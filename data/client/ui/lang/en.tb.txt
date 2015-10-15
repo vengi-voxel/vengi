@@ -1,0 +1,14 @@
+TBMessageWindow.ok Ok
+TBMessageWindow.cancel Cancel
+TBMessageWindow.yes Yes
+TBMessageWindow.no No
+TBList.header Showing %d of %d
+connect Connect
+password Password
+login Login
+email Email
+ok Ok
+disconnect Disconnect
+disconnecttext You either got disconnected or the connect attempt failed
+authfailed Authentication failed
+authfailedtext Authentication failed

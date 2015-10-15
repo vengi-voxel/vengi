@@ -1,0 +1,54 @@
+imports:
+    fips-glm:
+        git: https://github.com/floooh/fips-glm.git
+    fips-accidentalnoise:
+        git: https://github.com/mgerhardy/fips-accidentalnoise.git
+    fips-enet:
+        git: https://github.com/mgerhardy/fips-enet.git
+    fips-polyvox:
+        git: https://github.com/mgerhardy/fips-polyvox.git
+    fips-simpleai:
+        git: https://github.com/mgerhardy/fips-simpleai.git
+    fips-flatbuffers:
+        git: https://github.com/mgerhardy/fips-flatbuffers.git
+    fips-sauce:
+        git: https://github.com/mgerhardy/fips-sauce.git
+    fips-googletest:
+        git: https://github.com/mgerhardy/fips-googletest.git
+    fips-turbobadger:
+        git: https://github.com/fungos/fips-turbobadger.git
+    fips-stb:
+        git: https://github.com/fungos/fips-stb.git
+    fips-assimp:
+        git: https://github.com/fungos/fips-assimp.git
+    fips-lua:
+        git: https://github.com/mgerhardy/fips-lua.git
+    fips-zlib:
+        git: https://github.com/floooh/fips-zlib.git
+    fips-noisepp:
+        git: https://github.com/mgerhardy/fips-noisepp.git
+
+exports:
+    header-dirs:
+        - src/client
+        - src/server
+        - src/worldgenerator
+        - src/modules
+        - src/modules/ui
+    modules:
+        core: src/modules/core
+        io: src/modules/io
+        video: src/modules/video
+        ui: src/modules/ui
+        util: src/modules/util
+        network: src/modules/network
+        voxel: src/modules/voxel
+        attrib: src/modules/attrib
+        noise: src/modules/noise
+        backend: src/modules/backend
+        frontend: src/modules/frontend
+        client: src/client
+        server: src/server
+        rcon: src/rcon
+        worldgenerator: src/worldgenerator
+        commonlua: src/modules/commonlua

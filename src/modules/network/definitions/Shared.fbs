@@ -1,0 +1,34 @@
+// Shared data structures for client and server messages
+
+namespace network.messages;
+
+struct Vec3 {
+	x:float;
+	y:float;
+	z:float;
+}
+
+struct Vec2 {
+	x:float;
+	y:float;
+}
+
+enum NpcType: int {
+	NONE,
+
+	BEGIN_ANIMAL,
+	ANIMAL_WOLF,
+	ANIMAL_RABBIT,
+	MAX_ANIMAL,
+
+	BEGIN_CHARACTERS,
+	BLACKSMITH,
+	MAX_CHARACTERS,
+
+	MAX
+}
+
+enum NpcEffectType: int {
+	HUMAN_CONTROLLED,
+	AUTONOMOUS
+}

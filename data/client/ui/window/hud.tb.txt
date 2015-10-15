@@ -1,0 +1,10 @@
+WindowInfo
+	position: 0 0
+TBLayout
+	axis y
+	distribution gravity
+	TBTextField
+		text @disconnecttext
+	TBButton
+		text @disconnect
+		id disconnect

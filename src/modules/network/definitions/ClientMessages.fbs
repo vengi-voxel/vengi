@@ -1,0 +1,41 @@
+// Messages that the client send to the server
+
+include "Shared.fbs";
+
+namespace network.messages.client;
+
+table UserConnect {
+	email:string (required);
+	password:string (required);
+}
+
+/// a message that the client is sending once the connection is successful and it is
+/// ready to receive more data
+table UserConnected {
+}
+
+table UserDisconnect {
+}
+
+table Attack {
+	targetId:long;
+}
+
+/// The move direction is a bit mask of the keys that the client currently holds pressed
+enum MoveDirection:ubyte (bit_flags) { MOVEFORWARD = 1, MOVEBACKWARD = 2, MOVELEFT = 3, MOVERIGHT = 4 }
+
+table Move {
+	direction:MoveDirection;
+	/// vertical
+	pitch:float;
+	/// horizontal
+	yaw:float;
+}
+
+union Type { UserConnect, UserConnected, UserDisconnect, Attack, Move }
+
+table ClientMessage {
+	data:Type;
+}
+
+root_type ClientMessage;

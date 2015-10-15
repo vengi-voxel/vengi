@@ -1,0 +1,150 @@
+#include "WindowedApp.h"
+#include "core/Common.h"
+#include "core/Singleton.h"
+#include "GLFunc.h"
+
+#include <SDL.h>
+
+namespace video {
+
+namespace {
+inline void checkError(const char *file, unsigned int line, const char *function) {
+	const char *error = SDL_GetError();
+	if (*error != '\0') {
+		Log::error("%s (%s:%i => %s)", error, file, line, function);
+		SDL_ClearError();
+	} else {
+		Log::error("unknown error (%s:%i => %s)", file, line, function);
+	}
+}
+#define sdlCheckError() checkError(__FILE__, __LINE__, __PRETTY_FUNCTION__)
+}
+
+WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
+		App(filesystem, eventBus, 15679), _window(nullptr), _glcontext(nullptr), _width(-1), _height(-1), _aspect(1.0f), _clearColor(0.0, 0.0, 0.0) {
+}
+
+void WindowedApp::onAfterRunning() {
+	SDL_GL_SwapWindow(_window);
+}
+
+core::AppState WindowedApp::onRunning() {
+	App::onRunning();
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+		case SDL_QUIT:
+			return core::AppState::Cleanup;
+		default: {
+			const bool running = core::Singleton<io::EventHandler>::getInstance().handleEvent(event);
+			if (!running) {
+				return core::AppState::Cleanup;
+			}
+			break;
+		}
+		}
+	}
+
+	SDL_GL_MakeCurrent(_window, _glcontext);
+	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glViewport(0, 0, _width, _height);
+
+	return core::AppState::Running;
+}
+
+core::AppState WindowedApp::onInit() {
+	return App::onInit();
+}
+
+core::AppState WindowedApp::onConstruct() {
+	if (SDL_Init(SDL_INIT_VIDEO) == -1) {
+		sdlCheckError();
+		return core::AppState::Cleanup;
+	}
+
+	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
+
+	SDL_DisplayMode displayMode;
+	SDL_GetDesktopDisplayMode(0, &displayMode);
+	const char *name = SDL_GetPixelFormatName(displayMode.format);
+	int width = displayMode.w;
+	int height = displayMode.h;
+
+	SDL_ClearError();
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+
+	const bool fullscreen = core::Var::get("cl_fullscreen", "true")->boolVal();
+
+	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+	if (fullscreen)
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
+	const int videoDrivers = SDL_GetNumVideoDrivers();
+	for (int i = 0; i < videoDrivers; ++i) {
+		Log::info("available driver: %s", SDL_GetVideoDriver(i));
+	}
+
+	Log::info("driver: %s", SDL_GetCurrentVideoDriver());
+	const int displays = SDL_GetNumVideoDisplays();
+	Log::info("found %i displays", displays);
+	if (fullscreen && displays > 1) {
+		width = displayMode.w;
+		height = displayMode.h;
+		Log::info("use fake fullscreen for the first display: %i:%i", width, height);
+	}
+
+	_window = SDL_CreateWindow("Client", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+	if (!_window) {
+		sdlCheckError();
+		return core::AppState::Cleanup;
+	}
+
+	_glcontext = SDL_GL_CreateContext(_window);
+
+	SDL_DisableScreenSaver();
+
+	if (SDL_SetWindowBrightness(_window, 1.0f) == -1)
+		sdlCheckError();
+
+	const bool grabMouse = false;
+	if (grabMouse && (!fullscreen || displays > 1)) {
+		SDL_SetWindowGrab(_window, SDL_TRUE);
+	}
+
+	int screen = 0;
+	int modes = SDL_GetNumDisplayModes(screen);
+	Log::info("possible display modes:");
+	for (int i = 0; i < modes; i++) {
+		SDL_GetDisplayMode(screen, i, &displayMode);
+		name = SDL_GetPixelFormatName(displayMode.format);
+		Log::info("%ix%i@%iHz %s", displayMode.w, displayMode.h, displayMode.refresh_rate, name);
+	}
+
+	// some platforms may override or hardcode the resolution - so
+	// we have to query it here to get the actual resolution
+	SDL_GetWindowSize(_window, &_width, &_height);
+	_aspect = _width / static_cast<float>(_height);
+
+	ExtGLLoadFunctions();
+
+	return App::onConstruct();
+}
+
+core::AppState WindowedApp::onCleanup() {
+	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
+	SDL_GL_DeleteContext(_glcontext);
+	SDL_DestroyWindow(_window);
+	SDL_Quit();
+	return App::onCleanup();
+}
+
+}

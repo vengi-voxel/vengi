@@ -1,0 +1,10 @@
+WindowInfo
+	title @authfailed
+TBLayout
+	axis y
+	distribution gravity
+	TBTextField
+		text @authfailedtext
+	TBButton
+		text @ok
+		id ok

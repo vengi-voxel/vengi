@@ -1,0 +1,5 @@
+fips_add_subdirectory(modules)
+fips_add_subdirectory(client)
+fips_add_subdirectory(server)
+fips_add_subdirectory(rcon)
+fips_add_subdirectory(worldgenerator)

@@ -1,0 +1,36 @@
+WindowInfo
+	title @connect
+TBLayout
+	axis y
+	distribution gravity
+	TBLayout
+		axis x
+		gravity left right
+		distribution-position right
+		TBTextField
+			text @email
+		TBEditField
+			placeholder @email
+			id email
+			type email
+			lp
+				width 400
+	TBLayout
+		axis x
+		gravity left right
+		distribution-position right
+		TBTextField
+			text @password
+		TBEditField
+			placeholder @password
+			id password
+			type password
+			lp
+				width 400
+	TBLayout
+		axis x
+		gravity right
+		distribution-position right bottom
+		TBButton
+			text @login
+			id login
