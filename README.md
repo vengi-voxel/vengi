@@ -6,8 +6,6 @@ The build system is a cmake based system that automatically downloads all the ne
 
 Network message generation depends on [flatbuffers](https://github.com/mgerhardy/fips-flatbuffers)
 
-Concept: [Link](https://drive.google.com/open?id=0BxzNji4VZ2FaWXplX0I1ZWxOamc&authuser=0)
-
 # Var
 There are vars inside the engine that you can override via commandline. Var instances are runtime changeable
 configuration variables that you can influence from within the game.
