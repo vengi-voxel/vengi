@@ -17,6 +17,7 @@ class AINodeStaticResolver;
  * don't need this.
  */
 class AIApplication: public QApplication {
+Q_OBJECT
 protected:
 	AIDebugger* _debugger;
 	AINodeStaticResolver* _resolver;

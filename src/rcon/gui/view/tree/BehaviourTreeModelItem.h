@@ -23,8 +23,6 @@ class BehaviourTreeModelItem {
 private:
 	AIStateNode* _node;
 	const AIStateNodeStatic& _staticNodeData;
-	bool _populated;
-	int _rowCount;
 	QList<BehaviourTreeModelItem*> _rows;
 	BehaviourTreeModelItem* _parent;
 	QIcon _icon;

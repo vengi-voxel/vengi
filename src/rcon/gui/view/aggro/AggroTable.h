@@ -16,7 +16,6 @@ class AggroTable: public QTableView {
 private:
 	AggroTableModel _model;
 	QSortFilterProxyModel _proxyModel;
-	AIDebugger& _debugger;
 public:
 	AggroTable(AIDebugger& debugger);
 	virtual ~AggroTable();

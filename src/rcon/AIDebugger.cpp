@@ -100,7 +100,7 @@ public:
 AIDebugger::AIDebugger(AINodeStaticResolver& resolver) :
 		QObject(), _stateHandler(new StateHandler(*this)), _characterHandler(new CharacterHandler(*this)), _characterStaticHandler(
 				new CharacterStaticHandler(*this)), _pauseHandler(new PauseHandler(*this)), _namesHandler(new NamesHandler(*this)), _nopHandler(
-				new NopHandler()), _selectedId(-1), _socket(this), _pause(false), _resolver(resolver) {
+				new NopHandler()), _selectedId(AI_NOTHING_SELECTED), _socket(this), _pause(false), _resolver(resolver) {
 	connect(&_socket, SIGNAL(readyRead()), SLOT(readTcpData()));
 	connect(&_socket, SIGNAL(disconnected()), SLOT(onDisconnect()));
 
@@ -153,7 +153,9 @@ void AIDebugger::togglePause() {
 }
 
 void AIDebugger::select(const ai::AIStateWorld& ai) {
-	writeMessage(AISelectMessage(ai.getId()));
+	const ai::CharacterId id = ai.getId();
+	qDebug() << "select " << id;
+	writeMessage(AISelectMessage(id));
 }
 
 bool AIDebugger::writeMessage(const IProtocolMessage& msg) {
@@ -185,10 +187,12 @@ bool AIDebugger::writeMessage(const IProtocolMessage& msg) {
 }
 
 void AIDebugger::unselect() {
-	writeMessage(AISelectMessage(-1));
-	_selectedId = -1;
+	writeMessage(AISelectMessage(AI_NOTHING_SELECTED));
+	_selectedId = AI_NOTHING_SELECTED;
 	_aggro.clear();
 	_node = AIStateNode();
+	_attributes.clear();
+	emit onSelected();
 	qDebug() << "unselect entity";
 }
 
@@ -248,7 +252,7 @@ void AIDebugger::onDisconnect() {
 		emit onPause(_pause);
 	}
 	{
-		_selectedId = -1;
+		_selectedId = AI_NOTHING_SELECTED;
 		_aggro.clear();
 		_attributes.clear();
 		_node = AIStateNode();
@@ -262,7 +266,6 @@ void AIDebugger::onDisconnect() {
 		_entities.clear();
 		emit onEntitiesUpdated();
 	}
-	emit disconnect();
 }
 
 void AIDebugger::readTcpData() {
@@ -278,7 +281,8 @@ void AIDebugger::readTcpData() {
 		for (;;) {
 			if (!mf.isNewMessageAvailable(_stream))
 				break;
-			std::unique_ptr<ai::IProtocolMessage> msg(mf.create(_stream));
+			// don't free this - preallocated memory that is reused
+			ai::IProtocolMessage* msg = mf.create(_stream);
 			if (!msg) {
 				qDebug() << "unknown server message - disconnecting";
 				_socket.disconnectFromHost();
@@ -303,16 +307,27 @@ MapView* AIDebugger::createMapWidget() {
 
 void AIDebugger::setNames(const std::vector<std::string>& names) {
 	_names.clear();
-	for (std::vector<std::string>::const_iterator i = names.begin(); i != names.end(); ++i) {
-		_names << QString::fromStdString(*i);
+	_names.reserve(names.size());
+	// TODO: measure if contains/remove/insert manually is faster
+	for (const std::string& name : names) {
+		_names << QString::fromStdString(name);
 	}
 }
 
 void AIDebugger::setEntities(const std::vector<AIStateWorld>& entities) {
 	_entities.clear();
-	for (std::vector<AIStateWorld>::const_iterator i = entities.begin(); i != entities.end(); ++i) {
-		_entities.insert(i->getId(), *i);
+	// TODO: measure if contains/remove/insert manually is faster
+	for (const AIStateWorld& state : entities) {
+		_entities.insert(state.getId(), state);
 	}
+	if (_selectedId == AI_NOTHING_SELECTED) {
+		return;
+	}
+	if (_entities.contains(_selectedId)) {
+		return;
+	}
+	// TODO: this doesn't work for some reason
+//	unselect();
 }
 
 }

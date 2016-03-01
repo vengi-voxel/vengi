@@ -153,8 +153,11 @@ void BehaviourTreeModel::setRootNode(AIStateNode* node) {
 	beginResetModel();
 	if (_rootItem) {
 		delete _rootItem;
+		_rootItem = nullptr;
 	}
-	_rootItem = new BehaviourTreeModelItem(node, _resolver);
+	if (node->getNodeId() != -1) {
+		_rootItem = new BehaviourTreeModelItem(node, _resolver);
+	}
 	endResetModel();
 }
 

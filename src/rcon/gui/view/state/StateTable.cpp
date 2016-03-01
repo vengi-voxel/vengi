@@ -5,7 +5,7 @@ namespace ai {
 namespace debug {
 
 StateTable::StateTable(AIDebugger& debugger) :
-		QTableView(), _model(debugger), _debugger(debugger) {
+		QTableView(), _model(debugger) {
 	_proxyModel.setSourceModel(&_model);
 	setModel(&_proxyModel);
 	setAlternatingRowColors(true);

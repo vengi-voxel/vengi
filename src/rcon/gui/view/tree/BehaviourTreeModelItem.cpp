@@ -7,12 +7,12 @@ namespace ai {
 namespace debug {
 
 BehaviourTreeModelItem::BehaviourTreeModelItem(AIStateNode* node, AINodeStaticResolver& resolver, BehaviourTreeModelItem* parent) :
-		_node(node), _staticNodeData(resolver.get(node->getNodeId())), _populated(false), _rowCount(0), _parent(parent) {
+		_node(node), _staticNodeData(resolver.get(node->getNodeId())), _parent(parent) {
 	if (_parent == nullptr) {
 		_rows.push_back(new BehaviourTreeModelItem(_node, resolver, this));
 	} else {
-		for (const AIStateNode& node : _node->getChildren()) {
-			_rows.push_back(new BehaviourTreeModelItem(const_cast<AIStateNode*>(&node), resolver, this));
+		for (const AIStateNode& stateNode : _node->getChildren()) {
+			_rows.push_back(new BehaviourTreeModelItem(const_cast<AIStateNode*>(&stateNode), resolver, this));
 		}
 	}
 	const QString type = QString::fromStdString(_staticNodeData.getType()).toLower();

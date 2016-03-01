@@ -11,9 +11,21 @@ EntityListModel::EntityListModel(AIDebugger& debugger, QTableView *parent) :
 EntityListModel::~EntityListModel() {
 }
 
+QModelIndex EntityListModel::characterIndex(CharacterId id) const {
+	int row = 0;
+	for (const AIStateWorld& state : _list) {
+		if (state.getId() == id)
+			return createIndex(row, 0);
+		++row;
+	}
+	qDebug() << "Could not find entity " << id << " in the model";
+	return QModelIndex();
+}
+
 void EntityListModel::update() {
 	beginResetModel();
 	_list = _debugger.getEntities().values();
+	// TODO: sort list - not model
 	endResetModel();
 }
 

@@ -16,7 +16,6 @@ class StateTable: public QTableView {
 private:
 	StateTableModel _model;
 	QSortFilterProxyModel _proxyModel;
-	AIDebugger& _debugger;
 public:
 	StateTable(AIDebugger& debugger);
 	virtual ~StateTable();

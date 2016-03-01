@@ -5,7 +5,7 @@ namespace ai {
 namespace debug {
 
 AggroTable::AggroTable(AIDebugger& debugger) :
-		QTableView(), _model(debugger, this), _debugger(debugger) {
+		QTableView(), _model(debugger, this) {
 	_proxyModel.setSourceModel(&_model);
 	setModel(&_proxyModel);
 	setAlternatingRowColors(true);

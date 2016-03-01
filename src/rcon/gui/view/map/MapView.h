@@ -22,6 +22,7 @@ class MapView: public IGraphicsView {
 protected:
 	QGraphicsScene _scene;
 	AIDebugger& _debugger;
+	QHash<ai::CharacterId, MapItem*> _items;
 public:
 	MapView(AIDebugger& debugger);
 	virtual ~MapView();
