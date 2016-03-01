@@ -19,7 +19,7 @@ Npc::~Npc() {
 	ai::Zone* zone = _ai->getZone();
 	if (zone == nullptr)
 		return;
-	zone->scheduleDestroy(id());
+	zone->destroyAI(id());
 	_ai->setZone(nullptr);
 }
 
@@ -67,7 +67,7 @@ bool Npc::attack(ai::CharacterId id) {
 	const double strength = _attribs.getCurrent(attrib::Types::STRENGTH);
 	if (strength <= 0.0)
 		return false;
-	return _ai->getZone()->execute(id, [&] (const ai::AIPtr & targetAi) {
+	return _ai->getZone()->executeAsync(id, [=] (const ai::AIPtr & targetAi) {
 		AICharacter& targetChr = ai::character_cast<AICharacter>(targetAi->getCharacter());
 		targetChr.getNpc().applyDamage(this, strength);
 	});
