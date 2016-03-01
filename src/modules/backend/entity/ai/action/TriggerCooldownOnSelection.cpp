@@ -23,7 +23,7 @@ TreeNodeStatus TriggerCooldownOnSelection::doAction(backend::AICharacter& chr, l
 			Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
 			npc.cooldownMgr().triggerCooldown(_cooldownId);
 		};
-		zone->execute(id, func);
+		zone->executeAsync(id, func);
 	}
 	return FINISHED;
 }

@@ -31,19 +31,17 @@ public:
 		if (selection.empty())
 			return false;
 
-		bool closeEnough = false;
-		auto func = [&] (const ai::AIPtr& ai) {
+		auto func = [&] (const ai::AIPtr& ai) -> bool {
 			const Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
 			const glm::vec3& pos = npc.pos();
 			const ai::Vector3f& ownPos = entity->getCharacter()->getPosition();
 			const int distance = ownPos.distance(ai::Vector3f(pos.x, pos.y, pos.z));
-			if (distance <= _distance)
-				closeEnough = true;
+			return distance <= _distance;
 		};
 
-		if (!zone->execute(selection[0], func))
-			return false;
-		return closeEnough;
+		const AIPtr& selected = zone->getAI(selection[0]);
+		auto future = zone->executeAsync(selected, func);
+		return future.get();
 	}
 };
 

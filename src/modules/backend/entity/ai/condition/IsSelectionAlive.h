@@ -17,14 +17,14 @@ public:
 		const FilteredEntities& selection = entity->getFilteredEntities();
 		if (selection.empty())
 			return true;
-		bool alive = false;
-		auto func = [&] (const AIPtr& ai) {
+		static const auto func = [] (const AIPtr& ai) -> bool {
 			AICharacter& chr = ai->getCharacterCast<AICharacter>();
-			alive = !chr.getNpc().dead();
+			return !chr.getNpc().dead();
 		};
-		if (!entity->getZone()->execute(selection[0], func))
-			return false;
-		return alive;
+		const Zone* zone = entity->getZone();
+		const AIPtr& selected = zone->getAI(selection[0]);
+		auto future = zone->executeAsync(selected, func);
+		return future.get();
 	}
 };
 
