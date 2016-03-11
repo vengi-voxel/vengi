@@ -5,10 +5,10 @@ fips_begin_module(commonlua)
 	fips_deps(core lua52)
 fips_end_module()
 
-begin_googleunittest(commonlua)
+gtest_begin(commonlua)
 	fips_dir(tests)
 	fips_files(
 		LUATest.cpp
 	)
 	fips_deps(commonlua)
-end_googleunittest()
+gtest_end()

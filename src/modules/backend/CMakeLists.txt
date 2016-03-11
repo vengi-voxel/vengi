@@ -78,7 +78,7 @@ fips_begin_module(backend)
 	fips_deps(network io core util voxel attrib cooldown dbpost simpleai ${SDL2_LIBRARIES})
 fips_end_module()
 
-begin_googleunittest(backend)
+gtest_begin(backend)
 	fips_dir(tests)
 	fips_files(
 		SpawnMgrTest.cpp
@@ -86,4 +86,4 @@ begin_googleunittest(backend)
 		StorageTest.cpp
 	)
 	fips_deps(network io core util voxel attrib cooldown dbpost simpleai backend)
-end_googleunittest()
+gtest_end()

@@ -8,7 +8,7 @@ fips_begin_module(noise)
 	fips_deps(core noisepp accidentalnoise)
 fips_end_module()
 
-begin_googleunittest(noise)
+gtest_begin(noise)
 	fips_dir(tests)
 	fips_files(
 		AccidentalNoiseTest.cpp
@@ -17,4 +17,4 @@ begin_googleunittest(noise)
 		NoiseTestHelper.h
 	)
 	fips_deps(core noise accidentalnoise)
-end_googleunittest()
+gtest_end()

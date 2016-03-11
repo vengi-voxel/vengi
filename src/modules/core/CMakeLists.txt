@@ -25,7 +25,7 @@ fips_begin_module(core)
 	fips_deps(io ${SDL2_LIBRARIES})
 fips_end_module()
 
-begin_googleunittest(core)
+gtest_begin(core)
 	fips_dir(tests)
 	fips_files(
 		RectTest.cpp
@@ -39,4 +39,4 @@ begin_googleunittest(core)
 		TokenizerTest.cpp
 	)
 	fips_deps(core)
-end_googleunittest()
+gtest_end()

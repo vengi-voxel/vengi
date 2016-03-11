@@ -11,10 +11,10 @@ fips_begin_module(dbpost)
 	fips_deps(core ${PostgreSQL_LIBRARIES})
 fips_end_module()
 
-begin_googleunittest(dbpost)
+gtest_begin(dbpost)
 	fips_dir(tests)
 	fips_files(
 		PQStoreTest.cpp
 	)
 	fips_deps(dbpost)
-end_googleunittest()
+gtest_end()

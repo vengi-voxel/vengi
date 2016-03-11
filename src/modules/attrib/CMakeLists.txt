@@ -8,10 +8,10 @@ fips_begin_module(attrib)
 	fips_deps(core commonlua)
 fips_end_module()
 
-begin_googleunittest(attrib)
+gtest_begin(attrib)
 	fips_dir(tests)
 	fips_files(
 		AttributesTest.cpp
 	)
 	fips_deps(attrib)
-end_googleunittest()
+gtest_end()
