@@ -21,7 +21,6 @@ imports:
         git: https://github.com/fungos/fips-stb.git
     fips-assimp:
         git: https://github.com/fungos/fips-assimp.git
-        rev: 86a9d93a
     fips-lua:
         git: https://github.com/mgerhardy/fips-lua.git
     fips-zlib:
