@@ -13,7 +13,7 @@ public:
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
-		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == tb::TBIDC("ok")) {
+		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("ok")) {
 			Close();
 			return true;
 		}

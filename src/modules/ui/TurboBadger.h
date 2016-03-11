@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tb_core.h>
+#include <tb_language.h>
 #include <tb_node_tree.h>
 #include <tb_skin.h>
 #include <tb_system.h>

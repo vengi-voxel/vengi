@@ -204,7 +204,7 @@ core::AppState Client::onInit() {
 
 	_clearColor = glm::vec3(0.04, 0.29, 0.94);
 
-	_root.SetSkinBg(tb::TBIDC("background"));
+	_root.SetSkinBg(TBIDC("background"));
 	new frontend::LoginWindow(this);
 
 	SDL_GL_SetSwapInterval(core::Var::get("cl_vsync", "true")->boolVal());

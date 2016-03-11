@@ -24,7 +24,7 @@ public:
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
-		if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == tb::TBIDC("login")) || ev.special_key == tb::TB_KEY_ENTER) {
+		if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("login")) || ev.special_key == tb::TB_KEY_ENTER) {
 			TBWidget *email = ev.target->GetParentWindow()->GetWidgetByID(tb::TBID("email"));
 			TBWidget *password = ev.target->GetParentWindow()->GetWidgetByID(tb::TBID("password"));
 
@@ -36,7 +36,7 @@ public:
 			if (!_client->connect(port->intVal(), host->strVal())) {
 				tb::TBStr text;
 				text.SetFormatted("Failed to connect");
-				tb::TBMessageWindow *win = new tb::TBMessageWindow(this, tb::TBIDC(""));
+				tb::TBMessageWindow *win = new tb::TBMessageWindow(this, TBIDC(""));
 				win->Show("Failed to connect", text);
 			} else {
 				Close();

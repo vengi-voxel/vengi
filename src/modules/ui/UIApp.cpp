@@ -122,30 +122,30 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 			key += 'A' - 'a';
 		tb::TBID id;
 		if (key == 'X')
-			id = tb::TBIDC("cut");
+			id = TBIDC("cut");
 		else if (key == 'C' || special == tb::TB_KEY_INSERT)
-			id = tb::TBIDC("copy");
+			id = TBIDC("copy");
 		else if (key == 'V' || (special == tb::TB_KEY_INSERT && reverseKey))
-			id = tb::TBIDC("paste");
+			id = TBIDC("paste");
 		else if (key == 'A')
-			id = tb::TBIDC("selectall");
+			id = TBIDC("selectall");
 		else if (key == 'Z' || key == 'Y') {
 			bool undo = key == 'Z';
 			if (reverseKey)
 				undo = !undo;
-			id = undo ? tb::TBIDC("undo") : tb::TBIDC("redo");
+			id = undo ? TBIDC("undo") : TBIDC("redo");
 		} else if (key == 'N')
-			id = tb::TBIDC("new");
+			id = TBIDC("new");
 		else if (key == 'O')
-			id =tb:: TBIDC("open");
+			id = TBIDC("open");
 		else if (key == 'S')
-			id = tb::TBIDC("save");
+			id = TBIDC("save");
 		else if (key == 'W')
-			id = tb::TBIDC("close");
+			id = TBIDC("close");
 		else if (special == tb::TB_KEY_PAGE_UP)
-			id = tb::TBIDC("prev_doc");
+			id = TBIDC("prev_doc");
 		else if (special == tb::TB_KEY_PAGE_DOWN)
-			id = tb::TBIDC("next_doc");
+			id = TBIDC("next_doc");
 		else
 			return false;
 
@@ -260,10 +260,12 @@ core::AppState UIApp::onConstruct() {
 }
 
 core::AppState UIApp::onInit() {
-	if (!tb::tb_core_init(&_renderer, "ui/lang/en.tb.txt")) {
+	if (!tb::tb_core_init(&_renderer)) {
 		Log::error("failed to initialize the ui");
 		return core::AppState::Cleanup;
 	}
+
+	tb::g_tb_lng->Load("ui/lang/en.tb.txt");
 
 	if (!tb::g_tb_skin->Load("ui/skin/skin.tb.txt", nullptr)) {
 		Log::error("could not load the skin");
@@ -283,7 +285,7 @@ core::AppState UIApp::onInit() {
 	register_tbbf_font_renderer();
 	tb::g_font_manager->AddFontInfo("ui/font/font.tb.txt", "Segoe");
 	tb::TBFontDescription fd;
-	fd.SetID(tb::TBIDC("Segoe"));
+	fd.SetID(TBIDC("Segoe"));
 	fd.SetSize(tb::g_tb_skin->GetDimensionConverter()->DpToPx(14));
 	tb::g_font_manager->SetDefaultFontDescription(fd);
 	tb::TBFontFace *font = tb::g_font_manager->CreateFontFace(tb::g_font_manager->GetDefaultFontDescription());
@@ -294,7 +296,7 @@ core::AppState UIApp::onInit() {
 
 	font->RenderGlyphs(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·åäöÅÄÖ");
 	_root.SetRect(tb::TBRect(0, 0, _width, _height));
-	_root.SetSkinBg(tb::TBIDC("background"));
+	_root.SetSkinBg(TBIDC("background"));
 
 	const core::AppState state = WindowedApp::onInit();
 	return state;
