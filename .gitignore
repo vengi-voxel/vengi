@@ -1,13 +1,5 @@
-CMakeFiles/
-cmake_install.cmake
-CMakeCache.txt
-/fips_targets.yml
-Makefile
-/.project
-/.cproject
-/.fips-gen.py
-/.fips-imports.cmake
-*.a
-/.settings
-/fips-*_*
-/valgrind-*.log
+#>fips
+# this area is managed by fips, do not edit
+.fips-*
+*.pyc
+#<fips
