@@ -17,14 +17,10 @@ public:
 		const FilteredEntities& selection = entity->getFilteredEntities();
 		if (selection.empty())
 			return true;
-		static const auto func = [] (const AIPtr& ai) -> bool {
-			AICharacter& chr = ai->getCharacterCast<AICharacter>();
-			return !chr.getNpc().dead();
-		};
 		const Zone* zone = entity->getZone();
-		const AIPtr& selected = zone->getAI(selection[0]);
-		auto future = zone->executeAsync(selected, func);
-		return future.get();
+		const AIPtr& ai = zone->getAI(selection[0]);
+		AICharacter& chr = ai->getCharacterCast<AICharacter>();
+		return !chr.getNpc().dead();
 	}
 };
 

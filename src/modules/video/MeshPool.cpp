@@ -30,7 +30,7 @@ MeshPtr MeshPool::getMesh(const std::string& id) {
 		return i->second;
 
 	const MeshPtr mesh(new Mesh());
-	_threadPool.push([=]() {mesh->loadMesh(name);});
+	_threadPool.enqueue([=]() {mesh->loadMesh(name);});
 	_meshes[name] = mesh;
 	return mesh;
 }

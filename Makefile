@@ -18,11 +18,11 @@ run: build
 eclipse:
 	$(Q)./fips config linux-eclipse-debug
 
-server:
-	$(Q)./fips run server
+server: build
+	$(Q)./fips run server -- -set core_loglevel 4
 
-client:
-	$(Q)./fips run client
+client: build
+	$(Q)./fips run client -- -set core_loglevel 2
 
-generate:
+generate: build
 	$(Q)./fips run worldgenerator -- -set seed 1 -set size 64

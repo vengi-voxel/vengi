@@ -31,17 +31,12 @@ public:
 		if (selection.empty())
 			return false;
 
-		auto func = [&] (const ai::AIPtr& ai) -> bool {
-			const Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
-			const glm::vec3& pos = npc.pos();
-			const ai::Vector3f& ownPos = entity->getCharacter()->getPosition();
-			const int distance = ownPos.distance(ai::Vector3f(pos.x, pos.y, pos.z));
-			return distance <= _distance;
-		};
-
-		const AIPtr& selected = zone->getAI(selection[0]);
-		auto future = zone->executeAsync(selected, func);
-		return future.get();
+		const AIPtr& ai = zone->getAI(selection[0]);
+		const Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
+		const glm::vec3& pos = npc.pos();
+		const ai::Vector3f& ownPos = entity->getCharacter()->getPosition();
+		const int distance = ownPos.distance(ai::Vector3f(pos.x, pos.y, pos.z));
+		return distance <= _distance;
 	}
 };
 

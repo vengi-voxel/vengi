@@ -84,7 +84,7 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 	_meshesExtracted.insert(pos);
 
 	const int delta = size - 1;
-	_threadPool.push([=] () {
+	_threadPool.enqueue([=] () {
 		core_trace_scoped("MeshExtraction");
 		const PolyVox::Vector3DInt32 mins(pos.x, 0, pos.y);
 		const PolyVox::Vector3DInt32 maxs(mins.getX() + delta, MAX_HEIGHT, mins.getZ() + delta);

@@ -23,7 +23,7 @@ void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 
 	const char *email = message->email()->c_str();
 	const char *password = message->password()->c_str();
-	Log::info("User %s tries to log into the gameserver", email);
+	Log::info("User \"%s\" tries to log into the gameserver", email);
 
 	UserPtr user = _entityStorage->login(peer, email, password);
 	if (!user) {

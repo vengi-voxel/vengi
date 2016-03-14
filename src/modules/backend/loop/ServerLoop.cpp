@@ -1,6 +1,7 @@
 #include "ServerLoop.h"
 #include "core/Command.h"
 #include "core/Tokenizer.h"
+#include "core/Log.h"
 
 namespace backend {
 
@@ -24,10 +25,6 @@ bool ServerLoop::onInit() {
 
 	class ProgressMonitor: public util::IProgressMonitor {
 	public:
-		void step(int steps = 1) override {
-			IProgressMonitor::step(steps);
-			Log::info("max: %i, steps: %i => %f\r", _max, _steps, progress());
-		}
 		void done() override {
 			Log::info("\ndone");
 		}

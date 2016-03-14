@@ -14,7 +14,7 @@ public:
 
 TEST_F(ThreadPoolTest, testPush) {
 	core::ThreadPool pool(1);
-	auto future = pool.push([this] () {_executed = true;});
+	auto future = pool.enqueue([this] () {_executed = true;});
 	future.get();
 	ASSERT_TRUE(_executed) << "Thread wasn't executed";
 }
@@ -24,7 +24,7 @@ TEST_F(ThreadPoolTest, testMultiplePush) {
 	{
 		core::ThreadPool pool(2);
 		for (int i = 0; i < x; ++i) {
-			pool.push([this] () {_count++;});
+			pool.enqueue([this] () {_count++;});
 		}
 	}
 	ASSERT_EQ(x, _count) << "Not all threads were executed";

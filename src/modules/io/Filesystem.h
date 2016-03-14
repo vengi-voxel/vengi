@@ -40,7 +40,7 @@ public:
 	 */
 	template<class CompleteHandle>
 	void loadAsync(const std::string& filename, CompleteHandle completeHandle) {
-		_threadPool.push([=]() {
+		_threadPool.enqueue([=]() {
 			io::FilePtr f(new io::File(filename));
 			completeHandle(f);
 		});

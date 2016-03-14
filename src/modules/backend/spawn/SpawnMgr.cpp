@@ -42,7 +42,7 @@ void SpawnMgr::spawnEntity(ai::Zone& zone, network::messages::NpcType start, net
 	const int offset = start + 1;
 	int count[end - offset];
 	memset(count, 0, sizeof(count));
-	zone.execute([&] (const ai::AIPtr& ai) {
+	zone.execute([start, end, offset, &count] (const ai::AIPtr& ai) {
 		const AICharacter& chr = ai::character_cast<AICharacter>(ai->getCharacter());
 		const Npc& npc = chr.getNpc();
 		const network::messages::NpcType type = npc.npcType();

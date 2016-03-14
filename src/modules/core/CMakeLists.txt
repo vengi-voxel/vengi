@@ -16,7 +16,7 @@ fips_begin_module(core)
 		Log.cpp Log.h
 		Var.cpp Var.h
 		Trace.h
-		ThreadPool.h ThreadPool.cpp
+		ThreadPool.h
 		Tokenizer.h
 		TimeProvider.h TimeProvider.cpp
 	)

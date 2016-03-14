@@ -1,61 +1,112 @@
+/*
+ Copyright (c) 2012 Jakob Progsch, Václav Zeman
+
+ This software is provided 'as-is', without any express or implied
+ warranty. In no event will the authors be held liable for any damages
+ arising from the use of this software.
+
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute it
+ freely, subject to the following restrictions:
+
+ 1. The origin of this software must not be misrepresented; you must not
+ claim that you wrote the original software. If you use this software
+ in a product, an acknowledgment in the product documentation would be
+ appreciated but is not required.
+
+ 2. Altered source versions must be plainly marked as such, and must not be
+ misrepresented as being the original software.
+
+ 3. This notice may not be removed or altered from any source
+ distribution.
+ */
+
 #pragma once
 
-#include "Common.h"
+#include <vector>
 #include <queue>
 #include <memory>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
 #include <future>
 #include <functional>
-#include <stdexcept>
 
 namespace core {
 
-class ThreadPool {
-private:
-	typedef std::function<void()> FunctionType;
-	bool _join;
-	std::vector<std::thread> _workers;
-	std::deque<FunctionType> _tasks;
-	std::condition_variable _cond;
-	std::mutex _mutex;
-
-	void tick();
+class ThreadPool final {
 public:
-	ThreadPool(unsigned int numThreads = 2) :
-			_join(false) {
-		for (unsigned int i = 0; i < numThreads; ++i) {
-			_workers.push_back(std::move(std::thread(std::bind(&ThreadPool::tick, this))));
-		}
-	}
+	explicit ThreadPool(size_t);
 
-	template<class Function, class ... Args>
-	auto push(Function&& func, Args&&... args) -> std::future<typename std::result_of<Function(Args...)>::type> {
-		core_assert(!_join);
-		using retType = typename std::result_of<Function(Args...)>::type;
+	/**
+	 * Enqueue functors or lambdas into the thread pool
+	 */
+	template<class F, class ... Args>
+	auto enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
 
-		auto task = std::make_shared<std::packaged_task<retType()> >(std::bind(std::forward<Function>(func), std::forward<Args>(args)...));
-		std::future<retType> res = task->get_future();
+	~ThreadPool();
+private:
+	// need to keep track of threads so we can join them
+	std::vector<std::thread> _workers;
+	// the task queue
+	std::queue<std::function<void()> > _tasks;
 
-		auto funcWrapper = [task]() {
-			(*task)();
-		};
-		{
-			std::unique_lock<std::mutex> lock(_mutex);
-			_tasks.push_back(funcWrapper);
-		}
-		_cond.notify_one();
-		return res;
-	}
-
-	~ThreadPool() {
-		_join = true;
-		_cond.notify_all();
-		for (std::thread &worker : _workers) {
-			worker.join();
-		}
-	}
+	// synchronization
+	std::mutex _queueMutex;
+	std::condition_variable _condition;
+	std::atomic_bool _stop;
 };
+
+// the constructor just launches some amount of workers
+inline ThreadPool::ThreadPool(size_t threads) :
+		_stop(false) {
+	_workers.reserve(threads);
+	for (size_t i = 0; i < threads; ++i) {
+		_workers.emplace_back([this] {
+			for (;;) {
+				std::function<void()> task;
+				{
+					std::unique_lock<std::mutex> lock(this->_queueMutex);
+					this->_condition.wait(lock, [this] {
+						return this->_stop || !this->_tasks.empty();
+					});
+					if (this->_stop && this->_tasks.empty()) {
+						return;
+					}
+					task = std::move(this->_tasks.front());
+					this->_tasks.pop();
+				}
+
+				task();
+			}
+		});
+	}
+}
+
+// add new work item to the pool
+template<class F, class ... Args>
+auto ThreadPool::enqueue(F&& f, Args&&... args)
+-> std::future<typename std::result_of<F(Args...)>::type> {
+	using return_type = typename std::result_of<F(Args...)>::type;
+
+	auto task = std::make_shared<std::packaged_task<return_type()> >(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+
+	std::future<return_type> res = task->get_future();
+	{
+		std::unique_lock<std::mutex> lock(_queueMutex);
+		_tasks.emplace([task]() {(*task)();});
+		_condition.notify_one();
+	}
+	return res;
+}
+
+// the destructor joins all threads
+inline ThreadPool::~ThreadPool() {
+	_stop = true;
+	_condition.notify_all();
+	for (std::thread &worker : _workers)
+		worker.join();
+}
 
 }
