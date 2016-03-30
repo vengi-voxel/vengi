@@ -366,7 +366,9 @@ core::AppState Client::onRunning() {
 	sendMovement();
 	if (state == core::AppState::Running) {
 		_posLerp.update(_now);
-		_camera.setPosition(_posLerp.position());
+		glm::vec3 pos = _posLerp.position();
+		pos.z += 10.0f;
+		_camera.setPosition(pos);
 		_network->update();
 		_world->onFrame(_deltaFrame);
 	}

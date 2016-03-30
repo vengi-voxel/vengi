@@ -88,7 +88,7 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 	_threadPool.enqueue([=] () {
 		core_trace_scoped("MeshExtraction");
 		const PolyVox::Vector3DInt32 mins(pos.x, 0, pos.y);
-		const PolyVox::Vector3DInt32 maxs(mins.getX() + delta, MAX_HEIGHT, mins.getZ() + delta);
+		const PolyVox::Vector3DInt32 maxs(mins.getX() + delta, MAX_HEIGHT - 1, mins.getZ() + delta);
 		const PolyVox::Region region(mins, maxs);
 		DecodedMeshData data;
 		{
@@ -454,7 +454,6 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	} else {
 		createTrees(region, chunk);
 	}
-	core::App::getInstance()->eventBus()->publish(WorldCreatedEvent(this));
 }
 
 void World::onFrame(long dt) {

@@ -11,7 +11,6 @@
 
 #include "io/Filesystem.h"
 #include "WorldData.h"
-#include "WorldEvents.h"
 #include "Voxel.h"
 #include "Raycast.h"
 #include "core/ThreadPool.h"

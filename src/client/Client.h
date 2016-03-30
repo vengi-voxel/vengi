@@ -20,7 +20,7 @@
 #include "core/Common.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
-#include "voxel/World.h"
+#include "voxel/WorldEvents.h"
 #include "network/Network.h"
 #include "network/MessageSender.h"
 #include "network/NetworkEvents.h"

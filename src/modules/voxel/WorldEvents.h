@@ -1,20 +1,19 @@
 #pragma once
 
 #include "core/EventBus.h"
+#include "voxel/World.h"
 
 namespace voxel {
 
-class World;
-
 class WorldCreatedEvent: public core::IEventBusEvent {
 private:
-	World* _world;
+	WorldPtr _world;
 public:
-	WorldCreatedEvent(World* world) :
+	WorldCreatedEvent(const WorldPtr& world) :
 			_world(world) {
 	}
 
-	inline World* world() const {
+	inline const WorldPtr& world() const {
 		return _world;
 	}
 };
