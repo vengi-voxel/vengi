@@ -8,6 +8,16 @@ Texture::Texture(const std::string& filename) :
 		io::IOResource(), _filename(filename), _textureHandle(0u) {
 }
 
+Texture::Texture(uint8_t* data, int width, int height, int depth) :
+		io::IOResource(), _filename("mem"), _textureHandle(0u) {
+	glGenTextures(1, &_textureHandle);
+	glBindTexture(GL_TEXTURE_2D, _textureHandle);
+	const GLenum mode = depth == 4 ? GL_RGBA : GL_RGB;
+	glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+}
+
 Texture::~Texture() {
 	if (_textureHandle != 0) {
 		glDeleteTextures(1, &_textureHandle);

@@ -44,6 +44,7 @@ protected:
 	frontend::MeshShaderPtr _meshShader;
 	frontend::WaterShaderPtr _waterShader;
 	video::TexturePtr _waterTexture;
+	video::TexturePtr _colorTexture;
 	video::GLMeshData _waterData;
 	video::Camera _camera;
 	glm::vec3 _lightPos = glm::vec3(1.0, 1.0, 1.0);

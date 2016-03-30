@@ -10,6 +10,7 @@
 #include "core/Command.h"
 #include "sauce/ClientInjector.h"
 #include "video/GLDebug.h"
+#include "noise/SimplexNoise.h"
 
 #define registerMoveCmd(name, flag) \
 	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
@@ -203,6 +204,11 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
+
+	const int ColorTextureSize = 256;
+	uint8_t colorTexture[ColorTextureSize * ColorTextureSize * 3];
+	noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, 3, 0.3f, 0.7f);
+	_colorTexture = video::TexturePtr(new video::Texture(colorTexture, ColorTextureSize, ColorTextureSize, 3));
 
 	_clearColor = glm::vec3(0.0, 0.6, 0.796);
 

@@ -11,6 +11,11 @@ Image::Image(const std::string& filename) :
 		io::IOResource(), _filename(filename), _width(-1), _height(-1), _depth(-1), _data(nullptr) {
 }
 
+Image::Image(uint8_t* data, int width, int height, int depth) :
+		_width(width), _height(height), _depth(depth), _data(data), _alpha(depth == 4) {
+	_state = io::IOSTATE_LOADED;
+}
+
 Image::~Image() {
 	if (_data) {
 		stbi_image_free(_data);

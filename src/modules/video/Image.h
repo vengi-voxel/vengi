@@ -13,10 +13,14 @@ private:
 	int _height;
 	int _depth;
 	uint8_t* _data;
+	bool _alpha = true;
 
 	void load(const io::FilePtr& file);
 public:
 	Image(const std::string& filename);
+
+	Image(uint8_t* data, int width, int height, int depth);
+
 	~Image();
 
 	void loadAsync();
@@ -36,7 +40,7 @@ public:
 	}
 
 	inline bool hasAlpha() const {
-		return true;
+		return _alpha;
 	}
 };
 

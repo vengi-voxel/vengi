@@ -17,6 +17,7 @@ private:
 	void upload();
 public:
 	Texture(const std::string& filename);
+	Texture(uint8_t* data, int width, int height, int depth);
 	~Texture();
 
 	void load();
