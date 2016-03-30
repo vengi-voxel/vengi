@@ -390,18 +390,14 @@ bool World::load(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 bool World::save(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	Log::info("Save chunk");
 	core::ByteStream voxelStream;
-	const PolyVox::Vector3DInt32& lower = region.getLowerCorner();
-	const PolyVox::Vector3DInt32& upper = region.getUpperCorner();
-	const int lowerZ = lower.getZ();
-	const int upperZ = upper.getZ();
-	const int lowerY = lower.getY();
-	const int upperY = upper.getY();
-	const int lowerX = lower.getX();
-	const int upperX = upper.getX();
-	for (int z = lowerZ; z < upperZ; ++z) {
-		for (int y = lowerY; y < upperY; ++y) {
-			for (int x = lowerX; x < upperX; ++x) {
-				const Voxel& voxel = _volumeData->getVoxel(x, y, z);
+	const int width = region.getWidthInVoxels();
+	const int height = region.getHeightInVoxels();
+	const int depth = region.getDepthInVoxels();
+
+	for (int z = 0; z < depth; ++z) {
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
+				const Voxel& voxel = chunk->getVoxel(x, y, z);
 				voxelStream.addByte(voxel.getMaterial());
 				voxelStream.addByte(voxel.getDensity());
 			}
