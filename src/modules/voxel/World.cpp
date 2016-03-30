@@ -20,7 +20,7 @@
 
 namespace voxel {
 
-#define MAX_HEIGHT 256
+#define MAX_HEIGHT 255
 #define WORLD_FILE_VERSION 1
 
 void World::Pager::pageIn(const PolyVox::Region& region, WorldData::Chunk* chunk) {
@@ -103,7 +103,7 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 }
 
 int World::findFloor(int x, int z) const {
-	for (int i = MAX_HEIGHT - 1; i >= 0; i--) {
+	for (int i = MAX_HEIGHT; i >= 0; i--) {
 		const int material = getMaterial(x, i, z);
 		if (material != AIR && material != CLOUDS) {
 			return i + 1;
