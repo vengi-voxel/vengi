@@ -241,10 +241,11 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 				if ((x >= pos.x + trunkWidthY || x < pos.x - trunkWidthY) && (z >= pos.z + trunkWidthY || z < pos.z - trunkWidthY)) {
 					continue;
 				}
-				if (y == pos.y) {
-					y = findChunkFloor(chunkHeight, chunk, x, z);
+				int y1 = y;
+				if (y1 == pos.y) {
+					y1 = findChunkFloor(chunkHeight, chunk, x, z);
 				}
-				chunk->setVoxel(x, y, z, voxel);
+				chunk->setVoxel(x, y1, z, voxel);
 			}
 		}
 	}
