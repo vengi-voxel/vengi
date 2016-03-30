@@ -37,8 +37,8 @@ Project Voxel
 * Persist world data on server shutdown
 
 
-Voxel AMS
--------------------
+Attribute handling
+------------------
 
 * Buffs/Debuffs
 * AreaEffects
