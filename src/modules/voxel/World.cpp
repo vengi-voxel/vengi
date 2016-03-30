@@ -365,22 +365,18 @@ bool World::load(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	core::ByteStream voxelBuf(len);
 	voxelBuf.append(targetBuf, len);
 
-	const PolyVox::Vector3DInt32& lower = region.getLowerCorner();
-	const PolyVox::Vector3DInt32& upper = region.getUpperCorner();
-	const int lowerZ = lower.getZ();
-	const int upperZ = upper.getZ();
-	const int lowerY = lower.getY();
-	const int upperY = upper.getY();
-	const int lowerX = lower.getX();
-	const int upperX = upper.getX();
-	for (int z = lowerZ; z < upperZ; ++z) {
-		for (int y = lowerY; y < upperY; ++y) {
-			for (int x = lowerX; x < upperX; ++x) {
+	const int width = region.getWidthInVoxels();
+	const int height = region.getHeightInVoxels();
+	const int depth = region.getDepthInVoxels();
+
+	for (int z = 0; z < depth; ++z) {
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
 				core_assert(voxelBuf.getSize() >= 2);
 				const uint8_t material = voxelBuf.readByte();
 				const uint8_t density = voxelBuf.readByte();
 				const Voxel voxel(material, density);
-				_volumeData->setVoxel(x, y, z, voxel);
+				chunk->setVoxel(x, y, z, voxel);
 			}
 		}
 	}
