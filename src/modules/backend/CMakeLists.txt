@@ -73,8 +73,6 @@ fips_begin_module(backend)
 		EntityStorage.cpp EntityStorage.h
 		Entity.cpp Entity.h
 	)
-	find_package(SDL2 REQUIRED)
-	include_directories(${SDL2_INCLUDE_DIRS} .)
 	fips_deps(network io core util voxel attrib cooldown persistence simpleai ${SDL2_LIBRARIES})
 fips_end_module()
 

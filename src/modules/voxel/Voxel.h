@@ -9,15 +9,17 @@
 
 namespace voxel {
 
+#define MAX_HEIGHT 255
+
 // this must be 0
-const int AIR = 0;
-const int DIRT = 1;
-const int GRASS = 2;
-const int CLOUD = 3;
-const int WATER = 4;
-const int LEAVES = 5;
-const int TRUNK = 6;
-const int CLOUDS = 7;
+const uint8_t AIR = 0;
+const uint8_t DIRT = 1;
+const uint8_t GRASS = 2;
+const uint8_t CLOUD = 3;
+const uint8_t WATER = 4;
+const uint8_t LEAVES = 5;
+const uint8_t TRUNK = 6;
+const uint8_t CLOUDS = 7;
 
 // density 0 - 255 (8 bits)
 // material types 0 - 255 (8 bits)

@@ -49,7 +49,7 @@ size_t PoiProvider::getPoisCount() const {
 glm::vec3 PoiProvider::getPointOfInterest() const {
 	if (_pois.empty())
 		return _world->randomPos();
-	return core::randomElement(_pois.begin(), _pois.end())->pos;
+	return _world->random().randomElement(_pois.begin(), _pois.end())->pos;
 }
 
 }

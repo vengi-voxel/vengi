@@ -12,10 +12,12 @@
 #include "io/Filesystem.h"
 #include "WorldData.h"
 #include "Voxel.h"
+#include "BiomManager.h"
 #include "Raycast.h"
 #include "core/ThreadPool.h"
 #include "core/ReadWriteLock.h"
 #include "core/Var.h"
+#include "core/Random.h"
 #include "core/Log.h"
 
 namespace voxel {
@@ -86,12 +88,16 @@ public:
 
 	void onFrame(long dt);
 
+	const core::Random& random() const { return _random; }
+
 	inline long seed() const { return _seed; }
 
 	void setSeed(long seed) {
 		Log::info("Seed is: %li", seed);
 		_seed = seed;
-		_engine.seed(seed);
+		_random.setSeed(seed);
+		_noiseSeedOffsetX = _random.randomf(-10000.0f, 10000.0f);
+		_noiseSeedOffsetZ = _random.randomf(-10000.0f, 10000.0f);
 	}
 
 	inline bool isCreated() const {
@@ -122,6 +128,7 @@ private:
 
 	Pager _pager;
 	WorldData *_volumeData;
+	BiomManager _biomManager;
 	mutable std::mt19937 _engine;
 	long _seed;
 
@@ -171,9 +178,9 @@ private:
 	static void createPlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int depth, const Voxel& voxel);
 
 	static void addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height);
-	static void createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk);
-	glm::ivec2 randomPosWithoutHeight(const PolyVox::Region& region, int border = 0);
-	void createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk);
+	static void createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random);
+	glm::ivec2 randomPosWithoutHeight(const PolyVox::Region& region, core::Random& random, int border = 0);
+	void createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random);
 	static void createUnderground(const PolyVox::Region& region, WorldData::Chunk* chunk);
 
 	core::ThreadPool _threadPool;
@@ -185,6 +192,9 @@ private:
 	// fast lookup for positions that are already extracted and available in the _meshData vector
 	std::unordered_set<glm::ivec2, IVec2HashEquals> _meshesExtracted;
 	core::VarPtr _chunkSize;
+	core::Random _random;
+	float _noiseSeedOffsetX;
+	float _noiseSeedOffsetZ;
 };
 
 inline int World::getMaterial(int x, int y, int z) const {

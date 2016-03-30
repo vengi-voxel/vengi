@@ -1,6 +1,6 @@
 #include "TriggerCooldown.h"
 #include "core/Common.h"
-#include "entity/Npc.h"
+#include "backend/entity/Npc.h"
 
 namespace backend {
 

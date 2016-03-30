@@ -4,8 +4,8 @@
 #include "cooldown/CooldownType.h"
 #include "core/Common.h"
 #include "core/String.h"
-#include "entity/ai/AICharacter.h"
-#include "entity/Npc.h"
+#include "backend/entity/ai/AICharacter.h"
+#include "backend/entity/Npc.h"
 
 using namespace ai;
 

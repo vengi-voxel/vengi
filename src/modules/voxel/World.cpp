@@ -20,7 +20,6 @@
 
 namespace voxel {
 
-#define MAX_HEIGHT 255
 #define WORLD_FILE_VERSION 1
 
 void World::Pager::pageIn(const PolyVox::Region& region, WorldData::Chunk* chunk) {
@@ -35,9 +34,11 @@ void World::Pager::pageOut(const PolyVox::Region& region, WorldData::Chunk* chun
 
 // http://code.google.com/p/fortressoverseer/source/browse/Overseer/PolyVoxGenerator.cpp
 World::World() :
-		_pager(*this), _seed(0), _threadPool(1), _rwLock("World") {
+		_pager(*this), _seed(0), _threadPool(1), _rwLock("World"), _random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get("cl_chunksize", "64", core::CV_READONLY);
 	_volumeData = new WorldData(&_pager, 256 * 1024 * 1024, _chunkSize->intVal());
+	core_assert(_biomManager.addBiom(0, 100, Voxel(GRASS, Voxel::getMaxDensity())));
+	core_assert(_biomManager.addBiom(101, MAX_HEIGHT - 1, Voxel(GRASS, Voxel::getMaxDensity())));
 }
 
 World::~World() {
@@ -53,15 +54,13 @@ int World::findChunkFloor(int chunkHeight, WorldData::Chunk* chunk, int x, int z
 	return -1;
 }
 
-glm::ivec2 World::randomPosWithoutHeight(const PolyVox::Region& region, int border) {
+glm::ivec2 World::randomPosWithoutHeight(const PolyVox::Region& region, core::Random& random, int border) {
 	const int w = region.getWidthInVoxels();
 	const int d = region.getDepthInVoxels();
 	core_assert(border < w);
 	core_assert(border < d);
-	std::uniform_int_distribution<int> distributionX(border, w - border);
-	std::uniform_int_distribution<int> distributionZ(border, d - border);
-	const int x = distributionX(_engine);
-	const int z = distributionZ(_engine);
+	const int x = random.random(border, w - border);
+	const int z = random.random(border, d - border);
 	return glm::ivec2(x, z);
 }
 
@@ -243,6 +242,9 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 				int y1 = y;
 				if (y1 == pos.y) {
 					y1 = findChunkFloor(chunkHeight, chunk, x, z);
+					if (y1 < 0) {
+						continue;
+					}
 				}
 				chunk->setVoxel(x, y1, z, voxel);
 			}
@@ -266,41 +268,41 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 	}
 }
 
-void World::createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk) {
+void World::createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random) {
 	const int chunkHeight = region.getHeightInVoxels();
 	for (int i = 0; i < 5; ++i) {
 		const int maxSize = 14;
-		const int rndValX = core::random(maxSize, region.getWidthInVoxels() - 1 - maxSize);
+		const int rndValX = random.random(maxSize, region.getWidthInVoxels() - 1 - maxSize);
 		// number should be even
 		if (!(rndValX % 2)) {
 			continue;
 		}
 
-		const int rndValZ = core::random(maxSize, region.getDepthInVoxels() - 1 - maxSize);
+		const int rndValZ = random.random(maxSize, region.getDepthInVoxels() - 1 - maxSize);
 		// TODO: use a noise map to get the position
 		glm::ivec3 pos(rndValX, -1, rndValZ);
 		const int y = findChunkFloor(chunkHeight, chunk, pos.x, pos.z);
-		const int height = core::random(10, 14);
-		const int trunkHeight = core::random(5, 9);
+		const int height = random.random(10, 14);
+		const int trunkHeight = random.random(5, 9);
 		if (y < 0 || y >= chunkHeight - height - trunkHeight) {
 			continue;
 		}
 
 		pos.y = y;
 
-		const int size = core::random(12, maxSize);
-		const int treeType = core::random(0, int(TreeType::MAX) - 1);
+		const int size = random.random(12, maxSize);
+		const int treeType = random.random(0, int(TreeType::MAX) - 1);
 		const int trunkWidth = 1;
 		addTree(region, chunk, pos, (TreeType)treeType, trunkHeight, trunkWidth, size, size, height);
 	}
 }
 
-void World::createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk) {
+void World::createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random) {
 	const int amount = 4;
-	const Voxel voxel(CLOUDS, Voxel::getMinDensity());
+	static const Voxel voxel(CLOUDS, Voxel::getMinDensity());
 	for (int i = 0; i < amount; ++i) {
 		const int height = 10;
-		const glm::ivec2& pos = randomPosWithoutHeight(region, 20);
+		const glm::ivec2& pos = randomPosWithoutHeight(region, random, 20);
 		glm::ivec3 chunkCloudCenterPos(pos.x, region.getHeightInVoxels() - height, pos.y);
 		createEllipse(region, chunk, chunkCloudCenterPos, 10, height, 10, voxel);
 		chunkCloudCenterPos.x -= 5;
@@ -431,11 +433,11 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	const int depth = region.getDepthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int lowerY = region.getLowerY();
-	const int upperY = region.getUpperY();
+	const int lowerX = region.getLowerX();
+	const int lowerZ = region.getLowerZ();
 	for (double z = 0; z < depth; ++z) {
 		for (double x = 0; x < width; ++x) {
-			const glm::vec2 noisePos2d = glm::vec2(region.getLowerX() + x, region.getLowerZ() + z);
-			// TODO: include random here, too
+			const glm::vec2 noisePos2d = glm::vec2(_noiseSeedOffsetX + region.getLowerX() + x, _noiseSeedOffsetZ + region.getLowerZ() + z);
 			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, 3, 0.1f, 0.01f);
 			const float noiseNormalized = (landscapeNoise + 1.0f) * 0.5f;
 			const float mountainNoise = noise::Simplex::Noise2D(noisePos2d, 2, 0.3f, 0.00075f);
@@ -445,20 +447,21 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 			const int ni = n * (MAX_HEIGHT - 1);
 			int y = 0;
 			for (int h = lowerY; h < ni; ++h) {
-				// TODO: use biommanager
-				const Voxel voxel(GRASS, GRASS);
+				const Voxel voxel = _biomManager.getVoxelType(lowerX + x, h, lowerZ + z);
 				chunk->setVoxel(x, y++, z, voxel);
-				if (y >= height)
+				if (y >= height) {
 					break;
+				}
 			}
 		}
 	}
-	if (upperY >= MAX_HEIGHT - 1) {
+	const glm::vec3 worldPos(lowerX, lowerY, lowerZ);
+	if (_biomManager.hasClouds(worldPos)) {
 		// TODO: only generate this in the client - not the server
-		createClouds(region, chunk);
-	} else if (lowerY == 0) {
-		// generate trees on the lowest chunk
-		createTrees(region, chunk);
+		createClouds(region, chunk, _random);
+	}
+	if (_biomManager.hasTrees(worldPos)) {
+		createTrees(region, chunk, _random);
 	}
 }
 

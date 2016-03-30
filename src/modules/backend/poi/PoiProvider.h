@@ -2,6 +2,7 @@
 
 #include "core/TimeProvider.h"
 #include "core/ReadWriteLock.h"
+#include "core/Random.h"
 #include <glm/glm.hpp>
 #include <vector>
 #include <memory>

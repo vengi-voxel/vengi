@@ -13,6 +13,7 @@ fips_begin_module(core)
 		QuadTree.h
 		Singleton.h
 		Set.h
+		Random.cpp Random.h
 		Log.cpp Log.h
 		Var.cpp Var.h
 		Trace.h
