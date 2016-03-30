@@ -20,19 +20,19 @@ const float MAX_MATERIAL = 16.0;
 
 vec3 getMaterialColor() {
 	if (v_material == DIRT) {
-		return vec3(0.97, 0.67, 0.39);
+		return vec3(0.419, 0.258, 0.149);
 	}
 	if (v_material == GRASS) {
-		return vec3(0.24, 0.67, 0.24);
+		return vec3(0.427, 0.776, 0.007);
 	}
 	if (v_material == CLOUD) {
 		return vec3(0.75, 0.75, 0.9);
 	}
 	if (v_material == TRUNK) {
-		return vec3(0.4, 0.2, 0.0);
+		return vec3(0.419, 0.258, 0.149);
 	}
 	if (v_material == LEAVES) {
-		return vec3(0.4, 0.6, 0.4);
+		return vec3(0.0, 0.5, 0.0);
 	}
 	if (v_material == CLOUDS) {
 		return vec3(0.4, 0.6, 0.9);

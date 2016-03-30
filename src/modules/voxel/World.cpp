@@ -430,9 +430,11 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
 	const int height = region.getHeightInVoxels();
+	const int lowerY = region.getLowerY();
+	const int upperY = region.getUpperY();
 	for (double z = 0; z < depth; ++z) {
 		for (double x = 0; x < width; ++x) {
-			const glm::vec2 noisePos2d = glm::vec2(x, z);
+			const glm::vec2 noisePos2d = glm::vec2(region.getLowerX() + x, region.getLowerZ() + z);
 			// TODO: include random here, too
 			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, 3, 0.1f, 0.01f);
 			const float noiseNormalized = (landscapeNoise + 1.0f) * 0.5f;
@@ -440,18 +442,22 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 			const float mountainNoiseNormalized = (mountainNoise + 1.0f) * 0.5f;
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
-			const int ni = n * height;
-			for (int h = 0; h <= ni; ++h) {
+			const int ni = n * (MAX_HEIGHT - 1);
+			int y = 0;
+			for (int h = lowerY; h < ni; ++h) {
 				// TODO: use biommanager
-				const Voxel voxel(DIRT, DIRT);
-				chunk->setVoxel(x, h, z, voxel);
+				const Voxel voxel(GRASS, GRASS);
+				chunk->setVoxel(x, y++, z, voxel);
+				if (y >= height)
+					break;
 			}
 		}
 	}
-	if (region.getUpperZ() >= MAX_HEIGHT - 1) {
+	if (upperY >= MAX_HEIGHT - 1) {
 		// TODO: only generate this in the client - not the server
 		createClouds(region, chunk);
-	} else {
+	} else if (lowerY == 0) {
+		// generate trees on the lowest chunk
 		createTrees(region, chunk);
 	}
 }
