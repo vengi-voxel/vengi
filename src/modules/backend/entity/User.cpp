@@ -32,10 +32,10 @@ void User::visibleRemove(const EntitySet& entities) {
 }
 
 void User::setPos(const glm::vec3& pos) {
-	const int floor = _world->findFloor(pos.x, pos.z);
+	const int y = _world->findFloor(pos.x, pos.z);
 	_pos = pos;
-	if (_pos.y < floor)
-		_pos.y = floor;
+	if (_pos.y < y)
+		_pos.y = y;
 }
 
 ENetPeer* User::setPeer(ENetPeer* peer) {
