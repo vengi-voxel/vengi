@@ -36,7 +36,7 @@ public:
 
 	std::string load(const std::string& filename);
 	/**
-	 * @brief Loads a file asynchronously and executes the given @c CompleteHandle once some result is avaiable.
+	 * @brief Loads a file asynchronously and executes the given @c CompleteHandle once some result is available.
 	 */
 	template<class CompleteHandle>
 	void loadAsync(const std::string& filename, CompleteHandle completeHandle) {
