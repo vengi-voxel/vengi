@@ -56,7 +56,7 @@ fips_begin_module(backend)
 	fips_dir(storage)
 	fips_files(
 		UserStore.cpp UserStore.h
-		PQHandle.cpp PQHandle.h
+		Persister.cpp Persister.h
 		StoreCmd.cpp StoreCmd.h
 	)
 
@@ -75,15 +75,8 @@ fips_begin_module(backend)
 	)
 	find_package(SDL2 REQUIRED)
 	include_directories(${SDL2_INCLUDE_DIRS} .)
-	fips_deps(network io core util voxel attrib cooldown dbpost simpleai ${SDL2_LIBRARIES})
+	fips_deps(network io core util voxel attrib cooldown persistence simpleai ${SDL2_LIBRARIES})
 fips_end_module()
 
-gtest_begin(backend)
-	fips_dir(tests)
-	fips_files(
-		SpawnMgrTest.cpp
-		PoiProviderTest.cpp
-		StorageTest.cpp
-	)
-	fips_deps(network io core util voxel attrib cooldown dbpost simpleai backend)
-gtest_end()
+gtest_suite_files(tests tests/SpawnMgrTest.cpp tests/PoiProviderTest.cpp tests/PersisterTest.cpp)
+gtest_suite_deps(tests network io core util voxel attrib cooldown persistence simpleai backend)

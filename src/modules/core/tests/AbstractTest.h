@@ -4,6 +4,8 @@
 #include "core/EventBus.h"
 #include "io/Filesystem.h"
 
+#include "stb_image_write.h"
+
 namespace core {
 
 class AbstractTest: public testing::Test {
@@ -19,15 +21,9 @@ private:
 	TestApp *_testApp;
 
 public:
-	void SetUp() override {
-		core::EventBusPtr eventBus = core::EventBusPtr(new core::EventBus());
-		io::FilesystemPtr filesystem = io::FilesystemPtr(new io::Filesystem());
-		_testApp = new TestApp(filesystem,eventBus);
-	}
+	void SetUp() override;
 
-	void TearDown() override {
-		delete _testApp;
-	}
+	void TearDown() override;
 };
 
 }

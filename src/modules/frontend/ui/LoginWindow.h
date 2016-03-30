@@ -25,15 +25,18 @@ public:
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
 		if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("login")) || ev.special_key == tb::TB_KEY_ENTER) {
-			TBWidget *email = ev.target->GetParentWindow()->GetWidgetByID(tb::TBID("email"));
-			TBWidget *password = ev.target->GetParentWindow()->GetWidgetByID(tb::TBID("password"));
+			TBWindow *window = ev.target->GetParentWindow();
+			TBWidget *email = window->GetWidgetByID(tb::TBID("email"));
+			TBWidget *password = window->GetWidgetByID(tb::TBID("password"));
 
 			core::Var::get("cl_email")->setVal(email->GetText().CStr());
 			core::Var::get("cl_password")->setVal(password->GetText().CStr());
 
 			const core::VarPtr& port = core::Var::get("cl_port", "11337");
 			const core::VarPtr& host = core::Var::get("cl_host", "127.0.0.1");
+			Log::info("Trying to connect to server %s:%i", host->strVal().c_str(), port->intVal());
 			if (!_client->connect(port->intVal(), host->strVal())) {
+				Log::info("Failed to connect to server %s:%i", host->strVal().c_str(), port->intVal());
 				tb::TBStr text;
 				text.SetFormatted("Failed to connect");
 				tb::TBMessageWindow *win = new tb::TBMessageWindow(this, TBIDC(""));

@@ -3,6 +3,7 @@
 #include <PolyVox/MaterialDensityPair.h>
 #include <PolyVox/Mesh.h>
 #include <PolyVox/Vertex.h>
+#include <PolyVox/CubicSurfaceExtractor.h>
 #include <glm/glm.hpp>
 #include <vector>
 

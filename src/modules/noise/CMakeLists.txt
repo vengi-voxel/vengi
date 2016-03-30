@@ -1,20 +1,9 @@
 fips_begin_module(noise)
 	fips_files(
-		PerlinNoise.h PerlinNoise.cpp stb_perlin.h
-		AccidentalNoise.h AccidentalNoise.cpp
-		NoisePPNoise.h NoisePPNoise.cpp
-		WorldShapeNoise.h WorldShapeNoise.cpp
+		SimplexNoise.h SimplexNoise.cpp
 	)
-	fips_deps(core noisepp accidentalnoise)
+	fips_deps(core)
 fips_end_module()
 
-gtest_begin(noise)
-	fips_dir(tests)
-	fips_files(
-		AccidentalNoiseTest.cpp
-		PerlinNoiseTest.cpp
-		NoisePPNoiseTest.cpp
-		NoiseTestHelper.h
-	)
-	fips_deps(core noise accidentalnoise)
-gtest_end()
+gtest_suite_files(tests tests/SimplexNoiseTest.cpp)
+gtest_suite_deps(tests core noise)

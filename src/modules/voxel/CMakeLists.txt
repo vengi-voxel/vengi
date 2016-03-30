@@ -11,12 +11,5 @@ fips_begin_module(voxel)
 	fips_deps(core io noise zlib ${SDL2_LIBRARIES})
 fips_end_module()
 
-gtest_begin(voxel)
-	fips_dir(tests)
-	fips_files(
-		WorldTest.cpp
-	)
-	find_package(SDL2 REQUIRED)
-	include_directories(${SDL2_INCLUDE_DIRS})
-	fips_deps(voxel ${SDL2_LIBRARIES})
-gtest_end()
+gtest_suite_files(tests tests/WorldTest.cpp)
+gtest_suite_deps(tests voxel)

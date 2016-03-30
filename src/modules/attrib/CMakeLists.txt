@@ -8,10 +8,5 @@ fips_begin_module(attrib)
 	fips_deps(core commonlua)
 fips_end_module()
 
-gtest_begin(attrib)
-	fips_dir(tests)
-	fips_files(
-		AttributesTest.cpp
-	)
-	fips_deps(attrib)
-gtest_end()
+gtest_suite_files(tests tests/AttributesTest.cpp)
+gtest_suite_deps(tests attrib)

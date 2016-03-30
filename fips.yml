@@ -1,8 +1,6 @@
 imports:
     fips-glm:
         git: https://github.com/floooh/fips-glm.git
-    fips-accidentalnoise:
-        git: https://github.com/mgerhardy/fips-accidentalnoise.git
     fips-enet:
         git: https://github.com/mgerhardy/fips-enet.git
     fips-polyvox:
@@ -26,8 +24,6 @@ imports:
         git: https://github.com/mgerhardy/fips-lua.git
     fips-zlib:
         git: https://github.com/floooh/fips-zlib.git
-    fips-noisepp:
-        git: https://github.com/mgerhardy/fips-noisepp.git
 
 exports:
     header-dirs:

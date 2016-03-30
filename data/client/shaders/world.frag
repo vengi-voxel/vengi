@@ -61,7 +61,7 @@ vec3 getSpecularColor(vec3 lightdir, vec3 normal) {
 }
 
 vec3 getFogColor() {
-	return vec3(0.04, 0.29, 0.94);
+	return vec3(0.0, 0.6, 0.796);
 }
 
 float getFog() {

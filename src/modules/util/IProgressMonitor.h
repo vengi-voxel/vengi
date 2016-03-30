@@ -4,21 +4,21 @@ namespace util {
 
 class IProgressMonitor {
 protected:
-	int _max;
-	int _steps;
+	long _max;
+	long _steps;
 public:
-	IProgressMonitor(int max = 100) :
-			_max(max), _steps(0) {
+	IProgressMonitor(long max = 100l):
+			_max(max), _steps(0l) {
 	}
 
 	virtual ~IProgressMonitor() {
 	}
 
-	void init(int max) {
+	void init(long max) {
 		_max = max;
 	}
 
-	virtual void step(int steps = 1) {
+	virtual void step(long steps = 1l) {
 		_steps += steps;
 	}
 

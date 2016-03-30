@@ -3,65 +3,70 @@
 #include <cstring>
 #include <SDL.h>
 
-enum {
-	TRACE = 4, DEBUG = 3, INFO = 2, WARN = 1, ERROR = 0
-};
+static constexpr int bufSize = 1024;
+static SDL_LogPriority _logLevel;
 
-Log::Log() {
-	_logLevel = core::Var::get("core_loglevel", "2");
-}
-
-void Log::vsnprint(const char* msg, va_list args) {
-	char buf[1024];
-	SDL_vsnprintf(buf, sizeof(buf), msg, args);
-	buf[sizeof(buf) - 1] = 0;
-	if (buf[strlen(buf) - 1] == '\r')
-		SDL_Log("%s\n", buf);
-	else
-		SDL_Log("%s\n", buf);
+void Log::init() {
+	_logLevel = (SDL_LogPriority)core::Var::get("core_loglevel", std::to_string(SDL_LOG_PRIORITY_INFO))->intVal();
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, _logLevel);
 }
 
 void Log::trace(const char* msg, ...) {
-	if (get()._logLevel->intVal() < DEBUG)
+	if (_logLevel > SDL_LOG_PRIORITY_VERBOSE)
 		return;
 	va_list args;
 	va_start(args, msg);
-	get().vsnprint(msg, args);
+	char buf[bufSize];
+	SDL_vsnprintf(buf, sizeof(buf), msg, args);
+	buf[sizeof(buf) - 1] = '\0';
+	SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
 	va_end(args);
 }
 
 void Log::debug(const char* msg, ...) {
-	if (get()._logLevel->intVal() < DEBUG)
+	if (_logLevel > SDL_LOG_PRIORITY_DEBUG)
 		return;
 	va_list args;
 	va_start(args, msg);
-	get().vsnprint(msg, args);
+	char buf[bufSize];
+	SDL_vsnprintf(buf, sizeof(buf), msg, args);
+	buf[sizeof(buf) - 1] = '\0';
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
 	va_end(args);
 }
 
 void Log::info(const char* msg, ...) {
-	if (get()._logLevel->intVal() < INFO)
+	if (_logLevel > SDL_LOG_PRIORITY_INFO)
 		return;
 	va_list args;
 	va_start(args, msg);
-	get().vsnprint(msg, args);
+	char buf[bufSize];
+	SDL_vsnprintf(buf, sizeof(buf), msg, args);
+	buf[sizeof(buf) - 1] = '\0';
+	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
 	va_end(args);
 }
 
 void Log::warn(const char* msg, ...) {
-	if (get()._logLevel->intVal() < INFO)
+	if (_logLevel > SDL_LOG_PRIORITY_WARN)
 		return;
 	va_list args;
 	va_start(args, msg);
-	get().vsnprint(msg, args);
+	char buf[bufSize];
+	SDL_vsnprintf(buf, sizeof(buf), msg, args);
+	buf[sizeof(buf) - 1] = '\0';
+	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
 	va_end(args);
 }
 
 void Log::error(const char* msg, ...) {
-	if (get()._logLevel->intVal() < INFO)
+	if (_logLevel > SDL_LOG_PRIORITY_ERROR)
 		return;
 	va_list args;
 	va_start(args, msg);
-	get().vsnprint(msg, args);
+	char buf[bufSize];
+	SDL_vsnprintf(buf, sizeof(buf), msg, args);
+	buf[sizeof(buf) - 1] = '\0';
+	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
 	va_end(args);
 }

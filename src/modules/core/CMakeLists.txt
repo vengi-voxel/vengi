@@ -8,7 +8,7 @@ fips_begin_module(core)
 		EventBus.h
 		IFactoryRegistry.h
 		NonCopyable.h
-		String.h
+		String.cpp String.h
 		Input.h
 		QuadTree.h
 		Singleton.h
@@ -20,23 +20,13 @@ fips_begin_module(core)
 		Tokenizer.h
 		TimeProvider.h TimeProvider.cpp
 	)
-	find_package(SDL2 REQUIRED)
-	include_directories(${SDL2_INCLUDE_DIRS})
-	fips_deps(io ${SDL2_LIBRARIES})
+	fips_deps(io)
 fips_end_module()
+find_package(SDL2 REQUIRED)
+message(STATUS "SDL2 libs: ${SDL2_LIBRARIES}")
+message(STATUS "SDL2 includes: ${SDL2_INCLUDE_DIRS}")
+target_link_libraries(core ${SDL2_LIBRARIES})
+target_include_directories(core PUBLIC ${SDL2_INCLUDE_DIRS})
 
-gtest_begin(core)
-	fips_dir(tests)
-	fips_files(
-		RectTest.cpp
-		ByteStreamTest.cpp
-		ThreadPoolTest.cpp
-		EventBusTest.cpp
-		QuadTreeTest.cpp
-		VarTest.cpp
-		CommandTest.cpp
-		SetTest.cpp
-		TokenizerTest.cpp
-	)
-	fips_deps(core)
-gtest_end()
+gtest_suite_files(tests tests/AbstractTest.cpp tests/RectTest.cpp tests/ByteStreamTest.cpp tests/ThreadPoolTest.cpp tests/EventBusTest.cpp tests/QuadTreeTest.cpp tests/VarTest.cpp tests/CommandTest.cpp tests/SetTest.cpp tests/TokenizerTest.cpp)
+gtest_suite_deps(tests core)

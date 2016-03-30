@@ -33,7 +33,7 @@ core::AppState Server::onInit() {
 		Log::error("Failed to bind the server socket on %s:%i", host->strVal().c_str(), port->intVal());
 		return core::Cleanup;
 	}
-	Log::error("Server socket is up at %s:%i", host->strVal().c_str(), port->intVal());
+	Log::info("Server socket is up at %s:%i", host->strVal().c_str(), port->intVal());
 	return state;
 }
 

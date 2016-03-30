@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 #include <stdarg.h>
+#include <SDL.h>
 
 namespace core {
 namespace string {
@@ -89,7 +90,6 @@ inline int getUTF8Next (const char** str)
 	return character;
 }
 
-
 inline size_t getUTF8Length(const std::string& str) {
 	size_t result = 0;
 	const char *string = str.c_str();
@@ -102,20 +102,10 @@ inline size_t getUTF8Length(const std::string& str) {
 	return result;
 }
 
-inline std::string format(const char *msg, ...) {
-	va_list ap;
-	const std::size_t bufSize = 1024;
-	char text[bufSize];
-
-	va_start(ap, msg);
-	vsnprintf(text, bufSize, msg, ap);
-	va_end(ap);
-
-	return std::string(text);
-}
+extern std::string format(const char *msg, ...)  SDL_PRINTF_VARARG_FUNC(1);
 
 inline int toInt(const std::string& str) {
-	return ::atoi(str.c_str());
+	return SDL_atoi(str.c_str());
 }
 
 inline int toLong(const std::string& str) {
@@ -127,7 +117,7 @@ inline bool toBool(const std::string& str) {
 }
 
 inline float toFloat(const std::string& str) {
-	return atof(str.c_str());
+	return SDL_atof(str.c_str());
 }
 
 inline void splitString(const std::string& string, std::vector<std::string>& tokens, const std::string& delimiters = " \t\r\n\f\v") {

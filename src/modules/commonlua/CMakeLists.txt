@@ -5,10 +5,5 @@ fips_begin_module(commonlua)
 	fips_deps(core lua52)
 fips_end_module()
 
-gtest_begin(commonlua)
-	fips_dir(tests)
-	fips_files(
-		LUATest.cpp
-	)
-	fips_deps(commonlua)
-gtest_end()
+gtest_suite_files(tests tests/LUATest.cpp)
+gtest_suite_deps(tests commonlua)

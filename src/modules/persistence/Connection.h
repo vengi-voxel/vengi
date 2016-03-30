@@ -3,29 +3,39 @@
 #include <string>
 #include <postgresql/libpq-fe.h>
 
-namespace dbpost {
+namespace persistence {
 
-class PQConnect {
+class Connection {
 private:
 	PGconn* _pgConnection;
 	std::string _host;
-	std::string _port;
 	std::string _dbname;
 	std::string _user;
 	std::string _password;
+	uint16_t _port;
+
+	std::string escape(const std::string& value) const;
 public:
-	PQConnect();
-	~PQConnect();
+	Connection();
+
+	~Connection();
+
 	void setLoginData(const std::string& username, const std::string& password);
+
 	void changeHost(const std::string& host);
-	void changePort(const std::string& port);
+
+	void changePort(uint16_t port);
+
 	void changeDb(const std::string& dbname);
+
 	void disconnect();
-	int connect();
+
+	bool connect();
+
 	PGconn* connection() const;
 };
 
-inline PGconn* PQConnect::connection() const {
+inline PGconn* Connection::connection() const {
 	return _pgConnection;
 }
 

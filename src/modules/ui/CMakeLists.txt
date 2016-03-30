@@ -12,13 +12,5 @@ fips_begin_module(ui)
 	fips_deps(core io video turbobadger ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES})
 fips_end_module()
 
-gtest_begin(ui)
-	fips_dir(tests)
-	fips_files(
-		KeybindingParserTest.cpp
-	)
-	find_package(OpenGL)
-	find_package(SDL2 REQUIRED)
-	fips_include_directories(. ${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR})
-	fips_deps(core io video turbobadger ui ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES})
-gtest_end()
+gtest_suite_files(tests tests/KeybindingParserTest.cpp)
+gtest_suite_deps(tests ui)

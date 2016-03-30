@@ -6,8 +6,10 @@
 
 namespace backend {
 
+static const long spawnTime = 15000L;
+
 SpawnMgr::SpawnMgr(voxel::WorldPtr world, EntityStoragePtr entityStorage, network::MessageSenderPtr messageSender, core::TimeProviderPtr timeProvider, AILoaderPtr loader, attrib::ContainerProviderPtr containerProvider, PoiProviderPtr poiProvider) :
-		_loader(loader), _world(world), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _time(0L) {
+		_loader(loader), _world(world), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _time(15000L) {
 }
 
 bool SpawnMgr::init() {
@@ -82,7 +84,6 @@ int SpawnMgr::spawn(ai::Zone& zone, network::messages::NpcType type, int amount,
 }
 
 void SpawnMgr::onFrame(ai::Zone& zone, long dt) {
-	static const long spawnTime = 15000L;
 	_time += dt;
 	if (_time >= spawnTime) {
 		_time -= spawnTime;

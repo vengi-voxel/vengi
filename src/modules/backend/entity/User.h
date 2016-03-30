@@ -2,6 +2,7 @@
 
 #include "network/MessageSender.h"
 #include "Npc.h"
+#include "core/Var.h"
 
 namespace backend {
 

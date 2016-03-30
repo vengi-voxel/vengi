@@ -12,17 +12,32 @@ clean:
 	$(Q)rm -f .fips-gen.py
 	$(Q)rm -f .fips-imports.cmake
 
-run: build
-	$(Q)./fips run $(TARGET)
-
 eclipse:
 	$(Q)./fips config linux-eclipse-debug
 
 server: build
-	$(Q)./fips run server -- -set core_loglevel 4
+	$(Q)./fips run server
 
 client: build
-	$(Q)./fips run client -- -set core_loglevel 2
+	$(Q)./fips run client
+
+debugserver: build
+	$(Q)./fips gdb server
+
+debugclient: build
+	$(Q)./fips gdb client
+
+debuggenerate: build
+	$(Q)./fips gdb worldgenerator -- -set seed 1 -set size 1024
 
 generate: build
-	$(Q)./fips run worldgenerator -- -set seed 1 -set size 64
+	$(Q)./fips run worldgenerator -- -set seed 1 -set size 1024
+
+tests: build
+	$(Q)./fips run tests
+
+tests-list: build
+	$(Q)./fips run tests -- --gtest_list_tests
+
+tests-filter: build
+	$(Q)./fips run tests -- --gtest_filter=$(FILTER)

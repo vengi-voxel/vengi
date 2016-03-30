@@ -11,6 +11,7 @@ namespace messages {
 
 struct Vec3;
 struct Vec2;
+struct IVec2;
 
 enum NpcType {
   NpcType_NONE = 0,
@@ -72,6 +73,20 @@ MANUALLY_ALIGNED_STRUCT(4) Vec2 FLATBUFFERS_FINAL_CLASS {
   float y() const { return flatbuffers::EndianScalar(y_); }
 };
 STRUCT_END(Vec2, 8);
+
+MANUALLY_ALIGNED_STRUCT(4) IVec2 FLATBUFFERS_FINAL_CLASS {
+ private:
+  int32_t x_;
+  int32_t y_;
+
+ public:
+  IVec2(int32_t x, int32_t y)
+    : x_(flatbuffers::EndianScalar(x)), y_(flatbuffers::EndianScalar(y)) { }
+
+  int32_t x() const { return flatbuffers::EndianScalar(x_); }
+  int32_t y() const { return flatbuffers::EndianScalar(y_); }
+};
+STRUCT_END(IVec2, 8);
 
 }  // namespace messages
 }  // namespace network

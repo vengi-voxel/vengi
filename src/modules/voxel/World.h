@@ -7,20 +7,17 @@
 #include <mutex>
 #include <queue>
 #include <random>
+#include <chrono>
 
-#include "noise/AccidentalNoise.h"
-#include "noise/WorldShapeNoise.h"
-#include "noise/NoisePPNoise.h"
-#include "noise/PerlinNoise.h"
 #include "io/Filesystem.h"
 #include "WorldData.h"
 #include "WorldEvents.h"
 #include "Voxel.h"
 #include "Raycast.h"
-#include "util/IProgressMonitor.h"
 #include "core/ThreadPool.h"
 #include "core/ReadWriteLock.h"
 #include "core/Var.h"
+#include "core/Log.h"
 
 namespace voxel {
 
@@ -35,14 +32,7 @@ public:
 	World();
 	~World();
 
-	void create(long seed, int size, util::IProgressMonitor* progressMonitor = nullptr);
-	bool load(long seed, util::IProgressMonitor* progressMonitor = nullptr);
-	bool save(long seed);
 	void destroy();
-
-	inline bool isCreated() const {
-		return _volumeData != nullptr;
-	}
 
 	Result raycast(const glm::vec3& start, const glm::vec3& end, voxel::Raycast& raycast);
 	bool findPath(const PolyVox::Vector3DInt32& start, const PolyVox::Vector3DInt32& end, std::list<PolyVox::Vector3DInt32>& listResult);
@@ -52,8 +42,7 @@ public:
 	/**
 	 * @brief Returns a random position inside the boundaries of the world (on the surface)
 	 */
-	glm::ivec3 randomPos(int border = 0) const;
-	glm::ivec2 randomPosWithoutHeight(int border = 0) const;
+	glm::ivec3 randomPos() const;
 
 	/**
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
@@ -98,22 +87,44 @@ public:
 
 	void onFrame(long dt);
 
-	inline int size() const { return _size; }
 	inline long seed() const { return _seed; }
+
+	void setSeed(long seed) {
+		Log::info("Seed is: %li", seed);
+		_seed = seed;
+		_engine.seed(seed);
+	}
+
+	inline bool isCreated() const {
+		return _seed != 0;
+	}
 
 private:
 	enum class TreeType {
 		DOME,
 		CONE,
-		ELLIPSIS
+		ELLIPSIS,
+		CUBE,
+		MAX
 	};
 
-	WorldData* _volumeData;
+	class Pager: public WorldData::Pager {
+	private:
+		World& _world;
+	public:
+		Pager(World& world) :
+				_world(world) {
+		}
+
+		void pageIn(const PolyVox::Region& region, WorldData::Chunk* chunk) override;
+
+		void pageOut(const PolyVox::Region& region, WorldData::Chunk* chunk) override;
+	};
+
+	Pager _pager;
+	WorldData *_volumeData;
 	mutable std::mt19937 _engine;
 	long _seed;
-	int _size;
-	noise::NoisePPNoise _noise;
-	noise::WorldShapeNoise _worldShapeNoise;
 
 	struct IVec2HashEquals {
 		size_t operator()(const glm::ivec2& k) const {
@@ -126,24 +137,50 @@ private:
 		}
 	};
 
-	// assumes that the mutex is already locked
-	glm::ivec3 internalRandomPos(int border = 0) const;
-	int internalFindFloor(int x, int y) const;
+	template<typename Func>
+	inline auto locked(Func&& func) -> typename std::result_of<Func()>::type {
+		if (_mutex.try_lock_for(std::chrono::milliseconds(5000))) {
+			lockGuard lock(_mutex, std::adopt_lock_t());
+			return func();
+		}
+		Log::warn("Most likely a deadlock in the world - execute without locking");
+		return func();
+	}
 
-	void createCirclePlane(const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel);
-	void createEllipse(const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
-	void createCone(const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
-	void createDome(const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
-	void createCube(const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
-	void createPlane(const glm::ivec3& pos, int width, int depth, const Voxel& voxel);
+	template<typename Func>
+	inline auto locked(Func&& func) const -> typename std::result_of<Func()>::type {
+		if (_mutex.try_lock_for(std::chrono::milliseconds(5000))) {
+			lockGuard lock(_mutex, std::adopt_lock_t());
+			return func();
+		}
+		Log::warn("Most likely a deadlock in the world - execute without locking");
+		return func();
+	}
 
-	void addTree(const glm::ivec3& pos, TreeType type, int trunkHeight = 10);
-	void createTrees();
-	void createClouds();
-	void createUnderground();
+	static int findChunkFloor(int chunkSize, WorldData::Chunk* chunk, int x, int y);
+
+	bool load(const PolyVox::Region& region, WorldData::Chunk* chunk);
+	bool save(const PolyVox::Region& region, WorldData::Chunk* chunk);
+	// don't access the volume in anything that is called here
+	void create(const PolyVox::Region& region, WorldData::Chunk* chunk);
+
+	static void createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel);
+	static void createEllipse(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	static void createCone(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	static void createDome(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	static void createCube(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	static void createPlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int depth, const Voxel& voxel);
+
+	static void addTree(int chunkSize, const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height);
+	static void createTrees(int chunkSize, const PolyVox::Region& region, WorldData::Chunk* chunk);
+	glm::ivec2 randomPosWithoutHeight(const PolyVox::Region& region);
+	void createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk);
+	static void createUnderground(const PolyVox::Region& region, WorldData::Chunk* chunk);
 
 	core::ThreadPool _threadPool;
-	mutable std::mutex _mutex;
+	using mutex = std::recursive_timed_mutex;
+	mutable mutex _mutex;
+	using lockGuard = std::lock_guard<mutex>;
 	core::ReadWriteLock _rwLock;
 	std::deque<DecodedMeshData> _meshQueue;
 	// fast lookup for positions that are already extracted and available in the _meshData vector

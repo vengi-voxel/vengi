@@ -1,7 +1,7 @@
 #include "EntityStorage.h"
 #include "core/Var.h"
 #include "User.h"
-#include "backend/storage/PQHandle.h"
+#include "backend/storage/Persister.h"
 #include "backend/storage/UserStore.h"
 
 #define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::messages::server::type, network::messages::server::msg.Union());
@@ -30,12 +30,12 @@ void EntityStorage::registerUser(const UserPtr& user) {
 
 EntityId EntityStorage::getUserId(const std::string& user, const std::string& passwd) const {
 	std::string tmUid = "0";
-	PQHandle pq;
+	Persister pq;
 	pq.init();
 	int checkId = pq.loadUser(user, passwd, tmUid);
 
 	if (checkId == 0) {
-		const core::VarPtr& autoReg = core::Var::get("user_auto_register", "no");
+		const core::VarPtr& autoReg = core::Var::get("user_auto_register", "yes");
 		if (autoReg->strVal() == "yes") {
 			pq.storeUser(user, passwd, tmUid);
 			checkId = pq.loadUser(user, passwd, tmUid);

@@ -23,7 +23,9 @@ include_directories(src/modules)
 include_directories(src/modules/ui)
 
 fips_setup(PROJECT engine)
+gtest_suite_begin(tests TEMPLATE src/modules/core/tests/main.cpp.in)
 fips_add_subdirectory(src)
+gtest_suite_end(tests)
 fips_finish()
 
 copy_data_files(shared)

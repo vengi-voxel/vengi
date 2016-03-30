@@ -61,6 +61,10 @@ ENetPeer* Network::connect(uint16_t port, const std::string& hostname, int maxCh
 	address.port = port;
 
 	ENetPeer *peer = enet_host_connect(_client, &address, maxChannels, 0);
+	if (peer == nullptr) {
+		return nullptr;
+	}
+
 	enet_host_flush(_client);
 	enet_peer_timeout(peer, ENET_PEER_TIMEOUT_LIMIT, ENET_PEER_TIMEOUT_MINIMUM, ENET_PEER_TIMEOUT_MAXIMUM);
 	return peer;
@@ -93,6 +97,7 @@ void Network::disconnectPeer(ENetPeer *peer, uint32_t timeout) {
 			enet_packet_destroy(event.packet);
 			break;
 		case ENET_EVENT_TYPE_DISCONNECT:
+			_eventBus->publish(DisconnectEvent(event.peer));
 			success = true;
 			break;
 		case ENET_EVENT_TYPE_CONNECT:
@@ -104,6 +109,7 @@ void Network::disconnectPeer(ENetPeer *peer, uint32_t timeout) {
 		/* We've arrived here, so the disconnect attempt didn't */
 		/* succeed yet. Force the connection down. */
 		enet_peer_reset(peer);
+		_eventBus->publish(DisconnectEvent(event.peer));
 	}
 }
 

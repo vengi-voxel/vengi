@@ -1,31 +1,27 @@
-#include "PQStore.h"
-#include "StoreInterface.h"
+#include "Store.h"
 #include "core/Log.h"
 #include <sstream>
 
-namespace dbpost {
+namespace persistence {
 
-PQStore::PQStore(PQConnect* conn) :
+Store::Store(Connection* conn) :
 		_connection(conn), _usable(true), _res(nullptr), _lastState(PGRES_EMPTY_QUERY), _affectedRows(0) {
 }
 
-void PQStore::storeModel(StoreInterface& model) {
+bool Store::storeModel(PeristenceModel& model) {
 	const std::string& insertSql = sqlBuilder(model, false);
-
-	//trBegin();
-	query(insertSql);
-	//trEnd();
+	return query(insertSql);
 }
 
-void PQStore::createNeeds(const StoreInterface& model) {
+bool Store::createNeeds(const PeristenceModel& model) {
 	const std::string& crSql = model.getCreate();
-	query(crSql);
+	return query(crSql);
 }
 
-std::unordered_map<std::string, std::string> PQStore::loadModel(const StoreInterface& model) {
+KeyValueMap Store::loadModel(const PeristenceModel& model) {
 	const std::string& loadSql = sqlLoadBuilder(model, false);
 	Log::trace("sql used %s", loadSql.c_str());
-	std::unordered_map<std::string, std::string> dbResult;
+	KeyValueMap dbResult;
 	if (query(loadSql) && _affectedRows == 1) {
 		const int nFields = PQnfields(_res);
 		for (int i = 0; i < nFields; ++i) {
@@ -40,13 +36,13 @@ std::unordered_map<std::string, std::string> PQStore::loadModel(const StoreInter
 	return dbResult;
 }
 
-std::string PQStore::sqlBuilder(const StoreInterface& model, bool update) const {
+std::string Store::sqlBuilder(const PeristenceModel& model, bool update) const {
 	std::stringstream insertSql;
 	insertSql << "INSERT INTO " << model.getTableName() << " ";
 	std::stringstream fieldKeys;
 	std::stringstream valueKeys;
 
-	const std::unordered_map<std::string, std::string>& fields = model.getFields();
+	const Fields& fields = model.getFields();
 
 	std::string add = "";
 	for (auto p = fields.begin(); p != fields.end(); ++p) {
@@ -65,11 +61,11 @@ std::string PQStore::sqlBuilder(const StoreInterface& model, bool update) const 
 	return str;
 }
 
-std::string PQStore::sqlLoadBuilder(const StoreInterface& model, bool update) const {
+std::string Store::sqlLoadBuilder(const PeristenceModel& model, bool update) const {
 	std::string loadSql = "SELECT * FROM " + model.getTableName() + " ";
 	std::string fieldKeys = "";
 
-	const std::unordered_map<std::string, std::string>& fields = model.getFields();
+	const Fields& fields = model.getFields();
 
 	std::string add = "";
 	for (auto p = fields.begin(); p != fields.end(); ++p) {
@@ -85,7 +81,7 @@ std::string PQStore::sqlLoadBuilder(const StoreInterface& model, bool update) co
 	return loadSql;
 }
 
-void PQStore::trBegin() {
+void Store::trBegin() {
 	if (!_usable)
 		return;
 
@@ -96,7 +92,7 @@ void PQStore::trBegin() {
 	}
 }
 
-void PQStore::trEnd() {
+void Store::trEnd() {
 	if (!_usable)
 		return;
 
@@ -107,17 +103,16 @@ void PQStore::trEnd() {
 	}
 }
 
-bool PQStore::checkLastResult() {
+bool Store::checkLastResult() {
 	_affectedRows = 0;
-	Log::info("get result");
-	if (_res != nullptr)
-		_lastState = PQresultStatus(_res);
-	else
+	if (_res == nullptr)
 		return false;
+
+	_lastState = PQresultStatus(_res);
 
 	if ((_lastState == PGRES_EMPTY_QUERY) || (_lastState == PGRES_BAD_RESPONSE) || (_lastState == PGRES_FATAL_ERROR)) {
 		PQclear(_res);
-		char* msg = PQerrorMessage(_connection->connection());
+		const char* msg = PQerrorMessage(_connection->connection());
 		_lastErrorMsg = std::string(msg);
 
 		Log::error("Failed to execute sql: %s ", _lastErrorMsg.c_str());
@@ -133,7 +128,7 @@ bool PQStore::checkLastResult() {
 
 	if (_lastState == PGRES_TUPLES_OK) {
 		_affectedRows = PQntuples(_res);
-		Log::info("Data read %i", _affectedRows);
+		Log::trace("Affected rows on read %i", _affectedRows);
 		return true;
 	}
 
@@ -142,7 +137,7 @@ bool PQStore::checkLastResult() {
 	return false;
 }
 
-bool PQStore::query(const std::string& query) {
+bool Store::query(const std::string& query) {
 	if (_usable) {
 		Log::trace("SEND: %s", query.c_str());
 		_res = PQexec(_connection->connection(), query.c_str());
@@ -152,7 +147,7 @@ bool PQStore::query(const std::string& query) {
 	return false;
 }
 
-PQStore::~PQStore() {
+Store::~Store() {
 	// TODO: assigning a nullptr is not possible for a reference
 	//_connection = nullptr;
 }

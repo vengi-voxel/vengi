@@ -5,7 +5,7 @@
 namespace backend {
 
 UserStore::UserStore(const std::string& email, const std::string& password, const std::string& userid) :
-		_email(email), _password(password), _userid(userid) {
+		persistence::PeristenceModel("user_table"), _email(email), _password(password), _userid(userid) {
 }
 
 std::string UserStore::getCreate() const {
@@ -23,13 +23,8 @@ void UserStore::update(const std::string& fieldName, const std::string& value) c
 	}
 }
 
-std::string UserStore::getTableName() const {
-	static const std::string tabName = "user_table";
-	return tabName;
-}
-
-std::unordered_map<std::string, std::string> UserStore::getFields() const {
-	std::unordered_map<std::string, std::string> storeData;
+persistence::Fields UserStore::getFields() const {
+	persistence::Fields storeData;
 	storeData["userid"] = _userid;
 	storeData["user_email"] = _email;
 	storeData["user_pw_hash"] = _password;

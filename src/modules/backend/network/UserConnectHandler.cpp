@@ -6,8 +6,8 @@
 
 namespace backend {
 
-UserConnectHandler::UserConnectHandler(network::NetworkPtr network, backend::EntityStoragePtr entityStorage) :
-		_network(network), _entityStorage(entityStorage) {
+UserConnectHandler::UserConnectHandler(network::NetworkPtr network, backend::EntityStoragePtr entityStorage, voxel::WorldPtr world) :
+		_network(network), _entityStorage(entityStorage), _world(world) {
 	auto data = CreateAuthFailed(_authFailed);
 	auto msg = CreateServerMessage(_authFailed, Type_AuthFailed, data.Union());
 	FinishServerMessageBuffer(_authFailed, msg);
@@ -31,9 +31,7 @@ void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 		return;
 	}
 
-	// TODO: use the current seed from the world, not from a config var that can be changed during runtime
-	const long seed = core::Var::get("sv_seed")->longVal();
-	user->sendSeed(seed);
+	user->sendSeed(_world->seed());
 	user->sendUserSpawn();
 }
 

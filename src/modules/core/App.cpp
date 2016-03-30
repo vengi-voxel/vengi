@@ -119,6 +119,7 @@ AppState App::onInit() {
 		core::Var::get(name)->setVal(value);
 	}
 
+	Log::init();
 	Log::trace("handle %i command line arguments", _argc);
 	for (int i = 0; i < _argc; ++i) {
 		// every command is started with a '-'
@@ -137,6 +138,8 @@ AppState App::onInit() {
 		Log::trace("Execute %s with %i arguments", command.c_str(), (int)args.size());
 		core::Command::execute(command, args);
 	}
+	// we might have changed the loglevel from the commandline
+	Log::init();
 	return AppState::Running;
 }
 

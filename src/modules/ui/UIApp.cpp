@@ -294,7 +294,7 @@ core::AppState UIApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	font->RenderGlyphs(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·åäöÅÄÖ");
+	font->RenderGlyphs(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNORSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·åäöÅÄÖ");
 	_root.SetRect(tb::TBRect(0, 0, _width, _height));
 	_root.SetSkinBg(TBIDC("background"));
 

@@ -8,7 +8,7 @@ void StoreCmd::addComd() {
 			if (args[0] == "help") {
 				Log::info("store useradd <name> <password>\tadd a new users");
 			} else if (args[0] == "init") {
-				PQHandle pq;
+				Persister pq;
 				pq.init();
 				pq.initTables();
 			}
@@ -17,9 +17,9 @@ void StoreCmd::addComd() {
 				const std::string tmUid = "0";
 				const std::string& tmUser = args[1];
 				const std::string& tmPw = args[2];
-				PQHandle pq;
-				pq.init();
-				pq.storeUser(tmUser, tmPw, tmUid);
+				Persister persister;
+				persister.init();
+				persister.storeUser(tmUser, tmPw, tmUid);
 			}
 		}
 	});

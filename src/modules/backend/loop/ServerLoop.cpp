@@ -22,16 +22,9 @@ bool ServerLoop::onInit() {
 	if (!_spawnMgr->init())
 		return false;
 	const core::VarPtr& seed = core::Var::get("sv_seed", "1");
+	const core::VarPtr& size = core::Var::get("sv_size", "128");
 
-	class ProgressMonitor: public util::IProgressMonitor {
-	public:
-		void done() override {
-			Log::info("\ndone");
-		}
-	} monitor;
-
-	if (!_world->load(seed->longVal(), &monitor))
-		return false;
+	_world->setSeed(seed->longVal());
 	if (_aiServer.start()) {
 		Log::info("Start the ai debug server on 127.0.0.1:11338");
 		_aiServer.addZone(&_zone);

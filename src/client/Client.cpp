@@ -63,7 +63,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 	flatbuffers::FlatBufferBuilder fbb;
 	const std::string& email = core::Var::get("cl_email")->strVal();
 	const std::string& password = core::Var::get("cl_password")->strVal();
-	Log::info("Trying to log into the server");
+	Log::info("Trying to log into the server with %s", email.c_str());
 	_messageSender->sendClientMessage(_peer, fbb, Type_UserConnect,
 			CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(password)).Union());
 }
@@ -202,7 +202,7 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
-	_clearColor = glm::vec3(0.04, 0.29, 0.94);
+	_clearColor = glm::vec3(0.0, 0.6, 0.796);
 
 	_root.SetSkinBg(TBIDC("background"));
 	new frontend::LoginWindow(this);
@@ -424,7 +424,6 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	_userId = id;
 	_posLerp.setPosition(_now, pos);
 }
-;
 
 bool Client::connect(uint16_t port, const std::string& hostname) {
 	ENetPeer* peer = _network->connect(port, hostname);
@@ -436,7 +435,7 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 	peer->data = this;
 
 	_peer = peer;
-	Log::error("Connected to server %s:%i", hostname.c_str(), port);
+	Log::info("Connected to server %s:%i", hostname.c_str(), port);
 	return true;
 }
 
