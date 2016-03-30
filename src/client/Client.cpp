@@ -118,6 +118,10 @@ video::GLMeshData Client::createMesh(voxel::DecodedMesh& surfaceMesh, const glm:
 	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
 			GL_OFFSET(offsetof(voxel::VoxelVertexDecoded, position)));
 
+	const int normLoc = _worldShader.enableVertexAttribute("a_norm");
+	glVertexAttribPointer(normLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
+			GL_OFFSET(offsetof(voxel::VoxelVertexDecoded, normal)));
+
 	const int matLoc = _worldShader.enableVertexAttribute("a_materialdensity");
 	// our material and density is encoded as 8 bits material and 8 bits density
 	core_assert(sizeof(voxel::Voxel) == sizeof(uint16_t));
@@ -296,9 +300,11 @@ void Client::renderMap() {
 	_worldShader.activate();
 	_worldShader.setUniformMatrix("u_view", view, false);
 	_worldShader.setUniformMatrix("u_projection", projection, false);
-	_worldShader.setUniformVec3("u_lightpos", _lightPos);
-	_worldShader.setUniformVec3("u_diffusecolor", _diffuseColor);
-	_worldShader.setUniformVec3("u_specularcolor", _specularColor);
+	_worldShader.setUniformf("u_fogrange", 450);
+	_worldShader.setUniformf("u_viewdistance", 1000);
+	_worldShader.setUniformi("u_texture", 0);
+	_worldShader.setUniformVec3("u_lightdir", glm::vec3(0.5f, 1.0f, 0.25f));
+	_colorTexture->bind();
 	// TODO: add culling
 	for (const video::GLMeshData& meshData : _meshData) {
 		const glm::mat4& model = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation.x, 0, meshData.translation.y));

@@ -199,7 +199,7 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 #ifdef GL_ES_VERSION_2_0
 	src.append("#version 300\n");
 #else
-	src.append("#version 150\n");
+	src.append("#version 130\n");
 #endif
 
 	std::string append(buffer);

@@ -1,29 +1,49 @@
 // attributes from the VAOs
 in vec3 a_pos;
+in vec3 a_norm;
 in ivec2 a_materialdensity;
 
-uniform mat4 u_projection;
 uniform mat4 u_model;
 uniform mat4 u_view;
-uniform vec3 u_diffusecolor;
-uniform vec3 u_specularcolor;
-uniform vec3 u_lightpos;
+uniform mat4 u_projection;
+uniform vec3 u_lightdir;
+uniform float u_fogrange;
+uniform float u_viewdistance;
+uniform sampler2D u_texture;
 
-flat out int v_material;
-flat out int v_density;
 out vec3 v_pos;
-out vec3 v_diffusecolor;
-out vec3 v_specularcolor;
-out vec3 v_lightpos;
+out vec3 v_color;
+out float v_fogrange;
+out float v_viewdistance;
+out float v_ambientocclusion;
+
+vec3 materialColor[8] = vec3[](
+	vec3(0.0,   0.0,   0.0),		// air
+	vec3(0.419, 0.258, 0.149),		// dirt
+	vec3(0.427, 0.776, 0.007),		// grass
+	vec3(0.75,  0.75,  0.9),		// clouds
+	vec3(1.0,   0.0,   0.0),		// water
+	vec3(0.0,   0.5,   0.0),		// leaves
+	vec3(0.419, 0.258, 0.149),		// trunk
+	vec3(0.75,  0.75,  0.9)			// clouds
+);
 
 void main(void) {
 	mat4 modelview = u_view * u_model;
 	vec4 pos4 = modelview * vec4(a_pos, 1.0);
 	v_pos = vec3(pos4) / pos4.w;
-	v_material = a_materialdensity.x;
-	v_density = a_materialdensity.y;
-	v_diffusecolor = u_diffusecolor;
-	v_specularcolor = u_specularcolor;
-	v_lightpos = u_lightpos;
+	v_ambientocclusion = 1.0; //clamp(a_materialdensity.y / 63.0 + 1.0 - amb_occ_on, 0.0, 1.0);
+	v_fogrange = u_fogrange;
+	v_viewdistance = u_viewdistance;
+
+	vec4 noisepos = u_model * vec4(a_pos, 1.0);
+	vec3 colornoise = vec3(texture(u_texture, noisepos.xz / 256.0 / 10.0));
+	vec4 facenormal = u_model * vec4(a_norm, 1.0);
+	float diffuse = clamp(dot(a_norm, u_lightdir), 0.0, 1.0) * 0.7;
+	float ambient = 0.3;
+	float lightvalue = diffuse + ambient;
+	v_color = materialColor[a_materialdensity.x] * colornoise * lightvalue;
+	v_color = clamp(v_color, 0.0, 1.0);
+
 	gl_Position = u_projection * modelview * vec4(a_pos, 1.0);
 }

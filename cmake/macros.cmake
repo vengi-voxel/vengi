@@ -20,7 +20,7 @@ macro(check_glsl_files TARGET)
 				DEPENDS shadertool
 				WORKING_DIRECTORY ${FIPS_PROJECT_DIR}/data/${TARGET}/shaders
 			)
-			add_dependencies(${TARGET} shadertool ${_file} ${_outfile})
+			add_dependencies(${TARGET} shadertool ${_file})
 		endforeach()
 	else()
 		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found")
