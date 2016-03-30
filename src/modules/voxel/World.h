@@ -171,9 +171,9 @@ private:
 	static void createCube(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
 	static void createPlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int depth, const Voxel& voxel);
 
-	static void addTree(int chunkSize, const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height);
-	static void createTrees(int chunkSize, const PolyVox::Region& region, WorldData::Chunk* chunk);
-	glm::ivec2 randomPosWithoutHeight(const PolyVox::Region& region);
+	static void addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height);
+	static void createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk);
+	glm::ivec2 randomPosWithoutHeight(const PolyVox::Region& region, int border = 0);
 	void createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk);
 	static void createUnderground(const PolyVox::Region& region, WorldData::Chunk* chunk);
 

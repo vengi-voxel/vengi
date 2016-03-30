@@ -27,12 +27,6 @@ debugserver: build
 debugclient: build
 	$(Q)./fips gdb client
 
-debuggenerate: build
-	$(Q)./fips gdb worldgenerator -- -set seed 1 -set size 1024
-
-generate: build
-	$(Q)./fips run worldgenerator -- -set seed 1 -set size 1024
-
 tests: build
 	$(Q)./fips run tests
 
