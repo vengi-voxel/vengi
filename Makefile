@@ -16,22 +16,22 @@ eclipse:
 	$(Q)./fips config linux-eclipse-debug
 
 server: build
-	$(Q)./fips run server
+	$(Q)./fips run server -- $(ARGS)
 
 client: build
-	$(Q)./fips run client
+	$(Q)./fips run client -- $(ARGS)
 
 debugserver: build
-	$(Q)./fips gdb server
+	$(Q)./fips gdb server -- $(ARGS)
 
 debugclient: build
-	$(Q)./fips gdb client
+	$(Q)./fips gdb client -- $(ARGS)
 
 tests: build
-	$(Q)./fips run tests
+	$(Q)./fips run tests -- $(ARGS)
 
 tests-list: build
-	$(Q)./fips run tests -- --gtest_list_tests
+	$(Q)./fips run tests -- --gtest_list_tests $(ARGS)
 
 tests-filter: build
-	$(Q)./fips run tests -- --gtest_filter=$(FILTER)
+	$(Q)./fips run tests -- --gtest_filter=$(FILTER) $(ARGS)

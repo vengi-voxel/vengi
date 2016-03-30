@@ -13,8 +13,9 @@
 
 #define registerMoveCmd(name, flag) \
 	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
-		if (args.empty()) \
+		if (args.empty()) { \
 			return; \
+		} \
 		if (args[0] == "true") \
 			_moveMask |= MoveDirection_##flag; \
 		else \
@@ -43,6 +44,7 @@ void Client::sendMovement() {
 	if (_now - _lastMovement <= 100L)
 		return;
 
+	// TODO: only send if _moveMask differs
 	_lastMovement = _now;
 	flatbuffers::FlatBufferBuilder fbb;
 	const MoveDirection md = (MoveDirection) _moveMask;
@@ -73,7 +75,7 @@ void Client::onEvent(const voxel::WorldCreatedEvent& event) {
 	const int size = core::Var::get("cl_chunksize")->intVal();
 	glm::ivec2 pos = _lastCameraPosition;
 	voxel::Spiral o;
-	for (int i = 0; i < 10000; ++i) {
+	for (int i = 0; i < 1000; ++i) {
 		event.world()->scheduleMeshExtraction(pos);
 		o.next();
 		pos.x = _lastCameraPosition.x + o.x() * size;

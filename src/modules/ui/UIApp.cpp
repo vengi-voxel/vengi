@@ -234,13 +234,18 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 	auto range = _bindings.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
 		const std::string& command = i->second.first;
-		if ((modifier == 0 && i->second.second == 0) || (modifier != 0 && (i->second.second & modifier) == modifier)) {
-			if (command[0] == '+') {
-				if (core::Command::execute(command + " true") == 1)
-					_keys[key] = modifier;
-			} else {
-				core::Command::execute(command);
-			}
+		const int mod = i->second.second;
+		if (mod == KMOD_NONE && modifier != 0 && modifier != KMOD_NUM) {
+			continue;
+		}
+		if (mod != KMOD_NONE && !(modifier & mod)) {
+			continue;
+		}
+		if (command[0] == '+') {
+			if (core::Command::execute(command + " true") == 1)
+				_keys[key] = modifier;
+		} else {
+			core::Command::execute(command);
 		}
 	}
 

@@ -26,7 +26,6 @@ namespace voxel {
 void World::Pager::pageIn(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	if (!_world.load(region, chunk)) {
 		_world.create(region, chunk);
-		_world.save(region, chunk);
 	}
 }
 
@@ -271,25 +270,25 @@ void World::createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk) 
 	const int chunkHeight = region.getHeightInVoxels();
 	for (int i = 0; i < 5; ++i) {
 		const int maxSize = 14;
-		const int rndValX = core::random(maxSize, region.getWidthInVoxels() - maxSize);
+		const int rndValX = core::random(maxSize, region.getWidthInVoxels() - 1 - maxSize);
 		// number should be even
 		if (!(rndValX % 2)) {
 			continue;
 		}
 
-		const int rndValZ = core::random(maxSize, region.getDepthInVoxels() - maxSize);
+		const int rndValZ = core::random(maxSize, region.getDepthInVoxels() - 1 - maxSize);
 		// TODO: use a noise map to get the position
 		glm::ivec3 pos(rndValX, -1, rndValZ);
 		const int y = findChunkFloor(chunkHeight, chunk, pos.x, pos.z);
-		if (y < 0) {
+		const int height = core::random(10, 14);
+		const int trunkHeight = core::random(5, 9);
+		if (y < 0 || y >= chunkHeight - height - trunkHeight) {
 			continue;
 		}
 
 		pos.y = y;
 
 		const int size = core::random(12, maxSize);
-		const int height = core::random(10, 14);
-		const int trunkHeight = core::random(5, 9);
 		const int treeType = core::random(0, int(TreeType::MAX) - 1);
 		const int trunkWidth = 1;
 		addTree(region, chunk, pos, (TreeType)treeType, trunkHeight, trunkWidth, size, size, height);
@@ -301,12 +300,12 @@ void World::createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk)
 	const Voxel voxel(CLOUDS, Voxel::getMinDensity());
 	for (int i = 0; i < amount; ++i) {
 		const int height = 10;
-		const glm::ivec2& pos = randomPosWithoutHeight(region, 10);
+		const glm::ivec2& pos = randomPosWithoutHeight(region, 20);
 		glm::ivec3 chunkCloudCenterPos(pos.x, region.getHeightInVoxels() - height, pos.y);
 		createEllipse(region, chunk, chunkCloudCenterPos, 10, height, 10, voxel);
 		chunkCloudCenterPos.x -= 5;
 		chunkCloudCenterPos.y -= 5 + i;
-		createEllipse(region, chunk, chunkCloudCenterPos, 20, height, 35, voxel);
+		createEllipse(region, chunk, chunkCloudCenterPos, 20, height, 20, voxel);
 	}
 }
 
@@ -427,7 +426,7 @@ bool World::save(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 }
 
 void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
-	Log::info("Create new chunk at %i:%i:%i", region.getCentreX(), region.getCentreY(), region.getCentreZ());
+	Log::debug("Create new chunk at %i:%i:%i", region.getCentreX(), region.getCentreY(), region.getCentreZ());
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
 	const int height = region.getHeightInVoxels();
@@ -450,6 +449,7 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 		}
 	}
 	if (region.getUpperZ() >= MAX_HEIGHT - 1) {
+		// TODO: only generate this in the client - not the server
 		createClouds(region, chunk);
 	} else {
 		createTrees(region, chunk);
