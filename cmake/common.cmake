@@ -14,6 +14,7 @@ macro(check_lua_files TARGET files)
 			add_custom_target(
 				${_file}
 				COMMAND ${LUA_EXECUTABLE} ${_file}
+				COMMENT "Validate ${_file}"
 				WORKING_DIRECTORY ${FIPS_PROJECT_DIR}/data/${TARGET}
 			)
 			add_dependencies(${TARGET} ${_file})

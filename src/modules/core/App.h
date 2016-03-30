@@ -33,6 +33,7 @@ protected:
 	long _now;
 	long _deltaFrame;
 	long _initTime;
+	int _exitCode = 0;
 	io::FilesystemPtr _filesystem;
 	core::EventBusPtr _eventBus;
 	static App* _staticInstance;
@@ -42,7 +43,7 @@ public:
 	virtual ~App();
 
 	void init(const std::string& organisation, const std::string& appname);
-	void startMainLoop(int argc, char *argv[]);
+	int startMainLoop(int argc, char *argv[]);
 
 	// e.g. register your commands here
 	virtual AppState onConstruct();

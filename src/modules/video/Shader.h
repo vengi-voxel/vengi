@@ -12,6 +12,14 @@
 
 namespace video {
 
+#ifndef VERTEX_POSTFIX
+#define VERTEX_POSTFIX ".vert"
+#endif
+
+#ifndef FRAGMENT_POSTFIX
+#define FRAGMENT_POSTFIX ".frag"
+#endif
+
 class CheckErrorState {
 protected:
 	const char* _file;
@@ -84,8 +92,6 @@ protected:
 
 	int fetchAttributes();
 
-	std::string getSource(ShaderType shaderType, const std::string& buffer) const;
-
 	void createProgramFromShaders();
 
 public:
@@ -94,6 +100,8 @@ public:
 	virtual ~Shader();
 
 	bool load(const std::string& name, const std::string& buffer, ShaderType shaderType);
+
+	std::string getSource(ShaderType shaderType, const std::string& buffer) const;
 
 	/**
 	 * If the shaders were loaded manually via @c ::load, then you have to initialize the shader manually, too

@@ -7,14 +7,6 @@
 #define MAX_SHADER_VAR_NAME 128
 #endif
 
-#ifndef VERTEX_POSTFIX
-#define VERTEX_POSTFIX ".vert"
-#endif
-
-#ifndef FRAGMENT_POSTFIX
-#define FRAGMENT_POSTFIX ".frag"
-#endif
-
 #ifdef _DEBUG
 #define checkError() CheckErrorState(__FILE__, __LINE__, __PRETTY_FUNCTION__, _name.c_str());
 #else
@@ -32,9 +24,11 @@ Shader::Shader() :
 
 Shader::~Shader() {
 	for (int i = 0; i < SHADER_MAX; ++i) {
-		glDeleteShader(_shader[i]);
+		if (_shader[i] != 0)
+			glDeleteShader(_shader[i]);
 	}
-	glDeleteProgram(_program);
+	if (_program != 0)
+		glDeleteProgram(_program);
 }
 
 bool Shader::load(const std::string& name, const std::string& buffer, ShaderType shaderType) {
@@ -205,7 +199,7 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 #ifdef GL_ES_VERSION_2_0
 	src.append("#version 300\n");
 #else
-	src.append("#version 130\n");
+	src.append("#version 150\n");
 #endif
 
 	std::string append(buffer);

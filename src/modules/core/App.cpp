@@ -24,7 +24,7 @@ void App::init(const std::string& organisation, const std::string& appname) {
 	_appname = appname;
 }
 
-void App::startMainLoop(int argc, char *argv[]) {
+int App::startMainLoop(int argc, char *argv[]) {
 	_argc = argc;
 	_argv = argv;
 
@@ -32,6 +32,7 @@ void App::startMainLoop(int argc, char *argv[]) {
 		core_trace_scoped("AppMainLoop");
 		onFrame();
 	}
+	return _exitCode;
 }
 
 void App::addBlocker(AppState blockedState) {

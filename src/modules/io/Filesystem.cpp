@@ -21,7 +21,7 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		SDL_free(path);
 	}
 
-	char *prefPath = SDL_GetPrefPath(_organisation.c_str(), _organisation.c_str());
+	char *prefPath = SDL_GetPrefPath(_organisation.c_str(), _appname.c_str());
 	if (prefPath == nullptr) {
 		_homePath = "";
 	} else {
@@ -29,13 +29,17 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		SDL_free(prefPath);
 	}
 
-	Log::info("basepath: %s", _basePath.c_str());
-	Log::info("homepath: %s", _homePath.c_str());
+	Log::debug("basepath: %s", _basePath.c_str());
+	Log::debug("homepath: %s", _homePath.c_str());
 	core::Var::get("app_homepath", _homePath, core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get("app_basepath", _basePath, core::CV_READONLY | core::CV_NOPERSIST);
 }
 
 io::FilePtr Filesystem::open(const std::string& filename) {
+	if (io::File(filename).exists()) {
+		Log::debug("loading file %s from current working dir", filename.c_str());
+		return io::FilePtr(new io::File(filename));
+	}
 	const std::string homePath = _homePath + filename;
 	if (io::File(homePath).exists()) {
 		Log::debug("loading file %s from %s", filename.c_str(), _homePath.c_str());

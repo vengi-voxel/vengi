@@ -1,3 +1,30 @@
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/win32)
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/osx)
+else()
+	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/linux)
+endif()
+
+macro(check_glsl_files TARGET files)
+	find_program(GLSL_VALIDATOR_EXECUTABLE NAMES glslangValidator PATHS ${TOOLS_DIR})
+	if (GLSL_VALIDATOR_EXECUTABLE)
+		message("${GLSL_VALIDATOR_EXECUTABLE} found - executing in ${FIPS_PROJECT_DIR}/data/${TARGET}/shaders")
+		foreach(_file ${files})
+			add_custom_target(
+				${_file}
+				COMMENT "Validate ${_file}"
+				COMMAND ${FIPS_DEPLOY_DIR}/${CMAKE_PROJECT_NAME}/${FIPS_CONFIG}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file}
+				DEPENDS shadertool
+				WORKING_DIRECTORY ${FIPS_PROJECT_DIR}/data/${TARGET}/shaders
+			)
+			add_dependencies(${TARGET} shadertool ${_file} ${_outfile})
+		endforeach()
+	else()
+		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found")
+	endif()
+endmacro()
+
 #
 # macro for the FindLibName.cmake files.
 #
