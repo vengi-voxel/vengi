@@ -5,7 +5,7 @@ Q=@
 all: build
 
 build:
-	$(Q)./fips make VERBOSE=$(VERBOSE)
+	$(Q)./fips make
 
 clean:
 	$(Q)./fips clean
