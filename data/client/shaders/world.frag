@@ -15,31 +15,20 @@ const int WATER = 4;
 const int LEAVES = 5;
 const int TRUNK = 6;
 const int CLOUDS = 7;
+const int MAX = 8;
+
+vec3 materialColor[MAX] = vec3[](
+	vec3(0.0),
+	vec3(0.419, 0.258, 0.149),
+	vec3(0.427, 0.776, 0.007),
+	vec3(0.75, 0.75, 0.9),
+	vec3(1.0, 0.0, 0.0),
+	vec3(0.0, 0.5, 0.0),
+	vec3(0.419, 0.258, 0.149),
+	vec3(0.75, 0.75, 0.9)
+);
 
 const float MAX_MATERIAL = 16.0;
-
-vec3 getMaterialColor() {
-	if (v_material == DIRT) {
-		return vec3(0.419, 0.258, 0.149);
-	}
-	if (v_material == GRASS) {
-		return vec3(0.427, 0.776, 0.007);
-	}
-	if (v_material == CLOUD) {
-		return vec3(0.75, 0.75, 0.9);
-	}
-	if (v_material == TRUNK) {
-		return vec3(0.419, 0.258, 0.149);
-	}
-	if (v_material == LEAVES) {
-		return vec3(0.0, 0.5, 0.0);
-	}
-	if (v_material == CLOUDS) {
-		return vec3(0.4, 0.6, 0.9);
-	}
-	// error
-	return vec3(1.0, float(v_material) / (MAX_MATERIAL * 255.0), float(v_density) / (MAX_MATERIAL * 255.0));
-}
 
 vec3 getAmbientColor(vec3 materialcolor) {
 	const float ambientstrength = 1.0;
@@ -80,7 +69,7 @@ void main(void) {
 	vec3 normal = normalize(cross(fdx, fdy));
 	vec3 lightdir = normalize(v_lightpos - v_pos);
 
-	vec3 materialcolor = getMaterialColor();
+	vec3 materialcolor = materialColor[v_material];
 	vec3 ambientcolor = getAmbientColor(materialcolor);
 	vec3 diffusecolor = getDiffuseColor(lightdir, normal);
 	vec3 specularcolor = getSpecularColor(lightdir, normal);
