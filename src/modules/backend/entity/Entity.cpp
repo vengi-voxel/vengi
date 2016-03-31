@@ -21,7 +21,7 @@ void Entity::initAttribs() {
 
 	static const attrib::Types types[] = {attrib::Types::HEALTH};
 
-	for (size_t i = 0; i < lengthof(types); ++i) {
+	for (size_t i = 0; i < SDL_arraysize(types); ++i) {
 		const attrib::Types type = static_cast<attrib::Types>(types[i]);
 		const double max = _attribs.getMax(type);
 		_attribs.setCurrent(type, max);

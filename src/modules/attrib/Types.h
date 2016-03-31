@@ -22,7 +22,7 @@ static const char* typeNames[] = {
 	"ATTACKRANGE",
 	"STRENGTH"
 };
-CASSERT(lengthof(typeNames) == (size_t)Types::MAX);
+static_assert(SDL_arraysize(typeNames) == (size_t)Types::MAX, "types and names don't match");
 
 inline Types getType(const char* name) {
 	for (int i = 0; i < (int)Types::MAX; ++i) {

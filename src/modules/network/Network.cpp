@@ -129,7 +129,7 @@ bool Network::packetReceived(ENetEvent& event, bool server) {
 			return false;
 		}
 		Log::debug("Received %s", messages::server::EnumNameType(type));
-		handler->execute(event.peer, req->data());
+		handler->execute(event.peer, reinterpret_cast<const flatbuffers::Table*>(req->data()));
 		return true;
 	}
 
@@ -145,7 +145,7 @@ bool Network::packetReceived(ENetEvent& event, bool server) {
 		return false;
 	}
 	Log::debug("Received %s", messages::client::EnumNameType(type));
-	handler->execute(event.peer, req->data());
+	handler->execute(event.peer, reinterpret_cast<const flatbuffers::Table*>(req->data()));
 	return true;
 }
 

@@ -7,7 +7,7 @@ namespace video {
 
 Camera::Camera() :
 		_pos(0.0f, 0.0f, 0.0f), _width(0.0f), _height(0.0f), _pitch(-M_PI_2), _yaw(M_PI), _direction(0.0f, 0.0f, 0.0f), _mouseSpeed(
-				core::Var::get("cl_cammousespeed", "0.01")), _maxpitch(core::Var::get("cl_cammaxpitch", std::to_string(core::toRadians(89.0f)))) {
+				core::Var::get("cl_cammousespeed", "0.01")), _maxpitch(core::Var::get("cl_cammaxpitch", std::to_string(glm::radians(89.0f)))) {
 	updateDirection();
 }
 
@@ -41,7 +41,7 @@ void Camera::init(int width, int height) {
 
 void Camera::updateDirection() {
 	const float maxPitch = _maxpitch->floatVal();
-	_pitch = core::clamp(_pitch, -maxPitch, maxPitch);
+	_pitch = glm::clamp(_pitch, -maxPitch, maxPitch);
 
 	const float cosV = glm::cos(_pitch);
 	const float cosH = glm::cos(_yaw);

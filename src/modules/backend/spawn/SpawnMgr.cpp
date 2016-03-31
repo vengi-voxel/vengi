@@ -54,7 +54,7 @@ void SpawnMgr::spawnEntity(ai::Zone& zone, network::messages::NpcType start, net
 		++count[index];
 	});
 
-	const int size = lengthof(count);
+	const int size = SDL_arraysize(count);
 	for (int i = 0; i < size; ++i) {
 		if (count[i] >= maxAmount)
 			continue;

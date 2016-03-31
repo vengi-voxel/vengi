@@ -7,7 +7,7 @@ namespace video {
 
 GBuffer::GBuffer() :
 		_fbo(0), _depthTexture(0) {
-	for (std::size_t i = 0; i < lengthof(_textures); ++i) {
+	for (std::size_t i = 0; i < SDL_arraysize(_textures); ++i) {
 		_textures[i] = 0;
 	}
 }
@@ -18,7 +18,7 @@ GBuffer::~GBuffer() {
 	}
 
 	if (_textures[0] != 0) {
-		glDeleteTextures(lengthof(_textures), _textures);
+		glDeleteTextures(SDL_arraysize(_textures), _textures);
 	}
 
 	if (_depthTexture != 0) {
@@ -30,10 +30,10 @@ bool GBuffer::init(int width, int height) {
 	glGenFramebuffers(1, &_fbo);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
 
-	glGenTextures(lengthof(_textures), _textures);
+	glGenTextures(SDL_arraysize(_textures), _textures);
 	glGenTextures(1, &_depthTexture);
 
-	for (std::size_t i = 0; i < lengthof(_textures); ++i) {
+	for (std::size_t i = 0; i < SDL_arraysize(_textures); ++i) {
 		glBindTexture(GL_TEXTURE_2D, _textures[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _textures[i], 0);
@@ -44,7 +44,7 @@ bool GBuffer::init(int width, int height) {
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
 
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-	glDrawBuffers(lengthof(drawBuffers), drawBuffers);
+	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
 
 	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 

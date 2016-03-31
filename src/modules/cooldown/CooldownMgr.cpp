@@ -4,13 +4,15 @@
 namespace cooldown {
 
 namespace {
+
+// TODO: configuration from lua please
 unsigned long durations[] = {
-		0ul,
-		15000ul,
-		10000ul,
-		100ul
+	0ul,
+	15000ul,
+	10000ul,
+	100ul
 };
-CASSERT(lengthof(durations) == CooldownType::MAX);
+static_assert(SDL_arraysize(durations) == CooldownType::MAX, "durations and types don't match");
 }
 
 CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider) :
