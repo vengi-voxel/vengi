@@ -1,6 +1,7 @@
 #include "WindowedApp.h"
 #include "core/Common.h"
 #include "core/Singleton.h"
+#include "core/Var.h"
 #include "GLFunc.h"
 
 #include <SDL.h>
@@ -83,7 +84,7 @@ core::AppState WindowedApp::onConstruct() {
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
-	const bool fullscreen = core::Var::get("cl_fullscreen", "true")->boolVal();
+	const bool fullscreen = core::Var::get(cfg::ClientFullscreen, "true")->boolVal();
 
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 	if (fullscreen)

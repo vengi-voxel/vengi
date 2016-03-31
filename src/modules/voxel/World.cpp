@@ -35,7 +35,7 @@ void World::Pager::pageOut(const PolyVox::Region& region, WorldData::Chunk* chun
 // http://code.google.com/p/fortressoverseer/source/browse/Overseer/PolyVoxGenerator.cpp
 World::World() :
 		_pager(*this), _seed(0), _threadPool(1), _rwLock("World"), _random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
-	_chunkSize = core::Var::get("cl_chunksize", "64", core::CV_READONLY);
+	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
 	_volumeData = new WorldData(&_pager, 256 * 1024 * 1024, _chunkSize->intVal());
 	core_assert(_biomManager.addBiom(0, 100, Voxel(GRASS, Voxel::getMaxDensity())));
 	core_assert(_biomManager.addBiom(101, MAX_HEIGHT - 1, Voxel(GRASS, Voxel::getMaxDensity())));
@@ -77,7 +77,7 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 	const int size = _chunkSize->intVal();
 	const glm::ivec2& pos = getGridPos(p);
 	if (_meshesExtracted.find(pos) != _meshesExtracted.end()) {
-		Log::debug("mesh is already extracted for %i:%i", p.x, p.y);
+		Log::trace("mesh is already extracted for %i:%i", p.x, p.y);
 		return;
 	}
 	_meshesExtracted.insert(pos);

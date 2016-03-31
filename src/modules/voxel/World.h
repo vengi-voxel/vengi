@@ -60,6 +60,10 @@ public:
 		return glm::ivec2(pos.x / size * size, pos.y / size * size);
 	}
 
+	inline int getChunkSize() const {
+		return _chunkSize->intVal();
+	}
+
 	/**
 	 * @brief We need to pop the mesh extractor queue to find out if there are new and ready to use meshes for us
 	 */

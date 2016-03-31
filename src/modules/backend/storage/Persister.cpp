@@ -38,10 +38,10 @@ bool Persister::initTables() {
 
 bool Persister::init() {
 	Log::trace("init database connection");
-	const core::VarPtr& dbName = core::Var::get("db_name", "engine_db");
-	const core::VarPtr& dbHost = core::Var::get("db_host", "localhost");
-	const core::VarPtr& dbPw = core::Var::get("db_pw", "ben711cCefIUit887");
-	const core::VarPtr& dbUser = core::Var::get("db_user", "dbmaster");
+	const core::VarPtr& dbName = core::Var::get(cfg::DatabaseName, "engine_db");
+	const core::VarPtr& dbHost = core::Var::get(cfg::DatabaseHost, "localhost");
+	const core::VarPtr& dbPw = core::Var::get(cfg::DatabasePassword, "ben711cCefIUit887");
+	const core::VarPtr& dbUser = core::Var::get(cfg::DatabaseUser, "dbmaster");
 
 	_connection.changeDb(dbName->strVal());
 	_connection.changeHost(dbHost->strVal());

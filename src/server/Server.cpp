@@ -26,9 +26,9 @@ core::AppState Server::onInit() {
 	StoreCmd SCmd;
 	SCmd.addComd();
 
-	const core::VarPtr& port = core::Var::get("sv_port", "11337");
-	const core::VarPtr& host = core::Var::get("sv_host", "");
-	const core::VarPtr& maxclients = core::Var::get("sv_maxclients", "1024");
+	const core::VarPtr& port = core::Var::get(cfg::ServerPort, "11337");
+	const core::VarPtr& host = core::Var::get(cfg::ServerHost, "");
+	const core::VarPtr& maxclients = core::Var::get(cfg::ServerMaxClients, "1024");
 	if (!_network->bind(port->intVal(), host->strVal(), maxclients->intVal(), 2)) {
 		Log::error("Failed to bind the server socket on %s:%i", host->strVal().c_str(), port->intVal());
 		return core::Cleanup;

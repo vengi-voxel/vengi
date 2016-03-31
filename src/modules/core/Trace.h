@@ -6,8 +6,6 @@
 #else
 #endif
 
-#include "Var.h"
-
 namespace core {
 
 // a singleton - available via core::App

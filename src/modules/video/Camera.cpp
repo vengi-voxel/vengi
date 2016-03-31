@@ -6,8 +6,8 @@
 namespace video {
 
 Camera::Camera() :
-		_pos(0.0f, 0.0f, 0.0f), _width(0.0f), _height(0.0f), _pitch(-M_PI_2), _yaw(M_PI), _direction(0.0f, 0.0f, 0.0f), _mouseSpeed(
-				core::Var::get("cl_cammousespeed", "0.01")), _maxpitch(core::Var::get("cl_cammaxpitch", std::to_string(glm::radians(89.0f)))) {
+		_pos(0.0f, 0.0f, 0.0f), _width(0), _height(0), _pitch(-M_PI_2), _yaw(M_PI), _direction(0.0f, 0.0f, 0.0f), _mouseSpeed(
+				core::Var::get(cfg::ClientMouseSpeed, "0.01")), _maxpitch(core::Var::get(cfg::ClientCameraMaxPitch, std::to_string(glm::radians(89.0)))) {
 	updateDirection();
 }
 

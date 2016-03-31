@@ -7,7 +7,6 @@
 #include "backend/entity/ai/AILoader.h"
 #include "backend/poi/PoiProvider.h"
 #include "network/messages/ServerMessages.h"
-#include "core/Var.h"
 
 namespace backend {
 

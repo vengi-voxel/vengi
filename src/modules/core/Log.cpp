@@ -7,7 +7,7 @@ static constexpr int bufSize = 1024;
 static SDL_LogPriority _logLevel;
 
 void Log::init() {
-	_logLevel = (SDL_LogPriority)core::Var::get("core_loglevel", std::to_string(SDL_LOG_PRIORITY_INFO))->intVal();
+	_logLevel = (SDL_LogPriority)core::Var::get(cfg::CoreLogLevel, std::to_string(SDL_LOG_PRIORITY_INFO))->intVal();
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, _logLevel);
 }
 

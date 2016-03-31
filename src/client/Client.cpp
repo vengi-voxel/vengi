@@ -64,24 +64,28 @@ void Client::onEvent(const network::DisconnectEvent& event) {
 
 void Client::onEvent(const network::NewConnectionEvent& event) {
 	flatbuffers::FlatBufferBuilder fbb;
-	const std::string& email = core::Var::get("cl_email")->strVal();
-	const std::string& password = core::Var::get("cl_password")->strVal();
+	const std::string& email = core::Var::get(cfg::ClientEmail)->strVal();
+	const std::string& password = core::Var::get(cfg::ClientPassword)->strVal();
 	Log::info("Trying to log into the server with %s", email.c_str());
 	_messageSender->sendClientMessage(_peer, fbb, Type_UserConnect,
 			CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(password)).Union());
 }
 
+void Client::extractMeshAround(const glm::ivec2& initialPosition, int amount) {
+	const int size = _world->getChunkSize();
+	glm::ivec2 pos = initialPosition;
+	voxel::Spiral o;
+	for (int i = 0; i < amount; ++i) {
+		_world->scheduleMeshExtraction(pos);
+		o.next();
+		pos.x = initialPosition.x + o.x() * size;
+		pos.y = initialPosition.y + o.y() * size;
+	}
+}
+
 void Client::onEvent(const voxel::WorldCreatedEvent& event) {
 	Log::info("world created");
-	const int size = core::Var::get("cl_chunksize")->intVal();
-	glm::ivec2 pos = _lastCameraPosition;
-	voxel::Spiral o;
-	for (int i = 0; i < 1000; ++i) {
-		event.world()->scheduleMeshExtraction(pos);
-		o.next();
-		pos.x = _lastCameraPosition.x + o.x() * size;
-		pos.y = _lastCameraPosition.y + o.y() * size;
-	}
+	extractMeshAround(_lastCameraPosition, 1000);
 	new frontend::HudWindow(this, _width, _height);
 }
 
@@ -112,7 +116,7 @@ video::GLMeshData Client::createMesh(voxel::DecodedMesh& surfaceMesh, const glm:
 	glGenBuffers(1, &meshData.indexBuffer);
 	core_assert(meshData.indexBuffer > 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(uint32_t), vecIndices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(typename voxel::DecodedMesh::IndexType), vecIndices, GL_STATIC_DRAW);
 
 	const int posLoc = _worldShader.enableVertexAttribute("a_pos");
 	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
@@ -156,8 +160,8 @@ core::AppState Client::onInit() {
 	if (!_network->start())
 		return core::Cleanup;
 
-	core::Var::get("cl_name", "noname");
-	core::Var::get("cl_password", "nopassword");
+	core::Var::get(cfg::ClientName, "noname");
+	core::Var::get(cfg::ClientPassword, "nopassword");
 
 	if (!_worldShader.init()) {
 		return core::Cleanup;
@@ -219,7 +223,7 @@ core::AppState Client::onInit() {
 	_root.SetSkinBg(TBIDC("background"));
 	new frontend::LoginWindow(this);
 
-	SDL_GL_SetSwapInterval(core::Var::get("cl_vsync", "true")->boolVal());
+	SDL_GL_SetSwapInterval(core::Var::get(cfg::ClientVSync, "true")->boolVal());
 
 	return state;
 }
@@ -260,6 +264,11 @@ void Client::renderMap() {
 	}
 
 	// TODO: use polyvox VolumeResampler to create a minimap of your volume
+	// RawVolume<uint8_t> volDataLowLOD(PolyVox::Region(Vector3DInt32(0, 0, 0), Vector3DInt32(15, 31, 31)));
+	// VolumeResampler< RawVolume<uint8_t>, RawVolume<uint8_t> > volumeResampler(&volData, PolyVox::Region(Vector3DInt32(0, 0, 0), Vector3DInt32(31, 63, 63)), &volDataLowLOD, volDataLowLOD.getEnclosingRegion());
+	// volumeResampler.execute();
+	// auto meshLowLOD = extractMarchingCubesMesh(&volDataLowLOD, volDataLowLOD.getEnclosingRegion());
+	// auto decodedMeshLowLOD = decodeMesh(meshLowLOD);
 
 	const bool left = _moveMask & MoveDirection_MOVELEFT;
 	const bool right = _moveMask & MoveDirection_MOVERIGHT;
@@ -305,7 +314,7 @@ void Client::renderMap() {
 	_worldShader.setUniformi("u_texture", 0);
 	_worldShader.setUniformVec3("u_lightdir", glm::vec3(0.5f, 1.0f, 0.25f));
 	_colorTexture->bind();
-	// TODO: add culling
+	// TODO: add culling and call _world->allowReExtraction(culledPos)
 	for (const video::GLMeshData& meshData : _meshData) {
 		const glm::mat4& model = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation.x, 0, meshData.translation.y));
 		_worldShader.setUniformMatrix("u_model", model, false);
@@ -339,13 +348,11 @@ void Client::renderMap() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	GL_checkError();
 
-	// TODO: iterate over meshdata again and remove too far away chunks
-
 	const glm::ivec2& camXZ = _world->getGridPos(_camera.getPosition());
 	const glm::vec2 diff = _lastCameraPosition - camXZ;
 	if (glm::length(diff.x) >= 1 || glm::length(diff.y) >= 1) {
 		_lastCameraPosition = camXZ;
-		_world->scheduleMeshExtraction(camXZ);
+		extractMeshAround(camXZ, 40);
 	}
 
 	glBindVertexArray(0);

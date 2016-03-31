@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "String.h"
 #include "ReadWriteLock.h"
+#include "GameConfig.h"
 
 namespace core {
 

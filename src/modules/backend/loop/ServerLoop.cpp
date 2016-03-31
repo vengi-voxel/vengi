@@ -21,8 +21,7 @@ bool ServerLoop::onInit() {
 	_registry->init(_spawnMgr);
 	if (!_spawnMgr->init())
 		return false;
-	const core::VarPtr& seed = core::Var::get("sv_seed", "1");
-	const core::VarPtr& size = core::Var::get("sv_size", "128");
+	const core::VarPtr& seed = core::Var::get(cfg::ServerSeed, "1");
 
 	_world->setSeed(seed->longVal());
 	if (_aiServer.start()) {

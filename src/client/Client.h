@@ -72,6 +72,10 @@ protected:
 	video::GLMeshData createMesh(voxel::DecodedMesh& surfaceMesh, const glm::ivec2& translation, float scale);
 
 	void addMeshData(video::GLMeshData meshData);
+	// schedule mesh extraction around the given position on x and z
+	// this is extracted in a spiral around the position. The amount of chunks to be extracted is specified
+	// by the given amount. There is nothing extracted twice.
+	void extractMeshAround(const glm::ivec2& initialPosition, int amount);
 	void sendMovement();
 
 	void renderBackground();

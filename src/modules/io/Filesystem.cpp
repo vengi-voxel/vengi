@@ -31,8 +31,8 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 
 	Log::debug("basepath: %s", _basePath.c_str());
 	Log::debug("homepath: %s", _homePath.c_str());
-	core::Var::get("app_homepath", _homePath, core::CV_READONLY | core::CV_NOPERSIST);
-	core::Var::get("app_basepath", _basePath, core::CV_READONLY | core::CV_NOPERSIST);
+	core::Var::get(cfg::AppHomePath, _homePath, core::CV_READONLY | core::CV_NOPERSIST);
+	core::Var::get(cfg::AppBasePath, _basePath, core::CV_READONLY | core::CV_NOPERSIST);
 }
 
 io::FilePtr Filesystem::open(const std::string& filename) {

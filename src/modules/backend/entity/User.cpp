@@ -14,7 +14,7 @@ User::User(ENetPeer* peer, EntityId id, const std::string& name, const network::
 	const glm::vec3& poi = _poiProvider->getPointOfInterest();
 	_pos = poi;
 	_attribs.setCurrent(attrib::Types::SPEED, 20.0);
-	_userTimeout = core::Var::get("sv_usertimeout", "60000");
+	_userTimeout = core::Var::get(cfg::ServerUserTimeout, "60000");
 }
 
 void User::visibleAdd(const EntitySet& entities) {
