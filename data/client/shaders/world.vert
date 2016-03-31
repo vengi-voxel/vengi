@@ -1,18 +1,18 @@
 // attributes from the VAOs
 in vec3 a_pos;
-in vec3 a_norm;
 in ivec2 a_materialdensity;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
-uniform vec3 u_lightdir;
+uniform vec3 u_lightpos;
 uniform float u_fogrange;
 uniform float u_viewdistance;
 uniform sampler2D u_texture;
 
 out vec3 v_pos;
 out vec3 v_color;
+out vec3 v_lightpos;
 out float v_fogrange;
 out float v_viewdistance;
 out float v_ambientocclusion;
@@ -35,14 +35,11 @@ void main(void) {
 	v_ambientocclusion = 1.0; //clamp(a_materialdensity.y / 63.0 + 1.0 - amb_occ_on, 0.0, 1.0);
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
+	v_lightpos = u_lightpos;
 
 	vec4 noisepos = u_model * vec4(a_pos, 1.0);
 	vec3 colornoise = vec3(texture(u_texture, noisepos.xz / 256.0 / 10.0));
-	vec4 facenormal = u_model * vec4(a_norm, 1.0);
-	float diffuse = clamp(dot(a_norm, u_lightdir), 0.0, 1.0) * 0.7;
-	float ambient = 0.3;
-	float lightvalue = diffuse + ambient;
-	v_color = materialColor[a_materialdensity.x] * colornoise * lightvalue;
+	v_color = materialColor[a_materialdensity.x] * colornoise;
 	v_color = clamp(v_color, 0.0, 1.0);
 
 	gl_Position = u_projection * modelview * vec4(a_pos, 1.0);

@@ -12,6 +12,7 @@
 #include "noise/SimplexNoise.h"
 #include <PolyVox/AStarPathfinder.h>
 #include <PolyVox/CubicSurfaceExtractor.h>
+#include <PolyVox/MarchingCubesSurfaceExtractor.h>
 #include <PolyVox/RawVolume.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -91,11 +92,16 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 		DecodedMeshData data;
 		{
 			locked([&] () {
-				data.mesh = PolyVox::decodeMesh(PolyVox::extractCubicMesh(_volumeData, region));
+#if 0
+				data.mesh = PolyVox::decodeMesh(PolyVox::extractMarchingCubesMesh(_volumeData, region));
+#else
+				data.mesh = PolyVox::decodeMesh(PolyVox::extractCubicMesh(_volumeData, region, PolyVox::DefaultIsQuadNeeded<Voxel>(), true));
+#endif
 			});
 		}
 
-		data.translation = pos;
+		const PolyVox::Vector3DInt32& offset = data.mesh.getOffset();
+		data.translation = glm::ivec2(offset.getX(), offset.getZ());
 		core::ScopedWriteLock lock(_rwLock);
 		_meshQueue.push_back(std::move(data));
 	});

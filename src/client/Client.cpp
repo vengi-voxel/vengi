@@ -122,10 +122,6 @@ video::GLMeshData Client::createMesh(voxel::DecodedMesh& surfaceMesh, const glm:
 	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
 			GL_OFFSET(offsetof(voxel::VoxelVertexDecoded, position)));
 
-	const int normLoc = _worldShader.enableVertexAttribute("a_norm");
-	glVertexAttribPointer(normLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
-			GL_OFFSET(offsetof(voxel::VoxelVertexDecoded, normal)));
-
 	const int matLoc = _worldShader.enableVertexAttribute("a_materialdensity");
 	// our material and density is encoded as 8 bits material and 8 bits density
 	core_assert(sizeof(voxel::Voxel) == sizeof(uint16_t));
@@ -312,7 +308,7 @@ void Client::renderMap() {
 	_worldShader.setUniformf("u_fogrange", 450);
 	_worldShader.setUniformf("u_viewdistance", 1000);
 	_worldShader.setUniformi("u_texture", 0);
-	_worldShader.setUniformVec3("u_lightdir", glm::vec3(0.5f, 1.0f, 0.25f));
+	_worldShader.setUniformVec3("u_lightpos", _lightPos);
 	_colorTexture->bind();
 	// TODO: add culling and call _world->allowReExtraction(culledPos)
 	for (const video::GLMeshData& meshData : _meshData) {

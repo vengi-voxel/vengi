@@ -29,7 +29,7 @@ bool WorldShader::init() {
 	}
 	if (!hasUniform("u_texture")) {
 		Log::error("no uniform u_texture found");
-	//	return false;
+		return false;
 	}
 	if (!hasUniform("u_viewdistance")) {
 		Log::error("no uniform u_viewdistance found");
