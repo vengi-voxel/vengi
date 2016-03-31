@@ -35,8 +35,8 @@ EntityId EntityStorage::getUserId(const std::string& user, const std::string& pa
 	int checkId = pq.loadUser(user, passwd, tmUid);
 
 	if (checkId == 0) {
-		const core::VarPtr& autoReg = core::Var::get("user_auto_register", "yes");
-		if (autoReg->strVal() == "yes") {
+		const core::VarPtr& autoReg = core::Var::get("sv_autoregister", "true");
+		if (autoReg->boolVal()) {
 			pq.storeUser(user, passwd, tmUid);
 			checkId = pq.loadUser(user, passwd, tmUid);
 		}

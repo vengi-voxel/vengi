@@ -22,7 +22,9 @@ protected:
 
 	template<class MSGTYPE>
 	inline const MSGTYPE* getMsg(const void *data) const {
-		return static_cast<const MSGTYPE*>(data);
+		const MSGTYPE* msg = static_cast<const MSGTYPE*>(data);
+		// TODO: call verify
+		return msg;
 	}
 
 public:
