@@ -160,12 +160,12 @@ void World::createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* c
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
 	const double minRadius = std::min(xRadius, zRadius);
-	const double ratioX = xRadius / minRadius;
-	const double ratioZ = zRadius / minRadius;
+	const double ratioX = glm::pow(xRadius / minRadius, 2.0);
+	const double ratioZ = glm::pow(zRadius / minRadius, 2.0);
 
 	for (int z = -zRadius; z <= zRadius; ++z) {
 		for (int x = -xRadius; x <= xRadius; ++x) {
-			const double distance = glm::sqrt(glm::pow(x / ratioX, 2.0) + glm::pow(z / ratioZ, 2.0));
+			const double distance = glm::pow(x / ratioX, 2.0) + glm::pow(z / ratioZ, 2.0);
 			if (distance > radius) {
 				continue;
 			}
@@ -450,7 +450,7 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 			const float mountainNoiseNormalized = (mountainNoise + 1.0f) * 0.5f;
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
-			const int ni = n * (MAX_HEIGHT - 1);
+			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
 			int y = 0;
 			for (int h = lowerY; h < ni; ++h) {
 				const Voxel voxel = _biomManager.getVoxelType(lowerX + x, h, lowerZ + z);

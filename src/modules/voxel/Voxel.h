@@ -10,6 +10,7 @@
 namespace voxel {
 
 #define MAX_HEIGHT 255
+#define MAX_TERRAIN_HEIGHT MAX_HEIGHT / 2
 
 // this must be 0
 const uint8_t AIR = 0;
