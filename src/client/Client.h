@@ -8,6 +8,7 @@
 #include <mutex>
 #include <unordered_set>
 #include <unordered_map>
+#include <list>
 #include <SDL.h>
 
 #include "network/messages/ServerMessages.h"
@@ -54,7 +55,7 @@ protected:
 	// moving along the y axis should not arise the need to extract new meshes
 	glm::ivec2 _lastCameraPosition;
 	// Index/vertex buffer data
-	std::vector<video::GLMeshData> _meshData;
+	std::list<video::GLMeshData> _meshData;
 	frontend::ClientEntityId _userId;
 	ENetPeer* _peer;
 	uint8_t _moveMask;
@@ -64,6 +65,12 @@ protected:
 	util::PosLerp _posLerp;
 	long _lastMovement;
 
+	float _fogRange;
+	float _viewDistance;
+
+	int _drawCallsWorld = 0;
+	int _drawCallsEntities = 0;
+
 	inline frontend::ClientEntityId id() const {
 		return _userId;
 	}
@@ -71,11 +78,13 @@ protected:
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	video::GLMeshData createMesh(voxel::DecodedMesh& surfaceMesh, const glm::ivec2& translation, float scale);
 
-	void addMeshData(video::GLMeshData meshData);
-	// schedule mesh extraction around the given position on x and z
+	bool isCulled(const glm::ivec2& pos) const;
+	void destroyMeshData(const video::GLMeshData& meshData);
+	void addMeshData(const video::GLMeshData& meshData);
+	// schedule mesh extraction around the camera position on the grid
 	// this is extracted in a spiral around the position. The amount of chunks to be extracted is specified
 	// by the given amount. There is nothing extracted twice.
-	void extractMeshAround(const glm::ivec2& initialPosition, int amount);
+	void extractMeshAroundCamera(int amount);
 	void sendMovement();
 
 	void renderBackground();
@@ -89,6 +98,7 @@ public:
 	core::AppState onRunning() override;
 	core::AppState onCleanup() override;
 	void beforeUI() override;
+	void afterUI() override;
 
 	void onEvent(const voxel::WorldCreatedEvent& event);
 	void onEvent(const network::DisconnectEvent& event);
@@ -112,6 +122,6 @@ public:
 
 typedef std::shared_ptr<Client> ClientPtr;
 
-inline void Client::addMeshData(video::GLMeshData meshData) {
+inline void Client::addMeshData(const video::GLMeshData& meshData) {
 	_meshData.push_back(meshData);
 }

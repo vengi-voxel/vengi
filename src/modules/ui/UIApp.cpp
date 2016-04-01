@@ -350,12 +350,12 @@ core::AppState UIApp::onRunning() {
 		str.SetFormatted("FPS: %d", fps);
 		_root.GetFont()->DrawString(5, 5, tb::TBColor(255, 255, 255), str);
 
+		afterUI();
+
 		_renderer.EndPaint();
 		// If animations are running, reinvalidate immediately
 		if (tb::TBAnimationManager::HasAnimationsRunning())
 			_root.Invalidate();
-
-		afterUI();
 	}
 	return state;
 }

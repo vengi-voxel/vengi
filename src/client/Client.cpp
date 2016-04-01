@@ -25,9 +25,9 @@
 
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
-		UIApp(filesystem, eventBus), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender), _timeProvider(
-				timeProvider), _worldShader(), _meshShader(new frontend::MeshShader()), _waterShader(new frontend::WaterShader()), _userId(-1), _peer(nullptr), _moveMask(0), _lastMovement(
-				0L) {
+		UIApp(filesystem, eventBus), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
+		_timeProvider(timeProvider), _worldShader(), _meshShader(new frontend::MeshShader()), _waterShader(new frontend::WaterShader()),
+		_userId(-1), _peer(nullptr), _moveMask(0), _lastMovement(0L), _fogRange(0.0f), _viewDistance(0.0f) {
 	_world->setClientData(true);
 	init("engine", "client");
 }
@@ -72,21 +72,22 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 			CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(password)).Union());
 }
 
-void Client::extractMeshAround(const glm::ivec2& initialPosition, int amount) {
+void Client::extractMeshAroundCamera(int amount) {
 	const int size = _world->getChunkSize();
-	glm::ivec2 pos = initialPosition;
+	glm::ivec2 pos = _lastCameraPosition;
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
-		_world->scheduleMeshExtraction(pos);
+		if (!isCulled(pos)) {
+			_world->scheduleMeshExtraction(pos);
+		}
 		o.next();
-		pos.x = initialPosition.x + o.x() * size;
-		pos.y = initialPosition.y + o.y() * size;
+		pos.x = _lastCameraPosition.x + o.x() * size;
+		pos.y = _lastCameraPosition.y + o.y() * size;
 	}
 }
 
 void Client::onEvent(const voxel::WorldCreatedEvent& event) {
 	Log::info("world created");
-	extractMeshAround(_lastCameraPosition, 1000);
 	new frontend::HudWindow(this, _width, _height);
 }
 
@@ -220,7 +221,7 @@ core::AppState Client::onInit() {
 	_root.SetSkinBg(TBIDC("background"));
 	new frontend::LoginWindow(this);
 
-	SDL_GL_SetSwapInterval(core::Var::get(cfg::ClientVSync, "true")->boolVal());
+	SDL_GL_SetSwapInterval(core::Var::get(cfg::ClientVSync, "false")->boolVal());
 
 	return state;
 }
@@ -246,6 +247,7 @@ void Client::renderBackground() {
 		const glm::mat4& model = glm::rotate(scale, (float) glm::sin(_now / 100L), glm::vec3(0.0, 1.0, 0.0));
 		_meshShader->setUniformMatrix("u_model", model, false);
 		mesh->render();
+		_drawCallsEntities = 0;
 	}
 	_meshShader->deactivate();
 	glBindVertexArray(0);
@@ -253,12 +255,30 @@ void Client::renderBackground() {
 	GL_checkError();
 }
 
+void Client::destroyMeshData(const video::GLMeshData& meshData) {
+	_world->allowReExtraction(meshData.translation);
+}
+
+bool Client::isCulled(const glm::ivec2& pos) const {
+	const glm::ivec2 dist = pos - _lastCameraPosition;
+	const int distance = glm::sqrt(dist.x * dist.x + dist.y * dist.y);
+	const float cullingThreshold = 10.0f;
+	const int maxAllowedDistance = _viewDistance + cullingThreshold;
+	if (distance >= maxAllowedDistance) {
+		return true;
+	}
+	return false;
+}
+
 void Client::renderMap() {
 	voxel::DecodedMeshData mesh;
-	while (_world->pop(mesh)) {
+	if (_world->pop(mesh)) {
 		// Now add the mesh to the list of meshes to render.
 		addMeshData(createMesh(mesh.mesh, mesh.translation, 1.0f));
 	}
+
+	_drawCallsWorld = 0;
+	_drawCallsEntities = 0;
 
 	// TODO: use polyvox VolumeResampler to create a minimap of your volume
 	// RawVolume<uint8_t> volDataLowLOD(PolyVox::Region(Vector3DInt32(0, 0, 0), Vector3DInt32(15, 31, 31)));
@@ -298,6 +318,7 @@ void Client::renderMap() {
 	_waterTexture->bind();
 	glBindVertexArray(_waterData.vertexArrayObject);
 	glDrawElements(GL_TRIANGLES, _waterData.noOfIndices, _waterData.indexType, 0);
+	++_drawCallsWorld;
 	glBindVertexArray(0);
 	_waterTexture->unbind();
 	_waterShader->deactivate();
@@ -306,17 +327,24 @@ void Client::renderMap() {
 	_worldShader.activate();
 	_worldShader.setUniformMatrix("u_view", view, false);
 	_worldShader.setUniformMatrix("u_projection", projection, false);
-	_worldShader.setUniformf("u_fogrange", 450);
-	_worldShader.setUniformf("u_viewdistance", 1000);
+	_worldShader.setUniformf("u_fogrange", _fogRange);
+	_worldShader.setUniformf("u_viewdistance", _viewDistance);
 	_worldShader.setUniformi("u_texture", 0);
 	_worldShader.setUniformVec3("u_lightpos", _lightPos);
 	_colorTexture->bind();
-	// TODO: add culling and call _world->allowReExtraction(culledPos)
-	for (const video::GLMeshData& meshData : _meshData) {
+	for (auto i = _meshData.begin(); i != _meshData.end();) {
+		const video::GLMeshData& meshData = *i;
+		if (isCulled(meshData.translation)) {
+			destroyMeshData(meshData);
+			i = _meshData.erase(i);
+			continue;
+		}
 		const glm::mat4& model = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation.x, 0, meshData.translation.y));
 		_worldShader.setUniformMatrix("u_model", model, false);
 		glBindVertexArray(meshData.vertexArrayObject);
 		glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
+		++_drawCallsWorld;
+		++i;
 	}
 	_worldShader.deactivate();
 	GL_checkError();
@@ -339,6 +367,7 @@ void Client::renderMap() {
 		const glm::mat4& model = glm::rotate(scale, ent->orientation(), glm::vec3(0.0, 1.0, 0.0));
 		_meshShader->setUniformMatrix("u_model", model, false);
 		mesh->render();
+		++_drawCallsEntities;
 	}
 	_meshShader->deactivate();
 	glBindVertexArray(0);
@@ -349,7 +378,7 @@ void Client::renderMap() {
 	const glm::vec2 diff = _lastCameraPosition - camXZ;
 	if (glm::length(diff.x) >= 1 || glm::length(diff.y) >= 1) {
 		_lastCameraPosition = camXZ;
-		extractMeshAround(camXZ, 40);
+		extractMeshAroundCamera(40);
 	}
 
 	glBindVertexArray(0);
@@ -365,10 +394,23 @@ void Client::renderMap() {
 void Client::beforeUI() {
 	UIApp::beforeUI();
 
+	_drawCallsWorld = 0;
+	_drawCallsEntities = 0;
+
 	if (_world->isCreated())
 		renderMap();
 	else
 		renderBackground();
+}
+
+void Client::afterUI() {
+	UIApp::afterUI();
+	tb::TBStr drawCallsWorld;
+	drawCallsWorld.SetFormatted("drawcalls world: %i", _drawCallsWorld);
+	tb::TBStr drawCallsEntity;
+	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
+	_root.GetFont()->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
+	_root.GetFont()->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
 }
 
 core::AppState Client::onCleanup() {
@@ -384,11 +426,18 @@ core::AppState Client::onRunning() {
 	sendMovement();
 	if (state == core::AppState::Running) {
 		_posLerp.update(_now);
-		glm::vec3 pos = _posLerp.position();
-		pos.z += 10.0f;
+		const glm::vec3& pos = _posLerp.position();
 		_camera.setPosition(pos);
 		_network->update();
 		_world->onFrame(_deltaFrame);
+		if (_world->isCreated()) {
+			// TODO: properly lerp this
+			if (_viewDistance < 500) {
+				const int advance = _world->getChunkSize() / 16;
+				_viewDistance += advance;
+				_fogRange += advance / 2;
+			}
+		}
 	}
 
 	return state;
@@ -407,7 +456,7 @@ void Client::disconnect() {
 void Client::npcUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation) {
 	auto i = _entities.find(id);
 	if (i == _entities.end()) {
-		Log::error("could not find entity with id %li", id);
+		Log::error("could not find npc with id %li", id);
 		return;
 	}
 	Log::trace("NPC %li updated at pos %f:%f:%f with orientation %f", id, pos.x, pos.y, pos.z, orientation);
@@ -443,6 +492,11 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	Log::info("User %li (%s) logged in at pos %f:%f:%f", id, name, pos.x, pos.y, pos.z);
 	_userId = id;
 	_posLerp.setPosition(_now, pos);
+	_camera.setPosition(pos);
+	_viewDistance = _world->getChunkSize() * 3;
+	_fogRange = _viewDistance;
+	_lastCameraPosition = _world->getGridPos(pos);
+	extractMeshAroundCamera(1000);
 }
 
 bool Client::connect(uint16_t port, const std::string& hostname) {

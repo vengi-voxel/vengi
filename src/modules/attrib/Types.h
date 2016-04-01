@@ -10,6 +10,7 @@ enum class Types {
 	NONE,
 	HEALTH,
 	SPEED,
+	VIEWDISTANCE,
 	ATTACKRANGE,
 	STRENGTH,
 	MAX
@@ -19,6 +20,7 @@ static const char* typeNames[] = {
 	"NONE",
 	"HEALTH",
 	"SPEED",
+	"VIEWDISTANCE",
 	"ATTACKRANGE",
 	"STRENGTH"
 };

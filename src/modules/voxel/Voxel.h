@@ -14,7 +14,7 @@ namespace voxel {
 
 // density 0 - 255 (8 bits)
 // material types 0 - 255 (8 bits)
-typedef uint16_t VoxelType;
+typedef uint8_t VoxelType;
 typedef PolyVox::MaterialDensityPair88 Voxel;
 
 typedef PolyVox::CubicVertex<voxel::Voxel> VoxelVertex;

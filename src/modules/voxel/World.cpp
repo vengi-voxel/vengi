@@ -107,7 +107,7 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 	_threadPool.enqueue([=] () {
 		core_trace_scoped("MeshExtraction");
 		const PolyVox::Vector3DInt32 mins(pos.x, 0, pos.y);
-		const PolyVox::Vector3DInt32 maxs(mins.getX() + delta, MAX_HEIGHT, mins.getZ() + delta);
+		const PolyVox::Vector3DInt32 maxs(mins.getX() + delta, MAX_HEIGHT - 1, mins.getZ() + delta);
 		const PolyVox::Region region(mins, maxs);
 		DecodedMeshData data;
 		{
@@ -116,7 +116,8 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 				for (int y = region.getLowerY(); y < region.getUpperY(); ++y) {
 					for (int x = region.getLowerX(); x < region.getUpperX(); ++x) {
 						for (int z = region.getLowerZ(); z < region.getUpperZ(); ++z) {
-							// TODO:
+							// TODO: we will use the density on the client side to store the ao value
+							// the density is only used on the server for pathfinding
 							_volumeData->getVoxel(x, y, z).setDensity(255);
 						}
 					}
