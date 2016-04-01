@@ -160,8 +160,8 @@ void World::createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* c
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
 	const double minRadius = std::min(xRadius, zRadius);
-	const double ratioX = glm::pow(xRadius / minRadius, 2.0);
-	const double ratioZ = glm::pow(zRadius / minRadius, 2.0);
+	const double ratioX = xRadius / minRadius;
+	const double ratioZ = zRadius / minRadius;
 
 	for (int z = -zRadius; z <= zRadius; ++z) {
 		for (int x = -xRadius; x <= xRadius; ++x) {

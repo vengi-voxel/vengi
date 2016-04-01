@@ -174,6 +174,7 @@ private:
 	// don't access the volume in anything that is called here
 	void create(const PolyVox::Region& region, WorldData::Chunk* chunk);
 
+	// width and height are already squared - to prevent using sqrt
 	static void createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel);
 	static void createEllipse(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
 	static void createCone(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
