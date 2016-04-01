@@ -90,6 +90,42 @@ struct IsQuadNeeded {
 	}
 };
 
+void World::calculateAO(const PolyVox::Region& region) {
+	for (int nx = region.getLowerX(); nx < region.getUpperX(); ++nx) {
+		for (int nz = region.getLowerZ(); nz < region.getUpperZ(); ++nz) {
+			for (int ny = region.getLowerY(); ny < region.getUpperY() - 1; ++ny) {
+				// if the voxel is air, we don't need to compute anything
+				Voxel voxel = _volumeData->getVoxel(nx, ny, nz);
+				if (voxel.getMaterial() == AIR) {
+					continue;
+				}
+				// if the voxel above us is not free - we don't calculate ao for this voxel
+				if (_volumeData->getVoxel(nx, ny + 1, nz).getMaterial() != AIR) {
+					continue;
+				}
+				static const struct offsets {
+					int x;
+					int z;
+				} of[8] = {
+					{ 1,  0}, { 1, -1}, {0, -1}, {-1, -1},
+					{-1,  0}, {-1,  1}, {0,  1}, { 1,  1}
+				};
+				// reduce ao value to make a voxel face darker
+				uint8_t ao = 255;
+				for (int i = 0; i < 8; ++i) {
+					const int offX = of[i].x;
+					const int offZ = of[i].z;
+					const Voxel& voxel = _volumeData->getVoxel(nx + offX, ny + 1, nz + offZ);
+					if (voxel.getMaterial() != AIR) {
+						ao -= 25;
+					}
+				}
+				voxel.setDensity(ao);
+				_volumeData->setVoxel(nx, ny, nz, voxel);
+			}
+		}
+	}
+}
 
 // Extract the surface for the specified region of the volume.
 // The surface extractor outputs the mesh in an efficient compressed format which
@@ -113,15 +149,7 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 		{
 			locked([&] () {
 				// calculate ao
-				for (int y = region.getLowerY(); y < region.getUpperY(); ++y) {
-					for (int x = region.getLowerX(); x < region.getUpperX(); ++x) {
-						for (int z = region.getLowerZ(); z < region.getUpperZ(); ++z) {
-							// TODO: we will use the density on the client side to store the ao value
-							// the density is only used on the server for pathfinding
-							_volumeData->getVoxel(x, y, z).setDensity(255);
-						}
-					}
-				}
+				//calculateAO(region);
 #if 0
 				data.mesh = PolyVox::decodeMesh(PolyVox::extractMarchingCubesMesh(_volumeData, region));
 #else
