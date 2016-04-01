@@ -9,6 +9,7 @@ ServerLoop::ServerLoop(network::NetworkPtr network, SpawnMgrPtr spawnMgr, voxel:
 		attrib::ContainerProviderPtr containerProvider, PoiProviderPtr poiProvider) :
 		_network(network), _spawnMgr(spawnMgr), _world(world), _zone("Zone"), _aiServer(*registry, 11338, "127.0.0.1"), _entityStorage(entityStorage), _eventBus(eventBus), _registry(
 				registry), _containerProvider(containerProvider), _poiProvider(poiProvider) {
+	_world->setClientData(false);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
 }

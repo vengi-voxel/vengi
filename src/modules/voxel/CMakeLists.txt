@@ -7,9 +7,7 @@ fips_begin_module(voxel)
 		WorldData.h
 		Voxel.h
 	)
-	find_package(SDL2 REQUIRED)
-	include_directories(${SDL2_INCLUDE_DIRS})
-	fips_deps(core io noise zlib ${SDL2_LIBRARIES})
+	fips_deps(core io noise zlib)
 fips_end_module()
 
 gtest_suite_files(tests tests/WorldTest.cpp)

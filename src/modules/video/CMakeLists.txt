@@ -15,8 +15,9 @@ fips_begin_module(video)
 		Mesh.cpp Mesh.h
 		MeshPool.cpp MeshPool.h
 	)
-	find_package(OpenGL)
-	find_package(SDL2 REQUIRED)
-	include_directories(${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR})
-	fips_deps(core io assimp ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES})
+	fips_deps(core io assimp)
 fips_end_module()
+
+find_package(OpenGL REQUIRED)
+target_link_libraries(video ${OPENGL_LIBRARIES})
+target_include_directories(video PUBLIC ${OPENGL_INCLUDE_DIRS})

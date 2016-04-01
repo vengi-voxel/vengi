@@ -19,9 +19,14 @@ fips_begin_app(client windowed)
 		UserUpdateHandler.h
 		NpcRemoveHandler.h
 	)
-	find_package(SDL2 REQUIRED)
-	include_directories(${SDL2_INCLUDE_DIRS} .)
-	fips_deps(frontend util ${SDL2_LIBRARIES})
+	fips_dir(ui)
+	fips_files(
+		LoginWindow.h
+		HudWindow.h
+		AuthFailedWindow.h
+		DisconnectWindow.h
+	)
+	fips_deps(frontend util)
 	copy_data_files(client)
 fips_end_app()
 check_glsl_files(client world mesh)

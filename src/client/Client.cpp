@@ -1,10 +1,10 @@
 #include "Client.h"
 #include "voxel/Spiral.h"
 #include "network/messages/ClientMessages.h"
-#include "frontend/ui/LoginWindow.h"
-#include "frontend/ui/DisconnectWindow.h"
-#include "frontend/ui/AuthFailedWindow.h"
-#include "frontend/ui/HudWindow.h"
+#include "ui/LoginWindow.h"
+#include "ui/DisconnectWindow.h"
+#include "ui/AuthFailedWindow.h"
+#include "ui/HudWindow.h"
 #include <PolyVox/CubicSurfaceExtractor.h>
 #include <PolyVox/RawVolume.h>
 #include "core/Command.h"
@@ -28,6 +28,7 @@ Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::
 		UIApp(filesystem, eventBus), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender), _timeProvider(
 				timeProvider), _worldShader(), _meshShader(new frontend::MeshShader()), _waterShader(new frontend::WaterShader()), _userId(-1), _peer(nullptr), _moveMask(0), _lastMovement(
 				0L) {
+	_world->setClientData(true);
 	init("engine", "client");
 }
 

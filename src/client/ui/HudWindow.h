@@ -2,7 +2,7 @@
 
 #include "ui/Window.h"
 #include "core/Common.h"
-#include "Client.h"
+#include "../Client.h"
 
 namespace frontend {
 

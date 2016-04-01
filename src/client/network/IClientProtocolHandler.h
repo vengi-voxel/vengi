@@ -4,7 +4,7 @@
 #include "network/IMsgProtocolHandler.h"
 #include "network/messages/ServerMessages.h"
 #include "network/messages/ClientMessages.h"
-#include "Client.h"
+#include "../Client.h"
 
 template<class MSGTYPE>
 class IClientProtocolHandler: public network::IMsgProtocolHandler<MSGTYPE, Client> {

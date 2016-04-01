@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Client.h"
+#include "../Client.h"
 #include "network/NetworkModule.h"
 #include "network/messages/ServerMessages.h"
 #include "SeedHandler.h"

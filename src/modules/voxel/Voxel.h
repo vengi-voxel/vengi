@@ -12,18 +12,9 @@ namespace voxel {
 #define MAX_HEIGHT 255
 #define MAX_TERRAIN_HEIGHT MAX_HEIGHT / 2
 
-// this must be 0
-const uint8_t AIR = 0;
-const uint8_t DIRT = 1;
-const uint8_t GRASS = 2;
-const uint8_t CLOUD = 3;
-const uint8_t WATER = 4;
-const uint8_t LEAVES = 5;
-const uint8_t TRUNK = 6;
-const uint8_t CLOUDS = 7;
-
 // density 0 - 255 (8 bits)
 // material types 0 - 255 (8 bits)
+typedef uint16_t VoxelType;
 typedef PolyVox::MaterialDensityPair88 Voxel;
 
 typedef PolyVox::CubicVertex<voxel::Voxel> VoxelVertex;
@@ -36,5 +27,15 @@ struct DecodedMeshData {
 	// translation on the x and z axis
 	glm::ivec2 translation;
 };
+
+// this must be 0
+const VoxelType AIR = 0;
+const VoxelType DIRT = 1;
+const VoxelType GRASS = 2;
+const VoxelType CLOUD = 3;
+const VoxelType WATER = 4;
+const VoxelType LEAVES = 5;
+const VoxelType TRUNK = 6;
+const VoxelType CLOUDS = 7;
 
 }

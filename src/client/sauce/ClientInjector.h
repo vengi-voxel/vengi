@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ClientModule.h"
-#include "network/ClientNetworkModule.h"
+#include "../network/ClientNetworkModule.h"
 
 inline sauce::shared_ptr<sauce::Injector> getInjector() {
 	sauce::Modules modules;

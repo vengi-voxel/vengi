@@ -33,6 +33,11 @@ public:
 	World();
 	~World();
 
+	// if clientData is true, additional data that is only useful for rendering is generated
+	void setClientData(bool clientData) {
+		_clientData = clientData;
+	}
+
 	void destroy();
 
 	Result raycast(const glm::vec3& start, const glm::vec3& end, voxel::Raycast& raycast);
@@ -135,6 +140,7 @@ private:
 	BiomManager _biomManager;
 	mutable std::mt19937 _engine;
 	long _seed;
+	bool _clientData;
 
 	struct IVec2HashEquals {
 		size_t operator()(const glm::ivec2& k) const {

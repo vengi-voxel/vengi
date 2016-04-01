@@ -13,6 +13,7 @@
 #include <PolyVox/AStarPathfinder.h>
 #include <PolyVox/CubicSurfaceExtractor.h>
 #include <PolyVox/MarchingCubesSurfaceExtractor.h>
+#include <PolyVox/AmbientOcclusionCalculator.h>
 #include <PolyVox/RawVolume.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -35,7 +36,8 @@ void World::Pager::pageOut(const PolyVox::Region& region, WorldData::Chunk* chun
 
 // http://code.google.com/p/fortressoverseer/source/browse/Overseer/PolyVoxGenerator.cpp
 World::World() :
-		_pager(*this), _seed(0), _threadPool(1), _rwLock("World"), _random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
+		_pager(*this), _seed(0), _clientData(false), _threadPool(1), _rwLock("World"),
+		_random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
 	_volumeData = new WorldData(&_pager, 256 * 1024 * 1024, _chunkSize->intVal());
 	core_assert(_biomManager.addBiom(0, 100, Voxel(GRASS, Voxel::getMaxDensity())));
@@ -71,6 +73,24 @@ glm::ivec3 World::randomPos() const {
 	return glm::ivec3(pos.x, y, pos.y);
 }
 
+struct IsVoxelTransparent {
+	bool operator()(const Voxel& voxel) const {
+		return voxel.getMaterial() == AIR;
+	}
+};
+
+struct IsQuadNeeded {
+	bool operator()(Voxel back, Voxel front, Voxel& materialToUse) {
+		if (back.getMaterial() != AIR && front.getMaterial() == AIR) {
+			materialToUse = back;
+			return true;
+		} else {
+			return false;
+		}
+	}
+};
+
+
 // Extract the surface for the specified region of the volume.
 // The surface extractor outputs the mesh in an efficient compressed format which
 // is not directly suitable for rendering.
@@ -87,16 +107,26 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 	_threadPool.enqueue([=] () {
 		core_trace_scoped("MeshExtraction");
 		const PolyVox::Vector3DInt32 mins(pos.x, 0, pos.y);
-		const PolyVox::Vector3DInt32 maxs(mins.getX() + delta, MAX_HEIGHT - 1, mins.getZ() + delta);
+		const PolyVox::Vector3DInt32 maxs(mins.getX() + delta, MAX_HEIGHT, mins.getZ() + delta);
 		const PolyVox::Region region(mins, maxs);
 		DecodedMeshData data;
 		{
 			locked([&] () {
+				// calculate ao
+				for (int y = region.getLowerY(); y < region.getUpperY(); ++y) {
+					for (int x = region.getLowerX(); x < region.getUpperX(); ++x) {
+						for (int z = region.getLowerZ(); z < region.getUpperZ(); ++z) {
+							// TODO:
+							_volumeData->getVoxel(x, y, z).setDensity(255);
+						}
+					}
+				}
 #if 0
 				data.mesh = PolyVox::decodeMesh(PolyVox::extractMarchingCubesMesh(_volumeData, region));
 #else
-				data.mesh = PolyVox::decodeMesh(PolyVox::extractCubicMesh(_volumeData, region, PolyVox::DefaultIsQuadNeeded<Voxel>(), true));
+				data.mesh = PolyVox::decodeMesh(PolyVox::extractCubicMesh(_volumeData, region, IsQuadNeeded(), true));
 #endif
+				data.mesh.removeUnusedVertices();
 			});
 		}
 
@@ -441,8 +471,8 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	const int lowerY = region.getLowerY();
 	const int lowerX = region.getLowerX();
 	const int lowerZ = region.getLowerZ();
-	for (double z = 0; z < depth; ++z) {
-		for (double x = 0; x < width; ++x) {
+	for (int z = 0; z < depth; ++z) {
+		for (int x = 0; x < width; ++x) {
 			const glm::vec2 noisePos2d = glm::vec2(_noiseSeedOffsetX + region.getLowerX() + x, _noiseSeedOffsetZ + region.getLowerZ() + z);
 			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, 3, 0.1f, 0.01f);
 			const float noiseNormalized = (landscapeNoise + 1.0f) * 0.5f;
@@ -462,8 +492,7 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 		}
 	}
 	const glm::vec3 worldPos(lowerX, lowerY, lowerZ);
-	if (_biomManager.hasClouds(worldPos)) {
-		// TODO: only generate this in the client - not the server
+	if (_clientData && _biomManager.hasClouds(worldPos)) {
 		createClouds(region, chunk, _random);
 	}
 	if (_biomManager.hasTrees(worldPos)) {

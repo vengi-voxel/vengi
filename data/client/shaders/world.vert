@@ -32,7 +32,7 @@ void main(void) {
 	mat4 modelview = u_view * u_model;
 	vec4 pos4 = modelview * vec4(a_pos, 1.0);
 	v_pos = vec3(pos4) / pos4.w;
-	v_ambientocclusion = 1.0; //clamp(a_materialdensity.y / 63.0 + 1.0 - amb_occ_on, 0.0, 1.0);
+	v_ambientocclusion = clamp(a_materialdensity.y / 255.0, 0.0, 1.0);
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
 	v_lightpos = u_lightpos;

@@ -5,7 +5,7 @@
 #include "core/AbstractModule.h"
 #include "voxel/World.h"
 #include "network/MessageSender.h"
-#include "Server.h"
+#include "server/Server.h"
 
 #include "backend/poi/PoiProvider.h"
 #include "backend/entity/EntityStorage.h"
