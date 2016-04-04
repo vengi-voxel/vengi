@@ -11,6 +11,7 @@
 #include "sauce/ClientInjector.h"
 #include "video/GLDebug.h"
 #include "noise/SimplexNoise.h"
+#include "video/Color.h"
 
 #define registerMoveCmd(name, flag) \
 	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
@@ -186,7 +187,7 @@ core::AppState Client::onInit() {
 	}));
 	_colorTexture = video::createTexture("**colortexture**");
 
-	_clearColor = glm::vec3(0.0, 0.6, 0.796);
+	_clearColor = video::Color::LightBlue;
 
 	_root.SetSkinBg(TBIDC("background"));
 	new frontend::LoginWindow(this);
@@ -274,6 +275,44 @@ void Client::renderMap() {
 	const glm::mat4& view = _camera.getViewMatrix();
 	const glm::mat4& projection = glm::perspective(45.0f, _aspect, 0.1f, 1000.0f);
 
+	static const glm::vec4 materialColors[] = {
+		video::Color::LightBlue,	// air
+		video::Color::Lime,			// dirt
+		video::Color::Brown,		// grass
+		// leaves
+		video::Color::DarkGreen,	// clouds
+		video::Color::Green,		// water
+		video::Color::Purple,		// leaves
+		video::Color::Cyan,			// trunk
+		video::Color::Olive,		// clouds
+		video::Color::Orange,
+		video::Color::Red,
+		video::Color::Yellow,
+		video::Color::LightRed,
+		video::Color::Blue,
+		// leaves end
+		video::Color::DarkGray,
+		video::Color::White,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink,
+		video::Color::Pink
+	};
+	static_assert(SDL_arraysize(materialColors) == 32, "amount of colors doesn't match shader uniform");
+
 	_worldShader.activate();
 	_worldShader.setUniformMatrix("u_view", view, false);
 	_worldShader.setUniformMatrix("u_projection", projection, false);
@@ -281,6 +320,7 @@ void Client::renderMap() {
 	_worldShader.setUniformf("u_viewdistance", _viewDistance);
 	_worldShader.setUniformi("u_texture", 0);
 	_worldShader.setUniformVec3("u_lightpos", _lightPos);
+	_worldShader.setUniformVec4v("u_materialcolor", materialColors, SDL_arraysize(materialColors));
 	_colorTexture->bind();
 	for (auto i = _meshData.begin(); i != _meshData.end();) {
 		const video::GLMeshData& meshData = *i;

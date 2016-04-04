@@ -9,6 +9,7 @@ uniform vec3 u_lightpos;
 uniform float u_fogrange;
 uniform float u_viewdistance;
 uniform sampler2D u_texture;
+uniform vec4 u_materialcolor[32];
 
 out vec3 v_pos;
 out vec3 v_color;
@@ -16,17 +17,6 @@ out vec3 v_lightpos;
 out float v_fogrange;
 out float v_viewdistance;
 out float v_ambientocclusion;
-
-vec3 materialColor[8] = vec3[](
-	vec3(0.0,   0.0,   0.0),		// air
-	vec3(0.419, 0.258, 0.149),		// dirt
-	vec3(0.427, 0.776, 0.007),		// grass
-	vec3(0.75,  0.75,  0.9),		// clouds
-	vec3(1.0,   0.0,   0.0),		// water
-	vec3(0.0,   0.5,   0.0),		// leaves
-	vec3(0.419, 0.258, 0.149),		// trunk
-	vec3(0.75,  0.75,  0.9)			// clouds
-);
 
 void main(void) {
 	mat4 modelview = u_view * u_model;
@@ -39,7 +29,7 @@ void main(void) {
 
 	vec4 noisepos = u_model * vec4(a_pos, 1.0);
 	vec3 colornoise = vec3(texture(u_texture, noisepos.xz / 256.0 / 10.0));
-	v_color = materialColor[a_materialdensity.x] * colornoise;
+	v_color = u_materialcolor[a_materialdensity.x].rgb * colornoise;
 	v_color = clamp(v_color, 0.0, 1.0);
 
 	gl_Position = u_projection * modelview * vec4(a_pos, 1.0);

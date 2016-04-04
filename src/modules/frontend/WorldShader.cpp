@@ -39,7 +39,10 @@ bool WorldShader::init() {
 		Log::error("no uniform u_fogrange found");
 		return false;
 	}
-
+	if (!hasUniform("u_materialcolor")) {
+		Log::error("no uniform u_materialcolor found");
+		return false;
+	}
 	return true;
 }
 

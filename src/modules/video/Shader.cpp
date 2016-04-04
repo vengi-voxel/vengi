@@ -260,8 +260,11 @@ void Shader::createProgramFromShaders() {
 	GLint status;
 	glGetProgramiv(_program, GL_LINK_STATUS, &status);
 	checkError();
-	if (status == GL_TRUE)
+	if (status == GL_TRUE) {
+		glDetachShader(_program, vert);
+		glDetachShader(_program, frag);
 		return;
+	}
 	GLint infoLogLength;
 	glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &infoLogLength);
 

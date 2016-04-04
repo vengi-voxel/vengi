@@ -1,9 +1,9 @@
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/win32)
+	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/win32 CACHE STRING "" FORCE)
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/osx)
+	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/osx CACHE STRING "" FORCE)
 else()
-	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/linux)
+	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/linux CACHE STRING "" FORCE)
 endif()
 
 macro(check_glsl_files TARGET)
@@ -14,16 +14,16 @@ macro(check_glsl_files TARGET)
 		message("${GLSL_VALIDATOR_EXECUTABLE} found - executing in ${FIPS_PROJECT_DIR}/data/${TARGET}/shaders")
 		foreach(_file ${files})
 			add_custom_target(
-				${_file}
+				${_file}_shader_validation
 				COMMENT "Validate ${_file}"
 				COMMAND ${FIPS_DEPLOY_DIR}/${CMAKE_PROJECT_NAME}/${FIPS_CONFIG}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file}
 				DEPENDS shadertool
 				WORKING_DIRECTORY ${FIPS_PROJECT_DIR}/data/${TARGET}/shaders
 			)
-			add_dependencies(${TARGET} shadertool ${_file})
+			add_dependencies(${TARGET} shadertool ${_file}_shader_validation)
 		endforeach()
 	else()
-		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found")
+		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found at ${TOOLS_DIR}")
 	endif()
 endmacro()
 

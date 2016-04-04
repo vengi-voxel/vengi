@@ -3,6 +3,7 @@
 #include "core/Singleton.h"
 #include "core/Var.h"
 #include "GLFunc.h"
+#include "Color.h"
 
 #include <SDL.h>
 
@@ -22,7 +23,7 @@ inline void checkError(const char *file, unsigned int line, const char *function
 }
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
-		App(filesystem, eventBus, 15679), _window(nullptr), _glcontext(nullptr), _width(-1), _height(-1), _aspect(1.0f), _clearColor(0.0, 0.0, 0.0) {
+		App(filesystem, eventBus, 15679), _window(nullptr), _glcontext(nullptr), _width(-1), _height(-1), _aspect(1.0f), _clearColor(Color::White) {
 }
 
 void WindowedApp::onAfterRunning() {
@@ -47,7 +48,7 @@ core::AppState WindowedApp::onRunning() {
 	}
 
 	SDL_GL_MakeCurrent(_window, _glcontext);
-	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, 1.0f);
+	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glViewport(0, 0, _width, _height);

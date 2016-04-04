@@ -10,12 +10,12 @@ class BiomManager {
 private:
 	Voxel bioms[MAX_HEIGHT];
 
-	const Voxel INVALID = Voxel(AIR, Voxel::getMinDensity());
+	const Voxel INVALID = Voxel(Air, Voxel::getMinDensity());
 
 public:
 	BiomManager() {
 		for (int i = 0; i < MAX_HEIGHT; ++i) {
-			bioms[i] = Voxel(GRASS, Voxel::getMaxDensity());
+			bioms[i] = Voxel(Grass, Voxel::getMaxDensity());
 		}
 	}
 
@@ -43,7 +43,7 @@ public:
 	}
 
 	inline bool hasTrees(const glm::ivec3& pos) const {
-		return getVoxelType(pos, 1.0f).getMaterial() == GRASS;
+		return getVoxelType(pos, 1.0f).getMaterial() == Grass;
 	}
 
 	inline bool hasClouds(const glm::ivec3& pos) const {

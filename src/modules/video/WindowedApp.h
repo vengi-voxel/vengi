@@ -17,7 +17,7 @@ protected:
 	int _width;
 	int _height;
 	float _aspect;
-	glm::vec3 _clearColor;
+	glm::vec4 _clearColor;
 
 	WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus);
 

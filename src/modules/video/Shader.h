@@ -167,9 +167,12 @@ public:
 	void setUniform2fv(int location, const float* values, int length) const;
 	void setUniform3fv(const std::string& name, const float* values, int length) const;
 	void setUniformVec3(const std::string& name, const glm::vec3& value) const;
+	void setUniformVec3v(const std::string& name, const glm::vec3* value, int length) const;
 	void setUniform3fv(int location, const float* values, int length) const;
 	void setUniform4fv(const std::string& name, const float* values, int length) const;
 	void setUniform4fv(int location, const float* values, int length) const;
+	void setUniformVec4(const std::string& name, const glm::vec4& value) const;
+	void setUniformVec4v(const std::string& name, const glm::vec4* value, int length) const;
 	void setUniformMatrix(const std::string& name, const glm::mat4& matrix, bool transpose = false) const;
 	void setUniformMatrix(int location, const glm::mat4& matrix, bool transpose = false) const;
 	void setUniformMatrix(const std::string& name, const glm::mat3& matrix, bool transpose = false) const;
@@ -301,6 +304,11 @@ inline void Shader::setUniformVec3(const std::string& name, const glm::vec3& val
 	glUniform3fv(location, 1, glm::value_ptr(value));
 }
 
+inline void Shader::setUniformVec3v(const std::string& name, const glm::vec3* value, int length) const {
+	const int location = getUniformLocation(name);
+	glUniform3fv(location, length, glm::value_ptr(*value));
+}
+
 inline void Shader::setUniform3fv(int location, const float* values, int length) const {
 	glUniform3fv(location, length / 3, values);
 	checkError();
@@ -314,6 +322,16 @@ inline void Shader::setUniform4fv(const std::string& name, const float* values, 
 inline void Shader::setUniform4fv(int location, const float* values, int length) const {
 	glUniform4fv(location, length / 4, values);
 	checkError();
+}
+
+inline void Shader::setUniformVec4(const std::string& name, const glm::vec4& value) const {
+	const int location = getUniformLocation(name);
+	glUniform4fv(location, 1, glm::value_ptr(value));
+}
+
+inline void Shader::setUniformVec4v(const std::string& name, const glm::vec4* value, int length) const {
+	const int location = getUniformLocation(name);
+	glUniform4fv(location, length, glm::value_ptr(*value));
 }
 
 inline void Shader::setUniformMatrix(const std::string& name, const glm::mat4& matrix, bool transpose) const {

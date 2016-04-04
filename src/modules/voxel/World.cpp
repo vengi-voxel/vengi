@@ -31,7 +31,7 @@ void World::Pager::pageIn(const PolyVox::Region& region, WorldData::Chunk* chunk
 }
 
 void World::Pager::pageOut(const PolyVox::Region& region, WorldData::Chunk* chunk) {
-	_world.save(region, chunk);
+	//_world.save(region, chunk);
 }
 
 // http://code.google.com/p/fortressoverseer/source/browse/Overseer/PolyVoxGenerator.cpp
@@ -40,8 +40,8 @@ World::World() :
 		_random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
 	_volumeData = new WorldData(&_pager, 256 * 1024 * 1024, _chunkSize->intVal());
-	core_assert(_biomManager.addBiom(0, 100, Voxel(GRASS, Voxel::getMaxDensity())));
-	core_assert(_biomManager.addBiom(101, MAX_HEIGHT - 1, Voxel(GRASS, Voxel::getMaxDensity())));
+	core_assert(_biomManager.addBiom(0, 100, Voxel(Grass, Voxel::getMaxDensity())));
+	core_assert(_biomManager.addBiom(101, MAX_HEIGHT - 1, Voxel(Grass, Voxel::getMaxDensity())));
 }
 
 World::~World() {
@@ -50,7 +50,7 @@ World::~World() {
 int World::findChunkFloor(int chunkHeight, WorldData::Chunk* chunk, int x, int z) {
 	for (int i = chunkHeight - 1; i >= 0; i--) {
 		const int material = chunk->getVoxel(x, i, z).getMaterial();
-		if (material != AIR && material != CLOUDS) {
+		if (material != Air && material != Cloud) {
 			return i + 1;
 		}
 	}
@@ -75,13 +75,13 @@ glm::ivec3 World::randomPos() const {
 
 struct IsVoxelTransparent {
 	bool operator()(const Voxel& voxel) const {
-		return voxel.getMaterial() == AIR;
+		return voxel.getMaterial() == Air;
 	}
 };
 
 struct IsQuadNeeded {
 	bool operator()(Voxel back, Voxel front, Voxel& materialToUse) {
-		if (back.getMaterial() != AIR && front.getMaterial() == AIR) {
+		if (back.getMaterial() != Air && front.getMaterial() == Air) {
 			materialToUse = back;
 			return true;
 		} else {
@@ -96,11 +96,11 @@ void World::calculateAO(const PolyVox::Region& region) {
 			for (int ny = region.getLowerY(); ny < region.getUpperY() - 1; ++ny) {
 				// if the voxel is air, we don't need to compute anything
 				Voxel voxel = _volumeData->getVoxel(nx, ny, nz);
-				if (voxel.getMaterial() == AIR) {
+				if (voxel.getMaterial() == Air) {
 					continue;
 				}
 				// if the voxel above us is not free - we don't calculate ao for this voxel
-				if (_volumeData->getVoxel(nx, ny + 1, nz).getMaterial() != AIR) {
+				if (_volumeData->getVoxel(nx, ny + 1, nz).getMaterial() != Air) {
 					continue;
 				}
 				static const struct offsets {
@@ -116,7 +116,7 @@ void World::calculateAO(const PolyVox::Region& region) {
 					const int offX = of[i].x;
 					const int offZ = of[i].z;
 					const Voxel& voxel = _volumeData->getVoxel(nx + offX, ny + 1, nz + offZ);
-					if (voxel.getMaterial() != AIR) {
+					if (voxel.getMaterial() != Air) {
 						ao -= 25;
 					}
 				}
@@ -169,7 +169,7 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 int World::findFloor(int x, int z) const {
 	for (int i = MAX_HEIGHT; i >= 0; i--) {
 		const int material = getMaterial(x, i, z);
-		if (material != AIR && material != CLOUDS) {
+		if (material != Air && material != Cloud) {
 			return i + 1;
 		}
 	}
@@ -296,7 +296,7 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 
 	const int chunkHeight = region.getHeightInVoxels();
 
-	const Voxel voxel(TRUNK, Voxel::getMaxDensity());
+	const Voxel voxel(Wood, Voxel::getMaxDensity());
 	for (int y = pos.y; y < top; ++y) {
 		const int trunkWidthY = trunkWidth + std::max(0, 2 - (y - pos.y));
 		for (int x = pos.x - trunkWidthY; x < pos.x + trunkWidthY; ++x) {
@@ -316,7 +316,8 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 		}
 	}
 
-	const Voxel leavesVoxel(LEAVES, 1);
+	// TODO: random leaves
+	const Voxel leavesVoxel(Leaves1, 1);
 	const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 	if (type == TreeType::ELLIPSIS) {
 		createEllipse(region, chunk, leafesPos, width, height, depth, leavesVoxel);
@@ -364,7 +365,7 @@ void World::createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk, 
 
 void World::createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random) {
 	const int amount = 4;
-	static const Voxel voxel(CLOUDS, Voxel::getMinDensity());
+	static const Voxel voxel(Cloud, Voxel::getMinDensity());
 	for (int i = 0; i < amount; ++i) {
 		const int height = 10;
 		const glm::ivec2& pos = randomPosWithoutHeight(region, random, 20);
@@ -378,7 +379,7 @@ void World::createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk,
 
 void World::createUnderground(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	glm::ivec3 startPos(1, 1, 1);
-	const Voxel voxel(DIRT, Voxel::getMaxDensity());
+	const Voxel voxel(Grass, Voxel::getMaxDensity());
 	createPlane(region, chunk, startPos, 10, 10, voxel);
 }
 
