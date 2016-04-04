@@ -81,14 +81,6 @@ bool Shader::loadFromFile(const std::string& filename, ShaderType shaderType) {
 	return load(filename, buffer, shaderType);
 }
 
-/**
- * @brief Loads a vertex and fragment shader for the given base filename.
- *
- * The filename is hand over to your @c Context implementation with the appropriate filename postfixes
- *
- * @see VERTEX_POSTFIX
- * @see FRAGMENT_POSTFIX
- */
 bool Shader::loadProgram(const std::string& filename) {
 	const bool vertex = loadFromFile(filename + VERTEX_POSTFIX, SHADER_VERTEX);
 	if (!vertex)
