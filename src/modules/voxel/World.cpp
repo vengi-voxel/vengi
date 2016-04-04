@@ -112,7 +112,7 @@ void World::calculateAO(const PolyVox::Region& region) {
 				};
 				// reduce ao value to make a voxel face darker
 				uint8_t ao = 255;
-				for (int i = 0; i < SDL_arraysize(of); ++i) {
+				for (int i = 0; i < (int)SDL_arraysize(of); ++i) {
 					const int offX = of[i].x;
 					const int offZ = of[i].z;
 					const Voxel& voxel = _volumeData->getVoxel(nx + offX, ny + 1, nz + offZ);

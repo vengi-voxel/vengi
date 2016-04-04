@@ -14,7 +14,6 @@ private:
 	int _height;
 	int _depth;
 	uint8_t* _data;
-	bool _alpha = true;
 
 public:
 	Image(const std::string& name);
@@ -41,10 +40,6 @@ public:
 
 	inline int depth() const {
 		return _depth;
-	}
-
-	inline bool hasAlpha() const {
-		return _alpha;
 	}
 };
 

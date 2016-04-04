@@ -179,9 +179,10 @@ core::AppState Client::onInit() {
 
 	_noiseFuture.push_back(_threadPool.enqueue([] () {
 		const int ColorTextureSize = 256;
-		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * 3];
-		noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, 3, 0.3f, 0.7f);
-		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, 3);
+		const int ColorTextureDepth = 3;
+		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
+		noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureDepth, 0.3f, 0.7f);
+		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
 	}));
 	_colorTexture = video::createTexture("**colortexture**");
 
@@ -377,8 +378,8 @@ core::AppState Client::onRunning() {
 	if (!_noiseFuture.empty()) {
 		NoiseFuture& future = _noiseFuture.back();
 		if (future.valid()) {
-			Log::info("Noise texture ready - upload it");
 			NoiseGenerationTask c = future.get();
+			Log::info("Noise texture ready - upload it");
 			_colorTexture->upload(c.buffer, c.width, c.height, c.depth);
 			_colorTexture->unbind();
 			delete[] c.buffer;

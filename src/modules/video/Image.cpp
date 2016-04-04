@@ -29,6 +29,9 @@ void Image::load(uint8_t* buffer, int length) {
 		_state = io::IOSTATE_FAILED;
 		return;
 	}
+	if (_data) {
+		stbi_image_free(_data);
+	}
 	_data = stbi_load_from_memory(buffer, length, &_width, &_height, &_depth, STBI_rgb_alpha);
 	if (_data == nullptr)
 		_state = io::IOSTATE_FAILED;
