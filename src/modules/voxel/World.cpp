@@ -91,8 +91,8 @@ struct IsQuadNeeded {
 };
 
 void World::calculateAO(const PolyVox::Region& region) {
-	for (int nx = region.getLowerX(); nx < region.getUpperX(); ++nx) {
-		for (int nz = region.getLowerZ(); nz < region.getUpperZ(); ++nz) {
+	for (int nx = region.getLowerX() - 1; nx < region.getUpperX() + 1; ++nx) {
+		for (int nz = region.getLowerZ() - 1; nz < region.getUpperZ() + 1; ++nz) {
 			for (int ny = region.getLowerY(); ny < region.getUpperY() - 1; ++ny) {
 				// if the voxel is air, we don't need to compute anything
 				Voxel voxel = _volumeData->getVoxel(nx, ny, nz);
@@ -106,13 +106,13 @@ void World::calculateAO(const PolyVox::Region& region) {
 				static const struct offsets {
 					int x;
 					int z;
-				} of[8] = {
+				} of[] = {
 					{ 1,  0}, { 1, -1}, {0, -1}, {-1, -1},
 					{-1,  0}, {-1,  1}, {0,  1}, { 1,  1}
 				};
 				// reduce ao value to make a voxel face darker
 				uint8_t ao = 255;
-				for (int i = 0; i < 8; ++i) {
+				for (int i = 0; i < SDL_arraysize(of); ++i) {
 					const int offX = of[i].x;
 					const int offZ = of[i].z;
 					const Voxel& voxel = _volumeData->getVoxel(nx + offX, ny + 1, nz + offZ);
@@ -149,7 +149,7 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 		{
 			locked([&] () {
 				// calculate ao
-				//calculateAO(region);
+				calculateAO(region);
 #if 0
 				data.mesh = PolyVox::decodeMesh(PolyVox::extractMarchingCubesMesh(_volumeData, region));
 #else
