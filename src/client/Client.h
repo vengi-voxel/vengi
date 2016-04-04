@@ -46,8 +46,8 @@ protected:
 		const int depth;
 	};
 
-	typedef  std::future<NoiseGenerationTask> NoiseFuture;
-	std::vector<NoiseFuture>  _noiseFuture;
+	typedef std::future<NoiseGenerationTask> NoiseFuture;
+	std::vector<NoiseFuture> _noiseFuture;
 
 	video::MeshPoolPtr _meshPool;
 	network::NetworkPtr _network;
