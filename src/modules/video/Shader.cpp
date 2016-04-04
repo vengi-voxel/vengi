@@ -190,11 +190,7 @@ int Shader::fetchAttributes() {
 
 std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) const {
 	std::string src;
-#ifdef GL_ES_VERSION_2_0
-	src.append("#version 300\n");
-#else
-	src.append("#version 130\n");
-#endif
+	src.append("#version 150\n");
 
 	std::string append(buffer);
 
