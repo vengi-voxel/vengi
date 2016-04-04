@@ -9,14 +9,13 @@ fips_begin_module(video)
 		Camera.cpp Camera.h
 		GLMeshData.h
 		GLDebug.h
-		Image.cpp Image.h
 		Cubemap.cpp Cubemap.h
 		Texture.cpp Texture.h
 		Color.cpp Color.h
 		Mesh.cpp Mesh.h
 		MeshPool.cpp MeshPool.h
 	)
-	fips_deps(core io assimp)
+	fips_deps(core image io assimp)
 fips_end_module()
 
 find_package(OpenGL REQUIRED)

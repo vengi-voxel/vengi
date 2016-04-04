@@ -1,7 +1,7 @@
 #include "Cubemap.h"
 #include "core/Log.h"
 #include "core/String.h"
-#include "video/Image.h"
+#include "image/Image.h"
 #include "video/GLFunc.h"
 
 namespace video {

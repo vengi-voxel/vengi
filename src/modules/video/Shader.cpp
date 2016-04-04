@@ -7,12 +7,6 @@
 #define MAX_SHADER_VAR_NAME 128
 #endif
 
-#ifdef _DEBUG
-#define checkError() CheckErrorState(__FILE__, __LINE__, __PRETTY_FUNCTION__, _name.c_str());
-#else
-#define checkError()
-#endif
-
 namespace video {
 
 Shader::Shader() :
@@ -35,7 +29,7 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 	_name = name;
 	const std::string& source = getSource(shaderType, buffer);
 	const GLenum glType = shaderType == SHADER_VERTEX ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER;
-	checkError();
+	GL_checkError();
 
 	_shader[shaderType] = glCreateShader(glType);
 	const char *s = source.c_str();
@@ -121,7 +115,7 @@ void Shader::update(uint32_t deltaTime) {
 
 bool Shader::activate() const {
 	glUseProgram(_program);
-	checkError();
+	GL_checkError();
 	_active = true;
 	return _active;
 }
@@ -132,7 +126,7 @@ bool Shader::deactivate() const {
 	}
 
 	glUseProgram(0);
-	checkError();
+	GL_checkError();
 	_active = false;
 	_time = 0;
 	return _active;
@@ -160,7 +154,7 @@ int Shader::fetchUniforms() {
 	char name[MAX_SHADER_VAR_NAME];
 	int numUniforms = 0;
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORMS, &numUniforms);
-	checkError();
+	GL_checkError();
 
 	_uniforms.clear();
 	for (int i = 0; i < numUniforms; i++) {
@@ -179,7 +173,7 @@ int Shader::fetchAttributes() {
 	char name[MAX_SHADER_VAR_NAME];
 	int numAttributes = 0;
 	glGetProgramiv(_program, GL_ACTIVE_ATTRIBUTES, &numAttributes);
-	checkError();
+	GL_checkError();
 
 	_attributes.clear();
 	for (int i = 0; i < numAttributes; i++) {
@@ -245,21 +239,21 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 }
 
 void Shader::createProgramFromShaders() {
-	checkError();
+	GL_checkError();
 	_program = glCreateProgram();
-	checkError();
+	GL_checkError();
 
 	const GLuint vert = _shader[SHADER_VERTEX];
 	const GLuint frag = _shader[SHADER_FRAGMENT];
 
 	glAttachShader(_program, vert);
 	glAttachShader(_program, frag);
-	checkError();
+	GL_checkError();
 
 	glLinkProgram(_program);
 	GLint status;
 	glGetProgramiv(_program, GL_LINK_STATUS, &status);
-	checkError();
+	GL_checkError();
 	if (status == GL_TRUE) {
 		glDetachShader(_program, vert);
 		glDetachShader(_program, frag);

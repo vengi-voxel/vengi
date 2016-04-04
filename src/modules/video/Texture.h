@@ -2,7 +2,7 @@
 
 #include "video/GLFunc.h"
 #include "io/IOResource.h"
-#include "video/Image.h"
+#include "image/Image.h"
 
 #include <memory>
 

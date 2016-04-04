@@ -20,53 +20,6 @@ namespace video {
 #define FRAGMENT_POSTFIX ".frag"
 #endif
 
-class CheckErrorState {
-protected:
-	const char* _file;
-	const int _line;
-	const char* _function;
-	const char* _shader;
-
-	inline const char* translateError(GLenum glError) const {
-#define GL_ERROR_TRANSLATE(e) case e: return #e;
-		switch (glError) {
-		GL_ERROR_TRANSLATE(GL_INVALID_ENUM)
-		GL_ERROR_TRANSLATE(GL_INVALID_VALUE)
-		GL_ERROR_TRANSLATE(GL_INVALID_OPERATION)
-		GL_ERROR_TRANSLATE(GL_OUT_OF_MEMORY)
-#ifdef GL_STACK_OVERFLOW
-			GL_ERROR_TRANSLATE(GL_STACK_OVERFLOW)
-#endif
-#ifdef GL_STACK_UNDERFLOW
-			GL_ERROR_TRANSLATE(GL_STACK_UNDERFLOW)
-#endif
-		default:
-			return "UNKNOWN";
-		}
-#undef GL_ERROR_TRANSLATE
-	}
-
-public:
-	CheckErrorState(const char *file, int line, const char *function, const char* shader) :
-			_file(file), _line(line), _function(function), _shader(shader) {
-	}
-
-	~CheckErrorState() {
-		for (;;) {
-			const GLenum glError = glGetError();
-			if (glError == GL_NO_ERROR)
-				break;
-			Log::error("openGL err: %s (%i): %s %s => %i (%s)", _file, _line, _function, translateError(glError), glError, _shader);
-		}
-	}
-};
-
-#ifdef _DEBUG
-#define checkError() CheckErrorState(__FILE__, __LINE__, __PRETTY_FUNCTION__, _name.c_str());
-#else
-#define checkError()
-#endif
-
 enum ShaderType {
 	SHADER_VERTEX, SHADER_FRAGMENT,
 
@@ -201,7 +154,7 @@ inline void Shader::setUniformi(const std::string& name, int value) const {
 
 inline void Shader::setUniformi(int location, int value) const {
 	glUniform1i(location, value);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniformi(const std::string& name, int value1, int value2) const {
@@ -211,7 +164,7 @@ inline void Shader::setUniformi(const std::string& name, int value1, int value2)
 
 inline void Shader::setUniformi(int location, int value1, int value2) const {
 	glUniform2i(location, value1, value2);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniformi(const std::string& name, int value1, int value2, int value3) const {
@@ -221,7 +174,7 @@ inline void Shader::setUniformi(const std::string& name, int value1, int value2,
 
 inline void Shader::setUniformi(int location, int value1, int value2, int value3) const {
 	glUniform3i(location, value1, value2, value3);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniformi(const std::string& name, int value1, int value2, int value3, int value4) const {
@@ -231,7 +184,7 @@ inline void Shader::setUniformi(const std::string& name, int value1, int value2,
 
 inline void Shader::setUniformi(int location, int value1, int value2, int value3, int value4) const {
 	glUniform4i(location, value1, value2, value3, value4);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniformf(const std::string& name, float value) const {
@@ -241,7 +194,7 @@ inline void Shader::setUniformf(const std::string& name, float value) const {
 
 inline void Shader::setUniformf(int location, float value) const {
 	glUniform1f(location, value);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniformf(const std::string& name, float value1, float value2) const {
@@ -251,7 +204,7 @@ inline void Shader::setUniformf(const std::string& name, float value1, float val
 
 inline void Shader::setUniformf(int location, float value1, float value2) const {
 	glUniform2f(location, value1, value2);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniformf(const std::string& name, float value1, float value2, float value3) const {
@@ -261,7 +214,7 @@ inline void Shader::setUniformf(const std::string& name, float value1, float val
 
 inline void Shader::setUniformf(int location, float value1, float value2, float value3) const {
 	glUniform3f(location, value1, value2, value3);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniformf(const std::string& name, float value1, float value2, float value3, float value4) const {
@@ -271,7 +224,7 @@ inline void Shader::setUniformf(const std::string& name, float value1, float val
 
 inline void Shader::setUniformf(int location, float value1, float value2, float value3, float value4) const {
 	glUniform4f(location, value1, value2, value3, value4);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniform1fv(const std::string& name, const float* values, int length) const {
@@ -281,7 +234,7 @@ inline void Shader::setUniform1fv(const std::string& name, const float* values, 
 
 inline void Shader::setUniform1fv(int location, const float* values, int length) const {
 	glUniform1fv(location, length, values);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniform2fv(const std::string& name, const float* values, int length) const {
@@ -291,7 +244,7 @@ inline void Shader::setUniform2fv(const std::string& name, const float* values, 
 
 inline void Shader::setUniform2fv(int location, const float* values, int length) const {
 	glUniform2fv(location, length / 2, values);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniform3fv(const std::string& name, const float* values, int length) const {
@@ -311,7 +264,7 @@ inline void Shader::setUniformVec3v(const std::string& name, const glm::vec3* va
 
 inline void Shader::setUniform3fv(int location, const float* values, int length) const {
 	glUniform3fv(location, length / 3, values);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniform4fv(const std::string& name, const float* values, int length) const {
@@ -321,17 +274,19 @@ inline void Shader::setUniform4fv(const std::string& name, const float* values, 
 
 inline void Shader::setUniform4fv(int location, const float* values, int length) const {
 	glUniform4fv(location, length / 4, values);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniformVec4(const std::string& name, const glm::vec4& value) const {
 	const int location = getUniformLocation(name);
 	glUniform4fv(location, 1, glm::value_ptr(value));
+	GL_checkError();
 }
 
 inline void Shader::setUniformVec4v(const std::string& name, const glm::vec4* value, int length) const {
 	const int location = getUniformLocation(name);
 	glUniform4fv(location, length, glm::value_ptr(*value));
+	GL_checkError();
 }
 
 inline void Shader::setUniformMatrix(const std::string& name, const glm::mat4& matrix, bool transpose) const {
@@ -341,7 +296,7 @@ inline void Shader::setUniformMatrix(const std::string& name, const glm::mat4& m
 
 inline void Shader::setUniformMatrix(int location, const glm::mat4& matrix, bool transpose) const {
 	glUniformMatrix4fv(location, 1, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrix));
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniformMatrix(const std::string& name, const glm::mat3& matrix, bool transpose) const {
@@ -351,7 +306,7 @@ inline void Shader::setUniformMatrix(const std::string& name, const glm::mat3& m
 
 inline void Shader::setUniformMatrix(int location, const glm::mat3& matrix, bool transpose) const {
 	glUniformMatrix3fv(location, 1, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrix));
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setUniformf(const std::string& name, const glm::vec2& values) const {
@@ -387,13 +342,13 @@ inline void Shader::setVertexAttribute(const std::string& name, int size, int ty
 
 inline void Shader::setVertexAttribute(int location, int size, int type, bool normalize, int stride, void* buffer) const {
 	glVertexAttribPointer(location, size, type, normalize, stride, buffer);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::setAttributef(const std::string& name, float value1, float value2, float value3, float value4) const {
 	const int location = getAttributeLocation(name);
 	glVertexAttrib4f(location, value1, value2, value3, value4);
-	checkError();
+	GL_checkError();
 }
 
 inline void Shader::disableVertexAttribute(const std::string& name) const {
@@ -405,7 +360,7 @@ inline void Shader::disableVertexAttribute(const std::string& name) const {
 
 inline void Shader::disableVertexAttribute(int location) const {
 	glDisableVertexAttribArray(location);
-	checkError();
+	GL_checkError();
 }
 
 inline int Shader::enableVertexAttribute(const std::string& name) const {
@@ -418,7 +373,7 @@ inline int Shader::enableVertexAttribute(const std::string& name) const {
 
 inline void Shader::enableVertexAttribute(int location) const {
 	glEnableVertexAttribArray(location);
-	checkError();
+	GL_checkError();
 }
 
 inline bool Shader::hasAttribute(const std::string& name) const {
@@ -443,7 +398,6 @@ public:
 	}
 };
 
-#undef checkError
 
 typedef std::shared_ptr<Shader> ShaderPtr;
 
