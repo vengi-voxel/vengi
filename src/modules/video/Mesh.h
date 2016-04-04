@@ -18,7 +18,7 @@ private:
 	typedef std::vector<glm::vec2> TexCoords;
 	typedef std::vector<glm::vec3> Vertices;
 
-	void loadTextures(const aiScene* scene, const std::string& filename);
+	void loadTextureImages(const aiScene* scene, const std::string& filename);
 
 	GLuint _vertexArrayObject;
 	// 4 buffers - don't change the order - don't add anything in between these four buffers
@@ -28,6 +28,7 @@ private:
 	GLuint _indexBuffer;
 
 	std::vector<GLMeshData> _meshData;
+	std::vector<ImagePtr> _images;
 	std::vector<TexturePtr> _textures;
 
 	Vertices _positions;

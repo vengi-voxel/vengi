@@ -7,13 +7,8 @@
 
 namespace video {
 
-Image::Image(const std::string& filename) :
-		io::IOResource(), _filename(filename), _width(-1), _height(-1), _depth(-1), _data(nullptr) {
-}
-
-Image::Image(uint8_t* data, int width, int height, int depth) :
-		_width(width), _height(height), _depth(depth), _data(data), _alpha(depth == 4) {
-	_state = io::IOSTATE_LOADED;
+Image::Image(const std::string& name) :
+		io::IOResource(), _name(name), _width(-1), _height(-1), _depth(-1), _data(nullptr) {
 }
 
 Image::~Image() {
@@ -26,6 +21,10 @@ void Image::load(const io::FilePtr& file) {
 	uint8_t* buffer;
 	const int length = file->read((void**) &buffer);
 	std::unique_ptr<uint8_t[]> p(buffer);
+	load(buffer, length);
+}
+
+void Image::load(uint8_t* buffer, int length) {
 	if (!buffer || length <= 0) {
 		_state = io::IOSTATE_FAILED;
 		return;
@@ -35,19 +34,6 @@ void Image::load(const io::FilePtr& file) {
 		_state = io::IOSTATE_FAILED;
 	else
 		_state = io::IOSTATE_LOADED;
-}
-
-bool Image::loadSync() {
-	loadAsync();
-	while (isLoading()) {
-	}
-	return isLoaded();
-}
-
-void Image::loadAsync() {
-	// TODO: push into io thread
-	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(_filename);
-	load(file);
 }
 
 }

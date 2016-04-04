@@ -5,6 +5,7 @@
 #include "Common.h"
 #include "Trace.h"
 #include "EventBus.h"
+#include "core/ThreadPool.h"
 #include "io/Filesystem.h"
 
 namespace core {
@@ -37,9 +38,10 @@ protected:
 	io::FilesystemPtr _filesystem;
 	core::EventBusPtr _eventBus;
 	static App* _staticInstance;
+	core::ThreadPool _threadPool;
 
 public:
-	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport);
+	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport, size_t threadPoolSize = 1);
 	virtual ~App();
 
 	void init(const std::string& organisation, const std::string& appname);
@@ -72,6 +74,8 @@ public:
 
 	io::FilesystemPtr filesystem() const;
 
+	core::ThreadPool& threadPool();
+
 	core::EventBusPtr eventBus() const;
 
 	static App* getInstance() {
@@ -86,6 +90,10 @@ inline long App::currentMillis() const {
 
 inline io::FilesystemPtr App::filesystem() const {
 	return _filesystem;
+}
+
+inline core::ThreadPool& App::threadPool() {
+	return _threadPool;
 }
 
 inline core::EventBusPtr App::eventBus() const {

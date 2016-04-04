@@ -2,6 +2,7 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "video/Image.h"
+#include "video/GLFunc.h"
 
 namespace video {
 
@@ -30,10 +31,9 @@ bool Cubemap::load() {
 
 	for (unsigned int i = 1; i <= 6; i++) {
 		const std::string& filename = core::string::format("%s-cm-%i", _filename.c_str(), i);
-		Image img(filename);
-		img.loadSync();
-		const GLenum mode = img.hasAlpha() ? GL_RGBA : GL_RGB;
-		glTexImage2D(types[i - 1], 0, mode, img.width(), img.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
+		const ImagePtr& img = loadImage(filename);
+		const GLenum mode = img->hasAlpha() ? GL_RGBA : GL_RGB;
+		glTexImage2D(types[i - 1], 0, mode, img->width(), img->height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data());
 	}
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

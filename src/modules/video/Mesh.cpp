@@ -79,8 +79,8 @@ bool Mesh::loadMesh(const std::string& filename) {
 		}
 	}
 
-	loadTextures(scene, filename);
-	_state = io::IOSTATE_LOADED;
+	loadTextureImages(scene, filename);
+	_state = io::IOSTATE_LOADING;
 	return true;
 }
 
@@ -90,15 +90,26 @@ bool Mesh::initMesh(const ShaderPtr& shader) {
 	if (!shader)
 		return false;
 
-	if (_state != io::IOSTATE_LOADED)
-		return false;
+	if (_state != io::IOSTATE_LOADED) {
+		if (_state != io::IOSTATE_LOADING) {
+			return false;
+		}
+		for (const ImagePtr& i : _images) {
+			if (!i->isLoaded())
+				return false;
+		}
+
+		_textures.reserve(_images.size());
+		int materialIndex = 0;
+		for (const ImagePtr& i : _images) {
+			_textures[materialIndex++] = createTextureFromImage(i);
+		}
+		_images.clear();
+
+		_state = io::IOSTATE_LOADED;
+	}
 
 	_shader = shader;
-	for (const TexturePtr& t : _textures) {
-		if (!t)
-			continue;
-		t->load();
-	}
 
 	glGenVertexArrays(1, &_vertexArrayObject);
 	// generate all the 4 needed buffers at once
@@ -132,7 +143,7 @@ bool Mesh::initMesh(const ShaderPtr& shader) {
 	return GL_checkError() == 0;
 }
 
-void Mesh::loadTextures(const aiScene* scene, const std::string& filename) {
+void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) {
 	std::string::size_type slashIndex = filename.find_last_of("/");
 	std::string dir;
 
@@ -144,7 +155,7 @@ void Mesh::loadTextures(const aiScene* scene, const std::string& filename) {
 		dir = filename.substr(0, slashIndex);
 	}
 
-	_textures.resize(scene->mNumMaterials);
+	_images.resize(scene->mNumMaterials);
 	for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
 		const aiMaterial* material = scene->mMaterials[i];
 		const aiTextureType texType = aiTextureType_DIFFUSE;
@@ -162,19 +173,18 @@ void Mesh::loadTextures(const aiScene* scene, const std::string& filename) {
 		}
 
 		const std::string fullPath = dir + "/" + p;
-		_textures[i] = TexturePtr(new Texture(fullPath));
+		_images[i] = createImage(fullPath);
 	}
 }
 
 void Mesh::render() {
+	if (_state != io::IOSTATE_LOADED)
+		return;
 	glBindVertexArray(_vertexArrayObject);
-	uint32_t lastMatIdx = 0u;
 	for (const GLMeshData& mesh : _meshData) {
 		const uint32_t matIdx = mesh.materialIndex;
-		core_assert(matIdx < _textures.size());
-		if (/*lastMatIdx != matIdx &&*/ _textures[matIdx]) {
+		if (matIdx < _textures.size() && _textures[matIdx]) {
 			_textures[matIdx]->bind();
-			lastMatIdx = matIdx;
 		}
 		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, GL_UNSIGNED_INT, GL_OFFSET(sizeof(uint32_t) * mesh.baseIndex), mesh.baseVertex);
 	}

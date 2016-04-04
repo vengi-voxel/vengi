@@ -35,6 +35,14 @@ bool MeshShader::init() {
 		Log::error("no uniform u_texture found");
 		return false;
 	}
+	if (!hasUniform("u_viewdistance")) {
+		Log::error("no uniform u_viewdistance found");
+		return false;
+	}
+	if (!hasUniform("u_fogrange")) {
+		Log::error("no uniform u_fogrange found");
+		return false;
+	}
 
 	return true;
 }

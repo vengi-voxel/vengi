@@ -26,7 +26,7 @@
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
 		UIApp(filesystem, eventBus), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
-		_timeProvider(timeProvider), _worldShader(), _meshShader(new frontend::MeshShader()), _waterShader(new frontend::WaterShader()),
+		_timeProvider(timeProvider), _worldShader(), _meshShader(new frontend::MeshShader()),
 		_userId(-1), _peer(nullptr), _moveMask(0), _lastMovement(0L), _fogRange(0.0f), _viewDistance(0.0f) {
 	_world->setClientData(true);
 	init("engine", "client");
@@ -167,40 +167,6 @@ core::AppState Client::onInit() {
 	if (!_meshShader->init()) {
 		return core::Cleanup;
 	}
-	if (!_waterShader->init()) {
-		return core::Cleanup;
-	}
-
-	_waterTexture = video::TexturePtr(new video::Texture("texture/water.png"));
-	_waterTexture->load();
-	const glm::vec3 vertices[4] = { glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f,
-			1.0f, 0.0f) };
-	const glm::ivec3 indices[2] = { glm::ivec3( 0, 1, 2 ), glm::ivec3( 1, 3, 2 ) };
-	glGenVertexArrays(1, &_waterData.vertexArrayObject);
-	core_assert(_waterData.vertexArrayObject > 0);
-	glBindVertexArray(_waterData.vertexArrayObject);
-
-	glGenBuffers(1, &_waterData.vertexBuffer);
-	core_assert(_waterData.vertexBuffer > 0);
-	glBindBuffer(GL_ARRAY_BUFFER, _waterData.vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(glm::vec3), vertices, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &_waterData.indexBuffer);
-	core_assert(_waterData.indexBuffer > 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _waterData.indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * sizeof(glm::ivec2), indices, GL_STATIC_DRAW);
-
-	const int posLoc = _waterShader->enableVertexAttribute("a_pos");
-	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
-			GL_OFFSET(offsetof(voxel::VoxelVertexDecoded, position)));
-
-	glBindVertexArray(0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	_waterData.noOfIndices = 2;
-	_waterData.scale = 1.0f;
-	_waterData.indexType = GL_UNSIGNED_INT;
 
 	GL_checkError();
 
@@ -211,10 +177,13 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
-	const int ColorTextureSize = 256;
-	uint8_t colorTexture[ColorTextureSize * ColorTextureSize * 3];
-	noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, 3, 0.3f, 0.7f);
-	_colorTexture = video::TexturePtr(new video::Texture(colorTexture, ColorTextureSize, ColorTextureSize, 3));
+	_noiseFuture.push_back(_threadPool.enqueue([] () {
+		const int ColorTextureSize = 256;
+		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * 3];
+		noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, 3, 0.3f, 0.7f);
+		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, 3);
+	}));
+	_colorTexture = video::createTexture("**colortexture**");
 
 	_clearColor = glm::vec3(0.0, 0.6, 0.796);
 
@@ -237,8 +206,8 @@ void Client::renderBackground() {
 	_meshShader->setUniformMatrix("u_view", view, false);
 	_meshShader->setUniformMatrix("u_projection", projection, false);
 	_meshShader->setUniformVec3("u_lightpos", _lightPos);
-	_meshShader->setUniformVec3("u_diffusecolor", _diffuseColor);
-	_meshShader->setUniformVec3("u_specularcolor", _specularColor);
+	_meshShader->setUniformf("u_fogrange", _fogRange);
+	_meshShader->setUniformf("u_viewdistance", _viewDistance);
 	_meshShader->setUniformi("u_texture", 0);
 	const video::MeshPtr& mesh = _meshPool->getMesh("animal_rabbit");
 	if (mesh->initMesh(_meshShader)) {
@@ -304,26 +273,6 @@ void Client::renderMap() {
 	const glm::mat4& view = _camera.getViewMatrix();
 	const glm::mat4& projection = glm::perspective(45.0f, _aspect, 0.1f, 1000.0f);
 
-	_waterShader->activate();
-	_waterShader->setUniformMatrix("u_model", glm::mat4(1.0f), false);
-	_waterShader->setUniformMatrix("u_view", view, false);
-	_waterShader->setUniformMatrix("u_projection", projection, false);
-	_waterShader->setUniformVec3("u_lightpos", _lightPos);
-	_waterShader->setUniformVec3("u_diffusecolor", _diffuseColor);
-	_waterShader->setUniformVec3("u_specularcolor", _specularColor);
-	_waterShader->setUniformi("u_texture", 0);
-	_waterShader->setUniformf("u_wavetime", 0.5f);
-	_waterShader->setUniformf("u_wavewidth", 0.6f);
-	_waterShader->setUniformf("u_waveheight", 1.0f);
-	_waterTexture->bind();
-	glBindVertexArray(_waterData.vertexArrayObject);
-	glDrawElements(GL_TRIANGLES, _waterData.noOfIndices, _waterData.indexType, 0);
-	++_drawCallsWorld;
-	glBindVertexArray(0);
-	_waterTexture->unbind();
-	_waterShader->deactivate();
-	GL_checkError();
-
 	_worldShader.activate();
 	_worldShader.setUniformMatrix("u_view", view, false);
 	_worldShader.setUniformMatrix("u_projection", projection, false);
@@ -343,9 +292,11 @@ void Client::renderMap() {
 		_worldShader.setUniformMatrix("u_model", model, false);
 		glBindVertexArray(meshData.vertexArrayObject);
 		glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
+		GL_checkError();
 		++_drawCallsWorld;
 		++i;
 	}
+	GL_checkError();
 	_worldShader.deactivate();
 	GL_checkError();
 
@@ -353,8 +304,8 @@ void Client::renderMap() {
 	_meshShader->setUniformMatrix("u_view", view, false);
 	_meshShader->setUniformMatrix("u_projection", projection, false);
 	_meshShader->setUniformVec3("u_lightpos", _lightPos);
-	_meshShader->setUniformVec3("u_diffusecolor", _diffuseColor);
-	_meshShader->setUniformVec3("u_specularcolor", _specularColor);
+	_meshShader->setUniformf("u_fogrange", _fogRange);
+	_meshShader->setUniformf("u_viewdistance", _viewDistance);
 	_meshShader->setUniformi("u_texture", 0);
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
@@ -367,6 +318,7 @@ void Client::renderMap() {
 		const glm::mat4& model = glm::rotate(scale, ent->orientation(), glm::vec3(0.0, 1.0, 0.0));
 		_meshShader->setUniformMatrix("u_model", model, false);
 		mesh->render();
+		GL_checkError();
 		++_drawCallsEntities;
 	}
 	_meshShader->deactivate();
@@ -422,6 +374,17 @@ core::AppState Client::onCleanup() {
 
 core::AppState Client::onRunning() {
 	_timeProvider->update(_now);
+	if (!_noiseFuture.empty()) {
+		NoiseFuture& future = _noiseFuture.back();
+		if (future.valid()) {
+			Log::info("Noise texture ready - upload it");
+			NoiseGenerationTask c = future.get();
+			_colorTexture->upload(c.buffer, c.width, c.height, c.depth);
+			_colorTexture->unbind();
+			delete[] c.buffer;
+			_noiseFuture.erase(_noiseFuture.end());
+		}
+	}
 	core::AppState state = UIApp::onRunning();
 	sendMovement();
 	if (state == core::AppState::Running) {

@@ -2,30 +2,30 @@
 
 #include "io/IOResource.h"
 #include "io/File.h"
+#include "core/App.h"
 #include <memory>
 
 namespace video {
 
 class Image: public io::IOResource {
 private:
-	std::string _filename;
+	std::string _name;
 	int _width;
 	int _height;
 	int _depth;
 	uint8_t* _data;
 	bool _alpha = true;
 
-	void load(const io::FilePtr& file);
 public:
-	Image(const std::string& filename);
-
-	Image(uint8_t* data, int width, int height, int depth);
-
+	Image(const std::string& name);
 	~Image();
 
-	void loadAsync();
+	void load(const io::FilePtr& file);
+	void load(uint8_t* buffer, int length);
 
-	bool loadSync();
+	const std::string& name() const {
+		return _name;
+	}
 
 	const uint8_t* data() const {
 		return _data;
@@ -39,11 +39,31 @@ public:
 		return _height;
 	}
 
+	inline int depth() const {
+		return _depth;
+	}
+
 	inline bool hasAlpha() const {
 		return _alpha;
 	}
 };
 
 typedef std::shared_ptr<Image> ImagePtr;
+
+// creates an empty image
+inline ImagePtr createImage(const std::string& name) {
+	return ImagePtr(new Image(name));
+}
+
+inline ImagePtr loadImage(const io::FilePtr& file) {
+	ImagePtr i(new Image(file->getName()));
+	i->load(file);
+	return i;
+}
+
+inline ImagePtr loadImage(const std::string& filename) {
+	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(filename);
+	return loadImage(file);
+}
 
 }

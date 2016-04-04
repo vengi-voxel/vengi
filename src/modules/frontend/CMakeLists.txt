@@ -4,7 +4,6 @@ fips_begin_module(frontend)
 		ClientEntityId.h
 		MeshShader.h MeshShader.cpp
 		WorldShader.h WorldShader.cpp
-		WaterShader.h WaterShader.cpp
 	)
 	fips_deps(ui network voxel cooldown)
 fips_end_module()

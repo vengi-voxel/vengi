@@ -14,7 +14,6 @@
 #include "network/messages/ServerMessages.h"
 #include "frontend/WorldShader.h"
 #include "frontend/MeshShader.h"
-#include "frontend/WaterShader.h"
 #include "frontend/ClientEntity.h"
 #include "util/PosLerp.h"
 #include "core/Var.h"
@@ -36,6 +35,20 @@
 class Client: public ui::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxel::WorldCreatedEvent> {
 protected:
+	struct NoiseGenerationTask {
+		NoiseGenerationTask(uint8_t *_buffer, int _width, int _height, int _depth) :
+				buffer(_buffer), width(_width), height(_height), depth(_depth) {
+		}
+		// pointer to preallocated buffer that was hand into the noise task
+		uint8_t *buffer;
+		const int width;
+		const int height;
+		const int depth;
+	};
+
+	typedef  std::future<NoiseGenerationTask> NoiseFuture;
+	std::vector<NoiseFuture>  _noiseFuture;
+
 	video::MeshPoolPtr _meshPool;
 	network::NetworkPtr _network;
 	voxel::WorldPtr _world;
@@ -43,10 +56,7 @@ protected:
 	core::TimeProviderPtr _timeProvider;
 	frontend::WorldShader _worldShader;
 	frontend::MeshShaderPtr _meshShader;
-	frontend::WaterShaderPtr _waterShader;
-	video::TexturePtr _waterTexture;
 	video::TexturePtr _colorTexture;
-	video::GLMeshData _waterData;
 	video::Camera _camera;
 	glm::vec3 _lightPos = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _diffuseColor = glm::vec3(0.1, 0.1, 0.1);
