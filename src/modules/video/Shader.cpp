@@ -38,8 +38,8 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 
 	GLint status;
 	glGetShaderiv(_shader[shaderType], GL_COMPILE_STATUS, &status);
-	if (status != GL_TRUE || glGetError() != GL_NO_ERROR) {
-		GLint infoLogLength;
+	if (status == GL_FALSE) {
+		GLint infoLogLength = 0;
 		glGetShaderiv(_shader[shaderType], GL_INFO_LOG_LENGTH, &infoLogLength);
 
 		std::unique_ptr<GLchar> strInfoLog(new GLchar[infoLogLength + 1]);
@@ -60,6 +60,7 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 		}
 
 		Log::error("compile failure in %s (type: %s) shader:\n%s", name.c_str(), strShaderType, errorLog.c_str());
+		glDeleteShader(_shader[shaderType]);
 		return false;
 	}
 
