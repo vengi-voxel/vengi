@@ -14,10 +14,13 @@ private:
 	GLuint _handle;
 
 public:
+	// creates an empty dummy texture with the given name
 	Texture(const std::string& name);
+	// create a texture with the given name and uploads it
 	Texture(const std::string& name, const uint8_t* data, int width, int height, int depth);
 	~Texture();
 
+	// updates the texture with the new data
 	void upload(const uint8_t* data, int width, int height, int depth);
 	void bind();
 	void unbind();
