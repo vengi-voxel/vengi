@@ -14,13 +14,13 @@ macro(check_glsl_files TARGET)
 		message("${GLSL_VALIDATOR_EXECUTABLE} found - executing in ${FIPS_PROJECT_DIR}/data/${TARGET}/shaders")
 		foreach(_file ${files})
 			add_custom_target(
-				${_file}_shader_validation
+				${TARGET}_${_file}_shader_validation
 				COMMENT "Validate ${_file}"
 				COMMAND ${FIPS_DEPLOY_DIR}/${CMAKE_PROJECT_NAME}/${FIPS_CONFIG}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file}
 				DEPENDS shadertool
 				WORKING_DIRECTORY ${FIPS_PROJECT_DIR}/data/${TARGET}/shaders
 			)
-			add_dependencies(${TARGET} shadertool ${_file}_shader_validation)
+			add_dependencies(${TARGET} shadertool ${TARGET}_${_file}_shader_validation)
 		endforeach()
 	else()
 		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found at ${TOOLS_DIR}")
