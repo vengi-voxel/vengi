@@ -21,7 +21,8 @@ out float v_ambientocclusion;
 void main(void) {
 	mat4 modelview = u_view * u_model;
 	vec4 pos4 = modelview * vec4(a_pos, 1.0);
-	v_pos = vec3(pos4) / pos4.w;
+	v_pos = pos4.xyz;
+	// TODO: use a_pos.w to encode the ao for each vertex - per voxel is not enough
 	v_ambientocclusion = clamp(float(a_materialdensity.y) / 255.0, 0.0, 1.0);
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
@@ -29,7 +30,7 @@ void main(void) {
 
 	vec4 noisepos = u_model * vec4(a_pos, 1.0);
 	vec3 colornoise = vec3(texture(u_texture, noisepos.xz / 256.0 / 10.0));
-	v_color = u_materialcolor[a_materialdensity.x].rgb * colornoise;
+	v_color = u_materialcolor[a_materialdensity.x].xyz * colornoise * 1.8;
 	v_color = clamp(v_color, 0.0, 1.0);
 
 	gl_Position = u_projection * modelview * vec4(a_pos, 1.0);
