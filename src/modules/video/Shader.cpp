@@ -10,8 +10,13 @@
 
 namespace video {
 
+#ifdef GL_ES_VERSION_2_0
+// default to opengles3
+int Shader::glslVersion = 300;
+#else
 // default to opengl3
 int Shader::glslVersion = 130;
+#endif
 
 Shader::Shader() :
 		_program(0), _initialized(false), _active(false), _time(0) {
