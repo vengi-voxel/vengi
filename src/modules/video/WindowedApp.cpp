@@ -3,7 +3,9 @@
 #include "core/Singleton.h"
 #include "core/Var.h"
 #include "GLFunc.h"
+#include "Shader.h"
 #include "Color.h"
+#include "GLVersion.h"
 
 #include <SDL.h>
 
@@ -74,12 +76,18 @@ core::AppState WindowedApp::onConstruct() {
 	int width = displayMode.w;
 	int height = displayMode.h;
 
+	int ctxMajor = 3;
+	int ctxMinor = 0;
+	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
+		if (GLVersions[i].major == ctxMajor && GLVersions[i].minor == ctxMinor)
+			Shader::glslVersion = GLVersions[i].glslVersion;
+	}
 	SDL_ClearError();
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, ctxMajor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, ctxMinor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
@@ -110,11 +118,6 @@ core::AppState WindowedApp::onConstruct() {
 		return core::AppState::Cleanup;
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	_glcontext = SDL_GL_CreateContext(_window);
 
 	SDL_DisableScreenSaver();

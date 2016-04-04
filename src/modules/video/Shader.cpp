@@ -2,12 +2,16 @@
 
 #include "core/App.h"
 #include "io/Filesystem.h"
+#include "GLVersion.h"
 
 #ifndef MAX_SHADER_VAR_NAME
 #define MAX_SHADER_VAR_NAME 128
 #endif
 
 namespace video {
+
+// default to opengl3
+int Shader::glslVersion = 130;
 
 Shader::Shader() :
 		_program(0), _initialized(false), _active(false), _time(0) {
@@ -191,7 +195,9 @@ int Shader::fetchAttributes() {
 
 std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) const {
 	std::string src;
-	src.append("#version 150\n");
+	src.append("#version ");
+	src.append(std::to_string(glslVersion));
+	src.append("\n");
 
 	std::string append(buffer);
 

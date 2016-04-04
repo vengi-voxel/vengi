@@ -49,8 +49,9 @@ protected:
 
 public:
 	Shader();
-
 	virtual ~Shader();
+
+	static int glslVersion;
 
 	bool load(const std::string& name, const std::string& buffer, ShaderType shaderType);
 
