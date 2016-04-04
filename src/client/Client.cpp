@@ -230,7 +230,7 @@ void Client::destroyMeshData(const video::GLMeshData& meshData) {
 	_world->allowReExtraction(meshData.translation);
 	glDeleteBuffers(1, &meshData.vertexBuffer);
 	glDeleteBuffers(1, &meshData.indexBuffer);
-	glDeleteVertexArrays(1, meshData.vertexArrayObject);
+	glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 }
 
 bool Client::isCulled(const glm::ivec2& pos) const {

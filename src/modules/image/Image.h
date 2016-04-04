@@ -5,7 +5,7 @@
 #include "core/App.h"
 #include <memory>
 
-namespace video {
+namespace image {
 
 class Image: public io::IOResource {
 private:
@@ -21,6 +21,9 @@ public:
 
 	void load(const io::FilePtr& file);
 	void load(uint8_t* buffer, int length);
+
+	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);
+	bool writePng() const;
 
 	const std::string& name() const {
 		return _name;

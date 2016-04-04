@@ -28,7 +28,7 @@ private:
 	GLuint _indexBuffer;
 
 	std::vector<GLMeshData> _meshData;
-	std::vector<ImagePtr> _images;
+	std::vector<image::ImagePtr> _images;
 	std::vector<TexturePtr> _textures;
 
 	Vertices _positions;

@@ -6,4 +6,4 @@ fips_begin_module(noise)
 fips_end_module()
 
 gtest_suite_files(tests tests/SimplexNoiseTest.cpp)
-gtest_suite_deps(tests core noise)
+gtest_suite_deps(tests core image noise)

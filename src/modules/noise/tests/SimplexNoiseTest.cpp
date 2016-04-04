@@ -1,5 +1,6 @@
 #include "core/tests/AbstractTest.h"
 #include "noise/SimplexNoise.h"
+#include "image/Image.h"
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/constants.hpp>
 
@@ -12,7 +13,7 @@ protected:
 	const int h = 256;
 
 	bool WriteImage(const char* name, uint8_t* buffer) {
-		return stbi_write_png(name, w, h, components, buffer, w * components) != 0;
+		return image::Image::writePng(name, buffer, w, h, components);
 	}
 };
 
@@ -80,7 +81,7 @@ TEST_F(SimplexNoiseTest, test2DNoiseGray) {
 	const int components = 3;
 	uint8_t buffer[width * height * components];
 	Simplex::Noise2DGray(buffer, width, height, 1, 1.0, 1.0, 1.0);
-	ASSERT_TRUE(stbi_write_png("testNoiseGray.png", width, height, components, buffer, width * components) != 0);
+	ASSERT_TRUE(image::Image::writePng("testNoiseGray.png", buffer, width, height, components));
 }
 
 TEST_F(SimplexNoiseTest, test2DNoiseColorMap) {
@@ -89,7 +90,7 @@ TEST_F(SimplexNoiseTest, test2DNoiseColorMap) {
 	const int components = 3;
 	uint8_t buffer[width * height * components];
 	noise::Simplex::SeamlessNoise2DRGB(buffer, width, 3, 0.3f, 0.7f);
-	ASSERT_TRUE(stbi_write_png("testNoiseColorMap.png", width, height, components, buffer, width * components) != 0);
+	ASSERT_TRUE(image::Image::writePng("testNoiseColorMap.png", buffer, width, height, components));
 }
 
 }

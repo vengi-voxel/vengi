@@ -33,7 +33,7 @@ inline TexturePtr createTexture(const std::string& name) {
 	return TexturePtr(new Texture(name));
 }
 
-inline TexturePtr createTextureFromImage(const ImagePtr& image) {
+inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 	if (!image) {
 		return TexturePtr();
 	}
@@ -42,7 +42,7 @@ inline TexturePtr createTextureFromImage(const ImagePtr& image) {
 }
 
 inline TexturePtr createTextureFromImage(const std::string& filename) {
-	return createTextureFromImage(createImage(filename));
+	return createTextureFromImage(image::createImage(filename));
 }
 
 }

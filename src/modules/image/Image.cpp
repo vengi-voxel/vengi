@@ -3,9 +3,11 @@
 #include "core/App.h"
 #include "io/Filesystem.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
-namespace video {
+namespace image {
 
 Image::Image(const std::string& name) :
 		io::IOResource(), _name(name), _width(-1), _height(-1), _depth(-1), _data(nullptr) {
@@ -37,6 +39,17 @@ void Image::load(uint8_t* buffer, int length) {
 		_state = io::IOSTATE_FAILED;
 	else
 		_state = io::IOSTATE_LOADED;
+}
+
+bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {
+	return stbi_write_png(name, width, height, depth, (const void*)buffer, width * depth) != 0;
+}
+
+bool Image::writePng() const {
+	if (_state != io::IOSTATE_LOADED) {
+		return false;
+	}
+	return stbi_write_png(_name.c_str(), _width, _height, _depth, (const void*)_data, _width * _depth) != 0;
 }
 
 }

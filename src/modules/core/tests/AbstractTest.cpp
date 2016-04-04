@@ -1,9 +1,6 @@
 #include "AbstractTest.h"
 #include "core/Log.h"
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-
 namespace core {
 
 void AbstractTest::SetUp() {

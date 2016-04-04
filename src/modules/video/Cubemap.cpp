@@ -31,7 +31,7 @@ bool Cubemap::load() {
 
 	for (unsigned int i = 1; i <= 6; i++) {
 		const std::string& filename = core::string::format("%s-cm-%i", _filename.c_str(), i);
-		const ImagePtr& img = loadImage(filename);
+		const image::ImagePtr& img = image::loadImage(filename);
 		const GLenum mode = img->depth() == 4 ? GL_RGBA : GL_RGB;
 		glTexImage2D(types[i - 1], 0, mode, img->width(), img->height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data());
 	}

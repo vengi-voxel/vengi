@@ -4,8 +4,6 @@
 #include "core/EventBus.h"
 #include "io/Filesystem.h"
 
-#include "stb_image_write.h"
-
 namespace core {
 
 class AbstractTest: public testing::Test {
