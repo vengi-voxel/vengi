@@ -42,6 +42,7 @@ e.g. run the server with ```./server -set sv_port 1025``` to change the *sv_port
 * [Quest Generating AI](http://voxelquest.vanillaforums.com/discussion/comment/11/#Comment_11) (VoxelQuest)
 * [VoxelShip Editor](https://blackflux.com/node/11)
 * [MagicaVoxel Editor](http://ephtracy.github.io/)
+* [The Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/#abop)
 
 ## PostgreSQL
 
