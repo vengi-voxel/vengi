@@ -4,6 +4,8 @@
 
 namespace persistence {
 
+// TODO: this is far away from being thread safe and also fails hard if the user table is not available.
+
 Store::Store(Connection* conn) :
 		_connection(conn), _usable(true), _res(nullptr), _lastState(PGRES_EMPTY_QUERY), _affectedRows(0) {
 }
