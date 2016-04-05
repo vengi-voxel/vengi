@@ -33,6 +33,8 @@ void Persister::close() {
 }
 
 bool Persister::initTables() {
+	UserStore model("", "", "");
+	_store.createNeeds(model);
 	return true;
 }
 
