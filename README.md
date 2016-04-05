@@ -43,6 +43,7 @@ e.g. run the server with ```./server -set sv_port 1025``` to change the *sv_port
 * [VoxelShip Editor](https://blackflux.com/node/11)
 * [MagicaVoxel Editor](http://ephtracy.github.io/)
 * [The Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/#abop)
+* [Plants vterrain](http://vterrain.org/Plants/)
 
 ## PostgreSQL
 
