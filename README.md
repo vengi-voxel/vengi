@@ -45,6 +45,10 @@ e.g. run the server with ```./server -set sv_port 1025``` to change the *sv_port
 * [The Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/#abop)
 * [Plants vterrain](http://vterrain.org/Plants/)
 
+http://www.gamedev.net/blog/1621/entry-2260604-seedworld-voxel-world-engine-update-2/
+http://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/
+http://www.gamedev.net/blog/1621/entry-2260713-adding-biomes-and-rivers/
+
 ## PostgreSQL
 
 first sudo as postgres default superuser 'postgres' on bash
