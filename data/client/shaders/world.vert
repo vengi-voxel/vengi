@@ -14,6 +14,7 @@ uniform vec4 u_materialcolor[32];
 out vec3 v_pos;
 out vec3 v_color;
 out vec3 v_lightpos;
+out vec3 v_fogcolor;
 out float v_fogrange;
 out float v_viewdistance;
 out float v_ambientocclusion;
@@ -33,6 +34,9 @@ void main(void) {
 	int material = a_materialdensity.x;
 	v_color = u_materialcolor[material].rgb * colornoise * 1.8;
 	v_color = clamp(v_color, 0.0, 1.0);
+
+	// use the air color as fog color, too
+	v_fogcolor = u_materialcolor[0].rgb;
 
 	gl_Position = u_projection * modelview * vec4(a_pos, 1.0);
 }
