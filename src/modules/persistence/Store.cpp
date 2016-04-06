@@ -32,8 +32,8 @@ KeyValueMap Store::loadModel(const PeristenceModel& model) {
 			dbResult[std::string(name)] = std::string(value);
 			//model.update(tname, fvalue);
 		}
+		PQclear(_res);
 	}
-	PQclear(_res);
 
 	return dbResult;
 }
