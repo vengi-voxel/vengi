@@ -6,8 +6,7 @@ namespace video {
 
 static const char* supportedFormats[] = { "dae", "fbx", nullptr };
 
-MeshPool::MeshPool() :
-		_threadPool(2) {
+MeshPool::MeshPool() {
 }
 
 MeshPool::~MeshPool() {
@@ -30,7 +29,7 @@ MeshPtr MeshPool::getMesh(const std::string& id) {
 		return i->second;
 
 	const MeshPtr mesh(new Mesh());
-	_threadPool.enqueue([=]() {mesh->loadMesh(name);});
+	core::App::getInstance()->threadPool().enqueue([=]() {mesh->loadMesh(name);});
 	_meshes[name] = mesh;
 	return mesh;
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Mesh.h"
-#include "core/ThreadPool.h"
 #include <unordered_map>
 #include <string>
 
@@ -11,7 +10,6 @@ class MeshPool {
 private:
 	typedef std::unordered_map<std::string, MeshPtr> Meshes;
 	Meshes _meshes;
-	core::ThreadPool _threadPool;
 
 	std::string getName(const std::string& id) const;
 public:
