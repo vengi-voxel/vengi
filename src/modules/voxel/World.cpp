@@ -132,10 +132,12 @@ void World::calculateAO(const PolyVox::Region& region) {
 // is not directly suitable for rendering.
 bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 	const glm::ivec2& pos = getGridPos(p);
-	if (_meshesExtracted.find(pos) != _meshesExtracted.end()) {
-		Log::trace("mesh is already extracted for %i:%i", p.x, p.y);
+	auto i = _meshesExtracted.find(pos);
+	if (i != _meshesExtracted.end()) {
+		Log::trace("mesh is already extracted for %i:%i (%i:%i - %i:%i)", p.x, p.y, i->x, i->y, pos.x, pos.y);
 		return false;
 	}
+	Log::trace("mesh extraction for %i:%i (%i:%i)", p.x, p.y, pos.x, pos.y);
 	_meshesExtracted.insert(pos);
 
 	const int size = _chunkSize->intVal();

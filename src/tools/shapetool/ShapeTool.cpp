@@ -39,7 +39,6 @@ core::AppState ShapeTool::onInit() {
 	for (int i = 0; i < 8; ++i) {
 		o.next();
 		glm::ivec2 opos(pos.x + o.x() * chunkSize, pos.y + o.y() * chunkSize);
-		Log::info("extract world at %i:%i", opos.x, opos.y);
 		core_assert(_world->scheduleMeshExtraction(opos));
 	}
 
