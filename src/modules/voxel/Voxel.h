@@ -45,5 +45,6 @@ static const VoxelType Leaves9 = 11;
 static const VoxelType Leaves10 = 12;
 static const VoxelType Rock = 13;
 static const VoxelType Cloud = 14;
+static const VoxelType Water = 15;
 
 }

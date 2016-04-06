@@ -77,23 +77,23 @@ int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, flo
 
 	static const glm::vec4 materialColors[] = {
 		video::Color::LightBlue,	// air
-		video::Color::Lime,			// dirt
-		video::Color::Brown,		// grass
+		video::Color::Lime,			// grass
+		video::Color::Brown,		// wood
 		// leaves
-		video::Color::DarkGreen,	// clouds
-		video::Color::Green,		// water
-		video::Color::Purple,		// leaves
-		video::Color::Cyan,			// trunk
-		video::Color::Olive,		// clouds
+		video::Color::DarkGreen,
+		video::Color::Green,
+		video::Color::Purple,
+		video::Color::Cyan,
+		video::Color::Olive,
 		video::Color::Orange,
 		video::Color::Red,
 		video::Color::Yellow,
 		video::Color::LightRed,
 		video::Color::Blue,
 		// leaves end
-		video::Color::DarkGray,
-		video::Color::White,
-		video::Color::Pink,
+		video::Color::DarkGray,		// rock
+		video::Color::White,		// clouds
+		video::Color::Blue,			// water
 		video::Color::Pink,
 		video::Color::Pink,
 		video::Color::Pink,
