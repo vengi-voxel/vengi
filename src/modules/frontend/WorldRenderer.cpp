@@ -17,11 +17,15 @@ WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
 }
 
 WorldRenderer::~WorldRenderer() {
+}
+
+void WorldRenderer::onCleanup() {
 	for (const video::GLMeshData& meshData : _meshData) {
 		glDeleteBuffers(1, &meshData.vertexBuffer);
 		glDeleteBuffers(1, &meshData.indexBuffer);
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 	}
+	_meshData.clear();
 }
 
 ClientEntityPtr WorldRenderer::getEntity(ClientEntityId id) {

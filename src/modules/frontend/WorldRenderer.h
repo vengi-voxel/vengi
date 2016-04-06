@@ -61,6 +61,7 @@ public:
 
 	void onInit();
 	void onRunning(long now);
+	void onCleanup();
 
 	// called to initialed the player position
 	void onSpawn(const glm::vec3& pos);

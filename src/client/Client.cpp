@@ -157,6 +157,7 @@ void Client::afterUI() {
 }
 
 core::AppState Client::onCleanup() {
+	_worldRenderer.onCleanup();
 	core::AppState state = UIApp::onCleanup();
 	_world->destroy();
 	return state;

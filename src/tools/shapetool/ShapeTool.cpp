@@ -54,6 +54,7 @@ core::AppState ShapeTool::onRunning() {
 }
 
 core::AppState ShapeTool::onCleanup() {
+	_worldRenderer.onCleanup();
 	core::AppState state = UIApp::onCleanup();
 	_world->destroy();
 	return state;
