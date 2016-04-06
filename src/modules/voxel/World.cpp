@@ -540,7 +540,7 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 void World::cleanupFutures() {
 	for (auto i = _futures.begin(); i != _futures.end();) {
 		auto& future = *i;
-		if (std::future_status::ready == future.wait_for(std::chrono::milliseconds(1))) {
+		if (std::future_status::ready == future.wait_for(std::chrono::milliseconds(0))) {
 			i = _futures.erase(i);
 			continue;
 		}
