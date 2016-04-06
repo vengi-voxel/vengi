@@ -59,6 +59,7 @@ private:
 
 public:
 	WorldRenderer(const voxel::WorldPtr& world);
+	~WorldRenderer();
 
 	void onInit();
 	void onRunning(long now);

@@ -10,10 +10,16 @@
 
 namespace frontend {
 
-// TODO: destroy the gl buffers
-
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
 		_world(world) {
+}
+
+WorldRenderer::~WorldRenderer() {
+	for (const video::GLMeshData& meshData : _meshData) {
+		glDeleteBuffers(1, &meshData.vertexBuffer);
+		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+	}
 }
 
 ClientEntityPtr WorldRenderer::getEntity(ClientEntityId id) {
