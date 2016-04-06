@@ -161,8 +161,7 @@ bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 			});
 		}
 
-		const PolyVox::Vector3DInt32& offset = data.mesh.getOffset();
-		data.translation = glm::ivec2(offset.getX(), offset.getZ());
+		data.translation = pos;
 		core::ScopedWriteLock lock(_rwLock);
 		_meshQueue.push_back(std::move(data));
 	});
