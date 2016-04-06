@@ -69,12 +69,10 @@ public:
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
 	 */
 	inline glm::ivec2 getChunkPos(const glm::ivec2& pos) const {
-		const int size = _chunkSize->intVal();
-		const int deltaX = pos.x < 0 ? -1 : 0;
-		const int deltaY = pos.y < 0 ? -1 : 0;
-		const int chunkX = pos.x / size;
-		const int chunkY = pos.y / size;
-		return glm::ivec2(chunkX + deltaX, chunkY + deltaY);
+		const float size = _chunkSize->floatVal();
+		const int x = glm::floor(pos.x / size);
+		const int y = glm::floor(pos.y / size);
+		return glm::ivec2(x, y);
 	}
 
 	inline int getChunkSize() const {

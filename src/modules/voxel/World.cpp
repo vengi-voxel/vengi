@@ -141,11 +141,12 @@ bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 	_meshesExtracted.insert(pos);
 
 	const int size = _chunkSize->intVal();
-	const int delta = size - 1;
+	int deltaX = size - 1;
+	int deltaZ = size - 1;
 	_threadPool.enqueue([=] () {
 		core_trace_scoped("MeshExtraction");
 		const PolyVox::Vector3DInt32 mins(pos.x, 0, pos.y);
-		const PolyVox::Vector3DInt32 maxs(mins.getX() + delta, MAX_HEIGHT - 1, mins.getZ() + delta);
+		const PolyVox::Vector3DInt32 maxs(pos.x + deltaX, MAX_HEIGHT - 1, pos.y + deltaZ);
 		const PolyVox::Region region(mins, maxs);
 		DecodedMeshData data;
 		{
