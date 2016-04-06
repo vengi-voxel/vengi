@@ -32,15 +32,7 @@ core::AppState ShapeTool::onInit() {
 	_clearColor = video::Color::LightBlue;
 
 	// TODO: replace this with a scripting interface for the World::create* functions
-	voxel::Spiral o;
-	const int chunkSize = _world->getChunkSize();
-	glm::ivec2 pos(chunkSize / 2, chunkSize / 2);
-	_world->scheduleMeshExtraction(pos);
-	for (int i = 0; i < 8; ++i) {
-		o.next();
-		glm::ivec2 opos(pos.x + o.x() * chunkSize, pos.y + o.y() * chunkSize);
-		core_assert(_world->scheduleMeshExtraction(opos));
-	}
+	_worldRenderer.onSpawn(_camera.getPosition());
 
 	return ui::UIApp::onInit();
 }

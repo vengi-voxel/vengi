@@ -8,6 +8,8 @@
 #include <PolyVox/RawVolume.h>
 #include <SDL.h>
 
+constexpr int MinCullingDistance = 500;
+
 namespace frontend {
 
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
@@ -207,10 +209,11 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 }
 
 void WorldRenderer::onSpawn(const glm::vec3& pos) {
-	_viewDistance = _world->getChunkSize() * 3;
+	const int initialExtractionRadius = 5;
+	_viewDistance = _world->getChunkSize() * (initialExtractionRadius + 1);
 	_fogRange = _viewDistance;
 	_lastCameraPosition = _world->getGridPos(pos);
-	extractMeshAroundCamera(1000);
+	extractMeshAroundCamera(initialExtractionRadius);
 }
 
 int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const glm::mat4& view, float aspect) {
@@ -227,6 +230,7 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const glm::mat
 	shader->setUniformf("u_fogrange", _fogRange);
 	shader->setUniformf("u_viewdistance", _viewDistance);
 	shader->setUniformi("u_texture", 0);
+	// TODO: culling (not needed for server controlled entities - because the server is handling the vis)
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_now);
@@ -253,11 +257,13 @@ void WorldRenderer::extractNewMeshes(const glm::vec3& position) {
 	const glm::vec2 diff = _lastCameraPosition - camXZ;
 	if (glm::length(diff.x) >= 1 || glm::length(diff.y) >= 1) {
 		_lastCameraPosition = camXZ;
-		extractMeshAroundCamera(40);
+		extractMeshAroundCamera(1);
 	}
 }
 
-void WorldRenderer::extractMeshAroundCamera(int amount) {
+void WorldRenderer::extractMeshAroundCamera(int radius) {
+	const int sideLength = radius * 2 + 1;
+	const int amount = sideLength * (sideLength - 1) + sideLength;
 	const int size = _world->getChunkSize();
 	const glm::ivec2& cameraPos = _lastCameraPosition;
 	glm::ivec2 pos = cameraPos;
@@ -298,7 +304,7 @@ void WorldRenderer::onRunning(long now) {
 	}
 
 	// TODO: properly lerp this
-	if (_viewDistance < 500) {
+	if (_viewDistance < MinCullingDistance) {
 		const int advance = _world->getChunkSize() / 16;
 		_viewDistance += advance;
 		_fogRange += advance / 2;
@@ -308,9 +314,9 @@ void WorldRenderer::onRunning(long now) {
 bool WorldRenderer::isCulled(const glm::ivec2& pos) const {
 	const glm::ivec2 dist = pos - _lastCameraPosition;
 	const int distance = glm::sqrt(dist.x * dist.x + dist.y * dist.y);
-	const float cullingThreshold = 10.0f;
+	const float cullingThreshold = _world->getChunkSize();
 	const int maxAllowedDistance = _viewDistance + cullingThreshold;
-	if (distance >= maxAllowedDistance) {
+	if (distance > MinCullingDistance && distance >= maxAllowedDistance) {
 		return true;
 	}
 	return false;

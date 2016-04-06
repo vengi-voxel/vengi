@@ -18,9 +18,15 @@ TEST_F(WorldTest, testChunkAndGridPos) {
 	}
 	{
 		const glm::ivec2& chunkPos = world.getChunkPos(glm::ivec2(halfChunkSize, halfChunkSize));
-		ASSERT_EQ(glm::ivec2(1, 0), chunkPos);
+		ASSERT_EQ(glm::ivec2(0, 0), chunkPos);
 		const glm::ivec2& gridPos = world.getGridPos(glm::ivec2(halfChunkSize, halfChunkSize));
 		ASSERT_EQ(glm::ivec2(0, 0), gridPos);
+	}
+	{
+		const glm::ivec2& chunkPos = world.getChunkPos(glm::ivec2(2 * chunkSize + halfChunkSize, 2 * chunkSize + halfChunkSize));
+		ASSERT_EQ(glm::ivec2(2, 2), chunkPos);
+		const glm::ivec2& gridPos = world.getGridPos(glm::ivec2(2 * chunkSize + halfChunkSize, 2 * chunkSize + halfChunkSize));
+		ASSERT_EQ(glm::ivec2(2 * chunkSize, 2 * chunkSize), gridPos);
 	}
 }
 

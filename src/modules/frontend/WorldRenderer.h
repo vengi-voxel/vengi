@@ -52,10 +52,8 @@ private:
 	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec2& translation, float scale);
 
 	bool isCulled(const glm::ivec2& pos) const;
-	// schedule mesh extraction around the camera position on the grid
-	// this is extracted in a spiral around the position. The amount of chunks to be extracted is specified
-	// by the given amount. There is nothing extracted twice.
-	void extractMeshAroundCamera(int amount);
+	// schedule mesh extraction around the camera position on the grid with the given radius
+	void extractMeshAroundCamera(int radius);
 
 public:
 	WorldRenderer(const voxel::WorldPtr& world);
