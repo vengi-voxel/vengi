@@ -130,12 +130,12 @@ void World::calculateAO(const PolyVox::Region& region) {
 // Extract the surface for the specified region of the volume.
 // The surface extractor outputs the mesh in an efficient compressed format which
 // is not directly suitable for rendering.
-void World::scheduleMeshExtraction(const glm::ivec2& p) {
+bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 	const int size = _chunkSize->intVal();
 	const glm::ivec2& pos = getGridPos(p);
 	if (_meshesExtracted.find(pos) != _meshesExtracted.end()) {
 		Log::trace("mesh is already extracted for %i:%i", p.x, p.y);
-		return;
+		return false;
 	}
 	_meshesExtracted.insert(pos);
 
@@ -164,6 +164,7 @@ void World::scheduleMeshExtraction(const glm::ivec2& p) {
 		core::ScopedWriteLock lock(_rwLock);
 		_meshQueue.push_back(std::move(data));
 	});
+	return true;
 }
 
 int World::findFloor(int x, int z) const {

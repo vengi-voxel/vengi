@@ -10,6 +10,8 @@
 
 namespace frontend {
 
+// TODO: destroy the gl buffers
+
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
 		_world(world) {
 }

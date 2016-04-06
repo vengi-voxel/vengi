@@ -9,6 +9,7 @@
 class ShapeToolModule: public core::AbstractModule {
 	void configure() const override {
 		core::AbstractModule::configure();
-		bind<ShapeTool>().in<sauce::SingletonScope>().to<ShapeTool(io::Filesystem &, core::EventBus &)>();
+		bind<ShapeTool>().in<sauce::SingletonScope>().to<ShapeTool(io::Filesystem &, core::EventBus &, voxel::World &)>();
+		bind<voxel::World>().in<sauce::SingletonScope>().to<voxel::World>();
 	}
 };

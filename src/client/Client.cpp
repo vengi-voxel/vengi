@@ -158,7 +158,6 @@ void Client::afterUI() {
 
 core::AppState Client::onCleanup() {
 	core::AppState state = UIApp::onCleanup();
-	// TODO: destroy the gl buffers
 	_world->destroy();
 	return state;
 }

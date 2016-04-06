@@ -93,7 +93,7 @@ public:
 	 * @param[in] pos A World vector that is automatically converted into a mesh tile vector
 	 * @note This will not allow to reschedule an extraction for the same area until @c allowReExtraction was called.
 	 */
-	void scheduleMeshExtraction(const glm::ivec2& pos);
+	bool scheduleMeshExtraction(const glm::ivec2& pos);
 
 	void onFrame(long dt);
 
