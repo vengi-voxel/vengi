@@ -62,7 +62,9 @@ public:
 	 */
 	inline glm::ivec2 getGridPos(const glm::ivec2& pos) const {
 		const int size = _chunkSize->intVal();
-		return glm::ivec2(pos.x / size * size, pos.y / size * size);
+		const int chunkX = pos.x / size;
+		const int chunkY = pos.y / size;
+		return glm::ivec2(chunkX * size, chunkY * size);
 	}
 
 	inline int getChunkSize() const {
