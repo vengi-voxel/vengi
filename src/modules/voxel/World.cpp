@@ -131,7 +131,6 @@ void World::calculateAO(const PolyVox::Region& region) {
 // The surface extractor outputs the mesh in an efficient compressed format which
 // is not directly suitable for rendering.
 bool World::scheduleMeshExtraction(const glm::ivec2& p) {
-	const int size = _chunkSize->intVal();
 	const glm::ivec2& pos = getGridPos(p);
 	if (_meshesExtracted.find(pos) != _meshesExtracted.end()) {
 		Log::trace("mesh is already extracted for %i:%i", p.x, p.y);
@@ -139,6 +138,7 @@ bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 	}
 	_meshesExtracted.insert(pos);
 
+	const int size = _chunkSize->intVal();
 	const int delta = size - 1;
 	_threadPool.enqueue([=] () {
 		core_trace_scoped("MeshExtraction");
