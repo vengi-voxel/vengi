@@ -155,7 +155,6 @@ bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 #else
 				data.mesh = PolyVox::decodeMesh(PolyVox::extractCubicMesh(_volumeData, region, IsQuadNeeded(), true));
 #endif
-				data.mesh.removeUnusedVertices();
 			});
 		}
 
