@@ -12,10 +12,10 @@ namespace video {
 
 #ifdef GL_ES_VERSION_2_0
 // default to opengles3
-int Shader::glslVersion = 300;
+int Shader::glslVersion = GLSLVersion::V300;
 #else
 // default to opengl3
-int Shader::glslVersion = 130;
+int Shader::glslVersion = GLSLVersion::V130;
 #endif
 
 Shader::Shader() :
@@ -27,11 +27,13 @@ Shader::Shader() :
 
 Shader::~Shader() {
 	for (int i = 0; i < SHADER_MAX; ++i) {
-		if (_shader[i] != 0)
+		if (_shader[i] != 0) {
 			glDeleteShader(_shader[i]);
+		}
 	}
-	if (_program != 0)
+	if (_program != 0) {
 		glDeleteProgram(_program);
+	}
 }
 
 bool Shader::load(const std::string& name, const std::string& buffer, ShaderType shaderType) {

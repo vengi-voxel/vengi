@@ -76,18 +76,17 @@ core::AppState WindowedApp::onConstruct() {
 	int width = displayMode.w;
 	int height = displayMode.h;
 
-	int ctxMajor = 3;
-	int ctxMinor = 0;
+	const GLVersion glv = video::GL3_0;
 	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
-		if (GLVersions[i].major == ctxMajor && GLVersions[i].minor == ctxMinor)
+		if (GLVersions[i].version == glv)
 			Shader::glslVersion = GLVersions[i].glslVersion;
 	}
 	SDL_ClearError();
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, ctxMajor);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, ctxMinor);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glv.majorVersion);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glv.minorVersion);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
@@ -112,7 +111,7 @@ core::AppState WindowedApp::onConstruct() {
 		Log::info("use fake fullscreen for the first display: %i:%i", width, height);
 	}
 
-	_window = SDL_CreateWindow("Client", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+	_window = SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
 	if (!_window) {
 		sdlCheckError();
 		return core::AppState::Cleanup;

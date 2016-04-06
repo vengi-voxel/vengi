@@ -3,6 +3,7 @@ fips_begin_module(frontend)
 		ClientEntity.h ClientEntity.cpp
 		ClientEntityId.h
 		MeshShader.h MeshShader.cpp
+		WorldRenderer.h WorldRenderer.cpp
 		WorldShader.h WorldShader.cpp
 	)
 	fips_deps(ui network voxel cooldown)
