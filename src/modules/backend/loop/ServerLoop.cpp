@@ -44,6 +44,8 @@ void ServerLoop::readInput() {
 	while (t.hasNext()) {
 		const std::string& var = t.next();
 		const core::VarPtr& varPtr = core::Var::get(var, "", core::CV_NOTCREATEEMPTY);
+		if (!varPtr)
+			break;
 		if (!t.hasNext()) {
 			if (varPtr) {
 				Log::info("%s = %s", varPtr->name().c_str(), varPtr->strVal().c_str());

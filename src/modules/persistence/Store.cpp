@@ -17,6 +17,7 @@ bool Store::storeModel(PeristenceModel& model) {
 
 bool Store::createNeeds(const PeristenceModel& model) {
 	const std::string& crSql = model.getCreate();
+	Log::info("create table '%s'", crSql.c_str());
 	return query(crSql);
 }
 
