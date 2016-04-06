@@ -13,7 +13,7 @@ clean:
 	$(Q)rm -f .fips-imports.cmake
 
 eclipse:
-	$(Q)./fips config linux-eclipse-debug
+	$(Q)./fips set config linux-eclipse-debug
 
 server: build
 	$(Q)./fips run server -- $(ARGS)
@@ -21,11 +21,17 @@ server: build
 client: build
 	$(Q)./fips run client -- $(ARGS)
 
+shapetool: build
+	$(Q)./fips run shapetool -- $(ARGS)
+
 debugserver: build
 	$(Q)./fips gdb server -- $(ARGS)
 
 debugclient: build
 	$(Q)./fips gdb client -- $(ARGS)
+
+debugshapetool: build
+	$(Q)./fips gdb shapetool -- $(ARGS)
 
 tests: build
 	$(Q)./fips run tests -- $(ARGS)
