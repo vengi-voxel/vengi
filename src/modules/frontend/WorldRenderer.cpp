@@ -140,7 +140,6 @@ int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, flo
 		++drawCallsWorld;
 		++i;
 	}
-	GL_checkError();
 	shader.deactivate();
 	GL_checkError();
 
