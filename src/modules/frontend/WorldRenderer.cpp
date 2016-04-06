@@ -19,13 +19,21 @@ WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
 WorldRenderer::~WorldRenderer() {
 }
 
-void WorldRenderer::onCleanup() {
+void WorldRenderer::reset() {
 	for (const video::GLMeshData& meshData : _meshData) {
 		glDeleteBuffers(1, &meshData.vertexBuffer);
 		glDeleteBuffers(1, &meshData.indexBuffer);
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 	}
 	_meshData.clear();
+	_entities.clear();
+	_fogRange = 0.0f;
+	_viewDistance = 0.0f;
+	_now = 0l;
+}
+
+void WorldRenderer::onCleanup() {
+	reset();
 }
 
 ClientEntityPtr WorldRenderer::getEntity(ClientEntityId id) {

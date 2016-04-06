@@ -8,6 +8,8 @@
 #include <queue>
 #include <random>
 #include <chrono>
+#include <vector>
+#include <atomic>
 
 #include "io/Filesystem.h"
 #include "WorldData.h"
@@ -33,12 +35,30 @@ public:
 	World();
 	~World();
 
+	struct WorldContext {
+		int landscapeNoiseOctaves = 3;
+		float landscapeNoisePersistence = 0.1f;
+		float landscapeNoiseFrequency = 0.01f;
+		float landscapeNoiseAmplitude = 1.0f;
+
+		int mountainNoiseOctaves = 2;
+		float mountainNoisePersistence = 0.3f;
+		float mountainNoiseFrequency = 0.00075f;
+		float mountainNoiseAmplitude = 1.0f;
+	};
+
+	void setContext(const WorldContext& ctx) {
+		_ctx = ctx;
+	}
+
 	// if clientData is true, additional data that is only useful for rendering is generated
 	void setClientData(bool clientData) {
 		_clientData = clientData;
 	}
 
 	void destroy();
+	void reset();
+	bool isReset() const;
 
 	Result raycast(const glm::vec3& start, const glm::vec3& end, voxel::Raycast& raycast);
 	bool findPath(const PolyVox::Vector3DInt32& start, const PolyVox::Vector3DInt32& end, std::list<PolyVox::Vector3DInt32>& listResult);
@@ -145,13 +165,6 @@ private:
 		void pageOut(const PolyVox::Region& region, WorldData::Chunk* chunk) override;
 	};
 
-	Pager _pager;
-	WorldData *_volumeData;
-	BiomManager _biomManager;
-	mutable std::mt19937 _engine;
-	long _seed;
-	bool _clientData;
-
 	struct IVec2HashEquals {
 		size_t operator()(const glm::ivec2& k) const {
 			// TODO: find a better hash function - we have a lot of collisions here
@@ -206,6 +219,16 @@ private:
 	void createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random);
 	static void createUnderground(const PolyVox::Region& region, WorldData::Chunk* chunk);
 
+	void cleanupFutures();
+
+	Pager _pager;
+	WorldData *_volumeData;
+	BiomManager _biomManager;
+	WorldContext _ctx;
+	mutable std::mt19937 _engine;
+	long _seed;
+	bool _clientData;
+
 	core::ThreadPool _threadPool;
 	using mutex = std::recursive_timed_mutex;
 	mutable mutex _mutex;
@@ -216,6 +239,8 @@ private:
 	std::unordered_set<glm::ivec2, IVec2HashEquals> _meshesExtracted;
 	core::VarPtr _chunkSize;
 	core::Random _random;
+	std::vector<std::future<void> > _futures;
+	std::atomic_bool _cancelThreads;
 	float _noiseSeedOffsetX;
 	float _noiseSeedOffsetZ;
 };

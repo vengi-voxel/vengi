@@ -12,7 +12,10 @@ protected:
 	voxel::WorldPtr _world;
 	frontend::WorldShader _worldShader;
 
+	bool _resetTriggered = false;
+
 	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
+	bool onKeyPress(int32_t key, int16_t modifier) override;
 
 public:
 	ShapeTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world);

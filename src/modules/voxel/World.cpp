@@ -131,6 +131,8 @@ void World::calculateAO(const PolyVox::Region& region) {
 // The surface extractor outputs the mesh in an efficient compressed format which
 // is not directly suitable for rendering.
 bool World::scheduleMeshExtraction(const glm::ivec2& p) {
+	if (_cancelThreads)
+		return false;
 	const glm::ivec2& pos = getGridPos(p);
 	auto i = _meshesExtracted.find(pos);
 	if (i != _meshesExtracted.end()) {
@@ -143,7 +145,9 @@ bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 	const int size = _chunkSize->intVal();
 	int deltaX = size - 1;
 	int deltaZ = size - 1;
-	_threadPool.enqueue([=] () {
+	_futures.push_back(_threadPool.enqueue([=] () {
+		if (_cancelThreads)
+			return;
 		core_trace_scoped("MeshExtraction");
 		const PolyVox::Vector3DInt32 mins(pos.x, 0, pos.y);
 		const PolyVox::Vector3DInt32 maxs(pos.x + deltaX, MAX_HEIGHT - 1, pos.y + deltaZ);
@@ -164,7 +168,7 @@ bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 		data.translation = pos;
 		core::ScopedWriteLock lock(_rwLock);
 		_meshQueue.push_back(std::move(data));
-	});
+	}));
 	return true;
 }
 
@@ -210,11 +214,12 @@ bool World::findPath(const PolyVox::Vector3DInt32& start, const PolyVox::Vector3
 }
 
 void World::destroy() {
-	locked([this] () {
-		_volumeData->flushAll();
-		_seed = 0l;
-		Log::info("flush the world");
-	});
+	reset();
+	_seed = 0l;
+}
+
+void World::reset() {
+	_cancelThreads = true;
 }
 
 void World::createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
@@ -506,9 +511,9 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	for (int z = 0; z < depth; ++z) {
 		for (int x = 0; x < width; ++x) {
 			const glm::vec2 noisePos2d = glm::vec2(_noiseSeedOffsetX + region.getLowerX() + x, _noiseSeedOffsetZ + region.getLowerZ() + z);
-			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, 3, 0.1f, 0.01f);
+			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.landscapeNoiseOctaves, _ctx.landscapeNoisePersistence, _ctx.landscapeNoiseFrequency);
 			const float noiseNormalized = (landscapeNoise + 1.0f) * 0.5f;
-			const float mountainNoise = noise::Simplex::Noise2D(noisePos2d, 2, 0.3f, 0.00075f);
+			const float mountainNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.mountainNoiseOctaves, _ctx.mountainNoisePersistence, _ctx.mountainNoiseFrequency);
 			const float mountainNoiseNormalized = (mountainNoise + 1.0f) * 0.5f;
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
@@ -532,7 +537,38 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	}
 }
 
+void World::cleanupFutures() {
+	for (auto i = _futures.begin(); i != _futures.end();) {
+		auto& future = *i;
+		if (std::future_status::ready == future.wait_for(std::chrono::milliseconds(1))) {
+			i = _futures.erase(i);
+		} else {
+			++i;
+		}
+	}
+}
+
 void World::onFrame(long dt) {
+	if (_cancelThreads) {
+		cleanupFutures();
+		if (!_futures.empty()) {
+			return;
+		}
+		locked([this] () {
+			_volumeData->flushAll();
+			_ctx = WorldContext();
+			_meshesExtracted.clear();
+			_meshQueue.clear();
+			Log::info("reset the world");
+		});
+		_cancelThreads = false;
+	} else {
+		cleanupFutures();
+	}
+}
+
+bool World::isReset() const {
+	return _cancelThreads;
 }
 
 }

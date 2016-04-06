@@ -59,6 +59,8 @@ public:
 	WorldRenderer(const voxel::WorldPtr& world);
 	~WorldRenderer();
 
+	void reset();
+
 	void onInit();
 	void onRunning(long now);
 	void onCleanup();

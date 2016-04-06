@@ -42,6 +42,17 @@ core::AppState ShapeTool::onRunning() {
 
 	_world->onFrame(_deltaFrame);
 
+	if (_resetTriggered && !_world->isReset()) {
+		// todo get the value from 'somewhere' (tm)
+		voxel::World::WorldContext ctx;
+		ctx.landscapeNoiseOctaves = 1;
+		ctx.mountainNoiseOctaves = 1;
+
+		_world->setContext(ctx);
+		_worldRenderer.onSpawn(_camera.getPosition());
+		_resetTriggered = false;
+	}
+
 	_camera.updatePosition(_deltaFrame, false, false, false, false);
 	_camera.updateViewMatrix();
 
@@ -63,6 +74,22 @@ core::AppState ShapeTool::onCleanup() {
 void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	UIApp::onMouseMotion(x, y, relX, relY);
 	_camera.onMotion(x, y, relX, relY);
+}
+
+bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
+	const bool handled = UIApp::onKeyPress(key, modifier);
+	if (handled) {
+		return true;
+	}
+
+	if (key == SDLK_r) {
+		_worldRenderer.reset();
+		_world->reset();
+		_resetTriggered = true;
+		return true;
+	}
+
+	return false;
 }
 
 int main(int argc, char *argv[]) {
