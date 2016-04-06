@@ -542,9 +542,9 @@ void World::cleanupFutures() {
 		auto& future = *i;
 		if (std::future_status::ready == future.wait_for(std::chrono::milliseconds(1))) {
 			i = _futures.erase(i);
-		} else {
-			++i;
+			continue;
 		}
+		break;
 	}
 }
 
