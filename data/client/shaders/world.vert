@@ -31,7 +31,7 @@ void main(void) {
 	vec4 noisepos = u_model * vec4(a_pos, 1.0);
 	vec3 colornoise = texture(u_texture, noisepos.xz / 256.0 / 10.0).rgb;
 	int material = a_materialdensity.x;
-	v_color = u_materialcolor[material].rgb;
+	v_color = u_materialcolor[material].rgb * colornoise * 1.8;
 	v_color = clamp(v_color, 0.0, 1.0);
 
 	gl_Position = u_projection * modelview * vec4(a_pos, 1.0);

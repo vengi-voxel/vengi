@@ -110,7 +110,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, flo
 	shader.setUniformf("u_viewdistance", _viewDistance);
 	shader.setUniformi("u_texture", 0);
 	shader.setUniformVec3("u_lightpos", _lightPos);
-	shader.setUniformVec4v("u_materialcolor", materialColors, SDL_arraysize(materialColors));
+	shader.setUniformVec4v("u_materialcolor[0]", materialColors, SDL_arraysize(materialColors));
 	_colorTexture->bind();
 	for (auto i = _meshData.begin(); i != _meshData.end();) {
 		const video::GLMeshData& meshData = *i;
