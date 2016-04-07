@@ -110,8 +110,6 @@ void ShapeTool::placeTree(const voxel::World::TreeContext& ctx) {
 }
 
 void ShapeTool::regenerate(const glm::ivec2& pos) {
-	_worldRenderer.deleteMesh(pos);
-	_world->allowReExtraction(pos);
 	_worldRenderer.extractNewMeshes(glm::ivec3(pos.x, 0, pos.y), true);
 }
 
