@@ -73,31 +73,20 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 			break;
 		mouseWheel(event.wheel.x, event.wheel.y);
 		break;
-	case SDL_CONTROLLERAXISMOTION: {
-		const uint8_t axis = event.caxis.axis;
-		if (axis != SDL_CONTROLLER_AXIS_LEFTX && axis != SDL_CONTROLLER_AXIS_LEFTY && axis != SDL_CONTROLLER_AXIS_RIGHTX && axis != SDL_CONTROLLER_AXIS_RIGHTY)
-			break;
-		const bool horizontal = (axis == SDL_CONTROLLER_AXIS_LEFTX || axis == SDL_CONTROLLER_AXIS_RIGHTX);
-		joystickMotion(horizontal, event.caxis.value);
+	case SDL_CONTROLLERAXISMOTION:
+		controllerMotion(event.caxis.axis, event.caxis.value, event.caxis.which);
 		break;
-	}
 	case SDL_CONTROLLERBUTTONDOWN:
-		controllerButtonPress(getControllerButtonName(event.cbutton.button));
+		controllerButtonPress(getControllerButtonName(event.cbutton.button), event.cbutton.which);
 		break;
 	case SDL_CONTROLLERBUTTONUP:
-		controllerButtonRelease(getControllerButtonName(event.cbutton.button));
+		controllerButtonRelease(getControllerButtonName(event.cbutton.button), event.cbutton.which);
 		break;
 	case SDL_CONTROLLERDEVICEADDED:
-		joystickDeviceAdded(event.cdevice.which);
+		controllerDeviceAdded(event.cdevice.which);
 		break;
 	case SDL_CONTROLLERDEVICEREMOVED:
-		joystickDeviceRemoved(event.cdevice.which);
-		break;
-	case SDL_JOYDEVICEADDED:
-		joystickDeviceAdded(event.jdevice.which);
-		break;
-	case SDL_JOYDEVICEREMOVED:
-		joystickDeviceRemoved(event.jdevice.which);
+		controllerDeviceRemoved(event.cdevice.which);
 		break;
 	case SDL_DOLLARRECORD:
 		gestureRecord(event.dgesture.gestureId);
@@ -109,15 +98,12 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		multiGesture(event.mgesture.dTheta, event.mgesture.dDist, event.mgesture.numFingers);
 		break;
 	case SDL_JOYHATMOTION:
-		break;
+	case SDL_JOYDEVICEADDED:
+	case SDL_JOYDEVICEREMOVED:
 	case SDL_JOYBUTTONDOWN:
-		joystickButtonPress(event.jbutton.button);
-		break;
 	case SDL_JOYBUTTONUP:
-		joystickButtonRelease(event.jbutton.button);
-		break;
 	case SDL_JOYAXISMOTION:
-		joystickMotion(event.jaxis.axis == 0, event.jaxis.value);
+		// ignore joystick events - use gamecontroller events
 		break;
 	case SDL_FINGERDOWN:
 		fingerPress(event.tfinger.fingerId, event.tfinger.x, event.tfinger.y);
@@ -130,10 +116,15 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		break;
 	case SDL_WINDOWEVENT:
 		switch (event.window.event) {
+		case SDL_WINDOWEVENT_RESTORED:
+			for (IEventObserver* observer : _observers) {
+				observer->onWindowRestore();
+			}
+			break;
 		case SDL_WINDOWEVENT_RESIZED:
 		case SDL_WINDOWEVENT_SIZE_CHANGED:
-			for (EventObservers::iterator i = _observers.begin(); i != _observers.end(); ++i) {
-				(*i)->onWindowResize();
+			for (IEventObserver* observer : _observers) {
+				observer->onWindowResize();
 			}
 			break;
 		case SDL_WINDOWEVENT_CLOSE:
@@ -168,18 +159,6 @@ bool EventHandler::handleAppEvent(SDL_Event &event) {
 	return false;
 }
 
-void EventHandler::joystickDeviceAdded(int32_t device) {
-	for (IEventObserver* observer : _observers) {
-		observer->onJoystickDeviceAdded(device);
-	}
-}
-
-void EventHandler::joystickDeviceRemoved(int32_t device) {
-	for (IEventObserver* observer : _observers) {
-		observer->onJoystickDeviceRemoved(device);
-	}
-}
-
 void EventHandler::lowMemory() {
 	for (IEventObserver* observer : _observers) {
 		observer->onLowMemory();
@@ -205,20 +184,14 @@ void EventHandler::prepareForeground() {
 }
 
 void EventHandler::background() {
-	for (EventObservers::iterator i = _observers.begin(); i != _observers.end(); ++i) {
-		(*i)->onBackground();
+	for (IEventObserver* observer : _observers) {
+		observer->onBackground();
 	}
 }
 
 void EventHandler::foreground() {
 	for (IEventObserver* observer : _observers) {
 		observer->onForeground();
-	}
-}
-
-void EventHandler::joystickMotion(bool horizontal, int value) {
-	for (IEventObserver* observer : _observers) {
-		observer->onJoystickMotion(horizontal, value);
 	}
 }
 
@@ -234,27 +207,33 @@ void EventHandler::mouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY)
 	}
 }
 
-void EventHandler::controllerButtonPress(const std::string& button) {
+void EventHandler::controllerDeviceAdded(int32_t device) {
 	for (IEventObserver* observer : _observers) {
-		observer->onControllerButtonPress(button);
+		observer->onControllerDeviceAdded(device);
 	}
 }
 
-void EventHandler::controllerButtonRelease(const std::string& button) {
+void EventHandler::controllerDeviceRemoved(int32_t device) {
 	for (IEventObserver* observer : _observers) {
-		observer->onControllerButtonRelease(button);
+		observer->onControllerDeviceRemoved(device);
 	}
 }
 
-void EventHandler::joystickButtonPress(uint8_t button) {
+void EventHandler::controllerMotion(uint8_t axis, int value, uint32_t id) {
 	for (IEventObserver* observer : _observers) {
-		observer->onJoystickButtonPress(button);
+		observer->onControllerMotion(axis, value, id);
 	}
 }
 
-void EventHandler::joystickButtonRelease(uint8_t button) {
+void EventHandler::controllerButtonPress(const std::string& button, uint32_t id) {
 	for (IEventObserver* observer : _observers) {
-		observer->onJoystickButtonRelease(button);
+		observer->onControllerButtonPress(button, id);
+	}
+}
+
+void EventHandler::controllerButtonRelease(const std::string& button, uint32_t id) {
+	for (IEventObserver* observer : _observers) {
+		observer->onControllerButtonRelease(button, id);
 	}
 }
 

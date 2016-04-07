@@ -5,6 +5,9 @@
 
 namespace io {
 
+/**
+ * @brief Register implementations at the EventHandler class to get notifications on the events
+ */
 class IEventObserver {
 public:
 	virtual ~IEventObserver() {
@@ -37,13 +40,6 @@ public:
 	virtual void onForeground() {
 	}
 
-	/**
-	 * @param[in] horizontal
-	 * @param[in] value The relative value that the joystick was moved, [-32768,32767]
-	 */
-	virtual void onJoystickMotion(bool horizontal, int value) {
-	}
-
 	virtual void onMouseWheel(int32_t x, int32_t y) {
 	}
 
@@ -56,22 +52,24 @@ public:
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 	}
 
-	virtual void onJoystickDeviceRemoved(int32_t device) {
+	/**
+	 * @param[in] axis SDL_GameControllerAxis
+	 * @param[in] value -32768 to 32767
+	 * @param[in] id game controller id
+	 */
+	virtual void onControllerMotion(uint8_t axis, int value, uint32_t id) {
 	}
 
-	virtual void onJoystickDeviceAdded(int32_t device) {
+	virtual void onControllerDeviceRemoved(int32_t device) {
 	}
 
-	virtual void onControllerButtonPress(const std::string& button) {
+	virtual void onControllerDeviceAdded(int32_t device) {
 	}
 
-	virtual void onControllerButtonRelease(const std::string& button) {
+	virtual void onControllerButtonPress(const std::string& button, uint32_t id) {
 	}
 
-	virtual void onJoystickButtonPress(uint8_t button) {
-	}
-
-	virtual void onJoystickButtonRelease(uint8_t button) {
+	virtual void onControllerButtonRelease(const std::string& button, uint32_t id) {
 	}
 
 	virtual bool onTextInput(const std::string& text) {
@@ -102,9 +100,24 @@ public:
 	virtual void onWindowResize() {
 	}
 
+	virtual void onWindowRestore() {
+	}
+
+	/**
+	 * @param[in] theta the amount that the fingers rotated during this motion.
+	 * @param[in] dist the amount that the fingers pinched during this motion.
+	 * @param[in] numFingers the number of fingers used in the gesture.
+	 */
 	virtual void onMultiGesture(float theta, float dist, int32_t numFingers) {
 	}
 
+	/**
+	 * @brief Callback for dollar gestures
+	 * @note Can be recorded by pushing the record window onto the ui stack
+	 * @param[in] gestureId the unique id of the closest gesture to the performed stroke.
+	 * @param[in] error the difference between the gesture template and the actual performed gesture. Lower error is a better match.
+	 * @param[in] numFingers the number of fingers used to draw the stroke.
+	 */
 	virtual void onGesture(int64_t gestureId, float error, int32_t numFingers) {
 	}
 
