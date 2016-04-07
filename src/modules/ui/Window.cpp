@@ -11,14 +11,42 @@ Window::Window(Window* parent) {
 	parent->AddChild(this);
 }
 
-void Window::fillFields(TBWindow* window, const Field* fields, int fieldAmount, void* basePtr) {
+void Window::fillWidgets(const Field* fields, int fieldAmount, void* basePtr) {
 	for (int i = 0; i < fieldAmount; ++i) {
 		const Field& field = fields[i];
 		const tb::TBID& name = field.name;
-		const char *fieldName = name.debug_string.CStr();
-		TBWidget *widget = window->GetWidgetByID(name);
+		const char *widgetName = name.debug_string.CStr();
+		TBWidget *widget = GetWidgetByID(name);
 		if (widget == nullptr) {
-			Log::warn("Could not find widget with id %s in window %s", fieldName, window->GetID().debug_string.CStr());
+			Log::warn("Could not find widget with id %s in window %s", widgetName, GetID().debug_string.CStr());
+			continue;
+		}
+		void* fieldPtr = (uint8_t*)basePtr + field.offset;
+		switch (field.type) {
+		case T_INT: {
+			tb::TBStr str;
+			str.SetFormatted("%i", *(int*)fieldPtr);
+			widget->SetText(str);
+			break;
+		}
+		case T_FLOAT: {
+			tb::TBStr str;
+			str.SetFormatted("%f", *(float*)fieldPtr);
+			widget->SetText(str);
+			break;
+		}
+		}
+	}
+}
+
+void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
+	for (int i = 0; i < fieldAmount; ++i) {
+		const Field& field = fields[i];
+		const tb::TBID& name = field.name;
+		const char *widgetName = name.debug_string.CStr();
+		TBWidget *widget = GetWidgetByID(name);
+		if (widget == nullptr) {
+			Log::warn("Could not find widget with id %s in window %s", widgetName, GetID().debug_string.CStr());
 			continue;
 		}
 		const tb::TBStr& str = widget->GetText();
@@ -27,13 +55,13 @@ void Window::fillFields(TBWindow* window, const Field* fields, int fieldAmount, 
 		switch (field.type) {
 		case T_INT: {
 			const int value = atoi(string);
-			Log::info("Set %i for %s (%s)", value, fieldName, string);
+			Log::info("Set %i for %s (%s)", value, widgetName, string);
 			*(int*)fieldPtr = value;
 			break;
 		}
 		case T_FLOAT: {
 			const float value = atof(string);
-			Log::info("Set %f for %s (%s)", value, fieldName, string);
+			Log::info("Set %f for %s (%s)", value, widgetName, string);
 			*(float*)fieldPtr = value;
 			break;
 		}
