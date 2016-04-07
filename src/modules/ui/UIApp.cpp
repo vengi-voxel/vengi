@@ -242,11 +242,13 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 			continue;
 		}
 		if (command[0] == '+') {
-			if (core::Command::execute(command + " true") == 1)
+			if (core::Command::execute(command + " true") == 1) {
 				_keys[key] = modifier;
+			}
 		} else {
 			core::Command::execute(command);
 		}
+		return true;
 	}
 
 	return invokeKey(mapKey(key), mapSpecialKey(key), mapModifier(modifier), true);
