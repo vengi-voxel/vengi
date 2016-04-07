@@ -8,6 +8,7 @@
 #include "video/Color.h"
 #include "video/GLDebug.h"
 #include "ui/WorldParametersWindow.h"
+#include "ui/TreeParametersWindow.h"
 
 constexpr int MOVERIGHT		=	1 << 0;
 constexpr int MOVELEFT		=	1 << 1;
@@ -63,6 +64,7 @@ core::AppState ShapeTool::onInit() {
 	_worldRenderer.onSpawn(_camera.getPosition());
 
 	new WorldParametersWindow(this);
+	new TreeParametersWindow(this);
 
 	return state;
 }
@@ -99,6 +101,10 @@ core::AppState ShapeTool::onCleanup() {
 void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	UIApp::onMouseMotion(x, y, relX, relY);
 	_camera.onMotion(x, y, relX, relY);
+}
+
+void ShapeTool::placeTree(const voxel::World::TreeContext& ctx) {
+	_world->placeTree(ctx);
 }
 
 void ShapeTool::reset(const voxel::World::WorldContext& ctx) {

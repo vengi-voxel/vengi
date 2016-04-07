@@ -9,4 +9,11 @@ frequency Frequency
 persistence Persistence
 ok Ok
 reset Reset
-parametersheadline World Parameters
+worldparametersheadline World Parameters
+treeparametersheadline Tree Parameters
+treetype Type
+trunkheight Trunk height
+leavesheight Leaves height
+leavesdepth Leaves depth
+leaveswidth Leaves width
+treepos Position

@@ -1,0 +1,36 @@
+WindowInfo
+	title @worldparametersheadline
+	position 0 0
+TBLayout
+	axis y
+	distribution gravity
+	TBLayout
+		axis x
+		TBLayout
+			axis y
+			TBTextField: text: @octaves
+			TBInlineSelect: id: landscapeoctaves, min: 1, max: 10
+			TBTextField: text: @frequency
+			TBEditField: id: landscapefrequency
+			TBTextField: text: @amplitude
+			TBEditField: id: landscapeamplitude
+			TBTextField: text: @persistence
+			TBEditField: id: landscapepersistence
+		TBLayout
+			axis y
+			TBTextField: text: @octaves
+			TBInlineSelect: id: mountainoctaves, min: 1, max: 10
+			TBTextField: text: @frequency
+			TBEditField: id: mountainfrequency, type: number
+			TBTextField: text: @amplitude
+			TBEditField: id: mountainamplitude, type: number
+			TBTextField: text: @persistence
+			TBEditField: id: mountainpersistence, type: number
+	TBLayout
+		axis x
+		gravity right
+		distribution-position right bottom
+		TBButton
+			text @reset
+			id reset
+			autofocus 1

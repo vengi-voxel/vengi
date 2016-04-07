@@ -25,6 +25,7 @@ public:
 	~ShapeTool();
 
 	void reset(const voxel::World::WorldContext& ctx);
+	void placeTree(const voxel::World::TreeContext& ctx);
 
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;

@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "UIApp.h"
+#include <glm/glm.hpp>
 
 namespace ui {
 
@@ -35,6 +36,20 @@ void Window::fillWidgets(const Field* fields, int fieldAmount, void* basePtr) {
 			widget->SetText(str);
 			break;
 		}
+		case T_IVEC2: {
+			glm::ivec2* vec = (glm::ivec2*)fieldPtr;
+			tb::TBStr str;
+			str.SetFormatted("%i:%i", vec->x, vec->y);
+			widget->SetText(str);
+			break;
+		}
+		case T_VEC2: {
+			glm::vec2* vec = (glm::vec2*)fieldPtr;
+			tb::TBStr str;
+			str.SetFormatted("%f:%f", vec->x, vec->y);
+			widget->SetText(str);
+			break;
+		}
 		}
 	}
 }
@@ -44,12 +59,20 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 		const Field& field = fields[i];
 		const tb::TBID& name = field.name;
 		const char *widgetName = name.debug_string.CStr();
-		TBWidget *widget = GetWidgetByID(name);
-		if (widget == nullptr) {
-			Log::warn("Could not find widget with id %s in window %s", widgetName, GetID().debug_string.CStr());
-			continue;
+		tb::TBStr str;
+
+		tb::TBSelectList *list = GetWidgetByIDAndType<tb::TBSelectList>(name);
+		if (list != nullptr) {
+			const int value = list->GetValue();
+			str = list->GetSource()->GetItemString(value);
+		} else {
+			TBWidget *widget = GetWidgetByID(name);
+			if (widget == nullptr) {
+				Log::warn("Could not find widget with id %s in window %s", widgetName, GetID().debug_string.CStr());
+				continue;
+			}
+			str = widget->GetText();
 		}
-		const tb::TBStr& str = widget->GetText();
 		const char *string = str.CStr();
 		void* fieldPtr = (uint8_t*)basePtr + field.offset;
 		switch (field.type) {
@@ -63,6 +86,32 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 			const float value = atof(string);
 			Log::info("Set %f for %s (%s)", value, widgetName, string);
 			*(float*)fieldPtr = value;
+			break;
+		}
+		case T_IVEC2: {
+			char buf[64];
+			strncpy(buf, string, sizeof(buf) - 1);
+			buf[sizeof(buf) - 1] = '\0';
+			char *sep = strchr(buf, ':');
+			if (sep == nullptr)
+				break;
+			*sep++ = '\0';
+			glm::ivec2* vec = (glm::ivec2*)fieldPtr;
+			vec->x = atoi(string);
+			vec->y = atoi(sep);
+			break;
+		}
+		case T_VEC2: {
+			char buf[64];
+			strncpy(buf, string, sizeof(buf) - 1);
+			buf[sizeof(buf) - 1] = '\0';
+			char *sep = strchr(buf, ':');
+			if (sep == nullptr)
+				break;
+			*sep++ = '\0';
+			glm::vec2* vec = (glm::vec2*)fieldPtr;
+			vec->x = atof(string);
+			vec->y = atof(sep);
 			break;
 		}
 		}

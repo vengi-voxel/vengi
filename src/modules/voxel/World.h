@@ -35,6 +35,24 @@ public:
 	World();
 	~World();
 
+	enum class TreeType : int32_t {
+		DOME,
+		CONE,
+		ELLIPSIS,
+		CUBE,
+		MAX
+	};
+
+	struct TreeContext {
+		TreeType type = TreeType::DOME;
+		int trunkHeight = 6;
+		int width = 10;
+		int height = 10;
+		int depth = 10;
+		// y-level is automatically determined
+		glm::ivec2 pos = glm::ivec2(0, 0);
+	};
+
 	struct WorldContext {
 		int landscapeNoiseOctaves = 3;
 		float landscapeNoisePersistence = 0.1f;
@@ -64,6 +82,8 @@ public:
 	bool findPath(const PolyVox::Vector3DInt32& start, const PolyVox::Vector3DInt32& end, std::list<PolyVox::Vector3DInt32>& listResult);
 	int findFloor(int x, int z) const;
 	int getMaterial(int x, int y, int z) const;
+
+	void placeTree(const TreeContext& ctx);
 
 	/**
 	 * @brief Returns a random position inside the boundaries of the world (on the surface)
@@ -144,14 +164,6 @@ public:
 	}
 
 private:
-	enum class TreeType {
-		DOME,
-		CONE,
-		ELLIPSIS,
-		CUBE,
-		MAX
-	};
-
 	class Pager: public WorldData::Pager {
 	private:
 		World& _world;

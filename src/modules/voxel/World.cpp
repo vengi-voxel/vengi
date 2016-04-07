@@ -172,6 +172,10 @@ bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 	return true;
 }
 
+void World::placeTree(const World::TreeContext& ctx) {
+
+}
+
 int World::findFloor(int x, int z) const {
 	for (int i = MAX_HEIGHT; i >= 0; i--) {
 		const int material = getMaterial(x, i, z);

@@ -5,6 +5,8 @@
 #include <tb_node_tree.h>
 #include <tb_skin.h>
 #include <tb_system.h>
+#include <tb_select.h>
+#include <tb_select_item.h>
 #include <tb_widgets.h>
 #include <tb_window.h>
 #include <tb_msg.h>

@@ -3,17 +3,17 @@
 #include "ui/Window.h"
 #include "core/Common.h"
 
-using CTX = voxel::World::WorldContext;
-static const ui::Window::Field FIELDS[] = {
-	{INT_FIELD("landscapeoctaves", CTX, landscapeNoiseOctaves)},
-	{FLOAT_FIELD("landscapefrequency", CTX, landscapeNoiseFrequency)},
-	{FLOAT_FIELD("landscapeamplitude", CTX, landscapeNoiseAmplitude)},
-	{FLOAT_FIELD("landscapepersistence", CTX, landscapeNoisePersistence)},
+using WORLDCTX = voxel::World::WorldContext;
+static const ui::Window::Field WORLDFIELDS[] = {
+	{INT_FIELD("landscapeoctaves", WORLDCTX, landscapeNoiseOctaves)},
+	{FLOAT_FIELD("landscapefrequency", WORLDCTX, landscapeNoiseFrequency)},
+	{FLOAT_FIELD("landscapeamplitude", WORLDCTX, landscapeNoiseAmplitude)},
+	{FLOAT_FIELD("landscapepersistence", WORLDCTX, landscapeNoisePersistence)},
 
-	{INT_FIELD("mountainoctaves", CTX, mountainNoiseOctaves)},
-	{FLOAT_FIELD("mountainfrequency", CTX, mountainNoiseFrequency)},
-	{FLOAT_FIELD("mountainamplitude", CTX, mountainNoiseAmplitude)},
-	{FLOAT_FIELD("mountainpersistence", CTX, mountainNoisePersistence)},
+	{INT_FIELD("mountainoctaves", WORLDCTX, mountainNoiseOctaves)},
+	{FLOAT_FIELD("mountainfrequency", WORLDCTX, mountainNoiseFrequency)},
+	{FLOAT_FIELD("mountainamplitude", WORLDCTX, mountainNoiseAmplitude)},
+	{FLOAT_FIELD("mountainpersistence", WORLDCTX, mountainNoisePersistence)},
 };
 
 class WorldParametersWindow: public ui::Window {
@@ -23,15 +23,15 @@ private:
 public:
 	WorldParametersWindow(ShapeTool* tool) :
 			ui::Window(tool), _tool(tool) {
-		core_assert(loadResourceFile("ui/window/parameters.tb.txt"));
+		core_assert(loadResourceFile("ui/window/worldparameters.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 		SetOpacity(0.5f);
-		fillWidgets(FIELDS, SDL_arraysize(FIELDS), &_ctx);
+		fillWidgets(WORLDFIELDS, SDL_arraysize(WORLDFIELDS), &_ctx);
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
 		if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("reset")) || ev.special_key == tb::TB_KEY_ENTER) {
-			fillFields(FIELDS, SDL_arraysize(FIELDS), &_ctx);
+			fillFields(WORLDFIELDS, SDL_arraysize(WORLDFIELDS), &_ctx);
 			_tool->reset(_ctx);
 			return true;
 		}
