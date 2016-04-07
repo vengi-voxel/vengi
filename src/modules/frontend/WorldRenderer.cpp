@@ -53,6 +53,21 @@ bool WorldRenderer::addEntity(const ClientEntityPtr& entity) {
 	return true;
 }
 
+void WorldRenderer::deleteMesh(const glm::ivec2& pos) {
+	const glm::ivec2& p = _world->getGridPos(pos);
+	for (auto i = _meshData.begin(); i != _meshData.end(); ++i) {
+		const video::GLMeshData& meshData = *i;
+		if (meshData.translation.x != p.x || meshData.translation.y != p.y) {
+			continue;
+		}
+		_meshData.erase(i);
+		glDeleteBuffers(1, &meshData.vertexBuffer);
+		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+		return;
+	}
+}
+
 bool WorldRenderer::removeEntity(ClientEntityId id) {
 	auto i = _entities.find(id);
 	if (i == _entities.end()) {
@@ -136,7 +151,8 @@ int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, flo
 	_colorTexture->bind();
 	for (auto i = _meshData.begin(); i != _meshData.end();) {
 		const video::GLMeshData& meshData = *i;
-		if (isCulled(meshData.translation, true)) {
+		// TODO: proper culling - distance and frustum
+		if (isDistanceCulled(meshData.translation, true)) {
 			_world->allowReExtraction(meshData.translation);
 			glDeleteBuffers(1, &meshData.vertexBuffer);
 			glDeleteBuffers(1, &meshData.indexBuffer);
@@ -263,7 +279,12 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const glm::mat
 	return drawCallsEntities;
 }
 
-void WorldRenderer::extractNewMeshes(const glm::vec3& position) {
+void WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
+	if (force) {
+		const glm::ivec2& gridPos = _world->getGridPos(position);
+		_world->scheduleMeshExtraction(gridPos);
+		return;
+	}
 	const glm::ivec2& camXZ = _world->getGridPos(position);
 	const glm::vec2 diff = _lastCameraPosition - camXZ;
 	if (glm::length(diff.x) >= 1 || glm::length(diff.y) >= 1) {
@@ -280,7 +301,7 @@ void WorldRenderer::extractMeshAroundCamera(int radius) {
 	glm::ivec2 pos = cameraPos;
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
-		if (!isCulled(pos, false)) {
+		if (!isDistanceCulled(pos, false)) {
 			_world->scheduleMeshExtraction(pos);
 		}
 		o.next();
@@ -322,7 +343,7 @@ void WorldRenderer::onRunning(long now) {
 	}
 }
 
-bool WorldRenderer::isCulled(const glm::ivec2& pos, bool queryForRendering) const {
+bool WorldRenderer::isDistanceCulled(const glm::ivec2& pos, bool queryForRendering) const {
 	const glm::ivec2 dist = pos - _lastCameraPosition;
 	const int distance = glm::sqrt(dist.x * dist.x + dist.y * dist.y);
 	const float cullingThreshold = _world->getChunkSize();

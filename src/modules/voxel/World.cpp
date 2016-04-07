@@ -142,16 +142,11 @@ bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 	Log::trace("mesh extraction for %i:%i (%i:%i)", p.x, p.y, pos.x, pos.y);
 	_meshesExtracted.insert(pos);
 
-	const int size = _chunkSize->intVal();
-	int deltaX = size - 1;
-	int deltaZ = size - 1;
 	_futures.push_back(_threadPool.enqueue([=] () {
 		if (_cancelThreads)
 			return;
 		core_trace_scoped("MeshExtraction");
-		const PolyVox::Vector3DInt32 mins(pos.x, 0, pos.y);
-		const PolyVox::Vector3DInt32 maxs(pos.x + deltaX, MAX_HEIGHT - 1, pos.y + deltaZ);
-		const PolyVox::Region region(mins, maxs);
+		const PolyVox::Region& region = getRegion(pos);
 		DecodedMeshData data;
 		{
 			locked([&] () {
@@ -172,8 +167,20 @@ bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 	return true;
 }
 
-void World::placeTree(const World::TreeContext& ctx) {
+PolyVox::Region World::getRegion(const glm::ivec2& pos) const {
+	const int size = _chunkSize->intVal();
+	int deltaX = size - 1;
+	int deltaZ = size - 1;
+	const PolyVox::Vector3DInt32 mins(pos.x, 0, pos.y);
+	const PolyVox::Vector3DInt32 maxs(pos.x + deltaX, MAX_HEIGHT - 1, pos.y + deltaZ);
+	const PolyVox::Region region(mins, maxs);
+	return region;
+}
 
+void World::placeTree(const World::TreeContext& ctx) {
+	const PolyVox::Region& region = getRegion(ctx.pos);
+	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
+	addTree(region, nullptr, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height);
 }
 
 int World::findFloor(int x, int z) const {
@@ -239,7 +246,11 @@ void World::createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* c
 			if (distance > radius) {
 				continue;
 			}
-			chunk->setVoxel(center.x + x, center.y, center.z + z, voxel);
+			if (chunk != nullptr) {
+				chunk->setVoxel(center.x + x, center.y, center.z + z, voxel);
+			} else {
+				_volumeData->setVoxel(region.getLowerX() + center.x + x, center.y, region.getLowerZ() + center.z + z, voxel);
+			}
 		}
 	}
 }
@@ -251,7 +262,11 @@ void World::createCube(const PolyVox::Region& region, WorldData::Chunk* chunk, c
 	for (int x = -w; x < width - w; ++x) {
 		for (int y = -h; y < height - h; ++y) {
 			for (int z = -d; z < depth - d; ++z) {
-				chunk->setVoxel(pos.x + x, pos.y + y, pos.z + z, voxel);
+				if (chunk != nullptr) {
+					chunk->setVoxel(pos.x + x, pos.y + y, pos.z + z, voxel);
+				} else {
+					_volumeData->setVoxel(region.getLowerX() + pos.x + x, pos.y + y, region.getLowerZ() + pos.z + z, voxel);
+				}
 			}
 		}
 	}
@@ -317,12 +332,19 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 				}
 				int y1 = y;
 				if (y1 == pos.y) {
-					y1 = findChunkFloor(chunkHeight, chunk, x, z);
+					if (chunk != nullptr)
+						y1 = findChunkFloor(chunkHeight, chunk, x, z);
+					else
+						y1 = findFloor(x, z);
 					if (y1 < 0) {
 						continue;
 					}
 				}
-				chunk->setVoxel(x, y1, z, voxel);
+				if (chunk != nullptr) {
+					chunk->setVoxel(x, y1, z, voxel);
+				} else {
+					_volumeData->setVoxel(region.getLowerX() + x, y1, region.getLowerZ() + z, voxel);
+				}
 			}
 		}
 	}
@@ -515,9 +537,11 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	for (int z = 0; z < depth; ++z) {
 		for (int x = 0; x < width; ++x) {
 			const glm::vec2 noisePos2d = glm::vec2(_noiseSeedOffsetX + region.getLowerX() + x, _noiseSeedOffsetZ + region.getLowerZ() + z);
-			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.landscapeNoiseOctaves, _ctx.landscapeNoisePersistence, _ctx.landscapeNoiseFrequency);
+			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.landscapeNoiseOctaves,
+					_ctx.landscapeNoisePersistence, _ctx.landscapeNoiseFrequency, _ctx.mountainNoiseAmplitude);
 			const float noiseNormalized = (landscapeNoise + 1.0f) * 0.5f;
-			const float mountainNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.mountainNoiseOctaves, _ctx.mountainNoisePersistence, _ctx.mountainNoiseFrequency);
+			const float mountainNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.mountainNoiseOctaves,
+					_ctx.mountainNoisePersistence, _ctx.mountainNoiseFrequency, _ctx.mountainNoiseAmplitude);
 			const float mountainNoiseNormalized = (mountainNoise + 1.0f) * 0.5f;
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);

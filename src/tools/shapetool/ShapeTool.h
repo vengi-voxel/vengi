@@ -26,6 +26,7 @@ public:
 
 	void reset(const voxel::World::WorldContext& ctx);
 	void placeTree(const voxel::World::TreeContext& ctx);
+	void regenerate(const glm::ivec2& pos);
 
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;

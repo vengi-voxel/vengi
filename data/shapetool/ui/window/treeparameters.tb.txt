@@ -12,6 +12,8 @@ TBLayout
 		TBEditField: id: treepos
 		TBTextField: text: @trunkheight
 		TBEditField: id: trunkheight
+		TBTextField: text: @trunkwidth
+		TBEditField: id: trunkwidth
 		TBTextField: text: @leavesheight
 		TBEditField: id: leavesheight
 		TBTextField: text: @leavesdepth

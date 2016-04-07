@@ -7,6 +7,7 @@ using TREECTX = voxel::World::TreeContext;
 static const ui::Window::Field TREEFIELDS[] = {
 	{INT_FIELD("treetype", TREECTX, type)},
 	{INT_FIELD("trunkheight", TREECTX, trunkHeight)},
+	{INT_FIELD("trunkwidth", TREECTX, trunkWidth)},
 	{INT_FIELD("leaveswidth", TREECTX, width)},
 	{INT_FIELD("leavesheight", TREECTX, height)},
 	{INT_FIELD("leavesdepth", TREECTX, depth)},

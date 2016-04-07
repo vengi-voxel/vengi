@@ -46,6 +46,7 @@ public:
 	struct TreeContext {
 		TreeType type = TreeType::DOME;
 		int trunkHeight = 6;
+		int trunkWidth = 2;
 		int width = 10;
 		int height = 10;
 		int depth = 10;
@@ -218,20 +219,21 @@ private:
 	void calculateAO(const PolyVox::Region& region);
 
 	// width and height are already squared - to prevent using sqrt
-	static void createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel);
-	static void createEllipse(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
-	static void createCone(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
-	static void createDome(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
-	static void createCube(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
-	static void createPlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int depth, const Voxel& voxel);
+	void createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel);
+	void createEllipse(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	void createCone(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	void createDome(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	void createCube(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	void createPlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int depth, const Voxel& voxel);
 
-	static void addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height);
-	static void createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random);
+	void addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height);
+	void createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random);
 	glm::ivec2 randomPosWithoutHeight(const PolyVox::Region& region, core::Random& random, int border = 0);
 	void createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random);
-	static void createUnderground(const PolyVox::Region& region, WorldData::Chunk* chunk);
+	void createUnderground(const PolyVox::Region& region, WorldData::Chunk* chunk);
 
 	void cleanupFutures();
+	PolyVox::Region getRegion(const glm::ivec2& pos) const;
 
 	Pager _pager;
 	WorldData *_volumeData;

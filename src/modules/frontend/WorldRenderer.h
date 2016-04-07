@@ -53,7 +53,7 @@ private:
 
 	// we might want to get an answer for this question in two contexts, once for 'should-i-render-this' and once for
 	// 'should-i-create/destroy-the-mesh'.
-	bool isCulled(const glm::ivec2& pos, bool queryForRendering = true) const;
+	bool isDistanceCulled(const glm::ivec2& pos, bool queryForRendering = true) const;
 	// schedule mesh extraction around the camera position on the grid with the given radius
 	void extractMeshAroundCamera(int radius);
 
@@ -74,7 +74,10 @@ public:
 	bool addEntity(const ClientEntityPtr& entity);
 	bool removeEntity(ClientEntityId id);
 
-	void extractNewMeshes(const glm::vec3& position);
+	// world coordinates x/z
+	void deleteMesh(const glm::ivec2& pos);
+
+	void extractNewMeshes(const glm::vec3& position, bool force = false);
 	int renderWorld(video::Shader& shader, const glm::mat4& view, float aspect);
 	int renderEntities(const video::ShaderPtr& shader, const glm::mat4& view, float aspect);
 };

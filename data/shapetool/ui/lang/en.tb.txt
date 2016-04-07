@@ -13,6 +13,7 @@ worldparametersheadline World Parameters
 treeparametersheadline Tree Parameters
 treetype Type
 trunkheight Trunk height
+trunkwidth Trunk width
 leavesheight Leaves height
 leavesdepth Leaves depth
 leaveswidth Leaves width

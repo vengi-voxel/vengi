@@ -105,6 +105,14 @@ void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) 
 
 void ShapeTool::placeTree(const voxel::World::TreeContext& ctx) {
 	_world->placeTree(ctx);
+	regenerate(ctx.pos);
+	// TODO: might have affected more than one chunk
+}
+
+void ShapeTool::regenerate(const glm::ivec2& pos) {
+	_worldRenderer.deleteMesh(pos);
+	_world->allowReExtraction(pos);
+	_worldRenderer.extractNewMeshes(glm::ivec3(pos.x, 0, pos.y), true);
 }
 
 void ShapeTool::reset(const voxel::World::WorldContext& ctx) {
