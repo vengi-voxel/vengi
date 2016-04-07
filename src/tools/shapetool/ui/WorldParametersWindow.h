@@ -16,12 +16,12 @@ static const ui::Window::Field FIELDS[] = {
 	{FLOAT_FIELD("mountainpersistence", CTX, mountainNoisePersistence)},
 };
 
-class ParametersWindow: public ui::Window {
+class WorldParametersWindow: public ui::Window {
 private:
 	ShapeTool* _tool;
 	voxel::World::WorldContext _ctx;
 public:
-	ParametersWindow(ShapeTool* tool) :
+	WorldParametersWindow(ShapeTool* tool) :
 			ui::Window(tool), _tool(tool) {
 		core_assert(loadResourceFile("ui/window/parameters.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);

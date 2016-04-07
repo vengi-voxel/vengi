@@ -7,7 +7,7 @@
 #include "video/Shader.h"
 #include "video/Color.h"
 #include "video/GLDebug.h"
-#include "ui/ParametersWindow.h"
+#include "ui/WorldParametersWindow.h"
 
 constexpr int MOVERIGHT		=	1 << 0;
 constexpr int MOVELEFT		=	1 << 1;
@@ -62,7 +62,7 @@ core::AppState ShapeTool::onInit() {
 	// TODO: replace this with a scripting interface for the World::create* functions
 	_worldRenderer.onSpawn(_camera.getPosition());
 
-	new ParametersWindow(this);
+	new WorldParametersWindow(this);
 
 	return state;
 }

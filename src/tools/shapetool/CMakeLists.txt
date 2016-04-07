@@ -11,7 +11,7 @@ fips_begin_app(shapetool cmdline)
 
 	fips_dir(ui)
 	fips_files(
-		ParametersWindow.h
+		WorldParametersWindow.h
 	)
 	fips_deps(util frontend commonlua)
 	copy_data_files(shapetool)
