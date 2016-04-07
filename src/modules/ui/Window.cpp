@@ -11,6 +11,25 @@ Window::Window(Window* parent) {
 	parent->AddChild(this);
 }
 
+void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
+	for (int i = 0; i < fieldAmount; ++i) {
+		TBWidget *widget = GetWidgetByID(fields[i].name);
+		if (widget == nullptr) {
+			continue;
+		}
+		const char *string = widget->GetText().CStr();
+		void* fieldPtr = (uint8_t*)basePtr + fields[i].offset;
+		switch (fields[i].type) {
+		case T_INT:
+			*(int*)fieldPtr = atoi(string);
+			break;
+		case T_FLOAT:
+			*(float*)fieldPtr = atof(string);
+			break;
+		}
+	}
+}
+
 bool Window::loadResourceFile(const char *filename) {
 	tb::TBNode node;
 	if (!node.ReadFile(filename))

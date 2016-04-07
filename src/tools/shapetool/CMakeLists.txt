@@ -8,5 +8,11 @@ fips_begin_app(shapetool cmdline)
 		ShapeToolModule.h
 		ShapeToolInjector.h
 	)
+
+	fips_dir(ui)
+	fips_files(
+		ParametersWindow.h
+	)
 	fips_deps(util frontend commonlua)
+	copy_data_files(shapetool)
 fips_end_app()

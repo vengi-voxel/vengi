@@ -4,9 +4,11 @@
 #include "frontend/WorldShader.h"
 #include "frontend/WorldRenderer.h"
 #include "video/Camera.h"
+#include "voxel/World.h"
 
 class ShapeTool: public ui::UIApp {
 protected:
+	voxel::World::WorldContext _ctx;
 	video::Camera _camera;
 	frontend::WorldRenderer _worldRenderer;
 	voxel::WorldPtr _world;
@@ -16,13 +18,14 @@ protected:
 	uint8_t _moveMask = 0;
 
 	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
-	bool onKeyPress(int32_t key, int16_t modifier) override;
+	void beforeUI() override;
 
 public:
 	ShapeTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world);
 	~ShapeTool();
 
+	void reset(const voxel::World::WorldContext& ctx);
+
 	core::AppState onInit() override;
-	core::AppState onRunning() override;
 	core::AppState onCleanup() override;
 };

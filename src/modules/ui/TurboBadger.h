@@ -9,6 +9,7 @@
 #include <tb_window.h>
 #include <tb_msg.h>
 #include <tb_debug.h>
+#include <tb_value.h>
 #include <tb_bitmap_fragment.h>
 #include <tb_system.h>
 #include <tb_font_renderer.h>

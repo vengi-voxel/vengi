@@ -7,6 +7,7 @@
 #include "video/Shader.h"
 #include "video/Color.h"
 #include "video/GLDebug.h"
+#include "ui/ParametersWindow.h"
 
 constexpr int MOVERIGHT		=	1 << 0;
 constexpr int MOVELEFT		=	1 << 1;
@@ -38,6 +39,7 @@ ShapeTool::~ShapeTool() {
 }
 
 core::AppState ShapeTool::onInit() {
+	core::AppState state = ui::UIApp::onInit();
 	GLDebug::enable(GLDebug::Medium);
 
 	if (!_worldShader.init()) {
@@ -60,21 +62,16 @@ core::AppState ShapeTool::onInit() {
 	// TODO: replace this with a scripting interface for the World::create* functions
 	_worldRenderer.onSpawn(_camera.getPosition());
 
-	return ui::UIApp::onInit();
+	new ParametersWindow(this);
+
+	return state;
 }
 
-core::AppState ShapeTool::onRunning() {
-	core::AppState state = UIApp::onRunning();
-
+void ShapeTool::beforeUI() {
 	_world->onFrame(_deltaFrame);
 
 	if (_resetTriggered && !_world->isReset()) {
-		// todo get the value from 'somewhere' (tm)
-		voxel::World::WorldContext ctx;
-		ctx.landscapeNoiseOctaves = 1;
-		ctx.mountainNoiseOctaves = 1;
-
-		_world->setContext(ctx);
+		_world->setContext(_ctx);
 		_worldRenderer.onSpawn(_camera.getPosition());
 		_resetTriggered = false;
 	}
@@ -90,8 +87,6 @@ core::AppState ShapeTool::onRunning() {
 
 	const glm::mat4& view = _camera.getViewMatrix();
 	_worldRenderer.renderWorld(_worldShader, view, _aspect);
-
-	return state;
 }
 
 core::AppState ShapeTool::onCleanup() {
@@ -106,21 +101,13 @@ void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) 
 	_camera.onMotion(x, y, relX, relY);
 }
 
-bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
-	const bool handled = UIApp::onKeyPress(key, modifier);
-	if (handled) {
-		return true;
-	}
-
-	if (key == SDLK_r) {
-		_worldRenderer.reset();
-		_world->reset();
-		_resetTriggered = true;
-		return true;
-	}
-
-	return false;
+void ShapeTool::reset(const voxel::World::WorldContext& ctx) {
+	_ctx = ctx;
+	_worldRenderer.reset();
+	_world->reset();
+	_resetTriggered = true;
 }
+
 
 int main(int argc, char *argv[]) {
 	return getInjector()->get<ShapeTool>()->startMainLoop(argc, argv);

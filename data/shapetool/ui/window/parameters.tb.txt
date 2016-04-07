@@ -1,0 +1,10 @@
+WindowInfo
+	title @parametersheadline
+TBLayout
+	axis y
+	TBTextField: text: @octaves
+	TBInlineSelect: id: landscapeoctaves, min: 1, max: 10, value: 2
+	TBInlineSelect: id: landscapefrequency, min: 1, max: 10, value: 2
+	TBInlineSelect: id: landscapeamplitude, min: 1, max: 10, value: 2
+	TBInlineSelect: id: landscapepersistence, min: 1, max: 10, value: 2
+	TBButton text @reset id reset

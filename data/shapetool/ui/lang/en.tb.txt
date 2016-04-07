@@ -1,0 +1,12 @@
+TBMessageWindow.ok Ok
+TBMessageWindow.cancel Cancel
+TBMessageWindow.yes Yes
+TBMessageWindow.no No
+TBList.header Showing %d of %d
+octaves Octaves
+amplitude Amplitude
+frequency Frequency
+persistence Persistence
+ok Ok
+reset Reset
+parametersheadline World Parameters
