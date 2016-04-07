@@ -24,7 +24,7 @@ protected:
 		size_t offset;
 	};
 
-	void fillFields(const Field* fields, int fieldAmount, void* basePtr);
+	void fillFields(TBWindow* window, const Field* fields, int fieldAmount, void* basePtr);
 
 public:
 	Window(UIApp* app);

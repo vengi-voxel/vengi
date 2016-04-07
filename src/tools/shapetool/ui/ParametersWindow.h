@@ -12,6 +12,7 @@ public:
 			ui::Window(tool), _tool(tool) {
 		core_assert(loadResourceFile("ui/window/parameters.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
+		SetOpacity(0.5f);
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
@@ -19,12 +20,18 @@ public:
 			using CTX = voxel::World::WorldContext;
 			static const Field FIELDS[] = {
 				{INT_FIELD("landscapeoctaves", CTX, landscapeNoiseOctaves)},
-				{INT_FIELD("landscapefrequency", CTX, landscapeNoiseFrequency)},
-				{INT_FIELD("landscapeamplitude", CTX, landscapeNoiseAmplitude)},
-				{INT_FIELD("landscapepersistence", CTX, landscapeNoisePersistence)},
+				{FLOAT_FIELD("landscapefrequency", CTX, landscapeNoiseFrequency)},
+				{FLOAT_FIELD("landscapeamplitude", CTX, landscapeNoiseAmplitude)},
+				{FLOAT_FIELD("landscapepersistence", CTX, landscapeNoisePersistence)},
+
+				{INT_FIELD("mountainoctaves", CTX, mountainNoiseOctaves)},
+				{FLOAT_FIELD("mountainfrequency", CTX, mountainNoiseFrequency)},
+				{FLOAT_FIELD("mountainamplitude", CTX, mountainNoiseAmplitude)},
+				{FLOAT_FIELD("mountainpersistence", CTX, mountainNoisePersistence)},
 			};
 
-			fillFields(FIELDS, SDL_arraysize(FIELDS), &_ctx);
+			TBWindow *window = ev.target->GetParentWindow();
+			fillFields(window, FIELDS, SDL_arraysize(FIELDS), &_ctx);
 			_tool->reset(_ctx);
 			return true;
 		}

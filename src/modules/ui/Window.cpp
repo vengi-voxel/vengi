@@ -11,21 +11,32 @@ Window::Window(Window* parent) {
 	parent->AddChild(this);
 }
 
-void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
+void Window::fillFields(TBWindow* window, const Field* fields, int fieldAmount, void* basePtr) {
 	for (int i = 0; i < fieldAmount; ++i) {
-		TBWidget *widget = GetWidgetByID(fields[i].name);
+		const Field& field = fields[i];
+		const tb::TBID& name = field.name;
+		const char *fieldName = name.debug_string.CStr();
+		TBWidget *widget = window->GetWidgetByID(name);
 		if (widget == nullptr) {
+			Log::warn("Could not find widget with id %s in window %s", fieldName, window->GetID().debug_string.CStr());
 			continue;
 		}
-		const char *string = widget->GetText().CStr();
-		void* fieldPtr = (uint8_t*)basePtr + fields[i].offset;
-		switch (fields[i].type) {
-		case T_INT:
-			*(int*)fieldPtr = atoi(string);
+		const tb::TBStr& str = widget->GetText();
+		const char *string = str.CStr();
+		void* fieldPtr = (uint8_t*)basePtr + field.offset;
+		switch (field.type) {
+		case T_INT: {
+			const int value = atoi(string);
+			Log::info("Set %i for %s (%s)", value, fieldName, string);
+			*(int*)fieldPtr = value;
 			break;
-		case T_FLOAT:
-			*(float*)fieldPtr = atof(string);
+		}
+		case T_FLOAT: {
+			const float value = atof(string);
+			Log::info("Set %f for %s (%s)", value, fieldName, string);
+			*(float*)fieldPtr = value;
 			break;
+		}
 		}
 	}
 }
