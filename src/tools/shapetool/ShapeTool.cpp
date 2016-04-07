@@ -2,10 +2,27 @@
 #include "sauce/ShapeToolInjector.h"
 #include "core/App.h"
 #include "core/Process.h"
+#include "core/Command.h"
 #include "voxel/Spiral.h"
 #include "video/Shader.h"
 #include "video/Color.h"
 #include "video/GLDebug.h"
+
+constexpr int MOVERIGHT		=	1 << 0;
+constexpr int MOVELEFT		=	1 << 1;
+constexpr int MOVEFORWARD	=	1 << 2;
+constexpr int MOVEBACKWARD	=	1 << 3;
+
+#define registerMoveCmd(name, flag) \
+	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
+		if (args.empty()) { \
+			return; \
+		} \
+		if (args[0] == "true") \
+			_moveMask |= (flag); \
+		else \
+			_moveMask &= ~(flag); \
+	});
 
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
@@ -14,6 +31,10 @@ ShapeTool::ShapeTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus, v
 }
 
 ShapeTool::~ShapeTool() {
+	core::Command::unregisterCommand("+move_right");
+	core::Command::unregisterCommand("+move_left");
+	core::Command::unregisterCommand("+move_upt");
+	core::Command::unregisterCommand("+move_down");
 }
 
 core::AppState ShapeTool::onInit() {
@@ -22,6 +43,11 @@ core::AppState ShapeTool::onInit() {
 	if (!_worldShader.init()) {
 		return core::Cleanup;
 	}
+
+	registerMoveCmd("+move_right", MOVERIGHT);
+	registerMoveCmd("+move_left", MOVELEFT);
+	registerMoveCmd("+move_forward", MOVEFORWARD);
+	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	_world->setSeed(1);
 	_worldRenderer.onInit();
@@ -53,7 +79,11 @@ core::AppState ShapeTool::onRunning() {
 		_resetTriggered = false;
 	}
 
-	_camera.updatePosition(_deltaFrame, false, false, false, false);
+	const bool left = _moveMask & MOVELEFT;
+	const bool right = _moveMask & MOVERIGHT;
+	const bool forward = _moveMask & MOVEFORWARD;
+	const bool backward = _moveMask & MOVEBACKWARD;
+	_camera.updatePosition(_deltaFrame, left, right, forward, backward);
 	_camera.updateViewMatrix();
 
 	_worldRenderer.onRunning(_now);

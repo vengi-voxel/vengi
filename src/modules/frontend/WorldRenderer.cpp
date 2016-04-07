@@ -136,7 +136,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, flo
 	_colorTexture->bind();
 	for (auto i = _meshData.begin(); i != _meshData.end();) {
 		const video::GLMeshData& meshData = *i;
-		if (isCulled(meshData.translation)) {
+		if (isCulled(meshData.translation, true)) {
 			_world->allowReExtraction(meshData.translation);
 			glDeleteBuffers(1, &meshData.vertexBuffer);
 			glDeleteBuffers(1, &meshData.indexBuffer);
@@ -280,7 +280,7 @@ void WorldRenderer::extractMeshAroundCamera(int radius) {
 	glm::ivec2 pos = cameraPos;
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
-		if (!isCulled(pos)) {
+		if (!isCulled(pos, false)) {
 			_world->scheduleMeshExtraction(pos);
 		}
 		o.next();
@@ -322,12 +322,12 @@ void WorldRenderer::onRunning(long now) {
 	}
 }
 
-bool WorldRenderer::isCulled(const glm::ivec2& pos) const {
+bool WorldRenderer::isCulled(const glm::ivec2& pos, bool queryForRendering) const {
 	const glm::ivec2 dist = pos - _lastCameraPosition;
 	const int distance = glm::sqrt(dist.x * dist.x + dist.y * dist.y);
 	const float cullingThreshold = _world->getChunkSize();
 	const int maxAllowedDistance = _viewDistance + cullingThreshold;
-	if (distance > MinCullingDistance && distance >= maxAllowedDistance) {
+	if ((!queryForRendering && distance > MinCullingDistance) && distance >= maxAllowedDistance) {
 		return true;
 	}
 	return false;

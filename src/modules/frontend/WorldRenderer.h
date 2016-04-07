@@ -51,7 +51,9 @@ private:
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec2& translation, float scale);
 
-	bool isCulled(const glm::ivec2& pos) const;
+	// we might want to get an answer for this question in two contexts, once for 'should-i-render-this' and once for
+	// 'should-i-create/destroy-the-mesh'.
+	bool isCulled(const glm::ivec2& pos, bool queryForRendering = true) const;
 	// schedule mesh extraction around the camera position on the grid with the given radius
 	void extractMeshAroundCamera(int radius);
 

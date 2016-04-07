@@ -18,7 +18,7 @@ macro(check_glsl_files TARGET)
 				COMMENT "Validate ${_file}"
 				COMMAND ${FIPS_DEPLOY_DIR}/${CMAKE_PROJECT_NAME}/${FIPS_CONFIG}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file}
 				DEPENDS shadertool
-				WORKING_DIRECTORY ${FIPS_PROJECT_DIR}/data/${TARGET}/shaders
+				WORKING_DIRECTORY ${FIPS_DEPLOY_DIR}/${CMAKE_PROJECT_NAME}/${FIPS_CONFIG}/shaders
 			)
 			add_dependencies(${TARGET} shadertool ${TARGET}_${_file}_shader_validation)
 		endforeach()
