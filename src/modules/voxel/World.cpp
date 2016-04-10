@@ -318,7 +318,10 @@ void World::createDome(const PolyVox::Region& region, WorldData::Chunk* chunk, c
 }
 
 void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height) {
-	const int top = (int) pos.y + trunkHeight;
+	int top = (int) pos.y + trunkHeight;
+	if (type == TreeType::PINE) {
+		top += height;
+	}
 
 	const int chunkHeight = region.getHeightInVoxels();
 
@@ -356,6 +359,21 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 		createEllipse(region, chunk, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::CONE) {
 		createCone(region, chunk, leafesPos, width, height, depth, leavesVoxel);
+	} else if (type == TreeType::PINE) {
+		const int steps = std::max(1, height / 4);
+		const int singleHeight = steps;
+		const int stepWidth = width / steps;
+		const int stepDepth = depth / steps;
+		int currentWidth = stepWidth;
+		int currentDepth = stepDepth;
+		for (int i = 0; i < steps; ++i) {
+			glm::ivec3 pineLeaves(pos.x, top - i * singleHeight, pos.z);
+			createDome(region, chunk, pineLeaves, currentWidth, singleHeight, currentDepth, leavesVoxel);
+			pineLeaves.y -= 1;
+			createDome(region, chunk, pineLeaves, currentWidth + 1, singleHeight, currentDepth + 1, leavesVoxel);
+			currentDepth += stepDepth;
+			currentWidth += stepWidth;
+		}
 	} else if (type == TreeType::DOME) {
 		createDome(region, chunk, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::CUBE) {

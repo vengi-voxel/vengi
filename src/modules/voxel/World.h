@@ -40,6 +40,7 @@ public:
 		CONE,
 		ELLIPSIS,
 		CUBE,
+		PINE,
 		MAX
 	};
 
@@ -269,7 +270,8 @@ static const char *TreeTypeStr[] = {
 	"DOME",
 	"CONE",
 	"ELLIPSIS",
-	"CUBE"
+	"CUBE",
+	"PINE"
 };
 static_assert(SDL_arraysize(TreeTypeStr) == (int)World::TreeType::MAX, "TreeType and TreeTypeStr didn't match");
 
