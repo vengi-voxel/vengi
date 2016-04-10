@@ -47,16 +47,6 @@ World::World() :
 World::~World() {
 }
 
-int World::findChunkFloor(int chunkHeight, WorldData::Chunk* chunk, int x, int z) {
-	for (int i = chunkHeight - 1; i >= 0; i--) {
-		const int material = chunk->getVoxel(x, i, z).getMaterial();
-		if (material != Air && material != Cloud) {
-			return i + 1;
-		}
-	}
-	return -1;
-}
-
 glm::ivec2 World::randomPosWithoutHeight(const PolyVox::Region& region, core::Random& random, int border) {
 	const int w = region.getWidthInVoxels();
 	const int d = region.getDepthInVoxels();
@@ -183,10 +173,20 @@ void World::placeTree(const World::TreeContext& ctx) {
 	addTree(region, nullptr, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height);
 }
 
+int World::findChunkFloor(int chunkHeight, WorldData::Chunk* chunk, int x, int z) {
+	for (int i = chunkHeight - 1; i >= 0; i--) {
+		const int material = chunk->getVoxel(x, i, z).getMaterial();
+		if (isFloor(material)) {
+			return i + 1;
+		}
+	}
+	return -1;
+}
+
 int World::findFloor(int x, int z) const {
 	for (int i = MAX_HEIGHT; i >= 0; i--) {
 		const int material = getMaterial(x, i, z);
-		if (material != Air && material != Cloud) {
+		if (isFloor(material)) {
 			return i + 1;
 		}
 	}

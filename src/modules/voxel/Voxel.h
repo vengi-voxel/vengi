@@ -47,4 +47,8 @@ static const VoxelType Rock = 13;
 static const VoxelType Cloud = 14;
 static const VoxelType Water = 15;
 
+inline bool isFloor(VoxelType material) {
+	return material == Rock || material == Grass;
+}
+
 }
