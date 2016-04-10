@@ -265,4 +265,12 @@ inline int World::getMaterial(int x, int y, int z) const {
 
 typedef std::shared_ptr<World> WorldPtr;
 
+static const char *TreeTypeStr[] = {
+	"DOME",
+	"CONE",
+	"ELLIPSIS",
+	"CUBE"
+};
+static_assert(SDL_arraysize(TreeTypeStr) == (int)World::TreeType::MAX, "TreeType and TreeTypeStr didn't match");
+
 }

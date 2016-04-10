@@ -64,7 +64,13 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 		tb::TBSelectList *list = GetWidgetByIDAndType<tb::TBSelectList>(name);
 		if (list != nullptr) {
 			const int value = list->GetValue();
-			str = list->GetSource()->GetItemString(value);
+			tb::TBGenericStringItem* item = list->GetDefaultSource()->GetItem(value);
+			if (field.type == T_INT) {
+				const uint32_t id = item->id;
+				str.SetFormatted("%i", id);
+			} else {
+				str = item->str;
+			}
 		} else {
 			TBWidget *widget = GetWidgetByID(name);
 			if (widget == nullptr) {

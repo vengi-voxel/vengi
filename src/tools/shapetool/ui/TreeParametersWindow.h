@@ -29,10 +29,10 @@ public:
 		if (treeType != nullptr) {
 			int max = static_cast<int>(voxel::World::TreeType::MAX);
 			tb::TBGenericStringItemSource *itemSource = treeType->GetDefaultSource();
-			tb::TBStr str;
 			for (int i = 0; i < max; ++i) {
-				str.SetFormatted("%i", i);
-				itemSource->AddItem(new tb::TBGenericStringItem(str));
+				const tb::TBStr str(voxel::TreeTypeStr[i]);
+				tb::TBGenericStringItem* item = new tb::TBGenericStringItem(str, tb::TBID(i));
+				itemSource->AddItem(item);
 			}
 		}
 	}
