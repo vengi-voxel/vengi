@@ -405,29 +405,29 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 void World::createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random) {
 	const int chunkHeight = region.getHeightInVoxels();
 	for (int i = 0; i < 5; ++i) {
-		const int maxSize = 14;
-		const int rndValX = random.random(maxSize, region.getWidthInVoxels() - 1 - maxSize);
+		const int rndValX = random.random(1, region.getWidthInVoxels() - 1);
 		// number should be even
 		if (!(rndValX % 2)) {
 			continue;
 		}
 
-		const int rndValZ = random.random(maxSize, region.getDepthInVoxels() - 1 - maxSize);
+		const int rndValZ = random.random(1, region.getDepthInVoxels() - 1);
 		// TODO: use a noise map to get the position
 		glm::ivec3 pos(rndValX, -1, rndValZ);
 		const int y = findChunkFloor(chunkHeight, chunk, pos.x, pos.z);
 		const int height = random.random(10, 14);
 		const int trunkHeight = random.random(5, 9);
-		if (y < 0 || y >= chunkHeight - height - trunkHeight) {
+		if (y < 0 || y >= MAX_HEIGHT -1  - height - trunkHeight) {
 			continue;
 		}
 
 		pos.y = y;
 
+		const int maxSize = 14;
 		const int size = random.random(12, maxSize);
-		const int treeType = random.random(0, int(TreeType::MAX) - 1);
 		const int trunkWidth = 1;
-		addTree(region, chunk, pos, (TreeType)treeType, trunkHeight, trunkWidth, size, size, height);
+		const TreeType treeType = (TreeType)random.random(0, int(TreeType::MAX) - 1);
+		addTree(region, chunk, pos, treeType, trunkHeight, trunkWidth, size, size, height);
 	}
 }
 
