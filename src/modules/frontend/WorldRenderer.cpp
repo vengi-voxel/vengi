@@ -235,8 +235,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	return meshData;
 }
 
-void WorldRenderer::onSpawn(const glm::vec3& pos) {
-	const int initialExtractionRadius = 5;
+void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	_viewDistance = _world->getChunkSize() * (initialExtractionRadius + 1);
 	_fogRange = _viewDistance;
 	_lastCameraPosition = _world->getGridPos(pos);

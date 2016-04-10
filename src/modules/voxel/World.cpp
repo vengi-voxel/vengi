@@ -178,7 +178,7 @@ PolyVox::Region World::getRegion(const glm::ivec2& pos) const {
 }
 
 void World::placeTree(const World::TreeContext& ctx) {
-	const PolyVox::Region& region = getRegion(ctx.pos);
+	const PolyVox::Region& region = getRegion(getGridPos(ctx.pos));
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
 	addTree(region, nullptr, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height);
 }
@@ -249,7 +249,7 @@ void World::createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* c
 			if (chunk != nullptr) {
 				chunk->setVoxel(center.x + x, center.y, center.z + z, voxel);
 			} else {
-				_volumeData->setVoxel(region.getLowerX() + center.x + x, center.y, region.getLowerZ() + center.z + z, voxel);
+				_volumeData->setVoxel(center.x + x, center.y, center.z + z, voxel);
 			}
 		}
 	}
@@ -265,7 +265,7 @@ void World::createCube(const PolyVox::Region& region, WorldData::Chunk* chunk, c
 				if (chunk != nullptr) {
 					chunk->setVoxel(pos.x + x, pos.y + y, pos.z + z, voxel);
 				} else {
-					_volumeData->setVoxel(region.getLowerX() + pos.x + x, pos.y + y, region.getLowerZ() + pos.z + z, voxel);
+					_volumeData->setVoxel(pos.x + x, pos.y + y, pos.z + z, voxel);
 				}
 			}
 		}
@@ -343,14 +343,14 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 				if (chunk != nullptr) {
 					chunk->setVoxel(x, y1, z, voxel);
 				} else {
-					_volumeData->setVoxel(region.getLowerX() + x, y1, region.getLowerZ() + z, voxel);
+					_volumeData->setVoxel(x, y1, z, voxel);
 				}
 			}
 		}
 	}
 
-	// TODO: random leaves
-	const Voxel leavesVoxel(Leaves1, 1);
+	const VoxelType leavesType = _random.random(Leaves1, Leaves10);
+	const Voxel leavesVoxel(leavesType, 1);
 	const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 	if (type == TreeType::ELLIPSIS) {
 		createEllipse(region, chunk, leafesPos, width, height, depth, leavesVoxel);

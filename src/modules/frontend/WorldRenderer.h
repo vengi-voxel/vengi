@@ -68,7 +68,7 @@ public:
 	void onCleanup();
 
 	// called to initialed the player position
-	void onSpawn(const glm::vec3& pos);
+	void onSpawn(const glm::vec3& pos, int initialExtractionRadius = 5);
 
 	ClientEntityPtr getEntity(ClientEntityId id);
 	bool addEntity(const ClientEntityPtr& entity);
