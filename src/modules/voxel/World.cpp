@@ -6,17 +6,16 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "io/File.h"
-#include "Raycast.h"
 #include "Voxel.h"
 #include "core/Random.h"
 #include "noise/SimplexNoise.h"
-#include <PolyVox/AStarPathfinder.h>
-#include <PolyVox/CubicSurfaceExtractor.h>
-#include <PolyVox/MarchingCubesSurfaceExtractor.h>
-#include <PolyVox/AmbientOcclusionCalculator.h>
-#include <PolyVox/RawVolume.h>
+#include "cubiquity/PolyVox/AStarPathfinder.h"
+#include "cubiquity/PolyVox/CubicSurfaceExtractor.h"
+#include "cubiquity/PolyVox/MarchingCubesSurfaceExtractor.h"
+#include "cubiquity/PolyVox/AmbientOcclusionCalculator.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "cubiquity/PolyVox/RawVolume.h"
 #include <SDL.h>
 #include <zlib.h>
 
@@ -195,16 +194,6 @@ int World::findFloor(int x, int z) const {
 
 void World::allowReExtraction(const glm::ivec2& pos) {
 	_meshesExtracted.erase(getGridPos(pos));
-}
-
-World::Result World::raycast(const glm::vec3& start, const glm::vec3& end, voxel::Raycast& raycast) {
-	return locked([&] () {
-		PolyVox::RaycastResult result = PolyVox::raycastWithEndpoints(_volumeData, PolyVox::Vector3DFloat(start.x, start.y, start.z),
-				PolyVox::Vector3DFloat(end.x, end.y, end.z), raycast);
-		if (result == PolyVox::RaycastResults::Completed)
-			return World::COMPLETED;
-		return World::INTERUPTED;
-	});
 }
 
 bool World::findPath(const PolyVox::Vector3DInt32& start, const PolyVox::Vector3DInt32& end,

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <PolyVox/Mesh.h>
+#include "cubiquity/PolyVox/Mesh.h"
 #include <glm/glm.hpp>
 #include <memory>
 #include <unordered_set>
@@ -15,7 +15,6 @@
 #include "WorldData.h"
 #include "Voxel.h"
 #include "BiomManager.h"
-#include "Raycast.h"
 #include "core/ThreadPool.h"
 #include "core/ReadWriteLock.h"
 #include "core/Var.h"
@@ -80,7 +79,6 @@ public:
 	void reset();
 	bool isReset() const;
 
-	Result raycast(const glm::vec3& start, const glm::vec3& end, voxel::Raycast& raycast);
 	bool findPath(const PolyVox::Vector3DInt32& start, const PolyVox::Vector3DInt32& end, std::list<PolyVox::Vector3DInt32>& listResult);
 	int findFloor(int x, int z) const;
 	int getMaterial(int x, int y, int z) const;

@@ -3,9 +3,6 @@ imports:
         git: https://github.com/floooh/fips-glm.git
     fips-enet:
         git: https://github.com/mgerhardy/fips-enet.git
-    fips-polyvox:
-        git: https://github.com/mgerhardy/fips-polyvox.git
-        rev: bb32863e
     fips-simpleai:
         git: https://github.com/mgerhardy/fips-simpleai.git
     fips-flatbuffers:

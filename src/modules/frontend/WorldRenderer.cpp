@@ -4,8 +4,8 @@
 #include "voxel/Spiral.h"
 #include "core/App.h"
 #include "noise/SimplexNoise.h"
-#include <PolyVox/CubicSurfaceExtractor.h>
-#include <PolyVox/RawVolume.h>
+#include "cubiquity/PolyVox/CubicSurfaceExtractor.h"
+#include "cubiquity/PolyVox/RawVolume.h"
 #include <SDL.h>
 
 constexpr int MinCullingDistance = 500;

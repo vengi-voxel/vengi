@@ -12,6 +12,26 @@
 #define core_assert(condition) SDL_assert(condition)
 #endif
 
+#ifndef core_assert_msg
+#define core_assert_msg(condition, format, ...) \
+	do { \
+		static char buf[1024]; \
+		SDL_snprintf(buf, sizeof(buf) - 1, format, ##__VA_ARGS__); \
+		while (!(condition)) { \
+			struct SDL_AssertData sdl_assert_data = { \
+				0, 0, buf, 0, 0, 0, 0 \
+			}; \
+			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
+			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
+				continue; /* go again. */ \
+			} else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
+				SDL_TriggerBreakpoint(); \
+			} \
+			break; /* not retrying. */ \
+		} \
+	} while (SDL_NULL_WHILE_LOOP_CONDITION)
+#endif
+
 template<class T, class S>
 inline T assert_cast(const S object) {
 #ifdef __cpp_rtti

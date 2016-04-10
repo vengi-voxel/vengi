@@ -1,7 +1,6 @@
 fips_begin_module(voxel)
 	fips_files(
 		BiomManager.h
-		Raycast.cpp Raycast.h
 		World.cpp World.h
 		WorldEvents.h
 		WorldData.h

@@ -1,3 +1,4 @@
+fips_add_subdirectory(libs)
 fips_add_subdirectory(modules)
 fips_add_subdirectory(client)
 fips_add_subdirectory(server)
