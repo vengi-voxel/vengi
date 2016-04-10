@@ -4,7 +4,6 @@
 
 #include "core/AbstractModule.h"
 #include "core/App.h"
-#include "core/App.h"
 
 class ShaderToolModule: public core::AbstractModule {
 	void configure() const override {
