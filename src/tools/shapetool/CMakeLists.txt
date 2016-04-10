@@ -1,4 +1,4 @@
-fips_begin_app(shapetool cmdline)
+fips_begin_app(shapetool windowed)
 	fips_files(
 		ShapeTool.h ShapeTool.cpp
 	)

@@ -1,30 +1,11 @@
 #include "ShapeTool.h"
 #include "sauce/ShapeToolInjector.h"
-#include "core/App.h"
-#include "core/Process.h"
-#include "core/Command.h"
-#include "voxel/Spiral.h"
 #include "video/Shader.h"
 #include "video/Color.h"
 #include "video/GLDebug.h"
 #include "ui/WorldParametersWindow.h"
 #include "ui/TreeParametersWindow.h"
-
-constexpr int MOVERIGHT		=	1 << 0;
-constexpr int MOVELEFT		=	1 << 1;
-constexpr int MOVEFORWARD	=	1 << 2;
-constexpr int MOVEBACKWARD	=	1 << 3;
-
-#define registerMoveCmd(name, flag) \
-	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
-		if (args.empty()) { \
-			return; \
-		} \
-		if (args[0] == "true") \
-			_moveMask |= (flag); \
-		else \
-			_moveMask &= ~(flag); \
-	});
+#include "frontend/Movement.h"
 
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
@@ -119,7 +100,6 @@ void ShapeTool::reset(const voxel::World::WorldContext& ctx) {
 	_world->reset();
 	_resetTriggered = true;
 }
-
 
 int main(int argc, char *argv[]) {
 	return getInjector()->get<ShapeTool>()->startMainLoop(argc, argv);
