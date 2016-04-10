@@ -235,6 +235,7 @@ private:
 
 	void cleanupFutures();
 	PolyVox::Region getRegion(const glm::ivec2& pos) const;
+	inline bool isValidChunkPosition(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos) const;
 
 	Pager _pager;
 	WorldData *_volumeData;

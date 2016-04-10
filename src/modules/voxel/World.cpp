@@ -233,6 +233,20 @@ void World::reset() {
 	_cancelThreads = true;
 }
 
+bool World::isValidChunkPosition(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos) const {
+	if (chunk == nullptr) {
+		return false;
+	}
+
+	if (pos.x < 0 || pos.x >= region.getWidthInVoxels())
+		return false;
+	if (pos.y < 0 || pos.y >= region.getHeightInVoxels())
+		return false;
+	if (pos.z < 0 || pos.z >= region.getDepthInVoxels())
+		return false;
+	return true;
+}
+
 void World::createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
@@ -246,34 +260,36 @@ void World::createCirclePlane(const PolyVox::Region& region, WorldData::Chunk* c
 			if (distance > radius) {
 				continue;
 			}
-			if (chunk != nullptr) {
-				chunk->setVoxel(center.x + x, center.y, center.z + z, voxel);
+			const glm::ivec3 pos(center.x + x, center.y, center.z + z);
+			if (isValidChunkPosition(region, chunk, pos)) {
+				chunk->setVoxel(pos.x, pos.y, pos.z, voxel);
 			} else {
-				_volumeData->setVoxel(center.x + x, center.y, center.z + z, voxel);
+				_volumeData->setVoxel(pos.x, pos.y, pos.z, voxel);
 			}
 		}
 	}
 }
 
-void World::createCube(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void World::createCube(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int w = width / 2;
 	const int h = height / 2;
 	const int d = depth / 2;
 	for (int x = -w; x < width - w; ++x) {
 		for (int y = -h; y < height - h; ++y) {
 			for (int z = -d; z < depth - d; ++z) {
-				if (chunk != nullptr) {
-					chunk->setVoxel(pos.x + x, pos.y + y, pos.z + z, voxel);
+				const glm::ivec3 pos(center.x + x, center.y + y, center.z + z);
+				if (isValidChunkPosition(region, chunk, pos)) {
+					chunk->setVoxel(pos.x, pos.y, pos.z, voxel);
 				} else {
-					_volumeData->setVoxel(pos.x + x, pos.y + y, pos.z + z, voxel);
+					_volumeData->setVoxel(pos.x, pos.y, pos.z, voxel);
 				}
 			}
 		}
 	}
 }
 
-void World::createPlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int depth, const Voxel& voxel) {
-	createCube(region, chunk, pos, width, 1, depth, voxel);
+void World::createPlane(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
+	createCube(region, chunk, center, width, 1, depth, voxel);
 }
 
 void World::createEllipse(const PolyVox::Region& region, WorldData::Chunk* chunk, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
@@ -333,20 +349,21 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 				if ((x >= pos.x + trunkWidthY || x < pos.x - trunkWidthY) && (z >= pos.z + trunkWidthY || z < pos.z - trunkWidthY)) {
 					continue;
 				}
-				int y1 = y;
-				if (y1 == pos.y) {
-					if (chunk != nullptr)
-						y1 = findChunkFloor(chunkHeight, chunk, x, z);
-					else
-						y1 = findFloor(x, z);
-					if (y1 < 0) {
+				glm::ivec3 finalPos(x, y, z);
+				if (y == pos.y) {
+					if (isValidChunkPosition(region, chunk, finalPos)) {
+						finalPos.y = findChunkFloor(chunkHeight, chunk, x, z);
+					} else {
+						finalPos.y = findFloor(x, z);
+					}
+					if (finalPos.y < 0) {
 						continue;
 					}
 				}
-				if (chunk != nullptr) {
-					chunk->setVoxel(x, y1, z, voxel);
+				if (isValidChunkPosition(region, chunk, finalPos)) {
+					chunk->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
 				} else {
-					_volumeData->setVoxel(x, y1, z, voxel);
+					_volumeData->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
 				}
 			}
 		}
