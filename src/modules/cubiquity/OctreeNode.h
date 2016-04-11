@@ -31,14 +31,14 @@ public:
 	const ::PolyVox::Mesh<typename VoxelTraits<VoxelType>::VertexType, uint16_t>* getMesh(void);
 	void setMesh(const ::PolyVox::Mesh<typename VoxelTraits<VoxelType>::VertexType, uint16_t>* mesh);
 
-	bool isActive(void);
+	bool isActive();
 	void setActive(bool active);
 
-	bool renderThisNode(void);
+	bool renderThisNode();
 	void setRenderThisNode(bool render);
 
-	bool isMeshUpToDate(void);
-	bool isScheduledForUpdate(void);
+	bool isMeshUpToDate();
+	bool isScheduledForUpdate();
 
 	void updateFromCompletedTask(typename VoxelTraits<VoxelType>::SurfaceExtractionTaskType* completedTask);
 
@@ -136,7 +136,7 @@ void OctreeNode<VoxelType>::setMesh(const ::PolyVox::Mesh<typename VoxelTraits<V
 }
 
 template<typename VoxelType>
-bool OctreeNode<VoxelType>::isActive(void) {
+bool OctreeNode<VoxelType>::isActive() {
 	return _active;
 }
 
@@ -155,7 +155,7 @@ void OctreeNode<VoxelType>::setActive(bool active) {
 }
 
 template<typename VoxelType>
-bool OctreeNode<VoxelType>::renderThisNode(void) {
+bool OctreeNode<VoxelType>::renderThisNode() {
 	return _renderThisNode;
 }
 
@@ -168,13 +168,13 @@ void OctreeNode<VoxelType>::setRenderThisNode(bool render) {
 }
 
 template<typename VoxelType>
-bool OctreeNode<VoxelType>::isMeshUpToDate(void) {
+bool OctreeNode<VoxelType>::isMeshUpToDate() {
 	return _meshLastChanged > _dataLastModified;
 }
 
 template<typename VoxelType>
-bool OctreeNode<VoxelType>::isScheduledForUpdate(void) {
-	//We are sceduled for an update if being sceduled was the most recent thing that happened.
+bool OctreeNode<VoxelType>::isScheduledForUpdate() {
+	// We are scheduled for an update if being scheduled was the most recent thing that happened.
 	return _lastSceduledForUpdate > _dataLastModified && _lastSceduledForUpdate > _meshLastChanged;
 }
 
