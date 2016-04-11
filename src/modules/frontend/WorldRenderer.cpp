@@ -525,6 +525,7 @@ void WorldRenderer::processOctreeNodeStructure(video::Shader& shader, uint32_t o
 			for (uint32_t z = 0; z < 2; z++) {
 				for (uint32_t y = 0; y < 2; y++) {
 					for (uint32_t x = 0; x < 2; x++) {
+						// TODO: use a pool for these allocations
 						if (octreeNode.childHandles[x][y][z] != CU_UNKNOWN) {
 							if (!openGLOctreeNode->children[x][y][z]) {
 								openGLOctreeNode->children[x][y][z] = new OpenGLOctreeNode(openGLOctreeNode);
