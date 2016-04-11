@@ -26,9 +26,9 @@ public:
 	~OctreeNode();
 
 	OctreeNode* getChildNode(uint32_t childX, uint32_t childY, uint32_t childZ);
-	OctreeNode* getParentNode(void);
+	OctreeNode* getParentNode();
 
-	const ::PolyVox::Mesh<typename VoxelTraits<VoxelType>::VertexType, uint16_t>* getMesh(void);
+	const ::PolyVox::Mesh<typename VoxelTraits<VoxelType>::VertexType, uint16_t>* getMesh();
 	void setMesh(const ::PolyVox::Mesh<typename VoxelTraits<VoxelType>::VertexType, uint16_t>* mesh);
 
 	bool isActive();
@@ -108,12 +108,12 @@ OctreeNode<VoxelType>* OctreeNode<VoxelType>::getChildNode(uint32_t childX, uint
 }
 
 template<typename VoxelType>
-OctreeNode<VoxelType>* OctreeNode<VoxelType>::getParentNode(void) {
+OctreeNode<VoxelType>* OctreeNode<VoxelType>::getParentNode() {
 	return _parent == Octree<VoxelType>::InvalidNodeIndex ? 0 : _octree->_nodes[_parent];
 }
 
 template<typename VoxelType>
-const ::PolyVox::Mesh<typename VoxelTraits<VoxelType>::VertexType, uint16_t>* OctreeNode<VoxelType>::getMesh(void) {
+const ::PolyVox::Mesh<typename VoxelTraits<VoxelType>::VertexType, uint16_t>* OctreeNode<VoxelType>::getMesh() {
 	return _polyVoxMesh;
 }
 
