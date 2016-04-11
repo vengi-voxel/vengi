@@ -100,6 +100,9 @@ private:
 	Region _regionToCover;
 
 	OctreeConstructionMode _octreeConstructionMode;
+
+	std::vector<int> _freeNodeIndices;
+	std::vector<OctreeNode<VoxelType> > _nodeArray;
 };
 
 template<typename VoxelType>
@@ -181,6 +184,11 @@ template<typename VoxelType>
 Octree<VoxelType>::Octree(Volume<VoxelType>* volume, OctreeConstructionMode octreeConstructionMode, unsigned int baseNodeSize) :
 		_baseNodeSize(baseNodeSize), _volume(volume), _octreeConstructionMode(octreeConstructionMode)
 {
+	_nodeArray.reserve(InvalidNodeIndex);
+	_freeNodeIndices.reserve(InvalidNodeIndex);
+	for (int i = 0; i < InvalidNodeIndex; ++i) {
+		_freeNodeIndices.push_back(i);
+	}
 	_regionToCover = _volume->getEnclosingRegion();
 	if (_octreeConstructionMode == OctreeConstructionModes::BoundVoxels) {
 		_regionToCover.shiftUpperCorner(1, 1, 1);
@@ -234,14 +242,14 @@ Octree<VoxelType>::Octree(Volume<VoxelType>* volume, OctreeConstructionMode octr
 
 template<typename VoxelType>
 Octree<VoxelType>::~Octree() {
-	for (uint32_t ct = 0; ct < _nodes.size(); ct++) {
-		delete _nodes[ct];
-	}
 }
 
 template<typename VoxelType>
 uint16_t Octree<VoxelType>::createNode(Region region, uint16_t parent) {
-	OctreeNode<VoxelType>* node = new OctreeNode<VoxelType>(region, parent, this);
+	core_assert_msg(!_freeNodeIndices.empty(), "No free octree nodes left");
+	const int nodeIndex = _freeNodeIndices.back();
+	_freeNodeIndices.pop_back();
+	OctreeNode<VoxelType>* node = new (&_nodeArray[nodeIndex]) OctreeNode<VoxelType>(region, parent, this);
 
 	if (parent != InvalidNodeIndex) {
 		core_assert_msg(_nodes[parent]->_height < 100, "Node height has gone below zero and wrapped around.");
