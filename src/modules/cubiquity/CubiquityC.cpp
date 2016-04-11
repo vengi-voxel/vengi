@@ -488,6 +488,12 @@ CUBIQUITYC_API int32_t cuGetVolumeType(uint32_t volumeHandle, uint32_t* result) 
 	return CU_OK;
 }
 
+CUBIQUITYC_API uint32_t cuGetVolumeTypeRet(uint32_t volumeHandle) {
+	uint32_t volumeIndex, nodeIndex, result;
+	decodeHandle(volumeHandle, &result, &volumeIndex, &nodeIndex);
+	return result;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Octree functions
 ////////////////////////////////////////////////////////////////////////////////

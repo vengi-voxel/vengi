@@ -154,6 +154,7 @@ CUBIQUITYC_API int32_t cuNewEmptyTerrainVolume(int32_t lowerX, int32_t lowerY, i
 CUBIQUITYC_API int32_t cuNewTerrainVolumeFromVDB(const char* pathToExistingVoxelDatabase, uint32_t writePermissions, uint32_t baseNodeSize, uint32_t* result);
 
 CUBIQUITYC_API int32_t cuGetVolumeType(uint32_t volumeHandle, uint32_t* result);
+CUBIQUITYC_API uint32_t cuGetVolumeTypeRet(uint32_t volumeHandle);
 
 // Voxel functions
 CUBIQUITYC_API int32_t cuGetVoxel(uint32_t volumeHandle, int32_t x, int32_t y, int32_t z, void* result);
