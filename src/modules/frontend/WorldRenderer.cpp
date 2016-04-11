@@ -6,6 +6,7 @@
 #include "noise/SimplexNoise.h"
 #include "cubiquity/PolyVox/CubicSurfaceExtractor.h"
 #include "cubiquity/PolyVox/RawVolume.h"
+#include "cubiquity/CubiquityC.h"
 #include <SDL.h>
 
 constexpr int MinCullingDistance = 500;
@@ -17,6 +18,14 @@ WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
 }
 
 WorldRenderer::~WorldRenderer() {
+	if (_volumeHandle != 0) {
+		// Delete the volume from memory (doesn't delete from disk).
+		const int rc = cuDeleteVolume(_volumeHandle);
+		if (rc != CU_OK) {
+			Log::error("%s : %s", cuGetErrorCodeAsString(rc), cuGetLastErrorMessage());
+		}
+	}
+	delete _rootOpenGLOctreeNode;
 }
 
 void WorldRenderer::reset() {
@@ -94,9 +103,12 @@ int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, flo
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 
+	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
+	// Cull triangles whose normal is not towards the camera
+	glEnable(GL_CULL_FACE);
 
 	GL_checkError();
 
@@ -353,6 +365,275 @@ bool WorldRenderer::isDistanceCulled(const glm::ivec2& pos, bool queryForRenderi
 		return true;
 	}
 	return false;
+}
+
+void WorldRenderer::renderOctree(video::Shader& shader, const glm::mat4& view, float aspect) {
+	// The framework we're using here doesn't seem to provide easy access to the camera position. The following lines compute it.
+	glm::vec4 eyeSpaceEyePos(0.0, 0.0, 0.0, 1.0);
+	glm::mat4 inverseViewMatrix = glm::inverse(view);
+	glm::vec4 worldSpaceEyePos = inverseViewMatrix * eyeSpaceEyePos;
+	worldSpaceEyePos /= worldSpaceEyePos.w;
+
+	uint32_t isUpToDate;
+	int rc = cuUpdateVolume(_volumeHandle, worldSpaceEyePos[0], worldSpaceEyePos[1], worldSpaceEyePos[2], 1.0f, &isUpToDate);
+	if (rc != CU_OK) {
+		Log::info("%s - %s", cuGetErrorCodeAsString(rc), cuGetLastErrorMessage());
+	}
+
+	uint32_t hasRootNode;
+	rc = cuHasRootOctreeNode(_volumeHandle, &hasRootNode);
+	if (rc != CU_OK) {
+		Log::info("%s - %s", cuGetErrorCodeAsString(rc), cuGetLastErrorMessage());
+	}
+	if (hasRootNode == 1) {
+		// FIXME - Maybe it's easier if there is always a root node?
+		if (!_rootOpenGLOctreeNode) {
+			_rootOpenGLOctreeNode = new OpenGLOctreeNode(0);
+		}
+
+		uint32_t octreeNodeHandle;
+		cuGetRootOctreeNode(_volumeHandle, &octreeNodeHandle);
+		processOctreeNodeStructure(shader, octreeNodeHandle, _rootOpenGLOctreeNode);
+	} else {
+		if (_rootOpenGLOctreeNode) {
+			delete _rootOpenGLOctreeNode;
+			_rootOpenGLOctreeNode = nullptr;
+		}
+	}
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
+	// Cull triangles whose normal is not towards the camera
+	glEnable(GL_CULL_FACE);
+
+	GL_checkError();
+
+	const glm::mat4& projection = glm::perspective(45.0f, aspect, 0.1f, 1000.0f);
+
+	// Use our shader
+	shader.activate();
+	shader.setUniformMatrix("viewMatrix", view, false);
+	shader.setUniformMatrix("projectionMatrix", projection, false);
+	_colorTexture->bind();
+
+	if (_rootOpenGLOctreeNode) {
+		renderOpenGLOctreeNode(shader, _rootOpenGLOctreeNode);
+	}
+
+	shader.deactivate();
+	GL_checkError();
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_CULL_FACE);
+
+	GL_checkError();
+}
+
+void WorldRenderer::processOctreeNodeStructure(video::Shader& shader, uint32_t octreeNodeHandle, frontend::WorldRenderer::OpenGLOctreeNode* openGLOctreeNode) {
+	CuOctreeNode octreeNode;
+	int rc = cuGetOctreeNode(octreeNodeHandle, &octreeNode);
+	if (rc != CU_OK) {
+		Log::info("%s - %s", cuGetErrorCodeAsString(rc), cuGetLastErrorMessage());
+	}
+
+	if (octreeNode.nodeOrChildrenLastChanged > openGLOctreeNode->nodeAndChildrenLastSynced) {
+		if (octreeNode.propertiesLastChanged > openGLOctreeNode->propertiesLastSynced) {
+			std::cout << "Resynced properties at " << openGLOctreeNode->propertiesLastSynced << std::endl;
+			openGLOctreeNode->height = octreeNode.height;
+			openGLOctreeNode->renderThisNode = octreeNode.renderThisNode;
+			cuGetCurrentTime(&(openGLOctreeNode->propertiesLastSynced));
+		}
+
+		//std::cout << "updating" << std::endl;
+		if (octreeNode.meshLastChanged > openGLOctreeNode->meshLastSynced) {
+			if (octreeNode.hasMesh == 1) {
+				// These will point to the index and vertex data
+				uint32_t noOfIndices;
+				uint16_t* indices;
+				uint16_t noOfVertices;
+				void* vertices;
+
+				// Get the index and vertex data
+				rc = cuGetMesh(octreeNodeHandle, &noOfVertices, &vertices, &noOfIndices, &indices);
+				if (rc != CU_OK) {
+					Log::info("%s - %s", cuGetErrorCodeAsString(rc), cuGetLastErrorMessage());
+				}
+
+				uint32_t volumeType;
+				rc = cuGetVolumeType(octreeNodeHandle, &volumeType);
+				if (rc != CU_OK) {
+					Log::info("%s - %s", cuGetErrorCodeAsString(rc), cuGetLastErrorMessage());
+				}
+
+				// Pass it to the OpenGL node.
+				openGLOctreeNode->posX = octreeNode.posX;
+				openGLOctreeNode->posY = octreeNode.posY;
+				openGLOctreeNode->posZ = octreeNode.posZ;
+
+				openGLOctreeNode->noOfIndices = noOfIndices;
+
+				glBindVertexArray(openGLOctreeNode->vertexArrayObject);
+
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, openGLOctreeNode->indexBuffer);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * noOfIndices, indices, GL_STATIC_DRAW);
+
+				glBindBuffer(GL_ARRAY_BUFFER, openGLOctreeNode->vertexBuffer);
+
+				if (volumeType == CU_COLORED_CUBES) {
+					glBufferData(GL_ARRAY_BUFFER, sizeof(CuColoredCubesVertex) * noOfVertices, vertices,
+							GL_STATIC_DRAW);
+
+					// We pack the encoded position and the encoded normal into a single
+					// vertex attribute to save space: http://stackoverflow.com/a/21680009
+					const int posLoc = shader.enableVertexAttribute("encodedPosition");
+					glVertexAttribIPointer(posLoc, 4, GL_UNSIGNED_BYTE, sizeof(CuColoredCubesVertex),
+							(GLvoid*)(offsetof(CuColoredCubesVertex, encodedPosX)));
+
+					const int colorLoc = shader.enableVertexAttribute("quantizedColor");
+					glVertexAttribIPointer(colorLoc, 1, GL_UNSIGNED_INT, sizeof(CuColoredCubesVertex),
+							(GLvoid*)(offsetof(CuColoredCubesVertex, data)));
+				} else if (volumeType == CU_TERRAIN) {
+					glBufferData(GL_ARRAY_BUFFER, sizeof(CuTerrainVertex) * noOfVertices, vertices, GL_STATIC_DRAW);
+
+					// We pack the encoded position and the encoded normal into a single
+					// vertex attribute to save space: http://stackoverflow.com/a/21680009
+					const int posLoc = shader.enableVertexAttribute("encodedPositionAndNormal");
+					glVertexAttribIPointer(posLoc, 4, GL_UNSIGNED_SHORT, sizeof(CuTerrainVertex),
+							(GLvoid*)(offsetof(CuTerrainVertex, encodedPosX)));
+
+					const int materialLoc = shader.enableVertexAttribute("materialWeightsAsUBytes");
+					glVertexAttribIPointer(materialLoc, 4, GL_UNSIGNED_BYTE, sizeof(CuTerrainVertex),
+							(GLvoid*)(offsetof(CuTerrainVertex, material0)));
+				}
+
+				glBindVertexArray(0);
+			} else {
+				core_assert(openGLOctreeNode->noOfIndices == 0);
+			}
+
+			cuGetCurrentTime(&(openGLOctreeNode->meshLastSynced));
+			Log::debug("Resynced mesh at %i", openGLOctreeNode->meshLastSynced);
+		}
+
+		if (octreeNode.structureLastChanged > openGLOctreeNode->structureLastSynced) {
+			for (uint32_t z = 0; z < 2; z++) {
+				for (uint32_t y = 0; y < 2; y++) {
+					for (uint32_t x = 0; x < 2; x++) {
+						if (octreeNode.childHandles[x][y][z] != 0xFFFFFFFF) {
+							if (!openGLOctreeNode->children[x][y][z]) {
+								openGLOctreeNode->children[x][y][z] = new OpenGLOctreeNode(openGLOctreeNode);
+							}
+						} else {
+							if (openGLOctreeNode->children[x][y][z]) {
+								delete openGLOctreeNode->children[x][y][z];
+								openGLOctreeNode->children[x][y][z] = nullptr;
+							}
+						}
+					}
+				}
+			}
+
+			cuGetCurrentTime(&(openGLOctreeNode->structureLastSynced));
+			Log::debug("Resynced structure at %i", openGLOctreeNode->structureLastSynced);
+		}
+
+		for (uint32_t z = 0; z < 2; z++) {
+			for (uint32_t y = 0; y < 2; y++) {
+				for (uint32_t x = 0; x < 2; x++) {
+					if (octreeNode.childHandles[x][y][z] != 0xFFFFFFFF) {
+						// Recursivly call the octree traversal
+						processOctreeNodeStructure(shader, octreeNode.childHandles[x][y][z], openGLOctreeNode->children[x][y][z]);
+					}
+				}
+			}
+		}
+
+		cuGetCurrentTime(&(openGLOctreeNode->nodeAndChildrenLastSynced));
+	}
+}
+
+void WorldRenderer::renderOpenGLOctreeNode(video::Shader& shader, OpenGLOctreeNode* openGLOctreeNode) {
+	if (openGLOctreeNode->noOfIndices > 0 && openGLOctreeNode->renderThisNode) {
+		const glm::vec3 translate(openGLOctreeNode->posX, openGLOctreeNode->posY, openGLOctreeNode->posZ);
+		const glm::mat4 model = glm::translate(glm::mat4(1.0f), translate);
+		shader.setUniformMatrix("modelMatrix", model);
+		if (shader.hasUniform("height")) {
+			shader.setUniformui("height", openGLOctreeNode->height);
+		}
+		glBindVertexArray(openGLOctreeNode->vertexArrayObject);
+		glDrawElements(GL_TRIANGLES, openGLOctreeNode->noOfIndices, GL_UNSIGNED_SHORT, 0);
+		glBindVertexArray(0);
+	}
+
+	for (uint32_t z = 0; z < 2; z++) {
+		for (uint32_t y = 0; y < 2; y++) {
+			for (uint32_t x = 0; x < 2; x++) {
+				if (openGLOctreeNode->children[x][y][z]) {
+					renderOpenGLOctreeNode(shader, openGLOctreeNode->children[x][y][z]);
+				}
+			}
+		}
+	}
+}
+
+WorldRenderer::OpenGLOctreeNode::OpenGLOctreeNode(OpenGLOctreeNode* parent) {
+	noOfIndices = 0;
+	indexBuffer = 0;
+	vertexBuffer = 0;
+	vertexArrayObject = 0;
+
+	posX = 0;
+	posY = 0;
+	posZ = 0;
+
+	structureLastSynced = 0;
+	propertiesLastSynced = 0;
+	meshLastSynced = 0;
+	nodeAndChildrenLastSynced = 0;
+
+	renderThisNode = false;
+
+	height = 0;
+
+	this->parent = parent;
+
+	for (uint32_t z = 0; z < 2; z++) {
+		for (uint32_t y = 0; y < 2; y++) {
+			for (uint32_t x = 0; x < 2; x++) {
+				children[x][y][z] = 0;
+			}
+		}
+	}
+
+	glGenVertexArrays(1, &vertexArrayObject);
+
+	glGenBuffers(1, &indexBuffer);
+	glGenBuffers(1, &vertexBuffer);
+}
+
+WorldRenderer::OpenGLOctreeNode::~OpenGLOctreeNode() {
+	for (uint32_t z = 0; z < 2; z++) {
+		for (uint32_t y = 0; y < 2; y++) {
+			for (uint32_t x = 0; x < 2; x++) {
+				delete children[x][y][z];
+				children[x][y][z] = 0;
+			}
+		}
+	}
+
+	glDeleteBuffers(1, &indexBuffer);
+	glDeleteBuffers(1, &vertexBuffer);
+
+	glBindVertexArray(0);
+	glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
 }

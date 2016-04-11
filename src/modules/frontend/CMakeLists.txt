@@ -6,6 +6,8 @@ fips_begin_module(frontend)
 		MeshShader.h MeshShader.cpp
 		WorldRenderer.h WorldRenderer.cpp
 		WorldShader.h WorldShader.cpp
+		TerrainShader.h TerrainShader.cpp
+		ColoredCubesShader.h ColoredCubesShader.cpp
 	)
-	fips_deps(ui network voxel cooldown)
+	fips_deps(ui network voxel cubiquity cooldown)
 fips_end_module()

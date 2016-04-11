@@ -99,6 +99,8 @@ public:
 
 	int getUniformLocation(const std::string& name) const;
 
+	void setUniformui(const std::string& name, unsigned int value) const;
+	void setUniformui(int location, unsigned int value) const;
 	void setUniformi(const std::string& name, int value) const;
 	void setUniformi(int location, int value) const;
 	void setUniformi(const std::string& name, int value1, int value2) const;
@@ -151,6 +153,16 @@ public:
 inline void Shader::setUniformi(const std::string& name, int value) const {
 	const int location = getUniformLocation(name);
 	setUniformi(location, value);
+}
+
+inline void Shader::setUniformui(const std::string& name, unsigned int value) const {
+	const int location = getUniformLocation(name);
+	setUniformui(location, value);
+}
+
+inline void Shader::setUniformui(int location, unsigned int value) const {
+	glUniform1ui(location, value);
+	GL_checkError();
 }
 
 inline void Shader::setUniformi(int location, int value) const {

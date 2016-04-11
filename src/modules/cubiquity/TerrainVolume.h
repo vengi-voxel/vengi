@@ -20,7 +20,7 @@ public:
 	TerrainVolume(const std::string& pathToExistingVoxelDatabase, WritePermission writePermission, unsigned int baseNodeSize) :
 			Volume<MaterialSet>(pathToExistingVoxelDatabase, writePermission, baseNodeSize) {
 		std::string voxelType = _voxelDatabase->getPropertyAsString("VoxelType", "");
-		core_assert(voxelType != "MaterialSet");
+		core_assert_msg(voxelType == "MaterialSet", "VoxelDatabase does not have the expected VoxelType of 'MaterialSet'");
 		_octree = new Octree<VoxelType>(this, OctreeConstructionModes::BoundCells, baseNodeSize);
 	}
 

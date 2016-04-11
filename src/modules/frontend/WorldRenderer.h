@@ -58,6 +58,33 @@ private:
 	void extractMeshAroundCamera(int radius);
 
 public:
+	class OpenGLOctreeNode {
+	public:
+		OpenGLOctreeNode(OpenGLOctreeNode* parent);
+		~OpenGLOctreeNode();
+
+		GLuint noOfIndices;
+		GLuint indexBuffer;
+		GLuint vertexBuffer;
+		GLuint vertexArrayObject;
+
+		int32_t posX;
+		int32_t posY;
+		int32_t posZ;
+
+		uint32_t structureLastSynced;
+		uint32_t propertiesLastSynced;
+		uint32_t meshLastSynced;
+		uint32_t nodeAndChildrenLastSynced;
+
+		uint32_t renderThisNode;
+
+		OpenGLOctreeNode* parent;
+		OpenGLOctreeNode* children[2][2][2];
+
+		uint8_t height;
+	};
+
 	WorldRenderer(const voxel::WorldPtr& world);
 	~WorldRenderer();
 
@@ -80,6 +107,13 @@ public:
 	void extractNewMeshes(const glm::vec3& position, bool force = false);
 	int renderWorld(video::Shader& shader, const glm::mat4& view, float aspect);
 	int renderEntities(const video::ShaderPtr& shader, const glm::mat4& view, float aspect);
+
+	// TODO: should be private from here on
+	OpenGLOctreeNode* _rootOpenGLOctreeNode = nullptr;
+	uint32_t _volumeHandle = 0;
+	void renderOpenGLOctreeNode(video::Shader& shader, OpenGLOctreeNode* openGLOctreeNode);
+	void processOctreeNodeStructure(video::Shader& shader, uint32_t octreeNodeHandle, OpenGLOctreeNode* openGLOctreeNode);
+	void renderOctree(video::Shader& shader, const glm::mat4& view, float aspect);
 };
 
 }

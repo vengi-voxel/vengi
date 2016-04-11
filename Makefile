@@ -24,6 +24,12 @@ client: build
 shapetool: build
 	$(Q)./fips run shapetool -- $(ARGS)
 
+cubiquitytool: build
+	$(Q)./fips run cubiquitytool -- $(ARGS)
+
+debugcubiquitytool: build
+	$(Q)./fips gdb cubiquitytool -- $(ARGS)
+
 debugserver: build
 	$(Q)./fips gdb server -- $(ARGS)
 
