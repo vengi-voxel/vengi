@@ -565,7 +565,7 @@ CUBIQUITYC_API int32_t cuGetOctreeNode(uint32_t nodeHandle, CuOctreeNode* result
 
 						result->childHandles[childX][childY][childZ] = encodeHandle(CU_COLORED_CUBES, volumeHandle, nodeIndex);
 					} else {
-						result->childHandles[childX][childY][childZ] = 0xFFFFFFFF; // Should be CU_INVALID_HANLDE
+						result->childHandles[childX][childY][childZ] = CU_UNKNOWN;
 					}
 				}
 			}
@@ -600,7 +600,7 @@ CUBIQUITYC_API int32_t cuGetOctreeNode(uint32_t nodeHandle, CuOctreeNode* result
 
 						result->childHandles[childX][childY][childZ] = encodeHandle(CU_TERRAIN, volumeHandle, nodeIndex);
 					} else {
-						result->childHandles[childX][childY][childZ] = 0xFFFFFFFF; // Should be CU_INVALID_HANLDE
+						result->childHandles[childX][childY][childZ] = CU_UNKNOWN;
 					}
 				}
 			}
