@@ -446,7 +446,7 @@ void WorldRenderer::processOctreeNodeStructure(video::Shader& shader, uint32_t o
 
 	if (octreeNode.nodeOrChildrenLastChanged > openGLOctreeNode->nodeAndChildrenLastSynced) {
 		if (octreeNode.propertiesLastChanged > openGLOctreeNode->propertiesLastSynced) {
-			std::cout << "Resynced properties at " << openGLOctreeNode->propertiesLastSynced << std::endl;
+			Log::debug("Resynced properties at %i", openGLOctreeNode->propertiesLastSynced);
 			openGLOctreeNode->height = octreeNode.height;
 			openGLOctreeNode->renderThisNode = octreeNode.renderThisNode;
 			cuGetCurrentTime(&(openGLOctreeNode->propertiesLastSynced));
