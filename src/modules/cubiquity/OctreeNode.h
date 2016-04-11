@@ -22,7 +22,7 @@ class OctreeNode {
 	friend class Octree<VoxelType> ;
 
 public:
-	OctreeNode(Region region, uint16_t parent, Octree<VoxelType>* octree);
+	OctreeNode(const Region& region, uint16_t parent, Octree<VoxelType>* octree);
 	~OctreeNode();
 
 	OctreeNode* getChildNode(uint32_t childX, uint32_t childY, uint32_t childZ);
@@ -78,7 +78,7 @@ private:
 // to make sure the node is set to an 'out of date'
 // state which will then try to update.
 template<typename VoxelType>
-OctreeNode<VoxelType>::OctreeNode(Region region, uint16_t parent, Octree<VoxelType>* octree) :
+OctreeNode<VoxelType>::OctreeNode(const Region& region, uint16_t parent, Octree<VoxelType>* octree) :
 		_region(region), _octree(octree), _parent(parent) {
 	for (int z = 0; z < 2; z++) {
 		for (int y = 0; y < 2; y++) {
