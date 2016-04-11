@@ -2,8 +2,9 @@
 
 #include "PolyVox/CubicSurfaceExtractor.h"
 #include "PolyVox/Vertex.h"
-
 #include "BitField.h"
+
+#include <glm/glm.hpp>
 
 namespace Cubiquity {
 
@@ -39,6 +40,11 @@ public:
 		setColor(red, green, blue, alpha);
 	}
 
+	Color(const glm::vec4& color) {
+		_channels.clearAllBits();
+		setColor(color.r, color.g, color.b, color.a);
+	}
+
 	bool operator==(const Color& rhs) const {
 		return _channels == rhs._channels;
 	}
@@ -64,19 +70,19 @@ public:
 	}
 
 	void setRed(uint8_t value) {
-		_channels.setBits(RedMSB, RedLSB, value / RedScaleFactor);
+		setBits(RedMSB, RedLSB, value / RedScaleFactor);
 	}
 
 	void setGreen(uint8_t value) {
-		_channels.setBits(GreenMSB, GreenLSB, value / GreenScaleFactor);
+		setBits(GreenMSB, GreenLSB, value / GreenScaleFactor);
 	}
 
 	void setBlue(uint8_t value) {
-		_channels.setBits(BlueMSB, BlueLSB, value / BlueScaleFactor);
+		setBits(BlueMSB, BlueLSB, value / BlueScaleFactor);
 	}
 
 	void setAlpha(uint8_t value) {
-		_channels.setBits(AlphaMSB, AlphaLSB, value / AlphaScaleFactor);
+		setBits(AlphaMSB, AlphaLSB, value / AlphaScaleFactor);
 	}
 
 	void setColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
@@ -84,6 +90,10 @@ public:
 		setGreen(green);
 		setBlue(blue);
 		setAlpha(alpha);
+	}
+
+	inline void setBits(size_t MSB, size_t LSB, uint32_t bitsToSet) {
+		_channels.setBits(MSB, LSB, bitsToSet);
 	}
 
 private:
