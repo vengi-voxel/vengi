@@ -452,7 +452,6 @@ void WorldRenderer::processOctreeNodeStructure(video::Shader& shader, uint32_t o
 			cuGetCurrentTime(&(openGLOctreeNode->propertiesLastSynced));
 		}
 
-		//std::cout << "updating" << std::endl;
 		if (octreeNode.meshLastChanged > openGLOctreeNode->meshLastSynced) {
 			if (octreeNode.hasMesh == 1) {
 				// These will point to the index and vertex data
@@ -488,8 +487,7 @@ void WorldRenderer::processOctreeNodeStructure(video::Shader& shader, uint32_t o
 				glBindBuffer(GL_ARRAY_BUFFER, openGLOctreeNode->vertexBuffer);
 
 				if (volumeType == CU_COLORED_CUBES) {
-					glBufferData(GL_ARRAY_BUFFER, sizeof(CuColoredCubesVertex) * noOfVertices, vertices,
-							GL_STATIC_DRAW);
+					glBufferData(GL_ARRAY_BUFFER, sizeof(CuColoredCubesVertex) * noOfVertices, vertices, GL_STATIC_DRAW);
 
 					// We pack the encoded position and the encoded normal into a single
 					// vertex attribute to save space: http://stackoverflow.com/a/21680009
@@ -549,7 +547,7 @@ void WorldRenderer::processOctreeNodeStructure(video::Shader& shader, uint32_t o
 			for (uint32_t y = 0; y < 2; y++) {
 				for (uint32_t x = 0; x < 2; x++) {
 					if (octreeNode.childHandles[x][y][z] != 0xFFFFFFFF) {
-						// Recursivly call the octree traversal
+						// Recursively call the octree traversal
 						processOctreeNodeStructure(shader, octreeNode.childHandles[x][y][z], openGLOctreeNode->children[x][y][z]);
 					}
 				}
