@@ -34,7 +34,7 @@ bool VertexBuffer::bind() {
 	const int size = _attributes.size();
 	for (int i = 0; i < size; i++) {
 		const Attribute& a = _attributes[i];
-		glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, GL_OFFSET(a.offset));
+		glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
 		glEnableVertexAttribArray(i);
 	}
 	return true;

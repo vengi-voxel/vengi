@@ -225,13 +225,13 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 
 	const int posLoc = shader.enableVertexAttribute("a_pos");
 	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
-			(GLvoid*)(offsetof(voxel::VoxelVertexDecoded, position)));
+			GL_OFFSET_CAST(offsetof(voxel::VoxelVertexDecoded, position)));
 
 	const int matLoc = shader.enableVertexAttribute("a_materialdensity");
 	// our material and density is encoded as 8 bits material and 8 bits density
 	core_assert(sizeof(voxel::Voxel) == sizeof(uint16_t));
 	glVertexAttribIPointer(matLoc, sizeof(voxel::Voxel), GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertexDecoded),
-			(GLvoid*)(offsetof(voxel::VoxelVertexDecoded, data)));
+			GL_OFFSET_CAST(offsetof(voxel::VoxelVertexDecoded, data)));
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -505,11 +505,11 @@ void WorldRenderer::processOctreeNodeStructure(video::Shader& shader, uint32_t o
 					// vertex attribute to save space: http://stackoverflow.com/a/21680009
 					const int posLoc = shader.enableVertexAttribute("encodedPositionAndNormal");
 					glVertexAttribIPointer(posLoc, 4, GL_UNSIGNED_SHORT, sizeof(CuTerrainVertex),
-							(GLvoid*)(offsetof(CuTerrainVertex, encodedPosX)));
+							GL_OFFSET_CAST(offsetof(CuTerrainVertex, encodedPosX)));
 
 					const int materialLoc = shader.enableVertexAttribute("materialWeightsAsUBytes");
 					glVertexAttribIPointer(materialLoc, 4, GL_UNSIGNED_BYTE, sizeof(CuTerrainVertex),
-							(GLvoid*)(offsetof(CuTerrainVertex, material0)));
+							GL_OFFSET_CAST(offsetof(CuTerrainVertex, material0)));
 				}
 
 				glBindVertexArray(0);

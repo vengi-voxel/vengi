@@ -186,7 +186,7 @@ void Mesh::render() {
 		if (matIdx < _textures.size() && _textures[matIdx]) {
 			_textures[matIdx]->bind();
 		}
-		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, GL_UNSIGNED_INT, GL_OFFSET(sizeof(uint32_t) * mesh.baseIndex), mesh.baseVertex);
+		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, GL_UNSIGNED_INT, GL_OFFSET_CAST(sizeof(uint32_t) * mesh.baseIndex), mesh.baseVertex);
 	}
 }
 

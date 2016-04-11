@@ -125,9 +125,9 @@ void UIRendererGL::RenderBatch(Batch *batch) {
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, _buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * batch->vertex_count, batch->vertex, GL_STATIC_DRAW);
-	glVertexAttribPointer(_shader.enableVertexAttribute("a_color"), 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), GL_OFFSET(offsetof(Batch, vertex[0].col)));
-	glVertexAttribPointer(_shader.enableVertexAttribute("a_texcoord"), 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET(offsetof(Batch, vertex[0].u)));
-	glVertexAttribPointer(_shader.enableVertexAttribute("a_pos"), 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET(offsetof(Batch, vertex[0].x)));
+	glVertexAttribPointer(_shader.enableVertexAttribute("a_color"), 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].col)));
+	glVertexAttribPointer(_shader.enableVertexAttribute("a_texcoord"), 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].u)));
+	glVertexAttribPointer(_shader.enableVertexAttribute("a_pos"), 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].x)));
 
 	glDrawArrays(GL_TRIANGLES, 0, batch->vertex_count);
 	GL_checkError();

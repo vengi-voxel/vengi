@@ -28,7 +28,7 @@ extern "C" {
 #define GLAPI extern
 #endif
 
-#define GL_OFFSET(i) ((void*)(i))
+#define GL_OFFSET_CAST(i) ((void*)(i))
 
 /* -------------------------------- DATA TYPES ------------------------------- */
 
