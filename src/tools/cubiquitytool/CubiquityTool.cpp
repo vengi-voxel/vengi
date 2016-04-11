@@ -8,7 +8,7 @@
 #include "cubiquity/CubiquityC.h"
 
 CubiquityTool::CubiquityTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
-		ui::UIApp(filesystem, eventBus), _worldRenderer(world), _world(world) {
+		ui::UIApp(filesystem, eventBus), _worldRenderer(world), _world(world), _currentShader(nullptr) {
 	init("engine", "cubiquitytool");
 }
 
