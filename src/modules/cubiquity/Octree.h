@@ -142,11 +142,10 @@ public:
 
 	bool preChildren(OctreeNode<VoxelType>* octreeNode) {
 		// Remember that min and max are counter-intuitive here!
-		if (!octreeNode->isMeshUpToDate()
-				&& !octreeNode->isScheduledForUpdate()
-				&& (octreeNode->_lastSurfaceExtractionTask == 0 || octreeNode->_lastSurfaceExtractionTask->_processingStartedTimestamp < Clock::getTimestamp())
+		if (!octreeNode->isMeshUpToDate() && !octreeNode->isScheduledForUpdate()
+				&& (octreeNode->_lastSurfaceExtractionTask == nullptr || octreeNode->_lastSurfaceExtractionTask->_processingStartedTimestamp < Clock::getTimestamp())
 				&& (octreeNode->isActive() && octreeNode->_height <= octreeNode->_octree->_minimumLOD
-					&& (octreeNode->_height >= octreeNode->_octree->_maximumLOD))) {
+					&& octreeNode->_height >= octreeNode->_octree->_maximumLOD)) {
 			octreeNode->_lastSceduledForUpdate = Clock::getTimestamp();
 
 			octreeNode->_lastSurfaceExtractionTask = new typename VoxelTraits<VoxelType>::SurfaceExtractionTaskType(octreeNode,
@@ -278,7 +277,7 @@ bool Octree<VoxelType>::update(const Vector3F& viewPosition, float lodThreshold)
 		task->_octreeNode->updateFromCompletedTask(task);
 
 		if (task->_octreeNode->_lastSurfaceExtractionTask == task) {
-			task->_octreeNode->_lastSurfaceExtractionTask = 0;
+			task->_octreeNode->_lastSurfaceExtractionTask = nullptr;
 		}
 
 		delete task;
@@ -313,19 +312,20 @@ void Octree<VoxelType>::setLodRange(int32_t minimumLOD, int32_t maximumLOD) {
 
 template<typename VoxelType>
 void Octree<VoxelType>::buildOctreeNodeTree(uint16_t parent) {
-	core_assert_msg(_nodes[parent]->_region.getWidthInVoxels() == _nodes[parent]->_region.getHeightInVoxels(), "Region must be cubic");
-	core_assert_msg(_nodes[parent]->_region.getWidthInVoxels() == _nodes[parent]->_region.getDepthInVoxels(), "Region must be cubic");
+	OctreeNode<VoxelType>* parentNode = _nodes[parent];
+	core_assert_msg(parentNode->_region.getWidthInVoxels() == _nodes[parent]->_region.getHeightInVoxels(), "Region must be cubic");
+	core_assert_msg(parentNode->_region.getWidthInVoxels() == _nodes[parent]->_region.getDepthInVoxels(), "Region must be cubic");
 
 	//We know that width/height/depth are all the same.
 	const uint32_t parentSize = static_cast<uint32_t>(
-			(_octreeConstructionMode == OctreeConstructionModes::BoundCells) ? _nodes[parent]->_region.getWidthInCells() : _nodes[parent]->_region.getWidthInVoxels());
+			(_octreeConstructionMode == OctreeConstructionModes::BoundCells) ? parentNode->_region.getWidthInCells() : parentNode->_region.getWidthInVoxels());
 
 	if (parentSize <= _baseNodeSize) {
 		return;
 	}
-	const Vector3I baseLowerCorner = _nodes[parent]->_region.getLowerCorner();
+	const Vector3I baseLowerCorner = parentNode->_region.getLowerCorner();
 	const int32_t childSize =
-			(_octreeConstructionMode == OctreeConstructionModes::BoundCells) ? _nodes[parent]->_region.getWidthInCells() / 2 : _nodes[parent]->_region.getWidthInVoxels() / 2;
+			(_octreeConstructionMode == OctreeConstructionModes::BoundCells) ? parentNode->_region.getWidthInCells() / 2 : parentNode->_region.getWidthInVoxels() / 2;
 
 	Vector3I baseUpperCorner;
 	if (_octreeConstructionMode == OctreeConstructionModes::BoundCells) {
@@ -337,11 +337,11 @@ void Octree<VoxelType>::buildOctreeNodeTree(uint16_t parent) {
 	for (int z = 0; z < 2; z++) {
 		for (int y = 0; y < 2; y++) {
 			for (int x = 0; x < 2; x++) {
-				Vector3I offset(x * childSize, y * childSize, z * childSize);
-				Region childRegion(baseLowerCorner + offset, baseUpperCorner + offset);
+				const Vector3I offset(x * childSize, y * childSize, z * childSize);
+				const Region childRegion(baseLowerCorner + offset, baseUpperCorner + offset);
 				if (intersects(childRegion, _regionToCover)) {
-					uint16_t octreeNode = createNode(childRegion, parent);
-					_nodes[parent]->_children[x][y][z] = octreeNode;
+					const uint16_t octreeNode = createNode(childRegion, parent);
+					parentNode->_children[x][y][z] = octreeNode;
 					buildOctreeNodeTree(octreeNode);
 				}
 			}
@@ -366,7 +366,7 @@ void Octree<VoxelType>::markAsModified(uint16_t index, int32_t x, int32_t y, int
 	for (int iz = 0; iz < 2; iz++) {
 		for (int iy = 0; iy < 2; iy++) {
 			for (int ix = 0; ix < 2; ix++) {
-				uint16_t childIndex = node->_children[ix][iy][iz];
+				const uint16_t childIndex = node->_children[ix][iy][iz];
 				if (childIndex != InvalidNodeIndex) {
 					markAsModified(childIndex, x, y, z, newTimeStamp);
 				}
@@ -389,7 +389,7 @@ void Octree<VoxelType>::markAsModified(uint16_t index, const Region& region, Tim
 	for (int iz = 0; iz < 2; iz++) {
 		for (int iy = 0; iy < 2; iy++) {
 			for (int ix = 0; ix < 2; ix++) {
-				uint16_t childIndex = node->_children[ix][iy][iz];
+				const uint16_t childIndex = node->_children[ix][iy][iz];
 				if (childIndex != InvalidNodeIndex) {
 					markAsModified(childIndex, region, newTimeStamp);
 				}
@@ -402,8 +402,8 @@ template<typename VoxelType>
 void Octree<VoxelType>::determineActiveNodes(OctreeNode<VoxelType>* octreeNode, const Vector3F& viewPosition, float lodThreshold) {
 	// FIXME - Should have an early out to set active to false if parent is false.
 
-	OctreeNode<VoxelType>* parentNode = octreeNode->getParentNode();
-	if (parentNode) {
+	const OctreeNode<VoxelType>* parentNode = octreeNode->getParentNode();
+	if (parentNode != nullptr) {
 		const Vector3F regionCentre = static_cast<Vector3F>(parentNode->_region.getCentre());
 		const float distance = (viewPosition - regionCentre).length();
 		const Vector3I diagonal = parentNode->_region.getUpperCorner() - parentNode->_region.getLowerCorner();
@@ -422,7 +422,7 @@ void Octree<VoxelType>::determineActiveNodes(OctreeNode<VoxelType>* octreeNode, 
 	for (int iz = 0; iz < 2; iz++) {
 		for (int iy = 0; iy < 2; iy++) {
 			for (int ix = 0; ix < 2; ix++) {
-				uint16_t childIndex = octreeNode->_children[ix][iy][iz];
+				const uint16_t childIndex = octreeNode->_children[ix][iy][iz];
 				if (childIndex != InvalidNodeIndex) {
 					OctreeNode<VoxelType>* childNode = _nodes[childIndex];
 					determineActiveNodes(childNode, viewPosition, lodThreshold);
