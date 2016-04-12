@@ -39,8 +39,8 @@ World::World() :
 		_random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
 	_volumeData = new WorldData(&_pager, 256 * 1024 * 1024, _chunkSize->intVal());
-	core_assert(_biomManager.addBiom(0, 100, Voxel(Grass, Voxel::getMaxDensity())));
-	core_assert(_biomManager.addBiom(101, MAX_HEIGHT - 1, Voxel(Grass, Voxel::getMaxDensity())));
+	core_assert(_biomManager.addBiom(0, 100, createVoxel(Grass)));
+	core_assert(_biomManager.addBiom(101, MAX_HEIGHT - 1, createVoxel(Grass)));
 }
 
 World::~World() {
@@ -330,7 +330,7 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 
 	const int chunkHeight = region.getHeightInVoxels();
 
-	const Voxel voxel(Wood, Voxel::getMaxDensity());
+	const Voxel voxel = createVoxel(Wood);
 	for (int y = pos.y; y < top; ++y) {
 		const int trunkWidthY = trunkWidth + std::max(0, 2 - (y - pos.y));
 		for (int x = pos.x - trunkWidthY; x < pos.x + trunkWidthY; ++x) {
@@ -359,7 +359,7 @@ void World::addTree(const PolyVox::Region& region, WorldData::Chunk* chunk, cons
 	}
 
 	const VoxelType leavesType = _random.random(Leaves1, Leaves10);
-	const Voxel leavesVoxel(leavesType, 1);
+	const Voxel leavesVoxel = createVoxel(leavesType);
 	const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 	if (type == TreeType::ELLIPSIS) {
 		createEllipse(region, chunk, leafesPos, width, height, depth, leavesVoxel);
@@ -422,7 +422,7 @@ void World::createTrees(const PolyVox::Region& region, WorldData::Chunk* chunk, 
 
 void World::createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk, core::Random& random) {
 	const int amount = 4;
-	static const Voxel voxel(Cloud, Voxel::getMinDensity());
+	static const Voxel voxel = createVoxel(Cloud);
 	for (int i = 0; i < amount; ++i) {
 		const int height = 10;
 		const glm::ivec2& pos = randomPosWithoutHeight(region, random, 20);
@@ -436,7 +436,7 @@ void World::createClouds(const PolyVox::Region& region, WorldData::Chunk* chunk,
 
 void World::createUnderground(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 	glm::ivec3 startPos(1, 1, 1);
-	const Voxel voxel(Grass, Voxel::getMaxDensity());
+	const Voxel voxel = createVoxel(Grass);
 	createPlane(region, chunk, startPos, 10, 10, voxel);
 }
 
@@ -498,8 +498,7 @@ bool World::load(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 			for (int x = 0; x < width; ++x) {
 				core_assert(voxelBuf.getSize() >= 2);
 				const uint8_t material = voxelBuf.readByte();
-				const uint8_t density = voxelBuf.readByte();
-				const Voxel voxel(material, density);
+				const Voxel voxel = createVoxel(material);
 				chunk->setVoxel(x, y, z, voxel);
 			}
 		}
@@ -519,7 +518,6 @@ bool World::save(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 			for (int x = 0; x < width; ++x) {
 				const Voxel& voxel = chunk->getVoxel(x, y, z);
 				voxelStream.addByte(voxel.getMaterial());
-				voxelStream.addByte(voxel.getDensity());
 			}
 		}
 	}
@@ -572,7 +570,7 @@ void World::create(const PolyVox::Region& region, WorldData::Chunk* chunk) {
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
 			int y = 0;
 			for (int h = lowerY; h < ni; ++h) {
-				const Voxel voxel = _biomManager.getVoxelType(lowerX + x, h, lowerZ + z);
+				const Voxel& voxel = _biomManager.getVoxelType(lowerX + x, h, lowerZ + z);
 				chunk->setVoxel(x, y++, z, voxel);
 				if (y >= height) {
 					break;

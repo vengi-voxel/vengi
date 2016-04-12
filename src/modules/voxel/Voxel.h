@@ -17,6 +17,10 @@ namespace voxel {
 typedef uint8_t VoxelType;
 typedef PolyVox::MaterialDensityPair88 Voxel;
 
+inline Voxel createVoxel(VoxelType type) {
+	return Voxel(type, Voxel::getMaxDensity());
+}
+
 typedef PolyVox::CubicVertex<voxel::Voxel> VoxelVertex;
 typedef PolyVox::Mesh<VoxelVertex> CubicMesh;
 typedef PolyVox::Vertex<voxel::Voxel> VoxelVertexDecoded;

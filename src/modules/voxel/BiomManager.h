@@ -10,12 +10,12 @@ class BiomManager {
 private:
 	Voxel bioms[MAX_HEIGHT];
 
-	const Voxel INVALID = Voxel(Air, Voxel::getMinDensity());
+	const Voxel INVALID = createVoxel(Air);
 
 public:
 	BiomManager() {
 		for (int i = 0; i < MAX_HEIGHT; ++i) {
-			bioms[i] = Voxel(Grass, Voxel::getMaxDensity());
+			bioms[i] = createVoxel(Grass);
 		}
 	}
 
