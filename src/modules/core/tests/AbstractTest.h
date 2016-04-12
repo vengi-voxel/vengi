@@ -25,3 +25,23 @@ public:
 };
 
 }
+
+inline std::ostream& operator<<(std::ostream& stream, const glm::ivec2& v) {
+	stream << "(x: " << v.x << ", y: " << v.y << ")";
+	return stream;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const glm::vec2& v) {
+	stream << "(x: " << v.x << ", y: " << v.y << ")";
+	return stream;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const glm::ivec3& v) {
+	stream << "(x: " << v.x << ", y: " << v.y << ", z: " << v.z << ")";
+	return stream;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const glm::vec3& v) {
+	stream << "(x: " << v.x << ", y: " << v.y << ", z: " << v.z << ")";
+	return stream;
+}
