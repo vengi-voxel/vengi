@@ -66,7 +66,7 @@ void WorldRenderer::deleteMesh(const glm::ivec2& pos) {
 	const glm::ivec2& p = _world->getGridPos(pos);
 	for (auto i = _meshData.begin(); i != _meshData.end(); ++i) {
 		const video::GLMeshData& meshData = *i;
-		if (meshData.translation.x != p.x || meshData.translation.y != p.y) {
+		if (meshData.translation != p) {
 			continue;
 		}
 		_meshData.erase(i);
