@@ -23,6 +23,19 @@
 
 namespace voxel {
 
+struct IVec2HashEquals {
+	size_t operator()(const glm::ivec2& k) const {
+		// TODO: find a better hash function - we have a lot of collisions here
+		return std::hash<int>()(k.x) ^ std::hash<int>()(k.y);
+	}
+
+	bool operator()(const glm::ivec2& a, const glm::ivec2& b) const {
+		return a.x == b.x && a.y == b.y;
+	}
+};
+
+typedef std::unordered_set<glm::ivec2, IVec2HashEquals> PositionSet;
+
 class World {
 public:
 	enum Result {
@@ -182,17 +195,6 @@ private:
 		void pageOut(const PolyVox::Region& region, WorldData::Chunk* chunk) override;
 	};
 
-	struct IVec2HashEquals {
-		size_t operator()(const glm::ivec2& k) const {
-			// TODO: find a better hash function - we have a lot of collisions here
-			return std::hash<int>()(k.x) ^ std::hash<int>()(k.y);
-		}
-
-		bool operator()(const glm::ivec2& a, const glm::ivec2& b) const {
-			return a.x == b.x && a.y == b.y;
-		}
-	};
-
 	template<typename Func>
 	inline auto locked(Func&& func) -> typename std::result_of<Func()>::type {
 		if (_mutex.try_lock_for(std::chrono::milliseconds(5000))) {
@@ -255,7 +257,7 @@ private:
 	core::ReadWriteLock _rwLock;
 	std::deque<DecodedMeshData> _meshQueue;
 	// fast lookup for positions that are already extracted and available in the _meshData vector
-	std::unordered_set<glm::ivec2, IVec2HashEquals> _meshesExtracted;
+	PositionSet _meshesExtracted;
 	core::VarPtr _chunkSize;
 	core::Random _random;
 	std::vector<std::future<void> > _futures;
