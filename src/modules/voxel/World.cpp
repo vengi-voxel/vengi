@@ -82,9 +82,8 @@ struct IsQuadNeeded {
 		if (back.getMaterial() != Air && front.getMaterial() == Air) {
 			materialToUse = back;
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 };
 
