@@ -14,7 +14,7 @@ struct GLMeshData {
 	GLuint baseVertex = 0u;
 	GLuint baseIndex = 0u;
 	GLuint materialIndex = 0u;
-	glm::ivec2 translation;
+	glm::ivec3 translation;
 	float scale = 1.0f;
 };
 

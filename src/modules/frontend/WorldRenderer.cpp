@@ -62,8 +62,8 @@ bool WorldRenderer::addEntity(const ClientEntityPtr& entity) {
 	return true;
 }
 
-void WorldRenderer::deleteMesh(const glm::ivec2& pos) {
-	const glm::ivec2& p = _world->getGridPos(pos);
+void WorldRenderer::deleteMesh(const glm::ivec3& pos) {
+	const glm::ivec3& p = _world->getGridPos(pos);
 	for (auto i = _meshData.begin(); i != _meshData.end(); ++i) {
 		const video::GLMeshData& meshData = *i;
 		if (meshData.translation != p) {
@@ -184,7 +184,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, flo
 			i = _meshData.erase(i);
 			continue;
 		}
-		const glm::mat4& model = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation.x, 0, meshData.translation.y));
+		const glm::mat4& model = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
 		shader.setUniformMatrix("u_model", model, false);
 		glBindVertexArray(meshData.vertexArrayObject);
 		glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
@@ -224,7 +224,7 @@ void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshDat
 }
 
 // TODO: generate bigger buffers and use glBufferSubData
-video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec2& translation, float scale) {
+video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec3& translation, float scale) {
 	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
 	const uint32_t numVertices = surfaceMesh.getNoOfVertices();
 
@@ -259,8 +259,8 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	Log::trace("mesh information:\n- mesh indices: %i, vertices: %i\n- position: %i:%i", numIndices, numVertices, translation.x,
-			translation.y);
+	Log::trace("mesh information:\n- mesh indices: %i, vertices: %i\n- position: %i:%i:%i", numIndices, numVertices, translation.x,
+			translation.y, translation.z);
 
 	meshData.translation = translation;
 	meshData.scale = scale;
@@ -318,10 +318,10 @@ void WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 		_world->scheduleMeshExtraction(position);
 		return;
 	}
-	const glm::ivec2& camXZ = _world->getGridPos(position);
-	const glm::vec2 diff = _lastCameraPosition - camXZ;
-	if (glm::length(diff.x) >= 1 || glm::length(diff.y) >= 1) {
-		_lastCameraPosition = camXZ;
+	const glm::ivec3& camXYZ = _world->getGridPos(position);
+	const glm::vec3 diff = _lastCameraPosition - camXYZ;
+	if (glm::length(diff.x) >= 1 || glm::length(diff.y) >= 1 || glm::length(diff.z) >= 1) {
+		_lastCameraPosition = camXYZ;
 		extractMeshAroundCamera(1);
 	}
 }
@@ -329,17 +329,23 @@ void WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 void WorldRenderer::extractMeshAroundCamera(int radius) {
 	const int sideLength = radius * 2 + 1;
 	const int amount = sideLength * (sideLength - 1) + sideLength;
-	const int size = _world->getChunkSize();
-	const glm::ivec2& cameraPos = _lastCameraPosition;
-	glm::ivec2 pos = cameraPos;
+	const int chunkSize = _world->getChunkSize();
+	const glm::ivec3& cameraPos = _lastCameraPosition;
+	const int maxChunks = MAX_HEIGHT / chunkSize;
+	glm::ivec3 pos = cameraPos;
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
 		if (!isDistanceCulled(pos, false)) {
-			_world->scheduleMeshExtraction(pos);
+			glm::ivec3 regionPos = pos;
+			regionPos.y = 0;
+			for (int i = 0; i < maxChunks; ++i) {
+				_world->scheduleMeshExtraction(regionPos);
+				regionPos.y = chunkSize;
+			}
 		}
 		o.next();
-		pos.x = cameraPos.x + o.x() * size;
-		pos.y = cameraPos.y + o.y() * size;
+		pos.x = cameraPos.x + o.x() * chunkSize;
+		pos.z = cameraPos.z + o.y() * chunkSize;
 	}
 }
 
@@ -376,9 +382,9 @@ void WorldRenderer::onRunning(long now) {
 	}
 }
 
-bool WorldRenderer::isDistanceCulled(const glm::ivec2& pos, bool queryForRendering) const {
-	const glm::ivec2 dist = pos - _lastCameraPosition;
-	const int distance = glm::sqrt(dist.x * dist.x + dist.y * dist.y);
+bool WorldRenderer::isDistanceCulled(const glm::ivec3& pos, bool queryForRendering) const {
+	const glm::ivec3 dist = pos - _lastCameraPosition;
+	const int distance = glm::sqrt(dist.x * dist.x + dist.z * dist.z);
 	const float cullingThreshold = _world->getChunkSize();
 	const int maxAllowedDistance = _viewDistance + cullingThreshold;
 	if ((!queryForRendering && distance > MinCullingDistance) && distance >= maxAllowedDistance) {

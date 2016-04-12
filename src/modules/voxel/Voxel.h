@@ -29,7 +29,7 @@ typedef PolyVox::Mesh<VoxelVertexDecoded, typename CubicMesh::IndexType> Decoded
 struct DecodedMeshData {
 	DecodedMesh mesh;
 	// translation on the x and z axis
-	glm::ivec2 translation;
+	glm::ivec3 translation;
 };
 
 static const VoxelType Invalid = -1;

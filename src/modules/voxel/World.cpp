@@ -127,16 +127,16 @@ void World::calculateAO(const PolyVox::Region& region) {
 // Extract the surface for the specified region of the volume.
 // The surface extractor outputs the mesh in an efficient compressed format which
 // is not directly suitable for rendering.
-bool World::scheduleMeshExtraction(const glm::ivec2& p) {
+bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	if (_cancelThreads)
 		return false;
-	const glm::ivec2& pos = getGridPos(p);
+	const glm::ivec3& pos = getGridPos(p);
 	auto i = _meshesExtracted.find(pos);
 	if (i != _meshesExtracted.end()) {
-		Log::trace("mesh is already extracted for %i:%i (%i:%i - %i:%i)", p.x, p.y, i->x, i->y, pos.x, pos.y);
+		Log::trace("mesh is already extracted for %i:%i:%i (%i:%i:%i - %i:%i:%i)", p.x, p.y, p.z, i->x, i->y, i->z, pos.x, pos.y, pos.z);
 		return false;
 	}
-	Log::trace("mesh extraction for %i:%i (%i:%i)", p.x, p.y, pos.x, pos.y);
+	Log::trace("mesh extraction for %i:%i:%i (%i:%i:%i)", p.x, p.y, p.z, pos.x, pos.y, pos.z);
 	_meshesExtracted.insert(pos);
 
 	_futures.push_back(_threadPool.enqueue([=] () {
@@ -164,19 +164,20 @@ bool World::scheduleMeshExtraction(const glm::ivec2& p) {
 	return true;
 }
 
-PolyVox::Region World::getRegion(const glm::ivec2& pos) const {
+PolyVox::Region World::getRegion(const glm::ivec3& pos) const {
 	const int size = _chunkSize->intVal();
 	int deltaX = size - 1;
+	int deltaY = size - 1;
 	int deltaZ = size - 1;
-	const PolyVox::Vector3DInt32 mins(pos.x, 0, pos.y);
-	const PolyVox::Vector3DInt32 maxs(pos.x + deltaX, MAX_HEIGHT - 1, pos.y + deltaZ);
+	const PolyVox::Vector3DInt32 mins(pos.x, pos.y, pos.z);
+	const PolyVox::Vector3DInt32 maxs(pos.x + deltaX, pos.y + deltaY, pos.z + deltaZ);
 	const PolyVox::Region region(mins, maxs);
 	return region;
 }
 
 void World::placeTree(const World::TreeContext& ctx) {
-	const PolyVox::Region& region = getRegion(getGridPos(ctx.pos));
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
+	const PolyVox::Region& region = getRegion(getGridPos(pos));
 	TerrainContext tctx;
 	tctx.chunk = nullptr;
 	tctx.region = region;
@@ -203,7 +204,7 @@ int World::findFloor(int x, int z) const {
 	return -1;
 }
 
-void World::allowReExtraction(const glm::ivec2& pos) {
+void World::allowReExtraction(const glm::ivec3& pos) {
 	_meshesExtracted.erase(getGridPos(pos));
 }
 
@@ -249,8 +250,8 @@ bool World::isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) con
 
 void World::setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel) {
 	_volumeData->setVoxel(pos.x, pos.y, pos.z, voxel);
-	const glm::ivec2& chunkpos = getChunkPos(glm::ivec2(pos.x, pos.z));
-	ctx.dirty.insert(chunkpos);
+	const glm::ivec3& gridpos = getGridPos(pos);
+	ctx.dirty.insert(gridpos);
 }
 
 void World::createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
@@ -606,7 +607,10 @@ void World::create(TerrainContext& ctx) {
 	if (_biomManager.hasTrees(worldPos)) {
 		createTrees(ctx);
 	}
-	for (const glm::ivec2& pos : ctx.dirty) {
+	for (const glm::ivec3& pos : ctx.dirty) {
+		if (region.containsPoint(pos.x, pos.y, pos.z)) {
+			continue;
+		}
 		allowReExtraction(pos);
 		scheduleMeshExtraction(pos);
 	}

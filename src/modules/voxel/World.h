@@ -23,18 +23,18 @@
 
 namespace voxel {
 
-struct IVec2HashEquals {
-	size_t operator()(const glm::ivec2& k) const {
+struct IVec3HashEquals {
+	size_t operator()(const glm::ivec3& k) const {
 		// TODO: find a better hash function - we have a lot of collisions here
-		return std::hash<int>()(k.x) ^ std::hash<int>()(k.y);
+		return std::hash<int>()(k.x) ^ std::hash<int>()(k.y) ^ std::hash<int>()(k.z);
 	}
 
-	bool operator()(const glm::ivec2& a, const glm::ivec2& b) const {
-		return a.x == b.x && a.y == b.y;
+	bool operator()(const glm::ivec3& a, const glm::ivec3& b) const {
+		return a == b;
 	}
 };
 
-typedef std::unordered_set<glm::ivec2, IVec2HashEquals> PositionSet;
+typedef std::unordered_set<glm::ivec3, IVec3HashEquals> PositionSet;
 
 class World {
 public:
@@ -112,14 +112,7 @@ public:
 	/**
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
 	 */
-	inline glm::ivec2 getGridPos(const glm::vec3& pos) {
-		return getGridPos(glm::ivec2(static_cast<int>(pos.x), static_cast<int>(pos.z)));
-	}
-
-	/**
-	 * @brief Cuts the given world coordinate down to mesh tile vectors
-	 */
-	inline glm::ivec2 getGridPos(const glm::ivec2& pos) const {
+	inline glm::ivec3 getGridPos(const glm::ivec3& pos) const {
 		const int size = _chunkSize->intVal();
 		return getChunkPos(pos) * size;
 	}
@@ -127,11 +120,12 @@ public:
 	/**
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
 	 */
-	inline glm::ivec2 getChunkPos(const glm::ivec2& pos) const {
+	inline glm::ivec3 getChunkPos(const glm::ivec3& pos) const {
 		const float size = _chunkSize->floatVal();
 		const int x = glm::floor(pos.x / size);
 		const int y = glm::floor(pos.y / size);
-		return glm::ivec2(x, y);
+		const int z = glm::floor(pos.z / size);
+		return glm::ivec3(x, y, z);
 	}
 
 	inline int getChunkSize() const {
@@ -154,7 +148,7 @@ public:
 	 * @brief If you don't need an extracted mesh anymore, make sure to allow the reextraction at a later time.
 	 * @param[in] pos A World vector that is automatically converted into a mesh tile vector
 	 */
-	void allowReExtraction(const glm::ivec2& pos);
+	void allowReExtraction(const glm::ivec3& pos);
 
 	/**
 	 * @brief Performs async mesh extraction. You need to call @c pop in order to see if some extraction is ready.
@@ -162,7 +156,7 @@ public:
 	 * @param[in] pos A World vector that is automatically converted into a mesh tile vector
 	 * @note This will not allow to reschedule an extraction for the same area until @c allowReExtraction was called.
 	 */
-	bool scheduleMeshExtraction(const glm::ivec2& pos);
+	bool scheduleMeshExtraction(const glm::ivec3& pos);
 
 	void onFrame(long dt);
 
@@ -242,7 +236,7 @@ private:
 	void createUnderground(TerrainContext& ctx);
 
 	void cleanupFutures();
-	PolyVox::Region getRegion(const glm::ivec2& pos) const;
+	PolyVox::Region getRegion(const glm::ivec3& pos) const;
 	inline bool isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) const;
 
 	Pager _pager;

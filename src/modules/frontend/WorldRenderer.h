@@ -45,17 +45,17 @@ private:
 	glm::vec3 _diffuseColor = glm::vec3(0.1, 0.1, 0.1);
 	glm::vec3 _specularColor = glm::vec3(0.0, 0.0, 0.0);
 	// the position of the last extraction - we only care for x and z here
-	glm::ivec2 _lastCameraPosition;
+	glm::ivec3 _lastCameraPosition;
 	voxel::WorldPtr _world;
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
-	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec2& translation, float scale);
+	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec3& translation, float scale);
 	void updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData);
 	void handleMeshQueue(video::Shader& shader);
 
 	// we might want to get an answer for this question in two contexts, once for 'should-i-render-this' and once for
 	// 'should-i-create/destroy-the-mesh'.
-	bool isDistanceCulled(const glm::ivec2& pos, bool queryForRendering = true) const;
+	bool isDistanceCulled(const glm::ivec3& pos, bool queryForRendering = true) const;
 	// schedule mesh extraction around the camera position on the grid with the given radius
 	void extractMeshAroundCamera(int radius);
 
@@ -104,7 +104,7 @@ public:
 	bool removeEntity(ClientEntityId id);
 
 	// world coordinates x/z
-	void deleteMesh(const glm::ivec2& pos);
+	void deleteMesh(const glm::ivec3& pos);
 
 	void extractNewMeshes(const glm::vec3& position, bool force = false);
 	int renderWorld(video::Shader& shader, const glm::mat4& view, float aspect);
