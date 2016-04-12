@@ -210,7 +210,7 @@ void World::allowReExtraction(const glm::ivec2& pos) {
 bool World::findPath(const PolyVox::Vector3DInt32& start, const PolyVox::Vector3DInt32& end,
 		std::list<PolyVox::Vector3DInt32>& listResult) {
 	static auto f = [] (const voxel::WorldData* volData, const PolyVox::Vector3DInt32& v3dPos) {
-		voxel::Voxel voxel = volData->getVoxel(v3dPos);
+		const voxel::Voxel& voxel = volData->getVoxel(v3dPos);
 		return voxel.getDensity() != 0;
 	};
 
