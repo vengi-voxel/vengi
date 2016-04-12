@@ -313,10 +313,9 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const glm::mat
 
 void WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 	if (force) {
-		const glm::ivec2& gridPos = _world->getGridPos(position);
-		deleteMesh(gridPos);
-		_world->allowReExtraction(gridPos);
-		_world->scheduleMeshExtraction(gridPos);
+		deleteMesh(position);
+		_world->allowReExtraction(position);
+		_world->scheduleMeshExtraction(position);
 		return;
 	}
 	const glm::ivec2& camXZ = _world->getGridPos(position);
