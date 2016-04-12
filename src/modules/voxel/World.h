@@ -70,6 +70,7 @@ public:
 	struct TerrainContext {
 		PolyVox::Region region;
 		WorldData::Chunk* chunk;
+		PositionSet dirty;
 	};
 
 	struct WorldContext {
@@ -223,6 +224,8 @@ private:
 	void create(TerrainContext& ctx);
 
 	void calculateAO(const PolyVox::Region& region);
+
+	void setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel);
 
 	// width and height are already squared - to prevent using sqrt
 	void createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel);

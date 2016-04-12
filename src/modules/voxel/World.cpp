@@ -247,6 +247,12 @@ bool World::isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) con
 	return true;
 }
 
+void World::setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel) {
+	_volumeData->setVoxel(pos.x, pos.y, pos.z, voxel);
+	const glm::ivec2& chunkpos = getChunkPos(glm::ivec2(pos.x, pos.z));
+	ctx.dirty.insert(chunkpos);
+}
+
 void World::createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
@@ -264,7 +270,7 @@ void World::createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int
 			if (isValidChunkPosition(ctx, pos)) {
 				ctx.chunk->setVoxel(pos.x, pos.y, pos.z, voxel);
 			} else {
-				_volumeData->setVoxel(pos.x, pos.y, pos.z, voxel);
+				setVolumeVoxel(ctx, pos, voxel);
 			}
 		}
 	}
@@ -363,7 +369,7 @@ void World::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType type, i
 				if (isValidChunkPosition(ctx, finalPos)) {
 					ctx.chunk->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
 				} else {
-					_volumeData->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
+					setVolumeVoxel(ctx, finalPos, voxel);
 				}
 			}
 		}
@@ -599,6 +605,10 @@ void World::create(TerrainContext& ctx) {
 	}
 	if (_biomManager.hasTrees(worldPos)) {
 		createTrees(ctx);
+	}
+	for (const glm::ivec2& pos : ctx.dirty) {
+		allowReExtraction(pos);
+		scheduleMeshExtraction(pos);
 	}
 }
 
