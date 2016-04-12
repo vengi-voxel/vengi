@@ -194,12 +194,26 @@ int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, flo
 	return drawCallsWorld;
 }
 
-// TODO: generate bigger buffers and use glBufferSubData
-video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec2& translation, float scale) {
-	// Convenient access to the vertices and indices
+void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData) {
 	const uint32_t* vecIndices = surfaceMesh.getRawIndexData();
 	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
 	const voxel::VoxelVertexDecoded* vecVertices = surfaceMesh.getRawVertexData();
+	const uint32_t numVertices = surfaceMesh.getNoOfVertices();
+
+	core_assert(meshData.vertexBuffer > 0);
+	glBindBuffer(GL_ARRAY_BUFFER, meshData.vertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(voxel::VoxelVertexDecoded), vecVertices, GL_STATIC_DRAW);
+
+	core_assert(meshData.indexBuffer > 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(typename voxel::DecodedMesh::IndexType), vecIndices, GL_STATIC_DRAW);
+
+	meshData.noOfIndices = numIndices;
+}
+
+// TODO: generate bigger buffers and use glBufferSubData
+video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec2& translation, float scale) {
+	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
 	const uint32_t numVertices = surfaceMesh.getNoOfVertices();
 
 	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
@@ -213,15 +227,11 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 
 	// The GL_ARRAY_BUFFER will contain the list of vertex positions
 	glGenBuffers(1, &meshData.vertexBuffer);
-	core_assert(meshData.vertexBuffer > 0);
-	glBindBuffer(GL_ARRAY_BUFFER, meshData.vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(voxel::VoxelVertexDecoded), vecVertices, GL_STATIC_DRAW);
 
 	// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
 	glGenBuffers(1, &meshData.indexBuffer);
-	core_assert(meshData.indexBuffer > 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(typename voxel::DecodedMesh::IndexType), vecIndices, GL_STATIC_DRAW);
+
+	updateMesh(surfaceMesh, meshData);
 
 	const int posLoc = shader.enableVertexAttribute("a_pos");
 	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
@@ -240,7 +250,6 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	Log::trace("mesh information:\n- mesh indices: %i, vertices: %i\n- position: %i:%i", numIndices, numVertices, translation.x,
 			translation.y);
 
-	meshData.noOfIndices = numIndices;
 	meshData.translation = translation;
 	meshData.scale = scale;
 	meshData.indexType = GL_UNSIGNED_INT;
