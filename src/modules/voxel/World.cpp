@@ -65,6 +65,7 @@ glm::ivec2 World::randomPosWithoutHeight(const PolyVox::Region& region, int bord
 }
 
 glm::ivec3 World::randomPos() const {
+	// TODO: where the heck is the randomness
 	const glm::ivec2 pos(0, 0);
 	const int y = findFloor(pos.x, pos.y);
 	return glm::ivec3(pos.x, y, pos.y);
