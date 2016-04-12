@@ -51,6 +51,7 @@ private:
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec2& translation, float scale);
 	void updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData);
+	void handleMeshQueue(video::Shader& shader);
 
 	// we might want to get an answer for this question in two contexts, once for 'should-i-render-this' and once for
 	// 'should-i-create/destroy-the-mesh'.

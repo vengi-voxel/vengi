@@ -86,13 +86,25 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 	return true;
 }
 
-int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, float aspect) {
-	int drawCallsWorld = 0;
+void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	voxel::DecodedMeshData mesh;
-	if (_world->pop(mesh)) {
-		// Now add the mesh to the list of meshes to render.
-		_meshData.push_back(createMesh(shader, mesh.mesh, mesh.translation, 1.0f));
+	if (!_world->pop(mesh)) {
+		return;
 	}
+	for (video::GLMeshData& m : _meshData) {
+		if (m.translation == mesh.translation) {
+			updateMesh(mesh.mesh, m);
+			return;
+		}
+	}
+	// Now add the mesh to the list of meshes to render.
+	_meshData.push_back(createMesh(shader, mesh.mesh, mesh.translation, 1.0f));
+}
+
+int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, float aspect) {
+	handleMeshQueue(shader);
+
+	int drawCallsWorld = 0;
 
 	// TODO: use polyvox VolumeResampler to create a minimap of your volume
 	// RawVolume<uint8_t> volDataLowLOD(PolyVox::Region(Vector3DInt32(0, 0, 0), Vector3DInt32(15, 31, 31)));
