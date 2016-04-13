@@ -204,8 +204,8 @@ int World::findFloor(int x, int z) const {
 	return -1;
 }
 
-void World::allowReExtraction(const glm::ivec3& pos) {
-	_meshesExtracted.erase(getGridPos(pos));
+bool World::allowReExtraction(const glm::ivec3& pos) {
+	return _meshesExtracted.erase(getGridPos(pos)) != 0;
 }
 
 bool World::findPath(const PolyVox::Vector3DInt32& start, const PolyVox::Vector3DInt32& end,
@@ -617,7 +617,9 @@ void World::create(TerrainContext& ctx) {
 		if (region.containsPoint(pos.x, pos.y, pos.z)) {
 			continue;
 		}
-		allowReExtraction(pos);
+		if (!allowReExtraction(pos)) {
+			continue;
+		}
 		scheduleMeshExtraction(pos);
 	}
 }
