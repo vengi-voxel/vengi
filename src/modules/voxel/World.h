@@ -69,6 +69,11 @@ public:
 
 	struct TerrainContext {
 		PolyVox::Region region;
+		// if no chunk is given, the positions are defined in absolute world coordinates
+		// otherwise they should be given in chunk coordinates.
+		// if a chunk region is exceeded by a coordinate (which might be true for e.g. tree,
+		// cloud or building generation) then the relative chunk coordinate is converted into
+		// an absolute position in the world by taking the given region parameter into account
 		WorldData::Chunk* chunk;
 		PositionSet dirty;
 	};

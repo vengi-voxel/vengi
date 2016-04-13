@@ -249,8 +249,14 @@ bool World::isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) con
 }
 
 void World::setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel) {
-	_volumeData->setVoxel(pos.x, pos.y, pos.z, voxel);
-	const glm::ivec3& gridpos = getGridPos(pos);
+	glm::ivec3 finalPos = pos;
+	if (ctx.chunk != nullptr) {
+		finalPos.x += ctx.region.getLowerX();
+		finalPos.y += ctx.region.getLowerY();
+		finalPos.z += ctx.region.getLowerZ();
+	}
+	_volumeData->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
+	const glm::ivec3& gridpos = getGridPos(finalPos);
 	ctx.dirty.insert(gridpos);
 }
 
