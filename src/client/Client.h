@@ -37,6 +37,7 @@ protected:
 	frontend::ClientEntityId _userId = -1;
 	ENetPeer* _peer = nullptr;
 	uint8_t _moveMask = 0;
+	core::VarPtr _rotationSpeed;
 
 	util::PosLerp _posLerp;
 	long _lastMovement = 0l;

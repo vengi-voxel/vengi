@@ -63,7 +63,8 @@ void ShapeTool::beforeUI() {
 	const bool right = _moveMask & MOVERIGHT;
 	const bool forward = _moveMask & MOVEFORWARD;
 	const bool backward = _moveMask & MOVEBACKWARD;
-	_camera.updatePosition(_deltaFrame, left, right, forward, backward);
+	const float speed = core::Var::get(cfg::ClientMouseSpeed, "0.01")->floatVal();
+	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
 	_camera.updateViewMatrix();
 
 	_worldRenderer.onRunning(_now);

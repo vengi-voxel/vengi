@@ -2,6 +2,7 @@
 
 namespace cfg {
 
+constexpr const char *ClientMouseRotationSpeed = "cl_cammouserotspeed";
 constexpr const char *ClientMouseSpeed = "cl_cammousespeed";
 // the max pitch should not be bigger than 89.9 - because at 90 we have a visual switch
 constexpr const char *ClientCameraMaxPitch = "cl_cammaxpitch";

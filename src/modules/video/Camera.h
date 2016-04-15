@@ -18,7 +18,6 @@ private:
 	float _pitch;
 	float _yaw;
 	glm::vec3 _direction;
-	core::VarPtr _mouseSpeed;
 	core::VarPtr _maxpitch;
 
 public:
@@ -26,10 +25,10 @@ public:
 	~Camera();
 	void init(int width, int height);
 
-	void onMotion(int32_t x, int32_t y, int32_t relX, int32_t relY);
+	void onMotion(int32_t x, int32_t y, int32_t relX, int32_t relY, float rotationSpeed = 0.01f);
 	void onMovement(int32_t forward, int32_t sideward);
 
-	void updatePosition(long dt, bool left, bool right, bool forward, bool backward);
+	void updatePosition(long dt, bool left, bool right, bool forward, bool backward, float speed = 0.01f);
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateDirection();
