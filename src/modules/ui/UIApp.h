@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <unordered_map>
 #include <list>
+#include <tb_widgets_listener.h>
 
 #include "video/WindowedApp.h"
 #include "KeybindingParser.h"
@@ -10,7 +11,7 @@
 
 namespace ui {
 
-class UIApp: public video::WindowedApp {
+class UIApp: public video::WindowedApp, private tb::TBWidgetListener {
 protected:
 	/**
 	 * @brief This struct allows you to determine how long a key was pressed or how long it is pressed

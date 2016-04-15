@@ -19,7 +19,7 @@ void Window::fillWidgets(const Field* fields, int fieldAmount, void* basePtr) {
 		const char *widgetName = name.debug_string.CStr();
 		TBWidget *widget = GetWidgetByID(name);
 		if (widget == nullptr) {
-			Log::warn("Could not find widget with id %s in window %s", widgetName, GetID().debug_string.CStr());
+			Log::warn("Could not find widget with id %s in window %s", widgetName, GetClassName());
 			continue;
 		}
 		void* fieldPtr = (uint8_t*)basePtr + field.offset;
@@ -57,8 +57,7 @@ void Window::fillWidgets(const Field* fields, int fieldAmount, void* basePtr) {
 void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 	for (int i = 0; i < fieldAmount; ++i) {
 		const Field& field = fields[i];
-		const tb::TBID& name = field.name;
-		const char *widgetName = name.debug_string.CStr();
+		const tb::TBID name(field.name);
 		tb::TBStr str;
 
 		tb::TBSelectList *list = GetWidgetByIDAndType<tb::TBSelectList>(name);
@@ -74,7 +73,7 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 		} else {
 			TBWidget *widget = GetWidgetByID(name);
 			if (widget == nullptr) {
-				Log::warn("Could not find widget with id %s in window %s", widgetName, GetID().debug_string.CStr());
+				Log::warn("Could not find widget with id %s in window %s", field.name, GetClassName());
 				continue;
 			}
 			str = widget->GetText();
@@ -84,13 +83,13 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 		switch (field.type) {
 		case T_INT: {
 			const int value = atoi(string);
-			Log::info("Set %i for %s (%s)", value, widgetName, string);
+			Log::info("Set %i for %s (%s)", value, field.name, string);
 			*(int*)fieldPtr = value;
 			break;
 		}
 		case T_FLOAT: {
 			const float value = atof(string);
-			Log::info("Set %f for %s (%s)", value, widgetName, string);
+			Log::info("Set %f for %s (%s)", value, field.name, string);
 			*(float*)fieldPtr = value;
 			break;
 		}
@@ -151,15 +150,17 @@ void Window::loadResource(tb::TBNode &node) {
 	// Use specified size or adapt to the preferred content size.
 	tb::TBNode *tmp = node.GetNode("WindowInfo>size");
 	if (tmp && tmp->GetValue().GetArrayLength() == 2) {
-		windowRect.w = dc->GetPxFromString(tmp->GetValue().GetArray()->GetValue(0)->GetString(), windowRect.w);
-		windowRect.h = dc->GetPxFromString(tmp->GetValue().GetArray()->GetValue(1)->GetString(), windowRect.h);
+		tb::TBValueArray *dimensions = tmp->GetValue().GetArray();
+		windowRect.w = dc->GetPxFromString(dimensions->GetValue(0)->GetString(), windowRect.w);
+		windowRect.h = dc->GetPxFromString(dimensions->GetValue(1)->GetString(), windowRect.h);
 	}
 
 	// Use the specified position or center in parent.
 	tmp = node.GetNode("WindowInfo>position");
 	if (tmp && tmp->GetValue().GetArrayLength() == 2) {
-		windowRect.x = dc->GetPxFromString(tmp->GetValue().GetArray()->GetValue(0)->GetString(), windowRect.x);
-		windowRect.y = dc->GetPxFromString(tmp->GetValue().GetArray()->GetValue(1)->GetString(), windowRect.y);
+		tb::TBValueArray *position = tmp->GetValue().GetArray();
+		windowRect.x = dc->GetPxFromString(position->GetValue(0)->GetString(), windowRect.x);
+		windowRect.y = dc->GetPxFromString(position->GetValue(1)->GetString(), windowRect.y);
 	} else {
 		windowRect = windowRect.CenterIn(parentRect);
 	}

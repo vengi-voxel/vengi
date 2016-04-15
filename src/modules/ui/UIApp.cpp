@@ -98,7 +98,6 @@ UIApp::UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& event
 }
 
 UIApp::~UIApp() {
-	tb::tb_core_shutdown();
 }
 
 bool UIApp::loadKeyBindings() {
@@ -272,6 +271,8 @@ core::AppState UIApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
+	tb::TBWidgetListener::AddGlobalListener(this);
+
 	tb::g_tb_lng->Load("ui/lang/en.tb.txt");
 
 	if (!tb::g_tb_skin->Load("ui/skin/skin.tb.txt", nullptr)) {
@@ -363,7 +364,11 @@ core::AppState UIApp::onRunning() {
 }
 
 core::AppState UIApp::onCleanup() {
+	tb::TBAnimationManager::AbortAllAnimations();
+	tb::TBWidgetListener::RemoveGlobalListener(this);
+
 	tb::TBWidgetsAnimationManager::Shutdown();
+	tb::tb_core_shutdown();
 	return WindowedApp::onCleanup();
 }
 

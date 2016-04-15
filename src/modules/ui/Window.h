@@ -7,7 +7,7 @@ namespace ui {
 
 class UIApp;
 
-#define FIELD(name, type, structtarget, structmember) tb::TBID(name), type, offsetof(structtarget, structmember)
+#define FIELD(name, type, structtarget, structmember) name, type, offsetof(structtarget, structmember)
 #define INT_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_INT, structtarget, structmember)
 #define FLOAT_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_FLOAT, structtarget, structmember)
 #define IVEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_IVEC2, structtarget, structmember)
@@ -23,7 +23,7 @@ public:
 	};
 
 	struct Field {
-		tb::TBID name;
+		const char *name;
 		FieldType type;
 		size_t offset;
 	};
