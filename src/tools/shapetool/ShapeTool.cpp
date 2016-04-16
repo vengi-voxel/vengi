@@ -67,6 +67,8 @@ void ShapeTool::beforeUI() {
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
 	_camera.updateViewMatrix();
 
+	_worldRenderer.extractNewMeshes(_camera.getPosition());
+
 	_worldRenderer.onRunning(_now);
 
 	const glm::mat4& view = _camera.getViewMatrix();
