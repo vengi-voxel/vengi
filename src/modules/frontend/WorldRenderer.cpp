@@ -101,7 +101,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	_meshData.push_back(createMesh(shader, mesh.mesh, mesh.translation, 1.0f));
 }
 
-int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, float aspect) {
+int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection) {
 	handleMeshQueue(shader);
 
 	int drawCallsWorld = 0;
@@ -124,7 +124,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, flo
 
 	GL_checkError();
 
-	const glm::mat4& projection = glm::perspective(45.0f, aspect, 0.1f, 1000.0f);
+	const glm::mat4& view = camera.getViewMatrix();
 
 	static const glm::vec4 materialColors[] = {
 		video::Color::LightBlue,	// air
@@ -173,15 +173,22 @@ int WorldRenderer::renderWorld(video::Shader& shader, const glm::mat4& view, flo
 	shader.setUniformVec3("u_lightpos", _lightPos);
 	shader.setUniformVec4v("u_materialcolor[0]", materialColors, SDL_arraysize(materialColors));
 	_colorTexture->bind();
+	const float chunkSize = (float)_world->getChunkSize();
+	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
 	for (auto i = _meshData.begin(); i != _meshData.end();) {
 		const video::GLMeshData& meshData = *i;
-		// TODO: proper culling - distance and frustum
 		if (isDistanceCulled(meshData.translation, true)) {
 			_world->allowReExtraction(meshData.translation);
 			glDeleteBuffers(1, &meshData.vertexBuffer);
 			glDeleteBuffers(1, &meshData.indexBuffer);
 			glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 			i = _meshData.erase(i);
+			continue;
+		}
+		const glm::vec3 mins(meshData.translation);
+		const glm::vec3 maxs = glm::vec3(meshData.translation) + bboxSize;
+		if (camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
+			++i;
 			continue;
 		}
 		const glm::mat4& model = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
@@ -275,12 +282,13 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	extractMeshAroundCamera(initialExtractionRadius);
 }
 
-int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const glm::mat4& view, float aspect) {
+int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection) {
 	if (_entities.empty())
 		return 0;
 
 	int drawCallsEntities = 0;
-	const glm::mat4& projection = glm::perspective(45.0f, aspect, 0.1f, 1000.0f);
+
+	const glm::mat4& view = camera.getViewMatrix();
 
 	shader->activate();
 	shader->setUniformMatrix("u_view", view, false);
@@ -289,10 +297,17 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const glm::mat
 	shader->setUniformf("u_fogrange", _fogRange);
 	shader->setUniformf("u_viewdistance", _viewDistance);
 	shader->setUniformi("u_texture", 0);
-	// TODO: culling (not needed for server controlled entities - because the server is handling the vis)
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_now);
+#if 0
+		const glm::vec3& mins = ent->position();
+		const glm::vec3 maxs = mins + ent->size();
+		if (camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
+			continue;
+		}
+#endif
+
 		const video::MeshPtr& mesh = ent->mesh();
 		if (!mesh->initMesh(shader))
 			continue;
@@ -385,7 +400,7 @@ void WorldRenderer::onRunning(long now) {
 bool WorldRenderer::isDistanceCulled(const glm::ivec3& pos, bool queryForRendering) const {
 	const glm::ivec3 dist = pos - _lastCameraPosition;
 	const int distance = glm::sqrt(dist.x * dist.x + dist.z * dist.z);
-	const float cullingThreshold = _world->getChunkSize();
+	const float cullingThreshold = _world->getChunkSize() * 3;
 	const int maxAllowedDistance = _viewDistance + cullingThreshold;
 	if ((!queryForRendering && distance > MinCullingDistance) && distance >= maxAllowedDistance) {
 		return true;

@@ -66,13 +66,13 @@ void ShapeTool::beforeUI() {
 	const float speed = core::Var::get(cfg::ClientMouseSpeed, "0.1")->floatVal();
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
 	_camera.updateViewMatrix();
+	const float farPlane = _worldRenderer.getViewDistance();
+	const glm::mat4& projection = glm::perspective(45.0f, _aspect, 0.1f, farPlane);
+	_camera.updateFrustumPlanes(projection);
 
 	_worldRenderer.extractNewMeshes(_camera.getPosition());
-
 	_worldRenderer.onRunning(_now);
-
-	const glm::mat4& view = _camera.getViewMatrix();
-	_worldRenderer.renderWorld(_worldShader, view, _aspect);
+	_worldRenderer.renderWorld(_worldShader, _camera, projection);
 }
 
 core::AppState ShapeTool::onCleanup() {

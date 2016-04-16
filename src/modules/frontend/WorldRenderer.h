@@ -3,6 +3,7 @@
 #include "voxel/World.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
+#include "video/Camera.h"
 #include "video/GLMeshData.h"
 #include "ClientEntity.h"
 
@@ -106,9 +107,11 @@ public:
 	// world coordinates x/z
 	void deleteMesh(const glm::ivec3& pos);
 
+	float getViewDistance() const;
+
 	void extractNewMeshes(const glm::vec3& position, bool force = false);
-	int renderWorld(video::Shader& shader, const glm::mat4& view, float aspect);
-	int renderEntities(const video::ShaderPtr& shader, const glm::mat4& view, float aspect);
+	int renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection);
+	int renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection);
 
 	// TODO: should be private from here on
 	OpenGLOctreeNode* _rootOpenGLOctreeNode = nullptr;
@@ -117,5 +120,9 @@ public:
 	void processOctreeNodeStructure(video::Shader& shader, uint32_t octreeNodeHandle, OpenGLOctreeNode* openGLOctreeNode);
 	void renderOctree(video::Shader& shader, const glm::mat4& view, float aspect);
 };
+
+inline float WorldRenderer::getViewDistance() const {
+	return _viewDistance;
+}
 
 }

@@ -9,6 +9,23 @@
 
 namespace video {
 
+enum {
+	FrustumRight,
+	FrustumLeft,
+	FrustumTop,
+	FrustumBottom,
+	FrustumFar,
+	FrustumNear,
+
+	MaxPlanes
+};
+
+enum class FrustumResult {
+	Outside,
+	Inside,
+	Intersect
+};
+
 class Camera {
 private:
 	glm::vec3 _pos;
@@ -19,6 +36,7 @@ private:
 	float _yaw;
 	glm::vec3 _direction;
 	core::VarPtr _maxpitch;
+	glm::vec4 _frustumPlanes[MaxPlanes];
 
 public:
 	Camera();
@@ -32,6 +50,10 @@ public:
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateDirection();
+
+	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
+
+	void updateFrustumPlanes(const glm::mat4 &projectionMatrix);
 
 	inline void updateViewMatrix() {
 		_viewMatrix = glm::lookAt(_pos, _pos + glm::normalize(_direction), glm::vec3(0.0, 1.0, 0.0));
