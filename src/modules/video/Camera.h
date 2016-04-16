@@ -51,6 +51,7 @@ public:
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateDirection();
 
+	FrustumResult testFrustum(const glm::vec3& position) const;
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 
 	void updateFrustumPlanes(const glm::mat4 &projectionMatrix);

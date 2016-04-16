@@ -13,6 +13,18 @@ Camera::Camera() :
 Camera::~Camera() {
 }
 
+FrustumResult Camera::testFrustum(const glm::vec3& position) const {
+	FrustumResult result = FrustumResult::Inside;
+	for (int i = 0; i < MaxPlanes; i++) {
+		const glm::vec3 normal(_frustumPlanes[i]);
+		const float pos = _frustumPlanes[i].w;
+		if (glm::dot(normal, position) + pos < 0.0f) {
+			return FrustumResult::Outside;
+		}
+	}
+	return result;
+}
+
 FrustumResult Camera::testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const {
 	FrustumResult result = FrustumResult::Inside;
 	for (uint i = 0; i < MaxPlanes; i++) {
