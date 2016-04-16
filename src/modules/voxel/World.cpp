@@ -589,7 +589,7 @@ void World::create(TerrainContext& ctx) {
 		for (int x = 0; x < width; ++x) {
 			const glm::vec2 noisePos2d = glm::vec2(_noiseSeedOffsetX + lowerX + x, _noiseSeedOffsetZ + lowerZ + z);
 			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.landscapeNoiseOctaves,
-					_ctx.landscapeNoisePersistence, _ctx.landscapeNoiseFrequency, _ctx.mountainNoiseAmplitude);
+					_ctx.landscapeNoisePersistence, _ctx.landscapeNoiseFrequency, _ctx.landscapeNoiseAmplitude);
 			const float noiseNormalized = noise::norm(landscapeNoise);
 			const float mountainNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.mountainNoiseOctaves,
 					_ctx.mountainNoisePersistence, _ctx.mountainNoiseFrequency, _ctx.mountainNoiseAmplitude);
