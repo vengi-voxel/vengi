@@ -37,8 +37,8 @@ private:
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
 
-	float _fogRange = 0.0f;
-	float _viewDistance = 0.0f;
+	float _fogRange = 100.0f;
+	float _viewDistance = 0.1f;
 	long _now = 0l;
 
 	video::TexturePtr _colorTexture;

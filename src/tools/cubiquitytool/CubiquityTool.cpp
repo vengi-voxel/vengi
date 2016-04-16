@@ -75,7 +75,7 @@ void CubiquityTool::beforeUI() {
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward);
 	_camera.updateViewMatrix();
 
-	_worldRenderer.onRunning(_now);
+	_worldRenderer.onRunning(_deltaFrame);
 
 	const glm::mat4& view = _camera.getViewMatrix();
 	_worldRenderer.renderOctree(*_currentShader, view, _aspect);

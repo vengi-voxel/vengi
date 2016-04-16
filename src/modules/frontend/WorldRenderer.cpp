@@ -37,7 +37,7 @@ void WorldRenderer::reset() {
 	_meshData.clear();
 	_entities.clear();
 	_fogRange = 0.0f;
-	_viewDistance = 0.0f;
+	_viewDistance = 1.0f;
 	_now = 0l;
 }
 
@@ -276,8 +276,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 }
 
 void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
-	_viewDistance = _world->getChunkSize() * (initialExtractionRadius + 1);
-	_fogRange = _viewDistance;
+	_viewDistance = 1.0f;
 	_lastCameraPosition = _world->getGridPos(pos);
 	extractMeshAroundCamera(initialExtractionRadius);
 }
@@ -375,8 +374,8 @@ void WorldRenderer::onInit() {
 	_colorTexture = video::createTexture("**colortexture**");
 }
 
-void WorldRenderer::onRunning(long now) {
-	_now = now;
+void WorldRenderer::onRunning(long dt) {
+	_now += dt;
 	if (!_noiseFuture.empty()) {
 		NoiseFuture& future = _noiseFuture.back();
 		if (future.valid()) {
@@ -389,11 +388,9 @@ void WorldRenderer::onRunning(long now) {
 		}
 	}
 
-	// TODO: properly lerp this
 	if (_viewDistance < MinCullingDistance) {
-		const int advance = _world->getChunkSize() / 16;
+		const float advance = _world->getChunkSize() * (dt / 1000.0f) * 0.1f;
 		_viewDistance += advance;
-		_fogRange += advance / 2;
 	}
 }
 

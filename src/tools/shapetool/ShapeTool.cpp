@@ -71,7 +71,7 @@ void ShapeTool::beforeUI() {
 	_camera.updateFrustumPlanes(projection);
 
 	_worldRenderer.extractNewMeshes(_camera.getPosition());
-	_worldRenderer.onRunning(_now);
+	_worldRenderer.onRunning(_deltaFrame);
 	_worldRenderer.renderWorld(_worldShader, _camera, projection);
 }
 
