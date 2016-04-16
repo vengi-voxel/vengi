@@ -226,4 +226,11 @@ public:
 	}
 };
 
+/**
+ * @brief Normalizes a noise value in the range [-1,-1] to [0,1]
+ */
+inline float norm(float noise) {
+	return (noise + 1.0f) * 0.5f;
+}
+
 }

@@ -584,15 +584,16 @@ void World::create(TerrainContext& ctx) {
 	const int lowerY = region.getLowerY();
 	const int lowerX = region.getLowerX();
 	const int lowerZ = region.getLowerZ();
+
 	for (int z = 0; z < depth; ++z) {
 		for (int x = 0; x < width; ++x) {
-			const glm::vec2 noisePos2d = glm::vec2(_noiseSeedOffsetX + region.getLowerX() + x, _noiseSeedOffsetZ + region.getLowerZ() + z);
+			const glm::vec2 noisePos2d = glm::vec2(_noiseSeedOffsetX + lowerX + x, _noiseSeedOffsetZ + lowerZ + z);
 			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.landscapeNoiseOctaves,
 					_ctx.landscapeNoisePersistence, _ctx.landscapeNoiseFrequency, _ctx.mountainNoiseAmplitude);
-			const float noiseNormalized = (landscapeNoise + 1.0f) * 0.5f;
+			const float noiseNormalized = noise::norm(landscapeNoise);
 			const float mountainNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.mountainNoiseOctaves,
 					_ctx.mountainNoisePersistence, _ctx.mountainNoiseFrequency, _ctx.mountainNoiseAmplitude);
-			const float mountainNoiseNormalized = (mountainNoise + 1.0f) * 0.5f;
+			const float mountainNoiseNormalized = noise::norm(mountainNoise);
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
