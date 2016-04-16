@@ -599,16 +599,19 @@ void World::create(TerrainContext& ctx) {
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
 			int y = 0;
+			int start = lowerY;
+			if (start == y) {
+				++start;
+				const Voxel& voxel = _biomManager.getVoxelType(lowerX + x, 0, lowerZ + z);
+				ctx.chunk->setVoxel(x, 0, z, voxel);
+			}
 			for (int h = lowerY; h < ni; ++h) {
-#if 0
 				const glm::vec3 noisePos3d = glm::vec3(noisePos2d.x, h, noisePos2d.y);
 				const float noiseVal = noise::norm(noise::Simplex::Noise3D(noisePos3d, _ctx.cliffNoiseOctaves,
 						_ctx.cliffNoisePersistence, _ctx.cliffNoiseFrequency, _ctx.cliffNoiseAmplitude));
 				const float finalDensity = noiseNormalized + noise::norm(noiseVal);
 				//Log::info("noiseNormalized: %f, noiseVal: %f (finalDensity: %f)", noiseNormalized, noiseVal, finalDensity);
-				if (finalDensity > 1.1f)
-#endif
-				{
+				if (finalDensity > 1.1f) {
 					const Voxel& voxel = _biomManager.getVoxelType(lowerX + x, h, lowerZ + z);
 					ctx.chunk->setVoxel(x, y, z, voxel);
 				}

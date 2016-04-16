@@ -86,8 +86,8 @@ public:
 
 		int cliffNoiseOctaves = 1;
 		float cliffNoisePersistence = 0.1f;
-		float cliffNoiseFrequency = 0.01f;
-		float cliffNoiseAmplitude = 1.0f;
+		float cliffNoiseFrequency = 0.05f;
+		float cliffNoiseAmplitude = 0.1f;
 
 		int mountainNoiseOctaves = 2;
 		float mountainNoisePersistence = 0.3f;
