@@ -63,7 +63,7 @@ void ShapeTool::beforeUI() {
 	const bool right = _moveMask & MOVERIGHT;
 	const bool forward = _moveMask & MOVEFORWARD;
 	const bool backward = _moveMask & MOVEBACKWARD;
-	const float speed = core::Var::get(cfg::ClientMouseSpeed, "0.01")->floatVal();
+	const float speed = core::Var::get(cfg::ClientMouseSpeed, "0.1")->floatVal();
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
 	_camera.updateViewMatrix();
 
