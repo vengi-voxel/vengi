@@ -299,14 +299,9 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_now);
-#if 0
-		const glm::vec3& mins = ent->position();
-		const glm::vec3 maxs = mins + ent->size();
-		if (camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
+		if (camera.testFrustum(ent->position()) == video::FrustumResult::Outside) {
 			continue;
 		}
-#endif
-
 		const video::MeshPtr& mesh = ent->mesh();
 		if (!mesh->initMesh(shader))
 			continue;
