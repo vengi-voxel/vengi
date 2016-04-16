@@ -57,7 +57,7 @@ TEST_F(SimplexNoiseTest, test2DNoise) {
 			const float noise = Simplex::Noise2D(pos, 2, 1.0f, 0.5f, 1.5f);
 			ASSERT_LE(noise, 1.0f)<< "Noise is bigger than 1.0: " << noise;
 			ASSERT_GE(noise, -1.0f)<< "Noise is less than -1.0: " << noise;
-			float normalized = glm::clamp(noise * 0.5f + 0.5f, 0.0f, 1.0f);
+			float normalized = noise::norm(noise);
 			ASSERT_LE(normalized, 1.0f)<< "Noise is bigger than 1.0: " << normalized;
 			ASSERT_GE(normalized, 0.0f)<< "Noise is less than 0.0: " << normalized;
 			unsigned char color = (unsigned char) (normalized * 255.0f);
