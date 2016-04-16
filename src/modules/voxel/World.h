@@ -79,10 +79,15 @@ public:
 	};
 
 	struct WorldContext {
-		int landscapeNoiseOctaves = 3;
+		int landscapeNoiseOctaves = 1;
 		float landscapeNoisePersistence = 0.1f;
 		float landscapeNoiseFrequency = 0.01f;
 		float landscapeNoiseAmplitude = 1.0f;
+
+		int cliffNoiseOctaves = 1;
+		float cliffNoisePersistence = 0.1f;
+		float cliffNoiseFrequency = 0.01f;
+		float cliffNoiseAmplitude = 1.0f;
 
 		int mountainNoiseOctaves = 2;
 		float mountainNoisePersistence = 0.3f;
