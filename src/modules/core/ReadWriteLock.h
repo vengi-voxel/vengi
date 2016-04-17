@@ -1,9 +1,18 @@
 #pragma once
 
+#ifdef DEBUG
+#define RWLOCKDEBUG
+#define LOCK_DURATION 2000l
+#endif
+
 #include <thread>
 #include <mutex>
 #include <atomic>
 #include <iostream>
+#ifdef RWLOCKDEBUG
+#include <chrono>
+#include "core/Common.h"
+#endif
 
 namespace core {
 
@@ -16,7 +25,17 @@ public:
 	ReadWriteLock(const std::string& name) : _readers(0), _lock(false), _name(name) {}
 
 	inline void lockRead() const {
-		while (_lock) {}
+#ifdef RWLOCKDEBUG
+		auto start = std::chrono::system_clock::now();
+#endif
+		while (_lock) {
+			std::this_thread::yield();
+#ifdef RWLOCKDEBUG
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<long> diff = end-start;
+			core_assert_msg(diff.count() < LOCK_DURATION, "%s is blocked longer than %lims", _name.c_str(), LOCK_DURATION);
+#endif
+		}
 		++_readers;
 	}
 
@@ -25,8 +44,25 @@ public:
 	}
 
 	inline void lockWrite() {
-		while (std::atomic_exchange_explicit(&_lock, true, std::memory_order_acquire)) {}
-		while (_readers > 0) {}
+#ifdef RWLOCKDEBUG
+		auto start = std::chrono::system_clock::now();
+#endif
+		while (std::atomic_exchange_explicit(&_lock, true, std::memory_order_acquire)) {
+			std::this_thread::yield();
+#ifdef RWLOCKDEBUG
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<long> diff = end-start;
+			core_assert_msg(diff.count() < LOCK_DURATION, "%s is blocked longer than %lims", _name.c_str(), LOCK_DURATION);
+#endif
+		}
+		while (_readers > 0) {
+			std::this_thread::yield();
+#ifdef RWLOCKDEBUG
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<long> diff = end-start;
+			core_assert_msg(diff.count() < LOCK_DURATION, "%s is blocked longer than %lims", _name.c_str(), LOCK_DURATION);
+#endif
+		}
 	}
 
 	inline void unlockWrite() {
