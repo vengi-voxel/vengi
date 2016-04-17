@@ -38,6 +38,7 @@ private:
 	Entities _entities;
 
 	float _fogRange = 100.0f;
+	// TODO: get the view distance from the server - entity attributes
 	float _viewDistance = 0.1f;
 	long _now = 0l;
 
