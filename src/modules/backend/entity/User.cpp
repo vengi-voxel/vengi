@@ -79,8 +79,9 @@ bool User::update(long dt) {
 		return true;
 	}
 
-	if (_moveMask == (MoveDirection) 0)
+	if (_moveMask == (MoveDirection) 0) {
 		return true;
+	}
 
 	_lastAction = _time;
 
