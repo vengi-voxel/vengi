@@ -46,7 +46,7 @@ private:
 	glm::vec3 _diffuseColor = glm::vec3(0.1, 0.1, 0.1);
 	glm::vec3 _specularColor = glm::vec3(0.0, 0.0, 0.0);
 	// the position of the last extraction - we only care for x and z here
-	glm::ivec3 _lastCameraPosition;
+	glm::ivec3 _lastGridPosition;
 	voxel::WorldPtr _world;
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.

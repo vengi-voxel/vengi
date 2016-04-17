@@ -277,7 +277,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 
 void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	_viewDistance = 1.0f;
-	_lastCameraPosition = _world->getGridPos(pos);
+	_lastGridPosition = _world->getGridPos(pos);
 	extractMeshAroundCamera(initialExtractionRadius);
 }
 
@@ -303,8 +303,9 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 			continue;
 		}
 		const video::MeshPtr& mesh = ent->mesh();
-		if (!mesh->initMesh(shader))
+		if (!mesh->initMesh(shader)) {
 			continue;
+		}
 		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), ent->position());
 		const glm::mat4& scale = glm::scale(translate, glm::vec3(0.01f));
 		const glm::mat4& model = glm::rotate(scale, ent->orientation(), glm::vec3(0.0, 1.0, 0.0));
@@ -328,9 +329,9 @@ void WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 		return;
 	}
 	const glm::ivec3& camXYZ = _world->getGridPos(position);
-	const glm::vec3 diff = _lastCameraPosition - camXYZ;
+	const glm::vec3 diff = _lastGridPosition - camXYZ;
 	if (glm::length(diff.x) >= 1 || glm::length(diff.y) >= 1 || glm::length(diff.z) >= 1) {
-		_lastCameraPosition = camXYZ;
+		_lastGridPosition = camXYZ;
 		extractMeshAroundCamera(1);
 	}
 }
@@ -339,7 +340,7 @@ void WorldRenderer::extractMeshAroundCamera(int radius) {
 	const int sideLength = radius * 2 + 1;
 	const int amount = sideLength * (sideLength - 1) + sideLength;
 	const int chunkSize = _world->getChunkSize();
-	const glm::ivec3& cameraPos = _lastCameraPosition;
+	const glm::ivec3& cameraPos = _lastGridPosition;
 	const int maxChunks = MAX_HEIGHT / chunkSize;
 	glm::ivec3 pos = cameraPos;
 	voxel::Spiral o;
@@ -390,7 +391,7 @@ void WorldRenderer::onRunning(long dt) {
 }
 
 bool WorldRenderer::isDistanceCulled(const glm::ivec3& pos, bool queryForRendering) const {
-	const glm::ivec3 dist = pos - _lastCameraPosition;
+	const glm::ivec3 dist = pos - _lastGridPosition;
 	const int distance = glm::sqrt(dist.x * dist.x + dist.z * dist.z);
 	const float cullingThreshold = _world->getChunkSize() * 3;
 	const int maxAllowedDistance = _viewDistance + cullingThreshold;
