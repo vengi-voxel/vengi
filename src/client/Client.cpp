@@ -217,7 +217,6 @@ void Client::entityRemove(frontend::ClientEntityId id) {
 
 void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos) {
 	Log::info("User %li (%s) logged in at pos %f:%f:%f", id, name, pos.x, pos.y, pos.z);
-	_userId = id;
 	_camera.setPosition(pos);
 	_player = frontend::ClientEntityPtr(new frontend::ClientEntity(id, -1, _now, pos, 0.0f, _meshPool->getMesh("chr_fatkid")));
 	_worldRenderer.addEntity(_player);

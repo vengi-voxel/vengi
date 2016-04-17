@@ -34,7 +34,6 @@ protected:
 	// moving along the y axis should not arise the need to extract new meshes
 	video::Camera _camera;
 	frontend::WorldRenderer _worldRenderer;
-	frontend::ClientEntityId _userId = -1;
 	ENetPeer* _peer = nullptr;
 	uint8_t _moveMask = 0;
 	uint8_t _lastMoveMask = 0;
@@ -47,7 +46,9 @@ protected:
 	int _drawCallsEntities = 0;
 
 	inline frontend::ClientEntityId id() const {
-		return _userId;
+		if (!_player)
+			return -1;
+		return _player->id();
 	}
 
 	void sendMovement();
