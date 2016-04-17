@@ -52,6 +52,7 @@ ENetPeer* User::setPeer(ENetPeer* peer) {
 }
 
 void User::attack(EntityId id) {
+	_lastAction = _time;
 }
 
 void User::disconnect() {
@@ -60,8 +61,9 @@ void User::disconnect() {
 
 bool User::update(long dt) {
 	_time += dt;
-	if (!Entity::update(dt))
+	if (!Entity::update(dt)) {
 		return false;
+	}
 
 	if (_time - _lastAction > _userTimeout->ulongVal()) {
 		disconnect();

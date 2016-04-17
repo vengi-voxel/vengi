@@ -71,12 +71,6 @@ public:
 
 	bool update(long dt) override;
 
-	ENetPeer* peer() const override {
-		if (_peer->state == ENET_PEER_STATE_DISCONNECTED)
-			return nullptr;
-		return _peer;
-	}
-
 	/**
 	 * @brief Sets a new ENetPeer and returns the old one.
 	 */

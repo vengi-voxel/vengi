@@ -29,6 +29,7 @@ protected:
 	attrib::Attributes _attribs;
 	cooldown::CooldownMgr _cooldowns;
 	network::messages::NpcType _npcType = network::messages::NpcType_NONE;
+	ENetPeer *_peer = nullptr;
 
 	/**
 	 * @brief Called with the set of entities that just get visible for this entity
@@ -63,8 +64,10 @@ public:
 		return _attribs.getCurrent(attrib::Types::HEALTH) < 0.00001;
 	}
 
-	virtual ENetPeer* peer() const {
-		return nullptr;
+	inline ENetPeer* peer() const {
+		if (_peer != nullptr && _peer->state == ENET_PEER_STATE_DISCONNECTED)
+			return nullptr;
+		return _peer;
 	}
 
 	/**

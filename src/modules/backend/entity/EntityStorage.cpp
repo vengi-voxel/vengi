@@ -111,7 +111,6 @@ void EntityStorage::onFrame(long dt) {
 
 	_quadTreeCache.clear();
 	updateQuadTree();
-	// first update the users - to e.g. remove dead npc controls
 	for (auto i : _users) {
 		updateEntity(i.second, deltaLastTick);
 	}
