@@ -5,19 +5,17 @@
 #include "network/messages/ServerMessages.h"
 #include "SeedHandler.h"
 #include "AuthFailedHandler.h"
+#include "EntityRemoveHandler.h"
+#include "EntityUpdateHandler.h"
 #include "UserSpawnHandler.h"
-#include "UserUpdateHandler.h"
 #include "NpcSpawnHandler.h"
-#include "NpcUpdateHandler.h"
-#include "NpcRemoveHandler.h"
 
 class ClientNetworkModule: public NetworkModule {
 	void configureHandlers() const override {
 		configureHandler(Type_NpcSpawn, NpcSpawnHandler);
-		configureHandler(Type_NpcRemove, NpcRemoveHandler);
-		configureHandler(Type_NpcUpdate, NpcUpdateHandler);
+		configureHandler(Type_EntityRemove, EntityRemoveHandler);
+		configureHandler(Type_EntityUpdate, EntityUpdateHandler);
 		configureHandler(Type_UserSpawn, UserSpawnHandler);
-		configureHandler(Type_UserUpdate, UserUpdateHandler);
 		configureHandler(Type_Seed, SeedHandler(voxel::World &));
 		configureHandler(Type_AuthFailed, AuthFailedHandler);
 	}

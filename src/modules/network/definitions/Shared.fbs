@@ -32,8 +32,3 @@ enum NpcType: int {
 
 	MAX
 }
-
-enum NpcEffectType: int {
-	HUMAN_CONTROLLED,
-	AUTONOMOUS
-}

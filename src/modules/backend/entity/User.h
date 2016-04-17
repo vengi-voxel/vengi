@@ -13,7 +13,6 @@ private:
 	std::string _password;
 	std::string _email;
 	glm::vec3 _pos;
-	NpcPtr _npc;
 	uint32_t _host;
 	voxel::WorldPtr _world;
 	PoiProviderPtr _poiProvider;
@@ -97,27 +96,10 @@ public:
 		return _pitch;
 	}
 
-	network::messages::NpcType npcType() const override {
-		if (!_npc)
-			return network::messages::NpcType_NONE;
-		return _npc->npcType();
-	}
-
-	inline bool hasTakenOverNpc() const {
-		const bool val = _npc.get() != nullptr;
-		return val;
-	}
-
-	inline NpcPtr takenOverNpc() const {
-		return _npc;
-	}
-
-	bool takeOverNpc(const NpcPtr& character);
 	/**
 	 * @brief Informs the user that the login was successful
 	 */
 	void sendUserSpawn() const;
-	void sendUserUpdate() const;
 	void sendEntityUpdate(const EntityPtr& entity) const;
 	void sendEntitySpawn(const EntityPtr& entity) const;
 	void sendEntityRemove(const EntityPtr& entity) const;

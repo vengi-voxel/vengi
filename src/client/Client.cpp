@@ -194,10 +194,13 @@ void Client::disconnect() {
 	_messageSender->sendClientMessage(_peer, fbb, Type_UserDisconnect, CreateUserDisconnect(fbb).Union());
 }
 
-void Client::npcUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation) {
+void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation) {
 	const frontend::ClientEntityPtr& entity = _worldRenderer.getEntity(id);
 	if (!entity) {
 		return;
+	}
+	if (id == _player->id()) {
+		_posLerp.lerpPosition(_now, pos);
 	}
 	entity->lerpPosition(_now, pos, orientation);
 }
@@ -208,11 +211,7 @@ void Client::npcSpawn(frontend::ClientEntityId id, network::messages::NpcType ty
 	_worldRenderer.addEntity(frontend::ClientEntityPtr(new frontend::ClientEntity(id, type, _now, pos, 0.0f, _meshPool->getMesh(meshName))));
 }
 
-void Client::userUpdate(const glm::vec3& position) {
-	_posLerp.lerpPosition(_now, position);
-}
-
-void Client::npcRemove(frontend::ClientEntityId id) {
+void Client::entityRemove(frontend::ClientEntityId id) {
 	_worldRenderer.removeEntity(id);
 }
 
@@ -221,6 +220,8 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	_userId = id;
 	_posLerp.setPosition(_now, pos);
 	_camera.setPosition(pos);
+	_player = frontend::ClientEntityPtr(new frontend::ClientEntity(id, -1, _now, pos, 0.0f, _meshPool->getMesh("chr_fatkit")));
+	_worldRenderer.addEntity(_player);
 	_worldRenderer.onSpawn(pos);
 }
 

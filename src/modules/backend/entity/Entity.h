@@ -28,6 +28,7 @@ protected:
 	attrib::ContainerProviderPtr _containerProvider;
 	attrib::Attributes _attribs;
 	cooldown::CooldownMgr _cooldowns;
+	network::messages::NpcType _npcType = network::messages::NpcType_NONE;
 
 	/**
 	 * @brief Called with the set of entities that just get visible for this entity
@@ -72,7 +73,7 @@ public:
 	 */
 	virtual glm::vec3 pos() const = 0;
 	virtual float orientation() const = 0;
-	virtual network::messages::NpcType npcType() const = 0;
+	network::messages::NpcType npcType() const;
 
 	inline double current(attrib::Types type) const {
 		return _attribs.getCurrent(type);
@@ -163,5 +164,9 @@ public:
 		return core::RectFloat(p.x - regionHalf, p.z - regionHalf, p.x + regionHalf, p.z + regionHalf);
 	}
 };
+
+inline network::messages::NpcType Entity::npcType() const {
+	return _npcType;
+}
 
 }

@@ -52,10 +52,6 @@ ENetPeer* User::setPeer(ENetPeer* peer) {
 }
 
 void User::attack(EntityId id) {
-	const NpcPtr& npc = takenOverNpc();
-	if (!npc)
-		return;
-	npc->attack(id);
 }
 
 void User::disconnect() {
@@ -81,11 +77,6 @@ bool User::update(long dt) {
 		return true;
 	}
 
-	NpcPtr npc = takenOverNpc();
-	if (npc && npc->dead()) {
-		// if the controlled npc died, reset it
-		_npc = NpcPtr();
-	}
 	if (_moveMask == (MoveDirection) 0)
 		return true;
 
@@ -115,21 +106,8 @@ bool User::update(long dt) {
 			Log::trace("move right: dt %f, speed: %f p(%f:%f:%f)", deltaTime, speedVal, _pos.x, _pos.y, _pos.z);
 		}
 	}
-	sendUserUpdate();
 
 	return true;
-}
-
-void User::sendUserUpdate() const {
-	// update is send with the npc - and also broadcasted to all the others - we
-	// don't see the users until they have taken over an npc
-	if (hasTakenOverNpc())
-		return;
-
-	flatbuffers::FlatBufferBuilder fbb;
-	const glm::vec3& newPos = pos();
-	const network::messages::Vec3 posBuf { newPos.x, newPos.y, newPos.z };
-	sendServerMsg(UserUpdate(fbb, &posBuf), UserUpdate);
 }
 
 void User::sendSeed(long seed) const {
@@ -147,7 +125,7 @@ void User::sendEntityUpdate(const EntityPtr& entity) const {
 	flatbuffers::FlatBufferBuilder fbb;
 	const glm::vec3& _pos = entity->pos();
 	const network::messages::Vec3 pos { _pos.x, _pos.y, _pos.z };
-	sendServerMsg(NpcUpdate(fbb, entity->id(), &pos, entity->orientation()), NpcUpdate);
+	sendServerMsg(EntityUpdate(fbb, entity->id(), &pos, entity->orientation()), EntityUpdate);
 }
 
 void User::sendEntitySpawn(const EntityPtr& entity) const {
@@ -160,24 +138,7 @@ void User::sendEntitySpawn(const EntityPtr& entity) const {
 
 void User::sendEntityRemove(const EntityPtr& entity) const {
 	flatbuffers::FlatBufferBuilder fbb;
-	sendServerMsg(NpcRemove(fbb, entity->id()), NpcRemove);
-}
-
-bool User::takeOverNpc(const NpcPtr& character) {
-	// if the user already has control over a character, don't allow
-	// a switch to another character - only a reset
-	if (_npc && character)
-		return false;
-	if (_npc)
-		_npc->releaseHumanControlled();
-	_npc = NpcPtr();
-	if (character->aquireHumanControlled()) {
-		_npc = character;
-		flatbuffers::FlatBufferBuilder fbb;
-		broadcastServerMsg(NpcTakeOver(fbb, _npc->id(), id()), NpcTakeOver);
-		return true;
-	}
-	return false;
+	sendServerMsg(EntityRemove(fbb, entity->id()), EntityRemove);
 }
 
 }

@@ -32,18 +32,6 @@ inline const char **EnumNamesNpcType() {
 
 inline const char *EnumNameNpcType(NpcType e) { return EnumNamesNpcType()[e]; }
 
-enum NpcEffectType {
-  NpcEffectType_HUMAN_CONTROLLED = 0,
-  NpcEffectType_AUTONOMOUS = 1
-};
-
-inline const char **EnumNamesNpcEffectType() {
-  static const char *names[] = { "HUMAN_CONTROLLED", "AUTONOMOUS", nullptr };
-  return names;
-}
-
-inline const char *EnumNameNpcEffectType(NpcEffectType e) { return EnumNamesNpcEffectType()[e]; }
-
 MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
  private:
   float x_;

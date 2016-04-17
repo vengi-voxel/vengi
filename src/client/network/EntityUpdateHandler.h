@@ -5,9 +5,10 @@
 /**
  * Updates your own client
  */
-CLIENTPROTOHANDLERIMPL(UserUpdate) {
+CLIENTPROTOHANDLERIMPL(EntityUpdate) {
 	const network::messages::Vec3 *pos = message->pos();
 	if (pos == nullptr)
 		return;
-	client->userUpdate(glm::vec3(pos->x(), pos->y(), pos->z()));
+	const glm::vec3 userPos(pos->x(), pos->y(), pos->z());
+	client->entityUpdate(message->id(), userPos, message->rotation());
 }

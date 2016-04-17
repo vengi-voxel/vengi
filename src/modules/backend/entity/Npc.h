@@ -20,8 +20,6 @@ class Npc: public Entity {
 private:
 	friend class AICharacter;
 	static std::atomic<EntityId> _nextNpcId;
-	network::messages::NpcType _type;
-	std::atomic_bool _humanControlled;
 	voxel::WorldPtr _world;
 	EntityStoragePtr _entityStorage;
 	PoiProviderPtr _poiProvider;
@@ -44,9 +42,6 @@ public:
 	 */
 	void setPointOfInterest();
 	const glm::ivec3& homePosition() const;
-	void releaseHumanControlled();
-	bool aquireHumanControlled();
-	bool humanControlled() const;
 	bool route(const glm::ivec3& target);
 	const ai::AIPtr& ai();
 
@@ -67,8 +62,6 @@ public:
 	glm::vec3 pos() const override;
 	float orientation() const override;
 	std::string name() const;
-
-	network::messages::NpcType npcType() const override;
 };
 
 inline void Npc::setHomePosition(const glm::ivec3& pos) {
@@ -83,27 +76,8 @@ inline const glm::ivec3& Npc::homePosition() const {
 	return _homePosition;
 }
 
-inline void Npc::releaseHumanControlled() {
-	_humanControlled = false;
-}
-
-inline bool Npc::aquireHumanControlled() {
-	bool expected = false;
-	if (!_humanControlled.compare_exchange_strong(expected, true))
-		return false;
-	return true;
-}
-
-inline network::messages::NpcType Npc::npcType() const {
-	return _type;
-}
-
 inline const ai::AIPtr& Npc::ai() {
 	return _ai;
-}
-
-inline bool Npc::humanControlled() const {
-	return _humanControlled;
 }
 
 typedef std::shared_ptr<Npc> NpcPtr;

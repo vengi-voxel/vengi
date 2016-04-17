@@ -22,31 +22,23 @@ namespace server {
 struct Seed;
 struct AuthFailed;
 struct UserSpawn;
-struct UserUpdate;
 struct NpcSpawn;
-struct NpcTakeOver;
-struct NpcRemove;
-struct NpcUpdate;
-struct NpcAnim;
-struct NpcEffect;
+struct EntityRemove;
+struct EntityUpdate;
 struct ServerMessage;
 
 enum Type {
   Type_NONE = 0,
   Type_Seed = 1,
   Type_UserSpawn = 2,
-  Type_UserUpdate = 3,
-  Type_NpcSpawn = 4,
-  Type_NpcRemove = 5,
-  Type_NpcUpdate = 6,
-  Type_NpcAnim = 7,
-  Type_NpcEffect = 8,
-  Type_AuthFailed = 9,
-  Type_NpcTakeOver = 10
+  Type_NpcSpawn = 3,
+  Type_EntityRemove = 4,
+  Type_EntityUpdate = 5,
+  Type_AuthFailed = 6
 };
 
 inline const char **EnumNamesType() {
-  static const char *names[] = { "NONE", "Seed", "UserSpawn", "UserUpdate", "NpcSpawn", "NpcRemove", "NpcUpdate", "NpcAnim", "NpcEffect", "AuthFailed", "NpcTakeOver", nullptr };
+  static const char *names[] = { "NONE", "Seed", "UserSpawn", "NpcSpawn", "EntityRemove", "EntityUpdate", "AuthFailed", nullptr };
   return names;
 }
 
@@ -109,12 +101,14 @@ struct UserSpawn FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int64_t id() const { return GetField<int64_t>(4, 0); }
   const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(6); }
   const network::messages::Vec3 *pos() const { return GetStruct<const network::messages::Vec3 *>(8); }
+  float rotation() const { return GetField<float>(10, 0); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int64_t>(verifier, 4 /* id */) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, 6 /* name */) &&
            verifier.Verify(name()) &&
            VerifyField<network::messages::Vec3>(verifier, 8 /* pos */) &&
+           VerifyField<float>(verifier, 10 /* rotation */) &&
            verifier.EndTable();
   }
 };
@@ -125,10 +119,11 @@ struct UserSpawnBuilder {
   void add_id(int64_t id) { fbb_.AddElement<int64_t>(4, id, 0); }
   void add_name(flatbuffers::Offset<flatbuffers::String> name) { fbb_.AddOffset(6, name); }
   void add_pos(const network::messages::Vec3 *pos) { fbb_.AddStruct(8, pos); }
+  void add_rotation(float rotation) { fbb_.AddElement<float>(10, rotation, 0); }
   UserSpawnBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
   UserSpawnBuilder &operator=(const UserSpawnBuilder &);
   flatbuffers::Offset<UserSpawn> Finish() {
-    auto o = flatbuffers::Offset<UserSpawn>(fbb_.EndTable(start_, 3));
+    auto o = flatbuffers::Offset<UserSpawn>(fbb_.EndTable(start_, 4));
     return o;
   }
 };
@@ -136,39 +131,13 @@ struct UserSpawnBuilder {
 inline flatbuffers::Offset<UserSpawn> CreateUserSpawn(flatbuffers::FlatBufferBuilder &_fbb,
    int64_t id = 0,
    flatbuffers::Offset<flatbuffers::String> name = 0,
-   const network::messages::Vec3 *pos = 0) {
+   const network::messages::Vec3 *pos = 0,
+   float rotation = 0) {
   UserSpawnBuilder builder_(_fbb);
   builder_.add_id(id);
+  builder_.add_rotation(rotation);
   builder_.add_pos(pos);
   builder_.add_name(name);
-  return builder_.Finish();
-}
-
-struct UserUpdate FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  const network::messages::Vec3 *pos() const { return GetStruct<const network::messages::Vec3 *>(4); }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<network::messages::Vec3>(verifier, 4 /* pos */) &&
-           verifier.EndTable();
-  }
-};
-
-struct UserUpdateBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_pos(const network::messages::Vec3 *pos) { fbb_.AddStruct(4, pos); }
-  UserUpdateBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  UserUpdateBuilder &operator=(const UserUpdateBuilder &);
-  flatbuffers::Offset<UserUpdate> Finish() {
-    auto o = flatbuffers::Offset<UserUpdate>(fbb_.EndTable(start_, 1));
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<UserUpdate> CreateUserUpdate(flatbuffers::FlatBufferBuilder &_fbb,
-   const network::messages::Vec3 *pos = 0) {
-  UserUpdateBuilder builder_(_fbb);
-  builder_.add_pos(pos);
   return builder_.Finish();
 }
 
@@ -176,13 +145,13 @@ struct NpcSpawn FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int64_t id() const { return GetField<int64_t>(4, 0); }
   network::messages::NpcType type() const { return static_cast<network::messages::NpcType>(GetField<int32_t>(6, 0)); }
   const network::messages::Vec3 *pos() const { return GetStruct<const network::messages::Vec3 *>(8); }
-  int64_t human() const { return GetField<int64_t>(10, -1); }
+  float rotation() const { return GetField<float>(10, 0); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int64_t>(verifier, 4 /* id */) &&
            VerifyField<int32_t>(verifier, 6 /* type */) &&
            VerifyField<network::messages::Vec3>(verifier, 8 /* pos */) &&
-           VerifyField<int64_t>(verifier, 10 /* human */) &&
+           VerifyField<float>(verifier, 10 /* rotation */) &&
            verifier.EndTable();
   }
 };
@@ -193,7 +162,7 @@ struct NpcSpawnBuilder {
   void add_id(int64_t id) { fbb_.AddElement<int64_t>(4, id, 0); }
   void add_type(network::messages::NpcType type) { fbb_.AddElement<int32_t>(6, static_cast<int32_t>(type), 0); }
   void add_pos(const network::messages::Vec3 *pos) { fbb_.AddStruct(8, pos); }
-  void add_human(int64_t human) { fbb_.AddElement<int64_t>(10, human, -1); }
+  void add_rotation(float rotation) { fbb_.AddElement<float>(10, rotation, 0); }
   NpcSpawnBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
   NpcSpawnBuilder &operator=(const NpcSpawnBuilder &);
   flatbuffers::Offset<NpcSpawn> Finish() {
@@ -206,49 +175,16 @@ inline flatbuffers::Offset<NpcSpawn> CreateNpcSpawn(flatbuffers::FlatBufferBuild
    int64_t id = 0,
    network::messages::NpcType type = network::messages::NpcType_NONE,
    const network::messages::Vec3 *pos = 0,
-   int64_t human = -1) {
+   float rotation = 0) {
   NpcSpawnBuilder builder_(_fbb);
-  builder_.add_human(human);
   builder_.add_id(id);
+  builder_.add_rotation(rotation);
   builder_.add_pos(pos);
   builder_.add_type(type);
   return builder_.Finish();
 }
 
-struct NpcTakeOver FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  int64_t id() const { return GetField<int64_t>(4, 0); }
-  int64_t human() const { return GetField<int64_t>(6, -1); }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<int64_t>(verifier, 4 /* id */) &&
-           VerifyField<int64_t>(verifier, 6 /* human */) &&
-           verifier.EndTable();
-  }
-};
-
-struct NpcTakeOverBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_id(int64_t id) { fbb_.AddElement<int64_t>(4, id, 0); }
-  void add_human(int64_t human) { fbb_.AddElement<int64_t>(6, human, -1); }
-  NpcTakeOverBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  NpcTakeOverBuilder &operator=(const NpcTakeOverBuilder &);
-  flatbuffers::Offset<NpcTakeOver> Finish() {
-    auto o = flatbuffers::Offset<NpcTakeOver>(fbb_.EndTable(start_, 2));
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<NpcTakeOver> CreateNpcTakeOver(flatbuffers::FlatBufferBuilder &_fbb,
-   int64_t id = 0,
-   int64_t human = -1) {
-  NpcTakeOverBuilder builder_(_fbb);
-  builder_.add_human(human);
-  builder_.add_id(id);
-  return builder_.Finish();
-}
-
-struct NpcRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct EntityRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int64_t id() const { return GetField<int64_t>(4, 0); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -257,26 +193,26 @@ struct NpcRemove FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
 };
 
-struct NpcRemoveBuilder {
+struct EntityRemoveBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_id(int64_t id) { fbb_.AddElement<int64_t>(4, id, 0); }
-  NpcRemoveBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  NpcRemoveBuilder &operator=(const NpcRemoveBuilder &);
-  flatbuffers::Offset<NpcRemove> Finish() {
-    auto o = flatbuffers::Offset<NpcRemove>(fbb_.EndTable(start_, 1));
+  EntityRemoveBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+  EntityRemoveBuilder &operator=(const EntityRemoveBuilder &);
+  flatbuffers::Offset<EntityRemove> Finish() {
+    auto o = flatbuffers::Offset<EntityRemove>(fbb_.EndTable(start_, 1));
     return o;
   }
 };
 
-inline flatbuffers::Offset<NpcRemove> CreateNpcRemove(flatbuffers::FlatBufferBuilder &_fbb,
+inline flatbuffers::Offset<EntityRemove> CreateEntityRemove(flatbuffers::FlatBufferBuilder &_fbb,
    int64_t id = 0) {
-  NpcRemoveBuilder builder_(_fbb);
+  EntityRemoveBuilder builder_(_fbb);
   builder_.add_id(id);
   return builder_.Finish();
 }
 
-struct NpcUpdate FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct EntityUpdate FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   int64_t id() const { return GetField<int64_t>(4, 0); }
   const network::messages::Vec3 *pos() const { return GetStruct<const network::messages::Vec3 *>(6); }
   float rotation() const { return GetField<float>(8, 0); }
@@ -289,95 +225,29 @@ struct NpcUpdate FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
 };
 
-struct NpcUpdateBuilder {
+struct EntityUpdateBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_id(int64_t id) { fbb_.AddElement<int64_t>(4, id, 0); }
   void add_pos(const network::messages::Vec3 *pos) { fbb_.AddStruct(6, pos); }
   void add_rotation(float rotation) { fbb_.AddElement<float>(8, rotation, 0); }
-  NpcUpdateBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  NpcUpdateBuilder &operator=(const NpcUpdateBuilder &);
-  flatbuffers::Offset<NpcUpdate> Finish() {
-    auto o = flatbuffers::Offset<NpcUpdate>(fbb_.EndTable(start_, 3));
+  EntityUpdateBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+  EntityUpdateBuilder &operator=(const EntityUpdateBuilder &);
+  flatbuffers::Offset<EntityUpdate> Finish() {
+    auto o = flatbuffers::Offset<EntityUpdate>(fbb_.EndTable(start_, 3));
     fbb_.Required(o, 6);  // pos
     return o;
   }
 };
 
-inline flatbuffers::Offset<NpcUpdate> CreateNpcUpdate(flatbuffers::FlatBufferBuilder &_fbb,
+inline flatbuffers::Offset<EntityUpdate> CreateEntityUpdate(flatbuffers::FlatBufferBuilder &_fbb,
    int64_t id = 0,
    const network::messages::Vec3 *pos = 0,
    float rotation = 0) {
-  NpcUpdateBuilder builder_(_fbb);
+  EntityUpdateBuilder builder_(_fbb);
   builder_.add_id(id);
   builder_.add_rotation(rotation);
   builder_.add_pos(pos);
-  return builder_.Finish();
-}
-
-struct NpcAnim FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  int64_t id() const { return GetField<int64_t>(4, 0); }
-  uint8_t anim() const { return GetField<uint8_t>(6, 0); }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<int64_t>(verifier, 4 /* id */) &&
-           VerifyField<uint8_t>(verifier, 6 /* anim */) &&
-           verifier.EndTable();
-  }
-};
-
-struct NpcAnimBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_id(int64_t id) { fbb_.AddElement<int64_t>(4, id, 0); }
-  void add_anim(uint8_t anim) { fbb_.AddElement<uint8_t>(6, anim, 0); }
-  NpcAnimBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  NpcAnimBuilder &operator=(const NpcAnimBuilder &);
-  flatbuffers::Offset<NpcAnim> Finish() {
-    auto o = flatbuffers::Offset<NpcAnim>(fbb_.EndTable(start_, 2));
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<NpcAnim> CreateNpcAnim(flatbuffers::FlatBufferBuilder &_fbb,
-   int64_t id = 0,
-   uint8_t anim = 0) {
-  NpcAnimBuilder builder_(_fbb);
-  builder_.add_id(id);
-  builder_.add_anim(anim);
-  return builder_.Finish();
-}
-
-struct NpcEffect FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  int64_t id() const { return GetField<int64_t>(4, 0); }
-  network::messages::NpcEffectType type() const { return static_cast<network::messages::NpcEffectType>(GetField<int32_t>(6, 0)); }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<int64_t>(verifier, 4 /* id */) &&
-           VerifyField<int32_t>(verifier, 6 /* type */) &&
-           verifier.EndTable();
-  }
-};
-
-struct NpcEffectBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_id(int64_t id) { fbb_.AddElement<int64_t>(4, id, 0); }
-  void add_type(network::messages::NpcEffectType type) { fbb_.AddElement<int32_t>(6, static_cast<int32_t>(type), 0); }
-  NpcEffectBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  NpcEffectBuilder &operator=(const NpcEffectBuilder &);
-  flatbuffers::Offset<NpcEffect> Finish() {
-    auto o = flatbuffers::Offset<NpcEffect>(fbb_.EndTable(start_, 2));
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<NpcEffect> CreateNpcEffect(flatbuffers::FlatBufferBuilder &_fbb,
-   int64_t id = 0,
-   network::messages::NpcEffectType type = network::messages::NpcEffectType_HUMAN_CONTROLLED) {
-  NpcEffectBuilder builder_(_fbb);
-  builder_.add_id(id);
-  builder_.add_type(type);
   return builder_.Finish();
 }
 
@@ -420,14 +290,10 @@ inline bool VerifyType(flatbuffers::Verifier &verifier, const void *union_obj, T
     case Type_NONE: return true;
     case Type_Seed: return verifier.VerifyTable(reinterpret_cast<const Seed *>(union_obj));
     case Type_UserSpawn: return verifier.VerifyTable(reinterpret_cast<const UserSpawn *>(union_obj));
-    case Type_UserUpdate: return verifier.VerifyTable(reinterpret_cast<const UserUpdate *>(union_obj));
     case Type_NpcSpawn: return verifier.VerifyTable(reinterpret_cast<const NpcSpawn *>(union_obj));
-    case Type_NpcRemove: return verifier.VerifyTable(reinterpret_cast<const NpcRemove *>(union_obj));
-    case Type_NpcUpdate: return verifier.VerifyTable(reinterpret_cast<const NpcUpdate *>(union_obj));
-    case Type_NpcAnim: return verifier.VerifyTable(reinterpret_cast<const NpcAnim *>(union_obj));
-    case Type_NpcEffect: return verifier.VerifyTable(reinterpret_cast<const NpcEffect *>(union_obj));
+    case Type_EntityRemove: return verifier.VerifyTable(reinterpret_cast<const EntityRemove *>(union_obj));
+    case Type_EntityUpdate: return verifier.VerifyTable(reinterpret_cast<const EntityUpdate *>(union_obj));
     case Type_AuthFailed: return verifier.VerifyTable(reinterpret_cast<const AuthFailed *>(union_obj));
-    case Type_NpcTakeOver: return verifier.VerifyTable(reinterpret_cast<const NpcTakeOver *>(union_obj));
     default: return false;
   }
 }

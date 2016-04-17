@@ -38,6 +38,7 @@ protected:
 	ENetPeer* _peer = nullptr;
 	uint8_t _moveMask = 0;
 	core::VarPtr _rotationSpeed;
+	frontend::ClientEntityPtr _player;
 
 	util::PosLerp _posLerp;
 	long _lastMovement = 0l;
@@ -75,9 +76,8 @@ public:
 	bool connect(uint16_t port, const std::string& hostname);
 	void authFailed();
 	void npcSpawn(frontend::ClientEntityId id, network::messages::NpcType type, const glm::vec3& pos);
-	void npcUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation);
-	void npcRemove(frontend::ClientEntityId id);
-	void userUpdate(const glm::vec3& position);
+	void entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation);
+	void entityRemove(frontend::ClientEntityId id);
 	void disconnect();
 	// spawns our own player
 	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos);

@@ -16,8 +16,8 @@ fips_begin_app(client windowed)
 		NpcSpawnHandler.h
 		SeedHandler.cpp SeedHandler.h
 		UserSpawnHandler.h
-		UserUpdateHandler.h
-		NpcRemoveHandler.h
+		EntityUpdateHandler.h
+		EntityRemoveHandler.h
 	)
 	fips_dir(ui)
 	fips_files(

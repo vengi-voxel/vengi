@@ -15,50 +15,27 @@ table UserSpawn {
 	id:long;
 	name:string;
 	pos:Vec3;
-}
-
-table UserUpdate {
-	pos:Vec3;
+	rotation:float;
 }
 
 table NpcSpawn {
 	id:long;
 	type:NpcType;
 	pos:Vec3;
-	// is this npc controlled by a human - if so, who is controlling it.
-	human:long = -1;
+	rotation:float;
 }
 
-// defines the human-controlled state - sending -1 for the human means, that that the npc was released
-// and is no longer controlled by the previous human
-table NpcTakeOver {
-	id:long;
-	// is this npc controlled by a human - if so, who is controlling it.
-	human:long = -1;
-}
-
-table NpcRemove {
+table EntityRemove {
 	id:long;
 }
 
-table NpcUpdate {
+table EntityUpdate {
 	id:long;
 	pos:Vec3 (required);
 	rotation:float;
 }
 
-// TODO: make enum
-table NpcAnim {
-	id:long;
-	anim:ubyte;
-}
-
-table NpcEffect {
-	id:long;
-	type:NpcEffectType = HUMAN_CONTROLLED;
-}
-
-union Type { Seed, UserSpawn, UserUpdate, NpcSpawn, NpcRemove, NpcUpdate, NpcAnim, NpcEffect, AuthFailed, NpcTakeOver }
+union Type { Seed, UserSpawn, NpcSpawn, EntityRemove, EntityUpdate, AuthFailed }
 
 table ServerMessage {
 	data:Type;

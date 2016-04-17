@@ -27,8 +27,7 @@ private:
 	 * this is used for the quadtree
 	 */
 	struct Node {
-		UserPtr user;
-		NpcPtr npc;
+		EntityPtr entity;
 
 		core::RectFloat getRect() const;
 		bool operator==(const Node& rhs) const;

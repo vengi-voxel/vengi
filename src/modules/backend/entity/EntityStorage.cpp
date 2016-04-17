@@ -15,13 +15,11 @@ EntityStorage::EntityStorage(network::MessageSenderPtr messageSender, voxel::Wor
 }
 
 core::RectFloat EntityStorage::Node::getRect() const {
-	if (user)
-		return user->rect();
-	return npc->rect();
+	return entity->rect();
 }
 
 bool EntityStorage::Node::operator==(const Node& rhs) const {
-	return rhs.user == user && rhs.npc == rhs.npc;
+	return rhs.entity == entity;
 }
 
 void EntityStorage::registerUser(const UserPtr& user) {
@@ -84,7 +82,7 @@ bool EntityStorage::removeNpc(ai::CharacterId id) {
 	if (i == _npcs.end()) {
 		return false;
 	}
-	_quadTree.remove(Node { UserPtr(), i->second });
+	_quadTree.remove(Node { i->second });
 	_npcs.erase(id);
 	return true;
 }
@@ -121,7 +119,7 @@ void EntityStorage::onFrame(long dt) {
 		NpcPtr npc = i->second;
 		if (!updateEntity(npc, deltaLastTick)) {
 			Log::info("remove npc %i", npc->id());
-			_quadTree.remove(Node { UserPtr(), npc });
+			_quadTree.remove(Node { npc });
 			i = _npcs.erase(i);
 		} else {
 			++i;
@@ -132,18 +130,13 @@ void EntityStorage::onFrame(long dt) {
 void EntityStorage::updateQuadTree() {
 	// TODO: a full rebuild is not needed every frame
 	_quadTree.clear();
-	static const UserPtr EMPTYUSER;
-	static const NpcPtr EMPTYNPC;
 	for (auto i : _npcs) {
-		_quadTree.insert(Node { EMPTYUSER, i.second });
+		_quadTree.insert(Node { i.second });
 	}
 	for (auto i : _users) {
 		const UserPtr& user = i.second;
-		// users that have taken over a npc are indirectly updated with the npc already
-		if (user->hasTakenOverNpc())
-			continue;
 		// this user is an ghost light
-		_quadTree.insert(Node { user, EMPTYNPC });
+		_quadTree.insert(Node { user });
 	}
 }
 
@@ -154,10 +147,7 @@ bool EntityStorage::updateEntity(const EntityPtr& entity, long dt) {
 	const auto& contents = _quadTreeCache.query(rect);
 	EntitySet set;
 	for (const Node& node : contents) {
-		if (node.npc)
-			set.insert(node.npc);
-		else if (node.user && !node.user->hasTakenOverNpc())
-			set.insert(node.user);
+		set.insert(node.entity);
 	}
 	set.erase(entity);
 	entity->updateVisible(set);

@@ -67,7 +67,7 @@ void Entity::updateVisible(const EntitySet& set) {
 			const glm::vec3 _pos = e->pos();
 			const network::messages::Vec3 posBuf {_pos.x, _pos.y, _pos.z};
 			flatbuffers::FlatBufferBuilder fbb;
-			_messageSender->sendServerMessage(p, fbb, Type_NpcUpdate, CreateNpcUpdate(fbb, e->id(), &posBuf, e->orientation()).Union());
+			_messageSender->sendServerMessage(p, fbb, Type_EntityUpdate, CreateEntityUpdate(fbb, e->id(), &posBuf, e->orientation()).Union());
 		}
 	}
 
