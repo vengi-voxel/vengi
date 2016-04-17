@@ -44,8 +44,10 @@ void Client::sendMovement() {
 	if (_now - _lastMovement <= 100L)
 		return;
 
-	// TODO: only send if _moveMask differs
+	if (_lastMoveMask == _moveMask)
+		return;
 	_lastMovement = _now;
+	_lastMoveMask = _moveMask;
 	flatbuffers::FlatBufferBuilder fbb;
 	const MoveDirection md = (MoveDirection) _moveMask;
 	_messageSender->sendClientMessage(_peer, fbb, Type_Move, CreateMove(fbb, md, _camera.pitch(), _camera.yaw()).Union(), 0);
@@ -220,7 +222,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	_userId = id;
 	_posLerp.setPosition(_now, pos);
 	_camera.setPosition(pos);
-	_player = frontend::ClientEntityPtr(new frontend::ClientEntity(id, -1, _now, pos, 0.0f, _meshPool->getMesh("chr_fatkit")));
+	_player = frontend::ClientEntityPtr(new frontend::ClientEntity(id, -1, _now, pos, 0.0f, _meshPool->getMesh("chr_fatkid")));
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.onSpawn(pos);
 }
