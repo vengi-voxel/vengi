@@ -173,9 +173,10 @@ core::AppState Client::onRunning() {
 	core::AppState state = UIApp::onRunning();
 	sendMovement();
 	if (state == core::AppState::Running) {
-		_posLerp.update(_now);
-		const glm::vec3& pos = _posLerp.position();
-		_camera.setPosition(pos);
+		if (_player) {
+			const glm::vec3& pos = _player->position();
+			_camera.setPosition(pos);
+		}
 		_network->update();
 		_world->onFrame(_deltaFrame);
 		if (_world->isCreated()) {
@@ -201,9 +202,6 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 	if (!entity) {
 		return;
 	}
-	if (id == _player->id()) {
-		_posLerp.lerpPosition(_now, pos);
-	}
 	entity->lerpPosition(_now, pos, orientation);
 }
 
@@ -220,7 +218,6 @@ void Client::entityRemove(frontend::ClientEntityId id) {
 void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos) {
 	Log::info("User %li (%s) logged in at pos %f:%f:%f", id, name, pos.x, pos.y, pos.z);
 	_userId = id;
-	_posLerp.setPosition(_now, pos);
 	_camera.setPosition(pos);
 	_player = frontend::ClientEntityPtr(new frontend::ClientEntity(id, -1, _now, pos, 0.0f, _meshPool->getMesh("chr_fatkid")));
 	_worldRenderer.addEntity(_player);

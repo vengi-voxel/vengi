@@ -41,7 +41,6 @@ protected:
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _player;
 
-	util::PosLerp _posLerp;
 	long _lastMovement = 0l;
 
 	int _drawCallsWorld = 0;
