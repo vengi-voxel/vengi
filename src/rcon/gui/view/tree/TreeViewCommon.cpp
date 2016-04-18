@@ -13,7 +13,7 @@ E(FAILED),
 E(EXCEPTION)
 };
 #undef E
-COMPILE_TIME_ASSERT(ARRAY_LENGTH(stateNames) == MAX_TREENODESTATUS);
+static_assert(sizeof(stateNames) / sizeof(*stateNames) == MAX_TREENODESTATUS, "State names don't match");
 
 }
 }

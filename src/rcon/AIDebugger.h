@@ -14,6 +14,7 @@
 #include <QFile>
 #include <QStringList>
 #include <QMap>
+#include <QHash>
 
 namespace ai {
 namespace debug {
@@ -32,7 +33,7 @@ class AIDebugger: public QObject {
 	Q_OBJECT
 friend class PauseHandler;
 public:
-	typedef QMap<CharacterId, AIStateWorld> Entities;
+	typedef QHash<CharacterId, AIStateWorld> Entities;
 	typedef Entities::const_iterator EntitiesIter;
 	typedef QMap<QString, QString> CharacterAttributesMap;
 protected:

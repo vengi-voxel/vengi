@@ -56,6 +56,11 @@ QVariant EntityListModel::data(const QModelIndex &index, int role) const {
 	const AIStateWorld& state = _list.at(index.row());
 	if (role == Qt::DisplayRole) {
 		if (index.column() == 0) {
+			const CharacterAttributes& attributes = state.getAttributes();
+			auto name = attributes.find(attributes::NAME);
+			if (name != attributes.end()) {
+				return QString::fromStdString(name->second).append(" (%1)").arg(state.getId());
+			}
 			return state.getId();
 		}
 	} else if (role == Qt::BackgroundColorRole) {

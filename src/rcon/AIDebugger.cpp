@@ -21,13 +21,7 @@
 namespace ai {
 namespace debug {
 
-PROTOCOL_HANDLER(AIStateMessage);
-PROTOCOL_HANDLER(AICharacterDetailsMessage);
-PROTOCOL_HANDLER(AICharacterStaticMessage);
-PROTOCOL_HANDLER(AIPauseMessage);
-PROTOCOL_HANDLER(AINamesMessage);
-
-class StateHandler: public AIStateMessageHandler {
+class StateHandler: public ProtocolHandler<AIStateMessage> {
 private:
 	AIDebugger& _aiDebugger;
 public:
@@ -35,13 +29,13 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void executeAIStateMessage(const ai::AIStateMessage& msg) override {
-		_aiDebugger.setEntities(msg.getStates());
+	void execute(const ClientId&, const AIStateMessage* msg) override {
+		_aiDebugger.setEntities(msg->getStates());
 		emit _aiDebugger.onEntitiesUpdated();
 	}
 };
 
-class CharacterHandler: public AICharacterDetailsMessageHandler {
+class CharacterHandler: public ProtocolHandler<AICharacterDetailsMessage> {
 private:
 	AIDebugger& _aiDebugger;
 public:
@@ -49,13 +43,13 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void executeAICharacterDetailsMessage(const ai::AICharacterDetailsMessage& msg) override {
-		_aiDebugger.setCharacterDetails(msg.getCharacterId(), msg.getAggro(), msg.getNode());
+	void execute(const ClientId&, const AICharacterDetailsMessage* msg) override {
+		_aiDebugger.setCharacterDetails(msg->getCharacterId(), msg->getAggro(), msg->getNode());
 		emit _aiDebugger.onSelected();
 	}
 };
 
-class CharacterStaticHandler: public AICharacterStaticMessageHandler {
+class CharacterStaticHandler: public ProtocolHandler<AICharacterStaticMessage> {
 private:
 	AIDebugger& _aiDebugger;
 public:
@@ -63,13 +57,13 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void executeAICharacterStaticMessage(const ai::AICharacterStaticMessage& msg) override {
-		_aiDebugger.addCharacterStaticData(msg);
+	void execute(const ClientId&, const AICharacterStaticMessage* msg) override {
+		_aiDebugger.addCharacterStaticData(*msg);
 		emit _aiDebugger.onSelected();
 	}
 };
 
-class NamesHandler: public AINamesMessageHandler {
+class NamesHandler: public ProtocolHandler<AINamesMessage> {
 private:
 	AIDebugger& _aiDebugger;
 public:
@@ -77,13 +71,13 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void executeAINamesMessage(const ai::AINamesMessage& msg) override {
-		_aiDebugger.setNames(msg.getNames());
+	void execute(const ClientId&, const AINamesMessage* msg) override {
+		_aiDebugger.setNames(msg->getNames());
 		emit _aiDebugger.onNamesReceived();
 	}
 };
 
-class PauseHandler: public AIPauseMessageHandler {
+class PauseHandler: public ProtocolHandler<AIPauseMessage> {
 private:
 	AIDebugger& _aiDebugger;
 public:
@@ -91,9 +85,10 @@ public:
 			_aiDebugger(aiDebugger) {
 	}
 
-	void executeAIPauseMessage(const ai::AIPauseMessage& msg) override {
-		_aiDebugger._pause = msg.isPause();
-		emit _aiDebugger.onPause(msg.isPause());
+	void execute(const ClientId&, const AIPauseMessage* msg) override {
+		const bool pause = msg->isPause();
+		_aiDebugger._pause = pause;
+		emit _aiDebugger.onPause(pause);
 	}
 };
 
@@ -308,7 +303,6 @@ MapView* AIDebugger::createMapWidget() {
 void AIDebugger::setNames(const std::vector<std::string>& names) {
 	_names.clear();
 	_names.reserve(names.size());
-	// TODO: measure if contains/remove/insert manually is faster
 	for (const std::string& name : names) {
 		_names << QString::fromStdString(name);
 	}
@@ -316,7 +310,6 @@ void AIDebugger::setNames(const std::vector<std::string>& names) {
 
 void AIDebugger::setEntities(const std::vector<AIStateWorld>& entities) {
 	_entities.clear();
-	// TODO: measure if contains/remove/insert manually is faster
 	for (const AIStateWorld& state : entities) {
 		_entities.insert(state.getId(), state);
 	}
