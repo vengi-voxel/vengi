@@ -41,7 +41,7 @@ public:
 	virtual ~FilePager() {
 		for (std::vector<std::string>::iterator iter = m_vecCreatedFiles.begin(); iter < m_vecCreatedFiles.end(); iter++) {
 			if (std::remove(iter->c_str()) != 0) {
-				POLYVOX_LOG_WARNING("Failed to delete '", *iter, "' when destroying FilePager");
+				::Log::warn("Failed to delete '%s' when destroying FilePager", iter->c_str());
 			}
 		}
 

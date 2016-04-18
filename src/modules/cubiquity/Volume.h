@@ -21,7 +21,6 @@
 
 #include "Clock.h"
 #include "BackgroundTaskProcessor.h"
-#include "Logging.h"
 #include "MainThreadTaskProcessor.h"
 #include "MaterialSet.h"
 #include "Raycasting.h"

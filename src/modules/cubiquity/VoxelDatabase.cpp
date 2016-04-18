@@ -1,6 +1,5 @@
 #include "VoxelDatabase.h"
 #include "PolyVox/Region.h"
-#include "Logging.h"
 
 namespace Cubiquity {
 

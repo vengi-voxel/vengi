@@ -4,12 +4,13 @@
 
 #include "Brush.h"
 #include "ColoredCubesVolume.h"
-#include "Logging.h"
 #include "OctreeNode.h"
 #include "Raycasting.h"
 #include "TerrainVolume.h"
 #include "TerrainVolumeEditor.h"
 #include "TerrainVolumeGenerator.h"
+
+#include "core/Log.h"
 
 #if defined (_MSC_VER) || defined(__APPLE__)
 #include <future> //For std::future_error, but causes chrono-related compile errors on Linux/GCC.
@@ -66,22 +67,12 @@ void* gVolumes[MaxNoOfVolumes];
 // I do have some concerns about how robust this is - in particular see here: http://stackoverflow.com/a/1229542
 class EntryAndExitPoints {
 public:
-	EntryAndExitPoints() :
-			_logger() {
-		PolyVox::setLoggerInstance(&_logger);
-
+	EntryAndExitPoints() {
 		// HACK - Should have a seperate init function for this?
 		for (int ct = 0; ct < MaxNoOfVolumes; ct++) {
-			gVolumes[ct] = 0;
+			gVolumes[ct] = nullptr;
 		}
 	}
-
-	~EntryAndExitPoints() {
-		PolyVox::setLoggerInstance(0);
-	}
-
-public:
-	Logger _logger;
 };
 
 // The single global instance of the above class.
@@ -258,7 +249,7 @@ CUBIQUITYC_API int32_t cuNewEmptyColoredCubesVolume(int32_t lowerX, int32_t lowe
 
 	core_assert_msg(foundEmptySlot, "Cannot create new volume as there is a limit of %i", MaxNoOfVolumes);
 
-	POLYVOX_LOG_DEBUG("Created new colored cubes volume in slot ", ct);
+	::Log::debug("Created new colored cubes volume in slot %ui", ct);
 
 	// Build the handle
 	*result = encodeHandle(CU_COLORED_CUBES, ct, 0);
@@ -285,7 +276,7 @@ CUBIQUITYC_API int32_t cuNewColoredCubesVolumeFromVDB(const char* pathToExisting
 
 	core_assert_msg(foundEmptySlot, "Cannot create new volume as there is a limit of %i", MaxNoOfVolumes);
 
-	POLYVOX_LOG_DEBUG("Created new colored cubes volume in slot ", ct);
+	::Log::debug("Created new colored cubes volume in slot %ui", ct);
 
 	// Build the handle
 	*result = encodeHandle(CU_COLORED_CUBES, ct, 0);
@@ -312,7 +303,7 @@ CUBIQUITYC_API int32_t cuDeleteVolume(uint32_t volumeHandle) {
 	uint32_t volumeType, volumeIndex, nodeIndex;
 	decodeHandle(volumeHandle, &volumeType, &volumeIndex, &nodeIndex);
 
-	POLYVOX_LOG_DEBUG("Deleting volume with index ", volumeIndex);
+	::Log::debug("Deleting volume with index %ui", volumeIndex);
 
 	if (volumeType == CU_COLORED_CUBES) {
 		ColoredCubesVolume* volume = getColoredCubesVolumeFromHandle(volumeIndex);
@@ -444,7 +435,7 @@ CUBIQUITYC_API int32_t cuNewEmptyTerrainVolume(int32_t lowerX, int32_t lowerY, i
 
 	core_assert_msg(foundEmptySlot, "Cannot create new volume as there is a limit of %i", MaxNoOfVolumes);
 
-	POLYVOX_LOG_DEBUG("Created new smooth volume in slot ", ct);
+	::Log::debug("Created new smooth volume in slot %ui", ct);
 
 	// Build the handle
 	*result = encodeHandle(CU_TERRAIN, ct, 0);
@@ -471,7 +462,7 @@ CUBIQUITYC_API int32_t cuNewTerrainVolumeFromVDB(const char* pathToExistingVoxel
 
 	core_assert_msg(foundEmptySlot, "Cannot create new volume as there is a limit of %i", MaxNoOfVolumes);
 
-	POLYVOX_LOG_DEBUG("Created new smooth volume in slot ", ct);
+	::Log::debug("Created new smooth volume in slot %ui", ct);
 
 	// Build the handle
 	*result = encodeHandle(CU_TERRAIN, ct, 0);

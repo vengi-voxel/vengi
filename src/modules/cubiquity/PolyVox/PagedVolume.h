@@ -7,6 +7,8 @@
 #include "Morton.h"
 #include "Utility.h"
 
+#include "core/Log.h"
+
 #include <array>
 #include <algorithm>
 #include <limits>
@@ -275,14 +277,15 @@ PagedVolume<VoxelType>::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageIn
 	const uint32_t uMinPracticalNoOfChunks = 32; // Enough to make sure a chunks and it's neighbours can be loaded, with a few to spare.
 	const uint32_t uMaxPracticalNoOfChunks = uChunkArraySize / 2; // A hash table should only become half-full to avoid too many clashes.
 	if (m_uChunkCountLimit < uMinPracticalNoOfChunks) {
-		POLYVOX_LOG_WARNING("Requested memory usage limit of ", uTargetMemoryUsageInBytes / (1024 * 1024), "Mb is too low and cannot be adhered to.");
+		::Log::warn("Requested memory usage limit of %uiMb is too low and cannot be adhered to.",
+				uTargetMemoryUsageInBytes / (1024 * 1024));
 	}
 	m_uChunkCountLimit = std::max(m_uChunkCountLimit, uMinPracticalNoOfChunks);
 	m_uChunkCountLimit = std::min(m_uChunkCountLimit, uMaxPracticalNoOfChunks);
 
 	// Inform the user about the chosen memory configuration.
-	POLYVOX_LOG_DEBUG("Memory usage limit for volume now set to ", (m_uChunkCountLimit * uChunkSizeInBytes) / (1024 * 1024),
-			"Mb (", m_uChunkCountLimit, " chunks of ", uChunkSizeInBytes / 1024, "Kb each).");
+	::Log::debug("Memory usage limit for volume now set to %uiMb (%ui chunks of %uiKb each).",
+			(m_uChunkCountLimit * uChunkSizeInBytes) / (1024 * 1024), m_uChunkCountLimit, uChunkSizeInBytes / 1024);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -377,7 +380,7 @@ void PagedVolume<VoxelType>::prefetch(Region regPrefetch) {
 	Region region(v3dStart, v3dEnd);
 	uint32_t uNoOfChunks = static_cast<uint32_t>(region.getWidthInVoxels() * region.getHeightInVoxels() * region.getDepthInVoxels());
 	if (uNoOfChunks > m_uChunkCountLimit) {
-		POLYVOX_LOG_WARNING("Attempting to prefetch more than the maximum number of chunks (this will cause thrashing).");
+		::Log::warn("Attempting to prefetch more than the maximum number of chunks (this will cause thrashing).");
 	}
 	uNoOfChunks = std::min(uNoOfChunks, m_uChunkCountLimit);
 

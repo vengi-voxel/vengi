@@ -24,7 +24,6 @@ fips_begin_module(cubiquity)
 		ConcurrentQueue.h
 		Cubiquity.h
 		CubiquityForwardDeclarations.h
-		Logging.h
 		MainThreadTaskProcessor.h
 		MaterialSet.h
 		Octree.h
@@ -61,7 +60,6 @@ fips_begin_module(cubiquity)
 		FilePager.h
 		Interpolation.h
 		IteratorController.h
-		Logging.h
 		LoggingImpl.h
 		LowPassFilter.h
 		MarchingCubesSurfaceExtractor.h

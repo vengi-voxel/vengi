@@ -542,9 +542,8 @@ void extractMarchingCubesMeshCustom(VolumeType* volData, Region region, MeshType
 
 	result->setOffset(region.getLowerCorner());
 
-	POLYVOX_LOG_TRACE("Marching cubes surface extraction took ", timer.elapsedTimeInMilliSeconds(),
-			"ms (Region size = ", region.getWidthInVoxels(), "x", region.getHeightInVoxels(),
-			"x", region.getDepthInVoxels(), ")");
+	::Log::trace("Marching cubes surface extraction took %fms (Region size = %ix%ix%i)",
+			timer.elapsedTimeInMilliSeconds(), region.getWidthInVoxels(), region.getHeightInVoxels(), region.getDepthInVoxels());
 }
 
 }

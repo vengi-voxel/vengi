@@ -119,7 +119,7 @@ VoxelDatabase<VoxelType>* VoxelDatabase<VoxelType>::createEmpty(const std::strin
 		core_assert_msg(false, "Cannot create a new voxel database as the provided filename - already exists");
 	}
 
-	POLYVOX_LOG_INFO("Creating empty voxel database as '", pathToNewVoxelDatabase, "'");
+	::Log::info("Creating empty voxel database as '%s'", pathToNewVoxelDatabase.c_str());
 	VoxelDatabase<VoxelType>* voxelDatabase = new VoxelDatabase<VoxelType>;
 	EXECUTE_SQLITE_FUNC(sqlite3_open_v2(pathToNewVoxelDatabase.c_str(), &(voxelDatabase->_database), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL));
 
@@ -139,7 +139,7 @@ VoxelDatabase<VoxelType>* VoxelDatabase<VoxelType>::createFromVDB(const std::str
 	// the database will be temporary, but when creating from a VDB a valid path must be provided.
 	core_assert_msg(!pathToExistingVoxelDatabase.empty(), "Path must not be an empty string");
 
-	POLYVOX_LOG_INFO("Creating voxel database from '", pathToExistingVoxelDatabase, "'");
+	::Log::info("Creating voxel database from '%s'", pathToExistingVoxelDatabase.c_str());
 	VoxelDatabase<VoxelType>* voxelDatabase = new VoxelDatabase<VoxelType>;
 	int flags = writePermission == WritePermissions::ReadOnly ? SQLITE_OPEN_READONLY : SQLITE_OPEN_READWRITE;
 	EXECUTE_SQLITE_FUNC(sqlite3_open_v2(pathToExistingVoxelDatabase.c_str(), &(voxelDatabase->_database), flags, NULL));
@@ -242,7 +242,7 @@ void VoxelDatabase<VoxelType>::pageOut(const PolyVox::Region& region, typename P
 	uLong compressedLength = compressBound(srcLength); // Gets update when compression happens
 	if (_compressedBuffer.size() != compressedLength) {
 		// All chunks are the same size so should have the same upper bound. Therefore this should only happen once.
-		POLYVOX_LOG_INFO("Resizing compressed data buffer to ", compressedLength, "bytes. This should only happen once");
+		::Log::info("Resizing compressed data buffer to %li bytes. This should only happen once", (long)compressedLength);
 		_compressedBuffer.resize(compressedLength);
 	}
 
@@ -284,7 +284,7 @@ bool VoxelDatabase<VoxelType>::getProperty(const std::string& name, std::string&
 		value = std::string(reinterpret_cast<const char*>(sqlite3_column_text(_selectPropertyStatement, 0)));
 		return true;
 	}
-	POLYVOX_LOG_WARNING("Property '", name, "' was not found. The default value will be used instead");
+	::Log::warn("Property '%s' was not found. The default value will be used instead", name.c_str());
 	return false;
 }
 
