@@ -40,7 +40,9 @@ public:
 	/// Destructor
 	virtual ~FilePager() {
 		for (std::vector<std::string>::iterator iter = m_vecCreatedFiles.begin(); iter < m_vecCreatedFiles.end(); iter++) {
-			POLYVOX_LOG_WARNING_IF(std::remove(iter->c_str()) != 0, "Failed to delete '", *iter, "' when destroying FilePager");
+			if (std::remove(iter->c_str()) != 0) {
+				POLYVOX_LOG_WARNING("Failed to delete '", *iter, "' when destroying FilePager");
+			}
 		}
 
 		m_vecCreatedFiles.clear();

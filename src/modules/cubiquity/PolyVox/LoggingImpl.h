@@ -105,19 +105,9 @@ void logFatalMessageIf(bool condition, Args const& ... messageArgs) {
 }
 
 #define POLYVOX_LOG_TRACE(...) PolyVox::Impl::logTraceMessage(__VA_ARGS__)
-#define POLYVOX_LOG_TRACE_IF(condition, ...) PolyVox::Impl::logTraceMessageIf(condition, __VA_ARGS__)
 
 #define POLYVOX_LOG_DEBUG(...) PolyVox::Impl::logDebugMessage(__VA_ARGS__)
-#define POLYVOX_LOG_DEBUG_IF(condition, ...) PolyVox::Impl::logDebugMessageIf(condition, __VA_ARGS__)	
 
 #define POLYVOX_LOG_INFO(...) PolyVox::Impl::logInfoMessage(__VA_ARGS__)
-#define POLYVOX_LOG_INFO_IF(condition, ...) PolyVox::Impl::logInfoMessageIf(condition, __VA_ARGS__)	
 
 #define POLYVOX_LOG_WARNING(...) PolyVox::Impl::logWarningMessage(__VA_ARGS__)
-#define POLYVOX_LOG_WARNING_IF(condition, ...) PolyVox::Impl::logWarningMessageIf(condition, __VA_ARGS__)	
-
-#define POLYVOX_LOG_ERROR(...) PolyVox::Impl::logErrorMessage(__VA_ARGS__)
-#define POLYVOX_LOG_ERROR_IF(condition, ...) PolyVox::Impl::logErrorMessageIf(condition, __VA_ARGS__)	
-
-#define POLYVOX_LOG_FATAL(...) PolyVox::Impl::logFatalMessage(__VA_ARGS__)
-#define POLYVOX_LOG_FATAL_IF(condition, ...) PolyVox::Impl::logFatalMessageIf(condition, __VA_ARGS__)	
