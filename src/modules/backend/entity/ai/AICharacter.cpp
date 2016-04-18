@@ -5,7 +5,7 @@ namespace backend {
 
 AICharacter::AICharacter(ai::CharacterId id, Npc& npc) :
 		ai::ICharacter(id), _npc(npc) {
-	setOrientation(ai::randomf(ai::M_2PI));
+	setOrientation(ai::randomf(glm::two_pi<float>()));
 	setAttribute(ai::attributes::NAME, npc.name() + " " + std::to_string(id));
 	setAttribute(ai::attributes::ID, std::to_string(id));
 }
@@ -17,7 +17,7 @@ void AICharacter::update(long dt, bool debuggingActive) {
 	_npc.moveToGround();
 
 	if (debuggingActive) {
-		setAttribute(ai::attributes::POSITION, std::to_string(getPosition()));
+		setAttribute(ai::attributes::POSITION, ai::Str::toString(getPosition()));
 		setAttribute(ai::attributes::ORIENTATION, std::to_string(ai::toDegrees(getOrientation())));
 		for (int i = 0; i < (int)attrib::Types::MAX; ++i) {
 			const double current = _npc._attribs.getCurrent((attrib::Types)i);

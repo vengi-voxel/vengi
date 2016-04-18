@@ -33,8 +33,8 @@ public:
 		const AIPtr& ai = zone->getAI(selection[0]);
 		const Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
 		const glm::vec3& pos = npc.pos();
-		const ai::Vector3f& ownPos = entity->getCharacter()->getPosition();
-		const int distance = ownPos.distance(ai::Vector3f(pos.x, pos.y, pos.z));
+		const glm::vec3& ownPos = entity->getCharacter()->getPosition();
+		const float distance = glm::distance(pos, ownPos);
 		return distance <= _distance;
 	}
 };
