@@ -3,7 +3,7 @@
 #include "Connection.h"
 #include "PeristenceModel.h"
 #include <unordered_map>
-#include <postgresql/libpq-fe.h>
+#include <libpq-fe.h>
 #include "core/NonCopyable.h"
 
 namespace persistence {
