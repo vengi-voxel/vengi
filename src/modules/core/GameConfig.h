@@ -16,6 +16,8 @@ constexpr const char *ClientPort = "cl_port";
 // the host where the server is running on that the client wants to connect to
 constexpr const char *ClientHost = "cl_host";
 constexpr const char *ClientFullscreen = "cl_fullscreen";
+constexpr const char *ClientMultiSampleSamples = "cl_multisamplesamples";
+constexpr const char *ClientMultiSampleBuffers = "cl_multisamplebuffers";
 
 constexpr const char *ServerAutoRegister = "sv_autoregister";
 constexpr const char *ServerUserTimeout = "sv_usertimeout";
