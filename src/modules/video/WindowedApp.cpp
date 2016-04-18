@@ -148,7 +148,7 @@ core::AppState WindowedApp::onInit() {
 
 	ExtGLLoadFunctions();
 
-	//glEnable(GL_MULTISAMPLES);
+	glEnable(GL_MULTISAMPLE);
 
 	return state;
 }
