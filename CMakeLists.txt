@@ -16,7 +16,7 @@ if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
 elseif (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
 	# TODO: this is for the header only sauce lib
-	add_definitions(-Wall -Wextra -Wno-deprecated-declarations -Wno-unused-local-typedefs)
+	add_definitions("-Wall -Wextra -Wno-deprecated-declarations -Wno-unused-local-typedefs -Wno-mismatched-tags")
 endif()
 
 include_directories(src/modules)
