@@ -85,10 +85,8 @@ core::AppState ShapeTool::onCleanup() {
 bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 	if (key == SDLK_ESCAPE) {
 		const bool current = SDL_GetRelativeMouseMode();
-		if (current)
-			SDL_SetRelativeMouseMode(SDL_FALSE);
-		else
-			SDL_SetRelativeMouseMode(SDL_TRUE);
+		const SDL_bool mode = current ? SDL_FALSE : SDL_TRUE;
+		SDL_SetRelativeMouseMode(mode);
 	}
 	return UIApp::onKeyPress(key, modifier);
 }
@@ -96,8 +94,9 @@ bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	UIApp::onMouseMotion(x, y, relX, relY);
 	const bool current = SDL_GetRelativeMouseMode();
-	if (!current)
+	if (!current) {
 		return;
+	}
 	_camera.onMotion(x, y, relX, relY);
 }
 
