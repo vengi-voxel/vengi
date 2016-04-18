@@ -147,6 +147,8 @@ core::AppState WindowedApp::onConstruct() {
 
 	ExtGLLoadFunctions();
 
+	glEnable(GL_MULTISAMPLE);
+
 	return App::onConstruct();
 }
 
