@@ -94,7 +94,7 @@ public:
 	template<typename Func>
 	void visitVisible(Func& func) {
 		core::ScopedReadLock lock(_visibleLock);
-		for (EntityPtr& e : _visible) {
+		for (const EntityPtr& e : _visible) {
 			func(e);
 		}
 	}
