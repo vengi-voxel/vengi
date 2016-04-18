@@ -59,10 +59,11 @@ core::AppState WindowedApp::onRunning() {
 }
 
 core::AppState WindowedApp::onInit() {
-	return App::onInit();
-}
+	core::AppState state = App::onInit();
+	if (state == core::AppState::Cleanup) {
+		return state;
+	}
 
-core::AppState WindowedApp::onConstruct() {
 	if (SDL_Init(SDL_INIT_VIDEO) == -1) {
 		sdlCheckError();
 		return core::AppState::Cleanup;
@@ -147,9 +148,14 @@ core::AppState WindowedApp::onConstruct() {
 
 	ExtGLLoadFunctions();
 
-	glEnable(GL_MULTISAMPLE);
+	glEnable(GL_MULTISAMPLES);
 
-	return App::onConstruct();
+	return state;
+}
+
+core::AppState WindowedApp::onConstruct() {
+	core::AppState state = App::onConstruct();
+	return state;
 }
 
 core::AppState WindowedApp::onCleanup() {
