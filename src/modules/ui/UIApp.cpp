@@ -254,6 +254,7 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 core::AppState UIApp::onConstruct() {
+	const core::AppState state = WindowedApp::onConstruct();
 	core::Command::registerCommand("cl_ui_debug", [&] (const core::CmdArgs& args) {
 #ifndef NDEBUG
 		tb::ShowDebugInfoSettingsWindow(&_root);
@@ -262,7 +263,7 @@ core::AppState UIApp::onConstruct() {
 
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
 
-	return WindowedApp::onConstruct();
+	return state;
 }
 
 core::AppState UIApp::onInit() {
