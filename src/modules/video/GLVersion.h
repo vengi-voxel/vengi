@@ -30,7 +30,9 @@ enum VersionIdentifiers {
 	V400 = 400,
 	V410 = 410,
 	V420 = 420,
-	V430 = 430
+	V430 = 430,
+	V440 = 440,
+	V450 = 450
 };
 };
 
@@ -44,6 +46,8 @@ constexpr GLVersion GL4_0(4, 0);
 constexpr GLVersion GL4_1(4, 1);
 constexpr GLVersion GL4_2(4, 2);
 constexpr GLVersion GL4_3(4, 3);
+constexpr GLVersion GL4_4(4, 4);
+constexpr GLVersion GL4_5(4, 5);
 
 // https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
 constexpr struct Versions {
@@ -63,7 +67,9 @@ constexpr struct Versions {
 	{GL4_0, GLSLVersion::V400},
 	{GL4_1, GLSLVersion::V410},
 	{GL4_2, GLSLVersion::V420},
-	{GL4_3, GLSLVersion::V430}
+	{GL4_3, GLSLVersion::V430},
+	{GL4_4, GLSLVersion::V440},
+	{GL4_5, GLSLVersion::V450}
 #endif
 };
 
