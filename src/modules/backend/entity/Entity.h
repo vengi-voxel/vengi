@@ -74,7 +74,7 @@ public:
 	 * @note The implementation behind this must ensure thread safety
 	 * @return the current position in world coordinates
 	 */
-	virtual glm::vec3 pos() const = 0;
+	virtual const glm::vec3& pos() const = 0;
 	virtual float orientation() const = 0;
 	network::messages::NpcType npcType() const;
 

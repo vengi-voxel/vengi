@@ -59,7 +59,7 @@ public:
 
 	bool update(long dt) override;
 
-	glm::vec3 pos() const override;
+	const glm::vec3& pos() const override;
 	float orientation() const override;
 	std::string name() const;
 };

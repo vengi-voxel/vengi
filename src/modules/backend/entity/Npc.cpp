@@ -30,7 +30,7 @@ void Npc::init(const glm::ivec3* pos) {
 	Log::info("spawn character %i with behaviour tree %s at position %i:%i:%i (material: %i)",
 			ai()->getId(), ai()->getBehaviour()->getName().c_str(), randomPos.x, randomPos.y, randomPos.z, material);
 	setHomePosition(randomPos);
-	_ai->getCharacter()->setPosition(ai::Vector3f(randomPos.x, randomPos.y, randomPos.z));
+	_ai->getCharacter()->setPosition(glm::vec3(randomPos.x, randomPos.y, randomPos.z));
 	const char *typeName = network::messages::EnumNameNpcType(_npcType);
 	addContainer(typeName);
 	initAttribs();
@@ -74,9 +74,8 @@ bool Npc::attack(ai::CharacterId id) {
 	});
 }
 
-glm::vec3 Npc::pos() const {
-	const ai::Vector3f pos = _ai->getCharacter()->getPosition();
-	return glm::vec3(pos.x, pos.y, pos.z);
+const glm::vec3& Npc::pos() const {
+	return _ai->getCharacter()->getPosition();
 }
 
 bool Npc::update(long dt) {
@@ -88,15 +87,16 @@ bool Npc::update(long dt) {
 
 bool Npc::route(const glm::ivec3& target) {
 	std::list<PolyVox::Vector3DInt32> result;
-	const ai::Vector3f pos = _ai->getCharacter()->getPosition();
+	const glm::vec3& pos = _ai->getCharacter()->getPosition();
 	const PolyVox::Vector3DInt32 start(pos.x, pos.y, pos.z);
 	const PolyVox::Vector3DInt32 end(target.x, target.y, target.z);
 	return _world->findPath(start, end, result);
 }
 
 void Npc::moveToGround() {
-	const ai::Vector3f pos = _ai->getCharacter()->getPosition();
-	_ai->getCharacter()->setPosition(ai::Vector3f(pos.x, _world->findFloor(pos.x, pos.z), pos.z));
+	glm::vec3 pos = _ai->getCharacter()->getPosition();
+	pos.y = _world->findFloor(pos.x, pos.z);
+	_ai->getCharacter()->setPosition(pos);
 }
 
 }

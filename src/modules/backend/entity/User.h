@@ -80,7 +80,7 @@ public:
 		return _host;
 	}
 
-	glm::vec3 pos() const override {
+	const glm::vec3& pos() const override {
 		return _pos;
 	}
 
