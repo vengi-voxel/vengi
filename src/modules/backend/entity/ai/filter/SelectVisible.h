@@ -1,6 +1,6 @@
 #pragma once
 
-#include <filter/IFilter.h>
+#include "backend/entity/ai/AICommon.h"
 
 using namespace ai;
 

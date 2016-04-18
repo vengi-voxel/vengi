@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SimpleAI.h>
+#include "backend/entity/ai/AICommon.h"
 #include <atomic>
 #include "Entity.h"
 #include "ai/AICharacter.h"

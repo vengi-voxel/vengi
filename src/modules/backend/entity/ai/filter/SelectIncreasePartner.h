@@ -3,7 +3,7 @@
 #include "core/String.h"
 #include "core/Common.h"
 #include "cooldown/CooldownType.h"
-#include <filter/IFilter.h>
+#include "backend/entity/ai/AICommon.h"
 
 using namespace ai;
 

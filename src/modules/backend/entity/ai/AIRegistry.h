@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SimpleAI.h>
+#include "AICommon.h"
 #include <memory>
 
 #include "backend/entity/EntityStorage.h"

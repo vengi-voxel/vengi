@@ -11,8 +11,8 @@
 #include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "core/EventBus.h"
+#include "backend/entity/ai/AICommon.h"
 
-#include <SimpleAI.h>
 #include <memory>
 #include <thread>
 #include <chrono>

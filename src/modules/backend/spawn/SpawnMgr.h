@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <SimpleAI.h>
+#include "backend/entity/ai/AICommon.h"
 #include "voxel/World.h"
 #include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AILoader.h"

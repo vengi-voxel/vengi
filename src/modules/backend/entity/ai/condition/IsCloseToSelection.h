@@ -1,7 +1,6 @@
 #pragma once
 
-#include <conditions/ICondition.h>
-#include <common/String.h>
+#include "backend/entity/ai/AICommon.h"
 #include "backend/entity/EntityStorage.h"
 
 using namespace ai;

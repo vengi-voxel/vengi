@@ -1,6 +1,6 @@
 #pragma once
 
-#include <conditions/ICondition.h>
+#include "backend/entity/ai/AICommon.h"
 #include "cooldown/CooldownType.h"
 #include "core/Common.h"
 #include "core/String.h"

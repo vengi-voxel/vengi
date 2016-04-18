@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SimpleAI.h>
+#include "AICommon.h"
 #include <tree/loaders/lua/LUATreeLoader.h>
 #include <memory>
 

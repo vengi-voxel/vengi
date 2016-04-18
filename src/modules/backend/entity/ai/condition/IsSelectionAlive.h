@@ -1,6 +1,6 @@
 #pragma once
 
-#include <conditions/ICondition.h>
+#include "backend/entity/ai/AICommon.h"
 
 using namespace ai;
 

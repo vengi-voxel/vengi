@@ -1,6 +1,6 @@
 #pragma once
 
-#include <filter/IFilter.h>
+#include "backend/entity/ai/AICommon.h"
 #include "core/String.h"
 #include "core/Common.h"
 #include "network/messages/Shared_generated.h"
