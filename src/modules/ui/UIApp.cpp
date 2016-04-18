@@ -267,6 +267,7 @@ core::AppState UIApp::onConstruct() {
 }
 
 core::AppState UIApp::onInit() {
+	const core::AppState state = WindowedApp::onInit();
 	if (!tb::tb_core_init(&_renderer)) {
 		Log::error("failed to initialize the ui");
 		return core::AppState::Cleanup;
@@ -307,7 +308,6 @@ core::AppState UIApp::onInit() {
 	_root.SetRect(tb::TBRect(0, 0, _width, _height));
 	_root.SetSkinBg(TBIDC("background"));
 
-	const core::AppState state = WindowedApp::onInit();
 	return state;
 }
 
