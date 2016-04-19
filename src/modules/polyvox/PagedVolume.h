@@ -45,17 +45,17 @@ public:
 		friend class PagedVolume;
 
 	public:
-		Chunk(Vector3DInt32 v3dPosition, uint16_t uSideLength, Pager* pPager = nullptr);
+		Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager = nullptr);
 		~Chunk();
 
 		VoxelType* getData(void) const;
 		uint32_t getDataSizeInBytes(void) const;
 
 		VoxelType getVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos) const;
-		VoxelType getVoxel(const Vector3DUint16& v3dPos) const;
+		VoxelType getVoxel(const glm::i16vec3& v3dPos) const;
 
 		void setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, VoxelType tValue);
-		void setVoxel(const Vector3DUint16& v3dPos, VoxelType tValue);
+		void setVoxel(const glm::i16vec3& v3dPos, VoxelType tValue);
 
 		void changeLinearOrderingToMorton(void);
 		void changeMortonOrderingToLinear(void);
@@ -83,7 +83,7 @@ public:
 		Pager* m_pPager;
 
 		// Note: Do we really need to store this position here as well as in the block maps?
-		Vector3DInt32 m_v3dChunkSpacePosition;
+		glm::ivec3 m_v3dChunkSpacePosition;
 	};
 
 	/**
@@ -124,7 +124,7 @@ public:
 
 		inline VoxelType getVoxel(void) const;
 
-		void setPosition(const Vector3DInt32& v3dNewPos);
+		void setPosition(const glm::ivec3& v3dNewPos);
 		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
 		inline bool setVoxel(VoxelType tValue);
 
@@ -189,12 +189,12 @@ public:
 	/// Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
 	VoxelType getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const;
 	/// Gets a voxel at the position given by a 3D vector
-	VoxelType getVoxel(const Vector3DInt32& v3dPos) const;
+	VoxelType getVoxel(const glm::ivec3& v3dPos) const;
 
 	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
 	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, VoxelType tValue);
 	/// Sets the voxel at the position given by a 3D vector
-	void setVoxel(const Vector3DInt32& v3dPos, VoxelType tValue);
+	void setVoxel(const glm::ivec3& v3dPos, VoxelType tValue);
 
 	/// Tries to ensure that the voxels within the specified Region are loaded into memory.
 	void prefetch(Region regPrefetch);
@@ -216,7 +216,7 @@ private:
 	Chunk* getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 
 	// Storing these properties individually has proved to be faster than keeping
-	// them in a Vector3DInt32 as it avoids constructions and comparison overheads.
+	// them in a glm::ivec3 as it avoids constructions and comparison overheads.
 	// They are also at the start of the class in the hope that they will be pulled
 	// into cache - I've got no idea if this actually makes a difference.
 	mutable int32_t m_v3dLastAccessedChunkX = 0;
@@ -324,7 +324,7 @@ VoxelType PagedVolume<VoxelType>::getVoxel(int32_t uXPos, int32_t uYPos, int32_t
 /// \return The voxel value
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::getVoxel(const Vector3DInt32& v3dPos) const {
+VoxelType PagedVolume<VoxelType>::getVoxel(const glm::ivec3& v3dPos) const {
 	return getVoxel(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
@@ -353,7 +353,7 @@ void PagedVolume<VoxelType>::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPo
 /// \param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-void PagedVolume<VoxelType>::setVoxel(const Vector3DInt32& v3dPos, VoxelType tValue) {
+void PagedVolume<VoxelType>::setVoxel(const glm::ivec3& v3dPos, VoxelType tValue) {
 	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
 
@@ -364,11 +364,11 @@ void PagedVolume<VoxelType>::setVoxel(const Vector3DInt32& v3dPos, VoxelType tVa
 template<typename VoxelType>
 void PagedVolume<VoxelType>::prefetch(Region regPrefetch) {
 	// Convert the start and end positions into chunk space coordinates
-	const Vector3DInt32& lower = regPrefetch.getLowerCorner();
-	const Vector3DInt32 v3dStart {lower.x >> m_uChunkSideLengthPower, lower.y >> m_uChunkSideLengthPower, lower.z >> m_uChunkSideLengthPower};
+	const glm::ivec3& lower = regPrefetch.getLowerCorner();
+	const glm::ivec3 v3dStart {lower.x >> m_uChunkSideLengthPower, lower.y >> m_uChunkSideLengthPower, lower.z >> m_uChunkSideLengthPower};
 
-	const Vector3DInt32& upper = regPrefetch.getUpperCorner();
-	const Vector3DInt32 v3dEnd {upper.x >> m_uChunkSideLengthPower, upper.y >> m_uChunkSideLengthPower, upper.z >> m_uChunkSideLengthPower};
+	const glm::ivec3& upper = regPrefetch.getUpperCorner();
+	const glm::ivec3 v3dEnd {upper.x >> m_uChunkSideLengthPower, upper.y >> m_uChunkSideLengthPower, upper.z >> m_uChunkSideLengthPower};
 
 	// Ensure we don't page in more chunks than the volume can hold.
 	Region region(v3dStart, v3dEnd);
@@ -428,7 +428,7 @@ typename PagedVolume<VoxelType>::Chunk* PagedVolume<VoxelType>::getChunk(int32_t
 	uint32_t iIndex = iPosisionHash;
 	do {
 		if (m_arrayChunks[iIndex]) {
-			Vector3DInt32& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
+			glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
 			if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
 				pChunk = m_arrayChunks[iIndex].get();
 				pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
@@ -443,7 +443,7 @@ typename PagedVolume<VoxelType>::Chunk* PagedVolume<VoxelType>::getChunk(int32_t
 	// If we still haven't found the chunk then it's time to create a new one and page it in from disk.
 	if (!pChunk) {
 		// The chunk was not found so we will create a new one.
-		Vector3DInt32 v3dChunkPos(uChunkX, uChunkY, uChunkZ);
+		glm::ivec3 v3dChunkPos(uChunkX, uChunkY, uChunkZ);
 		pChunk = new PagedVolume<VoxelType>::Chunk(v3dChunkPos, m_uChunkSideLength, m_pPager);
 		pChunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
 
@@ -517,7 +517,7 @@ uint32_t PagedVolume<VoxelType>::calculateSizeInBytes(void) {
 }
 
 template<typename VoxelType>
-PagedVolume<VoxelType>::Chunk::Chunk(Vector3DInt32 v3dPosition, uint16_t uSideLength, Pager* pPager) :
+PagedVolume<VoxelType>::Chunk::Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager) :
 		m_uChunkLastAccessed(0), m_bDataModified(true), m_tData(0), m_uSideLength(0), m_uSideLengthPower(0), m_pPager(pPager), m_v3dChunkSpacePosition(v3dPosition) {
 	core_assert_msg(m_pPager, "No valid pager supplied to chunk constructor.");
 	core_assert_msg(uSideLength <= 256, "Chunk side length cannot be greater than 256.");
@@ -532,8 +532,8 @@ PagedVolume<VoxelType>::Chunk::Chunk(Vector3DInt32 v3dPosition, uint16_t uSideLe
 
 	// Pass the chunk to the Pager to give it a chance to initialise it with any data
 	// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
-	const Vector3DInt32 v3dLower = m_v3dChunkSpacePosition * static_cast<int32_t>(m_uSideLength);
-	const Vector3DInt32 v3dUpper = v3dLower + Vector3DInt32(m_uSideLength - 1, m_uSideLength - 1, m_uSideLength - 1);
+	const glm::ivec3 v3dLower = m_v3dChunkSpacePosition * static_cast<int32_t>(m_uSideLength);
+	const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(m_uSideLength - 1, m_uSideLength - 1, m_uSideLength - 1);
 	const Region reg(v3dLower, v3dUpper);
 
 	// A valid pager is normally present - this check is mostly to ease unit testing.
@@ -550,8 +550,8 @@ template<typename VoxelType>
 PagedVolume<VoxelType>::Chunk::~Chunk() {
 	if (m_bDataModified && m_pPager) {
 		// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
-		const Vector3DInt32 v3dLower = m_v3dChunkSpacePosition * static_cast<int32_t>(m_uSideLength);
-		const Vector3DInt32 v3dUpper = v3dLower + Vector3DInt32(m_uSideLength - 1, m_uSideLength - 1, m_uSideLength - 1);
+		const glm::ivec3 v3dLower = m_v3dChunkSpacePosition * static_cast<int32_t>(m_uSideLength);
+		const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(m_uSideLength - 1, m_uSideLength - 1, m_uSideLength - 1);
 
 		// Page the data out
 		m_pPager->pageOut(Region(v3dLower, v3dUpper), this);
@@ -585,7 +585,7 @@ VoxelType PagedVolume<VoxelType>::Chunk::getVoxel(uint32_t uXPos, uint32_t uYPos
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Chunk::getVoxel(const Vector3DUint16& v3dPos) const {
+VoxelType PagedVolume<VoxelType>::Chunk::getVoxel(const glm::i16vec3& v3dPos) const {
 	return getVoxel(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
@@ -604,7 +604,7 @@ void PagedVolume<VoxelType>::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uin
 }
 
 template<typename VoxelType>
-void PagedVolume<VoxelType>::Chunk::setVoxel(const Vector3DUint16& v3dPos, VoxelType tValue) {
+void PagedVolume<VoxelType>::Chunk::setVoxel(const glm::i16vec3& v3dPos, VoxelType tValue) {
 	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
 
@@ -726,7 +726,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::getVoxel(void) const {
 }
 
 template<typename VoxelType>
-void PagedVolume<VoxelType>::Sampler::setPosition(const Vector3DInt32& v3dNewPos) {
+void PagedVolume<VoxelType>::Sampler::setPosition(const glm::ivec3& v3dNewPos) {
 	setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
 }
 

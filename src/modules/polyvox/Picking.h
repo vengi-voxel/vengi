@@ -12,13 +12,13 @@ struct PickResult {
 			didHit(false) {
 	}
 	bool didHit; ///< Did the picking operation hit anything
-	Vector3DInt32 hitVoxel; ///< The location of the solid voxel it hit
-	Vector3DInt32 previousVoxel; ///< The location of the voxel before the one it hit
+	glm::ivec3 hitVoxel; ///< The location of the solid voxel it hit
+	glm::ivec3 previousVoxel; ///< The location of the voxel before the one it hit
 };
 
 /// Pick the first solid voxel along a vector
 template<typename VolumeType>
-PickResult pickVoxel(VolumeType* volData, const Vector3DFloat& v3dStart, const Vector3DFloat& v3dDirectionAndLength, const typename VolumeType::VoxelType& emptyVoxelExample);
+PickResult pickVoxel(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, const typename VolumeType::VoxelType& emptyVoxelExample);
 
 namespace {
 
@@ -65,7 +65,7 @@ public:
  * \return A PickResult containing the hit information
  */
 template<typename VolumeType>
-PickResult pickVoxel(VolumeType* volData, const Vector3DFloat& v3dStart, const Vector3DFloat& v3dDirectionAndLength, const typename VolumeType::VoxelType& emptyVoxelExample) {
+PickResult pickVoxel(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, const typename VolumeType::VoxelType& emptyVoxelExample) {
 	RaycastPickingFunctor<VolumeType> functor(emptyVoxelExample);
 
 	raycastWithDirection(volData, v3dStart, v3dDirectionAndLength, functor);

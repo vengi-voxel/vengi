@@ -23,7 +23,7 @@ void IteratorController<IteratorType>::reset(void) {
 
 template<typename IteratorType>
 bool IteratorController<IteratorType>::moveForward(void) {
-	Vector3DInt32 v3dInitialPosition(m_Iter->getPosition().x, m_Iter->getPosition().y, m_Iter->getPosition().z);
+	glm::ivec3 v3dInitialPosition(m_Iter->getPosition().x, m_Iter->getPosition().y, m_Iter->getPosition().z);
 
 	if (v3dInitialPosition.x < m_regValid.getUpperX()) {
 		m_Iter->movePositiveX();

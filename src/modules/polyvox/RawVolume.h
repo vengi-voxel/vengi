@@ -40,7 +40,7 @@ public:
 
 		bool isCurrentPositionValid(void) const;
 
-		void setPosition(const Vector3DInt32& v3dNewPos);
+		void setPosition(const glm::ivec3& v3dNewPos);
 		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
 		inline bool setVoxel(VoxelType tValue);
 
@@ -116,14 +116,14 @@ public:
 	/// Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
 	VoxelType getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const;
 	/// Gets a voxel at the position given by a 3D vector
-	VoxelType getVoxel(const Vector3DInt32& v3dPos) const;
+	VoxelType getVoxel(const glm::ivec3& v3dPos) const;
 
 	/// Sets the value used for voxels which are outside the volume
 	void setBorderValue(const VoxelType& tBorder);
 	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
 	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, VoxelType tValue);
 	/// Sets the voxel at the position given by a 3D vector
-	void setVoxel(const Vector3DInt32& v3dPos, VoxelType tValue);
+	void setVoxel(const glm::ivec3& v3dPos, VoxelType tValue);
 
 	/// Calculates approximatly how many bytes of memory the volume is currently using.
 	uint32_t calculateSizeInBytes(void);
@@ -267,7 +267,7 @@ VoxelType RawVolume<VoxelType>::getVoxel(int32_t uXPos, int32_t uYPos, int32_t u
 /// \return The voxel value
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::getVoxel(const Vector3DInt32& v3dPos) const {
+VoxelType RawVolume<VoxelType>::getVoxel(const glm::ivec3& v3dPos) const {
 	return getVoxel(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
@@ -287,11 +287,11 @@ void RawVolume<VoxelType>::setBorderValue(const VoxelType& tBorder) {
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void RawVolume<VoxelType>::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, VoxelType tValue) {
-	if (!this->m_regValidRegion.containsPoint(Vector3DInt32(uXPos, uYPos, uZPos))) {
+	if (!this->m_regValidRegion.containsPoint(glm::ivec3(uXPos, uYPos, uZPos))) {
 		core_assert_msg(false, "Position is outside valid region");
 	}
 
-	const Vector3DInt32& v3dLowerCorner = this->m_regValidRegion.getLowerCorner();
+	const glm::ivec3& v3dLowerCorner = this->m_regValidRegion.getLowerCorner();
 	int32_t iLocalXPos = uXPos - v3dLowerCorner.x;
 	int32_t iLocalYPos = uYPos - v3dLowerCorner.y;
 	int32_t iLocalZPos = uZPos - v3dLowerCorner.z;
@@ -304,7 +304,7 @@ void RawVolume<VoxelType>::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos,
 /// \param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-void RawVolume<VoxelType>::setVoxel(const Vector3DInt32& v3dPos, VoxelType tValue) {
+void RawVolume<VoxelType>::setVoxel(const glm::ivec3& v3dPos, VoxelType tValue) {
 	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
 
@@ -371,7 +371,7 @@ bool inline RawVolume<VoxelType>::Sampler::isCurrentPositionValid(void) const {
 }
 
 template<typename VoxelType>
-void RawVolume<VoxelType>::Sampler::setPosition(const Vector3DInt32& v3dNewPos) {
+void RawVolume<VoxelType>::Sampler::setPosition(const glm::ivec3& v3dNewPos) {
 	setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
 }
 
@@ -386,7 +386,7 @@ void RawVolume<VoxelType>::Sampler::setPosition(int32_t xPos, int32_t yPos, int3
 
 	// Then we update the voxel pointer
 	if (this->isCurrentPositionValid()) {
-		const Vector3DInt32& v3dLowerCorner = this->mVolume->m_regValidRegion.getLowerCorner();
+		const glm::ivec3& v3dLowerCorner = this->mVolume->m_regValidRegion.getLowerCorner();
 		const int32_t iLocalXPos = xPos - v3dLowerCorner.x;
 		const int32_t iLocalYPos = yPos - v3dLowerCorner.y;
 		const int32_t iLocalZPos = zPos - v3dLowerCorner.z;

@@ -37,7 +37,7 @@ public:
 	/// Constructor
 	Region();
 	/// Constructor
-	Region(const ::PolyVox::Vector3DInt32& v3dLowerCorner, const ::PolyVox::Vector3DInt32& v3dUpperCorner);
+	Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner);
 	/// Constructor
 	Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ);
 
@@ -66,11 +66,11 @@ public:
 	int32_t getUpperZ(void) const;
 
 	/// Gets the centre of the region
-	Vector3DInt32 getCentre(void) const;
+	glm::ivec3 getCentre(void) const;
 	/// Gets the position of the lower corner.
-	Vector3DInt32 getLowerCorner(void) const;
+	glm::ivec3 getLowerCorner(void) const;
 	/// Gets the position of the upper corner.
-	Vector3DInt32 getUpperCorner(void) const;
+	glm::ivec3 getUpperCorner(void) const;
 
 	/// Gets the width of the region measured in voxels.
 	int32_t getWidthInVoxels(void) const;
@@ -79,7 +79,7 @@ public:
 	/// Gets the depth of the region measured in voxels.
 	int32_t getDepthInVoxels(void) const;
 	/// Gets the dimensions of the region measured in voxels.
-	Vector3DInt32 getDimensionsInVoxels(void) const;
+	glm::ivec3 getDimensionsInVoxels(void) const;
 
 	/// Gets the width of the region measured in cells.
 	int32_t getWidthInCells(void) const;
@@ -88,7 +88,7 @@ public:
 	/// Gets the depth of the region measured in cells.
 	int32_t getDepthInCells(void) const;
 	/// Gets the dimensions of the region measured in cells.
-	Vector3DInt32 getDimensionsInCells(void) const;
+	glm::ivec3 getDimensionsInCells(void) const;
 
 	/// Sets the 'x' position of the lower corner.
 	void setLowerX(int32_t iX);
@@ -104,18 +104,18 @@ public:
 	void setUpperZ(int32_t iZ);
 
 	/// Sets the position of the lower corner.
-	void setLowerCorner(const Vector3DInt32& v3dLowerCorner);
+	void setLowerCorner(const glm::ivec3& v3dLowerCorner);
 	/// Sets the position of the upper corner.
-	void setUpperCorner(const Vector3DInt32& v3dUpperCorner);
+	void setUpperCorner(const glm::ivec3& v3dUpperCorner);
 
 	/// Tests whether the given point is contained in this Region.
 	bool containsPoint(float fX, float fY, float fZ, float boundary = 0.0f) const;
 	/// Tests whether the given point is contained in this Region.
-	bool containsPoint(const Vector3DFloat& pos, float boundary = 0.0f) const;
+	bool containsPoint(const glm::vec3& pos, float boundary = 0.0f) const;
 	/// Tests whether the given point is contained in this Region.
 	bool containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t boundary = 0) const;
 	/// Tests whether the given point is contained in this Region.
-	bool containsPoint(const Vector3DInt32& pos, uint8_t boundary = 0) const;
+	bool containsPoint(const glm::ivec3& pos, uint8_t boundary = 0) const;
 	/// Tests whether the given position is contained in the 'x' range of this Region.
 	bool containsPointInX(float pos, float boundary = 0.0f) const;
 	/// Tests whether the given position is contained in the 'x' range of this Region.
@@ -135,7 +135,7 @@ public:
 	/// Enlarges the Region so that it contains the specified position.
 	void accumulate(int32_t iX, int32_t iY, int32_t iZ);
 	/// Enlarges the Region so that it contains the specified position.
-	void accumulate(const Vector3DInt32& v3dPos);
+	void accumulate(const glm::ivec3& v3dPos);
 	/// Enlarges the Region so that it contains the specified Region.
 	void accumulate(const Region& reg);
 
@@ -147,7 +147,7 @@ public:
 	/// Grows this region by the amounts specified.
 	void grow(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
 	/// Grows this region by the amounts specified.
-	void grow(const Vector3DInt32& v3dAmount);
+	void grow(const glm::ivec3& v3dAmount);
 
 	/// Tests whether all components of the upper corner are at least
 	/// as great as the corresponding components of the lower corner.
@@ -156,22 +156,22 @@ public:
 	/// Moves the Region by the amount specified.
 	void shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
 	/// Moves the Region by the amount specified.
-	void shift(const Vector3DInt32& v3dAmount);
+	void shift(const glm::ivec3& v3dAmount);
 	/// Moves the lower corner of the Region by the amount specified.
 	void shiftLowerCorner(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
 	/// Moves the lower corner of the Region by the amount specified.
-	void shiftLowerCorner(const Vector3DInt32& v3dAmount);
+	void shiftLowerCorner(const glm::ivec3& v3dAmount);
 	/// Moves the upper corner of the Region by the amount specified.
 	void shiftUpperCorner(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
 	/// Moves the upper corner of the Region by the amount specified.
-	void shiftUpperCorner(const Vector3DInt32& v3dAmount);
+	void shiftUpperCorner(const glm::ivec3& v3dAmount);
 
 	/// Shrinks this region by the amount specified.
 	void shrink(int32_t iAmount);
 	/// Shrinks this region by the amounts specified.
 	void shrink(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
 	/// Shrinks this region by the amounts specified.
-	void shrink(const Vector3DInt32& v3dAmount);
+	void shrink(const glm::ivec3& v3dAmount);
 
 private:
 	int32_t m_iLowerX;
@@ -248,22 +248,22 @@ inline int32_t Region::getUpperZ(void) const {
 /**
  *  \return The position of the lower corner.
  */
-inline Vector3DInt32 Region::getCentre(void) const {
-	return Vector3DInt32(getCentreX(), getCentreY(), getCentreZ());
+inline glm::ivec3 Region::getCentre(void) const {
+	return glm::ivec3(getCentreX(), getCentreY(), getCentreZ());
 }
 
 /**
  *  \return The position of the lower corner.
  */
-inline Vector3DInt32 Region::getLowerCorner(void) const {
-	return Vector3DInt32(m_iLowerX, m_iLowerY, m_iLowerZ);
+inline glm::ivec3 Region::getLowerCorner(void) const {
+	return glm::ivec3(m_iLowerX, m_iLowerY, m_iLowerZ);
 }
 
 /**
  *  \return The position of the upper corner.
  */
-inline Vector3DInt32 Region::getUpperCorner(void) const {
-	return Vector3DInt32(m_iUpperX, m_iUpperY, m_iUpperZ);
+inline glm::ivec3 Region::getUpperCorner(void) const {
+	return glm::ivec3(m_iUpperX, m_iUpperY, m_iUpperZ);
 }
 
 /**
@@ -294,8 +294,8 @@ inline int32_t Region::getDepthInVoxels(void) const {
  *  \return The dimensions of the region measured in voxels.
  *  \sa getDimensionsInCells()
  */
-inline Vector3DInt32 Region::getDimensionsInVoxels(void) const {
-	return getDimensionsInCells() + Vector3DInt32(1, 1, 1);
+inline glm::ivec3 Region::getDimensionsInVoxels(void) const {
+	return getDimensionsInCells() + glm::ivec3(1, 1, 1);
 }
 
 /**
@@ -326,8 +326,8 @@ inline int32_t Region::getDepthInCells(void) const {
  *  \return The dimensions of the region measured in cells.
  *  \sa getDimensionsInVoxels()
  */
-inline Vector3DInt32 Region::getDimensionsInCells(void) const {
-	return Vector3DInt32(getWidthInCells(), getHeightInCells(), getDepthInCells());
+inline glm::ivec3 Region::getDimensionsInCells(void) const {
+	return glm::ivec3(getWidthInCells(), getHeightInCells(), getDepthInCells());
 }
 
 /**
@@ -375,7 +375,7 @@ inline void Region::setUpperZ(int32_t iZ) {
 /**
  *  \param v3dLowerCorner The new position of the lower corner.
  */
-inline void Region::setLowerCorner(const Vector3DInt32& v3dLowerCorner) {
+inline void Region::setLowerCorner(const glm::ivec3& v3dLowerCorner) {
 	m_iLowerX = v3dLowerCorner.x;
 	m_iLowerY = v3dLowerCorner.y;
 	m_iLowerZ = v3dLowerCorner.z;
@@ -384,7 +384,7 @@ inline void Region::setLowerCorner(const Vector3DInt32& v3dLowerCorner) {
 /**
  *  \param v3dUpperCorner The new position of the upper corner.
  */
-inline void Region::setUpperCorner(const Vector3DInt32& v3dUpperCorner) {
+inline void Region::setUpperCorner(const glm::ivec3& v3dUpperCorner) {
 	m_iUpperX = v3dUpperCorner.x;
 	m_iUpperY = v3dUpperCorner.y;
 	m_iUpperZ = v3dUpperCorner.z;
@@ -424,7 +424,7 @@ inline void Region::accumulate(int32_t iX, int32_t iY, int32_t iZ) {
 /**
  * \param v3dPos The position to accumulate.
  */
-inline void Region::accumulate(const Vector3DInt32& v3dPos) {
+inline void Region::accumulate(const glm::ivec3& v3dPos) {
 	accumulate(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
@@ -461,7 +461,7 @@ inline Region::Region() :
  * \param v3dLowerCorner The desired lower corner of the Region.
  * \param v3dUpperCorner The desired upper corner of the Region.
  */
-inline Region::Region(const Vector3DInt32& v3dLowerCorner, const Vector3DInt32& v3dUpperCorner) :
+inline Region::Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner) :
 		m_iLowerX(v3dLowerCorner.x), m_iLowerY(v3dLowerCorner.y), m_iLowerZ(v3dLowerCorner.z), m_iUpperX(v3dUpperCorner.x), m_iUpperY(v3dUpperCorner.y), m_iUpperZ(
 				v3dUpperCorner.z) {
 }
@@ -521,7 +521,7 @@ inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) 
  * \param pos The position to test.
  * \param boundary The desired boundary value.
  */
-inline bool Region::containsPoint(const Vector3DFloat& pos, float boundary) const {
+inline bool Region::containsPoint(const glm::vec3& pos, float boundary) const {
 	return containsPoint(pos.x, pos.y, pos.z, boundary);
 }
 
@@ -546,7 +546,7 @@ inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t bo
  * \param pos The position to test.
  * \param boundary The desired boundary value.
  */
-inline bool Region::containsPoint(const Vector3DInt32& pos, uint8_t boundary) const {
+inline bool Region::containsPoint(const glm::ivec3& pos, uint8_t boundary) const {
 	return containsPoint(pos.x, pos.y, pos.z, boundary);
 }
 
@@ -679,7 +679,7 @@ inline void Region::grow(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
  * is possible but you should prefer the shrink() function for clarity.
  * \param v3dAmount The amount to grow by (one component for each direction).
  */
-inline void Region::grow(const Vector3DInt32& v3dAmount) {
+inline void Region::grow(const glm::ivec3& v3dAmount) {
 	grow(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
@@ -702,7 +702,7 @@ inline void Region::shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) 
 /**
  * \param v3dAmount The amount to move the Region by.
  */
-inline void Region::shift(const Vector3DInt32& v3dAmount) {
+inline void Region::shift(const glm::ivec3& v3dAmount) {
 	shiftLowerCorner(v3dAmount);
 	shiftUpperCorner(v3dAmount);
 }
@@ -721,7 +721,7 @@ inline void Region::shiftLowerCorner(int32_t iAmountX, int32_t iAmountY, int32_t
 /**
  * \param v3dAmount The amount to move the lower corner by.
  */
-inline void Region::shiftLowerCorner(const Vector3DInt32& v3dAmount) {
+inline void Region::shiftLowerCorner(const glm::ivec3& v3dAmount) {
 	shiftLowerCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
@@ -739,7 +739,7 @@ inline void Region::shiftUpperCorner(int32_t iAmountX, int32_t iAmountY, int32_t
 /**
  * \param v3dAmount The amount to move the upper corner by.
  */
-inline void Region::shiftUpperCorner(const Vector3DInt32& v3dAmount) {
+inline void Region::shiftUpperCorner(const glm::ivec3& v3dAmount) {
 	shiftUpperCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
@@ -780,7 +780,7 @@ inline void Region::shrink(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ)
  * is possible but you should prefer the grow() function for clarity.
  * \param v3dAmount The amount to shrink by (one component for each direction).
  */
-inline void Region::shrink(const Vector3DInt32& v3dAmount) {
+inline void Region::shrink(const glm::ivec3& v3dAmount) {
 	shrink(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 

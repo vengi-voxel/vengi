@@ -11,7 +11,7 @@ namespace PolyVox {
 /// This function provides the default method for checking whether a given voxel
 /// is valid for the path computed by the AStarPathfinder.
 template<typename VolumeType>
-bool aStarDefaultVoxelValidator(const VolumeType* volData, const Vector3DInt32& v3dPos);
+bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3dPos);
 
 /// Provides a configuration for the AStarPathfinder.
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,9 +27,9 @@ bool aStarDefaultVoxelValidator(const VolumeType* volData, const Vector3DInt32& 
 template<typename VolumeType>
 struct AStarPathfinderParams {
 public:
-	AStarPathfinderParams(VolumeType* volData, const Vector3DInt32& v3dStart, const Vector3DInt32& v3dEnd, std::list<Vector3DInt32>* listResult, float fHBias = 1.0,
+	AStarPathfinderParams(VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, std::list<glm::ivec3>* listResult, float fHBias = 1.0,
 			uint32_t uMaxNoOfNodes = 10000, Connectivity requiredConnectivity = TwentySixConnected,
-			std::function<bool(const VolumeType*, const Vector3DInt32&)> funcIsVoxelValidForPath = &aStarDefaultVoxelValidator, std::function<void(float)> funcProgressCallback =
+			std::function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath = &aStarDefaultVoxelValidator, std::function<void(float)> funcProgressCallback =
 					nullptr) :
 			volume(volData), start(v3dStart), end(v3dEnd), result(listResult), connectivity(requiredConnectivity), hBias(fHBias), maxNumberOfNodes(uMaxNoOfNodes), isVoxelValidForPath(
 					funcIsVoxelValidForPath), progressCallback(funcProgressCallback) {
@@ -39,14 +39,14 @@ public:
 	VolumeType* volume;
 
 	/// The start point for the pathfinding algorithm.
-	Vector3DInt32 start;
+	glm::ivec3 start;
 
 	/// The end point for the pathfinding algorithm.
-	Vector3DInt32 end;
+	glm::ivec3 end;
 
 	/// The resulting path will be stored as a series of points in
 	/// this list. Any existing contents will be cleared.
-	std::list<Vector3DInt32>* result;
+	std::list<glm::ivec3>* result;
 
 	/// The AStarPathfinder performs its search by examining the neighbours
 	/// of each voxel it encounters. This property controls the meaning of
@@ -75,7 +75,7 @@ public:
 	/// you could check to ensure that the voxel above is empty and the voxel below is solid.
 	///
 	/// \sa aStarDefaultVoxelValidator
-	std::function<bool(const VolumeType*, const Vector3DInt32&)> isVoxelValidForPath;
+	std::function<bool(const VolumeType*, const glm::ivec3&)> isVoxelValidForPath;
 
 	/// This function is called by the AStarPathfinder to report on its progress in getting to
 	/// the goal. The progress is reported by computing the distance from the closest node found
@@ -117,12 +117,12 @@ public:
 	void execute();
 
 private:
-	void processNeighbour(const Vector3DInt32& neighbourPos, float neighbourGVal);
+	void processNeighbour(const glm::ivec3& neighbourPos, float neighbourGVal);
 
-	float SixConnectedCost(const Vector3DInt32& a, const Vector3DInt32& b);
-	float EighteenConnectedCost(const Vector3DInt32& a, const Vector3DInt32& b);
-	float TwentySixConnectedCost(const Vector3DInt32& a, const Vector3DInt32& b);
-	float computeH(const Vector3DInt32& a, const Vector3DInt32& b);
+	float SixConnectedCost(const glm::ivec3& a, const glm::ivec3& b);
+	float EighteenConnectedCost(const glm::ivec3& a, const glm::ivec3& b);
+	float TwentySixConnectedCost(const glm::ivec3& a, const glm::ivec3& b);
+	float computeH(const glm::ivec3& a, const glm::ivec3& b);
 	uint32_t hash(uint32_t a);
 
 	//Node containers
@@ -145,15 +145,15 @@ const float sqrt_1 = 1.0f;
 const float sqrt_2 = 1.4143f;
 const float sqrt_3 = 1.7321f;
 
-const Vector3DInt32 arrayPathfinderFaces[6] = { Vector3DInt32(0, 0, -1), Vector3DInt32(0, 0, +1), Vector3DInt32(0, -1, 0), Vector3DInt32(0, +1, 0), Vector3DInt32(-1, 0, 0),
-		Vector3DInt32(+1, 0, 0) };
+const glm::ivec3 arrayPathfinderFaces[6] = { glm::ivec3(0, 0, -1), glm::ivec3(0, 0, +1), glm::ivec3(0, -1, 0), glm::ivec3(0, +1, 0), glm::ivec3(-1, 0, 0),
+		glm::ivec3(+1, 0, 0) };
 
-const Vector3DInt32 arrayPathfinderEdges[12] = { Vector3DInt32(0, -1, -1), Vector3DInt32(0, -1, +1), Vector3DInt32(0, +1, -1), Vector3DInt32(0, +1, +1), Vector3DInt32(-1, 0, -1),
-		Vector3DInt32(-1, 0, +1), Vector3DInt32(+1, 0, -1), Vector3DInt32(+1, 0, +1), Vector3DInt32(-1, -1, 0), Vector3DInt32(-1, +1, 0), Vector3DInt32(+1, -1, 0), Vector3DInt32(
+const glm::ivec3 arrayPathfinderEdges[12] = { glm::ivec3(0, -1, -1), glm::ivec3(0, -1, +1), glm::ivec3(0, +1, -1), glm::ivec3(0, +1, +1), glm::ivec3(-1, 0, -1),
+		glm::ivec3(-1, 0, +1), glm::ivec3(+1, 0, -1), glm::ivec3(+1, 0, +1), glm::ivec3(-1, -1, 0), glm::ivec3(-1, +1, 0), glm::ivec3(+1, -1, 0), glm::ivec3(
 				+1, +1, 0) };
 
-const Vector3DInt32 arrayPathfinderCorners[8] = { Vector3DInt32(-1, -1, -1), Vector3DInt32(-1, -1, +1), Vector3DInt32(-1, +1, -1), Vector3DInt32(-1, +1, +1), Vector3DInt32(+1, -1,
-		-1), Vector3DInt32(+1, -1, +1), Vector3DInt32(+1, +1, -1), Vector3DInt32(+1, +1, +1) };
+const glm::ivec3 arrayPathfinderCorners[8] = { glm::ivec3(-1, -1, -1), glm::ivec3(-1, -1, +1), glm::ivec3(-1, +1, -1), glm::ivec3(-1, +1, +1), glm::ivec3(+1, -1,
+		-1), glm::ivec3(+1, -1, +1), glm::ivec3(+1, +1, -1), glm::ivec3(+1, +1, +1) };
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Using this function, a voxel is considered valid for the path if it is inside the
@@ -161,7 +161,7 @@ const Vector3DInt32 arrayPathfinderCorners[8] = { Vector3DInt32(-1, -1, -1), Vec
 /// \return true is the voxel is valid for the path
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VolumeType>
-bool aStarDefaultVoxelValidator(const VolumeType* volData, const Vector3DInt32& v3dPos) {
+bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3dPos) {
 	//Voxels are considered valid candidates for the path if they are inside the volume...
 	if (volData->getEnclosingRegion().containsPoint(v3dPos) == false) {
 		return false;
@@ -300,7 +300,7 @@ void AStarPathfinder<VolumeType>::execute() {
 }
 
 template<typename VolumeType>
-void AStarPathfinder<VolumeType>::processNeighbour(const Vector3DInt32& neighbourPos, float neighbourGVal) {
+void AStarPathfinder<VolumeType>::processNeighbour(const glm::ivec3& neighbourPos, float neighbourGVal) {
 	bool bIsVoxelValidForPath = _params.isVoxelValidForPath(_params.volume, neighbourPos);
 	if (!bIsVoxelValidForPath) {
 		return;
@@ -349,7 +349,7 @@ void AStarPathfinder<VolumeType>::processNeighbour(const Vector3DInt32& neighbou
 }
 
 template<typename VolumeType>
-float AStarPathfinder<VolumeType>::SixConnectedCost(const Vector3DInt32& a, const Vector3DInt32& b) {
+float AStarPathfinder<VolumeType>::SixConnectedCost(const glm::ivec3& a, const glm::ivec3& b) {
 	//This is the only heuristic I'm sure of - just use the manhatten distance for the 6-connected case.
 	uint32_t faceSteps = std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
 
@@ -357,7 +357,7 @@ float AStarPathfinder<VolumeType>::SixConnectedCost(const Vector3DInt32& a, cons
 }
 
 template<typename VolumeType>
-float AStarPathfinder<VolumeType>::EighteenConnectedCost(const Vector3DInt32& a, const Vector3DInt32& b) {
+float AStarPathfinder<VolumeType>::EighteenConnectedCost(const glm::ivec3& a, const glm::ivec3& b) {
 	//I'm not sure of the correct heuristic for the 18-connected case, so I'm just letting it fall through to the
 	//6-connected case. This means 'h' will be bigger than it should be, resulting in a faster path which may not
 	//actually be the shortest one. If you have a correct heuristic for the 18-connected case then please let me know.
@@ -366,7 +366,7 @@ float AStarPathfinder<VolumeType>::EighteenConnectedCost(const Vector3DInt32& a,
 }
 
 template<typename VolumeType>
-float AStarPathfinder<VolumeType>::TwentySixConnectedCost(const Vector3DInt32& a, const Vector3DInt32& b) {
+float AStarPathfinder<VolumeType>::TwentySixConnectedCost(const glm::ivec3& a, const glm::ivec3& b) {
 	//Can't say I'm certain about this heuristic - if anyone has
 	//a better idea of what it should be then please let me know.
 	uint32_t array[3];
@@ -387,7 +387,7 @@ float AStarPathfinder<VolumeType>::TwentySixConnectedCost(const Vector3DInt32& a
 }
 
 template<typename VolumeType>
-float AStarPathfinder<VolumeType>::computeH(const Vector3DInt32& a, const Vector3DInt32& b) {
+float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec3& b) {
 	float hVal;
 
 	switch (_params.connectivity) {

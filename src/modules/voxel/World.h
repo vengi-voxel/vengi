@@ -109,7 +109,7 @@ public:
 	void reset();
 	bool isReset() const;
 
-	bool findPath(const PolyVox::Vector3DInt32& start, const PolyVox::Vector3DInt32& end, std::list<PolyVox::Vector3DInt32>& listResult);
+	bool findPath(const glm::ivec3& start, const glm::ivec3& end, std::list<glm::ivec3>& listResult);
 	int findFloor(int x, int z) const;
 	int getMaterial(int x, int y, int z) const;
 

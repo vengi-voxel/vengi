@@ -50,10 +50,10 @@ typedef RaycastResults::RaycastResult RaycastResult;
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename VolumeType, typename Callback>
-RaycastResult raycastWithEndpoints(VolumeType* volData, const Vector3DFloat& v3dStart, const Vector3DFloat& v3dEnd, Callback& callback);
+RaycastResult raycastWithEndpoints(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback& callback);
 
 template<typename VolumeType, typename Callback>
-RaycastResult raycastWithDirection(VolumeType* volData, const Vector3DFloat& v3dStart, const Vector3DFloat& v3dDirectionAndLength, Callback& callback);
+RaycastResult raycastWithDirection(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback& callback);
 
 // This function is based on Christer Ericson's code and description of the 'Uniform Grid Intersection Test' in
 // 'Real Time Collision Detection'. The following information from the errata on the book website is also relevant:
@@ -101,7 +101,7 @@ RaycastResult raycastWithDirection(VolumeType* volData, const Vector3DFloat& v3d
  * \return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename VolumeType, typename Callback>
-RaycastResult raycastWithEndpoints(VolumeType* volData, const Vector3DFloat& v3dStart, const Vector3DFloat& v3dEnd, Callback& callback) {
+RaycastResult raycastWithEndpoints(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback& callback) {
 	typename VolumeType::Sampler sampler(volData);
 
 	//The doRaycast function is assuming that it is iterating over the areas defined between
@@ -205,8 +205,8 @@ RaycastResult raycastWithEndpoints(VolumeType* volData, const Vector3DFloat& v3d
  * \return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename VolumeType, typename Callback>
-RaycastResult raycastWithDirection(VolumeType* volData, const Vector3DFloat& v3dStart, const Vector3DFloat& v3dDirectionAndLength, Callback& callback) {
-	Vector3DFloat v3dEnd = v3dStart + v3dDirectionAndLength;
+RaycastResult raycastWithDirection(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback& callback) {
+	glm::vec3 v3dEnd = v3dStart + v3dDirectionAndLength;
 	return raycastWithEndpoints<VolumeType, Callback>(volData, v3dStart, v3dEnd, callback);
 }
 

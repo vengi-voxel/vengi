@@ -52,7 +52,7 @@ struct Node {
 		return false;
 	}
 
-	PolyVox::Vector3DInt32 position;
+	glm::ivec3 position;
 	float gVal;
 	float hVal;
 	Node* parent;

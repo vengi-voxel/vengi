@@ -34,8 +34,8 @@ public:
 	IndexType getIndex(uint32_t index) const;
 	const IndexType* getRawIndexData(void) const;
 
-	const Vector3DInt32& getOffset(void) const;
-	void setOffset(const Vector3DInt32& offset);
+	const glm::ivec3& getOffset(void) const;
+	void setOffset(const glm::ivec3& offset);
 
 	IndexType addVertex(const VertexType& vertex);
 	void addTriangle(IndexType index0, IndexType index1, IndexType index2);
@@ -47,7 +47,7 @@ public:
 private:
 	std::vector<IndexType> m_vecIndices;
 	std::vector<VertexType> m_vecVertices;
-	Vector3DInt32 m_offset;
+	glm::ivec3 m_offset;
 };
 
 /// Meshes returned by the surface extractors often have vertices with efficient compressed
@@ -109,12 +109,12 @@ const IndexType* Mesh<VertexType, IndexType>::getRawIndexData(void) const {
 }
 
 template<typename VertexType, typename IndexType>
-const Vector3DInt32& Mesh<VertexType, IndexType>::getOffset(void) const {
+const glm::ivec3& Mesh<VertexType, IndexType>::getOffset(void) const {
 	return m_offset;
 }
 
 template<typename VertexType, typename IndexType>
-void Mesh<VertexType, IndexType>::setOffset(const Vector3DInt32& offset) {
+void Mesh<VertexType, IndexType>::setOffset(const glm::ivec3& offset) {
 	m_offset = offset;
 }
 

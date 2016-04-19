@@ -23,10 +23,10 @@ public:
 		Sampler(DerivedVolumeType* volume);
 		~Sampler();
 
-		Vector3DInt32 getPosition(void) const;
+		glm::ivec3 getPosition(void) const;
 		inline VoxelType getVoxel(void) const;
 
-		void setPosition(const Vector3DInt32& v3dNewPos);
+		void setPosition(const glm::ivec3& v3dNewPos);
 		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
 		inline bool setVoxel(VoxelType tValue);
 
@@ -82,12 +82,12 @@ public:
 	/// Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
 	VoxelType getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const;
 	/// Gets a voxel at the position given by a 3D vector
-	VoxelType getVoxel(const Vector3DInt32& v3dPos) const;
+	VoxelType getVoxel(const glm::ivec3& v3dPos) const;
 
 	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
 	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, VoxelType tValue);
 	/// Sets the voxel at the position given by a 3D vector
-	void setVoxel(const Vector3DInt32& v3dPos, VoxelType tValue);
+	void setVoxel(const glm::ivec3& v3dPos, VoxelType tValue);
 
 	/// Calculates approximatly how many bytes of memory the volume is currently using.
 	uint32_t calculateSizeInBytes(void);
@@ -167,7 +167,7 @@ VoxelType BaseVolume<VoxelType>::getVoxel(int32_t /*uXPos*/, int32_t /*uYPos*/, 
 /// \return The voxel value
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-VoxelType BaseVolume<VoxelType>::getVoxel(const Vector3DInt32& /*v3dPos*/) const {
+VoxelType BaseVolume<VoxelType>::getVoxel(const glm::ivec3& /*v3dPos*/) const {
 	core_assert_msg(false, "You should never call the base class version of this function.");
 	return VoxelType();
 }
@@ -188,7 +188,7 @@ void BaseVolume<VoxelType>::setVoxel(int32_t /*uXPos*/, int32_t /*uYPos*/, int32
 /// \param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-void BaseVolume<VoxelType>::setVoxel(const Vector3DInt32& /*v3dPos*/, VoxelType /*tValue*/) {
+void BaseVolume<VoxelType>::setVoxel(const glm::ivec3& /*v3dPos*/, VoxelType /*tValue*/) {
 	core_assert_msg(false, "You should never call the base class version of this function.");
 }
 
@@ -214,8 +214,8 @@ BaseVolume<VoxelType>::Sampler<DerivedVolumeType>::~Sampler() {
 
 template<typename VoxelType>
 template<typename DerivedVolumeType>
-Vector3DInt32 BaseVolume<VoxelType>::Sampler<DerivedVolumeType>::getPosition(void) const {
-	return Vector3DInt32(mXPosInVolume, mYPosInVolume, mZPosInVolume);
+glm::ivec3 BaseVolume<VoxelType>::Sampler<DerivedVolumeType>::getPosition(void) const {
+	return glm::ivec3(mXPosInVolume, mYPosInVolume, mZPosInVolume);
 }
 
 template<typename VoxelType>
@@ -226,7 +226,7 @@ VoxelType BaseVolume<VoxelType>::Sampler<DerivedVolumeType>::getVoxel(void) cons
 
 template<typename VoxelType>
 template<typename DerivedVolumeType>
-void BaseVolume<VoxelType>::Sampler<DerivedVolumeType>::setPosition(const Vector3DInt32& v3dNewPos) {
+void BaseVolume<VoxelType>::Sampler<DerivedVolumeType>::setPosition(const glm::ivec3& v3dNewPos) {
 	setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
 }
 

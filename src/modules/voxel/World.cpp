@@ -161,8 +161,8 @@ PolyVox::Region World::getRegion(const glm::ivec3& pos) const {
 	int deltaX = size - 1;
 	int deltaY = size - 1;
 	int deltaZ = size - 1;
-	const PolyVox::Vector3DInt32 mins(pos.x, pos.y, pos.z);
-	const PolyVox::Vector3DInt32 maxs(pos.x + deltaX, pos.y + deltaY, pos.z + deltaZ);
+	const glm::ivec3 mins(pos.x, pos.y, pos.z);
+	const glm::ivec3 maxs(pos.x + deltaX, pos.y + deltaY, pos.z + deltaZ);
 	const PolyVox::Region region(mins, maxs);
 	return region;
 }
@@ -200,9 +200,9 @@ bool World::allowReExtraction(const glm::ivec3& pos) {
 	return _meshesExtracted.erase(getGridPos(pos)) != 0;
 }
 
-bool World::findPath(const PolyVox::Vector3DInt32& start, const PolyVox::Vector3DInt32& end,
-		std::list<PolyVox::Vector3DInt32>& listResult) {
-	static auto f = [] (const voxel::WorldData* volData, const PolyVox::Vector3DInt32& v3dPos) {
+bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
+		std::list<glm::ivec3>& listResult) {
+	static auto f = [] (const voxel::WorldData* volData, const glm::ivec3& v3dPos) {
 		const voxel::Voxel& voxel = volData->getVoxel(v3dPos);
 		return voxel.getDensity() != 0;
 	};

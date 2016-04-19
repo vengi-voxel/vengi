@@ -86,10 +86,10 @@ bool Npc::update(long dt) {
 }
 
 bool Npc::route(const glm::ivec3& target) {
-	std::list<PolyVox::Vector3DInt32> result;
+	std::list<glm::ivec3> result;
 	const glm::vec3& pos = _ai->getCharacter()->getPosition();
-	const PolyVox::Vector3DInt32 start(pos.x, pos.y, pos.z);
-	const PolyVox::Vector3DInt32 end(target.x, target.y, target.z);
+	const glm::ivec3 start(pos.x, pos.y, pos.z);
+	const glm::ivec3 end(target.x, target.y, target.z);
 	return _world->findPath(start, end, result);
 }
 

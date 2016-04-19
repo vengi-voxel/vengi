@@ -21,7 +21,7 @@ struct CubicVertex {
 
 	/// Each component of the position is stored as a single unsigned byte.
 	/// The true position is found by offseting each component by 0.5f.
-	Vector3DUint8 encodedPosition;
+	glm::i8vec3 encodedPosition;
 
 	/// A copy of the data which was stored in the voxel which generated this vertex.
 	DataType data;
@@ -33,7 +33,7 @@ struct CubicVertex {
 //using CubicMesh = Mesh< CubicVertex<VertexDataType>, IndexType >;
 
 /// Decodes a position from a CubicVertex
-inline Vector3DFloat decodePosition(const Vector3DUint8& encodedPosition);
+inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition);
 
 /// Decodes a CubicVertex by converting it into a regular Vertex which can then be directly used for rendering.
 template<typename DataType>
@@ -87,8 +87,8 @@ struct IndexAndMaterial {
 // Vertex encoding/decoding
 ////////////////////////////////////////////////////////////////////////////////
 
-inline Vector3DFloat decodePosition(const Vector3DUint8& encodedPosition) {
-	Vector3DFloat result(encodedPosition.x, encodedPosition.y, encodedPosition.z);
+inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition) {
+	glm::vec3 result(encodedPosition.x, encodedPosition.y, encodedPosition.z);
 	result -= 0.5f; // Apply the required offset
 	return result;
 }

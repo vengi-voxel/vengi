@@ -16,8 +16,8 @@ template<typename _DataType>
 struct Vertex {
 	typedef _DataType DataType;
 
-	Vector3DFloat position;
-	Vector3DFloat normal;
+	glm::vec3 position;
+	glm::vec3 normal;
 	DataType data;
 };
 

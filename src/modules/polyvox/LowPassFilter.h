@@ -116,8 +116,8 @@ template<typename SrcVolumeType, typename DstVolumeType, typename AccumulationTy
 void LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::executeSAT() {
 	const uint32_t border = (m_uKernelSize - 1) / 2;
 
-	const Vector3DInt32 satLowerCorner = m_regSrc.getLowerCorner() - Vector3DInt32(border, border, border);
-	const Vector3DInt32 satUpperCorner = m_regSrc.getUpperCorner() + Vector3DInt32(border, border, border);
+	const glm::ivec3 satLowerCorner = m_regSrc.getLowerCorner() - glm::ivec3(border, border, border);
+	const glm::ivec3 satUpperCorner = m_regSrc.getUpperCorner() + glm::ivec3(border, border, border);
 
 	//Use floats for the SAT volume to ensure it works with negative
 	//densities and with both integral and floating point input volumes.
@@ -196,9 +196,9 @@ void LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::executeSAT()
 	}
 
 	//Now compute the average
-	const Vector3DInt32& v3dDstLowerCorner = m_regDst.getLowerCorner();
-	const Vector3DInt32& v3dDstUpperCorner = m_regDst.getUpperCorner();
-	const Vector3DInt32& v3dSrcLowerCorner = m_regSrc.getLowerCorner();
+	const glm::ivec3& v3dDstLowerCorner = m_regDst.getLowerCorner();
+	const glm::ivec3& v3dDstUpperCorner = m_regDst.getUpperCorner();
+	const glm::ivec3& v3dSrcLowerCorner = m_regSrc.getLowerCorner();
 
 	for (int32_t iDstZ = v3dDstLowerCorner.z, iSrcZ = v3dSrcLowerCorner.z; iDstZ <= v3dDstUpperCorner.z; iDstZ++, iSrcZ++) {
 		for (int32_t iDstY = v3dDstLowerCorner.y, iSrcY = v3dSrcLowerCorner.y; iDstY <= v3dDstUpperCorner.y; iDstY++, iSrcY++) {
