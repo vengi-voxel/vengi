@@ -11,9 +11,6 @@
 #include "noise/SimplexNoise.h"
 #include "polyvox/AStarPathfinder.h"
 #include "polyvox/CubicSurfaceExtractor.h"
-#include "polyvox/AmbientOcclusionCalculator.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include "polyvox/RawVolume.h"
 #include <SDL.h>
 #include <zlib.h>

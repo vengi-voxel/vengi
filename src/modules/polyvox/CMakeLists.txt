@@ -1,6 +1,5 @@
 fips_begin_module(polyvox)
 	fips_files(
-		AmbientOcclusionCalculator.h
 		Array.h
 		AStarPathfinder.h
 		AStarPathfinderImpl.h
