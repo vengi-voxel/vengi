@@ -23,6 +23,7 @@ endif()
 include_directories(src/modules)
 include_directories(src/modules/ui)
 
+fips_add_subdirectory(contrib/libs)
 fips_setup(PROJECT engine)
 gtest_suite_begin(tests TEMPLATE src/modules/core/tests/main.cpp.in)
 fips_add_subdirectory(src)
