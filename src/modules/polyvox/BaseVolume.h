@@ -9,7 +9,7 @@ namespace PolyVox {
 /// The BaseVolume class provides common functionality and an interface for other volume classes to implement.
 /// You should not try to create an instance of this class directly. Instead you should use RawVolume or PagedVolume.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \sa RawVolume, PagedVolume
+/// @sa RawVolume, PagedVolume
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename _VoxelType>
 class BaseVolume {
@@ -108,7 +108,7 @@ protected:
 ////////////////////////////////////////////////////////////////////////////////
 /// This is protected because you should never create a BaseVolume directly, you should instead use one of the derived classes.
 ///
-/// \sa RawVolume, PagedVolume
+/// @sa RawVolume, PagedVolume
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 BaseVolume<VoxelType>::BaseVolume() {
@@ -119,7 +119,7 @@ BaseVolume<VoxelType>::BaseVolume() {
 /// it by accident (such as when passing them as paramenters to functions). That said, there are times when you really do want to
 /// make a copy of a volume and in this case you should look at the VolumeResampler.
 ///
-/// \sa VolumeResampler
+/// @sa VolumeResampler
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 BaseVolume<VoxelType>::BaseVolume(const BaseVolume<VoxelType>& /*rhs*/) {
@@ -138,7 +138,7 @@ BaseVolume<VoxelType>::~BaseVolume() {
 /// it by accident (such as when passing them as paramenters to functions). That said, there are times when you really do want to
 /// make a copy of a volume and in this case you should look at the VolumeResampler.
 ///
-/// \sa VolumeResampler
+/// @sa VolumeResampler
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 BaseVolume<VoxelType>& BaseVolume<VoxelType>::operator=(const BaseVolume<VoxelType>& /*rhs*/) {
@@ -148,10 +148,10 @@ BaseVolume<VoxelType>& BaseVolume<VoxelType>::operator=(const BaseVolume<VoxelTy
 ////////////////////////////////////////////////////////////////////////////////
 /// This version of the function is provided so that the wrap mode does not need
 /// to be specified as a template parameter, as it may be confusing to some users.
-/// \param uXPos The \c x position of the voxel
-/// \param uYPos The \c y position of the voxel
-/// \param uZPos The \c z position of the voxel
-/// \return The voxel value
+/// @param uXPos The @c x position of the voxel
+/// @param uYPos The @c y position of the voxel
+/// @param uZPos The @c z position of the voxel
+/// @return The voxel value
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 VoxelType BaseVolume<VoxelType>::getVoxel(int32_t /*uXPos*/, int32_t /*uYPos*/, int32_t /*uZPos*/) const {
@@ -162,8 +162,8 @@ VoxelType BaseVolume<VoxelType>::getVoxel(int32_t /*uXPos*/, int32_t /*uYPos*/, 
 ////////////////////////////////////////////////////////////////////////////////
 /// This version of the function is provided so that the wrap mode does not need
 /// to be specified as a template parameter, as it may be confusing to some users.
-/// \param v3dPos The 3D position of the voxel
-/// \return The voxel value
+/// @param v3dPos The 3D position of the voxel
+/// @return The voxel value
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 VoxelType BaseVolume<VoxelType>::getVoxel(const glm::ivec3& /*v3dPos*/) const {
@@ -172,10 +172,10 @@ VoxelType BaseVolume<VoxelType>::getVoxel(const glm::ivec3& /*v3dPos*/) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \param uXPos the \c x position of the voxel
-/// \param uYPos the \c y position of the voxel
-/// \param uZPos the \c z position of the voxel
-/// \param tValue the value to which the voxel will be set
+/// @param uXPos the @c x position of the voxel
+/// @param uYPos the @c y position of the voxel
+/// @param uZPos the @c z position of the voxel
+/// @param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void BaseVolume<VoxelType>::setVoxel(int32_t /*uXPos*/, int32_t /*uYPos*/, int32_t /*uZPos*/, VoxelType /*tValue*/) {
@@ -183,8 +183,8 @@ void BaseVolume<VoxelType>::setVoxel(int32_t /*uXPos*/, int32_t /*uYPos*/, int32
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \param v3dPos the 3D position of the voxel
-/// \param tValue the value to which the voxel will be set
+/// @param v3dPos the 3D position of the voxel
+/// @param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void BaseVolume<VoxelType>::setVoxel(const glm::ivec3& /*v3dPos*/, VoxelType /*tValue*/) {

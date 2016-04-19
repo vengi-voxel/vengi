@@ -93,12 +93,12 @@ RaycastResult raycastWithDirection(VolumeType* volData, const glm::vec3& v3dStar
  * returns a RaycastResults::Interupted. If it passes from start to end
  * without \a callback returning \a false, it returns RaycastResults::Completed.
  *
- * \param volData The volume to pass the ray though
- * \param v3dStart The start position in the volume
- * \param v3dEnd The end position in the volume
- * \param callback The callback to call for each voxel
+ * @param volData The volume to pass the ray though
+ * @param v3dStart The start position in the volume
+ * @param v3dEnd The end position in the volume
+ * @param callback The callback to call for each voxel
  *
- * \return A RaycastResults designating whether the ray hit anything or not
+ * @return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename VolumeType, typename Callback>
 RaycastResult raycastWithEndpoints(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback& callback) {
@@ -197,12 +197,12 @@ RaycastResult raycastWithEndpoints(VolumeType* volData, const glm::vec3& v3dStar
  * you must scale the direction vector so that it's length represents the maximum distance
  * over which you want the ray to be cast.
  *
- * \param volData The volume to pass the ray though
- * \param v3dStart The start position in the volume
- * \param v3dDirectionAndLength The direction and length of the ray
- * \param callback The callback to call for each voxel
+ * @param volData The volume to pass the ray though
+ * @param v3dStart The start position in the volume
+ * @param v3dDirectionAndLength The direction and length of the ray
+ * @param callback The callback to call for each voxel
  *
- * \return A RaycastResults designating whether the ray hit anything or not
+ * @return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename VolumeType, typename Callback>
 RaycastResult raycastWithDirection(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback& callback) {

@@ -31,11 +31,11 @@ private:
 };
 
 /**
- * \param pVolSrc
- * \param regSrc
- * \param[out] pVolDst
- * \param regDst
- * \param uKernelSize
+ * @param pVolSrc
+ * @param regSrc
+ * @param[out] pVolDst
+ * @param regDst
+ * @param uKernelSize
  */
 template<typename SrcVolumeType, typename DstVolumeType, typename AccumulationType>
 LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::LowPassFilter(SrcVolumeType* pVolSrc, Region regSrc, DstVolumeType* pVolDst, Region regDst, uint32_t uKernelSize) :

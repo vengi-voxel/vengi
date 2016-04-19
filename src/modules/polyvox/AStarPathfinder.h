@@ -22,7 +22,7 @@ bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3d
 /// the result. All the other option have sensible default values which can
 /// optionally be changed for more precise control over the pathfinder's behaviour.
 ///
-/// \sa AStarPathfinder
+/// @sa AStarPathfinder
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VolumeType>
 struct AStarPathfinderParams {
@@ -74,7 +74,7 @@ public:
 	/// own criteria if desired. For example, if you always want a path to follow a surface then
 	/// you could check to ensure that the voxel above is empty and the voxel below is solid.
 	///
-	/// \sa aStarDefaultVoxelValidator
+	/// @sa aStarDefaultVoxelValidator
 	std::function<bool(const VolumeType*, const glm::ivec3&)> isVoxelValidForPath;
 
 	/// This function is called by the AStarPathfinder to report on its progress in getting to
@@ -107,7 +107,7 @@ public:
 /// the AStarPathfinderParams. If a path cannot be found then an exception of type
 /// std::runtime_error is thrown.
 ///
-/// \sa AStarPathfinderParams
+/// @sa AStarPathfinderParams
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VolumeType>
 class AStarPathfinder {
@@ -158,7 +158,7 @@ const glm::ivec3 arrayPathfinderCorners[8] = { glm::ivec3(-1, -1, -1), glm::ivec
 ////////////////////////////////////////////////////////////////////////////////
 /// Using this function, a voxel is considered valid for the path if it is inside the
 /// volume and if its density is below that returned by the voxel's getDensity() function.
-/// \return true is the voxel is valid for the path
+/// @return true is the voxel is valid for the path
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VolumeType>
 bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3dPos) {

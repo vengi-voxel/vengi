@@ -11,7 +11,7 @@ namespace PolyVox {
 /// a voxel type for the Marching Cubes algorithm. Advanced users are likely to
 /// define custom voxel types and possibly custom controllers.
 ///
-/// \sa Density, Material
+/// @sa Density, Material
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Type, uint8_t NoOfMaterialBits, uint8_t NoOfDensityBits>
 class MaterialDensityPair {

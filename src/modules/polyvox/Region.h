@@ -183,197 +183,197 @@ private:
 };
 
 /**
- *  \return The 'x' position of the centre.
+ *  @return The 'x' position of the centre.
  */
 inline int32_t Region::getCentreX() const {
 	return (m_iLowerX + m_iUpperX) / 2;
 }
 
 /**
- *  \return The 'y' position of the centre.
+ *  @return The 'y' position of the centre.
  */
 inline int32_t Region::getCentreY() const {
 	return (m_iLowerY + m_iUpperY) / 2;
 }
 
 /**
- *  \return The 'z' position of the centre.
+ *  @return The 'z' position of the centre.
  */
 inline int32_t Region::getCentreZ() const {
 	return (m_iLowerZ + m_iUpperZ) / 2;
 }
 
 /**
- *  \return The 'x' position of the lower corner.
+ *  @return The 'x' position of the lower corner.
  */
 inline int32_t Region::getLowerX() const {
 	return m_iLowerX;
 }
 
 /**
- *  \return The 'y' position of the lower corner.
+ *  @return The 'y' position of the lower corner.
  */
 inline int32_t Region::getLowerY() const {
 	return m_iLowerY;
 }
 
 /**
- *  \return The 'z' position of the lower corner.
+ *  @return The 'z' position of the lower corner.
  */
 inline int32_t Region::getLowerZ() const {
 	return m_iLowerZ;
 }
 
 /**
- *  \return The 'x' position of the upper corner.
+ *  @return The 'x' position of the upper corner.
  */
 inline int32_t Region::getUpperX() const {
 	return m_iUpperX;
 }
 
 /**
- *  \return The 'y' position of the upper corner.
+ *  @return The 'y' position of the upper corner.
  */
 inline int32_t Region::getUpperY() const {
 	return m_iUpperY;
 }
 
 /**
- *  \return The 'z' position of the upper corner.
+ *  @return The 'z' position of the upper corner.
  */
 inline int32_t Region::getUpperZ() const {
 	return m_iUpperZ;
 }
 
 /**
- *  \return The position of the lower corner.
+ *  @return The position of the lower corner.
  */
 inline glm::ivec3 Region::getCentre() const {
 	return glm::ivec3(getCentreX(), getCentreY(), getCentreZ());
 }
 
 /**
- *  \return The position of the lower corner.
+ *  @return The position of the lower corner.
  */
 inline glm::ivec3 Region::getLowerCorner() const {
 	return glm::ivec3(m_iLowerX, m_iLowerY, m_iLowerZ);
 }
 
 /**
- *  \return The position of the upper corner.
+ *  @return The position of the upper corner.
  */
 inline glm::ivec3 Region::getUpperCorner() const {
 	return glm::ivec3(m_iUpperX, m_iUpperY, m_iUpperZ);
 }
 
 /**
- *  \return The width of the region measured in voxels.
- *  \sa getWidthInCells()
+ *  @return The width of the region measured in voxels.
+ *  @sa getWidthInCells()
  */
 inline int32_t Region::getWidthInVoxels() const {
 	return getWidthInCells() + 1;
 }
 
 /**
- *  \return The height of the region measured in voxels.
- *  \sa getHeightInCells()
+ *  @return The height of the region measured in voxels.
+ *  @sa getHeightInCells()
  */
 inline int32_t Region::getHeightInVoxels() const {
 	return getHeightInCells() + 1;
 }
 
 /**
- *  \return The depth of the region measured in voxels.
- *  \sa getDepthInCells()
+ *  @return The depth of the region measured in voxels.
+ *  @sa getDepthInCells()
  */
 inline int32_t Region::getDepthInVoxels() const {
 	return getDepthInCells() + 1;
 }
 
 /**
- *  \return The dimensions of the region measured in voxels.
- *  \sa getDimensionsInCells()
+ *  @return The dimensions of the region measured in voxels.
+ *  @sa getDimensionsInCells()
  */
 inline glm::ivec3 Region::getDimensionsInVoxels() const {
 	return getDimensionsInCells() + glm::ivec3(1, 1, 1);
 }
 
 /**
- *  \return The width of the region measured in cells.
- *  \sa getWidthInVoxels()
+ *  @return The width of the region measured in cells.
+ *  @sa getWidthInVoxels()
  */
 inline int32_t Region::getWidthInCells() const {
 	return m_iUpperX - m_iLowerX;
 }
 
 /**
- *  \return The height of the region measured in cells.
- *  \sa getHeightInVoxels()
+ *  @return The height of the region measured in cells.
+ *  @sa getHeightInVoxels()
  */
 inline int32_t Region::getHeightInCells() const {
 	return m_iUpperY - m_iLowerY;
 }
 
 /**
- *  \return The depth of the region measured in cells.
- *  \sa getDepthInVoxels()
+ *  @return The depth of the region measured in cells.
+ *  @sa getDepthInVoxels()
  */
 inline int32_t Region::getDepthInCells() const {
 	return m_iUpperZ - m_iLowerZ;
 }
 
 /**
- *  \return The dimensions of the region measured in cells.
- *  \sa getDimensionsInVoxels()
+ *  @return The dimensions of the region measured in cells.
+ *  @sa getDimensionsInVoxels()
  */
 inline glm::ivec3 Region::getDimensionsInCells() const {
 	return glm::ivec3(getWidthInCells(), getHeightInCells(), getDepthInCells());
 }
 
 /**
- *  \param iX The new 'x' position of the lower corner.
+ *  @param iX The new 'x' position of the lower corner.
  */
 inline void Region::setLowerX(int32_t iX) {
 	m_iLowerX = iX;
 }
 
 /**
- *  \param iY The new 'y' position of the lower corner.
+ *  @param iY The new 'y' position of the lower corner.
  */
 inline void Region::setLowerY(int32_t iY) {
 	m_iLowerY = iY;
 }
 
 /**
- *  \param iZ The new 'z' position of the lower corner.
+ *  @param iZ The new 'z' position of the lower corner.
  */
 inline void Region::setLowerZ(int32_t iZ) {
 	m_iLowerZ = iZ;
 }
 
 /**
- *  \param iX The new 'x' position of the upper corner.
+ *  @param iX The new 'x' position of the upper corner.
  */
 inline void Region::setUpperX(int32_t iX) {
 	m_iUpperX = iX;
 }
 
 /**
- *  \param iY The new 'y' position of the upper corner.
+ *  @param iY The new 'y' position of the upper corner.
  */
 inline void Region::setUpperY(int32_t iY) {
 	m_iUpperY = iY;
 }
 
 /**
- *  \param iZ The new 'z' position of the upper corner.
+ *  @param iZ The new 'z' position of the upper corner.
  */
 inline void Region::setUpperZ(int32_t iZ) {
 	m_iUpperZ = iZ;
 }
 
 /**
- *  \param v3dLowerCorner The new position of the lower corner.
+ *  @param v3dLowerCorner The new position of the lower corner.
  */
 inline void Region::setLowerCorner(const glm::ivec3& v3dLowerCorner) {
 	m_iLowerX = v3dLowerCorner.x;
@@ -382,7 +382,7 @@ inline void Region::setLowerCorner(const glm::ivec3& v3dLowerCorner) {
 }
 
 /**
- *  \param v3dUpperCorner The new position of the upper corner.
+ *  @param v3dUpperCorner The new position of the upper corner.
  */
 inline void Region::setUpperCorner(const glm::ivec3& v3dUpperCorner) {
 	m_iUpperX = v3dUpperCorner.x;
@@ -408,9 +408,9 @@ inline Region Region::InvertedRegion() {
 }
 
 /**
- * \param iX The 'x' component of the position to accumulate.
- * \param iY The 'y' component of the position to accumulate.
- * \param iZ The 'z' component of the position to accumulate.
+ * @param iX The 'x' component of the position to accumulate.
+ * @param iY The 'y' component of the position to accumulate.
+ * @param iZ The 'z' component of the position to accumulate.
  */
 inline void Region::accumulate(int32_t iX, int32_t iY, int32_t iZ) {
 	m_iLowerX = std::min(m_iLowerX, iX);
@@ -422,7 +422,7 @@ inline void Region::accumulate(int32_t iX, int32_t iY, int32_t iZ) {
 }
 
 /**
- * \param v3dPos The position to accumulate.
+ * @param v3dPos The position to accumulate.
  */
 inline void Region::accumulate(const glm::ivec3& v3dPos) {
 	accumulate(v3dPos.x, v3dPos.y, v3dPos.z);
@@ -432,8 +432,8 @@ inline void Region::accumulate(const glm::ivec3& v3dPos) {
  * Note that this is not the same as computing the union of two Regions (as the result of
  * such a union may not be a shape which can be exactly represented by a Region). Instead,
  * the result is simply big enough to contain both this Region and the one passed as a parameter.
- * \param reg The Region to accumulate. This must be valid as defined by the isValid() function.
- * \sa isValid()
+ * @param reg The Region to accumulate. This must be valid as defined by the isValid() function.
+ * @sa isValid()
  */
 inline void Region::accumulate(const Region& reg) {
 	if (!reg.isValid()) {
@@ -458,8 +458,8 @@ inline Region::Region() :
 
 /**
  * Constructs a Region and sets the lower and upper corners to the specified values.
- * \param v3dLowerCorner The desired lower corner of the Region.
- * \param v3dUpperCorner The desired upper corner of the Region.
+ * @param v3dLowerCorner The desired lower corner of the Region.
+ * @param v3dUpperCorner The desired upper corner of the Region.
  */
 inline Region::Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner) :
 		m_iLowerX(v3dLowerCorner.x), m_iLowerY(v3dLowerCorner.y), m_iLowerZ(v3dLowerCorner.z), m_iUpperX(v3dUpperCorner.x), m_iUpperY(v3dUpperCorner.y), m_iUpperZ(
@@ -468,12 +468,12 @@ inline Region::Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpp
 
 /**
  * Constructs a Region and sets the extents to the specified values.
- * \param iLowerX The desired lower 'x' extent of the Region.
- * \param iLowerY The desired lower 'y' extent of the Region.
- * \param iLowerZ The desired lower 'z' extent of the Region.
- * \param iUpperX The desired upper 'x' extent of the Region.
- * \param iUpperY The desired upper 'y' extent of the Region.
- * \param iUpperZ The desired upper 'z' extent of the Region.
+ * @param iLowerX The desired lower 'x' extent of the Region.
+ * @param iLowerY The desired lower 'y' extent of the Region.
+ * @param iLowerZ The desired lower 'z' extent of the Region.
+ * @param iUpperX The desired upper 'x' extent of the Region.
+ * @param iUpperY The desired upper 'y' extent of the Region.
+ * @param iUpperZ The desired upper 'z' extent of the Region.
  */
 inline Region::Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ) :
 		m_iLowerX(iLowerX), m_iLowerY(iLowerY), m_iLowerZ(iLowerZ), m_iUpperX(iUpperX), m_iUpperY(iUpperY), m_iUpperZ(iUpperZ) {
@@ -481,9 +481,9 @@ inline Region::Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t
 
 /**
  * Two regions are considered equal if all their extents match.
- * \param rhs The Region to compare to.
- * \return true if the Regions match.
- * \sa operator!=
+ * @param rhs The Region to compare to.
+ * @return true if the Regions match.
+ * @sa operator!=
  */
 inline bool Region::operator==(const Region& rhs) const {
 	return ((m_iLowerX == rhs.m_iLowerX) && (m_iLowerY == rhs.m_iLowerY) && (m_iLowerZ == rhs.m_iLowerZ) && (m_iUpperX == rhs.m_iUpperX) && (m_iUpperY == rhs.m_iUpperY)
@@ -492,9 +492,9 @@ inline bool Region::operator==(const Region& rhs) const {
 
 /**
  *  Two regions are considered different if any of their extents differ.
- *  \param rhs The Region to compare to.
- *  \return true if the Regions are different.
- *  \sa operator==
+ *  @param rhs The Region to compare to.
+ *  @return true if the Regions are different.
+ *  @sa operator==
  */
 inline bool Region::operator!=(const Region& rhs) const {
 	return !(*this == rhs);
@@ -504,10 +504,10 @@ inline bool Region::operator!=(const Region& rhs) const {
  *  The boundary value can be used to ensure a position is only considered to be inside
  *  the Region if it is that far in in all directions. Also, the test is inclusive such
  *  that positions lying exactly on the edge of the Region are considered to be inside it.
- *  \param fX The 'x' position of the point to test.
- *  \param fY The 'y' position of the point to test.
- *  \param fZ The 'z' position of the point to test.
- *  \param boundary The desired boundary value.
+ *  @param fX The 'x' position of the point to test.
+ *  @param fY The 'y' position of the point to test.
+ *  @param fZ The 'z' position of the point to test.
+ *  @param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) const {
 	return (fX <= m_iUpperX - boundary) && (fY <= m_iUpperY - boundary) && (fZ <= m_iUpperZ - boundary) && (fX >= m_iLowerX + boundary) && (fY >= m_iLowerY + boundary)
@@ -518,8 +518,8 @@ inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) 
  * The boundary value can be used to ensure a position is only considered to be inside
  * the Region if it is that far in in all directions. Also, the test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
- * \param pos The position to test.
- * \param boundary The desired boundary value.
+ * @param pos The position to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(const glm::vec3& pos, float boundary) const {
 	return containsPoint(pos.x, pos.y, pos.z, boundary);
@@ -529,10 +529,10 @@ inline bool Region::containsPoint(const glm::vec3& pos, float boundary) const {
  *  The boundary value can be used to ensure a position is only considered to be inside
  *  the Region if it is that far in in all directions. Also, the test is inclusive such
  *  that positions lying exactly on the edge of the Region are considered to be inside it.
- *  \param iX The 'x' position of the point to test.
- *  \param iY The 'y' position of the point to test.
- *  \param iZ The 'z' position of the point to test.
- *  \param boundary The desired boundary value.
+ *  @param iX The 'x' position of the point to test.
+ *  @param iY The 'y' position of the point to test.
+ *  @param iZ The 'z' position of the point to test.
+ *  @param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t boundary) const {
 	return (iX <= m_iUpperX - boundary) && (iY <= m_iUpperY - boundary) && (iZ <= m_iUpperZ - boundary) && (iX >= m_iLowerX + boundary) && (iY >= m_iLowerY + boundary)
@@ -543,8 +543,8 @@ inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t bo
  * The boundary value can be used to ensure a position is only considered to be inside
  * the Region if it is that far in in all directions. Also, the test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
- * \param pos The position to test.
- * \param boundary The desired boundary value.
+ * @param pos The position to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(const glm::ivec3& pos, uint8_t boundary) const {
 	return containsPoint(pos.x, pos.y, pos.z, boundary);
@@ -554,8 +554,8 @@ inline bool Region::containsPoint(const glm::ivec3& pos, uint8_t boundary) const
  * The boundary value can be used to ensure a position is only considered to be inside
  * the Region if it is that far in in the 'x' direction. Also, the test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
- * \param pos The position to test.
- * \param boundary The desired boundary value.
+ * @param pos The position to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInX(float pos, float boundary) const {
 	return (pos <= m_iUpperX - boundary) && (pos >= m_iLowerX + boundary);
@@ -565,8 +565,8 @@ inline bool Region::containsPointInX(float pos, float boundary) const {
  * The boundary value can be used to ensure a position is only considered to be inside
  * the Region if it is that far in in the 'x' direction. Also, the test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
- * \param pos The position to test.
- * \param boundary The desired boundary value.
+ * @param pos The position to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInX(int32_t pos, uint8_t boundary) const {
 	return (pos <= m_iUpperX - boundary) && (pos >= m_iLowerX + boundary);
@@ -576,8 +576,8 @@ inline bool Region::containsPointInX(int32_t pos, uint8_t boundary) const {
  * The boundary value can be used to ensure a position is only considered to be inside
  * the Region if it is that far in in the 'y' direction. Also, the test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
- * \param pos The position to test.
- * \param boundary The desired boundary value.
+ * @param pos The position to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInY(float pos, float boundary) const {
 	return (pos <= m_iUpperY - boundary) && (pos >= m_iLowerY + boundary);
@@ -587,8 +587,8 @@ inline bool Region::containsPointInY(float pos, float boundary) const {
  * The boundary value can be used to ensure a position is only considered to be inside
  * the Region if it is that far in in the 'y' direction. Also, the test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
- * \param pos The position to test.
- * \param boundary The desired boundary value.
+ * @param pos The position to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInY(int32_t pos, uint8_t boundary) const {
 	return (pos <= m_iUpperY - boundary) && (pos >= m_iLowerY + boundary);
@@ -598,8 +598,8 @@ inline bool Region::containsPointInY(int32_t pos, uint8_t boundary) const {
  * The boundary value can be used to ensure a position is only considered to be inside
  * the Region if it is that far in in the 'z' direction. Also, the test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
- * \param pos The position to test.
- * \param boundary The desired boundary value.
+ * @param pos The position to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInZ(float pos, float boundary) const {
 	return (pos <= m_iUpperZ - boundary) && (pos >= m_iLowerZ + boundary);
@@ -609,8 +609,8 @@ inline bool Region::containsPointInZ(float pos, float boundary) const {
  * The boundary value can be used to ensure a position is only considered to be inside
  * the Region if it is that far in in the 'z' direction. Also, the test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
- * \param pos The position to test.
- * \param boundary The desired boundary value.
+ * @param pos The position to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsPointInZ(int32_t pos, uint8_t boundary) const {
 	return (pos <= m_iUpperZ - boundary) && (pos >= m_iLowerZ + boundary);
@@ -620,8 +620,8 @@ inline bool Region::containsPointInZ(int32_t pos, uint8_t boundary) const {
  *  The boundary value can be used to ensure a region is only considered to be inside
  *  another Region if it is that far in in all directions. Also, the test is inclusive such
  *  that a region is considered to be inside of itself.
- *  \param reg The region to test.
- *  \param boundary The desired boundary value.
+ *  @param reg The region to test.
+ *  @param boundary The desired boundary value.
  */
 inline bool Region::containsRegion(const Region& reg, uint8_t boundary) const {
 	return (reg.m_iUpperX <= m_iUpperX - boundary) && (reg.m_iUpperY <= m_iUpperY - boundary) && (reg.m_iUpperZ <= m_iUpperZ - boundary) && (reg.m_iLowerX >= m_iLowerX + boundary)
@@ -631,7 +631,7 @@ inline bool Region::containsRegion(const Region& reg, uint8_t boundary) const {
 /**
  * After calling this functions, the extents of this Region are given by the intersection
  * of this Region and the one it was cropped to.
- * \param other The Region to crop to.
+ * @param other The Region to crop to.
  */
 inline void Region::cropTo(const Region& other) {
 	m_iLowerX = std::max(m_iLowerX, other.m_iLowerX);
@@ -645,7 +645,7 @@ inline void Region::cropTo(const Region& other) {
 /**
  * The same amount of growth is applied in all directions. Negative growth
  * is possible but you should prefer the shrink() function for clarity.
- * \param iAmount The amount to grow by.
+ * @param iAmount The amount to grow by.
  */
 inline void Region::grow(int32_t iAmount) {
 	m_iLowerX -= iAmount;
@@ -658,11 +658,11 @@ inline void Region::grow(int32_t iAmount) {
 }
 
 /**
- * The amount can be specified seperatly for each direction. Negative growth
+ * The amount can be specified separately for each direction. Negative growth
  * is possible but you should prefer the shrink() function for clarity.
- * \param iAmountX The amount to grow by in 'x'.
- * \param iAmountY The amount to grow by in 'y'.
- * \param iAmountZ The amount to grow by in 'z'.
+ * @param iAmountX The amount to grow by in 'x'.
+ * @param iAmountY The amount to grow by in 'y'.
+ * @param iAmountZ The amount to grow by in 'z'.
  */
 inline void Region::grow(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
 	m_iLowerX -= iAmountX;
@@ -675,9 +675,9 @@ inline void Region::grow(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
 }
 
 /**
- * The amount can be specified seperatly for each direction. Negative growth
+ * The amount can be specified separately for each direction. Negative growth
  * is possible but you should prefer the shrink() function for clarity.
- * \param v3dAmount The amount to grow by (one component for each direction).
+ * @param v3dAmount The amount to grow by (one component for each direction).
  */
 inline void Region::grow(const glm::ivec3& v3dAmount) {
 	grow(v3dAmount.x, v3dAmount.y, v3dAmount.z);
@@ -686,13 +686,13 @@ inline void Region::grow(const glm::ivec3& v3dAmount) {
 /**
  */
 inline bool Region::isValid() const {
-	return (m_iUpperX >= m_iLowerX) && (m_iUpperY >= m_iLowerY) && (m_iUpperZ >= m_iLowerZ);
+	return m_iUpperX >= m_iLowerX && m_iUpperY >= m_iLowerY && m_iUpperZ >= m_iLowerZ;
 }
 
 /**
- * \param iAmountX The amount to move the Region by in 'x'.
- * \param iAmountY The amount to move the Region by in 'y'.
- * \param iAmountZ The amount to move the Region by in 'z'.
+ * @param iAmountX The amount to move the Region by in 'x'.
+ * @param iAmountY The amount to move the Region by in 'y'.
+ * @param iAmountZ The amount to move the Region by in 'z'.
  */
 inline void Region::shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
 	shiftLowerCorner(iAmountX, iAmountY, iAmountZ);
@@ -700,7 +700,7 @@ inline void Region::shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) 
 }
 
 /**
- * \param v3dAmount The amount to move the Region by.
+ * @param v3dAmount The amount to move the Region by.
  */
 inline void Region::shift(const glm::ivec3& v3dAmount) {
 	shiftLowerCorner(v3dAmount);
@@ -708,9 +708,9 @@ inline void Region::shift(const glm::ivec3& v3dAmount) {
 }
 
 /**
- * \param iAmountX The amount to move the lower corner by in 'x'.
- * \param iAmountY The amount to move the lower corner by in 'y'.
- * \param iAmountZ The amount to move the lower corner by in 'z'.
+ * @param iAmountX The amount to move the lower corner by in 'x'.
+ * @param iAmountY The amount to move the lower corner by in 'y'.
+ * @param iAmountZ The amount to move the lower corner by in 'z'.
  */
 inline void Region::shiftLowerCorner(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
 	m_iLowerX += iAmountX;
@@ -719,16 +719,16 @@ inline void Region::shiftLowerCorner(int32_t iAmountX, int32_t iAmountY, int32_t
 }
 
 /**
- * \param v3dAmount The amount to move the lower corner by.
+ * @param v3dAmount The amount to move the lower corner by.
  */
 inline void Region::shiftLowerCorner(const glm::ivec3& v3dAmount) {
 	shiftLowerCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
 /**
- * \param iAmountX The amount to move the upper corner by in 'x'.
- * \param iAmountY The amount to move the upper corner by in 'y'.
- * \param iAmountZ The amount to move the upper corner by in 'z'.
+ * @param iAmountX The amount to move the upper corner by in 'x'.
+ * @param iAmountY The amount to move the upper corner by in 'y'.
+ * @param iAmountZ The amount to move the upper corner by in 'z'.
  */
 inline void Region::shiftUpperCorner(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
 	m_iUpperX += iAmountX;
@@ -737,7 +737,7 @@ inline void Region::shiftUpperCorner(int32_t iAmountX, int32_t iAmountY, int32_t
 }
 
 /**
- * \param v3dAmount The amount to move the upper corner by.
+ * @param v3dAmount The amount to move the upper corner by.
  */
 inline void Region::shiftUpperCorner(const glm::ivec3& v3dAmount) {
 	shiftUpperCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
@@ -746,7 +746,7 @@ inline void Region::shiftUpperCorner(const glm::ivec3& v3dAmount) {
 /**
  * The same amount of shrinkage is applied in all directions. Negative shrinkage
  * is possible but you should prefer the grow() function for clarity.
- * \param iAmount The amount to shrink by.
+ * @param iAmount The amount to shrink by.
  */
 inline void Region::shrink(int32_t iAmount) {
 	m_iLowerX += iAmount;
@@ -761,9 +761,9 @@ inline void Region::shrink(int32_t iAmount) {
 /**
  * The amount can be specified seperatly for each direction. Negative shrinkage
  * is possible but you should prefer the grow() function for clarity.
- * \param iAmountX The amount to shrink by in 'x'.
- * \param iAmountY The amount to shrink by in 'y'.
- * \param iAmountZ The amount to shrink by in 'z'.
+ * @param iAmountX The amount to shrink by in 'x'.
+ * @param iAmountY The amount to shrink by in 'y'.
+ * @param iAmountZ The amount to shrink by in 'z'.
  */
 inline void Region::shrink(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
 	m_iLowerX += iAmountX;
@@ -778,7 +778,7 @@ inline void Region::shrink(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ)
 /**
  * The amount can be specified seperatly for each direction. Negative shrinkage
  * is possible but you should prefer the grow() function for clarity.
- * \param v3dAmount The amount to shrink by (one component for each direction).
+ * @param v3dAmount The amount to shrink by (one component for each direction).
  */
 inline void Region::shrink(const glm::ivec3& v3dAmount) {
 	shrink(v3dAmount.x, v3dAmount.y, v3dAmount.z);

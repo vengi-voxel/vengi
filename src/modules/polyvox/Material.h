@@ -10,7 +10,7 @@ namespace PolyVox {
 /// a voxel type for the Marching Cubes algorithm. Advanced users are likely to
 /// define custom voxel types and possibly custom controllers.
 ///
-/// \sa Density, MaterialDensityPair
+/// @sa Density, MaterialDensityPair
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Type>
 class Material {
@@ -31,14 +31,14 @@ public:
 		return !(*this == rhs);
 	}
 
-	/// \return The current material value of the voxel
+	/// @return The current material value of the voxel
 	Type getMaterial() const {
 		return m_uMaterial;
 	}
 	/**
 	 * Set the material value of the voxel
 	 *
-	 * \param uMaterial The material to set to
+	 * @param uMaterial The material to set to
 	 */
 	void setMaterial(Type uMaterial) {
 		m_uMaterial = uMaterial;

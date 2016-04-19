@@ -148,7 +148,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 /// This constructor creates a volume with a fixed size which is specified as a parameter.
-/// \param regValid Specifies the minimum and maximum valid voxel positions.
+/// @param regValid Specifies the minimum and maximum valid voxel positions.
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 RawVolume<VoxelType>::RawVolume(const Region& regValid) :
@@ -164,7 +164,7 @@ RawVolume<VoxelType>::RawVolume(const Region& regValid) :
 /// it by accident (such as when passing them as paramenters to functions). That said, there are times when you really do want to
 /// make a copy of a volume and in this case you should look at the Volumeresampler.
 ///
-/// \sa VolumeResampler
+/// @sa VolumeResampler
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 RawVolume<VoxelType>::RawVolume(const RawVolume<VoxelType>& /*rhs*/) {
@@ -185,7 +185,7 @@ RawVolume<VoxelType>::~RawVolume() {
 /// it by accident (such as when passing them as paramenters to functions). That said, there are times when you really do want to
 /// make a copy of a volume and in this case you should look at the Volumeresampler.
 ///
-/// \sa VolumeResampler
+/// @sa VolumeResampler
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 RawVolume<VoxelType>& RawVolume<VoxelType>::operator=(const RawVolume<VoxelType>& /*rhs*/) {
@@ -195,7 +195,7 @@ RawVolume<VoxelType>& RawVolume<VoxelType>::operator=(const RawVolume<VoxelType>
 ////////////////////////////////////////////////////////////////////////////////
 /// The border value is returned whenever an attempt is made to read a voxel which
 /// is outside the extents of the volume.
-/// \return The value used for voxels outside of the volume
+/// @return The value used for voxels outside of the volume
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 VoxelType RawVolume<VoxelType>::getBorderValue() const {
@@ -203,7 +203,7 @@ VoxelType RawVolume<VoxelType>::getBorderValue() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \return A Region representing the extent of the volume.
+/// @return A Region representing the extent of the volume.
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 const Region& RawVolume<VoxelType>::getEnclosingRegion() const {
@@ -211,8 +211,8 @@ const Region& RawVolume<VoxelType>::getEnclosingRegion() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \return The width of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the width is 64.
-/// \sa getHeight(), getDepth()
+/// @return The width of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the width is 64.
+/// @sa getHeight(), getDepth()
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 int32_t RawVolume<VoxelType>::getWidth() const {
@@ -220,8 +220,8 @@ int32_t RawVolume<VoxelType>::getWidth() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \return The height of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the height is 64.
-/// \sa getWidth(), getDepth()
+/// @return The height of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the height is 64.
+/// @sa getWidth(), getDepth()
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 int32_t RawVolume<VoxelType>::getHeight() const {
@@ -229,8 +229,8 @@ int32_t RawVolume<VoxelType>::getHeight() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \return The depth of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the depth is 64.
-/// \sa getWidth(), getHeight()
+/// @return The depth of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the depth is 64.
+/// @sa getWidth(), getHeight()
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 int32_t RawVolume<VoxelType>::getDepth() const {
@@ -240,10 +240,10 @@ int32_t RawVolume<VoxelType>::getDepth() const {
 ////////////////////////////////////////////////////////////////////////////////
 /// This version of the function is provided so that the wrap mode does not need
 /// to be specified as a template parameter, as it may be confusing to some users.
-/// \param uXPos The \c x position of the voxel
-/// \param uYPos The \c y position of the voxel
-/// \param uZPos The \c z position of the voxel
-/// \return The voxel value
+/// @param uXPos The @c x position of the voxel
+/// @param uYPos The @c y position of the voxel
+/// @param uZPos The @c z position of the voxel
+/// @return The voxel value
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 VoxelType RawVolume<VoxelType>::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const {
@@ -261,8 +261,8 @@ VoxelType RawVolume<VoxelType>::getVoxel(int32_t uXPos, int32_t uYPos, int32_t u
 ////////////////////////////////////////////////////////////////////////////////
 /// This version of the function is provided so that the wrap mode does not need
 /// to be specified as a template parameter, as it may be confusing to some users.
-/// \param v3dPos The 3D position of the voxel
-/// \return The voxel value
+/// @param v3dPos The 3D position of the voxel
+/// @return The voxel value
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 VoxelType RawVolume<VoxelType>::getVoxel(const glm::ivec3& v3dPos) const {
@@ -270,7 +270,7 @@ VoxelType RawVolume<VoxelType>::getVoxel(const glm::ivec3& v3dPos) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \param tBorder The value to use for voxels outside the volume.
+/// @param tBorder The value to use for voxels outside the volume.
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void RawVolume<VoxelType>::setBorderValue(const VoxelType& tBorder) {
@@ -278,10 +278,10 @@ void RawVolume<VoxelType>::setBorderValue(const VoxelType& tBorder) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \param uXPos the \c x position of the voxel
-/// \param uYPos the \c y position of the voxel
-/// \param uZPos the \c z position of the voxel
-/// \param tValue the value to which the voxel will be set
+/// @param uXPos the @c x position of the voxel
+/// @param uYPos the @c y position of the voxel
+/// @param uZPos the @c z position of the voxel
+/// @param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void RawVolume<VoxelType>::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, VoxelType tValue) {
@@ -298,8 +298,8 @@ void RawVolume<VoxelType>::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \param v3dPos the 3D position of the voxel
-/// \param tValue the value to which the voxel will be set
+/// @param v3dPos the 3D position of the voxel
+/// @param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void RawVolume<VoxelType>::setVoxel(const glm::ivec3& v3dPos, VoxelType tValue) {

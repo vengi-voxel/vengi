@@ -242,9 +242,9 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 /// This constructor creates a volume with a fixed size which is specified as a parameter. By default this constructor will not enable paging but you can override this if desired. If you do wish to enable paging then you are required to provide the call back function (see the other PagedVolume constructor).
-/// \param pPager Called by PolyVox to load and unload data on demand.
-/// \param uTargetMemoryUsageInBytes The upper limit to how much memory this PagedVolume should aim to use.
-/// \param uChunkSideLength The size of the chunks making up the volume. Small chunks will compress/decompress faster, but there will also be more of them meaning voxel access could be slower.
+/// @param pPager Called by PolyVox to load and unload data on demand.
+/// @param uTargetMemoryUsageInBytes The upper limit to how much memory this PagedVolume should aim to use.
+/// @param uChunkSideLength The size of the chunks making up the volume. Small chunks will compress/decompress faster, but there will also be more of them meaning voxel access could be slower.
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 PagedVolume<VoxelType>::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint16_t uChunkSideLength) :
@@ -291,10 +291,10 @@ PagedVolume<VoxelType>::~PagedVolume() {
 ////////////////////////////////////////////////////////////////////////////////
 /// This version of the function is provided so that the wrap mode does not need
 /// to be specified as a template parameter, as it may be confusing to some users.
-/// \param uXPos The \c x position of the voxel
-/// \param uYPos The \c y position of the voxel
-/// \param uZPos The \c z position of the voxel
-/// \return The voxel value
+/// @param uXPos The @c x position of the voxel
+/// @param uYPos The @c y position of the voxel
+/// @param uZPos The @c z position of the voxel
+/// @return The voxel value
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 VoxelType PagedVolume<VoxelType>::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const {
@@ -314,8 +314,8 @@ VoxelType PagedVolume<VoxelType>::getVoxel(int32_t uXPos, int32_t uYPos, int32_t
 ////////////////////////////////////////////////////////////////////////////////
 /// This version of the function is provided so that the wrap mode does not need
 /// to be specified as a template parameter, as it may be confusing to some users.
-/// \param v3dPos The 3D position of the voxel
-/// \return The voxel value
+/// @param v3dPos The 3D position of the voxel
+/// @return The voxel value
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 VoxelType PagedVolume<VoxelType>::getVoxel(const glm::ivec3& v3dPos) const {
@@ -323,9 +323,9 @@ VoxelType PagedVolume<VoxelType>::getVoxel(const glm::ivec3& v3dPos) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \param uXPos the \c x position of the voxel
-/// \param uYPos the \c y position of the voxel
-/// \param uZPos the \c z position of the voxel
+/// @param uXPos the @c x position of the voxel
+/// @param uYPos the @c y position of the voxel
+/// @param uZPos the @c z position of the voxel
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void PagedVolume<VoxelType>::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, VoxelType tValue) {
@@ -343,8 +343,8 @@ void PagedVolume<VoxelType>::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPo
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \param v3dPos the 3D position of the voxel
-/// \param tValue the value to which the voxel will be set
+/// @param v3dPos the 3D position of the voxel
+/// @param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void PagedVolume<VoxelType>::setVoxel(const glm::ivec3& v3dPos, VoxelType tValue) {
@@ -353,7 +353,7 @@ void PagedVolume<VoxelType>::setVoxel(const glm::ivec3& v3dPos, VoxelType tValue
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Note that if the memory usage limit is not large enough to support the region this function will only load part of the region. In this case it is undefined which parts will actually be loaded. If all the voxels in the given region are already loaded, this function will not do anything. Other voxels might be unloaded to make space for the new voxels.
-/// \param regPrefetch The Region of voxels to prefetch into memory.
+/// @param regPrefetch The Region of voxels to prefetch into memory.
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void PagedVolume<VoxelType>::prefetch(Region regPrefetch) {

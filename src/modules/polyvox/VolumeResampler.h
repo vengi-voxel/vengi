@@ -31,12 +31,6 @@ private:
 	Region m_regDst;
 };
 
-/**
- * \param pVolSrc
- * \param regSrc
- * \param[out] pVolDst
- * \param regDst
- */
 template<typename SrcVolumeType, typename DstVolumeType>
 VolumeResampler<SrcVolumeType, DstVolumeType>::VolumeResampler(SrcVolumeType* pVolSrc, const Region &regSrc, DstVolumeType* pVolDst, const Region& regDst) :
 		m_pVolSrc(pVolSrc), m_regSrc(regSrc), m_pVolDst(pVolDst), m_regDst(regDst) {

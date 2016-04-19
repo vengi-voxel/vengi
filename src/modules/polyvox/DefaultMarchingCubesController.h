@@ -31,7 +31,7 @@ namespace PolyVox {
  * will pass through the density value specified by the threshold, and so you should make sure that the threshold value you choose is between
  * the minimum and maximum values found in your volume data. By default it is in the middle of the representable range of the underlying type.
  *
- * \sa extractMarchingCubesMesh
+ * @sa extractMarchingCubesMesh
  *
  */
 template<typename VoxelType>

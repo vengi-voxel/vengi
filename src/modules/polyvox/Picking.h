@@ -57,12 +57,12 @@ public:
 }
 
 /**
- * \param volData The volume to pass the ray though
- * \param v3dStart The start position in the volume
- * \param v3dDirectionAndLength The direction and length of the ray
- * \param emptyVoxelExample The value used to represent empty voxels in your volume
+ * @param volData The volume to pass the ray though
+ * @param v3dStart The start position in the volume
+ * @param v3dDirectionAndLength The direction and length of the ray
+ * @param emptyVoxelExample The value used to represent empty voxels in your volume
  *
- * \return A PickResult containing the hit information
+ * @return A PickResult containing the hit information
  */
 template<typename VolumeType>
 PickResult pickVoxel(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, const typename VolumeType::VoxelType& emptyVoxelExample) {
