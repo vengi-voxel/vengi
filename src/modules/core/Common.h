@@ -46,6 +46,15 @@ inline T assert_cast(const S object) {
 	return static_cast<T>(object);
 }
 
+namespace std {
+template<>
+struct hash<glm::ivec3> {
+	std::size_t operator()(const glm::ivec3& vec) const {
+		return ((vec.x & 0xFF)) | ((vec.y & 0xFF) << 8) | ((vec.z & 0xFF) << 16);
+	}
+};
+}
+
 #define DIAG_STR(s) #s
 #define DIAG_JOINSTR(x,y) DIAG_STR(x ## y)
 #ifdef _MSC_VER
