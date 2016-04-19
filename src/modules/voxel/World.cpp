@@ -584,6 +584,9 @@ void World::create(TerrainContext& ctx) {
 	const int lowerY = region.getLowerY();
 	const int lowerX = region.getLowerX();
 	const int lowerZ = region.getLowerZ();
+	// TODO: kill me
+	const core::VarPtr& plainTerrain = core::Var::get("voxel-plainterrain", "false");
+	const bool plainTerrainBool = plainTerrain->boolVal();
 
 	// TODO: the 2d noise doesn't neep the same resolution - we can optimize this a lot
 	for (int z = 0; z < depth; ++z) {
@@ -605,17 +608,24 @@ void World::create(TerrainContext& ctx) {
 				const Voxel& voxel = _biomManager.getVoxelType(lowerX + x, 0, lowerZ + z);
 				ctx.chunk->setVoxel(x, 0, z, voxel);
 			}
-			for (int h = lowerY; h < ni; ++h) {
-				const glm::vec3 noisePos3d = glm::vec3(noisePos2d.x, h, noisePos2d.y);
-				const float noiseVal = noise::norm(noise::Simplex::Noise3D(noisePos3d, _ctx.caveNoiseOctaves,
-						_ctx.caveNoisePersistence, _ctx.caveNoiseFrequency, _ctx.caveNoiseAmplitude));
-				const float finalDensity = noiseNormalized + noise::norm(noiseVal);
-				if (finalDensity > _ctx.caveDensityThreshold) {
+			if (plainTerrainBool) {
+				for (int h = lowerY; h < ni; ++h) {
 					const Voxel& voxel = _biomManager.getVoxelType(lowerX + x, h, lowerZ + z);
 					ctx.chunk->setVoxel(x, y, z, voxel);
 				}
-				if (++y >= height) {
-					break;
+			} else {
+				for (int h = lowerY; h < ni; ++h) {
+					const glm::vec3 noisePos3d = glm::vec3(noisePos2d.x, h, noisePos2d.y);
+					const float noiseVal = noise::norm(noise::Simplex::Noise3D(noisePos3d, _ctx.caveNoiseOctaves,
+							_ctx.caveNoisePersistence, _ctx.caveNoiseFrequency, _ctx.caveNoiseAmplitude));
+					const float finalDensity = noiseNormalized + noise::norm(noiseVal);
+					if (finalDensity > _ctx.caveDensityThreshold) {
+						const Voxel& voxel = _biomManager.getVoxelType(lowerX + x, h, lowerZ + z);
+						ctx.chunk->setVoxel(x, y, z, voxel);
+					}
+					if (++y >= height) {
+						break;
+					}
 				}
 			}
 		}
