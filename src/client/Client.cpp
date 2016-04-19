@@ -116,8 +116,6 @@ core::AppState Client::onInit() {
 	_root.SetSkinBg(TBIDC("background"));
 	new frontend::LoginWindow(this);
 
-	SDL_GL_SetSwapInterval(core::Var::get(cfg::ClientVSync, "false")->boolVal());
-
 	return state;
 }
 
