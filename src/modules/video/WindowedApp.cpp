@@ -95,22 +95,10 @@ core::AppState WindowedApp::onInit() {
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
 	const bool fullscreen = core::Var::get(cfg::ClientFullscreen, "true")->boolVal();
-	const bool vsync = core::Var::get(cfg::ClientVSync, "false")->boolVal();
 
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 	if (fullscreen)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
-
-	if (vsync) {
-		if (SDL_GL_SetSwapInterval(-1) == -1) {
-			if (SDL_GL_SetSwapInterval(1) == -1) {
-				Log::warn("Could not activate vsync: %s", SDL_GetError());
-			}
-		}
-		if (SDL_GL_GetSwapInterval() != 0) {
-			Log::info("Activated vsync");
-		}
-	}
 
 	const int videoDrivers = SDL_GetNumVideoDrivers();
 	for (int i = 0; i < videoDrivers; ++i) {
@@ -133,6 +121,18 @@ core::AppState WindowedApp::onInit() {
 	}
 
 	_glcontext = SDL_GL_CreateContext(_window);
+
+	const bool vsync = core::Var::get(cfg::ClientVSync, "false")->boolVal();
+	if (vsync) {
+		if (SDL_GL_SetSwapInterval(-1) == -1) {
+			if (SDL_GL_SetSwapInterval(1) == -1) {
+				Log::warn("Could not activate vsync: %s", SDL_GetError());
+			}
+		}
+		if (SDL_GL_GetSwapInterval() != 0) {
+			Log::info("Activated vsync");
+		}
+	}
 
 	int buffers, samples;
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
