@@ -15,9 +15,9 @@
 #ifndef core_assert_msg
 #define core_assert_msg(condition, format, ...) \
 	do { \
-		static char buf[1024]; \
-		SDL_snprintf(buf, sizeof(buf) - 1, format, ##__VA_ARGS__); \
 		while (!(condition)) { \
+			char buf[1024]; \
+			SDL_snprintf(buf, sizeof(buf) - 1, format, ##__VA_ARGS__); \
 			struct SDL_AssertData sdl_assert_data = { \
 				0, 0, buf, 0, 0, 0, 0 \
 			}; \
