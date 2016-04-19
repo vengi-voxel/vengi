@@ -20,5 +20,5 @@ leaveswidth Leaves width
 treepos Position
 threshold Threshold
 landscape Landscape
-mountains Mountains
+mountain Mountains
 caves Caves
