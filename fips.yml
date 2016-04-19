@@ -17,8 +17,6 @@ imports:
         git: https://github.com/fungos/fips-stb.git
     fips-lua:
         git: https://github.com/mgerhardy/fips-lua.git
-    fips-zlib:
-        git: https://github.com/floooh/fips-zlib.git
 
 exports:
     header-dirs:

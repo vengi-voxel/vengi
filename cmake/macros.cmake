@@ -6,6 +6,13 @@ else()
 	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/linux CACHE STRING "" FORCE)
 endif()
 
+macro(var_global VARIABLES)
+	foreach(VAR ${VARIABLES})
+		set(${VAR} ${${VAR}} CACHE STRING "" FORCE)
+		mark_as_advanced(${VAR})
+	endforeach()
+endmacro()
+
 macro(check_glsl_files TARGET)
 	set(files ${ARGV})
 	list(REMOVE_AT files 0)
@@ -35,8 +42,9 @@ endmacro()
 # HEADER: the header we are trying to find
 # SUFFIX: suffix for the include dir
 # VERSION: the operator and version that is given to the pkg-config call (e.g. ">=1.0")
+#          (this only works for pkg-config)
 #
-# Example: engine_find(SDL2_image SDL_image.h SDL2)
+# Example: engine_find(SDL2_image SDL_image.h SDL2 "")
 #
 macro(engine_find LIB HEADER SUFFIX VERSION)
 	string(TOUPPER ${LIB} PREFIX)
@@ -57,7 +65,7 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 	)
 	find_package(PkgConfig QUIET)
 	if (PKG_CONFIG_FOUND)
-		pkg_check_modules(_${PREFIX} QUIET ${LIB}${VERSION})
+		pkg_check_modules(_${PREFIX} QUIET "${LIB}${VERSION}")
 	endif()
 	find_path(${PREFIX}_INCLUDE_DIRS
 		NAMES ${HEADER}
@@ -68,18 +76,20 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 			${_SEARCH_PATHS}
 	)
 	find_library(${PREFIX}_LIBRARIES
-		NAMES ${LIB}
+		NAMES ${LIB} ${PREFIX} ${_${PREFIX}_LIBRARIES}
 		HINTS ENV ${PREFIX}DIR
 		PATH_SUFFIXES lib64 lib lib/${_PROCESSOR_ARCH}
 		PATHS
 			${_${PREFIX}_LIBRARY_DIRS}
 			${_SEARCH_PATHS}
 	)
+	include(FindPackageHandleStandardArgs)
+	find_package_handle_standard_args(${LIB} FOUND_VAR ${PREFIX}_FOUND REQUIRED_VARS ${PREFIX}_INCLUDE_DIRS ${PREFIX}_LIBRARIES)
+	mark_as_advanced(${PREFIX}_INCLUDE_DIRS ${PREFIX}_LIBRARIES ${PREFIX}_FOUND)
+	var_global(${PREFIX}_INCLUDE_DIRS ${PREFIX}_LIBRARIES ${PREFIX}_FOUND)
+	unset(PREFIX)
 	unset(_SEARCH_PATHS)
 	unset(_PROCESSOR_ARCH)
-	include(FindPackageHandleStandardArgs)
-	find_package_handle_standard_args(${PREFIX} REQUIRED_VARS ${PREFIX}_INCLUDE_DIRS ${PREFIX}_LIBRARIES)
-	mark_as_advanced(${PREFIX}_INCLUDE_DIRS ${PREFIX}_LIBRARIES)
 endmacro()
 
 #
@@ -112,6 +122,7 @@ macro(engine_add_library)
 
 	find_package(${_ADDLIB_LIB})
 	string(TOUPPER ${_ADDLIB_LIB} PREFIX)
+	var_global(${PREFIX}_INCLUDE_DIRS ${PREFIX}_LIBRARIES ${PREFIX}_FOUND)
 	if (${PREFIX}_FOUND)
 		add_library(${_ADDLIB_LIB} INTERFACE)
 		target_link_libraries(${_ADDLIB_LIB} INTERFACE ${${PREFIX}_LIBRARIES})
@@ -120,7 +131,7 @@ macro(engine_add_library)
 		endif()
 	else()
 		add_library(${_ADDLIB_LIB} STATIC ${_ADDLIB_SRCS})
-		target_include_directories(${_ADDLIB_LIB} ${_ADDLIB_PUBLICHEADER} ${ROOT_DIR}/src/libs/${_ADDLIB_LIB})
+		target_include_directories(${_ADDLIB_LIB} ${_ADDLIB_PUBLICHEADER} ${PROJECT_SOURCE_DIR}/src/libs/${_ADDLIB_LIB})
 		set_target_properties(${_ADDLIB_LIB} PROPERTIES COMPILE_DEFINITIONS "${_ADDLIB_DEFINES}")
 		if (NOT MSVC)
 			set_target_properties(${_ADDLIB_LIB} PROPERTIES COMPILE_FLAGS "${_ADDLIB_GCCCFLAGS}")

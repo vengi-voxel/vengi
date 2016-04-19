@@ -1,2 +1,4 @@
 fips_ide_group(Libs)
+fips_add_subdirectory(sdl2)
 fips_add_subdirectory(sqlite3)
+fips_add_subdirectory(zlib)

@@ -5,8 +5,5 @@ fips_begin_module(io)
 		File.cpp File.h
 		IOResource.h
 	)
+	fips_deps(sdl2)
 fips_end_module()
-
-find_package(SDL2 REQUIRED)
-target_link_libraries(io ${SDL2_LIBRARIES})
-target_include_directories(io PUBLIC ${SDL2_INCLUDE_DIRS})
