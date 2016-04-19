@@ -4,4 +4,4 @@ engine_add_library(
 	SRCS ${SRCS}
 	GCCCFLAGS ""
 	DEFINES SQLITE_OMIT_LOAD_EXTENSION)
-set_target_properties(sqlite3 PROPERTIES LINKER_LANGUAGE C)
+#set_target_properties(sqlite3 PROPERTIES LINKER_LANGUAGE C)
