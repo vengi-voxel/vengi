@@ -90,50 +90,6 @@ public:
 	}
 };
 
-template<typename Type, uint8_t NoOfMaterialBits, uint8_t NoOfDensityBits>
-class DefaultMarchingCubesController<MaterialDensityPair<Type, NoOfMaterialBits, NoOfDensityBits> > {
-public:
-	typedef Type DensityType;
-	typedef Type MaterialType;
-
-	DefaultMarchingCubesController(void) {
-		// Default to a threshold value halfway between the min and max possible values.
-		m_tThreshold = (MaterialDensityPair<Type, NoOfMaterialBits, NoOfDensityBits>::getMinDensity()
-				+ MaterialDensityPair<Type, NoOfMaterialBits, NoOfDensityBits>::getMaxDensity()) / 2;
-	}
-
-	DefaultMarchingCubesController(DensityType tThreshold) {
-		m_tThreshold = tThreshold;
-	}
-
-	DensityType convertToDensity(MaterialDensityPair<Type, NoOfMaterialBits, NoOfDensityBits> voxel) {
-		return voxel.getDensity();
-	}
-
-	MaterialType convertToMaterial(MaterialDensityPair<Type, NoOfMaterialBits, NoOfDensityBits> voxel) {
-		return voxel.getMaterial();
-	}
-
-	MaterialDensityPair<Type, NoOfMaterialBits, NoOfDensityBits> blendMaterials(MaterialDensityPair<Type, NoOfMaterialBits, NoOfDensityBits> a,
-			MaterialDensityPair<Type, NoOfMaterialBits, NoOfDensityBits> b, float /*weight*/) {
-		if (convertToDensity(a) > convertToDensity(b)) {
-			return a;
-		}
-		return b;
-	}
-
-	DensityType getThreshold(void) {
-		return m_tThreshold;
-	}
-
-	void setThreshold(DensityType tThreshold) {
-		m_tThreshold = tThreshold;
-	}
-
-private:
-	DensityType m_tThreshold;
-};
-
 typedef MaterialDensityPair<uint8_t, 4, 4> MaterialDensityPair44;
 typedef MaterialDensityPair<uint16_t, 8, 8> MaterialDensityPair88;
 
