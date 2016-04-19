@@ -11,7 +11,6 @@
 #include <array>
 #include <algorithm>
 #include <limits>
-#include <cstdlib> //For abort()
 #include <cstring> //For memcpy
 #include <unordered_map>
 #include <list>

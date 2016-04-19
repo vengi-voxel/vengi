@@ -2,6 +2,7 @@
 
 #include "Region.h"
 #include "Interpolation.h"
+#include "core/Common.h"
 #include <cmath>
 
 namespace PolyVox {
@@ -109,10 +110,10 @@ void VolumeResampler<SrcVolumeType, DstVolumeType>::resampleArbitrary() {
 				const typename SrcVolumeType::VoxelType& voxel111 = sampler.peekVoxel1px1py1pz();
 
 				//FIXME - should accept all float parameters, but GCC complains?
-				double dummy;
-				sx = modf(sx, &dummy);
-				sy = modf(sy, &dummy);
-				sz = modf(sz, &dummy);
+				float dummy;
+				sx = glm::modf(sx, dummy);
+				sy = glm::modf(sy, dummy);
+				sz = glm::modf(sz, dummy);
 
 				typename SrcVolumeType::VoxelType tInterpolatedValue = trilerp<float>(voxel000, voxel100, voxel010, voxel110, voxel001, voxel101, voxel011, voxel111, sx, sy, sz);
 

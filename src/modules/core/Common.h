@@ -4,6 +4,7 @@
 #include <cmath>
 #include <SDL.h>
 #include <glm/glm.hpp>
+#include <glm/detail/func_common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>

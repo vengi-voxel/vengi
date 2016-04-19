@@ -49,21 +49,21 @@ LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::LowPassFilter(Src
 
 template<typename SrcVolumeType, typename DstVolumeType, typename AccumulationType>
 void LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::execute() {
-	int32_t iSrcMinX = m_regSrc.getLowerX();
-	int32_t iSrcMinY = m_regSrc.getLowerY();
-	int32_t iSrcMinZ = m_regSrc.getLowerZ();
+	const int32_t iSrcMinX = m_regSrc.getLowerX();
+	const int32_t iSrcMinY = m_regSrc.getLowerY();
+	const int32_t iSrcMinZ = m_regSrc.getLowerZ();
 
-	int32_t iSrcMaxX = m_regSrc.getUpperX();
-	int32_t iSrcMaxY = m_regSrc.getUpperY();
-	int32_t iSrcMaxZ = m_regSrc.getUpperZ();
+	const int32_t iSrcMaxX = m_regSrc.getUpperX();
+	const int32_t iSrcMaxY = m_regSrc.getUpperY();
+	const int32_t iSrcMaxZ = m_regSrc.getUpperZ();
 
-	int32_t iDstMinX = m_regDst.getLowerX();
-	int32_t iDstMinY = m_regDst.getLowerY();
-	int32_t iDstMinZ = m_regDst.getLowerZ();
+	const int32_t iDstMinX = m_regDst.getLowerX();
+	const int32_t iDstMinY = m_regDst.getLowerY();
+	const int32_t iDstMinZ = m_regDst.getLowerZ();
 
-	//int32_t iDstMaxX = m_regDst.getUpperX();
-	//int32_t iDstMaxY = m_regDst.getUpperY();
-	//int32_t iDstMaxZ = m_regDst.getUpperZ();
+	//const int32_t iDstMaxX = m_regDst.getUpperX();
+	//const int32_t iDstMaxY = m_regDst.getUpperY();
+	//const int32_t iDstMaxZ = m_regDst.getUpperZ();
 
 	typename SrcVolumeType::Sampler srcSampler(m_pVolSrc);
 
@@ -116,8 +116,8 @@ template<typename SrcVolumeType, typename DstVolumeType, typename AccumulationTy
 void LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::executeSAT() {
 	const uint32_t border = (m_uKernelSize - 1) / 2;
 
-	Vector3DInt32 satLowerCorner = m_regSrc.getLowerCorner() - Vector3DInt32(border, border, border);
-	Vector3DInt32 satUpperCorner = m_regSrc.getUpperCorner() + Vector3DInt32(border, border, border);
+	const Vector3DInt32 satLowerCorner = m_regSrc.getLowerCorner() - Vector3DInt32(border, border, border);
+	const Vector3DInt32 satUpperCorner = m_regSrc.getUpperCorner() + Vector3DInt32(border, border, border);
 
 	//Use floats for the SAT volume to ensure it works with negative
 	//densities and with both integral and floating point input volumes.
@@ -198,19 +198,18 @@ void LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::executeSAT()
 	//Now compute the average
 	const Vector3DInt32& v3dDstLowerCorner = m_regDst.getLowerCorner();
 	const Vector3DInt32& v3dDstUpperCorner = m_regDst.getUpperCorner();
-
 	const Vector3DInt32& v3dSrcLowerCorner = m_regSrc.getLowerCorner();
 
 	for (int32_t iDstZ = v3dDstLowerCorner.z, iSrcZ = v3dSrcLowerCorner.z; iDstZ <= v3dDstUpperCorner.z; iDstZ++, iSrcZ++) {
 		for (int32_t iDstY = v3dDstLowerCorner.y, iSrcY = v3dSrcLowerCorner.y; iDstY <= v3dDstUpperCorner.y; iDstY++, iSrcY++) {
 			for (int32_t iDstX = v3dDstLowerCorner.x, iSrcX = v3dSrcLowerCorner.x; iDstX <= v3dDstUpperCorner.x; iDstX++, iSrcX++) {
-				int32_t satLowerX = iSrcX - border - 1;
-				int32_t satLowerY = iSrcY - border - 1;
-				int32_t satLowerZ = iSrcZ - border - 1;
+				const int32_t satLowerX = iSrcX - border - 1;
+				const int32_t satLowerY = iSrcY - border - 1;
+				const int32_t satLowerZ = iSrcZ - border - 1;
 
-				int32_t satUpperX = iSrcX + border;
-				int32_t satUpperY = iSrcY + border;
-				int32_t satUpperZ = iSrcZ + border;
+				const int32_t satUpperX = iSrcX + border;
+				const int32_t satUpperY = iSrcY + border;
+				const int32_t satUpperZ = iSrcZ + border;
 
 				AccumulationType a = satVolume.getVoxel(satLowerX, satLowerY, satLowerZ);
 				AccumulationType b = satVolume.getVoxel(satUpperX, satLowerY, satLowerZ);
