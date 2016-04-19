@@ -132,7 +132,7 @@ private:
 	//The current node
 	AllNodesContainer::iterator _current;
 
-	float _progress;
+	float _progress = 0.0f;
 
 	AStarPathfinderParams<VolumeType> _params;
 };
@@ -144,15 +144,37 @@ const float sqrt_1 = 1.0f;
 const float sqrt_2 = glm::root_two<float>();
 const float sqrt_3 = glm::root_three<float>();
 
-const glm::ivec3 arrayPathfinderFaces[6] = { glm::ivec3(0, 0, -1), glm::ivec3(0, 0, +1), glm::ivec3(0, -1, 0), glm::ivec3(0, +1, 0), glm::ivec3(-1, 0, 0),
+const glm::ivec3 arrayPathfinderFaces[6] = {
+		glm::ivec3(0, 0, -1),
+		glm::ivec3(0, 0, +1),
+		glm::ivec3(0, -1, 0),
+		glm::ivec3(0, +1, 0),
+		glm::ivec3(-1, 0, 0),
 		glm::ivec3(+1, 0, 0) };
 
-const glm::ivec3 arrayPathfinderEdges[12] = { glm::ivec3(0, -1, -1), glm::ivec3(0, -1, +1), glm::ivec3(0, +1, -1), glm::ivec3(0, +1, +1), glm::ivec3(-1, 0, -1),
-		glm::ivec3(-1, 0, +1), glm::ivec3(+1, 0, -1), glm::ivec3(+1, 0, +1), glm::ivec3(-1, -1, 0), glm::ivec3(-1, +1, 0), glm::ivec3(+1, -1, 0), glm::ivec3(
-				+1, +1, 0) };
+const glm::ivec3 arrayPathfinderEdges[12] = {
+		glm::ivec3(0, -1, -1),
+		glm::ivec3(0, -1, +1),
+		glm::ivec3(0, +1, -1),
+		glm::ivec3(0, +1, +1),
+		glm::ivec3(-1, 0, -1),
+		glm::ivec3(-1, 0, +1),
+		glm::ivec3(+1, 0, -1),
+		glm::ivec3(+1, 0, +1),
+		glm::ivec3(-1, -1, 0),
+		glm::ivec3(-1, +1, 0),
+		glm::ivec3(+1, -1, 0),
+		glm::ivec3(+1, +1, 0) };
 
-const glm::ivec3 arrayPathfinderCorners[8] = { glm::ivec3(-1, -1, -1), glm::ivec3(-1, -1, +1), glm::ivec3(-1, +1, -1), glm::ivec3(-1, +1, +1), glm::ivec3(+1, -1,
-		-1), glm::ivec3(+1, -1, +1), glm::ivec3(+1, +1, -1), glm::ivec3(+1, +1, +1) };
+const glm::ivec3 arrayPathfinderCorners[8] = {
+		glm::ivec3(-1, -1, -1),
+		glm::ivec3(-1, -1, +1),
+		glm::ivec3(-1, +1, -1),
+		glm::ivec3(-1, +1, +1),
+		glm::ivec3(+1, -1, -1),
+		glm::ivec3(+1, -1, +1),
+		glm::ivec3(+1, +1, -1),
+		glm::ivec3(+1, +1, +1) };
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Using this function, a voxel is considered valid for the path if it is inside the
@@ -162,7 +184,7 @@ const glm::ivec3 arrayPathfinderCorners[8] = { glm::ivec3(-1, -1, -1), glm::ivec
 template<typename VolumeType>
 bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3dPos) {
 	//Voxels are considered valid candidates for the path if they are inside the volume...
-	if (volData->getEnclosingRegion().containsPoint(v3dPos) == false) {
+	if (!volData->getEnclosingRegion().containsPoint(v3dPos)) {
 		return false;
 	}
 
