@@ -2,7 +2,7 @@ TARGET=
 VERBOSE=
 Q=@
 
-all: build
+all: run
 
 build:
 	$(Q)./fips make
@@ -23,6 +23,14 @@ client: build
 
 shapetool: build
 	$(Q)./fips run shapetool -- $(ARGS)
+
+run: shapetool
+
+runfast: build
+	$(Q)./fips run shapetool -- -set voxel-plainterrain true $(ARGS)
+
+debugrunfast: build
+	$(Q)./fips gdb shapetool -- -set voxel-plainterrain true $(ARGS)
 
 cubiquitytool: build
 	$(Q)./fips run cubiquitytool -- $(ARGS)
