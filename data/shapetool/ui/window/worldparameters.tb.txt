@@ -8,6 +8,7 @@ TBLayout
 		axis x
 		TBLayout
 			axis y
+			TBTextField: text: @landscape
 			TBTextField: text: @octaves
 			TBInlineSelect: id: landscapeoctaves, min: 1, max: 10
 			TBTextField: text: @frequency
@@ -18,6 +19,7 @@ TBLayout
 			TBEditField: id: landscapepersistence
 		TBLayout
 			axis y
+			TBTextField: text: @mountain
 			TBTextField: text: @octaves
 			TBInlineSelect: id: mountainoctaves, min: 1, max: 10
 			TBTextField: text: @frequency
@@ -26,6 +28,19 @@ TBLayout
 			TBEditField: id: mountainamplitude, type: number
 			TBTextField: text: @persistence
 			TBEditField: id: mountainpersistence, type: number
+		TBLayout
+			axis y
+			TBTextField: text: @caves
+			TBTextField: text: @octaves
+			TBInlineSelect: id: caveoctaves, min: 1, max: 10
+			TBTextField: text: @frequency
+			TBEditField: id: cavefrequency, type: number
+			TBTextField: text: @amplitude
+			TBEditField: id: caveamplitude, type: number
+			TBTextField: text: @persistence
+			TBEditField: id: cavepersistence, type: number
+			TBTextField: text: @threshold
+			TBEditField: id: cavedensitythreshold, type: number
 	TBLayout
 		axis x
 		gravity right

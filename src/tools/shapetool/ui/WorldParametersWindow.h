@@ -14,6 +14,12 @@ static const ui::Window::Field WORLDFIELDS[] = {
 	{FLOAT_FIELD("mountainfrequency", WORLDCTX, mountainNoiseFrequency)},
 	{FLOAT_FIELD("mountainamplitude", WORLDCTX, mountainNoiseAmplitude)},
 	{FLOAT_FIELD("mountainpersistence", WORLDCTX, mountainNoisePersistence)},
+
+	{INT_FIELD("caveoctaves", WORLDCTX, caveNoiseOctaves)},
+	{FLOAT_FIELD("cavefrequency", WORLDCTX, caveNoiseFrequency)},
+	{FLOAT_FIELD("caveamplitude", WORLDCTX, caveNoiseAmplitude)},
+	{FLOAT_FIELD("cavepersistence", WORLDCTX, caveNoisePersistence)},
+	{FLOAT_FIELD("cavedensitythreshold", WORLDCTX, caveDensityThreshold)}
 };
 
 class WorldParametersWindow: public ui::Window {

@@ -18,3 +18,7 @@ leavesheight Leaves height
 leavesdepth Leaves depth
 leaveswidth Leaves width
 treepos Position
+threshold Threshold
+landscape Landscape
+mountains Mountains
+caves Caves

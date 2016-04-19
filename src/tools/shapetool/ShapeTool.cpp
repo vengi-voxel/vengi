@@ -84,7 +84,7 @@ core::AppState ShapeTool::onCleanup() {
 
 bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 	if (key == SDLK_ESCAPE) {
-		const bool current = SDL_GetRelativeMouseMode();
+		const SDL_bool current = SDL_GetRelativeMouseMode();
 		const SDL_bool mode = current ? SDL_FALSE : SDL_TRUE;
 		SDL_SetRelativeMouseMode(mode);
 	}
