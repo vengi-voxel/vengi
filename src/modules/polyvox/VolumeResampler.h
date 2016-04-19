@@ -43,15 +43,15 @@ VolumeResampler<SrcVolumeType, DstVolumeType>::VolumeResampler(SrcVolumeType* pV
 
 template<typename SrcVolumeType, typename DstVolumeType>
 void VolumeResampler<SrcVolumeType, DstVolumeType>::execute() {
-	int32_t uSrcWidth = m_regSrc.getUpperX() - m_regSrc.getLowerX() + 1;
-	int32_t uSrcHeight = m_regSrc.getUpperY() - m_regSrc.getLowerY() + 1;
-	int32_t uSrcDepth = m_regSrc.getUpperZ() - m_regSrc.getLowerZ() + 1;
+	const int32_t uSrcWidth = m_regSrc.getUpperX() - m_regSrc.getLowerX() + 1;
+	const int32_t uSrcHeight = m_regSrc.getUpperY() - m_regSrc.getLowerY() + 1;
+	const int32_t uSrcDepth = m_regSrc.getUpperZ() - m_regSrc.getLowerZ() + 1;
 
-	int32_t uDstWidth = m_regDst.getUpperX() - m_regDst.getLowerX() + 1;
-	int32_t uDstHeight = m_regDst.getUpperY() - m_regDst.getLowerY() + 1;
-	int32_t uDstDepth = m_regDst.getUpperZ() - m_regDst.getLowerZ() + 1;
+	const int32_t uDstWidth = m_regDst.getUpperX() - m_regDst.getLowerX() + 1;
+	const int32_t uDstHeight = m_regDst.getUpperY() - m_regDst.getLowerY() + 1;
+	const int32_t uDstDepth = m_regDst.getUpperZ() - m_regDst.getLowerZ() + 1;
 
-	if ((uSrcWidth == uDstWidth) && (uSrcHeight == uDstHeight) && (uSrcDepth == uDstDepth)) {
+	if (uSrcWidth == uDstWidth && uSrcHeight == uDstHeight && uSrcDepth == uDstDepth) {
 		resampleSameSize();
 	} else {
 		resampleArbitrary();
@@ -73,17 +73,17 @@ void VolumeResampler<SrcVolumeType, DstVolumeType>::resampleSameSize() {
 
 template<typename SrcVolumeType, typename DstVolumeType>
 void VolumeResampler<SrcVolumeType, DstVolumeType>::resampleArbitrary() {
-	float srcWidth = m_regSrc.getWidthInCells();
-	float srcHeight = m_regSrc.getHeightInCells();
-	float srcDepth = m_regSrc.getDepthInCells();
+	const float srcWidth = m_regSrc.getWidthInCells();
+	const float srcHeight = m_regSrc.getHeightInCells();
+	const float srcDepth = m_regSrc.getDepthInCells();
 
-	float dstWidth = m_regDst.getWidthInCells();
-	float dstHeight = m_regDst.getHeightInCells();
-	float dstDepth = m_regDst.getDepthInCells();
+	const float dstWidth = m_regDst.getWidthInCells();
+	const float dstHeight = m_regDst.getHeightInCells();
+	const float dstDepth = m_regDst.getDepthInCells();
 
-	float fScaleX = srcWidth / dstWidth;
-	float fScaleY = srcHeight / dstHeight;
-	float fScaleZ = srcDepth / dstDepth;
+	const float fScaleX = srcWidth / dstWidth;
+	const float fScaleY = srcHeight / dstHeight;
+	const float fScaleZ = srcDepth / dstDepth;
 
 	typename SrcVolumeType::Sampler sampler(m_pVolSrc);
 
