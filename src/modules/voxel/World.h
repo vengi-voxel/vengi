@@ -270,7 +270,7 @@ private:
 	core::VarPtr _chunkSize;
 	core::Random _random;
 	std::vector<std::future<void> > _futures;
-	std::atomic_bool _cancelThreads;
+	std::atomic_bool _cancelThreads { false };
 	float _noiseSeedOffsetX;
 	float _noiseSeedOffsetZ;
 };
