@@ -65,7 +65,7 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 	)
 	find_package(PkgConfig QUIET)
 	if (PKG_CONFIG_FOUND)
-		pkg_check_modules(_${PREFIX} QUIET "${LIB}${VERSION}")
+		pkg_check_modules(_${PREFIX} "${LIB}${VERSION}")
 	endif()
 	find_path(${PREFIX}_INCLUDE_DIRS
 		NAMES ${HEADER}

@@ -22,7 +22,7 @@ fips_begin_module(core)
 		Tokenizer.h
 		TimeProvider.h TimeProvider.cpp
 	)
-	fips_deps(io)
+	fips_deps(io glm)
 fips_end_module()
 
 gtest_suite_files(tests tests/AbstractTest.cpp tests/RectTest.cpp tests/ByteStreamTest.cpp tests/ThreadPoolTest.cpp tests/EventBusTest.cpp tests/QuadTreeTest.cpp tests/VarTest.cpp tests/CommandTest.cpp tests/SetTest.cpp tests/TokenizerTest.cpp)
