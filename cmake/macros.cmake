@@ -117,7 +117,7 @@ macro(engine_add_library)
 		message(FATAL_ERROR "engine_add_library requires the SRCS argument")
 	endif()
 	if (NOT _ADDLIB_PUBLICHEADER)
-		set(_ADDLIB_PUBLICHEADER PRIVATE)
+		set(_ADDLIB_PUBLICHEADER PUBLIC)
 	endif()
 
 	find_package(${_ADDLIB_LIB})
