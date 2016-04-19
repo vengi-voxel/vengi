@@ -26,9 +26,7 @@ struct Node {
 			gVal(std::numeric_limits<float>::quiet_NaN()) //Initilise with NaNs so that we will
 					, hVal(std::numeric_limits<float>::quiet_NaN()) //know if we forget to set these properly.
 					, parent(0) {
-		position.setX(x);
-		position.setY(y);
-		position.setZ(z);
+		position = {x, y, z};
 	}
 
 	bool operator==(const Node& rhs) const {
@@ -36,19 +34,19 @@ struct Node {
 	}
 
 	bool operator<(const Node& rhs) const {
-		if (position.getX() < rhs.position.getX())
+		if (position.x < rhs.position.x)
 			return true;
-		if (rhs.position.getX() < position.getX())
+		if (rhs.position.x < position.x)
 			return false;
 
-		if (position.getY() < rhs.position.getY())
+		if (position.y < rhs.position.y)
 			return true;
-		if (rhs.position.getY() < position.getY())
+		if (rhs.position.y < position.y)
 			return false;
 
-		if (position.getZ() < rhs.position.getZ())
+		if (position.z < rhs.position.z)
 			return true;
-		if (rhs.position.getZ() < position.getZ())
+		if (rhs.position.z < position.z)
 			return false;
 
 		return false;

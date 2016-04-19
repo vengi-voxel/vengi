@@ -2,7 +2,7 @@
 
 #include "core/Common.h"
 
-#include "cubiquity/PolyVox/PagedVolume.h"
+#include "polyvox/PagedVolume.h"
 #include "Voxel.h"
 
 namespace voxel {

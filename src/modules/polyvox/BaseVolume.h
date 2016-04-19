@@ -227,7 +227,7 @@ VoxelType BaseVolume<VoxelType>::Sampler<DerivedVolumeType>::getVoxel(void) cons
 template<typename VoxelType>
 template<typename DerivedVolumeType>
 void BaseVolume<VoxelType>::Sampler<DerivedVolumeType>::setPosition(const Vector3DInt32& v3dNewPos) {
-	setPosition(v3dNewPos.getX(), v3dNewPos.getY(), v3dNewPos.getZ());
+	setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
 }
 
 template<typename VoxelType>

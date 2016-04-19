@@ -9,13 +9,12 @@
 #include "Voxel.h"
 #include "core/Random.h"
 #include "noise/SimplexNoise.h"
-#include "cubiquity/PolyVox/AStarPathfinder.h"
-#include "cubiquity/PolyVox/CubicSurfaceExtractor.h"
-#include "cubiquity/PolyVox/MarchingCubesSurfaceExtractor.h"
-#include "cubiquity/PolyVox/AmbientOcclusionCalculator.h"
+#include "polyvox/AStarPathfinder.h"
+#include "polyvox/CubicSurfaceExtractor.h"
+#include "polyvox/AmbientOcclusionCalculator.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "cubiquity/PolyVox/RawVolume.h"
+#include "polyvox/RawVolume.h"
 #include <SDL.h>
 #include <zlib.h>
 
@@ -149,11 +148,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 			locked([&] () {
 				// calculate ao
 				calculateAO(region);
-#if 0
-				data.mesh = PolyVox::decodeMesh(PolyVox::extractMarchingCubesMesh(_volumeData, region));
-#else
 				data.mesh = PolyVox::decodeMesh(PolyVox::extractCubicMesh(_volumeData, region, IsQuadNeeded(), true));
-#endif
 			});
 		}
 

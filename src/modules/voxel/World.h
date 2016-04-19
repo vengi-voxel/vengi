@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cubiquity/PolyVox/Mesh.h"
+#include "polyvox/Mesh.h"
 #include <glm/glm.hpp>
 #include <memory>
 #include <unordered_set>

@@ -1,3 +1,2 @@
 fips_add_subdirectory(shadertool)
 fips_add_subdirectory(shapetool)
-fips_add_subdirectory(cubiquitytool)

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "cubiquity/PolyVox/MaterialDensityPair.h"
-#include "cubiquity/PolyVox/Mesh.h"
-#include "cubiquity/PolyVox/Vertex.h"
-#include "cubiquity/PolyVox/CubicSurfaceExtractor.h"
+#include "polyvox/MaterialDensityPair.h"
+#include "polyvox/Mesh.h"
+#include "polyvox/Vertex.h"
+#include "polyvox/CubicSurfaceExtractor.h"
 #include <glm/glm.hpp>
 #include <vector>
 

@@ -6,7 +6,7 @@ fips_begin_module(voxel)
 		WorldData.h
 		Voxel.h
 	)
-	fips_deps(core io noise zlib)
+	fips_deps(core io polyvox noise zlib)
 fips_end_module()
 
 gtest_suite_files(tests tests/WorldTest.cpp)

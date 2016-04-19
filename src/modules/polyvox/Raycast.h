@@ -107,12 +107,12 @@ RaycastResult raycastWithEndpoints(VolumeType* volData, const Vector3DFloat& v3d
 	//The doRaycast function is assuming that it is iterating over the areas defined between
 	//voxels. We actually want to define the areas as being centered on voxels (as this is
 	//what the CubicSurfaceExtractor generates). We add 0.5 here to adjust for this.
-	const float x1 = v3dStart.getX() + 0.5f;
-	const float y1 = v3dStart.getY() + 0.5f;
-	const float z1 = v3dStart.getZ() + 0.5f;
-	const float x2 = v3dEnd.getX() + 0.5f;
-	const float y2 = v3dEnd.getY() + 0.5f;
-	const float z2 = v3dEnd.getZ() + 0.5f;
+	const float x1 = v3dStart.x + 0.5f;
+	const float y1 = v3dStart.y + 0.5f;
+	const float z1 = v3dStart.z + 0.5f;
+	const float x2 = v3dEnd.x + 0.5f;
+	const float y2 = v3dEnd.y + 0.5f;
+	const float z2 = v3dEnd.z + 0.5f;
 
 	int i = (int) floorf(x1);
 	int j = (int) floorf(y1);

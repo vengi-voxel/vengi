@@ -376,18 +376,18 @@ inline void Region::setUpperZ(int32_t iZ) {
  *  \param v3dLowerCorner The new position of the lower corner.
  */
 inline void Region::setLowerCorner(const Vector3DInt32& v3dLowerCorner) {
-	m_iLowerX = v3dLowerCorner.getX();
-	m_iLowerY = v3dLowerCorner.getY();
-	m_iLowerZ = v3dLowerCorner.getZ();
+	m_iLowerX = v3dLowerCorner.x;
+	m_iLowerY = v3dLowerCorner.y;
+	m_iLowerZ = v3dLowerCorner.z;
 }
 
 /**
  *  \param v3dUpperCorner The new position of the upper corner.
  */
 inline void Region::setUpperCorner(const Vector3DInt32& v3dUpperCorner) {
-	m_iUpperX = v3dUpperCorner.getX();
-	m_iUpperY = v3dUpperCorner.getY();
-	m_iUpperZ = v3dUpperCorner.getZ();
+	m_iUpperX = v3dUpperCorner.x;
+	m_iUpperY = v3dUpperCorner.y;
+	m_iUpperZ = v3dUpperCorner.z;
 }
 
 /**
@@ -425,7 +425,7 @@ inline void Region::accumulate(int32_t iX, int32_t iY, int32_t iZ) {
  * \param v3dPos The position to accumulate.
  */
 inline void Region::accumulate(const Vector3DInt32& v3dPos) {
-	accumulate(v3dPos.getX(), v3dPos.getY(), v3dPos.getZ());
+	accumulate(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
 /**
@@ -462,8 +462,8 @@ inline Region::Region() :
  * \param v3dUpperCorner The desired upper corner of the Region.
  */
 inline Region::Region(const Vector3DInt32& v3dLowerCorner, const Vector3DInt32& v3dUpperCorner) :
-		m_iLowerX(v3dLowerCorner.getX()), m_iLowerY(v3dLowerCorner.getY()), m_iLowerZ(v3dLowerCorner.getZ()), m_iUpperX(v3dUpperCorner.getX()), m_iUpperY(v3dUpperCorner.getY()), m_iUpperZ(
-				v3dUpperCorner.getZ()) {
+		m_iLowerX(v3dLowerCorner.x), m_iLowerY(v3dLowerCorner.y), m_iLowerZ(v3dLowerCorner.z), m_iUpperX(v3dUpperCorner.x), m_iUpperY(v3dUpperCorner.y), m_iUpperZ(
+				v3dUpperCorner.z) {
 }
 
 /**
@@ -522,7 +522,7 @@ inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) 
  * \param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(const Vector3DFloat& pos, float boundary) const {
-	return containsPoint(pos.getX(), pos.getY(), pos.getZ(), boundary);
+	return containsPoint(pos.x, pos.y, pos.z, boundary);
 }
 
 /**
@@ -547,7 +547,7 @@ inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t bo
  * \param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(const Vector3DInt32& pos, uint8_t boundary) const {
-	return containsPoint(pos.getX(), pos.getY(), pos.getZ(), boundary);
+	return containsPoint(pos.x, pos.y, pos.z, boundary);
 }
 
 /**
@@ -680,7 +680,7 @@ inline void Region::grow(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
  * \param v3dAmount The amount to grow by (one component for each direction).
  */
 inline void Region::grow(const Vector3DInt32& v3dAmount) {
-	grow(v3dAmount.getX(), v3dAmount.getY(), v3dAmount.getZ());
+	grow(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
 /**
@@ -722,7 +722,7 @@ inline void Region::shiftLowerCorner(int32_t iAmountX, int32_t iAmountY, int32_t
  * \param v3dAmount The amount to move the lower corner by.
  */
 inline void Region::shiftLowerCorner(const Vector3DInt32& v3dAmount) {
-	shiftLowerCorner(v3dAmount.getX(), v3dAmount.getY(), v3dAmount.getZ());
+	shiftLowerCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
 /**
@@ -740,7 +740,7 @@ inline void Region::shiftUpperCorner(int32_t iAmountX, int32_t iAmountY, int32_t
  * \param v3dAmount The amount to move the upper corner by.
  */
 inline void Region::shiftUpperCorner(const Vector3DInt32& v3dAmount) {
-	shiftUpperCorner(v3dAmount.getX(), v3dAmount.getY(), v3dAmount.getZ());
+	shiftUpperCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
 /**
@@ -781,7 +781,7 @@ inline void Region::shrink(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ)
  * \param v3dAmount The amount to shrink by (one component for each direction).
  */
 inline void Region::shrink(const Vector3DInt32& v3dAmount) {
-	shrink(v3dAmount.getX(), v3dAmount.getY(), v3dAmount.getZ());
+	shrink(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
 /**

@@ -327,7 +327,7 @@ VoxelType PagedVolume<VoxelType>::getVoxel(int32_t uXPos, int32_t uYPos, int32_t
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 VoxelType PagedVolume<VoxelType>::getVoxel(const Vector3DInt32& v3dPos) const {
-	return getVoxel(v3dPos.getX(), v3dPos.getY(), v3dPos.getZ());
+	return getVoxel(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -356,7 +356,7 @@ void PagedVolume<VoxelType>::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPo
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void PagedVolume<VoxelType>::setVoxel(const Vector3DInt32& v3dPos, VoxelType tValue) {
-	setVoxel(v3dPos.getX(), v3dPos.getY(), v3dPos.getZ(), tValue);
+	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -366,15 +366,11 @@ void PagedVolume<VoxelType>::setVoxel(const Vector3DInt32& v3dPos, VoxelType tVa
 template<typename VoxelType>
 void PagedVolume<VoxelType>::prefetch(Region regPrefetch) {
 	// Convert the start and end positions into chunk space coordinates
-	Vector3DInt32 v3dStart;
-	for (int i = 0; i < 3; i++) {
-		v3dStart.setElement(i, regPrefetch.getLowerCorner().getElement(i) >> m_uChunkSideLengthPower);
-	}
+	const Vector3DInt32& lower = regPrefetch.getLowerCorner();
+	const Vector3DInt32 v3dStart {lower.x >> m_uChunkSideLengthPower, lower.y >> m_uChunkSideLengthPower, lower.z >> m_uChunkSideLengthPower};
 
-	Vector3DInt32 v3dEnd;
-	for (int i = 0; i < 3; i++) {
-		v3dEnd.setElement(i, regPrefetch.getUpperCorner().getElement(i) >> m_uChunkSideLengthPower);
-	}
+	const Vector3DInt32& upper = regPrefetch.getUpperCorner();
+	const Vector3DInt32 v3dEnd {upper.x >> m_uChunkSideLengthPower, upper.y >> m_uChunkSideLengthPower, upper.z >> m_uChunkSideLengthPower};
 
 	// Ensure we don't page in more chunks than the volume can hold.
 	Region region(v3dStart, v3dEnd);
@@ -385,9 +381,9 @@ void PagedVolume<VoxelType>::prefetch(Region regPrefetch) {
 	uNoOfChunks = std::min(uNoOfChunks, m_uChunkCountLimit);
 
 	// Loops over the specified positions and touch the corresponding chunks.
-	for (int32_t x = v3dStart.getX(); x <= v3dEnd.getX(); x++) {
-		for (int32_t y = v3dStart.getY(); y <= v3dEnd.getY(); y++) {
-			for (int32_t z = v3dStart.getZ(); z <= v3dEnd.getZ(); z++) {
+	for (int32_t x = v3dStart.x; x <= v3dEnd.x; x++) {
+		for (int32_t y = v3dStart.y; y <= v3dEnd.y; y++) {
+			for (int32_t z = v3dStart.z; z <= v3dEnd.z; z++) {
 				getChunk(x, y, z);
 			}
 		}
@@ -435,7 +431,7 @@ typename PagedVolume<VoxelType>::Chunk* PagedVolume<VoxelType>::getChunk(int32_t
 	do {
 		if (m_arrayChunks[iIndex]) {
 			Vector3DInt32& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
-			if (entryPos.getX() == uChunkX && entryPos.getY() == uChunkY && entryPos.getZ() == uChunkZ) {
+			if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
 				pChunk = m_arrayChunks[iIndex].get();
 				pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
 				break;
@@ -592,7 +588,7 @@ VoxelType PagedVolume<VoxelType>::Chunk::getVoxel(uint32_t uXPos, uint32_t uYPos
 
 template<typename VoxelType>
 VoxelType PagedVolume<VoxelType>::Chunk::getVoxel(const Vector3DUint16& v3dPos) const {
-	return getVoxel(v3dPos.getX(), v3dPos.getY(), v3dPos.getZ());
+	return getVoxel(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
 template<typename VoxelType>
@@ -611,7 +607,7 @@ void PagedVolume<VoxelType>::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uin
 
 template<typename VoxelType>
 void PagedVolume<VoxelType>::Chunk::setVoxel(const Vector3DUint16& v3dPos, VoxelType tValue) {
-	setVoxel(v3dPos.getX(), v3dPos.getY(), v3dPos.getZ(), tValue);
+	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
 
 template<typename VoxelType>
@@ -733,7 +729,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::getVoxel(void) const {
 
 template<typename VoxelType>
 void PagedVolume<VoxelType>::Sampler::setPosition(const Vector3DInt32& v3dNewPos) {
-	setPosition(v3dNewPos.getX(), v3dNewPos.getY(), v3dNewPos.getZ());
+	setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
 }
 
 template<typename VoxelType>

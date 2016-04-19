@@ -268,7 +268,7 @@ VoxelType RawVolume<VoxelType>::getVoxel(int32_t uXPos, int32_t uYPos, int32_t u
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 VoxelType RawVolume<VoxelType>::getVoxel(const Vector3DInt32& v3dPos) const {
-	return getVoxel(v3dPos.getX(), v3dPos.getY(), v3dPos.getZ());
+	return getVoxel(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -292,9 +292,9 @@ void RawVolume<VoxelType>::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos,
 	}
 
 	const Vector3DInt32& v3dLowerCorner = this->m_regValidRegion.getLowerCorner();
-	int32_t iLocalXPos = uXPos - v3dLowerCorner.getX();
-	int32_t iLocalYPos = uYPos - v3dLowerCorner.getY();
-	int32_t iLocalZPos = uZPos - v3dLowerCorner.getZ();
+	int32_t iLocalXPos = uXPos - v3dLowerCorner.x;
+	int32_t iLocalYPos = uYPos - v3dLowerCorner.y;
+	int32_t iLocalZPos = uZPos - v3dLowerCorner.z;
 
 	m_pData[iLocalXPos + iLocalYPos * this->getWidth() + iLocalZPos * this->getWidth() * this->getHeight()] = tValue;
 }
@@ -305,7 +305,7 @@ void RawVolume<VoxelType>::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos,
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
 void RawVolume<VoxelType>::setVoxel(const Vector3DInt32& v3dPos, VoxelType tValue) {
-	setVoxel(v3dPos.getX(), v3dPos.getY(), v3dPos.getZ(), tValue);
+	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -372,7 +372,7 @@ bool inline RawVolume<VoxelType>::Sampler::isCurrentPositionValid(void) const {
 
 template<typename VoxelType>
 void RawVolume<VoxelType>::Sampler::setPosition(const Vector3DInt32& v3dNewPos) {
-	setPosition(v3dNewPos.getX(), v3dNewPos.getY(), v3dNewPos.getZ());
+	setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
 }
 
 template<typename VoxelType>
@@ -387,9 +387,9 @@ void RawVolume<VoxelType>::Sampler::setPosition(int32_t xPos, int32_t yPos, int3
 	// Then we update the voxel pointer
 	if (this->isCurrentPositionValid()) {
 		const Vector3DInt32& v3dLowerCorner = this->mVolume->m_regValidRegion.getLowerCorner();
-		const int32_t iLocalXPos = xPos - v3dLowerCorner.getX();
-		const int32_t iLocalYPos = yPos - v3dLowerCorner.getY();
-		const int32_t iLocalZPos = zPos - v3dLowerCorner.getZ();
+		const int32_t iLocalXPos = xPos - v3dLowerCorner.x;
+		const int32_t iLocalYPos = yPos - v3dLowerCorner.y;
+		const int32_t iLocalZPos = zPos - v3dLowerCorner.z;
 		const int32_t uVoxelIndex = iLocalXPos + iLocalYPos * this->mVolume->getWidth() + iLocalZPos * this->mVolume->getWidth() * this->mVolume->getHeight();
 
 		mCurrentVoxel = this->mVolume->m_pData + uVoxelIndex;

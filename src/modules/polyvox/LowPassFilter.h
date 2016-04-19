@@ -126,9 +126,9 @@ void LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::executeSAT()
 	//Clear to zeros (necessary?)
 	//FIXME - use Volume::fill() method. Implemented in base class as below
 	//but with optimised implementations in subclasses?
-	for (int32_t z = satLowerCorner.getZ(); z <= satUpperCorner.getZ(); z++) {
-		for (int32_t y = satLowerCorner.getY(); y <= satUpperCorner.getY(); y++) {
-			for (int32_t x = satLowerCorner.getX(); x <= satUpperCorner.getX(); x++) {
+	for (int32_t z = satLowerCorner.z; z <= satUpperCorner.z; z++) {
+		for (int32_t y = satLowerCorner.y; y <= satUpperCorner.y; y++) {
+			for (int32_t x = satLowerCorner.x; x <= satUpperCorner.x; x++) {
 				satVolume.setVoxel(x, y, z, 0);
 			}
 		}
@@ -159,11 +159,11 @@ void LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::executeSAT()
 	} while (satIterCont.moveForward());
 
 	//Build SAT in three passes
-	/*for(int32_t z = satLowerCorner.getZ(); z <= satUpperCorner.getZ(); z++)
+	/*for(int32_t z = satLowerCorner.z; z <= satUpperCorner.z; z++)
 	 {
-	 for(int32_t y = satLowerCorner.getY(); y <= satUpperCorner.getY(); y++)
+	 for(int32_t y = satLowerCorner.y; y <= satUpperCorner.y; y++)
 	 {
-	 for(int32_t x = satLowerCorner.getX(); x <= satUpperCorner.getX(); x++)
+	 for(int32_t x = satLowerCorner.x; x <= satUpperCorner.x; x++)
 	 {
 	 AccumulationType previousSum = static_cast<AccumulationType>(satVolume.getVoxel(x-1,y,z));
 	 AccumulationType currentVal = static_cast<AccumulationType>(m_pVolSrc->getVoxel(x,y,z));
@@ -173,9 +173,9 @@ void LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::executeSAT()
 	 }
 	 }*/
 
-	for (int32_t z = satLowerCorner.getZ(); z <= satUpperCorner.getZ(); z++) {
-		for (int32_t y = satLowerCorner.getY(); y <= satUpperCorner.getY(); y++) {
-			for (int32_t x = satLowerCorner.getX(); x <= satUpperCorner.getX(); x++) {
+	for (int32_t z = satLowerCorner.z; z <= satUpperCorner.z; z++) {
+		for (int32_t y = satLowerCorner.y; y <= satUpperCorner.y; y++) {
+			for (int32_t x = satLowerCorner.x; x <= satUpperCorner.x; x++) {
 				AccumulationType previousSum = static_cast<AccumulationType>(satVolume.getVoxel(x, y - 1, z));
 				AccumulationType currentSum = static_cast<AccumulationType>(satVolume.getVoxel(x, y, z));
 
@@ -184,9 +184,9 @@ void LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::executeSAT()
 		}
 	}
 
-	for (int32_t z = satLowerCorner.getZ(); z <= satUpperCorner.getZ(); z++) {
-		for (int32_t y = satLowerCorner.getY(); y <= satUpperCorner.getY(); y++) {
-			for (int32_t x = satLowerCorner.getX(); x <= satUpperCorner.getX(); x++) {
+	for (int32_t z = satLowerCorner.z; z <= satUpperCorner.z; z++) {
+		for (int32_t y = satLowerCorner.y; y <= satUpperCorner.y; y++) {
+			for (int32_t x = satLowerCorner.x; x <= satUpperCorner.x; x++) {
 				AccumulationType previousSum = static_cast<AccumulationType>(satVolume.getVoxel(x, y, z - 1));
 				AccumulationType currentSum = static_cast<AccumulationType>(satVolume.getVoxel(x, y, z));
 
@@ -201,9 +201,9 @@ void LowPassFilter<SrcVolumeType, DstVolumeType, AccumulationType>::executeSAT()
 
 	const Vector3DInt32& v3dSrcLowerCorner = m_regSrc.getLowerCorner();
 
-	for (int32_t iDstZ = v3dDstLowerCorner.getZ(), iSrcZ = v3dSrcLowerCorner.getZ(); iDstZ <= v3dDstUpperCorner.getZ(); iDstZ++, iSrcZ++) {
-		for (int32_t iDstY = v3dDstLowerCorner.getY(), iSrcY = v3dSrcLowerCorner.getY(); iDstY <= v3dDstUpperCorner.getY(); iDstY++, iSrcY++) {
-			for (int32_t iDstX = v3dDstLowerCorner.getX(), iSrcX = v3dSrcLowerCorner.getX(); iDstX <= v3dDstUpperCorner.getX(); iDstX++, iSrcX++) {
+	for (int32_t iDstZ = v3dDstLowerCorner.z, iSrcZ = v3dSrcLowerCorner.z; iDstZ <= v3dDstUpperCorner.z; iDstZ++, iSrcZ++) {
+		for (int32_t iDstY = v3dDstLowerCorner.y, iSrcY = v3dSrcLowerCorner.y; iDstY <= v3dDstUpperCorner.y; iDstY++, iSrcY++) {
+			for (int32_t iDstX = v3dDstLowerCorner.x, iSrcX = v3dSrcLowerCorner.x; iDstX <= v3dDstUpperCorner.x; iDstX++, iSrcX++) {
 				int32_t satLowerX = iSrcX - border - 1;
 				int32_t satLowerY = iSrcY - border - 1;
 				int32_t satLowerZ = iSrcZ - border - 1;

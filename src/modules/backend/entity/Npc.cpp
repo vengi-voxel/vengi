@@ -2,7 +2,7 @@
 #include "EntityStorage.h"
 #include "backend/poi/PoiProvider.h"
 #include "voxel/World.h"
-#include "cubiquity/PolyVox/AStarPathfinder.h"
+#include "polyvox/AStarPathfinder.h"
 
 namespace backend {
 

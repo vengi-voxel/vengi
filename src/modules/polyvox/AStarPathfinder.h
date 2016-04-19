@@ -189,8 +189,8 @@ void AStarPathfinder<VolumeType>::execute() {
 	_params.result->clear();
 
 	//Iterators to start and end node.
-	AllNodesContainer::iterator startNode = _allNodes.insert(Node(_params.start.getX(), _params.start.getY(), _params.start.getZ())).first;
-	AllNodesContainer::iterator endNode = _allNodes.insert(Node(_params.end.getX(), _params.end.getY(), _params.end.getZ())).first;
+	AllNodesContainer::iterator startNode = _allNodes.insert(Node(_params.start.x, _params.start.y, _params.start.z)).first;
+	AllNodesContainer::iterator endNode = _allNodes.insert(Node(_params.end.x, _params.end.y, _params.end.z)).first;
 
 	//Regarding the const_cast - normally you should not modify an object which is in an sdt::set.
 	//The reason is that objects in a set are stored sorted in a tree so they can be accessed quickly,
@@ -308,7 +308,7 @@ void AStarPathfinder<VolumeType>::processNeighbour(const Vector3DInt32& neighbou
 
 	float cost = neighbourGVal;
 
-	std::pair<AllNodesContainer::iterator, bool> insertResult = _allNodes.insert(Node(neighbourPos.getX(), neighbourPos.getY(), neighbourPos.getZ()));
+	std::pair<AllNodesContainer::iterator, bool> insertResult = _allNodes.insert(Node(neighbourPos.x, neighbourPos.y, neighbourPos.z));
 	AllNodesContainer::iterator neighbour = insertResult.first;
 
 	if (insertResult.second == true) //New node, compute h.
@@ -351,7 +351,7 @@ void AStarPathfinder<VolumeType>::processNeighbour(const Vector3DInt32& neighbou
 template<typename VolumeType>
 float AStarPathfinder<VolumeType>::SixConnectedCost(const Vector3DInt32& a, const Vector3DInt32& b) {
 	//This is the only heuristic I'm sure of - just use the manhatten distance for the 6-connected case.
-	uint32_t faceSteps = std::abs(a.getX() - b.getX()) + std::abs(a.getY() - b.getY()) + std::abs(a.getZ() - b.getZ());
+	uint32_t faceSteps = std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
 
 	return faceSteps * 1.0f;
 }
@@ -370,9 +370,9 @@ float AStarPathfinder<VolumeType>::TwentySixConnectedCost(const Vector3DInt32& a
 	//Can't say I'm certain about this heuristic - if anyone has
 	//a better idea of what it should be then please let me know.
 	uint32_t array[3];
-	array[0] = std::abs(a.getX() - b.getX());
-	array[1] = std::abs(a.getY() - b.getY());
-	array[2] = std::abs(a.getZ() - b.getZ());
+	array[0] = std::abs(a.x - b.x);
+	array[1] = std::abs(a.y - b.y);
+	array[2] = std::abs(a.z - b.z);
 
 	//Maybe this is better implemented directly
 	//using three compares and two swaps... but not
@@ -424,9 +424,9 @@ float AStarPathfinder<VolumeType>::computeH(const Vector3DInt32& a, const Vector
 	//sorting inside the std::set works (i.e. one system swaps values which are identical
 	//while the other one doesn't - both approaches are valid). For the same reason we want
 	//to make sure that position (x,y,z) has a differnt hash from e.g. position (x,z,y).
-	const uint32_t aX = (a.getX() << 16) & 0x00FF0000;
-	const uint32_t aY = (a.getY() << 8) & 0x0000FF00;
-	const uint32_t aZ = (a.getZ()) & 0x000000FF;
+	const uint32_t aX = (a.x << 16) & 0x00FF0000;
+	const uint32_t aY = (a.y << 8) & 0x0000FF00;
+	const uint32_t aZ = (a.z) & 0x000000FF;
 	uint32_t hashVal = hash(aX | aY | aZ);
 
 	//Stop hashVal going over 65535, and divide by 1000000 to make sure it is small.

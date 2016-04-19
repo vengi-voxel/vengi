@@ -88,7 +88,7 @@ struct IndexAndMaterial {
 ////////////////////////////////////////////////////////////////////////////////
 
 inline Vector3DFloat decodePosition(const Vector3DUint8& encodedPosition) {
-	Vector3DFloat result(encodedPosition.getX(), encodedPosition.getY(), encodedPosition.getZ());
+	Vector3DFloat result(encodedPosition.x, encodedPosition.y, encodedPosition.z);
 	result -= 0.5f; // Apply the required offset
 	return result;
 }
@@ -97,7 +97,7 @@ template<typename DataType>
 Vertex<DataType> decodeVertex(const CubicVertex<DataType>& cubicVertex) {
 	Vertex<DataType> result;
 	result.position = decodePosition(cubicVertex.encodedPosition);
-	result.normal.setElements(0.0f, 0.0f, 0.0f); // Currently not calculated
+	result.normal = {0.0f, 0.0f, 0.0f}; // Currently not calculated
 	result.data = cubicVertex.data; // Data is not encoded
 	return result;
 }
@@ -170,7 +170,7 @@ int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, typename VolumeType::Vo
 		if (rEntry.iIndex == -1) {
 			//No vertices matched and we've now hit an empty space. Fill it by creating a vertex. The 0.5f offset is because vertices set between voxels in order to build cubes around them.
 			CubicVertex<typename VolumeType::VoxelType> cubicVertex;
-			cubicVertex.encodedPosition.setElements(static_cast<uint8_t>(uX), static_cast<uint8_t>(uY), static_cast<uint8_t>(uZ));
+			cubicVertex.encodedPosition = { static_cast<uint8_t>(uX), static_cast<uint8_t>(uY), static_cast<uint8_t>(uZ) };
 			cubicVertex.data = uMaterialIn;
 			rEntry.iIndex = m_meshCurrent->addVertex(cubicVertex);
 			rEntry.uMaterial = uMaterialIn;
