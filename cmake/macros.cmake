@@ -81,3 +81,51 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 	find_package_handle_standard_args(${PREFIX} REQUIRED_VARS ${PREFIX}_INCLUDE_DIRS ${PREFIX}_LIBRARIES)
 	mark_as_advanced(${PREFIX}_INCLUDE_DIRS ${PREFIX}_LIBRARIES)
 endmacro()
+
+#
+# Add external dependency. It will trigger a find_package and use the system wide install if found
+#
+# parameters:
+# PUBLICHEADER: optional
+# LIB: the name of the lib. Must match the FindXXX.cmake module and the pkg-config name of the lib
+# GCCCFLAGS: optional
+# GCCLINKERFLAGS: optional
+# SRCS: the list of source files for the bundled lib
+# DEFINES: a list of defines (without -D or /D)
+#
+macro(engine_add_library)
+	set(_OPTIONS_ARGS)
+	set(_ONE_VALUE_ARGS LIB GCCCFLAGS LINKERFLAGS PUBLICHEADER)
+	set(_MULTI_VALUE_ARGS SRCS DEFINES)
+
+	cmake_parse_arguments(_ADDLIB "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
+
+	if (NOT _ADDLIB_LIB)
+		message(FATAL_ERROR "engine_add_library requires the LIB argument")
+	endif()
+	if (NOT _ADDLIB_SRCS)
+		message(FATAL_ERROR "engine_add_library requires the SRCS argument")
+	endif()
+	if (NOT _ADDLIB_PUBLICHEADER)
+		set(_ADDLIB_PUBLICHEADER PRIVATE)
+	endif()
+
+	find_package(${_ADDLIB_LIB})
+	string(TOUPPER ${_ADDLIB_LIB} PREFIX)
+	if (${PREFIX}_FOUND)
+		add_library(${_ADDLIB_LIB} INTERFACE)
+		target_link_libraries(${_ADDLIB_LIB} INTERFACE ${${PREFIX}_LIBRARIES})
+		if (${PREFIX}_INCLUDE_DIRS)
+			set_property(TARGET ${_ADDLIB_LIB} APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${${PREFIX}_INCLUDE_DIRS})
+		endif()
+	else()
+		add_library(${_ADDLIB_LIB} STATIC ${_ADDLIB_SRCS})
+		target_include_directories(${_ADDLIB_LIB} ${_ADDLIB_PUBLICHEADER} ${ROOT_DIR}/src/libs/${_ADDLIB_LIB})
+		set_target_properties(${_ADDLIB_LIB} PROPERTIES COMPILE_DEFINITIONS "${_ADDLIB_DEFINES}")
+		if (NOT MSVC)
+			set_target_properties(${_ADDLIB_LIB} PROPERTIES COMPILE_FLAGS "${_ADDLIB_GCCCFLAGS}")
+			set_target_properties(${_ADDLIB_LIB} PROPERTIES LINK_FLAGS "${_ADDLIB_GCCLINKERFLAGS}")
+		endif()
+		set_target_properties(${_ADDLIB_LIB} PROPERTIES FOLDER ${_ADDLIB_LIB})
+	endif()
+endmacro()
