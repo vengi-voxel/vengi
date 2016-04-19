@@ -66,7 +66,7 @@ public:
 	/// Volumes can be pretty huge (millions of voxels) and processing each one of these
 	/// can take a long time. In A* terminology each voxel is a node, and this property
 	/// controls the maximum number of nodes that will be considered when finding the path,
-	/// before giving up and throwing an exception because a path can't be found.
+	/// before giving up
 	uint32_t maxNumberOfNodes;
 
 	/// This function is called to determine whether the path can pass though a given voxel. The
@@ -104,8 +104,7 @@ public:
 ///
 /// Next you call the execute() function and wait for it to return. If a path is
 /// found then this is stored in the list which was set as the 'result' field of
-/// the AStarPathfinderParams. If a path cannot be found then an exception of type
-/// std::runtime_error is thrown.
+/// the AStarPathfinderParams.
 ///
 /// @sa AStarPathfinderParams
 ////////////////////////////////////////////////////////////////////////////////
@@ -142,8 +141,8 @@ private:
 // Useful constants
 ////////////////////////////////////////////////////////////////////////////////
 const float sqrt_1 = 1.0f;
-const float sqrt_2 = 1.4143f;
-const float sqrt_3 = 1.7321f;
+const float sqrt_2 = glm::root_two<float>();
+const float sqrt_3 = glm::root_three<float>();
 
 const glm::ivec3 arrayPathfinderFaces[6] = { glm::ivec3(0, 0, -1), glm::ivec3(0, 0, +1), glm::ivec3(0, -1, 0), glm::ivec3(0, +1, 0), glm::ivec3(-1, 0, 0),
 		glm::ivec3(+1, 0, 0) };
