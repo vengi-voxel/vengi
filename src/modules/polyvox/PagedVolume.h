@@ -42,8 +42,8 @@ public:
 		Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager = nullptr);
 		~Chunk();
 
-		VoxelType* getData(void) const;
-		uint32_t getDataSizeInBytes(void) const;
+		VoxelType* getData() const;
+		uint32_t getDataSizeInBytes() const;
 
 		VoxelType getVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos) const;
 		VoxelType getVoxel(const glm::i16vec3& v3dPos) const;
@@ -51,8 +51,8 @@ public:
 		void setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, VoxelType tValue);
 		void setVoxel(const glm::i16vec3& v3dPos, VoxelType tValue);
 
-		void changeLinearOrderingToMorton(void);
-		void changeMortonOrderingToLinear(void);
+		void changeLinearOrderingToMorton();
+		void changeMortonOrderingToLinear();
 
 	private:
 		/// Private copy constructor to prevent accisdental copying
@@ -68,7 +68,7 @@ public:
 		// a compressed chunk has to be paged back to disk, or whether they can just be discarded.
 		bool m_bDataModified;
 
-		uint32_t calculateSizeInBytes(void);
+		uint32_t calculateSizeInBytes();
 		static uint32_t calculateSizeInBytes(uint32_t uSideLength);
 
 		VoxelType* m_tData;
@@ -116,49 +116,49 @@ public:
 		Sampler(PagedVolume<VoxelType>* volume);
 		~Sampler();
 
-		inline VoxelType getVoxel(void) const;
+		inline VoxelType getVoxel() const;
 
 		void setPosition(const glm::ivec3& v3dNewPos);
 		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
 		inline bool setVoxel(VoxelType tValue);
 
-		void movePositiveX(void);
-		void movePositiveY(void);
-		void movePositiveZ(void);
+		void movePositiveX();
+		void movePositiveY();
+		void movePositiveZ();
 
-		void moveNegativeX(void);
-		void moveNegativeY(void);
-		void moveNegativeZ(void);
+		void moveNegativeX();
+		void moveNegativeY();
+		void moveNegativeZ();
 
-		inline VoxelType peekVoxel1nx1ny1nz(void) const;
-		inline VoxelType peekVoxel1nx1ny0pz(void) const;
-		inline VoxelType peekVoxel1nx1ny1pz(void) const;
-		inline VoxelType peekVoxel1nx0py1nz(void) const;
-		inline VoxelType peekVoxel1nx0py0pz(void) const;
-		inline VoxelType peekVoxel1nx0py1pz(void) const;
-		inline VoxelType peekVoxel1nx1py1nz(void) const;
-		inline VoxelType peekVoxel1nx1py0pz(void) const;
-		inline VoxelType peekVoxel1nx1py1pz(void) const;
+		inline VoxelType peekVoxel1nx1ny1nz() const;
+		inline VoxelType peekVoxel1nx1ny0pz() const;
+		inline VoxelType peekVoxel1nx1ny1pz() const;
+		inline VoxelType peekVoxel1nx0py1nz() const;
+		inline VoxelType peekVoxel1nx0py0pz() const;
+		inline VoxelType peekVoxel1nx0py1pz() const;
+		inline VoxelType peekVoxel1nx1py1nz() const;
+		inline VoxelType peekVoxel1nx1py0pz() const;
+		inline VoxelType peekVoxel1nx1py1pz() const;
 
-		inline VoxelType peekVoxel0px1ny1nz(void) const;
-		inline VoxelType peekVoxel0px1ny0pz(void) const;
-		inline VoxelType peekVoxel0px1ny1pz(void) const;
-		inline VoxelType peekVoxel0px0py1nz(void) const;
-		inline VoxelType peekVoxel0px0py0pz(void) const;
-		inline VoxelType peekVoxel0px0py1pz(void) const;
-		inline VoxelType peekVoxel0px1py1nz(void) const;
-		inline VoxelType peekVoxel0px1py0pz(void) const;
-		inline VoxelType peekVoxel0px1py1pz(void) const;
+		inline VoxelType peekVoxel0px1ny1nz() const;
+		inline VoxelType peekVoxel0px1ny0pz() const;
+		inline VoxelType peekVoxel0px1ny1pz() const;
+		inline VoxelType peekVoxel0px0py1nz() const;
+		inline VoxelType peekVoxel0px0py0pz() const;
+		inline VoxelType peekVoxel0px0py1pz() const;
+		inline VoxelType peekVoxel0px1py1nz() const;
+		inline VoxelType peekVoxel0px1py0pz() const;
+		inline VoxelType peekVoxel0px1py1pz() const;
 
-		inline VoxelType peekVoxel1px1ny1nz(void) const;
-		inline VoxelType peekVoxel1px1ny0pz(void) const;
-		inline VoxelType peekVoxel1px1ny1pz(void) const;
-		inline VoxelType peekVoxel1px0py1nz(void) const;
-		inline VoxelType peekVoxel1px0py0pz(void) const;
-		inline VoxelType peekVoxel1px0py1pz(void) const;
-		inline VoxelType peekVoxel1px1py1nz(void) const;
-		inline VoxelType peekVoxel1px1py0pz(void) const;
-		inline VoxelType peekVoxel1px1py1pz(void) const;
+		inline VoxelType peekVoxel1px1ny1nz() const;
+		inline VoxelType peekVoxel1px1ny0pz() const;
+		inline VoxelType peekVoxel1px1ny1pz() const;
+		inline VoxelType peekVoxel1px0py1nz() const;
+		inline VoxelType peekVoxel1px0py0pz() const;
+		inline VoxelType peekVoxel1px0py1pz() const;
+		inline VoxelType peekVoxel1px1py1nz() const;
+		inline VoxelType peekVoxel1px1py0pz() const;
+		inline VoxelType peekVoxel1px1py1pz() const;
 
 	private:
 		//Other current position information
@@ -196,7 +196,7 @@ public:
 	void flushAll();
 
 	/// Calculates approximatly how many bytes of memory the volume is currently using.
-	uint32_t calculateSizeInBytes(void);
+	uint32_t calculateSizeInBytes();
 
 protected:
 	/// Copy constructor
@@ -497,7 +497,7 @@ typename PagedVolume<VoxelType>::Chunk* PagedVolume<VoxelType>::getChunk(int32_t
 /// Calculate the memory usage of the volume.
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-uint32_t PagedVolume<VoxelType>::calculateSizeInBytes(void) {
+uint32_t PagedVolume<VoxelType>::calculateSizeInBytes() {
 	uint32_t uChunkCount = 0;
 	for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
 		if (m_arrayChunks[uIndex]) {
@@ -556,12 +556,12 @@ PagedVolume<VoxelType>::Chunk::~Chunk() {
 }
 
 template<typename VoxelType>
-VoxelType* PagedVolume<VoxelType>::Chunk::getData(void) const {
+VoxelType* PagedVolume<VoxelType>::Chunk::getData() const {
 	return m_tData;
 }
 
 template<typename VoxelType>
-uint32_t PagedVolume<VoxelType>::Chunk::getDataSizeInBytes(void) const {
+uint32_t PagedVolume<VoxelType>::Chunk::getDataSizeInBytes() const {
 	return m_uSideLength * m_uSideLength * m_uSideLength * sizeof(VoxelType);
 }
 
@@ -603,7 +603,7 @@ void PagedVolume<VoxelType>::Chunk::setVoxel(const glm::i16vec3& v3dPos, VoxelTy
 }
 
 template<typename VoxelType>
-uint32_t PagedVolume<VoxelType>::Chunk::calculateSizeInBytes(void) {
+uint32_t PagedVolume<VoxelType>::Chunk::calculateSizeInBytes() {
 	// Call through to the static version
 	return calculateSizeInBytes(m_uSideLength);
 }
@@ -621,7 +621,7 @@ uint32_t PagedVolume<VoxelType>::Chunk::calculateSizeInBytes(uint32_t uSideLengt
 // if they load the data in by memcpy()ing it via the raw pointer. On the other hand, if they set the data using setVoxel()
 // then the ordering is automatically handled correctly.
 template<typename VoxelType>
-void PagedVolume<VoxelType>::Chunk::changeLinearOrderingToMorton(void) {
+void PagedVolume<VoxelType>::Chunk::changeLinearOrderingToMorton() {
 	VoxelType* pTempBuffer = new VoxelType[m_uSideLength * m_uSideLength * m_uSideLength];
 
 	// We should prehaps restructure this loop. From: https://fgiesen.wordpress.com/2011/01/17/texture-tiling-and-swizzling/
@@ -652,7 +652,7 @@ void PagedVolume<VoxelType>::Chunk::changeLinearOrderingToMorton(void) {
 // Like the above function, this is provided fot easing backwards compatibility. In Cubiquity we have some
 // old databases which use linear ordering, and we need to continue to save such data in linear order.
 template<typename VoxelType>
-void PagedVolume<VoxelType>::Chunk::changeMortonOrderingToLinear(void) {
+void PagedVolume<VoxelType>::Chunk::changeMortonOrderingToLinear() {
 	VoxelType* pTempBuffer = new VoxelType[m_uSideLength * m_uSideLength * m_uSideLength];
 	for (uint16_t z = 0; z < m_uSideLength; z++) {
 		for (uint16_t y = 0; y < m_uSideLength; y++) {
@@ -715,7 +715,7 @@ PagedVolume<VoxelType>::Sampler::~Sampler() {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::getVoxel(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::getVoxel() const {
 	return *mCurrentVoxel;
 }
 
@@ -754,7 +754,7 @@ bool PagedVolume<VoxelType>::Sampler::setVoxel(VoxelType tValue) {
 }
 
 template<typename VoxelType>
-void PagedVolume<VoxelType>::Sampler::movePositiveX(void) {
+void PagedVolume<VoxelType>::Sampler::movePositiveX() {
 	// Base version updates position and validity flags.
 	BaseVolume<VoxelType>::template Sampler<PagedVolume<VoxelType> >::movePositiveX();
 
@@ -770,7 +770,7 @@ void PagedVolume<VoxelType>::Sampler::movePositiveX(void) {
 }
 
 template<typename VoxelType>
-void PagedVolume<VoxelType>::Sampler::movePositiveY(void) {
+void PagedVolume<VoxelType>::Sampler::movePositiveY() {
 	// Base version updates position and validity flags.
 	BaseVolume<VoxelType>::template Sampler<PagedVolume<VoxelType> >::movePositiveY();
 
@@ -786,7 +786,7 @@ void PagedVolume<VoxelType>::Sampler::movePositiveY(void) {
 }
 
 template<typename VoxelType>
-void PagedVolume<VoxelType>::Sampler::movePositiveZ(void) {
+void PagedVolume<VoxelType>::Sampler::movePositiveZ() {
 	// Base version updates position and validity flags.
 	BaseVolume<VoxelType>::template Sampler<PagedVolume<VoxelType> >::movePositiveZ();
 
@@ -802,7 +802,7 @@ void PagedVolume<VoxelType>::Sampler::movePositiveZ(void) {
 }
 
 template<typename VoxelType>
-void PagedVolume<VoxelType>::Sampler::moveNegativeX(void) {
+void PagedVolume<VoxelType>::Sampler::moveNegativeX() {
 	// Base version updates position and validity flags.
 	BaseVolume<VoxelType>::template Sampler<PagedVolume<VoxelType> >::moveNegativeX();
 
@@ -818,7 +818,7 @@ void PagedVolume<VoxelType>::Sampler::moveNegativeX(void) {
 }
 
 template<typename VoxelType>
-void PagedVolume<VoxelType>::Sampler::moveNegativeY(void) {
+void PagedVolume<VoxelType>::Sampler::moveNegativeY() {
 	// Base version updates position and validity flags.
 	BaseVolume<VoxelType>::template Sampler<PagedVolume<VoxelType> >::moveNegativeY();
 
@@ -834,7 +834,7 @@ void PagedVolume<VoxelType>::Sampler::moveNegativeY(void) {
 }
 
 template<typename VoxelType>
-void PagedVolume<VoxelType>::Sampler::moveNegativeZ(void) {
+void PagedVolume<VoxelType>::Sampler::moveNegativeZ() {
 	// Base version updates position and validity flags.
 	BaseVolume<VoxelType>::template Sampler<PagedVolume<VoxelType> >::moveNegativeZ();
 
@@ -850,7 +850,7 @@ void PagedVolume<VoxelType>::Sampler::moveNegativeZ(void) {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1ny1nz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1ny1nz() const {
 	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + NEG_X_DELTA + NEG_Y_DELTA + NEG_Z_DELTA);
 	}
@@ -858,7 +858,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1ny1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1ny0pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1ny0pz() const {
 	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk)) {
 		return *(mCurrentVoxel + NEG_X_DELTA + NEG_Y_DELTA);
 	}
@@ -866,7 +866,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1ny0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1ny1pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1ny1pz() const {
 	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + NEG_X_DELTA + NEG_Y_DELTA + POS_Z_DELTA);
 	}
@@ -874,7 +874,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1ny1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx0py1nz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx0py1nz() const {
 	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + NEG_X_DELTA + NEG_Z_DELTA);
 	}
@@ -882,7 +882,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx0py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx0py0pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx0py0pz() const {
 	if (CAN_GO_NEG_X(this->m_uXPosInChunk)) {
 		return *(mCurrentVoxel + NEG_X_DELTA);
 	}
@@ -890,7 +890,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx0py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx0py1pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx0py1pz() const {
 	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + NEG_X_DELTA + POS_Z_DELTA);
 	}
@@ -898,7 +898,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx0py1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1py1nz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1py1nz() const {
 	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + NEG_X_DELTA + POS_Y_DELTA + NEG_Z_DELTA);
 	}
@@ -906,7 +906,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1py0pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1py0pz() const {
 	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk)) {
 		return *(mCurrentVoxel + NEG_X_DELTA + POS_Y_DELTA);
 	}
@@ -914,7 +914,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1py1pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1py1pz() const {
 	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + NEG_X_DELTA + POS_Y_DELTA + POS_Z_DELTA);
 	}
@@ -924,7 +924,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1nx1py1pz(void) const {
 //////////////////////////////////////////////////////////////////////////
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1ny1nz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1ny1nz() const {
 	if (CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + NEG_Y_DELTA + NEG_Z_DELTA);
 	}
@@ -932,7 +932,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1ny1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1ny0pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1ny0pz() const {
 	if (CAN_GO_NEG_Y(this->m_uYPosInChunk)) {
 		return *(mCurrentVoxel + NEG_Y_DELTA);
 	}
@@ -940,7 +940,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1ny0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1ny1pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1ny1pz() const {
 	if (CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + NEG_Y_DELTA + POS_Z_DELTA);
 	}
@@ -948,7 +948,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1ny1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px0py1nz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px0py1nz() const {
 	if (CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + NEG_Z_DELTA);
 	}
@@ -956,12 +956,12 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px0py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px0py0pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px0py0pz() const {
 	return *mCurrentVoxel;
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px0py1pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px0py1pz() const {
 	if (CAN_GO_POS_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + POS_Z_DELTA);
 	}
@@ -969,7 +969,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px0py1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1py1nz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1py1nz() const {
 	if (CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + POS_Y_DELTA + NEG_Z_DELTA);
 	}
@@ -977,7 +977,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1py0pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1py0pz() const {
 	if (CAN_GO_POS_Y(this->m_uYPosInChunk)) {
 		return *(mCurrentVoxel + POS_Y_DELTA);
 	}
@@ -985,7 +985,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1py1pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1py1pz() const {
 	if (CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + POS_Y_DELTA + POS_Z_DELTA);
 	}
@@ -995,7 +995,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel0px1py1pz(void) const {
 //////////////////////////////////////////////////////////////////////////
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1ny1nz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1ny1nz() const {
 	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + POS_X_DELTA + NEG_Y_DELTA + NEG_Z_DELTA);
 	}
@@ -1003,7 +1003,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1ny1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1ny0pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1ny0pz() const {
 	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk)) {
 		return *(mCurrentVoxel + POS_X_DELTA + NEG_Y_DELTA);
 	}
@@ -1011,7 +1011,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1ny0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1ny1pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1ny1pz() const {
 	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + POS_X_DELTA + NEG_Y_DELTA + POS_Z_DELTA);
 	}
@@ -1019,7 +1019,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1ny1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px0py1nz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px0py1nz() const {
 	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + POS_X_DELTA + NEG_Z_DELTA);
 	}
@@ -1027,7 +1027,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px0py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px0py0pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px0py0pz() const {
 	if (CAN_GO_POS_X(this->m_uXPosInChunk)) {
 		return *(mCurrentVoxel + POS_X_DELTA);
 	}
@@ -1035,7 +1035,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px0py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px0py1pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px0py1pz() const {
 	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + POS_X_DELTA + POS_Z_DELTA);
 	}
@@ -1043,7 +1043,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px0py1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1py1nz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1py1nz() const {
 	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + POS_X_DELTA + POS_Y_DELTA + NEG_Z_DELTA);
 	}
@@ -1051,7 +1051,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1py0pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1py0pz() const {
 	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk)) {
 		return *(mCurrentVoxel + POS_X_DELTA + POS_Y_DELTA);
 	}
@@ -1059,7 +1059,7 @@ VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1py1pz(void) const {
+VoxelType PagedVolume<VoxelType>::Sampler::peekVoxel1px1py1pz() const {
 	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
 		return *(mCurrentVoxel + POS_X_DELTA + POS_Y_DELTA + POS_Z_DELTA);
 	}

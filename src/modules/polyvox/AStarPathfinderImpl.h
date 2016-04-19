@@ -57,7 +57,7 @@ struct Node {
 	float hVal;
 	Node* parent;
 
-	float f(void) const {
+	float f() const {
 		return gVal + hVal;
 	}
 };
@@ -83,11 +83,11 @@ public:
 	typedef std::vector<AllNodesContainer::iterator>::iterator iterator;
 
 public:
-	void clear(void) {
+	void clear() {
 		open.clear();
 	}
 
-	bool empty(void) const {
+	bool empty() const {
 		return open.empty();
 	}
 
@@ -96,11 +96,11 @@ public:
 		push_heap(open.begin(), open.end(), NodeSort());
 	}
 
-	AllNodesContainer::iterator getFirst(void) {
+	AllNodesContainer::iterator getFirst() {
 		return open[0];
 	}
 
-	void removeFirst(void) {
+	void removeFirst() {
 		pop_heap(open.begin(), open.end(), NodeSort());
 		open.pop_back();
 	}
@@ -110,11 +110,11 @@ public:
 		make_heap(open.begin(), open.end(), NodeSort());
 	}
 
-	iterator begin(void) {
+	iterator begin() {
 		return open.begin();
 	}
 
-	iterator end(void) {
+	iterator end() {
 		return open.end();
 	}
 
@@ -132,7 +132,7 @@ public:
 	typedef std::set<AllNodesContainer::iterator, AllNodesContainerIteratorComparator>::iterator iterator;
 
 public:
-	void clear(void) {
+	void clear() {
 		closed.clear();
 	}
 
@@ -144,11 +144,11 @@ public:
 		closed.erase(iterToRemove);
 	}
 
-	iterator begin(void) {
+	iterator begin() {
 		return closed.begin();
 	}
 
-	iterator end(void) {
+	iterator end() {
 		return closed.end();
 	}
 

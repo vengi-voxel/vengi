@@ -8,8 +8,8 @@ namespace PolyVox {
 template<typename IteratorType>
 class IteratorController {
 public:
-	void reset(void);
-	bool moveForward(void);
+	void reset();
+	bool moveForward();
 
 public:
 	Region m_regValid;
@@ -17,12 +17,12 @@ public:
 };
 
 template<typename IteratorType>
-void IteratorController<IteratorType>::reset(void) {
+void IteratorController<IteratorType>::reset() {
 	m_Iter->setPosition(m_regValid.getLowerCorner());
 }
 
 template<typename IteratorType>
-bool IteratorController<IteratorType>::moveForward(void) {
+bool IteratorController<IteratorType>::moveForward() {
 	glm::ivec3 v3dInitialPosition(m_Iter->getPosition().x, m_Iter->getPosition().y, m_Iter->getPosition().z);
 
 	if (v3dInitialPosition.x < m_regValid.getUpperX()) {

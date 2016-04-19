@@ -26,23 +26,23 @@ public:
 	Mesh();
 	~Mesh();
 
-	IndexType getNoOfVertices(void) const;
+	IndexType getNoOfVertices() const;
 	const VertexType& getVertex(IndexType index) const;
-	const VertexType* getRawVertexData(void) const;
+	const VertexType* getRawVertexData() const;
 
-	size_t getNoOfIndices(void) const;
+	size_t getNoOfIndices() const;
 	IndexType getIndex(uint32_t index) const;
-	const IndexType* getRawIndexData(void) const;
+	const IndexType* getRawIndexData() const;
 
-	const glm::ivec3& getOffset(void) const;
+	const glm::ivec3& getOffset() const;
 	void setOffset(const glm::ivec3& offset);
 
 	IndexType addVertex(const VertexType& vertex);
 	void addTriangle(IndexType index0, IndexType index1, IndexType index2);
 
-	void clear(void);
-	bool isEmpty(void) const;
-	void removeUnusedVertices(void);
+	void clear();
+	bool isEmpty() const;
+	void removeUnusedVertices();
 
 private:
 	std::vector<IndexType> m_vecIndices;
@@ -79,7 +79,7 @@ Mesh<VertexType, IndexType>::~Mesh() {
 }
 
 template<typename VertexType, typename IndexType>
-IndexType Mesh<VertexType, IndexType>::getNoOfVertices(void) const {
+IndexType Mesh<VertexType, IndexType>::getNoOfVertices() const {
 	return static_cast<IndexType>(m_vecVertices.size());
 }
 
@@ -89,12 +89,12 @@ const VertexType& Mesh<VertexType, IndexType>::getVertex(IndexType index) const 
 }
 
 template<typename VertexType, typename IndexType>
-const VertexType* Mesh<VertexType, IndexType>::getRawVertexData(void) const {
+const VertexType* Mesh<VertexType, IndexType>::getRawVertexData() const {
 	return m_vecVertices.data();
 }
 
 template<typename VertexType, typename IndexType>
-size_t Mesh<VertexType, IndexType>::getNoOfIndices(void) const {
+size_t Mesh<VertexType, IndexType>::getNoOfIndices() const {
 	return m_vecIndices.size();
 }
 
@@ -104,12 +104,12 @@ IndexType Mesh<VertexType, IndexType>::getIndex(uint32_t index) const {
 }
 
 template<typename VertexType, typename IndexType>
-const IndexType* Mesh<VertexType, IndexType>::getRawIndexData(void) const {
+const IndexType* Mesh<VertexType, IndexType>::getRawIndexData() const {
 	return m_vecIndices.data();
 }
 
 template<typename VertexType, typename IndexType>
-const glm::ivec3& Mesh<VertexType, IndexType>::getOffset(void) const {
+const glm::ivec3& Mesh<VertexType, IndexType>::getOffset() const {
 	return m_offset;
 }
 
@@ -140,18 +140,18 @@ IndexType Mesh<VertexType, IndexType>::addVertex(const VertexType& vertex) {
 }
 
 template<typename VertexType, typename IndexType>
-void Mesh<VertexType, IndexType>::clear(void) {
+void Mesh<VertexType, IndexType>::clear() {
 	m_vecVertices.clear();
 	m_vecIndices.clear();
 }
 
 template<typename VertexType, typename IndexType>
-bool Mesh<VertexType, IndexType>::isEmpty(void) const {
+bool Mesh<VertexType, IndexType>::isEmpty() const {
 	return (getNoOfVertices() == 0) || (getNoOfIndices() == 0);
 }
 
 template<typename VertexType, typename IndexType>
-void Mesh<VertexType, IndexType>::removeUnusedVertices(void) {
+void Mesh<VertexType, IndexType>::removeUnusedVertices() {
 	std::vector<bool> isVertexUsed(m_vecVertices.size());
 	std::fill(isVertexUsed.begin(), isVertexUsed.end(), false);
 

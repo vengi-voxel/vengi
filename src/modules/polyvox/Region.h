@@ -47,48 +47,48 @@ public:
 	bool operator!=(const Region& rhs) const;
 
 	/// Gets the 'x' position of the centre.
-	int32_t getCentreX(void) const;
+	int32_t getCentreX() const;
 	/// Gets the 'y' position of the centre.
-	int32_t getCentreY(void) const;
+	int32_t getCentreY() const;
 	/// Gets the 'z' position of the centre.
-	int32_t getCentreZ(void) const;
+	int32_t getCentreZ() const;
 	/// Gets the 'x' position of the lower corner.
-	int32_t getLowerX(void) const;
+	int32_t getLowerX() const;
 	/// Gets the 'y' position of the lower corner.
-	int32_t getLowerY(void) const;
+	int32_t getLowerY() const;
 	/// Gets the 'z' position of the lower corner.
-	int32_t getLowerZ(void) const;
+	int32_t getLowerZ() const;
 	/// Gets the 'x' position of the upper corner.
-	int32_t getUpperX(void) const;
+	int32_t getUpperX() const;
 	/// Gets the 'y' position of the upper corner.
-	int32_t getUpperY(void) const;
+	int32_t getUpperY() const;
 	/// Gets the 'z' position of the upper corner.
-	int32_t getUpperZ(void) const;
+	int32_t getUpperZ() const;
 
 	/// Gets the centre of the region
-	glm::ivec3 getCentre(void) const;
+	glm::ivec3 getCentre() const;
 	/// Gets the position of the lower corner.
-	glm::ivec3 getLowerCorner(void) const;
+	glm::ivec3 getLowerCorner() const;
 	/// Gets the position of the upper corner.
-	glm::ivec3 getUpperCorner(void) const;
+	glm::ivec3 getUpperCorner() const;
 
 	/// Gets the width of the region measured in voxels.
-	int32_t getWidthInVoxels(void) const;
+	int32_t getWidthInVoxels() const;
 	/// Gets the height of the region measured in voxels.
-	int32_t getHeightInVoxels(void) const;
+	int32_t getHeightInVoxels() const;
 	/// Gets the depth of the region measured in voxels.
-	int32_t getDepthInVoxels(void) const;
+	int32_t getDepthInVoxels() const;
 	/// Gets the dimensions of the region measured in voxels.
-	glm::ivec3 getDimensionsInVoxels(void) const;
+	glm::ivec3 getDimensionsInVoxels() const;
 
 	/// Gets the width of the region measured in cells.
-	int32_t getWidthInCells(void) const;
+	int32_t getWidthInCells() const;
 	/// Gets the height of the region measured in cells.
-	int32_t getHeightInCells(void) const;
+	int32_t getHeightInCells() const;
 	/// Gets the depth of the region measured in cells.
-	int32_t getDepthInCells(void) const;
+	int32_t getDepthInCells() const;
 	/// Gets the dimensions of the region measured in cells.
-	glm::ivec3 getDimensionsInCells(void) const;
+	glm::ivec3 getDimensionsInCells() const;
 
 	/// Sets the 'x' position of the lower corner.
 	void setLowerX(int32_t iX);
@@ -151,7 +151,7 @@ public:
 
 	/// Tests whether all components of the upper corner are at least
 	/// as great as the corresponding components of the lower corner.
-	bool isValid(void) const;
+	bool isValid() const;
 
 	/// Moves the Region by the amount specified.
 	void shift(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ);
@@ -185,84 +185,84 @@ private:
 /**
  *  \return The 'x' position of the centre.
  */
-inline int32_t Region::getCentreX(void) const {
+inline int32_t Region::getCentreX() const {
 	return (m_iLowerX + m_iUpperX) / 2;
 }
 
 /**
  *  \return The 'y' position of the centre.
  */
-inline int32_t Region::getCentreY(void) const {
+inline int32_t Region::getCentreY() const {
 	return (m_iLowerY + m_iUpperY) / 2;
 }
 
 /**
  *  \return The 'z' position of the centre.
  */
-inline int32_t Region::getCentreZ(void) const {
+inline int32_t Region::getCentreZ() const {
 	return (m_iLowerZ + m_iUpperZ) / 2;
 }
 
 /**
  *  \return The 'x' position of the lower corner.
  */
-inline int32_t Region::getLowerX(void) const {
+inline int32_t Region::getLowerX() const {
 	return m_iLowerX;
 }
 
 /**
  *  \return The 'y' position of the lower corner.
  */
-inline int32_t Region::getLowerY(void) const {
+inline int32_t Region::getLowerY() const {
 	return m_iLowerY;
 }
 
 /**
  *  \return The 'z' position of the lower corner.
  */
-inline int32_t Region::getLowerZ(void) const {
+inline int32_t Region::getLowerZ() const {
 	return m_iLowerZ;
 }
 
 /**
  *  \return The 'x' position of the upper corner.
  */
-inline int32_t Region::getUpperX(void) const {
+inline int32_t Region::getUpperX() const {
 	return m_iUpperX;
 }
 
 /**
  *  \return The 'y' position of the upper corner.
  */
-inline int32_t Region::getUpperY(void) const {
+inline int32_t Region::getUpperY() const {
 	return m_iUpperY;
 }
 
 /**
  *  \return The 'z' position of the upper corner.
  */
-inline int32_t Region::getUpperZ(void) const {
+inline int32_t Region::getUpperZ() const {
 	return m_iUpperZ;
 }
 
 /**
  *  \return The position of the lower corner.
  */
-inline glm::ivec3 Region::getCentre(void) const {
+inline glm::ivec3 Region::getCentre() const {
 	return glm::ivec3(getCentreX(), getCentreY(), getCentreZ());
 }
 
 /**
  *  \return The position of the lower corner.
  */
-inline glm::ivec3 Region::getLowerCorner(void) const {
+inline glm::ivec3 Region::getLowerCorner() const {
 	return glm::ivec3(m_iLowerX, m_iLowerY, m_iLowerZ);
 }
 
 /**
  *  \return The position of the upper corner.
  */
-inline glm::ivec3 Region::getUpperCorner(void) const {
+inline glm::ivec3 Region::getUpperCorner() const {
 	return glm::ivec3(m_iUpperX, m_iUpperY, m_iUpperZ);
 }
 
@@ -270,7 +270,7 @@ inline glm::ivec3 Region::getUpperCorner(void) const {
  *  \return The width of the region measured in voxels.
  *  \sa getWidthInCells()
  */
-inline int32_t Region::getWidthInVoxels(void) const {
+inline int32_t Region::getWidthInVoxels() const {
 	return getWidthInCells() + 1;
 }
 
@@ -278,7 +278,7 @@ inline int32_t Region::getWidthInVoxels(void) const {
  *  \return The height of the region measured in voxels.
  *  \sa getHeightInCells()
  */
-inline int32_t Region::getHeightInVoxels(void) const {
+inline int32_t Region::getHeightInVoxels() const {
 	return getHeightInCells() + 1;
 }
 
@@ -286,7 +286,7 @@ inline int32_t Region::getHeightInVoxels(void) const {
  *  \return The depth of the region measured in voxels.
  *  \sa getDepthInCells()
  */
-inline int32_t Region::getDepthInVoxels(void) const {
+inline int32_t Region::getDepthInVoxels() const {
 	return getDepthInCells() + 1;
 }
 
@@ -294,7 +294,7 @@ inline int32_t Region::getDepthInVoxels(void) const {
  *  \return The dimensions of the region measured in voxels.
  *  \sa getDimensionsInCells()
  */
-inline glm::ivec3 Region::getDimensionsInVoxels(void) const {
+inline glm::ivec3 Region::getDimensionsInVoxels() const {
 	return getDimensionsInCells() + glm::ivec3(1, 1, 1);
 }
 
@@ -302,7 +302,7 @@ inline glm::ivec3 Region::getDimensionsInVoxels(void) const {
  *  \return The width of the region measured in cells.
  *  \sa getWidthInVoxels()
  */
-inline int32_t Region::getWidthInCells(void) const {
+inline int32_t Region::getWidthInCells() const {
 	return m_iUpperX - m_iLowerX;
 }
 
@@ -310,7 +310,7 @@ inline int32_t Region::getWidthInCells(void) const {
  *  \return The height of the region measured in cells.
  *  \sa getHeightInVoxels()
  */
-inline int32_t Region::getHeightInCells(void) const {
+inline int32_t Region::getHeightInCells() const {
 	return m_iUpperY - m_iLowerY;
 }
 
@@ -318,7 +318,7 @@ inline int32_t Region::getHeightInCells(void) const {
  *  \return The depth of the region measured in cells.
  *  \sa getDepthInVoxels()
  */
-inline int32_t Region::getDepthInCells(void) const {
+inline int32_t Region::getDepthInCells() const {
 	return m_iUpperZ - m_iLowerZ;
 }
 
@@ -326,7 +326,7 @@ inline int32_t Region::getDepthInCells(void) const {
  *  \return The dimensions of the region measured in cells.
  *  \sa getDimensionsInVoxels()
  */
-inline glm::ivec3 Region::getDimensionsInCells(void) const {
+inline glm::ivec3 Region::getDimensionsInCells() const {
 	return glm::ivec3(getWidthInCells(), getHeightInCells(), getDepthInCells());
 }
 
@@ -685,7 +685,7 @@ inline void Region::grow(const glm::ivec3& v3dAmount) {
 
 /**
  */
-inline bool Region::isValid(void) const {
+inline bool Region::isValid() const {
 	return (m_iUpperX >= m_iLowerX) && (m_iUpperY >= m_iLowerY) && (m_iUpperZ >= m_iLowerZ);
 }
 

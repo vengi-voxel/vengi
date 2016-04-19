@@ -13,21 +13,21 @@ public:
 		}
 	}
 
-	void start(void) {
+	void start() {
 		m_start = clock::now();
 	}
 
-	float elapsedTimeInSeconds(void) {
+	float elapsedTimeInSeconds() {
 		std::chrono::duration<float> elapsed_seconds = clock::now() - m_start;
 		return elapsed_seconds.count();
 	}
 
-	float elapsedTimeInMilliSeconds(void) {
+	float elapsedTimeInMilliSeconds() {
 		std::chrono::duration<float, std::milli> elapsed_milliseconds = clock::now() - m_start;
 		return elapsed_milliseconds.count();
 	}
 
-	float elapsedTimeInMicroSeconds(void) {
+	float elapsedTimeInMicroSeconds() {
 		std::chrono::duration<float, std::micro> elapsed_microseconds = clock::now() - m_start;
 		return elapsed_microseconds.count();
 	}

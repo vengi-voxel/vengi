@@ -49,7 +49,7 @@ public:
 	 * For example, if the voxel type is 'uint8_t' then the representable range is 0-255, and the threshold will be set to 127. On the other hand,
 	 * if the voxel type is 'float' then the representable range is -FLT_MAX to FLT_MAX and the threshold will be set to zero.
 	 */
-	DefaultMarchingCubesController(void) {
+	DefaultMarchingCubesController() {
 		if (std::is_signed<DensityType>()) {
 			m_tThreshold = DensityType(0);
 		} else {
@@ -99,7 +99,7 @@ public:
 	 * should make sure that the threshold value you choose is between the minimum and maximum values found in your volume data. By default it
 	 * is in the middle of the representable range of the underlying type.
 	 */
-	DensityType getThreshold(void) {
+	DensityType getThreshold() {
 		return m_tThreshold;
 	}
 

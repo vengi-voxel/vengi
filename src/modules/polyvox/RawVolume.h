@@ -34,51 +34,51 @@ public:
 		Sampler(RawVolume<VoxelType>* volume);
 		~Sampler();
 
-		inline VoxelType getVoxel(void) const;
+		inline VoxelType getVoxel() const;
 
-		bool isCurrentPositionValid(void) const;
+		bool isCurrentPositionValid() const;
 
 		void setPosition(const glm::ivec3& v3dNewPos);
 		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
 		inline bool setVoxel(VoxelType tValue);
 
-		void movePositiveX(void);
-		void movePositiveY(void);
-		void movePositiveZ(void);
+		void movePositiveX();
+		void movePositiveY();
+		void movePositiveZ();
 
-		void moveNegativeX(void);
-		void moveNegativeY(void);
-		void moveNegativeZ(void);
+		void moveNegativeX();
+		void moveNegativeY();
+		void moveNegativeZ();
 
-		inline VoxelType peekVoxel1nx1ny1nz(void) const;
-		inline VoxelType peekVoxel1nx1ny0pz(void) const;
-		inline VoxelType peekVoxel1nx1ny1pz(void) const;
-		inline VoxelType peekVoxel1nx0py1nz(void) const;
-		inline VoxelType peekVoxel1nx0py0pz(void) const;
-		inline VoxelType peekVoxel1nx0py1pz(void) const;
-		inline VoxelType peekVoxel1nx1py1nz(void) const;
-		inline VoxelType peekVoxel1nx1py0pz(void) const;
-		inline VoxelType peekVoxel1nx1py1pz(void) const;
+		inline VoxelType peekVoxel1nx1ny1nz() const;
+		inline VoxelType peekVoxel1nx1ny0pz() const;
+		inline VoxelType peekVoxel1nx1ny1pz() const;
+		inline VoxelType peekVoxel1nx0py1nz() const;
+		inline VoxelType peekVoxel1nx0py0pz() const;
+		inline VoxelType peekVoxel1nx0py1pz() const;
+		inline VoxelType peekVoxel1nx1py1nz() const;
+		inline VoxelType peekVoxel1nx1py0pz() const;
+		inline VoxelType peekVoxel1nx1py1pz() const;
 
-		inline VoxelType peekVoxel0px1ny1nz(void) const;
-		inline VoxelType peekVoxel0px1ny0pz(void) const;
-		inline VoxelType peekVoxel0px1ny1pz(void) const;
-		inline VoxelType peekVoxel0px0py1nz(void) const;
-		inline VoxelType peekVoxel0px0py0pz(void) const;
-		inline VoxelType peekVoxel0px0py1pz(void) const;
-		inline VoxelType peekVoxel0px1py1nz(void) const;
-		inline VoxelType peekVoxel0px1py0pz(void) const;
-		inline VoxelType peekVoxel0px1py1pz(void) const;
+		inline VoxelType peekVoxel0px1ny1nz() const;
+		inline VoxelType peekVoxel0px1ny0pz() const;
+		inline VoxelType peekVoxel0px1ny1pz() const;
+		inline VoxelType peekVoxel0px0py1nz() const;
+		inline VoxelType peekVoxel0px0py0pz() const;
+		inline VoxelType peekVoxel0px0py1pz() const;
+		inline VoxelType peekVoxel0px1py1nz() const;
+		inline VoxelType peekVoxel0px1py0pz() const;
+		inline VoxelType peekVoxel0px1py1pz() const;
 
-		inline VoxelType peekVoxel1px1ny1nz(void) const;
-		inline VoxelType peekVoxel1px1ny0pz(void) const;
-		inline VoxelType peekVoxel1px1ny1pz(void) const;
-		inline VoxelType peekVoxel1px0py1nz(void) const;
-		inline VoxelType peekVoxel1px0py0pz(void) const;
-		inline VoxelType peekVoxel1px0py1pz(void) const;
-		inline VoxelType peekVoxel1px1py1nz(void) const;
-		inline VoxelType peekVoxel1px1py0pz(void) const;
-		inline VoxelType peekVoxel1px1py1pz(void) const;
+		inline VoxelType peekVoxel1px1ny1nz() const;
+		inline VoxelType peekVoxel1px1ny0pz() const;
+		inline VoxelType peekVoxel1px1ny1pz() const;
+		inline VoxelType peekVoxel1px0py1nz() const;
+		inline VoxelType peekVoxel1px0py0pz() const;
+		inline VoxelType peekVoxel1px0py1pz() const;
+		inline VoxelType peekVoxel1px1py1nz() const;
+		inline VoxelType peekVoxel1px1py0pz() const;
+		inline VoxelType peekVoxel1px1py1pz() const;
 
 	private:
 
@@ -100,16 +100,16 @@ public:
 	~RawVolume();
 
 	/// Gets the value used for voxels which are outside the volume
-	VoxelType getBorderValue(void) const;
+	VoxelType getBorderValue() const;
 	/// Gets a Region representing the extents of the Volume.
-	const Region& getEnclosingRegion(void) const;
+	const Region& getEnclosingRegion() const;
 
 	/// Gets the width of the volume in voxels.
-	int32_t getWidth(void) const;
+	int32_t getWidth() const;
 	/// Gets the height of the volume in voxels.
-	int32_t getHeight(void) const;
+	int32_t getHeight() const;
 	/// Gets the depth of the volume in voxels.
-	int32_t getDepth(void) const;
+	int32_t getDepth() const;
 
 	/// Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
 	VoxelType getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const;
@@ -124,7 +124,7 @@ public:
 	void setVoxel(const glm::ivec3& v3dPos, VoxelType tValue);
 
 	/// Calculates approximatly how many bytes of memory the volume is currently using.
-	uint32_t calculateSizeInBytes(void);
+	uint32_t calculateSizeInBytes();
 
 protected:
 	/// Copy constructor
@@ -198,7 +198,7 @@ RawVolume<VoxelType>& RawVolume<VoxelType>::operator=(const RawVolume<VoxelType>
 /// \return The value used for voxels outside of the volume
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::getBorderValue(void) const {
+VoxelType RawVolume<VoxelType>::getBorderValue() const {
 	return m_tBorderValue;
 }
 
@@ -206,7 +206,7 @@ VoxelType RawVolume<VoxelType>::getBorderValue(void) const {
 /// \return A Region representing the extent of the volume.
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-const Region& RawVolume<VoxelType>::getEnclosingRegion(void) const {
+const Region& RawVolume<VoxelType>::getEnclosingRegion() const {
 	return m_regValidRegion;
 }
 
@@ -215,7 +215,7 @@ const Region& RawVolume<VoxelType>::getEnclosingRegion(void) const {
 /// \sa getHeight(), getDepth()
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-int32_t RawVolume<VoxelType>::getWidth(void) const {
+int32_t RawVolume<VoxelType>::getWidth() const {
 	return m_regValidRegion.getUpperX() - m_regValidRegion.getLowerX() + 1;
 }
 
@@ -224,7 +224,7 @@ int32_t RawVolume<VoxelType>::getWidth(void) const {
 /// \sa getWidth(), getDepth()
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-int32_t RawVolume<VoxelType>::getHeight(void) const {
+int32_t RawVolume<VoxelType>::getHeight() const {
 	return m_regValidRegion.getUpperY() - m_regValidRegion.getLowerY() + 1;
 }
 
@@ -233,7 +233,7 @@ int32_t RawVolume<VoxelType>::getHeight(void) const {
 /// \sa getWidth(), getHeight()
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-int32_t RawVolume<VoxelType>::getDepth(void) const {
+int32_t RawVolume<VoxelType>::getDepth() const {
 	return m_regValidRegion.getUpperZ() - m_regValidRegion.getLowerZ() + 1;
 }
 
@@ -334,7 +334,7 @@ void RawVolume<VoxelType>::initialise(const Region& regValidRegion) {
 /// Note: This function needs reviewing for accuracy...
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>
-uint32_t RawVolume<VoxelType>::calculateSizeInBytes(void) {
+uint32_t RawVolume<VoxelType>::calculateSizeInBytes() {
 	return this->getWidth() * this->getHeight() * this->getDepth() * sizeof(VoxelType);
 }
 
@@ -356,7 +356,7 @@ RawVolume<VoxelType>::Sampler::~Sampler() {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::getVoxel(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::getVoxel() const {
 	if (this->isCurrentPositionValid()) {
 		return *mCurrentVoxel;
 	}
@@ -364,7 +364,7 @@ VoxelType RawVolume<VoxelType>::Sampler::getVoxel(void) const {
 }
 
 template<typename VoxelType>
-bool inline RawVolume<VoxelType>::Sampler::isCurrentPositionValid(void) const {
+bool inline RawVolume<VoxelType>::Sampler::isCurrentPositionValid() const {
 	return m_bIsCurrentPositionValidInX && m_bIsCurrentPositionValidInY && m_bIsCurrentPositionValidInZ;
 }
 
@@ -407,7 +407,7 @@ bool RawVolume<VoxelType>::Sampler::setVoxel(VoxelType tValue) {
 }
 
 template<typename VoxelType>
-void RawVolume<VoxelType>::Sampler::movePositiveX(void) {
+void RawVolume<VoxelType>::Sampler::movePositiveX() {
 	// We'll need this in a moment...
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
@@ -425,7 +425,7 @@ void RawVolume<VoxelType>::Sampler::movePositiveX(void) {
 }
 
 template<typename VoxelType>
-void RawVolume<VoxelType>::Sampler::movePositiveY(void) {
+void RawVolume<VoxelType>::Sampler::movePositiveY() {
 	// We'll need this in a moment...
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
@@ -443,7 +443,7 @@ void RawVolume<VoxelType>::Sampler::movePositiveY(void) {
 }
 
 template<typename VoxelType>
-void RawVolume<VoxelType>::Sampler::movePositiveZ(void) {
+void RawVolume<VoxelType>::Sampler::movePositiveZ() {
 	// We'll need this in a moment...
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
@@ -461,7 +461,7 @@ void RawVolume<VoxelType>::Sampler::movePositiveZ(void) {
 }
 
 template<typename VoxelType>
-void RawVolume<VoxelType>::Sampler::moveNegativeX(void) {
+void RawVolume<VoxelType>::Sampler::moveNegativeX() {
 	// We'll need this in a moment...
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
@@ -479,7 +479,7 @@ void RawVolume<VoxelType>::Sampler::moveNegativeX(void) {
 }
 
 template<typename VoxelType>
-void RawVolume<VoxelType>::Sampler::moveNegativeY(void) {
+void RawVolume<VoxelType>::Sampler::moveNegativeY() {
 	// We'll need this in a moment...
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
@@ -497,7 +497,7 @@ void RawVolume<VoxelType>::Sampler::moveNegativeY(void) {
 }
 
 template<typename VoxelType>
-void RawVolume<VoxelType>::Sampler::moveNegativeZ(void) {
+void RawVolume<VoxelType>::Sampler::moveNegativeZ() {
 	// We'll need this in a moment...
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
@@ -515,7 +515,7 @@ void RawVolume<VoxelType>::Sampler::moveNegativeZ(void) {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1ny1nz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1ny1nz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel - 1 - this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -523,7 +523,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1ny1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1ny0pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1ny0pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume)) {
 		return *(mCurrentVoxel - 1 - this->mVolume->getWidth());
 	}
@@ -531,7 +531,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1ny0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1ny1pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1ny1pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel - 1 - this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -539,7 +539,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1ny1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx0py1nz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx0py1nz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel - 1 - this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -547,7 +547,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx0py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx0py0pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx0py0pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume)) {
 		return *(mCurrentVoxel - 1);
 	}
@@ -555,7 +555,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx0py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx0py1pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx0py1pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel - 1 + this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -563,7 +563,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx0py1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1py1nz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1py1nz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel - 1 + this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -571,7 +571,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1py0pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1py0pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume)) {
 		return *(mCurrentVoxel - 1 + this->mVolume->getWidth());
 	}
@@ -579,7 +579,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1py1pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1py1pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel - 1 + this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -589,7 +589,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1nx1py1pz(void) const {
 //////////////////////////////////////////////////////////////////////////
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1ny1nz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1ny1nz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel - this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -597,7 +597,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1ny1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1ny0pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1ny0pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_Y(this->mYPosInVolume)) {
 		return *(mCurrentVoxel - this->mVolume->getWidth());
 	}
@@ -605,7 +605,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1ny0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1ny1pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1ny1pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel - this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -613,7 +613,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1ny1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px0py1nz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px0py1nz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_NEG_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel - this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -621,7 +621,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px0py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px0py0pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px0py0pz() const {
 	if (this->isCurrentPositionValid()) {
 		return *mCurrentVoxel;
 	}
@@ -629,7 +629,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px0py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px0py1pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px0py1pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel + this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -637,7 +637,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px0py1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1py1nz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1py1nz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel + this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -645,7 +645,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1py0pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1py0pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_Y(this->mYPosInVolume)) {
 		return *(mCurrentVoxel + this->mVolume->getWidth());
 	}
@@ -653,7 +653,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1py1pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1py1pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel + this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -663,7 +663,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel0px1py1pz(void) const {
 //////////////////////////////////////////////////////////////////////////
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1ny1nz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1ny1nz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel + 1 - this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -671,7 +671,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1ny1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1ny0pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1ny0pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume)) {
 		return *(mCurrentVoxel + 1 - this->mVolume->getWidth());
 	}
@@ -679,7 +679,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1ny0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1ny1pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1ny1pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel + 1 - this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -687,7 +687,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1ny1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px0py1nz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px0py1nz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel + 1 - this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -695,7 +695,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px0py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px0py0pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px0py0pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume)) {
 		return *(mCurrentVoxel + 1);
 	}
@@ -703,7 +703,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px0py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px0py1pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px0py1pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel + 1 + this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -711,7 +711,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px0py1pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1py1nz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1py1nz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel + 1 + this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
 	}
@@ -719,7 +719,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1py1nz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1py0pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1py0pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume)) {
 		return *(mCurrentVoxel + 1 + this->mVolume->getWidth());
 	}
@@ -727,7 +727,7 @@ VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1py0pz(void) const {
 }
 
 template<typename VoxelType>
-VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1py1pz(void) const {
+VoxelType RawVolume<VoxelType>::Sampler::peekVoxel1px1py1pz() const {
 	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
 		return *(mCurrentVoxel + 1 + this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
 	}

@@ -82,7 +82,7 @@ public:
 
 private:
 
-	void initialize(void) {
+	void initialize() {
 		// Calculate the total number of elements in the array.
 		m_uNoOfElements = 1;
 		for (uint32_t i = 0; i < noOfDims; i++) {
