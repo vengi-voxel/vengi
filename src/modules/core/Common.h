@@ -3,6 +3,7 @@
 #include "Log.h"
 #include <cmath>
 #include <SDL.h>
+#include <SDL_assert.h>
 #include <glm/glm.hpp>
 #include <glm/detail/func_common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,7 +16,11 @@
 #define CORE_STRINGIFY(x) CORE_STRINGIFY_INTERNAL(x)
 
 #ifndef core_assert
-#define core_assert(condition) SDL_assert(condition)
+#define core_assert SDL_assert
+#endif
+
+#ifndef core_assert_always
+#define core_assert_always SDL_assert_always
 #endif
 
 #ifndef core_assert_msg

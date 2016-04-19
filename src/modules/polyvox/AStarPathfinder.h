@@ -70,7 +70,7 @@ public:
 	uint32_t maxNumberOfNodes;
 
 	/// This function is called to determine whether the path can pass though a given voxel. The
-	/// default behaviour is specified by aStarDefaultVoxelValidator(), but users can specify thier
+	/// default behaviour is specified by aStarDefaultVoxelValidator(), but users can specify their
 	/// own criteria if desired. For example, if you always want a path to follow a surface then
 	/// you could check to ensure that the voxel above is empty and the voxel below is solid.
 	///
@@ -80,7 +80,7 @@ public:
 	/// This function is called by the AStarPathfinder to report on its progress in getting to
 	/// the goal. The progress is reported by computing the distance from the closest node found
 	/// so far to the end node, and comparing this with the distance from the start node to the
-	/// end node. This progress value is guarenteed to never decrease, but it may stop increasing
+	/// end node. This progress value is guaranteed to never decrease, but it may stop increasing
 	///for short periods of time. It may even stop increasing altogether if a path cannot be found.
 	std::function<void(float)> progressCallback;
 };
@@ -97,7 +97,7 @@ public:
 /// Programming page here: http://theory.stanford.edu/~amitp/GameProgramming/
 /// Much of this class is based on the principles described in those pages.
 ///
-/// Usage of this class if very strightforward. You create an instance of it
+/// Usage of this class if very straightforward. You create an instance of it
 /// by passing an instance of the AStarPathfinderParams structure to the constructor.
 /// The details of the AStarPathfinderParams and the options it provides are described
 /// in the documentation for that class.
@@ -113,7 +113,7 @@ class AStarPathfinder {
 public:
 	AStarPathfinder(const AStarPathfinderParams<VolumeType>& params);
 
-	void execute();
+	bool execute();
 
 private:
 	void processNeighbour(const glm::ivec3& neighbourPos, float neighbourGVal);
@@ -140,9 +140,6 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 // Useful constants
 ////////////////////////////////////////////////////////////////////////////////
-const float sqrt_1 = 1.0f;
-const float sqrt_2 = glm::root_two<float>();
-const float sqrt_3 = glm::root_three<float>();
 
 const glm::ivec3 arrayPathfinderFaces[6] = {
 		glm::ivec3(0, 0, -1),
@@ -200,7 +197,7 @@ AStarPathfinder<VolumeType>::AStarPathfinder(const AStarPathfinderParams<VolumeT
 }
 
 template<typename VolumeType>
-void AStarPathfinder<VolumeType>::execute() {
+bool AStarPathfinder<VolumeType>::execute() {
 	//Clear any existing nodes
 	_allNodes.clear();
 	_openNodes.clear();
@@ -233,7 +230,7 @@ void AStarPathfinder<VolumeType>::execute() {
 		_params.progressCallback(_progress);
 	}
 
-	while ((_openNodes.empty() == false) && (_openNodes.getFirst() != endNode)) {
+	while (!_openNodes.empty() && _openNodes.getFirst() != endNode) {
 		//Move the first node from open to closed.
 		_current = _openNodes.getFirst();
 		_openNodes.removeFirst();
@@ -252,9 +249,9 @@ void AStarPathfinder<VolumeType>::execute() {
 		}
 
 		//The distance from one cell to another connected by face, edge, or corner.
-		const float fFaceCost = sqrt_1;
-		const float fEdgeCost = sqrt_2;
-		const float fCornerCost = sqrt_3;
+		const float fFaceCost = 1.0f;
+		const float fEdgeCost = glm::root_two<float>();
+		const float fCornerCost = glm::root_three<float>();
 
 		//Process the neighbours. Note the deliberate lack of 'break'
 		//statements, larger connectivities include smaller ones.
@@ -299,25 +296,26 @@ void AStarPathfinder<VolumeType>::execute() {
 		}
 	}
 
-	if ((_openNodes.empty()) || (_openNodes.getFirst() != endNode)) {
+	if (_openNodes.empty() || _openNodes.getFirst() != endNode) {
 		//In this case we failed to find a valid path.
-		core_assert_msg(false, "No path found");
-	} else {
-		//Regarding the const_cast - normally you should not modify an object which is in an sdt::set.
-		//The reason is that objects in a set are stored sorted in a tree so they can be accessed quickly,
-		//and changing the object directly can break the sorting. However, in our case we have provided a
-		//custom sort operator for the set which we know only uses the position to sort. Hence we can safely
-		//modify other properties of the object while it is in the set.
-		Node* n = const_cast<Node*>(&(*endNode));
-		while (n != 0) {
-			_params.result->push_front(n->position);
-			n = n->parent;
-		}
+		return false;
+	}
+	//Regarding the const_cast - normally you should not modify an object which is in an sdt::set.
+	//The reason is that objects in a set are stored sorted in a tree so they can be accessed quickly,
+	//and changing the object directly can break the sorting. However, in our case we have provided a
+	//custom sort operator for the set which we know only uses the position to sort. Hence we can safely
+	//modify other properties of the object while it is in the set.
+	Node* n = const_cast<Node*>(&(*endNode));
+	while (n != 0) {
+		_params.result->push_front(n->position);
+		n = n->parent;
 	}
 
 	if (_params.progressCallback) {
 		_params.progressCallback(1.0f);
 	}
+
+	return true;
 }
 
 template<typename VolumeType>
@@ -332,8 +330,8 @@ void AStarPathfinder<VolumeType>::processNeighbour(const glm::ivec3& neighbourPo
 	std::pair<AllNodesContainer::iterator, bool> insertResult = _allNodes.insert(Node(neighbourPos.x, neighbourPos.y, neighbourPos.z));
 	AllNodesContainer::iterator neighbour = insertResult.first;
 
-	if (insertResult.second == true) //New node, compute h.
-			{
+	if (insertResult.second) {
+		//New node, compute h.
 		Node* tempNeighbour = const_cast<Node*>(&(*neighbour));
 		tempNeighbour->hVal = computeH(neighbour->position, _params.end);
 	}
@@ -356,7 +354,7 @@ void AStarPathfinder<VolumeType>::processNeighbour(const glm::ivec3& neighbourPo
 		}
 	}
 
-	if ((openIter == _openNodes.end()) && (closedIter == _closedNodes.end())) {
+	if (openIter == _openNodes.end() && closedIter == _closedNodes.end()) {
 		//Regarding the const_cast - normally you should not modify an object which is in an sdt::set.
 		//The reason is that objects in a set are stored sorted in a tree so they can be accessed quickly,
 		//and changing the object directly can break the sorting. However, in our case we have provided a
@@ -372,9 +370,8 @@ void AStarPathfinder<VolumeType>::processNeighbour(const glm::ivec3& neighbourPo
 template<typename VolumeType>
 float AStarPathfinder<VolumeType>::SixConnectedCost(const glm::ivec3& a, const glm::ivec3& b) {
 	//This is the only heuristic I'm sure of - just use the manhatten distance for the 6-connected case.
-	uint32_t faceSteps = std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
-
-	return faceSteps * 1.0f;
+	const uint32_t faceSteps = std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
+	return float(faceSteps);
 }
 
 template<typename VolumeType>
@@ -400,11 +397,11 @@ float AStarPathfinder<VolumeType>::TwentySixConnectedCost(const glm::ivec3& a, c
 	//until the profiler says so.
 	std::sort(&array[0], &array[3]);
 
-	uint32_t cornerSteps = array[0];
-	uint32_t edgeSteps = array[1] - array[0];
-	uint32_t faceSteps = array[2] - array[1];
+	const uint32_t cornerSteps = array[0];
+	const uint32_t edgeSteps = array[1] - array[0];
+	const uint32_t faceSteps = array[2] - array[1];
 
-	return cornerSteps * sqrt_3 + edgeSteps * sqrt_2 + faceSteps * sqrt_1;
+	return cornerSteps * glm::root_three<float>() + edgeSteps * glm::root_two<float>() + faceSteps;
 }
 
 template<typename VolumeType>
