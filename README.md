@@ -19,6 +19,8 @@ e.g. run the server with ```./server -set sv_port 1025``` to change the *sv_port
 * You need to have **cmake** installed and in your path
 * You need to have **python27** installed and in your path
 * You need to have **postgre** installed (ubuntu package postgresql, libpq-dev and postgresql-server-dev-9.3 (or another version))
+* You need lua installed
+* You need libassimp
 
 # Compilation
 * After fulfilling all the above mentioned dependencies, you just have to run ```fips```

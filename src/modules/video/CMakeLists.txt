@@ -15,8 +15,12 @@ fips_begin_module(video)
 		Mesh.cpp Mesh.h
 		MeshPool.cpp MeshPool.h
 	)
-	fips_deps(core image io assimp)
+	fips_deps(core image io)
 fips_end_module()
+
+find_package(assimp REQUIRED)
+target_link_libraries(video ${ASSIMP_LIBRARIES})
+target_include_directories(video PRIVATE ${ASSIMP_INCLUDE_DIRS})
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(video ${OPENGL_LIBRARIES})
