@@ -7,11 +7,8 @@ fips_begin_module(polyvox)
 		CubicSurfaceExtractor.h
 		DefaultIsQuadNeeded.h
 		DefaultMarchingCubesController.h
-		ErrorHandling.h
-		FilePager.h
 		Interpolation.h
 		IteratorController.h
-		LoggingImpl.h
 		LowPassFilter.h
 		MaterialDensityPair.h
 		Material.h

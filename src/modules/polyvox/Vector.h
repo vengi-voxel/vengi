@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/Common.h"
-#include "LoggingImpl.h"
 
 #include <algorithm>
 #include <cstring>

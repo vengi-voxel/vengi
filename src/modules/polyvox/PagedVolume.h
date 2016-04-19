@@ -3,7 +3,6 @@
 #include "BaseVolume.h"
 #include "Region.h"
 #include "Vector.h"
-#include "ErrorHandling.h"
 #include "Morton.h"
 #include "Utility.h"
 
