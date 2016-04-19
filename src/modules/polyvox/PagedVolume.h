@@ -1,16 +1,10 @@
 #pragma once
 
 #include "BaseVolume.h"
-#include "Region.h"
-#include "Vector.h"
 #include "Morton.h"
-#include "Utility.h"
-
-#include "core/Log.h"
 
 #include <array>
 #include <algorithm>
-#include <limits>
 #include <cstring> //For memcpy
 #include <unordered_map>
 #include <list>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vector.h"
+#include "core/Common.h"
 
 #include <algorithm>
 #include <limits> //For numeric_limits

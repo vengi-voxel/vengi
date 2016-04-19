@@ -1,8 +1,6 @@
 #pragma once
 
 #include "BaseVolume.h"
-#include "Region.h"
-#include "Vector.h"
 
 #include <cstdlib> //For abort()
 #include <limits>

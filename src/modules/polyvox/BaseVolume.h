@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/Common.h"
 #include "Region.h"
 #include "Utility.h"
 #include <limits>

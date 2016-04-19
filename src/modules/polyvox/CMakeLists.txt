@@ -23,7 +23,6 @@ fips_begin_module(polyvox)
 		Region.h
 		Timer.h
 		Utility.h
-		Vector.h
 		Vertex.h
 		VolumeResampler.h
 	)

@@ -1,9 +1,6 @@
 #pragma once
 
-#include "Vector.h"
-
-#include <bitset>
-#include <vector>
+#include "core/Common.h"
 
 namespace PolyVox {
 
