@@ -1,4 +1,4 @@
-SET(DEFAULT_LUA_EXECUTABLE lua)
+SET(DEFAULT_LUA_EXECUTABLE lua lua5.2 lua5.3)
 
 macro(copy_data_files TARGET)
 	add_custom_target(copy-data-${TARGET} ALL
