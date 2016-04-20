@@ -114,19 +114,19 @@ bool mergeQuads(Quad& q1, Quad& q2, MeshType* m_meshCurrent) {
 		//Now check whether quad 2 is adjacent to quad one by comparing vertices.
 		//Adjacent quads must share two vertices, and the second quad could be to the
 		//top, bottom, left, of right of the first one. This gives four combinations to test.
-		if ((q1.vertices[0] == q2.vertices[1]) && ((q1.vertices[3] == q2.vertices[2]))) {
+		if (q1.vertices[0] == q2.vertices[1] && q1.vertices[3] == q2.vertices[2]) {
 			q1.vertices[0] = q2.vertices[0];
 			q1.vertices[3] = q2.vertices[3];
 			return true;
-		} else if ((q1.vertices[3] == q2.vertices[0]) && ((q1.vertices[2] == q2.vertices[1]))) {
+		} else if (q1.vertices[3] == q2.vertices[0] && q1.vertices[2] == q2.vertices[1]) {
 			q1.vertices[3] = q2.vertices[3];
 			q1.vertices[2] = q2.vertices[2];
 			return true;
-		} else if ((q1.vertices[1] == q2.vertices[0]) && ((q1.vertices[2] == q2.vertices[3]))) {
+		} else if (q1.vertices[1] == q2.vertices[0] && q1.vertices[2] == q2.vertices[3]) {
 			q1.vertices[1] = q2.vertices[1];
 			q1.vertices[2] = q2.vertices[2];
 			return true;
-		} else if ((q1.vertices[0] == q2.vertices[3]) && ((q1.vertices[1] == q2.vertices[2]))) {
+		} else if (q1.vertices[0] == q2.vertices[3] && q1.vertices[1] == q2.vertices[2]) {
 			q1.vertices[0] = q2.vertices[0];
 			q1.vertices[1] = q2.vertices[1];
 			return true;
