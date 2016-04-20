@@ -173,8 +173,8 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 			i = _meshData.erase(i);
 			continue;
 		}
-		// TODO: get proper lod level - from 9
-		const int lod = distance > glm::pow(_world->getChunkSize() * 4, 2) ? meshData.numLods - 1 : 0;
+		// TODO: get proper lod level
+		const int lod = distance > glm::pow(_world->getChunkSize() * 4, 2) ? 1 : 0;
 		const glm::vec3 mins(meshData.translation);
 		const glm::vec3 maxs = glm::vec3(meshData.translation) + bboxSize;
 		if (camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
