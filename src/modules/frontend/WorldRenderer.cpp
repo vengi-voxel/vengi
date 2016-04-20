@@ -226,7 +226,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
 	video::GLMeshData meshData;
 	meshData.translation = mesh.translation;
-	meshData.numLods = mesh.numLods;
+	meshData.numLods = glm::clamp(mesh.numLods, 1, video::MAX_LODS);
 
 	// Create the VAOs for the meshes
 	glGenVertexArrays(meshData.numLods, meshData.vertexArrayObject);
@@ -237,7 +237,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
 	glGenBuffers(meshData.numLods, meshData.indexBuffer);
 
-	for (int i = 0; i < mesh.numLods; ++i) {
+	for (int i = 0; i < meshData.numLods; ++i) {
 		core_assert(meshData.vertexArrayObject[i] > 0);
 		glBindVertexArray(meshData.vertexArrayObject[i]);
 
