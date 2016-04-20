@@ -75,7 +75,7 @@ struct IsVoxelTransparent {
 };
 
 struct IsQuadNeeded {
-	bool operator()(Voxel back, Voxel front, Voxel& materialToUse) {
+	bool operator()(const Voxel& back, const Voxel& front, Voxel& materialToUse) {
 		if (back.getMaterial() != Air && front.getMaterial() == Air) {
 			materialToUse = back;
 			return true;
