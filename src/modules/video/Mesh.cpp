@@ -44,13 +44,13 @@ bool Mesh::loadMesh(const std::string& filename) {
 	for (uint32_t i = 0; i < _meshData.size(); ++i) {
 		const aiMesh* mesh = scene->mMeshes[i];
 		GLMeshData& meshData = _meshData[i];
-		meshData.materialIndex = mesh->mMaterialIndex;
-		meshData.noOfIndices = mesh->mNumFaces * 3;
-		meshData.baseVertex = numVertices;
-		meshData.baseIndex = numIndices;
+		meshData.materialIndex[0] = mesh->mMaterialIndex;
+		meshData.noOfIndices[0] = mesh->mNumFaces * 3;
+		meshData.baseVertex[0] = numVertices;
+		meshData.baseIndex[0] = numIndices;
 
 		numVertices += mesh->mNumVertices;
-		numIndices += meshData.noOfIndices;
+		numIndices += meshData.noOfIndices[0];
 	}
 
 	_positions.reserve(numVertices);
@@ -182,11 +182,11 @@ void Mesh::render() {
 		return;
 	glBindVertexArray(_vertexArrayObject);
 	for (const GLMeshData& mesh : _meshData) {
-		const uint32_t matIdx = mesh.materialIndex;
+		const uint32_t matIdx = mesh.materialIndex[0];
 		if (matIdx < _textures.size() && _textures[matIdx]) {
 			_textures[matIdx]->bind();
 		}
-		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, GL_UNSIGNED_INT, GL_OFFSET_CAST(sizeof(uint32_t) * mesh.baseIndex), mesh.baseVertex);
+		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices[0], GL_UNSIGNED_INT, GL_OFFSET_CAST(sizeof(uint32_t) * mesh.baseIndex[0]), mesh.baseVertex[0]);
 	}
 }
 

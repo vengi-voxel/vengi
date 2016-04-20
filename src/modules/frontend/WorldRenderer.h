@@ -51,13 +51,14 @@ private:
 	voxel::WorldPtr _world;
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
-	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec3& translation, float scale);
-	void updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData);
+	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh);
+	void updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData, int lod);
 	void handleMeshQueue(video::Shader& shader);
 
 	// we might want to get an answer for this question in two contexts, once for 'should-i-render-this' and once for
 	// 'should-i-create/destroy-the-mesh'.
-	bool isDistanceCulled(const glm::ivec3& pos, bool queryForRendering = true) const;
+	bool isDistanceCulled(int distance2, bool queryForRendering = true) const;
+	int getDistance2(const glm::ivec3& pos) const;
 	// schedule mesh extraction around the camera position on the grid with the given radius
 	void extractMeshAroundCamera(int radius);
 

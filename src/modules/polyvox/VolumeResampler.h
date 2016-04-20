@@ -102,17 +102,7 @@ void VolumeResampler<SrcVolumeType, DstVolumeType>::resampleArbitrary() {
 				const typename SrcVolumeType::VoxelType& voxel101 = sampler.peekVoxel1px0py1pz();
 				const typename SrcVolumeType::VoxelType& voxel110 = sampler.peekVoxel1px1py0pz();
 				const typename SrcVolumeType::VoxelType& voxel111 = sampler.peekVoxel1px1py1pz();
-
-				//FIXME - should accept all float parameters, but GCC complains?
-				float dummy;
-				sx = glm::modf(sx, dummy);
-				sy = glm::modf(sy, dummy);
-				sz = glm::modf(sz, dummy);
-
-				typename SrcVolumeType::VoxelType tInterpolatedValue = trilerp<float>(voxel000, voxel100, voxel010, voxel110, voxel001, voxel101, voxel011, voxel111, sx, sy, sz);
-
-				typename DstVolumeType::VoxelType result = static_cast<typename DstVolumeType::VoxelType>(tInterpolatedValue);
-				m_pVolDst->setVoxel(dx, dy, dz, result);
+				m_pVolDst->setVoxel(dx, dy, dz, voxel000);
 			}
 		}
 	}

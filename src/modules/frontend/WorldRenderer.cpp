@@ -21,9 +21,9 @@ WorldRenderer::~WorldRenderer() {
 
 void WorldRenderer::reset() {
 	for (const video::GLMeshData& meshData : _meshData) {
-		glDeleteBuffers(1, &meshData.vertexBuffer);
-		glDeleteBuffers(1, &meshData.indexBuffer);
-		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+		glDeleteBuffers(meshData.numLods, meshData.vertexBuffer);
+		glDeleteBuffers(meshData.numLods, meshData.indexBuffer);
+		glDeleteVertexArrays(meshData.numLods, meshData.vertexArrayObject);
 	}
 	_meshData.clear();
 	_entities.clear();
@@ -61,9 +61,9 @@ void WorldRenderer::deleteMesh(const glm::ivec3& pos) {
 			continue;
 		}
 		_meshData.erase(i);
-		glDeleteBuffers(1, &meshData.vertexBuffer);
-		glDeleteBuffers(1, &meshData.indexBuffer);
-		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+		glDeleteBuffers(meshData.numLods, meshData.vertexBuffer);
+		glDeleteBuffers(meshData.numLods, meshData.indexBuffer);
+		glDeleteVertexArrays(meshData.numLods, meshData.vertexArrayObject);
 		return;
 	}
 }
@@ -84,25 +84,21 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	}
 	for (video::GLMeshData& m : _meshData) {
 		if (m.translation == mesh.translation) {
-			updateMesh(mesh.mesh, m);
+			core_assert(m.numLods == mesh.numLods);
+			for (int i = 0; i < m.numLods; ++i) {
+				updateMesh(mesh.mesh[i], m, i);
+			}
 			return;
 		}
 	}
 	// Now add the mesh to the list of meshes to render.
-	_meshData.push_back(createMesh(shader, mesh.mesh, mesh.translation, 1.0f));
+	_meshData.push_back(createMesh(shader, mesh));
 }
 
 int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection) {
 	handleMeshQueue(shader);
 
 	int drawCallsWorld = 0;
-
-	// TODO: use polyvox VolumeResampler to create a minimap of your volume
-	// RawVolume<uint8_t> volDataLowLOD(PolyVox::Region(Vector3DInt32(0, 0, 0), Vector3DInt32(15, 31, 31)));
-	// VolumeResampler< RawVolume<uint8_t>, RawVolume<uint8_t> > volumeResampler(&volData, PolyVox::Region(Vector3DInt32(0, 0, 0), Vector3DInt32(31, 63, 63)), &volDataLowLOD, volDataLowLOD.getEnclosingRegion());
-	// volumeResampler.execute();
-	// auto meshLowLOD = extractMarchingCubesMesh(&volDataLowLOD, volDataLowLOD.getEnclosingRegion());
-	// auto decodedMeshLowLOD = decodeMesh(meshLowLOD);
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -168,24 +164,27 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
 	for (auto i = _meshData.begin(); i != _meshData.end();) {
 		const video::GLMeshData& meshData = *i;
-		if (isDistanceCulled(meshData.translation, true)) {
+		const float distance = getDistance2(meshData.translation);
+		if (isDistanceCulled(distance, true)) {
 			_world->allowReExtraction(meshData.translation);
-			glDeleteBuffers(1, &meshData.vertexBuffer);
-			glDeleteBuffers(1, &meshData.indexBuffer);
-			glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+			glDeleteBuffers(meshData.numLods, meshData.vertexBuffer);
+			glDeleteBuffers(meshData.numLods, meshData.indexBuffer);
+			glDeleteVertexArrays(meshData.numLods, meshData.vertexArrayObject);
 			i = _meshData.erase(i);
 			continue;
 		}
+		// TODO: get proper lod level - from 9
+		const int lod = distance > glm::pow(_world->getChunkSize() * 4, 2) ? meshData.numLods - 1 : 0;
 		const glm::vec3 mins(meshData.translation);
 		const glm::vec3 maxs = glm::vec3(meshData.translation) + bboxSize;
 		if (camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
 			++i;
 			continue;
 		}
-		const glm::mat4& model = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
+		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation)), glm::vec3(meshData.scale[lod]));
 		shader.setUniformMatrix("u_model", model, false);
-		glBindVertexArray(meshData.vertexArrayObject);
-		glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
+		glBindVertexArray(meshData.vertexArrayObject[lod]);
+		glDrawElements(GL_TRIANGLES, meshData.noOfIndices[lod], meshData.indexType[lod], 0);
 		GL_checkError();
 		++drawCallsWorld;
 		++i;
@@ -204,65 +203,64 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	return drawCallsWorld;
 }
 
-void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData) {
+void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData, int lod) {
 	const uint32_t* vecIndices = surfaceMesh.getRawIndexData();
 	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
 	const voxel::VoxelVertexDecoded* vecVertices = surfaceMesh.getRawVertexData();
 	const uint32_t numVertices = surfaceMesh.getNoOfVertices();
 
-	core_assert(meshData.vertexBuffer > 0);
-	glBindBuffer(GL_ARRAY_BUFFER, meshData.vertexBuffer);
+	core_assert(meshData.vertexBuffer[lod] > 0);
+	glBindBuffer(GL_ARRAY_BUFFER, meshData.vertexBuffer[lod]);
 	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(voxel::VoxelVertexDecoded), vecVertices, GL_STATIC_DRAW);
 
-	core_assert(meshData.indexBuffer > 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
+	core_assert(meshData.indexBuffer[lod] > 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer[lod]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(typename voxel::DecodedMesh::IndexType), vecIndices, GL_STATIC_DRAW);
 
-	meshData.noOfIndices = numIndices;
+	meshData.noOfIndices[lod] = numIndices;
 }
 
 // TODO: generate bigger buffers and use glBufferSubData
-video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::DecodedMesh& surfaceMesh, const glm::ivec3& translation, float scale) {
-	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
-	const uint32_t numVertices = surfaceMesh.getNoOfVertices();
-
+video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh) {
 	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
 	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
 	video::GLMeshData meshData;
+	meshData.translation = mesh.translation;
+	meshData.numLods = mesh.numLods;
 
-	// Create the VAO for the mesh
-	glGenVertexArrays(1, &meshData.vertexArrayObject);
-	core_assert(meshData.vertexArrayObject > 0);
-	glBindVertexArray(meshData.vertexArrayObject);
+	// Create the VAOs for the meshes
+	glGenVertexArrays(meshData.numLods, meshData.vertexArrayObject);
 
 	// The GL_ARRAY_BUFFER will contain the list of vertex positions
-	glGenBuffers(1, &meshData.vertexBuffer);
+	glGenBuffers(meshData.numLods, meshData.vertexBuffer);
 
 	// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
-	glGenBuffers(1, &meshData.indexBuffer);
+	glGenBuffers(meshData.numLods, meshData.indexBuffer);
 
-	updateMesh(surfaceMesh, meshData);
+	for (int i = 0; i < mesh.numLods; ++i) {
+		core_assert(meshData.vertexArrayObject[i] > 0);
+		glBindVertexArray(meshData.vertexArrayObject[i]);
 
-	const int posLoc = shader.enableVertexAttribute("a_pos");
-	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
-			GL_OFFSET_CAST(offsetof(voxel::VoxelVertexDecoded, position)));
+		updateMesh(mesh.mesh[i], meshData, i);
 
-	const int matLoc = shader.enableVertexAttribute("a_materialdensity");
-	// our material and density is encoded as 8 bits material and 8 bits density
-	core_assert(sizeof(voxel::Voxel) == sizeof(uint16_t));
-	glVertexAttribIPointer(matLoc, sizeof(voxel::Voxel), GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertexDecoded),
-			GL_OFFSET_CAST(offsetof(voxel::VoxelVertexDecoded, data)));
+		const int posLoc = shader.enableVertexAttribute("a_pos");
+		glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
+				GL_OFFSET_CAST(offsetof(voxel::VoxelVertexDecoded, position)));
+
+		const int matLoc = shader.enableVertexAttribute("a_materialdensity");
+		// our material and density is encoded as 8 bits material and 8 bits density
+		core_assert(sizeof(voxel::Voxel) == sizeof(uint16_t));
+		glVertexAttribIPointer(matLoc, sizeof(voxel::Voxel), GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertexDecoded),
+				GL_OFFSET_CAST(offsetof(voxel::VoxelVertexDecoded, data)));
+
+		meshData.scale[i] = 1 << i;
+		meshData.indexType[i] = GL_UNSIGNED_INT;
+	}
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	Log::trace("mesh information:\n- mesh indices: %i, vertices: %i\n- position: %i:%i:%i", numIndices, numVertices, translation.x,
-			translation.y, translation.z);
-
-	meshData.translation = translation;
-	meshData.scale = scale;
-	meshData.indexType = GL_UNSIGNED_INT;
 	return meshData;
 }
 
@@ -336,7 +334,8 @@ void WorldRenderer::extractMeshAroundCamera(int radius) {
 	glm::ivec3 pos = cameraPos;
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
-		if (!isDistanceCulled(pos, false)) {
+		const float distance = getDistance2(pos);
+		if (!isDistanceCulled(distance, false)) {
 			glm::ivec3 regionPos = pos;
 			regionPos.y = 0;
 			for (int i = 0; i < maxChunks; ++i) {
@@ -381,12 +380,16 @@ void WorldRenderer::onRunning(long dt) {
 	}
 }
 
-bool WorldRenderer::isDistanceCulled(const glm::ivec3& pos, bool queryForRendering) const {
+int WorldRenderer::getDistance2(const glm::ivec3& pos) const {
 	const glm::ivec3 dist = pos - _lastGridPosition;
-	const int distance = glm::sqrt(dist.x * dist.x + dist.z * dist.z);
+	const int distance = dist.x * dist.x + dist.z * dist.z;
+	return distance;
+}
+
+bool WorldRenderer::isDistanceCulled(int distance2, bool queryForRendering) const {
 	const float cullingThreshold = _world->getChunkSize() * 3;
-	const int maxAllowedDistance = _viewDistance + cullingThreshold;
-	if ((!queryForRendering && distance > MinCullingDistance) && distance >= maxAllowedDistance) {
+	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
+	if ((!queryForRendering && distance2 > glm::pow(MinCullingDistance, 2)) && distance2 >= maxAllowedDistance) {
 		return true;
 	}
 	return false;

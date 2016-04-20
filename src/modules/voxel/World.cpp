@@ -12,6 +12,7 @@
 #include "polyvox/AStarPathfinder.h"
 #include "polyvox/CubicSurfaceExtractor.h"
 #include "polyvox/RawVolume.h"
+#include "polyvox/VolumeResampler.h"
 #include <SDL.h>
 #include <zlib.h>
 
@@ -145,7 +146,21 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 			locked([&] () {
 				// calculate ao
 				calculateAO(region);
-				data.mesh = PolyVox::decodeMesh(PolyVox::extractCubicMesh(_volumeData, region, IsQuadNeeded(), true));
+				const bool mergeQuads = true;
+				data.mesh[0] = PolyVox::decodeMesh(PolyVox::extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
+
+				using TargetVolume = PolyVox::RawVolume<Voxel>;
+
+				for (int i = 1; i < voxel::MAX_VOXEL_LOD; ++i) {
+					PolyVox::Region targetRegion = region;
+					targetRegion.shrink(region.getWidthInVoxels() / (i * 4));
+					TargetVolume rawVolume(targetRegion);
+					PolyVox::VolumeResampler<WorldData, TargetVolume> resampler(_volumeData, region, &rawVolume, rawVolume.getEnclosingRegion());
+					resampler.execute();
+					data.mesh[i] = PolyVox::decodeMesh(PolyVox::extractCubicMesh(&rawVolume, targetRegion, IsQuadNeeded(), mergeQuads));
+				}
+
+				data.numLods = MAX_VOXEL_LOD;
 			});
 		}
 

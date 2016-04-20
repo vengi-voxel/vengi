@@ -26,10 +26,13 @@ typedef PolyVox::Mesh<VoxelVertex> CubicMesh;
 typedef PolyVox::Vertex<voxel::Voxel> VoxelVertexDecoded;
 typedef PolyVox::Mesh<VoxelVertexDecoded, typename CubicMesh::IndexType> DecodedMesh;
 
+constexpr int MAX_VOXEL_LOD = 4;
+
 struct DecodedMeshData {
-	DecodedMesh mesh;
+	DecodedMesh mesh[MAX_VOXEL_LOD];
 	// translation on the x and z axis
 	glm::ivec3 translation;
+	int numLods;
 };
 
 static const VoxelType Invalid = -1;

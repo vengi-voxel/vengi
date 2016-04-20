@@ -1,21 +1,25 @@
 #pragma once
 
 #include "GLFunc.h"
+#include "voxel/Voxel.h"
 #include <glm/glm.hpp>
 
 namespace video {
 
+constexpr int MAX_LODS = voxel::MAX_VOXEL_LOD;
+
 struct GLMeshData {
-	GLuint noOfIndices = 0;
-	GLenum indexType = 0;
-	GLuint indexBuffer = 0;
-	GLuint vertexBuffer = 0;
-	GLuint vertexArrayObject = 0;
-	GLuint baseVertex = 0u;
-	GLuint baseIndex = 0u;
-	GLuint materialIndex = 0u;
-	glm::ivec3 translation;
-	float scale = 1.0f;
+	GLuint noOfIndices[MAX_LODS] = { 0u, 0u, 0u, 0u };
+	GLenum indexType[MAX_LODS] = { 0, 0, 0, 0 };
+	GLuint indexBuffer[MAX_LODS] = { 0u, 0u, 0u, 0u };
+	GLuint vertexBuffer[MAX_LODS] = { 0u, 0u, 0u, 0u };
+	GLuint vertexArrayObject[MAX_LODS] = { 0u, 0u, 0u, 0u };
+	GLuint baseVertex[MAX_LODS] = { 0u, 0u, 0u, 0u };
+	GLuint baseIndex[MAX_LODS] = { 0u, 0u, 0u, 0u };
+	GLuint materialIndex[MAX_LODS] = { 0u, 0u, 0u, 0u };
+	float scale[MAX_LODS] = { 1.0f, 2.0f, 4.0f, 8.0f };
+	int numLods = 1;
+	glm::ivec3 translation = { 0, 0, 0 };
 };
 
 }
