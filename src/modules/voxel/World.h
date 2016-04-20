@@ -20,6 +20,7 @@
 #include "core/Var.h"
 #include "core/Random.h"
 #include "core/Log.h"
+#include "polyvox/Interpolation.h"
 
 namespace voxel {
 
@@ -289,5 +290,14 @@ static const char *TreeTypeStr[] = {
 	"PINE"
 };
 static_assert(SDL_arraysize(TreeTypeStr) == (int)World::TreeType::MAX, "TreeType and TreeTypeStr didn't match");
+
+}
+
+namespace PolyVox {
+
+template<>
+inline voxel::Voxel lerp(const voxel::Voxel& a, const voxel::Voxel& b, const float x) {
+	return a.getMaterial() == voxel::Air ? b : a;
+}
 
 }
