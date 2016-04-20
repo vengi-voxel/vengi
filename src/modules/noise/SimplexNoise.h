@@ -188,7 +188,7 @@ public:
 			int index = 0;
 			for (int x = 0; x < size; ++x) {
 				for (int y = 0; y < size; ++y, ++index) {
-					buffer[index*3+channel] = buffer_channel[index];
+					buffer[index * 3 + channel] = buffer_channel[index];
 				}
 			}
 		}
@@ -197,25 +197,24 @@ public:
 	template<class Func, class ... Args>
 	static void SeamlessNoise2DBuffer(uint8_t* buffer, int size, int components, const glm::vec4& pos, Func&& func, Args&&... args) {
 		// seamless noise: http://www.gamedev.net/blog/33/entry-2138456-seamless-noise/
-		const float pi2 = 2.0f * glm::pi<float>();
+		const float pi2 = glm::two_pi<float>();
 		const float d = 1.0f / size;
 		float s = 0.0f;
-		for (int x = 0; x < size; x++, s+=d) {
-			const float s_pi2 = s*pi2;
+		for (int x = 0; x < size; x++, s += d) {
+			const float s_pi2 = s * pi2;
 			const float nx = glm::cos(s_pi2);
 			const float nz = glm::sin(s_pi2);
 			float t = 0.0f;
-			for (int y = 0; y < size; y++, t+=d) {
-				const float t_pi2 = t*pi2;
-				float ny = glm::cos(t_pi2);
-				float nw = glm::sin(t_pi2);
-				float noise = func(glm::vec4(nx,ny,nz,nw) + pos, std::forward<Args>(args)...);
-				noise = (noise + 0.5f) * 1.0;
-				noise = std::min(std::max(noise, 0.0f), 1.0f);
-				unsigned char color = (unsigned char) (noise * 255.0f);
+			for (int y = 0; y < size; y++, t += d) {
+				const float t_pi2 = t * pi2;
+				const float ny = glm::cos(t_pi2);
+				const float nw = glm::sin(t_pi2);
+				float noise = func(glm::vec4(nx, ny, nz, nw) + pos, std::forward<Args>(args)...);
+				noise = glm::clamp(noise::norm(noise), 0.0f, 1.0f);
+				const unsigned char color = (unsigned char) (noise * 255.0f);
 				int index = y * (size * components) + (x * components);
-				const int fill_components = components == 4 ? 3 : components;
-				for (int i = 0; i < fill_components; ++i) {
+				const int fillComponents = components == 4 ? 3 : components;
+				for (int i = 0; i < fillComponents; ++i) {
 					buffer[index++] = color;
 				}
 				if (components == 4) {
