@@ -1,10 +1,10 @@
 #pragma once
 
-#include "polyvox/MaterialDensityPair.h"
-#include "polyvox/Mesh.h"
-#include "polyvox/Vertex.h"
-#include "polyvox/CubicSurfaceExtractor.h"
 #include <glm/glm.hpp>
+#include "CubicSurfaceExtractor.h"
+#include "MaterialDensityPair.h"
+#include "Mesh.h"
+#include "Vertex.h"
 #include <vector>
 
 namespace voxel {
@@ -15,16 +15,16 @@ namespace voxel {
 // density 0 - 255 (8 bits)
 // material types 0 - 255 (8 bits)
 typedef uint8_t VoxelType;
-typedef PolyVox::MaterialDensityPair88 Voxel;
+typedef MaterialDensityPair88 Voxel;
 
 inline Voxel createVoxel(VoxelType type) {
 	return Voxel(type, Voxel::getMaxDensity());
 }
 
-typedef PolyVox::CubicVertex<voxel::Voxel> VoxelVertex;
-typedef PolyVox::Mesh<VoxelVertex> CubicMesh;
-typedef PolyVox::Vertex<voxel::Voxel> VoxelVertexDecoded;
-typedef PolyVox::Mesh<VoxelVertexDecoded, typename CubicMesh::IndexType> DecodedMesh;
+typedef CubicVertex<voxel::Voxel> VoxelVertex;
+typedef Mesh<VoxelVertex> CubicMesh;
+typedef Vertex<voxel::Voxel> VoxelVertexDecoded;
+typedef Mesh<VoxelVertexDecoded, typename CubicMesh::IndexType> DecodedMesh;
 
 constexpr int MAX_VOXEL_LOD = 1;
 static_assert(MAX_VOXEL_LOD >= 1, "MAX_LODS might not be smaller than 1");

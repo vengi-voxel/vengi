@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-namespace PolyVox {
+namespace voxel {
 
 template<uint32_t noOfDims, typename ElementType>
 class Array {

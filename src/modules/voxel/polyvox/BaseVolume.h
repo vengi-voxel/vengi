@@ -4,7 +4,7 @@
 #include "Utility.h"
 #include <limits>
 
-namespace PolyVox {
+namespace voxel {
 
 /// The BaseVolume class provides common functionality and an interface for other volume classes to implement.
 /// You should not try to create an instance of this class directly. Instead you should use RawVolume or PagedVolume.

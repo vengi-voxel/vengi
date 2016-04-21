@@ -2,7 +2,7 @@
 
 #include "core/Common.h"
 
-namespace PolyVox {
+namespace voxel {
 namespace RaycastResults {
 
 /**

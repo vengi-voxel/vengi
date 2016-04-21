@@ -7,7 +7,8 @@
 #include <set>
 #include <vector>
 
-namespace PolyVox {
+namespace voxel {
+
 class OpenNodesContainer;
 class ClosedNodesContainer;
 

@@ -1,12 +1,11 @@
 #pragma once
 
 #include "BaseVolume.h"
-
 #include <cstdlib> //For abort()
 #include <limits>
 #include <memory>
 
-namespace PolyVox {
+namespace voxel {
 
 /**
  * Simple volume implementation which stores data in a single large 3D array.

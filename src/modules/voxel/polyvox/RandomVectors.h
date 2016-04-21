@@ -2,7 +2,7 @@
 
 #include "core/Common.h"
 
-namespace PolyVox {
+namespace voxel {
 
 const glm::vec3 randomVectors[1024] = {
 	glm::vec3(+0.348918f, -0.385662f, +0.650197f),

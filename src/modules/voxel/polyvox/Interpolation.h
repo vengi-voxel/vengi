@@ -1,6 +1,6 @@
 #pragma once
 
-namespace PolyVox {
+namespace voxel {
 
 template<typename Type>
 Type lerp(const Type& v0, const Type& v1, const float x) {

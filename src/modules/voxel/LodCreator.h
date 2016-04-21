@@ -1,7 +1,7 @@
 #pragma once
 
-#include "WorldData.h"
 #include "polyvox/RawVolume.h"
+#include "WorldData.h"
 
 namespace voxel {
 
@@ -9,13 +9,13 @@ inline bool isSolidVoxel(const Voxel& voxel) {
 	return voxel.getMaterial() != Air;
 }
 
-void rescaleCubicVolume(WorldData* source, const PolyVox::Region& sourceRegion, PolyVox::RawVolume<Voxel>* destination, const PolyVox::Region& destinationRegion) {
+void rescaleCubicVolume(WorldData* source, const Region& sourceRegion, RawVolume<Voxel>* destination, const Region& destinationRegion) {
 	core_assert_msg(sourceRegion.getWidthInVoxels() == destinationRegion.getWidthInVoxels() * 2, "Wrong width - %i versus %i!", sourceRegion.getWidthInVoxels(), destinationRegion.getWidthInVoxels() * 2);
 	core_assert_msg(sourceRegion.getHeightInVoxels() == destinationRegion.getHeightInVoxels() * 2, "Wrong height - %i versus %i!", sourceRegion.getHeightInVoxels(), destinationRegion.getHeightInVoxels() * 2);
 	core_assert_msg(sourceRegion.getDepthInVoxels() == destinationRegion.getDepthInVoxels() * 2, "Wrong depth - %i versus %i!", sourceRegion.getDepthInVoxels(), destinationRegion.getDepthInVoxels() * 2);
 
 	typename WorldData::Sampler srcSampler(source);
-	typename PolyVox::RawVolume<Voxel>::Sampler dstSampler(destination);
+	typename RawVolume<Voxel>::Sampler dstSampler(destination);
 
 	// First of all we iterate over all destination voxels and compute their color as the
 	// average of the colors of the eight corresponding voxels in the higher resolution version.

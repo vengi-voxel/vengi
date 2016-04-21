@@ -2,7 +2,6 @@
 
 #include "BaseVolume.h"
 #include "Morton.h"
-
 #include <array>
 #include <algorithm>
 #include <cstring> //For memcpy
@@ -12,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-namespace PolyVox {
+namespace voxel {
 
 /// This class provide a volume implementation which avoids storing all the data in memory at all times. Instead it breaks the volume
 /// down into a set of chunks and moves these into and out of memory on demand. This means it is much more memory efficient than the

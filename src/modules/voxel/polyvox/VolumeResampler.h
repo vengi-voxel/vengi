@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Region.h"
 #include "Interpolation.h"
+#include "Region.h"
 #include "core/Common.h"
 #include <cmath>
 
-namespace PolyVox {
+namespace voxel {
 
 /**
  * This class can be used to copy data from one volume to another, possibly while

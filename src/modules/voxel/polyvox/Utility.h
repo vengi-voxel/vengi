@@ -3,7 +3,7 @@
 #include "core/Common.h"
 #include <cstdint>
 
-namespace PolyVox {
+namespace voxel {
 inline bool isPowerOf2(uint32_t uInput) {
 	if (uInput == 0)
 		return false;

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "polyvox/Mesh.h"
 #include <glm/glm.hpp>
+#include "polyvox/Interpolation.h"
+#include "polyvox/Mesh.h"
+#include "polyvox/Voxel.h"
 #include <memory>
 #include <unordered_set>
 #include <mutex>
@@ -13,14 +15,12 @@
 
 #include "io/Filesystem.h"
 #include "WorldData.h"
-#include "Voxel.h"
 #include "BiomManager.h"
 #include "core/ThreadPool.h"
 #include "core/ReadWriteLock.h"
 #include "core/Var.h"
 #include "core/Random.h"
 #include "core/Log.h"
-#include "polyvox/Interpolation.h"
 
 namespace voxel {
 
@@ -69,7 +69,7 @@ public:
 	};
 
 	struct TerrainContext {
-		PolyVox::Region region;
+		Region region;
 		// if no chunk is given, the positions are defined in absolute world coordinates
 		// otherwise they should be given in chunk coordinates.
 		// if a chunk region is exceeded by a coordinate (which might be true for e.g. tree,
@@ -198,9 +198,9 @@ private:
 				_world(world) {
 		}
 
-		void pageIn(const PolyVox::Region& region, WorldData::Chunk* chunk) override;
+		void pageIn(const Region& region, WorldData::Chunk* chunk) override;
 
-		void pageOut(const PolyVox::Region& region, WorldData::Chunk* chunk) override;
+		void pageOut(const Region& region, WorldData::Chunk* chunk) override;
 	};
 
 	template<typename Func>
@@ -230,7 +230,7 @@ private:
 	// don't access the volume in anything that is called here
 	void create(TerrainContext& ctx);
 
-	void calculateAO(const PolyVox::Region& region);
+	void calculateAO(const Region& region);
 
 	void setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel);
 
@@ -244,12 +244,12 @@ private:
 
 	void addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height);
 	void createTrees(TerrainContext& ctx);
-	glm::ivec2 randomPosWithoutHeight(const PolyVox::Region& region, int border = 0);
+	glm::ivec2 randomPosWithoutHeight(const Region& region, int border = 0);
 	void createClouds(TerrainContext& ctx);
 	void createUnderground(TerrainContext& ctx);
 
 	void cleanupFutures();
-	PolyVox::Region getRegion(const glm::ivec3& pos) const;
+	Region getRegion(const glm::ivec3& pos) const;
 	inline bool isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) const;
 
 	Pager _pager;
@@ -290,10 +290,6 @@ static const char *TreeTypeStr[] = {
 	"PINE"
 };
 static_assert(SDL_arraysize(TreeTypeStr) == (int)World::TreeType::MAX, "TreeType and TreeTypeStr didn't match");
-
-}
-
-namespace PolyVox {
 
 template<>
 inline voxel::Voxel lerp(const voxel::Voxel& a, const voxel::Voxel& b, const float x) {

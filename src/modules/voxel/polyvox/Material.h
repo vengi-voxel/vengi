@@ -2,7 +2,7 @@
 
 #include "DefaultIsQuadNeeded.h" //we'll specialise this function for this voxel type
 
-namespace PolyVox {
+namespace voxel {
 
 ///This class represents a voxel storing only a material.
 ////////////////////////////////////////////////////////////////////////////////

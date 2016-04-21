@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Voxel.h"
 #include "core/Common.h"
 #include <glm/glm.hpp>
+#include "polyvox/Voxel.h"
 
 namespace voxel {
 

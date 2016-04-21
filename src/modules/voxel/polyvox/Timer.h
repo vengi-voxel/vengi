@@ -3,7 +3,7 @@
 #include <chrono>
 #include <cstdint>
 
-namespace PolyVox {
+namespace voxel {
 
 class Timer {
 public:

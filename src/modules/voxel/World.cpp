@@ -6,21 +6,21 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "io/File.h"
-#include "Voxel.h"
 #include "LodCreator.h"
 #include "core/Random.h"
 #include "noise/SimplexNoise.h"
+#include <SDL.h>
 #include "polyvox/AStarPathfinder.h"
 #include "polyvox/CubicSurfaceExtractor.h"
 #include "polyvox/RawVolume.h"
-#include <SDL.h>
+#include "polyvox/Voxel.h"
 #include <zlib.h>
 
 namespace voxel {
 
 #define WORLD_FILE_VERSION 1
 
-void World::Pager::pageIn(const PolyVox::Region& region, WorldData::Chunk* chunk) {
+void World::Pager::pageIn(const Region& region, WorldData::Chunk* chunk) {
 	TerrainContext ctx;
 	ctx.region = region;
 	ctx.chunk = chunk;
@@ -29,7 +29,7 @@ void World::Pager::pageIn(const PolyVox::Region& region, WorldData::Chunk* chunk
 	}
 }
 
-void World::Pager::pageOut(const PolyVox::Region& region, WorldData::Chunk* chunk) {
+void World::Pager::pageOut(const Region& region, WorldData::Chunk* chunk) {
 #if 0
 	TerrainContext ctx;
 	ctx.region = region;
@@ -51,7 +51,7 @@ World::World() :
 World::~World() {
 }
 
-glm::ivec2 World::randomPosWithoutHeight(const PolyVox::Region& region, int border) {
+glm::ivec2 World::randomPosWithoutHeight(const Region& region, int border) {
 	const int w = region.getWidthInVoxels();
 	const int d = region.getDepthInVoxels();
 	core_assert(border < w);
@@ -84,7 +84,7 @@ struct IsQuadNeeded {
 	}
 };
 
-void World::calculateAO(const PolyVox::Region& region) {
+void World::calculateAO(const Region& region) {
 	for (int nx = region.getLowerX() - 1; nx < region.getUpperX() + 1; ++nx) {
 		for (int nz = region.getLowerZ() - 1; nz < region.getUpperZ() + 1; ++nz) {
 			for (int ny = region.getLowerY(); ny < region.getUpperY() - 1; ++ny) {
@@ -140,20 +140,20 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		if (_cancelThreads)
 			return;
 		core_trace_scoped("MeshExtraction");
-		const PolyVox::Region& region = getRegion(pos);
+		const Region& region = getRegion(pos);
 		DecodedMeshData data;
 		{
 			locked([&] () {
 				// calculate ao
 				calculateAO(region);
 				const bool mergeQuads = true;
-				data.mesh[0] = PolyVox::decodeMesh(PolyVox::extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
+				data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
 
-				using TargetVolume = PolyVox::RawVolume<Voxel>;
+				using TargetVolume = RawVolume<Voxel>;
 
 				const uint32_t downScaleFactor = 2; // or 4
 				for (data.numLods = 1; data.numLods < 2; ++data.numLods) {
-					PolyVox::Region srcRegion = region;
+					Region srcRegion = region;
 					srcRegion.grow(downScaleFactor);
 
 					glm::ivec3 lowerCorner = srcRegion.getLowerCorner();
@@ -163,12 +163,12 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 					upperCorner = upperCorner / static_cast<int32_t>(2);
 					upperCorner = upperCorner + lowerCorner;
 
-					PolyVox::Region targetRegion(lowerCorner, upperCorner);
+					Region targetRegion(lowerCorner, upperCorner);
 
 					TargetVolume rawVolume(targetRegion);
 					rescaleCubicVolume(_volumeData, srcRegion, &rawVolume, rawVolume.getEnclosingRegion());
 					targetRegion.shrink(1);
-					data.mesh[data.numLods] = PolyVox::decodeMesh(PolyVox::extractCubicMesh(&rawVolume, targetRegion, IsQuadNeeded(), mergeQuads));
+					data.mesh[data.numLods] = decodeMesh(extractCubicMesh(&rawVolume, targetRegion, IsQuadNeeded(), mergeQuads));
 				}
 			});
 		}
@@ -180,20 +180,20 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	return true;
 }
 
-PolyVox::Region World::getRegion(const glm::ivec3& pos) const {
+Region World::getRegion(const glm::ivec3& pos) const {
 	const int size = _chunkSize->intVal();
 	int deltaX = size - 1;
 	int deltaY = size - 1;
 	int deltaZ = size - 1;
 	const glm::ivec3 mins(pos.x, pos.y, pos.z);
 	const glm::ivec3 maxs(pos.x + deltaX, pos.y + deltaY, pos.z + deltaZ);
-	const PolyVox::Region region(mins, maxs);
+	const Region region(mins, maxs);
 	return region;
 }
 
 void World::placeTree(const World::TreeContext& ctx) {
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
-	const PolyVox::Region& region = getRegion(getGridPos(pos));
+	const Region& region = getRegion(getGridPos(pos));
 	TerrainContext tctx;
 	tctx.chunk = nullptr;
 	tctx.region = region;
@@ -232,9 +232,9 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 	};
 
 	locked([&] () {
-		const PolyVox::AStarPathfinderParams<voxel::WorldData> params(_volumeData, start, end, &listResult, 1.0f, 10000,
-				PolyVox::TwentySixConnected, std::bind(f, std::placeholders::_1, std::placeholders::_2));
-		PolyVox::AStarPathfinder<voxel::WorldData> pf(params);
+		const AStarPathfinderParams<voxel::WorldData> params(_volumeData, start, end, &listResult, 1.0f, 10000,
+				TwentySixConnected, std::bind(f, std::placeholders::_1, std::placeholders::_2));
+		AStarPathfinder<voxel::WorldData> pf(params);
 		// TODO: move into threadpool
 		pf.execute();
 	});
@@ -432,7 +432,7 @@ void World::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType type, i
 }
 
 void World::createTrees(TerrainContext& ctx) {
-	const PolyVox::Region& region = ctx.region;
+	const Region& region = ctx.region;
 	const int chunkHeight = region.getHeightInVoxels();
 	for (int i = 0; i < 5; ++i) {
 		const int rndValX = _random.random(1, region.getWidthInVoxels() - 1);
@@ -484,7 +484,7 @@ void World::createUnderground(TerrainContext& ctx) {
 bool World::load(TerrainContext& ctx) {
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
-	const PolyVox::Region& region = ctx.region;
+	const Region& region = ctx.region;
 	const std::string& filename = core::string::format("world-%li-%i-%i-%i.wld", _seed, region.getCentreX(), region.getCentreY(), region.getCentreZ());
 	const io::FilePtr& f = filesystem->open(filename);
 	if (!f->exists()) {
@@ -551,7 +551,7 @@ bool World::load(TerrainContext& ctx) {
 bool World::save(TerrainContext& ctx) {
 	Log::info("Save chunk");
 	core::ByteStream voxelStream;
-	const PolyVox::Region& region = ctx.region;
+	const Region& region = ctx.region;
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
@@ -592,7 +592,7 @@ bool World::save(TerrainContext& ctx) {
 }
 
 void World::create(TerrainContext& ctx) {
-	const PolyVox::Region& region = ctx.region;
+	const Region& region = ctx.region;
 	Log::debug("Create new chunk at %i:%i:%i", region.getCentreX(), region.getCentreY(), region.getCentreZ());
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();

@@ -2,7 +2,6 @@
 
 #include "Region.h"
 #include "Vertex.h" //Should probably do away with this one in the future...
-
 #include <algorithm>
 #include <cstdlib>
 #include <list>
@@ -10,7 +9,7 @@
 #include <set>
 #include <vector>
 
-namespace PolyVox {
+namespace voxel {
 
 /// A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
 /// It supports different vertex types (which will vary depending on the surface extractor used and the contents

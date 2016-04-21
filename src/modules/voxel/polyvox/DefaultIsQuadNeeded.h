@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace PolyVox {
+namespace voxel {
 
 /// Default implementation of a function object for deciding when
 /// the cubic surface extractor should insert a face between two voxels.

@@ -2,7 +2,7 @@
 
 #include "core/Common.h"
 
-namespace PolyVox {
+namespace voxel {
 
 /**
  * A structure containing the information about a picking operation

@@ -2,7 +2,7 @@
 
 #include "core/Common.h"
 
-namespace PolyVox {
+namespace voxel {
 
 /**
  * Represents a vertex in a mesh and includes position and normal information.

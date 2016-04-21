@@ -2,10 +2,10 @@
 
 #include "IteratorController.h"
 #include "RawVolume.h" // Currently used by exectureSAT() method - should be replaced by PagedVolume or a template parameter?
-
 #include "Region.h"
 
-namespace PolyVox {
+namespace voxel {
+
 /// This class is able to copy volume data from a source volume to a destination volume while performing low-pass filtering (blurring).
 template<typename SrcVolumeType, typename DstVolumeType, typename AccumulationType>
 class LowPassFilter {

@@ -4,13 +4,12 @@
 #include "BaseVolume.h" //For wrap modes... should move these?
 #include "DefaultIsQuadNeeded.h"
 #include "Mesh.h"
-#include "Vertex.h"
 #include "Timer.h"
-
+#include "Vertex.h"
 #include <vector>
 #include <list>
 
-namespace PolyVox {
+namespace voxel {
 
 /// A specialised vertex format which encodes the data from the cubic extraction algorithm in a very
 /// compact way. You will probably want to use the decodeVertex() function to turn it into a regular

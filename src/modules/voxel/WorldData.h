@@ -1,12 +1,12 @@
 #pragma once
 
+#include "polyvox/Voxel.h"
 #include "core/Common.h"
 
 #include "polyvox/PagedVolume.h"
-#include "Voxel.h"
 
 namespace voxel {
 
-typedef PolyVox::PagedVolume<Voxel> WorldData;
+typedef PagedVolume<Voxel> WorldData;
 
 }

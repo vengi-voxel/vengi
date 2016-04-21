@@ -1,9 +1,8 @@
 #pragma once
 
 #include "DefaultIsQuadNeeded.h" //we'll specialise this function for this voxel type
-#include "DefaultMarchingCubesController.h" //We'll specialise the controller contained in here
 
-namespace PolyVox {
+namespace voxel {
 
 /// This class represents a voxel storing only a density.
 ////////////////////////////////////////////////////////////////////////////////

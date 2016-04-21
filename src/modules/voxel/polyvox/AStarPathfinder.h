@@ -6,7 +6,7 @@
 #include <functional>
 #include <list>
 
-namespace PolyVox {
+namespace voxel {
 
 /// This function provides the default method for checking whether a given voxel
 /// is valid for the path computed by the AStarPathfinder.

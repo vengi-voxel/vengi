@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <limits>
 
-namespace PolyVox {
+namespace voxel {
 
 /** Represents a part of a Volume.
  *

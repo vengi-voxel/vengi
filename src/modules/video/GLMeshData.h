@@ -1,8 +1,8 @@
 #pragma once
 
 #include "GLFunc.h"
-#include "voxel/Voxel.h"
 #include <glm/glm.hpp>
+#include <voxel/polyvox/Voxel.h>
 
 namespace video {
 

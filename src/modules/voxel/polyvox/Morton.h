@@ -1,6 +1,6 @@
 #pragma once
 
-namespace PolyVox {
+namespace voxel {
 
 // Based on: http://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/
 static const uint32_t morton256_x[256] =

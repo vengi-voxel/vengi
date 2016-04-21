@@ -2,7 +2,7 @@
 
 #include "Region.h"
 
-namespace PolyVox {
+namespace voxel {
 
 /// Unfinished class/feature, not appropriate for end user at the moment.
 template<typename IteratorType>
