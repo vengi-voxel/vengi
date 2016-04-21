@@ -7,17 +7,32 @@
 namespace video {
 
 constexpr int MAX_LODS = voxel::MAX_VOXEL_LOD;
+static_assert(MAX_LODS >= 1, "MAX_LODS might not be smaller than 1");
 
 struct GLMeshData {
-	GLuint noOfIndices[MAX_LODS] = { 0u, 0u, 0u, 0u };
-	GLenum indexType[MAX_LODS] = { 0, 0, 0, 0 };
-	GLuint indexBuffer[MAX_LODS] = { 0u, 0u, 0u, 0u };
-	GLuint vertexBuffer[MAX_LODS] = { 0u, 0u, 0u, 0u };
-	GLuint vertexArrayObject[MAX_LODS] = { 0u, 0u, 0u, 0u };
-	GLuint baseVertex[MAX_LODS] = { 0u, 0u, 0u, 0u };
-	GLuint baseIndex[MAX_LODS] = { 0u, 0u, 0u, 0u };
-	GLuint materialIndex[MAX_LODS] = { 0u, 0u, 0u, 0u };
-	float scale[MAX_LODS] = { 1.0f, 2.0f, 4.0f, 8.0f };
+	GLMeshData() {
+		for (int i = 0; i < MAX_LODS; ++i) {
+			noOfIndices[i] = 0u;
+			indexType[i] = 0;
+			indexBuffer[i] = 0u;
+			vertexBuffer[i] = 0u;
+			vertexArrayObject[i] = 0u;
+			baseVertex[i] = 0u;
+			baseIndex[i] = 0u;
+			materialIndex[i] = 0u;
+			scale[i] = float(1 << i);
+		}
+	}
+
+	GLuint noOfIndices[MAX_LODS];
+	GLenum indexType[MAX_LODS];
+	GLuint indexBuffer[MAX_LODS];
+	GLuint vertexBuffer[MAX_LODS];
+	GLuint vertexArrayObject[MAX_LODS];
+	GLuint baseVertex[MAX_LODS];
+	GLuint baseIndex[MAX_LODS];
+	GLuint materialIndex[MAX_LODS];
+	float scale[MAX_LODS];
 	int numLods = 1;
 	glm::ivec3 translation = { 0, 0, 0 };
 };
