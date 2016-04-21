@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WorldData.h"
+#include "polyvox/RawVolume.h"
 
 namespace voxel {
 
@@ -9,12 +10,12 @@ inline bool isSolidVoxel(const Voxel& voxel) {
 }
 
 void rescaleCubicVolume(WorldData* source, const PolyVox::Region& sourceRegion, PolyVox::RawVolume<Voxel>* destination, const PolyVox::Region& destinationRegion) {
-	core_assert_msg(sourceRegion.getWidthInVoxels() == destinationRegion.getWidthInVoxels() * 2, "Wrong size!");
-	core_assert_msg(sourceRegion.getHeightInVoxels() == destinationRegion.getHeightInVoxels() * 2, "Wrong size!");
-	core_assert_msg(sourceRegion.getDepthInVoxels() == destinationRegion.getDepthInVoxels() * 2, "Wrong size!");
+	core_assert_msg(sourceRegion.getWidthInVoxels() == destinationRegion.getWidthInVoxels() * 2, "Wrong width - %i versus %i!", sourceRegion.getWidthInVoxels(), destinationRegion.getWidthInVoxels() * 2);
+	core_assert_msg(sourceRegion.getHeightInVoxels() == destinationRegion.getHeightInVoxels() * 2, "Wrong height - %i versus %i!", sourceRegion.getHeightInVoxels(), destinationRegion.getHeightInVoxels() * 2);
+	core_assert_msg(sourceRegion.getDepthInVoxels() == destinationRegion.getDepthInVoxels() * 2, "Wrong depth - %i versus %i!", sourceRegion.getDepthInVoxels(), destinationRegion.getDepthInVoxels() * 2);
 
-	WorldData::Sampler srcSampler(source);
-	PolyVox::RawVolume<Voxel>::Sampler dstSampler(destination);
+	typename WorldData::Sampler srcSampler(source);
+	typename PolyVox::RawVolume<Voxel>::Sampler dstSampler(destination);
 
 	// First of all we iterate over all destination voxels and compute their color as the
 	// average of the colors of the eight corresponding voxels in the higher resolution version.

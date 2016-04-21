@@ -7,12 +7,12 @@
 #include "core/Trace.h"
 #include "io/File.h"
 #include "Voxel.h"
+#include "LodCreator.h"
 #include "core/Random.h"
 #include "noise/SimplexNoise.h"
 #include "polyvox/AStarPathfinder.h"
 #include "polyvox/CubicSurfaceExtractor.h"
 #include "polyvox/RawVolume.h"
-#include "polyvox/VolumeResampler.h"
 #include <SDL.h>
 #include <zlib.h>
 
@@ -151,16 +151,25 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 
 				using TargetVolume = PolyVox::RawVolume<Voxel>;
 
-				for (int i = 1; i < voxel::MAX_VOXEL_LOD; ++i) {
-					PolyVox::Region targetRegion = region;
-					targetRegion.shrink(region.getWidthInVoxels() / (i * 4));
-					TargetVolume rawVolume(targetRegion);
-					PolyVox::VolumeResampler<WorldData, TargetVolume> resampler(_volumeData, region, &rawVolume, rawVolume.getEnclosingRegion());
-					resampler.execute();
-					data.mesh[i] = PolyVox::decodeMesh(PolyVox::extractCubicMesh(&rawVolume, targetRegion, IsQuadNeeded(), mergeQuads));
-				}
+				const uint32_t downScaleFactor = 2; // or 4
+				for (data.numLods = 1; data.numLods < 2; ++data.numLods) {
+					PolyVox::Region srcRegion = region;
+					srcRegion.grow(downScaleFactor);
 
-				data.numLods = MAX_VOXEL_LOD;
+					glm::ivec3 lowerCorner = srcRegion.getLowerCorner();
+					glm::ivec3 upperCorner = srcRegion.getUpperCorner();
+
+					upperCorner = upperCorner - lowerCorner;
+					upperCorner = upperCorner / static_cast<int32_t>(2);
+					upperCorner = upperCorner + lowerCorner;
+
+					PolyVox::Region targetRegion(lowerCorner, upperCorner);
+
+					TargetVolume rawVolume(targetRegion);
+					rescaleCubicVolume(_volumeData, srcRegion, &rawVolume, rawVolume.getEnclosingRegion());
+					targetRegion.shrink(1);
+					data.mesh[data.numLods] = PolyVox::decodeMesh(PolyVox::extractCubicMesh(&rawVolume, targetRegion, IsQuadNeeded(), mergeQuads));
+				}
 			});
 		}
 
