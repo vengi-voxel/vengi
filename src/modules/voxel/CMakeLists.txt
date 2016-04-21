@@ -4,7 +4,6 @@ fips_begin_module(voxel)
 		World.cpp World.h
 		WorldEvents.h
 		WorldData.h
-		Voxel.h
 	)
 	fips_dir(polyvox)
 	fips_files(
@@ -14,7 +13,6 @@ fips_begin_module(voxel)
 		BaseVolume.h
 		CubicSurfaceExtractor.h
 		DefaultIsQuadNeeded.h
-		DefaultMarchingCubesController.h
 		Interpolation.h
 		IteratorController.h
 		LowPassFilter.h
@@ -32,6 +30,7 @@ fips_begin_module(voxel)
 		Timer.h
 		Utility.h
 		Vertex.h
+		Voxel.h
 		VolumeResampler.h
 	)
 	fips_deps(core io noise zlib)
