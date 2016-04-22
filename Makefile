@@ -58,3 +58,9 @@ tests-list: build
 
 tests-filter: build
 	$(Q)./fips run tests -- --gtest_filter=$(FILTER) $(ARGS)
+
+tags: forceme
+	$(Q)ctags -R src
+
+forceme:
+
