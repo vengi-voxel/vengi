@@ -149,16 +149,16 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 				const bool mergeQuads = true;
 				data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
 
-				const uint32_t downScaleFactor = 2; // or 4
+				const uint32_t downScaleFactor = 2;
 				for (data.numLods = 1; data.numLods < 2; ++data.numLods) {
 					Region srcRegion = region;
 					srcRegion.grow(downScaleFactor);
 
-					glm::ivec3 lowerCorner = srcRegion.getLowerCorner();
+					const glm::ivec3& lowerCorner = srcRegion.getLowerCorner();
 					glm::ivec3 upperCorner = srcRegion.getUpperCorner();
 
 					upperCorner = upperCorner - lowerCorner;
-					upperCorner = upperCorner / static_cast<int32_t>(2);
+					upperCorner = upperCorner / 2;
 					upperCorner = upperCorner + lowerCorner;
 
 					Region targetRegion(lowerCorner, upperCorner);

@@ -15,7 +15,7 @@ fips_begin_module(voxel)
 		BaseVolume.h BaseVolume.cpp
 		CubicSurfaceExtractor.h
 		DefaultIsQuadNeeded.h
-		Mesh.h
+		Mesh.h Mesh.cpp
 		Morton.h
 		PagedVolume.h PagedVolume.cpp
 		RawVolume.h RawVolume.cpp

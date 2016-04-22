@@ -52,23 +52,8 @@ private:
 /// Meshes returned by the surface extractors often have vertices with efficient compressed
 /// formats which are hard to interpret directly (see CubicVertex and MarchingCubesVertex).
 /// This function creates a new uncompressed mesh containing the much simpler Vertex objects.
-template<typename MeshType>
-Mesh<Vertex, typename MeshType::IndexType> decodeMesh(const MeshType& encodedMesh) {
-	Mesh<Vertex, typename MeshType::IndexType> decodedMesh;
+Mesh<Vertex> decodeMesh(const Mesh<CubicVertex>& encodedMesh);
 
-	for (typename MeshType::IndexType ct = 0; ct < encodedMesh.getNoOfVertices(); ct++) {
-		decodedMesh.addVertex(decodeVertex(encodedMesh.getVertex(ct)));
-	}
-
-	core_assert_msg(encodedMesh.getNoOfIndices() % 3 == 0, "The number of indices must always be a multiple of three.");
-	for (uint32_t ct = 0; ct < encodedMesh.getNoOfIndices(); ct += 3) {
-		decodedMesh.addTriangle(encodedMesh.getIndex(ct), encodedMesh.getIndex(ct + 1), encodedMesh.getIndex(ct + 2));
-	}
-
-	decodedMesh.setOffset(encodedMesh.getOffset());
-
-	return decodedMesh;
-}
 template<typename VertexType, typename IndexType>
 Mesh<VertexType, IndexType>::Mesh() {
 }
