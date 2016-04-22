@@ -1,7 +1,6 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include "polyvox/Interpolation.h"
 #include "polyvox/Mesh.h"
 #include "polyvox/Voxel.h"
 #include <memory>
@@ -290,10 +289,5 @@ static const char *TreeTypeStr[] = {
 	"PINE"
 };
 static_assert(SDL_arraysize(TreeTypeStr) == (int)World::TreeType::MAX, "TreeType and TreeTypeStr didn't match");
-
-template<>
-inline voxel::Voxel lerp(const voxel::Voxel& a, const voxel::Voxel& b, const float x) {
-	return a.getMaterial() == voxel::Air ? b : a;
-}
 
 }

@@ -4,7 +4,6 @@
 #include "BaseVolume.h" //For wrap modes... should move these?
 #include "DefaultIsQuadNeeded.h"
 #include "Mesh.h"
-#include "Timer.h"
 #include "Vertex.h"
 #include <vector>
 #include <list>
@@ -258,7 +257,6 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 	core_assert_msg(region.getHeightInVoxels() <= maxRegionDimensionInVoxels, "Requested extraction region exceeds maximum dimensions");
 	core_assert_msg(region.getDepthInVoxels() <= maxRegionDimensionInVoxels, "Requested extraction region exceeds maximum dimensions");
 
-	Timer timer;
 	result->clear();
 
 	//Used to avoid creating duplicate vertices.

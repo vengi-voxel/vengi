@@ -2,7 +2,7 @@
 
 #include "GLFunc.h"
 #include <glm/glm.hpp>
-#include <voxel/polyvox/Voxel.h>
+#include "voxel/Voxel.h"
 
 namespace video {
 
