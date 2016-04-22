@@ -3,7 +3,7 @@
 #include "ui/Window.h"
 #include "core/Common.h"
 
-using TREECTX = voxel::World::TreeContext;
+using TREECTX = voxel::TreeContext;
 static const ui::Window::Field TREEFIELDS[] = {
 	{INT_FIELD("treetype", TREECTX, type)},
 	{INT_FIELD("trunkheight", TREECTX, trunkHeight)},
@@ -17,7 +17,7 @@ static const ui::Window::Field TREEFIELDS[] = {
 class TreeParametersWindow: public ui::Window {
 private:
 	ShapeTool* _tool;
-	voxel::World::TreeContext _ctx;
+	voxel::TreeContext _ctx;
 public:
 	TreeParametersWindow(ShapeTool* tool) :
 			ui::Window(tool), _tool(tool) {
@@ -27,7 +27,7 @@ public:
 		fillWidgets(TREEFIELDS, SDL_arraysize(TREEFIELDS), &_ctx);
 		tb::TBSelectList *treeType = GetWidgetByIDAndType<tb::TBSelectList>("treetype");
 		if (treeType != nullptr) {
-			int max = static_cast<int>(voxel::World::TreeType::MAX);
+			int max = static_cast<int>(voxel::TreeType::MAX);
 			tb::TBGenericStringItemSource *itemSource = treeType->GetDefaultSource();
 			for (int i = 0; i < max; ++i) {
 				const tb::TBStr str(voxel::TreeTypeStr[i]);

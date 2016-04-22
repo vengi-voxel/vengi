@@ -4,7 +4,8 @@
 namespace core {
 
 ByteStream::ByteStream(int size) :
-		_buffer(size), _pos(0) {
+		_buffer(), _pos(0) {
+	_buffer.reserve(size);
 }
 
 ByteStream::~ByteStream() {

@@ -100,7 +100,7 @@ void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) 
 	_camera.onMotion(x, y, relX, relY);
 }
 
-void ShapeTool::placeTree(const voxel::World::TreeContext& ctx) {
+void ShapeTool::placeTree(const voxel::TreeContext& ctx) {
 	_world->placeTree(ctx);
 	regenerate(ctx.pos);
 	// TODO: might have affected more than one chunk

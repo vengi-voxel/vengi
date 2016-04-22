@@ -4,7 +4,6 @@
 #include "polyvox/Mesh.h"
 #include "polyvox/PagedVolume.h"
 #include <memory>
-#include <unordered_set>
 #include <mutex>
 #include <queue>
 #include <random>
@@ -12,6 +11,7 @@
 #include <vector>
 #include <atomic>
 
+#include "WorldPersister.h"
 #include "io/Filesystem.h"
 #include "BiomManager.h"
 #include "core/ThreadPool.h"
@@ -21,19 +21,6 @@
 #include "core/Log.h"
 
 namespace voxel {
-
-struct IVec3HashEquals {
-	size_t operator()(const glm::ivec3& k) const {
-		// TODO: find a better hash function - we have a lot of collisions here
-		return std::hash<int>()(k.x) ^ std::hash<int>()(k.y) ^ std::hash<int>()(k.z);
-	}
-
-	bool operator()(const glm::ivec3& a, const glm::ivec3& b) const {
-		return a == b;
-	}
-};
-
-typedef std::unordered_set<glm::ivec3, IVec3HashEquals> PositionSet;
 
 class World {
 public:
@@ -45,37 +32,6 @@ public:
 
 	World();
 	~World();
-
-	enum class TreeType : int32_t {
-		DOME,
-		CONE,
-		ELLIPSIS,
-		CUBE,
-		PINE,
-		MAX
-	};
-
-	struct TreeContext {
-		TreeType type = TreeType::DOME;
-		int trunkHeight = 6;
-		int trunkWidth = 2;
-		int width = 10;
-		int height = 10;
-		int depth = 10;
-		// y-level is automatically determined
-		glm::ivec2 pos = glm::ivec2(0, 0);
-	};
-
-	struct TerrainContext {
-		Region region;
-		// if no chunk is given, the positions are defined in absolute world coordinates
-		// otherwise they should be given in chunk coordinates.
-		// if a chunk region is exceeded by a coordinate (which might be true for e.g. tree,
-		// cloud or building generation) then the relative chunk coordinate is converted into
-		// an absolute position in the world by taking the given region parameter into account
-		PagedVolume::Chunk* chunk;
-		PositionSet dirty;
-	};
 
 	struct WorldContext {
 		int landscapeNoiseOctaves = 1;
@@ -190,6 +146,7 @@ public:
 private:
 	class Pager: public PagedVolume::Pager {
 	private:
+		WorldPersister _worldPersister;
 		World& _world;
 	public:
 		Pager(World& world) :
@@ -223,12 +180,8 @@ private:
 
 	static int findChunkFloor(int chunkSize, PagedVolume::Chunk* chunk, int x, int y);
 
-	bool load(TerrainContext& ctx);
-	bool save(TerrainContext& ctx);
 	// don't access the volume in anything that is called here
 	void create(TerrainContext& ctx);
-
-	std::string getWorldName(const Region& region) const;
 
 	void calculateAO(const Region& region);
 
@@ -281,14 +234,5 @@ inline int World::getMaterial(int x, int y, int z) const {
 }
 
 typedef std::shared_ptr<World> WorldPtr;
-
-static const char *TreeTypeStr[] = {
-	"DOME",
-	"CONE",
-	"ELLIPSIS",
-	"CUBE",
-	"PINE"
-};
-static_assert(SDL_arraysize(TreeTypeStr) == (int)World::TreeType::MAX, "TreeType and TreeTypeStr didn't match");
 
 }
