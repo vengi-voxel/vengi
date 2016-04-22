@@ -70,6 +70,14 @@ const Voxel& PagedVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) 
 	return pChunk->getVoxel(xOffset, yOffset, zOffset);
 }
 
+PagedVolume::Chunk* PagedVolume::getChunk(const glm::ivec3& pos) const {
+	const int32_t chunkX = pos.x >> m_uChunkSideLengthPower;
+	const int32_t chunkY = pos.y >> m_uChunkSideLengthPower;
+	const int32_t chunkZ = pos.z >> m_uChunkSideLengthPower;
+	auto pChunk = canReuseLastAccessedChunk(chunkX, chunkY, chunkZ) ? m_pLastAccessedChunk : getChunk(chunkX, chunkY, chunkZ);
+	return pChunk;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// This version of the function is provided so that the wrap mode does not need
 /// to be specified as a template parameter, as it may be confusing to some users.

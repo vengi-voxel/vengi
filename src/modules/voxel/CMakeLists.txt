@@ -28,5 +28,5 @@ fips_begin_module(voxel)
 	fips_deps(core io noise zlib)
 fips_end_module()
 
-gtest_suite_files(tests tests/WorldTest.cpp)
+gtest_suite_files(tests tests/WorldTest.cpp tests/WorldPersisterTest.cpp)
 gtest_suite_deps(tests voxel)

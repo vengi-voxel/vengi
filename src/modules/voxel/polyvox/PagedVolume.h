@@ -196,6 +196,7 @@ public:
 
 	/// Calculates approximatly how many bytes of memory the volume is currently using.
 	uint32_t calculateSizeInBytes();
+	Chunk* getChunk(const glm::ivec3& pos) const;
 
 protected:
 	/// Copy constructor

@@ -118,9 +118,9 @@ public:
 	/// Sets the value used for voxels which are outside the volume
 	void setBorderValue(const Voxel& tBorder);
 	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
-	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, Voxel tValue);
+	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue);
 	/// Sets the voxel at the position given by a 3D vector
-	inline void setVoxel(const glm::ivec3& v3dPos, Voxel tValue);
+	inline void setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue);
 
 	/// Calculates approximatly how many bytes of memory the volume is currently using.
 	uint32_t calculateSizeInBytes();
@@ -159,7 +159,7 @@ inline const Voxel& RawVolume::getVoxel(const glm::ivec3& v3dPos) const {
 /// @param v3dPos the 3D position of the voxel
 /// @param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
-inline void RawVolume::setVoxel(const glm::ivec3& v3dPos, Voxel tValue) {
+inline void RawVolume::setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue) {
 	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
 

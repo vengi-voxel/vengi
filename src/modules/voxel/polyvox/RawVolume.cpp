@@ -99,7 +99,7 @@ void RawVolume::setBorderValue(const Voxel& tBorder) {
 /// @param uZPos the @c z position of the voxel
 /// @param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
-void RawVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, Voxel tValue) {
+void RawVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue) {
 	if (!this->m_regValidRegion.containsPoint(glm::ivec3(uXPos, uYPos, uZPos))) {
 		core_assert_msg(false, "Position is outside valid region");
 	}

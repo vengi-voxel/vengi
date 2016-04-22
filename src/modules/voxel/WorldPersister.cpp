@@ -49,8 +49,6 @@ bool WorldPersister::load(TerrainContext& ctx, long seed) {
 		return false;
 	}
 
-	Log::info("Loading a world from file %s,uncompressing to %i", f->getName().c_str(), (int) len);
-
 	uint8_t* targetBuf = new uint8_t[len];
 	std::unique_ptr<uint8_t[]> smartTargetBuf(targetBuf);
 
