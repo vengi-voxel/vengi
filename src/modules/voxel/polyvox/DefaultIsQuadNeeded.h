@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Voxel.h"
 #include <cstdint>
 
 namespace voxel {
@@ -13,12 +14,11 @@ namespace voxel {
 /// geater than zero (typically indicating it is solid). Note that for
 /// different behaviour users can create their own implementation and pass
 /// it to extractCubicMesh().
-template<typename VoxelType>
 class DefaultIsQuadNeeded {
 public:
-	bool operator()(VoxelType back, VoxelType front, VoxelType& materialToUse) {
-		if (back > 0 && front == 0) {
-			materialToUse = static_cast<VoxelType>(back);
+	bool operator()(const Voxel& back, const Voxel& front, Voxel& materialToUse) {
+		if (back.getMaterial() != Air && front.getMaterial() == Air) {
+			materialToUse = back;
 			return true;
 		}
 		return false;

@@ -38,11 +38,11 @@ template<typename DataType>
 Vertex<DataType> decodeVertex(const CubicVertex<DataType>& cubicVertex);
 
 /// Generates a cubic-style mesh from the voxel data.
-template<typename VolumeType, typename MeshType, typename IsQuadNeeded = DefaultIsQuadNeeded<typename VolumeType::VoxelType> >
+template<typename VolumeType, typename MeshType, typename IsQuadNeeded = DefaultIsQuadNeeded>
 void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
 
 /// Generates a cubic-style mesh from the voxel data, placing the result into a user-provided Mesh.
-template<typename VolumeType, typename IsQuadNeeded = DefaultIsQuadNeeded<typename VolumeType::VoxelType> >
+template<typename VolumeType, typename IsQuadNeeded = DefaultIsQuadNeeded>
 Mesh<CubicVertex<typename VolumeType::VoxelType> > extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
 
 // This constant defines the maximum number of quads which can share a vertex in a cubic style mesh.

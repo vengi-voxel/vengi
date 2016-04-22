@@ -114,7 +114,7 @@ void World::calculateAO(const Region& region) {
 						ao -= 25;
 					}
 				}
-				voxel.setDensity(ao);
+				//voxel.setDensity(ao);
 				_volumeData->setVoxel(nx, ny, nz, voxel);
 			}
 		}
@@ -228,7 +228,7 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 		std::list<glm::ivec3>& listResult) {
 	static auto f = [] (const voxel::WorldData* volData, const glm::ivec3& v3dPos) {
 		const voxel::Voxel& voxel = volData->getVoxel(v3dPos);
-		return voxel.getDensity() != 0;
+		return voxel.getMaterial() != Air;
 	};
 
 	locked([&] () {

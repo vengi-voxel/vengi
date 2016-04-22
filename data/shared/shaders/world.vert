@@ -1,6 +1,6 @@
 // attributes from the VAOs
 in vec3 a_pos;
-in ivec2 a_materialdensity;
+in int a_material;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
@@ -24,15 +24,14 @@ void main(void) {
 	vec4 pos4 = modelview * vec4(a_pos, 1.0);
 	v_pos = pos4.xyz;
 	// TODO: use a_pos.w to encode the ao for each vertex - per voxel is not enough
-	v_ambientocclusion = clamp(float(a_materialdensity.y) / 255.0, 0.0, 1.0);
+	v_ambientocclusion = 1.0; //clamp(float(a_materialdensity.y) / 255.0, 0.0, 1.0);
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
 	v_lightpos = u_lightpos;
 
 	vec4 noisepos = u_model * vec4(a_pos, 1.0);
 	vec3 colornoise = texture(u_texture, abs(noisepos.xz) / 256.0 / 10.0).rgb;
-	int material = a_materialdensity.x;
-	v_color = u_materialcolor[material].rgb * colornoise * 1.8;
+	v_color = u_materialcolor[a_material].rgb * colornoise * 1.8;
 	v_color = clamp(v_color, 0.0, 1.0);
 
 	// use the air color as fog color, too
