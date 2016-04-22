@@ -13,6 +13,10 @@ private:
 		TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
 				core::App(filesystem, eventBus, 10000) {
 			init("engine", "test");
+			while (_curState < AppState::Running) {
+				core_trace_scoped("AppMainLoop");
+				onFrame();
+			}
 		}
 	};
 
