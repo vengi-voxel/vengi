@@ -14,6 +14,14 @@ std::string WorldPersister::getWorldName(const Region& region, long seed) const 
 	return core::string::format("world_%li_%i_%i_%i.wld", seed, region.getCentreX(), region.getCentreY(), region.getCentreZ());
 }
 
+void WorldPersister::erase(TerrainContext& ctx, long seed) {
+	const core::App* app = core::App::getInstance();
+	const io::FilesystemPtr& filesystem = app->filesystem();
+	const Region& region = ctx.region;
+	const std::string& filename = getWorldName(region, seed);
+	// TODO: filesystem->remove(filename);
+}
+
 bool WorldPersister::load(TerrainContext& ctx, long seed) {
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();

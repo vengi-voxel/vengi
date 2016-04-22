@@ -153,6 +153,8 @@ private:
 				_world(world) {
 		}
 
+		void erase(const Region& region, PagedVolume::Chunk* chunk);
+
 		void pageIn(const Region& region, PagedVolume::Chunk* chunk) override;
 
 		void pageOut(const Region& region, PagedVolume::Chunk* chunk) override;

@@ -15,6 +15,13 @@
 
 namespace voxel {
 
+void World::Pager::erase(const Region& region, PagedVolume::Chunk* chunk) {
+	TerrainContext ctx;
+	ctx.region = region;
+	ctx.chunk = chunk;
+	_worldPersister.erase(ctx, _world.seed());
+}
+
 void World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 	TerrainContext ctx;
 	ctx.region = region;
@@ -226,7 +233,8 @@ int World::findFloor(int x, int z) const {
 }
 
 bool World::allowReExtraction(const glm::ivec3& pos) {
-	return _meshesExtracted.erase(getGridPos(pos)) != 0;
+	const glm::ivec3& gridPos = getGridPos(pos);
+	return _meshesExtracted.erase(gridPos) != 0;
 }
 
 bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
