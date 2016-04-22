@@ -27,7 +27,6 @@ struct CubicVertex {
 inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition);
 
 /// Decodes a CubicVertex by converting it into a regular Vertex which can then be directly used for rendering.
-template<typename DataType>
 inline Vertex decodeVertex(const CubicVertex& cubicVertex);
 
 /// Generates a cubic-style mesh from the voxel data.
@@ -68,10 +67,9 @@ struct Quad {
 	uint32_t vertices[4];
 };
 
-template<typename VolumeType>
 struct IndexAndMaterial {
 	int32_t iIndex;
-	typename VolumeType::VoxelType uMaterial;
+	Voxel uMaterial;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,11 +149,11 @@ bool performQuadMerging(std::list<Quad>& quads, MeshType* m_meshCurrent) {
 	return bDidMerge;
 }
 
-template<typename VolumeType, typename MeshType>
-int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, typename VolumeType::VoxelType uMaterialIn, Array<3, IndexAndMaterial<VolumeType> >& existingVertices,
+template<typename MeshType>
+int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, IndexAndMaterial>& existingVertices,
 		MeshType* m_meshCurrent) {
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ct++) {
-		IndexAndMaterial<VolumeType>& rEntry = existingVertices(uX, uY, ct);
+		IndexAndMaterial& rEntry = existingVertices(uX, uY, ct);
 
 		if (rEntry.iIndex == -1) {
 			//No vertices matched and we've now hit an empty space. Fill it by creating a vertex. The 0.5f offset is because vertices set between voxels in order to build cubes around them.
@@ -252,17 +250,17 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 	result->clear();
 
 	//Used to avoid creating duplicate vertices.
-	Array<3, IndexAndMaterial<VolumeType> > m_previousSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
+	Array<3, IndexAndMaterial> m_previousSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
 			MaxVerticesPerPosition);
-	Array<3, IndexAndMaterial<VolumeType> > m_currentSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
+	Array<3, IndexAndMaterial> m_currentSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
 			MaxVerticesPerPosition);
 
 	//During extraction we create a number of different lists of quads. All the
 	//quads in a given list are in the same plane and facing in the same direction.
 	std::vector<std::list<Quad> > m_vecQuads[NoOfFaces];
 
-	memset(m_previousSliceVertices.getRawData(), 0xff, m_previousSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial<VolumeType> ));
-	memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial<VolumeType> ));
+	memset(m_previousSliceVertices.getRawData(), 0xff, m_previousSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
+	memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
 
 	m_vecQuads[NegativeX].resize(region.getUpperX() - region.getLowerX() + 2);
 	m_vecQuads[PositiveX].resize(region.getUpperX() - region.getLowerX() + 2);
@@ -354,7 +352,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 		}
 
 		m_previousSliceVertices.swap(m_currentSliceVertices);
-		memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial<VolumeType> ));
+		memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
 	}
 
 	for (uint32_t uFace = 0; uFace < NoOfFaces; uFace++) {
