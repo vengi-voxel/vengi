@@ -24,9 +24,8 @@ enum Connectivity {
 
 struct Node {
 	Node(int x, int y, int z) :
-			gVal(std::numeric_limits<float>::quiet_NaN()) //Initilise with NaNs so that we will
-					, hVal(std::numeric_limits<float>::quiet_NaN()) //know if we forget to set these properly.
-					, parent(0) {
+			// Initialise with NaNs so that we will know if we forget to set these properly.
+			gVal(std::numeric_limits<float>::quiet_NaN()), hVal(std::numeric_limits<float>::quiet_NaN()), parent(nullptr) {
 		position = {x, y, z};
 	}
 
@@ -58,7 +57,7 @@ struct Node {
 	float hVal;
 	Node* parent;
 
-	float f() const {
+	inline float f() const {
 		return gVal + hVal;
 	}
 };
@@ -84,11 +83,11 @@ public:
 	typedef std::vector<AllNodesContainer::iterator>::iterator iterator;
 
 public:
-	void clear() {
+	inline void clear() {
 		open.clear();
 	}
 
-	bool empty() const {
+	inline bool empty() const {
 		return open.empty();
 	}
 
@@ -97,7 +96,7 @@ public:
 		push_heap(open.begin(), open.end(), NodeSort());
 	}
 
-	AllNodesContainer::iterator getFirst() {
+	inline AllNodesContainer::iterator getFirst() {
 		return open[0];
 	}
 
@@ -111,11 +110,11 @@ public:
 		make_heap(open.begin(), open.end(), NodeSort());
 	}
 
-	iterator begin() {
+	inline iterator begin() {
 		return open.begin();
 	}
 
-	iterator end() {
+	inline iterator end() {
 		return open.end();
 	}
 
@@ -133,29 +132,28 @@ public:
 	typedef std::set<AllNodesContainer::iterator, AllNodesContainerIteratorComparator>::iterator iterator;
 
 public:
-	void clear() {
+	inline void clear() {
 		closed.clear();
 	}
 
-	void insert(AllNodesContainer::iterator node) {
+	inline void insert(AllNodesContainer::iterator node) {
 		closed.insert(node);
 	}
 
-	void remove(iterator iterToRemove) {
+	inline void remove(iterator iterToRemove) {
 		closed.erase(iterToRemove);
 	}
 
-	iterator begin() {
+	inline iterator begin() {
 		return closed.begin();
 	}
 
-	iterator end() {
+	inline iterator end() {
 		return closed.end();
 	}
 
-	iterator find(AllNodesContainer::iterator node) {
-		iterator iter = std::find(closed.begin(), closed.end(), node);
-		return iter;
+	inline iterator find(AllNodesContainer::iterator node) {
+		return std::find(closed.begin(), closed.end(), node);
 	}
 
 private:
