@@ -484,11 +484,15 @@ void World::createUnderground(TerrainContext& ctx) {
 	createPlane(ctx, startPos, 10, 10, voxel);
 }
 
+std::string World::getWorldName(const Region& region) const {
+	return core::string::format("world_%li_%i_%i_%i.wld", _seed, region.getCentreX(), region.getCentreY(), region.getCentreZ());
+}
+
 bool World::load(TerrainContext& ctx) {
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	const Region& region = ctx.region;
-	const std::string& filename = core::string::format("world-%li-%i-%i-%i.wld", _seed, region.getCentreX(), region.getCentreY(), region.getCentreZ());
+	const std::string& filename = getWorldName(region);
 	const io::FilePtr& f = filesystem->open(filename);
 	if (!f->exists()) {
 		return false;
@@ -569,7 +573,7 @@ bool World::save(TerrainContext& ctx) {
 	}
 
 	// save the stuff
-	const std::string filename = core::string::format("world-%li-%i-%i-%i.wld", _seed, region.getCentreX(), region.getCentreY(), region.getCentreZ());
+	const std::string& filename = getWorldName(region);
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
 

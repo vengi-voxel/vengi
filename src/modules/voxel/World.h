@@ -228,6 +228,8 @@ private:
 	// don't access the volume in anything that is called here
 	void create(TerrainContext& ctx);
 
+	std::string getWorldName(const Region& region) const;
+
 	void calculateAO(const Region& region);
 
 	void setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel);
