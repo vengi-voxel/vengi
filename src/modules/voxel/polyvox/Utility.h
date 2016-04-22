@@ -4,6 +4,7 @@
 #include <cstdint>
 
 namespace voxel {
+
 inline bool isPowerOf2(uint32_t uInput) {
 	if (uInput == 0)
 		return false;
@@ -28,28 +29,4 @@ inline uint8_t logBase2(uint32_t uInput) {
 	return static_cast<uint8_t>(uResult - 1);
 }
 
-// http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-inline uint32_t upperPowerOfTwo(uint32_t v) {
-	v--;
-	v |= v >> 1;
-	v |= v >> 2;
-	v |= v >> 4;
-	v |= v >> 8;
-	v |= v >> 16;
-	v++;
-	return v;
-}
-
-inline int32_t roundTowardsNegInf(float r) {
-	return r >= 0.0 ? static_cast<int32_t>(r) : static_cast<int32_t>(r - 1.0f);
-}
-
-inline int32_t roundToNearestInteger(float r) {
-	return r >= 0.0 ? static_cast<int32_t>(r + 0.5f) : static_cast<int32_t>(r - 0.5f);
-}
-
-template<typename Type>
-inline Type clamp(const Type& value, const Type& low, const Type& high) {
-	return std::min(high, std::max(low, value));
-}
 }

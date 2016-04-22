@@ -183,197 +183,197 @@ private:
 };
 
 /**
- *  @return The 'x' position of the centre.
+ * @return The 'x' position of the centre.
  */
 inline int32_t Region::getCentreX() const {
 	return (m_iLowerX + m_iUpperX) / 2;
 }
 
 /**
- *  @return The 'y' position of the centre.
+ * @return The 'y' position of the centre.
  */
 inline int32_t Region::getCentreY() const {
 	return (m_iLowerY + m_iUpperY) / 2;
 }
 
 /**
- *  @return The 'z' position of the centre.
+ * @return The 'z' position of the centre.
  */
 inline int32_t Region::getCentreZ() const {
 	return (m_iLowerZ + m_iUpperZ) / 2;
 }
 
 /**
- *  @return The 'x' position of the lower corner.
+ * @return The 'x' position of the lower corner.
  */
 inline int32_t Region::getLowerX() const {
 	return m_iLowerX;
 }
 
 /**
- *  @return The 'y' position of the lower corner.
+ * @return The 'y' position of the lower corner.
  */
 inline int32_t Region::getLowerY() const {
 	return m_iLowerY;
 }
 
 /**
- *  @return The 'z' position of the lower corner.
+ * @return The 'z' position of the lower corner.
  */
 inline int32_t Region::getLowerZ() const {
 	return m_iLowerZ;
 }
 
 /**
- *  @return The 'x' position of the upper corner.
+ * @return The 'x' position of the upper corner.
  */
 inline int32_t Region::getUpperX() const {
 	return m_iUpperX;
 }
 
 /**
- *  @return The 'y' position of the upper corner.
+ * @return The 'y' position of the upper corner.
  */
 inline int32_t Region::getUpperY() const {
 	return m_iUpperY;
 }
 
 /**
- *  @return The 'z' position of the upper corner.
+ * @return The 'z' position of the upper corner.
  */
 inline int32_t Region::getUpperZ() const {
 	return m_iUpperZ;
 }
 
 /**
- *  @return The position of the lower corner.
+ * @return The position of the lower corner.
  */
 inline glm::ivec3 Region::getCentre() const {
 	return glm::ivec3(getCentreX(), getCentreY(), getCentreZ());
 }
 
 /**
- *  @return The position of the lower corner.
+ * @return The position of the lower corner.
  */
 inline glm::ivec3 Region::getLowerCorner() const {
 	return glm::ivec3(m_iLowerX, m_iLowerY, m_iLowerZ);
 }
 
 /**
- *  @return The position of the upper corner.
+ * @return The position of the upper corner.
  */
 inline glm::ivec3 Region::getUpperCorner() const {
 	return glm::ivec3(m_iUpperX, m_iUpperY, m_iUpperZ);
 }
 
 /**
- *  @return The width of the region measured in voxels.
- *  @sa getWidthInCells()
+ * @return The width of the region measured in voxels.
+ * @sa getWidthInCells()
  */
 inline int32_t Region::getWidthInVoxels() const {
 	return getWidthInCells() + 1;
 }
 
 /**
- *  @return The height of the region measured in voxels.
- *  @sa getHeightInCells()
+ * @return The height of the region measured in voxels.
+ * @sa getHeightInCells()
  */
 inline int32_t Region::getHeightInVoxels() const {
 	return getHeightInCells() + 1;
 }
 
 /**
- *  @return The depth of the region measured in voxels.
- *  @sa getDepthInCells()
+ * @return The depth of the region measured in voxels.
+ * @sa getDepthInCells()
  */
 inline int32_t Region::getDepthInVoxels() const {
 	return getDepthInCells() + 1;
 }
 
 /**
- *  @return The dimensions of the region measured in voxels.
- *  @sa getDimensionsInCells()
+ * @return The dimensions of the region measured in voxels.
+ * @sa getDimensionsInCells()
  */
 inline glm::ivec3 Region::getDimensionsInVoxels() const {
 	return getDimensionsInCells() + glm::ivec3(1, 1, 1);
 }
 
 /**
- *  @return The width of the region measured in cells.
- *  @sa getWidthInVoxels()
+ * @return The width of the region measured in cells.
+ * @sa getWidthInVoxels()
  */
 inline int32_t Region::getWidthInCells() const {
 	return m_iUpperX - m_iLowerX;
 }
 
 /**
- *  @return The height of the region measured in cells.
- *  @sa getHeightInVoxels()
+ * @return The height of the region measured in cells.
+ * @sa getHeightInVoxels()
  */
 inline int32_t Region::getHeightInCells() const {
 	return m_iUpperY - m_iLowerY;
 }
 
 /**
- *  @return The depth of the region measured in cells.
- *  @sa getDepthInVoxels()
+ * @return The depth of the region measured in cells.
+ * @sa getDepthInVoxels()
  */
 inline int32_t Region::getDepthInCells() const {
 	return m_iUpperZ - m_iLowerZ;
 }
 
 /**
- *  @return The dimensions of the region measured in cells.
- *  @sa getDimensionsInVoxels()
+ * @return The dimensions of the region measured in cells.
+ * @sa getDimensionsInVoxels()
  */
 inline glm::ivec3 Region::getDimensionsInCells() const {
 	return glm::ivec3(getWidthInCells(), getHeightInCells(), getDepthInCells());
 }
 
 /**
- *  @param iX The new 'x' position of the lower corner.
+ * @param iX The new 'x' position of the lower corner.
  */
 inline void Region::setLowerX(int32_t iX) {
 	m_iLowerX = iX;
 }
 
 /**
- *  @param iY The new 'y' position of the lower corner.
+ * @param iY The new 'y' position of the lower corner.
  */
 inline void Region::setLowerY(int32_t iY) {
 	m_iLowerY = iY;
 }
 
 /**
- *  @param iZ The new 'z' position of the lower corner.
+ * @param iZ The new 'z' position of the lower corner.
  */
 inline void Region::setLowerZ(int32_t iZ) {
 	m_iLowerZ = iZ;
 }
 
 /**
- *  @param iX The new 'x' position of the upper corner.
+ * @param iX The new 'x' position of the upper corner.
  */
 inline void Region::setUpperX(int32_t iX) {
 	m_iUpperX = iX;
 }
 
 /**
- *  @param iY The new 'y' position of the upper corner.
+ * @param iY The new 'y' position of the upper corner.
  */
 inline void Region::setUpperY(int32_t iY) {
 	m_iUpperY = iY;
 }
 
 /**
- *  @param iZ The new 'z' position of the upper corner.
+ * @param iZ The new 'z' position of the upper corner.
  */
 inline void Region::setUpperZ(int32_t iZ) {
 	m_iUpperZ = iZ;
 }
 
 /**
- *  @param v3dLowerCorner The new position of the lower corner.
+ * @param v3dLowerCorner The new position of the lower corner.
  */
 inline void Region::setLowerCorner(const glm::ivec3& v3dLowerCorner) {
 	m_iLowerX = v3dLowerCorner.x;
@@ -382,29 +382,12 @@ inline void Region::setLowerCorner(const glm::ivec3& v3dLowerCorner) {
 }
 
 /**
- *  @param v3dUpperCorner The new position of the upper corner.
+ * @param v3dUpperCorner The new position of the upper corner.
  */
 inline void Region::setUpperCorner(const glm::ivec3& v3dUpperCorner) {
 	m_iUpperX = v3dUpperCorner.x;
 	m_iUpperY = v3dUpperCorner.y;
 	m_iUpperZ = v3dUpperCorner.z;
-}
-
-/**
- */
-inline Region Region::MaxRegion() {
-	return Region((std::numeric_limits<int32_t>::min)(), (std::numeric_limits<int32_t>::min)(), (std::numeric_limits<int32_t>::min)(), (std::numeric_limits<int32_t>::max)(),
-			(std::numeric_limits<int32_t>::max)(), (std::numeric_limits<int32_t>::max)());
-}
-
-/**
- * This Region is not considered valid as defined by isValid(). It's main application
- * is to initialise a Region to this value and then() accumulate positions. The result
- * of this will be a Region which encompasses all positions specified.
- */
-inline Region Region::InvertedRegion() {
-	return Region((std::numeric_limits<int32_t>::max)(), (std::numeric_limits<int32_t>::max)(), (std::numeric_limits<int32_t>::max)(), (std::numeric_limits<int32_t>::min)(),
-			(std::numeric_limits<int32_t>::min)(), (std::numeric_limits<int32_t>::min)());
 }
 
 /**
@@ -491,23 +474,23 @@ inline bool Region::operator==(const Region& rhs) const {
 }
 
 /**
- *  Two regions are considered different if any of their extents differ.
- *  @param rhs The Region to compare to.
- *  @return true if the Regions are different.
- *  @sa operator==
+ * Two regions are considered different if any of their extents differ.
+ * @param rhs The Region to compare to.
+ * @return true if the Regions are different.
+ * @sa operator==
  */
 inline bool Region::operator!=(const Region& rhs) const {
 	return !(*this == rhs);
 }
 
 /**
- *  The boundary value can be used to ensure a position is only considered to be inside
- *  the Region if it is that far in in all directions. Also, the test is inclusive such
- *  that positions lying exactly on the edge of the Region are considered to be inside it.
- *  @param fX The 'x' position of the point to test.
- *  @param fY The 'y' position of the point to test.
- *  @param fZ The 'z' position of the point to test.
- *  @param boundary The desired boundary value.
+ * The boundary value can be used to ensure a position is only considered to be inside
+ * the Region if it is that far in in all directions. Also, the test is inclusive such
+ * that positions lying exactly on the edge of the Region are considered to be inside it.
+ * @param fX The 'x' position of the point to test.
+ * @param fY The 'y' position of the point to test.
+ * @param fZ The 'z' position of the point to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) const {
 	return (fX <= m_iUpperX - boundary) && (fY <= m_iUpperY - boundary) && (fZ <= m_iUpperZ - boundary) && (fX >= m_iLowerX + boundary) && (fY >= m_iLowerY + boundary)
@@ -526,13 +509,13 @@ inline bool Region::containsPoint(const glm::vec3& pos, float boundary) const {
 }
 
 /**
- *  The boundary value can be used to ensure a position is only considered to be inside
- *  the Region if it is that far in in all directions. Also, the test is inclusive such
- *  that positions lying exactly on the edge of the Region are considered to be inside it.
- *  @param iX The 'x' position of the point to test.
- *  @param iY The 'y' position of the point to test.
- *  @param iZ The 'z' position of the point to test.
- *  @param boundary The desired boundary value.
+ * The boundary value can be used to ensure a position is only considered to be inside
+ * the Region if it is that far in in all directions. Also, the test is inclusive such
+ * that positions lying exactly on the edge of the Region are considered to be inside it.
+ * @param iX The 'x' position of the point to test.
+ * @param iY The 'y' position of the point to test.
+ * @param iZ The 'z' position of the point to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t boundary) const {
 	return (iX <= m_iUpperX - boundary) && (iY <= m_iUpperY - boundary) && (iZ <= m_iUpperZ - boundary) && (iX >= m_iLowerX + boundary) && (iY >= m_iLowerY + boundary)
@@ -617,11 +600,11 @@ inline bool Region::containsPointInZ(int32_t pos, uint8_t boundary) const {
 }
 
 /**
- *  The boundary value can be used to ensure a region is only considered to be inside
- *  another Region if it is that far in in all directions. Also, the test is inclusive such
- *  that a region is considered to be inside of itself.
- *  @param reg The region to test.
- *  @param boundary The desired boundary value.
+ * The boundary value can be used to ensure a region is only considered to be inside
+ * another Region if it is that far in in all directions. Also, the test is inclusive such
+ * that a region is considered to be inside of itself.
+ * @param reg The region to test.
+ * @param boundary The desired boundary value.
  */
 inline bool Region::containsRegion(const Region& reg, uint8_t boundary) const {
 	return (reg.m_iUpperX <= m_iUpperX - boundary) && (reg.m_iUpperY <= m_iUpperY - boundary) && (reg.m_iUpperZ <= m_iUpperZ - boundary) && (reg.m_iLowerX >= m_iLowerX + boundary)
@@ -683,8 +666,6 @@ inline void Region::grow(const glm::ivec3& v3dAmount) {
 	grow(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
-/**
- */
 inline bool Region::isValid() const {
 	return m_iUpperX >= m_iLowerX && m_iUpperY >= m_iLowerY && m_iUpperZ >= m_iLowerZ;
 }
