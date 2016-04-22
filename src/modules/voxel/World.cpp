@@ -163,7 +163,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 
 					Region targetRegion(lowerCorner, upperCorner);
 
-					RawVolume<Voxel> rawVolume(targetRegion);
+					RawVolume rawVolume(targetRegion);
 					rescaleCubicVolume(_volumeData, srcRegion, &rawVolume, rawVolume.getEnclosingRegion());
 					targetRegion.shrink(1);
 					data.mesh[data.numLods] = decodeMesh(extractCubicMesh(&rawVolume, targetRegion, IsQuadNeeded(), mergeQuads));

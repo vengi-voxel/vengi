@@ -18,7 +18,7 @@ fips_begin_module(voxel)
 		Mesh.h
 		Morton.h
 		PagedVolume.h PagedVolume.cpp
-		RawVolume.h
+		RawVolume.h RawVolume.cpp
 		Raycast.h
 		Region.h
 		Utility.h
