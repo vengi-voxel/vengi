@@ -20,7 +20,7 @@ namespace voxel {
 
 #define WORLD_FILE_VERSION 1
 
-void World::Pager::pageIn(const Region& region, WorldData::Chunk* chunk) {
+void World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 	TerrainContext ctx;
 	ctx.region = region;
 	ctx.chunk = chunk;
@@ -29,7 +29,7 @@ void World::Pager::pageIn(const Region& region, WorldData::Chunk* chunk) {
 	}
 }
 
-void World::Pager::pageOut(const Region& region, WorldData::Chunk* chunk) {
+void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
 #if 0
 	TerrainContext ctx;
 	ctx.region = region;
@@ -43,7 +43,7 @@ World::World() :
 		_pager(*this), _seed(0), _clientData(false), _threadPool(1), _rwLock("World"),
 		_random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
-	_volumeData = new WorldData(&_pager, 256 * 1024 * 1024, _chunkSize->intVal());
+	_volumeData = new PagedVolume(&_pager, 256 * 1024 * 1024, _chunkSize->intVal());
 	core_assert(_biomManager.addBiom(0, 100, createVoxel(Grass)));
 	core_assert(_biomManager.addBiom(101, MAX_HEIGHT - 1, createVoxel(Grass)));
 }
@@ -200,7 +200,7 @@ void World::placeTree(const World::TreeContext& ctx) {
 	addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height);
 }
 
-int World::findChunkFloor(int chunkHeight, WorldData::Chunk* chunk, int x, int z) {
+int World::findChunkFloor(int chunkHeight, PagedVolume::Chunk* chunk, int x, int z) {
 	for (int i = chunkHeight - 1; i >= 0; i--) {
 		const int material = chunk->getVoxel(x, i, z).getMaterial();
 		if (isFloor(material)) {
@@ -226,15 +226,15 @@ bool World::allowReExtraction(const glm::ivec3& pos) {
 
 bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 		std::list<glm::ivec3>& listResult) {
-	static auto f = [] (const voxel::WorldData* volData, const glm::ivec3& v3dPos) {
+	static auto f = [] (const voxel::PagedVolume* volData, const glm::ivec3& v3dPos) {
 		const voxel::Voxel& voxel = volData->getVoxel(v3dPos);
 		return voxel.getMaterial() != Air;
 	};
 
 	locked([&] () {
-		const AStarPathfinderParams<voxel::WorldData> params(_volumeData, start, end, &listResult, 1.0f, 10000,
+		const AStarPathfinderParams<voxel::PagedVolume> params(_volumeData, start, end, &listResult, 1.0f, 10000,
 				TwentySixConnected, std::bind(f, std::placeholders::_1, std::placeholders::_2));
-		AStarPathfinder<voxel::WorldData> pf(params);
+		AStarPathfinder<voxel::PagedVolume> pf(params);
 		// TODO: move into threadpool
 		pf.execute();
 	});

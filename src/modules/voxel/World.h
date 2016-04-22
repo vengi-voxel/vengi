@@ -74,7 +74,7 @@ public:
 		// if a chunk region is exceeded by a coordinate (which might be true for e.g. tree,
 		// cloud or building generation) then the relative chunk coordinate is converted into
 		// an absolute position in the world by taking the given region parameter into account
-		WorldData::Chunk* chunk;
+		PagedVolume::Chunk* chunk;
 		PositionSet dirty;
 	};
 
@@ -189,7 +189,7 @@ public:
 	}
 
 private:
-	class Pager: public WorldData::Pager {
+	class Pager: public PagedVolume::Pager {
 	private:
 		World& _world;
 	public:
@@ -197,9 +197,9 @@ private:
 				_world(world) {
 		}
 
-		void pageIn(const Region& region, WorldData::Chunk* chunk) override;
+		void pageIn(const Region& region, PagedVolume::Chunk* chunk) override;
 
-		void pageOut(const Region& region, WorldData::Chunk* chunk) override;
+		void pageOut(const Region& region, PagedVolume::Chunk* chunk) override;
 	};
 
 	template<typename Func>
@@ -222,7 +222,7 @@ private:
 		return func();
 	}
 
-	static int findChunkFloor(int chunkSize, WorldData::Chunk* chunk, int x, int y);
+	static int findChunkFloor(int chunkSize, PagedVolume::Chunk* chunk, int x, int y);
 
 	bool load(TerrainContext& ctx);
 	bool save(TerrainContext& ctx);
@@ -252,7 +252,7 @@ private:
 	inline bool isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) const;
 
 	Pager _pager;
-	WorldData *_volumeData;
+	PagedVolume *_volumeData;
 	BiomManager _biomManager;
 	WorldContext _ctx;
 	mutable std::mt19937 _engine;

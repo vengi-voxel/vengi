@@ -9,12 +9,12 @@ inline bool isSolidVoxel(const Voxel& voxel) {
 	return voxel.getMaterial() != Air;
 }
 
-void rescaleCubicVolume(WorldData* source, const Region& sourceRegion, RawVolume<Voxel>* destination, const Region& destinationRegion) {
+void rescaleCubicVolume(PagedVolume* source, const Region& sourceRegion, RawVolume<Voxel>* destination, const Region& destinationRegion) {
 	core_assert_msg(sourceRegion.getWidthInVoxels() == destinationRegion.getWidthInVoxels() * 2, "Wrong width - %i versus %i!", sourceRegion.getWidthInVoxels(), destinationRegion.getWidthInVoxels() * 2);
 	core_assert_msg(sourceRegion.getHeightInVoxels() == destinationRegion.getHeightInVoxels() * 2, "Wrong height - %i versus %i!", sourceRegion.getHeightInVoxels(), destinationRegion.getHeightInVoxels() * 2);
 	core_assert_msg(sourceRegion.getDepthInVoxels() == destinationRegion.getDepthInVoxels() * 2, "Wrong depth - %i versus %i!", sourceRegion.getDepthInVoxels(), destinationRegion.getDepthInVoxels() * 2);
 
-	typename WorldData::Sampler srcSampler(source);
+	typename PagedVolume::Sampler srcSampler(source);
 	typename RawVolume<Voxel>::Sampler dstSampler(destination);
 
 	// First of all we iterate over all destination voxels and compute their color as the
