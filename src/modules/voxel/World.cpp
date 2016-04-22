@@ -683,8 +683,8 @@ void World::cleanupFutures() {
 }
 
 void World::onFrame(long dt) {
+	cleanupFutures();
 	if (_cancelThreads) {
-		cleanupFutures();
 		if (!_futures.empty()) {
 			return;
 		}
@@ -696,8 +696,6 @@ void World::onFrame(long dt) {
 			Log::info("reset the world");
 		});
 		_cancelThreads = false;
-	} else {
-		cleanupFutures();
 	}
 }
 
