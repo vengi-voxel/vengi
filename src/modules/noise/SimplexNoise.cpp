@@ -6,11 +6,9 @@ namespace noise {
 template<class VecType>
 static float Noise(const VecType& pos, int octaves, float persistence, float frequency, float amplitude) {
 	float total = 0.0f;
-	float maxAmplitude = amplitude;
 	for (int i = 0; i < octaves; ++i) {
 		total += glm::simplex(pos * frequency) * amplitude;
 		frequency *= 2.0f;
-		maxAmplitude += amplitude;
 		amplitude *= persistence;
 	}
 	return total;
