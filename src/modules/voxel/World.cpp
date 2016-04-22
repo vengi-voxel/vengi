@@ -74,6 +74,11 @@ struct IsVoxelTransparent {
 	}
 };
 
+/**
+ * @brief The criteria used here are that the voxel in front of the potential
+ * quad should have a Air voxel while the voxel behind the potential quad
+ * would have a voxel that is not Air.
+ */
 struct IsQuadNeeded {
 	bool operator()(const Voxel& back, const Voxel& front, Voxel& materialToUse) {
 		if (back.getMaterial() != Air && front.getMaterial() == Air) {

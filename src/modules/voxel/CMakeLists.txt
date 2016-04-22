@@ -14,7 +14,6 @@ fips_begin_module(voxel)
 		AStarPathfinderImpl.h
 		BaseVolume.h BaseVolume.cpp
 		CubicSurfaceExtractor.h
-		DefaultIsQuadNeeded.h
 		Mesh.h Mesh.cpp
 		Morton.h
 		PagedVolume.h PagedVolume.cpp

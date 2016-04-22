@@ -2,7 +2,6 @@
 
 #include "Array.h"
 #include "BaseVolume.h" //For wrap modes... should move these?
-#include "DefaultIsQuadNeeded.h"
 #include "Mesh.h"
 #include "Voxel.h"
 #include "Vertex.h"
@@ -18,11 +17,11 @@ inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition);
 inline Vertex decodeVertex(const CubicVertex& cubicVertex);
 
 /// Generates a cubic-style mesh from the voxel data.
-template<typename VolumeType, typename MeshType, typename IsQuadNeeded = DefaultIsQuadNeeded>
+template<typename VolumeType, typename MeshType, typename IsQuadNeeded>
 void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
 
 /// Generates a cubic-style mesh from the voxel data, placing the result into a user-provided Mesh.
-template<typename VolumeType, typename IsQuadNeeded = DefaultIsQuadNeeded>
+template<typename VolumeType, typename IsQuadNeeded>
 Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
 
 // This constant defines the maximum number of quads which can share a vertex in a cubic style mesh.
