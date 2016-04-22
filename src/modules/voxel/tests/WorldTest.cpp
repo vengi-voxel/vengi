@@ -1,9 +1,9 @@
-#include "core/tests/AbstractTest.h"
+#include "AbstractVoxelTest.h"
 #include "voxel/World.h"
 
 namespace voxel {
 
-class WorldTest: public core::AbstractTest {
+class WorldTest: public AbstractVoxelTest {
 };
 
 TEST_F(WorldTest, testChunkAndGridPos) {
