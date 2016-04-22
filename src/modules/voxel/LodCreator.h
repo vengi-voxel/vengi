@@ -1,7 +1,7 @@
 #pragma once
 
 #include "polyvox/RawVolume.h"
-#include "WorldData.h"
+#include "polyvox/PagedVolume.h"
 
 namespace voxel {
 

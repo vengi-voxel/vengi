@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 #include "polyvox/Mesh.h"
-#include "polyvox/Voxel.h"
+#include "polyvox/PagedVolume.h"
 #include <memory>
 #include <unordered_set>
 #include <mutex>
@@ -13,7 +13,6 @@
 #include <atomic>
 
 #include "io/Filesystem.h"
-#include "WorldData.h"
 #include "BiomManager.h"
 #include "core/ThreadPool.h"
 #include "core/ReadWriteLock.h"

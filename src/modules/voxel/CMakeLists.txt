@@ -5,7 +5,6 @@ fips_begin_module(voxel)
 		Spiral.h
 		Voxel.h
 		World.cpp World.h
-		WorldData.h
 		WorldEvents.h
 	)
 	fips_dir(polyvox)
