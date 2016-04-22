@@ -13,7 +13,7 @@ static float Noise(const VecType& pos, int octaves, float persistence, float fre
 		maxAmplitude += amplitude;
 		amplitude *= persistence;
 	}
-	return total / maxAmplitude;
+	return total;
 }
 
 float Simplex::Noise2D(const glm::vec2& pos, int octaves, float persistence, float frequency, float amplitude) {
