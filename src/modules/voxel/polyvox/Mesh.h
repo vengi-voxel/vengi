@@ -53,8 +53,8 @@ private:
 /// formats which are hard to interpret directly (see CubicVertex and MarchingCubesVertex).
 /// This function creates a new uncompressed mesh containing the much simpler Vertex objects.
 template<typename MeshType>
-Mesh<Vertex<typename MeshType::VertexType::DataType>, typename MeshType::IndexType> decodeMesh(const MeshType& encodedMesh) {
-	Mesh<Vertex<typename MeshType::VertexType::DataType>, typename MeshType::IndexType> decodedMesh;
+Mesh<Vertex, typename MeshType::IndexType> decodeMesh(const MeshType& encodedMesh) {
+	Mesh<Vertex, typename MeshType::IndexType> decodedMesh;
 
 	for (typename MeshType::IndexType ct = 0; ct < encodedMesh.getNoOfVertices(); ct++) {
 		decodedMesh.addVertex(decodeVertex(encodedMesh.getVertex(ct)));

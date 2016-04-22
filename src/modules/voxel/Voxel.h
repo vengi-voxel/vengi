@@ -14,9 +14,9 @@ inline Voxel createVoxel(VoxelType type) {
 	return Voxel(type);
 }
 
-typedef CubicVertex<voxel::Voxel> VoxelVertex;
+typedef CubicVertex VoxelVertex;
 typedef Mesh<VoxelVertex> CubicMesh;
-typedef Vertex<voxel::Voxel> VoxelVertexDecoded;
+typedef Vertex VoxelVertexDecoded;
 typedef Mesh<VoxelVertexDecoded, typename CubicMesh::IndexType> DecodedMesh;
 
 constexpr int MAX_VOXEL_LOD = 4;

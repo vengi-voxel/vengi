@@ -4,6 +4,7 @@
 #include "BaseVolume.h" //For wrap modes... should move these?
 #include "DefaultIsQuadNeeded.h"
 #include "Mesh.h"
+#include "Voxel.h"
 #include "Vertex.h"
 #include <vector>
 #include <list>
@@ -13,29 +14,21 @@ namespace voxel {
 /// A specialised vertex format which encodes the data from the cubic extraction algorithm in a very
 /// compact way. You will probably want to use the decodeVertex() function to turn it into a regular
 /// Vertex for rendering, but advanced users should also be able to decode it on the GPU (not tested).
-template<typename _DataType>
 struct CubicVertex {
-	typedef _DataType DataType;
-
 	/// Each component of the position is stored as a single unsigned byte.
 	/// The true position is found by offseting each component by 0.5f.
 	glm::i8vec3 encodedPosition;
 
 	/// A copy of the data which was stored in the voxel which generated this vertex.
-	DataType data;
+	Voxel data;
 };
-
-// Convienient shorthand for declaring a mesh of 'cubic' vertices
-// Currently disabled because it requires GCC 4.7
-//template <typename VertexDataType, typename IndexType = DefaultIndexType>
-//using CubicMesh = Mesh< CubicVertex<VertexDataType>, IndexType >;
 
 /// Decodes a position from a CubicVertex
 inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition);
 
 /// Decodes a CubicVertex by converting it into a regular Vertex which can then be directly used for rendering.
 template<typename DataType>
-Vertex<DataType> decodeVertex(const CubicVertex<DataType>& cubicVertex);
+inline Vertex decodeVertex(const CubicVertex& cubicVertex);
 
 /// Generates a cubic-style mesh from the voxel data.
 template<typename VolumeType, typename MeshType, typename IsQuadNeeded = DefaultIsQuadNeeded>
@@ -43,7 +36,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 
 /// Generates a cubic-style mesh from the voxel data, placing the result into a user-provided Mesh.
 template<typename VolumeType, typename IsQuadNeeded = DefaultIsQuadNeeded>
-Mesh<CubicVertex<typename VolumeType::VoxelType> > extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
+Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
 
 // This constant defines the maximum number of quads which can share a vertex in a cubic style mesh.
 //
@@ -91,9 +84,8 @@ inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition) {
 	return result;
 }
 
-template<typename DataType>
-Vertex<DataType> decodeVertex(const CubicVertex<DataType>& cubicVertex) {
-	Vertex<DataType> result;
+inline Vertex decodeVertex(const CubicVertex& cubicVertex) {
+	Vertex result;
 	result.position = decodePosition(cubicVertex.encodedPosition);
 	result.normal = {0.0f, 0.0f, 0.0f}; // Currently not calculated
 	result.data = cubicVertex.data; // Data is not encoded
@@ -167,7 +159,7 @@ int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, typename VolumeType::Vo
 
 		if (rEntry.iIndex == -1) {
 			//No vertices matched and we've now hit an empty space. Fill it by creating a vertex. The 0.5f offset is because vertices set between voxels in order to build cubes around them.
-			CubicVertex<typename VolumeType::VoxelType> cubicVertex;
+			CubicVertex cubicVertex;
 			cubicVertex.encodedPosition = { static_cast<uint8_t>(uX), static_cast<uint8_t>(uY), static_cast<uint8_t>(uZ) };
 			cubicVertex.data = uMaterialIn;
 			rEntry.iIndex = m_meshCurrent->addVertex(cubicVertex);
@@ -230,8 +222,8 @@ int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, typename VolumeType::Vo
 /// Another scenario which sometimes results in confusion is when you wish to extract a region which corresponds to the whole volume, partcularly when solid voxels extend right to the edge of the volume.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<typename VolumeType, typename IsQuadNeeded>
-Mesh<CubicVertex<typename VolumeType::VoxelType> > extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
-	Mesh < CubicVertex<typename VolumeType::VoxelType> > result;
+Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
+	Mesh<CubicVertex> result;
 	extractCubicMeshCustom(volData, region, &result, isQuadNeeded, bMergeQuads);
 	return result;
 }

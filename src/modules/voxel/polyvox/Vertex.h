@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "Voxel.h"
 
 namespace voxel {
 
@@ -9,13 +10,10 @@ namespace voxel {
  * There is also a 'data' member, which usually stores the (possibly interpolated)
  * value of the voxel(s) which caused the vertex to be generated.
  */
-template<typename _DataType>
 struct Vertex {
-	typedef _DataType DataType;
-
 	glm::vec3 position;
 	glm::vec3 normal;
-	DataType data;
+	Voxel data;
 };
 
 }
