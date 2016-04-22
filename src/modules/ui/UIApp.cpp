@@ -197,7 +197,7 @@ void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 		tb::TBWidget* hover = tb::TBWidget::hovered_widget;
 		if (hover != nullptr) {
 			hover->ConvertFromRoot(x, y);
-			tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, x, y, false, tb::TB_MODIFIER_NONE);
+			tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, x, y, false, mapModifier(SDL_GetModState()));
 			hover->InvokeEvent(ev);
 		}
 	} else {
