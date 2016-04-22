@@ -18,6 +18,13 @@ private:
 				onFrame();
 			}
 		}
+
+		~TestApp() {
+			while (AppState::InvalidAppState != _curState) {
+				core_trace_scoped("AppMainLoop");
+				onFrame();
+			}
+		}
 	};
 
 	TestApp *_testApp;
