@@ -26,8 +26,7 @@ typedef Mesh<VoxelVertex> CubicMesh;
 typedef Vertex<voxel::Voxel> VoxelVertexDecoded;
 typedef Mesh<VoxelVertexDecoded, typename CubicMesh::IndexType> DecodedMesh;
 
-constexpr int MAX_VOXEL_LOD = 1;
-static_assert(MAX_VOXEL_LOD >= 1, "MAX_LODS might not be smaller than 1");
+constexpr int MAX_VOXEL_LOD = 4;
 
 struct DecodedMeshData {
 	DecodedMesh mesh[MAX_VOXEL_LOD];
