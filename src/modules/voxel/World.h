@@ -105,7 +105,7 @@ public:
 		core::ScopedWriteLock lock(_rwLock);
 		if (_meshQueue.empty())
 			return false;
-		item = std::move(_meshQueue.front());
+		item = _meshQueue.front();
 		_meshQueue.pop_front();
 		return true;
 	}
