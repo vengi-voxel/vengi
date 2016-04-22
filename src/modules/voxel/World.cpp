@@ -42,6 +42,14 @@ World::World() :
 }
 
 World::~World() {
+	_cancelThreads = true;
+	while (!_futures.empty()) {
+		cleanupFutures();
+	}
+	locked([this] () {
+		_meshesExtracted.clear();
+		_meshQueue.clear();
+	});
 	delete _volumeData;
 }
 
