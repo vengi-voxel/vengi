@@ -18,7 +18,7 @@ fips_begin_module(voxel)
 		DefaultIsQuadNeeded.h
 		Mesh.h
 		Morton.h
-		PagedVolume.h
+		PagedVolume.h PagedVolume.cpp
 		RawVolume.h
 		Raycast.h
 		Region.h

@@ -159,18 +159,6 @@ RawVolume<VoxelType>::RawVolume(const Region& regValid) :
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// This function should never be called. Copying volumes by value would be expensive, and we want to prevent users from doing
-/// it by accident (such as when passing them as paramenters to functions). That said, there are times when you really do want to
-/// make a copy of a volume and in this case you should look at the Volumeresampler.
-///
-/// @sa VolumeResampler
-////////////////////////////////////////////////////////////////////////////////
-template<typename VoxelType>
-RawVolume<VoxelType>::RawVolume(const RawVolume<VoxelType>& /*rhs*/) {
-	core_assert_msg(false, "Volume copy constructor not implemented for performance reasons.");
-}
-
-////////////////////////////////////////////////////////////////////////////////
 /// Destroys the volume
 ////////////////////////////////////////////////////////////////////////////////
 template<typename VoxelType>

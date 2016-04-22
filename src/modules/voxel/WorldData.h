@@ -7,6 +7,6 @@
 
 namespace voxel {
 
-typedef PagedVolume<Voxel> WorldData;
+typedef PagedVolume WorldData;
 
 }
