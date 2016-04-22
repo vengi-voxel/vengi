@@ -547,7 +547,7 @@ bool World::load(TerrainContext& ctx) {
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
 				core_assert(voxelBuf.getSize() >= 2);
-				const uint8_t material = voxelBuf.readByte();
+				const VoxelType material = voxelBuf.readByte();
 				const Voxel voxel = createVoxel(material);
 				ctx.chunk->setVoxel(x, y, z, voxel);
 			}
@@ -557,7 +557,6 @@ bool World::load(TerrainContext& ctx) {
 }
 
 bool World::save(TerrainContext& ctx) {
-	Log::info("Save chunk");
 	core::ByteStream voxelStream;
 	const Region& region = ctx.region;
 	const int width = region.getWidthInVoxels();
@@ -568,6 +567,7 @@ bool World::save(TerrainContext& ctx) {
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
 				const Voxel& voxel = ctx.chunk->getVoxel(x, y, z);
+				core_assert(sizeof(VoxelType) == sizeof(uint8_t));
 				voxelStream.addByte(voxel.getMaterial());
 			}
 		}
@@ -595,7 +595,7 @@ bool World::save(TerrainContext& ctx) {
 		Log::error("Failed to write file %s", filename.c_str());
 		return false;
 	}
-	Log::info("Wrote file %s (%i)", filename.c_str(), voxelSize);
+	Log::debug("Wrote file %s (%i)", filename.c_str(), voxelSize);
 	return true;
 }
 
