@@ -49,6 +49,7 @@ World::World() :
 }
 
 World::~World() {
+	delete _volumeData;
 }
 
 glm::ivec2 World::randomPosWithoutHeight(const Region& region, int border) {
