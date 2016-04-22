@@ -33,7 +33,7 @@ bool WorldPersister::load(TerrainContext& ctx, long seed) {
 	}
 	std::unique_ptr<uint8_t[]> smartBuf(fileBuf);
 
-	core::ByteStream bs;
+	core::ByteStream bs(fileLen);
 	bs.append(fileBuf, fileLen);
 	int len;
 	int version;
