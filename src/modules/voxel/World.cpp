@@ -30,12 +30,10 @@ void World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 }
 
 void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
-#if 0
 	TerrainContext ctx;
 	ctx.region = region;
 	ctx.chunk = chunk;
 	_world.save(ctx);
-#endif
 }
 
 // http://code.google.com/p/fortressoverseer/source/browse/Overseer/PolyVoxGenerator.cpp
