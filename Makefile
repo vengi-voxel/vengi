@@ -12,6 +12,9 @@ clean:
 	$(Q)rm -f .fips-gen.py
 	$(Q)rm -f .fips-imports.cmake
 
+clean-local-config:
+	$(Q)rm -r ~/.local/share/engine
+
 eclipse:
 	$(Q)./fips set config linux-eclipse-debug
 
