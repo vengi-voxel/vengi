@@ -248,7 +248,6 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 
 void World::destroy() {
 	reset();
-	_seed = 0l;
 }
 
 void World::reset() {
