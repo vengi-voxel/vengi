@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace voxel {
 
 // material types 0 - 255 (8 bits)

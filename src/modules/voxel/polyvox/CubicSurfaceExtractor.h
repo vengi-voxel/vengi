@@ -284,11 +284,11 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
 				uint32_t regX = x - region.getLowerX();
 
-				typename VolumeType::VoxelType material; //Filled in by callback
-				typename VolumeType::VoxelType currentVoxel = volumeSampler.getVoxel();
-				typename VolumeType::VoxelType negXVoxel = volumeSampler.peekVoxel1nx0py0pz();
-				typename VolumeType::VoxelType negYVoxel = volumeSampler.peekVoxel0px1ny0pz();
-				typename VolumeType::VoxelType negZVoxel = volumeSampler.peekVoxel0px0py1nz();
+				Voxel material; //Filled in by callback
+				const Voxel& currentVoxel = volumeSampler.getVoxel();
+				const Voxel& negXVoxel = volumeSampler.peekVoxel1nx0py0pz();
+				const Voxel& negYVoxel = volumeSampler.peekVoxel0px1ny0pz();
+				const Voxel& negZVoxel = volumeSampler.peekVoxel0px0py1nz();
 
 				// X
 				if (isQuadNeeded(currentVoxel, negXVoxel, material)) {
@@ -339,10 +339,10 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 				}
 
 				if (isQuadNeeded(negZVoxel, currentVoxel, material)) {
-					uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
-					uint32_t v1 = addVertex(regX, regY + 1, regZ, material, m_previousSliceVertices, result);
-					uint32_t v2 = addVertex(regX + 1, regY + 1, regZ, material, m_previousSliceVertices, result);
-					uint32_t v3 = addVertex(regX + 1, regY, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v1 = addVertex(regX, regY + 1, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v2 = addVertex(regX + 1, regY + 1, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v3 = addVertex(regX + 1, regY, regZ, material, m_previousSliceVertices, result);
 
 					m_vecQuads[PositiveZ][regZ].push_back(Quad(v0, v3, v2, v1));
 				}

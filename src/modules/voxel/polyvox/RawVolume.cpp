@@ -3,7 +3,7 @@
 namespace voxel {
 
 RawVolume::RawVolume(const Region& regValid) :
-		BaseVolume<Voxel>(), m_regValidRegion(regValid), m_tBorderValue() {
+		BaseVolume(), m_regValidRegion(regValid), m_tBorderValue() {
 	this->setBorderValue(Voxel());
 
 	//Create a volume of the right size.
@@ -31,7 +31,7 @@ RawVolume::~RawVolume() {
 /// is outside the extents of the volume.
 /// @return The value used for voxels outside of the volume
 ////////////////////////////////////////////////////////////////////////////////
-Voxel RawVolume::getBorderValue() const {
+const Voxel& RawVolume::getBorderValue() const {
 	return m_tBorderValue;
 }
 
@@ -143,7 +143,7 @@ uint32_t RawVolume::calculateSizeInBytes() {
 }
 
 RawVolume::Sampler::Sampler(RawVolume* volume) :
-		BaseVolume<Voxel>::template Sampler<RawVolume >(volume), mCurrentVoxel(0), m_bIsCurrentPositionValidInX(false), m_bIsCurrentPositionValidInY(false), m_bIsCurrentPositionValidInZ(
+		BaseVolume::template Sampler<RawVolume >(volume), mCurrentVoxel(0), m_bIsCurrentPositionValidInX(false), m_bIsCurrentPositionValidInY(false), m_bIsCurrentPositionValidInZ(
 				false) {
 }
 
@@ -152,7 +152,7 @@ RawVolume::Sampler::~Sampler() {
 
 void RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	// Base version updates position and validity flags.
-	BaseVolume<Voxel>::template Sampler<RawVolume >::setPosition(xPos, yPos, zPos);
+	BaseVolume::template Sampler<RawVolume >::setPosition(xPos, yPos, zPos);
 
 	m_bIsCurrentPositionValidInX = this->mVolume->getEnclosingRegion().containsPointInX(xPos);
 	m_bIsCurrentPositionValidInY = this->mVolume->getEnclosingRegion().containsPointInY(yPos);
@@ -177,7 +177,7 @@ void RawVolume::Sampler::movePositiveX() {
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
 	// Base version updates position and validity flags.
-	BaseVolume<Voxel>::template Sampler<RawVolume >::movePositiveX();
+	BaseVolume::template Sampler<RawVolume >::movePositiveX();
 
 	m_bIsCurrentPositionValidInX = this->mVolume->getEnclosingRegion().containsPointInX(this->mXPosInVolume);
 
@@ -194,7 +194,7 @@ void RawVolume::Sampler::movePositiveY() {
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
 	// Base version updates position and validity flags.
-	BaseVolume<Voxel>::template Sampler<RawVolume >::movePositiveY();
+	BaseVolume::template Sampler<RawVolume >::movePositiveY();
 
 	m_bIsCurrentPositionValidInY = this->mVolume->getEnclosingRegion().containsPointInY(this->mYPosInVolume);
 
@@ -211,7 +211,7 @@ void RawVolume::Sampler::movePositiveZ() {
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
 	// Base version updates position and validity flags.
-	BaseVolume<Voxel>::template Sampler<RawVolume >::movePositiveZ();
+	BaseVolume::template Sampler<RawVolume >::movePositiveZ();
 
 	m_bIsCurrentPositionValidInZ = this->mVolume->getEnclosingRegion().containsPointInZ(this->mZPosInVolume);
 
@@ -228,7 +228,7 @@ void RawVolume::Sampler::moveNegativeX() {
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
 	// Base version updates position and validity flags.
-	BaseVolume<Voxel>::template Sampler<RawVolume >::moveNegativeX();
+	BaseVolume::template Sampler<RawVolume >::moveNegativeX();
 
 	m_bIsCurrentPositionValidInX = this->mVolume->getEnclosingRegion().containsPointInX(this->mXPosInVolume);
 
@@ -245,7 +245,7 @@ void RawVolume::Sampler::moveNegativeY() {
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
 	// Base version updates position and validity flags.
-	BaseVolume<Voxel>::template Sampler<RawVolume >::moveNegativeY();
+	BaseVolume::template Sampler<RawVolume >::moveNegativeY();
 
 	m_bIsCurrentPositionValidInY = this->mVolume->getEnclosingRegion().containsPointInY(this->mYPosInVolume);
 
@@ -262,7 +262,7 @@ void RawVolume::Sampler::moveNegativeZ() {
 	const bool bIsOldPositionValid = this->isCurrentPositionValid();
 
 	// Base version updates position and validity flags.
-	BaseVolume<Voxel>::template Sampler<RawVolume >::moveNegativeZ();
+	BaseVolume::template Sampler<RawVolume >::moveNegativeZ();
 
 	m_bIsCurrentPositionValidInZ = this->mVolume->getEnclosingRegion().containsPointInZ(this->mZPosInVolume);
 
