@@ -11,7 +11,7 @@ namespace voxel {
 #define WORLD_FILE_VERSION 1
 
 std::string WorldPersister::getWorldName(const Region& region, long seed) const {
-	return core::string::format("world_%li_%i_%i_%i.wld", seed, region.getCentreX(), region.getCentreY(), region.getCentreZ());
+	return core::string::format("world_%li_%i_%i_%i.wld", seed, region.getLowerX(), region.getLowerY(), region.getLowerZ());
 }
 
 void WorldPersister::erase(TerrainContext& ctx, long seed) {
