@@ -352,10 +352,10 @@ void WorldRenderer::extractMeshAroundCamera(int radius) {
 void WorldRenderer::onInit() {
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
-		const int ColorTextureOctaves = 3;
+		const int ColorTextureOctaves = 2;
 		const int ColorTextureDepth = 3;
 		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
-		noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, 0.3f, 0.7f);
+		noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, 0.3f, 0.7f, 1.0f);
 		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
 	}));
 	_colorTexture = video::createTexture("**colortexture**");
