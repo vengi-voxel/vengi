@@ -288,11 +288,8 @@ PagedVolume::Chunk::Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* p
 	const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(m_uSideLength - 1, m_uSideLength - 1, m_uSideLength - 1);
 	const Region reg(v3dLower, v3dUpper);
 
-	// A valid pager is normally present - this check is mostly to ease unit testing.
-	if (m_pPager) {
-		// Page the data in
-		m_pPager->pageIn(reg, this);
-	}
+	// Page the data in
+	m_pPager->pageIn(reg, this);
 
 	// We'll use this later to decide if data needs to be paged out again.
 	m_bDataModified = false;
