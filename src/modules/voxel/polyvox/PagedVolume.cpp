@@ -369,7 +369,7 @@ uint32_t PagedVolume::Chunk::calculateSizeInBytes(uint32_t uSideLength) {
 void PagedVolume::Chunk::changeLinearOrderingToMorton() {
 	Voxel* pTempBuffer = new Voxel[m_uSideLength * m_uSideLength * m_uSideLength];
 
-	// We should prehaps restructure this loop. From: https://fgiesen.wordpress.com/2011/01/17/texture-tiling-and-swizzling/
+	// We should perhaps restructure this loop. From: https://fgiesen.wordpress.com/2011/01/17/texture-tiling-and-swizzling/
 	//
 	// "There's two basic ways to structure the actual swizzling: either you go through the (linear) source image in linear order,
 	// writing in (somewhat) random order, or you iterate over the output data, picking the right source pixel for each target
@@ -382,8 +382,8 @@ void PagedVolume::Chunk::changeLinearOrderingToMorton() {
 	for (uint16_t z = 0; z < m_uSideLength; z++) {
 		for (uint16_t y = 0; y < m_uSideLength; y++) {
 			for (uint16_t x = 0; x < m_uSideLength; x++) {
-				uint32_t uLinearIndex = x + y * m_uSideLength + z * m_uSideLength * m_uSideLength;
-				uint32_t uMortonIndex = morton256_x[x] | morton256_y[y] | morton256_z[z];
+				const uint32_t uLinearIndex = x + y * m_uSideLength + z * m_uSideLength * m_uSideLength;
+				const uint32_t uMortonIndex = morton256_x[x] | morton256_y[y] | morton256_z[z];
 				pTempBuffer[uMortonIndex] = m_tData[uLinearIndex];
 			}
 		}
@@ -401,8 +401,8 @@ void PagedVolume::Chunk::changeMortonOrderingToLinear() {
 	for (uint16_t z = 0; z < m_uSideLength; z++) {
 		for (uint16_t y = 0; y < m_uSideLength; y++) {
 			for (uint16_t x = 0; x < m_uSideLength; x++) {
-				uint32_t uLinearIndex = x + y * m_uSideLength + z * m_uSideLength * m_uSideLength;
-				uint32_t uMortonIndex = morton256_x[x] | morton256_y[y] | morton256_z[z];
+				const uint32_t uLinearIndex = x + y * m_uSideLength + z * m_uSideLength * m_uSideLength;
+				const uint32_t uMortonIndex = morton256_x[x] | morton256_y[y] | morton256_z[z];
 				pTempBuffer[uLinearIndex] = m_tData[uMortonIndex];
 			}
 		}
@@ -428,7 +428,7 @@ void PagedVolume::Chunk::changeMortonOrderingToLinear() {
 #define POS_Z_DELTA (deltaZ[this->m_uZPosInChunk])
 
 PagedVolume::Sampler::Sampler(PagedVolume* volume) :
-		BaseVolume::template Sampler<PagedVolume >(volume), m_uChunkSideLengthMinusOne(volume->m_uChunkSideLength - 1) {
+		BaseVolume::template Sampler<PagedVolume>(volume), m_uChunkSideLengthMinusOne(volume->m_uChunkSideLength - 1) {
 }
 
 PagedVolume::Sampler::~Sampler() {
