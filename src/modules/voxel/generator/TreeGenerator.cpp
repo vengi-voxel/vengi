@@ -16,13 +16,14 @@ void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
 	const Region& region = ctx.region;
 	const int chunkHeight = region.getHeightInVoxels();
 	for (int i = 0; i < 5; ++i) {
-		const int rndValX = random.random(1, region.getWidthInVoxels() - 1);
+		const int regionBorder = 4;
+		const int rndValX = random.random(regionBorder, region.getWidthInVoxels() - regionBorder);
 		// number should be even
 		if (!(rndValX % 2)) {
 			continue;
 		}
 
-		const int rndValZ = random.random(1, region.getDepthInVoxels() - 1);
+		const int rndValZ = random.random(regionBorder, region.getDepthInVoxels() - regionBorder);
 		// TODO: use a noise map to get the position
 		glm::ivec3 pos(rndValX, -1, rndValZ);
 		const int y = findChunkFloor(chunkHeight, ctx.chunk, pos.x, pos.z);
