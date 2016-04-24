@@ -6,9 +6,7 @@
 #include "Shader.h"
 #include "Color.h"
 #include "GLVersion.h"
-#if USE_REMOTERY
 #include "core/Remotery.h"
-#endif
 
 #include <SDL.h>
 
@@ -28,7 +26,7 @@ inline void checkError(const char *file, unsigned int line, const char *function
 }
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport) :
-		App(filesystem, eventBus), _trace(traceport), _window(nullptr), _glcontext(nullptr), _width(-1), _height(-1), _aspect(1.0f), _clearColor(Color::White) {
+		App(filesystem, eventBus, traceport), _window(nullptr), _glcontext(nullptr), _width(-1), _height(-1), _aspect(1.0f), _clearColor(Color::White) {
 }
 
 void WindowedApp::onAfterRunning() {
@@ -174,9 +172,7 @@ core::AppState WindowedApp::onInit() {
 
 	glEnable(GL_MULTISAMPLE);
 
-#if USE_GL_REMOTERY
 	rmt_BindOpenGL();
-#endif
 
 	return state;
 }
@@ -191,9 +187,7 @@ core::AppState WindowedApp::onCleanup() {
 	SDL_GL_DeleteContext(_glcontext);
 	SDL_DestroyWindow(_window);
 	SDL_Quit();
-#if RMT_
 	rmt_UnbindOpenGL();
-#endif
 	return App::onCleanup();
 }
 

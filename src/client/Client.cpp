@@ -22,7 +22,7 @@
 
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
-		UIApp(filesystem, eventBus), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
+		UIApp(filesystem, eventBus, 17816), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
 		_timeProvider(timeProvider), _worldShader(), _meshShader(new frontend::MeshShader()),
 		_worldRenderer(world) {
 	_world->setClientData(true);

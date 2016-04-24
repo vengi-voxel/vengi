@@ -16,6 +16,7 @@ enum AppState {
 
 class App {
 protected:
+	core::Trace _trace;
 	int _argc;
 	char **_argv;
 
@@ -36,7 +37,7 @@ protected:
 	core::ThreadPool _threadPool;
 
 public:
-	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, size_t threadPoolSize = 1);
+	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport, size_t threadPoolSize = 1);
 	virtual ~App();
 
 	void init(const std::string& organisation, const std::string& appname);

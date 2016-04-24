@@ -12,7 +12,6 @@ namespace video {
 
 class WindowedApp: public core::App, public io::IEventObserver {
 protected:
-	core::Trace _trace;
 	SDL_Window* _window;
 	SDL_GLContext _glcontext;
 	int _width;
