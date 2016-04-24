@@ -55,8 +55,17 @@ struct TerrainContext {
 	// if a chunk region is exceeded by a coordinate (which might be true for e.g. tree,
 	// cloud or building generation) then the relative chunk coordinate is converted into
 	// an absolute position in the world by taking the given region parameter into account
+	// (and put into the non chunk voxel vector for later handling)
 	PagedVolume::Chunk* chunk;
 	PositionSet dirty;
+	struct NonChunkVoxel {
+		NonChunkVoxel(const glm::ivec3& _pos, const Voxel& _voxel) :
+				pos(_pos), voxel(_voxel) {
+		}
+		glm::ivec3 pos;
+		Voxel voxel;
+	};
+	std::vector<NonChunkVoxel> nonChunkVoxels;
 };
 
 }

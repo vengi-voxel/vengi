@@ -89,7 +89,7 @@ struct IsVoxelTransparent {
  * would have a voxel that is not Air.
  */
 struct IsQuadNeeded {
-	bool operator()(const Voxel& back, const Voxel& front, Voxel& materialToUse) {
+	inline bool operator()(const Voxel& back, const Voxel& front, Voxel& materialToUse) const {
 		if (back.getMaterial() != Air && front.getMaterial() == Air) {
 			materialToUse = back;
 			return true;
@@ -288,91 +288,6 @@ void World::setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Vox
 	ctx.dirty.insert(gridpos);
 }
 
-void World::createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
-	const int xRadius = width / 2;
-	const int zRadius = depth / 2;
-	const double minRadius = std::min(xRadius, zRadius);
-	const double ratioX = xRadius / minRadius;
-	const double ratioZ = zRadius / minRadius;
-
-	for (int z = -zRadius; z <= zRadius; ++z) {
-		for (int x = -xRadius; x <= xRadius; ++x) {
-			const double distance = glm::pow(x / ratioX, 2.0) + glm::pow(z / ratioZ, 2.0);
-			if (distance > radius) {
-				continue;
-			}
-			const glm::ivec3 pos(center.x + x, center.y, center.z + z);
-			if (isValidChunkPosition(ctx, pos)) {
-				ctx.chunk->setVoxel(pos.x, pos.y, pos.z, voxel);
-			} else {
-				setVolumeVoxel(ctx, pos, voxel);
-			}
-		}
-	}
-}
-
-void World::createCube(TerrainContext& ctx, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
-	const int w = width / 2;
-	const int h = height / 2;
-	const int d = depth / 2;
-	for (int x = -w; x < width - w; ++x) {
-		for (int y = -h; y < height - h; ++y) {
-			for (int z = -d; z < depth - d; ++z) {
-				const glm::ivec3 pos(center.x + x, center.y + y, center.z + z);
-				if (isValidChunkPosition(ctx, pos)) {
-					ctx.chunk->setVoxel(pos.x, pos.y, pos.z, voxel);
-				} else {
-					setVolumeVoxel(ctx, pos, voxel);
-				}
-			}
-		}
-	}
-}
-
-void World::createPlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
-	createCube(ctx, center, width, 1, depth, voxel);
-}
-
-void World::createEllipse(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
-	const int heightLow = height / 2;
-	const int heightHigh = height - heightLow;
-	const double minDimension = std::min(width, depth);
-	const double adjustedMinRadius = minDimension / 2.0;
-	const double heightFactor = heightLow / adjustedMinRadius;
-	for (int y = -heightLow; y <= heightHigh; ++y) {
-		const double percent = glm::abs(y / heightFactor);
-		const double circleRadius = glm::pow(adjustedMinRadius + 0.5, 2.0) - glm::pow(percent, 2.0);
-		const glm::ivec3 planePos(pos.x, pos.y + y, pos.z);
-		createCirclePlane(ctx, planePos, width, depth, circleRadius, voxel);
-	}
-}
-
-void World::createCone(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
-	const int heightLow = height / 2;
-	const int heightHigh = height - heightLow;
-	const double minDimension = std::min(width, depth);
-	const double minRadius = minDimension / 2.0;
-	for (int y = -heightLow; y <= heightHigh; ++y) {
-		const double percent = 1.0 - ((y + heightLow) / double(height));
-		const double circleRadius = glm::pow(percent * minRadius, 2.0);
-		const glm::ivec3 planePos(pos.x, pos.y + y, pos.z);
-		createCirclePlane(ctx, planePos, width, depth, circleRadius, voxel);
-	}
-}
-
-void World::createDome(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
-	const int heightLow = height / 2;
-	const int heightHigh = height - heightLow;
-	const double minDimension = std::min(width, depth);
-	const double minRadius = minDimension / 2.0;
-	const double heightFactor = height / (minDimension - 1.0) / 2.0;
-	for (int y = -heightLow; y <= heightHigh; ++y) {
-		const double percent = glm::abs((y + heightLow) / heightFactor);
-		const double circleRadius = glm::pow(minRadius, 2.0) - glm::pow(percent, 2.0);
-		const glm::ivec3 planePos(pos.x, pos.y + y, pos.z);
-		createCirclePlane(ctx, planePos, width, depth, circleRadius, voxel);
-	}
-}
 
 void World::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height) {
 	int top = (int) pos.y + trunkHeight;
@@ -414,9 +329,9 @@ void World::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType type, i
 	const Voxel leavesVoxel = createVoxel(leavesType);
 	const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 	if (type == TreeType::ELLIPSIS) {
-		createEllipse(ctx, leafesPos, width, height, depth, leavesVoxel);
+		_generator.createEllipse(ctx, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::CONE) {
-		createCone(ctx, leafesPos, width, height, depth, leavesVoxel);
+		_generator.createCone(ctx, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::PINE) {
 		const int steps = std::max(1, height / 4);
 		const int singleHeight = steps;
@@ -426,20 +341,20 @@ void World::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType type, i
 		int currentDepth = stepDepth;
 		for (int i = 0; i < steps; ++i) {
 			glm::ivec3 pineLeaves(pos.x, top - i * singleHeight, pos.z);
-			createDome(ctx, pineLeaves, currentWidth, singleHeight, currentDepth, leavesVoxel);
+			_generator.createDome(ctx, pineLeaves, currentWidth, singleHeight, currentDepth, leavesVoxel);
 			pineLeaves.y -= 1;
-			createDome(ctx, pineLeaves, currentWidth + 1, singleHeight, currentDepth + 1, leavesVoxel);
+			_generator.createDome(ctx, pineLeaves, currentWidth + 1, singleHeight, currentDepth + 1, leavesVoxel);
 			currentDepth += stepDepth;
 			currentWidth += stepWidth;
 		}
 	} else if (type == TreeType::DOME) {
-		createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
+		_generator.createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::CUBE) {
-		createCube(ctx, leafesPos, width, height, depth, leavesVoxel);
+		_generator.createCube(ctx, leafesPos, width, height, depth, leavesVoxel);
 		// TODO: use CreatePlane
-		createCube(ctx, leafesPos, width + 2, height - 2, depth - 2, leavesVoxel);
-		createCube(ctx, leafesPos, width - 2, height + 2, depth - 2, leavesVoxel);
-		createCube(ctx, leafesPos, width - 2, height - 2, depth + 2, leavesVoxel);
+		_generator.createCube(ctx, leafesPos, width + 2, height - 2, depth - 2, leavesVoxel);
+		_generator.createCube(ctx, leafesPos, width - 2, height + 2, depth - 2, leavesVoxel);
+		_generator.createCube(ctx, leafesPos, width - 2, height - 2, depth + 2, leavesVoxel);
 	}
 }
 
@@ -480,17 +395,17 @@ void World::createClouds(TerrainContext& ctx) {
 		const int height = 10;
 		const glm::ivec2& pos = randomPosWithoutHeight(ctx.region, 20);
 		glm::ivec3 chunkCloudCenterPos(pos.x, ctx.region.getHeightInVoxels() - height, pos.y);
-		createEllipse(ctx, chunkCloudCenterPos, 10, height, 10, voxel);
+		_generator.createEllipse(ctx, chunkCloudCenterPos, 10, height, 10, voxel);
 		chunkCloudCenterPos.x -= 5;
 		chunkCloudCenterPos.y -= 5 + i;
-		createEllipse(ctx, chunkCloudCenterPos, 20, height, 20, voxel);
+		_generator.createEllipse(ctx, chunkCloudCenterPos, 20, height, 20, voxel);
 	}
 }
 
 void World::createUnderground(TerrainContext& ctx) {
 	glm::ivec3 startPos(1, 1, 1);
 	const Voxel voxel = createVoxel(Grass);
-	createPlane(ctx, startPos, 10, 10, voxel);
+	_generator.createPlane(ctx, startPos, 10, 10, voxel);
 }
 
 void World::create(TerrainContext& ctx) {

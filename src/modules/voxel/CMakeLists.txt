@@ -6,6 +6,7 @@ fips_begin_module(voxel)
 		Voxel.h
 		World.cpp World.h
 		WorldPersister.h WorldPersister.cpp
+		WorldGenerator.h WorldGenerator.cpp
 		WorldEvents.h
 	)
 	fips_dir(polyvox)
