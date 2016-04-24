@@ -23,7 +23,7 @@ CooldownTriggerState CooldownMgr::triggerCooldown(CooldownType type) {
 	core::ScopedWriteLock lock(_lock);
 	CooldownPtr cooldown = _cooldowns[type];
 	if (!cooldown) {
-		cooldown = CooldownPtr(new Cooldown(type, defaultDuration(type), _timeProvider));
+		cooldown = createCooldown(type, defaultDuration(type), _timeProvider);
 		_cooldowns[type] = cooldown;
 	} else if (cooldown->running()) {
 		Log::error("Failed to trigger the cooldown of type %i: already running", type);
