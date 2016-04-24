@@ -191,7 +191,7 @@ core::AppState WindowedApp::onCleanup() {
 	SDL_GL_DeleteContext(_glcontext);
 	SDL_DestroyWindow(_window);
 	SDL_Quit();
-#if USE_REMOTERY
+#if RMT_
 	rmt_UnbindOpenGL();
 #endif
 	return App::onCleanup();
