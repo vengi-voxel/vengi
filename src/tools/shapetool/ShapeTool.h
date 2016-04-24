@@ -8,7 +8,7 @@
 
 class ShapeTool: public ui::UIApp {
 protected:
-	voxel::World::WorldContext _ctx;
+	voxel::WorldContext _ctx;
 	video::Camera _camera;
 	frontend::WorldRenderer _worldRenderer;
 	voxel::WorldPtr _world;
@@ -25,7 +25,7 @@ public:
 	ShapeTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world);
 	~ShapeTool();
 
-	void reset(const voxel::World::WorldContext& ctx);
+	void reset(const voxel::WorldContext& ctx);
 	void placeTree(const voxel::TreeContext& ctx);
 	void regenerate(const glm::ivec2& pos);
 

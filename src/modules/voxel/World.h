@@ -33,24 +33,6 @@ public:
 	World();
 	~World();
 
-	struct WorldContext {
-		int landscapeNoiseOctaves = 1;
-		float landscapeNoisePersistence = 0.1f;
-		float landscapeNoiseFrequency = 0.01f;
-		float landscapeNoiseAmplitude = 0.5f;
-
-		int caveNoiseOctaves = 1;
-		float caveNoisePersistence = 0.1f;
-		float caveNoiseFrequency = 0.05f;
-		float caveNoiseAmplitude = 0.1f;
-		float caveDensityThreshold = 1.1f;
-
-		int mountainNoiseOctaves = 2;
-		float mountainNoisePersistence = 0.3f;
-		float mountainNoiseFrequency = 0.00075f;
-		float mountainNoiseAmplitude = 0.5f;
-	};
-
 	void setContext(const WorldContext& ctx) {
 		_ctx = ctx;
 	}
@@ -185,8 +167,6 @@ private:
 
 	void calculateAO(const Region& region);
 
-	glm::ivec2 randomPosWithoutHeight(const Region& region, int border = 0);
-	void createClouds(TerrainContext& ctx);
 	void createUnderground(TerrainContext& ctx);
 
 	void cleanupFutures();

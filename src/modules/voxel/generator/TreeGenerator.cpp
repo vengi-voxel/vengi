@@ -1,5 +1,4 @@
 #include "TreeGenerator.h"
-#include "core/Common.h"
 
 namespace voxel {
 

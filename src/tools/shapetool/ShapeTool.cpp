@@ -110,7 +110,7 @@ void ShapeTool::regenerate(const glm::ivec2& pos) {
 	_worldRenderer.extractNewMeshes(glm::ivec3(pos.x, 0, pos.y), true);
 }
 
-void ShapeTool::reset(const voxel::World::WorldContext& ctx) {
+void ShapeTool::reset(const voxel::WorldContext& ctx) {
 	_ctx = ctx;
 	_worldRenderer.reset();
 	_world->reset();

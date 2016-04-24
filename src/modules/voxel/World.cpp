@@ -9,6 +9,8 @@
 #include "noise/SimplexNoise.h"
 #include "generator/ShapeGenerator.h"
 #include "generator/TreeGenerator.h"
+#include "generator/CloudGenerator.h"
+#include "generator/WorldGenerator.h"
 #include <SDL.h>
 #include "polyvox/AStarPathfinder.h"
 #include "polyvox/CubicSurfaceExtractor.h"
@@ -60,16 +62,6 @@ World::~World() {
 		_meshQueue.clear();
 	});
 	delete _volumeData;
-}
-
-glm::ivec2 World::randomPosWithoutHeight(const Region& region, int border) {
-	const int w = region.getWidthInVoxels();
-	const int d = region.getDepthInVoxels();
-	core_assert(border < w);
-	core_assert(border < d);
-	const int x = _random.random(border, w - border);
-	const int z = _random.random(border, d - border);
-	return glm::ivec2(x, z);
 }
 
 glm::ivec3 World::randomPos() const {
@@ -268,20 +260,6 @@ bool World::isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) con
 	return true;
 }
 
-void World::createClouds(TerrainContext& ctx) {
-	const int amount = 4;
-	static const Voxel voxel = createVoxel(Cloud);
-	for (int i = 0; i < amount; ++i) {
-		const int height = 10;
-		const glm::ivec2& pos = randomPosWithoutHeight(ctx.region, 20);
-		glm::ivec3 chunkCloudCenterPos(pos.x, ctx.region.getHeightInVoxels() - height, pos.y);
-		ShapeGenerator::createEllipse(ctx, chunkCloudCenterPos, 10, height, 10, voxel);
-		chunkCloudCenterPos.x -= 5;
-		chunkCloudCenterPos.y -= 5 + i;
-		ShapeGenerator::createEllipse(ctx, chunkCloudCenterPos, 20, height, 20, voxel);
-	}
-}
-
 void World::createUnderground(TerrainContext& ctx) {
 	glm::ivec3 startPos(1, 1, 1);
 	const Voxel voxel = createVoxel(Grass);
@@ -289,72 +267,13 @@ void World::createUnderground(TerrainContext& ctx) {
 }
 
 void World::create(TerrainContext& ctx) {
-	const Region& region = ctx.region;
-	Log::debug("Create new chunk at %i:%i:%i", region.getCentreX(), region.getCentreY(), region.getCentreZ());
-	const int width = region.getWidthInVoxels();
-	const int depth = region.getDepthInVoxels();
-	const int height = region.getHeightInVoxels();
-	const int lowerY = region.getLowerY();
-	const int lowerX = region.getLowerX();
-	const int lowerZ = region.getLowerZ();
-	// TODO: kill me
-	const core::VarPtr& plainTerrain = core::Var::get("voxel-plainterrain", "false");
-	const bool plainTerrainBool = plainTerrain->boolVal();
-
-	// TODO: the 2d noise doesn't neep the same resolution - we can optimize this a lot
-	for (int z = 0; z < depth; ++z) {
-		for (int x = 0; x < width; ++x) {
-			const glm::vec2 noisePos2d = glm::vec2(_noiseSeedOffsetX + lowerX + x, _noiseSeedOffsetZ + lowerZ + z);
-			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.landscapeNoiseOctaves,
-					_ctx.landscapeNoisePersistence, _ctx.landscapeNoiseFrequency, _ctx.landscapeNoiseAmplitude);
-			const float noiseNormalized = noise::norm(landscapeNoise);
-			const float mountainNoise = noise::Simplex::Noise2D(noisePos2d, _ctx.mountainNoiseOctaves,
-					_ctx.mountainNoisePersistence, _ctx.mountainNoiseFrequency, _ctx.mountainNoiseAmplitude);
-			const float mountainNoiseNormalized = noise::norm(mountainNoise);
-			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
-			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
-			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
-			int y = 0;
-			int start = lowerY;
-			if (start == y) {
-				++start;
-				const Voxel& voxel = _biomManager.getVoxelType(lowerX + x, 0, lowerZ + z);
-				ctx.chunk->setVoxel(x, 0, z, voxel);
-			}
-			if (plainTerrainBool) {
-				for (int h = lowerY; h < ni; ++h) {
-					const Voxel& voxel = _biomManager.getVoxelType(lowerX + x, h, lowerZ + z);
-					ctx.chunk->setVoxel(x, y, z, voxel);
-				}
-			} else {
-				for (int h = lowerY; h < ni; ++h) {
-					const glm::vec3 noisePos3d = glm::vec3(noisePos2d.x, h, noisePos2d.y);
-					const float noiseVal = noise::norm(noise::Simplex::Noise3D(noisePos3d, _ctx.caveNoiseOctaves,
-							_ctx.caveNoisePersistence, _ctx.caveNoiseFrequency, _ctx.caveNoiseAmplitude));
-					const float finalDensity = noiseNormalized + noise::norm(noiseVal);
-					if (finalDensity > _ctx.caveDensityThreshold) {
-						const Voxel& voxel = _biomManager.getVoxelType(lowerX + x, h, lowerZ + z);
-						ctx.chunk->setVoxel(x, y, z, voxel);
-					}
-					if (++y >= height) {
-						break;
-					}
-				}
-			}
-		}
-	}
-	const glm::vec3 worldPos(lowerX, lowerY, lowerZ);
-	if (_clientData && _biomManager.hasClouds(worldPos)) {
-		createClouds(ctx);
-	}
-	if (_biomManager.hasTrees(worldPos)) {
-		TreeGenerator::createTrees(ctx, _random);
-	}
+	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
+	WorldGenerator::createWorld(_ctx, ctx, _biomManager, _random, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
 
 	for (const TerrainContext::NonChunkVoxel& voxelData : ctx.nonChunkVoxels) {
 		const glm::ivec3& pos = voxelData.pos;
 		_volumeData->setVoxel(pos, voxelData.voxel);
-		if (region.containsPoint(pos.x, pos.y, pos.z)) {
+		if (ctx.region.containsPoint(pos.x, pos.y, pos.z)) {
 			continue;
 		}
 		if (!allowReExtraction(pos)) {

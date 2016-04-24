@@ -3,7 +3,7 @@
 #include "ui/Window.h"
 #include "core/Common.h"
 
-using WORLDCTX = voxel::World::WorldContext;
+using WORLDCTX = voxel::WorldContext;
 static const ui::Window::Field WORLDFIELDS[] = {
 	{INT_FIELD("landscapeoctaves", WORLDCTX, landscapeNoiseOctaves)},
 	{FLOAT_FIELD("landscapefrequency", WORLDCTX, landscapeNoiseFrequency)},
@@ -25,7 +25,7 @@ static const ui::Window::Field WORLDFIELDS[] = {
 class WorldParametersWindow: public ui::Window {
 private:
 	ShapeTool* _tool;
-	voxel::World::WorldContext _ctx;
+	voxel::WorldContext _ctx;
 public:
 	WorldParametersWindow(ShapeTool* tool) :
 			ui::Window(tool), _tool(tool) {

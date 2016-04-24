@@ -10,8 +10,10 @@ fips_begin_module(voxel)
 	)
 	fips_dir(generator)
 	fips_files(
+		CloudGenerator.h CloudGenerator.cpp
 		ShapeGenerator.h ShapeGenerator.cpp
 		TreeGenerator.h TreeGenerator.cpp
+		WorldGenerator.h WorldGenerator.cpp
 	)
 	fips_dir(polyvox)
 	fips_files(

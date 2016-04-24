@@ -3,6 +3,7 @@
 #include "voxel/WorldContext.h"
 #include "voxel/Voxel.h"
 #include "core/Common.h"
+#include "core/Random.h"
 
 namespace voxel {
 
