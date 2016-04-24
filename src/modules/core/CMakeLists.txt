@@ -23,9 +23,9 @@ fips_begin_module(core)
 		Tokenizer.h
 		TimeProvider.h TimeProvider.cpp
 	)
-	add_definitions(-DRMT_USE_OPENGL)
-	fips_deps(io glm)
+	fips_deps(io glm ${CMAKE_DL_LIBS})
 fips_end_module()
+set_target_properties(core PROPERTIES COMPILE_FLAGS "-DUSE_REMOTERY=1 -DRMT_USE_OPENGL")
 
 gtest_suite_files(tests tests/AbstractTest.cpp tests/RectTest.cpp tests/ByteStreamTest.cpp tests/ThreadPoolTest.cpp tests/EventBusTest.cpp tests/QuadTreeTest.cpp tests/VarTest.cpp tests/CommandTest.cpp tests/SetTest.cpp tests/TokenizerTest.cpp)
 gtest_suite_deps(tests core)

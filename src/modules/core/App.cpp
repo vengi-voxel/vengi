@@ -23,6 +23,7 @@ App::~App() {
 void App::init(const std::string& organisation, const std::string& appname) {
 	_organisation = organisation;
 	_appname = appname;
+	core_trace_init();
 }
 
 int App::startMainLoop(int argc, char *argv[]) {

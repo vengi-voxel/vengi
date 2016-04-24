@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Log.h"
 #include <SDL_platform.h>
 
 #ifdef __EMSCRIPTEN__
@@ -60,9 +61,10 @@ public:
 };
 
 #if USE_REMOTERY
+#define core_trace_init() if (core::Trace::enabled()) Log::info("Remotery active")
 #define core_trace_begin_frame()
 #define core_trace_end_frame()
-#define core_trace_begin(name) if (core::Trace::enabled()) rmt_BeginCPUSample(name)
+#define core_trace_begin(name) if (core::Trace::enabled()) rmt_BeginCPUSample(name, 0)
 #define core_trace_end() if (core::Trace::enabled()) rmt_EndCPUSample()
 #define core_trace_gl_begin(name) rmt_BeginOpenGLSample(name)
 #define core_trace_gl_begin_dynamic(name) rmt_BeginOpenGLSampleDynamic(name)
@@ -70,20 +72,22 @@ public:
 #define core_trace_msg(message) if (message != nullptr && core::Trace::enabled()) rmt_LogText(message)
 #define core_trace_thread(name) if (core::Trace::enabled()) rmt_SetCurrentThreadName(name)
 #elif USE_EMTRACE
+#define core_trace_init() if (core::Trace::enabled()) Log::info("emtrace active")
 #define core_trace_begin_frame() if (core::Trace::enabled()) emscripten_trace_record_frame_start()
 #define core_trace_end_frame() if (core::Trace::enabled()) emscripten_trace_record_frame_end()
 #define core_trace_begin(name) if (core::Trace::enabled()) emscripten_trace_enter_context(#name)
-#define core_trace_end(name) if (core::Trace::enabled()) emscripten_trace_exit_context()
+#define core_trace_end() if (core::Trace::enabled()) emscripten_trace_exit_context()
 #define core_trace_gl_begin(name)
 #define core_trace_gl_begin_dynamic(name)
 #define core_trace_gl_end()
 #define core_trace_msg(message)
 #define core_trace_thread(name)
 #else
+#define core_trace_init()
 #define core_trace_begin_frame()
 #define core_trace_end_frame()
 #define core_trace_begin(name)
-#define core_trace_end(name)
+#define core_trace_end()
 #define core_trace_gl_begin(name)
 #define core_trace_gl_begin_dynamic(name)
 #define core_trace_gl_end()
@@ -99,7 +103,7 @@ public:
 	}
 
 	~TraceScoped() {
-		core_trace_end(name);
+		core_trace_end();
 	}
 };
 
