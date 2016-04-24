@@ -1,21 +1,21 @@
 #pragma once
 
-#include "WorldContext.h"
-#include "Voxel.h"
+#include "voxel/WorldContext.h"
+#include "voxel/Voxel.h"
+#include "core/Common.h"
 
 namespace voxel {
 
 class ShapeGenerator {
-private:
-	bool isValidChunkPosition(const TerrainContext& ctx, const glm::ivec3& pos) const;
-	void setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel);
 public:
-	void createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel);
-	void createCube(TerrainContext& ctx, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel);
-	void createPlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, const Voxel& voxel);
-	void createEllipse(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
-	void createCone(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
-	void createDome(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	static bool isValidChunkPosition(const TerrainContext& ctx, const glm::ivec3& pos);
+	static void setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel);
+	static void createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel);
+	static void createCube(TerrainContext& ctx, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel);
+	static void createPlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, const Voxel& voxel);
+	static void createEllipse(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	static void createCone(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
+	static void createDome(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel);
 
 };
 

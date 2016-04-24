@@ -1,8 +1,8 @@
-#include <voxel/generator/ShapeGenerator.h>
+#include "ShapeGenerator.h"
 
 namespace voxel {
 
-bool ShapeGenerator::isValidChunkPosition(const TerrainContext& ctx, const glm::ivec3& pos) const {
+bool ShapeGenerator::isValidChunkPosition(const TerrainContext& ctx, const glm::ivec3& pos) {
 	if (ctx.chunk == nullptr) {
 		return false;
 	}

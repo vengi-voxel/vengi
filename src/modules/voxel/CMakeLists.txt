@@ -11,6 +11,7 @@ fips_begin_module(voxel)
 	fips_dir(generator)
 	fips_files(
 		ShapeGenerator.h ShapeGenerator.cpp
+		TreeGenerator.h TreeGenerator.cpp
 	)
 	fips_dir(polyvox)
 	fips_files(

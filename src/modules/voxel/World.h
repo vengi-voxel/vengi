@@ -12,7 +12,6 @@
 #include <atomic>
 
 #include "WorldPersister.h"
-#include "generator/ShapeGenerator.h"
 #include "io/Filesystem.h"
 #include "BiomManager.h"
 #include "core/ThreadPool.h"
@@ -181,17 +180,11 @@ private:
 		return func();
 	}
 
-	static int findChunkFloor(int chunkSize, PagedVolume::Chunk* chunk, int x, int y);
-
 	// don't access the volume in anything that is called here
 	void create(TerrainContext& ctx);
 
 	void calculateAO(const Region& region);
 
-	void setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel);
-
-	void addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height);
-	void createTrees(TerrainContext& ctx);
 	glm::ivec2 randomPosWithoutHeight(const Region& region, int border = 0);
 	void createClouds(TerrainContext& ctx);
 	void createUnderground(TerrainContext& ctx);
@@ -203,7 +196,6 @@ private:
 	Pager _pager;
 	PagedVolume *_volumeData;
 	BiomManager _biomManager;
-	ShapeGenerator _generator;
 	WorldContext _ctx;
 	mutable std::mt19937 _engine;
 	long _seed;

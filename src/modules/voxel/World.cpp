@@ -7,6 +7,8 @@
 #include "LodCreator.h"
 #include "core/Random.h"
 #include "noise/SimplexNoise.h"
+#include "generator/ShapeGenerator.h"
+#include "generator/TreeGenerator.h"
 #include <SDL.h>
 #include "polyvox/AStarPathfinder.h"
 #include "polyvox/CubicSurfaceExtractor.h"
@@ -209,17 +211,7 @@ void World::placeTree(const TreeContext& ctx) {
 	TerrainContext tctx;
 	tctx.chunk = nullptr;
 	tctx.region = region;
-	addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height);
-}
-
-int World::findChunkFloor(int chunkHeight, PagedVolume::Chunk* chunk, int x, int z) {
-	for (int i = chunkHeight - 1; i >= 0; i--) {
-		const int material = chunk->getVoxel(x, i, z).getMaterial();
-		if (isFloor(material)) {
-			return i + 1;
-		}
-	}
-	return -1;
+	TreeGenerator::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
 }
 
 int World::findFloor(int x, int z) const {
@@ -276,118 +268,6 @@ bool World::isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) con
 	return true;
 }
 
-void World::setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel) {
-	glm::ivec3 finalPos = pos;
-	if (ctx.chunk != nullptr) {
-		finalPos.x += ctx.region.getLowerX();
-		finalPos.y += ctx.region.getLowerY();
-		finalPos.z += ctx.region.getLowerZ();
-	}
-	_volumeData->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
-	const glm::ivec3& gridpos = getGridPos(finalPos);
-	ctx.dirty.insert(gridpos);
-}
-
-
-void World::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height) {
-	int top = (int) pos.y + trunkHeight;
-	if (type == TreeType::PINE) {
-		top += height;
-	}
-
-	const int chunkHeight = ctx.region.getHeightInVoxels();
-
-	const Voxel voxel = createVoxel(Wood);
-	for (int y = pos.y; y < top; ++y) {
-		const int trunkWidthY = trunkWidth + std::max(0, 2 - (y - pos.y));
-		for (int x = pos.x - trunkWidthY; x < pos.x + trunkWidthY; ++x) {
-			for (int z = pos.z - trunkWidthY; z < pos.z + trunkWidthY; ++z) {
-				if ((x >= pos.x + trunkWidthY || x < pos.x - trunkWidthY) && (z >= pos.z + trunkWidthY || z < pos.z - trunkWidthY)) {
-					continue;
-				}
-				glm::ivec3 finalPos(x, y, z);
-				if (y == pos.y) {
-					if (isValidChunkPosition(ctx, finalPos)) {
-						finalPos.y = findChunkFloor(chunkHeight, ctx.chunk, x, z);
-					} else {
-						finalPos.y = findFloor(x, z);
-					}
-					if (finalPos.y < 0) {
-						continue;
-					}
-				}
-				if (isValidChunkPosition(ctx, finalPos)) {
-					ctx.chunk->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
-				} else {
-					setVolumeVoxel(ctx, finalPos, voxel);
-				}
-			}
-		}
-	}
-
-	const VoxelType leavesType = _random.random(Leaves1, Leaves10);
-	const Voxel leavesVoxel = createVoxel(leavesType);
-	const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
-	if (type == TreeType::ELLIPSIS) {
-		_generator.createEllipse(ctx, leafesPos, width, height, depth, leavesVoxel);
-	} else if (type == TreeType::CONE) {
-		_generator.createCone(ctx, leafesPos, width, height, depth, leavesVoxel);
-	} else if (type == TreeType::PINE) {
-		const int steps = std::max(1, height / 4);
-		const int singleHeight = steps;
-		const int stepWidth = width / steps;
-		const int stepDepth = depth / steps;
-		int currentWidth = stepWidth;
-		int currentDepth = stepDepth;
-		for (int i = 0; i < steps; ++i) {
-			glm::ivec3 pineLeaves(pos.x, top - i * singleHeight, pos.z);
-			_generator.createDome(ctx, pineLeaves, currentWidth, singleHeight, currentDepth, leavesVoxel);
-			pineLeaves.y -= 1;
-			_generator.createDome(ctx, pineLeaves, currentWidth + 1, singleHeight, currentDepth + 1, leavesVoxel);
-			currentDepth += stepDepth;
-			currentWidth += stepWidth;
-		}
-	} else if (type == TreeType::DOME) {
-		_generator.createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
-	} else if (type == TreeType::CUBE) {
-		_generator.createCube(ctx, leafesPos, width, height, depth, leavesVoxel);
-		// TODO: use CreatePlane
-		_generator.createCube(ctx, leafesPos, width + 2, height - 2, depth - 2, leavesVoxel);
-		_generator.createCube(ctx, leafesPos, width - 2, height + 2, depth - 2, leavesVoxel);
-		_generator.createCube(ctx, leafesPos, width - 2, height - 2, depth + 2, leavesVoxel);
-	}
-}
-
-void World::createTrees(TerrainContext& ctx) {
-	const Region& region = ctx.region;
-	const int chunkHeight = region.getHeightInVoxels();
-	for (int i = 0; i < 5; ++i) {
-		const int rndValX = _random.random(1, region.getWidthInVoxels() - 1);
-		// number should be even
-		if (!(rndValX % 2)) {
-			continue;
-		}
-
-		const int rndValZ = _random.random(1, region.getDepthInVoxels() - 1);
-		// TODO: use a noise map to get the position
-		glm::ivec3 pos(rndValX, -1, rndValZ);
-		const int y = findChunkFloor(chunkHeight, ctx.chunk, pos.x, pos.z);
-		const int height = _random.random(10, 14);
-		const int trunkHeight = _random.random(5, 9);
-		if (y < 0 || y >= MAX_HEIGHT -1  - height - trunkHeight) {
-			continue;
-		}
-
-		pos.y = y;
-
-		const int maxSize = 14;
-		const int size = _random.random(12, maxSize);
-		const int trunkWidth = 1;
-		const TreeType treeType = (TreeType)_random.random(0, int(TreeType::MAX) - 1);
-		addTree(ctx, pos, treeType, trunkHeight, trunkWidth, size, size, height);
-	}
-}
-
 void World::createClouds(TerrainContext& ctx) {
 	const int amount = 4;
 	static const Voxel voxel = createVoxel(Cloud);
@@ -395,17 +275,17 @@ void World::createClouds(TerrainContext& ctx) {
 		const int height = 10;
 		const glm::ivec2& pos = randomPosWithoutHeight(ctx.region, 20);
 		glm::ivec3 chunkCloudCenterPos(pos.x, ctx.region.getHeightInVoxels() - height, pos.y);
-		_generator.createEllipse(ctx, chunkCloudCenterPos, 10, height, 10, voxel);
+		ShapeGenerator::createEllipse(ctx, chunkCloudCenterPos, 10, height, 10, voxel);
 		chunkCloudCenterPos.x -= 5;
 		chunkCloudCenterPos.y -= 5 + i;
-		_generator.createEllipse(ctx, chunkCloudCenterPos, 20, height, 20, voxel);
+		ShapeGenerator::createEllipse(ctx, chunkCloudCenterPos, 20, height, 20, voxel);
 	}
 }
 
 void World::createUnderground(TerrainContext& ctx) {
 	glm::ivec3 startPos(1, 1, 1);
 	const Voxel voxel = createVoxel(Grass);
-	_generator.createPlane(ctx, startPos, 10, 10, voxel);
+	ShapeGenerator::createPlane(ctx, startPos, 10, 10, voxel);
 }
 
 void World::create(TerrainContext& ctx) {
@@ -468,9 +348,12 @@ void World::create(TerrainContext& ctx) {
 		createClouds(ctx);
 	}
 	if (_biomManager.hasTrees(worldPos)) {
-		createTrees(ctx);
+		TreeGenerator::createTrees(ctx, _random);
 	}
-	for (const glm::ivec3& pos : ctx.dirty) {
+
+	for (const TerrainContext::NonChunkVoxel& voxelData : ctx.nonChunkVoxels) {
+		const glm::ivec3& pos = voxelData.pos;
+		_volumeData->setVoxel(pos, voxelData.voxel);
 		if (region.containsPoint(pos.x, pos.y, pos.z)) {
 			continue;
 		}
