@@ -14,6 +14,7 @@ fips_begin_module(core)
 		Singleton.h
 		Set.h
 		Random.cpp Random.h
+		Remotery.c Remotery.h
 		Log.cpp Log.h
 		Var.cpp Var.h
 		Trace.h
@@ -22,6 +23,7 @@ fips_begin_module(core)
 		Tokenizer.h
 		TimeProvider.h TimeProvider.cpp
 	)
+	add_definitions(-DRMT_USE_OPENGL)
 	fips_deps(io glm)
 fips_end_module()
 

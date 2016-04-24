@@ -15,10 +15,6 @@ enum AppState {
 };
 
 class App {
-private:
-	//std::streambuf* _oldOut;
-	//std::streambuf* _oldErr;
-
 protected:
 	int _argc;
 	char **_argv;

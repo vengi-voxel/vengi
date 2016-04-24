@@ -59,6 +59,9 @@ tests-list: build
 tests-filter: build
 	$(Q)./fips run tests -- --gtest_filter=$(FILTER) $(ARGS)
 
+remotery:
+	$(Q)xdg-open file://$(CURDIR)/tools/remotery/index.html
+
 tags: forceme
 	$(Q)ctags -R src
 

@@ -1,2 +1,1 @@
-Remotery support for tracing
 Extract bigger mesh region than the chunk size to reduce drawcalls

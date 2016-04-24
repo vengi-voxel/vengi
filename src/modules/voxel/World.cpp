@@ -6,7 +6,6 @@
 #include "io/File.h"
 #include "LodCreator.h"
 #include "core/Random.h"
-#include "noise/SimplexNoise.h"
 #include "generator/ShapeGenerator.h"
 #include "generator/TreeGenerator.h"
 #include "generator/CloudGenerator.h"
