@@ -206,12 +206,12 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData, int lod) {
 	const uint32_t* vecIndices = surfaceMesh.getRawIndexData();
 	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
-	const voxel::VoxelVertexDecoded* vecVertices = surfaceMesh.getRawVertexData();
+	const voxel::Vertex* vecVertices = surfaceMesh.getRawVertexData();
 	const uint32_t numVertices = surfaceMesh.getNoOfVertices();
 
 	core_assert(meshData.vertexBuffer[lod] > 0);
 	glBindBuffer(GL_ARRAY_BUFFER, meshData.vertexBuffer[lod]);
-	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(voxel::VoxelVertexDecoded), vecVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(voxel::Vertex), vecVertices, GL_STATIC_DRAW);
 
 	core_assert(meshData.indexBuffer[lod] > 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer[lod]);
@@ -244,14 +244,14 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 		updateMesh(mesh.mesh[i], meshData, i);
 
 		const int posLoc = shader.enableVertexAttribute("a_pos");
-		glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::VoxelVertexDecoded),
-				GL_OFFSET_CAST(offsetof(voxel::VoxelVertexDecoded, position)));
+		glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::Vertex),
+				GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
 
 		const int matLoc = shader.enableVertexAttribute("a_material");
 		// our material and density is encoded as 8 bits material and 8 bits density
 		core_assert(sizeof(voxel::Voxel) == sizeof(uint8_t));
-		glVertexAttribIPointer(matLoc, sizeof(voxel::Voxel), GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertexDecoded),
-				GL_OFFSET_CAST(offsetof(voxel::VoxelVertexDecoded, data)));
+		glVertexAttribIPointer(matLoc, sizeof(voxel::Voxel), GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
+				GL_OFFSET_CAST(offsetof(voxel::Vertex, data)));
 
 		meshData.scale[i] = 1 << i;
 		meshData.indexType[i] = GL_UNSIGNED_INT;

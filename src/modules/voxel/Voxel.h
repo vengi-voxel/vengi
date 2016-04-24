@@ -14,10 +14,8 @@ inline Voxel createVoxel(VoxelType type) {
 	return Voxel(type);
 }
 
-typedef CubicVertex VoxelVertex;
-typedef Mesh<VoxelVertex> CubicMesh;
-typedef Vertex VoxelVertexDecoded;
-typedef Mesh<VoxelVertexDecoded, typename CubicMesh::IndexType> DecodedMesh;
+typedef Mesh<CubicVertex> CubicMesh;
+typedef Mesh<Vertex, typename CubicMesh::IndexType> DecodedMesh;
 
 constexpr int MAX_VOXEL_LOD = 2;
 static_assert(MAX_VOXEL_LOD >= 1, "MAX_LODS might not be smaller than 1");
