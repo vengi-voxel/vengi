@@ -1,8 +1,8 @@
-#include "WorldGenerator.h"
+#include <voxel/generator/ShapeGenerator.h>
 
 namespace voxel {
 
-bool WorldGenerator::isValidChunkPosition(const TerrainContext& ctx, const glm::ivec3& pos) const {
+bool ShapeGenerator::isValidChunkPosition(const TerrainContext& ctx, const glm::ivec3& pos) const {
 	if (ctx.chunk == nullptr) {
 		return false;
 	}
@@ -16,7 +16,7 @@ bool WorldGenerator::isValidChunkPosition(const TerrainContext& ctx, const glm::
 	return true;
 }
 
-void WorldGenerator::setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel) {
+void ShapeGenerator::setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel) {
 	glm::ivec3 finalPos = pos;
 	if (ctx.chunk != nullptr) {
 		finalPos.x += ctx.region.getLowerX();
@@ -31,7 +31,7 @@ void WorldGenerator::setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, 
 #endif
 }
 
-void WorldGenerator::createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
+void ShapeGenerator::createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
 	const double minRadius = std::min(xRadius, zRadius);
@@ -54,7 +54,7 @@ void WorldGenerator::createCirclePlane(TerrainContext& ctx, const glm::ivec3& ce
 	}
 }
 
-void WorldGenerator::createCube(TerrainContext& ctx, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
+void ShapeGenerator::createCube(TerrainContext& ctx, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int w = width / 2;
 	const int h = height / 2;
 	const int d = depth / 2;
@@ -72,11 +72,11 @@ void WorldGenerator::createCube(TerrainContext& ctx, const glm::ivec3& center, i
 	}
 }
 
-void WorldGenerator::createPlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
+void ShapeGenerator::createPlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
 	createCube(ctx, center, width, 1, depth, voxel);
 }
 
-void WorldGenerator::createEllipse(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void ShapeGenerator::createEllipse(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);
@@ -90,7 +90,7 @@ void WorldGenerator::createEllipse(TerrainContext& ctx, const glm::ivec3& pos, i
 	}
 }
 
-void WorldGenerator::createCone(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void ShapeGenerator::createCone(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);
@@ -103,7 +103,7 @@ void WorldGenerator::createCone(TerrainContext& ctx, const glm::ivec3& pos, int 
 	}
 }
 
-void WorldGenerator::createDome(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void ShapeGenerator::createDome(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);

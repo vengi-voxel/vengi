@@ -5,7 +5,7 @@
 
 namespace voxel {
 
-class WorldGenerator {
+class ShapeGenerator {
 private:
 	bool isValidChunkPosition(const TerrainContext& ctx, const glm::ivec3& pos) const;
 	void setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel);

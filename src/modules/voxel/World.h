@@ -12,7 +12,7 @@
 #include <atomic>
 
 #include "WorldPersister.h"
-#include "WorldGenerator.h"
+#include "generator/ShapeGenerator.h"
 #include "io/Filesystem.h"
 #include "BiomManager.h"
 #include "core/ThreadPool.h"
@@ -203,7 +203,7 @@ private:
 	Pager _pager;
 	PagedVolume *_volumeData;
 	BiomManager _biomManager;
-	WorldGenerator _generator;
+	ShapeGenerator _generator;
 	WorldContext _ctx;
 	mutable std::mt19937 _engine;
 	long _seed;
