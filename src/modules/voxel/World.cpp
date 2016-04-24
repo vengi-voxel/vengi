@@ -270,6 +270,7 @@ void World::create(TerrainContext& ctx) {
 	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
 	WorldGenerator::createWorld(_ctx, ctx, _biomManager, _random, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
 
+	// the generation of this chunk might have put voxel into neighbor chunks - let's process them here now
 	for (const TerrainContext::NonChunkVoxel& voxelData : ctx.nonChunkVoxels) {
 		const glm::ivec3& pos = voxelData.pos;
 		_volumeData->setVoxel(pos, voxelData.voxel);

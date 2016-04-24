@@ -24,11 +24,6 @@ void ShapeGenerator::setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, 
 		finalPos.z += ctx.region.getLowerZ();
 	}
 	ctx.nonChunkVoxels.emplace_back(finalPos, voxel);
-#if 0
-	_volumeData->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
-	const glm::ivec3& gridpos = getGridPos(finalPos);
-	ctx.dirty.insert(gridpos);
-#endif
 }
 
 void ShapeGenerator::createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
