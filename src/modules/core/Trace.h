@@ -24,6 +24,8 @@ private:
 public:
 	Trace(uint16_t port = 0x4597) {
 #if USE_REMOTERY
+		rmtSettings* settings = rmt_Settings();
+		settings->port = port;
 		rmt_CreateGlobalInstance(&_remotery);
 		rmt_SetCurrentThreadName("MainThread");
 #if USE_GL_REMOTERY
@@ -66,6 +68,7 @@ public:
 #define core_trace_gl_begin_dynamic(name) rmt_BeginOpenGLSampleDynamic(name)
 #define core_trace_gl_end() rmt_EndOpenGLSample()
 #define core_trace_msg(message) if (message != nullptr && core::Trace::enabled()) rmt_LogText(message)
+#define core_trace_thread(name) if (core::Trace::enabled()) rmt_SetCurrentThreadName(name)
 #elif USE_EMTRACE
 #define core_trace_begin_frame() if (core::Trace::enabled()) emscripten_trace_record_frame_start()
 #define core_trace_end_frame() if (core::Trace::enabled()) emscripten_trace_record_frame_end()
@@ -75,6 +78,7 @@ public:
 #define core_trace_gl_begin_dynamic(name)
 #define core_trace_gl_end()
 #define core_trace_msg(message)
+#define core_trace_thread(name)
 #else
 #define core_trace_begin_frame()
 #define core_trace_end_frame()
@@ -84,6 +88,7 @@ public:
 #define core_trace_gl_begin_dynamic(name)
 #define core_trace_gl_end()
 #define core_trace_msg(message)
+#define core_trace_thread(name)
 #endif
 
 class TraceScoped {
