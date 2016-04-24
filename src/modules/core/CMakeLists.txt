@@ -14,7 +14,6 @@ fips_begin_module(core)
 		Singleton.h
 		Set.h
 		Random.cpp Random.h
-		Remotery.c Remotery.h
 		Log.cpp Log.h
 		Var.cpp Var.h
 		Trace.h
@@ -23,7 +22,7 @@ fips_begin_module(core)
 		Tokenizer.h
 		TimeProvider.h TimeProvider.cpp
 	)
-	fips_deps(io glm ${CMAKE_DL_LIBS})
+	fips_deps(io glm)
 fips_end_module()
 set_target_properties(core PROPERTIES COMPILE_FLAGS "-DUSE_REMOTERY=1 -DRMT_USE_OPENGL")
 

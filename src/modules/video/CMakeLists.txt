@@ -14,9 +14,11 @@ fips_begin_module(video)
 		Color.cpp Color.h
 		Mesh.cpp Mesh.h
 		MeshPool.cpp MeshPool.h
+		Remotery.c Remotery.h
 	)
-	fips_deps(core image io assimp sdl2)
+	fips_deps(core image io assimp sdl2 ${CMAKE_DL_LIBS})
 fips_end_module()
+set_target_properties(video PROPERTIES COMPILE_FLAGS "-DUSE_REMOTERY=1 -DRMT_USE_OPENGL")
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(video ${OPENGL_LIBRARIES})

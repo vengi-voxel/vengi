@@ -23,7 +23,7 @@ private:
 	Remotery* _remotery;
 #endif
 public:
-	Trace(uint16_t port = 0x4597) {
+	Trace(uint16_t port = 17815) {
 #if USE_REMOTERY
 		rmtSettings* settings = rmt_Settings();
 		settings->port = port;

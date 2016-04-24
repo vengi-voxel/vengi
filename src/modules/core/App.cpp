@@ -10,8 +10,8 @@ namespace core {
 
 App* App::_staticInstance;
 
-App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport, size_t threadPoolSize) :
-		_argc(0), _argv(nullptr), _trace(traceport), _curState(AppState::Construct), _nextState(AppState::InvalidAppState),
+App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, size_t threadPoolSize) :
+		_argc(0), _argv(nullptr), _curState(AppState::Construct), _nextState(AppState::InvalidAppState),
 		_suspendRequested(false), _deltaFrame(0L), _initTime(0L), _filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize) {
 	_now = currentMillis();
 	_staticInstance = this;

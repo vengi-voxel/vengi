@@ -22,7 +22,6 @@ protected:
 	std::string _organisation;
 	std::string _appname;
 
-	Trace _trace;
 	AppState _curState;
 	AppState _nextState;
 	std::unordered_set<AppState, std::hash<int> > _blockers;
@@ -37,7 +36,7 @@ protected:
 	core::ThreadPool _threadPool;
 
 public:
-	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport, size_t threadPoolSize = 1);
+	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, size_t threadPoolSize = 1);
 	virtual ~App();
 
 	void init(const std::string& organisation, const std::string& appname);

@@ -1,1 +1,2 @@
 Extract bigger mesh region than the chunk size to reduce drawcalls
+Remotery tracing for console apps (and tests) (currently only works for windowed app)
