@@ -53,7 +53,7 @@ core::AppState WindowedApp::onRunning() {
 		}
 	}
 
-	core_trace_scoped(WindowedAppPrepareContext);
+	core_trace_gl_scoped(WindowedAppPrepareContext);
 	SDL_GL_MakeCurrent(_window, _glcontext);
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT);

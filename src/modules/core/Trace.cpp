@@ -2,11 +2,17 @@
 
 namespace core {
 
+static void rmtInputHandler(const char* text, void* context) {
+	Log::info("typed '%s' to console", text);
+}
+
 Trace::Trace(uint16_t port) :
 		_remotery(nullptr) {
 	rmtSettings* settings = rmt_Settings();
 	if (settings != nullptr) {
 		settings->port = port;
+		settings->input_handler = rmtInputHandler;
+		settings->input_handler_context = nullptr;
 	}
 	rmt_CreateGlobalInstance(&_remotery);
 	rmt_SetCurrentThreadName("MainThread");
