@@ -92,6 +92,7 @@ struct IsQuadNeeded {
 };
 
 void World::calculateAO(const Region& region) {
+	core_trace_scoped(CalculateAO);
 	for (int nx = region.getLowerX() - 1; nx < region.getUpperX() + 1; ++nx) {
 		for (int nz = region.getLowerZ() - 1; nz < region.getUpperZ() + 1; ++nz) {
 			for (int ny = region.getLowerY(); ny < region.getUpperY() - 1; ++ny) {
@@ -144,7 +145,6 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	_meshesExtracted.insert(pos);
 
 	_futures.push_back(_threadPool.enqueue([=] () {
-		core_trace_scoped(MeshExtraction);
 		if (_cancelThreads)
 			return;
 		core_trace_scoped(MeshExtraction);
@@ -198,6 +198,7 @@ Region World::getRegion(const glm::ivec3& pos) const {
 }
 
 void World::placeTree(const TreeContext& ctx) {
+	core_trace_scoped(PlaceTree);
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
 	const Region& region = getRegion(getGridPos(pos));
 	TerrainContext tctx;
@@ -223,6 +224,7 @@ bool World::allowReExtraction(const glm::ivec3& pos) {
 
 bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 		std::list<glm::ivec3>& listResult) {
+	core_trace_scoped(FindPath);
 	static auto f = [] (const voxel::PagedVolume* volData, const glm::ivec3& v3dPos) {
 		const voxel::Voxel& voxel = volData->getVoxel(v3dPos);
 		return voxel.getMaterial() != Air;

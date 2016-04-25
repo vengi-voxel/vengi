@@ -12,7 +12,7 @@ App* App::_staticInstance;
 
 App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport, size_t threadPoolSize) :
 		_trace(traceport), _argc(0), _argv(nullptr), _curState(AppState::Construct), _nextState(AppState::InvalidAppState),
-		_suspendRequested(false), _deltaFrame(0L), _initTime(0L), _filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize) {
+		_suspendRequested(false), _deltaFrame(0L), _initTime(0L), _filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core") {
 	_now = currentMillis();
 	_staticInstance = this;
 }
@@ -46,6 +46,7 @@ void App::remBlocker(AppState blockedState) {
 }
 
 void App::onFrame() {
+	core_trace_scoped(AppOnFrame);
 	if ((_nextState != AppState::InvalidAppState) && (_nextState != _curState)) {
 		if (_blockers.find(_nextState) != _blockers.end()) {
 			if (AppState::Blocked != _curState) {
@@ -65,25 +66,42 @@ void App::onFrame() {
 		_now = now;
 
 		switch (_curState) {
-		case AppState::Construct:
+		case AppState::Construct: {
+			core_trace_scoped(AppOnConstruct);
 			_nextState = onConstruct();
 			break;
-		case AppState::Init:
+		}
+		case AppState::Init: {
+			core_trace_scoped(AppOnInit);
 			_nextState = onInit();
 			break;
-		case AppState::Running:
-			onBeforeRunning();
-			_nextState = onRunning();
-			if (AppState::Running == _nextState)
+		}
+		case AppState::Running: {
+			{
+				core_trace_scoped(AppOnBeforeRunning);
+				onBeforeRunning();
+			}
+			{
+				core_trace_scoped(AppOnRunning);
+				_nextState = onRunning();
+			}
+			if (AppState::Running == _nextState) {
+				core_trace_scoped(AppOnAfterRunning);
 				onAfterRunning();
+			}
 			break;
-		case AppState::Cleanup:
+		}
+		case AppState::Cleanup: {
+			core_trace_scoped(AppOnCleanup);
 			_nextState = onCleanup();
 			break;
-		case AppState::Destroy:
+		}
+		case AppState::Destroy: {
+			core_trace_scoped(AppOnDestroy);
 			_nextState = onDestroy();
 			_curState = AppState::InvalidAppState;
 			break;
+		}
 		default:
 			break;
 		}

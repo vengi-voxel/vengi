@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include "Rect.h"
+#include "Trace.h"
 
 namespace core {
 
@@ -200,6 +201,7 @@ public:
 	}
 
 	inline Contents query(const Rect<TYPE>& area) const {
+		core_trace_scoped(QuadTreeQuery);
 		return _root.query(area);
 	}
 

@@ -179,7 +179,7 @@ void Network::updateHost(ENetHost* host, bool server) {
 }
 
 void Network::update() {
-	core_trace_scoped("Network");
+	core_trace_scoped(Network);
 	updateHost(_server, true);
 	updateHost(_client, false);
 }

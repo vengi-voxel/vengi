@@ -38,6 +38,8 @@ public:
 #define core_trace_gl_end() rmt_EndOpenGLSample()
 #define core_trace_msg(message) do { if (message != nullptr) rmt_LogText(message); } while (0)
 #define core_trace_thread(name) rmt_SetCurrentThreadName(name)
+#define core_trace_gl_scoped(name) rmt_ScopedOpenGLSample(name)
+#define core_trace_scoped(name) rmt_ScopedCPUSample(name, 0)
 #elif USE_EMTRACE
 #define core_trace_init() Log::info("emtrace active")
 #define core_trace_begin_frame() emscripten_trace_record_frame_start()
@@ -49,6 +51,8 @@ public:
 #define core_trace_gl_end()
 #define core_trace_msg(message)
 #define core_trace_thread(name)
+#define core_trace_gl_scoped(name)
+#define core_trace_scoped(name) core::TraceScoped(#name)
 #else
 #define core_trace_init() Log::info("Tracing disabled")
 #define core_trace_begin_frame()
@@ -60,8 +64,9 @@ public:
 #define core_trace_gl_end()
 #define core_trace_msg(message)
 #define core_trace_thread(name)
+#define core_trace_gl_scoped(name)
+#define core_trace_scoped(name) core::TraceScoped(#name)
 #endif
 
-#define core_trace_scoped(name) core::TraceScoped(name)
 
 }

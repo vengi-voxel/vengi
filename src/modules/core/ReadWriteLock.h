@@ -9,6 +9,7 @@
 #include <mutex>
 #include <atomic>
 #include <iostream>
+#include "Trace.h"
 #ifdef RWLOCKDEBUG
 #include <chrono>
 #include "core/Common.h"
@@ -25,6 +26,7 @@ public:
 	ReadWriteLock(const std::string& name) : _readers(0), _lock(false), _name(name) {}
 
 	inline void lockRead() const {
+		core_trace_scoped(LockRead);
 #ifdef RWLOCKDEBUG
 		auto start = std::chrono::system_clock::now();
 #endif
@@ -44,6 +46,7 @@ public:
 	}
 
 	inline void lockWrite() {
+		core_trace_scoped(LockWrite);
 #ifdef RWLOCKDEBUG
 		auto start = std::chrono::system_clock::now();
 #endif

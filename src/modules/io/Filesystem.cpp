@@ -6,7 +6,7 @@
 namespace io {
 
 Filesystem::Filesystem() :
-		_threadPool(1) {
+		_threadPool(1, "IO") {
 }
 
 void Filesystem::init(const std::string& organisation, const std::string& appname) {

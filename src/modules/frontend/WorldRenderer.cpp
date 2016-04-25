@@ -54,6 +54,7 @@ bool WorldRenderer::addEntity(const ClientEntityPtr& entity) {
 }
 
 void WorldRenderer::deleteMesh(const glm::ivec3& pos) {
+	core_trace_gl_scoped(WorldRendererDeleteMesh);
 	const glm::ivec3& p = _world->getGridPos(pos);
 	for (auto i = _meshData.begin(); i != _meshData.end(); ++i) {
 		const video::GLMeshData& meshData = *i;
@@ -82,6 +83,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	if (!_world->pop(mesh)) {
 		return;
 	}
+	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
 	for (video::GLMeshData& m : _meshData) {
 		if (m.translation == mesh.translation) {
 			core_assert(m.numLods == mesh.numLods);
@@ -98,6 +100,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection) {
 	handleMeshQueue(shader);
 
+	core_trace_gl_scoped(WorldRendererRenderWorld);
 	int drawCallsWorld = 0;
 
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -204,6 +207,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 }
 
 void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData, int lod) {
+	core_trace_gl_scoped(WorldRendererUpdateMesh);
 	const uint32_t* vecIndices = surfaceMesh.getRawIndexData();
 	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
 	const voxel::Vertex* vecVertices = surfaceMesh.getRawVertexData();
@@ -222,6 +226,7 @@ void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshDat
 
 // TODO: generate bigger buffers and use glBufferSubData
 video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh) {
+	core_trace_gl_scoped(WorldRendererCreateMesh);
 	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
 	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
 	video::GLMeshData meshData;
@@ -265,12 +270,14 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 }
 
 void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
+	core_trace_scoped(WorldRendererOnSpawn);
 	_viewDistance = 1.0f;
 	_lastGridPosition = _world->getGridPos(pos);
 	extractMeshAroundCamera(initialExtractionRadius);
 }
 
 int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection) {
+	core_trace_gl_scoped(WorldRendererRenderEntities);
 	if (_entities.empty())
 		return 0;
 
@@ -311,6 +318,7 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 }
 
 void WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
+	core_trace_scoped(WorldRendererExtractNewMeshes);
 	if (force) {
 		deleteMesh(position);
 		_world->allowReExtraction(position);
@@ -326,6 +334,7 @@ void WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 }
 
 void WorldRenderer::extractMeshAroundCamera(int radius) {
+	core_trace_scoped(WorldRendererExtractAroundCamera);
 	const int sideLength = radius * 2 + 1;
 	const int amount = sideLength * (sideLength - 1) + sideLength;
 	const int chunkSize = _world->getChunkSize();
@@ -350,6 +359,7 @@ void WorldRenderer::extractMeshAroundCamera(int radius) {
 }
 
 void WorldRenderer::onInit() {
+	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
 		const int ColorTextureOctaves = 2;
@@ -362,6 +372,7 @@ void WorldRenderer::onInit() {
 }
 
 void WorldRenderer::onRunning(long dt) {
+	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
 	if (!_noiseFuture.empty()) {
 		NoiseFuture& future = _noiseFuture.back();

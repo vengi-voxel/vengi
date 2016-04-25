@@ -67,8 +67,8 @@ inline ThreadPool::ThreadPool(size_t threads, const char *name) :
 	if (name == nullptr)
 		name = "ThreadPool";
 	for (size_t i = 0; i < threads; ++i) {
-		_workers.emplace_back([this] {
-			const std::string n = core::string::format("%s-%i", name, i);
+		_workers.emplace_back([this, name, i] {
+			const std::string n = core::string::format("%s-%i", name, (int)i);
 			core_trace_thread(n.c_str());
 			for (;;) {
 				std::function<void()> task;
