@@ -8,8 +8,8 @@
 #include "frontend/Movement.h"
 
 // tool for testing the world createXXX functions without starting the application
-ShapeTool::ShapeTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
-		ui::UIApp(filesystem, eventBus), _worldRenderer(world), _world(world) {
+ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
+		ui::UIApp(filesystem, eventBus), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _meshShader(new frontend::MeshShader()) {
 	init("engine", "shapetool");
 }
 
@@ -25,6 +25,9 @@ core::AppState ShapeTool::onInit() {
 	GLDebug::enable(GLDebug::Medium);
 
 	if (!_worldShader.init()) {
+		return core::Cleanup;
+	}
+	if (!_meshShader->init()) {
 		return core::Cleanup;
 	}
 
@@ -43,6 +46,9 @@ core::AppState ShapeTool::onInit() {
 
 	// TODO: replace this with a scripting interface for the World::create* functions
 	_worldRenderer.onSpawn(_camera.getPosition(), 2);
+
+	const frontend::ClientEntityPtr& entity = std::make_shared<frontend::ClientEntity>(1, -1, _now, _camera.getPosition(), 0.0f, _meshPool->getMesh("chr_fatkid"));
+	_worldRenderer.addEntity(entity);
 
 	new WorldParametersWindow(this);
 	new TreeParametersWindow(this);
@@ -72,7 +78,18 @@ void ShapeTool::beforeUI() {
 
 	_worldRenderer.extractNewMeshes(_camera.getPosition());
 	_worldRenderer.onRunning(_deltaFrame);
-	_worldRenderer.renderWorld(_worldShader, _camera, projection);
+	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _camera, projection);
+	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, projection);
+}
+
+void ShapeTool::afterUI() {
+	ui::UIApp::afterUI();
+	tb::TBStr drawCallsWorld;
+	drawCallsWorld.SetFormatted("drawcalls world: %i", _drawCallsWorld);
+	tb::TBStr drawCallsEntity;
+	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
+	_root.GetFont()->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
+	_root.GetFont()->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
 }
 
 core::AppState ShapeTool::onCleanup() {
