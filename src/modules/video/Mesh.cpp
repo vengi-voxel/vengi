@@ -80,7 +80,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 	}
 
 	loadTextureImages(scene, filename);
-	_state = io::IOSTATE_LOADING;
+	_readyToInit = true;
 	return true;
 }
 
@@ -91,15 +91,16 @@ bool Mesh::initMesh(const ShaderPtr& shader) {
 		return false;
 
 	if (_state != io::IOSTATE_LOADED) {
-		if (_state != io::IOSTATE_LOADING) {
+		if (!_readyToInit) {
 			return false;
 		}
 		for (const image::ImagePtr& i : _images) {
-			if (!i->isLoaded())
+			if (i->isLoading()) {
 				return false;
+			}
 		}
 
-		_textures.reserve(_images.size());
+		_textures.resize(_images.size());
 		int materialIndex = 0;
 		for (const image::ImagePtr& i : _images) {
 			_textures[materialIndex++] = createTextureFromImage(i);
@@ -173,7 +174,7 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 		}
 
 		const std::string fullPath = dir + "/" + p;
-		_images[i] = image::createImage(fullPath);
+		_images[i] = image::loadImage(fullPath);
 	}
 }
 

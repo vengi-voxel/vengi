@@ -26,6 +26,7 @@ private:
 	GLuint _uvBuffer;
 	GLuint _normalBuffer;
 	GLuint _indexBuffer;
+	bool _readyToInit = false;
 
 	std::vector<GLMeshData> _meshData;
 	std::vector<image::ImagePtr> _images;
