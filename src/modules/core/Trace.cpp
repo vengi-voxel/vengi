@@ -25,10 +25,10 @@ Trace::Trace(uint16_t port) :
 		settings->input_handler_context = nullptr;
 	}
 	rmt_CreateGlobalInstance(&_remotery);
-	rmt_SetCurrentThreadName("MainThread");
 #if USE_EMTRACE
 	emscripten_trace_configure("http://localhost:5000/", "Engine");
 #endif
+	core_trace_thread("MainThread");
 }
 
 Trace::~Trace() {
