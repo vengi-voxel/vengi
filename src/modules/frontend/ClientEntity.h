@@ -38,6 +38,10 @@ public:
 		return _posLerp.position();
 	}
 
+	inline float scale() const {
+		return 1.0f;
+	}
+
 	inline const video::MeshPtr& mesh() const {
 		return _mesh;
 	}
