@@ -278,9 +278,7 @@ void World::create(TerrainContext& ctx) {
 	for (const TerrainContext::NonChunkVoxel& voxelData : ctx.nonChunkVoxels) {
 		const glm::ivec3& pos = voxelData.pos;
 		_volumeData->setVoxel(pos, voxelData.voxel);
-		if (ctx.region.containsPoint(pos.x, pos.y, pos.z)) {
-			continue;
-		}
+		core_assert(!ctx.region.containsPoint(pos.x, pos.y, pos.z));
 		if (!allowReExtraction(pos)) {
 			continue;
 		}
