@@ -16,7 +16,7 @@ void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
 	const Region& region = ctx.region;
 	const int chunkHeight = region.getHeightInVoxels();
 	for (int i = 0; i < 5; ++i) {
-		const int regionBorder = 4;
+		const int regionBorder = 10;
 		const int rndValX = random.random(regionBorder, region.getWidthInVoxels() - regionBorder);
 		// number should be even
 		if (!(rndValX % 2)) {
