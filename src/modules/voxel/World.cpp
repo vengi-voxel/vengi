@@ -146,7 +146,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	_futures.push_back(_threadPool.enqueue([=] () {
 		if (_cancelThreads)
 			return;
-		core_trace_scoped("MeshExtraction");
+		core_trace_scoped(MeshExtraction);
 		const Region& region = getRegion(pos);
 		DecodedMeshData data;
 		{
@@ -266,7 +266,7 @@ void World::createUnderground(TerrainContext& ctx) {
 }
 
 void World::create(TerrainContext& ctx) {
-	core_trace_scoped("Create world");
+	core_trace_scoped(CreateWorld);
 	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
 	WorldGenerator::createWorld(_ctx, ctx, _biomManager, _random, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
 

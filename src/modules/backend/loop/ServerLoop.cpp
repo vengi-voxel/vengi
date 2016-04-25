@@ -61,27 +61,27 @@ void ServerLoop::readInput() {
 
 void ServerLoop::onFrame(long dt) {
 	readInput();
-	core_trace_scoped("ServerLoop");
+	core_trace_scoped(ServerLoop);
 	_network->update();
 	{ // TODO: move into own thread
-		core_trace_scoped("PoiUpdate");
+		core_trace_scoped(PoiUpdate);
 		_poiProvider->update(dt);
 	}
 	{ // TODO: move into own thread
-		core_trace_scoped("WorldUpdate");
+		core_trace_scoped(WorldUpdate);
 		_world->onFrame(dt);
 	}
 	{ // TODO: move into own thread
-		core_trace_scoped("AIServerUpdate");
+		core_trace_scoped(AIServerUpdate);
 		_zone.update(dt);
 		_aiServer.update(dt);
 	}
 	{ // TODO: move into own thread
-		core_trace_scoped("SpawnMgrUpdate");
+		core_trace_scoped(SpawnMgrUpdate);
 		_spawnMgr->onFrame(_zone, dt);
 	}
 	{
-		core_trace_scoped("EntityStorage");
+		core_trace_scoped(EntityStorage);
 		_entityStorage->onFrame(dt);
 	}
 }

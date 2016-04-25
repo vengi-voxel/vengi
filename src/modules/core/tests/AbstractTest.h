@@ -14,14 +14,14 @@ private:
 				core::App(filesystem, eventBus, 10000) {
 			init("engine", "test");
 			while (_curState < AppState::Running) {
-				core_trace_scoped("AppMainLoop");
+				core_trace_scoped(AppMainLoop);
 				onFrame();
 			}
 		}
 
 		~TestApp() {
 			while (AppState::InvalidAppState != _curState) {
-				core_trace_scoped("AppMainLoop");
+				core_trace_scoped(AppMainLoop);
 				onFrame();
 			}
 		}

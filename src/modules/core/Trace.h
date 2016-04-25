@@ -50,7 +50,7 @@ public:
 #define core_trace_msg(message)
 #define core_trace_thread(name)
 #else
-#define core_trace_init()
+#define core_trace_init() Log::info("Tracing disabled")
 #define core_trace_begin_frame()
 #define core_trace_end_frame()
 #define core_trace_begin(name)
