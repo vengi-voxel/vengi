@@ -2,6 +2,7 @@
 
 #include "polyvox/RawVolume.h"
 #include "polyvox/PagedVolume.h"
+#include "core/Trace.h"
 
 namespace voxel {
 
@@ -10,6 +11,7 @@ inline bool isSolidVoxel(const Voxel& voxel) {
 }
 
 void rescaleCubicVolume(PagedVolume* source, const Region& sourceRegion, RawVolume* destination, const Region& destinationRegion) {
+	core_trace_scoped(RescaleCubicVolume);
 	core_assert_msg(sourceRegion.getWidthInVoxels() == destinationRegion.getWidthInVoxels() * 2, "Wrong width - %i versus %i!", sourceRegion.getWidthInVoxels(), destinationRegion.getWidthInVoxels() * 2);
 	core_assert_msg(sourceRegion.getHeightInVoxels() == destinationRegion.getHeightInVoxels() * 2, "Wrong height - %i versus %i!", sourceRegion.getHeightInVoxels(), destinationRegion.getHeightInVoxels() * 2);
 	core_assert_msg(sourceRegion.getDepthInVoxels() == destinationRegion.getDepthInVoxels() * 2, "Wrong depth - %i versus %i!", sourceRegion.getDepthInVoxels(), destinationRegion.getDepthInVoxels() * 2);

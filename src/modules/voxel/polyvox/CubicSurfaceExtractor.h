@@ -7,6 +7,7 @@
 #include "Vertex.h"
 #include <vector>
 #include <list>
+#include "core/Trace.h"
 
 namespace voxel {
 
@@ -227,6 +228,7 @@ Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNee
 /// but this is relatively complex and I haven't done it yet. Could always add it later as another overload.
 template<typename VolumeType, typename MeshType, typename IsQuadNeeded>
 void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
+	core_trace_scoped(ExtractCubicMesh);
 	// This extractor has a limit as to how large the extracted region can be, because the vertex positions are encoded with a single byte per component.
 	int32_t maxRegionDimensionInVoxels = 255;
 	core_assert_msg(region.getWidthInVoxels() <= maxRegionDimensionInVoxels, "Requested extraction region exceeds maximum dimensions");

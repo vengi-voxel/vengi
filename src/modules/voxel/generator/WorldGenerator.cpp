@@ -64,9 +64,11 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 	}
 	const glm::vec3 worldPos(lowerX, lowerY, lowerZ);
 	if ((flags & WORLDGEN_CLOUDS) && biomManager.hasClouds(worldPos)) {
+		core_trace_scoped(Clouds);
 		CloudGenerator::createClouds(ctx, random);
 	}
 	if (biomManager.hasTrees(worldPos)) {
+		core_trace_scoped(Trees);
 		TreeGenerator::createTrees(ctx, random);
 	}
 }

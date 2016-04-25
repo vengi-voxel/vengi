@@ -1,6 +1,7 @@
 #include "Mesh.h"
 #include "CubicSurfaceExtractor.h"
 #include "core/Common.h"
+#include "core/Trace.h"
 
 namespace voxel {
 
@@ -8,6 +9,7 @@ namespace voxel {
 /// formats which are hard to interpret directly (see CubicVertex and MarchingCubesVertex).
 /// This function creates a new uncompressed mesh containing the much simpler Vertex objects.
 Mesh<Vertex> decodeMesh(const Mesh<CubicVertex>& encodedMesh) {
+	core_trace_scoped(DecodeMesh);
 	Mesh<Vertex, typename Mesh<CubicVertex>::IndexType> decodedMesh;
 
 	for (typename Mesh<CubicVertex>::IndexType ct = 0; ct < encodedMesh.getNoOfVertices(); ct++) {
