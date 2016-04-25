@@ -69,7 +69,6 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 	if (biomManager.hasTrees(worldPos)) {
 		TreeGenerator::createTrees(ctx, random);
 	}
-
 }
 
 }

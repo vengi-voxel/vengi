@@ -71,7 +71,7 @@ glm::ivec3 World::randomPos() const {
 }
 
 struct IsVoxelTransparent {
-	bool operator()(const Voxel& voxel) const {
+	inline bool operator()(const Voxel& voxel) const {
 		return voxel.getMaterial() == Air;
 	}
 };
@@ -93,16 +93,17 @@ struct IsQuadNeeded {
 
 void World::calculateAO(const Region& region) {
 	core_trace_scoped(CalculateAO);
+	const IsVoxelTransparent trans;
 	for (int nx = region.getLowerX() - 1; nx < region.getUpperX() + 1; ++nx) {
 		for (int nz = region.getLowerZ() - 1; nz < region.getUpperZ() + 1; ++nz) {
 			for (int ny = region.getLowerY(); ny < region.getUpperY() - 1; ++ny) {
 				// if the voxel is air, we don't need to compute anything
-				Voxel voxel = _volumeData->getVoxel(nx, ny, nz);
-				if (voxel.getMaterial() == Air) {
+				const Voxel& voxel = _volumeData->getVoxel(nx, ny, nz);
+				if (trans(voxel)) {
 					continue;
 				}
 				// if the voxel above us is not free - we don't calculate ao for this voxel
-				if (_volumeData->getVoxel(nx, ny + 1, nz).getMaterial() != Air) {
+				if (!trans(_volumeData->getVoxel(nx, ny + 1, nz).getMaterial())) {
 					continue;
 				}
 				static const struct offsets {
@@ -263,8 +264,8 @@ bool World::isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) con
 }
 
 void World::createUnderground(TerrainContext& ctx) {
-	glm::ivec3 startPos(1, 1, 1);
-	const Voxel voxel = createVoxel(Grass);
+	const glm::ivec3 startPos(1, 1, 1);
+	const Voxel& voxel = createVoxel(Grass);
 	ShapeGenerator::createPlane(ctx, startPos, 10, 10, voxel);
 }
 
