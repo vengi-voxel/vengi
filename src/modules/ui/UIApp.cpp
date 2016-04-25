@@ -331,35 +331,45 @@ core::AppState UIApp::onRunning() {
 		}
 	}
 
-	if (state == core::AppState::Running) {
-		beforeUI();
-
-		tb::TBAnimationManager::Update();
-		_root.InvokeProcessStates();
-		_root.InvokeProcess();
-
-		_renderer.BeginPaint(_width, _height);
-		_root.InvokePaint(tb::TBWidget::PaintProps());
-
-		++_frameCounter;
-
-		double time = tb::TBSystem::GetTimeMS();
-		if (time > _frameCounterResetRime + 1000) {
-			fps = (int) ((_frameCounter / (time - _frameCounterResetRime)) * 1000);
-			_frameCounterResetRime = time;
-			_frameCounter = 0;
+	const bool running = state == core::AppState::Running;
+	if (running) {
+		{
+			core_trace_scoped(UIAppBeforeUI);
+			beforeUI();
 		}
+		{
+			core_trace_scoped(UIAppUpdateUI);
+			tb::TBAnimationManager::Update();
+			_root.InvokeProcessStates();
+			_root.InvokeProcess();
 
-		tb::TBStr str;
-		str.SetFormatted("FPS: %d", fps);
-		_root.GetFont()->DrawString(5, 5, tb::TBColor(255, 255, 255), str);
+			_renderer.BeginPaint(_width, _height);
+			_root.InvokePaint(tb::TBWidget::PaintProps());
 
-		afterUI();
+			++_frameCounter;
 
-		_renderer.EndPaint();
-		// If animations are running, reinvalidate immediately
-		if (tb::TBAnimationManager::HasAnimationsRunning())
-			_root.Invalidate();
+			double time = tb::TBSystem::GetTimeMS();
+			if (time > _frameCounterResetRime + 1000) {
+				fps = (int) ((_frameCounter / (time - _frameCounterResetRime)) * 1000);
+				_frameCounterResetRime = time;
+				_frameCounter = 0;
+			}
+
+			tb::TBStr str;
+			str.SetFormatted("FPS: %d", fps);
+			_root.GetFont()->DrawString(5, 5, tb::TBColor(255, 255, 255), str);
+		}
+		{
+			core_trace_scoped(UIAppAfterUI);
+			afterUI();
+		}
+		{
+			core_trace_scoped(UIAppEndPaint);
+			_renderer.EndPaint();
+			// If animations are running, reinvalidate immediately
+			if (tb::TBAnimationManager::HasAnimationsRunning())
+				_root.Invalidate();
+		}
 	}
 	return state;
 }

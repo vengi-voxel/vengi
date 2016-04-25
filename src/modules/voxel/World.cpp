@@ -299,6 +299,7 @@ void World::cleanupFutures() {
 }
 
 void World::onFrame(long dt) {
+	core_trace_scoped(WorldOnFrame);
 	cleanupFutures();
 	if (_cancelThreads) {
 		if (!_futures.empty()) {

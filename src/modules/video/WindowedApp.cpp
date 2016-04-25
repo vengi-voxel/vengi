@@ -30,17 +30,20 @@ WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventB
 }
 
 void WindowedApp::onAfterRunning() {
+	core_trace_scoped(WindowedAppAfterRunning);
 	SDL_GL_SwapWindow(_window);
 }
 
 core::AppState WindowedApp::onRunning() {
 	App::onRunning();
+	core_trace_scoped(WindowedAppOnRunning);
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 		case SDL_QUIT:
 			return core::AppState::Cleanup;
 		default: {
+			core_trace_scoped(WindowedAppEventHandler);
 			const bool running = core::Singleton<io::EventHandler>::getInstance().handleEvent(event);
 			if (!running) {
 				return core::AppState::Cleanup;
@@ -50,6 +53,7 @@ core::AppState WindowedApp::onRunning() {
 		}
 	}
 
+	core_trace_scoped(WindowedAppPrepareContext);
 	SDL_GL_MakeCurrent(_window, _glcontext);
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT);
