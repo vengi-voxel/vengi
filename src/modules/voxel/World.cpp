@@ -43,7 +43,7 @@ void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
 
 // http://code.google.com/p/fortressoverseer/source/browse/Overseer/PolyVoxGenerator.cpp
 World::World() :
-		_pager(*this), _seed(0), _clientData(false), _threadPool(1), _rwLock("World"),
+		_pager(*this), _seed(0), _clientData(false), _threadPool(1, "World"), _rwLock("World"),
 		_random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 256 * 1024 * 1024, _chunkSize->intVal());
@@ -144,6 +144,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	_meshesExtracted.insert(pos);
 
 	_futures.push_back(_threadPool.enqueue([=] () {
+		core_trace_scoped(MeshExtraction);
 		if (_cancelThreads)
 			return;
 		core_trace_scoped(MeshExtraction);

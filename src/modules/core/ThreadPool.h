@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include "String.h"
+#include "Trace.h"
 #include <vector>
 #include <queue>
 #include <memory>
@@ -37,7 +39,7 @@ namespace core {
 
 class ThreadPool final {
 public:
-	explicit ThreadPool(size_t);
+	explicit ThreadPool(size_t, const char *name = nullptr);
 
 	/**
 	 * Enqueue functors or lambdas into the thread pool
@@ -59,11 +61,15 @@ private:
 };
 
 // the constructor just launches some amount of workers
-inline ThreadPool::ThreadPool(size_t threads) :
+inline ThreadPool::ThreadPool(size_t threads, const char *name) :
 		_stop(false) {
 	_workers.reserve(threads);
+	if (name == nullptr)
+		name = "ThreadPool";
 	for (size_t i = 0; i < threads; ++i) {
 		_workers.emplace_back([this] {
+			const std::string n = core::string::format("%s-%i", name, i);
+			core_trace_thread(n.c_str());
 			for (;;) {
 				std::function<void()> task;
 				{
