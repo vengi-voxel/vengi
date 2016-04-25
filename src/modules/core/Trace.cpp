@@ -1,9 +1,19 @@
 #include "Trace.h"
+#include "Var.h"
+#include "Command.h"
 
 namespace core {
 
 static void rmtInputHandler(const char* text, void* context) {
 	Log::info("typed '%s' to console", text);
+	if (core::Command::execute(text) <= 0) {
+		const VarPtr& var = core::Var::get(text, "", CV_NOTCREATEEMPTY);
+		if (var) {
+			core_trace_msg(var->strVal().c_str());
+			return;
+		}
+		core_trace_msg("Could not handle input");
+	}
 }
 
 Trace::Trace(uint16_t port) :
