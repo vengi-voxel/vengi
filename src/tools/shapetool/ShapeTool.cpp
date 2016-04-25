@@ -47,8 +47,17 @@ core::AppState ShapeTool::onInit() {
 	// TODO: replace this with a scripting interface for the World::create* functions
 	_worldRenderer.onSpawn(_camera.getPosition(), 2);
 
-	const frontend::ClientEntityPtr& entity = std::make_shared<frontend::ClientEntity>(1, -1, _now, _camera.getPosition(), 0.0f, _meshPool->getMesh("chr_fatkid"));
-	_worldRenderer.addEntity(entity);
+	const char *meshName = "chr_fatkid";
+	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
+	if (!mesh) {
+		Log::error("Failed to load the mesh '%s'", meshName);
+		return core::Cleanup;
+	}
+	const frontend::ClientEntityPtr& entity = std::make_shared<frontend::ClientEntity>(1, -1, _now, _camera.getPosition(), 0.0f, mesh);
+	if (!_worldRenderer.addEntity(entity)) {
+		Log::error("Failed to create entity");
+		return core::Cleanup;
+	}
 
 	new WorldParametersWindow(this);
 	new TreeParametersWindow(this);

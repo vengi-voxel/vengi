@@ -278,8 +278,9 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 
 int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection) {
 	core_trace_gl_scoped(WorldRendererRenderEntities);
-	if (_entities.empty())
+	if (_entities.empty()) {
 		return 0;
+	}
 
 	int drawCallsEntities = 0;
 
@@ -306,9 +307,8 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 		const glm::mat4& scale = glm::scale(translate, glm::vec3(0.01f));
 		const glm::mat4& model = glm::rotate(scale, ent->orientation(), glm::vec3(0.0, 1.0, 0.0));
 		shader->setUniformMatrix("u_model", model, false);
-		mesh->render();
+		drawCallsEntities += mesh->render();
 		GL_checkError();
-		++drawCallsEntities;
 	}
 	shader->deactivate();
 	glBindVertexArray(0);

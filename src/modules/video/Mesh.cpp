@@ -177,17 +177,20 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 	}
 }
 
-void Mesh::render() {
+int Mesh::render() {
 	if (_state != io::IOSTATE_LOADED)
-		return;
+		return 0;
 	glBindVertexArray(_vertexArrayObject);
+	int drawCalls = 0;
 	for (const GLMeshData& mesh : _meshData) {
 		const uint32_t matIdx = mesh.materialIndex[0];
 		if (matIdx < _textures.size() && _textures[matIdx]) {
 			_textures[matIdx]->bind();
 		}
 		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices[0], GL_UNSIGNED_INT, GL_OFFSET_CAST(sizeof(uint32_t) * mesh.baseIndex[0]), mesh.baseVertex[0]);
+		++drawCalls;
 	}
+	return drawCalls;
 }
 
 }
