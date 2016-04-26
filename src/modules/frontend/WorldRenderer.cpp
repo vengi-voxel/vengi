@@ -218,7 +218,7 @@ void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshDat
 
 	core_assert(meshData.indexBuffer[lod] > 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer[lod]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(typename voxel::DecodedMesh::IndexType), vecIndices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(uint32_t), vecIndices, GL_STATIC_DRAW);
 
 	meshData.noOfIndices[lod] = numIndices;
 }

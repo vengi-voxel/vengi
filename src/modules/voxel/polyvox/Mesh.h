@@ -14,37 +14,35 @@ namespace voxel {
 /// A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
 /// It supports different vertex types (which will vary depending on the surface extractor used and the contents
 /// of the volume) and both 16-bit and 32 bit indices.
-typedef uint32_t DefaultIndexType;
-template<typename _VertexType, typename _IndexType = DefaultIndexType>
+template<typename _VertexType>
 class Mesh {
 public:
 
 	typedef _VertexType VertexType;
-	typedef _IndexType IndexType;
 
 	Mesh();
 	~Mesh();
 
-	IndexType getNoOfVertices() const;
-	const VertexType& getVertex(IndexType index) const;
+	size_t getNoOfVertices() const;
+	const VertexType& getVertex(uint32_t index) const;
 	const VertexType* getRawVertexData() const;
 
 	size_t getNoOfIndices() const;
-	IndexType getIndex(uint32_t index) const;
-	const IndexType* getRawIndexData() const;
+	uint32_t getIndex(uint32_t index) const;
+	const uint32_t* getRawIndexData() const;
 
 	const glm::ivec3& getOffset() const;
 	void setOffset(const glm::ivec3& offset);
 
-	IndexType addVertex(const VertexType& vertex);
-	void addTriangle(IndexType index0, IndexType index1, IndexType index2);
+	uint32_t addVertex(const VertexType& vertex);
+	void addTriangle(uint32_t index0, uint32_t index1, uint32_t index2);
 
 	void clear();
 	bool isEmpty() const;
 	void removeUnusedVertices();
 
 private:
-	std::vector<IndexType> m_vecIndices;
+	std::vector<uint32_t> m_vecIndices;
 	std::vector<VertexType> m_vecVertices;
 	glm::ivec3 m_offset;
 };
@@ -54,56 +52,56 @@ private:
 /// This function creates a new uncompressed mesh containing the much simpler Vertex objects.
 Mesh<Vertex> decodeMesh(const Mesh<CubicVertex>& encodedMesh);
 
-template<typename VertexType, typename IndexType>
-Mesh<VertexType, IndexType>::Mesh() {
+template<typename VertexType>
+Mesh<VertexType>::Mesh() {
 }
 
-template<typename VertexType, typename IndexType>
-Mesh<VertexType, IndexType>::~Mesh() {
+template<typename VertexType>
+Mesh<VertexType>::~Mesh() {
 }
 
-template<typename VertexType, typename IndexType>
-IndexType Mesh<VertexType, IndexType>::getNoOfVertices() const {
-	return static_cast<IndexType>(m_vecVertices.size());
+template<typename VertexType>
+size_t Mesh<VertexType>::getNoOfVertices() const {
+	return m_vecVertices.size();
 }
 
-template<typename VertexType, typename IndexType>
-const VertexType& Mesh<VertexType, IndexType>::getVertex(IndexType index) const {
+template<typename VertexType>
+const VertexType& Mesh<VertexType>::getVertex(uint32_t index) const {
 	return m_vecVertices[index];
 }
 
-template<typename VertexType, typename IndexType>
-const VertexType* Mesh<VertexType, IndexType>::getRawVertexData() const {
+template<typename VertexType>
+const VertexType* Mesh<VertexType>::getRawVertexData() const {
 	return m_vecVertices.data();
 }
 
-template<typename VertexType, typename IndexType>
-size_t Mesh<VertexType, IndexType>::getNoOfIndices() const {
+template<typename VertexType>
+size_t Mesh<VertexType>::getNoOfIndices() const {
 	return m_vecIndices.size();
 }
 
-template<typename VertexType, typename IndexType>
-IndexType Mesh<VertexType, IndexType>::getIndex(uint32_t index) const {
+template<typename VertexType>
+uint32_t Mesh<VertexType>::getIndex(uint32_t index) const {
 	return m_vecIndices[index];
 }
 
-template<typename VertexType, typename IndexType>
-const IndexType* Mesh<VertexType, IndexType>::getRawIndexData() const {
+template<typename VertexType>
+const uint32_t* Mesh<VertexType>::getRawIndexData() const {
 	return m_vecIndices.data();
 }
 
-template<typename VertexType, typename IndexType>
-const glm::ivec3& Mesh<VertexType, IndexType>::getOffset() const {
+template<typename VertexType>
+const glm::ivec3& Mesh<VertexType>::getOffset() const {
 	return m_offset;
 }
 
-template<typename VertexType, typename IndexType>
-void Mesh<VertexType, IndexType>::setOffset(const glm::ivec3& offset) {
+template<typename VertexType>
+void Mesh<VertexType>::setOffset(const glm::ivec3& offset) {
 	m_offset = offset;
 }
 
-template<typename VertexType, typename IndexType>
-void Mesh<VertexType, IndexType>::addTriangle(IndexType index0, IndexType index1, IndexType index2) {
+template<typename VertexType>
+void Mesh<VertexType>::addTriangle(uint32_t index0, uint32_t index1, uint32_t index2) {
 	//Make sure the specified indices correspond to valid vertices.
 	core_assert_msg(index0 < m_vecVertices.size(), "Index points at an invalid vertex.");
 	core_assert_msg(index1 < m_vecVertices.size(), "Index points at an invalid vertex.");
@@ -114,28 +112,28 @@ void Mesh<VertexType, IndexType>::addTriangle(IndexType index0, IndexType index1
 	m_vecIndices.push_back(index2);
 }
 
-template<typename VertexType, typename IndexType>
-IndexType Mesh<VertexType, IndexType>::addVertex(const VertexType& vertex) {
+template<typename VertexType>
+uint32_t Mesh<VertexType>::addVertex(const VertexType& vertex) {
 	// We should not add more vertices than our chosen index type will let us index.
-	core_assert_msg(m_vecVertices.size() < std::numeric_limits<IndexType>::max(), "Mesh has more vertices that the chosen index type allows.");
+	core_assert_msg(m_vecVertices.size() < std::numeric_limits<uint32_t>::max(), "Mesh has more vertices that the chosen index type allows.");
 
 	m_vecVertices.push_back(vertex);
 	return m_vecVertices.size() - 1;
 }
 
-template<typename VertexType, typename IndexType>
-void Mesh<VertexType, IndexType>::clear() {
+template<typename VertexType>
+void Mesh<VertexType>::clear() {
 	m_vecVertices.clear();
 	m_vecIndices.clear();
 }
 
-template<typename VertexType, typename IndexType>
-bool Mesh<VertexType, IndexType>::isEmpty() const {
+template<typename VertexType>
+bool Mesh<VertexType>::isEmpty() const {
 	return (getNoOfVertices() == 0) || (getNoOfIndices() == 0);
 }
 
-template<typename VertexType, typename IndexType>
-void Mesh<VertexType, IndexType>::removeUnusedVertices() {
+template<typename VertexType>
+void Mesh<VertexType>::removeUnusedVertices() {
 	std::vector<bool> isVertexUsed(m_vecVertices.size());
 	std::fill(isVertexUsed.begin(), isVertexUsed.end(), false);
 
@@ -146,7 +144,7 @@ void Mesh<VertexType, IndexType>::removeUnusedVertices() {
 
 	int noOfUsedVertices = 0;
 	std::vector<uint32_t> newPos(m_vecVertices.size());
-	for (IndexType vertCt = 0; vertCt < m_vecVertices.size(); vertCt++) {
+	for (uint32_t vertCt = 0; vertCt < m_vecVertices.size(); vertCt++) {
 		if (isVertexUsed[vertCt]) {
 			m_vecVertices[noOfUsedVertices] = m_vecVertices[vertCt];
 			newPos[vertCt] = noOfUsedVertices;
