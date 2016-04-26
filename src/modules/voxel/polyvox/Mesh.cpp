@@ -13,7 +13,9 @@ Mesh<Vertex> decodeMesh(const Mesh<CubicVertex>& encodedMesh) {
 	Mesh<Vertex> decodedMesh;
 
 	for (size_t ct = 0; ct < encodedMesh.getNoOfVertices(); ct++) {
-		decodedMesh.addVertex(decodeVertex(encodedMesh.getVertex(ct)));
+		const CubicVertex& decodedVertex = encodedMesh.getVertex(ct);
+		const Vertex& vertex = decodeVertex(decodedVertex);
+		decodedMesh.addVertex(vertex);
 	}
 
 	core_assert_msg(encodedMesh.getNoOfIndices() % 3 == 0, "The number of indices must always be a multiple of three.");
