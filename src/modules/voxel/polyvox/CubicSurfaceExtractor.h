@@ -381,7 +381,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 		}
 
 		m_previousSliceVertices.swap(m_currentSliceVertices);
-		memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
+		std::memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
 	}
 
 	for (uint32_t uFace = 0; uFace < NoOfFaces; uFace++) {
