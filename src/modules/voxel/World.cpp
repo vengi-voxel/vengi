@@ -50,7 +50,7 @@ void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
 
 // http://code.google.com/p/fortressoverseer/source/browse/Overseer/PolyVoxGenerator.cpp
 World::World() :
-		_pager(*this), _seed(0), _clientData(false), _threadPool(1, "World"), _rwLock("World"),
+		_pager(*this), _seed(0), _clientData(false), _threadPool(4, "World"), _rwLock("World"),
 		_random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 256 * 1024 * 1024, 16);
@@ -63,10 +63,8 @@ World::~World() {
 	while (!_futures.empty()) {
 		cleanupFutures();
 	}
-	locked([this] () {
-		_meshesExtracted.clear();
-		_meshQueue.clear();
-	});
+	_meshesExtracted.clear();
+	_meshQueue.clear();
 	delete _volumeData;
 }
 
@@ -169,15 +167,13 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		const Region& region = getRegion(pos);
 		DecodedMeshData data;
 
-		locked([&] () {
-			calculateAO(region);
-			const bool mergeQuads = true;
-			TerrainContext ctx;
-			ctx.region = region;
-			ctx.volume = _volumeData;
-			create(ctx);
-			data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
-		});
+		calculateAO(region);
+		TerrainContext ctx;
+		ctx.region = region;
+		ctx.volume = _volumeData;
+		create(ctx);
+		const bool mergeQuads = true;
+		data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
 
 		data.translation = pos;
 		core::ScopedWriteLock lock(_rwLock);
@@ -229,13 +225,11 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 		return voxel.getMaterial() != Air;
 	};
 
-	locked([&] () {
-		const AStarPathfinderParams<voxel::PagedVolume> params(_volumeData, start, end, &listResult, 1.0f, 10000,
-				TwentySixConnected, std::bind(f, std::placeholders::_1, std::placeholders::_2));
-		AStarPathfinder<voxel::PagedVolume> pf(params);
-		// TODO: move into threadpool
-		pf.execute();
-	});
+	const AStarPathfinderParams<voxel::PagedVolume> params(_volumeData, start, end, &listResult, 1.0f, 10000,
+			TwentySixConnected, std::bind(f, std::placeholders::_1, std::placeholders::_2));
+	AStarPathfinder<voxel::PagedVolume> pf(params);
+	// TODO: move into threadpool
+	pf.execute();
 	return true;
 }
 
@@ -291,13 +285,11 @@ void World::onFrame(long dt) {
 		if (!_futures.empty()) {
 			return;
 		}
-		locked([this] () {
-			_volumeData->flushAll();
-			_ctx = WorldContext();
-			_meshesExtracted.clear();
-			_meshQueue.clear();
-			Log::info("reset the world");
-		});
+		_volumeData->flushAll();
+		_ctx = WorldContext();
+		_meshesExtracted.clear();
+		_meshQueue.clear();
+		Log::info("reset the world");
 		_cancelThreads = false;
 	}
 }

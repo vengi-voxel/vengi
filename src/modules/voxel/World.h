@@ -4,7 +4,6 @@
 #include "polyvox/Mesh.h"
 #include "polyvox/PagedVolume.h"
 #include <memory>
-#include <mutex>
 #include <queue>
 #include <random>
 #include <chrono>
@@ -142,26 +141,6 @@ private:
 		void pageOut(const Region& region, PagedVolume::Chunk* chunk) override;
 	};
 
-	template<typename Func>
-	inline auto locked(Func&& func) -> typename std::result_of<Func()>::type {
-		if (_mutex.try_lock_for(std::chrono::milliseconds(5000))) {
-			lockGuard lock(_mutex, std::adopt_lock_t());
-			return func();
-		}
-		Log::warn("Most likely a deadlock in the world - execute without locking");
-		return func();
-	}
-
-	template<typename Func>
-	inline auto locked(Func&& func) const -> typename std::result_of<Func()>::type {
-		if (_mutex.try_lock_for(std::chrono::milliseconds(5000))) {
-			lockGuard lock(_mutex, std::adopt_lock_t());
-			return func();
-		}
-		Log::warn("Most likely a deadlock in the world - execute without locking");
-		return func();
-	}
-
 	// don't access the volume in anything that is called here
 	void create(TerrainContext& ctx);
 
@@ -182,9 +161,6 @@ private:
 	bool _clientData;
 
 	core::ThreadPool _threadPool;
-	using mutex = std::recursive_timed_mutex;
-	mutable mutex _mutex;
-	using lockGuard = std::lock_guard<mutex>;
 	core::ReadWriteLock _rwLock;
 	std::deque<DecodedMeshData> _meshQueue;
 	// fast lookup for positions that are already extracted and available in the _meshData vector
