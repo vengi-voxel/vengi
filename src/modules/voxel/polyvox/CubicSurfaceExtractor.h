@@ -252,19 +252,21 @@ Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNee
 	return result;
 }
 
-/// This version of the function performs the extraction into a user-provided mesh rather than allocating a mesh automatically.
-/// There are a few reasons why this might be useful to more advanced users:
-///
-///   1. It leaves the user in control of memory allocation and would allow them to implement e.g. a mesh pooling system.
-///   2. The user-provided mesh could have a different index type (e.g. 16-bit indices) to reduce memory usage.
-///   3. The user could provide a custom mesh class, e.g a thin wrapper around an openGL VBO to allow direct writing into this structure.
-///
-/// We don't provide a default MeshType here. If the user doesn't want to provide a MeshType then it probably makes
-/// more sense to use the other variant of this function where the mesh is a return value rather than a parameter.
-///
-/// Note: This function is called 'extractCubicMeshCustom' rather than 'extractCubicMesh' to avoid ambiguity when only three parameters
-/// are provided (would the third parameter be a controller or a mesh?). It seems this can be fixed by using enable_if/static_assert to emulate concepts,
-/// but this is relatively complex and I haven't done it yet. Could always add it later as another overload.
+/**
+ * This version of the function performs the extraction into a user-provided mesh rather than allocating a mesh automatically.
+ * There are a few reasons why this might be useful to more advanced users:
+ *
+ *    1. It leaves the user in control of memory allocation and would allow them to implement e.g. a mesh pooling system.
+ *    2. The user-provided mesh could have a different index type (e.g. 16-bit indices) to reduce memory usage.
+ *    3. The user could provide a custom mesh class, e.g a thin wrapper around an openGL VBO to allow direct writing into this structure.
+ *
+ *  We don't provide a default MeshType here. If the user doesn't want to provide a MeshType then it probably makes
+ *  more sense to use the other variant of this function where the mesh is a return value rather than a parameter.
+ *
+ * @note: This function is called 'extractCubicMeshCustom' rather than 'extractCubicMesh' to avoid ambiguity when only three parameters
+ *  are provided (would the third parameter be a controller or a mesh?). It seems this can be fixed by using enable_if/static_assert to emulate concepts,
+ *  but this is relatively complex and I haven't done it yet. Could always add it later as another overload.
+ */
 template<typename VolumeType, typename MeshType, typename IsQuadNeeded>
 void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
 	core_trace_scoped(ExtractCubicMesh);
