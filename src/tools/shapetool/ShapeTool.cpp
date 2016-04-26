@@ -113,6 +113,11 @@ bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 		const SDL_bool current = SDL_GetRelativeMouseMode();
 		const SDL_bool mode = current ? SDL_FALSE : SDL_TRUE;
 		SDL_SetRelativeMouseMode(mode);
+		if (mode) {
+			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_INVISIBLE);
+		} else {
+			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_VISIBLE);
+		}
 	}
 	return UIApp::onKeyPress(key, modifier);
 }
