@@ -14,19 +14,19 @@
 
 namespace voxel {
 
-/// This class provide a volume implementation which avoids storing all the data in memory at all times. Instead it breaks the volume
-/// down into a set of chunks and moves these into and out of memory on demand. This means it is much more memory efficient than the
-/// RawVolume, but may also be slower and is more complicated We encourage uses to work with RawVolume initially, and then switch to
-/// PagedVolume once they have a larger application and/or a better understanding of PolyVox.
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///
-/// The PagedVolume makes use of a Pager which defines the source and/or destination for data paged into and out of memory. PolyVox
-/// comes with an example FilePager though users can also implement their own approaches. For example, the Pager could instead stream
-/// data from a network connection or generate it procedurally on demand.
-///
-/// A consequence of this paging approach is that (unlike the RawVolume) the PagedVolume does not need to have a predefined size. After
-/// the volume has been created you can begin acessing voxels anywhere in space and the required data will be created automatically.
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * This class provide a volume implementation which avoids storing all the data in memory at all times. Instead it breaks the volume
+ * down into a set of chunks and moves these into and out of memory on demand. This means it is much more memory efficient than the
+ * RawVolume, but may also be slower and is more complicated We encourage uses to work with RawVolume initially, and then switch to
+ * PagedVolume once they have a larger application and/or a better understanding of PolyVox.
+ *
+ * The PagedVolume makes use of a Pager which defines the source and/or destination for data paged into and out of memory. PolyVox
+ * comes with an example FilePager though users can also implement their own approaches. For example, the Pager could instead stream
+ * data from a network connection or generate it procedurally on demand.
+ *
+ * A consequence of this paging approach is that (unlike the RawVolume) the PagedVolume does not need to have a predefined size. After
+ * the volume has been created you can begin accessing voxels anywhere in space and the required data will be created automatically.
+ */
 class PagedVolume: public BaseVolume {
 public:
 	/// The PagedVolume stores it data as a set of Chunk instances which can be loaded and unloaded as memory requirements dictate.
