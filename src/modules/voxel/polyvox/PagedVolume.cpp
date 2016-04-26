@@ -65,7 +65,7 @@ const Voxel& PagedVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) 
 	const uint16_t yOffset = static_cast<uint16_t>(uYPos & m_iChunkMask);
 	const uint16_t zOffset = static_cast<uint16_t>(uZPos & m_iChunkMask);
 
-	auto pChunk = canReuseLastAccessedChunk(chunkX, chunkY, chunkZ) ? m_pLastAccessedChunk : getChunk(chunkX, chunkY, chunkZ);
+	auto pChunk = getChunk(chunkX, chunkY, chunkZ);
 
 	return pChunk->getVoxel(xOffset, yOffset, zOffset);
 }
@@ -74,7 +74,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(const glm::ivec3& pos) const {
 	const int32_t chunkX = pos.x >> m_uChunkSideLengthPower;
 	const int32_t chunkY = pos.y >> m_uChunkSideLengthPower;
 	const int32_t chunkZ = pos.z >> m_uChunkSideLengthPower;
-	auto pChunk = canReuseLastAccessedChunk(chunkX, chunkY, chunkZ) ? m_pLastAccessedChunk : getChunk(chunkX, chunkY, chunkZ);
+	auto pChunk = getChunk(chunkX, chunkY, chunkZ);
 	return pChunk;
 }
 
@@ -102,7 +102,7 @@ void PagedVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Vo
 	const uint16_t yOffset = static_cast<uint16_t>(uYPos - (chunkY << m_uChunkSideLengthPower));
 	const uint16_t zOffset = static_cast<uint16_t>(uZPos - (chunkZ << m_uChunkSideLengthPower));
 
-	auto pChunk = canReuseLastAccessedChunk(chunkX, chunkY, chunkZ) ? m_pLastAccessedChunk : getChunk(chunkX, chunkY, chunkZ);
+	auto pChunk = getChunk(chunkX, chunkY, chunkZ);
 
 	pChunk->setVoxel(xOffset, yOffset, zOffset, tValue);
 }
@@ -158,12 +158,13 @@ void PagedVolume::flushAll() {
 	}
 }
 
-bool PagedVolume::canReuseLastAccessedChunk(int32_t iChunkX, int32_t iChunkY, int32_t iChunkZ) const {
-	return iChunkX == m_v3dLastAccessedChunkX && iChunkY == m_v3dLastAccessedChunkY && iChunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk;
-}
-
 PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
 	core::ScopedWriteLock scopedLock(_lock);
+
+	if (canReuseLastAccessedChunk(uChunkX, uChunkY, uChunkZ)) {
+		return m_pLastAccessedChunk;
+	}
+
 	Chunk* pChunk = nullptr;
 
 	// We generate a 16-bit hash here and assume this matches the range available in the chunk
@@ -174,7 +175,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 	const uint32_t uChunkYLowerBits = static_cast<uint32_t>(uChunkY & 0x1F);
 	const uint32_t uChunkZLowerBits = static_cast<uint32_t>(uChunkZ & 0x1F);
 	// Combine then to form a 15-bit hash of the position. Also shift by one to spread the values out in the whole 16-bit space.
-	const uint32_t iPositionHash = (((uChunkXLowerBits)) | ((uChunkYLowerBits) << 5) | ((uChunkZLowerBits) << 10) << 1);
+	const uint32_t iPositionHash = (uChunkXLowerBits | (uChunkYLowerBits << 5) | (uChunkZLowerBits << 10) << 1);
 
 	// Starting at the position indicated by the hash, and then search through the whole array looking for a chunk with the correct
 	// position. In most cases we expect to find it in the first place we look. Note that this algorithm is slow in the case that
@@ -450,8 +451,7 @@ void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos)
 
 	uint32_t uVoxelIndexInChunk = morton256_x[m_uXPosInChunk] | morton256_y[m_uYPosInChunk] | morton256_z[m_uZPosInChunk];
 
-	auto pCurrentChunk =
-			this->mVolume->canReuseLastAccessedChunk(uXChunk, uYChunk, uZChunk) ? this->mVolume->m_pLastAccessedChunk : this->mVolume->getChunk(uXChunk, uYChunk, uZChunk);
+	auto pCurrentChunk = this->mVolume->getChunk(uXChunk, uYChunk, uZChunk);
 
 	mCurrentVoxel = pCurrentChunk->m_tData + uVoxelIndexInChunk;
 }

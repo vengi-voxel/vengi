@@ -473,6 +473,10 @@ inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1pz() const {
 	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume + 1, this->mZPosInVolume + 1);
 }
 
+inline bool PagedVolume::canReuseLastAccessedChunk(int32_t iChunkX, int32_t iChunkY, int32_t iChunkZ) const {
+	return iChunkX == m_v3dLastAccessedChunkX && iChunkY == m_v3dLastAccessedChunkY && iChunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk;
+}
+
 #undef CAN_GO_NEG_X
 #undef CAN_GO_POS_X
 #undef CAN_GO_NEG_Y
