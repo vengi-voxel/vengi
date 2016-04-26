@@ -1,7 +1,10 @@
 #pragma once
 
-#include "BaseVolume.h"
 #include "Voxel.h"
+#include "Region.h"
+#include "Utility.h"
+#include "core/NonCopyable.h"
+#include <limits>
 #include <cstdlib> //For abort()
 #include <limits>
 #include <memory>
@@ -14,21 +17,9 @@ namespace voxel {
  * This class is less memory-efficient than the PagedVolume, but it is the simplest possible
  * volume implementation which makes it useful for debugging and getting started with PolyVox.
  */
-class RawVolume: public BaseVolume {
+class RawVolume : public core::NonCopyable {
 public:
-	//There seems to be some descrepency between Visual Studio and GCC about how the following class should be declared.
-	//There is a work around (see also See http://goo.gl/qu1wn) given below which appears to work on VS2010 and GCC, but
-	//which seems to cause internal compiler errors on VS2008 when building with the /Gm 'Enable Minimal Rebuild' compiler
-	//option. For now it seems best to 'fix' it with the preprocessor insstead, but maybe the workaround can be reinstated
-	//in the future
-	//typedef Volume<Voxel> VolumeOfVoxelType; //Workaround for GCC/VS2010 differences.
-	//class Sampler : public VolumeOfVoxelType::template Sampler< RawVolume >
-#if defined(_MSC_VER)
-	class Sampler : public BaseVolume::Sampler< RawVolume> //This line works on VS2010
-#else
-	class Sampler: public BaseVolume::template Sampler<RawVolume> //This line works on GCC
-#endif
-	{
+	class Sampler {
 	public:
 		Sampler(RawVolume* volume);
 		~Sampler();
@@ -80,6 +71,12 @@ public:
 		inline Voxel peekVoxel1px1py1pz() const;
 
 	private:
+		RawVolume* mVolume;
+
+		//The current position in the volume
+		int32_t mXPosInVolume;
+		int32_t mYPosInVolume;
+		int32_t mZPosInVolume;
 
 		//Other current position information
 		Voxel* mCurrentVoxel;

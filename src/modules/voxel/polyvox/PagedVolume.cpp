@@ -9,7 +9,7 @@ namespace voxel {
 /// @param uChunkSideLength The size of the chunks making up the volume. Small chunks will compress/decompress faster, but there will also be more of them meaning voxel access could be slower.
 ////////////////////////////////////////////////////////////////////////////////
 PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint16_t uChunkSideLength) :
-		BaseVolume(), m_uChunkSideLength(uChunkSideLength), m_pPager(pPager), _lock("PagedVolume") {
+		m_uChunkSideLength(uChunkSideLength), m_pPager(pPager), _lock("PagedVolume") {
 	// Validation of parameters
 	core_assert_msg(pPager, "You must provide a valid pager when constructing a PagedVolume");
 	core_assert_msg(uTargetMemoryUsageInBytes >= 1 * 1024 * 1024, "Target memory usage is too small to be practical");
@@ -390,15 +390,17 @@ uint32_t PagedVolume::Chunk::calculateSizeInBytes(uint32_t uSideLength) {
 #define POS_Z_DELTA (deltaZ[this->m_uZPosInChunk])
 
 PagedVolume::Sampler::Sampler(PagedVolume* volume) :
-		BaseVolume::template Sampler<PagedVolume>(volume), m_uChunkSideLengthMinusOne(volume->m_uChunkSideLength - 1) {
+		mVolume(volume), mXPosInVolume(0), mYPosInVolume(0), mZPosInVolume(0), m_uChunkSideLengthMinusOne(
+				volume->m_uChunkSideLength - 1) {
 }
 
 PagedVolume::Sampler::~Sampler() {
 }
 
 void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
-	// Base version updates position and validity flags.
-	BaseVolume::template Sampler<PagedVolume >::setPosition(xPos, yPos, zPos);
+	mXPosInVolume = xPos;
+	mYPosInVolume = yPos;
+	mZPosInVolume = zPos;
 
 	// Then we update the voxel pointer
 	const int32_t uXChunk = this->mXPosInVolume >> this->mVolume->m_uChunkSideLengthPower;
@@ -423,8 +425,7 @@ bool PagedVolume::Sampler::setVoxel(const Voxel& tValue) {
 }
 
 void PagedVolume::Sampler::movePositiveX() {
-	// Base version updates position and validity flags.
-	BaseVolume::template Sampler<PagedVolume >::movePositiveX();
+	mXPosInVolume++;
 
 	// Then we update the voxel pointer
 	if (CAN_GO_POS_X(this->m_uXPosInChunk)) {
@@ -438,8 +439,7 @@ void PagedVolume::Sampler::movePositiveX() {
 }
 
 void PagedVolume::Sampler::movePositiveY() {
-	// Base version updates position and validity flags.
-	BaseVolume::template Sampler<PagedVolume >::movePositiveY();
+	mYPosInVolume++;
 
 	// Then we update the voxel pointer
 	if (CAN_GO_POS_Y(this->m_uYPosInChunk)) {
@@ -453,8 +453,7 @@ void PagedVolume::Sampler::movePositiveY() {
 }
 
 void PagedVolume::Sampler::movePositiveZ() {
-	// Base version updates position and validity flags.
-	BaseVolume::template Sampler<PagedVolume >::movePositiveZ();
+	mZPosInVolume++;
 
 	// Then we update the voxel pointer
 	if (CAN_GO_POS_Z(this->m_uZPosInChunk)) {
@@ -468,8 +467,7 @@ void PagedVolume::Sampler::movePositiveZ() {
 }
 
 void PagedVolume::Sampler::moveNegativeX() {
-	// Base version updates position and validity flags.
-	BaseVolume::template Sampler<PagedVolume >::moveNegativeX();
+	mXPosInVolume--;
 
 	// Then we update the voxel pointer
 	if (CAN_GO_NEG_X(this->m_uXPosInChunk)) {
@@ -483,8 +481,7 @@ void PagedVolume::Sampler::moveNegativeX() {
 }
 
 void PagedVolume::Sampler::moveNegativeY() {
-	// Base version updates position and validity flags.
-	BaseVolume::template Sampler<PagedVolume >::moveNegativeY();
+	mYPosInVolume--;
 
 	// Then we update the voxel pointer
 	if (CAN_GO_NEG_Y(this->m_uYPosInChunk)) {
@@ -498,8 +495,7 @@ void PagedVolume::Sampler::moveNegativeY() {
 }
 
 void PagedVolume::Sampler::moveNegativeZ() {
-	// Base version updates position and validity flags.
-	BaseVolume::template Sampler<PagedVolume >::moveNegativeZ();
+	mZPosInVolume--;
 
 	// Then we update the voxel pointer
 	if (CAN_GO_NEG_Z(this->m_uZPosInChunk)) {

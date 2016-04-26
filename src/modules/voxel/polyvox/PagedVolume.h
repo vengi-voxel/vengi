@@ -1,9 +1,12 @@
 #pragma once
 
-#include "BaseVolume.h"
-#include "Morton.h"
 #include "Voxel.h"
+#include "Region.h"
+#include "Utility.h"
+#include "Morton.h"
+#include "core/NonCopyable.h"
 #include "core/ReadWriteLock.h"
+#include <limits>
 #include <array>
 #include <algorithm>
 #include <cstring> //For memcpy
@@ -28,7 +31,7 @@ namespace voxel {
  * A consequence of this paging approach is that (unlike the RawVolume) the PagedVolume does not need to have a predefined size. After
  * the volume has been created you can begin accessing voxels anywhere in space and the required data will be created automatically.
  */
-class PagedVolume: public BaseVolume {
+class PagedVolume: public core::NonCopyable {
 public:
 	/// The PagedVolume stores it data as a set of Chunk instances which can be loaded and unloaded as memory requirements dictate.
 	class Chunk;
@@ -90,19 +93,7 @@ public:
 		virtual void pageOut(const Region& region, Chunk* pChunk) = 0;
 	};
 
-	//There seems to be some descrepency between Visual Studio and GCC about how the following class should be declared.
-	//There is a work around (see also See http://goo.gl/qu1wn) given below which appears to work on VS2010 and GCC, but
-	//which seems to cause internal compiler errors on VS2008 when building with the /Gm 'Enable Minimal Rebuild' compiler
-	//option. For now it seems best to 'fix' it with the preprocessor instead, but maybe the workaround can be reinstated
-	//in the future
-	//typedef Volume<Voxel> VolumeOfVoxelType; //Workaround for GCC/VS2010 differences.
-	//class Sampler : public VolumeOfVoxelType::template Sampler< PagedVolume >
-#if defined(_MSC_VER)
-	class Sampler : public BaseVolume::Sampler< PagedVolume > //This line works on VS2010
-#else
-	class Sampler: public BaseVolume::template Sampler<PagedVolume > //This line works on GCC
-#endif
-	{
+	class Sampler {
 	public:
 		Sampler(PagedVolume* volume);
 		~Sampler();
@@ -152,6 +143,13 @@ public:
 		inline const Voxel& peekVoxel1px1py1pz() const;
 
 	private:
+		PagedVolume* mVolume;
+
+		//The current position in the volume
+		int32_t mXPosInVolume;
+		int32_t mYPosInVolume;
+		int32_t mZPosInVolume;
+
 		//Other current position information
 		Voxel* mCurrentVoxel = nullptr;
 

@@ -20,7 +20,6 @@ fips_begin_module(voxel)
 		Array.h
 		AStarPathfinder.h
 		AStarPathfinderImpl.h
-		BaseVolume.h BaseVolume.cpp
 		CubicSurfaceExtractor.h
 		Mesh.h Mesh.cpp
 		Morton.h
