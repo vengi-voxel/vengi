@@ -64,10 +64,20 @@ World::~World() {
 }
 
 glm::ivec3 World::randomPos() const {
-	// TODO: where the heck is the randomness
-	const glm::ivec2 pos(0, 0);
-	const int y = findFloor(pos.x, pos.y);
-	return glm::ivec3(pos.x, y, pos.y);
+	int lowestX = 0;
+	int lowestZ = 0;
+	int highestX = 0;
+	int highestZ = 0;
+	for (const glm::ivec3& gridPos : _meshesExtracted) {
+		lowestX = std::min(lowestX, gridPos.x);
+		lowestZ = std::min(lowestZ, gridPos.z);
+		highestX = std::min(highestX, gridPos.x);
+		highestZ = std::min(highestZ, gridPos.z);
+	}
+	const int x = _random.random(lowestX, highestX);
+	const int z = _random.random(lowestZ, highestZ);
+	const int y = findFloor(x, z);
+	return glm::ivec3(x, y, z);
 }
 
 struct IsVoxelTransparent {
