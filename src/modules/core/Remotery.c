@@ -4165,6 +4165,11 @@ static rmtError Remotery_Constructor(Remotery* rmt)
     // Kick-off the timer
     usTimer_Init(&rmt->timer);
 
+    // Set as the global instance before creating any threads that uses it for sampling itself
+    assert(g_Remotery == NULL);
+    g_Remotery = rmt;
+    g_RemoteryCreated = RMT_TRUE;
+
     // Allocate a TLS handle for the thread sampler
     error = tlsAlloc(&rmt->thread_sampler_tls_handle);
     if (error != RMT_ERROR_NONE)
@@ -4209,11 +4214,6 @@ static rmtError Remotery_Constructor(Remotery* rmt)
         if (error != RMT_ERROR_NONE)
             return error;
     #endif
-
-    // Set as the global instance before creating any threads that uses it for sampling itself
-    assert(g_Remotery == NULL);
-    g_Remotery = rmt;
-    g_RemoteryCreated = RMT_TRUE;
 
     // Ensure global instance writes complete before other threads get a chance to use it
     WriteFence();
