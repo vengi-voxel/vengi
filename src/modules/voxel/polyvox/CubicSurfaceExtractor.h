@@ -303,15 +303,15 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 	typename VolumeType::Sampler volumeSampler(volData);
 
 	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
-		uint32_t regZ = z - region.getLowerZ();
+		const uint32_t regZ = z - region.getLowerZ();
 
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y++) {
-			uint32_t regY = y - region.getLowerY();
+			const uint32_t regY = y - region.getLowerY();
 
 			volumeSampler.setPosition(region.getLowerX(), y, z);
 
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
-				uint32_t regX = x - region.getLowerX();
+				const uint32_t regX = x - region.getLowerX();
 
 				Voxel material; //Filled in by callback
 				const Voxel& currentVoxel = volumeSampler.getVoxel();
@@ -321,48 +321,48 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 
 				// X
 				if (isQuadNeeded(currentVoxel, negXVoxel, material)) {
-					uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
-					uint32_t v1 = addVertex(regX, regY, regZ + 1, material, m_currentSliceVertices, result);
-					uint32_t v2 = addVertex(regX, regY + 1, regZ + 1, material, m_currentSliceVertices, result);
-					uint32_t v3 = addVertex(regX, regY + 1, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v1 = addVertex(regX, regY, regZ + 1, material, m_currentSliceVertices, result);
+					const uint32_t v2 = addVertex(regX, regY + 1, regZ + 1, material, m_currentSliceVertices, result);
+					const uint32_t v3 = addVertex(regX, regY + 1, regZ, material, m_previousSliceVertices, result);
 
 					m_vecQuads[NegativeX][regX].push_back(Quad(v0, v1, v2, v3));
 				}
 
 				if (isQuadNeeded(negXVoxel, currentVoxel, material)) {
-					uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
-					uint32_t v1 = addVertex(regX, regY, regZ + 1, material, m_currentSliceVertices, result);
-					uint32_t v2 = addVertex(regX, regY + 1, regZ + 1, material, m_currentSliceVertices, result);
-					uint32_t v3 = addVertex(regX, regY + 1, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v1 = addVertex(regX, regY, regZ + 1, material, m_currentSliceVertices, result);
+					const uint32_t v2 = addVertex(regX, regY + 1, regZ + 1, material, m_currentSliceVertices, result);
+					const uint32_t v3 = addVertex(regX, regY + 1, regZ, material, m_previousSliceVertices, result);
 
 					m_vecQuads[PositiveX][regX].push_back(Quad(v0, v3, v2, v1));
 				}
 
 				// Y
 				if (isQuadNeeded(currentVoxel, negYVoxel, material)) {
-					uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
-					uint32_t v1 = addVertex(regX + 1, regY, regZ, material, m_previousSliceVertices, result);
-					uint32_t v2 = addVertex(regX + 1, regY, regZ + 1, material, m_currentSliceVertices, result);
-					uint32_t v3 = addVertex(regX, regY, regZ + 1, material, m_currentSliceVertices, result);
+					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v1 = addVertex(regX + 1, regY, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v2 = addVertex(regX + 1, regY, regZ + 1, material, m_currentSliceVertices, result);
+					const uint32_t v3 = addVertex(regX, regY, regZ + 1, material, m_currentSliceVertices, result);
 
 					m_vecQuads[NegativeY][regY].push_back(Quad(v0, v1, v2, v3));
 				}
 
 				if (isQuadNeeded(negYVoxel, currentVoxel, material)) {
-					uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
-					uint32_t v1 = addVertex(regX + 1, regY, regZ, material, m_previousSliceVertices, result);
-					uint32_t v2 = addVertex(regX + 1, regY, regZ + 1, material, m_currentSliceVertices, result);
-					uint32_t v3 = addVertex(regX, regY, regZ + 1, material, m_currentSliceVertices, result);
+					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v1 = addVertex(regX + 1, regY, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v2 = addVertex(regX + 1, regY, regZ + 1, material, m_currentSliceVertices, result);
+					const uint32_t v3 = addVertex(regX, regY, regZ + 1, material, m_currentSliceVertices, result);
 
 					m_vecQuads[PositiveY][regY].push_back(Quad(v0, v3, v2, v1));
 				}
 
 				// Z
 				if (isQuadNeeded(currentVoxel, negZVoxel, material)) {
-					uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
-					uint32_t v1 = addVertex(regX, regY + 1, regZ, material, m_previousSliceVertices, result);
-					uint32_t v2 = addVertex(regX + 1, regY + 1, regZ, material, m_previousSliceVertices, result);
-					uint32_t v3 = addVertex(regX + 1, regY, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v1 = addVertex(regX, regY + 1, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v2 = addVertex(regX + 1, regY + 1, regZ, material, m_previousSliceVertices, result);
+					const uint32_t v3 = addVertex(regX + 1, regY, regZ, material, m_previousSliceVertices, result);
 
 					m_vecQuads[NegativeZ][regZ].push_back(Quad(v0, v1, v2, v3));
 				}
