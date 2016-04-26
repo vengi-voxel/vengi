@@ -173,13 +173,13 @@ typename PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChu
 	const uint32_t uChunkYLowerBits = static_cast<uint32_t>(uChunkY & 0x1F);
 	const uint32_t uChunkZLowerBits = static_cast<uint32_t>(uChunkZ & 0x1F);
 	// Combine then to form a 15-bit hash of the position. Also shift by one to spread the values out in the whole 16-bit space.
-	const uint32_t iPosisionHash = (((uChunkXLowerBits)) | ((uChunkYLowerBits) << 5) | ((uChunkZLowerBits) << 10) << 1);
+	const uint32_t iPositionHash = (((uChunkXLowerBits)) | ((uChunkYLowerBits) << 5) | ((uChunkZLowerBits) << 10) << 1);
 
 	// Starting at the position indicated by the hash, and then search through the whole array looking for a chunk with the correct
 	// position. In most cases we expect to find it in the first place we look. Note that this algorithm is slow in the case that
 	// the chunk is not found because the whole array has to be searched, but in this case we are going to have to page the data in
 	// from an external source which is likely to be slow anyway.
-	uint32_t iIndex = iPosisionHash;
+	uint32_t iIndex = iPositionHash;
 	do {
 		if (m_arrayChunks[iIndex]) {
 			glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
@@ -192,7 +192,7 @@ typename PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChu
 
 		iIndex++;
 		iIndex %= uChunkArraySize;
-	} while (iIndex != iPosisionHash); // Keep searching until we get back to our start position.
+	} while (iIndex != iPositionHash); // Keep searching until we get back to our start position.
 
 	// If we still haven't found the chunk then it's time to create a new one and page it in from disk.
 	if (!pChunk) {
@@ -201,10 +201,10 @@ typename PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChu
 		pChunk = new PagedVolume::Chunk(v3dChunkPos, m_uChunkSideLength, m_pPager);
 		pChunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
 
-		// Store the chunk at the appropriate place in out chunk array. Ideally this place is
+		// Store the chunk at the appropriate place in our chunk array. Ideally this place is
 		// given by the hash, otherwise we do a linear search for the next available location
 		// We always expect to find a free place because we aim to keep the array only half full.
-		uint32_t iIndex = iPosisionHash;
+		uint32_t iIndex = iPositionHash;
 		bool bInsertedSucessfully = false;
 		do {
 			if (m_arrayChunks[iIndex] == nullptr) {
@@ -215,7 +215,7 @@ typename PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChu
 
 			iIndex++;
 			iIndex %= uChunkArraySize;
-		} while (iIndex != iPosisionHash); // Keep searching until we get back to our start position.
+		} while (iIndex != iPositionHash); // Keep searching until we get back to our start position.
 
 		// This should never really happen unless we are failing to keep our number of active chunks
 		// significantly under the target amount. Perhaps if chunks are 'pinned' for threading purposes?
