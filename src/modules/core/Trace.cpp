@@ -23,6 +23,11 @@ Trace::Trace(uint16_t port) :
 		settings->port = port;
 		settings->input_handler = rmtInputHandler;
 		settings->input_handler_context = nullptr;
+#if 0
+		settings->malloc = SDL_malloc;
+		settings->free = SDL_free;
+		settings->realloc = SDL_realloc;
+#endif
 	}
 	rmt_CreateGlobalInstance(&_remotery);
 #if USE_EMTRACE
