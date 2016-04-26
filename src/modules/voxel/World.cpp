@@ -241,20 +241,6 @@ void World::reset() {
 	_cancelThreads = true;
 }
 
-bool World::isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) const {
-	if (ctx.volume == nullptr) {
-		return false;
-	}
-
-	if (pos.x < 0 || pos.x >= ctx.region.getWidthInVoxels())
-		return false;
-	if (pos.y < 0 || pos.y >= ctx.region.getHeightInVoxels())
-		return false;
-	if (pos.z < 0 || pos.z >= ctx.region.getDepthInVoxels())
-		return false;
-	return true;
-}
-
 void World::createUnderground(TerrainContext& ctx) {
 	const glm::ivec3 startPos(1, 1, 1);
 	const Voxel& voxel = createVoxel(Grass);

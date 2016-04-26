@@ -150,7 +150,6 @@ private:
 
 	void cleanupFutures();
 	Region getRegion(const glm::ivec3& pos) const;
-	inline bool isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) const;
 
 	Pager _pager;
 	PagedVolume *_volumeData;
