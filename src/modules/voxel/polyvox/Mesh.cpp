@@ -10,7 +10,7 @@ namespace voxel {
 /// This function creates a new uncompressed mesh containing the much simpler Vertex objects.
 Mesh<Vertex> decodeMesh(const Mesh<CubicVertex>& encodedMesh) {
 	core_trace_scoped(DecodeMesh);
-	Mesh<Vertex> decodedMesh;
+	Mesh<Vertex> decodedMesh(encodedMesh.getNoOfVertices());
 
 	for (size_t ct = 0; ct < encodedMesh.getNoOfVertices(); ct++) {
 		const CubicVertex& decodedVertex = encodedMesh.getVertex(ct);

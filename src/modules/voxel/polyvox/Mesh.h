@@ -20,6 +20,7 @@ template<typename VertexType>
 class Mesh {
 public:
 	Mesh();
+	Mesh(int vertices);
 	~Mesh();
 
 	size_t getNoOfVertices() const;
@@ -50,6 +51,11 @@ private:
 /// formats which are hard to interpret directly (see CubicVertex and MarchingCubesVertex).
 /// This function creates a new uncompressed mesh containing the much simpler Vertex objects.
 Mesh<Vertex> decodeMesh(const Mesh<CubicVertex>& encodedMesh);
+
+template<typename VertexType>
+Mesh<VertexType>::Mesh(int vertices) {
+	m_vecVertices.reserve(vertices);
+}
 
 template<typename VertexType>
 Mesh<VertexType>::Mesh() {
