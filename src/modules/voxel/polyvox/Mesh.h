@@ -11,15 +11,14 @@
 
 namespace voxel {
 
-/// A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
-/// It supports different vertex types (which will vary depending on the surface extractor used and the contents
-/// of the volume) and both 16-bit and 32 bit indices.
-template<typename _VertexType>
+/**
+ * A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
+ * It supports different vertex types (which will vary depending on the surface extractor used and the contents
+ * of the volume).
+ */
+template<typename VertexType>
 class Mesh {
 public:
-
-	typedef _VertexType VertexType;
-
 	Mesh();
 	~Mesh();
 
