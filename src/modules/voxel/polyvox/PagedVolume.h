@@ -52,12 +52,6 @@ public:
 		void setVoxel(const glm::i16vec3& v3dPos, Voxel tValue);
 
 	private:
-		/// Private copy constructor to prevent accisdental copying
-		Chunk(const Chunk& /*rhs*/);
-
-		/// Private assignment operator to prevent accisdental copying
-		Chunk& operator=(const Chunk& /*rhs*/);
-
 		// This is updated by the PagedVolume and used to discard the least recently used chunks.
 		uint32_t m_uChunkLastAccessed;
 

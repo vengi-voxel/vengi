@@ -3,6 +3,7 @@
 #include "Voxel.h"
 #include "Region.h"
 #include "Utility.h"
+#include "core/NonCopyable.h"
 #include <limits>
 
 namespace voxel {
@@ -12,7 +13,7 @@ namespace voxel {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @sa RawVolume, PagedVolume
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class BaseVolume {
+class BaseVolume : public core::NonCopyable {
 public:
 	template<typename DerivedVolumeType>
 	class Sampler {
@@ -93,14 +94,8 @@ protected:
 	/// Constructor for creating a volume.
 	BaseVolume();
 
-	/// Copy constructor
-	BaseVolume(const BaseVolume& rhs);
-
 	/// Destructor
 	~BaseVolume();
-
-	/// Assignment operator
-	BaseVolume& operator=(const BaseVolume& rhs);
 };
 
 template<typename DerivedVolumeType>
