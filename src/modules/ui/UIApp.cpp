@@ -166,8 +166,6 @@ void UIApp::onMouseWheel(int32_t x, int32_t y) {
 }
 
 void UIApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	if (tb::TBWidget::captured_widget != nullptr)
-		return;
 	_root.InvokePointerMove(x, y, mapModifier(SDL_GetModState()), false);
 }
 
