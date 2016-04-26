@@ -182,11 +182,11 @@ public:
 	void setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, int amount);
 
 	/// Tries to ensure that the voxels within the specified Region are loaded into memory.
-	void prefetch(Region regPrefetch);
+	void prefetch(const Region& regPrefetch);
 	/// Removes all voxels from memory
 	void flushAll();
 
-	/// Calculates approximatly how many bytes of memory the volume is currently using.
+	/// Calculates approximately how many bytes of memory the volume is currently using.
 	uint32_t calculateSizeInBytes();
 	Chunk* getChunk(const glm::ivec3& pos) const;
 

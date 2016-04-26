@@ -127,7 +127,7 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, i
 /// Note that if the memory usage limit is not large enough to support the region this function will only load part of the region. In this case it is undefined which parts will actually be loaded. If all the voxels in the given region are already loaded, this function will not do anything. Other voxels might be unloaded to make space for the new voxels.
 /// @param regPrefetch The Region of voxels to prefetch into memory.
 ////////////////////////////////////////////////////////////////////////////////
-void PagedVolume::prefetch(Region regPrefetch) {
+void PagedVolume::prefetch(const Region& regPrefetch) {
 	// Convert the start and end positions into chunk space coordinates
 	const glm::ivec3& lower = regPrefetch.getLowerCorner();
 	const glm::ivec3 v3dStart {lower.x >> m_uChunkSideLengthPower, lower.y >> m_uChunkSideLengthPower, lower.z >> m_uChunkSideLengthPower};
@@ -136,14 +136,15 @@ void PagedVolume::prefetch(Region regPrefetch) {
 	const glm::ivec3 v3dEnd {upper.x >> m_uChunkSideLengthPower, upper.y >> m_uChunkSideLengthPower, upper.z >> m_uChunkSideLengthPower};
 
 	// Ensure we don't page in more chunks than the volume can hold.
-	Region region(v3dStart, v3dEnd);
+	const Region region(v3dStart, v3dEnd);
 	uint32_t uNoOfChunks = static_cast<uint32_t>(region.getWidthInVoxels() * region.getHeightInVoxels() * region.getDepthInVoxels());
 	if (uNoOfChunks > m_uChunkCountLimit) {
-		::Log::warn("Attempting to prefetch more than the maximum number of chunks (this will cause thrashing).");
+		Log::warn("Attempting to prefetch more than the maximum number of chunks (this will cause thrashing).");
 	}
 	uNoOfChunks = std::min(uNoOfChunks, m_uChunkCountLimit);
 
 	// Loops over the specified positions and touch the corresponding chunks.
+	// TODO: only touch one chunk once - use the chunk size for x, y, and z increase here?
 	for (int32_t x = v3dStart.x; x <= v3dEnd.x; x++) {
 		for (int32_t y = v3dStart.y; y <= v3dEnd.y; y++) {
 			for (int32_t z = v3dStart.z; z <= v3dEnd.z; z++) {
@@ -157,6 +158,7 @@ void PagedVolume::prefetch(Region regPrefetch) {
  * Removes all voxels from memory by removing all chunks. The application has the chance to persist the data via @c Pager::pageOut
  */
 void PagedVolume::flushAll() {
+	core::ScopedWriteLock scopedLock(_lock);
 	// Clear this pointer as all chunks are about to be removed.
 	m_pLastAccessedChunk = nullptr;
 
@@ -192,7 +194,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 		uint32_t iIndex = iPositionHash;
 		do {
 			if (m_arrayChunks[iIndex]) {
-				glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
+				const glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
 				if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
 					pChunk = m_arrayChunks[iIndex].get();
 					pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
@@ -271,6 +273,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
  */
 uint32_t PagedVolume::calculateSizeInBytes() {
 	uint32_t uChunkCount = 0;
+	core::ScopedReadLock scopedLock(_lock);
 	for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
 		if (m_arrayChunks[uIndex]) {
 			uChunkCount++;
@@ -371,7 +374,7 @@ uint32_t PagedVolume::Chunk::calculateSizeInBytes() {
 uint32_t PagedVolume::Chunk::calculateSizeInBytes(uint32_t uSideLength) {
 	// Note: We disregard the size of the other class members as they are likely to be very small compared to the size of the
 	// allocated voxel data. This also keeps the reported size as a power of two, which makes other memory calculations easier.
-	uint32_t uSizeInBytes = uSideLength * uSideLength * uSideLength * sizeof(Voxel);
+	const uint32_t uSizeInBytes = uSideLength * uSideLength * uSideLength * sizeof(Voxel);
 	return uSizeInBytes;
 }
 
