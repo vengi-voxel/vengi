@@ -14,7 +14,7 @@ std::string WorldPersister::getWorldName(const Region& region, long seed) const 
 	return core::string::format("world_%li_%i_%i_%i.wld", seed, region.getLowerX(), region.getLowerY(), region.getLowerZ());
 }
 
-void WorldPersister::erase(TerrainContext& ctx, long seed) {
+void WorldPersister::erase(TerrainContext& ctx, PagedVolume::Chunk* chunk, long seed) {
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	const Region& region = ctx.region;
@@ -22,7 +22,7 @@ void WorldPersister::erase(TerrainContext& ctx, long seed) {
 	// TODO: filesystem->remove(filename);
 }
 
-bool WorldPersister::load(TerrainContext& ctx, long seed) {
+bool WorldPersister::load(TerrainContext& ctx, PagedVolume::Chunk* chunk, long seed) {
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	const Region& region = ctx.region;
@@ -80,14 +80,14 @@ bool WorldPersister::load(TerrainContext& ctx, long seed) {
 				core_assert(voxelBuf.getSize() >= 1);
 				const VoxelType material = voxelBuf.readByte();
 				const Voxel& voxel = createVoxel(material);
-				ctx.chunk->setVoxel(x, y, z, voxel);
+				chunk->setVoxel(x, y, z, voxel);
 			}
 		}
 	}
 	return true;
 }
 
-bool WorldPersister::save(TerrainContext& ctx, long seed) {
+bool WorldPersister::save(TerrainContext& ctx, PagedVolume::Chunk* chunk, long seed) {
 	core::ByteStream voxelStream;
 	const Region& region = ctx.region;
 	const int width = region.getWidthInVoxels();
@@ -97,7 +97,7 @@ bool WorldPersister::save(TerrainContext& ctx, long seed) {
 	for (int z = 0; z < depth; ++z) {
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
-				const Voxel& voxel = ctx.chunk->getVoxel(x, y, z);
+				const Voxel& voxel = chunk->getVoxel(x, y, z);
 				core_assert(sizeof(VoxelType) == sizeof(uint8_t));
 				voxelStream.addByte(voxel.getMaterial());
 			}

@@ -14,20 +14,20 @@ TEST_F(WorldPersisterTest, testSaveLoad) {
 	WorldPersister persister;
 	TerrainContext ctx;
 	ctx.region = region;
-	ctx.chunk = volData.getChunk(region.getLowerCorner());
-	ASSERT_TRUE(ctx.chunk != nullptr) << "Could not get chunk";
-	ASSERT_TRUE(persister.save(ctx, seed)) << "Could not save volume chunk";
+	ctx.volume = &volData;
+	PagedVolume::Chunk* chunk = volData.getChunk(region.getLowerCorner());
+	ASSERT_TRUE(chunk != nullptr) << "Could not get chunk";
+	ASSERT_TRUE(persister.save(ctx, chunk, seed)) << "Could not save volume chunk";
 
 	const std::string& filename = persister.getWorldName(region, seed);
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	ASSERT_TRUE(filesystem->open(filename)->exists()) << "Nothing was written into " << filename;
 
-	const PagedVolume::Chunk* chunk = ctx.chunk;
-	ctx.chunk = volData.getChunk(glm::ivec3(128, 0, 128));
-	ASSERT_TRUE(chunk != ctx.chunk) << "Chunks should be different";
-	ASSERT_TRUE(persister.load(ctx, seed)) << "Could not load volume chunk";
-	ASSERT_EQ(Grass, ctx.chunk->getVoxel(32, 32, 32).getMaterial());
+	PagedVolume::Chunk* chunk2 = volData.getChunk(glm::ivec3(128, 0, 128));
+	ASSERT_TRUE(chunk != chunk2) << "Chunks should be different";
+	ASSERT_TRUE(persister.load(ctx, chunk2, seed)) << "Could not load volume chunk";
+	ASSERT_EQ(Grass, volData.getVoxel(32, 32, 32).getMaterial());
 }
 
 }

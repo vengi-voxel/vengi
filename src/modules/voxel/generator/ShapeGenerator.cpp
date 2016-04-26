@@ -2,30 +2,6 @@
 
 namespace voxel {
 
-bool ShapeGenerator::isValidChunkPosition(const TerrainContext& ctx, const glm::ivec3& pos) {
-	if (ctx.chunk == nullptr) {
-		return false;
-	}
-
-	if (pos.x < 0 || pos.x >= ctx.region.getWidthInVoxels())
-		return false;
-	if (pos.y < 0 || pos.y >= ctx.region.getHeightInVoxels())
-		return false;
-	if (pos.z < 0 || pos.z >= ctx.region.getDepthInVoxels())
-		return false;
-	return true;
-}
-
-void ShapeGenerator::setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel) {
-	glm::ivec3 finalPos = pos;
-	if (ctx.chunk != nullptr) {
-		finalPos.x += ctx.region.getLowerX();
-		finalPos.y += ctx.region.getLowerY();
-		finalPos.z += ctx.region.getLowerZ();
-	}
-	ctx.nonChunkVoxels.emplace_back(finalPos, voxel);
-}
-
 void ShapeGenerator::createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
@@ -40,11 +16,7 @@ void ShapeGenerator::createCirclePlane(TerrainContext& ctx, const glm::ivec3& ce
 				continue;
 			}
 			const glm::ivec3 pos(center.x + x, center.y, center.z + z);
-			if (isValidChunkPosition(ctx, pos)) {
-				ctx.chunk->setVoxel(pos.x, pos.y, pos.z, voxel);
-			} else {
-				setVolumeVoxel(ctx, pos, voxel);
-			}
+			ctx.volume->setVoxel(pos, voxel);
 		}
 	}
 }
@@ -57,11 +29,7 @@ void ShapeGenerator::createCube(TerrainContext& ctx, const glm::ivec3& center, i
 		for (int y = -h; y < height - h; ++y) {
 			for (int z = -d; z < depth - d; ++z) {
 				const glm::ivec3 pos(center.x + x, center.y + y, center.z + z);
-				if (isValidChunkPosition(ctx, pos)) {
-					ctx.chunk->setVoxel(pos.x, pos.y, pos.z, voxel);
-				} else {
-					setVolumeVoxel(ctx, pos, voxel);
-				}
+				ctx.volume->setVoxel(pos, voxel);
 			}
 		}
 	}

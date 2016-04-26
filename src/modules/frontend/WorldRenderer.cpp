@@ -338,18 +338,13 @@ void WorldRenderer::extractMeshAroundCamera(int radius) {
 	const int amount = sideLength * (sideLength - 1) + sideLength;
 	const int chunkSize = _world->getChunkSize();
 	const glm::ivec3& cameraPos = _lastGridPosition;
-	const int maxChunks = MAX_HEIGHT / chunkSize;
 	glm::ivec3 pos = cameraPos;
+	pos.y = 0;
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
 		const float distance = getDistance2(pos);
 		if (!isDistanceCulled(distance, false)) {
-			glm::ivec3 regionPos = pos;
-			regionPos.y = 0;
-			for (int i = 0; i < maxChunks; ++i) {
-				_world->scheduleMeshExtraction(regionPos);
-				regionPos.y = chunkSize;
-			}
+			_world->scheduleMeshExtraction(pos);
 		}
 		o.next();
 		pos.x = cameraPos.x + o.x() * chunkSize;
@@ -386,7 +381,7 @@ void WorldRenderer::onRunning(long dt) {
 	}
 
 	if (_viewDistance < MinCullingDistance) {
-		const float advance = _world->getChunkSize() * (dt / 1000.0f) * 0.1f;
+		const float advance = _world->getChunkSize() * (dt / 1000.0f);
 		_viewDistance += advance;
 	}
 }

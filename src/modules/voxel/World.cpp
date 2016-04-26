@@ -15,30 +15,29 @@
 #include "polyvox/CubicSurfaceExtractor.h"
 #include "polyvox/RawVolume.h"
 #include "polyvox/Voxel.h"
+#include "Voxel.h"
 
 namespace voxel {
 
 void World::Pager::erase(const Region& region, PagedVolume::Chunk* chunk) {
 	TerrainContext ctx;
 	ctx.region = region;
-	ctx.chunk = chunk;
-	_worldPersister.erase(ctx, _world.seed());
+	ctx.volume = _world._volumeData;
+	_worldPersister.erase(ctx, chunk, _world.seed());
 }
 
 void World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 	TerrainContext ctx;
 	ctx.region = region;
-	ctx.chunk = chunk;
-	if (!_worldPersister.load(ctx, _world.seed())) {
-		_world.create(ctx);
-	}
+	ctx.volume = _world._volumeData;
+	_worldPersister.load(ctx, chunk, _world.seed());
 }
 
 void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
 	TerrainContext ctx;
 	ctx.region = region;
-	ctx.chunk = chunk;
-	_worldPersister.save(ctx, _world.seed());
+	ctx.volume = _world._volumeData;
+	_worldPersister.save(ctx, chunk, _world.seed());
 }
 
 // http://code.google.com/p/fortressoverseer/source/browse/Overseer/PolyVoxGenerator.cpp
@@ -46,7 +45,7 @@ World::World() :
 		_pager(*this), _seed(0), _clientData(false), _threadPool(1, "World"), _rwLock("World"),
 		_random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
-	_volumeData = new PagedVolume(&_pager, 256 * 1024 * 1024, _chunkSize->intVal());
+	_volumeData = new PagedVolume(&_pager, 256 * 1024 * 1024, 16);
 	core_assert(_biomManager.addBiom(0, 100, createVoxel(Grass)));
 	core_assert(_biomManager.addBiom(101, MAX_HEIGHT - 1, createVoxel(Grass)));
 }
@@ -163,30 +162,13 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		DecodedMeshData data;
 		{
 			locked([&] () {
-				// calculate ao
 				calculateAO(region);
 				const bool mergeQuads = true;
+				TerrainContext ctx;
+				ctx.region = region;
+				ctx.volume = _volumeData;
+				create(ctx);
 				data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
-
-				const uint32_t downScaleFactor = 2;
-				for (data.numLods = 1; data.numLods < 2; ++data.numLods) {
-					Region srcRegion = region;
-					srcRegion.grow(downScaleFactor);
-
-					const glm::ivec3& lowerCorner = srcRegion.getLowerCorner();
-					glm::ivec3 upperCorner = srcRegion.getUpperCorner();
-
-					upperCorner = upperCorner - lowerCorner;
-					upperCorner = upperCorner / 2;
-					upperCorner = upperCorner + lowerCorner;
-
-					Region targetRegion(lowerCorner, upperCorner);
-
-					RawVolume rawVolume(targetRegion);
-					rescaleCubicVolume(_volumeData, srcRegion, &rawVolume, rawVolume.getEnclosingRegion());
-					targetRegion.shrink(1);
-					data.mesh[data.numLods] = decodeMesh(extractCubicMesh(&rawVolume, targetRegion, IsQuadNeeded(), mergeQuads));
-				}
 			});
 		}
 
@@ -202,8 +184,8 @@ Region World::getRegion(const glm::ivec3& pos) const {
 	int deltaX = size - 1;
 	int deltaY = size - 1;
 	int deltaZ = size - 1;
-	const glm::ivec3 mins(pos.x, pos.y, pos.z);
-	const glm::ivec3 maxs(pos.x + deltaX, pos.y + deltaY, pos.z + deltaZ);
+	const glm::ivec3 mins(pos.x, 0, pos.z);
+	const glm::ivec3 maxs(pos.x + deltaX, MAX_HEIGHT - 1, pos.z + deltaZ);
 	const Region region(mins, maxs);
 	return region;
 }
@@ -213,7 +195,7 @@ void World::placeTree(const TreeContext& ctx) {
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
 	const Region& region = getRegion(getGridPos(pos));
 	TerrainContext tctx;
-	tctx.chunk = nullptr;
+	tctx.volume = nullptr;
 	tctx.region = region;
 	TreeGenerator::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
 }
@@ -260,7 +242,7 @@ void World::reset() {
 }
 
 bool World::isValidChunkPosition(TerrainContext& ctx, const glm::ivec3& pos) const {
-	if (ctx.chunk == nullptr) {
+	if (ctx.volume == nullptr) {
 		return false;
 	}
 
@@ -283,17 +265,6 @@ void World::create(TerrainContext& ctx) {
 	core_trace_scoped(CreateWorld);
 	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
 	WorldGenerator::createWorld(_ctx, ctx, _biomManager, _random, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
-
-	// the generation of this chunk might have put voxel into neighbor chunks - let's process them here now
-	for (const TerrainContext::NonChunkVoxel& voxelData : ctx.nonChunkVoxels) {
-		const glm::ivec3& pos = voxelData.pos;
-		_volumeData->setVoxel(pos, voxelData.voxel);
-		core_assert(!ctx.region.containsPoint(pos.x, pos.y, pos.z));
-		if (!allowReExtraction(pos)) {
-			continue;
-		}
-		scheduleMeshExtraction(pos);
-	}
 }
 
 void World::cleanupFutures() {

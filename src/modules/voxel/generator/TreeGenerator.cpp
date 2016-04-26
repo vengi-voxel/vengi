@@ -1,10 +1,11 @@
 #include "TreeGenerator.h"
+#include "voxel/Voxel.h"
 
 namespace voxel {
 
-int TreeGenerator::findChunkFloor(int chunkHeight, PagedVolume::Chunk* chunk, int x, int z) {
+int TreeGenerator::findFloor(int chunkHeight, PagedVolume* volume, int x, int z) {
 	for (int i = chunkHeight - 1; i >= 0; i--) {
-		const int material = chunk->getVoxel(x, i, z).getMaterial();
+		const int material = volume->getVoxel(x, i, z).getMaterial();
 		if (isFloor(material)) {
 			return i + 1;
 		}
@@ -25,11 +26,11 @@ void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
 
 		const int rndValZ = random.random(regionBorder, region.getDepthInVoxels() - regionBorder);
 		// TODO: use a noise map to get the position
-		glm::ivec3 pos(rndValX, -1, rndValZ);
-		const int y = findChunkFloor(chunkHeight, ctx.chunk, pos.x, pos.z);
+		glm::ivec3 pos(region.getLowerX() + rndValX, -1, region.getLowerZ() + rndValZ);
+		const int y = findFloor(chunkHeight, ctx.volume, pos.x, pos.z);
 		const int height = random.random(10, 14);
 		const int trunkHeight = random.random(5, 9);
-		if (y < 0 || y >= MAX_HEIGHT -1  - height - trunkHeight) {
+		if (y < 0 || y >= MAX_HEIGHT - 1 - height - trunkHeight) {
 			continue;
 		}
 
@@ -62,17 +63,13 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 				}
 				glm::ivec3 finalPos(x, y, z);
 				if (y == pos.y) {
-					core_assert(ShapeGenerator::isValidChunkPosition(ctx, finalPos));
-					finalPos.y = findChunkFloor(chunkHeight, ctx.chunk, x, z);
+					finalPos.y = findFloor(chunkHeight, ctx.volume, x, z);
 					if (finalPos.y < 0) {
 						continue;
 					}
 				}
-				if (ShapeGenerator::isValidChunkPosition(ctx, finalPos)) {
-					ctx.chunk->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
-				} else {
-					ShapeGenerator::setVolumeVoxel(ctx, finalPos, voxel);
-				}
+
+				ctx.volume->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
 			}
 		}
 	}

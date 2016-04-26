@@ -46,7 +46,7 @@ public:
 	}
 
 	inline bool hasClouds(const glm::ivec3& pos) const {
-		return pos.y > MAX_HEIGHT - 70;
+		return true;
 	}
 };
 

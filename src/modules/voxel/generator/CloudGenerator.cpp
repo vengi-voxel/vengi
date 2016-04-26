@@ -9,7 +9,7 @@ glm::ivec2 CloudGenerator::randomPosWithoutHeight(const Region& region, int bord
 	core_assert(border < d);
 	const int x = random.random(border, w - border);
 	const int z = random.random(border, d - border);
-	return glm::ivec2(x, z);
+	return glm::ivec2(region.getLowerX() + x, region.getLowerZ() + z);
 }
 
 void CloudGenerator::createClouds(TerrainContext& ctx, core::Random& random) {

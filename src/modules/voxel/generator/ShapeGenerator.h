@@ -9,8 +9,6 @@ namespace voxel {
 
 class ShapeGenerator {
 public:
-	static bool isValidChunkPosition(const TerrainContext& ctx, const glm::ivec3& pos);
-	static void setVolumeVoxel(TerrainContext& ctx, const glm::ivec3& pos, const Voxel& voxel);
 	static void createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel);
 	static void createCube(TerrainContext& ctx, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel);
 	static void createPlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, const Voxel& voxel);

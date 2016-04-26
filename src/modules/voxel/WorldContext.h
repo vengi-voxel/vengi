@@ -56,16 +56,8 @@ struct TerrainContext {
 	// cloud or building generation) then the relative chunk coordinate is converted into
 	// an absolute position in the world by taking the given region parameter into account
 	// (and put into the non chunk voxel vector for later handling)
-	PagedVolume::Chunk* chunk;
+	PagedVolume* volume;
 	PositionSet dirty;
-	struct NonChunkVoxel {
-		NonChunkVoxel(const glm::ivec3& _pos, const Voxel& _voxel) :
-				pos(_pos), voxel(_voxel) {
-		}
-		glm::ivec3 pos;
-		Voxel voxel;
-	};
-	std::vector<NonChunkVoxel> nonChunkVoxels;
 };
 
 struct WorldContext {

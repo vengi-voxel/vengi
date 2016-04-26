@@ -71,7 +71,7 @@ public:
 	inline glm::ivec3 getChunkPos(const glm::ivec3& pos) const {
 		const float size = _chunkSize->floatVal();
 		const int x = glm::floor(pos.x / size);
-		const int y = glm::floor(pos.y / size);
+		const int y = 0;
 		const int z = glm::floor(pos.z / size);
 		return glm::ivec3(x, y, z);
 	}
