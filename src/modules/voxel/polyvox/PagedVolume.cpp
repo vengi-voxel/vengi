@@ -116,6 +116,8 @@ void PagedVolume::setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue) {
 }
 
 void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, int amount) {
+	// lock here to ensure no other thread is writing and we can reuse the last used chunk
+	// TODO: core::ScopedReadLock scopedLock(_lock);
 	for (int y = 0; y < amount; ++y) {
 		setVoxel(uXPos, y, uZPos, tArray[y]);
 	}
