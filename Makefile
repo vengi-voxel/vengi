@@ -1,6 +1,7 @@
 TARGET=
 VERBOSE=
 Q=@
+LOCAL_CONFIG_DIR=~/.local/share/engine
 
 all: run
 
@@ -13,10 +14,10 @@ clean:
 	$(Q)rm -f .fips-imports.cmake
 
 clean-local-config:
-	$(Q)rm -r ~/.local/share/engine
+	$(Q)rm -r $(LOCAL_CONFIG_DIR)
 
 edit-local-config:
-	$(Q)$(EDITOR) ~/.local/share/engine/shapetool/shapetool.vars
+	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
 
 eclipse:
 	$(Q)./fips set config linux-eclipse-debug
