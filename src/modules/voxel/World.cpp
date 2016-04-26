@@ -189,7 +189,6 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 Region World::getRegion(const glm::ivec3& pos) const {
 	const int size = _chunkSize->intVal();
 	int deltaX = size - 1;
-	int deltaY = size - 1;
 	int deltaZ = size - 1;
 	const glm::ivec3 mins(pos.x, 0, pos.z);
 	const glm::ivec3 maxs(pos.x + deltaX, MAX_HEIGHT - 1, pos.z + deltaZ);
