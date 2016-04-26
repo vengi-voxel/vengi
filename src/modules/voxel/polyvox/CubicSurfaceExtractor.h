@@ -278,14 +278,14 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 
 	result->clear();
 
-	//Used to avoid creating duplicate vertices.
+	// Used to avoid creating duplicate vertices.
 	Array<3, IndexAndMaterial> m_previousSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
 			MaxVerticesPerPosition);
 	Array<3, IndexAndMaterial> m_currentSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
 			MaxVerticesPerPosition);
 
-	//During extraction we create a number of different lists of quads. All the
-	//quads in a given list are in the same plane and facing in the same direction.
+	// During extraction we create a number of different lists of quads. All the
+	// quads in a given list are in the same plane and facing in the same direction.
 	std::vector<std::list<Quad> > m_vecQuads[NoOfFaces];
 
 	memset(m_previousSliceVertices.getRawData(), 0xff, m_previousSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
@@ -391,8 +391,8 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 			std::list<Quad>& listQuads = vecListQuads[slice];
 
 			if (bMergeQuads) {
-				//Repeatedly call this function until it returns
-				//false to indicate nothing more can be done.
+				// Repeatedly call this function until it returns
+				// false to indicate nothing more can be done.
 				while (performQuadMerging(listQuads, result)) {
 				}
 			}
