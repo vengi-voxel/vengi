@@ -51,9 +51,6 @@ public:
 		void setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, Voxel tValue);
 		void setVoxel(const glm::i16vec3& v3dPos, Voxel tValue);
 
-		void changeLinearOrderingToMorton();
-		void changeMortonOrderingToLinear();
-
 	private:
 		/// Private copy constructor to prevent accisdental copying
 		Chunk(const Chunk& /*rhs*/);

@@ -145,9 +145,9 @@ void PagedVolume::prefetch(Region regPrefetch) {
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Removes all voxels from memory, and calls dataOverflowHandler() to ensure the application has a chance to store the data.
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * Removes all voxels from memory by removing all chunks. The application has the chance to persist the data via @c Pager::pageOut
+ */
 void PagedVolume::flushAll() {
 	// Clear this pointer as all chunks are about to be removed.
 	m_pLastAccessedChunk = nullptr;
@@ -255,9 +255,9 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 	return pChunk;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Calculate the memory usage of the volume.
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * Calculate the memory usage of the volume.
+ */
 uint32_t PagedVolume::calculateSizeInBytes() {
 	uint32_t uChunkCount = 0;
 	for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
@@ -362,57 +362,6 @@ uint32_t PagedVolume::Chunk::calculateSizeInBytes(uint32_t uSideLength) {
 	// allocated voxel data. This also keeps the reported size as a power of two, which makes other memory calculations easier.
 	uint32_t uSizeInBytes = uSideLength * uSideLength * uSideLength * sizeof(Voxel);
 	return uSizeInBytes;
-}
-
-// This convienience function exists for historical reasons. Chunks used to store their data in 'linear' order but now we
-// use Morton encoding. Users who still have data in linear order (on disk, in databases, etc) will need to call this function
-// if they load the data in by memcpy()ing it via the raw pointer. On the other hand, if they set the data using setVoxel()
-// then the ordering is automatically handled correctly.
-void PagedVolume::Chunk::changeLinearOrderingToMorton() {
-	Voxel* pTempBuffer = new Voxel[m_uSideLength * m_uSideLength * m_uSideLength];
-
-	// We should perhaps restructure this loop. From: https://fgiesen.wordpress.com/2011/01/17/texture-tiling-and-swizzling/
-	//
-	// "There's two basic ways to structure the actual swizzling: either you go through the (linear) source image in linear order,
-	// writing in (somewhat) random order, or you iterate over the output data, picking the right source pixel for each target
-	// location. The former is more natural, especially when updating subrects of the destination texture (the source pixels still
-	// consist of one linear sequence of bytes per line; the pattern of destination addresses written is considerably more
-	// complicated), but the latter is usually much faster, especially if the source image data is in cached memory while the output
-	// data resides in non-cached write-combined memory where non-sequential writes are expensive."
-	//
-	// This is something to consider if profiling identifies it as a hotspot.
-	for (uint16_t z = 0; z < m_uSideLength; z++) {
-		for (uint16_t y = 0; y < m_uSideLength; y++) {
-			for (uint16_t x = 0; x < m_uSideLength; x++) {
-				const uint32_t uLinearIndex = x + y * m_uSideLength + z * m_uSideLength * m_uSideLength;
-				const uint32_t uMortonIndex = morton256_x[x] | morton256_y[y] | morton256_z[z];
-				pTempBuffer[uMortonIndex] = m_tData[uLinearIndex];
-			}
-		}
-	}
-
-	std::memcpy(m_tData, pTempBuffer, getDataSizeInBytes());
-
-	delete[] pTempBuffer;
-}
-
-// Like the above function, this is provided fot easing backwards compatibility. In Cubiquity we have some
-// old databases which use linear ordering, and we need to continue to save such data in linear order.
-void PagedVolume::Chunk::changeMortonOrderingToLinear() {
-	Voxel* pTempBuffer = new Voxel[m_uSideLength * m_uSideLength * m_uSideLength];
-	for (uint16_t z = 0; z < m_uSideLength; z++) {
-		for (uint16_t y = 0; y < m_uSideLength; y++) {
-			for (uint16_t x = 0; x < m_uSideLength; x++) {
-				const uint32_t uLinearIndex = x + y * m_uSideLength + z * m_uSideLength * m_uSideLength;
-				const uint32_t uMortonIndex = morton256_x[x] | morton256_y[y] | morton256_z[z];
-				pTempBuffer[uLinearIndex] = m_tData[uMortonIndex];
-			}
-		}
-	}
-
-	std::memcpy(m_tData, pTempBuffer, getDataSizeInBytes());
-
-	delete[] pTempBuffer;
 }
 
 #define CAN_GO_NEG_X(val) (val > 0)
