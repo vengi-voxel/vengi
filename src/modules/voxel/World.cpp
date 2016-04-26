@@ -19,25 +19,33 @@
 
 namespace voxel {
 
+#define PERSIST 1
+
 void World::Pager::erase(const Region& region, PagedVolume::Chunk* chunk) {
+#if PERSIST
 	TerrainContext ctx;
 	ctx.region = region;
 	ctx.volume = _world._volumeData;
 	_worldPersister.erase(ctx, chunk, _world.seed());
+#endif
 }
 
 void World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
+#if PERSIST
 	TerrainContext ctx;
 	ctx.region = region;
 	ctx.volume = _world._volumeData;
 	_worldPersister.load(ctx, chunk, _world.seed());
+#endif
 }
 
 void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
+#if PERSIST
 	TerrainContext ctx;
 	ctx.region = region;
 	ctx.volume = _world._volumeData;
 	_worldPersister.save(ctx, chunk, _world.seed());
+#endif
 }
 
 // http://code.google.com/p/fortressoverseer/source/browse/Overseer/PolyVoxGenerator.cpp
