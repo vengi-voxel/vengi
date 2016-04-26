@@ -168,17 +168,16 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		core_trace_scoped(MeshExtraction);
 		const Region& region = getRegion(pos);
 		DecodedMeshData data;
-		{
-			locked([&] () {
-				calculateAO(region);
-				const bool mergeQuads = true;
-				TerrainContext ctx;
-				ctx.region = region;
-				ctx.volume = _volumeData;
-				create(ctx);
-				data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
-			});
-		}
+
+		locked([&] () {
+			calculateAO(region);
+			const bool mergeQuads = true;
+			TerrainContext ctx;
+			ctx.region = region;
+			ctx.volume = _volumeData;
+			create(ctx);
+			data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
+		});
 
 		data.translation = pos;
 		core::ScopedWriteLock lock(_rwLock);
