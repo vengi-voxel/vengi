@@ -180,6 +180,8 @@ public:
 	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue);
 	/// Sets the voxel at the position given by a 3D vector
 	void setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue);
+	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
+	void setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, int amount);
 
 	/// Tries to ensure that the voxels within the specified Region are loaded into memory.
 	void prefetch(Region regPrefetch);

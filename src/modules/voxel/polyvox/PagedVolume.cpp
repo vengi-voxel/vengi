@@ -115,6 +115,12 @@ void PagedVolume::setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue) {
 	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
 
+void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, int amount) {
+	for (int y = 0; y < amount; ++y) {
+		setVoxel(uXPos, y, uZPos, tArray[y]);
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Note that if the memory usage limit is not large enough to support the region this function will only load part of the region. In this case it is undefined which parts will actually be loaded. If all the voxels in the given region are already loaded, this function will not do anything. Other voxels might be unloaded to make space for the new voxels.
 /// @param regPrefetch The Region of voxels to prefetch into memory.
