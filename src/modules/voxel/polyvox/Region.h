@@ -23,7 +23,7 @@ namespace voxel {
  *  the size of the Region, shifting the Region in 3D space, testing whether it contains a given position, enlarging it so that
  *  it does contain a given position, cropping it to another Region, and various other utility functions.
  *
- *  \Note The dimensions of a region can be measured either in voxels or in cells. See the manual for more information
+ *  @note The dimensions of a region can be measured either in voxels or in cells. See the manual for more information
  *  about these definitions.
  *
  */

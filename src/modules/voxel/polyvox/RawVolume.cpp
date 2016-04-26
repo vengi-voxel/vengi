@@ -18,62 +18,54 @@ RawVolume::~RawVolume() {
 	m_pData = 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// This function should never be called. Copying volumes by value would be expensive, and we want to prevent users from doing
-/// it by accident (such as when passing them as paramenters to functions). That said, there are times when you really do want to
-/// make a copy of a volume and in this case you should look at the Volumeresampler.
-///
-/// @sa VolumeResampler
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-/// The border value is returned whenever an attempt is made to read a voxel which
-/// is outside the extents of the volume.
-/// @return The value used for voxels outside of the volume
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * The border value is returned whenever an attempt is made to read a voxel which
+ * is outside the extents of the volume.
+ * @return The value used for voxels outside of the volume
+ */
 const Voxel& RawVolume::getBorderValue() const {
 	return m_tBorderValue;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// @return A Region representing the extent of the volume.
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @return A Region representing the extent of the volume.
+ */
 const Region& RawVolume::getEnclosingRegion() const {
 	return m_regValidRegion;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// @return The width of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the width is 64.
-/// @sa getHeight(), getDepth()
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @return The width of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the width is 64.
+ * @sa getHeight(), getDepth()
+ */
 int32_t RawVolume::getWidth() const {
 	return m_regValidRegion.getUpperX() - m_regValidRegion.getLowerX() + 1;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// @return The height of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the height is 64.
-/// @sa getWidth(), getDepth()
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @return The height of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the height is 64.
+ * @sa getWidth(), getDepth()
+ */
 int32_t RawVolume::getHeight() const {
 	return m_regValidRegion.getUpperY() - m_regValidRegion.getLowerY() + 1;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// @return The depth of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the depth is 64.
-/// @sa getWidth(), getHeight()
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @return The depth of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the depth is 64.
+ * @sa getWidth(), getHeight()
+ */
 int32_t RawVolume::getDepth() const {
 	return m_regValidRegion.getUpperZ() - m_regValidRegion.getLowerZ() + 1;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// This version of the function is provided so that the wrap mode does not need
-/// to be specified as a template parameter, as it may be confusing to some users.
-/// @param uXPos The @c x position of the voxel
-/// @param uYPos The @c y position of the voxel
-/// @param uZPos The @c z position of the voxel
-/// @return The voxel value
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * This version of the function is provided so that the wrap mode does not need
+ * to be specified as a template parameter, as it may be confusing to some users.
+ * @param uXPos The @c x position of the voxel
+ * @param uYPos The @c y position of the voxel
+ * @param uZPos The @c z position of the voxel
+ * @return The voxel value
+ */
 const Voxel& RawVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const {
 	if (this->m_regValidRegion.containsPoint(uXPos, uYPos, uZPos)) {
 		const Region& regValidRegion = this->m_regValidRegion;
@@ -86,19 +78,19 @@ const Voxel& RawVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) co
 	return m_tBorderValue;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// @param tBorder The value to use for voxels outside the volume.
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @param tBorder The value to use for voxels outside the volume.
+ */
 void RawVolume::setBorderValue(const Voxel& tBorder) {
 	m_tBorderValue = tBorder;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// @param uXPos the @c x position of the voxel
-/// @param uYPos the @c y position of the voxel
-/// @param uZPos the @c z position of the voxel
-/// @param tValue the value to which the voxel will be set
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @param uXPos the @c x position of the voxel
+ * @param uYPos the @c y position of the voxel
+ * @param uZPos the @c z position of the voxel
+ * @param tValue the value to which the voxel will be set
+ */
 void RawVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue) {
 	if (!this->m_regValidRegion.containsPoint(glm::ivec3(uXPos, uYPos, uZPos))) {
 		core_assert_msg(false, "Position is outside valid region");
@@ -112,9 +104,9 @@ void RawVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxe
 	m_pData[iLocalXPos + iLocalYPos * this->getWidth() + iLocalZPos * this->getWidth() * this->getHeight()] = tValue;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// This function should probably be made internal...
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * This function should probably be made internal...
+ */
 void RawVolume::initialise(const Region& regValidRegion) {
 	this->m_regValidRegion = regValidRegion;
 
@@ -135,9 +127,9 @@ void RawVolume::initialise(const Region& regValidRegion) {
 	std::fill(m_pData, m_pData + this->getWidth() * this->getHeight() * this->getDepth(), Voxel());
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Note: This function needs reviewing for accuracy...
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @note: This function needs reviewing for accuracy...
+ */
 uint32_t RawVolume::calculateSizeInBytes() {
 	return this->getWidth() * this->getHeight() * this->getDepth() * sizeof(Voxel);
 }

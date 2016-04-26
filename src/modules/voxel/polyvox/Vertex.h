@@ -15,15 +15,19 @@ struct Vertex {
 	Voxel data;
 };
 
-/// A specialised vertex format which encodes the data from the cubic extraction algorithm in a very
-/// compact way. You will probably want to use the decodeVertex() function to turn it into a regular
-/// Vertex for rendering, but advanced users should also be able to decode it on the GPU (not tested).
+/**
+ * A specialised vertex format which encodes the data from the cubic extraction algorithm in a very
+ * compact way. You will probably want to use the decodeVertex() function to turn it into a regular
+ * Vertex for rendering, but advanced users should also be able to decode it on the GPU (not tested).
+ */
 struct CubicVertex {
-	/// Each component of the position is stored as a single unsigned byte.
-	/// The true position is found by offseting each component by 0.5f.
+	/**
+	 * Each component of the position is stored as a single unsigned byte.
+	 * The true position is found by offseting each component by 0.5f.
+	 */
 	glm::i8vec3 encodedPosition;
 
-	/// A copy of the data which was stored in the voxel which generated this vertex.
+	/** A copy of the data which was stored in the voxel which generated this vertex. */
 	Voxel data;
 };
 

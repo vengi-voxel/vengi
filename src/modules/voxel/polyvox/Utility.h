@@ -11,8 +11,10 @@ inline bool isPowerOf2(uint32_t uInput) {
 	return (uInput & (uInput - 1)) == 0;
 }
 
-//Note: this function only works for inputs which are a power of two and not zero
-//If this is not the case then the output is undefined.
+/**
+ * @note: this function only works for inputs which are a power of two and not zero
+ * If this is not the case then the output is undefined.
+ */
 inline uint8_t logBase2(uint32_t uInput) {
 	//Release mode validation
 	if (uInput == 0) {
