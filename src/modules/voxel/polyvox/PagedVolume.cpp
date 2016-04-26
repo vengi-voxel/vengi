@@ -159,14 +159,12 @@ void PagedVolume::flushAll() {
 }
 
 PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
-	core::ScopedWriteLock scopedLock(_lock);
-
-	if (canReuseLastAccessedChunk(uChunkX, uChunkY, uChunkZ)) {
-		return m_pLastAccessedChunk;
+	{
+		core::ScopedReadLock scopedLock(_lock);
+		if (canReuseLastAccessedChunk(uChunkX, uChunkY, uChunkZ)) {
+			return m_pLastAccessedChunk;
+		}
 	}
-
-	Chunk* pChunk = nullptr;
-
 	// We generate a 16-bit hash here and assume this matches the range available in the chunk
 	// array. The assert here is just to make sure we take care if change this in the future.
 	static_assert(uChunkArraySize == 65536, "Chunk array size has changed, check if the hash calculation needs updating.");
@@ -176,25 +174,28 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 	const uint32_t uChunkZLowerBits = static_cast<uint32_t>(uChunkZ & 0x1F);
 	// Combine then to form a 15-bit hash of the position. Also shift by one to spread the values out in the whole 16-bit space.
 	const uint32_t iPositionHash = (uChunkXLowerBits | (uChunkYLowerBits << 5) | (uChunkZLowerBits << 10) << 1);
-
-	// Starting at the position indicated by the hash, and then search through the whole array looking for a chunk with the correct
-	// position. In most cases we expect to find it in the first place we look. Note that this algorithm is slow in the case that
-	// the chunk is not found because the whole array has to be searched, but in this case we are going to have to page the data in
-	// from an external source which is likely to be slow anyway.
-	uint32_t iIndex = iPositionHash;
-	do {
-		if (m_arrayChunks[iIndex]) {
-			glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
-			if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
-				pChunk = m_arrayChunks[iIndex].get();
-				pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
-				break;
+	Chunk* pChunk = nullptr;
+	{
+		core::ScopedReadLock scopedLock(_lock);
+		// Starting at the position indicated by the hash, and then search through the whole array looking for a chunk with the correct
+		// position. In most cases we expect to find it in the first place we look. Note that this algorithm is slow in the case that
+		// the chunk is not found because the whole array has to be searched, but in this case we are going to have to page the data in
+		// from an external source which is likely to be slow anyway.
+		uint32_t iIndex = iPositionHash;
+		do {
+			if (m_arrayChunks[iIndex]) {
+				glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
+				if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
+					pChunk = m_arrayChunks[iIndex].get();
+					pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
+					break;
+				}
 			}
-		}
 
-		iIndex++;
-		iIndex %= uChunkArraySize;
-	} while (iIndex != iPositionHash); // Keep searching until we get back to our start position.
+			iIndex++;
+			iIndex %= uChunkArraySize;
+		} while (iIndex != iPositionHash); // Keep searching until we get back to our start position.
+	}
 
 	// If we still haven't found the chunk then it's time to create a new one and page it in from disk.
 	if (!pChunk) {
@@ -203,6 +204,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 		pChunk = new PagedVolume::Chunk(v3dChunkPos, m_uChunkSideLength, m_pPager);
 		pChunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
 
+		core::ScopedWriteLock scopedLock(_lock);
 		// Store the chunk at the appropriate place in our chunk array. Ideally this place is
 		// given by the hash, otherwise we do a linear search for the next available location
 		// We always expect to find a free place because we aim to keep the array only half full.
@@ -247,6 +249,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 		}
 	}
 
+	core::ScopedWriteLock scopedLock(_lock);
 	m_pLastAccessedChunk = pChunk;
 	m_v3dLastAccessedChunkX = uChunkX;
 	m_v3dLastAccessedChunkY = uChunkY;
