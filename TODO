@@ -1,5 +1,4 @@
 Extract bigger mesh region than the chunk size to reduce drawcalls
 Remotery tracing for gl calls
 Biommanager should handle humidity and fog values (currently it's a dummy object without the real functionality)
-UI: windows are not moveable - but turbobadger supports this
 UI: windows don't support alpha right now..
