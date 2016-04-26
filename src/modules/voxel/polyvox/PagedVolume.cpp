@@ -9,7 +9,7 @@ namespace voxel {
 /// @param uChunkSideLength The size of the chunks making up the volume. Small chunks will compress/decompress faster, but there will also be more of them meaning voxel access could be slower.
 ////////////////////////////////////////////////////////////////////////////////
 PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint16_t uChunkSideLength) :
-		BaseVolume(), m_uChunkSideLength(uChunkSideLength), m_pPager(pPager) {
+		BaseVolume(), m_uChunkSideLength(uChunkSideLength), m_pPager(pPager), _lock("PagedVolume") {
 	// Validation of parameters
 	core_assert_msg(pPager, "You must provide a valid pager when constructing a PagedVolume");
 	core_assert_msg(uTargetMemoryUsageInBytes >= 1 * 1024 * 1024, "Target memory usage is too small to be practical");
@@ -162,7 +162,8 @@ bool PagedVolume::canReuseLastAccessedChunk(int32_t iChunkX, int32_t iChunkY, in
 	return iChunkX == m_v3dLastAccessedChunkX && iChunkY == m_v3dLastAccessedChunkY && iChunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk;
 }
 
-typename PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
+PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
+	core::ScopedWriteLock scopedLock(_lock);
 	Chunk* pChunk = nullptr;
 
 	// We generate a 16-bit hash here and assume this matches the range available in the chunk

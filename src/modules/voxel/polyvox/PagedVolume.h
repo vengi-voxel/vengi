@@ -3,6 +3,7 @@
 #include "BaseVolume.h"
 #include "Morton.h"
 #include "Voxel.h"
+#include "core/ReadWriteLock.h"
 #include <array>
 #include <algorithm>
 #include <cstring> //For memcpy
@@ -238,6 +239,8 @@ private:
 	int32_t m_iChunkMask;
 
 	Pager* m_pPager = nullptr;
+
+	mutable core::ReadWriteLock _lock;
 };
 
 inline const Voxel& PagedVolume::Sampler::getVoxel() const {
