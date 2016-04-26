@@ -129,7 +129,7 @@ void Mesh<VertexType>::clear() {
 
 template<typename VertexType>
 bool Mesh<VertexType>::isEmpty() const {
-	return (getNoOfVertices() == 0) || (getNoOfIndices() == 0);
+	return getNoOfVertices() == 0 || getNoOfIndices() == 0;
 }
 
 template<typename VertexType>
@@ -144,7 +144,7 @@ void Mesh<VertexType>::removeUnusedVertices() {
 
 	int noOfUsedVertices = 0;
 	std::vector<uint32_t> newPos(m_vecVertices.size());
-	for (uint32_t vertCt = 0; vertCt < m_vecVertices.size(); vertCt++) {
+	for (size_t vertCt = 0; vertCt < m_vecVertices.size(); vertCt++) {
 		if (isVertexUsed[vertCt]) {
 			m_vecVertices[noOfUsedVertices] = m_vecVertices[vertCt];
 			newPos[vertCt] = noOfUsedVertices;
@@ -154,7 +154,7 @@ void Mesh<VertexType>::removeUnusedVertices() {
 
 	m_vecVertices.resize(noOfUsedVertices);
 
-	for (uint32_t triCt = 0; triCt < m_vecIndices.size(); triCt++) {
+	for (size_t triCt = 0; triCt < m_vecIndices.size(); triCt++) {
 		m_vecIndices[triCt] = newPos[m_vecIndices[triCt]];
 	}
 }
