@@ -15,6 +15,9 @@ clean:
 clean-local-config:
 	$(Q)rm -r ~/.local/share/engine
 
+edit-local-config:
+	$(Q)$(EDITOR) ~/.local/share/engine/shapetool/shapetool.vars
+
 eclipse:
 	$(Q)./fips set config linux-eclipse-debug
 
