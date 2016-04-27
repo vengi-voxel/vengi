@@ -1,5 +1,6 @@
 fips_ide_group(Libs)
 fips_add_subdirectory(glm)
 fips_add_subdirectory(zlib)
+fips_add_subdirectory(libenet)
 fips_add_subdirectory(lua53)
 fips_add_subdirectory(sdl2)
