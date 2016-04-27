@@ -1,7 +1,3 @@
-imports:
-    fips-googletest:
-        git: https://github.com/mgerhardy/fips-googletest.git
-
 exports:
     header-dirs:
         - src/client
