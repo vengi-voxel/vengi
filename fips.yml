@@ -1,6 +1,4 @@
 imports:
-    fips-glm:
-        git: https://github.com/floooh/fips-glm.git
     fips-flatbuffers:
         git: https://github.com/mgerhardy/fips-flatbuffers.git
     fips-sauce:
