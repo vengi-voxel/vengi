@@ -9,8 +9,6 @@ imports:
         git: https://github.com/fungos/fips-turbobadger.git
     fips-stb:
         git: https://github.com/fungos/fips-stb.git
-    fips-lua:
-        git: https://github.com/mgerhardy/fips-lua.git
 
 exports:
     header-dirs:
