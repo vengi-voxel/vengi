@@ -1,0 +1,249 @@
+$$ This is a Pump source file.  Please use Pump to convert it.
+$$
+$var n = 10  $$ The maximum arity we support.
+#ifndef SAUCE_INTERNAL_APPLY_VARIADIC_H_
+#define SAUCE_INTERNAL_APPLY_VARIADIC_H_
+
+namespace sauce {
+namespace internal {
+
+template<typename Parameters, typename Signature>
+class ApplyFunction;
+
+template<typename Parameters, typename Signature, typename Passed>
+typename ApplyFunction<Parameters, Signature>::Return applyFunction(
+  typename ApplyFunction<Parameters, Signature>::Function function, Passed passed) {
+  return ApplyFunction<Parameters, Signature>(function).apply(passed);
+}
+
+template<typename Parameters, typename Signature, typename Passed>
+void observeFunction(typename ApplyFunction<Parameters, Signature>::Function function, Passed passed) {
+  ApplyFunction<Parameters, Signature>(function).observe(passed);
+}
+
+template<typename Parameters, typename Signature>
+class ApplyVoidFunction;
+
+template<typename Parameters, typename Signature, typename Passed>
+void applyVoidFunction(typename ApplyVoidFunction<Parameters, Signature>::Function function, Passed passed) {
+  (ApplyVoidFunction<Parameters, Signature>(function)).apply(passed);
+}
+
+template<typename Parameters, typename Signature>
+class ApplyMethod;
+
+template<typename Parameters, typename Signature, typename Passed>
+typename ApplyMethod<Parameters, Signature>::Return applyMethod(
+  typename ApplyMethod<Parameters, Signature>::Receiver & receiver,
+  typename ApplyMethod<Parameters, Signature>::Method method, Passed passed) {
+  return ApplyMethod<Parameters, Signature>(method).apply(receiver, passed);
+}
+
+template<typename Parameters, typename Signature, typename Passed>
+void observeMethod(typename ApplyMethod<Parameters, Signature>::Method method, Passed passed) {
+  ApplyMethod<Parameters, Signature>(method).observe(passed);
+}
+
+template<typename Parameters, typename Constructed_, typename Allocator_>
+class ApplyConstructor {
+  typedef Constructed_ (Constructor)();
+  typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
+
+  Allocator allocator;
+
+public:
+
+  typedef Constructed_ Constructed;
+
+  ApplyConstructor():
+    allocator() {}
+
+  static int arity() {
+    return 0;
+  }
+
+  template<typename Passed>
+  Constructed * apply(Passed) {
+    return new(allocator.allocate(1))Constructed();
+  }
+
+  template<typename Passed>
+  void observe(Passed) {}
+};
+
+template<typename Parameters, typename Constructor, typename Allocator, typename Passed>
+typename ApplyConstructor<Parameters, Constructor, Allocator>::Constructed * applyConstructor(Passed passed) {
+  return ApplyConstructor<Parameters, Constructor, Allocator>().apply(passed);
+}
+
+template<typename Parameters, typename Constructor, typename Allocator, typename Passed>
+void observeConstructor(Passed passed) {
+  ApplyConstructor<Parameters, Constructor, Allocator>().observe(passed);
+}
+
+$range i 0..n
+$for i [[
+$range j 0..i-1
+$var comma_typename_As = [[$for j [[, typename A$j]]]]
+$var As = [[$for j, [[A$j]]]]
+$var as = [[$for j, [[a$j]]]]
+$var Passed_passed = [[$if i == 0 [[Passed]] $else [[Passed passed]]]]
+
+/* *INDENT-OFF* */
+template<typename Parameters, typename Return_$comma_typename_As>
+class ApplyFunction<Parameters, Return_(*)($As)> {
+public:
+  typedef Return_ Return;
+  typedef Return_ (* Signature)($As);
+  typedef Return_ (* Function)([[$for j, [[
+
+    typename Parameters::template Parameter<A$j, $j>::Type
+]]]]);
+
+private:
+  Function function;
+public:
+
+  ApplyFunction(Function function):
+    function(function) {}
+
+  static int arity() {
+    return $i;
+  }
+
+  template<typename Passed>
+  Return apply($Passed_passed) {
+    return function([[$for j, [[
+
+      (typename Parameters::template Parameter<A$j, $j>()).template yield<Passed>(passed)
+]]]]);
+  }
+
+  template<typename Passed>
+  void observe($Passed_passed) {
+[[$for j [[
+    (typename Parameters::template Parameter<A$j, $j>()).template observe<Passed>(passed);
+
+]]]]
+  }
+};
+/* *INDENT-ON* */
+
+/* *INDENT-OFF* */
+template<typename Parameters$comma_typename_As>
+class ApplyVoidFunction<Parameters, void(*)($As)> {
+public:
+  typedef void (* Signature)($As);
+  typedef void (* Function)([[$for j, [[
+
+    typename Parameters::template Parameter<A$j, $j>::Type
+]]]]);
+
+private:
+  Function function;
+public:
+
+  ApplyVoidFunction(Function function):
+    function(function) {}
+
+  static int arity() {
+    return $i;
+  }
+
+  template<typename Passed>
+  void apply($Passed_passed) {
+    function([[$for j, [[
+
+      (typename Parameters::template Parameter<A$j, $j>()).template yield<Passed>(passed)
+]]]]);
+  }
+};
+/* *INDENT-ON* */
+
+/* *INDENT-OFF* */
+template<typename Parameters, typename Return_, typename Receiver_$comma_typename_As>
+class ApplyMethod<Parameters, Return_(Receiver_::*)($As)> {
+public:
+  typedef Return_ Return;
+  typedef Receiver_ Receiver;
+  typedef Return_ (Receiver_::* Signature)($As);
+  typedef Return_ (Receiver_::* Method)([[$for j, [[
+
+    typename Parameters::template Parameter<A$j, $j>::Type
+]]]]);
+
+private:
+  Method method;
+public:
+
+  ApplyMethod(Method method):
+    method(method) {}
+
+  static int arity() {
+    return $i;
+  }
+
+  template<typename Passed>
+  Return apply(Receiver & receiver, $Passed_passed) {
+    return (receiver.*method)([[$for j, [[
+
+      (typename Parameters::template Parameter<A$j, $j>()).template yield<Passed>(passed)
+]]]]);
+  }
+
+  template<typename Passed>
+  void observe($Passed_passed) {
+[[$for j [[
+    (typename Parameters::template Parameter<A$j, $j>()).template observe<Passed>(passed);
+
+]]]]
+  }
+};
+/* *INDENT-ON* */
+
+/* *INDENT-OFF* */
+template<typename Parameters, typename Allocator_, typename Constructed_$comma_typename_As>
+class ApplyConstructor<Parameters, Constructed_($As), Allocator_> {
+  typedef Constructed_ (Constructor)($As);
+  typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
+
+  Allocator allocator;
+
+public:
+
+  typedef Constructed_ Constructed;
+
+  ApplyConstructor():
+    allocator() {}
+
+  static int arity() {
+    return $i;
+  }
+
+  template<typename Passed>
+  Constructed * apply($Passed_passed) {
+    return new(allocator.allocate(1)) Constructed([[$for j, [[
+
+      (typename Parameters::template Parameter<A$j, $j>()).template yield<Passed>(passed)
+]]]]);
+  }
+
+  template<typename Passed>
+  void observe($Passed_passed) {
+[[$for j [[
+    (typename Parameters::template Parameter<A$j, $j>()).template observe<Passed>(passed);
+
+]]]]
+  }
+};
+/* *INDENT-ON* */
+
+]]
+
+}
+
+namespace i = ::sauce::internal;
+
+}
+
+#endif // SAUCE_INTERNAL_APPLY_VARIADIC_H_

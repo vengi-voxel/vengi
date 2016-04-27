@@ -5,5 +5,5 @@ fips_begin_module(io)
 		File.cpp File.h
 		IOResource.h
 	)
-	fips_deps(sdl2)
+	fips_deps(sdl2 sauce)
 fips_end_module()

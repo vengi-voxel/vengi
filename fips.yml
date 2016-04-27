@@ -1,6 +1,4 @@
 imports:
-    fips-sauce:
-        git: https://github.com/mgerhardy/fips-sauce.git
     fips-googletest:
         git: https://github.com/mgerhardy/fips-googletest.git
     fips-turbobadger:

@@ -23,7 +23,7 @@ fips_begin_module(core)
 		Tokenizer.h
 		TimeProvider.h TimeProvider.cpp
 	)
-	fips_deps(io glm ${CMAKE_DL_LIBS})
+	fips_deps(io glm ${CMAKE_DL_LIBS} sauce)
 fips_end_module()
 set_target_properties(core PROPERTIES COMPILE_FLAGS "-DRMT_ENABLED=1")
 
