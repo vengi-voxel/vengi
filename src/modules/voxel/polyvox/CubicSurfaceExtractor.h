@@ -288,8 +288,8 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 	// quads in a given list are in the same plane and facing in the same direction.
 	std::vector<std::list<Quad> > m_vecQuads[NoOfFaces];
 
-	memset(m_previousSliceVertices.getRawData(), 0xff, m_previousSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
-	memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
+	std::memset(m_previousSliceVertices.getRawData(), 0xff, m_previousSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
+	std::memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
 
 	m_vecQuads[NegativeX].resize(region.getUpperX() - region.getLowerX() + 2);
 	m_vecQuads[PositiveX].resize(region.getUpperX() - region.getLowerX() + 2);
