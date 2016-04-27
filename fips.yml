@@ -20,8 +20,10 @@ exports:
         - src/modules
         - src/modules/ui
     modules:
+        ai: src/modules/ai
         core: src/modules/core
         io: src/modules/io
+        image: src/modules/image
         video: src/modules/video
         ui: src/modules/ui
         util: src/modules/util
@@ -31,8 +33,4 @@ exports:
         noise: src/modules/noise
         backend: src/modules/backend
         frontend: src/modules/frontend
-        client: src/client
-        server: src/server
-        rcon: src/rcon
-        worldgenerator: src/worldgenerator
         commonlua: src/modules/commonlua
