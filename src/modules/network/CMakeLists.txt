@@ -7,7 +7,7 @@ fips_begin_module(network)
 		NetworkEvents.h
 		ProtocolHandlerRegistry.h
 	)
-	fips_deps(core enet)
+	fips_deps(core enet flatbuffers)
 	fips_generate(TYPE FlatC FROM definitions/Shared.fbs HEADER ../messages/Shared_generated.h)
 	fips_generate(TYPE FlatC FROM definitions/ClientMessages.fbs HEADER ../messages/ClientMessages.h)
 	fips_generate(TYPE FlatC FROM definitions/ServerMessages.fbs HEADER ../messages/ServerMessages.h)

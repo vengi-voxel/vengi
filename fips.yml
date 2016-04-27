@@ -1,6 +1,4 @@
 imports:
-    fips-flatbuffers:
-        git: https://github.com/mgerhardy/fips-flatbuffers.git
     fips-sauce:
         git: https://github.com/mgerhardy/fips-sauce.git
     fips-googletest:
