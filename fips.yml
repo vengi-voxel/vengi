@@ -1,8 +1,6 @@
 imports:
     fips-googletest:
         git: https://github.com/mgerhardy/fips-googletest.git
-    fips-turbobadger:
-        git: https://github.com/fungos/fips-turbobadger.git
 
 exports:
     header-dirs:
