@@ -92,6 +92,38 @@ macro(engine_find LIB HEADER SUFFIX VERSION)
 	unset(_PROCESSOR_ARCH)
 endmacro()
 
+macro(engine_find_header_only LIB HEADER SUFFIX VERSION)
+	string(TOUPPER ${LIB} PREFIX)
+	set(_SEARCH_PATHS
+		~/Library/Frameworks
+		/Library/Frameworks
+		/usr/local
+		/usr
+		/sw # Fink
+		/opt/local # DarwinPorts
+		/opt/csw # Blastwave
+		/opt
+	)
+	find_package(PkgConfig QUIET)
+	if (PKG_CONFIG_FOUND)
+		pkg_check_modules(_${PREFIX} "${LIB}${VERSION}")
+	endif()
+	find_path(${PREFIX}_INCLUDE_DIRS
+		NAMES ${HEADER}
+		HINTS ENV ${PREFIX}DIR
+		PATH_SUFFIXES include include/${SUFFIX} ${SUFFIX}
+		PATHS
+			${_${PREFIX}_INCLUDE_DIRS}
+			${_SEARCH_PATHS}
+	)
+	include(FindPackageHandleStandardArgs)
+	find_package_handle_standard_args(${LIB} FOUND_VAR ${PREFIX}_FOUND REQUIRED_VARS ${PREFIX}_INCLUDE_DIRS)
+	mark_as_advanced(${PREFIX}_INCLUDE_DIRS ${PREFIX}_FOUND)
+	var_global(${PREFIX}_INCLUDE_DIRS ${PREFIX}_FOUND)
+	unset(PREFIX)
+	unset(_SEARCH_PATHS)
+endmacro()
+
 #
 # Add external dependency. It will trigger a find_package and use the system wide install if found
 #
