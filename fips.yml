@@ -1,22 +1,4 @@
 exports:
     header-dirs:
-        - src/client
-        - src/server
-        - src/worldgenerator
         - src/modules
         - src/modules/ui
-    modules:
-        ai: src/modules/ai
-        core: src/modules/core
-        io: src/modules/io
-        image: src/modules/image
-        video: src/modules/video
-        ui: src/modules/ui
-        util: src/modules/util
-        network: src/modules/network
-        voxel: src/modules/voxel
-        attrib: src/modules/attrib
-        noise: src/modules/noise
-        backend: src/modules/backend
-        frontend: src/modules/frontend
-        commonlua: src/modules/commonlua
