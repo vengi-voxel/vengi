@@ -7,8 +7,6 @@ imports:
         git: https://github.com/mgerhardy/fips-googletest.git
     fips-turbobadger:
         git: https://github.com/fungos/fips-turbobadger.git
-    fips-stb:
-        git: https://github.com/fungos/fips-stb.git
 
 exports:
     header-dirs:
