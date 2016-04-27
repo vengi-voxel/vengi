@@ -10,17 +10,17 @@
 
 namespace voxel {
 
-/// Decodes a position from a CubicVertex
+/** Decodes a position from a CubicVertex */
 inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition);
 
-/// Decodes a CubicVertex by converting it into a regular Vertex which can then be directly used for rendering.
+/** Decodes a CubicVertex by converting it into a regular Vertex which can then be directly used for rendering. */
 inline Vertex decodeVertex(const CubicVertex& cubicVertex);
 
-/// Generates a cubic-style mesh from the voxel data.
+/** Generates a cubic-style mesh from the voxel data. */
 template<typename VolumeType, typename MeshType, typename IsQuadNeeded>
 void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
 
-/// Generates a cubic-style mesh from the voxel data, placing the result into a user-provided Mesh.
+/** Generates a cubic-style mesh from the voxel data, placing the result into a user-provided Mesh. */
 template<typename VolumeType, typename IsQuadNeeded>
 Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
 
@@ -166,7 +166,8 @@ int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialI
 	return -1; //Should never happen.
 }
 
-/* The CubicSurfaceExtractor creates a mesh in which each voxel appears to be rendered as a cube
+/**
+ * The CubicSurfaceExtractor creates a mesh in which each voxel appears to be rendered as a cube
  * Introduction
  *  ------------
  *  Games such as Minecraft and Voxatron have a unique graphical style in which each voxel in the world appears to be rendered
