@@ -24,15 +24,17 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 template<typename VolumeType, typename IsQuadNeeded>
 Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
 
-// This constant defines the maximum number of quads which can share a vertex in a cubic style mesh.
-//
-// We try to avoid duplicate vertices by checking whether a vertex has already been added at a given position.
-// However, it is possible that vertices have the same position but different materials. In this case, the
-// vertices are not true duplicates and both must be added to the mesh. As far as I can tell, it is possible to have
-// at most eight vertices with the same position but different materials. For example, this worst-case scenario
-// happens when we have a 2x2x2 group of voxels, all with different materials and some/all partially transparent.
-// The vertex position at the center of this group is then going to be used by all eight voxels all with different
-// materials.
+/**
+ * This constant defines the maximum number of quads which can share a vertex in a cubic style mesh.
+ *
+ * We try to avoid duplicate vertices by checking whether a vertex has already been added at a given position.
+ * However, it is possible that vertices have the same position but different materials. In this case, the
+ * vertices are not true duplicates and both must be added to the mesh. As far as I can tell, it is possible to have
+ * at most eight vertices with the same position but different materials. For example, this worst-case scenario
+ * happens when we have a 2x2x2 group of voxels, all with different materials and some/all partially transparent.
+ * The vertex position at the center of this group is then going to be used by all eight voxels all with different
+ * materials.
+ */
 const uint32_t MaxVerticesPerPosition = 8;
 
 ////////////////////////////////////////////////////////////////////////////////
