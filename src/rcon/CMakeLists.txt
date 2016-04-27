@@ -70,7 +70,7 @@ fips_begin_app(rcon windowed)
 		endif()
 	endif()
 
-	fips_deps(simpleai)
+	fips_deps(ai)
 fips_end_app()
 qt5_use_modules(rcon Widgets Gui Network)
 

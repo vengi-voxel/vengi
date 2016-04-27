@@ -73,8 +73,8 @@ fips_begin_module(backend)
 		EntityStorage.cpp EntityStorage.h
 		Entity.cpp Entity.h
 	)
-	fips_deps(network io core util voxel attrib cooldown persistence simpleai)
+	fips_deps(network io core util voxel attrib cooldown persistence ai)
 fips_end_module()
 
 gtest_suite_files(tests tests/SpawnMgrTest.cpp tests/PoiProviderTest.cpp tests/PersisterTest.cpp)
-gtest_suite_deps(tests network io core util voxel attrib cooldown persistence simpleai backend)
+gtest_suite_deps(tests backend)
