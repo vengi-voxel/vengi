@@ -21,7 +21,7 @@ out float v_ambientocclusion;
 
 void main(void) {
 	mat4 modelview = u_view * u_model;
-	vec4 pos4 = modelview * vec4(a_pos, 1.0);
+	vec4 pos4 = u_model * vec4(a_pos, 1.0);
 	v_pos = pos4.xyz;
 	// TODO: use a_pos.w to encode the ao for each vertex - per voxel is not enough
 	v_ambientocclusion = 1.0; //clamp(float(a_materialdensity.y) / 255.0, 0.0, 1.0);
