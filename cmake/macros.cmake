@@ -196,16 +196,16 @@ set(GOOGLETESTDIR ${CMAKE_CURRENT_LIST_DIR})
 #   Begin defining a unit test suite.
 #
 macro(gtest_suite_begin name)
-    set(options NO_TEMPLATE)
-    set(oneValueArgs TEMPLATE)
-    set(multiValueArgs)
-    cmake_parse_arguments(${name} "${options}" "${oneValueArgs}" "" ${ARGN})
+	set(options NO_TEMPLATE)
+	set(oneValueArgs TEMPLATE)
+	set(multiValueArgs)
+	cmake_parse_arguments(${name} "${options}" "${oneValueArgs}" "" ${ARGN})
 
-    if (${name}_UNPARSED_ARGUMENTS)
-        message(FATAL_ERROR "gtest_suite_begin(): called with invalid args '${${name}_UNPARSED_ARGUMENTS}'")
-    endif()
-    set_property(GLOBAL PROPERTY ${name}_Sources "")
-    set_property(GLOBAL PROPERTY ${name}_Deps "")
+	if (${name}_UNPARSED_ARGUMENTS)
+		message(FATAL_ERROR "gtest_suite_begin(): called with invalid args '${${name}_UNPARSED_ARGUMENTS}'")
+	endif()
+	set_property(GLOBAL PROPERTY ${name}_Sources "")
+	set_property(GLOBAL PROPERTY ${name}_Deps "")
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -213,13 +213,13 @@ endmacro()
 #   Adds files to a test suite
 #
 macro(gtest_suite_files name)
-    set(ARG_LIST ${ARGV})
-    list(REMOVE_AT ARG_LIST 0)
-    get_property(list GLOBAL PROPERTY ${name}_Sources)
-    foreach(entry ${ARG_LIST})
-        list(APPEND list ${CMAKE_CURRENT_SOURCE_DIR}/${entry})
-    endforeach()
-    set_property(GLOBAL PROPERTY ${name}_Sources ${list})
+	set(ARG_LIST ${ARGV})
+	list(REMOVE_AT ARG_LIST 0)
+	get_property(list GLOBAL PROPERTY ${name}_Sources)
+	foreach(entry ${ARG_LIST})
+		list(APPEND list ${CMAKE_CURRENT_SOURCE_DIR}/${entry})
+	endforeach()
+	set_property(GLOBAL PROPERTY ${name}_Sources ${list})
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -227,11 +227,11 @@ endmacro()
 #   Adds files to a test suite
 #
 macro(gtest_suite_deps name)
-    set(ARG_LIST ${ARGV})
-    list(REMOVE_AT ARG_LIST 0)
-    get_property(list GLOBAL PROPERTY ${name}_Deps)
-    list(APPEND list ${ARG_LIST})
-    set_property(GLOBAL PROPERTY ${name}_Deps ${list})
+	set(ARG_LIST ${ARGV})
+	list(REMOVE_AT ARG_LIST 0)
+	get_property(list GLOBAL PROPERTY ${name}_Deps)
+	list(APPEND list ${ARG_LIST})
+	set_property(GLOBAL PROPERTY ${name}_Deps ${list})
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -239,28 +239,28 @@ endmacro()
 #   End defining a unittest suite
 #
 macro(gtest_suite_end name)
-    project(${name} cmdline)
-    get_property(srcs GLOBAL PROPERTY ${name}_Sources)
-    get_property(deps GLOBAL PROPERTY ${name}_Deps)
+	project(${name} cmdline)
+	get_property(srcs GLOBAL PROPERTY ${name}_Sources)
+	get_property(deps GLOBAL PROPERTY ${name}_Deps)
 
-    if (NOT ${name}_NO_TEMPLATE)
-        set(main_path ${CMAKE_CURRENT_BINARY_DIR}/${name}_main.cpp)
-        if (${name}_TEMPLATE)
-            configure_file(${${name}_TEMPLATE} ${main_path})
-        else()
-            configure_file(${FIPS_GOOGLETESTDIR}/main.cpp.in ${main_path})
-        endif()
-        list(APPEND srcs ${main_path})
-    endif()
+	if (NOT ${name}_NO_TEMPLATE)
+		set(main_path ${CMAKE_CURRENT_BINARY_DIR}/${name}_main.cpp)
+		if (${name}_TEMPLATE)
+			configure_file(${${name}_TEMPLATE} ${main_path})
+		else()
+			configure_file(${FIPS_GOOGLETESTDIR}/main.cpp.in ${main_path})
+		endif()
+		list(APPEND srcs ${main_path})
+	endif()
 
-    add_executable(${name} ${srcs})
-    # add googletest lib dependency
-    target_link_libraries(${name} gtest ${deps})
-    # generate a command line app
-    set_target_properties(${name} PROPERTIES FOLDER "tests")
+	add_executable(${name} ${srcs})
+	# add googletest lib dependency
+	target_link_libraries(${name} gtest ${deps})
+	# generate a command line app
+	set_target_properties(${name} PROPERTIES FOLDER "tests")
 
-    # add as cmake unit test
-    add_test(NAME ${name} COMMAND ${name})
+	# add as cmake unit test
+	add_test(NAME ${name} COMMAND ${name})
 endmacro()
 
 #
