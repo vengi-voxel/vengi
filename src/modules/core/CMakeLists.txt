@@ -26,7 +26,8 @@ set(LIB core)
 add_library(${LIB} ${SRCS})
 target_link_libraries(${LIB} io glm ${CMAKE_DL_LIBS} sauce)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
-set_target_properties(${LIB} PROPERTIES COMPILE_FLAGS "-DRMT_ENABLED=1")
+# TODO: add option for enable/disable this
+set_target_properties(${LIB} PROPERTIES COMPILE_FLAGS "-DRMT_ENABLED=0")
 
 gtest_suite_files(tests
 	tests/AbstractTest.cpp
