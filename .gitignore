@@ -1,7 +1,3 @@
 *.pyc
 /build
-/client
-/server
-/shapetool
-/shadertool
 /.project
