@@ -67,7 +67,7 @@ if (HAVE_FLAG_SANITIZE_LEAK)
 endif()
 
 if (HAVE_FLAG_SANITIZE_THREAD)
-	set(SANITIZE_FLAGS "${SANITIZE_FLAGS} -fsanitize=thread")
+#	set(SANITIZE_FLAGS "${SANITIZE_FLAGS} -fsanitize=thread")
 	message("Support thread sanitizer")
 endif()
 
