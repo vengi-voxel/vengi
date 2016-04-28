@@ -1,80 +1,48 @@
-fips_begin_module(backend)
-	fips_dir(spawn)
-	fips_files(
-		SpawnMgr.cpp SpawnMgr.h
-	)
+set(SRCS
+	spawn/SpawnMgr.cpp spawn/SpawnMgr.h
+	loop/ServerLoop.cpp loop/ServerLoop.h
+	entity/ai/AICharacter.cpp entity/ai/AICharacter.h
+	entity/ai/AIRegistry.cpp entity/ai/AIRegistry.h
+	entity/ai/AILoader.h
+	network/UserConnectHandler.cpp network/UserConnectHandler.h
+	network/UserDisconnectHandler.h
+	network/AttackHandler.h
+	network/ServerNetworkModule.h
+	network/MoveHandler.h
+	network/IUserProtocolHandler.h
+	entity/ai/condition/IsCloseToSelection.h
+	entity/ai/condition/IsSelectionAlive.h
+	entity/ai/condition/IsOnCooldown.h
+	entity/ai/action/Task.h
+	entity/ai/action/GoHome.h
+	entity/ai/action/Spawn.h
+	entity/ai/action/Die.h
+	entity/ai/action/SetPointOfInterest.h
+	entity/ai/action/AttackOnSelection.h
+	entity/ai/action/TriggerCooldown.cpp entity/ai/action/TriggerCooldown.h
+	entity/ai/action/TriggerCooldownOnSelection.cpp entity/ai/action/TriggerCooldownOnSelection.h
+	entity/ai/filter/SelectPrey.cpp entity/ai/filter/SelectPrey.h
+	entity/ai/filter/SelectVisible.cpp entity/ai/filter/SelectVisible.h
+	entity/ai/filter/SelectIncreasePartner.cpp entity/ai/filter/SelectIncreasePartner.h
+	entity/ai/filter/SelectNpcsOfTypes.h
+	storage/UserStore.cpp storage/UserStore.h
+	storage/Persister.cpp storage/Persister.h
+	storage/StoreCmd.cpp storage/StoreCmd.h
+	poi/PoiProvider.cpp poi/PoiProvider.h
+	entity/Npc.cpp entity/Npc.h
+	entity/User.cpp entity/User.h
+	entity/EntityId.h
+	entity/EntityStorage.cpp entity/EntityStorage.h
+	entity/Entity.cpp entity/Entity.h
+)
+set(LIB backend)
+add_library(${LIB} ${SRCS})
+target_link_libraries(${LIB} network io core util voxel attrib cooldown persistence ai)
+set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
-	fips_dir(loop)
-	fips_files(
-		ServerLoop.cpp ServerLoop.h
-	)
-
-	fips_dir(entity/ai)
-	fips_files(
-		AICharacter.cpp AICharacter.h
-		AIRegistry.cpp AIRegistry.h
-		AILoader.h
-	)
-
-	fips_dir(network)
-	fips_files(
-		UserConnectHandler.cpp UserConnectHandler.h
-		UserDisconnectHandler.h
-		AttackHandler.h
-		ServerNetworkModule.h
-		MoveHandler.h
-		IUserProtocolHandler.h
-	)
-
-	fips_dir(entity/ai/condition)
-	fips_files(
-		IsCloseToSelection.h
-		IsSelectionAlive.h
-		IsOnCooldown.h
-	)
-
-	fips_dir(entity/ai/action)
-	fips_files(
-		Task.h
-		GoHome.h
-		Spawn.h
-		Die.h
-		SetPointOfInterest.h
-		AttackOnSelection.h
-		TriggerCooldown.cpp TriggerCooldown.h
-		TriggerCooldownOnSelection.cpp TriggerCooldownOnSelection.h
-	)
-
-	fips_dir(entity/ai/filter)
-	fips_files(
-		SelectPrey.cpp SelectPrey.h
-		SelectVisible.cpp SelectVisible.h
-		SelectIncreasePartner.cpp SelectIncreasePartner.h
-		SelectNpcsOfTypes.h
-	)
-
-	fips_dir(storage)
-	fips_files(
-		UserStore.cpp UserStore.h
-		Persister.cpp Persister.h
-		StoreCmd.cpp StoreCmd.h
-	)
-
-	fips_dir(poi)
-	fips_files(
-		PoiProvider.cpp PoiProvider.h
-	)
-
-	fips_dir(entity)
-	fips_files(
-		Npc.cpp Npc.h
-		User.cpp User.h
-		EntityId.h
-		EntityStorage.cpp EntityStorage.h
-		Entity.cpp Entity.h
-	)
-	fips_deps(network io core util voxel attrib cooldown persistence ai)
-fips_end_module()
-
-gtest_suite_files(tests tests/SpawnMgrTest.cpp tests/PoiProviderTest.cpp tests/PersisterTest.cpp)
-gtest_suite_deps(tests backend)
+gtest_suite_files(tests
+	tests/SpawnMgrTest.cpp
+	tests/PoiProviderTest.cpp
+	tests/PersisterTest.cpp
+)
+gtest_suite_deps(tests ${LIB})

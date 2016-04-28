@@ -82,10 +82,13 @@ void observeConstructor(Passed passed) {
   ApplyConstructor<Parameters, Constructor, Allocator>().observe(passed);
 }
 
+// 0
+
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_>
 class ApplyFunction<Parameters, Return_(*)()> {
 public:
+
   typedef Return_ Return;
   typedef Return_ (* Signature)();
   typedef Return_ (* Function)();
@@ -103,6 +106,7 @@ public:
 
   template<typename Passed>
   Return apply(Passed) {
+
     return function();
   }
 
@@ -132,6 +136,7 @@ public:
 
   template<typename Passed>
   void apply(Passed) {
+
     function();
   }
 };
@@ -159,6 +164,7 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed) {
+
     return (receiver.*method)();
   }
 
@@ -189,6 +195,7 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed) {
+
     return new(allocator.allocate(1)) Constructed();
   }
 
@@ -198,14 +205,18 @@ public:
 };
 /* *INDENT-ON* */
 
+// 1
+
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_, typename A0>
 class ApplyFunction<Parameters, Return_(*)(A0)> {
 public:
+
   typedef Return_ Return;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
   typedef Return_ (* Signature)(A0);
   typedef Return_ (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type);
+    typename P0::Type);
 
 private:
   Function function;
@@ -220,13 +231,14 @@ public:
 
   template<typename Passed>
   Return apply(Passed passed) {
-    return function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+
+    return function(a0);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -235,9 +247,10 @@ public:
 template<typename Parameters, typename A0>
 class ApplyVoidFunction<Parameters, void(*)(A0)> {
 public:
+  typedef typename Parameters::template Parameter<A0, 0> P0;
   typedef void (* Signature)(A0);
   typedef void (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type);
+    typename P0::Type);
 
 private:
   Function function;
@@ -252,8 +265,9 @@ public:
 
   template<typename Passed>
   void apply(Passed passed) {
-    function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+
+    function(a0);
   }
 };
 /* *INDENT-ON* */
@@ -264,9 +278,10 @@ class ApplyMethod<Parameters, Return_(Receiver_::*)(A0)> {
 public:
   typedef Return_ Return;
   typedef Receiver_ Receiver;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
   typedef Return_ (Receiver_::* Signature)(A0);
   typedef Return_ (Receiver_::* Method)(
-    typename Parameters::template Parameter<A0, 0>::Type);
+    typename P0::Type);
 
 private:
   Method method;
@@ -281,13 +296,14 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed passed) {
-    return (receiver.*method)(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+
+    return (receiver.*method)(a0);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -296,6 +312,7 @@ public:
 template<typename Parameters, typename Allocator_, typename Constructed_, typename A0>
 class ApplyConstructor<Parameters, Constructed_(A0), Allocator_> {
   typedef Constructed_ (Constructor)(A0);
+  typedef typename Parameters::template Parameter<A0, 0> P0;
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -313,26 +330,32 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed passed) {
-    return new(allocator.allocate(1)) Constructed(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+
+    return new(allocator.allocate(1)) Constructed(a0);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
+
+// 2
 
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_, typename A0, typename A1>
 class ApplyFunction<Parameters, Return_(*)(A0, A1)> {
 public:
+
   typedef Return_ Return;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
   typedef Return_ (* Signature)(A0, A1);
   typedef Return_ (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type);
+    typename P0::Type,
+    typename P1::Type);
 
 private:
   Function function;
@@ -347,15 +370,16 @@ public:
 
   template<typename Passed>
   Return apply(Passed passed) {
-    return function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+
+    return function(a0, a1);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -364,10 +388,12 @@ public:
 template<typename Parameters, typename A0, typename A1>
 class ApplyVoidFunction<Parameters, void(*)(A0, A1)> {
 public:
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
   typedef void (* Signature)(A0, A1);
   typedef void (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type);
+    typename P0::Type,
+    typename P1::Type);
 
 private:
   Function function;
@@ -382,9 +408,10 @@ public:
 
   template<typename Passed>
   void apply(Passed passed) {
-    function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+
+    function(a0, a1);
   }
 };
 /* *INDENT-ON* */
@@ -395,10 +422,12 @@ class ApplyMethod<Parameters, Return_(Receiver_::*)(A0, A1)> {
 public:
   typedef Return_ Return;
   typedef Receiver_ Receiver;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
   typedef Return_ (Receiver_::* Signature)(A0, A1);
   typedef Return_ (Receiver_::* Method)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type);
+    typename P0::Type,
+    typename P1::Type);
 
 private:
   Method method;
@@ -413,15 +442,16 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed passed) {
-    return (receiver.*method)(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+
+    return (receiver.*method)(a0, a1);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -430,6 +460,8 @@ public:
 template<typename Parameters, typename Allocator_, typename Constructed_, typename A0, typename A1>
 class ApplyConstructor<Parameters, Constructed_(A0, A1), Allocator_> {
   typedef Constructed_ (Constructor)(A0, A1);
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -447,29 +479,36 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed passed) {
-    return new(allocator.allocate(1)) Constructed(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+
+    return new(allocator.allocate(1)) Constructed(a0, a1);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
+
+// 3
 
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_, typename A0, typename A1, typename A2>
 class ApplyFunction<Parameters, Return_(*)(A0, A1, A2)> {
 public:
+
   typedef Return_ Return;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
   typedef Return_ (* Signature)(A0, A1, A2);
   typedef Return_ (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type);
 
 private:
   Function function;
@@ -484,17 +523,18 @@ public:
 
   template<typename Passed>
   Return apply(Passed passed) {
-    return function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+
+    return function(a0, a1, a2);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -503,11 +543,14 @@ public:
 template<typename Parameters, typename A0, typename A1, typename A2>
 class ApplyVoidFunction<Parameters, void(*)(A0, A1, A2)> {
 public:
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
   typedef void (* Signature)(A0, A1, A2);
   typedef void (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type);
 
 private:
   Function function;
@@ -522,10 +565,11 @@ public:
 
   template<typename Passed>
   void apply(Passed passed) {
-    function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+
+    function(a0, a1, a2);
   }
 };
 /* *INDENT-ON* */
@@ -536,11 +580,14 @@ class ApplyMethod<Parameters, Return_(Receiver_::*)(A0, A1, A2)> {
 public:
   typedef Return_ Return;
   typedef Receiver_ Receiver;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
   typedef Return_ (Receiver_::* Signature)(A0, A1, A2);
   typedef Return_ (Receiver_::* Method)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type);
 
 private:
   Method method;
@@ -555,17 +602,18 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed passed) {
-    return (receiver.*method)(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+
+    return (receiver.*method)(a0, a1, a2);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -574,6 +622,9 @@ public:
 template<typename Parameters, typename Allocator_, typename Constructed_, typename A0, typename A1, typename A2>
 class ApplyConstructor<Parameters, Constructed_(A0, A1, A2), Allocator_> {
   typedef Constructed_ (Constructor)(A0, A1, A2);
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -591,32 +642,40 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed passed) {
-    return new(allocator.allocate(1)) Constructed(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+
+    return new(allocator.allocate(1)) Constructed(a0, a1, a2);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
+
+// 4
 
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_, typename A0, typename A1, typename A2, typename A3>
 class ApplyFunction<Parameters, Return_(*)(A0, A1, A2, A3)> {
 public:
+
   typedef Return_ Return;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
   typedef Return_ (* Signature)(A0, A1, A2, A3);
   typedef Return_ (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type);
 
 private:
   Function function;
@@ -631,19 +690,20 @@ public:
 
   template<typename Passed>
   Return apply(Passed passed) {
-    return function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+
+    return function(a0, a1, a2, a3);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -652,12 +712,16 @@ public:
 template<typename Parameters, typename A0, typename A1, typename A2, typename A3>
 class ApplyVoidFunction<Parameters, void(*)(A0, A1, A2, A3)> {
 public:
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
   typedef void (* Signature)(A0, A1, A2, A3);
   typedef void (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type);
 
 private:
   Function function;
@@ -672,11 +736,12 @@ public:
 
   template<typename Passed>
   void apply(Passed passed) {
-    function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+
+    function(a0, a1, a2, a3);
   }
 };
 /* *INDENT-ON* */
@@ -687,12 +752,16 @@ class ApplyMethod<Parameters, Return_(Receiver_::*)(A0, A1, A2, A3)> {
 public:
   typedef Return_ Return;
   typedef Receiver_ Receiver;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
   typedef Return_ (Receiver_::* Signature)(A0, A1, A2, A3);
   typedef Return_ (Receiver_::* Method)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type);
 
 private:
   Method method;
@@ -707,19 +776,20 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed passed) {
-    return (receiver.*method)(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+
+    return (receiver.*method)(a0, a1, a2, a3);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -729,6 +799,10 @@ template<typename Parameters, typename Allocator_, typename Constructed_, typena
     typename A3>
 class ApplyConstructor<Parameters, Constructed_(A0, A1, A2, A3), Allocator_> {
   typedef Constructed_ (Constructor)(A0, A1, A2, A3);
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -746,35 +820,44 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed passed) {
-    return new(allocator.allocate(1)) Constructed(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+
+    return new(allocator.allocate(1)) Constructed(a0, a1, a2, a3);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
+
+// 5
 
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_, typename A0, typename A1, typename A2, typename A3, typename A4>
 class ApplyFunction<Parameters, Return_(*)(A0, A1, A2, A3, A4)> {
 public:
+
   typedef Return_ Return;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
   typedef Return_ (* Signature)(A0, A1, A2, A3, A4);
   typedef Return_ (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type);
 
 private:
   Function function;
@@ -789,21 +872,22 @@ public:
 
   template<typename Passed>
   Return apply(Passed passed) {
-    return function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+
+    return function(a0, a1, a2, a3, a4);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -812,13 +896,18 @@ public:
 template<typename Parameters, typename A0, typename A1, typename A2, typename A3, typename A4>
 class ApplyVoidFunction<Parameters, void(*)(A0, A1, A2, A3, A4)> {
 public:
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
   typedef void (* Signature)(A0, A1, A2, A3, A4);
   typedef void (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type);
 
 private:
   Function function;
@@ -833,12 +922,13 @@ public:
 
   template<typename Passed>
   void apply(Passed passed) {
-    function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+
+    function(a0, a1, a2, a3, a4);
   }
 };
 /* *INDENT-ON* */
@@ -850,13 +940,18 @@ class ApplyMethod<Parameters, Return_(Receiver_::*)(A0, A1, A2, A3, A4)> {
 public:
   typedef Return_ Return;
   typedef Receiver_ Receiver;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
   typedef Return_ (Receiver_::* Signature)(A0, A1, A2, A3, A4);
   typedef Return_ (Receiver_::* Method)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type);
 
 private:
   Method method;
@@ -871,21 +966,22 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed passed) {
-    return (receiver.*method)(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+
+    return (receiver.*method)(a0, a1, a2, a3, a4);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -895,6 +991,11 @@ template<typename Parameters, typename Allocator_, typename Constructed_, typena
     typename A3, typename A4>
 class ApplyConstructor<Parameters, Constructed_(A0, A1, A2, A3, A4), Allocator_> {
   typedef Constructed_ (Constructor)(A0, A1, A2, A3, A4);
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -912,39 +1013,49 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed passed) {
-    return new(allocator.allocate(1)) Constructed(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+
+    return new(allocator.allocate(1)) Constructed(a0, a1, a2, a3, a4);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
+
+// 6
 
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_, typename A0, typename A1, typename A2, typename A3, typename A4,
     typename A5>
 class ApplyFunction<Parameters, Return_(*)(A0, A1, A2, A3, A4, A5)> {
 public:
+
   typedef Return_ Return;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
   typedef Return_ (* Signature)(A0, A1, A2, A3, A4, A5);
   typedef Return_ (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type);
 
 private:
   Function function;
@@ -959,23 +1070,24 @@ public:
 
   template<typename Passed>
   Return apply(Passed passed) {
-    return function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+
+    return function(a0, a1, a2, a3, a4, a5);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -984,14 +1096,20 @@ public:
 template<typename Parameters, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
 class ApplyVoidFunction<Parameters, void(*)(A0, A1, A2, A3, A4, A5)> {
 public:
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
   typedef void (* Signature)(A0, A1, A2, A3, A4, A5);
   typedef void (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type);
 
 private:
   Function function;
@@ -1006,13 +1124,14 @@ public:
 
   template<typename Passed>
   void apply(Passed passed) {
-    function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+
+    function(a0, a1, a2, a3, a4, a5);
   }
 };
 /* *INDENT-ON* */
@@ -1024,14 +1143,20 @@ class ApplyMethod<Parameters, Return_(Receiver_::*)(A0, A1, A2, A3, A4, A5)> {
 public:
   typedef Return_ Return;
   typedef Receiver_ Receiver;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
   typedef Return_ (Receiver_::* Signature)(A0, A1, A2, A3, A4, A5);
   typedef Return_ (Receiver_::* Method)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type);
 
 private:
   Method method;
@@ -1046,23 +1171,24 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed passed) {
-    return (receiver.*method)(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+
+    return (receiver.*method)(a0, a1, a2, a3, a4, a5);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -1072,6 +1198,12 @@ template<typename Parameters, typename Allocator_, typename Constructed_, typena
     typename A3, typename A4, typename A5>
 class ApplyConstructor<Parameters, Constructed_(A0, A1, A2, A3, A4, A5), Allocator_> {
   typedef Constructed_ (Constructor)(A0, A1, A2, A3, A4, A5);
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -1089,42 +1221,53 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed passed) {
-    return new(allocator.allocate(1)) Constructed(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+
+    return new(allocator.allocate(1)) Constructed(a0, a1, a2, a3, a4, a5);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
+
+// 7
 
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_, typename A0, typename A1, typename A2, typename A3, typename A4,
     typename A5, typename A6>
 class ApplyFunction<Parameters, Return_(*)(A0, A1, A2, A3, A4, A5, A6)> {
 public:
+
   typedef Return_ Return;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
   typedef Return_ (* Signature)(A0, A1, A2, A3, A4, A5, A6);
   typedef Return_ (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type);
 
 private:
   Function function;
@@ -1139,25 +1282,26 @@ public:
 
   template<typename Passed>
   Return apply(Passed passed) {
-    return function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+
+    return function(a0, a1, a2, a3, a4, a5, a6);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -1166,15 +1310,22 @@ public:
 template<typename Parameters, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
 class ApplyVoidFunction<Parameters, void(*)(A0, A1, A2, A3, A4, A5, A6)> {
 public:
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
   typedef void (* Signature)(A0, A1, A2, A3, A4, A5, A6);
   typedef void (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type);
 
 private:
   Function function;
@@ -1189,14 +1340,15 @@ public:
 
   template<typename Passed>
   void apply(Passed passed) {
-    function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+
+    function(a0, a1, a2, a3, a4, a5, a6);
   }
 };
 /* *INDENT-ON* */
@@ -1208,15 +1360,22 @@ class ApplyMethod<Parameters, Return_(Receiver_::*)(A0, A1, A2, A3, A4, A5, A6)>
 public:
   typedef Return_ Return;
   typedef Receiver_ Receiver;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
   typedef Return_ (Receiver_::* Signature)(A0, A1, A2, A3, A4, A5, A6);
   typedef Return_ (Receiver_::* Method)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type);
 
 private:
   Method method;
@@ -1231,25 +1390,26 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed passed) {
-    return (receiver.*method)(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+
+    return (receiver.*method)(a0, a1, a2, a3, a4, a5, a6);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -1259,6 +1419,13 @@ template<typename Parameters, typename Allocator_, typename Constructed_, typena
     typename A3, typename A4, typename A5, typename A6>
 class ApplyConstructor<Parameters, Constructed_(A0, A1, A2, A3, A4, A5, A6), Allocator_> {
   typedef Constructed_ (Constructor)(A0, A1, A2, A3, A4, A5, A6);
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -1276,45 +1443,57 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed passed) {
-    return new(allocator.allocate(1)) Constructed(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+
+    return new(allocator.allocate(1)) Constructed(a0, a1, a2, a3, a4, a5, a6);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
+
+// 8
 
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_, typename A0, typename A1, typename A2, typename A3, typename A4,
     typename A5, typename A6, typename A7>
 class ApplyFunction<Parameters, Return_(*)(A0, A1, A2, A3, A4, A5, A6, A7)> {
 public:
+
   typedef Return_ Return;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
   typedef Return_ (* Signature)(A0, A1, A2, A3, A4, A5, A6, A7);
   typedef Return_ (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type,
-    typename Parameters::template Parameter<A7, 7>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type,
+    typename P7::Type);
 
 private:
   Function function;
@@ -1329,27 +1508,28 @@ public:
 
   template<typename Passed>
   Return apply(Passed passed) {
-    return function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+
+    return function(a0, a1, a2, a3, a4, a5, a6, a7);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A7, 7>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
+    P7().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -1359,16 +1539,24 @@ template<typename Parameters, typename A0, typename A1, typename A2, typename A3
     typename A6, typename A7>
 class ApplyVoidFunction<Parameters, void(*)(A0, A1, A2, A3, A4, A5, A6, A7)> {
 public:
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
   typedef void (* Signature)(A0, A1, A2, A3, A4, A5, A6, A7);
   typedef void (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type,
-    typename Parameters::template Parameter<A7, 7>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type,
+    typename P7::Type);
 
 private:
   Function function;
@@ -1383,15 +1571,16 @@ public:
 
   template<typename Passed>
   void apply(Passed passed) {
-    function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+
+    function(a0, a1, a2, a3, a4, a5, a6, a7);
   }
 };
 /* *INDENT-ON* */
@@ -1403,16 +1592,24 @@ class ApplyMethod<Parameters, Return_(Receiver_::*)(A0, A1, A2, A3, A4, A5, A6, 
 public:
   typedef Return_ Return;
   typedef Receiver_ Receiver;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
   typedef Return_ (Receiver_::* Signature)(A0, A1, A2, A3, A4, A5, A6, A7);
   typedef Return_ (Receiver_::* Method)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type,
-    typename Parameters::template Parameter<A7, 7>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type,
+    typename P7::Type);
 
 private:
   Method method;
@@ -1427,27 +1624,28 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed passed) {
-    return (receiver.*method)(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+
+    return (receiver.*method)(a0, a1, a2, a3, a4, a5, a6, a7);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A7, 7>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
+    P7().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -1457,6 +1655,14 @@ template<typename Parameters, typename Allocator_, typename Constructed_, typena
     typename A3, typename A4, typename A5, typename A6, typename A7>
 class ApplyConstructor<Parameters, Constructed_(A0, A1, A2, A3, A4, A5, A6, A7), Allocator_> {
   typedef Constructed_ (Constructor)(A0, A1, A2, A3, A4, A5, A6, A7);
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -1474,48 +1680,61 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed passed) {
-    return new(allocator.allocate(1)) Constructed(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+
+    return new(allocator.allocate(1)) Constructed(a0, a1, a2, a3, a4, a5, a6, a7);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A7, 7>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
+    P7().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
+
+// 9
 
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_, typename A0, typename A1, typename A2, typename A3, typename A4,
     typename A5, typename A6, typename A7, typename A8>
 class ApplyFunction<Parameters, Return_(*)(A0, A1, A2, A3, A4, A5, A6, A7, A8)> {
 public:
+
   typedef Return_ Return;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
+  typedef typename Parameters::template Parameter<A8, 8> P8;
   typedef Return_ (* Signature)(A0, A1, A2, A3, A4, A5, A6, A7, A8);
   typedef Return_ (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type,
-    typename Parameters::template Parameter<A7, 7>::Type,
-    typename Parameters::template Parameter<A8, 8>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type,
+    typename P7::Type,
+    typename P8::Type);
 
 private:
   Function function;
@@ -1530,29 +1749,30 @@ public:
 
   template<typename Passed>
   Return apply(Passed passed) {
-    return function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A8, 8>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+    typename P8::Type const & a8(P8().template yield<Passed>(passed));
+
+    return function(a0, a1, a2, a3, a4, a5, a6, a7, a8);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A7, 7>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A8, 8>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
+    P7().template observe<Passed>(passed);
+    P8().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -1562,17 +1782,26 @@ template<typename Parameters, typename A0, typename A1, typename A2, typename A3
     typename A6, typename A7, typename A8>
 class ApplyVoidFunction<Parameters, void(*)(A0, A1, A2, A3, A4, A5, A6, A7, A8)> {
 public:
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
+  typedef typename Parameters::template Parameter<A8, 8> P8;
   typedef void (* Signature)(A0, A1, A2, A3, A4, A5, A6, A7, A8);
   typedef void (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type,
-    typename Parameters::template Parameter<A7, 7>::Type,
-    typename Parameters::template Parameter<A8, 8>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type,
+    typename P7::Type,
+    typename P8::Type);
 
 private:
   Function function;
@@ -1587,16 +1816,17 @@ public:
 
   template<typename Passed>
   void apply(Passed passed) {
-    function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A8, 8>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+    typename P8::Type const & a8(P8().template yield<Passed>(passed));
+
+    function(a0, a1, a2, a3, a4, a5, a6, a7, a8);
   }
 };
 /* *INDENT-ON* */
@@ -1608,17 +1838,26 @@ class ApplyMethod<Parameters, Return_(Receiver_::*)(A0, A1, A2, A3, A4, A5, A6, 
 public:
   typedef Return_ Return;
   typedef Receiver_ Receiver;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
+  typedef typename Parameters::template Parameter<A8, 8> P8;
   typedef Return_ (Receiver_::* Signature)(A0, A1, A2, A3, A4, A5, A6, A7, A8);
   typedef Return_ (Receiver_::* Method)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type,
-    typename Parameters::template Parameter<A7, 7>::Type,
-    typename Parameters::template Parameter<A8, 8>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type,
+    typename P7::Type,
+    typename P8::Type);
 
 private:
   Method method;
@@ -1633,29 +1872,30 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed passed) {
-    return (receiver.*method)(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A8, 8>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+    typename P8::Type const & a8(P8().template yield<Passed>(passed));
+
+    return (receiver.*method)(a0, a1, a2, a3, a4, a5, a6, a7, a8);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A7, 7>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A8, 8>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
+    P7().template observe<Passed>(passed);
+    P8().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -1665,6 +1905,15 @@ template<typename Parameters, typename Allocator_, typename Constructed_, typena
     typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
 class ApplyConstructor<Parameters, Constructed_(A0, A1, A2, A3, A4, A5, A6, A7, A8), Allocator_> {
   typedef Constructed_ (Constructor)(A0, A1, A2, A3, A4, A5, A6, A7, A8);
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
+  typedef typename Parameters::template Parameter<A8, 8> P8;
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -1682,51 +1931,65 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed passed) {
-    return new(allocator.allocate(1)) Constructed(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A8, 8>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+    typename P8::Type const & a8(P8().template yield<Passed>(passed));
+
+    return new(allocator.allocate(1)) Constructed(a0, a1, a2, a3, a4, a5, a6, a7, a8);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A7, 7>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A8, 8>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
+    P7().template observe<Passed>(passed);
+    P8().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
+
+// 10
 
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_, typename A0, typename A1, typename A2, typename A3, typename A4,
     typename A5, typename A6, typename A7, typename A8, typename A9>
 class ApplyFunction<Parameters, Return_(*)(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9)> {
 public:
+
   typedef Return_ Return;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
+  typedef typename Parameters::template Parameter<A8, 8> P8;
+  typedef typename Parameters::template Parameter<A9, 9> P9;
   typedef Return_ (* Signature)(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9);
   typedef Return_ (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type,
-    typename Parameters::template Parameter<A7, 7>::Type,
-    typename Parameters::template Parameter<A8, 8>::Type,
-    typename Parameters::template Parameter<A9, 9>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type,
+    typename P7::Type,
+    typename P8::Type,
+    typename P9::Type);
 
 private:
   Function function;
@@ -1741,31 +2004,32 @@ public:
 
   template<typename Passed>
   Return apply(Passed passed) {
-    return function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A8, 8>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A9, 9>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+    typename P8::Type const & a8(P8().template yield<Passed>(passed));
+    typename P9::Type const & a9(P9().template yield<Passed>(passed));
+
+    return function(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A7, 7>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A8, 8>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A9, 9>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
+    P7().template observe<Passed>(passed);
+    P8().template observe<Passed>(passed);
+    P9().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -1775,18 +2039,28 @@ template<typename Parameters, typename A0, typename A1, typename A2, typename A3
     typename A6, typename A7, typename A8, typename A9>
 class ApplyVoidFunction<Parameters, void(*)(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9)> {
 public:
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
+  typedef typename Parameters::template Parameter<A8, 8> P8;
+  typedef typename Parameters::template Parameter<A9, 9> P9;
   typedef void (* Signature)(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9);
   typedef void (* Function)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type,
-    typename Parameters::template Parameter<A7, 7>::Type,
-    typename Parameters::template Parameter<A8, 8>::Type,
-    typename Parameters::template Parameter<A9, 9>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type,
+    typename P7::Type,
+    typename P8::Type,
+    typename P9::Type);
 
 private:
   Function function;
@@ -1801,17 +2075,18 @@ public:
 
   template<typename Passed>
   void apply(Passed passed) {
-    function(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A8, 8>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A9, 9>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+    typename P8::Type const & a8(P8().template yield<Passed>(passed));
+    typename P9::Type const & a9(P9().template yield<Passed>(passed));
+
+    function(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
   }
 };
 /* *INDENT-ON* */
@@ -1823,18 +2098,28 @@ class ApplyMethod<Parameters, Return_(Receiver_::*)(A0, A1, A2, A3, A4, A5, A6, 
 public:
   typedef Return_ Return;
   typedef Receiver_ Receiver;
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
+  typedef typename Parameters::template Parameter<A8, 8> P8;
+  typedef typename Parameters::template Parameter<A9, 9> P9;
   typedef Return_ (Receiver_::* Signature)(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9);
   typedef Return_ (Receiver_::* Method)(
-    typename Parameters::template Parameter<A0, 0>::Type,
-    typename Parameters::template Parameter<A1, 1>::Type,
-    typename Parameters::template Parameter<A2, 2>::Type,
-    typename Parameters::template Parameter<A3, 3>::Type,
-    typename Parameters::template Parameter<A4, 4>::Type,
-    typename Parameters::template Parameter<A5, 5>::Type,
-    typename Parameters::template Parameter<A6, 6>::Type,
-    typename Parameters::template Parameter<A7, 7>::Type,
-    typename Parameters::template Parameter<A8, 8>::Type,
-    typename Parameters::template Parameter<A9, 9>::Type);
+    typename P0::Type,
+    typename P1::Type,
+    typename P2::Type,
+    typename P3::Type,
+    typename P4::Type,
+    typename P5::Type,
+    typename P6::Type,
+    typename P7::Type,
+    typename P8::Type,
+    typename P9::Type);
 
 private:
   Method method;
@@ -1849,31 +2134,32 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, Passed passed) {
-    return (receiver.*method)(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A8, 8>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A9, 9>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+    typename P8::Type const & a8(P8().template yield<Passed>(passed));
+    typename P9::Type const & a9(P9().template yield<Passed>(passed));
+
+    return (receiver.*method)(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A7, 7>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A8, 8>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A9, 9>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
+    P7().template observe<Passed>(passed);
+    P8().template observe<Passed>(passed);
+    P9().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */
@@ -1883,6 +2169,16 @@ template<typename Parameters, typename Allocator_, typename Constructed_, typena
     typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9>
 class ApplyConstructor<Parameters, Constructed_(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9), Allocator_> {
   typedef Constructed_ (Constructor)(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9);
+  typedef typename Parameters::template Parameter<A0, 0> P0;
+  typedef typename Parameters::template Parameter<A1, 1> P1;
+  typedef typename Parameters::template Parameter<A2, 2> P2;
+  typedef typename Parameters::template Parameter<A3, 3> P3;
+  typedef typename Parameters::template Parameter<A4, 4> P4;
+  typedef typename Parameters::template Parameter<A5, 5> P5;
+  typedef typename Parameters::template Parameter<A6, 6> P6;
+  typedef typename Parameters::template Parameter<A7, 7> P7;
+  typedef typename Parameters::template Parameter<A8, 8> P8;
+  typedef typename Parameters::template Parameter<A9, 9> P9;
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -1900,31 +2196,32 @@ public:
 
   template<typename Passed>
   Constructed * apply(Passed passed) {
-    return new(allocator.allocate(1)) Constructed(
-      (typename Parameters::template Parameter<A0, 0>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A1, 1>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A2, 2>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A3, 3>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A4, 4>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A5, 5>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A6, 6>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A7, 7>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A8, 8>()).template yield<Passed>(passed),
-      (typename Parameters::template Parameter<A9, 9>()).template yield<Passed>(passed));
+    typename P0::Type const & a0(P0().template yield<Passed>(passed));
+    typename P1::Type const & a1(P1().template yield<Passed>(passed));
+    typename P2::Type const & a2(P2().template yield<Passed>(passed));
+    typename P3::Type const & a3(P3().template yield<Passed>(passed));
+    typename P4::Type const & a4(P4().template yield<Passed>(passed));
+    typename P5::Type const & a5(P5().template yield<Passed>(passed));
+    typename P6::Type const & a6(P6().template yield<Passed>(passed));
+    typename P7::Type const & a7(P7().template yield<Passed>(passed));
+    typename P8::Type const & a8(P8().template yield<Passed>(passed));
+    typename P9::Type const & a9(P9().template yield<Passed>(passed));
+
+    return new(allocator.allocate(1)) Constructed(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
   }
 
   template<typename Passed>
   void observe(Passed passed) {
-    (typename Parameters::template Parameter<A0, 0>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A1, 1>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A2, 2>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A3, 3>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A4, 4>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A5, 5>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A6, 6>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A7, 7>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A8, 8>()).template observe<Passed>(passed);
-    (typename Parameters::template Parameter<A9, 9>()).template observe<Passed>(passed);
+    P0().template observe<Passed>(passed);
+    P1().template observe<Passed>(passed);
+    P2().template observe<Passed>(passed);
+    P3().template observe<Passed>(passed);
+    P4().template observe<Passed>(passed);
+    P5().template observe<Passed>(passed);
+    P6().template observe<Passed>(passed);
+    P7().template observe<Passed>(passed);
+    P8().template observe<Passed>(passed);
+    P9().template observe<Passed>(passed);
   }
 };
 /* *INDENT-ON* */

@@ -1,5 +1,5 @@
 #include "Client.h"
-#include "network/messages/ClientMessages.h"
+#include "network/messages/ClientMessages_generated.h"
 #include "ui/LoginWindow.h"
 #include "ui/DisconnectWindow.h"
 #include "ui/AuthFailedWindow.h"

@@ -1,4 +1,24 @@
+find_package(SDL2)
+
 set(SDL2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+# General source files
+file(GLOB SOURCE_FILES
+  ${SDL2_SOURCE_DIR}/src/*.c
+  ${SDL2_SOURCE_DIR}/src/atomic/*.c
+  ${SDL2_SOURCE_DIR}/src/audio/*.c
+  ${SDL2_SOURCE_DIR}/src/cpuinfo/*.c
+  ${SDL2_SOURCE_DIR}/src/dynapi/*.c
+  ${SDL2_SOURCE_DIR}/src/events/*.c
+  ${SDL2_SOURCE_DIR}/src/file/*.c
+  ${SDL2_SOURCE_DIR}/src/libm/*.c
+  ${SDL2_SOURCE_DIR}/src/render/*.c
+  ${SDL2_SOURCE_DIR}/src/render/*/*.c
+  ${SDL2_SOURCE_DIR}/src/stdlib/*.c
+  ${SDL2_SOURCE_DIR}/src/thread/*.c
+  ${SDL2_SOURCE_DIR}/src/timer/*.c
+  ${SDL2_SOURCE_DIR}/src/video/*.c)
+
+if (NOT SDL2_FOUND)
 
 include(CheckFunctionExists)
 include(CheckLibraryExists)
@@ -299,22 +319,6 @@ set(SDL_STATIC ON CACHE BOOL "Build a static version of the library")
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" OFF "SDL_STATIC" OFF)
 
-# General source files
-file(GLOB SOURCE_FILES
-  ${SDL2_SOURCE_DIR}/src/*.c
-  ${SDL2_SOURCE_DIR}/src/atomic/*.c
-  ${SDL2_SOURCE_DIR}/src/audio/*.c
-  ${SDL2_SOURCE_DIR}/src/cpuinfo/*.c
-  ${SDL2_SOURCE_DIR}/src/dynapi/*.c
-  ${SDL2_SOURCE_DIR}/src/events/*.c
-  ${SDL2_SOURCE_DIR}/src/file/*.c
-  ${SDL2_SOURCE_DIR}/src/libm/*.c
-  ${SDL2_SOURCE_DIR}/src/render/*.c
-  ${SDL2_SOURCE_DIR}/src/render/*/*.c
-  ${SDL2_SOURCE_DIR}/src/stdlib/*.c
-  ${SDL2_SOURCE_DIR}/src/thread/*.c
-  ${SDL2_SOURCE_DIR}/src/timer/*.c
-  ${SDL2_SOURCE_DIR}/src/video/*.c)
 
 
 if(ASSERTIONS STREQUAL "auto")
@@ -1471,6 +1475,8 @@ if (LINUX OR EMSCRIPTEN)
 else()
 	set(DEFINES "")
 endif()
+
+endif(NOT SDL2_FOUND)
 
 engine_add_library(
 	LIB sdl2

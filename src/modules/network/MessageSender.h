@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Network.h"
-#include "messages/ServerMessages.h"
-#include "messages/ClientMessages.h"
+#include "messages/ServerMessages_generated.h"
+#include "messages/ClientMessages_generated.h"
 #include <memory>
 
 using namespace network::messages::server;

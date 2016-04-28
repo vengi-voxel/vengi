@@ -1,11 +1,14 @@
-fips_begin_module(cooldown)
-	fips_files(
-		CooldownMgr.h CooldownMgr.cpp
-		CooldownType.h
-		CooldownTriggerState.h
-	)
-	fips_deps(core)
-fips_end_module()
+set(SRCS
+	CooldownMgr.h CooldownMgr.cpp
+	CooldownType.h
+	CooldownTriggerState.h
+)
+set(LIB cooldown)
+add_library(${LIB} ${SRCS})
+target_link_libraries(${LIB} core)
+set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
-gtest_suite_files(tests tests/CooldownMgrTest.cpp)
-gtest_suite_deps(tests cooldown)
+gtest_suite_files(tests
+	tests/CooldownMgrTest.cpp
+)
+gtest_suite_deps(tests ${LIB})

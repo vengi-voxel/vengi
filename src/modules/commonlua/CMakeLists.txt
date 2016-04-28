@@ -1,9 +1,12 @@
-fips_begin_module(commonlua)
-	fips_files(
-		LUA.h LUA.cpp
-	)
-	fips_deps(core lua53)
-fips_end_module()
+set(SRCS
+	LUA.h LUA.cpp
+)
+set(LIB commonlua)
+add_library(${LIB} ${SRCS})
+target_link_libraries(${LIB} core lua53)
+set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
-gtest_suite_files(tests tests/LUATest.cpp)
-gtest_suite_deps(tests commonlua)
+gtest_suite_files(tests
+	tests/LUATest.cpp
+)
+gtest_suite_deps(tests ${LIB})

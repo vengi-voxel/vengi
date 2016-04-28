@@ -135,7 +135,6 @@ public:
 
   template<typename Dependency>
   void inject(typename i::Key<Dependency>::Ptr & injected, std::string const name = unnamed()) {
-    typedef typename i::Key<Dependency>::Ptr Ptr;
     typedef typename i::Key<Dependency>::Normalized Normalized;
 
     sauce::auto_ptr<i::Lock> lock = acquireLock();

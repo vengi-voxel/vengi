@@ -1,16 +1,11 @@
-fips_begin_app(server cmdline)
-	fips_files(
-		Server.cpp Server.h
-	)
-
-	fips_dir(sauce)
-	fips_files(
-		ServerModule.h
-		ServerInjector.h
-	)
-
-	fips_deps(backend)
-	copy_data_files(server)
-fips_end_app()
+project(server)
+set(SRCS
+	Server.cpp Server.h
+	sauce/ServerModule.h
+	sauce/ServerInjector.h
+)
+engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS})
+target_link_libraries(${PROJECT_NAME} backend)
+copy_data_files(${PROJECT_NAME})
 check_lua_files(server behaviourtrees.lua)
 check_lua_files(server attributes.lua)

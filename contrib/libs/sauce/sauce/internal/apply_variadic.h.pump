@@ -89,15 +89,22 @@ $var As = [[$for j, [[A$j]]]]
 $var as = [[$for j, [[a$j]]]]
 $var Passed_passed = [[$if i == 0 [[Passed]] $else [[Passed passed]]]]
 
+// $i
+
 /* *INDENT-OFF* */
 template<typename Parameters, typename Return_$comma_typename_As>
 class ApplyFunction<Parameters, Return_(*)($As)> {
 public:
-  typedef Return_ Return;
+
+  typedef Return_ Return;[[$for j [[
+
+  typedef typename Parameters::template Parameter<A$j, $j> P$j;
+]]]]
+
   typedef Return_ (* Signature)($As);
   typedef Return_ (* Function)([[$for j, [[
 
-    typename Parameters::template Parameter<A$j, $j>::Type
+    typename P$j::Type
 ]]]]);
 
 private:
@@ -113,16 +120,18 @@ public:
 
   template<typename Passed>
   Return apply($Passed_passed) {
-    return function([[$for j, [[
+[[$for j [[
+    typename P$j::Type const & a$j(P$j().template yield<Passed>(passed));
 
-      (typename Parameters::template Parameter<A$j, $j>()).template yield<Passed>(passed)
-]]]]);
+]]]]
+
+    return function($as);
   }
 
   template<typename Passed>
   void observe($Passed_passed) {
 [[$for j [[
-    (typename Parameters::template Parameter<A$j, $j>()).template observe<Passed>(passed);
+    P$j().template observe<Passed>(passed);
 
 ]]]]
   }
@@ -132,11 +141,15 @@ public:
 /* *INDENT-OFF* */
 template<typename Parameters$comma_typename_As>
 class ApplyVoidFunction<Parameters, void(*)($As)> {
-public:
+public:[[$for j [[
+
+  typedef typename Parameters::template Parameter<A$j, $j> P$j;
+]]]]
+
   typedef void (* Signature)($As);
   typedef void (* Function)([[$for j, [[
 
-    typename Parameters::template Parameter<A$j, $j>::Type
+    typename P$j::Type
 ]]]]);
 
 private:
@@ -152,10 +165,12 @@ public:
 
   template<typename Passed>
   void apply($Passed_passed) {
-    function([[$for j, [[
+[[$for j [[
+    typename P$j::Type const & a$j(P$j().template yield<Passed>(passed));
 
-      (typename Parameters::template Parameter<A$j, $j>()).template yield<Passed>(passed)
-]]]]);
+]]]]
+
+    function($as);
   }
 };
 /* *INDENT-ON* */
@@ -165,11 +180,15 @@ template<typename Parameters, typename Return_, typename Receiver_$comma_typenam
 class ApplyMethod<Parameters, Return_(Receiver_::*)($As)> {
 public:
   typedef Return_ Return;
-  typedef Receiver_ Receiver;
+  typedef Receiver_ Receiver;[[$for j [[
+
+  typedef typename Parameters::template Parameter<A$j, $j> P$j;
+]]]]
+
   typedef Return_ (Receiver_::* Signature)($As);
   typedef Return_ (Receiver_::* Method)([[$for j, [[
 
-    typename Parameters::template Parameter<A$j, $j>::Type
+    typename P$j::Type
 ]]]]);
 
 private:
@@ -185,16 +204,18 @@ public:
 
   template<typename Passed>
   Return apply(Receiver & receiver, $Passed_passed) {
-    return (receiver.*method)([[$for j, [[
+[[$for j [[
+    typename P$j::Type const & a$j(P$j().template yield<Passed>(passed));
 
-      (typename Parameters::template Parameter<A$j, $j>()).template yield<Passed>(passed)
-]]]]);
+]]]]
+
+    return (receiver.*method)($as);
   }
 
   template<typename Passed>
   void observe($Passed_passed) {
 [[$for j [[
-    (typename Parameters::template Parameter<A$j, $j>()).template observe<Passed>(passed);
+    P$j().template observe<Passed>(passed);
 
 ]]]]
   }
@@ -204,7 +225,11 @@ public:
 /* *INDENT-OFF* */
 template<typename Parameters, typename Allocator_, typename Constructed_$comma_typename_As>
 class ApplyConstructor<Parameters, Constructed_($As), Allocator_> {
-  typedef Constructed_ (Constructor)($As);
+  typedef Constructed_ (Constructor)($As);[[$for j [[
+
+  typedef typename Parameters::template Parameter<A$j, $j> P$j;
+]]]]
+
   typedef typename Allocator_::template rebind<Constructed_>::other Allocator;
 
   Allocator allocator;
@@ -222,16 +247,18 @@ public:
 
   template<typename Passed>
   Constructed * apply($Passed_passed) {
-    return new(allocator.allocate(1)) Constructed([[$for j, [[
+[[$for j [[
+    typename P$j::Type const & a$j(P$j().template yield<Passed>(passed));
 
-      (typename Parameters::template Parameter<A$j, $j>()).template yield<Passed>(passed)
-]]]]);
+]]]]
+
+    return new(allocator.allocate(1)) Constructed($as);
   }
 
   template<typename Passed>
   void observe($Passed_passed) {
 [[$for j [[
-    (typename Parameters::template Parameter<A$j, $j>()).template observe<Passed>(passed);
+    P$j().template observe<Passed>(passed);
 
 ]]]]
   }

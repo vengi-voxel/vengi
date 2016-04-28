@@ -73,7 +73,7 @@ int SpawnMgr::spawn(ai::Zone& zone, network::messages::NpcType type, int amount,
 		return 0;
 	}
 	for (int x = 0; x < amount; ++x) {
-		NpcPtr npc(new Npc(type, _entityStorage, behaviour, _world, _messageSender, _timeProvider, _containerProvider, _poiProvider));
+		const NpcPtr& npc = std::make_shared<Npc>(type, _entityStorage, behaviour, _world, _messageSender, _timeProvider, _containerProvider, _poiProvider);
 		npc->init(pos);
 		// now let it tick
 		zone.addAI(npc->ai());

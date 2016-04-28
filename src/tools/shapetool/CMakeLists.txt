@@ -1,18 +1,10 @@
-fips_begin_app(shapetool windowed)
-	fips_files(
-		ShapeTool.h ShapeTool.cpp
-	)
-
-	fips_dir(sauce)
-	fips_files(
-		ShapeToolModule.h
-		ShapeToolInjector.h
-	)
-
-	fips_dir(ui)
-	fips_files(
-		WorldParametersWindow.h
-	)
-	fips_deps(util frontend commonlua)
-	copy_data_files(shapetool)
-fips_end_app()
+project(shapetool)
+set(SRCS
+	ShapeTool.h ShapeTool.cpp
+	sauce/ShapeToolModule.h
+	sauce/ShapeToolInjector.h
+	ui/WorldParametersWindow.h
+)
+engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
+target_link_libraries(${PROJECT_NAME} frontend util commonlua)
+copy_data_files(${PROJECT_NAME})

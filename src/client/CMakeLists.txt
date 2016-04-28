@@ -1,32 +1,22 @@
-fips_begin_app(client windowed)
-	fips_files(
-		Client.h Client.cpp
-	)
-
-	fips_dir(sauce)
-	fips_files(
-		ClientModule.h
-		ClientInjector.h
-	)
-
-	fips_dir(network)
-	fips_files(
-		AuthFailedHandler.h
-		ClientNetworkModule.h
-		NpcSpawnHandler.h
-		SeedHandler.cpp SeedHandler.h
-		UserSpawnHandler.h
-		EntityUpdateHandler.h
-		EntityRemoveHandler.h
-	)
-	fips_dir(ui)
-	fips_files(
-		LoginWindow.h
-		HudWindow.h
-		AuthFailedWindow.h
-		DisconnectWindow.h
-	)
-	fips_deps(frontend util)
-	copy_data_files(client)
-fips_end_app()
-check_glsl_files(client world mesh ui)
+project(client)
+set(SRCS
+	Client.h Client.cpp
+	sauce/ClientModule.h
+	sauce/ClientInjector.h
+	network/AuthFailedHandler.h
+	network/ClientNetworkModule.h
+	network/NpcSpawnHandler.h
+	network/SeedHandler.cpp
+	network/SeedHandler.h
+	network/UserSpawnHandler.h
+	network/EntityUpdateHandler.h
+	network/EntityRemoveHandler.h
+	ui/LoginWindow.h
+	ui/HudWindow.h
+	ui/AuthFailedWindow.h
+	ui/DisconnectWindow.h
+)
+engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
+target_link_libraries(${PROJECT_NAME} frontend util)
+check_glsl_files(${PROJECT_NAME} world mesh ui)
+copy_data_files(${PROJECT_NAME})

@@ -43,7 +43,7 @@ public:
   /**
    * Set the dynamic name of this binding.
    */
-  virtual void setName(std::string) = 0;
+  virtual void setName(std::string const) = 0;
 
   /**
    * The NamedTypeId of the (hidden) provided interface.

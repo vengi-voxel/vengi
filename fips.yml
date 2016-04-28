@@ -1,4 +1,0 @@
-exports:
-    header-dirs:
-        - src/modules
-        - src/modules/ui

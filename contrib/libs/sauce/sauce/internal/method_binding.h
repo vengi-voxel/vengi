@@ -32,7 +32,7 @@ class MethodBinding: public Binding<Dependency, NoScope> {
     }
   };
 
-  friend class MethodBindingFriend;
+  friend struct MethodBindingFriend;
 
   struct InjectParameters {
     struct Passed {

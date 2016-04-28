@@ -1,13 +1,14 @@
-fips_begin_module(frontend)
-	fips_files(
-		ClientEntity.h ClientEntity.cpp
-		ClientEntityId.h
-		Movement.h
-		MeshShader.h MeshShader.cpp
-		WorldRenderer.h WorldRenderer.cpp
-		WorldShader.h WorldShader.cpp
-		TerrainShader.h TerrainShader.cpp
-		ColoredCubesShader.h ColoredCubesShader.cpp
-	)
-	fips_deps(ui network voxel cooldown)
-fips_end_module()
+set(SRCS
+	ClientEntity.h ClientEntity.cpp
+	ClientEntityId.h
+	Movement.h
+	MeshShader.h MeshShader.cpp
+	WorldRenderer.h WorldRenderer.cpp
+	WorldShader.h WorldShader.cpp
+	TerrainShader.h TerrainShader.cpp
+	ColoredCubesShader.h ColoredCubesShader.cpp
+)
+set(LIB frontend)
+add_library(${LIB} ${SRCS})
+target_link_libraries(${LIB} ui network voxel cooldown)
+set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})

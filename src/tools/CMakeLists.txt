@@ -1,2 +1,2 @@
-fips_add_subdirectory(shadertool)
-fips_add_subdirectory(shapetool)
+add_subdirectory(shadertool)
+add_subdirectory(shapetool)

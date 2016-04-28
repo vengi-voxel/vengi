@@ -1,8 +1,11 @@
-SET(DEFAULT_LUA_EXECUTABLE lua lua5.2 lua5.3)
+include(CheckCXXCompilerFlag)
+include(CheckCXXSourceCompiles)
+
+set(DEFAULT_LUA_EXECUTABLE lua lua5.2 lua5.3)
 
 macro(copy_data_files TARGET)
 	add_custom_target(copy-data-${TARGET} ALL
-		COMMAND cmake -E copy_directory "${FIPS_PROJECT_DIR}/data/${TARGET}/" ${FIPS_DEPLOY_DIR}/${CMAKE_PROJECT_NAME}/${FIPS_CONFIG}
+		COMMAND cmake -E copy_directory "${ROOT_DIR}/data/${TARGET}/" ${CMAKE_BINARY_DIR}
 		COMMENT "Copy ${TARGET} data files...")
 endmacro()
 
@@ -17,7 +20,7 @@ macro(check_lua_files TARGET)
 				${_file}
 				COMMAND ${LUA_EXECUTABLE} ${_file}
 				COMMENT "Validate ${_file}"
-				WORKING_DIRECTORY ${FIPS_PROJECT_DIR}/data/${TARGET}
+				WORKING_DIRECTORY ${ROOT_DIR}/data/${TARGET}
 			)
 			add_dependencies(${TARGET} ${_file})
 		endforeach()
@@ -27,6 +30,16 @@ macro(check_lua_files TARGET)
 endmacro()
 
 include(CheckCCompilerFlag)
+
+check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
+check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if (COMPILER_SUPPORTS_CXX11)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif (COMPILER_SUPPORTS_CXX0X)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+else()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
 
 # thread sanitizer doesn't work in combination with address and leak
 set(CMAKE_REQUIRED_FLAGS "-Werror -fsanitize=thread")

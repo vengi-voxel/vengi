@@ -1,23 +1,22 @@
-fips_begin_module(video)
-	fips_files(
-		WindowedApp.cpp WindowedApp.h
-		GLFunc.cpp GLFunc.h
-		VertexBuffer.cpp VertexBuffer.h
-		FrameBuffer.cpp FrameBuffer.h
-		GBuffer.cpp GBuffer.h
-		Shader.cpp Shader.h
-		Camera.cpp Camera.h
-		GLMeshData.h
-		GLDebug.h
-		Cubemap.cpp Cubemap.h
-		Texture.cpp Texture.h
-		Color.cpp Color.h
-		Mesh.cpp Mesh.h
-		MeshPool.cpp MeshPool.h
-	)
-	fips_deps(core image io assimp sdl2)
-fips_end_module()
-
+set(SRCS
+	WindowedApp.cpp WindowedApp.h
+	GLFunc.cpp GLFunc.h
+	VertexBuffer.cpp VertexBuffer.h
+	FrameBuffer.cpp FrameBuffer.h
+	GBuffer.cpp GBuffer.h
+	Shader.cpp Shader.h
+	Camera.cpp Camera.h
+	GLMeshData.h
+	GLDebug.h
+	Cubemap.cpp Cubemap.h
+	Texture.cpp Texture.h
+	Color.cpp Color.h
+	Mesh.cpp Mesh.h
+	MeshPool.cpp MeshPool.h
+)
+set(LIB video)
 find_package(OpenGL REQUIRED)
-target_link_libraries(video ${OPENGL_LIBRARIES})
-target_include_directories(video PUBLIC ${OPENGL_INCLUDE_DIRS})
+add_library(${LIB} ${SRCS})
+target_link_libraries(${LIB} core image assimp zlib ${OPENGL_LIBRARIES})
+set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+target_include_directories(${LIB} PUBLIC ${OPENGL_INCLUDE_DIRS})

@@ -50,7 +50,7 @@ UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std
 	auto i = _users.find(id);
 	if (i == _users.end()) {
 		static const std::string name = "NONAME";
-		UserPtr u(new User(peer, id, name, _messageSender, _world, _timeProvider, _containerProvider, _poiProvider));
+		const UserPtr& u = std::make_shared<User>(peer, id, name, _messageSender, _world, _timeProvider, _containerProvider, _poiProvider);
 		registerUser(u);
 		return u;
 	}

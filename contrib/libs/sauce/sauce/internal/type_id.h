@@ -17,45 +17,31 @@ namespace internal {
  * to an Injector.  They are values (not types) with a total ordering.  This
  * allows us to do arbitrary binding resolution, but only at runtime.
  *
- * Concretely, they are function pointers: the total ordering is that of the
+ * Concretely, they are pointers: the total ordering is that of the
  * address space.  No RTTI (i.e. typeid) is used.
  */
-typedef void (*TypeSignature)();
-
-/**
- * The template that generates TypeSignatures.
- */
-template<typename Type>
-void TypeSignatureFactory() {}
-
-/**
- * A TypeSignature equipped with specific helper methods dealing in the hidden type.
- */
 class TypeId {
-  TypeSignature signature;
-
-  TypeId():
-    signature(NULL) {}
+  void const * id;
 
 protected:
 
-  explicit TypeId(TypeSignature const & signature):
-    signature(signature) {}
+  explicit TypeId(void const * id):
+    id(id) {}
 
 public:
 
   virtual ~TypeId() {}
 
-  bool operator==(TypeId const & id) const {
-    return signature == id.signature;
+  bool operator==(TypeId const & typeId) const {
+    return id == typeId.id;
   }
 
-  bool operator!=(TypeId const & id) const {
-    return signature != id.signature;
+  bool operator!=(TypeId const & typeId) const {
+    return id != typeId.id;
   }
 
-  bool operator<(TypeId const & id) const {
-    return signature < id.signature;
+  bool operator<(TypeId const & typeId) const {
+    return id < typeId.id;
   }
 
   /**
@@ -76,8 +62,8 @@ template<typename Type>
 class ResolvedTypeId: public TypeId {
   friend TypeId typeIdOf<Type>();
 
-  ResolvedTypeId():
-    TypeId(&TypeSignatureFactory<Type>) {}
+  explicit ResolvedTypeId(void const * id):
+    TypeId(id) {}
 
 public:
 
@@ -91,7 +77,8 @@ public:
  */
 template<typename Type>
 TypeId typeIdOf() {
-  return ResolvedTypeId<Type>();
+  static char idLocation = 0;
+  return ResolvedTypeId<Type>(&idLocation);
 }
 
 /**

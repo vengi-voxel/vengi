@@ -11,6 +11,7 @@ namespace network {
 namespace messages {
 struct Vec3;
 struct Vec2;
+struct IVec2;
 }  // namespace messages
 }  // namespace network
 

@@ -35,7 +35,7 @@ public:
 #if RWLOCKDEBUG > 0
 			auto end = std::chrono::system_clock::now();
 			std::chrono::duration<double> diff = end - start;
-			core_assert_msg(diff.count() < RWLOCKDEBUG, "%s is blocked longer than %ims", _name.c_str(), RWLOCKDEBUG);
+			core_assert_msg(diff.count() < RWLOCKDEBUG, "%s is blocked longer than %lims", _name.c_str(), RWLOCKDEBUG);
 #endif
 		}
 		++_readers;
@@ -61,7 +61,7 @@ public:
 #if RWLOCKDEBUG > 0
 			auto end = std::chrono::system_clock::now();
 			std::chrono::duration<double> diff = end - start;
-			core_assert_msg(diff.count() < RWLOCKDEBUG, "%s is blocked longer than %ims", _name.c_str(), RWLOCKDEBUG);
+			core_assert_msg(diff.count() < RWLOCKDEBUG, "%s is blocked longer than %lims", _name.c_str(), RWLOCKDEBUG);
 #endif
 		}
 		while (_readers > 0) {
@@ -69,7 +69,7 @@ public:
 #if RWLOCKDEBUG > 0
 			auto end = std::chrono::system_clock::now();
 			std::chrono::duration<double> diff = end - start;
-			core_assert_msg(diff.count() < RWLOCKDEBUG, "%s is blocked longer than %ims", _name.c_str(), RWLOCKDEBUG);
+			core_assert_msg(diff.count() < RWLOCKDEBUG, "%s is blocked longer than %lims", _name.c_str(), RWLOCKDEBUG);
 #endif
 		}
 		core_assert_msg(_recursive == 0, "Invalid state for unlocking a write lock of %s", _name.c_str());

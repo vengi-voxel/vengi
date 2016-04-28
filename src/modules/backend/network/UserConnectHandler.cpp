@@ -1,6 +1,6 @@
 #include "UserConnectHandler.h"
-#include "network/messages/ClientMessages.h"
-#include "network/messages/ServerMessages.h"
+#include "network/messages/ClientMessages_generated.h"
+#include "network/messages/ServerMessages_generated.h"
 #include "backend/entity/User.h"
 #include "core/Var.h"
 

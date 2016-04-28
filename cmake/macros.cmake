@@ -1,9 +1,11 @@
+set(GAME_BASE_DIR data)
+
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/win32 CACHE STRING "" FORCE)
+	set(TOOLS_DIR ${ROOT_DIR}/tools/win32 CACHE STRING "" FORCE)
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/osx CACHE STRING "" FORCE)
+	set(TOOLS_DIR ${ROOT_DIR}/tools//osx CACHE STRING "" FORCE)
 else()
-	set(TOOLS_DIR ${FIPS_PROJECT_DIR}/tools/linux CACHE STRING "" FORCE)
+	set(TOOLS_DIR ${ROOT_DIR}/tools//linux CACHE STRING "" FORCE)
 endif()
 
 macro(var_global VARIABLES)
@@ -13,22 +15,31 @@ macro(var_global VARIABLES)
 	endforeach()
 endmacro()
 
+# some cross compiling toolchains define this
+if(NOT COMMAND find_host_program)
+	macro(find_host_program)
+		find_program(${ARGN})
+	endmacro()
+endif()
+
 macro(check_glsl_files TARGET)
 	set(files ${ARGV})
 	list(REMOVE_AT files 0)
 	find_program(GLSL_VALIDATOR_EXECUTABLE NAMES glslangValidator PATHS ${TOOLS_DIR})
 	if (GLSL_VALIDATOR_EXECUTABLE)
-		message("${GLSL_VALIDATOR_EXECUTABLE} found - executing in ${FIPS_PROJECT_DIR}/data/${TARGET}/shaders")
-		foreach(_file ${files})
-			add_custom_target(
-				${TARGET}_${_file}_shader_validation
-				COMMENT "Validate ${_file}"
-				COMMAND ${FIPS_DEPLOY_DIR}/${CMAKE_PROJECT_NAME}/${FIPS_CONFIG}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file}
-				DEPENDS shadertool
-				WORKING_DIRECTORY ${FIPS_DEPLOY_DIR}/${CMAKE_PROJECT_NAME}/${FIPS_CONFIG}/shaders
-			)
-			add_dependencies(${TARGET} shadertool ${TARGET}_${_file}_shader_validation)
-		endforeach()
+		message("${GLSL_VALIDATOR_EXECUTABLE} found - executing in ${ROOT_DIR}/data/${TARGET}/shaders")
+		if (IS_DIRECTORY ${ROOT_DIR}/data/${TARGET}/shaders)
+			foreach(_file ${files})
+				add_custom_target(
+					${TARGET}_${_file}_shader_validation
+					COMMENT "Validate ${_file}"
+					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file}
+					DEPENDS shadertool
+					WORKING_DIRECTORY ${ROOT_DIR}/data/${TARGET}/shaders
+				)
+				add_dependencies(${TARGET} shadertool ${TARGET}_${_file}_shader_validation)
+			endforeach()
+		endif()
 	else()
 		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found at ${TOOLS_DIR}")
 	endif()
@@ -162,7 +173,7 @@ macro(engine_add_library)
 			set_property(TARGET ${_ADDLIB_LIB} APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${${PREFIX}_INCLUDE_DIRS})
 		endif()
 	else()
-		message(WARNING "Use the bundled lib ${_ADDLIB_LIB}")
+		message(STATUS "Use the bundled lib ${_ADDLIB_LIB}")
 		add_library(${_ADDLIB_LIB} STATIC ${_ADDLIB_SRCS})
 		target_include_directories(${_ADDLIB_LIB} ${_ADDLIB_PUBLICHEADER} ${PROJECT_SOURCE_DIR}/src/libs/${_ADDLIB_LIB})
 		set_target_properties(${_ADDLIB_LIB} PROPERTIES COMPILE_DEFINITIONS "${_ADDLIB_DEFINES}")
@@ -178,66 +189,7 @@ endmacro()
 #   Macros for generating google unit tests.
 #-------------------------------------------------------------------------------
 
-set(FIPS_GOOGLETESTDIR ${CMAKE_CURRENT_LIST_DIR})
-
-#-------------------------------------------------------------------------------
-#   gtest_begin(name)
-#   Begin defining a unit test.
-#
-macro(gtest_begin name)
-    set(options NO_TEMPLATE)
-    set(oneValueArgs TEMPLATE)
-    set(multiValueArgs)
-    cmake_parse_arguments(_gt "${options}" "${oneValueArgs}" "" ${ARGN})
-
-    if (_gt_UNPARSED_ARGUMENTS)
-        message(FATAL_ERROR "gtest_begin(): called with invalid args '${_gt_UNPARSED_ARGUMENTS}'")
-    endif()
-
-    set(FipsAddFilesEnabled 1)
-    fips_reset(${CurTargetName}Test)
-    if (FIPS_OSX)
-        set(CurAppType "windowed")
-    else()
-        set(CurAppType "cmdline")
-    endif()
-endmacro()
-
-#-------------------------------------------------------------------------------
-#   gtest_end()
-#   End defining a unittest named 'name' from sources in 'dir'
-#
-macro(gtest_end)
-    if (FIPS_CMAKE_VERBOSE)
-        message("Unit Test: name=" ${CurTargetName})
-    endif()
-
-    # add googletest lib dependency
-    fips_deps(gtest)
-
-    if (NOT _gt_NO_TEMPLATE)
-        set(main_path ${CMAKE_CURRENT_BINARY_DIR}/${CurTargetName}_main.cpp)
-        if (_gt_TEMPLATE)
-            configure_file(${_gt_TEMPLATE} ${main_path})
-        else()
-            configure_file(${FIPS_GOOGLETESTDIR}/main.cpp.in ${main_path})
-        endif()
-        list(APPEND CurSources ${main_path})
-    endif()
-
-    # generate a command line app
-    fips_end_app()
-    set_target_properties(${CurTargetName} PROPERTIES FOLDER "tests")
-
-    # add as cmake unit test
-    add_test(NAME ${CurTargetName} COMMAND ${CurTargetName})
-
-    # if configured, start the app as post-build-step
-    if (FIPS_UNITTESTS_RUN_AFTER_BUILD)
-        add_custom_command (TARGET ${CurTargetName} POST_BUILD COMMAND ${CurTargetName})
-    endif()
-    set(FipsAddFilesEnabled 1)
-endmacro()
+set(GOOGLETESTDIR ${CMAKE_CURRENT_LIST_DIR})
 
 #-------------------------------------------------------------------------------
 #   gtest_suite_begin(name)
@@ -251,11 +203,6 @@ macro(gtest_suite_begin name)
 
     if (${name}_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "gtest_suite_begin(): called with invalid args '${${name}_UNPARSED_ARGUMENTS}'")
-    endif()
-    if (FIPS_OSX)
-        set(${name}_CurAppType "windowed")
-    else()
-        set(${name}_CurAppType "cmdline")
     endif()
     set_property(GLOBAL PROPERTY ${name}_Sources "")
     set_property(GLOBAL PROPERTY ${name}_Deps "")
@@ -292,11 +239,7 @@ endmacro()
 #   End defining a unittest suite
 #
 macro(gtest_suite_end name)
-    if (FIPS_CMAKE_VERBOSE)
-        message("Unit Test: name=" ${name})
-    endif()
-
-    fips_begin_app(${name} ${${name}_CurAppType})
+    project(${name} cmdline)
     get_property(srcs GLOBAL PROPERTY ${name}_Sources)
     get_property(deps GLOBAL PROPERTY ${name}_Deps)
 
@@ -310,23 +253,43 @@ macro(gtest_suite_end name)
         list(APPEND srcs ${main_path})
     endif()
 
-    fips_files(${srcs})
+    add_executable(${name} ${srcs})
     # add googletest lib dependency
-    fips_deps(gtest ${deps})
+    target_link_libraries(${name} gtest ${deps})
     # generate a command line app
-    fips_end_app()
     set_target_properties(${name} PROPERTIES FOLDER "tests")
-    # silence some warnings
-    if(FIPS_LINUX)
-        set_target_properties(${name} PROPERTIES COMPILE_FLAGS "-Wno-sign-compare")
-    endif()
 
     # add as cmake unit test
     add_test(NAME ${name} COMMAND ${name})
+endmacro()
 
-    # if configured, start the app as post-build-step
-    if (FIPS_UNITTESTS_RUN_AFTER_BUILD)
-        add_custom_command (TARGET ${name} POST_BUILD COMMAND ${name})
-    endif()
-    set(FipsAddFilesEnabled 1)
+#
+# set up the binary for the application. This will also set up platform specific stuff for you
+#
+# Example: engine_add_executable(TARGET SomeTargetName SRCS Source.cpp Main.cpp WINDOWED)
+#
+macro(engine_add_executable)
+	set(_OPTIONS_ARGS WINDOWED)
+	set(_ONE_VALUE_ARGS TARGET)
+	set(_MULTI_VALUE_ARGS SRCS)
+
+	cmake_parse_arguments(_EXE "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
+
+	if (_EXE_WINDOWED)
+		if (WINDOWS)
+			add_executable(${_EXE_TARGET} WIN32 ${_EXE_SRCS})
+			if (MSVC)
+				set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+			endif()
+		else()
+			add_executable(${_EXE_TARGET} ${_EXE_SRCS})
+		endif()
+	else()
+		add_executable(${_EXE_TARGET} ${_EXE_SRCS})
+		if (WINDOWS)
+			if (MSVC)
+				set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
+			endif()
+		endif()
+	endif()
 endmacro()

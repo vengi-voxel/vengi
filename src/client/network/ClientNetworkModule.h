@@ -2,7 +2,7 @@
 
 #include "../Client.h"
 #include "network/NetworkModule.h"
-#include "network/messages/ServerMessages.h"
+#include "network/messages/ServerMessages_generated.h"
 #include "SeedHandler.h"
 #include "AuthFailedHandler.h"
 #include "EntityRemoveHandler.h"

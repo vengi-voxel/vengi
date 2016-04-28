@@ -46,12 +46,12 @@ public:
 /**
  * An injection that provides Providers for an already-bound dependency.
  */
-template<typename Dependency, typename Name>
-class ImplicitProviderBinding: public Binding<Named<Provider<Dependency>, Name>, NoScope> {
+template<typename BoundDependency, typename Name>
+class ImplicitProviderBinding: public Binding<Named<Provider<BoundDependency>, Name>, NoScope> {
 
-  typedef typename Key<Dependency>::Normalized Normalized;
+  typedef typename Key<BoundDependency>::Normalized Normalized;
   typedef typename ResolvedBinding<Normalized>::BindingPtr ProvidedBindingPtr;
-  typedef Named<Provider<Dependency>, Name> ProviderDependency;
+  typedef Named<Provider<BoundDependency>, Name> ProviderDependency;
   typedef typename Key<ProviderDependency>::Ptr ProviderPtr;
 
   ProvidedBindingPtr providedBinding;
@@ -63,11 +63,10 @@ public:
   typedef typename ResolvedBinding<ProviderDependency>::BindingPtr BindingPtr;
 
   ImplicitProviderBinding(ProvidedBindingPtr providedBinding):
-    Binding<Named<Provider<Dependency>, Name>, NoScope>(),
     providedBinding(providedBinding) {}
 
   void inject(ProviderPtr & injected, BindingPtr, InjectorPtr injector) const {
-    injected.reset(new ImplicitProvider<Dependency, Name>(providedBinding, injector));
+    injected.reset(new ImplicitProvider<BoundDependency, Name>(providedBinding, injector));
   }
 };
 

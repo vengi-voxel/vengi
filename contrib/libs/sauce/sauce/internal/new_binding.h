@@ -37,7 +37,7 @@ class NewBinding: public Binding<Dependency, Scope> {
     }
   };
 
-  friend class NewBindingFriend;
+  friend struct NewBindingFriend;
 
   struct InjectParameters {
     struct Passed {

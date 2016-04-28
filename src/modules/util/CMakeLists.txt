@@ -1,8 +1,9 @@
-fips_begin_module(util)
-	fips_files(
-		Velocity.h
-		IProgressMonitor.h
-		PosLerp.h
-		Dummy.cpp
-	)
-fips_end_module()
+set(SRCS
+	Velocity.h
+	IProgressMonitor.h
+	PosLerp.h
+	Dummy.cpp
+)
+set(LIB util)
+add_library(${LIB} ${SRCS})
+set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
