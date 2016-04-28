@@ -22,7 +22,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 	// TODO: the 2d noise doesn't neep the same resolution - we can optimize this a lot
 	for (int z = lowerZ; z < lowerZ + depth; ++z) {
 		for (int x = lowerX; x < lowerX + width; ++x) {
-			const glm::vec2 noisePos2d = glm::vec2(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
+			const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 					worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 			const float noiseNormalized = noise::norm(landscapeNoise);
@@ -42,7 +42,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 				const Voxel& voxel = biomManager.getVoxelType(x, 0, z);
 				voxels[0] = voxel;
 				for (int y = 1; y < ni; ++y) {
-					const glm::vec3 noisePos3d = glm::vec3(noisePos2d.x, y, noisePos2d.y);
+					const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
 					const float noiseVal = noise::norm(
 							noise::Simplex::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
 									worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
