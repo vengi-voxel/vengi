@@ -3,7 +3,7 @@
 #include "backend/entity/ai/AICommon.h"
 #include "core/String.h"
 #include "core/Common.h"
-#include "network/messages/Shared_generated.h"
+#include "messages/Shared_generated.h"
 
 using namespace ai;
 

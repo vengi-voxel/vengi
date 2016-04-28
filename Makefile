@@ -19,21 +19,21 @@ edit-local-config:
 	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
 
 server: build
-	$(Q)./server $(ARGS)
+	$(Q)cd $(BUILDDIR); ./server $(ARGS)
 
 client: build
-	$(Q)./client $(ARGS)
+	$(Q)cd $(BUILDDIR); ./client $(ARGS)
 
 shapetool: build
-	$(Q)./shapetool -set voxel-plainterrain false $(ARGS)
+	$(Q)cd $(BUILDDIR); ./shapetool -set voxel-plainterrain false $(ARGS)
 
 run: shapetool
 
 runfast: build
-	$(Q)./shapetool -set voxel-plainterrain true $(ARGS)
+	$(Q)cd $(BUILDDIR); ./shapetool -set voxel-plainterrain true $(ARGS)
 
 tests: build
-	$(Q)./tests -- $(ARGS)
+	$(Q)cd $(BUILDDIR); ./tests -- $(ARGS)
 
 remotery:
 	$(Q)xdg-open file://$(CURDIR)/tools/remotery/index.html

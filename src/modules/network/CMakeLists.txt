@@ -1,12 +1,14 @@
-macro(network_generate HEADER OUTDIR DEFINITION)
+set(MESSAGE_OUT_DIR ${CMAKE_BINARY_DIR}/messages)
+
+macro(network_generate HEADER DEFINITION)
 	add_custom_command(
-		OUTPUT ${OUTDIR}/${HEADER}
-		COMMAND ${TOOLS_DIR}/flatc -c --gen-includes -o ${OUTDIR} ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
+		OUTPUT ${MESSAGE_OUT_DIR}/${HEADER}
+		COMMAND ${TOOLS_DIR}/flatc -c --gen-includes -o ${MESSAGE_OUT_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
 		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Generating source code for ${DEFINITION}"
 	)
-	set_source_files_properties(${OUTDIR}/${HEADER} PROPERTIES GENERATED TRUE)
+	set_source_files_properties(${MESSAGE_OUT_DIR}/${HEADER} PROPERTIES GENERATED TRUE)
 endmacro()
 
 set(SRCS
@@ -20,16 +22,14 @@ set(SRCS
 set(LIB network)
 add_library(${LIB} ${SRCS})
 
-set(MESSAGE_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/messages)
-
 add_custom_target(GenerateNetworkMessages
 	DEPENDS ${MESSAGE_OUT_DIR}/Shared_generated.h ${MESSAGE_OUT_DIR}/ClientMessages_generated.h ${MESSAGE_OUT_DIR}/ServerMessages_generated.h
-	COMMENT "Generate network messages"
+	COMMENT "Generate network messages in ${MESSAGE_OUT_DIR}"
 )
 
-network_generate(Shared_generated.h ${MESSAGE_OUT_DIR} Shared.fbs)
-network_generate(ClientMessages_generated.h ${MESSAGE_OUT_DIR} ClientMessages.fbs)
-network_generate(ServerMessages_generated.h ${MESSAGE_OUT_DIR} ServerMessages.fbs)
+network_generate(Shared_generated.h Shared.fbs)
+network_generate(ClientMessages_generated.h ClientMessages.fbs)
+network_generate(ServerMessages_generated.h ServerMessages.fbs)
 
 target_link_libraries(${LIB} core enet flatbuffers)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})

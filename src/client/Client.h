@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <SDL.h>
 
-#include "network/messages/ServerMessages_generated.h"
+#include "messages/ServerMessages_generated.h"
 #include "frontend/WorldShader.h"
 #include "frontend/MeshShader.h"
 #include "frontend/ClientEntity.h"

@@ -6,7 +6,7 @@
 #include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AILoader.h"
 #include "backend/poi/PoiProvider.h"
-#include "network/messages/ServerMessages_generated.h"
+#include "messages/ServerMessages_generated.h"
 
 namespace backend {
 
