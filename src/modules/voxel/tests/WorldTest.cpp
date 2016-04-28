@@ -25,7 +25,7 @@ TEST_F(WorldTest, DISABLED_testExtraction) {
 			auto end = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double, std::milli> elapsed = end - start;
 			const double millis = elapsed.count();
-			ASSERT_LT(120 * 1000, millis);
+			ASSERT_LT(millis, 120 * 1000);
 		}
 		++extracted;
 		if (extracted == expected) {
