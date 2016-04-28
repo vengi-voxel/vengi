@@ -3,11 +3,15 @@ VERBOSE=
 Q=@
 LOCAL_CONFIG_DIR=~/.local/share/engine
 BUILDDIR=build
+
+MAKE_PID := $$PPID
+JOB_FLAG := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
+
 all: run
 
 .PHONY: build
 build:
-	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" ..; make
+	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" ..; make $(JOB_FLAG)
 
 clean:
 	$(Q)rm -rf $(BUILDDIR)
