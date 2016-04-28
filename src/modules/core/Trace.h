@@ -7,6 +7,8 @@
 #include <emscripten/trace.h>
 #endif
 
+#define RMT_ENABLED 0
+
 // disable remotery via -DRMT_ENABLED=0
 #include "Remotery.h"
 
