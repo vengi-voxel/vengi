@@ -9,8 +9,8 @@ in float v_ambientocclusion;
 out vec4 o_color;
 
 void main(void) {
-	vec3 fdx = vec3(dFdx(v_pos.x), dFdx(v_pos.y), dFdx(v_pos.z));
-	vec3 fdy = vec3(dFdy(v_pos.x), dFdy(v_pos.y), dFdy(v_pos.z));
+	vec3 fdx = dFdx(v_pos.xyz);
+	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
 	vec3 lightdir = normalize(v_lightpos - v_pos);
 
