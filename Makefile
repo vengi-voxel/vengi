@@ -10,7 +10,7 @@ build:
 	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" ..; make
 
 clean:
-	$(Q)git clean -fdx .
+	$(Q)rm -rf $(BUILDDIR)
 
 clean-local-config:
 	$(Q)rm -r $(LOCAL_CONFIG_DIR)
