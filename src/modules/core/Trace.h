@@ -27,7 +27,7 @@ public:
 	~TraceScoped();
 };
 
-#if RMT_ENABLED
+#if RMT_ENABLED > 0
 #define core_trace_init() Log::info("Remotery active")
 #define core_trace_begin_frame() core_trace_begin("Frame")
 #define core_trace_end_frame() core_trace_end()
