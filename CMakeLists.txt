@@ -6,6 +6,7 @@ set(SCRIPTS_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 include(${SCRIPTS_CMAKE_DIR}/common.cmake)
 include(${SCRIPTS_CMAKE_DIR}/macros.cmake)
 
+option(UNITTESTS "Builds with tests" ON)
 option(TOOLS "Builds with tools" ON)
 option(USE_CCACHE "Use ccache" ON)
 
