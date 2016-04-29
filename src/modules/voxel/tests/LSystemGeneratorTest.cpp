@@ -26,9 +26,9 @@ TEST_F(LSystemGeneratorTest, testState) {
 	LSystemState state;
 	state.pos = lsystemCtx.start;
 	LSystemGenerator::expand(&state, ctx, lsystemCtx, random, lsystemCtx.axiom, lsystemCtx.generations);
-	ASSERT_EQ(lsystemCtx.generations, state.pos.x);
-	ASSERT_EQ(lsystemCtx.generations, state.pos.y);
-	ASSERT_EQ(lsystemCtx.generations, state.pos.z);
+	ASSERT_EQ(1, state.pos.x);
+	ASSERT_EQ(1, state.pos.y);
+	ASSERT_EQ(1, state.pos.z);
 }
 
 TEST_F(LSystemGeneratorTest, testGenerateVoxels) {

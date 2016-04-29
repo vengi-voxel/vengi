@@ -51,15 +51,20 @@ bool LSystemGenerator::evaluateState(LSystemState* state, char c) {
 
 void LSystemGenerator::expand(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random, const std::string& axiom, int generations) {
 	std::vector<LSystemState> newStates;
+	LSystemState *currentState = state;
 	for (const char chr : axiom) {
 		if (chr == LSystemAlphabet::STATEPUSH) {
-			newStates.push_back(*state);
-			state = &newStates.back();
+			newStates.emplace_back(*currentState);
+			currentState = &newStates.back();
 		} else if (chr == LSystemAlphabet::STATEPOP) {
+			core_assert(!newStates.empty());
 			newStates.pop_back();
-			state = &newStates.back();
+			if (newStates.empty())
+				currentState = state;
+			else
+				currentState = &newStates.back();
 		} else {
-			expand_r(state, terrainCtx, ctx, random, chr, generations - 1);
+			expand_r(currentState, terrainCtx, ctx, random, chr, generations);
 		}
 	}
 }
