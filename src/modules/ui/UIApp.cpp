@@ -348,7 +348,7 @@ core::AppState UIApp::onRunning() {
 
 			double time = tb::TBSystem::GetTimeMS();
 			if (time > _frameCounterResetRime + 1000) {
-				fps = (int) ((_frameCounter / (time - _frameCounterResetRime)) * 1000);
+				fps = (int) round((_frameCounter / (time - _frameCounterResetRime)) * 1000);
 				_frameCounterResetRime = time;
 				_frameCounter = 0;
 			}
