@@ -61,7 +61,8 @@ public:
 	 */
 	inline glm::ivec3 getGridPos(const glm::ivec3& pos) const {
 		const int size = _chunkSize->intVal();
-		return getChunkPos(pos) * size;
+		const glm::ivec3& chunkPos = getChunkPos(pos);
+		return glm::ivec3(chunkPos.x * size, 0, chunkPos.z * size);
 	}
 
 	/**
@@ -70,7 +71,7 @@ public:
 	inline glm::ivec3 getChunkPos(const glm::ivec3& pos) const {
 		const float size = _chunkSize->floatVal();
 		const int x = glm::floor(pos.x / size);
-		const int y = 0;
+		const int y = glm::floor(pos.y / size);
 		const int z = glm::floor(pos.z / size);
 		return glm::ivec3(x, y, z);
 	}

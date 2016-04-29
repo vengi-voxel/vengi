@@ -16,6 +16,8 @@ TEST_F(WorldTest, DISABLED_testExtraction) {
 			++expected;
 	}
 
+	ASSERT_GT(expected, 10);
+
 	int extracted = 0;
 	auto start = std::chrono::high_resolution_clock::now();
 	for (;;) {
@@ -48,13 +50,13 @@ TEST_F(WorldTest, testChunkAndGridPos) {
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(chunkSize, chunkSize, chunkSize));
 		ASSERT_EQ(glm::ivec3(1, 1, 1), chunkPos);
 		const glm::ivec3& gridPos = world.getGridPos(glm::ivec3(chunkSize, chunkSize, chunkSize));
-		ASSERT_EQ(glm::ivec3(chunkSize, chunkSize, chunkSize), gridPos);
+		ASSERT_EQ(glm::ivec3(chunkSize, 0, chunkSize), gridPos);
 	}
 	{
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(chunkSize + 1, chunkSize + 1, chunkSize + 1));
 		ASSERT_EQ(glm::ivec3(1, 1, 1), chunkPos);
 		const glm::ivec3& gridPos = world.getGridPos(glm::ivec3(chunkSize + 1, chunkSize + 1, chunkSize + 1));
-		ASSERT_EQ(glm::ivec3(chunkSize, chunkSize, chunkSize), gridPos);
+		ASSERT_EQ(glm::ivec3(chunkSize, 0, chunkSize), gridPos);
 	}
 	{
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(chunkSize - 1, chunkSize - 1, chunkSize - 1));
@@ -66,13 +68,13 @@ TEST_F(WorldTest, testChunkAndGridPos) {
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(-chunkSize, -chunkSize, -chunkSize));
 		ASSERT_EQ(glm::ivec3(-1, -1, -1), chunkPos);
 		const glm::ivec3& gridPos = world.getGridPos(glm::ivec3(-chunkSize, -chunkSize, -chunkSize));
-		ASSERT_EQ(glm::ivec3(-chunkSize, -chunkSize, -chunkSize), gridPos);
+		ASSERT_EQ(glm::ivec3(-chunkSize, -0, -chunkSize), gridPos);
 	}
 	{
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(-(chunkSize + 1), -(chunkSize + 1), -(chunkSize + 1)));
 		ASSERT_EQ(glm::ivec3(-2, -2, -2), chunkPos);
 		const glm::ivec3& gridPos = world.getGridPos(glm::ivec3(-(chunkSize + 1), -(chunkSize + 1), -(chunkSize + 1)));
-		ASSERT_EQ(glm::ivec3(-2 * chunkSize, -2 * chunkSize, -2 * chunkSize), gridPos);
+		ASSERT_EQ(glm::ivec3(-2 * chunkSize, -0, -2 * chunkSize), gridPos);
 	}
 	{
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(-halfChunkSize, halfChunkSize, halfChunkSize));
@@ -84,7 +86,7 @@ TEST_F(WorldTest, testChunkAndGridPos) {
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(-halfChunkSize, -halfChunkSize, -halfChunkSize));
 		ASSERT_EQ(glm::ivec3(-1, -1, -1), chunkPos);
 		const glm::ivec3& gridPos = world.getGridPos(glm::ivec3(-halfChunkSize, -halfChunkSize, -halfChunkSize));
-		ASSERT_EQ(glm::ivec3(-chunkSize, -chunkSize, -chunkSize), gridPos);
+		ASSERT_EQ(glm::ivec3(-chunkSize, 0, -chunkSize), gridPos);
 	}
 	{
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(halfChunkSize, halfChunkSize, halfChunkSize));
@@ -96,7 +98,7 @@ TEST_F(WorldTest, testChunkAndGridPos) {
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(2 * chunkSize + halfChunkSize, 2 * chunkSize + halfChunkSize, 2 * chunkSize + halfChunkSize));
 		ASSERT_EQ(glm::ivec3(2, 2, 2), chunkPos);
 		const glm::ivec3& gridPos = world.getGridPos(glm::ivec3(2 * chunkSize + halfChunkSize, 2 * chunkSize + halfChunkSize, 2 * chunkSize + halfChunkSize));
-		ASSERT_EQ(glm::ivec3(2 * chunkSize, 2 * chunkSize, 2 * chunkSize), gridPos);
+		ASSERT_EQ(glm::ivec3(2 * chunkSize, 0, 2 * chunkSize), gridPos);
 	}
 	{
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(halfChunkSize, 0, halfChunkSize));
@@ -108,7 +110,7 @@ TEST_F(WorldTest, testChunkAndGridPos) {
 		const glm::ivec3& chunkPos = world.getChunkPos(glm::ivec3(halfChunkSize, MAX_HEIGHT - 1, halfChunkSize));
 		ASSERT_EQ(glm::ivec3(0, MAX_HEIGHT / chunkSize, 0), chunkPos);
 		const glm::ivec3& gridPos = world.getGridPos(glm::ivec3(halfChunkSize, MAX_HEIGHT - 1, halfChunkSize));
-		ASSERT_EQ(glm::ivec3(0, chunkPos.y * chunkSize, 0), gridPos);
+		ASSERT_EQ(glm::ivec3(0, 0, 0), gridPos);
 	}
 }
 
