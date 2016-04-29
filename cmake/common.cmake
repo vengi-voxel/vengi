@@ -1,3 +1,4 @@
+include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 
@@ -42,8 +43,13 @@ else()
 endif()
 
 # thread sanitizer doesn't work in combination with address and leak
-set(CMAKE_REQUIRED_FLAGS "-Werror")
+
+# Set -Werror to catch "argument unused during compilation" warnings
+set(CMAKE_REQUIRED_FLAGS "-Werror -fthread-sanitizer") # Also needs to be a link flag for test to pass
+check_c_compiler_flag("-fthread-sanitizer" HAVE_FLAG_THREAD_SANITIZER)
+set(CMAKE_REQUIRED_FLAGS "-Werror -fsanitize=thread") # Also needs to be a link flag for test to pass
 check_c_compiler_flag("-fsanitize=thread" HAVE_FLAG_SANITIZE_THREAD)
+set(CMAKE_REQUIRED_FLAGS "-Werror")
 check_c_compiler_flag("-fsanitize=undefined" HAVE_FLAG_SANITIZE_UNDEFINED)
 check_c_compiler_flag("-fsanitize=address" HAVE_FLAG_SANITIZE_ADDRESS)
 check_c_compiler_flag("-fsanitize=leak" HAVE_FLAG_SANITIZE_LEAK)
@@ -64,6 +70,11 @@ endif()
 
 if (HAVE_FLAG_SANITIZE_THREAD)
 	set(SANITIZE_THREAD_FLAG "-fsanitize=thread" CACHE STRING "" FORCE)
+	message("Support thread sanitizer")
+endif()
+
+if (HAVE_FLAG_THREAD_SANITIZER)
+	set(SANITIZE_THREAD_FLAG "-fthread-sanitizer" CACHE STRING "" FORCE)
 	message("Support thread sanitizer")
 endif()
 
