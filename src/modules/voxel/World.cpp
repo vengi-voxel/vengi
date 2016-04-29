@@ -185,6 +185,10 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 
 Region World::getRegion(const glm::ivec3& pos) const {
 	const int size = _chunkSize->intVal();
+	return getRegion(pos, size);
+}
+
+Region World::getRegion(const glm::ivec3& pos, int size) const {
 	int deltaX = size - 1;
 	int deltaZ = size - 1;
 	const glm::ivec3 mins(pos.x, 0, pos.z);
@@ -263,6 +267,14 @@ void World::cleanupFutures() {
 		}
 		break;
 	}
+}
+
+void World::prefetch(const glm::vec3& pos) {
+	_futures.push_back(_threadPool.enqueue([=] () {
+		if (_cancelThreads)
+			return;
+		_volumeData->prefetch(getRegion(pos, 1024));
+	}));
 }
 
 void World::onFrame(long dt) {

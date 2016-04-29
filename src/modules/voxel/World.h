@@ -107,6 +107,7 @@ public:
 	 */
 	bool scheduleMeshExtraction(const glm::ivec3& pos);
 
+	void prefetch(const glm::vec3& pos);
 	void onFrame(long dt);
 
 	const core::Random& random() const { return _random; }
@@ -151,6 +152,7 @@ private:
 
 	void cleanupFutures();
 	Region getRegion(const glm::ivec3& pos) const;
+	Region getRegion(const glm::ivec3& pos, int size) const;
 
 	Pager _pager;
 	PagedVolume *_volumeData;

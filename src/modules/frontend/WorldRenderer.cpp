@@ -272,6 +272,7 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	core_trace_scoped(WorldRendererOnSpawn);
 	_viewDistance = 1.0f;
 	_lastGridPosition = _world->getGridPos(pos);
+	_world->prefetch(_lastGridPosition);
 	extractMeshAroundCamera(initialExtractionRadius);
 }
 
