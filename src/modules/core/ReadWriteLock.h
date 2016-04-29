@@ -18,8 +18,8 @@ private:
 	mutable std::atomic_int _readers;
 	mutable std::atomic_bool _lock;
 	const std::string _name;
-	std::thread::id _threadID;
-	int _recursive;
+	std::atomic<std::thread::id> _threadID;
+	std::atomic_int _recursive;
 public:
 	ReadWriteLock(const std::string& name) :
 			_readers(0), _lock(false), _name(name), _recursive(0) {
