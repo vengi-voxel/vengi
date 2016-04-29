@@ -20,14 +20,12 @@ TEST_F(LSystemGeneratorTest, testState) {
 	random.setSeed(seed);
 
 	LSystemContext lsystemCtx;
-	lsystemCtx.axiom = "XYZ";
+	lsystemCtx.axiom = "XYZ[XYZ]";
 	lsystemCtx.generations = 1;
 
 	LSystemState state;
 	state.pos = lsystemCtx.start;
-	for (const char c : lsystemCtx.axiom) {
-		LSystemGenerator::expand(&state, &state, ctx, lsystemCtx, random, c, lsystemCtx.generations);
-	}
+	LSystemGenerator::expand(&state, ctx, lsystemCtx, random, lsystemCtx.axiom, lsystemCtx.generations);
 	ASSERT_EQ(lsystemCtx.generations, state.pos.x);
 	ASSERT_EQ(lsystemCtx.generations, state.pos.y);
 	ASSERT_EQ(lsystemCtx.generations, state.pos.z);

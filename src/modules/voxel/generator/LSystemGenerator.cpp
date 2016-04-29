@@ -49,7 +49,22 @@ bool LSystemGenerator::evaluateState(LSystemState* state, char c) {
 	return false;
 }
 
-void LSystemGenerator::expand(LSystemState* state, LSystemState* prevState, TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random, char c, int generations) {
+void LSystemGenerator::expand(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random, const std::string& axiom, int generations) {
+	std::vector<LSystemState> newStates;
+	for (const char chr : axiom) {
+		if (chr == LSystemAlphabet::STATEPUSH) {
+			newStates.push_back(*state);
+			state = &newStates.back();
+		} else if (chr == LSystemAlphabet::STATEPOP) {
+			newStates.pop_back();
+			state = &newStates.back();
+		} else {
+			expand_r(state, terrainCtx, ctx, random, chr, generations - 1);
+		}
+	}
+}
+
+void LSystemGenerator::expand_r(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random, char c, int generations) {
 	if (generations <= 0) {
 		return;
 	}
@@ -62,26 +77,13 @@ void LSystemGenerator::expand(LSystemState* state, LSystemState* prevState, Terr
 	if (iter == ctx.productionRules.end()) {
 		return;
 	}
-	LSystemState newState;
-	for (const char chr : iter->second) {
-		if (chr == LSystemAlphabet::STATEPUSH) {
-			newState = *state;
-			prevState = state;
-			state = &newState;
-		} else if (chr == LSystemAlphabet::STATEPOP) {
-			state = prevState;
-		} else {
-			expand(state, prevState, terrainCtx, ctx, random, chr, generations - 1);
-		}
-	}
+	expand(state, terrainCtx, ctx, random, iter->second, generations - 1);
 }
 
 void LSystemGenerator::generate(TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random) {
-	LSystemState state;
-	state.pos = ctx.start;
-	for (const char c : ctx.axiom) {
-		expand(&state, &state, terrainCtx, ctx, random, c, ctx.generations);
-	}
+	LSystemState initState;
+	initState.pos = ctx.start;
+	expand(&initState, terrainCtx, ctx, random, ctx.axiom, ctx.generations);
 }
 
 }
