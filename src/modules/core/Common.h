@@ -15,6 +15,9 @@
 #define CORE_STRINGIFY_INTERNAL(x) #x
 #define CORE_STRINGIFY(x) CORE_STRINGIFY_INTERNAL(x)
 
+#define CORE_CLASS(name) \
+	friend class name##Test;
+
 #ifndef core_assert
 #define core_assert SDL_assert
 #endif
