@@ -83,6 +83,8 @@ endif()
 add_subdirectory(src)
 if (UNITTESTS)
 	gtest_suite_end(tests)
+	set_target_properties(tests PROPERTIES COMPILE_FLAGS "${SANITIZE_THREAD_FLAG}")
+	set_target_properties(tests PROPERTIES LINK_FLAGS "${SANITIZE_THREAD_FLAG}")
 endif()
 
 copy_data_files(shared)

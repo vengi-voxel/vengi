@@ -1,4 +1,4 @@
-set(GAME_BASE_DIR data)
+set(GAME_BASE_DIR data CACHE STRING "" FORCE)
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	set(TOOLS_DIR ${ROOT_DIR}/tools/win32 CACHE STRING "" FORCE)
