@@ -5,8 +5,6 @@ set(SRCS
 	MeshShader.h MeshShader.cpp
 	WorldRenderer.h WorldRenderer.cpp
 	WorldShader.h WorldShader.cpp
-	TerrainShader.h TerrainShader.cpp
-	ColoredCubesShader.h ColoredCubesShader.cpp
 )
 set(LIB frontend)
 add_library(${LIB} ${SRCS})
