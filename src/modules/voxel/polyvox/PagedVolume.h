@@ -72,6 +72,8 @@ public:
 
 		// Note: Do we really need to store this position here as well as in the block maps?
 		glm::ivec3 m_v3dChunkSpacePosition;
+
+		core::ReadWriteLock _voxelLock;
 	};
 
 	/**

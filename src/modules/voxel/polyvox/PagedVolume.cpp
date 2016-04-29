@@ -285,7 +285,7 @@ uint32_t PagedVolume::calculateSizeInBytes() {
 }
 
 PagedVolume::Chunk::Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager) :
-		m_uChunkLastAccessed(0), m_bDataModified(true), m_tData(0), m_uSideLength(0), m_uSideLengthPower(0), m_pPager(pPager), m_v3dChunkSpacePosition(v3dPosition) {
+		m_uChunkLastAccessed(0), m_bDataModified(true), m_tData(0), m_uSideLength(0), m_uSideLengthPower(0), m_pPager(pPager), m_v3dChunkSpacePosition(v3dPosition), _voxelLock("ChunkLock") {
 	core_assert_msg(m_pPager, "No valid pager supplied to chunk constructor.");
 	core_assert_msg(uSideLength <= 256, "Chunk side length cannot be greater than 256.");
 
@@ -341,6 +341,7 @@ const Voxel& PagedVolume::Chunk::getVoxel(uint32_t uXPos, uint32_t uYPos, uint32
 	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
+	core::ScopedReadLock readLock(_voxelLock);
 	return m_tData[index];
 }
 
@@ -357,6 +358,7 @@ void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos
 	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
+	core::ScopedWriteLock readLock(_voxelLock);
 	m_tData[index] = tValue;
 	this->m_bDataModified = true;
 }
