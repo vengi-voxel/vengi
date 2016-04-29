@@ -7,7 +7,7 @@ BUILDDIR=build
 MAKE_PID := $$PPID
 JOB_FLAG := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
 
-all: run
+all: build
 
 .PHONY: build
 build:
