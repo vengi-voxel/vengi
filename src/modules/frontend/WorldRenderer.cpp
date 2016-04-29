@@ -4,6 +4,7 @@
 #include "voxel/Spiral.h"
 #include "core/App.h"
 #include "noise/SimplexNoise.h"
+#include "core/Var.h"
 #include <SDL.h>
 #include <voxel/polyvox/CubicSurfaceExtractor.h>
 #include <voxel/polyvox/RawVolume.h>
@@ -162,9 +163,11 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	shader.setUniformi("u_texture", 0);
 	shader.setUniformVec3("u_lightpos", _lightPos);
 	shader.setUniformVec4v("u_materialcolor[0]", materialColors, SDL_arraysize(materialColors));
+	shader.setUniformf("u_debug_color", 1.0);
 	_colorTexture->bind();
 	const float chunkSize = (float)_world->getChunkSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
+	auto debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "true")->boolVal();
 	for (auto i = _meshData.begin(); i != _meshData.end();) {
 		const video::GLMeshData& meshData = *i;
 		const float distance = getDistance2(meshData.translation);
@@ -186,8 +189,27 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation)), glm::vec3(meshData.scale[lod]));
 		shader.setUniformMatrix("u_model", model, false);
 		glBindVertexArray(meshData.vertexArrayObject[lod]);
+
+		if (debugGeometry) {
+			shader.setUniformf("u_debug_color", 1.0);
+		}
 		glDrawElements(GL_TRIANGLES, meshData.noOfIndices[lod], meshData.indexType[lod], 0);
 		GL_checkError();
+
+		if (debugGeometry) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glEnable(GL_POLYGON_OFFSET_LINE);
+			glEnable(GL_LINE_SMOOTH);
+			glLineWidth(2);
+			glPolygonOffset(-2, -2);
+			shader.setUniformf("u_debug_color", 0.0);
+			glDrawElements(GL_TRIANGLES, meshData.noOfIndices[lod], meshData.indexType[lod], 0);
+			glDisable(GL_LINE_SMOOTH);
+			glDisable(GL_POLYGON_OFFSET_LINE);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			GL_checkError();
+		}
+
 		++drawCallsWorld;
 		++i;
 	}

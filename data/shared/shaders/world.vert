@@ -10,6 +10,7 @@ uniform float u_fogrange;
 uniform float u_viewdistance;
 uniform sampler2D u_texture;
 uniform vec4 u_materialcolor[32];
+uniform float u_debug_color;
 
 out vec3 v_pos;
 out vec3 v_color;
@@ -18,6 +19,7 @@ out vec3 v_fogcolor;
 out float v_fogrange;
 out float v_viewdistance;
 out float v_ambientocclusion;
+out float v_debug_color;
 
 void main(void) {
 	mat4 modelview = u_view * u_model;
@@ -28,6 +30,7 @@ void main(void) {
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
 	v_lightpos = u_lightpos;
+	v_debug_color = u_debug_color;
 
 	vec4 noisepos = u_model * vec4(a_pos, 1.0);
 	vec3 colornoise = texture(u_texture, abs(noisepos.xz) / 256.0 / 10.0).rgb;
