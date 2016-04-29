@@ -15,11 +15,13 @@ std::string WorldPersister::getWorldName(const Region& region, long seed) const 
 }
 
 void WorldPersister::erase(TerrainContext& ctx, PagedVolume::Chunk* chunk, long seed) {
+#if 0
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	const Region& region = ctx.region;
 	const std::string& filename = getWorldName(region, seed);
 	// TODO: filesystem->remove(filename);
+#endif
 }
 
 bool WorldPersister::load(TerrainContext& ctx, PagedVolume::Chunk* chunk, long seed) {
