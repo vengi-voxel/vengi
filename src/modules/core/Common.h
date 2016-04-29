@@ -19,6 +19,18 @@
 #define core_assert SDL_assert
 #endif
 
+#ifndef core_malloc
+#define core_malloc SDL_malloc
+#endif
+
+#ifndef core_realloc
+#define core_realloc SDL_realloc
+#endif
+
+#ifndef core_free
+#define core_free SDL_free
+#endif
+
 #ifndef core_assert_always
 #define core_assert_always SDL_assert_always
 #endif

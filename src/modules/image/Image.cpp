@@ -2,6 +2,12 @@
 #include "core/Log.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
+
+#define STBI_ASSERT core_assert
+#define STBI_MALLOC core_malloc
+#define STBI_REALLOC core_realloc
+#define STBI_FREE core_free
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
