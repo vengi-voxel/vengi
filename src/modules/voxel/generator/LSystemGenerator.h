@@ -35,7 +35,7 @@ struct LSystemContext {
 	std::unordered_map<char, Voxel> voxels;
 
 	// how often should be generate?
-	int generations;
+	int generations = 1;
 
 	// where to put the first voxel at
 	glm::ivec3 start;
