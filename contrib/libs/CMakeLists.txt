@@ -1,3 +1,4 @@
+add_subdirectory(fruit)
 add_subdirectory(glm)
 add_subdirectory(zlib)
 add_subdirectory(libenet)
