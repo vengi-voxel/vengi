@@ -73,10 +73,10 @@ public:
 			// special case because the length would exceed the max possible value of TYPE
 			if (std::numeric_limits<TYPE>::is_signed) {
 				static const std::array<Rect<TYPE>, 4> maxSplit = {
-					Rect<TYPE>{_mins.x, _mins.y, 0, 0},
-					Rect<TYPE>{0, _mins.y, _maxs.x, 0},
-					Rect<TYPE>{_mins.x, 0, 0, _maxs.y},
-					Rect<TYPE>{0, 0, _maxs.x, _maxs.y}
+					Rect<TYPE>(_mins.x, _mins.y, 0, 0),
+					Rect<TYPE>(0, _mins.y, _maxs.x, 0),
+					Rect<TYPE>(_mins.x, 0, 0, _maxs.y),
+					Rect<TYPE>(0, 0, _maxs.x, _maxs.y)
 				};
 				return maxSplit;
 			}
@@ -87,10 +87,10 @@ public:
 		const TYPE lengthY = glm::abs(_maxs.y - _mins.y);
 		const TYPE halfY = lengthY / 2.0;
 		const std::array<Rect<TYPE>, 4> split = {
-			Rect<TYPE>{_mins.x, _mins.y, _mins.x + halfX, _mins.y + halfY},
-			Rect<TYPE>{_mins.x + halfX, _mins.y, _maxs.x, _mins.y + halfY},
-			Rect<TYPE>{_mins.x, _mins.y + halfY, _mins.x + halfX, _maxs.y},
-			Rect<TYPE>{_mins.x + halfX, _mins.y + halfY, _maxs.x, _maxs.y}
+			Rect<TYPE>(_mins.x, _mins.y, _mins.x + halfX, _mins.y + halfY),
+			Rect<TYPE>(_mins.x + halfX, _mins.y, _maxs.x, _mins.y + halfY),
+			Rect<TYPE>(_mins.x, _mins.y + halfY, _mins.x + halfX, _maxs.y),
+			Rect<TYPE>(_mins.x + halfX, _mins.y + halfY, _maxs.x, _maxs.y)
 		};
 		return split;
 	}

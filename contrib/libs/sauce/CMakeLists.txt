@@ -8,5 +8,5 @@ engine_add_library(
 )
 if (NOT SAUCE_FOUND)
 	target_include_directories(sauce PUBLIC .)
-#	target_compile_options(sauce PUBLIC "-Wno-deprecated-declarations -Wno-shadow")
+	target_compile_options(sauce PUBLIC "-Wno-deprecated-declarations")
 endif()
