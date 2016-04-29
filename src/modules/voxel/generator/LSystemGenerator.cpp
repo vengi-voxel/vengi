@@ -19,29 +19,47 @@ void LSystemGenerator::generateVoxel(const LSystemState* state, TerrainContext& 
 	volume->setVoxel(state->pos, voxel);
 }
 
-bool LSystemGenerator::evaluateState(LSystemState* state, char c) {
+bool LSystemGenerator::evaluateState(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, char c) {
 	switch (c) {
 	case LSystemAlphabet::X_FORWARD:
-		++state->pos.x;
+		for (int i = 0; i < ctx.xFactor; ++i) {
+			++state->pos.x;
+			generateVoxel(state, terrainCtx, ctx);
+		}
 		return true;
 	case LSystemAlphabet::X_BACK:
-		--state->pos.x;
+		for (int i = 0; i < ctx.xFactor; ++i) {
+			--state->pos.x;
+			generateVoxel(state, terrainCtx, ctx);
+		}
 		return true;
 	case LSystemAlphabet::Y_UPWARDS:
-		++state->pos.y;
+		for (int i = 0; i < ctx.yFactor; ++i) {
+			++state->pos.y;
+			generateVoxel(state, terrainCtx, ctx);
+		}
 		return true;
 	case LSystemAlphabet::Y_DOWN:
-		--state->pos.y;
+		for (int i = 0; i < ctx.yFactor; ++i) {
+			--state->pos.y;
+			generateVoxel(state, terrainCtx, ctx);
+		}
 		return true;
 	case LSystemAlphabet::Z_FORWARD:
-		++state->pos.z;
+		for (int i = 0; i < ctx.zFactor; ++i) {
+			++state->pos.z;
+			generateVoxel(state, terrainCtx, ctx);
+		}
 		return true;
 	case LSystemAlphabet::Z_BACK:
-		--state->pos.z;
+		for (int i = 0; i < ctx.zFactor; ++i) {
+			--state->pos.z;
+			generateVoxel(state, terrainCtx, ctx);
+		}
 		return true;
 	case LSystemAlphabet::STATEPUSH:
 	case LSystemAlphabet::STATEPOP:
-		return true;
+		return false;
 	default:
 		break;
 	}
@@ -74,8 +92,7 @@ void LSystemGenerator::expand_r(LSystemState* state, TerrainContext& terrainCtx,
 		return;
 	}
 
-	if (!evaluateState(state, c)) {
-		generateVoxel(state, terrainCtx, ctx);
+	if (!evaluateState(state, terrainCtx, ctx, c)) {
 		Log::trace("Current pos is %i:%i:%i\n", state->pos.x, state->pos.y, state->pos.z);
 	}
 	auto iter = ctx.productionRules.find(c);
