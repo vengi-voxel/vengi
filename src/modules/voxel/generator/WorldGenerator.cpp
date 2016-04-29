@@ -1,6 +1,7 @@
 #include "WorldGenerator.h"
 #include "TreeGenerator.h"
 #include "CloudGenerator.h"
+#include "LSystemGenerator.h"
 #include "core/Var.h"
 #include "core/Trace.h"
 #include "noise/SimplexNoise.h"

@@ -10,6 +10,7 @@ set(SRCS
 	generator/ShapeGenerator.h generator/ShapeGenerator.cpp
 	generator/TreeGenerator.h generator/TreeGenerator.cpp
 	generator/WorldGenerator.h generator/WorldGenerator.cpp
+	generator/LSystemGenerator.h generator/LSystemGenerator.cpp
 	polyvox/Array.h
 	polyvox/AStarPathfinder.h
 	polyvox/AStarPathfinderImpl.h
@@ -33,5 +34,6 @@ gtest_suite_files(tests
 	tests/AbstractVoxelTest.h
 	tests/WorldTest.cpp
 	tests/WorldPersisterTest.cpp
+	tests/LSystemGeneratorTest.cpp
 )
 gtest_suite_deps(tests ${LIB})
