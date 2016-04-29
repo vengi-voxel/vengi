@@ -1,4 +1,5 @@
 #include "TreeGenerator.h"
+#include "LSystemGenerator.h"
 #include "voxel/Voxel.h"
 
 namespace voxel {
@@ -104,6 +105,14 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 		ShapeGenerator::createCube(ctx, leafesPos, width + 2, height - 2, depth - 2, leavesVoxel);
 		ShapeGenerator::createCube(ctx, leafesPos, width - 2, height + 2, depth - 2, leavesVoxel);
 		ShapeGenerator::createCube(ctx, leafesPos, width - 2, height - 2, depth + 2, leavesVoxel);
+	} else if (type == TreeType::LSYSTEM) {
+		LSystemContext lsystemCtx;
+		lsystemCtx.axiom = "AY[xYA]AY[XYA]AY";
+		lsystemCtx.productionRules.emplace('A', lsystemCtx.axiom);
+		lsystemCtx.voxels.emplace('A', leavesVoxel);
+		lsystemCtx.generations = 2;
+		lsystemCtx.start = leafesPos;
+		LSystemGenerator::generate(ctx, lsystemCtx, random);
 	}
 }
 
