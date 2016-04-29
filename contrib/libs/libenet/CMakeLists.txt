@@ -13,7 +13,7 @@ set(SRCS
 engine_add_library(
 	LIB libenet
 	SRCS ${SRCS}
-	GCCCFLAGS "-Wno-cast-qual -Wno-parentheses-equality")
+)
 
 if (NOT LIBENET_FOUND)
 	target_include_directories(libenet PUBLIC include/)

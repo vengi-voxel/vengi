@@ -65,14 +65,14 @@ public:
 	void beforeUI() override;
 	void afterUI() override;
 
-	void onEvent(const voxel::WorldCreatedEvent& event);
-	void onEvent(const network::DisconnectEvent& event);
+	void onEvent(const voxel::WorldCreatedEvent& event) override;
+	void onEvent(const network::DisconnectEvent& event) override;
 	/**
 	 * @brief We send the user connect message to the server and we get the seed and a user spawn message back.
 	 *
 	 * @note If auth failed, we get an auth failed message
 	 */
-	void onEvent(const network::NewConnectionEvent& event);
+	void onEvent(const network::NewConnectionEvent& event) override;
 	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	bool connect(uint16_t port, const std::string& hostname);
 	void authFailed();

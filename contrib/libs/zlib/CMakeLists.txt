@@ -13,5 +13,10 @@ set(SRCS
 	inftrees.c
 	trees.c
 	uncompr.c
-	zutil.c)
-engine_add_library(LIB zlib SRCS ${SRCS} GCCCFLAGS "-Wno-cast-qual -Wno-implicit-function-declaration")
+	zutil.c
+)
+
+engine_add_library(
+	LIB zlib
+	SRCS ${SRCS}
+)

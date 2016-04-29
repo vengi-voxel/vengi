@@ -24,7 +24,7 @@ set(SRCS
 )
 set(LIB core)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} io glm ${CMAKE_DL_LIBS} sauce)
+target_link_libraries(${LIB} io glm ${CMAKE_DL_LIBS})
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests

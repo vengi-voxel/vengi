@@ -1481,7 +1481,7 @@ endif(NOT SDL2_FOUND)
 engine_add_library(
 	LIB sdl2
 	SRCS ${SOURCE_FILES} ${SDLMAIN_SOURCES} ${PLATFORM_SRCS}
-	GCCCFLAGS "${CMAKE_C_FLAGS} ${SDL_CFLAGS} ${EXTRA_CFLAGS} -Wno-deprecated-declarations -Wno-cast-qual -Wno-unused-parameter -Wno-sign-compare -Wno-ignored-qualifiers -Wno-discarded-qualifiers -Wno-empty-body -Wno-unused-but-set-variable"
+	GCCCFLAGS "${CMAKE_C_FLAGS} ${SDL_CFLAGS} ${EXTRA_CFLAGS}"
 	DEFINES ${DEFINES}
 	LINKERFLAGS ${ANDROID_LDFLAGS} ${EXTRA_LDFLAGS})
 if (NOT SDL2_FOUND)
@@ -1492,5 +1492,5 @@ if (NOT SDL2_FOUND)
 	if (IOS)
 		set_property(TARGET sdl2 APPEND_STRING PROPERTY COMPILE_FLAGS " -fobjc-arc")
 	endif()
-	target_include_directories(${_ADDLIB_LIB} ${_ADDLIB_PUBLICHEADER} ${PROJECT_SOURCE_DIR}/src/libs/sdl2/include ${PROJECT_SOURCE_DIR}/src/libs/sdl2/src ${PROJECT_SOURCE_DIR}/src/libs/sdl2/config)
+	target_include_directories(sdl2 ${PROJECT_SOURCE_DIR}/src/libs/sdl2/include ${PROJECT_SOURCE_DIR}/src/libs/sdl2/src ${PROJECT_SOURCE_DIR}/src/libs/sdl2/config)
 endif()

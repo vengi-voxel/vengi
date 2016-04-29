@@ -9,7 +9,6 @@ endif()
 engine_add_library(
 	LIB gtest
 	SRCS ${SRCS}
-	GCCCFLAGS "-Wno-sign-compare"
 	DEFINES ${DEFINES}
 )
 target_include_directories(gtest PUBLIC . include/)

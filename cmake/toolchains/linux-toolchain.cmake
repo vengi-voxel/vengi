@@ -53,7 +53,7 @@ else()
 endif()
 
 # TODO: fix most of these and activate them one by one
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wcast-align -Wpointer-arith -Wno-deprecated-declarations -Wno-long-long -Wno-non-virtual-dtor -Wno-cast-qual -Wno-multichar -Wno-shadow -Wno-sign-compare -Wno-unused-parameter -Wreturn-type -Wwrite-strings -Wno-variadic-macros -Wno-unknown-pragmas")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -Wreturn-type -Wwrite-strings -Wno-unused-parameter")
 if (CMAKE_USE_PTHREADS_INIT)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 endif()

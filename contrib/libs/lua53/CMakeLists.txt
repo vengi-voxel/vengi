@@ -37,8 +37,8 @@ set(SRCS
 engine_add_library(
 	LIB lua53
 	SRCS ${SRCS}
-	GCCCFLAGS "-Wno-cast-qual -Wno-parentheses-equality"
-	DEFINES LUA_USE_LONGJMP LUA_COMPAT_MODULE)
+	DEFINES LUA_USE_LONGJMP LUA_COMPAT_MODULE
+)
 if (NOT LUA53_FOUND)
 	if (LINUX AND NOT ANDROID AND NOT EMSCRIPTEN)
 		target_compile_definitions(lua53 PUBLIC -DLUA_USE_LINUX)

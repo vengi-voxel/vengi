@@ -128,7 +128,7 @@ set(SRCS
 engine_add_library(
 	LIB turbobadger
 	SRCS ${SRCS}
-	GCCCFLAGS "-Wno-shadow -Wno-unused-but-set-variable -Wno-maybe-uninitialized -Wno-array-bounds")
+)
 target_include_directories(turbobadger PUBLIC tb)
 
 if (FIPS_WINDOWS)
