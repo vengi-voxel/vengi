@@ -18,6 +18,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 	// TODO: kill me
 	const core::VarPtr& plainTerrain = core::Var::get("voxel-plainterrain", "false");
 	const bool plainTerrainBool = plainTerrain->boolVal();
+	thread_local Voxel voxels[MAX_TERRAIN_HEIGHT];
 
 	// TODO: the 2d noise doesn't neep the same resolution - we can optimize this a lot
 	for (int z = lowerZ; z < lowerZ + depth; ++z) {
@@ -32,7 +33,6 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
-			Voxel voxels[ni];
 			if (plainTerrainBool) {
 				for (int y = 0; y < ni; ++y) {
 					const Voxel& voxel = biomManager.getVoxelType(x, y, z);

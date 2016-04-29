@@ -86,6 +86,7 @@ glm::ivec3 World::randomPos() const {
 }
 
 struct IsVoxelTransparent {
+	IsVoxelTransparent() {}
 	inline bool operator()(const Voxel& voxel) const {
 		return voxel.getMaterial() == Air;
 	}
