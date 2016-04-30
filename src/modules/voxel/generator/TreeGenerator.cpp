@@ -48,6 +48,21 @@ void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
 }
 
 void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
+	if (type == TreeType::LSYSTEM) {
+		// TODO: select leave type via rule
+		const VoxelType leavesType = random.random(Leaves1, Leaves10);
+		const Voxel leavesVoxel = createVoxel(leavesType);
+		LSystemContext lsystemCtx;
+		// TODO: improve rule
+		lsystemCtx.axiom = "AY[xYA]AY[XYA]AY";
+		lsystemCtx.productionRules.emplace('A', lsystemCtx.axiom);
+		lsystemCtx.voxels.emplace('A', leavesVoxel);
+		lsystemCtx.generations = 2;
+		lsystemCtx.start = pos;
+		LSystemGenerator::generate(ctx, lsystemCtx, random);
+		return;
+	}
+
 	int top = (int) pos.y + trunkHeight;
 	if (type == TreeType::PINE) {
 		top += height;
@@ -108,14 +123,6 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 		ShapeGenerator::createCube(ctx, leafesPos, width + 2, height - 2, depth - 2, leavesVoxel);
 		ShapeGenerator::createCube(ctx, leafesPos, width - 2, height + 2, depth - 2, leavesVoxel);
 		ShapeGenerator::createCube(ctx, leafesPos, width - 2, height - 2, depth + 2, leavesVoxel);
-	} else if (type == TreeType::LSYSTEM) {
-		LSystemContext lsystemCtx;
-		lsystemCtx.axiom = "AY[xYA]AY[XYA]AY";
-		lsystemCtx.productionRules.emplace('A', lsystemCtx.axiom);
-		lsystemCtx.voxels.emplace('A', leavesVoxel);
-		lsystemCtx.generations = 2;
-		lsystemCtx.start = leafesPos;
-		LSystemGenerator::generate(ctx, lsystemCtx, random);
 	}
 }
 
