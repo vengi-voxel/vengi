@@ -8,7 +8,7 @@ class AbstractVoxelTest: public core::AbstractTest {
 protected:
 	class Pager: public PagedVolume::Pager {
 	public:
-		void pageIn(const Region& region, PagedVolume::Chunk* chunk) override {
+		bool pageIn(const Region& region, PagedVolume::Chunk* chunk) override {
 			const glm::ivec3 center(region.getWidthInVoxels() / 2, region.getHeightInVoxels() / 2, region.getDepthInVoxels() / 2);
 			for (int z = 0; z < region.getDepthInVoxels(); ++z) {
 				for (int y = 0; y < region.getHeightInVoxels(); ++y) {
@@ -24,6 +24,7 @@ protected:
 					}
 				}
 			}
+			return true;
 		}
 
 		void pageOut(const Region& region, PagedVolume::Chunk* chunk) override {

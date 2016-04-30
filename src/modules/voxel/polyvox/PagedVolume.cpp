@@ -304,10 +304,8 @@ PagedVolume::Chunk::Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* p
 	const Region reg(v3dLower, v3dUpper);
 
 	// Page the data in
-	m_pPager->pageIn(reg, this);
-
 	// We'll use this later to decide if data needs to be paged out again.
-	m_bDataModified = false;
+	m_bDataModified = m_pPager->pageIn(reg, this);
 }
 
 PagedVolume::Chunk::~Chunk() {
@@ -322,6 +320,10 @@ PagedVolume::Chunk::~Chunk() {
 
 	delete[] m_tData;
 	m_tData = 0;
+}
+
+bool PagedVolume::Chunk::isGenerated() const {
+	return m_bDataModified;
 }
 
 Voxel* PagedVolume::Chunk::getData() const {

@@ -30,12 +30,14 @@ void World::Pager::erase(const Region& region, PagedVolume::Chunk* chunk) {
 #endif
 }
 
-void World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
+bool World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 #if PERSIST
 	TerrainContext ctx;
 	ctx.region = region;
 	ctx.volume = _world._volumeData;
-	_worldPersister.load(ctx, chunk, _world.seed());
+	return _worldPersister.load(ctx, chunk, _world.seed());
+#else
+	return false;
 #endif
 }
 

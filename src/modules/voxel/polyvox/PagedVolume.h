@@ -45,6 +45,7 @@ public:
 		Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager = nullptr);
 		~Chunk();
 
+		bool isGenerated() const;
 		Voxel* getData() const;
 		uint32_t getDataSizeInBytes() const;
 
@@ -91,7 +92,7 @@ public:
 		virtual ~Pager() {
 		}
 
-		virtual void pageIn(const Region& region, Chunk* pChunk) = 0;
+		virtual bool pageIn(const Region& region, Chunk* pChunk) = 0;
 		virtual void pageOut(const Region& region, Chunk* pChunk) = 0;
 	};
 
