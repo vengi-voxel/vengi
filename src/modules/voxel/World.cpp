@@ -174,6 +174,8 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		TerrainContext ctx;
 		ctx.region = region;
 		ctx.volume = _volumeData;
+		// TODO: generate all chunks that are surrounding the given region - to ensure that we can generate across chunk boundary
+		// we therefore need to maintain a list of chunks that were successfully generated. See Chunk::isGenerated
 		create(ctx);
 		const bool mergeQuads = true;
 		data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));

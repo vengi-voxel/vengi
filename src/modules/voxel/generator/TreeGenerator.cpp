@@ -20,7 +20,7 @@ int TreeGenerator::findFloor(const PagedVolume* volume, int x, int z) {
 void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
 	const Region& region = ctx.region;
 	for (int i = 0; i < 5; ++i) {
-		const int regionBorder = 10;
+		const int regionBorder = 1;
 		const int rndValX = random.random(regionBorder, region.getWidthInVoxels() - regionBorder);
 		// number should be even
 		if (!(rndValX % 2)) {
