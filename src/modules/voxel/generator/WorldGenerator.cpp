@@ -41,6 +41,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 				}
 			} else {
 				const Voxel& voxel = biomManager.getVoxelType(x, 0, z);
+				const Voxel& air = createVoxel(Air);
 				voxels[0] = voxel;
 				for (int y = 1; y < ni; ++y) {
 					const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
@@ -51,6 +52,8 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 					if (finalDensity > worldCtx.caveDensityThreshold) {
 						const Voxel& voxel = biomManager.getVoxelType(x, y, z);
 						voxels[y] = voxel;
+					} else {
+						voxels[y] = air;
 					}
 				}
 			}
