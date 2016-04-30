@@ -31,4 +31,12 @@ inline bool isFloor(VoxelType material) {
 	return material == Rock || material == Grass;
 }
 
+inline bool isLeaves(VoxelType material) {
+	return material == Leaves1 || material == Leaves10;
+}
+
+inline bool isWood(VoxelType material) {
+	return material == Wood;
+}
+
 }
