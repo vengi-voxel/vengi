@@ -4,10 +4,13 @@
 
 namespace voxel {
 
-int TreeGenerator::findFloor(int chunkHeight, PagedVolume* volume, int x, int z) {
-	for (int i = chunkHeight - 1; i >= 0; i--) {
+int TreeGenerator::findFloor(const PagedVolume* volume, int x, int z) {
+	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= 0; i--) {
 		const int material = volume->getVoxel(x, i, z).getMaterial();
-		if (isFloor(material)) {
+		if (isLeaves(material)) {
+			return -1;
+		}
+		if (isFloor(material) || isWood(material)) {
 			return i + 1;
 		}
 	}
@@ -16,7 +19,6 @@ int TreeGenerator::findFloor(int chunkHeight, PagedVolume* volume, int x, int z)
 
 void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
 	const Region& region = ctx.region;
-	const int chunkHeight = region.getHeightInVoxels();
 	for (int i = 0; i < 5; ++i) {
 		const int regionBorder = 10;
 		const int rndValX = random.random(regionBorder, region.getWidthInVoxels() - regionBorder);
@@ -28,10 +30,10 @@ void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
 		const int rndValZ = random.random(regionBorder, region.getDepthInVoxels() - regionBorder);
 		// TODO: use a noise map to get the position
 		glm::ivec3 pos(region.getLowerX() + rndValX, -1, region.getLowerZ() + rndValZ);
-		const int y = findFloor(chunkHeight, ctx.volume, pos.x, pos.z);
+		const int y = findFloor(ctx.volume, pos.x, pos.z);
 		const int height = random.random(10, 14);
 		const int trunkHeight = random.random(5, 9);
-		if (y < 0 || y >= MAX_HEIGHT - 1 - height - trunkHeight) {
+		if (y < 0) {
 			continue;
 		}
 
@@ -51,8 +53,6 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 		top += height;
 	}
 
-	const int chunkHeight = ctx.region.getHeightInVoxels();
-
 	const Voxel voxel = createVoxel(Wood);
 	for (int y = pos.y; y < top; ++y) {
 		const int trunkWidthY = trunkWidth + std::max(0, 2 - (y - pos.y));
@@ -64,7 +64,7 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 				}
 				glm::ivec3 finalPos(x, y, z);
 				if (y == pos.y) {
-					finalPos.y = findFloor(chunkHeight, ctx.volume, x, z);
+					finalPos.y = findFloor(ctx.volume, x, z);
 					if (finalPos.y < 0) {
 						continue;
 					}
