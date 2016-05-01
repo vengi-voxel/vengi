@@ -217,6 +217,16 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 		pChunk = new PagedVolume::Chunk(v3dChunkPos, m_uChunkSideLength, m_pPager);
 		pChunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
 
+		// Pass the chunk to the Pager to give it a chance to initialise it with any data
+		// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
+		const glm::ivec3 v3dLower = pChunk->m_v3dChunkSpacePosition * static_cast<int32_t>(pChunk->m_uSideLength);
+		const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(pChunk->m_uSideLength - 1, pChunk->m_uSideLength - 1, pChunk->m_uSideLength - 1);
+		const Region reg(v3dLower, v3dUpper);
+
+		// Page the data in
+		// We'll use this later to decide if data needs to be paged out again.
+		pChunk->m_bDataModified = m_pPager->pageIn(reg, pChunk);
+
 		core::ScopedWriteLock scopedLock(_lock);
 		// Store the chunk at the appropriate place in our chunk array. Ideally this place is
 		// given by the hash, otherwise we do a linear search for the next available location
@@ -300,16 +310,6 @@ PagedVolume::Chunk::Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* p
 	// Allocate the data
 	const uint32_t uNoOfVoxels = m_uSideLength * m_uSideLength * m_uSideLength;
 	m_tData = new Voxel[uNoOfVoxels];
-
-	// Pass the chunk to the Pager to give it a chance to initialise it with any data
-	// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
-	const glm::ivec3 v3dLower = m_v3dChunkSpacePosition * static_cast<int32_t>(m_uSideLength);
-	const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(m_uSideLength - 1, m_uSideLength - 1, m_uSideLength - 1);
-	const Region reg(v3dLower, v3dUpper);
-
-	// Page the data in
-	// We'll use this later to decide if data needs to be paged out again.
-	m_bDataModified = m_pPager->pageIn(reg, this);
 }
 
 PagedVolume::Chunk::~Chunk() {
