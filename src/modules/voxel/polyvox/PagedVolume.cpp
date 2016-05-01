@@ -340,7 +340,7 @@ uint32_t PagedVolume::Chunk::getDataSizeInBytes() const {
 
 const Voxel& PagedVolume::Chunk::getVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos) const {
 	// This code is not usually expected to be called by the user, with the exception of when implementing paging
-	// of uncompressed data. It's a performance critical code path so we use asserts rather than exceptions.
+	// of uncompressed data. It's a performance critical code path
 	core_assert_msg(uXPos < m_uSideLength, "Supplied position is outside of the chunk");
 	core_assert_msg(uYPos < m_uSideLength, "Supplied position is outside of the chunk");
 	core_assert_msg(uZPos < m_uSideLength, "Supplied position is outside of the chunk");
