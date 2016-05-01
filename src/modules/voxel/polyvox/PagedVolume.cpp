@@ -2,12 +2,15 @@
 
 namespace voxel {
 
-////////////////////////////////////////////////////////////////////////////////
-/// This constructor creates a volume with a fixed size which is specified as a parameter. By default this constructor will not enable paging but you can override this if desired. If you do wish to enable paging then you are required to provide the call back function (see the other PagedVolume constructor).
-/// @param pPager Called by PolyVox to load and unload data on demand.
-/// @param uTargetMemoryUsageInBytes The upper limit to how much memory this PagedVolume should aim to use.
-/// @param uChunkSideLength The size of the chunks making up the volume. Small chunks will compress/decompress faster, but there will also be more of them meaning voxel access could be slower.
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * This constructor creates a volume with a fixed size which is specified as a parameter. By default this constructor will not enable paging
+ * but you can override this if desired. If you do wish to enable
+ * paging then you are required to provide the call back function (see the other PagedVolume constructor).
+ * @param pPager Called by PolyVox to load and unload data on demand.
+ * @param uTargetMemoryUsageInBytes The upper limit to how much memory this PagedVolume should aim to use.
+ * @param uChunkSideLength The size of the chunks making up the volume. Small chunks will compress/decompress faster, but there will also be
+ * more of them meaning voxel access could be slower.
+ */
 PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint16_t uChunkSideLength) :
 		m_uChunkSideLength(uChunkSideLength), m_pPager(pPager), _lock("PagedVolume") {
 	// Validation of parameters
@@ -41,21 +44,22 @@ PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint
 			(m_uChunkCountLimit * uChunkSizeInBytes) / (1024 * 1024), m_uChunkCountLimit, uChunkSizeInBytes / 1024);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Destroys the volume The destructor will call flushAll() to ensure that a paging volume has the chance to save it's data via the dataOverflowHandler() if desired.
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * Destroys the volume The destructor will call flushAll() to ensure that a paging volume has the chance to save it's
+ * data via the dataOverflowHandler() if desired.
+ */
 PagedVolume::~PagedVolume() {
 	flushAll();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// This version of the function is provided so that the wrap mode does not need
-/// to be specified as a template parameter, as it may be confusing to some users.
-/// @param uXPos The @c x position of the voxel
-/// @param uYPos The @c y position of the voxel
-/// @param uZPos The @c z position of the voxel
-/// @return The voxel value
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * This version of the function is provided so that the wrap mode does not need
+ * to be specified as a template parameter, as it may be confusing to some users.
+ * @param uXPos The @c x position of the voxel
+ * @param uYPos The @c y position of the voxel
+ * @param uZPos The @c z position of the voxel
+ * @return The voxel value
+ */
 const Voxel& PagedVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const {
 	const int32_t chunkX = uXPos >> m_uChunkSideLengthPower;
 	const int32_t chunkY = uYPos >> m_uChunkSideLengthPower;
@@ -78,21 +82,21 @@ PagedVolume::Chunk* PagedVolume::getChunk(const glm::ivec3& pos) const {
 	return pChunk;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// This version of the function is provided so that the wrap mode does not need
-/// to be specified as a template parameter, as it may be confusing to some users.
-/// @param v3dPos The 3D position of the voxel
-/// @return The voxel value
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * This version of the function is provided so that the wrap mode does not need
+ * to be specified as a template parameter, as it may be confusing to some users.
+ * @param v3dPos The 3D position of the voxel
+ * @return The voxel value
+ */
 const Voxel& PagedVolume::getVoxel(const glm::ivec3& v3dPos) const {
 	return getVoxel(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// @param uXPos the @c x position of the voxel
-/// @param uYPos the @c y position of the voxel
-/// @param uZPos the @c z position of the voxel
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @param uXPos the @c x position of the voxel
+ * @param uYPos the @c y position of the voxel
+ * @param uZPos the @c z position of the voxel
+ */
 void PagedVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue) {
 	const int32_t chunkX = uXPos >> m_uChunkSideLengthPower;
 	const int32_t chunkY = uYPos >> m_uChunkSideLengthPower;
@@ -107,10 +111,10 @@ void PagedVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Vo
 	pChunk->setVoxel(xOffset, yOffset, zOffset, tValue);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// @param v3dPos the 3D position of the voxel
-/// @param tValue the value to which the voxel will be set
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @param v3dPos the 3D position of the voxel
+ * @param tValue the value to which the voxel will be set
+ */
 void PagedVolume::setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue) {
 	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
@@ -123,10 +127,10 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, i
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Note that if the memory usage limit is not large enough to support the region this function will only load part of the region. In this case it is undefined which parts will actually be loaded. If all the voxels in the given region are already loaded, this function will not do anything. Other voxels might be unloaded to make space for the new voxels.
-/// @param regPrefetch The Region of voxels to prefetch into memory.
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * Note that if the memory usage limit is not large enough to support the region this function will only load part of the region. In this case it is undefined which parts will actually be loaded. If all the voxels in the given region are already loaded, this function will not do anything. Other voxels might be unloaded to make space for the new voxels.
+ * @param regPrefetch The Region of voxels to prefetch into memory.
+ */
 void PagedVolume::prefetch(const Region& regPrefetch) {
 	// Convert the start and end positions into chunk space coordinates
 	const glm::ivec3& lower = regPrefetch.getLowerCorner();
