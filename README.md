@@ -1,10 +1,9 @@
 # About
 Voxel engine that depends on [PolyVox](http://www.volumesoffun.com/polyvox-about/).
 
-The build system is a cmake based system that automatically downloads all the needed dependencies. See
-[fips homepage](http://floooh.github.io/fips).
+The build system is a cmake based system.
 
-Network message generation depends on [flatbuffers](https://github.com/mgerhardy/fips-flatbuffers)
+Network message generation depends on flatbuffers
 
 # Var
 There are vars inside the engine that you can override via commandline. Var instances are runtime changeable
@@ -12,9 +11,6 @@ configuration variables that you can influence from within the game.
 e.g. run the server with ```./server -set sv_port 1025``` to change the *sv_port* var to 1025 and bind that port.
 
 # Dependencies
-* You need to have **SDL2** installed
- * Windows: env var *SDL2DIR* point to the directory where you extracted it into ([Download link](http://libsdl.org/release/SDL2-devel-2.0.3-VC.zip))
- * Linux: pkg-config support is enough here (e.g. ```apt-get install libsdl2-dev```)
 * You need to have **git** installed and in your path
 * You need to have **cmake** installed and in your path
 * You need to have **python27** installed and in your path
@@ -22,13 +18,8 @@ e.g. run the server with ```./server -set sv_port 1025``` to change the *sv_port
 * You need lua installed
 * You need libassimp
 
-# Compilation
-* After fulfilling all the above mentioned dependencies, you just have to run ```fips```
-
 # Profiling
 * There is built-in [Remotery](https://github.com/Celtoys/Remotery) support - just run the application with e.g.
-    ```./fips run server -- -set core_trace true```
-  or without fips:
     ```./server -set core_trace true```
   The *core_trace* var will activate all those core_trace_* macros.
 
