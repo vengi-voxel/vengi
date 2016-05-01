@@ -142,7 +142,7 @@ void World::calculateAO(const Region& region) {
 					}
 				}
 				//voxel.setDensity(ao);
-				_volumeData->setVoxel(nx, ny, nz, voxel);
+				//_volumeData->setVoxel(nx, ny, nz, voxel);
 			}
 		}
 	}
