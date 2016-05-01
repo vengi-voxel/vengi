@@ -58,7 +58,7 @@ struct TerrainContext {
 	// cloud or building generation) then the relative chunk coordinate is converted into
 	// an absolute position in the world by taking the given region parameter into account
 	// (and put into the non chunk voxel vector for later handling)
-	PagedVolume* volume;
+	PagedVolume* voxelStorage;
 	PositionSet dirty;
 };
 

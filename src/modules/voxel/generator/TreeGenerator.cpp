@@ -30,7 +30,7 @@ void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
 		const int rndValZ = random.random(regionBorder, region.getDepthInVoxels() - regionBorder);
 		// TODO: use a noise map to get the position
 		glm::ivec3 pos(region.getLowerX() + rndValX, -1, region.getLowerZ() + rndValZ);
-		const int y = findFloor(ctx.volume, pos.x, pos.z);
+		const int y = findFloor(ctx.voxelStorage, pos.x, pos.z);
 		const int height = random.random(10, 14);
 		const int trunkHeight = random.random(5, 9);
 		if (y < 0) {
@@ -79,16 +79,16 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 				}
 				glm::ivec3 finalPos(x, y, z);
 				if (y == pos.y) {
-					finalPos.y = findFloor(ctx.volume, x, z);
+					finalPos.y = findFloor(ctx.voxelStorage, x, z);
 					if (finalPos.y < 0) {
 						continue;
 					}
 					for (int i = finalPos.y + 1; i <= y; ++i) {
-						ctx.volume->setVoxel(finalPos.x, i, finalPos.z, voxel);
+						ctx.voxelStorage->setVoxel(finalPos.x, i, finalPos.z, voxel);
 					}
 				}
 
-				ctx.volume->setVoxel(finalPos, voxel);
+				ctx.voxelStorage->setVoxel(finalPos, voxel);
 			}
 		}
 	}

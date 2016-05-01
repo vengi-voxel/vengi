@@ -57,7 +57,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 					}
 				}
 			}
-			ctx.volume->setVoxels(x, z, voxels, ni);
+			ctx.voxelStorage->setVoxels(x, z, voxels, ni);
 		}
 	}
 	const glm::vec3 worldPos(lowerX, 0, lowerZ);

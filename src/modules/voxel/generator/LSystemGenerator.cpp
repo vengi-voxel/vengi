@@ -11,7 +11,7 @@ void LSystemGenerator::generateVoxel(const LSystemState* state, TerrainContext& 
 		return;
 	}
 	const Voxel& voxel = i->second;
-	PagedVolume* volume = terrainCtx.volume;
+	PagedVolume* volume = terrainCtx.voxelStorage;
 	if (volume == nullptr) {
 		return;
 	}

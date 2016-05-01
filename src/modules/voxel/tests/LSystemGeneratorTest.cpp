@@ -18,7 +18,7 @@ public:
 		_random.setSeed(seed);
 		const voxel::Region region(glm::ivec3(0, 0, 0), glm::ivec3(63, 63, 63));
 		_ctx.region = region;
-		_ctx.volume = nullptr;
+		_ctx.voxelStorage = nullptr;
 	}
 };
 

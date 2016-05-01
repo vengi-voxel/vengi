@@ -25,7 +25,7 @@ void World::Pager::erase(const Region& region, PagedVolume::Chunk* chunk) {
 #if PERSIST
 	TerrainContext ctx;
 	ctx.region = region;
-	ctx.volume = _world._volumeData;
+	ctx.voxelStorage = _world._volumeData;
 	_worldPersister.erase(ctx, chunk, _world.seed());
 #endif
 }
@@ -34,7 +34,7 @@ bool World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 #if PERSIST
 	TerrainContext ctx;
 	ctx.region = region;
-	ctx.volume = _world._volumeData;
+	ctx.voxelStorage = _world._volumeData;
 	return _worldPersister.load(ctx, chunk, _world.seed());
 #else
 	return false;
@@ -45,7 +45,7 @@ void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
 #if PERSIST
 	TerrainContext ctx;
 	ctx.region = region;
-	ctx.volume = _world._volumeData;
+	ctx.voxelStorage = _world._volumeData;
 	_worldPersister.save(ctx, chunk, _world.seed());
 #endif
 }
@@ -173,7 +173,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		calculateAO(region);
 		TerrainContext ctx;
 		ctx.region = region;
-		ctx.volume = _volumeData;
+		ctx.voxelStorage = _volumeData;
 		region.grow(1, 1, 1);
 		_volumeData->prefetch(region);
 		// TODO: generate all chunks that are surrounding the given region - to ensure that we can generate across chunk boundary
@@ -208,7 +208,7 @@ void World::placeTree(const TreeContext& ctx) {
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
 	const Region& region = getRegion(getGridPos(pos));
 	TerrainContext tctx;
-	tctx.volume = nullptr;
+	tctx.voxelStorage = nullptr;
 	tctx.region = region;
 	TreeGenerator::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
 }

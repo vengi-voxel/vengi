@@ -14,7 +14,7 @@ TEST_F(WorldPersisterTest, testSaveLoad) {
 	WorldPersister persister;
 	TerrainContext ctx;
 	ctx.region = region;
-	ctx.volume = &volData;
+	ctx.voxelStorage = &volData;
 	PagedVolume::Chunk* chunk = volData.getChunk(region.getLowerCorner());
 	ASSERT_TRUE(chunk != nullptr) << "Could not get chunk";
 	ASSERT_TRUE(persister.save(ctx, chunk, seed)) << "Could not save volume chunk";
