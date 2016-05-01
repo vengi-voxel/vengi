@@ -11,12 +11,11 @@ void LSystemGenerator::generateVoxel(const LSystemState* state, TerrainContext& 
 		return;
 	}
 	const Voxel& voxel = i->second;
-	PagedVolume* volume = terrainCtx.voxelStorage;
-	if (volume == nullptr) {
+	if (terrainCtx.voxelStorage == nullptr) {
 		return;
 	}
 	Log::trace("add voxel %c to %i:%i:%i\n", state->lastVoxelType, state->pos.x, state->pos.y, state->pos.z);
-	volume->setVoxel(state->pos, voxel);
+	terrainCtx.voxelStorage->setVoxel(state->pos, voxel);
 }
 
 bool LSystemGenerator::evaluateState(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, char c) {

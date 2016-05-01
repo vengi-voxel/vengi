@@ -4,9 +4,9 @@
 
 namespace voxel {
 
-int TreeGenerator::findFloor(const PagedVolume* volume, int x, int z) {
+int TreeGenerator::findFloor(const TerrainContext& ctx, int x, int z) {
 	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= 0; i--) {
-		const int material = volume->getVoxel(x, i, z).getMaterial();
+		const int material = ctx.voxelStorage->getVoxel(x, i, z).getMaterial();
 		if (isLeaves(material)) {
 			return -1;
 		}
@@ -30,7 +30,7 @@ void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
 		const int rndValZ = random.random(regionBorder, region.getDepthInVoxels() - regionBorder);
 		// TODO: use a noise map to get the position
 		glm::ivec3 pos(region.getLowerX() + rndValX, -1, region.getLowerZ() + rndValZ);
-		const int y = findFloor(ctx.voxelStorage, pos.x, pos.z);
+		const int y = findFloor(ctx, pos.x, pos.z);
 		const int height = random.random(10, 14);
 		const int trunkHeight = random.random(5, 9);
 		if (y < 0) {
@@ -79,7 +79,7 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 				}
 				glm::ivec3 finalPos(x, y, z);
 				if (y == pos.y) {
-					finalPos.y = findFloor(ctx.voxelStorage, x, z);
+					finalPos.y = findFloor(ctx, x, z);
 					if (finalPos.y < 0) {
 						continue;
 					}
