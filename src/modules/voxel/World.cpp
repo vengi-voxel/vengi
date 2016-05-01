@@ -167,18 +167,20 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		if (_cancelThreads)
 			return;
 		core_trace_scoped(MeshExtraction);
-		const Region& region = getRegion(pos);
+		Region region = getRegion(pos);
 		DecodedMeshData data;
 
 		calculateAO(region);
 		TerrainContext ctx;
 		ctx.region = region;
 		ctx.volume = _volumeData;
+		region.grow(1, 1, 1);
+		_volumeData->prefetch(region);
 		// TODO: generate all chunks that are surrounding the given region - to ensure that we can generate across chunk boundary
 		// we therefore need to maintain a list of chunks that were successfully generated. See Chunk::isGenerated
 		create(ctx);
 		const bool mergeQuads = true;
-		data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
+		data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, ctx.region, IsQuadNeeded(), mergeQuads));
 
 		data.translation = pos;
 		core::ScopedWriteLock lock(_rwLock);
