@@ -88,7 +88,7 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 					}
 				}
 
-				ctx.volume->setVoxel(finalPos.x, finalPos.y, finalPos.z, voxel);
+				ctx.volume->setVoxel(finalPos, voxel);
 			}
 		}
 	}
