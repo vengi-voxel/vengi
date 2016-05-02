@@ -16,10 +16,9 @@ void Window::fillWidgets(const Field* fields, int fieldAmount, void* basePtr) {
 	for (int i = 0; i < fieldAmount; ++i) {
 		const Field& field = fields[i];
 		const tb::TBID& name = field.name;
-		const char *widgetName = name.debug_string.CStr();
 		TBWidget *widget = GetWidgetByID(name);
 		if (widget == nullptr) {
-			Log::warn("Could not find widget with id %s in window %s", widgetName, GetClassName());
+			Log::warn("Could not find widget in window %s", GetClassName());
 			continue;
 		}
 		void* fieldPtr = (uint8_t*)basePtr + field.offset;

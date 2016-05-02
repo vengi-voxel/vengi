@@ -23,7 +23,7 @@ namespace voxel {
 
 void World::Pager::erase(const Region& region, PagedVolume::Chunk* chunk) {
 #if PERSIST
-	TerrainContext ctx(_world._volumeData);
+	TerrainContext ctx(_world._volumeData, chunk);
 	ctx.region = region;
 	_worldPersister.erase(ctx, chunk, _world.seed());
 #endif
