@@ -14,7 +14,7 @@ protected:
 
 public:
 	LSystemGeneratorTest() :
-			_ctx(nullptr) {
+			_ctx(nullptr, nullptr) {
 	}
 
 	void SetUp() override {

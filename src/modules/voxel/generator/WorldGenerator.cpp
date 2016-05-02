@@ -19,7 +19,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 	// TODO: kill me
 	const core::VarPtr& plainTerrain = core::Var::get("voxel-plainterrain", "false");
 	const bool plainTerrainBool = plainTerrain->boolVal();
-	thread_local Voxel voxels[MAX_TERRAIN_HEIGHT];
+	Voxel voxels[MAX_TERRAIN_HEIGHT];
 
 	// TODO: the 2d noise doesn't neep the same resolution - we can optimize this a lot
 	for (int z = lowerZ; z < lowerZ + depth; ++z) {

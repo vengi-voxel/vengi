@@ -53,9 +53,10 @@ typedef std::unordered_set<glm::ivec3, IVec3HashEquals> PositionSet;
 class TerrainContext {
 private:
 	PagedVolume* _voxelStorage;
+	PagedVolume::Chunk* _chunk;
 public:
-	TerrainContext(PagedVolume* voxelStorage) :
-			_voxelStorage(voxelStorage) {
+	TerrainContext(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk) :
+			_voxelStorage(voxelStorage), _chunk(chunk) {
 	}
 
 	Region region;
@@ -70,20 +71,40 @@ public:
 	}
 
 	inline const Voxel& getVoxel(int x, int y, int z) const {
+		if (region.containsPoint(x, y, z)) {
+			core_assert(_chunk != nullptr);
+			return _chunk->getVoxel(x - region.getLowerX(), y - region.getLowerY(), z - region.getLowerZ());
+		}
 		core_assert(_voxelStorage != nullptr);
 		return _voxelStorage->getVoxel(x, y, z);
 	}
 
 	inline void setVoxel(int x, int y, int z, const Voxel& voxel) {
-		if (_voxelStorage == nullptr)
-			return;
-		_voxelStorage->setVoxel(x, y, z, voxel);
+		if (region.containsPoint(x, y, z)) {
+			core_assert(_chunk != nullptr);
+			_chunk->setVoxel(x - region.getLowerX(), y - region.getLowerY(), z - region.getLowerZ(), voxel);
+		} else {
+			core_assert(_voxelStorage != nullptr);
+			_voxelStorage->setVoxel(x, y, z, voxel);
+		}
 	}
 
 	inline void setVoxels(int x, int z, const Voxel* voxels, int amount) {
-		if (_voxelStorage == nullptr)
-			return;
-		_voxelStorage->setVoxels(x, z, voxels, amount);
+		if (region.containsPoint(x, 0, z)) {
+			// first part goes into the chunk
+			const int w = region.getWidthInVoxels();
+			_chunk->setVoxels(x - region.getLowerX(), z - region.getLowerZ(), voxels, std::min(w, amount));
+			amount -= w;
+			if (amount > 0) {
+				// everything else goes into the volume
+				core_assert(_voxelStorage != nullptr);
+				_voxelStorage->setVoxels(x, z, voxels + w, amount);
+			}
+		} else {
+			// TODO: add region/chunk support here, too
+			core_assert(_voxelStorage != nullptr);
+			_voxelStorage->setVoxels(x, z, voxels, amount);
+		}
 	}
 };
 

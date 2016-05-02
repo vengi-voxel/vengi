@@ -23,25 +23,27 @@ namespace voxel {
 
 void World::Pager::erase(const Region& region, PagedVolume::Chunk* chunk) {
 #if PERSIST
-	TerrainContext ctx(_world._volumeData);
+	TerrainContext ctx(_world._volumeData, chunk);
 	ctx.region = region;
 	_worldPersister.erase(ctx, chunk, _world.seed());
 #endif
 }
 
 bool World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
-#if PERSIST
-	TerrainContext ctx(_world._volumeData);
+	TerrainContext ctx(_world._volumeData, chunk);
 	ctx.region = region;
-	return _worldPersister.load(ctx, chunk, _world.seed());
-#else
-	return false;
+#if PERSIST
+	if (!_worldPersister.load(ctx, chunk, _world.seed()))
 #endif
+	{
+		_world.create(ctx);
+	}
+	return true;
 }
 
 void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
 #if PERSIST
-	TerrainContext ctx(_world._volumeData);
+	TerrainContext ctx(_world._volumeData, chunk);
 	ctx.region = region;
 	_worldPersister.save(ctx, chunk, _world.seed());
 #endif
@@ -164,19 +166,15 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		if (_cancelThreads)
 			return;
 		core_trace_scoped(MeshExtraction);
-		Region region = getRegion(pos);
+		const Region &region = getRegion(pos);
 		DecodedMeshData data;
 
-		calculateAO(region);
-		TerrainContext ctx(_volumeData);
-		ctx.region = region;
-		region.grow(1, 1, 1);
-		_volumeData->prefetch(region);
-		// TODO: generate all chunks that are surrounding the given region - to ensure that we can generate across chunk boundary
-		// we therefore need to maintain a list of chunks that were successfully generated. See Chunk::isGenerated
-		create(ctx);
+		Region prefetchRegion = region;
+		prefetchRegion.grow(1, 1, 1);
+		_volumeData->prefetch(prefetchRegion);
+
 		const bool mergeQuads = true;
-		data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, ctx.region, IsQuadNeeded(), mergeQuads));
+		data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
 
 		data.translation = pos;
 		core::ScopedWriteLock lock(_rwLock);
@@ -203,7 +201,7 @@ void World::placeTree(const TreeContext& ctx) {
 	core_trace_scoped(PlaceTree);
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
 	const Region& region = getRegion(getGridPos(pos));
-	TerrainContext tctx(_volumeData);
+	TerrainContext tctx(_volumeData, _volumeData->getChunk(pos));
 	tctx.region = region;
 	TreeGenerator::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
 }

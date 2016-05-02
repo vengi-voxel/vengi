@@ -162,7 +162,10 @@ void PagedVolume::prefetch(const Region& regPrefetch) {
 	for (int32_t x = v3dStart.x; x <= v3dEnd.x; x += m_uChunkSideLength) {
 		for (int32_t y = v3dStart.y; y <= v3dEnd.y; y += m_uChunkSideLength) {
 			for (int32_t z = v3dStart.z; z <= v3dEnd.z; z += m_uChunkSideLength) {
-				getChunk(x, y, z);
+				const int32_t chunkX = x >> m_uChunkSideLengthPower;
+				const int32_t chunkY = y >> m_uChunkSideLengthPower;
+				const int32_t chunkZ = z >> m_uChunkSideLengthPower;
+				getChunk(chunkX, chunkY, chunkZ);
 			}
 		}
 	}
@@ -218,13 +221,14 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 
 			iIndex++;
 			iIndex %= uChunkArraySize;
-		} while (iIndex != iPositionHash); // Keep searching until we get back to our start position.
+		} while (iIndex != iPositionHash); // Keep searching until we get back to our start position
 	}
 
 	// If we still haven't found the chunk then it's time to create a new one and page it in from disk.
 	if (!pChunk) {
 		// The chunk was not found so we will create a new one.
 		glm::ivec3 v3dChunkPos(uChunkX, uChunkY, uChunkZ);
+		Log::info("create new chunk at %i:%i:%i at %u", uChunkX, uChunkY, uChunkZ, iPositionHash);
 		pChunk = new PagedVolume::Chunk(v3dChunkPos, m_uChunkSideLength, m_pPager);
 		pChunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
 
@@ -234,53 +238,55 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 		const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(pChunk->m_uSideLength - 1, pChunk->m_uSideLength - 1, pChunk->m_uSideLength - 1);
 		const Region reg(v3dLower, v3dUpper);
 
+		{
+			core::ScopedWriteLock scopedLock(_lock);
+			// Store the chunk at the appropriate place in our chunk array. Ideally this place is
+			// given by the hash, otherwise we do a linear search for the next available location
+			// We always expect to find a free place because we aim to keep the array only half full.
+			uint32_t iIndex = iPositionHash;
+			bool bInsertedSucessfully = false;
+			do {
+				if (m_arrayChunks[iIndex] == nullptr) {
+					m_arrayChunks[iIndex] = std::move(std::unique_ptr<Chunk>(pChunk));
+					bInsertedSucessfully = true;
+					break;
+				}
+
+				iIndex++;
+				iIndex %= uChunkArraySize;
+			} while (iIndex != iPositionHash); // Keep searching until we get back to our start position.
+
+			// This should never really happen unless we are failing to keep our number of active chunks
+			// significantly under the target amount. Perhaps if chunks are 'pinned' for threading purposes?
+			core_assert_msg(bInsertedSucessfully, "No space in chunk array for new chunk.");
+
+			// As we have added a chunk we may have exceeded our target chunk limit. Search through the array to
+			// determine how many chunks we have, as well as finding the oldest timestamp. Note that this is potentially
+			// wasteful and we may instead wish to track how many chunks we have and/or delete a chunk at random (or
+			// just check e.g. 10 and delete the oldest of those) but we'll see if this is a bottleneck first. Paging
+			// the data in is probably more expensive.
+			uint32_t uChunkCount = 0;
+			uint32_t uOldestChunkIndex = 0;
+			uint32_t uOldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
+			for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
+				if (m_arrayChunks[uIndex]) {
+					uChunkCount++;
+					if (m_arrayChunks[uIndex]->m_uChunkLastAccessed < uOldestChunkTimestamp) {
+						uOldestChunkTimestamp = m_arrayChunks[uIndex]->m_uChunkLastAccessed;
+						uOldestChunkIndex = uIndex;
+					}
+				}
+			}
+
+			// Check if we have too many chunks, and delete the oldest if so.
+			if (uChunkCount > m_uChunkCountLimit) {
+				m_arrayChunks[uOldestChunkIndex] = nullptr;
+			}
+		}
+
 		// Page the data in
 		// We'll use this later to decide if data needs to be paged out again.
 		pChunk->m_bDataModified = m_pPager->pageIn(reg, pChunk);
-
-		core::ScopedWriteLock scopedLock(_lock);
-		// Store the chunk at the appropriate place in our chunk array. Ideally this place is
-		// given by the hash, otherwise we do a linear search for the next available location
-		// We always expect to find a free place because we aim to keep the array only half full.
-		uint32_t iIndex = iPositionHash;
-		bool bInsertedSucessfully = false;
-		do {
-			if (m_arrayChunks[iIndex] == nullptr) {
-				m_arrayChunks[iIndex] = std::move(std::unique_ptr<Chunk>(pChunk));
-				bInsertedSucessfully = true;
-				break;
-			}
-
-			iIndex++;
-			iIndex %= uChunkArraySize;
-		} while (iIndex != iPositionHash); // Keep searching until we get back to our start position.
-
-		// This should never really happen unless we are failing to keep our number of active chunks
-		// significantly under the target amount. Perhaps if chunks are 'pinned' for threading purposes?
-		core_assert_msg(bInsertedSucessfully, "No space in chunk array for new chunk.");
-
-		// As we have added a chunk we may have exceeded our target chunk limit. Search through the array to
-		// determine how many chunks we have, as well as finding the oldest timestamp. Note that this is potentially
-		// wasteful and we may instead wish to track how many chunks we have and/or delete a chunk at random (or
-		// just check e.g. 10 and delete the oldest of those) but we'll see if this is a bottleneck first. Paging
-		// the data in is probably more expensive.
-		uint32_t uChunkCount = 0;
-		uint32_t uOldestChunkIndex = 0;
-		uint32_t uOldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
-		for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
-			if (m_arrayChunks[uIndex]) {
-				uChunkCount++;
-				if (m_arrayChunks[uIndex]->m_uChunkLastAccessed < uOldestChunkTimestamp) {
-					uOldestChunkTimestamp = m_arrayChunks[uIndex]->m_uChunkLastAccessed;
-					uOldestChunkIndex = uIndex;
-				}
-			}
-		}
-
-		// Check if we have too many chunks, and delete the oldest if so.
-		if (uChunkCount > m_uChunkCountLimit) {
-			m_arrayChunks[uOldestChunkIndex] = nullptr;
-		}
 	}
 
 	core::ScopedWriteLock scopedLock(_lock);
