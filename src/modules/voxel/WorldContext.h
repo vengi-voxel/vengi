@@ -72,7 +72,7 @@ struct WorldContext {
 	float caveNoisePersistence = 0.1f;
 	float caveNoiseFrequency = 0.05f;
 	float caveNoiseAmplitude = 0.1f;
-	float caveDensityThreshold = 1.1f;
+	float caveDensityThreshold = 0.83f;
 
 	int mountainNoiseOctaves = 2;
 	float mountainNoisePersistence = 0.3f;
