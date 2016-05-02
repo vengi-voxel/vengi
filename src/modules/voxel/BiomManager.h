@@ -34,14 +34,14 @@ public:
 		if (pos.y < 0 || pos.y >= MAX_HEIGHT) {
 			return INVALID;
 		}
+		if (cave) {
+			return ROCK;
+		}
 		core_assert(noise >= 0.0f && noise <= 1.0f);
 		return bioms[glm::clamp(int(pos.y * noise), 0, MAX_HEIGHT - 1)];
 	}
 
 	inline const Voxel& getVoxelType(int x, int y, int z, bool cave = false, float noise = 1.0f) const {
-		if (cave) {
-			return ROCK;
-		}
 		return getVoxelType(glm::ivec3(x, y, z), cave, noise);
 	}
 

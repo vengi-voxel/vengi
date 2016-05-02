@@ -17,7 +17,7 @@ int TreeGenerator::findFloor(const TerrainContext& ctx, int x, int z) {
 	return -1;
 }
 
-void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
+void TreeGenerator::createTrees(TerrainContext& ctx, const BiomManager& biomManager, core::Random& random) {
 	const Region& region = ctx.region;
 	for (int i = 0; i < 5; ++i) {
 		const int regionBorder = 1;
@@ -38,6 +38,10 @@ void TreeGenerator::createTrees(TerrainContext& ctx, core::Random& random) {
 		}
 
 		pos.y = y;
+
+		if (!biomManager.hasTrees(pos)) {
+			continue;
+		}
 
 		const int maxSize = 14;
 		const int size = random.random(12, maxSize);
