@@ -289,7 +289,9 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 
 	// During extraction we create a number of different lists of quads. All the
 	// quads in a given list are in the same plane and facing in the same direction.
-	std::vector<std::list<Quad> > m_vecQuads[NoOfFaces];
+	typedef std::list<Quad> QuadList;
+	typedef std::vector<QuadList> QuadListVector;
+	QuadListVector m_vecQuads[NoOfFaces];
 
 	std::memset(m_previousSliceVertices.getRawData(), 0xff, m_previousSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
 	std::memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
@@ -387,12 +389,8 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 		std::memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
 	}
 
-	for (uint32_t uFace = 0; uFace < NoOfFaces; uFace++) {
-		std::vector<std::list<Quad> >& vecListQuads = m_vecQuads[uFace];
-
-		for (uint32_t slice = 0; slice < vecListQuads.size(); slice++) {
-			std::list<Quad>& listQuads = vecListQuads[slice];
-
+	for (QuadListVector& vecListQuads : m_vecQuads) {
+		for (QuadList& listQuads : vecListQuads) {
 			if (bMergeQuads) {
 				// Repeatedly call this function until it returns
 				// false to indicate nothing more can be done.
@@ -400,9 +398,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 				}
 			}
 
-			typename std::list<Quad>::iterator iterEnd = listQuads.end();
-			for (typename std::list<Quad>::iterator quadIter = listQuads.begin(); quadIter != iterEnd; quadIter++) {
-				Quad& quad = *quadIter;
+			for (const Quad& quad : listQuads) {
 				result->addTriangle(quad.vertices[0], quad.vertices[1], quad.vertices[2]);
 				result->addTriangle(quad.vertices[0], quad.vertices[2], quad.vertices[3]);
 			}
