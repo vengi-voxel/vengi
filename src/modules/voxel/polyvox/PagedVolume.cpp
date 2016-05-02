@@ -120,10 +120,21 @@ void PagedVolume::setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue) {
 }
 
 void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, int amount) {
-	// lock here to ensure no other thread is writing and we can reuse the last used chunk
-	// TODO: core::ScopedReadLock scopedLock(_lock);
-	for (int y = 0; y < amount; ++y) {
-		setVoxel(uXPos, y, uZPos, tArray[y]);
+	int32_t uYPos = 0;
+	while (amount > 0) {
+		const int32_t chunkX = uXPos >> m_uChunkSideLengthPower;
+		const int32_t chunkY = uYPos >> m_uChunkSideLengthPower;
+		const int32_t chunkZ = uZPos >> m_uChunkSideLengthPower;
+		const uint16_t xOffset = static_cast<uint16_t>(uXPos & m_iChunkMask);
+		const uint16_t zOffset = static_cast<uint16_t>(uZPos & m_iChunkMask);
+
+		Chunk* chunk = getChunk(chunkX, chunkY, chunkZ);
+		const int32_t n = std::min(amount, int32_t(chunk->m_uSideLength));
+
+		chunk->setVoxels(xOffset, zOffset, tArray, n);
+		amount -= n;
+		tArray += ptrdiff_t(n);
+		uYPos += n;
 	}
 }
 
@@ -373,8 +384,8 @@ void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uZPos, const Voxel* 
 	// This code is not usually expected to be called by the user, with the exception of when implementing paging
 	// of uncompressed data. It's a performance critical code path so we use asserts rather than exceptions.
 	core_assert_msg(amount <= m_uSideLength, "Supplied amount exceeds chunk boundaries");
-	core_assert_msg(uXPos < m_uSideLength, "Supplied position is outside of the chunk");
-	core_assert_msg(uZPos < m_uSideLength, "Supplied position is outside of the chunk");
+	core_assert_msg(uXPos < m_uSideLength, "Supplied x position is outside of the chunk");
+	core_assert_msg(uZPos < m_uSideLength, "Supplied z position is outside of the chunk");
 	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	core::ScopedWriteLock readLock(_voxelLock);
