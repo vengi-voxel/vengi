@@ -9,7 +9,7 @@ BiomeManager::BiomeManager() {
 }
 
 bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperature, const Voxel& type) {
-	if (lower < 0 || lower >= int(SDL_arraysize(bioms)) || upper <= lower || upper < 0 || upper >= int(SDL_arraysize(bioms))) {
+	if (lower < 0 || lower >= int(SDL_arraysize(bioms)) || upper <= lower || upper < 0 || upper > int(SDL_arraysize(bioms))) {
 		return false;
 	}
 	for (int i = lower; i < upper; ++i) {
