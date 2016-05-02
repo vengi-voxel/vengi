@@ -2794,7 +2794,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
 #define stbi__SOI(x)         ((x) == 0xd8)
 #define stbi__EOI(x)         ((x) == 0xd9)
 #define stbi__SOF(x)         ((x) == 0xc0 || (x) == 0xc1 || (x) == 0xc2)
-#define stbi__SOS(x)         ((x) == 0xda)
+#define stbi__SOS(x)         (x) == 0xda
 
 #define stbi__SOF_progressive(x)   ((x) == 0xc2)
 
