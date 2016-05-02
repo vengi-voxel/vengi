@@ -9,6 +9,7 @@ namespace voxel {
 
 #define MAX_HEIGHT 255
 #define MAX_TERRAIN_HEIGHT 100
+#define MAX_WATER_HEIGHT 10
 
 inline Voxel createVoxel(VoxelType type) {
 	return Voxel(type);
@@ -37,6 +38,10 @@ inline bool isLeaves(VoxelType material) {
 
 inline bool isWood(VoxelType material) {
 	return material == Wood;
+}
+
+inline bool isRock(VoxelType material) {
+	return material == Rock;
 }
 
 }

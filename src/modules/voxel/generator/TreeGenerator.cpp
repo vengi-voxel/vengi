@@ -5,12 +5,12 @@
 namespace voxel {
 
 int TreeGenerator::findFloor(const TerrainContext& ctx, int x, int z) {
-	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= 0; i--) {
+	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; i--) {
 		const int material = ctx.getVoxel(x, i, z).getMaterial();
 		if (isLeaves(material)) {
 			return -1;
 		}
-		if (isFloor(material) || isWood(material)) {
+		if (!isRock(material) && (isFloor(material) || isWood(material))) {
 			return i + 1;
 		}
 	}

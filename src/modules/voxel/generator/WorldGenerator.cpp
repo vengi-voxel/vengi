@@ -41,6 +41,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 				}
 			} else {
 				const Voxel& air = createVoxel(Air);
+				const Voxel& water = createVoxel(Water);
 				voxels[0] = createVoxel(Dirt);
 				for (int y = ni - 1; y >= 1; --y) {
 					const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
@@ -52,7 +53,11 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 						const Voxel& voxel = (y < ni - 1) ? biomManager.getCaveVoxelType(x, y, z) : biomManager.getVoxelType(x, y, z);
 						voxels[y] = voxel;
 					} else {
-						voxels[y] = air;
+						if (y <= MAX_WATER_HEIGHT) {
+							voxels[y] = water;
+						} else {
+							voxels[y] = air;
+						}
 					}
 				}
 			}
