@@ -323,7 +323,7 @@ PagedVolume::Chunk::~Chunk() {
 	}
 
 	delete[] m_tData;
-	m_tData = 0;
+	m_tData = nullptr;
 }
 
 bool PagedVolume::Chunk::isGenerated() const {
