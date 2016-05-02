@@ -310,7 +310,7 @@ uint32_t PagedVolume::calculateSizeInBytes() {
 }
 
 PagedVolume::Chunk::Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager) :
-		m_uChunkLastAccessed(0), m_bDataModified(true), m_tData(0), m_uSideLength(0), m_uSideLengthPower(0), m_pPager(pPager), m_v3dChunkSpacePosition(v3dPosition), _voxelLock("ChunkLock") {
+		m_uChunkLastAccessed(0), m_bDataModified(false), m_tData(0), m_uSideLength(0), m_uSideLengthPower(0), m_pPager(pPager), m_v3dChunkSpacePosition(v3dPosition), _voxelLock("ChunkLock") {
 	core_assert_msg(m_pPager, "No valid pager supplied to chunk constructor.");
 	core_assert_msg(uSideLength <= 256, "Chunk side length cannot be greater than 256.");
 
