@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "noise/SimplexNoise.h"
 #include "Voxel.h"
 
 namespace voxel {
@@ -66,9 +67,12 @@ public:
 		core_assert(noise >= 0.0f && noise <= 1.0f);
 		const int index = glm::clamp(int(pos.y * noise), 0, int(SDL_arraysize(bioms))- 1);
 		const Biome* biome = &bioms[index];
+		const glm::vec4 noisePos(pos.x, pos.y, pos.z, noise);
+		const float humidityNoise = noise::Simplex::Noise4D(noisePos, 1, 1.0f, 1.0f, 1.0f);
+		const float humidityNoiseNorm = noise::norm(humidityNoise);
 		while (biome != nullptr) {
 			// TODO: humidity and temperature noise map
-			biome = biome->next;
+			//biome = biome->next;
 		}
 		return biome;
 	}

@@ -13,7 +13,7 @@ bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperatu
 		return false;
 	}
 	for (int i = lower; i < upper; ++i) {
-		const Biome b { type, int16_t(lower), int16_t(upper), humidity, temperature, &bioms[i] };
+		const Biome b { type, int16_t(lower), int16_t(upper), humidity, temperature, nullptr };
 		bioms[i] = b;
 	}
 	return true;
