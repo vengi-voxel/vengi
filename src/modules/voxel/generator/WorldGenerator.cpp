@@ -69,7 +69,10 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 		core_trace_scoped(Clouds);
 		CloudGenerator::createClouds(ctx, biomManager, random);
 	}
-	TreeGenerator::createTrees(ctx, biomManager, random);
+	if ((flags & WORLDGEN_TREES) != 0) {
+		core_trace_scoped(Trees);
+		TreeGenerator::createTrees(ctx, biomManager, random);
+	}
 }
 
 }
