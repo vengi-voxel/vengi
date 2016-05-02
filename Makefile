@@ -50,4 +50,4 @@ tags:
 	$(Q)ctags -R src
 
 shapetool2: clean-local-config
-	$(Q)cd $(BUILDDIR); make shapetool && ./shapetool -set cl_debug_geometry false
+	$(Q)cd $(BUILDDIR); make $(JOB_FLAG) shapetool && ./shapetool -set cl_debug_geometry false
