@@ -12,13 +12,16 @@ glm::ivec2 CloudGenerator::randomPosWithoutHeight(const Region& region, int bord
 	return glm::ivec2(region.getLowerX() + x, region.getLowerZ() + z);
 }
 
-void CloudGenerator::createClouds(TerrainContext& ctx, core::Random& random) {
+void CloudGenerator::createClouds(TerrainContext& ctx, const BiomManager& biomManager, core::Random& random) {
 	const int amount = 4;
 	static const Voxel voxel = createVoxel(Cloud);
 	for (int i = 0; i < amount; ++i) {
 		const int height = 10;
 		const glm::ivec2& pos = randomPosWithoutHeight(ctx.region, 20, random);
-		glm::ivec3 chunkCloudCenterPos(pos.x, ctx.region.getHeightInVoxels() - height, pos.y);
+		glm::ivec3 chunkCloudCenterPos(pos.x, ctx.region.getUpperY() - height, pos.y);
+		if (!biomManager.hasClouds(chunkCloudCenterPos)) {
+			continue;
+		}
 		ShapeGenerator::createEllipse(ctx, chunkCloudCenterPos, 10, height, 10, voxel);
 		chunkCloudCenterPos.x -= 5;
 		chunkCloudCenterPos.y -= 5 + i;
