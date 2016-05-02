@@ -13,7 +13,7 @@ struct Biome {
 	float temperature;
 };
 
-class BiomManager {
+class BiomeManager {
 private:
 	Biome bioms[MAX_HEIGHT];
 
@@ -21,7 +21,7 @@ private:
 	const Voxel ROCK = createVoxel(Rock);
 
 public:
-	BiomManager();
+	BiomeManager();
 
 	bool addBiom(int lower, int upper, float humidity, float temperature, const Voxel& type);
 

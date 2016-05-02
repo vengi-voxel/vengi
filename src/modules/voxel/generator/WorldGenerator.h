@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ShapeGenerator.h"
-#include "voxel/BiomManager.h"
+#include "voxel/BiomeManager.h"
 
 namespace voxel {
 
@@ -13,7 +13,7 @@ constexpr int WORLDGEN_SERVER = WORLDGEN_TREES;
 
 class WorldGenerator {
 public:
-	static void createWorld(WorldContext& worldCtx, TerrainContext& ctx, BiomManager& biomManager, core::Random& random, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ);
+	static void createWorld(WorldContext& worldCtx, TerrainContext& ctx, BiomeManager& biomManager, core::Random& random, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ);
 };
 
 }

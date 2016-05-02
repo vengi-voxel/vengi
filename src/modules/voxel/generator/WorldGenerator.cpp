@@ -9,7 +9,7 @@
 
 namespace voxel {
 
-void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, BiomManager& biomManager, core::Random& random, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
+void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, BiomeManager& biomManager, core::Random& random, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
 	const Region& region = ctx.region;
 	Log::debug("Create new chunk at %i:%i:%i", region.getCentreX(), region.getCentreY(), region.getCentreZ());
 	const int width = region.getWidthInVoxels();

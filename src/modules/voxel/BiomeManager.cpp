@@ -1,14 +1,14 @@
-#include "BiomManager.h"
+#include "BiomeManager.h"
 
 namespace voxel {
 
-BiomManager::BiomManager() {
+BiomeManager::BiomeManager() {
 	for (int i = 0; i < MAX_TERRAIN_HEIGHT; ++i) {
 		bioms[i] = Biome { createVoxel(Grass), 0, MAX_TERRAIN_HEIGHT, 0.5f, 0.5f };
 	}
 }
 
-bool BiomManager::addBiom(int lower, int upper, float humidity, float temperature, const Voxel& type) {
+bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperature, const Voxel& type) {
 	if (lower < 0 || lower >= MAX_HEIGHT || upper <= lower || upper < 0 || upper >= MAX_HEIGHT) {
 		return false;
 	}

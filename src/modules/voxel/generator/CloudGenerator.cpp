@@ -12,7 +12,7 @@ glm::ivec2 CloudGenerator::randomPosWithoutHeight(const Region& region, int bord
 	return glm::ivec2(region.getLowerX() + x, region.getLowerZ() + z);
 }
 
-void CloudGenerator::createClouds(TerrainContext& ctx, const BiomManager& biomManager, core::Random& random) {
+void CloudGenerator::createClouds(TerrainContext& ctx, const BiomeManager& biomManager, core::Random& random) {
 	const int amount = 4;
 	static const Voxel voxel = createVoxel(Cloud);
 	for (int i = 0; i < amount; ++i) {

@@ -12,7 +12,7 @@
 
 #include "WorldPersister.h"
 #include "io/Filesystem.h"
-#include "BiomManager.h"
+#include "BiomeManager.h"
 #include "core/ThreadPool.h"
 #include "core/ReadWriteLock.h"
 #include "core/Var.h"
@@ -156,7 +156,7 @@ private:
 
 	Pager _pager;
 	PagedVolume *_volumeData;
-	BiomManager _biomManager;
+	BiomeManager _biomManager;
 	WorldContext _ctx;
 	mutable std::mt19937 _engine;
 	long _seed;
