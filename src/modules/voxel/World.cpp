@@ -104,6 +104,10 @@ struct IsQuadNeeded {
 			materialToUse = back;
 			return true;
 		}
+		if (back.getMaterial() != Water && front.getMaterial() == Water) {
+			materialToUse = back;
+			return true;
+		}
 		return false;
 	}
 };
