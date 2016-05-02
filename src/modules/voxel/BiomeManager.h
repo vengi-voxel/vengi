@@ -70,10 +70,10 @@ public:
 		const glm::vec4 noisePos(pos.x, pos.y, pos.z, noise);
 		const float humidityNoise = noise::Simplex::Noise4D(noisePos, 1, 1.0f, 1.0f, 1.0f);
 		const float humidityNoiseNorm = noise::norm(humidityNoise);
-		while (biome != nullptr) {
-			// TODO: humidity and temperature noise map
-			//biome = biome->next;
-		}
+		//while (biome != nullptr) {
+		// TODO: humidity and temperature noise map
+		//biome = biome->next;
+		//}
 		return biome;
 	}
 
