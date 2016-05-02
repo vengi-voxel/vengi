@@ -137,7 +137,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 		video::Color::White,		// clouds
 		glm::vec4(glm::vec3(video::Color::Blue), 0.4f), // water
 		video::Color::Brown,        // dirt
-		video::Color::Pink,
+		video::Color::Sandy,        // sand
 		video::Color::Pink,
 		video::Color::Pink,
 		video::Color::Pink,

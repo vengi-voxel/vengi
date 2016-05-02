@@ -30,6 +30,7 @@ public:
 		Pink,
 		Purple,
 		Yellow,
+		Sandy,
 		Cyan,
 		Orange,
 		Brown,
