@@ -6,6 +6,7 @@ uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
 uniform vec3 u_lightpos;
+uniform vec3 u_diffuse_color;
 uniform float u_fogrange;
 uniform float u_viewdistance;
 uniform sampler2D u_texture;
@@ -15,6 +16,7 @@ uniform float u_debug_color;
 out vec3 v_pos;
 out vec4 v_color;
 out vec3 v_lightpos;
+out vec3 v_diffuse_color;
 out vec3 v_fogcolor;
 out float v_fogrange;
 out float v_viewdistance;
@@ -30,6 +32,7 @@ void main(void) {
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
 	v_lightpos = u_lightpos;
+	v_diffuse_color = u_diffuse_color;
 	v_debug_color = u_debug_color;
 
 	vec4 noisepos = u_model * vec4(a_pos, 1.0);

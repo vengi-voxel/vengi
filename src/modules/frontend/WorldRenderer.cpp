@@ -162,6 +162,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	shader.setUniformf("u_viewdistance", _viewDistance);
 	shader.setUniformi("u_texture", 0);
 	shader.setUniformVec3("u_lightpos", _lightPos);
+	shader.setUniformVec3("u_diffuse_color", _diffuseColor);
 	shader.setUniformVec4v("u_materialcolor[0]", materialColors, SDL_arraysize(materialColors));
 	shader.setUniformf("u_debug_color", 1.0);
 	_colorTexture->bind();

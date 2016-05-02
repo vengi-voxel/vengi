@@ -44,7 +44,7 @@ private:
 
 	video::TexturePtr _colorTexture;
 	glm::vec3 _lightPos = glm::vec3(1.0, 100.0, 1.0);
-	glm::vec3 _diffuseColor = glm::vec3(0.1, 0.1, 0.1);
+	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	// the position of the last extraction - we only care for x and z here
 	glm::ivec3 _lastGridPosition;
 	voxel::WorldPtr _world;
