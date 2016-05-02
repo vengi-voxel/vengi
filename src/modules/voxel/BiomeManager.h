@@ -11,14 +11,17 @@ struct Biome {
 	int16_t yMax;
 	float humidity;
 	float temperature;
+
+	Biome* next;
 };
 
 class BiomeManager {
 private:
-	Biome bioms[MAX_HEIGHT];
+	Biome bioms[MAX_TERRAIN_HEIGHT];
 
 	const Voxel INVALID = createVoxel(Air);
 	const Voxel ROCK = createVoxel(Rock);
+	const Voxel GRASS = createVoxel(Grass);
 
 public:
 	BiomeManager();
@@ -26,45 +29,59 @@ public:
 	bool addBiom(int lower, int upper, float humidity, float temperature, const Voxel& type);
 
 	// this lookup must be really really fast - it is executed once per generated voxel
-	inline const Voxel& getVoxelType(const glm::ivec3& pos, bool cave = false, float noise = 1.0f) const {
-		if (pos.y < 0 || pos.y >= MAX_HEIGHT) {
+	inline const Voxel& getVoxelType(const glm::ivec3& pos, bool underground = false, float noise = 1.0f) const {
+		if (pos.y < 0 || pos.y >= int(SDL_arraysize(bioms))) {
 			return INVALID;
 		}
-		if (cave) {
+		if (underground) {
 			return ROCK;
 		}
 		core_assert(noise >= 0.0f && noise <= 1.0f);
-		return getBiome(pos, noise).voxel;
+		const Biome* biome = getBiome(pos, noise);
+		if (biome == nullptr) {
+			return GRASS;
+		}
+		return biome->voxel;
 	}
 
-	inline const Voxel& getVoxelType(int x, int y, int z, bool cave = false, float noise = 1.0f) const {
-		return getVoxelType(glm::ivec3(x, y, z), cave, noise);
+	inline const Voxel& getVoxelType(int x, int y, int z, bool underground = false, float noise = 1.0f) const {
+		return getVoxelType(glm::ivec3(x, y, z), underground, noise);
 	}
 
 	inline bool hasTrees(const glm::ivec3& pos, float noise = 1.0f) const {
 		if (pos.y < MAX_WATER_HEIGHT) {
 			return false;
 		}
-		if (pos.y > MAX_TERRAIN_HEIGHT) {
+		const Biome* biome = getBiome(pos, noise);
+		if (biome == nullptr) {
 			return false;
 		}
-		const Biome& biome = getBiome(pos, noise);
-		if (biome.voxel.getMaterial() != Grass) {
+		if (biome->voxel.getMaterial() != Grass) {
 			return false;
 		}
-		return biome.temperature > 0.3f && biome.humidity > 0.3f;
+		return biome->temperature > 0.3f && biome->humidity > 0.3f;
 	}
 
-	inline const Biome& getBiome(const glm::ivec3& pos, float noise = 1.0f) const {
-		return bioms[glm::clamp(int(pos.y * noise), 0, MAX_TERRAIN_HEIGHT- 1)];
+	inline const Biome* getBiome(const glm::ivec3& pos, float noise = 1.0f) const {
+		core_assert(noise >= 0.0f && noise <= 1.0f);
+		const int index = glm::clamp(int(pos.y * noise), 0, int(SDL_arraysize(bioms))- 1);
+		const Biome* biome = &bioms[index];
+		while (biome != nullptr) {
+			// TODO: humidity and temperature noise map
+			biome = biome->next;
+		}
+		return biome;
 	}
 
 	inline bool hasClouds(const glm::ivec3& pos, float noise = 1.0f) const {
 		if (pos.y <= MAX_TERRAIN_HEIGHT) {
 			return false;
 		}
-		core_assert(noise >= 0.0f && noise <= 1.0f);
-		return getBiome(pos, noise).humidity >= 0.5f;
+		const Biome* biome = getBiome(pos, noise);
+		if (biome == nullptr) {
+			return false;
+		}
+		return biome->humidity >= 0.5f;
 	}
 };
 
