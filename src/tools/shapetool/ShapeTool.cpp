@@ -11,6 +11,7 @@
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
 		ui::UIApp(filesystem, eventBus), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _meshShader(new frontend::MeshShader()) {
 	init("engine", "shapetool");
+	_world->setClientData(true);
 }
 
 ShapeTool::~ShapeTool() {
