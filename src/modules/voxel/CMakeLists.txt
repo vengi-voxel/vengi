@@ -1,5 +1,5 @@
 set(SRCS
-	BiomManager.h
+	BiomManager.h BiomManager.cpp
 	LodCreator.h
 	Spiral.h
 	Voxel.h
