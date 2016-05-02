@@ -40,9 +40,8 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 					voxels[y] = voxel;
 				}
 			} else {
-				const Voxel& voxel = biomManager.getVoxelType(x, 0, z);
 				const Voxel& air = createVoxel(Air);
-				voxels[0] = voxel;
+				voxels[0] = biomManager.getVoxelType(x, 0, z);
 				for (int y = 1; y < ni; ++y) {
 					const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
 					const float noiseVal = noise::norm(
