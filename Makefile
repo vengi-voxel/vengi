@@ -20,7 +20,7 @@ clean:
 	$(Q)rm -rf $(BUILDDIR)
 
 clean-local-config:
-	$(Q)rm -r $(LOCAL_CONFIG_DIR)
+	$(Q)rm -rf $(LOCAL_CONFIG_DIR)
 
 edit-local-config:
 	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
