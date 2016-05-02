@@ -41,15 +41,15 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 				}
 			} else {
 				const Voxel& air = createVoxel(Air);
-				voxels[0] = biomManager.getVoxelType(x, 0, z);
-				for (int y = 1; y < ni; ++y) {
+				voxels[0] = createVoxel(Dirt);
+				for (int y = ni - 1; y >= 1; --y) {
 					const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
 					const float noiseVal = noise::norm(
 							noise::Simplex::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
 									worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
 					const float finalDensity = noiseNormalized + noiseVal;
 					if (finalDensity > worldCtx.caveDensityThreshold) {
-						const Voxel& voxel = biomManager.getVoxelType(x, y, z);
+						const Voxel& voxel = (y < ni - 1) ? biomManager.getCaveVoxelType(x, y, z) : biomManager.getVoxelType(x, y, z);
 						voxels[y] = voxel;
 					} else {
 						voxels[y] = air;

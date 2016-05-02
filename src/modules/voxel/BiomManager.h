@@ -10,6 +10,7 @@ private:
 	Voxel bioms[MAX_HEIGHT];
 
 	const Voxel INVALID = createVoxel(Air);
+	const Voxel ROCK = createVoxel(Rock);
 
 public:
 	BiomManager() {
@@ -29,7 +30,7 @@ public:
 	}
 
 	// this lookup must be really really fast - it is executed once per generated voxel
-	inline Voxel getVoxelType(const glm::ivec3& pos, float noise = 1.0f) const {
+	inline const Voxel& getVoxelType(const glm::ivec3& pos, float noise = 1.0f) const {
 		if (pos.y < 0 || pos.y >= MAX_HEIGHT) {
 			return INVALID;
 		}
@@ -37,7 +38,11 @@ public:
 		return bioms[glm::clamp(int(pos.y * noise), 0, MAX_HEIGHT - 1)];
 	}
 
-	inline Voxel getVoxelType(int x, int y, int z, float noise = 1.0f) const {
+	inline const Voxel& getCaveVoxelType(int x, int y, int z, float noise = 1.0f) const {
+		return ROCK;
+	}
+
+	inline const Voxel& getVoxelType(int x, int y, int z, float noise = 1.0f) const {
 		return getVoxelType(glm::ivec3(x, y, z), noise);
 	}
 

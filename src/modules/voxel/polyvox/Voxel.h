@@ -25,6 +25,7 @@ static const VoxelType Leaves10 = 12;
 static const VoxelType Rock = 13;
 static const VoxelType Cloud = 14;
 static const VoxelType Water = 15;
+static const VoxelType Dirt = 16;
 
 class Voxel {
 public:

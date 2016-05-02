@@ -228,7 +228,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 	if (!pChunk) {
 		// The chunk was not found so we will create a new one.
 		glm::ivec3 v3dChunkPos(uChunkX, uChunkY, uChunkZ);
-		Log::info("create new chunk at %i:%i:%i at %u", uChunkX, uChunkY, uChunkZ, iPositionHash);
+		Log::debug("create new chunk at %i:%i:%i", uChunkX, uChunkY, uChunkZ);
 		pChunk = new PagedVolume::Chunk(v3dChunkPos, m_uChunkSideLength, m_pPager);
 		pChunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
 
