@@ -355,7 +355,7 @@ const Voxel& PagedVolume::Chunk::getVoxel(const glm::i16vec3& v3dPos) const {
 	return getVoxel(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
-void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, Voxel tValue) {
+void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, const Voxel& tValue) {
 	// This code is not usually expected to be called by the user, with the exception of when implementing paging
 	// of uncompressed data. It's a performance critical code path so we use asserts rather than exceptions.
 	core_assert_msg(uXPos < m_uSideLength, "Supplied position is outside of the chunk");
@@ -369,7 +369,23 @@ void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos
 	this->m_bDataModified = true;
 }
 
-void PagedVolume::Chunk::setVoxel(const glm::i16vec3& v3dPos, Voxel tValue) {
+void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uZPos, const Voxel* tValues, int amount) {
+	// This code is not usually expected to be called by the user, with the exception of when implementing paging
+	// of uncompressed data. It's a performance critical code path so we use asserts rather than exceptions.
+	core_assert_msg(amount <= m_uSideLength, "Supplied amount exceeds chunk boundaries");
+	core_assert_msg(uXPos < m_uSideLength, "Supplied position is outside of the chunk");
+	core_assert_msg(uZPos < m_uSideLength, "Supplied position is outside of the chunk");
+	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
+
+	core::ScopedWriteLock readLock(_voxelLock);
+	for (int y = 0; y < amount; ++y) {
+		const uint32_t index = morton256_x[uXPos] | morton256_y[y] | morton256_z[uZPos];
+		m_tData[index] = tValues[y];
+	}
+	this->m_bDataModified = true;
+}
+
+void PagedVolume::Chunk::setVoxel(const glm::i16vec3& v3dPos, const Voxel& tValue) {
 	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
 
