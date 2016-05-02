@@ -49,14 +49,14 @@ void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
 #endif
 }
 
-// http://code.google.com/p/fortressoverseer/source/browse/Overseer/PolyVoxGenerator.cpp
 World::World() :
 		_pager(*this), _seed(0), _clientData(false), _threadPool(4, "World"), _rwLock("World"),
 		_random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 256 * 1024 * 1024, 64);
-	core_assert(_biomManager.addBiom(0, 100, createVoxel(Grass)));
-	core_assert(_biomManager.addBiom(101, MAX_HEIGHT - 1, createVoxel(Grass)));
+	core_assert(_biomManager.addBiom(0, MAX_WATER_HEIGHT, createVoxel(Dirt)));
+	core_assert(_biomManager.addBiom(MAX_WATER_HEIGHT, MAX_TERRAIN_HEIGHT, createVoxel(Grass)));
+	core_assert(_biomManager.addBiom(MAX_TERRAIN_HEIGHT, MAX_HEIGHT - 1, createVoxel(Rock)));
 }
 
 World::~World() {

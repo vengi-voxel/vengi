@@ -30,7 +30,7 @@ public:
 	}
 
 	// this lookup must be really really fast - it is executed once per generated voxel
-	inline const Voxel& getVoxelType(const glm::ivec3& pos, float noise = 1.0f) const {
+	inline const Voxel& getVoxelType(const glm::ivec3& pos, bool cave = false, float noise = 1.0f) const {
 		if (pos.y < 0 || pos.y >= MAX_HEIGHT) {
 			return INVALID;
 		}
@@ -38,20 +38,25 @@ public:
 		return bioms[glm::clamp(int(pos.y * noise), 0, MAX_HEIGHT - 1)];
 	}
 
-	inline const Voxel& getCaveVoxelType(int x, int y, int z, float noise = 1.0f) const {
-		return ROCK;
-	}
-
-	inline const Voxel& getVoxelType(int x, int y, int z, float noise = 1.0f) const {
-		return getVoxelType(glm::ivec3(x, y, z), noise);
+	inline const Voxel& getVoxelType(int x, int y, int z, bool cave = false, float noise = 1.0f) const {
+		if (cave) {
+			return ROCK;
+		}
+		return getVoxelType(glm::ivec3(x, y, z), cave, noise);
 	}
 
 	inline bool hasTrees(const glm::ivec3& pos) const {
-		return getVoxelType(pos, 1.0f).getMaterial() == Grass;
+		if (pos.y < MAX_WATER_HEIGHT) {
+			return false;
+		}
+		if (pos.y > MAX_TERRAIN_HEIGHT) {
+			return false;
+		}
+		return getVoxelType(pos, false, 1.0f).getMaterial() == Grass;
 	}
 
 	inline bool hasClouds(const glm::ivec3& pos) const {
-		return true;
+		return pos.y > MAX_TERRAIN_HEIGHT;
 	}
 };
 

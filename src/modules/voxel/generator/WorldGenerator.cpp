@@ -36,7 +36,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
 			if (plainTerrainBool) {
 				for (int y = 0; y < ni; ++y) {
-					const Voxel& voxel = biomManager.getVoxelType(x, y, z);
+					const Voxel& voxel = biomManager.getVoxelType(x, y, z, false);
 					voxels[y] = voxel;
 				}
 			} else {
@@ -50,7 +50,8 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 									worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
 					const float finalDensity = noiseNormalized + noiseVal;
 					if (finalDensity > worldCtx.caveDensityThreshold) {
-						const Voxel& voxel = (y < ni - 1) ? biomManager.getCaveVoxelType(x, y, z) : biomManager.getVoxelType(x, y, z);
+						const bool cave = y < ni - 1;
+						const Voxel& voxel = biomManager.getVoxelType(x, y, z, cave, noiseNormalized);
 						voxels[y] = voxel;
 					} else {
 						if (y <= MAX_WATER_HEIGHT) {
