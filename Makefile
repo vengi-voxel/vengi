@@ -14,7 +14,7 @@ build:
 	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" ..; make $(JOB_FLAG)
 
 release:
-	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMALE_BUILD_TYPE=Release ..; make $(JOB_FLAG)
+	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..; make $(JOB_FLAG)
 
 clean:
 	$(Q)rm -rf $(BUILDDIR)
