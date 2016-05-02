@@ -64,7 +64,7 @@ public:
 	}
 
 	inline const Biome* getBiome(const glm::ivec3& pos, float noise = 1.0f) const {
-		core_assert(noise >= 0.0f && noise <= 1.0f);
+		core_assert_msg(noise >= 0.0f && noise <= 1.0f, "noise must be normalized [-1.0,1.0]: %f", noise);
 		const int index = glm::clamp(int(pos.y * noise), 0, int(SDL_arraysize(bioms))- 1);
 		const Biome* biome = &bioms[index];
 		const glm::vec4 noisePos(pos.x, pos.y, pos.z, noise);
