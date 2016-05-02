@@ -13,12 +13,15 @@ protected:
 	long seed = 0;
 
 public:
+	LSystemGeneratorTest() :
+			_ctx(nullptr) {
+	}
+
 	void SetUp() override {
 		AbstractVoxelTest::SetUp();
 		_random.setSeed(seed);
 		const voxel::Region region(glm::ivec3(0, 0, 0), glm::ivec3(63, 63, 63));
 		_ctx.region = region;
-		_ctx.voxelStorage = nullptr;
 	}
 };
 

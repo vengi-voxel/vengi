@@ -50,16 +50,41 @@ struct IVec3HashEquals {
 
 typedef std::unordered_set<glm::ivec3, IVec3HashEquals> PositionSet;
 
-struct TerrainContext {
+class TerrainContext {
+private:
+	PagedVolume* _voxelStorage;
+public:
+	TerrainContext(PagedVolume* voxelStorage) :
+			_voxelStorage(voxelStorage) {
+	}
+
 	Region region;
-	// if no chunk is given, the positions are defined in absolute world coordinates
-	// otherwise they should be given in chunk coordinates.
-	// if a chunk region is exceeded by a coordinate (which might be true for e.g. tree,
-	// cloud or building generation) then the relative chunk coordinate is converted into
-	// an absolute position in the world by taking the given region parameter into account
-	// (and put into the non chunk voxel vector for later handling)
-	PagedVolume* voxelStorage;
 	PositionSet dirty;
+
+	inline void setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
+		setVoxel(pos.x, pos.y, pos.z, voxel);
+	}
+
+	inline const Voxel& getVoxel(const glm::ivec3& pos) const {
+		return getVoxel(pos.x, pos.y, pos.z);
+	}
+
+	inline const Voxel& getVoxel(int x, int y, int z) const {
+		core_assert(_voxelStorage != nullptr);
+		return _voxelStorage->getVoxel(x, y, z);
+	}
+
+	inline void setVoxel(int x, int y, int z, const Voxel& voxel) {
+		if (_voxelStorage == nullptr)
+			return;
+		_voxelStorage->setVoxel(x, y, z, voxel);
+	}
+
+	inline void setVoxels(int x, int z, const Voxel* voxels, int amount) {
+		if (_voxelStorage == nullptr)
+			return;
+		_voxelStorage->setVoxels(x, z, voxels, amount);
+	}
 };
 
 struct WorldContext {

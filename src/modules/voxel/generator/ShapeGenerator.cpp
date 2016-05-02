@@ -16,7 +16,7 @@ void ShapeGenerator::createCirclePlane(TerrainContext& ctx, const glm::ivec3& ce
 				continue;
 			}
 			const glm::ivec3 pos(center.x + x, center.y, center.z + z);
-			ctx.voxelStorage->setVoxel(pos, voxel);
+			ctx.setVoxel(pos, voxel);
 		}
 	}
 }
@@ -29,7 +29,7 @@ void ShapeGenerator::createCube(TerrainContext& ctx, const glm::ivec3& center, i
 		for (int y = -h; y < height - h; ++y) {
 			for (int z = -d; z < depth - d; ++z) {
 				const glm::ivec3 pos(center.x + x, center.y + y, center.z + z);
-				ctx.voxelStorage->setVoxel(pos, voxel);
+				ctx.setVoxel(pos, voxel);
 			}
 		}
 	}

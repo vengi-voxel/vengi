@@ -6,7 +6,7 @@ namespace voxel {
 
 int TreeGenerator::findFloor(const TerrainContext& ctx, int x, int z) {
 	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= 0; i--) {
-		const int material = ctx.voxelStorage->getVoxel(x, i, z).getMaterial();
+		const int material = ctx.getVoxel(x, i, z).getMaterial();
 		if (isLeaves(material)) {
 			return -1;
 		}
@@ -84,11 +84,11 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 						continue;
 					}
 					for (int i = finalPos.y + 1; i <= y; ++i) {
-						ctx.voxelStorage->setVoxel(finalPos.x, i, finalPos.z, voxel);
+						ctx.setVoxel(finalPos.x, i, finalPos.z, voxel);
 					}
 				}
 
-				ctx.voxelStorage->setVoxel(finalPos, voxel);
+				ctx.setVoxel(finalPos, voxel);
 			}
 		}
 	}

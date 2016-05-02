@@ -23,18 +23,16 @@ namespace voxel {
 
 void World::Pager::erase(const Region& region, PagedVolume::Chunk* chunk) {
 #if PERSIST
-	TerrainContext ctx;
+	TerrainContext ctx(_world._volumeData);
 	ctx.region = region;
-	ctx.voxelStorage = _world._volumeData;
 	_worldPersister.erase(ctx, chunk, _world.seed());
 #endif
 }
 
 bool World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 #if PERSIST
-	TerrainContext ctx;
+	TerrainContext ctx(_world._volumeData);
 	ctx.region = region;
-	ctx.voxelStorage = _world._volumeData;
 	return _worldPersister.load(ctx, chunk, _world.seed());
 #else
 	return false;
@@ -43,9 +41,8 @@ bool World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 
 void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
 #if PERSIST
-	TerrainContext ctx;
+	TerrainContext ctx(_world._volumeData);
 	ctx.region = region;
-	ctx.voxelStorage = _world._volumeData;
 	_worldPersister.save(ctx, chunk, _world.seed());
 #endif
 }
@@ -171,9 +168,8 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		DecodedMeshData data;
 
 		calculateAO(region);
-		TerrainContext ctx;
+		TerrainContext ctx(_volumeData);
 		ctx.region = region;
-		ctx.voxelStorage = _volumeData;
 		region.grow(1, 1, 1);
 		_volumeData->prefetch(region);
 		// TODO: generate all chunks that are surrounding the given region - to ensure that we can generate across chunk boundary
@@ -207,8 +203,7 @@ void World::placeTree(const TreeContext& ctx) {
 	core_trace_scoped(PlaceTree);
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
 	const Region& region = getRegion(getGridPos(pos));
-	TerrainContext tctx;
-	tctx.voxelStorage = nullptr;
+	TerrainContext tctx(_volumeData);
 	tctx.region = region;
 	TreeGenerator::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
 }
