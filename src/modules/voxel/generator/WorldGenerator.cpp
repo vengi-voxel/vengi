@@ -48,7 +48,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 					const float noiseVal = noise::norm(
 							noise::Simplex::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
 									worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
-					const float finalDensity = noiseNormalized + noise::norm(noiseVal);
+					const float finalDensity = noiseNormalized + noiseVal;
 					if (finalDensity > worldCtx.caveDensityThreshold) {
 						const Voxel& voxel = biomManager.getVoxelType(x, y, z);
 						voxels[y] = voxel;
