@@ -135,7 +135,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 		// leaves end
 		video::Color::DarkGray,		// rock
 		video::Color::White,		// clouds
-		video::Color::Blue,			// water
+		glm::vec4(glm::vec3(video::Color::Blue), 0.4f), // water
 		video::Color::Brown,        // dirt
 		video::Color::Pink,
 		video::Color::Pink,

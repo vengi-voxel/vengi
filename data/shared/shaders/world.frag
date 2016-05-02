@@ -1,5 +1,5 @@
 in vec3 v_pos;
-in vec3 v_color;
+in vec4 v_color;
 in vec3 v_lightpos;
 in float v_fogrange;
 in vec3 v_fogcolor;
@@ -22,5 +22,5 @@ void main(void) {
 	float fogstart = max(v_viewdistance - v_fogrange, 0.0);
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
 	float fogval = 1.0 - clamp((v_viewdistance - fogdistance) / (v_viewdistance - fogstart), 0.0, 1.0);
-	o_color = vec4(mix(v_color * v_ambientocclusion * lightvalue, v_fogcolor, fogval) * v_debug_color, 1.0);
+	o_color = vec4(mix(v_color.rgb * v_ambientocclusion * lightvalue, v_fogcolor, fogval) * v_debug_color, v_color.a);
 }
