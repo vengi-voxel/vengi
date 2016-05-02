@@ -32,7 +32,9 @@ public:
 		Yellow,
 		Cyan,
 		Orange,
-		Brown;
+		Brown,
+		LightBrown,
+		DarkBrown;
 
 	static glm::vec4 FromRGB(const unsigned int rgbInt, const float a = 1.0f);
 	static glm::vec4 FromRGBA(const unsigned int rgbaInt);

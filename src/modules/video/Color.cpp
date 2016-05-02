@@ -31,6 +31,8 @@ const glm::vec4 Color::Olive        = glm::vec4(128.f, 128,   0, 255) / glm::vec
 const glm::vec4 Color::Purple       = glm::vec4(128.f,   0, 128, 255) / glm::vec4(Color::magnitude);
 const glm::vec4 Color::Cyan         = glm::vec4(  0.f, 255, 255, 255) / glm::vec4(Color::magnitude);
 const glm::vec4 Color::Brown        = glm::vec4(107.f,  66,  38, 255) / glm::vec4(Color::magnitude);
+const glm::vec4 Color::LightBrown   = glm::vec4(150.f, 107,  72, 255) / glm::vec4(Color::magnitude);
+const glm::vec4 Color::DarkBrown    = glm::vec4( 82.f,  43,  26, 255) / glm::vec4(Color::magnitude);
 
 glm::vec4 Color::FromRGB(const unsigned int rgbInt, const float a) {
 	return glm::vec4(static_cast<float>(rgbInt >> 16 & 0xFF) / Color::magnitude, static_cast<float>(rgbInt >> 8 & 0xFF) / Color::magnitude,
