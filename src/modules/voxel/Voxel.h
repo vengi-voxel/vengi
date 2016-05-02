@@ -8,7 +8,7 @@
 namespace voxel {
 
 #define MAX_HEIGHT 255
-#define MAX_TERRAIN_HEIGHT MAX_HEIGHT / 2
+#define MAX_TERRAIN_HEIGHT 100
 
 inline Voxel createVoxel(VoxelType type) {
 	return Voxel(type);

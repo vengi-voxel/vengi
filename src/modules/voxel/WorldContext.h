@@ -111,8 +111,8 @@ public:
 struct WorldContext {
 	int landscapeNoiseOctaves = 1;
 	float landscapeNoisePersistence = 0.1f;
-	float landscapeNoiseFrequency = 0.01f;
-	float landscapeNoiseAmplitude = 0.5f;
+	float landscapeNoiseFrequency = 0.005f;
+	float landscapeNoiseAmplitude = 0.4f;
 
 	int caveNoiseOctaves = 1;
 	float caveNoisePersistence = 0.1f;
