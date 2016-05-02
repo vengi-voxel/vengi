@@ -315,6 +315,7 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 	shader->setUniformf("u_fogrange", _fogRange);
 	shader->setUniformf("u_viewdistance", _viewDistance);
 	shader->setUniformi("u_texture", 0);
+	shader->setUniformf("u_debug_color", 1.0);
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_now);
