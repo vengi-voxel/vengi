@@ -54,8 +54,9 @@ World::World() :
 		_random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 256 * 1024 * 1024, 64);
-	_biomManager.addBiom(0, MAX_WATER_HEIGHT, 0.5f, 0.5f, createVoxel(Dirt));
-	_biomManager.addBiom(MAX_WATER_HEIGHT, MAX_TERRAIN_HEIGHT - 10, 0.5f, 0.5f, createVoxel(Grass));
+	_biomManager.addBiom(0, MAX_WATER_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Sand));
+	_biomManager.addBiom(MAX_WATER_HEIGHT + 1, MAX_WATER_HEIGHT + 3, 0.5f, 0.5f, createVoxel(Dirt));
+	_biomManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT - 10, 0.5f, 0.5f, createVoxel(Grass));
 	_biomManager.addBiom(MAX_TERRAIN_HEIGHT - 10, MAX_TERRAIN_HEIGHT, 0.5f, 0.5f, createVoxel(Rock));
 }
 
