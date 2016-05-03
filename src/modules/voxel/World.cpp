@@ -176,10 +176,11 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		const Region &region = getRegion(pos);
 		DecodedMeshData data;
 
-		const int extends = 1;
-		glm::ivec3 mins = region.getLowerCorner() - 1;
-		mins.y = std::max(mins.y, 0);
+		const int extends = 3;
+		glm::ivec3 mins = region.getLowerCorner() - extends;
+		mins.y = 0;
 		glm::ivec3 maxs = region.getUpperCorner() + extends;
+		maxs.y = MAX_HEIGHT - 1;
 		Region prefetchRegion(mins, maxs);
 		_volumeData->prefetch(prefetchRegion);
 
