@@ -65,7 +65,7 @@ public:
 		updateViewMatrix();
 	}
 
-	inline const glm::vec3 getPosition() const {
+	inline const glm::vec3& getPosition() const {
 		return _pos;
 	}
 
