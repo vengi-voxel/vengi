@@ -2,6 +2,7 @@
 
 #include "Log.h"
 #include <cmath>
+#include <limits>
 #include <SDL.h>
 #include <SDL_assert.h>
 #include <glm/glm.hpp>

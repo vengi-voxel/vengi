@@ -68,12 +68,23 @@ public:
 		const int index = glm::clamp(int(pos.y * noise), 0, int(SDL_arraysize(bioms))- 1);
 		const Biome* biome = &bioms[index];
 		const glm::vec4 noisePos(pos.x, pos.y, pos.z, noise);
+		// TODO: reasonable values
 		const float humidityNoise = noise::Simplex::Noise4D(noisePos, 1, 1.0f, 1.0f, 1.0f);
+		const float temperatureNoise = noise::Simplex::Noise4D(noisePos, 1, 1.2f, 1.2f, 1.2f);
 		const float humidityNoiseNorm = noise::norm(humidityNoise);
-		//while (biome != nullptr) {
-		// TODO: humidity and temperature noise map
-		//biome = biome->next;
-		//}
+		Biome *biomeBestMatch = nullptr;
+		float distMin = std::numeric_limits<float>::max();
+
+		while (biome != nullptr) {
+			const float dTemperature = temperatureNoise - biome->temperature;
+			const float dHumidity = humidityNoise - biome->humidity;
+			const float dist = (dTemperature * dTemperature) + (dHumidity * dHumidity);
+			if (dist < distMin) {
+				biomeBestMatch = biome;
+				distMin = dist;
+			}
+			biome = biome->next;
+		}
 		return biome;
 	}
 
