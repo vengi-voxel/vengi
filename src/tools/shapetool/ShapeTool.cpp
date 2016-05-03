@@ -13,6 +13,7 @@ ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, 
 		ui::UIApp(filesystem, eventBus), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _meshShader(new frontend::MeshShader()) {
 	init("engine", "shapetool");
 	_world->setClientData(true);
+	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
 }
 
 ShapeTool::~ShapeTool() {
@@ -80,7 +81,7 @@ void ShapeTool::beforeUI() {
 	const bool right = _moveMask & MOVERIGHT;
 	const bool forward = _moveMask & MOVEFORWARD;
 	const bool backward = _moveMask & MOVEBACKWARD;
-	const float speed = core::Var::get(cfg::ClientMouseSpeed, "0.1")->floatVal();
+	const float speed = _speed->floatVal();
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
 	_camera.updateViewMatrix();
 	const float farPlane = _worldRenderer.getViewDistance();
@@ -99,8 +100,12 @@ void ShapeTool::afterUI() {
 	drawCallsWorld.SetFormatted("drawcalls world: %i", _drawCallsWorld);
 	tb::TBStr drawCallsEntity;
 	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
+	tb::TBStr position;
+	const glm::vec3& pos = _camera.getPosition();
+	position.SetFormatted("pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
 	_root.GetFont()->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
 	_root.GetFont()->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
+	_root.GetFont()->DrawString(5, 50, tb::TBColor(255, 255, 255), position);
 }
 
 core::AppState ShapeTool::onCleanup() {

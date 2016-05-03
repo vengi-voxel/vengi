@@ -18,6 +18,7 @@ protected:
 	voxel::WorldPtr _world;
 	frontend::WorldShader _worldShader;
 	frontend::MeshShaderPtr _meshShader;
+	core::VarPtr _speed;
 
 	bool _resetTriggered = false;
 	uint8_t _moveMask = 0;
