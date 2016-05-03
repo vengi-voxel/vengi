@@ -39,27 +39,31 @@ static const VoxelType Dirt4 = 26;
 
 class Voxel {
 public:
-	Voxel() :
+	constexpr Voxel() :
 			m_uMaterial(Air) {
 	}
 
-	Voxel(VoxelType uMaterial) :
+	constexpr Voxel(VoxelType uMaterial) :
 			m_uMaterial(uMaterial) {
 	}
 
-	bool operator==(const Voxel& rhs) const {
+	constexpr Voxel(const Voxel& voxel) :
+			m_uMaterial(voxel.m_uMaterial) {
+	}
+
+	inline bool operator==(const Voxel& rhs) const {
 		return m_uMaterial == rhs.m_uMaterial;
 	}
 
-	bool operator!=(const Voxel& rhs) const {
+	inline bool operator!=(const Voxel& rhs) const {
 		return !(*this == rhs);
 	}
 
-	VoxelType getMaterial() const {
+	inline VoxelType getMaterial() const {
 		return m_uMaterial;
 	}
 
-	void setMaterial(VoxelType uMaterial) {
+	inline void setMaterial(VoxelType uMaterial) {
 		m_uMaterial = uMaterial;
 	}
 
