@@ -1,6 +1,8 @@
 #include "core/tests/AbstractTest.h"
 #include "voxel/polyvox/PagedVolume.h"
+#include "voxel/WorldContext.h"
 #include "voxel/Voxel.h"
+#include "core/Random.h"
 
 namespace voxel {
 
@@ -30,6 +32,26 @@ protected:
 		void pageOut(const Region& region, PagedVolume::Chunk* chunk) override {
 		}
 	};
+
+	Pager _pager;
+	PagedVolume _volData;
+	TerrainContext _ctx;
+	core::Random _random;
+	long _seed = 0;
+
+	AbstractVoxelTest() :
+			_volData(&_pager, 16 * 1024 * 1024, 64), _ctx(&_volData, nullptr) {
+	}
+
+public:
+	void SetUp() override {
+		_volData.flushAll();
+		core::AbstractTest::SetUp();
+		_random.setSeed(_seed);
+		const voxel::Region region(glm::ivec3(0, 0, 0), glm::ivec3(63, 63, 63));
+		_ctx.region = region;
+		_ctx.setChunk(_volData.getChunk(region.getCentre()));
+	}
 };
 
 }

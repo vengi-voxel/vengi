@@ -59,6 +59,18 @@ public:
 			_voxelStorage(voxelStorage), _chunk(chunk) {
 	}
 
+	void setChunk(PagedVolume::Chunk* chunk) {
+		_chunk = chunk;
+	}
+
+	void setVoxelStorage(PagedVolume* voxelStorage) {
+		_voxelStorage = voxelStorage;
+	}
+
+	inline PagedVolume::Chunk* getChunk() const {
+		return _chunk;
+	}
+
 	Region region;
 	PositionSet dirty;
 

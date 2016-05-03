@@ -6,23 +6,6 @@
 namespace voxel {
 
 class LSystemGeneratorTest: public AbstractVoxelTest {
-protected:
-	Pager _pager;
-	TerrainContext _ctx;
-	core::Random _random;
-	long seed = 0;
-
-public:
-	LSystemGeneratorTest() :
-			_ctx(nullptr, nullptr) {
-	}
-
-	void SetUp() override {
-		AbstractVoxelTest::SetUp();
-		_random.setSeed(seed);
-		const voxel::Region region(glm::ivec3(0, 0, 0), glm::ivec3(63, 63, 63));
-		_ctx.region = region;
-	}
 };
 
 TEST_F(LSystemGeneratorTest, testStatePushPop) {
