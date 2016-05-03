@@ -96,7 +96,11 @@ TEST_F(SimplexNoiseTest, test2DNoiseColorMap) {
 	const int height = 256;
 	const int components = 3;
 	uint8_t buffer[width * height * components];
-	noise::Simplex::SeamlessNoise2DRGB(buffer, width, 2, 0.3f, 0.7f, 1.0f);
+	const int octaves = 2;
+	const float persistence = 0.3f;
+	const float frequency = 0.7f;
+	const float amplitude = 1.0f;
+	noise::Simplex::SeamlessNoise2DRGB(buffer, width, octaves, persistence, frequency, amplitude);
 	ASSERT_TRUE(image::Image::writePng("testNoiseColorMap.png", buffer, width, height, components));
 }
 
