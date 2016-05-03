@@ -1,11 +1,12 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 namespace util {
 
 inline glm::vec3 getDirection(float yaw) {
-	const float angleRadians = yaw - M_PI_2;
+	const float angleRadians = yaw - glm::half_pi<float>();
 	const glm::vec3 direction(glm::sin(angleRadians), 0.0, glm::cos(angleRadians));
 	return direction;
 }

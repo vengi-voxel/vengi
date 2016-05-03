@@ -8,6 +8,7 @@
 #include "sauce/ClientInjector.h"
 #include "video/Color.h"
 #include "video/GLDebug.h"
+#include <glm/gtc/constants.hpp>
 
 #define registerMoveCmd(name, flag) \
 	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
@@ -120,7 +121,7 @@ core::AppState Client::onInit() {
 }
 
 void Client::renderBackground() {
-	_camera.setAngles(-M_PI_2, M_PI);
+	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
 	_camera.update();
 }

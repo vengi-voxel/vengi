@@ -1,4 +1,5 @@
 #include "MovementTest.h"
+#include <glm/gtc/constants.hpp>
 
 class MovementTest: public TestSuite {
 };
@@ -13,7 +14,7 @@ TEST_F(MovementTest, testFlee) {
 	entity->setPosition(glm::vec3(-1, 0, 0));
 	const ai::MoveVector& mvLeft = flee.execute(ai, 100);
 	ASSERT_EQ(glm::vec3(-100.0f, 0.0f, 0.0f), mvLeft.getVector());
-	ASSERT_FLOAT_EQ(M_PI, mvLeft.getOrientation(1.0f));
+	ASSERT_FLOAT_EQ(glm::pi<float>(), mvLeft.getOrientation(1.0f));
 
 	// flee to the right
 	entity->setPosition(glm::vec3(1, 0, 0));
@@ -25,13 +26,13 @@ TEST_F(MovementTest, testFlee) {
 	entity->setPosition(glm::vec3(0, 0, 1));
 	const ai::MoveVector& mvPosZ = flee.execute(ai, 100);
 	ASSERT_EQ(glm::vec3(0.0f, 0.0f, 100.0f), mvPosZ.getVector());
-	ASSERT_FLOAT_EQ(M_PI_2, mvPosZ.getOrientation(1.0f));
+	ASSERT_FLOAT_EQ(glm::half_pi<float>(), mvPosZ.getOrientation(1.0f));
 
 	// flee into negative z
 	entity->setPosition(glm::vec3(0, 0, -1));
 	const ai::MoveVector& mvNegZ = flee.execute(ai, 100);
 	ASSERT_EQ(glm::vec3(0.0f, 0.0f, -100.0f), mvNegZ.getVector());
-	ASSERT_FLOAT_EQ(M_PI_2 + M_PI, mvNegZ.getOrientation(1.0f));
+	ASSERT_FLOAT_EQ(glm::half_pi<float>() + glm::pi<float>(), mvNegZ.getOrientation(1.0f));
 }
 
 TEST_F(MovementTest, testWanderWithoutOrientationChange) {
@@ -47,19 +48,19 @@ TEST_F(MovementTest, testWanderWithoutOrientationChange) {
 	ASSERT_EQ(0.0f, mvRight.getOrientation(1.0f));
 
 	// moving to the left
-	entity->setOrientation(M_PI);
+	entity->setOrientation(glm::pi<float>());
 	const ai::MoveVector& mvLeft = wander.execute(ai, 100);
 	ASSERT_EQ(glm::vec3(-100.0f, 0.0f, 0.0f), mvLeft.getVector());
 	ASSERT_EQ(0.0f, mvLeft.getOrientation(1.0f));
 
 	// moving into positive z
-	entity->setOrientation(M_PI_2);
+	entity->setOrientation(glm::half_pi<float>());
 	const ai::MoveVector& mvPosZ = wander.execute(ai, 100);
 	ASSERT_EQ(glm::vec3(0.0f, 0.0f, 100.0f), mvPosZ.getVector());
 	ASSERT_EQ(0.0f, mvPosZ.getOrientation(1.0f));
 
 	// moving negative z
-	entity->setOrientation(M_PI_2 + M_PI);
+	entity->setOrientation(glm::half_pi<float>() + glm::pi<float>());
 	const ai::MoveVector& mvNegZ = wander.execute(ai, 100);
 	ASSERT_EQ(glm::vec3(0.0f, 0.0f, -100.0f), mvNegZ.getVector());
 	ASSERT_EQ(0.0f, mvNegZ.getOrientation(1.0f));

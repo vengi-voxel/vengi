@@ -2,11 +2,12 @@
 #include "core/Common.h"
 #include "core/Singleton.h"
 #include "io/EventHandler.h"
+#include <glm/gtc/constants.hpp>
 
 namespace video {
 
 Camera::Camera() :
-		_pos(0.0f, 0.0f, 0.0f), _width(0), _height(0), _pitch(-M_PI_2), _yaw(M_PI), _direction(0.0f, 0.0f, 0.0f), _maxpitch(core::Var::get(cfg::ClientCameraMaxPitch, std::to_string(glm::radians(89.0)))) {
+		_pos(0.0f, 0.0f, 0.0f), _width(0), _height(0), _pitch(-glm::half_pi<float>()), _yaw(glm::pi<float>()), _direction(0.0f, 0.0f, 0.0f), _maxpitch(core::Var::get(cfg::ClientCameraMaxPitch, std::to_string(glm::radians(89.0)))) {
 	updateDirection();
 }
 
@@ -117,7 +118,7 @@ void Camera::updateFrustumPlanes(const glm::mat4& p) {
 }
 
 void Camera::updatePosition(long dt, bool left, bool right, bool forward, bool backward, float speed) {
-	const float angle = _yaw - M_PI_2;
+	const float angle = _yaw - glm::half_pi<float>();
 	const glm::vec3 rightvec(glm::sin(angle), 0.0, glm::cos(angle));
 
 	const float deltaTime = static_cast<float>(dt);

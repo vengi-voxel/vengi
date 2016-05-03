@@ -6,6 +6,7 @@
 #include "ui/WorldParametersWindow.h"
 #include "ui/TreeParametersWindow.h"
 #include "frontend/Movement.h"
+#include <glm/gtc/constants.hpp>
 
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
@@ -40,7 +41,7 @@ core::AppState ShapeTool::onInit() {
 	_world->setSeed(1);
 	_worldRenderer.onInit();
 	_camera.init(_width, _height);
-	_camera.setAngles(-M_PI_2, M_PI);
+	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
 
 	_clearColor = video::Color::LightBlue;
