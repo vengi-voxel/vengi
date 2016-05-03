@@ -8,12 +8,14 @@ template<class VecType>
 static float Noise(const VecType& pos, int octaves, float persistence, float frequency, float amplitude) {
 	core_trace_scoped(Noise);
 	float total = 0.0f;
+	float maxAmplitude = amplitude;
 	for (int i = 0; i < octaves; ++i) {
 		total += glm::simplex(pos * frequency) * amplitude;
 		frequency *= 2.0f;
+		maxAmplitude += amplitude;
 		amplitude *= persistence;
 	}
-	return total;
+	return total / maxAmplitude;
 }
 
 float Simplex::Noise2D(const glm::vec2& pos, int octaves, float persistence, float frequency, float amplitude) {
