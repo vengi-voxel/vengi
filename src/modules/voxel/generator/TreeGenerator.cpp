@@ -1,5 +1,6 @@
 #include "TreeGenerator.h"
 #include "LSystemGenerator.h"
+#include "voxel/WorldContext.h"
 #include "voxel/Voxel.h"
 
 namespace voxel {

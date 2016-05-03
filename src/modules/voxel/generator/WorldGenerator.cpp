@@ -6,6 +6,7 @@
 #include "core/Trace.h"
 #include "noise/SimplexNoise.h"
 #include "voxel/Voxel.h"
+#include "voxel/WorldContext.h"
 
 namespace voxel {
 

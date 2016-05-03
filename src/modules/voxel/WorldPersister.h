@@ -1,9 +1,11 @@
 #pragma once
 
 #include "polyvox/Region.h"
-#include "WorldContext.h"
+#include "polyvox/PagedVolume.h"
 
 namespace voxel {
+
+class TerrainContext;
 
 class WorldPersister {
 public:

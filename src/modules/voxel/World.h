@@ -11,6 +11,7 @@
 #include <atomic>
 
 #include "WorldPersister.h"
+#include "WorldContext.h"
 #include "io/Filesystem.h"
 #include "BiomeManager.h"
 #include "core/ThreadPool.h"

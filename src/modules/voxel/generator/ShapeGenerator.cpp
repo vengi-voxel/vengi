@@ -1,4 +1,5 @@
 #include "ShapeGenerator.h"
+#include "voxel/WorldContext.h"
 
 namespace voxel {
 

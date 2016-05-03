@@ -1,11 +1,14 @@
 #pragma once
 
-#include "voxel/WorldContext.h"
 #include "voxel/Voxel.h"
 #include "core/Common.h"
 #include "core/Random.h"
 
 namespace voxel {
+
+struct WorldContext;
+class TerrainContext;
+enum class TreeType;
 
 class ShapeGenerator {
 public:

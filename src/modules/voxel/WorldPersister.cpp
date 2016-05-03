@@ -1,4 +1,5 @@
 #include "WorldPersister.h"
+#include "WorldContext.h"
 #include <zlib.h>
 #include "core/App.h"
 #include "core/Common.h"
