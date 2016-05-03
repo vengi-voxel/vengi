@@ -29,7 +29,8 @@ TEST_F(LSystemGeneratorTest, testStatePushPop) {
 	LSystemContext lsystemCtx;
 	// we change the coordinates in x, y and z directions once, then we push a new state and pop that
 	// new state again - which means, that we don't modify the initial state => hence the 1, 1, 1
-	lsystemCtx.axiom = "XYZ[XYZ]";
+	lsystemCtx.axiom = "AXYZ[XYZ]";
+	lsystemCtx.voxels.emplace('A', createVoxel(Wood1));
 
 	LSystemState state;
 	LSystemGenerator::expand(&state, _ctx, lsystemCtx, _random, lsystemCtx.axiom, lsystemCtx.generations);
@@ -41,7 +42,8 @@ TEST_F(LSystemGeneratorTest, testStatePushPop) {
 
 TEST_F(LSystemGeneratorTest, testStatePushPopPositionChangeToInit) {
 	LSystemContext lsystemCtx;
-	lsystemCtx.axiom = "XYZ[XYZ]xyz";
+	lsystemCtx.axiom = "AXYZ[XYZ]xyz";
+	lsystemCtx.voxels.emplace('A', createVoxel(Wood1));
 
 	LSystemState state;
 	LSystemGenerator::expand(&state, _ctx, lsystemCtx, _random, lsystemCtx.axiom, lsystemCtx.generations);
@@ -68,7 +70,8 @@ TEST_F(LSystemGeneratorTest, testMultipleStates) {
 
 TEST_F(LSystemGeneratorTest, testStatePositionChangeTwice) {
 	LSystemContext lsystemCtx;
-	lsystemCtx.axiom = "XYZXYZ";
+	lsystemCtx.axiom = "AXYZXYZ";
+	lsystemCtx.voxels.emplace('A', createVoxel(Wood1));
 
 	LSystemState state;
 	LSystemGenerator::expand(&state, _ctx, lsystemCtx, _random, lsystemCtx.axiom, lsystemCtx.generations);
