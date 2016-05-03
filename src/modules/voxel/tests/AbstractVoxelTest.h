@@ -17,7 +17,7 @@ protected:
 						const int distance = (pos - center).length();
 						Voxel uVoxelValue = createVoxel(Air);
 						if (distance <= 30) {
-							uVoxelValue = createVoxel(Grass);
+							uVoxelValue = createVoxel(Grass1);
 						}
 
 						chunk->setVoxel(x, y, z, uVoxelValue);

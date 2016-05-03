@@ -119,8 +119,8 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 
 	static const glm::vec4 materialColors[] = {
 		video::Color::LightBlue,	// air
-		video::Color::Lime,			// grass
-		video::Color::DarkBrown,    // wood
+		video::Color::Lime,			// grass1
+		video::Color::DarkBrown,	// wood1
 		// leaves
 		video::Color::LightGreen,
 		video::Color::DarkGreen,
@@ -133,20 +133,20 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 		video::Color::Darker(video::Color::Yellow),
 		video::Color::Darker(video::Color::Yellow, 2.0f),
 		// leaves end
-		video::Color::DarkGray,		// rock
+		video::Color::DarkGray,		// rock1
+		video::Color::DarkGray,		// rock2
+		video::Color::DarkGray,		// rock3
+		video::Color::DarkGray,		// rock4
+		video::Color::Sandy,		// sand1
+		video::Color::Sandy,		// sand2
+		video::Color::Sandy,		// sand3
+		video::Color::Sandy,		// sand4
 		video::Color::White,		// clouds
-		glm::vec4(glm::vec3(video::Color::Blue), 0.4f), // water
-		video::Color::Brown,        // dirt
-		video::Color::Sandy,        // sand
-		video::Color::Pink,
-		video::Color::Pink,
-		video::Color::Pink,
-		video::Color::Pink,
-		video::Color::Pink,
-		video::Color::Pink,
-		video::Color::Pink,
-		video::Color::Pink,
-		video::Color::Pink,
+		glm::vec4(glm::vec3(video::Color::Blue), 0.4f),	// water
+		video::Color::Brown,		// dirt1
+		video::Color::Brown,		// dirt2
+		video::Color::Brown,		// dirt3
+		video::Color::Brown,		// dirt4
 		video::Color::Pink,
 		video::Color::Pink,
 		video::Color::Pink,

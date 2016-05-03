@@ -55,7 +55,7 @@ TEST_F(LSystemGeneratorTest, testMultipleStates) {
 	LSystemContext lsystemCtx;
 	lsystemCtx.axiom = "AY[xYA]AY[XYA]AY";
 	lsystemCtx.productionRules.emplace('A', lsystemCtx.axiom);
-	lsystemCtx.voxels.emplace('A', createVoxel(Wood));
+	lsystemCtx.voxels.emplace('A', createVoxel(Wood1));
 	lsystemCtx.generations = 2;
 
 	LSystemState state;
@@ -86,8 +86,8 @@ TEST_F(LSystemGeneratorTest, testGenerateVoxels) {
 	lsystemCtx.productionRules.emplace('A', "XAxYAXBXXYYZZ");
 	lsystemCtx.productionRules.emplace('B', "A[zC]");
 
-	lsystemCtx.voxels.emplace('A', createVoxel(Wood));
-	lsystemCtx.voxels.emplace('B', createVoxel(Grass));
+	lsystemCtx.voxels.emplace('A', createVoxel(Wood1));
+	lsystemCtx.voxels.emplace('B', createVoxel(Grass1));
 	lsystemCtx.voxels.emplace('C', createVoxel(Leaves4));
 
 	LSystemGenerator::generate(_ctx, lsystemCtx, _random);

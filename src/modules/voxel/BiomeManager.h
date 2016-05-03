@@ -21,8 +21,8 @@ private:
 	Biome bioms[MAX_TERRAIN_HEIGHT];
 
 	const Voxel INVALID = createVoxel(Air);
-	const Voxel ROCK = createVoxel(Rock);
-	const Voxel GRASS = createVoxel(Grass);
+	const Voxel ROCK = createVoxel(Rock1);
+	const Voxel GRASS = createVoxel(Grass1);
 
 public:
 	BiomeManager();
@@ -57,7 +57,7 @@ public:
 		if (biome == nullptr) {
 			return false;
 		}
-		if (biome->voxel.getMaterial() != Grass) {
+		if (!isGrass(biome->voxel.getMaterial())) {
 			return false;
 		}
 		return biome->temperature > 0.3f && biome->humidity > 0.3f;

@@ -72,7 +72,7 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 		top += height;
 	}
 
-	const Voxel voxel = createVoxel(Wood);
+	const Voxel voxel = createVoxel(Wood1);
 	for (int y = pos.y; y < top; ++y) {
 		const int trunkWidthY = trunkWidth + std::max(0, 2 - (y - pos.y));
 		for (int x = pos.x - trunkWidthY; x < pos.x + trunkWidthY; ++x) {

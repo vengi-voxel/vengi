@@ -26,7 +26,7 @@ TEST_F(WorldPersisterTest, testSaveLoad) {
 	PagedVolume::Chunk* chunk2 = volData.getChunk(glm::ivec3(128, 0, 128));
 	ASSERT_TRUE(chunk != chunk2) << "Chunks should be different";
 	ASSERT_TRUE(persister.load(ctx, chunk2, seed)) << "Could not load volume chunk";
-	ASSERT_EQ(Grass, volData.getVoxel(32, 32, 32).getMaterial());
+	ASSERT_EQ(Grass1, volData.getVoxel(32, 32, 32).getMaterial());
 }
 
 }
