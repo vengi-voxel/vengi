@@ -92,7 +92,7 @@ TEST_F(SimplexNoiseTest, testLandscape) {
 TEST_F(SimplexNoiseTest, testMountains) {
 	const int w = 2048;
 	const int h = 2048;
-	uint8_t buffer[w * h * components];
+	uint8_t *buffer = new uint8_t[w * h * components];
 
 	voxel::WorldContext worldCtx;
 
@@ -119,6 +119,7 @@ TEST_F(SimplexNoiseTest, testMountains) {
 		}
 	}
 	ASSERT_TRUE(WriteImage("testNoiseMountains.png", buffer, w, h));
+	delete[] buffer;
 }
 
 TEST_F(SimplexNoiseTest, test2DNoise) {
