@@ -11,7 +11,7 @@ namespace voxel {
 #define MAX_TERRAIN_HEIGHT 100
 #define MAX_WATER_HEIGHT 10
 
-inline Voxel createVoxel(VoxelType type) {
+constexpr Voxel createVoxel(VoxelType type) {
 	return Voxel(type);
 }
 

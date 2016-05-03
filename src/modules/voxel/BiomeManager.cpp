@@ -2,9 +2,24 @@
 
 namespace voxel {
 
+constexpr Voxel BiomeManager::INVALID;
+constexpr Voxel BiomeManager::ROCK;
+constexpr Voxel BiomeManager::GRASS;
+constexpr Biome BiomeManager::DEFAULT;
+
 BiomeManager::BiomeManager() {
 	for (int i = 0; i < int(SDL_arraysize(bioms)); ++i) {
-		bioms[i] = Biome { GRASS, 0, MAX_TERRAIN_HEIGHT, 0.5f, 0.5f, nullptr };
+		bioms[i] = new Biome();
+	}
+}
+
+BiomeManager::~BiomeManager() {
+	for (int i = 0; i < int(SDL_arraysize(bioms)); ++i) {
+		for (Biome *b = bioms[i]; b != nullptr; ) {
+			Biome* toDelete = b;
+			b = b->next;
+			delete toDelete;
+		}
 	}
 }
 
@@ -13,7 +28,7 @@ bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperatu
 		return false;
 	}
 	for (int i = lower; i < upper; ++i) {
-		const Biome b { type, int16_t(lower), int16_t(upper), humidity, temperature, nullptr };
+		Biome* b = new Biome(type, int16_t(lower), int16_t(upper), humidity, temperature, bioms[i]);
 		bioms[i] = b;
 	}
 	return true;

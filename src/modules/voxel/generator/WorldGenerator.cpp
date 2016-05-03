@@ -40,8 +40,8 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 					voxels[y] = voxel;
 				}
 			} else {
-				const Voxel& air = createVoxel(Air);
-				const Voxel& water = createVoxel(Water);
+				static constexpr Voxel air = createVoxel(Air);
+				static constexpr Voxel water = createVoxel(Water);
 				voxels[0] = createVoxel(Dirt1);
 				for (int y = ni - 1; y >= 1; --y) {
 					const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);

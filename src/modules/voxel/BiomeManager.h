@@ -7,25 +7,35 @@
 namespace voxel {
 
 struct Biome {
-	Voxel voxel;
-	int16_t yMin;
-	int16_t yMax;
-	float humidity;
-	float temperature;
+	constexpr Biome(const Voxel& _voxel, int16_t _yMin, int16_t _yMax,
+			float _humidity, float _temperature, Biome* _next = nullptr) :
+			voxel(_voxel), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(
+					_temperature), next(_next) {
+	}
 
+	constexpr Biome() :
+			Biome(createVoxel(Grass1), 0, MAX_TERRAIN_HEIGHT, 0.5f, 0.5f) {
+	}
+	const Voxel voxel;
+	const int16_t yMin;
+	const int16_t yMax;
+	const float humidity;
+	const float temperature;
 	Biome* next;
 };
 
 class BiomeManager {
 private:
-	Biome bioms[MAX_TERRAIN_HEIGHT];
+	Biome* bioms[MAX_TERRAIN_HEIGHT];
 
-	const Voxel INVALID = createVoxel(Air);
-	const Voxel ROCK = createVoxel(Rock1);
-	const Voxel GRASS = createVoxel(Grass1);
+	static constexpr Voxel INVALID = createVoxel(Air);
+	static constexpr Voxel ROCK = createVoxel(Rock1);
+	static constexpr Voxel GRASS = createVoxel(Grass1);
+	static constexpr Biome DEFAULT = {}	;
 
 public:
 	BiomeManager();
+	~BiomeManager();
 
 	bool addBiom(int lower, int upper, float humidity, float temperature, const Voxel& type);
 
@@ -39,9 +49,6 @@ public:
 		}
 		core_assert(noise >= 0.0f && noise <= 1.0f);
 		const Biome* biome = getBiome(pos, noise);
-		if (biome == nullptr) {
-			return GRASS;
-		}
 		return biome->voxel;
 	}
 
@@ -66,18 +73,22 @@ public:
 	inline const Biome* getBiome(const glm::ivec3& pos, float noise = 1.0f) const {
 		core_assert_msg(noise >= 0.0f && noise <= 1.0f, "noise must be normalized [-1.0,1.0]: %f", noise);
 		const int index = glm::clamp(int(pos.y * noise), 0, int(SDL_arraysize(bioms))- 1);
-		const Biome* biome = &bioms[index];
+		const Biome* biome = bioms[index];
+		if (biome == nullptr) {
+			return &DEFAULT;
+		}
 		const glm::vec4 noisePos(pos.x, pos.y, pos.z, noise);
 		// TODO: reasonable values
 		const float humidityNoise = noise::Simplex::Noise4D(noisePos, 1, 1.0f, 1.0f, 1.0f);
 		const float temperatureNoise = noise::Simplex::Noise4D(noisePos, 1, 1.2f, 1.2f, 1.2f);
 		const float humidityNoiseNorm = noise::norm(humidityNoise);
-		Biome *biomeBestMatch = nullptr;
+		const float temperatureNoiseNorm = noise::norm(temperatureNoise);
+		const Biome *biomeBestMatch = nullptr;
 		float distMin = std::numeric_limits<float>::max();
 
 		while (biome != nullptr) {
-			const float dTemperature = temperatureNoise - biome->temperature;
-			const float dHumidity = humidityNoise - biome->humidity;
+			const float dTemperature = temperatureNoiseNorm - biome->temperature;
+			const float dHumidity = humidityNoiseNorm - biome->humidity;
 			const float dist = (dTemperature * dTemperature) + (dHumidity * dHumidity);
 			if (dist < distMin) {
 				biomeBestMatch = biome;
@@ -85,7 +96,7 @@ public:
 			}
 			biome = biome->next;
 		}
-		return biome;
+		return biomeBestMatch;
 	}
 
 	inline bool hasClouds(const glm::ivec3& pos, float noise = 1.0f) const {
@@ -93,10 +104,7 @@ public:
 			return false;
 		}
 		const Biome* biome = getBiome(pos, noise);
-		if (biome == nullptr) {
-			return false;
-		}
-		return biome->humidity >= 0.5f;
+		return biome->humidity >= 0.6f;
 	}
 };
 
