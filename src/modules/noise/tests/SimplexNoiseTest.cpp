@@ -29,8 +29,6 @@ TEST_F(SimplexNoiseTest, testLandscapeMountains) {
 			const glm::vec2 pos(x, y);
 			const float landscapeNoise = noise::Simplex::Noise2D(pos, worldCtx.landscapeNoiseOctaves,
 					worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
-			ASSERT_LE(landscapeNoise, 1.0f)<< "Noise is bigger than 1.0: " << landscapeNoise;
-			ASSERT_GE(landscapeNoise, -1.0f)<< "Noise is less than -1.0: " << landscapeNoise;
 			const float noiseNormalized = noise::norm(landscapeNoise);
 			ASSERT_LE(noiseNormalized, 1.0f)<< "Noise is bigger than 1.0: " << noiseNormalized;
 			ASSERT_GE(noiseNormalized, 0.0f)<< "Noise is less than 0.0: " << noiseNormalized;
@@ -62,8 +60,6 @@ TEST_F(SimplexNoiseTest, test2DNoise) {
 		for (int y = 0; y < h; ++y) {
 			const glm::vec2 pos(x, y);
 			const float noise = Simplex::Noise2D(pos, 2, 1.0f, 0.5f, 1.5f);
-			ASSERT_LE(noise, 1.0f)<< "Noise is bigger than 1.0: " << noise;
-			ASSERT_GE(noise, -1.0f)<< "Noise is less than -1.0: " << noise;
 			float normalized = noise::norm(noise);
 			ASSERT_LE(normalized, 1.0f)<< "Noise is bigger than 1.0: " << normalized;
 			ASSERT_GE(normalized, 0.0f)<< "Noise is less than 0.0: " << normalized;
