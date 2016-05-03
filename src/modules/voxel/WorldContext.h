@@ -135,7 +135,7 @@ struct WorldContext {
 	int mountainNoiseOctaves = 2;
 	float mountainNoisePersistence = 0.3f;
 	float mountainNoiseFrequency = 0.00075f;
-	float mountainNoiseAmplitude = 0.8f;
+	float mountainNoiseAmplitude = 0.5f;
 };
 
 }
