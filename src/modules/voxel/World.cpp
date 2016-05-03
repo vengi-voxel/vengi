@@ -306,4 +306,11 @@ bool World::isReset() const {
 	return _cancelThreads;
 }
 
+void World::stats(int& meshes, int& extracted, int& pending) const {
+	core::ScopedReadLock lock(_rwLock);
+	meshes = _meshQueue.size();
+	extracted = _meshesExtracted.size();
+	pending = _futures.size();
+}
+
 }

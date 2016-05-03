@@ -93,6 +93,8 @@ public:
 		return true;
 	}
 
+	void stats(int& meshes, int& extracted, int& pending) const;
+
 	/**
 	 * @brief If you don't need an extracted mesh anymore, make sure to allow the reextraction at a later time.
 	 * @param[in] pos A World vector that is automatically converted into a mesh tile vector

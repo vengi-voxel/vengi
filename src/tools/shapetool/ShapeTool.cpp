@@ -103,9 +103,16 @@ void ShapeTool::afterUI() {
 	tb::TBStr position;
 	const glm::vec3& pos = _camera.getPosition();
 	position.SetFormatted("pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
+	tb::TBStr extractions;
+	int meshes;
+	int extracted;
+	int pending;
+	_worldRenderer.stats(meshes, extracted, pending);
+	extractions.SetFormatted("pending: %i, meshes: %i, extracted: %i", pending, meshes, extracted);
 	_root.GetFont()->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
 	_root.GetFont()->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
 	_root.GetFont()->DrawString(5, 50, tb::TBColor(255, 255, 255), position);
+	_root.GetFont()->DrawString(5, 65, tb::TBColor(255, 255, 255), extractions);
 }
 
 core::AppState ShapeTool::onCleanup() {

@@ -376,6 +376,10 @@ void WorldRenderer::extractMeshAroundCamera(int radius) {
 	}
 }
 
+void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
+	_world->stats(meshes, extracted, pending);
+}
+
 void WorldRenderer::onInit() {
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
