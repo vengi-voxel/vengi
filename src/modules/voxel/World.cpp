@@ -59,7 +59,7 @@ World::World() :
 	_biomManager.addBiom(MAX_WATER_HEIGHT + 1, MAX_TERRAIN_HEIGHT + 1, 1.0f, 0.7f, createVoxel(Dirt1));
 	_biomManager.addBiom(MAX_WATER_HEIGHT + 1, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Grass1));
 	_biomManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, createVoxel(Rock1));
-	_biomManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Rock2));
+	_biomManager.addBiom(MAX_TERRAIN_HEIGHT - 30, MAX_MOUNTAIN_HEIGHT + 1, 0.32f, 0.32f, createVoxel(Rock2));
 }
 
 World::~World() {
