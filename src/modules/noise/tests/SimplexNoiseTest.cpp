@@ -90,8 +90,8 @@ TEST_F(SimplexNoiseTest, testLandscape) {
 }
 
 TEST_F(SimplexNoiseTest, testMountains) {
-	const int w = 1024;
-	const int h = 1024;
+	const int w = 2048;
+	const int h = 2048;
 	uint8_t buffer[w * h * components];
 
 	voxel::WorldContext worldCtx;
@@ -99,8 +99,11 @@ TEST_F(SimplexNoiseTest, testMountains) {
 	for (int x = 0; x < w; ++x) {
 		for (int y = 0; y < h; ++y) {
 			const glm::vec2 pos(x, y);
-			const float mountainNoise = noise::Simplex::Noise2D(pos, worldCtx.mountainNoiseOctaves,
-					worldCtx.mountainNoisePersistence, worldCtx.mountainNoiseFrequency, worldCtx.mountainNoiseAmplitude);
+			const int o = worldCtx.mountainNoiseOctaves;
+			const float p = worldCtx.mountainNoisePersistence;
+			const float f = worldCtx.mountainNoiseFrequency;
+			const float a = worldCtx.mountainNoiseAmplitude;
+			const float mountainNoise = noise::Simplex::Noise2D(pos, o, p, f, a);
 			const float mountainNoiseNormalized = noise::norm(mountainNoise);
 			const unsigned char color = (unsigned char) (mountainNoiseNormalized * 255.0f);
 			ASSERT_LE(color, 255) << "Color is bigger than 255: " << color;
