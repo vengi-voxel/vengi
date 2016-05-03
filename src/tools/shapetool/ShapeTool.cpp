@@ -125,6 +125,12 @@ bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 		} else {
 			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_VISIBLE);
 		}
+	} else if (key == SDLK_PLUS || key == SDLK_KP_PLUS) {
+		const float speed = _speed->floatVal() + 0.1f;
+		_speed->setVal(std::to_string(speed));
+	} else if (key == SDLK_MINUS || key == SDLK_KP_MINUS) {
+		const float speed = std::max(0.1f, _speed->floatVal() - 0.1f);
+		_speed->setVal(std::to_string(speed));
 	}
 	return UIApp::onKeyPress(key, modifier);
 }
