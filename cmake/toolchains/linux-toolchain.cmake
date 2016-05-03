@@ -53,7 +53,7 @@ else()
 endif()
 
 # TODO: fix most of these and activate them one by one
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -Wreturn-type -Wwrite-strings -Wno-unused-parameter")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -Wreturn-type -Wwrite-strings -Wno-unused-parameter -fdiagnostics-color=auto")
 if (CMAKE_USE_PTHREADS_INIT)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 endif()
