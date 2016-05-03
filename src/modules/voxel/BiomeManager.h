@@ -14,7 +14,7 @@ struct Biome {
 	}
 
 	constexpr Biome() :
-			Biome(createVoxel(Grass1), 0, MAX_TERRAIN_HEIGHT, 0.5f, 0.5f) {
+			Biome(createVoxel(Grass1), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f) {
 	}
 	const Voxel voxel;
 	const int16_t yMin;
@@ -26,7 +26,7 @@ struct Biome {
 
 class BiomeManager {
 private:
-	Biome* bioms[MAX_TERRAIN_HEIGHT];
+	Biome* bioms[MAX_MOUNTAIN_HEIGHT];
 
 	static constexpr Voxel INVALID = createVoxel(Air);
 	static constexpr Voxel ROCK = createVoxel(Rock1);
@@ -100,7 +100,7 @@ public:
 	}
 
 	inline bool hasClouds(const glm::ivec3& pos, float noise = 1.0f) const {
-		if (pos.y <= MAX_TERRAIN_HEIGHT) {
+		if (pos.y <= MAX_MOUNTAIN_HEIGHT) {
 			return false;
 		}
 		const Biome* biome = getBiome(pos, noise);
