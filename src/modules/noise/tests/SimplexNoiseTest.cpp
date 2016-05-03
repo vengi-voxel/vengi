@@ -1,5 +1,7 @@
 #include "core/tests/AbstractTest.h"
 #include "noise/SimplexNoise.h"
+// TODO: not a real dependency to the voxel module.... but... look there - a three headed monkey!
+#include "voxel/WorldContext.h"
 #include "image/Image.h"
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/constants.hpp>
@@ -20,29 +22,34 @@ protected:
 TEST_F(SimplexNoiseTest, testLandscapeMountains) {
 	uint8_t buffer[w * h * components];
 
+	voxel::WorldContext worldCtx;
+
 	for (int x = 0; x < w; ++x) {
 		for (int y = 0; y < h; ++y) {
 			const glm::vec2 pos(x, y);
-			float landscapeNoise = noise::Simplex::Noise2D(pos, 4, 0.3f, 0.01f);
+			const float landscapeNoise = noise::Simplex::Noise2D(pos, worldCtx.landscapeNoiseOctaves,
+					worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 			ASSERT_LE(landscapeNoise, 1.0f)<< "Noise is bigger than 1.0: " << landscapeNoise;
 			ASSERT_GE(landscapeNoise, -1.0f)<< "Noise is less than -1.0: " << landscapeNoise;
-			float noiseNormalized = (landscapeNoise + 1.0f) * 0.5f;
+			const float noiseNormalized = noise::norm(landscapeNoise);
 			ASSERT_LE(noiseNormalized, 1.0f)<< "Noise is bigger than 1.0: " << noiseNormalized;
 			ASSERT_GE(noiseNormalized, 0.0f)<< "Noise is less than 0.0: " << noiseNormalized;
-			float mountainNoise = noise::Simplex::Noise2D(pos, 4, 0.3f, 0.0075f);
-			float mountainNoiseNormalized = (mountainNoise + 1.0f) * 0.5f;
-			float mountainMultiplier = mountainNoiseNormalized * 2.3f;
-			float noiseHeight = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
-			unsigned char color = (unsigned char) (noiseHeight * 255.0f);
-			ASSERT_LE(color, 255)<< "Color is bigger than 255: " << color;
-			ASSERT_GE(color, 0)<< "Color is less than 0: " << color;
+			const float mountainNoise = noise::Simplex::Noise2D(pos, worldCtx.mountainNoiseOctaves,
+					worldCtx.mountainNoisePersistence, worldCtx.mountainNoiseFrequency, worldCtx.mountainNoiseAmplitude);
+			const float mountainNoiseNormalized = noise::norm(mountainNoise);
+			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
+			const float noiseHeight = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
+			const unsigned char color = (unsigned char) (noiseHeight * 255.0f);
+			ASSERT_LE(color, 255) << "Color is bigger than 255: " << color;
+			ASSERT_GE(color, 0) << "Color is less than 0: " << color;
 			int index = y * (w * components) + (x * components);
 			const int n = components == 4 ? 3 : components;
 			for (int i = 0; i < n; ++i) {
 				buffer[index++] = color;
 			}
-			if (components == 4)
+			if (components == 4) {
 				buffer[index] = 255;
+			}
 		}
 	}
 	ASSERT_TRUE(WriteImage("testNoiseLandscapeMountains.png", buffer));
