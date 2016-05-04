@@ -12,6 +12,7 @@
 #define GBUFFER 0
 
 constexpr int MinCullingDistance = 500;
+constexpr int MinExtractionCullingDistance = 1000;
 
 namespace frontend {
 
@@ -428,7 +429,7 @@ int WorldRenderer::getDistance2(const glm::ivec3& pos) const {
 bool WorldRenderer::isDistanceCulled(int distance2, bool queryForRendering) const {
 	const float cullingThreshold = _world->getChunkSize() * 3;
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
-	if ((!queryForRendering && distance2 > glm::pow(MinCullingDistance, 2)) && distance2 >= maxAllowedDistance) {
+	if ((!queryForRendering && distance2 > glm::pow(MinExtractionCullingDistance, 2)) && distance2 >= maxAllowedDistance) {
 		return true;
 	}
 	return false;
