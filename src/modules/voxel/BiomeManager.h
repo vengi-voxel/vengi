@@ -44,7 +44,6 @@ public:
 		if (underground) {
 			return ROCK;
 		}
-		core_assert(noise >= 0.0f && noise <= 1.0f);
 		const Biome* biome = getBiome(pos, noise);
 		return biome->voxel;
 	}
