@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Name=@_EXE_TARGET@ @VERSION@
+GenericName=@_EXE_TARGET@
+Comment=@DESCRIPTION@
+Exec=@_EXE_TARGET@
+Icon=@_EXE_TARGET@
+Terminal=false
+Type=Application
+Categories=Game;
+StartupNotify=true

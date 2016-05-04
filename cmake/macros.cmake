@@ -308,4 +308,35 @@ macro(engine_add_executable)
 			endif()
 		endif()
 	endif()
+
+	set(RESOURCE_DIRS ${ROOT_DIR}/data/${_EXE_TARGET} ${ROOT_DIR}/data/shared)
+
+	# by default, put system related files into the current binary dir on install
+	set(SHARE_DIR ".")
+	# by default, put data files into the current binary dir on install
+	set(GAMES_DIR "${_EXE_TARGET}")
+	# by default, put the binary into a subdir with the target name
+	set(BIN_DIR "${_EXE_TARGET}")
+	set(ICON_DIR ".")
+
+	if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+		set(SHARE_DIR "share")
+		set(GAMES_DIR "${SHARE_DIR}/${_EXE_TARGET}")
+		set(ICON_DIR "${SHARE_DIR}/icons")
+		set(BIN_DIR "games")
+		configure_file(${ROOT_DIR}/contrib/installer/linux/desktop.in ${PROJECT_BINARY_DIR}/${_EXE_TARGET}.desktop)
+		install(FILES ${PROJECT_BINARY_DIR}/${_EXE_TARGET}.desktop DESTINATION ${SHARE_DIR}/applications)
+	endif()
+
+	set(ICON "${_EXE_TARGET}-icon.png")
+	if (EXISTS ${ROOT_DIR}/contrib/${ICON})
+		install(FILES ${ROOT_DIR}/contrib/${ICON} DESTINATION ${ICON_DIR} COMPONENT ${_EXE_TARGET})
+	endif()
+
+	foreach (dir ${RESOURCE_DIRS})
+		if (IS_DIRECTORY ${dir})
+			install(DIRECTORY ${dir} DESTINATION ${GAMES_DIR}/ COMPONENT ${_EXE_TARGET})
+		endif()
+	endforeach()
+	install(TARGETS ${_EXE_TARGET} DESTINATION ${BIN_DIR} COMPONENT ${_EXE_TARGET})
 endmacro()

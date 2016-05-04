@@ -11,10 +11,10 @@ all: build
 
 .PHONY: build
 build:
-	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" ..; make $(JOB_FLAG)
+	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_INSTALL_PREFIX=./linux ..; make $(JOB_FLAG); make install
 
 release:
-	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ..; make $(JOB_FLAG)
+	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_INSTALL_PREFIX=./linux -DCMAKE_BUILD_TYPE=Release ..; make $(JOB_FLAG); make install
 
 clean:
 	$(Q)rm -rf $(BUILDDIR)

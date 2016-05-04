@@ -5,6 +5,8 @@ set(SCRIPTS_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 
 include(${SCRIPTS_CMAKE_DIR}/common.cmake)
 include(${SCRIPTS_CMAKE_DIR}/macros.cmake)
+include(${SCRIPTS_CMAKE_DIR}/pack.cmake)
+include(CPack)
 
 option(UNITTESTS "Builds with tests" ON)
 option(UNITTESTS_SANITIZER_THREADS "Builds tests with thread sanitizer" OFF)
