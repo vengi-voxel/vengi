@@ -51,3 +51,7 @@ tags:
 
 shapetool2: clean-local-config
 	$(Q)cd $(BUILDDIR); make $(JOB_FLAG) shapetool && ./shapetool -set cl_debug_geometry false
+
+material-color: build
+	$(Q)cd $(BUILDDIR); ./tests -- --gtest_filter=MaterialTest* $(ARGS)
+	$(Q)xdg-open build/material.png

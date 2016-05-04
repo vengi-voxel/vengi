@@ -19,7 +19,7 @@ protected:
 
 TEST_F(MaterialTest, testMaterial) {
 	const int w = 256;
-	const int h = 512;
+	const int h = 1024;
 	uint8_t buffer[w * h * components];
 
 	#include "frontend/MaterialColor.h"
