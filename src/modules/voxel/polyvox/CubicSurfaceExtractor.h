@@ -10,20 +10,6 @@
 
 namespace voxel {
 
-/** Decodes a position from a CubicVertex */
-inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition);
-
-/** Decodes a CubicVertex by converting it into a regular Vertex which can then be directly used for rendering. */
-inline Vertex decodeVertex(const CubicVertex& cubicVertex);
-
-/** Generates a cubic-style mesh from the voxel data. */
-template<typename VolumeType, typename MeshType, typename IsQuadNeeded>
-void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
-
-/** Generates a cubic-style mesh from the voxel data, placing the result into a user-provided Mesh. */
-template<typename VolumeType, typename IsQuadNeeded>
-Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded = IsQuadNeeded(), bool bMergeQuads = true);
-
 /**
  * This constant defines the maximum number of quads which can share a vertex in a cubic style mesh.
  *
@@ -65,12 +51,14 @@ struct IndexAndMaterial {
 // Vertex encoding/decoding
 ////////////////////////////////////////////////////////////////////////////////
 
+/** Decodes a position from a CubicVertex */
 inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition) {
 	glm::vec3 result(encodedPosition.x, encodedPosition.y, encodedPosition.z);
 	result -= 0.5f; // Apply the required offset
 	return result;
 }
 
+/** Decodes a CubicVertex by converting it into a regular Vertex which can then be directly used for rendering. */
 inline Vertex decodeVertex(const CubicVertex& cubicVertex) {
 	Vertex result;
 	result.position = decodePosition(cubicVertex.encodedPosition);
