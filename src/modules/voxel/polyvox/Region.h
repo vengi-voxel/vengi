@@ -436,7 +436,7 @@ inline void Region::accumulate(const Region& reg) {
  * Constructs a Region and clears all extents to zero.
  */
 inline Region::Region() :
-		m_iLowerX(0), m_iLowerY(0), m_iLowerZ(0), m_iUpperX(0), m_iUpperY(0), m_iUpperZ(0) {
+		Region(0, 0, 0, 0, 0, 0) {
 }
 
 /**
@@ -445,8 +445,7 @@ inline Region::Region() :
  * @param v3dUpperCorner The desired upper corner of the Region.
  */
 inline Region::Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner) :
-		m_iLowerX(v3dLowerCorner.x), m_iLowerY(v3dLowerCorner.y), m_iLowerZ(v3dLowerCorner.z), m_iUpperX(v3dUpperCorner.x), m_iUpperY(v3dUpperCorner.y), m_iUpperZ(
-				v3dUpperCorner.z) {
+		Region(v3dLowerCorner.x, v3dLowerCorner.y, v3dLowerCorner.z, v3dUpperCorner.x, v3dUpperCorner.y, v3dUpperCorner.z) {
 }
 
 /**
