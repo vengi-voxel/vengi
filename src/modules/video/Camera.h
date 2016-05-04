@@ -9,7 +9,7 @@
 
 namespace video {
 
-enum {
+enum class FrustumPlanes {
 	FrustumRight,
 	FrustumLeft,
 	FrustumTop,
@@ -36,7 +36,7 @@ private:
 	float _yaw;
 	glm::vec3 _direction;
 	core::VarPtr _maxpitch;
-	glm::vec4 _frustumPlanes[MaxPlanes];
+	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
 
 public:
 	Camera();
@@ -94,6 +94,10 @@ public:
 
 	inline const glm::mat4& getViewMatrix() const {
 		return _viewMatrix;
+	}
+
+	inline const glm::vec4& getFrustumPlane(FrustumPlanes plane) const {
+		return _frustumPlanes[int(plane)];
 	}
 };
 
