@@ -6,5 +6,5 @@ set(SRCS
 )
 set(LIB io)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} sdl2 sauce)
+target_link_libraries(${LIB} sdl2 sauce glm)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
