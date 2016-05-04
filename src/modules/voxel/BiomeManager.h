@@ -26,7 +26,7 @@ struct Biome {
 
 class BiomeManager {
 private:
-	Biome* bioms[MAX_MOUNTAIN_HEIGHT];
+	std::vector<Biome> bioms;
 
 	static constexpr Voxel INVALID = createVoxel(Air);
 	static constexpr Voxel ROCK = createVoxel(Rock1);
@@ -41,9 +41,6 @@ public:
 
 	// this lookup must be really really fast - it is executed once per generated voxel
 	inline const Voxel& getVoxelType(const glm::ivec3& pos, bool underground = false, float noise = 1.0f) const {
-		if (pos.y < 0 || pos.y >= int(SDL_arraysize(bioms))) {
-			return INVALID;
-		}
 		if (underground) {
 			return ROCK;
 		}
@@ -61,9 +58,6 @@ public:
 			return false;
 		}
 		const Biome* biome = getBiome(pos, noise);
-		if (biome == nullptr) {
-			return false;
-		}
 		if (!isGrass(biome->voxel.getMaterial())) {
 			return false;
 		}
@@ -72,29 +66,27 @@ public:
 
 	inline const Biome* getBiome(const glm::ivec3& pos, float noise = 1.0f) const {
 		core_assert_msg(noise >= 0.0f && noise <= 1.0f, "noise must be normalized [-1.0,1.0]: %f", noise);
-		const int index = glm::clamp(int(pos.y * noise), 0, int(SDL_arraysize(bioms))- 1);
-		const Biome* biome = bioms[index];
-		if (biome == nullptr) {
-			return &DEFAULT;
-		}
 		const glm::vec4 noisePos(pos.x, pos.y, pos.z, noise);
 		// TODO: reasonable values
 		const float humidityNoise = noise::Simplex::Noise4D(noisePos, 1, 1.0f, 1.0f, 1.0f);
 		const float temperatureNoise = noise::Simplex::Noise4D(noisePos, 1, 1.2f, 1.2f, 1.2f);
 		const float humidityNoiseNorm = noise::norm(humidityNoise);
 		const float temperatureNoiseNorm = noise::norm(temperatureNoise);
-		const Biome *biomeBestMatch = nullptr;
+
+		const Biome *biomeBestMatch = &DEFAULT;
 		float distMin = std::numeric_limits<float>::max();
 
-		while (biome != nullptr) {
-			const float dTemperature = temperatureNoiseNorm - biome->temperature;
-			const float dHumidity = humidityNoiseNorm - biome->humidity;
+		for (const Biome& biome : bioms) {
+			if (pos.y > biome.yMax || pos.y < biome.yMin) {
+				continue;
+			}
+			const float dTemperature = temperatureNoiseNorm - biome.temperature;
+			const float dHumidity = humidityNoiseNorm - biome.humidity;
 			const float dist = (dTemperature * dTemperature) + (dHumidity * dHumidity);
 			if (dist < distMin) {
-				biomeBestMatch = biome;
+				biomeBestMatch = &biome;
 				distMin = dist;
 			}
-			biome = biome->next;
 		}
 		return biomeBestMatch;
 	}
