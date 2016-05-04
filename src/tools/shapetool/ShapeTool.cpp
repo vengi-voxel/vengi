@@ -40,7 +40,7 @@ core::AppState ShapeTool::onInit() {
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	_world->setSeed(1);
-	_worldRenderer.onInit();
+	_worldRenderer.onInit(_width, _height);
 	_camera.init(_width, _height);
 	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
@@ -90,8 +90,8 @@ void ShapeTool::beforeUI() {
 
 	_worldRenderer.extractNewMeshes(_camera.getPosition());
 	_worldRenderer.onRunning(_deltaFrame);
-	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _camera, projection);
-	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, projection);
+	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _camera, projection, _width, _height);
+	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, projection, _width, _height);
 }
 
 void ShapeTool::afterUI() {

@@ -14,6 +14,7 @@ public:
 	~GBuffer();
 
 	bool init(int width, int height);
+	void shutdown();
 
 	void setReadBuffer(GBufferTextureType textureType);
 	void bindForWriting();

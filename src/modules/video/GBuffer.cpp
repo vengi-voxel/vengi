@@ -13,8 +13,13 @@ GBuffer::GBuffer() :
 }
 
 GBuffer::~GBuffer() {
+	shutdown();
+}
+
+void GBuffer::shutdown() {
 	if (_fbo != 0) {
 		glDeleteFramebuffers(1, &_fbo);
+		_fbo = 0;
 	}
 
 	if (_textures[0] != 0) {

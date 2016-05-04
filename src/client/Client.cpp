@@ -111,7 +111,7 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
-	_worldRenderer.onInit();
+	_worldRenderer.onInit(_width, _height);
 	_clearColor = video::Color::LightBlue;
 
 	_root.SetSkinBg(TBIDC("background"));
@@ -140,8 +140,8 @@ void Client::beforeUI() {
 		const glm::mat4& projection = glm::perspective(45.0f, _aspect, 0.1f, farPlane);
 		_camera.updateFrustumPlanes(projection);
 
-		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _camera, projection);
-		_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, projection);
+		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _camera, projection, _width, _height);
+		_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, projection, _width, _height);
 		_worldRenderer.extractNewMeshes(_camera.getPosition());
 	} else {
 		_drawCallsWorld = 0;

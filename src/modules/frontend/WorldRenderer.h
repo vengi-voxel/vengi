@@ -4,6 +4,7 @@
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/Camera.h"
+#include "video/GBuffer.h"
 #include "video/GLMeshData.h"
 #include "ClientEntity.h"
 
@@ -48,6 +49,7 @@ private:
 	// the position of the last extraction - we only care for x and z here
 	glm::ivec3 _lastGridPosition;
 	voxel::WorldPtr _world;
+	video::GBuffer _gbuffer;
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh);
@@ -61,13 +63,15 @@ private:
 	// schedule mesh extraction around the camera position on the grid with the given radius
 	void extractMeshAroundCamera(int radius);
 
+	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera);
+
 public:
 	WorldRenderer(const voxel::WorldPtr& world);
 	~WorldRenderer();
 
 	void reset();
 
-	void onInit();
+	void onInit(int width, int height);
 	void onRunning(long now);
 	void onCleanup();
 
@@ -86,8 +90,8 @@ public:
 	float getViewDistance() const;
 
 	void extractNewMeshes(const glm::vec3& position, bool force = false);
-	int renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection);
-	int renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection);
+	int renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height);
+	int renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height);
 };
 
 inline float WorldRenderer::getViewDistance() const {

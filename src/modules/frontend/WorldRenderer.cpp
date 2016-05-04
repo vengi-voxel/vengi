@@ -9,6 +9,8 @@
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/polyvox/RawVolume.h"
 
+#define GBUFFER 0
+
 constexpr int MinCullingDistance = 500;
 
 namespace frontend {
@@ -34,6 +36,9 @@ void WorldRenderer::reset() {
 }
 
 void WorldRenderer::onCleanup() {
+#if GBUFFER
+	_gbuffer.shutdown();
+#endif
 	reset();
 }
 
@@ -98,7 +103,60 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	_meshData.push_back(createMesh(shader, mesh));
 }
 
-int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection) {
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera) {
+	const float chunkSize = (float)_world->getChunkSize();
+	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
+	auto debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "true")->boolVal();
+	int drawCallsWorld = 0;
+	for (auto i = _meshData.begin(); i != _meshData.end();) {
+		const video::GLMeshData& meshData = *i;
+		const float distance = getDistance2(meshData.translation);
+		if (isDistanceCulled(distance, true)) {
+			_world->allowReExtraction(meshData.translation);
+			glDeleteBuffers(meshData.numLods, meshData.vertexBuffer);
+			glDeleteBuffers(meshData.numLods, meshData.indexBuffer);
+			glDeleteVertexArrays(meshData.numLods, meshData.vertexArrayObject);
+			i = _meshData.erase(i);
+			continue;
+		}
+		const int lod = 0;
+		const glm::vec3 mins(meshData.translation);
+		const glm::vec3 maxs = glm::vec3(meshData.translation) + bboxSize;
+		if (camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
+			++i;
+			continue;
+		}
+		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation)), glm::vec3(meshData.scale[lod]));
+		shader.setUniformMatrix("u_model", model, false);
+		glBindVertexArray(meshData.vertexArrayObject[lod]);
+
+		if (debugGeometry) {
+			shader.setUniformf("u_debug_color", 1.0);
+		}
+		glDrawElements(GL_TRIANGLES, meshData.noOfIndices[lod], meshData.indexType[lod], 0);
+		GL_checkError();
+
+		if (debugGeometry) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glEnable(GL_POLYGON_OFFSET_LINE);
+			glEnable(GL_LINE_SMOOTH);
+			glLineWidth(2);
+			glPolygonOffset(-2, -2);
+			shader.setUniformf("u_debug_color", 0.0);
+			glDrawElements(GL_TRIANGLES, meshData.noOfIndices[lod], meshData.indexType[lod], 0);
+			glDisable(GL_LINE_SMOOTH);
+			glDisable(GL_POLYGON_OFFSET_LINE);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			GL_checkError();
+		}
+
+		++drawCallsWorld;
+		++i;
+	}
+	return drawCallsWorld;
+}
+
+int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height) {
 	handleMeshQueue(shader);
 
 	core_trace_gl_scoped(WorldRendererRenderWorld);
@@ -166,54 +224,35 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	shader.setUniformVec4v("u_materialcolor[0]", materialColors, SDL_arraysize(materialColors));
 	shader.setUniformf("u_debug_color", 1.0);
 	_colorTexture->bind();
-	const float chunkSize = (float)_world->getChunkSize();
-	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
-	auto debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "true")->boolVal();
-	for (auto i = _meshData.begin(); i != _meshData.end();) {
-		const video::GLMeshData& meshData = *i;
-		const float distance = getDistance2(meshData.translation);
-		if (isDistanceCulled(distance, true)) {
-			_world->allowReExtraction(meshData.translation);
-			glDeleteBuffers(meshData.numLods, meshData.vertexBuffer);
-			glDeleteBuffers(meshData.numLods, meshData.indexBuffer);
-			glDeleteVertexArrays(meshData.numLods, meshData.vertexArrayObject);
-			i = _meshData.erase(i);
-			continue;
-		}
-		const int lod = 0;
-		const glm::vec3 mins(meshData.translation);
-		const glm::vec3 maxs = glm::vec3(meshData.translation) + bboxSize;
-		if (camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
-			++i;
-			continue;
-		}
-		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation)), glm::vec3(meshData.scale[lod]));
-		shader.setUniformMatrix("u_model", model, false);
-		glBindVertexArray(meshData.vertexArrayObject[lod]);
 
-		if (debugGeometry) {
-			shader.setUniformf("u_debug_color", 1.0);
-		}
-		glDrawElements(GL_TRIANGLES, meshData.noOfIndices[lod], meshData.indexType[lod], 0);
-		GL_checkError();
+#if GBUFFER
+	_gbuffer.bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 
-		if (debugGeometry) {
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			glEnable(GL_POLYGON_OFFSET_LINE);
-			glEnable(GL_LINE_SMOOTH);
-			glLineWidth(2);
-			glPolygonOffset(-2, -2);
-			shader.setUniformf("u_debug_color", 0.0);
-			glDrawElements(GL_TRIANGLES, meshData.noOfIndices[lod], meshData.indexType[lod], 0);
-			glDisable(GL_LINE_SMOOTH);
-			glDisable(GL_POLYGON_OFFSET_LINE);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			GL_checkError();
-		}
+	drawCallsWorld = renderWorldMeshes(shader, camera);
 
-		++drawCallsWorld;
-		++i;
-	}
+#if GBUFFER
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	_gbuffer.bindForReading();
+
+	const GLsizei halfWidth = (GLsizei) (width / 2.0f);
+	const GLsizei halfHeight = (GLsizei) (height / 2.0f);
+
+	_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
+	glBlitFramebuffer(0, 0, width, height, 0, 0, halfWidth, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+	_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
+	glBlitFramebuffer(0, 0, width, height, 0, halfHeight, halfWidth, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+	_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
+	glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+	_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
+	glBlitFramebuffer(0, 0, width, height, halfWidth, 0, width, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+#endif
+
 	shader.deactivate();
 	GL_checkError();
 
@@ -299,7 +338,7 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	extractMeshAroundCamera(initialExtractionRadius);
 }
 
-int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection) {
+int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height) {
 	core_trace_gl_scoped(WorldRendererRenderEntities);
 	if (_entities.empty()) {
 		return 0;
@@ -380,7 +419,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 	_world->stats(meshes, extracted, pending);
 }
 
-void WorldRenderer::onInit() {
+void WorldRenderer::onInit(int width, int height) {
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
@@ -391,6 +430,9 @@ void WorldRenderer::onInit() {
 		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
 	}));
 	_colorTexture = video::createTexture("**colortexture**");
+#if GBUFFER
+	core_assert(_gbuffer.init(width, height));
+#endif
 }
 
 void WorldRenderer::onRunning(long dt) {
