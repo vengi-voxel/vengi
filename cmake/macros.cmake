@@ -309,7 +309,7 @@ macro(engine_add_executable)
 		endif()
 	endif()
 
-	set(RESOURCE_DIRS ${ROOT_DIR}/data/${_EXE_TARGET} ${ROOT_DIR}/data/shared)
+	set(RESOURCE_DIRS ${ROOT_DIR}/data/${_EXE_TARGET}/ ${ROOT_DIR}/data/shared/)
 
 	# by default, put system related files into the current binary dir on install
 	set(SHARE_DIR ".")
@@ -320,7 +320,7 @@ macro(engine_add_executable)
 	set(ICON_DIR ".")
 
 	if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-		set(SHARE_DIR "share")
+		set(SHARE_DIR "shared")
 		set(GAMES_DIR "${SHARE_DIR}/${_EXE_TARGET}")
 		set(ICON_DIR "${SHARE_DIR}/icons")
 		set(BIN_DIR "games")
