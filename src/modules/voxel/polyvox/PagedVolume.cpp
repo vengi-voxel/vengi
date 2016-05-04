@@ -358,9 +358,9 @@ uint32_t PagedVolume::Chunk::getDataSizeInBytes() const {
 const Voxel& PagedVolume::Chunk::getVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos) const {
 	// This code is not usually expected to be called by the user, with the exception of when implementing paging
 	// of uncompressed data. It's a performance critical code path
-	core_assert_msg(uXPos < m_uSideLength, "Supplied position is outside of the chunk");
-	core_assert_msg(uYPos < m_uSideLength, "Supplied position is outside of the chunk");
-	core_assert_msg(uZPos < m_uSideLength, "Supplied position is outside of the chunk");
+	core_assert_msg(uXPos < m_uSideLength, "Supplied position is outside of the chunk. asserted %u > %u", uXPos, m_uSideLength);
+	core_assert_msg(uYPos < m_uSideLength, "Supplied position is outside of the chunk. asserted %u > %u", uYPos, m_uSideLength);
+	core_assert_msg(uZPos < m_uSideLength, "Supplied position is outside of the chunk. asserted %u > %u", uZPos, m_uSideLength);
 	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
