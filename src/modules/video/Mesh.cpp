@@ -95,7 +95,7 @@ bool Mesh::initMesh(const ShaderPtr& shader) {
 			return false;
 		}
 		for (const image::ImagePtr& i : _images) {
-			if (i->isLoading()) {
+			if (i && i->isLoading()) {
 				return false;
 			}
 		}
