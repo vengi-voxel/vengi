@@ -23,12 +23,15 @@ void ShapeGenerator::createCirclePlane(TerrainContext& ctx, const glm::ivec3& ce
 }
 
 void ShapeGenerator::createCube(TerrainContext& ctx, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
-	const int w = width / 2;
-	const int h = height / 2;
-	const int d = depth / 2;
-	for (int x = -w; x < width - w; ++x) {
-		for (int y = -h; y < height - h; ++y) {
-			for (int z = -d; z < depth - d; ++z) {
+	const int heightLow = height / 2;
+	const int heightHigh = height - heightLow;
+	const int widthLow = width / 2;
+	const int widthHigh = width - widthLow;
+	const int depthLow = depth / 2;
+	const int depthHigh = depth - depthLow;
+	for (int x = -widthLow; x < widthHigh; ++x) {
+		for (int y = -heightLow; y < heightHigh; ++y) {
+			for (int z = -depthLow; z < depthHigh; ++z) {
 				const glm::ivec3 pos(center.x + x, center.y + y, center.z + z);
 				ctx.setVoxel(pos, voxel);
 			}
