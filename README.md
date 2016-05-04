@@ -37,6 +37,8 @@ e.g. run the server with ```./server -set sv_port 1025``` to change the *sv_port
 * [The Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/#abop)
 * [Plants vterrain](http://vterrain.org/Plants/)
 * [Assimp and skeletal animation](http://www.ogldev.org/www/tutorial38/tutorial38.html)
+* [PolyVox fluids](www.volumesoffun.com/phpBB3/viewtopic.php?f=14&t=219&p=1802&hilit=non+solid+non+solid+solid%2Fnon+glass+solid)
+* [PolyVox AO](http://www.volumesoffun.com/phpBB3/viewtopic.php?f=14&t=481&hilit=transparen+solid)
 
 http://www.gamedev.net/blog/1621/entry-2260604-seedworld-voxel-world-engine-update-2/
 http://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/
