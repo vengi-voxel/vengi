@@ -16,7 +16,6 @@ constexpr Voxel createVoxel(VoxelType type) {
 	return Voxel(type);
 }
 
-typedef Mesh<CubicVertex> CubicMesh;
 typedef Mesh<Vertex> DecodedMesh;
 
 constexpr int MAX_VOXEL_LOD = 2;
