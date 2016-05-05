@@ -321,7 +321,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 				const Voxel& negZVoxel = volumeSampler.peekVoxel0px0py1nz();
 
 				// X
-				if (isQuadNeeded(currentVoxel, negXVoxel, material, NegativeX)) {
+				if (isQuadNeeded(currentVoxel, negXVoxel, material, NegativeX, x, z)) {
 					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
 					const uint32_t v1 = addVertex(regX, regY, regZ + 1, material, m_currentSliceVertices, result);
 					const uint32_t v2 = addVertex(regX, regY + 1, regZ + 1, material, m_currentSliceVertices, result);
@@ -330,7 +330,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 					m_vecQuads[NegativeX][regX].push_back(Quad(v0, v1, v2, v3));
 				}
 
-				if (isQuadNeeded(negXVoxel, currentVoxel, material, PositiveX)) {
+				if (isQuadNeeded(negXVoxel, currentVoxel, material, PositiveX, x, z)) {
 					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
 					const uint32_t v1 = addVertex(regX, regY, regZ + 1, material, m_currentSliceVertices, result);
 					const uint32_t v2 = addVertex(regX, regY + 1, regZ + 1, material, m_currentSliceVertices, result);
@@ -340,7 +340,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 				}
 
 				// Y
-				if (isQuadNeeded(currentVoxel, negYVoxel, material, NegativeY)) {
+				if (isQuadNeeded(currentVoxel, negYVoxel, material, NegativeY, x, z)) {
 					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
 					const uint32_t v1 = addVertex(regX + 1, regY, regZ, material, m_previousSliceVertices, result);
 					const uint32_t v2 = addVertex(regX + 1, regY, regZ + 1, material, m_currentSliceVertices, result);
@@ -349,7 +349,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 					m_vecQuads[NegativeY][regY].push_back(Quad(v0, v1, v2, v3));
 				}
 
-				if (isQuadNeeded(negYVoxel, currentVoxel, material, PositiveY)) {
+				if (isQuadNeeded(negYVoxel, currentVoxel, material, PositiveY, x, z)) {
 					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
 					const uint32_t v1 = addVertex(regX + 1, regY, regZ, material, m_previousSliceVertices, result);
 					const uint32_t v2 = addVertex(regX + 1, regY, regZ + 1, material, m_currentSliceVertices, result);
@@ -359,7 +359,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 				}
 
 				// Z
-				if (isQuadNeeded(currentVoxel, negZVoxel, material, NegativeZ)) {
+				if (isQuadNeeded(currentVoxel, negZVoxel, material, NegativeZ, x, z)) {
 					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
 					const uint32_t v1 = addVertex(regX, regY + 1, regZ, material, m_previousSliceVertices, result);
 					const uint32_t v2 = addVertex(regX + 1, regY + 1, regZ, material, m_previousSliceVertices, result);
@@ -368,7 +368,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result
 					m_vecQuads[NegativeZ][regZ].push_back(Quad(v0, v1, v2, v3));
 				}
 
-				if (isQuadNeeded(negZVoxel, currentVoxel, material, PositiveZ)) {
+				if (isQuadNeeded(negZVoxel, currentVoxel, material, PositiveZ, x, z)) {
 					const uint32_t v0 = addVertex(regX, regY, regZ, material, m_previousSliceVertices, result);
 					const uint32_t v1 = addVertex(regX, regY + 1, regZ, material, m_previousSliceVertices, result);
 					const uint32_t v2 = addVertex(regX + 1, regY + 1, regZ, material, m_previousSliceVertices, result);
