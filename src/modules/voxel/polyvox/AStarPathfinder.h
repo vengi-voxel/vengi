@@ -419,6 +419,7 @@ float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec
 		hVal = SixConnectedCost(a, b);
 		break;
 	default:
+		hVal = 0.0f;
 		core_assert_msg(false, "Connectivity parameter has an unrecognized value.");
 	}
 
