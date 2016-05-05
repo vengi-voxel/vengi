@@ -4,8 +4,8 @@ Voxel engine with procedural generated landscape.
 ![Screenshot](/screenshots/2016-05-05.png "Status")
 
 # Dependencies
-* **cmake**
-* **postgre**
+* cmake
+* postgre
 * development headers/libs for
  * glm
  * assimp
@@ -17,7 +17,8 @@ Voxel engine with procedural generated landscape.
  * enet
  * zlib
  * turbobadger
- * sauce
+ * sauce/fruit
+ * gtest
 
 Some of these dependencies might not be available as packages in your toolchain - most of them are also bundled with the application. But local installed headers always have the higher priority.
 
@@ -27,7 +28,8 @@ Some of these dependencies might not be available as packages in your toolchain 
 ## Arch Linux
     pacman [...]
 
-# Var
-There are vars inside the engine that you can override via commandline. Var instances are runtime changeable
-configuration variables that you can influence from within the game.
-e.g. run the server with ```./server -set sv_port 1025``` to change the *sv_port* var to 1025 and bind that port.
+# Building
+You can just run ```make``` in the project root folder.
+
+# More information
+For more information, please check out the [wiki](https://gitlab.com/mgerhardy/engine/wikis/home)
