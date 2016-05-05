@@ -27,26 +27,6 @@ e.g. run the server with ```./server -set sv_port 1025``` to change the *sv_port
     ```./server -set core_trace true```
   The *core_trace* var will activate all those core_trace_* macros.
 
-# Check this out:
-* [PolyVox and Bullet](http://www.reddit.com/r/VoxelGameDev/comments/2dmfr1/fun_with_polyvox_and_bullet/)
-* [PolyVox 3D world generation](http://accidentalnoise.sourceforge.net/minecraftworlds.html)
-* [AccidentalNoise islands](http://www.gamedev.net/blog/33/entry-2249282-hooking-into-the-tree-to-build-a-map/)
-* [libnoise tutorials](http://libnoise.sourceforge.net/tutorials/)
-* [VoxelEditor](https://voxel.codeplex.com/)
-* [Voxel Engines](http://www.reddit.com/r/gamedev/wiki/block_engines)
-* [Minecraft Protocol](http://wiki.vg/Protocol)
-* [Quest Generating AI](http://voxelquest.vanillaforums.com/discussion/comment/11/#Comment_11) (VoxelQuest)
-* [VoxelShip Editor](https://blackflux.com/node/11)
-* [MagicaVoxel Editor](http://ephtracy.github.io/)
-* [The Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/#abop)
-* [Plants vterrain](http://vterrain.org/Plants/)
-* [Assimp and skeletal animation](http://www.ogldev.org/www/tutorial38/tutorial38.html)
-* [PolyVox fluids](www.volumesoffun.com/phpBB3/viewtopic.php?f=14&t=219&p=1802&hilit=non+solid+non+solid+solid%2Fnon+glass+solid)
-* [PolyVox AO](http://www.volumesoffun.com/phpBB3/viewtopic.php?f=14&t=481&hilit=transparen+solid)
-* http://www.gamedev.net/blog/1621/entry-2260604-seedworld-voxel-world-engine-update-2/
-* http://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/
-* http://www.gamedev.net/blog/1621/entry-2260713-adding-biomes-and-rivers/
-
 ## PostgreSQL
 
 first sudo as postgres default superuser 'postgres' on bash
