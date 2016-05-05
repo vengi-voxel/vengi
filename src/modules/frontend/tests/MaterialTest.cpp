@@ -24,10 +24,11 @@ TEST_F(MaterialTest, testMaterial) {
 
 	#include "frontend/MaterialColor.h"
 
-	auto line_height = h / 32;
+	const int amount = SDL_arraysize(materialColors);
+	auto line_height = h / amount;
 
 	int y = 0;
-	for (int color_index = 0; color_index < 32; ++color_index) {
+	for (int color_index = 0; color_index < amount; ++color_index) {
 		auto line_y = 0;
 		auto color = materialColors[color_index];
 		for (; line_y < line_height; ++y, ++line_y) {
