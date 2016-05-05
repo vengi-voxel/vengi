@@ -31,6 +31,14 @@ enum FaceNames {
 	PositiveX, PositiveY, PositiveZ, NegativeX, NegativeY, NegativeZ, NoOfFaces
 };
 
+inline bool isHorizontalFace(FaceNames face) {
+	return face == PositiveX || face == PositiveZ || face == NegativeX || face == NegativeZ;
+}
+
+inline bool isVerticalFace(FaceNames face) {
+	 return face == PositiveY || face == NegativeY;
+}
+
 struct Quad {
 	Quad(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3) {
 		vertices[0] = v0;
