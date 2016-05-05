@@ -140,7 +140,8 @@ int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialI
 		IndexAndMaterial& rEntry = existingVertices(uX, uY, ct);
 
 		if (rEntry.iIndex == -1) {
-			//No vertices matched and we've now hit an empty space. Fill it by creating a vertex. The 0.5f offset is because vertices set between voxels in order to build cubes around them.
+			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
+			// The 0.5f offset is because vertices set between voxels in order to build cubes around them.
 			CubicVertex cubicVertex;
 			cubicVertex.encodedPosition = { static_cast<uint8_t>(uX), static_cast<uint8_t>(uY), static_cast<uint8_t>(uZ) };
 			cubicVertex.data = uMaterialIn;
@@ -150,7 +151,7 @@ int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialI
 			return rEntry.iIndex;
 		}
 
-		//If we have an existing vertex and the material matches then we can return it.
+		// If we have an existing vertex and the material matches then we can return it.
 		if (rEntry.uMaterial == uMaterialIn) {
 			return rEntry.iIndex;
 		}
