@@ -1,10 +1,11 @@
 #include "core/tests/AbstractTest.h"
 #include "image/Image.h"
 #include "video/Color.h"
+#include "frontend/MaterialColor.h"
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/constants.hpp>
 
-namespace noise {
+namespace frontend {
 
 class MaterialTest: public core::AbstractTest {
 protected:
@@ -22,9 +23,8 @@ TEST_F(MaterialTest, testMaterial) {
 	const int h = 1024;
 	uint8_t buffer[w * h * components];
 
-	#include "frontend/MaterialColor.h"
-
-	const int amount = SDL_arraysize(materialColors);
+	const MaterialColorArray& materialColors = getMaterialColors();
+	const int amount = materialColors.size();
 	auto line_height = h / amount;
 
 	int y = 0;

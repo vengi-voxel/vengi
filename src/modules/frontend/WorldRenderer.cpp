@@ -8,6 +8,7 @@
 #include <SDL.h>
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/polyvox/RawVolume.h"
+#include "MaterialColor.h"
 
 #define GBUFFER 0
 
@@ -175,7 +176,8 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	GL_checkError();
 
 	const glm::mat4& view = camera.getViewMatrix();
-	#include "MaterialColor.h"
+
+	const MaterialColorArray& materialColors = getMaterialColors();
 
 	shader.activate();
 	shader.setUniformMatrix("u_view", view, false);
@@ -185,7 +187,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	shader.setUniformi("u_texture", 0);
 	shader.setUniformVec3("u_lightpos", _lightPos);
 	shader.setUniformVec3("u_diffuse_color", _diffuseColor);
-	shader.setUniformVec4v("u_materialcolor[0]", materialColors, SDL_arraysize(materialColors));
+	shader.setUniformVec4v("u_materialcolor[0]", &materialColors[0], materialColors.size());
 	shader.setUniformf("u_debug_color", 1.0);
 	_colorTexture->bind();
 
