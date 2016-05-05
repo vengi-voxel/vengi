@@ -47,7 +47,6 @@ core::AppState ShapeTool::onInit() {
 
 	_clearColor = video::Color::LightBlue;
 
-	// TODO: replace this with a scripting interface for the World::create* functions
 	_worldRenderer.onSpawn(_camera.getPosition(), 5);
 
 	const char *meshName = "chr_fatkid";
