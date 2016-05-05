@@ -1,8 +1,0 @@
-Extract bigger mesh region than the chunk size to reduce drawcalls
-Remotery tracing for gl calls
-Biommanager should handle humidity and fog values (currently it's a dummy object without the real functionality)
-UI: windows don't support alpha right now..
-CMAKE: install target - each executable can have different data - and currently shapetool and client are e.g. overriding each other language files
-Convert rcon from fips to new build system
-turbobadger in contrib/libs depends on some fips vars
-fix arch linux lua stuff
