@@ -357,7 +357,8 @@ void WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 	const glm::vec3 diff = _lastGridPosition - camXYZ;
 	if (glm::length(diff.x) >= 1 || glm::length(diff.y) >= 1 || glm::length(diff.z) >= 1) {
 		_lastGridPosition = camXYZ;
-		extractMeshAroundCamera(1);
+		const int chunks = MinCullingDistance / _world->getChunkSize() + 1;
+		extractMeshAroundCamera(chunks);
 	}
 }
 
