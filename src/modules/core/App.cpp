@@ -3,6 +3,7 @@
 #include "Command.h"
 #include "Log.h"
 #include "Tokenizer.h"
+#include "Concurrency.h"
 #include <thread>
 #include <SDL.h>
 
@@ -123,6 +124,8 @@ AppState App::onConstruct() {
 		VarPtr st = core::Var::get(args[0]);
 		Log::info(" -> %s ",st->strVal().c_str());
 	});
+
+	Log::info("detected %u cpus", core::cpus());
 
 	return AppState::Init;
 }

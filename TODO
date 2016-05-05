@@ -5,5 +5,4 @@ UI: windows don't support alpha right now..
 CMAKE: install target - each executable can have different data - and currently shapetool and client are e.g. overriding each other language files
 Convert rcon from fips to new build system
 turbobadger in contrib/libs depends on some fips vars
-limit generator threadpool size to real cores - 1
 fix arch linux lua stuff

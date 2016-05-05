@@ -6,6 +6,7 @@
 #include "io/File.h"
 #include "LodCreator.h"
 #include "core/Random.h"
+#include "core/Concurrency.h"
 #include "generator/ShapeGenerator.h"
 #include "generator/TreeGenerator.h"
 #include "generator/CloudGenerator.h"
@@ -50,7 +51,7 @@ void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
 }
 
 World::World() :
-		_pager(*this), _seed(0), _clientData(false), _threadPool(4, "World"), _rwLock("World"),
+		_pager(*this), _seed(0), _clientData(false), _threadPool(core::halfcpus(), "World"), _rwLock("World"),
 		_random(_seed), _noiseSeedOffsetX(0.0f), _noiseSeedOffsetZ(0.0f) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 256 * 1024 * 1024, 64);
