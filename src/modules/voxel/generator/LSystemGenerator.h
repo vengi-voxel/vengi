@@ -18,7 +18,9 @@ enum LSystemAlphabet {
 	Z_FORWARD = 'Z',
 	Z_BACK = 'z',
 	STATEPUSH = '[',
-	STATEPOP = ']'
+	STATEPOP = ']',
+	RANDOMBEGIN = '(',
+	RANDOMEND = ')'
 };
 
 struct LSystemState {

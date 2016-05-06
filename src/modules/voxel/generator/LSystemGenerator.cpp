@@ -60,6 +60,8 @@ bool LSystemGenerator::evaluateState(LSystemState* state, TerrainContext& terrai
 		return true;
 	case LSystemAlphabet::STATEPUSH:
 	case LSystemAlphabet::STATEPOP:
+	case LSystemAlphabet::RANDOMBEGIN:
+	case LSystemAlphabet::RANDOMEND:
 		return false;
 	default:
 		break;
@@ -68,10 +70,11 @@ bool LSystemGenerator::evaluateState(LSystemState* state, TerrainContext& terrai
 	return false;
 }
 
-void LSystemGenerator::expand(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random, const std::string& axiom, int generations) {
+void LSystemGenerator::expand(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random, const std::string& axiomStr, int generations) {
 	std::vector<LSystemState> newStates;
 	LSystemState *currentState = state;
-	for (const char chr : axiom) {
+	for (const char *axiom = axiomStr.c_str(); *axiom != '\0'; ++axiom) {
+		const char chr = *axiom;
 		if (chr == LSystemAlphabet::STATEPUSH) {
 			newStates.emplace_back(*currentState);
 			currentState = &newStates.back();
@@ -82,6 +85,23 @@ void LSystemGenerator::expand(LSystemState* state, TerrainContext& terrainCtx, c
 				currentState = state;
 			else
 				currentState = &newStates.back();
+		} else if (chr == LSystemAlphabet::RANDOMEND) {
+			continue;
+		} else if (chr == LSystemAlphabet::RANDOMBEGIN) {
+			if (random.random(0, 100) > 50) {
+				int depth = 0;
+				for (++axiom; *axiom != '\0'; ++axiom) {
+					if (*axiom == LSystemAlphabet::RANDOMEND) {
+						if (depth == 0) {
+							break;
+						} else {
+							--depth;
+						}
+					} else if (*axiom == LSystemAlphabet::RANDOMBEGIN) {
+						++depth;
+					}
+				}
+			}
 		} else {
 			expand_r(currentState, terrainCtx, ctx, random, chr, generations);
 		}
