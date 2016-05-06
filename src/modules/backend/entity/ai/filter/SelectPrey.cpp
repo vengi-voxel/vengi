@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "SelectPrey.h"
 #include "backend/entity/Npc.h"
 

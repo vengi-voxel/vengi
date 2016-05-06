@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "PagedVolume.h"
 
 namespace voxel {

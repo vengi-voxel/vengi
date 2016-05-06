@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "UIApp.h"
 #include "TurboBadger.h"
 

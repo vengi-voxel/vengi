@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "core/tests/AbstractTest.h"
 #include "image/Image.h"
 #include "video/Color.h"

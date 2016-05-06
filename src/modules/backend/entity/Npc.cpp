@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "voxel/polyvox/AStarPathfinder.h"
 #include "Npc.h"
 #include "EntityStorage.h"

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "MeshShader.h"
 
 namespace frontend {

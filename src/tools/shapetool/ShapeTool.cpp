@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ShapeTool.h"
 #include "sauce/ShapeToolInjector.h"
 #include "video/Shader.h"

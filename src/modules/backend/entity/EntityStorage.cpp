@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "EntityStorage.h"
 #include "core/Var.h"
 #include "User.h"

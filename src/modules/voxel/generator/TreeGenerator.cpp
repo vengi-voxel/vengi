@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "TreeGenerator.h"
 #include "LSystemGenerator.h"
 #include "voxel/WorldContext.h"

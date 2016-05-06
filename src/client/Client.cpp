@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Client.h"
 #include "messages/ClientMessages_generated.h"
 #include "ui/LoginWindow.h"

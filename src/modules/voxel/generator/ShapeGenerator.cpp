@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ShapeGenerator.h"
 #include "voxel/WorldContext.h"
 

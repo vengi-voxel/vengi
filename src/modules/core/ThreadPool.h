@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 /*
  Copyright (c) 2012 Jakob Progsch, Václav Zeman
 

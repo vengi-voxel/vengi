@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "AIDebugger.h"
 #include "AIDebuggerWidget.h"
 #include "AINodeStaticResolver.h"

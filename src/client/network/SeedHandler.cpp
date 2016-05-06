@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "SeedHandler.h"
 #include "core/App.h"
 #include "core/Var.h"

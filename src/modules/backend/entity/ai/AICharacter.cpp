@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "AICharacter.h"
 #include "backend/entity/Npc.h"
 

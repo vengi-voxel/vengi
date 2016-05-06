@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Server.h"
 #include "core/Var.h"
 #include "core/Command.h"

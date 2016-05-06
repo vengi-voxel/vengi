@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "core/Log.h"
 #include "GLFunc.h"
 

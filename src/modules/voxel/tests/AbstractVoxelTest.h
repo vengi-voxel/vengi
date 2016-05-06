@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "core/tests/AbstractTest.h"
 #include "voxel/polyvox/PagedVolume.h"
 #include "voxel/WorldContext.h"

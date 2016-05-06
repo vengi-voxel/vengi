@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Persister.h"
 #include "UserStore.h"
 #include "core/Log.h"

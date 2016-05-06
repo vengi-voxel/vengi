@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "AbstractTest.h"
 #include "core/Log.h"
 

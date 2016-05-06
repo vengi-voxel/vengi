@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "App.h"
 #include "Var.h"
 #include "Command.h"

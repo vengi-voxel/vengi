@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "core/tests/AbstractTest.h"
 #include "backend/storage/Persister.h"
 

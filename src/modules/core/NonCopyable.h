@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 namespace core {

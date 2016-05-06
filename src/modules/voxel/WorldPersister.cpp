@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "WorldPersister.h"
 #include "WorldContext.h"
 #include <zlib.h>

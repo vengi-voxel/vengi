@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "SelectIncreasePartner.h"
 #include "backend/entity/Npc.h"
 #include "core/Log.h"

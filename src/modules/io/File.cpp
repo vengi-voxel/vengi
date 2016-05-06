@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "File.h"
 #include <SDL.h>
 

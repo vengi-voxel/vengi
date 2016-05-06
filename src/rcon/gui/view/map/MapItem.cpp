@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "MapItem.h"
 #include "AIDebugger.h"
 #include <QGraphicsSceneMouseEvent>

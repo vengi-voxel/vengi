@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Texture.h"
 #include "core/Log.h"
 #include "core/String.h"

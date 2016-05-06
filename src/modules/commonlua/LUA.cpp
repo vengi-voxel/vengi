@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "LUA.h"
 #include <assert.h>
 #include <stdlib.h>

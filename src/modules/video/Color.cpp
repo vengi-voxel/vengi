@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Color.h"
 
 #include <algorithm>

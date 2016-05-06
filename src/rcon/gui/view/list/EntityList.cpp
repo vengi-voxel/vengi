@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "EntityList.h"
 #include <QHeaderView>
 

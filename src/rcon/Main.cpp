@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "AIApplication.h"
 #include "AIDebugger.h"
 #include "AIDebuggerWidget.h"

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "TextConsole.h"
 #include "engine/common/ConfigManager.h"
 #include "engine/common/System.h"

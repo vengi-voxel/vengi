@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "SimplexNoise.h"
 #include "core/Trace.h"
 #include <glm/gtc/noise.hpp>

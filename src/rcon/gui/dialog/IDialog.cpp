@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "IDialog.h"
 
 #include <QGroupBox>

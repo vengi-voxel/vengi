@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "CooldownMgr.h"
 #include "core/Common.h"
 

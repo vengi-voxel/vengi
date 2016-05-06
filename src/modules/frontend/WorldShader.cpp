@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "WorldShader.h"
 
 namespace frontend {

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "EventHandler.h"
 #include "IEventObserver.h"
 #include "core/Common.h"

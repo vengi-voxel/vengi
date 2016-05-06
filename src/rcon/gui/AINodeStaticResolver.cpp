@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "AINodeStaticResolver.h"
 #include <server/AIStubTypes.h>
 #include <QObject>

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "WorldRenderer.h"
 #include "video/GLFunc.h"
 #include "video/Color.h"

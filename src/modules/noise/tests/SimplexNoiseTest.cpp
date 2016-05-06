@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "core/tests/AbstractTest.h"
 #include "noise/SimplexNoise.h"
 // TODO: not a real dependency to the voxel module.... but... look there - a three headed monkey!

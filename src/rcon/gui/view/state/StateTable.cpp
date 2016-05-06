@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "StateTable.h"
 #include <QHeaderView>
 

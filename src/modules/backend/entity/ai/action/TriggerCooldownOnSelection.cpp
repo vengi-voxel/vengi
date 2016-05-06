@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "TriggerCooldownOnSelection.h"
 #include "core/Common.h"
 #include "backend/entity/Npc.h"

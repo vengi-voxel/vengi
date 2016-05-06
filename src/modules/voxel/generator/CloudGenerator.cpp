@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "CloudGenerator.h"
 #include "voxel/WorldContext.h"
 

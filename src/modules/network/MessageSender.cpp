@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "MessageSender.h"
 #include "core/Log.h"
 #include "core/Common.h"

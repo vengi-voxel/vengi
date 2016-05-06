@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "WorldGenerator.h"
 #include "TreeGenerator.h"
 #include "CloudGenerator.h"

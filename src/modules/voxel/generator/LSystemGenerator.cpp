@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "LSystemGenerator.h"
 #include "voxel/WorldContext.h"
 #include "core/Log.h"

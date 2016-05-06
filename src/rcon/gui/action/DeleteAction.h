@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include <QAction>
 #include <QModelIndex>
 #include "AddDialog.h"

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "WindowedApp.h"
 #include "core/Common.h"
 #include "core/Singleton.h"

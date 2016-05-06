@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Window.h"
 #include "UIApp.h"
 #include <glm/glm.hpp>

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Var.h"
 #include "Log.h"
 

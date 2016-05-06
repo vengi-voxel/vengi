@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "VertexBuffer.h"
 #include "core/Common.h"
 

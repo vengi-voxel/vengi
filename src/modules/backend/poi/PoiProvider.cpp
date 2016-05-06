@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "PoiProvider.h"
 #include "core/Random.h"
 #include "voxel/World.h"

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Network.h"
 #include "IProtocolHandler.h"
 #include "ProtocolHandlerRegistry.h"

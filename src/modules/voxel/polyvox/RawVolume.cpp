@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "RawVolume.h"
 
 namespace voxel {

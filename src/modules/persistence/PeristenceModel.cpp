@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "PeristenceModel.h"
 
 namespace persistence {

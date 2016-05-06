@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ShaderTool.h"
 #include "sauce/ShaderToolInjector.h"
 #include "core/App.h"

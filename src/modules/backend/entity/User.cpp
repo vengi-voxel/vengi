@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "User.h"
 #include "util/Velocity.h"
 #include "core/Var.h"

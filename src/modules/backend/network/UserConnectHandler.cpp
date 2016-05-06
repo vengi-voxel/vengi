@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "UserConnectHandler.h"
 #include "messages/ClientMessages_generated.h"
 #include "messages/ServerMessages_generated.h"

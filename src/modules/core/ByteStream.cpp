@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ByteStream.h"
 #include <SDL_stdinc.h>
 

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include <assert.h>
 #include <stdio.h>
 #include "ui_renderer_gl.h"

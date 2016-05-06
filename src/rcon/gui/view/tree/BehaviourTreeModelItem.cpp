@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "BehaviourTreeModelItem.h"
 #include "TreeViewCommon.h"
 #include "AINodeStaticResolver.h"

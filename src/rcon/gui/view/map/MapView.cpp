@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "MapView.h"
 #include "AIDebugger.h"
 #include "MapItem.h"

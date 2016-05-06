@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Store.h"
 #include "core/Log.h"
 #include <sstream>

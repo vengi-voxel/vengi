@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Log.h"
 #include "Var.h"
 #include <cstring>

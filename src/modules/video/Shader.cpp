@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Shader.h"
 
 #include "core/App.h"

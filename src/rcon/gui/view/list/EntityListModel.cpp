@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "EntityListModel.h"
 #include <QColor>
 

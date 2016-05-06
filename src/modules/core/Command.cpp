@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Command.h"
 
 namespace core {

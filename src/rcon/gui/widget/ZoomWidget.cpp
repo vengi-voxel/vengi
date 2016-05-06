@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ZoomWidget.h"
 
 #include <QStyle>

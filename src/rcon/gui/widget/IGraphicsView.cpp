@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "IGraphicsView.h"
 
 namespace ai {

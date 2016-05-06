@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include <gtest/gtest.h>
 #include "core/ByteStream.h"
 #include <cstdlib>

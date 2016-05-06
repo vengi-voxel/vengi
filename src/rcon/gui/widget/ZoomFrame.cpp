@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ZoomFrame.h"
 #include "MapView.h"
 #include "ZoomWidget.h"

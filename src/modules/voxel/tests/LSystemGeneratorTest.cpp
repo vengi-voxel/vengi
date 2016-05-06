@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "AbstractVoxelTest.h"
 #include "voxel/generator/LSystemGenerator.h"
 #include "voxel/polyvox/Region.h"

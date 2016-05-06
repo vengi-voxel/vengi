@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Entity.h"
 #include "core/Set.h"
 #include "core/Common.h"

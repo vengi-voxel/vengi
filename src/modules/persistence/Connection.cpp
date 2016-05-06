@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Connection.h"
 #include "core/Log.h"
 

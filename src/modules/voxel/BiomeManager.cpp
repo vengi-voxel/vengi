@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "BiomeManager.h"
 
 namespace voxel {

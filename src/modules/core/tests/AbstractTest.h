@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include <gtest/gtest.h>
 
 #include "core/App.h"

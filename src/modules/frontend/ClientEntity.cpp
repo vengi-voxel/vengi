@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ClientEntity.h"
 
 namespace frontend {

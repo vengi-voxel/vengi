@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Container.h"
 
 namespace attrib {

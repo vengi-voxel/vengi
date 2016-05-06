@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Camera.h"
 #include "core/Common.h"
 #include "core/Singleton.h"

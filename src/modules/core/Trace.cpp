@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Trace.h"
 #include "Var.h"
 #include "Command.h"

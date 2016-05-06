@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "NodeTreeView.h"
 #include "AINodeStaticResolver.h"
 #include <AI.h>

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "FrameBuffer.h"
 
 namespace video {

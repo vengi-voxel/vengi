@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "StoreCmd.h"
 
 namespace backend {

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "GBuffer.h"
 
 #include <cstddef>

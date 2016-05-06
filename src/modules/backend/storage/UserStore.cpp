@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "UserStore.h"
 #include "core/Log.h"
 #include "backend/entity/User.h"

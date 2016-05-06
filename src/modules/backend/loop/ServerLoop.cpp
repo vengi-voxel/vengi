@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "ServerLoop.h"
 #include "core/Command.h"
 #include "core/Tokenizer.h"

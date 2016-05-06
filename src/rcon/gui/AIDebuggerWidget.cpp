@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QStatusBar>

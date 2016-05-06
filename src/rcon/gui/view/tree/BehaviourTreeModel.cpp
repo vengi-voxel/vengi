@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "BehaviourTreeModel.h"
 #include "BehaviourTreeModelItem.h"
 #include "AIDebugger.h"

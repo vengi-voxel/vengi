@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "AIRegistry.h"
 
 #include "backend/entity/EntityStorage.h"

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Attributes.h"
 
 namespace attrib {
