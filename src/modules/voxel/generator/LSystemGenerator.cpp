@@ -66,6 +66,10 @@ bool LSystemGenerator::evaluateState(LSystemState* state, TerrainContext& terrai
 	default:
 		break;
 	}
+	auto i = ctx.voxels.find(c);
+	if (ctx.voxels.end() == i) {
+		return false;
+	}
 	state->lastVoxelType = c;
 	return false;
 }
