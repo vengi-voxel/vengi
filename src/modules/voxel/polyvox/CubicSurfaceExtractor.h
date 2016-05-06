@@ -27,10 +27,9 @@ namespace voxel {
  */
 const uint32_t MaxVerticesPerPosition = 8;
 
-////////////////////////////////////////////////////////////////////////////////
-// Data structures
-////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * @section Data structures
+ */
 enum FaceNames {
 	PositiveX, PositiveY, PositiveZ, NegativeX, NegativeY, NegativeZ, NoOfFaces
 };
@@ -59,9 +58,9 @@ struct IndexAndMaterial {
 	Voxel uMaterial;
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// Vertex encoding/decoding
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @section Vertex encoding/decoding
+ */
 
 /** Decodes a position from a CubicVertex */
 inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition) {
@@ -78,9 +77,9 @@ inline Vertex decodeVertex(const CubicVertex& cubicVertex) {
 	return result;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Surface extraction
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @section Surface extraction
+ */
 
 template<typename MeshType>
 bool mergeQuads(Quad& q1, Quad& q2, MeshType* m_meshCurrent) {

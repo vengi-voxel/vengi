@@ -12,22 +12,25 @@
 
 namespace voxel {
 
-/// This function provides the default method for checking whether a given voxel
-/// is valid for the path computed by the AStarPathfinder.
+/**
+ * This function provides the default method for checking whether a given voxel
+ * is valid for the path computed by the AStarPathfinder.
+ */
 template<typename VolumeType>
 bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3dPos);
 
-/// Provides a configuration for the AStarPathfinder.
-////////////////////////////////////////////////////////////////////////////////
-/// This structure stores the AStarPathfinder%s configuration options, because this
-/// is simpler than providing a large number of get/set properties within the
-/// AStarPathfinder itself. In order to create an instance of this structure you
-/// must provide at least a volume, a start and end point, and a list to store
-/// the result. All the other option have sensible default values which can
-/// optionally be changed for more precise control over the pathfinder's behaviour.
-///
-/// @sa AStarPathfinder
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief Provides a configuration for the AStarPathfinder.
+ *
+ * This structure stores the AStarPathfinder%s configuration options, because this
+ * is simpler than providing a large number of get/set properties within the
+ * AStarPathfinder itself. In order to create an instance of this structure you
+ * must provide at least a volume, a start and end point, and a list to store
+ * the result. All the other option have sensible default values which can
+ * optionally be changed for more precise control over the pathfinder's behaviour.
+ *
+ * @sa AStarPathfinder
+ */
 template<typename VolumeType>
 struct AStarPathfinderParams {
 public:
@@ -85,33 +88,34 @@ public:
 	/// the goal. The progress is reported by computing the distance from the closest node found
 	/// so far to the end node, and comparing this with the distance from the start node to the
 	/// end node. This progress value is guaranteed to never decrease, but it may stop increasing
-	///for short periods of time. It may even stop increasing altogether if a path cannot be found.
+	/// for short periods of time. It may even stop increasing altogether if a path cannot be found.
 	std::function<void(float)> progressCallback;
 };
 
-/// The AStarPathfinder compute a path from one point in the volume to another.
-////////////////////////////////////////////////////////////////////////////////
-/// A* is a well known pathfinding algorithm commonly used in computer games. It
-/// takes as input a pair of points in the world, and works out a path between
-/// them which avoids obstacles and adheres to other user defined criteria. The
-/// resulting path is usually the shortest possible, but a less optimal path can
-/// be exchanged for reduced computation time.
-///
-/// For an excellent overview of the A* algorithm please see Amit Patel's Game
-/// Programming page here: http://theory.stanford.edu/~amitp/GameProgramming/
-/// Much of this class is based on the principles described in those pages.
-///
-/// Usage of this class if very straightforward. You create an instance of it
-/// by passing an instance of the AStarPathfinderParams structure to the constructor.
-/// The details of the AStarPathfinderParams and the options it provides are described
-/// in the documentation for that class.
-///
-/// Next you call the execute() function and wait for it to return. If a path is
-/// found then this is stored in the list which was set as the 'result' field of
-/// the AStarPathfinderParams.
-///
-/// @sa AStarPathfinderParams
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief The AStarPathfinder compute a path from one point in the volume to another.
+ *
+ * A* is a well known pathfinding algorithm commonly used in computer games. It
+ * takes as input a pair of points in the world, and works out a path between
+ * them which avoids obstacles and adheres to other user defined criteria. The
+ * resulting path is usually the shortest possible, but a less optimal path can
+ * be exchanged for reduced computation time.
+ *
+ * For an excellent overview of the A* algorithm please see Amit Patel's Game
+ * Programming page here: http://theory.stanford.edu/~amitp/GameProgramming/
+ * Much of this class is based on the principles described in those pages.
+ *
+ * Usage of this class if very straightforward. You create an instance of it
+ * by passing an instance of the AStarPathfinderParams structure to the constructor.
+ * The details of the AStarPathfinderParams and the options it provides are described
+ * in the documentation for that class.
+ *
+ * Next you call the execute() function and wait for it to return. If a path is
+ * found then this is stored in the list which was set as the 'result' field of
+ * the AStarPathfinderParams.
+ *
+ * @sa AStarPathfinderParams
+ */
 template<typename VolumeType>
 class AStarPathfinder {
 public:
@@ -128,12 +132,12 @@ private:
 	float computeH(const glm::ivec3& a, const glm::ivec3& b);
 	uint32_t hash(uint32_t a);
 
-	//Node containers
+	// Node containers
 	AllNodesContainer _allNodes;
 	OpenNodesContainer _openNodes;
 	ClosedNodesContainer _closedNodes;
 
-	//The current node
+	// The current node
 	AllNodesContainer::iterator _current;
 
 	float _progress = 0.0f;
@@ -141,9 +145,9 @@ private:
 	AStarPathfinderParams<VolumeType> _params;
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// Useful constants
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @section Useful constants
+ */
 
 const glm::ivec3 arrayPathfinderFaces[6] = {
 		glm::ivec3(0, 0, -1),
@@ -177,11 +181,11 @@ const glm::ivec3 arrayPathfinderCorners[8] = {
 		glm::ivec3(+1, +1, -1),
 		glm::ivec3(+1, +1, +1) };
 
-////////////////////////////////////////////////////////////////////////////////
-/// Using this function, a voxel is considered valid for the path if it is inside the
-/// volume and if its density is below that returned by the voxel's getDensity() function.
-/// @return true is the voxel is valid for the path
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * Using this function, a voxel is considered valid for the path if it is inside the
+ * volume and if its density is below that returned by the voxel's getDensity() function.
+ * @return true is the voxel is valid for the path
+ */
 template<typename VolumeType>
 bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3dPos) {
 	//Voxels are considered valid candidates for the path if they are inside the volume...
@@ -192,9 +196,9 @@ bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3d
 	return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// AStarPathfinder Class
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @section AStarPathfinder Class
+ */
 template<typename VolumeType>
 AStarPathfinder<VolumeType>::AStarPathfinder(const AStarPathfinderParams<VolumeType>& params) :
 		_params(params) {
@@ -461,8 +465,10 @@ float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec
 	return hVal;
 }
 
-// Robert Jenkins' 32 bit integer hash function
-// http://www.burtleburtle.net/bob/hash/integer.html
+/**
+ * Robert Jenkins' 32 bit integer hash function
+ * http://www.burtleburtle.net/bob/hash/integer.html
+ */
 template<typename VolumeType>
 uint32_t AStarPathfinder<VolumeType>::hash(uint32_t a) {
 	a = (a + 0x7ed55d16) + (a << 12);
