@@ -3,6 +3,7 @@ set(SRCS
 	ClientEntityId.h
 	Movement.h
 	MeshShader.h MeshShader.cpp
+	ColorShader.h ColorShader.cpp
 	WorldRenderer.h WorldRenderer.cpp
 	WorldShader.h WorldShader.cpp
 )
