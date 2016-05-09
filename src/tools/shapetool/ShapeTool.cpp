@@ -14,7 +14,8 @@
 
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
-		ui::UIApp(filesystem, eventBus), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _meshShader(new frontend::MeshShader()) {
+		ui::UIApp(filesystem, eventBus), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(),
+		_meshShader(new frontend::MeshShader()), _colorShader(new frontend::ColorShader()) {
 	init("engine", "shapetool");
 	_world->setClientData(true);
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
@@ -35,6 +36,9 @@ core::AppState ShapeTool::onInit() {
 		return core::Cleanup;
 	}
 	if (!_meshShader->init()) {
+		return core::Cleanup;
+	}
+	if (!_colorShader->init()) {
 		return core::Cleanup;
 	}
 
@@ -64,6 +68,28 @@ core::AppState ShapeTool::onInit() {
 		Log::error("Failed to create entity");
 		return core::Cleanup;
 	}
+
+	static const float verticesAxis[] = {
+			-20.0f,   0.0f,   0.0f, 1.0f,
+			 20.0f,   0.0f,   0.0f, 1.0f,
+			  0.0f, -20.0f,   0.0f, 1.0f,
+			  0.0f,  20.0f,   0.0f, 1.0f,
+			  0.0f,   0.0f, -20.0f, 1.0f,
+			  0.0f,   0.0f,  20.0f, 1.0f};
+
+	static const float colorAxis[] = {
+			1.0f, 0.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 0.0f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f};
+
+	const int32_t vIndex = _axisBuffer.create(verticesAxis, sizeof(verticesAxis));
+	const int32_t cIndex = _axisBuffer.create(colorAxis, sizeof(colorAxis));
+	core_assert(vIndex >= 0 && cIndex >= 0);
+	_axisBuffer.addAttribute(_colorShader->getAttributeLocation("a_pos"), vIndex, 4);
+	_axisBuffer.addAttribute(_colorShader->getAttributeLocation("a_color"), cIndex, 4);
 
 	new WorldParametersWindow(this);
 	new TreeParametersWindow(this);
@@ -117,7 +143,24 @@ void ShapeTool::afterUI() {
 	_root.GetFont()->DrawString(5, 50, tb::TBColor(255, 255, 255), position);
 	_root.GetFont()->DrawString(5, 65, tb::TBColor(255, 255, 255), extractions);
 
-	// TODO: render grid axis
+	const glm::mat4& view = _camera.getViewMatrix();
+
+	_colorShader->activate();
+	_colorShader->setUniformMatrix("u_view", view, false);
+	const float farPlane = _worldRenderer.getViewDistance();
+	const glm::mat4& projection = glm::perspective(45.0f, _aspect, 0.1f, farPlane);
+	_colorShader->setUniformMatrix("u_projection", projection, false);
+
+	// TODO: add x, y and z letters to the axis
+	glDisable(GL_DEPTH_TEST);
+	core_assert(_axisBuffer.bind());
+	glLineWidth(4.0f);
+	glDrawArrays(GL_LINES, 0, 6);
+	glLineWidth(1.0f);
+	_axisBuffer.unbind();
+
+	_colorShader->deactivate();
+	GL_checkError();
 }
 
 core::AppState ShapeTool::onCleanup() {

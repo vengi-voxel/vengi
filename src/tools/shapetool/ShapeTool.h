@@ -7,10 +7,12 @@
 #include "ui/UIApp.h"
 #include "frontend/WorldShader.h"
 #include "frontend/MeshShader.h"
+#include "frontend/ColorShader.h"
 #include "frontend/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "video/Camera.h"
 #include "video/MeshPool.h"
+#include "video/VertexBuffer.h"
 #include "voxel/World.h"
 
 class ShapeTool: public ui::UIApp {
@@ -22,6 +24,8 @@ protected:
 	voxel::WorldPtr _world;
 	frontend::WorldShader _worldShader;
 	frontend::MeshShaderPtr _meshShader;
+	frontend::ColorShaderPtr _colorShader;
+	video::VertexBuffer _axisBuffer;
 	core::VarPtr _speed;
 
 	bool _resetTriggered = false;
