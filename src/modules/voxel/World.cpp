@@ -270,7 +270,7 @@ void World::createUnderground(TerrainContext& ctx) {
 void World::create(TerrainContext& ctx) {
 	core_trace_scoped(CreateWorld);
 	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
-	WorldGenerator::createWorld(_ctx, ctx, _biomManager, _random, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
+	WorldGenerator::createWorld(_ctx, ctx, _biomManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
 }
 
 void World::cleanupFutures() {
