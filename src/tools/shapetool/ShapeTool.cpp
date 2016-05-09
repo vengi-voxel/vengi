@@ -70,11 +70,11 @@ core::AppState ShapeTool::onInit() {
 	}
 
 	static const float verticesAxis[] = {
-			-20.0f,   0.0f,   0.0f, 1.0f,
+			  0.0f,   0.0f,   0.0f, 1.0f,
 			 20.0f,   0.0f,   0.0f, 1.0f,
-			  0.0f, -20.0f,   0.0f, 1.0f,
+			  0.0f,   0.0f,   0.0f, 1.0f,
 			  0.0f,  20.0f,   0.0f, 1.0f,
-			  0.0f,   0.0f, -20.0f, 1.0f,
+			  0.0f,   0.0f,   0.0f, 1.0f,
 			  0.0f,   0.0f,  20.0f, 1.0f};
 
 	static const float colorAxis[] = {
