@@ -8,25 +8,23 @@
 namespace video {
 
 VertexBuffer::VertexBuffer(const void* data, GLsizeiptr size, GLenum target) :
-		_handle(GL_INVALID_VALUE), _target(target), _vao(0) {
+		_vao(0) {
 	create(data, size, target);
 }
 
 VertexBuffer::VertexBuffer() :
-		_handle(GL_INVALID_VALUE), _target(GL_INVALID_VALUE), _vao(0) {
+		_vao(0) {
 }
 
-bool VertexBuffer::addAttribute(uint32_t index, int size, GLenum type, bool normalized, int stride, intptr_t offset) {
-	// if we already have a buffer, we don't accept new attributes
-	if (isValid())
-		return false;
-	_attributes.push_back(Attribute{index, size, type, normalized, stride, offset});
+bool VertexBuffer::addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type, bool normalized, int stride, intptr_t offset) {
+	_attributes.push_back(Attribute{attributeIndex, bufferIndex, size, type, normalized, stride, offset});
 	return true;
 }
 
 bool VertexBuffer::bind() {
-	if (!isValid())
+	if (!isValid(0)) {
 		return false;
+	}
 	if (_vao != 0) {
 		glBindVertexArray(_vao);
 		return true;
@@ -34,48 +32,60 @@ bool VertexBuffer::bind() {
 
 	glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
-	glBindBuffer(_target, _handle);
 	const int size = _attributes.size();
 	for (int i = 0; i < size; i++) {
 		const Attribute& a = _attributes[i];
-		glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
+		glBindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
 		glEnableVertexAttribArray(i);
+		glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
 	}
 	return true;
 }
 
 void VertexBuffer::unbind() {
-	if (_vao != 0)
+	if (_vao != 0) {
 		glBindVertexArray(0);
-	else
-		glBindBuffer(_target, 0);
+	} else {
+		for (unsigned int i = 0; i < _handleIdx; ++i) {
+			glBindBuffer(_targets[i], _handles[i]);
+		}
+	}
 }
 
-bool VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
-	// we already have a buffer
-	if (isValid()) {
-		core_assert(_target == target);
-		glBindBuffer(target, _handle);
-		glBufferData(target, size, data, GL_STATIC_DRAW);
-		glBindBuffer(target, 0);
-		return true;
-	}
-	_target = target;
-	glGenBuffers(1, &_handle);
-	if (!isValid())
+bool VertexBuffer::update(int index, const void* data, GLsizeiptr size) {
+	if (!isValid(index)) {
 		return false;
-	glBindBuffer(target, _handle);
-	glBufferData(target, size, data, GL_STATIC_DRAW);
-	glBindBuffer(target, 0);
+	}
+
+	glBindBuffer(_targets[index], _handles[index]);
+	glBufferData(_targets[index], size, data, GL_STATIC_DRAW);
+	glBindBuffer(_targets[index], 0);
+
 	return true;
 }
 
+int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
+	// we already have a buffer
+	if (_handleIdx >= (int)SDL_arraysize(_handles)) {
+		return -1;
+	}
+	_targets[_handleIdx] = target;
+	glGenBuffers(1, &_handles[_handleIdx]);
+	if (!isValid(0)) {
+		return -1;
+	}
+	glBindBuffer(target, _handles[_handleIdx]);
+	glBufferData(target, size, data, GL_STATIC_DRAW);
+	glBindBuffer(target, 0);
+	++_handleIdx;
+	return _handleIdx - 1;
+}
+
 VertexBuffer::~VertexBuffer() {
-	if (!isValid())
-		return;
-	if (_vao != 0)
+	if (_vao != 0) {
 		glDeleteVertexArrays(1, &_vao);
-	glDeleteBuffers(1, &_handle);
+	}
+	glDeleteBuffers(_handleIdx, _handles);
 }
 
 }

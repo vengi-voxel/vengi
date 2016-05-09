@@ -5,16 +5,20 @@
 #pragma once
 
 #include "GLFunc.h"
+#include "core/Common.h"
 #include <vector>
 
 namespace video {
 
 class VertexBuffer {
 private:
-	GLuint _handle;
-	GLenum _target;
+	static constexpr int MAX_HANDLES = 4;
+	GLuint _handles[MAX_HANDLES] = {GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE};
+	GLenum _targets[MAX_HANDLES] = {GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE};
+	GLuint _handleIdx = 0;
 	struct Attribute {
 		uint32_t index;
+		uint32_t bufferIndex;
 		int size;
 		GLenum type;
 		bool normalized;
@@ -28,21 +32,29 @@ public:
 	VertexBuffer();
 	~VertexBuffer();
 
-	bool addAttribute(uint32_t index, int size, GLenum type, bool normalized, int stride, intptr_t offset);
+	bool addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type = GL_FLOAT, bool normalized = false, int stride = 0, intptr_t offset = 0);
 
-	bool create(const void* data, GLsizeiptr size, GLenum target = GL_ARRAY_BUFFER);
+	bool update(int idx, const void* data, GLsizeiptr size);
+	int32_t create(const void* data, GLsizeiptr size, GLenum target = GL_ARRAY_BUFFER);
 	bool bind();
 	void unbind();
-	bool isValid() const;
-	GLuint handle() const;
+	bool isValid(int idx) const;
+	GLuint handle(int idx) const;
 };
 
-inline bool VertexBuffer::isValid() const {
-	return _handle != GL_INVALID_VALUE && _handle > 0;
+inline bool VertexBuffer::isValid(int idx) const {
+	if (idx < 0) {
+		return false;
+	}
+	if (idx >= (int)SDL_arraysize(_handles)) {
+		return false;
+	}
+	return _handles[idx] != GL_INVALID_VALUE && _handles[idx] > 0;
 }
 
-inline GLuint VertexBuffer::handle() const {
-	return _handle;
+inline GLuint VertexBuffer::handle(int idx) const {
+	core_assert(idx >= 0 && idx < (int)SDL_arraysize(_handles));
+	return _handles[idx];
 }
 
 }
