@@ -116,6 +116,8 @@ void ShapeTool::afterUI() {
 	_root.GetFont()->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
 	_root.GetFont()->DrawString(5, 50, tb::TBColor(255, 255, 255), position);
 	_root.GetFont()->DrawString(5, 65, tb::TBColor(255, 255, 255), extractions);
+
+	// TODO: render grid axis
 }
 
 core::AppState ShapeTool::onCleanup() {
