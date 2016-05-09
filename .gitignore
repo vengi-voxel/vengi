@@ -1,3 +1,4 @@
 *.pyc
 /build
 /.project
+/Makefile.local

@@ -1,8 +1,9 @@
+-include Makefile.local
 TARGET=
 VERBOSE=
 Q=@
 LOCAL_CONFIG_DIR=~/.local/share/engine
-BUILDDIR=build
+BUILDDIR?=build
 
 MAKE_PID := $$PPID
 JOB_FLAG := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
@@ -11,10 +12,10 @@ all: build
 
 .PHONY: build
 build:
-	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_INSTALL_PREFIX=./linux ..; make $(JOB_FLAG); make install
+	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_INSTALL_PREFIX=./linux $(CURDIR); make $(JOB_FLAG); make install
 
 release:
-	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_INSTALL_PREFIX=./linux -DCMAKE_BUILD_TYPE=Release ..; make $(JOB_FLAG); make install
+	$(Q)mkdir -p $(BUILDDIR); cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_INSTALL_PREFIX=./linux -DCMAKE_BUILD_TYPE=Release $(CURDIR); make $(JOB_FLAG); make install
 
 clean:
 	$(Q)rm -rf $(BUILDDIR)
