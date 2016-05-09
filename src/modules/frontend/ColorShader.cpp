@@ -15,7 +15,7 @@ bool ColorShader::init() {
 		Log::error("no attribute a_pos found");
 	}
 	if (!hasAttribute("a_color")) {
-		Log::error("no attribute a_texcoords found");
+		Log::error("no attribute a_color found");
 	}
 	if (!hasUniform("u_projection")) {
 		Log::error("no uniform u_projection found");
