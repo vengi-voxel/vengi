@@ -36,5 +36,6 @@ gtest_suite_files(tests
 	tests/WorldTest.cpp
 	tests/WorldPersisterTest.cpp
 	tests/LSystemGeneratorTest.cpp
+	tests/PolyVoxTest.cpp
 )
 gtest_suite_deps(tests ${LIB})
