@@ -161,8 +161,8 @@ private:
 	BiomeManager _biomManager;
 	WorldContext _ctx;
 	mutable std::mt19937 _engine;
-	long _seed;
-	bool _clientData;
+	long _seed = 0l;
+	bool _clientData = false;
 
 	core::ThreadPool _threadPool;
 	core::ReadWriteLock _rwLock;
@@ -173,8 +173,8 @@ private:
 	core::Random _random;
 	std::vector<std::future<void> > _futures;
 	std::atomic_bool _cancelThreads { false };
-	float _noiseSeedOffsetX;
-	float _noiseSeedOffsetZ;
+	float _noiseSeedOffsetX = 0.0f;
+	float _noiseSeedOffsetZ = 0.0f;
 };
 
 inline int World::getMaterial(int x, int y, int z) const {
