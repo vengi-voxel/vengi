@@ -24,7 +24,7 @@ bool Persister::storeUser(const std::string& mail, const std::string& passwd, co
 
 int Persister::loadUser(const std::string& mail, const std::string& passwd, const std::string& uid) {
 	const UserStore dbUser(mail, passwd, uid);
-	_userData = std::move(_store.loadModel(dbUser));
+	_userData = _store.loadModel(dbUser);
 	if (!_userData.empty()) {
 		const int uid = core::string::toInt(_userData["userid"]);
 		return uid;
