@@ -59,9 +59,9 @@ bool Entity::update(long dt) {
 void Entity::updateVisible(const EntitySet& set) {
 	_visibleLock.lockWrite();
 	const auto& stillVisible = core::setIntersection(set, _visible);
-	const EntitySet remove = std::move(core::setDifference(stillVisible, _visible));
-	const EntitySet add = std::move(core::setDifference(set, stillVisible));
-	_visible = std::move(core::setUnion(stillVisible, add));
+	const EntitySet& remove = core::setDifference(stillVisible, _visible);
+	const EntitySet& add = core::setDifference(set, stillVisible);
+	_visible = core::setUnion(stillVisible, add);
 	core_assert(stillVisible.size() + add.size() == _visible.size());
 	_visibleLock.unlockWrite();
 
