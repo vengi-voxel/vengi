@@ -46,7 +46,7 @@
 	tr.load_stacktrace(st); \
 	for (size_t i = 0; i < st.size(); ++i) { \
 		const backward::ResolvedTrace& trace = tr.resolve(st[i]); \
-		Log::error("#%i %s %s [%p]", int(i), trace.object_filename.c_str(), trace.object_function.c_str(), trace.addr); \
+		printf("#%i %s %s [%p]", int(i), trace.object_filename.c_str(), trace.object_function.c_str(), trace.addr); \
 	}
 
 #ifndef core_assert
