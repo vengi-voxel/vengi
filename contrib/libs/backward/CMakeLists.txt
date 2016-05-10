@@ -20,6 +20,7 @@ set(STACK_DETAILS_DW FALSE CACHE BOOL "Use libdw to read debug info")
 set(STACK_DETAILS_BFD FALSE CACHE BOOL "Use libbfd to read debug info")
 
 unset(BACKWARD_LIBRARIES CACHE)
+unset(BACKWARD_INCLUDE_DIRS CACHE)
 
 ###############################################################################
 # CONFIGS
