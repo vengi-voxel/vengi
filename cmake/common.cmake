@@ -32,14 +32,12 @@ endmacro()
 
 include(CheckCCompilerFlag)
 
-check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
-check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if (COMPILER_SUPPORTS_CXX11)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-elseif (COMPILER_SUPPORTS_CXX0X)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-else()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
+if (COMPILER_SUPPORTS_CXX14)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+elseif (NOT MSVC)
+	# Don't error out, it might still work
+	message(SEND_ERROR "It looks like your compiler doesn't understand -std=c++14")
 endif()
 
 # thread sanitizer doesn't work in combination with address and leak
