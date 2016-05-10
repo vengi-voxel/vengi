@@ -198,6 +198,10 @@ public:
 	uint32_t calculateSizeInBytes();
 	Chunk* getChunk(const glm::ivec3& pos) const;
 
+	inline uint16_t getChunkSideLength() const {
+		return m_uChunkSideLength;
+	}
+
 protected:
 	/// Copy constructor
 	PagedVolume(const PagedVolume& rhs);
