@@ -59,6 +59,9 @@ private:
 	PagedVolume* _voxelStorage;
 	PagedVolume::Chunk* _chunk;
 public:
+	Region region;
+	PositionSet dirty;
+
 	TerrainContext(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk) :
 			_voxelStorage(voxelStorage), _chunk(chunk) {
 	}
@@ -74,9 +77,6 @@ public:
 	inline PagedVolume::Chunk* getChunk() const {
 		return _chunk;
 	}
-
-	Region region;
-	PositionSet dirty;
 
 	inline void setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 		setVoxel(pos.x, pos.y, pos.z, voxel);
