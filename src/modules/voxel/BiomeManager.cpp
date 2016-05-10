@@ -24,10 +24,9 @@ bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperatu
 
 const Biome* BiomeManager::getBiome(const glm::ivec3& pos, float noise) const {
 	core_assert_msg(noise >= 0.0f && noise <= 1.0f, "noise must be normalized [-1.0,1.0]: %f", noise);
-	const glm::vec4 noisePos(pos.x, pos.y, pos.z, noise);
-	// TODO: reasonable values
-	const float humidityNoise = noise::Simplex::Noise4D(noisePos, 1, 1.0f, 1.0f, 1.0f);
-	const float temperatureNoise = noise::Simplex::Noise4D(noisePos, 1, 1.2f, 1.2f, 1.2f);
+	const glm::vec2 noisePos(pos.x * noise, pos.z * noise);
+	const float humidityNoise = noise::Simplex::Noise2D(noisePos, 1, 1.0f, 1.0f, 1.0f);
+	const float temperatureNoise = noise::Simplex::Noise2D(noisePos, 1, 1.2f, 1.2f, 1.2f);
 	const float humidityNoiseNorm = noise::norm(humidityNoise);
 	const float temperatureNoiseNorm = noise::norm(temperatureNoise);
 

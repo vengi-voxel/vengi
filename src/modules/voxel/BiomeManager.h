@@ -12,9 +12,9 @@ namespace voxel {
 
 struct Biome {
 	constexpr Biome(const Voxel& _voxel, int16_t _yMin, int16_t _yMax,
-			float _humidity, float _temperature, Biome* _next = nullptr) :
+			float _humidity, float _temperature) :
 			voxel(_voxel), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(
-					_temperature), next(_next) {
+					_temperature) {
 	}
 
 	constexpr Biome() :
@@ -25,7 +25,6 @@ struct Biome {
 	const int16_t yMax;
 	const float humidity;
 	const float temperature;
-	Biome* next;
 };
 
 class BiomeManager {
