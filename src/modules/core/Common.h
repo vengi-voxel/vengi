@@ -27,10 +27,6 @@
 #define CORE_CLASS(name) \
 	friend class name##Test;
 
-#ifndef core_assert
-#define core_assert SDL_assert
-#endif
-
 #ifndef core_malloc
 #define core_malloc SDL_malloc
 #endif
@@ -43,8 +39,30 @@
 #define core_free SDL_free
 #endif
 
-#ifndef core_assert_always
-#define core_assert_always SDL_assert_always
+#ifndef core_assert
+#if SDL_ASSERT_LEVEL == 0
+#define core_assert(condition) SDL_disabled_assert(condition)
+#else
+#define core_assert(condition) \
+	do { \
+		while ( !(condition) ) { \
+			static struct SDL_AssertData sdl_assert_data = { \
+				0, 0, #condition, 0, 0, 0, 0 \
+			}; \
+			backward::StackTrace st; \
+			st.load_here(32); \
+			backward::Printer p; \
+			p.print(st); \
+			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
+			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
+				continue; /* go again. */ \
+			} else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
+				SDL_TriggerBreakpoint(); \
+			} \
+			break; /* not retrying. */ \
+		} \
+	} while (SDL_NULL_WHILE_LOOP_CONDITION)
+#endif
 #endif
 
 #ifndef core_assert_msg
