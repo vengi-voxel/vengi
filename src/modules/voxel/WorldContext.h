@@ -30,6 +30,21 @@ static const char *TreeTypeStr[] = {
 };
 static_assert(SDL_arraysize(TreeTypeStr) == (int)TreeType::MAX, "TreeType and TreeTypeStr didn't match");
 
+/**
+ * @brief Cuts the given world coordinate down to mesh tile vectors
+ */
+static inline glm::ivec3 getChunkPosForSize(const glm::ivec3& pos, float size) {
+	const int x = glm::floor(pos.x / size);
+	const int y = glm::floor(pos.y / size);
+	const int z = glm::floor(pos.z / size);
+	return glm::ivec3(x, y, z);
+}
+
+static inline glm::ivec3 getGridPosForSize(const glm::ivec3& pos, int size) {
+	const glm::ivec3& chunkPos = getChunkPosForSize(pos, size);
+	return glm::ivec3(chunkPos.x * size, 0, chunkPos.z * size);
+}
+
 struct TreeContext {
 	TreeType type = TreeType::DOME;
 	int trunkHeight = 6;
@@ -49,6 +64,26 @@ struct IVec3HashEquals {
 
 	bool operator()(const glm::ivec3& a, const glm::ivec3& b) const {
 		return a == b;
+	}
+};
+
+struct GridPosHashEquals {
+	int _chunkSize;
+
+	GridPosHashEquals(int chunkSize) :
+			_chunkSize(chunkSize) {
+	}
+
+	size_t operator()(const glm::ivec3& k) const {
+		const glm::ivec3 g = getGridPosForSize(k, _chunkSize);
+		// TODO: find a better hash function - we have a lot of collisions here
+		return std::hash<int>()(g.x) ^ std::hash<int>()(g.y) ^ std::hash<int>()(g.z);
+	}
+
+	bool operator()(const glm::ivec3& a, const glm::ivec3& b) const {
+		const glm::ivec3 ag = getGridPosForSize(a, _chunkSize);
+		const glm::ivec3 bg = getGridPosForSize(b, _chunkSize);
+		return ag == bg;
 	}
 };
 
@@ -101,6 +136,7 @@ public:
 			_chunk->setVoxel(x - region.getLowerX(), y - region.getLowerY(), z - region.getLowerZ(), voxel);
 		} else {
 			core_assert(_voxelStorage != nullptr);
+			dirty.insert(glm::ivec3(x, y, z));
 			_voxelStorage->setVoxel(x, y, z, voxel);
 		}
 	}
@@ -114,11 +150,13 @@ public:
 			if (amount > 0) {
 				// everything else goes into the volume
 				core_assert(_voxelStorage != nullptr);
+				dirty.insert(glm::ivec3(x, 0, z));
 				_voxelStorage->setVoxels(x, z, voxels + w, amount);
 			}
 		} else {
 			// TODO: add region/chunk support here, too
 			core_assert(_voxelStorage != nullptr);
+			dirty.insert(glm::ivec3(x, 0, z));
 			_voxelStorage->setVoxels(x, z, voxels, amount);
 		}
 	}

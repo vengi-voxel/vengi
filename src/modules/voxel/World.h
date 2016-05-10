@@ -65,20 +65,15 @@ public:
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
 	 */
 	inline glm::ivec3 getGridPos(const glm::ivec3& pos) const {
-		const int size = _chunkSize->intVal();
-		const glm::ivec3& chunkPos = getChunkPos(pos);
-		return glm::ivec3(chunkPos.x * size, 0, chunkPos.z * size);
+		const int size = getChunkSize();
+		return getGridPosForSize(pos, size);
 	}
 
 	/**
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
 	 */
 	inline glm::ivec3 getChunkPos(const glm::ivec3& pos) const {
-		const float size = _chunkSize->floatVal();
-		const int x = glm::floor(pos.x / size);
-		const int y = glm::floor(pos.y / size);
-		const int z = glm::floor(pos.z / size);
-		return glm::ivec3(x, y, z);
+		return getChunkPosForSize(pos, (float)getChunkSize());
 	}
 
 	inline int getChunkSize() const {
