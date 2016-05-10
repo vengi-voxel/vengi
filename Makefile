@@ -51,7 +51,7 @@ tags:
 	$(Q)ctags -R src
 
 shapetool2: clean-local-config
-	$(Q)cd $(BUILDDIR); make $(JOB_FLAG) shapetool && ./shapetool -set cl_debug_geometry false
+	$(Q)cd $(BUILDDIR); make $(JOB_FLAG) shapetool copy-data-shapetool copy-data-shared && ./shapetool -set cl_debug_geometry false
 
 material-color: build
 	$(Q)cd $(BUILDDIR); ./tests -- --gtest_filter=MaterialTest* $(ARGS)
