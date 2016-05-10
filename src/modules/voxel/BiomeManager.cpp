@@ -24,14 +24,14 @@ bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperatu
 
 float BiomeManager::getHumidity(const glm::ivec3& pos) const {
 	const glm::vec2 noisePos(pos.x, pos.z);
-	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.0f, 1.0f, 1.0f);
+	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.0f, 0.001f, 1.0f);
 	return noise::norm(n);
 }
 
 float BiomeManager::getTemperature(const glm::ivec3& pos) const {
 	const glm::vec2 noisePos(pos.x, pos.z);
 	// TODO: apply y value
-	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.2f, 1.2f, 1.2f);
+	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.2f, 0.01f, 1.2f);
 	return noise::norm(n);
 }
 

@@ -50,7 +50,7 @@ void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomMan
 
 		const int maxSize = 14;
 		const int size = random.random(12, maxSize);
-		const int trunkWidth = 2;
+		const int trunkWidth = 1;
 		const TreeType treeType = (TreeType)random.random(0, int(TreeType::MAX) - 1);
 		addTree(ctx, pos, treeType, trunkHeight, trunkWidth, size, size, height, random);
 	}
