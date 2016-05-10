@@ -163,9 +163,9 @@ void PagedVolume::prefetch(const Region& regPrefetch) {
 	uNoOfChunks = std::min(uNoOfChunks, m_uChunkCountLimit);
 
 	// Loops over the specified positions and touch the corresponding chunks.
-	for (int32_t x = v3dStart.x; x <= v3dEnd.x; x += m_uChunkSideLength) {
-		for (int32_t y = v3dStart.y; y <= v3dEnd.y; y += m_uChunkSideLength) {
-			for (int32_t z = v3dStart.z; z <= v3dEnd.z; z += m_uChunkSideLength) {
+	for (int32_t x = v3dStart.x; x <= v3dEnd.x; ++x) {
+		for (int32_t y = v3dStart.y; y <= v3dEnd.y; ++y) {
+			for (int32_t z = v3dStart.z; z <= v3dEnd.z; ++z) {
 				const int32_t chunkX = x >> m_uChunkSideLengthPower;
 				const int32_t chunkY = y >> m_uChunkSideLengthPower;
 				const int32_t chunkZ = z >> m_uChunkSideLengthPower;
