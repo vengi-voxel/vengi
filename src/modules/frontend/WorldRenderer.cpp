@@ -97,7 +97,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
 	for (video::GLMeshData& m : _meshData) {
 		if (m.translation == mesh.translation) {
-			core_assert(m.numLods == mesh.numLods);
+			core_assert_msg(m.numLods == mesh.numLods, "old lod count (%i) doesn't match new lod count (%i)", m.numLods, mesh.numLods);
 			for (int i = 0; i < m.numLods; ++i) {
 				updateMesh(mesh.mesh[i], m, i);
 			}
