@@ -62,19 +62,19 @@ public:
 
 	private:
 		// This is updated by the PagedVolume and used to discard the least recently used chunks.
-		uint32_t m_uChunkLastAccessed;
+		uint32_t m_uChunkLastAccessed = 0;
 
 		uint32_t calculateSizeInBytes();
 		static uint32_t calculateSizeInBytes(uint32_t uSideLength);
 
-		Voxel* m_tData;
-		uint16_t m_uSideLength;
+		Voxel* m_tData = nullptr;
+		uint16_t m_uSideLength = 0;
 
 		// This is so we can tell whether a uncompressed chunk has to be recompressed and whether
 		// a compressed chunk has to be paged back to disk, or whether they can just be discarded.
-		bool m_bDataModified;
+		bool m_bDataModified = false;
 
-		uint8_t m_uSideLengthPower;
+		uint8_t m_uSideLengthPower = 0b0;
 		Pager* m_pPager;
 
 		// Note: Do we really need to store this position here as well as in the block maps?
