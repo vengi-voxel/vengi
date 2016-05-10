@@ -10,21 +10,42 @@ namespace voxel {
 class BiomeManagerTest: public AbstractVoxelTest {
 };
 
-TEST_F(BiomeManagerTest, testFoo) {
+TEST_F(BiomeManagerTest, testBasic) {
 	BiomeManager mgr;
-	ASSERT_TRUE(mgr.addBiom(0, MAX_WATER_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Sand1)));
-	ASSERT_TRUE(mgr.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, createVoxel(Dirt1)));
-	ASSERT_TRUE(mgr.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Grass1)));
-	ASSERT_TRUE(mgr.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, createVoxel(Rock1)));
-	ASSERT_TRUE(mgr.addBiom(MAX_TERRAIN_HEIGHT - 30, MAX_MOUNTAIN_HEIGHT + 1, 0.32f, 0.32f, createVoxel(Rock2)));
+	ASSERT_TRUE(mgr.addBiom(0, 1, 1.0f, 1.0f, createVoxel(Sand1)));
+	ASSERT_TRUE(mgr.addBiom(1, 2, 1.0f, 1.0f, createVoxel(Sand2)));
+	ASSERT_TRUE(mgr.addBiom(2, 3, 1.0f, 1.0f, createVoxel(Sand3)));
+	ASSERT_TRUE(mgr.addBiom(3, 4, 1.0f, 1.0f, createVoxel(Sand4)));
 
-	ASSERT_EQ(nullptr, mgr.getBiome(glm::ivec3(0, MAX_WATER_HEIGHT + 1, 0), 1.0f));
+	ASSERT_FALSE(isSand(mgr.getBiome(glm::ivec3(0, 5, 0))->voxel.getMaterial()));
+	ASSERT_FALSE(isSand(mgr.getBiome(glm::ivec3(0, 6, 0))->voxel.getMaterial()));
 
-	const Biome* biome;
+	for (int i = 0; i <= 4; ++i) {
+		ASSERT_TRUE(isSand(mgr.getBiome(glm::ivec3(0, i, 0))->voxel.getMaterial()));
+	}
+}
 
-	biome = mgr.getBiome(glm::ivec3(0, 0, 0), 1.0f);
-	ASSERT_NE(nullptr, biome);
-	ASSERT_TRUE(isSand(biome->voxel.getMaterial()));
+TEST_F(BiomeManagerTest, testHumidityTemperature) {
+	BiomeManager mgr;
+	const glm::ivec3 p1(1, 0, 1);
+	const float h1 = mgr.getHumidity(p1);
+	const float t1 = mgr.getTemperature(p1);
+
+	const glm::ivec3 p2(10, 0, 10);
+	const float h2 = mgr.getHumidity(p2);
+	const float t2 = mgr.getTemperature(p2);
+
+	const glm::ivec3 p3(20, 0, 20);
+	const float h3 = mgr.getHumidity(p3);
+	const float t3 = mgr.getTemperature(p3);
+
+	ASSERT_TRUE(mgr.addBiom(0, 1, h1, t1, createVoxel(Sand1)));
+	ASSERT_TRUE(mgr.addBiom(0, 1, h2, t2, createVoxel(Sand2)));
+	ASSERT_TRUE(mgr.addBiom(0, 1, h3, t3, createVoxel(Sand3)));
+
+	ASSERT_EQ(Sand1, mgr.getBiome(p1)->voxel.getMaterial());
+	ASSERT_EQ(Sand2, mgr.getBiome(p2)->voxel.getMaterial());
+	ASSERT_EQ(Sand3, mgr.getBiome(p3)->voxel.getMaterial());
 }
 
 }

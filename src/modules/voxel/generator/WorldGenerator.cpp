@@ -58,7 +58,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 					const float finalDensity = noiseNormalized + noiseVal;
 					if (finalDensity > worldCtx.caveDensityThreshold) {
 						const bool cave = y < ni - 1;
-						const Voxel& voxel = biomManager.getVoxelType(x, y, z, cave, noiseNormalized);
+						const Voxel& voxel = biomManager.getVoxelType(x, y, z, cave);
 						voxels[y] = voxel;
 					} else {
 						if (y <= MAX_WATER_HEIGHT) {

@@ -34,7 +34,7 @@ private:
 	static constexpr Voxel INVALID = createVoxel(Air);
 	static constexpr Voxel ROCK = createVoxel(Rock1);
 	static constexpr Voxel GRASS = createVoxel(Grass1);
-	static constexpr Biome DEFAULT = {}	;
+	static constexpr Biome DEFAULT = {};
 
 public:
 	BiomeManager();
@@ -43,23 +43,26 @@ public:
 	bool addBiom(int lower, int upper, float humidity, float temperature, const Voxel& type);
 
 	// this lookup must be really really fast - it is executed once per generated voxel
-	inline const Voxel& getVoxelType(const glm::ivec3& pos, bool underground = false, float noise = 1.0f) const {
+	inline const Voxel& getVoxelType(const glm::ivec3& pos, bool underground = false) const {
 		if (underground) {
 			return ROCK;
 		}
-		const Biome* biome = getBiome(pos, noise);
+		const Biome* biome = getBiome(pos);
 		return biome->voxel;
 	}
 
-	inline const Voxel& getVoxelType(int x, int y, int z, bool underground = false, float noise = 1.0f) const {
-		return getVoxelType(glm::ivec3(x, y, z), underground, noise);
+	inline const Voxel& getVoxelType(int x, int y, int z, bool underground = false) const {
+		return getVoxelType(glm::ivec3(x, y, z), underground);
 	}
 
-	bool hasTrees(const glm::ivec3& pos, float noise = 1.0f) const;
+	float getHumidity(const glm::ivec3& pos) const;
+	float getTemperature(const glm::ivec3& pos) const;
 
-	const Biome* getBiome(const glm::ivec3& pos, float noise = 1.0f) const;
+	bool hasTrees(const glm::ivec3& pos) const;
 
-	bool hasClouds(const glm::ivec3& pos, float noise = 1.0f) const;
+	const Biome* getBiome(const glm::ivec3& pos) const;
+
+	bool hasClouds(const glm::ivec3& pos) const;
 };
 
 }
