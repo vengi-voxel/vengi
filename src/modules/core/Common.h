@@ -39,6 +39,16 @@
 #define core_free SDL_free
 #endif
 
+#define core_stacktrace \
+	backward::StackTrace st; \
+	st.load_here(32); \
+	backward::TraceResolver tr; \
+	tr.load_stacktrace(st); \
+	for (size_t i = 0; i < st.size(); ++i) { \
+		const backward::ResolvedTrace& trace = tr.resolve(st[i]); \
+		Log::error("#%i %s %s [%p]", int(i), trace.object_filename.c_str(), trace.object_function.c_str(), trace.addr); \
+	}
+
 #ifndef core_assert
 #if SDL_ASSERT_LEVEL == 0
 #define core_assert(condition) SDL_disabled_assert(condition)
@@ -49,10 +59,7 @@
 			static struct SDL_AssertData sdl_assert_data = { \
 				0, 0, #condition, 0, 0, 0, 0 \
 			}; \
-			backward::StackTrace st; \
-			st.load_here(32); \
-			backward::Printer p; \
-			p.print(st); \
+			core_stacktrace \
 			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
 				continue; /* go again. */ \
@@ -77,10 +84,7 @@
 			struct SDL_AssertData sdl_assert_data = { \
 				0, 0, buf, 0, 0, 0, 0 \
 			}; \
-			backward::StackTrace st; \
-			st.load_here(32); \
-			backward::Printer p; \
-			p.print(st); \
+			core_stacktrace \
 			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
 				continue; /* go again. */ \
