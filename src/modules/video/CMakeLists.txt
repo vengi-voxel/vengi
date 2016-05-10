@@ -10,7 +10,6 @@ set(SRCS
 	GLDebug.h
 	Cubemap.cpp Cubemap.h
 	Texture.cpp Texture.h
-	Color.cpp Color.h
 	Mesh.cpp Mesh.h
 	MeshPool.cpp MeshPool.h
 )

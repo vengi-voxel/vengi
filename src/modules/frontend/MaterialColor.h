@@ -13,40 +13,40 @@ typedef std::array<glm::vec4, 32> MaterialColorArray;
 
 inline const MaterialColorArray& getMaterialColors() {
 	static const MaterialColorArray materialColors = {
-		video::Color::LightBlue,	// air
-		video::Color::Lime,			// grass1
-		video::Color::DarkBrown,	// wood1
+		core::Color::LightBlue,	// air
+		core::Color::Lime,			// grass1
+		core::Color::DarkBrown,	// wood1
 		// leaves
-		video::Color::LightGreen,
-		video::Color::DarkGreen,
-		video::Color::Darker(video::Color::DarkGreen),
-		video::Color::Green,
-		video::Color::Olive,
-		video::Color::Darker(video::Color::Olive),
-		video::Color::Orange,
-		video::Color::Darker(video::Color::Orange),
-		video::Color::Darker(video::Color::Yellow),
-		video::Color::Darker(video::Color::Yellow, 2.0f),
+		core::Color::LightGreen,
+		core::Color::DarkGreen,
+		core::Color::Darker(core::Color::DarkGreen),
+		core::Color::Green,
+		core::Color::Olive,
+		core::Color::Darker(core::Color::Olive),
+		core::Color::Orange,
+		core::Color::Darker(core::Color::Orange),
+		core::Color::Darker(core::Color::Yellow),
+		core::Color::Darker(core::Color::Yellow, 2.0f),
 		// leaves end
-		video::Color::DarkGray,		// rock1
-		video::Color::DarkGray,		// rock2
-		video::Color::DarkGray,		// rock3
-		video::Color::DarkGray,		// rock4
-		video::Color::Sandy,		// sand1
-		video::Color::Sandy,		// sand2
-		video::Color::Sandy,		// sand3
-		video::Color::Sandy,		// sand4
-		video::Color::White,		// clouds
-		glm::vec4(glm::vec3(video::Color::Blue), 0.4f),	// water
-		video::Color::Brown,		// dirt1
-		video::Color::Brown,		// dirt2
-		video::Color::Brown,		// dirt3
-		video::Color::Brown,		// dirt4
-		video::Color::Pink,
-		video::Color::Pink,
-		video::Color::Pink,
-		video::Color::Pink,
-		video::Color::Pink
+		core::Color::DarkGray,		// rock1
+		core::Color::DarkGray,		// rock2
+		core::Color::DarkGray,		// rock3
+		core::Color::DarkGray,		// rock4
+		core::Color::Sandy,		// sand1
+		core::Color::Sandy,		// sand2
+		core::Color::Sandy,		// sand3
+		core::Color::Sandy,		// sand4
+		core::Color::White,		// clouds
+		glm::vec4(glm::vec3(core::Color::Blue), 0.4f),	// water
+		core::Color::Brown,		// dirt1
+		core::Color::Brown,		// dirt2
+		core::Color::Brown,		// dirt3
+		core::Color::Brown,		// dirt4
+		core::Color::Pink,
+		core::Color::Pink,
+		core::Color::Pink,
+		core::Color::Pink,
+		core::Color::Pink
 	};
 	return materialColors;
 }

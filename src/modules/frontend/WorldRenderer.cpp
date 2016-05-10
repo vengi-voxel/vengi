@@ -4,7 +4,6 @@
 
 #include "WorldRenderer.h"
 #include "video/GLFunc.h"
-#include "video/Color.h"
 #include "voxel/Spiral.h"
 #include "core/App.h"
 #include "noise/SimplexNoise.h"

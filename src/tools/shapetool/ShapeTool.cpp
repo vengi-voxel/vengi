@@ -5,7 +5,7 @@
 #include "ShapeTool.h"
 #include "sauce/ShapeToolInjector.h"
 #include "video/Shader.h"
-#include "video/Color.h"
+#include "core/Color.h"
 #include "video/GLDebug.h"
 #include "ui/WorldParametersWindow.h"
 #include "ui/TreeParametersWindow.h"
@@ -53,7 +53,7 @@ core::AppState ShapeTool::onInit() {
 	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
 
-	_clearColor = video::Color::LightBlue;
+	_clearColor = core::Color::LightBlue;
 
 	_worldRenderer.onSpawn(_camera.getPosition(), 5);
 

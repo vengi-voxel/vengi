@@ -10,7 +10,7 @@
 #include "video/Camera.h"
 #include "video/GBuffer.h"
 #include "video/GLMeshData.h"
-#include "video/Color.h"
+#include "core/Color.h"
 #include "ClientEntity.h"
 
 #include <unordered_map>

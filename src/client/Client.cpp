@@ -10,7 +10,7 @@
 #include "ui/HudWindow.h"
 #include "core/Command.h"
 #include "sauce/ClientInjector.h"
-#include "video/Color.h"
+#include "core/Color.h"
 #include "video/GLDebug.h"
 #include <glm/gtc/constants.hpp>
 
@@ -116,7 +116,7 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	_worldRenderer.onInit(_width, _height);
-	_clearColor = video::Color::LightBlue;
+	_clearColor = core::Color::LightBlue;
 
 	_root.SetSkinBg(TBIDC("background"));
 	new frontend::LoginWindow(this);

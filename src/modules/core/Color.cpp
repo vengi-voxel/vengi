@@ -8,7 +8,7 @@
 #include <cmath>
 #include <limits>
 
-namespace video {
+namespace core {
 
 const glm::vec4 Color::Clear        = glm::vec4(  0.f,   0,   0,   0) / glm::vec4(Color::magnitude);
 const glm::vec4 Color::White        = glm::vec4(255.f, 255, 255, 255) / glm::vec4(Color::magnitude);

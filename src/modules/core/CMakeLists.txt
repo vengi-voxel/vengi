@@ -4,6 +4,7 @@ set(SRCS
 	ByteStream.cpp ByteStream.h
 	Common.h
 	Command.h Command.cpp
+	Color.cpp Color.h
 	Concurrency.h
 	EventBus.h
 	IFactoryRegistry.h

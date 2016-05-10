@@ -6,7 +6,7 @@
 
 #include <glm/glm.hpp>
 
-namespace video {
+namespace core {
 
 class Color {
 public:

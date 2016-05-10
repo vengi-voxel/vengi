@@ -4,7 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "image/Image.h"
-#include "video/Color.h"
+#include "core/Color.h"
 #include "frontend/MaterialColor.h"
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/constants.hpp>
