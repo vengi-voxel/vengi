@@ -288,6 +288,9 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 			}
 		}
 
+		// TODO: concurrency issue - we might still be in the process to page the chunk in,
+		// but another thread might already write or read voxels from the chunk
+
 		// Page the data in
 		// We'll use this later to decide if data needs to be paged out again.
 		pChunk->m_bDataModified = m_pPager->pageIn(reg, pChunk);
