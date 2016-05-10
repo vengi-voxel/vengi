@@ -10,6 +10,7 @@
 #include "Log.h"
 #include <cmath>
 #include <limits>
+#include <backward.h>
 #include <SDL.h>
 #include <SDL_assert.h>
 #include <glm/glm.hpp>
@@ -47,6 +48,9 @@
 #endif
 
 #ifndef core_assert_msg
+#if SDL_ASSERT_LEVEL == 0
+#define core_assert_msg(condition, format, ...) SDL_disabled_assert(condition)
+#else
 #define core_assert_msg(condition, format, ...) \
 	do { \
 		while (!(condition)) { \
@@ -55,6 +59,10 @@
 			struct SDL_AssertData sdl_assert_data = { \
 				0, 0, buf, 0, 0, 0, 0 \
 			}; \
+			backward::StackTrace st; \
+			st.load_here(32); \
+			backward::Printer p; \
+			p.print(st); \
 			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
 				continue; /* go again. */ \
@@ -64,6 +72,7 @@
 			break; /* not retrying. */ \
 		} \
 	} while (SDL_NULL_WHILE_LOOP_CONDITION)
+#endif
 #endif
 
 template<class T, class S>
