@@ -45,7 +45,7 @@ bool World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 	_world.create(ctx);
 	for (const glm::ivec3& pos : ctx.dirty) {
 		// TODO: threading issue - dirty stuff should not happen
-		_world.allowReExtraction(pos);
+		//_world.allowReExtraction(pos);
 	}
 	return true;
 }
