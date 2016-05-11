@@ -78,9 +78,13 @@ public:
 	virtual void beforeUI() {
 	}
 
+	// hook that is called directory before the ui is rendered. Your last chance to let the app contribute
+	// something in the ui context and the ui drawcalls (like debug text or rendering an in-game console on
+	// top of the ui)
+	virtual void afterUI();
+
 	void addChild(Window* window);
 
-	virtual void afterUI();
 
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;
