@@ -189,13 +189,15 @@ void PagedVolume::flushAll() {
 	}
 }
 
+/**
+ * Starting at the position indicated by the hash, and then search through the whole array looking for a chunk with the correct
+ * position. In most cases we expect to find it in the first place we look. Note that this algorithm is slow in the case that
+ * the chunk is not found because the whole array has to be searched, but in this case we are going to have to page the data in
+ * from an external source which is likely to be slow anyway.
+ */
 PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
 	const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
 	core::ScopedReadLock scopedLock(_lock);
-	// Starting at the position indicated by the hash, and then search through the whole array looking for a chunk with the correct
-	// position. In most cases we expect to find it in the first place we look. Note that this algorithm is slow in the case that
-	// the chunk is not found because the whole array has to be searched, but in this case we are going to have to page the data in
-	// from an external source which is likely to be slow anyway.
 	uint32_t iIndex = iPositionHash;
 	do {
 		if (m_arrayChunks[iIndex]) {
@@ -213,12 +215,14 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t uChunkX, int32_t uChun
 	return nullptr;
 }
 
+/**
+ * As we have added a chunk we may have exceeded our target chunk limit. Search through the array to
+ * determine how many chunks we have, as well as finding the oldest timestamp. Note that this is potentially
+ * wasteful and we may instead wish to track how many chunks we have and/or delete a chunk at random (or
+ * just check e.g. 10 and delete the oldest of those) but we'll see if this is a bottleneck first. Paging
+ * the data in is probably more expensive.
+ */
 void PagedVolume::deleteOldestChunkIfNeeded() const {
-	// As we have added a chunk we may have exceeded our target chunk limit. Search through the array to
-	// determine how many chunks we have, as well as finding the oldest timestamp. Note that this is potentially
-	// wasteful and we may instead wish to track how many chunks we have and/or delete a chunk at random (or
-	// just check e.g. 10 and delete the oldest of those) but we'll see if this is a bottleneck first. Paging
-	// the data in is probably more expensive.
 	uint32_t uChunkCount = 0;
 	uint32_t uOldestChunkIndex = 0;
 	uint32_t uOldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
@@ -238,11 +242,13 @@ void PagedVolume::deleteOldestChunkIfNeeded() const {
 	}
 }
 
+/**
+ * Store the chunk at the appropriate place in our chunk array. Ideally this place is
+ * given by the hash, otherwise we do a linear search for the next available location
+ * We always expect to find a free place because we aim to keep the array only half full.
+ */
 void PagedVolume::insertNewChunk(PagedVolume::Chunk* pChunk, int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
 	const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
-	// Store the chunk at the appropriate place in our chunk array. Ideally this place is
-	// given by the hash, otherwise we do a linear search for the next available location
-	// We always expect to find a free place because we aim to keep the array only half full.
 	uint32_t iIndex = iPositionHash;
 	bool bInsertedSucessfully = false;
 	do {
