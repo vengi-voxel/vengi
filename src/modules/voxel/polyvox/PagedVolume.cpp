@@ -197,23 +197,31 @@ void PagedVolume::flushAll() {
  */
 PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
 	const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
-	core::ScopedReadLock scopedLock(_lock);
 	uint32_t iIndex = iPositionHash;
-	do {
-		if (m_arrayChunks[iIndex]) {
-			const glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
-			if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
-				PagedVolume::Chunk* pChunk = m_arrayChunks[iIndex].get();
-				pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
-				core::ScopedReadLock chunkLock(pChunk->_voxelLock);
-				return pChunk;
+	PagedVolume::Chunk* pChunk = nullptr;
+	{
+		core::ScopedReadLock scopedLock(_lock);
+		do {
+			if (m_arrayChunks[iIndex]) {
+				const glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
+				if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
+					pChunk = m_arrayChunks[iIndex].get();
+					pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
+					break;
+				}
 			}
-		}
 
-		iIndex++;
-		iIndex %= uChunkArraySize;
-	} while (iIndex != iPositionHash); // Keep searching until we get back to our start position
-	return nullptr;
+			iIndex++;
+			iIndex %= uChunkArraySize;
+		} while (iIndex != iPositionHash); // Keep searching until we get back to our start position
+	}
+
+	if (pChunk == nullptr) {
+		return nullptr;
+	}
+
+	core::ScopedReadLock chunkLock(pChunk->_voxelLock);
+	return pChunk;
 }
 
 /**
