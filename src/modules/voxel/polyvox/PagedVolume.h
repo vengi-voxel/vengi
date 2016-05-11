@@ -213,6 +213,7 @@ protected:
 private:
 	bool canReuseLastAccessedChunk(int32_t iChunkX, int32_t iChunkY, int32_t iChunkZ) const;
 	Chunk* getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
+	Chunk* getExistingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	uint32_t getPositionHash(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 
 	// Storing these properties individually has proved to be faster than keeping

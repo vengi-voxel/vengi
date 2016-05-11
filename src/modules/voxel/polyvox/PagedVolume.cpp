@@ -189,6 +189,30 @@ void PagedVolume::flushAll() {
 	}
 }
 
+PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
+	const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
+	core::ScopedReadLock scopedLock(_lock);
+	// Starting at the position indicated by the hash, and then search through the whole array looking for a chunk with the correct
+	// position. In most cases we expect to find it in the first place we look. Note that this algorithm is slow in the case that
+	// the chunk is not found because the whole array has to be searched, but in this case we are going to have to page the data in
+	// from an external source which is likely to be slow anyway.
+	uint32_t iIndex = iPositionHash;
+	do {
+		if (m_arrayChunks[iIndex]) {
+			const glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
+			if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
+				PagedVolume::Chunk* pChunk = m_arrayChunks[iIndex].get();
+				pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
+				return pChunk;
+			}
+		}
+
+		iIndex++;
+		iIndex %= uChunkArraySize;
+	} while (iIndex != iPositionHash); // Keep searching until we get back to our start position
+	return nullptr;
+}
+
 PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
 	{
 		core::ScopedReadLock scopedLock(_lock);
@@ -196,29 +220,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 			return m_pLastAccessedChunk;
 		}
 	}
-	const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
-	Chunk* pChunk = nullptr;
-	{
-		core::ScopedReadLock scopedLock(_lock);
-		// Starting at the position indicated by the hash, and then search through the whole array looking for a chunk with the correct
-		// position. In most cases we expect to find it in the first place we look. Note that this algorithm is slow in the case that
-		// the chunk is not found because the whole array has to be searched, but in this case we are going to have to page the data in
-		// from an external source which is likely to be slow anyway.
-		uint32_t iIndex = iPositionHash;
-		do {
-			if (m_arrayChunks[iIndex]) {
-				const glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
-				if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
-					pChunk = m_arrayChunks[iIndex].get();
-					pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
-					break;
-				}
-			}
-
-			iIndex++;
-			iIndex %= uChunkArraySize;
-		} while (iIndex != iPositionHash); // Keep searching until we get back to our start position
-	}
+	Chunk* pChunk = getExistingChunk(uChunkX, uChunkY, uChunkZ);
 
 	// If we still haven't found the chunk then it's time to create a new one and page it in from disk.
 	if (!pChunk) {
@@ -235,6 +237,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 		const Region reg(v3dLower, v3dUpper);
 
 		{
+			const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
 			core::ScopedWriteLock scopedLock(_lock);
 			// Store the chunk at the appropriate place in our chunk array. Ideally this place is
 			// given by the hash, otherwise we do a linear search for the next available location
