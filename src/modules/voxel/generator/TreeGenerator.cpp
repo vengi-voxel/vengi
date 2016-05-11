@@ -25,7 +25,7 @@ int TreeGenerator::findFloor(const TerrainContext& ctx, int x, int z) {
 void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomManager, core::Random& random) {
 	const Region& region = ctx.region;
 	for (int i = 0; i < 5; ++i) {
-		const int regionBorder = 1;
+		const int regionBorder = 8;
 		const int rndValX = random.random(regionBorder, region.getWidthInVoxels() - regionBorder);
 		// number should be even
 		if (!(rndValX % 2)) {
