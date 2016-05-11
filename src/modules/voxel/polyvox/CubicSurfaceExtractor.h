@@ -136,9 +136,8 @@ bool performQuadMerging(std::list<Quad>& quads, MeshType* m_meshCurrent) {
 	return bDidMerge;
 }
 
-template<typename MeshType>
-int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, IndexAndMaterial>& existingVertices,
-		MeshType* m_meshCurrent) {
+inline int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, IndexAndMaterial>& existingVertices,
+		Mesh<CubicVertex>* m_meshCurrent) {
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ct++) {
 		IndexAndMaterial& rEntry = existingVertices(uX, uY, ct);
 
@@ -270,8 +269,8 @@ Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNee
  *  are provided (would the third parameter be a controller or a mesh?). It seems this can be fixed by using enable_if/static_assert to emulate concepts,
  *  but this is relatively complex and I haven't done it yet. Could always add it later as another overload.
  */
-template<typename VolumeType, typename MeshType, typename IsQuadNeeded>
-void extractCubicMeshCustom(VolumeType* volData, Region region, MeshType* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
+template<typename VolumeType, typename IsQuadNeeded>
+void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<CubicVertex>* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
 	core_trace_scoped(ExtractCubicMesh);
 	// This extractor has a limit as to how large the extracted region can be, because the vertex positions are encoded with a single byte per component.
 	int32_t maxRegionDimensionInVoxels = 255;
