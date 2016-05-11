@@ -184,8 +184,8 @@ void PagedVolume::flushAll() {
 	m_pLastAccessedChunk = nullptr;
 
 	// Erase all the most recently used chunks.
-	for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
-		m_arrayChunks[uIndex] = nullptr;
+	for (uint32_t index = 0; index < uChunkArraySize; index++) {
+		m_arrayChunks[index] = nullptr;
 	}
 }
 
@@ -195,33 +195,33 @@ void PagedVolume::flushAll() {
  * the chunk is not found because the whole array has to be searched, but in this case we are going to have to page the data in
  * from an external source which is likely to be slow anyway.
  */
-PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
-	const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
-	uint32_t iIndex = iPositionHash;
-	PagedVolume::Chunk* pChunk = nullptr;
+PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
+	const uint32_t positionHash = getPositionHash(chunkX, chunkY, chunkZ);
+	uint32_t index = positionHash;
+	PagedVolume::Chunk* chunk = nullptr;
 	{
 		core::ScopedReadLock scopedLock(_lock);
 		do {
-			if (m_arrayChunks[iIndex]) {
-				const glm::ivec3& entryPos = m_arrayChunks[iIndex]->m_v3dChunkSpacePosition;
-				if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
-					pChunk = m_arrayChunks[iIndex].get();
-					pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
+			if (m_arrayChunks[index]) {
+				const glm::ivec3& entryPos = m_arrayChunks[index]->m_v3dChunkSpacePosition;
+				if (entryPos.x == chunkX && entryPos.y == chunkY && entryPos.z == chunkZ) {
+					chunk = m_arrayChunks[index].get();
+					chunk->m_uChunkLastAccessed = ++m_uTimestamper;
 					break;
 				}
 			}
 
-			iIndex++;
-			iIndex %= uChunkArraySize;
-		} while (iIndex != iPositionHash); // Keep searching until we get back to our start position
+			index++;
+			index %= uChunkArraySize;
+		} while (index != positionHash); // Keep searching until we get back to our start position
 	}
 
-	if (pChunk == nullptr) {
+	if (chunk == nullptr) {
 		return nullptr;
 	}
 
-	core::ScopedReadLock chunkLock(pChunk->_voxelLock);
-	return pChunk;
+	core::ScopedReadLock chunkLock(chunk->_voxelLock);
+	return chunk;
 }
 
 /**
@@ -232,22 +232,22 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t uChunkX, int32_t uChun
  * the data in is probably more expensive.
  */
 void PagedVolume::deleteOldestChunkIfNeeded() const {
-	uint32_t uChunkCount = 0;
-	uint32_t uOldestChunkIndex = 0;
-	uint32_t uOldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
-	for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
-		if (m_arrayChunks[uIndex]) {
-			uChunkCount++;
-			if (m_arrayChunks[uIndex]->m_uChunkLastAccessed < uOldestChunkTimestamp) {
-				uOldestChunkTimestamp = m_arrayChunks[uIndex]->m_uChunkLastAccessed;
-				uOldestChunkIndex = uIndex;
+	uint32_t chunkCount = 0;
+	uint32_t oldestChunkIndex = 0;
+	uint32_t oldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
+	for (uint32_t index = 0; index < uChunkArraySize; index++) {
+		if (m_arrayChunks[index]) {
+			chunkCount++;
+			if (m_arrayChunks[index]->m_uChunkLastAccessed < oldestChunkTimestamp) {
+				oldestChunkTimestamp = m_arrayChunks[index]->m_uChunkLastAccessed;
+				oldestChunkIndex = index;
 			}
 		}
 	}
 
 	// Check if we have too many chunks, and delete the oldest if so.
-	if (uChunkCount > m_uChunkCountLimit) {
-		m_arrayChunks[uOldestChunkIndex] = nullptr;
+	if (chunkCount > m_uChunkCountLimit) {
+		m_arrayChunks[oldestChunkIndex] = nullptr;
 	}
 }
 
@@ -256,74 +256,74 @@ void PagedVolume::deleteOldestChunkIfNeeded() const {
  * given by the hash, otherwise we do a linear search for the next available location
  * We always expect to find a free place because we aim to keep the array only half full.
  */
-void PagedVolume::insertNewChunk(PagedVolume::Chunk* pChunk, int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
-	const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
-	uint32_t iIndex = iPositionHash;
-	bool bInsertedSucessfully = false;
+void PagedVolume::insertNewChunk(PagedVolume::Chunk* chunk, int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
+	const uint32_t positionHash = getPositionHash(chunkX, chunkY, chunkZ);
+	uint32_t index = positionHash;
+	bool insertedSucessfully = false;
 	do {
-		if (m_arrayChunks[iIndex] == nullptr) {
-			m_arrayChunks[iIndex] = std::move(std::unique_ptr<Chunk>(pChunk));
-			bInsertedSucessfully = true;
+		if (m_arrayChunks[index] == nullptr) {
+			m_arrayChunks[index] = std::move(std::unique_ptr<Chunk>(chunk));
+			insertedSucessfully = true;
 			break;
 		}
 
-		iIndex++;
-		iIndex %= uChunkArraySize;
-	} while (iIndex != iPositionHash); // Keep searching until we get back to our start position.
+		index++;
+		index %= uChunkArraySize;
+	} while (index != positionHash); // Keep searching until we get back to our start position.
 
 	// This should never really happen unless we are failing to keep our number of active chunks
 	// significantly under the target amount. Perhaps if chunks are 'pinned' for threading purposes?
-	core_assert_msg(bInsertedSucessfully, "No space in chunk array for new chunk.");
+	core_assert_msg(insertedSucessfully, "No space in chunk array for new chunk.");
 }
 
-PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
+PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
 	// The chunk was not found so we will create a new one.
-	glm::ivec3 v3dChunkPos(uChunkX, uChunkY, uChunkZ);
-	Log::debug("create new chunk at %i:%i:%i", uChunkX, uChunkY, uChunkZ);
-	PagedVolume::Chunk* pChunk = new PagedVolume::Chunk(v3dChunkPos, m_uChunkSideLength, m_pPager);
-	pChunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
+	glm::ivec3 pos(chunkX, chunkY, chunkZ);
+	Log::debug("create new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
+	PagedVolume::Chunk* chunk = new PagedVolume::Chunk(pos, m_uChunkSideLength, m_pPager);
+	chunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
 
-	core::ScopedWriteLock scopedLockChunk(pChunk->_voxelLock);
+	core::ScopedWriteLock scopedLockChunk(chunk->_voxelLock);
 	{
 		core::ScopedWriteLock scopedLock(_lock);
-		insertNewChunk(pChunk, uChunkX, uChunkY, uChunkZ);
+		insertNewChunk(chunk, chunkX, chunkY, chunkZ);
 		deleteOldestChunkIfNeeded();
 		// Pass the chunk to the Pager to give it a chance to initialise it with any data
 		// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
-		const glm::ivec3 v3dLower = pChunk->m_v3dChunkSpacePosition * static_cast<int32_t>(pChunk->m_uSideLength);
-		const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(pChunk->m_uSideLength - 1, pChunk->m_uSideLength - 1, pChunk->m_uSideLength - 1);
-		const Region reg(v3dLower, v3dUpper);
+		const glm::ivec3 mins = chunk->m_v3dChunkSpacePosition * static_cast<int32_t>(chunk->m_uSideLength);
+		const glm::ivec3 maxs = mins + glm::ivec3(chunk->m_uSideLength - 1, chunk->m_uSideLength - 1, chunk->m_uSideLength - 1);
+		const Region reg(mins, maxs);
 
 		// Page the data in
 		// We'll use this later to decide if data needs to be paged out again.
-		pChunk->m_bDataModified = m_pPager->pageIn(reg, pChunk);
+		chunk->m_bDataModified = m_pPager->pageIn(reg, chunk);
 	}
 
-	return pChunk;
+	return chunk;
 }
 
-PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
+PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
 	{
 		core::ScopedReadLock scopedLock(_lock);
-		if (uChunkX == m_v3dLastAccessedChunkX && uChunkY == m_v3dLastAccessedChunkY && uChunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk) {
+		if (chunkX == m_v3dLastAccessedChunkX && chunkY == m_v3dLastAccessedChunkY && chunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk) {
 			core::ScopedReadLock chunkLock(m_pLastAccessedChunk->_voxelLock);
 			return m_pLastAccessedChunk;
 		}
 	}
-	Chunk* pChunk = getExistingChunk(uChunkX, uChunkY, uChunkZ);
+	Chunk* chunk = getExistingChunk(chunkX, chunkY, chunkZ);
 
 	// If we still haven't found the chunk then it's time to create a new one and page it in from disk.
-	if (!pChunk) {
-		pChunk = createNewChunk(uChunkX, uChunkY, uChunkZ);
+	if (!chunk) {
+		chunk = createNewChunk(chunkX, chunkY, chunkZ);
 	}
 
 	core::ScopedWriteLock scopedLock(_lock);
-	m_pLastAccessedChunk = pChunk;
-	m_v3dLastAccessedChunkX = uChunkX;
-	m_v3dLastAccessedChunkY = uChunkY;
-	m_v3dLastAccessedChunkZ = uChunkZ;
+	m_pLastAccessedChunk = chunk;
+	m_v3dLastAccessedChunkX = chunkX;
+	m_v3dLastAccessedChunkY = chunkY;
+	m_v3dLastAccessedChunkZ = chunkZ;
 
-	return pChunk;
+	return chunk;
 }
 
 /**
