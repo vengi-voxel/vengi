@@ -215,6 +215,7 @@ private:
 	Chunk* getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	Chunk* getExistingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	uint32_t getPositionHash(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
+	Chunk* createNewChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	// these are const because getChunk should stay const...
 	void insertNewChunk(Chunk* pChunk, int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	void deleteOldestChunkIfNeeded() const;
