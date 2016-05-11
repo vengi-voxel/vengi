@@ -213,6 +213,55 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t uChunkX, int32_t uChun
 	return nullptr;
 }
 
+void PagedVolume::deleteOldestChunkIfNeeded() const {
+	// As we have added a chunk we may have exceeded our target chunk limit. Search through the array to
+	// determine how many chunks we have, as well as finding the oldest timestamp. Note that this is potentially
+	// wasteful and we may instead wish to track how many chunks we have and/or delete a chunk at random (or
+	// just check e.g. 10 and delete the oldest of those) but we'll see if this is a bottleneck first. Paging
+	// the data in is probably more expensive.
+	uint32_t uChunkCount = 0;
+	uint32_t uOldestChunkIndex = 0;
+	uint32_t uOldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
+	for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
+		if (m_arrayChunks[uIndex]) {
+			uChunkCount++;
+			if (m_arrayChunks[uIndex]->m_uChunkLastAccessed < uOldestChunkTimestamp) {
+				uOldestChunkTimestamp = m_arrayChunks[uIndex]->m_uChunkLastAccessed;
+				uOldestChunkIndex = uIndex;
+			}
+		}
+	}
+
+	// Check if we have too many chunks, and delete the oldest if so.
+	if (uChunkCount > m_uChunkCountLimit) {
+		m_arrayChunks[uOldestChunkIndex] = nullptr;
+	}
+}
+
+void PagedVolume::insertNewChunk(PagedVolume::Chunk* pChunk, int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
+	const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
+	// Store the chunk at the appropriate place in our chunk array. Ideally this place is
+	// given by the hash, otherwise we do a linear search for the next available location
+	// We always expect to find a free place because we aim to keep the array only half full.
+	uint32_t iIndex = iPositionHash;
+	bool bInsertedSucessfully = false;
+	do {
+		if (m_arrayChunks[iIndex] == nullptr) {
+			m_arrayChunks[iIndex] = std::move(std::unique_ptr<Chunk>(pChunk));
+			bInsertedSucessfully = true;
+			break;
+		}
+
+		iIndex++;
+		iIndex %= uChunkArraySize;
+	} while (iIndex != iPositionHash); // Keep searching until we get back to our start position.
+
+	// This should never really happen unless we are failing to keep our number of active chunks
+	// significantly under the target amount. Perhaps if chunks are 'pinned' for threading purposes?
+	core_assert_msg(bInsertedSucessfully, "No space in chunk array for new chunk.");
+
+}
+
 PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
 	{
 		core::ScopedReadLock scopedLock(_lock);
@@ -237,50 +286,9 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 		const Region reg(v3dLower, v3dUpper);
 
 		{
-			const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
 			core::ScopedWriteLock scopedLock(_lock);
-			// Store the chunk at the appropriate place in our chunk array. Ideally this place is
-			// given by the hash, otherwise we do a linear search for the next available location
-			// We always expect to find a free place because we aim to keep the array only half full.
-			uint32_t iIndex = iPositionHash;
-			bool bInsertedSucessfully = false;
-			do {
-				if (m_arrayChunks[iIndex] == nullptr) {
-					m_arrayChunks[iIndex] = std::move(std::unique_ptr<Chunk>(pChunk));
-					bInsertedSucessfully = true;
-					break;
-				}
-
-				iIndex++;
-				iIndex %= uChunkArraySize;
-			} while (iIndex != iPositionHash); // Keep searching until we get back to our start position.
-
-			// This should never really happen unless we are failing to keep our number of active chunks
-			// significantly under the target amount. Perhaps if chunks are 'pinned' for threading purposes?
-			core_assert_msg(bInsertedSucessfully, "No space in chunk array for new chunk.");
-
-			// As we have added a chunk we may have exceeded our target chunk limit. Search through the array to
-			// determine how many chunks we have, as well as finding the oldest timestamp. Note that this is potentially
-			// wasteful and we may instead wish to track how many chunks we have and/or delete a chunk at random (or
-			// just check e.g. 10 and delete the oldest of those) but we'll see if this is a bottleneck first. Paging
-			// the data in is probably more expensive.
-			uint32_t uChunkCount = 0;
-			uint32_t uOldestChunkIndex = 0;
-			uint32_t uOldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
-			for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
-				if (m_arrayChunks[uIndex]) {
-					uChunkCount++;
-					if (m_arrayChunks[uIndex]->m_uChunkLastAccessed < uOldestChunkTimestamp) {
-						uOldestChunkTimestamp = m_arrayChunks[uIndex]->m_uChunkLastAccessed;
-						uOldestChunkIndex = uIndex;
-					}
-				}
-			}
-
-			// Check if we have too many chunks, and delete the oldest if so.
-			if (uChunkCount > m_uChunkCountLimit) {
-				m_arrayChunks[uOldestChunkIndex] = nullptr;
-			}
+			insertNewChunk(pChunk, uChunkX, uChunkY, uChunkZ);
+			deleteOldestChunkIfNeeded();
 		}
 
 		// TODO: concurrency issue - we might still be in the process to page the chunk in,
