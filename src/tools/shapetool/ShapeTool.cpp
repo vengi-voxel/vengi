@@ -142,8 +142,11 @@ void ShapeTool::afterUI() {
 	_root.GetFont()->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
 	_root.GetFont()->DrawString(5, 50, tb::TBColor(255, 255, 255), position);
 	_root.GetFont()->DrawString(5, 65, tb::TBColor(255, 255, 255), extractions);
+}
 
-	// TODO: this breaks debug info text rendering
+core::AppState ShapeTool::onRunning() {
+	core::AppState state = UIApp::onRunning();
+
 	const glm::mat4& view = _camera.getViewMatrix();
 
 	_colorShader->activate();
@@ -162,6 +165,8 @@ void ShapeTool::afterUI() {
 
 	_colorShader->deactivate();
 	GL_checkError();
+
+	return state;
 }
 
 core::AppState ShapeTool::onCleanup() {

@@ -48,4 +48,5 @@ public:
 
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;
+	core::AppState onRunning() override;
 };
