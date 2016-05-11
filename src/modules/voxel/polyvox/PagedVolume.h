@@ -213,6 +213,7 @@ protected:
 private:
 	bool canReuseLastAccessedChunk(int32_t iChunkX, int32_t iChunkY, int32_t iChunkZ) const;
 	Chunk* getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
+	uint32_t getPositionHash(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 
 	// Storing these properties individually has proved to be faster than keeping
 	// them in a glm::ivec3 as it avoids constructions and comparison overheads.
@@ -477,10 +478,6 @@ inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1pz() const {
 	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume + 1, this->mZPosInVolume + 1);
 }
 
-inline bool PagedVolume::canReuseLastAccessedChunk(int32_t iChunkX, int32_t iChunkY, int32_t iChunkZ) const {
-	return iChunkX == m_v3dLastAccessedChunkX && iChunkY == m_v3dLastAccessedChunkY && iChunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk;
-}
-
 #undef CAN_GO_NEG_X
 #undef CAN_GO_POS_X
 #undef CAN_GO_NEG_Y
@@ -495,6 +492,21 @@ inline bool PagedVolume::canReuseLastAccessedChunk(int32_t iChunkX, int32_t iChu
 #undef NEG_Z_DELTA
 #undef POS_Z_DELTA
 
+inline bool PagedVolume::canReuseLastAccessedChunk(int32_t iChunkX, int32_t iChunkY, int32_t iChunkZ) const {
+	return iChunkX == m_v3dLastAccessedChunkX && iChunkY == m_v3dLastAccessedChunkY && iChunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk;
+}
 
+inline uint32_t PagedVolume::getPositionHash(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
+	// We generate a 16-bit hash here and assume this matches the range available in the chunk
+	// array. The assert here is just to make sure we take care if change this in the future.
+	static_assert(uChunkArraySize == 65536, "Chunk array size has changed, check if the hash calculation needs updating.");
+	// Extract the lower five bits from each position component.
+	const uint32_t uChunkXLowerBits = static_cast<uint32_t>(uChunkX & 0x1F);
+	const uint32_t uChunkYLowerBits = static_cast<uint32_t>(uChunkY & 0x1F);
+	const uint32_t uChunkZLowerBits = static_cast<uint32_t>(uChunkZ & 0x1F);
+	// Combine then to form a 15-bit hash of the position. Also shift by one to spread the values out in the whole 16-bit space.
+	const uint32_t iPositionHash = (uChunkXLowerBits | (uChunkYLowerBits << 5) | (uChunkZLowerBits << 10) << 1);
+	return iPositionHash;
+}
 
 }

@@ -196,15 +196,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int3
 			return m_pLastAccessedChunk;
 		}
 	}
-	// We generate a 16-bit hash here and assume this matches the range available in the chunk
-	// array. The assert here is just to make sure we take care if change this in the future.
-	static_assert(uChunkArraySize == 65536, "Chunk array size has changed, check if the hash calculation needs updating.");
-	// Extract the lower five bits from each position component.
-	const uint32_t uChunkXLowerBits = static_cast<uint32_t>(uChunkX & 0x1F);
-	const uint32_t uChunkYLowerBits = static_cast<uint32_t>(uChunkY & 0x1F);
-	const uint32_t uChunkZLowerBits = static_cast<uint32_t>(uChunkZ & 0x1F);
-	// Combine then to form a 15-bit hash of the position. Also shift by one to spread the values out in the whole 16-bit space.
-	const uint32_t iPositionHash = (uChunkXLowerBits | (uChunkYLowerBits << 5) | (uChunkZLowerBits << 10) << 1);
+	const uint32_t iPositionHash = getPositionHash(uChunkX, uChunkY, uChunkZ);
 	Chunk* pChunk = nullptr;
 	{
 		core::ScopedReadLock scopedLock(_lock);
