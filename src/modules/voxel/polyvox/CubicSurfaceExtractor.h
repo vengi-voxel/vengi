@@ -81,8 +81,7 @@ inline Vertex decodeVertex(const CubicVertex& cubicVertex) {
  * @section Surface extraction
  */
 
-template<typename MeshType>
-bool mergeQuads(Quad& q1, Quad& q2, MeshType* m_meshCurrent) {
+inline bool mergeQuads(Quad& q1, Quad& q2, Mesh<CubicVertex>* m_meshCurrent) {
 	//All four vertices of a given quad have the same data,
 	//so just check that the first pair of vertices match.
 	if (m_meshCurrent->getVertex(q1.vertices[0]).data == m_meshCurrent->getVertex(q2.vertices[0]).data) {
@@ -112,8 +111,7 @@ bool mergeQuads(Quad& q1, Quad& q2, MeshType* m_meshCurrent) {
 	return false;
 }
 
-template<typename MeshType>
-bool performQuadMerging(std::list<Quad>& quads, MeshType* m_meshCurrent) {
+inline bool performQuadMerging(std::list<Quad>& quads, Mesh<CubicVertex>* m_meshCurrent) {
 	bool bDidMerge = false;
 	for (typename std::list<Quad>::iterator outerIter = quads.begin(); outerIter != quads.end(); outerIter++) {
 		typename std::list<Quad>::iterator innerIter = outerIter;
