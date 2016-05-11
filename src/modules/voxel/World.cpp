@@ -38,14 +38,14 @@ bool World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 	TerrainContext ctx(_world._volumeData, chunk);
 	ctx.region = region;
 #if PERSIST
-	if (!_worldPersister.load(ctx, chunk, _world.seed()))
+	if (_worldPersister.load(ctx, chunk, _world.seed())) {
+		return false;
+	}
 #endif
-	{
-		_world.create(ctx);
-		for (const glm::ivec3& pos : ctx.dirty) {
-			// TODO: threading issue - dirty stuff should not happen
-			_world.allowReExtraction(pos);
-		}
+	_world.create(ctx);
+	for (const glm::ivec3& pos : ctx.dirty) {
+		// TODO: threading issue - dirty stuff should not happen
+		_world.allowReExtraction(pos);
 	}
 	return true;
 }

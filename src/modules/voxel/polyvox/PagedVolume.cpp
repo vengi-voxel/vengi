@@ -205,6 +205,7 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t uChunkX, int32_t uChun
 			if (entryPos.x == uChunkX && entryPos.y == uChunkY && entryPos.z == uChunkZ) {
 				PagedVolume::Chunk* pChunk = m_arrayChunks[iIndex].get();
 				pChunk->m_uChunkLastAccessed = ++m_uTimestamper;
+				core::ScopedReadLock chunkLock(pChunk->_voxelLock);
 				return pChunk;
 			}
 		}
@@ -275,24 +276,22 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t uChunkX, int32_t uChunkY
 	PagedVolume::Chunk* pChunk = new PagedVolume::Chunk(v3dChunkPos, m_uChunkSideLength, m_pPager);
 	pChunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
 
+	core::ScopedWriteLock scopedLockChunk(pChunk->_voxelLock);
 	{
 		core::ScopedWriteLock scopedLock(_lock);
 		insertNewChunk(pChunk, uChunkX, uChunkY, uChunkZ);
 		deleteOldestChunkIfNeeded();
+		// Pass the chunk to the Pager to give it a chance to initialise it with any data
+		// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
+		const glm::ivec3 v3dLower = pChunk->m_v3dChunkSpacePosition * static_cast<int32_t>(pChunk->m_uSideLength);
+		const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(pChunk->m_uSideLength - 1, pChunk->m_uSideLength - 1, pChunk->m_uSideLength - 1);
+		const Region reg(v3dLower, v3dUpper);
+
+		// Page the data in
+		// We'll use this later to decide if data needs to be paged out again.
+		pChunk->m_bDataModified = m_pPager->pageIn(reg, pChunk);
 	}
 
-	// Pass the chunk to the Pager to give it a chance to initialise it with any data
-	// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
-	const glm::ivec3 v3dLower = pChunk->m_v3dChunkSpacePosition * static_cast<int32_t>(pChunk->m_uSideLength);
-	const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(pChunk->m_uSideLength - 1, pChunk->m_uSideLength - 1, pChunk->m_uSideLength - 1);
-	const Region reg(v3dLower, v3dUpper);
-
-	// TODO: concurrency issue - we might still be in the process to page the chunk in,
-	// but another thread might already write or read voxels from the chunk because insertNewChunk was already executed
-
-	// Page the data in
-	// We'll use this later to decide if data needs to be paged out again.
-	pChunk->m_bDataModified = m_pPager->pageIn(reg, pChunk);
 	return pChunk;
 }
 
