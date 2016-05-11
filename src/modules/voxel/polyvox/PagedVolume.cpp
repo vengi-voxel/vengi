@@ -306,7 +306,6 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
 	{
 		core::ScopedReadLock scopedLock(_lock);
 		if (chunkX == m_v3dLastAccessedChunkX && chunkY == m_v3dLastAccessedChunkY && chunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk) {
-			core::ScopedReadLock chunkLock(m_pLastAccessedChunk->_voxelLock);
 			return m_pLastAccessedChunk;
 		}
 	}
