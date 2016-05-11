@@ -143,6 +143,7 @@ void ShapeTool::afterUI() {
 	_root.GetFont()->DrawString(5, 50, tb::TBColor(255, 255, 255), position);
 	_root.GetFont()->DrawString(5, 65, tb::TBColor(255, 255, 255), extractions);
 
+	// TODO: this breaks debug info text rendering
 	const glm::mat4& view = _camera.getViewMatrix();
 
 	_colorShader->activate();
