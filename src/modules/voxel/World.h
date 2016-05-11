@@ -148,8 +148,6 @@ private:
 	// don't access the volume in anything that is called here
 	void create(TerrainContext& ctx);
 
-	void calculateAO(const Region& region);
-
 	void createUnderground(TerrainContext& ctx);
 
 	void cleanupFutures();

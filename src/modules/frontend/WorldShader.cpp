@@ -17,6 +17,9 @@ bool WorldShader::init() {
 	if (!hasAttribute("a_material")) {
 		Log::error("no attribute a_material found");
 	}
+	if (!hasAttribute("a_ambientocclusion")) {
+		Log::error("no attribute a_ambientocclusion found");
+	}
 	if (!hasUniform("u_projection")) {
 		Log::error("no uniform u_projection found");
 	}

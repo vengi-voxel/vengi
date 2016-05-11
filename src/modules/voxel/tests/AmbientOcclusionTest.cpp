@@ -43,15 +43,28 @@ TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
 	const Mesh<CubicVertex>& mesh = extractCubicMesh(&_volData, _ctx.region, IsQuadNeeded(), false);
 	const CubicVertex* vertices = mesh.getRawVertexData();
 	const int amount = mesh.getNoOfVertices();
-	ASSERT_EQ(116, amount);
+	// TODO: this was the amount before ao
+	//ASSERT_EQ(116, amount);
 
+	// TODO: replace magic constant
+	const int noAO = 3;
 	for (int i = 0; i < amount; ++i) {
 		const CubicVertex& v = vertices[i];
-		const int8_t y = v.encodedPosition.y;
-		if (y == 0) {
-		} else if (y == 1) {
+		const int x = v.encodedPosition.x;
+		const int y = v.encodedPosition.y;
+		const int z = v.encodedPosition.z;
+		if (y == 0 || y == 1 || y == 3) {
+			// these two levels don't receive any ao
+			EXPECT_EQ(noAO, v.ambientOcclusion) << "Unexpected ao value at y level " << y << " found";
 		} else if (y == 2) {
-		} else if (y == 3) {
+			if (x == 0 || x == 3 || z == 0 || z == 3) {
+				// borders of the mesh don't receive any ao
+				EXPECT_EQ(noAO, v.ambientOcclusion) << "Unexpected ao value at y level " << y << " found";
+			} else {
+				// these should have ao
+				// 4 vertices x = [1,2] z = [1,2] - all with ao of 2 (1 occlusion cell)
+				EXPECT_EQ(2, v.ambientOcclusion) << "Unexpected ao value at " << x << ":" << y << ":" << z;
+			}
 		} else {
 			ADD_FAILURE() << "unexpected y coordinate " << int(y);
 		}

@@ -97,45 +97,6 @@ glm::ivec3 World::randomPos() const {
 	return glm::ivec3(x, y, z);
 }
 
-void World::calculateAO(const Region& region) {
-	core_trace_scoped(CalculateAO);
-	const IsVoxelTransparent trans;
-	for (int nx = region.getLowerX() - 1; nx < region.getUpperX() + 1; ++nx) {
-		for (int nz = region.getLowerZ() - 1; nz < region.getUpperZ() + 1; ++nz) {
-			for (int ny = region.getLowerY(); ny < region.getUpperY() - 1; ++ny) {
-				// if the voxel is air, we don't need to compute anything
-				const Voxel& voxel = _volumeData->getVoxel(nx, ny, nz);
-				if (trans(voxel)) {
-					continue;
-				}
-				// if the voxel above us is not free - we don't calculate ao for this voxel
-				if (!trans(_volumeData->getVoxel(nx, ny + 1, nz).getMaterial())) {
-					continue;
-				}
-				static const struct offsets {
-					int x;
-					int z;
-				} of[] = {
-					{ 1,  0}, { 1, -1}, {0, -1}, {-1, -1},
-					{-1,  0}, {-1,  1}, {0,  1}, { 1,  1}
-				};
-				// reduce ao value to make a voxel face darker
-				uint8_t ao = 255;
-				for (int i = 0; i < (int)SDL_arraysize(of); ++i) {
-					const int offX = of[i].x;
-					const int offZ = of[i].z;
-					const Voxel& voxel = _volumeData->getVoxel(nx + offX, ny + 1, nz + offZ);
-					if (voxel.getMaterial() != Air) {
-						ao -= 25;
-					}
-				}
-				//voxel.setDensity(ao);
-				//_volumeData->setVoxel(nx, ny, nz, voxel);
-			}
-		}
-	}
-}
-
 // Extract the surface for the specified region of the volume.
 // The surface extractor outputs the mesh in an efficient compressed format which
 // is not directly suitable for rendering.
@@ -166,7 +127,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		Region prefetchRegion(mins, maxs);
 		_volumeData->prefetch(prefetchRegion);
 
-		const bool mergeQuads = true;
+		const bool mergeQuads = false;
 		data.mesh[0] = decodeMesh(extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads));
 		data.translation = pos;
 		data.numLods = 1;

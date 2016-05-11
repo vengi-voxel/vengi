@@ -56,3 +56,6 @@ shapetool2: clean-local-config
 material-color: build
 	$(Q)cd $(BUILDDIR); ./tests -- --gtest_filter=MaterialTest* $(ARGS)
 	$(Q)xdg-open build/material.png
+
+test-ambient-occlusion: build
+	$(Q)cd $(BUILDDIR); ./tests -- --gtest_filter=AmbientOcclusionTest* $(ARGS)

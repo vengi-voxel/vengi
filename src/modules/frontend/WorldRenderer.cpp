@@ -282,6 +282,10 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 		glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::Vertex),
 				GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
 
+		const int locationAO = shader.enableVertexAttribute("a_ao");
+		glVertexAttribIPointer(locationAO, 1, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
+				GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
+
 		const int matLoc = shader.enableVertexAttribute("a_material");
 		// our material and density is encoded as 8 bits material and 8 bits density
 		core_assert(sizeof(voxel::Voxel) == sizeof(uint8_t));
@@ -309,7 +313,7 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 
 int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height) {
 	core_trace_gl_scoped(WorldRendererRenderEntities);
-	if (_entities.empty()) {
+	if (_entities.empty() || true) {
 		return 0;
 	}
 

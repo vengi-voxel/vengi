@@ -1,5 +1,6 @@
 // attributes from the VAOs
 in vec3 a_pos;
+in int a_ao;
 in int a_material;
 
 uniform mat4 u_model;
@@ -28,7 +29,16 @@ void main(void) {
 	vec4 pos4 = u_model * vec4(a_pos, 1.0);
 	v_pos = pos4.xyz;
 	// TODO: use a_pos.w to encode the ao for each vertex - per voxel is not enough
-	v_ambientocclusion = 1.0; //clamp(float(a_materialdensity.y) / 255.0, 0.0, 1.0);
+	// v_ambientocclusion = 1.0; //clamp(float(a_materialdensity.y) / 255.0, 0.0, 1.0);
+	v_ambientocclusion = (float(a_ao) + 1.0) / 4.0;
+	vec3 aocolor[4] = vec3[](
+		vec3(0.0, 0.0, 0.0),
+		vec3(0.0, 0.0, 1.0),
+		vec3(1.0, 0.0, 0.0),
+		vec3(1.0, 1.0, 1.0));
+	// v_ambientocclusion = aocolor[a_ao];
+	// v_ambientocclusion = vec3((float(a_ao) + 0.0) / 3.0);
+
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
 	v_lightpos = u_lightpos;

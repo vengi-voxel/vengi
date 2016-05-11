@@ -16,6 +16,7 @@ namespace voxel {
  */
 struct Vertex {
 	glm::vec3 position;
+	uint8_t ambientOcclusion;
 	Voxel data;
 };
 
@@ -30,6 +31,11 @@ struct CubicVertex {
 	 * The true position is found by offseting each component by 0.5f.
 	 */
 	glm::i8vec3 encodedPosition;
+
+	/** TODO: Technically we only need 2 bits of data, maytbe pack it somewhere else
+	 * but its not worth to optimize in this state. When We know for sure what attributes we
+	 * really need, we can start to combine them in a smart way. */
+	uint8_t ambientOcclusion;
 
 	/** A copy of the data which was stored in the voxel which generated this vertex. */
 	Voxel data;

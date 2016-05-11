@@ -32,6 +32,11 @@ struct DecodedMeshData {
 	int numLods;
 };
 
+inline bool isBlocked(VoxelType material) {
+	return material != Air;
+}
+
+
 inline bool isLeaves(VoxelType material) {
 	return material >= Leaves1 && material <= Leaves10;
 }
