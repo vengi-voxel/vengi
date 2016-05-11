@@ -156,7 +156,7 @@ void PagedVolume::prefetch(const Region& regPrefetch) {
 
 	// Ensure we don't page in more chunks than the volume can hold.
 	const Region region(v3dStart, v3dEnd);
-	uint32_t uNoOfChunks = static_cast<uint32_t>(region.getWidthInVoxels() * region.getHeightInVoxels() * region.getDepthInVoxels());
+	const uint32_t uNoOfChunks = static_cast<uint32_t>(region.getWidthInVoxels() * region.getHeightInVoxels() * region.getDepthInVoxels());
 	if (uNoOfChunks > m_uChunkCountLimit) {
 		Log::warn("Attempting to prefetch more than the maximum number of chunks (this will cause thrashing).");
 	}
@@ -284,16 +284,16 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 		core::ScopedWriteLock scopedLock(_lock);
 		insertNewChunk(chunk, chunkX, chunkY, chunkZ);
 		deleteOldestChunkIfNeeded();
-		// Pass the chunk to the Pager to give it a chance to initialise it with any data
-		// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
-		const glm::ivec3 mins = chunk->m_v3dChunkSpacePosition * static_cast<int32_t>(chunk->m_uSideLength);
-		const glm::ivec3 maxs = mins + glm::ivec3(chunk->m_uSideLength - 1, chunk->m_uSideLength - 1, chunk->m_uSideLength - 1);
-		const Region reg(mins, maxs);
-
-		// Page the data in
-		// We'll use this later to decide if data needs to be paged out again.
-		chunk->m_bDataModified = m_pPager->pageIn(reg, chunk);
 	}
+	// Pass the chunk to the Pager to give it a chance to initialise it with any data
+	// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
+	const glm::ivec3 mins = chunk->m_v3dChunkSpacePosition * static_cast<int32_t>(chunk->m_uSideLength);
+	const glm::ivec3 maxs = mins + glm::ivec3(chunk->m_uSideLength - 1, chunk->m_uSideLength - 1, chunk->m_uSideLength - 1);
+	const Region reg(mins, maxs);
+
+	// Page the data in
+	// We'll use this later to decide if data needs to be paged out again.
+	chunk->m_bDataModified = m_pPager->pageIn(reg, chunk);
 
 	return chunk;
 }
@@ -302,6 +302,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
 	{
 		core::ScopedReadLock scopedLock(_lock);
 		if (chunkX == m_v3dLastAccessedChunkX && chunkY == m_v3dLastAccessedChunkY && chunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk) {
+			core::ScopedReadLock chunkLock(m_pLastAccessedChunk->_voxelLock);
 			return m_pLastAccessedChunk;
 		}
 	}
