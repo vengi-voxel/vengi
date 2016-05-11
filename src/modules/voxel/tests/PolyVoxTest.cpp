@@ -149,10 +149,76 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 
 						ASSERT_EQ(0, voxelBelow.getMaterial()) << "Wrong below voxel " << x << ":" << y << ":" << z;
 					}
+					if (x == 1 && z == 1) {
+						ASSERT_EQ(4, voxelLeft.getMaterial()) << "Wrong left voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(6, voxelRight.getMaterial()) << "Wrong right voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(8, voxelBehind.getMaterial()) << "Wrong behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(2, voxelBefore.getMaterial()) << "Wrong before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(1, voxelLeftBefore.getMaterial()) << "Wrong left before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(3, voxelRightBefore.getMaterial()) << "Wrong right before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(7, voxelLeftBehind.getMaterial()) << "Wrong left behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(9, voxelRightBehind.getMaterial()) << "Wrong right behind voxel " << x << ":" << y << ":" << z;
+
+						ASSERT_EQ(15, voxelAbove.getMaterial()) << "Wrong above voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(14, voxelAboveLeft.getMaterial()) << "Wrong above left voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(16, voxelAboveRight.getMaterial()) << "Wrong above right voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(18, voxelAboveBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(12, voxelAboveBefore.getMaterial()) << "Wrong above before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(11, voxelAboveLeftBefore.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(13, voxelAboveRightBefore.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(17, voxelAboveLeftBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(19, voxelAboveRightBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+
+						ASSERT_EQ(0, voxelBelow.getMaterial()) << "Wrong below voxel " << x << ":" << y << ":" << z;
+					}
 				} else if (y == 1) {
 					if (x < 3 && z < 3) {
 						const int expected = 11 + x + z * 3;
 						ASSERT_EQ(expected, voxelCurrent.getMaterial()) << "Wrong voxel at coordinate " << x << ":" << y << ":" << z;
+					}
+					if (x == 0 && z == 0) {
+						ASSERT_EQ( 0, voxelLeft.getMaterial()) << "Wrong left voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(12, voxelRight.getMaterial()) << "Wrong right voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(14, voxelBehind.getMaterial()) << "Wrong behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelBefore.getMaterial()) << "Wrong before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelLeftBefore.getMaterial()) << "Wrong left before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelRightBefore.getMaterial()) << "Wrong right before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelLeftBehind.getMaterial()) << "Wrong left behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(15, voxelRightBehind.getMaterial()) << "Wrong right behind voxel " << x << ":" << y << ":" << z;
+
+						ASSERT_EQ( 0, voxelAbove.getMaterial()) << "Wrong above voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveLeft.getMaterial()) << "Wrong above left voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveRight.getMaterial()) << "Wrong above right voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveBefore.getMaterial()) << "Wrong above before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveLeftBefore.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveRightBefore.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveLeftBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(25, voxelAboveRightBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+
+						ASSERT_EQ(1, voxelBelow.getMaterial()) << "Wrong below voxel " << x << ":" << y << ":" << z;
+					}
+					if (x == 1 && z == 1) {
+						ASSERT_EQ(14, voxelLeft.getMaterial()) << "Wrong left voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(16, voxelRight.getMaterial()) << "Wrong right voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(18, voxelBehind.getMaterial()) << "Wrong behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(12, voxelBefore.getMaterial()) << "Wrong before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(11, voxelLeftBefore.getMaterial()) << "Wrong left before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(13, voxelRightBefore.getMaterial()) << "Wrong right before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(17, voxelLeftBehind.getMaterial()) << "Wrong left behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(19, voxelRightBehind.getMaterial()) << "Wrong right behind voxel " << x << ":" << y << ":" << z;
+
+						ASSERT_EQ(25, voxelAbove.getMaterial()) << "Wrong above voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveLeft.getMaterial()) << "Wrong above left voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveRight.getMaterial()) << "Wrong above right voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveBefore.getMaterial()) << "Wrong above before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveLeftBefore.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveRightBefore.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveLeftBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ( 0, voxelAboveRightBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+
+						ASSERT_EQ(5, voxelBelow.getMaterial()) << "Wrong below voxel " << x << ":" << y << ":" << z;
 					}
 				} else if (y == 2) {
 					// 25
