@@ -160,7 +160,6 @@ void PagedVolume::prefetch(const Region& regPrefetch) {
 	if (uNoOfChunks > m_uChunkCountLimit) {
 		Log::warn("Attempting to prefetch more than the maximum number of chunks (this will cause thrashing).");
 	}
-	uNoOfChunks = std::min(uNoOfChunks, m_uChunkCountLimit);
 
 	// Loops over the specified positions and touch the corresponding chunks.
 	for (int32_t x = v3dStart.x; x <= v3dEnd.x; ++x) {
