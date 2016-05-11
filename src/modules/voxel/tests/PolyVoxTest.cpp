@@ -6,57 +6,31 @@
 
 namespace voxel {
 
-class PolyVoxTest: public core::AbstractTest {
+class PolyVoxTest: public AbstractVoxelTest {
 protected:
-	class Pager: public PagedVolume::Pager {
-	public:
-		bool pageIn(const Region& region, PagedVolume::Chunk* chunk) override {
-			chunk->setVoxel(1, 2, 1, createVoxel(25));
+	bool pageIn(const Region& region, PagedVolume::Chunk* chunk) override {
+		chunk->setVoxel(1, 2, 1, createVoxel(25));
 
-			chunk->setVoxel(0, 1, 0, createVoxel(11));
-			chunk->setVoxel(1, 1, 0, createVoxel(12));
-			chunk->setVoxel(2, 1, 0, createVoxel(13));
-			chunk->setVoxel(0, 1, 1, createVoxel(14));
-			chunk->setVoxel(1, 1, 1, createVoxel(15));
-			chunk->setVoxel(2, 1, 1, createVoxel(16));
-			chunk->setVoxel(0, 1, 2, createVoxel(17));
-			chunk->setVoxel(1, 1, 2, createVoxel(18));
-			chunk->setVoxel(2, 1, 2, createVoxel(19));
+		chunk->setVoxel(0, 1, 0, createVoxel(11));
+		chunk->setVoxel(1, 1, 0, createVoxel(12));
+		chunk->setVoxel(2, 1, 0, createVoxel(13));
+		chunk->setVoxel(0, 1, 1, createVoxel(14));
+		chunk->setVoxel(1, 1, 1, createVoxel(15));
+		chunk->setVoxel(2, 1, 1, createVoxel(16));
+		chunk->setVoxel(0, 1, 2, createVoxel(17));
+		chunk->setVoxel(1, 1, 2, createVoxel(18));
+		chunk->setVoxel(2, 1, 2, createVoxel(19));
 
-			chunk->setVoxel(0, 0, 0, createVoxel(1));
-			chunk->setVoxel(1, 0, 0, createVoxel(2));
-			chunk->setVoxel(2, 0, 0, createVoxel(3));
-			chunk->setVoxel(0, 0, 1, createVoxel(4));
-			chunk->setVoxel(1, 0, 1, createVoxel(5));
-			chunk->setVoxel(2, 0, 1, createVoxel(6));
-			chunk->setVoxel(0, 0, 2, createVoxel(7));
-			chunk->setVoxel(1, 0, 2, createVoxel(8));
-			chunk->setVoxel(2, 0, 2, createVoxel(9));
-			return true;
-		}
-
-		void pageOut(const Region& region, PagedVolume::Chunk* chunk) override {
-		}
-	};
-
-	Pager _pager;
-	PagedVolume _volData;
-	TerrainContext _ctx;
-	core::Random _random;
-	long _seed = 0;
-
-	PolyVoxTest() :
-			_volData(&_pager, 16 * 1024 * 1024, 64), _ctx(&_volData, nullptr) {
-	}
-
-public:
-	void SetUp() override {
-		_volData.flushAll();
-		core::AbstractTest::SetUp();
-		_random.setSeed(_seed);
-		const voxel::Region region(glm::ivec3(0, 0, 0), glm::ivec3(63, 63, 63));
-		_ctx.region = region;
-		_ctx.setChunk(_volData.getChunk(region.getCentre()));
+		chunk->setVoxel(0, 0, 0, createVoxel(1));
+		chunk->setVoxel(1, 0, 0, createVoxel(2));
+		chunk->setVoxel(2, 0, 0, createVoxel(3));
+		chunk->setVoxel(0, 0, 1, createVoxel(4));
+		chunk->setVoxel(1, 0, 1, createVoxel(5));
+		chunk->setVoxel(2, 0, 1, createVoxel(6));
+		chunk->setVoxel(0, 0, 2, createVoxel(7));
+		chunk->setVoxel(1, 0, 2, createVoxel(8));
+		chunk->setVoxel(2, 0, 2, createVoxel(9));
+		return true;
 	}
 };
 
