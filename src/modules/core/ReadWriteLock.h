@@ -31,6 +31,10 @@ public:
 
 	inline void lockRead() const {
 		core_trace_scoped(LockRead);
+		if (_threadID == std::this_thread::get_id()) {
+			++_readers;
+			return;
+		}
 #if RWLOCKDEBUG > 0
 		auto start = std::chrono::system_clock::now();
 #endif
