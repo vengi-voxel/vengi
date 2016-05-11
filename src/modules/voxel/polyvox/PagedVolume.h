@@ -98,6 +98,9 @@ public:
 		virtual ~Pager() {
 		}
 
+		/**
+		 * @return @c true if the chunk was modified (created), @c false if it was just loaded
+		 */
 		virtual bool pageIn(const Region& region, Chunk* pChunk) = 0;
 		virtual void pageOut(const Region& region, Chunk* pChunk) = 0;
 	};
@@ -211,7 +214,6 @@ protected:
 	PagedVolume& operator=(const PagedVolume& rhs);
 
 private:
-	bool canReuseLastAccessedChunk(int32_t iChunkX, int32_t iChunkY, int32_t iChunkZ) const;
 	Chunk* getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	Chunk* getExistingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	uint32_t getPositionHash(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
@@ -496,10 +498,6 @@ inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1pz() const {
 #undef POS_Y_DELTA
 #undef NEG_Z_DELTA
 #undef POS_Z_DELTA
-
-inline bool PagedVolume::canReuseLastAccessedChunk(int32_t iChunkX, int32_t iChunkY, int32_t iChunkZ) const {
-	return iChunkX == m_v3dLastAccessedChunkX && iChunkY == m_v3dLastAccessedChunkY && iChunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk;
-}
 
 inline uint32_t PagedVolume::getPositionHash(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
 	// We generate a 16-bit hash here and assume this matches the range available in the chunk

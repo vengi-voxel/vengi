@@ -274,7 +274,6 @@ void PagedVolume::insertNewChunk(PagedVolume::Chunk* pChunk, int32_t uChunkX, in
 	// This should never really happen unless we are failing to keep our number of active chunks
 	// significantly under the target amount. Perhaps if chunks are 'pinned' for threading purposes?
 	core_assert_msg(bInsertedSucessfully, "No space in chunk array for new chunk.");
-
 }
 
 PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
@@ -306,7 +305,8 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t uChunkX, int32_t uChunkY
 PagedVolume::Chunk* PagedVolume::getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
 	{
 		core::ScopedReadLock scopedLock(_lock);
-		if (canReuseLastAccessedChunk(uChunkX, uChunkY, uChunkZ)) {
+		if (uChunkX == m_v3dLastAccessedChunkX && uChunkY == m_v3dLastAccessedChunkY && uChunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk) {
+			core::ScopedReadLock chunkLock(m_pLastAccessedChunk->_voxelLock);
 			return m_pLastAccessedChunk;
 		}
 	}
