@@ -38,5 +38,6 @@ gtest_suite_files(tests
 	tests/LSystemGeneratorTest.cpp
 	tests/PolyVoxTest.cpp
 	tests/BiomeManagerTest.cpp
+	tests/AmbientOcclusionTest.cpp
 )
 gtest_suite_deps(tests ${LIB})
