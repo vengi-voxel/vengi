@@ -264,13 +264,13 @@ core::AppState UIApp::onConstruct() {
 	});
 
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
-	_console.init();
 
 	return state;
 }
 
 void UIApp::afterUI() {
-	_console.render();
+	const tb::TBRect rect(0, 0, _width, _height);
+	_console.render(rect);
 }
 
 core::AppState UIApp::onInit() {
@@ -314,6 +314,8 @@ core::AppState UIApp::onInit() {
 	font->RenderGlyphs(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNORSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·åäöÅÄÖ");
 	_root.SetRect(tb::TBRect(0, 0, _width, _height));
 	_root.SetSkinBg(TBIDC("background"));
+
+	_console.init();
 
 	return state;
 }

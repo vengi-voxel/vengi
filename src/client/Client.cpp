@@ -155,13 +155,13 @@ void Client::beforeUI() {
 }
 
 void Client::afterUI() {
-	UIApp::afterUI();
 	tb::TBStr drawCallsWorld;
 	drawCallsWorld.SetFormatted("drawcalls world: %i", _drawCallsWorld);
 	tb::TBStr drawCallsEntity;
 	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
 	_root.GetFont()->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
 	_root.GetFont()->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
+	UIApp::afterUI();
 }
 
 core::AppState Client::onCleanup() {
