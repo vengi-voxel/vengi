@@ -117,7 +117,6 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 			return;
 		core_trace_scoped(MeshExtraction);
 		const Region &region = getRegion(pos);
-		DecodedMeshData data;
 
 		const int extends = 3;
 		glm::ivec3 mins = region.getLowerCorner() - extends;
@@ -128,6 +127,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		_volumeData->prefetch(prefetchRegion);
 
 		const bool mergeQuads = false;
+		DecodedMeshData data;
 		data.mesh = extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads);
 		data.translation = pos;
 		core::ScopedWriteLock lock(_rwLock);
