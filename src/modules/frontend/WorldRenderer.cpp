@@ -400,7 +400,9 @@ void WorldRenderer::onInit(int width, int height) {
 #endif
 }
 
-void WorldRenderer::onRunning(long dt) {
+void WorldRenderer::onRunning(long dt, const glm::vec3& cameraPosition) {
+	_lightPos.x = cameraPosition.x;
+	_lightPos.z = cameraPosition.z;
 	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
 	if (!_noiseFuture.empty()) {
