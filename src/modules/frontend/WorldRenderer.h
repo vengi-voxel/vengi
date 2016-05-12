@@ -47,7 +47,7 @@ private:
 	long _now = 0l;
 
 	video::TexturePtr _colorTexture;
-	glm::vec3 _lightPos = glm::vec3(1.0, 10000.0, 1.0);
+	glm::vec3 _lightPos = glm::vec3(10000.0, 10000.0, 10000.0);
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	// the position of the last extraction - we only care for x and z here
 	glm::ivec3 _lastGridPosition;
@@ -75,7 +75,7 @@ public:
 	void reset();
 
 	void onInit(int width, int height);
-	void onRunning(long now, const glm::vec3& cameraPosition);
+	void onRunning(long now);
 	void onCleanup();
 
 	// called to initialed the player position

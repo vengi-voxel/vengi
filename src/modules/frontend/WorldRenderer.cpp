@@ -184,7 +184,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	shader.setUniformf("u_fogrange", _fogRange);
 	shader.setUniformf("u_viewdistance", _viewDistance);
 	shader.setUniformi("u_texture", 0);
-	shader.setUniformVec3("u_lightpos", _lightPos);
+	shader.setUniformVec3("u_lightpos", _lightPos + camera.getPosition());
 	shader.setUniformVec3("u_diffuse_color", _diffuseColor);
 	shader.setUniformVec4v("u_materialcolor[0]", &materialColors[0], materialColors.size());
 	shader.setUniformf("u_debug_color", 1.0);
@@ -400,9 +400,7 @@ void WorldRenderer::onInit(int width, int height) {
 #endif
 }
 
-void WorldRenderer::onRunning(long dt, const glm::vec3& cameraPosition) {
-	_lightPos.x = cameraPosition.x;
-	_lightPos.z = cameraPosition.z;
+void WorldRenderer::onRunning(long dt) {
 	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
 	if (!_noiseFuture.empty()) {
