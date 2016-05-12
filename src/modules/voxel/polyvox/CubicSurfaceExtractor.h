@@ -171,6 +171,10 @@ Mesh<Vertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded i
 	return result;
 }
 
+inline bool isQuadFlipped(const Vertex v00, const Vertex v01, const Vertex v10, const Vertex v11) {
+	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
+}
+
 /**
  * This version of the function performs the extraction into a user-provided mesh rather than allocating a mesh automatically.
  * There are a few reasons why this might be useful to more advanced users:
@@ -415,9 +419,19 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<Vertex>* re
 			}
 
 			for (const Quad& quad : listQuads) {
-				// TODO: change the tri layout by taken ao into account
-				result->addTriangle(quad.vertices[0], quad.vertices[1], quad.vertices[2]);
-				result->addTriangle(quad.vertices[0], quad.vertices[2], quad.vertices[3]);
+				const auto v00 = result->getVertex(quad.vertices[3]);
+				const auto v01 = result->getVertex(quad.vertices[0]);
+				const auto v10 = result->getVertex(quad.vertices[2]);
+				const auto v11 = result->getVertex(quad.vertices[1]);
+
+				if (isQuadFlipped(v00, v01, v10, v11)) {
+					result->addTriangle(quad.vertices[1], quad.vertices[2], quad.vertices[3]);
+					result->addTriangle(quad.vertices[1], quad.vertices[3], quad.vertices[0]);
+				} else {
+					result->addTriangle(quad.vertices[0], quad.vertices[1], quad.vertices[2]);
+					result->addTriangle(quad.vertices[0], quad.vertices[2], quad.vertices[3]);
+				}
+
 			}
 		}
 	}
