@@ -23,6 +23,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 	const int depth = region.getDepthInVoxels();
 	const int lowerX = region.getLowerX();
 	const int lowerZ = region.getLowerZ();
+	core_assert(region.getLowerY() >= 0);
 	// TODO: kill me
 	const core::VarPtr& plainTerrain = core::Var::get("voxel-plainterrain", "false");
 	const bool plainTerrainBool = plainTerrain->boolVal();

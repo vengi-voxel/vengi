@@ -35,6 +35,9 @@ void World::Pager::erase(const Region& region, PagedVolume::Chunk* chunk) {
 }
 
 bool World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
+	if (region.getLowerY() < 0) {
+		return false;
+	}
 	TerrainContext ctx(_world._volumeData, chunk);
 	ctx.region = region;
 #if PERSIST
