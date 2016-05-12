@@ -73,7 +73,7 @@ bool BiomeManager::hasClouds(const glm::ivec3& pos) const {
 		return false;
 	}
 	const Biome* biome = getBiome(pos);
-	return biome->humidity >= 0.6f;
+	return biome->humidity >= 0.5f;
 }
 
 }

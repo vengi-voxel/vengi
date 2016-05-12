@@ -27,7 +27,6 @@ void CloudGenerator::createClouds(TerrainContext& ctx, const BiomeManager& biomM
 		if (!biomManager.hasClouds(chunkCloudCenterPos)) {
 			continue;
 		}
-		Log::info("Create clouds on y level: %i", chunkCloudCenterPos.y);
 		ShapeGenerator::createEllipse(ctx, chunkCloudCenterPos, 10, height, 10, voxel);
 		chunkCloudCenterPos.x -= 5;
 		chunkCloudCenterPos.y -= 5 + i;
