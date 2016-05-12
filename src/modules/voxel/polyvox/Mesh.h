@@ -51,11 +51,6 @@ private:
 	glm::ivec3 m_offset;
 };
 
-/// Meshes returned by the surface extractors often have vertices with efficient compressed
-/// formats which are hard to interpret directly (see CubicVertex and MarchingCubesVertex).
-/// This function creates a new uncompressed mesh containing the much simpler Vertex objects.
-Mesh<Vertex> decodeMesh(const Mesh<CubicVertex>& encodedMesh);
-
 template<typename VertexType>
 Mesh<VertexType>::Mesh(int vertices) {
 	m_vecVertices.reserve(vertices);

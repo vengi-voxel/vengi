@@ -62,23 +62,6 @@ struct IndexAndMaterial {
  * @section Vertex encoding/decoding
  */
 
-/** Decodes a position from a CubicVertex */
-inline glm::vec3 decodePosition(const glm::i8vec3& encodedPosition) {
-	glm::vec3 result(encodedPosition.x, encodedPosition.y, encodedPosition.z);
-	result -= 0.5f; // Apply the required offset
-	return result;
-}
-
-/** Decodes a CubicVertex by converting it into a regular Vertex which can then be directly used for rendering. */
-inline Vertex decodeVertex(const CubicVertex& cubicVertex) {
-	Vertex result;
-	result.position = decodePosition(cubicVertex.encodedPosition);
-	result.data = cubicVertex.data; // Data is not encoded
-	// TODO: encode AO value somewhere else, but not now, after we know all our attributes
-	result.ambientOcclusion = cubicVertex.ambientOcclusion;
-	return result;
-}
-
 // 0 is the darkest
 // 3 is no occlusion at all
 inline uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
@@ -92,7 +75,7 @@ inline uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
  * @section Surface extraction
  */
 
-inline bool mergeQuads(Quad& q1, Quad& q2, Mesh<CubicVertex>* m_meshCurrent) {
+inline bool mergeQuads(Quad& q1, Quad& q2, Mesh<Vertex>* m_meshCurrent) {
 	//All four vertices of a given quad have the same data,
 	//so just check that the first pair of vertices match.
 	if (m_meshCurrent->getVertex(q1.vertices[0]).data == m_meshCurrent->getVertex(q2.vertices[0]).data) {
@@ -122,7 +105,7 @@ inline bool mergeQuads(Quad& q1, Quad& q2, Mesh<CubicVertex>* m_meshCurrent) {
 	return false;
 }
 
-inline bool performQuadMerging(std::list<Quad>& quads, Mesh<CubicVertex>* m_meshCurrent) {
+inline bool performQuadMerging(std::list<Quad>& quads, Mesh<Vertex>* m_meshCurrent) {
 	bool bDidMerge = false;
 	for (typename std::list<Quad>::iterator outerIter = quads.begin(); outerIter != quads.end(); outerIter++) {
 		typename std::list<Quad>::iterator innerIter = outerIter;
@@ -146,21 +129,21 @@ inline bool performQuadMerging(std::list<Quad>& quads, Mesh<CubicVertex>* m_mesh
 }
 
 inline int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, IndexAndMaterial>& existingVertices,
-		Mesh<CubicVertex>* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
+		Mesh<Vertex>* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ct++) {
 		IndexAndMaterial& rEntry = existingVertices(uX, uY, ct);
 
 		if (rEntry.iIndex == -1 || true) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
 			// The 0.5f offset is because vertices set between voxels in order to build cubes around them.
-			CubicVertex cubicVertex;
-			cubicVertex.encodedPosition = { static_cast<uint8_t>(uX), static_cast<uint8_t>(uY), static_cast<uint8_t>(uZ) };
-			cubicVertex.data = uMaterialIn;
-			cubicVertex.ambientOcclusion = vertexAmbientOcclusion(
+			Vertex Vertex;
+			Vertex.position = { uX, uY, uZ };
+			Vertex.data = uMaterialIn;
+			Vertex.ambientOcclusion = vertexAmbientOcclusion(
 				face1.getMaterial() != voxel::Air,
 				face2.getMaterial() != voxel::Air,
 				corner.getMaterial() != voxel::Air);
-			rEntry.iIndex = m_meshCurrent->addVertex(cubicVertex);
+			rEntry.iIndex = m_meshCurrent->addVertex(Vertex);
 			rEntry.uMaterial = uMaterialIn;
 
 			return rEntry.iIndex;
@@ -261,8 +244,8 @@ inline int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMa
  *  particularly when solid voxels extend right to the edge of the volume.
  */
 template<typename VolumeType, typename IsQuadNeeded>
-Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
-	Mesh<CubicVertex> result;
+Mesh<Vertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
+	Mesh<Vertex> result;
 	extractCubicMeshCustom(volData, region, &result, isQuadNeeded, bMergeQuads);
 	return result;
 }
@@ -283,7 +266,7 @@ Mesh<CubicVertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNee
  *  but this is relatively complex and I haven't done it yet. Could always add it later as another overload.
  */
 template<typename VolumeType, typename IsQuadNeeded>
-void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<CubicVertex>* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
+void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<Vertex>* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
 	core_trace_scoped(ExtractCubicMesh);
 	// This extractor has a limit as to how large the extracted region can be, because the vertex positions are encoded with a single byte per component.
 	int32_t maxRegionDimensionInVoxels = 255;

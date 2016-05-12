@@ -40,8 +40,8 @@ TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
 	_volData.setVoxel(1, 0, 2, createVoxel(2));
 	_volData.setVoxel(2, 0, 2, createVoxel(1));
 
-	const Mesh<CubicVertex>& mesh = extractCubicMesh(&_volData, _ctx.region, IsQuadNeeded(), false);
-	const CubicVertex* vertices = mesh.getRawVertexData();
+	const Mesh<Vertex>& mesh = extractCubicMesh(&_volData, _ctx.region, IsQuadNeeded(), false);
+	const Vertex* vertices = mesh.getRawVertexData();
 	const int amount = mesh.getNoOfVertices();
 	// TODO: this was the amount before ao
 	//ASSERT_EQ(116, amount);
@@ -49,10 +49,10 @@ TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
 	// TODO: replace magic constant
 	const int noAO = 3;
 	for (int i = 0; i < amount; ++i) {
-		const CubicVertex& v = vertices[i];
-		const int x = v.encodedPosition.x;
-		const int y = v.encodedPosition.y;
-		const int z = v.encodedPosition.z;
+		const Vertex& v = vertices[i];
+		const int x = v.position.x;
+		const int y = v.position.y;
+		const int z = v.position.z;
 		if (y == 0 || y == 1 || y == 3) {
 			// these two levels don't receive any ao
 			EXPECT_EQ(noAO, v.ambientOcclusion) << "Unexpected ao value at y level " << y << " found";
