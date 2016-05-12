@@ -29,9 +29,9 @@ WorldRenderer::~WorldRenderer() {
 
 void WorldRenderer::reset() {
 	for (const video::GLMeshData& meshData : _meshData) {
-		glDeleteBuffers(meshData.numLods, meshData.vertexBuffer);
-		glDeleteBuffers(meshData.numLods, meshData.indexBuffer);
-		glDeleteVertexArrays(meshData.numLods, meshData.vertexArrayObject);
+		glDeleteBuffers(1, &meshData.vertexBuffer);
+		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 	}
 	_meshData.clear();
 	_entities.clear();
@@ -73,9 +73,9 @@ void WorldRenderer::deleteMesh(const glm::ivec3& pos) {
 			continue;
 		}
 		_meshData.erase(i);
-		glDeleteBuffers(meshData.numLods, meshData.vertexBuffer);
-		glDeleteBuffers(meshData.numLods, meshData.indexBuffer);
-		glDeleteVertexArrays(meshData.numLods, meshData.vertexArrayObject);
+		glDeleteBuffers(1, &meshData.vertexBuffer);
+		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 		return;
 	}
 }
@@ -97,10 +97,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
 	for (video::GLMeshData& m : _meshData) {
 		if (m.translation == mesh.translation) {
-			core_assert_msg(m.numLods == mesh.numLods, "old lod count (%i) doesn't match new lod count (%i)", m.numLods, mesh.numLods);
-			for (int i = 0; i < m.numLods; ++i) {
-				updateMesh(mesh.mesh[i], m, i);
-			}
+			updateMesh(mesh.mesh, m);
 			return;
 		}
 	}
@@ -118,27 +115,26 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		const float distance = getDistance2(meshData.translation);
 		if (isDistanceCulled(distance, true)) {
 			_world->allowReExtraction(meshData.translation);
-			glDeleteBuffers(meshData.numLods, meshData.vertexBuffer);
-			glDeleteBuffers(meshData.numLods, meshData.indexBuffer);
-			glDeleteVertexArrays(meshData.numLods, meshData.vertexArrayObject);
+			glDeleteBuffers(1, &meshData.vertexBuffer);
+			glDeleteBuffers(1, &meshData.indexBuffer);
+			glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 			i = _meshData.erase(i);
 			continue;
 		}
-		const int lod = 0;
 		const glm::vec3 mins(meshData.translation);
 		const glm::vec3 maxs = glm::vec3(meshData.translation) + bboxSize;
 		if (camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
 			++i;
 			continue;
 		}
-		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation)), glm::vec3(meshData.scale[lod]));
+		const glm::mat4& model = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
 		shader.setUniformMatrix("u_model", model, false);
-		glBindVertexArray(meshData.vertexArrayObject[lod]);
+		glBindVertexArray(meshData.vertexArrayObject);
 
 		if (debugGeometry) {
 			shader.setUniformf("u_debug_color", 1.0);
 		}
-		glDrawElements(GL_TRIANGLES, meshData.noOfIndices[lod], meshData.indexType[lod], 0);
+		glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
 		GL_checkError();
 
 		if (debugGeometry) {
@@ -148,7 +144,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 			glLineWidth(2);
 			glPolygonOffset(-2, -2);
 			shader.setUniformf("u_debug_color", 0.0);
-			glDrawElements(GL_TRIANGLES, meshData.noOfIndices[lod], meshData.indexType[lod], 0);
+			glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
 			glDisable(GL_LINE_SMOOTH);
 			glDisable(GL_POLYGON_OFFSET_LINE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -236,22 +232,22 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	return drawCallsWorld;
 }
 
-void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData, int lod) {
+void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData) {
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
 	const uint32_t* vecIndices = surfaceMesh.getRawIndexData();
 	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
 	const voxel::Vertex* vecVertices = surfaceMesh.getRawVertexData();
 	const uint32_t numVertices = surfaceMesh.getNoOfVertices();
 
-	core_assert(meshData.vertexBuffer[lod] > 0);
-	glBindBuffer(GL_ARRAY_BUFFER, meshData.vertexBuffer[lod]);
+	core_assert(meshData.vertexBuffer > 0);
+	glBindBuffer(GL_ARRAY_BUFFER, meshData.vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(voxel::Vertex), vecVertices, GL_STATIC_DRAW);
 
-	core_assert(meshData.indexBuffer[lod] > 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer[lod]);
+	core_assert(meshData.indexBuffer > 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(uint32_t), vecIndices, GL_STATIC_DRAW);
 
-	meshData.noOfIndices[lod] = numIndices;
+	meshData.noOfIndices = numIndices;
 }
 
 // TODO: generate bigger buffers and use glBufferSubData
@@ -261,40 +257,36 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
 	video::GLMeshData meshData;
 	meshData.translation = mesh.translation;
-	meshData.numLods = glm::clamp(mesh.numLods, 1, video::MAX_LODS);
 
 	// Create the VAOs for the meshes
-	glGenVertexArrays(meshData.numLods, meshData.vertexArrayObject);
+	glGenVertexArrays(1, &meshData.vertexArrayObject);
 
 	// The GL_ARRAY_BUFFER will contain the list of vertex positions
-	glGenBuffers(meshData.numLods, meshData.vertexBuffer);
+	glGenBuffers(1, &meshData.vertexBuffer);
 
 	// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
-	glGenBuffers(meshData.numLods, meshData.indexBuffer);
+	glGenBuffers(1, &meshData.indexBuffer);
 
-	for (int i = 0; i < meshData.numLods; ++i) {
-		core_assert(meshData.vertexArrayObject[i] > 0);
-		glBindVertexArray(meshData.vertexArrayObject[i]);
+	core_assert(meshData.vertexArrayObject > 0);
+	glBindVertexArray(meshData.vertexArrayObject);
 
-		updateMesh(mesh.mesh[i], meshData, i);
+	updateMesh(mesh.mesh, meshData);
 
-		const int posLoc = shader.enableVertexAttribute("a_pos");
-		glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::Vertex),
-				GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
+	const int posLoc = shader.enableVertexAttribute("a_pos");
+	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::Vertex),
+			GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
 
-		const int locationAO = shader.enableVertexAttribute("a_ao");
-		glVertexAttribIPointer(locationAO, 1, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
-				GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
+	const int locationAO = shader.enableVertexAttribute("a_ao");
+	glVertexAttribIPointer(locationAO, 1, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
+			GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
 
-		const int matLoc = shader.enableVertexAttribute("a_material");
-		// our material and density is encoded as 8 bits material and 8 bits density
-		core_assert(sizeof(voxel::Voxel) == sizeof(uint8_t));
-		glVertexAttribIPointer(matLoc, sizeof(voxel::Voxel), GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
-				GL_OFFSET_CAST(offsetof(voxel::Vertex, data)));
+	const int matLoc = shader.enableVertexAttribute("a_material");
+	// our material and density is encoded as 8 bits material and 8 bits density
+	core_assert(sizeof(voxel::Voxel) == sizeof(uint8_t));
+	glVertexAttribIPointer(matLoc, sizeof(voxel::Voxel), GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
+			GL_OFFSET_CAST(offsetof(voxel::Vertex, data)));
 
-		meshData.scale[i] = 1 << i;
-		meshData.indexType[i] = GL_UNSIGNED_INT;
-	}
+	meshData.indexType = GL_UNSIGNED_INT;
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

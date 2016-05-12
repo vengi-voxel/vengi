@@ -22,14 +22,10 @@ constexpr Voxel createVoxel(VoxelType type) {
 
 typedef Mesh<Vertex> DecodedMesh;
 
-constexpr int MAX_VOXEL_LOD = 2;
-static_assert(MAX_VOXEL_LOD >= 1, "MAX_LODS might not be smaller than 1");
-
 struct DecodedMeshData {
-	DecodedMesh mesh[MAX_VOXEL_LOD];
+	DecodedMesh mesh;
 	// translation on the x and z axis
 	glm::ivec3 translation;
-	int numLods;
 };
 
 inline bool isBlocked(VoxelType material) {

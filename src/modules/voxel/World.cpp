@@ -128,9 +128,8 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		_volumeData->prefetch(prefetchRegion);
 
 		const bool mergeQuads = false;
-		data.mesh[0] = extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads);
+		data.mesh = extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads);
 		data.translation = pos;
-		data.numLods = 1;
 		core::ScopedWriteLock lock(_rwLock);
 		_meshQueue.push_back(std::move(data));
 	}));
