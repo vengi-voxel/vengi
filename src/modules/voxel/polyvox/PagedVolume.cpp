@@ -37,14 +37,14 @@ PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint
 	const uint32_t uMinPracticalNoOfChunks = 32; // Enough to make sure a chunks and it's neighbours can be loaded, with a few to spare.
 	const uint32_t uMaxPracticalNoOfChunks = uChunkArraySize / 2; // A hash table should only become half-full to avoid too many clashes.
 	if (m_uChunkCountLimit < uMinPracticalNoOfChunks) {
-		::Log::warn("Requested memory usage limit of %uiMb is too low and cannot be adhered to.",
+		Log::warn("Requested memory usage limit of %uiMb is too low and cannot be adhered to.",
 				uTargetMemoryUsageInBytes / (1024 * 1024));
 	}
 	m_uChunkCountLimit = std::max(m_uChunkCountLimit, uMinPracticalNoOfChunks);
 	m_uChunkCountLimit = std::min(m_uChunkCountLimit, uMaxPracticalNoOfChunks);
 
 	// Inform the user about the chosen memory configuration.
-	::Log::debug("Memory usage limit for volume now set to %uiMb (%ui chunks of %uiKb each).",
+	Log::debug("Memory usage limit for volume now set to %uiMb (%ui chunks of %uiKb each).",
 			(m_uChunkCountLimit * uChunkSizeInBytes) / (1024 * 1024), m_uChunkCountLimit, uChunkSizeInBytes / 1024);
 }
 
