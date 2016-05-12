@@ -2,6 +2,7 @@
 #include "core/Command.h"
 #include "core/Common.h"
 #include "core/Color.h"
+#include "core/Tokenizer.h"
 
 namespace ui {
 
@@ -31,9 +32,74 @@ bool Console::init() {
 	return true;
 }
 
-bool Console::onTextInput(const std::string& text) {
-	if (_consoleActive)
+bool Console::onKeyPress(int32_t key, int16_t modifier) {
+	if (!_consoleActive) {
 		return false;
+	}
+
+	if (key == SDLK_RETURN || key == SDLK_KP_ENTER) {
+		_messages.push_back(_commandLine);
+		if (core::Command::execute(_commandLine) <= 0) {
+			core::Tokenizer t(_commandLine);
+			while (t.hasNext()) {
+				const std::string& var = t.next();
+				const core::VarPtr& varPtr = core::Var::get(var, "", core::CV_NOTCREATEEMPTY);
+				if (!varPtr) {
+					Log::info("unknown command and cvar");
+					break;
+				}
+				if (!t.hasNext()) {
+					Log::info("%s = %s", varPtr->name().c_str(), varPtr->strVal().c_str());
+					break;
+				}
+				const std::string& value = t.next();
+				varPtr->setVal(value);
+				if (!t.hasNext()) {
+					break;
+				}
+				if (t.next() != ";") {
+					break;
+				}
+			}
+		}
+		_history.push_back(_commandLine);
+		_historyPos = _history.size();
+		_commandLine = "";
+	} else if (key == SDLK_TAB) {
+		// TODO: auto complete command and/or cvar
+	} else if (key == SDLK_UP) {
+		if (_historyPos > 1) {
+			_commandLine = _history[_historyPos - 1];
+			--_historyPos;
+		} else if (_historyPos == 1) {
+			_commandLine = _history[0];
+		}
+	} else if (key == SDLK_DOWN) {
+		if (_historyPos < _history.size()) {
+			++_historyPos;
+			_commandLine = _history[_historyPos - 1];
+		} else {
+			_commandLine = "";
+		}
+	}
+
+	return true;
+}
+
+bool Console::onMouseWheel(int32_t x, int32_t y) {
+	if (!_consoleActive) {
+		return false;
+	}
+
+	// TODO: scrolling
+
+	return true;
+}
+
+bool Console::onTextInput(const std::string& text) {
+	if (!_consoleActive) {
+		return false;
+	}
 
 	_commandLine.append(text);
 
@@ -75,7 +141,8 @@ void Console::render(const tb::TBRect &rect) {
 
 	const int lineHeight = _font->GetFontDescription().GetSize();
 	int maxY = _messages.size() * lineHeight;
-	int y = std::min(rect.y + rect.h, maxY);
+	const int startY = std::min(rect.y + rect.h, maxY) - lineHeight;
+	int y = startY - lineHeight;
 	for (MessagesIter i = _messages.rbegin(); i != _messages.rend(); ++i) {
 		tb::TBStr str(i->c_str());
 		if (y - lineHeight < 0) {
@@ -85,7 +152,9 @@ void Console::render(const tb::TBRect &rect) {
 		y -= lineHeight;
 	}
 
-	// TODO: draw input/commandline line
+	const tb::TBStr cmdLine(_commandLine.c_str());
+	_font->DrawString(5, startY, consoleFontColor, "] ");
+	_font->DrawString(15, startY, consoleFontColor, cmdLine);
 }
 
 }

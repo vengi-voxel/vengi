@@ -164,18 +164,28 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 }
 
 void UIApp::onMouseWheel(int32_t x, int32_t y) {
+	if (_console.onMouseWheel(x, y)) {
+		return;
+	}
 	int posX, posY;
 	SDL_GetMouseState(&posX, &posY);
 	_root.InvokeWheel(posX, posY, x, -y, mapModifier(SDL_GetModState()));
 }
 
 void UIApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
+	if (_console.isActive()) {
+		return;
+	}
 	_root.InvokePointerMove(x, y, mapModifier(SDL_GetModState()), false);
 }
 
 void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
-	if (button != SDL_BUTTON_LEFT)
+	if (_console.isActive()) {
 		return;
+	}
+	if (button != SDL_BUTTON_LEFT) {
+		return;
+	}
 	static double lastTime = 0;
 	static int lastX = 0;
 	static int lastY = 0;
@@ -194,6 +204,9 @@ void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 }
 
 void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
+	if (_console.isActive()) {
+		return;
+	}
 	if (button == SDL_BUTTON_RIGHT) {
 		_root.InvokePointerMove(x, y, mapModifier(SDL_GetModState()), false);
 		tb::TBWidget* hover = tb::TBWidget::hovered_widget;
@@ -215,13 +228,17 @@ bool UIApp::onKeyRelease(int32_t key) {
 			core_assert(1 == core::Command::execute(command + " false"));
 		}
 	}
+	if (_console.isActive()) {
+		return true;
+	}
 
 	return invokeKey(mapKey(key), mapSpecialKey(key), mapModifier(SDL_GetModState()), false);
 }
 
 bool UIApp::onTextInput(const std::string& text) {
-	if (_console.onTextInput(text))
+	if (_console.onTextInput(text)) {
 		return true;
+	}
 	const char *c = text.c_str();
 	for (;;) {
 		const int key = core::string::getUTF8Next(&c);
@@ -234,6 +251,9 @@ bool UIApp::onTextInput(const std::string& text) {
 }
 
 bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
+	if (_console.onKeyPress(key, modifier)) {
+		return true;
+	}
 	auto range = _bindings.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
 		const std::string& command = i->second.first;
