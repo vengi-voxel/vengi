@@ -53,6 +53,10 @@ public:
 		Voxel* getData() const;
 		uint32_t getDataSizeInBytes() const;
 
+		bool containsPoint(const glm::ivec3& pos) const;
+		bool containsPoint(int32_t x, int32_t y, int32_t z) const;
+		Region getRegion() const;
+
 		const Voxel& getVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos) const;
 		const Voxel& getVoxel(const glm::i16vec3& v3dPos) const;
 
@@ -498,6 +502,20 @@ inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1pz() const {
 #undef POS_Y_DELTA
 #undef NEG_Z_DELTA
 #undef POS_Z_DELTA
+
+inline bool PagedVolume::Chunk::containsPoint(const glm::ivec3& pos) const {
+	 return getRegion().containsPoint(pos);
+}
+
+inline bool PagedVolume::Chunk::containsPoint(int32_t x, int32_t y, int32_t z) const {
+	 return getRegion().containsPoint(x, y, z);
+}
+
+inline Region PagedVolume::Chunk::getRegion() const {
+	 const glm::ivec3 mins = m_v3dChunkSpacePosition * static_cast<int32_t>(m_uSideLength);
+	 const glm::ivec3 maxs = mins + glm::ivec3(m_uSideLength - 1);
+	 return Region(mins, maxs);
+}
 
 inline uint32_t PagedVolume::getPositionHash(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
 	// We generate a 16-bit hash here and assume this matches the range available in the chunk
