@@ -67,14 +67,14 @@ int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialI
 		if (rEntry.iIndex == -1 || true) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
 			// The 0.5f offset is because vertices set between voxels in order to build cubes around them.
-			Vertex Vertex;
-			Vertex.position = { uX, uY, uZ };
-			Vertex.data = uMaterialIn;
-			Vertex.ambientOcclusion = vertexAmbientOcclusion(
+			Vertex vertex;
+			vertex.position = { uX, uY, uZ };
+			vertex.data = uMaterialIn;
+			vertex.ambientOcclusion = vertexAmbientOcclusion(
 				face1.getMaterial() != voxel::Air,
 				face2.getMaterial() != voxel::Air,
 				corner.getMaterial() != voxel::Air);
-			rEntry.iIndex = m_meshCurrent->addVertex(Vertex);
+			rEntry.iIndex = m_meshCurrent->addVertex(vertex);
 			rEntry.uMaterial = uMaterialIn;
 
 			return rEntry.iIndex;
