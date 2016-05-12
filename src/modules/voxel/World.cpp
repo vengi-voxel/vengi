@@ -60,7 +60,7 @@ void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
 
 World::World() :
 		_pager(*this), _threadPool(core::halfcpus(), "World"), _rwLock("World"), _random(_seed) {
-	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "64", core::CV_READONLY);
+	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "128", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 256 * 1024 * 1024, 256);
 	_biomManager.addBiom(0, MAX_WATER_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Sand1));
 	_biomManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.1f, 0.9f, createVoxel(Sand2));
@@ -103,7 +103,7 @@ glm::ivec3 World::randomPos() const {
 bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	if (_cancelThreads)
 		return false;
-	const glm::ivec3& pos = getGridPos(p);
+	const glm::ivec3& pos = getMeshPos(p);
 	auto i = _meshesExtracted.find(pos);
 	if (i != _meshesExtracted.end()) {
 		Log::trace("mesh is already extracted for %i:%i:%i (%i:%i:%i - %i:%i:%i)", p.x, p.y, p.z, i->x, i->y, i->z, pos.x, pos.y, pos.z);
@@ -116,7 +116,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		if (_cancelThreads)
 			return;
 		core_trace_scoped(MeshExtraction);
-		const Region &region = getRegion(pos);
+		const Region &region = getMeshRegion(pos);
 
 		const int extends = 3;
 		glm::ivec3 mins = region.getLowerCorner() - extends;
@@ -136,11 +136,6 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	return true;
 }
 
-Region World::getRegion(const glm::ivec3& pos) const {
-	const int size = _chunkSize->intVal();
-	return getRegion(pos, size);
-}
-
 Region World::getRegion(const glm::ivec3& pos, int size) const {
 	int deltaX = size - 1;
 	int deltaZ = size - 1;
@@ -153,7 +148,7 @@ Region World::getRegion(const glm::ivec3& pos, int size) const {
 void World::placeTree(const TreeContext& ctx) {
 	core_trace_scoped(PlaceTree);
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
-	const Region& region = getRegion(getGridPos(pos));
+	const Region& region = getChunkRegion(getMeshPos(pos));
 	TerrainContext tctx(_volumeData, _volumeData->getChunk(pos));
 	tctx.region = region;
 	TreeGenerator::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
@@ -170,7 +165,7 @@ int World::findFloor(int x, int z) const {
 }
 
 bool World::allowReExtraction(const glm::ivec3& pos) {
-	const glm::ivec3& gridPos = getGridPos(pos);
+	const glm::ivec3& gridPos = getMeshPos(pos);
 	return _meshesExtracted.erase(gridPos) != 0;
 }
 

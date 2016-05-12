@@ -64,20 +64,23 @@ public:
 	/**
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
 	 */
-	inline glm::ivec3 getGridPos(const glm::ivec3& pos) const {
-		const int size = getChunkSize();
-		return getGridPosForSize(pos, size);
+	inline glm::ivec3 getMeshPos(const glm::ivec3& pos) const {
+		const int size = getMeshSize();
+		const int x = glm::floor(pos.x / size);
+		const int y = glm::floor(pos.y / size);
+		const int z = glm::floor(pos.z / size);
+		return glm::ivec3(x * size, y * size, z * size);
 	}
 
 	/**
-	 * @brief Cuts the given world coordinate down to mesh tile vectors
+	 * @brief Cuts the given world coordinate down to chunk tile vectors
 	 */
 	inline glm::ivec3 getChunkPos(const glm::ivec3& pos) const {
-		return getChunkPosForSize(pos, (float)getChunkSize());
-	}
-
-	inline int getChunkSize() const {
-		return _chunkSize->intVal();
+		const int size = getChunkSize();
+		const int x = glm::floor(pos.x / size);
+		const int y = glm::floor(pos.y / size);
+		const int z = glm::floor(pos.z / size);
+		return glm::ivec3(x, y, z);
 	}
 
 	/**
@@ -128,6 +131,9 @@ public:
 		return _seed != 0;
 	}
 
+	int getChunkSize() const;
+	int getMeshSize() const;
+
 private:
 	class Pager: public PagedVolume::Pager {
 	private:
@@ -151,7 +157,8 @@ private:
 	void createUnderground(TerrainContext& ctx);
 
 	void cleanupFutures();
-	Region getRegion(const glm::ivec3& pos) const;
+	Region getChunkRegion(const glm::ivec3& pos) const;
+	Region getMeshRegion(const glm::ivec3& pos) const;
 	Region getRegion(const glm::ivec3& pos, int size) const;
 
 	Pager _pager;
@@ -174,6 +181,24 @@ private:
 	float _noiseSeedOffsetX = 0.0f;
 	float _noiseSeedOffsetZ = 0.0f;
 };
+
+inline Region World::getChunkRegion(const glm::ivec3& pos) const {
+	const int size = getChunkSize();
+	return getRegion(pos, size);
+}
+
+inline Region World::getMeshRegion(const glm::ivec3& pos) const {
+	const int size = getMeshSize();
+	return getRegion(pos, size);
+}
+
+inline int World::getChunkSize() const {
+	return _volumeData->getChunkSideLength();
+}
+
+inline int World::getMeshSize() const {
+	return _chunkSize->intVal();
+}
 
 inline int World::getMaterial(int x, int y, int z) const {
 	return _volumeData->getVoxel(x, y, z).getMaterial();
