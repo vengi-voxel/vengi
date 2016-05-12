@@ -31,6 +31,15 @@ bool Console::init() {
 	return true;
 }
 
+bool Console::onTextInput(const std::string& text) {
+	if (_consoleActive)
+		return false;
+
+	_commandLine.append(text);
+
+	return true;
+}
+
 void Console::logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	Console* console = (Console*)userdata;
 	console->_logFunction(userdata, category, priority, message);

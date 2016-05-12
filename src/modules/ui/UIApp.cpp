@@ -220,6 +220,8 @@ bool UIApp::onKeyRelease(int32_t key) {
 }
 
 bool UIApp::onTextInput(const std::string& text) {
+	if (_console.onTextInput(text))
+		return true;
 	const char *c = text.c_str();
 	for (;;) {
 		const int key = core::string::getUTF8Next(&c);
