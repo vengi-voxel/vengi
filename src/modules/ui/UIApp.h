@@ -12,6 +12,7 @@
 #include "video/WindowedApp.h"
 #include "KeybindingParser.h"
 #include "Window.h"
+#include "Console.h"
 
 namespace ui {
 
@@ -59,6 +60,7 @@ protected:
 	int fps = 0;
 	uint32_t _frameCounter = 0;
 	double _frameCounterResetRime = 0.0;
+	Console _console;
 
 	bool loadKeyBindings();
 
@@ -84,7 +86,6 @@ public:
 	virtual void afterUI();
 
 	void addChild(Window* window);
-
 
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;

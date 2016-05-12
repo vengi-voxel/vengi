@@ -264,8 +264,13 @@ core::AppState UIApp::onConstruct() {
 	});
 
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
+	_console.init();
 
 	return state;
+}
+
+void UIApp::afterUI() {
+	_console.render();
 }
 
 core::AppState UIApp::onInit() {
@@ -383,10 +388,6 @@ core::AppState UIApp::onCleanup() {
 	tb::TBWidgetsAnimationManager::Shutdown();
 	tb::tb_core_shutdown();
 	return WindowedApp::onCleanup();
-}
-
-void UIApp::afterUI() {
-	// render the console
 }
 
 }

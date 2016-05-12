@@ -2,6 +2,7 @@ set(SRCS
 	UIApp.cpp UIApp.h
 	TurboBadger.h
 	Window.cpp Window.h
+	Console.cpp Console.h
 	KeybindingParser.h
 	ui_renderer_gl.cpp ui_renderer_gl.h
 )
