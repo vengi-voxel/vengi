@@ -78,12 +78,13 @@ class TerrainContext {
 private:
 	PagedVolume* _voxelStorage;
 	PagedVolume::Chunk* _chunk;
+	Region _chunkRegion;
 public:
 	Region region;
-	PositionSet dirty;
 
 	TerrainContext(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk) :
 			_voxelStorage(voxelStorage), _chunk(chunk) {
+		_chunkRegion = chunk->getRegion();
 	}
 
 	void setChunk(PagedVolume::Chunk* chunk) {
@@ -107,41 +108,38 @@ public:
 	}
 
 	inline const Voxel& getVoxel(int x, int y, int z) const {
-		if (region.containsPoint(x, y, z)) {
+		if (_chunkRegion.containsPoint(x, y, z)) {
 			core_assert(_chunk != nullptr);
-			return _chunk->getVoxel(x - region.getLowerX(), y - region.getLowerY(), z - region.getLowerZ());
+			return _chunk->getVoxel(x - _chunkRegion.getLowerX(), y - _chunkRegion.getLowerY(), z - _chunkRegion.getLowerZ());
 		}
 		core_assert(_voxelStorage != nullptr);
 		return _voxelStorage->getVoxel(x, y, z);
 	}
 
 	inline void setVoxel(int x, int y, int z, const Voxel& voxel) {
-		if (region.containsPoint(x, y, z)) {
+		if (_chunkRegion.containsPoint(x, y, z)) {
 			core_assert(_chunk != nullptr);
-			_chunk->setVoxel(x - region.getLowerX(), y - region.getLowerY(), z - region.getLowerZ(), voxel);
+			_chunk->setVoxel(x - _chunkRegion.getLowerX(), y - _chunkRegion.getLowerY(), z - _chunkRegion.getLowerZ(), voxel);
 		} else {
 			core_assert(_voxelStorage != nullptr);
-			dirty.insert(glm::ivec3(x, y, z));
 			_voxelStorage->setVoxel(x, y, z, voxel);
 		}
 	}
 
 	inline void setVoxels(int x, int z, const Voxel* voxels, int amount) {
-		if (region.containsPoint(x, 0, z)) {
+		if (_chunkRegion.containsPoint(x, 0, z)) {
 			// first part goes into the chunk
-			const int w = region.getWidthInVoxels();
-			_chunk->setVoxels(x - region.getLowerX(), z - region.getLowerZ(), voxels, std::min(w, amount));
+			const int w = _chunkRegion.getWidthInVoxels();
+			_chunk->setVoxels(x - _chunkRegion.getLowerX(), z - _chunkRegion.getLowerZ(), voxels, std::min(w, amount));
 			amount -= w;
 			if (amount > 0) {
 				// everything else goes into the volume
 				core_assert(_voxelStorage != nullptr);
-				dirty.insert(glm::ivec3(x, 0, z));
 				_voxelStorage->setVoxels(x, z, voxels + w, amount);
 			}
 		} else {
 			// TODO: add region/chunk support here, too
 			core_assert(_voxelStorage != nullptr);
-			dirty.insert(glm::ivec3(x, 0, z));
 			_voxelStorage->setVoxels(x, z, voxels, amount);
 		}
 	}
