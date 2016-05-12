@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Log.h"
-#include <glm/glm.hpp>
+#include "core/GLM.h"
 
 namespace util {
 

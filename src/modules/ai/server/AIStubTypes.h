@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include "common/Types.h"
-#include <glm/glm.hpp>
+#include "core/GLM.h"
 #include "tree/TreeNode.h"
 
 namespace ai {

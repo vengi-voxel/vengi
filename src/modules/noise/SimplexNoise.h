@@ -4,11 +4,7 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include "core/GLM.h"
 #include <cstdint>
 #include <functional>
 

@@ -8,8 +8,7 @@
 #include "voxel/WorldContext.h"
 #include "voxel/Voxel.h"
 #include "image/Image.h"
-#include <glm/gtc/noise.hpp>
-#include <glm/gtc/constants.hpp>
+#include "core/GLM.h"
 
 namespace noise {
 

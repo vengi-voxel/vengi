@@ -5,7 +5,7 @@
 #pragma once
 
 #include "GLFunc.h"
-#include <glm/glm.hpp>
+#include "core/GLM.h"
 #include "voxel/Voxel.h"
 
 namespace video {

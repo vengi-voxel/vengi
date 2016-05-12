@@ -1,5 +1,5 @@
 #include "MovementTest.h"
-#include <glm/gtc/constants.hpp>
+#include "core/GLM.h"
 
 class MovementTest: public TestSuite {
 };

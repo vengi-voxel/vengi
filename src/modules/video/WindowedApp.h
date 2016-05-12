@@ -7,7 +7,7 @@
 #include "core/App.h"
 #include "io/IEventObserver.h"
 #include "io/EventHandler.h"
-#include <glm/glm.hpp>
+#include "core/GLM.h"
 
 struct SDL_Window;
 typedef void *SDL_GLContext;

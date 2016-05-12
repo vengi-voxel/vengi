@@ -7,19 +7,13 @@
 
 #pragma once
 
+#include "GLM.h"
 #include "Log.h"
 #include <cmath>
 #include <limits>
 #include <backward.h>
 #include <SDL.h>
 #include <SDL_assert.h>
-#include <glm/glm.hpp>
-#include <glm/detail/func_common.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/constants.hpp>
-#include <glm/gtx/compatibility.hpp>
-#include <glm/gtx/norm.hpp>
 
 #define CORE_STRINGIFY_INTERNAL(x) #x
 #define CORE_STRINGIFY(x) CORE_STRINGIFY_INTERNAL(x)

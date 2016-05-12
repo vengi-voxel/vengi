@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "ui_renderer_gl.h"
-#include <glm/gtc/matrix_transform.hpp>
+#include "core/GLM.h"
 #include <tb_bitmap_fragment.h>
 #include <tb_system.h>
 

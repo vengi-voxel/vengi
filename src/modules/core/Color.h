@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
+#include "GLM.h"
 
 namespace core {
 

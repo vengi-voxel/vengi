@@ -8,11 +8,11 @@
 #include "ui/DisconnectWindow.h"
 #include "ui/AuthFailedWindow.h"
 #include "ui/HudWindow.h"
-#include "core/Command.h"
 #include "sauce/ClientInjector.h"
+#include "core/Command.h"
+#include "core/GLM.h"
 #include "core/Color.h"
 #include "video/GLDebug.h"
-#include <glm/gtc/constants.hpp>
 
 #define registerMoveCmd(name, flag) \
 	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \

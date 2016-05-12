@@ -4,7 +4,7 @@
 
 #include "Window.h"
 #include "UIApp.h"
-#include <glm/glm.hpp>
+#include "core/GLM.h"
 
 namespace ui {
 

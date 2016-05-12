@@ -5,7 +5,7 @@
 #pragma once
 #include <limits>
 #include <array>
-#include <glm/glm.hpp>
+#include "GLM.h"
 #include "core/Common.h"
 
 namespace core {

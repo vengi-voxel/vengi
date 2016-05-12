@@ -2,7 +2,7 @@
 
 #include "common/Thread.h"
 #include "common/Types.h"
-#include <glm/glm.hpp>
+#include "core/GLM.h"
 #include <map>
 #include <memory>
 #include <unordered_map>

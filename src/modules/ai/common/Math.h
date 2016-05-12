@@ -1,9 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-#include <glm/gtx/compatibility.hpp>
-#include <glm/gtx/norm.hpp>
+#include "core/GLM.h"
 #include <limits>
 #include <cmath>
 #include "String.h"

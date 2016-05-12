@@ -7,7 +7,7 @@
 #include "core/TimeProvider.h"
 #include "core/ReadWriteLock.h"
 #include "core/Random.h"
-#include <glm/glm.hpp>
+#include "core/GLM.h"
 #include <vector>
 #include <memory>
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
+#include "core/GLM.h"
 #include "polyvox/Mesh.h"
 #include "polyvox/PagedVolume.h"
 #include <memory>

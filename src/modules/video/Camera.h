@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtx/rotate_vector.hpp>
 #include "io/IEventObserver.h"
+#include "core/GLM.h"
 #include "core/Var.h"
 #include <math.h>
 #include <ctime>

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
+#include "core/GLM.h"
 #include <unordered_set>
 #include <memory>
 #include "core/Rect.h"

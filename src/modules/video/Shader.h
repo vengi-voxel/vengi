@@ -9,9 +9,8 @@
 #include <cstring>
 #include <memory>
 #include <unordered_map>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include "GLFunc.h"
+#include "core/GLM.h"
 #include "core/Log.h"
 
 namespace video {

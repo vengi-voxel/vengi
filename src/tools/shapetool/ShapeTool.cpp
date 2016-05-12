@@ -5,12 +5,12 @@
 #include "ShapeTool.h"
 #include "sauce/ShapeToolInjector.h"
 #include "video/Shader.h"
-#include "core/Color.h"
 #include "video/GLDebug.h"
+#include "core/GLM.h"
+#include "core/Color.h"
 #include "ui/WorldParametersWindow.h"
 #include "ui/TreeParametersWindow.h"
 #include "frontend/Movement.h"
-#include <glm/gtc/constants.hpp>
 
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
