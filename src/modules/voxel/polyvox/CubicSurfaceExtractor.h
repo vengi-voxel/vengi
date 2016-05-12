@@ -171,7 +171,7 @@ Mesh<Vertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded i
 	return result;
 }
 
-inline bool isQuadFlipped(const Vertex v00, const Vertex v01, const Vertex v10, const Vertex v11) {
+inline bool isQuadFlipped(const Vertex& v00, const Vertex& v01, const Vertex& v10, const Vertex& v11) {
 	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
 }
 
