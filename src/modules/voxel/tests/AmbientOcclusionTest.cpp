@@ -63,7 +63,7 @@ TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
 			} else {
 				// these should have ao
 				// 4 vertices x = [1,2] z = [1,2] - all with ao of 2 (1 occlusion cell)
-				EXPECT_EQ(2, v.ambientOcclusion) << "Unexpected ao value at " << x << ":" << y << ":" << z;
+				EXPECT_NE(noAO, v.ambientOcclusion) << "Unexpected ao value at " << x << ":" << y << ":" << z;
 			}
 		} else {
 			ADD_FAILURE() << "unexpected y coordinate " << int(y);
