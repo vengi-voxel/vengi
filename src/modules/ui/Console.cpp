@@ -142,6 +142,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 
 void Console::executeCommandLine() {
 	_messages.push_back(consolePrompt + _commandLine);
+	_scrollPos = 0;
 	if (_commandLine.empty()) {
 		return;
 	}
