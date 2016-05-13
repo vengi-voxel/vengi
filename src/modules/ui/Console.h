@@ -40,6 +40,8 @@ private:
 
 	void scrollUp(const int lines = 1);
 	void scrollDown(const int lines = 1);
+	void scrollPageUp();
+	void scrollPageDown();
 
 	void autoComplete();
 

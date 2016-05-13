@@ -87,6 +87,14 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 	if (modifier & KMOD_SHIFT) {
 		if (key == SDLK_TAB) {
 			toggle();
+		} else if (key == SDLK_HOME) {
+			_scrollPos = _messages.size() - _maxLines + 1;
+		} else if (key == SDLK_END) {
+			_scrollPos = 0;
+		} else if (key == SDLK_PAGEUP) {
+			scrollPageUp();
+		} else if (key == SDLK_PAGEDOWN) {
+			scrollPageDown();
 		}
 		return true;
 	}
@@ -127,10 +135,10 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		cursorDown();
 		break;
 	case SDLK_PAGEUP:
-		scrollUp(_maxLines - 2); // scroll one page minus one line minus prompt
+		scrollPageUp();
 		break;
 	case SDLK_PAGEDOWN:
-		scrollDown(_maxLines - 2); // scroll one page minus one line minus prompt
+		scrollPageDown();
 		break;
 	case SDLK_TAB:
 		autoComplete();
@@ -249,6 +257,17 @@ void Console::scrollDown(const int lines) {
 		return;
 	}
 	_scrollPos = std::max(_scrollPos - lines, 0);
+}
+
+void Console::scrollPageUp() {
+	// scroll one page minus one line minus prompt
+	scrollUp(_maxLines - 2);
+}
+
+
+void Console::scrollPageDown() {
+	// scroll one page minus one line minus prompt
+	scrollDown(_maxLines - 2);
 }
 
 void Console::cursorRight() {
