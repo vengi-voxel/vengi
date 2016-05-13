@@ -85,7 +85,7 @@ public:
 			func(i->second);
 		}
 	}
-	
+
 	template<class Functor>
 	static void visitSorted(Functor func) {
 		ScopedReadLock lock(_lock);
