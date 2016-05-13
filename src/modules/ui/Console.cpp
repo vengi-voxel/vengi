@@ -342,17 +342,15 @@ void Console::render(const tb::TBRect &rect) {
 	const int lineHeight = _font->GetFontDescription().GetSize();
 	_maxLines = rect.h / lineHeight;
 	int maxY = _messages.size() * lineHeight;
-	const int startY = std::min(rect.y + rect.h, maxY) - lineHeight;
-	int y = startY - lineHeight;
+	const int startY = std::min(rect.y + rect.h - lineHeight, maxY);
 	MessagesIter i = _messages.rbegin();
 	std::advance(i, _scrollPos);
-	for (; i != _messages.rend(); ++i) {
+	for (int y = startY - lineHeight; i != _messages.rend(); ++i, y -= lineHeight) {
 		tb::TBStr str(i->c_str());
-		if (y - lineHeight < 0) {
+		if (y < 0) {
 			break;
 		}
 		_font->DrawString(consoleMarginLeft, y, consoleFontColor, str);
-		y -= lineHeight;
 	}
 
 	_font->DrawString(consoleMarginLeft, startY, consoleFontColor, consolePrompt);
