@@ -37,12 +37,14 @@ shapetool2: clean-local-config
 	$(Q)cd $(BUILDDIR); make shapetool copy-data-shapetool copy-data-shared $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(GDB) ./shapetool
 
-material-color: build
-	$(Q)cd $(BUILDDIR); ./tests --gtest_filter=MaterialTest* -- $(ARGS)
+material-color:
+	$(Q)cd $(BUILDDIR); make tests $(JOB_FLAG)
+	$(Q)cd $(BUILDDIR); $(GDB) ./tests --gtest_filter=MaterialTest* -- $(ARGS)
 	$(Q)xdg-open build/material.png
 
-test-ambient-occlusion: build
-	$(Q)cd $(BUILDDIR); ./tests --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
+test-ambient-occlusion:
+	$(Q)cd $(BUILDDIR); make tests $(JOB_FLAG)
+	$(Q)cd $(BUILDDIR); $(GDB) ./tests --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
 
 .PHONY: remotery
 remotery:
