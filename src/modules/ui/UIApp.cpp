@@ -267,12 +267,14 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 		if (mod != KMOD_NONE && !(modifier & mod)) {
 			continue;
 		}
-		if (command[0] == '+') {
-			if (core::Command::execute(command + " true") == 1) {
-				_keys[key] = modifier;
+		if (_keys.find(key) == _keys.end()) {
+			if (command[0] == '+') {
+				if (core::Command::execute(command + " true") == 1) {
+					_keys[key] = modifier;
+				}
+			} else {
+				core::Command::execute(command);
 			}
-		} else {
-			core::Command::execute(command);
 		}
 		return true;
 	}

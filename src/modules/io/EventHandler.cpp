@@ -50,8 +50,7 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		break;
 	case SDL_KEYDOWN:
 		// we are handling this on our own
-		if (!event.key.repeat)
-			keyPress((int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
+		keyPress((int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
 		break;
 	case SDL_MOUSEMOTION: {
 		if (event.motion.which == SDL_TOUCH_MOUSEID)
