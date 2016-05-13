@@ -26,25 +26,31 @@ clean-local-config:
 edit-local-config:
 	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
 
-server: build
-	$(Q)cd $(BUILDDIR); ./server $(ARGS)
+server:
+	$(Q)cd $(BUILDDIR); make $@ $(JOB_FLAG)
+	$(Q)cd $(BUILDDIR); ./$@ $(ARGS)
 
-client: build
-	$(Q)cd $(BUILDDIR); ./client $(ARGS)
+client:
+	$(Q)cd $(BUILDDIR); make $@ $(JOB_FLAG)
+	$(Q)cd $(BUILDDIR); ./$@ $(ARGS)
 
-debugclient: build
+debugclient:
+	$(Q)cd $(BUILDDIR); make client $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); gdb --args ./client $(ARGS)
 
-shapetool: build
-	$(Q)cd $(BUILDDIR); ./shapetool -set voxel-plainterrain false $(ARGS)
+shapetool:
+	$(Q)cd $(BUILDDIR); make $@ $(JOB_FLAG)
+	$(Q)cd $(BUILDDIR); ./$@ -set voxel-plainterrain false $(ARGS)
 
 run: shapetool
 
-runfast: build
+runfast:
+	$(Q)cd $(BUILDDIR); make shapetool $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); ./shapetool -set voxel-plainterrain true $(ARGS)
 
-tests: build
-	$(Q)cd $(BUILDDIR); ./tests -- $(ARGS)
+tests:
+	$(Q)cd $(BUILDDIR); make $@ $(JOB_FLAG)
+	$(Q)cd $(BUILDDIR); ./$@ -- $(ARGS)
 
 remotery:
 	$(Q)xdg-open file://$(CURDIR)/tools/remotery/index.html

@@ -100,4 +100,3 @@ public:
 };
 
 bool GLDebug::_enabled = false;
-
