@@ -125,8 +125,12 @@ AppState App::onConstruct() {
 	core::Command::registerCommand("show", [] (const core::CmdArgs& args) {
 		if (args.size() != 1)
 			return;
-		VarPtr st = core::Var::get(args[0]);
-		Log::info(" -> %s ",st->strVal().c_str());
+		const VarPtr& st = core::Var::get(args[0]);
+		if (st) {
+			Log::info(" -> %s ",st->strVal().c_str());
+		} else {
+			Log::info("not found");
+		}
 	});
 	core::Command::registerCommand("cvarlist", [] (const core::CmdArgs& args) {
 		core::Var::visit([] (const core::VarPtr& var) {
