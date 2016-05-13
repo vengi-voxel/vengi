@@ -280,7 +280,7 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 core::AppState UIApp::onConstruct() {
 	const core::AppState state = WindowedApp::onConstruct();
 	core::Command::registerCommand("cl_ui_debug", [&] (const core::CmdArgs& args) {
-#ifndef NDEBUG
+#ifdef DEBUG
 		tb::ShowDebugInfoSettingsWindow(&_root);
 #endif
 	});
