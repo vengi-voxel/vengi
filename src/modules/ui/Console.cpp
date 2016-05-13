@@ -74,6 +74,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		} else if (key == SDLK_e) {
 			_cursorPos = _commandLine.size();
 		} else if (key == SDLK_c) {
+			_messages.push_back(consolePrompt + _commandLine);
 			_cursorPos = 0;
 			_commandLine = "";
 		} else if (key == SDLK_d) {
