@@ -292,7 +292,7 @@ void Console::autoComplete() {
 			matches.push_back(var->name());
 		}
 	});
-	
+
 	if (matches.empty()) {
 		return;
 	}
