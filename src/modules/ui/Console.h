@@ -51,6 +51,7 @@ private:
 public:
 	Console();
 	bool init();
+	void shutdown();
 	bool toggle();
 	void render(const tb::TBRect &rect);
 	bool isActive() const;

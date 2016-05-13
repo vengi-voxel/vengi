@@ -1,8 +1,14 @@
 #include "Console.h"
+#include "core/App.h"
+#include "io/Filesystem.h"
 #include "core/Command.h"
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Tokenizer.h"
+
+namespace {
+static const char *historyFilename = "history";
+}
 
 namespace ui {
 
@@ -29,7 +35,29 @@ bool Console::init() {
 
 	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); });
 
+	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+	const std::string& content = fs->load(historyFilename);
+	core::string::splitString(content, _history, "\n");
+	_historyPos = _history.size();
+	Log::info("Loaded %i history entries", _historyPos);
+	Log::info("DEBUG: %s", content.c_str());
+
 	return true;
+}
+
+void Console::shutdown() {
+	std::string content;
+	for (const std::string& s : _history) {
+		content += s;
+		content += '\n';
+	}
+
+	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
+	if (!fs->write(historyFilename, content)) {
+		Log::warn("Failed to write the history");
+	} else {
+		Log::debug("Wrote the history");
+	}
 }
 
 bool Console::onKeyPress(int32_t key, int16_t modifier) {
@@ -222,7 +250,7 @@ void Console::autoComplete() {
 	std::vector<std::string> strings;
 	std::string match = "";
 	core::string::splitString(_commandLine, strings);
-const std::string search = strings.empty() ? "*" : strings[0] + "*";
+	const std::string search = strings.empty() ? "*" : strings[0] + "*";
 	core::Command::visit([&] (const core::Command& cmd) {
 		const std::string tmp();
 		if (core::string::matches(search, cmd.name())) {

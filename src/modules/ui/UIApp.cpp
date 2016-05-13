@@ -446,6 +446,9 @@ core::AppState UIApp::onCleanup() {
 
 	tb::TBWidgetsAnimationManager::Shutdown();
 	tb::tb_core_shutdown();
+
+	_console.shutdown();
+
 	return WindowedApp::onCleanup();
 }
 
