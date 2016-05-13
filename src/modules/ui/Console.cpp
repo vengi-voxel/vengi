@@ -201,26 +201,22 @@ void Console::cursorRight() {
 }
 
 void Console::autoComplete() {
-	if (_commandLine.empty()) {
-		return;
-	}
 	std::vector<std::string> matches;
 	std::vector<std::string> strings;
 	std::string match = "";
 	core::string::splitString(_commandLine, strings);
-	core_assert(!strings.empty());
-	if (strings.size() == 1) {
-		core::Command::visit([&] (const core::Command& cmd) {
-			const std::string tmp(strings[0] + "*");
-			if (core::string::matches(tmp, cmd.name())) {
-				matches.push_back(cmd.name());
-			}
-		});
-	}
-	if (matches.empty()) {
+const std::string search = strings.empty() ? "*" : strings[0] + "*";
+	core::Command::visit([&] (const core::Command& cmd) {
+		const std::string tmp();
+		if (core::string::matches(search, cmd.name())) {
+			matches.push_back(cmd.name());
+		}
+	});
+	// if we didn't find a command that matches, or there is nothing we could autocomplete
+	// we are trying to show the config vars
+	if (matches.empty() || strings.empty()) {
 		core::Var::visit([&] (const core::VarPtr& var) {
-			const std::string tmp(strings[0] + "*");
-			if (core::string::matches(tmp, var->name())) {
+			if (core::string::matches(search, var->name())) {
 				matches.push_back(var->name());
 			}
 		});

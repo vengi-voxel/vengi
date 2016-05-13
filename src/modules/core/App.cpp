@@ -130,7 +130,17 @@ AppState App::onConstruct() {
 	});
 	core::Command::registerCommand("cvarlist", [] (const core::CmdArgs& args) {
 		core::Var::visit([] (const core::VarPtr& var) {
-			Log::info("* %s = %s", var->name().c_str(), var->strVal().c_str());
+			const int flags = var->getFlags();
+			std::string flagsStr = "  ";
+			if (flags & CV_READONLY) {
+				flagsStr[0]  = 'R';
+			}
+			if (!(flags & CV_NOPERSIST)) {
+				flagsStr[1]  = 'S';
+			}
+			const std::string& name = core::string::format("%-28s", var->name().c_str());
+			const std::string& value = core::string::format("\"%s\"", var->strVal().c_str());
+			Log::info("* %s %s = %s", flagsStr.c_str(), name.c_str(), value.c_str());
 		});
 	});
 	core::Command::registerCommand("cmdlist", [] (const core::CmdArgs& args) {
