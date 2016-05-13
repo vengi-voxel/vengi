@@ -16,8 +16,8 @@ void main(void) {
 	vec3 normal = normalize(cross(fdx, fdy));
 	vec3 lightdir = normalize(v_lightpos - v_pos);
 
-	vec3 diffuse = v_diffuse_color * clamp(dot(normal, lightdir), 0.0, 1.0) * 0.7;
-	vec3 ambient = vec3(0.3);
+	vec3 diffuse = v_diffuse_color * clamp(dot(normal, lightdir), 0.0, 1.0) * 0.8;
+	vec3 ambient = vec3(0.2);
 	vec3 lightvalue = diffuse + ambient;
 
 	float fogstart = max(v_viewdistance - v_fogrange, 0.0);
