@@ -288,15 +288,11 @@ void Console::autoComplete() {
 			matches.push_back(cmd.name());
 		}
 	});
-	// if we didn't find a command that matches, or there is nothing we could autocomplete
-	// we are trying to show the config vars
-	if (matches.empty() || strings.empty()) {
-		core::Var::visitSorted([&] (const core::VarPtr& var) {
-			if (core::string::matches(search, var->name())) {
-				matches.push_back(var->name());
-			}
-		});
-	}
+	core::Var::visitSorted([&] (const core::VarPtr& var) {
+		if (core::string::matches(search, var->name())) {
+			matches.push_back(var->name());
+		}
+	});
 
 	if (matches.size() == 1) {
 		if (strings.size() == 1) {
