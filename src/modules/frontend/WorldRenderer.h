@@ -11,6 +11,7 @@
 #include "video/GBuffer.h"
 #include "video/GLMeshData.h"
 #include "core/GLM.h"
+#include "core/Var.h"
 #include "core/Color.h"
 #include "ClientEntity.h"
 
@@ -53,6 +54,7 @@ private:
 	glm::ivec3 _lastGridPosition;
 	voxel::WorldPtr _world;
 	video::GBuffer _gbuffer;
+	core::VarPtr _debugGeometry;
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh);

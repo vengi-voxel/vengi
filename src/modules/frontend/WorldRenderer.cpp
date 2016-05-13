@@ -108,7 +108,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera) {
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
-	auto debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "true")->boolVal();
+	auto debugGeometry = _debugGeometry->boolVal();
 	int drawCallsWorld = 0;
 	for (auto i = _meshData.begin(); i != _meshData.end();) {
 		const video::GLMeshData& meshData = *i;
@@ -385,6 +385,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 }
 
 void WorldRenderer::onInit(int width, int height) {
+	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false");
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
