@@ -38,8 +38,8 @@ private:
 	void cursorUp();
 	void cursorDown();
 
-	void scrollUp();
-	void scrollDown();
+	void scrollUp(const int lines = 1);
+	void scrollDown(const int lines = 1);
 
 	void autoComplete();
 

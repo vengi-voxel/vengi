@@ -127,10 +127,10 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		cursorDown();
 		break;
 	case SDLK_PAGEUP:
-		scrollUp();
+		scrollUp(_maxLines - 2); // scroll one page minus one line minus prompt
 		break;
 	case SDLK_PAGEDOWN:
-		scrollDown();
+		scrollDown(_maxLines - 2); // scroll one page minus one line minus prompt
 		break;
 	case SDLK_TAB:
 		autoComplete();
@@ -233,21 +233,21 @@ void Console::cursorDown() {
 	_cursorPos = _commandLine.size();
 }
 
-void Console::scrollUp() {
+void Console::scrollUp(const int lines) {
 	const int scrollableLines = _messages.size() - _maxLines;
 	if (scrollableLines <= 0) {
 		return;
 	}
 	if (_scrollPos <= scrollableLines) {
-		++_scrollPos;
+		_scrollPos += std::min(lines, scrollableLines - _scrollPos + 1);
 	}
 }
 
-void Console::scrollDown() {
+void Console::scrollDown(const int lines) {
 	if (_scrollPos <= 0) {
 		return;
 	}
-	--_scrollPos;
+	_scrollPos = std::max(_scrollPos - lines, 0);
 }
 
 void Console::cursorRight() {
