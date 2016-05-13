@@ -330,6 +330,7 @@ bool Console::toggle() {
 }
 
 void Console::clear() {
+	clearCommandLine();
 	_messages.clear();
 	_scrollPos = 0;
 }
