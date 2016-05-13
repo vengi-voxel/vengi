@@ -299,9 +299,13 @@ void Console::cursorDelete(bool moveCursor) {
 	if (_commandLine.empty()) {
 		return;
 	}
-	const int size = _commandLine.size();
-	if (_cursorPos > size - 1) {
+	if (moveCursor) {
+		if (_cursorPos <= 0) {
+			return;
+		}
 		cursorLeft();
+	} else if (_cursorPos >= _commandLine.size()) {
+		return;
 	}
 	_commandLine.erase(_cursorPos, 1);
 }
