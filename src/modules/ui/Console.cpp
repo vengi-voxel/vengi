@@ -137,7 +137,7 @@ bool Console::onTextInput(const std::string& text) {
 		return false;
 	}
 
-	if (_overwrite) {
+	if (_overwrite && _cursorPos < _commandLine.size()) {
 		cursorDelete();
 	}
 	_commandLine.insert(_commandLine.begin() + _cursorPos, text.begin(), text.end());
@@ -248,7 +248,7 @@ void Console::cursorDelete(bool moveCursor) {
 		return;
 	}
 	const int size = _commandLine.size();
-	if (moveCursor || _cursorPos > size - 1) {
+	if (_cursorPos > size - 1) {
 		cursorLeft();
 	}
 	_commandLine.erase(_cursorPos, 1);
