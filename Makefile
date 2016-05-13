@@ -32,6 +32,9 @@ server: build
 client: build
 	$(Q)cd $(BUILDDIR); ./client $(ARGS)
 
+debugclient: build
+	$(Q)cd $(BUILDDIR); gdb --args ./client $(ARGS)
+
 shapetool: build
 	$(Q)cd $(BUILDDIR); ./shapetool -set voxel-plainterrain false $(ARGS)
 

@@ -87,11 +87,11 @@ core::AppState Client::onInit() {
 	eventBus()->subscribe<network::DisconnectEvent>(*this);
 	eventBus()->subscribe<voxel::WorldCreatedEvent>(*this);
 
-	GLDebug::enable(GLDebug::Medium);
-
 	core::AppState state = UIApp::onInit();
 	if (state != core::Running)
 		return state;
+
+	GLDebug::enable(GLDebug::Medium);
 
 	if (!_network->start())
 		return core::Cleanup;

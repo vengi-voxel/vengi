@@ -30,6 +30,9 @@ ShapeTool::~ShapeTool() {
 
 core::AppState ShapeTool::onInit() {
 	core::AppState state = ui::UIApp::onInit();
+	if (state != core::Running)
+		return state;
+
 	GLDebug::enable(GLDebug::Medium);
 
 	if (!_worldShader.init()) {
