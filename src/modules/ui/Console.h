@@ -25,21 +25,26 @@ private:
 	bool _cursorBlink = false;
 	int _frame = 0;
 	int _cursorPos = 0;
+	int _scrollPos = 0;
+	int _maxLines = 0;
 
 	static void logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
 	// cursor move on the commandline
-	void cursorLeft ();
-	void cursorRight ();
+	void cursorLeft();
+	void cursorRight();
 
 	// history 'scroll' methods
-	void cursorUp ();
-	void cursorDown ();
+	void cursorUp();
+	void cursorDown();
+
+	void scrollUp();
+	void scrollDown();
 
 	void executeCommandLine();
 
 	// removed the character under the cursor position
-	void cursorDelete (bool moveCursor = true);
+	void cursorDelete(bool moveCursor = true);
 
 public:
 	Console();

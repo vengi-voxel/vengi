@@ -66,6 +66,12 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 	case SDLK_DOWN:
 		cursorDown();
 		break;
+	case SDLK_PAGEUP:
+		scrollUp();
+		break;
+	case SDLK_PAGEDOWN:
+		scrollDown();
+		break;
 	case SDLK_TAB:
 		// TODO: autoComplete();
 		break;
@@ -117,7 +123,11 @@ bool Console::onMouseWheel(int32_t x, int32_t y) {
 		return false;
 	}
 
-	// TODO: scrolling
+	if (y > 0) {
+		scrollUp();
+	} else {
+		scrollDown();
+	}
 
 	return true;
 }
@@ -164,6 +174,23 @@ void Console::cursorDown() {
 	}
 	_commandLine = _history[_historyPos];
 	_cursorPos = _commandLine.size();
+}
+
+void Console::scrollUp() {
+	const int scrollableLines = _messages.size() - _maxLines;
+	if (scrollableLines <= 0) {
+		return;
+	}
+	if (_scrollPos < scrollableLines) {
+		++_scrollPos;
+	}
+}
+
+void Console::scrollDown() {
+	if (_scrollPos <= 0) {
+		return;
+	}
+	--_scrollPos;
 }
 
 void Console::cursorRight() {
@@ -223,10 +250,13 @@ void Console::render(const tb::TBRect &rect) {
 	tb::g_renderer->DrawRectFill(rect, consoleBgColor);
 
 	const int lineHeight = _font->GetFontDescription().GetSize();
+	_maxLines = rect.h / lineHeight;
 	int maxY = _messages.size() * lineHeight;
 	const int startY = std::min(rect.y + rect.h, maxY) - lineHeight;
 	int y = startY - lineHeight;
-	for (MessagesIter i = _messages.rbegin(); i != _messages.rend(); ++i) {
+	MessagesIter i = _messages.rbegin();
+	std::advance(i, _scrollPos);
+	for (; i != _messages.rend(); ++i) {
 		tb::TBStr str(i->c_str());
 		if (y - lineHeight < 0) {
 			break;
