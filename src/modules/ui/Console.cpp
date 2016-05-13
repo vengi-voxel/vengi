@@ -250,7 +250,7 @@ void Console::autoComplete() {
 	std::string match = "";
 	core::string::splitString(_commandLine, strings);
 	const std::string search = strings.empty() ? "*" : strings[0] + "*";
-	core::Command::visit([&] (const core::Command& cmd) {
+	core::Command::visitSorted([&] (const core::Command& cmd) {
 		if (core::string::matches(search, cmd.name())) {
 			matches.push_back(cmd.name());
 		}
@@ -258,7 +258,7 @@ void Console::autoComplete() {
 	// if we didn't find a command that matches, or there is nothing we could autocomplete
 	// we are trying to show the config vars
 	if (matches.empty() || strings.empty()) {
-		core::Var::visit([&] (const core::VarPtr& var) {
+		core::Var::visitSorted([&] (const core::VarPtr& var) {
 			if (core::string::matches(search, var->name())) {
 				matches.push_back(var->name());
 			}

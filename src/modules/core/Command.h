@@ -85,6 +85,21 @@ public:
 			func(i->second);
 		}
 	}
+	
+	template<class Functor>
+	static void visitSorted(Functor func) {
+		ScopedReadLock lock(_lock);
+		std::vector<Command> commandList;
+		for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
+			commandList.push_back(i->second);
+		}
+		std::sort(begin(commandList), end(commandList), [](auto const &v1, auto const &v2) {
+			return v1.name() < v2.name();
+		});
+		for (const auto& command : commandList) {
+			func(command);
+		}
+	}
 
 	inline bool operator==(const Command& rhs) const {
 		return rhs._name == _name;

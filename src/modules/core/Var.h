@@ -76,6 +76,21 @@ public:
 		}
 	}
 
+	template<class Functor>
+	static void visitSorted(Functor func) {
+		ScopedReadLock lock(_lock);
+		std::vector<core::VarPtr> varList;
+		for (auto i = _vars.begin(); i != _vars.end(); ++i) {
+			varList.push_back(i->second);
+		}
+		std::sort(begin(varList), end(varList), [](auto const &v1, auto const &v2) {
+			return v1->name() < v2->name();
+		});
+		for (const auto& var : varList) {
+			func(var);
+		}
+	}
+
 	/**
 	 * @return the bitmask of flags for this var
 	 * @note See the existing @c CV_ ints
