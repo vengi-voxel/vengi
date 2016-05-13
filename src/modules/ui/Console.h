@@ -20,8 +20,26 @@ private:
 	core::VarPtr _autoEnable;
 	tb::TBFontFace *_font;
 	std::string _commandLine;
+	// commandline character will get overwritten if this is true
+	bool _overwrite = false;
+	bool _cursorBlink = false;
+	int _frame = 0;
+	int _cursorPos = 0;
 
 	static void logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message);
+
+	// cursor move on the commandline
+	void cursorLeft ();
+	void cursorRight ();
+
+	// history 'scroll' methods
+	void cursorUp ();
+	void cursorDown ();
+
+	void executeCommandLine();
+
+	// removed the character under the cursor position
+	void cursorDelete (bool moveCursor = true);
 
 public:
 	Console();
