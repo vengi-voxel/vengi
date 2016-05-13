@@ -8,6 +8,7 @@
 
 namespace {
 static const char *historyFilename = "history";
+static const auto consolePrompt = "> ";
 }
 
 namespace ui {
@@ -126,7 +127,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 void Console::executeCommandLine() {
-	_messages.push_back(_commandLine);
+	_messages.push_back(consolePrompt + _commandLine);
 	if (_commandLine.empty()) {
 		return;
 	}
@@ -346,7 +347,7 @@ void Console::render(const tb::TBRect &rect) {
 		y -= lineHeight;
 	}
 
-	_font->DrawString(5, startY, consoleFontColor, "] ");
+	_font->DrawString(consoleMarginLeft, startY, consoleFontColor, consolePrompt);
 	const tb::TBStr cmdLine(_commandLine.c_str());
 	_font->DrawString(15, startY, consoleFontColor, cmdLine);
 	if (_cursorBlink) {
