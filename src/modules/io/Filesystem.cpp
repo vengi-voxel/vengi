@@ -70,6 +70,7 @@ bool Filesystem::write(const std::string& filename, const std::string& string) {
 }
 
 bool Filesystem::createDir(const std::string& path) const {
+	// TODO: windows
 	return ::mkdir(path.c_str(), 0700);
 }
 
