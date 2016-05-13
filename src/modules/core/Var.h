@@ -120,6 +120,7 @@ public:
 	 * @return @c true if some @c Var::setVal call changed the initial/default value that was specified on construction
 	 */
 	bool isDirty() const;
+	void markClean();
 };
 
 inline float Var::floatVal() const {
@@ -152,6 +153,10 @@ inline const std::string& Var::name() const {
 
 inline bool Var::isDirty() const {
 	return _dirty;
+}
+
+inline void Var::markClean() {
+	_dirty = false;
 }
 
 inline int Var::getFlags() const {
