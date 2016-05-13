@@ -60,12 +60,17 @@ std::string Filesystem::load(const std::string& filename) {
 
 bool Filesystem::write(const std::string& filename, const uint8_t* content, size_t length) {
 	io::File f(_homePath + filename);
+	createDir(f.getPath());
 	return f.write(content, length) == static_cast<long>(length);
 }
 
 bool Filesystem::write(const std::string& filename, const std::string& string) {
 	const uint8_t* buf = reinterpret_cast<const uint8_t*>(string.c_str());
 	return write(filename, buf, string.size());
+}
+
+bool Filesystem::createDir(const std::string& path) const {
+	return ::mkdir(path.c_str(), 0700);
 }
 
 }

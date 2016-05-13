@@ -475,6 +475,29 @@ core::AppState UIApp::onCleanup() {
 
 	_console.shutdown();
 
+	std::string keybindings;
+
+	for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
+		const int32_t key = i->first;
+		const CommandModifierPair& pair = i->second;
+		const std::string keyName = core::string::toLower(SDL_GetKeyName(key));
+		const int16_t modifier = pair.second;
+		std::string modifierKey;
+		if (modifier & KMOD_ALT) {
+			modifierKey += "alt+";
+		}
+		if (modifier & KMOD_SHIFT) {
+			modifierKey += "shift+";
+		}
+		if (modifier & KMOD_CTRL) {
+			modifierKey += "ctrl+";
+		}
+		const std::string& command = pair.first;
+		keybindings += modifierKey + keyName + " " + command + '\n';
+	}
+	Log::info("%s", keybindings.c_str());
+	filesystem()->write("ui/keybindings.cfg", keybindings);
+
 	return WindowedApp::onCleanup();
 }
 

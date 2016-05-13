@@ -53,6 +53,8 @@ public:
 	bool write(const std::string& filename, const uint8_t* content, size_t length);
 
 	bool write(const std::string& filename, const std::string& string);
+
+	bool createDir(const std::string& dir) const;
 };
 
 inline const std::string& Filesystem::basePath() const {
