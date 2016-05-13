@@ -324,7 +324,7 @@ void Console::cursorDelete(bool moveCursor) {
 			return;
 		}
 		cursorLeft();
-	} else if (_cursorPos >= _commandLine.size()) {
+	} else if (_cursorPos >= static_cast<int>(_commandLine.size())) {
 		return;
 	}
 	_commandLine.erase(_cursorPos, 1);
