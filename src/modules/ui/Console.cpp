@@ -238,7 +238,7 @@ void Console::scrollUp() {
 	if (scrollableLines <= 0) {
 		return;
 	}
-	if (_scrollPos < scrollableLines) {
+	if (_scrollPos <= scrollableLines) {
 		++_scrollPos;
 	}
 }
