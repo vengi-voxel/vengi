@@ -181,7 +181,7 @@ bool Console::onTextInput(const std::string& text) {
 		return false;
 	}
 
-	if (_overwrite && _cursorPos < _commandLine.size()) {
+	if (_overwrite && _cursorPos < int(_commandLine.size())) {
 		cursorDelete();
 	}
 	_commandLine.insert(_commandLine.begin() + _cursorPos, text.begin(), text.end());
@@ -251,7 +251,6 @@ void Console::autoComplete() {
 	core::string::splitString(_commandLine, strings);
 	const std::string search = strings.empty() ? "*" : strings[0] + "*";
 	core::Command::visit([&] (const core::Command& cmd) {
-		const std::string tmp();
 		if (core::string::matches(search, cmd.name())) {
 			matches.push_back(cmd.name());
 		}
