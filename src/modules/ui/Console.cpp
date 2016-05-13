@@ -73,7 +73,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		scrollDown();
 		break;
 	case SDLK_TAB:
-		// TODO: autoComplete();
+		autoComplete();
 		break;
 	}
 
@@ -200,6 +200,49 @@ void Console::cursorRight() {
 	}
 }
 
+void Console::autoComplete() {
+	if (_commandLine.empty()) {
+		return;
+	}
+	std::vector<std::string> matches;
+	std::vector<std::string> strings;
+	std::string match = "";
+	core::string::splitString(_commandLine, strings);
+	core_assert(!strings.empty());
+	if (strings.size() == 1) {
+		core::Command::visit([&] (const core::Command& cmd) {
+			const std::string tmp(strings[0] + "*");
+			if (core::string::matches(tmp, cmd.name())) {
+				matches.push_back(cmd.name());
+			}
+		});
+	}
+	if (matches.empty()) {
+		core::Var::visit([&] (const core::VarPtr& var) {
+			const std::string tmp(strings[0] + "*");
+			if (core::string::matches(tmp, var->name())) {
+				matches.push_back(var->name());
+			}
+		});
+	}
+
+	if (matches.size() == 1) {
+		if (strings.size() == 1) {
+			_commandLine = matches.front();
+		} else {
+			const int start = _commandLine.size() - match.size();
+			_commandLine.replace(start, _commandLine.size() - 1, matches.front());
+		}
+		_cursorPos = _commandLine.size();
+	} else if (matches.empty()) {
+		Log::info("no matches found for %s", _commandLine.c_str());
+	} else {
+		for (std::vector<std::string>::const_iterator i = matches.begin(); i != matches.end(); ++i) {
+			Log::info("%s", (*i).c_str());
+		}
+	}
+}
+
 void Console::cursorDelete(bool moveCursor) {
 	if (_commandLine.empty()) {
 		return;
@@ -226,7 +269,6 @@ void Console::logConsole(void *userdata, int category, SDL_LogPriority priority,
 
 bool Console::toggle() {
 	_consoleActive ^= true;
-	Log::info("toggle game console");
 	if (_consoleActive) {
 		SDL_StartTextInput();
 	} else {

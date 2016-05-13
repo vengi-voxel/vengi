@@ -41,6 +41,8 @@ private:
 	void scrollUp();
 	void scrollDown();
 
+	void autoComplete();
+
 	void executeCommandLine();
 
 	// removed the character under the cursor position
