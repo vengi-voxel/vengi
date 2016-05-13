@@ -300,10 +300,10 @@ void Console::autoComplete() {
 
 	if (matches.size() == 1) {
 		if (strings.size() == 1) {
-			_commandLine = matches.front();
+			_commandLine = matches.front() + " ";
 		} else {
 			const int start = _commandLine.size() - match.size();
-			_commandLine.replace(start, _commandLine.size() - 1, matches.front());
+			_commandLine.replace(start, _commandLine.size() - 1, matches.front() + " ");
 		}
 		_cursorPos = _commandLine.size();
 	} else {
