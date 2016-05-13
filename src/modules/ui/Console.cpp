@@ -307,6 +307,7 @@ void Console::autoComplete() {
 		}
 		_cursorPos = _commandLine.size();
 	} else {
+		_messages.push_back(consolePrompt + _commandLine);
 		for (std::vector<std::string>::const_iterator i = matches.begin(); i != matches.end(); ++i) {
 			Log::info("%s", (*i).c_str());
 		}
