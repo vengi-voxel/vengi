@@ -10,7 +10,8 @@
 
 namespace ui {
 
-typedef std::unordered_multimap<int32_t, std::pair<std::string, int16_t> > BindMap;
+typedef std::pair<std::string, int16_t> CommandModifierPair;
+typedef std::unordered_multimap<int32_t, CommandModifierPair> BindMap;
 
 class KeybindingParser: public core::Tokenizer {
 private:
