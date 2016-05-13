@@ -210,5 +210,7 @@ inline std::string trim(const std::string &str) {
 	return ltrim(rtrim(str));
 }
 
+extern bool matches (const std::string& pattern, const std::string& text);
+
 }
 }
