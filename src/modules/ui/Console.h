@@ -53,6 +53,7 @@ public:
 	bool init();
 	void shutdown();
 	bool toggle();
+	void clear();
 	void render(const tb::TBRect &rect);
 	bool isActive() const;
 	bool onTextInput(const std::string& text);

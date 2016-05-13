@@ -37,6 +37,7 @@ bool Console::init() {
 	_font->RenderGlyphs(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNORSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·");
 
 	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); });
+	core::Command::registerCommand("clear", [&] (const core::CmdArgs& args) { clear(); });
 
 	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
 	const std::string& content = fs->load(historyFilename);
@@ -317,6 +318,11 @@ bool Console::toggle() {
 		SDL_StopTextInput();
 	}
 	return _consoleActive;
+}
+
+void Console::clear() {
+	_messages.clear();
+	_scrollPos = 0;
 }
 
 void Console::render(const tb::TBRect &rect) {
