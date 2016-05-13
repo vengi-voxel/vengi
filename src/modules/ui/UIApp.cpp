@@ -287,6 +287,39 @@ core::AppState UIApp::onConstruct() {
 
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
 
+	core::Command::registerCommand("bind", [this] (const core::CmdArgs& args) {
+		if (args.size() != 2) {
+			Log::error("Expected parameters: key+modifier command - got %i parameters", (int)args.size());
+			return;
+		}
+		std::string result;
+		for (const std::string& s : args) {
+			result += s;
+			result += " ";
+		}
+
+		KeybindingParser p(result);
+		const BindMap& bindings = p.getBindings();
+		for (BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
+			const uint32_t key = i->first;
+			const CommandModifierPair& pair = i->second;
+			auto range = _bindings.equal_range(key);
+			bool found = false;
+			for (auto it = range.first; it != range.second; ++it) {
+				if (it->second.second == pair.second) {
+					it->second.first = pair.first;
+					found = true;
+					Log::info("Updated binding for key %s", args[0].c_str());
+					break;
+				}
+			}
+			if (!found) {
+				_bindings.insert(std::make_pair(key, pair));
+				Log::info("Added binding for key %s", args[0].c_str());
+			}
+		}
+	});
+
 	return state;
 }
 
