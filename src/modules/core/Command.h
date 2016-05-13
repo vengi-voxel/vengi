@@ -78,6 +78,14 @@ public:
 		return true;
 	}
 
+	template<class Functor>
+	static void visit(Functor func) {
+		ScopedReadLock lock(_lock);
+		for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
+			func(i->second);
+		}
+	}
+
 	inline bool operator==(const Command& rhs) const {
 		return rhs._name == _name;
 	}
