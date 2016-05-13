@@ -37,9 +37,27 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		return false;
 	}
 
+	if (modifier & KMOD_CTRL) {
+		if (key == SDLK_a) {
+			_cursorPos = 0;
+		} else if (key == SDLK_e) {
+			_cursorPos = _commandLine.size();
+		} else if (key == SDLK_c) {
+			_cursorPos = 0;
+			_commandLine = "";
+		}
+		return true;
+	}
+
 	switch (key) {
 	case SDLK_ESCAPE:
 		toggle();
+		break;
+	case SDLK_HOME:
+		_cursorPos = 0;
+		break;
+	case SDLK_END:
+		_cursorPos = _commandLine.size();
 		break;
 	case SDLK_RETURN:
 	case SDLK_KP_ENTER:
@@ -96,22 +114,21 @@ void Console::executeCommandLine() {
 		core::string::splitString(command, tokens);
 		std::string cmd = core::string::eraseAllSpaces(tokens[0]);
 		tokens.erase(tokens.begin());
-		if (!core::Command::execute(cmd)) {
-			const core::VarPtr& c = core::Var::get(cmd, "", core::CV_NOTCREATEEMPTY);
-			if (c) {
-				if (tokens.empty()) {
-					if (c->strVal().empty())
-						Log::info("%s: no value set", cmd.c_str());
-					else
-						Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
-				} else {
-					c->setVal(core::string::eraseAllSpaces(tokens[0]));
-				}
-			} else {
-				Log::info("unknown config variable %s", cmd.c_str());
-			}
+		if (core::Command::execute(cmd, tokens)) {
+			continue;
+		}
+		const core::VarPtr& c = core::Var::get(cmd, "", core::CV_NOTCREATEEMPTY);
+		if (!c) {
+			Log::info("unknown config variable %s", cmd.c_str());
+			continue;
+		}
+		if (tokens.empty()) {
+			if (c->strVal().empty())
+				Log::info("%s: no value set", cmd.c_str());
+			else
+				Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
 		} else {
-			core::Command::execute(cmd, tokens);
+			c->setVal(core::string::eraseAllSpaces(tokens[0]));
 		}
 	}
 	_commandLine.clear();
