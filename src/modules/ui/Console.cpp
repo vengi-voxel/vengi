@@ -75,8 +75,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 			_cursorPos = _commandLine.size();
 		} else if (key == SDLK_c) {
 			_messages.push_back(consolePrompt + _commandLine);
-			_cursorPos = 0;
-			_commandLine = "";
+			clearCommandLine();
 		} else if (key == SDLK_d) {
 			toggle();
 		} else if (key == SDLK_l) {
@@ -167,8 +166,7 @@ void Console::executeCommandLine() {
 			c->setVal(core::string::eraseAllSpaces(tokens[0]));
 		}
 	}
-	_commandLine.clear();
-	_cursorPos = 0;
+	clearCommandLine();
 }
 
 bool Console::onMouseWheel(int32_t x, int32_t y) {
@@ -221,8 +219,7 @@ void Console::cursorDown() {
 	const size_t entries = _history.size();
 	if (_historyPos >= entries) {
 		_historyPos = entries;
-		_commandLine = "";
-		_cursorPos = 0;
+		clearCommandLine();
 		return;
 	}
 	_commandLine = _history[_historyPos];
@@ -328,6 +325,11 @@ bool Console::toggle() {
 void Console::clear() {
 	_messages.clear();
 	_scrollPos = 0;
+}
+
+inline void Console::clearCommandLine() {
+	_cursorPos = 0;
+	_commandLine.clear();
 }
 
 void Console::render(const tb::TBRect &rect) {
