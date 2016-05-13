@@ -78,6 +78,8 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 			_commandLine = "";
 		} else if (key == SDLK_d) {
 			toggle();
+		} else if (key == SDLK_l) {
+			clear();
 		}
 		return true;
 	}
