@@ -292,6 +292,27 @@ core::AppState UIApp::onConstruct() {
 
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
 
+	core::Command::registerCommand("bindlist", [this] (const core::CmdArgs& args) {
+		for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
+			const int32_t key = i->first;
+			const CommandModifierPair& pair = i->second;
+			const char* keyName = SDL_GetKeyName(key);
+			const int16_t modifier = pair.second;
+			std::string modifierKey;
+			if (modifier & KMOD_ALT) {
+				modifierKey += "ALT ";
+			}
+			if (modifier & KMOD_SHIFT) {
+				modifierKey += "SHIFT ";
+			}
+			if (modifier & KMOD_CTRL) {
+				modifierKey += "CTRL ";
+			}
+			const std::string& command = pair.first;
+			Log::info("%-15s %-10s %s", modifierKey.c_str(), keyName, command.c_str());
+		}
+	});
+
 	core::Command::registerCommand("bind", [this] (const core::CmdArgs& args) {
 		if (args.size() != 2) {
 			Log::error("Expected parameters: key+modifier command - got %i parameters", (int)args.size());
