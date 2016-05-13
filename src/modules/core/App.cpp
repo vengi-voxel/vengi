@@ -210,11 +210,18 @@ AppState App::onCleanup() {
 	if (!_organisation.empty() && !_appname.empty()) {
 		Log::debug("save the config variables");
 		std::stringstream ss;
+		std::vector<core::VarPtr> varList;
 		core::Var::visit([&](const core::VarPtr& var) {
 			if (var->getFlags() & core::CV_NOPERSIST)
 				return;
-			ss << var->name() << " \"" << var->strVal() << "\"" << std::endl;
+			varList.push_back(var);
 		});
+		std::sort(begin(varList), end(varList), [](auto const &v1, auto const &v2) {
+			return v1->name() < v2->name();
+		});
+		for (const auto& var : varList) {
+			ss << var->name() << " \"" << var->strVal() << "\"" << std::endl;
+		}
 		const std::string& str = ss.str();
 		_filesystem->write(_appname + ".vars", str);
 	} else {
