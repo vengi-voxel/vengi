@@ -280,7 +280,6 @@ void Console::cursorRight() {
 void Console::autoComplete() {
 	std::vector<std::string> matches;
 	std::vector<std::string> strings;
-	std::string match = "";
 	core::string::splitString(_commandLine, strings);
 	const std::string search = strings.empty() ? "*" : strings[0] + "*";
 	core::Command::visitSorted([&] (const core::Command& cmd) {
@@ -302,8 +301,8 @@ void Console::autoComplete() {
 		if (strings.size() == 1) {
 			_commandLine = matches.front() + " ";
 		} else {
-			const int start = _commandLine.size() - match.size();
-			_commandLine.replace(start, _commandLine.size() - 1, matches.front() + " ");
+			_commandLine.erase(0, strings[0].size());
+			_commandLine.insert(0, matches.front());
 		}
 		_cursorPos = _commandLine.size();
 	} else {
