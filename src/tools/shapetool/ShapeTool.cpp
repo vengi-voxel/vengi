@@ -18,7 +18,6 @@ ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, 
 		_meshShader(new frontend::MeshShader()), _colorShader(new frontend::ColorShader()) {
 	init("engine", "shapetool");
 	_world->setClientData(true);
-	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
 }
 
 ShapeTool::~ShapeTool() {
@@ -44,6 +43,9 @@ core::AppState ShapeTool::onInit() {
 	if (!_colorShader->init()) {
 		return core::Cleanup;
 	}
+
+	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
@@ -205,7 +207,7 @@ void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) 
 	if (!current) {
 		return;
 	}
-	_camera.onMotion(x, y, relX, relY);
+	_camera.onMotion(x, y, relX, relY, _rotationSpeed->floatVal());
 }
 
 void ShapeTool::placeTree(const voxel::TreeContext& ctx) {

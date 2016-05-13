@@ -32,7 +32,6 @@ Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::
 		_worldRenderer(world) {
 	_world->setClientData(true);
 	init("engine", "client");
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 }
 
 Client::~Client() {
@@ -98,6 +97,7 @@ core::AppState Client::onInit() {
 
 	core::Var::get(cfg::ClientName, "noname");
 	core::Var::get(cfg::ClientPassword, "nopassword");
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
 	if (!_worldShader.init()) {
 		return core::Cleanup;
