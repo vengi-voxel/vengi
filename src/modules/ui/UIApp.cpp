@@ -251,6 +251,9 @@ bool UIApp::onTextInput(const std::string& text) {
 }
 
 bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
+	if (WindowedApp::onKeyPress(key, modifier)) {
+		return true;
+	}
 	if (_console.onKeyPress(key, modifier)) {
 		return true;
 	}

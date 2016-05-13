@@ -30,6 +30,7 @@ protected:
 public:
 	virtual core::AppState onRunning() override;
 	virtual void onAfterRunning() override;
+	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;
 	virtual core::AppState onCleanup() override;

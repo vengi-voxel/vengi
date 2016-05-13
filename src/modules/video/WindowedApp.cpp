@@ -65,6 +65,21 @@ core::AppState WindowedApp::onRunning() {
 	return core::AppState::Running;
 }
 
+bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
+	if (modifier & KMOD_LALT) {
+		if (key == SDLK_RETURN) {
+			const int flags = SDL_GetWindowFlags(_window);
+			if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+				SDL_SetWindowFullscreen(_window, 0);
+			} else {
+				SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
 core::AppState WindowedApp::onInit() {
 	core::AppState state = App::onInit();
 	if (state == core::AppState::Cleanup) {
