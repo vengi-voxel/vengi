@@ -128,6 +128,16 @@ AppState App::onConstruct() {
 		VarPtr st = core::Var::get(args[0]);
 		Log::info(" -> %s ",st->strVal().c_str());
 	});
+	core::Command::registerCommand("cvarlist", [] (const core::CmdArgs& args) {
+		core::Var::visit([] (const core::VarPtr& var) {
+			Log::info("* %s = %s", var->name().c_str(), var->strVal().c_str());
+		});
+	});
+	core::Command::registerCommand("cmdlist", [] (const core::CmdArgs& args) {
+		core::Command::visit([] (const core::Command& cmd) {
+			Log::info("* %s", cmd.name().c_str());
+		});
+	});
 
 	Log::info("detected %u cpus", core::cpus());
 

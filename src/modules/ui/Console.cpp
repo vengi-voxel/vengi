@@ -28,11 +28,6 @@ bool Console::init() {
 	_font->RenderGlyphs(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNORSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·");
 
 	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); });
-	core::Command::registerCommand("cvarlist", [&] (const core::CmdArgs& args) {
-		core::Var::visit([] (const core::VarPtr& var) {
-			Log::info("* %s = %s", var->name().c_str(), var->strVal().c_str());
-		});
-	});
 
 	return true;
 }
