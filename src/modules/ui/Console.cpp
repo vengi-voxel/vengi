@@ -9,6 +9,8 @@
 namespace {
 static const char *historyFilename = "history";
 static const auto consolePrompt = "> ";
+static const auto consoleMarginLeft = 5;
+static const auto consoleMarginLeftBehindPrompt = 13;
 }
 
 namespace ui {
@@ -343,16 +345,16 @@ void Console::render(const tb::TBRect &rect) {
 		if (y - lineHeight < 0) {
 			break;
 		}
-		_font->DrawString(5, y, consoleFontColor, str);
+		_font->DrawString(consoleMarginLeft, y, consoleFontColor, str);
 		y -= lineHeight;
 	}
 
 	_font->DrawString(consoleMarginLeft, startY, consoleFontColor, consolePrompt);
 	const tb::TBStr cmdLine(_commandLine.c_str());
-	_font->DrawString(15, startY, consoleFontColor, cmdLine);
+	_font->DrawString(consoleMarginLeft + consoleMarginLeftBehindPrompt, startY, consoleFontColor, cmdLine);
 	if (_cursorBlink) {
 		const int l = _font->GetStringWidth(_commandLine.c_str(), _cursorPos);
-		_font->DrawString(15 + l, startY, consoleFontColor, "_");
+		_font->DrawString(consoleMarginLeft + consoleMarginLeftBehindPrompt + l, startY, consoleFontColor, "_");
 	}
 }
 
