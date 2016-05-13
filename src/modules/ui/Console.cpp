@@ -40,7 +40,6 @@ bool Console::init() {
 	core::string::splitString(content, _history, "\n");
 	_historyPos = _history.size();
 	Log::info("Loaded %i history entries", _historyPos);
-	Log::info("DEBUG: %s", content.c_str());
 
 	return true;
 }
