@@ -386,12 +386,14 @@ core::AppState UIApp::onRunning() {
 
 	for (KeyMapConstIter it = _keys.begin(); it != _keys.end(); ++it) {
 		const int key = it->first;
-		auto i = _bindings.find(key);
-		const std::string& command = i->second.first;
-		const int16_t modifier = it->second;
-		if (i->second.second == modifier && command[0] == '+') {
-			core_assert(1 == core::Command::execute(command + " true"));
-			_keys[key] = modifier;
+		auto range = _bindings.equal_range(key);
+		for (auto i = range.first; i != range.second; ++i) {
+			const std::string& command = i->second.first;
+			const int16_t modifier = i->second.second;
+			if (it->second == modifier && command[0] == '+') {
+				core_assert(1 == core::Command::execute(command + " true"));
+				_keys[key] = modifier;
+			}
 		}
 	}
 
