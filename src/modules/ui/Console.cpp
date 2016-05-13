@@ -293,6 +293,10 @@ void Console::autoComplete() {
 			matches.push_back(var->name());
 		}
 	});
+	
+	if (matches.empty()) {
+		return;
+	}
 
 	if (matches.size() == 1) {
 		if (strings.size() == 1) {
@@ -302,8 +306,6 @@ void Console::autoComplete() {
 			_commandLine.replace(start, _commandLine.size() - 1, matches.front());
 		}
 		_cursorPos = _commandLine.size();
-	} else if (matches.empty()) {
-		Log::info("no matches found for %s", _commandLine.c_str());
 	} else {
 		for (std::vector<std::string>::const_iterator i = matches.begin(); i != matches.end(); ++i) {
 			Log::info("%s", (*i).c_str());
