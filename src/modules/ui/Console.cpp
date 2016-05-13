@@ -83,7 +83,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		}
 		return true;
 	}
-	
+
 	if (modifier & KMOD_SHIFT) {
 		if (key == SDLK_TAB) {
 			toggle();
