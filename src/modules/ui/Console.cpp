@@ -76,6 +76,8 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		} else if (key == SDLK_c) {
 			_cursorPos = 0;
 			_commandLine = "";
+		} else if (key == SDLK_d) {
+			toggle();
 		}
 		return true;
 	}
