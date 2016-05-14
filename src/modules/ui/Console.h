@@ -33,6 +33,8 @@ private:
 	// cursor move on the commandline
 	void cursorLeft();
 	void cursorRight();
+	void cursorWordLeft();
+	void cursorWordRight();
 
 	// history 'scroll' methods
 	void cursorUp();

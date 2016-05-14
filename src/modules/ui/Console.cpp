@@ -68,6 +68,16 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		return false;
 	}
 
+	if (modifier & KMOD_ALT) {
+		if (key == SDLK_BACKSPACE) {
+		} else if (key == SDLK_LEFT) {
+			cursorWordLeft();
+		} else if (key == SDLK_RIGHT) {
+			cursorWordRight();
+		}
+		return true;
+	}
+
 	if (modifier & KMOD_CTRL) {
 		if (key == SDLK_a) {
 			_cursorPos = 0;
@@ -80,6 +90,10 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 			toggle();
 		} else if (key == SDLK_l) {
 			clear();
+		} else if (key == SDLK_LEFT) {
+			cursorWordLeft();
+		} else if (key == SDLK_RIGHT) {
+			cursorWordRight();
 		}
 		return true;
 	}
@@ -219,6 +233,33 @@ void Console::cursorLeft() {
 	}
 }
 
+void Console::cursorRight() {
+	const int size = _commandLine.size();
+	if (_cursorPos < size) {
+		_cursorPos++;
+	}
+}
+
+void Console::cursorWordLeft() {
+	auto prevWordEnd = _commandLine.find_last_of(" ", std::max(0, _cursorPos - 1));
+	if (std::string::npos == prevWordEnd) {
+		_cursorPos = 0;
+		return;
+	}
+	_cursorPos = prevWordEnd;
+}
+
+void Console::cursorWordRight() {
+	auto spaceOffset = _commandLine[_cursorPos] == ' ' ? 1 : 0;
+	auto partialCommandLine = _commandLine.substr(_cursorPos + spaceOffset);
+	auto nextWordEnd = partialCommandLine.find_first_of(" ");
+	if (std::string::npos == nextWordEnd) {
+		_cursorPos = _commandLine.size();
+		return;
+	}
+	_cursorPos = std::min(_commandLine.size(), _cursorPos + nextWordEnd + spaceOffset);
+}
+
 void Console::cursorUp() {
 	if (_historyPos <= 0) {
 		return;
@@ -268,13 +309,6 @@ void Console::scrollPageUp() {
 void Console::scrollPageDown() {
 	// scroll one page minus one line minus prompt
 	scrollDown(_maxLines - 2);
-}
-
-void Console::cursorRight() {
-	const int size = _commandLine.size();
-	if (_cursorPos < size) {
-		_cursorPos++;
-	}
 }
 
 void Console::autoComplete() {
