@@ -70,6 +70,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 
 	if (modifier & KMOD_ALT) {
 		if (key == SDLK_BACKSPACE) {
+			cursorDeleteWord();
 		} else if (key == SDLK_LEFT) {
 			cursorWordLeft();
 		} else if (key == SDLK_RIGHT) {
@@ -359,10 +360,26 @@ void Console::cursorDelete(bool moveCursor) {
 			return;
 		}
 		cursorLeft();
-	} else if (_cursorPos >= static_cast<int>(_commandLine.size())) {
-		return;
 	}
 	_commandLine.erase(_cursorPos, 1);
+}
+
+void Console::cursorDeleteWord() {
+	if (_commandLine.empty()) {
+		return;
+	}
+	if (0 >= _cursorPos) {
+		return;
+	}
+	auto spaceOffset = _commandLine[_cursorPos - 1] == ' ' ? 1 : 0;
+	auto prevWordStart = _commandLine.find_last_of(" ", _cursorPos - spaceOffset - 1);
+	if (std::string::npos == prevWordStart) {
+		_commandLine.erase(0, _cursorPos);
+		_cursorPos = 0;
+		return;
+	}
+	_commandLine.erase(prevWordStart + 1, _cursorPos - prevWordStart - 1);
+	_cursorPos = prevWordStart + 1;
 }
 
 void Console::logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message) {

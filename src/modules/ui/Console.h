@@ -51,6 +51,7 @@ private:
 
 	// removed the character under the cursor position
 	void cursorDelete(bool moveCursor = true);
+	void cursorDeleteWord();
 
 public:
 	Console();
