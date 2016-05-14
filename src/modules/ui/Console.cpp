@@ -91,6 +91,8 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 			toggle();
 		} else if (key == SDLK_l) {
 			clear();
+		} else if (key == SDLK_w) {
+			cursorDeleteWord();
 		} else if (key == SDLK_LEFT) {
 			cursorWordLeft();
 		} else if (key == SDLK_RIGHT) {
