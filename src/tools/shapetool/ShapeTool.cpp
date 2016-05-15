@@ -6,7 +6,6 @@
 #include "sauce/ShapeToolInjector.h"
 #include "video/Shader.h"
 #include "video/GLDebug.h"
-#include "core/Color.h"
 #include "core/GLM.h"
 #include "core/Color.h"
 #include "ui/WorldParametersWindow.h"
@@ -32,9 +31,6 @@ core::AppState ShapeTool::onInit() {
 	core::AppState state = ui::UIApp::onInit();
 	if (state != core::Running)
 		return state;
-
-	core_assert(_font.init(_root.GetFont()));
-	_font.color(core::Color::White);
 
 	GLDebug::enable(GLDebug::Medium);
 
@@ -133,18 +129,23 @@ void ShapeTool::beforeUI() {
 }
 
 void ShapeTool::afterUI() {
+	tb::TBStr drawCallsWorld;
+	drawCallsWorld.SetFormatted("drawcalls world: %i", _drawCallsWorld);
+	tb::TBStr drawCallsEntity;
+	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
+	tb::TBStr position;
 	const glm::vec3& pos = _camera.getPosition();
+	position.SetFormatted("pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
+	tb::TBStr extractions;
 	int meshes;
 	int extracted;
 	int pending;
 	_worldRenderer.stats(meshes, extracted, pending);
-
-	_font.pos(5, 20);
-	_font.draw("drawcalls world: %i", _drawCallsWorld);
-	_font.draw("drawcalls entities: %i", _drawCallsEntities);
-	_font.draw("pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
-	_font.draw("pending: %i, meshes: %i, extracted: %i", pending, meshes, extracted);
-
+	extractions.SetFormatted("pending: %i, meshes: %i, extracted: %i", pending, meshes, extracted);
+	_root.GetFont()->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
+	_root.GetFont()->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
+	_root.GetFont()->DrawString(5, 50, tb::TBColor(255, 255, 255), position);
+	_root.GetFont()->DrawString(5, 65, tb::TBColor(255, 255, 255), extractions);
 	ui::UIApp::afterUI();
 }
 

@@ -1,7 +1,6 @@
 set(SRCS
 	UIApp.cpp UIApp.h
 	TurboBadger.h
-	Font.cpp Font.h
 	Window.cpp Window.h
 	Console.cpp Console.h
 	KeybindingParser.h
