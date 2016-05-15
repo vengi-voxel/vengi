@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui/UIApp.h"
+#include "ui/Font.h"
 #include "frontend/WorldShader.h"
 #include "frontend/MeshShader.h"
 #include "frontend/ColorShader.h"
@@ -28,6 +29,7 @@ protected:
 	video::VertexBuffer _axisBuffer;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;
+	ui::Font _font;
 
 	bool _resetTriggered = false;
 	uint8_t _moveMask = 0;

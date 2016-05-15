@@ -5,6 +5,7 @@
 #include <string>
 #include "core/Var.h"
 #include "TurboBadger.h"
+#include "Font.h"
 
 namespace ui {
 
@@ -18,7 +19,7 @@ private:
 	bool _consoleActive = false;
 	SDL_LogOutputFunction _logFunction = nullptr;
 	core::VarPtr _autoEnable;
-	tb::TBFontFace *_font;
+	Font _font;
 	std::string _commandLine;
 	// commandline character will get overwritten if this is true
 	bool _overwrite = false;

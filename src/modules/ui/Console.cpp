@@ -23,18 +23,7 @@ Console::Console() {
 }
 
 bool Console::init() {
-	tb::TBFontDescription fd;
-	fd.SetID(TBIDC("Segoe"));
-	fd.SetSize(tb::g_tb_skin->GetDimensionConverter()->DpToPx(20));
-	tb::TBFontManager *fontMgr = tb::g_font_manager;
-
-	if (fontMgr->HasFontFace(fd)) {
-		_font = fontMgr->GetFontFace(fd);
-	} else {
-		_font = fontMgr->CreateFontFace(fd);
-	}
-	core_assert_msg(_font != nullptr, "Could not find the default font - make sure the ui is already configured");
-	_font->RenderGlyphs(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNORSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·");
+	core_assert(_font.init("Segoe", 20));
 
 	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); });
 	core::Command::registerCommand("clear", [&] (const core::CmdArgs& args) { clear(); });
@@ -432,26 +421,24 @@ void Console::render(const tb::TBRect &rect) {
 
 	tb::g_renderer->DrawRectFill(rect, consoleBgColor);
 
-	const int lineHeight = _font->GetFontDescription().GetSize();
+	const int lineHeight = _font.getSize();
 	_maxLines = rect.h / lineHeight;
 	int maxY = _messages.size() * lineHeight;
 	const int startY = std::min(rect.y + rect.h - lineHeight, maxY);
 	MessagesIter i = _messages.rbegin();
 	std::advance(i, _scrollPos);
 	for (int y = startY - lineHeight; i != _messages.rend(); ++i, y -= lineHeight) {
-		tb::TBStr str(i->c_str());
 		if (y < 0) {
 			break;
 		}
-		_font->DrawString(consoleMarginLeft, y, consoleFontColor, str);
+		_font.pos(consoleMarginLeft, y).draw(*i);
 	}
 
-	_font->DrawString(consoleMarginLeft, startY, consoleFontColor, consolePrompt);
-	const tb::TBStr cmdLine(_commandLine.c_str());
-	_font->DrawString(consoleMarginLeft + consoleMarginLeftBehindPrompt, startY, consoleFontColor, cmdLine);
+	_font.pos(consoleMarginLeft, startY).draw(consolePrompt);
+	_font.pos(consoleMarginLeft + consoleMarginLeftBehindPrompt, startY).draw(_commandLine);
 	if (_cursorBlink) {
-		const int l = _font->GetStringWidth(_commandLine.c_str(), _cursorPos);
-		_font->DrawString(consoleMarginLeft + consoleMarginLeftBehindPrompt + l, startY, consoleFontColor, "_");
+		const int l = _font.getWidth(_commandLine, _cursorPos);
+		_font.pos(consoleMarginLeft + consoleMarginLeftBehindPrompt + l, startY).draw("_");
 	}
 }
 

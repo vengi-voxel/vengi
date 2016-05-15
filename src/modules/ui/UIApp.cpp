@@ -386,7 +386,7 @@ core::AppState UIApp::onInit() {
 	fd.SetID(TBIDC("Segoe"));
 	fd.SetSize(tb::g_tb_skin->GetDimensionConverter()->DpToPx(14));
 	tb::g_font_manager->SetDefaultFontDescription(fd);
-	tb::TBFontFace *font = tb::g_font_manager->CreateFontFace(tb::g_font_manager->GetDefaultFontDescription());
+	tb::TBFontFace *font = tb::g_font_manager->CreateFontFace(fd);
 	if (font == nullptr) {
 		Log::error("could not create the font face");
 		return core::AppState::Cleanup;
