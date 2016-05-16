@@ -73,7 +73,10 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 	}
 
 	int top = (int) pos.y + trunkHeight;
-	if (type == TreeType::PINE) {
+	if (type == TreeType::PINE || type == TreeType::FIR) {
+		height *= 2;
+		depth *= 2;
+		width *= 2;
 		top += height;
 	}
 
@@ -109,20 +112,47 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 		ShapeGenerator::createEllipse(ctx, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::CONE) {
 		ShapeGenerator::createCone(ctx, leafesPos, width, height, depth, leavesVoxel);
+	} else if (type == TreeType::FIR) {
+		const int branches = 12; //random.random(5, 8);
+		const int stepWidth = 360 / branches;
+		int angle = random.random(0, stepWidth);
+		double w = 1.0;
+		for (int b = 0; b < branches; ++b) {
+			glm::ivec3 start = leafesPos;
+			glm::ivec3 end = start;
+			const double x = glm::cos(double(angle));
+			const double z = glm::sin(double(angle));
+			const int randomZ = random.random(16, 20);
+			end.y -= randomZ;
+			end.x -= x * w;
+			end.z -= z * w;
+			ShapeGenerator::createLine(ctx, start, end, leavesVoxel);
+			glm::ivec3 end2 = end;
+			end2.y -= 2;
+			end2.x -= x * w;
+			end2.z -= z * w;
+			ShapeGenerator::createLine(ctx, end, end2, leavesVoxel);
+			angle += stepWidth;
+			w += 1.0 / (double)(b + 1);
+			Log::info("w: %f", w);
+		}
 	} else if (type == TreeType::PINE) {
-		const int steps = std::max(1, height / 4);
-		const int singleHeight = steps;
+		const int singleLeaveHeight = 2;
+		const int singleStepDelta = 1;
+		const int singleStepHeight = singleLeaveHeight + singleStepDelta;
+		const int steps = std::max(1, height / singleStepHeight);
 		const int stepWidth = width / steps;
 		const int stepDepth = depth / steps;
-		int currentWidth = stepWidth;
-		int currentDepth = stepDepth;
+		int currentWidth = 2;
+		int currentDepth = 2;
+		glm::ivec3 leavesPos(pos.x, top, pos.z);
 		for (int i = 0; i < steps; ++i) {
-			glm::ivec3 pineLeaves(pos.x, top - i * singleHeight, pos.z);
-			ShapeGenerator::createDome(ctx, pineLeaves, currentWidth, singleHeight, currentDepth, leavesVoxel);
-			pineLeaves.y -= 1;
-			ShapeGenerator::createDome(ctx, pineLeaves, currentWidth + 1, singleHeight, currentDepth + 1, leavesVoxel);
+			ShapeGenerator::createDome(ctx, leavesPos, currentWidth, singleLeaveHeight, currentDepth, leavesVoxel);
+			leavesPos.y -= singleStepDelta;
+			ShapeGenerator::createDome(ctx, leavesPos, currentWidth + 1, singleLeaveHeight, currentDepth + 1, leavesVoxel);
 			currentDepth += stepDepth;
 			currentWidth += stepWidth;
+			leavesPos.y -= singleLeaveHeight;
 		}
 	} else if (type == TreeType::DOME) {
 		ShapeGenerator::createDome(ctx, leafesPos, width, height, depth, leavesVoxel);

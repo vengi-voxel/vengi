@@ -16,6 +16,7 @@ enum class TreeType : int32_t {
 	ELLIPSIS,
 	CUBE,
 	PINE,
+	FIR,
 	LSYSTEM,
 	MAX
 };
@@ -26,6 +27,7 @@ static const char *TreeTypeStr[] = {
 	"ELLIPSIS",
 	"CUBE",
 	"PINE",
+	"FIR",
 	"LSYSTEM"
 };
 static_assert(SDL_arraysize(TreeTypeStr) == (int)TreeType::MAX, "TreeType and TreeTypeStr didn't match");
