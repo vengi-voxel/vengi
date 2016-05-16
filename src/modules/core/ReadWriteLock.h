@@ -14,9 +14,39 @@
 #include <chrono>
 #include "Trace.h"
 #include "Common.h"
+#include <mutex>
 
 namespace core {
 
+#define USE_MUTEX 1
+
+#if USE_MUTEX != 0
+class ReadWriteLock {
+private:
+	const std::string _name;
+	mutable std::recursive_mutex _mutex;
+public:
+	ReadWriteLock(const std::string& name) :
+			_name(name) {
+	}
+
+	inline void lockRead() const {
+		_mutex.lock();
+	}
+
+	inline void unlockRead() const {
+		_mutex.unlock();
+	}
+
+	inline void lockWrite() {
+		_mutex.lock();
+	}
+
+	inline void unlockWrite() {
+		_mutex.unlock();
+	}
+};
+#else
 class ReadWriteLock {
 private:
 	mutable std::atomic_int _readers;
@@ -95,6 +125,7 @@ public:
 		}
 	}
 };
+#endif
 
 class ScopedReadLock {
 private:
