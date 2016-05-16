@@ -74,6 +74,78 @@ void ShapeGenerator::createCone(TerrainContext& ctx, const glm::ivec3& pos, int 
 	}
 }
 
+// http://members.chello.at/~easyfilter/bresenham.html
+void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel) {
+	const glm::ivec3 delta = end - start;
+
+	const int xInc = (delta.x < 0) ? -1 : 1;
+	const int yInc = (delta.y < 0) ? -1 : 1;
+	const int zInc = (delta.z < 0) ? -1 : 1;
+
+	const int w = glm::abs(delta.x);
+	const int h = glm::abs(delta.y);
+	const int d = glm::abs(delta.z);
+
+	const int dx2 = w << 1;
+	const int dy2 = h << 1;
+	const int dz2 = d << 1;
+
+	glm::ivec3 point = start;
+	if (w >= h && w >= d) {
+		int err1 = dy2 - w;
+		int err2 = dz2 - w;
+		for (int i = 0; i < w; i++) {
+			ctx.setVoxel(point, voxel);
+			if (err1 > 0) {
+				point.y += yInc;
+				err1 -= dx2;
+			}
+			if (err2 > 0) {
+				point.z += zInc;
+				err2 -= dx2;
+			}
+			err1 += dy2;
+			err2 += dz2;
+			point.x += xInc;
+		}
+	} else if (h >= w && h >= d) {
+		int err1 = dx2 - h;
+		int err2 = dz2 - h;
+		for (int i = 0; i < h; i++) {
+			ctx.setVoxel(point, voxel);
+			if (err1 > 0) {
+				point.x += xInc;
+				err1 -= dy2;
+			}
+			if (err2 > 0) {
+				point.z += zInc;
+				err2 -= dy2;
+			}
+			err1 += dx2;
+			err2 += dz2;
+			point.y += yInc;
+		}
+	} else {
+		int err1 = dy2 - d;
+		int err2 = dx2 - d;
+		for (int i = 0; i < d; i++) {
+			ctx.setVoxel(point, voxel);
+			if (err1 > 0) {
+				point.y += yInc;
+				err1 -= dz2;
+			}
+			if (err2 > 0) {
+				point.x += xInc;
+				err2 -= dz2;
+			}
+			err1 += dy2;
+			err2 += dx2;
+			point.z += zInc;
+		}
+	}
+	ctx.setVoxel(point, voxel);
+}
+
 void ShapeGenerator::createDome(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
