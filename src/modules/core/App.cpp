@@ -133,7 +133,10 @@ AppState App::onConstruct() {
 		}
 	});
 	core::Command::registerCommand("cvarlist", [] (const core::CmdArgs& args) {
-		core::Var::visitSorted([] (const core::VarPtr& var) {
+		core::Var::visitSorted([&] (const core::VarPtr& var) {
+			if (!args.empty() && !core::string::matches(args[0], var->name())) {
+				return;
+			}
 			const int flags = var->getFlags();
 			std::string flagsStr = "  ";
 			if (flags & CV_READONLY) {
@@ -148,7 +151,10 @@ AppState App::onConstruct() {
 		});
 	});
 	core::Command::registerCommand("cmdlist", [] (const core::CmdArgs& args) {
-		core::Command::visitSorted([] (const core::Command& cmd) {
+		core::Command::visitSorted([&] (const core::Command& cmd) {
+			if (!args.empty() && !core::string::matches(args[0], cmd.name())) {
+				return;
+			}
 			Log::info("* %s", cmd.name().c_str());
 		});
 	});
