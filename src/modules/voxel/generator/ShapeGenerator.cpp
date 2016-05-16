@@ -4,6 +4,7 @@
 
 #include "ShapeGenerator.h"
 #include "voxel/WorldContext.h"
+#include "voxel/Spiral.h"
 
 namespace voxel {
 
@@ -75,7 +76,8 @@ void ShapeGenerator::createCone(TerrainContext& ctx, const glm::ivec3& pos, int 
 }
 
 // http://members.chello.at/~easyfilter/bresenham.html
-void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel) {
+void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel, int radius) {
+	core_assert(radius >= 1);
 	const glm::ivec3 delta = end - start;
 
 	const int xInc = (delta.x < 0) ? -1 : 1;
@@ -89,13 +91,22 @@ void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, co
 	const int dx2 = w << 1;
 	const int dy2 = h << 1;
 	const int dz2 = d << 1;
+	const int sideLength = radius * 2 + 1;
+	const int amount = sideLength * (sideLength - 1) + sideLength;
 
 	glm::ivec3 point = start;
 	if (w >= h && w >= d) {
 		int err1 = dy2 - w;
 		int err2 = dz2 - w;
 		for (int i = 0; i < w; i++) {
-			ctx.setVoxel(point, voxel);
+			voxel::Spiral o;
+			glm::ivec3 pos = point;
+			for (int i = 0; i < amount; ++i) {
+				ctx.setVoxel(pos, voxel);
+				o.next();
+				pos.y = point.y + o.x();
+				pos.z = point.z + o.y();
+			}
 			if (err1 > 0) {
 				point.y += yInc;
 				err1 -= dx2;
@@ -112,7 +123,14 @@ void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, co
 		int err1 = dx2 - h;
 		int err2 = dz2 - h;
 		for (int i = 0; i < h; i++) {
-			ctx.setVoxel(point, voxel);
+			voxel::Spiral o;
+			glm::ivec3 pos = point;
+			for (int i = 0; i < amount; ++i) {
+				ctx.setVoxel(pos, voxel);
+				o.next();
+				pos.x = point.x + o.x();
+				pos.z = point.z + o.y();
+			}
 			if (err1 > 0) {
 				point.x += xInc;
 				err1 -= dy2;
@@ -129,7 +147,14 @@ void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, co
 		int err1 = dy2 - d;
 		int err2 = dx2 - d;
 		for (int i = 0; i < d; i++) {
-			ctx.setVoxel(point, voxel);
+			voxel::Spiral o;
+			glm::ivec3 pos = point;
+			for (int i = 0; i < amount; ++i) {
+				ctx.setVoxel(pos, voxel);
+				o.next();
+				pos.x = point.x + o.x();
+				pos.y = point.y + o.y();
+			}
 			if (err1 > 0) {
 				point.y += yInc;
 				err1 -= dz2;
