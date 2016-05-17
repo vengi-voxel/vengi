@@ -21,30 +21,32 @@ public:
 	Spiral() :
 			_layer(1), _leg(0), _x(0), _z(0) {
 	}
-	void next() {
-		switch (_leg) {
-		case 0:
-			++_x;
-			if (_x == _layer)
-				++_leg;
-			break;
-		case 1:
-			++_z;
-			if (_z == _layer)
-				++_leg;
-			break;
-		case 2:
-			--_x;
-			if (-_x == _layer)
-				++_leg;
-			break;
-		case 3:
-			--_z;
-			if (-_z == _layer) {
-				_leg = 0;
-				++_layer;
+	void next(int amount = 1) {
+		for (int i = 0; i < amount; ++i) {
+			switch (_leg) {
+			case 0:
+				++_x;
+				if (_x == _layer)
+					++_leg;
+				break;
+			case 1:
+				++_z;
+				if (_z == _layer)
+					++_leg;
+				break;
+			case 2:
+				--_x;
+				if (-_x == _layer)
+					++_leg;
+				break;
+			case 3:
+				--_z;
+				if (-_z == _layer) {
+					_leg = 0;
+					++_layer;
+				}
+				break;
 			}
-			break;
 		}
 	}
 
