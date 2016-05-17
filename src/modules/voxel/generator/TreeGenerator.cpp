@@ -6,6 +6,7 @@
 #include "LSystemGenerator.h"
 #include "voxel/WorldContext.h"
 #include "voxel/Voxel.h"
+#include "voxel/Spiral.h"
 
 namespace voxel {
 
@@ -24,7 +25,8 @@ int TreeGenerator::findFloor(const TerrainContext& ctx, int x, int z) {
 
 void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomManager, core::Random& random) {
 	const Region& region = ctx.region;
-	for (int i = 0; i < 5; ++i) {
+	// TODO: amount of trees should depend on biom
+	for (int i = 0; i < 40; ++i) {
 		const int regionBorder = 8;
 		const int rndValX = random.random(regionBorder, region.getWidthInVoxels() - regionBorder);
 		// number should be even
@@ -107,33 +109,38 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 
 	const VoxelType leavesType = random.random(Leaves1, Leaves10);
 	const Voxel leavesVoxel = createVoxel(leavesType);
-	const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 	if (type == TreeType::ELLIPSIS) {
+		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 		ShapeGenerator::createEllipse(ctx, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::CONE) {
+		height *= 2;
+		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 		ShapeGenerator::createCone(ctx, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::FIR) {
 		const int branches = 12;
 		const float stepWidth = glm::radians(360.0f / branches);
-		float angle = random.random(0, stepWidth);
-		float w = 1.0f;
-		for (int b = 0; b < branches; ++b) {
-			glm::ivec3 start = leafesPos;
-			glm::ivec3 end = start;
-			const float x = glm::cos(angle);
-			const float z = glm::sin(angle);
-			const int randomZ = random.random(16, 20);
-			end.y -= randomZ;
-			end.x -= x * w;
-			end.z -= z * w;
-			ShapeGenerator::createLine(ctx, start, end, leavesVoxel);
-			glm::ivec3 end2 = end;
-			end2.y -= 2;
-			end2.x -= x * w;
-			end2.z -= z * w;
-			ShapeGenerator::createLine(ctx, end, end2, leavesVoxel);
-			angle += stepWidth;
-			w += 1.0 / (double)(b + 1);
+		float angle = random.random(0, glm::two_pi<float>());
+		float w = 1.5f;
+		for (int n = 0; n < 3; ++n) {
+			glm::ivec3 leafesPos(pos.x, top + +height - n * 10, pos.z);
+			for (int b = 0; b < branches; ++b) {
+				glm::ivec3 start = leafesPos;
+				glm::ivec3 end = start;
+				const float x = glm::cos(angle);
+				const float z = glm::sin(angle);
+				const int randomZ = random.random(4, 8);
+				end.y -= randomZ;
+				end.x -= x * w;
+				end.z -= z * w;
+				ShapeGenerator::createLine(ctx, start, end, leavesVoxel);
+				glm::ivec3 end2 = end;
+				end2.y -= 4;
+				end2.x -= x * w * 1.8;
+				end2.z -= z * w * 1.8;
+				ShapeGenerator::createLine(ctx, end, end2, leavesVoxel);
+				angle += stepWidth;
+				w += 1.0 / (double)(b + 1);
+			}
 		}
 	} else if (type == TreeType::PINE) {
 		const int singleLeaveHeight = 2;
@@ -154,13 +161,29 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 			leavesPos.y -= singleLeaveHeight;
 		}
 	} else if (type == TreeType::DOME) {
+		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 		ShapeGenerator::createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::CUBE) {
+		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 		ShapeGenerator::createCube(ctx, leafesPos, width, height, depth, leavesVoxel);
 		// TODO: use CreatePlane
 		ShapeGenerator::createCube(ctx, leafesPos, width + 2, height - 2, depth - 2, leavesVoxel);
 		ShapeGenerator::createCube(ctx, leafesPos, width - 2, height + 2, depth - 2, leavesVoxel);
 		ShapeGenerator::createCube(ctx, leafesPos, width - 2, height - 2, depth + 2, leavesVoxel);
+		if (random.randomf() < 0.5f) {
+			Spiral o;
+			o.next();
+			const int halfWidth = width / 2;
+			const int halfHeight = height / 2;
+			const int halfDepth = depth / 2;
+			for (int i = 0; i < 4; ++i) {
+				glm::ivec3 leafesPos2 = leafesPos;
+				leafesPos2.x += o.x() * halfWidth;
+				leafesPos2.z += o.z() * halfDepth;
+				ShapeGenerator::createEllipse(ctx, leafesPos2, halfWidth, halfHeight, halfDepth, leavesVoxel);
+				o.next(2);
+			}
+		}
 	}
 }
 
