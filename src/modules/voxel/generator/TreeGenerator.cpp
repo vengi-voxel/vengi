@@ -113,15 +113,15 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 	} else if (type == TreeType::CONE) {
 		ShapeGenerator::createCone(ctx, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::FIR) {
-		const int branches = 12; //random.random(5, 8);
-		const int stepWidth = 360 / branches;
-		int angle = random.random(0, stepWidth);
-		double w = 1.0;
+		const int branches = 12;
+		const float stepWidth = glm::radians(360.0f / branches);
+		float angle = random.random(0, stepWidth);
+		float w = 1.0f;
 		for (int b = 0; b < branches; ++b) {
 			glm::ivec3 start = leafesPos;
 			glm::ivec3 end = start;
-			const double x = glm::cos(double(angle));
-			const double z = glm::sin(double(angle));
+			const float x = glm::cos(angle);
+			const float z = glm::sin(angle);
 			const int randomZ = random.random(16, 20);
 			end.y -= randomZ;
 			end.x -= x * w;
@@ -134,7 +134,6 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 			ShapeGenerator::createLine(ctx, end, end2, leavesVoxel);
 			angle += stepWidth;
 			w += 1.0 / (double)(b + 1);
-			Log::info("w: %f", w);
 		}
 	} else if (type == TreeType::PINE) {
 		const int singleLeaveHeight = 2;
