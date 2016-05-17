@@ -376,7 +376,7 @@ void WorldRenderer::extractMeshAroundCamera(int radius) {
 		}
 		o.next();
 		pos.x = cameraPos.x + o.x() * chunkSize;
-		pos.z = cameraPos.z + o.y() * chunkSize;
+		pos.z = cameraPos.z + o.z() * chunkSize;
 	}
 }
 

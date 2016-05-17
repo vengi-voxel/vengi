@@ -16,10 +16,10 @@ protected:
 	int _layer = 1;
 	int _leg = 0;
 	int _x = 0;
-	int _y = 0;
+	int _z = 0;
 public:
 	Spiral() :
-			_layer(1), _leg(0), _x(0), _y(0) {
+			_layer(1), _leg(0), _x(0), _z(0) {
 	}
 	void next() {
 		switch (_leg) {
@@ -29,8 +29,8 @@ public:
 				++_leg;
 			break;
 		case 1:
-			++_y;
-			if (_y == _layer)
+			++_z;
+			if (_z == _layer)
 				++_leg;
 			break;
 		case 2:
@@ -39,8 +39,8 @@ public:
 				++_leg;
 			break;
 		case 3:
-			--_y;
-			if (-_y == _layer) {
+			--_z;
+			if (-_z == _layer) {
 				_leg = 0;
 				++_layer;
 			}
@@ -51,8 +51,8 @@ public:
 	inline int x() const {
 		return _x;
 	}
-	inline int y() const {
-		return _y;
+	inline int z() const {
+		return _z;
 	}
 };
 

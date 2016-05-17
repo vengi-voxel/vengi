@@ -105,7 +105,7 @@ void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, co
 				ctx.setVoxel(pos, voxel);
 				o.next();
 				pos.y = point.y + o.x();
-				pos.z = point.z + o.y();
+				pos.z = point.z + o.z();
 			}
 			if (err1 > 0) {
 				point.y += yInc;
@@ -129,7 +129,7 @@ void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, co
 				ctx.setVoxel(pos, voxel);
 				o.next();
 				pos.x = point.x + o.x();
-				pos.z = point.z + o.y();
+				pos.z = point.z + o.z();
 			}
 			if (err1 > 0) {
 				point.x += xInc;
@@ -153,7 +153,7 @@ void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, co
 				ctx.setVoxel(pos, voxel);
 				o.next();
 				pos.x = point.x + o.x();
-				pos.y = point.y + o.y();
+				pos.y = point.y + o.z();
 			}
 			if (err1 > 0) {
 				point.y += yInc;
