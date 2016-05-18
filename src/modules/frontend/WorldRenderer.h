@@ -94,7 +94,7 @@ public:
 
 	float getViewDistance() const;
 
-	void extractNewMeshes(const glm::vec3& position, bool force = false);
+	bool extractNewMeshes(const glm::vec3& position, bool force = false);
 	int renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height);
 	int renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height);
 };

@@ -343,13 +343,12 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 	return drawCallsEntities;
 }
 
-void WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
+bool WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 	core_trace_scoped(WorldRendererExtractNewMeshes);
 	if (force) {
 		deleteMesh(position);
 		_world->allowReExtraction(position);
-		_world->scheduleMeshExtraction(position);
-		return;
+		return _world->scheduleMeshExtraction(position);
 	}
 	const glm::ivec3& camXYZ = _world->getMeshPos(position);
 	const glm::vec3 diff = _lastGridPosition - camXYZ;
@@ -357,7 +356,9 @@ void WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 		_lastGridPosition = camXYZ;
 		const int chunks = MinCullingDistance / _world->getMeshSize() + 1;
 		extractMeshAroundCamera(chunks);
+		return true;
 	}
+	return false;
 }
 
 void WorldRenderer::extractMeshAroundCamera(int radius) {
