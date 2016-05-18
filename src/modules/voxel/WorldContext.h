@@ -87,7 +87,9 @@ public:
 
 	TerrainContext(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk) :
 			_voxelStorage(voxelStorage), _chunk(chunk) {
-		_chunkRegion = chunk->getRegion();
+		if (_chunk != nullptr) {
+			_chunkRegion = _chunk->getRegion();
+		}
 	}
 
 	void setChunk(PagedVolume::Chunk* chunk) {
