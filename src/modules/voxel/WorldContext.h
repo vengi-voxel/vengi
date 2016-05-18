@@ -83,6 +83,7 @@ private:
 	Region _chunkRegion;
 public:
 	Region region;
+	Region maxRegion = Region::MaxRegion;
 
 	TerrainContext(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk) :
 			_voxelStorage(voxelStorage), _chunk(chunk) {
@@ -101,8 +102,12 @@ public:
 		return _chunk;
 	}
 
-	inline void setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
-		setVoxel(pos.x, pos.y, pos.z, voxel);
+	inline bool setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
+		return setVoxel(pos.x, pos.y, pos.z, voxel);
+	}
+
+	inline bool canGetVoxel(int x, int y, int z) const {
+		return maxRegion.containsPoint(x, y, z);
 	}
 
 	inline const Voxel& getVoxel(const glm::ivec3& pos) const {
@@ -114,21 +119,26 @@ public:
 			core_assert(_chunk != nullptr);
 			return _chunk->getVoxel(x - _chunkRegion.getLowerX(), y - _chunkRegion.getLowerY(), z - _chunkRegion.getLowerZ());
 		}
+		core_assert_msg(maxRegion.containsPoint(x, y, z), "the accessed voxel exceeds the max bounds of %i:%i:%i/%i:%i:%i (voxel was at %i:%i:%i)",
+				maxRegion.getLowerX(), maxRegion.getLowerY(), maxRegion.getLowerZ(), maxRegion.getUpperX(), maxRegion.getUpperY(), maxRegion.getUpperZ(), x, y, z);
 		core_assert(_voxelStorage != nullptr);
 		return _voxelStorage->getVoxel(x, y, z);
 	}
 
-	inline void setVoxel(int x, int y, int z, const Voxel& voxel) {
+	inline bool setVoxel(int x, int y, int z, const Voxel& voxel) {
 		if (_chunkRegion.containsPoint(x, y, z)) {
 			core_assert(_chunk != nullptr);
 			_chunk->setVoxel(x - _chunkRegion.getLowerX(), y - _chunkRegion.getLowerY(), z - _chunkRegion.getLowerZ(), voxel);
-		} else {
+			return true;
+		} else if (maxRegion.containsPoint(x, y, z)) {
 			core_assert(_voxelStorage != nullptr);
 			_voxelStorage->setVoxel(x, y, z, voxel);
+			return true;
 		}
+		return false;
 	}
 
-	inline void setVoxels(int x, int z, const Voxel* voxels, int amount) {
+	inline bool setVoxels(int x, int z, const Voxel* voxels, int amount) {
 		if (_chunkRegion.containsPoint(x, 0, z)) {
 			// first part goes into the chunk
 			const int w = _chunkRegion.getWidthInVoxels();
@@ -139,11 +149,14 @@ public:
 				core_assert(_voxelStorage != nullptr);
 				_voxelStorage->setVoxels(x, z, voxels + w, amount);
 			}
-		} else {
+			return true;
+		} else if (maxRegion.containsPoint(x, 0, z)) {
 			// TODO: add region/chunk support here, too
 			core_assert(_voxelStorage != nullptr);
 			_voxelStorage->setVoxels(x, z, voxels, amount);
+			return true;
 		}
+		return false;
 	}
 };
 

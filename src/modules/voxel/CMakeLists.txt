@@ -20,7 +20,7 @@ set(SRCS
 	polyvox/PagedVolume.h polyvox/PagedVolume.cpp
 	polyvox/RawVolume.h polyvox/RawVolume.cpp
 	polyvox/Raycast.h
-	polyvox/Region.h
+	polyvox/Region.h polyvox/Region.cpp
 	polyvox/Utility.h
 	polyvox/Vertex.h
 	polyvox/Voxel.h

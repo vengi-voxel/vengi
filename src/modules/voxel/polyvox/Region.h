@@ -33,17 +33,16 @@ namespace voxel {
  */
 class Region {
 public:
-	/// A Region with the lower corner set as low as possible and the upper corner set as high as possible.
-	static Region MaxRegion();
-	/// A Region with the lower corner set as high as possible and the upper corner set as low as possible.
-	static Region InvertedRegion();
-
 	/// Constructor
 	Region();
 	/// Constructor
 	Region(const glm::ivec3& v3dLowerCorner, const glm::ivec3& v3dUpperCorner);
 	/// Constructor
 	Region(int32_t iLowerX, int32_t iLowerY, int32_t iLowerZ, int32_t iUpperX, int32_t iUpperY, int32_t iUpperZ);
+	Region(int mins, int maxs);
+
+	/// A Region with the lower corner set as low as possible and the upper corner set as high as possible.
+	static const Region MaxRegion;
 
 	/// Equality Operator.
 	bool operator==(const Region& rhs) const;
@@ -434,6 +433,10 @@ inline void Region::accumulate(const Region& reg) {
 	m_iUpperX = std::max(m_iUpperX, reg.getUpperX());
 	m_iUpperY = std::max(m_iUpperY, reg.getUpperY());
 	m_iUpperZ = std::max(m_iUpperZ, reg.getUpperZ());
+}
+
+inline Region::Region(int mins, int maxs) :
+		Region(mins, mins, mins, maxs, maxs, maxs) {
 }
 
 /**
