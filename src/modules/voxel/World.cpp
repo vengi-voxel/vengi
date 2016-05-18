@@ -122,7 +122,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		mins.y = 0;
 		glm::ivec3 maxs = region.getUpperCorner() + extends;
 		maxs.y = MAX_HEIGHT - 1;
-		Region prefetchRegion(mins, maxs);
+		const Region prefetchRegion(mins, maxs);
 		_volumeData->prefetch(prefetchRegion);
 
 		const bool mergeQuads = false;
