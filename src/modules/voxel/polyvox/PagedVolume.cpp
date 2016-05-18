@@ -297,6 +297,7 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 	// Page the data in
 	// We'll use this later to decide if data needs to be paged out again.
 	chunk->m_bDataModified = m_pPager->pageIn(pctx);
+	Log::debug("finished creating new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
 
 	return chunk;
 }
