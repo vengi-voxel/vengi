@@ -19,11 +19,11 @@ protected:
 				_test(test) {
 		}
 
-		bool pageIn(const Region& region, PagedVolume::Chunk* chunk) override {
-			return _test->pageIn(region, chunk);
+		bool pageIn(PagedVolume::PagerContext& ctx) override {
+			return _test->pageIn(ctx.region, ctx.chunk);
 		}
 
-		void pageOut(const Region& region, PagedVolume::Chunk* chunk) override {
+		void pageOut(PagedVolume::PagerContext& ctx) override {
 		}
 	};
 

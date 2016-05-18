@@ -12,7 +12,7 @@ class WorldPersisterTest: public AbstractVoxelTest {
 
 TEST_F(WorldPersisterTest, testSaveLoad) {
 	WorldPersister persister;
-	ASSERT_TRUE(persister.save(_ctx, _ctx.getChunk(), _seed)) << "Could not save volume chunk";
+	ASSERT_TRUE(persister.save(_ctx, _seed)) << "Could not save volume chunk";
 
 	const std::string& filename = persister.getWorldName(_ctx.region, _seed);
 	const core::App* app = core::App::getInstance();
@@ -21,7 +21,8 @@ TEST_F(WorldPersisterTest, testSaveLoad) {
 
 	PagedVolume::Chunk* chunk2 = _volData.getChunk(glm::ivec3(128, 0, 128));
 	ASSERT_TRUE(_ctx.getChunk() != chunk2) << "Chunks should be different";
-	ASSERT_TRUE(persister.load(_ctx, chunk2, _seed)) << "Could not load volume chunk";
+	_ctx.setChunk(chunk2);
+	ASSERT_TRUE(persister.load(_ctx, _seed)) << "Could not load volume chunk";
 	ASSERT_EQ(Grass1, _volData.getVoxel(32, 32, 32).getMaterial());
 }
 

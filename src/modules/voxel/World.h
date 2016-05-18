@@ -144,11 +144,11 @@ private:
 				_world(world) {
 		}
 
-		void erase(const Region& region, PagedVolume::Chunk* chunk);
+		void erase(PagedVolume::PagerContext& ctx);
 
-		bool pageIn(const Region& region, PagedVolume::Chunk* chunk) override;
+		bool pageIn(PagedVolume::PagerContext& ctx) override;
 
-		void pageOut(const Region& region, PagedVolume::Chunk* chunk) override;
+		void pageOut(PagedVolume::PagerContext& ctx) override;
 	};
 
 	// don't access the volume in anything that is called here

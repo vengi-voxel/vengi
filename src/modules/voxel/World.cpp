@@ -26,22 +26,22 @@ namespace voxel {
 
 #define PERSIST 1
 
-void World::Pager::erase(const Region& region, PagedVolume::Chunk* chunk) {
+void World::Pager::erase(PagedVolume::PagerContext& pctx) {
 #if PERSIST
-	TerrainContext ctx(_world._volumeData, chunk);
-	ctx.region = region;
-	_worldPersister.erase(ctx, chunk, _world.seed());
+	TerrainContext ctx(_world._volumeData, pctx.chunk);
+	ctx.region = pctx.region;
+	_worldPersister.erase(ctx, _world.seed());
 #endif
 }
 
-bool World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
-	if (region.getLowerY() < 0) {
+bool World::Pager::pageIn(PagedVolume::PagerContext& pctx) {
+	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
-	TerrainContext ctx(_world._volumeData, chunk);
-	ctx.region = region;
+	TerrainContext ctx(_world._volumeData, pctx.chunk);
+	ctx.region = pctx.region;
 #if PERSIST
-	if (_worldPersister.load(ctx, chunk, _world.seed())) {
+	if (_worldPersister.load(ctx, _world.seed())) {
 		return false;
 	}
 #endif
@@ -49,11 +49,11 @@ bool World::Pager::pageIn(const Region& region, PagedVolume::Chunk* chunk) {
 	return true;
 }
 
-void World::Pager::pageOut(const Region& region, PagedVolume::Chunk* chunk) {
+void World::Pager::pageOut(PagedVolume::PagerContext& pctx) {
 #if PERSIST
-	TerrainContext ctx(_world._volumeData, chunk);
-	ctx.region = region;
-	_worldPersister.save(ctx, chunk, _world.seed());
+	TerrainContext ctx(_world._volumeData, pctx.chunk);
+	ctx.region = pctx.region;
+	_worldPersister.save(ctx, _world.seed());
 #endif
 }
 

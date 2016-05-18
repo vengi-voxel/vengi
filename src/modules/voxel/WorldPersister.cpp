@@ -19,8 +19,9 @@ std::string WorldPersister::getWorldName(const Region& region, long seed) const 
 	return core::string::format("world_%li_%i_%i_%i.wld", seed, region.getLowerX(), region.getLowerY(), region.getLowerZ());
 }
 
-void WorldPersister::erase(TerrainContext& ctx, PagedVolume::Chunk* chunk, long seed) {
+void WorldPersister::erase(TerrainContext& ctx, long seed) {
 #if 0
+	PagedVolume::Chunk* chunk = ctx.getChunk();
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	const Region& region = ctx.region;
@@ -29,7 +30,8 @@ void WorldPersister::erase(TerrainContext& ctx, PagedVolume::Chunk* chunk, long 
 #endif
 }
 
-bool WorldPersister::load(TerrainContext& ctx, PagedVolume::Chunk* chunk, long seed) {
+bool WorldPersister::load(TerrainContext& ctx, long seed) {
+	PagedVolume::Chunk* chunk = ctx.getChunk();
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	const Region& region = ctx.region;
@@ -94,7 +96,8 @@ bool WorldPersister::load(TerrainContext& ctx, PagedVolume::Chunk* chunk, long s
 	return true;
 }
 
-bool WorldPersister::save(TerrainContext& ctx, PagedVolume::Chunk* chunk, long seed) {
+bool WorldPersister::save(TerrainContext& ctx, long seed) {
+	PagedVolume::Chunk* chunk = ctx.getChunk();
 	core::ByteStream voxelStream;
 	const Region& region = ctx.region;
 	const int width = region.getWidthInVoxels();

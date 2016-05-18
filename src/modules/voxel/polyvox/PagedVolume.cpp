@@ -289,11 +289,14 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 	// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
 	const glm::ivec3 mins = chunk->m_v3dChunkSpacePosition * static_cast<int32_t>(chunk->m_uSideLength);
 	const glm::ivec3 maxs = mins + glm::ivec3(chunk->m_uSideLength - 1, chunk->m_uSideLength - 1, chunk->m_uSideLength - 1);
-	const Region reg(mins, maxs);
+
+	PagerContext pctx;
+	pctx.region = Region(mins, maxs);
+	pctx.chunk = chunk;
 
 	// Page the data in
 	// We'll use this later to decide if data needs to be paged out again.
-	chunk->m_bDataModified = m_pPager->pageIn(reg, chunk);
+	chunk->m_bDataModified = m_pPager->pageIn(pctx);
 
 	return chunk;
 }
@@ -360,7 +363,11 @@ PagedVolume::Chunk::~Chunk() {
 		const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(m_uSideLength - 1, m_uSideLength - 1, m_uSideLength - 1);
 
 		// Page the data out
-		m_pPager->pageOut(Region(v3dLower, v3dUpper), this);
+		PagerContext pctx;
+		pctx.region = Region(v3dLower, v3dUpper);
+		pctx.chunk = this;
+
+		m_pPager->pageOut(pctx);
 	}
 
 	delete[] m_tData;

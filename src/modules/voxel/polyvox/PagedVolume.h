@@ -87,6 +87,11 @@ public:
 		core::ReadWriteLock _voxelLock;
 	};
 
+	struct PagerContext {
+		Region region;
+		Chunk* chunk = nullptr;
+	};
+
 	/**
 	 * Users can override this class and provide an instance of the derived class to the PagedVolume constructor. This derived class
 	 * could then perform tasks such as compression and decompression of the data, and read/writing it to a file, database, network,
@@ -105,8 +110,8 @@ public:
 		/**
 		 * @return @c true if the chunk was modified (created), @c false if it was just loaded
 		 */
-		virtual bool pageIn(const Region& region, Chunk* pChunk) = 0;
-		virtual void pageOut(const Region& region, Chunk* pChunk) = 0;
+		virtual bool pageIn(PagerContext& ctx) = 0;
+		virtual void pageOut(PagerContext& ctx) = 0;
 	};
 
 	class Sampler {
