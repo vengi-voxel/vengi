@@ -92,6 +92,7 @@ public:
 
 	void setChunk(PagedVolume::Chunk* chunk) {
 		_chunk = chunk;
+		_chunkRegion = chunk->getRegion();
 	}
 
 	void setVoxelStorage(PagedVolume* voxelStorage) {
