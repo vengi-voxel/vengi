@@ -87,6 +87,7 @@ bool WorldPersister::load(TerrainContext& ctx, long seed) {
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
 				core_assert(voxelBuf.getSize() >= 1);
+				static_assert(sizeof(VoxelType) == sizeof(uint8_t), "Voxel type size changed");
 				const VoxelType material = voxelBuf.readByte();
 				const Voxel& voxel = createVoxel(material);
 				chunk->setVoxel(x, y, z, voxel);
@@ -108,7 +109,7 @@ bool WorldPersister::save(TerrainContext& ctx, long seed) {
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
 				const Voxel& voxel = chunk->getVoxel(x, y, z);
-				core_assert(sizeof(VoxelType) == sizeof(uint8_t));
+				static_assert(sizeof(VoxelType) == sizeof(uint8_t), "Voxel type size changed");
 				voxelStream.addByte(voxel.getMaterial());
 			}
 		}
