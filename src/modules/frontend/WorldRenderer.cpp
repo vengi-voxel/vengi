@@ -282,7 +282,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 
 	const int matLoc = shader.enableVertexAttribute("a_material");
 	// our material and density is encoded as 8 bits material and 8 bits density
-	core_assert(sizeof(voxel::Voxel) == sizeof(uint8_t));
+	static_assert(sizeof(voxel::Voxel) == sizeof(uint8_t), "Voxel doesn't have the expected size");
 	glVertexAttribIPointer(matLoc, sizeof(voxel::Voxel), GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
 			GL_OFFSET_CAST(offsetof(voxel::Vertex, data)));
 

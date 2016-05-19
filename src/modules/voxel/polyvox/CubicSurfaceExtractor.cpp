@@ -59,29 +59,33 @@ bool performQuadMerging(std::list<Quad>& quads, Mesh<Vertex>* m_meshCurrent) {
 	return bDidMerge;
 }
 
-int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, IndexAndMaterial>& existingVertices,
+int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
 		Mesh<Vertex>* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ct++) {
-		IndexAndMaterial& rEntry = existingVertices(uX, uY, ct);
+		VertexData& rEntry = existingVertices(uX, uY, ct);
 
-		if (rEntry.iIndex == -1 || true) {
+		const uint8_t ambientOcclusion = vertexAmbientOcclusion(
+			face1.getMaterial() != voxel::Air,
+			face2.getMaterial() != voxel::Air,
+			corner.getMaterial() != voxel::Air);
+
+		if (rEntry.iIndex == -1) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
 			// The 0.5f offset is because vertices set between voxels in order to build cubes around them.
 			Vertex vertex;
 			vertex.position = { uX, uY, uZ };
 			vertex.data = uMaterialIn;
-			vertex.ambientOcclusion = vertexAmbientOcclusion(
-				face1.getMaterial() != voxel::Air,
-				face2.getMaterial() != voxel::Air,
-				corner.getMaterial() != voxel::Air);
+			vertex.ambientOcclusion = ambientOcclusion;
+
 			rEntry.iIndex = m_meshCurrent->addVertex(vertex);
 			rEntry.uMaterial = uMaterialIn;
+			rEntry.ambientOcclusion = vertex.ambientOcclusion;
 
 			return rEntry.iIndex;
 		}
 
 		// If we have an existing vertex and the material matches then we can return it.
-		if (rEntry.uMaterial == uMaterialIn) {
+		if (rEntry.uMaterial == uMaterialIn && rEntry.ambientOcclusion == ambientOcclusion) {
 			return rEntry.iIndex;
 		}
 	}

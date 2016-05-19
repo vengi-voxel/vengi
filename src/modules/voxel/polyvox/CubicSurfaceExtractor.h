@@ -53,9 +53,10 @@ struct Quad {
 	uint32_t vertices[4];
 };
 
-struct IndexAndMaterial {
+struct VertexData {
 	int32_t iIndex;
 	Voxel uMaterial;
+	uint8_t ambientOcclusion;
 };
 
 /**
@@ -79,7 +80,7 @@ extern bool mergeQuads(Quad& q1, Quad& q2, Mesh<Vertex>* m_meshCurrent);
 
 extern bool performQuadMerging(std::list<Quad>& quads, Mesh<Vertex>* m_meshCurrent);
 
-extern int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, IndexAndMaterial>& existingVertices,
+extern int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
 		Mesh<Vertex>* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner);
 
 /**
@@ -202,9 +203,9 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<Vertex>* re
 	result->clear();
 
 	// Used to avoid creating duplicate vertices.
-	Array<3, IndexAndMaterial> m_previousSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
+	Array<3, VertexData> m_previousSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
 			MaxVerticesPerPosition);
-	Array<3, IndexAndMaterial> m_currentSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
+	Array<3, VertexData> m_currentSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
 			MaxVerticesPerPosition);
 
 	// During extraction we create a number of different lists of quads. All the
@@ -213,8 +214,8 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<Vertex>* re
 	typedef std::vector<QuadList> QuadListVector;
 	QuadListVector m_vecQuads[NoOfFaces];
 
-	std::memset(m_previousSliceVertices.getRawData(), 0xff, m_previousSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
-	std::memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
+	std::memset(m_previousSliceVertices.getRawData(), 0xff, m_previousSliceVertices.getNoOfElements() * sizeof(VertexData));
+	std::memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(VertexData));
 
 	m_vecQuads[NegativeX].resize(region.getUpperX() - region.getLowerX() + 2);
 	m_vecQuads[PositiveX].resize(region.getUpperX() - region.getLowerX() + 2);
@@ -406,7 +407,7 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<Vertex>* re
 		}
 
 		m_previousSliceVertices.swap(m_currentSliceVertices);
-		std::memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(IndexAndMaterial));
+		std::memset(m_currentSliceVertices.getRawData(), 0xff, m_currentSliceVertices.getNoOfElements() * sizeof(VertexData));
 	}
 
 	for (QuadListVector& vecListQuads : m_vecQuads) {
