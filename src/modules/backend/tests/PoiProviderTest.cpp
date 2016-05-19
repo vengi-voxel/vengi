@@ -15,9 +15,9 @@ public:
 	void SetUp() override {
 		core::AbstractTest::SetUp();
 		io::FilesystemPtr filesystem(new io::Filesystem());
-		voxel::WorldPtr world(new voxel::World);
-		_timeProvider = core::TimeProviderPtr(new core::TimeProvider);
-		_poiProvider = PoiProviderPtr(new PoiProvider(world, _timeProvider));
+		voxel::WorldPtr world = std::make_shared<voxel::World>();
+		_timeProvider = std::make_shared<core::TimeProvider>();
+		_poiProvider = std::make_shared<PoiProvider>(world, _timeProvider);
 	}
 };
 
