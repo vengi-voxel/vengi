@@ -25,8 +25,8 @@ int TreeGenerator::findFloor(const TerrainContext& ctx, int x, int z) {
 
 void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomManager, core::Random& random) {
 	const Region& region = ctx.region;
-	// TODO: amount of trees should depend on biom
-	for (int i = 0; i < 40; ++i) {
+	const int amount = biomManager.getAmountOfTrees(region);
+	for (int i = 0; i < amount; ++i) {
 		const int regionBorder = 8;
 		const int rndValX = random.random(regionBorder, region.getWidthInVoxels() - regionBorder);
 		// number should be even
@@ -35,7 +35,6 @@ void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomMan
 		}
 
 		const int rndValZ = random.random(regionBorder, region.getDepthInVoxels() - regionBorder);
-		// TODO: use a noise map to get the position
 		glm::ivec3 pos(region.getLowerX() + rndValX, -1, region.getLowerZ() + rndValZ);
 		const int y = findFloor(ctx, pos.x, pos.z);
 		int height;

@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "noise/SimplexNoise.h"
 #include "Voxel.h"
+#include "polyvox/Region.h"
 
 namespace voxel {
 
@@ -59,6 +60,7 @@ public:
 	float getTemperature(const glm::ivec3& pos) const;
 
 	bool hasTrees(const glm::ivec3& pos) const;
+	int getAmountOfTrees(const Region& region) const;
 
 	const Biome* getBiome(const glm::ivec3& pos) const;
 

@@ -57,12 +57,28 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos) const {
 	return biomeBestMatch;
 }
 
+int BiomeManager::getAmountOfTrees(const Region& region) const {
+	const glm::ivec3&pos = region.getCentre();
+	const Biome* biome = getBiome(pos);
+	const int maxDim = region.getDepthInCells();
+	if (biome->temperature > 0.7f || biome->humidity < 0.2f) {
+		return maxDim / 16;
+	}
+	if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
+		return maxDim / 32;
+	}
+	return maxDim / 6;
+}
+
 bool BiomeManager::hasTrees(const glm::ivec3& pos) const {
 	if (pos.y < MAX_WATER_HEIGHT) {
 		return false;
 	}
 	const Biome* biome = getBiome(pos);
 	if (!isGrass(biome->voxel.getMaterial())) {
+		return false;
+	}
+	if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
 		return false;
 	}
 	return biome->temperature > 0.3f && biome->humidity > 0.3f;
