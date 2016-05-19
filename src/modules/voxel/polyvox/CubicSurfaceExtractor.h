@@ -194,11 +194,6 @@ inline bool isQuadFlipped(const Vertex& v00, const Vertex& v01, const Vertex& v1
 template<typename VolumeType, typename IsQuadNeeded, typename ShouldBeIncluded>
 void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<Vertex>* result, IsQuadNeeded isQuadNeeded, ShouldBeIncluded shouldBeIncluded, bool bMergeQuads) {
 	core_trace_scoped(ExtractCubicMesh);
-	// This extractor has a limit as to how large the extracted region can be, because the vertex positions are encoded with a single byte per component.
-	int32_t maxRegionDimensionInVoxels = 255;
-	core_assert_msg(region.getWidthInVoxels() <= maxRegionDimensionInVoxels, "Requested extraction region exceeds maximum dimensions");
-	core_assert_msg(region.getHeightInVoxels() <= maxRegionDimensionInVoxels, "Requested extraction region exceeds maximum dimensions");
-	core_assert_msg(region.getDepthInVoxels() <= maxRegionDimensionInVoxels, "Requested extraction region exceeds maximum dimensions");
 
 	result->clear();
 
