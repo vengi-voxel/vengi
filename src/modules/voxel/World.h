@@ -131,6 +131,10 @@ public:
 		return _seed != 0;
 	}
 
+	void setPersist(bool persist) {
+		_persist = persist;
+	}
+
 	int getChunkSize() const;
 	int getMeshSize() const;
 
@@ -168,6 +172,7 @@ private:
 	mutable std::mt19937 _engine;
 	long _seed = 0l;
 	bool _clientData = false;
+	bool _persist = true;
 
 	core::ThreadPool _threadPool;
 	core::ReadWriteLock _rwLock;

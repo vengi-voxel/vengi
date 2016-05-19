@@ -12,6 +12,7 @@ class WorldRendererTest: public core::AbstractTest {
 
 TEST_F(WorldRendererTest, testCreate) {
 	const voxel::WorldPtr& world = std::make_shared<voxel::World>();
+	world->setPersist(false);
 	WorldRenderer renderer(world);
 	ASSERT_TRUE(renderer.extractNewMeshes(glm::ivec3(0), true));
 	voxel::DecodedMeshData mesh;

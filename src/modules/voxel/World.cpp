@@ -41,7 +41,7 @@ bool World::Pager::pageIn(PagedVolume::PagerContext& pctx) {
 	TerrainContext ctx(_world._volumeData, pctx.chunk);
 	ctx.region = pctx.region;
 #if PERSIST
-	if (_worldPersister.load(ctx, _world.seed())) {
+	if (_world._persist && _worldPersister.load(ctx, _world.seed())) {
 		return false;
 	}
 #endif
@@ -51,6 +51,9 @@ bool World::Pager::pageIn(PagedVolume::PagerContext& pctx) {
 
 void World::Pager::pageOut(PagedVolume::PagerContext& pctx) {
 #if PERSIST
+	if (!_world._persist) {
+		return;
+	}
 	TerrainContext ctx(_world._volumeData, pctx.chunk);
 	ctx.region = pctx.region;
 	_worldPersister.save(ctx, _world.seed());
