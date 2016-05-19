@@ -29,7 +29,7 @@ void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomMan
 	for (int i = 0; i < amount; ++i) {
 		const int regionBorder = 8;
 		const int rndValX = random.random(regionBorder, region.getWidthInVoxels() - regionBorder);
-		// number should be even
+		// number should be even - to get more variance
 		if (!(rndValX % 2)) {
 			continue;
 		}
