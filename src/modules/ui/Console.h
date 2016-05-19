@@ -53,7 +53,7 @@ private:
 	void cursorDelete(bool moveCursor = true);
 	void cursorDeleteWord();
 
-	void drawString(int x, int y, const tb::TBColor &color, const std::string& str, int len = TB_ALL_TO_TERMINATION);
+	void drawString(int x, int y, const std::string& str, int len = TB_ALL_TO_TERMINATION);
 
 public:
 	Console();

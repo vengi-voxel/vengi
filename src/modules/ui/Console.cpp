@@ -12,6 +12,32 @@ static const std::string consolePrompt = "> ";
 static const std::string consoleCursor = "_";
 static const int consoleMarginLeft = 5;
 static const int consoleMarginLeftBehindPrompt = 13;
+static const tb::TBColor consoleBgColor(127, 127, 127, 150);
+static const std::string colorMark = "^";
+enum ConsoleColor {
+	WHITE, BLACK, GRAY, BLUE, GREEN, YELLOW, RED, MAX_COLORS
+};
+static const tb::TBColor colors[MAX_COLORS] = {
+	tb::TBColor(255, 255, 255),
+	tb::TBColor(0, 0, 0),
+	tb::TBColor(127, 127, 127),
+	tb::TBColor(0, 0, 255),
+	tb::TBColor(0, 255, 0),
+	tb::TBColor(255, 255, 0),
+	tb::TBColor(255, 0, 0),
+};
+static_assert(SDL_arraysize(colors) == MAX_COLORS, "Color count doesn't match");
+
+static const ConsoleColor priorityColors[SDL_NUM_LOG_PRIORITIES] = {
+	GRAY,
+	GRAY,
+	GREEN,
+	WHITE,
+	YELLOW,
+	RED,
+	RED
+};
+static_assert(SDL_arraysize(priorityColors) == SDL_NUM_LOG_PRIORITIES, "Priority count doesn't match");
 }
 
 namespace ui {
@@ -39,7 +65,30 @@ bool Console::init() {
 
 	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); });
 	core::Command::registerCommand("clear", [&] (const core::CmdArgs& args) { clear(); });
-
+	core::Command::registerCommand("logerror", [&] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			return;
+		}
+		Log::error("%s", args[0].c_str());
+	});
+	core::Command::registerCommand("loginfo", [&] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			return;
+		}
+		Log::info("%s", args[0].c_str());
+	});
+	core::Command::registerCommand("logdebug", [&] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			return;
+		}
+		Log::debug("%s", args[0].c_str());
+	});
+	core::Command::registerCommand("logwarn", [&] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			return;
+		}
+		Log::warn("%s", args[0].c_str());
+	});
 	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
 	const std::string& content = fs->load(historyFilename);
 	core::string::splitString(content, _history, "\n");
@@ -388,8 +437,9 @@ void Console::cursorDeleteWord() {
 void Console::logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	Console* console = (Console*)userdata;
 	console->_logFunction(userdata, category, priority, message);
-	// TODO: add color code for errors
-	console->_messages.push_back(message);
+	const ConsoleColor consoleColor = priorityColors[priority];
+	const std::string color = colorMark + std::to_string(int(consoleColor));
+	console->_messages.push_back(color + message);
 	if (priority < SDL_LOG_PRIORITY_ERROR) {
 		return;
 	}
@@ -419,8 +469,17 @@ inline void Console::clearCommandLine() {
 	_commandLine.clear();
 }
 
-void Console::drawString(int x, int y, const tb::TBColor &color, const std::string& str, int len) {
-	_font->DrawString(x, y, color, str.c_str(), len);
+void Console::drawString(int x, int y, const std::string& str, int len) {
+	const char *cstr = str.c_str();
+	tb::TBColor color = colors[WHITE];
+	if (str[0] == colorMark[0] && str[1] >= '0' && str[1] <= '9') {
+		cstr += 2;
+		const int colorIndex = str[1] - '0';
+		if (colorIndex >= 0 && colorIndex < (int)SDL_arraysize(colors)) {
+			color = colors[colorIndex];
+		}
+	}
+	_font->DrawString(x, y, color, cstr, len);
 }
 
 void Console::render(const tb::TBRect &rect) {
@@ -429,8 +488,6 @@ void Console::render(const tb::TBRect &rect) {
 		_cursorBlink ^= true;
 	}
 
-	static const tb::TBColor consoleFontColor(255, 255, 255);
-	static const tb::TBColor consoleBgColor(127, 127, 127, 150);
 	if (!_consoleActive) {
 		return;
 	}
@@ -447,14 +504,14 @@ void Console::render(const tb::TBRect &rect) {
 		if (y < 0) {
 			break;
 		}
-		drawString(consoleMarginLeft, y, consoleFontColor, *i);
+		drawString(consoleMarginLeft, y, *i);
 	}
 
-	drawString(consoleMarginLeft, startY, consoleFontColor, consolePrompt);
-	drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt, startY, consoleFontColor, _commandLine);
+	drawString(consoleMarginLeft, startY, consolePrompt);
+	drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt, startY, _commandLine);
 	if (_cursorBlink) {
 		const int l = _font->GetStringWidth(_commandLine.c_str(), _cursorPos);
-		drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt + l, startY, consoleFontColor, consoleCursor);
+		drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt + l, startY, consoleCursor);
 	}
 }
 
