@@ -38,8 +38,24 @@ void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomMan
 		// TODO: use a noise map to get the position
 		glm::ivec3 pos(region.getLowerX() + rndValX, -1, region.getLowerZ() + rndValZ);
 		const int y = findFloor(ctx, pos.x, pos.z);
-		const int height = random.random(10, 14);
-		const int trunkHeight = random.random(5, 9);
+		int height;
+		int trunkHeight;
+		const TreeType treeType = (TreeType)random.random(0, int(TreeType::MAX) - 1);
+		switch (treeType) {
+		default:
+		case TreeType::ELLIPSIS:
+			height = random.random(10, 14);
+			trunkHeight = random.random(5, 9);
+			break;
+		case TreeType::CONE:
+			height = random.random(20, 28);
+			trunkHeight = random.random(5, 9);
+			break;
+		case TreeType::DOME:
+			height = random.random(20, 28);
+			trunkHeight = random.random(10, 14);
+			break;
+		}
 		if (y < 0) {
 			continue;
 		}
@@ -53,7 +69,6 @@ void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomMan
 		const int maxSize = 14;
 		const int size = random.random(12, maxSize);
 		const int trunkWidth = 1;
-		const TreeType treeType = (TreeType)random.random(0, int(TreeType::MAX) - 1);
 		addTree(ctx, pos, treeType, trunkHeight, trunkWidth, size, size, height, random);
 	}
 }
@@ -113,7 +128,6 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 		ShapeGenerator::createEllipse(ctx, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::CONE) {
-		height *= 2;
 		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 		ShapeGenerator::createCone(ctx, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::FIR) {
@@ -122,7 +136,7 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 		float angle = random.random(0, glm::two_pi<float>());
 		float w = 1.5f;
 		for (int n = 0; n < 3; ++n) {
-			glm::ivec3 leafesPos(pos.x, top + +height - n * 10, pos.z);
+			glm::ivec3 leafesPos(pos.x, top + height - n * 10, pos.z);
 			for (int b = 0; b < branches; ++b) {
 				glm::ivec3 start = leafesPos;
 				glm::ivec3 end = start;
@@ -161,12 +175,10 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 			leavesPos.y -= singleLeaveHeight;
 		}
 	} else if (type == TreeType::DOME) {
+		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 		if (random.randomf() < 0.5f) {
-			height *= 3;
-			const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 			ShapeGenerator::createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
 		} else {
-			const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 			const glm::ivec3 trunkPos(pos.x, top, pos.z);
 			ShapeGenerator::createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
 			int branches = 6;
@@ -176,8 +188,8 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 				glm::ivec3 start = trunkPos;
 				const float x = glm::cos(angle);
 				const float z = glm::sin(angle);
-				start.x -= x * width / 2;
-				start.z -= z * depth / 2;
+				start.x -= x * (width - 1) / 2;
+				start.z -= z * (depth - 1) / 2;
 				const int randomZ = random.random(4, 8);
 				glm::ivec3 end = start;
 				end.y -= randomZ;
