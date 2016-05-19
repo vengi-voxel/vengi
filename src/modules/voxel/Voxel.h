@@ -32,6 +32,9 @@ inline bool isBlocked(VoxelType material) {
 	return material != Air;
 }
 
+inline bool isWater(VoxelType material) {
+	return material == Water;
+}
 
 inline bool isLeaves(VoxelType material) {
 	return material >= Leaves1 && material <= Leaves10;
