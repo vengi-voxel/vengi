@@ -81,16 +81,10 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 	ASSERT_EQ(0, region.getLowerZ());
 
 	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
-		const uint32_t regZ = z - region.getLowerZ();
-
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y++) {
-			const uint32_t regY = y - region.getLowerY();
-
 			volumeSampler.setPosition(region.getLowerX(), y, z);
 
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
-				const uint32_t regX = x - region.getLowerX();
-
 				const Voxel voxelCurrent          = volumeSampler.getVoxel();
 				const Voxel voxelLeft             = volumeSampler.peekVoxel1nx0py0pz();
 				const Voxel voxelRight            = volumeSampler.peekVoxel1px0py0pz();
@@ -112,14 +106,6 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 				const Voxel voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz();
 
 				const Voxel voxelBelow            = volumeSampler.peekVoxel0px1ny0pz();
-				const Voxel voxelBelowLeft        = volumeSampler.peekVoxel1nx1ny0pz();
-				const Voxel voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
-				const Voxel voxelBelowBefore      = volumeSampler.peekVoxel0px1ny1nz();
-				const Voxel voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
-				const Voxel voxelBelowLeftBefore  = volumeSampler.peekVoxel1nx1ny1nz();
-				const Voxel voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz();
-				const Voxel voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz();
-				const Voxel voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
 
 				if (y == 0) {
 					// 1 - 9
