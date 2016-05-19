@@ -161,8 +161,30 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 			leavesPos.y -= singleLeaveHeight;
 		}
 	} else if (type == TreeType::DOME) {
-		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
-		ShapeGenerator::createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
+		if (random.randomf() < 0.5f) {
+			height *= 3;
+			const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
+			ShapeGenerator::createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
+		} else {
+			const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
+			const glm::ivec3 trunkPos(pos.x, top, pos.z);
+			ShapeGenerator::createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
+			int branches = 6;
+			const float stepWidth = glm::radians(360.0f / branches);
+			float angle = random.random(0, glm::two_pi<float>());
+			for (int b = 0; b < branches; ++b) {
+				glm::ivec3 start = trunkPos;
+				const float x = glm::cos(angle);
+				const float z = glm::sin(angle);
+				start.x -= x * width / 2;
+				start.z -= z * depth / 2;
+				const int randomZ = random.random(4, 8);
+				glm::ivec3 end = start;
+				end.y -= randomZ;
+				ShapeGenerator::createLine(ctx, start, end, leavesVoxel);
+				angle += stepWidth;
+			}
+		}
 	} else if (type == TreeType::CUBE) {
 		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 		ShapeGenerator::createCube(ctx, leafesPos, width, height, depth, leavesVoxel);

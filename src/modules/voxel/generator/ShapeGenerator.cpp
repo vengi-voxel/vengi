@@ -76,8 +76,7 @@ void ShapeGenerator::createCone(TerrainContext& ctx, const glm::ivec3& pos, int 
 }
 
 // http://members.chello.at/~easyfilter/bresenham.html
-void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel, int radius) {
-	core_assert(radius >= 1);
+void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel, int extends) {
 	const glm::ivec3 delta = end - start;
 
 	const int xInc = (delta.x < 0) ? -1 : 1;
@@ -91,7 +90,7 @@ void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, co
 	const int dx2 = w << 1;
 	const int dy2 = h << 1;
 	const int dz2 = d << 1;
-	const int sideLength = radius * 2 + 1;
+	const int sideLength = extends * 2 + 1;
 	const int amount = sideLength * (sideLength - 1) + sideLength;
 
 	glm::ivec3 point = start;
