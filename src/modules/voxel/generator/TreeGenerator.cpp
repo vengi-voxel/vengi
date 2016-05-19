@@ -37,6 +37,16 @@ void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomMan
 		const int rndValZ = random.random(regionBorder, region.getDepthInVoxels() - regionBorder);
 		glm::ivec3 pos(region.getLowerX() + rndValX, -1, region.getLowerZ() + rndValZ);
 		const int y = findFloor(ctx, pos.x, pos.z);
+		if (y < 0) {
+			continue;
+		}
+
+		pos.y = y;
+
+		if (!biomManager.hasTrees(pos)) {
+			continue;
+		}
+
 		int height;
 		int trunkHeight;
 		const TreeType treeType = (TreeType)random.random(0, int(TreeType::MAX) - 1);
@@ -55,16 +65,6 @@ void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomMan
 			trunkHeight = random.random(10, 14);
 			break;
 		}
-		if (y < 0) {
-			continue;
-		}
-
-		pos.y = y;
-
-		if (!biomManager.hasTrees(pos)) {
-			continue;
-		}
-
 		const int maxSize = 14;
 		const int size = random.random(12, maxSize);
 		const int trunkWidth = 1;
