@@ -165,10 +165,10 @@ extern int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMa
  *  Another scenario which sometimes results in confusion is when you wish to extract a region which corresponds to the whole volume,
  *  particularly when solid voxels extend right to the edge of the volume.
  */
-template<typename VolumeType, typename IsQuadNeeded>
-Mesh<Vertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
+template<typename VolumeType, typename IsQuadNeeded, typename ShouldBeIncluded>
+Mesh<Vertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded, ShouldBeIncluded shouldBeIncluded, bool bMergeQuads) {
 	Mesh<Vertex> result;
-	extractCubicMeshCustom(volData, region, &result, isQuadNeeded, bMergeQuads);
+	extractCubicMeshCustom(volData, region, &result, isQuadNeeded, shouldBeIncluded, bMergeQuads);
 	return result;
 }
 
@@ -191,8 +191,8 @@ inline bool isQuadFlipped(const Vertex& v00, const Vertex& v01, const Vertex& v1
  *  are provided (would the third parameter be a controller or a mesh?). It seems this can be fixed by using enable_if/static_assert to emulate concepts,
  *  but this is relatively complex and I haven't done it yet. Could always add it later as another overload.
  */
-template<typename VolumeType, typename IsQuadNeeded>
-void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<Vertex>* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads) {
+template<typename VolumeType, typename IsQuadNeeded, typename ShouldBeIncluded>
+void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<Vertex>* result, IsQuadNeeded isQuadNeeded, ShouldBeIncluded shouldBeIncluded, bool bMergeQuads) {
 	core_trace_scoped(ExtractCubicMesh);
 	// This extractor has a limit as to how large the extracted region can be, because the vertex positions are encoded with a single byte per component.
 	int32_t maxRegionDimensionInVoxels = 255;
@@ -258,7 +258,9 @@ void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<Vertex>* re
 				 *               [C]
 				 */
 
-				const Voxel voxelCurrent          = volumeSampler.getVoxel();
+				Voxel voxelCurrent                = volumeSampler.getVoxel();
+				// we might want to have different material in different meshes
+				shouldBeIncluded(voxelCurrent);
 				const Voxel voxelLeft             = volumeSampler.peekVoxel1nx0py0pz();
 				const Voxel voxelBefore           = volumeSampler.peekVoxel0px0py1nz();
 				const Voxel voxelLeftBefore       = volumeSampler.peekVoxel1nx0py1nz();

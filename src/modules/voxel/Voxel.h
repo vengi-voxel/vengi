@@ -94,4 +94,30 @@ struct IsQuadNeeded {
 	}
 };
 
+struct IncludeAll {
+	inline bool operator()(Voxel& voxel) const {
+		return true;
+	}
+};
+
+struct IncludeNoWater {
+	inline bool operator()(Voxel& voxel) const {
+		if (!isWater(voxel.getMaterial())) {
+			return true;
+		}
+		voxel = createVoxel(Air);
+		return false;
+	}
+};
+
+struct IncludeOnlyWater {
+	inline bool operator()(Voxel& voxel) const {
+		if (isWater(voxel.getMaterial())) {
+			return true;
+		}
+		voxel = createVoxel(Air);
+		return false;
+	}
+};
+
 }

@@ -130,7 +130,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 
 		const bool mergeQuads = false;
 		DecodedMeshData data;
-		data.mesh = extractCubicMesh(_volumeData, region, IsQuadNeeded(), mergeQuads);
+		data.mesh = extractCubicMesh(_volumeData, region, IsQuadNeeded(), IncludeAll(), mergeQuads);
 		data.translation = pos;
 		core::ScopedWriteLock lock(_rwLock);
 		_meshQueue.push_back(std::move(data));
