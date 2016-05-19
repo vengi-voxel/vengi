@@ -7,10 +7,11 @@
 #include "core/Tokenizer.h"
 
 namespace {
-static const char *historyFilename = "history";
-static const auto consolePrompt = "> ";
-static const auto consoleMarginLeft = 5;
-static const auto consoleMarginLeftBehindPrompt = 13;
+static const char* historyFilename = "history";
+static const std::string consolePrompt = "> ";
+static const std::string consoleCursor = "_";
+static const int consoleMarginLeft = 5;
+static const int consoleMarginLeftBehindPrompt = 13;
 }
 
 namespace ui {
@@ -253,9 +254,9 @@ void Console::cursorWordLeft() {
 }
 
 void Console::cursorWordRight() {
-	auto spaceOffset = _commandLine[_cursorPos] == ' ' ? 1 : 0;
-	auto partialCommandLine = _commandLine.substr(_cursorPos + spaceOffset);
-	auto nextWordEnd = partialCommandLine.find_first_of(" ");
+	const int spaceOffset = _commandLine[_cursorPos] == ' ' ? 1 : 0;
+	const std::string& partialCommandLine = _commandLine.substr(_cursorPos + spaceOffset);
+	const size_t nextWordEnd = partialCommandLine.find_first_of(" ");
 	if (std::string::npos == nextWordEnd) {
 		_cursorPos = _commandLine.size();
 		return;
@@ -373,8 +374,8 @@ void Console::cursorDeleteWord() {
 	if (0 >= _cursorPos) {
 		return;
 	}
-	auto spaceOffset = _commandLine[_cursorPos - 1] == ' ' ? 1 : 0;
-	auto prevWordStart = _commandLine.find_last_of(" ", _cursorPos - spaceOffset - 1);
+	const int spaceOffset = _commandLine[_cursorPos - 1] == ' ' ? 1 : 0;
+	const size_t prevWordStart = _commandLine.find_last_of(" ", _cursorPos - spaceOffset - 1);
 	if (std::string::npos == prevWordStart) {
 		_commandLine.erase(0, _cursorPos);
 		_cursorPos = 0;
@@ -418,6 +419,10 @@ inline void Console::clearCommandLine() {
 	_commandLine.clear();
 }
 
+void Console::drawString(int x, int y, const tb::TBColor &color, const std::string& str, int len) {
+	_font->DrawString(x, y, color, str.c_str(), len);
+}
+
 void Console::render(const tb::TBRect &rect) {
 	_frame++;
 	if ((_frame % 10) == 0) {
@@ -439,19 +444,17 @@ void Console::render(const tb::TBRect &rect) {
 	MessagesIter i = _messages.rbegin();
 	std::advance(i, _scrollPos);
 	for (int y = startY - lineHeight; i != _messages.rend(); ++i, y -= lineHeight) {
-		tb::TBStr str(i->c_str());
 		if (y < 0) {
 			break;
 		}
-		_font->DrawString(consoleMarginLeft, y, consoleFontColor, str);
+		drawString(consoleMarginLeft, y, consoleFontColor, *i);
 	}
 
-	_font->DrawString(consoleMarginLeft, startY, consoleFontColor, consolePrompt);
-	const tb::TBStr cmdLine(_commandLine.c_str());
-	_font->DrawString(consoleMarginLeft + consoleMarginLeftBehindPrompt, startY, consoleFontColor, cmdLine);
+	drawString(consoleMarginLeft, startY, consoleFontColor, consolePrompt);
+	drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt, startY, consoleFontColor, _commandLine);
 	if (_cursorBlink) {
 		const int l = _font->GetStringWidth(_commandLine.c_str(), _cursorPos);
-		_font->DrawString(consoleMarginLeft + consoleMarginLeftBehindPrompt + l, startY, consoleFontColor, "_");
+		drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt + l, startY, consoleFontColor, consoleCursor);
 	}
 }
 
