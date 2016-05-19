@@ -6,6 +6,8 @@
 #include "core/Color.h"
 #include "core/Tokenizer.h"
 
+namespace ui {
+
 namespace {
 static const char* historyFilename = "history";
 static const std::string consolePrompt = "> ";
@@ -13,10 +15,8 @@ static const std::string consoleCursor = "_";
 static const int consoleMarginLeft = 5;
 static const int consoleMarginLeftBehindPrompt = 13;
 static const tb::TBColor consoleBgColor(127, 127, 127, 150);
-static const std::string colorMark = "^";
-enum ConsoleColor {
-	WHITE, BLACK, GRAY, BLUE, GREEN, YELLOW, RED, MAX_COLORS
-};
+static const char colorMark = '^';
+
 static const tb::TBColor colors[MAX_COLORS] = {
 	tb::TBColor(255, 255, 255),
 	tb::TBColor(0, 0, 0),
@@ -40,7 +40,23 @@ static const ConsoleColor priorityColors[SDL_NUM_LOG_PRIORITIES] = {
 static_assert(SDL_arraysize(priorityColors) == SDL_NUM_LOG_PRIORITIES, "Priority count doesn't match");
 }
 
-namespace ui {
+std::string getColor(ConsoleColor color) {
+	core_assert(color >= 0 && color <= (int)SDL_arraysize(colors));
+	std::string s;
+	s += colorMark;
+	s += std::to_string((int)color);
+	return s;
+}
+
+static inline bool isColor(const char *cstr) {
+	static const char maxColor = MAX_COLORS + '0';
+	return cstr[0] == colorMark && cstr[1] >= '0' && cstr[1] <= maxColor;
+}
+
+static inline void skipColor(const char **cstr) {
+	static_assert((int)MAX_COLORS < 10, "max colors must not exceed one ascii char for encoding");
+	*cstr += 2;
+}
 
 Console::Console() {
 	SDL_LogGetOutputFunction(&_logFunction, nullptr);
@@ -436,10 +452,13 @@ void Console::cursorDeleteWord() {
 
 void Console::logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	Console* console = (Console*)userdata;
-	console->_logFunction(userdata, category, priority, message);
-	const ConsoleColor consoleColor = priorityColors[priority];
-	const std::string color = colorMark + std::to_string(int(consoleColor));
+	const bool hasColor = isColor(message);
+	const std::string& color = hasColor ? "" : getColor(priorityColors[priority]);
 	console->_messages.push_back(color + message);
+	if (hasColor) {
+		skipColor(&message);
+	}
+	console->_logFunction(userdata, category, priority, message);
 	if (priority < SDL_LOG_PRIORITY_ERROR) {
 		return;
 	}
@@ -472,8 +491,8 @@ inline void Console::clearCommandLine() {
 void Console::drawString(int x, int y, const std::string& str, int len) {
 	const char *cstr = str.c_str();
 	tb::TBColor color = colors[WHITE];
-	if (str[0] == colorMark[0] && str[1] >= '0' && str[1] <= '9') {
-		cstr += 2;
+	if (isColor(cstr)) {
+		skipColor(&cstr);
 		const int colorIndex = str[1] - '0';
 		if (colorIndex >= 0 && colorIndex < (int)SDL_arraysize(colors)) {
 			color = colors[colorIndex];

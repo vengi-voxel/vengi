@@ -8,6 +8,13 @@
 
 namespace ui {
 
+enum ConsoleColor {
+	WHITE, BLACK, GRAY, BLUE, GREEN, YELLOW, RED, MAX_COLORS
+};
+
+extern std::string getColor(ConsoleColor color);
+
+
 class Console {
 private:
 	typedef std::vector<std::string> Messages;
