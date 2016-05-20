@@ -23,6 +23,7 @@ public:
 	// create a texture with the given name and uploads it
 	Texture(const std::string& name, const uint8_t* data, int width, int height, int depth);
 	~Texture();
+	void shutdown();
 
 	// updates the texture with the new data
 	void upload(const uint8_t* data, int width, int height, int depth);

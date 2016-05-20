@@ -27,7 +27,14 @@ Texture::Texture(const std::string& name, const uint8_t* data, int width, int he
 }
 
 Texture::~Texture() {
-	glDeleteTextures(1, &_handle);
+	shutdown();
+}
+
+void Texture::shutdown() {
+	if (_handle != 0) {
+		glDeleteTextures(1, &_handle);
+		_handle = 0;
+	}
 }
 
 void Texture::upload(const uint8_t* data, int width, int height, int depth) {
