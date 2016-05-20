@@ -23,9 +23,6 @@ protected:
 			_state(IOSTATE_LOADING) {
 	}
 
-	virtual ~IOResource() {
-	}
-
 public:
 	inline bool isLoaded() const {
 		return _state == io::IOSTATE_LOADED;
