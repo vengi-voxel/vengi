@@ -40,6 +40,11 @@ elseif (NOT MSVC)
 	message(SEND_ERROR "It looks like your compiler doesn't understand -std=c++14")
 endif()
 
+check_cxx_compiler_flag("-pg" COMPILER_SUPPORTS_GNUPROF)
+if (COMPILER_SUPPORTS_CXX14)
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg")
+endif()
+
 # thread sanitizer doesn't work in combination with address and leak
 
 # Set -Werror to catch "argument unused during compilation" warnings
