@@ -46,6 +46,9 @@ void WorldRenderer::shutdown() {
 #endif
 	reset();
 	_colorTexture = video::TexturePtr();
+	_entities.clear();
+	_meshData.clear();
+	_noiseFuture.clear();
 }
 
 ClientEntityPtr WorldRenderer::getEntity(ClientEntityId id) {
