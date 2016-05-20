@@ -177,6 +177,10 @@ core::AppState ShapeTool::onRunning() {
 core::AppState ShapeTool::onCleanup() {
 	_meshPool->shutdown();
 	_worldRenderer.onCleanup();
+	_worldShader.shutdown();
+	_meshShader->shutdown();
+	_colorShader->shutdown();
+	_axisBuffer.shutdown();
 	core::AppState state = UIApp::onCleanup();
 	_world->shutdown();
 	return state;

@@ -82,10 +82,18 @@ int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
 }
 
 VertexBuffer::~VertexBuffer() {
+	shutdown();
+}
+
+void VertexBuffer::shutdown() {
 	if (_vao != 0) {
 		glDeleteVertexArrays(1, &_vao);
+		_vao = 0;
 	}
-	glDeleteBuffers(_handleIdx, _handles);
+	if (_handleIdx > 0) {
+		glDeleteBuffers(_handleIdx, _handles);
+		_handleIdx = 0;
+	}
 }
 
 }

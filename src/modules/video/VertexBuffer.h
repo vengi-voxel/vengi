@@ -32,6 +32,8 @@ public:
 	VertexBuffer();
 	~VertexBuffer();
 
+	void shutdown();
+
 	bool addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type = GL_FLOAT, bool normalized = false, int stride = 0, intptr_t offset = 0);
 
 	bool update(int idx, const void* data, GLsizeiptr size);

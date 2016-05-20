@@ -30,14 +30,23 @@ Shader::Shader() :
 }
 
 Shader::~Shader() {
+	shutdown();
+}
+
+void Shader::shutdown() {
 	for (int i = 0; i < SHADER_MAX; ++i) {
 		if (_shader[i] != 0) {
 			glDeleteShader(_shader[i]);
+			_shader[i] = 0;
 		}
 	}
 	if (_program != 0) {
 		glDeleteProgram(_program);
+		_program = 0;
 	}
+	_initialized = false;
+	_active = false;
+	_time = 0;
 }
 
 bool Shader::load(const std::string& name, const std::string& buffer, ShaderType shaderType) {

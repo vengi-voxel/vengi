@@ -45,6 +45,7 @@ void WorldRenderer::onCleanup() {
 	_gbuffer.shutdown();
 #endif
 	reset();
+	_colorTexture = video::TexturePtr();
 }
 
 ClientEntityPtr WorldRenderer::getEntity(ClientEntityId id) {

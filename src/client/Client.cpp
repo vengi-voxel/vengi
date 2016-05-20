@@ -167,6 +167,8 @@ void Client::afterUI() {
 core::AppState Client::onCleanup() {
 	_meshPool->shutdown();
 	_worldRenderer.onCleanup();
+	_worldShader.shutdown();
+	_meshShader = frontend::MeshShaderPtr();
 	core::AppState state = UIApp::onCleanup();
 	_world->shutdown();
 	return state;

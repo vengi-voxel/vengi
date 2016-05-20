@@ -56,6 +56,8 @@ public:
 
 	static int glslVersion;
 
+	void shutdown();
+
 	bool load(const std::string& name, const std::string& buffer, ShaderType shaderType);
 
 	std::string getSource(ShaderType shaderType, const std::string& buffer) const;
