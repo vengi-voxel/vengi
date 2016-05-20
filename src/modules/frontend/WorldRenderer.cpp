@@ -163,8 +163,6 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	core_trace_gl_scoped(WorldRendererRenderWorld);
 	int drawCallsWorld = 0;
 
-	glClear(GL_DEPTH_BUFFER_BIT);
-
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
