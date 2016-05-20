@@ -161,6 +161,10 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height) {
 	handleMeshQueue(shader);
 
+	if (_meshData.empty()) {
+		return 0;
+	}
+
 	core_trace_gl_scoped(WorldRendererRenderWorld);
 	int drawCallsWorld = 0;
 
