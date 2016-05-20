@@ -109,7 +109,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera) {
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
-	auto debugGeometry = _debugGeometry->boolVal();
+	const bool debugGeometry = _debugGeometry->boolVal();
 	int drawCallsWorld = 0;
 	for (auto i = _meshData.begin(); i != _meshData.end();) {
 		const video::GLMeshData& meshData = *i;
