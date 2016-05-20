@@ -34,6 +34,7 @@ public:
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;
 	virtual core::AppState onCleanup() override;
+	virtual void onWindowResize() override;
 };
 
 }
