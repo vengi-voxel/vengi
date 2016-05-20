@@ -36,7 +36,7 @@ MeshPtr MeshPool::getMesh(const std::string& id) {
 	if (i != _meshes.end())
 		return i->second;
 
-	const MeshPtr mesh(new Mesh());
+	const MeshPtr mesh = std::make_shared<Mesh>();
 	core::App::getInstance()->threadPool().enqueue([=]() {mesh->loadMesh(name);});
 	_meshes[name] = mesh;
 	return mesh;
