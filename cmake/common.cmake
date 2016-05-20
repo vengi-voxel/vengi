@@ -42,7 +42,7 @@ endif()
 
 check_cxx_compiler_flag("-pg" COMPILER_SUPPORTS_GNUPROF)
 if (COMPILER_SUPPORTS_CXX14)
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg")
+	set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_DEBUG} -pg")
 endif()
 
 # thread sanitizer doesn't work in combination with address and leak
