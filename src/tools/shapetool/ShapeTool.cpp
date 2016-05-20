@@ -68,8 +68,8 @@ core::AppState ShapeTool::onInit() {
 		Log::error("Failed to load the mesh '%s'", meshName);
 		return core::Cleanup;
 	}
-	const frontend::ClientEntityPtr& entity = std::make_shared<frontend::ClientEntity>(1, -1, _now, _camera.getPosition(), 0.0f, mesh);
-	if (!_worldRenderer.addEntity(entity)) {
+	_entity = std::make_shared<frontend::ClientEntity>(1, -1, _now, _camera.getPosition(), 0.0f, mesh);
+	if (!_worldRenderer.addEntity(_entity)) {
 		Log::error("Failed to create entity");
 		return core::Cleanup;
 	}
@@ -160,6 +160,7 @@ core::AppState ShapeTool::onRunning() {
 	const glm::mat4& projection = glm::perspective(45.0f, _aspect, 0.1f, farPlane);
 	_colorShader->setUniformMatrix("u_projection", projection, false);
 
+	_entity->update(_deltaFrame);
 	// TODO: add x, y and z letters to the axis
 	glDisable(GL_DEPTH_TEST);
 	core_assert(_axisBuffer.bind());
@@ -181,6 +182,7 @@ core::AppState ShapeTool::onCleanup() {
 	_meshShader->shutdown();
 	_colorShader->shutdown();
 	_axisBuffer.shutdown();
+	_entity = frontend::ClientEntityPtr();
 	core::AppState state = UIApp::onCleanup();
 	_world->shutdown();
 	return state;

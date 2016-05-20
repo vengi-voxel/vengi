@@ -28,6 +28,7 @@ protected:
 	video::VertexBuffer _axisBuffer;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;
+	frontend::ClientEntityPtr _entity;
 
 	bool _resetTriggered = false;
 	uint8_t _moveMask = 0;
