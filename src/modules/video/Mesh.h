@@ -46,6 +46,7 @@ public:
 	Mesh();
 	~Mesh();
 
+	void shutdown();
 	bool loadMesh(const std::string& filename);
 	bool initMesh(const ShaderPtr& shader);
 	int render();

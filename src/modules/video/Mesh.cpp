@@ -18,10 +18,33 @@ Mesh::Mesh() :
 }
 
 Mesh::~Mesh() {
+	shutdown();
+}
+
+void Mesh::shutdown() {
 	_textures.clear();
+	_images.clear();
+	_meshData.clear();
+
+	_positions.clear();
+	_normals.clear();
+	_texCoords.clear();
+	_indices.clear();
+
+	_shader = ShaderPtr();
+	_readyToInit = false;
 	// destroy all the 4 buffers at once
-	glDeleteBuffers(4, &_posBuffer);
-	glDeleteVertexArrays(1, &_vertexArrayObject);
+	if (_posBuffer != 0) {
+		glDeleteBuffers(4, &_posBuffer);
+		_posBuffer = 0;
+		_uvBuffer = 0;
+		_normalBuffer = 0;
+		_indexBuffer = 0;
+	}
+	if (_vertexArrayObject != 0) {
+		glDeleteVertexArrays(1, &_vertexArrayObject);
+		_vertexArrayObject = 0;
+	}
 }
 
 bool Mesh::loadMesh(const std::string& filename) {
