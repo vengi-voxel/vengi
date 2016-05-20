@@ -40,7 +40,7 @@ void WorldRenderer::reset() {
 	_now = 0l;
 }
 
-void WorldRenderer::onCleanup() {
+void WorldRenderer::shutdown() {
 #if GBUFFER
 	_gbuffer.shutdown();
 #endif

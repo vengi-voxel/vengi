@@ -78,7 +78,7 @@ public:
 
 	void onInit(int width, int height);
 	void onRunning(long now);
-	void onCleanup();
+	void shutdown();
 
 	// called to initialed the player position
 	void onSpawn(const glm::vec3& pos, int initialExtractionRadius = 5);

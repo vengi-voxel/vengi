@@ -177,7 +177,7 @@ core::AppState ShapeTool::onRunning() {
 
 core::AppState ShapeTool::onCleanup() {
 	_meshPool->shutdown();
-	_worldRenderer.onCleanup();
+	_worldRenderer.shutdown();
 	_worldShader.shutdown();
 	_meshShader->shutdown();
 	_colorShader->shutdown();
