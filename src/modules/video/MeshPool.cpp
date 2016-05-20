@@ -16,6 +16,10 @@ MeshPool::MeshPool() {
 MeshPool::~MeshPool() {
 }
 
+void MeshPool::shutdown() {
+	_meshes.clear();
+}
+
 std::string MeshPool::getName(const std::string& id) const {
 	for (const char **format = supportedFormats; *format != nullptr; format++) {
 		const std::string name = "mesh/" + id + "." + *format;

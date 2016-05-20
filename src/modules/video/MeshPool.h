@@ -20,6 +20,8 @@ public:
 	MeshPool();
 	~MeshPool();
 
+	void shutdown();
+
 	MeshPtr getMesh(const std::string& name);
 };
 

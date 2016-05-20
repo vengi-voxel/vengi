@@ -165,9 +165,10 @@ void Client::afterUI() {
 }
 
 core::AppState Client::onCleanup() {
+	_meshPool->shutdown();
 	_worldRenderer.onCleanup();
 	core::AppState state = UIApp::onCleanup();
-	_world->destroy();
+	_world->shutdown();
 	return state;
 }
 

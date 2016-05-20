@@ -46,7 +46,7 @@ public:
 		_clientData = clientData;
 	}
 
-	void destroy();
+	void shutdown();
 	void reset();
 	bool isReset() const;
 
