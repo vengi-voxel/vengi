@@ -1995,6 +1995,7 @@ inline const char* translateError(GLenum glError) {
 
 inline int OpenGLStateHandlerCheckError(const char *file, int line, const char *function) {
 	int ret = 0;
+#ifdef DEBUG
 	/* check gl errors (can return multiple errors) */
 	for (;;) {
 		const GLenum glError = glGetError();
@@ -2004,11 +2005,8 @@ inline int OpenGLStateHandlerCheckError(const char *file, int line, const char *
 		Log::error("openGL err: %s (%i): %s %s => %i", file, line, function, translateError(glError), glError);
 		ret++;
 	}
+#endif
 	return ret;
 }
 
-#ifdef DEBUG
 #define GL_checkError() OpenGLStateHandlerCheckError(__FILE__, __LINE__, __PRETTY_FUNCTION__)
-#else
-#define GL_checkError()
-#endif
