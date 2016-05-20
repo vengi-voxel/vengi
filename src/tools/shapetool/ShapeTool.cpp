@@ -74,6 +74,11 @@ core::AppState ShapeTool::onInit() {
 		return core::Cleanup;
 	}
 
+	glm::vec3 targetPos = _camera.getPosition();
+	targetPos.x += 1000.0f;
+	targetPos.z += 1000.0f;
+	_entity->lerpPosition(_now, targetPos, _entity->orientation());
+
 	static const float verticesAxis[] = {
 			  0.0f,   0.0f,   0.0f, 1.0f,
 			 20.0f,   0.0f,   0.0f, 1.0f,
@@ -160,6 +165,8 @@ core::AppState ShapeTool::onRunning() {
 	const glm::mat4& projection = glm::perspective(45.0f, _aspect, 0.1f, farPlane);
 	_colorShader->setUniformMatrix("u_projection", projection, false);
 
+	//glm::vec3 entPos = _entity->position();
+	//entPos.y = _world->findFloor(entPos.x, entPos.z);
 	_entity->update(_deltaFrame);
 	// TODO: add x, y and z letters to the axis
 	glDisable(GL_DEPTH_TEST);
