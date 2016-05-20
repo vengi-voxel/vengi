@@ -44,10 +44,13 @@ all: build
 
 run: shapetool
 
-.PHONY: build
-build:
+.PHONY: cmake
+cmake:
 	$(Q)mkdir -p $(BUILDDIR)
 	$(Q)cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_INSTALL_PREFIX=./linux -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(CURDIR)
+
+.PHONY: build
+build: cmake
 	$(Q)cd $(BUILDDIR); make $(JOB_FLAG);
 	$(Q)cd $(BUILDDIR); make install
 
@@ -60,20 +63,20 @@ clean-local-config:
 edit-local-config:
 	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
 
-server client shapetool tests:
+server client shapetool tests: cmake
 	$(Q)cd $(BUILDDIR); make $@ $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(GDB_CMD) ./$@ $(ARGS)
 
-shapetool2: clean-local-config
+shapetool2: cmake clean-local-config
 	$(Q)cd $(BUILDDIR); make shapetool copy-data-shapetool copy-data-shared $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(GDB_CMD) ./shapetool
 
-material-color:
+material-color: cmake
 	$(Q)cd $(BUILDDIR); make tests $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(GDB_CMD) ./tests --gtest_filter=MaterialTest* -- $(ARGS)
 	$(Q)xdg-open build/material.png
 
-test-ambient-occlusion:
+test-ambient-occlusion: cmake
 	$(Q)cd $(BUILDDIR); make tests $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(GDB_CMD) ./tests --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
 
