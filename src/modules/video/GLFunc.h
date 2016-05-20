@@ -2007,4 +2007,8 @@ inline int OpenGLStateHandlerCheckError(const char *file, int line, const char *
 	return ret;
 }
 
+#ifdef DEBUG
 #define GL_checkError() OpenGLStateHandlerCheckError(__FILE__, __LINE__, __PRETTY_FUNCTION__)
+#else
+#define GL_checkError()
+#endif
