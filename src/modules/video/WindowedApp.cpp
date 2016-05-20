@@ -110,8 +110,13 @@ core::AppState WindowedApp::onInit() {
 	SDL_ClearError();
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, core::Var::get(cfg::ClientMultiSampleBuffers, "1")->intVal());
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, core::Var::get(cfg::ClientMultiSampleSamples, "4")->intVal());
+	const core::VarPtr& multisampleBuffers = core::Var::get(cfg::ClientMultiSampleBuffers, "1");
+	const core::VarPtr& multisampleSamples = core::Var::get(cfg::ClientMultiSampleSamples, "4");
+	const bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
+	if (multisampling) {
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, multisampleBuffers->intVal());
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, multisampleSamples->intVal());
+	}
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glv.majorVersion);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glv.minorVersion);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -194,7 +199,9 @@ core::AppState WindowedApp::onInit() {
 
 	ExtGLLoadFunctions();
 
-	glEnable(GL_MULTISAMPLE);
+	if (multisampling) {
+		glEnable(GL_MULTISAMPLE);
+	}
 
 	rmt_BindOpenGL();
 
