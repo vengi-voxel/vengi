@@ -306,10 +306,10 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 }
 
 int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height) {
-	core_trace_gl_scoped(WorldRendererRenderEntities);
-	if (_entities.empty() || true) {
+	if (_entities.empty()) {
 		return 0;
 	}
+	core_trace_gl_scoped(WorldRendererRenderEntities);
 
 	int drawCallsEntities = 0;
 
