@@ -133,7 +133,6 @@ bool Shader::deactivate() const {
 		return false;
 	}
 
-	glUseProgram(0);
 	GL_checkError();
 	_active = false;
 	_time = 0;
