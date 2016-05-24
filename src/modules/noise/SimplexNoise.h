@@ -135,7 +135,7 @@ public:
 		for (int x = 0; x < width; ++x) {
 			for (int y = 0; y < height; ++y) {
 				float noise = func(glm::vec2(x, y) + pos, std::forward<Args>(args)...);
-				float noiseHeight = (noise + 1.0f) * 0.5f;
+				float noiseHeight = norm(noise);
 				unsigned char color = (unsigned char) (noiseHeight * 255.0f);
 				int index = y * (width * components) + (x * components);
 				const int n = components == 4 ? 3 : components;
