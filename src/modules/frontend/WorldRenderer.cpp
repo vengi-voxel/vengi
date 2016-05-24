@@ -240,7 +240,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 
 void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData) {
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
-	const uint32_t* vecIndices = surfaceMesh.getRawIndexData();
+	const voxel::IndexType* vecIndices = surfaceMesh.getRawIndexData();
 	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
 	const voxel::Vertex* vecVertices = surfaceMesh.getRawVertexData();
 	const uint32_t numVertices = surfaceMesh.getNoOfVertices();
@@ -251,7 +251,7 @@ void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshDat
 
 	core_assert(meshData.indexBuffer > 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(uint32_t), vecIndices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(voxel::IndexType), vecIndices, GL_STATIC_DRAW);
 
 	meshData.noOfIndices = numIndices;
 }
@@ -292,6 +292,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	glVertexAttribIPointer(matLoc, sizeof(voxel::Voxel), GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
 			GL_OFFSET_CAST(offsetof(voxel::Vertex, data)));
 
+	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	meshData.indexType = GL_UNSIGNED_INT;
 
 	glBindVertexArray(0);
