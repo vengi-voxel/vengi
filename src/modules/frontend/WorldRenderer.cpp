@@ -287,8 +287,8 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	glVertexAttribIPointer(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
 			GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
 
-	static_assert(sizeof(voxel::IndexType) == sizeof(uint16_t), "Index type doesn't match");
-	meshData.indexType = GL_UNSIGNED_SHORT;
+	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+	meshData.indexType = GL_UNSIGNED_INT;
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
