@@ -41,7 +41,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 			const float mountainNoiseNormalized = noise::norm(mountainNoise);
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
-			 const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
+			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
 			if (plainTerrainBool) {
 				for (int y = 0; y < ni; ++y) {
 					const Voxel& voxel = biomManager.getVoxelType(x, y, z, false);
