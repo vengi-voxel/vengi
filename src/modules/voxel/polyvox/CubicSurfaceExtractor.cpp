@@ -9,7 +9,9 @@ namespace voxel {
 bool mergeQuads(Quad& q1, Quad& q2, Mesh<Vertex>* m_meshCurrent) {
 	//All four vertices of a given quad have the same data,
 	//so just check that the first pair of vertices match.
-	if (m_meshCurrent->getVertex(q1.vertices[0]).data == m_meshCurrent->getVertex(q2.vertices[0]).data) {
+	const Vertex& v1 = m_meshCurrent->getVertex(q1.vertices[0]);
+	const Vertex& v2 = m_meshCurrent->getVertex(q2.vertices[0]);
+	if (v1.data == v2.data) {
 		//Now check whether quad 2 is adjacent to quad one by comparing vertices.
 		//Adjacent quads must share two vertices, and the second quad could be to the
 		//top, bottom, left, of right of the first one. This gives four combinations to test.
