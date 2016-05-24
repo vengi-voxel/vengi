@@ -15,7 +15,7 @@ namespace voxel {
  * value of the voxel(s) which caused the vertex to be generated.
  */
 struct Vertex {
-	glm::vec3 position;
+	glm::u8vec3 position;
 	uint8_t ambientOcclusion;
 	Voxel data;
 };

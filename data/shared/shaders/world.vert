@@ -1,5 +1,5 @@
 // attributes from the VAOs
-in vec3 a_pos;
+in uvec3 a_pos;
 in int a_ao;
 in int a_material;
 

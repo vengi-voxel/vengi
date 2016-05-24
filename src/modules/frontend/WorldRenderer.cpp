@@ -279,7 +279,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	updateMesh(mesh.mesh, meshData);
 
 	const int posLoc = shader.enableVertexAttribute("a_pos");
-	glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, sizeof(voxel::Vertex),
+	glVertexAttribIPointer(posLoc, 3, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
 			GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
 
 	const int locationAO = shader.enableVertexAttribute("a_ao");
