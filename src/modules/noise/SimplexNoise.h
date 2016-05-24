@@ -27,7 +27,10 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
+	static float Noise2DClamped(const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
+
 	static float Noise2D(const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
+
 	/**
 	 * @return A value between [-1,1]
 	 * @param[in] octaves the amount of noise calls that contribute to the final result
@@ -36,7 +39,10 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
+	static float Noise3DClamped(const glm::vec3& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
+
 	static float Noise3D(const glm::vec3& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
+
 	/**
 	 * @return A value between [-1,1]
 	 * @param[in] octaves the amount of noise calls that contribute to the final result
@@ -45,7 +51,10 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
+	static float Noise4DClamped(const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
+
 	static float Noise4D(const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
+
 	/**
 	 * @brief Fills the given target buffer with RGB or RGBA values for the noise (depending on the components).
 	 * @param[in] buffer pointer to the target buffer - must be of size @c width * height * 3
@@ -229,6 +238,18 @@ public:
 				}
 			}
 		}
+	}
+
+	static float ScaledNoise2D(const float lowerBound, const float upperBound, const glm::vec2& pos) {
+		return Noise2D(pos) * (upperBound - lowerBound) / 2.0f + (upperBound + lowerBound) / 2.0f;
+	}
+
+	static float ScaledNoise3D(const float lowerBound, const float upperBound, const glm::vec3& pos) {
+		return Noise3D(pos) * (upperBound - lowerBound) / 2.0f + (upperBound + lowerBound) / 2.0f;
+	}
+
+	static float ScaledNoise4D(const float lowerBound, const float upperBound, const glm::vec4& pos) {
+		return Noise4D(pos) * (upperBound - lowerBound) / 2.0f + (upperBound + lowerBound) / 2.0f;
 	}
 };
 
