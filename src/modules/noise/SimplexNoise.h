@@ -118,13 +118,13 @@ public:
 	}
 
 	static void Noise2DChannel(uint8_t* buffer, int width, int height, int components, const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		uint8_t buffer_channel[width * height];
+		uint8_t bufferChannel[width * height];
 		for (int channel = 0; channel < components; ++channel) {
-			Noise2DBuffer(buffer_channel, width, height, 1, pos + glm::vec2(channel), noise::Simplex::Noise2D, octaves, persistence, frequency, amplitude);
+			Noise2DBuffer(bufferChannel, width, height, 1, pos + glm::vec2(channel), noise::Simplex::Noise2D, octaves, persistence, frequency, amplitude);
 			int index = 0;
 			for (int x = 0; x < width; ++x) {
 				for (int y = 0; y < height; ++y, ++index) {
-					buffer[index*3+channel] = buffer_channel[index];
+					buffer[index * 3 + channel] = bufferChannel[index];
 				}
 			}
 		}
@@ -198,13 +198,13 @@ public:
 	}
 
 	static void SeamlessNoise2DChannel(uint8_t* buffer, int size, int components, const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		uint8_t buffer_channel[size * size];
+		uint8_t bufferChannel[size * size];
 		for (int channel = 0; channel < components; ++channel) {
-			SeamlessNoise2DBuffer(buffer_channel, size, 1, pos + glm::vec4(channel), noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
+			SeamlessNoise2DBuffer(bufferChannel, size, 1, pos + glm::vec4(channel), noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
 			int index = 0;
 			for (int x = 0; x < size; ++x) {
 				for (int y = 0; y < size; ++y, ++index) {
-					buffer[index * 3 + channel] = buffer_channel[index];
+					buffer[index * 3 + channel] = bufferChannel[index];
 				}
 			}
 		}
