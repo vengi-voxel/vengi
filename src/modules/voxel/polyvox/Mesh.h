@@ -16,7 +16,7 @@
 namespace voxel {
 
 // TODO: maybe reduce to uint16_t and use glDrawElementsBaseVertex
-typedef uint32_t IndexType;
+typedef uint16_t IndexType;
 
 /**
  * A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
