@@ -18,6 +18,8 @@ struct Vertex {
 	glm::u8vec3 position;
 	uint8_t ambientOcclusion;
 	Voxel data;
+	uint8_t padding[3];
 };
+static_assert(sizeof(Vertex) == 8, "Unexpected size of the vertex struct");
 
 }
