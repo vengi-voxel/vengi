@@ -6,12 +6,20 @@
 
 namespace voxel {
 
+inline bool isSameVertex(const Vertex& v1, const Vertex& v2) {
+	return v1.data == v2.data && v1.ambientOcclusion == v2.ambientOcclusion;
+}
+
 bool mergeQuads(Quad& q1, Quad& q2, Mesh<Vertex>* m_meshCurrent) {
-	//All four vertices of a given quad have the same data,
-	//so just check that the first pair of vertices match.
-	const Vertex& v1 = m_meshCurrent->getVertex(q1.vertices[0]);
-	const Vertex& v2 = m_meshCurrent->getVertex(q2.vertices[0]);
-	if (v1.data == v2.data) {
+	const Vertex& v11 = m_meshCurrent->getVertex(q1.vertices[0]);
+	const Vertex& v21 = m_meshCurrent->getVertex(q2.vertices[0]);
+	const Vertex& v12 = m_meshCurrent->getVertex(q1.vertices[1]);
+	const Vertex& v22 = m_meshCurrent->getVertex(q2.vertices[1]);
+	const Vertex& v13 = m_meshCurrent->getVertex(q1.vertices[2]);
+	const Vertex& v23 = m_meshCurrent->getVertex(q2.vertices[2]);
+	const Vertex& v14 = m_meshCurrent->getVertex(q1.vertices[3]);
+	const Vertex& v24 = m_meshCurrent->getVertex(q2.vertices[3]);
+	if (isSameVertex(v11, v21) && isSameVertex(v12, v22) && isSameVertex(v13, v23) && isSameVertex(v14, v24)) {
 		//Now check whether quad 2 is adjacent to quad one by comparing vertices.
 		//Adjacent quads must share two vertices, and the second quad could be to the
 		//top, bottom, left, of right of the first one. This gives four combinations to test.

@@ -128,7 +128,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		const Region prefetchRegion(mins, maxs);
 		_volumeData->prefetch(prefetchRegion);
 
-		const bool mergeQuads = false;
+		const bool mergeQuads = true;
 		DecodedMeshData data;
 		data.mesh = extractCubicMesh(_volumeData, region, IsQuadNeeded(), IncludeAll(), mergeQuads);
 		data.translation = pos;
