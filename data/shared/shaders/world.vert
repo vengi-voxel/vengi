@@ -45,8 +45,7 @@ void main(void) {
 	v_debug_color = u_debug_color;
 
 	vec3 materialColor = u_materialcolor[a_material].rgb;
-	vec4 noisepos = u_model * vec4(a_pos, 1.0);
-	vec3 colornoise = texture(u_texture, abs(noisepos.xz) / 256.0 / 10.0).rgb;
+	vec3 colornoise = texture(u_texture, abs(pos4.xz) / 256.0 / 10.0).rgb;
 	v_color = vec4(materialColor * colornoise * 1.8, u_materialcolor[a_material].a);
 	v_color = clamp(v_color, 0.0, 1.0);
 
