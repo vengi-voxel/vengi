@@ -75,6 +75,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 		meshData.noOfIndices = mesh->mNumFaces * 3;
 		meshData.baseVertex = numVertices;
 		meshData.baseIndex = numIndices;
+		meshData.indexType = GL_UNSIGNED_INT;
 
 		numVertices += mesh->mNumVertices;
 		numIndices += meshData.noOfIndices;
@@ -215,7 +216,7 @@ int Mesh::render() {
 		if (matIdx < _textures.size() && _textures[matIdx]) {
 			_textures[matIdx]->bind();
 		}
-		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, GL_UNSIGNED_INT, GL_OFFSET_CAST(sizeof(uint32_t) * mesh.baseIndex), mesh.baseVertex);
+		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, mesh.indexType, GL_OFFSET_CAST(sizeof(uint32_t) * mesh.baseIndex), mesh.baseVertex);
 		++drawCalls;
 	}
 	return drawCalls;
