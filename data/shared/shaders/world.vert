@@ -1,7 +1,6 @@
 // attributes from the VAOs
 in uvec3 a_pos;
-in int a_ao;
-in int a_material;
+in uvec2 a_info;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
@@ -25,6 +24,8 @@ out float v_ambientocclusion;
 out float v_debug_color;
 
 void main(void) {
+	uint a_ao = a_info[0];
+	uint a_material = a_info[1];
 	mat4 modelview = u_view * u_model;
 	vec4 pos4 = u_model * vec4(a_pos, 1.0);
 	v_pos = pos4.xyz;

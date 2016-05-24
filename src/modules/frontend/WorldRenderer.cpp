@@ -282,15 +282,10 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	glVertexAttribIPointer(posLoc, 3, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
 			GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
 
-	const int locationAO = shader.enableVertexAttribute("a_ao");
-	glVertexAttribIPointer(locationAO, 1, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
+	static_assert(sizeof(voxel::Voxel) == sizeof(uint8_t), "Voxel type doesn't match");
+	const int locationInfo = shader.enableVertexAttribute("a_info");
+	glVertexAttribIPointer(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
 			GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
-
-	const int matLoc = shader.enableVertexAttribute("a_material");
-	// our material and density is encoded as 8 bits material and 8 bits density
-	static_assert(sizeof(voxel::Voxel) == sizeof(uint8_t), "Voxel doesn't have the expected size");
-	glVertexAttribIPointer(matLoc, sizeof(voxel::Voxel), GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
-			GL_OFFSET_CAST(offsetof(voxel::Vertex, data)));
 
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	meshData.indexType = GL_UNSIGNED_INT;

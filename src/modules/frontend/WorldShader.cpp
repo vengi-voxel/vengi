@@ -14,11 +14,8 @@ bool WorldShader::init() {
 	if (!hasAttribute("a_pos")) {
 		Log::error("no attribute a_pos found");
 	}
-	if (!hasAttribute("a_material")) {
-		Log::error("no attribute a_material found");
-	}
-	if (!hasAttribute("a_ao")) {
-		Log::error("no attribute a_ao found");
+	if (!hasAttribute("a_info")) {
+		Log::error("no attribute a_info found");
 	}
 	if (!hasUniform("u_projection")) {
 		Log::error("no uniform u_projection found");
