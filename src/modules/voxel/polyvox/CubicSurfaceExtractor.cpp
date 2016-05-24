@@ -48,20 +48,20 @@ bool mergeQuads(Quad& q1, Quad& q2, Mesh<Vertex>* m_meshCurrent) {
 
 bool performQuadMerging(std::list<Quad>& quads, Mesh<Vertex>* m_meshCurrent) {
 	bool bDidMerge = false;
-	for (typename std::list<Quad>::iterator outerIter = quads.begin(); outerIter != quads.end(); outerIter++) {
+	for (typename std::list<Quad>::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
 		typename std::list<Quad>::iterator innerIter = outerIter;
-		innerIter++;
+		++innerIter;
 		while (innerIter != quads.end()) {
 			Quad& q1 = *outerIter;
 			Quad& q2 = *innerIter;
 
-			bool result = mergeQuads(q1, q2, m_meshCurrent);
+			const bool result = mergeQuads(q1, q2, m_meshCurrent);
 
 			if (result) {
 				bDidMerge = true;
 				innerIter = quads.erase(innerIter);
 			} else {
-				innerIter++;
+				++innerIter;
 			}
 		}
 	}
