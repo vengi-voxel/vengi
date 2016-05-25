@@ -21,6 +21,7 @@
 #include "polyvox/RawVolume.h"
 #include "polyvox/Voxel.h"
 #include "Voxel.h"
+#include "IsQuadNeeded.h"
 
 namespace voxel {
 

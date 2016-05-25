@@ -5,6 +5,7 @@
 #include "AbstractVoxelTest.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/Spiral.h"
+#include "voxel/IsQuadNeeded.h"
 
 namespace voxel {
 
