@@ -268,10 +268,8 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	glGenVertexArrays(1, &meshData.vertexArrayObject);
 
 	// The GL_ARRAY_BUFFER will contain the list of vertex positions
-	glGenBuffers(1, &meshData.vertexBuffer);
-
 	// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
-	glGenBuffers(1, &meshData.indexBuffer);
+	glGenBuffers(2, &meshData.indexBuffer);
 
 	core_assert(meshData.vertexArrayObject > 0);
 	glBindVertexArray(meshData.vertexArrayObject);
