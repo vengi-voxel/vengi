@@ -109,7 +109,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	_meshData.push_back(createMesh(shader, mesh));
 }
 
-int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera) {
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, int* vertices) {
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
 	const bool debugGeometry = _debugGeometry->boolVal();
@@ -139,6 +139,9 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 			shader.setUniformf("u_debug_color", 1.0);
 		}
 		glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
+		if (vertices != nullptr) {
+			*vertices += meshData.noOfVertices;
+		}
 		GL_checkError();
 
 		if (debugGeometry) {
@@ -161,7 +164,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height) {
+int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height, int* vertices) {
 	handleMeshQueue(shader);
 
 	if (_meshData.empty()) {
@@ -201,7 +204,7 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
-	drawCallsWorld = renderWorldMeshes(shader, camera);
+	drawCallsWorld = renderWorldMeshes(shader, camera, vertices);
 
 #if GBUFFER
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -253,6 +256,7 @@ void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshDat
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(voxel::IndexType), vecIndices, GL_STATIC_DRAW);
 
+	meshData.noOfVertices = numVertices;
 	meshData.noOfIndices = numIndices;
 }
 

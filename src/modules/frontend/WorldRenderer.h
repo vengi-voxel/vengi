@@ -68,7 +68,7 @@ private:
 	// schedule mesh extraction around the camera position on the grid with the given radius
 	void extractMeshAroundCamera(int radius);
 
-	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera);
+	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, int* vertices);
 
 public:
 	WorldRenderer(const voxel::WorldPtr& world);
@@ -95,7 +95,7 @@ public:
 	float getViewDistance() const;
 
 	bool extractNewMeshes(const glm::vec3& position, bool force = false);
-	int renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height);
+	int renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height, int* vertices = nullptr);
 	int renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height);
 };
 

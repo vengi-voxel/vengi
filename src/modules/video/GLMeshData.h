@@ -12,6 +12,7 @@ namespace video {
 
 struct GLMeshData {
 	GLuint noOfIndices = 0u;
+	GLuint noOfVertices = 0u;
 	GLenum indexType = 0;
 	// don't change the order of these two entries here - they are created in one step
 	GLuint indexBuffer = 0u;

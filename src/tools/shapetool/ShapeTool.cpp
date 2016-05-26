@@ -129,13 +129,14 @@ void ShapeTool::beforeUI() {
 
 	_worldRenderer.extractNewMeshes(_camera.getPosition());
 	_worldRenderer.onRunning(_deltaFrame);
-	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _camera, projection, _width, _height);
+	_vertices = 0;
+	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _camera, projection, _width, _height, &_vertices);
 	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, projection, _width, _height);
 }
 
 void ShapeTool::afterUI() {
 	tb::TBStr drawCallsWorld;
-	drawCallsWorld.SetFormatted("drawcalls world: %i", _drawCallsWorld);
+	drawCallsWorld.SetFormatted("drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
 	tb::TBStr drawCallsEntity;
 	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
 	tb::TBStr position;

@@ -33,6 +33,7 @@ protected:
 	bool _resetTriggered = false;
 	uint8_t _moveMask = 0;
 	int _drawCallsWorld = 0;
+	int _vertices = 0;
 	int _drawCallsEntities = 0;
 
 	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
