@@ -3,6 +3,7 @@
  */
 
 #include "BiomeManager.h"
+#include "noise/SimplexNoise.h"
 
 namespace voxel {
 

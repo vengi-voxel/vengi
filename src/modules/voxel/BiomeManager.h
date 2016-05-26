@@ -5,9 +5,9 @@
 #pragma once
 
 #include "core/Common.h"
-#include "noise/SimplexNoise.h"
-#include "Voxel.h"
+#include "Constants.h"
 #include "polyvox/Region.h"
+#include "polyvox/Voxel.h"
 
 namespace voxel {
 

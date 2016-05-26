@@ -26,6 +26,11 @@
 
 namespace voxel {
 
+struct ChunkMeshData {
+	Mesh opaqueMesh;
+	Mesh waterMesh;
+};
+
 class World {
 public:
 	enum Result {

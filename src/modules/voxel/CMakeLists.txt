@@ -2,7 +2,7 @@ set(SRCS
 	BiomeManager.h BiomeManager.cpp
 	LodCreator.h
 	Spiral.h
-	Voxel.h
+	Constants.h
 	World.cpp World.h
 	WorldPersister.h WorldPersister.cpp
 	WorldEvents.h

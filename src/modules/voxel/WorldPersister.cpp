@@ -9,7 +9,7 @@
 #include "core/Common.h"
 #include "core/String.h"
 #include "core/ByteStream.h"
-#include "Voxel.h"
+#include "Constants.h"
 
 namespace voxel {
 

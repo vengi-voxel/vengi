@@ -6,7 +6,7 @@
 #include "noise/SimplexNoise.h"
 // TODO: not a real dependency to the voxel module.... but... look there - a three headed monkey!
 #include "voxel/WorldContext.h"
-#include "voxel/Voxel.h"
+#include "voxel/Constants.h"
 #include "image/Image.h"
 #include "core/GLM.h"
 

@@ -5,7 +5,7 @@
 #include "TreeGenerator.h"
 #include "LSystemGenerator.h"
 #include "voxel/WorldContext.h"
-#include "voxel/Voxel.h"
+#include "voxel/polyvox/Voxel.h"
 #include "voxel/Spiral.h"
 
 namespace voxel {

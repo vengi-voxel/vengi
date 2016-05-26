@@ -20,7 +20,7 @@
 #include "polyvox/CubicSurfaceExtractor.h"
 #include "polyvox/RawVolume.h"
 #include "polyvox/Voxel.h"
-#include "Voxel.h"
+#include "Constants.h"
 #include "IsQuadNeeded.h"
 
 namespace voxel {

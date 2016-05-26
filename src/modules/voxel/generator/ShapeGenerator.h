@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxel/Voxel.h"
+#include "voxel/polyvox/Voxel.h"
 #include "core/Common.h"
 #include "core/Random.h"
 
