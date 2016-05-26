@@ -27,8 +27,16 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
-	static float Noise2DClamped(const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
+	static float Noise2DClamped(const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f);
 
+	/**
+	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
+	 * @param[in] octaves the amount of noise calls that contribute to the final result
+	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
+	 * sense if you have @c octaves > 1). The higher this value is (ranges from 0-1) the more each new octave will add to the result.
+	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
+	 * @param[in] amplitude the amplitude defines how high the noise will be.
+	 */
 	static float Noise2D(const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
 
 	/**
@@ -39,8 +47,16 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
-	static float Noise3DClamped(const glm::vec3& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
+	static float Noise3DClamped(const glm::vec3& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f);
 
+	/**
+	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
+	 * @param[in] octaves the amount of noise calls that contribute to the final result
+	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
+	 * sense if you have @c octaves > 1). The higher this value is (ranges from 0-1) the more each new octave will add to the result.
+	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
+	 * @param[in] amplitude the amplitude defines how high the noise will be.
+	 */
 	static float Noise3D(const glm::vec3& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
 
 	/**
@@ -49,10 +65,17 @@ public:
 	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
 	 * sense if you have @c octaves > 1). The higher this value is (ranges from 0-1) the more each new octave will add to the result.
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
+	 */
+	static float Noise4DClamped(const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f);
+
+	/**
+	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
+	 * @param[in] octaves the amount of noise calls that contribute to the final result
+	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
+	 * sense if you have @c octaves > 1). The higher this value is (ranges from 0-1) the more each new octave will add to the result.
+	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
-	static float Noise4DClamped(const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
-
 	static float Noise4D(const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
 
 	/**

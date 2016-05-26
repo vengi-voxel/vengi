@@ -20,10 +20,11 @@ static float Noise(const VecType& pos, int octaves, float persistence, float fre
 }
 
 template<class VecType>
-static float NoiseClamped(const VecType& pos, int octaves, float persistence, float frequency, float amplitude) {
+static float NoiseClamped(const VecType& pos, int octaves, float persistence, float frequency) {
 	core_trace_scoped(Noise);
 	float total = 0.0f;
 	float maxAmplitude = 0;
+	float amplitude = 1.0f;
 	for (int i = 0; i < octaves; ++i) {
 		total += glm::simplex(pos * frequency) * amplitude;
 		frequency *= 2.0f;
@@ -45,16 +46,16 @@ float Simplex::Noise4D(const glm::vec4& pos, int octaves, float persistence, flo
 	return Noise(pos, octaves, persistence, frequency, amplitude);
 }
 
-float Simplex::Noise2DClamped(const glm::vec2& pos, int octaves, float persistence, float frequency, float amplitude) {
-	return NoiseClamped(pos, octaves, persistence, frequency, amplitude);
+float Simplex::Noise2DClamped(const glm::vec2& pos, int octaves, float persistence, float frequency) {
+	return NoiseClamped(pos, octaves, persistence, frequency);
 }
 
-float Simplex::Noise3DClamped(const glm::vec3& pos, int octaves, float persistence, float frequency, float amplitude) {
-	return NoiseClamped(pos, octaves, persistence, frequency, amplitude);
+float Simplex::Noise3DClamped(const glm::vec3& pos, int octaves, float persistence, float frequency) {
+	return NoiseClamped(pos, octaves, persistence, frequency);
 }
 
-float Simplex::Noise4DClamped(const glm::vec4& pos, int octaves, float persistence, float frequency, float amplitude) {
-	return NoiseClamped(pos, octaves, persistence, frequency, amplitude);
+float Simplex::Noise4DClamped(const glm::vec4& pos, int octaves, float persistence, float frequency) {
+	return NoiseClamped(pos, octaves, persistence, frequency);
 }
 
 }
