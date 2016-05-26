@@ -8,6 +8,7 @@
 #include "Mesh.h"
 #include "Voxel.h"
 #include "Vertex.h"
+#include "Region.h"
 #include <vector>
 #include <list>
 #include "core/Trace.h"
@@ -166,7 +167,7 @@ extern int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMa
  *  particularly when solid voxels extend right to the edge of the volume.
  */
 template<typename VolumeType, typename IsQuadNeeded>
-Mesh<Vertex> extractCubicMesh(VolumeType* volData, Region region, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
+Mesh<Vertex> extractCubicMesh(VolumeType* volData, const Region& region, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
 	Mesh<Vertex> result;
 	extractCubicMeshCustom(volData, region, &result, isQuadNeeded, bMergeQuads);
 	return result;
@@ -192,7 +193,7 @@ inline bool isQuadFlipped(const Vertex& v00, const Vertex& v01, const Vertex& v1
  *  but this is relatively complex and I haven't done it yet. Could always add it later as another overload.
  */
 template<typename VolumeType, typename IsQuadNeeded>
-void extractCubicMeshCustom(VolumeType* volData, Region region, Mesh<Vertex>* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
+void extractCubicMeshCustom(VolumeType* volData, const Region& region, Mesh<Vertex>* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
 	core_trace_scoped(ExtractCubicMesh);
 
 	result->clear();

@@ -107,19 +107,19 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 }
 
 void WorldRenderer::handleMeshQueue(video::Shader& shader) {
-	voxel::DecodedMeshData mesh;
+	voxel::ChunkMeshData mesh;
 	if (!_world->pop(mesh)) {
 		return;
 	}
 	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
 	for (video::GLMeshData& m : _meshDataOpaque) {
-		if (m.translation == mesh.translation) {
+		if (m.translation == mesh.opaqueMesh.getOffset()) {
 			updateMesh(mesh.opaqueMesh, m);
 			return;
 		}
 	}
 	for (video::GLMeshData& m : _meshDataWater) {
-		if (m.translation == mesh.translation) {
+		if (m.translation == mesh.waterMesh.getOffset()) {
 			updateMesh(mesh.waterMesh, m);
 			return;
 		}
@@ -291,12 +291,11 @@ void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshDat
 }
 
 // TODO: generate bigger buffers and use glBufferSubData
-video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh, bool opaque) {
+video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::ChunkMeshData& mesh, bool opaque) {
 	core_trace_gl_scoped(WorldRendererCreateMesh);
 	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
 	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
 	video::GLMeshData meshData;
-	meshData.translation = mesh.translation;
 
 	// Create the VAOs for the meshes
 	glGenVertexArrays(1, &meshData.vertexArrayObject);
@@ -309,8 +308,10 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	glBindVertexArray(meshData.vertexArrayObject);
 
 	if (opaque) {
+		meshData.translation = mesh.opaqueMesh.getOffset();
 		updateMesh(mesh.opaqueMesh, meshData);
 	} else {
+		meshData.translation = mesh.waterMesh.getOffset();
 		updateMesh(mesh.waterMesh, meshData);
 	}
 

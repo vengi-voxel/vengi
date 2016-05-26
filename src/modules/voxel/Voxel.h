@@ -7,7 +7,6 @@
 #include "polyvox/Voxel.h"
 #include "polyvox/Mesh.h"
 #include "polyvox/Vertex.h"
-#include "polyvox/CubicSurfaceExtractor.h"
 
 namespace voxel {
 
@@ -22,11 +21,9 @@ constexpr Voxel createVoxel(VoxelType type) {
 
 typedef Mesh<Vertex> DecodedMesh;
 
-struct DecodedMeshData {
+struct ChunkMeshData {
 	DecodedMesh opaqueMesh;
 	DecodedMesh waterMesh;
-	// translation on the x and z axis
-	glm::ivec3 translation;
 };
 
 inline bool isBlocked(VoxelType material) {

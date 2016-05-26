@@ -59,7 +59,7 @@ private:
 	core::VarPtr _debugGeometry;
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
-	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh, bool opaque);
+	video::GLMeshData createMesh(video::Shader& shader, voxel::ChunkMeshData& mesh, bool opaque);
 	void updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData);
 	void handleMeshQueue(video::Shader& shader);
 

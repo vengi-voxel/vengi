@@ -6,7 +6,6 @@
 
 #include "GLFunc.h"
 #include "core/GLM.h"
-#include "voxel/Voxel.h"
 
 namespace video {
 

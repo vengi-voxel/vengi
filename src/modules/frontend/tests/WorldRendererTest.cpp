@@ -15,7 +15,7 @@ TEST_F(WorldRendererTest, testCreate) {
 	world->setPersist(false);
 	WorldRenderer renderer(world);
 	ASSERT_TRUE(renderer.extractNewMeshes(glm::ivec3(0), true));
-	voxel::DecodedMeshData mesh;
+	voxel::ChunkMeshData mesh;
 	int amount = 0;
 	while (!world->pop(mesh)) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
