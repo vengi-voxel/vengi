@@ -10,7 +10,7 @@ namespace frontend {
 
 class ColorShader : public video::Shader {
 public:
-	bool init();
+	bool setup();
 };
 
 typedef std::shared_ptr<ColorShader> ColorShaderPtr;

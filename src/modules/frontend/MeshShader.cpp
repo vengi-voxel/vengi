@@ -6,7 +6,7 @@
 
 namespace frontend {
 
-bool MeshShader::init() {
+bool MeshShader::setup() {
 	if (!loadProgram("shaders/mesh")) {
 		return false;
 	}

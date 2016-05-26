@@ -24,6 +24,7 @@ constexpr const char *ClientMultiSampleSamples = "cl_multisamplesamples";
 constexpr const char *ClientMultiSampleBuffers = "cl_multisamplebuffers";
 
 constexpr const char *ClientDebugGeometry = "cl_debug_geometry";
+constexpr const char *ClientDebugAmbientOcclusion = "cl_debug_ambientocclusion";
 
 constexpr const char *ServerAutoRegister = "sv_autoregister";
 constexpr const char *ServerUserTimeout = "sv_usertimeout";

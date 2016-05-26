@@ -11,6 +11,8 @@
 #include "core/Color.h"
 #include "GLVersion.h"
 #include "core/Remotery.h"
+#include "core/Singleton.h"
+#include "ShaderManager.h"
 
 namespace video {
 
@@ -59,6 +61,8 @@ core::AppState WindowedApp::onRunning() {
 	SDL_GL_MakeCurrent(_window, _glcontext);
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// TODO: maybe only do this every nth frame?
+	core::Singleton<ShaderManager>::getInstance().update();
 
 	return core::AppState::Running;
 }

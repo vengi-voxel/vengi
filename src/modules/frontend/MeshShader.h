@@ -10,7 +10,7 @@ namespace frontend {
 
 class MeshShader : public video::Shader {
 public:
-	bool init();
+	bool setup();
 };
 
 typedef std::shared_ptr<MeshShader> MeshShaderPtr;

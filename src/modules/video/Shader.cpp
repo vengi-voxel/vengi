@@ -7,6 +7,9 @@
 #include "core/App.h"
 #include "io/Filesystem.h"
 #include "GLVersion.h"
+#include "core/Var.h"
+#include "core/Singleton.h"
+#include "ShaderManager.h"
 
 #ifndef MAX_SHADER_VAR_NAME
 #define MAX_SHADER_VAR_NAME 128
@@ -27,9 +30,11 @@ Shader::Shader() :
 	for (int i = 0; i < SHADER_MAX; ++i) {
 		_shader[i] = 0;
 	}
+	core::Singleton<ShaderManager>::getInstance().registerShader(this);
 }
 
 Shader::~Shader() {
+	core::Singleton<ShaderManager>::getInstance().unregisterShader(this);
 	shutdown();
 }
 
@@ -55,7 +60,9 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 	const GLenum glType = shaderType == SHADER_VERTEX ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER;
 	GL_checkError();
 
-	_shader[shaderType] = glCreateShader(glType);
+	if (_shader[shaderType] == 0) {
+		_shader[shaderType] = glCreateShader(glType);
+	}
 	const char *s = source.c_str();
 	glShaderSource(_shader[shaderType], 1, (const GLchar**) &s, nullptr);
 	glCompileShader(_shader[shaderType]);
@@ -110,7 +117,13 @@ bool Shader::loadProgram(const std::string& filename) {
 	if (!fragment)
 		return false;
 
+	_name = filename;
 	return init();
+}
+
+bool Shader::reload() {
+	const std::string name = _name;
+	return loadProgram(name);
 }
 
 bool Shader::init() {
@@ -210,6 +223,22 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 	src.append(std::to_string(glslVersion));
 	src.append("\n");
 
+	core::Var::visitSorted([&] (const core::VarPtr& var) {
+		if ((var->getFlags() & core::CV_SHADER) != 0) {
+			src.append("#define ");
+			src.append(var->name());
+			src.append(" ");
+			std::string val;
+			if (var->typeIsBool()) {
+				val = var->boolVal() ? "1" : "0";
+			} else {
+				val = var->strVal();
+			}
+			src.append(val);
+			src.append("\n");
+		}
+	});
+
 	std::string append(buffer);
 
 	const std::string include = "#include";
@@ -254,7 +283,9 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 
 void Shader::createProgramFromShaders() {
 	GL_checkError();
-	_program = glCreateProgram();
+	if (_program == 0) {
+		_program = glCreateProgram();
+	}
 	GL_checkError();
 
 	const GLuint vert = _shader[SHADER_VERTEX];

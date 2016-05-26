@@ -18,6 +18,8 @@ const unsigned int CV_READONLY = 1 << 0;
 const unsigned int CV_NOTCREATEEMPTY = 1 << 1;
 // will not get saved to the file
 const unsigned int CV_NOPERSIST = 1 << 2;
+// will be put as define in every shader
+const unsigned int CV_SHADER = 1 << 3;
 
 class Var;
 typedef std::shared_ptr<Var> VarPtr;
@@ -77,16 +79,27 @@ public:
 	}
 
 	template<class Functor>
+	static bool check(Functor func) {
+		ScopedReadLock lock(_lock);
+		for (auto i = _vars.begin(); i != _vars.end(); ++i) {
+			if (func(i->second)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	template<class Functor>
 	static void visitSorted(Functor func) {
 		ScopedReadLock lock(_lock);
-		std::vector<core::VarPtr> varList;
+		std::vector<VarPtr> varList;
 		for (auto i = _vars.begin(); i != _vars.end(); ++i) {
 			varList.push_back(i->second);
 		}
-		std::sort(begin(varList), end(varList), [](auto const &v1, auto const &v2) {
+		std::sort(begin(varList), end(varList), [](const VarPtr& v1, const VarPtr& v2) {
 			return v1->name() < v2->name();
 		});
-		for (const auto& var : varList) {
+		for (const VarPtr& var : varList) {
 			func(var);
 		}
 	}
@@ -136,6 +149,8 @@ public:
 	 */
 	bool isDirty() const;
 	void markClean();
+
+	bool typeIsBool() const;
 };
 
 inline float Var::floatVal() const {
@@ -156,6 +171,10 @@ inline unsigned long Var::ulongVal() const {
 
 inline bool Var::boolVal() const {
 	return _value == "true" || _value == "1";
+}
+
+inline bool Var::typeIsBool() const {
+	return _value == "true" || _value == "1" || _value == "false" || _value == "0";
 }
 
 inline const std::string& Var::strVal() const {

@@ -99,10 +99,10 @@ core::AppState Client::onInit() {
 	core::Var::get(cfg::ClientPassword, "nopassword");
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
-	if (!_worldShader.init()) {
+	if (!_worldShader.setup()) {
 		return core::Cleanup;
 	}
-	if (!_meshShader->init()) {
+	if (!_meshShader->setup()) {
 		return core::Cleanup;
 	}
 

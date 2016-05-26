@@ -10,7 +10,7 @@ namespace frontend {
 
 class WorldShader : public video::Shader {
 public:
-	bool init();
+	bool setup();
 };
 
 typedef std::shared_ptr<WorldShader> WorldShaderPtr;

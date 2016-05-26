@@ -6,7 +6,7 @@
 
 namespace frontend {
 
-bool ColorShader::init() {
+bool ColorShader::setup() {
 	if (!loadProgram("shaders/color")) {
 		return false;
 	}

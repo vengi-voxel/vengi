@@ -78,6 +78,7 @@ public:
 	 * @see FRAGMENT_POSTFIX
 	 */
 	bool loadProgram(const std::string& filename);
+	bool reload();
 
 	/**
 	 * @brief Returns the raw shader handle

@@ -386,7 +386,8 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 }
 
 void WorldRenderer::onInit(int width, int height) {
-	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false");
+	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false", core::CV_SHADER);
+	core::Var::get(cfg::ClientDebugAmbientOcclusion, "false", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;

@@ -34,13 +34,13 @@ core::AppState ShapeTool::onInit() {
 
 	GLDebug::enable(GLDebug::Medium);
 
-	if (!_worldShader.init()) {
+	if (!_worldShader.setup()) {
 		return core::Cleanup;
 	}
-	if (!_meshShader->init()) {
+	if (!_meshShader->setup()) {
 		return core::Cleanup;
 	}
-	if (!_colorShader->init()) {
+	if (!_colorShader->setup()) {
 		return core::Cleanup;
 	}
 

@@ -6,7 +6,7 @@
 
 namespace frontend {
 
-bool WorldShader::init() {
+bool WorldShader::setup() {
 	if (!loadProgram("shaders/world")) {
 		return false;
 	}
