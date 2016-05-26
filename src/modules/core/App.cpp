@@ -121,13 +121,55 @@ AppState App::onConstruct() {
 			return;
 		core::Var::get(args[0])->setVal(args[1]);
 	});
+	core::Command::registerCommand("varclearhistory", [] (const core::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::error("not enough arguments given. Expecting a variable name");
+			return;
+		}
+		const VarPtr& st = core::Var::get(args[0], "", CV_NOTCREATEEMPTY);
+		if (st) {
+			st->clearHistory();
+		}
+	});
+	core::Command::registerCommand("toggle", [] (const core::CmdArgs& args) {
+		if (args.size() < 1) {
+			Log::error("not enough arguments given. Expecting a variable name at least");
+			return;
+		}
+		const core::VarPtr& var = core::Var::get(args[0], "", CV_NOTCREATEEMPTY);
+		if (!var) {
+			Log::error("given var doesn't exist: %s", args[0].c_str());
+			return;
+		}
+		const uint32_t index = var->getHistoryIndex();
+		const uint32_t size = var->getHistorySize();
+		if (size <= 1) {
+			if (var->typeIsBool()) {
+				var->setVal(var->boolVal() ? "false" : "true");
+			} else {
+				Log::error("Could not toggle %s", args[0].c_str());
+			}
+			return;
+		}
+		bool changed;
+		if (index == size - 1) {
+			changed = var->useHistory(size - 2);
+		} else {
+			changed = var->useHistory(size - 1);
+		}
+		if (!changed) {
+			Log::error("Could not toggle %s", args[0].c_str());
+		}
+	});
 	// show a specific variable
 	core::Command::registerCommand("show", [] (const core::CmdArgs& args) {
-		if (args.size() != 1)
+		if (args.size() != 1) {
+			Log::error("not enough arguments given. Expecting a variable name");
 			return;
-		const VarPtr& st = core::Var::get(args[0]);
+		}
+		const VarPtr& st = core::Var::get(args[0], "", CV_NOTCREATEEMPTY);
 		if (st) {
-			Log::info(" -> %s ",st->strVal().c_str());
+			Log::info(" -> %s ", st->strVal().c_str());
 		} else {
 			Log::info("not found");
 		}
@@ -147,7 +189,7 @@ AppState App::onConstruct() {
 			}
 			const std::string& name = core::string::format("%-28s", var->name().c_str());
 			const std::string& value = core::string::format("\"%s\"", var->strVal().c_str());
-			Log::info("* %s %s = %s", flagsStr.c_str(), name.c_str(), value.c_str());
+			Log::info("* %s %s = %s (%u)", flagsStr.c_str(), name.c_str(), value.c_str(), var->getHistorySize());
 		});
 	});
 	core::Command::registerCommand("cmdlist", [] (const core::CmdArgs& args) {

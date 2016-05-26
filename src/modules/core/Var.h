@@ -49,14 +49,21 @@ private:
 	const std::string _name;
 	const unsigned int _flags;
 
-	float _floatValue;
-	int _intValue;
-	long _longValue;
-	std::string _value;
+	struct Value {
+		float _floatValue;
+		int _intValue;
+		long _longValue;
+		std::string _value;
+	};
+
+	std::vector<Value> _history;
+	uint32_t _currentHistoryPos = 0;
 	bool _dirty;
 
 	// private - use the static get method
 	Var(const std::string& name, const std::string& value = "", unsigned int flags = 0u);
+
+	void addValueToHistory(const std::string& value);
 public:
 	/**
 	 * @brief Creates a new or gets an already existing var
@@ -103,6 +110,18 @@ public:
 			func(var);
 		}
 	}
+
+	template<class Functor>
+	void visitHistory(Functor func) {
+		for (auto i = _history.rbegin(); i != _history.rend(); ++i) {
+			func(*i);
+		}
+	}
+
+	void clearHistory();
+	uint32_t getHistorySize() const;
+	uint32_t getHistoryIndex() const;
+	bool useHistory(uint32_t historyIndex);
 
 	/**
 	 * @return the bitmask of flags for this var
@@ -153,32 +172,46 @@ public:
 	bool typeIsBool() const;
 };
 
+inline uint32_t Var::getHistorySize() const {
+	return _history.size();
+}
+
+inline uint32_t Var::getHistoryIndex() const {
+	return _currentHistoryPos;
+}
+
+inline void Var::clearHistory() {
+	if (_history.size() == 1)
+		return;
+	_history.erase(_history.begin(), _history.end() - 1);
+}
+
 inline float Var::floatVal() const {
-	return _floatValue;
+	return _history[_currentHistoryPos]._floatValue;
 }
 
 inline int Var::intVal() const {
-	return _intValue;
+	return _history[_currentHistoryPos]._intValue;
 }
 
 inline long Var::longVal() const {
-	return _longValue;
+	return _history[_currentHistoryPos]._longValue;
 }
 
 inline unsigned long Var::ulongVal() const {
-	return static_cast<unsigned long>(_longValue);
+	return static_cast<unsigned long>(_history[_currentHistoryPos]._longValue);
 }
 
 inline bool Var::boolVal() const {
-	return _value == "true" || _value == "1";
+	return _history[_currentHistoryPos]._value == "true" || _history[_currentHistoryPos]._value == "1";
 }
 
 inline bool Var::typeIsBool() const {
-	return _value == "true" || _value == "1" || _value == "false" || _value == "0";
+	return _history[_currentHistoryPos]._value == "true" || _history[_currentHistoryPos]._value == "1" || _history[_currentHistoryPos]._value == "false" || _history[_currentHistoryPos]._value == "0";
 }
 
 inline const std::string& Var::strVal() const {
-	return _value;
+	return _history[_currentHistoryPos]._value;
 }
 
 inline const std::string& Var::name() const {
@@ -198,7 +231,7 @@ inline int Var::getFlags() const {
 }
 
 inline unsigned int Var::uintVal() const {
-	return static_cast<unsigned int>(_intValue);
+	return static_cast<unsigned int>(_history[_currentHistoryPos]._intValue);
 }
 
 

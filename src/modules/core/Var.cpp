@@ -30,13 +30,31 @@ VarPtr Var::get(const std::string& name, const std::string& value, unsigned int 
 }
 
 Var::Var(const std::string& name, const std::string& value, unsigned int flags) :
-		_name(name), _flags(flags), _value(value), _dirty(false) {
-	_intValue = string::toInt(_value);
-	_longValue = string::toLong(_value);
-	_floatValue = string::toFloat(_value);
+		_name(name), _flags(flags), _dirty(false) {
+	addValueToHistory(value);
 }
 
 Var::~Var() {
+}
+
+void Var::addValueToHistory(const std::string& value) {
+	Value v;
+	v._value = value;
+	v._intValue = string::toInt(v._value);
+	v._longValue = string::toLong(v._value);
+	v._floatValue = string::toFloat(v._value);
+	_history.push_back(v);
+}
+
+bool Var::useHistory(uint32_t historyIndex) {
+	if (historyIndex >= getHistorySize()) {
+		return false;
+	}
+
+	_dirty = _history[_currentHistoryPos]._value != _history[historyIndex]._value;
+	_currentHistoryPos = historyIndex;
+
+	return true;
 }
 
 void Var::setVal(const std::string& value) {
@@ -44,12 +62,10 @@ void Var::setVal(const std::string& value) {
 		Log::error("%s is write protected", _name.c_str());
 		return;
 	}
-	_dirty = _value != value;
+	_dirty = _history[_currentHistoryPos]._value != value;
 	if (_dirty) {
-		_value = value;
-		_intValue = string::toInt(_value);
-		_longValue = string::toLong(_value);
-		_floatValue = string::toFloat(_value);
+		addValueToHistory(value);
+		++_currentHistoryPos;
 	}
 }
 
