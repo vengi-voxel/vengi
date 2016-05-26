@@ -6,6 +6,7 @@
 
 #include "ui/UIApp.h"
 #include "frontend/WorldShader.h"
+#include "frontend/WaterShader.h"
 #include "frontend/MeshShader.h"
 #include "frontend/ColorShader.h"
 #include "frontend/WorldRenderer.h"
@@ -23,6 +24,7 @@ protected:
 	frontend::WorldRenderer _worldRenderer;
 	voxel::WorldPtr _world;
 	frontend::WorldShader _worldShader;
+	frontend::WaterShader _waterShader;
 	frontend::MeshShaderPtr _meshShader;
 	frontend::ColorShaderPtr _colorShader;
 	video::VertexBuffer _axisBuffer;

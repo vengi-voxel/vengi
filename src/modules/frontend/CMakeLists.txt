@@ -5,6 +5,7 @@ set(SRCS
 	MeshShader.h MeshShader.cpp
 	ColorShader.h ColorShader.cpp
 	WorldRenderer.h WorldRenderer.cpp
+	WaterShader.h WaterShader.cpp
 	WorldShader.h WorldShader.cpp
 )
 set(LIB frontend)

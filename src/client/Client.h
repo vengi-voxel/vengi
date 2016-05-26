@@ -10,6 +10,7 @@
 #include "messages/ServerMessages_generated.h"
 #include "frontend/WorldShader.h"
 #include "frontend/MeshShader.h"
+#include "frontend/WaterShader.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/WorldRenderer.h"
 #include "util/PosLerp.h"
@@ -34,6 +35,7 @@ protected:
 	network::MessageSenderPtr _messageSender;
 	core::TimeProviderPtr _timeProvider;
 	frontend::WorldShader _worldShader;
+	frontend::WaterShader _waterShader;
 	frontend::MeshShaderPtr _meshShader;
 	// moving along the y axis should not arise the need to extract new meshes
 	video::Camera _camera;

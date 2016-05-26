@@ -129,7 +129,22 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	_meshDataWater.push_back(createMesh(shader, mesh, false));
 }
 
-int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, bool opaque, int* vertices) {
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, bool opaque, int* vertices) {
+	const glm::mat4& view = camera.getViewMatrix();
+
+	const MaterialColorArray& materialColors = getMaterialColors();
+
+	shader.activate();
+	shader.setUniformMatrix("u_view", view, false);
+	shader.setUniformMatrix("u_projection", projection, false);
+	shader.setUniformf("u_fogrange", _fogRange);
+	shader.setUniformf("u_viewdistance", _viewDistance);
+	shader.setUniformi("u_texture", 0);
+	shader.setUniformVec3("u_lightpos", _lightPos + camera.getPosition());
+	shader.setUniformVec3("u_diffuse_color", _diffuseColor);
+	shader.setUniformVec4v("u_materialcolor[0]", &materialColors[0], materialColors.size());
+	shader.setUniformf("u_debug_color", 1.0);
+
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
 	const bool debugGeometry = _debugGeometry->boolVal();
@@ -188,11 +203,13 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		++i;
 	}
 
+	shader.deactivate();
+
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height, int* vertices) {
-	handleMeshQueue(shader);
+int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& waterShader, const video::Camera& camera, const glm::mat4& projection, int width, int height, int* vertices) {
+	handleMeshQueue(opaqueShader);
 
 	if (_meshDataOpaque.empty()) {
 		return 0;
@@ -210,20 +227,6 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 
 	GL_checkError();
 
-	const glm::mat4& view = camera.getViewMatrix();
-
-	const MaterialColorArray& materialColors = getMaterialColors();
-
-	shader.activate();
-	shader.setUniformMatrix("u_view", view, false);
-	shader.setUniformMatrix("u_projection", projection, false);
-	shader.setUniformf("u_fogrange", _fogRange);
-	shader.setUniformf("u_viewdistance", _viewDistance);
-	shader.setUniformi("u_texture", 0);
-	shader.setUniformVec3("u_lightpos", _lightPos + camera.getPosition());
-	shader.setUniformVec3("u_diffuse_color", _diffuseColor);
-	shader.setUniformVec4v("u_materialcolor[0]", &materialColors[0], materialColors.size());
-	shader.setUniformf("u_debug_color", 1.0);
 	_colorTexture->bind();
 
 #if GBUFFER
@@ -231,8 +234,8 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
-	drawCallsWorld = renderWorldMeshes(shader, camera, true, vertices);
-	drawCallsWorld += renderWorldMeshes(shader, camera, false, vertices);
+	drawCallsWorld = renderWorldMeshes(opaqueShader, camera, projection, true, vertices);
+	drawCallsWorld += renderWorldMeshes(waterShader, camera, projection, false, vertices);
 
 #if GBUFFER
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -255,7 +258,6 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	glBlitFramebuffer(0, 0, width, height, halfWidth, 0, width, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 #endif
 
-	shader.deactivate();
 	GL_checkError();
 
 	glBindVertexArray(0);
