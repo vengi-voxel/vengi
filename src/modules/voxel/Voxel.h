@@ -19,11 +19,9 @@ constexpr Voxel createVoxel(VoxelType type) {
 	return Voxel(type);
 }
 
-typedef Mesh<Vertex> DecodedMesh;
-
 struct ChunkMeshData {
-	DecodedMesh opaqueMesh;
-	DecodedMesh waterMesh;
+	Mesh opaqueMesh;
+	Mesh waterMesh;
 };
 
 inline bool isBlocked(VoxelType material) {

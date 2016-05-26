@@ -10,7 +10,7 @@ inline bool isSameVertex(const Vertex& v1, const Vertex& v2) {
 	return v1.data == v2.data && v1.ambientOcclusion == v2.ambientOcclusion;
 }
 
-bool mergeQuads(Quad& q1, Quad& q2, Mesh<Vertex>* m_meshCurrent) {
+bool mergeQuads(Quad& q1, Quad& q2, Mesh* m_meshCurrent) {
 	const Vertex& v11 = m_meshCurrent->getVertex(q1.vertices[0]);
 	const Vertex& v21 = m_meshCurrent->getVertex(q2.vertices[0]);
 	const Vertex& v12 = m_meshCurrent->getVertex(q1.vertices[1]);
@@ -46,7 +46,7 @@ bool mergeQuads(Quad& q1, Quad& q2, Mesh<Vertex>* m_meshCurrent) {
 	return false;
 }
 
-bool performQuadMerging(std::list<Quad>& quads, Mesh<Vertex>* m_meshCurrent) {
+bool performQuadMerging(std::list<Quad>& quads, Mesh* m_meshCurrent) {
 	bool bDidMerge = false;
 	for (typename std::list<Quad>::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
 		typename std::list<Quad>::iterator innerIter = outerIter;
@@ -70,7 +70,7 @@ bool performQuadMerging(std::list<Quad>& quads, Mesh<Vertex>* m_meshCurrent) {
 }
 
 int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
-		Mesh<Vertex>* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
+		Mesh* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ct++) {
 		VertexData& rEntry = existingVertices(uX, uY, ct);
 

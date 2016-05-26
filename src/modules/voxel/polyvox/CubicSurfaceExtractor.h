@@ -77,12 +77,12 @@ inline uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
  * @section Surface extraction
  */
 
-extern bool mergeQuads(Quad& q1, Quad& q2, Mesh<Vertex>* m_meshCurrent);
+extern bool mergeQuads(Quad& q1, Quad& q2, Mesh* m_meshCurrent);
 
-extern bool performQuadMerging(std::list<Quad>& quads, Mesh<Vertex>* m_meshCurrent);
+extern bool performQuadMerging(std::list<Quad>& quads, Mesh* m_meshCurrent);
 
 extern int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
-		Mesh<Vertex>* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner);
+		Mesh* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner);
 
 /**
  * The CubicSurfaceExtractor creates a mesh in which each voxel appears to be rendered as a cube
@@ -167,8 +167,8 @@ extern int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMa
  *  particularly when solid voxels extend right to the edge of the volume.
  */
 template<typename VolumeType, typename IsQuadNeeded>
-Mesh<Vertex> extractCubicMesh(VolumeType* volData, const Region& region, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
-	Mesh<Vertex> result;
+Mesh extractCubicMesh(VolumeType* volData, const Region& region, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
+	Mesh result;
 	extractCubicMeshCustom(volData, region, &result, isQuadNeeded, bMergeQuads);
 	return result;
 }
@@ -193,7 +193,7 @@ inline bool isQuadFlipped(const Vertex& v00, const Vertex& v01, const Vertex& v1
  *  but this is relatively complex and I haven't done it yet. Could always add it later as another overload.
  */
 template<typename VolumeType, typename IsQuadNeeded>
-void extractCubicMeshCustom(VolumeType* volData, const Region& region, Mesh<Vertex>* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
+void extractCubicMeshCustom(VolumeType* volData, const Region& region, Mesh* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
 	core_trace_scoped(ExtractCubicMesh);
 
 	result->clear();

@@ -271,7 +271,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& water
 	return drawCallsWorld;
 }
 
-void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData) {
+void WorldRenderer::updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) {
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
 	const voxel::IndexType* vecIndices = surfaceMesh.getRawIndexData();
 	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
