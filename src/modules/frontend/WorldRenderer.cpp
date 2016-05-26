@@ -28,12 +28,13 @@ WorldRenderer::~WorldRenderer() {
 }
 
 void WorldRenderer::reset() {
-	for (const video::GLMeshData& meshData : _meshData) {
+	for (const video::GLMeshData& meshData : _meshDataOpaque) {
 		glDeleteBuffers(1, &meshData.vertexBuffer);
 		glDeleteBuffers(1, &meshData.indexBuffer);
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 	}
-	_meshData.clear();
+	_meshDataOpaque.clear();
+	_meshDataWater.clear();
 	_entities.clear();
 	_fogRange = 0.0f;
 	_viewDistance = 1.0f;
@@ -47,7 +48,8 @@ void WorldRenderer::shutdown() {
 	reset();
 	_colorTexture = video::TexturePtr();
 	_entities.clear();
-	_meshData.clear();
+	_meshDataOpaque.clear();
+	_meshDataWater.clear();
 	_noiseFuture.clear();
 }
 
@@ -71,16 +73,27 @@ bool WorldRenderer::addEntity(const ClientEntityPtr& entity) {
 void WorldRenderer::deleteMesh(const glm::ivec3& pos) {
 	core_trace_gl_scoped(WorldRendererDeleteMesh);
 	const glm::ivec3& p = _world->getMeshPos(pos);
-	for (auto i = _meshData.begin(); i != _meshData.end(); ++i) {
+	for (auto i = _meshDataOpaque.begin(); i != _meshDataOpaque.end(); ++i) {
 		const video::GLMeshData& meshData = *i;
 		if (meshData.translation != p) {
 			continue;
 		}
-		_meshData.erase(i);
+		_meshDataOpaque.erase(i);
 		glDeleteBuffers(1, &meshData.vertexBuffer);
 		glDeleteBuffers(1, &meshData.indexBuffer);
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
-		return;
+		break;
+	}
+	for (auto i = _meshDataWater.begin(); i != _meshDataWater.end(); ++i) {
+		const video::GLMeshData& meshData = *i;
+		if (meshData.translation != p) {
+			continue;
+		}
+		_meshDataWater.erase(i);
+		glDeleteBuffers(1, &meshData.vertexBuffer);
+		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+		break;
 	}
 }
 
@@ -99,22 +112,35 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 		return;
 	}
 	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
-	for (video::GLMeshData& m : _meshData) {
+	for (video::GLMeshData& m : _meshDataOpaque) {
 		if (m.translation == mesh.translation) {
-			updateMesh(mesh.mesh, m);
+			updateMesh(mesh.opaqueMesh, m);
+			return;
+		}
+	}
+	for (video::GLMeshData& m : _meshDataWater) {
+		if (m.translation == mesh.translation) {
+			updateMesh(mesh.waterMesh, m);
 			return;
 		}
 	}
 	// Now add the mesh to the list of meshes to render.
-	_meshData.push_back(createMesh(shader, mesh));
+	_meshDataOpaque.push_back(createMesh(shader, mesh, true));
+	_meshDataWater.push_back(createMesh(shader, mesh, false));
 }
 
-int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, int* vertices) {
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, bool opaque, int* vertices) {
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
 	const bool debugGeometry = _debugGeometry->boolVal();
 	int drawCallsWorld = 0;
-	for (auto i = _meshData.begin(); i != _meshData.end();) {
+	GLMeshDatas* meshes;
+	if (opaque) {
+		meshes = &_meshDataOpaque;
+	} else {
+		meshes = &_meshDataWater;
+	}
+	for (auto i = meshes->begin(); i != meshes->end();) {
 		const video::GLMeshData& meshData = *i;
 		const float distance = getDistance2(meshData.translation);
 		if (isDistanceCulled(distance, true)) {
@@ -122,7 +148,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 			glDeleteBuffers(1, &meshData.vertexBuffer);
 			glDeleteBuffers(1, &meshData.indexBuffer);
 			glDeleteVertexArrays(1, &meshData.vertexArrayObject);
-			i = _meshData.erase(i);
+			i = meshes->erase(i);
 			continue;
 		}
 		const glm::vec3 mins(meshData.translation);
@@ -161,13 +187,14 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		++drawCallsWorld;
 		++i;
 	}
+
 	return drawCallsWorld;
 }
 
 int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height, int* vertices) {
 	handleMeshQueue(shader);
 
-	if (_meshData.empty()) {
+	if (_meshDataOpaque.empty()) {
 		return 0;
 	}
 
@@ -204,7 +231,8 @@ int WorldRenderer::renderWorld(video::Shader& shader, const video::Camera& camer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
-	drawCallsWorld = renderWorldMeshes(shader, camera, vertices);
+	drawCallsWorld = renderWorldMeshes(shader, camera, true, vertices);
+	drawCallsWorld += renderWorldMeshes(shader, camera, false, vertices);
 
 #if GBUFFER
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -261,7 +289,7 @@ void WorldRenderer::updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshDat
 }
 
 // TODO: generate bigger buffers and use glBufferSubData
-video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh) {
+video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh, bool opaque) {
 	core_trace_gl_scoped(WorldRendererCreateMesh);
 	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
 	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
@@ -278,7 +306,11 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Decode
 	core_assert(meshData.vertexArrayObject > 0);
 	glBindVertexArray(meshData.vertexArrayObject);
 
-	updateMesh(mesh.mesh, meshData);
+	if (opaque) {
+		updateMesh(mesh.opaqueMesh, meshData);
+	} else {
+		updateMesh(mesh.waterMesh, meshData);
+	}
 
 	const int posLoc = shader.enableVertexAttribute("a_pos");
 	glVertexAttribIPointer(posLoc, 3, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),

@@ -130,7 +130,8 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		_volumeData->prefetch(prefetchRegion);
 
 		DecodedMeshData data;
-		data.mesh = extractCubicMesh(_volumeData, region, IsQuadNeeded());
+		data.opaqueMesh = extractCubicMesh(_volumeData, region, IsQuadNeeded(false));
+		data.waterMesh = extractCubicMesh(_volumeData, region, IsQuadNeeded(true));
 		data.translation = pos;
 		core::ScopedWriteLock lock(_rwLock);
 		_meshQueue.push_back(std::move(data));

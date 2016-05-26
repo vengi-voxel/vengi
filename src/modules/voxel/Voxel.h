@@ -23,7 +23,8 @@ constexpr Voxel createVoxel(VoxelType type) {
 typedef Mesh<Vertex> DecodedMesh;
 
 struct DecodedMeshData {
-	DecodedMesh mesh;
+	DecodedMesh opaqueMesh;
+	DecodedMesh waterMesh;
 	// translation on the x and z axis
 	glm::ivec3 translation;
 };

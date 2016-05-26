@@ -10,13 +10,32 @@ namespace voxel {
  * would have a voxel that is not Air.
  */
 struct IsQuadNeeded {
-public:
-	inline bool operator()(const Voxel& back, const Voxel& front, Voxel& materialToUse, FaceNames face, int x, int z) const {
-		if (back.getMaterial() != Air && front.getMaterial() == Air) {
-			materialToUse = back;
-			return true;
+private:
+	inline bool is(bool negative, const Voxel& v) const {
+		const VoxelType m = v.getMaterial();
+		if (m == Air) {
+			return negative;
+		} else if (!_water && m == Water) {
+			return negative;
 		}
-		if (back.getMaterial() != Water && front.getMaterial() == Water) {
+		return !negative;
+	}
+
+	bool _water;
+public:
+	IsQuadNeeded(bool water) :
+			_water(water) {
+	}
+
+	inline bool operator()(const Voxel& back, const Voxel& front, Voxel& materialToUse, FaceNames face, int x, int z) const {
+		if (_water) {
+			if (front.getMaterial() == Air && back.getMaterial() == Water && face == PositiveY) {
+				materialToUse = back;
+				return true;
+			}
+			return false;
+		}
+		if (is(false, back) && is(true, front)) {
 			materialToUse = back;
 			return true;
 		}

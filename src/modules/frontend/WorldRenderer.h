@@ -37,7 +37,9 @@ private:
 	std::vector<NoiseFuture> _noiseFuture;
 
 	// Index/vertex buffer data
-	std::list<video::GLMeshData> _meshData;
+	typedef std::list<video::GLMeshData> GLMeshDatas;
+	GLMeshDatas _meshDataOpaque;
+	GLMeshDatas _meshDataWater;
 
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
@@ -57,7 +59,7 @@ private:
 	core::VarPtr _debugGeometry;
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
-	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh);
+	video::GLMeshData createMesh(video::Shader& shader, voxel::DecodedMeshData& mesh, bool opaque);
 	void updateMesh(voxel::DecodedMesh& surfaceMesh, video::GLMeshData& meshData);
 	void handleMeshQueue(video::Shader& shader);
 
@@ -68,7 +70,7 @@ private:
 	// schedule mesh extraction around the camera position on the grid with the given radius
 	void extractMeshAroundCamera(int radius);
 
-	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, int* vertices);
+	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, bool opaque, int* vertices);
 
 public:
 	WorldRenderer(const voxel::WorldPtr& world);
