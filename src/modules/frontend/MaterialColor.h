@@ -12,7 +12,7 @@ namespace frontend {
 typedef std::array<glm::vec4, 32> MaterialColorArray;
 
 inline const MaterialColorArray& getMaterialColors() {
-	static const MaterialColorArray materialColors = {
+	static const MaterialColorArray materialColors = {{
 		core::Color::LightBlue,	// air
 		core::Color::Lime,			// grass1
 		core::Color::DarkBrown,	// wood1
@@ -47,7 +47,7 @@ inline const MaterialColorArray& getMaterialColors() {
 		core::Color::Pink,
 		core::Color::Pink,
 		core::Color::Pink
-	};
+	}};
 	return materialColors;
 }
 
