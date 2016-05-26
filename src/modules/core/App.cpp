@@ -120,7 +120,7 @@ AppState App::onConstruct() {
 		if (args.size() != 2)
 			return;
 		core::Var::get(args[0])->setVal(args[1]);
-	});
+	}).setHelp("Set a variable name");
 	core::Command::registerCommand("varclearhistory", [] (const core::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::error("not enough arguments given. Expecting a variable name");
@@ -197,7 +197,7 @@ AppState App::onConstruct() {
 			if (!args.empty() && !core::string::matches(args[0], cmd.name())) {
 				return;
 			}
-			Log::info("* %s", cmd.name().c_str());
+			Log::info("* %s - %s", cmd.name().c_str(), cmd.help().c_str());
 		});
 	});
 

@@ -386,12 +386,19 @@ void Console::autoComplete() {
 	core::string::splitString(_commandLine, strings);
 	const std::string search = strings.empty() ? "*" : strings[0] + "*";
 	core::Command::visitSorted([&] (const core::Command& cmd) {
-		if (core::string::matches(search, cmd.name())) {
-			matches.push_back(cmd.name());
+		if (strings.empty() || strings.size() == 1) {
+			// match the command name itself
+			if (core::string::matches(search, cmd.name())) {
+				matches.push_back(cmd.name());
+			}
+		} else {
+			// match parameters for the command
+			cmd.complete(strings.back(), matches);
 		}
 	});
+	const std::string varSearch = strings.empty() ? "*" : strings.back() + "*";
 	core::Var::visitSorted([&] (const core::VarPtr& var) {
-		if (core::string::matches(search, var->name())) {
+		if (core::string::matches(varSearch, var->name())) {
 			matches.push_back(var->name());
 		}
 	});
@@ -401,19 +408,21 @@ void Console::autoComplete() {
 	}
 
 	if (matches.size() == 1) {
-		if (strings.size() == 1) {
+		if (strings.empty() || strings.size() == 1) {
 			_commandLine = matches.front() + " ";
 		} else {
-			_commandLine.erase(0, strings[0].size());
-			_commandLine.insert(0, matches.front());
+			const int cmdLineSize = _commandLine.size();
+			const int cmdEraseIndex = cmdLineSize - strings.back().size();
+			_commandLine.erase(cmdEraseIndex, strings.back().size());
+			_commandLine.insert(cmdEraseIndex, matches.front());
 		}
 		_cursorPos = _commandLine.size();
 	} else {
 		_messages.push_back(consolePrompt + _commandLine);
-		std::sort(begin(matches), end(matches), [](auto const &v1, auto const &v2) {
+		std::sort(begin(matches), end(matches), [](const std::string& v1, const std::string& v2) {
 			return v1 < v2;
 		});
-		for (auto match : matches) {
+		for (const std::string& match : matches) {
 			Log::info("%s", match.c_str());
 		}
 	}

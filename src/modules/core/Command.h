@@ -28,22 +28,26 @@ private:
 	static ReadWriteLock _lock;
 
 	std::string _name;
+	std::string _help;
 	FunctionType _func;
+	typedef std::function<int(const std::string&, std::vector<std::string>& matches)> CompleteFunctionType;
+	mutable CompleteFunctionType _completer;
 
 	Command(std::string&& name, FunctionType&& func) :
 			_name(std::move(name)), _func(std::move(func)) {
 	}
 
 public:
-	static void registerCommand(std::string&& name, FunctionType&& func) {
+	static Command& registerCommand(std::string&& name, FunctionType&& func) {
 		ScopedWriteLock lock(_lock);
 		const Command c(std::move(name), std::move(func));
 		_cmds.insert(std::make_pair(c.name(), c));
+		return _cmds.find(c.name())->second;
 	}
 
 	template<class Function>
-	static void registerCommand2(std::string&& name, Function&& func) {
-		registerCommand(std::move(name), std::bind(std::forward<Function>(func)));
+	static Command& registerCommand2(std::string&& name, Function&& func) {
+		return registerCommand(std::move(name), std::bind(std::forward<Function>(func)));
 	}
 
 	static void unregisterCommand(const std::string& name) {
@@ -79,7 +83,7 @@ public:
 	}
 
 	template<class Functor>
-	static void visit(Functor func) {
+	static void visit(Functor&& func) {
 		ScopedReadLock lock(_lock);
 		for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
 			func(i->second);
@@ -87,7 +91,7 @@ public:
 	}
 
 	template<class Functor>
-	static void visitSorted(Functor func) {
+	static void visitSorted(Functor&& func) {
 		ScopedReadLock lock(_lock);
 		std::vector<Command> commandList;
 		for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
@@ -101,12 +105,29 @@ public:
 		}
 	}
 
+	int complete(const std::string& str, std::vector<std::string>& matches) const;
+
+	Command& setHelp(const std::string& help) {
+		_help = help;
+		return *this;
+	}
+
+	template<class Functor>
+	Command& setArgumentCompleter(Functor&& func) {
+		_completer = std::bind(std::forward<Functor>(func));
+		return *this;
+	}
+
 	inline bool operator==(const Command& rhs) const {
 		return rhs._name == _name;
 	}
 
 	inline const std::string& name() const {
 		return _name;
+	}
+
+	inline const std::string& help() const {
+		return _help;
 	}
 };
 
