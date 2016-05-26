@@ -10,22 +10,25 @@
 
 namespace voxel {
 
-void rescaleCubicVolume(PagedVolume* source, const Region& sourceRegion, RawVolume* destination, const Region& destinationRegion) {
+void rescaleCubicVolume(PagedVolume* source, const Region& sourceRegion, RawVolume* destination, const Region& destRegion) {
 	core_trace_scoped(RescaleCubicVolume);
-	core_assert_msg(sourceRegion.getWidthInVoxels() == destinationRegion.getWidthInVoxels() * 2, "Wrong width - %i versus %i!", sourceRegion.getWidthInVoxels(), destinationRegion.getWidthInVoxels() * 2);
-	core_assert_msg(sourceRegion.getHeightInVoxels() == destinationRegion.getHeightInVoxels() * 2, "Wrong height - %i versus %i!", sourceRegion.getHeightInVoxels(), destinationRegion.getHeightInVoxels() * 2);
-	core_assert_msg(sourceRegion.getDepthInVoxels() == destinationRegion.getDepthInVoxels() * 2, "Wrong depth - %i versus %i!", sourceRegion.getDepthInVoxels(), destinationRegion.getDepthInVoxels() * 2);
+	core_assert_msg(sourceRegion.getWidthInVoxels() == destRegion.getWidthInVoxels() * 2, "Wrong width - %i versus %i!", sourceRegion.getWidthInVoxels(), destRegion.getWidthInVoxels() * 2);
+	core_assert_msg(sourceRegion.getHeightInVoxels() == destRegion.getHeightInVoxels() * 2, "Wrong height - %i versus %i!", sourceRegion.getHeightInVoxels(), destRegion.getHeightInVoxels() * 2);
+	core_assert_msg(sourceRegion.getDepthInVoxels() == destRegion.getDepthInVoxels() * 2, "Wrong depth - %i versus %i!", sourceRegion.getDepthInVoxels(), destRegion.getDepthInVoxels() * 2);
 
 	typename PagedVolume::Sampler srcSampler(source);
 	typename RawVolume::Sampler dstSampler(destination);
 
 	// First of all we iterate over all destination voxels and compute their color as the
 	// average of the colors of the eight corresponding voxels in the higher resolution version.
-	for (int32_t z = 0; z < destinationRegion.getDepthInVoxels(); z++) {
-		for (int32_t y = 0; y < destinationRegion.getHeightInVoxels(); y++) {
-			for (int32_t x = 0; x < destinationRegion.getWidthInVoxels(); x++) {
-				const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + (glm::ivec3(x, y, z) * 2);
-				const glm::ivec3 dstPos = destinationRegion.getLowerCorner() + glm::ivec3(x, y, z);
+	const int32_t depth = destRegion.getDepthInVoxels();
+	const int32_t height = destRegion.getHeightInVoxels();
+	const int32_t width = destRegion.getWidthInVoxels();
+	for (int32_t z = 0; z < depth; z++) {
+		for (int32_t y = 0; y < height; y++) {
+			for (int32_t x = 0; x < width; x++) {
+				const glm::ivec3& srcPos = sourceRegion.getLowerCorner() + (glm::ivec3(x, y, z) * 2);
+				const glm::ivec3& dstPos = destRegion.getLowerCorner() + glm::ivec3(x, y, z);
 
 				uint32_t noOfSolidVoxels = 0;
 				for (int32_t childZ = 0; childZ < 2; childZ++) {
