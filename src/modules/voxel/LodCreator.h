@@ -10,10 +10,6 @@
 
 namespace voxel {
 
-inline bool isSolidVoxel(const Voxel& voxel) {
-	return voxel.getMaterial() != Air;
-}
-
 void rescaleCubicVolume(PagedVolume* source, const Region& sourceRegion, RawVolume* destination, const Region& destinationRegion) {
 	core_trace_scoped(RescaleCubicVolume);
 	core_assert_msg(sourceRegion.getWidthInVoxels() == destinationRegion.getWidthInVoxels() * 2, "Wrong width - %i versus %i!", sourceRegion.getWidthInVoxels(), destinationRegion.getWidthInVoxels() * 2);
@@ -36,7 +32,7 @@ void rescaleCubicVolume(PagedVolume* source, const Region& sourceRegion, RawVolu
 					for (int32_t childY = 0; childY < 2; childY++) {
 						for (int32_t childX = 0; childX < 2; childX++) {
 							srcSampler.setPosition(srcPos.x + childX, srcPos.y + childY, srcPos.z + childZ);
-							if (!isSolidVoxel(srcSampler.getVoxel())) {
+							if (!isBlocked(srcSampler.getVoxel().getMaterial())) {
 								continue;
 							}
 							noOfSolidVoxels++;
