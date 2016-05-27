@@ -27,6 +27,13 @@
 namespace voxel {
 
 struct ChunkMeshData {
+	ChunkMeshData() {
+	}
+
+	ChunkMeshData(int vertices) :
+			opaqueMesh(vertices), waterMesh(vertices) {
+	}
+
 	Mesh opaqueMesh;
 	Mesh waterMesh;
 };
