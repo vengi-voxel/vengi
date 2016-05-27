@@ -37,7 +37,7 @@ public:
 	TBOBJECT_SUBCLASS(TBWindow, TBWidget);
 
 	TBWindow();
-	~TBWindow();
+	virtual ~TBWindow();
 
 	/** Close this window.
 		Warning: This window will be deleted after this call! */
