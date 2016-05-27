@@ -7,7 +7,6 @@
 
 #include "sauce/NoiseToolInjector.h"
 
-// tool for testing the world createXXX functions without starting the application
 NoiseTool::NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
 		ui::UIApp(filesystem, eventBus) {
 	init("engine", "noisetool");
