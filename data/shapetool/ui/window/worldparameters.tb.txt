@@ -8,44 +8,44 @@ TBLayout
 		axis x
 		TBLayout
 			axis y
-			TBTextField: text: @landscape
-			TBTextField: text: @octaves
+			TBTextField: text: Landscape surface (2dNoise)
+			TBTextField: text: Octaves
 			TBInlineSelect: id: landscapeoctaves, min: 1, max: 10
-			TBTextField: text: @frequency
+			TBTextField: text: Frequency
 			TBEditField: id: landscapefrequency
-			TBTextField: text: @amplitude
+			TBTextField: text: Amplitude
 			TBEditField: id: landscapeamplitude
-			TBTextField: text: @persistence
+			TBTextField: text: Persistence
 			TBEditField: id: landscapepersistence
 		TBLayout
 			axis y
-			TBTextField: text: @mountain
-			TBTextField: text: @octaves
+			TBTextField: text: Mountain (2dNoise)
+			TBTextField: text: Octaves
 			TBInlineSelect: id: mountainoctaves, min: 1, max: 10
-			TBTextField: text: @frequency
+			TBTextField: text: Frequency
 			TBEditField: id: mountainfrequency, type: number
-			TBTextField: text: @amplitude
+			TBTextField: text: Amplitude
 			TBEditField: id: mountainamplitude, type: number
-			TBTextField: text: @persistence
+			TBTextField: text: Persistence
 			TBEditField: id: mountainpersistence, type: number
 		TBLayout
 			axis y
-			TBTextField: text: @caves
-			TBTextField: text: @octaves
+			TBTextField: text: Caves (3dNoise(
+			TBTextField: text: Octaves
 			TBInlineSelect: id: caveoctaves, min: 1, max: 10
-			TBTextField: text: @frequency
+			TBTextField: text: Frequency
 			TBEditField: id: cavefrequency, type: number
-			TBTextField: text: @amplitude
+			TBTextField: text: Amplitude
 			TBEditField: id: caveamplitude, type: number
-			TBTextField: text: @persistence
+			TBTextField: text: Persistence
 			TBEditField: id: cavepersistence, type: number
-			TBTextField: text: @threshold
+			TBTextField: text: Threshold
 			TBEditField: id: cavedensitythreshold, type: number
 	TBLayout
 		axis x
 		gravity right
 		distribution-position right bottom
 		TBButton
-			text @reset
+			text Apply
 			id reset
 			autofocus 1
