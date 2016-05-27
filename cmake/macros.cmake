@@ -276,6 +276,8 @@ macro(gtest_suite_end name)
 
 		# add as cmake unit test
 		add_test(NAME ${name} COMMAND ${name})
+
+		copy_data_files(${name})
 	endif()
 endmacro()
 
@@ -310,7 +312,7 @@ macro(engine_add_executable)
 	endif()
 
 	set(RESOURCE_DIRS ${ROOT_DIR}/data/${_EXE_TARGET}/ ${ROOT_DIR}/data/shared/)
-
+	copy_data_files(${_EXE_TARGET})
 	# by default, put system related files into the current binary dir on install
 	set(SHARE_DIR ".")
 	# by default, put data files into the current binary dir on install

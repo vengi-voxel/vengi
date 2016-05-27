@@ -63,13 +63,11 @@ clean-local-config:
 edit-local-config:
 	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
 
-server client shapetool tests: cmake
-	$(Q)cd $(BUILDDIR); make $@ $(JOB_FLAG)
+server client shapetool shadertool noisetool tests: cmake
+	$(Q)cd $(BUILDDIR); make $@ copy-data-shared copy-data-$@ $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(GDB_CMD) ./$@ $(ARGS)
 
-shapetool2: cmake clean-local-config
-	$(Q)cd $(BUILDDIR); make shapetool copy-data-shapetool copy-data-shared $(JOB_FLAG)
-	$(Q)cd $(BUILDDIR); $(GDB_CMD) ./shapetool
+shapetool2: shapetool clean-local-config
 
 material-color: cmake
 	$(Q)cd $(BUILDDIR); make tests $(JOB_FLAG)
