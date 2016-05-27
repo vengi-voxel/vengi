@@ -1,0 +1,105 @@
+definitions
+	layoutparamsx
+		axis x
+		distribution gravity
+		position left
+	layoutparamsy
+		axis y
+		distribution available
+		gravity all
+		position left
+	labels
+		lp
+			width 100
+	values
+		lp
+			width 80
+
+WindowInfo
+	title Let's make some noise
+
+TBLayout
+	@include definitions>layoutparamsy
+	TBLayout
+		@include definitions>layoutparamsx
+		TBLayout
+			@include definitions>layoutparamsy
+			TBLayout
+				@include definitions>layoutparamsx
+				TBTextField:
+					@include definitions>labels
+					text Amplitude
+				TBEditField:
+					@include definitions>values
+					id amplitude
+					tooltip the amplitude defines how high the noise will be
+					text 10.0
+			TBLayout
+				@include definitions>layoutparamsx
+				TBTextField:
+					@include definitions>labels
+					text Frequency
+				TBEditField:
+					@include definitions>values
+					id frequency
+					tooltip the higher the frequency the more deviation you get in your noise (wavelength)
+					text 0.1
+			TBLayout
+				@include definitions>layoutparamsy
+				TBClickLabel:
+					text Enable multiple octaves:
+					TBCheckBox:
+						connection toggleoctaves
+						id enableoctaves
+				TBToggleContainer:
+					connection toggleoctaves
+					toggle enabled
+					TBLayout
+						@include definitions>layoutparamsy
+						TBLayout
+							@include definitions>layoutparamsx
+							TBTextField:
+								@include definitions>labels
+								text Octaves
+							TBEditField:
+								@include definitions>values
+								id octaves
+								tooltip the amount of noise calls that contribute to the final result
+								text 1
+						TBLayout
+							@include definitions>layoutparamsx
+							TBTextField:
+								@include definitions>labels
+								text Persistence
+							TBEditField:
+								@include definitions>values
+								id persistence
+								tooltip the persistence defines how much of the amplitude will be applied to the next noise call
+								text 1.0
+			TBClickLabel:
+				text Gray:
+				TBCheckBox:
+					id gray
+			TBClickLabel:
+				text Append:
+				TBCheckBox:
+					id append
+					value 1
+		TBScrollContainer
+			adapt-content 1
+			scroll-mode y
+			lp
+				min-width 530
+				min-height 530
+			TBLayout
+				id imagelayout
+				axis y
+				spacing 20
+	TBLayout
+		axis x
+		gravity right
+		distribution-position right bottom
+		TBButton
+			text Ok
+			id ok
+			autofocus 1

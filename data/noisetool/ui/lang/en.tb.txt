@@ -1,0 +1,10 @@
+cut Cut
+copy Copy
+paste Paste
+delete Delete
+selectall Select all
+TBMessageWindow.ok Ok
+TBMessageWindow.cancel Cancel
+TBMessageWindow.yes Yes
+TBMessageWindow.no No
+TBList.header Showing %d of %d
