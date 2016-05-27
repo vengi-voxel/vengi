@@ -199,10 +199,8 @@ void extractCubicMeshCustom(VolumeType* volData, const Region& region, Mesh* res
 	result->clear();
 
 	// Used to avoid creating duplicate vertices.
-	Array<3, VertexData> m_previousSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
-			MaxVerticesPerPosition);
-	Array<3, VertexData> m_currentSliceVertices(region.getUpperX() - region.getLowerX() + 2, region.getUpperY() - region.getLowerY() + 2,
-			MaxVerticesPerPosition);
+	Array<3, VertexData> m_previousSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
+	Array<3, VertexData> m_currentSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
 
 	// During extraction we create a number of different lists of quads. All the
 	// quads in a given list are in the same plane and facing in the same direction.
