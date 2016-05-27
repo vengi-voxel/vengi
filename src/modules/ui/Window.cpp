@@ -8,6 +8,8 @@
 
 namespace ui {
 
+static const std::string EMPTY = "";
+
 Window::Window(UIApp* app) {
 	app->addChild(this);
 }
@@ -132,6 +134,25 @@ bool Window::loadResourceFile(const char *filename) {
 		return false;
 	loadResource(node);
 	return true;
+}
+
+bool Window::isToggled(const char *checkBoxNodeId) {
+	tb::TBCheckBox *widget = GetWidgetByIDAndType<tb::TBCheckBox>(checkBoxNodeId);
+	if (widget == nullptr) {
+		Log::info("could not find a checkbox node with the name %s", checkBoxNodeId);
+		return false;
+	}
+	return widget->GetValue() == 1;
+}
+
+std::string Window::getStr(const char *nodeId) {
+	tb::TBWidget *widget = GetWidgetByID(nodeId);
+	if (widget == nullptr) {
+		Log::info("could not find a node with the name %s", nodeId);
+		return EMPTY;
+	}
+	const tb::TBStr& amplitude = widget->GetText();
+	return std::string(amplitude.CStr());
 }
 
 void Window::loadResourceData(const char *data) {

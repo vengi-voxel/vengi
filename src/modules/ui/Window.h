@@ -6,6 +6,7 @@
 
 #include "TurboBadger.h"
 #include <cstdint>
+#include "core/String.h"
 
 namespace ui {
 
@@ -39,11 +40,24 @@ public:
 	Window(Window* parent);
 	virtual ~Window() {}
 
+	std::string getStr(const char* nodeId);
+	float getFloat(const char *nodeId);
+	int getInt(const char *nodeId);
+	bool isToggled(const char *checkBoxNodeId);
+
 	bool loadResourceFile(const char *filename);
 	void loadResourceData(const char *data);
 	void loadResource(tb::TBNode &node);
 
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };
+
+inline float Window::getFloat(const char *nodeId) {
+	return core::string::toFloat(getStr(nodeId));
+}
+
+inline int Window::getInt(const char *nodeId) {
+	return core::string::toInt(getStr(nodeId));
+}
 
 }
