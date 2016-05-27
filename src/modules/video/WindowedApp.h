@@ -28,6 +28,14 @@ protected:
 	virtual ~WindowedApp() {
 	}
 public:
+	inline int width() const {
+		return _width;
+	}
+
+	inline int height() const {
+		return _height;
+	}
+
 	virtual core::AppState onRunning() override;
 	virtual void onAfterRunning() override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;

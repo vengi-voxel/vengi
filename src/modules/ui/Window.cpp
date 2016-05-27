@@ -193,6 +193,24 @@ void Window::loadResource(tb::TBNode &node) {
 		windowRect = windowRect.CenterIn(parentRect);
 	}
 
+	if (tb::TBNode *fullscreen = node.GetNode("WindowInfo>fullscreen")) {
+		const int fullscreenVal = fullscreen->GetValue().GetInt();
+		if (fullscreenVal != 0) {
+			windowRect.x = 0;
+			windowRect.y = 0;
+			if (_app != nullptr) {
+				windowRect.w = _app->width();
+				windowRect.h = _app->height();
+			} else {
+				TBWidget *parent = GetParent();
+				if (parent != nullptr) {
+					windowRect.w = parent->GetPreferredSize().pref_w;
+					windowRect.h = parent->GetPreferredSize().pref_h;
+				}
+			}
+		}
+	}
+
 	// Make sure the window is inside the parent, and not larger.
 	windowRect = windowRect.MoveIn(parentRect).Clip(parentRect);
 
