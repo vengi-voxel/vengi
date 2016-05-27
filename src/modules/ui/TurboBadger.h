@@ -11,6 +11,7 @@
 #include <tb_system.h>
 #include <tb_str.h>
 #include <tb_select.h>
+#include <image/tb_image_widget.h>
 #include <tb_select_item.h>
 #include <tb_widgets.h>
 #include <tb_window.h>
