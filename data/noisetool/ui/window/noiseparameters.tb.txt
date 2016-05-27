@@ -32,6 +32,7 @@ TBLayout
 				TBEditField:
 					@include definitions>values
 					id amplitude
+					type number
 					tooltip the amplitude defines how high the noise will be
 					text 10.0
 			TBLayout
@@ -42,6 +43,7 @@ TBLayout
 				TBEditField:
 					@include definitions>values
 					id frequency
+					type number
 					tooltip the higher the frequency the more deviation you get in your noise (wavelength)
 					text 0.1
 			TBLayout
@@ -64,6 +66,7 @@ TBLayout
 							TBEditField:
 								@include definitions>values
 								id octaves
+								type number
 								tooltip the amount of noise calls that contribute to the final result
 								text 1
 						TBLayout
@@ -74,6 +77,7 @@ TBLayout
 							TBEditField:
 								@include definitions>values
 								id persistence
+								type number
 								tooltip the persistence defines how much of the amplitude will be applied to the next noise call
 								text 1.0
 			TBClickLabel:
@@ -89,8 +93,8 @@ TBLayout
 			adapt-content 1
 			scroll-mode y
 			lp
-				min-width 530
-				min-height 530
+				min-width 1080
+				min-height 800
 			TBLayout
 				id imagelayout
 				axis y

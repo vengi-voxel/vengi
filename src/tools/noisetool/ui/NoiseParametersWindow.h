@@ -17,8 +17,8 @@ private:
 		if (existingFragment != nullptr) {
 			return;
 		}
-		const int width = 512;
-		const int height = 512;
+		const int width = 1024;
+		const int height = 768;
 		const int components = 4;
 		uint8_t buffer[width * height * components];
 		if (gray) {
@@ -38,10 +38,22 @@ private:
 		tb::TBTextField* caption = new tb::TBTextField();
 		caption->SetText(idStr.CStr());
 		caption->SetGravity(tb::WIDGET_GRAVITY_BOTTOM | tb::WIDGET_GRAVITY_LEFT_RIGHT);
-		imageWidget->AddChild(caption);
+		caption->SetSkinBg(tb::TBID("image_caption"));
+		imageWidget->AddChild(caption, tb::WIDGET_Z_BOTTOM);
+		imageWidget->OnInflateChild(caption);
+
+		tb::TBButton* removeButton = new tb::TBButton();
+		removeButton->SetID(tb::TBID("remove"));
+		removeButton->SetSkinBg(tb::TBID("button_remove"));
+		removeButton->SetGravity(tb::WIDGET_GRAVITY_RIGHT);
+		imageWidget->AddChild(removeButton, tb::WIDGET_Z_BOTTOM);
+		imageWidget->OnInflateChild(removeButton);
+
 		const tb::TBImage& image = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)buffer, width, height);
 		imageWidget->SetImage(image);
-		layout->AddChild(imageWidget);
+		layout->AddChild(imageWidget, tb::WIDGET_Z_TOP);
+		layout->OnInflateChild(imageWidget);
+		layout->InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 		Log::info("a: %f, f: %f, o: %i, p: %f", amplitude, frequency, octaves, persistence);
 	}
 
@@ -63,6 +75,17 @@ public:
 			make2DNoise(append, gray, amplitude, frequency, octaves, persistence);
 			return true;
 		}
+		if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("remove")) || ev.special_key == tb::TB_KEY_DELETE) {
+			TBWidget *image = ev.target->GetParent();
+			image->GetParent()->RemoveChild(image);
+			delete image;
+			return true;
+		}
 		return ui::Window::OnEvent(ev);
+	}
+
+	void OnDie() override {
+		ui::Window::OnDie();
+		_app->requestQuit();
 	}
 };

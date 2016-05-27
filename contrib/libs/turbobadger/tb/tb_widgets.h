@@ -964,6 +964,11 @@ public:
 		by GetCalculatedFontDescription) */
 	TBFontFace *GetFont() const;
 
+	TBStr GetTooltip() const { return m_tooltip; }
+
+	bool SetTooltip(const char *tooltip) {
+		return m_tooltip.Set(tooltip);
+	}
 private:
 	friend class TBWidgetListener;	///< It does iteration of m_listeners for us.
 	TBWidget *m_parent;				///< The parent of this widget
@@ -985,6 +990,7 @@ private:
 	LayoutParams *m_layout_params;	///< Layout params, or nullptr.
 	TBScroller *m_scroller;
 	TBLongClickTimer *m_long_click_timer;
+	TBStr m_tooltip;
 	union {
 		struct {
 			uint16 is_group_root : 1;

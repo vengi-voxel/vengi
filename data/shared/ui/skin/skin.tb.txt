@@ -462,3 +462,11 @@ elements
 		bitmap focus_r4.png
 		cut 11
 		expand 4
+
+	image_caption
+		background-color #00000088
+
+	button_remove
+		bitmap remove.png
+		type Image
+		padding 5

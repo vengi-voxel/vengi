@@ -19,6 +19,8 @@ class UIApp;
 #define VEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_VEC2, structtarget, structmember)
 
 class Window: public tb::TBWindow {
+protected:
+	UIApp* _app;
 public:
 	enum FieldType {
 		T_INT,

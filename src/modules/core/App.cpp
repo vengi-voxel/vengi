@@ -88,7 +88,10 @@ void App::onFrame() {
 			}
 			{
 				core_trace_scoped(AppOnRunning);
-				_nextState = onRunning();
+				const AppState state = onRunning();
+				if (_nextState != AppState::Cleanup && _nextState != AppState::Destroy) {
+					_nextState = state;
+				}
 			}
 			if (AppState::Running == _nextState) {
 				core_trace_scoped(AppOnAfterRunning);
