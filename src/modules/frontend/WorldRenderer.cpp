@@ -433,7 +433,10 @@ void WorldRenderer::onInit(int width, int height) {
 		const int ColorTextureOctaves = 2;
 		const int ColorTextureDepth = 3;
 		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
-		noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, 0.3f, 0.7f, 1.0f);
+		const float persistence = 0.3f;
+		const float frequency = 0.7f;
+		const float amplitude = 1.0f;
+		noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
 		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
 	}));
 	_colorTexture = video::createTexture("**colortexture**");
