@@ -10,21 +10,35 @@
 
 class NoiseParametersWindow: public ui::Window {
 private:
-	void make2DNoise(bool append, bool gray, float amplitude, float frequency, int octaves, float persistence) {
+	void make2DNoise(bool append, bool gray, bool seamless, bool alpha, float amplitude, float frequency, int octaves, float persistence) {
 		tb::TBStr idStr;
 		idStr.SetFormatted("%i-%f-%f-%i-%f", gray ? 1 : 0, amplitude, frequency, octaves, persistence);
 		tb::TBBitmapFragment *existingFragment = tb::g_tb_skin->GetFragmentManager()->GetFragment(tb::TBID(idStr.CStr()));
 		if (existingFragment != nullptr) {
-			return;
+			tb::g_tb_skin->GetFragmentManager()->FreeFragment(existingFragment);
 		}
-		const int width = 1024;
 		const int height = 768;
+		const int width = seamless ? height : 1024;
+		core_assert(!seamless || width == height);
 		const int components = 4;
 		uint8_t buffer[width * height * components];
 		if (gray) {
-			noise::Simplex::Noise2DGrayA(buffer, width, height, octaves, persistence, frequency, amplitude);
+			if (seamless) {
+				noise::Simplex::SeamlessNoise2DGrayA(buffer, width, octaves, persistence, frequency, amplitude);
+			} else {
+				noise::Simplex::Noise2DGrayA(buffer, width, height, octaves, persistence, frequency, amplitude);
+			}
 		} else {
-			noise::Simplex::Noise2DRGBA(buffer, width, height, octaves, persistence, frequency, amplitude);
+			if (seamless) {
+				noise::Simplex::SeamlessNoise2DRGBA(buffer, width, octaves, persistence, frequency, amplitude);
+			} else {
+				noise::Simplex::Noise2DRGBA(buffer, width, height, octaves, persistence, frequency, amplitude);
+			}
+		}
+		if (!alpha) {
+			for (int i = components - 1; i < width * height * components; i += components) {
+				buffer[i] = 255;
+			}
 		}
 		tb::TBLayout* layout = GetWidgetByIDAndType<tb::TBLayout>("imagelayout");
 		if (layout == nullptr) {
@@ -53,8 +67,8 @@ private:
 		imageWidget->SetImage(image);
 		layout->AddChild(imageWidget, tb::WIDGET_Z_TOP);
 		layout->OnInflateChild(imageWidget);
-		layout->InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
-		Log::info("a: %f, f: %f, o: %i, p: %f", amplitude, frequency, octaves, persistence);
+		Log::info("seamless: %i, gray: %i, amplitude: %f, freq: %f, oct: %i, persist: %f",
+				seamless ? 1 : 0, gray ? 1 : 0, amplitude, frequency, octaves, persistence);
 	}
 
 public:
@@ -70,9 +84,11 @@ public:
 			const bool enableoctaves = isToggled("enableoctaves");
 			const bool gray = isToggled("gray");
 			const bool append = isToggled("append");
+			const bool alpha = isToggled("alpha");
+			const bool seamless = isToggled("seamless");
 			const int octaves = enableoctaves ? getInt("octaves") : 1;
 			const float persistence = enableoctaves ? getFloat("persistence") : 1.0f;
-			make2DNoise(append, gray, amplitude, frequency, octaves, persistence);
+			make2DNoise(append, gray, seamless, alpha, amplitude, frequency, octaves, persistence);
 			return true;
 		}
 		if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("remove")) || ev.special_key == tb::TB_KEY_DELETE) {

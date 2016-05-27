@@ -85,6 +85,15 @@ TBLayout
 				TBCheckBox:
 					id gray
 			TBClickLabel:
+				text Seamless:
+				TBCheckBox:
+					id seamless
+			TBClickLabel:
+				text Alpha:
+				TBCheckBox:
+					id alpha
+					value 1
+			TBClickLabel:
 				text Append:
 				TBCheckBox:
 					id append
