@@ -10,19 +10,6 @@
 
 class NoiseParametersWindow: public ui::Window {
 private:
-	void make3DNoise(bool append, float amplitude, float frequency, int octaves, float persistence) {
-		tb::TBStr idStr;
-		idStr.SetFormatted("3d-%f-%f-%i-%f", amplitude, frequency, octaves, persistence);
-		cleanup(idStr);
-		const int height = 768;
-		const int width = 1024;
-		const int components = 4;
-		uint8_t buffer[width * height * components];
-		const glm::vec3 pos = {0, 0, 0};
-		noise::Simplex::Noise3D(pos, octaves, persistence, frequency, amplitude);
-		addImage(idStr, append, buffer, width, height);
-	}
-
 	void make2DNoise(bool append, bool gray, bool seamless, bool alpha, float amplitude, float frequency, int octaves, float persistence) {
 		tb::TBStr idStr;
 		idStr.SetFormatted("2d-%i-%i-%i-%f-%f-%i-%f", gray ? 1 : 0, seamless ? 1 : 0, alpha ? 1 : 0, amplitude, frequency, octaves, persistence);
@@ -105,16 +92,11 @@ public:
 			const bool append = isToggled("append");
 			const bool alpha = isToggled("alpha");
 			const bool seamless = isToggled("seamless");
-			const bool threedimensional = isToggled("threedimensional");
 			const int octaves = enableoctaves ? getInt("octaves") : 1;
 			const float persistence = enableoctaves ? getFloat("persistence") : 1.0f;
 			Log::info("seamless: %i, gray: %i, amplitude: %f, freq: %f, oct: %i, persist: %f",
 					seamless ? 1 : 0, gray ? 1 : 0, amplitude, frequency, octaves, persistence);
-			if (threedimensional) {
-				make3DNoise(append, amplitude, frequency, octaves, persistence);
-			} else {
-				make2DNoise(append, gray, seamless, alpha, amplitude, frequency, octaves, persistence);
-			}
+			make2DNoise(append, gray, seamless, alpha, amplitude, frequency, octaves, persistence);
 			return true;
 		}
 		if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("remove")) || ev.special_key == tb::TB_KEY_DELETE) {
