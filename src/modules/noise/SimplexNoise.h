@@ -147,7 +147,7 @@ public:
 			int index = 0;
 			for (int x = 0; x < width; ++x) {
 				for (int y = 0; y < height; ++y, ++index) {
-					buffer[index * 3 + channel] = bufferChannel[index];
+					buffer[index * components + channel] = bufferChannel[index];
 				}
 			}
 		}
