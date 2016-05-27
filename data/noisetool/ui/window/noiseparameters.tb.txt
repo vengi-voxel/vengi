@@ -17,6 +17,7 @@ definitions
 
 WindowInfo
 	title Let's make some noise
+	fullscreen 1
 
 TBLayout
 	@include definitions>layoutparamsy
