@@ -129,7 +129,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		const Region prefetchRegion(mins, maxs);
 		_volumeData->prefetch(prefetchRegion);
 
-		ChunkMeshData data;
+		ChunkMeshData data(region.getWidthInCells() * region.getDepthInCells() * 4);
 		extractCubicMeshCustom(_volumeData, region, &data.opaqueMesh, IsQuadNeeded(false));
 		extractCubicMeshCustom(_volumeData, region, &data.waterMesh, IsQuadNeeded(true));
 		core::ScopedWriteLock lock(_rwLock);
