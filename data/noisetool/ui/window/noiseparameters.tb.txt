@@ -94,6 +94,10 @@ TBLayout
 					id alpha
 					value 1
 			TBClickLabel:
+				text 3D:
+				TBCheckBox:
+					id threedimensional
+			TBClickLabel:
 				text Append:
 				TBCheckBox:
 					id append
