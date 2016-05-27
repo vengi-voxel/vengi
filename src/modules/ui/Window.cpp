@@ -11,12 +11,12 @@ namespace ui {
 static const std::string EMPTY = "";
 
 Window::Window(UIApp* app) :
-		_app(app) {
+		tb::TBWindow(), _app(app) {
 	app->addChild(this);
 }
 
 Window::Window(Window* parent) :
-		_app(nullptr) {
+		tb::TBWindow(), _app(nullptr) {
 	parent->AddChild(this);
 }
 
