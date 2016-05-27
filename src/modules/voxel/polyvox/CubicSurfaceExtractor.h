@@ -84,6 +84,10 @@ extern bool performQuadMerging(std::list<Quad>& quads, Mesh* m_meshCurrent);
 extern int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
 		Mesh* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner);
 
+inline bool isQuadFlipped(const Vertex& v00, const Vertex& v01, const Vertex& v10, const Vertex& v11) {
+	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
+}
+
 /**
  * The CubicSurfaceExtractor creates a mesh in which each voxel appears to be rendered as a cube
  * Introduction
@@ -165,19 +169,7 @@ extern int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMa
  *
  *  Another scenario which sometimes results in confusion is when you wish to extract a region which corresponds to the whole volume,
  *  particularly when solid voxels extend right to the edge of the volume.
- */
-template<typename VolumeType, typename IsQuadNeeded>
-Mesh extractCubicMesh(VolumeType* volData, const Region& region, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
-	Mesh result;
-	extractCubicMeshCustom(volData, region, &result, isQuadNeeded, bMergeQuads);
-	return result;
-}
-
-inline bool isQuadFlipped(const Vertex& v00, const Vertex& v01, const Vertex& v10, const Vertex& v11) {
-	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
-}
-
-/**
+ *
  * This version of the function performs the extraction into a user-provided mesh rather than allocating a mesh automatically.
  * There are a few reasons why this might be useful to more advanced users:
  *
@@ -193,7 +185,7 @@ inline bool isQuadFlipped(const Vertex& v00, const Vertex& v01, const Vertex& v1
  *  but this is relatively complex and I haven't done it yet. Could always add it later as another overload.
  */
 template<typename VolumeType, typename IsQuadNeeded>
-void extractCubicMeshCustom(VolumeType* volData, const Region& region, Mesh* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
+void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true) {
 	core_trace_scoped(ExtractCubicMesh);
 
 	result->clear();

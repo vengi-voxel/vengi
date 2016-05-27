@@ -25,7 +25,7 @@ TEST_F(WorldTest, DISABLED_testExtraction) {
 	int extracted = 0;
 	auto start = std::chrono::high_resolution_clock::now();
 	for (;;) {
-		ChunkMeshData meshData;
+		ChunkMeshData meshData(0, 0);
 		while (!world.pop(meshData)) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 			auto end = std::chrono::high_resolution_clock::now();

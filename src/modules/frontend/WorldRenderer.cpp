@@ -107,7 +107,7 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 }
 
 void WorldRenderer::handleMeshQueue(video::Shader& shader) {
-	voxel::ChunkMeshData mesh;
+	voxel::ChunkMeshData mesh(0, 0);
 	if (!_world->pop(mesh)) {
 		return;
 	}

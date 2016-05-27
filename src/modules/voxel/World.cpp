@@ -129,9 +129,11 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		const Region prefetchRegion(mins, maxs);
 		_volumeData->prefetch(prefetchRegion);
 
-		ChunkMeshData data(region.getWidthInCells() * region.getDepthInCells() * 4);
-		extractCubicMeshCustom(_volumeData, region, &data.opaqueMesh, IsQuadNeeded(false));
-		extractCubicMeshCustom(_volumeData, region, &data.waterMesh, IsQuadNeeded(true));
+		// these number are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
+		// they also heavily depend on the size of the mesh region we extract
+		ChunkMeshData data(region.getWidthInVoxels() * region.getDepthInVoxels() * 6, std::numeric_limits<uint16_t>::max() * 4);
+		extractCubicMesh(_volumeData, region, &data.opaqueMesh, IsQuadNeeded(false));
+		extractCubicMesh(_volumeData, region, &data.waterMesh, IsQuadNeeded(true));
 		core::ScopedWriteLock lock(_rwLock);
 		_meshQueue.push_back(std::move(data));
 	}));

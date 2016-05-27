@@ -25,8 +25,7 @@ typedef uint32_t IndexType;
  */
 class Mesh {
 public:
-	Mesh();
-	Mesh(int vertices);
+	Mesh(int vertices, int indices);
 	~Mesh();
 
 	size_t getNoOfVertices() const;
@@ -53,11 +52,11 @@ private:
 	glm::ivec3 _offset;
 };
 
-inline Mesh::Mesh(int vertices) {
-	_vecVertices.reserve(vertices);
-}
-
-inline Mesh::Mesh() {
+inline Mesh::Mesh(int vertices, int indices) {
+	if (vertices > 0)
+		_vecVertices.reserve(vertices);
+	if (indices > 0)
+		_vecIndices.reserve(indices);
 }
 
 inline Mesh::~Mesh() {
@@ -100,6 +99,7 @@ inline void Mesh::addTriangle(IndexType index0, IndexType index1, IndexType inde
 	core_assert_msg(index0 < _vecVertices.size(), "Index points at an invalid vertex.");
 	core_assert_msg(index1 < _vecVertices.size(), "Index points at an invalid vertex.");
 	core_assert_msg(index2 < _vecVertices.size(), "Index points at an invalid vertex.");
+	core_assert_msg(_vecIndices.size() + 3 < _vecIndices.capacity(), "addTriangle() call exceeds the capacity of the indices vector and will trigger a realloc (%i vs %i)", (int)_vecIndices.size(), (int)_vecIndices.capacity());
 
 	_vecIndices.push_back(index0);
 	_vecIndices.push_back(index1);
@@ -109,6 +109,7 @@ inline void Mesh::addTriangle(IndexType index0, IndexType index1, IndexType inde
 inline IndexType Mesh::addVertex(const Vertex& vertex) {
 	// We should not add more vertices than our chosen index type will let us index.
 	core_assert_msg(_vecVertices.size() < std::numeric_limits<IndexType>::max(), "Mesh has more vertices that the chosen index type allows.");
+	core_assert_msg(_vecVertices.size() + 1 < _vecVertices.capacity(), "addVertex() call exceeds the capacity of the vertices vector and will trigger a realloc (%i vs %i)", (int)_vecVertices.size(), (int)_vecVertices.capacity());
 
 	_vecVertices.push_back(vertex);
 	return _vecVertices.size() - 1;
