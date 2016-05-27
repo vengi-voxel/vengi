@@ -438,7 +438,7 @@ void PagedVolume::Chunk::setVoxel(const glm::i16vec3& v3dPos, const Voxel& tValu
 	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
 }
 
-uint32_t PagedVolume::Chunk::calculateSizeInBytes() {
+uint32_t PagedVolume::Chunk::calculateSizeInBytes() const {
 	// Call through to the static version
 	return calculateSizeInBytes(m_uSideLength);
 }

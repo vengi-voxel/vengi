@@ -68,7 +68,7 @@ public:
 		// This is updated by the PagedVolume and used to discard the least recently used chunks.
 		uint32_t m_uChunkLastAccessed = 0;
 
-		uint32_t calculateSizeInBytes();
+		uint32_t calculateSizeInBytes() const;
 		static uint32_t calculateSizeInBytes(uint32_t uSideLength);
 
 		Voxel* m_tData = nullptr;
