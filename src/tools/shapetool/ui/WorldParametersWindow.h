@@ -35,7 +35,7 @@ public:
 			ui::Window(tool), _tool(tool) {
 		core_assert(loadResourceFile("ui/window/worldparameters.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
-		SetOpacity(0.5f);
+		SetOpacity(0.8f);
 		fillWidgets(WORLDFIELDS, SDL_arraysize(WORLDFIELDS), &_ctx);
 	}
 

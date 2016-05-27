@@ -1,6 +1,6 @@
 WindowInfo
 	title @worldparametersheadline
-	position 0 0
+	position 500 0
 TBLayout
 	axis y
 	distribution gravity

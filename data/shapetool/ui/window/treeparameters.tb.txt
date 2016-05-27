@@ -1,6 +1,6 @@
 WindowInfo
 	title @treeparametersheadline
-	position 500 0
+	position 300 0
 TBLayout
 	axis y
 	distribution gravity

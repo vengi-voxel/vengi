@@ -27,7 +27,7 @@ public:
 			ui::Window(tool), _tool(tool) {
 		core_assert(loadResourceFile("ui/window/treeparameters.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
-		SetOpacity(0.5f);
+		SetOpacity(0.8f);
 		fillWidgets(TREEFIELDS, SDL_arraysize(TREEFIELDS), &_ctx);
 		tb::TBSelectList *treeType = GetWidgetByIDAndType<tb::TBSelectList>("treetype");
 		if (treeType != nullptr) {
