@@ -63,7 +63,7 @@ core::AppState ShapeTool::onInit() {
 
 	_clearColor = core::Color::LightBlue;
 
-	_worldRenderer.onSpawn(_camera.getPosition(), 5);
+	_worldRenderer.onSpawn(_camera.getPosition(), core::Var::get(cfg::ClientExtractRadius, "1")->intVal());
 
 	const char *meshName = "chr_fatkid";
 	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
