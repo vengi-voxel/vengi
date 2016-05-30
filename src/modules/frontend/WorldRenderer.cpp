@@ -208,7 +208,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& waterShader, const video::Camera& camera, int width, int height, int* vertices) {
+int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& waterShader, const video::Camera& camera, int* vertices) {
 	handleMeshQueue(opaqueShader);
 
 	if (_meshDataOpaque.empty()) {
@@ -238,6 +238,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& water
 	drawCallsWorld += renderWorldMeshes(waterShader, camera, false, vertices);
 
 #if GBUFFER
+	const int width = camera.getWidth();
+	const int height = camera.getHeight();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	_gbuffer.bindForReading();
@@ -347,7 +349,7 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	extractMeshAroundCamera(initialExtractionRadius);
 }
 
-int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, int width, int height) {
+int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera) {
 	if (_entities.empty()) {
 		return 0;
 	}

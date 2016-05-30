@@ -80,6 +80,7 @@ public:
 	 */
 	void onEvent(const network::NewConnectionEvent& event) override;
 	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
+	void onWindowResize() override;
 	bool connect(uint16_t port, const std::string& hostname);
 	void authFailed();
 	void npcSpawn(frontend::ClientEntityId id, network::messages::NpcType type, const glm::vec3& pos);

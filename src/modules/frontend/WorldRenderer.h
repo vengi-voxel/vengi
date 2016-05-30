@@ -99,8 +99,8 @@ public:
 	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 
 	bool extractNewMeshes(const glm::vec3& position, bool force = false);
-	int renderWorld(video::Shader& opaqueShader, video::Shader& waterShader, const video::Camera& camera, int width, int height, int* vertices = nullptr);
-	int renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, int width, int height);
+	int renderWorld(video::Shader& opaqueShader, video::Shader& waterShader, const video::Camera& camera, int* vertices = nullptr);
+	int renderEntities(const video::ShaderPtr& shader, const video::Camera& camera);
 };
 
 inline float WorldRenderer::getViewDistance() const {

@@ -132,8 +132,8 @@ void ShapeTool::beforeUI() {
 	_worldRenderer.extractNewMeshes(_camera.getPosition());
 	_worldRenderer.onRunning(_deltaFrame);
 	_vertices = 0;
-	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, _width, _height, &_vertices);
-	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, _width, _height);
+	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, &_vertices);
+	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera);
 }
 
 void ShapeTool::afterUI() {
@@ -203,6 +203,10 @@ core::AppState ShapeTool::onCleanup() {
 	core::AppState state = UIApp::onCleanup();
 	_world->shutdown();
 	return state;
+}
+
+void ShapeTool::onWindowResize() {
+	_camera.init(_width, _height);
 }
 
 bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {

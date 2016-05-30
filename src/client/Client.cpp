@@ -146,8 +146,8 @@ void Client::beforeUI() {
 		_camera.perspective(45.0f, _aspect, 0.1f, farPlane);
 		_camera.update();
 
-		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, _width, _height);
-		_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, _width, _height);
+		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera);
+		_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera);
 		_worldRenderer.extractNewMeshes(_camera.getPosition());
 	} else {
 		_drawCallsWorld = 0;
@@ -161,8 +161,9 @@ void Client::afterUI() {
 	drawCallsWorld.SetFormatted("drawcalls world: %i", _drawCallsWorld);
 	tb::TBStr drawCallsEntity;
 	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
-	_root.GetFont()->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
-	_root.GetFont()->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
+	tb::TBFontFace *font = _root.GetFont();
+	font->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
+	font->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
 	UIApp::afterUI();
 }
 
@@ -194,6 +195,10 @@ core::AppState Client::onRunning() {
 	}
 
 	return state;
+}
+
+void Client::onWindowResize() {
+	_camera.init(_width, _height);
 }
 
 void Client::authFailed() {

@@ -79,6 +79,14 @@ public:
 		return _pos;
 	}
 
+	inline int getWidth() const {
+		return _width;
+	}
+
+	inline int getHeight() const {
+		return _height;
+	}
+
 	/**
 	 * @brief Converts mouse coordinates into a ray
 	 */
