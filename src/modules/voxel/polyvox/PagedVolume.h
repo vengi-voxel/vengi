@@ -119,11 +119,11 @@ public:
 		Sampler(PagedVolume* volume);
 		~Sampler();
 
-		inline const Voxel& getVoxel() const;
+		const Voxel& getVoxel() const;
 
-		inline void setPosition(const glm::ivec3& v3dNewPos);
+		void setPosition(const glm::ivec3& v3dNewPos);
 		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
-		inline bool setVoxel(const Voxel& tValue);
+		bool setVoxel(const Voxel& tValue);
 		glm::ivec3 getPosition() const;
 
 		void movePositiveX();
@@ -134,35 +134,35 @@ public:
 		void moveNegativeY();
 		void moveNegativeZ();
 
-		inline const Voxel& peekVoxel1nx1ny1nz() const;
-		inline const Voxel& peekVoxel1nx1ny0pz() const;
-		inline const Voxel& peekVoxel1nx1ny1pz() const;
-		inline const Voxel& peekVoxel1nx0py1nz() const;
-		inline const Voxel& peekVoxel1nx0py0pz() const;
-		inline const Voxel& peekVoxel1nx0py1pz() const;
-		inline const Voxel& peekVoxel1nx1py1nz() const;
-		inline const Voxel& peekVoxel1nx1py0pz() const;
-		inline const Voxel& peekVoxel1nx1py1pz() const;
+		const Voxel& peekVoxel1nx1ny1nz() const;
+		const Voxel& peekVoxel1nx1ny0pz() const;
+		const Voxel& peekVoxel1nx1ny1pz() const;
+		const Voxel& peekVoxel1nx0py1nz() const;
+		const Voxel& peekVoxel1nx0py0pz() const;
+		const Voxel& peekVoxel1nx0py1pz() const;
+		const Voxel& peekVoxel1nx1py1nz() const;
+		const Voxel& peekVoxel1nx1py0pz() const;
+		const Voxel& peekVoxel1nx1py1pz() const;
 
-		inline const Voxel& peekVoxel0px1ny1nz() const;
-		inline const Voxel& peekVoxel0px1ny0pz() const;
-		inline const Voxel& peekVoxel0px1ny1pz() const;
-		inline const Voxel& peekVoxel0px0py1nz() const;
-		inline const Voxel& peekVoxel0px0py0pz() const;
-		inline const Voxel& peekVoxel0px0py1pz() const;
-		inline const Voxel& peekVoxel0px1py1nz() const;
-		inline const Voxel& peekVoxel0px1py0pz() const;
-		inline const Voxel& peekVoxel0px1py1pz() const;
+		const Voxel& peekVoxel0px1ny1nz() const;
+		const Voxel& peekVoxel0px1ny0pz() const;
+		const Voxel& peekVoxel0px1ny1pz() const;
+		const Voxel& peekVoxel0px0py1nz() const;
+		const Voxel& peekVoxel0px0py0pz() const;
+		const Voxel& peekVoxel0px0py1pz() const;
+		const Voxel& peekVoxel0px1py1nz() const;
+		const Voxel& peekVoxel0px1py0pz() const;
+		const Voxel& peekVoxel0px1py1pz() const;
 
-		inline const Voxel& peekVoxel1px1ny1nz() const;
-		inline const Voxel& peekVoxel1px1ny0pz() const;
-		inline const Voxel& peekVoxel1px1ny1pz() const;
-		inline const Voxel& peekVoxel1px0py1nz() const;
-		inline const Voxel& peekVoxel1px0py0pz() const;
-		inline const Voxel& peekVoxel1px0py1pz() const;
-		inline const Voxel& peekVoxel1px1py1nz() const;
-		inline const Voxel& peekVoxel1px1py0pz() const;
-		inline const Voxel& peekVoxel1px1py1pz() const;
+		const Voxel& peekVoxel1px1ny1nz() const;
+		const Voxel& peekVoxel1px1ny0pz() const;
+		const Voxel& peekVoxel1px1ny1pz() const;
+		const Voxel& peekVoxel1px0py1nz() const;
+		const Voxel& peekVoxel1px0py0pz() const;
+		const Voxel& peekVoxel1px0py1pz() const;
+		const Voxel& peekVoxel1px1py1nz() const;
+		const Voxel& peekVoxel1px1py0pz() const;
+		const Voxel& peekVoxel1px1py1pz() const;
 
 	private:
 		PagedVolume* mVolume;
