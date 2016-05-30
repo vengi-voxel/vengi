@@ -127,14 +127,13 @@ void ShapeTool::beforeUI() {
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
 	_camera.updateViewMatrix();
 	const float farPlane = _worldRenderer.getViewDistance();
-	const glm::mat4& projection = glm::perspective(45.0f, _aspect, 0.1f, farPlane);
-	_camera.updateFrustumPlanes(projection);
+	_camera.updateFrustumPlanes(_projection);
 
 	_worldRenderer.extractNewMeshes(_camera.getPosition());
 	_worldRenderer.onRunning(_deltaFrame);
 	_vertices = 0;
-	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, projection, _width, _height, &_vertices);
-	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, projection, _width, _height);
+	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, _projection, _width, _height, &_vertices);
+	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, _projection, _width, _height);
 }
 
 void ShapeTool::afterUI() {
