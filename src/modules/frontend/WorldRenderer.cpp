@@ -130,17 +130,17 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, bool opaque, int* vertices) {
-	const glm::mat4& view = camera.getViewMatrix();
+	const glm::mat4& view = camera.viewMatrix();
 
 	const MaterialColorArray& materialColors = getMaterialColors();
 
 	shader.activate();
 	shader.setUniformMatrix("u_view", view, false);
-	shader.setUniformMatrix("u_projection", camera.getProjectionMatrix(), false);
+	shader.setUniformMatrix("u_projection", camera.projectionMatrix(), false);
 	shader.setUniformf("u_fogrange", _fogRange);
 	shader.setUniformf("u_viewdistance", _viewDistance);
 	shader.setUniformi("u_texture", 0);
-	shader.setUniformVec3("u_lightpos", _lightPos + camera.getPosition());
+	shader.setUniformVec3("u_lightpos", _lightPos + camera.position());
 	shader.setUniformVec3("u_diffuse_color", _diffuseColor);
 	shader.setUniformVec4v("u_materialcolor[0]", &materialColors[0], materialColors.size());
 	shader.setUniformf("u_debug_color", 1.0);
@@ -357,11 +357,11 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 
 	int drawCallsEntities = 0;
 
-	const glm::mat4& view = camera.getViewMatrix();
+	const glm::mat4& view = camera.viewMatrix();
 
 	shader->activate();
 	shader->setUniformMatrix("u_view", view, false);
-	shader->setUniformMatrix("u_projection", camera.getProjectionMatrix(), false);
+	shader->setUniformMatrix("u_projection", camera.projectionMatrix(), false);
 	shader->setUniformVec3("u_lightpos", _lightPos);
 	shader->setUniformf("u_fogrange", _fogRange);
 	shader->setUniformf("u_viewdistance", _viewDistance);

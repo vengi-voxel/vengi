@@ -148,7 +148,7 @@ void Client::beforeUI() {
 
 		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera);
 		_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera);
-		_worldRenderer.extractNewMeshes(_camera.getPosition());
+		_worldRenderer.extractNewMeshes(_camera.position());
 	} else {
 		_drawCallsWorld = 0;
 		_drawCallsEntities = 0;

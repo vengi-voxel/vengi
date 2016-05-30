@@ -63,7 +63,7 @@ core::AppState ShapeTool::onInit() {
 
 	_clearColor = core::Color::LightBlue;
 
-	_worldRenderer.onSpawn(_camera.getPosition(), core::Var::get(cfg::ClientExtractRadius, "1")->intVal());
+	_worldRenderer.onSpawn(_camera.position(), core::Var::get(cfg::ClientExtractRadius, "1")->intVal());
 
 	const char *meshName = "chr_fatkid";
 	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
@@ -71,13 +71,13 @@ core::AppState ShapeTool::onInit() {
 		Log::error("Failed to load the mesh '%s'", meshName);
 		return core::Cleanup;
 	}
-	_entity = std::make_shared<frontend::ClientEntity>(1, -1, _now, _camera.getPosition(), 0.0f, mesh);
+	_entity = std::make_shared<frontend::ClientEntity>(1, -1, _now, _camera.position(), 0.0f, mesh);
 	if (!_worldRenderer.addEntity(_entity)) {
 		Log::error("Failed to create entity");
 		return core::Cleanup;
 	}
 
-	glm::vec3 targetPos = _camera.getPosition();
+	glm::vec3 targetPos = _camera.position();
 	targetPos.x += 1000.0f;
 	targetPos.z += 1000.0f;
 	_entity->lerpPosition(_now, targetPos, _entity->orientation());
@@ -115,7 +115,7 @@ void ShapeTool::beforeUI() {
 
 	if (_resetTriggered && !_world->isReset()) {
 		_world->setContext(_ctx);
-		_worldRenderer.onSpawn(_camera.getPosition());
+		_worldRenderer.onSpawn(_camera.position());
 		_resetTriggered = false;
 	}
 
@@ -129,7 +129,7 @@ void ShapeTool::beforeUI() {
 	_camera.perspective(45.0f, _aspect, 0.1f, farPlane);
 	_camera.update();
 
-	_worldRenderer.extractNewMeshes(_camera.getPosition());
+	_worldRenderer.extractNewMeshes(_camera.position());
 	_worldRenderer.onRunning(_deltaFrame);
 	_vertices = 0;
 	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, &_vertices);
@@ -142,7 +142,7 @@ void ShapeTool::afterUI() {
 	tb::TBStr drawCallsEntity;
 	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
 	tb::TBStr position;
-	const glm::vec3& pos = _camera.getPosition();
+	const glm::vec3& pos = _camera.position();
 	position.SetFormatted("pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
 	tb::TBStr extractions;
 	int meshes;
@@ -168,11 +168,11 @@ void ShapeTool::afterUI() {
 core::AppState ShapeTool::onRunning() {
 	core::AppState state = UIApp::onRunning();
 
-	const glm::mat4& view = _camera.getViewMatrix();
+	const glm::mat4& view = _camera.viewMatrix();
 
 	_colorShader->activate();
 	_colorShader->setUniformMatrix("u_view", view, false);
-	_colorShader->setUniformMatrix("u_projection", _camera.getProjectionMatrix(), false);
+	_colorShader->setUniformMatrix("u_projection", _camera.projectionMatrix(), false);
 
 	//glm::vec3 entPos = _entity->position();
 	//entPos.y = _world->findFloor(entPos.x, entPos.z);
