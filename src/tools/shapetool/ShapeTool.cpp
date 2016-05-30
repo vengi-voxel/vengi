@@ -228,6 +228,25 @@ bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 	return UIApp::onKeyPress(key, modifier);
 }
 
+void ShapeTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
+	UIApp::onMouseButtonPress(x, y, button);
+
+	if (button != SDL_BUTTON_LEFT) {
+		return;
+	}
+
+	Log::debug("Click to %u:%u", x, y);
+	const glm::vec2 mousePos(x / float(width()), y / float(height()));
+	const video::Ray& ray = _camera.screenRay(mousePos, _projection);
+	glm::ivec3 hit;
+	voxel::Voxel voxel;
+	if (_world->raycast(ray.origin, ray.direction, _worldRenderer.getViewDistance(), hit, voxel)) {
+		_worldRenderer.setVoxel(hit, voxel::createVoxel(voxel::Air));
+	} else {
+		Log::warn("Raycast didn't hit anything");
+	}
+}
+
 void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	UIApp::onMouseMotion(x, y, relX, relY);
 	const bool current = SDL_GetRelativeMouseMode();
