@@ -271,6 +271,12 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& water
 	return drawCallsWorld;
 }
 
+void WorldRenderer::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
+	Log::debug("set voxel to %i at %i:%i:%i", voxel.getMaterial(), pos.x, pos.y, pos.z);
+	_world->setVoxel(pos, voxel);
+	extractNewMeshes(pos, true);
+}
+
 void WorldRenderer::updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) {
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
 	const voxel::IndexType* vecIndices = surfaceMesh.getRawIndexData();

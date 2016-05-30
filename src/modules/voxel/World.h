@@ -84,6 +84,7 @@ public:
 	int getMaterial(int x, int y, int z) const;
 
 	void placeTree(const TreeContext& ctx);
+	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 
 	/**
 	 * @brief Returns a random position inside the boundaries of the world (on the surface)

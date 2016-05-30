@@ -149,6 +149,10 @@ Region World::getRegion(const glm::ivec3& pos, int size) const {
 	return region;
 }
 
+void World::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
+	_volumeData->setVoxel(pos, voxel);
+}
+
 void World::placeTree(const TreeContext& ctx) {
 	core_trace_scoped(PlaceTree);
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
