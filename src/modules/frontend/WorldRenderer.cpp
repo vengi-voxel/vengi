@@ -385,7 +385,6 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 bool WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 	core_trace_scoped(WorldRendererExtractNewMeshes);
 	if (force) {
-		deleteMesh(position);
 		_world->allowReExtraction(position);
 		return _world->scheduleMeshExtraction(position);
 	}
