@@ -151,10 +151,18 @@ void ShapeTool::afterUI() {
 	int pending;
 	_worldRenderer.stats(meshes, extracted, pending);
 	extractions.SetFormatted("pending: %i, meshes: %i, extracted: %i", pending, meshes, extracted);
-	_root.GetFont()->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
-	_root.GetFont()->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
-	_root.GetFont()->DrawString(5, 50, tb::TBColor(255, 255, 255), position);
-	_root.GetFont()->DrawString(5, 65, tb::TBColor(255, 255, 255), extractions);
+	tb::TBFontFace *font = _root.GetFont();
+	const tb::TBColor color(255, 255, 255);
+	const int x = 5;
+	int y = 20;
+	const int lineHeight = font->GetHeight() + 2;
+	font->DrawString(x, y, color, drawCallsEntity);
+	y += lineHeight;
+	font->DrawString(x, y, color, drawCallsWorld);
+	y += lineHeight;
+	font->DrawString(x, y, color, position);
+	y += lineHeight;
+	font->DrawString(x, y, color, extractions);
 	ui::UIApp::afterUI();
 }
 
