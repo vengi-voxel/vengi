@@ -260,12 +260,16 @@ void World::stats(int& meshes, int& extracted, int& pending) const {
 }
 
 bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) {
-	return raycast(start, direction, maxDistance, [&] (const PagedVolume::Sampler& sampler) {
-		// store position and abort raycast
-		hit = sampler.getPosition();
+	const bool result = raycast(start, direction, maxDistance, [&] (const PagedVolume::Sampler& sampler) {
 		voxel = sampler.getVoxel();
-		return false;
+		if (isBlocked(voxel.getMaterial())) {
+			// store position and abort raycast
+			hit = sampler.getPosition();
+			return false;
+		}
+		return true;
 	});
+	return result;
 }
 
 }
