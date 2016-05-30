@@ -7,6 +7,7 @@
 #include "TurboBadger.h"
 #include <cstdint>
 #include "core/String.h"
+#include "io/IEventObserver.h"
 
 namespace ui {
 
@@ -18,9 +19,11 @@ class UIApp;
 #define IVEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_IVEC2, structtarget, structmember)
 #define VEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_VEC2, structtarget, structmember)
 
-class Window: public tb::TBWindow {
+class Window: public tb::TBWindow, public io::IEventObserver {
 protected:
 	UIApp* _app;
+	float _percentWidth = 0.0f;
+	float _percentHeight = 0.0f;
 public:
 	enum FieldType {
 		T_INT,
@@ -52,6 +55,8 @@ public:
 	void loadResource(tb::TBNode &node);
 
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
+
+	virtual void onWindowResize() override;
 };
 
 inline float Window::getFloat(const char *nodeId) {

@@ -5,6 +5,7 @@
 #include "Window.h"
 #include "UIApp.h"
 #include "core/GLM.h"
+#include "core/Singleton.h"
 
 namespace ui {
 
@@ -13,11 +14,13 @@ static const std::string EMPTY = "";
 Window::Window(UIApp* app) :
 		tb::TBWindow(), _app(app) {
 	app->addChild(this);
+	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 }
 
 Window::Window(Window* parent) :
 		tb::TBWindow(), _app(nullptr) {
 	parent->AddChild(this);
+	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
 }
 
 void Window::fillWidgets(const Field* fields, int fieldAmount, void* basePtr) {
@@ -179,16 +182,30 @@ void Window::loadResource(tb::TBNode &node) {
 	tb::TBNode *tmp = node.GetNode("WindowInfo>size");
 	if (tmp && tmp->GetValue().GetArrayLength() == 2) {
 		tb::TBValueArray *dimensions = tmp->GetValue().GetArray();
-		windowRect.w = dc->GetPxFromString(dimensions->GetValue(0)->GetString(), windowRect.w);
-		windowRect.h = dc->GetPxFromString(dimensions->GetValue(1)->GetString(), windowRect.h);
+		const char *sizeW = dimensions->GetValue(0)->GetString();
+		if (sizeW[strlen(sizeW) - 1] == '%') {
+			_percentWidth = atof(sizeW);
+			windowRect.w = _app->width() * _percentWidth / 100.0f;
+		} else {
+			windowRect.w = dc->GetPxFromString(sizeW, windowRect.w);
+		}
+		const char *sizeH = dimensions->GetValue(1)->GetString();
+		if (sizeH[strlen(sizeH) - 1] == '%') {
+			_percentHeight = atof(sizeW);
+			windowRect.h = _app->height() * _percentHeight / 100.0f;
+		} else {
+			windowRect.h = dc->GetPxFromString(sizeH, windowRect.h);
+		}
 	}
 
 	// Use the specified position or center in parent.
 	tmp = node.GetNode("WindowInfo>position");
 	if (tmp && tmp->GetValue().GetArrayLength() == 2) {
 		tb::TBValueArray *position = tmp->GetValue().GetArray();
-		windowRect.x = dc->GetPxFromString(position->GetValue(0)->GetString(), windowRect.x);
-		windowRect.y = dc->GetPxFromString(position->GetValue(1)->GetString(), windowRect.y);
+		const char *posW = position->GetValue(0)->GetString();
+		const char *posH = position->GetValue(1)->GetString();
+		windowRect.x = dc->GetPxFromString(posW, windowRect.x);
+		windowRect.y = dc->GetPxFromString(posH, windowRect.y);
 	} else {
 		windowRect = windowRect.CenterIn(parentRect);
 	}
@@ -225,6 +242,19 @@ void Window::loadResource(tb::TBNode &node) {
 
 bool Window::OnEvent(const tb::TBWidgetEvent &ev) {
 	return TBWindow::OnEvent(ev);
+}
+
+void Window::onWindowResize() {
+	const tb::TBRect parentRect(0, 0, GetParent()->GetRect().w, GetParent()->GetRect().h);
+	tb::TBRect windowRect = GetRect();
+	windowRect = windowRect.MoveIn(parentRect).Clip(parentRect);
+	if (_percentHeight > 0.0f) {
+		windowRect.w = _app->width() * _percentWidth;
+	}
+	if (_percentHeight > 0.0f) {
+		windowRect.h = _app->height() * _percentHeight;
+	}
+	SetRect(windowRect);
 }
 
 }
