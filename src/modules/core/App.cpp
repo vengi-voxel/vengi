@@ -243,6 +243,7 @@ AppState App::onInit() {
 	}
 	// we might have changed the loglevel from the commandline
 	Log::init();
+	_logLevel = core::Var::get(cfg::CoreLogLevel);
 	return AppState::Running;
 }
 
@@ -253,6 +254,10 @@ void App::onBeforeRunning() {
 }
 
 AppState App::onRunning() {
+	if (_logLevel->isDirty()) {
+		Log::init();
+		_logLevel->markClean();
+	}
 	return AppState::Cleanup;
 }
 

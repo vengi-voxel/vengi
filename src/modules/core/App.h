@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <chrono>
 #include "Common.h"
+#include "Var.h"
 #include "Trace.h"
 #include "EventBus.h"
 #include "core/ThreadPool.h"
@@ -39,6 +40,7 @@ protected:
 	core::EventBusPtr _eventBus;
 	static App* _staticInstance;
 	core::ThreadPool _threadPool;
+	core::VarPtr _logLevel;
 
 public:
 	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport, size_t threadPoolSize = 1);
