@@ -124,10 +124,10 @@ void ShapeTool::beforeUI() {
 	const bool forward = _moveMask & MOVEFORWARD;
 	const bool backward = _moveMask & MOVEBACKWARD;
 	const float speed = _speed->floatVal();
-	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
-	_camera.updateViewMatrix();
 	const float farPlane = _worldRenderer.getViewDistance();
-	_camera.updateFrustumPlanes();
+	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
+	_camera.perspective(45.0f, _aspect, 0.1f, farPlane);
+	_camera.update();
 
 	_worldRenderer.extractNewMeshes(_camera.getPosition());
 	_worldRenderer.onRunning(_deltaFrame);
@@ -172,8 +172,6 @@ core::AppState ShapeTool::onRunning() {
 
 	_colorShader->activate();
 	_colorShader->setUniformMatrix("u_view", view, false);
-	const float farPlane = _worldRenderer.getViewDistance();
-	_camera.perspective(45.0f, _aspect, 0.1f, farPlane);
 	_colorShader->setUniformMatrix("u_projection", _camera.getProjectionMatrix(), false);
 
 	//glm::vec3 entPos = _entity->position();

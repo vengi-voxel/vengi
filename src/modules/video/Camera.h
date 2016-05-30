@@ -72,6 +72,7 @@ public:
 	inline void update() {
 		updateDirection();
 		updateViewMatrix();
+		updateFrustumPlanes();
 	}
 
 	inline const glm::vec3& getPosition() const {
