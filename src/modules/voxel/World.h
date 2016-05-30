@@ -7,6 +7,7 @@
 #include "core/GLM.h"
 #include "polyvox/Mesh.h"
 #include "polyvox/PagedVolume.h"
+#include "polyvox/Raycast.h"
 #include <memory>
 #include <queue>
 #include <random>
@@ -53,6 +54,25 @@ public:
 	// if clientData is true, additional data that is only useful for rendering is generated
 	void setClientData(bool clientData) {
 		_clientData = clientData;
+	}
+
+	/**
+	 * @return true if the ray hit something - false if not. If true is returned, the position is set to @c hit and
+	 * the @c Voxel that was hit is stored in @c voxel
+	 * @param[out] hit If the ray hits a voxel, this is the position of the hit
+	 * @param[out] voxel The voxel that was hit
+	 */
+	bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel);
+
+	/**
+	 * @return true if the ray hit something - false if not.
+	 * @note The callback has a parameter of @c const PagedVolume::Sampler& and returns a boolean. If the callback returns false,
+	 * the ray is interrupted. Only if the callback returned false at some point in time, this function will return @c true.
+	 */
+	template<typename Callback>
+	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) {
+		const RaycastResults::RaycastResult result = raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
+		return result == RaycastResults::Interupted;
 	}
 
 	void shutdown();

@@ -255,4 +255,13 @@ void World::stats(int& meshes, int& extracted, int& pending) const {
 	pending = _futures.size();
 }
 
+bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) {
+	return raycast(start, direction, maxDistance, [&] (const PagedVolume::Sampler& sampler) {
+		// store position and abort raycast
+		hit = sampler.getPosition();
+		voxel = sampler.getVoxel();
+		return false;
+	});
+}
+
 }

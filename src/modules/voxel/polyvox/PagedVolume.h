@@ -124,6 +124,7 @@ public:
 		inline void setPosition(const glm::ivec3& v3dNewPos);
 		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
 		inline bool setVoxel(const Voxel& tValue);
+		glm::ivec3 getPosition() const;
 
 		void movePositiveX();
 		void movePositiveY();
@@ -270,6 +271,10 @@ inline const Voxel& PagedVolume::Sampler::getVoxel() const {
 
 inline void PagedVolume::Sampler::setPosition(const glm::ivec3& v3dNewPos) {
 	setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
+}
+
+inline glm::ivec3 PagedVolume::Sampler::getPosition() const {
+	return glm::ivec3(mXPosInVolume, mYPosInVolume, mZPosInVolume);
 }
 
 // These precomputed offset are used to determine how much we move our pointer by to move a single voxel in the x, y, or z direction given an x, y, or z starting position inside a chunk.

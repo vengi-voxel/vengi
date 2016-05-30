@@ -53,12 +53,6 @@ typedef RaycastResults::RaycastResult RaycastResult;
 /// Note that we also have a pickVoxel() function which provides a slightly higher-level interface.
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename VolumeType, typename Callback>
-RaycastResult raycastWithEndpoints(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback& callback);
-
-template<typename VolumeType, typename Callback>
-RaycastResult raycastWithDirection(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback& callback);
-
 // This function is based on Christer Ericson's code and description of the 'Uniform Grid Intersection Test' in
 // 'Real Time Collision Detection'. The following information from the errata on the book website is also relevant:
 //
@@ -94,7 +88,7 @@ RaycastResult raycastWithDirection(VolumeType* volData, const glm::vec3& v3dStar
  *
  * The ray will move from @a v3dStart to @a v3dEnd, calling @a callback for each
  * voxel it passes through until @a callback returns @a false. In this case it
- * returns a RaycastResults::Interupted. If it passes from start to end
+ * returns a RaycastResults::Interrupted. If it passes from start to end
  * without @a callback returning @a false, it returns RaycastResults::Completed.
  *
  * @param volData The volume to pass the ray though
@@ -104,9 +98,9 @@ RaycastResult raycastWithDirection(VolumeType* volData, const glm::vec3& v3dStar
  *
  * @return A RaycastResults designating whether the ray hit anything or not
  */
-template<typename VolumeType, typename Callback>
-RaycastResult raycastWithEndpoints(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback& callback) {
-	typename VolumeType::Sampler sampler(volData);
+template<typename Callback>
+RaycastResult raycastWithEndpoints(PagedVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+	PagedVolume::Sampler sampler(volData);
 
 	//The doRaycast function is assuming that it is iterating over the areas defined between
 	//voxels. We actually want to define the areas as being centered on voxels (as this is
@@ -189,7 +183,7 @@ RaycastResult raycastWithEndpoints(VolumeType* volData, const glm::vec3& v3dStar
  *
  * The ray will move from @a v3dStart along @a v3dDirectionAndLength, calling
  * @a callback for each voxel it passes through until @a callback returns
- * @a false. In this case it returns a RaycastResults::Interupted. If it
+ * @a false. In this case it returns a RaycastResults::Interrupted. If it
  * passes from start to end without @a callback returning @a false, it
  * returns RaycastResults::Completed.
  *
@@ -208,10 +202,10 @@ RaycastResult raycastWithEndpoints(VolumeType* volData, const glm::vec3& v3dStar
  *
  * @return A RaycastResults designating whether the ray hit anything or not
  */
-template<typename VolumeType, typename Callback>
-RaycastResult raycastWithDirection(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback& callback) {
-	glm::vec3 v3dEnd = v3dStart + v3dDirectionAndLength;
-	return raycastWithEndpoints<VolumeType, Callback>(volData, v3dStart, v3dEnd, callback);
+template<typename Callback>
+RaycastResult raycastWithDirection(PagedVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback&& callback) {
+	const glm::vec3 v3dEnd = v3dStart + v3dDirectionAndLength;
+	return raycastWithEndpoints<Callback>(volData, v3dStart, v3dEnd, std::forward<Callback>(callback));
 }
 
 }
