@@ -7,6 +7,7 @@
 #include "io/IEventObserver.h"
 #include "core/GLM.h"
 #include "core/Var.h"
+#include "Ray.h"
 #include <math.h>
 #include <ctime>
 
@@ -70,6 +71,30 @@ public:
 
 	inline const glm::vec3& getPosition() const {
 		return _pos;
+	}
+
+	/**
+	 * @brief Converts mouse coordinates into a ray
+	 */
+	Ray screenRay(const glm::vec2& screenPos, const glm::mat4& projection) const {
+		// project relative mouse cursor position [0.0-1.0] to [-1.0,1.0] and flip y axis
+		const float x = +(screenPos.x - 0.5f) * 2.0f;
+		const float y = -(screenPos.y - 0.5f) * 2.0f;
+		const glm::mat4& viewProjInverse = glm::inverse(projection * _viewMatrix);
+		const glm::vec4 near(x, y, 0.0f, 1.0f);
+		const glm::vec4 far(x, y, 1.0f, 1.0f);
+		const glm::vec4& origin = viewProjInverse * near;
+		return Ray(glm::vec3(origin), glm::vec3(glm::normalize((viewProjInverse * far) - origin)));
+	}
+
+	/**
+	 * @brief Converts normalized screen coordinates [0.0-1.0] into world coordinates.
+	 * @param[in] screenPos The normalized screen coordinates. The z component defines the length of the ray
+	 * @param[in] projection The projection matrix
+	 */
+	glm::vec3 screenToWorld(const glm::vec3& screenPos, const glm::mat4& projection) const {
+		const Ray& ray = screenRay(glm::vec2(screenPos), projection);
+		return ray.origin + ray.direction * screenPos.z;
 	}
 
 	/**
