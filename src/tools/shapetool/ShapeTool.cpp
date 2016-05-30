@@ -174,8 +174,8 @@ core::AppState ShapeTool::onRunning() {
 	_colorShader->activate();
 	_colorShader->setUniformMatrix("u_view", view, false);
 	const float farPlane = _worldRenderer.getViewDistance();
-	const glm::mat4& projection = glm::perspective(45.0f, _aspect, 0.1f, farPlane);
-	_colorShader->setUniformMatrix("u_projection", projection, false);
+	_projection = glm::perspective(45.0f, _aspect, 0.1f, farPlane);
+	_colorShader->setUniformMatrix("u_projection", _projection, false);
 
 	//glm::vec3 entPos = _entity->position();
 	//entPos.y = _world->findFloor(entPos.x, entPos.z);
