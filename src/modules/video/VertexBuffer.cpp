@@ -94,6 +94,7 @@ void VertexBuffer::shutdown() {
 		glDeleteBuffers(_handleIdx, _handles);
 		_handleIdx = 0;
 	}
+	_attributes.clear();
 }
 
 }
