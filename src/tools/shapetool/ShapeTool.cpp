@@ -127,13 +127,13 @@ void ShapeTool::beforeUI() {
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
 	_camera.updateViewMatrix();
 	const float farPlane = _worldRenderer.getViewDistance();
-	_camera.updateFrustumPlanes(_projection);
+	_camera.updateFrustumPlanes();
 
 	_worldRenderer.extractNewMeshes(_camera.getPosition());
 	_worldRenderer.onRunning(_deltaFrame);
 	_vertices = 0;
-	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, _projection, _width, _height, &_vertices);
-	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, _projection, _width, _height);
+	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, _width, _height, &_vertices);
+	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, _width, _height);
 }
 
 void ShapeTool::afterUI() {
@@ -173,8 +173,8 @@ core::AppState ShapeTool::onRunning() {
 	_colorShader->activate();
 	_colorShader->setUniformMatrix("u_view", view, false);
 	const float farPlane = _worldRenderer.getViewDistance();
-	_projection = glm::perspective(45.0f, _aspect, 0.1f, farPlane);
-	_colorShader->setUniformMatrix("u_projection", _projection, false);
+	_camera.perspective(45.0f, _aspect, 0.1f, farPlane);
+	_colorShader->setUniformMatrix("u_projection", _camera.getProjectionMatrix(), false);
 
 	//glm::vec3 entPos = _entity->position();
 	//entPos.y = _world->findFloor(entPos.x, entPos.z);
@@ -236,7 +236,7 @@ void ShapeTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 
 	Log::debug("Click to %u:%u", x, y);
 	const glm::vec2 mousePos(x / float(width()), y / float(height()));
-	const video::Ray& ray = _camera.screenRay(mousePos, _projection);
+	const video::Ray& ray = _camera.screenRay(mousePos);
 	glm::ivec3 hit;
 	voxel::Voxel voxel;
 	if (_world->raycast(ray.origin, ray.direction, _worldRenderer.getViewDistance(), hit, voxel)) {

@@ -129,14 +129,14 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	_meshDataWater.push_back(createMesh(shader, mesh, false));
 }
 
-int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, const glm::mat4& projection, bool opaque, int* vertices) {
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, bool opaque, int* vertices) {
 	const glm::mat4& view = camera.getViewMatrix();
 
 	const MaterialColorArray& materialColors = getMaterialColors();
 
 	shader.activate();
 	shader.setUniformMatrix("u_view", view, false);
-	shader.setUniformMatrix("u_projection", projection, false);
+	shader.setUniformMatrix("u_projection", camera.getProjectionMatrix(), false);
 	shader.setUniformf("u_fogrange", _fogRange);
 	shader.setUniformf("u_viewdistance", _viewDistance);
 	shader.setUniformi("u_texture", 0);
@@ -208,7 +208,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& waterShader, const video::Camera& camera, const glm::mat4& projection, int width, int height, int* vertices) {
+int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& waterShader, const video::Camera& camera, int width, int height, int* vertices) {
 	handleMeshQueue(opaqueShader);
 
 	if (_meshDataOpaque.empty()) {
@@ -234,8 +234,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& water
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
-	drawCallsWorld = renderWorldMeshes(opaqueShader, camera, projection, true, vertices);
-	drawCallsWorld += renderWorldMeshes(waterShader, camera, projection, false, vertices);
+	drawCallsWorld = renderWorldMeshes(opaqueShader, camera, true, vertices);
+	drawCallsWorld += renderWorldMeshes(waterShader, camera, false, vertices);
 
 #if GBUFFER
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -347,7 +347,7 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	extractMeshAroundCamera(initialExtractionRadius);
 }
 
-int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, const glm::mat4& projection, int width, int height) {
+int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera, int width, int height) {
 	if (_entities.empty()) {
 		return 0;
 	}
@@ -359,7 +359,7 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 
 	shader->activate();
 	shader->setUniformMatrix("u_view", view, false);
-	shader->setUniformMatrix("u_projection", projection, false);
+	shader->setUniformMatrix("u_projection", camera.getProjectionMatrix(), false);
 	shader->setUniformVec3("u_lightpos", _lightPos);
 	shader->setUniformf("u_fogrange", _fogRange);
 	shader->setUniformf("u_viewdistance", _viewDistance);

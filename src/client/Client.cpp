@@ -144,11 +144,11 @@ void Client::beforeUI() {
 		_camera.updatePosition(_deltaFrame, left, right, forward, backward);
 		_camera.updateViewMatrix();
 		const float farPlane = _worldRenderer.getViewDistance();
-		const glm::mat4& projection = glm::perspective(45.0f, _aspect, 0.1f, farPlane);
-		_camera.updateFrustumPlanes(projection);
+		_camera.perspective(45.0f, _aspect, 0.1f, farPlane);
+		_camera.updateFrustumPlanes();
 
-		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, projection, _width, _height);
-		_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, projection, _width, _height);
+		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, _width, _height);
+		_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera, _width, _height);
 		_worldRenderer.extractNewMeshes(_camera.getPosition());
 	} else {
 		_drawCallsWorld = 0;

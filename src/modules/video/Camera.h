@@ -34,6 +34,7 @@ class Camera {
 private:
 	glm::vec3 _pos;
 	glm::mat4 _viewMatrix;
+	glm::mat4 _projectionMatrix;
 	int _width;
 	int _height;
 	float _pitch;
@@ -58,10 +59,14 @@ public:
 	FrustumResult testFrustum(const glm::vec3& position) const;
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 
-	void updateFrustumPlanes(const glm::mat4 &projectionMatrix);
+	void updateFrustumPlanes();
 
 	inline void updateViewMatrix() {
 		_viewMatrix = glm::lookAt(_pos, _pos + glm::normalize(_direction), glm::vec3(0.0, 1.0, 0.0));
+	}
+
+	void perspective(float fieldOfViewY, float aspectRatio, float zNear, float zFar) {
+		_projectionMatrix = glm::perspective(fieldOfViewY, aspectRatio, zNear, zFar);
 	}
 
 	inline void update() {
@@ -76,11 +81,11 @@ public:
 	/**
 	 * @brief Converts mouse coordinates into a ray
 	 */
-	Ray screenRay(const glm::vec2& screenPos, const glm::mat4& projection) const {
+	Ray screenRay(const glm::vec2& screenPos) const {
 		// project relative mouse cursor position [0.0-1.0] to [-1.0,1.0] and flip y axis
 		const float x = +(screenPos.x - 0.5f) * 2.0f;
 		const float y = -(screenPos.y - 0.5f) * 2.0f;
-		const glm::mat4& viewProjInverse = glm::inverse(projection * _viewMatrix);
+		const glm::mat4& viewProjInverse = glm::inverse(_projectionMatrix * _viewMatrix);
 		const glm::vec4 near(x, y, 0.0f, 1.0f);
 		const glm::vec4 far(x, y, 1.0f, 1.0f);
 		const glm::vec4& origin = viewProjInverse * near;
@@ -92,8 +97,8 @@ public:
 	 * @param[in] screenPos The normalized screen coordinates. The z component defines the length of the ray
 	 * @param[in] projection The projection matrix
 	 */
-	glm::vec3 screenToWorld(const glm::vec3& screenPos, const glm::mat4& projection) const {
-		const Ray& ray = screenRay(glm::vec2(screenPos), projection);
+	glm::vec3 screenToWorld(const glm::vec3& screenPos) const {
+		const Ray& ray = screenRay(glm::vec2(screenPos));
 		return ray.origin + ray.direction * screenPos.z;
 	}
 
@@ -122,6 +127,10 @@ public:
 
 	inline const glm::mat4& getViewMatrix() const {
 		return _viewMatrix;
+	}
+
+	inline const glm::mat4& getProjectionMatrix() const {
+		return _projectionMatrix;
 	}
 
 	inline const glm::vec4& getFrustumPlane(FrustumPlanes plane) const {

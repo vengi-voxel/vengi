@@ -64,8 +64,9 @@ FrustumResult Camera::testFrustum(const glm::vec3& mins, const glm::vec3& maxs) 
 	return result;
 }
 
-void Camera::updateFrustumPlanes(const glm::mat4& p) {
+void Camera::updateFrustumPlanes() {
 	const glm::mat4 &v = _viewMatrix;
+	const glm::mat4 &p = _projectionMatrix;
 
 	glm::mat4 clipMatrix;
 
