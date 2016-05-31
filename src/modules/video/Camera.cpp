@@ -171,7 +171,7 @@ Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	const glm::vec4 near(x, y, 0.0f, 1.0f);
 	const glm::vec4 far(x, y, 1.0f, 1.0f);
 	const glm::vec4& origin = viewProjInverse * near;
-	return Ray(glm::vec3(origin), glm::vec3(glm::normalize((viewProjInverse * far) - origin)));
+	return Ray(glm::vec3(origin), glm::normalize(glm::vec3(viewProjInverse * far - origin)));
 }
 
 glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
