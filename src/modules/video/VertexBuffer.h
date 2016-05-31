@@ -21,9 +21,10 @@ private:
 		uint32_t bufferIndex;
 		int size;
 		GLenum type;
-		bool normalized;
 		int stride;
 		intptr_t offset;
+		bool normalized = false;
+		uint8_t divisor = 0; // for instanced rendering
 	};
 	std::vector<Attribute> _attributes;
 	GLuint _vao;
@@ -34,7 +35,7 @@ public:
 
 	void shutdown();
 
-	bool addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type = GL_FLOAT, bool normalized = false, int stride = 0, intptr_t offset = 0);
+	bool addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type = GL_FLOAT, bool normalized = false, int stride = 0, intptr_t offset = 0, uint8_t divisor = 0);
 
 	bool update(int idx, const void* data, GLsizeiptr size);
 	int32_t create(const void* data, GLsizeiptr size, GLenum target = GL_ARRAY_BUFFER);
