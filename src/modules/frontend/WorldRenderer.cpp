@@ -51,6 +51,7 @@ void WorldRenderer::shutdown() {
 	_meshDataOpaque.clear();
 	_meshDataWater.clear();
 	_noiseFuture.clear();
+	_plantGenerator.shutdown();
 }
 
 ClientEntityPtr WorldRenderer::getEntity(ClientEntityId id) {
@@ -447,6 +448,7 @@ void WorldRenderer::onInit(int width, int height) {
 		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
 	}));
 	_colorTexture = video::createTexture("**colortexture**");
+	_plantGenerator.generateAll();
 #if GBUFFER
 	core_assert(_gbuffer.init(width, height));
 #endif

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxel/World.h"
+#include "voxel/generator/PlantGenerator.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/Camera.h"
@@ -57,6 +58,8 @@ private:
 	voxel::WorldPtr _world;
 	video::GBuffer _gbuffer;
 	core::VarPtr _debugGeometry;
+
+	voxel::PlantGenerator _plantGenerator;
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	video::GLMeshData createMesh(video::Shader& shader, voxel::ChunkMeshData& mesh, bool opaque);
