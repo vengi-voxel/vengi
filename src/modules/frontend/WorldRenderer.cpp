@@ -239,8 +239,10 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& water
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
-	drawCallsWorld = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
-	drawCallsWorld += renderWorldMeshes(waterShader, camera, _meshDataWater, vertices);
+	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
+	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
+	// TODO: set positions
+	drawCallsWorld += renderWorldMeshes(opaqueShader, camera, _meshDataPlant,  vertices);
 
 #if GBUFFER
 	const int width = camera.getWidth();
@@ -437,7 +439,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 	_world->stats(meshes, extracted, pending);
 }
 
-void WorldRenderer::onInit(int width, int height) {
+void WorldRenderer::onInit(video::Shader& shader, int width, int height) {
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugAmbientOcclusion, "false", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
@@ -454,6 +456,17 @@ void WorldRenderer::onInit(int width, int height) {
 	}));
 	_colorTexture = video::createTexture("**colortexture**");
 	_plantGenerator.generateAll();
+
+	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
+		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
+		video::GLMeshData meshDataPlant = createMesh(shader, *mesh);
+		if (meshDataPlant.noOfIndices > 0) {
+			meshDataPlant.scale = glm::vec3(0.1f, 0.1f, 0.1f);
+			meshDataPlant.amount = 100;
+			_meshDataPlant.push_back(meshDataPlant);
+		}
+	}
+
 #if GBUFFER
 	core_assert(_gbuffer.init(width, height));
 #endif

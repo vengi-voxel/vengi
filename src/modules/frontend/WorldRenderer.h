@@ -41,6 +41,7 @@ private:
 	typedef std::list<video::GLMeshData> GLMeshDatas;
 	GLMeshDatas _meshDataOpaque;
 	GLMeshDatas _meshDataWater;
+	GLMeshDatas _meshDataPlant;
 
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
@@ -81,7 +82,7 @@ public:
 
 	void reset();
 
-	void onInit(int width, int height);
+	void onInit(video::Shader& shader, int width, int height);
 	void onRunning(long now);
 	void shutdown();
 

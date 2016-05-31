@@ -118,7 +118,7 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
-	_worldRenderer.onInit(_width, _height);
+	_worldRenderer.onInit(_worldShader, _width, _height);
 	_clearColor = core::Color::LightBlue;
 
 	_root.SetSkinBg(TBIDC("background"));
