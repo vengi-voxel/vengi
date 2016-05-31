@@ -320,6 +320,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::ChunkM
 	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
 	video::GLMeshData meshData;
 	meshData.translation = m->getOffset();
+	meshData.scale = glm::vec3(1.0f);
 
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	meshData.indexType = GL_UNSIGNED_INT;
