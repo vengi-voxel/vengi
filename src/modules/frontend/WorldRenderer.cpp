@@ -461,7 +461,7 @@ void WorldRenderer::onInit(video::Shader& shader, int width, int height) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
 		video::GLMeshData meshDataPlant = createMesh(shader, *mesh);
 		if (meshDataPlant.noOfIndices > 0) {
-			meshDataPlant.scale = glm::vec3(0.1f, 0.1f, 0.1f);
+			meshDataPlant.scale = glm::vec3(10.0f, 10.0f, 10.0f);
 			meshDataPlant.amount = 100;
 			_meshDataPlant.push_back(meshDataPlant);
 		}

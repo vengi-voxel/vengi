@@ -31,19 +31,20 @@ bool PlantGenerator::generatePlant(int size, PlantType type, Mesh *result) {
 	switch (type) {
 	case Flower: {
 		const Voxel stalk = createVoxel(Grass1);
-		for (int i = 0; i < size - 1; ++i) {
+		for (int i = 0; i < size - 2; ++i) {
 			volume.setVoxel(pos, stalk);
 			++pos.y;
 		}
-		++pos.y;
 		volume.setVoxel(pos, createVoxel(Leaves10));
 		--pos.x;
 		volume.setVoxel(pos, stalk);
 		--pos.z;
+		++pos.x;
 		volume.setVoxel(pos, stalk);
-		pos.x += 3;
+		pos.z += 2;
 		volume.setVoxel(pos, stalk);
-		pos.z += 3;
+		--pos.z;
+		++pos.x;
 		volume.setVoxel(pos, stalk);
 		}
 		break;
@@ -63,7 +64,7 @@ Mesh* PlantGenerator::getMesh(PlantType type) {
 void PlantGenerator::generateAll() {
 	for (int t = 0; t < MaxPlantTypes; ++t) {
 		_meshes[t] = new Mesh(1000, 1000);
-		generatePlant(16, (PlantType)t, _meshes[t]);
+		generatePlant(5, (PlantType)t, _meshes[t]);
 	}
 }
 
