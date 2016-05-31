@@ -73,7 +73,7 @@ const Voxel& PagedVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) 
 	const uint16_t yOffset = static_cast<uint16_t>(uYPos & m_iChunkMask);
 	const uint16_t zOffset = static_cast<uint16_t>(uZPos & m_iChunkMask);
 
-	auto pChunk = getChunk(chunkX, chunkY, chunkZ);
+	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
 
 	return pChunk->getVoxel(xOffset, yOffset, zOffset);
 }
@@ -82,7 +82,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(const glm::ivec3& pos) const {
 	const int32_t chunkX = pos.x >> m_uChunkSideLengthPower;
 	const int32_t chunkY = pos.y >> m_uChunkSideLengthPower;
 	const int32_t chunkZ = pos.z >> m_uChunkSideLengthPower;
-	auto pChunk = getChunk(chunkX, chunkY, chunkZ);
+	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
 	return pChunk;
 }
 
@@ -110,7 +110,7 @@ void PagedVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Vo
 	const uint16_t yOffset = static_cast<uint16_t>(uYPos - (chunkY << m_uChunkSideLengthPower));
 	const uint16_t zOffset = static_cast<uint16_t>(uZPos - (chunkZ << m_uChunkSideLengthPower));
 
-	auto pChunk = getChunk(chunkX, chunkY, chunkZ);
+	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
 
 	pChunk->setVoxel(xOffset, yOffset, zOffset, tValue);
 }
@@ -488,7 +488,7 @@ void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos)
 
 	uint32_t uVoxelIndexInChunk = morton256_x[m_uXPosInChunk] | morton256_y[m_uYPosInChunk] | morton256_z[m_uZPosInChunk];
 
-	auto pCurrentChunk = this->mVolume->getChunk(uXChunk, uYChunk, uZChunk);
+	Chunk* pCurrentChunk = this->mVolume->getChunk(uXChunk, uYChunk, uZChunk);
 
 	mCurrentVoxel = pCurrentChunk->m_tData + uVoxelIndexInChunk;
 }
