@@ -62,7 +62,7 @@ void World::Pager::pageOut(PagedVolume::PagerContext& pctx) {
 }
 
 World::World() :
-		_pager(*this), _threadPool(core::halfcpus(), "World"), _rwLock("World"), _random(_seed) {
+		_pager(*this), _threadPool(core::halfcpus(), "World"), _random(_seed) {
 	_chunkSize = core::Var::get(cfg::VoxelChunkSize, "128", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
 	_biomManager.addBiom(0, MAX_WATER_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Sand1));
@@ -134,7 +134,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		ChunkMeshData data(region.getWidthInVoxels() * region.getDepthInVoxels() * 6, std::numeric_limits<uint16_t>::max() * 4);
 		extractCubicMesh(_volumeData, region, &data.opaqueMesh, IsQuadNeeded(false));
 		extractCubicMesh(_volumeData, region, &data.waterMesh, IsQuadNeeded(true));
-		core::ScopedWriteLock lock(_rwLock);
+		LockGuard lock(_rwLock);
 		_meshQueue.push_back(std::move(data));
 	}));
 	return true;
@@ -253,10 +253,10 @@ bool World::isReset() const {
 }
 
 void World::stats(int& meshes, int& extracted, int& pending) const {
-	core::ScopedReadLock lock(_rwLock);
-	meshes = _meshQueue.size();
 	extracted = _meshesExtracted.size();
 	pending = _futures.size();
+	LockGuard lock(_rwLock);
+	meshes = _meshQueue.size();
 }
 
 bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) {

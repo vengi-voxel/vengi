@@ -117,7 +117,7 @@ public:
 	 * @brief We need to pop the mesh extractor queue to find out if there are new and ready to use meshes for us
 	 */
 	inline bool pop(ChunkMeshData& item) {
-		core::ScopedWriteLock lock(_rwLock);
+		LockGuard lock(_rwLock);
 		if (_meshQueue.empty())
 			return false;
 		item = _meshQueue.front();
@@ -205,7 +205,8 @@ private:
 	bool _persist = true;
 
 	core::ThreadPool _threadPool;
-	core::ReadWriteLock _rwLock;
+	mutable std::mutex _rwLock;
+	typedef std::lock_guard<std::mutex> LockGuard;
 	std::deque<ChunkMeshData> _meshQueue;
 	// fast lookup for positions that are already extracted and available in the _meshData vector
 	PositionSet _meshesExtracted;
