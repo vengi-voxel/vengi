@@ -135,7 +135,7 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 		float angle = random.random(0, glm::two_pi<float>());
 		float w = 1.5f;
 		for (int n = 0; n < 3; ++n) {
-			glm::ivec3 leafesPos(pos.x, top + height - n * 10, pos.z);
+			glm::ivec3 leafesPos(pos.x, top - n * 10, pos.z);
 			for (int b = 0; b < branches; ++b) {
 				glm::ivec3 start = leafesPos;
 				glm::ivec3 end = start;
