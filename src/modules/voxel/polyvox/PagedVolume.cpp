@@ -491,10 +491,13 @@ void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos)
 }
 
 bool PagedVolume::Sampler::setVoxel(const Voxel& tValue) {
+	if (mCurrentVoxel == nullptr) {
+		return false;
+	}
 	//Need to think what effect this has on any existing iterators.
 	//core_assert_msg(false, "This function cannot be used on PagedVolume samplers.");
 	*mCurrentVoxel = tValue;
-	return false;
+	return true;
 }
 
 void PagedVolume::Sampler::movePositiveX() {
