@@ -173,7 +173,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 			++i;
 			continue;
 		}
-		const glm::mat4& model = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
+		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation)), meshData.scale);
 		shader.setUniformMatrix("u_model", model, false);
 		glBindVertexArray(meshData.vertexArrayObject);
 
