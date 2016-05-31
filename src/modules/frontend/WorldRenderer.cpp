@@ -126,8 +126,14 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 		}
 	}
 	// Now add the mesh to the list of meshes to render.
-	_meshDataOpaque.emplace_back(createMesh(shader, mesh, true));
-	_meshDataWater.emplace_back(createMesh(shader, mesh, false));
+	const video::GLMeshData& meshDataOpaque = createMesh(shader, mesh, true);
+	if (meshDataOpaque.noOfIndices > 0) {
+		_meshDataOpaque.push_back(meshDataOpaque);
+	}
+	const video::GLMeshData& meshDataWater = createMesh(shader, mesh, false);
+	if (meshDataWater.noOfIndices > 0) {
+		_meshDataWater.push_back(meshDataWater);
+	}
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, bool opaque, int* vertices) {
@@ -302,9 +308,25 @@ void WorldRenderer::updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& mesh
 // TODO: generate bigger buffers and use glBufferSubData
 video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::ChunkMeshData& mesh, bool opaque) {
 	core_trace_gl_scoped(WorldRendererCreateMesh);
+
+	voxel::Mesh *m;
+	if (opaque) {
+		m = &mesh.opaqueMesh;
+	} else {
+		m = &mesh.waterMesh;
+	}
+
 	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
 	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
 	video::GLMeshData meshData;
+	meshData.translation = m->getOffset();
+
+	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+	meshData.indexType = GL_UNSIGNED_INT;
+
+	if (m->getNoOfIndices() == 0) {
+		return meshData;
+	}
 
 	// Create the VAOs for the meshes
 	glGenVertexArrays(1, &meshData.vertexArrayObject);
@@ -316,13 +338,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::ChunkM
 	core_assert(meshData.vertexArrayObject > 0);
 	glBindVertexArray(meshData.vertexArrayObject);
 
-	if (opaque) {
-		meshData.translation = mesh.opaqueMesh.getOffset();
-		updateMesh(mesh.opaqueMesh, meshData);
-	} else {
-		meshData.translation = mesh.waterMesh.getOffset();
-		updateMesh(mesh.waterMesh, meshData);
-	}
+	updateMesh(*m, meshData);
 
 	const int posLoc = shader.enableVertexAttribute("a_pos");
 	glVertexAttribIPointer(posLoc, 3, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
@@ -332,9 +348,6 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::ChunkM
 	const int locationInfo = shader.enableVertexAttribute("a_info");
 	glVertexAttribIPointer(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
 			GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
-
-	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-	meshData.indexType = GL_UNSIGNED_INT;
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
