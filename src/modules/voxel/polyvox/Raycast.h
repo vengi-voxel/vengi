@@ -105,12 +105,13 @@ RaycastResult raycastWithEndpoints(PagedVolume* volData, const glm::vec3& v3dSta
 	//The doRaycast function is assuming that it is iterating over the areas defined between
 	//voxels. We actually want to define the areas as being centered on voxels (as this is
 	//what the CubicSurfaceExtractor generates). We add 0.5 here to adjust for this.
-	const float x1 = v3dStart.x + 0.5f;
-	const float y1 = v3dStart.y + 0.5f;
-	const float z1 = v3dStart.z + 0.5f;
-	const float x2 = v3dEnd.x + 0.5f;
-	const float y2 = v3dEnd.y + 0.5f;
-	const float z2 = v3dEnd.z + 0.5f;
+	const float offset = 0.0f;
+	const float x1 = v3dStart.x + offset;
+	const float y1 = v3dStart.y + offset;
+	const float z1 = v3dStart.z + offset;
+	const float x2 = v3dEnd.x + offset;
+	const float y2 = v3dEnd.y + offset;
+	const float z2 = v3dEnd.z + offset;
 
 	int i = (int) floorf(x1);
 	int j = (int) floorf(y1);
