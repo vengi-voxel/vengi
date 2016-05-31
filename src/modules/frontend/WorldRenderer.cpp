@@ -180,7 +180,11 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		if (debugGeometry) {
 			shader.setUniformf("u_debug_color", 1.0);
 		}
-		glDrawElementsInstanced(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0, meshData.amount);
+		if (meshData.amount == 1) {
+			glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
+		} else {
+			glDrawElementsInstanced(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0, meshData.amount);
+		}
 		if (vertices != nullptr) {
 			*vertices += meshData.noOfVertices;
 		}
