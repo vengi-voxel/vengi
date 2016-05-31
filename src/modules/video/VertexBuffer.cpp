@@ -38,6 +38,7 @@ bool VertexBuffer::bind() {
 		glBindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
 		glEnableVertexAttribArray(i);
 		glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
+		glVertexAttribDivisor(i, 1);
 	}
 	return true;
 }
