@@ -278,12 +278,6 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 	PagedVolume::Chunk* chunk = new PagedVolume::Chunk(pos, m_uChunkSideLength, m_pPager);
 	chunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
 
-	PagedVolume::Chunk::ChunkLockGuard scopedLockChunk(chunk->_voxelLock);
-	{
-		VolumeLockGuard scopedLock(_lock);
-		insertNewChunk(chunk, chunkX, chunkY, chunkZ);
-		deleteOldestChunkIfNeeded();
-	}
 	// Pass the chunk to the Pager to give it a chance to initialise it with any data
 	// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
 	const glm::ivec3 mins = chunk->m_v3dChunkSpacePosition * static_cast<int32_t>(chunk->m_uSideLength);
@@ -292,6 +286,13 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 	PagerContext pctx;
 	pctx.region = Region(mins, maxs);
 	pctx.chunk = chunk;
+
+	PagedVolume::Chunk::ChunkLockGuard scopedLockChunk(chunk->_voxelLock);
+	{
+		VolumeLockGuard scopedLock(_lock);
+		insertNewChunk(chunk, chunkX, chunkY, chunkZ);
+		deleteOldestChunkIfNeeded();
+	}
 
 	// Page the data in
 	// We'll use this later to decide if data needs to be paged out again.
