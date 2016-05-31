@@ -105,6 +105,10 @@ public:
 		return _chunk;
 	}
 
+	inline PagedVolume* getVolume() const {
+		return _voxelStorage;
+	}
+
 	inline bool setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 		return setVoxel(pos.x, pos.y, pos.z, voxel);
 	}

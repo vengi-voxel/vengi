@@ -5,6 +5,7 @@
 #include "ShapeGenerator.h"
 #include "voxel/WorldContext.h"
 #include "voxel/Spiral.h"
+#include "voxel/polyvox/Raycast.h"
 
 namespace voxel {
 
@@ -76,98 +77,11 @@ void ShapeGenerator::createCone(TerrainContext& ctx, const glm::ivec3& pos, int 
 }
 
 // http://members.chello.at/~easyfilter/bresenham.html
-void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel, int extends) {
-	const glm::ivec3 delta = end - start;
-
-	const int xInc = (delta.x < 0) ? -1 : 1;
-	const int yInc = (delta.y < 0) ? -1 : 1;
-	const int zInc = (delta.z < 0) ? -1 : 1;
-
-	const int w = glm::abs(delta.x);
-	const int h = glm::abs(delta.y);
-	const int d = glm::abs(delta.z);
-
-	const int dx2 = w << 1;
-	const int dy2 = h << 1;
-	const int dz2 = d << 1;
-	const int sideLength = extends * 2 + 1;
-	const int amount = sideLength * (sideLength - 1) + sideLength;
-
-	glm::ivec3 point = start;
-	if (w >= h && w >= d) {
-		int err1 = dy2 - w;
-		int err2 = dz2 - w;
-		for (int i = 0; i < w; i++) {
-			voxel::Spiral o;
-			glm::ivec3 pos = point;
-			for (int i = 0; i < amount; ++i) {
-				ctx.setVoxel(pos, voxel);
-				o.next();
-				pos.y = point.y + o.x();
-				pos.z = point.z + o.z();
-			}
-			if (err1 > 0) {
-				point.y += yInc;
-				err1 -= dx2;
-			}
-			if (err2 > 0) {
-				point.z += zInc;
-				err2 -= dx2;
-			}
-			err1 += dy2;
-			err2 += dz2;
-			point.x += xInc;
-		}
-	} else if (h >= w && h >= d) {
-		int err1 = dx2 - h;
-		int err2 = dz2 - h;
-		for (int i = 0; i < h; i++) {
-			voxel::Spiral o;
-			glm::ivec3 pos = point;
-			for (int i = 0; i < amount; ++i) {
-				ctx.setVoxel(pos, voxel);
-				o.next();
-				pos.x = point.x + o.x();
-				pos.z = point.z + o.z();
-			}
-			if (err1 > 0) {
-				point.x += xInc;
-				err1 -= dy2;
-			}
-			if (err2 > 0) {
-				point.z += zInc;
-				err2 -= dy2;
-			}
-			err1 += dx2;
-			err2 += dz2;
-			point.y += yInc;
-		}
-	} else {
-		int err1 = dy2 - d;
-		int err2 = dx2 - d;
-		for (int i = 0; i < d; i++) {
-			voxel::Spiral o;
-			glm::ivec3 pos = point;
-			for (int i = 0; i < amount; ++i) {
-				ctx.setVoxel(pos, voxel);
-				o.next();
-				pos.x = point.x + o.x();
-				pos.y = point.y + o.z();
-			}
-			if (err1 > 0) {
-				point.y += yInc;
-				err1 -= dz2;
-			}
-			if (err2 > 0) {
-				point.x += xInc;
-				err2 -= dz2;
-			}
-			err1 += dy2;
-			err2 += dx2;
-			point.z += zInc;
-		}
-	}
-	ctx.setVoxel(point, voxel);
+void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel) {
+	voxel::raycastWithEndpoints(ctx.getVolume(), start, end, [&] (PagedVolume::Sampler& sampler) {
+		sampler.setVoxel(voxel);
+		return true;
+	});
 }
 
 void ShapeGenerator::createDome(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
