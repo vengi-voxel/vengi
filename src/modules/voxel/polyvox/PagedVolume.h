@@ -84,7 +84,8 @@ public:
 		// Note: Do we really need to store this position here as well as in the block maps?
 		glm::ivec3 m_v3dChunkSpacePosition;
 
-		core::ReadWriteLock _voxelLock;
+		mutable std::recursive_mutex _voxelLock;
+		typedef std::lock_guard<std::recursive_mutex> ChunkLockGuard;
 	};
 
 	struct PagerContext {
@@ -262,7 +263,8 @@ private:
 
 	Pager* m_pPager = nullptr;
 
-	mutable core::ReadWriteLock _lock;
+	mutable std::recursive_mutex _lock;
+	typedef std::lock_guard<std::recursive_mutex> VolumeLockGuard;
 };
 
 inline const Voxel& PagedVolume::Sampler::getVoxel() const {

@@ -16,7 +16,7 @@ namespace voxel {
  * more of them meaning voxel access could be slower.
  */
 PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint16_t uChunkSideLength) :
-		m_uChunkSideLength(uChunkSideLength), m_pPager(pPager), _lock("PagedVolume") {
+		m_uChunkSideLength(uChunkSideLength), m_pPager(pPager) {
 	// Validation of parameters
 	core_assert_msg(pPager, "You must provide a valid pager when constructing a PagedVolume");
 	core_assert_msg(uTargetMemoryUsageInBytes >= 1 * 1024 * 1024, "Target memory usage is too small to be practical");
@@ -175,7 +175,7 @@ void PagedVolume::prefetch(const Region& regPrefetch) {
  * Removes all voxels from memory by removing all chunks. The application has the chance to persist the data via @c Pager::pageOut
  */
 void PagedVolume::flushAll() {
-	core::ScopedWriteLock scopedLock(_lock);
+	VolumeLockGuard scopedLock(_lock);
 	// Clear this pointer as all chunks are about to be removed.
 	m_pLastAccessedChunk = nullptr;
 
@@ -196,7 +196,7 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY
 	uint32_t index = positionHash;
 	PagedVolume::Chunk* chunk = nullptr;
 	{
-		core::ScopedReadLock scopedLock(_lock);
+		VolumeLockGuard scopedLock(_lock);
 		do {
 			if (m_arrayChunks[index]) {
 				const glm::ivec3& entryPos = m_arrayChunks[index]->m_v3dChunkSpacePosition;
@@ -216,7 +216,7 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY
 		return nullptr;
 	}
 
-	core::ScopedReadLock chunkLock(chunk->_voxelLock);
+	PagedVolume::Chunk::ChunkLockGuard chunkLock(chunk->_voxelLock);
 	return chunk;
 }
 
@@ -279,9 +279,9 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 	PagedVolume::Chunk* chunk = new PagedVolume::Chunk(pos, m_uChunkSideLength, m_pPager);
 	chunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
 
-	core::ScopedWriteLock scopedLockChunk(chunk->_voxelLock);
+	PagedVolume::Chunk::ChunkLockGuard scopedLockChunk(chunk->_voxelLock);
 	{
-		core::ScopedWriteLock scopedLock(_lock);
+		VolumeLockGuard scopedLock(_lock);
 		insertNewChunk(chunk, chunkX, chunkY, chunkZ);
 		deleteOldestChunkIfNeeded();
 	}
@@ -304,9 +304,9 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 
 PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
 	{
-		core::ScopedReadLock scopedLock(_lock);
+		VolumeLockGuard scopedLock(_lock);
 		if (chunkX == m_v3dLastAccessedChunkX && chunkY == m_v3dLastAccessedChunkY && chunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk) {
-			core::ScopedReadLock chunkLock(m_pLastAccessedChunk->_voxelLock);
+			PagedVolume::Chunk::ChunkLockGuard chunkLock(m_pLastAccessedChunk->_voxelLock);
 			return m_pLastAccessedChunk;
 		}
 	}
@@ -317,7 +317,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
 		chunk = createNewChunk(chunkX, chunkY, chunkZ);
 	}
 
-	core::ScopedWriteLock scopedLock(_lock);
+	VolumeLockGuard scopedLock(_lock);
 	m_pLastAccessedChunk = chunk;
 	m_v3dLastAccessedChunkX = chunkX;
 	m_v3dLastAccessedChunkY = chunkY;
@@ -331,7 +331,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
  */
 uint32_t PagedVolume::calculateSizeInBytes() {
 	uint32_t uChunkCount = 0;
-	core::ScopedReadLock scopedLock(_lock);
+	VolumeLockGuard scopedLock(_lock);
 	for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
 		if (m_arrayChunks[uIndex]) {
 			uChunkCount++;
@@ -344,7 +344,7 @@ uint32_t PagedVolume::calculateSizeInBytes() {
 }
 
 PagedVolume::Chunk::Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager) :
-		m_pPager(pPager), m_v3dChunkSpacePosition(v3dPosition), _voxelLock("ChunkLock") {
+		m_pPager(pPager), m_v3dChunkSpacePosition(v3dPosition) {
 	core_assert_msg(m_pPager, "No valid pager supplied to chunk constructor.");
 	core_assert_msg(uSideLength <= 256, "Chunk side length cannot be greater than 256.");
 
@@ -396,7 +396,7 @@ const Voxel& PagedVolume::Chunk::getVoxel(uint32_t uXPos, uint32_t uYPos, uint32
 	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
-	core::ScopedReadLock readLock(_voxelLock);
+	ChunkLockGuard readLock(_voxelLock);
 	return m_tData[index];
 }
 
@@ -413,7 +413,7 @@ void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos
 	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
-	core::ScopedWriteLock writeLock(_voxelLock);
+	ChunkLockGuard writeLock(_voxelLock);
 	m_tData[index] = tValue;
 	this->m_bDataModified = true;
 }
@@ -426,7 +426,7 @@ void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uZPos, const Voxel* 
 	core_assert_msg(uZPos < m_uSideLength, "Supplied z position is outside of the chunk");
 	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
-	core::ScopedWriteLock writeLock(_voxelLock);
+	ChunkLockGuard writeLock(_voxelLock);
 	for (int y = 0; y < amount; ++y) {
 		const uint32_t index = morton256_x[uXPos] | morton256_y[y] | morton256_z[uZPos];
 		m_tData[index] = tValues[y];
