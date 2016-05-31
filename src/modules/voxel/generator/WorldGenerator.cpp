@@ -7,6 +7,7 @@
 #include "CloudGenerator.h"
 #include "LSystemGenerator.h"
 #include "core/Var.h"
+#include "core/GameConfig.h"
 #include "core/Trace.h"
 #include "noise/SimplexNoise.h"
 #include "voxel/polyvox/Voxel.h"
@@ -25,7 +26,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 	const int lowerZ = region.getLowerZ();
 	core_assert(region.getLowerY() >= 0);
 	// TODO: kill me
-	const core::VarPtr& plainTerrain = core::Var::get("voxel-plainterrain", "false");
+	const core::VarPtr& plainTerrain = core::Var::get(cfg::VoxelPlainTerrain, "false");
 	const bool plainTerrainBool = plainTerrain->boolVal();
 	Voxel voxels[MAX_TERRAIN_HEIGHT];
 
