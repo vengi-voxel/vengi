@@ -126,17 +126,17 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 		}
 	}
 	// Now add the mesh to the list of meshes to render.
-	const video::GLMeshData& meshDataOpaque = createMesh(shader, mesh, true);
+	const video::GLMeshData& meshDataOpaque = createMesh(shader, mesh.opaqueMesh);
 	if (meshDataOpaque.noOfIndices > 0) {
 		_meshDataOpaque.push_back(meshDataOpaque);
 	}
-	const video::GLMeshData& meshDataWater = createMesh(shader, mesh, false);
+	const video::GLMeshData& meshDataWater = createMesh(shader, mesh.waterMesh);
 	if (meshDataWater.noOfIndices > 0) {
 		_meshDataWater.push_back(meshDataWater);
 	}
 }
 
-int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, bool opaque, int* vertices) {
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices) {
 	const glm::mat4& view = camera.viewMatrix();
 
 	const MaterialColorArray& materialColors = getMaterialColors();
@@ -156,13 +156,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
 	const bool debugGeometry = _debugGeometry->boolVal();
 	int drawCallsWorld = 0;
-	GLMeshDatas* meshes;
-	if (opaque) {
-		meshes = &_meshDataOpaque;
-	} else {
-		meshes = &_meshDataWater;
-	}
-	for (auto i = meshes->begin(); i != meshes->end();) {
+	for (auto i = meshes.begin(); i != meshes.end();) {
 		const video::GLMeshData& meshData = *i;
 		const float distance = getDistance2(meshData.translation);
 		if (isDistanceCulled(distance, true)) {
@@ -170,7 +164,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 			glDeleteBuffers(1, &meshData.vertexBuffer);
 			glDeleteBuffers(1, &meshData.indexBuffer);
 			glDeleteVertexArrays(1, &meshData.vertexArrayObject);
-			i = meshes->erase(i);
+			i = meshes.erase(i);
 			continue;
 		}
 		const glm::vec3 mins(meshData.translation);
@@ -186,7 +180,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		if (debugGeometry) {
 			shader.setUniformf("u_debug_color", 1.0);
 		}
-		glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
+		glDrawElementsInstanced(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0, meshData.amount);
 		if (vertices != nullptr) {
 			*vertices += meshData.noOfVertices;
 		}
@@ -241,8 +235,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& water
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
-	drawCallsWorld = renderWorldMeshes(opaqueShader, camera, true, vertices);
-	drawCallsWorld += renderWorldMeshes(waterShader, camera, false, vertices);
+	drawCallsWorld = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
+	drawCallsWorld += renderWorldMeshes(waterShader, camera, _meshDataWater, vertices);
 
 #if GBUFFER
 	const int width = camera.getWidth();
@@ -306,26 +300,19 @@ void WorldRenderer::updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& mesh
 }
 
 // TODO: generate bigger buffers and use glBufferSubData
-video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::ChunkMeshData& mesh, bool opaque) {
+video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Mesh &mesh) {
 	core_trace_gl_scoped(WorldRendererCreateMesh);
-
-	voxel::Mesh *m;
-	if (opaque) {
-		m = &mesh.opaqueMesh;
-	} else {
-		m = &mesh.waterMesh;
-	}
 
 	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
 	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
 	video::GLMeshData meshData;
-	meshData.translation = m->getOffset();
+	meshData.translation = mesh.getOffset();
 	meshData.scale = glm::vec3(1.0f);
 
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	meshData.indexType = GL_UNSIGNED_INT;
 
-	if (m->getNoOfIndices() == 0) {
+	if (mesh.getNoOfIndices() == 0) {
 		return meshData;
 	}
 
@@ -339,7 +326,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::ChunkM
 	core_assert(meshData.vertexArrayObject > 0);
 	glBindVertexArray(meshData.vertexArrayObject);
 
-	updateMesh(*m, meshData);
+	updateMesh(mesh, meshData);
 
 	const int posLoc = shader.enableVertexAttribute("a_pos");
 	glVertexAttribIPointer(posLoc, 3, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),

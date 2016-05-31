@@ -22,6 +22,7 @@ struct GLMeshData {
 	GLuint materialIndex = 0u;
 	glm::ivec3 translation = { 0, 0, 0 };
 	glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
+	int amount = 1;
 };
 
 }
