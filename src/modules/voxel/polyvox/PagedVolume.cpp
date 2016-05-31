@@ -216,7 +216,6 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY
 		return nullptr;
 	}
 
-	PagedVolume::Chunk::ChunkLockGuard chunkLock(chunk->_voxelLock);
 	return chunk;
 }
 
@@ -306,7 +305,6 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
 	{
 		VolumeLockGuard scopedLock(_lock);
 		if (chunkX == m_v3dLastAccessedChunkX && chunkY == m_v3dLastAccessedChunkY && chunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk) {
-			PagedVolume::Chunk::ChunkLockGuard chunkLock(m_pLastAccessedChunk->_voxelLock);
 			return m_pLastAccessedChunk;
 		}
 	}
@@ -413,7 +411,6 @@ void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos
 	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
-	ChunkLockGuard writeLock(_voxelLock);
 	m_tData[index] = tValue;
 	this->m_bDataModified = true;
 }
@@ -426,7 +423,6 @@ void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uZPos, const Voxel* 
 	core_assert_msg(uZPos < m_uSideLength, "Supplied z position is outside of the chunk");
 	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
-	ChunkLockGuard writeLock(_voxelLock);
 	for (int y = 0; y < amount; ++y) {
 		const uint32_t index = morton256_x[uXPos] | morton256_y[y] | morton256_z[uZPos];
 		m_tData[index] = tValues[y];
