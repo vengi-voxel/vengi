@@ -126,8 +126,8 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 		}
 	}
 	// Now add the mesh to the list of meshes to render.
-	_meshDataOpaque.push_back(createMesh(shader, mesh, true));
-	_meshDataWater.push_back(createMesh(shader, mesh, false));
+	_meshDataOpaque.emplace_back(createMesh(shader, mesh, true));
+	_meshDataWater.emplace_back(createMesh(shader, mesh, false));
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, bool opaque, int* vertices) {
