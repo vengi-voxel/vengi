@@ -1,5 +1,5 @@
-in vec3 v_color;
-out vec4 o_color;
+$in vec3 v_color;
+$out vec4 o_color;
 
 void main()
 {

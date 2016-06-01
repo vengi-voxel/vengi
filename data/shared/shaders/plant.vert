@@ -1,8 +1,8 @@
 // attributes from the VAOs
-in uvec3 a_pos;
-in uvec2 a_info;
+$in uvec3 a_pos;
+$in uvec2 a_info;
 // instanced rendering
-in vec3 a_offset;
+$in vec3 a_offset;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
@@ -15,15 +15,15 @@ uniform sampler2D u_texture;
 uniform vec4 u_materialcolor[32];
 uniform float u_debug_color;
 
-out vec3 v_pos;
-out vec4 v_color;
-out vec3 v_lightpos;
-out vec3 v_diffuse_color;
-out vec3 v_fogcolor;
-out float v_fogrange;
-out float v_viewdistance;
-out float v_ambientocclusion;
-out float v_debug_color;
+$out vec3 v_pos;
+$out vec4 v_color;
+$out vec3 v_lightpos;
+$out vec3 v_diffuse_color;
+$out vec3 v_fogcolor;
+$out float v_fogrange;
+$out float v_viewdistance;
+$out float v_ambientocclusion;
+$out float v_debug_color;
 
 void main(void) {
 	uint a_ao = a_info[0];

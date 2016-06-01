@@ -1,10 +1,10 @@
-in vec3 v_pos;
-in vec3 v_norm;
-in vec2 v_texcoords;
-in vec3 v_lightpos;
-in float v_fogrange;
-in float v_viewdistance;
-out vec4 o_color;
+$in vec3 v_pos;
+$in vec3 v_norm;
+$in vec2 v_texcoords;
+$in vec3 v_lightpos;
+$in float v_fogrange;
+$in float v_viewdistance;
+$out vec4 o_color;
 uniform sampler2D u_texture;
 
 void main(void) {

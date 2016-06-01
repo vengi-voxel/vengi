@@ -1,14 +1,14 @@
-in vec3 v_pos;
-in vec4 v_color;
-in vec3 v_lightpos;
-in vec3 v_diffuse_color;
-in float v_fogrange;
-in vec3 v_fogcolor;
-in float v_viewdistance;
-in float v_ambientocclusion;
-in float v_debug_color;
+$in vec3 v_pos;
+$in vec4 v_color;
+$in vec3 v_lightpos;
+$in vec3 v_diffuse_color;
+$in float v_fogrange;
+$in vec3 v_fogcolor;
+$in float v_viewdistance;
+$in float v_ambientocclusion;
+$in float v_debug_color;
 
-out vec4 o_color;
+$out vec4 o_color;
 
 void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);

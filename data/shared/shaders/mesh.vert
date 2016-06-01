@@ -1,7 +1,7 @@
 // attributes from the VAOs
-in vec3 a_pos;
-in vec3 a_norm;
-in vec2 a_texcoords;
+$in vec3 a_pos;
+$in vec3 a_norm;
+$in vec2 a_texcoords;
 
 uniform mat4 u_projection;
 uniform mat4 u_model;
@@ -10,12 +10,12 @@ uniform float u_fogrange;
 uniform float u_viewdistance;
 uniform vec3 u_lightpos;
 
-out vec3 v_pos;
-out vec3 v_norm;
-out vec2 v_texcoords;
-out vec3 v_lightpos;
-out float v_fogrange;
-out float v_viewdistance;
+$out vec3 v_pos;
+$out vec3 v_norm;
+$out vec2 v_texcoords;
+$out vec3 v_lightpos;
+$out float v_fogrange;
+$out float v_viewdistance;
 
 void main(void) {
 	mat4 modelview = u_view * u_model;
