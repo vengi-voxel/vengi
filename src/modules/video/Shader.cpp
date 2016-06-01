@@ -179,6 +179,25 @@ int Shader::getUniformLocation(const std::string& name) const {
 	return i->second;
 }
 
+GLuint Shader::getUniformBlockLocation(const std::string& name) const {
+	return glGetUniformBlockIndex(_program, name.c_str());
+}
+
+GLuint Shader::getUniformBlockSize(const std::string& name) const {
+	GLint blockSize;
+	GLuint loc = getUniformBlockLocation(name);
+	glGetActiveUniformBlockiv(_program, loc, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+	return blockSize;
+}
+
+std::vector<GLint> Shader::getUniformBlockOffsets(const char **names, int amount) const {
+	std::vector<GLint> offsets(amount);
+	GLuint indices[amount];
+	glGetUniformIndices(_program, amount, names, indices);
+	glGetActiveUniformsiv(_program, amount, indices, GL_UNIFORM_OFFSET, &offsets[0]);
+	return offsets;
+}
+
 int Shader::fetchUniforms() {
 	char name[MAX_SHADER_VAR_NAME];
 	int numUniforms = 0;

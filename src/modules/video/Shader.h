@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstring>
 #include <memory>
+#include <vector>
 #include <unordered_map>
 #include "GLFunc.h"
 #include "core/GLM.h"
@@ -104,6 +105,13 @@ public:
 	int getAttributeLocation(const std::string& name) const;
 
 	int getUniformLocation(const std::string& name) const;
+	// the location of the block
+	GLuint getUniformBlockLocation(const std::string& name) const;
+	// how much memory is needed to store the uniform block
+	GLuint getUniformBlockSize(const std::string& name) const;
+	// returns a vector with offsets for the specified member names in the same order as the names
+	// these offsets can be used to e.g. memcpy the data in.
+	std::vector<GLint> getUniformBlockOffsets(const char **names, int amount) const;
 
 	void setUniformui(const std::string& name, unsigned int value) const;
 	void setUniformui(int location, unsigned int value) const;
