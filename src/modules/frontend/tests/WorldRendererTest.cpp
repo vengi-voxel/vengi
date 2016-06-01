@@ -24,8 +24,8 @@ TEST_F(WorldRendererTest, testCreate) {
 		world->stats(meshes, extracted, pending);
 		ASSERT_TRUE(amount < 100) << "Took too long to generate the chunks. Pending: " << pending << ", extracted: " << extracted << ", meshes: " << meshes;
 	}
-	ASSERT_GT(mesh.opaqueMesh.getNoOfVertices(), 0);
-	ASSERT_GT(mesh.opaqueMesh.getNoOfIndices(), 0);
+	ASSERT_GT(mesh.opaqueMesh.getNoOfVertices(), 0u);
+	ASSERT_GT(mesh.opaqueMesh.getNoOfIndices(), 0u);
 }
 
 }
