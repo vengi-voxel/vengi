@@ -33,6 +33,11 @@ void WorldRenderer::reset() {
 		glDeleteBuffers(1, &meshData.indexBuffer);
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 	}
+	for (const video::GLMeshData& meshData : _meshDataWater) {
+		glDeleteBuffers(1, &meshData.vertexBuffer);
+		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+	}
 	_meshDataOpaque.clear();
 	_meshDataWater.clear();
 	_entities.clear();
@@ -48,8 +53,13 @@ void WorldRenderer::shutdown() {
 	reset();
 	_colorTexture = video::TexturePtr();
 	_entities.clear();
-	_meshDataOpaque.clear();
-	_meshDataWater.clear();
+
+	for (const video::GLMeshData& meshData : _meshDataPlant) {
+		glDeleteBuffers(1, &meshData.vertexBuffer);
+		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+	}
+	_meshDataPlant.clear();
 	_noiseFuture.clear();
 	_plantGenerator.shutdown();
 }
