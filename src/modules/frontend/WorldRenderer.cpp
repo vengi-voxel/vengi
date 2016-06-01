@@ -404,8 +404,8 @@ bool WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 		return _world->scheduleMeshExtraction(position);
 	}
 	const glm::ivec3& camXYZ = _world->getMeshPos(position);
-	const glm::vec3 diff = _lastGridPosition - camXYZ;
-	if (glm::length(diff.x) >= 1 || glm::length(diff.y) >= 1 || glm::length(diff.z) >= 1) {
+	const glm::ivec3& diff = _lastGridPosition - camXYZ;
+	if (glm::abs(diff.x) >= 1 || glm::abs(diff.y) >= 1 || glm::abs(diff.z) >= 1) {
 		const int chunks = MinCullingDistance / _world->getMeshSize() + 1;
 		extractMeshAroundCamera(camXYZ, chunks);
 		return true;
