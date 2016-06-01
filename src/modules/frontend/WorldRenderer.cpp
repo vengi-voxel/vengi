@@ -117,7 +117,7 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 	return true;
 }
 
-void WorldRenderer::distributePlants(const glm::ivec3& pos, std::vector<glm::ivec3>& translations) {
+void WorldRenderer::distributePlants(const glm::ivec3& pos, core::Random& random, std::vector<glm::u8vec3>& translations) {
 	core_trace_scoped(WorldRendererDistributePlants);
 	const int meshSize = _world->getMeshSize();
 	const int n = 10;
@@ -125,8 +125,11 @@ void WorldRenderer::distributePlants(const glm::ivec3& pos, std::vector<glm::ive
 	const voxel::BiomeManager& biomeMgr = _world->getBiomeManager();
 	for (int x = 0; x < steps; ++x) {
 		for (int z = 0; z < steps; ++z) {
-			const int nx = pos.x + x * n;
-			const int nz = pos.z + z * n;
+			const int lx = x * (n - 1) + random.random(1, n);
+			const int nx = pos.x + lx;
+			const int lz = z * (n - 1) + random.random(1, n);
+			const int nz = pos.z + lz;
+			// TODO: y can leave the mesh boundaries
 			const int y = _world->findFloor(nx, nz);
 			if (y == -1) {
 				continue;
@@ -136,7 +139,9 @@ void WorldRenderer::distributePlants(const glm::ivec3& pos, std::vector<glm::ive
 				continue;
 			}
 
+			const glm::u8vec3 localTranslation(lx, y, lz);
 			translations.push_back(translation);
+			Log::info("plant at %i:%i:%i", lx, y, lz);
 		}
 	}
 }
@@ -276,9 +281,10 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& water
 	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
 	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
 
-	std::vector<glm::ivec3> plantTranslations;
+	core::Random rnd(_world->seed());
+	std::vector<glm::u8vec3> plantTranslations;
 	for (video::GLMeshData& m : _meshDataOpaque) {
-		distributePlants(m.translation, plantTranslations);
+		distributePlants(m.translation, rnd, plantTranslations);
 	}
 	drawCallsWorld += renderWorldMeshes(opaqueShader, camera, _meshDataPlant, vertices);
 

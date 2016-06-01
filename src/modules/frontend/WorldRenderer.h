@@ -66,7 +66,7 @@ private:
 	video::GLMeshData createMesh(video::Shader& shader, voxel::Mesh& mesh);
 	void updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& meshData);
 	void handleMeshQueue(video::Shader& shader);
-	void distributePlants(const glm::ivec3& pos, std::vector<glm::ivec3>& translations);
+	void distributePlants(const glm::ivec3& pos, core::Random& random, std::vector<glm::u8vec3>& translations);
 
 	// we might want to get an answer for this question in two contexts, once for 'should-i-render-this' and once for
 	// 'should-i-create/destroy-the-mesh'.
