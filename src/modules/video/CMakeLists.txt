@@ -1,6 +1,7 @@
 set(SRCS
 	WindowedApp.cpp WindowedApp.h
 	GLFunc.cpp GLFunc.h
+	UniformBuffer.cpp UniformBuffer.h
 	VertexBuffer.cpp VertexBuffer.h
 	FrameBuffer.cpp FrameBuffer.h
 	GBuffer.cpp GBuffer.h
