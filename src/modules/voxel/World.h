@@ -83,6 +83,9 @@ public:
 	int findFloor(int x, int z) const;
 	int getMaterial(int x, int y, int z) const;
 
+	BiomeManager& getBiomeManager();
+	const BiomeManager& getBiomeManager() const;
+
 	void placeTree(const TreeContext& ctx);
 	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 
@@ -238,6 +241,14 @@ inline int World::getMeshSize() const {
 
 inline int World::getMaterial(int x, int y, int z) const {
 	return _volumeData->getVoxel(x, y, z).getMaterial();
+}
+
+inline BiomeManager& World::getBiomeManager() {
+	return _biomeManager;
+}
+
+inline const BiomeManager& World::getBiomeManager() const {
+	return _biomeManager;
 }
 
 typedef std::shared_ptr<World> WorldPtr;
