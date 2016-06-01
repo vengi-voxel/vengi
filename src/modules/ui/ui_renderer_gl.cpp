@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "ui_renderer_gl.h"
 #include "core/GLM.h"
+#include "core/Common.h"
 #include <tb_bitmap_fragment.h>
 #include <tb_system.h>
 
@@ -129,6 +130,7 @@ void UIRendererGL::RenderBatch(Batch *batch) {
 	if (g_current_batch != batch) {
 		g_current_batch = batch;
 	}
+	core_assert(_buffer > 0);
 	glBindBuffer(GL_ARRAY_BUFFER, _buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * batch->vertex_count, batch->vertex, GL_STATIC_DRAW);
 	glVertexAttribPointer(_shader.enableVertexAttribute("a_color"), 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].col)));
