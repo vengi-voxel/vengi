@@ -45,6 +45,51 @@ void ShapeGenerator::createCube(TerrainContext& ctx, const glm::ivec3& center, i
 	}
 }
 
+void ShapeGenerator::createCubeNoCenter(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+	const int w = glm::abs(width);
+	const int h = glm::abs(height);
+	const int d = glm::abs(depth);
+
+	const int sw = width / w;
+	const int sh = height / h;
+	const int sd = depth / d;
+
+	glm::ivec3 p = pos;
+	for (int x = 0; x < w; ++x) {
+		p.y = pos.y;
+		for (int y = 0; y < h; ++y) {
+			p.z = pos.z;
+			for (int z = 0; z < d; ++z) {
+				ctx.setVoxel(p, voxel);
+				p.z += sd;
+			}
+			p.y += sh;
+		}
+		p.x += sw;
+	}
+}
+
+glm::ivec3 ShapeGenerator::createL(TerrainContext& ctx, const glm::ivec3& pos, int width, int depth, int height, int thickness, const Voxel& voxel) {
+	glm::ivec3 p = pos;
+	if (width != 0) {
+		createCubeNoCenter(ctx, p, width, thickness, thickness, voxel);
+		p.x += width;
+		createCubeNoCenter(ctx, p, thickness, height, thickness, voxel);
+		p.x += thickness / 2;
+		p.z += thickness / 2;
+	} else if (depth != 0) {
+		createCubeNoCenter(ctx, p, thickness, thickness, depth, voxel);
+		p.z += depth;
+		createCubeNoCenter(ctx, p, thickness, height, thickness, voxel);
+		p.x += thickness / 2;
+		p.z += thickness / 2;
+	} else {
+		core_assert(false);
+	}
+	p.y += height;
+	return p;
+}
+
 void ShapeGenerator::createPlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
 	createCube(ctx, center, width, 1, depth, voxel);
 }
