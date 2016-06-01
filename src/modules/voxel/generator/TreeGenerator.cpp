@@ -221,9 +221,16 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 		const int branches = 12;
 		const float stepWidth = glm::radians(360.0f / branches);
 		float angle = random.random(0, glm::two_pi<float>());
-		float w = 1.5f;
-		for (int n = 0; n < 3; ++n) {
-			glm::ivec3 leafesPos(pos.x, top - n * 10, pos.z);
+		float w = 1.3f;
+		const int amount = 3;
+		const int stepHeight = 10;
+		glm::ivec3 leafesPos(pos.x, top, pos.z);
+
+		const int halfHeight = ((amount - 1) * stepHeight) / 2;
+		glm::ivec3 center(pos.x, top - halfHeight, pos.z);
+		ShapeGenerator::createCube(ctx, center, trunkWidth * 3, halfHeight * 2, trunkWidth * 3, leavesVoxel);
+
+		for (int n = 0; n < amount; ++n) {
 			for (int b = 0; b < branches; ++b) {
 				glm::ivec3 start = leafesPos;
 				glm::ivec3 end = start;
@@ -242,6 +249,7 @@ void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType
 				angle += stepWidth;
 				w += 1.0 / (double)(b + 1);
 			}
+			leafesPos.y -= stepHeight;
 		}
 	} else if (type == TreeType::PINE) {
 		const int singleLeaveHeight = 2;
