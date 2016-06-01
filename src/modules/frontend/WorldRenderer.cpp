@@ -363,8 +363,7 @@ void WorldRenderer::updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& mesh
 	meshData.noOfIndices = numIndices;
 }
 
-// TODO: generate bigger buffers and use glBufferSubData
-video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Mesh &mesh) {
+video::GLMeshData WorldRenderer::createMeshInternal(video::Shader& shader, voxel::Mesh &mesh, int buffers) {
 	core_trace_gl_scoped(WorldRendererCreateMesh);
 
 	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
@@ -385,7 +384,10 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Mesh &
 
 	// The GL_ARRAY_BUFFER will contain the list of vertex positions
 	// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
-	glGenBuffers(2, &meshData.indexBuffer);
+	// and GL_ARRAY_BUFFER will contain the offsets for instanced rendering
+	core_assert(buffers == 2 || buffers == 3);
+	glGenBuffers(buffers, &meshData.indexBuffer);
+	core_assert(buffers == 2 || meshData.offsetBuffer > 0);
 
 	core_assert(meshData.vertexArrayObject > 0);
 	glBindVertexArray(meshData.vertexArrayObject);
@@ -402,6 +404,16 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Mesh &
 			GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
 	GL_checkError();
 
+	return meshData;
+}
+
+// TODO: generate bigger buffers and use glBufferSubData
+video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Mesh &mesh) {
+	const video::GLMeshData& meshData = createMeshInternal(shader, mesh, 2);
+	if (mesh.getNoOfIndices() == 0) {
+		return meshData;
+	}
+
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -410,43 +422,12 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Mesh &
 }
 
 video::GLMeshData WorldRenderer::createInstancedMesh(video::Shader& shader, voxel::Mesh &mesh, int amount) {
-	core_trace_gl_scoped(WorldRendererCreateMesh);
-
-	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
-	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
-	video::GLMeshData meshData;
-	meshData.translation = mesh.getOffset();
-	meshData.scale = glm::vec3(1.0f);
-	meshData.amount = amount;
-
-	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-	meshData.indexType = GL_UNSIGNED_INT;
-
+	video::GLMeshData meshData = createMeshInternal(shader, mesh, 3);
 	if (mesh.getNoOfIndices() == 0) {
 		return meshData;
 	}
 
-	// Create the VAOs for the meshes
-	glGenVertexArrays(1, &meshData.vertexArrayObject);
-
-	// The GL_ARRAY_BUFFER will contain the list of vertex positions
-	// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
-	// and GL_ARRAY_BUFFER will contain the offsets for instanced rendering
-	glGenBuffers(3, &meshData.indexBuffer);
-
-	core_assert(meshData.vertexArrayObject > 0);
-	glBindVertexArray(meshData.vertexArrayObject);
-
-	updateMesh(mesh, meshData);
-
-	const int posLoc = shader.enableVertexAttribute("a_pos");
-	glVertexAttribIPointer(posLoc, 3, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
-			GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
-
-	static_assert(sizeof(voxel::Voxel) == sizeof(uint8_t), "Voxel type doesn't match");
-	const int locationInfo = shader.enableVertexAttribute("a_info");
-	glVertexAttribIPointer(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
-			GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
+	meshData.amount = amount;
 
 	core_assert(meshData.offsetBuffer > 0);
 	glBindBuffer(GL_ARRAY_BUFFER, meshData.offsetBuffer);

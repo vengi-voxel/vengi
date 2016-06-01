@@ -63,6 +63,7 @@ private:
 	voxel::PlantGenerator _plantGenerator;
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
+	video::GLMeshData createMeshInternal(video::Shader& shader, voxel::Mesh &mesh, int buffers);
 	video::GLMeshData createMesh(video::Shader& shader, voxel::Mesh& mesh);
 	video::GLMeshData createInstancedMesh(video::Shader& shader, voxel::Mesh &mesh, int amount);
 	void updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& meshData);
