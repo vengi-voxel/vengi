@@ -298,6 +298,9 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 			}
 			break;
 		}
+		if (i == append.end()) {
+			break;
+		}
 	}
 
 	return src;
