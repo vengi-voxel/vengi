@@ -68,8 +68,10 @@ UIRendererGL::UIRendererGL() : _buffer(0) {
 }
 
 bool UIRendererGL::init() {
-	if (!_shader.loadProgram("shaders/ui"))
+	if (!_shader.loadProgram("shaders/ui")) {
+		Log::error("Could not load the ui shader");
 		return false;
+	}
 	glGenBuffers(1, &_buffer);
 	GL_checkError();
 	return true;
