@@ -5,6 +5,7 @@
 #pragma once
 
 #include <random>
+#include <algorithm>
 
 namespace core {
 
@@ -20,7 +21,14 @@ public:
 
 	int random(int min, int max) const;
 
+	bool fithyFifthy() const;
+
 	float randomBinomial(float max = 1.0f) const;
+
+	template<typename I>
+	void shuffle(I begin, I end) {
+		std::shuffle(begin, end, _engine);
+	}
 
 	template<typename I>
 	I randomElement(I begin, I end) const {
@@ -32,5 +40,9 @@ public:
 private:
 	mutable std::default_random_engine _engine;
 };
+
+inline bool Random::fithyFifthy() const {
+	return randomf() >= 0.5f;
+}
 
 }

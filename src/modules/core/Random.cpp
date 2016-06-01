@@ -29,6 +29,9 @@ float Random::randomf(float min, float max) const {
 }
 
 int Random::random(int min, int max) const {
+	if (min == max) {
+		return min;
+	}
 	std::uniform_int_distribution<int> distribution(min, max);
 	return distribution(_engine);
 }
