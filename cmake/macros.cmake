@@ -41,6 +41,18 @@ macro(check_glsl_files TARGET)
 				add_dependencies(${TARGET} shadertool ${TARGET}_${_file}_shader_validation)
 			endforeach()
 		endif()
+		if (IS_DIRECTORY ${ROOT_DIR}/data/shared/shaders)
+			foreach(_file ${files})
+				add_custom_target(
+					${TARGET}_${_file}_shader_validation
+					COMMENT "Validate ${_file}"
+					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file}
+					DEPENDS shadertool
+					WORKING_DIRECTORY ${ROOT_DIR}/data/shared/shaders
+				)
+				add_dependencies(${TARGET} shadertool ${TARGET}_${_file}_shader_validation)
+			endforeach()
+		endif()
 	else()
 		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found at ${TOOLS_DIR}")
 	endif()
