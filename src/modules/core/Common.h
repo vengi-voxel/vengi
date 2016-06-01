@@ -54,13 +54,13 @@
 			static struct SDL_AssertData sdl_assert_data = { \
 				0, 0, #condition, 0, 0, 0, 0 \
 			}; \
-			core_stacktrace \
 			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
 				continue; /* go again. */ \
 			} else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
 				SDL_TriggerBreakpoint(); \
 			} \
+			core_stacktrace \
 			break; /* not retrying. */ \
 		} \
 	} while (SDL_NULL_WHILE_LOOP_CONDITION)
@@ -71,21 +71,22 @@
 #if SDL_ASSERT_LEVEL == 0
 #define core_assert_msg(condition, format, ...) SDL_disabled_assert(condition)
 #else
-#define core_assert_msg(condition, format, ...) \
+#define core_assert_msg(conditionCheck, format, ...) \
 	do { \
-		while (!(condition)) { \
+		while (!(conditionCheck)) { \
 			char buf[1024]; \
 			SDL_snprintf(buf, sizeof(buf) - 1, format, ##__VA_ARGS__); \
-			struct SDL_AssertData sdl_assert_data = { \
-				0, 0, buf, 0, 0, 0, 0 \
+			static struct SDL_AssertData sdl_assert_data = { \
+				0, 0, nullptr, 0, 0, 0, 0 \
 			}; \
-			core_stacktrace \
+			sdl_assert_data.condition = buf; \
 			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
 				continue; /* go again. */ \
 			} else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
 				SDL_TriggerBreakpoint(); \
 			} \
+			core_stacktrace \
 			break; /* not retrying. */ \
 		} \
 	} while (SDL_NULL_WHILE_LOOP_CONDITION)
