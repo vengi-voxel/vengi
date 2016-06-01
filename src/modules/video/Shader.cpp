@@ -242,7 +242,7 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 	src.append(std::to_string(glslVersion));
 	src.append("\n");
 	if (glslVersion < GLSLVersion::V140) {
-		src.append("#extension GL_EXT_draw_instanced : enable\n");
+		//src.append("#extension GL_EXT_draw_instanced : enable\n");
 	}
 
 	core::Var::visitSorted([&] (const core::VarPtr& var) {
