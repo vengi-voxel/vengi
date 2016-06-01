@@ -49,7 +49,8 @@ void main(void) {
 	v_diffuse_color = u_diffuse_color;
 	v_debug_color = u_debug_color;
 
-	vec3 materialColor = u_materialcolor[(int(a_material) + gl_InstanceID) % 32].rgb;
+	int materialColorIndex = int(a_material) + gl_InstanceID;
+	vec3 materialColor = u_materialcolor[materialColorIndex % 32].rgb;
 	vec3 colornoise = texture(u_texture, abs(pos4.xz) / 256.0 / 10.0).rgb;
 	v_color = vec4(materialColor * colornoise * 1.8, u_materialcolor[a_material].a);
 	v_color = clamp(v_color, 0.0, 1.0);
