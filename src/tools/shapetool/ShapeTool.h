@@ -9,6 +9,7 @@
 #include "frontend/WaterShader.h"
 #include "frontend/MeshShader.h"
 #include "frontend/ColorShader.h"
+#include "frontend/PlantShader.h"
 #include "frontend/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "video/Camera.h"
@@ -24,6 +25,7 @@ protected:
 	frontend::WorldRenderer _worldRenderer;
 	voxel::WorldPtr _world;
 	frontend::WorldShader _worldShader;
+	frontend::PlantShader _plantShader;
 	frontend::WaterShader _waterShader;
 	frontend::MeshShaderPtr _meshShader;
 	frontend::ColorShaderPtr _colorShader;

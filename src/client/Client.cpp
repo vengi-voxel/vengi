@@ -28,7 +28,7 @@
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
 		UIApp(filesystem, eventBus, 17816), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
-		_timeProvider(timeProvider), _worldShader(), _meshShader(new frontend::MeshShader()),
+		_timeProvider(timeProvider), _worldShader(), _plantShader(), _meshShader(new frontend::MeshShader()),
 		_worldRenderer(world) {
 	_world->setClientData(true);
 	init("engine", "client");
@@ -102,6 +102,9 @@ core::AppState Client::onInit() {
 	if (!_worldShader.setup()) {
 		return core::Cleanup;
 	}
+	if (!_plantShader.setup()) {
+		return core::Cleanup;
+	}
 	if (!_waterShader.setup()) {
 		return core::Cleanup;
 	}
@@ -118,7 +121,7 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
-	_worldRenderer.onInit(_worldShader, _width, _height);
+	_worldRenderer.onInit(_plantShader, _width, _height);
 	_clearColor = core::Color::LightBlue;
 
 	_root.SetSkinBg(TBIDC("background"));
@@ -146,7 +149,7 @@ void Client::beforeUI() {
 		_camera.perspective(45.0f, _aspect, 0.1f, farPlane);
 		_camera.update();
 
-		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera);
+		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _plantShader, _waterShader, _camera);
 		_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera);
 		_worldRenderer.extractNewMeshes(_camera.position());
 	} else {
@@ -171,6 +174,7 @@ core::AppState Client::onCleanup() {
 	_meshPool->shutdown();
 	_worldRenderer.shutdown();
 	_worldShader.shutdown();
+	_plantShader.shutdown();
 	_waterShader.shutdown();
 	_meshShader = frontend::MeshShaderPtr();
 	core::AppState state = UIApp::onCleanup();

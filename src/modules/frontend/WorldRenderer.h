@@ -64,9 +64,10 @@ private:
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	video::GLMeshData createMesh(video::Shader& shader, voxel::Mesh& mesh);
+	video::GLMeshData createInstancedMesh(video::Shader& shader, voxel::Mesh &mesh, int amount);
 	void updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& meshData);
 	void handleMeshQueue(video::Shader& shader);
-	void distributePlants(const glm::ivec3& pos, core::Random& random, std::vector<glm::u8vec3>& translations);
+	void distributePlants(const glm::ivec3& pos, int amount, core::Random& random, std::vector<glm::vec3>& translations);
 
 	// we might want to get an answer for this question in two contexts, once for 'should-i-render-this' and once for
 	// 'should-i-create/destroy-the-mesh'.
@@ -83,7 +84,7 @@ public:
 
 	void reset();
 
-	void onInit(video::Shader& shader, int width, int height);
+	void onInit(video::Shader& plantShader, int width, int height);
 	void onRunning(long now);
 	void shutdown();
 
@@ -104,7 +105,7 @@ public:
 	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 
 	bool extractNewMeshes(const glm::vec3& position, bool force = false);
-	int renderWorld(video::Shader& opaqueShader, video::Shader& waterShader, const video::Camera& camera, int* vertices = nullptr);
+	int renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, const video::Camera& camera, int* vertices = nullptr);
 	int renderEntities(const video::ShaderPtr& shader, const video::Camera& camera);
 };
 

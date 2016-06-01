@@ -1,6 +1,8 @@
 // attributes from the VAOs
 in uvec3 a_pos;
 in uvec2 a_info;
+// instanced rendering
+in vec3 a_offset;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
@@ -26,7 +28,7 @@ out float v_debug_color;
 void main(void) {
 	uint a_ao = a_info[0];
 	uint a_material = a_info[1];
-	vec4 pos4 = u_model * vec4(a_pos, 1.0);
+	vec4 pos4 = vec4(a_offset, 1.0) + u_model * vec4(a_pos, 1.0);
 	v_pos = pos4.xyz;
 
 #if cl_debug_ambientocclusion == 1
@@ -47,13 +49,15 @@ void main(void) {
 	v_diffuse_color = u_diffuse_color;
 	v_debug_color = u_debug_color;
 
-	vec3 materialColor = u_materialcolor[a_material].rgb;
+	vec3 materialColor = u_materialcolor[(int(a_material) + gl_InstanceID) % 32].rgb;
 	vec3 colornoise = texture(u_texture, abs(pos4.xz) / 256.0 / 10.0).rgb;
 	v_color = vec4(materialColor * colornoise * 1.8, u_materialcolor[a_material].a);
 	v_color = clamp(v_color, 0.0, 1.0);
 
 	// use the air color as fog color, too
 	v_fogcolor = u_materialcolor[0].rgb;
+
+	vec4 p = vec4(a_pos + a_offset, 1.0);
 
 	gl_Position = u_projection * u_view * pos4;
 }

@@ -31,11 +31,13 @@ void WorldRenderer::reset() {
 	for (const video::GLMeshData& meshData : _meshDataOpaque) {
 		glDeleteBuffers(1, &meshData.vertexBuffer);
 		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteBuffers(1, &meshData.offsetBuffer);
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 	}
 	for (const video::GLMeshData& meshData : _meshDataWater) {
 		glDeleteBuffers(1, &meshData.vertexBuffer);
 		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteBuffers(1, &meshData.offsetBuffer);
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 	}
 	_meshDataOpaque.clear();
@@ -57,6 +59,7 @@ void WorldRenderer::shutdown() {
 	for (const video::GLMeshData& meshData : _meshDataPlant) {
 		glDeleteBuffers(1, &meshData.vertexBuffer);
 		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteBuffers(1, &meshData.offsetBuffer);
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 	}
 	_meshDataPlant.clear();
@@ -92,6 +95,7 @@ void WorldRenderer::deleteMesh(const glm::ivec3& pos) {
 		_meshDataOpaque.erase(i);
 		glDeleteBuffers(1, &meshData.vertexBuffer);
 		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteBuffers(1, &meshData.offsetBuffer);
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 		break;
 	}
@@ -103,6 +107,7 @@ void WorldRenderer::deleteMesh(const glm::ivec3& pos) {
 		_meshDataWater.erase(i);
 		glDeleteBuffers(1, &meshData.vertexBuffer);
 		glDeleteBuffers(1, &meshData.indexBuffer);
+		glDeleteBuffers(1, &meshData.offsetBuffer);
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 		break;
 	}
@@ -117,7 +122,7 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 	return true;
 }
 
-void WorldRenderer::distributePlants(const glm::ivec3& pos, core::Random& random, std::vector<glm::u8vec3>& translations) {
+void WorldRenderer::distributePlants(const glm::ivec3& pos, int amount, core::Random& random, std::vector<glm::vec3>& translations) {
 	core_trace_scoped(WorldRendererDistributePlants);
 	const int meshSize = _world->getMeshSize();
 	const int n = 10;
@@ -125,6 +130,9 @@ void WorldRenderer::distributePlants(const glm::ivec3& pos, core::Random& random
 	const voxel::BiomeManager& biomeMgr = _world->getBiomeManager();
 	for (int x = 0; x < steps; ++x) {
 		for (int z = 0; z < steps; ++z) {
+			if (amount-- <= 0) {
+				return;
+			}
 			const int lx = x * (n - 1) + random.random(1, n);
 			const int nx = pos.x + lx;
 			const int lz = z * (n - 1) + random.random(1, n);
@@ -139,9 +147,9 @@ void WorldRenderer::distributePlants(const glm::ivec3& pos, core::Random& random
 				continue;
 			}
 
-			const glm::u8vec3 localTranslation(lx, y, lz);
+			const glm::vec3 localTranslation(nx, y, nz);
 			translations.push_back(translation);
-			Log::info("plant at %i:%i:%i", lx, y, lz);
+			//Log::info("plant at %i:%i:%i (%i)", lx, y, lz, (int)translations.size());
 		}
 	}
 }
@@ -202,6 +210,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 			_world->allowReExtraction(meshData.translation);
 			glDeleteBuffers(1, &meshData.vertexBuffer);
 			glDeleteBuffers(1, &meshData.indexBuffer);
+			glDeleteBuffers(1, &meshData.offsetBuffer);
 			glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 			i = meshes.erase(i);
 			continue;
@@ -219,10 +228,13 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		if (debugGeometry) {
 			shader.setUniformf("u_debug_color", 1.0);
 		}
-		if (meshData.amount == 1) {
-			glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
+		if (meshData.instancedPositions.empty()) {
+			glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, nullptr);
 		} else {
-			glDrawElementsInstanced(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0, meshData.amount);
+			const int amount = (int)meshData.instancedPositions.size();
+			glBindBuffer(GL_ARRAY_BUFFER, meshData.offsetBuffer);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::u8vec3) * amount, &meshData.instancedPositions[0], GL_DYNAMIC_DRAW);
+			glDrawElementsInstanced(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, nullptr, amount);
 		}
 		if (vertices != nullptr) {
 			*vertices += meshData.noOfVertices;
@@ -252,7 +264,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& waterShader, const video::Camera& camera, int* vertices) {
+int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, const video::Camera& camera, int* vertices) {
 	handleMeshQueue(opaqueShader);
 
 	if (_meshDataOpaque.empty()) {
@@ -280,13 +292,14 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& water
 
 	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
 	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
-
-	core::Random rnd(_world->seed());
-	std::vector<glm::u8vec3> plantTranslations;
-	for (video::GLMeshData& m : _meshDataOpaque) {
-		distributePlants(m.translation, rnd, plantTranslations);
+	for (video::GLMeshData& mp : _meshDataPlant) {
+		mp.instancedPositions.clear();
+		for (video::GLMeshData& m : _meshDataOpaque) {
+			core::Random rnd(_world->seed() + m.translation.x + m.translation.y + m.translation.z);
+			distributePlants(m.translation, mp.amount, rnd, mp.instancedPositions);
+		}
 	}
-	drawCallsWorld += renderWorldMeshes(opaqueShader, camera, _meshDataPlant, vertices);
+	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices);
 
 #if GBUFFER
 	const int width = camera.getWidth();
@@ -309,9 +322,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& water
 
 	_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
 	glBlitFramebuffer(0, 0, width, height, halfWidth, 0, width, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-#endif
-
 	GL_checkError();
+#endif
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -386,6 +398,62 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Mesh &
 	const int locationInfo = shader.enableVertexAttribute("a_info");
 	glVertexAttribIPointer(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
 			GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
+	GL_checkError();
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	return meshData;
+}
+
+video::GLMeshData WorldRenderer::createInstancedMesh(video::Shader& shader, voxel::Mesh &mesh, int amount) {
+	core_trace_gl_scoped(WorldRendererCreateMesh);
+
+	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
+	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
+	video::GLMeshData meshData;
+	meshData.translation = mesh.getOffset();
+	meshData.scale = glm::vec3(1.0f);
+	meshData.amount = amount;
+
+	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+	meshData.indexType = GL_UNSIGNED_INT;
+
+	if (mesh.getNoOfIndices() == 0) {
+		return meshData;
+	}
+
+	// Create the VAOs for the meshes
+	glGenVertexArrays(1, &meshData.vertexArrayObject);
+
+	// The GL_ARRAY_BUFFER will contain the list of vertex positions
+	// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
+	// and GL_ARRAY_BUFFER will contain the offsets for instanced rendering
+	glGenBuffers(3, &meshData.indexBuffer);
+
+	core_assert(meshData.vertexArrayObject > 0);
+	glBindVertexArray(meshData.vertexArrayObject);
+
+	updateMesh(mesh, meshData);
+
+	const int posLoc = shader.enableVertexAttribute("a_pos");
+	glVertexAttribIPointer(posLoc, 3, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
+			GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
+
+	static_assert(sizeof(voxel::Voxel) == sizeof(uint8_t), "Voxel type doesn't match");
+	const int locationInfo = shader.enableVertexAttribute("a_info");
+	glVertexAttribIPointer(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
+			GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
+
+	core_assert(meshData.offsetBuffer > 0);
+	glBindBuffer(GL_ARRAY_BUFFER, meshData.offsetBuffer);
+
+	const int offsetLoc = shader.enableVertexAttribute("a_offset");
+	glVertexAttribPointer(offsetLoc, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3),
+			GL_OFFSET_CAST(offsetof(glm::vec3, x)));
+	glVertexAttribDivisor(offsetLoc, 1);
+	GL_checkError();
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -481,7 +549,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 	_world->stats(meshes, extracted, pending);
 }
 
-void WorldRenderer::onInit(video::Shader& shader, int width, int height) {
+void WorldRenderer::onInit(video::Shader& plantShader, int width, int height) {
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugAmbientOcclusion, "false", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
@@ -501,10 +569,9 @@ void WorldRenderer::onInit(video::Shader& shader, int width, int height) {
 
 	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
-		video::GLMeshData meshDataPlant = createMesh(shader, *mesh);
+		video::GLMeshData meshDataPlant = createInstancedMesh(plantShader, *mesh, 40);
 		if (meshDataPlant.noOfIndices > 0) {
-			meshDataPlant.scale = glm::vec3(10.0f, 10.0f, 10.0f);
-			meshDataPlant.amount = 100;
+			meshDataPlant.scale = glm::vec3(0.4f, 0.4f, 0.4f);
 			_meshDataPlant.push_back(meshDataPlant);
 		}
 	}

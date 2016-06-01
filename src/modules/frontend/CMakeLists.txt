@@ -7,6 +7,7 @@ set(SRCS
 	WorldRenderer.h WorldRenderer.cpp
 	WaterShader.h WaterShader.cpp
 	WorldShader.h WorldShader.cpp
+	PlantShader.h PlantShader.cpp
 )
 set(LIB frontend)
 add_library(${LIB} ${SRCS})

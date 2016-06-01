@@ -14,7 +14,7 @@
 
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
-		ui::UIApp(filesystem, eventBus), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _waterShader(),
+		ui::UIApp(filesystem, eventBus), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _plantShader(), _waterShader(),
 		_meshShader(new frontend::MeshShader()), _colorShader(new frontend::ColorShader()) {
 	init("engine", "shapetool");
 	_world->setClientData(true);
@@ -37,6 +37,9 @@ core::AppState ShapeTool::onInit() {
 	if (!_worldShader.setup()) {
 		return core::Cleanup;
 	}
+	if (!_plantShader.setup()) {
+		return core::Cleanup;
+	}
 	if (!_waterShader.setup()) {
 		return core::Cleanup;
 	}
@@ -56,7 +59,7 @@ core::AppState ShapeTool::onInit() {
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	_world->setSeed(1);
-	_worldRenderer.onInit(_worldShader, _width, _height);
+	_worldRenderer.onInit(_plantShader, _width, _height);
 	_camera.init(_width, _height);
 	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
@@ -132,7 +135,7 @@ void ShapeTool::beforeUI() {
 	_worldRenderer.extractNewMeshes(_camera.position());
 	_worldRenderer.onRunning(_deltaFrame);
 	_vertices = 0;
-	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _waterShader, _camera, &_vertices);
+	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _plantShader, _waterShader, _camera, &_vertices);
 	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera);
 }
 
@@ -195,6 +198,7 @@ core::AppState ShapeTool::onCleanup() {
 	_meshPool->shutdown();
 	_worldRenderer.shutdown();
 	_worldShader.shutdown();
+	_plantShader.shutdown();
 	_waterShader.shutdown();
 	_meshShader->shutdown();
 	_colorShader->shutdown();
