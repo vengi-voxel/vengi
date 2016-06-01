@@ -93,4 +93,9 @@ bool BiomeManager::hasClouds(const glm::ivec3& pos) const {
 	return biome->humidity >= 0.5f;
 }
 
+bool BiomeManager::hasPlants(const glm::ivec3& pos) const {
+	// TODO:
+	return hasTrees(pos);
+}
+
 }

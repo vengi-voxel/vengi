@@ -65,6 +65,8 @@ public:
 	const Biome* getBiome(const glm::ivec3& pos) const;
 
 	bool hasClouds(const glm::ivec3& pos) const;
+
+	bool hasPlants(const glm::ivec3& pos) const;
 };
 
 }
