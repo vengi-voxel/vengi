@@ -48,6 +48,8 @@ bool PlantGenerator::generatePlant(int size, PlantType type, Mesh *result) {
 		volume.setVoxel(pos, stalk);
 		}
 		break;
+	case Mushroom:
+		return false;
 	default:
 		return false;
 	}

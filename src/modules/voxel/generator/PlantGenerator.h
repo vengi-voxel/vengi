@@ -6,6 +6,7 @@ namespace voxel {
 
 enum PlantType {
 	Flower,
+	Mushroom,
 
 	MaxPlantTypes
 };
