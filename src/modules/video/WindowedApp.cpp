@@ -106,10 +106,17 @@ core::AppState WindowedApp::onInit() {
 	int width = displayMode.w;
 	int height = displayMode.h;
 
-	const GLVersion glv = video::GL3_0;
+	const core::VarPtr& glVersion = core::Var::get(cfg::ClientOpenGLVersion, "3.0", core::CV_READONLY);
+	int glMinor = 0, glMajor = 0;
+	if (std::sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
+		glMajor = 3;
+		glMinor = 0;
+	}
+	GLVersion glv(glMajor, glMinor);
 	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
-		if (GLVersions[i].version == glv)
+		if (GLVersions[i].version == glv) {
 			Shader::glslVersion = GLVersions[i].glslVersion;
+		}
 	}
 	SDL_ClearError();
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
