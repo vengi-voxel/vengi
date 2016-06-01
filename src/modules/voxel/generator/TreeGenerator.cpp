@@ -59,10 +59,12 @@ void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomMan
 			trunkHeight = random.random(5, 9);
 			break;
 		case TreeType::FIR:
+			height = random.random(20, 28);
+			trunkHeight = random.random(40, 56);
+			break;
 		case TreeType::PINE:
 			height = random.random(20, 28);
-			trunkHeight = random.random(10, 18);
-			size *= 2;
+			trunkHeight = random.random(20, 28);
 			break;
 		case TreeType::CONE:
 			height = random.random(20, 28);
