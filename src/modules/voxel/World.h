@@ -197,7 +197,7 @@ private:
 
 	Pager _pager;
 	PagedVolume *_volumeData;
-	BiomeManager _biomManager;
+	BiomeManager _biomeManager;
 	WorldContext _ctx;
 	mutable std::mt19937 _engine;
 	long _seed = 0l;

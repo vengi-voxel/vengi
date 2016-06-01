@@ -65,12 +65,12 @@ World::World() :
 		_pager(*this), _threadPool(core::halfcpus(), "World"), _random(_seed) {
 	_meshSize = core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
-	_biomManager.addBiom(0, MAX_WATER_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Sand1));
-	_biomManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.1f, 0.9f, createVoxel(Sand2));
-	_biomManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, createVoxel(Dirt1));
-	_biomManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Grass1));
-	_biomManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, createVoxel(Rock1));
-	_biomManager.addBiom(MAX_TERRAIN_HEIGHT - 30, MAX_MOUNTAIN_HEIGHT + 1, 0.32f, 0.32f, createVoxel(Rock2));
+	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Sand1));
+	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.1f, 0.9f, createVoxel(Sand2));
+	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, createVoxel(Dirt1));
+	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Grass1));
+	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, createVoxel(Rock1));
+	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 30, MAX_MOUNTAIN_HEIGHT + 1, 0.32f, 0.32f, createVoxel(Rock2));
 }
 
 World::~World() {
@@ -210,7 +210,7 @@ void World::createUnderground(TerrainContext& ctx) {
 void World::create(TerrainContext& ctx) {
 	core_trace_scoped(CreateWorld);
 	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
-	WorldGenerator::createWorld(_ctx, ctx, _biomManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
+	WorldGenerator::createWorld(_ctx, ctx, _biomeManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
 }
 
 void World::cleanupFutures() {
