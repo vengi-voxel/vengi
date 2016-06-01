@@ -117,6 +117,30 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 	return true;
 }
 
+void WorldRenderer::distributePlants(const glm::ivec3& pos, std::vector<glm::ivec3>& translations) {
+	core_trace_scoped(WorldRendererDistributePlants);
+	const int meshSize = _world->getMeshSize();
+	const int n = 10;
+	const int steps = meshSize / n;
+	const voxel::BiomeManager& biomeMgr = _world->getBiomeManager();
+	for (int x = 0; x < steps; ++x) {
+		for (int z = 0; z < steps; ++z) {
+			const int nx = pos.x + x * n;
+			const int nz = pos.z + z * n;
+			const int y = _world->findFloor(nx, nz);
+			if (y == -1) {
+				continue;
+			}
+			const glm::ivec3 translation(nx, y, nz);
+			if (!biomeMgr.hasPlants(translation)) {
+				continue;
+			}
+
+			translations.push_back(translation);
+		}
+	}
+}
+
 void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	voxel::ChunkMeshData mesh(0, 0);
 	if (!_world->pop(mesh)) {
@@ -251,8 +275,12 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& water
 
 	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
 	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
-	// TODO: set positions
-	drawCallsWorld += renderWorldMeshes(opaqueShader, camera, _meshDataPlant,  vertices);
+
+	std::vector<glm::ivec3> plantTranslations;
+	for (video::GLMeshData& m : _meshDataOpaque) {
+		distributePlants(m.translation, plantTranslations);
+	}
+	drawCallsWorld += renderWorldMeshes(opaqueShader, camera, _meshDataPlant, vertices);
 
 #if GBUFFER
 	const int width = camera.getWidth();
