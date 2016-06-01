@@ -292,6 +292,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
 	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
+#if 0
 	for (video::GLMeshData& mp : _meshDataPlant) {
 		mp.instancedPositions.clear();
 		for (video::GLMeshData& m : _meshDataOpaque) {
@@ -300,6 +301,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		}
 	}
 	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices);
+#endif
 
 #if GBUFFER
 	const int width = camera.getWidth();
