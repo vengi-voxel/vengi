@@ -71,8 +71,8 @@ private:
 	// 'should-i-create/destroy-the-mesh'.
 	bool isDistanceCulled(int distance2, bool queryForRendering = true) const;
 	int getDistance2(const glm::ivec3& pos) const;
-	// schedule mesh extraction around the camera position on the grid with the given radius
-	void extractMeshAroundCamera(int radius);
+	// schedule mesh extraction around the grid position with the given radius
+	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
 	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices);
 

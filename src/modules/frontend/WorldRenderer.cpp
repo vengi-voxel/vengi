@@ -353,8 +353,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Mesh &
 void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	core_trace_scoped(WorldRendererOnSpawn);
 	_viewDistance = 1.0f;
-	_lastGridPosition = _world->getMeshPos(pos);
-	extractMeshAroundCamera(initialExtractionRadius);
+	extractMeshAroundCamera(_world->getMeshPos(pos), initialExtractionRadius);
 }
 
 int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera) {
@@ -407,21 +406,20 @@ bool WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 	const glm::ivec3& camXYZ = _world->getMeshPos(position);
 	const glm::vec3 diff = _lastGridPosition - camXYZ;
 	if (glm::length(diff.x) >= 1 || glm::length(diff.y) >= 1 || glm::length(diff.z) >= 1) {
-		_lastGridPosition = camXYZ;
 		const int chunks = MinCullingDistance / _world->getMeshSize() + 1;
-		extractMeshAroundCamera(chunks);
+		extractMeshAroundCamera(camXYZ, chunks);
 		return true;
 	}
 	return false;
 }
 
-void WorldRenderer::extractMeshAroundCamera(int radius) {
+void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& gridPos, int radius) {
 	core_trace_scoped(WorldRendererExtractAroundCamera);
 	const int sideLength = radius * 2 + 1;
 	const int amount = sideLength * (sideLength - 1) + sideLength;
 	const int chunkSize = _world->getMeshSize();
-	const glm::ivec3& cameraPos = _lastGridPosition;
-	glm::ivec3 pos = cameraPos;
+	_lastGridPosition = gridPos;
+	glm::ivec3 pos = gridPos;
 	pos.y = 0;
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
@@ -430,8 +428,8 @@ void WorldRenderer::extractMeshAroundCamera(int radius) {
 			_world->scheduleMeshExtraction(pos);
 		}
 		o.next();
-		pos.x = cameraPos.x + o.x() * chunkSize;
-		pos.z = cameraPos.z + o.z() * chunkSize;
+		pos.x = gridPos.x + o.x() * chunkSize;
+		pos.z = gridPos.z + o.z() * chunkSize;
 	}
 }
 
