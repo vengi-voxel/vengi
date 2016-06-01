@@ -34,12 +34,13 @@ constexpr const char *ServerHost = "sv_host";
 constexpr const char *ServerPort = "sv_port";
 constexpr const char *ServerMaxClients = "sv_maxclients";
 
+constexpr const char *ShapeToolExtractRadius = "sh_extractradius";
+
 constexpr const char *CoreLogLevel = "core_loglevel";
 
 // The size of the chunk that is extracted with each step
 constexpr const char *VoxelMeshSize = "voxel_meshsize";
 constexpr const char *VoxelPlainTerrain = "voxel_plainterrain";
-constexpr const char *ClientExtractRadius = "cl_extractradius";
 
 constexpr const char *DatabaseName = "db_name";
 constexpr const char *DatabaseHost = "db_host";
