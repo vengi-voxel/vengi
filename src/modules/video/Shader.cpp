@@ -264,9 +264,9 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 	std::string append(buffer);
 
 	// TODO: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
-	std::string replaceIn = "";
-	std::string replaceOut = "";
-	std::string replaceTexture2D = "";
+	std::string replaceIn = "in";
+	std::string replaceOut = "out";
+	std::string replaceTexture2D = "texture2D";
 	if (glslVersion < GLSLVersion::V130) {
 		replaceIn = "attribute";
 		replaceOut = "varying";
@@ -315,6 +315,10 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 			break;
 		}
 	}
+
+	src = core::string::replaceAll(src, "$in", replaceIn);
+	src = core::string::replaceAll(src, "$out", replaceOut);
+	src = core::string::replaceAll(src, "$texture2D", replaceTexture2D);
 
 	return src;
 }
