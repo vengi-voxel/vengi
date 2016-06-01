@@ -37,8 +37,8 @@ constexpr const char *ServerMaxClients = "sv_maxclients";
 constexpr const char *CoreLogLevel = "core_loglevel";
 
 // The size of the chunk that is extracted with each step
-constexpr const char *VoxelChunkSize = "voxel_chunksize";
-constexpr const char *VoxelPlainTerrain = "voxel-plainterrain";
+constexpr const char *VoxelMeshSize = "voxel_meshsize";
+constexpr const char *VoxelPlainTerrain = "voxel_plainterrain";
 constexpr const char *ClientExtractRadius = "cl_extractradius";
 
 constexpr const char *DatabaseName = "db_name";

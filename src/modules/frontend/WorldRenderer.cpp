@@ -417,7 +417,7 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& gridPos, int radiu
 	core_trace_scoped(WorldRendererExtractAroundCamera);
 	const int sideLength = radius * 2 + 1;
 	const int amount = sideLength * (sideLength - 1) + sideLength;
-	const int chunkSize = _world->getMeshSize();
+	const int meshSize = _world->getMeshSize();
 	_lastGridPosition = gridPos;
 	glm::ivec3 pos = gridPos;
 	pos.y = 0;
@@ -428,8 +428,8 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& gridPos, int radiu
 			_world->scheduleMeshExtraction(pos);
 		}
 		o.next();
-		pos.x = gridPos.x + o.x() * chunkSize;
-		pos.z = gridPos.z + o.z() * chunkSize;
+		pos.x = gridPos.x + o.x() * meshSize;
+		pos.z = gridPos.z + o.z() * meshSize;
 	}
 }
 

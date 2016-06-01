@@ -210,7 +210,7 @@ private:
 	std::deque<ChunkMeshData> _meshQueue;
 	// fast lookup for positions that are already extracted and available in the _meshData vector
 	PositionSet _meshesExtracted;
-	core::VarPtr _chunkSize;
+	core::VarPtr _meshSize;
 	core::Random _random;
 	std::vector<std::future<void> > _futures;
 	std::atomic_bool _cancelThreads { false };
@@ -233,7 +233,7 @@ inline int World::getChunkSize() const {
 }
 
 inline int World::getMeshSize() const {
-	return _chunkSize->intVal();
+	return _meshSize->intVal();
 }
 
 inline int World::getMaterial(int x, int y, int z) const {
