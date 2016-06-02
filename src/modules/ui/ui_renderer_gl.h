@@ -33,7 +33,8 @@ public:
 class UIRendererGL: public TBRendererBatcher {
 private:
 	video::Shader _shader;
-	GLuint _buffer;
+	GLuint _buffer = 0u;
+	GLuint _vao = 0u;
 public:
 	UIRendererGL();
 

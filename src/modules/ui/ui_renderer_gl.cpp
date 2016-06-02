@@ -65,7 +65,7 @@ void UIBitmapGL::SetData(uint32 *data) {
 	TB_IF_DEBUG_SETTING(RENDER_BATCHES, dbg_bitmap_validations++);
 }
 
-UIRendererGL::UIRendererGL() : _buffer(0) {
+UIRendererGL::UIRendererGL() {
 }
 
 bool UIRendererGL::init() {
@@ -73,7 +73,15 @@ bool UIRendererGL::init() {
 		Log::error("Could not load the ui shader");
 		return false;
 	}
+	glGenVertexArrays(1, &_vao);
 	glGenBuffers(1, &_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _buffer);
+	glBindVertexArray(_vao);
+	glVertexAttribPointer(_shader.enableVertexAttribute("a_color"), 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].col)));
+	glVertexAttribPointer(_shader.enableVertexAttribute("a_texcoord"), 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].u)));
+	glVertexAttribPointer(_shader.enableVertexAttribute("a_pos"), 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].x)));
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 	GL_checkError();
 	return true;
 }
@@ -89,6 +97,7 @@ void UIRendererGL::BeginPaint(int render_target_w, int render_target_h) {
 
 	const glm::mat4& ortho = glm::ortho(0.0f, (float) render_target_w, (float) render_target_h, 0.0f, -1.0f, 1.0f);
 	_shader.setUniformMatrix("u_projection", ortho, false);
+	GL_checkError();
 
 	g_current_texture = (GLuint) -1;
 	g_current_batch = nullptr;
@@ -97,16 +106,21 @@ void UIRendererGL::BeginPaint(int render_target_w, int render_target_h) {
 	glScissor(0, 0, render_target_w, render_target_h);
 
 	glEnable(GL_BLEND);
-	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D); // invalid operation in gl >= 3.1
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glBindVertexArray(_vao);
+	core_assert(_buffer > 0);
+	glBindBuffer(GL_ARRAY_BUFFER, _buffer);
 	GL_checkError();
 }
 
 void UIRendererGL::EndPaint() {
 	TBRendererBatcher::EndPaint();
 	_shader.deactivate();
+	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 #ifdef TB_RUNTIME_DEBUG_INFO
@@ -130,12 +144,8 @@ void UIRendererGL::RenderBatch(Batch *batch) {
 	if (g_current_batch != batch) {
 		g_current_batch = batch;
 	}
-	core_assert(_buffer > 0);
-	glBindBuffer(GL_ARRAY_BUFFER, _buffer);
+	GL_checkError();
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * batch->vertex_count, batch->vertex, GL_STATIC_DRAW);
-	glVertexAttribPointer(_shader.enableVertexAttribute("a_color"), 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].col)));
-	glVertexAttribPointer(_shader.enableVertexAttribute("a_texcoord"), 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].u)));
-	glVertexAttribPointer(_shader.enableVertexAttribute("a_pos"), 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].x)));
 
 	glDrawArrays(GL_TRIANGLES, 0, batch->vertex_count);
 	GL_checkError();
