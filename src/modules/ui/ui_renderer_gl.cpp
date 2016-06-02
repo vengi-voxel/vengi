@@ -106,7 +106,6 @@ void UIRendererGL::BeginPaint(int render_target_w, int render_target_h) {
 	glScissor(0, 0, render_target_w, render_target_h);
 
 	glEnable(GL_BLEND);
-	//glEnable(GL_TEXTURE_2D); // invalid operation in gl >= 3.1
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
