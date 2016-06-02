@@ -55,7 +55,7 @@ private:
 	glm::vec3 _lightPos = glm::vec3(10000.0, 10000.0, 10000.0);
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	// the position of the last extraction - we only care for x and z here
-	glm::ivec3 _lastGridPosition;
+	glm::ivec3 _lastGridPosition = { std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min() };
 	voxel::WorldPtr _world;
 	video::GBuffer _gbuffer;
 	core::VarPtr _debugGeometry;
@@ -68,7 +68,7 @@ private:
 	video::GLMeshData createInstancedMesh(video::Shader& shader, voxel::Mesh &mesh, int amount);
 	void updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& meshData);
 	void handleMeshQueue(video::Shader& shader);
-	void distributePlants(const glm::ivec3& pos, int amount, core::Random& random, std::vector<glm::vec3>& translations);
+	void distributePlants(int amount, const glm::ivec3& meshGridPos, core::Random& random, std::vector<glm::vec3>& translations);
 
 	// we might want to get an answer for this question in two contexts, once for 'should-i-render-this' and once for
 	// 'should-i-create/destroy-the-mesh'.
@@ -77,7 +77,7 @@ private:
 	// schedule mesh extraction around the grid position with the given radius
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
-	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices);
+	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, bool culling = true);
 
 public:
 	WorldRenderer(const voxel::WorldPtr& world);

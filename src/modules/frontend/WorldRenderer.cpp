@@ -122,35 +122,29 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 	return true;
 }
 
-void WorldRenderer::distributePlants(const glm::ivec3& pos, int amount, core::Random& random, std::vector<glm::vec3>& translations) {
+void WorldRenderer::distributePlants(int amount, const glm::ivec3& meshGridPos, core::Random& random, std::vector<glm::vec3>& translations) {
 	core_trace_scoped(WorldRendererDistributePlants);
-	const int meshSize = _world->getMeshSize();
-	const int n = 10;
-	const int steps = meshSize / n;
+	const int sizeHalf = _world->getMeshSize() / 2 - 1;
 	const voxel::BiomeManager& biomeMgr = _world->getBiomeManager();
-	for (int x = 0; x < steps; ++x) {
-		for (int z = 0; z < steps; ++z) {
-			if (amount-- <= 0) {
-				return;
-			}
-			const int lx = x * (n - 1) + random.random(1, n);
-			const int nx = pos.x + lx;
-			const int lz = z * (n - 1) + random.random(1, n);
-			const int nz = pos.z + lz;
-			// TODO: y can leave the mesh boundaries
-			const int y = _world->findFloor(nx, nz);
-			if (y == -1) {
-				continue;
-			}
-			const glm::ivec3 translation(nx, y, nz);
-			if (!biomeMgr.hasPlants(translation)) {
-				continue;
-			}
-
-			const glm::vec3 localTranslation(nx, y, nz);
-			translations.push_back(translation);
-			//Log::info("plant at %i:%i:%i (%i)", lx, y, lz, (int)translations.size());
+	for (;;) {
+		if (amount-- <= 0) {
+			return;
 		}
+		const int lx = random.random(-sizeHalf, sizeHalf);
+		const int nx = meshGridPos.x + lx;
+		const int lz = random.random(-sizeHalf, sizeHalf);
+		const int nz = meshGridPos.z + lz;
+		const int y = _world->findFloor(nx, nz);
+		if (y == -1) {
+			continue;
+		}
+		const glm::ivec3 translation(nx, y, nz);
+		if (!biomeMgr.hasPlants(translation)) {
+			continue;
+		}
+
+		translations.push_back(translation);
+		//Log::info("plant at %i:%i:%i (%i)", nx, y, nz, (int)translations.size());
 	}
 }
 
@@ -173,9 +167,30 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 		}
 	}
 	// Now add the mesh to the list of meshes to render.
-	const video::GLMeshData& meshDataOpaque = createMesh(shader, mesh.opaqueMesh);
+	video::GLMeshData meshDataOpaque = createMesh(shader, mesh.opaqueMesh);
 	if (meshDataOpaque.noOfIndices > 0) {
+		core::Random rnd(_world->seed() + meshDataOpaque.translation.x + meshDataOpaque.translation.y + meshDataOpaque.translation.z);
+		distributePlants(100, meshDataOpaque.translation, rnd, meshDataOpaque.instancedPositions);
 		_meshDataOpaque.push_back(meshDataOpaque);
+
+		for (video::GLMeshData& mp : _meshDataPlant) {
+			mp.instancedPositions.clear();
+		}
+
+		// now redistribute the plants on the meshes that are already extracted
+		for (const video::GLMeshData& data : _meshDataOpaque) {
+			std::vector<glm::vec3> p = data.instancedPositions;
+			core::Random rnd2(_world->seed() + data.translation.x + data.translation.y + data.translation.z);
+			rnd2.shuffle(p.begin(), p.end());
+			auto i = p.begin();
+			const int plantMeshes = p.size() / _meshDataPlant.size();
+			for (video::GLMeshData& mp : _meshDataPlant) {
+				auto end = i;
+				std::advance(end, plantMeshes);
+				mp.instancedPositions.insert(mp.instancedPositions.begin(), i, end);
+				i = end;
+			}
+		}
 	}
 	const video::GLMeshData& meshDataWater = createMesh(shader, mesh.waterMesh);
 	if (meshDataWater.noOfIndices > 0) {
@@ -183,7 +198,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	}
 }
 
-int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices) {
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, bool culling) {
 	const glm::mat4& view = camera.viewMatrix();
 
 	const MaterialColorArray& materialColors = getMaterialColors();
@@ -206,7 +221,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	for (auto i = meshes.begin(); i != meshes.end();) {
 		const video::GLMeshData& meshData = *i;
 		const float distance = getDistance2(meshData.translation);
-		if (isDistanceCulled(distance, true)) {
+		if (culling && isDistanceCulled(distance, true)) {
 			_world->allowReExtraction(meshData.translation);
 			glDeleteBuffers(1, &meshData.vertexBuffer);
 			glDeleteBuffers(1, &meshData.indexBuffer);
@@ -217,23 +232,24 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		}
 		const glm::vec3 mins(meshData.translation);
 		const glm::vec3 maxs = glm::vec3(meshData.translation) + bboxSize;
-		if (camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
+		if (culling && camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
 			++i;
 			continue;
 		}
-		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation)), meshData.scale);
+		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
+		const glm::mat4& model = translate; //glm::scale(translate, meshData.scale);
 		shader.setUniformMatrix("u_model", model, false);
 		glBindVertexArray(meshData.vertexArrayObject);
 
 		if (debugGeometry) {
 			shader.setUniformf("u_debug_color", 1.0);
 		}
-		if (meshData.instancedPositions.empty()) {
+		if (meshData.amount == 1) {
 			glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, nullptr);
 		} else {
 			const int amount = (int)meshData.instancedPositions.size();
 			glBindBuffer(GL_ARRAY_BUFFER, meshData.offsetBuffer);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::u8vec3) * amount, &meshData.instancedPositions[0], GL_DYNAMIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * amount, &meshData.instancedPositions[0], GL_DYNAMIC_DRAW);
 			glDrawElementsInstanced(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, nullptr, amount);
 		}
 		if (vertices != nullptr) {
@@ -292,16 +308,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
 	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
-#if 0
-	for (video::GLMeshData& mp : _meshDataPlant) {
-		mp.instancedPositions.clear();
-		for (video::GLMeshData& m : _meshDataOpaque) {
-			core::Random rnd(_world->seed() + m.translation.x + m.translation.y + m.translation.z);
-			distributePlants(m.translation, mp.amount, rnd, mp.instancedPositions);
-		}
-	}
-	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices);
-#endif
+	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
 
 #if GBUFFER
 	const int width = camera.getWidth();
@@ -498,23 +505,26 @@ bool WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 		_world->allowReExtraction(position);
 		return _world->scheduleMeshExtraction(position);
 	}
-	const glm::ivec3& camXYZ = _world->getMeshPos(position);
-	const glm::ivec3& diff = _lastGridPosition - camXYZ;
+	const glm::ivec3& meshGridPos = _world->getMeshPos(position);
+	const glm::ivec3& diff = _lastGridPosition - meshGridPos;
 	if (glm::abs(diff.x) >= 1 || glm::abs(diff.y) >= 1 || glm::abs(diff.z) >= 1) {
 		const int chunks = MinCullingDistance / _world->getMeshSize() + 1;
-		extractMeshAroundCamera(camXYZ, chunks);
+		extractMeshAroundCamera(meshGridPos, chunks);
 		return true;
 	}
 	return false;
 }
 
-void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& gridPos, int radius) {
+void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int radius) {
 	core_trace_scoped(WorldRendererExtractAroundCamera);
 	const int sideLength = radius * 2 + 1;
 	const int amount = sideLength * (sideLength - 1) + sideLength;
 	const int meshSize = _world->getMeshSize();
-	_lastGridPosition = gridPos;
-	glm::ivec3 pos = gridPos;
+	if (meshGridPos == _lastGridPosition) {
+		return;
+	}
+	_lastGridPosition = meshGridPos;
+	glm::ivec3 pos = meshGridPos;
 	pos.y = 0;
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
@@ -523,8 +533,8 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& gridPos, int radiu
 			_world->scheduleMeshExtraction(pos);
 		}
 		o.next();
-		pos.x = gridPos.x + o.x() * meshSize;
-		pos.z = gridPos.z + o.z() * meshSize;
+		pos.x = meshGridPos.x + o.x() * meshSize;
+		pos.z = meshGridPos.z + o.z() * meshSize;
 	}
 }
 
