@@ -28,7 +28,7 @@ $out float v_debug_color;
 void main(void) {
 	uint a_ao = a_info[0];
 	uint a_material = a_info[1];
-	vec4 pos4 = vec4(a_offset, 1.0) + u_model * vec4(a_pos, 1.0);
+	vec4 pos4 = u_model * vec4(a_pos + a_offset, 1.0);
 	v_pos = pos4.xyz;
 	const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 	v_ambientocclusion = aovalues[a_ao];
