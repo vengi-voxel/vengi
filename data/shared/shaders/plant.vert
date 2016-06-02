@@ -30,18 +30,8 @@ void main(void) {
 	uint a_material = a_info[1];
 	vec4 pos4 = vec4(a_offset, 1.0) + u_model * vec4(a_pos, 1.0);
 	v_pos = pos4.xyz;
-
-#if cl_debug_ambientocclusion == 1
-	vec3 aocolor[4] = vec3[](
-		vec3(0.0, 0.0, 0.0),
-		vec3(0.0, 0.0, 1.0),
-		vec3(1.0, 0.0, 0.0),
-		vec3(1.0, 1.0, 1.0));
-	// TODO: whatever these value were for... just meant as example on how to use config vars in shaders
-#else
 	const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 	v_ambientocclusion = aovalues[a_ao];
-#endif
 
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
@@ -57,8 +47,6 @@ void main(void) {
 
 	// use the air color as fog color, too
 	v_fogcolor = u_materialcolor[0].rgb;
-
-	vec4 p = vec4(a_pos + a_offset, 1.0);
 
 	gl_Position = u_projection * u_view * pos4;
 }
