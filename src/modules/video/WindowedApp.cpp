@@ -174,9 +174,13 @@ core::AppState WindowedApp::onInit() {
 				Log::warn("Could not activate vsync: %s", SDL_GetError());
 			}
 		}
-		if (SDL_GL_GetSwapInterval() != 0) {
-			Log::info("Activated vsync");
-		}
+	} else {
+		SDL_GL_SetSwapInterval(0);
+	}
+	if (SDL_GL_GetSwapInterval() == 0) {
+		Log::info("Deactivated vsync");
+	} else {
+		Log::info("Activated vsync");
 	}
 
 	int buffers, samples;
