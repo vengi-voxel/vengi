@@ -122,8 +122,11 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 	return true;
 }
 
-void WorldRenderer::distributePlants(int amount, const glm::ivec3& meshGridPos, core::Random& random, std::vector<glm::vec3>& translations) {
+void WorldRenderer::distributePlants(int amount, video::GLMeshData& meshData) {
 	core_trace_scoped(WorldRendererDistributePlants);
+	const glm::ivec3& pos = meshData.translation;
+	std::vector<glm::vec3>& translations = meshData.instancedPositions;
+	core::Random random(_world->seed() + pos.x + pos.y + pos.z);
 	const int size = _world->getMeshSize();
 	const voxel::BiomeManager& biomeMgr = _world->getBiomeManager();
 	for (;;) {
@@ -131,9 +134,9 @@ void WorldRenderer::distributePlants(int amount, const glm::ivec3& meshGridPos, 
 			return;
 		}
 		const int lx = random.random(1, size - 1);
-		const int nx = meshGridPos.x + lx;
+		const int nx = pos.x + lx;
 		const int lz = random.random(1, size - 1);
-		const int nz = meshGridPos.z + lz;
+		const int nz = pos.z + lz;
 		const int y = _world->findFloor(nx, nz);
 		if (y == -1) {
 			continue;
@@ -196,8 +199,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	// Now add the mesh to the list of meshes to render.
 	video::GLMeshData meshDataOpaque = createMesh(shader, mesh.opaqueMesh);
 	if (meshDataOpaque.noOfIndices > 0) {
-		core::Random rnd(_world->seed() + meshDataOpaque.translation.x + meshDataOpaque.translation.y + meshDataOpaque.translation.z);
-		distributePlants(100, meshDataOpaque.translation, rnd, meshDataOpaque.instancedPositions);
+		distributePlants(100, meshDataOpaque);
 		_meshDataOpaque.push_back(meshDataOpaque);
 		fillPlantPositionsFromMeshes();
 	}
