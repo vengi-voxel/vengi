@@ -124,15 +124,15 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 
 void WorldRenderer::distributePlants(int amount, const glm::ivec3& meshGridPos, core::Random& random, std::vector<glm::vec3>& translations) {
 	core_trace_scoped(WorldRendererDistributePlants);
-	const int sizeHalf = _world->getMeshSize() / 2 - 1;
+	const int size = _world->getMeshSize();
 	const voxel::BiomeManager& biomeMgr = _world->getBiomeManager();
 	for (;;) {
 		if (amount-- <= 0) {
 			return;
 		}
-		const int lx = random.random(-sizeHalf, sizeHalf);
+		const int lx = random.random(1, size - 1);
 		const int nx = meshGridPos.x + lx;
-		const int lz = random.random(-sizeHalf, sizeHalf);
+		const int lz = random.random(1, size - 1);
 		const int nz = meshGridPos.z + lz;
 		const int y = _world->findFloor(nx, nz);
 		if (y == -1) {
@@ -145,6 +145,34 @@ void WorldRenderer::distributePlants(int amount, const glm::ivec3& meshGridPos, 
 
 		translations.push_back(translation);
 		//Log::info("plant at %i:%i:%i (%i)", nx, y, nz, (int)translations.size());
+	}
+}
+
+// redistribute the plants on the meshes that are already extracted
+void WorldRenderer::fillPlantPositionsFromMeshes() {
+	const int plantMeshAmount = _meshDataPlant.size();
+	if (plantMeshAmount == 0) {
+		return;
+	}
+	for (video::GLMeshData& mp : _meshDataPlant) {
+		mp.instancedPositions.clear();
+	}
+	for (const video::GLMeshData& data : _meshDataOpaque) {
+		if (data.instancedPositions.empty()) {
+			continue;
+		}
+		std::vector<glm::vec3> p = data.instancedPositions;
+		core::Random rnd(_world->seed() + data.translation.x + data.translation.y + data.translation.z);
+		rnd.shuffle(p.begin(), p.end());
+		auto i = p.begin();
+		const int plantMeshes = p.size() / plantMeshAmount;
+		int delta = p.size() - plantMeshes * plantMeshAmount;
+		for (video::GLMeshData& mp : _meshDataPlant) {
+			auto it = std::next(p.begin(), plantMeshes + delta);
+			std::move(p.begin(), it, std::back_inserter(mp.instancedPositions));
+			p.erase(p.begin(), it);
+			delta = 0;
+		}
 	}
 }
 
@@ -172,25 +200,7 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 		core::Random rnd(_world->seed() + meshDataOpaque.translation.x + meshDataOpaque.translation.y + meshDataOpaque.translation.z);
 		distributePlants(100, meshDataOpaque.translation, rnd, meshDataOpaque.instancedPositions);
 		_meshDataOpaque.push_back(meshDataOpaque);
-
-		for (video::GLMeshData& mp : _meshDataPlant) {
-			mp.instancedPositions.clear();
-		}
-
-		// now redistribute the plants on the meshes that are already extracted
-		for (const video::GLMeshData& data : _meshDataOpaque) {
-			std::vector<glm::vec3> p = data.instancedPositions;
-			core::Random rnd2(_world->seed() + data.translation.x + data.translation.y + data.translation.z);
-			rnd2.shuffle(p.begin(), p.end());
-			auto i = p.begin();
-			const int plantMeshes = p.size() / _meshDataPlant.size();
-			for (video::GLMeshData& mp : _meshDataPlant) {
-				auto end = i;
-				std::advance(end, plantMeshes);
-				mp.instancedPositions.insert(mp.instancedPositions.begin(), i, end);
-				i = end;
-			}
-		}
+		fillPlantPositionsFromMeshes();
 	}
 	const video::GLMeshData& meshDataWater = createMesh(shader, mesh.waterMesh);
 	if (meshDataWater.noOfIndices > 0) {
