@@ -106,7 +106,7 @@ core::AppState WindowedApp::onInit() {
 	int width = displayMode.w;
 	int height = displayMode.h;
 
-	const core::VarPtr& glVersion = core::Var::get(cfg::ClientOpenGLVersion, "3.0", core::CV_READONLY);
+	const core::VarPtr& glVersion = core::Var::get(cfg::ClientOpenGLVersion, "3.1", core::CV_READONLY);
 	int glMinor = 0, glMajor = 0;
 	if (std::sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
 		glMajor = 3;

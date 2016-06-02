@@ -22,7 +22,7 @@ namespace video {
 int Shader::glslVersion = GLSLVersion::V300;
 #else
 // default to opengl3
-int Shader::glslVersion = GLSLVersion::V130;
+int Shader::glslVersion = GLSLVersion::V330;
 #endif
 
 Shader::Shader() :
