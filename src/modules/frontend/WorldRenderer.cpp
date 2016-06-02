@@ -144,7 +144,7 @@ void WorldRenderer::distributePlants(int amount, const glm::ivec3& meshGridPos, 
 		}
 
 		translations.push_back(translation);
-		//Log::info("plant at %i:%i:%i (%i)", nx, y, nz, (int)translations.size());
+		Log::trace("plant at %i:%i:%i (%i)", nx, y, nz, (int)translations.size());
 	}
 }
 
@@ -164,7 +164,6 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 		std::vector<glm::vec3> p = data.instancedPositions;
 		core::Random rnd(_world->seed() + data.translation.x + data.translation.y + data.translation.z);
 		rnd.shuffle(p.begin(), p.end());
-		auto i = p.begin();
 		const int plantMeshes = p.size() / plantMeshAmount;
 		int delta = p.size() - plantMeshes * plantMeshAmount;
 		for (video::GLMeshData& mp : _meshDataPlant) {
