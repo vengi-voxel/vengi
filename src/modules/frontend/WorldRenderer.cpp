@@ -29,12 +29,10 @@ WorldRenderer::~WorldRenderer() {
 
 void WorldRenderer::reset() {
 	for (video::GLMeshData& meshData : _meshDataOpaque) {
-		meshData.deleteBuffers();
-		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+		meshData.shutdown();
 	}
 	for (video::GLMeshData& meshData : _meshDataWater) {
-		meshData.deleteBuffers();
-		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+		meshData.shutdown();
 	}
 	_meshDataOpaque.clear();
 	_meshDataWater.clear();
