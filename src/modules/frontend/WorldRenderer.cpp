@@ -28,16 +28,12 @@ WorldRenderer::~WorldRenderer() {
 }
 
 void WorldRenderer::reset() {
-	for (const video::GLMeshData& meshData : _meshDataOpaque) {
-		glDeleteBuffers(1, &meshData.vertexBuffer);
-		glDeleteBuffers(1, &meshData.indexBuffer);
-		glDeleteBuffers(1, &meshData.offsetBuffer);
+	for (video::GLMeshData& meshData : _meshDataOpaque) {
+		meshData.deleteBuffers();
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 	}
-	for (const video::GLMeshData& meshData : _meshDataWater) {
-		glDeleteBuffers(1, &meshData.vertexBuffer);
-		glDeleteBuffers(1, &meshData.indexBuffer);
-		glDeleteBuffers(1, &meshData.offsetBuffer);
+	for (video::GLMeshData& meshData : _meshDataWater) {
+		meshData.deleteBuffers();
 		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
 	}
 	_meshDataOpaque.clear();
@@ -56,11 +52,8 @@ void WorldRenderer::shutdown() {
 	_colorTexture = video::TexturePtr();
 	_entities.clear();
 
-	for (const video::GLMeshData& meshData : _meshDataPlant) {
-		glDeleteBuffers(1, &meshData.vertexBuffer);
-		glDeleteBuffers(1, &meshData.indexBuffer);
-		glDeleteBuffers(1, &meshData.offsetBuffer);
-		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+	for (video::GLMeshData& meshData : _meshDataPlant) {
+		meshData.shutdown();
 	}
 	_meshDataPlant.clear();
 	_noiseFuture.clear();
@@ -88,27 +81,21 @@ void WorldRenderer::deleteMesh(const glm::ivec3& pos) {
 	core_trace_gl_scoped(WorldRendererDeleteMesh);
 	const glm::ivec3& p = _world->getMeshPos(pos);
 	for (auto i = _meshDataOpaque.begin(); i != _meshDataOpaque.end(); ++i) {
-		const video::GLMeshData& meshData = *i;
+		video::GLMeshData& meshData = *i;
 		if (meshData.translation != p) {
 			continue;
 		}
 		_meshDataOpaque.erase(i);
-		glDeleteBuffers(1, &meshData.vertexBuffer);
-		glDeleteBuffers(1, &meshData.indexBuffer);
-		glDeleteBuffers(1, &meshData.offsetBuffer);
-		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+		meshData.shutdown();
 		break;
 	}
 	for (auto i = _meshDataWater.begin(); i != _meshDataWater.end(); ++i) {
-		const video::GLMeshData& meshData = *i;
+		video::GLMeshData& meshData = *i;
 		if (meshData.translation != p) {
 			continue;
 		}
 		_meshDataWater.erase(i);
-		glDeleteBuffers(1, &meshData.vertexBuffer);
-		glDeleteBuffers(1, &meshData.indexBuffer);
-		glDeleteBuffers(1, &meshData.offsetBuffer);
-		glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+		meshData.shutdown();
 		break;
 	}
 }
@@ -230,14 +217,11 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	const bool debugGeometry = _debugGeometry->boolVal();
 	int drawCallsWorld = 0;
 	for (auto i = meshes.begin(); i != meshes.end();) {
-		const video::GLMeshData& meshData = *i;
+		video::GLMeshData& meshData = *i;
 		const float distance = getDistance2(meshData.translation);
 		if (culling && isDistanceCulled(distance, true)) {
 			_world->allowReExtraction(meshData.translation);
-			glDeleteBuffers(1, &meshData.vertexBuffer);
-			glDeleteBuffers(1, &meshData.indexBuffer);
-			glDeleteBuffers(1, &meshData.offsetBuffer);
-			glDeleteVertexArrays(1, &meshData.vertexArrayObject);
+			meshData.shutdown();
 			i = meshes.erase(i);
 			continue;
 		}
@@ -250,19 +234,12 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
 		const glm::mat4& model = glm::scale(translate, meshData.scale);
 		shader.setUniformMatrix("u_model", model, false);
-		glBindVertexArray(meshData.vertexArrayObject);
+		meshData.bindVAO();
 
 		if (debugGeometry) {
 			shader.setUniformf("u_debug_color", 1.0);
 		}
-		if (meshData.amount == 1) {
-			glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, nullptr);
-		} else {
-			const int amount = (int)meshData.instancedPositions.size();
-			glBindBuffer(GL_ARRAY_BUFFER, meshData.offsetBuffer);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * amount, &meshData.instancedPositions[0], GL_DYNAMIC_DRAW);
-			glDrawElementsInstanced(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, nullptr, amount);
-		}
+		meshData.draw();
 		if (vertices != nullptr) {
 			*vertices += meshData.noOfVertices;
 		}
@@ -397,18 +374,8 @@ video::GLMeshData WorldRenderer::createMeshInternal(video::Shader& shader, voxel
 		return meshData;
 	}
 
-	// Create the VAOs for the meshes
-	glGenVertexArrays(1, &meshData.vertexArrayObject);
-
-	// The GL_ARRAY_BUFFER will contain the list of vertex positions
-	// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
-	// and GL_ARRAY_BUFFER will contain the offsets for instanced rendering
-	core_assert(buffers == 2 || buffers == 3);
-	glGenBuffers(buffers, &meshData.indexBuffer);
-	core_assert(buffers == 2 || meshData.offsetBuffer > 0);
-
-	core_assert(meshData.vertexArrayObject > 0);
-	glBindVertexArray(meshData.vertexArrayObject);
+	meshData.create(buffers);
+	meshData.bindVAO();
 
 	updateMesh(mesh, meshData);
 

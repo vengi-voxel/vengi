@@ -6,6 +6,7 @@
 
 #include "GLFunc.h"
 #include "core/GLM.h"
+#include "core/Common.h"
 
 namespace video {
 
@@ -13,7 +14,7 @@ struct GLMeshData {
 	GLuint noOfIndices = 0u;
 	GLuint noOfVertices = 0u;
 	GLenum indexType = 0;
-	// don't change the order of these two entries here - they are created in one step
+	// don't change the order of these three entries here - they are created and deleted in one step
 	GLuint indexBuffer = 0u;
 	GLuint vertexBuffer = 0u;
 	// used for instanced rendering
@@ -27,6 +28,56 @@ struct GLMeshData {
 	int amount = 1;
 	// this can only be u8vec3 because the mesh chunk size is small enough
 	std::vector<glm::vec3> instancedPositions;
+
+	inline void draw() {
+		if (amount == 1) {
+			glDrawElements(GL_TRIANGLES, noOfIndices, indexType, nullptr);
+		} else {
+			const int amount = (int)instancedPositions.size();
+			glBindBuffer(GL_ARRAY_BUFFER, offsetBuffer);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * amount, &instancedPositions[0], GL_DYNAMIC_DRAW);
+			glDrawElementsInstanced(GL_TRIANGLES, noOfIndices, indexType, nullptr, amount);
+		}
+	}
+
+	inline void bindVAO() {
+		core_assert(vertexArrayObject > 0);
+		glBindVertexArray(vertexArrayObject);
+	}
+
+	inline void create(int buffers) {
+		core_assert(vertexArrayObject == 0u);
+		// Create the VAOs for the meshes
+		glGenVertexArrays(1, &vertexArrayObject);
+
+		core_assert(indexBuffer == 0u);
+		core_assert(vertexBuffer == 0u);
+		core_assert(offsetBuffer == 0u);
+
+		// The GL_ARRAY_BUFFER will contain the list of vertex positions
+		// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
+		// and GL_ARRAY_BUFFER will contain the offsets for instanced rendering
+		core_assert(buffers == 2 || buffers == 3);
+		glGenBuffers(buffers, &indexBuffer);
+		core_assert(buffers == 2 || offsetBuffer > 0);
+	}
+
+	inline void deleteBuffers() {
+		glDeleteBuffers(3, &indexBuffer);
+		indexBuffer = 0u;
+		vertexBuffer = 0u;
+		offsetBuffer = 0u;
+	}
+
+	inline void deleteVAO() {
+		glDeleteVertexArrays(1, &vertexArrayObject);
+		vertexArrayObject = 0u;
+	}
+
+	inline void shutdown() {
+		deleteBuffers();
+		deleteVAO();
+	}
 };
 
 }
