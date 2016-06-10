@@ -339,7 +339,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		} else {
 			video::ShaderScope scoped(deferredShader);
 			_gbuffer.bindForReading(false);
-			glClearColor(0.0, 1.0, 0.0, 1.0);
+			glDisable(GL_CULL_FACE);
+			glClearColor(0.0, 0.0, 0.0, 1.0);
 			glClear(GL_COLOR_BUFFER_BIT);
 			deferredShader.setUniformi("u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
 			deferredShader.setUniformi("u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
