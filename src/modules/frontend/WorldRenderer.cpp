@@ -329,6 +329,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 			_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
 			glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+			// TODO: render the final buffer in the lower right corner of the screen
 		} else {
 			_gbuffer.bindForReading(false);
 			// TODO: do the lighting pass
