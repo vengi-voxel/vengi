@@ -11,9 +11,10 @@ $in float v_ambientocclusion;
 $in float v_debug_color;
 $out vec4 o_color;
 #else
+// the order is defines in the gbuffer bindings
 $out vec3 o_pos;
-$out vec3 o_norm;
 $out vec3 o_color;
+$out vec3 o_norm;
 #endif
 
 void main(void) {

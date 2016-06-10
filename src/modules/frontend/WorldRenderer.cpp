@@ -304,6 +304,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		_gbuffer.bindForReading();
+		GL_checkError();
 
 		const GLsizei halfWidth = (GLsizei) (width / 2.0f);
 		const GLsizei halfHeight = (GLsizei) (height / 2.0f);
@@ -317,8 +318,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
 		glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-		_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
-		glBlitFramebuffer(0, 0, width, height, halfWidth, 0, width, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 		GL_checkError();
 	}
 
