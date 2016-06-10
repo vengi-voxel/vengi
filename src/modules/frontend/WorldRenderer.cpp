@@ -345,7 +345,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 			deferredShader.setUniformi("u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
 			deferredShader.setUniformi("u_norm", video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
 			deferredShader.setUniformVec2("u_screensize", glm::vec2(width, height));
-			_fullscreenQuad.bind();
+			core_assert_always(_fullscreenQuad.bind());
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			_fullscreenQuad.unbind();
 			_gbuffer.unbind();
