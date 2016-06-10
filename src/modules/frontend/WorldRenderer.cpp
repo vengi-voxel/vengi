@@ -522,7 +522,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 }
 
 void WorldRenderer::onInit(video::Shader& plantShader, int width, int height) {
-	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false", core::CV_SHADER);
+	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugAmbientOcclusion, "false", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
