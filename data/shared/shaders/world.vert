@@ -2,11 +2,23 @@
 $in uvec3 a_pos;
 $in uvec2 a_info;
 
+#ifdef INSTANCED
+// instanced rendering
+$in vec3 a_offset;
+#endif
+#ifdef MATERIALOFFSET
+int materialoffset = MATERIALOFFSET;
+#else
+const int materialoffset = 0;
+#endif
+
+#define MATERIALCOLORS 32
+
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
 uniform sampler2D u_texture;
-uniform vec4 u_materialcolor[32];
+uniform vec4 u_materialcolor[MATERIALCOLORS];
 #if cl_deferred == 0
 uniform vec3 u_lightpos;
 uniform vec3 u_diffuse_color;
@@ -30,10 +42,15 @@ $out float v_debug_color;
 void main(void) {
 	uint a_ao = a_info[0];
 	uint a_material = a_info[1];
+#ifdef INSTANCED
+	vec4 pos4 = vec4(a_offset, 0.0) + u_model * vec4(a_pos, 1.0);
+#else
 	vec4 pos4 = u_model * vec4(a_pos, 1.0);
+#endif
 	v_pos = pos4.xyz;
 
-	vec3 materialColor = u_materialcolor[a_material].rgb;
+	int materialColorIndex = int(a_material) + materialoffset;
+	vec3 materialColor = u_materialcolor[materialColorIndex % MATERIALCOLORS].rgb;
 	vec3 colornoise = texture(u_texture, abs(pos4.xz) / 256.0 / 10.0).rgb;
 	v_color = vec4(materialColor * colornoise * 1.8, u_materialcolor[a_material].a);
 	v_color = clamp(v_color, 0.0, 1.0);
