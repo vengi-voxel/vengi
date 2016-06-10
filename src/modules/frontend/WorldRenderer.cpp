@@ -297,8 +297,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
 
 #if GBUFFER
-	const int width = camera.getWidth();
-	const int height = camera.getHeight();
+	const int width = camera.width();
+	const int height = camera.height();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	_gbuffer.bindForReading();
