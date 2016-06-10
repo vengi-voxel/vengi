@@ -11,7 +11,7 @@ Var::VarMap Var::_vars;
 ReadWriteLock Var::_lock("Var");
 
 VarPtr Var::get(const std::string& name, const std::string& value, unsigned int flags) {
-	VarMap::const_iterator i;
+	VarMap::iterator i;
 	bool missing;
 	{
 		ScopedReadLock lock(_lock);
@@ -25,6 +25,9 @@ VarPtr Var::get(const std::string& name, const std::string& value, unsigned int 
 		ScopedWriteLock lock(_lock);
 		_vars[name] = p;
 		return p;
+	}
+	if (flags != 0) {
+		i->second->_flags = flags;
 	}
 	return i->second;
 }

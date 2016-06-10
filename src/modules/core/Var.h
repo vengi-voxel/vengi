@@ -47,7 +47,7 @@ private:
 	static ReadWriteLock _lock;
 
 	const std::string _name;
-	const unsigned int _flags;
+	unsigned int _flags;
 
 	struct Value {
 		float _floatValue;
