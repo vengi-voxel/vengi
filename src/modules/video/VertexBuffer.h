@@ -35,6 +35,8 @@ public:
 
 	void shutdown();
 
+	static VertexBuffer createFullscreenQuad();
+
 	/**
 	 * @param[in] attributeIndex The index in the shader
 	 * @param[in] bufferIndex The internal buffer index that was returned by @c create()

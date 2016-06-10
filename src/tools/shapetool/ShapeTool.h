@@ -10,6 +10,7 @@
 #include "frontend/MeshShader.h"
 #include "frontend/ColorShader.h"
 #include "frontend/PlantShader.h"
+#include "frontend/DeferredDirectionalLight.h"
 #include "frontend/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "video/Camera.h"
@@ -29,6 +30,7 @@ protected:
 	frontend::WaterShader _waterShader;
 	frontend::MeshShader _meshShader;
 	frontend::ColorShader _colorShader;
+	frontend::DeferredDirectionalLight _deferredDirLightShader;
 	video::VertexBuffer _axisBuffer;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;

@@ -145,6 +145,8 @@ public:
 	void setUniform2fv(const std::string& name, const float* values, int length) const;
 	void setUniform2fv(int location, const float* values, int length) const;
 	void setUniform3fv(const std::string& name, const float* values, int length) const;
+	void setUniformVec2(const std::string& name, const glm::vec2& value) const;
+	void setUniformVec2v(const std::string& name, const glm::vec2* value, int length) const;
 	void setUniformVec3(const std::string& name, const glm::vec3& value) const;
 	void setUniformVec3v(const std::string& name, const glm::vec3* value, int length) const;
 	void setUniform3fv(int location, const float* values, int length) const;
@@ -286,6 +288,16 @@ inline void Shader::setUniform2fv(int location, const float* values, int length)
 inline void Shader::setUniform3fv(const std::string& name, const float* values, int length) const {
 	const int location = getUniformLocation(name);
 	setUniform3fv(location, values, length);
+}
+
+inline void Shader::setUniformVec2(const std::string& name, const glm::vec2& value) const {
+	const int location = getUniformLocation(name);
+	glUniform2fv(location, 1, glm::value_ptr(value));
+}
+
+inline void Shader::setUniformVec2v(const std::string& name, const glm::vec2* value, int length) const {
+	const int location = getUniformLocation(name);
+	glUniform2fv(location, length, glm::value_ptr(*value));
 }
 
 inline void Shader::setUniformVec3(const std::string& name, const glm::vec3& value) const {

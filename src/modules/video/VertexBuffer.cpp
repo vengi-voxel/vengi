@@ -7,6 +7,16 @@
 
 namespace video {
 
+VertexBuffer VertexBuffer::createFullscreenQuad() {
+	VertexBuffer vbo;
+	glm::vec3 vecs[] = {
+		glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(1.0f,  1.0f, 0.0f), glm::vec3( 1.0f, -1.0f, 0.0f),
+		glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(-1.0f, -1.0f, 0.0f),
+	};
+	vbo.create(vecs, sizeof(vecs));
+	return vbo;
+}
+
 VertexBuffer::VertexBuffer(const void* data, GLsizeiptr size, GLenum target) :
 		_vao(0) {
 	create(data, size, target);

@@ -15,7 +15,7 @@
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
 		ui::UIApp(filesystem, eventBus), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _plantShader(), _waterShader(),
-		_meshShader(), _colorShader() {
+		_meshShader(), _colorShader(), _deferredDirLightShader() {
 	init("engine", "shapetool");
 	_world->setClientData(true);
 }
@@ -49,6 +49,9 @@ core::AppState ShapeTool::onInit() {
 	if (!_colorShader.setup()) {
 		return core::Cleanup;
 	}
+	if (!_deferredDirLightShader.setup()) {
+		return core::Cleanup;
+	}
 
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
@@ -59,7 +62,7 @@ core::AppState ShapeTool::onInit() {
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	_world->setSeed(1);
-	_worldRenderer.onInit(_plantShader, _width, _height);
+	_worldRenderer.onInit(_plantShader, _deferredDirLightShader, _width, _height);
 	_camera.init(_width, _height);
 	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
@@ -135,7 +138,7 @@ void ShapeTool::beforeUI() {
 	_worldRenderer.extractNewMeshes(_camera.position());
 	_worldRenderer.onRunning(_deltaFrame);
 	_vertices = 0;
-	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _plantShader, _waterShader, _camera, &_vertices);
+	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _plantShader, _waterShader, _deferredDirLightShader, _camera, &_vertices);
 	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera);
 }
 
@@ -182,7 +185,7 @@ core::AppState ShapeTool::onRunning() {
 	_entity->update(_deltaFrame);
 	// TODO: add x, y and z letters to the axis
 	glDisable(GL_DEPTH_TEST);
-	core_assert(_axisBuffer.bind());
+	core_assert_always(_axisBuffer.bind());
 	glLineWidth(4.0f);
 	glDrawArrays(GL_LINES, 0, 6);
 	glLineWidth(1.0f);
@@ -202,6 +205,7 @@ core::AppState ShapeTool::onCleanup() {
 	_waterShader.shutdown();
 	_meshShader.shutdown();
 	_colorShader.shutdown();
+	_deferredDirLightShader.shutdown();
 	_axisBuffer.shutdown();
 	_entity = frontend::ClientEntityPtr();
 	core::AppState state = UIApp::onCleanup();

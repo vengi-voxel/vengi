@@ -50,7 +50,7 @@ bool GBuffer::init(int width, int height) {
 		glBindTexture(GL_TEXTURE_2D, _textures[i]);
 		// we are going to write vec3 into the out vars in the shaders
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _textures[i], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _textures[i], 0);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		GL_checkError();
@@ -58,7 +58,7 @@ bool GBuffer::init(int width, int height) {
 
 	glBindTexture(GL_TEXTURE_2D, _depthTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
 	GL_checkError();
 
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
@@ -101,9 +101,10 @@ void GBuffer::bindForReading(bool gbuffer) {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	// activate the textures to read from
-	for (unsigned int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
+	for (int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
 		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, _textures[GBUFFER_TEXTURE_TYPE_POSITION + i]);
+		core_assert(_textures[i] != 0);
+		glBindTexture(GL_TEXTURE_2D, _textures[i]);
 	}
 	glActiveTexture(GL_TEXTURE0);
 }
@@ -112,7 +113,7 @@ void GBuffer::unbind() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	// activate the textures to read from
-	for (unsigned int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
+	for (int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}

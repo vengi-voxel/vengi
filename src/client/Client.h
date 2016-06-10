@@ -12,6 +12,7 @@
 #include "frontend/MeshShader.h"
 #include "frontend/WaterShader.h"
 #include "frontend/PlantShader.h"
+#include "frontend/DeferredDirectionalLight.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/WorldRenderer.h"
 #include "util/PosLerp.h"
@@ -39,6 +40,7 @@ protected:
 	frontend::PlantShader _plantShader;
 	frontend::WaterShader _waterShader;
 	frontend::MeshShader _meshShader;
+	frontend::DeferredDirectionalLight _deferredDirLightShader;
 	// moving along the y axis should not arise the need to extract new meshes
 	video::Camera _camera;
 	frontend::WorldRenderer _worldRenderer;

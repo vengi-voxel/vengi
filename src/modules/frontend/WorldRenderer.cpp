@@ -197,7 +197,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 
 	const bool deferred = _deferred->boolVal();
 
-	shader.activate();
+	video::ShaderScope scoped(shader);
 	shader.setUniformMatrix("u_view", view, false);
 	shader.setUniformMatrix("u_projection", camera.projectionMatrix(), false);
 
@@ -262,12 +262,10 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		++i;
 	}
 
-	shader.deactivate();
-
 	return drawCallsWorld;
 }
 
-int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, const video::Camera& camera, int* vertices) {
+int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, const video::Camera& camera, int* vertices) {
 	handleMeshQueue(opaqueShader);
 
 	if (_meshDataOpaque.empty()) {
@@ -301,6 +299,13 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
 	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
 
+	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_CULL_FACE);
+
 	if (deferred) {
 		glDepthMask(GL_FALSE);
 		glDisable(GL_DEPTH_TEST);
@@ -311,9 +316,9 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 		const int width = camera.width();
 		const int height = camera.height();
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		glClear(GL_COLOR_BUFFER_BIT);
 		if (_deferredDebug->boolVal()) {
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+			glClear(GL_COLOR_BUFFER_BIT);
 			// show the gbuffer buffers
 			_gbuffer.bindForReading(true);
 			GL_checkError();
@@ -332,21 +337,22 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 			// TODO: render the final buffer in the lower right corner of the screen
 		} else {
+			Log::info("fuck this shit");
+			video::ShaderScope scoped(deferredShader);
 			_gbuffer.bindForReading(false);
-			// TODO: do the lighting pass
-
+			glClear(GL_COLOR_BUFFER_BIT);
+			deferredShader.setUniformi("u_pos", 0);
+			deferredShader.setUniformi("u_color", 1);
+			deferredShader.setUniformi("u_norm", 2);
+			deferredShader.setUniformVec2("u_screensize", glm::vec2(width, height));
+			_fullscreenQuad.bind();
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			_fullscreenQuad.unbind();
 			_gbuffer.unbind();
 		}
 
 		GL_checkError();
 	}
-
-	glBindVertexArray(0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glDisable(GL_DEPTH_TEST);
-	//glDisable(GL_CULL_FACE);
 
 	GL_checkError();
 	return drawCallsWorld;
@@ -539,10 +545,11 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 	_world->stats(meshes, extracted, pending);
 }
 
-void WorldRenderer::onInit(video::Shader& plantShader, int width, int height) {
+void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredShader, int width, int height) {
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
 	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
+	_fullscreenQuad = video::VertexBuffer::createFullscreenQuad();
 	core::Var::get(cfg::ClientDebugAmbientOcclusion, "false", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
@@ -558,6 +565,7 @@ void WorldRenderer::onInit(video::Shader& plantShader, int width, int height) {
 	}));
 	_colorTexture = video::createTexture("**colortexture**");
 	_plantGenerator.generateAll();
+	_fullscreenQuad.addAttribute(deferredShader.getAttributeLocation("a_pos"), 0, 4);
 
 	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
