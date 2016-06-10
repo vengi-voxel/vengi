@@ -124,10 +124,12 @@ core::AppState WindowedApp::onInit() {
 	const core::VarPtr& multisampleBuffers = core::Var::get(cfg::ClientMultiSampleBuffers, "1");
 	const core::VarPtr& multisampleSamples = core::Var::get(cfg::ClientMultiSampleSamples, "4");
 	const core::VarPtr& deferred = core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER | core::CV_READONLY);
-	const bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
+	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
 	if (!deferred->boolVal() && multisampling) {
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, multisampleBuffers->intVal());
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, multisampleSamples->intVal());
+	} else {
+		multisampling = false;
 	}
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glv.majorVersion);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glv.minorVersion);
@@ -189,6 +191,7 @@ core::AppState WindowedApp::onInit() {
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
 	if (buffers == 0 || samples == 0) {
 		Log::warn("Could not get FSAA context");
+		multisampling = false;
 	} else {
 		Log::info("Got FSAA context with %i buffers and %i samples", buffers, samples);
 	}

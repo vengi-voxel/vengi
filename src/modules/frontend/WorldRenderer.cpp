@@ -292,7 +292,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	if (deferred) {
 		_gbuffer.bindForWriting();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDisable(GL_MULTISAMPLE);
 	}
 
 	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
