@@ -11,8 +11,13 @@ FrameBuffer::FrameBuffer() :
 }
 
 FrameBuffer::~FrameBuffer() {
+	shutdown();
+}
+
+void FrameBuffer::shutdown() {
 	if (_framebuffer != 0)
 		glDeleteFramebuffers(1, &_framebuffer);
+	_framebuffer = 0;
 }
 
 void FrameBuffer::bind() {
@@ -35,11 +40,12 @@ bool FrameBuffer::isSuccessful() {
 }
 
 void FrameBuffer::attachRenderBuffer(GLenum internalformat, GLenum attachment, GLsizei width, GLsizei height) {
-	GLuint depthrenderbuffer;
-	glGenRenderbuffers(1, &depthrenderbuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+	// TODO: shutdown support for render buffers, too
+	GLuint rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 	glRenderbufferStorage(GL_RENDERBUFFER, internalformat, width, height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, depthrenderbuffer);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rbo);
 }
 
 void FrameBuffer::attachTexture(GLuint texture, GLenum attachmentType) {

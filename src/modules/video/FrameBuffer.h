@@ -16,6 +16,8 @@ public:
 	FrameBuffer();
 	~FrameBuffer();
 
+	void shutdown();
+
 	bool isSuccessful();
 
 	/**
