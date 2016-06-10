@@ -398,6 +398,8 @@ core::AppState UIApp::onInit() {
 
 	_console.init();
 
+	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
+
 	return state;
 }
 
@@ -429,7 +431,8 @@ core::AppState UIApp::onRunning() {
 			core_trace_scoped(UIAppBeforeUI);
 			beforeUI();
 		}
-		{
+		const bool renderUI = _renderUI->boolVal();
+		if (renderUI) {
 			core_trace_scoped(UIAppUpdateUI);
 			tb::TBAnimationManager::Update();
 			_root.InvokeProcessStates();
@@ -455,7 +458,7 @@ core::AppState UIApp::onRunning() {
 			core_trace_scoped(UIAppAfterUI);
 			afterUI();
 		}
-		{
+		if (renderUI) {
 			core_trace_scoped(UIAppEndPaint);
 			_renderer.EndPaint();
 			// If animations are running, reinvalidate immediately

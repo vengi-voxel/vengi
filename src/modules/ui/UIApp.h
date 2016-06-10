@@ -61,6 +61,7 @@ protected:
 	uint32_t _frameCounter = 0;
 	double _frameCounterResetRime = 0.0;
 	Console _console;
+	core::VarPtr _renderUI;
 
 	bool loadKeyBindings();
 

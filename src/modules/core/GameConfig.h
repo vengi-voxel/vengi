@@ -23,6 +23,7 @@ constexpr const char *ClientFullscreen = "cl_fullscreen";
 constexpr const char *ClientMultiSampleSamples = "cl_multisamplesamples";
 constexpr const char *ClientMultiSampleBuffers = "cl_multisamplebuffers";
 constexpr const char *ClientOpenGLVersion = "cl_openglversion";
+constexpr const char *ClientRenderUI = "cl_renderui";
 
 constexpr const char *ClientDeferred = "cl_deferred";
 constexpr const char *ClientDeferredDebug = "cl_deferreddebug";
