@@ -334,6 +334,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		} else {
 			_gbuffer.bindForReading(false);
 			// TODO: do the lighting pass
+
+			_gbuffer.unbind();
 		}
 
 		GL_checkError();

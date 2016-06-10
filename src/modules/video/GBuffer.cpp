@@ -105,6 +105,18 @@ void GBuffer::bindForReading(bool gbuffer) {
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, _textures[GBUFFER_TEXTURE_TYPE_POSITION + i]);
 	}
+	glActiveTexture(GL_TEXTURE0);
+}
+
+void GBuffer::unbind() {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+	// activate the textures to read from
+	for (unsigned int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	glActiveTexture(GL_TEXTURE0);
 }
 
 void GBuffer::setReadBuffer(GBufferTextureType textureType) {
