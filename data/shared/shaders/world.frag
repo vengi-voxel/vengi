@@ -9,11 +9,12 @@ $in vec3 v_fogcolor;
 $in float v_viewdistance;
 $in float v_ambientocclusion;
 $in float v_debug_color;
+$out vec4 o_color;
 #else
 $out vec3 o_pos;
 $out vec3 o_norm;
-#endif
 $out vec3 o_color;
+#endif
 
 void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
@@ -32,7 +33,7 @@ void main(void) {
 	float fogval = 1.0 - clamp((v_viewdistance - fogdistance) / (v_viewdistance - fogstart), 0.0, 1.0);
 
 	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * v_debug_color;
-	o_color = mix(linearColor, v_fogcolor, fogval);
+	o_color = vec4(mix(linearColor, v_fogcolor, fogval), v_color.a);
 #else
 	o_color = v_color;
 	o_pos = v_pos;
