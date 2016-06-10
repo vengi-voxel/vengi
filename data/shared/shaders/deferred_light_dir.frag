@@ -17,6 +17,5 @@ void main(void) {
 	vec3 color = $texture2D(u_color, uv).xyz;
 	vec3 norm  = normalize($texture2D(u_norm, uv).xyz);
 
-	//o_color = vec4(color, 1.0) * calcDirectionalLight(pos, norm);
-	o_color = vec4(1.0, 1.0, 0.0, 1.0);
+	o_color = vec4(color, 1.0) * calcDirectionalLight(pos, norm);
 }
