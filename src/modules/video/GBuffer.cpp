@@ -60,6 +60,7 @@ bool GBuffer::init(int width, int height) {
 	GL_checkError();
 
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	static_assert(SDL_arraysize(drawBuffers) == SDL_arraysize(_textures), "buffers and textures don't match");
 	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
 	GL_checkError();
 
