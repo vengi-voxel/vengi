@@ -81,16 +81,34 @@ bool GBuffer::init(int width, int height) {
 
 void GBuffer::bindForWriting() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
+#ifdef DEBUG
+	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		Log::error("Failed to bind framebuffer for writing");
+	}
+#endif
 	GL_checkError();
 }
 
 void GBuffer::bindForReading() {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
+#ifdef DEBUG
+	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		Log::error("Failed to bind framebuffer for reading");
+	}
 	GL_checkError();
+#endif
 }
 
 void GBuffer::setReadBuffer(GBufferTextureType textureType) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
+#ifdef DEBUG
+	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		Log::error("Failed to set the read buffer to %i", (int)textureType);
+	}
+#endif
 	GL_checkError();
 }
 
