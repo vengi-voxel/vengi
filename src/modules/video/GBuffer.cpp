@@ -39,8 +39,8 @@ bool GBuffer::init(int width, int height) {
 	glGenFramebuffers(1, &_fbo);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
 
-	glGenTextures(SDL_arraysize(_textures), _textures);
-	glGenTextures(1, &_depthTexture);
+	// +1 for the depth texture
+	glGenTextures(SDL_arraysize(_textures) + 1, _textures);
 
 	for (std::size_t i = 0; i < SDL_arraysize(_textures); ++i) {
 		glBindTexture(GL_TEXTURE_2D, _textures[i]);
@@ -57,13 +57,14 @@ bool GBuffer::init(int width, int height) {
 
 	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
+	// restore default FBO
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		Log::error("FB error, status: %i", (int)status);
 		return false;
 	}
-
-	// restore default FBO
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	return true;
 }
