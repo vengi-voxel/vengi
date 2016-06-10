@@ -109,7 +109,7 @@ public:
 
 	bool extractNewMeshes(const glm::vec3& position, bool force = false);
 	int renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, const video::Camera& camera, int* vertices = nullptr);
-	int renderEntities(const video::ShaderPtr& shader, const video::Camera& camera);
+	int renderEntities(video::Shader& shader, const video::Camera& camera);
 };
 
 inline float WorldRenderer::getViewDistance() const {

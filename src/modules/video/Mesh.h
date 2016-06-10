@@ -40,15 +40,13 @@ private:
 	Vertices _normals;
 	TexCoords _texCoords;
 	Indices _indices;
-
-	ShaderPtr _shader;
 public:
 	Mesh();
 	~Mesh();
 
 	void shutdown();
 	bool loadMesh(const std::string& filename);
-	bool initMesh(const ShaderPtr& shader);
+	bool initMesh(Shader& shader);
 	int render();
 };
 

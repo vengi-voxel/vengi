@@ -38,7 +38,7 @@ protected:
 	frontend::WorldShader _worldShader;
 	frontend::PlantShader _plantShader;
 	frontend::WaterShader _waterShader;
-	frontend::MeshShaderPtr _meshShader;
+	frontend::MeshShader _meshShader;
 	// moving along the y axis should not arise the need to extract new meshes
 	video::Camera _camera;
 	frontend::WorldRenderer _worldRenderer;

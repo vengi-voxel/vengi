@@ -31,7 +31,6 @@ void Mesh::shutdown() {
 	_texCoords.clear();
 	_indices.clear();
 
-	_shader = ShaderPtr();
 	_readyToInit = false;
 	// destroy all the 4 buffers at once
 	if (_posBuffer != 0) {
@@ -112,12 +111,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 	return true;
 }
 
-bool Mesh::initMesh(const ShaderPtr& shader) {
-	if (_shader)
-		return true;
-	if (!shader)
-		return false;
-
+bool Mesh::initMesh(Shader& shader) {
 	if (_state != io::IOSTATE_LOADED) {
 		if (!_readyToInit) {
 			return false;
@@ -138,8 +132,6 @@ bool Mesh::initMesh(const ShaderPtr& shader) {
 		_state = io::IOSTATE_LOADED;
 	}
 
-	_shader = shader;
-
 	glGenVertexArrays(1, &_vertexArrayObject);
 	// generate all the 4 needed buffers at once
 	glGenBuffers(4, &_posBuffer);
@@ -148,19 +140,19 @@ bool Mesh::initMesh(const ShaderPtr& shader) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, _posBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_positions[0]) * _positions.size(), &_positions[0], GL_STATIC_DRAW);
-	const int locPos = _shader->enableVertexAttribute("a_pos");
+	const int locPos = shader.enableVertexAttribute("a_pos");
 	core_assert(locPos >= 0);
 	glVertexAttribPointer(locPos, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _uvBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_texCoords[0]) * _texCoords.size(), &_texCoords[0], GL_STATIC_DRAW);
-	const int locTexCoords = _shader->enableVertexAttribute("a_texcoords");
+	const int locTexCoords = shader.enableVertexAttribute("a_texcoords");
 	core_assert(locTexCoords >= 0);
 	glVertexAttribPointer(locTexCoords, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _normalBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_normals[0]) * _normals.size(), &_normals[0], GL_STATIC_DRAW);
-	const int locNorm = _shader->enableVertexAttribute("a_norm");
+	const int locNorm = shader.enableVertexAttribute("a_norm");
 	core_assert(locNorm >= 0);
 	glVertexAttribPointer(locNorm, 3, GL_FLOAT, GL_FALSE, 0, 0);
 

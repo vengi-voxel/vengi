@@ -27,8 +27,8 @@ protected:
 	frontend::WorldShader _worldShader;
 	frontend::PlantShader _plantShader;
 	frontend::WaterShader _waterShader;
-	frontend::MeshShaderPtr _meshShader;
-	frontend::ColorShaderPtr _colorShader;
+	frontend::MeshShader _meshShader;
+	frontend::ColorShader _colorShader;
 	video::VertexBuffer _axisBuffer;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;

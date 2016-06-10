@@ -15,7 +15,7 @@
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
 		ui::UIApp(filesystem, eventBus), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _plantShader(), _waterShader(),
-		_meshShader(new frontend::MeshShader()), _colorShader(new frontend::ColorShader()) {
+		_meshShader(), _colorShader() {
 	init("engine", "shapetool");
 	_world->setClientData(true);
 }
@@ -43,10 +43,10 @@ core::AppState ShapeTool::onInit() {
 	if (!_waterShader.setup()) {
 		return core::Cleanup;
 	}
-	if (!_meshShader->setup()) {
+	if (!_meshShader.setup()) {
 		return core::Cleanup;
 	}
-	if (!_colorShader->setup()) {
+	if (!_colorShader.setup()) {
 		return core::Cleanup;
 	}
 
@@ -104,8 +104,8 @@ core::AppState ShapeTool::onInit() {
 	const int32_t vIndex = _axisBuffer.create(verticesAxis, sizeof(verticesAxis));
 	const int32_t cIndex = _axisBuffer.create(colorAxis, sizeof(colorAxis));
 	core_assert(vIndex >= 0 && cIndex >= 0);
-	_axisBuffer.addAttribute(_colorShader->getAttributeLocation("a_pos"), vIndex, 4);
-	_axisBuffer.addAttribute(_colorShader->getAttributeLocation("a_color"), cIndex, 4);
+	_axisBuffer.addAttribute(_colorShader.getAttributeLocation("a_pos"), vIndex, 4);
+	_axisBuffer.addAttribute(_colorShader.getAttributeLocation("a_color"), cIndex, 4);
 
 	new WorldParametersWindow(this);
 	new TreeParametersWindow(this);
@@ -173,9 +173,9 @@ core::AppState ShapeTool::onRunning() {
 
 	const glm::mat4& view = _camera.viewMatrix();
 
-	_colorShader->activate();
-	_colorShader->setUniformMatrix("u_view", view, false);
-	_colorShader->setUniformMatrix("u_projection", _camera.projectionMatrix(), false);
+	_colorShader.activate();
+	_colorShader.setUniformMatrix("u_view", view, false);
+	_colorShader.setUniformMatrix("u_projection", _camera.projectionMatrix(), false);
 
 	//glm::vec3 entPos = _entity->position();
 	//entPos.y = _world->findFloor(entPos.x, entPos.z);
@@ -188,7 +188,7 @@ core::AppState ShapeTool::onRunning() {
 	glLineWidth(1.0f);
 	_axisBuffer.unbind();
 
-	_colorShader->deactivate();
+	_colorShader.deactivate();
 	GL_checkError();
 
 	return state;
@@ -200,8 +200,8 @@ core::AppState ShapeTool::onCleanup() {
 	_worldShader.shutdown();
 	_plantShader.shutdown();
 	_waterShader.shutdown();
-	_meshShader->shutdown();
-	_colorShader->shutdown();
+	_meshShader.shutdown();
+	_colorShader.shutdown();
 	_axisBuffer.shutdown();
 	_entity = frontend::ClientEntityPtr();
 	core::AppState state = UIApp::onCleanup();

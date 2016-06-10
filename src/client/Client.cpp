@@ -28,7 +28,7 @@
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
 		UIApp(filesystem, eventBus, 17816), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
-		_timeProvider(timeProvider), _worldShader(), _plantShader(), _meshShader(new frontend::MeshShader()),
+		_timeProvider(timeProvider), _worldShader(), _plantShader(), _meshShader(),
 		_worldRenderer(world) {
 	_world->setClientData(true);
 	init("engine", "client");
@@ -108,7 +108,7 @@ core::AppState Client::onInit() {
 	if (!_waterShader.setup()) {
 		return core::Cleanup;
 	}
-	if (!_meshShader->setup()) {
+	if (!_meshShader.setup()) {
 		return core::Cleanup;
 	}
 
@@ -176,7 +176,7 @@ core::AppState Client::onCleanup() {
 	_worldShader.shutdown();
 	_plantShader.shutdown();
 	_waterShader.shutdown();
-	_meshShader = frontend::MeshShaderPtr();
+	_meshShader.shutdown();
 	core::AppState state = UIApp::onCleanup();
 	_world->shutdown();
 	return state;

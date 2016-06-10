@@ -453,7 +453,7 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	extractMeshAroundCamera(_world->getMeshPos(pos), initialExtractionRadius);
 }
 
-int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::Camera& camera) {
+int WorldRenderer::renderEntities(video::Shader& shader, const video::Camera& camera) {
 	if (_entities.empty()) {
 		return 0;
 	}
@@ -463,13 +463,13 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 
 	const glm::mat4& view = camera.viewMatrix();
 
-	shader->activate();
-	shader->setUniformMatrix("u_view", view, false);
-	shader->setUniformMatrix("u_projection", camera.projectionMatrix(), false);
-	shader->setUniformVec3("u_lightpos", _lightPos);
-	shader->setUniformf("u_fogrange", _fogRange);
-	shader->setUniformf("u_viewdistance", _viewDistance);
-	shader->setUniformi("u_texture", 0);
+	shader.activate();
+	shader.setUniformMatrix("u_view", view, false);
+	shader.setUniformMatrix("u_projection", camera.projectionMatrix(), false);
+	shader.setUniformVec3("u_lightpos", _lightPos);
+	shader.setUniformf("u_fogrange", _fogRange);
+	shader.setUniformf("u_viewdistance", _viewDistance);
+	shader.setUniformi("u_texture", 0);
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_now);
@@ -483,11 +483,11 @@ int WorldRenderer::renderEntities(const video::ShaderPtr& shader, const video::C
 		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), ent->position());
 		const glm::mat4& scale = glm::scale(translate, glm::vec3(ent->scale()));
 		const glm::mat4& model = glm::rotate(scale, ent->orientation(), glm::vec3(0.0, 1.0, 0.0));
-		shader->setUniformMatrix("u_model", model, false);
+		shader.setUniformMatrix("u_model", model, false);
 		drawCallsEntities += mesh->render();
 		GL_checkError();
 	}
-	shader->deactivate();
+	shader.deactivate();
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	GL_checkError();
