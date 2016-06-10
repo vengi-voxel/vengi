@@ -337,7 +337,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 			// TODO: render the final buffer in the lower right corner of the screen
 		} else {
-			Log::info("fuck this shit");
 			video::ShaderScope scoped(deferredShader);
 			_gbuffer.bindForReading(false);
 			glClear(GL_COLOR_BUFFER_BIT);
