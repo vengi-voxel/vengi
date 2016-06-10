@@ -162,6 +162,10 @@ bool Shader::deactivate() const {
 	return _active;
 }
 
+void Shader::addDefine(const std::string& name, const std::string& value) {
+	_defines[name] = value;
+}
+
 int Shader::getAttributeLocation(const std::string& name) const {
 	ShaderVariables::const_iterator i = _attributes.find(name);
 	if (i == _attributes.end()) {
@@ -261,6 +265,18 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 			src.append("\n");
 		}
 	});
+
+	for (auto i = _defines.begin(); i != _defines.end(); ++i) {
+		src.append("#ifndef ");
+		src.append(i->first);
+		src.append("\n");
+		src.append("#define ");
+		src.append(i->first);
+		src.append(" ");
+		src.append(i->second);
+		src.append("\n");
+		src.append("#endif\n");
+	}
 
 	std::string append(buffer);
 

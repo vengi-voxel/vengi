@@ -9,6 +9,7 @@
 #include <cstring>
 #include <memory>
 #include <vector>
+#include <map>
 #include <unordered_map>
 #include "GLFunc.h"
 #include "core/GLM.h"
@@ -36,6 +37,9 @@ protected:
 	GLuint _program;
 	bool _initialized;
 	mutable bool _active;
+
+	typedef std::map<std::string, std::string> ShaderDefines;
+	ShaderDefines _defines;
 
 	typedef std::unordered_map<std::string, int> ShaderVariables;
 	ShaderVariables _uniforms;
@@ -101,6 +105,11 @@ public:
 	virtual bool activate() const;
 
 	virtual bool deactivate() const;
+
+	/**
+	 * @brief Adds a new define in the form '#define value' to the shader source code
+	 */
+	void addDefine(const std::string& name, const std::string& value);
 
 	int getAttributeLocation(const std::string& name) const;
 
