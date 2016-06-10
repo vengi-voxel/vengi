@@ -27,11 +27,11 @@ void FrameBuffer::bind() {
 	}
 
 	glGenFramebuffers(1, &_framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _framebuffer);
 }
 
 void FrameBuffer::unbind() {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
 bool FrameBuffer::isSuccessful() {

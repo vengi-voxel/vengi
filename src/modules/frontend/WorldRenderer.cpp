@@ -291,7 +291,10 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	const bool deferred = _deferred->boolVal();
 	if (deferred) {
 		_gbuffer.bindForWriting();
+		glDepthMask(GL_TRUE);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
 	}
 
 	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
@@ -299,24 +302,37 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
 
 	if (deferred) {
+		glDepthMask(GL_FALSE);
+		glDisable(GL_DEPTH_TEST);
+
+		glEnable(GL_BLEND);
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_ONE, GL_ONE);
+
 		const int width = camera.width();
 		const int height = camera.height();
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		_gbuffer.bindForReading();
-		GL_checkError();
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+		if (true) {
+			// show the gbuffer buffers
+			_gbuffer.bindForReading(true);
+			GL_checkError();
 
-		const GLsizei halfWidth = (GLsizei) (width / 2.0f);
-		const GLsizei halfHeight = (GLsizei) (height / 2.0f);
+			const GLsizei halfWidth = (GLsizei) (width / 2.0f);
+			const GLsizei halfHeight = (GLsizei) (height / 2.0f);
 
-		_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
-		glBlitFramebuffer(0, 0, width, height, 0, 0, halfWidth, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+			_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
+			glBlitFramebuffer(0, 0, width, height, 0, 0, halfWidth, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-		_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
-		glBlitFramebuffer(0, 0, width, height, 0, halfHeight, halfWidth, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+			_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
+			glBlitFramebuffer(0, 0, width, height, 0, halfHeight, halfWidth, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-		_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
-		glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+			_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
+			glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		} else {
+			_gbuffer.bindForReading(false);
+			// TODO: do the lighting pass
+		}
 
 		GL_checkError();
 	}

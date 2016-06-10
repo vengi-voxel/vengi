@@ -51,6 +51,8 @@ bool GBuffer::init(int width, int height) {
 		// we are going to write vec3 into the out vars in the shaders
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _textures[i], 0);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		GL_checkError();
 	}
 
@@ -90,15 +92,19 @@ void GBuffer::bindForWriting() {
 	GL_checkError();
 }
 
-void GBuffer::bindForReading() {
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
-#ifdef DEBUG
-	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		Log::error("Failed to bind framebuffer for reading");
+void GBuffer::bindForReading(bool gbuffer) {
+	if (gbuffer) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
+		return;
 	}
-	GL_checkError();
-#endif
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+	// activate the textures to read from
+	for (unsigned int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, _textures[GBUFFER_TEXTURE_TYPE_POSITION + i]);
+	}
 }
 
 void GBuffer::setReadBuffer(GBufferTextureType textureType) {

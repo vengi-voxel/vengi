@@ -22,7 +22,7 @@ public:
 
 	void setReadBuffer(GBufferTextureType textureType);
 	void bindForWriting();
-	void bindForReading();
+	void bindForReading(bool gbuffer = false);
 
 private:
 	GLuint _fbo;
