@@ -313,7 +313,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		const int height = camera.height();
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
-		if (true) {
+		if (_deferredDebug->boolVal()) {
 			// show the gbuffer buffers
 			_gbuffer.bindForReading(true);
 			GL_checkError();
@@ -538,6 +538,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 void WorldRenderer::onInit(video::Shader& plantShader, int width, int height) {
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
+	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
 	core::Var::get(cfg::ClientDebugAmbientOcclusion, "false", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {

@@ -60,6 +60,7 @@ private:
 	video::GBuffer _gbuffer;
 	core::VarPtr _debugGeometry;
 	core::VarPtr _deferred;
+	core::VarPtr _deferredDebug;
 
 	voxel::PlantGenerator _plantGenerator;
 
