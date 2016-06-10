@@ -58,8 +58,8 @@ core::AppState WindowedApp::onRunning() {
 	}
 
 	core_trace_gl_scoped(WindowedAppPrepareContext);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	SDL_GL_MakeCurrent(_window, _glcontext);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// TODO: maybe only do this every nth frame?
 	core::Singleton<ShaderManager>::getInstance().update();
 
