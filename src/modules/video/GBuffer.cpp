@@ -47,20 +47,24 @@ bool GBuffer::init(int width, int height) {
 		// we are going to write vec3 into the out vars in the shaders
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _textures[i], 0);
+		GL_checkError();
 	}
 
 	glBindTexture(GL_TEXTURE_2D, _depthTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
+	GL_checkError();
 
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
+	GL_checkError();
 
 	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 	// restore default FBO
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	GL_checkError();
 
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		Log::error("FB error, status: %i", (int)status);
@@ -72,14 +76,17 @@ bool GBuffer::init(int width, int height) {
 
 void GBuffer::bindForWriting() {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
+	GL_checkError();
 }
 
 void GBuffer::bindForReading() {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
+	GL_checkError();
 }
 
 void GBuffer::setReadBuffer(GBufferTextureType textureType) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
+	GL_checkError();
 }
 
 }
