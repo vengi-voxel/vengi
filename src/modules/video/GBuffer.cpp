@@ -28,10 +28,14 @@ void GBuffer::shutdown() {
 
 	if (_textures[0] != 0) {
 		glDeleteTextures(SDL_arraysize(_textures), _textures);
+		for (int i = 0; i < (int)SDL_arraysize(_textures); ++i) {
+			_textures[i] = 0;
+		}
 	}
 
 	if (_depthTexture != 0) {
 		glDeleteTextures(1, &_depthTexture);
+		_depthTexture = 0;
 	}
 }
 
