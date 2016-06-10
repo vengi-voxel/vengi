@@ -163,6 +163,7 @@ bool Shader::deactivate() const {
 }
 
 void Shader::addDefine(const std::string& name, const std::string& value) {
+	core_assert_msg(!_initialized, "Shader is already initialized");
 	_defines[name] = value;
 }
 
