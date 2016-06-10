@@ -523,7 +523,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 
 void WorldRenderer::onInit(video::Shader& plantShader, int width, int height) {
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
-	_deferred = core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
+	_deferred = core::Var::get(cfg::ClientDeferred);
 	core::Var::get(cfg::ClientDebugAmbientOcclusion, "false", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
