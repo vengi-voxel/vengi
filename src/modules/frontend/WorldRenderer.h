@@ -52,6 +52,7 @@ private:
 	float _viewDistance = 0.1f;
 	long _now = 0l;
 
+	glm::vec4 _clearColor;
 	video::TexturePtr _colorTexture;
 	glm::vec3 _lightPos = glm::vec3(10000.0, 10000.0, 10000.0);
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);

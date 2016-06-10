@@ -30,7 +30,7 @@ inline void checkError(const char *file, unsigned int line, const char *function
 }
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport) :
-		App(filesystem, eventBus, traceport), _window(nullptr), _glcontext(nullptr), _width(-1), _height(-1), _aspect(1.0f), _clearColor(core::Color::White) {
+		App(filesystem, eventBus, traceport), _window(nullptr), _glcontext(nullptr), _width(-1), _height(-1), _aspect(1.0f) {
 }
 
 void WindowedApp::onAfterRunning() {
@@ -58,9 +58,8 @@ core::AppState WindowedApp::onRunning() {
 	}
 
 	core_trace_gl_scoped(WindowedAppPrepareContext);
-	SDL_GL_MakeCurrent(_window, _glcontext);
-	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	SDL_GL_MakeCurrent(_window, _glcontext);
 	// TODO: maybe only do this every nth frame?
 	core::Singleton<ShaderManager>::getInstance().update();
 

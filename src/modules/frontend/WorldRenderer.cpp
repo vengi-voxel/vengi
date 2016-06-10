@@ -3,6 +3,7 @@
  */
 
 #include "WorldRenderer.h"
+#include "core/Color.h"
 #include "video/GLFunc.h"
 #include "voxel/Spiral.h"
 #include "core/App.h"
@@ -19,7 +20,7 @@ constexpr int MinExtractionCullingDistance = 1000;
 namespace frontend {
 
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
-		_world(world) {
+		_world(world), _clearColor(core::Color::LightBlue) {
 }
 
 WorldRenderer::~WorldRenderer() {
@@ -290,11 +291,12 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	if (deferred) {
 		_gbuffer.bindForWriting();
 		glDepthMask(GL_TRUE);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 	}
 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
 	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
 	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
@@ -303,16 +305,11 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glDisable(GL_DEPTH_TEST);
-	//glDisable(GL_CULL_FACE);
-
 	if (deferred) {
 		glDepthMask(GL_FALSE);
 		glDisable(GL_DEPTH_TEST);
-
-		glEnable(GL_BLEND);
-		glBlendEquation(GL_FUNC_ADD);
-		glBlendFunc(GL_ONE, GL_ONE);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_BLEND);
 
 		const int width = camera.width();
 		const int height = camera.height();
@@ -337,11 +334,10 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 			// TODO: render the final buffer in the lower right corner of the screen
 		} else {
-			video::ShaderScope scoped(deferredShader);
 			_gbuffer.bindForReading(false);
-			glDisable(GL_CULL_FACE);
-			glClearColor(0.0, 0.0, 0.0, 1.0);
 			glClear(GL_COLOR_BUFFER_BIT);
+
+			video::ShaderScope scoped(deferredShader);
 			deferredShader.setUniformi("u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
 			deferredShader.setUniformi("u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
 			deferredShader.setUniformi("u_norm", video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);

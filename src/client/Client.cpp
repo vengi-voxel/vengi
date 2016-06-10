@@ -125,7 +125,6 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	_worldRenderer.onInit(_plantShader, _deferredDirLightShader, _width, _height);
-	_clearColor = core::Color::LightBlue;
 
 	_root.SetSkinBg(TBIDC("background"));
 	new frontend::LoginWindow(this);
