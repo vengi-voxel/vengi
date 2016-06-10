@@ -1,6 +1,5 @@
 $in vec3 v_pos;
 $in vec4 v_color;
-$in vec4 v_worldpos;
 
 $out vec3 o_pos;
 $out vec3 o_color;

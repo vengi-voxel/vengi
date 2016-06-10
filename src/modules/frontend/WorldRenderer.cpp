@@ -13,8 +13,6 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "MaterialColor.h"
 
-#define GBUFFER 0
-
 constexpr int MinCullingDistance = 500;
 constexpr int MinExtractionCullingDistance = 1000;
 
@@ -43,9 +41,7 @@ void WorldRenderer::reset() {
 }
 
 void WorldRenderer::shutdown() {
-#if GBUFFER
 	_gbuffer.shutdown();
-#endif
 	reset();
 	_colorTexture = video::TexturePtr();
 	_entities.clear();
@@ -199,16 +195,21 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 
 	const MaterialColorArray& materialColors = getMaterialColors();
 
+	const bool deferred = _deferred->boolVal();
+
 	shader.activate();
 	shader.setUniformMatrix("u_view", view, false);
 	shader.setUniformMatrix("u_projection", camera.projectionMatrix(), false);
-	shader.setUniformf("u_fogrange", _fogRange);
-	shader.setUniformf("u_viewdistance", _viewDistance);
+
 	shader.setUniformi("u_texture", 0);
-	shader.setUniformVec3("u_lightpos", _lightPos + camera.position());
-	shader.setUniformVec3("u_diffuse_color", _diffuseColor);
 	shader.setUniformVec4v("u_materialcolor[0]", &materialColors[0], materialColors.size());
-	shader.setUniformf("u_debug_color", 1.0);
+	if (!deferred) {
+		shader.setUniformf("u_fogrange", _fogRange);
+		shader.setUniformf("u_viewdistance", _viewDistance);
+		shader.setUniformVec3("u_lightpos", _lightPos + camera.position());
+		shader.setUniformVec3("u_diffuse_color", _diffuseColor);
+		shader.setUniformf("u_debug_color", 1.0);
+	}
 
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
@@ -234,7 +235,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		shader.setUniformMatrix("u_model", model, false);
 		meshData.bindVAO();
 
-		if (debugGeometry) {
+		if (debugGeometry && !deferred) {
 			shader.setUniformf("u_debug_color", 1.0);
 		}
 		meshData.draw();
@@ -243,7 +244,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		}
 		GL_checkError();
 
-		if (debugGeometry) {
+		if (debugGeometry && !deferred) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glEnable(GL_POLYGON_OFFSET_LINE);
 			glEnable(GL_LINE_SMOOTH);
@@ -287,38 +288,40 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 	_colorTexture->bind();
 
-#if GBUFFER
-	_gbuffer.bindForWriting();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
+	const bool deferred = _deferred->boolVal();
+	if (deferred) {
+		_gbuffer.bindForWriting();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_MULTISAMPLE);
+	}
 
 	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
 	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
 	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
 
-#if GBUFFER
-	const int width = camera.width();
-	const int height = camera.height();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	_gbuffer.bindForReading();
+	if (deferred) {
+		const int width = camera.width();
+		const int height = camera.height();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		_gbuffer.bindForReading();
 
-	const GLsizei halfWidth = (GLsizei) (width / 2.0f);
-	const GLsizei halfHeight = (GLsizei) (height / 2.0f);
+		const GLsizei halfWidth = (GLsizei) (width / 2.0f);
+		const GLsizei halfHeight = (GLsizei) (height / 2.0f);
 
-	_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
-	glBlitFramebuffer(0, 0, width, height, 0, 0, halfWidth, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
+		glBlitFramebuffer(0, 0, width, height, 0, 0, halfWidth, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-	_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
-	glBlitFramebuffer(0, 0, width, height, 0, halfHeight, halfWidth, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
+		glBlitFramebuffer(0, 0, width, height, 0, halfHeight, halfWidth, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-	_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
-	glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
+		glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-	_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
-	glBlitFramebuffer(0, 0, width, height, halfWidth, 0, width, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	GL_checkError();
-#endif
+		_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
+		glBlitFramebuffer(0, 0, width, height, halfWidth, 0, width, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		GL_checkError();
+	}
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -520,6 +523,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 
 void WorldRenderer::onInit(video::Shader& plantShader, int width, int height) {
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false", core::CV_SHADER);
+	_deferred = core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugAmbientOcclusion, "false", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
@@ -545,9 +549,7 @@ void WorldRenderer::onInit(video::Shader& plantShader, int width, int height) {
 		}
 	}
 
-#if GBUFFER
 	core_assert(_gbuffer.init(width, height));
-#endif
 }
 
 void WorldRenderer::onRunning(long dt) {

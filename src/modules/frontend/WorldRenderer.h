@@ -59,6 +59,7 @@ private:
 	voxel::WorldPtr _world;
 	video::GBuffer _gbuffer;
 	core::VarPtr _debugGeometry;
+	core::VarPtr _deferred;
 
 	voxel::PlantGenerator _plantGenerator;
 
