@@ -67,6 +67,8 @@
 #endif
 #endif
 
+#define core_assert_always SDL_assert_always
+
 #ifndef core_assert_msg
 #if SDL_ASSERT_LEVEL == 0
 #define core_assert_msg(condition, format, ...) SDL_disabled_assert(condition)

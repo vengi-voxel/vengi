@@ -549,7 +549,7 @@ void WorldRenderer::onInit(video::Shader& plantShader, int width, int height) {
 		}
 	}
 
-	core_assert(_gbuffer.init(width, height));
+	core_assert_always(_gbuffer.init(width, height));
 }
 
 void WorldRenderer::onRunning(long dt) {
