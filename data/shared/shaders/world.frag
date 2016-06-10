@@ -36,7 +36,7 @@ void main(void) {
 	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * v_debug_color;
 	o_color = vec4(mix(linearColor, v_fogcolor, fogval), v_color.a);
 #else
-	o_color = v_color;
+	o_color = v_color.xyz;
 	o_pos = v_pos;
 	o_norm = normal;
 #endif
