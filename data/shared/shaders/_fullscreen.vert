@@ -2,7 +2,6 @@
 
 $in vec3 a_pos;
 
-void main() 
-{
+void main(void) {
 	gl_Position = mat4() * vec4(a_pos, 1.0);
 }

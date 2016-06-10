@@ -8,6 +8,7 @@ set(SRCS
 	WaterShader.h WaterShader.cpp
 	WorldShader.h WorldShader.cpp
 	PlantShader.h PlantShader.cpp
+	DeferredDirectionalLight.h DeferredDirectionalLight.cpp
 )
 set(LIB frontend)
 add_library(${LIB} ${SRCS})

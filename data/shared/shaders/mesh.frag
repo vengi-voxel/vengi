@@ -9,7 +9,7 @@ uniform sampler2D u_texture;
 
 void main(void) {
 	vec3 lightdir = normalize(v_lightpos - v_pos);
-	vec3 color = texture(u_texture, v_texcoords).rgb;
+	vec3 color = $texture2D(u_texture, v_texcoords).rgb;
 	float diffuse = clamp(dot(v_norm, lightdir), 0.0, 1.0) * 0.7;
 	float ambient = 0.3;
 	float lightvalue = diffuse + ambient;
