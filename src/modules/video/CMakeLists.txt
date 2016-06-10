@@ -20,3 +20,8 @@ add_library(${LIB} ${SRCS})
 target_link_libraries(${LIB} core image assimp zlib ${OPENGL_LIBRARIES})
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_include_directories(${LIB} PUBLIC ${OPENGL_INCLUDE_DIRS})
+
+gtest_suite_files(tests
+	tests/ShaderTest.cpp
+)
+gtest_suite_deps(tests ${LIB})

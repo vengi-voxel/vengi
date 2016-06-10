@@ -180,6 +180,18 @@ inline std::string cutAfterFirstMatch(const std::string& str, const std::string&
 	return str.substr(start, pos);
 }
 
+/**
+ * @brief extract path with trailing /
+ * @note Assumed to be normalized (no \ , only /)
+ */
+inline std::string extractPath(const std::string& str) {
+	const size_t pos = str.rfind("/");
+	if (pos == std::string::npos) {
+		return "";
+	}
+	return str.substr(0, pos + 1) ;
+}
+
 inline std::string eraseAllSpaces(const std::string& str) {
 	std::string tmp = str;
 	tmp.erase(std::remove(tmp.begin(), tmp.end(), ' '), tmp.end());

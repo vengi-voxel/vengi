@@ -5,6 +5,7 @@
 #include "Shader.h"
 
 #include "core/App.h"
+#include "core/Common.h"
 #include "io/Filesystem.h"
 #include "GLVersion.h"
 #include "core/Var.h"
@@ -300,11 +301,11 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 				if (*cEnd != '"')
 					continue;
 
+				const std::string& dir = core::string::extractPath(_name);
 				const std::string includeFile(cStart + 1, cEnd);
-				const std::string& includeBuffer = core::App::getInstance()->filesystem()->load(includeFile);
-				if (!includeBuffer.empty()) {
-					Log::error("could not load shader include %s (shader %s)", includeFile.c_str(), _name.c_str());
-					break;
+				const std::string& includeBuffer = core::App::getInstance()->filesystem()->load(dir + includeFile);
+				if (includeBuffer.empty()) {
+					Log::error("could not load shader include %s from dir %s (shader %s)", includeFile.c_str(), dir.c_str(), _name.c_str());
 				}
 				src.append(includeBuffer);
 				break;
