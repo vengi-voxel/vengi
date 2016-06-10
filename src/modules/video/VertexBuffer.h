@@ -35,8 +35,6 @@ public:
 
 	void shutdown();
 
-	static VertexBuffer createFullscreenQuad();
-
 	/**
 	 * @param[in] attributeIndex The index in the shader
 	 * @param[in] bufferIndex The internal buffer index that was returned by @c create()
@@ -54,6 +52,7 @@ public:
 
 	bool update(int idx, const void* data, GLsizeiptr size);
 	int32_t create(const void* data, GLsizeiptr size, GLenum target = GL_ARRAY_BUFFER);
+	int32_t createFullscreenQuad();
 	bool bind();
 	void unbind();
 	bool isValid(int idx) const;
