@@ -51,6 +51,7 @@ void Var::addValueToHistory(const std::string& value) {
 	v._longValue = string::toLong(v._value);
 	v._floatValue = string::toFloat(v._value);
 	_history.push_back(v);
+	Log::debug("new value for %s is %s", _name.c_str(), value.c_str());
 }
 
 bool Var::useHistory(uint32_t historyIndex) {
