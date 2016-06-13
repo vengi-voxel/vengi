@@ -202,15 +202,14 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shader.setUniformMatrix("u_view", view, false);
 	shader.setUniformMatrix("u_projection", camera.projectionMatrix(), false);
 
-	shader.setUniformi("u_texture", 0);
 	shader.setUniformVec4v("u_materialcolor[0]", &materialColors[0], materialColors.size());
-	if (!deferred) {
-		shader.setUniformf("u_fogrange", _fogRange);
-		shader.setUniformf("u_viewdistance", _viewDistance);
-		shader.setUniformVec3("u_lightpos", _lightPos + camera.position());
-		shader.setUniformVec3("u_diffuse_color", _diffuseColor);
-		shader.setUniformf("u_debug_color", 1.0);
-	}
+
+	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
+	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
+	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightPos + camera.position());
+	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
+	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
@@ -237,7 +236,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		meshData.bindVAO();
 
 		if (debugGeometry && !deferred) {
-			shader.setUniformf("u_debug_color", 1.0);
+			shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 		}
 		meshData.draw();
 		if (vertices != nullptr) {
@@ -251,7 +250,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 			glEnable(GL_LINE_SMOOTH);
 			glLineWidth(2);
 			glPolygonOffset(-2, -2);
-			shader.setUniformf("u_debug_color", 0.0);
+			shaderSetUniformIf(shader, setUniformf, "u_debug_color", 0.0);
 			glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
 			glDisable(GL_LINE_SMOOTH);
 			glDisable(GL_POLYGON_OFFSET_LINE);
@@ -471,10 +470,10 @@ int WorldRenderer::renderEntities(video::Shader& shader, const video::Camera& ca
 	shader.activate();
 	shader.setUniformMatrix("u_view", view, false);
 	shader.setUniformMatrix("u_projection", camera.projectionMatrix(), false);
-	shader.setUniformVec3("u_lightpos", _lightPos);
-	shader.setUniformf("u_fogrange", _fogRange);
-	shader.setUniformf("u_viewdistance", _viewDistance);
-	shader.setUniformi("u_texture", 0);
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightPos + camera.position());
+	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
+	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
+	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_now);
