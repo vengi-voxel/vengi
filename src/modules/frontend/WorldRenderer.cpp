@@ -466,10 +466,11 @@ int WorldRenderer::renderEntities(video::Shader& shader, const video::Camera& ca
 	int drawCallsEntities = 0;
 
 	const glm::mat4& view = camera.viewMatrix();
+	const glm::mat4& projection = camera.projectionMatrix();
 
 	shader.activate();
 	shader.setUniformMatrix("u_view", view, false);
-	shader.setUniformMatrix("u_projection", camera.projectionMatrix(), false);
+	shader.setUniformMatrix("u_projection", projection, false);
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightPos + camera.position());
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
