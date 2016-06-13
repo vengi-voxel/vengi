@@ -7,7 +7,7 @@ set(SRCS
 	WorldRenderer.h WorldRenderer.cpp
 	WaterShader.h WaterShader.cpp
 	WorldShader.h WorldShader.cpp
-	PlantShader.h PlantShader.cpp
+	WorldInstancedShader.h WorldInstancedShader.cpp
 	DeferredDirectionalLight.h DeferredDirectionalLight.cpp
 )
 set(LIB frontend)

@@ -8,4 +8,4 @@ set(SRCS
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
 target_link_libraries(${PROJECT_NAME} frontend util commonlua)
-check_glsl_files(${PROJECT_NAME} world mesh ui color water plant deferred_light_dir)
+check_glsl_files(${PROJECT_NAME} world mesh ui color water world_instanced deferred_light_dir)

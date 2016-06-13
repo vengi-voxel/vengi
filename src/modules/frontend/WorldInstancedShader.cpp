@@ -2,12 +2,12 @@
  * @file
  */
 
-#include "PlantShader.h"
+#include "WorldInstancedShader.h"
 
 namespace frontend {
 
-bool PlantShader::setup() {
-	if (!loadProgram("shaders/plant")) {
+bool WorldInstancedShader::setup() {
+	if (!loadProgram("shaders/world_instanced")) {
 		return false;
 	}
 
