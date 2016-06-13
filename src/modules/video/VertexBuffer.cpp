@@ -78,6 +78,7 @@ int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
 		return -1;
 	}
 	glBindBuffer(target, _handles[_handleIdx]);
+	_size[_handleIdx] = size;
 	glBufferData(target, size, data, GL_STATIC_DRAW);
 	glBindBuffer(target, 0);
 	++_handleIdx;

@@ -13,6 +13,7 @@ namespace video {
 class VertexBuffer {
 private:
 	static constexpr int MAX_HANDLES = 6;
+	GLuint _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
 	GLuint _handles[MAX_HANDLES] = {GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE};
 	GLenum _targets[MAX_HANDLES] = {GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE};
 	GLuint _handleIdx = 0;
@@ -55,6 +56,8 @@ public:
 	int32_t createFullscreenQuad();
 	bool bind();
 	void unbind();
+	GLuint size(int idx) const;
+	GLuint elements(int idx, int components = 3, size_t componentSize = sizeof(float)) const;
 	bool isValid(int idx) const;
 	GLuint handle(int idx) const;
 };
@@ -67,6 +70,15 @@ inline bool VertexBuffer::isValid(int idx) const {
 		return false;
 	}
 	return _handles[idx] != GL_INVALID_VALUE && _handles[idx] > 0;
+}
+
+inline GLuint VertexBuffer::size(int idx) const {
+	core_assert(idx >= 0 && idx < (int)SDL_arraysize(_size));
+	return _size[idx];
+}
+
+inline GLuint VertexBuffer::elements(int idx, int components, size_t componentSize) const {
+	return size(idx) / (components * componentSize);
 }
 
 inline GLuint VertexBuffer::handle(int idx) const {

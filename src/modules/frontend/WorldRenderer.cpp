@@ -342,7 +342,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 			shaderSetUniformIf(deferredShader, setUniformi, "u_norm", video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
 			shaderSetUniformIf(deferredShader, setUniformVec2, "u_screensize", glm::vec2(width, height));
 			core_assert_always(_fullscreenQuad.bind());
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glDrawArrays(GL_TRIANGLES, 0, _fullscreenQuad.elements(0));
 			_fullscreenQuad.unbind();
 			_gbuffer.unbind();
 		}
@@ -562,7 +562,7 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 	_colorTexture = video::createTexture("**colortexture**");
 	_plantGenerator.generateAll();
 
-	auto fullscreenQuadVertexIndex = _fullscreenQuad.createFullscreenQuad();
+	const uint32_t fullscreenQuadVertexIndex = _fullscreenQuad.createFullscreenQuad();
 	_fullscreenQuad.addAttribute(deferredShader.getAttributeLocation("a_pos"), fullscreenQuadVertexIndex, 3);
 
 	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
