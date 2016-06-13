@@ -11,21 +11,8 @@ bool DeferredDirectionalLight::setup() {
 		return false;
 	}
 
-	if (!hasAttribute("a_pos")) {
-		Log::error("no attribute a_pos found");
-	}
-	if (!hasUniform("u_screensize")) {
-		Log::error("no uniform u_screensize found");
-	}
-	if (!hasUniform("u_pos")) {
-		Log::error("no uniform u_pos found");
-	}
-	if (!hasUniform("u_norm")) {
-		Log::error("no uniform u_norm found");
-	}
-	if (!hasUniform("u_color")) {
-		Log::error("no uniform u_color found");
-	}
+	checkAttributes({"a_pos"});
+	checkUniforms({"u_screensize", "u_pos", "u_norm", "u_color"});
 	return true;
 }
 

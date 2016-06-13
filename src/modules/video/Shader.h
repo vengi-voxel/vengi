@@ -106,6 +106,11 @@ public:
 
 	virtual bool deactivate() const;
 
+	void checkAttribute(const std::string& attribute);
+	void checkUniform(const std::string& uniform);
+	void checkAttributes(std::initializer_list<std::string> attributes);
+	void checkUniforms(std::initializer_list<std::string> uniforms);
+
 	/**
 	 * @brief Adds a new define in the form '#define value' to the shader source code
 	 */

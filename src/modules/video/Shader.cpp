@@ -39,6 +39,34 @@ Shader::~Shader() {
 	shutdown();
 }
 
+void Shader::checkAttribute(const std::string& attribute) {
+	if (!hasAttribute(attribute)) {
+		Log::error("Attribute %s missing for shader %s", attribute.c_str(), _name.c_str());
+	} else {
+		Log::debug("Found attribute %s for shader %s", attribute.c_str(), _name.c_str());
+	}
+}
+
+void Shader::checkUniform(const std::string& uniform) {
+	if (!hasUniform(uniform)) {
+		Log::error("Uniform %s missing for shader %s", uniform.c_str(), _name.c_str());
+	} else {
+		Log::debug("Found uniform %s for shader %s", uniform.c_str(), _name.c_str());
+	}
+}
+
+void Shader::checkAttributes(std::initializer_list<std::string> attributes) {
+	for (const std::string& attribute : attributes) {
+		checkAttribute(attribute);
+	}
+}
+
+void Shader::checkUniforms(std::initializer_list<std::string> uniforms) {
+	for (const std::string& uniform : uniforms) {
+		checkUniform(uniform);
+	}
+}
+
 void Shader::shutdown() {
 	for (int i = 0; i < SHADER_MAX; ++i) {
 		if (_shader[i] != 0) {
