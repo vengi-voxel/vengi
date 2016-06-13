@@ -5,6 +5,7 @@
 #include "App.h"
 #include "Var.h"
 #include "Command.h"
+#include "Common.h"
 #include "Log.h"
 #include "Tokenizer.h"
 #include "Concurrency.h"
@@ -182,13 +183,19 @@ AppState App::onConstruct() {
 			if (!args.empty() && !core::string::matches(args[0], var->name())) {
 				return;
 			}
-			const int flags = var->getFlags();
-			std::string flagsStr = "  ";
-			if (flags & CV_READONLY) {
+			const uint32_t flags = var->getFlags();
+			std::string flagsStr = "    ";
+			if ((flags & CV_READONLY) != 0) {
 				flagsStr[0]  = 'R';
 			}
-			if (!(flags & CV_NOPERSIST)) {
-				flagsStr[1]  = 'S';
+			if ((flags & CV_NOPERSIST) != 0) {
+				flagsStr[1]  = 'N';
+			}
+			if ((flags & CV_SHADER) != 0) {
+				flagsStr[2]  = 'S';
+			}
+			if (var->isDirty()) {
+				flagsStr[3]  = 'D';
 			}
 			const std::string& name = core::string::format("%-28s", var->name().c_str());
 			const std::string& value = core::string::format("\"%s\"", var->strVal().c_str());
@@ -216,18 +223,33 @@ AppState App::onInit() {
 	core::Tokenizer t(content);
 	while (t.hasNext()) {
 		const std::string& name = t.next();
-		if (!t.hasNext())
+		if (!t.hasNext()) {
 			break;
+		}
 		const std::string& value = t.next();
-		core::Var::get(name)->setVal(value);
+		if (!t.hasNext()) {
+			break;
+		}
+		const std::string& flags = t.next();
+		unsigned int flagsMask = 0u;
+		for (char c : flags) {
+			if (c == 'R') {
+				flagsMask &= CV_READONLY;
+			} else if (c == 'S') {
+				flagsMask &= CV_SHADER;
+			}
+		}
+		const VarPtr& v = core::Var::get(name, value, flagsMask);
+		core_assert(v->getFlags() == flagsMask);
 	}
 
 	Log::init();
 	Log::trace("handle %i command line arguments", _argc);
 	for (int i = 0; i < _argc; ++i) {
 		// every command is started with a '-'
-		if (_argv[i][0] != '-')
+		if (_argv[i][0] != '-') {
 			continue;
+		}
 
 		const std::string command = &_argv[i][1];
 		CmdArgs args;
@@ -271,9 +293,18 @@ AppState App::onCleanup() {
 		Log::debug("save the config variables");
 		std::stringstream ss;
 		core::Var::visitSorted([&](const core::VarPtr& var) {
-			if (var->getFlags() & core::CV_NOPERSIST)
+			if (var->getFlags() & core::CV_NOPERSIST) {
 				return;
-			ss << var->name() << " \"" << var->strVal() << "\"" << std::endl;
+			}
+			const uint32_t flags = var->getFlags();
+			std::string flagsStr;
+			if ((flags & CV_READONLY) == CV_READONLY) {
+				flagsStr.append("R");
+			}
+			if ((flags & CV_SHADER) == CV_SHADER) {
+				flagsStr.append("S");
+			}
+			ss << var->name() << " \"" << var->strVal() << "\" \"" << flagsStr << "\"" << std::endl;
 		});
 		const std::string& str = ss.str();
 		_filesystem->write(_appname + ".vars", str);

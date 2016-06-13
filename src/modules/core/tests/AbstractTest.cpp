@@ -18,6 +18,7 @@ void AbstractTest::SetUp() {
 
 void AbstractTest::TearDown() {
 	delete _testApp;
+	Var::shutdown();
 }
 
 }

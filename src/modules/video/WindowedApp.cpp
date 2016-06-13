@@ -122,7 +122,7 @@ core::AppState WindowedApp::onInit() {
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	const core::VarPtr& multisampleBuffers = core::Var::get(cfg::ClientMultiSampleBuffers, "1");
 	const core::VarPtr& multisampleSamples = core::Var::get(cfg::ClientMultiSampleSamples, "4");
-	const core::VarPtr& deferred = core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER | core::CV_READONLY);
+	const core::VarPtr& deferred = core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
 	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
 	if (!deferred->boolVal() && multisampling) {
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, multisampleBuffers->intVal());

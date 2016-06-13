@@ -13,13 +13,13 @@
 
 namespace core {
 
-const unsigned int CV_READONLY = 1 << 0;
+const uint32_t CV_READONLY = 1 << 0;
 // don't create empty value config vars
-const unsigned int CV_NOTCREATEEMPTY = 1 << 1;
+const uint32_t CV_NOTCREATEEMPTY = 1 << 1;
 // will not get saved to the file
-const unsigned int CV_NOPERSIST = 1 << 2;
+const uint32_t CV_NOPERSIST = 1 << 2;
 // will be put as define in every shader
-const unsigned int CV_SHADER = 1 << 3;
+const uint32_t CV_SHADER = 1 << 3;
 
 class Var;
 typedef std::shared_ptr<Var> VarPtr;
@@ -47,7 +47,7 @@ protected:
 	static ReadWriteLock _lock;
 
 	const std::string _name;
-	unsigned int _flags;
+	uint32_t _flags;
 
 	struct Value {
 		float _floatValue;
@@ -61,7 +61,7 @@ protected:
 	bool _dirty;
 
 	// invisible - use the static get method
-	Var(const std::string& name, const std::string& value = "", unsigned int flags = 0u);
+	Var(const std::string& name, const std::string& value = "", uint32_t flags = 0u);
 
 	void addValueToHistory(const std::string& value);
 public:
@@ -74,7 +74,8 @@ public:
 	 *
 	 * @note This is using a read/write lock to allow access from different threads.
 	 */
-	static VarPtr get(const std::string& name, const std::string& value = "", unsigned int flags = 0u);
+	static VarPtr get(const std::string& name, const std::string& value = "", int32_t flags = -1);
+	static void shutdown();
 	virtual ~Var();
 
 	template<class Functor>
@@ -127,7 +128,7 @@ public:
 	 * @return the bitmask of flags for this var
 	 * @note See the existing @c CV_ ints
 	 */
-	int getFlags() const;
+	uint32_t getFlags() const;
 	/**
 	 * @return the value of the variable as @c int.
 	 *
@@ -226,7 +227,7 @@ inline void Var::markClean() {
 	_dirty = false;
 }
 
-inline int Var::getFlags() const {
+inline uint32_t Var::getFlags() const {
 	return _flags;
 }
 

@@ -13,7 +13,12 @@ ReadWriteLock Var::_lock("Var");
 
 MAKE_SHARED_INVIS_CTOR(Var);
 
-VarPtr Var::get(const std::string& name, const std::string& value, unsigned int flags) {
+void Var::shutdown() {
+	ScopedWriteLock lock(_lock);
+	_vars.clear();
+}
+
+VarPtr Var::get(const std::string& name, const std::string& value, int32_t flags) {
 	VarMap::iterator i;
 	bool missing;
 	{
@@ -21,19 +26,22 @@ VarPtr Var::get(const std::string& name, const std::string& value, unsigned int 
 		i = _vars.find(name);
 		missing = i == _vars.end();
 	}
+
+	const uint32_t flagsMask = flags < 0 ? 0u : static_cast<uint32_t>(flags);
 	if (missing) {
-		if (value.empty() && (flags & CV_NOTCREATEEMPTY)) {
+		if (value.empty() && (flags & CV_NOTCREATEEMPTY) != 0) {
 			return VarPtr();
 		}
-		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flags);
+		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flagsMask & ~CV_NOTCREATEEMPTY);
 		ScopedWriteLock lock(_lock);
 		_vars[name] = p;
 		return p;
 	}
-	if (flags != 0) {
-		i->second->_flags = flags;
+	const VarPtr& v = i->second;
+	if (flags >= 0 && flagsMask != CV_NOTCREATEEMPTY) {
+		v->_flags = flagsMask & ~CV_NOTCREATEEMPTY;
 	}
-	return i->second;
+	return v;
 }
 
 Var::Var(const std::string& name, const std::string& value, unsigned int flags) :
