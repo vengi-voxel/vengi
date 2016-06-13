@@ -265,6 +265,22 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	return drawCallsWorld;
 }
 
+void WorldRenderer::renderWorldDeferred(const int width, const int height, video::Shader& deferredShader, bool clearColor) {
+	_gbuffer.bindForReading(false);
+	if (clearColor) {
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+	video::ShaderScope scoped(deferredShader);
+	shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
+	shaderSetUniformIf(deferredShader, setUniformi, "u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
+	shaderSetUniformIf(deferredShader, setUniformi, "u_norm", video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
+	shaderSetUniformIf(deferredShader, setUniformVec2, "u_screensize", glm::vec2(width, height));
+	core_assert_always(_fullscreenQuad.bind());
+	glDrawArrays(GL_TRIANGLES, 0, _fullscreenQuad.elements(0));
+	_fullscreenQuad.unbind();
+	_gbuffer.unbind();
+}
+
 int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, const video::Camera& camera, int* vertices) {
 	handleMeshQueue(opaqueShader);
 
@@ -331,20 +347,13 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 			_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
 			glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-			// TODO: render the final buffer in the lower right corner of the screen
+			GLint viewport[4];
+			glGetIntegerv(GL_VIEWPORT, viewport);
+			glViewport(halfWidth, 0, halfWidth, halfHeight);
+			renderWorldDeferred(halfWidth, halfHeight, deferredShader, false);
+			glViewport(viewport[0], viewport[1], (GLsizei)viewport[2], (GLsizei)viewport[3]);
 		} else {
-			_gbuffer.bindForReading(false);
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			video::ShaderScope scoped(deferredShader);
-			shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
-			shaderSetUniformIf(deferredShader, setUniformi, "u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
-			shaderSetUniformIf(deferredShader, setUniformi, "u_norm", video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
-			shaderSetUniformIf(deferredShader, setUniformVec2, "u_screensize", glm::vec2(width, height));
-			core_assert_always(_fullscreenQuad.bind());
-			glDrawArrays(GL_TRIANGLES, 0, _fullscreenQuad.elements(0));
-			_fullscreenQuad.unbind();
-			_gbuffer.unbind();
+			renderWorldDeferred(width, height, deferredShader, true);
 		}
 
 		GL_checkError();
