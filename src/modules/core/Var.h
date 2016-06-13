@@ -41,7 +41,7 @@ typedef std::shared_ptr<Var> VarPtr;
  * variable already exists.
  */
 class Var {
-private:
+protected:
 	typedef std::unordered_map<std::string, VarPtr> VarMap;
 	static VarMap _vars;
 	static ReadWriteLock _lock;
@@ -60,7 +60,7 @@ private:
 	uint32_t _currentHistoryPos = 0;
 	bool _dirty;
 
-	// private - use the static get method
+	// invisible - use the static get method
 	Var(const std::string& name, const std::string& value = "", unsigned int flags = 0u);
 
 	void addValueToHistory(const std::string& value);

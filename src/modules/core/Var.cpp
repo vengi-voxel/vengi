@@ -4,11 +4,14 @@
 
 #include "Var.h"
 #include "Log.h"
+#include "Common.h"
 
 namespace core {
 
 Var::VarMap Var::_vars;
 ReadWriteLock Var::_lock("Var");
+
+MAKE_SHARED_INVIS_CTOR(Var);
 
 VarPtr Var::get(const std::string& name, const std::string& value, unsigned int flags) {
 	VarMap::iterator i;
@@ -19,9 +22,10 @@ VarPtr Var::get(const std::string& name, const std::string& value, unsigned int 
 		missing = i == _vars.end();
 	}
 	if (missing) {
-		if (value.empty() && (flags & CV_NOTCREATEEMPTY))
+		if (value.empty() && (flags & CV_NOTCREATEEMPTY)) {
 			return VarPtr();
-		VarPtr p(new Var(name, value, flags));
+		}
+		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flags);
 		ScopedWriteLock lock(_lock);
 		_vars[name] = p;
 		return p;

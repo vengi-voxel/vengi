@@ -103,6 +103,14 @@ inline T assert_cast(const S object) {
 	return static_cast<T>(object);
 }
 
+#define MAKE_SHARED_INVIS_CTOR(classname) \
+	struct make_shared_enabler: public classname { \
+		template<typename ... Args> \
+		make_shared_enabler(Args&&... args) : \
+				classname(std::forward<Args>(args)...) { \
+		} \
+	}
+
 namespace std {
 template<>
 struct hash<glm::ivec3> {
