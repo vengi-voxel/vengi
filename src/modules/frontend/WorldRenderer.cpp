@@ -265,11 +265,8 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	return drawCallsWorld;
 }
 
-void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int width, const int height, video::Shader& deferredShader, bool clearColor) {
+void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int width, const int height, video::Shader& deferredShader) {
 	_gbuffer.bindForReading(false);
-	if (clearColor) {
-		glClear(GL_COLOR_BUFFER_BIT);
-	}
 	video::ShaderScope scoped(deferredShader);
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightpos", _lightPos + camera.position());
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
@@ -332,7 +329,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		const int height = camera.height();
 		if (_deferredDebug->boolVal()) {
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-			glClear(GL_COLOR_BUFFER_BIT);
 			// show the gbuffer buffers
 			_gbuffer.bindForReading(true);
 			GL_checkError();
@@ -352,10 +348,10 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 			GLint viewport[4];
 			glGetIntegerv(GL_VIEWPORT, viewport);
 			glViewport(halfWidth, 0, halfWidth, halfHeight);
-			renderWorldDeferred(camera, halfWidth, halfHeight, deferredShader, false);
+			renderWorldDeferred(camera, halfWidth, halfHeight, deferredShader);
 			glViewport(viewport[0], viewport[1], (GLsizei)viewport[2], (GLsizei)viewport[3]);
 		} else {
-			renderWorldDeferred(camera, width, height, deferredShader, true);
+			renderWorldDeferred(camera, width, height, deferredShader);
 		}
 
 		GL_checkError();
