@@ -1,5 +1,7 @@
 $in vec3 v_pos;
 $in vec4 v_color;
+$in float v_ambientocclusion;
+$in float v_debug_color;
 
 #if cl_deferred == 0
 $in vec3 v_lightpos;
@@ -7,8 +9,6 @@ $in vec3 v_diffuse_color;
 $in float v_fogrange;
 $in vec3 v_fogcolor;
 $in float v_viewdistance;
-$in float v_ambientocclusion;
-$in float v_debug_color;
 $out vec4 o_color;
 #else
 // the order is defines in the gbuffer bindings
@@ -36,7 +36,7 @@ void main(void) {
 	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * v_debug_color;
 	o_color = vec4(mix(linearColor, v_fogcolor, fogval), v_color.a);
 #else
-	o_color = v_color.xyz;
+	o_color = v_color.xyz * v_ambientocclusion * v_debug_color;;
 	o_pos = v_pos;
 	o_norm = normal;
 #endif
