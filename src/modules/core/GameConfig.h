@@ -30,7 +30,6 @@ constexpr const char *ClientDeferred = "cl_deferred";
 constexpr const char *ClientDeferredDebug = "cl_deferreddebug";
 
 constexpr const char *ClientDebugGeometry = "cl_debug_geometry";
-constexpr const char *ClientDebugAmbientOcclusion = "cl_debug_ambientocclusion";
 
 constexpr const char *ServerAutoRegister = "sv_autoregister";
 constexpr const char *ServerUserTimeout = "sv_usertimeout";

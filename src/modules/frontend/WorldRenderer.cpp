@@ -553,7 +553,6 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
 	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
-	core::Var::get(cfg::ClientDebugAmbientOcclusion, "false", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
