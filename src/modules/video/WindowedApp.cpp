@@ -214,6 +214,8 @@ core::AppState WindowedApp::onInit() {
 		Log::info("%ix%i@%iHz %s", displayMode.w, displayMode.h, displayMode.refresh_rate, name);
 	}
 
+	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
+
 	// some platforms may override or hardcode the resolution - so
 	// we have to query it here to get the actual resolution
 	SDL_GetWindowSize(_window, &_width, &_height);

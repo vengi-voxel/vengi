@@ -9,12 +9,12 @@ uniform vec3 u_diffuse_color;
 
 $out vec4 o_color;
 
-vec4 calcDirectionalLight(vec3 pos, vec3 norm) {
+vec3 calcDirectionalLight(vec3 pos, vec3 norm) {
 	vec3 lightdir = normalize(u_lightpos - pos);
 	vec3 diffuse = u_diffuse_color * clamp(dot(norm, lightdir), 0.0, 1.0) * 0.8;
 	vec3 ambient = vec3(0.2);
 	vec3 lightvalue = diffuse + ambient;
-	return vec4(lightvalue, 1.0);
+	return lightvalue;
 }
 
 void main(void) {
@@ -23,5 +23,8 @@ void main(void) {
 	vec3 color = $texture2D(u_color, uv).xyz;
 	vec3 norm  = normalize($texture2D(u_norm, uv).xyz);
 
-	o_color = vec4(color, 1.0) * calcDirectionalLight(pos, norm);
+	// cl_gamma is a cvar
+	vec3 finalGamma = vec3(1.0 / cl_gamma);
+	vec3 finalColor = color * calcDirectionalLight(pos, norm);
+	o_color = vec4(pow(finalColor, finalGamma), 1.0);
 }
