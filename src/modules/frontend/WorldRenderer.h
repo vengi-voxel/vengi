@@ -84,7 +84,7 @@ private:
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
 	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, bool culling = true);
-	void renderWorldDeferred(const int width, const int height, video::Shader& deferredShader, bool clearColor = true);
+	void renderWorldDeferred(const video::Camera& camera, const int width, const int height, video::Shader& deferredShader, bool clearColor = true);
 
 public:
 	WorldRenderer(const voxel::WorldPtr& world);

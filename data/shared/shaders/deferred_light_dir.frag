@@ -4,11 +4,17 @@ uniform sampler2D u_pos;
 uniform sampler2D u_color;
 uniform sampler2D u_norm;
 
+uniform vec3 u_lightpos;
+uniform vec3 u_diffuse_color;
+
 $out vec4 o_color;
 
 vec4 calcDirectionalLight(vec3 pos, vec3 norm) {
-	// TODO:
-	return vec4(1.0);
+	vec3 lightdir = normalize(u_lightpos - pos);
+	vec3 diffuse = u_diffuse_color * clamp(dot(norm, lightdir), 0.0, 1.0) * 0.8;
+	vec3 ambient = vec3(0.2);
+	vec3 lightvalue = diffuse + ambient;
+	return vec4(lightvalue, 1.0);
 }
 
 void main(void) {
