@@ -337,10 +337,10 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			video::ShaderScope scoped(deferredShader);
-			deferredShader.setUniformi("u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
-			deferredShader.setUniformi("u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
-			deferredShader.setUniformi("u_norm", video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
-			deferredShader.setUniformVec2("u_screensize", glm::vec2(width, height));
+			shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
+			shaderSetUniformIf(deferredShader, setUniformi, "u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
+			shaderSetUniformIf(deferredShader, setUniformi, "u_norm", video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
+			shaderSetUniformIf(deferredShader, setUniformVec2, "u_screensize", glm::vec2(width, height));
 			core_assert_always(_fullscreenQuad.bind());
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			_fullscreenQuad.unbind();
