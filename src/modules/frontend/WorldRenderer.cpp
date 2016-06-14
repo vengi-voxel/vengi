@@ -316,13 +316,13 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	glDepthFunc(GL_LESS);
 	// Cull triangles whose normal is not towards the camera
 	glEnable(GL_CULL_FACE);
+	glDepthMask(GL_TRUE);
 
 	GL_checkError();
 
 	_colorTexture->bind(0);
 
 	_depthBuffer.bind();
-	glDepthMask(GL_TRUE);
 	glCullFace(GL_FRONT);
 	drawCallsWorld  = renderWorldMeshes(shadowmapShader, camera, _meshDataOpaque, vertices);
 	//drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
