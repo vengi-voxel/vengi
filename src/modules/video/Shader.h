@@ -451,7 +451,7 @@ public:
 	}
 };
 
-#define shaderSetUniformIf(shader, func, var, value) if (shader.hasUniform(var)) { shader.func(var, value); }
+#define shaderSetUniformIf(shader, func, var, ...) if (shader.hasUniform(var)) { shader.func(var, __VA_ARGS__); }
 
 typedef std::shared_ptr<Shader> ShaderPtr;
 

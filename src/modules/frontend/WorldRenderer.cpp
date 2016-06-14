@@ -199,11 +199,9 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	const bool deferred = _deferred->boolVal();
 
 	video::ShaderScope scoped(shader);
-	shader.setUniformMatrix("u_view", view, false);
-	shader.setUniformMatrix("u_projection", camera.projectionMatrix(), false);
-
-	shader.setUniformVec4v("u_materialcolor[0]", &materialColors[0], materialColors.size());
-
+	shaderSetUniformIf(shader, setUniformMatrix, "u_view", view);
+	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
+	shaderSetUniformIf(shader, setUniformVec4v, "u_materialcolor[0]", &materialColors[0], materialColors.size());
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
