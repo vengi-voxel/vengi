@@ -216,6 +216,12 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		const glm::mat4& lightSpaceMatrix = lightProjection * lightView;
 		shader.setUniformMatrix("u_light", lightSpaceMatrix);
 	}
+	const bool shadowMap = shader.hasUniform("u_shadowmap");
+	if (shadowMap) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
+		shaderSetUniformIf(shader, setUniformi, "u_shadowmap", 1);
+	}
 
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
@@ -268,6 +274,12 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		++i;
 	}
 
+	if (shadowMap) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE0);
+	}
+
 	return drawCallsWorld;
 }
 
@@ -305,7 +317,12 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 	GL_checkError();
 
-	_colorTexture->bind();
+	_colorTexture->bind(0);
+
+	_depthBuffer.bind();
+	drawCallsWorld  = renderWorldMeshes(shadowmapShader, camera, _meshDataOpaque, vertices);
+	//drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
+	_depthBuffer.unbind();
 
 	const bool deferred = _deferred->boolVal();
 	if (deferred) {
@@ -314,13 +331,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 	}
-
-#if 0
-	_depthBuffer.bind();
-	drawCallsWorld  = renderWorldMeshes(shadowmapShader, camera, _meshDataOpaque, vertices);
-	//drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
-	_depthBuffer.unbind();
-#endif
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);

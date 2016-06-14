@@ -16,6 +16,7 @@ class Texture: public io::IOResource {
 private:
 	std::string _name;
 	GLuint _handle;
+	int _boundUnit = 0;
 
 public:
 	// creates an empty dummy texture with the given name
@@ -27,7 +28,7 @@ public:
 
 	// updates the texture with the new data
 	void upload(const uint8_t* data, int width, int height, int depth);
-	void bind();
+	void bind(int unit = 0);
 	void unbind();
 };
 

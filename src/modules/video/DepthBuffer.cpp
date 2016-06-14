@@ -68,7 +68,7 @@ void DepthBuffer::bind() {
 
 void DepthBuffer::unbind() {
 	glViewport(_viewport[0], _viewport[1], (GLsizei)_viewport[2], (GLsizei)_viewport[3]);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 }

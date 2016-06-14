@@ -49,14 +49,28 @@ void Texture::upload(const uint8_t* data, int width, int height, int depth) {
 	GL_checkError();
 }
 
-void Texture::bind() {
+void Texture::bind(int unit) {
+	if (unit != 0) {
+		glActiveTexture(GL_TEXTURE0 + unit);
+	}
 	glBindTexture(GL_TEXTURE_2D, _handle);
 	GL_checkError();
+	_boundUnit = unit;
+	if (unit != 0) {
+		glActiveTexture(GL_TEXTURE0);
+	}
 }
 
 void Texture::unbind() {
+	if (_boundUnit != 0) {
+		glActiveTexture(GL_TEXTURE0 + _boundUnit);
+	}
 	glBindTexture(GL_TEXTURE_2D, 0);
 	GL_checkError();
+	if (_boundUnit != 0) {
+		glActiveTexture(GL_TEXTURE0);
+	}
+	_boundUnit = 0;
 }
 
 }

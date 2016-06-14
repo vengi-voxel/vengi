@@ -19,6 +19,10 @@ public:
 	void bind();
 	void unbind();
 
+	inline GLuint getTexture() const {
+		return _depthTexture;
+	}
+
 private:
 	GLint _viewport[4] = {0, 0, 0, 0};
 	GLuint _fbo = 0u;
