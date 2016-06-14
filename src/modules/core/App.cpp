@@ -304,7 +304,7 @@ AppState App::onCleanup() {
 			if ((flags & CV_SHADER) == CV_SHADER) {
 				flagsStr.append("S");
 			}
-			ss << var->name() << " \"" << var->strVal() << "\" \"" << flagsStr << "\"" << std::endl;
+			ss << "\"" << var->name() << "\" \"" << var->strVal() << "\" \"" << flagsStr << "\"" << std::endl;
 		});
 		const std::string& str = ss.str();
 		_filesystem->write(_appname + ".vars", str);
