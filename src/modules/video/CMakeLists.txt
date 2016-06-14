@@ -9,6 +9,7 @@ set(SRCS
 	Camera.cpp Camera.h
 	GLMeshData.h
 	GLDebug.h
+	DepthBuffer.cpp DepthBuffer.h
 	Cubemap.cpp Cubemap.h
 	Texture.cpp Texture.h
 	Mesh.cpp Mesh.h

@@ -27,9 +27,7 @@ public:
 
 private:
 	GLuint _fbo;
-	// don't change the order - textures are created with one call
 	GLuint _textures[GBUFFER_NUM_TEXTURES];
-	GLuint _depthTexture;
 };
 
 }
