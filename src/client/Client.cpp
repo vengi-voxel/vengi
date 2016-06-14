@@ -28,7 +28,7 @@
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
 		UIApp(filesystem, eventBus, 17816), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
-		_timeProvider(timeProvider), _worldShader(), _plantShader(), _meshShader(), _deferredDirLightShader(),
+		_timeProvider(timeProvider), _worldShader(), _plantShader(), _meshShader(), _deferredDirLightShader(), _shadowMapShader(),
 		_worldRenderer(world) {
 	_world->setClientData(true);
 	init("engine", "client");
@@ -114,6 +114,9 @@ core::AppState Client::onInit() {
 	if (!_deferredDirLightShader.setup()) {
 		return core::Cleanup;
 	}
+	if (!_shadowMapShader.setup()) {
+		return core::Cleanup;
+	}
 
 	GL_checkError();
 
@@ -151,7 +154,7 @@ void Client::beforeUI() {
 		_camera.perspective(45.0f, _aspect, 0.1f, farPlane);
 		_camera.update();
 
-		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _plantShader, _waterShader, _deferredDirLightShader, _camera);
+		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _plantShader, _waterShader, _deferredDirLightShader, _shadowMapShader, _camera);
 		_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera);
 		_worldRenderer.extractNewMeshes(_camera.position());
 	} else {
@@ -179,6 +182,7 @@ core::AppState Client::onCleanup() {
 	_plantShader.shutdown();
 	_waterShader.shutdown();
 	_meshShader.shutdown();
+	_shadowMapShader.shutdown();
 	_deferredDirLightShader.shutdown();
 	core::AppState state = UIApp::onCleanup();
 	_world->shutdown();
@@ -229,7 +233,7 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 void Client::npcSpawn(frontend::ClientEntityId id, network::messages::NpcType type, const glm::vec3& pos) {
 	Log::info("NPC %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, type);
 	const std::string& meshName = core::string::toLower(network::messages::EnumNameNpcType(type));
-	_worldRenderer.addEntity(frontend::ClientEntityPtr(new frontend::ClientEntity(id, type, _now, pos, 0.0f, _meshPool->getMesh(meshName))));
+	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, _now, pos, 0.0f, _meshPool->getMesh(meshName)));
 }
 
 void Client::entityRemove(frontend::ClientEntityId id) {
@@ -239,7 +243,7 @@ void Client::entityRemove(frontend::ClientEntityId id) {
 void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos) {
 	Log::info("User %li (%s) logged in at pos %f:%f:%f", id, name, pos.x, pos.y, pos.z);
 	_camera.setPosition(pos);
-	_player = frontend::ClientEntityPtr(new frontend::ClientEntity(id, -1, _now, pos, 0.0f, _meshPool->getMesh("chr_fatkid")));
+	_player = std::make_shared<frontend::ClientEntity>(id, -1, _now, pos, 0.0f, _meshPool->getMesh("chr_fatkid"));
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.onSpawn(pos);
 }

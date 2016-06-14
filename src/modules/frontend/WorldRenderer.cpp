@@ -43,6 +43,8 @@ void WorldRenderer::reset() {
 
 void WorldRenderer::shutdown() {
 	_gbuffer.shutdown();
+	_fullscreenQuad.shutdown();
+	_depthBuffer.shutdown();
 	reset();
 	_colorTexture = video::TexturePtr();
 	_entities.clear();
@@ -208,6 +210,12 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightPos + camera.position());
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
+	if (shader.hasUniform("u_light")) {
+		const glm::mat4& lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+		const glm::mat4& lightView = glm::lookAt(_lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		const glm::mat4& lightSpaceMatrix = lightProjection * lightView;
+		shader.setUniformMatrix("u_light", lightSpaceMatrix);
+	}
 
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
@@ -278,7 +286,7 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	_gbuffer.unbind();
 }
 
-int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, const video::Camera& camera, int* vertices) {
+int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, video::Shader& shadowmapShader, const video::Camera& camera, int* vertices) {
 	handleMeshQueue(opaqueShader);
 
 	if (_meshDataOpaque.empty()) {
@@ -307,11 +315,18 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		glDisable(GL_BLEND);
 	}
 
+#if 0
+	_depthBuffer.bind();
+	drawCallsWorld  = renderWorldMeshes(shadowmapShader, camera, _meshDataOpaque, vertices);
+	//drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
+	_depthBuffer.unbind();
+#endif
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
-	drawCallsWorld  = renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
-	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
+	drawCallsWorld += renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
 	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
+	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -577,6 +592,8 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 			_meshDataPlant.push_back(meshDataPlant);
 		}
 	}
+
+	core_assert_always(_depthBuffer.init(1024, 1024));
 
 	core_assert_always(_gbuffer.init(width, height));
 }

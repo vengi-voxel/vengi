@@ -11,6 +11,7 @@
 #include "video/Camera.h"
 #include "video/VertexBuffer.h"
 #include "video/GBuffer.h"
+#include "video/DepthBuffer.h"
 #include "video/GLMeshData.h"
 #include "core/GLM.h"
 #include "core/Var.h"
@@ -64,6 +65,7 @@ private:
 	core::VarPtr _deferred;
 	core::VarPtr _deferredDebug;
 	video::VertexBuffer _fullscreenQuad;
+	video::DepthBuffer _depthBuffer;
 
 	voxel::PlantGenerator _plantGenerator;
 
@@ -113,7 +115,7 @@ public:
 	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 
 	bool extractNewMeshes(const glm::vec3& position, bool force = false);
-	int renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, const video::Camera& camera, int* vertices = nullptr);
+	int renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, video::Shader& shadowmapShader, const video::Camera& camera, int* vertices = nullptr);
 	int renderEntities(video::Shader& shader, const video::Camera& camera);
 };
 
