@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Log.h"
+#include "core/Common.h"
 
 // based on the generator script from oryol
 
@@ -2002,7 +2003,7 @@ inline int OpenGLStateHandlerCheckError(const char *file, int line, const char *
 		if (glError == GL_NO_ERROR)
 			break;
 
-		Log::error("openGL err: %s (%i): %s %s => %i", file, line, function, translateError(glError), glError);
+		core_assert_msg(glError == GL_NO_ERROR, "openGL err: %s (%i): %s %s => %i", file, line, function, translateError(glError), glError);
 		ret++;
 	}
 #endif
