@@ -119,6 +119,7 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 			break;
 		}
 
+		Log::error("%s", source.c_str());
 		Log::error("compile failure in %s (type: %s) shader:\n%s", name.c_str(), strShaderType, errorLog.c_str());
 		glDeleteShader(_shader[shaderType]);
 		return false;
