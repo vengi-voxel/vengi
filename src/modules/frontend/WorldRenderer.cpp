@@ -219,8 +219,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		const glm::mat4& lightProjection = camera.ortho();
 		static const glm::vec3 up(0.0f, 1.0f, 0.0f);
 		static const glm::vec3 center(0.0f, 0.0f, 0.0f);
-		const glm::vec3 eye(_lightPos.x, camera.farPlane() - 1.0f, _lightPos.z);
-		const glm::mat4& lightView = glm::lookAt(eye, center, up);
+		const glm::mat4& lightView = glm::lookAt(_lightPos, center, up);
 		const glm::mat4& lightSpaceMatrix = lightProjection * lightView;
 		shader.setUniformMatrix("u_light", lightSpaceMatrix);
 	}
