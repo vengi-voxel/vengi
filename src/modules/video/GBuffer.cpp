@@ -10,7 +10,7 @@
 namespace video {
 
 GBuffer::GBuffer() :
-		_fbo(0) {
+		_fbo(0), _depthTexture(0) {
 	for (std::size_t i = 0; i < SDL_arraysize(_textures); ++i) {
 		_textures[i] = 0;
 	}
@@ -32,13 +32,19 @@ void GBuffer::shutdown() {
 			_textures[i] = 0;
 		}
 	}
+
+	if (_depthTexture != 0) {
+		glDeleteTextures(1, &_depthTexture);
+		_depthTexture = 0;
+	}
 }
 
 bool GBuffer::init(int width, int height) {
 	glGenFramebuffers(1, &_fbo);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
 
-	glGenTextures(SDL_arraysize(_textures), _textures);
+	// +1 for the depth texture
+	glGenTextures(SDL_arraysize(_textures) + 1, _textures);
 
 	for (std::size_t i = 0; i < SDL_arraysize(_textures); ++i) {
 		glBindTexture(GL_TEXTURE_2D, _textures[i]);
@@ -49,6 +55,11 @@ bool GBuffer::init(int width, int height) {
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		GL_checkError();
 	}
+
+	glBindTexture(GL_TEXTURE_2D, _depthTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
+	GL_checkError();
 
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	static_assert(SDL_arraysize(drawBuffers) == SDL_arraysize(_textures), "buffers and textures don't match");
