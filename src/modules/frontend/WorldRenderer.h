@@ -69,7 +69,7 @@ private:
 	video::VertexBuffer _fullscreenQuad;
 	video::VertexBuffer _texturedFullscreenQuad;
 	video::DepthBuffer _depthBuffer;
-	frontend::ShadowMapRenderShader _shadowMapRender;
+	frontend::ShadowMapRenderShader _shadowMapRenderShader;
 
 	voxel::PlantGenerator _plantGenerator;
 

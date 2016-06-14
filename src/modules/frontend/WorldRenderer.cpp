@@ -391,14 +391,15 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		const int height = camera.height();
 		const GLsizei halfWidth = (GLsizei) (width / 2.0f);
 		const GLsizei halfHeight = (GLsizei) (height / 2.0f);
-		video::ShaderScope scopedShader(_shadowMapRender);
+		video::ShaderScope scopedShader(_shadowMapRenderShader);
 		video::ScopedViewPort scopedViewport(halfWidth, 0, halfWidth, halfHeight);
 		core_assert_always(_texturedFullscreenQuad.bind());
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
-		shaderSetUniformIf(_shadowMapRender, setUniformi, "u_shadowmap", 0);
+		shaderSetUniformIf(_shadowMapRenderShader, setUniformi, "u_shadowmap", 0);
 		glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
 		_texturedFullscreenQuad.unbind();
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	GL_checkError();
@@ -613,14 +614,14 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 	_colorTexture = video::createTexture("**colortexture**");
 	_plantGenerator.generateAll();
 
-	_shadowMapRender.setup();
+	_shadowMapRenderShader.setup();
 
 	const uint32_t fullscreenQuadVertexIndex = _fullscreenQuad.createFullscreenQuad();
 	_fullscreenQuad.addAttribute(deferredShader.getAttributeLocation("a_pos"), fullscreenQuadVertexIndex, 3);
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
-	_texturedFullscreenQuad.addAttribute(_shadowMapRender.getAttributeLocation("a_pos"), fullscreenQuadIndices.x, 3);
-	_texturedFullscreenQuad.addAttribute(_shadowMapRender.getAttributeLocation("a_texcoord"), fullscreenQuadIndices.y, 2);
+	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getAttributeLocation("a_pos"), fullscreenQuadIndices.x, 3);
+	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getAttributeLocation("a_texcoord"), fullscreenQuadIndices.y, 2);
 
 	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
