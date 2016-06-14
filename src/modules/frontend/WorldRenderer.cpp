@@ -216,7 +216,8 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		// Because we're modelling a directional light source all its light rays are parallel.
 		// For this reason we're going to use an orthographic projection matrix for the light
 		// source where there is no perspective deform
-		const glm::mat4& lightProjection = camera.ortho();
+		const glm::mat4& lightProjection = camera.orthoMatrix();
+		//const glm::mat4& lightProjection = camera.projectionMatrix();
 		static const glm::vec3 up(0.0f, 1.0f, 0.0f);
 		static const glm::vec3 center(0.0f, 0.0f, 0.0f);
 		const glm::mat4& lightView = glm::lookAt(_lightPos, center, up);
