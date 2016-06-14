@@ -29,7 +29,7 @@ VarPtr Var::get(const std::string& name, const std::string& value, int32_t flags
 
 	const uint32_t flagsMask = flags < 0 ? 0u : static_cast<uint32_t>(flags);
 	if (missing) {
-		if (value.empty() && (flags & CV_NOTCREATEEMPTY) != 0) {
+		if (value.empty() && (flagsMask & CV_NOTCREATEEMPTY) != 0) {
 			return VarPtr();
 		}
 		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flagsMask & ~CV_NOTCREATEEMPTY);
