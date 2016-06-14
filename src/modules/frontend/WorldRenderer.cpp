@@ -614,7 +614,7 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 	_colorTexture = video::createTexture("**colortexture**");
 	_plantGenerator.generateAll();
 
-	_shadowMapRenderShader.setup();
+	core_assert_always(_shadowMapRenderShader.setup());
 
 	const uint32_t fullscreenQuadVertexIndex = _fullscreenQuad.createFullscreenQuad();
 	_fullscreenQuad.addAttribute(deferredShader.getAttributeLocation("a_pos"), fullscreenQuadVertexIndex, 3);
