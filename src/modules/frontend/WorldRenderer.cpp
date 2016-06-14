@@ -213,7 +213,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 	if (shader.hasUniform("u_light")) {
-		const glm::mat4& lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, camera.nearPlane(), camera.farPlane());
+		const glm::mat4& lightProjection = camera.ortho();
 		const glm::mat4& lightView = glm::lookAt(glm::vec3(_lightPos.x, camera.farPlane() - 1.0f, _lightPos.z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		const glm::mat4& lightSpaceMatrix = lightProjection * lightView;
 		shader.setUniformMatrix("u_light", lightSpaceMatrix);

@@ -73,6 +73,8 @@ public:
 	FrustumResult testFrustum(const glm::vec3& position) const;
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 
+	glm::mat4 ortho() const;
+
 	void perspective(float fieldOfViewY, float aspectRatio);
 
 	const glm::vec3& position() const;
@@ -108,6 +110,10 @@ public:
 
 inline float Camera::yaw() const {
 	return _yaw;
+}
+
+inline glm::mat4 Camera::ortho() const {
+	return glm::ortho(0.0f, (float)width(), (float)height(), 0.0f, nearPlane(), farPlane());
 }
 
 inline float Camera::pitch() const {
