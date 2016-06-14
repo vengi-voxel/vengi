@@ -6,6 +6,7 @@
 
 #include "GLFunc.h"
 #include "core/Common.h"
+#include "core/GLM.h"
 #include <vector>
 
 namespace video {
@@ -54,6 +55,8 @@ public:
 	bool update(int idx, const void* data, GLsizeiptr size);
 	int32_t create(const void* data, GLsizeiptr size, GLenum target = GL_ARRAY_BUFFER);
 	int32_t createFullscreenQuad();
+	int32_t createFullscreenTextureBuffer();
+	glm::ivec2 createFullscreenTexturedQuad();
 	bool bind();
 	void unbind();
 	GLuint size(int idx) const;

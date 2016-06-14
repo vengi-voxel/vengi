@@ -28,6 +28,7 @@ constexpr const char *ClientRenderUI = "cl_renderui";
 constexpr const char *ClientGamma = "cl_gamma";
 constexpr const char *ClientDeferred = "cl_deferred";
 constexpr const char *ClientDeferredDebug = "cl_deferreddebug";
+constexpr const char *ClientShadowMapDebug = "cl_shadowmapdebug";
 
 constexpr const char *ClientDebugGeometry = "cl_debug_geometry";
 

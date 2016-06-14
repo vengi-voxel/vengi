@@ -131,9 +131,9 @@ void ShapeTool::beforeUI() {
 	const bool forward = _moveMask & MOVEFORWARD;
 	const bool backward = _moveMask & MOVEBACKWARD;
 	const float speed = _speed->floatVal();
-	const float farPlane = _worldRenderer.getViewDistance();
+	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
-	_camera.perspective(45.0f, _aspect, 0.1f, farPlane);
+	_camera.perspective(45.0f, _aspect);
 	_camera.update();
 
 	_worldRenderer.extractNewMeshes(_camera.position());

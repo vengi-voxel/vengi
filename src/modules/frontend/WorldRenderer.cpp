@@ -5,6 +5,7 @@
 #include "WorldRenderer.h"
 #include "core/Color.h"
 #include "video/GLFunc.h"
+#include "video/ScopedViewPort.h"
 #include "voxel/Spiral.h"
 #include "core/App.h"
 #include "noise/SimplexNoise.h"
@@ -44,6 +45,7 @@ void WorldRenderer::reset() {
 void WorldRenderer::shutdown() {
 	_gbuffer.shutdown();
 	_fullscreenQuad.shutdown();
+	_texturedFullscreenQuad.shutdown();
 	_depthBuffer.shutdown();
 	reset();
 	_colorTexture = video::TexturePtr();
@@ -211,8 +213,8 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 	if (shader.hasUniform("u_light")) {
-		const glm::mat4& lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
-		const glm::mat4& lightView = glm::lookAt(_lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		const glm::mat4& lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, camera.nearPlane(), camera.farPlane());
+		const glm::mat4& lightView = glm::lookAt(glm::vec3(_lightPos.x, camera.farPlane() - 1.0f, _lightPos.z), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		const glm::mat4& lightSpaceMatrix = lightProjection * lightView;
 		shader.setUniformMatrix("u_light", lightSpaceMatrix);
 	}
@@ -320,15 +322,16 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	_colorTexture->bind(0);
 
 	_depthBuffer.bind();
+	glDepthMask(GL_TRUE);
+	glCullFace(GL_FRONT);
 	drawCallsWorld  = renderWorldMeshes(shadowmapShader, camera, _meshDataOpaque, vertices);
 	//drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
+	glCullFace(GL_BACK);
 	_depthBuffer.unbind();
 
 	const bool deferred = _deferred->boolVal();
 	if (deferred) {
 		_gbuffer.bindForWriting();
-		glDepthMask(GL_TRUE);
-		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 	}
 
@@ -337,6 +340,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	drawCallsWorld += renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
 	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
 	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
+
+	_colorTexture->unbind();
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -368,16 +373,32 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 			_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
 			glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-			GLint viewport[4];
-			glGetIntegerv(GL_VIEWPORT, viewport);
-			glViewport(halfWidth, 0, halfWidth, halfHeight);
+			video::ScopedViewPort scoped(halfWidth, 0, halfWidth, halfHeight);
 			renderWorldDeferred(camera, halfWidth, halfHeight, deferredShader);
-			glViewport(viewport[0], viewport[1], (GLsizei)viewport[2], (GLsizei)viewport[3]);
 		} else {
 			renderWorldDeferred(camera, width, height, deferredShader);
 		}
 
 		GL_checkError();
+	}
+
+	if (_shadowMapDebug->boolVal()) {
+		glDepthMask(GL_FALSE);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_BLEND);
+		const int width = camera.width();
+		const int height = camera.height();
+		const GLsizei halfWidth = (GLsizei) (width / 2.0f);
+		const GLsizei halfHeight = (GLsizei) (height / 2.0f);
+		video::ShaderScope scopedShader(_shadowMapRender);
+		video::ScopedViewPort scopedViewport(halfWidth, 0, halfWidth, halfHeight);
+		core_assert_always(_texturedFullscreenQuad.bind());
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
+		shaderSetUniformIf(_shadowMapRender, setUniformi, "u_shadowmap", 0);
+		glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
+		_texturedFullscreenQuad.unbind();
 	}
 
 	GL_checkError();
@@ -576,6 +597,7 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
 	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
+	_shadowMapDebug = core::Var::get(cfg::ClientShadowMapDebug, "false");
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
@@ -591,8 +613,14 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 	_colorTexture = video::createTexture("**colortexture**");
 	_plantGenerator.generateAll();
 
+	_shadowMapRender.setup();
+
 	const uint32_t fullscreenQuadVertexIndex = _fullscreenQuad.createFullscreenQuad();
 	_fullscreenQuad.addAttribute(deferredShader.getAttributeLocation("a_pos"), fullscreenQuadVertexIndex, 3);
+
+	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
+	_texturedFullscreenQuad.addAttribute(_shadowMapRender.getAttributeLocation("a_pos"), fullscreenQuadIndices.x, 3);
+	_texturedFullscreenQuad.addAttribute(_shadowMapRender.getAttributeLocation("a_texcoord"), fullscreenQuadIndices.y, 2);
 
 	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);

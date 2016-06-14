@@ -32,13 +32,18 @@ bool DepthBuffer::init(int width, int height) {
 	_width = width;
 	_height = height;
 	glGenFramebuffers(1, &_fbo);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 
-	// +1 for the depth texture
 	glGenTextures(1, &_depthTexture);
 
 	glBindTexture(GL_TEXTURE_2D, _depthTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
@@ -47,7 +52,7 @@ bool DepthBuffer::init(int width, int height) {
 	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 	// restore default FBO
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	GL_checkError();
 
@@ -63,6 +68,7 @@ void DepthBuffer::bind() {
 	glGetIntegerv(GL_VIEWPORT, _viewport);
 	glViewport(0, 0, _width, _height);
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	glClear(GL_DEPTH_BUFFER_BIT);
 	GL_checkError();
 }
 

@@ -150,8 +150,8 @@ void Client::beforeUI() {
 		const bool forward = _moveMask & MoveDirection_MOVEFORWARD;
 		const bool backward = _moveMask & MoveDirection_MOVEBACKWARD;
 		_camera.updatePosition(_deltaFrame, left, right, forward, backward);
-		const float farPlane = _worldRenderer.getViewDistance();
-		_camera.perspective(45.0f, _aspect, 0.1f, farPlane);
+		_camera.setFarPlane(_worldRenderer.getViewDistance());
+		_camera.perspective(45.0f, _aspect);
 		_camera.update();
 
 		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _plantShader, _waterShader, _deferredDirLightShader, _shadowMapShader, _camera);

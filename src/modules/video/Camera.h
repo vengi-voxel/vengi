@@ -42,6 +42,7 @@ private:
 	glm::vec3 _direction;
 	core::VarPtr _maxpitch;
 	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
+	float _farPlane = 500.0f;
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateDirection();
@@ -52,6 +53,18 @@ public:
 	~Camera();
 	void init(int width, int height);
 
+	inline float nearPlane() const {
+		return 0.1f;
+	}
+
+	inline float farPlane() const {
+		return _farPlane;
+	}
+
+	inline void setFarPlane(float farPlane) {
+		_farPlane = farPlane;
+	}
+
 	void onMotion(int32_t x, int32_t y, int32_t relX, int32_t relY, float rotationSpeed = 0.01f);
 	void onMovement(int32_t forward, int32_t sideward);
 	void updatePosition(long dt, bool left, bool right, bool forward, bool backward, float speed = 0.01f);
@@ -60,7 +73,7 @@ public:
 	FrustumResult testFrustum(const glm::vec3& position) const;
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 
-	void perspective(float fieldOfViewY, float aspectRatio, float zNear, float zFar);
+	void perspective(float fieldOfViewY, float aspectRatio);
 
 	const glm::vec3& position() const;
 	int width() const;
@@ -122,8 +135,8 @@ inline const glm::vec4& Camera::frustumPlane(FrustumPlanes plane) const {
 	return _frustumPlanes[int(plane)];
 }
 
-inline void Camera::perspective(float fieldOfViewY, float aspectRatio, float zNear, float zFar) {
-	_projectionMatrix = glm::perspective(fieldOfViewY, aspectRatio, zNear, zFar);
+inline void Camera::perspective(float fieldOfViewY, float aspectRatio) {
+	_projectionMatrix = glm::perspective(fieldOfViewY, aspectRatio, nearPlane(), farPlane());
 }
 
 inline void Camera::update() {

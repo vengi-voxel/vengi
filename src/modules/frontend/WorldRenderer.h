@@ -12,6 +12,7 @@
 #include "video/VertexBuffer.h"
 #include "video/GBuffer.h"
 #include "video/DepthBuffer.h"
+#include "frontend/ShadowMapRenderShader.h"
 #include "video/GLMeshData.h"
 #include "core/GLM.h"
 #include "core/Var.h"
@@ -64,8 +65,11 @@ private:
 	core::VarPtr _debugGeometry;
 	core::VarPtr _deferred;
 	core::VarPtr _deferredDebug;
+	core::VarPtr _shadowMapDebug;
 	video::VertexBuffer _fullscreenQuad;
+	video::VertexBuffer _texturedFullscreenQuad;
 	video::DepthBuffer _depthBuffer;
+	frontend::ShadowMapRenderShader _shadowMapRender;
 
 	voxel::PlantGenerator _plantGenerator;
 

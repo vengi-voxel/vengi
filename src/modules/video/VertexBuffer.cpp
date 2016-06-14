@@ -93,6 +93,21 @@ int32_t VertexBuffer::createFullscreenQuad() {
 	return create(vecs, sizeof(vecs));
 }
 
+int32_t VertexBuffer::createFullscreenTextureBuffer() {
+	static const glm::vec2 vecs[] = {
+		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 1.0f), glm::vec2(1.0f, 0.0f),
+		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec2(0.0f, 0.0f),
+	};
+	return create(vecs, sizeof(vecs));
+}
+
+glm::ivec2 VertexBuffer::createFullscreenTexturedQuad() {
+	glm::ivec2 indices;
+	indices.x = createFullscreenQuad();
+	indices.y = createFullscreenTextureBuffer();
+	return indices;
+}
+
 VertexBuffer::~VertexBuffer() {
 	shutdown();
 }

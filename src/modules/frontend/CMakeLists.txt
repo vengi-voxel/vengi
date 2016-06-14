@@ -8,6 +8,7 @@ set(SRCS
 	WaterShader.h WaterShader.cpp
 	WorldShader.h WorldShader.cpp
 	ShadowMapShader.h ShadowMapShader.cpp
+	ShadowMapRenderShader.h ShadowMapRenderShader.cpp
 	WorldInstancedShader.h WorldInstancedShader.cpp
 	DeferredDirectionalLight.h DeferredDirectionalLight.cpp
 )
