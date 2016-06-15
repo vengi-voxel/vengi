@@ -16,7 +16,7 @@ uniform sampler2D u_shadowmap;
 
 void main()
 {
-	float v = texture(u_shadowmap, v_texcoord).r;
+	float v = $texture2D(u_shadowmap, v_texcoord).r;
 #ifdef PERSPECTIVE
 	o_color = vec4(vec3(linearizeDepth(depthValue) / u_farplane), 1.0);
 #else
