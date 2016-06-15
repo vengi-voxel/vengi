@@ -33,6 +33,7 @@ $out float v_ambientocclusion;
 $out float v_debug_color;
 
 #if cl_deferred == 0
+$out vec4 v_lightspacepos;
 $out vec3 v_lightpos;
 $out vec3 v_diffuse_color;
 $out vec3 v_fogcolor;
@@ -61,6 +62,10 @@ void main(void) {
 	v_debug_color = u_debug_color;
 
 #if cl_deferred == 0
+	// TODO: lightspacematrix is wrong...
+	mat4 lightspacematrix = u_projection * u_view;
+	v_lightspacepos = lightspacematrix * vec4(v_pos, 1.0);
+
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
 	v_lightpos = u_lightpos;

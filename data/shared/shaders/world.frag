@@ -2,6 +2,10 @@ $in vec3 v_pos;
 $in vec4 v_color;
 $in float v_ambientocclusion;
 $in float v_debug_color;
+#if cl_deferred == 0
+uniform sampler2D u_shadowmap;
+$in vec4 v_lightspacepos;
+#endif
 
 #if cl_deferred == 0
 $in vec3 v_lightpos;
@@ -17,17 +21,35 @@ $out vec3 o_color;
 $out vec3 o_norm;
 #endif
 
+#if cl_deferred == 0
+float calculateShadow()
+{
+	// perform perspective divide
+	vec3 projCoords = v_lightspacepos.xyz / v_lightspacepos.w;
+	// Transform to [0,1] range
+	projCoords = projCoords * 0.5 + 0.5;
+	// Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+	float closestDepth = $texture2D(u_shadowmap, projCoords.xy).r;
+	// Get depth of current fragment from light's perspective
+	float currentDepth = projCoords.z;
+	// Check whether current frag pos is in shadow
+	float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+	return shadow;
+}
+#endif
+
 void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
 	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
 
 #if cl_deferred == 0
+	float shadow = calculateShadow();
 	vec3 lightdir = normalize(v_lightpos - v_pos);
 
 	vec3 diffuse = v_diffuse_color * clamp(dot(normal, lightdir), 0.0, 1.0) * 0.8;
 	vec3 ambient = vec3(0.2);
-	vec3 lightvalue = diffuse + ambient;
+	vec3 lightvalue = ambient + (1.0 - shadow) * diffuse;
 
 	float fogstart = max(v_viewdistance - v_fogrange, 0.0);
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
