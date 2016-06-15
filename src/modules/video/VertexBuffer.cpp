@@ -86,6 +86,7 @@ int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
 }
 
 int32_t VertexBuffer::createFullscreenQuad() {
+	// counter clock wise winding
 	static const glm::vec3 vecs[] = {
 		glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3(1.0f,  1.0f, 0.0f),
 		glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(1.0f, -1.0f, 0.0f),
@@ -94,6 +95,7 @@ int32_t VertexBuffer::createFullscreenQuad() {
 }
 
 int32_t VertexBuffer::createFullscreenTextureBuffer() {
+	// counter clock wise winding
 	static const glm::vec2 vecs[] = {
 		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f),
 		glm::vec2(0.0f, 1.0f), glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f),
