@@ -63,7 +63,7 @@ void main(void) {
 	v_debug_color = u_debug_color;
 
 #if cl_deferred == 0
-	v_lightspacepos = u_light * vec4(v_pos, 1.0);
+	v_lightspacepos = u_light * pos4;
 
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
