@@ -212,6 +212,8 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightPos + camera.position());
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
+	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
+	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
 	if (shader.hasUniform("u_light")) {
 		// Because we're modelling a directional light source all its light rays are parallel.
 		// For this reason we're going to use an orthographic projection matrix for the light
