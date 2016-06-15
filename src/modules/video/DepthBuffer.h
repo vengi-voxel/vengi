@@ -18,6 +18,7 @@ public:
 
 	void bind();
 	void unbind();
+	float *read();
 
 	inline GLuint getTexture() const {
 		return _depthTexture;

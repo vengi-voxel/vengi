@@ -75,6 +75,14 @@ void DepthBuffer::bind() {
 	GL_checkError();
 }
 
+float *DepthBuffer::read() {
+	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	float *depths = new float[_width * _height];
+	glReadPixels(0, 0, _width, _height, GL_DEPTH_COMPONENT, GL_FLOAT, depths);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return depths;
+}
+
 void DepthBuffer::unbind() {
 	glViewport(_viewport[0], _viewport[1], (GLsizei)_viewport[2], (GLsizei)_viewport[3]);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
