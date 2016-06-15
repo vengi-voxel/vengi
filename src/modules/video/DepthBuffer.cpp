@@ -31,11 +31,8 @@ void DepthBuffer::shutdown() {
 bool DepthBuffer::init(int width, int height) {
 	_width = width;
 	_height = height;
-	glGenFramebuffers(1, &_fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 
 	glGenTextures(1, &_depthTexture);
-
 	glBindTexture(GL_TEXTURE_2D, _depthTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -45,6 +42,9 @@ bool DepthBuffer::init(int width, int height) {
 	GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+
+	glGenFramebuffers(1, &_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
@@ -68,7 +68,7 @@ bool DepthBuffer::init(int width, int height) {
 void DepthBuffer::bind() {
 	glGetIntegerv(GL_VIEWPORT, _viewport);
 	glViewport(0, 0, _width, _height);
-	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
 	//glClearDepth(0); // black
 	//glClearDepth(1); // white
 	glClear(GL_DEPTH_BUFFER_BIT);
