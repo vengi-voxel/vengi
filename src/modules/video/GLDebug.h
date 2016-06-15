@@ -78,10 +78,10 @@ public:
 			glDebugMessageCallbackARB(debugOutputCallback, nullptr);
 			GL_checkError();
 			_enabled = true;
+			Log::info("enable opengl debug messages");
 		}
-		Log::info("enable opengl debug messages");
 #else
-		Log::warn("Not implemented");
+		Log::warn("Opengl debug extensions are not implemented");
 #endif
 	}
 
