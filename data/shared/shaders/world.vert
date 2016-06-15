@@ -21,6 +21,7 @@ uniform sampler2D u_texture;
 uniform vec4 u_materialcolor[MATERIALCOLORS];
 uniform float u_debug_color;
 #if cl_deferred == 0
+uniform mat4 u_light;
 uniform vec3 u_lightpos;
 uniform vec3 u_diffuse_color;
 uniform float u_fogrange;
@@ -62,9 +63,7 @@ void main(void) {
 	v_debug_color = u_debug_color;
 
 #if cl_deferred == 0
-	// TODO: lightspacematrix is wrong...
-	mat4 lightspacematrix = u_projection * u_view;
-	v_lightspacepos = lightspacematrix * vec4(v_pos, 1.0);
+	v_lightspacepos = u_light * vec4(v_pos, 1.0);
 
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
