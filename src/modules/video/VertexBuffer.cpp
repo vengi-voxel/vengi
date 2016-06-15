@@ -87,16 +87,16 @@ int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
 
 int32_t VertexBuffer::createFullscreenQuad() {
 	static const glm::vec3 vecs[] = {
-		glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(1.0f,  1.0f, 0.0f), glm::vec3( 1.0f, -1.0f, 0.0f),
-		glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(-1.0f, -1.0f, 0.0f),
+		glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3(1.0f,  1.0f, 0.0f),
+		glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(1.0f, -1.0f, 0.0f),
 	};
 	return create(vecs, sizeof(vecs));
 }
 
 int32_t VertexBuffer::createFullscreenTextureBuffer() {
 	static const glm::vec2 vecs[] = {
-		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 1.0f), glm::vec2(1.0f, 0.0f),
-		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec2(0.0f, 0.0f),
+		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f),
+		glm::vec2(0.0f, 1.0f), glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f),
 	};
 	return create(vecs, sizeof(vecs));
 }
