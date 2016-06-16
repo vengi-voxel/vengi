@@ -41,6 +41,10 @@ TBFile *TBFile::Open(const char *filename, TBFileMode mode)
 	{
 	case MODE_READ:
 		f = fopen(filename, "rb");
+#ifdef TB_RUNTIME_DEBUG_INFO
+		if (!f)
+			TBDebugPrint("TBFile::Open, unable to open file '%s'\n", filename);
+#endif
 		break;
 	default:
 		break;

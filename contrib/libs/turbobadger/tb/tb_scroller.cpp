@@ -33,7 +33,7 @@ float TBScrollerFunction::GetDurationFromSpeed(float start_speed)
 	float abs_start_speed = ABS(start_speed);
 	if (abs_start_speed <= SF_GATE_THRESHOLD)
 		return 0;
-	return -log(SF_GATE_THRESHOLD / abs_start_speed) * m_decay;
+	return -logf(SF_GATE_THRESHOLD / abs_start_speed) * m_decay;
 }
 
 float TBScrollerFunction::GetSpeedFromDistance(float distance)
@@ -49,7 +49,7 @@ float TBScrollerFunction::GetSpeedFromDistance(float distance)
 float TBScrollerFunction::GetDistanceAtTime(float start_speed, float elapsed_time_ms)
 {
 	assert(elapsed_time_ms >= 0);
-	return start_speed * (1 - exp(-elapsed_time_ms / m_decay)) * m_decay;
+	return start_speed * (1 - expf(-elapsed_time_ms / m_decay)) * m_decay;
 }
 
 int TBScrollerFunction::GetDistanceAtTimeInt(float start_speed, float elapsed_time_ms)

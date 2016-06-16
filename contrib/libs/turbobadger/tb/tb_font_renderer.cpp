@@ -44,19 +44,6 @@ static void blurGlyph(unsigned char* src, int srcw, int srch, int srcStride, uns
 
 // ================================================================================================
 
-TBFontEffect::TBFontEffect()
-	: m_blur_radius(0)
-	, m_tempBuffer(nullptr)
-	, m_kernel(nullptr)
-{
-}
-
-TBFontEffect::~TBFontEffect()
-{
-	delete [] m_tempBuffer;
-	delete [] m_kernel;
-}
-
 void TBFontEffect::SetBlurRadius(int blur_radius)
 {
 	assert(blur_radius >= 0);
@@ -65,26 +52,25 @@ void TBFontEffect::SetBlurRadius(int blur_radius)
 	m_blur_radius = blur_radius;
 	if (m_blur_radius > 0)
 	{
-		delete [] m_kernel;
-		m_kernel = new float[m_blur_radius * 2 + 1];
-		if (!m_kernel)
+		if (!m_kernel.Reserve(sizeof(float) * (m_blur_radius * 2 + 1)))
 		{
 			m_blur_radius = 0;
 			return;
 		}
-		float stdDevSq2 = (float)m_blur_radius / 2.f;
+		float *kernel = (float *) m_kernel.GetData();
+		float stdDevSq2 = (float) m_blur_radius / 2.f;
 		stdDevSq2 = 2.f * stdDevSq2 * stdDevSq2;
 		float scale = 1.f / sqrt(3.1415f * stdDevSq2);
 		float sum = 0;
 		for (int k = 0; k < 2 * m_blur_radius + 1; k++)
 		{
-			float x = (float)(k - m_blur_radius);
+			float x = (float) (k - m_blur_radius);
 			float kval = scale * exp(-(x * x / stdDevSq2));
-			m_kernel[k] = kval;
+			kernel[k] = kval;
 			sum += kval;
 		}
 		for (int k = 0; k < 2 * m_blur_radius + 1; k++)
-			m_kernel[k] /= sum;
+			kernel[k] /= sum;
 	}
 }
 
@@ -100,20 +86,20 @@ TBFontGlyphData *TBFontEffect::Render(TBGlyphMetrics *metrics, const TBFontGlyph
 		effect_glyph_data->w = src->w + m_blur_radius * 2;
 		effect_glyph_data->h = src->h + m_blur_radius * 2;
 		effect_glyph_data->stride = effect_glyph_data->w;
-		effect_glyph_data->data8 = new unsigned char[effect_glyph_data->w * effect_glyph_data->h];
 
 		// Reserve memory needed for blurring.
-		if (!effect_glyph_data->data8 ||
+		if (!m_data_dst.Reserve(effect_glyph_data->w * effect_glyph_data->h) ||
 			!m_blur_temp.Reserve(effect_glyph_data->w * effect_glyph_data->h * sizeof(float)))
 		{
 			delete effect_glyph_data;
 			return nullptr;
 		}
+		effect_glyph_data->data8 = (uint8*) m_data_dst.GetData();
 
 		// Blur!
 		blurGlyph(src->data8, src->w, src->h, src->stride,
 					effect_glyph_data->data8, effect_glyph_data->w, effect_glyph_data->h, effect_glyph_data->w,
-					(float *)m_blur_temp.GetData(), m_kernel, m_blur_radius);
+					(float*) m_blur_temp.GetData(), (float*) m_kernel.GetData(), m_blur_radius);
 
 		// Adjust glyph position to compensate for larger size.
 		metrics->x -= m_blur_radius;

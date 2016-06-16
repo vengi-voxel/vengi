@@ -6,7 +6,9 @@
 #include "tb_tempbuffer.h"
 #include <assert.h>
 #include <stdlib.h>
+#if !defined(__native_client__)
 #include <memory.h>
+#endif
 #include <string.h>
 
 namespace tb {

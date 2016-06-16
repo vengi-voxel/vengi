@@ -62,6 +62,7 @@ set(SRCS
 	tb/tb_style_edit_content.cpp
 	tb/tb_system_android.cpp
 	tb/tb_system_linux.cpp
+	tb/tb_system_sdl.cpp
 	tb/tb_system_win.cpp
 	tb/tb_tab_container.cpp
 	tb/tb_tempbuffer.cpp
@@ -130,14 +131,15 @@ engine_add_library(
 	SRCS ${SRCS}
 )
 target_include_directories(turbobadger PUBLIC tb)
+target_link_libraries(turbobadger sdl2)
 
-if (FIPS_WINDOWS)
+add_definitions(-DTB_SYSTEM_SDL -DTB_CLIPBOARD_SDL2)
+if (WINDOWS)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
 	add_definitions(-DTB_USE_CURRENT_DIRECTORY)
-elseif (FIPS_LINUX)
-elseif (FIPS_MACOS)
+elseif (LINUX)
+elseif (DARWIN)
 	add_definitions(-DMACOSX)
-	add_definitions(-Dnullptr=0)
 	add_definitions(-DTB_USE_CURRENT_DIRECTORY)
 endif()

@@ -150,6 +150,8 @@ void TBWidget::OnInflate(const INFLATE_INFO &info)
 		SetTooltip(tooltip);
 }
 
+TB_WIDGET_FACTORY(TBWindow, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
+
 TB_WIDGET_FACTORY(TBButton, TBValue::TYPE_NULL, WIDGET_Z_BOTTOM) {}
 void TBButton::OnInflate(const INFLATE_INFO &info)
 {

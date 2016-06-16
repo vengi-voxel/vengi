@@ -58,9 +58,17 @@
 	It is using GL version 1.1, */
 #define TB_RENDERER_GL
 
+/** Enable renderer using OpenGL3. This renderer depends on TB_RENDERER_BATCHER.
+	It is using GL version 3.2, */
+//#define TB_RENDERER_GL3
+
 /** Enable renderer using OpenGL ES. This renderer depends on TB_RENDERER_GL.
 	It is using GL ES version 1. */
 //#define TB_RENDERER_GLES_1
+
+/** Enable renderer using OpenGL ES. This renderer depends on TB_RENDERER_GL.
+	It is using GL ES version 2. */
+//#define TB_RENDERER_GLES_2
 
 /** The width of the font glyph cache. Must be a power of two. */
 #define TB_GLYPH_CACHE_WIDTH 512
@@ -81,6 +89,7 @@
 /** Defines for implementations of TBClipboard. */
 //#define TB_CLIPBOARD_DUMMY // Cross platform. Not integrating with the OS.
 //#define TB_CLIPBOARD_GLFW // Cross platform using glfw API.
+//#define TB_CLIPBOARD_SDL2 // Cross platform using SDL2 API.
 //#define TB_CLIPBOARD_WINDOWS
 
 /** Defines for implementations of TBSystem. */

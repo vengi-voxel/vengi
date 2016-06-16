@@ -30,7 +30,7 @@ double TBSystem::GetTimeMS()
 	return now.tv_usec/1000 + now.tv_sec*1000;
 }
 
-// Implementation currently done in port_glut.cpp.
+// Implementation currently done in port_glfw.cpp.
 // FIX: Implement here for linux-desktop/android/macos?
 //void TBSystem::RescheduleTimer(double fire_time)
 //{

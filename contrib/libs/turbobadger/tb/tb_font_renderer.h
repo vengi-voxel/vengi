@@ -119,8 +119,8 @@ private:
 class TBFontEffect
 {
 public:
-	TBFontEffect();
-	~TBFontEffect();
+	TBFontEffect() : m_blur_radius(0) {}
+	~TBFontEffect() {}
 
 	/** Set blur radius. 0 means no blur. */
 	void SetBlurRadius(int blur_radius);
@@ -133,9 +133,9 @@ public:
 private:
 	// Blur data
 	int m_blur_radius;
-	float *m_tempBuffer;
-	float *m_kernel;
+	TBTempBuffer m_kernel;
 	TBTempBuffer m_blur_temp;
+	TBTempBuffer m_data_dst;
 };
 
 /** TBFontFace represents a loaded font that can measure and render strings. */

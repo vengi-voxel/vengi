@@ -7,7 +7,9 @@
 #include "tb_core.h"
 #include <assert.h>
 #include <stdlib.h>
+#if !defined(__native_client__)
 #include <memory.h>
+#endif
 
 namespace tb {
 

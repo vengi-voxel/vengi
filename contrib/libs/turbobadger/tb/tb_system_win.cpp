@@ -29,7 +29,7 @@ double TBSystem::GetTimeMS()
 	return timeGetTime();
 }
 
-// Implementation currently done in port_glut.cpp.
+// Implementation currently done in port_glfw.cpp.
 // Windows timer suck. Glut timers suck too (can't be canceled) but that will do for now.
 //void TBSystem::RescheduleTimer(double fire_time)
 //{
