@@ -65,6 +65,7 @@ private:
 	core::VarPtr _debugGeometry;
 	core::VarPtr _deferred;
 	core::VarPtr _deferredDebug;
+	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapDebug;
 	video::VertexBuffer _fullscreenQuad;
 	video::VertexBuffer _texturedFullscreenQuad;

@@ -20,8 +20,8 @@ uniform mat4 u_projection;
 uniform sampler2D u_texture;
 uniform vec4 u_materialcolor[MATERIALCOLORS];
 uniform float u_debug_color;
+
 #if cl_deferred == 0
-uniform mat4 u_light;
 uniform vec3 u_lightpos;
 uniform vec3 u_diffuse_color;
 uniform float u_fogrange;
@@ -33,8 +33,12 @@ $out vec4 v_color;
 $out float v_ambientocclusion;
 $out float v_debug_color;
 
-#if cl_deferred == 0
+#if cl_shadowmap == 1
 $out vec4 v_lightspacepos;
+uniform mat4 u_light;
+#endif
+
+#if cl_deferred == 0
 $out vec3 v_lightpos;
 $out vec3 v_diffuse_color;
 $out vec3 v_fogcolor;
@@ -62,9 +66,11 @@ void main(void) {
 	v_ambientocclusion = aovalues[a_ao];
 	v_debug_color = u_debug_color;
 
-#if cl_deferred == 0
+#if cl_shadowmap == 1
 	v_lightspacepos = u_light * pos4;
+#endif
 
+#if cl_deferred == 0
 	v_fogrange = u_fogrange;
 	v_viewdistance = u_viewdistance;
 	v_lightpos = u_lightpos;

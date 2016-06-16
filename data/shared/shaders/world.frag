@@ -3,9 +3,12 @@ $in vec4 v_color;
 $in float v_ambientocclusion;
 $in float v_debug_color;
 
-#if cl_deferred == 0
+#if cl_shadowmap == 1
 uniform sampler2D u_shadowmap;
 $in vec4 v_lightspacepos;
+#endif
+
+#if cl_deferred == 0
 $in vec3 v_lightpos;
 $in vec3 v_diffuse_color;
 $in float v_fogrange;
@@ -19,7 +22,7 @@ $out vec3 o_color;
 $out vec3 o_norm;
 #endif
 
-#if cl_deferred == 0
+#if cl_shadowmap == 1
 float calculateShadow()
 {
 	// perform perspective divide
@@ -41,8 +44,13 @@ void main(void) {
 	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
 
-#if cl_deferred == 0
+#if cl_shadowmap == 1
 	float shadow = calculateShadow();
+#else
+	float shadow = 0.0;
+#endif
+
+#if cl_deferred == 0
 	vec3 lightdir = normalize(v_lightpos - v_pos);
 
 	vec3 diffuse = v_diffuse_color * clamp(dot(normal, lightdir), 0.0, 1.0) * 0.8;
@@ -56,7 +64,7 @@ void main(void) {
 	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * v_debug_color;
 	o_color = vec4(mix(linearColor, v_fogcolor, fogval), v_color.a);
 #else
-	o_color = v_color.xyz * v_ambientocclusion * v_debug_color;;
+	o_color = v_color.xyz * v_ambientocclusion * v_debug_color;
 	o_pos = v_pos;
 	o_norm = normal;
 #endif

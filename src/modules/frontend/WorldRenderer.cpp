@@ -330,12 +330,14 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 	_colorTexture->bind(0);
 
-	_depthBuffer.bind();
-	glCullFace(GL_FRONT);
-	drawCallsWorld  = renderWorldMeshes(shadowmapShader, camera, _meshDataOpaque, vertices);
-	//drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
-	glCullFace(GL_BACK);
-	_depthBuffer.unbind();
+	if (_shadowMap->boolVal()) {
+		_depthBuffer.bind();
+		glCullFace(GL_FRONT);
+		drawCallsWorld  = renderWorldMeshes(shadowmapShader, camera, _meshDataOpaque, vertices);
+		//drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
+		glCullFace(GL_BACK);
+		_depthBuffer.unbind();
+	}
 
 	const bool deferred = _deferred->boolVal();
 	if (deferred) {
@@ -390,7 +392,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		GL_checkError();
 	}
 
-	if (_shadowMapDebug->boolVal()) {
+	if (_shadowMap->boolVal() && _shadowMapDebug->boolVal()) {
 		glDepthMask(GL_FALSE);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
@@ -607,6 +609,7 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 	_deferred = core::Var::get(cfg::ClientDeferred);
 	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
 	_shadowMapDebug = core::Var::get(cfg::ClientShadowMapDebug, "false");
+	_shadowMap = core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
