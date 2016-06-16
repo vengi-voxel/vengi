@@ -317,18 +317,18 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 	GL_checkError();
 
-
 	// Because we're modelling a directional light source all its light rays are parallel.
 	// For this reason we're going to use an orthographic projection matrix for the light
 	// source where there is no perspective deform
-	const glm::mat4& lightProjection = camera.orthoMatrix();
-	//const glm::mat4& lightProjection = camera.projectionMatrix();
+	const float halfWidth = camera.width() / 2.0f;
+	const float halfHeight = camera.height() / 2.0f;
+	const glm::mat4& lightProjection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -10.0f, 100.0f);
 	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
-	static const glm::vec3 center(0.0f, 0.0f, 0.0f);
-	const glm::mat4& lightView = glm::lookAt(_lightPos, center, up);
+	static const glm::vec3 pos(0.0f);
+	static const glm::vec3 dir(1.0f, -1.0f, 0.0f);
+	// TODO: this doesn't look correct
+	const glm::mat4& lightView = glm::lookAt(pos, dir, up);
 	_lightSpaceMatrix = lightProjection * lightView;
-
-	_colorTexture->bind(0);
 
 	if (_shadowMap->boolVal()) {
 		_depthBuffer.bind();
@@ -338,6 +338,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		glCullFace(GL_BACK);
 		_depthBuffer.unbind();
 	}
+
+	_colorTexture->bind(0);
 
 	const bool deferred = _deferred->boolVal();
 	if (deferred) {
@@ -607,9 +609,9 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredShader, int width, int height) {
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
+	_shadowMap = core::Var::get(cfg::ClientShadowMap);
 	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
 	_shadowMapDebug = core::Var::get(cfg::ClientShadowMapDebug, "false");
-	_shadowMap = core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
