@@ -32,10 +32,22 @@ GDB_CMD          ?=
 else
 GDB_CMD          ?= gdb -ex run --args
 endif
+
 BUILD_TYPE       ?= Debug
 # override this in your Makefile.local to use a different directory
 BUILDDIRPATH     ?= ./
 BUILDDIR         ?= $(BUILDDIRPATH)build-$(shell echo $(BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
+
+#VOGL_OPTIONS     ?= --vogl_force_debug_context --vogl_exit_after_x_frames 2000
+VOGL_OPTIONS     ?= --vogl_force_debug_context
+VOGL             ?=
+ifeq ($(VOGL),)
+VOGL_CMD         ?=
+else
+VOGL_CMD         ?= vogl trace --vogl_tracepath $(BUILDDIR) --vogl_tracefile $@.trace $(VOGL_OPTIONS)
+ARGS_TMP         := $(ARGS)
+ARGS              = "--args $(ARGS_TMP)"
+endif
 
 MAKE_PID := $$PPID
 JOB_FLAG := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
@@ -65,7 +77,7 @@ edit-local-config:
 
 server client shapetool shadertool noisetool tests: cmake
 	$(Q)cd $(BUILDDIR); make $@ copy-data-shared copy-data-$@ $(JOB_FLAG)
-	$(Q)cd $(BUILDDIR); $(GDB_CMD) ./$@ $(ARGS)
+	$(Q)cd $(BUILDDIR); $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
 shapetool2: shapetool clean-local-config
 
