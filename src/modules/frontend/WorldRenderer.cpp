@@ -331,7 +331,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
 	static const glm::vec3 pos(0.5f, 1.0f, 2.0f);
 	static const glm::vec3 dir(0.0f);
-	// TODO: this doesn't look correct
 	_lightView = glm::lookAt(pos, dir, up);
 	_lightSpaceMatrix = _lightProjection * _lightView;
 
