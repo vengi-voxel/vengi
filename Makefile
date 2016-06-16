@@ -44,7 +44,8 @@ VOGL             ?=
 ifeq ($(VOGL),)
 VOGL_CMD         ?=
 else
-VOGL_CMD         ?= vogl trace --vogl_tracepath $(BUILDDIR) --vogl_tracefile $@.trace $(VOGL_OPTIONS)
+VOGL_BIN         ?= vogl
+VOGL_CMD         ?= $(VOGL_BIN) trace --vogl_tracepath $(BUILDDIR) --vogl_tracefile $@.trace $(VOGL_OPTIONS)
 ARGS_TMP         := $(ARGS)
 ARGS              = "--args $(ARGS_TMP)"
 endif
