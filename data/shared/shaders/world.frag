@@ -4,7 +4,7 @@ $in float v_ambientocclusion;
 $in float v_debug_color;
 
 #if cl_shadowmap == 1
-uniform sampler2D u_shadowmap;
+uniform sampler2DShadow u_shadowmap;
 $in vec4 v_lightspacepos;
 #endif
 
@@ -27,14 +27,11 @@ float when_gt(float x, float y) {
 	return max(sign(x - y), 0.0);
 }
 
-float calculateShadow()
-{
+float calculateShadow() {
 	// perform perspective divide
 	vec3 projCoords = v_lightspacepos.xyz / v_lightspacepos.w;
-	// Transform to [0,1] range
-	projCoords = projCoords * 0.5 + 0.5;
 	// Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-	float closestDepth = $texture2D(u_shadowmap, projCoords.xy).r;
+	float closestDepth = $shadow2D(u_shadowmap, projCoords);
 	// Get depth of current fragment from light's perspective
 	float currentDepth = projCoords.z;
 	// Check whether current frag pos is in shadow

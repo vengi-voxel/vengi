@@ -13,7 +13,7 @@ public:
 	DepthBuffer();
 	~DepthBuffer();
 
-	bool init(int width, int height);
+	bool init(int width, int height, bool antialiased = true);
 	void shutdown();
 
 	void bind();
