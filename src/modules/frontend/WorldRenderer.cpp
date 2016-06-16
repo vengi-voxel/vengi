@@ -214,18 +214,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
-	if (shader.hasUniform("u_light")) {
-		// Because we're modelling a directional light source all its light rays are parallel.
-		// For this reason we're going to use an orthographic projection matrix for the light
-		// source where there is no perspective deform
-		const glm::mat4& lightProjection = camera.orthoMatrix();
-		//const glm::mat4& lightProjection = camera.projectionMatrix();
-		static const glm::vec3 up(0.0f, 1.0f, 0.0f);
-		static const glm::vec3 center(0.0f, 0.0f, 0.0f);
-		const glm::mat4& lightView = glm::lookAt(_lightPos, center, up);
-		const glm::mat4& lightSpaceMatrix = lightProjection * lightView;
-		shader.setUniformMatrix("u_light", lightSpaceMatrix);
-	}
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _lightSpaceMatrix);
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	if (shadowMap) {
 		glActiveTexture(GL_TEXTURE1);
@@ -327,6 +316,17 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	glDepthMask(GL_TRUE);
 
 	GL_checkError();
+
+
+	// Because we're modelling a directional light source all its light rays are parallel.
+	// For this reason we're going to use an orthographic projection matrix for the light
+	// source where there is no perspective deform
+	const glm::mat4& lightProjection = camera.orthoMatrix();
+	//const glm::mat4& lightProjection = camera.projectionMatrix();
+	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
+	static const glm::vec3 center(0.0f, 0.0f, 0.0f);
+	const glm::mat4& lightView = glm::lookAt(_lightPos, center, up);
+	_lightSpaceMatrix = lightProjection * lightView;
 
 	_colorTexture->bind(0);
 
