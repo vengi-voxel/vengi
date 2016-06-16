@@ -3,6 +3,7 @@
  */
 
 #include "DepthBuffer.h"
+#include "GLFunc.h"
 
 #include <cstddef>
 #include "core/Common.h"
@@ -76,10 +77,10 @@ void DepthBuffer::bind() {
 }
 
 float *DepthBuffer::read() {
-	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
 	float *depths = new float[_width * _height];
 	glReadPixels(0, 0, _width, _height, GL_DEPTH_COMPONENT, GL_FLOAT, depths);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	return depths;
 }
 
