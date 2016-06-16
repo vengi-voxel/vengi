@@ -23,6 +23,10 @@ $out vec3 o_norm;
 #endif
 
 #if cl_shadowmap == 1
+float when_gt(float x, float y) {
+	return max(sign(x - y), 0.0);
+}
+
 float calculateShadow()
 {
 	// perform perspective divide
@@ -34,7 +38,7 @@ float calculateShadow()
 	// Get depth of current fragment from light's perspective
 	float currentDepth = projCoords.z;
 	// Check whether current frag pos is in shadow
-	float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+	float shadow = 1.0 * when_gt(currentDepth, closestDepth);
 	return shadow;
 }
 #endif
