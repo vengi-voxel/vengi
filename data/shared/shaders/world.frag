@@ -2,12 +2,10 @@ $in vec3 v_pos;
 $in vec4 v_color;
 $in float v_ambientocclusion;
 $in float v_debug_color;
+
 #if cl_deferred == 0
 uniform sampler2D u_shadowmap;
 $in vec4 v_lightspacepos;
-#endif
-
-#if cl_deferred == 0
 $in vec3 v_lightpos;
 $in vec3 v_diffuse_color;
 $in float v_fogrange;
