@@ -506,6 +506,31 @@ core::AppState UIApp::onCleanup() {
 
 }
 
+static SDL_TimerID tb_sdl_timer_id = 0;
+static Uint32 tb_sdl_timer_callback(Uint32 interval, void *param)
+{
+	double nextFireTime = tb::TBMessageHandler::GetNextMessageFireTime();
+	double now = tb::TBSystem::GetTimeMS();
+	if (nextFireTime != TB_NOT_SOON && now < nextFireTime) {
+		// We timed out *before* we were supposed to (the OS is not playing nice).
+		// Calling ProcessMessages now won't achieve a thing so force a reschedule
+		// of the platform timer again with the same time.
+		return nextFireTime - now;
+	}
+
+	tb::TBMessageHandler::ProcessMessages();
+
+	// If we still have things to do (because we didn't process all messages,
+	// or because there are new messages), we need to rescedule, so call RescheduleTimer.
+	nextFireTime = tb::TBMessageHandler::GetNextMessageFireTime();
+	if (nextFireTime == TB_NOT_SOON) {
+		tb_sdl_timer_id = 0;
+		return 0; // never - no longer scheduled
+	}
+	nextFireTime -= tb::TBSystem::GetTimeMS();
+	return std::max((uint32_t)nextFireTime, (uint32_t)1); // asap
+}
+
 /**
  * Called when the need to call TBMessageHandler::ProcessMessages has changed due to changes in the
  * message queue. fire_time is the new time is needs to be called.
@@ -513,16 +538,17 @@ core::AppState UIApp::onCleanup() {
  * It may also be TB_NOT_SOON which means that ProcessMessages doesn't need to be called.
  */
 void tb::TBSystem::RescheduleTimer(double fireTime) {
-#if 0
-	static double setFireTime = -1;
-	if (fireTime == TB_NOT_SOON) {
-		setFireTime = -1;
-		//glfwKillTimer();
-	} else if (fireTime != setFireTime || fireTime == 0.0) {
-		setFireTime = fireTime;
-		double delay = fireTime - tb::TBSystem::GetTimeMS();
-		unsigned int idelay = (unsigned int) std::max(delay, 0.0);
-		//glfwRescheduleTimer(idelay);
+	// cancel existing timer
+	if (tb_sdl_timer_id) {
+		SDL_RemoveTimer(tb_sdl_timer_id);
+		tb_sdl_timer_id = 0;
 	}
-#endif
+	// set new timer
+	if (fireTime != TB_NOT_SOON) {
+		double delay = fireTime - tb::TBSystem::GetTimeMS();
+		tb_sdl_timer_id = SDL_AddTimer(std::max((uint32_t)delay, (uint32_t)1), tb_sdl_timer_callback, nullptr);
+		if (!tb_sdl_timer_id) {
+			Log::error("ERROR: RescheduleTimer failed to SDL_AddTimer\n");
+		}
+	}
 }
