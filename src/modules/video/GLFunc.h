@@ -2011,3 +2011,8 @@ inline int OpenGLStateHandlerCheckError(const char *file, int line, const char *
 }
 
 #define GL_checkError() OpenGLStateHandlerCheckError(__FILE__, __LINE__, __PRETTY_FUNCTION__)
+#if 0
+	#define GL_setName(identifier, handle, label) glObjectLabel(identifier, handle, strlen(label), label)
+#else
+	#define GL_setName(identifier, handle, label) do {} while (0)
+#endif

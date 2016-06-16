@@ -41,12 +41,13 @@ void GBuffer::shutdown() {
 
 bool GBuffer::init(int width, int height) {
 	glGenFramebuffers(1, &_fbo);
+	GL_setName(GL_FRAMEBUFFER, _fbo, "gbuffer");
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
 
 	// +1 for the depth texture
 	glGenTextures(SDL_arraysize(_textures) + 1, _textures);
-
 	for (std::size_t i = 0; i < SDL_arraysize(_textures); ++i) {
+		GL_setName(GL_TEXTURE, _textures[i], "gbuffertexture");
 		glBindTexture(GL_TEXTURE_2D, _textures[i]);
 		// we are going to write vec3 into the out vars in the shaders
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
@@ -57,6 +58,7 @@ bool GBuffer::init(int width, int height) {
 	}
 
 	glBindTexture(GL_TEXTURE_2D, _depthTexture);
+	GL_setName(GL_TEXTURE, _depthTexture, "gbufferdepthtexture");
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
 	GL_checkError();

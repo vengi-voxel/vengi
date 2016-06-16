@@ -34,6 +34,7 @@ bool DepthBuffer::init(int width, int height, bool antialiased) {
 	_height = height;
 
 	glGenTextures(1, &_depthTexture);
+	GL_setName(GL_TEXTURE, _depthTexture, "depthtexture");
 	glBindTexture(GL_TEXTURE_2D, _depthTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	if (antialiased) {
@@ -57,6 +58,7 @@ bool DepthBuffer::init(int width, int height, bool antialiased) {
 	}
 
 	glGenFramebuffers(1, &_fbo);
+	GL_setName(GL_FRAMEBUFFER, _fbo, "depthfbo");
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
 	glDrawBuffer(GL_NONE);
