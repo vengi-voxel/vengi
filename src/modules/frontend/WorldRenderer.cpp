@@ -203,8 +203,13 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	const bool deferred = _deferred->boolVal();
 
 	video::ShaderScope scoped(shader);
-	shaderSetUniformIf(shader, setUniformMatrix, "u_view", view);
-	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
+	if (_cameraSun->boolVal()) {
+		shaderSetUniformIf(shader, setUniformMatrix, "u_view", _lightView);
+		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", _lightProjection);
+	} else {
+		shaderSetUniformIf(shader, setUniformMatrix, "u_view", view);
+		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
+	}
 	shaderSetUniformIf(shader, setUniformVec4v, "u_materialcolor[0]", &materialColors[0], materialColors.size());
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
@@ -320,20 +325,21 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	// Because we're modelling a directional light source all its light rays are parallel.
 	// For this reason we're going to use an orthographic projection matrix for the light
 	// source where there is no perspective deform
-	const float halfWidth = camera.width() / 2.0f;
-	const float halfHeight = camera.height() / 2.0f;
-	const glm::mat4& lightProjection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -10.0f, 100.0f);
+	const float halfWidth = 50;
+	const float halfHeight = 50;
+	_lightProjection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1000.0f, 1000.0f);
 	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
-	static const glm::vec3 pos(0.0f);
-	static const glm::vec3 dir(1.0f, -1.0f, 0.0f);
+	static const glm::vec3 pos(0.5f, 1.0f, 2.0f);
+	static const glm::vec3 dir(0.0f);
 	// TODO: this doesn't look correct
-	const glm::mat4& lightView = glm::lookAt(pos, dir, up);
-	_lightSpaceMatrix = lightProjection * lightView;
+	_lightView = glm::lookAt(pos, dir, up);
+	_lightSpaceMatrix = _lightProjection * _lightView;
 
 	if (_shadowMap->boolVal()) {
 		_depthBuffer.bind();
 		glCullFace(GL_FRONT);
-		drawCallsWorld  = renderWorldMeshes(shadowmapShader, camera, _meshDataOpaque, vertices);
+		// TODO: we need a bitmask for culling, because we need some kind of culling here, too...
+		drawCallsWorld  = renderWorldMeshes(shadowmapShader, camera, _meshDataOpaque, vertices, false);
 		//drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
 		glCullFace(GL_BACK);
 		_depthBuffer.unbind();
@@ -612,6 +618,7 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 	_shadowMap = core::Var::get(cfg::ClientShadowMap);
 	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
 	_shadowMapDebug = core::Var::get(cfg::ClientShadowMapDebug, "false");
+	_cameraSun = core::Var::get(cfg::ClientCameraSun, "false");
 	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
