@@ -231,8 +231,14 @@ bool UIApp::onKeyRelease(int32_t key) {
 	if (_console.isActive()) {
 		return true;
 	}
-
-	return invokeKey(mapKey(key), mapSpecialKey(key), mapModifier(SDL_GetModState()), false);
+	const tb::MODIFIER_KEYS mod = mapModifier(SDL_GetModState());
+	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
+		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU);
+		ev.modifierkeys = mod;
+		tb::TBWidget::focused_widget->InvokeEvent(ev);
+		return true;
+	}
+	return invokeKey(mapKey(key), mapSpecialKey(key), mod, false);
 }
 
 bool UIApp::onTextInput(const std::string& text) {
