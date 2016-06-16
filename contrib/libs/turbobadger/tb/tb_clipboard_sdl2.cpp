@@ -7,11 +7,7 @@
 
 #ifdef TB_CLIPBOARD_SDL2
 
-#ifdef __EMSCRIPTEN__
-#include "SDL/SDL.h"
-#else
-#include "SDL2/SDL.h"
-#endif
+#include <SDL.h>
 
 namespace tb {
 

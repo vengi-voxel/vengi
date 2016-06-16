@@ -23,6 +23,7 @@ set(SRCS
 	tb/tb_clipboard_dummy.cpp
 	tb/tb_clipboard_glfw.cpp
 	tb/tb_clipboard_win.cpp
+	tb/tb_clipboard_sdl2.cpp
 	tb/tb_color.cpp
 	tb/tb_core.cpp
 	tb/tb_debug.cpp
@@ -133,7 +134,6 @@ engine_add_library(
 target_include_directories(turbobadger PUBLIC tb)
 target_link_libraries(turbobadger sdl2)
 
-add_definitions(-DTB_SYSTEM_SDL -DTB_CLIPBOARD_SDL2)
 if (WINDOWS)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)

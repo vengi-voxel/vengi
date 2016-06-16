@@ -86,8 +86,10 @@
 //#define TB_CLIPBOARD_DUMMY // Cross platform. Not integrating with the OS.
 //#define TB_CLIPBOARD_GLFW // Cross platform using glfw API.
 //#define TB_CLIPBOARD_WINDOWS
+#define TB_CLIPBOARD_SDL2
 
 /** Defines for implementations of TBSystem. */
+#define TB_SYSTEM_SDL
 //#define TB_SYSTEM_LINUX
 //#define TB_SYSTEM_WINDOWS
 //#define TB_SYSTEM_ANDROID
@@ -102,27 +104,16 @@
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
 #define TB_FILE_POSIX
 #define TB_TARGET_WINDOWS
-#define TB_CLIPBOARD_WINDOWS
-#define TB_SYSTEM_WINDOWS
 #endif
 
 #if defined(__linux) || defined(__linux__)
 #define TB_FILE_POSIX
 #define TB_TARGET_LINUX
-#define TB_SYSTEM_LINUX
-#define TB_CLIPBOARD_DUMMY
 #endif
 
 #ifdef MACOSX
 #define TB_FILE_POSIX
 #define TB_TARGET_MACOSX
-#define TB_SYSTEM_LINUX
-#define TB_CLIPBOARD_DUMMY
-#endif
-
-#if defined(ANDROID) || defined(__ANDROID__)
-#define TB_SYSTEM_ANDROID
-#define TB_CLIPBOARD_DUMMY
 #endif
 
 #endif // TB_CONFIG_H
