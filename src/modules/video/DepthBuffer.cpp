@@ -37,10 +37,13 @@ bool DepthBuffer::init(int width, int height, bool antialiased) {
 	_width = width;
 	_height = height;
 
+	glGenFramebuffers(1, &_fbo);
+	GL_setName(GL_FRAMEBUFFER, _fbo, "depthfbo");
+	ScopedFrameBuffer scopedFrameBuffer(_fbo);
+
 	glGenTextures(1, &_depthTexture);
 	GL_setName(GL_TEXTURE, _depthTexture, "depthtexture");
 	glBindTexture(GL_TEXTURE_2D, _depthTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	if (antialiased) {
 		// GL_LINEAR because we want to have values between 0.0 and 1.0 in the shadowmap to get
 		// anti-aliased shadow maps. You have to use sampler2DShadow in your shader to get PCF with this.
@@ -60,10 +63,9 @@ bool DepthBuffer::init(int width, int height, bool antialiased) {
 	} else {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 
-	glGenFramebuffers(1, &_fbo);
-	GL_setName(GL_FRAMEBUFFER, _fbo, "depthfbo");
-	ScopedFrameBuffer scopedFrameBuffer(_fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
