@@ -22,6 +22,7 @@
 #include "polyvox/Voxel.h"
 #include "Constants.h"
 #include "IsQuadNeeded.h"
+#include "voxel/Spiral.h"
 
 namespace voxel {
 
@@ -210,7 +211,36 @@ void World::createUnderground(TerrainContext& ctx) {
 void World::create(TerrainContext& ctx) {
 	core_trace_scoped(CreateWorld);
 	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
+#ifndef DEBUG_SCENE
 	WorldGenerator::createWorld(_ctx, ctx, _biomeManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
+#else
+	auto& _volData = *ctx.getVolume();
+	_volData.setVoxel(1, 5, 1, createVoxel(21));
+	_volData.setVoxel(1, 4, 1, createVoxel(21));
+	_volData.setVoxel(1, 3, 1, createVoxel(21));
+	_volData.setVoxel(1, 2, 1, createVoxel(21));
+
+	_volData.setVoxel(0, 1, 0, createVoxel(19));
+	_volData.setVoxel(1, 1, 0, createVoxel(18));
+	_volData.setVoxel(2, 1, 0, createVoxel(17));
+	_volData.setVoxel(0, 1, 1, createVoxel(16));
+	_volData.setVoxel(1, 1, 1, createVoxel(15));
+	_volData.setVoxel(2, 1, 1, createVoxel(14));
+	_volData.setVoxel(0, 1, 2, createVoxel(13));
+	_volData.setVoxel(1, 1, 2, createVoxel(12));
+	_volData.setVoxel(2, 1, 2, createVoxel(11));
+
+	int radius = 10;
+	const int sideLength = radius * 2 + 1;
+	const int amount = sideLength * (sideLength - 1) + sideLength;
+	voxel::Spiral o;
+	glm::vec3 pos;
+	for (int i = 0; i < amount; ++i, o.next()) {
+		pos.x = o.x();
+		pos.z = o.z();
+		_volData.setVoxel(pos, createVoxel(9));
+	}
+#endif
 }
 
 void World::cleanupFutures() {
