@@ -43,15 +43,23 @@ private:
 	core::VarPtr _maxpitch;
 	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
 	float _farPlane = 500.0f;
+	bool _ortho;
+	float _aspectRatio = 1.0f;
+	float _fieldOfViewY = 45.0f;
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateDirection();
 	void updateFrustumPlanes();
 	void updateViewMatrix();
+	void updateProjectionMatrix();
 public:
-	Camera();
+	Camera(bool ortho = false);
 	~Camera();
 	void init(int width, int height);
+
+	inline void setOrtho(bool ortho) {
+		_ortho = ortho;
+	}
 
 	inline float nearPlane() const {
 		return 0.1f;
@@ -74,8 +82,10 @@ public:
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 
 	glm::mat4 orthoMatrix() const;
+	glm::mat4 perspectiveMatrix() const;
 
-	void perspective(float fieldOfViewY, float aspectRatio);
+	void setFieldOfView(float angles);
+	void setAspectRatio(float aspect);
 
 	const glm::vec3& position() const;
 	int width() const;
@@ -113,7 +123,9 @@ inline float Camera::yaw() const {
 }
 
 inline glm::mat4 Camera::orthoMatrix() const {
-	return glm::ortho(0.0f, (float)width(), (float)height(), 0.0f, nearPlane(), farPlane());
+	const float w = width();
+	const float h = height();
+	return glm::ortho(0.0f, w, h, 0.0f, nearPlane(), farPlane());
 }
 
 inline float Camera::pitch() const {
@@ -141,13 +153,30 @@ inline const glm::vec4& Camera::frustumPlane(FrustumPlanes plane) const {
 	return _frustumPlanes[int(plane)];
 }
 
-inline void Camera::perspective(float fieldOfViewY, float aspectRatio) {
-	_projectionMatrix = glm::perspective(fieldOfViewY, aspectRatio, nearPlane(), farPlane());
+inline void Camera::setFieldOfView(float angles) {
+	_fieldOfViewY = angles;
+}
+
+inline void Camera::setAspectRatio(float aspect) {
+	_aspectRatio = aspect;
+}
+
+inline glm::mat4 Camera::perspectiveMatrix() const {
+	return glm::perspective(_fieldOfViewY, _aspectRatio, nearPlane(), farPlane());
+}
+
+inline void Camera::updateProjectionMatrix() {
+	if (_ortho) {
+		_projectionMatrix = orthoMatrix();
+	} else {
+		_projectionMatrix = perspectiveMatrix();
+	}
 }
 
 inline void Camera::update() {
 	updateDirection();
 	updateViewMatrix();
+	updateProjectionMatrix();
 	updateFrustumPlanes();
 }
 

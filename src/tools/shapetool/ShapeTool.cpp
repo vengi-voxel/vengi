@@ -14,7 +14,7 @@
 
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
-		ui::UIApp(filesystem, eventBus), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _plantShader(), _waterShader(),
+		ui::UIApp(filesystem, eventBus), _camera(false), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _plantShader(), _waterShader(),
 		_meshShader(), _colorShader(), _deferredDirLightShader(), _shadowMapShader() {
 	init("engine", "shapetool");
 	_world->setClientData(true);
@@ -133,7 +133,8 @@ void ShapeTool::beforeUI() {
 	const float speed = _speed->floatVal();
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
-	_camera.perspective(45.0f, _aspect);
+	_camera.setFieldOfView(45.0f);
+	_camera.setAspectRatio(_aspect);
 	_camera.update();
 
 	_worldRenderer.extractNewMeshes(_camera.position());

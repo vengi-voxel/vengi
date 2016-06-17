@@ -27,7 +27,7 @@
 
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
-		UIApp(filesystem, eventBus, 17816), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
+		UIApp(filesystem, eventBus, 17816), _camera(false), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
 		_timeProvider(timeProvider), _worldShader(), _plantShader(), _meshShader(), _deferredDirLightShader(), _shadowMapShader(),
 		_worldRenderer(world) {
 	_world->setClientData(true);
@@ -151,7 +151,8 @@ void Client::beforeUI() {
 		const bool backward = _moveMask & MoveDirection_MOVEBACKWARD;
 		_camera.updatePosition(_deltaFrame, left, right, forward, backward);
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
-		_camera.perspective(45.0f, _aspect);
+		_camera.setFieldOfView(45.0f);
+		_camera.setAspectRatio(_aspect);
 		_camera.update();
 
 		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _plantShader, _waterShader, _deferredDirLightShader, _shadowMapShader, _camera);

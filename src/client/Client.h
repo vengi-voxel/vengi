@@ -32,6 +32,7 @@
 class Client: public ui::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxel::WorldCreatedEvent> {
 protected:
+	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
 	network::NetworkPtr _network;
 	voxel::WorldPtr _world;
@@ -43,8 +44,6 @@ protected:
 	frontend::MeshShader _meshShader;
 	frontend::DeferredDirectionalLight _deferredDirLightShader;
 	frontend::ShadowMapShader _shadowMapShader;
-	// moving along the y axis should not arise the need to extract new meshes
-	video::Camera _camera;
 	frontend::WorldRenderer _worldRenderer;
 	ENetPeer* _peer = nullptr;
 	uint8_t _moveMask = 0;
