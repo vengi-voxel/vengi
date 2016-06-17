@@ -416,16 +416,32 @@ void Console::autoComplete() {
 			_commandLine.erase(cmdEraseIndex, strings.back().size());
 			_commandLine.insert(cmdEraseIndex, matches.front());
 		}
-		_cursorPos = _commandLine.size();
 	} else {
 		_messages.push_back(consolePrompt + _commandLine);
 		std::sort(begin(matches), end(matches), [](const std::string& v1, const std::string& v2) {
 			return v1 < v2;
 		});
+		int pos = 0;
+		const std::string first = matches.front();
+		for (char c : first) {
+			bool allMatch = true;
+			for (const std::string& match : matches) {
+				if (match[pos] != c) {
+					allMatch = false;
+					break;
+				}
+			}
+			if (!allMatch) {
+				break;
+			}
+			++pos;
+		}
+		_commandLine = matches.front().substr(0, pos);
 		for (const std::string& match : matches) {
 			Log::info("%s", match.c_str());
 		}
 	}
+	_cursorPos = _commandLine.size();
 }
 
 void Console::cursorDelete(bool moveCursor) {

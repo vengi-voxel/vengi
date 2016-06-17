@@ -112,10 +112,29 @@ public:
 		return *this;
 	}
 
+	/**
+	 * @param func A functor or lambda that accepts the following parameters: @code const std::string& str, std::vector<std::string>& matches @endcode
+	 */
 	template<class Functor>
 	Command& setArgumentCompleter(Functor&& func) {
-		_completer = std::bind(std::forward<Functor>(func));
+		_completer = func;
 		return *this;
+	}
+
+	Command& setBoolCompleter() {
+		return setArgumentCompleter([] (const std::string& str, std::vector<std::string>& matches) -> int {
+			if (str[0] == 't') {
+				matches.push_back("true");
+				return 1;
+			}
+			if (str[0] == 'f') {
+				matches.push_back("false");
+				return 1;
+			}
+			matches.push_back("true");
+			matches.push_back("false");
+			return 2;
+		});
 	}
 
 	inline bool operator==(const Command& rhs) const {
