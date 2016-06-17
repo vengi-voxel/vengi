@@ -248,7 +248,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		}
 		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
 		const glm::mat4& model = glm::scale(translate, meshData.scale);
-		shader.setUniformMatrix("u_model", model, false);
+		shaderSetUniformIf(shader, setUniformMatrix, "u_model", model);
 		meshData.bindVAO();
 
 		if (debugGeometry && !deferred) {
