@@ -437,16 +437,16 @@ inline bool Shader::hasUniform(const std::string& name) const {
 	return _uniforms.find(name) != _uniforms.end();
 }
 
-class ShaderScope {
+class ScopedShader {
 private:
 	const Shader& _shader;
 public:
-	ShaderScope(const Shader& shader) :
+	ScopedShader(const Shader& shader) :
 			_shader(shader) {
 		_shader.activate();
 	}
 
-	virtual ~ShaderScope() {
+	virtual ~ScopedShader() {
 		_shader.deactivate();
 	}
 };

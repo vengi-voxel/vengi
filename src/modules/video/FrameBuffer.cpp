@@ -16,12 +16,17 @@ FrameBuffer::~FrameBuffer() {
 }
 
 void FrameBuffer::shutdown() {
-	if (_framebuffer != 0)
+	if (_framebuffer != 0) {
 		glDeleteFramebuffers(1, &_framebuffer);
+	}
 	_framebuffer = 0;
+	core_assert(_oldFramebuffer == -1);
 }
 
 void FrameBuffer::bind() {
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
+	GL_checkError();
+
 	if (_framebuffer != 0) {
 		glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
 		return;
@@ -32,7 +37,9 @@ void FrameBuffer::bind() {
 }
 
 void FrameBuffer::unbind() {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	core_assert(_oldFramebuffer != -1);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _oldFramebuffer);
+	_oldFramebuffer = -1;
 }
 
 bool FrameBuffer::isSuccessful() {
@@ -50,10 +57,11 @@ void FrameBuffer::attachRenderBuffer(GLenum internalformat, GLenum attachment, G
 }
 
 void FrameBuffer::attachTexture(GLuint texture, GLenum attachmentType) {
-	if (texture != 0)
+	if (texture != 0) {
 		++_attached;
-	else
+	} else {
 		--_attached;
+	}
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glFramebufferTexture(GL_FRAMEBUFFER, attachmentType, texture, 0);
 }

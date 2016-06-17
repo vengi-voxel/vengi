@@ -26,6 +26,7 @@ public:
 
 private:
 	GLint _viewport[4] = {0, 0, 0, 0};
+	GLint _oldFramebuffer = -1;
 	GLuint _fbo = 0u;
 	GLuint _depthTexture = 0u;
 	int _width = 0;

@@ -11,6 +11,7 @@ namespace video {
 class FrameBuffer {
 private:
 	GLuint _framebuffer;
+	GLint _oldFramebuffer = -1;
 	int _attached;
 public:
 	FrameBuffer();

@@ -3,6 +3,7 @@
  */
 
 #include "GBuffer.h"
+#include "ScopedFrameBuffer.h"
 
 #include <cstddef>
 #include "core/Common.h"
@@ -38,12 +39,14 @@ void GBuffer::shutdown() {
 		glDeleteTextures(1, &_depthTexture);
 		_depthTexture = 0;
 	}
+	core_assert(_oldDrawFramebuffer == -1);
+	core_assert(_oldReadFramebuffer == -1);
 }
 
 bool GBuffer::init(int width, int height) {
 	glGenFramebuffers(1, &_fbo);
 	GL_setName(GL_FRAMEBUFFER, _fbo, "gbuffer");
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
+	ScopedFrameBuffer scopedFrameBuffer(_fbo);
 
 	// +1 for the depth texture
 	glGenTextures(SDL_arraysize(_textures) + 1, _textures);
@@ -70,12 +73,6 @@ bool GBuffer::init(int width, int height) {
 	GL_checkError();
 
 	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-	// restore default FBO
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	GL_checkError();
-
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		Log::error("FB error, status: %i", (int)status);
 		return false;
@@ -85,22 +82,29 @@ bool GBuffer::init(int width, int height) {
 }
 
 void GBuffer::bindForWriting() {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
-#ifdef DEBUG
-	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		Log::error("Failed to bind framebuffer for writing");
+	if (_oldDrawFramebuffer == -1) {
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &_oldDrawFramebuffer);
+		GL_checkError();
 	}
-#endif
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
 	GL_checkError();
 }
 
 void GBuffer::bindForReading(bool gbuffer) {
 	if (gbuffer) {
+		if (_oldReadFramebuffer == -1) {
+			glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &_oldReadFramebuffer);
+			GL_checkError();
+		}
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
 		return;
 	}
 
+	if (_oldDrawFramebuffer == -1) {
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &_oldDrawFramebuffer);
+		GL_checkError();
+	}
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	// activate the textures to read from
@@ -113,7 +117,14 @@ void GBuffer::bindForReading(bool gbuffer) {
 }
 
 void GBuffer::unbind() {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	if (_oldDrawFramebuffer != -1) {
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _oldDrawFramebuffer);
+		_oldDrawFramebuffer = -1;
+	}
+	if (_oldReadFramebuffer != -1) {
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, _oldReadFramebuffer);
+		_oldReadFramebuffer = -1;
+	}
 
 	// activate the textures to read from
 	for (int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
@@ -125,12 +136,6 @@ void GBuffer::unbind() {
 
 void GBuffer::setReadBuffer(GBufferTextureType textureType) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
-#ifdef DEBUG
-	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		Log::error("Failed to set the read buffer to %i", (int)textureType);
-	}
-#endif
 	GL_checkError();
 }
 

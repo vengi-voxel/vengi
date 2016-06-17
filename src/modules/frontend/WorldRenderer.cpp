@@ -204,7 +204,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 
 	const bool deferred = _deferred->boolVal();
 
-	video::ShaderScope scoped(shader);
+	video::ScopedShader scoped(shader);
 	if (_cameraSun->boolVal()) {
 		shaderSetUniformIf(shader, setUniformMatrix, "u_view", _lightView);
 		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", _lightProjection);
@@ -291,7 +291,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 
 void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int width, const int height, video::Shader& deferredShader) {
 	_gbuffer.bindForReading(false);
-	video::ShaderScope scoped(deferredShader);
+	video::ScopedShader scoped(deferredShader);
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightpos", _lightPos + camera.position());
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
@@ -375,7 +375,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		const int width = camera.width();
 		const int height = camera.height();
 		if (_deferredDebug->boolVal()) {
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 			// show the gbuffer buffers
 			_gbuffer.bindForReading(true);
 			GL_checkError();
@@ -410,7 +409,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		const int height = camera.height();
 		const GLsizei halfWidth = (GLsizei) (width / 2.0f);
 		const GLsizei halfHeight = (GLsizei) (height / 2.0f);
-		video::ShaderScope scopedShader(_shadowMapRenderShader);
+		video::ScopedShader scopedShader(_shadowMapRenderShader);
 		video::ScopedViewPort scopedViewport(halfWidth, 0, halfWidth, halfHeight);
 		core_assert_always(_texturedFullscreenQuad.bind());
 		glActiveTexture(GL_TEXTURE0);

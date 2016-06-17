@@ -15,6 +15,7 @@ set(SRCS
 	Mesh.cpp Mesh.h
 	MeshPool.cpp MeshPool.h
 	ScopedViewPort.h
+	ScopedFrameBuffer.h
 )
 set(LIB video)
 find_package(OpenGL REQUIRED)
