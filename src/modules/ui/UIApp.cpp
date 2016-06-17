@@ -483,6 +483,7 @@ core::AppState UIApp::onCleanup() {
 	tb::tb_core_shutdown();
 
 	_console.shutdown();
+	_renderer.shutdown();
 
 	std::string keybindings;
 

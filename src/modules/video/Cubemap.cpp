@@ -15,6 +15,11 @@ Cubemap::Cubemap(const std::string& filename) :
 }
 
 Cubemap::~Cubemap() {
+	core_assert_msg(_textureHandle == 0u, "Cubemap was not properly shut down");
+	shutdown();
+}
+
+void Cubemap::shutdown() {
 	if (_textureHandle != 0) {
 		glDeleteTextures(1, &_textureHandle);
 	}

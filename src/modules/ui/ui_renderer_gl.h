@@ -39,6 +39,7 @@ public:
 	UIRendererGL();
 
 	bool init();
+	void shutdown();
 
 	virtual void BeginPaint(int render_target_w, int render_target_h);
 	virtual void EndPaint();

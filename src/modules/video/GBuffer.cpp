@@ -17,6 +17,7 @@ GBuffer::GBuffer() :
 }
 
 GBuffer::~GBuffer() {
+	core_assert_msg(_fbo == 0u, "GBuffer was not properly shut down");
 	shutdown();
 }
 

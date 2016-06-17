@@ -7,6 +7,7 @@ UniformBuffer::UniformBuffer() :
 }
 
 UniformBuffer::~UniformBuffer() {
+	core_assert_msg(_handle == 0u, "Uniform buffer was not properly shut down");
 	shutdown();
 }
 

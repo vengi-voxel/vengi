@@ -68,6 +68,10 @@ void UIBitmapGL::SetData(uint32 *data) {
 UIRendererGL::UIRendererGL() {
 }
 
+void UIRendererGL::shutdown() {
+	_shader.shutdown();
+}
+
 bool UIRendererGL::init() {
 	if (!_shader.loadProgram("shaders/ui")) {
 		Log::error("Could not load the ui shader");

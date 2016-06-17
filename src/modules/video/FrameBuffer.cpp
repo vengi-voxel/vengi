@@ -11,6 +11,7 @@ FrameBuffer::FrameBuffer() :
 }
 
 FrameBuffer::~FrameBuffer() {
+	core_assert_msg(_framebuffer == 0u, "Framebuffer was not properly shut down");
 	shutdown();
 }
 

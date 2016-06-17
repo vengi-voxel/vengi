@@ -18,6 +18,7 @@ Mesh::Mesh() :
 }
 
 Mesh::~Mesh() {
+	core_assert_msg(_vertexArrayObject == 0u, "Mesh was not properly shut down");
 	shutdown();
 }
 

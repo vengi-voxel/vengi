@@ -36,6 +36,7 @@ Shader::Shader() :
 
 Shader::~Shader() {
 	core::Singleton<ShaderManager>::getInstance().unregisterShader(this);
+	core_assert_msg(_program == 0u, "Shader %s was not properly shut down", _name.c_str());
 	shutdown();
 }
 

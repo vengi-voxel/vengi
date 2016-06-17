@@ -27,6 +27,8 @@ public:
 	Cubemap(const std::string& filename);
 	~Cubemap();
 
+	void shutdown();
+
 	bool load();
 	void bind(GLenum texUnit = GL_TEXTURE0);
 	void unbind(GLenum texUnit = GL_TEXTURE0);

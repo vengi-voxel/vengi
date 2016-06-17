@@ -111,6 +111,7 @@ glm::ivec2 VertexBuffer::createFullscreenTexturedQuad() {
 }
 
 VertexBuffer::~VertexBuffer() {
+	core_assert_msg(_vao == 0u, "Vertex buffer was not properly shut down");
 	shutdown();
 }
 

@@ -46,8 +46,10 @@ void WorldRenderer::shutdown() {
 	_gbuffer.shutdown();
 	_fullscreenQuad.shutdown();
 	_texturedFullscreenQuad.shutdown();
+	_shadowMapRenderShader.shutdown();
 	_depthBuffer.shutdown();
 	reset();
+	_colorTexture->shutdown();
 	_colorTexture = video::TexturePtr();
 	_entities.clear();
 

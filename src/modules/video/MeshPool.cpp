@@ -14,6 +14,7 @@ MeshPool::MeshPool() {
 }
 
 MeshPool::~MeshPool() {
+	shutdown();
 }
 
 void MeshPool::shutdown() {

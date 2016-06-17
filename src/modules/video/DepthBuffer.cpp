@@ -14,6 +14,7 @@ DepthBuffer::DepthBuffer() {
 }
 
 DepthBuffer::~DepthBuffer() {
+	core_assert_msg(_fbo == 0u, "Depthbuffer was not properly shut down");
 	shutdown();
 }
 
