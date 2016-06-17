@@ -357,7 +357,7 @@ core::AppState UIApp::onConstruct() {
 
 void UIApp::afterUI() {
 	const tb::TBRect rect(0, 0, _width, _height);
-	_console.render(rect);
+	_console.render(rect, _deltaFrame);
 }
 
 core::AppState UIApp::onInit() {

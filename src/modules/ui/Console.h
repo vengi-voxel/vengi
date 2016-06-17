@@ -69,7 +69,7 @@ public:
 	bool toggle();
 	void clear();
 	void clearCommandLine();
-	void render(const tb::TBRect &rect);
+	void render(const tb::TBRect &rect, long deltaFrame);
 	bool isActive() const;
 	bool onTextInput(const std::string& text);
 	bool onKeyPress(int32_t key, int16_t modifier);

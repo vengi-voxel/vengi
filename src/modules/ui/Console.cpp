@@ -526,9 +526,10 @@ void Console::drawString(int x, int y, const std::string& str, int len) {
 	_font->DrawString(x, y, color, cstr, len);
 }
 
-void Console::render(const tb::TBRect &rect) {
-	_frame++;
-	if ((_frame % 10) == 0) {
+void Console::render(const tb::TBRect &rect, long deltaFrame) {
+	_frame += deltaFrame;
+	if (_frame > 250) {
+		_frame -= 250;
 		_cursorBlink ^= true;
 	}
 
