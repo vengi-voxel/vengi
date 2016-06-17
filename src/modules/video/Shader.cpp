@@ -272,6 +272,50 @@ int Shader::fetchAttributes() {
 	return numAttributes;
 }
 
+std::string Shader::handleIncludes(const std::string& buffer) const {
+	std::string src;
+	const std::string include = "#include";
+	int index = 0;
+	for (std::string::const_iterator i = buffer.begin(); i != buffer.end(); ++i, ++index) {
+		const char *c = &buffer[index];
+		if (*c != '#') {
+			src.append(c, 1);
+			continue;
+		}
+		if (::strncmp(include.c_str(), c, include.length())) {
+			src.append(c, 1);
+			continue;
+		}
+		for (; i != buffer.end(); ++i, ++index) {
+			const char *cStart = &buffer[index];
+			if (*cStart != '"')
+				continue;
+
+			++index;
+			++i;
+			for (; i != buffer.end(); ++i, ++index) {
+				const char *cEnd = &buffer[index];
+				if (*cEnd != '"')
+					continue;
+
+				const std::string& dir = core::string::extractPath(_name);
+				const std::string includeFile(cStart + 1, cEnd);
+				const std::string& includeBuffer = core::App::getInstance()->filesystem()->load(dir + includeFile);
+				if (includeBuffer.empty()) {
+					Log::error("could not load shader include %s from dir %s (shader %s)", includeFile.c_str(), dir.c_str(), _name.c_str());
+				}
+				src.append(includeBuffer);
+				break;
+			}
+			break;
+		}
+		if (i == buffer.end()) {
+			break;
+		}
+	}
+	return src;
+}
+
 std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) const {
 	std::string src;
 	src.append("#version ");
@@ -309,8 +353,6 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 		src.append("#endif\n");
 	}
 
-	std::string append(buffer);
-
 	// TODO: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
 	std::string replaceIn = "in";
 	std::string replaceOut = "out";
@@ -328,42 +370,13 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) 
 		replaceShadow2D = "texture";
 	}
 
-	const std::string include = "#include";
-	int index = 0;
-	for (std::string::iterator i = append.begin(); i != append.end(); ++i, ++index) {
-		const char *c = &append[index];
-		if (*c != '#') {
-			src.append(c, 1);
-			continue;
-		}
-		if (::strncmp(include.c_str(), c, include.length())) {
-			src.append(c, 1);
-			continue;
-		}
-		for (; i != append.end(); ++i, ++index) {
-			const char *cStart = &append[index];
-			if (*cStart != '"')
-				continue;
-
-			++index;
-			++i;
-			for (; i != append.end(); ++i, ++index) {
-				const char *cEnd = &append[index];
-				if (*cEnd != '"')
-					continue;
-
-				const std::string& dir = core::string::extractPath(_name);
-				const std::string includeFile(cStart + 1, cEnd);
-				const std::string& includeBuffer = core::App::getInstance()->filesystem()->load(dir + includeFile);
-				if (includeBuffer.empty()) {
-					Log::error("could not load shader include %s from dir %s (shader %s)", includeFile.c_str(), dir.c_str(), _name.c_str());
-				}
-				src.append(includeBuffer);
-				break;
-			}
-			break;
-		}
-		if (i == append.end()) {
+	src += handleIncludes(buffer);
+	int level = 0;
+	while (core::string::contains(src, "#include")) {
+		src = handleIncludes(src);
+		++level;
+		if (level >= 10) {
+			Log::warn("Abort shader include loop for %s", _name.c_str());
 			break;
 		}
 	}

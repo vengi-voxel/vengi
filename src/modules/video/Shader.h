@@ -55,6 +55,7 @@ protected:
 
 	void createProgramFromShaders();
 
+	std::string handleIncludes(const std::string& buffer) const;
 public:
 	Shader();
 	virtual ~Shader();
