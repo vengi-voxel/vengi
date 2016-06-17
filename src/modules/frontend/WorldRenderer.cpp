@@ -329,9 +329,9 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	// source where there is no perspective deform
 	const float halfWidth = 50;
 	const float halfHeight = 50;
-	_lightProjection = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1000.0f, 1000.0f);
-	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
-	static const glm::vec3 pos(0.5f, 1.0f, 2.0f);
+	_lightProjection = glm::perspective(glm::radians(0*2.f), 1.f, 1.f, 100.f);
+	static const glm::vec3 up(0.0f, 0.0f, -1.f);
+	static const glm::vec3 pos(0.5f, 50.0f, 2.0f);
 	static const glm::vec3 dir(0.0f);
 	_lightView = glm::lookAt(pos, dir, up);
 	_lightSpaceMatrix = _lightProjection * _lightView;
