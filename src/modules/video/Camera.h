@@ -37,41 +37,52 @@ private:
 	glm::mat4 _projectionMatrix;
 	int _width;
 	int _height;
+	// vertical angle
 	float _pitch;
+	// horizontal angle
 	float _yaw;
 	glm::vec3 _direction;
 	core::VarPtr _maxpitch;
 	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
+	float _nearPlane = 0.1f;
 	float _farPlane = 500.0f;
-	bool _ortho;
 	float _aspectRatio = 1.0f;
-	float _fieldOfViewY = 45.0f;
+	float _fieldOfView = 45.0f;
+	bool _ortho;
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateDirection();
 	void updateFrustumPlanes();
 	void updateViewMatrix();
 	void updateProjectionMatrix();
+
+	void normalizeAngles();
 public:
 	Camera(bool ortho = false);
 	~Camera();
+
 	void init(int width, int height);
 
-	inline void setOrtho(bool ortho) {
-		_ortho = ortho;
-	}
+	void setOrtho(bool ortho);
 
-	inline float nearPlane() const {
-		return 0.1f;
-	}
+	float nearPlane() const;
 
-	inline float farPlane() const {
-		return _farPlane;
-	}
+	float farPlane() const;
 
-	inline void setFarPlane(float farPlane) {
-		_farPlane = farPlane;
-	}
+	void setFarPlane(float farPlane);
+
+	void setNearPlane(float nearPlane);
+
+	/**
+	 * @return The rotation matrix of the direction the camera is facing to.
+	 */
+	glm::mat4 orientation() const;
+
+	glm::vec3 forward() const;
+
+	glm::vec3 right() const;
+
+	glm::vec3 up() const;
 
 	void onMotion(int32_t x, int32_t y, int32_t relX, int32_t relY, float rotationSpeed = 0.01f);
 	void onMovement(int32_t forward, int32_t sideward);
@@ -86,6 +97,8 @@ public:
 
 	void setFieldOfView(float angles);
 	void setAspectRatio(float aspect);
+
+	void lookAt(const glm::vec3& position);
 
 	const glm::vec3& position() const;
 	int width() const;
@@ -122,6 +135,43 @@ inline float Camera::yaw() const {
 	return _yaw;
 }
 
+inline void Camera::setOrtho(bool ortho) {
+	_ortho = ortho;
+}
+
+inline float Camera::nearPlane() const {
+	return _nearPlane;
+}
+
+inline float Camera::farPlane() const {
+	return _farPlane;
+}
+
+inline void Camera::setFarPlane(float farPlane) {
+	_farPlane = farPlane;
+}
+
+inline void Camera::setNearPlane(float nearPlane) {
+	_nearPlane = nearPlane;
+}
+
+inline glm::mat4 Camera::orientation() const {
+	const glm::mat4& orientation = glm::rotate(glm::rotate(glm::mat4(), glm::radians(_pitch), glm::vec3(1, 0, 0)), glm::radians(_yaw), glm::vec3(0, 1, 0));
+	return orientation;
+}
+
+inline glm::vec3 Camera::forward() const {
+	return (glm::inverse(orientation()) * glm::vec4(0, 0, -1, 1)).xyz();
+}
+
+inline glm::vec3 Camera::right() const {
+	return (glm::inverse(orientation()) * glm::vec4(1, 0, 0, 1)).xyz();
+}
+
+inline glm::vec3 Camera::up() const {
+	return (glm::inverse(orientation()) * glm::vec4(0, 1, 0, 1)).xyz();
+}
+
 inline glm::mat4 Camera::orthoMatrix() const {
 	const float w = width();
 	const float h = height();
@@ -154,7 +204,7 @@ inline const glm::vec4& Camera::frustumPlane(FrustumPlanes plane) const {
 }
 
 inline void Camera::setFieldOfView(float angles) {
-	_fieldOfViewY = angles;
+	_fieldOfView = angles;
 }
 
 inline void Camera::setAspectRatio(float aspect) {
@@ -162,7 +212,7 @@ inline void Camera::setAspectRatio(float aspect) {
 }
 
 inline glm::mat4 Camera::perspectiveMatrix() const {
-	return glm::perspective(_fieldOfViewY, _aspectRatio, nearPlane(), farPlane());
+	return glm::perspective(glm::radians(_fieldOfView), _aspectRatio, nearPlane(), farPlane());
 }
 
 inline void Camera::updateProjectionMatrix() {

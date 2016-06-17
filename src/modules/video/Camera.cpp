@@ -20,6 +20,24 @@ Camera::Camera(bool ortho) :
 Camera::~Camera() {
 }
 
+void Camera::lookAt(const glm::vec3& position) {
+	assert(position != _pos);
+	glm::vec3 direction = glm::normalize(position - _pos);
+	_pitch = glm::radians(asinf(-direction.y));
+	_yaw = -glm::radians(atan2f(-direction.x, -direction.z));
+	normalizeAngles();
+}
+
+void Camera::normalizeAngles() {
+	_yaw = fmodf(_yaw, 360.0f);
+	if (_yaw < 0.0f) {
+		_yaw += 360.0f;
+	}
+
+	const float maxPitch = _maxpitch->floatVal();
+	_pitch = glm::clamp(_pitch, -maxPitch, maxPitch);
+}
+
 FrustumResult Camera::testFrustum(const glm::vec3& position) const {
 	FrustumResult result = FrustumResult::Inside;
 	for (int i = 0; i < int(FrustumPlanes::MaxPlanes); i++) {
@@ -149,8 +167,7 @@ void Camera::init(int width, int height) {
 }
 
 void Camera::updateDirection() {
-	const float maxPitch = _maxpitch->floatVal();
-	_pitch = glm::clamp(_pitch, -maxPitch, maxPitch);
+	normalizeAngles();
 
 	const float cosV = glm::cos(_pitch);
 	const float cosH = glm::cos(_yaw);
