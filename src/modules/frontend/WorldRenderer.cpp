@@ -317,25 +317,37 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS);
+	glDepthFunc(GL_LEQUAL);
 	// Cull triangles whose normal is not towards the camera
 	glEnable(GL_CULL_FACE);
 	glDepthMask(GL_TRUE);
 
 	GL_checkError();
 
+	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
+	static const glm::vec3 pos(50.0f, 50.0f, -50.0f);
+	static const glm::vec3 center(0.0f);
+#if 1
+	// normalize the opengl depth from [-1, 1] to [0, 1]
+	_lightProjection = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 1.0f));
+	_lightProjection = glm::scale(_lightProjection, glm::vec3(1.0f, 1.0f, 0.5f));
 	// Because we're modelling a directional light source all its light rays are parallel.
 	// For this reason we're going to use an orthographic projection matrix for the light
 	// source where there is no perspective deform
-	const float halfWidth = 50;
-	const float halfHeight = 50;
-	_lightProjection = glm::perspective(glm::radians(0*2.f), 1.f, 1.f, 100.f);
-	static const glm::vec3 up(0.0f, 0.0f, -1.f);
-	static const glm::vec3 pos(0.5f, 50.0f, 2.0f);
-	static const glm::vec3 dir(0.0f);
+	_lightProjection = _lightProjection * glm::ortho(-75.0f, +75.0f, -75.0f, +75.0f, 1.0f, 400.0f);
+	_lightView = glm::lookAt(pos, center, up);
+#elif 0
 	_lightView = glm::lookAt(pos, dir, up);
+	_lightProjection = glm::perspective(glm::radians(0*2.f), 1.f, 1.f, 100.f);
+#else
+	_lightProjection = camera.projectionMatrix();
+	_lightView = camera.viewMatrix();
+#endif
 	_lightSpaceMatrix = _lightProjection * _lightView;
+	_lightPos = glm::vec3(glm::column(glm::inverse(_lightView), 2));
 
+	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
+	// then we are do one pass for the gbuffer + the sun
 	if (_shadowMap->boolVal()) {
 		_depthBuffer.bind();
 		glCullFace(GL_FRONT);
@@ -354,8 +366,8 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		glDisable(GL_BLEND);
 	}
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	drawCallsWorld += renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
 	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
 	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
@@ -401,10 +413,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	}
 
 	if (_shadowMap->boolVal() && _shadowMapDebug->boolVal()) {
-		glDepthMask(GL_FALSE);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_BLEND);
 		const int width = camera.width();
 		const int height = camera.height();
 		const GLsizei halfWidth = (GLsizei) (width / 2.0f);
@@ -652,7 +660,7 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 		}
 	}
 
-	core_assert_always(_depthBuffer.init(1024, 1024));
+	core_assert_always(_depthBuffer.init(width, height));
 
 	core_assert_always(_gbuffer.init(width, height));
 }
