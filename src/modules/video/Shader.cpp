@@ -316,7 +316,7 @@ std::string Shader::handleIncludes(const std::string& buffer) const {
 	return src;
 }
 
-std::string Shader::getSource(ShaderType shaderType, const std::string& buffer) const {
+std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, bool finalize) const {
 	std::string src;
 	src.append("#version ");
 	src.append(std::to_string(glslVersion));

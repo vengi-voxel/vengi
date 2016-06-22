@@ -66,7 +66,7 @@ public:
 
 	bool load(const std::string& name, const std::string& buffer, ShaderType shaderType);
 
-	std::string getSource(ShaderType shaderType, const std::string& buffer) const;
+	std::string getSource(ShaderType shaderType, const std::string& buffer, bool finalize = true) const;
 
 	/**
 	 * If the shaders were loaded manually via @c ::load, then you have to initialize the shader manually, too
