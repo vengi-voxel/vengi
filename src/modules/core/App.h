@@ -80,6 +80,8 @@ public:
 
 	core::EventBusPtr eventBus() const;
 
+	std::string currentWorkingDir() const;
+
 	static App* getInstance() {
 		core_assert(_staticInstance != nullptr);
 		return _staticInstance;
@@ -100,6 +102,10 @@ inline core::ThreadPool& App::threadPool() {
 
 inline core::EventBusPtr App::eventBus() const {
 	return _eventBus;
+}
+
+inline std::string App::currentWorkingDir() const {
+	return _filesystem->basePath();
 }
 
 }
