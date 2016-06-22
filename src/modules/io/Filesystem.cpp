@@ -69,6 +69,17 @@ bool Filesystem::write(const std::string& filename, const std::string& string) {
 	return write(filename, buf, string.size());
 }
 
+bool Filesystem::syswrite(const std::string& filename, const uint8_t* content, size_t length) {
+	io::File f(filename);
+	createDir(f.getPath());
+	return f.write(content, length) == static_cast<long>(length);
+}
+
+bool Filesystem::syswrite(const std::string& filename, const std::string& string) {
+	const uint8_t* buf = reinterpret_cast<const uint8_t*>(string.c_str());
+	return syswrite(filename, buf, string.size());
+}
+
 bool Filesystem::createDir(const std::string& path) const {
 	// TODO: windows
 	return ::mkdir(path.c_str(), 0700);

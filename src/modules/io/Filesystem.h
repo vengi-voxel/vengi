@@ -54,6 +54,10 @@ public:
 
 	bool write(const std::string& filename, const std::string& string);
 
+	bool syswrite(const std::string& filename, const uint8_t* content, size_t length);
+
+	bool syswrite(const std::string& filename, const std::string& string);
+
 	bool createDir(const std::string& dir) const;
 };
 
