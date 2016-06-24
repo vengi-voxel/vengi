@@ -18,8 +18,9 @@ protected:
 	inline char skip(const char **s) const {
 		char c;
 		while ((c = **s) <= ' ') {
-			if (c == '\0')
+			if (c == '\0') {
 				return '\0';
+			}
 			*s += core::string::getUTF8LengthForCharacter(c);
 		}
 
@@ -50,8 +51,9 @@ public:
 
 		for (;;) {
 			char c = skip(&s);
-			if (c == '\0')
+			if (c == '\0') {
 				break;
+			}
 			std::string token;
 			if (c == '"') {
 				++s;
@@ -80,8 +82,9 @@ public:
 			for (;;) {
 				s++;
 				c = *s;
-				if (c <= ' ' || c == '(' || c == ')' || c == '{' || c == '}')
+				if (c <= ' ' || c == '(' || c == ')' || c == '{' || c == '}' || c == ';') {
 					break;
+				}
 				token.push_back(c);
 			}
 			_tokens.push_back(token);

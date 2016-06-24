@@ -10,13 +10,16 @@ class ShaderTool: public core::App {
 protected:
 	struct Variable {
 		enum Type {
-			FLOAT, BOOL, INT, VEC2, VEC3, VEC4, MAT, SAMPLER2D, SAMPLER2DSHADOW
+			FLOAT, UNSIGNED_INT, INT, VEC2, VEC3, VEC4, MAT, SAMPLER2D, SAMPLER2DSHADOW, MAX
 		};
 		Type type;
 		std::string name;
+		int arraySize = 0;
 	};
 
 	struct ShaderStruct {
+		std::string name;
+		std::string filename;
 		// both
 		std::vector<Variable> uniforms;
 		// vertex only
@@ -27,8 +30,13 @@ protected:
 		std::vector<Variable> outs;
 	};
 	ShaderStruct _shaderStruct;
+	std::string _namespaceSrc;
+	std::string _sourceDirectory;
+	std::string _shaderDirectory;
+
 	bool parse(const std::string& src, bool vertex);
 	Variable::Type getType(const std::string& type) const;
+	std::string uniformSetterPostfix(const Variable::Type type, int amount) const;
 	void generateSrc() const;
 public:
 	ShaderTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);

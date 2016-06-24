@@ -9,26 +9,91 @@
 #include "core/Tokenizer.h"
 #include "video/Shader.h"
 
+static const char *cTypes[] = {
+	"float", "unsigned int", "int", "const glm::vec2&", "const glm::vec3&", "const glm::vec4&", "const glm::mat4&", "int", "int"
+};
+
+static const char* templateShader =
+	"/**\n"
+	" * @file\n"
+	" */\n"
+	"\n"
+	"#pragma once\n"
+	"\n"
+	"#include \"video/Shader.h\"\n"
+	"\n"
+	"namespace $namespace$ {\n"
+	"\n"
+	"class $name$ : public video::Shader {\n"
+	"public:\n"
+	"	bool setup() {\n"
+	"		if (!loadProgram(\"$filename$\")) {\n"
+	"			return false;\n"
+	"		}\n"
+	"		$attributes$\n"
+	"		$uniforms$\n"
+	"		return true;\n"
+	"	}\n"
+	"$setters$"
+	"};\n"
+	"\n"
+	"typedef std::shared_ptr<$name$> $name$Ptr;\n"
+	"\n"
+	"}\n";
+
 ShaderTool::ShaderTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		core::App(filesystem, eventBus, 0) {
 	init("engine", "shadertool");
+	static_assert(Variable::MAX == SDL_arraysize(cTypes), "mismatch in glsl types");
 }
 
 ShaderTool::~ShaderTool() {
 }
 
+std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type type, int amount) const {
+	switch (type) {
+	case Variable::MAX:
+		return "";
+	case Variable::FLOAT:
+		return "f";
+	case Variable::UNSIGNED_INT:
+		return "ui";
+	case Variable::INT:
+		return "i";
+	case Variable::VEC2:
+		return "Vec2";
+	case Variable::VEC3:
+		return "Vec3";
+	case Variable::VEC4:
+		return "Vec4";
+	case Variable::MAT:
+		return "Matrix";
+	case Variable::SAMPLER2D:
+		return "i";
+	case Variable::SAMPLER2DSHADOW:
+		return "i";
+	}
+	return "";
+}
+
 ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
 	if (type == "float") {
 		return Variable::FLOAT;
-	} else if (type == "bool") {
-		return Variable::BOOL;
 	} else if (type == "int") {
+		return Variable::INT;
+	} else if (type == "uint") {
 		return Variable::INT;
 	} else if (type == "vec2") {
 		return Variable::VEC2;
 	} else if (type == "vec3") {
 		return Variable::VEC3;
 	} else if (type == "vec4") {
+		return Variable::VEC4;
+	} else if (type == "uvec2") {
+		return Variable::VEC2;
+	} else if (type == "uvec3") {
+		return Variable::VEC3;
+	} else if (type == "uvec4") {
 		return Variable::VEC4;
 	} else if (type == "mat4") {
 		return Variable::MAT;
@@ -54,6 +119,116 @@ void ShaderTool::generateSrc() const {
 	for (const auto& v : _shaderStruct.outs) {
 		Log::info("Found out var of type %i with name %s", int(v.type), v.name.c_str());
 	}
+
+	std::string src(templateShader);
+	std::string name = _shaderStruct.name + "Shader";
+
+	std::vector<std::string> shaderNameParts;
+	core::string::splitString(name, shaderNameParts, "_");
+	std::string filename = "";
+	for (std::string n : shaderNameParts) {
+		if (n.length() > 1 || shaderNameParts.size() < 2) {
+			n[0] = SDL_toupper(n[0]);
+			filename += n;
+		}
+	}
+	if (filename.empty()) {
+		filename = name;
+	}
+	const std::string classname = filename;
+	filename += ".h";
+	src = core::string::replaceAll(src, "$name$", classname);
+	src = core::string::replaceAll(src, "$namespace$", _namespaceSrc);
+	src = core::string::replaceAll(src, "$filename$", _shaderDirectory + _shaderStruct.filename);
+	std::stringstream uniforms;
+	const int uniformSize = int(_shaderStruct.uniforms.size());
+	if (uniformSize > 0) {
+		uniforms << "checkUniforms({";
+		for (int i = 0; i < uniformSize; ++i) {
+			// TODO: if array foo[SOME_SIZE] then to foo[0] here
+			std::string uniformName = _shaderStruct.uniforms[i].name;
+			uniforms << "\"" << uniformName << "\"";
+			if (i < uniformSize - 1) {
+				uniforms << ", ";
+			}
+		}
+		uniforms << "});";
+	} else {
+		uniforms << "// no uniforms";
+	}
+	src = core::string::replaceAll(src, "$uniforms$", uniforms.str());
+
+	std::stringstream attributes;
+	const int attributeSize = int(_shaderStruct.attributes.size());
+	if (attributeSize > 0) {
+		attributes << "checkAttributes({";
+		for (int i = 0; i < attributeSize; ++i) {
+			const Variable& v = _shaderStruct.attributes[i];
+			attributes << "\"" << v.name << "\"";
+			if (i < attributeSize - 1) {
+				attributes << ", ";
+			}
+		}
+		attributes << "});";
+	} else {
+		attributes << "// no attributes";
+	}
+
+	std::stringstream setters;
+	if (uniformSize > 0) {
+		setters << "\n";
+	}
+	for (int i = 0; i < uniformSize; ++i) {
+		const Variable& v = _shaderStruct.uniforms[i];
+		std::string uniformName = v.name;
+		std::vector<std::string> nameParts;
+		core::string::splitString(uniformName, nameParts, "_");
+		uniformName = "";
+		for (std::string n : nameParts) {
+			if (n.length() > 1 || nameParts.size() < 2) {
+				n[0] = SDL_toupper(n[0]);
+				uniformName += n;
+			}
+		}
+		if (uniformName.empty()) {
+			uniformName = v.name;
+		}
+		setters << "\tinline bool set" << uniformName << "(";
+		const char *cType = cTypes[v.type];
+		setters << cType;
+		if (v.arraySize == -1) {
+			setters << "*";
+		}
+		setters << " " << v.name;
+		if (v.arraySize > 0) {
+			setters << "[" << v.arraySize << "]";
+		} else if (v.arraySize == -1) {
+			setters << ", int amount";
+		}
+		setters << ") const {\n";
+
+		setters << "\t\tif (!hasUniform(\"" << v.name << "\") {\n";
+		setters << "\t\t\treturn false;\n";
+		setters << "\t\t}\n";
+		setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize);
+		setters << "(\"" << v.name << "\", " << v.name;
+		if (v.arraySize > 0) {
+			setters << ", " << v.arraySize;
+		} else if (v.arraySize == -1) {
+			setters << ", amount";
+		}
+		setters << ");\n";
+		setters << "\t}\n";
+		if (i < uniformSize- - 2) {
+			setters << "\n";
+		}
+	}
+
+	src = core::string::replaceAll(src, "$attributes$", attributes.str());
+	src = core::string::replaceAll(src, "$setters$", setters.str());
+	const std::string targetFile = _sourceDirectory + filename;
+	Log::info("Generate shader bindings for %s at %s", name.c_str(), targetFile.c_str());
+	core::App::getInstance()->filesystem()->syswrite(targetFile, src);
 }
 
 bool ShaderTool::parse(const std::string& buffer, bool vertex) {
@@ -78,29 +253,70 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			Log::error("Failed to parse the shader, could not get type");
 			return false;
 		}
-		const std::string type = tok.next();
+		std::string type = tok.next();
 		if (!tok.hasNext()) {
 			Log::error("Failed to parse the shader, could not get variable name for type %s", type.c_str());
 			return false;
 		}
-		const std::string name = tok.next();
+		while (type == "highp" || type == "mediump" || type == "lowp" || type == "precision") {
+			if (!tok.hasNext()) {
+				Log::error("Failed to parse the shader, could not get type");
+				return false;
+			}
+			type = tok.next();
+		}
+		std::string name = tok.next();
 		const Variable::Type typeEnum = getType(type);
-		v->push_back(Variable{typeEnum, name});
+		bool isArray = false;
+		std::string number;
+		for (char c : name) {
+			if (c == ']') {
+				break;
+			}
+			if (isArray) {
+				number.push_back(c);
+			}
+			if (c == '[') {
+				isArray = true;
+			}
+		}
+		int arraySize = core::string::toInt(number);
+		if (isArray && arraySize == 0) {
+			arraySize = -1;
+			Log::warn("Could not determine array size for %s (%s)", name.c_str(), number.c_str());
+		}
+		if (isArray) {
+			std::vector<std::string> tokens;
+			core::string::splitString(name, tokens, "[");
+			if (tokens.size() != 2) {
+				Log::error("Could not extract variable name from %s", name.c_str());
+			} else {
+				name = tokens[0];
+			}
+		}
+		v->push_back(Variable{typeEnum, name, arraySize});
 	}
 	return true;
 }
 
 core::AppState ShaderTool::onRunning() {
-	if (_argc != 3) {
+	if (_argc < 3) {
 		_exitCode = 1;
-		Log::error("Usage: %s <path/to/glslangvalidator> <shaderfile>", _argv[0]);
+		Log::error("Usage: %s <path/to/glslangvalidator> <shaderfile> <namespace> <shader-dir> <src-generator-dir>", _argv[0]);
 		return core::AppState::Cleanup;
 	}
 
 	const std::string glslangValidatorBin = _argv[1];
-	Log::debug("Using glslangvalidator binary: %s", glslangValidatorBin.c_str());
+	const std::string shaderfile          = _argv[2];
+	_namespaceSrc    = _argc >= 4 ?         _argv[3] : "frontend";
+	_shaderDirectory = _argc >= 5 ?         _argv[4] : "shaders/";
+	_sourceDirectory = _argc >= 6 ?         _argv[5] : _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/";
 
-	const std::string shaderfile = _argv[2];
+	Log::debug("Using glslangvalidator binary: %s", glslangValidatorBin.c_str());
+	Log::info("Using %s as output directory", _sourceDirectory.c_str());
+	Log::info("Using %s as namespace", _namespaceSrc.c_str());
+	Log::info("Using %s as shader directory", _shaderDirectory.c_str());
+
 
 	Log::debug("Preparing shader file %s", shaderfile.c_str());
 	const std::string fragmentFilename = shaderfile + FRAGMENT_POSTFIX;
@@ -123,6 +339,8 @@ core::AppState ShaderTool::onRunning() {
 	const std::string& fragmentSrcSource = shader.getSource(video::ShaderType::SHADER_FRAGMENT, fragmentBuffer, false);
 	const std::string& vertexSrcSource = shader.getSource(video::ShaderType::SHADER_VERTEX, vertexBuffer, false);
 
+	_shaderStruct.filename = shaderfile;
+	_shaderStruct.name = shaderfile;
 	parse(fragmentSrcSource, false);
 	parse(vertexSrcSource, true);
 	generateSrc();

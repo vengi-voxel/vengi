@@ -34,7 +34,7 @@ macro(check_glsl_files TARGET)
 				add_custom_target(
 					${TARGET}_${_file}_shader_validation
 					COMMENT "Validate ${_file}"
-					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file}
+					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} frontend shaders/ ${ROOT_DIR}/src/modules/frontend
 					DEPENDS shadertool
 					WORKING_DIRECTORY ${ROOT_DIR}/data/${TARGET}/shaders
 				)
