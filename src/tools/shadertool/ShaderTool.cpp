@@ -227,7 +227,7 @@ void ShaderTool::generateSrc() const {
 	src = core::string::replaceAll(src, "$attributes$", attributes.str());
 	src = core::string::replaceAll(src, "$setters$", setters.str());
 	const std::string targetFile = _sourceDirectory + filename;
-	Log::info("Generate shader bindings for %s at %s", name.c_str(), targetFile.c_str());
+	Log::info("Generate shader bindings for %s at %s", _shaderStruct.name.c_str(), targetFile.c_str());
 	core::App::getInstance()->filesystem()->syswrite(targetFile, src);
 }
 
@@ -306,6 +306,9 @@ core::AppState ShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 
+	for (int i = 0; i < _argc; ++i) {
+		Log::trace("argv[%i] = %s", i, _argv[i]);
+	}
 	const std::string glslangValidatorBin = _argv[1];
 	const std::string shaderfile          = _argv[2];
 	_namespaceSrc    = _argc >= 4 ?         _argv[3] : "frontend";
@@ -313,10 +316,9 @@ core::AppState ShaderTool::onRunning() {
 	_sourceDirectory = _argc >= 6 ?         _argv[5] : _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/";
 
 	Log::debug("Using glslangvalidator binary: %s", glslangValidatorBin.c_str());
-	Log::info("Using %s as output directory", _sourceDirectory.c_str());
-	Log::info("Using %s as namespace", _namespaceSrc.c_str());
-	Log::info("Using %s as shader directory", _shaderDirectory.c_str());
-
+	Log::debug("Using %s as output directory", _sourceDirectory.c_str());
+	Log::debug("Using %s as namespace", _namespaceSrc.c_str());
+	Log::debug("Using %s as shader directory", _shaderDirectory.c_str());
 
 	Log::debug("Preparing shader file %s", shaderfile.c_str());
 	const std::string fragmentFilename = shaderfile + FRAGMENT_POSTFIX;
