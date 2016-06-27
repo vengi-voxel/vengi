@@ -23,36 +23,74 @@ if(NOT COMMAND find_host_program)
 	endmacro()
 endif()
 
+macro(convert_to_camel_case IN OUT)
+	string(REPLACE "_" ";" _list ${IN})
+	set(_final "")
+	if (_list)
+		foreach(_e ${_list})
+			string(SUBSTRING ${_e} 0 1 _first_letter)
+			string(TOUPPER ${_first_letter} _first_letter)
+			string(SUBSTRING ${_e} 1 -1 _remaining)
+			set(_final "${_final}${_first_letter}${_remaining}")
+		endforeach()
+	else()
+		string(SUBSTRING ${IN} 0 1 _first_letter)
+		string(TOUPPER ${_first_letter} _first_letter)
+		string(SUBSTRING ${IN} 1 -1 _remaining)
+		set(_final "${_final}${_first_letter}${_remaining}")
+	endif()
+	set(${OUT} ${_final})
+endmacro()
+
 macro(check_glsl_files TARGET)
 	set(files ${ARGV})
 	list(REMOVE_AT files 0)
 	find_program(GLSL_VALIDATOR_EXECUTABLE NAMES glslangValidator PATHS ${TOOLS_DIR})
+	set(_headers)
+	set(GEN_DIR ${ROOT_DIR}/src/modules/frontend/)
 	if (GLSL_VALIDATOR_EXECUTABLE)
 		message("${GLSL_VALIDATOR_EXECUTABLE} found - executing in ${ROOT_DIR}/data/${TARGET}/shaders")
-		if (IS_DIRECTORY ${ROOT_DIR}/data/${TARGET}/shaders)
+		set(_dir ${ROOT_DIR}/data/${TARGET}/shaders)
+		if (IS_DIRECTORY ${_dir})
 			foreach(_file ${files})
-				add_custom_target(
-					${TARGET}_${_file}_shader_validation
-					COMMENT "Validate ${_file}"
-					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} frontend shaders/ ${ROOT_DIR}/src/modules/frontend/
-					DEPENDS shadertool
-					WORKING_DIRECTORY ${ROOT_DIR}/data/${TARGET}/shaders
+				convert_to_camel_case(${_file} _f)
+				set(_shaderfile "${_f}Shader.h")
+				set(_shader "${GEN_DIR}${_shaderfile}")
+				add_custom_command(
+					OUTPUT ${_shader}
+					COMMENT "Validate ${_file} and generate ${_shaderfile}"
+					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} frontend shaders/ ${GEN_DIR}
+					DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert
+					WORKING_DIRECTORY ${_dir}
 				)
-				add_dependencies(${TARGET} shadertool ${TARGET}_${_file}_shader_validation)
+				list(APPEND _headers ${_shader})
 			endforeach()
 		endif()
-		if (IS_DIRECTORY ${ROOT_DIR}/data/shared/shaders)
+		set(_dir ${ROOT_DIR}/data/shared/shaders)
+		if (IS_DIRECTORY ${_dir})
 			foreach(_file ${files})
-				add_custom_target(
-					${TARGET}_${_file}_shader_validation
-					COMMENT "Validate ${_file}"
-					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} frontend shaders/ ${ROOT_DIR}/src/modules/frontend/
-					DEPENDS shadertool
-					WORKING_DIRECTORY ${ROOT_DIR}/data/shared/shaders
+				convert_to_camel_case(${_file} _f)
+				set(_shaderfile "${_f}Shader.h")
+				set(_shader "${GEN_DIR}${_shaderfile}")
+				add_custom_command(
+					OUTPUT ${_shader}
+					COMMENT "Validate ${_file} and generate ${_shaderfile}"
+					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} frontend shaders/ ${GEN_DIR}
+					DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert
+					WORKING_DIRECTORY ${_dir}
 				)
-				add_dependencies(${TARGET} shadertool ${TARGET}_${_file}_shader_validation)
+				list(APPEND _headers ${_shader})
 			endforeach()
 		endif()
+
+		add_custom_target(GenerateShaderBindings${TARGET}
+			DEPENDS ${_headers}
+			COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
+		)
+		#target_sources(${TARGET} PUBLIC ${_headers})
+		set_source_files_properties(${_headers} PROPERTIES GENERATED TRUE)
+message(${_headers})
+		add_dependencies(${TARGET} GenerateShaderBindings${TARGET})
 	else()
 		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found at ${TOOLS_DIR}")
 	endif()

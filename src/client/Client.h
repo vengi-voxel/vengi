@@ -12,8 +12,8 @@
 #include "frontend/MeshShader.h"
 #include "frontend/WaterShader.h"
 #include "frontend/WorldInstancedShader.h"
-#include "frontend/DeferredDirectionalLight.h"
-#include "frontend/ShadowMapShader.h"
+#include "frontend/ShadowmapShader.h"
+#include "frontend/DeferredLightDirShader.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/WorldRenderer.h"
 #include "util/PosLerp.h"
@@ -42,8 +42,8 @@ protected:
 	frontend::WorldInstancedShader _plantShader;
 	frontend::WaterShader _waterShader;
 	frontend::MeshShader _meshShader;
-	frontend::DeferredDirectionalLight _deferredDirLightShader;
-	frontend::ShadowMapShader _shadowMapShader;
+	frontend::DeferredLightDirShader _deferredDirLightShader;
+	frontend::ShadowmapShader _shadowMapShader;
 	frontend::WorldRenderer _worldRenderer;
 	ENetPeer* _peer = nullptr;
 	uint8_t _moveMask = 0;

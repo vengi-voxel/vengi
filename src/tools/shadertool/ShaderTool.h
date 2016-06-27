@@ -17,6 +17,20 @@ protected:
 		int arraySize = 0;
 	};
 
+	enum PassBy {
+		Value,
+		Reference,
+		Pointer
+	};
+
+	struct Types {
+		ShaderTool::Variable::Type type;
+		const char* ctype;
+		PassBy passBy;
+	};
+
+	static const Types cTypes[];
+
 	struct ShaderStruct {
 		std::string name;
 		std::string filename;

@@ -8,22 +8,22 @@
 
 namespace frontend {
 
-class ColorShader : public video::Shader {
+class UiShader : public video::Shader {
 public:
 	bool setup() {
-		if (!loadProgram("shaders/color")) {
+		if (!loadProgram("shaders/ui")) {
 			return false;
 		}
 		// no attributes
-		checkUniforms({"u_view", "u_projection"});
+		checkUniforms({"u_texture", "u_projection"});
 		return true;
 	}
 
-	inline bool setView(const glm::mat4& u_view) const {
-		if (!hasUniform("u_view")) {
+	inline bool setTexture(int u_texture) const {
+		if (!hasUniform("u_texture")) {
 			return false;
 		}
-		setUniformMatrix("u_view", u_view);
+		setUniformi("u_texture", u_texture);
 		return true;
 	}
 
@@ -37,6 +37,6 @@ public:
 
 };
 
-typedef std::shared_ptr<ColorShader> ColorShaderPtr;
+typedef std::shared_ptr<UiShader> UiShaderPtr;
 
 }

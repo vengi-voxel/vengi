@@ -9,8 +9,16 @@
 #include "core/Tokenizer.h"
 #include "video/Shader.h"
 
-static const char *cTypes[] = {
-	"float", "unsigned int", "int", "const glm::vec2&", "const glm::vec3&", "const glm::vec4&", "const glm::mat4&", "int", "int"
+const ShaderTool::Types ShaderTool::cTypes[] = {
+	{ ShaderTool::Variable::FLOAT,           "float",           Value },
+	{ ShaderTool::Variable::INT,             "unsigned int",    Value },
+	{ ShaderTool::Variable::INT,             "int",             Value },
+	{ ShaderTool::Variable::VEC2,            "const glm::vec2", Reference },
+	{ ShaderTool::Variable::VEC3,            "const glm::vec3", Reference },
+	{ ShaderTool::Variable::VEC4,            "const glm::vec4", Reference },
+	{ ShaderTool::Variable::MAT,             "const glm::mat4", Reference },
+	{ ShaderTool::Variable::SAMPLER2D,       "int",             Value },
+	{ ShaderTool::Variable::SAMPLER2DSHADOW, "int",             Value }
 };
 
 static const char* templateShader =
@@ -55,22 +63,46 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 	case Variable::MAX:
 		return "";
 	case Variable::FLOAT:
+		if (amount > 1) {
+			return "fv";
+		}
 		return "f";
 	case Variable::UNSIGNED_INT:
+		if (amount > 1) {
+			return "uiv";
+		}
 		return "ui";
 	case Variable::INT:
+		if (amount > 1) {
+			return "iv";
+		}
 		return "i";
 	case Variable::VEC2:
+		if (amount > 1) {
+			return "Vec2v";
+		}
 		return "Vec2";
 	case Variable::VEC3:
+		if (amount > 1) {
+			return "Vec3v";
+		}
 		return "Vec3";
 	case Variable::VEC4:
+		if (amount > 1) {
+			return "Vec4v";
+		}
 		return "Vec4";
 	case Variable::MAT:
 		return "Matrix";
 	case Variable::SAMPLER2D:
+		if (amount > 1) {
+			return "iv";
+		}
 		return "i";
 	case Variable::SAMPLER2DSHADOW:
+		if (amount > 1) {
+			return "iv";
+		}
 		return "i";
 	}
 	return "";
@@ -194,11 +226,15 @@ void ShaderTool::generateSrc() const {
 			uniformName = v.name;
 		}
 		setters << "\tinline bool set" << uniformName << "(";
-		const char *cType = cTypes[v.type];
-		setters << cType;
-		if (v.arraySize == -1) {
+		const Types& cType = cTypes[v.type];
+		setters << cType.ctype;
+		if (v.arraySize == -1 || cType.passBy == PassBy::Pointer) {
 			setters << "*";
+		} else if (cType.passBy == PassBy::Reference){
+			setters << "&";
+		} else if (cType.passBy == PassBy::Value){
 		}
+
 		setters << " " << v.name;
 		if (v.arraySize > 0) {
 			setters << "[" << v.arraySize << "]";
@@ -207,10 +243,10 @@ void ShaderTool::generateSrc() const {
 		}
 		setters << ") const {\n";
 
-		setters << "\t\tif (!hasUniform(\"" << v.name << "\") {\n";
+		setters << "\t\tif (!hasUniform(\"" << v.name << "\")) {\n";
 		setters << "\t\t\treturn false;\n";
 		setters << "\t\t}\n";
-		setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize);
+		setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
 		setters << "(\"" << v.name << "\", " << v.name;
 		if (v.arraySize > 0) {
 			setters << ", " << v.arraySize;
@@ -218,6 +254,7 @@ void ShaderTool::generateSrc() const {
 			setters << ", amount";
 		}
 		setters << ");\n";
+		setters << "\t\treturn true;\n";
 		setters << "\t}\n";
 		if (i < uniformSize- - 2) {
 			setters << "\n";
@@ -307,7 +344,7 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	for (int i = 0; i < _argc; ++i) {
-		Log::trace("argv[%i] = %s", i, _argv[i]);
+		Log::debug("argv[%i] = %s", i, _argv[i]);
 	}
 	const std::string glslangValidatorBin = _argv[1];
 	const std::string shaderfile          = _argv[2];

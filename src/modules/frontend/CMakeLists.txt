@@ -2,18 +2,12 @@ set(SRCS
 	ClientEntity.h ClientEntity.cpp
 	ClientEntityId.h
 	Movement.h
-	MeshShader.h MeshShader.cpp
-	ColorShader.h ColorShader.cpp
 	WorldRenderer.h WorldRenderer.cpp
-	WaterShader.h WaterShader.cpp
-	WorldShader.h WorldShader.cpp
-	ShadowMapShader.h ShadowMapShader.cpp
-	ShadowMapRenderShader.h ShadowMapRenderShader.cpp
-	WorldInstancedShader.h WorldInstancedShader.cpp
-	DeferredDirectionalLight.h DeferredDirectionalLight.cpp
 )
+
 set(LIB frontend)
 add_library(${LIB} ${SRCS})
+check_glsl_files(${LIB} world mesh water world_instanced deferred_light_dir shadowmap shadowmap_render)
 target_link_libraries(${LIB} ui network voxel cooldown)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
