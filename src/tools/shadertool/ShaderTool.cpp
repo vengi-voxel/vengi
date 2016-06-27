@@ -219,11 +219,19 @@ void ShaderTool::generateSrc() const {
 		}
 		setters << ") const {\n";
 
-		setters << "\t\tif (!hasUniform(\"" << v.name << "\")) {\n";
+		setters << "\t\tif (!hasUniform(\"" << v.name;
+		if (v.arraySize == -1 || v.arraySize > 1) {
+			setters << "[0]";
+		}
+		setters << "\")) {\n";
 		setters << "\t\t\treturn false;\n";
 		setters << "\t\t}\n";
 		setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
-		setters << "(\"" << v.name << "\", " << v.name;
+		setters << "(\"" << v.name;
+		if (v.arraySize == -1 || v.arraySize > 1) {
+			setters << "[0]";
+		}
+		setters << "\", " << v.name;
 		if (v.arraySize > 0) {
 			setters << ", " << v.arraySize;
 		} else if (v.arraySize == -1) {
@@ -236,21 +244,23 @@ void ShaderTool::generateSrc() const {
 			setters << "\n";
 		}
 
+#if 0
 		if (v.arraySize == -1 || v.arraySize > 1) {
 			setters << "\tinline bool set" << uniformName << "(";
 			const Types& cType = cTypes[v.type];
 			setters << "const std::vector<" << cType.ctype << ">& " << v.name << ") const {\n";
-			setters << "\t\tif (!hasUniform(\"" << v.name << "\")) {\n";
+			setters << "\t\tif (!hasUniform(\"" << v.name << "[0]\")) {\n";
 			setters << "\t\t\treturn false;\n";
 			setters << "\t\t}\n";
 			setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
-			setters << "(\"" << v.name << "\", &" << v.name << "[0], " << v.name << ".size());\n";
+			setters << "(\"" << v.name << "[0]\", &" << v.name << "[0], " << v.name << ".size());\n";
 			setters << "\t\treturn true;\n";
 			setters << "\t}\n";
 			if (i < uniformSize- - 2) {
 				setters << "\n";
 			}
 		}
+#endif
 	}
 	for (int i = 0; i < attributeSize; ++i) {
 		const Variable& v = _shaderStruct.attributes[i];
