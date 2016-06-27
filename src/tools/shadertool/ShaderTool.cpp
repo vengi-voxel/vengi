@@ -179,7 +179,12 @@ void ShaderTool::generateSrc() const {
 		for (int i = 0; i < uniformSize; ++i) {
 			// TODO: if array foo[SOME_SIZE] then to foo[0] here
 			std::string uniformName = _shaderStruct.uniforms[i].name;
-			uniforms << "\"" << uniformName << "\"";
+			uniforms << "\"";
+			uniforms << uniformName;
+			if (_shaderStruct.uniforms[i].arraySize == -1 || _shaderStruct.uniforms[i].arraySize > 1) {
+				uniforms << "[0]";
+			}
+			uniforms << "\"";
 			if (i < uniformSize - 1) {
 				uniforms << ", ";
 			}
