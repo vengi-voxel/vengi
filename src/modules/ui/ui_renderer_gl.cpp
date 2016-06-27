@@ -2,7 +2,6 @@
  * @file
  */
 
-#include <assert.h>
 #include <stdio.h>
 #include "ui_renderer_gl.h"
 #include "core/GLM.h"
@@ -33,15 +32,16 @@ UIBitmapGL::UIBitmapGL(UIRendererGL *renderer) :
 
 UIBitmapGL::~UIBitmapGL() {
 	m_renderer->FlushBitmap(this);
-	if (m_texture == g_current_texture)
+	if (m_texture == g_current_texture) {
 		BindBitmap(nullptr);
+	}
 
 	glDeleteTextures(1, &m_texture);
 }
 
 bool UIBitmapGL::Init(int width, int height, uint32 *data) {
-	assert(width == TBGetNearestPowerOfTwo(width));
-	assert(height == TBGetNearestPowerOfTwo(height));
+	core_assert(width == TBGetNearestPowerOfTwo(width));
+	core_assert(height == TBGetNearestPowerOfTwo(height));
 
 	m_w = width;
 	m_h = height;
