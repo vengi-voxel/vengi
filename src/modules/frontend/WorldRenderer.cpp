@@ -422,7 +422,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		core_assert_always(_texturedFullscreenQuad.bind());
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
-		shaderSetUniformIf(_shadowMapRenderShader, setUniformi, "u_shadowmap", 0);
+		_shadowMapRenderShader.setShadowmap(0);
 		glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
 		_texturedFullscreenQuad.unbind();
 		glBindTexture(GL_TEXTURE_2D, 0);
