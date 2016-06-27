@@ -21,6 +21,7 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::SAMPLER2DSHADOW, "int",             Value }
 };
 
+// TODO: move into src/modules/video/Shader.h.in and hand filename in via cmake
 static const char* templateShader =
 	"/**\n"
 	" * @file\n"
