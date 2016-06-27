@@ -11,7 +11,7 @@
 
 const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::FLOAT,           "float",           Value },
-	{ ShaderTool::Variable::INT,             "unsigned int",    Value },
+	{ ShaderTool::Variable::UNSIGNED_INT,    "unsigned int",    Value },
 	{ ShaderTool::Variable::INT,             "int",             Value },
 	{ ShaderTool::Variable::VEC2,            "const glm::vec2", Reference },
 	{ ShaderTool::Variable::VEC3,            "const glm::vec3", Reference },
