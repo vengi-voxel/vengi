@@ -112,16 +112,16 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
 
 void ShaderTool::generateSrc() const {
 	for (const auto& v : _shaderStruct.uniforms) {
-		Log::info("Found uniform of type %i with name %s", int(v.type), v.name.c_str());
+		Log::debug("Found uniform of type %i with name %s", int(v.type), v.name.c_str());
 	}
 	for (const auto& v : _shaderStruct.attributes) {
-		Log::info("Found attribute of type %i with name %s", int(v.type), v.name.c_str());
+		Log::debug("Found attribute of type %i with name %s", int(v.type), v.name.c_str());
 	}
 	for (const auto& v : _shaderStruct.varyings) {
-		Log::info("Found varying of type %i with name %s", int(v.type), v.name.c_str());
+		Log::debug("Found varying of type %i with name %s", int(v.type), v.name.c_str());
 	}
 	for (const auto& v : _shaderStruct.outs) {
-		Log::info("Found out var of type %i with name %s", int(v.type), v.name.c_str());
+		Log::debug("Found out var of type %i with name %s", int(v.type), v.name.c_str());
 	}
 
 	const std::string& templateShader = core::App::getInstance()->filesystem()->load(_shaderTemplateFile);
@@ -275,7 +275,7 @@ void ShaderTool::generateSrc() const {
 	src = core::string::replaceAll(src, "$attributes$", attributes.str());
 	src = core::string::replaceAll(src, "$setters$", setters.str());
 	const std::string targetFile = _sourceDirectory + filename;
-	Log::info("Generate shader bindings for %s at %s", _shaderStruct.name.c_str(), targetFile.c_str());
+	Log::debug("Generate shader bindings for %s at %s", _shaderStruct.name.c_str(), targetFile.c_str());
 	core::App::getInstance()->filesystem()->syswrite(targetFile, src);
 }
 
