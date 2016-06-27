@@ -82,8 +82,8 @@ bool UIRendererGL::init() {
 	glBindBuffer(GL_ARRAY_BUFFER, _buffer);
 	glBindVertexArray(_vao);
 	_shader.initColor(sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].col)), GL_UNSIGNED_BYTE, 4, false, true);
-	_shader.initTexcoord(sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].u)), GL_FLOAT);
-	_shader.initPos(sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].x)), GL_FLOAT);
+	_shader.initTexcoord(sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].u)));
+	_shader.initPos(sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].x)));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	GL_checkError();
