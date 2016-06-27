@@ -1,0 +1,26 @@
+/**
+ * @file
+ */
+
+#pragma once
+
+#include "video/Shader.h"
+
+namespace $namespace$ {
+
+class $name$ : public video::Shader {
+public:
+	bool setup() {
+		if (!loadProgram("$filename$")) {
+			return false;
+		}
+		$attributes$
+		$uniforms$
+		return true;
+	}
+$setters$
+};
+
+typedef std::shared_ptr<$name$> $name$Ptr;
+
+};

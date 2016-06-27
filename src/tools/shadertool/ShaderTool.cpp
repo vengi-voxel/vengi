@@ -21,35 +21,6 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::SAMPLER2DSHADOW, "int",             Value }
 };
 
-// TODO: move into src/modules/video/Shader.h.in and hand filename in via cmake
-static const char* templateShader =
-	"/**\n"
-	" * @file\n"
-	" */\n"
-	"\n"
-	"#pragma once\n"
-	"\n"
-	"#include \"video/Shader.h\"\n"
-	"\n"
-	"namespace $namespace$ {\n"
-	"\n"
-	"class $name$ : public video::Shader {\n"
-	"public:\n"
-	"	bool setup() {\n"
-	"		if (!loadProgram(\"$filename$\")) {\n"
-	"			return false;\n"
-	"		}\n"
-	"		$attributes$\n"
-	"		$uniforms$\n"
-	"		return true;\n"
-	"	}\n"
-	"$setters$"
-	"};\n"
-	"\n"
-	"typedef std::shared_ptr<$name$> $name$Ptr;\n"
-	"\n"
-	"}\n";
-
 ShaderTool::ShaderTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		core::App(filesystem, eventBus, 0) {
 	init("engine", "shadertool");
@@ -153,6 +124,7 @@ void ShaderTool::generateSrc() const {
 		Log::info("Found out var of type %i with name %s", int(v.type), v.name.c_str());
 	}
 
+	const std::string& templateShader = core::App::getInstance()->filesystem()->load(_shaderTemplateFile);
 	std::string src(templateShader);
 	std::string name = _shaderStruct.name + "Shader";
 
@@ -351,9 +323,9 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 }
 
 core::AppState ShaderTool::onRunning() {
-	if (_argc < 3) {
+	if (_argc < 4) {
 		_exitCode = 1;
-		Log::error("Usage: %s <path/to/glslangvalidator> <shaderfile> <namespace> <shader-dir> <src-generator-dir>", _argv[0]);
+		Log::error("Usage: %s <path/to/glslangvalidator> <shaderfile> <shadertemplate> <namespace> <shader-dir> <src-generator-dir>", _argv[0]);
 		return core::AppState::Cleanup;
 	}
 
@@ -362,9 +334,10 @@ core::AppState ShaderTool::onRunning() {
 	}
 	const std::string glslangValidatorBin = _argv[1];
 	const std::string shaderfile          = _argv[2];
-	_namespaceSrc    = _argc >= 4 ?         _argv[3] : "frontend";
-	_shaderDirectory = _argc >= 5 ?         _argv[4] : "shaders/";
-	_sourceDirectory = _argc >= 6 ?         _argv[5] : _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/";
+	_shaderTemplateFile                   = _argv[3];
+	_namespaceSrc    = _argc >= 5 ?         _argv[4] : "frontend";
+	_shaderDirectory = _argc >= 6 ?         _argv[5] : "shaders/";
+	_sourceDirectory = _argc >= 7 ?         _argv[6] : _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/";
 
 	Log::debug("Using glslangvalidator binary: %s", glslangValidatorBin.c_str());
 	Log::debug("Using %s as output directory", _sourceDirectory.c_str());

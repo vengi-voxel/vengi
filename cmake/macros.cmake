@@ -48,6 +48,7 @@ macro(generate_shaders TARGET)
 	find_program(GLSL_VALIDATOR_EXECUTABLE NAMES glslangValidator PATHS ${TOOLS_DIR})
 	set(_headers)
 	set(GEN_DIR ${CMAKE_BINARY_DIR}/gen-shaders/${TARGET}/)
+	set(_template ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.h.in)
 	file(MAKE_DIRECTORY ${GEN_DIR})
 	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
 	if (GLSL_VALIDATOR_EXECUTABLE)
@@ -61,8 +62,8 @@ macro(generate_shaders TARGET)
 				add_custom_command(
 					OUTPUT ${_shader}
 					COMMENT "Validate ${_file} and generate ${_shaderfile}"
-					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} shader shaders/ ${GEN_DIR}
-					DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert
+					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} ${_template} shader shaders/ ${GEN_DIR}
+					DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template}
 					WORKING_DIRECTORY ${_dir}
 				)
 				list(APPEND _headers ${_shader})
@@ -77,8 +78,8 @@ macro(generate_shaders TARGET)
 				add_custom_command(
 					OUTPUT ${_shader}
 					COMMENT "Validate ${_file} and generate ${_shaderfile}"
-					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} shader shaders/ ${GEN_DIR}
-					DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert
+					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} ${_template} shader shaders/ ${GEN_DIR}
+					DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template}
 					WORKING_DIRECTORY ${_dir}
 				)
 				list(APPEND _headers ${_shader})

@@ -47,6 +47,7 @@ protected:
 	std::string _namespaceSrc;
 	std::string _sourceDirectory;
 	std::string _shaderDirectory;
+	std::string _shaderTemplateFile;
 
 	bool parse(const std::string& src, bool vertex);
 	Variable::Type getType(const std::string& type) const;
