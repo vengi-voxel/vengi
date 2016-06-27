@@ -10,15 +10,15 @@
 #include "video/Shader.h"
 
 const ShaderTool::Types ShaderTool::cTypes[] = {
-	{ ShaderTool::Variable::FLOAT,           "float",           Value },
-	{ ShaderTool::Variable::UNSIGNED_INT,    "unsigned int",    Value },
-	{ ShaderTool::Variable::INT,             "int",             Value },
-	{ ShaderTool::Variable::VEC2,            "const glm::vec2", Reference },
-	{ ShaderTool::Variable::VEC3,            "const glm::vec3", Reference },
-	{ ShaderTool::Variable::VEC4,            "const glm::vec4", Reference },
-	{ ShaderTool::Variable::MAT,             "const glm::mat4", Reference },
-	{ ShaderTool::Variable::SAMPLER2D,       "int",             Value },
-	{ ShaderTool::Variable::SAMPLER2DSHADOW, "int",             Value }
+	{ ShaderTool::Variable::FLOAT,           1, "float",           Value },
+	{ ShaderTool::Variable::UNSIGNED_INT,    1, "unsigned int",    Value },
+	{ ShaderTool::Variable::INT,             1, "int",             Value },
+	{ ShaderTool::Variable::VEC2,            2, "const glm::vec2", Reference },
+	{ ShaderTool::Variable::VEC3,            3, "const glm::vec3", Reference },
+	{ ShaderTool::Variable::VEC4,            4, "const glm::vec4", Reference },
+	{ ShaderTool::Variable::MAT,             1, "const glm::mat4", Reference },
+	{ ShaderTool::Variable::SAMPLER2D,       1, "int",             Value },
+	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int",             Value }
 };
 
 ShaderTool::ShaderTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
@@ -184,15 +184,14 @@ void ShaderTool::generateSrc() const {
 	}
 
 	std::stringstream setters;
-	if (uniformSize > 0) {
+	if (uniformSize > 0 || attributeSize > 0) {
 		setters << "\n";
 	}
 	for (int i = 0; i < uniformSize; ++i) {
 		const Variable& v = _shaderStruct.uniforms[i];
-		std::string uniformName = v.name;
+		std::string uniformName = "";
 		std::vector<std::string> nameParts;
-		core::string::splitString(uniformName, nameParts, "_");
-		uniformName = "";
+		core::string::splitString(v.name, nameParts, "_");
 		for (std::string n : nameParts) {
 			if (n.length() > 1 || nameParts.size() < 2) {
 				n[0] = SDL_toupper(n[0]);
@@ -234,6 +233,41 @@ void ShaderTool::generateSrc() const {
 		setters << "\t\treturn true;\n";
 		setters << "\t}\n";
 		if (i < uniformSize- - 2) {
+			setters << "\n";
+		}
+	}
+	for (int i = 0; i < attributeSize; ++i) {
+		const Variable& v = _shaderStruct.attributes[i];
+		std::string attributeName = "";
+		std::vector<std::string> nameParts;
+		core::string::splitString(v.name, nameParts, "_");
+		for (std::string n : nameParts) {
+			if (n.length() > 1 || nameParts.size() < 2) {
+				n[0] = SDL_toupper(n[0]);
+				attributeName += n;
+			}
+		}
+		if (attributeName.empty()) {
+			attributeName = v.name;
+		}
+		const bool isInt = v.type == Variable::UNSIGNED_INT || v.type == Variable::INT;
+		setters << "\tinline bool init" << attributeName << "(GLsizei stride, const void* pointer, GLenum type = GL_FLOAT, GLint size = ";
+		setters << cTypes[v.type].typeSize << ", ";
+		setters << "bool isInt = ";
+		setters << (isInt ? "true" : "false");
+		setters << ", bool normalize = false) const {\n";
+		setters << "\t\tif (!hasAttribute(\"" << v.name << "\")) {\n";
+		setters << "\t\t\treturn false;\n";
+		setters << "\t\t}\n";
+		setters << "\t\tconst int loc = enableVertexAttribute(\"" << v.name << "\");\n";
+		setters << "\t\tif (isInt) {\n";
+		setters << "\t\t\tglVertexAttribIPointer(loc, size, type, stride, pointer);\n";
+		setters << "\t\t} else {\n";
+		setters << "\t\t\tglVertexAttribPointer(loc, size, type, normalize, stride, pointer);\n";
+		setters << "\t\t}\n";
+		setters << "\t\treturn true;\n";
+		setters << "\t}\n";
+		if (i < attributeSize- - 2) {
 			setters << "\n";
 		}
 	}

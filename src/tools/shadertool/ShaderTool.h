@@ -25,6 +25,7 @@ protected:
 
 	struct Types {
 		ShaderTool::Variable::Type type;
+		int typeSize;
 		const char* ctype;
 		PassBy passBy;
 	};
