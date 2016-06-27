@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <vector>
 #include "video/Shader.h"
 
 namespace $namespace$ {
