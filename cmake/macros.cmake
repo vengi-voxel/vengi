@@ -47,7 +47,9 @@ macro(check_glsl_files TARGET)
 	list(REMOVE_AT files 0)
 	find_program(GLSL_VALIDATOR_EXECUTABLE NAMES glslangValidator PATHS ${TOOLS_DIR})
 	set(_headers)
-	set(GEN_DIR ${ROOT_DIR}/src/modules/frontend/)
+	set(GEN_DIR ${CMAKE_BINARY_DIR}/gen-shaders/${TARGET}/)
+	file(MAKE_DIRECTORY ${GEN_DIR})
+	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
 	if (GLSL_VALIDATOR_EXECUTABLE)
 		message("${GLSL_VALIDATOR_EXECUTABLE} found - executing in ${ROOT_DIR}/data/${TARGET}/shaders")
 		set(_dir ${ROOT_DIR}/data/${TARGET}/shaders)
@@ -59,7 +61,7 @@ macro(check_glsl_files TARGET)
 				add_custom_command(
 					OUTPUT ${_shader}
 					COMMENT "Validate ${_file} and generate ${_shaderfile}"
-					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} frontend shaders/ ${GEN_DIR}
+					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} shader shaders/ ${GEN_DIR}
 					DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert
 					WORKING_DIRECTORY ${_dir}
 				)
@@ -75,7 +77,7 @@ macro(check_glsl_files TARGET)
 				add_custom_command(
 					OUTPUT ${_shader}
 					COMMENT "Validate ${_file} and generate ${_shaderfile}"
-					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} frontend shaders/ ${GEN_DIR}
+					COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} shader shaders/ ${GEN_DIR}
 					DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert
 					WORKING_DIRECTORY ${_dir}
 				)
@@ -87,9 +89,15 @@ macro(check_glsl_files TARGET)
 			DEPENDS ${_headers}
 			COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
 		)
+		set(_h ${GEN_DIR}/Shaders.h)
+		file(WRITE ${_h} "#pragma once\n")
+		foreach(header_path ${_headers})
+			string(REPLACE "${GEN_DIR}" "" header "${header_path}")
+			file(APPEND ${_h} "#include \"${header}\"\n")
+		endforeach()
+
 		#target_sources(${TARGET} PUBLIC ${_headers})
 		set_source_files_properties(${_headers} PROPERTIES GENERATED TRUE)
-message(${_headers})
 		add_dependencies(${TARGET} GenerateShaderBindings${TARGET})
 	else()
 		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found at ${TOOLS_DIR}")

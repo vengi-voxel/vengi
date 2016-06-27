@@ -5,13 +5,7 @@
 #pragma once
 
 #include "ui/UIApp.h"
-#include "frontend/WorldShader.h"
-#include "frontend/WaterShader.h"
-#include "frontend/MeshShader.h"
-#include "frontend/ColorShader.h"
-#include "frontend/WorldInstancedShader.h"
-#include "frontend/ShadowmapShader.h"
-#include "frontend/DeferredLightDirShader.h"
+#include "Shaders.h"
 #include "frontend/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "video/Camera.h"
@@ -26,13 +20,13 @@ protected:
 	video::MeshPoolPtr _meshPool;
 	frontend::WorldRenderer _worldRenderer;
 	voxel::WorldPtr _world;
-	frontend::WorldShader _worldShader;
-	frontend::WorldInstancedShader _plantShader;
-	frontend::WaterShader _waterShader;
-	frontend::MeshShader _meshShader;
-	frontend::ColorShader _colorShader;
-	frontend::DeferredLightDirShader _deferredDirLightShader;
-	frontend::ShadowmapShader _shadowMapShader;
+	shader::WorldShader _worldShader;
+	shader::WorldInstancedShader _plantShader;
+	shader::WaterShader _waterShader;
+	shader::MeshShader _meshShader;
+	shader::ColorShader _colorShader;
+	shader::DeferredLightDirShader _deferredDirLightShader;
+	shader::ShadowmapShader _shadowMapShader;
 	video::VertexBuffer _axisBuffer;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;
