@@ -8,7 +8,7 @@ set(SRCS
 )
 set(LIB ui)
 add_library(${LIB} ${SRCS})
-check_glsl_files(${LIB} ui)
+generate_shaders(${LIB} ui)
 target_link_libraries(${LIB} core io video turbobadger)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 

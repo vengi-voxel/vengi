@@ -12,7 +12,7 @@
 #include "video/VertexBuffer.h"
 #include "video/GBuffer.h"
 #include "video/DepthBuffer.h"
-#include "Shaders.h"
+#include "FrontendShaders.h"
 #include "video/GLMeshData.h"
 #include "core/GLM.h"
 #include "core/Var.h"

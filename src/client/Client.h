@@ -8,7 +8,7 @@
 #include <SDL.h>
 
 #include "messages/ServerMessages_generated.h"
-#include "Shaders.h"
+#include "FrontendShaders.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/WorldRenderer.h"
 #include "util/PosLerp.h"

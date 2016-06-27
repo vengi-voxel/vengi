@@ -5,7 +5,8 @@
 #pragma once
 
 #include "ui/UIApp.h"
-#include "Shaders.h"
+#include "ShapetoolShaders.h"
+#include "FrontendShaders.h"
 #include "frontend/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
 #include "video/Camera.h"

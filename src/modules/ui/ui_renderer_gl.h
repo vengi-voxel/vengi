@@ -5,7 +5,7 @@
 #pragma once
 
 #include "video/GLFunc.h"
-#include "video/Shader.h"
+#include "UiShaders.h"
 
 #include <renderers/tb_renderer_batcher.h>
 
@@ -32,7 +32,7 @@ public:
 
 class UIRendererGL: public TBRendererBatcher {
 private:
-	video::Shader _shader;
+	shader::UiShader _shader;
 	GLuint _buffer = 0u;
 	GLuint _vao = 0u;
 public:

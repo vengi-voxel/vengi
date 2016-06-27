@@ -7,7 +7,7 @@ set(SRCS
 
 set(LIB frontend)
 add_library(${LIB} ${SRCS})
-check_glsl_files(${LIB} world mesh water world_instanced deferred_light_dir shadowmap shadowmap_render)
+generate_shaders(${LIB} world mesh water world_instanced deferred_light_dir shadowmap shadowmap_render)
 target_link_libraries(${LIB} ui network voxel cooldown)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 

@@ -73,7 +73,7 @@ void UIRendererGL::shutdown() {
 }
 
 bool UIRendererGL::init() {
-	if (!_shader.loadProgram("shaders/ui")) {
+	if (!_shader.setup()) {
 		Log::error("Could not load the ui shader");
 		return false;
 	}
