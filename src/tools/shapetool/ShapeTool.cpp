@@ -179,8 +179,8 @@ core::AppState ShapeTool::onRunning() {
 	const glm::mat4& view = _camera.viewMatrix();
 
 	_colorShader.activate();
-	_colorShader.setUniformMatrix("u_view", view, false);
-	_colorShader.setUniformMatrix("u_projection", _camera.projectionMatrix(), false);
+	_colorShader.setView(view);
+	_colorShader.setProjection(_camera.projectionMatrix());
 
 	//glm::vec3 entPos = _entity->position();
 	//entPos.y = _world->findFloor(entPos.x, entPos.z);
