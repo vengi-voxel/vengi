@@ -10,6 +10,11 @@ namespace $namespace$ {
 
 class $name$ : public video::Shader {
 public:
+	/**
+	 * @brief Load the vertex and fragment shaders and verfies that its attributes and uniforms are used.
+	 * @note If an attribute or an uniform isn't active, a message will be printed about that fact - but
+	 * the setup process won't fail.
+	 */
 	bool setup() {
 		if (!loadProgram("$filename$")) {
 			return false;
