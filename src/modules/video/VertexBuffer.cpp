@@ -37,6 +37,7 @@ bool VertexBuffer::bind() {
 		const Attribute& a = _attributes[i];
 		glBindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
 		glEnableVertexAttribArray(i);
+		// TODO: add glVertexAttribIPointer support here
 		glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
 		if (a.divisor > 0) {
 			glVertexAttribDivisor(i, a.divisor);
