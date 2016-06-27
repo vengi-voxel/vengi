@@ -31,14 +31,16 @@ protected:
 				int l = 0;
 				*s += 2;
 				const char* data = *s;
-				while (!(data[l] != '\0' && data[l] == '*') && (data[l + 1] != '\0' && data[l + 1] == '/')) {
+				while (data[l] != '\0' && data[l] != '*' && data[l + 1] != '\0' && data[l + 1] != '/') {
 					++l;
 				}
 				*s += l + 2;
+				return skip(s);
 			} else if (next == '/') {
 				while (**s != '\0' && **s != '\n') {
 					(*s)++;
 				}
+				return skip(s);
 			}
 		}
 

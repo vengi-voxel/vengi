@@ -381,13 +381,14 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 		}
 	}
 
-	src = core::string::replaceAll(src, "$in", replaceIn);
-	src = core::string::replaceAll(src, "$out", replaceOut);
-	src = core::string::replaceAll(src, "$texture1D", replaceTexture1D);
-	src = core::string::replaceAll(src, "$texture2D", replaceTexture2D);
-	src = core::string::replaceAll(src, "$texture3D", replaceTexture3D);
-	src = core::string::replaceAll(src, "$shadow2D", replaceShadow2D);
-
+	if (finalize) {
+		src = core::string::replaceAll(src, "$in", replaceIn);
+		src = core::string::replaceAll(src, "$out", replaceOut);
+		src = core::string::replaceAll(src, "$texture1D", replaceTexture1D);
+		src = core::string::replaceAll(src, "$texture2D", replaceTexture2D);
+		src = core::string::replaceAll(src, "$texture3D", replaceTexture3D);
+		src = core::string::replaceAll(src, "$shadow2D", replaceShadow2D);
+	}
 	return src;
 }
 

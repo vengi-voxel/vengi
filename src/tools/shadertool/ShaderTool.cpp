@@ -277,9 +277,15 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 	core::Tokenizer tok(buffer);
 	while (tok.hasNext()) {
 		const std::string token = tok.next();
+		Log::trace("token: %s", token.c_str());
 		std::vector<Variable>* v = nullptr;
 		if (token == "$in") {
-			v = &_shaderStruct.attributes;
+			if (vertex) {
+				v = &_shaderStruct.attributes;
+			} else {
+				// TODO: use this to validate that each $out of the vertex shader has a $in in the fragment shader
+				//v = &_shaderStruct.varyings;
+			}
 		} else if (token == "$out") {
 			if (vertex) {
 				v = &_shaderStruct.varyings;
@@ -288,9 +294,12 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			}
 		} else if (token == "uniform") {
 			v = &_shaderStruct.uniforms;
-		} else {
+		}
+
+		if (v == nullptr) {
 			continue;
 		}
+
 		if (!tok.hasNext()) {
 			Log::error("Failed to parse the shader, could not get type");
 			return false;

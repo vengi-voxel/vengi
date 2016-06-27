@@ -23,6 +23,13 @@ TEST(TokenizerTest, testTokenizerSimple) {
 	ASSERT_EQ(4u, core::Tokenizer("{}{}").size());
 	ASSERT_EQ(4u, core::Tokenizer("(){}").size());
 	ASSERT_EQ(8u, core::Tokenizer("w +foo\nalt+a \"somecommand +\"\nCTRL+s +bar\nSHIFT+d +xyz\n").size());
+	ASSERT_EQ(0u, core::Tokenizer("// empty").size());
+	ASSERT_EQ(1u, core::Tokenizer("// empty\none").size());
+	ASSERT_EQ("one", core::Tokenizer("// empty\none").next());
+	ASSERT_EQ(0u, core::Tokenizer("/* empty\none */").size());
+	ASSERT_EQ(1u, core::Tokenizer("/* empty\none */\nfoo").size());
+	ASSERT_EQ("foo", core::Tokenizer("/* empty\none */\nfoo").next());
+	ASSERT_EQ("bar", core::Tokenizer("/* empty\none */\n// foo\n bar").next());
 }
 
 }
