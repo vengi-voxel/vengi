@@ -5,6 +5,7 @@
 
 TestTemplate::TestTemplate(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus, 21000) {
+	init("engine", "testtemplate");
 }
 
 TestTemplate::~TestTemplate() {

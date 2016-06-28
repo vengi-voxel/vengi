@@ -6,6 +6,7 @@
 
 TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus, 21000) {
+	init("engine", "testdepthbuffer");
 }
 
 TestDepthBuffer::~TestDepthBuffer() {
