@@ -1,4 +1,5 @@
 #include "TestTemplate.h"
+#include "core/AppModule.h"
 #include "video/GLFunc.h"
 #include "core/Color.h"
 

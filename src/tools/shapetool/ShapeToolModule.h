@@ -6,9 +6,8 @@
 
 #include <sauce/sauce.h>
 
-#include "core/AbstractModule.h"
+#include "core/AppModule.h"
 #include "video/MeshPool.h"
-#include "core/App.h"
 
 class ShapeToolModule: public core::AbstractAppModule {
 	void configureApp() const override {

@@ -3,6 +3,7 @@
  */
 
 #include "ShaderTool.h"
+#include "core/AppModule.h"
 #include "core/App.h"
 #include "core/Process.h"
 #include "core/Tokenizer.h"

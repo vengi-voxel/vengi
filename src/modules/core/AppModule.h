@@ -50,12 +50,19 @@ inline typename sauce::shared_ptr<AppClass> getApp() {
 	return getAppInjector<AppClass, Module>()->template get<AppClass>();
 }
 
+inline void addModule(sauce::Modules& modules) {
+}
+
+template<typename Module, typename... Modules>
+inline void addModule(sauce::Modules& modules, const Module& module, Modules&&... mods) {
+	modules.add(module);
+	addModule(modules, mods...);
+}
+
 template<typename AppClass, typename... Modules>
 inline typename sauce::shared_ptr<AppClass> getAppWithModules(Modules&&... mods) {
 	sauce::Modules modules;
-	for (const sauce::AbstractModule& m : std::initializer_list<sauce::AbstractModule>{ mods... }) {
-		modules.add(m);
-	}
+	addModule(modules, mods...);
 	return modules.createInjector()->template get<AppClass>();
 }
 

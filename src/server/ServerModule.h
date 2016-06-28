@@ -6,7 +6,7 @@
 
 #include <sauce/sauce.h>
 
-#include "core/AbstractModule.h"
+#include "core/AppModule.h"
 #include "voxel/World.h"
 #include "network/MessageSender.h"
 #include "server/Server.h"

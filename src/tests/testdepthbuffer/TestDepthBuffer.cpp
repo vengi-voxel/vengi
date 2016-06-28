@@ -1,4 +1,5 @@
 #include "TestDepthBuffer.h"
+#include "core/AppModule.h"
 #include "video/GLDebug.h"
 #include "video/ScopedViewPort.h"
 #include "core/Color.h"
