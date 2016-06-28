@@ -327,7 +327,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
 	static const glm::vec3 pos(50.0f, 50.0f, -50.0f);
 	static const glm::vec3 center(0.0f);
-#if 1
 	// normalize the opengl depth from [-1, 1] to [0, 1]
 	_lightProjection = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 1.0f));
 	_lightProjection = glm::scale(_lightProjection, glm::vec3(1.0f, 1.0f, 0.5f));
@@ -336,13 +335,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	// source where there is no perspective deform
 	_lightProjection = _lightProjection * glm::ortho(-75.0f, +75.0f, -75.0f, +75.0f, 1.0f, 400.0f);
 	_lightView = glm::lookAt(pos, center, up);
-#elif 0
-	_lightView = glm::lookAt(pos, dir, up);
-	_lightProjection = glm::perspective(glm::radians(0*2.f), 1.f, 1.f, 100.f);
-#else
-	_lightProjection = camera.projectionMatrix();
-	_lightView = camera.viewMatrix();
-#endif
 	_lightSpaceMatrix = _lightProjection * _lightView;
 	_lightPos = pos;
 
