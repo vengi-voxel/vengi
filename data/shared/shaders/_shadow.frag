@@ -1,3 +1,10 @@
+/**
+ * float/rgba8 encoding/decoding so that we can use an RGBA8
+ * shadow map instead of floating point render targets which might
+ * not be supported everywhere
+ *
+ * http://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
+ */
 vec4 encodeDepth(float v) {
 	vec4 enc = vec4(1.0, 255.0, 65025.0, 160581375.0) * v;
 	enc = fract(enc);
@@ -9,12 +16,18 @@ float decodeDepth(vec4 rgba) {
 	return dot(rgba, vec4(1.0, 1.0 / 255.0, 1.0 / 65025.0, 1.0 / 160581375.0));
 }
 
+/**
+ * perform simple shadow map lookup returns 0.0 (unlit) or 1.0 (lit)
+ */
 float sampleShadow(sampler2D shadowMap, vec2 uv, float compare) {
 	float depth = decodeDepth($texture2D(shadowMap, uv));
 	depth += 0.001;
 	return step(compare, depth);
 }
 
+/**
+ * perform percentage-closer shadow map lookup
+ */
 float sampleShadowPCF(sampler2D shadowMap, vec2 uv, vec2 smSize, float compare) {
 	float result = 0.0;
 	for (int x = -2; x <= 2; x++) {
