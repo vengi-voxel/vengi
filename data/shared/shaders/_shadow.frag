@@ -10,7 +10,7 @@ float decodeDepth(vec4 rgba) {
 }
 
 float sampleShadow(sampler2D shadowMap, vec2 uv, float compare) {
-	float depth = decodeDepth($texture2D(shadowMap, vec2(uv.x, uv.y)));
+	float depth = decodeDepth($texture2D(shadowMap, uv));
 	depth += 0.001;
 	return step(compare, depth);
 }

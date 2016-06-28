@@ -11,6 +11,7 @@ $in vec4 v_lightspacepos;
 #endif
 
 #if cl_deferred == 0
+uniform vec2 u_screensize;
 $in vec3 v_lightpos;
 $in vec3 v_diffuse_color;
 $in float v_fogrange;
@@ -27,11 +28,11 @@ $out vec3 o_norm;
 #if cl_shadowmap == 1
 float calculateShadow() {
 	// perform perspective divide
-	vec3 projCoords = v_lightspacepos.xyz / v_lightspacepos.w;
-	float depth = projCoords.z;
-	// TODO: 1024 depth color - don't hardcode
-	float s = sampleShadowPCF(u_shadowmap, projCoords.xy, vec2(1024.0, 1024.0), depth);
-	return s;
+	vec3 lightPos = v_lightspacepos.xyz / v_lightspacepos.w;
+	vec2 smUV = (lightPos.xy + 1.0) * 0.5;
+	float depth = lightPos.z;
+	float s = sampleShadowPCF(u_shadowmap, lightPos.xy, u_screensize, depth);
+	return max(s, 0.0);
 }
 #endif
 

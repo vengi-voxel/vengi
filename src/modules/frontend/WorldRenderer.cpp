@@ -219,6 +219,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightDir + camera.position());
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
+	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.width(), camera.height()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _lightSpaceMatrix);
