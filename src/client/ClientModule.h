@@ -12,11 +12,13 @@
 #include "network/Network.h"
 #include "network/MessageSender.h"
 
-class ClientModule: public core::AbstractModule {
-	void configure() const override {
-		core::AbstractModule::configure();
+class ClientModule: public core::AbstractAppModule {
+	virtual void configureApp() const override {
 		bind<Client>().in<sauce::SingletonScope>().to<Client(video::MeshPool &, network::Network &, voxel::World &, network::MessageSender &, core::EventBus &, core::TimeProvider &, io::Filesystem &)>();
-		bind<video::MeshPool>().in<sauce::SingletonScope>().to<video::MeshPool>();
-		bind<voxel::World>().in<sauce::SingletonScope>().to<voxel::World>();
+	}
+
+	virtual void configureBindings() const override {
+		bindSingleton<video::MeshPool>();
+		bindSingleton<voxel::World>();
 	}
 };

@@ -10,11 +10,13 @@
 #include "video/MeshPool.h"
 #include "core/App.h"
 
-class ShapeToolModule: public core::AbstractModule {
-	void configure() const override {
-		core::AbstractModule::configure();
+class ShapeToolModule: public core::AbstractAppModule {
+	void configureApp() const override {
 		bind<ShapeTool>().in<sauce::SingletonScope>().to<ShapeTool(video::MeshPool &, io::Filesystem &, core::EventBus &, voxel::World &)>();
-		bind<video::MeshPool>().in<sauce::SingletonScope>().to<video::MeshPool>();
-		bind<voxel::World>().in<sauce::SingletonScope>().to<voxel::World>();
+	}
+
+	void configureBindings() const override {
+		bindSingleton<video::MeshPool>();
+		bindSingleton<voxel::World>();
 	}
 };

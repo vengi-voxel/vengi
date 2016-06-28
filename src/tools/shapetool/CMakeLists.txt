@@ -1,8 +1,7 @@
 project(shapetool)
 set(SRCS
 	ShapeTool.h ShapeTool.cpp
-	sauce/ShapeToolModule.h
-	sauce/ShapeToolInjector.h
+	ShapeToolModule.h
 	ui/WorldParametersWindow.h
 	ui/TreeParametersWindow.h
 )

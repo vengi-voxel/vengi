@@ -8,11 +8,12 @@
 #include "ui/DisconnectWindow.h"
 #include "ui/AuthFailedWindow.h"
 #include "ui/HudWindow.h"
-#include "sauce/ClientInjector.h"
 #include "core/Command.h"
 #include "core/GLM.h"
 #include "core/Color.h"
 #include "video/GLDebug.h"
+#include "ClientModule.h"
+#include "network/ClientNetworkModule.h"
 
 #define registerMoveCmd(name, flag) \
 	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
@@ -264,6 +265,5 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 }
 
 int main(int argc, char *argv[]) {
-	getInjector()->get<Client>()->startMainLoop(argc, argv);
-	return EXIT_SUCCESS;
+	return core::getAppWithModules<Client>(ClientModule(), ClientNetworkModule())->startMainLoop(argc, argv);
 }

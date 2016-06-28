@@ -5,6 +5,7 @@
 #pragma once
 
 #include <sauce/sauce.h>
+#include <utility>
 
 #include "core/TimeProvider.h"
 #include "core/EventBus.h"
@@ -13,11 +14,20 @@
 namespace core {
 
 class AbstractModule: public sauce::AbstractModule {
+public:
+	AbstractModule() : sauce::AbstractModule() {}
 protected:
+	template<class Class>
+	inline void bindSingleton() const {
+		typename sauce::BindClause<Class> bindClause = bind<Class>();
+		typename sauce::InClause<sauce::Named<Class, sauce::Unnamed>, sauce::SingletonScope> inClause = bindClause.template in<sauce::SingletonScope>();
+		inClause.template to<Class>();
+	}
+
 	void configure() const override {
-		bind<core::TimeProvider>().in<sauce::SingletonScope>().to<core::TimeProvider>();
-		bind<core::EventBus>().in<sauce::SingletonScope>().to<core::EventBus>();
-		bind<io::Filesystem>().in<sauce::SingletonScope>().to<io::Filesystem>();
+		bindSingleton<core::TimeProvider>();
+		bindSingleton<core::EventBus>();
+		bindSingleton<io::Filesystem>();
 	}
 };
 

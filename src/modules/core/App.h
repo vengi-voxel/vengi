@@ -12,6 +12,7 @@
 #include "EventBus.h"
 #include "core/ThreadPool.h"
 #include "io/Filesystem.h"
+#include "AppModule.h"
 
 namespace core {
 

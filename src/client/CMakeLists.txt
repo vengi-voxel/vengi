@@ -1,8 +1,7 @@
 project(client)
 set(SRCS
 	Client.h Client.cpp
-	sauce/ClientModule.h
-	sauce/ClientInjector.h
+	ClientModule.h
 	network/AuthFailedHandler.h
 	network/ClientNetworkModule.h
 	network/NpcSpawnHandler.h

@@ -3,7 +3,6 @@
  */
 
 #include "ShaderTool.h"
-#include "sauce/ShaderToolInjector.h"
 #include "core/App.h"
 #include "core/Process.h"
 #include "core/Tokenizer.h"
@@ -460,5 +459,5 @@ core::AppState ShaderTool::onRunning() {
 }
 
 int main(int argc, char *argv[]) {
-	return getInjector()->get<ShaderTool>()->startMainLoop(argc, argv);
+	return core::getApp<ShaderTool>()->startMainLoop(argc, argv);
 }

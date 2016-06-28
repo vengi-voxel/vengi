@@ -5,8 +5,6 @@
 #include "NoiseTool.h"
 #include "ui/NoiseParametersWindow.h"
 
-#include "sauce/NoiseToolInjector.h"
-
 NoiseTool::NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
 		ui::UIApp(filesystem, eventBus) {
 	init("engine", "noisetool");
@@ -23,5 +21,5 @@ core::AppState NoiseTool::onInit() {
 }
 
 int main(int argc, char *argv[]) {
-	return getInjector()->get<NoiseTool>()->startMainLoop(argc, argv);
+	return core::getApp<NoiseTool>()->startMainLoop(argc, argv);
 }

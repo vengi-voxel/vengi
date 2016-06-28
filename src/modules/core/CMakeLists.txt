@@ -1,28 +1,34 @@
 set(SRCS
-	Rect.h
+	AbstractModule.h
 	App.cpp App.h
+	AppModule.h
 	ByteStream.cpp ByteStream.h
-	Common.h
-	Command.h Command.cpp
 	Color.cpp Color.h
+	Command.h Command.cpp
+	Common.h
 	Concurrency.h
 	EventBus.h
+	GameConfig.h
+	GLM.h
 	IFactoryRegistry.h
-	NonCopyable.h
-	String.cpp String.h
 	Input.h
-	QuadTree.h
-	Singleton.h
-	Set.h
-	Random.cpp Random.h
 	Log.cpp Log.h
-	Var.cpp Var.h
-	Remotery.c Remotery.h
-	Trace.cpp Trace.h
+	MemoryAllocator.h
+	NonCopyable.h
 	Process.cpp Process.h
+	QuadTree.h
+	Random.cpp Random.h
+	ReadWriteLock.h
+	Rect.h
+	Remotery.c Remotery.h
+	Set.h
+	Singleton.h
+	String.cpp String.h
 	ThreadPool.h
-	Tokenizer.h
 	TimeProvider.h TimeProvider.cpp
+	Tokenizer.h
+	Trace.cpp Trace.h
+	Var.cpp Var.h
 )
 set(LIB core)
 add_library(${LIB} ${SRCS})

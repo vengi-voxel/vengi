@@ -3,7 +3,7 @@
  */
 
 #include "ShapeTool.h"
-#include "sauce/ShapeToolInjector.h"
+#include "ShapeToolModule.h"
 #include "video/Shader.h"
 #include "video/GLDebug.h"
 #include "core/GLM.h"
@@ -286,5 +286,5 @@ void ShapeTool::reset(const voxel::WorldContext& ctx) {
 }
 
 int main(int argc, char *argv[]) {
-	return getInjector()->get<ShapeTool>()->startMainLoop(argc, argv);
+	return core::getApp<ShapeTool, ShapeToolModule>()->startMainLoop(argc, argv);
 }

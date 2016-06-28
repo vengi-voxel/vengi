@@ -5,8 +5,9 @@
 #include "Server.h"
 #include "core/Var.h"
 #include "core/Command.h"
-#include "sauce/ServerInjector.h"
 #include "backend/storage/StoreCmd.h"
+#include "backend/network/ServerNetworkModule.h"
+#include "ServerModule.h"
 #include <cstdlib>
 
 Server::Server(network::NetworkPtr network, backend::ServerLoopPtr serverLoop, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
@@ -27,7 +28,7 @@ core::AppState Server::onInit() {
 	}
 
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
-	StoreCmd SCmd;
+	backend::StoreCmd SCmd;
 	SCmd.addComd();
 
 	const core::VarPtr& port = core::Var::get(cfg::ServerPort, "11337");
@@ -51,6 +52,5 @@ core::AppState Server::onRunning() {
 }
 
 int main(int argc, char *argv[]) {
-	getInjector()->get<Server>()->startMainLoop(argc, argv);
-	return EXIT_SUCCESS;
+	return core::getAppWithModules<Server>(ServerModule(), backend::ServerNetworkModule())->startMainLoop(argc, argv);
 }

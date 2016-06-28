@@ -29,18 +29,19 @@ using namespace voxel;
 using namespace attrib;
 using namespace io;
 
-class ServerModule: public core::AbstractModule {
-	void configure() const override {
-		core::AbstractModule::configure();
+class ServerModule: public core::AbstractAppModule {
+	void configureApp() const override {
 		bind<Server>().in<SingletonScope>().to<Server(Network&, ServerLoop&, TimeProvider&, Filesystem&, EventBus&)>();
+	}
 
+	void configureBindings() const override {
 		bind<PoiProvider>().in<SingletonScope>().to<PoiProvider(World&, TimeProvider&)>();
-		bind<ContainerProvider>().in<SingletonScope>().to<ContainerProvider>();
+		bindSingleton<ContainerProvider>();
 		bind<ServerLoop>().in<SingletonScope>().to<ServerLoop(Network&, SpawnMgr&, World&, EntityStorage&, EventBus&, AIRegistry&, ContainerProvider&, PoiProvider&)>();
-		bind<AIRegistry>().in<SingletonScope>().to<AIRegistry>();
+		bindSingleton<AIRegistry>();
 		bind<AILoader>().in<SingletonScope>().to<AILoader(AIRegistry&)>();
 		bind<EntityStorage>().in<SingletonScope>().to<EntityStorage(MessageSender&, World&, TimeProvider&, ContainerProvider&, PoiProvider&)>();
 		bind<SpawnMgr>().in<SingletonScope>().to<SpawnMgr(World&, EntityStorage&, MessageSender&, TimeProvider&, AILoader&, ContainerProvider&, PoiProvider&)>();
-		bind<World>().in<SingletonScope>().to<World>();
+		bindSingleton<World>();
 	}
 };
