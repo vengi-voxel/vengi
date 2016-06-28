@@ -57,15 +57,19 @@ inline ImagePtr createImage(const std::string& name) {
 	return std::make_shared<Image>(name);
 }
 
-inline ImagePtr loadImage(const io::FilePtr& file) {
-	const ImagePtr& i = std::make_shared<Image>(file->getName());
-	core::App::getInstance()->threadPool().enqueue([=] () { i->load(file); });
+inline ImagePtr loadImage(const io::FilePtr& file, bool async = true) {
+	const ImagePtr& i = createImage(file->getName());
+	if (async) {
+		core::App::getInstance()->threadPool().enqueue([=] () { i->load(file); });
+	} else {
+		i->load(file);
+	}
 	return i;
 }
 
-inline ImagePtr loadImage(const std::string& filename) {
+inline ImagePtr loadImage(const std::string& filename, bool async = true) {
 	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(filename);
-	return loadImage(file);
+	return loadImage(file, async);
 }
 
 }

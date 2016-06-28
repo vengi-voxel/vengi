@@ -117,6 +117,13 @@ bool Mesh::initMesh(Shader& shader) {
 		if (!_readyToInit) {
 			return false;
 		}
+
+		glGenVertexArrays(1, &_vertexArrayObject);
+		// generate all the 4 needed buffers at once
+		glGenBuffers(4, &_posBuffer);
+
+		glBindVertexArray(_vertexArrayObject);
+
 		for (const image::ImagePtr& i : _images) {
 			if (i && i->isLoading()) {
 				return false;
@@ -133,29 +140,29 @@ bool Mesh::initMesh(Shader& shader) {
 		_state = io::IOSTATE_LOADED;
 	}
 
-	glGenVertexArrays(1, &_vertexArrayObject);
-	// generate all the 4 needed buffers at once
-	glGenBuffers(4, &_posBuffer);
-
-	glBindVertexArray(_vertexArrayObject);
-
 	glBindBuffer(GL_ARRAY_BUFFER, _posBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_positions[0]) * _positions.size(), &_positions[0], GL_STATIC_DRAW);
-	const int locPos = shader.enableVertexAttribute("a_pos");
-	core_assert(locPos >= 0);
-	glVertexAttribPointer(locPos, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	if (shader.hasAttribute("a_pos")) {
+		const int loc = shader.enableVertexAttribute("a_pos");
+		core_assert(loc >= 0);
+		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, _uvBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_texCoords[0]) * _texCoords.size(), &_texCoords[0], GL_STATIC_DRAW);
-	const int locTexCoords = shader.enableVertexAttribute("a_texcoords");
-	core_assert(locTexCoords >= 0);
-	glVertexAttribPointer(locTexCoords, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	if (shader.hasAttribute("a_texcoords")) {
+		const int loc = shader.enableVertexAttribute("a_texcoords");
+		core_assert(loc >= 0);
+		glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, _normalBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_normals[0]) * _normals.size(), &_normals[0], GL_STATIC_DRAW);
-	const int locNorm = shader.enableVertexAttribute("a_norm");
-	core_assert(locNorm >= 0);
-	glVertexAttribPointer(locNorm, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	if (shader.hasAttribute("a_norm")) {
+		const int loc = shader.enableVertexAttribute("a_norm");
+		core_assert(loc >= 0);
+		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _indices.size(), &_indices[0], GL_STATIC_DRAW);
@@ -195,7 +202,7 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 		}
 
 		const std::string fullPath = dir + "/" + p;
-		_images[i] = image::loadImage(fullPath);
+		_images[i] = image::loadImage(fullPath, false);
 	}
 }
 
