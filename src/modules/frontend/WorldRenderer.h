@@ -56,7 +56,7 @@ private:
 
 	glm::vec4 _clearColor;
 	video::TexturePtr _colorTexture;
-	glm::vec3 _lightPos = glm::vec3(10000.0, 10000.0, 10000.0);
+	glm::vec3 _lightDir = glm::vec3(10000.0, 10000.0, 10000.0);
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::mat4 _lightProjection;
 	glm::mat4 _lightView;

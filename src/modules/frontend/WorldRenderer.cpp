@@ -216,7 +216,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightPos + camera.position());
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightDir + camera.position());
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
@@ -292,7 +292,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int width, const int height, video::Shader& deferredShader) {
 	_gbuffer.bindForReading(false);
 	video::ScopedShader scoped(deferredShader);
-	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightpos", _lightPos + camera.position());
+	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightpos", _lightDir + camera.position());
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
@@ -336,7 +336,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	_lightProjection = _lightProjection * glm::ortho(-75.0f, +75.0f, -75.0f, +75.0f, 1.0f, 400.0f);
 	_lightView = glm::lookAt(pos, center, up);
 	_lightSpaceMatrix = _lightProjection * _lightView;
-	_lightPos = pos;
+	_lightDir = glm::vec3(glm::column(glm::inverse(_lightView), 2));
 
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we are do one pass for the gbuffer + the sun
@@ -541,7 +541,7 @@ int WorldRenderer::renderEntities(video::Shader& shader, const video::Camera& ca
 	shader.activate();
 	shader.setUniformMatrix("u_view", view, false);
 	shader.setUniformMatrix("u_projection", projection, false);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightPos + camera.position());
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightDir + camera.position());
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);

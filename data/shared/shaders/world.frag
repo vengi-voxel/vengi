@@ -28,10 +28,9 @@ $out vec3 o_norm;
 float calculateShadow() {
 	// perform perspective divide
 	vec3 projCoords = v_lightspacepos.xyz / v_lightspacepos.w;
-	vec2 smUV = (projCoords.xy + 1.0) * 0.5;
 	float depth = projCoords.z;
 	// TODO: 1024 depth color - don't hardcode
-	float s = sampleShadowPCF(u_shadowmap, smUV, vec2(1024.0, 1024.0), depth);
+	float s = sampleShadowPCF(u_shadowmap, projCoords.xy, vec2(1024.0, 1024.0), depth);
 	return s;
 }
 #endif
