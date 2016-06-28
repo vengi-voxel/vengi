@@ -16,13 +16,20 @@ public:
 	explicit ScopedFrameBuffer(GLint bindHandle) {
 		glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_handle);
 		GL_checkError();
+		// check for double bind
+		if (_handle == bindHandle) {
+			_handle = -1;
+			return;
+		}
 		glBindFramebuffer(GL_FRAMEBUFFER, bindHandle);
 		GL_checkError();
 	}
 
 	~ScopedFrameBuffer() {
-		glBindFramebuffer(GL_FRAMEBUFFER, _handle);
-		GL_checkError();
+		if (_handle != -1) {
+			glBindFramebuffer(GL_FRAMEBUFFER, _handle);
+			GL_checkError();
+		}
 	}
 };
 

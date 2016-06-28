@@ -91,10 +91,10 @@ void DepthBuffer::bind() {
 	GL_checkError();
 }
 
-float *DepthBuffer::read() {
+uint8_t *DepthBuffer::read() {
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);
-	float *depths = new float[_width * _height];
-	glReadPixels(0, 0, _width, _height, GL_DEPTH_COMPONENT, GL_FLOAT, depths);
+	uint8_t *depths = new uint8_t[_width * _height * 4];
+	glReadPixels(0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, depths);
 	return depths;
 }
 
