@@ -328,6 +328,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
 	static const glm::vec3 pos(50.0f, 50.0f, -50.0f);
 	static const glm::vec3 center(0.0f);
+	// TODO: are they automatically normalized, what about the far and near clup plane?
 	// normalize the opengl depth from [-1, 1] to [0, 1]
 	_lightProjection = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 1.0f));
 	_lightProjection = glm::scale(_lightProjection, glm::vec3(1.0f, 1.0f, 0.5f));
