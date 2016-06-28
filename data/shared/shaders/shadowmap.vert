@@ -1,4 +1,4 @@
-$in vec3 a_pos;
+$in uvec3 a_pos;
 #ifdef INSTANCED
 // instanced rendering
 $in vec3 a_offset;
