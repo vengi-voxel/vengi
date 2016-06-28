@@ -31,7 +31,7 @@ float calculateShadow() {
 	vec3 lightPos = v_lightspacepos.xyz / v_lightspacepos.w;
 	vec2 smUV = (lightPos.xy + 1.0) * 0.5;
 	float depth = lightPos.z;
-	float s = sampleShadowPCF(u_shadowmap, lightPos.xy, u_screensize, depth);
+	float s = sampleShadowPCF(u_shadowmap, smUV, u_screensize, depth);
 	return max(s, 0.0);
 }
 #endif
