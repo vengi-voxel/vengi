@@ -83,7 +83,7 @@ void DepthBuffer::bind() {
 	GL_checkError();
 
 	glGetIntegerv(GL_VIEWPORT, _viewport);
-	//glViewport(0, 0, _width, _height);
+	glViewport(0, 0, _width, _height);
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 	//glClearDepth(0); // black
 	//glClearDepth(1); // white
