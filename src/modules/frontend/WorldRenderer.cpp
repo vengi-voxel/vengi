@@ -344,7 +344,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	_lightView = camera.viewMatrix();
 #endif
 	_lightSpaceMatrix = _lightProjection * _lightView;
-	_lightPos = glm::vec3(glm::column(glm::inverse(_lightView), 2));
+	_lightPos = pos;
 
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we are do one pass for the gbuffer + the sun
