@@ -3,6 +3,7 @@
  */
 
 #include "NoiseTool.h"
+#include "core/AppModule.h"
 #include "ui/NoiseParametersWindow.h"
 
 NoiseTool::NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
