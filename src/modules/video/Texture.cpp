@@ -27,7 +27,9 @@ Texture::Texture(const std::string& name, const uint8_t* data, int width, int he
 }
 
 Texture::~Texture() {
-	core_assert_msg(_handle == 0u, "Texture %s was not properly shut down", _name.c_str());
+	// in case of a texture we don't want this check, as it might be shared between multiple resources
+	// and it should only be destroyed once it's completely destroyed by the shared_ptr
+	//core_assert_msg(_handle == 0u, "Texture %s was not properly shut down", _name.c_str());
 	shutdown();
 }
 
