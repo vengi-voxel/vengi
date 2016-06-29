@@ -10,7 +10,6 @@
 #include <tb_widgets_listener.h>
 
 #include "video/WindowedApp.h"
-#include "KeybindingParser.h"
 #include "Window.h"
 #include "Console.h"
 
@@ -50,11 +49,6 @@ protected:
 		state.downtime = 0;
 	}
 
-	typedef std::unordered_map<int32_t, int16_t> KeyMap;
-	typedef KeyMap::const_iterator KeyMapConstIter;
-	typedef KeyMap::iterator KeyMapIter;
-	KeyMap _keys;
-	BindMap _bindings;
 	bool _quit;
 	tb::TBWidget _root;
 	int fps = 0;
@@ -62,8 +56,6 @@ protected:
 	double _frameCounterResetRime = 0.0;
 	Console _console;
 	core::VarPtr _renderUI;
-
-	bool loadKeyBindings();
 
 	virtual bool onKeyRelease(int32_t key) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;

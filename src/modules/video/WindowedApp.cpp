@@ -9,6 +9,7 @@
 #include "GLFunc.h"
 #include "Shader.h"
 #include "core/Color.h"
+#include "core/Command.h"
 #include "GLVersion.h"
 #include "core/Remotery.h"
 #include "core/Singleton.h"
@@ -40,6 +41,20 @@ void WindowedApp::onAfterRunning() {
 
 core::AppState WindowedApp::onRunning() {
 	App::onRunning();
+
+	for (KeyMapConstIter it = _keys.begin(); it != _keys.end(); ++it) {
+		const int key = it->first;
+		auto range = _bindings.equal_range(key);
+		for (auto i = range.first; i != range.second; ++i) {
+			const std::string& command = i->second.first;
+			const int16_t modifier = i->second.second;
+			if (it->second == modifier && command[0] == '+') {
+				core_assert(1 == core::Command::execute(command + " true"));
+				_keys[key] = modifier;
+			}
+		}
+	}
+
 	core_trace_scoped(WindowedAppOnRunning);
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -71,6 +86,17 @@ void WindowedApp::onWindowResize() {
 	glViewport(0, 0, _width, _height);
 }
 
+bool WindowedApp::onKeyRelease(int32_t key) {
+	auto range = _bindings.equal_range(key);
+	for (auto i = range.first; i != range.second; ++i) {
+		const std::string& command = i->second.first;
+		if (command[0] == '+' && _keys.erase(key) > 0) {
+			core_assert(1 == core::Command::execute(command + " false"));
+		}
+	}
+	return true;
+}
+
 bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 	if (modifier & KMOD_LALT) {
 		if (key == SDLK_RETURN) {
@@ -83,7 +109,39 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 			return true;
 		}
 	}
+
+	auto range = _bindings.equal_range(key);
+	for (auto i = range.first; i != range.second; ++i) {
+		const std::string& command = i->second.first;
+		const int mod = i->second.second;
+		if (mod == KMOD_NONE && modifier != 0 && modifier != KMOD_NUM) {
+			continue;
+		}
+		if (mod != KMOD_NONE && !(modifier & mod)) {
+			continue;
+		}
+		if (_keys.find(key) == _keys.end()) {
+			if (command[0] == '+') {
+				if (core::Command::execute(command + " true") == 1) {
+					_keys[key] = modifier;
+				}
+			} else {
+				core::Command::execute(command);
+			}
+		}
+		return true;
+	}
+
 	return false;
+}
+
+bool WindowedApp::loadKeyBindings() {
+	const std::string& bindings = filesystem()->load("keybindings.cfg");
+	if (bindings.empty())
+		return false;
+	const core::KeybindingParser p(bindings);
+	_bindings = p.getBindings();
+	return true;
 }
 
 core::AppState WindowedApp::onInit() {
@@ -95,6 +153,10 @@ core::AppState WindowedApp::onInit() {
 	if (SDL_Init(SDL_INIT_VIDEO) == -1) {
 		sdlCheckError();
 		return core::AppState::Cleanup;
+	}
+
+	if (!loadKeyBindings()) {
+		Log::error("failed to init the keybindings");
 	}
 
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
@@ -248,6 +310,31 @@ core::AppState WindowedApp::onCleanup() {
 	SDL_DestroyWindow(_window);
 	SDL_Quit();
 	rmt_UnbindOpenGL();
+
+	std::string keybindings;
+
+	for (core::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
+		const int32_t key = i->first;
+		const core::CommandModifierPair& pair = i->second;
+		const std::string keyName = core::string::toLower(SDL_GetKeyName(key));
+		const int16_t modifier = pair.second;
+		std::string modifierKey;
+		if (modifier & KMOD_ALT) {
+			modifierKey += "alt+";
+		}
+		if (modifier & KMOD_SHIFT) {
+			modifierKey += "shift+";
+		}
+		if (modifier & KMOD_CTRL) {
+			modifierKey += "ctrl+";
+		}
+		const std::string& command = pair.first;
+		keybindings += modifierKey + keyName + " " + command + '\n';
+	}
+	Log::info("%s", keybindings.c_str());
+	filesystem()->write("keybindings.cfg", keybindings);
+
+
 	return App::onCleanup();
 }
 

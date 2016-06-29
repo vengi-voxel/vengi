@@ -8,7 +8,7 @@
 #include <SDL.h>
 #include <unordered_map>
 
-namespace ui {
+namespace core {
 
 typedef std::pair<std::string, int16_t> CommandModifierPair;
 typedef std::unordered_multimap<int32_t, CommandModifierPair> BindMap;

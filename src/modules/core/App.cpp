@@ -280,6 +280,7 @@ AppState App::onRunning() {
 		Log::init();
 		_logLevel->markClean();
 	}
+
 	return AppState::Cleanup;
 }
 

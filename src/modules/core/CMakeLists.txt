@@ -12,6 +12,7 @@ set(SRCS
 	GLM.h
 	IFactoryRegistry.h
 	Input.h
+	KeybindingParser.h
 	Log.cpp Log.h
 	MemoryAllocator.h
 	NonCopyable.h

@@ -8,6 +8,7 @@
 #include "io/IEventObserver.h"
 #include "io/EventHandler.h"
 #include "core/GLM.h"
+#include "core/KeybindingParser.h"
 
 struct SDL_Window;
 typedef void *SDL_GLContext;
@@ -22,7 +23,15 @@ protected:
 	int _height;
 	float _aspect;
 
+	typedef std::unordered_map<int32_t, int16_t> KeyMap;
+	typedef KeyMap::const_iterator KeyMapConstIter;
+	typedef KeyMap::iterator KeyMapIter;
+	KeyMap _keys;
+	core::BindMap _bindings;
+
 	WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport = 17815);
+
+	bool loadKeyBindings();
 
 	virtual ~WindowedApp() {
 	}
@@ -37,6 +46,7 @@ public:
 
 	virtual core::AppState onRunning() override;
 	virtual void onAfterRunning() override;
+	virtual bool onKeyRelease(int32_t key) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;

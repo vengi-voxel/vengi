@@ -104,15 +104,6 @@ UIApp::UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& event
 UIApp::~UIApp() {
 }
 
-bool UIApp::loadKeyBindings() {
-	const std::string& bindings = filesystem()->load("ui/keybindings.cfg");
-	if (bindings.empty())
-		return false;
-	const KeybindingParser p(bindings);
-	_bindings = p.getBindings();
-	return true;
-}
-
 bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, bool down) {
 #ifdef MACOSX
 	bool shortcutKey = (mod & tb::TB_SUPER) ? true : false;
@@ -221,13 +212,7 @@ void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 }
 
 bool UIApp::onKeyRelease(int32_t key) {
-	auto range = _bindings.equal_range(key);
-	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.first;
-		if (command[0] == '+' && _keys.erase(key) > 0) {
-			core_assert(1 == core::Command::execute(command + " false"));
-		}
-	}
+	video::WindowedApp::onKeyRelease(key);
 	if (_console.isActive()) {
 		return true;
 	}
@@ -257,31 +242,11 @@ bool UIApp::onTextInput(const std::string& text) {
 }
 
 bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
-	if (WindowedApp::onKeyPress(key, modifier)) {
-		return true;
-	}
 	if (_console.onKeyPress(key, modifier)) {
 		return true;
 	}
-	auto range = _bindings.equal_range(key);
-	for (auto i = range.first; i != range.second; ++i) {
-		const std::string& command = i->second.first;
-		const int mod = i->second.second;
-		if (mod == KMOD_NONE && modifier != 0 && modifier != KMOD_NUM) {
-			continue;
-		}
-		if (mod != KMOD_NONE && !(modifier & mod)) {
-			continue;
-		}
-		if (_keys.find(key) == _keys.end()) {
-			if (command[0] == '+') {
-				if (core::Command::execute(command + " true") == 1) {
-					_keys[key] = modifier;
-				}
-			} else {
-				core::Command::execute(command);
-			}
-		}
+
+	if (WindowedApp::onKeyPress(key, modifier)) {
 		return true;
 	}
 
@@ -299,9 +264,9 @@ core::AppState UIApp::onConstruct() {
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
 
 	core::Command::registerCommand("bindlist", [this] (const core::CmdArgs& args) {
-		for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
+		for (core::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 			const int32_t key = i->first;
-			const CommandModifierPair& pair = i->second;
+			const core::CommandModifierPair& pair = i->second;
 			const char* keyName = SDL_GetKeyName(key);
 			const int16_t modifier = pair.second;
 			std::string modifierKey;
@@ -330,11 +295,11 @@ core::AppState UIApp::onConstruct() {
 			result += " ";
 		}
 
-		KeybindingParser p(result);
-		const BindMap& bindings = p.getBindings();
-		for (BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
+		core::KeybindingParser p(result);
+		const core::BindMap& bindings = p.getBindings();
+		for (core::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
 			const uint32_t key = i->first;
-			const CommandModifierPair& pair = i->second;
+			const core::CommandModifierPair& pair = i->second;
 			auto range = _bindings.equal_range(key);
 			bool found = false;
 			for (auto it = range.first; it != range.second; ++it) {
@@ -382,9 +347,6 @@ core::AppState UIApp::onInit() {
 	}
 
 	tb::TBWidgetsAnimationManager::Init();
-	if (!loadKeyBindings()) {
-		Log::error("failed to init the keybindings");
-	}
 
 	register_tbbf_font_renderer();
 	tb::g_font_manager->AddFontInfo("ui/font/font.tb.txt", "Segoe");
@@ -417,19 +379,6 @@ core::AppState UIApp::onRunning() {
 	if (_quit)
 		return core::AppState::Cleanup;
 	core::AppState state = WindowedApp::onRunning();
-
-	for (KeyMapConstIter it = _keys.begin(); it != _keys.end(); ++it) {
-		const int key = it->first;
-		auto range = _bindings.equal_range(key);
-		for (auto i = range.first; i != range.second; ++i) {
-			const std::string& command = i->second.first;
-			const int16_t modifier = i->second.second;
-			if (it->second == modifier && command[0] == '+') {
-				core_assert(1 == core::Command::execute(command + " true"));
-				_keys[key] = modifier;
-			}
-		}
-	}
 
 	const bool running = state == core::AppState::Running;
 	if (running) {
@@ -484,29 +433,6 @@ core::AppState UIApp::onCleanup() {
 
 	_console.shutdown();
 	_renderer.shutdown();
-
-	std::string keybindings;
-
-	for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
-		const int32_t key = i->first;
-		const CommandModifierPair& pair = i->second;
-		const std::string keyName = core::string::toLower(SDL_GetKeyName(key));
-		const int16_t modifier = pair.second;
-		std::string modifierKey;
-		if (modifier & KMOD_ALT) {
-			modifierKey += "alt+";
-		}
-		if (modifier & KMOD_SHIFT) {
-			modifierKey += "shift+";
-		}
-		if (modifier & KMOD_CTRL) {
-			modifierKey += "ctrl+";
-		}
-		const std::string& command = pair.first;
-		keybindings += modifierKey + keyName + " " + command + '\n';
-	}
-	Log::info("%s", keybindings.c_str());
-	filesystem()->write("ui/keybindings.cfg", keybindings);
 
 	return WindowedApp::onCleanup();
 }
