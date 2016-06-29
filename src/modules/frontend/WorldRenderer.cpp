@@ -351,7 +351,10 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	// source where there is no perspective deform
 	_lightProjection = _lightProjection * glm::ortho(-75.0f, +75.0f, -75.0f, +75.0f, 1.0f, 400.0f);
 	_lightView = glm::lookAt(pos, center, up);
-	_lightSpaceMatrix = _lightProjection * _lightView;
+	const glm::mat4& lightModelTranslate = glm::translate(glm::mat4(1.0f), camera.position());
+	const glm::mat4& lightModelRotate = glm::rotate(lightModelTranslate, camera.yaw(), glm::vec3(0.0, 1.0, 0.0));
+	const glm::mat4& lightModel = lightModelRotate;
+	_lightSpaceMatrix = _lightProjection * _lightView * lightModel;
 	_lightDir = glm::vec3(glm::column(glm::inverse(_lightView), 2));
 
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.

@@ -32,7 +32,7 @@ float calculateShadow(float ndotl) {
 	vec2 smUV = (lightPos.xy + 1.0) * 0.5;
 	float depth = lightPos.z;
 	float s = sampleShadowPCF(u_shadowmap, smUV, u_screensize, depth);
-	return max(ndotl * s, 0.0);
+	return max(s, 0.0);
 }
 #endif
 
