@@ -129,8 +129,6 @@ core::AppState TestDepthBuffer::onRunning() {
 	}
 	{
 		video::ScopedShader scoped(_shadowMapRenderShader);
-		_shadowMapRenderShader.setFar(_camera.farPlane());
-		_shadowMapRenderShader.setNear(_camera.nearPlane());
 		_shadowMapRenderShader.setShadowmap(0);
 		const int width = _camera.width();
 		const int height = _camera.height();
