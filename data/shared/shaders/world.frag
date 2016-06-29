@@ -26,13 +26,13 @@ $out vec3 o_norm;
 #endif
 
 #if cl_shadowmap == 1
-float calculateShadow() {
+float calculateShadow(float ndotl) {
 	// perform perspective divide
 	vec3 lightPos = v_lightspacepos.xyz / v_lightspacepos.w;
 	vec2 smUV = (lightPos.xy + 1.0) * 0.5;
 	float depth = lightPos.z;
 	float s = sampleShadowPCF(u_shadowmap, smUV, u_screensize, depth);
-	return max(s, 0.0);
+	return max(ndotl * s, 0.0);
 }
 #endif
 
@@ -40,19 +40,18 @@ void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
 	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
-
+	vec3 lightdir = normalize(v_lightpos - v_pos);
+	float ndotl = dot(normal, lightdir);
 #if cl_shadowmap == 1
-	float shadow = calculateShadow();
+	float shadow = calculateShadow(ndotl);
 #else
 	float shadow = 0.0;
 #endif
 
 #if cl_deferred == 0
-	vec3 lightdir = normalize(v_lightpos - v_pos);
-
-	vec3 diffuse = v_diffuse_color * clamp(dot(normal, lightdir), 0.0, 1.0) * 0.8;
+	vec3 diffuse = v_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
 	vec3 ambient = vec3(0.2);
-	vec3 lightvalue = ambient + shadow * diffuse;
+	vec3 lightvalue = (ambient + shadow) * diffuse;
 
 	float fogstart = max(v_viewdistance - v_fogrange, 0.0);
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;

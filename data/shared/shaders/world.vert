@@ -67,7 +67,7 @@ void main(void) {
 	v_debug_color = u_debug_color;
 
 #if cl_shadowmap == 1
-	v_lightspacepos = u_light * vec4(a_pos, 1.0);
+	v_lightspacepos = u_light * u_model * vec4(a_pos, 1.0);
 #endif
 
 #if cl_deferred == 0
