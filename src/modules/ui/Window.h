@@ -43,7 +43,7 @@ public:
 public:
 	Window(UIApp* app);
 	Window(Window* parent);
-	virtual ~Window() {}
+	virtual ~Window();
 
 	std::string getStr(const char* nodeId);
 	float getFloat(const char *nodeId);

@@ -20,6 +20,10 @@ Window::Window(UIApp* app) :
 Window::Window(Window* parent) :
 		tb::TBWindow(), _app(nullptr) {
 	parent->AddChild(this);
+	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
+}
+
+Window::~Window() {
 	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
 }
 
