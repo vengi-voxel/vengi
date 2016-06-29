@@ -644,8 +644,8 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 	_fullscreenQuad.addAttribute(deferredShader.getAttributeLocation("a_pos"), fullscreenQuadVertexIndex, 3);
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
-	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getAttributeLocation("a_pos"), fullscreenQuadIndices.x, 3);
-	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getAttributeLocation("a_texcoord"), fullscreenQuadIndices.y, 2);
+	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationPos(), fullscreenQuadIndices.x, 3);
+	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationTexcoord(), fullscreenQuadIndices.y, 2);
 
 	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);

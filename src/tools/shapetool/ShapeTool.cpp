@@ -108,8 +108,8 @@ core::AppState ShapeTool::onInit() {
 	const int32_t vIndex = _axisBuffer.create(verticesAxis, sizeof(verticesAxis));
 	const int32_t cIndex = _axisBuffer.create(colorAxis, sizeof(colorAxis));
 	core_assert(vIndex >= 0 && cIndex >= 0);
-	_axisBuffer.addAttribute(_colorShader.getAttributeLocation("a_pos"), vIndex, 4);
-	_axisBuffer.addAttribute(_colorShader.getAttributeLocation("a_color"), cIndex, 4);
+	_axisBuffer.addAttribute(_colorShader.getLocationPos(), vIndex, 4);
+	_axisBuffer.addAttribute(_colorShader.getLocationColor(), cIndex, 4);
 
 	new WorldParametersWindow(this);
 	new TreeParametersWindow(this);

@@ -35,8 +35,8 @@ core::AppState TestDepthBuffer::onInit() {
 	}
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
-	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getAttributeLocation("a_pos"), fullscreenQuadIndices.x, 3);
-	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getAttributeLocation("a_texcoord"), fullscreenQuadIndices.y, 2);
+	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationPos(), fullscreenQuadIndices.x, 3);
+	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationTexcoord(), fullscreenQuadIndices.y, 2);
 
 	const std::string mesh = "animal_chicken.dae";
 	if (!_mesh.loadMesh(mesh)) {
