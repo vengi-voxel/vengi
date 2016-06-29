@@ -136,6 +136,8 @@ bool Mesh::initMesh(Shader& shader) {
 		_images.clear();
 
 		_state = io::IOSTATE_LOADED;
+	} else {
+		return true;
 	}
 
 	glBindVertexArray(_vertexArrayObject);
