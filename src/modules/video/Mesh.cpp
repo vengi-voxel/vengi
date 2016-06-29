@@ -122,8 +122,6 @@ bool Mesh::initMesh(Shader& shader) {
 		// generate all the 4 needed buffers at once
 		glGenBuffers(4, &_posBuffer);
 
-		glBindVertexArray(_vertexArrayObject);
-
 		for (const image::ImagePtr& i : _images) {
 			if (i && i->isLoading()) {
 				return false;
@@ -139,6 +137,8 @@ bool Mesh::initMesh(Shader& shader) {
 
 		_state = io::IOSTATE_LOADED;
 	}
+
+	glBindVertexArray(_vertexArrayObject);
 
 	glBindBuffer(GL_ARRAY_BUFFER, _posBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(_positions[0]) * _positions.size(), &_positions[0], GL_STATIC_DRAW);

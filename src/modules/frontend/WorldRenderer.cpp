@@ -341,7 +341,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	_lightDir = glm::vec3(glm::column(glm::inverse(_lightView), 2));
 
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
-	// then we are do one pass for the gbuffer + the sun
+	// then we do one pass for the gbuffer + the sun
 	if (_shadowMap->boolVal()) {
 		_depthBuffer.bind();
 		glCullFace(GL_FRONT);

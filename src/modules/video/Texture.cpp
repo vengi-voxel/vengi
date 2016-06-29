@@ -27,7 +27,7 @@ Texture::Texture(const std::string& name, const uint8_t* data, int width, int he
 }
 
 Texture::~Texture() {
-	core_assert_msg(_handle == 0u, "Texture was not properly shut down");
+	core_assert_msg(_handle == 0u, "Texture %s was not properly shut down", _name.c_str());
 	shutdown();
 }
 
