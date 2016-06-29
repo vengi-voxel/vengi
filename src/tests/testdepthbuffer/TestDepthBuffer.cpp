@@ -112,9 +112,9 @@ core::AppState TestDepthBuffer::onRunning() {
 		_shadowMapRenderShader.setShadowmap(0);
 		const int width = _camera.width();
 		const int height = _camera.height();
-		const GLsizei halfWidth = (GLsizei) (width / 2.0f);
-		const GLsizei halfHeight = (GLsizei) (height / 2.0f);
-		video::ScopedViewPort scopedViewport(halfWidth, 0, halfWidth, halfHeight);
+		const GLsizei quadWidth = (GLsizei) (width / 3.0f);
+		const GLsizei quadHeight = (GLsizei) (height / 3.0f);
+		video::ScopedViewPort scopedViewport(width - quadWidth, 0, quadWidth, quadHeight);
 		core_assert_always(_texturedFullscreenQuad.bind());
 		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
 		glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
