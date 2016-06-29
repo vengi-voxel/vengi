@@ -292,6 +292,9 @@ void ShaderTool::generateSrc() const {
 		setters << "\t\t\tglVertexAttribPointer(loc, size, type, normalize, stride, pointer);\n";
 		setters << "\t\t}\n";
 		setters << "\t\treturn true;\n";
+		setters << "\t}\n\n";
+		setters << "\tinline int getLocation" << attributeName << "() const {\n";
+		setters << "\t\treturn getAttributeLocation(\"" << v.name << "\");\n";
 		setters << "\t}\n";
 		if (i < attributeSize- - 2) {
 			setters << "\n";
