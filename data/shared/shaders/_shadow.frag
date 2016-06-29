@@ -1,5 +1,6 @@
-const vec4 bitSh = vec4(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0);
-const vec4 bitMsk = vec4(0.0, vec3(1.0 / 256.0));
+const float bitScale = 255.0;
+const vec4 bitSh = vec4(1.0, bitScale, bitScale * bitScale, bitScale * bitScale * bitScale);
+const vec4 bitMsk = vec4(vec3(1.0 / bitScale), 0.0);
 const vec4 bitShifts = vec4(1.0) / bitSh;
 
 /**
@@ -11,7 +12,7 @@ const vec4 bitShifts = vec4(1.0) / bitSh;
  */
 vec4 encodeDepth(float v) {
 	vec4 comp = fract(v * bitSh);
-	comp -= comp.xxyz * bitMsk;
+	comp -= comp.yzww * bitMsk;
 	return comp;
 }
 
