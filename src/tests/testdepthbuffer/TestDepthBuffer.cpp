@@ -67,15 +67,20 @@ core::AppState TestDepthBuffer::onRunning() {
 	_camera.setAspectRatio(_aspect);
 	_camera.update();
 
-	_meshShader.activate();
-	_meshShader.setView(_camera.viewMatrix());
-	_meshShader.setProjection(_camera.projectionMatrix());
-	_meshShader.setFogrange(500.0f);
-	_meshShader.setViewdistance(500.0f);
-	_meshShader.setTexture(0);
-
+	const glm::mat4 lightProjection =
+			glm::scale(
+				glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 1.0f)),
+				glm::vec3(1.0f, 1.0f, 0.5f)
+			)
+			*
+			glm::ortho(-75.0f, +75.0f, -75.0f, +75.0f, 1.0f, 400.0f);
+	const glm::mat4 lightView = glm::lookAt(glm::vec3(50.0f, 50.0f, -50.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+	const glm::vec3 lightDir = glm::vec3(glm::column(glm::inverse(lightView), 2));
 	{
 		video::ScopedShader scoped(_shadowMapShader);
+		_shadowMapShader.setLight(lightSpaceMatrix);
+		_shadowMapShader.setModel(glm::mat4());
 		if (!_mesh.initMesh(_shadowMapShader)) {
 			Log::error("Failed to init the mesh");
 			return core::AppState::Cleanup;
@@ -86,23 +91,32 @@ core::AppState TestDepthBuffer::onRunning() {
 	}
 	{
 		video::ScopedShader scoped(_meshShader);
+		_meshShader.setView(_camera.viewMatrix());
+		_meshShader.setProjection(_camera.projectionMatrix());
+		_meshShader.setFogrange(500.0f);
+		_meshShader.setViewdistance(500.0f);
+		_meshShader.setModel(glm::mat4());
+		_meshShader.setLightpos(lightDir + _camera.position());
+		_meshShader.setTexture(0);
+
 		if (!_mesh.initMesh(_meshShader)) {
 			Log::error("Failed to init the mesh");
 			return core::AppState::Cleanup;
 		}
-		_mesh.render();
+		core_assert(_mesh.render() > 0);
 	}
 	{
 		video::ScopedShader scoped(_shadowMapRenderShader);
+		_shadowMapRenderShader.setFar(_camera.farPlane());
+		_shadowMapRenderShader.setNear(_camera.nearPlane());
+		_shadowMapRenderShader.setShadowmap(0);
 		const int width = _camera.width();
 		const int height = _camera.height();
 		const GLsizei halfWidth = (GLsizei) (width / 2.0f);
 		const GLsizei halfHeight = (GLsizei) (height / 2.0f);
-		video::ScopedShader scopedShader(_shadowMapRenderShader);
 		video::ScopedViewPort scopedViewport(halfWidth, 0, halfWidth, halfHeight);
 		core_assert_always(_texturedFullscreenQuad.bind());
 		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
-		_shadowMapRenderShader.setShadowmap(0);
 		glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
 		_texturedFullscreenQuad.unbind();
 	}
