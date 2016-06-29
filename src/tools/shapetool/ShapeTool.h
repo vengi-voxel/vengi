@@ -5,10 +5,10 @@
 #pragma once
 
 #include "ui/UIApp.h"
-#include "ShapetoolShaders.h"
 #include "FrontendShaders.h"
 #include "frontend/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
+#include "frontend/Axis.h"
 #include "video/Camera.h"
 #include "video/MeshPool.h"
 #include "video/VertexBuffer.h"
@@ -25,10 +25,9 @@ protected:
 	shader::WorldInstancedShader _plantShader;
 	shader::WaterShader _waterShader;
 	shader::MeshShader _meshShader;
-	shader::ColorShader _colorShader;
 	shader::DeferredLightDirShader _deferredDirLightShader;
 	shader::ShadowmapShader _shadowMapShader;
-	video::VertexBuffer _axisBuffer;
+	frontend::Axis _axis;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;

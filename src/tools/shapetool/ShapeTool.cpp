@@ -15,7 +15,7 @@
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
 		ui::UIApp(filesystem, eventBus), _camera(false), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _plantShader(), _waterShader(),
-		_meshShader(), _colorShader(), _deferredDirLightShader(), _shadowMapShader() {
+		_meshShader(), _deferredDirLightShader(), _shadowMapShader() {
 	init("engine", "shapetool");
 	_world->setClientData(true);
 }
@@ -46,13 +46,14 @@ core::AppState ShapeTool::onInit() {
 	if (!_meshShader.setup()) {
 		return core::Cleanup;
 	}
-	if (!_colorShader.setup()) {
-		return core::Cleanup;
-	}
 	if (!_shadowMapShader.setup()) {
 		return core::Cleanup;
 	}
 	if (!_deferredDirLightShader.setup()) {
+		return core::Cleanup;
+	}
+
+	if (!_axis.init()) {
 		return core::Cleanup;
 	}
 
@@ -88,28 +89,6 @@ core::AppState ShapeTool::onInit() {
 	targetPos.x += 1000.0f;
 	targetPos.z += 1000.0f;
 	_entity->lerpPosition(_now, targetPos, _entity->orientation());
-
-	static const float verticesAxis[] = {
-			  0.0f,   0.0f,   0.0f, 1.0f,
-			 20.0f,   0.0f,   0.0f, 1.0f,
-			  0.0f,   0.0f,   0.0f, 1.0f,
-			  0.0f,  20.0f,   0.0f, 1.0f,
-			  0.0f,   0.0f,   0.0f, 1.0f,
-			  0.0f,   0.0f,  20.0f, 1.0f};
-
-	static const float colorAxis[] = {
-			1.0f, 0.0f, 0.0f, 1.0f,
-			1.0f, 0.0f, 0.0f, 1.0f,
-			0.0f, 1.0f, 0.0f, 1.0f,
-			0.0f, 1.0f, 0.0f, 1.0f,
-			0.0f, 0.0f, 1.0f, 1.0f,
-			0.0f, 0.0f, 1.0f, 1.0f};
-
-	const int32_t vIndex = _axisBuffer.create(verticesAxis, sizeof(verticesAxis));
-	const int32_t cIndex = _axisBuffer.create(colorAxis, sizeof(colorAxis));
-	core_assert(vIndex >= 0 && cIndex >= 0);
-	_axisBuffer.addAttribute(_colorShader.getLocationPos(), vIndex, 4);
-	_axisBuffer.addAttribute(_colorShader.getLocationColor(), cIndex, 4);
 
 	new WorldParametersWindow(this);
 	new TreeParametersWindow(this);
@@ -176,26 +155,10 @@ void ShapeTool::afterUI() {
 core::AppState ShapeTool::onRunning() {
 	core::AppState state = UIApp::onRunning();
 
-	const glm::mat4& view = _camera.viewMatrix();
-
-	_colorShader.activate();
-	_colorShader.setView(view);
-	_colorShader.setProjection(_camera.projectionMatrix());
-
+	_axis.render(_camera);
 	//glm::vec3 entPos = _entity->position();
 	//entPos.y = _world->findFloor(entPos.x, entPos.z);
 	_entity->update(_deltaFrame);
-	// TODO: add x, y and z letters to the axis
-	glDisable(GL_DEPTH_TEST);
-	core_assert_always(_axisBuffer.bind());
-	glLineWidth(4.0f);
-	glDrawArrays(GL_LINES, 0, 6);
-	glLineWidth(1.0f);
-	_axisBuffer.unbind();
-
-	_colorShader.deactivate();
-	GL_checkError();
-
 	return state;
 }
 
@@ -206,10 +169,9 @@ core::AppState ShapeTool::onCleanup() {
 	_plantShader.shutdown();
 	_waterShader.shutdown();
 	_meshShader.shutdown();
-	_colorShader.shutdown();
 	_shadowMapShader.shutdown();
 	_deferredDirLightShader.shutdown();
-	_axisBuffer.shutdown();
+	_axis.shutdown();
 	_entity = frontend::ClientEntityPtr();
 	core::AppState state = UIApp::onCleanup();
 	_world->shutdown();

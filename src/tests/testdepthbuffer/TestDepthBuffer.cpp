@@ -3,6 +3,8 @@
 #include "video/GLDebug.h"
 #include "video/ScopedViewPort.h"
 #include "core/Color.h"
+#include "core/Command.h"
+#include "frontend/Movement.h"
 
 TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus, 21000) {
@@ -10,6 +12,10 @@ TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr
 }
 
 TestDepthBuffer::~TestDepthBuffer() {
+	core::Command::unregisterCommand("+move_right");
+	core::Command::unregisterCommand("+move_left");
+	core::Command::unregisterCommand("+move_upt");
+	core::Command::unregisterCommand("+move_down");
 }
 
 core::AppState TestDepthBuffer::onInit() {
@@ -17,9 +23,16 @@ core::AppState TestDepthBuffer::onInit() {
 
 	GLDebug::enable(GLDebug::Medium);
 
+	_axis.init();
+
 	_camera.init(_width, _height);
 	_camera.setPosition(glm::vec3(50.0f, 50.0f, 0.0f));
 	_camera.lookAt(glm::vec3(0.0f));
+
+	registerMoveCmd("+move_right", MOVERIGHT);
+	registerMoveCmd("+move_left", MOVELEFT);
+	registerMoveCmd("+move_forward", MOVEFORWARD);
+	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	if (!_shadowMapRenderShader.setup()) {
 		Log::error("Failed to init shadowmaprender shader");
@@ -65,6 +78,11 @@ core::AppState TestDepthBuffer::onRunning() {
 	_camera.setFarPlane(500.0f);
 	_camera.setFieldOfView(45.0f);
 	_camera.setAspectRatio(_aspect);
+	const bool left = _moveMask & MOVELEFT;
+	const bool right = _moveMask & MOVERIGHT;
+	const bool forward = _moveMask & MOVEFORWARD;
+	const bool backward = _moveMask & MOVEBACKWARD;
+	_camera.updatePosition(_deltaFrame, left, right, forward, backward);
 	_camera.update();
 
 	const glm::mat4 lightProjection =
@@ -121,6 +139,8 @@ core::AppState TestDepthBuffer::onRunning() {
 		_texturedFullscreenQuad.unbind();
 	}
 
+	_axis.render(_camera);
+
 	return state;
 }
 
@@ -131,6 +151,7 @@ core::AppState TestDepthBuffer::onCleanup() {
 	_shadowMapRenderShader.shutdown();
 	_shadowMapShader.shutdown();
 	_mesh.shutdown();
+	_axis.shutdown();
 	return Super::onCleanup();
 }
 

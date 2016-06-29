@@ -9,6 +9,7 @@
 #include "video/Mesh.h"
 #include "video/Camera.h"
 #include "video/VertexBuffer.h"
+#include "frontend/Axis.h"
 #include "FrontendShaders.h"
 
 class TestDepthBuffer: public video::WindowedApp {
@@ -21,6 +22,8 @@ private:
 	video::VertexBuffer _texturedFullscreenQuad;
 	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	shader::ShadowmapShader _shadowMapShader;
+	frontend::Axis _axis;
+	uint8_t _moveMask = 0;
 public:
 	TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
 	~TestDepthBuffer();
