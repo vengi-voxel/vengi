@@ -3,9 +3,9 @@
  */
 
 #include <gtest/gtest.h>
-#include "ui/KeybindingParser.h"
+#include "core/KeybindingParser.h"
 
-namespace ui {
+namespace core {
 
 const char *CFG = "w +foo\n"
 		"alt+a \"somecommand +\"\n"

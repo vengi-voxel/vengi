@@ -47,5 +47,6 @@ gtest_suite_files(tests
 	tests/CommandTest.cpp
 	tests/SetTest.cpp
 	tests/TokenizerTest.cpp
+	tests/KeybindingParserTest.cpp
 )
 gtest_suite_deps(tests ${LIB})
