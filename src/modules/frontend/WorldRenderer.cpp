@@ -305,12 +305,26 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	_gbuffer.unbind();
 }
 
+bool WorldRenderer::checkShaders(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, video::Shader& shadowmapShader) const {
+	static const std::string pos = "a_pos";
+	const int loc1 = opaqueShader.getAttributeLocation(pos);
+	const int loc2 = plantShader.getAttributeLocation(pos);
+	const int loc3 = waterShader.getAttributeLocation(pos);
+	const int loc4 = deferredShader.getAttributeLocation(pos);
+	const int loc5 = shadowmapShader.getAttributeLocation(pos);
+	const bool same = loc1 == loc2 && loc2 == loc3 && loc3 == loc4 && loc4 == loc5;
+	core_assert_msg(same, "attribute locations for %s differ: %i, %i, %i, %i, %i", pos.c_str(), loc1, loc2, loc3, loc4, loc5);
+	return same;
+}
+
 int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, video::Shader& shadowmapShader, const video::Camera& camera, int* vertices) {
 	handleMeshQueue(opaqueShader);
 
 	if (_meshDataOpaque.empty()) {
 		return 0;
 	}
+
+	core_assert_msg(checkShaders(opaqueShader, plantShader, waterShader, deferredShader, shadowmapShader), "Shader attributes don't have the same order");
 
 	core_trace_gl_scoped(WorldRendererRenderWorld);
 	int drawCallsWorld = 0;

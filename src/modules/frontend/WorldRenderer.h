@@ -97,6 +97,8 @@ private:
 	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, bool culling = true);
 	void renderWorldDeferred(const video::Camera& camera, const int width, const int height, video::Shader& deferredShader);
 
+	bool checkShaders(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, video::Shader& shadowmapShader) const;
+
 public:
 	WorldRenderer(const voxel::WorldPtr& world);
 	~WorldRenderer();
