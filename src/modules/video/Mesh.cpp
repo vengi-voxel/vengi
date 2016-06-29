@@ -57,7 +57,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 	importer.SetIOHandler(&iosystem);
 #endif
 	const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_FindDegenerates);
-	if (scene == nullptr) {
+	if (scene == nullptr || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		Log::error("Error parsing '%s': '%s'\n", filename.c_str(), importer.GetErrorString());
 		_state = io::IOSTATE_FAILED;
 		return false;
