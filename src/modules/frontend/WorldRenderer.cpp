@@ -431,8 +431,6 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
 		_shadowMapRenderShader.setShadowmap(0);
-		_shadowMapRenderShader.setNear(camera.nearPlane());
-		_shadowMapRenderShader.setFar(camera.farPlane());
 		glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
 		_texturedFullscreenQuad.unbind();
 		glBindTexture(GL_TEXTURE_2D, 0);
