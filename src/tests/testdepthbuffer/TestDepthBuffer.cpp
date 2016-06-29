@@ -63,6 +63,10 @@ core::AppState TestDepthBuffer::onInit() {
 
 	const glm::vec4& color = ::core::Color::Red;
 	glClearColor(color.r, color.g, color.b, color.a);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_CULL_FACE);
+	glDepthMask(GL_TRUE);
 
 	return state;
 }
