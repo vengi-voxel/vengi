@@ -7,9 +7,16 @@
 
 class GLDebug {
 private:
+	static int _recompileErrors;
 	static bool _enabled;
 #if defined(GL_ARB_debug_output)
 	static void debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) {
+		if (id == 131218) {
+			++_recompileErrors;
+			if (_recompileErrors <= 5) {
+				return;
+			}
+		}
 		void (*log)(const char* msg, ...);
 		const char* sourceStr;
 		switch (source) {
@@ -138,3 +145,4 @@ public:
 };
 
 bool GLDebug::_enabled = false;
+int GLDebug::_recompileErrors = 0;
