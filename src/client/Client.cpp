@@ -87,13 +87,15 @@ core::AppState Client::onInit() {
 	eventBus()->subscribe<voxel::WorldCreatedEvent>(*this);
 
 	core::AppState state = UIApp::onInit();
-	if (state != core::Running)
+	if (state != core::Running) {
 		return state;
+	}
 
 	GLDebug::enable(GLDebug::Medium);
 
-	if (!_network->start())
+	if (!_network->start()) {
 		return core::Cleanup;
+	}
 
 	core::Var::get(cfg::ClientName, "noname");
 	core::Var::get(cfg::ClientPassword, "nopassword");

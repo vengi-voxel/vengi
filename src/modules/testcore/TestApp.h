@@ -25,4 +25,5 @@ public:
 	core::AppState onInit() override;
 	core::AppState onRunning() override;
 	core::AppState onCleanup() override;
+	virtual void onWindowResize() override;
 };

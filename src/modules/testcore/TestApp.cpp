@@ -18,6 +18,10 @@ TestApp::~TestApp() {
 	core::Command::unregisterCommand("+move_down");
 }
 
+void TestApp::onWindowResize() {
+	_camera.init(_width, _height);
+}
+
 core::AppState TestApp::onInit() {
 	const core::AppState state = Super::onInit();
 
@@ -26,7 +30,7 @@ core::AppState TestApp::onInit() {
 	_axis.init();
 
 	_camera.init(_width, _height);
-	_camera.setPosition(glm::vec3(50.0f, 50.0f, 0.0f));
+	_camera.setPosition(glm::vec3(0.0f, 50.0f, 0.0f));
 	_camera.lookAt(glm::vec3(0.0f));
 
 	registerMoveCmd("+move_right", MOVERIGHT);
@@ -34,12 +38,18 @@ core::AppState TestApp::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
-	const glm::vec4& color = ::core::Color::Red;
+	const glm::vec4& color = ::core::Color::Black;
 	glClearColor(color.r, color.g, color.b, color.a);
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_CULL_FACE);
 	glDepthMask(GL_TRUE);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glViewport(0, 0, _width, _height);
 
 	return state;
 }
