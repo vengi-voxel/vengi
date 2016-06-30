@@ -16,6 +16,7 @@
 
 class ShapeTool: public ui::UIApp {
 protected:
+	using Super = ui::UIApp;
 	voxel::WorldContext _ctx;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;

@@ -14,7 +14,7 @@
 
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
-		ui::UIApp(filesystem, eventBus), _camera(false), _meshPool(meshPool), _worldRenderer(world), _world(world) {
+		Super(filesystem, eventBus), _camera(false), _meshPool(meshPool), _worldRenderer(world), _world(world) {
 	init("engine", "shapetool");
 	_world->setClientData(true);
 }
@@ -27,7 +27,7 @@ ShapeTool::~ShapeTool() {
 }
 
 core::AppState ShapeTool::onInit() {
-	core::AppState state = ui::UIApp::onInit();
+	core::AppState state = Super::onInit();
 	if (state != core::Running)
 		return state;
 
@@ -131,11 +131,11 @@ void ShapeTool::afterUI() {
 	font->DrawString(x, y, color, position);
 	y += lineHeight;
 	font->DrawString(x, y, color, extractions);
-	ui::UIApp::afterUI();
+	Super::afterUI();
 }
 
 core::AppState ShapeTool::onRunning() {
-	core::AppState state = UIApp::onRunning();
+	core::AppState state = Super::onRunning();
 
 	_axis.render(_camera);
 	//glm::vec3 entPos = _entity->position();
@@ -149,13 +149,13 @@ core::AppState ShapeTool::onCleanup() {
 	_worldRenderer.shutdown();
 	_axis.shutdown();
 	_entity = frontend::ClientEntityPtr();
-	core::AppState state = UIApp::onCleanup();
+	core::AppState state = Super::onCleanup();
 	_world->shutdown();
 	return state;
 }
 
 void ShapeTool::onWindowResize() {
-	UIApp::onWindowResize();
+	Super::onWindowResize();
 	_camera.init(_width, _height);
 }
 
@@ -176,11 +176,11 @@ bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 		const float speed = std::max(0.1f, _speed->floatVal() - 0.1f);
 		_speed->setVal(std::to_string(speed));
 	}
-	return UIApp::onKeyPress(key, modifier);
+	return Super::onKeyPress(key, modifier);
 }
 
 void ShapeTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
-	UIApp::onMouseButtonPress(x, y, button);
+	Super::onMouseButtonPress(x, y, button);
 
 	if (button != SDL_BUTTON_LEFT) {
 		return;
@@ -199,7 +199,7 @@ void ShapeTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 }
 
 void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	UIApp::onMouseMotion(x, y, relX, relY);
+	Super::onMouseMotion(x, y, relX, relY);
 	const bool current = SDL_GetRelativeMouseMode();
 	if (!current) {
 		return;
