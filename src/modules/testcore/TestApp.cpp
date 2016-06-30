@@ -15,6 +15,7 @@ TestApp::~TestApp() {
 }
 
 void TestApp::onWindowResize() {
+	Super::onWindowResize();
 	_camera.init(_width, _height);
 	_camera.setAspectRatio(_aspect);
 }

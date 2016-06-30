@@ -155,6 +155,7 @@ core::AppState ShapeTool::onCleanup() {
 }
 
 void ShapeTool::onWindowResize() {
+	UIApp::onWindowResize();
 	_camera.init(_width, _height);
 }
 

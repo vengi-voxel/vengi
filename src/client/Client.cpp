@@ -188,6 +188,7 @@ core::AppState Client::onRunning() {
 }
 
 void Client::onWindowResize() {
+	UIApp::onWindowResize();
 	_camera.init(_width, _height);
 }
 
