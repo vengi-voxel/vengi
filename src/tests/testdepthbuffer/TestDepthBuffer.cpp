@@ -1,39 +1,13 @@
 #include "TestDepthBuffer.h"
 #include "core/AppModule.h"
-#include "video/GLDebug.h"
 #include "video/ScopedViewPort.h"
-#include "core/Color.h"
-#include "core/Command.h"
-#include "frontend/Movement.h"
 
 TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		Super(filesystem, eventBus, 21000) {
-	init("engine", "testdepthbuffer");
-}
-
-TestDepthBuffer::~TestDepthBuffer() {
-	core::Command::unregisterCommand("+move_right");
-	core::Command::unregisterCommand("+move_left");
-	core::Command::unregisterCommand("+move_upt");
-	core::Command::unregisterCommand("+move_down");
+		Super(filesystem, eventBus) {
 }
 
 core::AppState TestDepthBuffer::onInit() {
-	const core::AppState state = Super::onInit();
-
-	GLDebug::enable(GLDebug::Medium);
-
-	_axis.init();
-
-	_camera.init(_width, _height);
-	_camera.setPosition(glm::vec3(50.0f, 50.0f, 0.0f));
-	_camera.lookAt(glm::vec3(0.0f));
-
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
-
+	core::AppState state = Super::onInit();
 	if (!_shadowMapRenderShader.setup()) {
 		Log::error("Failed to init shadowmaprender shader");
 		return core::AppState::Cleanup;
@@ -61,34 +35,10 @@ core::AppState TestDepthBuffer::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	const glm::vec4& color = ::core::Color::Red;
-	glClearColor(color.r, color.g, color.b, color.a);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_CULL_FACE);
-	glDepthMask(GL_TRUE);
-
 	return state;
 }
 
-core::AppState TestDepthBuffer::onRunning() {
-	const core::AppState state = Super::onRunning();
-	if (state == core::AppState::Cleanup) {
-		return state;
-	}
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	_camera.setFarPlane(500.0f);
-	_camera.setFieldOfView(45.0f);
-	_camera.setAspectRatio(_aspect);
-	const bool left = _moveMask & MOVELEFT;
-	const bool right = _moveMask & MOVERIGHT;
-	const bool forward = _moveMask & MOVEFORWARD;
-	const bool backward = _moveMask & MOVEBACKWARD;
-	_camera.updatePosition(_deltaFrame, left, right, forward, backward);
-	_camera.update();
-
+void TestDepthBuffer::doRender() {
 	const glm::mat4 lightProjection =
 			glm::scale(
 				glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 1.0f)),
@@ -105,7 +55,6 @@ core::AppState TestDepthBuffer::onRunning() {
 		_shadowMapShader.setModel(glm::mat4());
 		if (!_mesh.initMesh(_shadowMapShader)) {
 			Log::error("Failed to init the mesh");
-			return core::AppState::Cleanup;
 		}
 		_depthBuffer.bind();
 		_mesh.render();
@@ -123,7 +72,7 @@ core::AppState TestDepthBuffer::onRunning() {
 
 		if (!_mesh.initMesh(_meshShader)) {
 			Log::error("Failed to init the mesh");
-			return core::AppState::Cleanup;
+			return;
 		}
 		core_assert(_mesh.render() > 0);
 	}
@@ -140,10 +89,6 @@ core::AppState TestDepthBuffer::onRunning() {
 		glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
 		_texturedFullscreenQuad.unbind();
 	}
-
-	_axis.render(_camera);
-
-	return state;
 }
 
 core::AppState TestDepthBuffer::onCleanup() {
@@ -153,7 +98,6 @@ core::AppState TestDepthBuffer::onCleanup() {
 	_shadowMapRenderShader.shutdown();
 	_shadowMapShader.shutdown();
 	_mesh.shutdown();
-	_axis.shutdown();
 	return Super::onCleanup();
 }
 

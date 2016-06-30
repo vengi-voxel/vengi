@@ -4,25 +4,20 @@
 
 #pragma once
 
-#include "video/WindowedApp.h"
+#include "testcore/TestApp.h"
 #include "video/Mesh.h"
-#include "video/Camera.h"
-#include "frontend/Axis.h"
 #include "TestmeshShaders.h"
 
-class TestMesh: public video::WindowedApp {
+class TestMesh: public TestApp {
 private:
-	using Super = video::WindowedApp;
+	using Super = TestApp;
 	video::Mesh _mesh;
-	video::Camera _camera;
 	shader::MeshShader _meshShader;
-	frontend::Axis _axis;
-	uint8_t _moveMask = 0;
+
+	void doRender() override;
 public:
 	TestMesh(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
-	~TestMesh();
 
 	core::AppState onInit() override;
-	core::AppState onRunning() override;
 	core::AppState onCleanup() override;
 };

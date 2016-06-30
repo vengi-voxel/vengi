@@ -10,13 +10,12 @@
 #include "frontend/Axis.h"
 
 class TestApp: public video::WindowedApp {
-private:
+protected:
 	using Super = video::WindowedApp;
 	video::Camera _camera;
 	frontend::Axis _axis;
 	uint8_t _moveMask = 0;
 
-protected:
 	virtual void doRender() = 0;
 
 public:

@@ -4,31 +4,26 @@
 
 #pragma once
 
-#include "video/WindowedApp.h"
+#include "testcore/TestApp.h"
 #include "video/DepthBuffer.h"
 #include "video/Mesh.h"
-#include "video/Camera.h"
 #include "video/VertexBuffer.h"
-#include "frontend/Axis.h"
 #include "FrontendShaders.h"
 
-class TestDepthBuffer: public video::WindowedApp {
+class TestDepthBuffer: public TestApp {
 private:
-	using Super = video::WindowedApp;
+	using Super = TestApp;
 	video::DepthBuffer _depthBuffer;
 	video::Mesh _mesh;
-	video::Camera _camera;
 	shader::MeshShader _meshShader;
 	video::VertexBuffer _texturedFullscreenQuad;
 	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	shader::ShadowmapShader _shadowMapShader;
-	frontend::Axis _axis;
-	uint8_t _moveMask = 0;
+
+	void doRender() override;
 public:
 	TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
-	~TestDepthBuffer();
 
 	core::AppState onInit() override;
-	core::AppState onRunning() override;
 	core::AppState onCleanup() override;
 };
