@@ -206,12 +206,18 @@ void ShaderTool::generateSrc() const {
 		setters << cType.ctype;
 		if (v.arraySize == -1 || cType.passBy == PassBy::Pointer) {
 			setters << "*";
-		} else if (cType.passBy == PassBy::Reference){
-			setters << "&";
-		} else if (cType.passBy == PassBy::Value){
+		} else if (cType.passBy == PassBy::Reference) {
+			if (v.arraySize <= 0) {
+				setters << "&";
+			}
+		} else if (cType.passBy == PassBy::Value) {
 		}
 
-		setters << " " << v.name;
+		if (v.arraySize > 0) {
+			setters << " (&" << v.name << ")";
+		} else {
+			setters << " " << v.name;
+		}
 		if (v.arraySize > 0) {
 			setters << "[" << v.arraySize << "]";
 		} else if (v.arraySize == -1) {

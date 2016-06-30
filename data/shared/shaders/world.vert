@@ -12,13 +12,13 @@ int materialoffset = MATERIALOFFSET;
 const int materialoffset = 0;
 #endif
 
-#define MATERIALCOLORS 32
 
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
 uniform sampler2D u_texture;
-uniform vec4 u_materialcolor[MATERIALCOLORS];
+#define MATERIALCOLORS 32
+uniform vec4 u_materialcolor[32];
 uniform float u_debug_color;
 
 #if cl_deferred == 0
