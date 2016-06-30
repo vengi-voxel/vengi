@@ -365,6 +365,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we do one pass for the gbuffer + the sun
 	if (_shadowMap->boolVal()) {
+		glDisable(GL_BLEND);
 		_depthBuffer.bind();
 		glCullFace(GL_FRONT);
 		// TODO: we need a bitmask for culling, because we need some kind of culling here, too...
@@ -372,6 +373,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, _meshDataPlant,  vertices, false);
 		glCullFace(GL_BACK);
 		_depthBuffer.unbind();
+		glEnable(GL_BLEND);
 	}
 
 	_colorTexture->bind(0);
