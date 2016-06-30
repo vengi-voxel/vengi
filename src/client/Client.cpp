@@ -136,7 +136,6 @@ void Client::beforeUI() {
 		const bool backward = _moveMask & MoveDirection_MOVEBACKWARD;
 		_camera.updatePosition(_deltaFrame, left, right, forward, backward);
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
-		_camera.setFieldOfView(45.0f);
 		_camera.setAspectRatio(_aspect);
 		_camera.update();
 
