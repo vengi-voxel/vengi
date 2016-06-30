@@ -12,10 +12,6 @@ TestApp::TestApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 }
 
 TestApp::~TestApp() {
-	core::Command::unregisterCommand("+move_right");
-	core::Command::unregisterCommand("+move_left");
-	core::Command::unregisterCommand("+move_upt");
-	core::Command::unregisterCommand("+move_down");
 }
 
 void TestApp::onWindowResize() {
@@ -79,5 +75,9 @@ core::AppState TestApp::onRunning() {
 
 core::AppState TestApp::onCleanup() {
 	_axis.shutdown();
+	core::Command::unregisterCommand("+move_right");
+	core::Command::unregisterCommand("+move_left");
+	core::Command::unregisterCommand("+move_upt");
+	core::Command::unregisterCommand("+move_down");
 	return Super::onCleanup();
 }
