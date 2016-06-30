@@ -340,7 +340,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	GL_checkError();
 
 	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
-	static const glm::vec3 pos(50.0f, 50.0f, -50.0f);
+	static const glm::vec3 pos(20.0f, 50.0f, -20.0f);
 	static const glm::vec3 center(0.0f);
 	// normalize the opengl depth from [-1, 1] to [0, 1]
 	_lightProjection = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -348,12 +348,11 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	// Because we're modelling a directional light source all its light rays are parallel.
 	// For this reason we're going to use an orthographic projection matrix for the light
 	// source where there is no perspective deform
-	// TODO: calculate the obb around the frustum - but we have to improve later anyway for cascaded shadowmaps
-	_lightProjection = _lightProjection * glm::ortho(-750.0f, +750.0f, -750.0f, +750.0f, 1.0f, 400.0f);
+	// TODO: calculate the obb around the frustum - but we have to improve later anyway for cascaded shadowmaps.
+	// TODO: then create the ortho matrix from it. http://www.ogldev.org/www/tutorial49/tutorial49.html
+	_lightProjection = _lightProjection * glm::ortho(-250.0f, +250.0f, -250.0f, +250.0f, 1.0f, 400.0f);
 	_lightView = glm::lookAt(pos, center, up);
-	const glm::mat4& lightModelTranslate = glm::translate(glm::mat4(1.0f), camera.position());
-	const glm::mat4& lightModelRotate = glm::rotate(lightModelTranslate, camera.yaw(), glm::vec3(0.0, 1.0, 0.0));
-	const glm::mat4& lightModel = lightModelRotate;
+	const glm::mat4& lightModel = glm::translate(glm::mat4(1.0f), camera.position());
 	_lightSpaceMatrix = _lightProjection * _lightView * lightModel;
 	_lightDir = glm::vec3(glm::column(glm::inverse(_lightView), 2));
 
