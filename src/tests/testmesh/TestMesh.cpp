@@ -39,7 +39,7 @@ core::AppState TestMesh::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	const std::string mesh = "animal_chicken.dae";
+	const std::string mesh = "animal_rabbit.dae";
 	if (!_mesh.loadMesh(mesh)) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
