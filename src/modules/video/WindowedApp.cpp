@@ -83,6 +83,7 @@ core::AppState WindowedApp::onRunning() {
 
 void WindowedApp::onWindowResize() {
 	SDL_GetWindowSize(_window, &_width, &_height);
+	_aspect = _width / static_cast<float>(_height);
 	glViewport(0, 0, _width, _height);
 }
 
