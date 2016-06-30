@@ -205,8 +205,6 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, bool culling) {
-	const glm::mat4& view = camera.viewMatrix();
-
 	const MaterialColorArray& materialColors = getMaterialColors();
 
 	const bool deferred = _deferred->boolVal();
@@ -216,7 +214,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		shaderSetUniformIf(shader, setUniformMatrix, "u_view", _lightView);
 		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", _lightProjection);
 	} else {
-		shaderSetUniformIf(shader, setUniformMatrix, "u_view", view);
+		shaderSetUniformIf(shader, setUniformMatrix, "u_view", camera.viewMatrix());
 		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
 	}
 	shaderSetUniformIf(shader, setUniformVec4v, "u_materialcolor[0]", &materialColors[0], materialColors.size());
