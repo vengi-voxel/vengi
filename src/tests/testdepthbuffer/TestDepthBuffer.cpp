@@ -1,5 +1,4 @@
 #include "TestDepthBuffer.h"
-#include "core/AppModule.h"
 #include "video/ScopedViewPort.h"
 
 TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :

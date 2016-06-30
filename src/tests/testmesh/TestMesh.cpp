@@ -1,5 +1,4 @@
 #include "TestMesh.h"
-#include "core/AppModule.h"
 
 TestMesh::TestMesh(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {

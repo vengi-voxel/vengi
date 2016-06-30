@@ -4,15 +4,13 @@
 
 #pragma once
 
-#include "video/WindowedApp.h"
+#include "testcore/TestApp.h"
 
-class TestTemplate: public video::WindowedApp {
+class TestTemplate: public TestApp {
 private:
-	using Super = video::WindowedApp;
+	using Super = TestApp;
+
+	void doRender() override;
 public:
 	TestTemplate(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
-	~TestTemplate();
-
-	core::AppState onInit() override;
-	core::AppState onRunning() override;
 };

@@ -8,6 +8,7 @@
 #include "video/Mesh.h"
 #include "video/Camera.h"
 #include "frontend/Axis.h"
+#include "core/AppModule.h"
 
 class TestApp: public video::WindowedApp {
 protected:
