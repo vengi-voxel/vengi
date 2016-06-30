@@ -13,7 +13,7 @@ core::AppState TestTexture::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	_texture = video::createTexture("texture.png");
+	_texture = video::createTextureFromImage("texture.png");
 	if (!_texture) {
 		Log::error("Failed to load texture");
 		return core::AppState::Cleanup;

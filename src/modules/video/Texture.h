@@ -48,7 +48,7 @@ inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 }
 
 inline TexturePtr createTextureFromImage(const std::string& filename) {
-	return createTextureFromImage(image::createImage(filename));
+	return createTextureFromImage(image::loadImage(filename, false));
 }
 
 }
