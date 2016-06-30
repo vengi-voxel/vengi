@@ -16,6 +16,7 @@ TestApp::~TestApp() {
 
 void TestApp::onWindowResize() {
 	_camera.init(_width, _height);
+	_camera.setAspectRatio(_aspect);
 }
 
 core::AppState TestApp::onInit() {
@@ -28,6 +29,7 @@ core::AppState TestApp::onInit() {
 	}
 
 	_camera.init(_width, _height);
+	_camera.setAspectRatio(_aspect);
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 0.0f));
 	_camera.lookAt(glm::vec3(0.0f));
 
@@ -58,7 +60,6 @@ core::AppState TestApp::onRunning() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	_camera.setAspectRatio(_aspect);
 	const bool left = _moveMask & MOVELEFT;
 	const bool right = _moveMask & MOVERIGHT;
 	const bool forward = _moveMask & MOVEFORWARD;
