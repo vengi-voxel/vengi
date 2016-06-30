@@ -74,7 +74,14 @@ private:
 	video::VertexBuffer _fullscreenQuad;
 	video::VertexBuffer _texturedFullscreenQuad;
 	video::DepthBuffer _depthBuffer;
+
 	shader::ShadowmapRenderShader _shadowMapRenderShader;
+	shader::WorldShader _worldShader;
+	shader::WorldInstancedShader _plantShader;
+	shader::WaterShader _waterShader;
+	shader::MeshShader _meshShader;
+	shader::DeferredLightDirShader _deferredDirLightShader;
+	shader::ShadowmapShader _shadowMapShader;
 
 	voxel::PlantGenerator _plantGenerator;
 
@@ -95,9 +102,9 @@ private:
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
 	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, bool culling = true);
-	void renderWorldDeferred(const video::Camera& camera, const int width, const int height, video::Shader& deferredShader);
+	void renderWorldDeferred(const video::Camera& camera, const int width, const int height);
 
-	bool checkShaders(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, video::Shader& shadowmapShader) const;
+	bool checkShaders() const;
 
 public:
 	WorldRenderer(const voxel::WorldPtr& world);
@@ -105,7 +112,7 @@ public:
 
 	void reset();
 
-	void onInit(video::Shader& plantShader, video::Shader& deferredShader, int width, int height);
+	bool onInit(int width, int height);
 	void onRunning(long now);
 	void shutdown();
 
@@ -126,8 +133,8 @@ public:
 	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 
 	bool extractNewMeshes(const glm::vec3& position, bool force = false);
-	int renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, video::Shader& shadowmapShader, const video::Camera& camera, int* vertices = nullptr);
-	int renderEntities(video::Shader& shader, const video::Camera& camera);
+	int renderWorld(const video::Camera& camera, int* vertices = nullptr);
+	int renderEntities(const video::Camera& camera);
 };
 
 inline float WorldRenderer::getViewDistance() const {

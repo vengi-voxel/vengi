@@ -14,8 +14,7 @@
 
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
-		ui::UIApp(filesystem, eventBus), _camera(false), _meshPool(meshPool), _worldRenderer(world), _world(world), _worldShader(), _plantShader(), _waterShader(),
-		_meshShader(), _deferredDirLightShader(), _shadowMapShader() {
+		ui::UIApp(filesystem, eventBus), _camera(false), _meshPool(meshPool), _worldRenderer(world), _world(world) {
 	init("engine", "shapetool");
 	_world->setClientData(true);
 }
@@ -34,25 +33,6 @@ core::AppState ShapeTool::onInit() {
 
 	GLDebug::enable(GLDebug::Medium);
 
-	if (!_worldShader.setup()) {
-		return core::Cleanup;
-	}
-	if (!_plantShader.setup()) {
-		return core::Cleanup;
-	}
-	if (!_waterShader.setup()) {
-		return core::Cleanup;
-	}
-	if (!_meshShader.setup()) {
-		return core::Cleanup;
-	}
-	if (!_shadowMapShader.setup()) {
-		return core::Cleanup;
-	}
-	if (!_deferredDirLightShader.setup()) {
-		return core::Cleanup;
-	}
-
 	if (!_axis.init()) {
 		return core::Cleanup;
 	}
@@ -66,7 +46,7 @@ core::AppState ShapeTool::onInit() {
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	_world->setSeed(1);
-	_worldRenderer.onInit(_plantShader, _deferredDirLightShader, _width, _height);
+	_worldRenderer.onInit(_width, _height);
 	_camera.init(_width, _height);
 	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
@@ -119,8 +99,8 @@ void ShapeTool::beforeUI() {
 	_worldRenderer.extractNewMeshes(_camera.position());
 	_worldRenderer.onRunning(_deltaFrame);
 	_vertices = 0;
-	_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _plantShader, _waterShader, _deferredDirLightShader, _shadowMapShader, _camera, &_vertices);
-	_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera);
+	_drawCallsWorld = _worldRenderer.renderWorld(_camera, &_vertices);
+	_drawCallsEntities = _worldRenderer.renderEntities(_camera);
 }
 
 void ShapeTool::afterUI() {
@@ -165,12 +145,6 @@ core::AppState ShapeTool::onRunning() {
 core::AppState ShapeTool::onCleanup() {
 	_meshPool->shutdown();
 	_worldRenderer.shutdown();
-	_worldShader.shutdown();
-	_plantShader.shutdown();
-	_waterShader.shutdown();
-	_meshShader.shutdown();
-	_shadowMapShader.shutdown();
-	_deferredDirLightShader.shutdown();
 	_axis.shutdown();
 	_entity = frontend::ClientEntityPtr();
 	core::AppState state = UIApp::onCleanup();

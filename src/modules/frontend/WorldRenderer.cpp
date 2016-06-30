@@ -47,6 +47,12 @@ void WorldRenderer::shutdown() {
 	_fullscreenQuad.shutdown();
 	_texturedFullscreenQuad.shutdown();
 	_shadowMapRenderShader.shutdown();
+	_worldShader.shutdown();
+	_plantShader.shutdown();
+	_waterShader.shutdown();
+	_meshShader.shutdown();
+	_shadowMapShader.shutdown();
+	_deferredDirLightShader.shutdown();
 	_depthBuffer.shutdown();
 	reset();
 	_colorTexture->shutdown();
@@ -290,8 +296,9 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	return drawCallsWorld;
 }
 
-void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int width, const int height, video::Shader& deferredShader) {
+void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int width, const int height) {
 	_gbuffer.bindForReading(false);
+	shader::DeferredLightDirShader& deferredShader = _deferredDirLightShader;
 	video::ScopedShader scoped(deferredShader);
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightpos", _lightDir + camera.position());
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
@@ -305,26 +312,26 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	_gbuffer.unbind();
 }
 
-bool WorldRenderer::checkShaders(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, video::Shader& shadowmapShader) const {
+bool WorldRenderer::checkShaders() const {
 	static const std::string pos = "a_pos";
-	const int loc1 = opaqueShader.getAttributeLocation(pos);
-	const int loc2 = plantShader.getAttributeLocation(pos);
-	const int loc3 = waterShader.getAttributeLocation(pos);
-	const int loc4 = deferredShader.getAttributeLocation(pos);
-	const int loc5 = shadowmapShader.getAttributeLocation(pos);
+	const int loc1 = _worldShader.getAttributeLocation(pos);
+	const int loc2 = _plantShader.getAttributeLocation(pos);
+	const int loc3 = _waterShader.getAttributeLocation(pos);
+	const int loc4 = _deferredDirLightShader.getAttributeLocation(pos);
+	const int loc5 = _shadowMapShader.getAttributeLocation(pos);
 	const bool same = loc1 == loc2 && loc2 == loc3 && loc3 == loc4 && loc4 == loc5;
 	core_assert_msg(same, "attribute locations for %s differ: %i, %i, %i, %i, %i", pos.c_str(), loc1, loc2, loc3, loc4, loc5);
 	return same;
 }
 
-int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plantShader, video::Shader& waterShader, video::Shader& deferredShader, video::Shader& shadowmapShader, const video::Camera& camera, int* vertices) {
-	handleMeshQueue(opaqueShader);
+int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
+	handleMeshQueue(_worldShader);
 
 	if (_meshDataOpaque.empty()) {
 		return 0;
 	}
 
-	core_assert_msg(checkShaders(opaqueShader, plantShader, waterShader, deferredShader, shadowmapShader), "Shader attributes don't have the same order");
+	core_assert_msg(checkShaders(), "Shader attributes don't have the same order");
 
 	core_trace_gl_scoped(WorldRendererRenderWorld);
 	int drawCallsWorld = 0;
@@ -362,7 +369,7 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 		_depthBuffer.bind();
 		glCullFace(GL_FRONT);
 		// TODO: we need a bitmask for culling, because we need some kind of culling here, too...
-		drawCallsWorld  = renderWorldMeshes(shadowmapShader, camera, _meshDataOpaque, vertices, false);
+		drawCallsWorld  = renderWorldMeshes(_shadowMapShader, camera, _meshDataOpaque, vertices, false);
 		//drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
 		glCullFace(GL_BACK);
 		_depthBuffer.unbind();
@@ -378,9 +385,9 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	drawCallsWorld += renderWorldMeshes(opaqueShader, camera, _meshDataOpaque, vertices);
-	drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
-	drawCallsWorld += renderWorldMeshes(waterShader,  camera, _meshDataWater,  vertices);
+	drawCallsWorld += renderWorldMeshes(_worldShader, camera, _meshDataOpaque, vertices);
+	drawCallsWorld += renderWorldMeshes(_plantShader,  camera, _meshDataPlant,  vertices, false);
+	drawCallsWorld += renderWorldMeshes(_waterShader,  camera, _meshDataWater,  vertices);
 
 	_colorTexture->unbind();
 
@@ -414,9 +421,9 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 			glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 			video::ScopedViewPort scoped(halfWidth, 0, halfWidth, halfHeight);
-			renderWorldDeferred(camera, halfWidth, halfHeight, deferredShader);
+			renderWorldDeferred(camera, halfWidth, halfHeight);
 		} else {
-			renderWorldDeferred(camera, width, height, deferredShader);
+			renderWorldDeferred(camera, width, height);
 		}
 
 		GL_checkError();
@@ -545,7 +552,7 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	extractMeshAroundCamera(_world->getMeshPos(pos), initialExtractionRadius);
 }
 
-int WorldRenderer::renderEntities(video::Shader& shader, const video::Camera& camera) {
+int WorldRenderer::renderEntities(const video::Camera& camera) {
 	if (_entities.empty()) {
 		return 0;
 	}
@@ -556,7 +563,8 @@ int WorldRenderer::renderEntities(video::Shader& shader, const video::Camera& ca
 	const glm::mat4& view = camera.viewMatrix();
 	const glm::mat4& projection = camera.projectionMatrix();
 
-	shader.activate();
+	shader::MeshShader& shader = _meshShader;
+	video::ScopedShader scoped(shader);
 	shader.setUniformMatrix("u_view", view, false);
 	shader.setUniformMatrix("u_projection", projection, false);
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightDir + camera.position());
@@ -580,7 +588,6 @@ int WorldRenderer::renderEntities(video::Shader& shader, const video::Camera& ca
 		drawCallsEntities += mesh->render();
 		GL_checkError();
 	}
-	shader.deactivate();
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	GL_checkError();
@@ -630,14 +637,14 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 	_world->stats(meshes, extracted, pending);
 }
 
-void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredShader, int width, int height) {
+bool WorldRenderer::onInit(int width, int height) {
+	core_trace_scoped(WorldRendererOnInit);
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
 	_shadowMap = core::Var::get(cfg::ClientShadowMap);
 	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
 	_shadowMapDebug = core::Var::get(cfg::ClientShadowMapDebug, "false");
 	_cameraSun = core::Var::get(cfg::ClientCameraSun, "false");
-	core_trace_scoped(WorldRendererOnInit);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
 		const int ColorTextureOctaves = 2;
@@ -652,10 +659,30 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 	_colorTexture = video::createTexture("**colortexture**");
 	_plantGenerator.generateAll();
 
-	core_assert_always(_shadowMapRenderShader.setup());
+	if (!_worldShader.setup()) {
+		return false;
+	}
+	if (!_plantShader.setup()) {
+		return false;
+	}
+	if (!_waterShader.setup()) {
+		return false;
+	}
+	if (!_meshShader.setup()) {
+		return false;
+	}
+	if (!_shadowMapShader.setup()) {
+		return false;
+	}
+	if (!_deferredDirLightShader.setup()) {
+		return false;
+	}
+	if (!_shadowMapRenderShader.setup()) {
+		return false;
+	}
 
 	const uint32_t fullscreenQuadVertexIndex = _fullscreenQuad.createFullscreenQuad();
-	_fullscreenQuad.addAttribute(deferredShader.getAttributeLocation("a_pos"), fullscreenQuadVertexIndex, 3);
+	_fullscreenQuad.addAttribute(_deferredDirLightShader.getAttributeLocation("a_pos"), fullscreenQuadVertexIndex, 3);
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
 	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationPos(), fullscreenQuadIndices.x, 3);
@@ -663,16 +690,22 @@ void WorldRenderer::onInit(video::Shader& plantShader, video::Shader& deferredSh
 
 	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
-		video::GLMeshData meshDataPlant = createInstancedMesh(plantShader, *mesh, 40);
+		video::GLMeshData meshDataPlant = createInstancedMesh(_plantShader, *mesh, 40);
 		if (meshDataPlant.noOfIndices > 0) {
 			meshDataPlant.scale = glm::vec3(0.4f, 0.4f, 0.4f);
 			_meshDataPlant.push_back(meshDataPlant);
 		}
 	}
 
-	core_assert_always(_depthBuffer.init(width, height));
+	if (!_depthBuffer.init(width, height)) {
+		return false;
+	}
 
-	core_assert_always(_gbuffer.init(width, height));
+	if (!_gbuffer.init(width, height)) {
+		return false;
+	}
+
+	return true;
 }
 
 void WorldRenderer::onRunning(long dt) {

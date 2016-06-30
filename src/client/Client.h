@@ -8,7 +8,6 @@
 #include <SDL.h>
 
 #include "messages/ServerMessages_generated.h"
-#include "FrontendShaders.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/WorldRenderer.h"
 #include "util/PosLerp.h"
@@ -33,12 +32,6 @@ protected:
 	voxel::WorldPtr _world;
 	network::MessageSenderPtr _messageSender;
 	core::TimeProviderPtr _timeProvider;
-	shader::WorldShader _worldShader;
-	shader::WorldInstancedShader _plantShader;
-	shader::WaterShader _waterShader;
-	shader::MeshShader _meshShader;
-	shader::DeferredLightDirShader _deferredDirLightShader;
-	shader::ShadowmapShader _shadowMapShader;
 	frontend::WorldRenderer _worldRenderer;
 	ENetPeer* _peer = nullptr;
 	uint8_t _moveMask = 0;

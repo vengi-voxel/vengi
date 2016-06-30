@@ -21,12 +21,6 @@ protected:
 	video::MeshPoolPtr _meshPool;
 	frontend::WorldRenderer _worldRenderer;
 	voxel::WorldPtr _world;
-	shader::WorldShader _worldShader;
-	shader::WorldInstancedShader _plantShader;
-	shader::WaterShader _waterShader;
-	shader::MeshShader _meshShader;
-	shader::DeferredLightDirShader _deferredDirLightShader;
-	shader::ShadowmapShader _shadowMapShader;
 	frontend::Axis _axis;
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;

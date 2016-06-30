@@ -29,8 +29,7 @@
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
 		UIApp(filesystem, eventBus, 17816), _camera(false), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
-		_timeProvider(timeProvider), _worldShader(), _plantShader(), _meshShader(), _deferredDirLightShader(), _shadowMapShader(),
-		_worldRenderer(world) {
+		_timeProvider(timeProvider), _worldRenderer(world) {
 	_world->setClientData(true);
 	init("engine", "client");
 }
@@ -100,25 +99,6 @@ core::AppState Client::onInit() {
 	core::Var::get(cfg::ClientPassword, "nopassword");
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
-	if (!_worldShader.setup()) {
-		return core::Cleanup;
-	}
-	if (!_plantShader.setup()) {
-		return core::Cleanup;
-	}
-	if (!_waterShader.setup()) {
-		return core::Cleanup;
-	}
-	if (!_meshShader.setup()) {
-		return core::Cleanup;
-	}
-	if (!_deferredDirLightShader.setup()) {
-		return core::Cleanup;
-	}
-	if (!_shadowMapShader.setup()) {
-		return core::Cleanup;
-	}
-
 	GL_checkError();
 
 	_camera.init(_width, _height);
@@ -128,7 +108,7 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
-	_worldRenderer.onInit(_plantShader, _deferredDirLightShader, _width, _height);
+	_worldRenderer.onInit(_width, _height);
 
 	_root.SetSkinBg(TBIDC("background"));
 	new frontend::LoginWindow(this);
@@ -156,8 +136,8 @@ void Client::beforeUI() {
 		_camera.setAspectRatio(_aspect);
 		_camera.update();
 
-		_drawCallsWorld = _worldRenderer.renderWorld(_worldShader, _plantShader, _waterShader, _deferredDirLightShader, _shadowMapShader, _camera);
-		_drawCallsEntities = _worldRenderer.renderEntities(_meshShader, _camera);
+		_drawCallsWorld = _worldRenderer.renderWorld(_camera);
+		_drawCallsEntities = _worldRenderer.renderEntities(_camera);
 		_worldRenderer.extractNewMeshes(_camera.position());
 	} else {
 		_drawCallsWorld = 0;
@@ -180,12 +160,6 @@ void Client::afterUI() {
 core::AppState Client::onCleanup() {
 	_meshPool->shutdown();
 	_worldRenderer.shutdown();
-	_worldShader.shutdown();
-	_plantShader.shutdown();
-	_waterShader.shutdown();
-	_meshShader.shutdown();
-	_shadowMapShader.shutdown();
-	_deferredDirLightShader.shutdown();
 	core::AppState state = UIApp::onCleanup();
 	_world->shutdown();
 	return state;
