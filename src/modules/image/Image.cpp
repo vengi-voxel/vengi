@@ -45,6 +45,8 @@ void Image::load(uint8_t* buffer, int length) {
 		stbi_image_free(_data);
 	}
 	_data = stbi_load_from_memory(buffer, length, &_width, &_height, &_depth, STBI_rgb_alpha);
+	// we are always using rgba
+	_depth = 4;
 	if (_data == nullptr)
 		_state = io::IOSTATE_FAILED;
 	else
