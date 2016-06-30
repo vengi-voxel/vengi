@@ -28,8 +28,9 @@ ShapeTool::~ShapeTool() {
 
 core::AppState ShapeTool::onInit() {
 	core::AppState state = Super::onInit();
-	if (state != core::Running)
+	if (state != core::Running) {
 		return state;
+	}
 
 	GLDebug::enable(GLDebug::Medium);
 
