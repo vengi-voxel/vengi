@@ -290,6 +290,7 @@ core::AppState WindowedApp::onInit() {
 	_aspect = _width / static_cast<float>(_height);
 
 	ExtGLLoadFunctions();
+	glViewport(0, 0, _width, _height);
 
 	if (multisampling) {
 		glEnable(GL_MULTISAMPLE);
