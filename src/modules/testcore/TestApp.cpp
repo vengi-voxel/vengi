@@ -59,8 +59,6 @@ core::AppState TestApp::onRunning() {
 		return state;
 	}
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	const bool left = _moveMask & MOVELEFT;
 	const bool right = _moveMask & MOVERIGHT;
 	const bool forward = _moveMask & MOVEFORWARD;
