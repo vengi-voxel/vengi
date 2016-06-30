@@ -118,15 +118,15 @@ bool Mesh::initMesh(Shader& shader) {
 			return false;
 		}
 
-		glGenVertexArrays(1, &_vertexArrayObject);
-		// generate all the 4 needed buffers at once
-		glGenBuffers(4, &_posBuffer);
-
 		for (const image::ImagePtr& i : _images) {
 			if (i && i->isLoading()) {
 				return false;
 			}
 		}
+
+		glGenVertexArrays(1, &_vertexArrayObject);
+		// generate all the 4 needed buffers at once
+		glGenBuffers(4, &_posBuffer);
 
 		_textures.resize(_images.size());
 		int materialIndex = 0;
