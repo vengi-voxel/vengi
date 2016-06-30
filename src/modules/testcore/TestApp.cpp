@@ -27,7 +27,9 @@ core::AppState TestApp::onInit() {
 
 	GLDebug::enable(GLDebug::Medium);
 
-	_axis.init();
+	if (!_axis.init()) {
+		return core::AppState::Cleanup;
+	}
 
 	_camera.init(_width, _height);
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 0.0f));
