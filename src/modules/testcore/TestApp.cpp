@@ -62,8 +62,6 @@ core::AppState TestApp::onRunning() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	_camera.setFarPlane(500.0f);
-	_camera.setFieldOfView(45.0f);
 	_camera.setAspectRatio(_aspect);
 	const bool left = _moveMask & MOVELEFT;
 	const bool right = _moveMask & MOVERIGHT;
