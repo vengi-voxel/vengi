@@ -342,14 +342,14 @@ int WorldRenderer::renderWorld(video::Shader& opaqueShader, video::Shader& plant
 	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
 	static const glm::vec3 pos(50.0f, 50.0f, -50.0f);
 	static const glm::vec3 center(0.0f);
-	// TODO: are they automatically normalized, what about the far and near clup plane?
 	// normalize the opengl depth from [-1, 1] to [0, 1]
 	_lightProjection = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 1.0f));
 	_lightProjection = glm::scale(_lightProjection, glm::vec3(1.0f, 1.0f, 0.5f));
 	// Because we're modelling a directional light source all its light rays are parallel.
 	// For this reason we're going to use an orthographic projection matrix for the light
 	// source where there is no perspective deform
-	_lightProjection = _lightProjection * glm::ortho(-75.0f, +75.0f, -75.0f, +75.0f, 1.0f, 400.0f);
+	// TODO: calculate the obb around the frustum - but we have to improve later anyway for cascaded shadowmaps
+	_lightProjection = _lightProjection * glm::ortho(-750.0f, +750.0f, -750.0f, +750.0f, 1.0f, 400.0f);
 	_lightView = glm::lookAt(pos, center, up);
 	const glm::mat4& lightModelTranslate = glm::translate(glm::mat4(1.0f), camera.position());
 	const glm::mat4& lightModelRotate = glm::rotate(lightModelTranslate, camera.yaw(), glm::vec3(0.0, 1.0, 0.0));
