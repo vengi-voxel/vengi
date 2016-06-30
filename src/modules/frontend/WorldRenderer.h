@@ -78,6 +78,7 @@ private:
 	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	shader::WorldShader _worldShader;
 	shader::WorldInstancedShader _plantShader;
+	shader::ShadowmapInstancedShader _shadowMapInstancedShader;
 	shader::WaterShader _waterShader;
 	shader::MeshShader _meshShader;
 	shader::DeferredLightDirShader _deferredDirLightShader;

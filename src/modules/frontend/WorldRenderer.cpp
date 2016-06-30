@@ -47,6 +47,7 @@ void WorldRenderer::shutdown() {
 	_fullscreenQuad.shutdown();
 	_texturedFullscreenQuad.shutdown();
 	_shadowMapRenderShader.shutdown();
+	_shadowMapInstancedShader.shutdown();
 	_worldShader.shutdown();
 	_plantShader.shutdown();
 	_waterShader.shutdown();
@@ -369,8 +370,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_depthBuffer.bind();
 		glCullFace(GL_FRONT);
 		// TODO: we need a bitmask for culling, because we need some kind of culling here, too...
-		drawCallsWorld  = renderWorldMeshes(_shadowMapShader, camera, _meshDataOpaque, vertices, false);
-		//drawCallsWorld += renderWorldMeshes(plantShader,  camera, _meshDataPlant,  vertices, false);
+		drawCallsWorld  = renderWorldMeshes(_shadowMapShader,          camera, _meshDataOpaque, vertices, false);
+		drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, _meshDataPlant,  vertices, false);
 		glCullFace(GL_BACK);
 		_depthBuffer.unbind();
 	}
@@ -386,8 +387,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	drawCallsWorld += renderWorldMeshes(_worldShader, camera, _meshDataOpaque, vertices);
-	drawCallsWorld += renderWorldMeshes(_plantShader,  camera, _meshDataPlant,  vertices, false);
-	drawCallsWorld += renderWorldMeshes(_waterShader,  camera, _meshDataWater,  vertices);
+	drawCallsWorld += renderWorldMeshes(_plantShader, camera, _meshDataPlant,  vertices, false);
+	drawCallsWorld += renderWorldMeshes(_waterShader, camera, _meshDataWater,  vertices);
 
 	_colorTexture->unbind();
 
@@ -663,6 +664,9 @@ bool WorldRenderer::onInit(int width, int height) {
 		return false;
 	}
 	if (!_plantShader.setup()) {
+		return false;
+	}
+	if (!_shadowMapInstancedShader.setup()) {
 		return false;
 	}
 	if (!_waterShader.setup()) {

@@ -108,7 +108,9 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
-	_worldRenderer.onInit(_width, _height);
+	if (!_worldRenderer.onInit(_width, _height)) {
+		return core::Cleanup;
+	}
 
 	_root.SetSkinBg(TBIDC("background"));
 	new frontend::LoginWindow(this);

@@ -46,7 +46,9 @@ core::AppState ShapeTool::onInit() {
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	_world->setSeed(1);
-	_worldRenderer.onInit(_width, _height);
+	if (!_worldRenderer.onInit(_width, _height)) {
+		return core::Cleanup;
+	}
 	_camera.init(_width, _height);
 	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
