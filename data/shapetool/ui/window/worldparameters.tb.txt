@@ -35,7 +35,7 @@ TBLayout
 			TBEditField: id: mountainpersistence, type: number
 		TBLayout
 			axis y
-			TBTextField: text: Caves (3dNoise(
+			TBTextField: text: Caves (3dNoise)
 			TBTextField: text: Octaves
 			TBInlineSelect: id: caveoctaves, min: 1, max: 10
 			TBTextField: text: Frequency
