@@ -8,8 +8,6 @@
 #include "video/GLDebug.h"
 #include "core/GLM.h"
 #include "core/Color.h"
-#include "ui/WorldParametersWindow.h"
-#include "ui/TreeParametersWindow.h"
 #include "frontend/Movement.h"
 
 // tool for testing the world createXXX functions without starting the application
@@ -72,13 +70,15 @@ core::AppState ShapeTool::onInit() {
 	targetPos.z += 1000.0f;
 	_entity->lerpPosition(_now, targetPos, _entity->orientation());
 
-	new WorldParametersWindow(this);
-	new TreeParametersWindow(this);
+	//new WorldParametersWindow(this);
+	//new TreeParametersWindow(this);
 
 	return state;
 }
 
-void ShapeTool::beforeUI() {
+core::AppState ShapeTool::onRunning() {
+	core::AppState state = Super::onRunning();
+
 	_world->onFrame(_deltaFrame);
 
 	if (_resetTriggered && !_world->isReset()) {
@@ -103,39 +103,6 @@ void ShapeTool::beforeUI() {
 	_vertices = 0;
 	_drawCallsWorld = _worldRenderer.renderWorld(_camera, &_vertices);
 	_drawCallsEntities = _worldRenderer.renderEntities(_camera);
-}
-
-void ShapeTool::afterUI() {
-	tb::TBStr drawCallsWorld;
-	drawCallsWorld.SetFormatted("drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
-	tb::TBStr drawCallsEntity;
-	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
-	tb::TBStr position;
-	const glm::vec3& pos = _camera.position();
-	position.SetFormatted("pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
-	tb::TBStr extractions;
-	int meshes;
-	int extracted;
-	int pending;
-	_worldRenderer.stats(meshes, extracted, pending);
-	extractions.SetFormatted("pending: %i, meshes: %i, extracted: %i", pending, meshes, extracted);
-	tb::TBFontFace *font = _root.GetFont();
-	const tb::TBColor color(255, 255, 255);
-	const int x = 5;
-	int y = 20;
-	const int lineHeight = font->GetHeight() + 2;
-	font->DrawString(x, y, color, drawCallsEntity);
-	y += lineHeight;
-	font->DrawString(x, y, color, drawCallsWorld);
-	y += lineHeight;
-	font->DrawString(x, y, color, position);
-	y += lineHeight;
-	font->DrawString(x, y, color, extractions);
-	Super::afterUI();
-}
-
-core::AppState ShapeTool::onRunning() {
-	core::AppState state = Super::onRunning();
 
 	_axis.render(_camera);
 	//glm::vec3 entPos = _entity->position();
@@ -164,11 +131,6 @@ bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 		const SDL_bool current = SDL_GetRelativeMouseMode();
 		const SDL_bool mode = current ? SDL_FALSE : SDL_TRUE;
 		SDL_SetRelativeMouseMode(mode);
-		if (mode) {
-			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_INVISIBLE);
-		} else {
-			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_VISIBLE);
-		}
 	} else if (key == SDLK_PLUS || key == SDLK_KP_PLUS) {
 		const float speed = _speed->floatVal() + 0.1f;
 		_speed->setVal(std::to_string(speed));
