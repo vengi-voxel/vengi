@@ -2,7 +2,7 @@
 
 #include "video/VertexBuffer.h"
 #include "video/Camera.h"
-#include "FrontendShaders.h"
+#include "ColorShader.h"
 
 namespace frontend {
 
