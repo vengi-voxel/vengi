@@ -14,9 +14,9 @@
 #include "video/VertexBuffer.h"
 #include "voxel/World.h"
 
-class ShapeTool: public video::WindowedApp {
+class ShapeTool: public ui::UIApp {
 protected:
-	using Super = video::WindowedApp;
+	using Super = ui::UIApp;
 	voxel::WorldContext _ctx;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
@@ -37,6 +37,8 @@ protected:
 	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize() override;
+	void beforeUI() override;
+	void afterUI() override;
 
 public:
 	ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world);
