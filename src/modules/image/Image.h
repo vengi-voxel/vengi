@@ -14,10 +14,10 @@ namespace image {
 class Image: public io::IOResource {
 private:
 	std::string _name;
-	int _width;
-	int _height;
-	int _depth;
-	uint8_t* _data;
+	int _width = -1;
+	int _height = -1;
+	int _depth = -1;
+	uint8_t* _data = nullptr;
 
 public:
 	Image(const std::string& name);
@@ -29,11 +29,11 @@ public:
 	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);
 	bool writePng() const;
 
-	const std::string& name() const {
+	inline const std::string& name() const {
 		return _name;
 	}
 
-	const uint8_t* data() const {
+	inline const uint8_t* data() const {
 		return _data;
 	}
 

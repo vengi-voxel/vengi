@@ -20,7 +20,7 @@
 namespace image {
 
 Image::Image(const std::string& name) :
-		io::IOResource(), _name(name), _width(-1), _height(-1), _depth(-1), _data(nullptr) {
+		io::IOResource(), _name(name) {
 }
 
 Image::~Image() {
