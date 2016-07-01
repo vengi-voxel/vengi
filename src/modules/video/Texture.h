@@ -35,12 +35,17 @@ public:
 typedef std::shared_ptr<Texture> TexturePtr;
 
 // creates empty texture with placeholder pixel in
-inline TexturePtr createTexture(const std::string& name) {
+inline TexturePtr createEmptyTexture(const std::string& name) {
 	return TexturePtr(new Texture(name));
 }
 
 inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 	if (!image) {
+		Log::warn("Could not load texture");
+		return TexturePtr();
+	}
+	if (image->width() == -1) {
+		Log::warn("Could not load texture from image %s", image->name().c_str());
 		return TexturePtr();
 	}
 	TexturePtr t(new Texture(image->name(), image->data(), image->width(), image->height(), image->depth()));
