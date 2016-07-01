@@ -657,7 +657,7 @@ bool WorldRenderer::onInit(int width, int height) {
 		noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
 		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
 	}));
-	_colorTexture = video::createTexture("**colortexture**");
+	_colorTexture = video::createEmptyTexture("**colortexture**");
 	_plantGenerator.generateAll();
 
 	if (!_worldShader.setup()) {

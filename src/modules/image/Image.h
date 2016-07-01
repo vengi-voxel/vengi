@@ -53,12 +53,12 @@ public:
 typedef std::shared_ptr<Image> ImagePtr;
 
 // creates an empty image
-inline ImagePtr createImage(const std::string& name) {
+inline ImagePtr createEmptyImage(const std::string& name) {
 	return std::make_shared<Image>(name);
 }
 
 inline ImagePtr loadImage(const io::FilePtr& file, bool async = true) {
-	const ImagePtr& i = createImage(file->getName());
+	const ImagePtr& i = createEmptyImage(file->getName());
 	if (async) {
 		core::App::getInstance()->threadPool().enqueue([=] () { i->load(file); });
 	} else {
