@@ -11,8 +11,9 @@
 #include "core/AppModule.h"
 
 class TestApp: public video::WindowedApp {
-protected:
+private:
 	using Super = video::WindowedApp;
+protected:
 	video::Camera _camera;
 	frontend::Axis _axis;
 	uint8_t _moveMask = 0;
@@ -23,8 +24,8 @@ public:
 	TestApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
 	virtual ~TestApp();
 
-	core::AppState onInit() override;
-	core::AppState onRunning() override;
-	core::AppState onCleanup() override;
+	virtual core::AppState onInit() override;
+	virtual core::AppState onRunning() override;
+	virtual core::AppState onCleanup() override;
 	virtual void onWindowResize() override;
 };

@@ -22,6 +22,9 @@ void TestApp::onWindowResize() {
 
 core::AppState TestApp::onInit() {
 	const core::AppState state = Super::onInit();
+	if (state == core::AppState::Cleanup) {
+		return state;
+	}
 
 	GLDebug::enable(GLDebug::Medium);
 
