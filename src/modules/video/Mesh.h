@@ -26,6 +26,7 @@ private:
 
 	GLuint _vertexArrayObject;
 	// 4 buffers - don't change the order - don't add anything in between these four buffers
+	// TODO: move them all into one buffer and set up proper stride values
 	GLuint _posBuffer;
 	GLuint _uvBuffer;
 	GLuint _normalBuffer;
