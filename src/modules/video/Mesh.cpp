@@ -14,7 +14,7 @@ const aiVector3D VECZERO(0.0f, 0.0f, 0.0f);
 }
 
 Mesh::Mesh() :
-		io::IOResource(), _vertexArrayObject(0u), _posBuffer(0u), _uvBuffer(0u), _normalBuffer(0u), _indexBuffer(0u) {
+		io::IOResource() {
 }
 
 Mesh::~Mesh() {
@@ -27,23 +27,21 @@ void Mesh::shutdown() {
 	_images.clear();
 	_meshData.clear();
 
-	_positions.clear();
-	_normals.clear();
-	_texCoords.clear();
+	_vertices.clear();
 	_indices.clear();
 
 	_readyToInit = false;
-	// destroy all the 4 buffers at once
-	if (_posBuffer != 0) {
-		glDeleteBuffers(4, &_posBuffer);
-		_posBuffer = 0;
-		_uvBuffer = 0;
-		_normalBuffer = 0;
-		_indexBuffer = 0;
+	if (_vbo != 0u) {
+		glDeleteBuffers(1, &_vbo);
+		_vbo = 0u;
 	}
-	if (_vertexArrayObject != 0) {
+	if (_indexBuffer != 0u) {
+		glDeleteBuffers(1, &_indexBuffer);
+		_indexBuffer = 0u;
+	}
+	if (_vertexArrayObject != 0u) {
 		glDeleteVertexArrays(1, &_vertexArrayObject);
-		_vertexArrayObject = 0;
+		_vertexArrayObject = 0u;
 	}
 }
 
@@ -81,9 +79,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 		numIndices += meshData.noOfIndices;
 	}
 
-	_positions.reserve(numVertices);
-	_normals.reserve(numVertices);
-	_texCoords.reserve(numVertices);
+	_vertices.reserve(numVertices);
 	_indices.reserve(numIndices);
 
 	for (uint32_t i = 0; i < _meshData.size(); i++) {
@@ -101,9 +97,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 			const aiVector3D* normal = &mesh->mNormals[i];
 			const aiVector3D* texCoord = mesh->HasTextureCoords(0) ? &mesh->mTextureCoords[0][i] : &VECZERO;
 
-			_positions.push_back(glm::vec3(pos->x, pos->y, pos->z));
-			_normals.push_back(glm::vec3(normal->x, normal->y, normal->z));
-			_texCoords.push_back(glm::vec2(texCoord->x, texCoord->y));
+			_vertices.emplace_back(glm::vec3(pos->x, pos->y, pos->z), glm::vec3(normal->x, normal->y, normal->z), glm::vec2(texCoord->x, texCoord->y));
 		}
 	}
 
@@ -126,7 +120,8 @@ bool Mesh::initMesh(Shader& shader) {
 
 		glGenVertexArrays(1, &_vertexArrayObject);
 		// generate all the 4 needed buffers at once
-		glGenBuffers(4, &_posBuffer);
+		glGenBuffers(1, &_vbo);
+		glGenBuffers(1, &_indexBuffer);
 
 		_textures.resize(_images.size());
 		int materialIndex = 0;
@@ -142,28 +137,22 @@ bool Mesh::initMesh(Shader& shader) {
 
 	glBindVertexArray(_vertexArrayObject);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _posBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(_positions[0]) * _positions.size(), &_positions[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * _vertices.size(), &_vertices[0], GL_STATIC_DRAW);
 	if (shader.hasAttribute("a_pos")) {
 		const int loc = shader.enableVertexAttribute("a_pos");
 		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _pos)));
 	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, _uvBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(_texCoords[0]) * _texCoords.size(), &_texCoords[0], GL_STATIC_DRAW);
 	if (shader.hasAttribute("a_texcoords")) {
 		const int loc = shader.enableVertexAttribute("a_texcoords");
 		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _uv)));
 	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, _normalBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(_normals[0]) * _normals.size(), &_normals[0], GL_STATIC_DRAW);
 	if (shader.hasAttribute("a_norm")) {
 		const int loc = shader.enableVertexAttribute("a_norm");
 		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _norm)));
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);

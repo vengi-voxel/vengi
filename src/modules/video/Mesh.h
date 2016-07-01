@@ -18,28 +18,29 @@ namespace video {
 
 class Mesh : public io::IOResource {
 private:
+	struct Vertex {
+		glm::vec3 _pos;
+		glm::vec3 _norm;
+		glm::vec2 _uv;
+
+		Vertex(const glm::vec3& p, const glm::vec3& n, const glm::vec2& t) :
+				_pos(p), _norm(n), _uv(t) {
+		}
+	};
+	typedef std::vector<Vertex> Vertices;
 	typedef std::vector<uint32_t> Indices;
-	typedef std::vector<glm::vec2> TexCoords;
-	typedef std::vector<glm::vec3> Vertices;
 
 	void loadTextureImages(const aiScene* scene, const std::string& filename);
 
-	GLuint _vertexArrayObject;
-	// 4 buffers - don't change the order - don't add anything in between these four buffers
-	// TODO: move them all into one buffer and set up proper stride values
-	GLuint _posBuffer;
-	GLuint _uvBuffer;
-	GLuint _normalBuffer;
-	GLuint _indexBuffer;
+	GLuint _vertexArrayObject = 0u;
+	GLuint _vbo = 0u;
+	GLuint _indexBuffer = 0u;
 	bool _readyToInit = false;
 
 	std::vector<GLMeshData> _meshData;
 	std::vector<image::ImagePtr> _images;
 	std::vector<TexturePtr> _textures;
-
-	Vertices _positions;
-	Vertices _normals;
-	TexCoords _texCoords;
+	Vertices _vertices;
 	Indices _indices;
 public:
 	Mesh();
