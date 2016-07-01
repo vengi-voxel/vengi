@@ -8,7 +8,7 @@
 #include <SDL.h>
 
 static constexpr int bufSize = 1024;
-static SDL_LogPriority _logLevel;
+static SDL_LogPriority _logLevel = SDL_LOG_PRIORITY_INFO;
 
 void Log::init() {
 	_logLevel = (SDL_LogPriority)core::Var::get(cfg::CoreLogLevel, std::to_string(SDL_LOG_PRIORITY_INFO))->intVal();

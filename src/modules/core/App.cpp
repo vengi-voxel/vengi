@@ -19,6 +19,7 @@ App* App::_staticInstance;
 App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport, size_t threadPoolSize) :
 		_trace(traceport), _argc(0), _argv(nullptr), _curState(AppState::Construct), _nextState(AppState::InvalidAppState),
 		_suspendRequested(false), _deltaFrame(0L), _initTime(0L), _filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core") {
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 	_now = currentMillis();
 	_staticInstance = this;
 }
