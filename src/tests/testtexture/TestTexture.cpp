@@ -1,4 +1,5 @@
 #include "TestTexture.h"
+#include "core/Color.h"
 
 TestTexture::TestTexture(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
@@ -7,6 +8,7 @@ TestTexture::TestTexture(io::FilesystemPtr filesystem, core::EventBusPtr eventBu
 core::AppState TestTexture::onInit() {
 	_camera.setOrtho(true);
 	const core::AppState state = Super::onInit();
+	_camera.setPosition(glm::vec3(_width / 2.0f, -_height / 2.0f, 0.0f));
 
 	if (!_textureShader.setup()) {
 		Log::error("Failed to init the texture shader");
@@ -23,11 +25,17 @@ core::AppState TestTexture::onInit() {
 	_texturedFullscreenQuad.addAttribute(_textureShader.getLocationPos(), fullscreenQuadIndices.x, 3);
 	_texturedFullscreenQuad.addAttribute(_textureShader.getLocationTexcoord(), fullscreenQuadIndices.y, 2);
 
+	const glm::vec4& color = ::core::Color::White;
+	glClearColor(color.r, color.g, color.b, color.a);
+
 	return state;
 }
 
 void TestTexture::doRender() {
 	video::ScopedShader scoped(_textureShader);
+	_textureShader.setView(_camera.viewMatrix());
+	_textureShader.setProjection(_camera.projectionMatrix());
+	_textureShader.setModel(glm::scale(glm::mat4(), glm::vec3(_width / 2, _height / 2, 1.0)));
 	_textureShader.setTexture(0);
 	_texture->bind();
 	core_assert_always(_texturedFullscreenQuad.bind());

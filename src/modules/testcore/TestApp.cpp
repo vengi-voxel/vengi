@@ -34,6 +34,7 @@ core::AppState TestApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
+	Log::info("Set window dimensions: %ix%i (aspect: %f)", _width, _height, _aspect);
 	_camera.init(_width, _height);
 	_camera.setAspectRatio(_aspect);
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 0.0f));
