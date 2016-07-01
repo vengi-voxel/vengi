@@ -180,11 +180,13 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 		const aiMaterial* material = scene->mMaterials[i];
 		const aiTextureType texType = aiTextureType_DIFFUSE;
 		if (material->GetTextureCount(texType) <= 0) {
+			Log::warn("No textures for texture type %i", texType);
 			continue;
 		}
 
 		aiString path;
-		if (material->GetTexture(texType, 0, &path, nullptr, nullptr, nullptr, nullptr, nullptr) != AI_SUCCESS) {
+		if (material->GetTexture(texType, i, &path, nullptr, nullptr, nullptr, nullptr, nullptr) != AI_SUCCESS) {
+			Log::warn("Could not get texture path for material index %i", i);
 			continue;
 		}
 
