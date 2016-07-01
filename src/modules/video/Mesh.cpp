@@ -126,7 +126,11 @@ bool Mesh::initMesh(Shader& shader) {
 		_textures.resize(_images.size());
 		int materialIndex = 0;
 		for (const image::ImagePtr& i : _images) {
-			_textures[materialIndex++] = createTextureFromImage(i);
+			if (i && i->isLoaded()) {
+				_textures[materialIndex++] = createTextureFromImage(i);
+			} else {
+				++materialIndex;
+			}
 		}
 		_images.clear();
 
@@ -180,7 +184,7 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 		const aiMaterial* material = scene->mMaterials[i];
 		const aiTextureType texType = aiTextureType_DIFFUSE;
 		if (material->GetTextureCount(texType) <= 0) {
-			Log::warn("No textures for texture type %i", texType);
+			Log::warn("No textures for texture type %i at index %i", texType, i);
 			continue;
 		}
 
