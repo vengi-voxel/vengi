@@ -103,6 +103,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 
 	loadTextureImages(scene, filename);
 	_readyToInit = true;
+	Log::info("Loaded mesh %s with %i vertices and %i indices", filename.c_str(), (int)_vertices.size(), (int)_indices.size());
 	return true;
 }
 
