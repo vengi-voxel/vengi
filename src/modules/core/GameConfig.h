@@ -24,6 +24,8 @@ constexpr const char *ClientMultiSampleSamples = "cl_multisamplesamples";
 constexpr const char *ClientMultiSampleBuffers = "cl_multisamplebuffers";
 constexpr const char *ClientOpenGLVersion = "cl_openglversion";
 constexpr const char *ClientRenderUI = "cl_renderui";
+constexpr const char *ClientWindowWidth = "cl_width";
+constexpr const char *ClientWindowHeight = "cl_height";
 
 constexpr const char *ClientGamma = "cl_gamma";
 constexpr const char *ClientDeferred = "cl_deferred";

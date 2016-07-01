@@ -21,6 +21,10 @@ void TestApp::onWindowResize() {
 }
 
 core::AppState TestApp::onInit() {
+	core::Var::get(cfg::ClientFullscreen, "false");
+	core::Var::get(cfg::ClientWindowWidth, "640");
+	core::Var::get(cfg::ClientWindowHeight, "480");
+
 	const core::AppState state = Super::onInit();
 	_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
 	Log::init();
@@ -70,6 +74,10 @@ core::AppState TestApp::onRunning() {
 	const bool forward = _moveMask & MOVEFORWARD;
 	const bool backward = _moveMask & MOVEBACKWARD;
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward);
+	if (left || right || forward || backward) {
+		const glm::vec3& pos = _camera.position();
+		Log::info("camera: %f:%f:%f", pos.x, pos.y, pos.z);
+	}
 	_camera.update();
 
 	doRender();

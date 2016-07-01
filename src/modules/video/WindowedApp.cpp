@@ -165,8 +165,8 @@ core::AppState WindowedApp::onInit() {
 	SDL_DisplayMode displayMode;
 	SDL_GetDesktopDisplayMode(0, &displayMode);
 	const char *name = SDL_GetPixelFormatName(displayMode.format);
-	int width = displayMode.w;
-	int height = displayMode.h;
+	int width = core::Var::get(cfg::ClientWindowWidth, std::to_string(displayMode.w))->intVal();
+	int height = core::Var::get(cfg::ClientWindowHeight, std::to_string(displayMode.h))->intVal();
 
 	const core::VarPtr& glVersion = core::Var::get(cfg::ClientOpenGLVersion, "3.1", core::CV_READONLY);
 	int glMinor = 0, glMajor = 0;
