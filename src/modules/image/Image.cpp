@@ -29,17 +29,17 @@ Image::~Image() {
 	}
 }
 
-void Image::load(const io::FilePtr& file) {
+bool Image::load(const io::FilePtr& file) {
 	uint8_t* buffer;
 	const int length = file->read((void**) &buffer);
 	std::unique_ptr<uint8_t[]> p(buffer);
-	load(buffer, length);
+	return load(buffer, length);
 }
 
-void Image::load(uint8_t* buffer, int length) {
+bool Image::load(uint8_t* buffer, int length) {
 	if (!buffer || length <= 0) {
 		_state = io::IOSTATE_FAILED;
-		return;
+		return false;
 	}
 	if (_data) {
 		stbi_image_free(_data);
@@ -47,10 +47,13 @@ void Image::load(uint8_t* buffer, int length) {
 	_data = stbi_load_from_memory(buffer, length, &_width, &_height, &_depth, STBI_rgb_alpha);
 	// we are always using rgba
 	_depth = 4;
-	if (_data == nullptr)
+	if (_data == nullptr) {
 		_state = io::IOSTATE_FAILED;
-	else
+	} else {
 		_state = io::IOSTATE_LOADED;
+	}
+
+	return true;
 }
 
 bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {

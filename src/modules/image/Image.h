@@ -23,8 +23,8 @@ public:
 	Image(const std::string& name);
 	~Image();
 
-	void load(const io::FilePtr& file);
-	void load(uint8_t* buffer, int length);
+	bool load(const io::FilePtr& file);
+	bool load(uint8_t* buffer, int length);
 
 	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);
 	bool writePng() const;

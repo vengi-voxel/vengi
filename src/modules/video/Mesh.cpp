@@ -179,12 +179,14 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 	for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
 		const aiMaterial* material = scene->mMaterials[i];
 		const aiTextureType texType = aiTextureType_DIFFUSE;
-		if (material->GetTextureCount(texType) <= 0)
+		if (material->GetTextureCount(texType) <= 0) {
 			continue;
+		}
 
 		aiString path;
-		if (material->GetTexture(texType, 0, &path, nullptr, nullptr, nullptr, nullptr, nullptr) != AI_SUCCESS)
+		if (material->GetTexture(texType, 0, &path, nullptr, nullptr, nullptr, nullptr, nullptr) != AI_SUCCESS) {
 			continue;
+		}
 
 		std::string p(path.data);
 
@@ -198,8 +200,9 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 }
 
 int Mesh::render() {
-	if (_state != io::IOSTATE_LOADED)
+	if (_state != io::IOSTATE_LOADED) {
 		return 0;
+	}
 	glBindVertexArray(_vertexArrayObject);
 	int drawCalls = 0;
 	for (const GLMeshData& mesh : _meshData) {
