@@ -45,7 +45,7 @@ void main(void) {
 #if cl_shadowmap == 1
 	float shadow = calculateShadow(ndotl);
 #else
-	float shadow = 0.0;
+	float shadow = 1.0;
 #endif
 
 #if cl_deferred == 0
