@@ -23,6 +23,4 @@ TreeNodeStatus TriggerCooldown::doAction(backend::AICharacter& chr, long deltaMi
 	return FAILED;
 }
 
-NODE_FACTORY_IMPL(TriggerCooldown)
-
 }

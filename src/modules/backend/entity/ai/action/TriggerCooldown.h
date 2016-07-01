@@ -16,7 +16,7 @@ private:
 	cooldown::CooldownType _cooldownId;
 public:
 	TriggerCooldown(const std::string& name, const std::string& parameters, const ConditionPtr& condition);
-	NODE_FACTORY
+	NODE_FACTORY(TriggerCooldown)
 
 	TreeNodeStatus doAction(backend::AICharacter& chr, long deltaMillis) override;
 };

@@ -22,17 +22,6 @@ bool SpawnMgr::init() {
 		Log::error("could not load the behaviourtrees: %s", _loader->getError().c_str());
 		return false;
 	}
-	std::vector<std::string> trees;
-	_loader->getTrees(trees);
-
-	Log::info("loaded %i behaviour trees", (int)trees.size());
-	for (const std::string& tree : trees) {
-		std::stringstream s;
-		const ai::TreeNodePtr& node = _loader->load(tree);
-		core_assert(node);
-		s << *node;
-		Log::debug("%s", s.str().c_str());
-	}
 	return true;
 }
 

@@ -17,7 +17,7 @@ class SelectIncreasePartner: public IFilter {
 private:
 	cooldown::CooldownType _cooldownId;
 public:
-	FILTER_FACTORY
+	FILTER_FACTORY(SelectIncreasePartner)
 
 	SelectIncreasePartner(const std::string& parameters = "") :
 			IFilter("SelectIncreasePartner", parameters) {

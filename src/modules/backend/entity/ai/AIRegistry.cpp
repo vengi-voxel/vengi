@@ -30,18 +30,18 @@ namespace backend {
 void AIRegistry::init(const backend::SpawnMgrPtr& spawnMgr) {
 	registerNodeFactory("GoHome", core::Singleton<GoHome::Factory>::getInstance());
 	registerNodeFactory("AttackOnSelection", core::Singleton<AttackOnSelection::Factory>::getInstance());
-	registerFilterFactory("SelectVisible", SelectVisible::FACTORY);
-	registerFilterFactory("SelectIncreasePartner", SelectIncreasePartner::FACTORY);
-	registerFilterFactory("SelectPrey", SelectPrey::FACTORY);
-	registerFilterFactory("SelectNpcsOfTypes", SelectNpcsOfTypes::FACTORY);
-	registerConditionFactory("IsCloseToSelection", IsCloseToSelection::FACTORY);
-	registerConditionFactory("IsOnCooldown", IsOnCooldown::FACTORY);
-	registerConditionFactory("IsSelectionAlive", IsSelectionAlive::FACTORY);
-	registerNodeFactory("SetPointOfInterest", SetPointOfInterest::FACTORY);
+	registerFilterFactory("SelectVisible", SelectVisible::getFactory());
+	registerFilterFactory("SelectIncreasePartner", SelectIncreasePartner::getFactory());
+	registerFilterFactory("SelectPrey", SelectPrey::getFactory());
+	registerFilterFactory("SelectNpcsOfTypes", SelectNpcsOfTypes::getFactory());
+	registerConditionFactory("IsCloseToSelection", IsCloseToSelection::getFactory());
+	registerConditionFactory("IsOnCooldown", IsOnCooldown::getFactory());
+	registerConditionFactory("IsSelectionAlive", IsSelectionAlive::getFactory());
+	registerNodeFactory("SetPointOfInterest", SetPointOfInterest::getFactory());
 	registerNodeFactory("Spawn", Spawn::getInstance(spawnMgr));
 	registerNodeFactory("Die", core::Singleton<Die::Factory>::getInstance());
-	registerNodeFactory("TriggerCooldown", TriggerCooldown::FACTORY);
-	registerNodeFactory("TriggerCooldownOnSelection", TriggerCooldownOnSelection::FACTORY);
+	registerNodeFactory("TriggerCooldown", TriggerCooldown::getFactory());
+	registerNodeFactory("TriggerCooldownOnSelection", TriggerCooldownOnSelection::getFactory());
 }
 
 }

@@ -7,7 +7,6 @@ set(SRCS
 	AIRegistry.h
 	common/IFactoryRegistry.h
 	common/IParser.h
-	common/IPrintable.h
 	common/Log.h
 	common/Math.h
 	common/MemoryAllocator.h
@@ -87,7 +86,6 @@ set(SRCS
 	tree/ITimedNode.h
 	tree/loaders/ITreeLoader.h
 	tree/Parallel.h
-	tree/Print.h
 	tree/PrioritySelector.h
 	tree/ProbabilitySelector.h
 	tree/RandomSelector.h

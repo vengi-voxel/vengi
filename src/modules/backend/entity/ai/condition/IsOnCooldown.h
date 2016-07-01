@@ -18,14 +18,14 @@ namespace backend {
 class IsOnCooldown: public ICondition {
 private:
 	cooldown::CooldownType _cooldownId;
+public:
 	IsOnCooldown(const std::string& parameters) :
 			ICondition("IsOnCooldown", parameters) {
 		_cooldownId = static_cast<cooldown::CooldownType>(core::string::toInt(parameters));
 		core_assert(_cooldownId > cooldown::NONE);
 		core_assert(_cooldownId < cooldown::MAX);
 	}
-public:
-	CONDITION_FACTORY
+	CONDITION_FACTORY(IsOnCooldown)
 
 	bool evaluate(const AIPtr& entity) override {
 		const AICharacter& chr = ai::character_cast<AICharacter>(entity->getCharacter());
@@ -33,7 +33,5 @@ public:
 	}
 
 };
-
-CONDITION_FACTORY_IMPL(IsOnCooldown)
 
 }

@@ -32,6 +32,4 @@ TreeNodeStatus TriggerCooldownOnSelection::doAction(backend::AICharacter& chr, l
 	return FINISHED;
 }
 
-NODE_FACTORY_IMPL(TriggerCooldownOnSelection)
-
 }

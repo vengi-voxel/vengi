@@ -28,10 +28,9 @@ struct TaskName: public Task { \
 	TaskName(const std::string& name, const std::string& parameters, const ConditionPtr& condition) : \
 			Task(name, parameters, condition) {} \
 	virtual ~TaskName() {} \
-	NODE_FACTORY \
+	NODE_FACTORY(TaskName) \
 	TreeNodeStatus doAction(backend::AICharacter& chr, long deltaMillis) override; \
 }; \
-NODE_FACTORY_IMPL(TaskName) \
 inline TreeNodeStatus TaskName::doAction(backend::AICharacter& chr, long deltaMillis)
 
 }

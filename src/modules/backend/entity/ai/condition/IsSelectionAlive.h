@@ -12,9 +12,9 @@ namespace backend {
 
 class IsSelectionAlive: public ICondition {
 protected:
-	CONDITION_CLASS(IsSelectionAlive)
 public:
-	CONDITION_FACTORY
+	CONDITION_CLASS(IsSelectionAlive)
+	CONDITION_FACTORY(IsSelectionAlive)
 
 	bool evaluate(const AIPtr& entity) override {
 		const FilteredEntities& selection = entity->getFilteredEntities();
@@ -26,7 +26,5 @@ public:
 		return !chr.getNpc().dead();
 	}
 };
-
-CONDITION_FACTORY_IMPL(IsSelectionAlive);
 
 }

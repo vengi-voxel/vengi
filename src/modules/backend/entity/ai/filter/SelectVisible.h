@@ -12,7 +12,7 @@ namespace backend {
 
 class SelectVisible: public IFilter {
 public:
-	FILTER_FACTORY
+	FILTER_FACTORY(SelectVisible)
 
 	SelectVisible(const std::string& parameters = "") :
 		IFilter("SelectVisible", parameters) {

@@ -32,6 +32,4 @@ void SelectPrey::filter(const AIPtr& entity) {
 	});
 }
 
-FILTER_FACTORY_IMPL(SelectPrey)
-
 }

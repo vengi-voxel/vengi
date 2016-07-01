@@ -18,7 +18,7 @@ class SelectNpcsOfTypes: public IFilter {
 private:
 	std::bitset<network::messages::NpcType::NpcType_MAX> _npcTypes;
 public:
-	FILTER_FACTORY
+	FILTER_FACTORY(SelectNpcsOfTypes)
 
 	SelectNpcsOfTypes(const std::string& parameters) :
 			IFilter("SelectNpcsOfTypes", parameters) {
@@ -48,7 +48,5 @@ public:
 		});
 	}
 };
-
-FILTER_FACTORY_IMPL(SelectNpcsOfTypes)
 
 }

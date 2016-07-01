@@ -17,7 +17,7 @@ class SelectPrey: public IFilter {
 private:
 	network::messages::NpcType _npcType;
 public:
-	FILTER_FACTORY
+	FILTER_FACTORY(SelectPrey)
 
 	SelectPrey(const std::string& parameters = "");
 

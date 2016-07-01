@@ -15,9 +15,9 @@ namespace backend {
 class TriggerCooldownOnSelection: public Task {
 private:
 	cooldown::CooldownType _cooldownId;
-	TriggerCooldownOnSelection(const std::string& name, const std::string& parameters, const ConditionPtr& condition);
 public:
-	NODE_FACTORY
+	TriggerCooldownOnSelection(const std::string& name, const std::string& parameters, const ConditionPtr& condition);
+	NODE_FACTORY(TriggerCooldownOnSelection)
 
 	TreeNodeStatus doAction(backend::AICharacter& chr, long deltaMillis) override;
 };

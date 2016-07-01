@@ -15,6 +15,7 @@ class IsCloseToSelection: public ICondition {
 protected:
 	int _distance;
 
+public:
 	IsCloseToSelection(const std::string& parameters) :
 			ICondition("IsCloseToSelection", parameters) {
 		if (_parameters.empty())
@@ -22,8 +23,7 @@ protected:
 		else
 			_distance = std::stoi(_parameters);
 	}
-public:
-	CONDITION_FACTORY
+	CONDITION_FACTORY(IsCloseToSelection)
 
 	bool evaluate(const AIPtr& entity) override {
 		ai::Zone* zone = entity->getZone();
@@ -42,7 +42,5 @@ public:
 		return distance <= _distance;
 	}
 };
-
-CONDITION_FACTORY_IMPL(IsCloseToSelection)
 
 }
