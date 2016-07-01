@@ -24,7 +24,7 @@ public:
 			IProtocolMessage(PROTO_UPDATENODE), _nodeId(nodeId), _characterId(characterId), _name(name), _type(type), _condition(condition) {
 	}
 
-	AIUpdateNodeMessage(streamContainer& in) :
+	explicit AIUpdateNodeMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_UPDATENODE) {
 		_nodeId = readInt(in);
 		_characterId = readInt(in);

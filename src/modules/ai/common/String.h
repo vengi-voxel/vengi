@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/GLM.h"
+#include "Math.h"
 #include <vector>
 #include <string>
 #include <sstream>

@@ -19,7 +19,7 @@ public:
 			IProtocolMessage(PROTO_CHARACTER_STATIC), _chrId(id), _nodeStaticDataPtr(&nodeStaticData) {
 	}
 
-	AICharacterStaticMessage(streamContainer& in) :
+	explicit AICharacterStaticMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_CHARACTER_STATIC), _nodeStaticDataPtr(nullptr) {
 		_chrId = readInt(in);
 		const std::size_t size = readInt(in);

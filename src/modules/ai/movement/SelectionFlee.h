@@ -10,9 +10,9 @@ namespace movement {
  */
 class SelectionFlee: public SelectionSteering {
 public:
-	STEERING_FACTORY
+	STEERING_FACTORY(SelectionFlee)
 
-	SelectionFlee(const std::string&) :
+	explicit SelectionFlee(const std::string&) :
 			SelectionSteering() {
 	}
 
@@ -28,14 +28,6 @@ public:
 		}
 		const MoveVector d(v, orientation);
 		return d;
-	}
-
-	std::ostream& print(std::ostream& stream, int level) const override {
-		for (int i = 0; i < level; ++i) {
-			stream << '\t';
-		}
-		stream << "SelectionFlee()";
-		return stream;
 	}
 };
 

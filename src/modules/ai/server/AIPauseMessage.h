@@ -19,11 +19,11 @@ private:
 	bool _pause;
 
 public:
-	AIPauseMessage(bool pause) :
+	explicit AIPauseMessage(bool pause) :
 			IProtocolMessage(PROTO_PAUSE),_pause(pause) {
 	}
 
-	AIPauseMessage(streamContainer& in) :
+	explicit AIPauseMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_PAUSE) {
 		_pause = readBool(in);
 	}

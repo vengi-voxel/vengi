@@ -23,7 +23,7 @@ public:
 			IProtocolMessage(PROTO_ADDNODE), _parentNodeId(parentNodeId), _characterId(characterId), _name(name), _type(type), _condition(condition) {
 	}
 
-	AIAddNodeMessage(streamContainer& in) :
+	explicit AIAddNodeMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_ADDNODE) {
 		_parentNodeId = readInt(in);
 		_characterId = readInt(in);

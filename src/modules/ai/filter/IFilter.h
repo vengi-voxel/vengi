@@ -3,6 +3,7 @@
 #include <list>
 #include <vector>
 #include "ICharacter.h"
+#include "AI.h"
 #include "common/MemoryAllocator.h"
 
 namespace ai {
@@ -11,20 +12,25 @@ namespace ai {
  * @brief Macro to simplify the condition creation. Just give the class name of the condition as parameter.
  */
 #define FILTER_CLASS(FilterName) \
-	FilterName(const std::string& parameters = "") : \
+	explicit FilterName(const std::string& parameters = "") : \
 		IFilter(#FilterName, parameters) { \
 	} \
 public: \
 	virtual ~FilterName() { \
 	}
 
-#define FILTER_FACTORY \
+#define FILTER_FACTORY(FilterName) \
 public: \
 	class Factory: public IFilterFactory { \
 	public: \
-		FilterPtr create (const FilterFactoryContext *ctx) const override; \
+		FilterPtr create (const FilterFactoryContext *ctx) const override { \
+			return std::make_shared<FilterName>(ctx->parameters); \
+		} \
 	}; \
-	static Factory FACTORY;
+	static const Factory& getFactory() { \
+		static Factory FACTORY; \
+		return FACTORY; \
+	}
 
 #define FILTER_FACTORY_SINGLETON \
 public: \
@@ -33,14 +39,10 @@ public: \
 			return get(); \
 		} \
 	}; \
-	static Factory FACTORY;
-
-#define FILTER_FACTORY_IMPL(FilterName) \
-	FilterPtr FilterName::Factory::create(const FilterFactoryContext *ctx) const { \
-		FilterName* c = new FilterName(ctx->parameters); \
-		return FilterPtr(c); \
-	} \
-	FilterName::Factory FilterName::FACTORY;
+	static const Factory& getFactory() { \
+		static Factory FACTORY; \
+		return FACTORY; \
+	}
 
 /**
  * @brief Macro to create a singleton conditions for very easy conditions without a state.
@@ -62,6 +64,16 @@ public: \
  *
  * To modify the selection, the implementing classes should call @c getFilteredEntities to access
  * the storage to persist the filtering for the @c TreeNode.
+ *
+ * In combination with the @code Filter condition @code IFilter provides a quite flexible way to provide
+ * generic behaviour tree tasks. You can e.g. just create one @code ITask implementation that deals with
+ * e.g. attacking. The target is just picked from the selection. If you encapsulate this with a condition
+ * like (lua):
+ * @code
+ * someNode:addNode("AttackTarget", "attack"):setCondition("Filter(SelectGroupLeader{1})")
+ * @endcode
+ * You would only attack the group leader of group 1 if it was found. You can provide your own filters like:
+ * SelectAllInRange, SelectWithAttribute or whatever you like to filter selections and forward them to tasks.
  */
 class IFilter : public MemObject {
 protected:

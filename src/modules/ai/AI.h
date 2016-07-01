@@ -3,10 +3,11 @@
 #include <unordered_map>
 #include <memory>
 
+#include "group/GroupId.h"
 #include "aggro/AggroMgr.h"
+#include "ICharacter.h"
 #include "tree/TreeNode.h"
 #include "tree/loaders/ITreeLoader.h"
-#include "group/GroupMgr.h"
 #include "common/Thread.h"
 #include "common/Types.h"
 #include "common/NonCopyable.h"
@@ -28,9 +29,7 @@ typedef std::vector<CharacterId> FilteredEntities;
  * @brief This is the type the library works with. It interacts with it's real world entity by
  * the @c ICharacter interface.
  *
- * Each ai entity has a @c AggroMgr assigned that is updated with each tick. The character also
- * holds a reference to the @c IPathfinder that should be used to move the attached @c ICharacter
- * through the world.
+ * Each ai entity has a @c AggroMgr assigned that is updated with each tick.
  *
  * A behaviour can be replaced at runtime with @c AI::setBehaviour
  *
@@ -74,7 +73,7 @@ protected:
 	LimitStates _limitStates;
 
 	TreeNodePtr _behaviour;
-	AggroMgr _aggroList;
+	AggroMgr _aggroMgr;
 
 	ICharacterPtr _character;
 
@@ -90,8 +89,11 @@ public:
 	/**
 	 * @param behaviour The behaviour tree node that is applied to this ai entity
 	 */
-	AI(const TreeNodePtr& behaviour);
-	virtual ~AI();
+	explicit AI(const TreeNodePtr& behaviour) :
+			_behaviour(behaviour), _pause(false), _debuggingActive(false), _time(0L), _zone(nullptr), _reset(false) {
+	}
+	virtual ~AI() {
+	}
 
 	/**
 	 * @brief Update the behaviour and the aggro values if the entity is not on hold.
@@ -129,29 +131,21 @@ public:
 	bool isDebuggingActive() const;
 
 	/**
-	 * @return The average group position, or @c glm::vec3::INFINITE if no such group exists.
-	 * @note Keep in mind that this is updated with the zone and doesn't change until the @c Zone::update
-	 * was called.
-	 */
-	glm::vec3 getGroupPosition(GroupId id) const;
-	/**
-	 * @return The current position of the group leader or @c glm::vec3::INFINITE if no such
-	 * group exists.
-	 */
-	glm::vec3 getGroupLeaderPosition(GroupId id) const;
-
-	/**
 	 * @brief Get the current behaviour for this ai
 	 */
 	TreeNodePtr getBehaviour() const;
 	/**
-	 * @brief Set a new behaviour and return the old one
+	 * @brief Set a new behaviour
+	 * @return the old one if there was any
 	 */
 	TreeNodePtr setBehaviour(const TreeNodePtr& newBehaviour);
 	/**
 	 * @return The real world entity reference
 	 */
 	ICharacterPtr getCharacter() const;
+	/**
+	 * You might not set a character twice to an @c AI instance.
+	 */
 	void setCharacter(const ICharacterPtr& character);
 
 	template <typename CharacterType>
@@ -166,7 +160,7 @@ public:
 	 */
 	AggroMgr& getAggroMgr();
 	/**
-	 * @return the @c Zone's @c GroupMgr instance to modify
+	 * @return the @c AggroMgr for this @c AI instance. Each @c AI instance has its own @c AggroMgr instance.
 	 */
 	const AggroMgr& getAggroMgr() const;
 
@@ -206,15 +200,16 @@ inline ICharacterPtr AI::getCharacter() const {
 }
 
 inline void AI::setCharacter(const ICharacterPtr& character) {
+	ai_assert(!_character, "There is already a character set");
 	_character = character;
 }
 
 inline AggroMgr& AI::getAggroMgr() {
-	return _aggroList;
+	return _aggroMgr;
 }
 
 inline const AggroMgr& AI::getAggroMgr() const {
-	return _aggroList;
+	return _aggroMgr;
 }
 
 inline const FilteredEntities& AI::getFilteredEntities() const {
@@ -235,6 +230,36 @@ inline Zone* AI::getZone() const {
 
 inline bool AI::hasZone() const {
 	return _zone != nullptr;
+}
+
+inline CharacterId AI::getId() const {
+	if (!_character) {
+		return AI_NOTHING_SELECTED;
+	}
+	return _character->getId();
+}
+
+inline void AI::update(int64_t dt, bool debuggingActive) {
+	if (isPause()) {
+		return;
+	}
+
+	if (_character) {
+		_character->update(dt, debuggingActive);
+	}
+
+	if (_reset) {
+		// safe to do it like this, because update is not called from multiple threads
+		_reset = false;
+		_lastStatus.clear();
+		_lastExecMillis.clear();
+		_filteredEntities.clear();
+		_selectorStates.clear();
+	}
+
+	_debuggingActive = debuggingActive;
+	_time += dt;
+	_aggroMgr.update(dt);
 }
 
 typedef std::shared_ptr<AI> AIPtr;

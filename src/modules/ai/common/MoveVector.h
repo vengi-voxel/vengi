@@ -1,7 +1,6 @@
 #pragma once
 
-#include "core/GLM.h"
-#include <cmath>
+#include "Math.h"
 
 namespace ai {
 

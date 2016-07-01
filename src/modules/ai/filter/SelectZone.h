@@ -1,6 +1,7 @@
 #pragma once
 
 #include "filter/IFilter.h"
+#include "zone/Zone.h"
 
 namespace ai {
 
@@ -9,13 +10,20 @@ namespace ai {
  */
 class SelectZone: public IFilter {
 public:
-	FILTER_FACTORY
+	FILTER_FACTORY(SelectZone)
 
-	SelectZone(const std::string& parameters = "") :
+	explicit SelectZone(const std::string& parameters = "") :
 		IFilter("SelectZone", parameters) {
 	}
 
-	void filter (const AIPtr& entity) override;
+	void filter (const AIPtr& entity) override {
+		FilteredEntities& entities = getFilteredEntities(entity);
+		auto func = [&] (const AIPtr& ai) {
+			entities.push_back(ai->getId());
+			return true;
+		};
+		entity->getZone()->execute(func);
+	}
 };
 
 }

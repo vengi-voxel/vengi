@@ -11,7 +11,7 @@
 #include <cstdlib>
 
 Server::Server(network::NetworkPtr network, backend::ServerLoopPtr serverLoop, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		App(filesystem, eventBus, 15678), _quit(false), _network(network), _serverLoop(serverLoop), _timeProvider(timeProvider) {
+		core::App(filesystem, eventBus, 15678), _quit(false), _network(network), _serverLoop(serverLoop), _timeProvider(timeProvider) {
 	init("engine", "server");
 }
 

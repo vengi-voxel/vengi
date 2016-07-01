@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IProtocolHandler.h"
+#include "common/Thread.h"
 #include <string>
 #include <stdint.h>
 #include <list>
@@ -18,8 +19,8 @@ namespace ai {
 class IProtocolMessage;
 
 struct Client {
-	Client(SOCKET _socket) :
-			socket(_socket), finished(false) {
+	explicit Client(SOCKET _socket) :
+			socket(_socket), finished(false), in(), out() {
 	}
 	SOCKET socket;
 	bool finished;
@@ -52,6 +53,7 @@ protected:
 
 	typedef std::list<INetworkListener*> Listeners;
 	Listeners _listeners;
+
 	bool sendMessage(Client& client);
 public:
 	Network(uint16_t port = 10001, const std::string& hostname = "0.0.0.0");

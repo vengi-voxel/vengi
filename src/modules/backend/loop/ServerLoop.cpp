@@ -9,10 +9,13 @@
 
 namespace backend {
 
+constexpr int aiDebugServerPort = 11338;
+constexpr const char* aiDebugServerInterface = "127.0.0.1";
+
 ServerLoop::ServerLoop(network::NetworkPtr network, SpawnMgrPtr spawnMgr, voxel::WorldPtr world, EntityStoragePtr entityStorage, core::EventBusPtr eventBus, AIRegistryPtr registry,
 		attrib::ContainerProviderPtr containerProvider, PoiProviderPtr poiProvider) :
-		_network(network), _spawnMgr(spawnMgr), _world(world), _zone("Zone"), _aiServer(*registry, 11338, "127.0.0.1"), _entityStorage(entityStorage), _eventBus(eventBus), _registry(
-				registry), _containerProvider(containerProvider), _poiProvider(poiProvider) {
+		_network(network), _spawnMgr(spawnMgr), _world(world), _zone("Zone"), _aiServer(*registry, aiDebugServerPort, aiDebugServerInterface),
+		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider) {
 	_world->setClientData(false);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
@@ -24,13 +27,14 @@ bool ServerLoop::onInit() {
 		return false;
 	}
 	_registry->init(_spawnMgr);
-	if (!_spawnMgr->init())
+	if (!_spawnMgr->init()) {
 		return false;
+	}
 	const core::VarPtr& seed = core::Var::get(cfg::ServerSeed, "1");
 
 	_world->setSeed(seed->longVal());
 	if (_aiServer.start()) {
-		Log::info("Start the ai debug server on 127.0.0.1:11338");
+		Log::info("Start the ai debug server on %s:%i", aiDebugServerInterface, aiDebugServerPort);
 		_aiServer.addZone(&_zone);
 	} else {
 		Log::error("Could not start the ai debug server");
@@ -40,16 +44,19 @@ bool ServerLoop::onInit() {
 
 void ServerLoop::readInput() {
 	const char *input = _input.read();
-	if (input == nullptr)
+	if (input == nullptr) {
 		return;
-	if (core::Command::execute(input) != 0)
+	}
+	if (core::Command::execute(input) != 0) {
 		return;
+	}
 	core::Tokenizer t(input);
 	while (t.hasNext()) {
 		const std::string& var = t.next();
 		const core::VarPtr& varPtr = core::Var::get(var, "", core::CV_NOTCREATEEMPTY);
-		if (!varPtr)
+		if (!varPtr) {
 			break;
+		}
 		if (!t.hasNext()) {
 			if (varPtr) {
 				Log::info("%s = %s", varPtr->name().c_str(), varPtr->strVal().c_str());

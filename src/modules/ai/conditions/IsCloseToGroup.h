@@ -3,6 +3,7 @@
 #include "ICondition.h"
 #include "common/String.h"
 #include "group/GroupMgr.h"
+#include "zone/Zone.h"
 
 namespace ai {
 
@@ -16,8 +17,10 @@ class IsCloseToGroup: public ICondition {
 private:
 	GroupId _groupId;
 	float _distance;
+public:
+	CONDITION_FACTORY(IsCloseToGroup)
 
-	IsCloseToGroup(const std::string& parameters) :
+	explicit IsCloseToGroup(const std::string& parameters) :
 		ICondition("IsCloseToGroup", parameters) {
 		std::vector<std::string> tokens;
 		Str::splitString(_parameters, tokens, ",");
@@ -29,12 +32,26 @@ private:
 			_distance = std::stof(tokens[1]);
 		}
 	}
-public:
+
 	virtual ~IsCloseToGroup() {
 	}
-	CONDITION_FACTORY
 
-	bool evaluate(const AIPtr& entity) override;
+	bool evaluate(const AIPtr& entity) override {
+		if (_groupId == -1) {
+			return false;
+		}
+
+		if (_distance < 0.0f) {
+			return false;
+		}
+
+		const GroupMgr& mgr = entity->getZone()->getGroupMgr();
+		const glm::vec3& pos = mgr.getPosition(_groupId);
+		if (isInfinite(pos)) {
+			return false;
+		}
+		return glm::distance(pos, entity->getCharacter()->getPosition()) <= _distance;
+	}
 };
 
 }

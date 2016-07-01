@@ -1,3 +1,5 @@
+#pragma once
+
 #include <map>
 
 #include "common/NonCopyable.h"

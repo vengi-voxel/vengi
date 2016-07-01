@@ -1,9 +1,11 @@
 #pragma once
 
 #include "tree/TreeNode.h"
+#include <stdlib.h>
 
 namespace ai {
 
+#define NOTSTARTED -1
 #define TIMERNODE_CLASS(NodeName) \
 	NodeName(const std::string& name, const std::string& parameters, const ConditionPtr& condition) : \
 		ITimedNode(name, parameters, condition) { \
@@ -12,7 +14,7 @@ namespace ai {
 	virtual ~NodeName() { \
 	} \
 	\
-	NODE_FACTORY
+	NODE_FACTORY(NodeName)
 
 /**
  * @brief A timed node is a @c TreeNode that is executed until a given time (millis) is elapsed.
@@ -22,10 +24,40 @@ protected:
 	int64_t _timerMillis;
 	int64_t _millis;
 public:
-	ITimedNode(const std::string& name, const std::string& parameters, const ConditionPtr& condition);
-	virtual ~ITimedNode();
+	ITimedNode(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
+			TreeNode(name, parameters, condition), _timerMillis(NOTSTARTED) {
+		if (!parameters.empty()) {
+			_millis = ::atol(parameters.c_str());
+		} else {
+			_millis = 1000L;
+		}
+	}
+	virtual ~ITimedNode() {}
 
-	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override;
+	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
+		const TreeNodeStatus result = TreeNode::execute(entity, deltaMillis);
+		if (result == CANNOTEXECUTE)
+			return CANNOTEXECUTE;
+
+		if (_timerMillis == NOTSTARTED) {
+			_timerMillis = _millis;
+			const TreeNodeStatus status = executeStart(entity, deltaMillis);
+			if (status == FINISHED)
+				_timerMillis = NOTSTARTED;
+			return state(entity, status);
+		}
+
+		if (_timerMillis - deltaMillis > 0) {
+			_timerMillis -= deltaMillis;
+			const TreeNodeStatus status = executeRunning(entity, deltaMillis);
+			if (status == FINISHED)
+				_timerMillis = NOTSTARTED;
+			return state(entity, status);
+		}
+
+		_timerMillis = NOTSTARTED;
+		return state(entity, executeExpired(entity, deltaMillis));
+	}
 
 	/**
 	 * @brief Called whenever the timer is started or restarted
@@ -55,5 +87,7 @@ public:
 		return FINISHED;
 	}
 };
+
+#undef NOTSTARTED
 
 }

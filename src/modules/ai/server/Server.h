@@ -5,19 +5,31 @@
 #include <unordered_set>
 #include "Network.h"
 #include "zone/Zone.h"
-#include "SelectHandler.h"
-#include "PauseHandler.h"
-#include "ResetHandler.h"
-#include "StepHandler.h"
-#include "ChangeHandler.h"
-#include "AddNodeHandler.h"
-#include "DeleteNodeHandler.h"
-#include "UpdateNodeHandler.h"
+#include "AIRegistry.h"
+#include "AIStateMessage.h"
+#include "AINamesMessage.h"
+#include "AIStubTypes.h"
+#include "AICharacterDetailsMessage.h"
+#include "AICharacterStaticMessage.h"
+#include "ProtocolHandlerRegistry.h"
+#include "conditions/ConditionParser.h"
+#include "tree/TreeNodeParser.h"
+#include "tree/TreeNodeImpl.h"
 
 namespace ai {
 
 class AIStateNode;
 class AIStateNodeStatic;
+
+class SelectHandler;
+class PauseHandler;
+class ResetHandler;
+class StepHandler;
+class ChangeHandler;
+class AddNodeHandler;
+class DeleteNodeHandler;
+class UpdateNodeHandler;
+class NopHandler;
 
 /**
  * @brief The server can serialize the state of the AI and broadcast it to all connected clients.
@@ -30,7 +42,7 @@ class AIStateNodeStatic;
  * clients. If someone selected a particular @c AI instance by sending @c AISelectMessage to the server, it
  * will also broadcast an @c AICharacterDetailsMessage to all connected clients.
  *
- * You can only debug one Zone at the same time.
+ * You can only debug one Zone at the same time. The debugging session is shared between all connected clients.
  */
 class Server: public INetworkListener {
 protected:
@@ -42,31 +54,64 @@ protected:
 	Network _network;
 	CharacterId _selectedCharacterId;
 	int64_t _time;
-	SelectHandler _selectHandler;
-	PauseHandler _pauseHandler;
-	ResetHandler _resetHandler;
-	StepHandler _stepHandler;
-	ChangeHandler _changeHandler;
-	AddNodeHandler _addNodeHandler;
-	DeleteNodeHandler _deleteNodeHandler;
-	UpdateNodeHandler _updateNodeHandler;
+	SelectHandler *_selectHandler;
+	PauseHandler *_pauseHandler;
+	ResetHandler *_resetHandler;
+	StepHandler *_stepHandler;
+	ChangeHandler *_changeHandler;
+	AddNodeHandler *_addNodeHandler;
+	DeleteNodeHandler *_deleteNodeHandler;
+	UpdateNodeHandler *_updateNodeHandler;
 	NopHandler _nopHandler;
 	std::atomic_bool _pause;
 	// the current active debugging zone
 	std::atomic<Zone*> _zone;
 	ReadWriteLock _lock = {"server"};
 	std::vector<std::string> _names;
+	uint32_t _broadcastMask = 0u;
+
+	enum EventType {
+		EV_SELECTION,
+		EV_STEP,
+		EV_UPDATESTATICCHRDETAILS,
+		EV_NEWCONNECTION,
+		EV_ZONEADD,
+		EV_ZONEREMOVE,
+		EV_PAUSE,
+		EV_RESET,
+		EV_SETDEBUG,
+
+		EV_MAX
+	};
+
+	struct Event {
+		union {
+			CharacterId characterId;
+			int64_t stepMillis;
+			Zone* zone;
+			Client* newClient;
+			bool pauseState;
+		} data;
+		std::string strData = "";
+		EventType type;
+	};
+	std::vector<Event> _events;
 
 	void resetSelection();
 
 	void addChildren(const TreeNodePtr& node, std::vector<AIStateNodeStatic>& out) const;
 	void addChildren(const TreeNodePtr& node, AIStateNode& parent, const AIPtr& ai) const;
+
+	// only call these from the Server::update method
 	void broadcastState(const Zone* zone);
 	void broadcastCharacterDetails(const Zone* zone);
 	void broadcastStaticCharacterDetails(const Zone* zone);
-	void broadcastZoneNames();
+
 	void onConnect(Client* client) override;
 	void onDisconnect(Client* client) override;
+
+	void handleEvents(Zone* zone, bool pauseState);
+	void enqueueEvent(const Event& event);
 public:
 	Server(AIRegistry& aiRegistry, short port = 10001, const std::string& hostname = "0.0.0.0");
 	virtual ~Server();
@@ -75,21 +120,6 @@ public:
 	 * @brief Start to listen on the specified port
 	 */
 	bool start();
-
-	/**
-	 * @brief Select a particular character (resp. @c AI instance) and send detail
-	 * information to all the connected clients for this entity.
-	 */
-	void select(const ClientId& clientId, const CharacterId& id);
-	/**
-	 * @brief Will pause/unpause the execution of the behaviour trees for all watched @c AI instances.
-	 */
-	void pause(const ClientId& clientId, bool pause);
-
-	/**
-	 * @brief Performs one step of the ai in pause mode
-	 */
-	void step(int64_t stepMillis = 1L);
 
 	/**
 	 * @brief Update the specified node with the given values for the specified character and all the
@@ -159,6 +189,23 @@ public:
 	 * @brief Resets the ai states
 	 */
 	void reset();
+
+	/**
+	 * @brief Select a particular character (resp. @c AI instance) and send detail
+	 * information to all the connected clients for this entity.
+	 */
+	void select(const ClientId& clientId, const CharacterId& id);
+
+	/**
+	 * @brief Will pause/unpause the execution of the behaviour trees for all watched @c AI instances.
+	 */
+	void pause(const ClientId& clientId, bool pause);
+
+	/**
+	 * @brief Performs one step of the ai in pause mode
+	 */
+	void step(int64_t stepMillis = 1L);
+
 	/**
 	 * @brief call this to update the server - should get called somewhere from your game tick
 	 */

@@ -20,7 +20,7 @@ public:
 			IProtocolMessage(PROTO_DELETENODE), _nodeId(nodeId), _characterId(characterId) {
 	}
 
-	AIDeleteNodeMessage(streamContainer& in) :
+	explicit AIDeleteNodeMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_DELETENODE) {
 		_nodeId = readInt(in);
 		_characterId = readInt(in);

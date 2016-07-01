@@ -15,12 +15,12 @@ private:
 	ai::CharacterId _chrId;
 
 public:
-	AISelectMessage(ai::CharacterId id) :
+	explicit AISelectMessage(ai::CharacterId id) :
 			IProtocolMessage(PROTO_SELECT) {
 		_chrId = id;
 	}
 
-	AISelectMessage(streamContainer& in) :
+	explicit AISelectMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_SELECT) {
 		_chrId = readInt(in);
 	}

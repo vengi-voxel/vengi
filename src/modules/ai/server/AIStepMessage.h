@@ -14,12 +14,12 @@ private:
 	int64_t _millis;
 
 public:
-	AIStepMessage(int64_t millis) :
+	explicit AIStepMessage(int64_t millis) :
 			IProtocolMessage(PROTO_STEP) {
 		_millis = millis;
 	}
 
-	AIStepMessage(streamContainer& in) :
+	explicit AIStepMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_STEP) {
 		_millis = readLong(in);
 	}

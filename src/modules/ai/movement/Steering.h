@@ -16,13 +16,18 @@
 namespace ai {
 namespace movement {
 
-#define STEERING_FACTORY \
+#define STEERING_FACTORY(SteeringName) \
 public: \
 	class Factory: public ISteeringFactory { \
 	public: \
-		SteeringPtr create (const SteeringFactoryContext *ctx) const; \
+		SteeringPtr create (const SteeringFactoryContext *ctx) const override { \
+			return std::make_shared<SteeringName>(ctx->parameters); \
+		} \
 	}; \
-	static Factory FACTORY;
+	static const Factory& getFactory() { \
+		static Factory FACTORY; \
+		return FACTORY; \
+	}
 
 #define STEERING_FACTORY_SINGLETON \
 public: \
@@ -31,19 +36,15 @@ public: \
 			return get(); \
 		} \
 	}; \
-	static Factory FACTORY;
-
-#define STEERING_FACTORY_IMPL(SteeringName) \
-	SteeringPtr SteeringName::Factory::create(const SteeringFactoryContext *ctx) const { \
-		SteeringName* c = new SteeringName(ctx->parameters); \
-		return SteeringPtr(c); \
-	} \
-	SteeringName::Factory SteeringName::FACTORY;
+	static const Factory& getFactory() { \
+		static Factory FACTORY; \
+		return FACTORY; \
+	}
 
 /**
  * @brief Steering interface
  */
-class ISteering : public MemObject, public IPrintable {
+class ISteering : public MemObject {
 public:
 	virtual ~ISteering() {}
 	/**
@@ -53,8 +54,6 @@ public:
 	 * because there was an error.
 	 */
 	virtual MoveVector execute (const AIPtr& ai, float speed) const = 0;
-
-	virtual std::ostream& print(std::ostream& output, int level) const = 0;
 };
 
 /**

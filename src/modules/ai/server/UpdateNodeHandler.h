@@ -2,6 +2,7 @@
 
 #include "IProtocolHandler.h"
 #include "AIUpdateNodeMessage.h"
+#include "Server.h"
 
 namespace ai {
 
@@ -11,10 +12,15 @@ class UpdateNodeHandler: public ai::IProtocolHandler {
 private:
 	Server& _server;
 public:
-	UpdateNodeHandler(Server& server) : _server(server) {
+	explicit UpdateNodeHandler(Server& server) : _server(server) {
 	}
 
-	void execute(const ClientId& clientId, const IProtocolMessage& message) override;
+	void execute(const ClientId& /*clientId*/, const IProtocolMessage& message) override {
+		const AIUpdateNodeMessage& msg = static_cast<const AIUpdateNodeMessage&>(message);
+		if (!_server.updateNode(msg.getCharacterId(), msg.getNodeId(), msg.getName(), msg.getType(), msg.getCondition())) {
+			ai_log_error("Failed to update the node %u", msg.getNodeId());
+		}
+	}
 };
 
 }

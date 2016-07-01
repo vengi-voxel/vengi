@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AI.h"
+#include "ICharacter.h"
 #include "group/GroupMgr.h"
 #include "common/Thread.h"
 #include "common/ThreadPool.h"
@@ -8,8 +8,12 @@
 #include "common/ExecutionTime.h"
 #include <unordered_map>
 #include <list>
+#include <memory>
 
 namespace ai {
+
+class AI;
+typedef std::shared_ptr<AI> AIPtr;
 
 /**
  * @brief A zone represents one logical zone that groups AI instances.
@@ -127,8 +131,9 @@ public:
 	inline AIPtr getAI(CharacterId id) const {
 		ScopedReadLock scopedLock(_lock);
 		auto i = _ais.find(id);
-		if (i == _ais.end())
+		if (i == _ais.end()) {
 			return AIPtr();
+		}
 		const AIPtr& ai = i->second;
 		return ai;
 	}
@@ -147,8 +152,9 @@ public:
 	template<typename Func>
 	inline bool executeAsync(CharacterId id, const Func& func) const {
 		const AIPtr& ai = getAI(id);
-		if (!ai)
+		if (!ai) {
 			return false;
+		}
 		executeAsync(ai, func);
 		return true;
 	}
@@ -211,15 +217,16 @@ public:
 	template<typename Func>
 	void executeParallel(Func& func) {
 		std::vector<std::future<void> > results;
-		{
-			ScopedReadLock scopedLock(_lock);
-			for (auto i = _ais.begin(); i != _ais.end(); ++i) {
-				const AIPtr& ai = i->second;
-				results.emplace_back(executeAsync(ai, func));
-			}
+		_lock.lockRead();
+		AIMap copy(_ais);
+		_lock.unlockRead();
+		for (auto i = copy.begin(); i != _ais.end(); ++i) {
+			const AIPtr& ai = i->second;
+			results.emplace_back(executeAsync(ai, func));
 		}
-		for (auto && result: results)
+		for (auto & result: results) {
 			result.wait();
+		}
 	}
 
 	/**
@@ -232,15 +239,16 @@ public:
 	template<typename Func>
 	void executeParallel(const Func& func) const {
 		std::vector<std::future<void> > results;
-		{
-			ScopedReadLock scopedLock(_lock);
-			for (auto i = _ais.begin(); i != _ais.end(); ++i) {
-				const AIPtr& ai = i->second;
-				results.emplace_back(executeAsync(ai, func));
-			}
+		_lock.lockRead();
+		AIMap copy(_ais);
+		_lock.unlockRead();
+		for (auto i = copy.begin(); i != copy.end(); ++i) {
+			const AIPtr& ai = i->second;
+			results.emplace_back(executeAsync(ai, func));
 		}
-		for (auto && result: results)
+		for (auto & result: results) {
 			result.wait();
+		}
 	}
 
 	/**
@@ -251,8 +259,10 @@ public:
 	 */
 	template<typename Func>
 	void execute(const Func& func) const {
-		ScopedReadLock scopedLock(_lock);
-		for (auto i = _ais.begin(); i != _ais.end(); ++i) {
+		_lock.lockRead();
+		AIMap copy(_ais);
+		_lock.unlockRead();
+		for (auto i = copy.begin(); i != copy.end(); ++i) {
 			const AIPtr& ai = i->second;
 			func(ai);
 		}
@@ -266,8 +276,10 @@ public:
 	 */
 	template<typename Func>
 	void execute(Func& func) {
-		ScopedReadLock scopedLock(_lock);
-		for (auto i = _ais.begin(); i != _ais.end(); ++i) {
+		_lock.lockRead();
+		AIMap copy(_ais);
+		_lock.unlockRead();
+		for (auto i = copy.begin(); i != copy.end(); ++i) {
 			const AIPtr& ai = i->second;
 			func(ai);
 		}
@@ -297,6 +309,87 @@ inline GroupMgr& Zone::getGroupMgr() {
 
 inline const GroupMgr& Zone::getGroupMgr() const {
 	return _groupManager;
+}
+
+inline bool Zone::doAddAI(const AIPtr& ai) {
+	if (ai == nullptr)
+		return false;
+	const CharacterId& id = ai->getCharacter()->getId();
+	if (_ais.find(id) != _ais.end())
+		return false;
+	_ais.insert(std::make_pair(id, ai));
+	ai->setZone(this);
+	return true;
+}
+
+inline bool Zone::doRemoveAI(const AIPtr& ai) {
+	if (!ai)
+		return false;
+	const CharacterId& id = ai->getCharacter()->getId();
+	AIMapIter i = _ais.find(id);
+	if (i == _ais.end())
+		return false;
+	i->second->setZone(nullptr);
+	_groupManager.removeFromAllGroups(i->second);
+	_ais.erase(i);
+	return true;
+}
+
+inline bool Zone::doDestroyAI(const CharacterId& id) {
+	AIMapIter i = _ais.find(id);
+	if (i == _ais.end())
+		return false;
+	_ais.erase(i);
+	return true;
+}
+
+inline bool Zone::addAI(const AIPtr& ai) {
+	if (!ai)
+		return false;
+	ScopedWriteLock scopedLock(_scheduleLock);
+	_scheduledAdd.push_back(ai);
+	return true;
+}
+
+inline bool Zone::destroyAI(const CharacterId& id) {
+	ScopedWriteLock scopedLock(_scheduleLock);
+	_scheduledDestroy.push_back(id);
+	return true;
+}
+
+inline bool Zone::removeAI(const AIPtr& ai) {
+	if (!ai)
+		return false;
+	ScopedWriteLock scopedLock(_scheduleLock);
+	_scheduledRemove.push_back(ai);
+	return true;
+}
+
+inline void Zone::update(int64_t dt) {
+	{
+		ScopedWriteLock scopedLock(_scheduleLock);
+		for (const AIPtr& ai : _scheduledAdd) {
+			doAddAI(ai);
+		}
+		_scheduledAdd.clear();
+		for (const AIPtr& ai : _scheduledRemove) {
+			doRemoveAI(ai);
+		}
+		_scheduledRemove.clear();
+		for (auto id : _scheduledDestroy) {
+			doDestroyAI(id);
+		}
+		_scheduledDestroy.clear();
+	}
+
+	auto func = [&] (const AIPtr& ai) {
+		if (ai->isPause())
+			return;
+		ai->update(dt, _debug);
+		ai->getBehaviour()->execute(ai, dt);
+	};
+	executeParallel(func);
+	_groupManager.update(dt);
 }
 
 }

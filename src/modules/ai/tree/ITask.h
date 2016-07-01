@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tree/TreeNode.h"
+#include "common/Types.h"
 
 namespace ai {
 
@@ -19,10 +20,28 @@ namespace ai {
  */
 class ITask: public TreeNode {
 protected:
-	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override;
+	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
+		if (TreeNode::execute(entity, deltaMillis) == CANNOTEXECUTE) {
+			return CANNOTEXECUTE;
+		}
+
+#if AI_EXCEPTIONS
+		try {
+#endif
+			return state(entity, doAction(entity, deltaMillis));
+#if AI_EXCEPTIONS
+		} catch (...) {
+			return state(entity, EXCEPTION);
+		}
+#endif
+	}
 public:
-	ITask(const std::string& name, const std::string& parameters, const ConditionPtr& condition);
-	virtual ~ITask();
+	ITask(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
+			TreeNode(name, parameters, condition) {
+	}
+
+	virtual ~ITask() {
+	}
 
 	/**
 	 * @note The returned @c TreeNodeStatus is automatically recorded. This method is only
@@ -30,7 +49,9 @@ public:
 	 */
 	virtual TreeNodeStatus doAction(const AIPtr& entity, int64_t deltaMillis) = 0;
 
-	bool addChild(const TreeNodePtr& child) override;
+	bool addChild(const TreeNodePtr& /*child*/) override {
+		return false;
+	}
 };
 
 }

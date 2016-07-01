@@ -1,6 +1,7 @@
 #pragma once
 
 #include "filter/IFilter.h"
+#include "zone/Zone.h"
 
 namespace ai {
 
@@ -11,17 +12,26 @@ class SelectGroupLeader: public IFilter {
 protected:
 	GroupId _groupId;
 public:
-	FILTER_FACTORY
+	FILTER_FACTORY(SelectGroupLeader)
 
-	SelectGroupLeader(const std::string& parameters = "") :
+	explicit SelectGroupLeader(const std::string& parameters = "") :
 		IFilter("SelectGroupLeader", parameters) {
-		if (_parameters.empty())
+		if (_parameters.empty()) {
 			_groupId = -1;
-		else
+		} else {
 			_groupId = std::stoi(_parameters);
+		}
 	}
 
-	void filter (const AIPtr& entity) override;
+	void filter (const AIPtr& entity) override {
+		FilteredEntities& entities = getFilteredEntities(entity);
+		const Zone* zone = entity->getZone();
+		const GroupMgr& groupMgr = zone->getGroupMgr();
+		const AIPtr& groupLeader = groupMgr.getLeader(_groupId);
+		if (groupLeader) {
+			entities.push_back(groupLeader->getId());
+		}
+	}
 };
 
 }

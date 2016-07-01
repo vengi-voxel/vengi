@@ -12,6 +12,9 @@
 
 namespace ai {
 
+/**
+ * Schedules tasks that executed with a fixed delay between their executions.
+ */
 class ThreadScheduler {
 private:
 	struct ScheduledTask {
@@ -30,8 +33,10 @@ private:
 
 		void operator()() const {
 			_callback();
-			if (_delay.count() <= 0)
+			if (_delay.count() <= 0) {
 				return;
+			}
+			// reschedule with the same delay from that moment the callback finished
 			auto epoch = std::chrono::system_clock::now().time_since_epoch();
 			auto now = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
 			_scheduler->_tasks.emplace(_scheduler, _callback, now + _delay, _delay);
@@ -49,7 +54,7 @@ private:
 	std::thread _thread;
 
 public:
-	ThreadScheduler() : _stop(false) {
+	ThreadScheduler() : _stop(false), _notEmpty(false) {
 		_thread = std::thread([this] {
 			for (;;) {
 				if (this->_stop) {

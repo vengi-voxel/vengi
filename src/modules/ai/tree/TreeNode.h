@@ -3,8 +3,8 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <algorithm>
 #include "common/MemoryAllocator.h"
-#include "common/IPrintable.h"
 #include "common/Types.h"
 #include "conditions/ICondition.h"
 #include "conditions/True.h"
@@ -42,18 +42,17 @@ enum TreeNodeStatus {
 	MAX_TREENODESTATUS
 };
 
-#define NODE_FACTORY \
+#define NODE_FACTORY(NodeName) \
 	class Factory: public ITreeNodeFactory { \
 	public: \
-		TreeNodePtr create (const TreeNodeFactoryContext *ctx) const override; \
+		TreeNodePtr create (const TreeNodeFactoryContext *ctx) const override { \
+			return std::make_shared<NodeName>(ctx->name, ctx->parameters, ctx->condition); \
+		} \
 	}; \
-	static Factory FACTORY;
-
-#define NODE_FACTORY_IMPL(NodeName) \
-	TreeNodePtr NodeName::Factory::create(const TreeNodeFactoryContext *ctx) const { \
-		return TreeNodePtr(new NodeName(ctx->name, ctx->parameters, ctx->condition)); \
-	} \
-	NodeName::Factory NodeName::FACTORY;
+	static const Factory& getFactory() { \
+		static Factory FACTORY; \
+		return FACTORY; \
+	}
 
 #define NODE_CLASS(NodeName) \
 	NodeName(const std::string& name, const std::string& parameters, const ConditionPtr& condition) : \
@@ -63,7 +62,7 @@ enum TreeNodeStatus {
 	virtual ~NodeName() { \
 	} \
 	\
-	NODE_FACTORY
+	NODE_FACTORY(NodeName)
 
 /**
  * @brief The base class for all behaviour tree actions.
@@ -74,9 +73,13 @@ enum TreeNodeStatus {
  * be reused for multiple @c AI instances. Always use the @c AI or @c ICharacter
  * to store your state!
  */
-class TreeNode : public IPrintable, public MemObject {
+class TreeNode : public MemObject {
 protected:
-	static int _nextId;
+	static int getNextId() {
+		static int _nextId;
+		const int nextId = _nextId++;
+		return nextId;
+	}
 	int _id;
 	TreeNodes _children;
 	std::string _name;
@@ -100,8 +103,11 @@ public:
 	 * the responsibility of the node to parse the values in its constructor
 	 * @param condition The connected ICondition for this node
 	 */
-	TreeNode(const std::string& name, const std::string& parameters, const ConditionPtr& condition);
-	virtual ~TreeNode();
+	TreeNode(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
+			_id(getNextId()), _name(name), _parameters(parameters), _condition(condition) {
+	}
+
+	virtual ~TreeNode() {}
 	/**
 	 * @brief Return the unique id for this node.
 	 * @return unique id
@@ -170,51 +176,6 @@ public:
 	 * @return An empty @c TreeNodePtr if not found, or the parent is the root node of the behaviour tree
 	 */
 	TreeNodePtr getParent(const TreeNodePtr& self, int id) const;
-
-	virtual std::ostream& print(std::ostream& stream, int level) const override;
 };
-
-inline int TreeNode::getId() const {
-	return _id;
-}
-
-inline void TreeNode::setName(const std::string& name) {
-	if (name.empty())
-		return;
-	_name = name;
-}
-
-inline const std::string& TreeNode::getType() const {
-	return _type;
-}
-
-inline const std::string& TreeNode::getName() const {
-	return _name;
-}
-
-inline const ConditionPtr& TreeNode::getCondition() const {
-	return _condition;
-}
-
-inline void TreeNode::setCondition(const ConditionPtr& condition) {
-	_condition = condition;
-}
-
-inline const std::string& TreeNode::getParameters() const {
-	return _parameters;
-}
-
-inline const TreeNodes& TreeNode::getChildren() const {
-	return _children;
-}
-
-inline TreeNodes& TreeNode::getChildren() {
-	return _children;
-}
-
-inline bool TreeNode::addChild(const TreeNodePtr& child) {
-	_children.push_back(child);
-	return true;
-}
 
 }

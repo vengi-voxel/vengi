@@ -4,47 +4,50 @@
 #include <string>
 #include <unordered_map>
 #include <cassert>
-#include <iostream>
 #include <cstdio>
 
 #ifndef ai_log
-#define ai_log(format, ...) ai::Log::info(format, ##__VA_ARGS__)
+#define ai_log(...) ai::Log::info(__VA_ARGS__)
 #endif
 
 #ifndef ai_log_error
-#define ai_log_error(format, ...) ai::Log::error(format, ##__VA_ARGS__)
+#define ai_log_error(...) ai::Log::error(__VA_ARGS__)
 #endif
 
 #ifndef ai_log_warn
-#define ai_log_warn(format, ...) ai::Log::warn(format, ##__VA_ARGS__)
+#define ai_log_warn(...) ai::Log::warn(__VA_ARGS__)
 #endif
 
 #ifndef ai_log_debug
-#define ai_log_debug(format, ...) ai::Log::debug(format, ##__VA_ARGS__)
+#define ai_log_debug(...) ai::Log::debug(__VA_ARGS__)
 #endif
 
 #ifndef ai_log_trace
-#define ai_log_trace(format, ...) ai::Log::trace(format, ##__VA_ARGS__)
+#define ai_log_trace(...) ai::Log::trace(__VA_ARGS__)
 #endif
 
 #if !(__GNUC__ || __GNUC__)
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif
 
+#ifndef ai_assert_always
+	#if (__clang_analyzer__)
+		#define ai_assert_always(condition, ...) assert(condition)
+	#else
+		#define ai_assert_always(condition, ...) \
+			if ( !(condition) ) { \
+				ai::Log::error(__VA_ARGS__); \
+				ai::Log::error("%s:%i", __FILE__, __LINE__); \
+				assert(condition); \
+			}
+	#endif
+#endif
+
 #ifndef ai_assert
 	#ifdef DEBUG
-		#if (__clang_analyzer__)
-			#define ai_assert(condition, format, ...) assert(condition)
-		#else
-			#define ai_assert(condition, format, ...) \
-				if ( !(condition) ) { \
-					ai::Log::error(format, ##__VA_ARGS__); \
-					ai::Log::error("%s:%i", __FILE__, __LINE__); \
-					assert(condition); \
-				}
-		#endif
+		#define ai_assert ai_assert_always
 	#else
-		#define ai_assert(condition, format, ...)
+		#define ai_assert(condition, ...)
 	#endif
 #endif
 
@@ -73,6 +76,31 @@ inline T ai_assert_cast(const S object) {
 #	endif
 #else
 #	define SIMPLEAI_LIB
+#endif
+
+#define DIAG_STR(s) #s
+#define DIAG_JOINSTR(x,y) DIAG_STR(x ## y)
+#ifdef _MSC_VER
+#define DIAG_DO_PRAGMA(x) __pragma (#x)
+#define DIAG_PRAGMA(compiler,x) DIAG_DO_PRAGMA(warning(x))
+#else
+#define DIAG_DO_PRAGMA(x) _Pragma (#x)
+#define DIAG_PRAGMA(compiler,x) DIAG_DO_PRAGMA(compiler diagnostic x)
+#endif
+#if defined(__clang__)
+# define DISABLE_WARNING(gcc_unused,clang_option,msvc_unused) DIAG_PRAGMA(clang,push) DIAG_PRAGMA(clang,ignored DIAG_JOINSTR(-W,clang_option))
+# define ENABLE_WARNING(gcc_unused,clang_option,msvc_unused) DIAG_PRAGMA(clang,pop)
+#elif defined(_MSC_VER)
+# define DISABLE_WARNING(gcc_unused,clang_unused,msvc_errorcode) DIAG_PRAGMA(msvc,push) DIAG_DO_PRAGMA(warning(disable:##msvc_errorcode))
+# define ENABLE_WARNING(gcc_unused,clang_unused,msvc_errorcode) DIAG_PRAGMA(msvc,pop)
+#elif defined(__GNUC__)
+#if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
+# define DISABLE_WARNING(gcc_option,clang_unused,msvc_unused) DIAG_PRAGMA(GCC,push) DIAG_PRAGMA(GCC,ignored DIAG_JOINSTR(-W,gcc_option))
+# define ENABLE_WARNING(gcc_option,clang_unused,msvc_unused) DIAG_PRAGMA(GCC,pop)
+#else
+# define DISABLE_WARNING(gcc_option,clang_unused,msvc_unused) DIAG_PRAGMA(GCC,ignored DIAG_JOINSTR(-W,gcc_option))
+# define ENABLE_WARNING(gcc_option,clang_option,msvc_unused) DIAG_PRAGMA(GCC,warning DIAG_JOINSTR(-W,gcc_option))
+#endif
 #endif
 
 namespace ai {

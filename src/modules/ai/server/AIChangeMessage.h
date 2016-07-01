@@ -15,11 +15,11 @@ private:
 	const std::string _name;
 
 public:
-	AIChangeMessage(const std::string& name) :
+	explicit AIChangeMessage(const std::string& name) :
 			IProtocolMessage(PROTO_CHANGE), _name(name) {
 	}
 
-	AIChangeMessage(streamContainer& in) :
+	explicit AIChangeMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_CHANGE), _name(readString(in)) {
 	}
 

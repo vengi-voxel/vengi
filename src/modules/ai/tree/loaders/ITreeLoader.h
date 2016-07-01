@@ -25,7 +25,7 @@ protected:
 private:
 	std::string _error;		/**< make sure to set this member if your own implementation ran into an error. @sa ITreeLoader::getError */
 public:
-	ITreeLoader(const IAIFactory& aiFactory) :
+	explicit ITreeLoader(const IAIFactory& aiFactory) :
 			_aiFactory(aiFactory) {
 	}
 

@@ -11,13 +11,9 @@ class False: public ICondition {
 public:
 	CONDITION_CLASS_SINGLETON(False)
 
-	bool evaluate(const AIPtr& entity) override;
-
-	std::ostream& print(std::ostream& stream, int level) const override;
+	bool evaluate(const AIPtr& /*entity*/) override {
+		return false;
+	}
 };
-
-inline bool False::evaluate(const AIPtr& /*entity*/) {
-	return false;
-}
 
 }

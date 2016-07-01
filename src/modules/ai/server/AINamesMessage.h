@@ -15,11 +15,11 @@ private:
 	const std::vector<std::string>* _namesPtr;
 
 public:
-	AINamesMessage(const std::vector<std::string>& names) :
+	explicit AINamesMessage(const std::vector<std::string>& names) :
 			IProtocolMessage(PROTO_NAMES), _namesPtr(&names) {
 	}
 
-	AINamesMessage(streamContainer& in) :
+	explicit AINamesMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_NAMES), _namesPtr(nullptr) {
 		const int size = readInt(in);
 		for (int i = 0; i < size; ++i) {

@@ -19,6 +19,9 @@ namespace movement {
 class ISteering;
 }
 typedef std::shared_ptr<movement::ISteering> SteeringPtr;
+namespace movement {
+typedef std::vector<SteeringPtr> Steerings;
+}
 
 class ICondition;
 typedef std::shared_ptr<ICondition> ConditionPtr;

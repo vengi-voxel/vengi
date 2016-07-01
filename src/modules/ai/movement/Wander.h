@@ -16,9 +16,9 @@ class Wander: public ISteering {
 protected:
 	const float _rotation;
 public:
-	STEERING_FACTORY
+	STEERING_FACTORY(Wander)
 
-	Wander(const std::string& parameter) :
+	explicit Wander(const std::string& parameter) :
 			ISteering(), _rotation(parameter.empty() ? ai::toRadians(10.0f) : Str::strToFloat(parameter)) {
 	}
 
@@ -26,14 +26,6 @@ public:
 		const glm::vec3& v = fromRadians(ai->getCharacter()->getOrientation()) * speed;
 		const MoveVector d(v, ai::randomBinomial() * _rotation);
 		return d;
-	}
-
-	std::ostream& print(std::ostream& stream, int level) const override {
-		for (int i = 0; i < level; ++i) {
-			stream << '\t';
-		}
-		stream << "Wander(" << _rotation << ")";
-		return stream;
 	}
 };
 

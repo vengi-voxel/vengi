@@ -12,7 +12,7 @@ namespace ai {
 	virtual ~NodeName() { \
 	} \
 	\
-	NODE_FACTORY
+	NODE_FACTORY(NodeName)
 
 /**
  * @brief Base class for all type of @c TreeNode selectors.
@@ -29,8 +29,9 @@ public:
 	virtual void getRunningChildren(const AIPtr& entity, std::vector<bool>& active) const override {
 		int n = 0;
 		int selectorState = getSelectorState(entity);
-		for (TreeNodes::const_iterator i = _children.begin(); i != _children.end(); ++i, ++n)
+		for (TreeNodes::const_iterator i = _children.begin(); i != _children.end(); ++i, ++n) {
 			active.push_back(selectorState == n);
+		}
 	}
 };
 

@@ -140,7 +140,7 @@ public:
 	static std::string readString(streamContainer& in);
 
 public:
-	IProtocolMessage(const ProtocolId& id) :
+	explicit IProtocolMessage(const ProtocolId& id) :
 			_id(id) {
 	}
 
@@ -214,13 +214,13 @@ inline void IProtocolMessage::addString(streamContainer& out, const std::string&
 }
 
 inline void IProtocolMessage::addShort(streamContainer& out, int16_t word) {
-	const int16_t swappedWord = AI_SwapBE16(word);
+	const int16_t swappedWord = AI_SwapLE16(word);
 	out.push_back(uint8_t(swappedWord));
 	out.push_back(uint8_t(swappedWord >> CHAR_BIT));
 }
 
 inline void IProtocolMessage::addInt(streamContainer& out, int32_t dword) {
-	int32_t swappedDWord = AI_SwapBE32(dword);
+	int32_t swappedDWord = AI_SwapLE32(dword);
 	out.push_back(uint8_t(swappedDWord));
 	out.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
 	out.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
@@ -228,7 +228,7 @@ inline void IProtocolMessage::addInt(streamContainer& out, int32_t dword) {
 }
 
 inline void IProtocolMessage::addLong(streamContainer& out, int64_t dword) {
-	int64_t swappedDWord = AI_SwapBE64(dword);
+	int64_t swappedDWord = AI_SwapLE64(dword);
 	out.push_back(uint8_t(swappedDWord));
 	out.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
 	out.push_back(uint8_t(swappedDWord >>= CHAR_BIT));
@@ -247,7 +247,7 @@ inline int16_t IProtocolMessage::readShort(streamContainer& in) {
 		in.pop_front();
 	}
 	const int16_t *word = (const int16_t*) (void*) &buf;
-	const int16_t val = AI_SwapBE16(*word);
+	const int16_t val = AI_SwapLE16(*word);
 	return val;
 }
 
@@ -259,7 +259,7 @@ inline int32_t IProtocolMessage::readInt(streamContainer& in) {
 		in.pop_front();
 	}
 	const int32_t *word = (const int32_t*) (void*) &buf;
-	const int32_t val = AI_SwapBE32(*word);
+	const int32_t val = AI_SwapLE32(*word);
 	return val;
 }
 
@@ -274,7 +274,7 @@ inline int32_t IProtocolMessage::peekInt(const streamContainer& in) {
 		++it;
 	}
 	const int32_t *word = (const int32_t*) (void*) &buf;
-	const int32_t val = AI_SwapBE32(*word);
+	const int32_t val = AI_SwapLE32(*word);
 	return val;
 }
 
@@ -286,7 +286,7 @@ inline int64_t IProtocolMessage::readLong(streamContainer& in) {
 		in.pop_front();
 	}
 	const int64_t *word = (const int64_t*) (void*) &buf;
-	const int64_t val = AI_SwapBE64(*word);
+	const int64_t val = AI_SwapLE64(*word);
 	return val;
 }
 

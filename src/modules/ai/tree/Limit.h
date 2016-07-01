@@ -2,7 +2,6 @@
 
 #include "tree/TreeNode.h"
 #include "common/Types.h"
-#include "AIRegistry.h"
 
 namespace ai {
 
@@ -16,6 +15,8 @@ namespace ai {
 class Limit: public TreeNode {
 private:
 	int _amount;
+public:
+	NODE_FACTORY(Limit)
 
 	Limit(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
 		TreeNode(name, parameters, condition) {
@@ -25,8 +26,6 @@ private:
 		else
 			_amount = 1;
 	}
-public:
-	NODE_FACTORY
 
 	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
 		if (_children.size() != 1) {

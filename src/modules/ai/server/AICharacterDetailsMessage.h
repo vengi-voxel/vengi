@@ -74,7 +74,7 @@ public:
 			IProtocolMessage(PROTO_CHARACTER_DETAILS), _chrId(id), _aggroPtr(&aggro), _rootPtr(&root) {
 	}
 
-	AICharacterDetailsMessage(streamContainer& in) :
+	explicit AICharacterDetailsMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_CHARACTER_DETAILS), _aggroPtr(nullptr), _rootPtr(nullptr) {
 		_chrId = readInt(in);
 		readAggro(in, _aggro);

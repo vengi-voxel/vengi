@@ -1,104 +1,52 @@
 #pragma once
 
 #include "IAIFactory.h"
+#include "AIFactories.h"
 #include "common/IFactoryRegistry.h"
 #include <vector>
+#include "tree/TreeNode.h"
+#include "conditions/ICondition.h"
+#include "tree/Fail.h"
+#include "tree/Limit.h"
+#include "tree/Invert.h"
+#include "tree/Idle.h"
+#include "tree/Parallel.h"
+#include "tree/PrioritySelector.h"
+#include "tree/ProbabilitySelector.h"
+#include "tree/RandomSelector.h"
+#include "tree/Sequence.h"
+#include "tree/Steer.h"
+#include "tree/Succeed.h"
+#include "conditions/And.h"
+#include "conditions/False.h"
+#include "conditions/HasEnemies.h"
+#include "conditions/Not.h"
+#include "conditions/Filter.h"
+#include "conditions/Or.h"
+#include "conditions/True.h"
+#include "conditions/IsInGroup.h"
+#include "conditions/IsGroupLeader.h"
+#include "conditions/IsCloseToGroup.h"
+#include "filter/IFilter.h"
+#include "filter/SelectEmpty.h"
+#include "filter/SelectHighestAggro.h"
+#include "filter/SelectGroupLeader.h"
+#include "filter/SelectGroupMembers.h"
+#include "filter/SelectZone.h"
+#include "movement/SelectionSeek.h"
+#include "movement/SelectionFlee.h"
+#include "movement/GroupFlee.h"
+#include "movement/GroupSeek.h"
+#include "movement/Steering.h"
+#include "movement/TargetFlee.h"
+#include "movement/TargetSeek.h"
+#include "movement/Wander.h"
+#include "movement/WeightedSteering.h"
 
 namespace ai {
 
-namespace movement {
-typedef std::vector<SteeringPtr> Steerings;
-}
-
-/**
- * @brief Context for ITreeNodeFactory
- */
-struct TreeNodeFactoryContext {
-	std::string name;
-	std::string parameters;
-	ConditionPtr condition;
-	TreeNodeFactoryContext(const std::string& _name, const std::string& _parameters, const ConditionPtr& _condition) :
-			name(_name), parameters(_parameters), condition(_condition) {
-	}
-};
-
-struct SteerNodeFactoryContext {
-	std::string name;
-	std::string parameters;
-	ConditionPtr condition;
-	movement::Steerings steerings;
-	SteerNodeFactoryContext(const std::string& _name, const std::string& _parameters, const ConditionPtr& _condition, const movement::Steerings& _steerings) :
-			name(_name), parameters(_parameters), condition(_condition), steerings(_steerings) {
-	}
-};
-
-struct FilterFactoryContext {
-	// Parameters for the filter - can get hand over to the ctor in your factory implementation.
-	std::string parameters;
-	FilterFactoryContext(const std::string& _parameters) :
-		parameters(_parameters) {
-	}
-};
-
-struct SteeringFactoryContext {
-	// Parameters for the steering class - can get hand over to the ctor in your factory implementation.
-	std::string parameters;
-	SteeringFactoryContext(const std::string& _parameters) :
-		parameters(_parameters) {
-	}
-};
-
-struct ConditionFactoryContext {
-	// Parameters for the condition - can get hand over to the ctor in your factory implementation.
-	std::string parameters;
-	// Some conditions have child conditions
-	Conditions conditions;
-	// The filter condition also has filters
-	Filters filters;
-	bool filter;
-	ConditionFactoryContext(const std::string& _parameters) :
-		parameters(_parameters), filter(false) {
-	}
-};
-
-/**
- * @brief This factory will create tree nodes. It uses the @c TreeNodeFactoryContext to
- * collect all the needed data for this action.
- */
-class ITreeNodeFactory: public IFactory<TreeNode, TreeNodeFactoryContext> {
-public:
-	virtual ~ITreeNodeFactory() {
-	}
-	virtual TreeNodePtr create(const TreeNodeFactoryContext *ctx) const override = 0;
-};
-
-class ISteeringFactory: public IFactory<movement::ISteering, SteeringFactoryContext> {
-public:
-	virtual ~ISteeringFactory() {
-	}
-	virtual SteeringPtr create(const SteeringFactoryContext* ctx) const override = 0;
-};
-
-class ISteerNodeFactory: public IFactory<TreeNode, SteerNodeFactoryContext> {
-public:
-	virtual ~ISteerNodeFactory() {
-	}
-	virtual TreeNodePtr create(const SteerNodeFactoryContext *ctx) const override = 0;
-};
-
-class IFilterFactory: public IFactory<IFilter, FilterFactoryContext> {
-public:
-	virtual ~IFilterFactory() {
-	}
-	virtual FilterPtr create(const FilterFactoryContext *ctx) const override = 0;
-};
-
-class IConditionFactory: public IFactory<ICondition, ConditionFactoryContext> {
-public:
-	virtual ~IConditionFactory() {
-	}
-	virtual ConditionPtr create(const ConditionFactoryContext *ctx) const override = 0;
-};
+#define R_GET(Name) registerFactory(#Name, Name::getFactory());
+#define R_MOVE(Name) registerFactory(#Name, movement::Name::getFactory());
 
 /**
  * @brief The place to register your @c TreeNode and @c ICondition factories at
@@ -107,41 +55,81 @@ class AIRegistry: public IAIFactory {
 protected:
 	class TreeNodeFactory: public IFactoryRegistry<std::string, TreeNode, TreeNodeFactoryContext> {
 	public:
-		TreeNodeFactory();
+		TreeNodeFactory() {
+			R_GET(Fail);
+			R_GET(Limit);
+			R_GET(Invert);
+			R_GET(Succeed);
+			R_GET(Parallel);
+			R_GET(PrioritySelector);
+			R_GET(ProbabilitySelector);
+			R_GET(RandomSelector);
+			R_GET(Sequence);
+			R_GET(Idle);
+		}
 	};
 
 	TreeNodeFactory _treeNodeFactory;
 
 	class SteerNodeFactory: public IFactoryRegistry<std::string, TreeNode, SteerNodeFactoryContext> {
 	public:
-		SteerNodeFactory();
+		SteerNodeFactory() {
+			R_GET(Steer);
+		}
 	};
 
 	SteerNodeFactory _steerNodeFactory;
 
 	class SteeringFactory: public IFactoryRegistry<std::string, movement::ISteering, SteeringFactoryContext> {
 	public:
-		SteeringFactory();
+		SteeringFactory() {
+			R_MOVE(Wander);
+			R_MOVE(GroupSeek);
+			R_MOVE(GroupFlee);
+			R_MOVE(TargetSeek);
+			R_MOVE(TargetFlee);
+			R_MOVE(SelectionSeek);
+			R_MOVE(SelectionFlee);
+		}
 	};
 
 	SteeringFactory _steeringFactory;
 
 	class FilterFactory: public IFactoryRegistry<std::string, IFilter, FilterFactoryContext> {
 	public:
-		FilterFactory();
+		FilterFactory() {
+			R_GET(SelectEmpty);
+			R_GET(SelectGroupLeader);
+			R_GET(SelectGroupMembers);
+			R_GET(SelectHighestAggro);
+			R_GET(SelectZone);
+		}
 	};
 
 	FilterFactory _filterFactory;
 
 	class ConditionFactory: public IFactoryRegistry<std::string, ICondition, ConditionFactoryContext> {
 	public:
-		ConditionFactory();
+		ConditionFactory() {
+			R_GET(And);
+			R_GET(False);
+			R_GET(HasEnemies);
+			R_GET(Not);
+			R_GET(Or);
+			R_GET(True);
+			R_GET(Filter);
+			R_GET(IsGroupLeader);
+			R_GET(IsInGroup);
+			R_GET(IsCloseToGroup);
+		}
 	};
 
 	ConditionFactory _conditionFactory;
 public:
-	AIRegistry();
-	virtual ~AIRegistry();
+	AIRegistry() :
+			IAIFactory() {
+	}
+	virtual ~AIRegistry() {}
 
 	/**
 	 * @brief Registers a tree node factory of the given @c type.
@@ -196,5 +184,68 @@ public:
 	ConditionPtr createCondition(const std::string& type, const ConditionFactoryContext& ctx) const override;
 	SteeringPtr createSteering(const std::string& type, const SteeringFactoryContext& ctx) const override;
 };
+
+#undef R_GET
+#undef R_MOVE
+
+inline TreeNodePtr AIRegistry::createNode(const std::string& nodeType, const TreeNodeFactoryContext& ctx) const {
+	return _treeNodeFactory.create(nodeType, &ctx);
+}
+
+inline TreeNodePtr AIRegistry::createSteerNode(const std::string& nodeType, const SteerNodeFactoryContext& ctx) const {
+	return _steerNodeFactory.create(nodeType, &ctx);
+}
+
+inline FilterPtr AIRegistry::createFilter(const std::string& nodeType, const FilterFactoryContext& ctx) const {
+	return _filterFactory.create(nodeType, &ctx);
+}
+
+inline bool AIRegistry::registerNodeFactory(const std::string& nodeType, const ITreeNodeFactory& factory) {
+	return _treeNodeFactory.registerFactory(nodeType, factory);
+}
+
+inline bool AIRegistry::registerFilterFactory(const std::string& nodeType, const IFilterFactory& factory) {
+	return _filterFactory.registerFactory(nodeType, factory);
+}
+
+inline bool AIRegistry::registerConditionFactory(const std::string& nodeType, const IConditionFactory& factory) {
+	return _conditionFactory.registerFactory(nodeType, factory);
+}
+
+inline bool AIRegistry::unregisterNodeFactory(const std::string& nodeType) {
+	return _treeNodeFactory.unregisterFactory(nodeType);
+}
+
+inline bool AIRegistry::registerSteerNodeFactory(const std::string& type, const ISteerNodeFactory& factory) {
+	return _steerNodeFactory.registerFactory(type, factory);
+}
+
+inline bool AIRegistry::unregisterSteerNodeFactory(const std::string& type) {
+	return _steerNodeFactory.unregisterFactory(type);
+}
+
+inline bool AIRegistry::registerSteeringFactory(const std::string& type, const ISteeringFactory& factory) {
+	return _steeringFactory.registerFactory(type, factory);
+}
+
+inline bool AIRegistry::unregisterSteeringFactory(const std::string& type) {
+	return _steeringFactory.unregisterFactory(type);
+}
+
+inline bool AIRegistry::unregisterFilterFactory(const std::string& nodeType) {
+	return _filterFactory.unregisterFactory(nodeType);
+}
+
+inline bool AIRegistry::unregisterConditionFactory(const std::string& nodeType) {
+	return _conditionFactory.unregisterFactory(nodeType);
+}
+
+inline ConditionPtr AIRegistry::createCondition(const std::string& nodeType, const ConditionFactoryContext& ctx) const {
+	return _conditionFactory.create(nodeType, &ctx);
+}
+
+inline SteeringPtr AIRegistry::createSteering(const std::string& type, const SteeringFactoryContext& ctx) const {
+	return _steeringFactory.create(type, &ctx);
+}
 
 }

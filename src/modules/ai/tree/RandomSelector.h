@@ -1,6 +1,8 @@
 #pragma once
 
 #include "tree/Selector.h"
+#include "AI.h"
+#include <algorithm>
 
 namespace ai {
 
@@ -15,7 +17,30 @@ class RandomSelector: public Selector {
 public:
 	SELECTOR_CLASS(RandomSelector)
 
-	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override;
+	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
+		if (Selector::execute(entity, deltaMillis) == CANNOTEXECUTE)
+			return CANNOTEXECUTE;
+
+		TreeNodes childrenShuffled = _children;
+		const std::size_t size = childrenShuffled.size();
+		std::random_shuffle(childrenShuffled.begin(), childrenShuffled.end());
+		TreeNodeStatus overallResult = FINISHED;
+		std::size_t i;
+		for (i = 0; i < size; ++i) {
+			const TreeNodePtr& child = childrenShuffled[i];
+			const TreeNodeStatus result = child->execute(entity, deltaMillis);
+			if (result == RUNNING) {
+				continue;
+			} else if (result == CANNOTEXECUTE || result == FAILED) {
+				overallResult = result;
+			}
+			child->resetState(entity);
+		}
+		for (++i; i < size; ++i) {
+			childrenShuffled[i]->resetState(entity);
+		}
+		return state(entity, overallResult);
+	}
 };
 
 }

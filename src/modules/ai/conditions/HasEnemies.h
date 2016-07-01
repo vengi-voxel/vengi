@@ -2,6 +2,7 @@
 
 #include "conditions/ICondition.h"
 #include "common/String.h"
+#include "aggro/AggroMgr.h"
 
 namespace ai {
 
@@ -17,10 +18,27 @@ class HasEnemies: public ICondition {
 protected:
 	int _enemyCount;
 public:
-	HasEnemies(const std::string& parameters);
-	CONDITION_FACTORY
+	CONDITION_FACTORY(HasEnemies)
 
-	bool evaluate(const AIPtr& entity) override;
+	explicit HasEnemies(const std::string& parameters) :
+			ICondition("HasEnemies", parameters) {
+		if (_parameters.empty()) {
+			_enemyCount = -1;
+		} else {
+			_enemyCount = std::stoi(_parameters);
+		}
+	}
+
+	bool evaluate(const AIPtr& entity) override {
+		const AggroMgr& mgr = entity->getAggroMgr();
+		if (_enemyCount == -1) {
+			// TODO: check why boolean operator isn't working here
+			const bool hasEnemy = mgr.getHighestEntry() != nullptr;
+			return hasEnemy;
+		}
+		const int size = static_cast<int>(mgr.getEntries().size());
+		return size >= _enemyCount;
+	}
 };
 
 }

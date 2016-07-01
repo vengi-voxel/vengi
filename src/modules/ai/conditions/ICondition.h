@@ -13,9 +13,8 @@
 #include <memory>
 
 #include "common/MemoryAllocator.h"
-#include "common/IPrintable.h"
 
-#include "AIRegistry.h"
+#include "AIFactories.h"
 
 namespace ai {
 
@@ -26,20 +25,36 @@ typedef std::shared_ptr<AI> AIPtr;
  * @brief Macro to simplify the condition creation. Just give the class name of the condition as parameter.
  */
 #define CONDITION_CLASS(ConditionName) \
-	ConditionName(const std::string& parameters = "") : \
+	explicit ConditionName(const std::string& parameters = "") : \
 		ICondition(#ConditionName, parameters) { \
 	} \
 public: \
 	virtual ~ConditionName() { \
 	}
 
-#define CONDITION_FACTORY \
+#define CONDITION_FACTORY_NO_IMPL(ConditionName) \
 public: \
 	class Factory: public IConditionFactory { \
 	public: \
 		ConditionPtr create (const ConditionFactoryContext *ctx) const override; \
 	}; \
-	static Factory FACTORY;
+	static const Factory& getFactory() { \
+		static Factory FACTORY; \
+		return FACTORY; \
+	}
+
+#define CONDITION_FACTORY(ConditionName) \
+public: \
+	class Factory: public IConditionFactory { \
+	public: \
+		ConditionPtr create (const ConditionFactoryContext *ctx) const override { \
+			return std::make_shared<ConditionName>(ctx->parameters); \
+		} \
+	}; \
+	static const Factory& getFactory() { \
+		static Factory FACTORY; \
+		return FACTORY; \
+	}
 
 #define CONDITION_FACTORY_SINGLETON \
 public: \
@@ -48,14 +63,10 @@ public: \
 			return get(); \
 		} \
 	}; \
-	static Factory FACTORY;
-
-#define CONDITION_FACTORY_IMPL(ConditionName) \
-	ConditionPtr ConditionName::Factory::create(const ConditionFactoryContext *ctx) const { \
-		ConditionName* c = new ConditionName(ctx->parameters); \
-		return ConditionPtr(c); \
-	} \
-	ConditionName::Factory ConditionName::FACTORY;
+	static const Factory& getFactory() { \
+		static Factory FACTORY; \
+		return FACTORY; \
+	}
 
 /**
  * @brief Macro to create a singleton conditions for very easy conditions without a state.
@@ -72,6 +83,20 @@ public: \
 	} \
 	CONDITION_FACTORY_SINGLETON
 
+#define CONDITION_PRINT_SUBCONDITIONS_GETCONDITIONNAMEWITHVALUE \
+	void getConditionNameWithValue(std::stringstream& s, const AIPtr& entity) override { \
+		bool first = true; \
+		s << "("; \
+		for (ConditionsConstIter i = _conditions.begin(); i != _conditions.end(); ++i) { \
+			if (!first) { \
+				s << ","; \
+			} \
+			s << (*i)->getNameWithConditions(entity); \
+			first = false; \
+		} \
+		s << ")"; \
+	}
+
 class ICondition;
 typedef std::shared_ptr<ICondition> ConditionPtr;
 typedef std::vector<ConditionPtr> Conditions;
@@ -82,9 +107,14 @@ typedef Conditions::const_iterator ConditionsConstIter;
  * @brief A condition can be placed on a @c TreeNode to decide which node is going to get executed. In general they are stateless.
  * If they are not, it should explicitly get noted.
  */
-class ICondition : public IPrintable, public MemObject {
+class ICondition : public MemObject {
 protected:
-	static int _nextId;
+	static int getNextId() {
+		static int _nextId = 0;
+		const int id = _nextId++;
+		return id;
+	}
+
 	int _id;
 	const std::string _name;
 	const std::string _parameters;
@@ -102,7 +132,7 @@ protected:
 	}
 public:
 	ICondition(const std::string& name, const std::string& parameters) :
-			_id(_nextId++), _name(name), _parameters(parameters) {
+			_id(getNextId()), _name(name), _parameters(parameters) {
 	}
 
 	virtual ~ICondition() {
@@ -139,8 +169,6 @@ public:
 		s << "]";
 		return s.str();
 	}
-
-	std::ostream& print(std::ostream& stream, int level) const override;
 };
 
 inline const std::string& ICondition::getName() const {

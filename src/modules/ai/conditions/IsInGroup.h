@@ -3,6 +3,7 @@
 #include "ICondition.h"
 #include "common/String.h"
 #include "group/GroupMgr.h"
+#include "zone/Zone.h"
 
 namespace ai {
 
@@ -18,19 +19,27 @@ class IsInGroup: public ICondition {
 private:
 	GroupId _groupId;
 
-	IsInGroup(const std::string& parameters) :
-		ICondition("IsInGroup", parameters) {
-		if (_parameters.empty())
-			_groupId = -1;
-		else
-			_groupId = std::stoi(_parameters);
-	}
 public:
+	CONDITION_FACTORY(IsInGroup)
+
+	explicit IsInGroup(const std::string& parameters) :
+		ICondition("IsInGroup", parameters) {
+		if (_parameters.empty()) {
+			_groupId = -1;
+		} else {
+			_groupId = std::stoi(_parameters);
+		}
+	}
+
 	virtual ~IsInGroup() {
 	}
-	CONDITION_FACTORY
 
-	bool evaluate(const AIPtr& entity) override;
+	bool evaluate(const AIPtr& entity) override {
+		const GroupMgr& mgr = entity->getZone()->getGroupMgr();
+		if (_groupId == -1)
+			return mgr.isInAnyGroup(entity);
+		return mgr.isInGroup(_groupId, entity);
+	}
 };
 
 }

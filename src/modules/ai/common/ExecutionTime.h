@@ -25,7 +25,6 @@ SOFTWARE.
 #pragma once
 
 #include <chrono>
-#include <iostream>
 #include <iomanip>
 #include <string>
 

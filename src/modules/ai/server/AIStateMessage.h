@@ -63,7 +63,7 @@ public:
 			IProtocolMessage(PROTO_STATE) {
 	}
 
-	AIStateMessage(streamContainer& in) :
+	explicit AIStateMessage(streamContainer& in) :
 			IProtocolMessage(PROTO_STATE) {
 		const int treeSize = readInt(in);
 		for (int i = 0; i < treeSize; ++i) {

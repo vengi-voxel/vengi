@@ -16,8 +16,8 @@ Npc::Npc(network::messages::NpcType type, const EntityStoragePtr& entityStorage,
 		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider) :
 		Entity(_nextNpcId++, messageSender, timeProvider, containerProvider), _world(world), _poiProvider(poiProvider) {
 	_npcType = type;
-	_ai = ai::AIPtr(new ai::AI(behaviour));
-	_ai->setCharacter(ai::ICharacterPtr(new AICharacter(_entityId, *this)));
+	_ai = std::make_shared<ai::AI>(behaviour);
+	_ai->setCharacter(std::make_shared<AICharacter>(_entityId, *this));
 }
 
 Npc::~Npc() {
@@ -57,7 +57,7 @@ double Npc::applyDamage(Npc* attacker, double damage) {
 	if (health > 0.0) {
 		health = std::max(0.0, health - damage);
 		if (attacker != nullptr)
-			_ai->getAggroMgr().addAggro(attacker->ai(), damage);
+			_ai->getAggroMgr().addAggro(attacker->id(), damage);
 		_attribs.setCurrent(attrib::Types::HEALTH, health);
 		return damage;
 	}
