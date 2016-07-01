@@ -62,7 +62,9 @@ inline ImagePtr loadImage(const io::FilePtr& file, bool async = true) {
 	if (async) {
 		core::App::getInstance()->threadPool().enqueue([=] () { i->load(file); });
 	} else {
-		i->load(file);
+		if (!i->load(file)) {
+			Log::warn("Failed to load image %s", i->name().c_str());
+		}
 	}
 	return i;
 }
