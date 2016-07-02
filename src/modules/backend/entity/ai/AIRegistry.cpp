@@ -28,8 +28,8 @@
 namespace backend {
 
 void AIRegistry::init(const backend::SpawnMgrPtr& spawnMgr) {
-	registerNodeFactory("GoHome", core::Singleton<GoHome::Factory>::getInstance());
-	registerNodeFactory("AttackOnSelection", core::Singleton<AttackOnSelection::Factory>::getInstance());
+	registerNodeFactory("GoHome", GoHome::getFactory());
+	registerNodeFactory("AttackOnSelection", AttackOnSelection::getFactory());
 	registerFilterFactory("SelectVisible", SelectVisible::getFactory());
 	registerFilterFactory("SelectIncreasePartner", SelectIncreasePartner::getFactory());
 	registerFilterFactory("SelectPrey", SelectPrey::getFactory());

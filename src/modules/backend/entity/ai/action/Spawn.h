@@ -25,7 +25,7 @@ public:
 		}
 
 		TreeNodePtr create(const TreeNodeFactoryContext *ctx) const {
-			return TreeNodePtr(new Spawn(ctx->name, ctx->parameters, ctx->condition, _spawnMgr));
+			return std::make_shared<Spawn>(ctx->name, ctx->parameters, ctx->condition, _spawnMgr);
 		}
 	};
 
