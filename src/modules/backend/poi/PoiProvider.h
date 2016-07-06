@@ -22,7 +22,7 @@ namespace backend {
  * @brief Maintains a list of points of interest that are only valid for a particular time.
  *
  * @note One can add new POIs by calling @c PoiProvider::addPointOfInterest and get a random,
- * not yet expired POI by calling @c PoiProvider::getPointOfInterest(). If there are not POIs
+ * not yet expired POI by calling @c PoiProvider::getPointOfInterest(). If there are no POIs
  * left, you will get a random one from the @c voxel::World
  */
 class PoiProvider {

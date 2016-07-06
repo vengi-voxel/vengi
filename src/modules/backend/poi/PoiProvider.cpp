@@ -16,24 +16,21 @@ PoiProvider::PoiProvider(voxel::WorldPtr world, core::TimeProviderPtr timeProvid
 void PoiProvider::update(long /*dt*/) {
 	constexpr unsigned long seconds = 60L * 1000L;
 	for (;;) {
-		_lock.lockWrite();
+		core::ScopedWriteLock scoped(_lock);
 		auto i = _pois.begin();
 		if (i == _pois.end()) {
-			_lock.unlockWrite();
 			break;
 		}
 		Poi poi = *i;
 		if (poi.time + seconds > _timeProvider->tickTime()) {
-			_lock.unlockWrite();
 			break;
 		}
 		_pois.erase(i);
-		_lock.unlockWrite();
 	}
 }
 
 void PoiProvider::addPointOfInterest(const glm::vec3& pos) {
-	_lock.lockWrite();
+	core::ScopedWriteLock scoped(_lock);
 	_pois.push_back(Poi { pos, _timeProvider->tickTime() });
 
 	struct PoiComparatorLess: public std::binary_function<Poi, Poi, bool> {
@@ -43,7 +40,6 @@ void PoiProvider::addPointOfInterest(const glm::vec3& pos) {
 	};
 
 	std::sort(_pois.begin(), _pois.end(), PoiComparatorLess());
-	_lock.unlockWrite();
 }
 
 size_t PoiProvider::getPoisCount() const {
