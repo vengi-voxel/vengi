@@ -21,10 +21,10 @@ Camera::~Camera() {
 }
 
 void Camera::lookAt(const glm::vec3& position) {
-	assert(position != _pos);
-	glm::vec3 direction = glm::normalize(position - _pos);
-	_pitch = glm::radians(asinf(-direction.y));
-	_yaw = -glm::radians(atan2f(-direction.x, -direction.z));
+	core_assert(position != _pos);
+	const glm::quat q(glm::normalize(_pos), glm::normalize(position));
+	_pitch = glm::pitch(q);
+	_yaw = glm::yaw(q);
 	normalizeAngles();
 }
 
