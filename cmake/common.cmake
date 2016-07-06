@@ -39,6 +39,8 @@ elseif (NOT MSVC)
 	# Don't error out, it might still work
 	message(SEND_ERROR "It looks like your compiler doesn't understand -std=c++14")
 endif()
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
 
 check_cxx_compiler_flag("-pg" COMPILER_SUPPORTS_GNUPROF)
 if (COMPILER_SUPPORTS_CXX14)
