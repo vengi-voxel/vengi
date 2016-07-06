@@ -3,6 +3,7 @@
 
 TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
+	setCameraMotion(true);
 }
 
 core::AppState TestDepthBuffer::onInit() {
