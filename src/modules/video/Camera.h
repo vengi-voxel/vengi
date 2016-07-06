@@ -42,6 +42,7 @@ private:
 	// horizontal angle
 	float _yaw;
 	glm::vec3 _direction;
+	// rotation speed over time for all three axis
 	glm::vec3 _omega;
 	core::VarPtr _maxpitch;
 	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
