@@ -38,6 +38,8 @@ core::AppState TestApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _width, _height, _aspect);
 	_camera.init(_width, _height);
 	_camera.setAspectRatio(_aspect);
@@ -94,4 +96,11 @@ core::AppState TestApp::onCleanup() {
 	core::Command::unregisterCommand("+move_upt");
 	core::Command::unregisterCommand("+move_down");
 	return Super::onCleanup();
+}
+
+void TestApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
+	Super::onMouseMotion(x, y, relX, relY);
+	if (_cameraMotion) {
+		_camera.onMotion(x, y, relX, relY, _rotationSpeed->floatVal());
+	}
 }

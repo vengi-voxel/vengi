@@ -2,10 +2,12 @@
 
 TestMesh::TestMesh(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
+	setCameraMotion(true);
 }
 
 core::AppState TestMesh::onInit() {
 	const core::AppState state = Super::onInit();
+	_camera.setPosition(glm::vec3(0.0f, 250.0f, 0.0f));
 
 	if (!_meshShader.setup()) {
 		Log::error("Failed to init mesh shader");
