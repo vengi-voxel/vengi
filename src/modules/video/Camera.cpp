@@ -12,7 +12,7 @@ namespace video {
 
 Camera::Camera(bool ortho) :
 		_pos(0.0f, 0.0f, 0.0f), _width(0), _height(0), _pitch(-glm::half_pi<float>()), _yaw(glm::pi<float>()),
-		_direction(0.0f, 0.0f, 0.0f), _maxpitch(core::Var::get(cfg::ClientCameraMaxPitch, std::to_string(glm::radians(89.0)))),
+		_direction(0.0f), _omega(0.0f), _maxpitch(core::Var::get(cfg::ClientCameraMaxPitch, std::to_string(glm::radians(89.0)))),
 		_ortho(ortho) {
 	updateDirection();
 }

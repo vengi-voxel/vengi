@@ -97,7 +97,7 @@ void ShapeTool::beforeUI() {
 	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
 	_camera.setFieldOfView(45.0f);
 	_camera.setAspectRatio(_aspect);
-	_camera.update();
+	_camera.update(_deltaFrame);
 
 	_worldRenderer.extractNewMeshes(_camera.position());
 	_worldRenderer.onRunning(_deltaFrame);

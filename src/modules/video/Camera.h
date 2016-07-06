@@ -42,6 +42,7 @@ private:
 	// horizontal angle
 	float _yaw;
 	glm::vec3 _direction;
+	glm::vec3 _omega;
 	core::VarPtr _maxpitch;
 	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
 	float _nearPlane = 0.1f;
@@ -73,6 +74,8 @@ public:
 
 	void setNearPlane(float nearPlane);
 
+	void setOmega(const glm::vec3& omega);
+
 	/**
 	 * @return The rotation matrix of the direction the camera is facing to.
 	 */
@@ -87,7 +90,7 @@ public:
 	void onMotion(int32_t x, int32_t y, int32_t relX, int32_t relY, float rotationSpeed = 0.01f);
 	void onMovement(int32_t forward, int32_t sideward);
 	void updatePosition(long dt, bool left, bool right, bool forward, bool backward, float speed = 0.01f);
-	void update();
+	void update(long deltaFrame);
 
 	FrustumResult testFrustum(const glm::vec3& position) const;
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
@@ -223,7 +226,7 @@ inline void Camera::updateProjectionMatrix() {
 	}
 }
 
-inline void Camera::update() {
+inline void Camera::update(long deltaFrame) {
 	updateDirection();
 	updateViewMatrix();
 	updateProjectionMatrix();
@@ -244,6 +247,10 @@ inline int Camera::height() const {
 
 inline void Camera::updateViewMatrix() {
 	_viewMatrix = glm::lookAt(_pos, _pos + glm::normalize(_direction), glm::vec3(0.0, 1.0, 0.0));
+}
+
+inline void Camera::setOmega(const glm::vec3& omega) {
+	_omega = omega;
 }
 
 }

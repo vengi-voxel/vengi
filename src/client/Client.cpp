@@ -123,7 +123,7 @@ core::AppState Client::onInit() {
 void Client::renderBackground() {
 	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
-	_camera.update();
+	_camera.update(0L);
 }
 
 void Client::beforeUI() {
@@ -137,7 +137,7 @@ void Client::beforeUI() {
 		_camera.updatePosition(_deltaFrame, left, right, forward, backward);
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
 		_camera.setAspectRatio(_aspect);
-		_camera.update();
+		_camera.update(_deltaFrame);
 
 		_drawCallsWorld = _worldRenderer.renderWorld(_camera);
 		_drawCallsEntities = _worldRenderer.renderEntities(_camera);

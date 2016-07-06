@@ -80,7 +80,7 @@ core::AppState TestApp::onRunning() {
 		const glm::vec3& pos = _camera.position();
 		Log::info("camera: %f:%f:%f", pos.x, pos.y, pos.z);
 	}
-	_camera.update();
+	_camera.update(_deltaFrame);
 
 	doRender();
 
