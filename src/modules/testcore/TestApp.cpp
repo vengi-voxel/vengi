@@ -75,7 +75,7 @@ core::AppState TestApp::onRunning() {
 	const bool right = _moveMask & MOVERIGHT;
 	const bool forward = _moveMask & MOVEFORWARD;
 	const bool backward = _moveMask & MOVEBACKWARD;
-	_camera.updatePosition(_deltaFrame, left, right, forward, backward);
+	_camera.updatePosition(_deltaFrame, left, right, forward, backward, _cameraSpeed);
 	if (left || right || forward || backward) {
 		const glm::vec3& pos = _camera.position();
 		Log::info("camera: %f:%f:%f", pos.x, pos.y, pos.z);

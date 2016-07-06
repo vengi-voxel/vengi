@@ -19,8 +19,13 @@ protected:
 	core::VarPtr _rotationSpeed;
 	uint8_t _moveMask = 0;
 	bool _cameraMotion = false;
+	float _cameraSpeed = 0.1f;
 
 	virtual void doRender() = 0;
+
+	inline void setCameraSpeed(float cameraSpeed) {
+		_cameraSpeed = cameraSpeed;
+	}
 
 	inline void setCameraMotion(bool cameraMotion) {
 		_cameraMotion = cameraMotion;
