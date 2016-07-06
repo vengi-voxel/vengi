@@ -42,7 +42,7 @@ void PoiProvider::addPointOfInterest(const glm::vec3& pos) {
 	std::sort(_pois.begin(), _pois.end(), PoiComparatorLess());
 }
 
-size_t PoiProvider::getPoisCount() const {
+size_t PoiProvider::getPointOfInterestCount() const {
 	return _pois.size();
 }
 

@@ -30,10 +30,10 @@ TEST_F(PoiProviderTest, testExpire) {
 	_poiProvider->addPointOfInterest(glm::vec3(1.0));
 	_poiProvider->addPointOfInterest(glm::vec3(2.0));
 	_poiProvider->addPointOfInterest(glm::vec3(3.0));
-	ASSERT_EQ(3u, _poiProvider->getPoisCount());
+	ASSERT_EQ(3u, _poiProvider->getPointOfInterestCount());
 	_timeProvider->update(60 * 1000UL);
 	_poiProvider->update(0UL);
-	ASSERT_EQ(0u, _poiProvider->getPoisCount());
+	ASSERT_EQ(0u, _poiProvider->getPointOfInterestCount());
 }
 
 TEST_F(PoiProviderTest, testExpireWithProperPos) {
@@ -42,13 +42,13 @@ TEST_F(PoiProviderTest, testExpireWithProperPos) {
 		_timeProvider->update(i * 60 * 1000UL);
 		_poiProvider->addPointOfInterest(glm::vec3(static_cast<float>(i)));
 	}
-	ASSERT_EQ(3u, _poiProvider->getPoisCount());
+	ASSERT_EQ(3u, _poiProvider->getPointOfInterestCount());
 	_poiProvider->update(0UL);
-	ASSERT_EQ(1u, _poiProvider->getPoisCount());
+	ASSERT_EQ(1u, _poiProvider->getPointOfInterestCount());
 	ASSERT_EQ(glm::vec3(static_cast<float>(max - 1)), _poiProvider->getPointOfInterest());
 	_timeProvider->update(max * 60 * 1000UL);
 	_poiProvider->update(0UL);
-	ASSERT_EQ(0u, _poiProvider->getPoisCount());
+	ASSERT_EQ(0u, _poiProvider->getPointOfInterestCount());
 }
 
 }

@@ -44,7 +44,7 @@ public:
 	void update(long dt);
 
 	void addPointOfInterest(const glm::vec3& pos);
-	size_t getPoisCount() const;
+	size_t getPointOfInterestCount() const;
 	glm::vec3 getPointOfInterest() const;
 };
 
