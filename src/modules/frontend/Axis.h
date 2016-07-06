@@ -22,6 +22,7 @@ public:
 		glDrawArrays(GL_LINES, 0, 6);
 		glLineWidth(1.0f);
 		_axisBuffer.unbind();
+		glEnable(GL_DEPTH_TEST);
 		GL_checkError();
 	}
 

@@ -564,6 +564,9 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	const glm::mat4& view = camera.viewMatrix();
 	const glm::mat4& projection = camera.projectionMatrix();
 
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	// TODO: deferred rendering
 	shader::MeshShader& shader = _meshShader;
 	video::ScopedShader scoped(shader);
 	shader.setUniformMatrix("u_view", view, false);
