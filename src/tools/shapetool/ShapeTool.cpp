@@ -51,8 +51,8 @@ core::AppState ShapeTool::onInit() {
 		return core::Cleanup;
 	}
 	_camera.init(_width, _height);
-	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
+	_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
 	_worldRenderer.onSpawn(_camera.position(), core::Var::get(cfg::ShapeToolExtractRadius, "1")->intVal());
 
