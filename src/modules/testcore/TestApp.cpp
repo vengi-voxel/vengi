@@ -38,7 +38,7 @@ core::AppState TestApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.1");
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _width, _height, _aspect);
 	_camera.init(_width, _height);
@@ -75,7 +75,7 @@ core::AppState TestApp::onRunning() {
 	const bool right = _moveMask & MOVERIGHT;
 	const bool forward = _moveMask & MOVEFORWARD;
 	const bool backward = _moveMask & MOVEBACKWARD;
-	_camera.updatePosition(_deltaFrame, left, right, forward, backward, _cameraSpeed);
+	_camera.onMovement(_deltaFrame, left, right, forward, backward, _cameraSpeed);
 	if (left || right || forward || backward) {
 		const glm::vec3& pos = _camera.position();
 		Log::info("camera: %f:%f:%f", pos.x, pos.y, pos.z);

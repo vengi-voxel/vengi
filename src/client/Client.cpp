@@ -99,7 +99,7 @@ core::AppState Client::onInit() {
 
 	core::Var::get(cfg::ClientName, "noname");
 	core::Var::get(cfg::ClientPassword, "nopassword");
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.1");
 
 	GL_checkError();
 
@@ -134,7 +134,7 @@ void Client::beforeUI() {
 		const bool right = _moveMask & MoveDirection_MOVERIGHT;
 		const bool forward = _moveMask & MoveDirection_MOVEFORWARD;
 		const bool backward = _moveMask & MoveDirection_MOVEBACKWARD;
-		_camera.updatePosition(_deltaFrame, left, right, forward, backward);
+		_camera.onMovement(_deltaFrame, left, right, forward, backward);
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
 		_camera.setAspectRatio(_aspect);
 		_camera.update(_deltaFrame);

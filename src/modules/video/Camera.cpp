@@ -145,7 +145,7 @@ void Camera::updateFrustumPlanes() {
 	}
 }
 
-void Camera::updatePosition(long dt, bool left, bool _right, bool _forward, bool backward, float speed) {
+void Camera::onMovement(long dt, bool left, bool _right, bool _forward, bool backward, float speed) {
 	const float deltaTime = static_cast<float>(dt);
 	if (_forward) {
 		_pos += forward() * deltaTime * speed;
@@ -201,16 +201,10 @@ void Camera::init(int width, int height) {
 }
 
 void Camera::onMotion(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
-	float _yaw = glm::clamp(static_cast<float>(deltaX), -89.0f, 89.0f);
-	_yaw *= rotationSpeed;
-
-	float _pitch = glm::clamp(static_cast<float>(deltaY), -89.0f, 89.0f);
-	_pitch *= rotationSpeed;
-
-	_quat = glm::angleAxis(_yaw, glm::vec3(0.0f, 1.0f, 0.0f)) * _quat;
-	_quat = glm::angleAxis(_pitch, glm::vec3(1.0f, 0.0f, 0.0f)) * _quat;
-	_quat = glm::angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0f)) * _quat;
-	_dirty |= DIRTY_ORIENTATION;
+	rotationSpeed = glm::clamp(rotationSpeed, 0.0001f, 1.0f);
+	const float _yaw = glm::degrees(yaw()) + static_cast<float>(deltaX) * rotationSpeed;
+	const float _pitch = glm::clamp(glm::degrees(pitch()) + static_cast<float>(deltaY) * rotationSpeed, -89.999f, 89.999f);
+	setAngles(glm::radians(_pitch), glm::radians(_yaw));
 }
 
 Ray Camera::screenRay(const glm::vec2& screenPos) const {

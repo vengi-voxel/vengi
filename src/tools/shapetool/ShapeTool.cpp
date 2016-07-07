@@ -39,7 +39,7 @@ core::AppState ShapeTool::onInit() {
 	}
 
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.1");
 
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
@@ -94,7 +94,7 @@ void ShapeTool::beforeUI() {
 	const bool backward = _moveMask & MOVEBACKWARD;
 	const float speed = _speed->floatVal();
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
-	_camera.updatePosition(_deltaFrame, left, right, forward, backward, speed);
+	_camera.onMovement(_deltaFrame, left, right, forward, backward, speed);
 	_camera.setFieldOfView(45.0f);
 	_camera.setAspectRatio(_aspect);
 	_camera.update(_deltaFrame);

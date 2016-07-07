@@ -94,8 +94,8 @@ public:
 
 	glm::vec3 up() const;
 
-	void onMotion(int32_t relX, int32_t relY, float rotationSpeed = 0.01f);
-	void updatePosition(long dt, bool left, bool right, bool forward, bool backward, float speed = 0.01f);
+	void onMotion(int32_t relX, int32_t relY, float rotationSpeed = 0.1f);
+	void onMovement(long dt, bool left, bool right, bool forward, bool backward, float speed = 0.01f);
 	void update(long deltaFrame);
 
 	FrustumResult testFrustum(const glm::vec3& position) const;
@@ -189,15 +189,15 @@ inline glm::mat4 Camera::orientation() const {
 }
 
 inline glm::vec3 Camera::forward() const {
-	return glm::conjugate(_quat) * glm::vec3(0.0f, 0.0f, -1.0f);;
+	return _quat * glm::vec3(0.0f, 0.0f, -1.0f);
 }
 
 inline glm::vec3 Camera::right() const {
-	return glm::conjugate(_quat) * glm::vec3(1.0f, 0.0f, 0.0f);;
+	return _quat * glm::vec3(1.0f, 0.0f, 0.0f);
 }
 
 inline glm::vec3 Camera::up() const {
-	return glm::conjugate(_quat) * glm::vec3(0.0f, 1.0f, 0.0f);;
+	return _quat * glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
 inline glm::mat4 Camera::orthoMatrix() const {
@@ -207,7 +207,8 @@ inline glm::mat4 Camera::orthoMatrix() const {
 }
 
 inline void Camera::setAngles(float pitch, float yaw) {
-	_quat = glm::angleAxis(pitch, glm::vec3(1.0f, 0.0f, 0.0f)) * glm::angleAxis(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+	_quat = glm::quat(glm::vec3(pitch, yaw, roll()));
+	_dirty |= DIRTY_ORIENTATION;
 }
 
 inline void Camera::setPosition(const glm::vec3& pos) {
