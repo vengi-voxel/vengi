@@ -13,11 +13,34 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <memory>
+#include <unordered_map>
 
 namespace video {
 
 class Mesh : public io::IOResource {
 private:
+#define NUM_BONES_PER_VEREX 4
+	struct BoneInfo {
+		glm::mat4 boneOffset;
+		glm::mat4 finalTransformation;
+	};
+
+	struct VertexBoneData {
+		uint32_t boneIds[NUM_BONES_PER_VEREX];
+		float boneWeights[NUM_BONES_PER_VEREX];
+
+		VertexBoneData() {
+			Reset();
+		}
+
+		void Reset() {
+			SDL_zero(boneIds);
+			SDL_zero(boneWeights);
+		}
+
+		void AddBoneData(uint BoneID, float Weight);
+	};
+
 	struct Vertex {
 		glm::vec3 _pos;
 		glm::vec3 _norm;
@@ -30,7 +53,18 @@ private:
 	typedef std::vector<Vertex> Vertices;
 	typedef std::vector<uint32_t> Indices;
 
+	glm::mat4 toMat4(const aiMatrix4x4& matrix) const;
+	glm::mat4 toMat4(const aiMatrix3x3& matrix) const;
 	void loadTextureImages(const aiScene* scene, const std::string& filename);
+	void calcInterpolatedScaling(aiVector3D& out, float animationTime, const aiNodeAnim* nodeAnim);
+	void calcInterpolatedRotation(aiQuaternion& out, float animationTime, const aiNodeAnim* nodeAnim);
+	void calcInterpolatedPosition(aiVector3D& out, float animationTime, const aiNodeAnim* nodeAnim);
+	uint findScaling(float animationTime, const aiNodeAnim* nodeAnim);
+	uint findRotation(float animationTime, const aiNodeAnim* nodeAnim);
+	uint findPosition(float animationTime, const aiNodeAnim* nodeAnim);
+	const aiNodeAnim* findNodeAnim(const aiAnimation* animation, const std::string& nodeName);
+	void readNodeHierarchy(aiScene* scene, float animationTime, const aiNode* node, const glm::mat4& parentTransform);
+	void loadBones(uint32_t neshIndex, const aiMesh* aiMesh, std::vector<VertexBoneData>& bones);
 
 	GLuint _vertexArrayObject = 0u;
 	GLuint _vbo = 0u;
@@ -40,11 +74,22 @@ private:
 	std::vector<GLMeshData> _meshData;
 	std::vector<image::ImagePtr> _images;
 	std::vector<TexturePtr> _textures;
+	std::vector<VertexBoneData> _bones;
 	Vertices _vertices;
 	Indices _indices;
+	std::unordered_map<std::string, uint32_t> _boneMapping;
+	uint32_t _numBones;
+	std::vector<BoneInfo> _boneInfo;
+	glm::mat4 _globalInverseTransform;
 public:
 	Mesh();
 	~Mesh();
+
+	inline uint32_t NumBones() const {
+		return _numBones;
+	}
+
+	void boneTransform(aiScene* scene, float timeInSeconds, std::vector<glm::mat4>& transforms);
 
 	void shutdown();
 	bool loadMesh(const std::string& filename);
