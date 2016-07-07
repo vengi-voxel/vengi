@@ -19,7 +19,7 @@ Camera::~Camera() {
 }
 
 void Camera::slerp(float pitch, float yaw, float factor) {
-	const glm::quat& quat2 = glm::angleAxis(pitch, glm::vec3(1.0f, 0.0f, 0.0f)) * glm::angleAxis(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::quat quat2(glm::vec3(pitch, yaw, 0.0f));
 	_quat = glm::mix(_quat, quat2, factor);
 }
 
@@ -27,7 +27,7 @@ void Camera::lookAt(const glm::vec3& position) {
 	core_assert(position != _pos);
 	_dirty |= DIRTY_ORIENTATION;
 	const glm::vec3& direction = glm::normalize(position - _pos);
-	const float dot = glm::dot(glm::vec3(0, 0, 1), direction);
+	const float dot = glm::dot(glm::vec3(0, 0, -1), direction);
 	if (fabs(dot + 1.0f) < 0.000001f) {
 		_quat = glm::angleAxis(glm::pi<float>(), glm::vec3(0, 1, 0));
 		return;
@@ -37,7 +37,7 @@ void Camera::lookAt(const glm::vec3& position) {
 	}
 
 	const float angle = acosf(dot);
-	const glm::vec3& cross = glm::normalize(glm::cross(direction, glm::vec3(0, 0, 1)));
+	const glm::vec3& cross = glm::normalize(glm::cross(direction, glm::vec3(0, 0, -1)));
 	_quat = glm::angleAxis(angle, cross);
 }
 
@@ -202,7 +202,7 @@ void Camera::init(int width, int height) {
 
 void Camera::onMotion(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
 	rotationSpeed = glm::clamp(rotationSpeed, 0.0001f, 1.0f);
-	const float _yaw = glm::degrees(yaw()) - static_cast<float>(deltaX) * rotationSpeed;
+	const float _yaw = glm::degrees(yaw()) + static_cast<float>(deltaX) * rotationSpeed;
 	const float _pitch = glm::clamp(glm::degrees(pitch()) - static_cast<float>(deltaY) * rotationSpeed, -89.999f, 89.999f);
 	setAngles(glm::radians(_pitch), glm::radians(_yaw));
 }

@@ -189,6 +189,7 @@ inline glm::mat4 Camera::orientation() const {
 }
 
 inline glm::vec3 Camera::forward() const {
+	// opengl looks down the negative z axis
 	return _quat * glm::vec3(0.0f, 0.0f, -1.0f);
 }
 
