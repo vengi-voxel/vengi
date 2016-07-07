@@ -1,5 +1,6 @@
 #pragma once
 
+#define GLM_FORCE_RADIANS
 #define GLM_SWIZZLE
 
 #include <glm/glm.hpp>
