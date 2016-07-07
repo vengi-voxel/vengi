@@ -101,6 +101,6 @@ core::AppState TestApp::onCleanup() {
 void TestApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	Super::onMouseMotion(x, y, relX, relY);
 	if (_cameraMotion) {
-		_camera.onMotion(x, y, relX, relY, _rotationSpeed->floatVal());
+		_camera.onMotion(relX, relY, _rotationSpeed->floatVal());
 	}
 }

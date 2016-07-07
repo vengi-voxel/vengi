@@ -205,7 +205,7 @@ void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) 
 	if (!current) {
 		return;
 	}
-	_camera.onMotion(x, y, relX, relY, _rotationSpeed->floatVal());
+	_camera.onMotion(relX, relY, _rotationSpeed->floatVal());
 }
 
 void ShapeTool::placeTree(const voxel::TreeContext& ctx) {

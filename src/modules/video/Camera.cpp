@@ -11,31 +11,34 @@
 namespace video {
 
 Camera::Camera(bool ortho) :
-		_pos(0.0f, 0.0f, 0.0f), _width(0), _height(0), _pitch(-glm::half_pi<float>()), _yaw(glm::pi<float>()),
-		_direction(0.0f), _omega(0.0f), _maxpitch(core::Var::get(cfg::ClientCameraMaxPitch, std::to_string(glm::radians(89.0)))),
-		_ortho(ortho) {
-	updateDirection();
+		_pos(0.0f, 0.0f, 0.0f), _omega(0.0f), _ortho(ortho) {
+	_dirty |= DIRTY_ORIENTATION;
 }
 
 Camera::~Camera() {
 }
 
-void Camera::lookAt(const glm::vec3& position) {
-	core_assert(position != _pos);
-	const glm::quat q(glm::normalize(_pos), glm::normalize(position));
-	_pitch = glm::pitch(q);
-	_yaw = glm::yaw(q);
-	normalizeAngles();
+void Camera::slerp(float pitch, float yaw, float factor) {
+	const glm::quat& quat2 = glm::angleAxis(pitch, glm::vec3(1.0f, 0.0f, 0.0f)) * glm::angleAxis(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+	_quat = glm::mix(_quat, quat2, factor);
 }
 
-void Camera::normalizeAngles() {
-	_yaw = fmodf(_yaw, 360.0f);
-	if (_yaw < 0.0f) {
-		_yaw += 360.0f;
+void Camera::lookAt(const glm::vec3& position) {
+	core_assert(position != _pos);
+	_dirty |= DIRTY_ORIENTATION;
+	const glm::vec3& direction = glm::normalize(position - _pos);
+	const float dot = glm::dot(glm::vec3(0, 0, 1), direction);
+	if (fabs(dot + 1.0f) < 0.000001f) {
+		_quat = glm::angleAxis(glm::degrees(glm::pi<float>()), glm::vec3(0, 1, 0));
+		return;
+	} else if (fabs(dot - 1.0f) < 0.000001f) {
+		_quat = glm::quat();
+		return;
 	}
 
-	const float maxPitch = _maxpitch->floatVal();
-	_pitch = glm::clamp(_pitch, -maxPitch, maxPitch);
+	const float angle = glm::degrees(acosf(dot));
+	const glm::vec3& cross = glm::normalize(glm::cross(direction, glm::vec3(0, 0, 1)));
+	_quat = glm::angleAxis(angle, cross);
 }
 
 FrustumResult Camera::testFrustum(const glm::vec3& position) const {
@@ -142,23 +145,54 @@ void Camera::updateFrustumPlanes() {
 	}
 }
 
-void Camera::updatePosition(long dt, bool left, bool right, bool forward, bool backward, float speed) {
-	const float angle = _yaw - glm::half_pi<float>();
-	const glm::vec3 rightvec(glm::sin(angle), 0.0, glm::cos(angle));
-
+void Camera::updatePosition(long dt, bool left, bool _right, bool _forward, bool backward, float speed) {
 	const float deltaTime = static_cast<float>(dt);
-	if (forward) {
-		_pos += _direction * deltaTime * speed;
+	if (_forward) {
+		_pos += forward() * deltaTime * speed;
+		_dirty |= DIRTY_POSITON;
 	}
 	if (backward) {
-		_pos -= _direction * deltaTime * speed;
+		_pos -= forward() * deltaTime * speed;
+		_dirty |= DIRTY_POSITON;
 	}
 	if (left) {
-		_pos -= rightvec * deltaTime * speed;
+		_pos -= right() * deltaTime * speed;
+		_dirty |= DIRTY_POSITON;
 	}
-	if (right) {
-		_pos += rightvec * deltaTime * speed;
+	if (_right) {
+		_pos += right() * deltaTime * speed;
+		_dirty |= DIRTY_POSITON;
 	}
+}
+
+void Camera::updateProjectionMatrix() {
+	if (_ortho) {
+		_projectionMatrix = orthoMatrix();
+	} else {
+		_projectionMatrix = perspectiveMatrix();
+	}
+}
+
+void Camera::updateOrientation() {
+	if (!isDirty(DIRTY_ORIENTATION)) {
+		return;
+	}
+	_orientation = glm::mat4_cast(_quat);
+}
+
+void Camera::updateViewMatrix() {
+	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON)) {
+		return;
+	}
+	_viewMatrix = glm::translate(orientation(), -_pos);
+}
+
+void Camera::update(long deltaFrame) {
+	updateOrientation();
+	updateViewMatrix();
+	updateProjectionMatrix();
+	updateFrustumPlanes();
+	_dirty = 0;
 }
 
 void Camera::init(int width, int height) {
@@ -166,20 +200,17 @@ void Camera::init(int width, int height) {
 	_height = height;
 }
 
-void Camera::updateDirection() {
-	normalizeAngles();
+void Camera::onMotion(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
+	float _yaw = glm::clamp(static_cast<float>(deltaX), -89.0f, 89.0f);
+	_yaw *= rotationSpeed;
 
-	const float cosV = glm::cos(_pitch);
-	const float cosH = glm::cos(_yaw);
-	const float sinH = glm::sin(_yaw);
-	const float sinV = glm::sin(_pitch);
-	_direction = glm::vec3(cosV * sinH, sinV, cosV * cosH);
-}
+	float _pitch = glm::clamp(static_cast<float>(deltaY), -89.0f, 89.0f);
+	_pitch *= rotationSpeed;
 
-void Camera::onMotion(int32_t x, int32_t y, int32_t deltaX, int32_t deltaY, float rotationSpeed) {
-	_yaw -= static_cast<float>(deltaX) * rotationSpeed;
-	_pitch -= static_cast<float>(deltaY) * rotationSpeed;
-	updateDirection();
+	_quat = glm::angleAxis(_yaw, glm::vec3(0.0f, 1.0f, 0.0f)) * _quat;
+	_quat = glm::angleAxis(_pitch, glm::vec3(1.0f, 0.0f, 0.0f)) * _quat;
+	_quat = glm::angleAxis(0.0f, glm::vec3(0.0f, 0.0f, 1.0f)) * _quat;
+	_dirty |= DIRTY_ORIENTATION;
 }
 
 Ray Camera::screenRay(const glm::vec2& screenPos) const {

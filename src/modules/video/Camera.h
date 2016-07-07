@@ -32,33 +32,39 @@ enum class FrustumResult {
 
 class Camera {
 private:
+	constexpr static int DIRTY_ORIENTATION = 1 << 0;
+	constexpr static int DIRTY_POSITON = 1 << 1;
+	constexpr static int DIRTY_FRUSTUM = 1 << 2;
+
+	inline bool isDirty(int flag) const {
+		if ((_dirty & flag) == 0) {
+			return false;
+		}
+		return true;
+	}
+
 	glm::vec3 _pos;
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projectionMatrix;
-	int _width;
-	int _height;
-	// vertical angle
-	float _pitch;
-	// horizontal angle
-	float _yaw;
-	glm::vec3 _direction;
+	glm::mat4 _orientation;
+	int _width = 0;
+	int _height = 0;
+	glm::quat _quat;
 	// rotation speed over time for all three axis
 	glm::vec3 _omega;
-	core::VarPtr _maxpitch;
 	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
 	float _nearPlane = 0.1f;
 	float _farPlane = 500.0f;
 	float _aspectRatio = 1.0f;
 	float _fieldOfView = 45.0f;
+	int _dirty = 0;
 	bool _ortho;
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
-	void updateDirection();
 	void updateFrustumPlanes();
 	void updateViewMatrix();
+	void updateOrientation();
 	void updateProjectionMatrix();
-
-	void normalizeAngles();
 public:
 	Camera(bool ortho = false);
 	~Camera();
@@ -88,8 +94,7 @@ public:
 
 	glm::vec3 up() const;
 
-	void onMotion(int32_t x, int32_t y, int32_t relX, int32_t relY, float rotationSpeed = 0.01f);
-	void onMovement(int32_t forward, int32_t sideward);
+	void onMotion(int32_t relX, int32_t relY, float rotationSpeed = 0.01f);
 	void updatePosition(long dt, bool left, bool right, bool forward, bool backward, float speed = 0.01f);
 	void update(long deltaFrame);
 
@@ -98,6 +103,8 @@ public:
 
 	glm::mat4 orthoMatrix() const;
 	glm::mat4 perspectiveMatrix() const;
+	const glm::mat4& viewMatrix() const;
+	const glm::mat4& projectionMatrix() const;
 
 	void setFieldOfView(float angles);
 	void setAspectRatio(float aspect);
@@ -107,20 +114,30 @@ public:
 	const glm::vec3& position() const;
 	int width() const;
 	int height() const;
-	const glm::mat4& viewMatrix() const;
-	const glm::mat4& projectionMatrix() const;
+
 	const glm::vec4& frustumPlane(FrustumPlanes plane) const;
+
 	/**
-	 * @brief Return the horizontal angle of the camera view direction
+	 * @brief Rotation around the y-axis
 	 */
 	float yaw() const;
 	/**
-	 * @brief Return the vertical angle of the camera view direction
+	 * @brief Rotation around the z-axis
+	 */
+	float roll() const;
+	/**
+	 * @brief Rotation around the x-axis
 	 */
 	float pitch() const;
 
+	/**
+	 * @param[in] pitch rotation in modelspace
+	 * @param[in] yaw rotation in modelspace
+	 */
 	void setAngles(float pitch, float yaw);
 	void setPosition(const glm::vec3& pos);
+
+	void slerp(float pitch, float yaw, float factor);
 
 	/**
 	 * @brief Converts mouse coordinates into a ray
@@ -135,8 +152,16 @@ public:
 	glm::vec3 screenToWorld(const glm::vec3& screenPos) const;
 };
 
+inline float Camera::pitch() const {
+	return glm::pitch(_quat);
+}
+
+inline float Camera::roll() const {
+	return glm::roll(_quat);
+}
+
 inline float Camera::yaw() const {
-	return _yaw;
+	return glm::yaw(_quat);
 }
 
 inline void Camera::setOrtho(bool ortho) {
@@ -160,20 +185,20 @@ inline void Camera::setNearPlane(float nearPlane) {
 }
 
 inline glm::mat4 Camera::orientation() const {
-	const glm::mat4& orientation = glm::rotate(glm::rotate(glm::mat4(), glm::radians(_pitch), glm::vec3(1, 0, 0)), glm::radians(_yaw), glm::vec3(0, 1, 0));
-	return orientation;
+	core_assert_msg(!isDirty(DIRTY_ORIENTATION), "state is dirty - call update()");
+	return _orientation;
 }
 
 inline glm::vec3 Camera::forward() const {
-	return (glm::inverse(orientation()) * glm::vec4(0, 0, -1, 1)).xyz();
+	return glm::conjugate(_quat) * glm::vec3(0.0f, 0.0f, -1.0f);;
 }
 
 inline glm::vec3 Camera::right() const {
-	return (glm::inverse(orientation()) * glm::vec4(1, 0, 0, 1)).xyz();
+	return glm::conjugate(_quat) * glm::vec3(1.0f, 0.0f, 0.0f);;
 }
 
 inline glm::vec3 Camera::up() const {
-	return (glm::inverse(orientation()) * glm::vec4(0, 1, 0, 1)).xyz();
+	return glm::conjugate(_quat) * glm::vec3(0.0f, 1.0f, 0.0f);;
 }
 
 inline glm::mat4 Camera::orthoMatrix() const {
@@ -182,16 +207,12 @@ inline glm::mat4 Camera::orthoMatrix() const {
 	return glm::ortho(0.0f, w, h, 0.0f, nearPlane(), farPlane());
 }
 
-inline float Camera::pitch() const {
-	return _pitch;
-}
-
 inline void Camera::setAngles(float pitch, float yaw) {
-	_pitch = pitch;
-	_yaw = yaw;
+	_quat = glm::angleAxis(pitch, glm::vec3(1.0f, 0.0f, 0.0f)) * glm::angleAxis(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 inline void Camera::setPosition(const glm::vec3& pos) {
+	_dirty |= DIRTY_POSITON;
 	_pos = pos;
 }
 
@@ -219,21 +240,6 @@ inline glm::mat4 Camera::perspectiveMatrix() const {
 	return glm::perspective(glm::radians(_fieldOfView), _aspectRatio, nearPlane(), farPlane());
 }
 
-inline void Camera::updateProjectionMatrix() {
-	if (_ortho) {
-		_projectionMatrix = orthoMatrix();
-	} else {
-		_projectionMatrix = perspectiveMatrix();
-	}
-}
-
-inline void Camera::update(long deltaFrame) {
-	updateDirection();
-	updateViewMatrix();
-	updateProjectionMatrix();
-	updateFrustumPlanes();
-}
-
 inline const glm::vec3& Camera::position() const {
 	return _pos;
 }
@@ -244,10 +250,6 @@ inline int Camera::width() const {
 
 inline int Camera::height() const {
 	return _height;
-}
-
-inline void Camera::updateViewMatrix() {
-	_viewMatrix = glm::lookAt(_pos, _pos + glm::normalize(_direction), glm::vec3(0.0, 1.0, 0.0));
 }
 
 inline void Camera::setOmega(const glm::vec3& omega) {

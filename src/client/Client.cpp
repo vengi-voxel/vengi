@@ -59,7 +59,7 @@ void Client::sendMovement() {
 
 void Client::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	UIApp::onMouseMotion(x, y, relX, relY);
-	_camera.onMotion(x, y, relX, relY, _rotationSpeed->floatVal());
+	_camera.onMotion(relX, relY, _rotationSpeed->floatVal());
 }
 
 void Client::onEvent(const network::DisconnectEvent& event) {

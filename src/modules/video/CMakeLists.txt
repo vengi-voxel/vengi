@@ -26,5 +26,6 @@ target_include_directories(${LIB} PUBLIC ${OPENGL_INCLUDE_DIRS})
 
 gtest_suite_files(tests
 	tests/ShaderTest.cpp
+	tests/CameraTest.cpp
 )
 gtest_suite_deps(tests ${LIB})
