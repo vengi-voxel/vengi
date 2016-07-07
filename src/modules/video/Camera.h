@@ -185,7 +185,6 @@ inline void Camera::setNearPlane(float nearPlane) {
 }
 
 inline glm::mat4 Camera::orientation() const {
-	core_assert_msg(!isDirty(DIRTY_ORIENTATION), "state is dirty - call update()");
 	return _orientation;
 }
 
