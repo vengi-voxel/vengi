@@ -54,7 +54,7 @@ private:
 	uint findRotation(float animationTime, const aiNodeAnim* nodeAnim);
 	uint findPosition(float animationTime, const aiNodeAnim* nodeAnim);
 	const aiNodeAnim* findNodeAnim(const aiAnimation* animation, const std::string& nodeName);
-	void readNodeHierarchy(aiScene* scene, float animationTime, const aiNode* node, const glm::mat4& parentTransform);
+	void readNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform);
 	void loadBones(uint32_t neshIndex, const aiMesh* aiMesh, std::vector<VertexBoneData>& bones);
 
 	GLuint _vertexArrayObject = 0u;
@@ -72,6 +72,8 @@ private:
 	uint32_t _numBones = 0u;
 	std::vector<BoneInfo> _boneInfo;
 	glm::mat4 _globalInverseTransform;
+	const aiScene* _scene = nullptr;
+	Assimp::Importer _importer;
 public:
 	Mesh();
 	~Mesh();
@@ -80,11 +82,11 @@ public:
 		return _numBones;
 	}
 
-	void boneTransform(aiScene* scene, float timeInSeconds, std::vector<glm::mat4>& transforms);
+	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms);
 
 	void shutdown();
 	bool loadMesh(const std::string& filename);
-	bool initMesh(Shader& shader);
+	bool initMesh(Shader& shader, float timeInSeconds = 0.0f);
 	int render();
 };
 

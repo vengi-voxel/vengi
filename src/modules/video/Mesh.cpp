@@ -23,6 +23,7 @@ Mesh::~Mesh() {
 }
 
 void Mesh::shutdown() {
+	_importer.FreeScene();
 	_textures.clear();
 	_images.clear();
 	_meshData.clear();
@@ -46,30 +47,29 @@ void Mesh::shutdown() {
 }
 
 bool Mesh::loadMesh(const std::string& filename) {
-	Assimp::Importer importer;
 #if 0
 	// TODO: implement custom io handler to support meshes that are split over several files (like obj)
 	class MeshIOSystem : public Assimp::IOSystem {
 	};
 	MeshIOSystem iosystem;
-	importer.SetIOHandler(&iosystem);
+	_importer.SetIOHandler(&iosystem);
 #endif
-	const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_FindDegenerates);
-	if (scene == nullptr || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-		Log::error("Error parsing '%s': '%s'\n", filename.c_str(), importer.GetErrorString());
+	_scene = _importer.ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_FindDegenerates);
+	if (_scene == nullptr || _scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !_scene->mRootNode) {
+		Log::error("Error parsing '%s': '%s'\n", filename.c_str(), _importer.GetErrorString());
 		_state = io::IOSTATE_FAILED;
 		return false;
 	}
 
-	_globalInverseTransform = glm::inverse(toMat4(scene->mRootNode->mTransformation));
+	_globalInverseTransform = glm::inverse(toMat4(_scene->mRootNode->mTransformation));
 
-	_meshData.resize(scene->mNumMeshes);
+	_meshData.resize(_scene->mNumMeshes);
 
 	uint32_t numIndices = 0u;
 	uint32_t numVertices = 0u;
 
 	for (uint32_t i = 0; i < _meshData.size(); ++i) {
-		const aiMesh* mesh = scene->mMeshes[i];
+		const aiMesh* mesh = _scene->mMeshes[i];
 		GLMeshData& meshData = _meshData[i];
 		meshData.materialIndex = mesh->mMaterialIndex;
 		meshData.noOfIndices = mesh->mNumFaces * 3;
@@ -86,7 +86,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 	_indices.reserve(numIndices);
 
 	for (uint32_t i = 0; i < _meshData.size(); i++) {
-		const aiMesh* mesh = scene->mMeshes[i];
+		const aiMesh* mesh = _scene->mMeshes[i];
 		for (uint32_t i = 0; i < mesh->mNumFaces; ++i) {
 			const aiFace& face = mesh->mFaces[i];
 			core_assert(face.mNumIndices == 3);
@@ -95,23 +95,23 @@ bool Mesh::loadMesh(const std::string& filename) {
 			_indices.push_back(face.mIndices[2]);
 		}
 
-		for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {
-			const aiVector3D* pos = &mesh->mVertices[i];
-			const aiVector3D* normal = &mesh->mNormals[i];
-			const aiVector3D* texCoord = mesh->HasTextureCoords(0) ? &mesh->mTextureCoords[0][i] : &VECZERO;
+		for (uint32_t vi = 0; vi < mesh->mNumVertices; ++vi) {
+			const aiVector3D* pos = &mesh->mVertices[vi];
+			const aiVector3D* normal = &mesh->mNormals[vi];
+			const aiVector3D* texCoord = mesh->HasTextureCoords(0) ? &mesh->mTextureCoords[0][vi] : &VECZERO;
 
 			_vertices.emplace_back(glm::vec3(pos->x, pos->y, pos->z), glm::vec3(normal->x, normal->y, normal->z), glm::vec2(texCoord->x, texCoord->y));
 		}
 		loadBones(i, mesh, _bones);
 	}
 
-	loadTextureImages(scene, filename);
+	loadTextureImages(_scene, filename);
 	_readyToInit = true;
 	Log::info("Loaded mesh %s with %i vertices and %i indices", filename.c_str(), (int)_vertices.size(), (int)_indices.size());
 	return true;
 }
 
-bool Mesh::initMesh(Shader& shader) {
+bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 	if (_state != io::IOSTATE_LOADED) {
 		if (!_readyToInit) {
 			return false;
@@ -144,7 +144,7 @@ bool Mesh::initMesh(Shader& shader) {
 		const int size = shader.getUniformArraySize("u_bonetransforms");
 		if (size > 0) {
 			std::vector<glm::mat4> transforms;
-			boneTransform(nullptr, 0.0f, transforms);
+			boneTransform(timeInSeconds, transforms);
 			const int numTransforms = std::min((int)transforms.size(), size);
 			shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], numTransforms);
 		}
@@ -354,10 +354,9 @@ void Mesh::calcInterpolatedScaling(aiVector3D& out, float animationTime, const a
 	out = start + factor * delta;
 }
 
-void Mesh::readNodeHierarchy(aiScene* scene, float animationTime, const aiNode* node, const glm::mat4& parentTransform) {
+void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform) {
 	// TODO: what about scene->mNumAnimations
 	const std::string nodeName(node->mName.data);
-	const aiAnimation* animation = scene->mAnimations[0];
 	glm::mat4 nodeTransformation;
 	const aiNodeAnim* nodeAnim = findNodeAnim(animation, nodeName);
 
@@ -391,23 +390,25 @@ void Mesh::readNodeHierarchy(aiScene* scene, float animationTime, const aiNode* 
 	}
 
 	for (uint32_t i = 0; i < node->mNumChildren; i++) {
-		readNodeHierarchy(scene, animationTime, node->mChildren[i], globalTransformation);
+		readNodeHierarchy(animation, animationTime, node->mChildren[i], globalTransformation);
 	}
 }
 
-void Mesh::boneTransform(aiScene* scene, float timeInSeconds, std::vector<glm::mat4>& transforms) {
+void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms) {
 	glm::mat4 identity;
 
-	if (_numBones <= 0) {
+	if (_numBones <= 0 || _scene->mNumAnimations <= 0) {
 		transforms.push_back(identity);
 		return;
 	}
 
-	const float ticksPerSecond = (float) (scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f);
+	// TODO: support more than just the first animation
+	const aiAnimation* animation = _scene->mAnimations[0];
+	const float ticksPerSecond = (float) (animation->mTicksPerSecond != 0 ? animation->mTicksPerSecond : 25.0f);
 	const float timeInTicks = timeInSeconds * ticksPerSecond;
-	const float animationTime = fmod(timeInTicks, (float) scene->mAnimations[0]->mDuration);
+	const float animationTime = fmod(timeInTicks, (float) animation->mDuration);
 
-	readNodeHierarchy(scene, animationTime, scene->mRootNode, identity);
+	readNodeHierarchy(animation, animationTime, _scene->mRootNode, identity);
 
 	transforms.resize(_numBones);
 

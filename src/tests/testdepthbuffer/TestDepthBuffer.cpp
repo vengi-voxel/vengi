@@ -57,7 +57,7 @@ void TestDepthBuffer::doRender() {
 			Log::error("Failed to init the mesh");
 		}
 		_depthBuffer.bind();
-		_mesh.render(_shadowMapShader);
+		_mesh.render();
 		_depthBuffer.unbind();
 	}
 	{
