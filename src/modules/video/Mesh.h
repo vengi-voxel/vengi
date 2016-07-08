@@ -50,9 +50,9 @@ private:
 	void calcInterpolatedScaling(aiVector3D& out, float animationTime, const aiNodeAnim* nodeAnim);
 	void calcInterpolatedRotation(aiQuaternion& out, float animationTime, const aiNodeAnim* nodeAnim);
 	void calcInterpolatedPosition(aiVector3D& out, float animationTime, const aiNodeAnim* nodeAnim);
-	uint findScaling(float animationTime, const aiNodeAnim* nodeAnim);
-	uint findRotation(float animationTime, const aiNodeAnim* nodeAnim);
-	uint findPosition(float animationTime, const aiNodeAnim* nodeAnim);
+	uint32_t findScaling(float animationTime, const aiNodeAnim* nodeAnim);
+	uint32_t findRotation(float animationTime, const aiNodeAnim* nodeAnim);
+	uint32_t findPosition(float animationTime, const aiNodeAnim* nodeAnim);
 	const aiNodeAnim* findNodeAnim(const aiAnimation* animation, const std::string& nodeName);
 	void readNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform);
 	void loadBones(uint32_t neshIndex, const aiMesh* aiMesh, std::vector<VertexBoneData>& bones);

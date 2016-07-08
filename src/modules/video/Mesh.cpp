@@ -251,7 +251,7 @@ uint32_t Mesh::findPosition(float animationTime, const aiNodeAnim* nodeAnim) {
 		}
 	}
 
-	core_assert(false);
+	core_assert_msg(false, "could not find a suitable position for animationTime %f", animationTime);
 
 	return 0;
 }
@@ -265,12 +265,12 @@ uint32_t Mesh::findRotation(float animationTime, const aiNodeAnim* nodeAnim) {
 		}
 	}
 
-	core_assert(false);
+	core_assert_msg(false, "could not find a suitable rotation for animationTime %f", animationTime);
 
 	return 0;
 }
 
-uint Mesh::findScaling(float animationTime, const aiNodeAnim* nodeAnim) {
+uint32_t Mesh::findScaling(float animationTime, const aiNodeAnim* nodeAnim) {
 	core_assert(nodeAnim->mNumScalingKeys > 0);
 
 	for (uint i = 0; i < nodeAnim->mNumScalingKeys - 1; i++) {
@@ -279,7 +279,7 @@ uint Mesh::findScaling(float animationTime, const aiNodeAnim* nodeAnim) {
 		}
 	}
 
-	core_assert(false);
+	core_assert_msg(false, "could not find a suitable scaling for animationTime %f", animationTime);
 
 	return 0;
 }
