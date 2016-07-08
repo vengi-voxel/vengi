@@ -144,54 +144,52 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 		_images.clear();
 
 		_state = io::IOSTATE_LOADED;
-	} else {
-		const int size = shader.getUniformArraySize("u_bonetransforms");
-		if (size > 0) {
-			std::vector<glm::mat4> transforms;
-			transforms.resize(size);
-			boneTransform(timeInSeconds, transforms);
-			shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], size);
+
+		glBindVertexArray(_vertexArrayObject);
+
+		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * _vertices.size(), &_vertices[0], GL_STATIC_DRAW);
+		if (shader.hasAttribute("a_pos")) {
+			const int loc = shader.enableVertexAttribute("a_pos");
+			core_assert(loc >= 0);
+			glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _pos)));
+		}
+		if (shader.hasAttribute("a_texcoords")) {
+			const int loc = shader.enableVertexAttribute("a_texcoords");
+			core_assert(loc >= 0);
+			glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _uv)));
+		}
+		if (shader.hasAttribute("a_norm")) {
+			const int loc = shader.enableVertexAttribute("a_norm");
+			core_assert(loc >= 0);
+			glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _norm)));
+		}
+		if (shader.hasAttribute("a_boneids")) {
+			const int loc = shader.enableVertexAttribute("a_boneids");
+			core_assert(loc >= 0);
+			glVertexAttribIPointer(loc, 4, GL_INT, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneIds)));
+		}
+		if (shader.hasAttribute("a_boneweights")) {
+			const int loc = shader.enableVertexAttribute("a_boneweights");
+			core_assert(loc >= 0);
+			glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneWeights)));
 		}
 
-		return true;
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _indices.size(), &_indices[0], GL_STATIC_DRAW);
+
+		glBindVertexArray(0);
 	}
 
-	glBindVertexArray(_vertexArrayObject);
-
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * _vertices.size(), &_vertices[0], GL_STATIC_DRAW);
-	if (shader.hasAttribute("a_pos")) {
-		const int loc = shader.enableVertexAttribute("a_pos");
-		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _pos)));
-	}
-	if (shader.hasAttribute("a_texcoords")) {
-		const int loc = shader.enableVertexAttribute("a_texcoords");
-		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _uv)));
-	}
-	if (shader.hasAttribute("a_norm")) {
-		const int loc = shader.enableVertexAttribute("a_norm");
-		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _norm)));
-	}
-	if (shader.hasAttribute("a_boneids")) {
-		const int loc = shader.enableVertexAttribute("a_boneids");
-		core_assert(loc >= 0);
-		glVertexAttribIPointer(loc, 4, GL_INT, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneIds)));
-	}
-	if (shader.hasAttribute("a_boneweights")) {
-		const int loc = shader.enableVertexAttribute("a_boneweights");
-		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneWeights)));
+	const int size = shader.getUniformArraySize("u_bonetransforms");
+	if (size > 0) {
+		std::vector<glm::mat4> transforms;
+		transforms.resize(size);
+		boneTransform(timeInSeconds, transforms);
+		shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], size);
 	}
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _indices.size(), &_indices[0], GL_STATIC_DRAW);
-
-	glBindVertexArray(0);
-
-	return false;
+	return true;
 }
 
 void Mesh::Vertex::addBoneData(uint32_t boneID, float weight) {
