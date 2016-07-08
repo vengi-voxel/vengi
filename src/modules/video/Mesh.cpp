@@ -84,10 +84,10 @@ bool Mesh::loadMesh(const std::string& filename) {
 	_vertices.reserve(numVertices);
 	_indices.reserve(numIndices);
 
-	for (uint32_t i = 0; i < _meshData.size(); i++) {
+	for (uint32_t i = 0u; i < _meshData.size(); ++i) {
 		const aiMesh* mesh = _scene->mMeshes[i];
-		for (uint32_t i = 0; i < mesh->mNumFaces; ++i) {
-			const aiFace& face = mesh->mFaces[i];
+		for (uint32_t fi = 0; fi < mesh->mNumFaces; ++fi) {
+			const aiFace& face = mesh->mFaces[fi];
 			core_assert(face.mNumIndices == 3);
 			_indices.push_back(face.mIndices[0]);
 			_indices.push_back(face.mIndices[1]);
