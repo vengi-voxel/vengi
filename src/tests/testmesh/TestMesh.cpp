@@ -34,7 +34,7 @@ void TestMesh::doRender() {
 	_meshShader.setModel(glm::mat4());
 	_meshShader.setTexture(0);
 
-	if (!_mesh.initMesh(_meshShader, _now / 1000.0f)) {
+	if (!_mesh.initMesh(_meshShader, (_now - _initTime) / 1000.0f)) {
 		Log::error("Failed to init the mesh");
 		return;
 	}
