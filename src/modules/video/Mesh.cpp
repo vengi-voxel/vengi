@@ -216,6 +216,7 @@ glm::mat4 Mesh::toMat4(const aiMatrix3x3& m) const {
 }
 
 void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh) {
+	Log::debug("Load %i bones", mesh->mNumBones);
 	for (uint32_t i = 0u; i < mesh->mNumBones; ++i) {
 		uint32_t boneIndex = 0u;
 		const aiBone* aiBone = mesh->mBones[i];
@@ -233,6 +234,7 @@ void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh) {
 			boneIndex = iter->second;
 		}
 
+		Log::debug("Load bone %s with %i weights defined", boneName.c_str(), aiBone->mNumWeights);
 		for (uint32_t j = 0u; j < aiBone->mNumWeights; ++j) {
 			const aiVertexWeight& weights = aiBone->mWeights[j];
 			const uint32_t vertexID = _meshData[meshIndex].baseVertex + weights.mVertexId;
@@ -369,6 +371,9 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 	if (iter != _boneMapping.end()) {
 		const uint32_t boneIndex = iter->second;
 		_boneInfo[boneIndex].finalTransformation = _globalInverseTransform * globalTransformation * _boneInfo[boneIndex].boneOffset;
+		Log::trace("update bone transform for node name %s (index: %u)", nodeName.c_str(), boneIndex);
+	} else {
+		Log::trace("Could not find bone mapping for node name %s", nodeName.c_str());
 	}
 
 	for (uint32_t i = 0u; i < node->mNumChildren; ++i) {
@@ -379,7 +384,7 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms) {
 	const glm::mat4 identity;
 
-	if (_numBones <= 0 || _scene->mNumAnimations <= 0) {
+	if (_numBones == 0 || _scene->mNumAnimations == 0) {
 		transforms.push_back(identity);
 		return;
 	}
@@ -394,19 +399,20 @@ void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms
 
 	transforms.resize(_numBones);
 
-	for (uint32_t i = 0; i < _numBones; i++) {
+	for (uint32_t i = 0u; i < _numBones; ++i) {
 		transforms[i] = _boneInfo[i].finalTransformation;
 	}
 }
 
 const aiNodeAnim* Mesh::findNodeAnim(const aiAnimation* animation, const std::string& nodeName) {
-	for (uint32_t i = 0; i < animation->mNumChannels; i++) {
+	for (uint32_t i = 0u; i < animation->mNumChannels; ++i) {
 		const aiNodeAnim* nodeAnim = animation->mChannels[i];
 		if (!strcmp(nodeAnim->mNodeName.data, nodeName.c_str())) {
 			return nodeAnim;
 		}
 	}
 
+	Log::trace("Could not find animation node for %s", nodeName.c_str());
 	return nullptr;
 }
 
