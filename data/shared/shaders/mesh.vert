@@ -27,8 +27,8 @@ void main(void) {
 	bonetrans     += u_bonetransforms[a_boneids[3]] * a_weights[3];
 	mat4 modelview = u_view * u_model;
 	vec4 pos4      = modelview * bonetrans * vec4(a_pos, 1.0);
-	// TODO: does this make sense with the projection applied. Afaik the w
-	// components division here is to correct perspective transforms
+	// TODO: does this make sense without the projection applied. Afaik
+	// the w components division here is to correct perspective transforms
 	v_pos          = pos4.xyz / pos4.w;
 	v_norm         = vec4(bonetrans * vec4(a_norm, 0.0)).xyz;
 	v_texcoords    = a_texcoords;
