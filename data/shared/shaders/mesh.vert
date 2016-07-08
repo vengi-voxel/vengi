@@ -8,17 +8,11 @@ $in vec4 a_weights;
 uniform mat4 u_projection;
 uniform mat4 u_model;
 uniform mat4 u_view;
-uniform float u_fogrange;
-uniform float u_viewdistance;
-uniform vec3 u_lightpos;
 uniform mat4 u_bonetransforms[100];
 
 $out vec3 v_pos;
 $out vec3 v_norm;
 $out vec2 v_texcoords;
-$out vec3 v_lightpos;
-$out float v_fogrange;
-$out float v_viewdistance;
 
 void main(void) {
 	mat4 bonetrans = u_bonetransforms[a_boneids[0]] * a_weights[0];
@@ -32,8 +26,5 @@ void main(void) {
 	v_pos          = pos4.xyz / pos4.w;
 	v_norm         = vec4(bonetrans * vec4(a_norm, 0.0)).xyz;
 	v_texcoords    = a_texcoords;
-	v_fogrange     = u_fogrange;
-	v_viewdistance = u_viewdistance;
-	v_lightpos     = u_lightpos;
 	gl_Position    = u_projection * pos4;
 }
