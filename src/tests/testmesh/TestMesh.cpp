@@ -15,7 +15,7 @@ core::AppState TestMesh::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	const std::string mesh = "animal_rabbit.dae";
+	const std::string mesh = "boblampclean.md5mesh";
 	if (!_mesh.loadMesh(mesh)) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
@@ -33,7 +33,7 @@ void TestMesh::doRender() {
 	_meshShader.setModel(glm::mat4());
 	_meshShader.setTexture(0);
 
-	if (!_mesh.initMesh(_meshShader)) {
+	if (!_mesh.initMesh(_meshShader, _now / 1000.0f)) {
 		Log::error("Failed to init the mesh");
 		return;
 	}

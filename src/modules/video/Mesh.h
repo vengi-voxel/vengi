@@ -26,8 +26,12 @@ private:
 	};
 
 	struct VertexBoneData {
-		uint32_t boneIds[NUM_BONES_PER_VEREX] = {0, 0, 0, 0};
-		float boneWeights[NUM_BONES_PER_VEREX] = {0.0f, 0.0f, 0.0f, 0.0f};
+		uint32_t boneIds[NUM_BONES_PER_VEREX];
+		float boneWeights[NUM_BONES_PER_VEREX];
+
+		VertexBoneData() :
+				boneIds { 0u, 0u, 0u, 0u }, boneWeights { 0.0f, 0.0f, 0.0f, 0.0f } {
+		}
 
 		void addBoneData(uint32_t boneID, float weight);
 	};

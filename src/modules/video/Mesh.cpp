@@ -81,7 +81,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 		numIndices += meshData.noOfIndices;
 	}
 
-	_bones.reserve(numVertices);
+	_bones.resize(numVertices);
 	_vertices.reserve(numVertices);
 	_indices.reserve(numIndices);
 
@@ -197,16 +197,22 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 }
 
 void Mesh::VertexBoneData::addBoneData(uint32_t boneID, float weight) {
-	for (uint i = 0; i < SDL_arraysize(boneIds); i++) {
-		if (fabs(boneWeights[i]) <= 0.000001) {
+	if (weight <= 0.0f) {
+		return;
+	}
+
+
+	const int size = SDL_arraysize(boneIds);
+	for (int i = 0; i < size; ++i) {
+		Log::info("boneIds[%i] = %u (%f)", i, boneIds[i], boneWeights[i]);
+		if (boneIds[i] == 0u) {
 			boneIds[i] = boneID;
 			boneWeights[i] = weight;
 			return;
 		}
 	}
 
-	// should never get here - more bones than we have space for
-	core_assert(false);
+	core_assert_msg(false, "more bones than we have space for - can't handle boneid %u with weight %f", boneID, weight);
 }
 
 glm::mat4 Mesh::toMat4(const aiMatrix4x4& m) const {
@@ -218,8 +224,8 @@ glm::mat4 Mesh::toMat4(const aiMatrix3x3& m) const {
 }
 
 void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh, std::vector<VertexBoneData>& bones) {
-	for (uint32_t i = 0; i < mesh->mNumBones; i++) {
-		uint32_t boneIndex = 0;
+	for (uint32_t i = 0u; i < mesh->mNumBones; ++i) {
+		uint32_t boneIndex = 0u;
 		const aiBone* aiBone = mesh->mBones[i];
 		const std::string boneName(aiBone->mName.data);
 
@@ -227,7 +233,7 @@ void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh, std::vector<VertexB
 		if (iter == _boneMapping.end()) {
 			// Allocate an index for a new bone
 			boneIndex = _numBones;
-			_numBones++;
+			++_numBones;
 			const BoneInfo bi = { toMat4(aiBone->mOffsetMatrix), glm::mat4() };
 			_boneInfo.push_back(bi);
 			_boneMapping[boneName] = boneIndex;
@@ -235,7 +241,7 @@ void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh, std::vector<VertexB
 			boneIndex = iter->second;
 		}
 
-		for (uint32_t j = 0; j < aiBone->mNumWeights; j++) {
+		for (uint32_t j = 0u; j < aiBone->mNumWeights; ++j) {
 			const aiVertexWeight& weights = aiBone->mWeights[j];
 			const uint32_t vertexID = _meshData[meshIndex].baseVertex + weights.mVertexId;
 			const float weight = weights.mWeight;
@@ -245,7 +251,7 @@ void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh, std::vector<VertexB
 }
 
 uint32_t Mesh::findPosition(float animationTime, const aiNodeAnim* nodeAnim) {
-	for (uint32_t i = 0; i < nodeAnim->mNumPositionKeys - 1; i++) {
+	for (uint32_t i = 0u; i < nodeAnim->mNumPositionKeys - 1; ++i) {
 		if (animationTime < (float) nodeAnim->mPositionKeys[i + 1].mTime) {
 			return i;
 		}
@@ -253,13 +259,13 @@ uint32_t Mesh::findPosition(float animationTime, const aiNodeAnim* nodeAnim) {
 
 	core_assert_msg(false, "could not find a suitable position for animationTime %f", animationTime);
 
-	return 0;
+	return 0u;
 }
 
 uint32_t Mesh::findRotation(float animationTime, const aiNodeAnim* nodeAnim) {
 	core_assert(nodeAnim->mNumRotationKeys > 0);
 
-	for (uint32_t i = 0; i < nodeAnim->mNumRotationKeys - 1; i++) {
+	for (uint32_t i = 0u; i < nodeAnim->mNumRotationKeys - 1; ++i) {
 		if (animationTime < (float) nodeAnim->mRotationKeys[i + 1].mTime) {
 			return i;
 		}
@@ -267,13 +273,13 @@ uint32_t Mesh::findRotation(float animationTime, const aiNodeAnim* nodeAnim) {
 
 	core_assert_msg(false, "could not find a suitable rotation for animationTime %f", animationTime);
 
-	return 0;
+	return 0u;
 }
 
 uint32_t Mesh::findScaling(float animationTime, const aiNodeAnim* nodeAnim) {
 	core_assert(nodeAnim->mNumScalingKeys > 0);
 
-	for (uint i = 0; i < nodeAnim->mNumScalingKeys - 1; i++) {
+	for (uint32_t i = 0u; i < nodeAnim->mNumScalingKeys - 1; ++i) {
 		if (animationTime < (float) nodeAnim->mScalingKeys[i + 1].mTime) {
 			return i;
 		}
@@ -281,7 +287,7 @@ uint32_t Mesh::findScaling(float animationTime, const aiNodeAnim* nodeAnim) {
 
 	core_assert_msg(false, "could not find a suitable scaling for animationTime %f", animationTime);
 
-	return 0;
+	return 0u;
 }
 
 void Mesh::calcInterpolatedPosition(aiVector3D& out, float animationTime, const aiNodeAnim* nodeAnim) {
@@ -341,7 +347,6 @@ void Mesh::calcInterpolatedScaling(aiVector3D& out, float animationTime, const a
 }
 
 void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform) {
-	// TODO: what about scene->mNumAnimations
 	const std::string nodeName(node->mName.data);
 	glm::mat4 nodeTransformation;
 	const aiNodeAnim* nodeAnim = findNodeAnim(animation, nodeName);
@@ -355,7 +360,7 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 		// Interpolate rotation and generate rotation transformation matrix
 		aiQuaternion rotationQ;
 		calcInterpolatedRotation(rotationQ, animationTime, nodeAnim);
-		const glm::mat4 rotationM = glm::mat4(toMat4(rotationQ.GetMatrix()));
+		const glm::mat4 rotationM = toMat4(rotationQ.GetMatrix());
 
 		// Interpolate translation and generate translation transformation matrix
 		aiVector3D translation;
@@ -370,18 +375,19 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 
 	const glm::mat4 globalTransformation = parentTransform * nodeTransformation;
 
-	if (_boneMapping.find(nodeName) != _boneMapping.end()) {
-		const uint32_t boneIndex = _boneMapping[nodeName];
+	auto iter = _boneMapping.find(nodeName);
+	if (iter != _boneMapping.end()) {
+		const uint32_t boneIndex = iter->second;
 		_boneInfo[boneIndex].finalTransformation = _globalInverseTransform * globalTransformation * _boneInfo[boneIndex].boneOffset;
 	}
 
-	for (uint32_t i = 0; i < node->mNumChildren; i++) {
+	for (uint32_t i = 0u; i < node->mNumChildren; ++i) {
 		readNodeHierarchy(animation, animationTime, node->mChildren[i], globalTransformation);
 	}
 }
 
 void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms) {
-	glm::mat4 identity;
+	const glm::mat4 identity;
 
 	if (_numBones <= 0 || _scene->mNumAnimations <= 0) {
 		transforms.push_back(identity);
