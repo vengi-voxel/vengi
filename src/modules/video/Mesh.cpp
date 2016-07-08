@@ -81,7 +81,6 @@ bool Mesh::loadMesh(const std::string& filename) {
 		numIndices += meshData.noOfIndices;
 	}
 
-	_bones.resize(numVertices);
 	_vertices.reserve(numVertices);
 	_indices.reserve(numIndices);
 
@@ -96,13 +95,13 @@ bool Mesh::loadMesh(const std::string& filename) {
 		}
 
 		for (uint32_t vi = 0; vi < mesh->mNumVertices; ++vi) {
-			const aiVector3D* pos = &mesh->mVertices[vi];
-			const aiVector3D* normal = &mesh->mNormals[vi];
-			const aiVector3D* texCoord = mesh->HasTextureCoords(0) ? &mesh->mTextureCoords[0][vi] : &VECZERO;
+			const aiVector3D& pos = mesh->mVertices[vi];
+			const aiVector3D& normal = mesh->mNormals[vi];
+			const aiVector3D& texCoord = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][vi] : VECZERO;
 
-			_vertices.emplace_back(glm::vec3(pos->x, pos->y, pos->z), glm::vec3(normal->x, normal->y, normal->z), glm::vec2(texCoord->x, texCoord->y));
+			_vertices.emplace_back(pos, normal, texCoord);
 		}
-		loadBones(i, mesh, _bones);
+		loadBones(i, mesh);
 	}
 
 	loadTextureImages(_scene, filename);
@@ -172,20 +171,15 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _norm)));
 	}
 
-#if 0
-	// TODO: move bones data into the vbo
-	glBindBuffer(GL_ARRAY_BUFFER, m_Buffers[BONE_VB]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(_bones[0]) * _bones.size(), &_bones[0], GL_STATIC_DRAW);
-#endif
-	if (shader.hasAttribute("a_boneid")) {
-		const int loc = shader.enableVertexAttribute("a_boneid");
+	if (shader.hasAttribute("a_boneids")) {
+		const int loc = shader.enableVertexAttribute("a_boneids");
 		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 4, GL_INT, GL_FALSE, sizeof(VertexBoneData), GL_OFFSET_CAST(offsetof(VertexBoneData, boneIds)));
+		glVertexAttribPointer(loc, 4, GL_INT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, boneIds)));
 	}
-	if (shader.hasAttribute("a_boneweight")) {
-		const int loc = shader.enableVertexAttribute("a_boneweight");
+	if (shader.hasAttribute("a_boneweights")) {
+		const int loc = shader.enableVertexAttribute("a_boneweights");
 		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(VertexBoneData), GL_OFFSET_CAST(offsetof(VertexBoneData, boneWeights)));
+		glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, boneWeights)));
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
@@ -196,15 +190,13 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 	return GL_checkError() == 0;
 }
 
-void Mesh::VertexBoneData::addBoneData(uint32_t boneID, float weight) {
+void Mesh::Vertex::addBoneData(uint32_t boneID, float weight) {
 	if (weight <= 0.0f) {
 		return;
 	}
 
-
 	const int size = SDL_arraysize(boneIds);
 	for (int i = 0; i < size; ++i) {
-		Log::info("boneIds[%i] = %u (%f)", i, boneIds[i], boneWeights[i]);
 		if (boneIds[i] == 0u) {
 			boneIds[i] = boneID;
 			boneWeights[i] = weight;
@@ -223,7 +215,7 @@ glm::mat4 Mesh::toMat4(const aiMatrix3x3& m) const {
 	return glm::mat4(glm::mat3(m.a1, m.a2, m.a3, m.b1, m.b2, m.b3, m.c1, m.c2, m.c3));
 }
 
-void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh, std::vector<VertexBoneData>& bones) {
+void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh) {
 	for (uint32_t i = 0u; i < mesh->mNumBones; ++i) {
 		uint32_t boneIndex = 0u;
 		const aiBone* aiBone = mesh->mBones[i];
@@ -245,12 +237,13 @@ void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh, std::vector<VertexB
 			const aiVertexWeight& weights = aiBone->mWeights[j];
 			const uint32_t vertexID = _meshData[meshIndex].baseVertex + weights.mVertexId;
 			const float weight = weights.mWeight;
-			bones[vertexID].addBoneData(boneIndex, weight);
+			_vertices[vertexID].addBoneData(boneIndex, weight);
 		}
 	}
 }
 
 uint32_t Mesh::findPosition(float animationTime, const aiNodeAnim* nodeAnim) {
+	core_assert(nodeAnim->mNumPositionKeys > 0);
 	for (uint32_t i = 0u; i < nodeAnim->mNumPositionKeys - 1; ++i) {
 		if (animationTime < (float) nodeAnim->mPositionKeys[i + 1].mTime) {
 			return i;
@@ -264,7 +257,6 @@ uint32_t Mesh::findPosition(float animationTime, const aiNodeAnim* nodeAnim) {
 
 uint32_t Mesh::findRotation(float animationTime, const aiNodeAnim* nodeAnim) {
 	core_assert(nodeAnim->mNumRotationKeys > 0);
-
 	for (uint32_t i = 0u; i < nodeAnim->mNumRotationKeys - 1; ++i) {
 		if (animationTime < (float) nodeAnim->mRotationKeys[i + 1].mTime) {
 			return i;
@@ -278,7 +270,6 @@ uint32_t Mesh::findRotation(float animationTime, const aiNodeAnim* nodeAnim) {
 
 uint32_t Mesh::findScaling(float animationTime, const aiNodeAnim* nodeAnim) {
 	core_assert(nodeAnim->mNumScalingKeys > 0);
-
 	for (uint32_t i = 0u; i < nodeAnim->mNumScalingKeys - 1; ++i) {
 		if (animationTime < (float) nodeAnim->mScalingKeys[i + 1].mTime) {
 			return i;
@@ -336,8 +327,7 @@ void Mesh::calcInterpolatedScaling(aiVector3D& out, float animationTime, const a
 	const uint32_t scalingIndex = findScaling(animationTime, nodeAnim);
 	const uint32_t nextScalingIndex = (scalingIndex + 1);
 	core_assert(nextScalingIndex < nodeAnim->mNumScalingKeys);
-	const float deltaTime = (float) (nodeAnim->mScalingKeys[nextScalingIndex].mTime
-			- nodeAnim->mScalingKeys[scalingIndex].mTime);
+	const float deltaTime = (float) (nodeAnim->mScalingKeys[nextScalingIndex].mTime - nodeAnim->mScalingKeys[scalingIndex].mTime);
 	const float factor = (animationTime - (float) nodeAnim->mScalingKeys[scalingIndex].mTime) / deltaTime;
 	core_assert(factor >= 0.0f && factor <= 1.0f);
 	const aiVector3D& start = nodeAnim->mScalingKeys[scalingIndex].mValue;

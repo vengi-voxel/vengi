@@ -25,25 +25,22 @@ private:
 		glm::mat4 finalTransformation;
 	};
 
-	struct VertexBoneData {
-		uint32_t boneIds[NUM_BONES_PER_VEREX];
-		float boneWeights[NUM_BONES_PER_VEREX];
-
-		VertexBoneData() :
-				boneIds { 0u, 0u, 0u, 0u }, boneWeights { 0.0f, 0.0f, 0.0f, 0.0f } {
-		}
-
-		void addBoneData(uint32_t boneID, float weight);
-	};
-
 	struct Vertex {
 		glm::vec3 _pos;
 		glm::vec3 _norm;
 		glm::vec2 _uv;
+		uint32_t boneIds[NUM_BONES_PER_VEREX];
+		float boneWeights[NUM_BONES_PER_VEREX];
 
 		Vertex(const glm::vec3& p, const glm::vec3& n, const glm::vec2& t) :
-				_pos(p), _norm(n), _uv(t) {
+				_pos(p), _norm(n), _uv(t), boneIds { 0u, 0u, 0u, 0u }, boneWeights { 0.0f, 0.0f, 0.0f, 0.0f } {
 		}
+
+		Vertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t) :
+				Vertex(glm::vec3(p.x, p.y, p.z), glm::vec3(n.x, n.y, n.z), glm::vec2(t.x, t.y)) {
+		}
+
+		void addBoneData(uint32_t boneID, float weight);
 	};
 	typedef std::vector<Vertex> Vertices;
 	typedef std::vector<uint32_t> Indices;
@@ -59,7 +56,7 @@ private:
 	uint32_t findPosition(float animationTime, const aiNodeAnim* nodeAnim);
 	const aiNodeAnim* findNodeAnim(const aiAnimation* animation, const std::string& nodeName);
 	void readNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform);
-	void loadBones(uint32_t neshIndex, const aiMesh* aiMesh, std::vector<VertexBoneData>& bones);
+	void loadBones(uint32_t neshIndex, const aiMesh* aiMesh);
 
 	GLuint _vertexArrayObject = 0u;
 	GLuint _vbo = 0u;
@@ -69,7 +66,6 @@ private:
 	std::vector<GLMeshData> _meshData;
 	std::vector<image::ImagePtr> _images;
 	std::vector<TexturePtr> _textures;
-	std::vector<VertexBoneData> _bones;
 	Vertices _vertices;
 	Indices _indices;
 	std::unordered_map<std::string, uint32_t> _boneMapping;
