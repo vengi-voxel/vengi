@@ -29,11 +29,11 @@ private:
 		glm::vec3 _pos;
 		glm::vec3 _norm;
 		glm::vec2 _uv;
-		uint32_t boneIds[NUM_BONES_PER_VEREX];
-		float boneWeights[NUM_BONES_PER_VEREX];
+		uint32_t _boneIds[NUM_BONES_PER_VEREX];
+		float _boneWeights[NUM_BONES_PER_VEREX];
 
 		Vertex(const glm::vec3& p, const glm::vec3& n, const glm::vec2& t) :
-				_pos(p), _norm(n), _uv(t), boneIds { 0u, 0u, 0u, 0u }, boneWeights { 0.0f, 0.0f, 0.0f, 0.0f } {
+				_pos(p), _norm(n), _uv(t), _boneIds { 0u, 0u, 0u, 0u }, _boneWeights { 0.0f, 0.0f, 0.0f, 0.0f } {
 		}
 
 		Vertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t) :
