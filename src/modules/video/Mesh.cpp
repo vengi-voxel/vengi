@@ -144,15 +144,13 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 		_images.clear();
 
 		_state = io::IOSTATE_LOADED;
-		return false;
 	} else {
 		const int size = shader.getUniformArraySize("u_bonetransforms");
 		if (size > 0) {
 			std::vector<glm::mat4> transforms;
 			transforms.resize(size);
 			boneTransform(timeInSeconds, transforms);
-			const int numTransforms = std::min((int)transforms.size(), size);
-			shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], numTransforms);
+			shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], size);
 		}
 
 		return true;
@@ -193,7 +191,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 
 	glBindVertexArray(0);
 
-	return GL_checkError() == 0;
+	return false;
 }
 
 void Mesh::Vertex::addBoneData(uint32_t boneID, float weight) {
@@ -396,6 +394,7 @@ void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms
 		transforms.push_back(identity);
 		return;
 	}
+	core_assert(_numBones <= transforms.size());
 
 	// TODO: support more than just the first animation
 	const aiAnimation* animation = _scene->mAnimations[0];
