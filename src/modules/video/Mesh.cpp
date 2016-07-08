@@ -209,50 +209,36 @@ void Mesh::VertexBoneData::addBoneData(uint32_t boneID, float weight) {
 	core_assert(false);
 }
 
-glm::mat4 Mesh::toMat4(const aiMatrix4x4& matrix) const {
-#if 0
-	// TODO:
-	GLM_FUNC_DECL tmat4x4(
-		X1 const & x1, Y1 const & y1, Z1 const & z1, W1 const & w1,
-		X2 const & x2, Y2 const & y2, Z2 const & z2, W2 const & w2,
-		X3 const & x3, Y3 const & y3, Z3 const & z3, W3 const & w3,
-		X4 const & x4, Y4 const & y4, Z4 const & z4, W4 const & w4);
-#endif
-	return glm::mat4();
+glm::mat4 Mesh::toMat4(const aiMatrix4x4& m) const {
+	return glm::mat4(m.a1, m.a2, m.a3, m.a4, m.b1, m.b2, m.b3, m.b4, m.c1, m.c2, m.c3, m.c4, m.d1, m.d2, m.d3, m.d4);
 }
 
-glm::mat4 Mesh::toMat4(const aiMatrix3x3& matrix) const {
-#if 0
-	// TODO:
-	GLM_FUNC_DECL tmat4x4(
-		X1 const & x1, Y1 const & y1, Z1 const & z1, W1 const & w1,
-		X2 const & x2, Y2 const & y2, Z2 const & z2, W2 const & w2,
-		X3 const & x3, Y3 const & y3, Z3 const & z3, W3 const & w3,
-		X4 const & x4, Y4 const & y4, Z4 const & z4, W4 const & w4);
-#endif
-	return glm::mat4();
+glm::mat4 Mesh::toMat4(const aiMatrix3x3& m) const {
+	return glm::mat4(glm::mat3(m.a1, m.a2, m.a3, m.b1, m.b2, m.b3, m.c1, m.c2, m.c3));
 }
 
 void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh, std::vector<VertexBoneData>& bones) {
 	for (uint32_t i = 0; i < mesh->mNumBones; i++) {
 		uint32_t boneIndex = 0;
-		const std::string boneName(mesh->mBones[i]->mName.data);
+		const aiBone* aiBone = mesh->mBones[i];
+		const std::string boneName(aiBone->mName.data);
 
-		if (_boneMapping.find(boneName) == _boneMapping.end()) {
+		auto iter = _boneMapping.find(boneName);
+		if (iter == _boneMapping.end()) {
 			// Allocate an index for a new bone
 			boneIndex = _numBones;
 			_numBones++;
-			BoneInfo bi;
+			const BoneInfo bi = { toMat4(aiBone->mOffsetMatrix), glm::mat4() };
 			_boneInfo.push_back(bi);
-			_boneInfo[boneIndex].boneOffset = toMat4(mesh->mBones[i]->mOffsetMatrix);
 			_boneMapping[boneName] = boneIndex;
 		} else {
-			boneIndex = _boneMapping[boneName];
+			boneIndex = iter->second;
 		}
 
-		for (uint32_t j = 0; j < mesh->mBones[i]->mNumWeights; j++) {
-			const uint32_t vertexID = _meshData[meshIndex].baseVertex + mesh->mBones[i]->mWeights[j].mVertexId;
-			const float weight = mesh->mBones[i]->mWeights[j].mWeight;
+		for (uint32_t j = 0; j < aiBone->mNumWeights; j++) {
+			const aiVertexWeight& weights = aiBone->mWeights[j];
+			const uint32_t vertexID = _meshData[meshIndex].baseVertex + weights.mVertexId;
+			const float weight = weights.mWeight;
 			bones[vertexID].addBoneData(boneIndex, weight);
 		}
 	}
