@@ -178,13 +178,6 @@ void Camera::updateOrientation() {
 		return;
 	}
 
-	glm::quat _yaw = glm::angleAxis(_motionDelta.y, _quat * glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::quat _pitch = glm::angleAxis(_motionDelta.x, glm::vec3(1.0f, 0.0f, 0.0f));
-	_motionDelta = glm::vec3();
-
-	/** The order of applying this matters, don't touch! */
-	_quat = _yaw * _quat;
-	_quat = _pitch * _quat;
 	_quat = glm::normalize(_quat);
 	_orientation = glm::mat4_cast(_quat);
 }
@@ -210,7 +203,8 @@ void Camera::init(int width, int height) {
 }
 
 void Camera::onMotion(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
-	_motionDelta += glm::vec3(deltaY, deltaX, 0.0f) * rotationSpeed;
+	turn(deltaX * rotationSpeed);
+	pitch(deltaY * rotationSpeed);
 	_dirty |= DIRTY_ORIENTATION;
 }
 

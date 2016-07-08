@@ -20,7 +20,6 @@ enum class FrustumPlanes {
 	FrustumBottom,
 	FrustumFar,
 	FrustumNear,
-
 	MaxPlanes
 };
 
@@ -28,6 +27,16 @@ enum class FrustumResult {
 	Outside,
 	Inside,
 	Intersect
+};
+
+enum class CameraMode {
+	FirstPerson,
+	Free
+};
+
+enum class CameraType {
+	Perspective,
+	Orthogonal
 };
 
 class Camera {
@@ -49,8 +58,6 @@ private:
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projectionMatrix;
 	glm::mat4 _orientation;
-
-	glm::vec3 _motionDelta;
 
 	int _width = 0;
 	int _height = 0;
@@ -125,20 +132,32 @@ public:
 	 * @brief Rotation around the y-axis
 	 */
 	float yaw() const;
+	void yaw(float radians);
 	/**
 	 * @brief Rotation around the z-axis
 	 */
 	float roll() const;
+	void roll(float radians);
 	/**
 	 * @brief Rotation around the x-axis
 	 */
 	float pitch() const;
+	void pitch(float radians);
+
+	/**
+	 * @brief Rotation around the y-axis relative to world up
+	 */
+	void turn(float radians);
+	
+	void rotate(float radians, const glm::vec3& axis);
+	void rotate(const glm::quat& rotation);
 
 	/**
 	 * @param[in] pitch rotation in modelspace
 	 * @param[in] yaw rotation in modelspace
+	 * @param[in] roll rotation in modelspace
 	 */
-	void setAngles(float pitch, float yaw);
+	void setAngles(float pitch, float yaw, float roll);
 	void setPosition(const glm::vec3& pos);
 
 	void slerp(float pitch, float yaw, float factor);
@@ -168,6 +187,32 @@ inline float Camera::yaw() const {
 	return glm::yaw(_quat);
 }
 
+inline void Camera::pitch(float radians) {
+	rotate(radians, glm::right);
+}
+
+inline void Camera::yaw(float radians) {
+	rotate(radians, glm::up);
+}
+
+inline void Camera::roll(float radians) {
+	rotate(radians, glm::backward);
+}
+
+inline void Camera::turn(float radians) {
+	glm::quat quat = glm::angleAxis(radians, _quat * glm::up);
+	rotate(quat);
+}
+
+inline void Camera::rotate(float radians, const glm::vec3& axis) {
+	glm::quat quat = glm::angleAxis(radians, axis);
+	rotate(quat);
+}
+
+inline void Camera::rotate(const glm::quat& rotation) {
+	_quat = rotation * _quat;
+}
+
 inline void Camera::setOrtho(bool ortho) {
 	_ortho = ortho;
 }
@@ -193,16 +238,15 @@ inline glm::mat4 Camera::orientation() const {
 }
 
 inline glm::vec3 Camera::forward() const {
-	// opengl looks down the negative z axis
-	return glm::conjugate(_quat) * glm::vec3(0.0f, 0.0f, -1.0f);
+	return glm::conjugate(_quat) * glm::forward;
 }
 
 inline glm::vec3 Camera::right() const {
-	return glm::conjugate(_quat) * glm::vec3(1.0f, 0.0f, 0.0f);
+	return glm::conjugate(_quat) * glm::right;
 }
 
 inline glm::vec3 Camera::up() const {
-	return glm::conjugate(_quat) * glm::vec3(0.0f, 1.0f, 0.0f);
+	return glm::conjugate(_quat) * glm::up;
 }
 
 inline glm::mat4 Camera::orthoMatrix() const {
@@ -211,8 +255,8 @@ inline glm::mat4 Camera::orthoMatrix() const {
 	return glm::ortho(0.0f, w, h, 0.0f, nearPlane(), farPlane());
 }
 
-inline void Camera::setAngles(float pitch, float yaw) {
-	_quat = glm::quat(glm::vec3(pitch, yaw, 0.0f));
+inline void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
+	_quat = glm::quat(glm::vec3(pitch, yaw, roll));
 	_dirty |= DIRTY_ORIENTATION;
 }
 
