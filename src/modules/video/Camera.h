@@ -190,15 +190,15 @@ inline glm::mat4 Camera::orientation() const {
 
 inline glm::vec3 Camera::forward() const {
 	// opengl looks down the negative z axis
-	return _quat * glm::vec3(0.0f, 0.0f, -1.0f);
+	return glm::conjugate(_quat) * glm::vec3(0.0f, 0.0f, -1.0f);
 }
 
 inline glm::vec3 Camera::right() const {
-	return _quat * glm::vec3(1.0f, 0.0f, 0.0f);
+	return glm::conjugate(_quat) * glm::vec3(1.0f, 0.0f, 0.0f);
 }
 
 inline glm::vec3 Camera::up() const {
-	return _quat * glm::vec3(0.0f, 1.0f, 0.0f);
+	return glm::conjugate(_quat) * glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
 inline glm::mat4 Camera::orthoMatrix() const {
