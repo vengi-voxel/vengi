@@ -141,6 +141,14 @@ bool Mesh::initMesh(Shader& shader) {
 
 		_state = io::IOSTATE_LOADED;
 	} else {
+		const int size = shader.getUniformArraySize("u_bonetransforms");
+		if (size > 0) {
+			std::vector<glm::mat4> transforms;
+			boneTransform(nullptr, 0.0f, transforms);
+			const int numTransforms = std::min((int)transforms.size(), size);
+			shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], numTransforms);
+		}
+
 		return true;
 	}
 
@@ -390,6 +398,11 @@ void Mesh::readNodeHierarchy(aiScene* scene, float animationTime, const aiNode* 
 void Mesh::boneTransform(aiScene* scene, float timeInSeconds, std::vector<glm::mat4>& transforms) {
 	glm::mat4 identity;
 
+	if (_numBones <= 0) {
+		transforms.push_back(identity);
+		return;
+	}
+
 	const float ticksPerSecond = (float) (scene->mAnimations[0]->mTicksPerSecond != 0 ? scene->mAnimations[0]->mTicksPerSecond : 25.0f);
 	const float timeInTicks = timeInSeconds * ticksPerSecond;
 	const float animationTime = fmod(timeInTicks, (float) scene->mAnimations[0]->mDuration);
@@ -452,22 +465,9 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 	}
 }
 
-int Mesh::render(video::Shader& shader) {
+int Mesh::render() {
 	if (_state != io::IOSTATE_LOADED) {
 		return 0;
-	}
-	if (shader.hasUniform("u_bonetransforms")) {
-		std::vector<glm::mat4> transforms;
-		boneTransform(nullptr, 0.0f, transforms);
-		int index = 0;
-		for (const glm::mat4& mat : transforms) {
-			const int loc = shader.getUniformLocation(core::string::format("u_bonetransforms[%i]", index));
-			if (loc < 0) {
-				break;
-			}
-			shader.setUniformMatrix(loc, mat);
-			++index;
-		}
 	}
 	glBindVertexArray(_vertexArrayObject);
 	int drawCalls = 0;

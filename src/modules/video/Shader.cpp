@@ -68,6 +68,19 @@ void Shader::checkUniforms(std::initializer_list<std::string> uniforms) {
 	}
 }
 
+void Shader::setUniformArraySize(const std::string& name, int size) {
+	_uniformArraySizes[name] = size;
+}
+
+int Shader::getUniformArraySize(const std::string& name) const {
+	ShaderUniformArraySizes::const_iterator i = _uniformArraySizes.find(name);
+	if (i == _uniforms.end()) {
+		Log::trace("can't find uniform %s in shader %s - unknown array size", name.c_str(), _name.c_str());
+		return -1;
+	}
+	return i->second;
+}
+
 void Shader::shutdown() {
 	for (int i = 0; i < SHADER_MAX; ++i) {
 		if (_shader[i] != 0) {

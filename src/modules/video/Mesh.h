@@ -85,7 +85,7 @@ public:
 	void shutdown();
 	bool loadMesh(const std::string& filename);
 	bool initMesh(Shader& shader);
-	int render(Shader& shader);
+	int render();
 };
 
 typedef std::shared_ptr<Mesh> MeshPtr;

@@ -173,6 +173,7 @@ void ShaderTool::generateSrc() const {
 	src = core::string::replaceAll(src, "$namespace$", _namespaceSrc);
 	src = core::string::replaceAll(src, "$filename$", _shaderDirectory + _shaderStruct.filename);
 	std::stringstream uniforms;
+	std::stringstream uniformArrayInfo;
 	const int uniformSize = int(_shaderStruct.uniforms.size());
 	if (uniformSize > 0) {
 		uniforms << "checkUniforms({";
@@ -189,9 +190,18 @@ void ShaderTool::generateSrc() const {
 			}
 		}
 		uniforms << "});";
+
+		for (int i = 0; i < uniformSize; ++i) {
+			uniformArrayInfo << "\t\tsetUniformArraySize(\"";
+			uniformArrayInfo << _shaderStruct.uniforms[i].name;
+			uniformArrayInfo << "\", ";
+			uniformArrayInfo << _shaderStruct.uniforms[i].arraySize;
+			uniformArrayInfo << ");\n";
+		}
 	} else {
 		uniforms << "// no uniforms";
 	}
+	src = core::string::replaceAll(src, "$uniformarrayinfo$", uniformArrayInfo.str());
 	src = core::string::replaceAll(src, "$uniforms$", uniforms.str());
 
 	std::stringstream attributes;

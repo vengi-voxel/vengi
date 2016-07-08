@@ -41,6 +41,9 @@ protected:
 	typedef std::map<std::string, std::string> ShaderDefines;
 	ShaderDefines _defines;
 
+	typedef std::unordered_map<std::string, int> ShaderUniformArraySizes;
+	ShaderUniformArraySizes _uniformArraySizes;
+
 	typedef std::unordered_map<std::string, int> ShaderVariables;
 	ShaderVariables _uniforms;
 	ShaderVariables _attributes;
@@ -116,6 +119,13 @@ public:
 	 * @brief Adds a new define in the form '#define value' to the shader source code
 	 */
 	void addDefine(const std::string& name, const std::string& value);
+
+	void setUniformArraySize(const std::string& name, int size);
+	/**
+	 * @return -1 if uniform wasn't found, or no size is known. If the uniform is known, but
+	 * it is no array, this might even return 0
+	 */
+	int getUniformArraySize(const std::string& name) const;
 
 	int getAttributeLocation(const std::string& name) const;
 
