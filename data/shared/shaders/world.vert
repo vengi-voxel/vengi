@@ -6,20 +6,20 @@ $in uvec2 a_info;
 // instanced rendering
 $in vec3 a_offset;
 #endif
-#ifdef MATERIALOFFSET
-int materialoffset = MATERIALOFFSET;
-#else
-const int materialoffset = 0;
-#endif
 
+#ifndef MATERIALOFFSET
+#define MATERIALOFFSET 0
+#endif
+int materialoffset = MATERIALOFFSET;
 
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
 uniform sampler2D u_texture;
 #define MATERIALCOLORS 32
+// use the size here directly to let the shadertool be able
+// to generate the setters with the correct sizes
 uniform vec4 u_materialcolor[32];
-uniform float u_debug_color;
 
 $out vec3 v_pos;
 $out vec4 v_color;
@@ -32,11 +32,7 @@ uniform mat4 u_light;
 #endif
 
 #if cl_deferred == 0
-$out vec3 v_lightpos;
-$out vec3 v_diffuse_color;
 $out vec3 v_fogcolor;
-$out float v_fogrange;
-$out float v_viewdistance;
 #endif
 
 void main(void) {
@@ -57,7 +53,6 @@ void main(void) {
 
 	const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 	v_ambientocclusion = aovalues[a_ao];
-	v_debug_color = u_debug_color;
 
 #if cl_shadowmap == 1
 	v_lightspacepos = u_light * u_model * vec4(a_pos, 1.0);

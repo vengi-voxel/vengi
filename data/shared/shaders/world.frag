@@ -3,7 +3,7 @@
 $in vec3 v_pos;
 $in vec4 v_color;
 $in float v_ambientocclusion;
-$in float v_debug_color;
+uniform float u_debug_color;
 
 #if cl_shadowmap == 1
 uniform sampler2D u_shadowmap;
@@ -57,10 +57,10 @@ void main(void) {
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
 	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / (u_viewdistance - fogstart), 0.0, 1.0);
 
-	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * v_debug_color;
+	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * u_debug_color;
 	o_color = vec4(mix(linearColor, v_fogcolor, fogval), v_color.a);
 #else
-	o_color = v_color.xyz * v_ambientocclusion * v_debug_color;
+	o_color = v_color.xyz * v_ambientocclusion * u_debug_color;
 	o_pos = v_pos;
 	o_norm = normal;
 #endif
