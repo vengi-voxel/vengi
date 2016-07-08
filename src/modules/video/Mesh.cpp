@@ -148,6 +148,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 		const int size = shader.getUniformArraySize("u_bonetransforms");
 		if (size > 0) {
 			std::vector<glm::mat4> transforms;
+			transforms.resize(size);
 			boneTransform(timeInSeconds, transforms);
 			const int numTransforms = std::min((int)transforms.size(), size);
 			shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], numTransforms);
@@ -402,8 +403,6 @@ void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms
 	const float animationTime = fmod(timeInTicks, (float) animation->mDuration);
 
 	readNodeHierarchy(animation, animationTime, _scene->mRootNode, identity);
-
-	transforms.resize(_numBones);
 
 	for (uint32_t i = 0u; i < _numBones; ++i) {
 		transforms[i] = _boneInfo[i].finalTransformation;
