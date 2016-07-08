@@ -439,7 +439,7 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 		}
 
 		aiString path;
-		if (material->GetTexture(texType, i, &path, nullptr, nullptr, nullptr, nullptr, nullptr) != AI_SUCCESS) {
+		if (material->GetTexture(texType, 0, &path, nullptr, nullptr, nullptr, nullptr, nullptr) != AI_SUCCESS) {
 			Log::warn("Could not get texture path for material index %i", i);
 			continue;
 		}
