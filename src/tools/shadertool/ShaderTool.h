@@ -10,7 +10,7 @@ class ShaderTool: public core::App {
 protected:
 	struct Variable {
 		enum Type {
-			FLOAT, UNSIGNED_INT, INT, VEC2, VEC3, VEC4, MAT, SAMPLER2D, SAMPLER2DSHADOW, MAX
+			FLOAT, UNSIGNED_INT, INT, IVEC2, IVEC3, IVEC4, VEC2, VEC3, VEC4, MAT, SAMPLER2D, SAMPLER2DSHADOW, MAX
 		};
 		Type type;
 		std::string name;

@@ -164,6 +164,10 @@ public:
 	void setUniformMatrix(int location, const glm::mat4& matrix, bool transpose = false) const;
 	void setUniformMatrix(const std::string& name, const glm::mat3& matrix, bool transpose = false) const;
 	void setUniformMatrix(int location, const glm::mat3& matrix, bool transpose = false) const;
+	void setUniformMatrixv(const std::string& name, const glm::mat4* matrixes, int amount, bool transpose = false) const;
+	void setUniformMatrixv(int location, const glm::mat4* matrixes, int amount, bool transpose = false) const;
+	void setUniformMatrixv(const std::string& name, const glm::mat3* matrixes, int amount, bool transpose = false) const;
+	void setUniformMatrixv(int location, const glm::mat3* matrixes, int amount, bool transpose = false) const;
 	void setUniformf(const std::string& name, const glm::vec2& values) const;
 	void setUniformf(int location, const glm::vec2& values) const;
 	void setUniformf(const std::string& name, const glm::vec3& values) const;
@@ -344,22 +348,38 @@ inline void Shader::setUniformVec4v(const std::string& name, const glm::vec4* va
 }
 
 inline void Shader::setUniformMatrix(const std::string& name, const glm::mat4& matrix, bool transpose) const {
-	const int location = getUniformLocation(name);
-	setUniformMatrix(location, matrix, transpose);
+	setUniformMatrixv(name, &matrix, 1, transpose);
 }
 
 inline void Shader::setUniformMatrix(int location, const glm::mat4& matrix, bool transpose) const {
-	glUniformMatrix4fv(location, 1, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrix));
-	GL_checkError();
+	setUniformMatrixv(location, &matrix, 1, transpose);
 }
 
 inline void Shader::setUniformMatrix(const std::string& name, const glm::mat3& matrix, bool transpose) const {
-	const int location = getUniformLocation(name);
-	setUniformMatrix(location, matrix, transpose);
+	setUniformMatrixv(name, &matrix, 1, transpose);
 }
 
 inline void Shader::setUniformMatrix(int location, const glm::mat3& matrix, bool transpose) const {
-	glUniformMatrix3fv(location, 1, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrix));
+	setUniformMatrixv(location, &matrix, 1, transpose);
+}
+
+inline void Shader::setUniformMatrixv(const std::string& name, const glm::mat4* matrixes, int amount, bool transpose) const {
+	const int location = getUniformLocation(name);
+	setUniformMatrixv(location, matrixes, amount, transpose);
+}
+
+inline void Shader::setUniformMatrixv(int location, const glm::mat4* matrixes, int amount, bool transpose) const {
+	glUniformMatrix4fv(location, amount, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrixes[0]));
+	GL_checkError();
+}
+
+inline void Shader::setUniformMatrixv(const std::string& name, const glm::mat3* matrixes, int amount, bool transpose) const {
+	const int location = getUniformLocation(name);
+	setUniformMatrixv(location, matrixes, amount, transpose);
+}
+
+inline void Shader::setUniformMatrixv(int location, const glm::mat3* matrixes, int amount, bool transpose) const {
+	glUniformMatrix3fv(location, amount, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrixes[0]));
 	GL_checkError();
 }
 

@@ -10,15 +10,18 @@
 #include "video/Shader.h"
 
 const ShaderTool::Types ShaderTool::cTypes[] = {
-	{ ShaderTool::Variable::FLOAT,           1, "float",           Value },
-	{ ShaderTool::Variable::UNSIGNED_INT,    1, "unsigned int",    Value },
-	{ ShaderTool::Variable::INT,             1, "int",             Value },
-	{ ShaderTool::Variable::VEC2,            2, "const glm::vec2", Reference },
-	{ ShaderTool::Variable::VEC3,            3, "const glm::vec3", Reference },
-	{ ShaderTool::Variable::VEC4,            4, "const glm::vec4", Reference },
-	{ ShaderTool::Variable::MAT,             1, "const glm::mat4", Reference },
-	{ ShaderTool::Variable::SAMPLER2D,       1, "int",             Value },
-	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int",             Value }
+	{ ShaderTool::Variable::FLOAT,           1, "float",            Value },
+	{ ShaderTool::Variable::UNSIGNED_INT,    1, "unsigned int",     Value },
+	{ ShaderTool::Variable::INT,             1, "int",              Value },
+	{ ShaderTool::Variable::IVEC2,           2, "const glm::ivec2", Reference },
+	{ ShaderTool::Variable::IVEC3,           3, "const glm::ivec3", Reference },
+	{ ShaderTool::Variable::IVEC4,           4, "const glm::ivec4", Reference },
+	{ ShaderTool::Variable::VEC2,            2, "const glm::vec2",  Reference },
+	{ ShaderTool::Variable::VEC3,            3, "const glm::vec3",  Reference },
+	{ ShaderTool::Variable::VEC4,            4, "const glm::vec4",  Reference },
+	{ ShaderTool::Variable::MAT,             1, "const glm::mat4",  Reference },
+	{ ShaderTool::Variable::SAMPLER2D,       1, "int",              Value },
+	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int",              Value }
 };
 
 ShaderTool::ShaderTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
@@ -64,7 +67,25 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 			return "Vec4v";
 		}
 		return "Vec4";
+	case Variable::IVEC2:
+		if (amount > 1) {
+			return "Vec2v";
+		}
+		return "Vec2";
+	case Variable::IVEC3:
+		if (amount > 1) {
+			return "Vec3v";
+		}
+		return "Vec3";
+	case Variable::IVEC4:
+		if (amount > 1) {
+			return "Vec4v";
+		}
+		return "Vec4";
 	case Variable::MAT:
+		if (amount > 1) {
+			return "Matrixv";
+		}
 		return "Matrix";
 	case Variable::SAMPLER2D:
 		if (amount > 1) {
@@ -99,6 +120,12 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
 		return Variable::VEC3;
 	} else if (type == "uvec4") {
 		return Variable::VEC4;
+	} else if (type == "ivec2") {
+		return Variable::IVEC2;
+	} else if (type == "ivec3") {
+		return Variable::IVEC3;
+	} else if (type == "ivec4") {
+		return Variable::IVEC4;
 	} else if (type == "mat4") {
 		return Variable::MAT;
 	} else if (type == "sampler2D") {
@@ -282,8 +309,14 @@ void ShaderTool::generateSrc() const {
 		if (attributeName.empty()) {
 			attributeName = v.name;
 		}
-		const bool isInt = v.type == Variable::UNSIGNED_INT || v.type == Variable::INT;
-		setters << "\tinline bool init" << attributeName << "(GLsizei stride, const void* pointer, GLenum type = GL_FLOAT, GLint size = ";
+		const bool isInt = v.type == Variable::UNSIGNED_INT || v.type == Variable::INT || v.type == Variable::IVEC2 || v.type == Variable::IVEC3 || v.type == Variable::IVEC4;
+		setters << "\tinline bool init" << attributeName << "(GLsizei stride, const void* pointer, GLenum type = ";
+		if (isInt) {
+			setters << "GL_INT";
+		} else {
+			setters << "GL_FLOAT";
+		}
+		setters << ", GLint size = ";
 		setters << cTypes[v.type].typeSize << ", ";
 		setters << "bool isInt = ";
 		setters << (isInt ? "true" : "false");
