@@ -471,6 +471,8 @@ int Mesh::render() {
 		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, mesh.indexType, GL_OFFSET_CAST(sizeof(uint32_t) * mesh.baseIndex), mesh.baseVertex);
 		++drawCalls;
 	}
+	// Make sure the VAO is not changed from the outside
+	glBindVertexArray(0);
 	GL_checkError();
 	return drawCalls;
 }
