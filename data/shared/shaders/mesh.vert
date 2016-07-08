@@ -26,12 +26,14 @@ void main(void) {
 	bonetrans     += u_bonetransforms[a_boneids[2]] * a_weights[2];
 	bonetrans     += u_bonetransforms[a_boneids[3]] * a_weights[3];
 	mat4 modelview = u_view * u_model;
-	vec4 pos4 = modelview * bonetrans * vec4(a_pos, 1.0);
-	v_pos = vec3(pos4) / pos4.w;
-	v_norm = a_norm;
-	v_texcoords = a_texcoords;
-	v_fogrange = u_fogrange;
+	vec4 pos4      = modelview * bonetrans * vec4(a_pos, 1.0);
+	// TODO: does this make sense with the projection applied. Afaik the w
+	// components division here is to correct perspective transforms
+	v_pos          = pos4.xyz / pos4.w;
+	v_norm         = vec4(bonetrans * vec4(a_norm, 0.0)).xyz;
+	v_texcoords    = a_texcoords;
+	v_fogrange     = u_fogrange;
 	v_viewdistance = u_viewdistance;
-	v_lightpos = u_lightpos;
-	gl_Position = u_projection * modelview * vec4(a_pos, 1.0);
+	v_lightpos     = u_lightpos;
+	gl_Position    = u_projection * pos4;
 }
