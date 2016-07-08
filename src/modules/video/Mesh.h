@@ -74,15 +74,11 @@ private:
 	glm::mat4 _globalInverseTransform;
 	const aiScene* _scene = nullptr;
 	Assimp::Importer _importer;
+
+	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms);
 public:
 	Mesh();
 	~Mesh();
-
-	inline uint32_t NumBones() const {
-		return _numBones;
-	}
-
-	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms);
 
 	void shutdown();
 	bool loadMesh(const std::string& filename);

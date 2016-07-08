@@ -30,6 +30,10 @@ void Mesh::shutdown() {
 
 	_vertices.clear();
 	_indices.clear();
+	_boneInfo.clear();
+	_boneMapping.clear();
+	_globalInverseTransform = glm::mat4();
+	_numBones = 0;
 
 	_readyToInit = false;
 	if (_vbo != 0u) {
@@ -83,6 +87,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 
 	_vertices.reserve(numVertices);
 	_indices.reserve(numIndices);
+	_boneInfo.clear();
 
 	for (uint32_t i = 0u; i < _meshData.size(); ++i) {
 		const aiMesh* mesh = _scene->mMeshes[i];
