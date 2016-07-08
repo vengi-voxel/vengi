@@ -345,17 +345,17 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 		// Interpolate scaling and generate scaling transformation matrix
 		aiVector3D scaling;
 		calcInterpolatedScaling(scaling, animationTime, nodeAnim);
-		const glm::mat4 scalingM = glm::scale(glm::mat4(), glm::vec3(scaling.x, scaling.y, scaling.z));
+		const glm::mat4& scalingM = glm::scale(glm::mat4(), glm::vec3(scaling.x, scaling.y, scaling.z));
 
 		// Interpolate rotation and generate rotation transformation matrix
 		aiQuaternion rotationQ;
 		calcInterpolatedRotation(rotationQ, animationTime, nodeAnim);
-		const glm::mat4 rotationM = toMat4(rotationQ.GetMatrix());
+		const glm::mat4& rotationM = toMat4(rotationQ.GetMatrix());
 
 		// Interpolate translation and generate translation transformation matrix
 		aiVector3D translation;
 		calcInterpolatedPosition(translation, animationTime, nodeAnim);
-		const glm::mat4 translationM = glm::translate(glm::mat4(), glm::vec3(translation.x, translation.y, translation.z));
+		const glm::mat4& translationM = glm::translate(glm::mat4(), glm::vec3(translation.x, translation.y, translation.z));
 
 		// Combine the above transformations
 		nodeTransformation = translationM * rotationM * scalingM;
