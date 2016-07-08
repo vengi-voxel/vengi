@@ -144,6 +144,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 		_images.clear();
 
 		_state = io::IOSTATE_LOADED;
+		return false;
 	} else {
 		const int size = shader.getUniformArraySize("u_bonetransforms");
 		if (size > 0) {
