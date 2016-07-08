@@ -26,19 +26,10 @@ private:
 	};
 
 	struct VertexBoneData {
-		uint32_t boneIds[NUM_BONES_PER_VEREX];
-		float boneWeights[NUM_BONES_PER_VEREX];
+		uint32_t boneIds[NUM_BONES_PER_VEREX] = {0, 0, 0, 0};
+		float boneWeights[NUM_BONES_PER_VEREX] = {0.0f, 0.0f, 0.0f, 0.0f};
 
-		VertexBoneData() {
-			Reset();
-		}
-
-		void Reset() {
-			SDL_zero(boneIds);
-			SDL_zero(boneWeights);
-		}
-
-		void AddBoneData(uint BoneID, float Weight);
+		void addBoneData(uint32_t boneID, float weight);
 	};
 
 	struct Vertex {
@@ -78,7 +69,7 @@ private:
 	Vertices _vertices;
 	Indices _indices;
 	std::unordered_map<std::string, uint32_t> _boneMapping;
-	uint32_t _numBones;
+	uint32_t _numBones = 0u;
 	std::vector<BoneInfo> _boneInfo;
 	glm::mat4 _globalInverseTransform;
 public:
@@ -94,7 +85,7 @@ public:
 	void shutdown();
 	bool loadMesh(const std::string& filename);
 	bool initMesh(Shader& shader);
-	int render();
+	int render(Shader& shader);
 };
 
 typedef std::shared_ptr<Mesh> MeshPtr;

@@ -188,10 +188,9 @@ bool Mesh::initMesh(Shader& shader) {
 	return GL_checkError() == 0;
 }
 
-void Mesh::VertexBoneData::AddBoneData(uint32_t boneID, float weight) {
+void Mesh::VertexBoneData::addBoneData(uint32_t boneID, float weight) {
 	for (uint i = 0; i < SDL_arraysize(boneIds); i++) {
-		// TODO: fabs please - bobs
-		if (boneWeights[i] == 0.0) {
+		if (fabs(boneWeights[i]) <= 0.000001) {
 			boneIds[i] = boneID;
 			boneWeights[i] = weight;
 			return;
@@ -246,7 +245,7 @@ void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh, std::vector<VertexB
 		for (uint32_t j = 0; j < mesh->mBones[i]->mNumWeights; j++) {
 			const uint32_t vertexID = _meshData[meshIndex].baseVertex + mesh->mBones[i]->mWeights[j].mVertexId;
 			const float weight = mesh->mBones[i]->mWeights[j].mWeight;
-			bones[vertexID].AddBoneData(boneIndex, weight);
+			bones[vertexID].addBoneData(boneIndex, weight);
 		}
 	}
 }
@@ -453,9 +452,22 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 	}
 }
 
-int Mesh::render() {
+int Mesh::render(video::Shader& shader) {
 	if (_state != io::IOSTATE_LOADED) {
 		return 0;
+	}
+	if (shader.hasUniform("u_bonetransforms")) {
+		std::vector<glm::mat4> transforms;
+		boneTransform(nullptr, 0.0f, transforms);
+		int index = 0;
+		for (const glm::mat4& mat : transforms) {
+			const int loc = shader.getUniformLocation(core::string::format("u_bonetransforms[%i]", index));
+			if (loc < 0) {
+				break;
+			}
+			shader.setUniformMatrix(loc, mat);
+			++index;
+		}
 	}
 	glBindVertexArray(_vertexArrayObject);
 	int drawCalls = 0;

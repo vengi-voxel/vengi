@@ -37,7 +37,7 @@ void TestMesh::doRender() {
 		Log::error("Failed to init the mesh");
 		return;
 	}
-	core_assert(_mesh.render() > 0);
+	core_assert_always(_mesh.render(_meshShader) > 0);
 }
 
 core::AppState TestMesh::onCleanup() {

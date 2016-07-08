@@ -57,7 +57,7 @@ void TestDepthBuffer::doRender() {
 			Log::error("Failed to init the mesh");
 		}
 		_depthBuffer.bind();
-		_mesh.render();
+		_mesh.render(_shadowMapShader);
 		_depthBuffer.unbind();
 	}
 	{
@@ -74,7 +74,7 @@ void TestDepthBuffer::doRender() {
 			Log::error("Failed to init the mesh");
 			return;
 		}
-		core_assert(_mesh.render() > 0);
+		core_assert_always(_mesh.render(_meshShader) > 0);
 	}
 	{
 		video::ScopedShader scoped(_shadowMapRenderShader);
