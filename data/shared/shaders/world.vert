@@ -21,13 +21,6 @@ uniform sampler2D u_texture;
 uniform vec4 u_materialcolor[32];
 uniform float u_debug_color;
 
-#if cl_deferred == 0
-uniform vec3 u_lightpos;
-uniform vec3 u_diffuse_color;
-uniform float u_fogrange;
-uniform float u_viewdistance;
-#endif
-
 $out vec3 v_pos;
 $out vec4 v_color;
 $out float v_ambientocclusion;
@@ -71,11 +64,6 @@ void main(void) {
 #endif
 
 #if cl_deferred == 0
-	v_fogrange = u_fogrange;
-	v_viewdistance = u_viewdistance;
-	v_lightpos = u_lightpos;
-	v_diffuse_color = u_diffuse_color;
-
 	// use the air color as fog color, too
 	v_fogcolor = u_materialcolor[0].rgb;
 #endif

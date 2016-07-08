@@ -12,11 +12,11 @@ uniform vec2 u_screensize;
 #endif
 
 #if cl_deferred == 0
-$in vec3 v_lightpos;
-$in vec3 v_diffuse_color;
-$in float v_fogrange;
+uniform vec3 u_lightpos;
+uniform vec3 u_diffuse_color;
+uniform float u_fogrange;
+uniform float u_viewdistance;
 $in vec3 v_fogcolor;
-$in float v_viewdistance;
 $out vec4 o_color;
 #else
 // the order is defines in the gbuffer bindings
@@ -40,7 +40,7 @@ void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
 	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
-	vec3 lightdir = normalize(v_lightpos - v_pos);
+	vec3 lightdir = normalize(u_lightpos - v_pos);
 	float ndotl = dot(normal, lightdir);
 #if cl_shadowmap == 1
 	float shadow = calculateShadow(ndotl);
@@ -49,13 +49,13 @@ void main(void) {
 #endif
 
 #if cl_deferred == 0
-	vec3 diffuse = v_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
+	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
 	vec3 ambient = vec3(0.2);
 	vec3 lightvalue = (ambient + shadow) * diffuse;
 
-	float fogstart = max(v_viewdistance - v_fogrange, 0.0);
+	float fogstart = max(u_viewdistance - u_fogrange, 0.0);
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
-	float fogval = 1.0 - clamp((v_viewdistance - fogdistance) / (v_viewdistance - fogstart), 0.0, 1.0);
+	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / (u_viewdistance - fogstart), 0.0, 1.0);
 
 	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * v_debug_color;
 	o_color = vec4(mix(linearColor, v_fogcolor, fogval), v_color.a);
