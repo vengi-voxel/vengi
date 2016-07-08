@@ -177,6 +177,15 @@ void Camera::updateOrientation() {
 	if (!isDirty(DIRTY_ORIENTATION)) {
 		return;
 	}
+
+	glm::quat _yaw = glm::angleAxis(_motionDelta.y, _quat * glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::quat _pitch = glm::angleAxis(_motionDelta.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	_motionDelta = glm::vec3();
+
+	/** The order of applying this matters, don't touch! */
+	_quat = _yaw * _quat;
+	_quat = _pitch * _quat;
+	_quat = glm::normalize(_quat);
 	_orientation = glm::mat4_cast(_quat);
 }
 
@@ -201,10 +210,8 @@ void Camera::init(int width, int height) {
 }
 
 void Camera::onMotion(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
-	rotationSpeed = glm::clamp(rotationSpeed, 0.0001f, 1.0f);
-	const float _yaw = glm::degrees(yaw()) + static_cast<float>(deltaX) * rotationSpeed;
-	const float _pitch = glm::clamp(glm::degrees(pitch()) + static_cast<float>(deltaY) * rotationSpeed, -89.999f, 89.999f);
-	setAngles(glm::radians(_pitch), glm::radians(_yaw));
+	_motionDelta += glm::vec3(deltaY, deltaX, 0.0f) * rotationSpeed;
+	_dirty |= DIRTY_ORIENTATION;
 }
 
 Ray Camera::screenRay(const glm::vec2& screenPos) const {

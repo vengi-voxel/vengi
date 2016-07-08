@@ -44,12 +44,16 @@ private:
 	}
 
 	glm::vec3 _pos;
+	glm::quat _quat;
+
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projectionMatrix;
 	glm::mat4 _orientation;
+
+	glm::vec3 _motionDelta;
+
 	int _width = 0;
 	int _height = 0;
-	glm::quat _quat;
 	// rotation speed over time for all three axis
 	glm::vec3 _omega;
 	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
@@ -208,7 +212,7 @@ inline glm::mat4 Camera::orthoMatrix() const {
 }
 
 inline void Camera::setAngles(float pitch, float yaw) {
-	_quat = glm::quat(glm::vec3(pitch, yaw, roll()));
+	_quat = glm::quat(glm::vec3(pitch, yaw, 0.0f));
 	_dirty |= DIRTY_ORIENTATION;
 }
 
