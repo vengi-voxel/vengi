@@ -1,4 +1,5 @@
 set(SRCS
+	Camera.cpp Camera.h
 	WindowedApp.cpp WindowedApp.h
 	GLFunc.cpp GLFunc.h
 	UniformBuffer.cpp UniformBuffer.h
