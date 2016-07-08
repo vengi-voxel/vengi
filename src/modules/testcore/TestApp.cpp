@@ -71,6 +71,10 @@ core::AppState TestApp::onRunning() {
 		return state;
 	}
 
+	if (_cameraMotion) {
+		SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
+	}
+
 	const bool left = _moveMask & MOVELEFT;
 	const bool right = _moveMask & MOVERIGHT;
 	const bool forward = _moveMask & MOVEFORWARD;
