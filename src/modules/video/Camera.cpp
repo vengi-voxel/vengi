@@ -18,6 +18,31 @@ Camera::Camera(CameraType type, CameraMode mode) :
 Camera::~Camera() {
 }
 
+void Camera::init(int width, int height) {
+	_width = width;
+	_height = height;
+}
+
+void Camera::move(const glm::vec3& delta) {
+	_pos += forward() * -delta.z;
+	_pos += right() * delta.x;
+	_pos += up() * delta.y;
+	_dirty |= DIRTY_POSITON;
+}
+
+void Camera::onMotion(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
+	switch(_type) {
+		case CameraType::FirstPerson:
+			turn(deltaX * rotationSpeed);
+			break;
+		case CameraType::Free:
+			yaw(deltaX * rotationSpeed);
+			break;
+	}
+	pitch(deltaY * rotationSpeed);
+	_dirty |= DIRTY_ORIENTATION;
+}
+
 void Camera::slerp(float pitch, float yaw, float factor) {
 	const glm::quat quat2(glm::vec3(pitch, yaw, 0.0f));
 	_quat = glm::mix(_quat, quat2, factor);
@@ -39,6 +64,58 @@ void Camera::lookAt(const glm::vec3& position) {
 	const float angle = acosf(dot);
 	const glm::vec3& cross = glm::normalize(glm::cross(direction, glm::vec3(0, 0, -1)));
 	_quat = glm::angleAxis(angle, cross);
+}
+
+void Camera::update(long deltaFrame) {
+	updateOrientation();
+	updateViewMatrix();
+	updateProjectionMatrix();
+	updateFrustumPlanes();
+	// TODO: apply omega rotation
+	_dirty = 0;
+}
+
+void Camera::updateOrientation() {
+	if (!isDirty(DIRTY_ORIENTATION)) {
+		return;
+	}
+
+	_quat = glm::normalize(_quat);
+	_orientation = glm::mat4_cast(_quat);
+}
+
+void Camera::updateProjectionMatrix() {
+	switch(_mode) {
+		case CameraMode::Orthogonal:
+			_projectionMatrix = orthogonalMatrix();
+			break;
+		case CameraMode::Perspective:
+			_projectionMatrix = perspectiveMatrix();
+			break;
+	}
+}
+
+void Camera::updateViewMatrix() {
+	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON)) {
+		return;
+	}
+	_viewMatrix = glm::translate(orientation(), -_pos);
+}
+
+Ray Camera::screenRay(const glm::vec2& screenPos) const {
+	// project relative mouse cursor position [0.0-1.0] to [-1.0,1.0] and flip y axis
+	const float x = +(screenPos.x - 0.5f) * 2.0f;
+	const float y = -(screenPos.y - 0.5f) * 2.0f;
+	const glm::mat4& viewProjInverse = glm::inverse(_projectionMatrix * _viewMatrix);
+	const glm::vec4 near(x, y, 0.0f, 1.0f);
+	const glm::vec4 far(x, y, 1.0f, 1.0f);
+	const glm::vec4& origin = viewProjInverse * near;
+	return Ray(glm::vec3(origin), glm::normalize(glm::vec3(viewProjInverse * far - origin)));
+}
+
+glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
+	const Ray& ray = screenRay(glm::vec2(screenPos));
+	return ray.origin + ray.direction * screenPos.z;
 }
 
 FrustumResult Camera::testFrustum(const glm::vec3& position) const {
@@ -143,83 +220,6 @@ void Camera::updateFrustumPlanes() {
 	for (int i = 0; i < int(FrustumPlanes::MaxPlanes); i++) {
 		_frustumPlanes[i] = glm::normalize(_frustumPlanes[i]);
 	}
-}
-
-void Camera::move(const glm::vec3& delta) {
-	_pos += forward() * -delta.z;
-	_pos += right() * delta.x;
-	_pos += up() * delta.y;
-	_dirty |= DIRTY_POSITON;
-}
-
-void Camera::updateProjectionMatrix() {
-	switch(_mode) {
-		case CameraMode::Orthogonal:
-			_projectionMatrix = orthoMatrix();
-			break;
-		case CameraMode::Perspective:
-			_projectionMatrix = perspectiveMatrix();
-			break;
-	}
-}
-
-void Camera::updateOrientation() {
-	if (!isDirty(DIRTY_ORIENTATION)) {
-		return;
-	}
-
-	_quat = glm::normalize(_quat);
-	_orientation = glm::mat4_cast(_quat);
-}
-
-void Camera::updateViewMatrix() {
-	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON)) {
-		return;
-	}
-	_viewMatrix = glm::translate(orientation(), -_pos);
-}
-
-void Camera::update(long deltaFrame) {
-	updateOrientation();
-	updateViewMatrix();
-	updateProjectionMatrix();
-	updateFrustumPlanes();
-	// TODO: apply omega rotation
-	_dirty = 0;
-}
-
-void Camera::init(int width, int height) {
-	_width = width;
-	_height = height;
-}
-
-void Camera::onMotion(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
-	switch(_type) {
-		case CameraType::FirstPerson:
-			turn(deltaX * rotationSpeed);
-			break;
-		case CameraType::Free:
-			yaw(deltaX * rotationSpeed);
-			break;
-	}
-	pitch(deltaY * rotationSpeed);
-	_dirty |= DIRTY_ORIENTATION;
-}
-
-Ray Camera::screenRay(const glm::vec2& screenPos) const {
-	// project relative mouse cursor position [0.0-1.0] to [-1.0,1.0] and flip y axis
-	const float x = +(screenPos.x - 0.5f) * 2.0f;
-	const float y = -(screenPos.y - 0.5f) * 2.0f;
-	const glm::mat4& viewProjInverse = glm::inverse(_projectionMatrix * _viewMatrix);
-	const glm::vec4 near(x, y, 0.0f, 1.0f);
-	const glm::vec4 far(x, y, 1.0f, 1.0f);
-	const glm::vec4& origin = viewProjInverse * near;
-	return Ray(glm::vec3(origin), glm::normalize(glm::vec3(viewProjInverse * far - origin)));
-}
-
-glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
-	const Ray& ray = screenRay(glm::vec2(screenPos));
-	return ray.origin + ray.direction * screenPos.z;
 }
 
 }

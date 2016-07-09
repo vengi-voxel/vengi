@@ -85,21 +85,17 @@ public:
 
 	void init(int width, int height);
 
+	CameraType type();
 	void setType(CameraType type);
 
-	CameraType type();
-
+	CameraMode mode();
 	void setMode(CameraMode mode);
 
-	CameraMode mode();
-
 	float nearPlane() const;
+	void setNearPlane(float nearPlane);
 
 	float farPlane() const;
-
 	void setFarPlane(float farPlane);
-
-	void setNearPlane(float nearPlane);
 
 	void setOmega(const glm::vec3& omega);
 
@@ -114,14 +110,14 @@ public:
 
 	glm::vec3 up() const;
 
-	void onMotion(int32_t relX, int32_t relY, float rotationSpeed = 0.1f);
 	void move(const glm::vec3& delta);
+	void onMotion(int32_t relX, int32_t relY, float rotationSpeed = 0.1f);
 	void update(long deltaFrame);
 
 	FrustumResult testFrustum(const glm::vec3& position) const;
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 
-	glm::mat4 orthoMatrix() const;
+	glm::mat4 orthogonalMatrix() const;
 	glm::mat4 perspectiveMatrix() const;
 	const glm::mat4& viewMatrix() const;
 	const glm::mat4& projectionMatrix() const;
@@ -270,7 +266,7 @@ inline glm::vec3 Camera::up() const {
 	return glm::conjugate(_quat) * glm::up;
 }
 
-inline glm::mat4 Camera::orthoMatrix() const {
+inline glm::mat4 Camera::orthogonalMatrix() const {
 	const float w = width();
 	const float h = height();
 	return glm::ortho(0.0f, w, h, 0.0f, nearPlane(), farPlane());
