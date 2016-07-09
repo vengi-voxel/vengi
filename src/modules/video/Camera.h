@@ -52,6 +52,9 @@ private:
 		return true;
 	}
 
+	CameraType _type;
+	CameraMode _mode;
+
 	glm::vec3 _pos;
 	glm::quat _quat;
 	int _dirty = 0;
@@ -69,7 +72,6 @@ private:
 	float _farPlane = 500.0f;
 	float _aspectRatio = 1.0f;
 	float _fieldOfView = 45.0f;
-	CameraMode _mode;
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateFrustumPlanes();
@@ -78,10 +80,14 @@ private:
 	void updateProjectionMatrix();
 	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
 public:
-	Camera(CameraMode mode = CameraMode::Perspective);
+	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 	~Camera();
 
 	void init(int width, int height);
+
+	void setType(CameraType type);
+
+	CameraType type();
 
 	void setMode(CameraMode mode);
 
@@ -214,6 +220,14 @@ inline void Camera::rotate(float radians, const glm::vec3& axis) {
 
 inline void Camera::rotate(const glm::quat& rotation) {
 	_quat = rotation * _quat;
+}
+
+inline void Camera::setType(CameraType type) {
+	_type = type;
+}
+
+inline CameraType Camera::type() {
+	return _type;
 }
 
 inline void Camera::setMode(CameraMode mode) {

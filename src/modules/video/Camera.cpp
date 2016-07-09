@@ -10,8 +10,8 @@
 
 namespace video {
 
-Camera::Camera(CameraMode mode) :
-		_pos(0.0f, 0.0f, 0.0f), _omega(0.0f), _mode(mode) {
+Camera::Camera(CameraType type, CameraMode mode) :
+	_type(type), _mode(mode), _pos(0.0f, 0.0f, 0.0f), _omega(0.0f) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
@@ -194,7 +194,14 @@ void Camera::init(int width, int height) {
 }
 
 void Camera::onMotion(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
-	turn(deltaX * rotationSpeed);
+	switch(_type) {
+		case CameraType::FirstPerson:
+			turn(deltaX * rotationSpeed);
+			break;
+		case CameraType::Free:
+			yaw(deltaX * rotationSpeed);
+			break;
+	}
 	pitch(deltaY * rotationSpeed);
 	_dirty |= DIRTY_ORIENTATION;
 }
