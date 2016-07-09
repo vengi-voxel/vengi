@@ -181,6 +181,7 @@ void Camera::update(long deltaFrame) {
 	updateViewMatrix();
 	updateProjectionMatrix();
 	updateFrustumPlanes();
+	// TODO: apply omega rotation
 	_dirty = 0;
 }
 
