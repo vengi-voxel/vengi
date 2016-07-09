@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Command.h"
+#include "core/GLM.h"
 
 constexpr int MOVERIGHT		=	1 << 0;
 constexpr int MOVELEFT		=	1 << 1;
@@ -21,3 +22,20 @@ constexpr int MOVEBACKWARD	=	1 << 3;
 		else \
 			_moveMask &= ~(flag); \
 	});
+
+inline glm::vec3 getMoveDelta(float speed, int _moveMask) {
+	glm::vec3 moveDelta;
+	if (_moveMask & MOVELEFT) {
+		moveDelta += glm::left * speed;
+	}
+	if (_moveMask & MOVERIGHT) {
+		moveDelta += glm::right * speed;
+	}
+	if (_moveMask & MOVEFORWARD) {
+		moveDelta += glm::forward * speed;
+	}
+	if (_moveMask & MOVEBACKWARD) {
+		moveDelta += glm::backward * speed;
+	}
+	return moveDelta;
+}

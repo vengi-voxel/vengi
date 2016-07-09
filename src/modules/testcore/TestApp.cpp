@@ -75,21 +75,9 @@ core::AppState TestApp::onRunning() {
 		SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
 	}
 
-	glm::vec3 moveDelta = glm::vec3();
-	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
-	if(_moveMask & MOVELEFT) {
-		moveDelta += glm::left * speed;
-	}
-	if(_moveMask & MOVERIGHT) {
-		moveDelta += glm::right * speed;
-	}
-	if(_moveMask & MOVEFORWARD) {
-		moveDelta += glm::forward * speed;
-	}
-	if(_moveMask & MOVEBACKWARD) {
-		moveDelta += glm::backward * speed;
-	}
-	if(moveDelta != glm::vec3()) {
+	const float speed = _cameraSpeed * static_cast<float>(_deltaFrame);
+	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
+	if (moveDelta != glm::vec3()) {
 		_camera.move(moveDelta);
 	}
 
