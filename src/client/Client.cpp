@@ -132,19 +132,19 @@ void Client::beforeUI() {
 	if (_world->isCreated()) {
 		glm::vec3 moveDelta = glm::vec3();
 		const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
-		if(_moveMask & MOVELEFT) {
+		if (_moveMask & MoveDirection_MOVELEFT) {
 			moveDelta += glm::left * speed;
 		}
-		if(_moveMask & MOVERIGHT) {
+		if (_moveMask & MoveDirection_MOVERIGHT) {
 			moveDelta += glm::right * speed;
 		}
-		if(_moveMask & MOVEFORWARD) {
+		if (_moveMask & MoveDirection_MOVEFORWARD) {
 			moveDelta += glm::forward * speed;
 		}
-		if(_moveMask & MOVEBACKWARD) {
+		if (_moveMask & MoveDirection_MOVEBACKWARD) {
 			moveDelta += glm::backward * speed;
 		}
-		if(moveDelta != glm::vec3()) {
+		if (moveDelta != glm::vec3()) {
 			_camera.move(moveDelta);
 		}
 
