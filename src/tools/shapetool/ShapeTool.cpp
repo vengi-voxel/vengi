@@ -14,7 +14,7 @@
 
 // tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
-		Super(filesystem, eventBus), _camera(false), _meshPool(meshPool), _worldRenderer(world), _world(world) {
+		Super(filesystem, eventBus), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
 	init("engine", "shapetool");
 	_world->setClientData(true);
 }

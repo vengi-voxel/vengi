@@ -29,12 +29,12 @@ enum class FrustumResult {
 	Intersect
 };
 
-enum class CameraMode {
+enum class CameraType {
 	FirstPerson,
 	Free
 };
 
-enum class CameraType {
+enum class CameraMode {
 	Perspective,
 	Orthogonal
 };
@@ -54,6 +54,7 @@ private:
 
 	glm::vec3 _pos;
 	glm::quat _quat;
+	int _dirty = 0;
 
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projectionMatrix;
@@ -63,26 +64,28 @@ private:
 	int _height = 0;
 	// rotation speed over time for all three axis
 	glm::vec3 _omega;
-	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
+
 	float _nearPlane = 0.1f;
 	float _farPlane = 500.0f;
 	float _aspectRatio = 1.0f;
 	float _fieldOfView = 45.0f;
-	int _dirty = 0;
-	bool _ortho;
+	CameraMode _mode;
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateFrustumPlanes();
 	void updateViewMatrix();
 	void updateOrientation();
 	void updateProjectionMatrix();
+	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
 public:
-	Camera(bool ortho = false);
+	Camera(CameraMode mode = CameraMode::Perspective);
 	~Camera();
 
 	void init(int width, int height);
 
-	void setOrtho(bool ortho);
+	void setMode(CameraMode mode);
+
+	CameraMode mode();
 
 	float nearPlane() const;
 
@@ -213,8 +216,12 @@ inline void Camera::rotate(const glm::quat& rotation) {
 	_quat = rotation * _quat;
 }
 
-inline void Camera::setOrtho(bool ortho) {
-	_ortho = ortho;
+inline void Camera::setMode(CameraMode mode) {
+	_mode = mode;
+}
+
+inline CameraMode Camera::mode() {
+	return _mode;
 }
 
 inline float Camera::nearPlane() const {

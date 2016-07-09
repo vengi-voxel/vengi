@@ -10,8 +10,8 @@
 
 namespace video {
 
-Camera::Camera(bool ortho) :
-		_pos(0.0f, 0.0f, 0.0f), _omega(0.0f), _ortho(ortho) {
+Camera::Camera(CameraMode mode) :
+		_pos(0.0f, 0.0f, 0.0f), _omega(0.0f), _mode(mode) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
@@ -153,10 +153,13 @@ void Camera::move(const glm::vec3& delta) {
 }
 
 void Camera::updateProjectionMatrix() {
-	if (_ortho) {
-		_projectionMatrix = orthoMatrix();
-	} else {
-		_projectionMatrix = perspectiveMatrix();
+	switch(_mode) {
+		case CameraMode::Orthogonal:
+			_projectionMatrix = orthoMatrix();
+			break;
+		case CameraMode::Perspective:
+			_projectionMatrix = perspectiveMatrix();
+			break;
 	}
 }
 

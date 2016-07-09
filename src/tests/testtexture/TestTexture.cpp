@@ -1,12 +1,13 @@
 #include "TestTexture.h"
 #include "core/Color.h"
+#include "video/Camera.h"
 
 TestTexture::TestTexture(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
 }
 
 core::AppState TestTexture::onInit() {
-	_camera.setOrtho(true);
+	_camera.setMode(video::CameraMode::Orthogonal);
 	const core::AppState state = Super::onInit();
 	_camera.setPosition(glm::vec3(_width / 2.0f, -_height / 2.0f, -50.0f));
 
