@@ -131,7 +131,7 @@ void Client::beforeUI() {
 
 	if (_world->isCreated()) {
 		glm::vec3 moveDelta = glm::vec3();
-		const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
+		const float speed = 0.01f * static_cast<float>(_deltaFrame);
 		if (_moveMask & MoveDirection_MOVELEFT) {
 			moveDelta += glm::left * speed;
 		}
