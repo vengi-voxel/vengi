@@ -75,19 +75,26 @@ core::AppState TestApp::onRunning() {
 		SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
 	}
 
-	const bool left = _moveMask & MOVELEFT;
-	const bool right = _moveMask & MOVERIGHT;
-	const bool forward = _moveMask & MOVEFORWARD;
-	const bool backward = _moveMask & MOVEBACKWARD;
-	_camera.onMovement(_deltaFrame, left, right, forward, backward, _cameraSpeed);
-	if (left || right || forward || backward) {
-		const glm::vec3& pos = _camera.position();
-		Log::info("camera: %f:%f:%f", pos.x, pos.y, pos.z);
+	glm::vec3 moveDelta = glm::vec3();
+	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
+	if(_moveMask & MOVELEFT) {
+		moveDelta += glm::left * speed;
 	}
+	if(_moveMask & MOVERIGHT) {
+		moveDelta += glm::right * speed;
+	}
+	if(_moveMask & MOVEFORWARD) {
+		moveDelta += glm::forward * speed;
+	}
+	if(_moveMask & MOVEBACKWARD) {
+		moveDelta += glm::backward * speed;
+	}
+	if(moveDelta != glm::vec3()) {
+		_camera.move(moveDelta);
+	}
+
 	_camera.update(_deltaFrame);
-
 	doRender();
-
 	_axis.render(_camera);
 
 	return state;

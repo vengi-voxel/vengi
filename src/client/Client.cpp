@@ -130,11 +130,24 @@ void Client::beforeUI() {
 	UIApp::beforeUI();
 
 	if (_world->isCreated()) {
-		const bool left = _moveMask & MoveDirection_MOVELEFT;
-		const bool right = _moveMask & MoveDirection_MOVERIGHT;
-		const bool forward = _moveMask & MoveDirection_MOVEFORWARD;
-		const bool backward = _moveMask & MoveDirection_MOVEBACKWARD;
-		_camera.onMovement(_deltaFrame, left, right, forward, backward);
+		glm::vec3 moveDelta = glm::vec3();
+		const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
+		if(_moveMask & MOVELEFT) {
+			moveDelta += glm::left * speed;
+		}
+		if(_moveMask & MOVERIGHT) {
+			moveDelta += glm::right * speed;
+		}
+		if(_moveMask & MOVEFORWARD) {
+			moveDelta += glm::forward * speed;
+		}
+		if(_moveMask & MOVEBACKWARD) {
+			moveDelta += glm::backward * speed;
+		}
+		if(moveDelta != glm::vec3()) {
+			_camera.move(moveDelta);
+		}
+
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
 		_camera.setAspectRatio(_aspect);
 		_camera.update(_deltaFrame);

@@ -106,7 +106,7 @@ public:
 	glm::vec3 up() const;
 
 	void onMotion(int32_t relX, int32_t relY, float rotationSpeed = 0.1f);
-	void onMovement(long dt, bool left, bool right, bool forward, bool backward, float speed = 0.01f);
+	void move(const glm::vec3& delta);
 	void update(long deltaFrame);
 
 	FrustumResult testFrustum(const glm::vec3& position) const;
@@ -123,6 +123,7 @@ public:
 	void lookAt(const glm::vec3& position);
 
 	const glm::vec3& position() const;
+	void setPosition(const glm::vec3& pos);
 	int width() const;
 	int height() const;
 
@@ -158,7 +159,6 @@ public:
 	 * @param[in] roll rotation in modelspace
 	 */
 	void setAngles(float pitch, float yaw, float roll);
-	void setPosition(const glm::vec3& pos);
 
 	void slerp(float pitch, float yaw, float factor);
 

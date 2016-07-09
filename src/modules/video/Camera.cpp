@@ -145,24 +145,11 @@ void Camera::updateFrustumPlanes() {
 	}
 }
 
-void Camera::onMovement(long dt, bool left, bool _right, bool _forward, bool backward, float speed) {
-	const float deltaTime = static_cast<float>(dt);
-	if (_forward) {
-		_pos += forward() * deltaTime * speed;
-		_dirty |= DIRTY_POSITON;
-	}
-	if (backward) {
-		_pos -= forward() * deltaTime * speed;
-		_dirty |= DIRTY_POSITON;
-	}
-	if (left) {
-		_pos -= right() * deltaTime * speed;
-		_dirty |= DIRTY_POSITON;
-	}
-	if (_right) {
-		_pos += right() * deltaTime * speed;
-		_dirty |= DIRTY_POSITON;
-	}
+void Camera::move(const glm::vec3& delta) {
+	_pos += forward() * -delta.z;
+	_pos += right() * delta.x;
+	_pos += up() * delta.y;
+	_dirty |= DIRTY_POSITON;
 }
 
 void Camera::updateProjectionMatrix() {
