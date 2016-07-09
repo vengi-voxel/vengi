@@ -200,12 +200,12 @@ inline void Camera::roll(float radians) {
 }
 
 inline void Camera::turn(float radians) {
-	glm::quat quat = glm::angleAxis(radians, _quat * glm::up);
+	const glm::quat& quat = glm::angleAxis(radians, _quat * glm::up);
 	rotate(quat);
 }
 
 inline void Camera::rotate(float radians, const glm::vec3& axis) {
-	glm::quat quat = glm::angleAxis(radians, axis);
+	const glm::quat& quat = glm::angleAxis(radians, axis);
 	rotate(quat);
 }
 
