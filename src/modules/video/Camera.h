@@ -13,6 +13,16 @@
 
 namespace video {
 
+enum class CameraType {
+	FirstPerson,
+	Free
+};
+
+enum class CameraMode {
+	Perspective,
+	Orthogonal
+};
+
 enum class FrustumPlanes {
 	FrustumRight,
 	FrustumLeft,
@@ -27,16 +37,6 @@ enum class FrustumResult {
 	Outside,
 	Inside,
 	Intersect
-};
-
-enum class CameraType {
-	FirstPerson,
-	Free
-};
-
-enum class CameraMode {
-	Perspective,
-	Orthogonal
 };
 
 class Camera {
@@ -84,11 +84,13 @@ public:
 	~Camera();
 
 	void init(int width, int height);
+	int width() const;
+	int height() const;
 
-	CameraType type();
+	CameraType type() const;
 	void setType(CameraType type);
 
-	CameraMode mode();
+	CameraMode mode() const;
 	void setMode(CameraMode mode);
 
 	float nearPlane() const;
@@ -97,42 +99,33 @@ public:
 	float farPlane() const;
 	void setFarPlane(float farPlane);
 
+	glm::vec3 omega() const;
 	void setOmega(const glm::vec3& omega);
 
 	/**
 	 * @return The rotation matrix of the direction the camera is facing to.
 	 */
 	glm::mat4 orientation() const;
+	glm::quat quaternion() const;
 
 	glm::vec3 forward() const;
-
 	glm::vec3 right() const;
-
 	glm::vec3 up() const;
 
+	const glm::vec3& position() const;
+	void setPosition(const glm::vec3& pos);
 	void move(const glm::vec3& delta);
-	void onMotion(int32_t relX, int32_t relY, float rotationSpeed = 0.1f);
-	void update(long deltaFrame);
-
-	FrustumResult testFrustum(const glm::vec3& position) const;
-	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 
 	glm::mat4 orthogonalMatrix() const;
 	glm::mat4 perspectiveMatrix() const;
 	const glm::mat4& viewMatrix() const;
 	const glm::mat4& projectionMatrix() const;
 
+	float fieldOfView() const;
 	void setFieldOfView(float angles);
+
+	float aspectRatio() const;
 	void setAspectRatio(float aspect);
-
-	void lookAt(const glm::vec3& position);
-
-	const glm::vec3& position() const;
-	void setPosition(const glm::vec3& pos);
-	int width() const;
-	int height() const;
-
-	const glm::vec4& frustumPlane(FrustumPlanes plane) const;
 
 	/**
 	 * @brief Rotation around the y-axis
@@ -157,6 +150,9 @@ public:
 
 	void rotate(float radians, const glm::vec3& axis);
 	void rotate(const glm::quat& rotation);
+	void rotate(int32_t relX, int32_t relY, float rotationSpeed = 0.1f);
+
+	void lookAt(const glm::vec3& position);
 
 	/**
 	 * @param[in] pitch rotation in modelspace
@@ -178,7 +174,29 @@ public:
 	 * @param[in] projection The projection matrix
 	 */
 	glm::vec3 screenToWorld(const glm::vec3& screenPos) const;
+
+	void update(long deltaFrame);
+
+	const glm::vec4& frustumPlane(FrustumPlanes plane) const;
+	FrustumResult testFrustum(const glm::vec3& position) const;
+	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 };
+
+inline void Camera::setType(CameraType type) {
+	_type = type;
+}
+
+inline CameraType Camera::type() const {
+	return _type;
+}
+
+inline void Camera::setMode(CameraMode mode) {
+	_mode = mode;
+}
+
+inline CameraMode Camera::mode() const {
+	return _mode;
+}
 
 inline float Camera::pitch() const {
 	return glm::pitch(_quat);
@@ -218,22 +236,6 @@ inline void Camera::rotate(const glm::quat& rotation) {
 	_quat = rotation * _quat;
 }
 
-inline void Camera::setType(CameraType type) {
-	_type = type;
-}
-
-inline CameraType Camera::type() {
-	return _type;
-}
-
-inline void Camera::setMode(CameraMode mode) {
-	_mode = mode;
-}
-
-inline CameraMode Camera::mode() {
-	return _mode;
-}
-
 inline float Camera::nearPlane() const {
 	return _nearPlane;
 }
@@ -252,6 +254,10 @@ inline void Camera::setNearPlane(float nearPlane) {
 
 inline glm::mat4 Camera::orientation() const {
 	return _orientation;
+}
+
+inline glm::quat Camera::quaternion() const {
+	return _quat;
 }
 
 inline glm::vec3 Camera::forward() const {
@@ -294,8 +300,16 @@ inline const glm::vec4& Camera::frustumPlane(FrustumPlanes plane) const {
 	return _frustumPlanes[int(plane)];
 }
 
+inline float Camera::fieldOfView() const {
+	return _fieldOfView;
+}
+
 inline void Camera::setFieldOfView(float angles) {
 	_fieldOfView = angles;
+}
+
+inline float Camera::aspectRatio() const {
+	return _aspectRatio;
 }
 
 inline void Camera::setAspectRatio(float aspect) {

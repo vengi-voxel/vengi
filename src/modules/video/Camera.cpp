@@ -30,7 +30,7 @@ void Camera::move(const glm::vec3& delta) {
 	_dirty |= DIRTY_POSITON;
 }
 
-void Camera::onMotion(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
+void Camera::rotate(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
 	switch(_type) {
 		case CameraType::FirstPerson:
 			turn(deltaX * rotationSpeed);
