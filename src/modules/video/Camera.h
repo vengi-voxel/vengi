@@ -149,7 +149,7 @@ public:
 	 * @brief Rotation around the y-axis relative to world up
 	 */
 	void turn(float radians);
-	
+
 	void rotate(float radians, const glm::vec3& axis);
 	void rotate(const glm::quat& rotation);
 
