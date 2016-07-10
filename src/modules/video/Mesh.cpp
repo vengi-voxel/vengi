@@ -65,7 +65,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 		return false;
 	}
 
-	_globalInverseTransform = glm::inverse(toMat4(_scene->mRootNode->mTransformation));
+	_globalInverseTransform = glm::inverse(glm::rotate(toMat4(_scene->mRootNode->mTransformation), 90.0f, glm::vec3(1.0f, 0.0f, 0.0f)));
 
 	_meshData.resize(_scene->mNumMeshes);
 
