@@ -161,6 +161,7 @@ public:
 	 */
 	void setAngles(float pitch, float yaw, float roll);
 
+	void slerp(const glm::quat& quat, float factor);
 	void slerp(float pitch, float yaw, float factor);
 	void slerp(float pitch, float yaw, float roll, float factor);
 

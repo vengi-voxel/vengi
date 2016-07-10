@@ -43,6 +43,11 @@ void Camera::rotate(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
+inline void Camera::slerp(const glm::quiat& quat, float factor) {
+	_quat = quaternion::mix(_quat, quat, factor);
+	_dirty |= DIRTY_ORIENTATION;
+}
+
 inline void Camera::slerp(float pitch, float yaw, float factor) {
 	slerp(pitch, yaw, 0.0f, factor);
 }
@@ -50,6 +55,7 @@ inline void Camera::slerp(float pitch, float yaw, float factor) {
 void Camera::slerp(float pitch, float yaw, float roll, float factor) {
 	const glm::quat quat2(glm::vec3(pitch, yaw, roll));
 	_quat = glm::mix(_quat, quat2, factor);
+	_dirty |= DIRTY_ORIENTATION;
 }
 
 void Camera::lookAt(const glm::vec3& position) {
