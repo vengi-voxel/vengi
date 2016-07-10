@@ -7,7 +7,7 @@ TestMesh::TestMesh(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 
 core::AppState TestMesh::onInit() {
 	const core::AppState state = Super::onInit();
-	_camera.setPosition(glm::vec3(0.0f, 250.0f, 0.0f));
+	_camera.setPosition(glm::vec3(0.0f, 0.0f, 250.0f));
 	_camera.lookAt(glm::vec3(0.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 
