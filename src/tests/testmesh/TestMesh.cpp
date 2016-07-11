@@ -7,8 +7,8 @@ TestMesh::TestMesh(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 
 core::AppState TestMesh::onInit() {
 	const core::AppState state = Super::onInit();
-	_camera.setPosition(glm::vec3(0.0f, 0.0f, 250.0f));
-	_camera.lookAt(glm::vec3(0.0f));
+	_camera.setPosition(glm::vec3(0.0f, 50.0f, 150.0f));
+	_camera.lookAt(glm::vec3(0.0f, 50.0f, 0.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 
 	if (!_meshShader.setup()) {
@@ -29,8 +29,8 @@ void TestMesh::doRender() {
 	video::ScopedShader scoped(_meshShader);
 	_meshShader.setView(_camera.viewMatrix());
 	_meshShader.setProjection(_camera.projectionMatrix());
-	_meshShader.setFogrange(500.0f);
-	_meshShader.setViewdistance(500.0f);
+	_meshShader.setFogrange(2500.0f);
+	_meshShader.setViewdistance(2500.0f);
 	_meshShader.setModel(glm::mat4());
 	_meshShader.setTexture(0);
 
