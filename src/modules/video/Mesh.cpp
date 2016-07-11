@@ -167,12 +167,12 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 		if (shader.hasAttribute("a_boneids")) {
 			const int loc = shader.enableVertexAttribute("a_boneids");
 			core_assert(loc >= 0);
-			glVertexAttribIPointer(loc, 4, GL_INT, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneIds)));
+			glVertexAttribIPointer(loc, NUM_BONES_PER_VEREX, GL_INT, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneIds)));
 		}
 		if (shader.hasAttribute("a_boneweights")) {
 			const int loc = shader.enableVertexAttribute("a_boneweights");
 			core_assert(loc >= 0);
-			glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneWeights)));
+			glVertexAttribPointer(loc, NUM_BONES_PER_VEREX, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneWeights)));
 		}
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
