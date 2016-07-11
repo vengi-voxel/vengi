@@ -11,7 +11,7 @@
 namespace video {
 
 Camera::Camera(CameraType type, CameraMode mode) :
-	_type(type), _mode(mode), _pos(0.0f, 0.0f, 0.0f), _omega(0.0f) {
+	_type(type), _mode(mode), _pos(glm::zero<float>()), _omega(0.0f) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
