@@ -52,10 +52,7 @@ private:
 	constexpr static int DIRTY_TARGET      = 1 << 3;
 
 	inline bool isDirty(int flag) const {
-		if ((_dirty & flag) == 0) {
-			return false;
-		}
-		return true;
+		return (_dirty & flag) != 0;
 	}
 
 	CameraType _type;
