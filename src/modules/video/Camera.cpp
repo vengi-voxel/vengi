@@ -58,10 +58,10 @@ void Camera::slerp(float pitch, float yaw, float roll, float factor) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
-void Camera::lookAt(const glm::vec3& position) {
+void Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 	core_assert(position != _pos);
 	_dirty |= DIRTY_ORIENTATION;
-	_quat = glm::quat_cast(glm::lookAt(_pos, position, up()));
+	_quat = glm::quat_cast(glm::lookAt(_pos, position, upDirection));
 }
 
 void Camera::updateTarget() {

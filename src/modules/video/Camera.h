@@ -167,6 +167,7 @@ public:
 	void rotate(int32_t relX, int32_t relY, float rotationSpeed = 0.1f);
 
 	void lookAt(const glm::vec3& position);
+	void lookAt(const glm::vec3& position, const glm::vec3& upDirection);
 
 	void setTarget(const glm::vec3& target);
 	void setTargetDistance(float distance);
@@ -264,6 +265,10 @@ inline void Camera::rotate(float radians, const glm::vec3& axis) {
 
 inline void Camera::rotate(const glm::quat& rotation) {
 	_quat = rotation * _quat;
+}
+
+inline void Camera::lookAt(const glm::vec3& position) {
+	lookAt(position, up());
 }
 
 inline float Camera::nearPlane() const {
