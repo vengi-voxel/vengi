@@ -62,12 +62,9 @@ void Camera::lookAt(const glm::vec3& position) {
 	core_assert(position != _pos);
 	_dirty |= DIRTY_ORIENTATION;
 	const glm::vec3& direction = glm::normalize(position - _pos);
-	const float dot = glm::dot(glm::vec3(0, 0, -1), direction);
-	if (fabs(dot + 1.0f) < 0.000001f) {
-		_quat = glm::angleAxis(glm::pi<float>(), glm::vec3(0, 1, 0));
-		return;
-	} else if (fabs(dot - 1.0f) < 0.000001f) {
-		_quat = glm::quat();
+	const float dot = glm::dot(_pos, position);
+	if (fabs(dot) < 0.000001f) {
+		_quat = glm::angleAxis(glm::pi<float>(), glm::up);
 		return;
 	}
 
