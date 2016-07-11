@@ -29,12 +29,12 @@ enum class CameraMode {
 };
 
 enum class FrustumPlanes {
-	FrustumRight,
-	FrustumLeft,
-	FrustumTop,
-	FrustumBottom,
-	FrustumFar,
-	FrustumNear,
+	Right,
+	Left,
+	Top,
+	Bottom,
+	Far,
+	Near,
 	MaxPlanes
 };
 

@@ -206,35 +206,35 @@ void Camera::updateFrustumPlanes() {
 	clipMatrix[2][3] = v[3][0] * p[0][2] + v[3][1] * p[1][2] + v[3][2] * p[2][2] + v[3][3] * p[3][2];
 	clipMatrix[3][3] = v[3][0] * p[0][3] + v[3][1] * p[1][3] + v[3][2] * p[2][3] + v[3][3] * p[3][3];
 
-	_frustumPlanes[int(FrustumPlanes::FrustumRight)].x = clipMatrix[3][0] - clipMatrix[0][0];
-	_frustumPlanes[int(FrustumPlanes::FrustumRight)].y = clipMatrix[3][1] - clipMatrix[0][1];
-	_frustumPlanes[int(FrustumPlanes::FrustumRight)].z = clipMatrix[3][2] - clipMatrix[0][2];
-	_frustumPlanes[int(FrustumPlanes::FrustumRight)].w = clipMatrix[3][3] - clipMatrix[0][3];
+	_frustumPlanes[int(FrustumPlanes::Right)].x = clipMatrix[3][0] - clipMatrix[0][0];
+	_frustumPlanes[int(FrustumPlanes::Right)].y = clipMatrix[3][1] - clipMatrix[0][1];
+	_frustumPlanes[int(FrustumPlanes::Right)].z = clipMatrix[3][2] - clipMatrix[0][2];
+	_frustumPlanes[int(FrustumPlanes::Right)].w = clipMatrix[3][3] - clipMatrix[0][3];
 
-	_frustumPlanes[int(FrustumPlanes::FrustumLeft)].x = clipMatrix[3][0] + clipMatrix[0][0];
-	_frustumPlanes[int(FrustumPlanes::FrustumLeft)].y = clipMatrix[3][1] + clipMatrix[0][1];
-	_frustumPlanes[int(FrustumPlanes::FrustumLeft)].z = clipMatrix[3][2] + clipMatrix[0][2];
-	_frustumPlanes[int(FrustumPlanes::FrustumLeft)].w = clipMatrix[3][3] + clipMatrix[0][3];
+	_frustumPlanes[int(FrustumPlanes::Left)].x = clipMatrix[3][0] + clipMatrix[0][0];
+	_frustumPlanes[int(FrustumPlanes::Left)].y = clipMatrix[3][1] + clipMatrix[0][1];
+	_frustumPlanes[int(FrustumPlanes::Left)].z = clipMatrix[3][2] + clipMatrix[0][2];
+	_frustumPlanes[int(FrustumPlanes::Left)].w = clipMatrix[3][3] + clipMatrix[0][3];
 
-	_frustumPlanes[int(FrustumPlanes::FrustumBottom)].x = clipMatrix[3][0] + clipMatrix[1][0];
-	_frustumPlanes[int(FrustumPlanes::FrustumBottom)].y = clipMatrix[3][1] + clipMatrix[1][1];
-	_frustumPlanes[int(FrustumPlanes::FrustumBottom)].z = clipMatrix[3][2] + clipMatrix[1][2];
-	_frustumPlanes[int(FrustumPlanes::FrustumBottom)].w = clipMatrix[3][3] + clipMatrix[1][3];
+	_frustumPlanes[int(FrustumPlanes::Bottom)].x = clipMatrix[3][0] + clipMatrix[1][0];
+	_frustumPlanes[int(FrustumPlanes::Bottom)].y = clipMatrix[3][1] + clipMatrix[1][1];
+	_frustumPlanes[int(FrustumPlanes::Bottom)].z = clipMatrix[3][2] + clipMatrix[1][2];
+	_frustumPlanes[int(FrustumPlanes::Bottom)].w = clipMatrix[3][3] + clipMatrix[1][3];
 
-	_frustumPlanes[int(FrustumPlanes::FrustumTop)].x = clipMatrix[3][0] - clipMatrix[1][0];
-	_frustumPlanes[int(FrustumPlanes::FrustumTop)].y = clipMatrix[3][1] - clipMatrix[1][1];
-	_frustumPlanes[int(FrustumPlanes::FrustumTop)].z = clipMatrix[3][2] - clipMatrix[1][2];
-	_frustumPlanes[int(FrustumPlanes::FrustumTop)].w = clipMatrix[3][3] - clipMatrix[1][3];
+	_frustumPlanes[int(FrustumPlanes::Top)].x = clipMatrix[3][0] - clipMatrix[1][0];
+	_frustumPlanes[int(FrustumPlanes::Top)].y = clipMatrix[3][1] - clipMatrix[1][1];
+	_frustumPlanes[int(FrustumPlanes::Top)].z = clipMatrix[3][2] - clipMatrix[1][2];
+	_frustumPlanes[int(FrustumPlanes::Top)].w = clipMatrix[3][3] - clipMatrix[1][3];
 
-	_frustumPlanes[int(FrustumPlanes::FrustumFar)].x = clipMatrix[3][0] - clipMatrix[2][0];
-	_frustumPlanes[int(FrustumPlanes::FrustumFar)].y = clipMatrix[3][1] - clipMatrix[2][1];
-	_frustumPlanes[int(FrustumPlanes::FrustumFar)].z = clipMatrix[3][2] - clipMatrix[2][2];
-	_frustumPlanes[int(FrustumPlanes::FrustumFar)].w = clipMatrix[3][3] - clipMatrix[2][3];
+	_frustumPlanes[int(FrustumPlanes::Far)].x = clipMatrix[3][0] - clipMatrix[2][0];
+	_frustumPlanes[int(FrustumPlanes::Far)].y = clipMatrix[3][1] - clipMatrix[2][1];
+	_frustumPlanes[int(FrustumPlanes::Far)].z = clipMatrix[3][2] - clipMatrix[2][2];
+	_frustumPlanes[int(FrustumPlanes::Far)].w = clipMatrix[3][3] - clipMatrix[2][3];
 
-	_frustumPlanes[int(FrustumPlanes::FrustumNear)].x = clipMatrix[3][0] + clipMatrix[2][0];
-	_frustumPlanes[int(FrustumPlanes::FrustumNear)].y = clipMatrix[3][1] + clipMatrix[2][1];
-	_frustumPlanes[int(FrustumPlanes::FrustumNear)].z = clipMatrix[3][2] + clipMatrix[2][2];
-	_frustumPlanes[int(FrustumPlanes::FrustumNear)].w = clipMatrix[3][3] + clipMatrix[2][3];
+	_frustumPlanes[int(FrustumPlanes::Near)].x = clipMatrix[3][0] + clipMatrix[2][0];
+	_frustumPlanes[int(FrustumPlanes::Near)].y = clipMatrix[3][1] + clipMatrix[2][1];
+	_frustumPlanes[int(FrustumPlanes::Near)].z = clipMatrix[3][2] + clipMatrix[2][2];
+	_frustumPlanes[int(FrustumPlanes::Near)].w = clipMatrix[3][3] + clipMatrix[2][3];
 
 	for (int i = 0; i < int(FrustumPlanes::MaxPlanes); i++) {
 		_frustumPlanes[i] = glm::normalize(_frustumPlanes[i]);
