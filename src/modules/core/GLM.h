@@ -12,6 +12,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/noise.hpp>
+#include <glm/gtc/epsilon.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/norm.hpp>
@@ -31,6 +32,11 @@ extern const glm::vec3 down;
 GLM_FUNC_QUALIFIER bvec4 isnan(quat const & x) {
 	const vec4 v(x.x, x.y, x.z, x.w);
 	return isnan(v);
+}
+
+template <typename T, precision P, template <typename, precision> class vecType>
+GLM_FUNC_QUALIFIER bool isEpsilonEqual(vecType<T, P> const & x, vecType<T, P> const & y, T const & epsilon) {
+	return all(lessThan(abs(x - y), vecType<T, P>(epsilon)));
 }
 
 }

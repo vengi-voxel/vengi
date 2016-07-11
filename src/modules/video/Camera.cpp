@@ -77,7 +77,7 @@ void Camera::updateTarget() {
 	}
 	const glm::vec3& backward = -forward();
 	const glm::vec3& newPosition = _target + backward * _distance;
-	if (glm::length2(_pos - newPosition) < 0.0001f) {
+	if (glm::isEpsilonEqual(_pos, newPosition, 0.0001f)) {
 		return;
 	}
 	_pos = newPosition;
