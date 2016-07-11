@@ -61,13 +61,6 @@ void Camera::slerp(float pitch, float yaw, float roll, float factor) {
 void Camera::lookAt(const glm::vec3& position) {
 	core_assert(position != _pos);
 	_dirty |= DIRTY_ORIENTATION;
-	const glm::vec3& direction = glm::normalize(position - _pos);
-	const float dot = glm::dot(_pos, position);
-	if (fabs(dot) < 0.000001f) {
-		_quat = glm::angleAxis(glm::pi<float>(), glm::up);
-		return;
-	}
-
 	_quat = glm::quat_cast(glm::lookAt(_pos, position, up()));
 }
 
