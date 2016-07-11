@@ -321,6 +321,9 @@ inline void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
 inline void Camera::setPosition(const glm::vec3& pos) {
 	_dirty |= DIRTY_POSITON;
 	_pos = pos;
+	if (_rotationType == CameraRotationType::Target) {
+		lookAt(_target);
+	}
 }
 
 inline const glm::mat4& Camera::viewMatrix() const {

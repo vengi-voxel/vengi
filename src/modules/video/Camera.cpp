@@ -24,13 +24,13 @@ void Camera::init(int width, int height) {
 }
 
 void Camera::move(const glm::vec3& delta) {
-	if (_rotationType == CameraRotationType::Target) {
-		return;
-	}
+	_dirty |= DIRTY_POSITON;
 	_pos += forward() * -delta.z;
 	_pos += right() * delta.x;
 	_pos += up() * delta.y;
-	_dirty |= DIRTY_POSITON;
+	if (_rotationType == CameraRotationType::Target) {
+		lookAt(_target);
+	}
 }
 
 void Camera::rotate(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
@@ -76,7 +76,9 @@ void Camera::updateTarget() {
 		return;
 	}
 	const glm::vec3& backward = -forward();
-	setPosition(_target + backward * _distance);
+	const glm::vec3& newPosition = _target + backward * _distance;
+	_pos = newPosition;
+	_dirty |= DIRTY_POSITON;
 }
 
 void Camera::update(long deltaFrame) {
