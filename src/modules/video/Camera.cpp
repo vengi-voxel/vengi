@@ -71,9 +71,7 @@ void Camera::lookAt(const glm::vec3& position) {
 		return;
 	}
 
-	const float angle = acosf(dot);
-	const glm::vec3& cross = glm::normalize(glm::cross(direction, glm::vec3(0, 0, -1)));
-	_quat = glm::angleAxis(angle, cross);
+	_quat = glm::quat_cast(glm::lookAt(_pos, position, up()));
 }
 
 void Camera::update(long deltaFrame) {
