@@ -75,6 +75,9 @@ void Camera::updateTarget() {
 	if (_rotationType != CameraRotationType::Target) {
 		return;
 	}
+	if (!isDirty(DIRTY_ORIENTATION | DIRTY_TARGET)) {
+		return;
+	}
 	const glm::vec3& backward = -forward();
 	setPosition(_target + backward * _distance);
 }

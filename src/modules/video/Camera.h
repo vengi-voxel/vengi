@@ -47,8 +47,9 @@ enum class FrustumResult {
 class Camera {
 private:
 	constexpr static int DIRTY_ORIENTATION = 1 << 0;
-	constexpr static int DIRTY_POSITON = 1 << 1;
-	constexpr static int DIRTY_FRUSTUM = 1 << 2;
+	constexpr static int DIRTY_POSITON     = 1 << 1;
+	constexpr static int DIRTY_FRUSTUM     = 1 << 2;
+	constexpr static int DIRTY_TARGET      = 1 << 3;
 
 	inline bool isDirty(int flag) const {
 		if ((_dirty & flag) == 0) {
@@ -223,6 +224,7 @@ inline CameraRotationType Camera::rotationType() const {
 }
 
 inline void Camera::setRotationType(CameraRotationType rotationType) {
+	_dirty |= DIRTY_TARGET;
 	_rotationType = rotationType;
 }
 
@@ -365,10 +367,18 @@ inline void Camera::setOmega(const glm::vec3& omega) {
 }
 
 inline void Camera::setTarget(const glm::vec3& target) {
+	if (glm::length2(_target - target) < 0.001f) {
+		return;
+	}
+	_dirty |= DIRTY_TARGET;
 	_target = target;
 }
 
 inline void Camera::setTargetDistance(float distance) {
+	if (fabs(_distance - distance) < 0.0001f) {
+		return;
+	}
+	_dirty |= DIRTY_TARGET;
 	_distance = distance;
 }
 
