@@ -65,7 +65,7 @@ void Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 	core_assert(position != _pos);
 	_dirty |= DIRTY_ORIENTATION;
 	_quat = glm::quat_cast(glm::lookAt(_pos, position, upDirection));
-	core_assert(!glm::any(glm::isnan(glm::vec4(_quat.x, _quat.y, _quat.z, _quat.w))));
+	core_assert(!glm::any(glm::isnan(_quat)));
 }
 
 void Camera::updateTarget() {

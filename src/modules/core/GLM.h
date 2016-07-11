@@ -27,4 +27,10 @@ static const glm::vec3& right    = glm::vec3( 1.0f,  0.0f,  0.0f);
 static const glm::vec3& left     = glm::vec3(-1.0f,  0.0f,  0.0f);
 static const glm::vec3& up       = glm::vec3( 0.0f,  1.0f,  0.0f);
 static const glm::vec3& down     = glm::vec3( 0.0f, -1.0f,  0.0f);
+
+GLM_FUNC_QUALIFIER bvec4 isnan(quat const & x) {
+	const vec4 v(x.x, x.y, x.z, x.w);
+	return isnan(v);
+}
+
 }
