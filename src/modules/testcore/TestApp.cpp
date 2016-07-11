@@ -87,9 +87,7 @@ core::AppState TestApp::onRunning() {
 
 	const float speed = _cameraSpeed * static_cast<float>(_deltaFrame);
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
-	if (moveDelta != glm::vec3()) {
-		_camera.move(moveDelta);
-	}
+	_camera.move(moveDelta);
 
 	_camera.update(_deltaFrame);
 	doRender();

@@ -90,9 +90,7 @@ void ShapeTool::beforeUI() {
 
 	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
 	glm::vec3 moveDelta = getMoveDelta(speed, _moveMask);;
-	if (moveDelta != glm::vec3()) {
-		_camera.move(moveDelta);
-	}
+	_camera.move(moveDelta);
 
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	_camera.setFieldOfView(45.0f);

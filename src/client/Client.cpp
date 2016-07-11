@@ -144,9 +144,7 @@ void Client::beforeUI() {
 		if (_moveMask & MoveDirection_MOVEBACKWARD) {
 			moveDelta += glm::backward * speed;
 		}
-		if (moveDelta != glm::vec3()) {
-			_camera.move(moveDelta);
-		}
+		_camera.move(moveDelta);
 
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
 		_camera.setAspectRatio(_aspect);

@@ -24,12 +24,16 @@ void Camera::init(int width, int height) {
 }
 
 void Camera::move(const glm::vec3& delta) {
+	if (glm::all(glm::epsilonEqual(delta, glm::vec3(), 0.0001f))) {
+		return;
+	}
 	_dirty |= DIRTY_POSITON;
 	_pos += forward() * -delta.z;
 	_pos += right() * delta.x;
 	_pos += up() * delta.y;
 	if (_rotationType == CameraRotationType::Target) {
-		lookAt(_target);
+		lookAt(_target, glm::up);
+		_dirty |= DIRTY_TARGET;
 	}
 }
 
@@ -77,7 +81,7 @@ void Camera::updateTarget() {
 	}
 	const glm::vec3& backward = -forward();
 	const glm::vec3& newPosition = _target + backward * _distance;
-	if (glm::isEpsilonEqual(_pos, newPosition, 0.0001f)) {
+	if (glm::all(glm::epsilonEqual(_pos, newPosition, 0.0001f))) {
 		return;
 	}
 	_pos = newPosition;

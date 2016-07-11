@@ -316,7 +316,7 @@ inline void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
 }
 
 inline void Camera::setPosition(const glm::vec3& pos) {
-	if (glm::isEpsilonEqual(_pos, pos, 0.0001f)) {
+	if (glm::all(glm::epsilonEqual(_pos, pos, 0.0001f))) {
 		return;
 	}
 	_dirty |= DIRTY_POSITON;
@@ -375,7 +375,7 @@ inline void Camera::setOmega(const glm::vec3& omega) {
 }
 
 inline void Camera::setTarget(const glm::vec3& target) {
-	if (glm::isEpsilonEqual(_target, target, 0.0001f)) {
+	if (glm::all(glm::epsilonEqual(_target, target, 0.0001f))) {
 		return;
 	}
 	_dirty |= DIRTY_TARGET;

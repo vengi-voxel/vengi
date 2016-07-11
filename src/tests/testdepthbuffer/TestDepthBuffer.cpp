@@ -46,7 +46,7 @@ void TestDepthBuffer::doRender() {
 			)
 			*
 			glm::ortho(-75.0f, +75.0f, -75.0f, +75.0f, 1.0f, 400.0f);
-	const glm::mat4 lightView = glm::lookAt(glm::vec3(50.0f, 50.0f, -50.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::mat4 lightView = glm::lookAt(glm::vec3(50.0f, 50.0f, -50.0f), glm::vec3(0.0f), glm::up);
 	const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 	const glm::vec3 lightDir = glm::vec3(glm::column(glm::inverse(lightView), 2));
 	{

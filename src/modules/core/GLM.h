@@ -34,9 +34,4 @@ GLM_FUNC_QUALIFIER bvec4 isnan(quat const & x) {
 	return isnan(v);
 }
 
-template <typename T, precision P, template <typename, precision> class vecType>
-GLM_FUNC_QUALIFIER bool isEpsilonEqual(vecType<T, P> const & x, vecType<T, P> const & y, T const & epsilon) {
-	return all(lessThan(abs(x - y), vecType<T, P>(epsilon)));
-}
-
 }

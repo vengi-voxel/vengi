@@ -148,7 +148,7 @@ glm::vec4 Color::Brighter(const glm::vec4& color, float f) {
 	static float min = 21.f / magnitude;
 	glm::vec3 result = glm::vec3(color);
 	f = std::pow(scaleFactor, f);
-	if (glm::all(glm::equal(glm::vec3(), result)))
+	if (glm::all(glm::epsilonEqual(glm::vec3(), result, 0.00001f)))
 		return glm::vec4(min / f, min / f, min / f, color.a);
 	if (result.r > 0.f && result.r < min)
 		result.r = min;

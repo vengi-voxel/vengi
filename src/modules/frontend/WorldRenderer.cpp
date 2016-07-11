@@ -587,7 +587,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		}
 		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), ent->position());
 		const glm::mat4& scale = glm::scale(translate, glm::vec3(ent->scale()));
-		const glm::mat4& model = glm::rotate(scale, ent->orientation(), glm::vec3(0.0, 1.0, 0.0));
+		const glm::mat4& model = glm::rotate(scale, ent->orientation(), glm::up);
 		shader.setUniformMatrix("u_model", model, false);
 		drawCallsEntities += mesh->render();
 		GL_checkError();
@@ -699,7 +699,7 @@ bool WorldRenderer::onInit(int width, int height) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
 		video::GLMeshData meshDataPlant = createInstancedMesh(_plantShader, *mesh, 40);
 		if (meshDataPlant.noOfIndices > 0) {
-			meshDataPlant.scale = glm::vec3(0.4f, 0.4f, 0.4f);
+			meshDataPlant.scale = glm::vec3(0.4f);
 			_meshDataPlant.push_back(meshDataPlant);
 		}
 	}
