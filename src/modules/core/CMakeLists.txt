@@ -9,7 +9,7 @@ set(SRCS
 	Concurrency.h
 	EventBus.h
 	GameConfig.h
-	GLM.h
+	GLM.cpp GLM.h
 	IFactoryRegistry.h
 	Input.h
 	KeybindingParser.h

@@ -21,12 +21,12 @@
 #include <cmath>
 
 namespace glm {
-static const glm::vec3& forward  = glm::vec3( 0.0f,  0.0f, -1.0f);
-static const glm::vec3& backward = glm::vec3( 0.0f,  0.0f,  1.0f);
-static const glm::vec3& right    = glm::vec3( 1.0f,  0.0f,  0.0f);
-static const glm::vec3& left     = glm::vec3(-1.0f,  0.0f,  0.0f);
-static const glm::vec3& up       = glm::vec3( 0.0f,  1.0f,  0.0f);
-static const glm::vec3& down     = glm::vec3( 0.0f, -1.0f,  0.0f);
+extern const glm::vec3 forward;
+extern const glm::vec3 backward;
+extern const glm::vec3 right;
+extern const glm::vec3 left;
+extern const glm::vec3 up;
+extern const glm::vec3 down;
 
 GLM_FUNC_QUALIFIER bvec4 isnan(quat const & x) {
 	const vec4 v(x.x, x.y, x.z, x.w);
