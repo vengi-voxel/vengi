@@ -51,6 +51,16 @@ core::AppState TestApp::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
+	core::Command::registerCommand("+cam_freelook", [&] (const core::CmdArgs& args) {
+		Log::info("target lock: %s", args[0].c_str());
+		if (args[0] == "true") {
+			_camera.setRotationType(video::CameraRotationType::Target);
+			_camera.setTarget(glm::vec3(0.0f, 50.0f, 0.0f));
+			return;
+		}
+		_camera.setRotationType(video::CameraRotationType::Eye);
+	});
+
 	const glm::vec4& color = ::core::Color::Black;
 	glClearColor(color.r, color.g, color.b, color.a);
 

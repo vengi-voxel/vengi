@@ -62,21 +62,28 @@ public:
 		for (const std::string& c : commands) {
 			std::vector<std::string> args;
 			core::string::splitString(c, args);
-			if (args.empty())
+			if (args.empty()) {
 				continue;
+			}
 			const std::string cmd = core::string::eraseAllSpaces(args[0]);
 			args.erase(args.begin());
-			if (execute(cmd, args))
+			if (execute(cmd, args)) {
 				++executed;
+			}
 		}
 		return executed;
 	}
 
 	static bool execute(const std::string& command, const CmdArgs& args) {
 		ScopedReadLock lock(_lock);
-		auto i = _cmds.find(command);
-		if (i == _cmds.end())
+		if ((command[0] == '+' || command[0] == '-') && args.empty()) {
+			Log::debug("Skip execution of %s - no arguments provided", command.c_str());
 			return false;
+		}
+		auto i = _cmds.find(command);
+		if (i == _cmds.end()) {
+			return false;
+		}
 		const Command& cmd = i->second;
 		cmd._func(args);
 		return true;

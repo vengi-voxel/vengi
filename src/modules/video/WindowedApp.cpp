@@ -92,7 +92,7 @@ bool WindowedApp::onKeyRelease(int32_t key) {
 	for (auto i = range.first; i != range.second; ++i) {
 		const std::string& command = i->second.first;
 		if (command[0] == '+' && _keys.erase(key) > 0) {
-			core_assert(1 == core::Command::execute(command + " false"));
+			core_assert_always(1 == core::Command::execute(command + " false"));
 		}
 	}
 	return true;

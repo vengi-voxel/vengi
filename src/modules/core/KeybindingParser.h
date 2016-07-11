@@ -50,6 +50,7 @@ public:
 
 			const SDL_Keycode keyCode = SDL_GetKeyFromName(key.c_str());
 			if (keyCode == SDLK_UNKNOWN) {
+				Log::warn("could not get a valid key code for %s (skip binding for %s)", key.c_str(), command.c_str());
 				++_invalidBindings;
 				continue;
 			}
