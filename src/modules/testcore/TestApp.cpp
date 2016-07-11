@@ -43,7 +43,7 @@ core::AppState TestApp::onInit() {
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _width, _height, _aspect);
 	_camera.init(_width, _height);
 	_camera.setAspectRatio(_aspect);
-	_camera.setPosition(glm::vec3(0.0f, 50.0f, 0.0f));
+	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	_camera.lookAt(glm::vec3(0.0f));
 
 	registerMoveCmd("+move_right", MOVERIGHT);
