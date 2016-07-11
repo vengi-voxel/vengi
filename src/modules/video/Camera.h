@@ -319,6 +319,9 @@ inline void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
 }
 
 inline void Camera::setPosition(const glm::vec3& pos) {
+	if (glm::length2(_pos - pos) < 0.0001f) {
+		return;
+	}
 	_dirty |= DIRTY_POSITON;
 	_pos = pos;
 	if (_rotationType == CameraRotationType::Target) {
@@ -375,7 +378,7 @@ inline void Camera::setOmega(const glm::vec3& omega) {
 }
 
 inline void Camera::setTarget(const glm::vec3& target) {
-	if (glm::length2(_target - target) < 0.001f) {
+	if (glm::length2(_target - target) < 0.0001f) {
 		return;
 	}
 	_dirty |= DIRTY_TARGET;
