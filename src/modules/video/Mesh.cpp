@@ -65,6 +65,11 @@ bool Mesh::loadMesh(const std::string& filename) {
 		return false;
 	}
 
+	for (int i = 0; i < _scene->mNumAnimations; ++i) {
+		const aiAnimation* animation = _scene->mAnimations[i];
+		Log::debug("Animation %i: %s", i, animation->mName.C_Str());
+	}
+
 	_globalInverseTransform = glm::inverse(glm::rotate(toMat4(_scene->mRootNode->mTransformation), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
 
 	_meshData.resize(_scene->mNumMeshes);
