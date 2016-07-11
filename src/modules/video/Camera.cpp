@@ -24,6 +24,9 @@ void Camera::init(int width, int height) {
 }
 
 void Camera::move(const glm::vec3& delta) {
+	if (_rotationType == CameraRotationType::Target) {
+		return;
+	}
 	_pos += forward() * -delta.z;
 	_pos += right() * delta.x;
 	_pos += up() * delta.y;
