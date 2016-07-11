@@ -65,7 +65,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 		return false;
 	}
 
-	for (int i = 0; i < _scene->mNumAnimations; ++i) {
+	for (uint32_t i = 0; i < _scene->mNumAnimations; ++i) {
 		const aiAnimation* animation = _scene->mAnimations[i];
 		Log::debug("Animation %i: %s", i, animation->mName.C_Str());
 	}
