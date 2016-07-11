@@ -71,7 +71,16 @@ void Camera::lookAt(const glm::vec3& position) {
 	_quat = glm::quat_cast(glm::lookAt(_pos, position, up()));
 }
 
+void Camera::updateTarget() {
+	if (_rotationType != CameraRotationType::Target) {
+		return;
+	}
+	const glm::vec3& backward = -forward();
+	setPosition(_target + backward * _distance);
+}
+
 void Camera::update(long deltaFrame) {
+	updateTarget();
 	updateOrientation();
 	updateViewMatrix();
 	updateProjectionMatrix();

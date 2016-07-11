@@ -18,6 +18,11 @@ enum class CameraType {
 	Free
 };
 
+enum class CameraRotationType {
+	Target,
+	Eye
+};
+
 enum class CameraMode {
 	Perspective,
 	Orthogonal
@@ -54,6 +59,7 @@ private:
 
 	CameraType _type;
 	CameraMode _mode;
+	CameraRotationType _rotationType = CameraRotationType::Eye;
 
 	glm::vec3 _pos;
 	glm::quat _quat;
@@ -73,11 +79,15 @@ private:
 	float _aspectRatio = 1.0f;
 	float _fieldOfView = 45.0f;
 
+	float _distance = 100.0f;
+	glm::vec3 _target;
+
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateFrustumPlanes();
 	void updateViewMatrix();
 	void updateOrientation();
 	void updateProjectionMatrix();
+	void updateTarget();
 	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
@@ -92,6 +102,9 @@ public:
 
 	CameraMode mode() const;
 	void setMode(CameraMode mode);
+
+	CameraRotationType rotationType() const;
+	void setRotationType(CameraRotationType rotationType);
 
 	float nearPlane() const;
 	void setNearPlane(float nearPlane);
@@ -154,6 +167,11 @@ public:
 
 	void lookAt(const glm::vec3& position);
 
+	void setTarget(const glm::vec3& target);
+	void setTargetDistance(float distance);
+	glm::vec3 target() const;
+	float targetDistance() const;
+
 	/**
 	 * @param[in] pitch rotation in modelspace
 	 * @param[in] yaw rotation in modelspace
@@ -198,6 +216,14 @@ inline void Camera::setMode(CameraMode mode) {
 
 inline CameraMode Camera::mode() const {
 	return _mode;
+}
+
+inline CameraRotationType Camera::rotationType() const {
+	return _rotationType;
+}
+
+inline void Camera::setRotationType(CameraRotationType rotationType) {
+	_rotationType = rotationType;
 }
 
 inline float Camera::pitch() const {
@@ -336,6 +362,22 @@ inline int Camera::height() const {
 
 inline void Camera::setOmega(const glm::vec3& omega) {
 	_omega = omega;
+}
+
+inline void Camera::setTarget(const glm::vec3& target) {
+	_target = target;
+}
+
+inline void Camera::setTargetDistance(float distance) {
+	_distance = distance;
+}
+
+inline glm::vec3 Camera::target() const {
+	return _target;
+}
+
+inline float Camera::targetDistance() const {
+	return _distance;
 }
 
 }

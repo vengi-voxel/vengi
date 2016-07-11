@@ -10,6 +10,9 @@ core::AppState TestMesh::onInit() {
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 150.0f));
 	_camera.lookAt(glm::vec3(0.0f, 50.0f, 0.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
+	_camera.setTarget(glm::vec3(0.0f, 50.0f, 0.0f));
+	_camera.setTargetDistance(150.0f);
+	_camera.setRotationType(video::CameraRotationType::Target);
 
 	if (!_meshShader.setup()) {
 		Log::error("Failed to init mesh shader");
