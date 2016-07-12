@@ -59,6 +59,7 @@ private:
 	CameraMode _mode;
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
+	glm::ivec2 _dimension;
 	glm::vec3 _pos;
 	glm::quat _quat;
 	int _dirty = 0;
@@ -67,8 +68,6 @@ private:
 	glm::mat4 _projectionMatrix;
 	glm::mat4 _orientation;
 
-	int _width = 0;
-	int _height = 0;
 	// rotation speed over time for all three axis
 	glm::vec3 _omega;
 
@@ -77,8 +76,8 @@ private:
 	float _aspectRatio = 1.0f;
 	float _fieldOfView = 45.0f;
 
-	float _distance = 100.0f;
 	glm::vec3 _target;
+	float _distance = 100.0f;
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateFrustumPlanes();
@@ -91,7 +90,8 @@ public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 	~Camera();
 
-	void init(int width, int height);
+	void init(const glm::ivec2& dimension);
+	glm::ivec2 dimension() const;
 	int width() const;
 	int height() const;
 
@@ -200,6 +200,22 @@ public:
 	FrustumResult testFrustum(const glm::vec3& position) const;
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 };
+
+inline void Camera::init(const glm::ivec2& dimension) {
+	_dimension = dimension;
+}
+
+inline glm::ivec2 Camera::dimension() const {
+	return _dimension;
+}
+
+inline int Camera::width() const {
+	return _dimension.x;
+}
+
+inline int Camera::height() const {
+	return _dimension.y;
+}
 
 inline void Camera::setType(CameraType type) {
 	_type = type;
@@ -360,14 +376,6 @@ inline glm::mat4 Camera::perspectiveMatrix() const {
 
 inline const glm::vec3& Camera::position() const {
 	return _pos;
-}
-
-inline int Camera::width() const {
-	return _width;
-}
-
-inline int Camera::height() const {
-	return _height;
 }
 
 inline void Camera::setOmega(const glm::vec3& omega) {

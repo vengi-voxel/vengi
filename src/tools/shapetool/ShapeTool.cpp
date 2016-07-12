@@ -47,10 +47,10 @@ core::AppState ShapeTool::onInit() {
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	_world->setSeed(1);
-	if (!_worldRenderer.onInit(_width, _height)) {
+	if (!_worldRenderer.onInit(_dimension)) {
 		return core::Cleanup;
 	}
-	_camera.init(_width, _height);
+	_camera.init(dimension());
 	_camera.setPosition(glm::vec3(50.0f, 100.0f, 50.0f));
 	_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
@@ -155,7 +155,7 @@ core::AppState ShapeTool::onCleanup() {
 
 void ShapeTool::onWindowResize() {
 	Super::onWindowResize();
-	_camera.init(_width, _height);
+	_camera.init(dimension());
 }
 
 bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
@@ -186,7 +186,7 @@ void ShapeTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 	}
 
 	Log::debug("Click to %u:%u", x, y);
-	const glm::vec2 mousePos(x / float(width()), y / float(height()));
+	const glm::vec2 mousePos = glm::vec2(float(x), float(y)) / glm::vec2(dimension());
 	const video::Ray& ray = _camera.screenRay(mousePos);
 	glm::ivec3 hit;
 	voxel::Voxel voxel;

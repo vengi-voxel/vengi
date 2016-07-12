@@ -38,9 +38,8 @@ void DepthBuffer::shutdown() {
 	core_assert(_oldFramebuffer == -1);
 }
 
-bool DepthBuffer::init(int width, int height) {
-	_width = width;
-	_height = height;
+bool DepthBuffer::init(const glm::ivec2& dimension) {
+	_dimension = dimension;
 
 	glGenFramebuffers(1, &_fbo);
 	GL_setName(GL_FRAMEBUFFER, _fbo, "depthfbo");
@@ -54,14 +53,14 @@ bool DepthBuffer::init(int width, int height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, dimension.x, dimension.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _depthTexture, 0);
 	GL_checkError();
 
 	glGenRenderbuffers(1, &_rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, _rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, dimension.x, dimension.y);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _rbo);
 	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _rbo);
 
@@ -83,7 +82,7 @@ void DepthBuffer::bind() {
 	GL_checkError();
 
 	glGetIntegerv(GL_VIEWPORT, _viewport);
-	glViewport(0, 0, _width, _height);
+	glViewport(0, 0, _dimension.x, _dimension.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 	//glClearDepth(0); // black
 	//glClearDepth(1); // white
@@ -93,8 +92,8 @@ void DepthBuffer::bind() {
 
 uint8_t *DepthBuffer::read() {
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);
-	uint8_t *depths = new uint8_t[_width * _height * 4];
-	glReadPixels(0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, depths);
+	uint8_t *depths = new uint8_t[_dimension.x * _dimension.y * 4];
+	glReadPixels(0, 0, _dimension.x, _dimension.y, GL_RGBA, GL_UNSIGNED_BYTE, depths);
 	return depths;
 }
 

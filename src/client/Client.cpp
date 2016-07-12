@@ -78,7 +78,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 
 void Client::onEvent(const voxel::WorldCreatedEvent& event) {
 	Log::info("world created");
-	new frontend::HudWindow(this, _width, _height);
+	new frontend::HudWindow(this, _dimension);
 }
 
 core::AppState Client::onInit() {
@@ -103,14 +103,14 @@ core::AppState Client::onInit() {
 
 	GL_checkError();
 
-	_camera.init(_width, _height);
+	_camera.init(dimension());
 
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
-	if (!_worldRenderer.onInit(_width, _height)) {
+	if (!_worldRenderer.onInit(_dimension)) {
 		return core::Cleanup;
 	}
 
@@ -200,7 +200,7 @@ core::AppState Client::onRunning() {
 
 void Client::onWindowResize() {
 	UIApp::onWindowResize();
-	_camera.init(_width, _height);
+	_camera.init(dimension());
 }
 
 void Client::authFailed() {

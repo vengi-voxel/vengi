@@ -9,7 +9,7 @@ TestTexture::TestTexture(io::FilesystemPtr filesystem, core::EventBusPtr eventBu
 core::AppState TestTexture::onInit() {
 	_camera.setMode(video::CameraMode::Orthogonal);
 	const core::AppState state = Super::onInit();
-	_camera.setPosition(glm::vec3(_width / 2.0f, -_height / 2.0f, -50.0f));
+	_camera.setPosition(glm::vec3(_dimension.x / 2.0f, -_dimension.y / 2.0f, -50.0f));
 
 	if (!_textureShader.setup()) {
 		Log::error("Failed to init the texture shader");
@@ -36,7 +36,7 @@ void TestTexture::doRender() {
 	video::ScopedShader scoped(_textureShader);
 	_textureShader.setView(_camera.viewMatrix());
 	_textureShader.setProjection(_camera.projectionMatrix());
-	_textureShader.setModel(glm::scale(glm::mat4(), glm::vec3(_width / 2, _height / 2, 1.0)));
+	_textureShader.setModel(glm::scale(glm::mat4(), glm::vec3(_dimension.x / 2, _dimension.y / 2, 1.0)));
 	_textureShader.setTexture(0);
 	_texture->bind();
 	core_assert_always(_texturedFullscreenQuad.bind());

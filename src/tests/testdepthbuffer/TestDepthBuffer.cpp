@@ -30,7 +30,7 @@ core::AppState TestDepthBuffer::onInit() {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
 	}
-	if (!_depthBuffer.init(_width, _height)) {
+	if (!_depthBuffer.init(_dimension)) {
 		Log::error("Failed to init the depthbuffer");
 		return core::AppState::Cleanup;
 	}

@@ -19,8 +19,7 @@ class WindowedApp: public core::App, public io::IEventObserver {
 protected:
 	SDL_Window* _window;
 	SDL_GLContext _glcontext;
-	int _width;
-	int _height;
+	glm::ivec2 _dimension;
 	float _aspect;
 
 	typedef std::unordered_map<int32_t, int16_t> KeyMap;
@@ -36,12 +35,16 @@ protected:
 	virtual ~WindowedApp() {
 	}
 public:
+	inline glm::ivec2 dimension() const {
+		return _dimension;
+	}
+
 	inline int width() const {
-		return _width;
+		return _dimension.x;
 	}
 
 	inline int height() const {
-		return _height;
+		return _dimension.y;
 	}
 
 	virtual core::AppState onRunning() override;

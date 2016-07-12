@@ -17,7 +17,7 @@ public:
 	GBuffer();
 	~GBuffer();
 
-	bool init(int width, int height);
+	bool init(const glm::ivec2& dimension);
 	void shutdown();
 
 	void setReadBuffer(GBufferTextureType textureType);

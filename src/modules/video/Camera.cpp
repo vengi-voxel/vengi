@@ -11,16 +11,11 @@
 namespace video {
 
 Camera::Camera(CameraType type, CameraMode mode) :
-	_type(type), _mode(mode), _pos(glm::zero<float>()), _omega(0.0f) {
+	_type(type), _mode(mode), _pos(glm::vec3()), _omega(0.0f) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
 Camera::~Camera() {
-}
-
-void Camera::init(int width, int height) {
-	_width = width;
-	_height = height;
 }
 
 void Camera::move(const glm::vec3& delta) {

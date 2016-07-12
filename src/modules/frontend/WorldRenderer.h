@@ -113,7 +113,7 @@ public:
 
 	void reset();
 
-	bool onInit(int width, int height);
+	bool onInit(const glm::ivec2& dimension);
 	void onRunning(long now);
 	void shutdown();
 

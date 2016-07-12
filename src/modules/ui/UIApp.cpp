@@ -321,7 +321,7 @@ core::AppState UIApp::onConstruct() {
 }
 
 void UIApp::afterUI() {
-	const tb::TBRect rect(0, 0, _width, _height);
+	const tb::TBRect rect(0, 0, _dimension.x, _dimension.y);
 	_console.render(rect, _deltaFrame);
 }
 
@@ -361,7 +361,7 @@ core::AppState UIApp::onInit() {
 	}
 
 	font->RenderGlyphs(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNORSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·åäöÅÄÖ");
-	_root.SetRect(tb::TBRect(0, 0, _width, _height));
+	_root.SetRect(tb::TBRect(0, 0, _dimension.x, _dimension.y));
 	_root.SetSkinBg(TBIDC("background"));
 
 	_console.init();
@@ -393,7 +393,7 @@ core::AppState UIApp::onRunning() {
 			_root.InvokeProcessStates();
 			_root.InvokeProcess();
 
-			_renderer.BeginPaint(_width, _height);
+			_renderer.BeginPaint(_dimension.x, _dimension.y);
 			_root.InvokePaint(tb::TBWidget::PaintProps());
 
 			++_frameCounter;

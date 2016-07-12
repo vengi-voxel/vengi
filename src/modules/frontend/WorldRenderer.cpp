@@ -224,7 +224,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightDir + camera.position());
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
-	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.width(), camera.height()));
+	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _lightSpaceMatrix);
@@ -641,7 +641,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 	_world->stats(meshes, extracted, pending);
 }
 
-bool WorldRenderer::onInit(int width, int height) {
+bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
@@ -704,11 +704,11 @@ bool WorldRenderer::onInit(int width, int height) {
 		}
 	}
 
-	if (!_depthBuffer.init(width, height)) {
+	if (!_depthBuffer.init(dimension)) {
 		return false;
 	}
 
-	if (!_gbuffer.init(width, height)) {
+	if (!_gbuffer.init(dimension)) {
 		return false;
 	}
 

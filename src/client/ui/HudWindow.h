@@ -14,11 +14,11 @@ class HudWindow: public ui::Window {
 private:
 	Client* _client;
 public:
-	HudWindow(Client* client, int width, int /*height*/) :
+	HudWindow(Client* client, const glm::ivec2& dimension) :
 			ui::Window(client), _client(client) {
 		core_assert(loadResourceFile("ui/window/hud.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_NONE);
-		SetSize(width, 20);
+		SetSize(dimension.x, 20);
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {

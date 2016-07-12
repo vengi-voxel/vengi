@@ -16,7 +16,7 @@ TestApp::~TestApp() {
 
 void TestApp::onWindowResize() {
 	Super::onWindowResize();
-	_camera.init(_width, _height);
+	_camera.init(dimension());
 	_camera.setAspectRatio(_aspect);
 }
 
@@ -40,8 +40,8 @@ core::AppState TestApp::onInit() {
 
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.001");
 
-	Log::info("Set window dimensions: %ix%i (aspect: %f)", _width, _height, _aspect);
-	_camera.init(_width, _height);
+	Log::info("Set window dimensions: %ix%i (aspect: %f)", _dimension.x, _dimension.y, _aspect);
+	_camera.init(dimension());
 	_camera.setAspectRatio(_aspect);
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	_camera.lookAt(glm::vec3(0.0f));

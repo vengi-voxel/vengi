@@ -31,7 +31,7 @@ inline void checkError(const char *file, unsigned int line, const char *function
 }
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport) :
-		App(filesystem, eventBus, traceport), _window(nullptr), _glcontext(nullptr), _width(-1), _height(-1), _aspect(1.0f) {
+		App(filesystem, eventBus, traceport), _window(nullptr), _glcontext(nullptr), _dimension(-1), _aspect(1.0f) {
 }
 
 void WindowedApp::onAfterRunning() {
@@ -82,8 +82,10 @@ core::AppState WindowedApp::onRunning() {
 }
 
 void WindowedApp::onWindowResize() {
+	int _width, _height;
 	SDL_GetWindowSize(_window, &_width, &_height);
 	_aspect = _width / static_cast<float>(_height);
+	_dimension = glm::ivec2(_width, _height);
 	glViewport(0, 0, _width, _height);
 }
 
@@ -286,7 +288,9 @@ core::AppState WindowedApp::onInit() {
 
 	// some platforms may override or hardcode the resolution - so
 	// we have to query it here to get the actual resolution
+	int _width, _height;
 	SDL_GetWindowSize(_window, &_width, &_height);
+	_dimension = glm::ivec2(_width, _height);
 	_aspect = _width / static_cast<float>(_height);
 
 	ExtGLLoadFunctions();

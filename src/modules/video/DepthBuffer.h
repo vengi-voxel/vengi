@@ -13,7 +13,7 @@ public:
 	DepthBuffer();
 	~DepthBuffer();
 
-	bool init(int width, int height);
+	bool init(const glm::ivec2& dimension);
 	void shutdown();
 
 	void bind();
@@ -30,8 +30,7 @@ private:
 	GLuint _fbo = 0u;
 	GLuint _rbo = 0u;
 	GLuint _depthTexture = 0u;
-	int _width = 0;
-	int _height = 0;
+	glm::ivec2 _dimension;
 };
 
 }

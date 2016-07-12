@@ -43,7 +43,7 @@ void GBuffer::shutdown() {
 	core_assert(_oldReadFramebuffer == -1);
 }
 
-bool GBuffer::init(int width, int height) {
+bool GBuffer::init(const glm::ivec2& dimension) {
 	glGenFramebuffers(1, &_fbo);
 	GL_setName(GL_FRAMEBUFFER, _fbo, "gbuffer");
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);
@@ -54,7 +54,7 @@ bool GBuffer::init(int width, int height) {
 		GL_setName(GL_TEXTURE, _textures[i], "gbuffertexture");
 		glBindTexture(GL_TEXTURE_2D, _textures[i]);
 		// we are going to write vec3 into the out vars in the shaders
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, dimension.x, dimension.y, 0, GL_RGB, GL_FLOAT, nullptr);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _textures[i], 0);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -63,7 +63,7 @@ bool GBuffer::init(int width, int height) {
 
 	glBindTexture(GL_TEXTURE_2D, _depthTexture);
 	GL_setName(GL_TEXTURE, _depthTexture, "gbufferdepthtexture");
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
 	GL_checkError();
 
