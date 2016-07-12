@@ -36,13 +36,14 @@ void Camera::rotate(const glm::vec3& radians) {
 	switch(_type) {
 	case CameraType::FirstPerson:
 		turn(radians.y);
+		pitch(radians.x);
 		break;
 	case CameraType::Free:
 		yaw(radians.y);
+		pitch(radians.x);
+		roll(radians.z);
 		break;
 	}
-	pitch(radians.x);
-	roll(radians.z);
 	_dirty |= DIRTY_ORIENTATION;
 }
 
