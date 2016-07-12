@@ -1,8 +1,15 @@
+image: debian:experimental
+
 before_script:
-  - apt-get update -qq && apt-get install -y -qq cmake libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev
+  - export TERM=dumb
+  - apt-get update -qq
+  - apt-get install -y -qq pkg-config
+  - apt-get install -y -qq build-essential
+  - apt-get install -y -qq cmake
+  - apt-get install -y -qq libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev libenet-dev
   - cmake --version
-  - gcc --version
 
 build:
   script:
-    - make
+    - make -j 4
+    - make tests
