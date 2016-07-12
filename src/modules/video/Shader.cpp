@@ -82,9 +82,9 @@ void Shader::shutdown() {
 	for (auto& shader : _shader) {
 		if (shader.second != 0) {
 			glDeleteShader(shader.second);
-			shader.second = 0;
 		}
 	}
+	_shader.clear();
 	if (_program != 0) {
 		glDeleteProgram(_program);
 		_program = 0;
