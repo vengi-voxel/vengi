@@ -25,7 +25,7 @@ TEST_F(CameraTest, testMotion) {
 	Camera camera;
 	camera.setPosition(glm::vec3(0.0, 1.0, 0.0));
 	camera.lookAt(glm::vec3(0.0), glm::forward);
-	camera.rotate(10, 0, 1.0f);
+	camera.rotate(glm::vec3(0.0f, 10.0f, 0.0f));
 	camera.update(0l);
 }
 

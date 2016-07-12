@@ -32,16 +32,17 @@ void Camera::move(const glm::vec3& delta) {
 	}
 }
 
-void Camera::rotate(int32_t deltaX, int32_t deltaY, float rotationSpeed) {
+void Camera::rotate(const glm::vec3& radians) {
 	switch(_type) {
-		case CameraType::FirstPerson:
-			turn(deltaX * rotationSpeed);
-			break;
-		case CameraType::Free:
-			yaw(deltaX * rotationSpeed);
-			break;
+	case CameraType::FirstPerson:
+		turn(radians.y);
+		break;
+	case CameraType::Free:
+		yaw(radians.y);
+		break;
 	}
-	pitch(deltaY * rotationSpeed);
+	pitch(radians.x);
+	roll(radians.z);
 	_dirty |= DIRTY_ORIENTATION;
 }
 
@@ -104,12 +105,12 @@ void Camera::updateOrientation() {
 
 void Camera::updateProjectionMatrix() {
 	switch(_mode) {
-		case CameraMode::Orthogonal:
-			_projectionMatrix = orthogonalMatrix();
-			break;
-		case CameraMode::Perspective:
-			_projectionMatrix = perspectiveMatrix();
-			break;
+	case CameraMode::Orthogonal:
+		_projectionMatrix = orthogonalMatrix();
+		break;
+	case CameraMode::Perspective:
+		_projectionMatrix = perspectiveMatrix();
+		break;
 	}
 }
 

@@ -203,7 +203,7 @@ void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) 
 	if (!current) {
 		return;
 	}
-	_camera.rotate(relX, relY, _rotationSpeed->floatVal());
+	_camera.rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
 }
 
 void ShapeTool::placeTree(const voxel::TreeContext& ctx) {

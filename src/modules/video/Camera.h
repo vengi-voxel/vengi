@@ -161,7 +161,7 @@ public:
 
 	void rotate(float radians, const glm::vec3& axis);
 	void rotate(const glm::quat& rotation);
-	void rotate(int32_t relX, int32_t relY, float rotationSpeed = 0.1f);
+	void rotate(const glm::vec3& radians);
 
 	void lookAt(const glm::vec3& position);
 	void lookAt(const glm::vec3& position, const glm::vec3& upDirection);
