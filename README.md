@@ -1,3 +1,5 @@
+![Build Status](https://gitlab.com/mgerhardy/engine/badges/master/build.svg)
+
 # About
 Voxel engine with procedural generated landscape.
 
