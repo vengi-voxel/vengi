@@ -1,3 +1,6 @@
+before_script:
+   - apt-get install --yes cmake
+
 build:
   services:
     - postgres:latest
