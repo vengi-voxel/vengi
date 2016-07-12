@@ -267,11 +267,17 @@ inline void Camera::roll(float radians) {
 }
 
 inline void Camera::turn(float radians) {
+	if (fabs(radians) < 0.00001f) {
+		return;
+	}
 	const glm::quat& quat = glm::angleAxis(radians, _quat * glm::up);
 	rotate(quat);
 }
 
 inline void Camera::rotate(float radians, const glm::vec3& axis) {
+	if (fabs(radians) < 0.00001f) {
+		return;
+	}
 	const glm::quat& quat = glm::angleAxis(radians, axis);
 	rotate(quat);
 }
