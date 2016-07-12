@@ -18,8 +18,8 @@ TEST_F(ShaderTest, testInclude) {
 	filesystem->write("foobar.frag", "#define SUCCESS");
 
 	Shader s;
-	const std::string &vert = s.getSource(SHADER_VERTEX, "#include \"foobar.vert\"");
-	const std::string &frag = s.getSource(SHADER_FRAGMENT, "#include \"foobar.frag\"");
+	const std::string &vert = s.getSource(ShaderType::Vertex, "#include \"foobar.vert\"");
+	const std::string &frag = s.getSource(ShaderType::Fragment, "#include \"foobar.frag\"");
 	ASSERT_TRUE(core::string::contains(vert, "SUCCESS"));
 	ASSERT_TRUE(core::string::contains(frag, "SUCCESS"));
 }

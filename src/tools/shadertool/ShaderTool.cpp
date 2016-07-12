@@ -474,8 +474,8 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	video::Shader shader;
-	const std::string& fragmentSrcSource = shader.getSource(video::ShaderType::SHADER_FRAGMENT, fragmentBuffer, false);
-	const std::string& vertexSrcSource = shader.getSource(video::ShaderType::SHADER_VERTEX, vertexBuffer, false);
+	const std::string& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, false);
+	const std::string& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, false);
 
 	_shaderStruct.filename = shaderfile;
 	_shaderStruct.name = shaderfile;
@@ -483,8 +483,8 @@ core::AppState ShaderTool::onRunning() {
 	parse(vertexSrcSource, true);
 	generateSrc();
 
-	const std::string& fragmentSource = shader.getSource(video::ShaderType::SHADER_FRAGMENT, fragmentBuffer, true);
-	const std::string& vertexSource = shader.getSource(video::ShaderType::SHADER_VERTEX, vertexBuffer, true);
+	const std::string& fragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, true);
+	const std::string& vertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, true);
 
 	Log::debug("Writing shader file %s to %s", shaderfile.c_str(), filesystem()->homePath().c_str());
 	std::string finalFragmentFilename = _appname + "-" + fragmentFilename;

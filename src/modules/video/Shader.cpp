@@ -28,9 +28,6 @@ int Shader::glslVersion = GLSLVersion::V330;
 
 Shader::Shader() :
 		_program(0), _initialized(false), _active(false), _time(0) {
-	for (int i = 0; i < SHADER_MAX; ++i) {
-		_shader[i] = 0;
-	}
 	core::Singleton<ShaderManager>::getInstance().registerShader(this);
 }
 
@@ -82,10 +79,10 @@ int Shader::getUniformArraySize(const std::string& name) const {
 }
 
 void Shader::shutdown() {
-	for (int i = 0; i < SHADER_MAX; ++i) {
-		if (_shader[i] != 0) {
-			glDeleteShader(_shader[i]);
-			_shader[i] = 0;
+	for (auto& shader : _shader) {
+		if (shader.second != 0) {
+			glDeleteShader(shader.second);
+			shader.second = 0;
 		}
 	}
 	if (_program != 0) {
@@ -100,7 +97,7 @@ void Shader::shutdown() {
 bool Shader::load(const std::string& name, const std::string& buffer, ShaderType shaderType) {
 	_name = name;
 	const std::string& source = getSource(shaderType, buffer);
-	const GLenum glType = shaderType == SHADER_VERTEX ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER;
+	const GLenum glType = std::enum_value(shaderType);
 	GL_checkError();
 
 	if (_shader[shaderType] == 0) {
@@ -153,11 +150,11 @@ bool Shader::loadFromFile(const std::string& filename, ShaderType shaderType) {
 }
 
 bool Shader::loadProgram(const std::string& filename) {
-	const bool vertex = loadFromFile(filename + VERTEX_POSTFIX, SHADER_VERTEX);
+	const bool vertex = loadFromFile(filename + VERTEX_POSTFIX, ShaderType::Vertex);
 	if (!vertex)
 		return false;
 
-	const bool fragment = loadFromFile(filename + FRAGMENT_POSTFIX, SHADER_FRAGMENT);
+	const bool fragment = loadFromFile(filename + FRAGMENT_POSTFIX, ShaderType::Fragment);
 	if (!fragment)
 		return false;
 
@@ -180,7 +177,11 @@ bool Shader::init() {
 }
 
 GLuint Shader::getShader(ShaderType shaderType) const {
-	return _shader[shaderType];
+	auto shader = _shader.find(shaderType);
+	if (shader == _shader.end()) {
+		return 0;
+	}
+	return shader->second;
 }
 
 void Shader::update(uint32_t deltaTime) {
@@ -412,8 +413,8 @@ void Shader::createProgramFromShaders() {
 	}
 	GL_checkError();
 
-	const GLuint vert = _shader[SHADER_VERTEX];
-	const GLuint frag = _shader[SHADER_FRAGMENT];
+	const GLuint vert = _shader[ShaderType::Vertex];
+	const GLuint frag = _shader[ShaderType::Fragment];
 
 	glAttachShader(_program, vert);
 	glAttachShader(_program, frag);

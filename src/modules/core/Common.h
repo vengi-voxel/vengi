@@ -118,6 +118,12 @@ struct hash<glm::ivec3> {
 		return ((vec.x & 0xFF)) | ((vec.y & 0xFF) << 8) | ((vec.z & 0xFF) << 16);
 	}
 };
+
+template<typename T>
+constexpr typename underlying_type<T>::type enum_value(const T& val)
+{
+    return static_cast<typename underlying_type<T>::type>(val);
+}
 }
 
 #define DIAG_STR(s) #s

@@ -25,15 +25,16 @@ namespace video {
 #define FRAGMENT_POSTFIX ".frag"
 #endif
 
-enum ShaderType {
-	SHADER_VERTEX, SHADER_FRAGMENT,
-
-	SHADER_MAX
+enum class ShaderType : GLenum {
+	Vertex = GL_VERTEX_SHADER,
+	Fragment = GL_FRAGMENT_SHADER
 };
 
 class Shader {
 protected:
-	GLuint _shader[SHADER_MAX];
+	typedef std::map<ShaderType, GLuint> ShaderMap;
+	ShaderMap _shader;
+
 	GLuint _program;
 	bool _initialized;
 	mutable bool _active;
