@@ -278,6 +278,7 @@ inline void Camera::rotate(float radians, const glm::vec3& axis) {
 
 inline void Camera::rotate(const glm::quat& rotation) {
 	_quat = rotation * _quat;
+	_dirty |= DIRTY_ORIENTATION;
 }
 
 inline void Camera::lookAt(const glm::vec3& position) {
