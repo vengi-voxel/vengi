@@ -1,5 +1,9 @@
+git:
+  policy: clone
+  depth: 10
+
 before_script:
-   - apt-get install --yes cmake
+  - apt-get install --yes cmake libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev
 
 build:
   services:
