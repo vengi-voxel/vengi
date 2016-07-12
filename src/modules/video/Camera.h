@@ -34,9 +34,9 @@ enum class FrustumPlanes {
 	Top,
 	Bottom,
 	Far,
-	Near,
-	MaxPlanes
+	Near
 };
+static const uint8_t FRUSTUM_PLANES_MAX = 6;
 
 enum class FrustumResult {
 	Outside,
@@ -85,7 +85,7 @@ private:
 	void updateOrientation();
 	void updateProjectionMatrix();
 	void updateTarget();
-	glm::vec4 _frustumPlanes[int(FrustumPlanes::MaxPlanes)];
+	glm::vec4 _frustumPlanes[FRUSTUM_PLANES_MAX];
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 	~Camera();

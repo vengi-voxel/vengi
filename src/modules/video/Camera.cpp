@@ -138,7 +138,7 @@ glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
 
 FrustumResult Camera::testFrustum(const glm::vec3& position) const {
 	FrustumResult result = FrustumResult::Inside;
-	for (int i = 0; i < int(FrustumPlanes::MaxPlanes); i++) {
+	for (int i = 0; i < FRUSTUM_PLANES_MAX; i++) {
 		const glm::vec3 normal(_frustumPlanes[i]);
 		const float pos = _frustumPlanes[i].w;
 		if (glm::dot(normal, position) + pos < 0.0f) {
@@ -150,7 +150,7 @@ FrustumResult Camera::testFrustum(const glm::vec3& position) const {
 
 FrustumResult Camera::testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const {
 	FrustumResult result = FrustumResult::Inside;
-	for (uint i = 0; i < int(FrustumPlanes::MaxPlanes); i++) {
+	for (uint i = 0; i < FRUSTUM_PLANES_MAX; i++) {
 		const float pos = _frustumPlanes[i].w;
 		const glm::vec3 normal(_frustumPlanes[i]);
 
@@ -235,7 +235,7 @@ void Camera::updateFrustumPlanes() {
 	_frustumPlanes[int(FrustumPlanes::Near)].z = clipMatrix[3][2] + clipMatrix[2][2];
 	_frustumPlanes[int(FrustumPlanes::Near)].w = clipMatrix[3][3] + clipMatrix[2][3];
 
-	for (int i = 0; i < int(FrustumPlanes::MaxPlanes); i++) {
+	for (int i = 0; i < FRUSTUM_PLANES_MAX; i++) {
 		_frustumPlanes[i] = glm::normalize(_frustumPlanes[i]);
 	}
 }
