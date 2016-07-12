@@ -1,11 +1,8 @@
 before_script:
-  - apt-get install --yes cmake libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev
+  - apt-get update -qq && apt-get install -y -qq cmake libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev
+  - cmake --version
+  - gcc --version
 
 build:
-  services:
-    - postgres:latest
   script:
-    - mkdir build/
-    - cd build
-    - cmake -D CMAKE_BUILD_TYPE=Debug ..
     - make
