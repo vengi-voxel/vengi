@@ -1,4 +1,4 @@
-![Build Status](https://gitlab.com/mgerhardy/engine/badges/master/build.svg)
+[![Build Status](https://gitlab.com/mgerhardy/engine/badges/master/build.svg)](https://gitlab.com/mgerhardy/engine/commits/master)
 
 # About
 Voxel engine with procedural generated landscape.
