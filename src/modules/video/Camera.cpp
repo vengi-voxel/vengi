@@ -52,12 +52,8 @@ inline void Camera::slerp(const glm::quat& quat, float factor) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
-inline void Camera::slerp(float pitch, float yaw, float factor) {
-	slerp(pitch, yaw, 0.0f, factor);
-}
-
-void Camera::slerp(float pitch, float yaw, float roll, float factor) {
-	const glm::quat quat2(glm::vec3(pitch, yaw, roll));
+void Camera::slerp(const glm::vec3& radians, float factor) {
+	const glm::quat quat2(radians);
 	_quat = glm::mix(_quat, quat2, factor);
 	_dirty |= DIRTY_ORIENTATION;
 }
