@@ -32,7 +32,7 @@ enum class ShaderType : GLenum {
 
 class Shader {
 protected:
-	typedef std::map<ShaderType, GLuint> ShaderMap;
+	typedef std::unordered_map<ShaderType, GLuint, EnumClassHash> ShaderMap;
 	ShaderMap _shader;
 
 	GLuint _program;
