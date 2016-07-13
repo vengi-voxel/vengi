@@ -117,30 +117,26 @@ bool Store::checkLastResult(State& state) const {
 
 	state.lastState = PQresultStatus(state.res);
 
-	if ((state.lastState == PGRES_EMPTY_QUERY) || (state.lastState == PGRES_BAD_RESPONSE) || (state.lastState == PGRES_FATAL_ERROR)) {
-		const char* msg = PQerrorMessage(_connection->connection());
-		state.lastErrorMsg = std::string(msg);
+	switch (state.lastState) {
+	case PGRES_EMPTY_QUERY:
+	case PGRES_BAD_RESPONSE:
+	case PGRES_FATAL_ERROR:
+		state.lastErrorMsg = PQerrorMessage(_connection->connection());
 		Log::error("Failed to execute sql: %s ", state.lastErrorMsg.c_str());
+		return false;
+	case PGRES_COMMAND_OK:
+		break;
+	case PGRES_TUPLES_OK:
+		state.affectedRows = PQntuples(state.res);
+		Log::trace("Affected rows on read %i", state.affectedRows);
+		break;
+	default:
+		Log::error("not catched state: %s", PQresStatus(state.lastState));
 		return false;
 	}
 
-	if (state.lastState == PGRES_COMMAND_OK) {
-		// no data in return but all fine
-		state.affectedRows = 0;
-		state.result = true;
-		return true;
-	}
-
-	if (state.lastState == PGRES_TUPLES_OK) {
-		state.affectedRows = PQntuples(state.res);
-		Log::trace("Affected rows on read %i", state.affectedRows);
-		state.result = true;
-		return true;
-	}
-
-	Log::error("not catched state: %s", PQresStatus(state.lastState));
-	// what else ?
-	return false;
+	state.result = true;
+	return true;
 }
 
 Store::State Store::query(const std::string& query) const {
