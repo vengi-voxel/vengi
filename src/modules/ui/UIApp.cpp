@@ -289,13 +289,8 @@ core::AppState UIApp::onConstruct() {
 			Log::error("Expected parameters: key+modifier command - got %i parameters", (int)args.size());
 			return;
 		}
-		std::string result;
-		for (const std::string& s : args) {
-			result += s;
-			result += " ";
-		}
 
-		core::KeybindingParser p(result);
+		core::KeybindingParser p(args[0], args[1]);
 		const core::BindMap& bindings = p.getBindings();
 		for (core::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
 			const uint32_t key = i->first;

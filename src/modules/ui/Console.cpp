@@ -240,13 +240,10 @@ void Console::executeCommandLine() {
 	_history.push_back(_commandLine);
 	_historyPos = _history.size();
 
-	std::vector<std::string> commands;
-	core::string::splitString(_commandLine, commands, ";");
-
+	const std::vector<std::string> commands = core::Tokenizer(_commandLine, ";").tokens();
 	for (const std::string& command : commands) {
-		std::vector<std::string> tokens;
-		core::string::splitString(command, tokens);
-		std::string cmd = core::string::eraseAllSpaces(tokens[0]);
+		std::vector<std::string> tokens = core::Tokenizer(command, " ").tokens();
+		const std::string cmd = tokens[0];
 		tokens.erase(tokens.begin());
 		if (core::Command::execute(cmd, tokens)) {
 			continue;
