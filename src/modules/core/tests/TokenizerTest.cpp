@@ -41,6 +41,8 @@ TEST(TokenizerTest, testTokenizerSimple) {
 	ASSERT_EQ(4u, core::Tokenizer("1;2;3;", ";").size());
 	ASSERT_EQ(4u, core::Tokenizer(";2;3;", ";").size());
 	ASSERT_EQ(4u, core::Tokenizer(";;;", ";").size());
+	ASSERT_EQ(0u, core::Tokenizer("", ";").size());
+	ASSERT_EQ(1u, core::Tokenizer("foo", ";").size());
 	ASSERT_EQ(0u, core::Tokenizer("\n").size());
 	ASSERT_EQ("foo", core::Tokenizer("foo\n").next());
 	ASSERT_EQ("foo", core::Tokenizer("\nfoo\n").next());

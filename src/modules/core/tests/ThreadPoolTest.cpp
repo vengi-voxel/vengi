@@ -2,12 +2,12 @@
  * @file
  */
 
-#include <gtest/gtest.h>
+#include "AbstractTest.h"
 #include "core/ThreadPool.h"
 
 namespace core {
 
-class ThreadPoolTest: public ::testing::Test {
+class ThreadPoolTest: public AbstractTest {
 public:
 	std::atomic_int _count;
 	bool _executed;

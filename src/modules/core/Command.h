@@ -33,14 +33,14 @@ private:
 	typedef std::function<int(const std::string&, std::vector<std::string>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
-	Command(std::string&& name, FunctionType&& func);
+	Command(const std::string& name, FunctionType&& func);
 
 public:
-	static Command& registerCommand(std::string&& name, FunctionType&& func);
+	static Command& registerCommand(const std::string& name, FunctionType&& func);
 
 	template<class Function>
-	static Command& registerCommand2(std::string&& name, Function&& func) {
-		return registerCommand(std::move(name), std::bind(std::forward<Function>(func)));
+	static Command& registerCommand2(const std::string& name, Function&& func) {
+		return registerCommand(name, std::bind(std::forward<Function>(func)));
 	}
 
 	static void unregisterCommand(const std::string& name);

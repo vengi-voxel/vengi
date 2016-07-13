@@ -10,12 +10,12 @@ namespace core {
 Command::CommandMap Command::_cmds;
 ReadWriteLock Command::_lock("Command");
 
-Command::Command(std::string&& name, FunctionType&& func) :
-		_name(std::move(name)), _func(std::move(func)) {
+Command::Command(const std::string& name, FunctionType&& func) :
+		_name(name), _func(std::move(func)) {
 }
 
 int Command::complete(const std::string& str, std::vector<std::string>& matches) const {
-	if (_completer) {
+	if (!_completer) {
 		return 0;
 	}
 	return _completer(str, matches);
@@ -57,9 +57,9 @@ bool Command::execute(const std::string& command, const CmdArgs& args) {
 	return true;
 }
 
-Command& Command::registerCommand(std::string&& name, FunctionType&& func) {
+Command& Command::registerCommand(const std::string& name, FunctionType&& func) {
 	ScopedWriteLock lock(_lock);
-	const Command c(std::move(name), std::move(func));
+	const Command c(name, std::move(func));
 	_cmds.insert(std::make_pair(c.name(), c));
 	return _cmds.find(c.name())->second;
 }

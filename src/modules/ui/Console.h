@@ -14,7 +14,6 @@ enum ConsoleColor {
 
 extern std::string getColor(ConsoleColor color);
 
-
 class Console {
 private:
 	typedef std::vector<std::string> Messages;
@@ -52,8 +51,6 @@ private:
 	void scrollPageUp();
 	void scrollPageDown();
 
-	void autoComplete();
-
 	void executeCommandLine();
 
 	// removed the character under the cursor position
@@ -74,10 +71,18 @@ public:
 	bool onTextInput(const std::string& text);
 	bool onKeyPress(int32_t key, int16_t modifier);
 	bool onMouseWheel(int32_t x, int32_t y);
+
+	void autoComplete();
+
+	const std::string& commandLine() const;
 };
 
 inline bool Console::isActive() const {
 	return _consoleActive;
+}
+
+inline const std::string& Console::commandLine() const {
+	return _commandLine;
 }
 
 }

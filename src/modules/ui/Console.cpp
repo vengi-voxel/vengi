@@ -381,14 +381,20 @@ void Console::scrollPageDown() {
 }
 
 void Console::autoComplete() {
+	// TODO: handle the cursor position properly
 	std::vector<std::string> matches;
-	std::vector<std::string> strings;
-	core::string::splitString(_commandLine, strings);
-	const std::string search = strings.empty() ? "*" : strings[0] + "*";
+	const std::vector<std::string> allCommands = core::Tokenizer(_commandLine, ";").tokens();
+	const std::string& lastCmd = allCommands.empty() ? "" : allCommands.back();
+	const std::vector<std::string> strings = core::Tokenizer(lastCmd, " ").tokens();
+	std::string baseSearchString = "";
+	if (strings.size() == 1) {
+		// try to complete the already existing command
+		baseSearchString = strings.back();
+	}
 	core::Command::visitSorted([&] (const core::Command& cmd) {
 		if (strings.empty() || strings.size() == 1) {
 			// match the command name itself
-			if (core::string::matches(search, cmd.name())) {
+			if (core::string::matches(baseSearchString + "*", cmd.name())) {
 				matches.push_back(cmd.name());
 			}
 		} else {
@@ -396,9 +402,13 @@ void Console::autoComplete() {
 			cmd.complete(strings.back(), matches);
 		}
 	});
-	const std::string varSearch = strings.empty() ? "*" : strings.back() + "*";
+	if (!strings.empty()) {
+		// try to complete the last string as it can be used as a parameter to the command
+		baseSearchString = strings.back();
+	}
+	baseSearchString += '*';
 	core::Var::visitSorted([&] (const core::VarPtr& var) {
-		if (core::string::matches(varSearch, var->name())) {
+		if (core::string::matches(baseSearchString, var->name())) {
 			matches.push_back(var->name());
 		}
 	});
@@ -406,6 +416,9 @@ void Console::autoComplete() {
 	if (matches.empty()) {
 		return;
 	}
+
+	std::sort(matches.begin(), matches.end());
+	matches.erase(std::unique(matches.begin(), matches.end()), matches.end());
 
 	if (matches.size() == 1) {
 		if (strings.empty() || strings.size() == 1) {

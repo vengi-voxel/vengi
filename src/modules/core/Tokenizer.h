@@ -29,6 +29,10 @@ public:
 		return _tokens[_posIndex++];
 	}
 
+	inline const std::vector<std::string>& tokens() const {
+		return _tokens;
+	}
+
 	inline bool hasPrev() const {
 		return _posIndex > 0;
 	}
