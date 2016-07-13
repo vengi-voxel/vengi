@@ -64,7 +64,7 @@ public:
 		for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
 			commandList.push_back(i->second);
 		}
-		std::sort(begin(commandList), end(commandList), [](auto const &v1, auto const &v2) {
+		std::sort(begin(commandList), end(commandList), [](const Command &v1, const Command &v2) {
 			return v1.name() < v2.name();
 		});
 		for (const auto& command : commandList) {
