@@ -2,15 +2,20 @@
 
 namespace core {
 
-Tokenizer::Tokenizer(const std::string& string) :
+Tokenizer::Tokenizer(const std::string& string, const char *sep) :
 		_posIndex(0u) {
 	const char *s = string.c_str();
 
+	bool lastCharIsSep = false;
 	for (;;) {
 		char c = skip(&s);
 		if (c == '\0') {
+			if (lastCharIsSep) {
+				_tokens.push_back("");
+			}
 			break;
 		}
+		lastCharIsSep = false;
 		std::string token;
 		if (c == '"') {
 			++s;
@@ -35,11 +40,22 @@ Tokenizer::Tokenizer(const std::string& string) :
 			continue;
 		}
 
+		lastCharIsSep = isSeparator(c, sep);
+		if (lastCharIsSep) {
+			_tokens.push_back("");
+			++s;
+			continue;
+		}
 		token.push_back(c);
 		for (;;) {
-			s++;
+			++s;
 			c = *s;
-			if (c <= ' ' || c == '(' || c == ')' || c == '{' || c == '}' || c == ';') {
+			if (c < ' ') {
+				break;
+			}
+			lastCharIsSep = isSeparator(c, sep);
+			if (lastCharIsSep) {
+				++s;
 				break;
 			}
 			token.push_back(c);
@@ -48,6 +64,17 @@ Tokenizer::Tokenizer(const std::string& string) :
 	}
 
 	_size = _tokens.size();
+}
+
+bool Tokenizer::isSeparator(char c, const char *sep) {
+	const char *sepPtr = sep;
+	while (*sepPtr != '\0') {
+		if (c == *sepPtr) {
+			return true;
+		}
+		++sepPtr;
+	}
+	return false;
 }
 
 char Tokenizer::skip(const char **s) const {

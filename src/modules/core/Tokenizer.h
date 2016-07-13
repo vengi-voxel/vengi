@@ -16,8 +16,9 @@ protected:
 	std::size_t _size;
 
 	char skip(const char **s) const;
+	bool isSeparator(char c, const char *sep);
 public:
-	Tokenizer(const std::string& string);
+	Tokenizer(const std::string& string, const char *sep = " (){};");
 
 	inline bool hasNext() const {
 		return _posIndex < _tokens.size();

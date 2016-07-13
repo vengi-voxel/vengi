@@ -8,11 +8,12 @@
 namespace core {
 
 TEST(CommandTest, testExecute) {
-	ASSERT_FALSE(Command::execute("test"));
+	ASSERT_EQ(0, Command::execute("test"));
 	Command::registerCommand2("test", [] () {});
-	ASSERT_TRUE(Command::execute("test"));
+	ASSERT_EQ(1, Command::execute("test"));
+	ASSERT_EQ(3, Command::execute("test;test parameter; test"));
 	Command::unregisterCommand("test");
-	ASSERT_FALSE(Command::execute("test"));
+	ASSERT_EQ(0, Command::execute("test"));
 }
 
 }

@@ -3,6 +3,7 @@
  */
 
 #include "Command.h"
+#include "Tokenizer.h"
 
 namespace core {
 
@@ -21,18 +22,20 @@ int Command::complete(const std::string& str, std::vector<std::string>& matches)
 }
 
 int Command::execute(const std::string& command) {
-	std::vector<std::string> commands;
-	core::string::splitString(command, commands, ";");
 	int executed = 0;
-	for (const std::string& c : commands) {
-		std::vector<std::string> args;
-		core::string::splitString(c, args);
-		if (args.empty()) {
+	Tokenizer commandLineTokenizer(command, ";");
+	while (commandLineTokenizer.hasNext()) {
+		const std::string& fullCmd = commandLineTokenizer.next();
+		Tokenizer commandTokenizer(fullCmd, " ");
+		if (!commandTokenizer.hasNext()) {
 			continue;
 		}
-		const std::string cmd = core::string::eraseAllSpaces(args[0]);
-		args.erase(args.begin());
-		if (execute(cmd, args)) {
+		const std::string c = commandTokenizer.next();
+		std::vector<std::string> args;
+		while (commandTokenizer.hasNext()) {
+			args.push_back(commandTokenizer.next());
+		}
+		if (execute(c, args)) {
 			++executed;
 		}
 	}
