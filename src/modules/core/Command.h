@@ -33,61 +33,21 @@ private:
 	typedef std::function<int(const std::string&, std::vector<std::string>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
-	Command(std::string&& name, FunctionType&& func) :
-			_name(std::move(name)), _func(std::move(func)) {
-	}
+	Command(std::string&& name, FunctionType&& func);
 
 public:
-	static Command& registerCommand(std::string&& name, FunctionType&& func) {
-		ScopedWriteLock lock(_lock);
-		const Command c(std::move(name), std::move(func));
-		_cmds.insert(std::make_pair(c.name(), c));
-		return _cmds.find(c.name())->second;
-	}
+	static Command& registerCommand(std::string&& name, FunctionType&& func);
 
 	template<class Function>
 	static Command& registerCommand2(std::string&& name, Function&& func) {
 		return registerCommand(std::move(name), std::bind(std::forward<Function>(func)));
 	}
 
-	static void unregisterCommand(const std::string& name) {
-		ScopedWriteLock lock(_lock);
-		_cmds.erase(name);
-	}
+	static void unregisterCommand(const std::string& name);
 
-	static int execute(const std::string& command) {
-		std::vector<std::string> commands;
-		core::string::splitString(command, commands, ";");
-		int executed = 0;
-		for (const std::string& c : commands) {
-			std::vector<std::string> args;
-			core::string::splitString(c, args);
-			if (args.empty()) {
-				continue;
-			}
-			const std::string cmd = core::string::eraseAllSpaces(args[0]);
-			args.erase(args.begin());
-			if (execute(cmd, args)) {
-				++executed;
-			}
-		}
-		return executed;
-	}
+	static int execute(const std::string& command);
 
-	static bool execute(const std::string& command, const CmdArgs& args) {
-		ScopedReadLock lock(_lock);
-		if ((command[0] == '+' || command[0] == '-') && args.empty()) {
-			Log::debug("Skip execution of %s - no arguments provided", command.c_str());
-			return false;
-		}
-		auto i = _cmds.find(command);
-		if (i == _cmds.end()) {
-			return false;
-		}
-		const Command& cmd = i->second;
-		cmd._func(args);
-		return true;
-	}
+	static bool execute(const std::string& command, const CmdArgs& args);
 
 	template<class Functor>
 	static void visit(Functor&& func) {
@@ -114,11 +74,6 @@ public:
 
 	int complete(const std::string& str, std::vector<std::string>& matches) const;
 
-	Command& setHelp(const std::string& help) {
-		_help = help;
-		return *this;
-	}
-
 	/**
 	 * @param func A functor or lambda that accepts the following parameters: @code const std::string& str, std::vector<std::string>& matches @endcode
 	 */
@@ -128,34 +83,27 @@ public:
 		return *this;
 	}
 
-	Command& setBoolCompleter() {
-		return setArgumentCompleter([] (const std::string& str, std::vector<std::string>& matches) -> int {
-			if (str[0] == 't') {
-				matches.push_back("true");
-				return 1;
-			}
-			if (str[0] == 'f') {
-				matches.push_back("false");
-				return 1;
-			}
-			matches.push_back("true");
-			matches.push_back("false");
-			return 2;
-		});
-	}
+	Command& setBoolCompleter();
 
-	inline bool operator==(const Command& rhs) const {
-		return rhs._name == _name;
-	}
+	const std::string& name() const;
 
-	inline const std::string& name() const {
-		return _name;
-	}
+	Command& setHelp(const std::string& help);
+	const std::string& help() const;
 
-	inline const std::string& help() const {
-		return _help;
-	}
+	bool operator==(const Command& rhs) const;
 };
+
+inline bool Command::operator==(const Command& rhs) const {
+	return rhs._name == _name;
+}
+
+inline const std::string& Command::name() const {
+	return _name;
+}
+
+inline const std::string& Command::help() const {
+	return _help;
+}
 
 }
 
