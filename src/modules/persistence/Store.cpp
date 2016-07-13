@@ -8,36 +8,45 @@
 
 namespace persistence {
 
-// TODO: this is far away from being thread safe and also fails hard if the user table is not available.
+Store::State::State(PGresult* _res) :
+		res(_res) {
+}
+
+Store::State::~State() {
+	if (res != nullptr) {
+		PQclear(res);
+	}
+}
 
 Store::Store(Connection* conn) :
-		_connection(conn), _usable(true), _res(nullptr), _lastState(PGRES_EMPTY_QUERY), _affectedRows(0) {
+		_connection(conn) {
 }
 
-bool Store::storeModel(PeristenceModel& model) {
+bool Store::store(const PeristenceModel& model) const {
 	const std::string& insertSql = sqlBuilder(model, false);
-	return query(insertSql);
+	return query(insertSql).result;
 }
 
-bool Store::createNeeds(const PeristenceModel& model) {
+bool Store::createTable(const PeristenceModel& model) const {
 	const std::string& crSql = model.getCreate();
-	Log::info("create table '%s'", crSql.c_str());
-	return query(crSql);
+	Log::info("create table '%s'", model.getTableName().c_str());
+	return query(crSql).result;
 }
 
-KeyValueMap Store::loadModel(const PeristenceModel& model) {
+KeyValueMap Store::load(const PeristenceModel& model) const {
 	const std::string& loadSql = sqlLoadBuilder(model, false);
 	Log::trace("sql used %s", loadSql.c_str());
 	KeyValueMap dbResult;
-	if (query(loadSql) && _affectedRows == 1) {
-		const int nFields = PQnfields(_res);
+	State state = query(loadSql);
+	if (state.result && state.affectedRows == 1) {
+		const int nFields = PQnfields(state.res);
 		for (int i = 0; i < nFields; ++i) {
-			const char* name = PQfname(_res, i);
-			const char* value = PQgetvalue(_res, 0, i);
+			const char* name = PQfname(state.res, i);
+			const char* value = PQgetvalue(state.res, 0, i);
 			dbResult[std::string(name)] = std::string(value);
 			//model.update(tname, fvalue);
 		}
-		PQclear(_res);
+		PQclear(state.res);
 	}
 
 	return dbResult;
@@ -70,11 +79,11 @@ std::string Store::sqlBuilder(const PeristenceModel& model, bool update) const {
 
 std::string Store::sqlLoadBuilder(const PeristenceModel& model, bool update) const {
 	std::string loadSql = "SELECT * FROM " + model.getTableName() + " ";
-	std::string fieldKeys = "";
+	std::string fieldKeys;
 
 	const Fields& fields = model.getFields();
 
-	std::string add = "";
+	std::string add;
 	for (auto p = fields.begin(); p != fields.end(); ++p) {
 		const std::string& strKey = p->first;
 		const std::string& strValue = p->second;
@@ -88,70 +97,56 @@ std::string Store::sqlLoadBuilder(const PeristenceModel& model, bool update) con
 	return loadSql;
 }
 
-void Store::trBegin() {
-	if (!_usable)
-		return;
-
-	_res = PQexec(_connection->connection(), "BEGIN");
-	if (checkLastResult()) {
-		// anyway ..res no longer needed but already closed in case of fail
-		PQclear(_res);
-	}
+bool Store::begin() const {
+	return query("BEGIN").result;
 }
 
-void Store::trEnd() {
-	if (!_usable)
-		return;
-
-	_res = PQexec(_connection->connection(), "END");
-	if (checkLastResult()) {
-		// anyway ..res no longer needed but already closed in case of fail
-		PQclear(_res);
-	}
+bool Store::end() const {
+	return query("END").result;
 }
 
-bool Store::checkLastResult() {
-	_affectedRows = 0;
-	if (_res == nullptr)
+bool Store::checkLastResult(State& state) const {
+	state.affectedRows = 0;
+	if (state.res == nullptr) {
 		return false;
+	}
 
-	_lastState = PQresultStatus(_res);
+	state.lastState = PQresultStatus(state.res);
 
-	if ((_lastState == PGRES_EMPTY_QUERY) || (_lastState == PGRES_BAD_RESPONSE) || (_lastState == PGRES_FATAL_ERROR)) {
-		PQclear(_res);
+	if ((state.lastState == PGRES_EMPTY_QUERY) || (state.lastState == PGRES_BAD_RESPONSE) || (state.lastState == PGRES_FATAL_ERROR)) {
+		PQclear(state.res);
 		const char* msg = PQerrorMessage(_connection->connection());
-		_lastErrorMsg = std::string(msg);
+		state.lastErrorMsg = std::string(msg);
 
-		Log::error("Failed to execute sql: %s ", _lastErrorMsg.c_str());
+		Log::error("Failed to execute sql: %s ", state.lastErrorMsg.c_str());
 		return false;
 	}
 
-	if (_lastState == PGRES_COMMAND_OK) {
+	if (state.lastState == PGRES_COMMAND_OK) {
 		// no data in return but all fine
-		PQclear(_res);
-		_affectedRows = 0;
+		PQclear(state.res);
+		state.affectedRows = 0;
+		state.result = true;
 		return true;
 	}
 
-	if (_lastState == PGRES_TUPLES_OK) {
-		_affectedRows = PQntuples(_res);
-		Log::trace("Affected rows on read %i", _affectedRows);
+	if (state.lastState == PGRES_TUPLES_OK) {
+		state.affectedRows = PQntuples(state.res);
+		Log::trace("Affected rows on read %i", state.affectedRows);
+		state.result = true;
 		return true;
 	}
 
-	Log::error("not catched state: %s", PQresStatus(_lastState));
+	Log::error("not catched state: %s", PQresStatus(state.lastState));
 	// what else ?
 	return false;
 }
 
-bool Store::query(const std::string& query) {
-	if (_usable) {
-		Log::trace("SEND: %s", query.c_str());
-		_res = PQexec(_connection->connection(), query.c_str());
-		return checkLastResult();
-	}
-	Log::error("DB Error: connection not usable");
-	return false;
+Store::State Store::query(const std::string& query) const {
+	Log::trace("Query: %s", query.c_str());
+	State s(PQexec(_connection->connection(), query.c_str()));
+	checkLastResult(s);
+	return s;
 }
 
 Store::~Store() {

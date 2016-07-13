@@ -19,12 +19,12 @@ Persister::~Persister() {
 
 bool Persister::storeUser(const std::string& mail, const std::string& passwd, const std::string& uid) {
 	UserStore dbUser(mail, passwd, uid);
-	return _store.storeModel(dbUser);
+	return _store.store(dbUser);
 }
 
 int Persister::loadUser(const std::string& mail, const std::string& passwd, const std::string& uid) {
 	const UserStore dbUser(mail, passwd, uid);
-	_userData = _store.loadModel(dbUser);
+	_userData = _store.load(dbUser);
 	if (!_userData.empty()) {
 		const int uid = core::string::toInt(_userData["userid"]);
 		return uid;
@@ -38,7 +38,7 @@ void Persister::close() {
 
 bool Persister::initTables() {
 	UserStore model("", "", "");
-	_store.createNeeds(model);
+	_store.createTable(model);
 	return true;
 }
 

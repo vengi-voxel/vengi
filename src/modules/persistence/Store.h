@@ -18,38 +18,39 @@ typedef std::pair<std::string, std::string> KeyValuePair;
 class Store : public core::NonCopyable {
 private:
 	Connection* _connection;
-	bool _usable;
-	PGresult* _res;
-	std::string _lastErrorMsg;
-	ExecStatusType _lastState;
-	int _affectedRows;
+
+	class State {
+	public:
+		State(PGresult* res);
+		~State();
+
+		PGresult* res = nullptr;
+		std::string lastErrorMsg;
+		ExecStatusType lastState = PGRES_FATAL_ERROR;
+		int affectedRows = -1;
+		bool result = false;
+	};
 
 	std::string sqlBuilder(const PeristenceModel& model, bool update) const;
 
 	std::string sqlLoadBuilder(const PeristenceModel& model, bool update) const;
+	State query(const std::string& query) const;
+	bool checkLastResult(State& state) const;
+	PGresult* result() const;
+
 public:
 	Store(Connection* conn);
 	~Store();
 
-	bool query(const std::string& query);
+	bool begin() const;
 
-	void trBegin();
+	bool end() const;
 
-	void trEnd();
+	bool store(const PeristenceModel& model) const;
 
-	bool checkLastResult();
+	bool createTable(const PeristenceModel& model) const;
 
-	bool storeModel(PeristenceModel& model);
-
-	bool createNeeds(const PeristenceModel& model);
-
-	KeyValueMap loadModel(const PeristenceModel& model);
-
-	PGresult* result() const;
+	KeyValueMap load(const PeristenceModel& model) const;
 };
-
-inline PGresult* Store::result() const {
-	return _res;
-}
 
 }
