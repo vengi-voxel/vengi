@@ -49,7 +49,7 @@ core::AppState WindowedApp::onRunning() {
 			const std::string& command = i->second.first;
 			const int16_t modifier = i->second.second;
 			if (it->second == modifier && command[0] == '+') {
-				core_assert(1 == core::Command::execute(command + " true"));
+				core_assert_always(1 == core::Command::execute(command + " true"));
 				_keys[key] = modifier;
 			}
 		}
