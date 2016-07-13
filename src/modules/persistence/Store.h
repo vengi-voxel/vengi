@@ -33,7 +33,7 @@ private:
 
 	std::string sqlBuilder(const PeristenceModel& model, bool update) const;
 
-	std::string sqlLoadBuilder(const PeristenceModel& model, bool update) const;
+	std::string sqlLoadBuilder(const PeristenceModel& model) const;
 	State query(const std::string& query) const;
 	bool checkLastResult(State& state) const;
 	PGresult* result() const;

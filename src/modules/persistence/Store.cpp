@@ -22,6 +22,10 @@ Store::Store(Connection* conn) :
 		_connection(conn) {
 }
 
+Store::~Store() {
+	_connection = nullptr;
+}
+
 bool Store::store(const PeristenceModel& model) const {
 	const std::string& insertSql = sqlBuilder(model, false);
 	return query(insertSql).result;
@@ -34,19 +38,17 @@ bool Store::createTable(const PeristenceModel& model) const {
 }
 
 KeyValueMap Store::load(const PeristenceModel& model) const {
-	const std::string& loadSql = sqlLoadBuilder(model, false);
+	const std::string& loadSql = sqlLoadBuilder(model);
 	Log::trace("sql used %s", loadSql.c_str());
 	KeyValueMap dbResult;
-	State state = query(loadSql);
+	const State& state = query(loadSql);
 	if (state.result && state.affectedRows == 1) {
 		const int nFields = PQnfields(state.res);
 		for (int i = 0; i < nFields; ++i) {
 			const char* name = PQfname(state.res, i);
 			const char* value = PQgetvalue(state.res, 0, i);
 			dbResult[std::string(name)] = std::string(value);
-			//model.update(tname, fvalue);
 		}
-		PQclear(state.res);
 	}
 
 	return dbResult;
@@ -77,7 +79,7 @@ std::string Store::sqlBuilder(const PeristenceModel& model, bool update) const {
 	return str;
 }
 
-std::string Store::sqlLoadBuilder(const PeristenceModel& model, bool update) const {
+std::string Store::sqlLoadBuilder(const PeristenceModel& model) const {
 	std::string loadSql = "SELECT * FROM " + model.getTableName() + " ";
 	std::string fieldKeys;
 
@@ -116,17 +118,14 @@ bool Store::checkLastResult(State& state) const {
 	state.lastState = PQresultStatus(state.res);
 
 	if ((state.lastState == PGRES_EMPTY_QUERY) || (state.lastState == PGRES_BAD_RESPONSE) || (state.lastState == PGRES_FATAL_ERROR)) {
-		PQclear(state.res);
 		const char* msg = PQerrorMessage(_connection->connection());
 		state.lastErrorMsg = std::string(msg);
-
 		Log::error("Failed to execute sql: %s ", state.lastErrorMsg.c_str());
 		return false;
 	}
 
 	if (state.lastState == PGRES_COMMAND_OK) {
 		// no data in return but all fine
-		PQclear(state.res);
 		state.affectedRows = 0;
 		state.result = true;
 		return true;
@@ -149,11 +148,6 @@ Store::State Store::query(const std::string& query) const {
 	State s(PQexec(_connection->connection(), query.c_str()));
 	checkLastResult(s);
 	return s;
-}
-
-Store::~Store() {
-	// TODO: assigning a nullptr is not possible for a reference
-	//_connection = nullptr;
 }
 
 }
