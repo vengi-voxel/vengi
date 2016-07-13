@@ -89,7 +89,9 @@ std::string Store::sqlLoadBuilder(const PeristenceModel& model, bool update) con
 		const std::string& strValue = p->second;
 		if (!model.isSerial(strKey)) {
 			fieldKeys += add + strKey + " = '" + strValue + "'";
-			add = " AND ";
+			if (add.empty()) {
+				add = " AND ";
+			}
 		}
 	}
 
