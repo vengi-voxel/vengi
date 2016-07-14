@@ -21,15 +21,17 @@ public:
 
 	virtual ~PeristenceModel();
 
-	virtual std::string getCreate() const = 0;
+	const std::string& getTableName() const;
 
-	virtual const std::string& getTableName() const {
-		return _tableName;
-	}
+	virtual std::string getCreate() const = 0;
 
 	virtual Fields getFields() const = 0;
 
 	virtual bool isSerial(const std::string& fieldname) const = 0;
 };
+
+inline const std::string& PeristenceModel::getTableName() const {
+	return _tableName;
+}
 
 }
