@@ -441,9 +441,6 @@ core::AppState ShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 
-	for (int i = 0; i < _argc; ++i) {
-		Log::debug("argv[%i] = %s", i, _argv[i]);
-	}
 	const std::string glslangValidatorBin = _argv[1];
 	const std::string shaderfile          = _argv[2];
 	_shaderTemplateFile                   = _argv[3];
