@@ -29,8 +29,6 @@ public:
 
 	virtual Fields getFields() const = 0;
 
-	virtual void update(const std::string& fieldName,const std::string& value) const = 0;
-
 	virtual bool isSerial(const std::string& fieldname) const = 0;
 };
 

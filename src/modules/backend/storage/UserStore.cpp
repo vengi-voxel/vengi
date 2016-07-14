@@ -20,13 +20,6 @@ std::string UserStore::getCreate() const {
 	return crSql;
 }
 
-void UserStore::update(const std::string& fieldName, const std::string& value) const {
-	Log::trace("update called");
-	if (fieldName == "userid") {
-		Log::trace("userid read %s", value.c_str());
-	}
-}
-
 persistence::Fields UserStore::getFields() const {
 	persistence::Fields storeData;
 	storeData["userid"] = _userid;

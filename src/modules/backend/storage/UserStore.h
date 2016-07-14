@@ -24,8 +24,6 @@ public:
 	persistence::Fields getFields() const override;
 
 	bool isSerial(const std::string& fieldname) const override;
-
-	void update(const std::string& fieldName, const std::string& value) const override;
 };
 
 }
