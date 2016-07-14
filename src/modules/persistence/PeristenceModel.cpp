@@ -10,4 +10,7 @@ PeristenceModel::PeristenceModel(const std::string& tableName) :
 		_tableName(tableName) {
 }
 
+PeristenceModel::~PeristenceModel() {
+}
+
 }

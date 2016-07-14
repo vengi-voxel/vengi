@@ -19,8 +19,7 @@ protected:
 public:
 	PeristenceModel(const std::string& tableName);
 
-	virtual ~PeristenceModel() {
-	}
+	virtual ~PeristenceModel();
 
 	virtual std::string getCreate() const = 0;
 
