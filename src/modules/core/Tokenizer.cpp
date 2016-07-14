@@ -1,11 +1,12 @@
 #include "Tokenizer.h"
 
 namespace core {
-
 Tokenizer::Tokenizer(const std::string& string, const char *sep) :
-		_posIndex(0u) {
-	const char *s = string.c_str();
+		Tokenizer(string.c_str(), sep) {
+}
 
+Tokenizer::Tokenizer(const char* s, const char *sep) :
+		_posIndex(0u) {
 	bool lastCharIsSep = false;
 	for (;;) {
 		char c = skip(&s);

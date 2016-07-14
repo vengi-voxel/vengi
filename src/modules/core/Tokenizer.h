@@ -18,6 +18,7 @@ protected:
 	char skip(const char **s) const;
 	bool isSeparator(char c, const char *sep);
 public:
+	Tokenizer(const char* string, const char *sep = " (){};");
 	Tokenizer(const std::string& string, const char *sep = " (){};");
 
 	inline bool hasNext() const {

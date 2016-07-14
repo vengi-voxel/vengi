@@ -37,6 +37,10 @@ int App::startMainLoop(int argc, char *argv[]) {
 	_argc = argc;
 	_argv = argv;
 
+	for (int i = 0; i < _argc; ++i) {
+		Log::debug("argv[%i] = %s", i, _argv[i]);
+	}
+
 	while (AppState::InvalidAppState != _curState) {
 		core_trace_scoped(AppMainLoop);
 		onFrame();
