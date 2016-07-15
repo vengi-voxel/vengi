@@ -36,10 +36,18 @@ public:
 
 	bool connect();
 
+	void close();
+
+	inline operator PGconn*();
+
 	PGconn* connection() const;
 };
 
 inline PGconn* Connection::connection() const {
+	return _pgConnection;
+}
+
+inline Connection::operator PGconn*() {
 	return _pgConnection;
 }
 

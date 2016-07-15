@@ -5,8 +5,7 @@
 #include "EntityStorage.h"
 #include "core/Var.h"
 #include "User.h"
-#include "backend/storage/Persister.h"
-#include "backend/storage/UserStore.h"
+#include "DatabaseModels.h"
 
 #define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::messages::server::type, network::messages::server::msg.Union());
 
@@ -31,16 +30,14 @@ void EntityStorage::registerUser(const UserPtr& user) {
 }
 
 EntityId EntityStorage::getUserId(const std::string& user, const std::string& passwd) const {
-	std::string tmUid = "0";
-	Persister pq;
-	pq.init();
-	int checkId = pq.loadUser(user, passwd, tmUid);
+	persistence::UserStore userStore(&user, &passwd);
+	EntityId checkId = userStore.userid();
 
 	if (checkId == 0) {
 		const core::VarPtr& autoReg = core::Var::get(cfg::ServerAutoRegister, "true");
 		if (autoReg->boolVal()) {
-			pq.storeUser(user, passwd, tmUid);
-			checkId = pq.loadUser(user, passwd, tmUid);
+			userStore.insert(user, passwd);
+			checkId = userStore.userid();
 		}
 	}
 	return checkId;
@@ -49,8 +46,9 @@ EntityId EntityStorage::getUserId(const std::string& user, const std::string& pa
 UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std::string& passwd) {
 	EntityId id = getUserId(email, passwd);
 	Log::info("getting userid: %i", (int) id);
-	if (id <= 0)
+	if (id <= 0) {
 		return UserPtr();
+	}
 	auto i = _users.find(id);
 	if (i == _users.end()) {
 		static const std::string name = "NONAME";
@@ -71,8 +69,9 @@ UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std
 
 bool EntityStorage::logout(EntityId userId) {
 	auto i = _users.find(userId);
-	if (i == _users.end())
+	if (i == _users.end()) {
 		return false;
+	}
 	_users.erase(i);
 	return true;
 }
@@ -121,7 +120,7 @@ void EntityStorage::onFrame(long dt) {
 	for (auto i = _npcs.begin(); i != _npcs.end();) {
 		NpcPtr npc = i->second;
 		if (!updateEntity(npc, deltaLastTick)) {
-			Log::info("remove npc %i", npc->id());
+			Log::info("remove npc %li", npc->id());
 			_quadTree.remove(Node { npc });
 			i = _npcs.erase(i);
 		} else {

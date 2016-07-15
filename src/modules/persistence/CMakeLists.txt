@@ -1,7 +1,8 @@
 set(SRCS
 	Connection.cpp Connection.h
-	Store.cpp Store.h
-	PeristenceModel.cpp PeristenceModel.h
+	ScopedConnection.cpp ScopedConnection.h
+	ConnectionPool.cpp ConnectionPool.h
+	Model.cpp Model.h
 )
 set(LIB persistence)
 add_library(${LIB} ${SRCS})
@@ -15,6 +16,6 @@ target_link_libraries(persistence ${PostgreSQL_LIBRARIES})
 target_include_directories(persistence PUBLIC ${PostgreSQL_INCLUDE_DIRS})
 
 gtest_suite_files(tests
-	tests/StoreTest.cpp
+	tests/ConnectionPoolTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

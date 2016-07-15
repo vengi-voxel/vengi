@@ -5,7 +5,6 @@
 #include "Server.h"
 #include "core/Var.h"
 #include "core/Command.h"
-#include "backend/storage/StoreCmd.h"
 #include "backend/network/ServerNetworkModule.h"
 #include "ServerModule.h"
 #include <cstdlib>
@@ -28,8 +27,6 @@ core::AppState Server::onInit() {
 	}
 
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
-	backend::StoreCmd SCmd;
-	SCmd.addComd();
 
 	const core::VarPtr& port = core::Var::get(cfg::ServerPort, "11337");
 	const core::VarPtr& host = core::Var::get(cfg::ServerHost, "");

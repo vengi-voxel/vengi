@@ -108,12 +108,20 @@ inline size_t getUTF8Length(const std::string& str) {
 
 extern std::string format(const char *msg, ...)  SDL_PRINTF_VARARG_FUNC(1);
 
+inline int toInt(const char*str) {
+	return SDL_atoi(str);
+}
+
+inline int toLong(const char* str) {
+	return ::atol(str);
+}
+
 inline int toInt(const std::string& str) {
-	return SDL_atoi(str.c_str());
+	return toInt(str.c_str());
 }
 
 inline int toLong(const std::string& str) {
-	return ::atol(str.c_str());
+	return toLong(str.c_str());
 }
 
 inline bool toBool(const std::string& str) {
@@ -220,6 +228,19 @@ inline std::string rtrim(const std::string &str) {
 
 inline std::string trim(const std::string &str) {
 	return ltrim(rtrim(str));
+}
+
+inline bool iequals(const std::string& a, const std::string& b) {
+	const unsigned int sz = a.size();
+	if (b.size() != sz) {
+		return false;
+	}
+	for (unsigned int i = 0u; i < sz; ++i) {
+		if (tolower(a[i]) != tolower(b[i])) {
+			return false;
+		}
+	}
+	return true;
 }
 
 extern bool matches (const std::string& pattern, const std::string& text);

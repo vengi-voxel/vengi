@@ -8,6 +8,6 @@
 
 namespace backend {
 
-typedef int32_t EntityId;
+typedef int64_t EntityId;
 
 }

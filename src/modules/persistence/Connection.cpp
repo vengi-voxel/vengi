@@ -3,6 +3,7 @@
  */
 
 #include "Connection.h"
+#include "ConnectionPool.h"
 #include "core/Log.h"
 
 namespace persistence {
@@ -40,19 +41,32 @@ inline std::string Connection::escape(const std::string& value) const {
 bool Connection::connect() {
 	std::string conninfo = "connect_timeout='2'";
 
-	if (!_host.empty())
-		conninfo += " host=" + escape(_host);
-	if (!_dbname.empty())
-		conninfo += " dbname=" + escape(_dbname);
-	if (!_user.empty())
-		conninfo += " user=" + escape(_user);
-	if (!_password.empty())
-		conninfo += " password=" + escape(_password);
-	if (_port > 0)
-		conninfo += " port=" + escape(std::to_string(_port));
+	const char *host = nullptr;
+	if (!_host.empty()) {
+		host = _host.c_str();
+	}
 
-	_pgConnection = PQconnectdb(conninfo.c_str());
+	const char *dbname = nullptr;
+	if (!_dbname.empty()) {
+		dbname = _dbname.c_str();
+	}
 
+	const char *user = nullptr;
+	if (!_user.empty()) {
+		user = _user.c_str();
+	}
+
+	const char *password = nullptr;
+	if (!_password.empty()) {
+		password = _password.c_str();
+	}
+
+	std::string port;
+	if (_port > 0) {
+		port = std::to_string(_port);
+	}
+
+	_pgConnection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), nullptr, dbname, user, password);
 	if (PQstatus(_pgConnection) != CONNECTION_OK) {
 		Log::error("Connection to database failed: %s", PQerrorMessage(_pgConnection));
 		disconnect();
@@ -65,6 +79,10 @@ bool Connection::connect() {
 void Connection::disconnect() {
 	PQfinish(_pgConnection);
 	_pgConnection = nullptr;
+}
+
+void Connection::close() {
+	ConnectionPool::get().giveBack(this);
 }
 
 }

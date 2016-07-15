@@ -1,0 +1,21 @@
+table user_table {
+	classname UserStore
+	namespace backend
+	field userid {
+		type long
+	}
+	field email {
+		type string
+		notnull
+	}
+	field password {
+		type password
+		length 128
+		notnull
+	}
+	constraints {
+		email unique
+		userid primarykey
+		userid autoincrement
+	}
+}
