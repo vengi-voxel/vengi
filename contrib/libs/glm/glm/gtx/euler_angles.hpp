@@ -1,44 +1,15 @@
-///////////////////////////////////////////////////////////////////////////////////
-/// OpenGL Mathematics (glm.g-truc.net)
-///
-/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
-/// Permission is hereby granted, free of charge, to any person obtaining a copy
-/// of this software and associated documentation files (the "Software"), to deal
-/// in the Software without restriction, including without limitation the rights
-/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-/// copies of the Software, and to permit persons to whom the Software is
-/// furnished to do so, subject to the following conditions:
-/// 
-/// The above copyright notice and this permission notice shall be included in
-/// all copies or substantial portions of the Software.
-/// 
-/// Restrictions:
-///		By making use of the Software for military purposes, you choose to make
-///		a Bunny unhappy.
-/// 
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-/// THE SOFTWARE.
-///
 /// @ref gtx_euler_angles
 /// @file glm/gtx/euler_angles.hpp
-/// @date 2005-12-21 / 2011-06-07
-/// @author Christophe Riccio
 ///
 /// @see core (dependence)
 /// @see gtc_half_float (dependence)
 ///
 /// @defgroup gtx_euler_angles GLM_GTX_euler_angles
 /// @ingroup gtx
-/// 
+///
 /// @brief Build matrices from Euler angles.
-/// 
+///
 /// <glm/gtx/euler_angles.hpp> need to be included to use these functionalities.
-///////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
@@ -114,6 +85,14 @@ namespace glm
 		T const & angleZ,
 		T const & angleY);
 
+    /// Creates a 3D 4 * 4 homogeneous rotation matrix from euler angles (X * Y * Z).
+    /// @see gtx_euler_angles
+    template <typename T>
+    GLM_FUNC_DECL tmat4x4<T, defaultp> eulerAngleXYZ(
+        T const & t1,
+        T const & t2,
+        T const & t3);
+    
 	/// Creates a 3D 4 * 4 homogeneous rotation matrix from euler angles (Y * X * Z).
 	/// @see gtx_euler_angles
 	template <typename T>
@@ -121,7 +100,7 @@ namespace glm
 		T const & yaw,
 		T const & pitch,
 		T const & roll);
-
+    
 	/// Creates a 3D 4 * 4 homogeneous rotation matrix from euler angles (Y * X * Z).
 	/// @see gtx_euler_angles
 	template <typename T>
@@ -150,6 +129,14 @@ namespace glm
 	template <typename T, precision P>
 	GLM_FUNC_DECL tmat4x4<T, P> orientate4(tvec3<T, P> const & angles);
 
+    /// Extracts the (X * Y * Z) Euler angles from the rotation matrix M
+    /// @see gtx_euler_angles
+    template <typename T>
+    GLM_FUNC_DECL void extractEulerAngleXYZ(tmat4x4<T, defaultp> const & M,
+                                            T & t1,
+                                            T & t2,
+                                            T & t3);
+    
 	/// @}
 }//namespace glm
 

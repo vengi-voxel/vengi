@@ -1,32 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////////
-/// OpenGL Mathematics (glm.g-truc.net)
-///
-/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
-/// Permission is hereby granted, free of charge, to any person obtaining a copy
-/// of this software and associated documentation files (the "Software"), to deal
-/// in the Software without restriction, including without limitation the rights
-/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-/// copies of the Software, and to permit persons to whom the Software is
-/// furnished to do so, subject to the following conditions:
-/// 
-/// The above copyright notice and this permission notice shall be included in
-/// all copies or substantial portions of the Software.
-/// 
-/// Restrictions:
-///		By making use of the Software for military purposes, you choose to make
-///		a Bunny unhappy.
-/// 
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-/// THE SOFTWARE.
-///
-/// @file glm/glm.hpp
-/// @date 2009-05-01 / 2011-05-16
-/// @author Christophe Riccio
+/// @file glm/ext.hpp
 ///
 /// @ref core (Dependence)
 /// 
@@ -52,7 +24,6 @@
 /// Even if it's highly unrecommended, it's possible to include all the extensions 
 /// at once by including <glm/ext.hpp>. Otherwise, each extension needs to be 
 /// included  a specific file.
-///////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
@@ -79,6 +50,9 @@
 #include "./gtc/type_ptr.hpp"
 #include "./gtc/ulp.hpp"
 #include "./gtc/vec1.hpp"
+#if GLM_HAS_ALIGNED_TYPE
+#	include "./gtc/type_aligned.hpp"
+#endif
 
 #include "./gtx/associated_min_max.hpp"
 #include "./gtx/bit.hpp"
@@ -90,7 +64,7 @@
 #include "./gtx/dual_quaternion.hpp"
 #include "./gtx/euler_angles.hpp"
 #include "./gtx/extend.hpp"
-#include "./gtx/extented_min_max.hpp"
+#include "./gtx/extended_min_max.hpp"
 #include "./gtx/fast_exponential.hpp"
 #include "./gtx/fast_square_root.hpp"
 #include "./gtx/fast_trigonometry.hpp"
@@ -124,7 +98,6 @@
 #endif
 #include "./gtx/transform.hpp"
 #include "./gtx/transform2.hpp"
-#include "./gtx/type_aligned.hpp"
 #include "./gtx/vector_angle.hpp"
 #include "./gtx/vector_query.hpp"
 #include "./gtx/wrap.hpp"
@@ -135,9 +108,4 @@
 
 #if GLM_HAS_RANGE_FOR
 #	include "./gtx/range.hpp"
-#endif
-
-#if GLM_ARCH & GLM_ARCH_SSE2
-#	include "./gtx/simd_vec4.hpp"
-#	include "./gtx/simd_mat4.hpp"
 #endif

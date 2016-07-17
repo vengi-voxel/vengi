@@ -1,39 +1,30 @@
-///////////////////////////////////////////////////////////////////////////////////
-/// OpenGL Mathematics (glm.g-truc.net)
-///
-/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
-/// Permission is hereby granted, free of charge, to any person obtaining a copy
-/// of this software and associated documentation files (the "Software"), to deal
-/// in the Software without restriction, including without limitation the rights
-/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-/// copies of the Software, and to permit persons to whom the Software is
-/// furnished to do so, subject to the following conditions:
-/// 
-/// The above copyright notice and this permission notice shall be included in
-/// all copies or substantial portions of the Software.
-/// 
-/// Restrictions:
-///		By making use of the Software for military purposes, you choose to make
-///		a Bunny unhappy.
-/// 
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-/// THE SOFTWARE.
-///
 /// @ref gtx_common
 /// @file glm/gtx/common.inl
-/// @date 2014-09-08 / 2014-09-08
-/// @author Christophe Riccio
-///////////////////////////////////////////////////////////////////////////////////
 
 #include <cmath>
 
-namespace glm
+namespace glm{
+namespace detail
 {
+	template <typename T, precision P, template <class, precision> class vecType, bool isFloat = true>
+	struct compute_fmod
+	{
+		GLM_FUNC_QUALIFIER static vecType<T, P> call(vecType<T, P> const & a, vecType<T, P> const & b)
+		{
+			return detail::functor2<T, P, vecType>::call(std::fmod, a, b);
+		}
+	};
+
+	template <typename T, precision P, template <class, precision> class vecType>
+	struct compute_fmod<T, P, vecType, false>
+	{
+		GLM_FUNC_QUALIFIER static vecType<T, P> call(vecType<T, P> const & a, vecType<T, P> const & b)
+		{
+			return a % b;
+		}
+	};
+}//namespace detail
+
 	template <typename T> 
 	GLM_FUNC_QUALIFIER bool isdenormal(T const & x)
 	{
@@ -98,5 +89,24 @@ namespace glm
 			isdenormal(x.y),
 			isdenormal(x.z),
 			isdenormal(x.w));
+	}
+
+	// fmod
+	template <typename genType>
+	GLM_FUNC_QUALIFIER genType fmod(genType x, genType y)
+	{
+		return fmod(tvec1<genType>(x), y).x;
+	}
+
+	template <typename T, precision P, template <typename, precision> class vecType>
+	GLM_FUNC_QUALIFIER vecType<T, P> fmod(vecType<T, P> const & x, T y)
+	{
+		return detail::compute_fmod<T, P, vecType, std::numeric_limits<T>::is_iec559>::call(x, vecType<T, P>(y));
+	}
+
+	template <typename T, precision P, template <typename, precision> class vecType>
+	GLM_FUNC_QUALIFIER vecType<T, P> fmod(vecType<T, P> const & x, vecType<T, P> const & y)
+	{
+		return detail::compute_fmod<T, P, vecType, std::numeric_limits<T>::is_iec559>::call(x, y);
 	}
 }//namespace glm
