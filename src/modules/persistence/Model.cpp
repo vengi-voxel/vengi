@@ -75,7 +75,7 @@ bool Model::exec(const char* query) {
 #ifdef PERSISTENCE_POSTGRES
 	State s(PQexec(conn, query));
 	checkLastResult(s, scoped);
-	return fillKeys(s).result;
+	return fillModelValues(s).result;
 #elif defined PERSISTENCE_SQLITE
 	char *zErrMsg = nullptr;
 	const int rc = sqlite3_exec(conn, query, nullptr, nullptr, &zErrMsg);
@@ -102,7 +102,7 @@ Model::Field Model::getField(const std::string& name) const {
 	return Field();
 }
 
-Model::State Model::fillKeys(Model::State& state) {
+Model::State Model::fillModelValues(Model::State& state) {
 	// TODO: 0 even in case a key was generated
 	if (state.affectedRows != 1) {
 		Log::debug("More than one row affected, can't fill generated keys");
@@ -177,7 +177,7 @@ Model::State Model::PreparedStatement::exec() {
 	if (!_model->checkLastResult(prepState, scoped)) {
 		return prepState;
 	}
-	return _model->fillKeys(prepState);
+	return _model->fillModelValues(prepState);
 #elif defined PERSISTENCE_SQLITE
 	ResultType *stmt;
 	const char *pzTest;
@@ -207,7 +207,7 @@ Model::State Model::PreparedStatement::exec() {
 		return State(nullptr);
 	}
 
-	return _model->fillKeys(State(stmt));
+	return _model->fillModelValues(State(stmt));
 #else
 	return State(nullptr);
 #endif

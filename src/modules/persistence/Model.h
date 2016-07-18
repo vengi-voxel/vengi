@@ -78,7 +78,7 @@ protected:
 	const std::string _tableName;
 
 	bool checkLastResult(State& state, Connection* connection) const;
-	State fillKeys(State& state);
+	State fillModelValues(State& state);
 public:
 	Model(const std::string& tableName);
 
