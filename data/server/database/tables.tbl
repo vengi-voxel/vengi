@@ -1,3 +1,10 @@
+//
+// table descriptions for the databasetool.
+//
+// the databasetool binary will generate model files for the
+// table definitions in this file.
+//
+
 table user_table {
 	classname UserStore
 	namespace backend
