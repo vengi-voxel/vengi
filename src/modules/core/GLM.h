@@ -29,6 +29,7 @@ extern const glm::vec3 left;
 extern const glm::vec3 up;
 extern const glm::vec3 down;
 
+// TODO: will be part of glm 0.9.8
 GLM_FUNC_QUALIFIER bvec4 isnan(quat const & x) {
 	const vec4 v(x.x, x.y, x.z, x.w);
 	return isnan(v);
