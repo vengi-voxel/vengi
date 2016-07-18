@@ -104,8 +104,8 @@ Model::Field Model::getField(const std::string& name) const {
 	return Field();
 }
 
-Model::PreparedStatement::PreparedStatement(Model* model, const std::string& name, const std::string& statement, const std::vector<std::string>& params) :
-		_model(model), _name(name), _statement(statement), _params(params) {
+Model::PreparedStatement::PreparedStatement(Model* model, const std::string& name, const std::string& statement) :
+		_model(model), _name(name), _statement(statement) {
 }
 
 Model::State Model::PreparedStatement::exec() {
@@ -124,8 +124,9 @@ Model::State Model::PreparedStatement::exec() {
 	}
 	const int size = _params.size();
 	const char* paramValues[size];
+	// TODO: handle the type
 	for (int i = 0; i < size; ++i) {
-		paramValues[i] = _params[i].c_str();
+		paramValues[i] = _params[i].first.c_str();
 	}
 	State prepState(PQexecPrepared(conn, _name.c_str(), size, paramValues, nullptr, nullptr, 0));
 	if (!_model->checkLastResult(prepState, scoped)) {

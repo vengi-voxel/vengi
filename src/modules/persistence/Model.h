@@ -93,37 +93,38 @@ public:
 		Model* _model;
 		std::string _name;
 		std::string _statement;
-		std::vector<std::string> _params;
+		typedef std::pair<std::string, FieldType> ParamEntry;
+		std::vector<ParamEntry> _params;
 	public:
-		PreparedStatement(Model* model, const std::string& name, const std::string& statement, const std::vector<std::string>& params = std::vector<std::string>());
+		PreparedStatement(Model* model, const std::string& name, const std::string& statement);
+
+		inline PreparedStatement& add(const std::string& type, FieldType fieldType) {
+			_params.push_back(std::make_pair(type, fieldType));
+			return *this;
+		}
 
 		template<class Type>
-		PreparedStatement& add(const Type& type) {
-			_params.push_back(std::to_string(type));
-			return *this;
+		PreparedStatement& add(const Type& type, FieldType fieldType) {
+			return add(std::to_string(type), fieldType);
 		}
 
 		inline PreparedStatement& add(const std::string& type) {
-			_params.push_back(type);
-			return *this;
+			return add(type, Model::STRING);
 		}
 
 		inline PreparedStatement& addPassword(const std::string& password) {
-			_params.push_back("md5("/*TODO: salt */ + password + ")");
-			return *this;
+			return add(password, Model::PASSWORD);
 		}
 
-		inline PreparedStatement& add(const char* type) {
-			_params.push_back(type);
-			return *this;
+		inline PreparedStatement& add(const char* type, FieldType fieldType) {
+			return add(std::string(type), Model::STRING);
 		}
 
 		inline PreparedStatement& add(const Timestamp& type) {
 			if (type.isNow()) {
-				_params.push_back("NOW()");
-				return *this;
+				return add("NOW()", Model::TIMESTAMP);
 			}
-			return add(type.time());
+			return add(type.time(), Model::TIMESTAMP);
 		}
 
 		State exec();
