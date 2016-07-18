@@ -33,11 +33,6 @@ void Connection::changePort(uint16_t port) {
 	_port = port;
 }
 
-inline std::string Connection::escape(const std::string& value) const {
-	// TODO: escape ' inside the value
-	return "'" + value + "'";
-}
-
 bool Connection::connect() {
 	std::string conninfo = "connect_timeout='2'";
 

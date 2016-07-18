@@ -17,8 +17,6 @@ private:
 	std::string _user;
 	std::string _password;
 	uint16_t _port;
-
-	std::string escape(const std::string& value) const;
 public:
 	Connection();
 
