@@ -572,6 +572,20 @@ bool DatabaseTool::parse(const std::string& buffer) {
 	return true;
 }
 
+DatabaseTool::DatabaseType DatabaseTool::getDatabaseType(const std::string& arg) const {
+	if (core::string::iequals(arg, "sqlite3")) {
+		Log::info("Generate database models for sqlite3");
+		return SQLITE;
+	}
+	if (core::string::iequals(arg, "mysql")) {
+		Log::info("Generate database models for mysql");
+		return MYSQL;
+	}
+	// default is postgres
+	Log::info("Generate database models for postgres");
+	return POSTGRES;
+}
+
 core::AppState DatabaseTool::onRunning() {
 	if (_argc < 3) {
 		_exitCode = 1;
@@ -581,6 +595,7 @@ core::AppState DatabaseTool::onRunning() {
 
 	_tableFile    = _argv[1];
 	_targetFile   = _argv[2];
+	_database     = _argc >= 4 ? getDatabaseType(_argv[3]) : POSTGRES;
 
 	Log::debug("Preparing table file %s", _tableFile.c_str());
 	const std::string& buf = filesystem()->load(_tableFile);

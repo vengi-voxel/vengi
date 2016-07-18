@@ -60,6 +60,8 @@ protected:
 	bool parse(const std::string& src);
 	bool generateClassForTable(const Table& table, std::stringstream& src) const;
 	bool generateSrc() const;
+
+	DatabaseType getDatabaseType(const std::string& arg) const;
 public:
 	DatabaseTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
 

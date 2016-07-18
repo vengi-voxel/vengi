@@ -1,6 +1,15 @@
 set(GAME_BASE_DIR data CACHE STRING "" FORCE)
 set(LIBS_DIR ${PROJECT_SOURCE_DIR}/contrib/libs)
 
+find_package(PostgreSQL)
+if (PostgreSQL_FOUND)
+	set(_PERSISTENCE_DBTYPE "postgres")
+else()
+	set(_PERSISTENCE_DBTYPE "sqlite3")
+endif()
+
+option(PERSISTENCE_DBTYPE "Generate database bindings for sqlite3, mysql or postgres" ${_PERSISTENCE_DBTYPE})
+
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	set(TOOLS_DIR ${ROOT_DIR}/tools/win32 CACHE STRING "" FORCE)
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
@@ -113,11 +122,12 @@ endmacro()
 macro(generate_db_models TARGET INPUT OUTPUT)
 	set(GEN_DIR ${CMAKE_BINARY_DIR}/gen-dbmodels/${TARGET}/)
 	file(MAKE_DIRECTORY ${GEN_DIR})
+	message(STATUS "Generate models for ${PERSISTENCE_DBTYPE}")
 	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
 	add_custom_command(
 		OUTPUT ${GEN_DIR}${OUTPUT}
 		COMMENT "Generate ${OUTPUT}"
-		COMMAND ${CMAKE_BINARY_DIR}/databasetool ${INPUT} ${GEN_DIR}${OUTPUT}
+		COMMAND ${CMAKE_BINARY_DIR}/databasetool ${INPUT} ${GEN_DIR}${OUTPUT} ${PERSISTENCE_DBTYPE}
 		DEPENDS databasetool ${INPUT}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 	)

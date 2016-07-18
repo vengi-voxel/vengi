@@ -38,6 +38,8 @@ BUILD_TYPE       ?= Debug
 BUILDDIRPATH     ?= ./
 BUILDDIR         ?= $(BUILDDIRPATH)build-$(shell echo $(BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
 
+CMAKE_OPTIONS    ?=
+
 #VOGL_OPTIONS     ?= --vogl_force_debug_context --vogl_exit_after_x_frames 2000
 VOGL_OPTIONS     ?= --vogl_force_debug_context
 VOGL             ?=
@@ -60,7 +62,7 @@ run: shapetool
 .PHONY: cmake
 cmake:
 	$(Q)mkdir -p $(BUILDDIR)
-	$(Q)cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_INSTALL_PREFIX=./linux -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(CURDIR)
+	$(Q)cd $(BUILDDIR); cmake -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_INSTALL_PREFIX=./linux -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(CURDIR) $(CMAKE_OPTIONS)
 
 .PHONY: build
 build: cmake
