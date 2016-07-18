@@ -38,7 +38,7 @@ public:
 	Connection* connection();
 
 private:
-	void addConnection();
+	Connection* addConnection();
 	void giveBack(Connection* c);
 };
 

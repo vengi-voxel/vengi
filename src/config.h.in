@@ -1,3 +1,5 @@
-#cmakedefine PERSISTENCE_DBTYPE "@PERSISTENCE_DBTYPE@"
-#cmakedefine POSTGRESQL_FOUND
-#cmakedefine GAME_BASE_DIR "@GAME_BASE_DIR@"
+#pragma once
+
+#cmakedefine PERSISTENCE_SQLITE
+#cmakedefine PERSISTENCE_MYSQL
+#cmakedefine PERSISTENCE_POSTGRES

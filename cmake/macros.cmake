@@ -1,15 +1,6 @@
 set(GAME_BASE_DIR data CACHE STRING "" FORCE)
 set(LIBS_DIR ${PROJECT_SOURCE_DIR}/contrib/libs)
 
-find_package(PostgreSQL)
-if (PostgreSQL_FOUND)
-	set(_PERSISTENCE_DBTYPE "postgres")
-else()
-	set(_PERSISTENCE_DBTYPE "sqlite3")
-endif()
-
-option(PERSISTENCE_DBTYPE "Generate database bindings for sqlite3, mysql or postgres" ${_PERSISTENCE_DBTYPE})
-
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	set(TOOLS_DIR ${ROOT_DIR}/tools/win32 CACHE STRING "" FORCE)
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")

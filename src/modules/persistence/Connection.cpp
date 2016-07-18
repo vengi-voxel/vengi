@@ -5,6 +5,7 @@
 #include "Connection.h"
 #include "ConnectionPool.h"
 #include "core/Log.h"
+#include "config.h"
 
 namespace persistence {
 
@@ -34,6 +35,7 @@ void Connection::changePort(uint16_t port) {
 }
 
 bool Connection::connect() {
+#ifdef PERSISTENCE_POSTGRES
 	std::string conninfo = "connect_timeout='2'";
 
 	const char *host = nullptr;
@@ -67,12 +69,26 @@ bool Connection::connect() {
 		disconnect();
 		return false;
 	}
-
-	return true;
+#elif defined PERSISTENCE_SQLITE
+	const int rc = sqlite3_open(_dbname.c_str(), &_pgConnection);
+	if (rc != SQLITE_OK) {
+		Log::error("Can't open database '%s': %s", _dbname.c_str(), sqlite3_errmsg(_pgConnection));
+		sqlite3_close(_pgConnection);
+		_pgConnection = nullptr;
+		return false;
+	}
+#elif defined PERSISTENCE_MYSQL
+	return false;
+#endif
+	return false;
 }
 
 void Connection::disconnect() {
+#ifdef PERSISTENCE_POSTGRES
 	PQfinish(_pgConnection);
+#elif defined PERSISTENCE_SQLITE
+	sqlite3_close(_pgConnection);
+#endif
 	_pgConnection = nullptr;
 }
 

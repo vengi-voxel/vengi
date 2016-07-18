@@ -5,13 +5,21 @@
 #pragma once
 
 #include <string>
+#include "config.h"
+
+#ifdef PERSISTENCE_POSTGRES
 #include <libpq-fe.h>
+using ConnectionType = PGconn;
+#elif defined PERSISTENCE_SQLITE
+#include <sqlite3.h>
+using ConnectionType = ::sqlite3;
+#endif
 
 namespace persistence {
 
 class Connection {
 private:
-	PGconn* _pgConnection;
+	ConnectionType* _pgConnection;
 	std::string _host;
 	std::string _dbname;
 	std::string _user;
@@ -36,16 +44,10 @@ public:
 
 	void close();
 
-	inline operator PGconn*();
-
-	PGconn* connection() const;
+	ConnectionType* connection() const;
 };
 
-inline PGconn* Connection::connection() const {
-	return _pgConnection;
-}
-
-inline Connection::operator PGconn*() {
+inline ConnectionType* Connection::connection() const {
 	return _pgConnection;
 }
 

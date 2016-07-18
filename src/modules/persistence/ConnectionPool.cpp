@@ -22,9 +22,11 @@ void ConnectionPool::shutdown() {
 	_connectionAmount = 0;
 }
 
-void ConnectionPool::addConnection() {
-	_connections.push(new Connection());
+Connection* ConnectionPool::addConnection() {
+	Connection* c = new Connection();
+	_connections.push(c);
 	++_connectionAmount;
+	return c;
 }
 
 void ConnectionPool::giveBack(Connection* c) {
@@ -37,13 +39,18 @@ Connection* ConnectionPool::connection() {
 			Log::warn("Could not aquire pooled connection, max limit hit");
 			return nullptr;
 		}
-		addConnection();
+		Connection* newC = addConnection();
+		newC->connect();
 	}
 	Connection* c = _connections.front();
 	_connections.pop();
-	if (PQstatus(c->connection()) == CONNECTION_OK) {
+#ifdef PERSISTENCE_POSTGRES
+	if (PQstatus(c->connection()) == CONNECTION_OK)
+#endif
+	{
 		return c;
 	}
+
 	delete c;
 	--_connectionAmount;
 	return connection();

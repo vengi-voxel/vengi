@@ -9,9 +9,18 @@
 #include <cstddef>
 #include <unordered_map>
 #include <vector>
-#include <libpq-fe.h>
 #include "core/Common.h"
 #include "Timestamp.h"
+#include "config.h"
+
+#ifdef PERSISTENCE_POSTGRES
+#include <libpq-fe.h>
+using ResultType = PGresult;
+#endif
+#ifdef PERSISTENCE_SQLITE
+#include <sqlite3.h>
+using ResultType = sqlite3_stmt;
+#endif
 
 namespace persistence {
 
@@ -51,13 +60,14 @@ public:
 
 	class State {
 	public:
-		State(PGresult* res);
+		State(ResultType* res);
 		~State();
 
-		PGresult* res = nullptr;
+		ResultType* res = nullptr;
+
 		std::string lastErrorMsg;
-		ExecStatusType lastState = PGRES_FATAL_ERROR;
 		int affectedRows = -1;
+		// false on error, true on success
 		bool result = false;
 	};
 protected:

@@ -1,10 +1,8 @@
 #pragma once
 
-#include <libpq-fe.h>
+#include "Connection.h"
 
 namespace persistence {
-
-class Connection;
 
 class ScopedConnection {
 private:
@@ -18,7 +16,9 @@ public:
 		return _c;
 	}
 
-	operator PGconn*();
+	inline Connection* connection() {
+		return _c;
+	}
 
 	inline operator bool() const {
 		return _c != nullptr;

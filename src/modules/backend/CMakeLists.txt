@@ -39,6 +39,7 @@ set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 generate_db_models(${LIB} ${ROOT_DIR}/data/server/database/tables.tbl DatabaseModels.h)
 
 gtest_suite_files(tests
+	tests/DatabaseModelTest.cpp
 	tests/SpawnMgrTest.cpp
 	tests/PoiProviderTest.cpp
 )

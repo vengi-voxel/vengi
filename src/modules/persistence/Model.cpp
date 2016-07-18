@@ -36,13 +36,15 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 		return false;
 	}
 
-	state.lastState = PQresultStatus(state.res);
+#ifdef PERSISTENCE_POSTGRES
+	ExecStatusType lastState = PQresultStatus(state.res);
 
-	switch (state.lastState) {
+	switch (lastState) {
 	case PGRES_BAD_RESPONSE:
 	case PGRES_NONFATAL_ERROR:
 	case PGRES_FATAL_ERROR:
-		state.lastErrorMsg = PQerrorMessage(*connection);
+
+		state.lastErrorMsg = PQerrorMessage(connection->connection());
 		Log::error("Failed to execute sql: %s ", state.lastErrorMsg.c_str());
 		return false;
 	case PGRES_EMPTY_QUERY:
@@ -54,9 +56,10 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 		Log::trace("Affected rows %i", state.affectedRows);
 		break;
 	default:
-		Log::error("not catched state: %s", PQresStatus(state.lastState));
+		Log::error("not catched state: %s", PQresStatus(lastState));
 		return false;
 	}
+#endif
 
 	state.result = true;
 	return true;
@@ -69,9 +72,26 @@ bool Model::exec(const char* query) {
 		Log::error("Could not execute query '%s' - could not acquire connection", query);
 		return false;
 	}
-	State s(PQexec(scoped, query));
+	ConnectionType* conn = scoped.connection()->connection();
+#ifdef PERSISTENCE_POSTGRES
+	State s(PQexec(conn, query));
 	checkLastResult(s, scoped);
 	return s.result;
+#elif defined PERSISTENCE_SQLITE
+	char *zErrMsg = nullptr;
+	const int rc = sqlite3_exec(conn, query, nullptr, nullptr, &zErrMsg);
+	if (rc != SQLITE_OK) {
+		if (zErrMsg != nullptr) {
+			Log::error("SQL error: %s", zErrMsg);
+		}
+		sqlite3_free(zErrMsg);
+		return false;
+	}
+
+	return true;
+#else
+	return false;
+#endif
 }
 
 Model::Field Model::getField(const std::string& name) const {
@@ -93,7 +113,11 @@ Model::State Model::PreparedStatement::exec() {
 		Log::error("Could not prepare query '%s' - could not acquire connection", _statement.c_str());
 		return State(nullptr);
 	}
-	State state = State(PQprepare(scoped, _name.c_str(), _statement.c_str(), (int)_params.size(), nullptr));
+
+	ConnectionType* conn = scoped.connection()->connection();
+
+#ifdef PERSISTENCE_POSTGRES
+	State state(PQprepare(conn, _name.c_str(), _statement.c_str(), (int)_params.size(), nullptr));
 	if (!_model->checkLastResult(state, scoped)) {
 		return state;
 	}
@@ -102,7 +126,7 @@ Model::State Model::PreparedStatement::exec() {
 	for (int i = 0; i < size; ++i) {
 		paramValues[i] = _params[i].c_str();
 	}
-	State prepState(PQexecPrepared(scoped, _name.c_str(), size, paramValues, nullptr, nullptr, 0));
+	State prepState(PQexecPrepared(conn, _name.c_str(), size, paramValues, nullptr, nullptr, 0));
 	if (!_model->checkLastResult(prepState, scoped)) {
 		return prepState;
 	}
@@ -136,15 +160,57 @@ Model::State Model::PreparedStatement::exec() {
 		}
 	}
 	return prepState;
+#elif defined PERSISTENCE_SQLITE
+	ResultType *stmt;
+	const char *pzTest;
+	const int rcPrep = sqlite3_prepare_v2(conn, _statement.c_str(), _statement.size(), &stmt, &pzTest);
+	if (rcPrep != SQLITE_OK) {
+		Log::error("failed to prepare the insert statement: %s", sqlite3_errmsg(conn));
+		return State(nullptr);
+	}
+	sqlite3_reset(stmt);
+
+	const int size = _params.size();
+	for (int i = 0; i < size; ++i) {
+		const int retVal = sqlite3_bind_text(stmt, i, _params[i].c_str(), _params[i].size(), SQLITE_TRANSIENT);
+		if (retVal != SQLITE_OK) {
+			Log::error("SQL error: %s", sqlite3_errmsg(conn));
+			return State(nullptr);
+		}
+	}
+
+	char *zErrMsg = nullptr;
+	const int rcExec = sqlite3_exec(conn, _statement.c_str(), nullptr, nullptr, &zErrMsg);
+	if (rcExec != SQLITE_OK) {
+		if (zErrMsg != nullptr) {
+			Log::error("SQL error: %s", zErrMsg);
+		}
+		sqlite3_free(zErrMsg);
+		return State(nullptr);
+	}
+
+	return State(stmt);
+#else
+	return State(nullptr);
+#endif
 }
 
-Model::State::State(PGresult* _res) :
+Model::State::State(ResultType* _res) :
 		res(_res) {
 }
 
 Model::State::~State() {
 	if (res != nullptr) {
+#ifdef PERSISTENCE_POSTGRES
 		PQclear(res);
+#elif defined PERSISTENCE_SQLITE
+		const int retVal = sqlite3_finalize(res);
+		if (retVal != SQLITE_OK) {
+			//const char *errMsg = sqlite3_errmsg(_pgConnection);
+			Log::error("Could not finialize the statement");
+		}
+#endif
+		res = nullptr;
 	}
 }
 
