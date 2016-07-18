@@ -3,6 +3,7 @@ set(SRCS
 	ScopedConnection.cpp ScopedConnection.h
 	ConnectionPool.cpp ConnectionPool.h
 	Model.cpp Model.h
+	Timestamp.h
 )
 set(LIB persistence)
 add_library(${LIB} ${SRCS})

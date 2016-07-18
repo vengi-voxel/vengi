@@ -30,13 +30,13 @@ void EntityStorage::registerUser(const UserPtr& user) {
 }
 
 EntityId EntityStorage::getUserId(const std::string& user, const std::string& passwd) const {
-	persistence::UserStore userStore(&user, &passwd);
+	persistence::UserStore userStore(&user, &passwd, nullptr);
 	EntityId checkId = userStore.userid();
 
 	if (checkId == 0) {
 		const core::VarPtr& autoReg = core::Var::get(cfg::ServerAutoRegister, "true");
 		if (autoReg->boolVal()) {
-			userStore.insert(user, passwd);
+			userStore.insert(user, passwd, ::persistence::Timestamp::now());
 			checkId = userStore.userid();
 		}
 	}

@@ -11,6 +11,7 @@
 #include <vector>
 #include <libpq-fe.h>
 #include "core/Common.h"
+#include "Timestamp.h"
 
 namespace persistence {
 
@@ -32,9 +33,10 @@ public:
 		STRING,
 		LONG,
 		INT,
-		PASSWORD
+		PASSWORD,
+		TIMESTAMP
 	};
-	static constexpr int MAX_FIELDTYPES = 4;
+	static constexpr int MAX_FIELDTYPES = 5;
 
 	struct Field {
 		std::string name;
@@ -91,9 +93,17 @@ public:
 			return *this;
 		}
 
-		PreparedStatement& add(const std::string& type) {
+		inline PreparedStatement& add(const std::string& type) {
 			_params.push_back(type);
 			return *this;
+		}
+
+		inline PreparedStatement& add(const Timestamp& type) {
+			if (type.isNow()) {
+				_params.push_back("NOW()");
+				return *this;
+			}
+			return add(type.time());
 		}
 
 		State exec();

@@ -9,7 +9,8 @@ static const char *FieldTypeNames[] = {
 	CORE_STRINGIFY(STRING),
 	CORE_STRINGIFY(LONG),
 	CORE_STRINGIFY(INT),
-	CORE_STRINGIFY(PASSWORD)
+	CORE_STRINGIFY(PASSWORD),
+	CORE_STRINGIFY(TIMESTAMP)
 };
 
 static const char *ConstraintTypeNames[] = {
@@ -26,21 +27,11 @@ DatabaseTool::DatabaseTool(io::FilesystemPtr filesystem, core::EventBusPtr event
 	static_assert(SDL_arraysize(ConstraintTypeNames) == persistence::Model::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
 }
 
-std::string DatabaseTool::getCPPValue(const persistence::Model::Field& field) const {
-	switch (field.type) {
-	case persistence::Model::PASSWORD:
-		return "md5(/*TODO:ADD SALT + */'\"" + field.name + "\")'";
-	case persistence::Model::STRING:
-		return "'\"" + field.name + "\"'";
-	default:
-		return "\" + std::to_string(" + field.name + ") + \"";
-	}
-}
-
 bool DatabaseTool::needsInitCPP(persistence::Model::FieldType type) const {
 	switch (type) {
 	case persistence::Model::PASSWORD:
 	case persistence::Model::STRING:
+	case persistence::Model::TIMESTAMP:
 		return false;
 	default:
 		return true;
@@ -52,6 +43,7 @@ std::string DatabaseTool::getCPPInit(persistence::Model::FieldType type) const {
 	case persistence::Model::PASSWORD:
 	case persistence::Model::STRING:
 		return "\"\"";
+	case persistence::Model::TIMESTAMP:
 	case persistence::Model::LONG:
 		return "0l";
 	case persistence::Model::INT:
@@ -70,6 +62,11 @@ std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool fu
 			return "const std::string&";
 		}
 		return "std::string";
+	case persistence::Model::TIMESTAMP:
+		if (pointer) {
+			return "::persistence::Timestamp*";
+		}
+		return "::persistence::Timestamp";
 	case persistence::Model::LONG:
 		if (pointer) {
 			return "int64_t*";
@@ -101,6 +98,8 @@ std::string DatabaseTool::getDbType(const persistence::Model::Field& field) cons
 		type += ')';
 		return type;
 	}
+	case persistence::Model::TIMESTAMP:
+		return "TIMESTAMP";
 	case persistence::Model::LONG:
 		return "BIGINT";
 	case persistence::Model::INT:

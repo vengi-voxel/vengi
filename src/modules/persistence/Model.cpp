@@ -129,6 +129,9 @@ Model::State Model::PreparedStatement::exec() {
 			case Model::LONG:
 				_model->setValue(f, core::string::toLong(value));
 				break;
+			case Model::TIMESTAMP:
+				// TODO: implement me
+				break;
 			}
 		}
 	}

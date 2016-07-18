@@ -51,7 +51,6 @@ protected:
 	std::string getDbFlags(const Table& table, const persistence::Model::Field& field) const;
 	std::string getCPPType(persistence::Model::FieldType type, bool function = false, bool pointer = false) const;
 	std::string getCPPInit(persistence::Model::FieldType type) const;
-	std::string getCPPValue(const persistence::Model::Field& field) const;
 
 	void sep(std::stringstream& ss, int count) const;
 

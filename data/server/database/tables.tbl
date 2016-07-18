@@ -13,6 +13,11 @@ table user_table {
 		length 128
 		notnull
 	}
+	field registrationdate {
+		type timestamp
+		default "NOW()"
+		notnull
+	}
 	constraints {
 		email unique
 		userid primarykey
