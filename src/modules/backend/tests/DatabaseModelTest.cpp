@@ -24,11 +24,11 @@ public:
 };
 
 TEST_F(DatabaseModelTest, testCreate) {
-	persistence::UserStore u;
-	ASSERT_TRUE(u.createTable()) << "Could not create table";
+	ASSERT_TRUE(persistence::UserStore::createTable()) << "Could not create table";
 }
 
 TEST_F(DatabaseModelTest, testWrite) {
+	ASSERT_TRUE(persistence::UserStore::createTable()) << "Could not create table";
 	const std::string email = "a@b.c.d";
 	const std::string password = "secret";
 	persistence::UserStore::truncate();

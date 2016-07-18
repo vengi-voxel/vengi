@@ -378,8 +378,8 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	}
 	createTable << "\t\t\t\");";
 
-	src << "\tbool createTable() {\n";
-	src << "\t\treturn exec(\"" << createTable.str() << "\");\n";
+	src << "\tstatic bool createTable() {\n";
+	src << "\t\treturn " << classname << "().exec(\"" << createTable.str() << "\");\n";
 	src << "\t}\n";
 
 	src << "}; // class " << classname << "\n\n";
