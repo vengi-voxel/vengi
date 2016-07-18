@@ -63,6 +63,12 @@ public:
 	void addBlocker(AppState blockedState);
 	void remBlocker(AppState blockedState);
 
+	/**
+	 * @note Only valid after
+	 */
+	bool hasArg(const std::string& arg) const;
+	std::string getArgVal(const std::string& arg) const;
+
 	// handle the app state changes here
 	virtual void onFrame();
 	void readyForInit();

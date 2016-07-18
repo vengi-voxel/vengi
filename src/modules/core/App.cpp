@@ -289,6 +289,27 @@ AppState App::onRunning() {
 	return AppState::Cleanup;
 }
 
+bool App::hasArg(const std::string& arg) const {
+	for (int i = 1; i < _argc; ++i) {
+		if (arg == _argv[i]) {
+			return true;
+		}
+	}
+	return false;
+}
+
+std::string App::getArgVal(const std::string& arg) const {
+	for (int i = 1; i < _argc; ++i) {
+		if (arg != _argv[i]) {
+			continue;
+		}
+		if (i + 1 < _argc) {
+			return _argv[i + 1];
+		}
+	}
+	return "";
+}
+
 AppState App::onCleanup() {
 	if (_suspendRequested) {
 		addBlocker(AppState::Init);
