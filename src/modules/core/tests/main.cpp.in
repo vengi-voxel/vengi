@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+char **_argv;
+int _argc;
+
 class LocalEnv: public ::testing::Environment {
 public:
     virtual ~LocalEnv() {
@@ -13,6 +16,8 @@ public:
 extern "C" int main (int argc, char *argv[]) {
     ::testing::AddGlobalTestEnvironment(new LocalEnv);
     ::testing::InitGoogleTest(&argc, argv);
+    _argv = argv;
+    _argc = argc;
 #if __cpp_exceptions
     try {
 #endif

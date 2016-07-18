@@ -14,21 +14,10 @@ class AbstractTest: public testing::Test {
 private:
 	class TestApp: public core::App {
 	public:
-		TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
-				core::App(filesystem, eventBus, 10000) {
-			init("engine", "test");
-			while (_curState < AppState::Running) {
-				core_trace_scoped(AppMainLoop);
-				onFrame();
-			}
-		}
+		TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus);
+		~TestApp();
 
-		~TestApp() {
-			while (AppState::InvalidAppState != _curState) {
-				core_trace_scoped(AppMainLoop);
-				onFrame();
-			}
-		}
+		virtual AppState onInit() override;
 	};
 
 	TestApp *_testApp;
