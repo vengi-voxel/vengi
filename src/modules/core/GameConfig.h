@@ -54,6 +54,8 @@ constexpr const char *DatabaseName = "db_name";
 constexpr const char *DatabaseHost = "db_host";
 constexpr const char *DatabasePassword = "db_pw";
 constexpr const char *DatabaseUser = "db_user";
+constexpr const char *DatabaseMinConnections = "db_minconnections";
+constexpr const char *DatabaseMaxConnections = "db_maxconnections";
 
 constexpr const char *AppHomePath = "app_homepath";
 constexpr const char *AppBasePath = "app_basepath";

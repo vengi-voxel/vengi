@@ -3,6 +3,7 @@
 #include <queue>
 #include "Connection.h"
 #include "ScopedConnection.h"
+#include "core/Var.h"
 
 namespace persistence {
 
@@ -12,10 +13,13 @@ namespace persistence {
 class ConnectionPool {
 	friend class Connection;
 protected:
-	// TODO: move into cvar
-	int _min = 2;
-	int _max = 10;
+	int _min = -1;
+	int _max = -1;
 	int _connectionAmount = 0;
+	core::VarPtr _dbName;
+	core::VarPtr _dbHost;
+	core::VarPtr _dbUser;
+	core::VarPtr _dbPw;
 
 	std::queue<Connection*> _connections;
 
@@ -23,6 +27,7 @@ protected:
 public:
 	~ConnectionPool();
 
+	int init(const char *password = "engine", const char *user = "engine", const char *database = "engine", const char *host = "localhost");
 	void shutdown();
 
 	static ConnectionPool& get() {

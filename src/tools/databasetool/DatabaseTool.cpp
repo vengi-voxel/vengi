@@ -104,8 +104,14 @@ std::string DatabaseTool::getDbType(const persistence::Model::Field& field) cons
 	case persistence::Model::TIMESTAMP:
 		return "TIMESTAMP";
 	case persistence::Model::LONG:
+		if (_database == POSTGRES && (field.contraintMask & persistence::Model::AUTOINCREMENT) != 0) {
+			return "";
+		}
 		return "BIGINT";
 	case persistence::Model::INT:
+		if (_database == POSTGRES && (field.contraintMask & persistence::Model::AUTOINCREMENT) != 0) {
+			return "";
+		}
 		return "INT";
 	}
 }
@@ -114,7 +120,11 @@ std::string DatabaseTool::getDbFlags(const Table& table, const persistence::Mode
 	std::stringstream ss;
 	if (field.contraintMask & persistence::Model::AUTOINCREMENT) {
 		if (_database == POSTGRES) {
-			ss << " SERIAL";
+			if (field.type == ::persistence::Model::LONG) {
+				ss << " BIGSERIAL";
+			} else {
+				ss << " SERIAL";
+			}
 		} else if (_database == MYSQL) {
 			ss << " AUTO_INCREMEMT";
 		}
@@ -219,8 +229,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		loadNonPk << "\t\t\t\t__andNeeded_ = false;\n";
 		loadNonPk << "\t\t\t}\n";
 
-		loadNonPk << "\t\t\t__load_ << ";
-		loadNonPk << f.name << " << \" = ";
+		loadNonPk << "\t\t\t__load_ << \"" << f.name << " = ";
 		if (_database == POSTGRES) {
 			loadNonPk << "$\" << __count_";
 		} else if (_database == MYSQL) {
@@ -235,7 +244,17 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		loadNonPk << "\t\t}\n";
 
 		loadNonPkAdd << "\t\tif (" << f.name << " != nullptr) {\n";
-		loadNonPkAdd << "\t\t\t__p_.add(*" << f.name << ");\n";
+		if (f.type == persistence::Model::TIMESTAMP) {
+			loadNonPkAdd << "\t\t\tif (" << f.name << "->isNow()) {\n";
+			loadNonPkAdd << "\t\t\t\t__p_.add(\"NOW()\");\n";
+			loadNonPkAdd << "\t\t\t} else {\n";
+			loadNonPkAdd << "\t\t\t\t__p_.add(" << f.name << "->time()" << ");\n";
+			loadNonPkAdd << "\t\t\t}\n";
+		} else if (f.type == persistence::Model::PASSWORD) {
+			loadNonPkAdd << "\t\t\t__p_.addPassword(" << "*" << f.name << ");\n";
+		} else {
+			loadNonPkAdd << "\t\t\t__p_.add(" << "*" << f.name << ");\n";
+		}
 		loadNonPkAdd << "\t\t}\n";
 	}
 	if (nonPrimaryKeyMembers > 0) {
@@ -285,7 +304,11 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 			insert << "\\\"" << f.name << "\\\"";
 			sep(insertvalues, insertValues);
 			// TODO: length check if type is string
-			insertadd << ".add(" << f.name << ")";
+			if (f.type == persistence::Model::PASSWORD) {
+				insertadd << ".addPassword(" << f.name << ")";
+			} else {
+				insertadd << ".add(" << f.name << ")";
+			}
 		}
 	}
 	insert << ") VALUES (" << insertvalues.str() << ")\"";

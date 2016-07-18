@@ -9,7 +9,7 @@
 
 #ifdef PERSISTENCE_POSTGRES
 #include <libpq-fe.h>
-using ConnectionType = PGconn;
+using ConnectionType = ::PGconn;
 #elif defined PERSISTENCE_SQLITE
 #include <sqlite3.h>
 using ConnectionType = ::sqlite3;
@@ -19,7 +19,7 @@ namespace persistence {
 
 class Connection {
 private:
-	ConnectionType* _pgConnection;
+	ConnectionType* _connection;
 	std::string _host;
 	std::string _dbname;
 	std::string _user;
@@ -48,7 +48,7 @@ public:
 };
 
 inline ConnectionType* Connection::connection() const {
-	return _pgConnection;
+	return _connection;
 }
 
 }

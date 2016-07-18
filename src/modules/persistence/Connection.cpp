@@ -10,7 +10,7 @@
 namespace persistence {
 
 Connection::Connection() :
-		_pgConnection(nullptr), _port(0) {
+		_connection(nullptr), _port(0) {
 }
 
 Connection::~Connection() {
@@ -36,7 +36,7 @@ void Connection::changePort(uint16_t port) {
 
 bool Connection::connect() {
 #ifdef PERSISTENCE_POSTGRES
-	std::string conninfo = "connect_timeout='2'";
+	std::string conninfo = "";
 
 	const char *host = nullptr;
 	if (!_host.empty()) {
@@ -63,33 +63,33 @@ bool Connection::connect() {
 		port = std::to_string(_port);
 	}
 
-	_pgConnection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), nullptr, dbname, user, password);
-	if (PQstatus(_pgConnection) != CONNECTION_OK) {
-		Log::error("Connection to database failed: %s", PQerrorMessage(_pgConnection));
+	_connection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), nullptr, dbname, user, password);
+	if (PQstatus(_connection) != CONNECTION_OK) {
+		Log::error("Connection to database failed: %s", PQerrorMessage(_connection));
 		disconnect();
 		return false;
 	}
 #elif defined PERSISTENCE_SQLITE
-	const int rc = sqlite3_open(_dbname.c_str(), &_pgConnection);
+	const int rc = sqlite3_open(_dbname.c_str(), &_connection);
 	if (rc != SQLITE_OK) {
-		Log::error("Can't open database '%s': %s", _dbname.c_str(), sqlite3_errmsg(_pgConnection));
-		sqlite3_close(_pgConnection);
-		_pgConnection = nullptr;
+		Log::error("Can't open database '%s': %s", _dbname.c_str(), sqlite3_errmsg(_connection));
+		sqlite3_close(_connection);
+		_connection = nullptr;
 		return false;
 	}
 #elif defined PERSISTENCE_MYSQL
 	return false;
 #endif
-	return false;
+	return true;
 }
 
 void Connection::disconnect() {
 #ifdef PERSISTENCE_POSTGRES
-	PQfinish(_pgConnection);
+	PQfinish(_connection);
 #elif defined PERSISTENCE_SQLITE
-	sqlite3_close(_pgConnection);
+	sqlite3_close(_connection);
 #endif
-	_pgConnection = nullptr;
+	_connection = nullptr;
 }
 
 void Connection::close() {

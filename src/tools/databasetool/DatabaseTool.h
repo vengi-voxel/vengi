@@ -22,6 +22,7 @@ protected:
 	};
 
 	typedef std::map<std::string, Constraint> Constraints;
+	// TODO: sort for insertion order - keep it stable
 	typedef std::map<std::string, persistence::Model::Field> Fields;
 
 	struct Table {

@@ -108,6 +108,16 @@ public:
 			return *this;
 		}
 
+		inline PreparedStatement& addPassword(const std::string& password) {
+			_params.push_back("md5("/*TODO: salt */ + password + ")");
+			return *this;
+		}
+
+		inline PreparedStatement& add(const char* type) {
+			_params.push_back(type);
+			return *this;
+		}
+
 		inline PreparedStatement& add(const Timestamp& type) {
 			if (type.isNow()) {
 				_params.push_back("NOW()");

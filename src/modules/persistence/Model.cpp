@@ -43,9 +43,10 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 	case PGRES_BAD_RESPONSE:
 	case PGRES_NONFATAL_ERROR:
 	case PGRES_FATAL_ERROR:
-
 		state.lastErrorMsg = PQerrorMessage(connection->connection());
 		Log::error("Failed to execute sql: %s ", state.lastErrorMsg.c_str());
+		PQclear(state.res);
+		state.res = nullptr;
 		return false;
 	case PGRES_EMPTY_QUERY:
 	case PGRES_COMMAND_OK:
@@ -202,7 +203,7 @@ Model::State::State(ResultType* _res) :
 Model::State::~State() {
 	if (res != nullptr) {
 #ifdef PERSISTENCE_POSTGRES
-		PQclear(res);
+		//PQclear(res);
 #elif defined PERSISTENCE_SQLITE
 		const int retVal = sqlite3_finalize(res);
 		if (retVal != SQLITE_OK) {
