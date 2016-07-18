@@ -105,6 +105,7 @@ Model::Field Model::getField(const std::string& name) const {
 }
 
 Model::State Model::fillKeys(Model::State& state) {
+	// TODO: 0 even in case a key was generated
 	if (state.affectedRows != 1) {
 		Log::debug("More than one row affected, can't fill generated keys");
 		return state;
@@ -121,7 +122,7 @@ Model::State Model::fillKeys(Model::State& state) {
 		const char* name = PQfname(state.res, i);
 		const char* value = PQgetvalue(state.res, 0, i);
 #else
-		const char* name = "";
+		const char* name = "NOT_IMPLEMENTED";
 		const char* value = "";
 #endif
 		const Field& f = getField(name);
