@@ -104,17 +104,21 @@ Model::Field Model::getField(const std::string& name) const {
 
 Model::State Model::fillModelValues(Model::State& state) {
 	// TODO: 0 even in case a key was generated
-	if (state.affectedRows != 1) {
-		Log::debug("More than one row affected, can't fill generated keys");
+	if (state.affectedRows > 1) {
+		Log::debug("More than one row affected, can't fill model values");
+		return state;
+	} else if (state.affectedRows > 0) {
+		Log::trace("No rows affected, can't fill model values");
 		return state;
 	}
+
 #ifdef PERSISTENCE_POSTGRES
 	const int nFields = PQnfields(state.res);
 #else
 	//sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
 	const int nFields = 0;
 #endif
-	Log::info("Generated keys for %i fields", nFields);
+	Log::info("Query has values for %i fields", nFields);
 	for (int i = 0; i < nFields; ++i) {
 #ifdef PERSISTENCE_POSTGRES
 		const char* name = PQfname(state.res, i);
@@ -133,17 +137,34 @@ Model::State Model::fillModelValues(Model::State& state) {
 		switch (f.type) {
 		case Model::STRING:
 		case Model::PASSWORD:
+			if (value == nullptr) {
+				value = "";
+			}
+
 			setValue(f, std::string(value));
 			break;
 		case Model::INT:
-			setValue(f, core::string::toInt(value));
+			if (value == nullptr) {
+				setValue(f, 0);
+			} else {
+				setValue(f, core::string::toInt(value));
+			}
 			break;
 		case Model::LONG:
-			setValue(f, core::string::toLong(value));
+			if (value == nullptr) {
+				setValue(f, 0l);
+			} else {
+				setValue(f, core::string::toLong(value));
+			}
 			break;
-		case Model::TIMESTAMP:
-			// TODO: implement me
+		case Model::TIMESTAMP: {
+			if (value == nullptr) {
+				setValue(f, Timestamp(0L));
+			} else {
+				setValue(f, Timestamp(core::string::toLong(value)));
+			}
 			break;
+		}
 		}
 	}
 	return state;
@@ -154,6 +175,7 @@ Model::PreparedStatement::PreparedStatement(Model* model, const std::string& nam
 }
 
 Model::State Model::PreparedStatement::exec() {
+	Log::debug("prepared statement: '%s'", _statement.c_str());
 	ScopedConnection scoped(ConnectionPool::get().connection());
 	if (scoped == false) {
 		Log::error("Could not prepare query '%s' - could not acquire connection", _statement.c_str());
