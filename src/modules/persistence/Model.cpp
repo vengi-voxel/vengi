@@ -77,7 +77,7 @@ bool Model::exec(const char* query) {
 #ifdef PERSISTENCE_POSTGRES
 	State s(PQexec(conn, query));
 	checkLastResult(s, scoped);
-	return s.result;
+	return fillKeys(s).result;
 #elif defined PERSISTENCE_SQLITE
 	char *zErrMsg = nullptr;
 	const int rc = sqlite3_exec(conn, query, nullptr, nullptr, &zErrMsg);

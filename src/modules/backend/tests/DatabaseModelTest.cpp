@@ -35,7 +35,7 @@ TEST_F(DatabaseModelTest, testWrite) {
 	const ::persistence::Timestamp ts = ::persistence::Timestamp::now();
 	persistence::UserStore u(&email, &password, &ts);
 	ASSERT_EQ(0, u.userid());
-	u.insert(email, password, ts);
+	ASSERT_TRUE(u.insert(email, password, ts));
 	ASSERT_NE(0, u.userid());
 }
 
