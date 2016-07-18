@@ -1,5 +1,8 @@
 #pragma once
 
 #cmakedefine PERSISTENCE_SQLITE
-#cmakedefine PERSISTENCE_MYSQL
 #cmakedefine PERSISTENCE_POSTGRES
+
+#if !defined PERSISTENCE_POSTGRES and !defined PERSISTENCE_SQLITE
+#error "No persistence backend defined"
+#endif

@@ -31,6 +31,7 @@ TEST_F(DatabaseModelTest, testCreate) {
 TEST_F(DatabaseModelTest, testWrite) {
 	const std::string email = "a@b.c.d";
 	const std::string password = "secret";
+	persistence::UserStore::truncate();
 	const ::persistence::Timestamp ts = ::persistence::Timestamp::now();
 	persistence::UserStore u(&email, &password, &ts);
 	ASSERT_EQ(0, u.userid());

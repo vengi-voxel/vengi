@@ -331,6 +331,10 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	src << "\t\treturn __p_.exec().result;\n";
 	src << "\t}\n\n";
 
+	src << "\tstatic bool truncate() {\n";
+	src << "\t\treturn " << classname << "().exec(\"TRUNCATE TABLE " << table.name << ";\");\n";
+	src << "\t}\n\n";
+
 	createTable << "CREATE TABLE IF NOT EXISTS " << table.name << " (\"\n";
 	bool firstField = true;
 	for (auto entry : table.fields) {

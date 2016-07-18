@@ -104,6 +104,52 @@ Model::Field Model::getField(const std::string& name) const {
 	return Field();
 }
 
+Model::State Model::fillKeys(Model::State& state) {
+	if (state.affectedRows != 1) {
+		Log::debug("More than one row affected, can't fill generated keys");
+		return state;
+	}
+#ifdef PERSISTENCE_POSTGRES
+	const int nFields = PQnfields(state.res);
+#else
+	//sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
+	const int nFields = 0;
+#endif
+	Log::info("Generated keys for %i fields", nFields);
+	for (int i = 0; i < nFields; ++i) {
+#ifdef PERSISTENCE_POSTGRES
+		const char* name = PQfname(state.res, i);
+		const char* value = PQgetvalue(state.res, 0, i);
+#else
+		const char* name = "";
+		const char* value = "";
+#endif
+		const Field& f = getField(name);
+		if (f.name != name) {
+			Log::error("Unkown field name for '%s'", name);
+			state.result = false;
+			return state;
+		}
+		Log::debug("Try to set '%s' to '%s'", name, value);
+		switch (f.type) {
+		case Model::STRING:
+		case Model::PASSWORD:
+			setValue(f, std::string(value));
+			break;
+		case Model::INT:
+			setValue(f, core::string::toInt(value));
+			break;
+		case Model::LONG:
+			setValue(f, core::string::toLong(value));
+			break;
+		case Model::TIMESTAMP:
+			// TODO: implement me
+			break;
+		}
+	}
+	return state;
+}
+
 Model::PreparedStatement::PreparedStatement(Model* model, const std::string& name, const std::string& statement) :
 		_model(model), _name(name), _statement(statement) {
 }
@@ -132,36 +178,7 @@ Model::State Model::PreparedStatement::exec() {
 	if (!_model->checkLastResult(prepState, scoped)) {
 		return prepState;
 	}
-	if (state.affectedRows == 1) {
-		const int nFields = PQnfields(state.res);
-		for (int i = 0; i < nFields; ++i) {
-			const char* name = PQfname(state.res, i);
-			const char* value = PQgetvalue(state.res, 0, i);
-			const Field& f = _model->getField(name);
-			if (f.name != name) {
-				Log::error("Unkown field name for '%s'", name);
-				prepState.result = false;
-				return prepState;
-			}
-			Log::debug("Try to set '%s' to '%s'", name, value);
-			switch (f.type) {
-			case Model::STRING:
-			case Model::PASSWORD:
-				_model->setValue(f, std::string(value));
-				break;
-			case Model::INT:
-				_model->setValue(f, core::string::toInt(value));
-				break;
-			case Model::LONG:
-				_model->setValue(f, core::string::toLong(value));
-				break;
-			case Model::TIMESTAMP:
-				// TODO: implement me
-				break;
-			}
-		}
-	}
-	return prepState;
+	return _model->fillKeys(prepState);
 #elif defined PERSISTENCE_SQLITE
 	ResultType *stmt;
 	const char *pzTest;
@@ -191,7 +208,7 @@ Model::State Model::PreparedStatement::exec() {
 		return State(nullptr);
 	}
 
-	return State(stmt);
+	return _model->fillKeys(State(stmt));
 #else
 	return State(nullptr);
 #endif
