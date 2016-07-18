@@ -50,11 +50,9 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 		return false;
 	case PGRES_EMPTY_QUERY:
 	case PGRES_COMMAND_OK:
-		state.affectedRows = 0;
-		break;
 	case PGRES_TUPLES_OK:
 		state.affectedRows = PQntuples(state.res);
-		Log::trace("Affected rows %i", state.affectedRows);
+		Log::debug("Affected rows %i", state.affectedRows);
 		break;
 	default:
 		Log::error("not catched state: %s", PQresStatus(lastState));
