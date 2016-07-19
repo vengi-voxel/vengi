@@ -319,7 +319,7 @@ core::AppState UIApp::onConstruct() {
 }
 
 void UIApp::OnWidgetFocusChanged(tb::TBWidget *widget, bool focused) {
-	if (widget->IsOfType<tb::TBEditField>()) {
+	if (focused && widget->IsOfType<tb::TBEditField>()) {
 		SDL_StartTextInput();
 	} else {
 		SDL_StopTextInput();
