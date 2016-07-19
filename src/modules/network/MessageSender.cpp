@@ -51,6 +51,10 @@ void MessageSender::broadcastServerMessage(FlatBufferBuilder& fbb, messages::ser
 }
 
 void MessageSender::sendClientMessage(ENetPeer* peer, FlatBufferBuilder& fbb, messages::client::Type type, Offset<void> data, uint32_t flags) {
+	if (peer == nullptr) {
+		Log::debug("don't send client message, no peer available");
+		return;
+	}
 	_network->sendMessage(peer, createClientPacket(fbb, type, data, flags));
 }
 
