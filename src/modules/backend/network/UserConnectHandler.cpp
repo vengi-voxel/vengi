@@ -46,6 +46,7 @@ void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 		return;
 	}
 
+	Log::info("User '%s' logged into the gameserver", email.c_str());
 	user->sendSeed(_world->seed());
 	user->sendUserSpawn();
 }

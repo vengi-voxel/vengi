@@ -176,6 +176,7 @@ core::AppState Client::onCleanup() {
 	_worldRenderer.shutdown();
 	core::AppState state = UIApp::onCleanup();
 	_world->shutdown();
+	_player = frontend::ClientEntityPtr();
 	_network->shutdown();
 	return state;
 }
