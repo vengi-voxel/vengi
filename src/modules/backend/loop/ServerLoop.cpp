@@ -33,6 +33,7 @@ bool ServerLoop::init() {
 	}
 	_registry->init(_spawnMgr);
 	if (!_spawnMgr->init()) {
+		Log::error("Failed to init the spawn manager");
 		return false;
 	}
 	const core::VarPtr& seed = core::Var::get(cfg::ServerSeed, "1");
@@ -48,9 +49,9 @@ bool ServerLoop::init() {
 }
 
 void ServerLoop::shutdown() {
+	_world->shutdown();
 	persistence::ConnectionPool::get().shutdown();
 	_spawnMgr->shutdown();
-	_world->shutdown();
 }
 
 void ServerLoop::readInput() {
