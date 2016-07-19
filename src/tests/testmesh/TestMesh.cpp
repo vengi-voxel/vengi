@@ -19,7 +19,7 @@ core::AppState TestMesh::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	const std::string mesh = "mesh/char1_v2_walk.FBX";
+	const std::string mesh = "mesh/chr_skelett2_bake.FBX";
 	if (!_mesh.loadMesh(mesh)) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
@@ -37,7 +37,8 @@ void TestMesh::doRender() {
 	_meshShader.setModel(glm::mat4());
 	_meshShader.setTexture(0);
 
-	if (!_mesh.initMesh(_meshShader, (_now - _initTime) / 1000.0f)) {
+	// TODO: support more than just the first animation
+	if (!_mesh.initMesh(_meshShader, (_now - _initTime) / 1000.0f), 0) {
 		Log::error("Failed to init the mesh");
 		return;
 	}

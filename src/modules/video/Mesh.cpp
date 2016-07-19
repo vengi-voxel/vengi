@@ -127,7 +127,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 	return true;
 }
 
-bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
+bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex) {
 	if (_state != io::IOSTATE_LOADED) {
 		if (!_readyToInit) {
 			return false;
@@ -202,7 +202,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 	if (size > 0) {
 		std::vector<glm::mat4> transforms;
 		transforms.resize(size);
-		boneTransform(timeInSeconds, transforms);
+		boneTransform(timeInSeconds, transforms, animationIndex);
 		shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], size);
 	}
 
@@ -402,7 +402,7 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 	}
 }
 
-void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms) {
+void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms, uint8_t animationIndex) {
 	const glm::mat4 identity;
 
 	if (_numBones == 0 || _scene->mNumAnimations == 0) {
@@ -411,8 +411,7 @@ void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms
 	}
 	core_assert(_numBones <= transforms.size());
 
-	// TODO: support more than just the first animation
-	const aiAnimation* animation = _scene->mAnimations[0];
+	const aiAnimation* animation = _scene->mAnimations[animationIndex];
 	const float ticksPerSecond = (float) (animation->mTicksPerSecond != 0 ? animation->mTicksPerSecond : 25.0f);
 	const float timeInTicks = timeInSeconds * ticksPerSecond;
 	const float animationTime = fmod(timeInTicks, (float) animation->mDuration);

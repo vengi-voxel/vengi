@@ -76,14 +76,14 @@ private:
 	const aiScene* _scene = nullptr;
 	Assimp::Importer _importer;
 
-	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms);
+	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms, uint8_t animationIndex = 0u);
 public:
 	Mesh();
 	~Mesh();
 
 	void shutdown();
 	bool loadMesh(const std::string& filename);
-	bool initMesh(Shader& shader, float timeInSeconds = 0.0f);
+	bool initMesh(Shader& shader, float timeInSeconds = 0.0f, uint8_t animationIndex = 0u);
 	int render();
 };
 
