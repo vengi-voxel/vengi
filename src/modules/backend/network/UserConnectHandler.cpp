@@ -7,6 +7,7 @@
 #include "messages/ServerMessages_generated.h"
 #include "backend/entity/User.h"
 #include "core/Var.h"
+#include "core/EMailValidator.h"
 
 namespace backend {
 
@@ -25,9 +26,19 @@ void UserConnectHandler::sendAuthFailed(ENetPeer* peer) {
 void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 	const auto* message = getMsg<UserConnect>(raw);
 
-	const char *email = message->email()->c_str();
-	const char *password = message->password()->c_str();
-	Log::info("User \"%s\" tries to log into the gameserver", email);
+	const std::string email(message->email()->c_str());
+	if (!core::isValidEmail(email)) {
+		sendAuthFailed(peer);
+		Log::warn("Invalid email given: '%s', %c", email.c_str(), email[0]);
+		return;
+	}
+	const std::string password(message->password()->c_str());
+	if (password.empty()) {
+		Log::warn("User tries to log into the gameserver without providing a password");
+		sendAuthFailed(peer);
+		return;
+	}
+	Log::info("User %s tries to log into the gameserver", email.c_str());
 
 	UserPtr user = _entityStorage->login(peer, email, password);
 	if (!user) {
