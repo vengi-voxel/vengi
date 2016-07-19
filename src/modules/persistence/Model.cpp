@@ -217,7 +217,7 @@ Model::State Model::PreparedStatement::exec() {
 	const char *pzTest;
 	const int rcPrep = sqlite3_prepare_v2(conn, _statement.c_str(), _statement.size(), &stmt, &pzTest);
 	if (rcPrep != SQLITE_OK) {
-		Log::error("failed to prepare the insert statement: %s", sqlite3_errmsg(conn));
+		Log::error("failed to prepare the statement: %s", sqlite3_errmsg(conn));
 		return State(nullptr);
 	}
 	sqlite3_reset(stmt);
@@ -226,7 +226,7 @@ Model::State Model::PreparedStatement::exec() {
 	for (int i = 0; i < size; ++i) {
 		const int retVal = sqlite3_bind_text(stmt, i, _params[i].c_str(), _params[i].size(), SQLITE_TRANSIENT);
 		if (retVal != SQLITE_OK) {
-			Log::error("SQL error: %s", sqlite3_errmsg(conn));
+			Log::error("Failed to bind: %s", sqlite3_errmsg(conn));
 			return State(nullptr);
 		}
 	}
@@ -235,7 +235,7 @@ Model::State Model::PreparedStatement::exec() {
 	const int rcExec = sqlite3_exec(conn, _statement.c_str(), nullptr, nullptr, &zErrMsg);
 	if (rcExec != SQLITE_OK) {
 		if (zErrMsg != nullptr) {
-			Log::error("SQL error: %s", zErrMsg);
+			Log::error("Failed to exec: %s", zErrMsg);
 		}
 		sqlite3_free(zErrMsg);
 		return State(nullptr);
