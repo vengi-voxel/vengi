@@ -102,6 +102,18 @@ Model::Field Model::getField(const std::string& name) const {
 	return Field();
 }
 
+bool Model::begin() {
+	return exec("START TRANSACTION;");
+}
+
+bool Model::commit() {
+	return exec("COMMIT;");
+}
+
+bool Model::rollback() {
+	return exec("ROLLBACK;");
+}
+
 Model::State Model::fillModelValues(Model::State& state) {
 	// TODO: 0 even in case a key was generated
 	if (state.affectedRows > 1) {
@@ -252,6 +264,34 @@ Model::State::~State() {
 #endif
 		res = nullptr;
 	}
+}
+
+Model::ScopedTransaction::ScopedTransaction(Model* model, bool autocommit) :
+		_autocommit(autocommit), _model(model) {
+}
+
+Model::ScopedTransaction::~ScopedTransaction() {
+	if (_autocommit) {
+		commit();
+	} else {
+		rollback();
+	}
+}
+
+void Model::ScopedTransaction::commit() {
+	if (_commited) {
+		return;
+	}
+	_commited = true;
+	_model->commit();
+}
+
+void Model::ScopedTransaction::rollback() {
+	if (_commited) {
+		return;
+	}
+	_commited = true;
+	_model->rollback();
 }
 
 }

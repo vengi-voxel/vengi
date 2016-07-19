@@ -88,6 +88,23 @@ public:
 
 	bool isPrimaryKey(const std::string& fieldname) const;
 
+	bool begin();
+	bool commit();
+	bool rollback();
+
+	class ScopedTransaction {
+	private:
+		bool _commited = false;
+		bool _autocommit;
+		Model* _model;
+	public:
+		ScopedTransaction(Model* model, bool autocommit = true);
+		~ScopedTransaction();
+
+		void commit();
+		void rollback();
+	};
+
 	class PreparedStatement {
 	private:
 		Model* _model;
