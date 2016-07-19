@@ -149,6 +149,10 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 		return tb::TBWidget::focused_widget->InvokeEvent(ev);
 	}
 
+	if (special == tb::TB_KEY_UNDEFINED && SDL_IsTextInputActive()) {
+		return true;
+	}
+
 	if (key >= SDLK_SPACE && key < SDLK_DELETE) {
 		return false;
 	}
@@ -237,18 +241,11 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 		return true;
 	}
 
-	if (SDL_IsTextInputActive()) {
-		return true;
-	}
-
 	return invokeKey(mapKey(key), mapSpecialKey(key), mapModifier(modifier), true);
 }
 
 bool UIApp::onKeyRelease(int32_t key) {
 	video::WindowedApp::onKeyRelease(key);
-	if (SDL_IsTextInputActive()) {
-		return true;
-	}
 	const tb::MODIFIER_KEYS mod = mapModifier(SDL_GetModState());
 	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
 		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU);
