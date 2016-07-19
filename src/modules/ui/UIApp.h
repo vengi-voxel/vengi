@@ -65,6 +65,8 @@ protected:
 	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button) override;
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
 
+	virtual void OnWidgetFocusChanged(tb::TBWidget *widget, bool focused) override;
+
 	bool invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, bool down);
 public:
 	UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport = 17815);

@@ -158,6 +158,8 @@ core::AppState WindowedApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
+	SDL_StopTextInput();
+
 	if (!loadKeyBindings()) {
 		Log::error("failed to init the keybindings");
 	}
