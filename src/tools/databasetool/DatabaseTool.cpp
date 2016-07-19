@@ -187,6 +187,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	// ctor
 	src << "\t" << classname << "(";
 	src << ") : Super(\"" << table.name << "\") {\n";
+	src << "\t\t_membersPointer = (uint8_t*)&_m;\n";
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
 		src << "\t\t_fields.push_back(Field{";
@@ -274,6 +275,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	std::stringstream insertparams;
 	std::stringstream load;
 	std::stringstream loadadd;
+	std::string autoincrement;
 	insert << "\"INSERT INTO " << table.name << " (";
 	int insertValues = 0;
 	for (auto entry : table.fields) {
@@ -309,9 +311,15 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 			} else {
 				insertadd << ".add(" << f.name << ")";
 			}
+		} else {
+			autoincrement = f.name;
 		}
 	}
-	insert << ") VALUES (" << insertvalues.str() << ")\"";
+	insert << ") VALUES (" << insertvalues.str() << ")";
+	if (_database == POSTGRES && !autoincrement.empty()) {
+		insert << " RETURNING " << autoincrement;
+	}
+	insert << "\"";
 	if (primaryKeys > 0) {
 		load << "\"";
 		src << ") : " << classname << "() {\n";

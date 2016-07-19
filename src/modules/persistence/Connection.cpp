@@ -14,7 +14,6 @@ Connection::Connection() :
 }
 
 Connection::~Connection() {
-	disconnect();
 }
 
 void Connection::setLoginData(const std::string& username, const std::string& password) {
@@ -33,6 +32,12 @@ void Connection::changeHost(const std::string& host) {
 void Connection::changePort(uint16_t port) {
 	_port = port;
 }
+
+#ifdef PERSISTENCE_POSTGRES
+static void defaultNoticeProcessor(void *arg, const char *message) {
+	Log::debug("notice processor: %s", message);
+}
+#endif
 
 bool Connection::connect() {
 #ifdef PERSISTENCE_POSTGRES
@@ -64,13 +69,18 @@ bool Connection::connect() {
 	}
 
 	_connection = PQsetdbLogin(host, port.empty() ? nullptr : port.c_str(), conninfo.c_str(), nullptr, dbname, user, password);
+	Log::debug("connect %p", _connection);
 	if (PQstatus(_connection) != CONNECTION_OK) {
 		Log::error("Connection to database failed: %s", PQerrorMessage(_connection));
 		disconnect();
 		return false;
 	}
+
+	PQsetNoticeProcessor(_connection, defaultNoticeProcessor, nullptr);
+
 #elif defined PERSISTENCE_SQLITE
 	const int rc = sqlite3_open(_dbname.c_str(), &_connection);
+	Log::debug("connect %p", _connection);
 	if (rc != SQLITE_OK) {
 		Log::error("Can't open database '%s': %s", _dbname.c_str(), sqlite3_errmsg(_connection));
 		sqlite3_close(_connection);
@@ -84,12 +94,15 @@ bool Connection::connect() {
 }
 
 void Connection::disconnect() {
+	if (_connection != nullptr) {
+		Log::debug("disconnect %p", _connection);
 #ifdef PERSISTENCE_POSTGRES
-	PQfinish(_connection);
+		PQfinish(_connection);
 #elif defined PERSISTENCE_SQLITE
-	sqlite3_close(_connection);
+		sqlite3_close(_connection);
 #endif
-	_connection = nullptr;
+		_connection = nullptr;
+	}
 }
 
 void Connection::close() {

@@ -18,6 +18,7 @@ using ConnectionType = ::sqlite3;
 namespace persistence {
 
 class Connection {
+	friend class ConnectionPool;
 private:
 	ConnectionType* _connection;
 	std::string _host;
@@ -25,7 +26,6 @@ private:
 	std::string _user;
 	std::string _password;
 	uint16_t _port;
-public:
 	Connection();
 
 	~Connection();
@@ -42,6 +42,7 @@ public:
 
 	bool connect();
 
+public:
 	void close();
 
 	ConnectionType* connection() const;

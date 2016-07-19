@@ -13,6 +13,11 @@ namespace persistence {
 
 Model::Model(const std::string& tableName) :
 		_tableName(tableName) {
+	_membersPointer = (uint8_t*)this;
+}
+
+Model::~Model() {
+	_fields.clear();
 }
 
 bool Model::isPrimaryKey(const std::string& fieldname) const {
@@ -33,6 +38,7 @@ Model::PreparedStatement Model::prepare(const std::string& name, const std::stri
 bool Model::checkLastResult(State& state, Connection* connection) const {
 	state.affectedRows = 0;
 	if (state.res == nullptr) {
+		Log::debug("Empty result");
 		return false;
 	}
 
@@ -40,17 +46,19 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 	ExecStatusType lastState = PQresultStatus(state.res);
 
 	switch (lastState) {
-	case PGRES_BAD_RESPONSE:
 	case PGRES_NONFATAL_ERROR:
+		state.lastErrorMsg = PQerrorMessage(connection->connection());
+		Log::warn("non fatal error: %s", state.lastErrorMsg.c_str());
+		break;
+	case PGRES_BAD_RESPONSE:
 	case PGRES_FATAL_ERROR:
 		state.lastErrorMsg = PQerrorMessage(connection->connection());
-		Log::error("Failed to execute sql: %s ", state.lastErrorMsg.c_str());
+		Log::error("fatal error: %s", state.lastErrorMsg.c_str());
 		PQclear(state.res);
 		state.res = nullptr;
 		return false;
 	case PGRES_EMPTY_QUERY:
 	case PGRES_COMMAND_OK:
-		break;
 	case PGRES_TUPLES_OK:
 		state.affectedRows = PQntuples(state.res);
 		Log::debug("Affected rows %i", state.affectedRows);
@@ -119,10 +127,10 @@ bool Model::fillModelValues(Model::State& state) {
 	// TODO: 0 even in case a key was generated
 	if (state.affectedRows > 1) {
 		Log::debug("More than one row affected, can't fill model values");
-		return false;
-	} else if (state.affectedRows > 0) {
+		return state.result;
+	} else if (state.affectedRows <= 0) {
 		Log::trace("No rows affected, can't fill model values");
-		return false;
+		return state.result;
 	}
 
 #ifdef PERSISTENCE_POSTGRES
@@ -185,7 +193,7 @@ Model::State Model::PreparedStatement::exec() {
 	ConnectionType* conn = scoped.connection()->connection();
 
 #ifdef PERSISTENCE_POSTGRES
-	State state(PQprepare(conn, _name.c_str(), _statement.c_str(), (int)_params.size(), nullptr));
+	State state(PQprepare(conn, "", _statement.c_str(), (int)_params.size(), nullptr));
 	if (!_model->checkLastResult(state, scoped)) {
 		return state;
 	}
@@ -195,7 +203,7 @@ Model::State Model::PreparedStatement::exec() {
 	for (int i = 0; i < size; ++i) {
 		paramValues[i] = _params[i].first.c_str();
 	}
-	State prepState(PQexecPrepared(conn, _name.c_str(), size, paramValues, nullptr, nullptr, 0));
+	State prepState(PQexecPrepared(conn, "", size, paramValues, nullptr, nullptr, 0));
 	if (!_model->checkLastResult(prepState, scoped)) {
 		return prepState;
 	}

@@ -33,10 +33,13 @@ TEST_F(DatabaseModelTest, testWrite) {
 	const std::string password = "secret";
 	persistence::UserStore::truncate();
 	const ::persistence::Timestamp ts = ::persistence::Timestamp::now();
-	persistence::UserStore u(&email, &password, &ts);
+	persistence::UserStore u(&email, &password, nullptr);
 	ASSERT_EQ(0, u.userid());
 	ASSERT_TRUE(u.insert(email, password, ts));
 	ASSERT_NE(0, u.userid());
+
+	persistence::UserStore u2nd(&email, &password, nullptr);
+	ASSERT_EQ(u2nd.userid(), u.userid());
 }
 
 }

@@ -26,6 +26,14 @@
 
 Q                 = @
 LOCAL_CONFIG_DIR  = ~/.local/share/engine
+
+VALGRIND         ?=
+ifeq ($(VALGRIND),)
+VALGRIND_CMD     ?=
+else
+VALGRIND_CMD     ?= valgrind
+endif
+
 GDB              ?=
 ifeq ($(GDB),)
 GDB_CMD          ?=
@@ -80,18 +88,18 @@ edit-local-config:
 
 server client shapetool shadertool noisetool databasetool tests testmesh testdepthbuffer testtexture: cmake
 	$(Q)cd $(BUILDDIR); make $@ copy-data-shared copy-data-$@ $(JOB_FLAG)
-	$(Q)cd $(BUILDDIR); $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
+	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
 shapetool2: shapetool clean-local-config
 
 material-color: cmake
 	$(Q)cd $(BUILDDIR); make tests $(JOB_FLAG)
-	$(Q)cd $(BUILDDIR); $(GDB_CMD) ./tests --gtest_filter=MaterialTest* -- $(ARGS)
+	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_filter=MaterialTest* -- $(ARGS)
 	$(Q)xdg-open build/material.png
 
 test-ambient-occlusion: cmake
 	$(Q)cd $(BUILDDIR); make tests $(JOB_FLAG)
-	$(Q)cd $(BUILDDIR); $(GDB_CMD) ./tests --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
+	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
 
 .PHONY: remotery
 remotery:

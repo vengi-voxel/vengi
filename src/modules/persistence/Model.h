@@ -77,15 +77,15 @@ public:
 	};
 protected:
 	Fields _fields;
+	const std::string _tableName;
+	uint8_t* _membersPointer;
 
 	Field getField(const std::string& name) const;
-
-	const std::string _tableName;
-
 	bool checkLastResult(State& state, Connection* connection) const;
 	bool fillModelValues(State& state);
 public:
 	Model(const std::string& tableName);
+	virtual ~Model();
 
 	const std::string& getTableName() const;
 
@@ -154,7 +154,7 @@ public:
 
 	template<class TYPE>
 	inline void setValue(const Field& f, const TYPE& value) {
-		uint8_t* target = (uint8_t*)(this + f.offset);
+		uint8_t* target = (uint8_t*)(_membersPointer + f.offset);
 		TYPE* targetValue = (TYPE*)target;
 		*targetValue = value;
 	}
