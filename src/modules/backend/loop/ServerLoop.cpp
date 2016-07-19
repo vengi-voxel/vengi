@@ -7,6 +7,7 @@
 #include "core/Tokenizer.h"
 #include "core/Log.h"
 #include "persistence/ConnectionPool.h"
+#include "DatabaseModels.h"
 
 namespace backend {
 
@@ -23,10 +24,13 @@ ServerLoop::ServerLoop(network::NetworkPtr network, SpawnMgrPtr spawnMgr, voxel:
 }
 
 bool ServerLoop::init() {
-	if (persistence::ConnectionPool::get().init() <= 0) {
+	if (::persistence::ConnectionPool::get().init() <= 0) {
 		Log::error("Failed to init the connection pool");
 		return false;
 	}
+	persistence::UserStore u;
+	u.createTable();
+
 	if (!_containerProvider->init()) {
 		Log::error("Failed to load the attributes: %s", _containerProvider->error().c_str());
 		return false;
@@ -50,7 +54,7 @@ bool ServerLoop::init() {
 
 void ServerLoop::shutdown() {
 	_world->shutdown();
-	persistence::ConnectionPool::get().shutdown();
+	::persistence::ConnectionPool::get().shutdown();
 	_spawnMgr->shutdown();
 }
 
