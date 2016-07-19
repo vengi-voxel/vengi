@@ -212,6 +212,7 @@ void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 }
 
 bool UIApp::onKeyRelease(int32_t key) {
+	// TODO: broken for modifiers maybe ignore if text input is active
 	video::WindowedApp::onKeyRelease(key);
 	if (_console.isActive()) {
 		return true;
@@ -235,6 +236,7 @@ bool UIApp::onTextInput(const std::string& text) {
 		const int key = core::string::getUTF8Next(&c);
 		if (key == -1)
 			return true;
+		// TODO: broken for modifiers
 		_root.InvokeKey(key, tb::TB_KEY_UNDEFINED, tb::TB_MODIFIER_NONE, true);
 		_root.InvokeKey(key, tb::TB_KEY_UNDEFINED, tb::TB_MODIFIER_NONE, false);
 	}
@@ -250,6 +252,7 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 		return true;
 	}
 
+	// TODO: broken for modifiers maybe ignore if text input is active
 	return invokeKey(mapKey(key), mapSpecialKey(key), mapModifier(modifier), true);
 }
 
