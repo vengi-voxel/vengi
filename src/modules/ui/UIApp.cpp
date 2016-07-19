@@ -212,21 +212,6 @@ void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 	}
 }
 
-bool UIApp::onKeyRelease(int32_t key) {
-	video::WindowedApp::onKeyRelease(key);
-	if (SDL_IsTextInputActive()) {
-		return true;
-	}
-	const tb::MODIFIER_KEYS mod = mapModifier(SDL_GetModState());
-	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
-		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU);
-		ev.modifierkeys = mod;
-		tb::TBWidget::focused_widget->InvokeEvent(ev);
-		return true;
-	}
-	return invokeKey(mapKey(key), mapSpecialKey(key), mod, false);
-}
-
 bool UIApp::onTextInput(const std::string& text) {
 	if (_console.onTextInput(text)) {
 		return true;
@@ -257,6 +242,21 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 	}
 
 	return invokeKey(mapKey(key), mapSpecialKey(key), mapModifier(modifier), true);
+}
+
+bool UIApp::onKeyRelease(int32_t key) {
+	video::WindowedApp::onKeyRelease(key);
+	if (SDL_IsTextInputActive()) {
+		return true;
+	}
+	const tb::MODIFIER_KEYS mod = mapModifier(SDL_GetModState());
+	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
+		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU);
+		ev.modifierkeys = mod;
+		tb::TBWidget::focused_widget->InvokeEvent(ev);
+		return true;
+	}
+	return invokeKey(mapKey(key), mapSpecialKey(key), mod, false);
 }
 
 core::AppState UIApp::onConstruct() {
