@@ -172,6 +172,8 @@ void Client::afterUI() {
 }
 
 core::AppState Client::onCleanup() {
+	Log::info("shutting down the client");
+	disconnect();
 	_meshPool->shutdown();
 	_worldRenderer.shutdown();
 	core::AppState state = UIApp::onCleanup();
