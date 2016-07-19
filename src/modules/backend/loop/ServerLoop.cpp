@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "persistence/ConnectionPool.h"
 #include "DatabaseModels.h"
+#include "backend/entity/User.h"
 
 namespace backend {
 
@@ -114,7 +115,11 @@ void ServerLoop::onFrame(long dt) {
 }
 
 void ServerLoop::onEvent(const network::DisconnectEvent& event) {
-	Log::info("disconnect peer: %u", event.peer()->connectID);
+	ENetPeer* peer = event.peer();
+	Log::info("disconnect peer: %u", peer->connectID);
+	User* user = reinterpret_cast<User*>(peer->data);
+	// TODO: handle this and abort on re-login
+	user->cooldownMgr().triggerCooldown(cooldown::LOGOUT);
 }
 
 void ServerLoop::onEvent(const network::NewConnectionEvent& event) {
