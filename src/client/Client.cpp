@@ -172,6 +172,10 @@ void Client::afterUI() {
 }
 
 core::AppState Client::onCleanup() {
+	eventBus()->unsubscribe<network::NewConnectionEvent>(*this);
+	eventBus()->unsubscribe<network::DisconnectEvent>(*this);
+	eventBus()->unsubscribe<voxel::WorldCreatedEvent>(*this);
+
 	Log::info("shutting down the client");
 	disconnect();
 	_meshPool->shutdown();
