@@ -50,6 +50,7 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 		return false;
 	case PGRES_EMPTY_QUERY:
 	case PGRES_COMMAND_OK:
+		break;
 	case PGRES_TUPLES_OK:
 		state.affectedRows = PQntuples(state.res);
 		Log::debug("Affected rows %i", state.affectedRows);
@@ -75,7 +76,7 @@ bool Model::exec(const char* query) {
 #ifdef PERSISTENCE_POSTGRES
 	State s(PQexec(conn, query));
 	checkLastResult(s, scoped);
-	return fillModelValues(s).result;
+	return fillModelValues(s);
 #elif defined PERSISTENCE_SQLITE
 	char *zErrMsg = nullptr;
 	const int rc = sqlite3_exec(conn, query, nullptr, nullptr, &zErrMsg);
@@ -114,14 +115,14 @@ bool Model::rollback() {
 	return exec("ROLLBACK;");
 }
 
-Model::State Model::fillModelValues(Model::State& state) {
+bool Model::fillModelValues(Model::State& state) {
 	// TODO: 0 even in case a key was generated
 	if (state.affectedRows > 1) {
 		Log::debug("More than one row affected, can't fill model values");
-		return state;
+		return false;
 	} else if (state.affectedRows > 0) {
 		Log::trace("No rows affected, can't fill model values");
-		return state;
+		return false;
 	}
 
 #ifdef PERSISTENCE_POSTGRES
@@ -139,47 +140,34 @@ Model::State Model::fillModelValues(Model::State& state) {
 		const char* name = "NOT_IMPLEMENTED";
 		const char* value = "";
 #endif
+		if (value == nullptr) {
+			value = "";
+		}
 		const Field& f = getField(name);
 		if (f.name != name) {
-			Log::error("Unkown field name for '%s'", name);
+			Log::error("Unknown field name for '%s'", name);
 			state.result = false;
-			return state;
+			return false;
 		}
 		Log::debug("Try to set '%s' to '%s'", name, value);
 		switch (f.type) {
 		case Model::STRING:
 		case Model::PASSWORD:
-			if (value == nullptr) {
-				value = "";
-			}
-
 			setValue(f, std::string(value));
 			break;
 		case Model::INT:
-			if (value == nullptr) {
-				setValue(f, 0);
-			} else {
-				setValue(f, core::string::toInt(value));
-			}
+			setValue(f, core::string::toInt(value));
 			break;
 		case Model::LONG:
-			if (value == nullptr) {
-				setValue(f, 0l);
-			} else {
-				setValue(f, core::string::toLong(value));
-			}
+			setValue(f, core::string::toLong(value));
 			break;
 		case Model::TIMESTAMP: {
-			if (value == nullptr) {
-				setValue(f, Timestamp(0L));
-			} else {
-				setValue(f, Timestamp(core::string::toLong(value)));
-			}
+			setValue(f, Timestamp(core::string::toLong(value)));
 			break;
 		}
 		}
 	}
-	return state;
+	return true;
 }
 
 Model::PreparedStatement::PreparedStatement(Model* model, const std::string& name, const std::string& statement) :
@@ -211,7 +199,8 @@ Model::State Model::PreparedStatement::exec() {
 	if (!_model->checkLastResult(prepState, scoped)) {
 		return prepState;
 	}
-	return _model->fillModelValues(prepState);
+	_model->fillModelValues(prepState);
+	return prepState;
 #elif defined PERSISTENCE_SQLITE
 	ResultType *stmt;
 	const char *pzTest;
@@ -241,7 +230,9 @@ Model::State Model::PreparedStatement::exec() {
 		return State(nullptr);
 	}
 
-	return _model->fillModelValues(State(stmt));
+	State state(stmt);
+	_model->fillModelValues();
+	return state;
 #else
 	return State(nullptr);
 #endif
@@ -251,15 +242,21 @@ Model::State::State(ResultType* _res) :
 		res(_res) {
 }
 
+Model::State::State(State&& other) :
+		res(other.res), lastErrorMsg(other.lastErrorMsg), affectedRows(
+				other.affectedRows), result(other.result) {
+	other.res = nullptr;
+}
+
 Model::State::~State() {
 	if (res != nullptr) {
 #ifdef PERSISTENCE_POSTGRES
-		//PQclear(res);
+		PQclear(res);
 #elif defined PERSISTENCE_SQLITE
 		const int retVal = sqlite3_finalize(res);
 		if (retVal != SQLITE_OK) {
 			//const char *errMsg = sqlite3_errmsg(_pgConnection);
-			Log::error("Could not finialize the statement");
+			Log::error("Could not finalize the statement");
 		}
 #endif
 		res = nullptr;

@@ -63,6 +63,11 @@ public:
 		State(ResultType* res);
 		~State();
 
+		State(State&& other);
+
+		State(const State& other) = delete;
+		State& operator=(const State& other) = delete;
+
 		ResultType* res = nullptr;
 
 		std::string lastErrorMsg;
@@ -78,7 +83,7 @@ protected:
 	const std::string _tableName;
 
 	bool checkLastResult(State& state, Connection* connection) const;
-	State fillModelValues(State& state);
+	bool fillModelValues(State& state);
 public:
 	Model(const std::string& tableName);
 
