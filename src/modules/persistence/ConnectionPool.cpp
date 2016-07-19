@@ -23,6 +23,8 @@ int ConnectionPool::init(const char *password, const char *user, const char *dat
 	_dbUser = core::Var::get(cfg::DatabaseUser, user);
 	_dbPw = core::Var::get(cfg::DatabasePassword, password);
 
+	Log::debug("Connect to %s@%s to database %s", _dbUser->strVal().c_str(), _dbHost->strVal().c_str(), _dbName->strVal().c_str());
+
 	for (int i = 0; i < _min; ++i) {
 		addConnection();
 	}
