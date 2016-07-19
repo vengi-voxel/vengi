@@ -42,6 +42,7 @@ gtest_suite_files(tests
 	tests/RectTest.cpp
 	tests/ByteStreamTest.cpp
 	tests/ThreadPoolTest.cpp
+	tests/EMailValidatorTest.cpp
 	tests/EventBusTest.cpp
 	tests/QuadTreeTest.cpp
 	tests/VarTest.cpp
