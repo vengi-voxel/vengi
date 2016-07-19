@@ -20,30 +20,45 @@ Network::Network(ProtocolHandlerRegistryPtr protocolHandlerRegistry, core::Event
 }
 
 Network::~Network() {
-	enet_host_destroy(_server);
-	enet_host_destroy(_client);
-	enet_deinitialize();
+	shutdown();
 }
 
-bool Network::start() {
-	if (enet_initialize() != 0)
+void Network::shutdown() {
+	if (_server != nullptr) {
+		enet_host_destroy(_server);
+	}
+	if (_client != nullptr) {
+		enet_host_destroy(_client);
+	}
+	enet_deinitialize();
+	_server = nullptr;
+	_client = nullptr;
+}
+
+bool Network::init() {
+	if (enet_initialize() != 0) {
 		return false;
+	}
 	enet_time_set(0);
 	return true;
 }
 
 bool Network::bind(uint16_t port, const std::string& hostname, int maxPeers, int maxChannels) {
-	if (_server)
+	if (_server) {
 		return false;
-	if (maxPeers <= 0)
+	}
+	if (maxPeers <= 0) {
 		return false;
-	if (maxChannels <= 0)
+	}
+	if (maxChannels <= 0) {
 		return false;
+	}
 	ENetAddress address;
-	if (hostname.empty())
+	if (hostname.empty()) {
 		address.host = ENET_HOST_ANY;
-	else
+	} else {
 		enet_address_set_host(&address, hostname.c_str());
+	}
 	address.port = port;
 	_server = enet_host_create(&address, maxPeers, maxChannels, 0, 0);
 	if (_server == nullptr) {
@@ -53,8 +68,9 @@ bool Network::bind(uint16_t port, const std::string& hostname, int maxPeers, int
 }
 
 ENetPeer* Network::connect(uint16_t port, const std::string& hostname, int maxChannels) {
-	if (_client)
+	if (_client) {
 		disconnect();
+	}
 	_client = enet_host_create(nullptr, 1, maxChannels, 57600 / 8, 14400 / 8);
 	if (_client == nullptr) {
 		return nullptr;
@@ -75,8 +91,9 @@ ENetPeer* Network::connect(uint16_t port, const std::string& hostname, int maxCh
 }
 
 void Network::disconnect() {
-	if (_client == nullptr)
+	if (_client == nullptr) {
 		return;
+	}
 
 	for (size_t i = 0; i < _client->peerCount; ++i) {
 		ENetPeer *peer = &_client->peers[i];
@@ -87,8 +104,9 @@ void Network::disconnect() {
 }
 
 void Network::disconnectPeer(ENetPeer *peer, uint32_t timeout) {
-	if (peer == nullptr)
+	if (peer == nullptr) {
 		return;
+	}
 	Log::info("trying to disconnect peer %i", peer->connectID);
 	ENetEvent event;
 	enet_peer_disconnect(peer, 0);
@@ -154,8 +172,9 @@ bool Network::packetReceived(ENetEvent& event, bool server) {
 }
 
 void Network::updateHost(ENetHost* host, bool server) {
-	if (host == nullptr)
+	if (host == nullptr) {
 		return;
+	}
 	ENetEvent event;
 	while (enet_host_service(host, &event, 0) > 0) {
 		switch (event.type) {

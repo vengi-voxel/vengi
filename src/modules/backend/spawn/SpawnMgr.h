@@ -32,6 +32,7 @@ private:
 public:
 	SpawnMgr(voxel::WorldPtr world, EntityStoragePtr entityStorage, network::MessageSenderPtr messageSender, core::TimeProviderPtr timeProvider, AILoaderPtr loader, attrib::ContainerProviderPtr containerProvider, PoiProviderPtr poiProvider);
 	bool init();
+	void shutdown();
 
 	int spawn(ai::Zone& zone, network::messages::NpcType type, int amount, const glm::ivec3* pos = nullptr);
 	void onFrame(ai::Zone& zone, long dt);

@@ -6,6 +6,7 @@
 #include "core/Command.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
+#include "persistence/ConnectionPool.h"
 
 namespace backend {
 
@@ -21,7 +22,11 @@ ServerLoop::ServerLoop(network::NetworkPtr network, SpawnMgrPtr spawnMgr, voxel:
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
 }
 
-bool ServerLoop::onInit() {
+bool ServerLoop::init() {
+	if (persistence::ConnectionPool::get().init() <= 0) {
+		Log::error("Failed to init the connection pool");
+		return false;
+	}
 	if (!_containerProvider->init()) {
 		Log::error("Failed to load the attributes: %s", _containerProvider->error().c_str());
 		return false;
@@ -40,6 +45,12 @@ bool ServerLoop::onInit() {
 		Log::error("Could not start the ai debug server");
 	}
 	return true;
+}
+
+void ServerLoop::shutdown() {
+	persistence::ConnectionPool::get().shutdown();
+	_spawnMgr->shutdown();
+	_world->shutdown();
 }
 
 void ServerLoop::readInput() {

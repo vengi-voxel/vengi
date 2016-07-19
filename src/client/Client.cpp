@@ -93,7 +93,7 @@ core::AppState Client::onInit() {
 
 	GLDebug::enable(GLDebug::Medium);
 
-	if (!_network->start()) {
+	if (!_network->init()) {
 		return core::Cleanup;
 	}
 
@@ -176,6 +176,7 @@ core::AppState Client::onCleanup() {
 	_worldRenderer.shutdown();
 	core::AppState state = UIApp::onCleanup();
 	_world->shutdown();
+	_network->shutdown();
 	return state;
 }
 

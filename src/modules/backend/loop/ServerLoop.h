@@ -42,7 +42,8 @@ public:
 	ServerLoop(network::NetworkPtr network, SpawnMgrPtr spawnMgr, voxel::WorldPtr world, EntityStoragePtr entityStorage, core::EventBusPtr eventBus, AIRegistryPtr registry,
 			attrib::ContainerProviderPtr containerProvider, PoiProviderPtr poiProvider);
 
-	bool onInit();
+	bool init();
+	void shutdown();
 	void onFrame(long dt);
 	void onEvent(const network::DisconnectEvent& event);
 	void onEvent(const network::NewConnectionEvent& event);

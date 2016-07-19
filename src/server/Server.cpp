@@ -16,12 +16,12 @@ Server::Server(network::NetworkPtr network, backend::ServerLoopPtr serverLoop, c
 
 core::AppState Server::onInit() {
 	const core::AppState state = core::App::onInit();
-	if (!_network->start()) {
-		Log::error("Failed to start the server");
+	if (!_network->init()) {
+		Log::error("Failed to init the network");
 		return core::Cleanup;
 	}
 
-	if (!_serverLoop->onInit()) {
+	if (!_serverLoop->init()) {
 		Log::error("Failed to init the main loop");
 		return core::Cleanup;
 	}
@@ -39,9 +39,17 @@ core::AppState Server::onInit() {
 	return state;
 }
 
+core::AppState Server::onCleanup() {
+	const core::AppState state = core::App::onCleanup();
+	_serverLoop->shutdown();
+	_network->shutdown();
+	return state;
+}
+
 core::AppState Server::onRunning() {
-	if (_quit)
+	if (_quit) {
 		return core::Cleanup;
+	}
 	_timeProvider->update(_now);
 	core::App::onRunning();
 	_serverLoop->onFrame(_deltaFrame);

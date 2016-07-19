@@ -38,7 +38,8 @@ void TestMesh::doRender() {
 	_meshShader.setTexture(0);
 
 	// TODO: support more than just the first animation
-	if (!_mesh.initMesh(_meshShader, (_now - _initTime) / 1000.0f), 0) {
+	const uint8_t animationIndex = 0u;
+	if (!_mesh.initMesh(_meshShader, (_now - _initTime) / 1000.0f, animationIndex)) {
 		Log::error("Failed to init the mesh");
 		return;
 	}

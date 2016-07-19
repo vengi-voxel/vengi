@@ -19,6 +19,6 @@ public:
 	Server(network::NetworkPtr network, backend::ServerLoopPtr serverLoop, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
 
 	core::AppState onInit() override;
-
+	core::AppState onCleanup() override;
 	core::AppState onRunning() override;
 };

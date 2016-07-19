@@ -28,7 +28,8 @@ public:
 	Network(ProtocolHandlerRegistryPtr protocolHandlerRegistry, core::EventBusPtr eventBus);
 	virtual ~Network();
 
-	bool start();
+	bool init();
+	void shutdown();
 	void update();
 
 	// Server related methods

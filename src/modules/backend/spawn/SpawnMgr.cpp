@@ -16,6 +16,9 @@ SpawnMgr::SpawnMgr(voxel::WorldPtr world, EntityStoragePtr entityStorage, networ
 		_loader(loader), _world(world), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _time(15000L) {
 }
 
+void SpawnMgr::shutdown() {
+}
+
 bool SpawnMgr::init() {
 	const std::string& lua = core::App::getInstance()->filesystem()->load("behaviourtrees.lua");
 	if (!_loader->init(lua)) {
