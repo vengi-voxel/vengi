@@ -11,6 +11,7 @@ namespace video {
 
 namespace {
 const aiVector3D VECZERO(0.0f, 0.0f, 0.0f);
+const aiColor4D COLOR_BLACK(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 Mesh::Mesh() :
@@ -70,7 +71,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 		Log::debug("Animation %i: %s", i, animation->mName.C_Str());
 	}
 
-	_globalInverseTransform = glm::inverse(glm::rotate(toMat4(_scene->mRootNode->mTransformation), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+	_globalInverseTransform = glm::inverse(toMat4(_scene->mRootNode->mTransformation));
 
 	_meshData.resize(_scene->mNumMeshes);
 
@@ -96,6 +97,11 @@ bool Mesh::loadMesh(const std::string& filename) {
 
 	for (uint32_t i = 0u; i < _meshData.size(); ++i) {
 		const aiMesh* mesh = _scene->mMeshes[i];
+
+		if (mesh->HasVertexColors(0)) {
+			Log::debug("Mesh has vertex color");
+		}
+
 		for (uint32_t fi = 0; fi < mesh->mNumFaces; ++fi) {
 			const aiFace& face = mesh->mFaces[fi];
 			core_assert(face.mNumIndices == 3);
@@ -108,8 +114,9 @@ bool Mesh::loadMesh(const std::string& filename) {
 			const aiVector3D& pos = mesh->mVertices[vi];
 			const aiVector3D& normal = mesh->mNormals[vi];
 			const aiVector3D& texCoord = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][vi] : VECZERO;
+			const aiColor4D& color = mesh->HasVertexColors(0) ? mesh->mColors[0][vi] : COLOR_BLACK;
 
-			_vertices.emplace_back(pos, normal, texCoord);
+			_vertices.emplace_back(pos, normal, texCoord, color);
 		}
 		loadBones(i, mesh);
 	}
@@ -163,6 +170,11 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds) {
 			const int loc = shader.enableVertexAttribute("a_texcoords");
 			core_assert(loc >= 0);
 			glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _uv)));
+		}
+		if (shader.hasAttribute("a_color")) {
+			const int loc = shader.enableVertexAttribute("a_color");
+			core_assert(loc >= 0);
+			glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _color)));
 		}
 		if (shader.hasAttribute("a_norm")) {
 			const int loc = shader.enableVertexAttribute("a_norm");
@@ -441,7 +453,7 @@ void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) 
 		const aiMaterial* material = scene->mMaterials[i];
 		const aiTextureType texType = aiTextureType_DIFFUSE;
 		if (material->GetTextureCount(texType) <= 0) {
-			Log::warn("No textures for texture type %i at index %i", texType, i);
+			Log::debug("No textures for texture type %i at index %i", texType, i);
 			continue;
 		}
 

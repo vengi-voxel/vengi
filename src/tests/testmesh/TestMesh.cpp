@@ -19,7 +19,7 @@ core::AppState TestMesh::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	const std::string mesh = "boblampclean.md5mesh";
+	const std::string mesh = "mesh/char1_v2_walk.FBX";
 	if (!_mesh.loadMesh(mesh)) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
