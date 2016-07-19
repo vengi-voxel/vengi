@@ -25,9 +25,11 @@ Network::~Network() {
 
 void Network::shutdown() {
 	if (_server != nullptr) {
+		enet_host_flush(_server);
 		enet_host_destroy(_server);
 	}
 	if (_client != nullptr) {
+		enet_host_flush(_client);
 		enet_host_destroy(_client);
 	}
 	enet_deinitialize();
