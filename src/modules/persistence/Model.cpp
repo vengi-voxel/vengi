@@ -139,7 +139,7 @@ bool Model::fillModelValues(Model::State& state) {
 	//sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
 	const int nFields = 0;
 #endif
-	Log::info("Query has values for %i fields", nFields);
+	Log::trace("Query has values for %i fields", nFields);
 	for (int i = 0; i < nFields; ++i) {
 #ifdef PERSISTENCE_POSTGRES
 		const char* name = PQfname(state.res, i);
