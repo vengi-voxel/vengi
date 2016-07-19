@@ -76,6 +76,8 @@ bool Connection::connect() {
 		return false;
 	}
 
+	_preparedStatements.clear();
+
 	PQsetNoticeProcessor(_connection, defaultNoticeProcessor, nullptr);
 
 #elif defined PERSISTENCE_SQLITE
