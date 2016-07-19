@@ -193,9 +193,12 @@ Model::State Model::PreparedStatement::exec() {
 	ConnectionType* conn = scoped.connection()->connection();
 
 #ifdef PERSISTENCE_POSTGRES
-	State state(PQprepare(conn, "", _statement.c_str(), (int)_params.size(), nullptr));
-	if (!_model->checkLastResult(state, scoped)) {
-		return state;
+	if (!scoped.connection()->hasPreparedStatement(_name)) {
+		State state(PQprepare(conn, _name.c_str(), _statement.c_str(), (int)_params.size(), nullptr));
+		if (!_model->checkLastResult(state, scoped)) {
+			return state;
+		}
+		scoped.connection()->registerPreparedStatement(_name);
 	}
 	const int size = _params.size();
 	const char* paramValues[size];
@@ -203,7 +206,7 @@ Model::State Model::PreparedStatement::exec() {
 	for (int i = 0; i < size; ++i) {
 		paramValues[i] = _params[i].first.c_str();
 	}
-	State prepState(PQexecPrepared(conn, "", size, paramValues, nullptr, nullptr, 0));
+	State prepState(PQexecPrepared(conn, _name.c_str(), size, paramValues, nullptr, nullptr, 0));
 	if (!_model->checkLastResult(prepState, scoped)) {
 		return prepState;
 	}

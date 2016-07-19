@@ -103,6 +103,7 @@ void Connection::disconnect() {
 #endif
 		_connection = nullptr;
 	}
+	_preparedStatements.clear();
 }
 
 void Connection::close() {
