@@ -331,6 +331,11 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 
 	std::stringstream createTable;
 
+	src << "\t/**\n";
+	src << "\t * @brief Insert a new row into the database with the given parameters\n";
+	src << "\t * @note Also fills the generated keys in the model instance\n";
+	src << "\t * @return @c true if the execution was successful, @c false otherwise\n";
+	src << "\t */\n";
 	src << "\tbool insert(";
 	src << insertparams.str();
 	src << ") {\n";
