@@ -261,7 +261,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	if (nonPrimaryKeyMembers > 0) {
 		src << ") : " << classname << "() {\n";
 		src << loadNonPk.str();
-		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"" << classname << "LoadMembers\", __load_.str());\n";
+		src << "\t\tSuper::PreparedStatement __p_ = prepare(\"\", __load_.str());\n";
 		src << loadNonPkAdd.str();
 		src << "\t\tcore_assert_always(__p_.exec().result);\n";
 		src << "\t}\n\n";
