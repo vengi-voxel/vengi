@@ -60,10 +60,17 @@ bool Network::bind(uint16_t port, const std::string& hostname, int maxPeers, int
 		enet_address_set_host(&address, hostname.c_str());
 	}
 	address.port = port;
-	_server = enet_host_create(&address, maxPeers, maxChannels, 0, 0);
+	_server = enet_host_create(
+			&address,
+			maxPeers,
+			maxChannels,
+			0, /* assume any amount of incoming bandwidth */
+			0 /* assume any amount of outgoing bandwidth */
+			);
 	if (_server == nullptr) {
 		return false;
 	}
+	enet_host_compress_with_range_coder(_server);
 	return true;
 }
 
@@ -71,10 +78,17 @@ ENetPeer* Network::connect(uint16_t port, const std::string& hostname, int maxCh
 	if (_client) {
 		disconnect();
 	}
-	_client = enet_host_create(nullptr, 1, maxChannels, 57600 / 8, 14400 / 8);
+	_client = enet_host_create(
+			nullptr,
+			1, /* only allow 1 outgoing connection */
+			maxChannels,
+			57600 / 8, /* 56K modem with 56 Kbps downstream bandwidth */
+			14400 / 8 /* 56K modem with 14 Kbps upstream bandwidth */
+			);
 	if (_client == nullptr) {
 		return nullptr;
 	}
+	enet_host_compress_with_range_coder(_client);
 
 	ENetAddress address;
 	enet_address_set_host(&address, hostname.c_str());
