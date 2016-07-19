@@ -24,6 +24,7 @@ Network::~Network() {
 }
 
 void Network::shutdown() {
+	disconnect();
 	if (_server != nullptr) {
 		enet_host_flush(_server);
 		enet_host_destroy(_server);
@@ -123,7 +124,7 @@ void Network::disconnectPeer(ENetPeer *peer, uint32_t timeout) {
 	if (peer == nullptr) {
 		return;
 	}
-	Log::info("trying to disconnect peer %i", peer->connectID);
+	Log::info("trying to disconnect peer: %u", peer->connectID);
 	ENetEvent event;
 	enet_peer_disconnect(peer, 0);
 	bool success = false;
@@ -191,6 +192,7 @@ void Network::updateHost(ENetHost* host, bool server) {
 	if (host == nullptr) {
 		return;
 	}
+	enet_host_flush(host);
 	ENetEvent event;
 	while (enet_host_service(host, &event, 0) > 0) {
 		switch (event.type) {

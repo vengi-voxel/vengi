@@ -15,7 +15,7 @@ private:
 public:
 	NewConnectionEvent(ENetPeer* peer) :
 			_peer(peer) {
-		Log::info("Connect peer %i", peer->connectID);
+		Log::trace("Connect peer event %u", peer->connectID);
 	}
 	inline ENetPeer* peer() const {
 		return _peer;
@@ -28,7 +28,7 @@ private:
 public:
 	DisconnectEvent(ENetPeer* peer) :
 			_peer(peer) {
-		Log::info("Disconnect peer %i", peer->connectID);
+		Log::trace("Disconnect peer event %u", peer->connectID);
 	}
 	inline ENetPeer* peer() const {
 		return _peer;

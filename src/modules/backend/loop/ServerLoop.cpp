@@ -114,11 +114,11 @@ void ServerLoop::onFrame(long dt) {
 }
 
 void ServerLoop::onEvent(const network::DisconnectEvent& event) {
-	Log::info("disconnect peer: %i", event.peer()->connectID);
+	Log::info("disconnect peer: %u", event.peer()->connectID);
 }
 
 void ServerLoop::onEvent(const network::NewConnectionEvent& event) {
-	Log::info("new connection - waiting for login request from %i", event.peer()->connectID);
+	Log::info("new connection - waiting for login request from %u", event.peer()->connectID);
 }
 
 }
