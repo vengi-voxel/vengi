@@ -31,6 +31,18 @@ TBLayout
 		axis x
 		gravity right
 		distribution-position right bottom
+		TBLayout
+			gravity left
+			distribution-position right bottom
+			TBClickLabel
+				text @autologin
+				TBCheckBox
+				id autologin
+				lp
+					min-height 20
 		TBButton
 			text @login
 			id login
+		TBButton
+			text @signup
+			id signup

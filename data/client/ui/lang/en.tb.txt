@@ -17,3 +17,5 @@ disconnect Disconnect
 disconnecttext You either got disconnected or the connect attempt failed
 authfailed Authentication failed
 authfailedtext Authentication failed
+signup Signup
+autologin Auto-login
