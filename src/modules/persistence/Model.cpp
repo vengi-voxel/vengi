@@ -124,7 +124,6 @@ bool Model::rollback() {
 }
 
 bool Model::fillModelValues(Model::State& state) {
-	// TODO: 0 even in case a key was generated
 	if (state.affectedRows > 1) {
 		Log::debug("More than one row affected, can't fill model values");
 		return state.result;
@@ -202,7 +201,6 @@ Model::State Model::PreparedStatement::exec() {
 	}
 	const int size = _params.size();
 	const char* paramValues[size];
-	// TODO: handle the type
 	for (int i = 0; i < size; ++i) {
 		paramValues[i] = _params[i].first.c_str();
 	}
