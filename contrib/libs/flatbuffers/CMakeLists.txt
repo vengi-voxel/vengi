@@ -13,3 +13,23 @@ engine_add_library(
 if (NOT FLATBUFFERS_FOUND)
 	target_include_directories(flatbuffers PUBLIC .)
 endif()
+set(COMPILER_SRCS
+	compiler/src/compiler/cpp_generator.cc
+	compiler/src/compiler/cpp_generator.h
+	compiler/flatc.cpp
+	compiler/idl_gen_cpp.cpp
+	compiler/idl_gen_fbs.cpp
+	compiler/idl_gen_general.cpp
+	compiler/idl_gen_go.cpp
+	compiler/idl_gen_grpc.cpp
+	compiler/idl_gen_js.cpp
+	compiler/idl_gen_php.cpp
+	compiler/idl_gen_python.cpp
+	compiler/idl_gen_text.cpp
+	compiler/idl_parser.cpp
+	compiler/reflection.cpp
+	compiler/util.cpp
+)
+engine_add_executable(TARGET flatc SRCS ${COMPILER_SRCS})
+target_link_libraries(flatc flatbuffers)
+target_include_directories(flatc PRIVATE compiler/)
