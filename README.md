@@ -3,7 +3,7 @@
 # About
 Voxel engine with procedural generated landscape.
 
-![Screenshot](/screenshots/2016-05-05.png "Status")
+![Screenshot](/screenshots/2016-07-11.png "Status")
 
 # Dependencies
 * cmake
