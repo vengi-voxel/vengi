@@ -3,6 +3,9 @@
 #cmakedefine PERSISTENCE_SQLITE
 #cmakedefine PERSISTENCE_POSTGRES
 
+#cmakedefine SERVER_HOST "@SERVER_HOST@"
+#cmakedefine SERVER_PORT "@SERVER_PORT@"
+
 #if !defined PERSISTENCE_POSTGRES and !defined PERSISTENCE_SQLITE
 #error "No persistence backend defined"
 #endif

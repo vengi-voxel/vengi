@@ -7,6 +7,7 @@
 #include "ui/Window.h"
 #include "core/Common.h"
 #include "../Client.h"
+#include "config.h"
 
 namespace frontend {
 
@@ -36,8 +37,8 @@ public:
 			core::Var::get(cfg::ClientEmail)->setVal(email->GetText().CStr());
 			core::Var::get(cfg::ClientPassword)->setVal(password->GetText().CStr());
 
-			const core::VarPtr& port = core::Var::get(cfg::ClientPort, "11337");
-			const core::VarPtr& host = core::Var::get(cfg::ClientHost, "127.0.0.1");
+			const core::VarPtr& port = core::Var::get(cfg::ClientPort, SERVER_PORT);
+			const core::VarPtr& host = core::Var::get(cfg::ClientHost, SERVER_HOST);
 			Log::info("Trying to connect to server %s:%i", host->strVal().c_str(), port->intVal());
 			if (!_client->connect(port->intVal(), host->strVal())) {
 				Log::info("Failed to connect to server %s:%i", host->strVal().c_str(), port->intVal());

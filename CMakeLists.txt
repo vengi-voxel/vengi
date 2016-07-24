@@ -34,6 +34,8 @@ option(UNITTESTS_SANITIZER_LEAK "Builds tests with leak sanitizer" OFF)
 option(UNITTESTS_SANITIZER_ADDRESS "Builds tests with address sanitizer" OFF)
 option(TOOLS "Builds with tools" ON)
 option(USE_CCACHE "Use ccache" ON)
+option(SERVER_HOST "Host where the server is running on" "localhost")
+option(SERVER_PORT "Port where the server is listening on" "11337")
 
 if (NOT CMAKE_TOOLCHAIN_FILE)
 	if (WINDOWS)
@@ -93,7 +95,7 @@ else()
 	message(STATUS "ccache not found")
 endif()
 
-configure_file(${ROOT_DIR}/src/config.h.in ${CMAKE_BINARY_DIR}/config.h)
+configure_file(${ROOT_DIR}/src/config.h.in ${CMAKE_BINARY_DIR}/config.h @ONLY)
 include_directories(${CMAKE_BINARY_DIR})
 
 include_directories(src/modules)
