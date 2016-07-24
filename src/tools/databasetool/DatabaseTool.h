@@ -37,16 +37,6 @@ protected:
 	typedef std::map<std::string, Table> Tables;
 	Tables _tables;
 
-	enum DatabaseType {
-		POSTGRES,
-		SQLITE,
-		MYSQL,
-
-		MAX_DATABASETYPES
-	};
-
-	DatabaseType _database = POSTGRES;
-
 	bool needsInitCPP(persistence::Model::FieldType type) const;
 	std::string getDbType(const persistence::Model::Field& field) const;
 	std::string getDbFlags(const Table& table, const persistence::Model::Field& field) const;
@@ -61,8 +51,6 @@ protected:
 	bool parse(const std::string& src);
 	bool generateClassForTable(const Table& table, std::stringstream& src) const;
 	bool generateSrc() const;
-
-	DatabaseType getDatabaseType(const std::string& arg) const;
 public:
 	DatabaseTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
 

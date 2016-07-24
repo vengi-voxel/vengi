@@ -87,12 +87,7 @@ std::string DatabaseTool::getDbType(const persistence::Model::Field& field) cons
 	switch (field.type) {
 	case persistence::Model::PASSWORD:
 	case persistence::Model::STRING: {
-		std::string type;
-		if (_database == POSTGRES) {
-			type = "CHAR(";
-		} else {
-			type = "VARCHAR(";
-		}
+		std::string type = "CHAR(";
 		if (field.length > 0) {
 			type += std::to_string(field.length);
 		} else {
@@ -104,12 +99,12 @@ std::string DatabaseTool::getDbType(const persistence::Model::Field& field) cons
 	case persistence::Model::TIMESTAMP:
 		return "TIMESTAMP";
 	case persistence::Model::LONG:
-		if (_database == POSTGRES && (field.contraintMask & persistence::Model::AUTOINCREMENT) != 0) {
+		if ((field.contraintMask & persistence::Model::AUTOINCREMENT) != 0) {
 			return "";
 		}
 		return "BIGINT";
 	case persistence::Model::INT:
-		if (_database == POSTGRES && (field.contraintMask & persistence::Model::AUTOINCREMENT) != 0) {
+		if ((field.contraintMask & persistence::Model::AUTOINCREMENT) != 0) {
 			return "";
 		}
 		return "INT";
@@ -119,14 +114,10 @@ std::string DatabaseTool::getDbType(const persistence::Model::Field& field) cons
 std::string DatabaseTool::getDbFlags(const Table& table, const persistence::Model::Field& field) const {
 	std::stringstream ss;
 	if (field.contraintMask & persistence::Model::AUTOINCREMENT) {
-		if (_database == POSTGRES) {
-			if (field.type == ::persistence::Model::LONG) {
-				ss << " BIGSERIAL";
-			} else {
-				ss << " SERIAL";
-			}
-		} else if (_database == MYSQL) {
-			ss << " AUTO_INCREMEMT";
+		if (field.type == ::persistence::Model::LONG) {
+			ss << " BIGSERIAL";
+		} else {
+			ss << " SERIAL";
 		}
 	}
 	if (field.contraintMask & persistence::Model::NOTNULL) {
@@ -145,16 +136,7 @@ std::string DatabaseTool::getDbFlags(const Table& table, const persistence::Mode
 }
 
 void DatabaseTool::sep(std::stringstream& ss, int count) const {
-	if (_database == POSTGRES) {
-		ss << "$" << count;
-	} else if (_database == MYSQL) {
-		ss << "?";
-	} else if (_database == SQLITE) {
-		ss << "?";
-	} else {
-		Log::warn("Unknown prepared statement variable identifier - using ?");
-		ss << "?";
-	}
+	ss << "$" << count;
 }
 
 bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& src) const {
@@ -231,16 +213,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		loadNonPk << "\t\t\t}\n";
 
 		loadNonPk << "\t\t\t__load_ << \"" << f.name << " = ";
-		if (_database == POSTGRES) {
-			loadNonPk << "$\" << __count_";
-		} else if (_database == MYSQL) {
-			loadNonPk << "?\"";
-		} else if (_database == SQLITE) {
-			loadNonPk << "?\"";
-		} else {
-			Log::warn("Unknown prepared statement variable identifier - using ?");
-			loadNonPk << "?\"";
-		}
+		loadNonPk << "$\" << __count_";
 		loadNonPk << ";\n\t\t\t++__count_;\n\t\t\t__andNeeded_ = true;\n";
 		loadNonPk << "\t\t}\n";
 
@@ -316,7 +289,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		}
 	}
 	insert << ") VALUES (" << insertvalues.str() << ")";
-	if (_database == POSTGRES && !autoincrement.empty()) {
+	if (!autoincrement.empty()) {
 		insert << " RETURNING " << autoincrement;
 	}
 	insert << "\"";
@@ -615,20 +588,6 @@ bool DatabaseTool::parse(const std::string& buffer) {
 	return true;
 }
 
-DatabaseTool::DatabaseType DatabaseTool::getDatabaseType(const std::string& arg) const {
-	if (core::string::iequals(arg, "sqlite3")) {
-		Log::info("Generate database models for sqlite3");
-		return SQLITE;
-	}
-	if (core::string::iequals(arg, "mysql")) {
-		Log::info("Generate database models for mysql");
-		return MYSQL;
-	}
-	// default is postgres
-	Log::info("Generate database models for postgres");
-	return POSTGRES;
-}
-
 core::AppState DatabaseTool::onRunning() {
 	if (_argc < 3) {
 		_exitCode = 1;
@@ -638,7 +597,6 @@ core::AppState DatabaseTool::onRunning() {
 
 	_tableFile    = _argv[1];
 	_targetFile   = _argv[2];
-	_database     = _argc >= 4 ? getDatabaseType(_argv[3]) : POSTGRES;
 
 	Log::debug("Preparing table file %s", _tableFile.c_str());
 	const std::string& buf = filesystem()->load(_tableFile);
