@@ -95,8 +95,9 @@ else()
 	message(STATUS "ccache not found")
 endif()
 
-configure_file(${ROOT_DIR}/src/config.h.in ${CMAKE_BINARY_DIR}/config.h @ONLY)
-include_directories(${CMAKE_BINARY_DIR})
+configure_file(src/config.h.in config.h @ONLY)
+message(STATUS "Generate config.h in ${CMAKE_CURRENT_BINARY_DIR}")
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 include_directories(src/modules)
 include_directories(src/modules/ui)
