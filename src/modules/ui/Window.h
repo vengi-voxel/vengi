@@ -45,6 +45,9 @@ public:
 	Window(Window* parent);
 	virtual ~Window();
 
+	Window* getParent() const;
+	UIApp* getApp() const;
+
 	std::string getStr(const char* nodeId);
 	float getFloat(const char *nodeId);
 	int getInt(const char *nodeId);

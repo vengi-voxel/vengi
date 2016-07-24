@@ -27,6 +27,21 @@ Window::~Window() {
 	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
 }
 
+Window* Window::getParent() const {
+	return static_cast<Window*>(GetParent());
+}
+
+UIApp* Window::getApp() const {
+	if (_app) {
+		return _app;
+	}
+	Window* parent = getParent();
+	if (parent == nullptr) {
+		return nullptr;
+	}
+	return parent->getApp();
+}
+
 void Window::fillWidgets(const Field* fields, int fieldAmount, void* basePtr) {
 	for (int i = 0; i < fieldAmount; ++i) {
 		const Field& field = fields[i];
