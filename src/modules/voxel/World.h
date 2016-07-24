@@ -98,7 +98,7 @@ public:
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
 	 */
 	inline glm::ivec3 getMeshPos(const glm::ivec3& pos) const {
-		const int size = getMeshSize();
+		const float size = getMeshSize();
 		const int x = glm::floor(pos.x / size);
 		const int y = glm::floor(pos.y / size);
 		const int z = glm::floor(pos.z / size);
@@ -109,7 +109,7 @@ public:
 	 * @brief Cuts the given world coordinate down to chunk tile vectors
 	 */
 	inline glm::ivec3 getChunkPos(const glm::ivec3& pos) const {
-		const int size = getChunkSize();
+		const float size = getChunkSize();
 		const int x = glm::floor(pos.x / size);
 		const int y = glm::floor(pos.y / size);
 		const int z = glm::floor(pos.z / size);

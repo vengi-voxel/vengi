@@ -26,11 +26,13 @@ protected:
 
 		const glm::ivec3& chunkPos = world.getChunkPos(vec);
 		ASSERT_EQ(glm::ivec3(chunkX, chunkY, chunkZ), chunkPos)
-			<< "Chunk position doesn't match the expected for chunk size: " << world.getChunkSize();
+			<< "Chunk position doesn't match the expected for chunk size: " << world.getChunkSize()
+			<< " at: " << vec;
 
 		const glm::ivec3& meshPos = world.getMeshPos(vec);
 		ASSERT_EQ(glm::ivec3(meshX, meshY, meshZ), meshPos)
-			<< "Mesh position doesn't match the expected for mesh size: " << world.getMeshSize();
+			<< "Mesh position doesn't match the expected for mesh size: " << world.getMeshSize()
+			<< " at: " << vec;
 	}
 };
 
@@ -83,15 +85,17 @@ TEST_F(WorldTest, testChunkAndmeshPos) {
 	chunkMeshPositionTest(world, chunkSize + 1, chunkSize + 1, chunkSize + 1, 1, 1, 1, chunkSize, chunkSize, chunkSize);
 	chunkMeshPositionTest(world, chunkSize - 1, chunkSize - 1, chunkSize - 1, 0, 0, 0, chunkSizeMinusOneMesh, chunkSizeMinusOneMesh, chunkSizeMinusOneMesh);
 	chunkMeshPositionTest(world, -chunkSize, -chunkSize, -chunkSize, -1, -1, -1, -chunkSize, -chunkSize, -chunkSize);
+	chunkMeshPositionTest(world, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+	chunkMeshPositionTest(world, -1, -1, -1, -1, -1, -1, -meshSize, -meshSize, -meshSize);
 #if 0
 	chunkMeshPositionTest(world, -(chunkSize + 1), -(chunkSize + 1), -(chunkSize + 1), -2, -2, -2, -2 * chunkSize, -2 * chunkSize, -2 * chunkSize);
-
 	chunkMeshPositionTest(world, -halfChunkSize, halfChunkSize, halfChunkSize, -1, 0, 0, -chunkSize, 0, 0);
 	chunkMeshPositionTest(world, -halfChunkSize, -halfChunkSize, -halfChunkSize, -1, -1, -1, -chunkSize, 0, -chunkSize);
 	chunkMeshPositionTest(world, halfChunkSize, halfChunkSize, halfChunkSize, 0, 0, 0, 0, 0, 0);
+
 	chunkMeshPositionTest(world, 2 * chunkSize + halfChunkSize, 2 * chunkSize + halfChunkSize, 2 * chunkSize + halfChunkSize, 2, 2, 2, 2 * chunkSize, 0, 2 * chunkSize);
 	chunkMeshPositionTest(world, halfChunkSize, 0, halfChunkSize, 0, 0, 0, 0, 0, 0);
-
 	chunkMeshPositionTest(world, halfChunkSize, MAX_HEIGHT - 1, halfChunkSize, 0, MAX_HEIGHT / chunkSize, 0, 0, 0, 0);
 #endif
 }
