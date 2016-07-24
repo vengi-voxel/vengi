@@ -11,6 +11,8 @@
 
 namespace frontend {
 
+// TODO: introduce a login facade here that performs the auto login (if user wishes so), or show this popup. Or forward to a
+// signup window
 class LoginWindow: public ui::Window {
 private:
 	Client* _client;
