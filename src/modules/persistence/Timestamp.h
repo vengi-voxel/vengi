@@ -7,7 +7,7 @@ private:
 	uint64_t _time;
 	bool _now;
 public:
-	// TODO: POSTGRES: microseconds, sqlite seconds, mysql seconds
+	// TODO: POSTGRES: microseconds
 	Timestamp(uint64_t time) :
 			_time(time), _now(false) {
 	}

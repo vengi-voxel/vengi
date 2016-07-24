@@ -77,10 +77,8 @@ Connection* ConnectionPool::connection() {
 	}
 	Connection* c = _connections.front();
 	_connections.pop();
-#ifdef PERSISTENCE_POSTGRES
-	if (PQstatus(c->connection()) == CONNECTION_OK)
-#endif
-	{
+	// TODO: hide postgres here - move into connection
+	if (PQstatus(c->connection()) == CONNECTION_OK) {
 		return c;
 	}
 

@@ -13,14 +13,8 @@
 #include "Timestamp.h"
 #include "config.h"
 
-#ifdef PERSISTENCE_POSTGRES
 #include <libpq-fe.h>
 using ResultType = PGresult;
-#endif
-#ifdef PERSISTENCE_SQLITE
-#include <sqlite3.h>
-using ResultType = sqlite3_stmt;
-#endif
 
 namespace persistence {
 

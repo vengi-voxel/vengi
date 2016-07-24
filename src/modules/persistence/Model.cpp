@@ -42,7 +42,6 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 		return false;
 	}
 
-#ifdef PERSISTENCE_POSTGRES
 	ExecStatusType lastState = PQresultStatus(state.res);
 
 	switch (lastState) {
@@ -67,7 +66,6 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 		Log::error("not catched state: %s", PQresStatus(lastState));
 		return false;
 	}
-#endif
 
 	state.result = true;
 	return true;
@@ -81,25 +79,9 @@ bool Model::exec(const char* query) {
 		return false;
 	}
 	ConnectionType* conn = scoped.connection()->connection();
-#ifdef PERSISTENCE_POSTGRES
 	State s(PQexec(conn, query));
 	checkLastResult(s, scoped);
 	return fillModelValues(s);
-#elif defined PERSISTENCE_SQLITE
-	char *zErrMsg = nullptr;
-	const int rc = sqlite3_exec(conn, query, nullptr, nullptr, &zErrMsg);
-	if (rc != SQLITE_OK) {
-		if (zErrMsg != nullptr) {
-			Log::error("SQL error: %s", zErrMsg);
-		}
-		sqlite3_free(zErrMsg);
-		return false;
-	}
-
-	return true;
-#else
-	return false;
-#endif
 }
 
 Model::Field Model::getField(const std::string& name) const {
@@ -132,21 +114,11 @@ bool Model::fillModelValues(Model::State& state) {
 		return state.result;
 	}
 
-#ifdef PERSISTENCE_POSTGRES
 	const int nFields = PQnfields(state.res);
-#else
-	//sqlite3_int64 sqlite3_last_insert_rowid(sqlite3*);
-	const int nFields = 0;
-#endif
 	Log::trace("Query has values for %i fields", nFields);
 	for (int i = 0; i < nFields; ++i) {
-#ifdef PERSISTENCE_POSTGRES
 		const char* name = PQfname(state.res, i);
 		const char* value = PQgetvalue(state.res, 0, i);
-#else
-		const char* name = "NOT_IMPLEMENTED";
-		const char* value = "";
-#endif
 		if (value == nullptr) {
 			value = "";
 		}
@@ -191,7 +163,6 @@ Model::State Model::PreparedStatement::exec() {
 
 	ConnectionType* conn = scoped.connection()->connection();
 
-#ifdef PERSISTENCE_POSTGRES
 	if (!scoped.connection()->hasPreparedStatement(_name)) {
 		State state(PQprepare(conn, _name.c_str(), _statement.c_str(), (int)_params.size(), nullptr));
 		if (!_model->checkLastResult(state, scoped)) {
@@ -210,41 +181,6 @@ Model::State Model::PreparedStatement::exec() {
 	}
 	_model->fillModelValues(prepState);
 	return prepState;
-#elif defined PERSISTENCE_SQLITE
-	ResultType *stmt;
-	const char *pzTest;
-	const int rcPrep = sqlite3_prepare_v2(conn, _statement.c_str(), _statement.size(), &stmt, &pzTest);
-	if (rcPrep != SQLITE_OK) {
-		Log::error("failed to prepare the statement: %s", sqlite3_errmsg(conn));
-		return State(nullptr);
-	}
-	sqlite3_reset(stmt);
-
-	const int size = _params.size();
-	for (int i = 0; i < size; ++i) {
-		const int retVal = sqlite3_bind_text(stmt, i, _params[i].c_str(), _params[i].size(), SQLITE_TRANSIENT);
-		if (retVal != SQLITE_OK) {
-			Log::error("Failed to bind: %s", sqlite3_errmsg(conn));
-			return State(nullptr);
-		}
-	}
-
-	char *zErrMsg = nullptr;
-	const int rcExec = sqlite3_exec(conn, _statement.c_str(), nullptr, nullptr, &zErrMsg);
-	if (rcExec != SQLITE_OK) {
-		if (zErrMsg != nullptr) {
-			Log::error("Failed to exec: %s", zErrMsg);
-		}
-		sqlite3_free(zErrMsg);
-		return State(nullptr);
-	}
-
-	State state(stmt);
-	_model->fillModelValues();
-	return state;
-#else
-	return State(nullptr);
-#endif
 }
 
 Model::State::State(ResultType* _res) :
@@ -259,15 +195,7 @@ Model::State::State(State&& other) :
 
 Model::State::~State() {
 	if (res != nullptr) {
-#ifdef PERSISTENCE_POSTGRES
 		PQclear(res);
-#elif defined PERSISTENCE_SQLITE
-		const int retVal = sqlite3_finalize(res);
-		if (retVal != SQLITE_OK) {
-			//const char *errMsg = sqlite3_errmsg(_pgConnection);
-			Log::error("Could not finalize the statement");
-		}
-#endif
 		res = nullptr;
 	}
 }

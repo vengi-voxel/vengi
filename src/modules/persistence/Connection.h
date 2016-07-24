@@ -8,13 +8,8 @@
 #include <unordered_set>
 #include "config.h"
 
-#ifdef PERSISTENCE_POSTGRES
 #include <libpq-fe.h>
 using ConnectionType = ::PGconn;
-#elif defined PERSISTENCE_SQLITE
-#include <sqlite3.h>
-using ConnectionType = ::sqlite3;
-#endif
 
 namespace persistence {
 

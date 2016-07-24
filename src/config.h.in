@@ -1,11 +1,11 @@
 #pragma once
 
-#cmakedefine PERSISTENCE_SQLITE
-#cmakedefine PERSISTENCE_POSTGRES
+#define PROJECT_VERSION "@PROJECT_VERSION@"
+#define PROJECT_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@"
+#define PROJECT_VERSION_MINOR "@PROJECT_VERSION_MINOR@"
+#define PROJECT_VERSION_PATCH "@PROJECT_VERSION_PATCH@"
 
-#cmakedefine SERVER_HOST "@SERVER_HOST@"
-#cmakedefine SERVER_PORT "@SERVER_PORT@"
+#define SERVER_HOST "@SERVER_HOST@"
+#define SERVER_PORT "@SERVER_PORT@"
 
-#if !defined PERSISTENCE_POSTGRES and !defined PERSISTENCE_SQLITE
-#error "No persistence backend defined"
-#endif
+#cmakedefine01 RELEASE

@@ -33,14 +33,11 @@ void Connection::changePort(uint16_t port) {
 	_port = port;
 }
 
-#ifdef PERSISTENCE_POSTGRES
 static void defaultNoticeProcessor(void *arg, const char *message) {
 	Log::debug("notice processor: %s", message);
 }
-#endif
 
 bool Connection::connect() {
-#ifdef PERSISTENCE_POSTGRES
 	std::string conninfo = "";
 
 	const char *host = nullptr;
@@ -79,30 +76,13 @@ bool Connection::connect() {
 	_preparedStatements.clear();
 
 	PQsetNoticeProcessor(_connection, defaultNoticeProcessor, nullptr);
-
-#elif defined PERSISTENCE_SQLITE
-	const int rc = sqlite3_open(_dbname.c_str(), &_connection);
-	Log::debug("connect %p", _connection);
-	if (rc != SQLITE_OK) {
-		Log::error("Can't open database '%s': %s", _dbname.c_str(), sqlite3_errmsg(_connection));
-		sqlite3_close(_connection);
-		_connection = nullptr;
-		return false;
-	}
-#elif defined PERSISTENCE_MYSQL
-	return false;
-#endif
 	return true;
 }
 
 void Connection::disconnect() {
 	if (_connection != nullptr) {
 		Log::debug("disconnect %p", _connection);
-#ifdef PERSISTENCE_POSTGRES
 		PQfinish(_connection);
-#elif defined PERSISTENCE_SQLITE
-		sqlite3_close(_connection);
-#endif
 		_connection = nullptr;
 	}
 	_preparedStatements.clear();
