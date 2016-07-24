@@ -16,7 +16,7 @@ private:
 public:
 	HudWindow(Client* client, const glm::ivec2& dimension) :
 			ui::Window(client), _client(client) {
-		core_assert(loadResourceFile("ui/window/hud.tb.txt"));
+		core_assert_always(loadResourceFile("ui/window/hud.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_NONE);
 		SetSize(dimension.x, 20);
 	}

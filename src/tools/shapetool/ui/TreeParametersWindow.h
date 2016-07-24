@@ -25,7 +25,7 @@ private:
 public:
 	TreeParametersWindow(ShapeTool* tool) :
 			ui::Window(tool), _tool(tool) {
-		core_assert(loadResourceFile("ui/window/treeparameters.tb.txt"));
+		core_assert_always(loadResourceFile("ui/window/treeparameters.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 		SetOpacity(0.8f);
 		fillWidgets(TREEFIELDS, SDL_arraysize(TREEFIELDS), &_ctx);

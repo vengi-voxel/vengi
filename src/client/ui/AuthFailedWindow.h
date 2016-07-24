@@ -13,7 +13,7 @@ class AuthFailedWindow: public ui::Window {
 public:
 	AuthFailedWindow(Window* parent) :
 			ui::Window(parent) {
-		core_assert(loadResourceFile("ui/window/authfailed.tb.txt"));
+		core_assert_always(loadResourceFile("ui/window/authfailed.tb.txt"));
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {

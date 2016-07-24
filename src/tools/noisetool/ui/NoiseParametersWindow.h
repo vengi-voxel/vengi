@@ -80,7 +80,7 @@ private:
 public:
 	NoiseParametersWindow(NoiseTool* tool) :
 			ui::Window(tool) {
-		core_assert(loadResourceFile("ui/window/noiseparameters.tb.txt"));
+		core_assert_always(loadResourceFile("ui/window/noiseparameters.tb.txt"));
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {

@@ -17,7 +17,7 @@ private:
 public:
 	LoginWindow(Client* client) :
 			ui::Window(client), _client(client) {
-		core_assert(loadResourceFile("ui/window/login.tb.txt"));
+		core_assert_always(loadResourceFile("ui/window/login.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 
 		const std::string& email = core::Var::get(cfg::ClientEmail)->strVal();
