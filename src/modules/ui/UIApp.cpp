@@ -438,6 +438,11 @@ core::AppState UIApp::onCleanup() {
 	tb::TBWidgetsAnimationManager::Shutdown();
 	tb::tb_core_shutdown();
 
+	core::Command::unregisterCommand("cl_ui_debug");
+	core::Command::unregisterCommand("quit");
+	core::Command::unregisterCommand("bindlist");
+	core::Command::unregisterCommand("bind");
+
 	_console.shutdown();
 	_renderer.shutdown();
 
