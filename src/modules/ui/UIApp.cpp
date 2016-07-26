@@ -112,36 +112,39 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 #endif
 	if (tb::TBWidget::focused_widget && down && shortcutKey) {
 		bool reverseKey = (mod & tb::TB_SHIFT) ? true : false;
-		if (key >= 'a' && key <= 'z')
+		if (key >= 'a' && key <= 'z') {
 			key += 'A' - 'a';
+		}
 		tb::TBID id;
-		if (key == 'X')
+		if (key == 'X') {
 			id = TBIDC("cut");
-		else if (key == 'C' || special == tb::TB_KEY_INSERT)
+		} else if (key == 'C' || special == tb::TB_KEY_INSERT) {
 			id = TBIDC("copy");
-		else if (key == 'V' || (special == tb::TB_KEY_INSERT && reverseKey))
+		} else if (key == 'V' || (special == tb::TB_KEY_INSERT && reverseKey)) {
 			id = TBIDC("paste");
-		else if (key == 'A')
+		} else if (key == 'A') {
 			id = TBIDC("selectall");
-		else if (key == 'Z' || key == 'Y') {
+		} else if (key == 'Z' || key == 'Y') {
 			bool undo = key == 'Z';
-			if (reverseKey)
+			if (reverseKey) {
 				undo = !undo;
+			}
 			id = undo ? TBIDC("undo") : TBIDC("redo");
-		} else if (key == 'N')
+		} else if (key == 'N') {
 			id = TBIDC("new");
-		else if (key == 'O')
+		} else if (key == 'O') {
 			id = TBIDC("open");
-		else if (key == 'S')
+		} else if (key == 'S') {
 			id = TBIDC("save");
-		else if (key == 'W')
+		} else if (key == 'W') {
 			id = TBIDC("close");
-		else if (special == tb::TB_KEY_PAGE_UP)
+		} else if (special == tb::TB_KEY_PAGE_UP) {
 			id = TBIDC("prev_doc");
-		else if (special == tb::TB_KEY_PAGE_DOWN)
+		} else if (special == tb::TB_KEY_PAGE_DOWN) {
 			id = TBIDC("next_doc");
-		else
+		} else {
 			return false;
+		}
 
 		tb::TBWidgetEvent ev(tb::EVENT_TYPE_SHORTCUT);
 		ev.modifierkeys = mod;
@@ -188,10 +191,11 @@ void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 	static int counter = 1;
 
 	const double time = tb::TBSystem::GetTimeMS();
-	if (time < lastTime + 600 && lastX == x && lastY == y)
+	if (time < lastTime + 600 && lastX == x && lastY == y) {
 		++counter;
-	else
+	} else {
 		counter = 1;
+	}
 	lastX = x;
 	lastY = y;
 	lastTime = time;
