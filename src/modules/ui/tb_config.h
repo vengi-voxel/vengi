@@ -90,6 +90,7 @@
 
 /** Defines for implementations of TBSystem. */
 #define TB_SYSTEM_SDL
+#define TB_FILE_SDL
 //#define TB_SYSTEM_LINUX
 //#define TB_SYSTEM_WINDOWS
 //#define TB_SYSTEM_ANDROID
@@ -102,17 +103,17 @@
 // == Setting some defaults for platform implementations ==========================
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-#define TB_FILE_POSIX
+//#define TB_FILE_POSIX
 #define TB_TARGET_WINDOWS
 #endif
 
 #if defined(__linux) || defined(__linux__)
-#define TB_FILE_POSIX
+//#define TB_FILE_POSIX
 #define TB_TARGET_LINUX
 #endif
 
 #ifdef MACOSX
-#define TB_FILE_POSIX
+//#define TB_FILE_POSIX
 #define TB_TARGET_MACOSX
 #endif
 
