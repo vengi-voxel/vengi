@@ -382,8 +382,9 @@ void UIApp::addChild(Window* window) {
 }
 
 core::AppState UIApp::onRunning() {
-	if (_quit)
+	if (_quit) {
 		return core::AppState::Cleanup;
+	}
 	core::AppState state = WindowedApp::onRunning();
 
 	const bool running = state == core::AppState::Running;
