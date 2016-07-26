@@ -98,7 +98,7 @@ int mapKey(int32_t key) {
 tb::UIRendererGL _renderer;
 
 UIApp::UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport) :
-		WindowedApp(filesystem, eventBus, traceport), _quit(false) {
+		Super(filesystem, eventBus, traceport), _quit(false) {
 }
 
 UIApp::~UIApp() {
@@ -237,7 +237,7 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 		return true;
 	}
 
-	if (WindowedApp::onKeyPress(key, modifier)) {
+	if (Super::onKeyPress(key, modifier)) {
 		return true;
 	}
 
@@ -245,7 +245,7 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 bool UIApp::onKeyRelease(int32_t key) {
-	video::WindowedApp::onKeyRelease(key);
+	Super::onKeyRelease(key);
 	const tb::MODIFIER_KEYS mod = mapModifier(SDL_GetModState());
 	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
 		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU);
@@ -257,7 +257,7 @@ bool UIApp::onKeyRelease(int32_t key) {
 }
 
 core::AppState UIApp::onConstruct() {
-	const core::AppState state = WindowedApp::onConstruct();
+	const core::AppState state = Super::onConstruct();
 	core::Command::registerCommand("cl_ui_debug", [&] (const core::CmdArgs& args) {
 #ifdef DEBUG
 		tb::ShowDebugInfoSettingsWindow(&_root);
@@ -332,7 +332,7 @@ void UIApp::afterUI() {
 }
 
 core::AppState UIApp::onInit() {
-	const core::AppState state = WindowedApp::onInit();
+	const core::AppState state = Super::onInit();
 	if (!tb::tb_core_init(&_renderer)) {
 		Log::error("failed to initialize the ui");
 		return core::AppState::Cleanup;
@@ -385,7 +385,7 @@ core::AppState UIApp::onRunning() {
 	if (_quit) {
 		return core::AppState::Cleanup;
 	}
-	core::AppState state = WindowedApp::onRunning();
+	core::AppState state = Super::onRunning();
 
 	const bool running = state == core::AppState::Running;
 	if (running) {
@@ -441,7 +441,7 @@ core::AppState UIApp::onCleanup() {
 	_console.shutdown();
 	_renderer.shutdown();
 
-	return WindowedApp::onCleanup();
+	return Super::onCleanup();
 }
 
 }

@@ -16,6 +16,8 @@
 namespace ui {
 
 class UIApp: public video::WindowedApp, private tb::TBWidgetListener {
+private:
+	using Super = video::WindowedApp;
 protected:
 	/**
 	 * @brief This struct allows you to determine how long a key was pressed or how long it is pressed
@@ -42,8 +44,9 @@ protected:
 	 * @brief Call this in a key down key binding function
 	 */
 	inline void keyDown(KeyState& state) {
-		if (state.active)
+		if (state.active) {
 			return;
+		}
 		state.msec = _now;
 		state.active = true;
 		state.downtime = 0;
