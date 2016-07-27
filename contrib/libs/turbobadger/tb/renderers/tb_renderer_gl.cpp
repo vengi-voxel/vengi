@@ -25,7 +25,7 @@ uint32 dbg_bitmap_validations = 0;
 		xxx;															\
 		GLenum err = GL_NO_ERROR;										\
 		while((err = glGetError()) != GL_NO_ERROR) {					\
-			//std::cout << __FILE__ << ":" << __LINE__ << ", GL error 0x" << std::hex << err << std::dec << "\n"; \
+			TBDebugPrint("%s:%i => gl error: %i", __FILE__, (int)__LINE__, (int)err); \
 		} } while (0)
 #else
 #define GLCALL(xxx) do {} while (0)
