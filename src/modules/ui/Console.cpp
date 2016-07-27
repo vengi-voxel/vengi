@@ -551,7 +551,7 @@ void Console::render(const tb::TBRect &rect, long deltaFrame) {
 
 	const int lineHeight = _font->GetFontDescription().GetSize();
 	_maxLines = rect.h / lineHeight;
-	int maxY = _messages.size() * lineHeight;
+	const int maxY = _messages.size() * lineHeight;
 	const int startY = std::min(rect.y + rect.h - lineHeight, maxY);
 	MessagesIter i = _messages.rbegin();
 	std::advance(i, _scrollPos);

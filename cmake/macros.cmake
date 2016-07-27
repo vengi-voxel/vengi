@@ -52,43 +52,26 @@ macro(generate_shaders TARGET)
 	file(MAKE_DIRECTORY ${GEN_DIR})
 	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
 	if (GLSL_VALIDATOR_EXECUTABLE)
-		message("${GLSL_VALIDATOR_EXECUTABLE} found - executing in ${ROOT_DIR}/data/${TARGET}/shaders")
-		set(_dir ${ROOT_DIR}/data/${TARGET}/shaders)
-		if (IS_DIRECTORY ${_dir})
-			foreach(_file ${files})
-				if (EXISTS ${_dir}/${_file}.frag AND EXISTS ${_dir}/${_file}.vert)
-					convert_to_camel_case(${_file} _f)
-					set(_shaderfile "${_f}Shader.h")
-					set(_shader "${GEN_DIR}${_shaderfile}")
-					add_custom_command(
-						OUTPUT ${_shader}
-						COMMENT "Validate ${_file} and generate ${_shaderfile}"
-						COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} ${_template} shader shaders/ ${GEN_DIR}
-						DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template}
-						WORKING_DIRECTORY ${_dir}
-					)
-					list(APPEND _headers ${_shader})
-				endif()
-			endforeach()
-		endif()
-		set(_dir ${ROOT_DIR}/data/shared/shaders)
-		if (IS_DIRECTORY ${_dir})
-			foreach(_file ${files})
-				if (EXISTS ${_dir}/${_file}.frag AND EXISTS ${_dir}/${_file}.vert)
-					convert_to_camel_case(${_file} _f)
-					set(_shaderfile "${_f}Shader.h")
-					set(_shader "${GEN_DIR}${_shaderfile}")
-					add_custom_command(
-						OUTPUT ${_shader}
-						COMMENT "Validate ${_file} and generate ${_shaderfile}"
-						COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} ${_template} shader shaders/ ${GEN_DIR}
-						DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template}
-						WORKING_DIRECTORY ${_dir}
-					)
-					list(APPEND _headers ${_shader})
-				endif()
-			endforeach()
-		endif()
+		foreach (shader_dir "${TARGET}" shared)
+			set(_dir ${ROOT_DIR}/data/${shader_dir}/shaders)
+			if (IS_DIRECTORY ${_dir})
+				foreach (_file ${files})
+					if (EXISTS ${_dir}/${_file}.frag AND EXISTS ${_dir}/${_file}.vert)
+						convert_to_camel_case(${_file} _f)
+						set(_shaderfile "${_f}Shader.h")
+						set(_shader "${GEN_DIR}${_shaderfile}")
+						add_custom_command(
+							OUTPUT ${_shader}
+							COMMENT "Validate ${_file} and generate ${_shaderfile}"
+							COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} ${_template} shader shaders/ ${GEN_DIR}
+							DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template}
+							WORKING_DIRECTORY ${_dir}
+						)
+						list(APPEND _headers ${_shader})
+					endif()
+				endforeach()
+			endif()
+		endforeach()
 
 		add_custom_target(GenerateShaderBindings${TARGET}
 			DEPENDS ${_headers}
