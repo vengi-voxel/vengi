@@ -72,21 +72,25 @@ macro(generate_shaders TARGET)
 				endforeach()
 			endif()
 		endforeach()
-
-		add_custom_target(GenerateShaderBindings${TARGET}
-			DEPENDS ${_headers}
-			COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
-		)
 		convert_to_camel_case(${TARGET} _filetarget)
 		set(_h ${GEN_DIR}/${_filetarget}Shaders.h)
-		file(WRITE ${_h} "#pragma once\n")
+		file(WRITE ${_h}.in "#pragma once\n")
 		foreach(header_path ${_headers})
 			string(REPLACE "${GEN_DIR}" "" header "${header_path}")
-			file(APPEND ${_h} "#include \"${header}\"\n")
+			file(APPEND ${_h}.in "#include \"${header}\"\n")
 		endforeach()
-
+		add_custom_command(
+			OUTPUT  ${_h}
+			COMMAND ${CMAKE_COMMAND}
+			ARGS    -E copy_if_different ${_h}.in ${_h}
+			COMMENT "Generate ${_h}"
+		)
+		add_custom_target(GenerateShaderBindings${TARGET}
+			DEPENDS ${_headers} ${_h}
+			COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
+		)
 		#target_sources(${TARGET} PUBLIC ${_headers} ${_h})
-		set_source_files_properties(${_headers} ${_h} PROPERTIES GENERATED TRUE)
+		set_source_files_properties(${_headers} ${_h} ${_h}.in PROPERTIES GENERATED TRUE)
 		add_dependencies(${TARGET} GenerateShaderBindings${TARGET})
 	else()
 		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found at ${TOOLS_DIR}")
