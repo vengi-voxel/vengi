@@ -75,7 +75,7 @@ cmake:
 .PHONY: build
 build: cmake
 	$(Q)cd $(BUILDDIR); make $(JOB_FLAG);
-	$(Q)cd $(BUILDDIR); make install
+	$(Q)cd $(BUILDDIR); make install | grep -v Up-to-date
 
 clean:
 	$(Q)rm -rf $(BUILDDIR)
