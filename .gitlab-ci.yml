@@ -12,4 +12,4 @@ before_script:
 build:
   script:
     - make -j 4
-    - make tests ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*"
+    - make tests ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate"
