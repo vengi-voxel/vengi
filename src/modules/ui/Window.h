@@ -6,6 +6,7 @@
 
 #include "TurboBadger.h"
 #include <cstdint>
+#include "core/Var.h"
 #include "core/String.h"
 #include "io/IEventObserver.h"
 
@@ -52,6 +53,9 @@ public:
 	float getFloat(const char *nodeId);
 	int getInt(const char *nodeId);
 	bool isToggled(const char *checkBoxNodeId);
+	void setText(const char *nodeId, const std::string& text);
+	void toggleViaVar(const char *checkBoxNodeId, const core::VarPtr& var);
+	void toggle(const char *checkBoxNodeId, bool state);
 
 	bool loadResourceFile(const char *filename);
 	void loadResourceData(const char *data);

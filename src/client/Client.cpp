@@ -115,7 +115,20 @@ core::AppState Client::onInit() {
 	}
 
 	_root.SetSkinBg(TBIDC("background"));
-	new frontend::LoginWindow(this);
+
+	const core::VarPtr& autoLoginVar = core::Var::get(cfg::ClientAutoLogin);
+	if (autoLoginVar->boolVal()) {
+		const int port = core::Var::get(cfg::ClientPort)->intVal();
+		const std::string& host = core::Var::get(cfg::ClientHost)->strVal();
+		Log::info("Trying to connect to server %s:%i", host.c_str(), port);
+		if (!connect(port, host)) {
+			autoLoginVar->setVal(false);
+		}
+	}
+
+	if (!autoLoginVar->boolVal()) {
+		new frontend::LoginWindow(this);
+	}
 
 	return state;
 }

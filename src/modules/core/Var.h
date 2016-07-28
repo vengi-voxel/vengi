@@ -159,6 +159,12 @@ public:
 	 */
 	bool boolVal() const;
 	void setVal(const std::string& value);
+	inline void setVal(const char* value) {
+		setVal(std::string(value));
+	}
+	inline void setVal(bool value) {
+		setVal(value ? "true" : "false");
+	}
 	/**
 	 * @return The string value of this var
 	 */

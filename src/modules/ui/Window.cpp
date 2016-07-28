@@ -162,6 +162,28 @@ bool Window::loadResourceFile(const char *filename) {
 	return true;
 }
 
+void Window::setText(const char *nodeId, const std::string& text) {
+	tb::TBEditField *widget = GetWidgetByIDAndType<tb::TBEditField>(tb::TBID(nodeId));
+	if (widget == nullptr) {
+		Log::info("could not find an edit field node with the name %s", nodeId);
+		return;
+	}
+	widget->SetText(text.c_str());
+}
+
+void Window::toggleViaVar(const char *checkBoxNodeId, const core::VarPtr& var) {
+	toggle(checkBoxNodeId, var->boolVal());
+}
+
+void Window::toggle(const char *checkBoxNodeId, bool state) {
+	tb::TBCheckBox *widget = GetWidgetByIDAndType<tb::TBCheckBox>(checkBoxNodeId);
+	if (widget == nullptr) {
+		Log::info("could not find a checkbox node with the name %s", checkBoxNodeId);
+		return;
+	}
+	return widget->SetValue(state ? 1 : 0);
+}
+
 bool Window::isToggled(const char *checkBoxNodeId) {
 	tb::TBCheckBox *widget = GetWidgetByIDAndType<tb::TBCheckBox>(checkBoxNodeId);
 	if (widget == nullptr) {

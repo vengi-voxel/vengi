@@ -37,9 +37,9 @@ TBLayout
 			TBClickLabel
 				text @autologin
 				TBCheckBox
-				id autologin
-				lp
-					min-height 20
+					id autologin
+					lp
+						min-height 20
 		TBButton
 			text @login
 			id login
