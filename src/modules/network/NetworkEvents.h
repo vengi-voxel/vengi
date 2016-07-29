@@ -28,7 +28,11 @@ private:
 public:
 	DisconnectEvent(ENetPeer* peer) :
 			_peer(peer) {
-		Log::trace("Disconnect peer event %u", peer->connectID);
+		if (peer != nullptr) {
+			Log::trace("Disconnect peer event %u", peer->connectID);
+		} else {
+			Log::trace("Could not connect");
+		}
 	}
 	inline ENetPeer* peer() const {
 		return _peer;
