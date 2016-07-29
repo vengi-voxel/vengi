@@ -118,6 +118,9 @@ void ServerLoop::onEvent(const network::DisconnectEvent& event) {
 	ENetPeer* peer = event.peer();
 	Log::info("disconnect peer: %u", peer->connectID);
 	User* user = reinterpret_cast<User*>(peer->data);
+	if (user == nullptr) {
+		return;
+	}
 	// TODO: handle this and abort on re-login
 	user->cooldownMgr().triggerCooldown(cooldown::LOGOUT);
 }
