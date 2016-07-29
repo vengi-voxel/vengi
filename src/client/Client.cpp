@@ -116,6 +116,12 @@ core::AppState Client::onInit() {
 
 	_root.SetSkinBg(TBIDC("background"));
 
+	handleLogin();
+
+	return state;
+}
+
+void Client::handleLogin() {
 	const core::VarPtr& autoLoginVar = core::Var::get(cfg::ClientAutoLogin);
 	if (autoLoginVar->boolVal()) {
 		const int port = core::Var::get(cfg::ClientPort)->intVal();
@@ -129,8 +135,6 @@ core::AppState Client::onInit() {
 	if (!autoLoginVar->boolVal()) {
 		new frontend::LoginWindow(this);
 	}
-
-	return state;
 }
 
 void Client::renderBackground() {

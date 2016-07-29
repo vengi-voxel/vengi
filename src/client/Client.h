@@ -52,6 +52,7 @@ protected:
 
 	void sendMovement();
 	void renderBackground();
+	void handleLogin();
 	int renderMap(video::Shader& shader, const voxel::WorldPtr& world, const glm::mat4& view, float aspect);
 public:
 	Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
