@@ -162,6 +162,11 @@ bool Window::loadResourceFile(const char *filename) {
 	return true;
 }
 
+void Window::popup(const std::string& title, const std::string& str) {
+	tb::TBMessageWindow *win = new tb::TBMessageWindow(this, TBIDC(""));
+	win->Show(title.c_str(), str.c_str());
+}
+
 void Window::setText(const char *nodeId, const std::string& text) {
 	tb::TBEditField *widget = GetWidgetByIDAndType<tb::TBEditField>(tb::TBID(nodeId));
 	if (widget == nullptr) {

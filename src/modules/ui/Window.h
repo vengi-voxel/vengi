@@ -19,12 +19,18 @@ class UIApp;
 #define FLOAT_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_FLOAT, structtarget, structmember)
 #define IVEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_IVEC2, structtarget, structmember)
 #define VEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_VEC2, structtarget, structmember)
+#define _(id) getTranslation(tb::TBID(id))
 
 class Window: public tb::TBWindow, public io::IEventObserver {
 protected:
 	UIApp* _app;
 	float _percentWidth = 0.0f;
 	float _percentHeight = 0.0f;
+
+	inline const char *getTranslation(const tb::TBID& id) const {
+		return tb::g_tb_lng->GetString(id);
+	}
+
 public:
 	enum FieldType {
 		T_INT,
@@ -41,10 +47,12 @@ public:
 
 	void fillFields(const Field* fields, int fieldAmount, void* basePtr);
 	void fillWidgets(const Field* fields, int fieldAmount, void* basePtr);
-public:
+
 	Window(UIApp* app);
 	Window(Window* parent);
 	virtual ~Window();
+
+	void popup(const std::string& title, const std::string& str);
 
 	Window* getParent() const;
 	UIApp* getApp() const;

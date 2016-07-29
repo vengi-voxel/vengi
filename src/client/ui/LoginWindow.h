@@ -17,22 +17,19 @@ class LoginWindow: public ui::Window {
 private:
 	Client* _client;
 
-	void doLogin(TBWindow *window) {
-		TBWidget *email = window->GetWidgetByID(tb::TBID("email"));
-		TBWidget *password = window->GetWidgetByID(tb::TBID("password"));
+	void doLogin(ui::Window *window) {
+		const std::string& email = window->getStr("email");
+		const std::string& password = window->getStr("password");
 
-		core::Var::get(cfg::ClientEmail)->setVal(email->GetText().CStr());
-		core::Var::get(cfg::ClientPassword)->setVal(password->GetText().CStr());
+		core::Var::get(cfg::ClientEmail)->setVal(email);
+		core::Var::get(cfg::ClientPassword)->setVal(password);
 
 		const core::VarPtr& port = core::Var::get(cfg::ClientPort, SERVER_PORT);
 		const core::VarPtr& host = core::Var::get(cfg::ClientHost, SERVER_HOST);
 		Log::info("Trying to connect to server %s:%i", host->strVal().c_str(), port->intVal());
 		if (!_client->connect(port->intVal(), host->strVal())) {
 			Log::info("Failed to connect to server %s:%i", host->strVal().c_str(), port->intVal());
-			tb::TBStr text;
-			text.SetFormatted("Failed to connect");
-			tb::TBMessageWindow *win = new tb::TBMessageWindow(this, TBIDC(""));
-			win->Show("Failed to connect", text);
+			popup(_("error"), _("failed_to_connect"));
 		} else {
 			Close();
 		}
