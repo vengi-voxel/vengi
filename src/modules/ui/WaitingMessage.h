@@ -23,12 +23,12 @@ public:
 	void shutdown();
 
 	void setColor(const glm::vec4& color);
+	/**
+	 * @param[in] textId The language identifier
+	 */
 	void setTextId(const char *textId);
 
 	void reset();
-	/**
-	 * @param[in] stringId The language identifier
-	 */
 	void update(int deltaFrame);
 	void render();
 };
