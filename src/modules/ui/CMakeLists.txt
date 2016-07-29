@@ -3,6 +3,7 @@ set(SRCS
 	TurboBadger.h
 	Window.cpp Window.h
 	FontUtil.h
+	WaitingMessage.h WaitingMessage.cpp
 	Console.cpp Console.h
 	ui_renderer_gl.cpp ui_renderer_gl.h
 )

@@ -20,7 +20,7 @@
 #include "network/MessageSender.h"
 #include "network/NetworkEvents.h"
 #include "ui/UIApp.h"
-#include "ui/TurboBadger.h"
+#include "ui/WaitingMessage.h"
 #include "video/MeshPool.h"
 #include "video/Camera.h"
 
@@ -42,7 +42,7 @@ protected:
 	uint8_t _lastMoveMask = 0;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _player;
-	tb::TBFontFace *_font;
+	ui::WaitingMessage _waiting;
 
 	long _lastMovement = 0l;
 
@@ -64,8 +64,9 @@ protected:
 	}
 
 	inline frontend::ClientEntityId id() const {
-		if (!_player)
+		if (!_player) {
 			return -1;
+		}
 		return _player->id();
 	}
 

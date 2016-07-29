@@ -31,7 +31,7 @@
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
 		UIApp(filesystem, eventBus, 17816), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
-		_timeProvider(timeProvider), _worldRenderer(world) {
+		_timeProvider(timeProvider), _worldRenderer(world), _waiting(this) {
 	_world->setClientData(true);
 	init("engine", "client");
 }
@@ -108,6 +108,7 @@ core::AppState Client::onInit() {
 	GL_checkError();
 
 	_camera.init(dimension());
+	_waiting.init();
 
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
@@ -119,8 +120,6 @@ core::AppState Client::onInit() {
 	}
 
 	_root.SetSkinBg(TBIDC("background"));
-
-	_font = ui::getFont(28);
 
 	handleLogin();
 
@@ -193,21 +192,7 @@ void Client::afterUI() {
 	font->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
 
 	if (hasState(CLIENT_CONNECTING)) {
-		static int connectingStart = 0;
-		static const char *dotsArray[] = { ".", "..", "..." };
-		if (connectingStart >= 2000) {
-			connectingStart %= 2000;
-		}
-		connectingStart += _deltaFrame;
-		const int y = height() / 2 - _font->GetHeight() / 2;
-		const char* connectString = _("stateconnecting");
-		const int w = _font->GetStringWidth(connectString);
-		const int x = width() / 2 - w / 2;
-		_font->DrawString(x, y, tb::TBColor(255, 255, 255), connectString);
-		const int dotX = x + w + 5;
-		const int dotsIndex = (connectingStart / 500) % SDL_arraysize(dotsArray);
-		const char *dotsString = dotsArray[dotsIndex];
-		_font->DrawString(dotX, y, tb::TBColor(255, 255, 255), dotsString);
+		_waiting.render();
 	}
 
 	UIApp::afterUI();
@@ -226,11 +211,13 @@ core::AppState Client::onCleanup() {
 	_world->shutdown();
 	_player = frontend::ClientEntityPtr();
 	_network->shutdown();
+	_waiting.shutdown();
 	return state;
 }
 
 core::AppState Client::onRunning() {
 	_timeProvider->update(_now);
+	_waiting.update(_deltaFrame);
 	core::AppState state = UIApp::onRunning();
 	sendMovement();
 	if (state == core::AppState::Running) {
@@ -303,6 +290,7 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 	_peer = peer;
 	Log::info("Connected to server %s:%i", hostname.c_str(), port);
 	setState(CLIENT_CONNECTING);
+	_waiting.setTextId("stateconnecting");
 	return true;
 }
 
