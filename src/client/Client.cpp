@@ -225,6 +225,7 @@ void Client::onWindowResize() {
 }
 
 void Client::authFailed() {
+	core::Var::get(cfg::ClientAutoLogin)->setVal(false);
 	// TODO: stack (push/pop in UIApp) window support
 	ui::Window* main = new frontend::LoginWindow(this);
 	new frontend::AuthFailedWindow(main);
