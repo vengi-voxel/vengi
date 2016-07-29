@@ -13,9 +13,13 @@ password Password
 login Login
 email Email
 ok Ok
+cancel Cancel
+error Error
 disconnect Disconnect
 disconnecttext You either got disconnected or the connect attempt failed
 authfailed Authentication failed
 authfailedtext Authentication failed
-signup Signup
-autologin Auto-login
+autologin Auto
+failedtoconnect Failed to connect
+lostpassword Lost password
+signup New account

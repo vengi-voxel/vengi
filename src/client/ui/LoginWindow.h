@@ -47,13 +47,21 @@ public:
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
+		ui::Window* window = (ui::Window*)ev.target->GetParentWindow();
 		if (ev.special_key == tb::TB_KEY_ENTER) {
-			doLogin(ev.target->GetParentWindow());
+			doLogin(window);
 			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK) {
 			if (ev.target->GetID() == TBIDC("login")) {
-				doLogin(ev.target->GetParentWindow());
+				doLogin(window);
+				return true;
+			} else if (ev.target->GetID() == TBIDC("cancel")) {
+				_app->requestQuit();
+				return true;
+			} else if (ev.target->GetID() == TBIDC("signup")) {
+				return true;
+			} else if (ev.target->GetID() == TBIDC("lostpassword")) {
 				return true;
 			} else if (ev.target->GetID() == TBIDC("autologin")) {
 				const bool s = isToggled("autologin");

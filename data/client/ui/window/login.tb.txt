@@ -29,20 +29,38 @@ TBLayout
 				width 400
 	TBLayout
 		axis x
-		gravity right
-		distribution-position right bottom
+		gravity left right
+		distribution-position right
 		TBLayout
-			gravity left
-			distribution-position right bottom
+			gravity left right
+			distribution-position right
+			axis x
+			lp
+				width 100
 			TBClickLabel
 				text @autologin
 				TBCheckBox
 					id autologin
-					lp
-						min-height 20
+		TBLayout
+			skin linkbutton
+			gravity left right
+			distribution-position right
+			axis x
+			lp
+				width 300
+			TBButton
+				text @login
+				id login
+			TBButton
+				text @cancel
+				id cancel
+	TBLayout
+		axis x
 		TBButton
-			text @login
-			id login
-		TBButton
+			skin TBButton.flat
 			text @signup
 			id signup
+		TBButton
+			skin TBButton.flat
+			text @lostpassword
+			id lostpassword
