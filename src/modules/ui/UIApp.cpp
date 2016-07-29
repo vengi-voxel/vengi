@@ -4,13 +4,12 @@
 
 #include "UIApp.h"
 #include "TurboBadger.h"
+#include "ui/FontUtil.h"
 
 #include "io/File.h"
 #include "core/Command.h"
 #include "core/Common.h"
 #include "ui_renderer_gl.h"
-
-extern void register_tbbf_font_renderer();
 
 namespace ui {
 
@@ -358,19 +357,13 @@ core::AppState UIApp::onInit() {
 
 	tb::TBWidgetsAnimationManager::Init();
 
-	register_tbbf_font_renderer();
-	tb::g_font_manager->AddFontInfo("ui/font/font.tb.txt", "Segoe");
-	tb::TBFontDescription fd;
-	fd.SetID(TBIDC("Segoe"));
-	fd.SetSize(tb::g_tb_skin->GetDimensionConverter()->DpToPx(14));
-	tb::g_font_manager->SetDefaultFontDescription(fd);
-	tb::TBFontFace *font = tb::g_font_manager->CreateFontFace(tb::g_font_manager->GetDefaultFontDescription());
+	initFonts();
+	tb::TBFontFace *font = getFont(14, true);
 	if (font == nullptr) {
 		Log::error("could not create the font face");
 		return core::AppState::Cleanup;
 	}
 
-	font->RenderGlyphs(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNORSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·åäöÅÄÖ");
 	_root.SetRect(tb::TBRect(0, 0, _dimension.x, _dimension.y));
 	_root.SetSkinBg(TBIDC("background"));
 

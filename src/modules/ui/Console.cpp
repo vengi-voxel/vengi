@@ -5,6 +5,7 @@
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Tokenizer.h"
+#include "ui/FontUtil.h"
 
 namespace ui {
 
@@ -66,18 +67,7 @@ Console::Console() {
 }
 
 bool Console::init() {
-	tb::TBFontDescription fd;
-	fd.SetID(TBIDC("Segoe"));
-	fd.SetSize(tb::g_tb_skin->GetDimensionConverter()->DpToPx(20));
-	tb::TBFontManager *fontMgr = tb::g_font_manager;
-
-	if (fontMgr->HasFontFace(fd)) {
-		_font = fontMgr->GetFontFace(fd);
-	} else {
-		_font = fontMgr->CreateFontFace(fd);
-	}
-	core_assert_msg(_font != nullptr, "Could not find the default font - make sure the ui is already configured");
-	_font->RenderGlyphs(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNORSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~•·");
+	_font = getFont(20);
 
 	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); });
 	core::Command::registerCommand("clear", [&] (const core::CmdArgs& args) { clear(); });

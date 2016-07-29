@@ -20,8 +20,12 @@
 #include "network/MessageSender.h"
 #include "network/NetworkEvents.h"
 #include "ui/UIApp.h"
+#include "ui/TurboBadger.h"
 #include "video/MeshPool.h"
 #include "video/Camera.h"
+
+// client states
+constexpr int CLIENT_CONNECTING = 1 << 0;
 
 class Client: public ui::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxel::WorldCreatedEvent> {
@@ -38,11 +42,26 @@ protected:
 	uint8_t _lastMoveMask = 0;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _player;
+	tb::TBFontFace *_font;
 
 	long _lastMovement = 0l;
 
 	int _drawCallsWorld = 0;
 	int _drawCallsEntities = 0;
+
+	int _state = 0;
+
+	inline void setState(int flag) {
+		_state |= flag;
+	}
+
+	inline bool hasState(int flag) const {
+		return (_state & flag) != 0;
+	}
+
+	inline void removeState(int flag) {
+		_state &= ~flag;
+	}
 
 	inline frontend::ClientEntityId id() const {
 		if (!_player)

@@ -8,6 +8,8 @@
 #include "ui/DisconnectWindow.h"
 #include "ui/AuthFailedWindow.h"
 #include "ui/HudWindow.h"
+#include "ui/FontUtil.h"
+#include "ui/Window.h"
 #include "core/Command.h"
 #include "core/GLM.h"
 #include "core/Color.h"
@@ -63,11 +65,13 @@ void Client::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 }
 
 void Client::onEvent(const network::DisconnectEvent& event) {
+	removeState(CLIENT_CONNECTING);
 	ui::Window* main = new frontend::LoginWindow(this);
 	new frontend::DisconnectWindow(main);
 }
 
 void Client::onEvent(const network::NewConnectionEvent& event) {
+	removeState(CLIENT_CONNECTING);
 	flatbuffers::FlatBufferBuilder fbb;
 	const std::string& email = core::Var::get(cfg::ClientEmail)->strVal();
 	const std::string& password = core::Var::get(cfg::ClientPassword)->strVal();
@@ -115,6 +119,8 @@ core::AppState Client::onInit() {
 	}
 
 	_root.SetSkinBg(TBIDC("background"));
+
+	_font = ui::getFont(28);
 
 	handleLogin();
 
@@ -185,6 +191,25 @@ void Client::afterUI() {
 	tb::TBFontFace *font = _root.GetFont();
 	font->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
 	font->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
+
+	if (hasState(CLIENT_CONNECTING)) {
+		static int connectingStart = 0;
+		static const char *dotsArray[] = { ".", "..", "..." };
+		if (connectingStart >= 2000) {
+			connectingStart %= 2000;
+		}
+		connectingStart += _deltaFrame;
+		const int y = height() / 2 - _font->GetHeight() / 2;
+		const char* connectString = _("stateconnecting");
+		const int w = _font->GetStringWidth(connectString);
+		const int x = width() / 2 - w / 2;
+		_font->DrawString(x, y, tb::TBColor(255, 255, 255), connectString);
+		const int dotX = x + w + 5;
+		const int dotsIndex = (connectingStart / 500) % SDL_arraysize(dotsArray);
+		const char *dotsString = dotsArray[dotsIndex];
+		_font->DrawString(dotX, y, tb::TBColor(255, 255, 255), dotsString);
+	}
+
 	UIApp::afterUI();
 }
 
@@ -277,6 +302,7 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 
 	_peer = peer;
 	Log::info("Connected to server %s:%i", hostname.c_str(), port);
+	setState(CLIENT_CONNECTING);
 	return true;
 }
 
