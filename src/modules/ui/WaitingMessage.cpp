@@ -42,6 +42,9 @@ void WaitingMessage::render() {
 	if (_translatedStr == nullptr) {
 		return;
 	}
+	if (_font == nullptr) {
+		return;
+	}
 	if (_connectingStart >= 2000) {
 		_dotsIndex = (_dotsIndex + 1) % SDL_arraysize(dotsArray);
 		_connectingStart -= 2000;
