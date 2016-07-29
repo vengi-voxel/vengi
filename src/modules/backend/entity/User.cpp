@@ -39,8 +39,9 @@ void User::visibleRemove(const EntitySet& entities) {
 void User::setPos(const glm::vec3& pos) {
 	const int y = _world->findFloor(pos.x, pos.z);
 	_pos = pos;
-	if (_pos.y < y)
+	if (_pos.y < y) {
 		_pos.y = y;
+	}
 }
 
 ENetPeer* User::setPeer(ENetPeer* peer) {
@@ -113,6 +114,11 @@ bool User::update(long dt) {
 			Log::trace("move right: dt %f, speed: %f p(%f:%f:%f)", deltaTime, speedVal, _pos.x, _pos.y, _pos.z);
 		}
 	}
+
+	flatbuffers::FlatBufferBuilder fbb;
+	const glm::vec3& _pos = pos();
+	const network::messages::Vec3 pos { _pos.x, _pos.y, _pos.z };
+	sendServerMsg(EntityUpdate(fbb, id(), &pos, orientation()), EntityUpdate);
 
 	return true;
 }

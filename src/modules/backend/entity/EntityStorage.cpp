@@ -143,8 +143,9 @@ void EntityStorage::updateQuadTree() {
 }
 
 bool EntityStorage::updateEntity(const EntityPtr& entity, long dt) {
-	if (!entity->update(dt))
+	if (!entity->update(dt)) {
 		return false;
+	}
 	const core::RectFloat& rect = entity->regionRect();
 	const auto& contents = _quadTreeCache.query(rect);
 	EntitySet set;

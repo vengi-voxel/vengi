@@ -44,18 +44,22 @@ Client::~Client() {
 }
 
 void Client::sendMovement() {
-	if (_peer == nullptr)
+	if (_peer == nullptr) {
 		return;
+	}
 
-	if (_now - _lastMovement <= 100L)
+	if (_now - _lastMovement <= 100L) {
 		return;
+	}
 
-	if (_lastMoveMask == _moveMask)
+	if (_lastMoveMask == _moveMask) {
 		return;
+	}
 	_lastMovement = _now;
 	_lastMoveMask = _moveMask;
 	flatbuffers::FlatBufferBuilder fbb;
 	const MoveDirection md = (MoveDirection) _moveMask;
+	Log::info("send movement to server");
 	_messageSender->sendClientMessage(_peer, fbb, Type_Move, CreateMove(fbb, md, _camera.pitch(), _camera.yaw()).Union(), 0);
 }
 
@@ -256,8 +260,10 @@ void Client::disconnect() {
 void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation) {
 	const frontend::ClientEntityPtr& entity = _worldRenderer.getEntity(id);
 	if (!entity) {
+		Log::warn("Could not get entity with id %li", id);
 		return;
 	}
+	Log::warn("Update entity %li with pos %f:%f:%f and orientation %f", id, pos.x, pos.y, pos.z, orientation);
 	entity->lerpPosition(_now, pos, orientation);
 }
 
