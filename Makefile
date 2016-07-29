@@ -75,8 +75,7 @@ cmake:
 
 .PHONY: build
 build: cmake
-	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG);
-	$(Q)$(MAKE) $(MAKE_OPTIONS) install | grep -v Up-to-date
+	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install | grep -v Up-to-date
 
 clean:
 	$(Q)rm -rf $(BUILDDIR)
