@@ -60,8 +60,9 @@ ARGS_TMP         := $(ARGS)
 ARGS              = "--args $(ARGS_TMP)"
 endif
 
-MAKE_PID := $$PPID
-JOB_FLAG := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
+MAKE_PID     := $$PPID
+JOB_FLAG     := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
+MAKE_OPTIONS := --no-print-directory -C $(BUILDDIR)
 
 all: build
 
@@ -74,8 +75,8 @@ cmake:
 
 .PHONY: build
 build: cmake
-	$(Q)cd $(BUILDDIR); make $(JOB_FLAG);
-	$(Q)cd $(BUILDDIR); make install | grep -v Up-to-date
+	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG);
+	$(Q)$(MAKE) $(MAKE_OPTIONS) install | grep -v Up-to-date
 
 clean:
 	$(Q)rm -rf $(BUILDDIR)
@@ -87,18 +88,18 @@ edit-local-config:
 	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
 
 server client shapetool shadertool noisetool databasetool tests testmesh testdepthbuffer testtexture flatc: cmake
-	$(Q)cd $(BUILDDIR); make $@ copy-data-shared copy-data-$@ $(JOB_FLAG)
+	$(Q)$(MAKE) $(MAKE_OPTIONS) $@ copy-data-shared copy-data-$@ $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
 shapetool2: shapetool clean-local-config
 
 material-color: cmake
-	$(Q)cd $(BUILDDIR); make tests $(JOB_FLAG)
+	$(Q)$(MAKE) $(MAKE_OPTIONS) tests $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_filter=MaterialTest* -- $(ARGS)
 	$(Q)xdg-open build/material.png
 
 test-ambient-occlusion: cmake
-	$(Q)cd $(BUILDDIR); make tests $(JOB_FLAG)
+	$(Q)$(MAKE) $(MAKE_OPTIONS) tests $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
 
 .PHONY: remotery
