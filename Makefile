@@ -75,7 +75,7 @@ cmake:
 
 .PHONY: build
 build: cmake
-	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install | grep -v Up-to-date
+	$(Q)script -q --return -c "$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install" | grep -v Up-to-date
 
 clean:
 	$(Q)rm -rf $(BUILDDIR)
@@ -94,12 +94,12 @@ shapetool2: shapetool clean-local-config
 
 material-color: cmake
 	$(Q)$(MAKE) $(MAKE_OPTIONS) tests $(JOB_FLAG)
-	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_filter=MaterialTest* -- $(ARGS)
+	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_color=yes --gtest_filter=MaterialTest* -- $(ARGS)
 	$(Q)xdg-open build/material.png
 
 test-ambient-occlusion: cmake
 	$(Q)$(MAKE) $(MAKE_OPTIONS) tests $(JOB_FLAG)
-	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
+	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_color=yes --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
 
 .PHONY: remotery
 remotery:
