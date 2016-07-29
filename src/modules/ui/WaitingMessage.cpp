@@ -38,7 +38,7 @@ void WaitingMessage::update(int deltaFrame) {
 }
 
 void WaitingMessage::render() {
-	static const char *dotsArray[] = { ".", "..", "..." };
+	static const char *dotsArray[] = { ".", "..", "...", "....", "....." };
 	if (_translatedStr == nullptr) {
 		return;
 	}
