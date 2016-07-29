@@ -66,6 +66,7 @@ void Client::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 
 void Client::onEvent(const network::DisconnectEvent& event) {
 	removeState(CLIENT_CONNECTING);
+	core_assert(!hasState(CLIENT_CONNECTING));
 	ui::Window* main = new frontend::LoginWindow(this);
 	new frontend::DisconnectWindow(main);
 }
@@ -279,8 +280,10 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 }
 
 bool Client::connect(uint16_t port, const std::string& hostname) {
+	setState(CLIENT_CONNECTING);
 	ENetPeer* peer = _network->connect(port, hostname);
 	if (!peer) {
+		removeState(CLIENT_CONNECTING);
 		Log::error("Failed to connect to server %s:%i", hostname.c_str(), port);
 		return false;
 	}
@@ -289,7 +292,6 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 
 	_peer = peer;
 	Log::info("Connected to server %s:%i", hostname.c_str(), port);
-	setState(CLIENT_CONNECTING);
 	_waiting.setTextId("stateconnecting");
 	return true;
 }

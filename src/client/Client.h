@@ -25,7 +25,7 @@
 #include "video/Camera.h"
 
 // client states
-constexpr int CLIENT_CONNECTING = 1 << 0;
+constexpr uint32_t CLIENT_CONNECTING = 1 << 0;
 
 class Client: public ui::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxel::WorldCreatedEvent> {
@@ -49,17 +49,17 @@ protected:
 	int _drawCallsWorld = 0;
 	int _drawCallsEntities = 0;
 
-	int _state = 0;
+	uint32_t _state = 0u;
 
-	inline void setState(int flag) {
+	inline void setState(uint32_t flag) {
 		_state |= flag;
 	}
 
-	inline bool hasState(int flag) const {
+	inline bool hasState(uint32_t flag) const {
 		return (_state & flag) != 0;
 	}
 
-	inline void removeState(int flag) {
+	inline void removeState(uint32_t flag) {
 		_state &= ~flag;
 	}
 
