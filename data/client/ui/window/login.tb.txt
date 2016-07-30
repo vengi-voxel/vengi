@@ -42,7 +42,6 @@ TBLayout
 				TBCheckBox
 					id autologin
 		TBLayout
-			skin linkbutton
 			gravity left right
 			distribution-position right
 			axis x
