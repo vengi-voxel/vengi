@@ -29,13 +29,8 @@ void Network::shutdown() {
 		enet_host_flush(_server);
 		enet_host_destroy(_server);
 	}
-	if (_client != nullptr) {
-		enet_host_flush(_client);
-		enet_host_destroy(_client);
-	}
 	enet_deinitialize();
 	_server = nullptr;
-	_client = nullptr;
 }
 
 bool Network::init() {
@@ -111,6 +106,8 @@ void Network::disconnect() {
 	if (_client == nullptr) {
 		return;
 	}
+
+	enet_host_flush(_client);
 
 	for (size_t i = 0; i < _client->peerCount; ++i) {
 		ENetPeer *peer = &_client->peers[i];
