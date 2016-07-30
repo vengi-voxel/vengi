@@ -14,7 +14,9 @@ namespace core {
 void AbstractTest::SetUp() {
 	const core::EventBusPtr eventBus(new core::EventBus());
 	const io::FilesystemPtr filesystem(new io::Filesystem());
-	_testApp = new TestApp(filesystem, eventBus);
+	_testApp = new TestApp(filesystem, eventBus, this);
+	const bool isRunning = _testApp->_curState == AppState::Running;
+	ASSERT_TRUE(isRunning) << "Failed to setup the test app properly";
 }
 
 void AbstractTest::TearDown() {
@@ -22,8 +24,8 @@ void AbstractTest::TearDown() {
 	delete _testApp;
 }
 
-AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
-		core::App(filesystem, eventBus, 10000) {
+AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, AbstractTest* test) :
+		core::App(filesystem, eventBus, 10000), _test(test) {
 	init("engine", "test");
 	_argc = ::_argc;
 	_argv = ::_argv;
@@ -43,6 +45,11 @@ AppState AbstractTest::TestApp::onInit() {
 		_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_WARN));
 		Log::init();
 	}
+
+	if (!_test->onInitApp()) {
+		return AppState::Cleanup;
+	}
+
 	return state;
 }
 

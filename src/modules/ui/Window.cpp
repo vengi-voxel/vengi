@@ -155,8 +155,12 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 bool Window::loadResourceFile(const char *filename) {
 	tb::TBNode node;
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
-	core_assert_msg(filesystem->open(filename)->exists(), "%s doesn't exists", filename);
-	const std::string& data = filesystem->load(filename);
+	const io::FilePtr& file = filesystem->open(filename);
+	if (!file->exists()) {
+		Log::error("%s doesn't exists", filename);
+		return false;
+	}
+	const std::string& data = file->load();
 	node.ReadData(data.c_str(), (int)data.size(), tb::TB_NODE_READ_FLAGS_NONE);
 	loadResource(node);
 	return true;

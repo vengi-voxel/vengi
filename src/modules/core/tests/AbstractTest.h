@@ -13,14 +13,22 @@ namespace core {
 class AbstractTest: public testing::Test {
 private:
 	class TestApp: public core::App {
+		friend class AbstractTest;
+	protected:
+		AbstractTest* _test = nullptr;
 	public:
-		TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus);
+		TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, AbstractTest* test);
 		~TestApp();
 
 		virtual AppState onInit() override;
 	};
 
+protected:
 	TestApp *_testApp;
+
+	virtual bool onInitApp() {
+		return true;
+	}
 
 public:
 	void SetUp() override;

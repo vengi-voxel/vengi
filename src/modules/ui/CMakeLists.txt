@@ -15,5 +15,6 @@ set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
 	tests/ConsoleTest.cpp
+	tests/UITest.h
 )
 gtest_suite_deps(tests ${LIB})
