@@ -76,7 +76,6 @@ void Client::onEvent(const network::DisconnectEvent& event) {
 }
 
 void Client::onEvent(const network::NewConnectionEvent& event) {
-	removeState(CLIENT_CONNECTING);
 	flatbuffers::FlatBufferBuilder fbb;
 	const std::string& email = core::Var::get(cfg::ClientEmail)->strVal();
 	const std::string& password = core::Var::get(cfg::ClientPassword)->strVal();
@@ -267,6 +266,7 @@ void Client::onWindowResize() {
 }
 
 void Client::authFailed() {
+	removeState(CLIENT_CONNECTING);
 	core::Var::get(cfg::ClientAutoLogin)->setVal(false);
 	// TODO: stack (push/pop in UIApp) window support
 	ui::Window* main = new frontend::LoginWindow(this);
@@ -299,6 +299,7 @@ void Client::entityRemove(frontend::ClientEntityId id) {
 }
 
 void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos) {
+	removeState(CLIENT_CONNECTING);
 	Log::info("User %li (%s) logged in at pos %f:%f:%f", id, name, pos.x, pos.y, pos.z);
 	_camera.setPosition(pos);
 	_player = std::make_shared<frontend::ClientEntity>(id, -1, _now, pos, 0.0f, _meshPool->getMesh("chr_fatkid"));
