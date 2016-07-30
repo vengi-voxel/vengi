@@ -60,8 +60,10 @@ public:
 				_app->requestQuit();
 				return true;
 			} else if (ev.target->GetID() == TBIDC("signup")) {
+				popup(_("error"), "not implemented");
 				return true;
 			} else if (ev.target->GetID() == TBIDC("lostpassword")) {
+				popup(_("error"), "not implemented");
 				return true;
 			} else if (ev.target->GetID() == TBIDC("autologin")) {
 				const bool s = isToggled("autologin");
