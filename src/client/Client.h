@@ -30,6 +30,7 @@ constexpr uint32_t CLIENT_CONNECTING = 1 << 0;
 class Client: public ui::UIApp, public core::IEventBusHandler<network::NewConnectionEvent>, public core::IEventBusHandler<
 		network::DisconnectEvent>, public core::IEventBusHandler<voxel::WorldCreatedEvent> {
 protected:
+	using Super = ui::UIApp;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
 	network::NetworkPtr _network;

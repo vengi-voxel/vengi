@@ -30,7 +30,7 @@
 
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
-		UIApp(filesystem, eventBus, 17816), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
+		Super(filesystem, eventBus, 17816), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
 		_timeProvider(timeProvider), _worldRenderer(world), _waiting(this) {
 	_world->setClientData(true);
 	init("engine", "client");
@@ -64,7 +64,7 @@ void Client::sendMovement() {
 }
 
 void Client::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	UIApp::onMouseMotion(x, y, relX, relY);
+	Super::onMouseMotion(x, y, relX, relY);
 	_camera.rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
 }
 
@@ -95,7 +95,7 @@ core::AppState Client::onInit() {
 	eventBus()->subscribe<network::DisconnectEvent>(*this);
 	eventBus()->subscribe<voxel::WorldCreatedEvent>(*this);
 
-	core::AppState state = UIApp::onInit();
+	core::AppState state = Super::onInit();
 	if (state != core::Running) {
 		return state;
 	}
@@ -154,7 +154,7 @@ void Client::renderBackground() {
 }
 
 void Client::beforeUI() {
-	UIApp::beforeUI();
+	Super::beforeUI();
 
 	if (_world->isCreated()) {
 		glm::vec3 moveDelta = glm::vec3();
@@ -204,7 +204,7 @@ void Client::afterUI() {
 		_waiting.render();
 	}
 
-	UIApp::afterUI();
+	Super::afterUI();
 }
 
 core::AppState Client::onCleanup() {
@@ -216,7 +216,7 @@ core::AppState Client::onCleanup() {
 	disconnect();
 	_meshPool->shutdown();
 	_worldRenderer.shutdown();
-	core::AppState state = UIApp::onCleanup();
+	core::AppState state = Super::onCleanup();
 	_world->shutdown();
 	_player = frontend::ClientEntityPtr();
 	_network->shutdown();
@@ -227,7 +227,7 @@ core::AppState Client::onCleanup() {
 core::AppState Client::onRunning() {
 	_timeProvider->update(_now);
 	_waiting.update(_deltaFrame);
-	core::AppState state = UIApp::onRunning();
+	core::AppState state = Super::onRunning();
 	sendMovement();
 	if (state == core::AppState::Running) {
 		if (_player) {
@@ -246,7 +246,7 @@ core::AppState Client::onRunning() {
 }
 
 void Client::onWindowResize() {
-	UIApp::onWindowResize();
+	Super::onWindowResize();
 	_camera.init(dimension());
 }
 
