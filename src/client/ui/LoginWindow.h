@@ -17,9 +17,9 @@ class LoginWindow: public ui::Window {
 private:
 	Client* _client;
 
-	void doLogin(ui::Window *window) {
-		const std::string& email = window->getStr("email");
-		const std::string& password = window->getStr("password");
+	void doLogin() {
+		const std::string& email = getStr("email");
+		const std::string& password = getStr("password");
 
 		core::Var::get(cfg::ClientEmail)->setVal(email);
 		core::Var::get(cfg::ClientPassword)->setVal(password);
@@ -47,14 +47,13 @@ public:
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
-		ui::Window* window = (ui::Window*)ev.target->GetParentWindow();
 		if (ev.special_key == tb::TB_KEY_ENTER) {
-			doLogin(window);
+			doLogin();
 			return true;
 		}
 		if (ev.type == tb::EVENT_TYPE_CLICK) {
 			if (ev.target->GetID() == TBIDC("login")) {
-				doLogin(window);
+				doLogin();
 				return true;
 			} else if (ev.target->GetID() == TBIDC("cancel")) {
 				_app->requestQuit();
