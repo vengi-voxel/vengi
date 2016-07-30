@@ -86,6 +86,8 @@ public:
 	void beforeUI() override;
 	void afterUI() override;
 
+	bool onKeyPress(int32_t key, int16_t modifier) override;
+
 	void onEvent(const voxel::WorldCreatedEvent& event) override;
 	void onEvent(const network::DisconnectEvent& event) override;
 	/**

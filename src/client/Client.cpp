@@ -224,6 +224,21 @@ core::AppState Client::onCleanup() {
 	return state;
 }
 
+bool Client::onKeyPress(int32_t key, int16_t modifier) {
+	if (Super::onKeyPress(key, modifier)) {
+		return true;
+	}
+
+	if (key == SDLK_ESCAPE) {
+		if (hasState(CLIENT_CONNECTING)) {
+			removeState(CLIENT_CONNECTING);
+			disconnect();
+		}
+	}
+
+	return false;
+}
+
 core::AppState Client::onRunning() {
 	_timeProvider->update(_now);
 	_waiting.update(_deltaFrame);
