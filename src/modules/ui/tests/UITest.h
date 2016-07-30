@@ -30,7 +30,9 @@ protected:
 			Log::error("failed to initialize the ui");
 			return false;
 		}
-		tb::g_tb_lng->Load("ui/lang/en.tb.txt");
+		if (!tb::g_tb_lng->Load("ui/lang/en.tb.txt")) {
+			Log::warn("could not load the translation");
+		}
 		if (!tb::g_tb_skin->Load("ui/skin/skin.tb.txt", nullptr)) {
 			Log::error("could not load the skin");
 			return false;
