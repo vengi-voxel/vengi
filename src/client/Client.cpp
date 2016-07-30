@@ -233,6 +233,7 @@ bool Client::onKeyPress(int32_t key, int16_t modifier) {
 		if (hasState(CLIENT_CONNECTING)) {
 			removeState(CLIENT_CONNECTING);
 			disconnect();
+			_network->disconnect();
 		}
 	}
 
