@@ -8,6 +8,7 @@
 #include "core/Common.h"
 #include "../Client.h"
 #include "config.h"
+#include "SignupWindow.h"
 
 namespace frontend {
 
@@ -59,7 +60,7 @@ public:
 				_app->requestQuit();
 				return true;
 			} else if (ev.target->GetID() == TBIDC("signup")) {
-				popup(_("error"), "not implemented");
+				new SignupWindow(_client);
 				return true;
 			} else if (ev.target->GetID() == TBIDC("lostpassword")) {
 				popup(_("error"), "not implemented");
