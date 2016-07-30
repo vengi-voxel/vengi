@@ -11,9 +11,14 @@ set(SRCS
 	network/EntityUpdateHandler.h
 	network/EntityRemoveHandler.h
 	ui/LoginWindow.h
+	ui/SignupWindow.h
 	ui/HudWindow.h
 	ui/AuthFailedWindow.h
 	ui/DisconnectWindow.h
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
 target_link_libraries(${PROJECT_NAME} frontend util)
+
+gtest_suite_files(tests
+	tests/ClientUITest.cpp
+)
