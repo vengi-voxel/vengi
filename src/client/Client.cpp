@@ -231,6 +231,7 @@ core::AppState Client::onRunning() {
 	sendMovement();
 	if (state == core::AppState::Running) {
 		if (_player) {
+			// TODO: broken. either the lerping in client side the player or the position that is sent from the server
 			const glm::vec3& pos = _player->position();
 			_camera.setPosition(pos);
 		}
