@@ -16,14 +16,19 @@ class UIRendererGL;
 class UIBitmapGL: public TBBitmap {
 public:
 	UIBitmapGL(UIRendererGL *renderer);
-	~UIBitmapGL();bool Init(int width, int height, uint32 *data);
-	virtual int Width() {
+	~UIBitmapGL();
+
+	bool Init(int width, int height, uint32 *data);
+
+	virtual int Width() override {
 		return m_w;
 	}
-	virtual int Height() {
+
+	virtual int Height() override {
 		return m_h;
 	}
-	virtual void SetData(uint32 *data);
+
+	virtual void SetData(uint32 *data) override;
 public:
 	UIRendererGL *m_renderer;
 	int m_w, m_h;
