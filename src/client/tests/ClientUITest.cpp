@@ -14,14 +14,12 @@ namespace ui {
 class ClientUITest: public ui::UITest {
 };
 
-#if 0
-TEST_F(ClientUITest, testLoginWindow) {
-	new frontend::LoginWindow(nullptr);
-}
-#endif
-
-TEST_F(ClientUITest, testSignupWindow) {
+TEST_F(ClientUITest, testLoadClientUI) {
+	//ASSERT_DEATH(new frontend::LoginWindow(nullptr), "");
 	ASSERT_DEATH(new frontend::SignupWindow(nullptr), "");
+	ASSERT_DEATH(new frontend::AuthFailedWindow(nullptr), "");
+	ASSERT_DEATH(new frontend::DisconnectWindow(nullptr), "");
+	//ASSERT_DEATH(new frontend::HudWindow(nullptr, glm::ivec2()), "");
 }
 
 

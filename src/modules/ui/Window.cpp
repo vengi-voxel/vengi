@@ -19,7 +19,10 @@ Window::Window(UIApp* app) :
 
 Window::Window(Window* parent) :
 		tb::TBWindow(), _app(nullptr) {
-	parent->AddChild(this);
+	// if this is null, make sure to add the window on your own
+	if (parent != nullptr) {
+		parent->AddChild(this);
+	}
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 }
 
