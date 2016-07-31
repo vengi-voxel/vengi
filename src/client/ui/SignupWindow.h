@@ -6,6 +6,7 @@
 
 #include "ui/Window.h"
 #include "core/Common.h"
+#include "core/EMailValidator.h"
 #include "../Client.h"
 
 namespace frontend {
@@ -28,6 +29,15 @@ public:
 			const std::string& email = getStr("email");
 			const std::string& password = getStr("password");
 			const std::string& passwordVerify = getStr("password_verify");
+			if (password != passwordVerify) {
+				popup(_("error"), _("passwordsdonotmatch"));
+				return true;
+			}
+			if (!core::isValidEmail(email)) {
+				popup(_("error"), _("emailinvalid"));
+				return true;
+			}
+			_client->signup(email, password);
 			return true;
 		} else if (ev.target->GetID() == TBIDC("cancel")) {
 			Close();

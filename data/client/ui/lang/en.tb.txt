@@ -24,3 +24,5 @@ failedtoconnect Failed to connect
 lostpassword Lost password
 signup New account
 stateconnecting Connecting
+passwordsdonotmatch Passwords don't match
+emailinvalid Invalid email
