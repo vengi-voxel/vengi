@@ -69,6 +69,7 @@ public:
 	bool loadResourceData(const char *data);
 	bool loadResource(tb::TBNode &node);
 
+	virtual void OnDie() override;
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
 
 	virtual void onWindowResize() override;

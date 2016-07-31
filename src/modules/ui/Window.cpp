@@ -27,6 +27,10 @@ Window::Window(Window* parent) :
 }
 
 Window::~Window() {
+}
+
+void Window::OnDie() {
+	tb::TBWindow::OnDie();
 	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
 }
 
