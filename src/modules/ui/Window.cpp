@@ -165,8 +165,7 @@ bool Window::loadResourceFile(const char *filename) {
 	}
 	const std::string& data = file->load();
 	node.ReadData(data.c_str(), (int)data.size(), tb::TB_NODE_READ_FLAGS_NONE);
-	loadResource(node);
-	return true;
+	return loadResource(node);
 }
 
 void Window::popup(const std::string& title, const std::string& str) {
@@ -215,19 +214,24 @@ std::string Window::getStr(const char *nodeId) {
 	return std::string(amplitude.CStr());
 }
 
-void Window::loadResourceData(const char *data) {
+bool Window::loadResourceData(const char *data) {
 	tb::TBNode node;
 	node.ReadData(data);
-	loadResource(node);
+	return loadResource(node);
 }
 
-void Window::loadResource(tb::TBNode &node) {
+bool Window::loadResource(tb::TBNode &node) {
 	tb::g_widgets_reader->LoadNodeTree(this, &node);
 
 	// Get title from the WindowInfo section (or use "" if not specified)
 	SetText(node.GetValueString("WindowInfo>title", ""));
 
-	const tb::TBRect parentRect(0, 0, GetParent()->GetRect().w, GetParent()->GetRect().h);
+	tb::TBWidget *parent = GetParent();
+	if (parent == nullptr) {
+		return false;
+	}
+	const tb::TBRect& r = parent->GetRect();
+	const tb::TBRect parentRect(0, 0, r.w, r.h);
 	const tb::TBDimensionConverter *dc = tb::g_tb_skin->GetDimensionConverter();
 	tb::TBRect windowRect = GetResizeToFitContentRect();
 
@@ -291,6 +295,7 @@ void Window::loadResource(tb::TBNode &node) {
 	// adding the window to the root), but then we had nothing to focus.
 	// Alternatively, we could add the window after setting it up properly.
 	EnsureFocus();
+	return true;
 }
 
 bool Window::OnEvent(const tb::TBWidgetEvent &ev) {

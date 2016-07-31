@@ -30,6 +30,25 @@ macro(check_lua_files TARGET)
 	endif()
 endmacro()
 
+macro(check_ui_files TARGET)
+	set(_workingdir "${ROOT_DIR}/data/${TARGET}")
+	set(_dir "${_workingdir}/ui/window")
+	file(GLOB UI_FILES ${_dir}/*.tb.txt)
+	foreach(_file ${UI_FILES})
+		get_filename_component(_filename ${_file} NAME)
+		add_custom_target(
+			${_filename}
+			COMMAND ${CMAKE_BINARY_DIR}/uitool ui/window/${_filename}
+			COMMENT "Validate ui file: ${_filename}"
+			WORKING_DIRECTORY ${_workingdir}
+		)
+		add_dependencies(${TARGET} ${_filename})
+	endforeach()
+	if (UI_FILES)
+		add_dependencies(${TARGET} uitool)
+	endif()
+endmacro()
+
 include(CheckCCompilerFlag)
 
 check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)

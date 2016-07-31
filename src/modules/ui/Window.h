@@ -66,8 +66,8 @@ public:
 	void toggle(const char *checkBoxNodeId, bool state);
 
 	bool loadResourceFile(const char *filename);
-	void loadResourceData(const char *data);
-	void loadResource(tb::TBNode &node);
+	bool loadResourceData(const char *data);
+	bool loadResource(tb::TBNode &node);
 
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
 

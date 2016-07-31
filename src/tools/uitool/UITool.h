@@ -11,6 +11,7 @@
 class UITool: public core::App {
 private:
 	DummyRenderer _renderer;
+	tb::TBWidget _root;
 public:
 	UITool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
 
