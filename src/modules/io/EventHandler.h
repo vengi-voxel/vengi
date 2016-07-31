@@ -23,6 +23,14 @@ private:
 
 	typedef std::vector<IEventObserver*> EventObservers;
 	EventObservers _observers;
+	struct Event {
+		Event(IEventObserver* _observer, bool _remove) : observer(_observer), remove(_remove) {
+		}
+
+		IEventObserver* observer;
+		bool remove;
+	};
+	std::vector<Event> _events;
 
 	std::string getControllerButtonName(uint8_t button) const;
 

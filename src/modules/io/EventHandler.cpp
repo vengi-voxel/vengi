@@ -19,24 +19,20 @@ EventHandler::~EventHandler() {
 }
 
 void EventHandler::registerObserver(IEventObserver* observer) {
-	core_assert(observer);
-	_observers.push_back(observer);
+	core_assert(observer != nullptr);
+	_events.emplace_back(observer, false);
 }
 
 void EventHandler::removeObserver(IEventObserver* observer) {
-	// Traverse through the list and try to find the specified observer
-	for (EventObservers::iterator i = _observers.begin(); i != _observers.end(); ++i) {
-		if (*i == observer) {
-			_observers.erase(i);
-			break;
-		}
-	}
+	core_assert(observer != nullptr);
+	_events.emplace_back(observer, true);
 }
 
 inline std::string EventHandler::getControllerButtonName(uint8_t button) const {
 	const char *name = SDL_GameControllerGetStringForButton(static_cast<SDL_GameControllerButton>(button));
-	if (name == nullptr)
+	if (name == nullptr) {
 		return "unknown";
+	}
 	return name;
 }
 
@@ -135,6 +131,22 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		}
 		break;
 	}
+
+	// Traverse through the list and try to find the specified observer
+	for (const Event& event : _events) {
+		if (event.remove) {
+			for (EventObservers::iterator i = _observers.begin(); i != _observers.end(); ++i) {
+				if (*i == event.observer) {
+					_observers.erase(i);
+					break;
+				}
+			}
+		} else {
+			_observers.push_back(event.observer);
+		}
+	}
+	_events.clear();
+
 	return true;
 }
 
