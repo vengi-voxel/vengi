@@ -305,6 +305,10 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	_player = std::make_shared<frontend::ClientEntity>(id, -1, _now, pos, 0.0f, _meshPool->getMesh("chr_fatkid"));
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.onSpawn(pos);
+
+	flatbuffers::FlatBufferBuilder fbb;
+	_messageSender->sendClientMessage(_peer, fbb, Type_UserConnected,
+			CreateUserConnected(fbb).Union());
 }
 
 bool Client::connect(uint16_t port, const std::string& hostname) {

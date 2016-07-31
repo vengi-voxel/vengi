@@ -4,6 +4,7 @@ include "Shared.fbs";
 
 namespace network.messages.client;
 
+/// a message that the client is sending to log into the gameserver
 table UserConnect {
 	email:string (required);
 	password:string (required);
@@ -14,6 +15,8 @@ table UserConnect {
 table UserConnected {
 }
 
+/// a message the the client is sending to notify the gameserver that the user would like
+/// to quit the current game
 table UserDisconnect {
 }
 

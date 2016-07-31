@@ -5,6 +5,7 @@ set(SRCS
 	entity/ai/AIRegistry.cpp entity/ai/AIRegistry.h
 	entity/ai/AILoader.h
 	network/UserConnectHandler.cpp network/UserConnectHandler.h
+	network/UserConnectedHandler.h
 	network/UserDisconnectHandler.h
 	network/AttackHandler.h
 	network/ServerNetworkModule.h
