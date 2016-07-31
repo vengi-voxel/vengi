@@ -21,10 +21,16 @@ public:
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
-		if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("signup")) {
+		if (ev.type != tb::EVENT_TYPE_CLICK) {
+			return ui::Window::OnEvent(ev);
+		}
+		if (ev.target->GetID() == TBIDC("signup")) {
 			const std::string& email = getStr("email");
 			const std::string& password = getStr("password");
 			const std::string& passwordVerify = getStr("password_verify");
+			return true;
+		} else if (ev.target->GetID() == TBIDC("cancel")) {
+			Close();
 			return true;
 		}
 		return ui::Window::OnEvent(ev);
