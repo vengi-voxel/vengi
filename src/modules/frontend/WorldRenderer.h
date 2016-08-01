@@ -114,7 +114,7 @@ public:
 	void reset();
 
 	bool onInit(const glm::ivec2& dimension);
-	void onRunning(long now);
+	void onRunning(long dt);
 	void shutdown();
 
 	// called to initialed the player position
