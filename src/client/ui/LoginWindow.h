@@ -9,6 +9,7 @@
 #include "../Client.h"
 #include "config.h"
 #include "SignupWindow.h"
+#include "LostPasswordWindow.h"
 
 namespace frontend {
 
@@ -63,7 +64,7 @@ public:
 				new SignupWindow(_client);
 				return true;
 			} else if (ev.target->GetID() == TBIDC("lostpassword")) {
-				popup(_("error"), "not implemented");
+				new LostPasswordWindow(_client);
 				return true;
 			} else if (ev.target->GetID() == TBIDC("autologin")) {
 				const bool s = isToggled("autologin");

@@ -269,6 +269,10 @@ void Client::signup(const std::string& email, const std::string& password) {
 	// TODO:
 }
 
+void Client::lostPassword(const std::string& email) {
+	// TOOD:
+}
+
 void Client::authFailed() {
 	removeState(CLIENT_CONNECTING);
 	core::Var::get(cfg::ClientAutoLogin)->setVal(false);

@@ -15,6 +15,7 @@ set(SRCS
 	ui/HudWindow.h
 	ui/AuthFailedWindow.h
 	ui/DisconnectWindow.h
+	ui/LostPasswordWindow.h
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
 target_link_libraries(${PROJECT_NAME} frontend util)

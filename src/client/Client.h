@@ -101,6 +101,7 @@ public:
 	bool connect(uint16_t port, const std::string& hostname);
 	void authFailed();
 	void signup(const std::string& email, const std::string& password);
+	void lostPassword(const std::string& email);
 	void npcSpawn(frontend::ClientEntityId id, network::messages::NpcType type, const glm::vec3& pos);
 	void entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation);
 	void entityRemove(frontend::ClientEntityId id);
