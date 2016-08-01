@@ -116,7 +116,6 @@ bool User::update(long dt) {
 	}
 
 	flatbuffers::FlatBufferBuilder fbb;
-	const glm::vec3& _pos = pos();
 	const network::messages::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	sendServerMsg(EntityUpdate(fbb, id(), &pos, orientation()), EntityUpdate);
 
