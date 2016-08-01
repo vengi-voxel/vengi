@@ -7,6 +7,7 @@
 #include "../ui/SignupWindow.h"
 #include "../ui/AuthFailedWindow.h"
 #include "../ui/DisconnectWindow.h"
+#include "../ui/LostPasswordWindow.h"
 #include "../ui/HudWindow.h"
 
 namespace ui {
@@ -20,6 +21,7 @@ TEST_F(ClientUITest, testLoadClientUI) {
 	ASSERT_DEATH(new frontend::AuthFailedWindow(nullptr), "");
 	ASSERT_DEATH(new frontend::DisconnectWindow(nullptr), "");
 	//ASSERT_DEATH(new frontend::HudWindow(nullptr, glm::ivec2()), "");
+	//ASSERT_DEATH(new frontend::LostPasswordWindow(nullptr), "");
 }
 
 
