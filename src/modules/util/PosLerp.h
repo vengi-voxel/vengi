@@ -46,7 +46,7 @@ public:
 			const long remaining = _nextPosTime - _now;
 			const long passed = MOVETIME - remaining;
 			const float lerp = passed / (float) MOVETIME;
-			_currentPosition = _lastPosition + ((_nextPosition - _lastPosition) * lerp);
+			_currentPosition = glm::lerp(_lastPosition, _nextPosition, lerp);
 		} else {
 			_currentPosition = _nextPosition;
 		}
