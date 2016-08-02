@@ -306,11 +306,12 @@ void Client::entityRemove(frontend::ClientEntityId id) {
 	_worldRenderer.removeEntity(id);
 }
 
-void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos) {
+void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation) {
 	removeState(CLIENT_CONNECTING);
-	Log::info("User %li (%s) logged in at pos %f:%f:%f", id, name, pos.x, pos.y, pos.z);
+	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);
 	_camera.setPosition(pos);
-	_player = std::make_shared<frontend::ClientEntity>(id, -1, pos, 0.0f, _meshPool->getMesh("chr_fatkid"));
+	//_camera.setAngles(0.0f, orientation);
+	_player = std::make_shared<frontend::ClientEntity>(id, -1, pos, orientation, _meshPool->getMesh("chr_fatkid"));
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.onSpawn(pos);
 

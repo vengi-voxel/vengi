@@ -107,7 +107,7 @@ public:
 	void entityRemove(frontend::ClientEntityId id);
 	void disconnect();
 	// spawns our own player
-	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos);
+	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);
 };
 
 typedef std::shared_ptr<Client> ClientPtr;
