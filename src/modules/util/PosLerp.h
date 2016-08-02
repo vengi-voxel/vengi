@@ -26,19 +26,18 @@ public:
 		return _currentPosition;
 	}
 
-	inline void setPosition(const glm::vec3& position) {
+	inline void setStartPosition(const glm::vec3& position) {
 		_lastPosition = position;
 		_currentPosition = position;
 		_nextPosition = position;
 		_nextPosTime = 0l;
 	}
 
-	inline void lerpPosition(const glm::vec3& position) {
+	inline void setTargetPosition(const glm::vec3& position) {
 		_lastPosition = _currentPosition;
 		_nextPosition = position;
+		// TODO: there might be a delta between _now and "old" _nextPosTime, take that into account
 		_nextPosTime = _now + MOVETIME;
-		Log::trace("update: c(%f:%f:%f) n(%f:%f:%f) l(%f:%f:%f)", _currentPosition.x, _currentPosition.y, _currentPosition.z,
-				_nextPosition.x, _nextPosition.y, _nextPosition.z, _lastPosition.x, _lastPosition.y, _lastPosition.z);
 	}
 
 	void update(long dt) {
@@ -48,9 +47,6 @@ public:
 			const long passed = MOVETIME - remaining;
 			const float lerp = passed / (float) MOVETIME;
 			_currentPosition = _lastPosition + ((_nextPosition - _lastPosition) * lerp);
-			Log::trace("lerp: %f, passed: %li c(%f:%f:%f) n(%f:%f:%f) l(%f:%f:%f)", lerp, passed, _currentPosition.x, _currentPosition.y,
-					_currentPosition.z, _nextPosition.x, _nextPosition.y, _nextPosition.z, _lastPosition.x, _lastPosition.y,
-					_lastPosition.z);
 		} else {
 			_currentPosition = _nextPosition;
 		}
