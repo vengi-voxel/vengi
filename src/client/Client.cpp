@@ -248,7 +248,7 @@ core::AppState Client::onRunning() {
 	if (state == core::AppState::Running) {
 		if (_player) {
 			const glm::vec3& pos = _player->position();
-			_camera.setPosition(pos);
+			_camera.setTarget(pos);
 		}
 		_network->update();
 		_world->onFrame(_deltaFrame);
@@ -309,8 +309,11 @@ void Client::entityRemove(frontend::ClientEntityId id) {
 void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation) {
 	removeState(CLIENT_CONNECTING);
 	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);
-	_camera.setPosition(pos);
-	//_camera.setAngles(0.0f, orientation);
+	_camera.setTarget(pos);
+	//const glm::vec3 lookAtPos(pos.x + 1, pos.y, pos.z);
+	// TODO: take orientation into account
+	//_camera.lookAt(lookAtPos);
+	// broken: _camera.setAngles(0.0f, orientation);
 	_player = std::make_shared<frontend::ClientEntity>(id, -1, pos, orientation, _meshPool->getMesh("chr_fatkid"));
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.onSpawn(pos);
