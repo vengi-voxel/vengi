@@ -112,6 +112,7 @@ core::AppState Client::onInit() {
 	GL_checkError();
 
 	_camera.init(dimension());
+	_camera.setRotationType(video::CameraRotationType::Target);
 	_waiting.init();
 
 	registerMoveCmd("+move_right", MOVERIGHT);
