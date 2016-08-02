@@ -577,7 +577,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
-		ent->update(_now);
+		ent->update(_deltaFrame);
 		if (camera.testFrustum(ent->position()) == video::FrustumResult::Outside) {
 			continue;
 		}
@@ -718,6 +718,7 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 void WorldRenderer::onRunning(long dt) {
 	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
+	_deltaFrame = dt;
 	if (!_noiseFuture.empty()) {
 		NoiseFuture& future = _noiseFuture.back();
 		if (future.valid()) {

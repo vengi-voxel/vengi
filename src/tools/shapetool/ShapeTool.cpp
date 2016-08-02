@@ -62,7 +62,7 @@ core::AppState ShapeTool::onInit() {
 		Log::error("Failed to load the mesh '%s'", meshName);
 		return core::Cleanup;
 	}
-	_entity = std::make_shared<frontend::ClientEntity>(1, -1, _now, _camera.position(), 0.0f, mesh);
+	_entity = std::make_shared<frontend::ClientEntity>(1, -1, _camera.position(), 0.0f, mesh);
 	if (!_worldRenderer.addEntity(_entity)) {
 		Log::error("Failed to create entity");
 		return core::Cleanup;
@@ -71,7 +71,7 @@ core::AppState ShapeTool::onInit() {
 	glm::vec3 targetPos = _camera.position();
 	targetPos.x += 1000.0f;
 	targetPos.z += 1000.0f;
-	_entity->lerpPosition(_now, targetPos, _entity->orientation());
+	_entity->lerpPosition(targetPos, _entity->orientation());
 
 	new WorldParametersWindow(this);
 	new TreeParametersWindow(this);

@@ -293,13 +293,13 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 		return;
 	}
 	Log::warn("Update entity %li with pos %f:%f:%f and orientation %f", id, pos.x, pos.y, pos.z, orientation);
-	entity->lerpPosition(_now, pos, orientation);
+	entity->lerpPosition(pos, orientation);
 }
 
 void Client::npcSpawn(frontend::ClientEntityId id, network::messages::NpcType type, const glm::vec3& pos) {
 	Log::info("NPC %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, type);
 	const std::string& meshName = core::string::toLower(network::messages::EnumNameNpcType(type));
-	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, _now, pos, 0.0f, _meshPool->getMesh(meshName)));
+	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, pos, 0.0f, _meshPool->getMesh(meshName)));
 }
 
 void Client::entityRemove(frontend::ClientEntityId id) {
@@ -310,7 +310,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	removeState(CLIENT_CONNECTING);
 	Log::info("User %li (%s) logged in at pos %f:%f:%f", id, name, pos.x, pos.y, pos.z);
 	_camera.setPosition(pos);
-	_player = std::make_shared<frontend::ClientEntity>(id, -1, _now, pos, 0.0f, _meshPool->getMesh("chr_fatkid"));
+	_player = std::make_shared<frontend::ClientEntity>(id, -1, pos, 0.0f, _meshPool->getMesh("chr_fatkid"));
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.onSpawn(pos);
 

@@ -53,6 +53,7 @@ private:
 	// TODO: get the view distance from the server - entity attributes
 	float _viewDistance = 0.1f;
 	long _now = 0l;
+	long _deltaFrame = 0l;
 
 	glm::vec4 _clearColor;
 	video::TexturePtr _colorTexture;

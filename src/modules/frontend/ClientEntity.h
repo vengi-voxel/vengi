@@ -21,10 +21,10 @@ private:
 	float _orientation;
 	video::MeshPtr _mesh;
 public:
-	ClientEntity(ClientEntityId id, int type, long now, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
+	ClientEntity(ClientEntityId id, int type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
 
-	void lerpPosition(long now, const glm::vec3& position, float orientation);
-	void update(long now);
+	void lerpPosition(const glm::vec3& position, float orientation);
+	void update(long dt);
 
 	inline int type() const {
 		return _type;
