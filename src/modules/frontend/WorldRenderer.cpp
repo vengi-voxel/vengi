@@ -132,7 +132,7 @@ void WorldRenderer::distributePlants(int amount, video::GLMeshData& meshData) {
 		const int nx = pos.x + lx;
 		const int lz = random.random(1, size - 1);
 		const int nz = pos.z + lz;
-		const int y = _world->findFloor(nx, nz);
+		const int y = _world->findFloor(nx, nz, voxel::isFloor);
 		if (y == -1) {
 			continue;
 		}

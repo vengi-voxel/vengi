@@ -138,7 +138,7 @@ core::AppState ShapeTool::onRunning() {
 
 	_axis.render(_camera);
 	//glm::vec3 entPos = _entity->position();
-	//entPos.y = _world->findFloor(entPos.x, entPos.z);
+	//entPos.y = _world->findFloor(entPos.x, entPos.z, voxel::isFloor);
 	_entity->update(_deltaFrame);
 	return state;
 }

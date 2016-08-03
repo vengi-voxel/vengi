@@ -37,7 +37,7 @@ void User::visibleRemove(const EntitySet& entities) {
 }
 
 void User::setPos(const glm::vec3& pos) {
-	const int y = _world->findFloor(pos.x, pos.z);
+	const int y = _world->findFloor(pos.x, pos.z, voxel::isFloor);
 	_pos = pos;
 	if (_pos.y < y) {
 		_pos.y = y;
