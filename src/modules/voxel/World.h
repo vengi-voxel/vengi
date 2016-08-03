@@ -81,7 +81,7 @@ public:
 
 	bool findPath(const glm::ivec3& start, const glm::ivec3& end, std::list<glm::ivec3>& listResult);
 	int findFloor(int x, int z) const;
-	int getMaterial(int x, int y, int z) const;
+	VoxelType getMaterial(int x, int y, int z) const;
 
 	BiomeManager& getBiomeManager();
 	const BiomeManager& getBiomeManager() const;
@@ -244,8 +244,9 @@ inline int World::getMeshSize() const {
 	return _meshSize->intVal();
 }
 
-inline int World::getMaterial(int x, int y, int z) const {
-	return _volumeData->getVoxel(x, y, z).getMaterial();
+inline VoxelType World::getMaterial(int x, int y, int z) const {
+	const Voxel& voxel = _volumeData->getVoxel(x, y, z);
+	return voxel.getMaterial();
 }
 
 inline BiomeManager& World::getBiomeManager() {
