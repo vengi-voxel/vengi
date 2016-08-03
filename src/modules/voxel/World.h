@@ -80,7 +80,23 @@ public:
 	bool isReset() const;
 
 	bool findPath(const glm::ivec3& start, const glm::ivec3& end, std::list<glm::ivec3>& listResult);
-	int findFloor(int x, int z) const;
+
+	template<typename VoxelTypeChecker>
+	int findFloor(int x, int z, VoxelTypeChecker&& check) const {
+		const glm::vec3 start = glm::vec3(x, MAX_HEIGHT, z);
+		const glm::vec3& direction = glm::down;
+		const float distance = (float)MAX_HEIGHT;
+		int y = -1;
+		raycast(start, direction, distance, [&] (const PagedVolume::Sampler& sampler) {
+			if (check(sampler.getVoxel().getMaterial())) {
+				y = sampler.getPosition().y;
+				return false;
+			}
+			return true;
+		});
+		return y;
+	}
+
 	VoxelType getMaterial(int x, int y, int z) const;
 
 	BiomeManager& getBiomeManager();

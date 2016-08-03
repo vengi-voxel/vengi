@@ -92,14 +92,14 @@ bool Npc::update(long dt) {
 bool Npc::route(const glm::ivec3& target) {
 	std::list<glm::ivec3> result;
 	const glm::vec3& pos = _ai->getCharacter()->getPosition();
-	const glm::ivec3 start(pos.x, pos.y, pos.z);
+	const glm::ivec3 start(pos);
 	const glm::ivec3 end(target.x, target.y, target.z);
 	return _world->findPath(start, end, result);
 }
 
 void Npc::moveToGround() {
 	glm::vec3 pos = _ai->getCharacter()->getPosition();
-	pos.y = _world->findFloor(pos.x, pos.z);
+	pos.y = _world->findFloor(pos.x, pos.z, voxel::isFloor);
 	_ai->getCharacter()->setPosition(pos);
 }
 

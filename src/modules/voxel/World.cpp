@@ -97,7 +97,7 @@ glm::ivec3 World::randomPos() const {
 	}
 	const int x = _random.random(lowestX, highestX);
 	const int z = _random.random(lowestZ, highestZ);
-	const int y = findFloor(x, z);
+	const int y = findFloor(x, z, isFloor);
 	return glm::ivec3(x, y, z);
 }
 
@@ -156,21 +156,11 @@ void World::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 
 void World::placeTree(const TreeContext& ctx) {
 	core_trace_scoped(PlaceTree);
-	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y), ctx.pos.y);
+	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y, isFloor), ctx.pos.y);
 	const Region& region = getChunkRegion(getMeshPos(pos));
 	TerrainContext tctx(_volumeData, _volumeData->getChunk(pos));
 	tctx.region = region;
 	TreeGenerator::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
-}
-
-int World::findFloor(int x, int z) const {
-	for (int i = MAX_HEIGHT; i >= 0; i--) {
-		const int material = getMaterial(x, i, z);
-		if (isFloor(material)) {
-			return i + 1;
-		}
-	}
-	return -1;
 }
 
 bool World::allowReExtraction(const glm::ivec3& pos) {
