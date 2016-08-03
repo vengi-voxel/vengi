@@ -62,7 +62,7 @@ public:
 	 * @param[out] hit If the ray hits a voxel, this is the position of the hit
 	 * @param[out] voxel The voxel that was hit
 	 */
-	bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel);
+	bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) const;
 
 	/**
 	 * @return true if the ray hit something - false if not.
@@ -70,7 +70,7 @@ public:
 	 * the ray is interrupted. Only if the callback returned false at some point in time, this function will return @c true.
 	 */
 	template<typename Callback>
-	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) {
+	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) const {
 		const RaycastResults::RaycastResult result = raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
 		return result == RaycastResults::Interupted;
 	}

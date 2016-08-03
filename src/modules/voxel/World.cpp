@@ -289,7 +289,7 @@ void World::stats(int& meshes, int& extracted, int& pending) const {
 	meshes = _meshQueue.size();
 }
 
-bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) {
+bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) const {
 	const bool result = raycast(start, direction, maxDistance, [&] (const PagedVolume::Sampler& sampler) {
 		voxel = sampler.getVoxel();
 		if (isBlocked(voxel.getMaterial())) {

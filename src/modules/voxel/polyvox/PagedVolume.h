@@ -118,7 +118,7 @@ public:
 
 	class Sampler {
 	public:
-		Sampler(PagedVolume* volume);
+		Sampler(const PagedVolume* volume);
 		~Sampler();
 
 		const Voxel& getVoxel() const;
@@ -167,7 +167,7 @@ public:
 		const Voxel& peekVoxel1px1py1pz() const;
 
 	private:
-		PagedVolume* mVolume;
+		const PagedVolume* mVolume;
 
 		//The current position in the volume
 		int32_t mXPosInVolume;

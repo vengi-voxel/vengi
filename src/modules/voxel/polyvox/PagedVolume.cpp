@@ -461,7 +461,7 @@ uint32_t PagedVolume::Chunk::calculateSizeInBytes(uint32_t uSideLength) {
 #define NEG_Z_DELTA (-(deltaZ[this->m_uZPosInChunk-1]))
 #define POS_Z_DELTA (deltaZ[this->m_uZPosInChunk])
 
-PagedVolume::Sampler::Sampler(PagedVolume* volume) :
+PagedVolume::Sampler::Sampler(const PagedVolume* volume) :
 		mVolume(volume), mXPosInVolume(0), mYPosInVolume(0), mZPosInVolume(0), m_uChunkSideLengthMinusOne(
 				volume->m_uChunkSideLength - 1) {
 }
