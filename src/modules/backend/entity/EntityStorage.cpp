@@ -148,6 +148,7 @@ bool EntityStorage::updateEntity(const EntityPtr& entity, long dt) {
 	const core::RectFloat& rect = entity->regionRect();
 	const auto& contents = _quadTreeCache.query(rect);
 	EntitySet set;
+	set.reserve(contents.size());
 	for (const Node& node : contents) {
 		set.insert(node.entity);
 	}
