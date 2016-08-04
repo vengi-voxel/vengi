@@ -49,11 +49,14 @@ core::AppState TestDepthBuffer::onInit() {
 
 void TestDepthBuffer::doRender() {
 	_sunLight.update(_deltaFrame, _camera);
+	// TODO: support different animations...
+	const uint8_t animationIndex = 0u;
+	const long timeInSeconds = (_now - _initTime) / 1000.0f;
 	{
 		video::ScopedShader scoped(_shadowMapShader);
 		_shadowMapShader.setLight(_sunLight.model());
 		_shadowMapShader.setModel(glm::mat4());
-		if (!_mesh.initMesh(_shadowMapShader)) {
+		if (!_mesh.initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
 			Log::error("Failed to init the mesh for the shadow map stage");
 		}
 		glDisable(GL_BLEND);
@@ -77,7 +80,7 @@ void TestDepthBuffer::doRender() {
 		_meshShader.setLightpos(_sunLight.dir() + _camera.position());
 		_meshShader.setTexture(0);
 
-		if (!_mesh.initMesh(_meshShader)) {
+		if (!_mesh.initMesh(_meshShader, timeInSeconds, animationIndex)) {
 			Log::error("Failed to init the mesh for the render stage");
 			return;
 		}
