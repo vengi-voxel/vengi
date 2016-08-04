@@ -33,7 +33,7 @@ core::AppState TestDepthBuffer::onInit() {
 	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationPos(), fullscreenQuadIndices.x, 3);
 	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationTexcoord(), fullscreenQuadIndices.y, 2);
 
-	const std::string mesh = "animal_chicken.dae";
+	const std::string mesh = "mesh/chr_skelett2_bake.FBX";
 	if (!_mesh.loadMesh(mesh)) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
