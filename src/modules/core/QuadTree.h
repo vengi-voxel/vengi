@@ -247,6 +247,8 @@ public:
 	inline void clear() {
 #if CACHE
 		_cache.clear();
+#else
+		_tree.clear();
 #endif
 	}
 
