@@ -64,11 +64,18 @@ void TestDepthBuffer::doRender() {
 		if (!_mesh.initMesh(_shadowMapShader)) {
 			Log::error("Failed to init the mesh");
 		}
+		glDisable(GL_BLEND);
+		glCullFace(GL_FRONT);
 		_depthBuffer.bind();
 		_mesh.render();
 		_depthBuffer.unbind();
+		glCullFace(GL_BACK);
+		glEnable(GL_BLEND);
 	}
 	{
+		glClearColor(0.8, 0.8f, 0.8f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		video::ScopedShader scoped(_meshShader);
 		_meshShader.setView(_camera.viewMatrix());
 		_meshShader.setProjection(_camera.projectionMatrix());
