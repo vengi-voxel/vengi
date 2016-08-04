@@ -35,4 +35,9 @@ GLM_FUNC_QUALIFIER bvec4 isnan(quat const & x) {
 	return isnan(v);
 }
 
+GLM_FUNC_QUALIFIER bvec4 isinf(quat const & x) {
+	const vec4 v(x.x, x.y, x.z, x.w);
+	return isinf(v);
+}
+
 }

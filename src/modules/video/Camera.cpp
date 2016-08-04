@@ -50,19 +50,24 @@ void Camera::rotate(const glm::vec3& radians) {
 inline void Camera::slerp(const glm::quat& quat, float factor) {
 	_quat = glm::mix(_quat, quat, factor);
 	_dirty |= DIRTY_ORIENTATION;
+	core_assert(!glm::any(glm::isnan(_quat)));
+	core_assert(!glm::any(glm::isinf(_quat)));
 }
 
 void Camera::slerp(const glm::vec3& radians, float factor) {
 	const glm::quat quat2(radians);
 	_quat = glm::mix(_quat, quat2, factor);
 	_dirty |= DIRTY_ORIENTATION;
+	core_assert(!glm::any(glm::isnan(_quat)));
+	core_assert(!glm::any(glm::isinf(_quat)));
 }
 
 void Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 	core_assert(position != _pos);
-	_dirty |= DIRTY_ORIENTATION;
 	_quat = glm::quat_cast(glm::lookAt(_pos, position, upDirection));
+	_dirty |= DIRTY_ORIENTATION;
 	core_assert(!glm::any(glm::isnan(_quat)));
+	core_assert(!glm::any(glm::isinf(_quat)));
 }
 
 void Camera::updateTarget() {
