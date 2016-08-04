@@ -19,7 +19,7 @@ Mesh::Mesh() :
 }
 
 Mesh::~Mesh() {
-	core_assert_msg(_vertexArrayObject == 0u, "Mesh was not properly shut down");
+	core_assert_msg(_vertexArrayObject == 0u, "Mesh %s was not properly shut down", _filename.c_str());
 	shutdown();
 }
 
@@ -59,6 +59,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 	MeshIOSystem iosystem;
 	_importer.SetIOHandler(&iosystem);
 #endif
+	_filename = filename;
 	_scene = _importer.ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_FindDegenerates);
 	if (_scene == nullptr || _scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !_scene->mRootNode) {
 		Log::error("Error parsing '%s': '%s'\n", filename.c_str(), _importer.GetErrorString());

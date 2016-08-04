@@ -11,6 +11,10 @@ ClientEntity::ClientEntity(ClientEntityId id, int type, const glm::vec3& pos, fl
 	_posLerp.setStartPosition(pos);
 }
 
+ClientEntity::~ClientEntity() {
+	_mesh->shutdown();
+}
+
 void ClientEntity::lerpPosition(const glm::vec3& position, float orientation) {
 	_posLerp.setTargetPosition(position);
 	_orientation = orientation;

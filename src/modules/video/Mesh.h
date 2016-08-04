@@ -81,6 +81,7 @@ private:
 	const aiScene* _scene = nullptr;
 	Assimp::Importer _importer;
 	void* _lastShader = nullptr;
+	std::string _filename;
 
 	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms, uint8_t animationIndex = 0u);
 public:
@@ -90,11 +91,16 @@ public:
 	const glm::vec3 mins() const;
 	const glm::vec3 maxs() const;
 
+	const std::string& filename() const;
 	void shutdown();
 	bool loadMesh(const std::string& filename);
 	bool initMesh(Shader& shader, float timeInSeconds = 0.0f, uint8_t animationIndex = 0u);
 	int render();
 };
+
+inline const std::string& Mesh::filename() const {
+	return _filename;
+}
 
 inline const glm::vec3 Mesh::mins() const {
 	return _aabbMins;

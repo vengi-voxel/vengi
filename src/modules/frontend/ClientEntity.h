@@ -22,6 +22,7 @@ private:
 	video::MeshPtr _mesh;
 public:
 	ClientEntity(ClientEntityId id, int type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
+	~ClientEntity();
 
 	void lerpPosition(const glm::vec3& position, float orientation);
 	void update(long dt);
