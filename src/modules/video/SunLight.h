@@ -14,13 +14,15 @@ private:
 	glm::vec3 _lightDir;
 
 public:
-	// Because we're modeling a directional light source all its light rays are parallel.
-	// For this reason we're going to use an orthographic projection matrix for the light
-	// source where there is no perspective deform
 	void update(long dt, const Camera& camera);
 
 	const glm::vec3& dir() const;
 
+	/**
+	 * @brief Because we're modeling a directional light source all its light rays are parallel.
+	 * For this reason we're going to use an orthographic projection matrix for the light
+	 * source where there is no perspective deform
+	 */
 	const glm::mat4& projection() const;
 
 	const glm::mat4& model() const;
