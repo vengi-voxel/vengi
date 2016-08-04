@@ -8,6 +8,7 @@
 #include "video/DepthBuffer.h"
 #include "video/Mesh.h"
 #include "video/VertexBuffer.h"
+#include "video/SunLight.h"
 #include "FrontendShaders.h"
 
 class TestDepthBuffer: public TestApp {
@@ -17,6 +18,7 @@ private:
 	video::Mesh _mesh;
 	shader::MeshShader _meshShader;
 	video::VertexBuffer _texturedFullscreenQuad;
+	video::SunLight _sunLight;
 	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	shader::ShadowmapShader _shadowMapShader;
 

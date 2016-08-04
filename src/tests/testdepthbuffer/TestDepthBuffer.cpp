@@ -9,6 +9,7 @@ TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr
 core::AppState TestDepthBuffer::onInit() {
 	core::AppState state = Super::onInit();
 
+	_sunLight.setPos(glm::vec3(20.0f, 50.0f, -20.0));
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 150.0f));
 	_camera.lookAt(glm::vec3(0.0f, 50.0f, 0.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
@@ -47,19 +48,10 @@ core::AppState TestDepthBuffer::onInit() {
 }
 
 void TestDepthBuffer::doRender() {
-	const glm::mat4 lightProjection =
-			glm::scale(
-				glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 1.0f)),
-				glm::vec3(1.0f, 1.0f, 0.5f)
-			)
-			*
-			glm::ortho(-75.0f, +75.0f, -75.0f, +75.0f, 1.0f, 400.0f);
-	const glm::mat4 lightView = glm::lookAt(glm::vec3(50.0f, 50.0f, -50.0f), glm::vec3(0.0f), glm::up);
-	const glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-	const glm::vec3 lightDir = glm::vec3(glm::column(glm::inverse(lightView), 2));
+	_sunLight.update(_deltaFrame, _camera);
 	{
 		video::ScopedShader scoped(_shadowMapShader);
-		_shadowMapShader.setLight(lightSpaceMatrix);
+		_shadowMapShader.setLight(_sunLight.model());
 		_shadowMapShader.setModel(glm::mat4());
 		if (!_mesh.initMesh(_shadowMapShader)) {
 			Log::error("Failed to init the mesh");
@@ -82,7 +74,7 @@ void TestDepthBuffer::doRender() {
 		_meshShader.setFogrange(500.0f);
 		_meshShader.setViewdistance(500.0f);
 		_meshShader.setModel(glm::mat4());
-		_meshShader.setLightpos(lightDir + _camera.position());
+		_meshShader.setLightpos(_sunLight.dir() + _camera.position());
 		_meshShader.setTexture(0);
 
 		if (!_mesh.initMesh(_meshShader)) {

@@ -12,6 +12,7 @@
 #include "video/VertexBuffer.h"
 #include "video/GBuffer.h"
 #include "video/DepthBuffer.h"
+#include "video/SunLight.h"
 #include "FrontendShaders.h"
 #include "video/GLMeshData.h"
 #include "core/GLM.h"
@@ -57,11 +58,7 @@ private:
 
 	glm::vec4 _clearColor;
 	video::TexturePtr _colorTexture;
-	glm::vec3 _lightDir = glm::vec3(10000.0, 10000.0, 10000.0);
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
-	glm::mat4 _lightProjection;
-	glm::mat4 _lightView;
-	glm::mat4 _lightSpaceMatrix;
 	// the position of the last extraction - we only care for x and z here
 	glm::ivec3 _lastGridPosition = { std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min() };
 	voxel::WorldPtr _world;
@@ -84,6 +81,7 @@ private:
 	shader::MeshShader _meshShader;
 	shader::DeferredLightDirShader _deferredDirLightShader;
 	shader::ShadowmapShader _shadowMapShader;
+	video::SunLight _sunLight;
 
 	voxel::PlantGenerator _plantGenerator;
 

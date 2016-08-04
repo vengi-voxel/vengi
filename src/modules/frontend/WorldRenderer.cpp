@@ -211,8 +211,8 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 
 	video::ScopedShader scoped(shader);
 	if (_cameraSun->boolVal()) {
-		shaderSetUniformIf(shader, setUniformMatrix, "u_view", _lightView);
-		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", _lightProjection);
+		shaderSetUniformIf(shader, setUniformMatrix, "u_view", _sunLight.view());
+		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", _sunLight.projection());
 	} else {
 		shaderSetUniformIf(shader, setUniformMatrix, "u_view", camera.viewMatrix());
 		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
@@ -221,13 +221,13 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightDir + camera.position());
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.dir() + camera.position());
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _lightSpaceMatrix);
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.model());
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	if (shadowMap) {
 		glActiveTexture(GL_TEXTURE1);
@@ -299,7 +299,7 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	_gbuffer.bindForReading(false);
 	shader::DeferredLightDirShader& deferredShader = _deferredDirLightShader;
 	video::ScopedShader scoped(deferredShader);
-	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightpos", _lightDir + camera.position());
+	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightpos", _sunLight.dir() + camera.position());
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
@@ -345,22 +345,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	GL_checkError();
 
-	static const glm::vec3 up(0.0f, 1.0f, 0.0f);
-	static const glm::vec3 pos(20.0f, 50.0f, -20.0f);
-	static const glm::vec3 center(0.0f);
-	// normalize the opengl depth from [-1, 1] to [0, 1]
-	_lightProjection = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 1.0f));
-	_lightProjection = glm::scale(_lightProjection, glm::vec3(1.0f, 1.0f, 0.5f));
-	// Because we're modelling a directional light source all its light rays are parallel.
-	// For this reason we're going to use an orthographic projection matrix for the light
-	// source where there is no perspective deform
-	// TODO: calculate the obb around the frustum - but we have to improve later anyway for cascaded shadowmaps.
-	// TODO: then create the ortho matrix from it. http://www.ogldev.org/www/tutorial49/tutorial49.html
-	_lightProjection = _lightProjection * glm::ortho(-250.0f, +250.0f, -250.0f, +250.0f, 1.0f, 400.0f);
-	_lightView = glm::lookAt(pos, center, up);
-	const glm::mat4& lightModel = glm::translate(glm::mat4(1.0f), camera.position());
-	_lightSpaceMatrix = _lightProjection * _lightView * lightModel;
-	_lightDir = glm::vec3(glm::column(glm::inverse(_lightView), 2));
+	_sunLight.setPos(glm::vec3(20.0f, 50.0f, -20.0f));
+	_sunLight.update(_deltaFrame, camera);
 
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we do one pass for the gbuffer + the sun
@@ -571,7 +557,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	video::ScopedShader scoped(shader);
 	shader.setUniformMatrix("u_view", view, false);
 	shader.setUniformMatrix("u_projection", projection, false);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _lightDir + camera.position());
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.dir() + camera.position());
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
@@ -643,6 +629,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 
 bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
+	_sunLight.setPos(glm::vec3(20.0f, 50.0f, -20.0));
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
 	_shadowMap = core::Var::get(cfg::ClientShadowMap);
