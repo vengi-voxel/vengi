@@ -112,7 +112,6 @@ void EntityStorage::onFrame(long dt) {
 		return;
 	}
 
-	_quadTreeCache.clear();
 	updateQuadTree();
 	for (auto i : _users) {
 		updateEntity(i.second, deltaLastTick);
