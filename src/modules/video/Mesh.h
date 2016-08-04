@@ -75,6 +75,7 @@ private:
 	glm::mat4 _globalInverseTransform;
 	const aiScene* _scene = nullptr;
 	Assimp::Importer _importer;
+	void* _lastShader = nullptr;
 
 	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms, uint8_t animationIndex = 0u);
 public:

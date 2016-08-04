@@ -161,6 +161,17 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 
 		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * _vertices.size(), &_vertices[0], GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _indices.size(), &_indices[0], GL_STATIC_DRAW);
+
+		glBindVertexArray(0);
+	}
+
+	if (&shader != _lastShader) {
+		_lastShader = &shader;
+		glBindVertexArray(_vertexArrayObject);
+		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 		if (shader.hasAttribute("a_pos")) {
 			const int loc = shader.enableVertexAttribute("a_pos");
 			core_assert(loc >= 0);
@@ -191,10 +202,6 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 			core_assert(loc >= 0);
 			glVertexAttribPointer(loc, NUM_BONES_PER_VEREX, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneWeights)));
 		}
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _indices.size(), &_indices[0], GL_STATIC_DRAW);
-
 		glBindVertexArray(0);
 	}
 
