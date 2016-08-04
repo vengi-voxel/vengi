@@ -147,12 +147,6 @@ void Client::handleLogin() {
 	}
 }
 
-void Client::renderBackground() {
-	_camera.setAngles(-glm::half_pi<float>(), glm::pi<float>());
-	_camera.setPosition(glm::vec3(0.0f, 100.0f, 0.0f));
-	_camera.update(0L);
-}
-
 void Client::beforeUI() {
 	Super::beforeUI();
 
@@ -183,7 +177,6 @@ void Client::beforeUI() {
 	} else {
 		_drawCallsWorld = 0;
 		_drawCallsEntities = 0;
-		renderBackground();
 	}
 }
 
