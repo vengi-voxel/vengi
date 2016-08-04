@@ -116,6 +116,25 @@ bool Mesh::loadMesh(const std::string& filename) {
 			const aiVector3D& texCoord = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][vi] : VECZERO;
 			const aiColor4D& color = mesh->HasVertexColors(0) ? mesh->mColors[0][vi] : COLOR_BLACK;
 
+			if (pos.x < _aabbMins.x) {
+				_aabbMins.x = pos.x;
+			}
+			if (pos.x > _aabbMaxs.x) {
+				_aabbMaxs.x = pos.x;
+			}
+			if (pos.y < _aabbMins.y) {
+				_aabbMins.y = pos.y;
+			}
+			if (pos.y > _aabbMaxs.y) {
+				_aabbMaxs.y = pos.y;
+			}
+			if (pos.z < _aabbMins.z) {
+				_aabbMins.z = pos.z;
+			}
+			if (pos.z > _aabbMaxs.z) {
+				_aabbMaxs.z = pos.z;
+			}
+
 			_vertices.emplace_back(pos, normal, texCoord, color);
 		}
 		loadBones(i, mesh);

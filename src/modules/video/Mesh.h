@@ -69,6 +69,11 @@ private:
 	std::vector<TexturePtr> _textures;
 	Vertices _vertices;
 	Indices _indices;
+
+	// AABB
+	glm::vec3 _aabbMins;
+	glm::vec3 _aabbMaxs;
+
 	std::unordered_map<std::string, uint32_t> _boneMapping;
 	uint32_t _numBones = 0u;
 	std::vector<BoneInfo> _boneInfo;
@@ -82,11 +87,23 @@ public:
 	Mesh();
 	~Mesh();
 
+	const glm::vec3 mins() const;
+	const glm::vec3 maxs() const;
+
 	void shutdown();
 	bool loadMesh(const std::string& filename);
 	bool initMesh(Shader& shader, float timeInSeconds = 0.0f, uint8_t animationIndex = 0u);
 	int render();
 };
+
+inline const glm::vec3 Mesh::mins() const {
+	return _aabbMins;
+}
+
+inline const glm::vec3 Mesh::maxs() const {
+	return _aabbMaxs;
+}
+
 
 typedef std::shared_ptr<Mesh> MeshPtr;
 
