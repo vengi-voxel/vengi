@@ -60,7 +60,6 @@ public:
 	}
 
 	void changeMovement(MoveDirection bitmask, float pitch, float yaw) {
-		Log::info("change movement for %li", id());
 		_moveMask = bitmask;
 		_pitch = pitch;
 		_yaw = yaw;

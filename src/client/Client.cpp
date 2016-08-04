@@ -59,7 +59,6 @@ void Client::sendMovement() {
 	_lastMoveMask = _moveMask;
 	flatbuffers::FlatBufferBuilder fbb;
 	const MoveDirection md = (MoveDirection) _moveMask;
-	Log::info("send movement to server");
 	_messageSender->sendClientMessage(_peer, fbb, Type_Move, CreateMove(fbb, md, _camera.pitch(), _camera.yaw()).Union(), 0);
 }
 
@@ -285,7 +284,6 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 		Log::warn("Could not get entity with id %li", id);
 		return;
 	}
-	Log::warn("Update entity %li with pos %f:%f:%f and orientation %f", id, pos.x, pos.y, pos.z, orientation);
 	entity->lerpPosition(pos, orientation);
 }
 
