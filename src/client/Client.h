@@ -42,6 +42,7 @@ protected:
 	uint8_t _moveMask = 0;
 	uint8_t _lastMoveMask = 0;
 	core::VarPtr _rotationSpeed;
+	core::VarPtr _maxTargetDistance;
 	frontend::ClientEntityPtr _player;
 	ui::WaitingMessage _waiting;
 
@@ -86,6 +87,7 @@ public:
 	void afterUI() override;
 
 	bool onKeyPress(int32_t key, int16_t modifier) override;
+	void onMouseWheel(int32_t x, int32_t y) override;
 
 	void onEvent(const voxel::WorldCreatedEvent& event) override;
 	void onEvent(const network::DisconnectEvent& event) override;

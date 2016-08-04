@@ -110,8 +110,10 @@ core::AppState Client::onInit() {
 
 	GL_checkError();
 
+	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "250.0");
 	_camera.init(dimension());
 	_camera.setRotationType(video::CameraRotationType::Target);
+	_camera.setTargetDistance(_maxTargetDistance->floatVal());
 	_waiting.init();
 
 	registerMoveCmd("+move_right", MOVERIGHT);
@@ -214,6 +216,12 @@ core::AppState Client::onCleanup() {
 	_network->shutdown();
 	_waiting.shutdown();
 	return state;
+}
+
+void Client::onMouseWheel(int32_t x, int32_t y) {
+	Super::onMouseWheel(x, y);
+	const float targetDistance = glm::clamp(_camera.targetDistance() - y, 0.0f, _maxTargetDistance->floatVal());
+	_camera.setTargetDistance(targetDistance);
 }
 
 bool Client::onKeyPress(int32_t key, int16_t modifier) {
