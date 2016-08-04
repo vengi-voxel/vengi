@@ -54,7 +54,7 @@ void TestDepthBuffer::doRender() {
 		_shadowMapShader.setLight(_sunLight.model());
 		_shadowMapShader.setModel(glm::mat4());
 		if (!_mesh.initMesh(_shadowMapShader)) {
-			Log::error("Failed to init the mesh");
+			Log::error("Failed to init the mesh for the shadow map stage");
 		}
 		glDisable(GL_BLEND);
 		glCullFace(GL_FRONT);
@@ -78,7 +78,7 @@ void TestDepthBuffer::doRender() {
 		_meshShader.setTexture(0);
 
 		if (!_mesh.initMesh(_meshShader)) {
-			Log::error("Failed to init the mesh");
+			Log::error("Failed to init the mesh for the render stage");
 			return;
 		}
 		core_assert_always(_mesh.render() > 0);
