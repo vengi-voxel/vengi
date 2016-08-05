@@ -57,7 +57,7 @@ void Client::sendMovement() {
 	}
 	_lastMovement = _now;
 	_lastMoveMask = _moveMask;
-	flatbuffers::FlatBufferBuilder fbb;
+	static flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::Move, CreateMove(fbb, _moveMask, _camera.pitch(), _camera.yaw()).Union(), 0);
 }
 
