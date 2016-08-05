@@ -13,9 +13,9 @@ using namespace network::messages::server;
 using namespace network::messages::client;
 
 #define sendServerMsgMultiple(peers, numPeers, msg, type) _messageSender->sendServerMessage(peers, numPeers, fbb, network::messages::server::Type_##type, network::messages::server::Create##msg.Union());
-#define sendServerMsg(msg, type) _messageSender->sendServerMessage(_peer, fbb, network::messages::server::Type_##type, network::messages::server::Create##msg.Union());
-#define broadcastServerMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::messages::server::Type_##type, network::messages::server::Create##msg.Union());
-#define sendClientMsg(msg, type) _messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type_##type, network::messages::client::Create##msg.Union());
+#define sendServerMsg(msg, type) _messageSender->sendServerMessage(_peer, fbb, network::messages::server::Type::type, network::messages::server::Create##msg.Union());
+#define broadcastServerMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::messages::server::Type::type, network::messages::server::Create##msg.Union());
+#define sendClientMsg(msg, type) _messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::type, network::messages::client::Create##msg.Union());
 
 namespace network {
 

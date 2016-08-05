@@ -32,7 +32,7 @@ protected:
 	attrib::ContainerProviderPtr _containerProvider;
 	attrib::Attributes _attribs;
 	cooldown::CooldownMgr _cooldowns;
-	network::messages::NpcType _npcType = network::messages::NpcType_NONE;
+	network::messages::NpcType _npcType = network::messages::NpcType::NONE;
 	ENetPeer *_peer = nullptr;
 
 	/**

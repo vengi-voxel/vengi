@@ -16,7 +16,7 @@ namespace backend {
 
 class SelectNpcsOfTypes: public IFilter {
 private:
-	std::bitset<network::messages::NpcType::NpcType_MAX> _npcTypes;
+	std::bitset<(int)network::messages::NpcType::MAX> _npcTypes;
 public:
 	FILTER_FACTORY(SelectNpcsOfTypes)
 
@@ -42,8 +42,9 @@ public:
 		FilteredEntities& entities = getFilteredEntities(entity);
 		backend::Npc& chr = ai::character_cast<AICharacter>(entity->getCharacter()).getNpc();
 		chr.visitVisible([&] (const backend::EntityPtr& e) {
-			if (!_npcTypes[e->npcType()])
+			if (!_npcTypes[(int)e->npcType()]) {
 				return;
+			}
 			entities.push_back(e->id());
 		});
 	}

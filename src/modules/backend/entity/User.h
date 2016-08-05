@@ -20,12 +20,24 @@ private:
 	uint32_t _host;
 	voxel::WorldPtr _world;
 	PoiProviderPtr _poiProvider;
-	MoveDirection _moveMask;
+	uint32_t _moveMask;
 	float _pitch;
 	float _yaw;
 	uint64_t _lastAction;
 	uint64_t _time;
 	core::VarPtr _userTimeout;
+
+	inline bool isMove(network::messages::client::MoveDirection dir) const {
+		return (_moveMask & (uint32_t)dir) != 0;
+	}
+
+	inline void addMove(network::messages::client::MoveDirection dir) {
+		_moveMask |= (uint32_t)dir;
+	}
+
+	inline void removeMove(network::messages::client::MoveDirection dir) {
+		_moveMask &= ~((uint32_t)dir);
+	}
 
 protected:
 	void visibleAdd(const EntitySet& entities) override;
@@ -60,7 +72,7 @@ public:
 	}
 
 	void changeMovement(MoveDirection bitmask, float pitch, float yaw) {
-		_moveMask = bitmask;
+		_moveMask = (uint32_t)bitmask;
 		_pitch = pitch;
 		_yaw = yaw;
 	}

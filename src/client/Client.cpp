@@ -23,9 +23,9 @@
 			return; \
 		} \
 		if (args[0] == "true") \
-			_moveMask |= MoveDirection_##flag; \
+			_moveMask |= network::messages::client::MoveDirection::flag; \
 		else \
-			_moveMask &= ~MoveDirection_##flag; \
+			_moveMask &= ~network::messages::client::MoveDirection::flag; \
 	});
 
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
@@ -59,7 +59,7 @@ void Client::sendMovement() {
 	_lastMoveMask = _moveMask;
 	flatbuffers::FlatBufferBuilder fbb;
 	const MoveDirection md = (MoveDirection) _moveMask;
-	_messageSender->sendClientMessage(_peer, fbb, Type_Move, CreateMove(fbb, md, _camera.pitch(), _camera.yaw()).Union(), 0);
+	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::Move, CreateMove(fbb, md, _camera.pitch(), _camera.yaw()).Union(), 0);
 }
 
 void Client::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
@@ -78,7 +78,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 	const std::string& email = core::Var::get(cfg::ClientEmail)->strVal();
 	const std::string& password = core::Var::get(cfg::ClientPassword)->strVal();
 	Log::info("Trying to log into the server with %s", email.c_str());
-	_messageSender->sendClientMessage(_peer, fbb, Type_UserConnect,
+	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::UserConnect,
 			CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(password)).Union());
 }
 
@@ -153,16 +153,16 @@ void Client::beforeUI() {
 	if (_world->isCreated()) {
 		glm::vec3 moveDelta = glm::vec3();
 		const float speed = 0.01f * static_cast<float>(_deltaFrame);
-		if (_moveMask & MoveDirection_MOVELEFT) {
+		if ((_moveMask & MoveDirection::MOVELEFT) != MoveDirection::MOVELEFT) {
 			moveDelta += glm::left * speed;
 		}
-		if (_moveMask & MoveDirection_MOVERIGHT) {
+		if ((_moveMask & MoveDirection::MOVERIGHT) != MoveDirection::MOVERIGHT) {
 			moveDelta += glm::right * speed;
 		}
-		if (_moveMask & MoveDirection_MOVEFORWARD) {
+		if ((_moveMask & MoveDirection::MOVEFORWARD) != MoveDirection::MOVEFORWARD) {
 			moveDelta += glm::forward * speed;
 		}
-		if (_moveMask & MoveDirection_MOVEBACKWARD) {
+		if ((_moveMask & MoveDirection::MOVEBACKWARD) != MoveDirection::MOVEBACKWARD) {
 			moveDelta += glm::backward * speed;
 		}
 		_camera.move(moveDelta);
@@ -282,7 +282,7 @@ void Client::authFailed() {
 
 void Client::disconnect() {
 	flatbuffers::FlatBufferBuilder fbb;
-	_messageSender->sendClientMessage(_peer, fbb, Type_UserDisconnect, CreateUserDisconnect(fbb).Union());
+	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::UserDisconnect, CreateUserDisconnect(fbb).Union());
 }
 
 void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation) {
@@ -295,7 +295,7 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 }
 
 void Client::npcSpawn(frontend::ClientEntityId id, network::messages::NpcType type, float orientation, const glm::vec3& pos) {
-	Log::info("NPC %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, type);
+	Log::info("NPC %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
 	const std::string& meshName = "mesh/chr_skelett2_bake.FBX"; // core::string::toLower(network::messages::EnumNameNpcType(type));
 	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, _meshPool->getMesh(meshName)));
 }
@@ -312,12 +312,12 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	// TODO: take orientation into account
 	//_camera.lookAt(lookAtPos);
 	// broken: _camera.setAngles(0.0f, orientation);
-	_player = std::make_shared<frontend::ClientEntity>(id, -1, pos, orientation, _meshPool->getMesh("mesh/chr_skelett2_bake.FBX"));
+	_player = std::make_shared<frontend::ClientEntity>(id, network::messages::NpcType::NONE, pos, orientation, _meshPool->getMesh("mesh/chr_skelett2_bake.FBX"));
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.onSpawn(pos);
 
 	flatbuffers::FlatBufferBuilder fbb;
-	_messageSender->sendClientMessage(_peer, fbb, Type_UserConnected,
+	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::UserConnected,
 			CreateUserConnected(fbb).Union());
 }
 

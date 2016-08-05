@@ -159,7 +159,7 @@ bool Network::packetReceived(ENetEvent& event, bool server) {
 		}
 		const messages::server::ServerMessage *req = messages::server::GetServerMessage(event.packet->data);
 		messages::server::Type type = req->data_type();
-		ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(type);
+		ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(messages::server::EnumNameType(type));
 		if (!handler) {
 			Log::error("No handler for server msg type %s", messages::server::EnumNameType(type));
 			return false;
@@ -175,7 +175,7 @@ bool Network::packetReceived(ENetEvent& event, bool server) {
 	}
 	const messages::client::ClientMessage *req = messages::client::GetClientMessage(event.packet->data);
 	messages::client::Type type = req->data_type();
-	ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(type);
+	ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(messages::client::EnumNameType(type));
 	if (!handler) {
 		Log::error("No handler for client msg type %s", messages::client::EnumNameType(type));
 		return false;

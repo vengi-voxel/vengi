@@ -8,7 +8,7 @@
 namespace backend {
 
 SelectPrey::SelectPrey(const std::string& parameters) :
-		IFilter("SelectPrey", parameters), _npcType(network::messages::NpcType_NONE) {
+		IFilter("SelectPrey", parameters), _npcType(network::messages::NpcType::NONE) {
 	const char **names = network::messages::EnumNamesNpcType();
 	int i = 0;
 	while (*names) {
@@ -19,8 +19,8 @@ SelectPrey::SelectPrey(const std::string& parameters) :
 		++i;
 		++names;
 	}
-	core_assert(_npcType > network::messages::NpcType_NONE);
-	core_assert(_npcType < network::messages::NpcType_MAX);
+	core_assert(_npcType > network::messages::NpcType::NONE);
+	core_assert(_npcType < network::messages::NpcType::MAX);
 }
 
 void SelectPrey::filter(const AIPtr& entity) {

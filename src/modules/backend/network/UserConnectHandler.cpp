@@ -14,7 +14,7 @@ namespace backend {
 UserConnectHandler::UserConnectHandler(network::NetworkPtr network, backend::EntityStoragePtr entityStorage, voxel::WorldPtr world) :
 		_network(network), _entityStorage(entityStorage), _world(world) {
 	auto data = CreateAuthFailed(_authFailed);
-	auto msg = CreateServerMessage(_authFailed, Type_AuthFailed, data.Union());
+	auto msg = CreateServerMessage(_authFailed, network::messages::server::Type::AuthFailed, data.Union());
 	FinishServerMessageBuffer(_authFailed, msg);
 }
 

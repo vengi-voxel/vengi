@@ -15,12 +15,17 @@
 #include "NpcSpawnHandler.h"
 
 class ClientNetworkModule: public NetworkModule {
+	template<typename Ctor>
+	inline void bindHandler(network::messages::server::Type type) const {
+		bind<network::IProtocolHandler>().named(network::messages::server::EnumNameType(type)).to<Ctor>();
+	}
+
 	void configureHandlers() const override {
-		configureHandler(Type_NpcSpawn, NpcSpawnHandler);
-		configureHandler(Type_EntityRemove, EntityRemoveHandler);
-		configureHandler(Type_EntityUpdate, EntityUpdateHandler);
-		configureHandler(Type_UserSpawn, UserSpawnHandler);
-		configureHandler(Type_Seed, SeedHandler(voxel::World &));
-		configureHandler(Type_AuthFailed, AuthFailedHandler);
+		bindHandler<NpcSpawnHandler>(network::messages::server::Type::NpcSpawn);
+		bindHandler<EntityRemoveHandler>(network::messages::server::Type::EntityRemove);
+		bindHandler<EntityUpdateHandler>(network::messages::server::Type::EntityUpdate);
+		bindHandler<UserSpawnHandler>(network::messages::server::Type::UserSpawn);
+		bindHandler<AuthFailedHandler>(network::messages::server::Type::AuthFailed);
+		bindHandler<SeedHandler(voxel::World &)>(network::messages::server::Type::Seed);
 	}
 };

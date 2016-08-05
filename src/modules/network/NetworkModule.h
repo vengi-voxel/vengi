@@ -9,7 +9,7 @@
 #include "core/EventBus.h"
 #include <sauce/sauce.h>
 
-#define configureHandler(type, handler) bind<network::IProtocolHandler>().named(std::to_string(type)).to<handler>();
+#define configureHandler(type, handler) bind<network::IProtocolHandler>().named(type).to<handler>();
 
 class NetworkModule: public sauce::AbstractModule {
 	void configure() const {

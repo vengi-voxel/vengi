@@ -16,12 +16,17 @@
 namespace backend {
 
 class ServerNetworkModule: public NetworkModule {
+	template<typename Ctor>
+	inline void bindHandler(network::messages::client::Type type) const {
+		bind<network::IProtocolHandler>().named(network::messages::client::EnumNameType(type)).to<Ctor>();
+	}
+
 	void configureHandlers() const override {
-		configureHandler(Type_UserConnect, UserConnectHandler(network::Network &, backend::EntityStorage &, voxel::World &));
-		configureHandler(Type_UserConnected, UserConnectedHandler());
-		configureHandler(Type_UserDisconnect, UserDisconnectHandler());
-		configureHandler(Type_Attack, AttackHandler());
-		configureHandler(Type_Move, MoveHandler());
+		bindHandler<UserConnectHandler(network::Network &, backend::EntityStorage &, voxel::World &)>(network::messages::client::Type::UserConnect);
+		bindHandler<UserConnectedHandler>(network::messages::client::Type::UserConnected);
+		bindHandler<UserDisconnectHandler>(network::messages::client::Type::UserDisconnect);
+		bindHandler<AttackHandler>(network::messages::client::Type::Attack);
+		bindHandler<MoveHandler>(network::messages::client::Type::Move);
 	}
 };
 

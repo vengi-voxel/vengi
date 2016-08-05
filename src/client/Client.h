@@ -39,8 +39,8 @@ protected:
 	core::TimeProviderPtr _timeProvider;
 	frontend::WorldRenderer _worldRenderer;
 	ENetPeer* _peer = nullptr;
-	uint8_t _moveMask = 0;
-	uint8_t _lastMoveMask = 0;
+	MoveDirection _moveMask = MoveDirection::NONE;
+	MoveDirection _lastMoveMask = MoveDirection::NONE;
 	core::VarPtr _rotationSpeed;
 	core::VarPtr _maxTargetDistance;
 	frontend::ClientEntityPtr _player;

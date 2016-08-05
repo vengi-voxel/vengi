@@ -3,7 +3,7 @@ set(MESSAGE_OUT_DIR ${CMAKE_BINARY_DIR}/messages)
 macro(network_generate HEADER DEFINITION)
 	add_custom_command(
 		OUTPUT ${MESSAGE_OUT_DIR}/${HEADER}
-		COMMAND ${CMAKE_BINARY_DIR}/flatc -c --gen-includes -o ${MESSAGE_OUT_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
+		COMMAND ${CMAKE_BINARY_DIR}/flatc -c --scoped-enums -o ${MESSAGE_OUT_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
 		DEPENDS flatc ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Generating source code for ${DEFINITION}"

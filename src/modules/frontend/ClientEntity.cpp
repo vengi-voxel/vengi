@@ -6,7 +6,7 @@
 
 namespace frontend {
 
-ClientEntity::ClientEntity(ClientEntityId id, int type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh) :
+ClientEntity::ClientEntity(ClientEntityId id, network::messages::NpcType type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh) :
 		_id(id), _type(type), _orientation(orientation), _mesh(mesh) {
 	_posLerp.setStartPosition(pos);
 }

@@ -29,24 +29,25 @@ bool SpawnMgr::init() {
 }
 
 void SpawnMgr::spawnCharacters(ai::Zone& zone) {
-	spawnEntity(zone, network::messages::NpcType_BEGIN_CHARACTERS, network::messages::NpcType_MAX_CHARACTERS, 0);
+	spawnEntity(zone, network::messages::NpcType::BEGIN_CHARACTERS, network::messages::NpcType::MAX_CHARACTERS, 0);
 }
 
 void SpawnMgr::spawnAnimals(ai::Zone& zone) {
-	spawnEntity(zone, network::messages::NpcType_BEGIN_ANIMAL, network::messages::NpcType_MAX_ANIMAL, 2);
+	spawnEntity(zone, network::messages::NpcType::BEGIN_ANIMAL, network::messages::NpcType::MAX_ANIMAL, 2);
 }
 
 void SpawnMgr::spawnEntity(ai::Zone& zone, network::messages::NpcType start, network::messages::NpcType end, int maxAmount) {
-	const int offset = start + 1;
-	int count[end - offset];
+	const int offset = (int)start + 1;
+	int count[(int)end - offset];
 	memset(count, 0, sizeof(count));
 	zone.execute([start, end, offset, &count] (const ai::AIPtr& ai) {
 		const AICharacter& chr = ai::character_cast<AICharacter>(ai->getCharacter());
 		const Npc& npc = chr.getNpc();
 		const network::messages::NpcType type = npc.npcType();
-		if (type <= start || type >= end)
+		if (type <= start || type >= end) {
 			return;
-		const int index = type - offset;
+		}
+		const int index = (int)type - offset;
 		++count[index];
 	});
 

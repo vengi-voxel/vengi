@@ -13,7 +13,7 @@ User::User(ENetPeer* peer, EntityId id, const std::string& name, const network::
 		const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
 		const PoiProviderPtr& poiProvider) :
 		Entity(id, messageSender, timeProvider, containerProvider), _peer(nullptr), _name(name), _world(world), _poiProvider(poiProvider), _moveMask(
-				(MoveDirection) 0), _pitch(0.0f), _yaw(0.0f), _lastAction(0ul), _time(0ul) {
+				0u), _pitch(0.0f), _yaw(0.0f), _lastAction(0ul), _time(0ul) {
 	setPeer(peer);
 	const glm::vec3& poi = _poiProvider->getPointOfInterest();
 	_pos = poi;
@@ -84,7 +84,7 @@ bool User::update(long dt) {
 		return true;
 	}
 
-	if (_moveMask == (MoveDirection) 0) {
+	if (!isMove(MoveDirection::ANY)) {
 		return true;
 	}
 
@@ -92,24 +92,24 @@ bool User::update(long dt) {
 
 	const float speedVal = current(attrib::Types::SPEED);
 	const float deltaTime = static_cast<float>(dt) / 1000.0f;
-	if (_moveMask & (MoveDirection_MOVEFORWARD | MoveDirection_MOVEBACKWARD)) {
+	if (isMove(MoveDirection::MOVEFORWARD | MoveDirection::MOVEBACKWARD)) {
 		const glm::vec3& direction = util::getDirection(_pitch, _yaw);
 		const glm::vec3 velocity(direction * speedVal);
-		if (_moveMask & MoveDirection_MOVEFORWARD) {
+		if (isMove(MoveDirection::MOVEFORWARD)) {
 			setPos(pos() + velocity * deltaTime);
 			Log::trace("move forward: dt %f, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", deltaTime, speedVal, _pos.x, _pos.y, _pos.z, _pitch, _yaw);
-		} else if (_moveMask & MoveDirection_MOVEBACKWARD) {
+		} else if (isMove(MoveDirection::MOVEBACKWARD)) {
 			setPos(pos() - velocity * deltaTime);
 			Log::trace("move backward: dt %f, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", deltaTime, speedVal, _pos.x, _pos.y, _pos.z, _pitch, _yaw);
 		}
 	}
-	if (_moveMask & (MoveDirection_MOVERIGHT | MoveDirection_MOVELEFT)) {
+	if (isMove(MoveDirection::MOVERIGHT | MoveDirection::MOVELEFT)) {
 		const glm::vec3& direction = util::getDirection(_yaw);
 		const glm::vec3 velocity(direction * speedVal);
-		if (_moveMask & MoveDirection_MOVELEFT) {
+		if (isMove(MoveDirection::MOVELEFT)) {
 			setPos(pos() - velocity * deltaTime);
 			Log::trace("move left: dt %f, speed: %f p(%f:%f:%f)", deltaTime, speedVal, _pos.x, _pos.y, _pos.z);
-		} else if (_moveMask & MoveDirection_MOVERIGHT) {
+		} else if (isMove(MoveDirection::MOVERIGHT)) {
 			setPos(pos() + velocity * deltaTime);
 			Log::trace("move right: dt %f, speed: %f p(%f:%f:%f)", deltaTime, speedVal, _pos.x, _pos.y, _pos.z);
 		}

@@ -18,8 +18,8 @@ public:
 			_injector(injector) {
 	}
 
-	inline ProtocolHandlerPtr getHandler(int type) {
-		return _injector->get<IProtocolHandler>(std::to_string(type));
+	inline ProtocolHandlerPtr getHandler(const char* type) {
+		return _injector->get<IProtocolHandler>(type);
 	}
 };
 
