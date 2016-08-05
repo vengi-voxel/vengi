@@ -8,7 +8,7 @@
 
 namespace video {
 
-static const char* supportedFormats[] = { "dae", "fbx", nullptr };
+static const char* supportedFormats[] = { "dae", "fbx", "DAE", "FBX", nullptr };
 
 MeshPool::MeshPool() {
 }

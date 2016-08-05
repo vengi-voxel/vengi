@@ -296,7 +296,7 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 
 void Client::npcSpawn(frontend::ClientEntityId id, network::messages::NpcType type, float orientation, const glm::vec3& pos) {
 	Log::info("NPC %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
-	const std::string& meshName = "mesh/chr_skelett2_bake.FBX"; // core::string::toLower(network::messages::EnumNameNpcType(type));
+	const std::string& meshName = "chr_skelett2_bake"; // core::string::toLower(network::messages::EnumNameNpcType(type));
 	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, _meshPool->getMesh(meshName)));
 }
 
@@ -312,7 +312,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	// TODO: take orientation into account
 	//_camera.lookAt(lookAtPos);
 	// broken: _camera.setAngles(0.0f, orientation);
-	_player = std::make_shared<frontend::ClientEntity>(id, network::messages::NpcType::NONE, pos, orientation, _meshPool->getMesh("mesh/chr_skelett2_bake.FBX"));
+	_player = std::make_shared<frontend::ClientEntity>(id, network::messages::NpcType::NONE, pos, orientation, _meshPool->getMesh("chr_skelett2_bake"));
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.onSpawn(pos);
 
