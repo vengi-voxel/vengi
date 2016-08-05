@@ -58,8 +58,7 @@ void Client::sendMovement() {
 	_lastMovement = _now;
 	_lastMoveMask = _moveMask;
 	flatbuffers::FlatBufferBuilder fbb;
-	const MoveDirection md = (MoveDirection) _moveMask;
-	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::Move, CreateMove(fbb, md, _camera.pitch(), _camera.yaw()).Union(), 0);
+	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::Move, CreateMove(fbb, _moveMask, _camera.pitch(), _camera.yaw()).Union(), 0);
 }
 
 void Client::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
