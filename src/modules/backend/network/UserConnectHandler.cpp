@@ -26,13 +26,13 @@ void UserConnectHandler::sendAuthFailed(ENetPeer* peer) {
 void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 	const auto* message = getMsg<UserConnect>(raw);
 
-	const std::string email(message->email()->c_str());
+	const std::string& email = message->email()->str();
 	if (!core::isValidEmail(email)) {
 		sendAuthFailed(peer);
 		Log::warn("Invalid email given: '%s', %c", email.c_str(), email[0]);
 		return;
 	}
-	const std::string password(message->password()->c_str());
+	const std::string& password = message->password()->str();
 	if (password.empty()) {
 		Log::warn("User tries to log into the gameserver without providing a password");
 		sendAuthFailed(peer);
