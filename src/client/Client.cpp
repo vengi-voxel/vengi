@@ -189,8 +189,9 @@ void Client::afterUI() {
 	font->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
 	font->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
 	const glm::vec3& pos = _camera.position();
+	const glm::vec3& target = _camera.target();
 	tb::TBStr position;
-	position.SetFormatted("pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
+	position.SetFormatted("pos: %.2f:%.2f:%.2f (target: %.2f:%.2f:%.2f)", pos.x, pos.y, pos.z, target.x, target.y, target.z);
 	font->DrawString(5, 50, tb::TBColor(255, 255, 255), position);
 
 	if (hasState(CLIENT_CONNECTING)) {
