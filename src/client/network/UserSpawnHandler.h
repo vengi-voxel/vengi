@@ -7,6 +7,10 @@
 #include "IClientProtocolHandler.h"
 
 CLIENTPROTOHANDLERIMPL(UserSpawn) {
-	const network::messages::Vec3 *pos = message->pos();
-	client->spawn(message->id(), message->name()->c_str(), glm::vec3(pos->x(), pos->y(), pos->z()), message->rotation());
+	const frontend::ClientEntityId id = message->id();
+	const char* name = message->name()->c_str();
+	const network::messages::Vec3 *_pos = message->pos();
+	const glm::vec3 pos(_pos->x(), _pos->y(), _pos->z());
+	const float orientation = message->rotation();
+	client->spawn(id, name, pos, orientation);
 }
