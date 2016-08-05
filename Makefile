@@ -86,6 +86,9 @@ clean-local-config:
 edit-local-config:
 	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
 
+doc:
+	$(Q)$(MAKE) $(MAKE_OPTIONS) doc
+
 server client shapetool shadertool noisetool databasetool uitool tests testmesh testdepthbuffer testtexture flatc: cmake
 	$(Q)$(MAKE) $(MAKE_OPTIONS) $@ copy-data-shared copy-data-$@ $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
