@@ -39,15 +39,18 @@ void MessageSender::sendServerMessage(ENetPeer** peers, int numPeers, FlatBuffer
 	auto packet = createServerPacket(fbb, type, data, flags);
 	for (int i = 0; i < numPeers; ++i) {
 		const bool success = _network->sendMessage(peers[i], packet);
-		if (success)
+		if (success) {
 			continue;
+		}
 		Log::error("Failed to send the message %s to peer %i (State: %i)", messages::server::EnumNameType(type), i, peers[i]->state);
 	}
+	fbb.Clear();
 }
 
 void MessageSender::broadcastServerMessage(FlatBufferBuilder& fbb, messages::server::Type type, Offset<void> data, int channel, uint32_t flags) {
 	Log::debug("Broadcast %s", messages::server::EnumNameType(type));
 	_network->broadcast(createServerPacket(fbb, type, data, flags), channel);
+	fbb.Clear();
 }
 
 void MessageSender::sendClientMessage(ENetPeer* peer, FlatBufferBuilder& fbb, messages::client::Type type, Offset<void> data, uint32_t flags) {
@@ -56,6 +59,7 @@ void MessageSender::sendClientMessage(ENetPeer* peer, FlatBufferBuilder& fbb, me
 		return;
 	}
 	_network->sendMessage(peer, createClientPacket(fbb, type, data, flags));
+	fbb.Clear();
 }
 
 }
