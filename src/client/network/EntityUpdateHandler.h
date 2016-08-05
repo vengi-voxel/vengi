@@ -14,6 +14,6 @@ CLIENTPROTOHANDLERIMPL(EntityUpdate) {
 	if (pos == nullptr) {
 		return;
 	}
-	const glm::vec3 userPos(pos->x(), pos->y(), pos->z());
-	client->entityUpdate(message->id(), userPos, message->rotation());
+	const glm::vec3 entityPos(pos->x(), pos->y(), pos->z());
+	client->entityUpdate(message->id(), entityPos, message->rotation());
 }

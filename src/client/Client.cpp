@@ -69,7 +69,6 @@ void Client::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 
 void Client::onEvent(const network::DisconnectEvent& event) {
 	removeState(CLIENT_CONNECTING);
-	core_assert(!hasState(CLIENT_CONNECTING));
 	ui::Window* main = new frontend::LoginWindow(this);
 	new frontend::DisconnectWindow(main);
 }
@@ -295,10 +294,10 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 	entity->lerpPosition(pos, orientation);
 }
 
-void Client::npcSpawn(frontend::ClientEntityId id, network::messages::NpcType type, const glm::vec3& pos) {
+void Client::npcSpawn(frontend::ClientEntityId id, network::messages::NpcType type, float orientation, const glm::vec3& pos) {
 	Log::info("NPC %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, type);
 	const std::string& meshName = "mesh/chr_skelett2_bake.FBX"; // core::string::toLower(network::messages::EnumNameNpcType(type));
-	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, pos, 0.0f, _meshPool->getMesh(meshName)));
+	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, _meshPool->getMesh(meshName)));
 }
 
 void Client::entityRemove(frontend::ClientEntityId id) {

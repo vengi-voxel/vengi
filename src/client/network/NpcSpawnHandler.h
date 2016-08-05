@@ -11,5 +11,5 @@
  */
 CLIENTPROTOHANDLERIMPL(NpcSpawn) {
 	const network::messages::Vec3 *pos = message->pos();
-	client->npcSpawn(message->id(), message->type(), glm::vec3(pos->x(), pos->y(), pos->z()));
+	client->npcSpawn(message->id(), message->type(), message->rotation(), glm::vec3(pos->x(), pos->y(), pos->z()));
 }
