@@ -7,5 +7,6 @@
 #include "IClientProtocolHandler.h"
 
 CLIENTPROTOHANDLERIMPL(EntityRemove) {
-	client->entityRemove(message->id());
+	const frontend::ClientEntityId id = message->id();
+	client->entityRemove(id);
 }
