@@ -86,7 +86,7 @@ clean-local-config:
 edit-local-config:
 	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
 
-doc:
+doc: cmake
 	$(Q)$(MAKE) $(MAKE_OPTIONS) doc
 
 server client shapetool shadertool noisetool databasetool uitool tests testmesh testdepthbuffer testtexture flatc: cmake
