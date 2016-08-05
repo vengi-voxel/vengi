@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Common.h"
 #include "core/Log.h"
 #include "core/GLM.h"
 
@@ -45,6 +46,8 @@ public:
 		if (_now < _nextPosTime) {
 			const long remaining = _nextPosTime - _now;
 			const long passed = MOVETIME - remaining;
+			core_assert_msg(passed > 0l, "passed is %li - but should be bigger than 0", passed);
+			core_assert_msg(passed < MOVETIME, "passed is not within the valid boundaries - %li (max would be %li)", passed, MOVETIME);
 			const float lerp = passed / (float) MOVETIME;
 			_currentPosition = glm::lerp(_lastPosition, _nextPosition, lerp);
 		} else {
