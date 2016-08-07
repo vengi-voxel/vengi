@@ -13,6 +13,7 @@ namespace attrib {
 enum class Types {
 	NONE,
 	HEALTH,
+	// how many fields/voxels can be passed in one second
 	SPEED,
 	VIEWDISTANCE,
 	ATTACKRANGE,
