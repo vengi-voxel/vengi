@@ -19,7 +19,7 @@ core::AppState TestMesh::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	const std::string mesh = "mesh/chr_skelett2_bake.FBX";
+	const std::string mesh = "chr_skelett2_bake";
 	if (!_mesh.loadMesh(mesh)) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
