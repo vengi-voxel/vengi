@@ -268,7 +268,7 @@ void Client::signup(const std::string& email, const std::string& password) {
 			"\"password\": \"" + password + "\""
 		"}");
 	if (r.code != 200) {
-		Log::error("Failed to signup with %s", email.c_str());
+		Log::error("Failed to signup with %s (%i)", email.c_str(), r.code);
 	}
 }
 
@@ -277,7 +277,7 @@ void Client::lostPassword(const std::string& email) {
 	conn.AppendHeader("Content-Type", "text/json");
 	const RestClient::Response r = conn.post("lostpassword", "{\"email\": \"" + email + "\"}");
 	if (r.code != 200) {
-		Log::error("Failed to request the password reset for %s", email.c_str());
+		Log::error("Failed to request the password reset for %s (%i)", email.c_str(), r.code);
 	}
 }
 
