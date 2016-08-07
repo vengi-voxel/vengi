@@ -17,6 +17,8 @@
 #include "ClientModule.h"
 #include "network/ClientNetworkModule.h"
 
+#include <restclient-cpp/restclient.h>
+
 #define registerMoveCmd(name, flag) \
 	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
 		if (args.empty()) { \
@@ -125,6 +127,8 @@ core::AppState Client::onInit() {
 		return core::Cleanup;
 	}
 
+	RestClient::init();
+
 	_root.SetSkinBg(TBIDC("background"));
 
 	handleLogin();
@@ -204,6 +208,9 @@ core::AppState Client::onCleanup() {
 	_player = frontend::ClientEntityPtr();
 	_network->shutdown();
 	_waiting.shutdown();
+
+	RestClient::disable();
+
 	return state;
 }
 
@@ -251,11 +258,26 @@ void Client::onWindowResize() {
 }
 
 void Client::signup(const std::string& email, const std::string& password) {
-	// TODO:
+	const std::string host = "localhost";
+	RestClient::Response r = RestClient::post("https://" + host + "/signup", "text/json",
+		"{"
+			"\"email\": \"" + email + "\", "
+			"\"password\": \"" + password + "\""
+		"}");
+	if (r.code != 200) {
+		Log::error("Failed to signup with %s", email.c_str());
+	}
 }
 
 void Client::lostPassword(const std::string& email) {
-	// TODO:
+	const std::string host = "localhost";
+	RestClient::Response r = RestClient::post("https://" + host + "/lostpassword", "text/json",
+		"{"
+			"\"email\": \"" + email + "\", "
+		"}");
+	if (r.code != 200) {
+		Log::error("Failed to request the password reset for %s", email.c_str());
+	}
 }
 
 void Client::authFailed() {
