@@ -8,34 +8,60 @@ table Seed {
 	seed:long;
 }
 
+/// email and password validation failed
 table AuthFailed {
 }
 
+/// this message is sent whenever a user gets into the visible area of another user
 table UserSpawn {
-	id:long;
-	name:string;
+	id:long (key);
+	name:string (required);
 	pos:Vec3;
-	rotation:float;
+	rotation:float = 0.0;
 }
 
+/// this message is sent whenever an entity (but not an user) is getting into the visible
+/// area of a user
 table EntitySpawn {
-	id:long;
+	id:long (key);
 	type:EntityType;
 	pos:Vec3;
-	rotation:float;
+	rotation:float = 0.0;
 }
 
+/// sent whenever an entity vanishes from the visible area of an user
+/// @note also sent for users
 table EntityRemove {
-	id:long;
+	id:long (key);
 }
 
+/// sent whenever an entity updates its state in the visible area of the user that received this
+/// also sent for users
 table EntityUpdate {
-	id:long;
-	pos:Vec3 (required);
-	rotation:float;
+	id:long (key);
+	pos:Vec3;
+	rotation:float = 0.0;
 }
 
-union Type { Seed, UserSpawn, EntitySpawn, EntityRemove, EntityUpdate, AuthFailed }
+enum AttribMode : byte {
+	PERCENTAGE,
+	ABSOLUTE,
+}
+
+table AttribEntry {
+	type:AttribType;
+	value:float;
+	mode:AttribMode;
+}
+
+table AttribUpdate {
+	/// the entity id whose attributes should be updated
+	id:long (key);
+	/// a list of @c AttribEntry
+	attribs:[AttribEntry] (required);
+}
+
+union Type { Seed, UserSpawn, EntitySpawn, EntityRemove, EntityUpdate, AuthFailed, AttribUpdate }
 
 table ServerMessage {
 	data:Type;

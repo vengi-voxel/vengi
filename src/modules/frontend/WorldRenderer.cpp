@@ -68,7 +68,7 @@ void WorldRenderer::shutdown() {
 	_plantGenerator.shutdown();
 }
 
-ClientEntityPtr WorldRenderer::getEntity(ClientEntityId id) {
+ClientEntityPtr WorldRenderer::getEntity(ClientEntityId id) const {
 	auto i = _entities.find(id);
 	if (i == _entities.end()) {
 		return ClientEntityPtr();

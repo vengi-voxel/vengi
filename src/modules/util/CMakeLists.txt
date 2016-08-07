@@ -1,5 +1,4 @@
 set(SRCS
-	Velocity.h
 	IProgressMonitor.h
 	PosLerp.h
 	Dummy.cpp

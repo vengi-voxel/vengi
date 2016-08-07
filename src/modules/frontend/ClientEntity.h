@@ -5,8 +5,10 @@
 #pragma once
 
 #include "ClientEntityId.h"
+#include "ServerMessages_generated.h"
 #include "Shared_generated.h"
 #include "util/PosLerp.h"
+#include "attrib/Attributes.h"
 #include <vector>
 #include <functional>
 #include "video/Mesh.h"
@@ -21,12 +23,15 @@ private:
 	network::messages::EntityType _type;
 	float _orientation;
 	video::MeshPtr _mesh;
+	attrib::Attributes _attrib;
 public:
 	ClientEntity(ClientEntityId id, network::messages::EntityType type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
 	~ClientEntity();
 
 	void lerpPosition(const glm::vec3& position, float orientation);
 	void update(long dt);
+
+	void attribUpdate(const network::messages::server::AttribEntry& attribEntry);
 
 	inline network::messages::EntityType type() const {
 		return _type;

@@ -104,9 +104,12 @@ public:
 	void authFailed();
 	void signup(const std::string& email, const std::string& password);
 	void lostPassword(const std::string& email);
+
 	void entitySpawn(frontend::ClientEntityId id, network::messages::EntityType type, float orientation, const glm::vec3& pos);
 	void entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation);
 	void entityRemove(frontend::ClientEntityId id);
+	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
+
 	void disconnect();
 	// spawns our own player
 	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);

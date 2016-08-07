@@ -31,8 +31,6 @@ enum EntityType: int {
 	MAX_CHARACTERS,
 }
 
-namespace network.messages.attrib;
-
 enum AttribType: int {
 	NONE,
 	HEALTH,

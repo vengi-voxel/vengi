@@ -290,6 +290,10 @@ void Client::entityRemove(frontend::ClientEntityId id) {
 	_worldRenderer.removeEntity(id);
 }
 
+frontend::ClientEntityPtr Client::getEntity(frontend::ClientEntityId id) const {
+	return _worldRenderer.getEntity(id);
+}
+
 void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation) {
 	removeState(CLIENT_CONNECTING);
 	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);

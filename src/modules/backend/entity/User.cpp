@@ -3,7 +3,6 @@
  */
 
 #include "User.h"
-#include "util/Velocity.h"
 #include "core/Var.h"
 #include "voxel/World.h"
 

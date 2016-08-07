@@ -9,7 +9,7 @@ set(SRCS
 set(LIB frontend)
 add_library(${LIB} ${SRCS})
 generate_shaders(${LIB} world mesh water world_instanced deferred_light_dir shadowmap shadowmap_instanced shadowmap_render color)
-target_link_libraries(${LIB} ui network voxel cooldown)
+target_link_libraries(${LIB} ui network voxel cooldown attrib)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests

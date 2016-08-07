@@ -25,7 +25,7 @@ table Attack {
 }
 
 /// The move direction is a bit mask of the keys that the client currently holds pressed
-enum MoveDirection:ubyte (bit_flags) { MOVEFORWARD = 1, MOVEBACKWARD = 2, MOVELEFT = 3, MOVERIGHT = 4 }
+enum MoveDirection:ubyte (bit_flags) { MOVEFORWARD, MOVEBACKWARD, MOVELEFT, MOVERIGHT }
 
 table Move {
 	direction:MoveDirection;

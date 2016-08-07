@@ -20,8 +20,13 @@ void ClientEntity::lerpPosition(const glm::vec3& position, float orientation) {
 	_orientation = orientation;
 }
 
+void ClientEntity::attribUpdate(const network::messages::server::AttribEntry& attribEntry) {
+	_attrib.setCurrent(attribEntry.type(), attribEntry.value());
+}
+
 void ClientEntity::update(long dt) {
 	_posLerp.update(dt);
+	_attrib.onFrame(dt);
 }
 
 }
