@@ -58,7 +58,10 @@ void Client::sendMovement() {
 	_lastMovement = _now;
 	_lastMoveMask = _moveMask;
 	static flatbuffers::FlatBufferBuilder fbb;
-	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::Move, CreateMove(fbb, _moveMask, _camera.pitch(), _camera.yaw()).Union(), 0);
+	// TODO: we can't use the camera, as we are aiming for a freelook mode, where the players' angles might be different from the camera's
+	const float pitch = 0.0f;
+	const float yaw = 0.0f;
+	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::Move, CreateMove(fbb, _moveMask, pitch, yaw).Union(), 0);
 }
 
 void Client::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
