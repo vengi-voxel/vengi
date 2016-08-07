@@ -26,6 +26,7 @@ private:
 	uint64_t _lastAction;
 	uint64_t _time;
 	core::VarPtr _userTimeout;
+	flatbuffers::FlatBufferBuilder _entityUpdateFbb;
 
 	inline bool isMove(network::messages::client::MoveDirection dir) const {
 		return (_moveMask & dir) != MoveDirection::NONE;

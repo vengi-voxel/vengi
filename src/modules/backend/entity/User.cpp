@@ -116,9 +116,10 @@ bool User::update(long dt) {
 		}
 	}
 
-	flatbuffers::FlatBufferBuilder fbb;
 	const network::messages::Vec3 pos { _pos.x, _pos.y, _pos.z };
-	sendServerMsg(EntityUpdate(fbb, id(), &pos, orientation()), EntityUpdate);
+	_messageSender->sendServerMessage(_peer, _entityUpdateFbb,
+			network::messages::server::Type::EntityUpdate,
+			network::messages::server::CreateEntityUpdate(_entityUpdateFbb, id(), &pos, orientation()).Union());
 
 	return true;
 }
