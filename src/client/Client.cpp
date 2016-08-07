@@ -153,22 +153,10 @@ void Client::beforeUI() {
 	Super::beforeUI();
 
 	if (_world->isCreated()) {
-		glm::vec3 moveDelta = glm::vec3();
-		const float speed = 0.01f * static_cast<float>(_deltaFrame);
-		if ((_moveMask & MoveDirection::MOVELEFT) != MoveDirection::MOVELEFT) {
-			moveDelta += glm::left * speed;
+		if (_player) {
+			const glm::vec3& pos = _player->position();
+			_camera.setTarget(pos);
 		}
-		if ((_moveMask & MoveDirection::MOVERIGHT) != MoveDirection::MOVERIGHT) {
-			moveDelta += glm::right * speed;
-		}
-		if ((_moveMask & MoveDirection::MOVEFORWARD) != MoveDirection::MOVEFORWARD) {
-			moveDelta += glm::forward * speed;
-		}
-		if ((_moveMask & MoveDirection::MOVEBACKWARD) != MoveDirection::MOVEBACKWARD) {
-			moveDelta += glm::backward * speed;
-		}
-		_camera.move(moveDelta);
-
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
 		_camera.setAspectRatio(_aspect);
 		_camera.update(_deltaFrame);
@@ -248,10 +236,6 @@ core::AppState Client::onRunning() {
 	core::AppState state = Super::onRunning();
 	sendMovement();
 	if (state == core::AppState::Running) {
-		if (_player) {
-			const glm::vec3& pos = _player->position();
-			_camera.setTarget(pos);
-		}
 		_network->update();
 		_world->onFrame(_deltaFrame);
 		if (_world->isCreated()) {
