@@ -62,4 +62,6 @@ constexpr const char *DatabaseMaxConnections = "db_maxconnections";
 constexpr const char *AppHomePath = "app_homepath";
 constexpr const char *AppBasePath = "app_basepath";
 
+constexpr const char *HTTPBaseURL = "http_baseurl";
+
 }

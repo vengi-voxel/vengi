@@ -18,6 +18,7 @@
 #include "network/ClientNetworkModule.h"
 
 #include <restclient-cpp/restclient.h>
+#include <restclient-cpp/connection.h>
 
 #define registerMoveCmd(name, flag) \
 	core::Command::registerCommand(name, [&] (const core::CmdArgs& args) { \
@@ -108,6 +109,7 @@ core::AppState Client::onInit() {
 
 	core::Var::get(cfg::ClientName, "noname");
 	core::Var::get(cfg::ClientPassword, "nopassword");
+	core::Var::get(cfg::HTTPBaseURL, "https://localhost/");
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.1");
 
 	GL_checkError();
@@ -258,8 +260,9 @@ void Client::onWindowResize() {
 }
 
 void Client::signup(const std::string& email, const std::string& password) {
-	const std::string host = "localhost";
-	RestClient::Response r = RestClient::post("https://" + host + "/signup", "text/json",
+	RestClient::Connection conn(core::Var::get(cfg::HTTPBaseURL)->strVal());
+	conn.AppendHeader("Content-Type", "text/json");
+	const RestClient::Response r = conn.post("signup",
 		"{"
 			"\"email\": \"" + email + "\", "
 			"\"password\": \"" + password + "\""
@@ -270,11 +273,9 @@ void Client::signup(const std::string& email, const std::string& password) {
 }
 
 void Client::lostPassword(const std::string& email) {
-	const std::string host = "localhost";
-	RestClient::Response r = RestClient::post("https://" + host + "/lostpassword", "text/json",
-		"{"
-			"\"email\": \"" + email + "\", "
-		"}");
+	RestClient::Connection conn(core::Var::get(cfg::HTTPBaseURL)->strVal());
+	conn.AppendHeader("Content-Type", "text/json");
+	const RestClient::Response r = conn.post("lostpassword", "{\"email\": \"" + email + "\"}");
 	if (r.code != 200) {
 		Log::error("Failed to request the password reset for %s", email.c_str());
 	}
