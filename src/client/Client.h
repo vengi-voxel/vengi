@@ -39,6 +39,7 @@ protected:
 	core::TimeProviderPtr _timeProvider;
 	frontend::WorldRenderer _worldRenderer;
 	ENetPeer* _peer = nullptr;
+	flatbuffers::FlatBufferBuilder _moveFbb;
 	MoveDirection _moveMask = MoveDirection::NONE;
 	MoveDirection _lastMoveMask = MoveDirection::NONE;
 	core::VarPtr _rotationSpeed;
