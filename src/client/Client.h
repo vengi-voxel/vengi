@@ -115,4 +115,8 @@ public:
 	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);
 };
 
+inline frontend::ClientEntityPtr Client::getEntity(frontend::ClientEntityId id) const {
+	return _worldRenderer.getEntity(id);
+}
+
 typedef std::shared_ptr<Client> ClientPtr;
