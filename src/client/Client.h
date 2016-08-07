@@ -86,33 +86,32 @@ public:
 	core::AppState onCleanup() override;
 	void beforeUI() override;
 	void afterUI() override;
-
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onMouseWheel(int32_t x, int32_t y) override;
+	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
+	void onWindowResize() override;
 
-	void onEvent(const voxel::WorldCreatedEvent& event) override;
-	void onEvent(const network::DisconnectEvent& event) override;
 	/**
 	 * @brief We send the user connect message to the server and we get the seed and a user spawn message back.
 	 *
 	 * @note If auth failed, we get an auth failed message
 	 */
 	void onEvent(const network::NewConnectionEvent& event) override;
-	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
-	void onWindowResize() override;
+	void onEvent(const voxel::WorldCreatedEvent& event) override;
+	void onEvent(const network::DisconnectEvent& event) override;
+
 	bool connect(uint16_t port, const std::string& hostname);
 	void authFailed();
 	void signup(const std::string& email, const std::string& password);
 	void lostPassword(const std::string& email);
+	void disconnect();
+	// spawns our own player
+	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);
 
 	void entitySpawn(frontend::ClientEntityId id, network::messages::EntityType type, float orientation, const glm::vec3& pos);
 	void entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation);
 	void entityRemove(frontend::ClientEntityId id);
 	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;
-
-	void disconnect();
-	// spawns our own player
-	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);
 };
 
 inline frontend::ClientEntityPtr Client::getEntity(frontend::ClientEntityId id) const {
