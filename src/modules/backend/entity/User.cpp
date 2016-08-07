@@ -91,30 +91,24 @@ bool User::update(long dt) {
 
 	_lastAction = _time;
 
-	const float speedVal = current(attrib::Types::SPEED);
-	const float deltaTime = static_cast<float>(dt) / 1000.0f;
-	if (isMove(MoveDirection::MOVEFORWARD | MoveDirection::MOVEBACKWARD)) {
-		const glm::vec3& direction = util::getDirection(_pitch, _yaw);
-		const glm::vec3 velocity(direction * speedVal);
-		if (isMove(MoveDirection::MOVEFORWARD)) {
-			setPos(pos() + velocity * deltaTime);
-			Log::trace("move forward: dt %f, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", deltaTime, speedVal, _pos.x, _pos.y, _pos.z, _pitch, _yaw);
-		} else if (isMove(MoveDirection::MOVEBACKWARD)) {
-			setPos(pos() - velocity * deltaTime);
-			Log::trace("move backward: dt %f, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", deltaTime, speedVal, _pos.x, _pos.y, _pos.z, _pitch, _yaw);
-		}
+	glm::vec3 moveDelta = glm::vec3(0.0f);
+	const float speed = current(attrib::Types::SPEED) * static_cast<float>(dt) / 1000.0f;
+	if (isMove(MoveDirection::MOVELEFT)) {
+		moveDelta += glm::left * speed;
+	} else if (isMove(MoveDirection::MOVERIGHT)) {
+		moveDelta += glm::right * speed;
 	}
-	if (isMove(MoveDirection::MOVERIGHT | MoveDirection::MOVELEFT)) {
-		const glm::vec3& direction = util::getDirection(_yaw);
-		const glm::vec3 velocity(direction * speedVal);
-		if (isMove(MoveDirection::MOVELEFT)) {
-			setPos(pos() - velocity * deltaTime);
-			Log::trace("move left: dt %f, speed: %f p(%f:%f:%f)", deltaTime, speedVal, _pos.x, _pos.y, _pos.z);
-		} else if (isMove(MoveDirection::MOVERIGHT)) {
-			setPos(pos() + velocity * deltaTime);
-			Log::trace("move right: dt %f, speed: %f p(%f:%f:%f)", deltaTime, speedVal, _pos.x, _pos.y, _pos.z);
-		}
+	if (isMove(MoveDirection::MOVEFORWARD)) {
+		moveDelta += glm::forward * speed;
+	} else if (isMove(MoveDirection::MOVEBACKWARD)) {
+		moveDelta += glm::backward * speed;
 	}
+	moveDelta.z = -moveDelta.z;
+
+	_pos += glm::quat(glm::vec3(_pitch, _yaw, 0.0f)) * moveDelta;
+	// TODO: if not flying...
+	_pos.y = _world->findFloor(_pos.x, _pos.z, voxel::isFloor);
+	Log::info("move: dt %li, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", dt, speed, _pos.x, _pos.y, _pos.z, _pitch, _yaw);
 
 	const network::messages::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	_messageSender->sendServerMessage(_peer, _entityUpdateFbb,
