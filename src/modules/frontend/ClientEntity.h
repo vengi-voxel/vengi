@@ -31,7 +31,8 @@ public:
 	void lerpPosition(const glm::vec3& position, float orientation);
 	void update(long dt);
 
-	void attribUpdate(const network::messages::server::AttribEntry& attribEntry);
+	void setCurrent(attrib::Types type, double value);
+	double current(attrib::Types type) const;
 
 	inline network::messages::EntityType type() const {
 		return _type;

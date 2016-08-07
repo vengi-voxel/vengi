@@ -14,6 +14,6 @@ CLIENTPROTOHANDLERIMPL(AttribUpdate) {
 		return;
 	}
 	for (const AttribEntry* e : *attribs) {
-		entity->attribUpdate(*e);
+		entity->setCurrent(e->type(), e->value());
 	}
 }
