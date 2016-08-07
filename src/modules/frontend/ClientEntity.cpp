@@ -20,14 +20,6 @@ void ClientEntity::lerpPosition(const glm::vec3& position, float orientation) {
 	_orientation = orientation;
 }
 
-void ClientEntity::setCurrent(attrib::Types type, double value) {
-	_attrib.setCurrent(type, value);
-}
-
-double ClientEntity::current(attrib::Types type) const {
-	return _attrib.getCurrent(type);
-}
-
 void ClientEntity::update(long dt) {
 	_posLerp.update(dt);
 	_attrib.onFrame(dt);

@@ -13,7 +13,8 @@ CLIENTPROTOHANDLERIMPL(AttribUpdate) {
 	if (!entity) {
 		return;
 	}
+	attrib::Attributes& attrib = entity->attrib();
 	for (const AttribEntry* e : *attribs) {
-		entity->setCurrent(e->type(), e->value());
+		attrib.setCurrent(e->type(), e->value());
 	}
 }

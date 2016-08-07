@@ -28,40 +28,54 @@ public:
 	ClientEntity(ClientEntityId id, network::messages::EntityType type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
 	~ClientEntity();
 
-	void lerpPosition(const glm::vec3& position, float orientation);
 	void update(long dt);
 
-	void setCurrent(attrib::Types type, double value);
-	double current(attrib::Types type) const;
+	void lerpPosition(const glm::vec3& position, float orientation);
+	const glm::vec3& position() const;
+	float orientation() const;
+	float scale() const;
 
-	inline network::messages::EntityType type() const {
-		return _type;
-	}
+	bool operator==(const ClientEntity& other) const;
 
-	inline ClientEntityId id() const {
-		return _id;
-	}
+	network::messages::EntityType type() const;
+	ClientEntityId id() const;
 
-	inline float orientation() const {
-		return _orientation;
-	}
-
-	inline const glm::vec3& position() const {
-		return _posLerp.position();
-	}
-
-	inline float scale() const {
-		return 1.0f;
-	}
-
-	inline const video::MeshPtr& mesh() const {
-		return _mesh;
-	}
-
-	inline bool operator==(const ClientEntity& other) const {
-		return _id == other._id;
-	}
+	// components
+	attrib::Attributes& attrib();
+	const video::MeshPtr& mesh() const;
 };
+
+inline attrib::Attributes& ClientEntity::attrib() {
+	return _attrib;
+}
+
+inline network::messages::EntityType ClientEntity::type() const {
+	return _type;
+}
+
+inline ClientEntityId ClientEntity::id() const {
+	return _id;
+}
+
+inline float ClientEntity::orientation() const {
+	return _orientation;
+}
+
+inline const glm::vec3& ClientEntity::position() const {
+	return _posLerp.position();
+}
+
+inline float ClientEntity::scale() const {
+	return 1.0f;
+}
+
+inline const video::MeshPtr& ClientEntity::mesh() const {
+	return _mesh;
+}
+
+inline bool ClientEntity::operator==(const ClientEntity& other) const {
+	return _id == other._id;
+}
 
 typedef std::shared_ptr<ClientEntity> ClientEntityPtr;
 
