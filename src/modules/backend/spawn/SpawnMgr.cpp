@@ -29,21 +29,21 @@ bool SpawnMgr::init() {
 }
 
 void SpawnMgr::spawnCharacters(ai::Zone& zone) {
-	spawnEntity(zone, network::messages::NpcType::BEGIN_CHARACTERS, network::messages::NpcType::MAX_CHARACTERS, 0);
+	spawnEntity(zone, network::messages::EntityType::BEGIN_CHARACTERS, network::messages::EntityType::MAX_CHARACTERS, 0);
 }
 
 void SpawnMgr::spawnAnimals(ai::Zone& zone) {
-	spawnEntity(zone, network::messages::NpcType::BEGIN_ANIMAL, network::messages::NpcType::MAX_ANIMAL, 2);
+	spawnEntity(zone, network::messages::EntityType::BEGIN_ANIMAL, network::messages::EntityType::MAX_ANIMAL, 2);
 }
 
-void SpawnMgr::spawnEntity(ai::Zone& zone, network::messages::NpcType start, network::messages::NpcType end, int maxAmount) {
+void SpawnMgr::spawnEntity(ai::Zone& zone, network::messages::EntityType start, network::messages::EntityType end, int maxAmount) {
 	const int offset = (int)start + 1;
 	int count[(int)end - offset];
 	memset(count, 0, sizeof(count));
 	zone.execute([start, end, offset, &count] (const ai::AIPtr& ai) {
 		const AICharacter& chr = ai::character_cast<AICharacter>(ai->getCharacter());
 		const Npc& npc = chr.getNpc();
-		const network::messages::NpcType type = npc.npcType();
+		const network::messages::EntityType type = npc.npcType();
 		if (type <= start || type >= end) {
 			return;
 		}
@@ -57,13 +57,13 @@ void SpawnMgr::spawnEntity(ai::Zone& zone, network::messages::NpcType start, net
 			continue;
 
 		const int needToSpawn = maxAmount - count[i];
-		network::messages::NpcType type = static_cast<network::messages::NpcType>(offset + i);
+		network::messages::EntityType type = static_cast<network::messages::EntityType>(offset + i);
 		spawn(zone, type, needToSpawn);
 	}
 }
 
-int SpawnMgr::spawn(ai::Zone& zone, network::messages::NpcType type, int amount, const glm::ivec3* pos) {
-	const char *typeName = network::messages::EnumNameNpcType(type);
+int SpawnMgr::spawn(ai::Zone& zone, network::messages::EntityType type, int amount, const glm::ivec3* pos) {
+	const char *typeName = network::messages::EnumNameEntityType(type);
 	ai::TreeNodePtr behaviour = _loader->load(typeName);
 	if (!behaviour) {
 		Log::error("could not load the behaviour tree %s", typeName);

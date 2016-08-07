@@ -6,13 +6,13 @@
 
 #include "../Client.h"
 #include "network/NetworkModule.h"
-#include "messages/ServerMessages_generated.h"
+#include "ServerMessages_generated.h"
 #include "SeedHandler.h"
 #include "AuthFailedHandler.h"
 #include "EntityRemoveHandler.h"
+#include "EntitySpawnHandler.h"
 #include "EntityUpdateHandler.h"
 #include "UserSpawnHandler.h"
-#include "NpcSpawnHandler.h"
 
 class ClientNetworkModule: public NetworkModule {
 	template<typename Ctor>
@@ -21,7 +21,7 @@ class ClientNetworkModule: public NetworkModule {
 	}
 
 	void configureHandlers() const override {
-		bindHandler<NpcSpawnHandler>(network::messages::server::Type::NpcSpawn);
+		bindHandler<EntitySpawnHandler>(network::messages::server::Type::EntitySpawn);
 		bindHandler<EntityRemoveHandler>(network::messages::server::Type::EntityRemove);
 		bindHandler<EntityUpdateHandler>(network::messages::server::Type::EntityUpdate);
 		bindHandler<UserSpawnHandler>(network::messages::server::Type::UserSpawn);

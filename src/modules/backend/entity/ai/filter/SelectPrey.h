@@ -7,7 +7,7 @@
 #include "backend/entity/ai/AICommon.h"
 #include "core/String.h"
 #include "core/Common.h"
-#include "messages/Shared_generated.h"
+#include "Shared_generated.h"
 
 using namespace ai;
 
@@ -15,7 +15,7 @@ namespace backend {
 
 class SelectPrey: public IFilter {
 private:
-	network::messages::NpcType _npcType;
+	network::messages::EntityType _npcType;
 public:
 	FILTER_FACTORY(SelectPrey)
 

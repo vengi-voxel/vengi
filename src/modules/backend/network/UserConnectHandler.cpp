@@ -3,8 +3,8 @@
  */
 
 #include "UserConnectHandler.h"
-#include "messages/ClientMessages_generated.h"
-#include "messages/ServerMessages_generated.h"
+#include "ClientMessages_generated.h"
+#include "ServerMessages_generated.h"
 #include "backend/entity/User.h"
 #include "core/Var.h"
 #include "core/EMailValidator.h"

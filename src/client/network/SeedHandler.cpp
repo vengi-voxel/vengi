@@ -5,7 +5,7 @@
 #include "SeedHandler.h"
 #include "core/App.h"
 #include "core/Var.h"
-#include "messages/ServerMessages_generated.h"
+#include "ServerMessages_generated.h"
 #include "voxel/WorldEvents.h"
 
 void SeedHandler::execute(ENetPeer* peer, const void* raw) {

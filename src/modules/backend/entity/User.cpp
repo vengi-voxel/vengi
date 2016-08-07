@@ -140,7 +140,7 @@ void User::sendEntitySpawn(const EntityPtr& entity) const {
 	const glm::vec3& pos = entity->pos();
 	const network::messages::Vec3 vec3 { pos.x, pos.y, pos.z };
 	const long humanId = id(); // -1;
-	sendServerMsg(NpcSpawn(fbb, entity->id(), entity->npcType(), &vec3, humanId), NpcSpawn);
+	sendServerMsg(EntitySpawn(fbb, entity->id(), entity->npcType(), &vec3, humanId), EntitySpawn);
 }
 
 void User::sendEntityRemove(const EntityPtr& entity) const {

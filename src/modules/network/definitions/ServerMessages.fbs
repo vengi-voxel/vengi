@@ -1,4 +1,4 @@
-// Messages that the server send to the client
+// Messages that the server sends to the client
 
 include "Shared.fbs";
 
@@ -18,9 +18,9 @@ table UserSpawn {
 	rotation:float;
 }
 
-table NpcSpawn {
+table EntitySpawn {
 	id:long;
-	type:NpcType;
+	type:EntityType;
 	pos:Vec3;
 	rotation:float;
 }
@@ -35,7 +35,7 @@ table EntityUpdate {
 	rotation:float;
 }
 
-union Type { Seed, UserSpawn, NpcSpawn, EntityRemove, EntityUpdate, AuthFailed }
+union Type { Seed, UserSpawn, EntitySpawn, EntityRemove, EntityUpdate, AuthFailed }
 
 table ServerMessage {
 	data:Type;

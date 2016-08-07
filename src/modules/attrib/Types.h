@@ -7,34 +7,21 @@
 #include <functional>
 #include <cstring>
 #include "core/Common.h"
+#include "Shared_generated.h"
 
 namespace attrib {
 
-enum class Types {
-	NONE,
-	HEALTH,
-	// how many fields/voxels can be passed in one second
-	SPEED,
-	VIEWDISTANCE,
-	ATTACKRANGE,
-	STRENGTH,
-	MAX
-};
-
-static const char* typeNames[] = {
-	"NONE",
-	"HEALTH",
-	"SPEED",
-	"VIEWDISTANCE",
-	"ATTACKRANGE",
-	"STRENGTH"
-};
-static_assert(SDL_arraysize(typeNames) == (size_t)Types::MAX, "types and names don't match");
+using Types = network::messages::attrib::AttribType;
 
 inline Types getType(const char* name) {
-	for (int i = 0; i < (int)Types::MAX; ++i) {
-		if (!strcmp(typeNames[i], name))
-			return (Types)i;
+	const char **names = network::messages::attrib::EnumNamesAttribType();
+	int i = 0;
+	while (*names) {
+		if (!strcmp(*names, name)) {
+			return static_cast<Types>(i);
+		}
+		++i;
+		++names;
 	}
 	return Types::NONE;
 }

@@ -6,8 +6,8 @@
 #include "IProtocolHandler.h"
 #include "ProtocolHandlerRegistry.h"
 #include "NetworkEvents.h"
-#include "messages/ClientMessages_generated.h"
-#include "messages/ServerMessages_generated.h"
+#include "ClientMessages_generated.h"
+#include "ServerMessages_generated.h"
 #include "core/Trace.h"
 #include "core/Log.h"
 

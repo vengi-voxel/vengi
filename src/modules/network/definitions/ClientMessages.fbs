@@ -1,4 +1,4 @@
-// Messages that the client send to the server
+// Messages that the client sends to the server
 
 include "Shared.fbs";
 

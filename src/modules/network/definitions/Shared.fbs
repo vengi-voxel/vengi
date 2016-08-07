@@ -18,7 +18,7 @@ struct IVec2 {
 	y:int;
 }
 
-enum NpcType: int {
+enum EntityType: int {
 	NONE,
 
 	BEGIN_ANIMAL,
@@ -29,6 +29,16 @@ enum NpcType: int {
 	BEGIN_CHARACTERS,
 	BLACKSMITH,
 	MAX_CHARACTERS,
+}
 
-//	MAX
+namespace network.messages.attrib;
+
+enum AttribType: int {
+	NONE,
+	HEALTH,
+	// how many fields/voxels can be passed in one second
+	SPEED,
+	VIEWDISTANCE,
+	ATTACKRANGE,
+	STRENGTH
 }

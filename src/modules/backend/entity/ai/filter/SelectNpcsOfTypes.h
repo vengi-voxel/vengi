@@ -7,7 +7,7 @@
 #include "backend/entity/ai/AICommon.h"
 #include "core/String.h"
 #include "core/Common.h"
-#include "messages/Shared_generated.h"
+#include "Shared_generated.h"
 #include <bitset>
 
 using namespace ai;
@@ -16,13 +16,13 @@ namespace backend {
 
 class SelectNpcsOfTypes: public IFilter {
 private:
-	std::bitset<(int)network::messages::NpcType::MAX> _npcTypes;
+	std::bitset<(int)network::messages::EntityType::MAX> _npcTypes;
 public:
 	FILTER_FACTORY(SelectNpcsOfTypes)
 
 	SelectNpcsOfTypes(const std::string& parameters) :
 			IFilter("SelectNpcsOfTypes", parameters) {
-		const char **names = network::messages::EnumNamesNpcType();
+		const char **names = network::messages::EnumNamesEntityType();
 		std::vector<std::string> types;
 		core::string::splitString(parameters, types, ",");
 		for (const std::string& type : types) {

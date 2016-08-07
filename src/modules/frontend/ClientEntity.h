@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ClientEntityId.h"
-#include "messages/Shared_generated.h"
+#include "Shared_generated.h"
 #include "util/PosLerp.h"
 #include <vector>
 #include <functional>
@@ -18,17 +18,17 @@ class ClientEntity {
 private:
 	util::PosLerp _posLerp;
 	ClientEntityId _id;
-	network::messages::NpcType _type;
+	network::messages::EntityType _type;
 	float _orientation;
 	video::MeshPtr _mesh;
 public:
-	ClientEntity(ClientEntityId id, network::messages::NpcType type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
+	ClientEntity(ClientEntityId id, network::messages::EntityType type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
 	~ClientEntity();
 
 	void lerpPosition(const glm::vec3& position, float orientation);
 	void update(long dt);
 
-	inline network::messages::NpcType type() const {
+	inline network::messages::EntityType type() const {
 		return _type;
 	}
 

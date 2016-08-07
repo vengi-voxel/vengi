@@ -4,7 +4,7 @@ set(SRCS
 	ClientModule.h
 	network/AuthFailedHandler.h
 	network/ClientNetworkModule.h
-	network/NpcSpawnHandler.h
+	network/EntitySpawnHandler.h
 	network/SeedHandler.cpp
 	network/SeedHandler.h
 	network/UserSpawnHandler.h

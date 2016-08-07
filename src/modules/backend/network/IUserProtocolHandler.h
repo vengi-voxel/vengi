@@ -6,8 +6,8 @@
 
 #include "network/IMsgProtocolHandler.h"
 #include "backend/entity/User.h"
-#include "messages/ServerMessages_generated.h"
-#include "messages/ClientMessages_generated.h"
+#include "ServerMessages_generated.h"
+#include "ClientMessages_generated.h"
 
 using namespace network::messages::server;
 using namespace network::messages::client;

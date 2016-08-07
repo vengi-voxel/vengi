@@ -6,7 +6,12 @@ set(SRCS
 )
 set(LIB attrib)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} core commonlua)
+# the network module will assemble the header with the attribute types
+# link it in because we need the directory where the c++ headers are
+# generated to be also added to this lib. TODO: find a way to just
+# use add_dependencies
+#add_dependencies(${LIB} network)
+target_link_libraries(${LIB} core commonlua network)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests

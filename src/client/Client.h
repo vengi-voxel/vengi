@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <SDL.h>
 
-#include "messages/ServerMessages_generated.h"
+#include "ServerMessages_generated.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/WorldRenderer.h"
 #include "util/PosLerp.h"
@@ -104,7 +104,7 @@ public:
 	void authFailed();
 	void signup(const std::string& email, const std::string& password);
 	void lostPassword(const std::string& email);
-	void npcSpawn(frontend::ClientEntityId id, network::messages::NpcType type, float orientation, const glm::vec3& pos);
+	void entitySpawn(frontend::ClientEntityId id, network::messages::EntityType type, float orientation, const glm::vec3& pos);
 	void entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation);
 	void entityRemove(frontend::ClientEntityId id);
 	void disconnect();

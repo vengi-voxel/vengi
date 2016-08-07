@@ -32,7 +32,7 @@ protected:
 	attrib::ContainerProviderPtr _containerProvider;
 	attrib::Attributes _attribs;
 	cooldown::CooldownMgr _cooldowns;
-	network::messages::NpcType _npcType = network::messages::NpcType::NONE;
+	network::messages::EntityType _npcType = network::messages::EntityType::NONE;
 	ENetPeer *_peer = nullptr;
 
 	/**
@@ -80,7 +80,7 @@ public:
 	 */
 	virtual const glm::vec3& pos() const = 0;
 	virtual float orientation() const = 0;
-	network::messages::NpcType npcType() const;
+	network::messages::EntityType npcType() const;
 
 	inline double current(attrib::Types type) const {
 		return _attribs.getCurrent(type);
@@ -172,7 +172,7 @@ public:
 	}
 };
 
-inline network::messages::NpcType Entity::npcType() const {
+inline network::messages::EntityType Entity::npcType() const {
 	return _npcType;
 }
 

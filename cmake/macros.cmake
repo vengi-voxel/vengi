@@ -117,6 +117,38 @@ macro(generate_db_models TARGET INPUT OUTPUT)
 	add_dependencies(${TARGET} GenerateDatabaseModelBindings${TARGET})
 endmacro()
 
+
+macro(generate_protocol TARGET)
+	set(files ${ARGV})
+	list(REMOVE_AT files 0)
+	set(GEN_DIR ${CMAKE_BINARY_DIR}/gen-protocol/${TARGET}/)
+	file(MAKE_DIRECTORY ${GEN_DIR})
+	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
+	set(_headers)
+	foreach (_file ${files})
+		get_filename_component(_basefilename ${_file} NAME_WE)
+		set(HEADER "${_basefilename}_generated.h")
+		set(DEFINITION ${_file})
+		list(APPEND _headers ${GEN_DIR}${HEADER})
+		add_custom_command(
+			OUTPUT ${GEN_DIR}${HEADER}
+			COMMAND ${CMAKE_BINARY_DIR}/flatc -c -I ${CMAKE_CURRENT_SOURCE_DIR}/../attrib/definitions --scoped-enums -o ${GEN_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
+			DEPENDS flatc ${CMAKE_CURRENT_SOURCE_DIR}/definitions/${DEFINITION}
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+			COMMENT "Generating source code for ${DEFINITION}"
+		)
+		set_source_files_properties(${GEN_DIR}/${HEADER} PROPERTIES GENERATED TRUE)
+	endforeach()
+
+	message(STATUS "HEADERS: ${_headers}")
+
+	add_custom_target(GenerateNetworkMessages${TARGET}
+		DEPENDS ${_headers}
+		COMMENT "Generate network messages in ${GEN_DIR}"
+	)
+	add_dependencies(${TARGET} GenerateNetworkMessages${TARGET})
+endmacro()
+
 #
 # macro for the FindLibName.cmake files.
 #

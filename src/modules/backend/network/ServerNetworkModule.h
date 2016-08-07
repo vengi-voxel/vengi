@@ -5,7 +5,7 @@
 #pragma once
 
 #include "network/NetworkModule.h"
-#include "messages/ClientMessages_generated.h"
+#include "ClientMessages_generated.h"
 
 #include "UserConnectHandler.h"
 #include "UserConnectedHandler.h"

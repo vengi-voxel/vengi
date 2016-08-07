@@ -6,8 +6,8 @@
 
 #include "network/Network.h"
 #include "network/IMsgProtocolHandler.h"
-#include "messages/ServerMessages_generated.h"
-#include "messages/ClientMessages_generated.h"
+#include "ServerMessages_generated.h"
+#include "ClientMessages_generated.h"
 #include "../Client.h"
 
 template<class MSGTYPE>
