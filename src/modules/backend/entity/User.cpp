@@ -107,7 +107,7 @@ bool User::update(long dt) {
 	_pos += glm::quat(glm::vec3(_pitch, _yaw, 0.0f)) * moveDelta;
 	// TODO: if not flying...
 	_pos.y = _world->findFloor(_pos.x, _pos.z, voxel::isFloor);
-	Log::info("move: dt %li, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", dt, speed, _pos.x, _pos.y, _pos.z, _pitch, _yaw);
+	Log::trace("move: dt %li, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", dt, speed, _pos.x, _pos.y, _pos.z, _pitch, _yaw);
 
 	const network::messages::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	_messageSender->sendServerMessage(_peer, _entityUpdateFbb,
