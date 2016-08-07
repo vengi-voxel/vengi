@@ -103,7 +103,6 @@ bool User::update(long dt) {
 	} else if (isMove(MoveDirection::MOVEBACKWARD)) {
 		moveDelta += glm::backward * speed;
 	}
-	moveDelta.z = -moveDelta.z;
 
 	_pos += glm::quat(glm::vec3(_pitch, _yaw, 0.0f)) * moveDelta;
 	// TODO: if not flying...
