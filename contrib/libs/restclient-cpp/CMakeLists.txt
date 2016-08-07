@@ -1,0 +1,6 @@
+set(SRCS connection.cc helpers.cc restclient.cc)
+set(LIB restclient-cpp)
+engine_add_library(LIB ${LIB} SRCS ${SRCS})
+find_package(CURL REQUIRED)
+target_link_libraries(${LIB} ${CURL_LIBRARIES})
+target_include_directories(${LIB} PRIVATE ${CURL_INCLUDE_DIRS} .)

@@ -255,7 +255,7 @@ void Client::signup(const std::string& email, const std::string& password) {
 }
 
 void Client::lostPassword(const std::string& email) {
-	// TOOD:
+	// TODO:
 }
 
 void Client::authFailed() {

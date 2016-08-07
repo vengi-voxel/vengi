@@ -140,8 +140,6 @@ macro(generate_protocol TARGET)
 		set_source_files_properties(${GEN_DIR}/${HEADER} PROPERTIES GENERATED TRUE)
 	endforeach()
 
-	message(STATUS "HEADERS: ${_headers}")
-
 	add_custom_target(GenerateNetworkMessages${TARGET}
 		DEPENDS ${_headers}
 		COMMENT "Generate network messages in ${GEN_DIR}"
