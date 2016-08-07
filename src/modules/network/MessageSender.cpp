@@ -42,7 +42,7 @@ void MessageSender::sendServerMessage(ENetPeer** peers, int numPeers, FlatBuffer
 		if (success) {
 			continue;
 		}
-		Log::error("Failed to send the message %s to peer %i (State: %i)", messages::server::EnumNameType(type), i, peers[i]->state);
+		Log::debug("Failed to send the message %s to peer %i (State: %i)", messages::server::EnumNameType(type), i, peers[i]->state);
 	}
 	fbb.Clear();
 }
