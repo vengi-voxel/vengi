@@ -7,7 +7,7 @@ before_script:
   - apt-get install -y -qq build-essential
   - apt-get install -y -qq cmake
   - apt-get install -y -qq doxygen graphviz
-  - apt-get install -y -qq libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev libenet-dev doxygen
+  - apt-get install -y -qq libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev libenet-dev doxygen libcurl4-openssl-dev
   - cmake --version
 
 build:
