@@ -251,6 +251,9 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 bool UIApp::onKeyRelease(int32_t key) {
+	if (_console.isActive()) {
+		return true;
+	}
 	Super::onKeyRelease(key);
 	const tb::MODIFIER_KEYS mod = mapModifier(SDL_GetModState());
 	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
