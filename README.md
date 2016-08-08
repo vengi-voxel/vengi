@@ -13,6 +13,7 @@ Voxel engine with procedural generated landscape.
  * assimp
  * lua >= 5.3
  * sdl2 > 2.0.4
+ * libcurl
  * postgresql-server-dev >= 9.5
  * libpq
  * flatbuffers
