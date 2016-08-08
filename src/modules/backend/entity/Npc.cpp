@@ -22,8 +22,9 @@ Npc::Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const 
 
 Npc::~Npc() {
 	ai::Zone* zone = _ai->getZone();
-	if (zone == nullptr)
+	if (zone == nullptr) {
 		return;
+	}
 	zone->destroyAI(id());
 	_ai->setZone(nullptr);
 }
@@ -56,8 +57,9 @@ double Npc::applyDamage(Npc* attacker, double damage) {
 	double health = _attribs.getCurrent(attrib::Types::HEALTH);
 	if (health > 0.0) {
 		health = std::max(0.0, health - damage);
-		if (attacker != nullptr)
+		if (attacker != nullptr) {
 			_ai->getAggroMgr().addAggro(attacker->id(), damage);
+		}
 		_attribs.setCurrent(attrib::Types::HEALTH, health);
 		return damage;
 	}
@@ -70,8 +72,9 @@ bool Npc::die() {
 
 bool Npc::attack(ai::CharacterId id) {
 	const double strength = _attribs.getCurrent(attrib::Types::STRENGTH);
-	if (strength <= 0.0)
+	if (strength <= 0.0) {
 		return false;
+	}
 	return _ai->getZone()->executeAsync(id, [=] (const ai::AIPtr & targetAi) {
 		AICharacter& targetChr = ai::character_cast<AICharacter>(targetAi->getCharacter());
 		targetChr.getNpc().applyDamage(this, strength);
@@ -83,8 +86,9 @@ const glm::vec3& Npc::pos() const {
 }
 
 bool Npc::update(long dt) {
-	if (!Entity::update(dt))
+	if (!Entity::update(dt)) {
 		return false;
+	}
 	_ai->getCharacter()->setSpeed(_attribs.getCurrent(attrib::Types::SPEED));
 	return !dead();
 }
@@ -94,6 +98,7 @@ bool Npc::route(const glm::ivec3& target) {
 	const glm::vec3& pos = _ai->getCharacter()->getPosition();
 	const glm::ivec3 start(pos);
 	const glm::ivec3 end(target.x, target.y, target.z);
+	// TODO: use the route
 	return _world->findPath(start, end, result);
 }
 
