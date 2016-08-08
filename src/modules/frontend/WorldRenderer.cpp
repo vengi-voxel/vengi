@@ -345,7 +345,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	GL_checkError();
 
-	_sunLight.setPos(glm::vec3(20.0f, 50.0f, -20.0f));
+	const glm::vec3 sunLightPos(20.0f, 50.0f, -20.0f);
+	_sunLight.setPos(sunLightPos);
 	const core::RectFloat sceneBoudingBox(-250.0f, +250.0f, -250.0f, +250.0f);
 	_sunLight.update(_deltaFrame, camera, sceneBoudingBox);
 
