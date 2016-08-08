@@ -48,7 +48,7 @@ core::AppState TestDepthBuffer::onInit() {
 }
 
 void TestDepthBuffer::doRender() {
-	const glm::vec4 sceneBoudingBox = glm::vec4(-250.0f, +250.0f, -250.0f, +250.0f);
+	const core::RectFloat sceneBoudingBox(-250.0f, +250.0f, -250.0f, +250.0f);
 	_sunLight.update(_deltaFrame, _camera, sceneBoudingBox);
 	// TODO: support different animations...
 	const uint8_t animationIndex = 0u;

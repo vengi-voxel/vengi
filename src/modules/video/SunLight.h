@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/GLM.h"
+#include "core/Rect.h"
 #include "Camera.h"
 
 namespace video {
@@ -14,7 +15,7 @@ private:
 	glm::vec3 _lightDir;
 
 public:
-	void update(long dt, const Camera& camera, const glm::vec4& sceneBoudingBox);
+	void update(long dt, const Camera& camera, const core::RectFloat& sceneBoudingBox);
 
 	const glm::vec3& dir() const;
 
