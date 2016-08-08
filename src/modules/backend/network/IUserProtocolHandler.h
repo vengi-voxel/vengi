@@ -9,8 +9,7 @@
 #include "ServerMessages_generated.h"
 #include "ClientMessages_generated.h"
 
-using namespace network::messages::server;
-using namespace network::messages::client;
+using namespace network;
 
 namespace backend {
 

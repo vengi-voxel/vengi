@@ -11,10 +11,10 @@
 
 namespace attrib {
 
-using Types = network::messages::AttribType;
+using Types = network::AttribType;
 
 inline Types getType(const char* name) {
-	const char **names = network::messages::EnumNamesAttribType();
+	const char **names = network::EnumNamesAttribType();
 	int i = 0;
 	while (*names) {
 		if (!strcmp(*names, name)) {

@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "EntityId.h"
+#include "Entity.h"
 #include "Npc.h"
 #include "network/Network.h"
-#include "network/MessageSender.h"
 #include "core/QuadTree.h"
+#include "core/TimeProvider.h"
 #include <unordered_map>
 
 namespace backend {

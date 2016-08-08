@@ -4,16 +4,10 @@
 
 #pragma once
 
-#include "backend/entity/ai/AICommon.h"
+#include "backend/entity/ai/AICharacter.h"
 #include <atomic>
 #include "Entity.h"
-#include "ai/AICharacter.h"
 #include "backend/poi/PoiProvider.h"
-
-namespace voxel {
-class World;
-typedef std::shared_ptr<World> WorldPtr;
-}
 
 namespace backend {
 
@@ -33,7 +27,7 @@ private:
 	void moveToGround();
 
 public:
-	Npc(network::messages::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
+	Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider);
 	~Npc();
 

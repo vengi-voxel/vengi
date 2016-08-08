@@ -20,12 +20,12 @@ class ClientEntity {
 private:
 	util::PosLerp _posLerp;
 	ClientEntityId _id;
-	network::messages::EntityType _type;
+	network::EntityType _type;
 	float _orientation;
 	video::MeshPtr _mesh;
 	attrib::Attributes _attrib;
 public:
-	ClientEntity(ClientEntityId id, network::messages::EntityType type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
+	ClientEntity(ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
 	~ClientEntity();
 
 	void update(long dt);
@@ -37,7 +37,7 @@ public:
 
 	bool operator==(const ClientEntity& other) const;
 
-	network::messages::EntityType type() const;
+	network::EntityType type() const;
 	ClientEntityId id() const;
 
 	// components
@@ -49,7 +49,7 @@ inline attrib::Attributes& ClientEntity::attrib() {
 	return _attrib;
 }
 
-inline network::messages::EntityType ClientEntity::type() const {
+inline network::EntityType ClientEntity::type() const {
 	return _type;
 }
 

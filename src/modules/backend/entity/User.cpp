@@ -84,7 +84,7 @@ bool User::update(long dt) {
 		return true;
 	}
 
-	if (!isMove(MoveDirection::ANY)) {
+	if (!isMove(network::MoveDirection::ANY)) {
 		return true;
 	}
 
@@ -92,14 +92,14 @@ bool User::update(long dt) {
 
 	glm::vec3 moveDelta = glm::vec3(0.0f);
 	const float speed = current(attrib::Types::SPEED) * static_cast<float>(dt) / 1000.0f;
-	if (isMove(MoveDirection::MOVELEFT)) {
+	if (isMove(network::MoveDirection::MOVELEFT)) {
 		moveDelta += glm::left * speed;
-	} else if (isMove(MoveDirection::MOVERIGHT)) {
+	} else if (isMove(network::MoveDirection::MOVERIGHT)) {
 		moveDelta += glm::right * speed;
 	}
-	if (isMove(MoveDirection::MOVEFORWARD)) {
+	if (isMove(network::MoveDirection::MOVEFORWARD)) {
 		moveDelta += glm::forward * speed;
-	} else if (isMove(MoveDirection::MOVEBACKWARD)) {
+	} else if (isMove(network::MoveDirection::MOVEBACKWARD)) {
 		moveDelta += glm::backward * speed;
 	}
 
@@ -108,10 +108,10 @@ bool User::update(long dt) {
 	_pos.y = _world->findFloor(_pos.x, _pos.z, voxel::isFloor);
 	Log::trace("move: dt %li, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", dt, speed, _pos.x, _pos.y, _pos.z, _pitch, _yaw);
 
-	const network::messages::Vec3 pos { _pos.x, _pos.y, _pos.z };
+	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	_messageSender->sendServerMessage(_peer, _entityUpdateFbb,
-			network::messages::server::Type::EntityUpdate,
-			network::messages::server::CreateEntityUpdate(_entityUpdateFbb, id(), &pos, orientation()).Union());
+			network::ServerMsgType::EntityUpdate,
+			network::CreateEntityUpdate(_entityUpdateFbb, id(), &pos, orientation()).Union());
 
 	return true;
 }
@@ -123,21 +123,21 @@ void User::sendSeed(long seed) const {
 
 void User::sendUserSpawn() const {
 	flatbuffers::FlatBufferBuilder fbb;
-	const network::messages::Vec3 pos { _pos.x, _pos.y, _pos.z };
+	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	broadcastServerMsg(UserSpawn(fbb, id(), fbb.CreateString(_name), &pos), UserSpawn);
 }
 
 void User::sendEntityUpdate(const EntityPtr& entity) const {
 	flatbuffers::FlatBufferBuilder fbb;
 	const glm::vec3& _pos = entity->pos();
-	const network::messages::Vec3 pos { _pos.x, _pos.y, _pos.z };
+	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	sendServerMsg(EntityUpdate(fbb, entity->id(), &pos, entity->orientation()), EntityUpdate);
 }
 
 void User::sendEntitySpawn(const EntityPtr& entity) const {
 	flatbuffers::FlatBufferBuilder fbb;
 	const glm::vec3& pos = entity->pos();
-	const network::messages::Vec3 vec3 { pos.x, pos.y, pos.z };
+	const network::Vec3 vec3 { pos.x, pos.y, pos.z };
 	const long humanId = id(); // -1;
 	sendServerMsg(EntitySpawn(fbb, entity->id(), entity->npcType(), &vec3, humanId), EntitySpawn);
 }

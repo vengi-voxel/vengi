@@ -40,8 +40,8 @@ protected:
 	frontend::WorldRenderer _worldRenderer;
 	ENetPeer* _peer = nullptr;
 	flatbuffers::FlatBufferBuilder _moveFbb;
-	MoveDirection _moveMask = MoveDirection::NONE;
-	MoveDirection _lastMoveMask = MoveDirection::NONE;
+	network::MoveDirection _moveMask = network::MoveDirection::NONE;
+	network::MoveDirection _lastMoveMask = network::MoveDirection::NONE;
 	core::VarPtr _rotationSpeed;
 	core::VarPtr _maxTargetDistance;
 	frontend::ClientEntityPtr _player;
@@ -108,7 +108,7 @@ public:
 	// spawns our own player
 	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);
 
-	void entitySpawn(frontend::ClientEntityId id, network::messages::EntityType type, float orientation, const glm::vec3& pos);
+	void entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos);
 	void entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation);
 	void entityRemove(frontend::ClientEntityId id);
 	frontend::ClientEntityPtr getEntity(frontend::ClientEntityId id) const;

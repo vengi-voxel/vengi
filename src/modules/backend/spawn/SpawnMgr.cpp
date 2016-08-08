@@ -7,6 +7,8 @@
 #include "core/Singleton.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
+#include "backend/entity/ai/AICharacter.h"
+#include "backend/entity/ai/AILoader.h"
 
 namespace backend {
 
@@ -29,21 +31,21 @@ bool SpawnMgr::init() {
 }
 
 void SpawnMgr::spawnCharacters(ai::Zone& zone) {
-	spawnEntity(zone, network::messages::EntityType::BEGIN_CHARACTERS, network::messages::EntityType::MAX_CHARACTERS, 0);
+	spawnEntity(zone, network::EntityType::BEGIN_CHARACTERS, network::EntityType::MAX_CHARACTERS, 0);
 }
 
 void SpawnMgr::spawnAnimals(ai::Zone& zone) {
-	spawnEntity(zone, network::messages::EntityType::BEGIN_ANIMAL, network::messages::EntityType::MAX_ANIMAL, 2);
+	spawnEntity(zone, network::EntityType::BEGIN_ANIMAL, network::EntityType::MAX_ANIMAL, 2);
 }
 
-void SpawnMgr::spawnEntity(ai::Zone& zone, network::messages::EntityType start, network::messages::EntityType end, int maxAmount) {
+void SpawnMgr::spawnEntity(ai::Zone& zone, network::EntityType start, network::EntityType end, int maxAmount) {
 	const int offset = (int)start + 1;
 	int count[(int)end - offset];
 	memset(count, 0, sizeof(count));
 	zone.execute([start, end, offset, &count] (const ai::AIPtr& ai) {
 		const AICharacter& chr = ai::character_cast<AICharacter>(ai->getCharacter());
 		const Npc& npc = chr.getNpc();
-		const network::messages::EntityType type = npc.npcType();
+		const network::EntityType type = npc.npcType();
 		if (type <= start || type >= end) {
 			return;
 		}
@@ -57,13 +59,13 @@ void SpawnMgr::spawnEntity(ai::Zone& zone, network::messages::EntityType start, 
 			continue;
 
 		const int needToSpawn = maxAmount - count[i];
-		network::messages::EntityType type = static_cast<network::messages::EntityType>(offset + i);
+		network::EntityType type = static_cast<network::EntityType>(offset + i);
 		spawn(zone, type, needToSpawn);
 	}
 }
 
-int SpawnMgr::spawn(ai::Zone& zone, network::messages::EntityType type, int amount, const glm::ivec3* pos) {
-	const char *typeName = network::messages::EnumNameEntityType(type);
+int SpawnMgr::spawn(ai::Zone& zone, network::EntityType type, int amount, const glm::ivec3* pos) {
+	const char *typeName = network::EnumNameEntityType(type);
 	ai::TreeNodePtr behaviour = _loader->load(typeName);
 	if (!behaviour) {
 		Log::error("could not load the behaviour tree %s", typeName);

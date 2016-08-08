@@ -15,6 +15,11 @@
 #include "network/MessageSender.h"
 #include "EntityId.h"
 
+namespace voxel {
+class World;
+typedef std::shared_ptr<World> WorldPtr;
+}
+
 namespace backend {
 
 class Entity;
@@ -32,7 +37,7 @@ protected:
 	attrib::ContainerProviderPtr _containerProvider;
 	attrib::Attributes _attribs;
 	cooldown::CooldownMgr _cooldowns;
-	network::messages::EntityType _npcType = network::messages::EntityType::NONE;
+	network::EntityType _npcType = network::EntityType::NONE;
 	ENetPeer *_peer = nullptr;
 
 	/**
@@ -80,7 +85,7 @@ public:
 	 */
 	virtual const glm::vec3& pos() const = 0;
 	virtual float orientation() const = 0;
-	network::messages::EntityType npcType() const;
+	network::EntityType npcType() const;
 
 	inline double current(attrib::Types type) const {
 		return _attribs.getCurrent(type);
@@ -172,7 +177,7 @@ public:
 	}
 };
 
-inline network::messages::EntityType Entity::npcType() const {
+inline network::EntityType Entity::npcType() const {
 	return _npcType;
 }
 

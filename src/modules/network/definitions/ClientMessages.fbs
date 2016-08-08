@@ -2,7 +2,7 @@
 
 include "Shared.fbs";
 
-namespace network.messages.client;
+namespace network;
 
 /// a message that the client is sending to log into the gameserver
 table UserConnect {
@@ -35,10 +35,10 @@ table Move {
 	yaw:float;
 }
 
-union Type { UserConnect, UserConnected, UserDisconnect, Attack, Move }
+union ClientMsgType { UserConnect, UserConnected, UserDisconnect, Attack, Move }
 
 table ClientMessage {
-	data:Type;
+	data:ClientMsgType;
 }
 
 root_type ClientMessage;

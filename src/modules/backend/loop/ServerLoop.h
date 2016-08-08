@@ -13,15 +13,16 @@
 #include "core/Input.h"
 #include "network/ProtocolHandlerRegistry.h"
 #include "backend/entity/EntityStorage.h"
-#include "backend/entity/ai/AIRegistry.h"
 #include "core/EventBus.h"
-#include "backend/entity/ai/AICommon.h"
 
 #include <memory>
 #include <thread>
 #include <chrono>
 
 namespace backend {
+
+class AIRegistry;
+typedef std::shared_ptr<AIRegistry> AIRegistryPtr;
 
 class ServerLoop: public core::IEventBusHandler<network::NewConnectionEvent>, core::IEventBusHandler<network::DisconnectEvent> {
 private:

@@ -16,13 +16,13 @@ namespace backend {
 
 class SelectNpcsOfTypes: public IFilter {
 private:
-	std::bitset<(int)network::messages::EntityType::MAX> _npcTypes;
+	std::bitset<(int)network::EntityType::MAX> _npcTypes;
 public:
 	FILTER_FACTORY(SelectNpcsOfTypes)
 
 	SelectNpcsOfTypes(const std::string& parameters) :
 			IFilter("SelectNpcsOfTypes", parameters) {
-		const char **names = network::messages::EnumNamesEntityType();
+		const char **names = network::EnumNamesEntityType();
 		std::vector<std::string> types;
 		core::string::splitString(parameters, types, ",");
 		for (const std::string& type : types) {

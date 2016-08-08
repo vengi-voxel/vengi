@@ -7,7 +7,7 @@
 #include "User.h"
 #include "DatabaseModels.h"
 
-#define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::messages::server::type, network::messages::server::msg.Union());
+#define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::type, network::msg.Union());
 
 namespace backend {
 

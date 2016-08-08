@@ -10,6 +10,8 @@
 #include "ClientMessages_generated.h"
 #include "../Client.h"
 
+using namespace network;
+
 template<class MSGTYPE>
 class IClientProtocolHandler: public network::IMsgProtocolHandler<MSGTYPE, Client> {
 public:

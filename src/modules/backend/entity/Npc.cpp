@@ -12,7 +12,7 @@ namespace backend {
 
 std::atomic<EntityId> Npc::_nextNpcId(5000000);
 
-Npc::Npc(network::messages::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
+Npc::Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider) :
 		Entity(_nextNpcId++, messageSender, timeProvider, containerProvider), _world(world), _poiProvider(poiProvider) {
 	_npcType = type;
@@ -35,13 +35,13 @@ void Npc::init(const glm::ivec3* pos) {
 			ai()->getId(), ai()->getBehaviour()->getName().c_str(), randomPos.x, randomPos.y, randomPos.z, material);
 	setHomePosition(randomPos);
 	_ai->getCharacter()->setPosition(glm::vec3(randomPos.x, randomPos.y, randomPos.z));
-	const char *typeName = network::messages::EnumNameEntityType(_npcType);
+	const char *typeName = network::EnumNameEntityType(_npcType);
 	addContainer(typeName);
 	initAttribs();
 }
 
 std::string Npc::name() const {
-	return network::messages::EnumNameEntityType(_npcType);
+	return network::EnumNameEntityType(_npcType);
 }
 
 void Npc::setPointOfInterest() {

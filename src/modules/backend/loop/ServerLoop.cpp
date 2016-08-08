@@ -9,6 +9,8 @@
 #include "persistence/ConnectionPool.h"
 #include "DatabaseModels.h"
 #include "backend/entity/User.h"
+#include "backend/entity/ai/AIRegistry.h"
+#include "backend/entity/ai/AICommon.h"
 
 namespace backend {
 

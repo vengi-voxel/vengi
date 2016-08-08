@@ -26,9 +26,9 @@
 			return; \
 		} \
 		if (args[0] == "true") \
-			_moveMask |= network::messages::client::MoveDirection::flag; \
+			_moveMask |= network::MoveDirection::flag; \
 		else \
-			_moveMask &= ~network::messages::client::MoveDirection::flag; \
+			_moveMask &= ~network::MoveDirection::flag; \
 	});
 
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
@@ -63,7 +63,7 @@ void Client::sendMovement() {
 	// TODO: we can't use the camera, as we are aiming for a freelook mode, where the players' angles might be different from the camera's
 	const float pitch = 0.0f;
 	const float yaw = 0.0f;
-	_messageSender->sendClientMessage(_peer, _moveFbb, network::messages::client::Type::Move, CreateMove(_moveFbb, _moveMask, pitch, yaw).Union());
+	_messageSender->sendClientMessage(_peer, _moveFbb, network::ClientMsgType::Move, CreateMove(_moveFbb, _moveMask, pitch, yaw).Union());
 }
 
 void Client::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
@@ -82,7 +82,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 	const std::string& email = core::Var::get(cfg::ClientEmail)->strVal();
 	const std::string& password = core::Var::get(cfg::ClientPassword)->strVal();
 	Log::info("Trying to log into the server with %s", email.c_str());
-	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::UserConnect,
+	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserConnect,
 			CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(password)).Union());
 }
 
@@ -291,7 +291,7 @@ void Client::authFailed() {
 
 void Client::disconnect() {
 	flatbuffers::FlatBufferBuilder fbb;
-	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::UserDisconnect, CreateUserDisconnect(fbb).Union());
+	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserDisconnect, CreateUserDisconnect(fbb).Union());
 }
 
 void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation) {
@@ -303,9 +303,9 @@ void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, flo
 	entity->lerpPosition(pos, orientation);
 }
 
-void Client::entitySpawn(frontend::ClientEntityId id, network::messages::EntityType type, float orientation, const glm::vec3& pos) {
+void Client::entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos) {
 	Log::info("Entity %li spawned at pos %f:%f:%f (type %i)", id, pos.x, pos.y, pos.z, (int)type);
-	const std::string& meshName = "chr_skelett2_bake"; // core::string::toLower(network::messages::EnumNameEntityType(type));
+	const std::string& meshName = "chr_skelett2_bake"; // core::string::toLower(network::EnumNameEntityType(type));
 	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
 	_worldRenderer.addEntity(std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, mesh));
 }
@@ -323,13 +323,13 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	//_camera.lookAt(lookAtPos);
 	// broken: _camera.setAngles(0.0f, orientation);
 	const video::MeshPtr& mesh = _meshPool->getMesh("chr_skelett2_bake");
-	const network::messages::EntityType type = network::messages::EntityType::PLAYER;
+	const network::EntityType type = network::EntityType::PLAYER;
 	_player = std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, mesh);
 	_worldRenderer.addEntity(_player);
 	_worldRenderer.onSpawn(pos);
 
 	flatbuffers::FlatBufferBuilder fbb;
-	_messageSender->sendClientMessage(_peer, fbb, network::messages::client::Type::UserConnected,
+	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserConnected,
 			CreateUserConnected(fbb).Union());
 }
 

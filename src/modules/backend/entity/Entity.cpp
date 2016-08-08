@@ -69,9 +69,9 @@ void Entity::updateVisible(const EntitySet& set) {
 	if (p != nullptr) {
 		for (const auto& e : stillVisible) {
 			const glm::vec3& _pos = e->pos();
-			const network::messages::Vec3 posBuf {_pos.x, _pos.y, _pos.z};
+			const network::Vec3 posBuf {_pos.x, _pos.y, _pos.z};
 			flatbuffers::FlatBufferBuilder fbb;
-			_messageSender->sendServerMessage(p, fbb, network::messages::server::Type::EntityUpdate, CreateEntityUpdate(fbb, e->id(), &posBuf, e->orientation()).Union());
+			_messageSender->sendServerMessage(p, fbb, network::ServerMsgType::EntityUpdate, CreateEntityUpdate(fbb, e->id(), &posBuf, e->orientation()).Union());
 		}
 	}
 

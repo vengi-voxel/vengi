@@ -62,7 +62,7 @@ core::AppState ShapeTool::onInit() {
 		Log::error("Failed to load the mesh '%s'", meshName);
 		return core::Cleanup;
 	}
-	_entity = std::make_shared<frontend::ClientEntity>(1, network::messages::EntityType::NONE, _camera.position(), 0.0f, mesh);
+	_entity = std::make_shared<frontend::ClientEntity>(1, network::EntityType::NONE, _camera.position(), 0.0f, mesh);
 	if (!_worldRenderer.addEntity(_entity)) {
 		Log::error("Failed to create entity");
 		return core::Cleanup;

@@ -15,7 +15,7 @@ namespace backend {
 
 class SelectPrey: public IFilter {
 private:
-	network::messages::EntityType _npcType;
+	network::EntityType _npcType;
 public:
 	FILTER_FACTORY(SelectPrey)
 

@@ -5,8 +5,9 @@
 #pragma once
 
 #include "network/MessageSender.h"
-#include "Npc.h"
+#include "Entity.h"
 #include "core/Var.h"
+#include "backend/poi/PoiProvider.h"
 
 namespace backend {
 
@@ -20,7 +21,7 @@ private:
 	uint32_t _host;
 	voxel::WorldPtr _world;
 	PoiProviderPtr _poiProvider;
-	MoveDirection _moveMask = MoveDirection::NONE;
+	network::MoveDirection _moveMask = network::MoveDirection::NONE;
 	float _pitch;
 	float _yaw;
 	uint64_t _lastAction;
@@ -28,15 +29,15 @@ private:
 	core::VarPtr _userTimeout;
 	flatbuffers::FlatBufferBuilder _entityUpdateFbb;
 
-	inline bool isMove(network::messages::client::MoveDirection dir) const {
-		return (_moveMask & dir) != MoveDirection::NONE;
+	inline bool isMove(network::MoveDirection dir) const {
+		return (_moveMask & dir) != network::MoveDirection::NONE;
 	}
 
-	inline void addMove(network::messages::client::MoveDirection dir) {
+	inline void addMove(network::MoveDirection dir) {
 		_moveMask |= dir;
 	}
 
-	inline void removeMove(network::messages::client::MoveDirection dir) {
+	inline void removeMove(network::MoveDirection dir) {
 		_moveMask &= ~dir;
 	}
 
@@ -72,7 +73,7 @@ public:
 		return _email;
 	}
 
-	void changeMovement(MoveDirection bitmask, float pitch, float yaw) {
+	void changeMovement(network::MoveDirection bitmask, float pitch, float yaw) {
 		_moveMask = bitmask;
 		_pitch = pitch;
 		_yaw = yaw;

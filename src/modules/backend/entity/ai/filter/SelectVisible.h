@@ -13,10 +13,7 @@ namespace backend {
 class SelectVisible: public IFilter {
 public:
 	FILTER_FACTORY(SelectVisible)
-
-	SelectVisible(const std::string& parameters = "") :
-		IFilter("SelectVisible", parameters) {
-	}
+	FILTER_CLASS(SelectVisible)
 
 	void filter (const AIPtr& entity) override;
 };

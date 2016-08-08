@@ -2,7 +2,7 @@
 
 include "Shared.fbs";
 
-namespace network.messages.server;
+namespace network;
 
 table Seed {
 	seed:long;
@@ -61,10 +61,10 @@ table AttribUpdate {
 	attribs:[AttribEntry] (required);
 }
 
-union Type { Seed, UserSpawn, EntitySpawn, EntityRemove, EntityUpdate, AuthFailed, AttribUpdate }
+union ServerMsgType { Seed, UserSpawn, EntitySpawn, EntityRemove, EntityUpdate, AuthFailed, AttribUpdate }
 
 table ServerMessage {
-	data:Type;
+	data:ServerMsgType;
 }
 
 root_type ServerMessage;

@@ -5,14 +5,15 @@
 #pragma once
 
 #include <memory>
-#include "backend/entity/ai/AICommon.h"
 #include "voxel/World.h"
 #include "backend/entity/EntityStorage.h"
-#include "backend/entity/ai/AILoader.h"
 #include "backend/poi/PoiProvider.h"
 #include "ServerMessages_generated.h"
 
 namespace backend {
+
+class AILoader;
+typedef std::shared_ptr<AILoader> AILoaderPtr;
 
 class SpawnMgr {
 private:
@@ -25,7 +26,7 @@ private:
 	PoiProviderPtr _poiProvider;
 	long _time;
 
-	void spawnEntity(ai::Zone& zone, network::messages::EntityType start, network::messages::EntityType end, int maxAmount);
+	void spawnEntity(ai::Zone& zone, network::EntityType start, network::EntityType end, int maxAmount);
 	void spawnAnimals(ai::Zone& zone);
 	void spawnCharacters(ai::Zone& zone);
 
@@ -34,7 +35,7 @@ public:
 	bool init();
 	void shutdown();
 
-	int spawn(ai::Zone& zone, network::messages::EntityType type, int amount, const glm::ivec3* pos = nullptr);
+	int spawn(ai::Zone& zone, network::EntityType type, int amount, const glm::ivec3* pos = nullptr);
 	void onFrame(ai::Zone& zone, long dt);
 };
 

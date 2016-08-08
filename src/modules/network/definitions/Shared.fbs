@@ -1,6 +1,6 @@
 // Shared data structures for client and server messages
 
-namespace network.messages;
+namespace network;
 
 struct Vec3 {
 	x:float;

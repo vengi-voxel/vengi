@@ -4,23 +4,24 @@
 
 #include "SelectPrey.h"
 #include "backend/entity/Npc.h"
+#include "core/Common.h"
 
 namespace backend {
 
 SelectPrey::SelectPrey(const std::string& parameters) :
-		IFilter("SelectPrey", parameters), _npcType(network::messages::EntityType::NONE) {
-	const char **names = network::messages::EnumNamesEntityType();
+		IFilter("SelectPrey", parameters), _npcType(network::EntityType::NONE) {
+	const char **names = network::EnumNamesEntityType();
 	int i = 0;
 	while (*names) {
 		if (!strcmp(*names, parameters.c_str())) {
-			_npcType = static_cast<network::messages::EntityType>(i);
+			_npcType = static_cast<network::EntityType>(i);
 			break;
 		}
 		++i;
 		++names;
 	}
-	core_assert(_npcType > network::messages::EntityType::NONE);
-	core_assert(_npcType < network::messages::EntityType::MAX);
+	core_assert(_npcType > network::EntityType::NONE);
+	core_assert(_npcType < network::EntityType::MAX);
 }
 
 void SelectPrey::filter(const AIPtr& entity) {

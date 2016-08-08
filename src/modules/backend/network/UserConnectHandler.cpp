@@ -13,9 +13,9 @@ namespace backend {
 
 UserConnectHandler::UserConnectHandler(network::NetworkPtr network, backend::EntityStoragePtr entityStorage, voxel::WorldPtr world) :
 		_network(network), _entityStorage(entityStorage), _world(world) {
-	auto data = CreateAuthFailed(_authFailed);
-	auto msg = CreateServerMessage(_authFailed, network::messages::server::Type::AuthFailed, data.Union());
-	FinishServerMessageBuffer(_authFailed, msg);
+	auto data = network::CreateAuthFailed(_authFailed);
+	auto msg = network::CreateServerMessage(_authFailed, network::ServerMsgType::AuthFailed, data.Union());
+	network::FinishServerMessageBuffer(_authFailed, msg);
 }
 
 void UserConnectHandler::sendAuthFailed(ENetPeer* peer) {
@@ -24,7 +24,7 @@ void UserConnectHandler::sendAuthFailed(ENetPeer* peer) {
 }
 
 void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
-	const auto* message = getMsg<UserConnect>(raw);
+	const auto* message = getMsg<network::UserConnect>(raw);
 
 	const std::string& email = message->email()->str();
 	if (!core::isValidEmail(email)) {

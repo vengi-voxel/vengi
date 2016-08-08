@@ -8,19 +8,19 @@
 
 namespace network {
 
-inline ENetPacket* createServerPacket(FlatBufferBuilder& fbb, messages::server::Type type, Offset<void> data, uint32_t flags) {
-	auto msg = messages::server::CreateServerMessage(fbb, type, data);
-	messages::server::FinishServerMessageBuffer(fbb, msg);
+inline ENetPacket* createServerPacket(FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags) {
+	auto msg = CreateServerMessage(fbb, type, data);
+	FinishServerMessageBuffer(fbb, msg);
 	ENetPacket* packet = enet_packet_create(fbb.GetBufferPointer(), fbb.GetSize(), flags);
-	Log::trace("Create server package: %s - size %ui", messages::server::EnumNameType(type), fbb.GetSize());
+	Log::trace("Create server package: %s - size %ui", EnumNameServerMsgType(type), fbb.GetSize());
 	return packet;
 }
 
-inline ENetPacket* createClientPacket(FlatBufferBuilder& fbb, messages::client::Type type, Offset<void> data, uint32_t flags) {
-	auto msg = messages::client::CreateClientMessage(fbb, type, data);
-	messages::client::FinishClientMessageBuffer(fbb, msg);
+inline ENetPacket* createClientPacket(FlatBufferBuilder& fbb, ClientMsgType type, Offset<void> data, uint32_t flags) {
+	auto msg = CreateClientMessage(fbb, type, data);
+	FinishClientMessageBuffer(fbb, msg);
 	ENetPacket* packet = enet_packet_create(fbb.GetBufferPointer(), fbb.GetSize(), flags);
-	Log::trace("Create client package: %s - size %ui", messages::client::EnumNameType(type), fbb.GetSize());
+	Log::trace("Create client package: %s - size %ui", EnumNameClientMsgType(type), fbb.GetSize());
 	return packet;
 }
 
@@ -28,13 +28,13 @@ MessageSender::MessageSender(NetworkPtr network) :
 		_network(network) {
 }
 
-void MessageSender::sendServerMessage(ENetPeer* peer, FlatBufferBuilder& fbb, messages::server::Type type, Offset<void> data, uint32_t flags) {
+void MessageSender::sendServerMessage(ENetPeer* peer, FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags) {
 	core_assert(peer != nullptr);
 	sendServerMessage(&peer, 1, fbb, type, data, flags);
 }
 
-void MessageSender::sendServerMessage(ENetPeer** peers, int numPeers, FlatBufferBuilder& fbb, messages::server::Type type, Offset<void> data, uint32_t flags) {
-	Log::debug("Send %s", messages::server::EnumNameType(type));
+void MessageSender::sendServerMessage(ENetPeer** peers, int numPeers, FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, uint32_t flags) {
+	Log::debug("Send %s", EnumNameServerMsgType(type));
 	core_assert(numPeers > 0);
 	auto packet = createServerPacket(fbb, type, data, flags);
 	for (int i = 0; i < numPeers; ++i) {
@@ -42,18 +42,18 @@ void MessageSender::sendServerMessage(ENetPeer** peers, int numPeers, FlatBuffer
 		if (success) {
 			continue;
 		}
-		Log::debug("Failed to send the message %s to peer %i (State: %i)", messages::server::EnumNameType(type), i, peers[i]->state);
+		Log::debug("Failed to send the message %s to peer %i (State: %i)", EnumNameServerMsgType(type), i, peers[i]->state);
 	}
 	fbb.Clear();
 }
 
-void MessageSender::broadcastServerMessage(FlatBufferBuilder& fbb, messages::server::Type type, Offset<void> data, int channel, uint32_t flags) {
-	Log::debug("Broadcast %s", messages::server::EnumNameType(type));
+void MessageSender::broadcastServerMessage(FlatBufferBuilder& fbb, ServerMsgType type, Offset<void> data, int channel, uint32_t flags) {
+	Log::debug("Broadcast %s", EnumNameServerMsgType(type));
 	_network->broadcast(createServerPacket(fbb, type, data, flags), channel);
 	fbb.Clear();
 }
 
-void MessageSender::sendClientMessage(ENetPeer* peer, FlatBufferBuilder& fbb, messages::client::Type type, Offset<void> data, uint32_t flags) {
+void MessageSender::sendClientMessage(ENetPeer* peer, FlatBufferBuilder& fbb, ClientMsgType type, Offset<void> data, uint32_t flags) {
 	if (peer == nullptr) {
 		Log::debug("don't send client message, no peer available");
 		return;

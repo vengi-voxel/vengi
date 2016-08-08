@@ -153,34 +153,34 @@ bool Network::packetReceived(ENetEvent& event, bool server) {
 	flatbuffers::Verifier v(event.packet->data, event.packet->dataLength);
 
 	if (!server) {
-		if (!messages::server::VerifyServerMessageBuffer(v)) {
+		if (!VerifyServerMessageBuffer(v)) {
 			Log::error("Illegal server packet received with length: %i", (int)event.packet->dataLength);
 			return false;
 		}
-		const messages::server::ServerMessage *req = messages::server::GetServerMessage(event.packet->data);
-		messages::server::Type type = req->data_type();
-		ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(messages::server::EnumNameType(type));
+		const ServerMessage *req = GetServerMessage(event.packet->data);
+		ServerMsgType type = req->data_type();
+		ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(EnumNameServerMsgType(type));
 		if (!handler) {
-			Log::error("No handler for server msg type %s", messages::server::EnumNameType(type));
+			Log::error("No handler for server msg type %s", EnumNameServerMsgType(type));
 			return false;
 		}
-		Log::debug("Received %s", messages::server::EnumNameType(type));
+		Log::debug("Received %s", EnumNameServerMsgType(type));
 		handler->execute(event.peer, reinterpret_cast<const flatbuffers::Table*>(req->data()));
 		return true;
 	}
 
-	if (!messages::client::VerifyClientMessageBuffer(v)) {
+	if (!VerifyClientMessageBuffer(v)) {
 		Log::error("Illegal client packet received with length: %i", (int)event.packet->dataLength);
 		return false;
 	}
-	const messages::client::ClientMessage *req = messages::client::GetClientMessage(event.packet->data);
-	messages::client::Type type = req->data_type();
-	ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(messages::client::EnumNameType(type));
+	const ClientMessage *req = GetClientMessage(event.packet->data);
+	ClientMsgType type = req->data_type();
+	ProtocolHandlerPtr handler = _protocolHandlerRegistry->getHandler(EnumNameClientMsgType(type));
 	if (!handler) {
-		Log::error("No handler for client msg type %s", messages::client::EnumNameType(type));
+		Log::error("No handler for client msg type %s", EnumNameClientMsgType(type));
 		return false;
 	}
-	Log::debug("Received %s", messages::client::EnumNameType(type));
+	Log::debug("Received %s", EnumNameClientMsgType(type));
 	handler->execute(event.peer, reinterpret_cast<const flatbuffers::Table*>(req->data()));
 	return true;
 }
