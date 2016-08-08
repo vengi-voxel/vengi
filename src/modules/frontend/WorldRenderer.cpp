@@ -346,7 +346,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	GL_checkError();
 
 	_sunLight.setPos(glm::vec3(20.0f, 50.0f, -20.0f));
-	_sunLight.update(_deltaFrame, camera);
+	const glm::vec4 sceneBoudingBox = glm::vec4(-250.0f, +250.0f, -250.0f, +250.0f);
+	_sunLight.update(_deltaFrame, camera, sceneBoudingBox);
 
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we do one pass for the gbuffer + the sun

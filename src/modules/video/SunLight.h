@@ -14,7 +14,7 @@ private:
 	glm::vec3 _lightDir;
 
 public:
-	void update(long dt, const Camera& camera);
+	void update(long dt, const Camera& camera, const glm::vec4& sceneBoudingBox);
 
 	const glm::vec3& dir() const;
 
