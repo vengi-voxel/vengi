@@ -158,6 +158,9 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 	if (key >= SDLK_SPACE && key < SDLK_DELETE) {
 		return false;
 	}
+	if (_root.GetVisibility() != tb::WIDGET_VISIBILITY_VISIBLE) {
+		return false;
+	}
 	return _root.InvokeKey(key, special, mod, down);
 }
 
