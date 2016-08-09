@@ -54,8 +54,9 @@ long File::write(const unsigned char *buf, size_t len) const {
 std::string File::getPath() const {
 	const std::string& name = getName();
 	const size_t pos = name.rfind("/");
-	if (pos == std::string::npos)
+	if (pos == std::string::npos) {
 		return "";
+	}
 	return name.substr(0, pos);
 }
 
@@ -74,8 +75,9 @@ std::string File::getFileName() const {
 
 std::string File::getExtension() const {
 	const char *ext = ::strrchr(getName().c_str(), '.');
-	if (ext == nullptr)
+	if (ext == nullptr) {
 		return "";
+	}
 	++ext;
 	return std::string(ext);
 }
@@ -92,15 +94,12 @@ long File::length() const {
 	return end;
 }
 
-bool File::exists() const {
-	return _file != nullptr;
-}
-
 int File::read(void **buffer) {
 	*buffer = nullptr;
 	const long len = length();
-	if (len <= 0)
+	if (len <= 0) {
 		return len;
+	}
 	*buffer = new char[len];
 	return read(*buffer, len);
 }
@@ -117,16 +116,17 @@ int File::read(void *buffer, int n) {
 
 	while (remaining) {
 		size_t block = remaining;
-		if (block > blockSize)
+		if (block > blockSize) {
 			block = blockSize;
+		}
 		const int readAmount = read(buf, 1, block);
 
 		/* end of file reached */
-		if (readAmount == 0)
+		if (readAmount == 0) {
 			return (len - remaining + readAmount);
-
-		else if (readAmount == -1)
+		} else if (readAmount == -1) {
 			return -1;
+		}
 
 		/* do some progress bar thing here... */
 		remaining -= readAmount;
@@ -137,24 +137,33 @@ int File::read(void *buffer, int n) {
 
 int File::read(void *buf, size_t size, size_t maxnum) {
 	const int n = SDL_RWread(_file, buf, size, maxnum);
-	if (n == 0)
+	if (n == 0) {
 		_state = IOSTATE_LOADED;
-	else if (n == -1)
+	} else if (n == -1) {
 		_state = IOSTATE_FAILED;
+	}
 	return n;
 }
 
 void File::close() {
-	if (_file != nullptr)
+	if (_file != nullptr) {
 		SDL_RWclose(_file);
+		_file = nullptr;
+	}
 }
 
 long File::tell() const {
-	return SDL_RWtell(_file);
+	if (_file != nullptr) {
+		return SDL_RWtell(_file);
+	}
+	return -1L;
 }
 
 long File::seek(long offset, int seekType) const {
-	return SDL_RWseek(_file, offset, seekType);
+	if (_file != nullptr) {
+		return SDL_RWseek(_file, offset, seekType);
+	}
+	return -1L;
 }
 
 }

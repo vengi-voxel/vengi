@@ -24,7 +24,6 @@ protected:
 
 public:
 	File(const std::string& rawPath);
-
 	virtual ~File();
 
 	bool exists() const;
@@ -39,6 +38,10 @@ public:
 	const std::string& getName() const;
 	std::string load();
 };
+
+inline bool File::exists() const {
+	return _file != nullptr;
+}
 
 typedef std::shared_ptr<File> FilePtr;
 
