@@ -42,15 +42,15 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 io::FilePtr Filesystem::open(const std::string& filename) {
 	if (io::File(filename).exists()) {
 		Log::debug("loading file %s from current working dir", filename.c_str());
-		return io::FilePtr(new io::File(filename));
+		return std::make_shared<io::File>(filename);
 	}
 	const std::string homePath = _homePath + filename;
 	if (io::File(homePath).exists()) {
 		Log::debug("loading file %s from %s", filename.c_str(), _homePath.c_str());
-		return io::FilePtr(new io::File(homePath));
+		return std::make_shared<io::File>(homePath);
 	}
 	Log::debug("loading file %s from %s (doesn't exist at %s)", filename.c_str(), _basePath.c_str(), homePath.c_str());
-	return io::FilePtr(new io::File(_basePath + filename));
+	return std::make_shared<io::File>(_basePath + filename);
 }
 
 std::string Filesystem::load(const std::string& filename) {
