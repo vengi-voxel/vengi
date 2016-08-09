@@ -24,4 +24,11 @@ TEST_F(ShaderTest, testInclude) {
 	ASSERT_TRUE(core::string::contains(frag, "SUCCESS"));
 }
 
+TEST_F(ShaderTest, testCvar) {
+	core::Var::get("awesome_name", "true", core::CV_SHADER);
+	Shader s;
+	const std::string &vert = s.getSource(ShaderType::Vertex, "");
+	ASSERT_TRUE(core::string::contains(vert, "awesome_name"));
+}
+
 }
