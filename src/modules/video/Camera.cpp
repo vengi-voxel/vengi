@@ -87,13 +87,13 @@ void Camera::updateTarget() {
 }
 
 void Camera::update(long deltaFrame) {
+	rotate(_omega);
 	updateTarget();
 	updateOrientation();
 	updateViewMatrix();
 	updateProjectionMatrix();
 	updateFrustumPlanes();
 	updateFrustumVertices();
-	// TODO: apply omega rotation
 	_dirty = 0;
 }
 

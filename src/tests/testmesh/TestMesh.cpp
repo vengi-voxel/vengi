@@ -9,7 +9,7 @@ core::AppState TestMesh::onInit() {
 	const core::AppState state = Super::onInit();
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 150.0f));
 	_camera.lookAt(glm::vec3(0.0f, 50.0f, 0.0f));
-	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
+	_camera.setOmega(glm::vec3(0.0f, 0.001f, 0.0f));
 	_camera.setTarget(glm::vec3(0.0f, 50.0f, 0.0f));
 	_camera.setTargetDistance(150.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);
@@ -20,7 +20,8 @@ core::AppState TestMesh::onInit() {
 	}
 
 	const std::string mesh = "chr_skelett2_bake";
-	if (!_mesh.loadMesh(mesh)) {
+	_mesh = _meshPool.getMesh(mesh);
+	if (!_mesh->isLoading()) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
 	}
@@ -39,16 +40,16 @@ void TestMesh::doRender() {
 
 	// TODO: support more than just the first animation
 	const uint8_t animationIndex = 0u;
-	if (!_mesh.initMesh(_meshShader, (_now - _initTime) / 1000.0f, animationIndex)) {
-		Log::error("Failed to init the mesh");
+	if (!_mesh->initMesh(_meshShader, (_now - _initTime) / 1000.0f, animationIndex)) {
 		return;
 	}
-	core_assert_always(_mesh.render() > 0);
+	core_assert_always(_mesh->render() > 0);
 }
 
 core::AppState TestMesh::onCleanup() {
 	_meshShader.shutdown();
-	_mesh.shutdown();
+	_mesh->shutdown();
+	_meshPool.shutdown();
 	return Super::onCleanup();
 }
 

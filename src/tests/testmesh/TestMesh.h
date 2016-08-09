@@ -5,13 +5,14 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "video/Mesh.h"
+#include "video/MeshPool.h"
 #include "TestmeshShaders.h"
 
 class TestMesh: public TestApp {
 private:
 	using Super = TestApp;
-	video::Mesh _mesh;
+	video::MeshPtr _mesh;
+	video::MeshPool _meshPool;
 	shader::MeshShader _meshShader;
 
 	void doRender() override;
