@@ -92,6 +92,7 @@ void Camera::update(long deltaFrame) {
 	updateViewMatrix();
 	updateProjectionMatrix();
 	updateFrustumPlanes();
+	updateFrustumVertices();
 	// TODO: apply omega rotation
 	_dirty = 0;
 }
@@ -183,6 +184,27 @@ FrustumResult Camera::testFrustum(const glm::vec3& mins, const glm::vec3& maxs) 
 	}
 
 	return result;
+}
+
+void Camera::updateFrustumVertices() {
+	const float halfViewSize = glm::tan(glm::pi<float>() / 360.0f * _fieldOfView);
+	glm::vec3 near;
+	near.z = nearPlane();
+	near.y = near.z * halfViewSize;
+	near.x = near.y * aspectRatio();
+	glm::vec3 far;
+	far.z = farPlane();
+	far.y = far.z * halfViewSize;
+	far.x = far.y * aspectRatio();
+	const glm::mat3x4 transform(_viewMatrix);
+	_frustumVertices[0] = glm::vec3(transform * near);
+	_frustumVertices[1] = glm::vec3(transform * glm::vec3(near.x, -near.y, near.z));
+	_frustumVertices[2] = glm::vec3(transform * glm::vec3(-near.x, -near.y, near.z));
+	_frustumVertices[3] = glm::vec3(transform * glm::vec3(-near.x, near.y, near.z));
+	_frustumVertices[4] = glm::vec3(transform * far);
+	_frustumVertices[5] = glm::vec3(transform * glm::vec3(far.x, -far.y, far.z));
+	_frustumVertices[6] = glm::vec3(transform * glm::vec3(-far.x, -far.y, far.z));
+	_frustumVertices[7] = glm::vec3(transform * glm::vec3(-far.x, far.y, far.z));
 }
 
 void Camera::updateFrustumPlanes() {

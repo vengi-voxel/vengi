@@ -37,6 +37,7 @@ enum class FrustumPlanes {
 	Near
 };
 static const uint8_t FRUSTUM_PLANES_MAX = 6;
+static const uint8_t FRUSTUM_VERTICES_MAX = 8;
 
 enum class FrustumResult {
 	Outside,
@@ -81,11 +82,13 @@ private:
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	void updateFrustumPlanes();
+	void updateFrustumVertices();
 	void updateViewMatrix();
 	void updateOrientation();
 	void updateProjectionMatrix();
 	void updateTarget();
 	glm::vec4 _frustumPlanes[FRUSTUM_PLANES_MAX];
+	glm::vec3 _frustumVertices[FRUSTUM_VERTICES_MAX];
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 	~Camera();
@@ -195,8 +198,10 @@ public:
 
 	void update(long deltaFrame);
 
+	void frustumCorners(glm::vec3 out[8]) const;
 	const glm::vec4& frustumPlane(FrustumPlanes plane) const;
 	FrustumResult testFrustum(const glm::vec3& position) const;
+	// TODO: use core::AABB here
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 };
 
@@ -358,6 +363,12 @@ inline const glm::mat4& Camera::projectionMatrix() const {
 
 inline const glm::vec4& Camera::frustumPlane(FrustumPlanes plane) const {
 	return _frustumPlanes[int(plane)];
+}
+
+inline void Camera::frustumCorners(glm::vec3 out[8]) const {
+	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
+		out[i] = _frustumVertices[i];
+	}
 }
 
 inline float Camera::fieldOfView() const {
