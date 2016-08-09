@@ -232,9 +232,13 @@ void Console::executeCommandLine() {
 
 	const std::vector<std::string> commands = core::Tokenizer(_commandLine, ";").tokens();
 	for (const std::string& command : commands) {
-		std::vector<std::string> tokens = core::Tokenizer(command, " ").tokens();
-		const std::string cmd = tokens[0];
-		tokens.erase(tokens.begin());
+		std::string cmd = core::string::trim(command);
+		std::vector<std::string> tokens;
+		if (core::string::contains(cmd, " ")) {
+			tokens = core::Tokenizer(cmd, " ").tokens();
+			cmd = tokens[0];
+			tokens.erase(tokens.begin());
+		}
 		if (core::Command::execute(cmd, tokens)) {
 			continue;
 		}
