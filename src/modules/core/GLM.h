@@ -19,6 +19,7 @@
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/detail/func_common.hpp>
+#include <glm/detail/func_trigonometric.hpp>
 #include <limits>
 #include <cmath>
 
