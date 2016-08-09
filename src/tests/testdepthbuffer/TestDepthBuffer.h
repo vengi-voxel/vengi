@@ -6,7 +6,7 @@
 
 #include "testcore/TestApp.h"
 #include "video/DepthBuffer.h"
-#include "video/Mesh.h"
+#include "video/MeshPool.h"
 #include "video/VertexBuffer.h"
 #include "video/SunLight.h"
 #include "FrontendShaders.h"
@@ -15,7 +15,8 @@ class TestDepthBuffer: public TestApp {
 private:
 	using Super = TestApp;
 	video::DepthBuffer _depthBuffer;
-	video::Mesh _mesh;
+	video::MeshPtr _mesh;
+	video::MeshPool _meshPool;
 	shader::MeshShader _meshShader;
 	video::VertexBuffer _texturedFullscreenQuad;
 	video::SunLight _sunLight;

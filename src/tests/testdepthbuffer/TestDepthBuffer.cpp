@@ -12,7 +12,7 @@ core::AppState TestDepthBuffer::onInit() {
 	_sunLight.setPos(glm::vec3(20.0f, 50.0f, -20.0));
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 150.0f));
 	_camera.lookAt(glm::vec3(0.0f, 50.0f, 0.0f));
-	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
+	_camera.setOmega(glm::vec3(0.0f, 0.001f, 0.0f));
 	_camera.setTarget(glm::vec3(0.0f, 50.0f, 0.0f));
 	_camera.setTargetDistance(150.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);
@@ -35,7 +35,8 @@ core::AppState TestDepthBuffer::onInit() {
 	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationTexcoord(), fullscreenQuadIndices.y, 2);
 
 	const std::string mesh = "chr_skelett2_bake";
-	if (!_mesh.loadMesh(mesh)) {
+	_mesh = _meshPool.getMesh(mesh);
+	if (!_mesh->isLoading()) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
 	}
@@ -57,13 +58,14 @@ void TestDepthBuffer::doRender() {
 		video::ScopedShader scoped(_shadowMapShader);
 		_shadowMapShader.setLight(_sunLight.model());
 		_shadowMapShader.setModel(glm::mat4());
-		if (!_mesh.initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
+		if (!_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
 			Log::error("Failed to init the mesh for the shadow map stage");
+			return;
 		}
 		glDisable(GL_BLEND);
 		glCullFace(GL_FRONT);
 		_depthBuffer.bind();
-		_mesh.render();
+		_mesh->render();
 		_depthBuffer.unbind();
 		glCullFace(GL_BACK);
 		glEnable(GL_BLEND);
@@ -81,11 +83,10 @@ void TestDepthBuffer::doRender() {
 		_meshShader.setLightpos(_sunLight.dir() + _camera.position());
 		_meshShader.setTexture(0);
 
-		if (!_mesh.initMesh(_meshShader, timeInSeconds, animationIndex)) {
-			Log::error("Failed to init the mesh for the render stage");
+		if (!_mesh->initMesh(_meshShader, timeInSeconds, animationIndex)) {
 			return;
 		}
-		core_assert_always(_mesh.render() > 0);
+		core_assert_always(_mesh->render() > 0);
 	}
 	{
 		video::ScopedShader scoped(_shadowMapRenderShader);
@@ -108,7 +109,8 @@ core::AppState TestDepthBuffer::onCleanup() {
 	_texturedFullscreenQuad.shutdown();
 	_shadowMapRenderShader.shutdown();
 	_shadowMapShader.shutdown();
-	_mesh.shutdown();
+	_mesh->shutdown();
+	_meshPool.shutdown();
 	return Super::onCleanup();
 }
 
