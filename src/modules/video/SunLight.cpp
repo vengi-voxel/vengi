@@ -8,6 +8,12 @@ SunLight::SunLight() {
 	_sunCamera.setFarPlane(400.0f);
 }
 
+void SunLight::init(const glm::vec3& sunPos, const glm::ivec2& dimension) {
+	_sunCamera.init(dimension);
+	_sunCamera.setPosition(sunPos);
+	_sunCamera.lookAt(glm::zero<glm::vec3>());
+}
+
 void SunLight::update(long dt, const Camera& camera) {
 	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
 	camera.frustumCorners(out);
@@ -28,8 +34,6 @@ void SunLight::update(long dt, const Camera& camera) {
 		aabb.accumulate(out[i]);
 	}
 	const core::RectFloat sceneBoundingBox(aabb.getLowerX(), aabb.getLowerZ(), aabb.getUpperX(), aabb.getUpperZ());
-	_sunCamera.init(camera.dimension());
-	_sunCamera.lookAt(glm::zero<glm::vec3>());
 	_sunCamera.updateSun(dt, sceneBoundingBox);
 }
 

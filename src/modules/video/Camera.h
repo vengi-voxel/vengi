@@ -97,7 +97,7 @@ public:
 	~Camera();
 
 	void init(const glm::ivec2& dimension);
-	glm::ivec2 dimension() const;
+	const glm::ivec2& dimension() const;
 	int width() const;
 	int height() const;
 
@@ -214,7 +214,7 @@ inline void Camera::init(const glm::ivec2& dimension) {
 	_dimension = dimension;
 }
 
-inline glm::ivec2 Camera::dimension() const {
+inline const glm::ivec2& Camera::dimension() const {
 	return _dimension;
 }
 

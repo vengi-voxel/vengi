@@ -9,7 +9,7 @@ TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr
 core::AppState TestDepthBuffer::onInit() {
 	core::AppState state = Super::onInit();
 
-	_sunLight.setPosition(glm::vec3(20.0f, 50.0f, -20.0));
+	_sunLight.init(glm::vec3(20.0f, 50.0f, -20.0), dimension());
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 150.0f));
 	_camera.lookAt(glm::vec3(0.0f, 50.0f, 0.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.001f, 0.0f));

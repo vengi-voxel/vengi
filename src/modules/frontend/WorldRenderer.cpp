@@ -345,8 +345,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	GL_checkError();
 
-	const glm::vec3 sunLightPos(20.0f, 50.0f, -20.0f);
-	_sunLight.setPosition(sunLightPos);
 	_sunLight.update(_deltaFrame, camera);
 
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
@@ -630,7 +628,8 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 
 bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
-	_sunLight.setPosition(glm::vec3(20.0f, 50.0f, -20.0));
+	const glm::vec3 sunLightPos(20.0f, 50.0f, -20.0f);
+	_sunLight.init(sunLightPos, dimension);
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
 	_shadowMap = core::Var::get(cfg::ClientShadowMap);
