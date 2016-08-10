@@ -66,6 +66,7 @@ void TestDepthBuffer::doRender() {
 			glDisable(GL_BLEND);
 			glCullFace(GL_FRONT);
 			_depthBuffer.bind();
+			renderPlane();
 			_mesh->render();
 			_depthBuffer.unbind();
 			glCullFace(GL_BACK);
@@ -86,6 +87,7 @@ void TestDepthBuffer::doRender() {
 		_meshShader.setTexture(0);
 
 		if (_mesh->initMesh(_meshShader, timeInSeconds, animationIndex)) {
+			renderPlane();
 			core_assert_always(_mesh->render() > 0);
 		}
 	}
@@ -104,6 +106,10 @@ void TestDepthBuffer::doRender() {
 		_texturedFullscreenQuad.unbind();
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+}
+
+void TestDepthBuffer::renderPlane() {
+	// TODO: render the plane to put the shadow on.
 }
 
 core::AppState TestDepthBuffer::onCleanup() {

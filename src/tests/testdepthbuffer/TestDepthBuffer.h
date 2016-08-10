@@ -23,6 +23,7 @@ private:
 	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	shader::ShadowmapShader _shadowMapShader;
 
+	void renderPlane();
 	void doRender() override;
 public:
 	TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
