@@ -46,7 +46,7 @@ enum class FrustumResult {
 };
 
 class Camera {
-private:
+protected:
 	constexpr static int DIRTY_ORIENTATION = 1 << 0;
 	constexpr static int DIRTY_POSITON     = 1 << 1;
 	constexpr static int DIRTY_FRUSTUM     = 1 << 2;
@@ -119,8 +119,8 @@ public:
 	/**
 	 * @return The rotation matrix of the direction the camera is facing to.
 	 */
-	glm::mat4 orientation() const;
-	glm::quat quaternion() const;
+	const glm::mat4& orientation() const;
+	const glm::quat& quaternion() const;
 
 	glm::vec3 forward() const;
 	glm::vec3 right() const;
@@ -313,11 +313,11 @@ inline void Camera::setNearPlane(float nearPlane) {
 	_nearPlane = nearPlane;
 }
 
-inline glm::mat4 Camera::orientation() const {
+inline const glm::mat4& Camera::orientation() const {
 	return _orientation;
 }
 
-inline glm::quat Camera::quaternion() const {
+inline const glm::quat& Camera::quaternion() const {
 	return _quat;
 }
 
