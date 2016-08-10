@@ -240,7 +240,7 @@ void Console::executeCommandLine() {
 		}
 		const core::VarPtr& c = core::Var::get(cmd, "", core::CV_NOTCREATEEMPTY);
 		if (!c) {
-			Log::info("unknown config variable %s", cmd.c_str());
+			Log::info("unknown command: %s", cmd.c_str());
 			continue;
 		}
 		if (tokens.empty()) {
