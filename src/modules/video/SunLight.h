@@ -25,7 +25,7 @@ private:
 	SunCamera _sunCamera;
 
 public:
-	void update(long dt, const Camera& camera, const core::RectFloat& sceneBoundingBox);
+	void update(long dt, const Camera& camera);
 
 	glm::vec3 direction() const;
 

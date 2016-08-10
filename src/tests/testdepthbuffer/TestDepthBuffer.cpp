@@ -49,8 +49,7 @@ core::AppState TestDepthBuffer::onInit() {
 }
 
 void TestDepthBuffer::doRender() {
-	const core::RectFloat sceneBoundingBox(-250.0f, -250.0f, 250.0f, 250.0f);
-	_sunLight.update(_deltaFrame, _camera, sceneBoundingBox);
+	_sunLight.update(_deltaFrame, _camera);
 	// TODO: support different animations...
 	const uint8_t animationIndex = 0u;
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;

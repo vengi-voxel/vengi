@@ -3,7 +3,6 @@
  */
 
 #include "WorldRenderer.h"
-#include "core/AABB.h"
 #include "core/Color.h"
 #include "video/GLFunc.h"
 #include "video/ScopedViewPort.h"
@@ -348,24 +347,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	const glm::vec3 sunLightPos(20.0f, 50.0f, -20.0f);
 	_sunLight.setPosition(sunLightPos);
-
-	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
-	camera.frustumCorners(out);
-
-	/**
-	 * @TODO:
-	 * Transform the frustum corners to a space aligned with the shadow map axes.
-	 * This would commonly be the directional light object's local space. (In fact,
-	 * steps 1 and 2 can be done in one step by combining the inverse view-projection
-	 * matrix of the camera with the inverse world matrix of the light.)
-	 */
-	core::AABB<float> aabb(out[0], out[1]);
-	for (int i = 0; i < video::FRUSTUM_VERTICES_MAX; ++i) {
-		aabb.accumulate(out[i]);
-	}
-
-	const core::RectFloat sceneBoundingBox(aabb.getLowerX(), aabb.getLowerZ(), aabb.getUpperX(), aabb.getUpperZ());
-	_sunLight.update(_deltaFrame, camera, sceneBoundingBox);
+	_sunLight.update(_deltaFrame, camera);
 
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we do one pass for the gbuffer + the sun
