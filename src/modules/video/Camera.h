@@ -126,6 +126,8 @@ public:
 	glm::vec3 right() const;
 	glm::vec3 up() const;
 
+	glm::vec3 direction() const;
+
 	const glm::vec3& position() const;
 	void setPosition(const glm::vec3& pos);
 	void move(const glm::vec3& delta);
@@ -389,6 +391,10 @@ inline void Camera::setAspectRatio(float aspect) {
 
 inline glm::mat4 Camera::perspectiveMatrix() const {
 	return glm::perspective(glm::radians(_fieldOfView), _aspectRatio, nearPlane(), farPlane());
+}
+
+inline glm::vec3 Camera::direction() const {
+	return glm::vec3(glm::column(glm::inverse(viewMatrix()), 2));
 }
 
 inline const glm::vec3& Camera::position() const {
