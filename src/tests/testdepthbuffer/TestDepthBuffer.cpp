@@ -88,17 +88,19 @@ void TestDepthBuffer::doRender() {
 		core_assert_always(_mesh->render() > 0);
 	}
 	{
-		video::ScopedShader scoped(_shadowMapRenderShader);
-		_shadowMapRenderShader.setShadowmap(0);
 		const int width = _camera.width();
 		const int height = _camera.height();
 		const GLsizei quadWidth = (GLsizei) (width / 3.0f);
 		const GLsizei quadHeight = (GLsizei) (height / 3.0f);
+		video::ScopedShader scopedShader(_shadowMapRenderShader);
 		video::ScopedViewPort scopedViewport(width - quadWidth, 0, quadWidth, quadHeight);
 		core_assert_always(_texturedFullscreenQuad.bind());
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
+		_shadowMapRenderShader.setShadowmap(0);
 		glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
 		_texturedFullscreenQuad.unbind();
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 
