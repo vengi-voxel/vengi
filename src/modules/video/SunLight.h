@@ -11,6 +11,7 @@ private:
 	class SunCamera : public Camera {
 	public:
 		void updateSun(long deltaFrame, const core::RectFloat& bbox) {
+			_dirty |= DIRTY_PERSPECTIVE;
 			updateOrientation();
 			updateViewMatrix();
 			// normalize the opengl depth from [-1, 1] to [0, 1]
