@@ -9,6 +9,10 @@ TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr
 core::AppState TestDepthBuffer::onInit() {
 	core::AppState state = Super::onInit();
 
+	if (!_plane.init()) {
+		return core::AppState::Cleanup;
+	}
+
 	_sunLight.init(glm::vec3(20.0f, 50.0f, -20.0), dimension());
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.001f, 0.0f));
@@ -66,7 +70,6 @@ void TestDepthBuffer::doRender() {
 			glDisable(GL_BLEND);
 			glCullFace(GL_FRONT);
 			_depthBuffer.bind();
-			renderPlane();
 			_mesh->render();
 			_depthBuffer.unbind();
 			glCullFace(GL_BACK);
@@ -76,6 +79,8 @@ void TestDepthBuffer::doRender() {
 	{
 		glClearColor(0.8, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		renderPlane();
 
 		video::ScopedShader scoped(_meshShader);
 		_meshShader.setView(_camera.viewMatrix());
@@ -87,7 +92,6 @@ void TestDepthBuffer::doRender() {
 		_meshShader.setTexture(0);
 
 		if (_mesh->initMesh(_meshShader, timeInSeconds, animationIndex)) {
-			renderPlane();
 			core_assert_always(_mesh->render() > 0);
 		}
 	}
@@ -109,13 +113,14 @@ void TestDepthBuffer::doRender() {
 }
 
 void TestDepthBuffer::renderPlane() {
-	// TODO: render the plane to put the shadow on.
+	_plane.render(_camera);
 }
 
 core::AppState TestDepthBuffer::onCleanup() {
 	_depthBuffer.shutdown();
 	_meshShader.shutdown();
 	_texturedFullscreenQuad.shutdown();
+	_plane.shutdown();
 	_shadowMapRenderShader.shutdown();
 	_shadowMapShader.shutdown();
 	_mesh->shutdown();
