@@ -9,7 +9,7 @@ TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr
 core::AppState TestDepthBuffer::onInit() {
 	core::AppState state = Super::onInit();
 
-	_sunLight.setPos(glm::vec3(20.0f, 50.0f, -20.0));
+	_sunLight.setPosition(glm::vec3(20.0f, 50.0f, -20.0));
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 150.0f));
 	_camera.lookAt(glm::vec3(0.0f, 50.0f, 0.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.001f, 0.0f));
@@ -56,7 +56,7 @@ void TestDepthBuffer::doRender() {
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;
 	{
 		video::ScopedShader scoped(_shadowMapShader);
-		_shadowMapShader.setLight(_sunLight.model());
+		_shadowMapShader.setLight(_sunLight.modelViewProjectionMatrix());
 		_shadowMapShader.setModel(glm::mat4());
 		if (!_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
 			Log::error("Failed to init the mesh for the shadow map stage");
@@ -80,7 +80,7 @@ void TestDepthBuffer::doRender() {
 		_meshShader.setFogrange(500.0f);
 		_meshShader.setViewdistance(500.0f);
 		_meshShader.setModel(glm::mat4());
-		_meshShader.setLightpos(_sunLight.dir() + _camera.position());
+		_meshShader.setLightpos(_sunLight.direction() + _camera.position());
 		_meshShader.setTexture(0);
 
 		if (!_mesh->initMesh(_meshShader, timeInSeconds, animationIndex)) {

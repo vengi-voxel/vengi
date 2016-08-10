@@ -212,8 +212,8 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 
 	video::ScopedShader scoped(shader);
 	if (_cameraSun->boolVal()) {
-		shaderSetUniformIf(shader, setUniformMatrix, "u_view", _sunLight.view());
-		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", _sunLight.projection());
+		shaderSetUniformIf(shader, setUniformMatrix, "u_view", _sunLight.viewMatrix());
+		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", _sunLight.projectionMatrix());
 	} else {
 		shaderSetUniformIf(shader, setUniformMatrix, "u_view", camera.viewMatrix());
 		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
@@ -222,13 +222,13 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.dir() + camera.position());
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.model());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.modelViewProjectionMatrix());
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	if (shadowMap) {
 		glActiveTexture(GL_TEXTURE1);
@@ -300,7 +300,7 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	_gbuffer.bindForReading(false);
 	shader::DeferredLightDirShader& deferredShader = _deferredDirLightShader;
 	video::ScopedShader scoped(deferredShader);
-	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightpos", _sunLight.dir() + camera.position());
+	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
@@ -347,7 +347,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	GL_checkError();
 
 	const glm::vec3 sunLightPos(20.0f, 50.0f, -20.0f);
-	_sunLight.setPos(sunLightPos);
+	_sunLight.setPosition(sunLightPos);
 
 	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
 	camera.frustumCorners(out);
@@ -576,7 +576,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	video::ScopedShader scoped(shader);
 	shader.setUniformMatrix("u_view", view, false);
 	shader.setUniformMatrix("u_projection", projection, false);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.dir() + camera.position());
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
@@ -648,7 +648,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 
 bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
-	_sunLight.setPos(glm::vec3(20.0f, 50.0f, -20.0));
+	_sunLight.setPosition(glm::vec3(20.0f, 50.0f, -20.0));
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
 	_shadowMap = core::Var::get(cfg::ClientShadowMap);

@@ -8,55 +8,71 @@ namespace video {
 
 class SunLight {
 private:
-	glm::vec3 _sunPos;
-	glm::mat4 _lightProjection;
-	glm::mat4 _lightView;
-	glm::mat4 _lightSpaceMatrix;
-	glm::vec3 _lightDir;
+	class SunCamera : public Camera {
+	public:
+		void updateSun(long deltaFrame, const core::RectFloat& bbox) {
+			updateOrientation();
+			updateViewMatrix();
+			// normalize the opengl depth from [-1, 1] to [0, 1]
+			static const glm::mat4 normalizeDepth = glm::scale(glm::translate(glm::mat4(), glm::backward), glm::vec3(1.0f, 1.0f, 0.5f));
+			_projectionMatrix = normalizeDepth * glm::ortho(bbox.getMinX(), bbox.getMaxX(), bbox.getMinZ(), bbox.getMaxZ(), nearPlane(), farPlane());
+			updateFrustumPlanes();
+			updateFrustumVertices();
+			_dirty = 0;
+		}
+	};
+
+	SunCamera _sunCamera;
 
 public:
-	void update(long dt, const Camera& camera, const core::RectFloat& sceneBoudingBox);
+	void update(long dt, const Camera& camera, const core::RectFloat& sceneBoundingBox);
 
-	const glm::vec3& dir() const;
+	glm::vec3 direction() const;
 
 	/**
 	 * @brief Because we're modeling a directional light source all its light rays are parallel.
 	 * For this reason we're going to use an orthographic projection matrix for the light
 	 * source where there is no perspective deform
 	 */
-	const glm::mat4& projection() const;
+	const glm::mat4& projectionMatrix() const;
 
-	const glm::mat4& model() const;
+	glm::mat4 modelMatrix() const;
 
-	const glm::mat4& view() const;
+	glm::mat4 modelViewProjectionMatrix() const;
 
-	const glm::vec3& pos() const;
+	const glm::mat4& viewMatrix() const;
 
-	void setPos(const glm::vec3& sunPos);
+	const glm::vec3& position() const;
+
+	void setPosition(const glm::vec3& sunPos);
 };
 
 }
 
-inline const glm::vec3& video::SunLight::dir() const {
-	return _lightDir;
+inline glm::vec3 video::SunLight::direction() const {
+	return _sunCamera.direction();
 }
 
-inline const glm::mat4& video::SunLight::projection() const {
-	return _lightProjection;
+inline const glm::mat4& video::SunLight::projectionMatrix() const {
+	return _sunCamera.projectionMatrix();
 }
 
-inline const glm::mat4& video::SunLight::model() const {
-	return _lightSpaceMatrix;
+inline glm::mat4 video::SunLight::modelViewProjectionMatrix() const {
+	return projectionMatrix() * viewMatrix() * modelMatrix();
 }
 
-inline const glm::mat4& video::SunLight::view() const {
-	return _lightView;
+inline glm::mat4 video::SunLight::modelMatrix() const {
+	return glm::translate(glm::mat4(1.0f), position());
 }
 
-inline const glm::vec3& video::SunLight::pos() const {
-	return _sunPos;
+inline const glm::mat4& video::SunLight::viewMatrix() const {
+	return _sunCamera.viewMatrix();
 }
 
-inline void video::SunLight::setPos(const glm::vec3& sunPos) {
-	_sunPos = sunPos;
+inline const glm::vec3& video::SunLight::position() const {
+	return _sunCamera.position();
+}
+
+inline void video::SunLight::setPosition(const glm::vec3& sunPos) {
+	_sunCamera.setPosition(sunPos);
 }
