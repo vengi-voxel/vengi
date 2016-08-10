@@ -189,6 +189,9 @@ FrustumResult Camera::testFrustum(const glm::vec3& mins, const glm::vec3& maxs) 
 }
 
 void Camera::updateFrustumVertices() {
+	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE)) {
+		return;
+	}
 	const float halfViewSize = glm::tan(glm::pi<float>() / 360.0f * _fieldOfView);
 	glm::vec3 near;
 	near.z = nearPlane();
@@ -210,6 +213,9 @@ void Camera::updateFrustumVertices() {
 }
 
 void Camera::updateFrustumPlanes() {
+	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE)) {
+		return;
+	}
 	const glm::mat4 &v = _viewMatrix;
 	const glm::mat4 &p = _projectionMatrix;
 
