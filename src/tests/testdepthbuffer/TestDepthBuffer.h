@@ -29,4 +29,6 @@ public:
 
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;
+
+	void onMouseWheel(int32_t x, int32_t y) override;
 };

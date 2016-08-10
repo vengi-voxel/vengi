@@ -10,11 +10,10 @@ core::AppState TestDepthBuffer::onInit() {
 	core::AppState state = Super::onInit();
 
 	_sunLight.init(glm::vec3(20.0f, 50.0f, -20.0), dimension());
-	_camera.setPosition(glm::vec3(0.0f, 50.0f, 150.0f));
-	_camera.lookAt(glm::vec3(0.0f, 50.0f, 0.0f));
+	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.001f, 0.0f));
-	_camera.setTarget(glm::vec3(0.0f, 50.0f, 0.0f));
-	_camera.setTargetDistance(150.0f);
+	_camera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
+	_camera.setTargetDistance(50.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);
 
 	if (!_shadowMapRenderShader.setup()) {
@@ -46,6 +45,12 @@ core::AppState TestDepthBuffer::onInit() {
 	}
 
 	return state;
+}
+
+void TestDepthBuffer::onMouseWheel(int32_t x, int32_t y) {
+	Super::onMouseWheel(x, y);
+	const float targetDistance = glm::clamp(_camera.targetDistance() - y, 0.0f, 500.0f);
+	_camera.setTargetDistance(targetDistance);
 }
 
 void TestDepthBuffer::doRender() {
