@@ -19,7 +19,7 @@ public:
 		glDisable(GL_DEPTH_TEST);
 		core_assert_always(_axisBuffer.bind());
 		glLineWidth(4.0f);
-		glDrawArrays(GL_LINES, 0, 6);
+		glDrawArrays(GL_LINES, 0, _axisBuffer.elements(0, 4));
 		glLineWidth(1.0f);
 		_axisBuffer.unbind();
 		glEnable(GL_DEPTH_TEST);

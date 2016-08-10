@@ -4,6 +4,7 @@
 
 #include "VertexBuffer.h"
 #include "core/Common.h"
+#include <vector>
 
 namespace video {
 
@@ -84,6 +85,20 @@ int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
 	glBindBuffer(target, 0);
 	++_handleIdx;
 	return _handleIdx - 1;
+}
+
+int32_t VertexBuffer::createPlane(int rows, int columns) {
+	core_assert(rows > 0);
+	core_assert(columns > 0);
+	std::vector<glm::vec4> vecs;
+	vecs.reserve(rows * columns);
+	for (int r = 0; r < rows; ++r) {
+		for (int c = 0; c < columns; ++c) {
+			vecs.emplace_back((float) c, 0.0f, (float) r, 1.0f);
+		}
+	}
+
+	return create(&vecs[0], sizeof(glm::vec4) * vecs.size());
 }
 
 int32_t VertexBuffer::createFullscreenQuad() {

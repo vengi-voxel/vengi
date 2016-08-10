@@ -3,6 +3,7 @@ set(SRCS
 	ClientEntityId.h
 	Movement.h
 	Axis.h
+	Plane.h
 	WorldRenderer.h WorldRenderer.cpp
 )
 
