@@ -57,17 +57,15 @@ void TestDepthBuffer::doRender() {
 		video::ScopedShader scoped(_shadowMapShader);
 		_shadowMapShader.setLight(_sunLight.modelViewProjectionMatrix());
 		_shadowMapShader.setModel(glm::mat4());
-		if (!_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
-			Log::error("Failed to init the mesh for the shadow map stage");
-			return;
+		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
+			glDisable(GL_BLEND);
+			glCullFace(GL_FRONT);
+			_depthBuffer.bind();
+			_mesh->render();
+			_depthBuffer.unbind();
+			glCullFace(GL_BACK);
+			glEnable(GL_BLEND);
 		}
-		glDisable(GL_BLEND);
-		glCullFace(GL_FRONT);
-		_depthBuffer.bind();
-		_mesh->render();
-		_depthBuffer.unbind();
-		glCullFace(GL_BACK);
-		glEnable(GL_BLEND);
 	}
 	{
 		glClearColor(0.8, 0.8f, 0.8f, 1.0f);
@@ -82,10 +80,9 @@ void TestDepthBuffer::doRender() {
 		_meshShader.setLightpos(_sunLight.direction() + _camera.position());
 		_meshShader.setTexture(0);
 
-		if (!_mesh->initMesh(_meshShader, timeInSeconds, animationIndex)) {
-			return;
+		if (_mesh->initMesh(_meshShader, timeInSeconds, animationIndex)) {
+			core_assert_always(_mesh->render() > 0);
 		}
-		core_assert_always(_mesh->render() > 0);
 	}
 	{
 		const int width = _camera.width();
