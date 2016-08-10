@@ -25,6 +25,8 @@ private:
 	SunCamera _sunCamera;
 
 public:
+	SunLight();
+
 	void update(long dt, const Camera& camera);
 
 	glm::vec3 direction() const;

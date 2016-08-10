@@ -12,7 +12,6 @@ namespace video {
 
 Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _pos(glm::vec3()), _omega(0.0f) {
-	_dirty |= DIRTY_ORIENTATION;
 }
 
 Camera::~Camera() {
@@ -107,6 +106,9 @@ void Camera::updateOrientation() {
 }
 
 void Camera::updateProjectionMatrix() {
+	if (!isDirty(DIRTY_PERSPECTIVE)) {
+		return;
+	}
 	switch(_mode) {
 	case CameraMode::Orthogonal:
 		_projectionMatrix = orthogonalMatrix();

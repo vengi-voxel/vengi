@@ -47,13 +47,16 @@ enum class FrustumResult {
 
 class Camera {
 protected:
-	constexpr static int DIRTY_ORIENTATION = 1 << 0;
-	constexpr static int DIRTY_POSITON     = 1 << 1;
-	constexpr static int DIRTY_FRUSTUM     = 1 << 2;
-	constexpr static int DIRTY_TARGET      = 1 << 3;
+	constexpr static uint32_t DIRTY_ORIENTATION = 1 << 0;
+	constexpr static uint32_t DIRTY_POSITON     = 1 << 1;
+	constexpr static uint32_t DIRTY_FRUSTUM     = 1 << 2;
+	constexpr static uint32_t DIRTY_TARGET      = 1 << 3;
+	constexpr static uint32_t DIRTY_PERSPECTIVE = 1 << 4;
 
-	inline bool isDirty(int flag) const {
-		return (_dirty & flag) != 0;
+	constexpr static uint32_t DIRTY_ALL = 0XFFFFFFFF;
+
+	inline bool isDirty(uint32_t flag) const {
+		return (_dirty & flag) != 0u;
 	}
 
 	CameraType _type;
@@ -63,7 +66,7 @@ protected:
 	glm::ivec2 _dimension;
 	glm::vec3 _pos;
 	glm::quat _quat;
-	int _dirty = 0;
+	uint32_t _dirty = DIRTY_ALL;
 
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projectionMatrix;
@@ -306,10 +309,12 @@ inline float Camera::farPlane() const {
 }
 
 inline void Camera::setFarPlane(float farPlane) {
+	_dirty |= DIRTY_PERSPECTIVE;
 	_farPlane = farPlane;
 }
 
 inline void Camera::setNearPlane(float nearPlane) {
+	_dirty |= DIRTY_PERSPECTIVE;
 	_nearPlane = nearPlane;
 }
 
@@ -378,6 +383,7 @@ inline float Camera::fieldOfView() const {
 }
 
 inline void Camera::setFieldOfView(float angles) {
+	_dirty |= DIRTY_PERSPECTIVE;
 	_fieldOfView = angles;
 }
 
@@ -386,6 +392,7 @@ inline float Camera::aspectRatio() const {
 }
 
 inline void Camera::setAspectRatio(float aspect) {
+	_dirty |= DIRTY_PERSPECTIVE;
 	_aspectRatio = aspect;
 }
 
