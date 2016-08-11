@@ -1,4 +1,4 @@
-#include "_shadow.frag"
+#include "_shadowsampler.frag"
 
 $out vec4 o_color;
 $in vec2 o_projZW;

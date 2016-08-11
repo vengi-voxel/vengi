@@ -1,4 +1,4 @@
-#include "_shadow.frag"
+#include "_shadowsampler.frag"
 
 $in vec3 v_pos;
 $in vec4 v_color;
