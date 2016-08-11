@@ -26,10 +26,7 @@ $out vec4 v_color;
 $out float v_ambientocclusion;
 $out float v_debug_color;
 
-#if cl_shadowmap == 1
-$out vec4 v_lightspacepos;
-uniform mat4 u_light;
-#endif
+#include "_shadowmap.vert"
 
 #if cl_deferred == 0
 $out vec3 v_fogcolor;

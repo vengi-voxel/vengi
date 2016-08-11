@@ -11,6 +11,8 @@ uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_bonetransforms[100];
 
+#include "_shadowmap.vert"
+
 $out vec3 v_pos;
 $out vec3 v_norm;
 $out vec2 v_texcoords;
@@ -23,6 +25,10 @@ void main(void) {
 	bonetrans     += u_bonetransforms[a_boneids[3]] * a_boneweights[3];
 	mat4 modelview = u_view * u_model;
 	vec4 pos4      = modelview * bonetrans * vec4(a_pos, 1.0);
+
+#if cl_shadowmap == 1
+	v_lightspacepos = u_light * u_model * vec4(a_pos, 1.0);
+#endif
 	// TODO: does this make sense without the projection applied. Afaik
 	// the w components division here is to correct perspective transforms
 	v_pos          = pos4.xyz / pos4.w;

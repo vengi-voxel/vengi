@@ -1,15 +1,9 @@
-#include "_shadowsampler.frag"
-
 $in vec3 v_pos;
 $in vec4 v_color;
 $in float v_ambientocclusion;
 uniform float u_debug_color;
 
-#if cl_shadowmap == 1
-uniform sampler2D u_shadowmap;
-$in vec4 v_lightspacepos;
-uniform vec2 u_screensize;
-#endif
+#include "_shadowmap.frag"
 
 #if cl_deferred == 0
 uniform vec3 u_lightpos;
@@ -25,28 +19,13 @@ $out vec3 o_color;
 $out vec3 o_norm;
 #endif
 
-#if cl_shadowmap == 1
-float calculateShadow(float ndotl) {
-	// perform perspective divide
-	vec3 lightPos = v_lightspacepos.xyz / v_lightspacepos.w;
-	vec2 smUV = (lightPos.xy + 1.0) * 0.5;
-	float depth = lightPos.z;
-	float s = sampleShadowPCF(u_shadowmap, smUV, u_screensize, depth);
-	return max(s, 0.0);
-}
-#endif
-
 void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
 	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
 	vec3 lightdir = normalize(u_lightpos - v_pos);
 	float ndotl = dot(normal, lightdir);
-#if cl_shadowmap == 1
 	float shadow = calculateShadow(ndotl);
-#else
-	float shadow = 1.0;
-#endif
 
 #if cl_deferred == 0
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;

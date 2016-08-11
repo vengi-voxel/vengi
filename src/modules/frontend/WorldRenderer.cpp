@@ -37,7 +37,6 @@ void WorldRenderer::reset() {
 	_meshDataOpaque.clear();
 	_meshDataWater.clear();
 	_entities.clear();
-	_fogRange = 0.0f;
 	_viewDistance = 1.0f;
 	_now = 0l;
 }
@@ -560,6 +559,17 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
+	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
+	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
+	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
+	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.modelViewProjectionMatrix());
+	const bool shadowMap = shader.hasUniform("u_shadowmap");
+	if (shadowMap) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
+		shaderSetUniformIf(shader, setUniformi, "u_shadowmap", 1);
+	}
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_deltaFrame);
@@ -576,6 +586,12 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		shader.setUniformMatrix("u_model", model, false);
 		drawCallsEntities += mesh->render();
 		GL_checkError();
+	}
+
+	if (shadowMap) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE0);
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
