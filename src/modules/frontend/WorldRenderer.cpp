@@ -553,12 +553,12 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	// TODO: deferred rendering
 	shader::MeshShader& shader = _meshShader;
 	video::ScopedShader scoped(shader);
-	shader.setUniformMatrix("u_view", view, false);
-	shader.setUniformMatrix("u_projection", projection, false);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
+	shader.setUniformMatrix("u_view", view);
+	shader.setUniformMatrix("u_projection", projection);
+	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
-	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
