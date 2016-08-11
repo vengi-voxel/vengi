@@ -24,6 +24,7 @@ private:
 	video::SunLight _sunLight;
 	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	shader::ShadowmapShader _shadowMapShader;
+	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 
 	void renderPlane();
 	void doRender() override;

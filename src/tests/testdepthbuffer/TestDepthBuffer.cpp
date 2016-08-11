@@ -90,9 +90,18 @@ void TestDepthBuffer::doRender() {
 		_meshShader.setModel(glm::mat4());
 		_meshShader.setLightpos(_sunLight.direction() + _camera.position());
 		_meshShader.setTexture(0);
+		_meshShader.setDiffuseColor(_diffuseColor);
+		_meshShader.setScreensize(glm::vec2(_camera.dimension()));
+		_meshShader.setLight(_sunLight.modelViewProjectionMatrix());
+		_meshShader.setShadowmap(1);
 
 		if (_mesh->initMesh(_meshShader, timeInSeconds, animationIndex)) {
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
 			core_assert_always(_mesh->render() > 0);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glActiveTexture(GL_TEXTURE0);
 		}
 	}
 	{

@@ -6,6 +6,8 @@
 
 #include "testcore/TestApp.h"
 #include "video/MeshPool.h"
+#include "video/SunLight.h"
+#include "frontend/Plane.h"
 #include "TestmeshShaders.h"
 
 class TestMesh: public TestApp {
@@ -14,6 +16,9 @@ private:
 	video::MeshPtr _mesh;
 	video::MeshPool _meshPool;
 	shader::MeshShader _meshShader;
+	frontend::Plane _plane;
+	video::SunLight _sunLight;
+	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 
 	void doRender() override;
 public:

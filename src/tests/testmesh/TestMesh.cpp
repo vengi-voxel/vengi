@@ -14,6 +14,12 @@ core::AppState TestMesh::onInit() {
 	_camera.setTargetDistance(150.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);
 
+	if (!_plane.init()) {
+		return core::AppState::Cleanup;
+	}
+
+	_sunLight.init(glm::vec3(20.0f, 50.0f, -20.0), dimension());
+
 	if (!_meshShader.setup()) {
 		Log::error("Failed to init mesh shader");
 		return core::AppState::Cleanup;
@@ -36,6 +42,8 @@ void TestMesh::onMouseWheel(int32_t x, int32_t y) {
 }
 
 void TestMesh::doRender() {
+	_plane.render(_camera);
+
 	video::ScopedShader scoped(_meshShader);
 	_meshShader.setView(_camera.viewMatrix());
 	_meshShader.setProjection(_camera.projectionMatrix());
@@ -43,6 +51,10 @@ void TestMesh::doRender() {
 	_meshShader.setViewdistance(2500.0f);
 	_meshShader.setModel(glm::mat4());
 	_meshShader.setTexture(0);
+	_meshShader.setDiffuseColor(_diffuseColor);
+	_meshShader.setScreensize(glm::vec2(_camera.dimension()));
+	_meshShader.setLight(_sunLight.modelViewProjectionMatrix());
+	_meshShader.setShadowmap(1);
 
 	// TODO: support more than just the first animation
 	const uint8_t animationIndex = 0u;
@@ -54,6 +66,7 @@ void TestMesh::doRender() {
 
 core::AppState TestMesh::onCleanup() {
 	_meshShader.shutdown();
+	_plane.shutdown();
 	_mesh->shutdown();
 	_meshPool.shutdown();
 	return Super::onCleanup();
