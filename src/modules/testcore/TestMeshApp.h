@@ -5,24 +5,30 @@
 #pragma once
 
 #include "testcore/TestApp.h"
+#include "video/DepthBuffer.h"
 #include "video/MeshPool.h"
+#include "video/VertexBuffer.h"
 #include "video/SunLight.h"
 #include "frontend/Plane.h"
-#include "TestmeshShaders.h"
+#include "FrontendShaders.h"
 
-class TestMesh: public TestApp {
+class TestMeshApp: public TestApp {
 private:
 	using Super = TestApp;
+protected:
+	video::DepthBuffer _depthBuffer;
 	video::MeshPtr _mesh;
 	video::MeshPool _meshPool;
 	shader::MeshShader _meshShader;
 	frontend::Plane _plane;
 	video::SunLight _sunLight;
+	shader::ShadowmapShader _shadowMapShader;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 
-	void doRender() override;
+	virtual void renderPlane();
+	virtual void doRender() override;
 public:
-	TestMesh(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
+	TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
 
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;

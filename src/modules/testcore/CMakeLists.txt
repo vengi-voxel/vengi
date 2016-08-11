@@ -1,5 +1,6 @@
 set(SRCS
 	TestApp.cpp TestApp.h
+	TestMeshApp.cpp TestMeshApp.h
 )
 set(LIB testcore)
 add_library(${LIB} ${SRCS})
