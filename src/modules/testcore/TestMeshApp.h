@@ -20,6 +20,7 @@ protected:
 	video::MeshPtr _mesh;
 	video::MeshPool _meshPool;
 	shader::MeshShader _meshShader;
+	shader::ColorShader _colorShader;
 	frontend::Plane _plane;
 	video::SunLight _sunLight;
 	shader::ShadowmapShader _shadowMapShader;

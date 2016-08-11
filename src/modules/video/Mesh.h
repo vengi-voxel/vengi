@@ -61,6 +61,10 @@ private:
 
 	GLuint _vertexArrayObject = 0u;
 	GLuint _vbo = 0u;
+
+	GLuint _vertexArrayObjectNormals = 0u;
+	GLuint _vboNormals = 0u;
+
 	GLuint _indexBuffer = 0u;
 	bool _readyToInit = false;
 
@@ -96,6 +100,7 @@ public:
 	bool loadMesh(const std::string& filename);
 	bool initMesh(Shader& shader, float timeInSeconds = 0.0f, uint8_t animationIndex = 0u);
 	int render();
+	int renderNormals(video::Shader& shader);
 };
 
 inline const std::string& Mesh::filename() const {

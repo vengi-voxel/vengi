@@ -111,6 +111,8 @@ public:
 
 	virtual bool deactivate() const;
 
+	bool isActive() const;
+
 	void checkAttribute(const std::string& attribute);
 	void checkUniform(const std::string& uniform);
 	void checkAttributes(std::initializer_list<std::string> attributes);
@@ -467,6 +469,10 @@ inline bool Shader::hasAttribute(const std::string& name) const {
 
 inline bool Shader::hasUniform(const std::string& name) const {
 	return _uniforms.find(name) != _uniforms.end();
+}
+
+inline bool Shader::isActive() const {
+	return _active;
 }
 
 class ScopedShader {

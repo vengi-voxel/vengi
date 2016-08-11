@@ -27,6 +27,10 @@ core::AppState TestMeshApp::onInit() {
 		Log::error("Failed to init mesh shader");
 		return core::AppState::Cleanup;
 	}
+	if (!_colorShader.setup()) {
+		Log::error("Failed to init color shader");
+		return core::AppState::Cleanup;
+	}
 
 	const std::string mesh = "chr_skelett2_bake";
 	_mesh = _meshPool.getMesh(mesh);
@@ -67,6 +71,7 @@ void TestMeshApp::doRender() {
 			glEnable(GL_BLEND);
 		}
 	}
+	bool meshInitialized = false;
 	{
 		glClearColor(0.8, 0.8f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -86,7 +91,8 @@ void TestMeshApp::doRender() {
 		_meshShader.setLight(_sunLight.modelViewProjectionMatrix());
 		_meshShader.setShadowmap(1);
 
-		if (_mesh->initMesh(_meshShader, timeInSeconds, animationIndex)) {
+		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
+		if (meshInitialized) {
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
 			core_assert_always(_mesh->render() > 0);
@@ -94,6 +100,12 @@ void TestMeshApp::doRender() {
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glActiveTexture(GL_TEXTURE0);
 		}
+	}
+	if (meshInitialized) {
+		video::ScopedShader scoped(_colorShader);
+		_colorShader.setView(_camera.viewMatrix());
+		_colorShader.setProjection(_camera.projectionMatrix());
+		core_assert_always(_mesh->renderNormals(_colorShader) > 0);
 	}
 }
 
@@ -104,6 +116,7 @@ void TestMeshApp::renderPlane() {
 core::AppState TestMeshApp::onCleanup() {
 	_depthBuffer.shutdown();
 	_meshShader.shutdown();
+	_colorShader.shutdown();
 	_plane.shutdown();
 	_shadowMapShader.shutdown();
 	_mesh->shutdown();

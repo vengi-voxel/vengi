@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "GLFunc.h"
 #include "core/Common.h"
+#include "core/Color.h"
 #include "core/Log.h"
 
 namespace video {
@@ -20,6 +21,7 @@ Mesh::Mesh() :
 
 Mesh::~Mesh() {
 	core_assert_msg(_vertexArrayObject == 0u, "Mesh %s was not properly shut down", _filename.c_str());
+	core_assert_msg(_vertexArrayObjectNormals == 0u, "Mesh %s was not properly shut down", _filename.c_str());
 	shutdown();
 }
 
@@ -48,6 +50,10 @@ void Mesh::shutdown() {
 	if (_vertexArrayObject != 0u) {
 		glDeleteVertexArrays(1, &_vertexArrayObject);
 		_vertexArrayObject = 0u;
+	}
+	if (_vertexArrayObjectNormals != 0u) {
+		glDeleteVertexArrays(1, &_vertexArrayObjectNormals);
+		_vertexArrayObjectNormals = 0u;
 	}
 }
 
@@ -159,8 +165,10 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 			}
 		}
 
+		glGenVertexArrays(1, &_vertexArrayObjectNormals);
+		glGenBuffers(1, &_vboNormals);
+
 		glGenVertexArrays(1, &_vertexArrayObject);
-		// generate all the 4 needed buffers at once
 		glGenBuffers(1, &_vbo);
 		glGenBuffers(1, &_indexBuffer);
 
@@ -189,6 +197,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 	}
 
 	if (&shader != _lastShader) {
+		core_assert(shader.isActive());
 		_lastShader = &shader;
 		glBindVertexArray(_vertexArrayObject);
 		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
@@ -517,7 +526,63 @@ int Mesh::render() {
 	// Make sure the VAO is not changed from the outside
 	glBindVertexArray(0);
 	GL_checkError();
+
 	return drawCalls;
+}
+
+int Mesh::renderNormals(video::Shader& shader) {
+	core_assert(shader.isActive());
+	struct MeshNormals {
+		struct AttributeData {
+			glm::vec3 vertex;
+			glm::vec4 color;
+		};
+		std::vector<AttributeData> data;
+
+		inline size_t size() const {
+			return sizeof(AttributeData) * data.size();
+		}
+
+		inline void reserve(size_t amount) {
+			data.reserve(amount);
+		}
+	};
+
+	if (_vertexArrayObjectNormals == 0u) {
+		return 0;
+	}
+
+	MeshNormals normalData;
+	normalData.reserve(_vertices.size() * 2);
+	for (const Vertex& v : _vertices) {
+		const glm::vec3 extended = v._pos + 2.0f * v._norm;
+		normalData.data.push_back(MeshNormals::AttributeData{ v._pos,   core::Color::Red    });
+		normalData.data.push_back(MeshNormals::AttributeData{ extended, core::Color::Yellow });
+		Log::info("n: %f:%f:%f", v._norm.x, v._norm.y, v._norm.z);
+	}
+
+	glBindVertexArray(_vertexArrayObjectNormals);
+	glBindBuffer(GL_ARRAY_BUFFER, _vboNormals);
+	glBufferData(GL_ARRAY_BUFFER, normalData.size(), &normalData.data[0], GL_STATIC_DRAW);
+
+	if (shader.hasAttribute("a_pos")) {
+		const int loc = shader.enableVertexAttribute("a_pos");
+		core_assert(loc >= 0);
+		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, vertex)));
+	}
+	if (shader.hasAttribute("a_color")) {
+		const int loc = shader.enableVertexAttribute("a_color");
+		core_assert(loc >= 0);
+		glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, color)));
+	}
+
+	glLineWidth(4.0f);
+	glDrawArrays(GL_LINES, 0, normalData.data.size());
+	glLineWidth(1.0f);
+
+	glBindVertexArray(0);
+
+	return 1;
 }
 
 }
