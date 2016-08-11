@@ -29,6 +29,12 @@ core::AppState TestMesh::onInit() {
 	return state;
 }
 
+void TestMesh::onMouseWheel(int32_t x, int32_t y) {
+	Super::onMouseWheel(x, y);
+	const float targetDistance = glm::clamp(_camera.targetDistance() - y, 0.0f, 500.0f);
+	_camera.setTargetDistance(targetDistance);
+}
+
 void TestMesh::doRender() {
 	video::ScopedShader scoped(_meshShader);
 	_meshShader.setView(_camera.viewMatrix());
