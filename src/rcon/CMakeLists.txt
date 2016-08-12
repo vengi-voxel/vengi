@@ -1,9 +1,8 @@
 find_package(Qt5Widgets)
 find_package(Qt5Network)
 find_package(Qt5Gui)
-find_package(Qt5LinguistTools)
 
-if (${Qt5Widgets_FOUND} AND ${Qt5Network_FOUND} AND ${Qt5Gui_FOUND} AND ${Qt5LinguistTools_FOUND})
+if (${Qt5Widgets_FOUND} AND ${Qt5Network_FOUND} AND ${Qt5Gui_FOUND})
 
 project(rcon)
 set(CMAKE_AUTOMOC ON)
@@ -61,5 +60,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 qt5_use_modules(${PROJECT_NAME} Widgets Gui Network)
+
+else()
+
+message(STATUS "Could not findl qt5 modules for network gui and widget support")
 
 endif() # NO QT
