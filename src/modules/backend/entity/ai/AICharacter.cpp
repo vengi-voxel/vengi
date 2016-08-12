@@ -4,6 +4,7 @@
 
 #include "AICharacter.h"
 #include "backend/entity/Npc.h"
+#include "core/String.h"
 
 namespace backend {
 
@@ -24,9 +25,11 @@ void AICharacter::update(long dt, bool debuggingActive) {
 		setAttribute(ai::attributes::POSITION, ai::Str::toString(getPosition()));
 		setAttribute(ai::attributes::ORIENTATION, std::to_string(ai::toDegrees(getOrientation())));
 		for (int i = 0; i < (int)attrib::Types::MAX; ++i) {
-			const double current = _npc._attribs.getCurrent((attrib::Types)i);
-			const double max = _npc._attribs.getMax((attrib::Types)i);
-			setAttribute("Attrib " + std::to_string(i), std::to_string(current) + "/" + std::to_string(max));
+			const attrib::Types attribType = (attrib::Types)i;
+			const attrib::Attributes& attribs =  _npc._attribs;
+			const double current = attribs.getCurrent(attribType);
+			const double max = attribs.getMax(attribType);
+			setAttribute(network::EnumNameAttribType(attribType), core::string::format("%f/%f", current, max));
 		}
 	}
 	ai::ICharacter::update(dt, debuggingActive);

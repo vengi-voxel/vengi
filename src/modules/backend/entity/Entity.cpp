@@ -21,13 +21,20 @@ void Entity::visibleRemove(const EntitySet& entities) {
 }
 
 void Entity::initAttribs() {
-	_attribs.onFrame(0L);
+	core_assert_always(_attribs.onFrame(0L));
 
-	static const attrib::Types types[] = {attrib::Types::HEALTH};
+	// the list of attribute types that should be set to max on spawn
+	static const attrib::Types types[] = {
+			attrib::Types::HEALTH,
+			attrib::Types::SPEED,
+			attrib::Types::VIEWDISTANCE,
+			attrib::Types::ATTACKRANGE,
+			attrib::Types::STRENGTH };
 
 	for (size_t i = 0; i < SDL_arraysize(types); ++i) {
 		const attrib::Types type = static_cast<attrib::Types>(types[i]);
 		const double max = _attribs.getMax(type);
+		Log::debug("Set currrent for %s to %f", network::EnumNameAttribType(type), max);
 		_attribs.setCurrent(type, max);
 	}
 }
