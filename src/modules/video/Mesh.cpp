@@ -558,7 +558,6 @@ int Mesh::renderNormals(video::Shader& shader) {
 		const glm::vec3 extended = v._pos + 2.0f * v._norm;
 		normalData.data.push_back(MeshNormals::AttributeData{ v._pos,   core::Color::Red    });
 		normalData.data.push_back(MeshNormals::AttributeData{ extended, core::Color::Yellow });
-		Log::info("n: %f:%f:%f", v._norm.x, v._norm.y, v._norm.z);
 	}
 
 	glBindVertexArray(_vertexArrayObjectNormals);
