@@ -1,7 +1,6 @@
 add_subdirectory(modules)
 add_subdirectory(client)
 add_subdirectory(server)
-add_subdirectory(rcon)
 if (TOOLS)
 	add_subdirectory(tools)
 endif()
