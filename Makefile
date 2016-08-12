@@ -93,9 +93,11 @@ server client shapetool shadertool noisetool databasetool uitool tests testmesh 
 	$(Q)$(MAKE) $(MAKE_OPTIONS) $@ copy-data-shared copy-data-$@ $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
-shapetool2: shapetool clean-local-config
+rcon: cmake
+	$(Q)$(MAKE) $(MAKE_OPTIONS) $@ $(JOB_FLAG)
+	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
-material-color: cmake
+test-material-color: cmake
 	$(Q)$(MAKE) $(MAKE_OPTIONS) tests $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_color=yes --gtest_filter=MaterialTest* -- $(ARGS)
 	$(Q)xdg-open build/material.png
