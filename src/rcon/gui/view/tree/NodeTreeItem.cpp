@@ -1,7 +1,6 @@
 /**
  * @file
  */
-
 #include "NodeTreeItem.h"
 #include "AIDebugger.h"
 #include "TreeViewCommon.h"

@@ -1,9 +1,9 @@
 /**
  * @file
  */
-
 #include "MapItem.h"
 #include "AIDebugger.h"
+#include "Settings.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QFont>
@@ -21,7 +21,7 @@ MapItem::MapItem(QGraphicsItem* parent, const AIStateWorld& state, AIDebugger& a
 	const bool selected = _aiDebugger.isSelected(state);
 	setFlag(QGraphicsItem::ItemIsSelectable);
 
-	const qreal size = 30.0;
+	const qreal size = Settings::getItemSize();
 	QColor color = selected ? QColor::fromRgb(200, 200, 0, 255) : QColor::fromRgb(255, 0, 0, 128);
 	QGraphicsEllipseItem *body = new QGraphicsEllipseItem(0.0, 0.0, size, size);
 	addToGroup(body);

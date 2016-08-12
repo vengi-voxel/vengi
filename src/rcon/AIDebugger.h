@@ -1,18 +1,11 @@
 /**
  * @file
  */
-
 #pragma once
 
 #include <vector>
 #include <utility>
 #include <SimpleAI.h>
-#include <server/AIStateMessage.h>
-#include <server/AIPauseMessage.h>
-#include <server/AICharacterDetailsMessage.h>
-#include <server/AICharacterStaticMessage.h>
-#include <server/AIStubTypes.h>
-#include <server/IProtocolHandler.h>
 #include <QTcpSocket>
 #include <QSettings>
 #include <QFile>
@@ -103,6 +96,7 @@ public:
 	 */
 	int run();
 	bool connectToAIServer(const QString& hostname, short port);
+	bool disconnectFromAIServer();
 
 	bool isSelected(const ai::AIStateWorld& ai) const;
 	const CharacterId& getSelected() const;

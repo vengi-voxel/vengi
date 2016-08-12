@@ -1,12 +1,11 @@
 /**
  * @file
  */
-
 #pragma once
 
 #include <QVariant>
 #include <QIcon>
-#include <server/AIStubTypes.h>
+#include <SimpleAI.h>
 
 namespace ai {
 namespace debug {

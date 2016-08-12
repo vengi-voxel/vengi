@@ -1,7 +1,6 @@
 /**
  * @file
  */
-
 #include "AIApplication.h"
 #include "AIDebugger.h"
 #include "AINodeStaticResolver.h"
@@ -22,6 +21,7 @@ AIApplication::AIApplication(int argc, char** argv) :
 #ifdef Q_WS_X11
 	QApplication::setGraphicsSystem(QLatin1String("raster"));
 #endif
+	setOrganizationName("engine");
 	setOrganizationDomain("engine");
 	setApplicationName("rcon");
 	setApplicationVersion(VERSION);
@@ -31,7 +31,7 @@ AIApplication::AIApplication(int argc, char** argv) :
 
 	_resolver = new AINodeStaticResolver();
 	_debugger = new AIDebugger(*_resolver);
-	_widget = new AIDebuggerWidget(*_debugger, *_resolver);
+	_widget = new AIDebuggerWidget(*_debugger, *_resolver, true);
 
 	_window.setCentralWidget(_widget);
 
@@ -45,6 +45,7 @@ AIApplication::AIApplication(int argc, char** argv) :
 	QMenu* menuBar = _window.menuBar()->addMenu(tr("&File"));
 	_widget->contributeToFileMenu(menuBar);
 	_widget->contributeToHelpMenu(_window.menuBar()->addMenu(tr("&Help")));
+	_widget->contributeToSettingsMenu(_window.menuBar()->addMenu(tr("Settings")));
 	_window.showMaximized();
 	_window.show();
 

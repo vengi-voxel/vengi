@@ -19,16 +19,16 @@
 #include "EntityList.h"
 #include "AggroTable.h"
 #include "MapView.h"
-#include "ZoomFrame.h"
 #include "NodeTreeView.h"
 #include "AddAction.h"
 #include "DeleteAction.h"
+#include "SettingsDialog.h"
 
 namespace ai {
 namespace debug {
 
-AIDebuggerWidget::AIDebuggerWidget(AIDebugger& debugger, AINodeStaticResolver& resolver) :
-		QWidget(), _resolver(resolver), _model(debugger, resolver), _debugger(debugger), _proxy(this) {
+AIDebuggerWidget::AIDebuggerWidget(AIDebugger& debugger, AINodeStaticResolver& resolver, bool standalone) :
+		QWidget(), _resolver(resolver), _model(debugger, resolver), _debugger(debugger), _proxy(this), _standalone(standalone) {
 	createView();
 	createActions();
 
@@ -50,20 +50,21 @@ AIDebuggerWidget::AIDebuggerWidget(AIDebugger& debugger, AINodeStaticResolver& r
 
 AIDebuggerWidget::~AIDebuggerWidget() {
 	delete _nodeTree;
-	delete _nodeTreeFrame;
-	delete _mapFrame;
 	delete _entityList;
 	delete _statusBarLabel;
 	delete _selectedLabel;
 	delete _stateTable;
 	delete _aggroTable;
 	delete _pauseAction;
+	delete _quitAction;
 	delete _resetAction;
 	delete _stepAction;
 	delete _connectAction;
+	delete _disconnectAction;
 	delete _aboutAction;
 	delete _documentationAction;
 	delete _bugAction;
+	delete _settingsAction;
 	delete _namesComboBox;
 	delete _tree;
 }
@@ -74,15 +75,18 @@ void AIDebuggerWidget::onEntitiesUpdated() {
 }
 
 void AIDebuggerWidget::onSelected() {
+	if (_model.editMode()) {
+		_model.abortEditMode();
+	}
 	const ai::CharacterId& id = _debugger.getSelected();
 	if (id == -1) {
 		_selectedLabel->setText(tr("nothing selected"));
 	} else {
 		_selectedLabel->setText(tr("selected %1").arg(id));
 	}
+	ai_assert_always(_model.setRootNode(const_cast<AIStateNode*>(&_debugger.getNode())), "Could not set root node");
 	_stateTable->updateStateTable();
 	_nodeTree->updateTreeWidget();
-	_model.setRootNode(const_cast<AIStateNode*>(&_debugger.getNode()));
 	_tree->expandAll();
 	_aggroTable->updateAggroTable();
 }
@@ -122,12 +126,24 @@ void AIDebuggerWidget::contributeToToolBar(QToolBar* toolBar) {
 
 void AIDebuggerWidget::contributeToFileMenu(QMenu *fileMenu) {
 	fileMenu->addAction(_connectAction);
+	fileMenu->addAction(_disconnectAction);
+	if (_standalone) {
+		fileMenu->addAction(_quitAction);
+	}
 }
 
 void AIDebuggerWidget::contributeToHelpMenu(QMenu *helpMenu) {
 	helpMenu->addAction(_documentationAction);
 	helpMenu->addAction(_bugAction);
 	helpMenu->addAction(_aboutAction);
+}
+
+void AIDebuggerWidget::contributeToSettingsMenu(QMenu *settingsMenu) {
+	settingsMenu->addAction(_settingsAction);
+}
+
+void AIDebuggerWidget::removeFromSettingsMenu(QMenu *settingsMenu) {
+	settingsMenu->removeAction(_settingsAction);
 }
 
 void AIDebuggerWidget::removeFromStatusBar(QStatusBar* statusBar) {
@@ -144,6 +160,10 @@ void AIDebuggerWidget::removeFromToolBar(QToolBar* toolBar) {
 
 void AIDebuggerWidget::removeFromFileMenu(QMenu *fileMenu) {
 	fileMenu->removeAction(_connectAction);
+	fileMenu->removeAction(_disconnectAction);
+	if (_standalone) {
+		fileMenu->removeAction(_quitAction);
+	}
 }
 
 void AIDebuggerWidget::removeFromHelpMenu(QMenu *helpMenu) {
@@ -153,7 +173,7 @@ void AIDebuggerWidget::removeFromHelpMenu(QMenu *helpMenu) {
 }
 
 void AIDebuggerWidget::createView() {
-	QVBoxLayout *layout = new QVBoxLayout;
+	QVBoxLayout *layout = new QVBoxLayout();
 	QSplitter* splitter = new QSplitter(Qt::Orientation::Vertical);
 	splitter->addWidget(createTopWidget());
 	splitter->addWidget(createBottomWidget());
@@ -162,10 +182,9 @@ void AIDebuggerWidget::createView() {
 }
 
 QWidget *AIDebuggerWidget::createTopWidget() {
-	QSplitter *splitter = new QSplitter;
+	QSplitter *splitter = new QSplitter();
 
 	_mapWidget = _debugger.createMapWidget();
-	_mapFrame = new ZoomFrame(_mapWidget);
 
 	_entityFilter = new QLineEdit();
 	_entityList = new EntityList(_debugger, _entityFilter);
@@ -174,7 +193,7 @@ QWidget *AIDebuggerWidget::createTopWidget() {
 	_namesComboBox->setInsertPolicy(QComboBox::InsertAlphabetically);
 	_namesComboBox->addItem(tr("None"));
 
-	splitter->addWidget(_mapFrame);
+	splitter->addWidget(_mapWidget);
 
 	QVBoxLayout *vbox = new QVBoxLayout();
 	vbox->setMargin(0);
@@ -220,33 +239,29 @@ void AIDebuggerWidget::showContextMenu(const QPoint &pos) {
 
 QWidget *AIDebuggerWidget::createTreePanelWidget() {
 	QWidget* treePanel = new QWidget();
-	treePanel->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
+	treePanel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 	_nodeTree = new NodeTreeView(_debugger, _resolver);
-	_nodeTreeFrame = new ZoomFrame(_nodeTree, treePanel);
-	_nodeTreeFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	_nodeTreeFrame->setVisible(false);
-	_aggroTable = new AggroTable(_debugger);
-	_stateTable = new StateTable(_debugger);
+	_nodeTree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	_nodeTree->setVisible(false);
 
-	_tree = new QTreeView(treePanel);
+	_tree = new QTreeView();
 	_tree->setUniformRowHeights(true);
 	_tree->setAlternatingRowColors(true);
 	_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	_tree->setModel(&_model);
 	_tree->setContextMenuPolicy(Qt::CustomContextMenu);
-
 	connect(_tree, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(showContextMenu(const QPoint &)));
 
 	QHeaderView *header = _tree->header();
 	header->setStretchLastSection(false);
-	header->setSectionResizeMode(COL_NAME, QHeaderView::Stretch);
-	header->setSectionResizeMode(COL_TYPE, QHeaderView::Stretch);
-	header->setSectionResizeMode(COL_CONDITION, QHeaderView::Stretch);
+	header->setSectionResizeMode(QHeaderView::Stretch);
+#if 0
 	header->setSectionResizeMode(COL_STATE, QHeaderView::ResizeToContents);
 	header->setSectionResizeMode(COL_LASTRUN, QHeaderView::ResizeToContents);
+#endif
 
-	QPushButton *toggle = new QPushButton(QIcon(":/images/switch.png"), "", treePanel);
+	QPushButton *toggle = new QPushButton(QIcon(":/images/switch.png"), "");
 	toggle->setFlat(true);
 	toggle->setCheckable(true);
 	toggle->setFixedSize(16, 16);
@@ -257,17 +272,18 @@ QWidget *AIDebuggerWidget::createTreePanelWidget() {
 	QGridLayout *treeLayout = new QGridLayout();
 	treeLayout->setColumnStretch(0, 10);
 	treeLayout->setRowStretch(0, 10);
-	treeLayout->addWidget(_nodeTreeFrame, 0, 0);
+	treeLayout->addWidget(_nodeTree, 0, 0);
 	treeLayout->addWidget(_tree, 0, 0);
 	treeLayout->addWidget(toggle, 0, 0, Qt::AlignRight | Qt::AlignTop);
-
 	treePanel->setLayout(treeLayout);
-	treePanel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	return treePanel;
 }
 
 QWidget *AIDebuggerWidget::createBottomWidget() {
-	QSplitter *splitter = new QSplitter;
+	QSplitter *splitter = new QSplitter();
+
+	_aggroTable = new AggroTable(_debugger);
+	_stateTable = new StateTable(_debugger);
 
 	QWidget* treePanel = createTreePanelWidget();
 	splitter->addWidget(treePanel);
@@ -316,6 +332,14 @@ void AIDebuggerWidget::connectToAIServer(const QString& hostname, short port) {
 	}
 }
 
+void AIDebuggerWidget::quitApplication() {
+	QApplication::quit();
+}
+
+void AIDebuggerWidget::disconnectFromAIServer() {
+	_debugger.disconnectFromAIServer();
+}
+
 void AIDebuggerWidget::connectToAIServer() {
 	ConnectDialog d;
 	const int state = d.run();
@@ -336,26 +360,40 @@ void AIDebuggerWidget::documentation() {
 	QDesktopServices::openUrl(QUrl("https://github.com/mgerhardy/simpleai/wiki"));
 }
 
+void AIDebuggerWidget::settings() {
+	SettingsDialog d;
+	d.run();
+}
+
 void AIDebuggerWidget::bug() {
 	QDesktopServices::openUrl(QUrl("https://github.com/mgerhardy/simpleai/issues"));
 }
 
 void AIDebuggerWidget::toggleTreeView() {
-	if (_nodeTreeFrame->isVisible()) {
-		_nodeTreeFrame->setVisible(false);
+	if (_nodeTree->isVisible()) {
+		_nodeTree->setVisible(false);
 		_tree->setVisible(true);
 	} else {
-		_nodeTreeFrame->setVisible(true);
+		_nodeTree->setVisible(true);
 		_tree->setVisible(false);
 	}
 }
 
 void AIDebuggerWidget::createActions() {
+	_disconnectAction = new QAction(tr("Disconnect"), this);
+	_disconnectAction->setShortcuts(QKeySequence::Close);
+	_disconnectAction->setStatusTip(tr("Disconnect from AI server"));
+	_disconnectAction->setIcon(QIcon(":/images/disconnect.png"));
+	connect(_disconnectAction, SIGNAL(triggered()), this, SLOT(disconnectFromAIServer()));
+
 	_connectAction = new QAction(tr("C&onnect"), this);
 	_connectAction->setShortcuts(QKeySequence::Open);
 	_connectAction->setStatusTip(tr("Connect to AI server"));
 	_connectAction->setIcon(QIcon(":/images/connect.png"));
 	connect(_connectAction, SIGNAL(triggered()), this, SLOT(connectToAIServer()));
+
+	_quitAction = new QAction(tr("Quit"), this);
+	connect(_quitAction, SIGNAL(triggered()), this, SLOT(quitApplication()));
 
 	_pauseAction = new QAction(tr("Pause"), this);
 	_pauseAction->setStatusTip(tr("Freeze the ai controlled entities"));
@@ -386,6 +424,11 @@ void AIDebuggerWidget::createActions() {
 	_bugAction->setStatusTip(tr("Report a bug"));
 	_bugAction->setIcon(QIcon(":/images/bug.png"));
 	connect(_bugAction, SIGNAL(triggered()), this, SLOT(bug()));
+
+	_settingsAction = new QAction(tr("Settings"), this);
+	_settingsAction->setStatusTip(tr("Settings"));
+	_settingsAction->setIcon(QIcon(":/images/settings.png"));
+	connect(_settingsAction, SIGNAL(triggered()), this, SLOT(settings()));
 }
 
 QLabel *AIDebuggerWidget::createLabel(const QString &text) const {

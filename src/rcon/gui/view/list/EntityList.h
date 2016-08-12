@@ -1,18 +1,18 @@
 /**
  * @file
  */
-
 #pragma once
 
 #include <QTableView>
 #include <QSortFilterProxyModel>
 #include <QLineEdit>
 
-#include "AIDebugger.h"
 #include "EntityListModel.h"
 
 namespace ai {
 namespace debug {
+
+class AIDebugger;
 
 /**
  * @brief Shows a list of all entities that are handled on the server we are connected to

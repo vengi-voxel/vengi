@@ -25,7 +25,6 @@ class StateTable;
 class EntityList;
 class AggroTable;
 class NodeTreeView;
-class ZoomFrame;
 class MapView;
 class AIDebugger;
 
@@ -35,7 +34,11 @@ class AIDebugger;
 class AIDebuggerWidget: public QWidget {
 Q_OBJECT
 public:
-	AIDebuggerWidget(AIDebugger& debugger, AINodeStaticResolver& resolver);
+	/**
+	 * @param[in] standalone If this is @c true, the widget will e.g. contribute a quit action to the file menu.
+	 * If this false, the widget will behave as if it would be part of an already existing appliation.
+	 */
+	AIDebuggerWidget(AIDebugger& debugger, AINodeStaticResolver& resolver, bool standalone);
 	virtual ~AIDebuggerWidget();
 
 	void connectToAIServer(const QString& hostname, short port);
@@ -56,6 +59,10 @@ public:
 	 * @brief Call this with an existing @c QToolbar to add addition ai debugger entries to it
 	 */
 	void contributeToHelpMenu(QMenu *helpMenu);
+	/**
+	 * @brief Call this with an existing @c QToolbar to add addition ai debugger entries to it
+	 */
+	void contributeToSettingsMenu(QMenu *settingsMenu);
 
 	/**
 	 * @brief If you let the ai debugger contribute to the status bar, call if to remove the contribution
@@ -73,13 +80,20 @@ public:
 	 * @brief If you let the ai debugger contribute to the help menu, call if to remove the contribution
 	 */
 	void removeFromHelpMenu(QMenu *helpMenu);
+	/**
+	 * @brief If you let the ai debugger contribute to the settings menu, call if to remove the contribution
+	 */
+	void removeFromSettingsMenu(QMenu *settingsMenu);
 
 private slots:
 	void about();
 	void documentation();
 	void bug();
+	void settings();
 	void toggleTreeView();
 	void connectToAIServer();
+	void disconnectFromAIServer();
+	void quitApplication();
 	void requestPause();
 	void requestStep();
 	void requestReset();
@@ -103,20 +117,21 @@ private:
 	QLabel *createLabel(const QString &text) const;
 
 	NodeTreeView *_nodeTree;
-	ZoomFrame *_nodeTreeFrame;
 	StateTable *_stateTable;
-	ZoomFrame *_mapFrame;
 	MapView *_mapWidget;
 	EntityList *_entityList;
 	QLineEdit *_entityFilter;
 	AggroTable *_aggroTable;
 	QAction *_connectAction;
+	QAction *_disconnectAction;
 	QAction *_pauseAction;
+	QAction *_quitAction;
 	QAction *_stepAction;
 	QAction *_resetAction;
 	QAction *_aboutAction;
 	QAction *_documentationAction;
 	QAction *_bugAction;
+	QAction *_settingsAction;
 	QLabel *_statusBarLabel;
 	QLabel *_selectedLabel;
 	QComboBox *_namesComboBox;
@@ -127,6 +142,7 @@ private:
 	AIDebugger& _debugger;
 	QString _name;
 	CompressorProxy _proxy;
+	bool _standalone;
 };
 
 }

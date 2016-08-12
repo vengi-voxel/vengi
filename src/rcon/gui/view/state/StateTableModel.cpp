@@ -1,7 +1,6 @@
 /**
  * @file
  */
-
 #include "StateTableModel.h"
 #include <QColor>
 

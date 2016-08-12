@@ -1,7 +1,6 @@
 /**
  * @file
  */
-
 #include "AggroTable.h"
 #include <QHeaderView>
 

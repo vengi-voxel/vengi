@@ -1,7 +1,6 @@
 /**
  * @file
  */
-
 #pragma once
 
 #include "IDialog.h"
@@ -9,6 +8,7 @@
 #include <QLineEdit>
 #include <QGroupBox>
 
+// TODO: implement history of last connects
 class ConnectDialog: public IDialog {
 Q_OBJECT
 private:

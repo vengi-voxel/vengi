@@ -1,23 +1,10 @@
 /**
  * @file
  */
-
 #include "AIDebugger.h"
 #include "AIDebuggerWidget.h"
 #include "AINodeStaticResolver.h"
 #include "MapView.h"
-#include <server/IProtocolMessage.h>
-#include <server/AISelectMessage.h>
-#include <server/AIUpdateNodeMessage.h>
-#include <server/AIAddNodeMessage.h>
-#include <server/AIUpdateNodeMessage.h>
-#include <server/AICharacterDetailsMessage.h>
-#include <server/AICharacterStaticMessage.h>
-#include <server/AIChangeMessage.h>
-#include <server/AINamesMessage.h>
-#include <server/AIStepMessage.h>
-#include <server/ProtocolMessageFactory.h>
-#include <server/ProtocolHandlerRegistry.h>
 #include <QtCore>
 #include <vector>
 #include "Version.h"
@@ -113,7 +100,7 @@ AIDebugger::AIDebugger(AINodeStaticResolver& resolver) :
 }
 
 AIDebugger::~AIDebugger() {
-	_socket.close();
+	disconnectFromAIServer();
 	delete _stateHandler;
 	delete _characterHandler;
 	delete _characterStaticHandler;
@@ -182,6 +169,7 @@ bool AIDebugger::writeMessage(const IProtocolMessage& msg) {
 	}
 	// now write everything to the socket
 	_socket.write(temp);
+	_socket.flush();
 	return true;
 }
 
@@ -220,7 +208,8 @@ void AIDebugger::addNode(int32_t parentNodeId, const QVariant& name, const QVari
 }
 
 bool AIDebugger::connectToAIServer(const QString& hostname, short port) {
-	_socket.disconnectFromHost();
+	disconnectFromAIServer();
+	qDebug() << "connect to server: " << hostname << ":" << port;
 	_socket.connectToHost(hostname, port, QAbstractSocket::ReadWrite, QAbstractSocket::AnyIPProtocol);
 	if (_socket.waitForConnected()) {
 		qDebug() << "Connection established " << _socket.state();
@@ -242,6 +231,14 @@ bool AIDebugger::connectToAIServer(const QString& hostname, short port) {
 		break;
 	}
 	return false;
+}
+
+bool AIDebugger::disconnectFromAIServer() {
+	qDebug() << "disconnect from server";
+	_socket.disconnectFromHost();
+	_socket.waitForDisconnected();
+	_socket.close();
+	return true;
 }
 
 void AIDebugger::onDisconnect() {
@@ -284,7 +281,7 @@ void AIDebugger::readTcpData() {
 			ai::IProtocolMessage* msg = mf.create(_stream);
 			if (!msg) {
 				qDebug() << "unknown server message - disconnecting";
-				_socket.disconnectFromHost();
+				disconnectFromAIServer();
 				break;
 			}
 			ai::ProtocolHandlerRegistry& r = ai::ProtocolHandlerRegistry::get();
@@ -293,7 +290,7 @@ void AIDebugger::readTcpData() {
 				handler->execute(1, *msg);
 			} else {
 				qDebug() << "no handler for " << msg->getId();
-				_socket.disconnectFromHost();
+				disconnectFromAIServer();
 				break;
 			}
 		}

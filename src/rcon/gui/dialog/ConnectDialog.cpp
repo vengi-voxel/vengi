@@ -1,23 +1,15 @@
 /**
  * @file
  */
-
 #include "ConnectDialog.h"
 #include <QSettings>
 #include "Settings.h"
 
-#define S_HOSTNAME "hostname"
-#define S_PORT "port"
-
 ConnectDialog::ConnectDialog(const QString& defaultHostname, short defaultPort) :
 		IDialog(tr("Connect to AI server")), _hostnameText(nullptr), _portText(nullptr), _group(
 				nullptr) {
-	Settings::setIfAbsent(S_HOSTNAME, defaultHostname);
-	Settings::setIfAbsent(S_PORT, QString::number(defaultPort));
-
-	const QSettings& settings = Settings::getSettings();
-	_hostname = settings.value(S_HOSTNAME).toString();
-	_port = settings.value(S_PORT).toInt();
+	_hostname = Settings::getHostname(defaultHostname);
+	_port = Settings::getPort(defaultPort);
 }
 
 ConnectDialog::~ConnectDialog() {
@@ -41,9 +33,8 @@ void ConnectDialog::onApply() {
 	_hostname = _hostnameText->text();
 	_port = _portText->text().toShort();
 
-	QSettings& settings = Settings::getSettings();
-	settings.setValue(S_HOSTNAME, _hostname);
-	settings.setValue(S_PORT, _portText->text());
+	Settings::setHostname(_hostname);
+	Settings::setPort(_portText->text().toInt());
 
 	close();
 }

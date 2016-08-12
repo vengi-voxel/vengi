@@ -1,7 +1,6 @@
 /**
  * @file
  */
-
 #pragma once
 
 #include <QGraphicsItemGroup>

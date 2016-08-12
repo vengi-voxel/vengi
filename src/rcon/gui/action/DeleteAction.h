@@ -1,9 +1,7 @@
 /**
  * @file
  */
-
-#include <QAction>
-#include <QModelIndex>
+#include "Action.h"
 #include "AddDialog.h"
 
 namespace ai {
@@ -11,7 +9,7 @@ namespace debug {
 
 class BehaviourTreeModelItem;
 
-class DeleteAction: public QAction {
+class DeleteAction: public Action {
 Q_OBJECT
 private:
 	int _nodeId;
@@ -21,8 +19,7 @@ private slots:
 	}
 public:
 	DeleteAction(int nodeId, QObject* parent) :
-			QAction(parent), _nodeId(nodeId) {
-		setText(tr("Delete node"));
+			Action(tr("Delete node"), parent), _nodeId(nodeId) {
 		connect(this, SIGNAL(triggered()), this, SLOT(onTriggered()));
 	}
 signals:

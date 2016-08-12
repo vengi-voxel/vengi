@@ -1,10 +1,9 @@
 /**
  * @file
  */
-
 #include "NodeTreeView.h"
 #include "AINodeStaticResolver.h"
-#include <AI.h>
+#include "AIDebugger.h"
 
 namespace {
 const int horizontalSpacing = 40;
@@ -16,12 +15,13 @@ namespace ai {
 namespace debug {
 
 NodeTreeView::NodeTreeView(AIDebugger& debugger, AINodeStaticResolver& resolver, QWidget* parent) :
-		IGraphicsView(false, false, parent), _debugger(debugger), _scene(this), _resolver(resolver) {
+		QGraphicsView(parent), _debugger(debugger), _scene(this), _resolver(resolver) {
 	_scene.setItemIndexMethod(QGraphicsScene::NoIndex);
 	// because the connection lines are not included in the bounding box...
 	setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 	setCacheMode(QGraphicsView::CacheBackground);
 	setRenderHint(QPainter::Antialiasing, false);
+	setDragMode(ScrollHandDrag);
 	setScene(&_scene);
 }
 
@@ -50,6 +50,36 @@ NodeTreeItem* NodeTreeView::buildTreeItems(const AIStateNode& node, NodeTreeItem
 		thisNode->addChildren(childNode);
 	}
 	return thisNode;
+}
+
+void NodeTreeView::scalingTime(qreal x) {
+	qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
+	scale(factor, factor);
+}
+
+void NodeTreeView::wheelEvent(QWheelEvent * event) {
+	int numDegrees = event->delta() / 8;
+	int numSteps = numDegrees / 15;
+	_numScheduledScalings += numSteps;
+	if (_numScheduledScalings * numSteps < 0) {
+		_numScheduledScalings = numSteps;
+	}
+
+	QTimeLine *anim = new QTimeLine(350, this);
+	anim->setUpdateInterval(20);
+
+	connect(anim, SIGNAL(valueChanged(qreal)), SLOT(scalingTime(qreal)));
+	connect(anim, SIGNAL(finished()), SLOT(animFinished()));
+	anim->start();
+}
+
+void NodeTreeView::animFinished() {
+	if (_numScheduledScalings > 0) {
+		--_numScheduledScalings;
+	} else {
+		++_numScheduledScalings;
+	}
+	sender()->~QObject();
 }
 
 }

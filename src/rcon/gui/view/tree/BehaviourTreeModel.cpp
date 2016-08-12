@@ -1,7 +1,6 @@
 /**
  * @file
  */
-
 #include "BehaviourTreeModel.h"
 #include "BehaviourTreeModelItem.h"
 #include "AIDebugger.h"
@@ -82,6 +81,8 @@ int BehaviourTreeModel::rowCount(const QModelIndex &parent) const {
 int BehaviourTreeModel::columnCount(const QModelIndex &parent) const {
 	if (parent.isValid())
 		return item(parent)->columnCount();
+	if (_rootItem == nullptr)
+		return 0;
 	return _rootItem->columnCount();
 }
 
@@ -151,9 +152,9 @@ QVariant BehaviourTreeModel::headerData(int section, Qt::Orientation orientation
 	return QVariant();
 }
 
-void BehaviourTreeModel::setRootNode(AIStateNode* node) {
+bool BehaviourTreeModel::setRootNode(AIStateNode* node) {
 	if (!_allowUpdate)
-		return;
+		return false;
 	beginResetModel();
 	if (_rootItem) {
 		delete _rootItem;
@@ -163,6 +164,7 @@ void BehaviourTreeModel::setRootNode(AIStateNode* node) {
 		_rootItem = new BehaviourTreeModelItem(node, _resolver);
 	}
 	endResetModel();
+	return true;
 }
 
 }

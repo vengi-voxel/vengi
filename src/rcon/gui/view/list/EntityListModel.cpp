@@ -1,8 +1,8 @@
 /**
  * @file
  */
-
 #include "EntityListModel.h"
+#include "AIDebugger.h"
 #include <QColor>
 
 namespace ai {

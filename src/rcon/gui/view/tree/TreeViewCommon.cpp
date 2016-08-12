@@ -1,8 +1,8 @@
 /**
  * @file
  */
-
 #include "TreeViewCommon.h"
+#include <SimpleAI.h>
 
 namespace ai {
 namespace debug {
