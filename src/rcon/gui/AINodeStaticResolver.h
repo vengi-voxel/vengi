@@ -5,6 +5,7 @@
 #pragma once
 
 #include <QHash>
+#include <vector>
 
 namespace ai {
 
