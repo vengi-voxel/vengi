@@ -255,11 +255,7 @@ QWidget *AIDebuggerWidget::createTreePanelWidget() {
 
 	QHeaderView *header = _tree->header();
 	header->setStretchLastSection(false);
-	header->setSectionResizeMode(QHeaderView::Stretch);
-#if 0
-	header->setSectionResizeMode(COL_STATE, QHeaderView::ResizeToContents);
-	header->setSectionResizeMode(COL_LASTRUN, QHeaderView::ResizeToContents);
-#endif
+	header->setSectionResizeMode(QHeaderView::Interactive);
 
 	QPushButton *toggle = new QPushButton(QIcon(":/images/switch.png"), "");
 	toggle->setFlat(true);
