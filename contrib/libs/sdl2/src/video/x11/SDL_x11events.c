@@ -840,32 +840,10 @@ X11_DispatchEvent(_THIS)
                    xevent.xconfigure.x, xevent.xconfigure.y,
                    xevent.xconfigure.width, xevent.xconfigure.height);
 #endif
-            long border_left = 0;
-            long border_top = 0;
-            if (data->xwindow) {
-                Atom _net_frame_extents = X11_XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
-                Atom type;
-                int format;
-                unsigned long nitems, bytes_after;
-                unsigned char *property;
-                if (X11_XGetWindowProperty(display, data->xwindow,
-                        _net_frame_extents, 0, 16, 0,
-                        XA_CARDINAL, &type, &format,
-                        &nitems, &bytes_after, &property) == Success) {
-                    if (type != None && nitems == 4)
-                    {
-                        border_left = ((long*)property)[0];
-                        border_top = ((long*)property)[2];
-                    }
-                    X11_XFree(property);
-                }
-            }
-
             if (xevent.xconfigure.x != data->last_xconfigure.x ||
                 xevent.xconfigure.y != data->last_xconfigure.y) {
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
-                                    xevent.xconfigure.x - border_left,
-                                    xevent.xconfigure.y - border_top);
+                                    xevent.xconfigure.x, xevent.xconfigure.y);
 #ifdef SDL_USE_IBUS
                 if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
                     /* Update IBus candidate list position */
@@ -1175,6 +1153,24 @@ X11_DispatchEvent(_THIS)
                    right approach, but it seems to work. */
                 X11_UpdateKeymap(_this);
                 SDL_SendKeymapChangedEvent();
+            } else if (xevent.xproperty.atom == videodata->_NET_FRAME_EXTENTS) {
+                Atom type;
+                int format;
+                unsigned long nitems, bytes_after;
+                unsigned char *property;
+                if (X11_XGetWindowProperty(display, data->xwindow, videodata->_NET_FRAME_EXTENTS, 0, 16, 0, XA_CARDINAL, &type, &format, &nitems, &bytes_after, &property) == Success) {
+                    if (type != None && nitems == 4) {
+                        data->border_left = (int) ((long*)property)[0];
+                        data->border_right = (int) ((long*)property)[1];
+                        data->border_top = (int) ((long*)property)[2];
+                        data->border_bottom = (int) ((long*)property)[3];
+                    }
+                    X11_XFree(property);
+
+                    #ifdef DEBUG_XEVENTS
+                    printf("New _NET_FRAME_EXTENTS: left=%d right=%d, top=%d, bottom=%d\n", data->border_left, data->border_right, data->border_top, data->border_bottom);
+                    #endif
+                }
             }
         }
         break;
@@ -1229,11 +1225,11 @@ X11_DispatchEvent(_THIS)
         break;
 
     case SelectionNotify: {
+            Atom target = xevent.xselection.target;
 #ifdef DEBUG_XEVENTS
             printf("window %p: SelectionNotify (requestor = %ld, target = %ld)\n", data,
                 xevent.xselection.requestor, xevent.xselection.target);
 #endif
-            Atom target = xevent.xselection.target;
             if (target == data->xdnd_req) {
                 /* read data */
                 SDL_x11Prop p;

@@ -18,27 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#ifndef _SDL_uikitclipboard_h
+#define _SDL_uikitclipboard_h
 
-/*
-  Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
-*/
+#include "../SDL_sysvideo.h"
 
-#ifndef _SDL_mirvideo_h_
-#define _SDL_mirvideo_h_
+extern int UIKit_SetClipboardText(_THIS, const char *text);
+extern char *UIKit_GetClipboardText(_THIS);
+extern SDL_bool UIKit_HasClipboardText(_THIS);
 
-#include <EGL/egl.h>
-#include <mir_toolkit/mir_client_library.h>
+extern void UIKit_InitClipboard(_THIS);
+extern void UIKit_QuitClipboard(_THIS);
 
-typedef struct MIR_Window MIR_Window;
-
-typedef struct
-{
-    MirConnection* connection;
-    MIR_Window*    current_window;
-    SDL_bool       software;
-    MirPixelFormat pixel_format;
-} MIR_Data;
-
-#endif /* _SDL_mirvideo_h_ */
+#endif /* _SDL_uikitclipboard_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

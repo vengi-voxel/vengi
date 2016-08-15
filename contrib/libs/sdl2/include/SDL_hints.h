@@ -369,7 +369,7 @@ extern "C" {
 *  Use this hint in case you need to set SDL's threads stack size to other than the default.
 *  This is specially useful if you build SDL against a non glibc libc library (such as musl) which
 *  provides a relatively small default thread stack size (a few kilobytes versus the default 8MB glibc uses).
-*  Support for this hint is currently available only in the pthread backend.
+*  Support for this hint is currently available only in the pthread, Windows, and PSP backend.
 */
 #define SDL_HINT_THREAD_STACK_SIZE              "SDL_THREAD_STACK_SIZE"
 
@@ -431,7 +431,7 @@ extern "C" {
  *  privacy policy.
  *
  *  To setup a URL to an app's privacy policy, set SDL_HINT_WINRT_PRIVACY_POLICY_URL
- *  before calling any SDL_Init functions.  The contents of the hint should
+ *  before calling any SDL_Init() functions.  The contents of the hint should
  *  be a valid URL.  For example, "http://www.example.com".
  *
  *  The default value is "", which will prevent SDL from adding a privacy policy
@@ -461,7 +461,7 @@ extern "C" {
  *  The contents of this hint should be encoded as a UTF8 string.
  *
  *  The default value is "Privacy Policy".  This hint should only be set during app
- *  initialization, preferably before any calls to SDL_Init.
+ *  initialization, preferably before any calls to SDL_Init().
  *
  *  For additional information on linking to a privacy policy, see the documentation for
  *  SDL_HINT_WINRT_PRIVACY_POLICY_URL.
@@ -546,6 +546,13 @@ extern "C" {
 *
 */
 #define SDL_HINT_MAC_BACKGROUND_APP    "SDL_MAC_BACKGROUND_APP"
+
+/**
+ *  \brief Allow mouse click events when clicking to focus an SDL window
+ *
+ *  This hint only applies to Mac OS X.
+ */
+#define SDL_HINT_MAC_MOUSE_FOCUS_CLICKTHROUGH "SDL_MAC_MOUSE_FOCUS_CLICKTHROUGH"
 
 /**
  * \brief Android APK expansion main file version. Should be a string number like "1", "2" etc.

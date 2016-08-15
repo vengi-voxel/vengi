@@ -781,7 +781,7 @@ X11_SetWindowPosition(_THIS, SDL_Window * window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
 
-    X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+    X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
     X11_XFlush(display);
 }
 
@@ -807,7 +807,7 @@ X11_SetWindowMinimumSize(_THIS, SDL_Window * window)
 
         /* See comment in X11_SetWindowSize. */
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
         X11_XRaiseWindow(display, data->xwindow);
     }
 
@@ -836,7 +836,7 @@ X11_SetWindowMaximumSize(_THIS, SDL_Window * window)
 
         /* See comment in X11_SetWindowSize. */
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
         X11_XRaiseWindow(display, data->xwindow);
     }
 
@@ -885,7 +885,7 @@ X11_SetWindowSize(_THIS, SDL_Window * window)
            and transitioning from windowed to fullscreen in Unity.
          */
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
         X11_XRaiseWindow(display, data->xwindow);
     } else {
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
@@ -898,28 +898,13 @@ int
 X11_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *bottom, int *right)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-    Display *display = data->videodata->display;
-    Atom _NET_FRAME_EXTENTS = X11_XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
-    Atom type;
-    int format;
-    unsigned long nitems, bytes_after;
-    unsigned char *property;
-    int result = -1;
 
-    if (X11_XGetWindowProperty(display, data->xwindow, _NET_FRAME_EXTENTS,
-                               0, 16, 0, XA_CARDINAL, &type, &format,
-                               &nitems, &bytes_after, &property) == Success) {
-        if (type != None && nitems == 4) {
-            *left = (int) (((long*)property)[0]);
-            *right = (int) (((long*)property)[1]);
-            *top = (int) (((long*)property)[2]);
-            *bottom = (int) (((long*)property)[3]);
-            result = 0;
-        }
-        X11_XFree(property);
-    }
+    *left = data->border_left;
+    *right = data->border_right;
+    *top = data->border_top;
+    *bottom = data->border_bottom;
 
-    return result;
+    return 0;
 }
 
 int
@@ -1047,7 +1032,6 @@ SetWindowActive(_THIS, SDL_Window * window)
     if (X11_IsWindowMapped(_this, window)) {
         XEvent e;
 
-        SDL_assert(data->user_time != 0);  /* should be set by _some_ event by now. */
         /*printf("SDL Window %p: sending _NET_ACTIVE_WINDOW with timestamp %lu\n", window, data->user_time);*/
 
         SDL_zero(e);
@@ -1187,6 +1171,22 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
 
         X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
                    SubstructureNotifyMask | SubstructureRedirectMask, &e);
+
+        /* Fullscreen windows sometimes end up being marked maximized by
+            window managers. Force it back to how we expect it to be. */
+        if (!fullscreen && ((window->flags & SDL_WINDOW_MAXIMIZED) == 0)) {
+            SDL_zero(e);
+            e.xany.type = ClientMessage;
+            e.xclient.message_type = _NET_WM_STATE;
+            e.xclient.format = 32;
+            e.xclient.window = data->xwindow;
+            e.xclient.data.l[0] = _NET_WM_STATE_REMOVE;
+            e.xclient.data.l[1] = data->videodata->_NET_WM_STATE_MAXIMIZED_VERT;
+            e.xclient.data.l[2] = data->videodata->_NET_WM_STATE_MAXIMIZED_HORZ;
+            e.xclient.data.l[3] = 0l;
+            X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
+                   SubstructureNotifyMask | SubstructureRedirectMask, &e);
+        }
     } else {
         Uint32 flags;
 
@@ -1205,12 +1205,6 @@ X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _dis
         } else {
             X11_XUninstallColormap(display, data->colormap);
         }
-    }
-
-    /* Fullscreen windows sometimes end up being marked maximized by
-        window managers. Force it back to how we expect it to be. */
-    if (!fullscreen && (window->flags & SDL_WINDOW_MAXIMIZED) == 0) {
-        SetWindowMaximized(_this, window, SDL_FALSE);
     }
 
     X11_XFlush(display);

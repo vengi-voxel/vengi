@@ -139,7 +139,7 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
 }
 
 /* Drop file */
-void Java_org_libsdl_app_SDLActivity_onNativeDropFile(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeDropFile(
                                     JNIEnv* env, jclass jcls,
                                     jstring filename)
 {
@@ -561,9 +561,9 @@ int Android_JNI_OpenAudioDevice(int sampleRate, int is16Bit, int channelCount, i
 {
     jboolean audioBufferStereo;
     int audioBufferFrames;
+    jboolean isCopy;
 
     JNIEnv *env = Android_JNI_GetEnv();
-    jboolean isCopy = JNI_FALSE;
 
     if (!env) {
         LOGE("callback_handler: failed to attach current thread");
@@ -603,6 +603,7 @@ int Android_JNI_OpenAudioDevice(int sampleRate, int is16Bit, int channelCount, i
         return 0;
     }
 
+    isCopy = JNI_FALSE;
     if (audioBuffer16Bit) {
         audioBufferPinned = (*env)->GetShortArrayElements(env, (jshortArray)audioBuffer, &isCopy);
         audioBufferFrames = (*env)->GetArrayLength(env, (jshortArray)audioBuffer);
@@ -654,12 +655,10 @@ void Android_JNI_CloseAudioDevice(void)
 /* If the parameter silent is truthy then SDL_SetError() will not be called. */
 static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
 {
-    JNIEnv *mEnv;
+    JNIEnv *mEnv = Android_JNI_GetEnv();
     jthrowable exception;
 
     SDL_assert(LocalReferenceHolder_IsActive());
-
-    mEnv = Android_JNI_GetEnv();
 
     exception = (*mEnv)->ExceptionOccurred(mEnv);
     if (exception != NULL) {
@@ -1152,17 +1151,17 @@ static jobject Android_JNI_GetSystemServiceObject(const char* name)
 
 int Android_JNI_SetClipboardText(const char* text)
 {
-    jmethodID mid;
-    jstring string;
-
+    /* Watch out for C89 scoping rules because of the macro */
     SETUP_CLIPBOARD(-1)
 
-    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, clipboard), "setText", "(Ljava/lang/CharSequence;)V");
-    string = (*env)->NewStringUTF(env, text);
-    (*env)->CallVoidMethod(env, clipboard, mid, string);
-    (*env)->DeleteGlobalRef(env, clipboard);
-    (*env)->DeleteLocalRef(env, string);
-
+    /* Nest the following in a scope to avoid C89 declaration rules triggered by the macro */
+    {
+        jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, clipboard), "setText", "(Ljava/lang/CharSequence;)V");
+        jstring string = (*env)->NewStringUTF(env, text);
+        (*env)->CallVoidMethod(env, clipboard, mid, string);
+        (*env)->DeleteGlobalRef(env, clipboard);
+        (*env)->DeleteLocalRef(env, string);
+    }
     CLEANUP_CLIPBOARD();
 
     return 0;
@@ -1170,32 +1169,31 @@ int Android_JNI_SetClipboardText(const char* text)
 
 char* Android_JNI_GetClipboardText(void)
 {
-    jmethodID mid;
-    jobject sequence;
-
+    /* Watch out for C89 scoping rules because of the macro */
     SETUP_CLIPBOARD(SDL_strdup(""))
 
-    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, clipboard), "getText", "()Ljava/lang/CharSequence;");
-    sequence = (*env)->CallObjectMethod(env, clipboard, mid);
-    (*env)->DeleteGlobalRef(env, clipboard);
-    if (sequence) {
-        jstring string;
-        const char* utf;
+    /* Nest the following in a scope to avoid C89 declaration rules triggered by the macro */
+    {
+        jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, clipboard), "getText", "()Ljava/lang/CharSequence;");
+        jobject sequence = (*env)->CallObjectMethod(env, clipboard, mid);
+        (*env)->DeleteGlobalRef(env, clipboard);
+        if (sequence) {
+            jstring string;
+            const char* utf;
+            mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, sequence), "toString", "()Ljava/lang/String;");
+            string = (jstring)((*env)->CallObjectMethod(env, sequence, mid));
+            utf = (*env)->GetStringUTFChars(env, string, 0);
+            if (utf) {
+                char* text = SDL_strdup(utf);
+                (*env)->ReleaseStringUTFChars(env, string, utf);
 
-        mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, sequence), "toString", "()Ljava/lang/String;");
-        string = (jstring)((*env)->CallObjectMethod(env, sequence, mid));
-        utf = (*env)->GetStringUTFChars(env, string, 0);
-        if (utf) {
-            char* text = SDL_strdup(utf);
-            (*env)->ReleaseStringUTFChars(env, string, utf);
+                CLEANUP_CLIPBOARD();
 
-            CLEANUP_CLIPBOARD();
-
-            return text;
+                return text;
+            }
         }
     }
-
-    CLEANUP_CLIPBOARD();
+    CLEANUP_CLIPBOARD();    
 
     return SDL_strdup("");
 }
@@ -1204,7 +1202,7 @@ SDL_bool Android_JNI_HasClipboardText(void)
 {
     jmethodID mid;
     jboolean has;
-
+    /* Watch out for C89 scoping rules because of the macro */
     SETUP_CLIPBOARD(SDL_FALSE)
 
     mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, clipboard), "hasText", "()Z");
@@ -1212,7 +1210,7 @@ SDL_bool Android_JNI_HasClipboardText(void)
     (*env)->DeleteGlobalRef(env, clipboard);
 
     CLEANUP_CLIPBOARD();
-
+    
     return has ? SDL_TRUE : SDL_FALSE;
 }
 
@@ -1231,15 +1229,15 @@ int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seco
     jclass cls;
     jobject filter;
     jobject intent;
-    jmethodID imid;
     jstring iname;
+    jmethodID imid;
     jstring bname;
     jmethodID bmid;
-
     if (!LocalReferenceHolder_Init(&refs, env)) {
         LocalReferenceHolder_Cleanup(&refs);
         return -1;
     }
+
 
     mid = (*env)->GetStaticMethodID(env, mActivityClass, "getContext", "()Landroid/content/Context;");
     context = (*env)->CallStaticObjectMethod(env, mActivityClass, mid);
@@ -1262,20 +1260,24 @@ int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seco
 
     imid = (*env)->GetMethodID(env, cls, "getIntExtra", "(Ljava/lang/String;I)I");
 
+    /* Watch out for C89 scoping rules because of the macro */
 #define GET_INT_EXTRA(var, key) \
+    int var; \
     iname = (*env)->NewStringUTF(env, key); \
     var = (*env)->CallIntMethod(env, intent, imid, iname, -1); \
     (*env)->DeleteLocalRef(env, iname);
 
     bmid = (*env)->GetMethodID(env, cls, "getBooleanExtra", "(Ljava/lang/String;Z)Z");
 
+    /* Watch out for C89 scoping rules because of the macro */
 #define GET_BOOL_EXTRA(var, key) \
+    int var; \
     bname = (*env)->NewStringUTF(env, key); \
     var = (*env)->CallBooleanMethod(env, intent, bmid, bname, JNI_FALSE); \
     (*env)->DeleteLocalRef(env, bname);
 
     if (plugged) {
-        int plug;
+        /* Watch out for C89 scoping rules because of the macro */
         GET_INT_EXTRA(plug, "plugged") /* == BatteryManager.EXTRA_PLUGGED (API 5) */
         if (plug == -1) {
             LocalReferenceHolder_Cleanup(&refs);
@@ -1287,7 +1289,7 @@ int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seco
     }
 
     if (charged) {
-        int status;
+        /* Watch out for C89 scoping rules because of the macro */
         GET_INT_EXTRA(status, "status") /* == BatteryManager.EXTRA_STATUS (API 5) */
         if (status == -1) {
             LocalReferenceHolder_Cleanup(&refs);
@@ -1298,7 +1300,6 @@ int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seco
     }
 
     if (battery) {
-        int present;
         GET_BOOL_EXTRA(present, "present") /* == BatteryManager.EXTRA_PRESENT (API 5) */
         *battery = present ? 1 : 0;
     }
@@ -1310,8 +1311,18 @@ int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seco
     if (percent) {
         int level;
         int scale;
-        GET_INT_EXTRA(level, "level") /* == BatteryManager.EXTRA_LEVEL (API 5) */
-        GET_INT_EXTRA(scale, "scale") /* == BatteryManager.EXTRA_SCALE (API 5) */
+        
+        /* Watch out for C89 scoping rules because of the macro */
+        {
+            GET_INT_EXTRA(level_temp, "level") /* == BatteryManager.EXTRA_LEVEL (API 5) */
+            level = level_temp;
+        }
+        /* Watch out for C89 scoping rules because of the macro */
+        {
+            GET_INT_EXTRA(scale_temp, "scale") /* == BatteryManager.EXTRA_SCALE (API 5) */
+            scale = scale_temp;
+        }
+        
         if ((level == -1) || (scale == -1)) {
             LocalReferenceHolder_Cleanup(&refs);
             return -1;
@@ -1366,7 +1377,6 @@ int Android_JNI_SendMessage(int command, int param)
     JNIEnv *env = Android_JNI_GetEnv();
     jmethodID mid;
     jboolean success;
-
     if (!env) {
         return -1;
     }

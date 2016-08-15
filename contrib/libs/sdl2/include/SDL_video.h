@@ -449,7 +449,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  *               ::SDL_WINDOW_MINIMIZED,     ::SDL_WINDOW_INPUT_GRABBED,
  *               ::SDL_WINDOW_ALLOW_HIGHDPI.
  *
- *  \return The id of the window created, or zero if window creation failed.
+ *  \return The created window, or NULL if window creation failed.
  *
  *  If the window is created with the SDL_WINDOW_ALLOW_HIGHDPI flag, its size
  *  in pixels may differ from its size in screen coordinates on platforms with
@@ -468,7 +468,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_CreateWindow(const char *title,
  *
  *  \param data A pointer to driver-dependent window creation data
  *
- *  \return The id of the window created, or zero if window creation failed.
+ *  \return The created window, or NULL if window creation failed.
  *
  *  \sa SDL_DestroyWindow()
  */
@@ -789,7 +789,6 @@ extern DECLSPEC int SDLCALL SDL_UpdateWindowSurface(SDL_Window * window);
  *  \return 0 on success, or -1 on error.
  *
  *  \sa SDL_GetWindowSurface()
- *  \sa SDL_UpdateWindowSurfaceRect()
  */
 extern DECLSPEC int SDLCALL SDL_UpdateWindowSurfaceRects(SDL_Window * window,
                                                          const SDL_Rect * rects,
@@ -1017,7 +1016,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_Window * window);
 
 
 /**
- *  \brief Returns whether the screensaver is currently enabled (default on).
+ *  \brief Returns whether the screensaver is currently enabled (default off).
  *
  *  \sa SDL_EnableScreenSaver()
  *  \sa SDL_DisableScreenSaver()

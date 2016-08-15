@@ -226,13 +226,15 @@ Cocoa_WarpMouseGlobal(int x, int y)
 
     Cocoa_HandleMouseWarp(point.x, point.y);
 
-    /* According to the docs, this was deprecated in 10.6, but it's still
-     * around. The substitute requires a CGEventSource, but I'm not entirely
-     * sure how we'd procure the right one for this event.
-     */
-    CGSetLocalEventsSuppressionInterval(0.0);
     CGWarpMouseCursorPosition(point);
-    CGSetLocalEventsSuppressionInterval(0.25);
+
+    /* CGWarpMouse causes a short delay by default, which is preventable by
+     * Calling this directly after. CGSetLocalEventsSuppressionInterval can also
+     * prevent it, but it's deprecated as of OS X 10.6.
+     */
+    if (!mouse->relative_mode) {
+        CGAssociateMouseAndMouseCursorPosition(YES);
+    }
 
     /* CGWarpMouseCursorPosition doesn't generate a window event, unlike our
      * other implementations' APIs. Send what's appropriate.
@@ -314,7 +316,7 @@ Cocoa_GetGlobalMouseState(int *x, int *y)
 
     for (NSScreen *screen in [NSScreen screens]) {
         NSRect frame = [screen frame];
-        if (NSPointInRect(cocoaLocation, frame)) {
+        if (NSMouseInRect(cocoaLocation, frame, NO)) {
             *x = (int) cocoaLocation.x;
             *y = (int) ((frame.origin.y + frame.size.height) - cocoaLocation.y);
             break;
@@ -396,7 +398,7 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
     /* Ignore events that aren't inside the client area (i.e. title bar.) */
     if ([event window]) {
         NSRect windowRect = [[[event window] contentView] frame];
-        if (!NSPointInRect([event locationInWindow], windowRect)) {
+        if (!NSMouseInRect([event locationInWindow], windowRect, NO)) {
             return;
         }
     }

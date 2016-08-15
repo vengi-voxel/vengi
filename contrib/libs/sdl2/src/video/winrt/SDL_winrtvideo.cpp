@@ -118,18 +118,15 @@ WINRT_CreateDevice(int devindex)
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         SDL_OutOfMemory();
-        if (device) {
-            SDL_free(device);
-        }
         return (0);
     }
 
     data = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
     if (!data) {
         SDL_OutOfMemory();
+        SDL_free(device);
         return (0);
     }
-    SDL_zerop(data);
     device->driverdata = data;
 
     /* Set the function pointers */
@@ -142,6 +139,14 @@ WINRT_CreateDevice(int devindex)
     device->SetDisplayMode = WINRT_SetDisplayMode;
     device->PumpEvents = WINRT_PumpEvents;
     device->GetWindowWMInfo = WINRT_GetWindowWMInfo;
+
+#if NTDDI_VERSION >= NTDDI_WIN10
+    device->HasScreenKeyboardSupport = WINRT_HasScreenKeyboardSupport;
+    device->ShowScreenKeyboard = WINRT_ShowScreenKeyboard;
+    device->HideScreenKeyboard = WINRT_HideScreenKeyboard;
+    device->IsScreenKeyboardShown = WINRT_IsScreenKeyboardShown;
+#endif
+
 #ifdef SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = WINRT_GLES_LoadLibrary;
     device->GL_GetProcAddress = WINRT_GLES_GetProcAddress;

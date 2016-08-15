@@ -145,7 +145,7 @@ display_handle_geometry(void *data,
 {
     SDL_VideoDisplay *display = data;
 
-    display->name = strdup(model);
+    display->name = SDL_strdup(model);
     display->driverdata = output;
 }
 
@@ -253,7 +253,6 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
     } else if (strcmp(interface, "wl_shm") == 0) {
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
         d->cursor_theme = WAYLAND_wl_cursor_theme_load(NULL, 32, d->shm);
-        d->default_cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "left_ptr");
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (strcmp(interface, "qt_touch_extension") == 0) {
