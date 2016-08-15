@@ -17,6 +17,7 @@ set(SRCS
 	KeybindingParser.h
 	Log.cpp Log.h
 	MemoryAllocator.h
+	MemGuard.cpp MemGuard.h
 	NonCopyable.h
 	Process.cpp Process.h
 	QuadTree.h
