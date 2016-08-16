@@ -89,7 +89,7 @@ edit-local-config:
 doc: cmake
 	$(Q)$(MAKE) $(MAKE_OPTIONS) doc
 
-server client shapetool shadertool noisetool databasetool uitool tests testmesh testdepthbuffer testtexture flatc: cmake
+server client shapetool shadertool noisetool databasetool uitool tests testmesh testcamera testdepthbuffer testtexture flatc: cmake
 	$(Q)$(MAKE) $(MAKE_OPTIONS) $@ copy-data-shared copy-data-$@ $(JOB_FLAG)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 

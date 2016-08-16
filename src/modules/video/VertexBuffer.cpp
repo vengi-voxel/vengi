@@ -36,13 +36,22 @@ bool VertexBuffer::bind() {
 	const int size = _attributes.size();
 	for (int i = 0; i < size; i++) {
 		const Attribute& a = _attributes[i];
-		glBindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
-		glEnableVertexAttribArray(i);
-		// TODO: add glVertexAttribIPointer support here
-		glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
-		if (a.divisor > 0) {
-			glVertexAttribDivisor(i, a.divisor);
+		if (_targets[a.bufferIndex] == GL_ELEMENT_ARRAY_BUFFER) {
+			continue;
 		}
+		glBindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
+		glEnableVertexAttribArray(a.index);
+		// TODO: add glVertexAttribIPointer support here
+		glVertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
+		if (a.divisor > 0) {
+			glVertexAttribDivisor(a.index, a.divisor);
+		}
+	}
+	for (unsigned int i = 0; i < _handleIdx; ++i) {
+		if (_targets[i] != GL_ELEMENT_ARRAY_BUFFER) {
+			continue;
+		}
+		glBindBuffer(_targets[i], _handles[i]);
 	}
 	return true;
 }
@@ -52,7 +61,7 @@ void VertexBuffer::unbind() {
 		glBindVertexArray(0);
 	} else {
 		for (unsigned int i = 0; i < _handleIdx; ++i) {
-			glBindBuffer(_targets[i], _handles[i]);
+			glBindBuffer(_targets[i], 0);
 		}
 	}
 }
@@ -85,20 +94,6 @@ int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
 	glBindBuffer(target, 0);
 	++_handleIdx;
 	return _handleIdx - 1;
-}
-
-int32_t VertexBuffer::createPlane(int rows, int columns) {
-	core_assert(rows > 0);
-	core_assert(columns > 0);
-	std::vector<glm::vec4> vecs;
-	vecs.reserve(rows * columns);
-	for (int r = 0; r < rows; ++r) {
-		for (int c = 0; c < columns; ++c) {
-			vecs.emplace_back((float) c, 0.0f, (float) r, 1.0f);
-		}
-	}
-
-	return create(&vecs[0], sizeof(glm::vec4) * vecs.size());
 }
 
 int32_t VertexBuffer::createFullscreenQuad() {

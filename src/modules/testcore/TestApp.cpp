@@ -38,6 +38,10 @@ core::AppState TestApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
+	if (!_plane.init(glm::zero<glm::vec3>())) {
+		return core::AppState::Cleanup;
+	}
+
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.001");
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _dimension.x, _dimension.y, _aspect);
@@ -90,6 +94,9 @@ core::AppState TestApp::onRunning() {
 	_camera.move(moveDelta);
 
 	_camera.update(_deltaFrame);
+	if  (_renderPlane) {
+		_plane.render(_camera);
+	}
 	doRender();
 	_axis.render(_camera);
 
@@ -98,6 +105,7 @@ core::AppState TestApp::onRunning() {
 
 core::AppState TestApp::onCleanup() {
 	_axis.shutdown();
+	_plane.shutdown();
 	core::Command::unregisterCommand("+move_right");
 	core::Command::unregisterCommand("+move_left");
 	core::Command::unregisterCommand("+move_upt");

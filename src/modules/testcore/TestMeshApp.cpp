@@ -3,14 +3,11 @@
 TestMeshApp::TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
 	setCameraMotion(true);
+	setRenderPlane(false);
 }
 
 core::AppState TestMeshApp::onInit() {
 	core::AppState state = Super::onInit();
-
-	if (!_plane.init()) {
-		return core::AppState::Cleanup;
-	}
 
 	_sunLight.init(glm::vec3(20.0f, 50.0f, -20.0), dimension());
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
@@ -117,7 +114,6 @@ core::AppState TestMeshApp::onCleanup() {
 	_depthBuffer.shutdown();
 	_meshShader.shutdown();
 	_colorShader.shutdown();
-	_plane.shutdown();
 	_shadowMapShader.shutdown();
 	_mesh->shutdown();
 	_meshPool.shutdown();
