@@ -28,9 +28,9 @@ private:
 	uint32_t _byteAmount = 0u;
 	core::ReadWriteLock _rwLock;
 
-	std::array<Chunk*, 13> _chunkBuckets = { nullptr, nullptr, nullptr, nullptr,
+	std::array<Chunk*, 13> _chunkBuckets = {{ nullptr, nullptr, nullptr, nullptr,
 			nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-			nullptr, nullptr };
+			nullptr, nullptr }};
 
 	Chunk* chunk_cast(void* const ptr) const;
 
