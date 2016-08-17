@@ -35,7 +35,10 @@ bool CameraFrustum::init(const video::Camera& frustumCamera, const glm::vec4& co
 	_frustumBuffer.addAttribute(_colorShader.getLocationColor(), cIndex, 4);
 
 	_vertexAABBIndex = _aabbBuffer.create(nullptr, 0);
-	_indexAABBIndex = _aabbBuffer.create(indices, sizeof(indices), GL_ELEMENT_ARRAY_BUFFER);
+	// we don't want the last two to be uploaded - they are not used in the aabb
+	// Note: this is more or less a hack that assumes that the indices are the same for
+	// the frustum and the aabb
+	_indexAABBIndex = _aabbBuffer.create(indices, sizeof(indices) - 2 * sizeof(uint32_t), GL_ELEMENT_ARRAY_BUFFER);
 	const int32_t cAABBIndex = _aabbBuffer.create(colors, sizeof(colors));
 
 	// configure shader attributes
@@ -76,24 +79,25 @@ void CameraFrustum::render(const video::Camera& camera, const video::Camera& fru
 		return;
 	}
 
-	core::AABB<float> aabb(out[0], out[1]);
+	core::AABB<float> aabb(out[0], out[7]);
 	// fill buffers
 	for (size_t i = 0; i < SDL_arraysize(out); ++i) {
-		out4[i] = glm::vec4(out[i], 1.0f);
 		aabb.accumulate(out[i]);
 	}
 
 	glm::vec3 aabbOut[8];
-	uint32_t aabbIndices[24];
-	aabb.corners(aabbOut, aabbIndices);
-	glm::vec4 aabbOut4[8];
-	for (size_t i = 0; i < 8; ++i) {
-		aabbOut4[i] = glm::vec4(aabbOut[i], 1.0f);
+	aabb.corners(aabbOut, nullptr);
+	glm::vec4 aabbOut4[SDL_arraysize(aabbOut)];
+	const glm::mat4& transform = glm::inverse(frustumCamera.projectionMatrix() * frustumCamera.viewMatrix());
+	for (size_t i = 0; i < SDL_arraysize(aabbOut); ++i) {
+		const glm::vec4& v = transform * glm::vec4(aabbOut[i], 1.0f);
+		aabbOut4[i] = glm::vec4(v.xyz() / v.w, 1.0f);
 	}
 
-	_aabbBuffer.update(_vertexAABBIndex, aabbOut4, sizeof(aabbOut4));
+	core_assert_always(_aabbBuffer.update(_vertexAABBIndex, aabbOut4, sizeof(aabbOut4)));
 	core_assert_always(_aabbBuffer.bind());
 	const GLuint aabbIndicesAmount = _aabbBuffer.elements(_indexAABBIndex, 1, sizeof(uint32_t));
+	core_assert(aabbIndicesAmount == SDL_arraysize(aabbOut) * 3);
 	glDrawElements(GL_LINES, aabbIndicesAmount, GL_UNSIGNED_INT, 0);
 	_aabbBuffer.unbind();
 	GL_checkError();
