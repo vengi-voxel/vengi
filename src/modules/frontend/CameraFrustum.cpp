@@ -9,34 +9,24 @@ bool CameraFrustum::init(const video::Camera& frustumCamera, const glm::vec4& co
 		return false;
 	}
 
-	// allocate buffer space
-	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
 	// +2 because we also show the position and target as line
 	constexpr int outSize = video::FRUSTUM_VERTICES_MAX + 2;
-	glm::vec4 out4[outSize];
 	glm::vec4 colors[outSize];
 	uint32_t indices[24 + 2];
 
-	frustumCamera.frustumCorners(out, indices);
-
-	// fill buffers
-	for (size_t i = 0; i < SDL_arraysize(out); ++i) {
-		out4[i] = glm::vec4(out[i], 1.0f);
-	}
+	frustumCamera.frustumCorners(nullptr, indices);
 
 	for (size_t v = 0; v < SDL_arraysize(colors); ++v) {
 		colors[v] = color;
 	}
 	colors[video::FRUSTUM_VERTICES_MAX + 0] = core::Color::Green;
 	colors[video::FRUSTUM_VERTICES_MAX + 1] = core::Color::Green;
-	out4[video::FRUSTUM_VERTICES_MAX + 0] = glm::vec4(frustumCamera.position(), 1.0f);
-	out4[video::FRUSTUM_VERTICES_MAX + 1] = glm::vec4(frustumCamera.target(), 1.0f);
 
 	indices[24 + 0] = video::FRUSTUM_VERTICES_MAX + 0;
 	indices[24 + 1] = video::FRUSTUM_VERTICES_MAX + 1;
 
 	// upload to gpu
-	_vertexIndex = _frustumBuffer.create(out4, sizeof(out4));
+	_vertexIndex = _frustumBuffer.create(nullptr, 0);
 	_indexIndex = _frustumBuffer.create(indices, sizeof(indices), GL_ELEMENT_ARRAY_BUFFER);
 	const int32_t cIndex = _frustumBuffer.create(colors, sizeof(colors));
 
