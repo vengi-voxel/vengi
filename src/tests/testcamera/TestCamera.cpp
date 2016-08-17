@@ -31,6 +31,7 @@ core::AppState TestCamera::onInit() {
 
 	// allocate buffer space
 	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
+	glm::vec4 out4[video::FRUSTUM_VERTICES_MAX];
 	glm::vec4 colors[video::FRUSTUM_VERTICES_MAX];
 	uint32_t indices[24];
 
@@ -38,12 +39,13 @@ core::AppState TestCamera::onInit() {
 	glm::vec4 color = core::Color::Red;
 	for (size_t i = 0; i < video::FRUSTUM_VERTICES_MAX; ++i) {
 		colors[i] = color;
+		out4[i] = glm::vec4(out[i], 1.0f);
 		color = core::Color::Brighter(color, 0.5f);
 	}
 	_renderCamera.frustumCorners(out, indices);
 
 	// upload to gpu
-	_vertexIndex = _frustumBuffer.create(out, sizeof(out));
+	_vertexIndex = _frustumBuffer.create(out4, sizeof(out4));
 	_indexIndex = _frustumBuffer.create(indices, sizeof(indices), GL_ELEMENT_ARRAY_BUFFER);
 	const int32_t cIndex = _frustumBuffer.create(colors, sizeof(colors));
 
@@ -69,9 +71,13 @@ core::AppState TestCamera::onCleanup() {
 
 void TestCamera::doRender() {
 	// update the vertex buffer, because the reference camera might have changed
-	glm::vec3 out[8];
+	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
+	glm::vec4 out4[video::FRUSTUM_VERTICES_MAX];
 	_renderCamera.frustumCorners(out, nullptr);
-	_frustumBuffer.update(_vertexIndex, out, sizeof(out));
+	for (size_t i = 0; i < video::FRUSTUM_VERTICES_MAX; ++i) {
+		out4[i] = glm::vec4(out[i], 1.0f);
+	}
+	_frustumBuffer.update(_vertexIndex, out4, sizeof(out4));
 
 	video::ScopedShader scoped(_colorShader);
 	_colorShader.setView(_camera.viewMatrix());
