@@ -25,7 +25,6 @@ public:
 		glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, 0);
 		_planeBuffer.unbind();
 		GL_checkError();
-
 	}
 
 	void shutdown() {
