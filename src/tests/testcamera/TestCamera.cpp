@@ -50,6 +50,8 @@ core::AppState TestCamera::onInit() {
 		for (size_t v = 0; v < SDL_arraysize(colors); ++v) {
 			colors[v] = _colors[i];
 		}
+		colors[video::FRUSTUM_VERTICES_MAX + 0] = core::Color::Green;
+		colors[video::FRUSTUM_VERTICES_MAX + 1] = core::Color::Green;
 		out4[video::FRUSTUM_VERTICES_MAX + 0] = glm::vec4(_renderCamera[i].position(), 1.0f);
 		out4[video::FRUSTUM_VERTICES_MAX + 1] = glm::vec4(_renderCamera[i].target(), 1.0f);
 
