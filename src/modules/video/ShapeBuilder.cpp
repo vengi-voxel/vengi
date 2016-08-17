@@ -2,7 +2,7 @@
 
 namespace video {
 
-void ShapeBuilder::init(uint32_t tesselation) {
+void ShapeBuilder::initPlane(uint32_t tesselation) {
 	static const glm::vec2 uv0(0.0f, 1.0f);
 	static const glm::vec2 uv1(1.0f, 0.0f);
 	static const glm::vec2 uv2(0.0f, 0.0f);

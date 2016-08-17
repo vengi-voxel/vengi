@@ -45,7 +45,7 @@ public:
 			return false;
 		}
 
-		_shapeBuilder.init(tesselation);
+		_shapeBuilder.initPlane(tesselation);
 
 		const video::ShapeBuilder::Vertices& vertices = _shapeBuilder.getVertices();
 		const video::ShapeBuilder::Indices& indices = _shapeBuilder.getIndices();

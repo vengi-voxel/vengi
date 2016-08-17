@@ -22,7 +22,7 @@ public:
 	/**
 	 * @param[in] tesselation The amount of splits on the plane that should be made
 	 */
-	void init(uint32_t tesselation = 10);
+	void initPlane(uint32_t tesselation = 10);
 	/**
 	 * @brief Frees the memory
 	 */
