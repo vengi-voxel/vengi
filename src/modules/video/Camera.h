@@ -203,7 +203,7 @@ public:
 
 	void update(long deltaFrame);
 
-	void frustumCorners(glm::vec3 out[8]) const;
+	void frustumCorners(glm::vec3 out[video::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
 	const glm::vec4& frustumPlane(FrustumPlanes plane) const;
 	FrustumResult testFrustum(const glm::vec3& position) const;
 	// TODO: use core::AABB here
@@ -372,10 +372,54 @@ inline const glm::vec4& Camera::frustumPlane(FrustumPlanes plane) const {
 	return _frustumPlanes[int(plane)];
 }
 
-inline void Camera::frustumCorners(glm::vec3 out[8]) const {
+inline void Camera::frustumCorners(glm::vec3 out[video::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const {
 	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
 		out[i] = _frustumVertices[i];
 	}
+	if (indices == nullptr) {
+		return;
+	}
+
+	uint32_t currentIndex = 0;
+
+	// near plane
+	indices[currentIndex++] = 0;
+	indices[currentIndex++] = 1;
+
+	indices[currentIndex++] = 1;
+	indices[currentIndex++] = 3;
+
+	indices[currentIndex++] = 3;
+	indices[currentIndex++] = 2;
+
+	indices[currentIndex++] = 2;
+	indices[currentIndex++] = 0;
+
+	// far plane
+	indices[currentIndex++] = 4;
+	indices[currentIndex++] = 5;
+
+	indices[currentIndex++] = 5;
+	indices[currentIndex++] = 7;
+
+	indices[currentIndex++] = 7;
+	indices[currentIndex++] = 6;
+
+	indices[currentIndex++] = 6;
+	indices[currentIndex++] = 4;
+
+	// connections
+	indices[currentIndex++] = 0;
+	indices[currentIndex++] = 4;
+
+	indices[currentIndex++] = 2;
+	indices[currentIndex++] = 6;
+
+	indices[currentIndex++] = 1;
+	indices[currentIndex++] = 5;
+
+	indices[currentIndex++] = 3;
+	indices[currentIndex++] = 7;
 }
 
 inline float Camera::fieldOfView() const {

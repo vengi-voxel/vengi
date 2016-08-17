@@ -16,6 +16,7 @@ private:
 	using Super = video::WindowedApp;
 	bool _cameraMotion = false;
 	bool _renderPlane = false;
+	bool _renderAxis = true;
 protected:
 	video::Camera _camera;
 	frontend::Axis _axis;
@@ -37,6 +38,10 @@ protected:
 
 	inline void setRenderPlane(bool renderPlane) {
 		_renderPlane = renderPlane;
+	}
+
+	inline void setRenderAxis(bool renderAxis) {
+		_renderAxis = renderAxis;
 	}
 
 public:

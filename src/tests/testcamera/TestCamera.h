@@ -18,7 +18,8 @@ private:
 	// the camera to render the frustum for
 	video::Camera _renderCamera;
 	video::VertexBuffer _frustumBuffer;
-	int32_t _frustumIndex = -1;
+	int32_t _vertexIndex = -1;
+	int32_t _indexIndex = -1;
 	shader::ColorShader _colorShader;
 
 	void doRender() override;

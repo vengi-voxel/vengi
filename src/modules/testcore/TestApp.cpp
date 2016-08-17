@@ -48,7 +48,7 @@ core::AppState TestApp::onInit() {
 	_camera.init(dimension());
 	_camera.setAspectRatio(_aspect);
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
-	_camera.lookAt(glm::vec3(0.0f));
+	_camera.lookAt(glm::vec3(0.0001f));
 
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
@@ -98,7 +98,9 @@ core::AppState TestApp::onRunning() {
 		_plane.render(_camera);
 	}
 	doRender();
-	_axis.render(_camera);
+	if (_renderAxis) {
+		_axis.render(_camera);
+	}
 
 	return state;
 }

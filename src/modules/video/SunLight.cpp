@@ -16,7 +16,7 @@ void SunLight::init(const glm::vec3& sunPos, const glm::ivec2& dimension) {
 
 void SunLight::update(long dt, const Camera& camera) {
 	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
-	camera.frustumCorners(out);
+	camera.frustumCorners(out, nullptr);
 
 	/**
 	 * https://www.uni-koblenz.de/~cg/Studienarbeiten/ShadowMappingNicoHempe.pdf
