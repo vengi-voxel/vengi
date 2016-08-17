@@ -15,11 +15,13 @@ class TestCamera: public TestApp {
 private:
 	using Super = TestApp;
 
-	// the camera to render the frustum for
-	video::Camera _renderCamera;
-	video::VertexBuffer _frustumBuffer;
-	int32_t _vertexIndex = -1;
-	int32_t _indexIndex = -1;
+	static constexpr int CAMERAS = 2;
+	// the cameras to render the frustums for
+	video::Camera _renderCamera[CAMERAS];
+	video::VertexBuffer _frustumBuffer[CAMERAS];
+	int32_t _vertexIndex[CAMERAS] = { -1, -1 };
+	int32_t _indexIndex[CAMERAS] = { -1, -1 };
+	int _targetCamera = 0;
 	shader::ColorShader _colorShader;
 
 	void doRender() override;
