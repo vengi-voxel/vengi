@@ -27,5 +27,6 @@ public:
 	TestCamera(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
 
 	core::AppState onInit() override;
+	core::AppState onRunning() override;
 	core::AppState onCleanup() override;
 };

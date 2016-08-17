@@ -54,6 +54,12 @@ core::AppState TestCamera::onInit() {
 	return state;
 }
 
+core::AppState TestCamera::onRunning() {
+	core::AppState state = Super::onRunning();
+	_renderCamera.update(_deltaFrame);
+	return state;
+}
+
 core::AppState TestCamera::onCleanup() {
 	core::AppState state = Super::onCleanup();
 	_colorShader.shutdown();
