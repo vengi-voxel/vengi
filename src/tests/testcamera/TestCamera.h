@@ -5,8 +5,7 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "video/Camera.h"
-#include "ColorShader.h"
+#include "frontend/CameraFrustum.h"
 
 /**
  * @brief Renders the view frustum of a camera
@@ -16,15 +15,11 @@ private:
 	using Super = TestApp;
 
 	static constexpr int CAMERAS = 2;
+	frontend::CameraFrustum _frustums[CAMERAS];
 	// the cameras to render the frustums for
 	video::Camera _renderCamera[CAMERAS];
-	video::VertexBuffer _frustumBuffer[CAMERAS];
-	int32_t _vertexIndex[CAMERAS] = { -1, -1 };
-	int32_t _indexIndex[CAMERAS] = { -1, -1 };
-	glm::vec4 _colors[CAMERAS];
 
 	int _targetCamera = 0;
-	shader::ColorShader _colorShader;
 
 	void doRender() override;
 public:
