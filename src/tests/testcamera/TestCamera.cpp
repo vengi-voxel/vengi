@@ -7,7 +7,7 @@ TestCamera::TestCamera(io::FilesystemPtr filesystem, core::EventBusPtr eventBus)
 		Super(filesystem, eventBus) {
 	setCameraMotion(true);
 	setRenderPlane(false);
-	setRenderAxis(false);
+	setRenderAxis(true);
 }
 
 core::AppState TestCamera::onInit() {
@@ -21,13 +21,14 @@ core::AppState TestCamera::onInit() {
 	_renderCamera.setAspectRatio(_aspect);
 	_renderCamera.setRotationType(video::CameraRotationType::Target);
 	_renderCamera.setPosition(glm::vec3(1.0f, 10.0f, 1.0f));
+	_renderCamera.setOmega(glm::vec3(0.0f, 0.001f, 0.0f));
 	_renderCamera.setTarget(glm::vec3(10.0f, 70.0f, 10.0f));
-	_renderCamera.setNearPlane(0.1f);
-	_renderCamera.setFarPlane(10.0f);
+	_renderCamera.setNearPlane(5.0f);
+	_renderCamera.setFarPlane(40.0f);
 	_renderCamera.update(0l);
 
-	_camera.setPosition(glm::vec3(100.0f, 100.0f, 100.0f));
-	_camera.lookAt(_renderCamera.position());
+	_camera.setRotationType(video::CameraRotationType::Target);
+	_camera.setTarget(_renderCamera.position());
 
 	// allocate buffer space
 	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
@@ -59,6 +60,7 @@ core::AppState TestCamera::onInit() {
 core::AppState TestCamera::onRunning() {
 	core::AppState state = Super::onRunning();
 	_renderCamera.update(_deltaFrame);
+	_camera.setTarget(_renderCamera.position());
 	return state;
 }
 

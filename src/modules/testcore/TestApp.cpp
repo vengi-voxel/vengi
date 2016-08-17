@@ -115,6 +115,12 @@ core::AppState TestApp::onCleanup() {
 	return Super::onCleanup();
 }
 
+void TestApp::onMouseWheel(int32_t x, int32_t y) {
+	Super::onMouseWheel(x, y);
+	const float targetDistance = glm::clamp(_camera.targetDistance() - y, 0.0f, 500.0f);
+	_camera.setTargetDistance(targetDistance);
+}
+
 void TestApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	Super::onMouseMotion(x, y, relX, relY);
 	if (_cameraMotion) {

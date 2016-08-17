@@ -43,12 +43,6 @@ core::AppState TestMeshApp::onInit() {
 	return state;
 }
 
-void TestMeshApp::onMouseWheel(int32_t x, int32_t y) {
-	Super::onMouseWheel(x, y);
-	const float targetDistance = glm::clamp(_camera.targetDistance() - y, 0.0f, 500.0f);
-	_camera.setTargetDistance(targetDistance);
-}
-
 void TestMeshApp::doRender() {
 	_sunLight.update(_deltaFrame, _camera);
 	// TODO: support different animations...
