@@ -74,6 +74,7 @@ bool VertexBuffer::update(int index, const void* data, GLsizeiptr size) {
 	glBindBuffer(_targets[index], _handles[index]);
 	glBufferData(_targets[index], size, data, GL_STATIC_DRAW);
 	glBindBuffer(_targets[index], 0);
+	_size[index] = size;
 
 	return true;
 }
