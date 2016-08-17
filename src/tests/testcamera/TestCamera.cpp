@@ -34,7 +34,7 @@ core::AppState TestCamera::onInit() {
 	}
 
 	_camera.setRotationType(video::CameraRotationType::Target);
-	_camera.setTarget(_renderCamera[0].position());
+	_camera.setTarget(_renderCamera[_targetCamera].position());
 
 	return state;
 }
