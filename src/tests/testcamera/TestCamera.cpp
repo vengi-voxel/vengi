@@ -11,29 +11,26 @@ TestCamera::TestCamera(io::FilesystemPtr filesystem, core::EventBusPtr eventBus)
 
 core::AppState TestCamera::onInit() {
 	core::AppState state = Super::onInit();
-	_renderCamera[0].update(0l);
-	_renderCamera[1].update(0l);
-
-	if (!_frustums[0].init(_renderCamera[0], core::Color::Red)) {
-		return core::AppState::Cleanup;
-	}
-	if (!_frustums[1].init(_renderCamera[1], core::Color::Yellow)) {
-		return core::AppState::Cleanup;
-	}
-
+	const glm::vec4 colors[CAMERAS] = { core::Color::Red, core::Color::Yellow };
 	static_assert(CAMERAS == 2, "Unexpected amount of cameras");
-
 	for (int i = 0; i < CAMERAS; ++i) {
 		const float p = i * 10.0f + 1.0f;
 		_renderCamera[i].init(dimension());
 		_renderCamera[i].setAspectRatio(_aspect);
 		_renderCamera[i].setRotationType(video::CameraRotationType::Target);
 		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.001f, 0.0f));
+
 		// TODO: per camera settings
 		_renderCamera[i].setPosition(glm::vec3(p, 10.0f, p));
 		_renderCamera[i].setTarget(glm::vec3(10.0f, 70.0f, 10.0f));
 		_renderCamera[i].setNearPlane(5.0f);
 		_renderCamera[i].setFarPlane(40.0f);
+
+		_renderCamera[i].update(0l);
+
+		if (!_frustums[i].init(_renderCamera[i], colors[i])) {
+			return core::AppState::Cleanup;
+		}
 	}
 
 	_camera.setRotationType(video::CameraRotationType::Target);
