@@ -52,20 +52,20 @@ public:
 	 */
 	bool addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type = GL_FLOAT, bool normalized = false, int stride = 0, intptr_t offset = 0, uint8_t divisor = 0);
 
-	bool update(int idx, const void* data, GLsizeiptr size);
+	bool update(int32_t idx, const void* data, GLsizeiptr size);
 	int32_t create(const void* data, GLsizeiptr size, GLenum target = GL_ARRAY_BUFFER);
 	int32_t createFullscreenQuad();
 	int32_t createFullscreenTextureBuffer();
 	glm::ivec2 createFullscreenTexturedQuad();
 	bool bind();
 	void unbind();
-	GLuint size(int idx) const;
-	GLuint elements(int idx, int components = 3, size_t componentSize = sizeof(float)) const;
-	bool isValid(int idx) const;
-	GLuint handle(int idx) const;
+	GLuint size(int32_t idx) const;
+	GLuint elements(int32_t idx, int components = 3, size_t componentSize = sizeof(float)) const;
+	bool isValid(int32_t idx) const;
+	GLuint handle(int32_t idx) const;
 };
 
-inline bool VertexBuffer::isValid(int idx) const {
+inline bool VertexBuffer::isValid(int32_t idx) const {
 	if (idx < 0) {
 		return false;
 	}
@@ -75,16 +75,16 @@ inline bool VertexBuffer::isValid(int idx) const {
 	return _handles[idx] != GL_INVALID_VALUE && _handles[idx] > 0;
 }
 
-inline GLuint VertexBuffer::size(int idx) const {
+inline GLuint VertexBuffer::size(int32_t idx) const {
 	core_assert(idx >= 0 && idx < (int)SDL_arraysize(_size));
 	return _size[idx];
 }
 
-inline GLuint VertexBuffer::elements(int idx, int components, size_t componentSize) const {
+inline GLuint VertexBuffer::elements(int32_t idx, int components, size_t componentSize) const {
 	return size(idx) / (components * componentSize);
 }
 
-inline GLuint VertexBuffer::handle(int idx) const {
+inline GLuint VertexBuffer::handle(int32_t idx) const {
 	core_assert(idx >= 0 && idx < (int)SDL_arraysize(_handles));
 	return _handles[idx];
 }

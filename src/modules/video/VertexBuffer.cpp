@@ -66,15 +66,15 @@ void VertexBuffer::unbind() {
 	}
 }
 
-bool VertexBuffer::update(int index, const void* data, GLsizeiptr size) {
-	if (!isValid(index)) {
+bool VertexBuffer::update(int32_t idx, const void* data, GLsizeiptr size) {
+	if (!isValid(idx)) {
 		return false;
 	}
 
-	glBindBuffer(_targets[index], _handles[index]);
-	glBufferData(_targets[index], size, data, GL_STATIC_DRAW);
-	glBindBuffer(_targets[index], 0);
-	_size[index] = size;
+	glBindBuffer(_targets[idx], _handles[idx]);
+	glBufferData(_targets[idx], size, data, GL_STATIC_DRAW);
+	glBindBuffer(_targets[idx], 0);
+	_size[idx] = size;
 
 	return true;
 }
