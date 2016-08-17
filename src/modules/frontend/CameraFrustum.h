@@ -11,15 +11,26 @@ namespace frontend {
 class CameraFrustum {
 protected:
 	video::VertexBuffer _frustumBuffer;
+	video::VertexBuffer _aabbBuffer;
 	int32_t _vertexIndex = -1;
 	int32_t _indexIndex = -1;
+	int32_t _vertexAABBIndex = -1;
+	int32_t _indexAABBIndex = -1;
 	shader::ColorShader _colorShader;
+
+	bool _renderAABB = false;
 public:
 	bool init(const video::Camera& frustumCamera, const glm::vec4& color = core::Color::Red);
 
 	void shutdown();
 
+	void setRenderAABB(bool renderAABB);
+
 	void render(const video::Camera& camera, const video::Camera& frustumCamera);
 };
+
+inline void CameraFrustum::setRenderAABB(bool renderAABB) {
+	_renderAABB = renderAABB;
+}
 
 }
