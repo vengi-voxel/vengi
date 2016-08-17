@@ -192,25 +192,19 @@ void Camera::updateFrustumVertices() {
 	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE)) {
 		return;
 	}
-	static constexpr float degtorad2 = glm::pi<float>() / 360.0f;
-	const float halfViewSize = glm::tan(degtorad2 * _fieldOfView);
-	glm::vec3 near;
-	near.z = nearPlane();
-	near.y = near.z * halfViewSize;
-	near.x = near.y * aspectRatio();
-	glm::vec3 far;
-	far.z = farPlane();
-	far.y = far.z * halfViewSize;
-	far.x = far.y * aspectRatio();
-	const glm::mat3x4 transform(_viewMatrix);
-	_frustumVertices[0] = glm::vec3(transform * near);
-	_frustumVertices[1] = glm::vec3(transform * glm::vec3(near.x, -near.y, near.z));
-	_frustumVertices[2] = glm::vec3(transform * glm::vec3(-near.x, -near.y, near.z));
-	_frustumVertices[3] = glm::vec3(transform * glm::vec3(-near.x, near.y, near.z));
-	_frustumVertices[4] = glm::vec3(transform * far);
-	_frustumVertices[5] = glm::vec3(transform * glm::vec3(far.x, -far.y, far.z));
-	_frustumVertices[6] = glm::vec3(transform * glm::vec3(-far.x, -far.y, far.z));
-	_frustumVertices[7] = glm::vec3(transform * glm::vec3(-far.x, far.y, far.z));
+
+	static const glm::vec4 vecs[video::FRUSTUM_VERTICES_MAX] = {
+		glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
+		glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
+		glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
+		glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
+	};
+
+	const glm::mat4& transform = glm::inverse(projectionMatrix() * viewMatrix());
+	for (int i = 0; i < video::FRUSTUM_VERTICES_MAX; ++i) {
+		const glm::vec4& v = transform * vecs[i];
+		_frustumVertices[i] = v.xyz() / v.w;
+	}
 }
 
 void Camera::updateFrustumPlanes() {
