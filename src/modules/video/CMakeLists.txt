@@ -15,7 +15,7 @@ set(SRCS
 	Texture.cpp Texture.h
 	Mesh.cpp Mesh.h
 	MeshPool.cpp MeshPool.h
-	RectTesselator.cpp RectTesselator.h
+	ShapeBuilder.cpp ShapeBuilder.h
 	ScopedViewPort.h
 	ScopedFrameBuffer.h
 	SunLight.h SunLight.cpp

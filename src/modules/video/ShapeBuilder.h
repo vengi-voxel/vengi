@@ -6,7 +6,7 @@
 
 namespace video {
 
-class RectTesselator {
+class ShapeBuilder {
 public:
 	typedef std::vector<uint32_t> Indices;
 	typedef Indices::const_iterator IndicesIter;
@@ -38,15 +38,15 @@ public:
 	const Texcoords& getTexcoords() const;
 };
 
-inline const RectTesselator::Vertices& RectTesselator::getVertices() const {
+inline const ShapeBuilder::Vertices& ShapeBuilder::getVertices() const {
 	return _vertices;
 }
 
-inline const RectTesselator::Indices& RectTesselator::getIndices() const {
+inline const ShapeBuilder::Indices& ShapeBuilder::getIndices() const {
 	return _indices;
 }
 
-inline const RectTesselator::Texcoords& RectTesselator::getTexcoords() const {
+inline const ShapeBuilder::Texcoords& ShapeBuilder::getTexcoords() const {
 	return _texcoords;
 }
 

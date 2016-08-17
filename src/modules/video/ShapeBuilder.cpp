@@ -1,8 +1,8 @@
-#include "RectTesselator.h"
+#include "ShapeBuilder.h"
 
 namespace video {
 
-void RectTesselator::init(uint32_t tesselation) {
+void ShapeBuilder::init(uint32_t tesselation) {
 	static const glm::vec2 uv0(0.0f, 1.0f);
 	static const glm::vec2 uv1(1.0f, 0.0f);
 	static const glm::vec2 uv2(0.0f, 0.0f);
@@ -39,7 +39,7 @@ void RectTesselator::init(uint32_t tesselation) {
 	}
 }
 
-void RectTesselator::shutdown() {
+void ShapeBuilder::shutdown() {
 	_vertices.clear();
 	_texcoords.clear();
 	_indices.clear();

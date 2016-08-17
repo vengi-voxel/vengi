@@ -2,7 +2,7 @@
 
 #include "video/VertexBuffer.h"
 #include "video/Camera.h"
-#include "video/RectTesselator.h"
+#include "video/ShapeBuilder.h"
 #include "core/Color.h"
 #include "ColorShader.h"
 #include <algorithm>
@@ -13,7 +13,7 @@ class Plane {
 private:
 	shader::ColorShader _colorShader;
 	video::VertexBuffer _planeBuffer;
-	video::RectTesselator _tesselator;
+	video::ShapeBuilder _shapeBuilder;
 	int32_t _iIndex = -1;
 public:
 	void render(const video::Camera& camera) {
@@ -21,7 +21,7 @@ public:
 		_colorShader.setView(camera.viewMatrix());
 		_colorShader.setProjection(camera.projectionMatrix());
 		core_assert_always(_planeBuffer.bind());
-		const GLuint indices = _planeBuffer.elements(_iIndex, 1, sizeof(video::RectTesselator::Indices::value_type));
+		const GLuint indices = _planeBuffer.elements(_iIndex, 1, sizeof(video::ShapeBuilder::Indices::value_type));
 		glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, 0);
 		_planeBuffer.unbind();
 		GL_checkError();
@@ -31,7 +31,7 @@ public:
 	void shutdown() {
 		_colorShader.shutdown();
 		_planeBuffer.shutdown();
-		_tesselator.shutdown();
+		_shapeBuilder.shutdown();
 	}
 
 	/**
@@ -45,10 +45,10 @@ public:
 			return false;
 		}
 
-		_tesselator.init(tesselation);
+		_shapeBuilder.init(tesselation);
 
-		const video::RectTesselator::Vertices& vertices = _tesselator.getVertices();
-		const video::RectTesselator::Indices& indices = _tesselator.getIndices();
+		const video::ShapeBuilder::Vertices& vertices = _shapeBuilder.getVertices();
+		const video::ShapeBuilder::Indices& indices = _shapeBuilder.getIndices();
 
 		std::vector<glm::vec4> verticesPlane;
 		verticesPlane.reserve(vertices.size());
@@ -63,7 +63,7 @@ public:
 
 		const int32_t vIndex = _planeBuffer.create(&verticesPlane[0], vecSize);
 		const int32_t cIndex = _planeBuffer.create(&colorPlane[0], vecSize);
-		_iIndex = _planeBuffer.create(&indices[0], indices.size() * sizeof(video::RectTesselator::Indices::value_type), GL_ELEMENT_ARRAY_BUFFER);
+		_iIndex = _planeBuffer.create(&indices[0], indices.size() * sizeof(video::ShapeBuilder::Indices::value_type), GL_ELEMENT_ARRAY_BUFFER);
 		core_assert(vIndex >= 0 && cIndex >= 0 && _iIndex >= 0);
 		_planeBuffer.addAttribute(_colorShader.getLocationPos(), vIndex, 4);
 		_planeBuffer.addAttribute(_colorShader.getLocationColor(), cIndex, 4);
