@@ -79,7 +79,7 @@ void CameraFrustum::render(const video::Camera& camera, const video::Camera& fru
 		return;
 	}
 
-	core::AABB<float> aabb(out[0], out[7]);
+	core::AABB<float> aabb(out[1], out[6]);
 	// fill buffers
 	for (size_t i = 0; i < SDL_arraysize(out); ++i) {
 		aabb.accumulate(out[i]);
