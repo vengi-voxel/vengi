@@ -373,9 +373,12 @@ inline const glm::vec4& Camera::frustumPlane(FrustumPlanes plane) const {
 }
 
 inline void Camera::frustumCorners(glm::vec3 out[video::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const {
-	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
-		out[i] = _frustumVertices[i];
+	if (out != nullptr) {
+		for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
+			out[i] = _frustumVertices[i];
+		}
 	}
+
 	if (indices == nullptr) {
 		return;
 	}
