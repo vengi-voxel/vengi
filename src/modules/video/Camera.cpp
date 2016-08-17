@@ -192,7 +192,8 @@ void Camera::updateFrustumVertices() {
 	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE)) {
 		return;
 	}
-	const float halfViewSize = glm::tan(glm::pi<float>() / 360.0f * _fieldOfView);
+	static constexpr float degtorad2 = glm::pi<float>() / 360.0f;
+	const float halfViewSize = glm::tan(degtorad2 * _fieldOfView);
 	glm::vec3 near;
 	near.z = nearPlane();
 	near.y = near.z * halfViewSize;
