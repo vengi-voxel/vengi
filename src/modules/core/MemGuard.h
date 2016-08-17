@@ -9,6 +9,10 @@
 
 namespace core {
 
+/**
+ * @brief The memguard class implements memory consistency checks
+ * like underflow or overflow of the allocated memory.
+ */
 class MemGuard {
 private:
 	static constexpr uint32_t _headGuard = 0xDEADBEEF;

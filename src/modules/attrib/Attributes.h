@@ -9,6 +9,11 @@
 
 namespace attrib {
 
+/**
+ * @brief Attributes are applied via @c Container instances
+ *
+ * @sa ContainerProvider
+ */
 class Attributes {
 protected:
 	std::atomic_bool _dirty;

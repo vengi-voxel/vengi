@@ -26,6 +26,14 @@ class Entity;
 typedef std::shared_ptr<Entity> EntityPtr;
 typedef std::unordered_set<EntityPtr> EntitySet;
 
+/**
+ * @brief Every actor in the world is an entity
+ *
+ * Entities are updated via @c network::ServerMsgType::EntityUpdate
+ * message for the clients that are seeing the entity
+ *
+ * @sa EntityUpdateHandler
+ */
 class Entity {
 private:
 	core::ReadWriteLock _visibleLock;
