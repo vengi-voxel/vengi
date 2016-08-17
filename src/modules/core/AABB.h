@@ -641,7 +641,7 @@ void AABB<TYPE>::corners(glm::vec3 out[8], uint32_t indices[24]) const {
 	const glm::mat4& transform = glm::translate(glm::mat4(), getCentre());
 
 	for (int i = 0; i < 8; ++i) {
-		out[0] = glm::vec3(transform * vecs[i]).xyz();
+		out[i] = glm::vec3(transform * vecs[i]).xyz();
 	}
 	if (indices == nullptr) {
 		return;
