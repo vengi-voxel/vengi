@@ -12,7 +12,7 @@ bool CameraFrustum::init(const video::Camera& frustumCamera, const glm::vec4& co
 	// +2 because we also show the position and target as line
 	constexpr int outSize = video::FRUSTUM_VERTICES_MAX + 2;
 	glm::vec4 colors[outSize];
-	uint32_t indices[24 + 2];
+	uint32_t indices[video::FRUSTUM_VERTICES_MAX * 3 + 2];
 
 	frustumCamera.frustumCorners(nullptr, indices);
 
@@ -22,8 +22,8 @@ bool CameraFrustum::init(const video::Camera& frustumCamera, const glm::vec4& co
 	colors[video::FRUSTUM_VERTICES_MAX + 0] = core::Color::Green;
 	colors[video::FRUSTUM_VERTICES_MAX + 1] = core::Color::Green;
 
-	indices[24 + 0] = video::FRUSTUM_VERTICES_MAX + 0;
-	indices[24 + 1] = video::FRUSTUM_VERTICES_MAX + 1;
+	indices[video::FRUSTUM_VERTICES_MAX * 3 + 0] = video::FRUSTUM_VERTICES_MAX + 0;
+	indices[video::FRUSTUM_VERTICES_MAX * 3 + 1] = video::FRUSTUM_VERTICES_MAX + 1;
 
 	// upload to gpu
 	_vertexIndex = _frustumBuffer.create(nullptr, 0);
