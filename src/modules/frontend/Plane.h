@@ -44,15 +44,15 @@ public:
 			return false;
 		}
 
-		_shapeBuilder.initPlane(tesselation);
+		_shapeBuilder.plane(tesselation);
 
 		const video::ShapeBuilder::Vertices& vertices = _shapeBuilder.getVertices();
 		const video::ShapeBuilder::Indices& indices = _shapeBuilder.getIndices();
 
 		std::vector<glm::vec4> verticesPlane;
 		verticesPlane.reserve(vertices.size());
-		for (const glm::vec2& v : vertices) {
-			verticesPlane.emplace_back(position.x + v.x * scale, position.y, position.z + v.y * scale, 1.0f);
+		for (const glm::vec3& v : vertices) {
+			verticesPlane.emplace_back(position + v * scale, 1.0f);
 		}
 
 		std::vector<glm::vec4> colorPlane(vertices.size());

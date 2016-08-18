@@ -52,6 +52,7 @@ void CameraFrustum::shutdown() {
 	_colorShader.shutdown();
 	_frustumBuffer.shutdown();
 	_aabbBuffer.shutdown();
+	_shapeBuilder.shutdown();
 }
 
 void CameraFrustum::render(const video::Camera& camera, const video::Camera& frustumCamera) {

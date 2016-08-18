@@ -2,7 +2,71 @@
 
 namespace video {
 
-void ShapeBuilder::initPlane(uint32_t tesselation) {
+void ShapeBuilder::aabb(const core::AABB<float>& aabb) {
+	reserve(8);
+
+	static const glm::vec3 vecs[8] = {
+		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(-0.5f, -0.5f,  0.5f),
+		glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3( 0.5f, -0.5f,  0.5f),
+		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(-0.5f, -0.5f, -0.5f),
+		glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3( 0.5f, -0.5f, -0.5f)
+	};
+	const glm::vec3& width = aabb.getWidth() / 2.0f;
+	const glm::vec3& center = aabb.getCenter();
+	for (int i = 0; i < 8; ++i) {
+		addVertex(vecs[i] * width + center, glm::zero<glm::vec2>());
+	}
+
+	uint32_t currentIndex = 0;
+
+	// front
+	_indices[currentIndex++] = 0;
+	_indices[currentIndex++] = 1;
+
+	_indices[currentIndex++] = 1;
+	_indices[currentIndex++] = 3;
+
+	_indices[currentIndex++] = 3;
+	_indices[currentIndex++] = 2;
+
+	_indices[currentIndex++] = 2;
+	_indices[currentIndex++] = 0;
+
+	// back
+	_indices[currentIndex++] = 4;
+	_indices[currentIndex++] = 5;
+
+	_indices[currentIndex++] = 5;
+	_indices[currentIndex++] = 7;
+
+	_indices[currentIndex++] = 7;
+	_indices[currentIndex++] = 6;
+
+	_indices[currentIndex++] = 6;
+	_indices[currentIndex++] = 4;
+
+	// connections
+	_indices[currentIndex++] = 0;
+	_indices[currentIndex++] = 4;
+
+	_indices[currentIndex++] = 2;
+	_indices[currentIndex++] = 6;
+
+	_indices[currentIndex++] = 1;
+	_indices[currentIndex++] = 5;
+
+	_indices[currentIndex++] = 3;
+	_indices[currentIndex++] = 7;
+}
+
+void ShapeBuilder::frustum(const Camera& camera) {
+	reserve(video::FRUSTUM_VERTICES_MAX, 2);
+	camera.frustumCorners(&_vertices[0], &_indices[0]);
+	_indices[video::FRUSTUM_VERTICES_MAX * 3 + 0] = video::FRUSTUM_VERTICES_MAX + 0;
+	_indices[video::FRUSTUM_VERTICES_MAX * 3 + 1] = video::FRUSTUM_VERTICES_MAX + 1;
+}
+
+void ShapeBuilder::plane(uint32_t tesselation) {
 	static const glm::vec2 uv0(0.0f, 1.0f);
 	static const glm::vec2 uv1(1.0f, 0.0f);
 	static const glm::vec2 uv2(0.0f, 0.0f);
@@ -16,14 +80,13 @@ void ShapeBuilder::initPlane(uint32_t tesselation) {
 	const float scaleX = meshBounds.x / (tesselation + 1);
 	const float scaleY = meshBounds.y / (tesselation + 1);
 
-	_vertices.reserve(strucWidth * strucWidth);
-	_texcoords.reserve(strucWidth * strucWidth);
-	_indices.reserve((tesselation + 1) * (tesselation + 1) * 6);
+	reserve(strucWidth * strucWidth);
 
 	for (float y = 0.0f; y < strucWidth; ++y) {
 		for (float x = 0.0f; x < strucWidth; ++x) {
-			_vertices.emplace_back(x * scaleX - anchorOffset.x, y * scaleY - anchorOffset.y);
-			_texcoords.emplace_back((x * segmentWidth * uvBounds.x) + uvPos.x, uvBounds.y - (y * segmentWidth * uvBounds.y) + uvPos.y);
+			const glm::vec2 uv((x * segmentWidth * uvBounds.x) + uvPos.x, uvBounds.y - (y * segmentWidth * uvBounds.y) + uvPos.y);
+			const glm::vec3 v(x * scaleX - anchorOffset.x, 0.0f, y * scaleY - anchorOffset.y);
+			addVertex(v, uv);
 		}
 	}
 
@@ -40,9 +103,7 @@ void ShapeBuilder::initPlane(uint32_t tesselation) {
 }
 
 void ShapeBuilder::shutdown() {
-	_vertices.clear();
-	_texcoords.clear();
-	_indices.clear();
+	clear();
 }
 
 }

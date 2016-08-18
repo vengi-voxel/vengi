@@ -17,6 +17,7 @@ protected:
 	int32_t _vertexAABBIndex = -1;
 	int32_t _indexAABBIndex = -1;
 	shader::ColorShader _colorShader;
+	video::ShapeBuilder _shapeBuilder;
 
 	bool _renderAABB = false;
 public:
