@@ -21,12 +21,17 @@ public:
 	/// Inequality Operator.
 	bool operator!=(const AABB& rhs) const;
 
-	/// Gets the 'x' position of the centre.
-	TYPE getCentreX() const;
-	/// Gets the 'y' position of the centre.
-	TYPE getCentreY() const;
-	/// Gets the 'z' position of the centre.
-	TYPE getCentreZ() const;
+	TYPE getWidthX() const;
+	TYPE getWidthY() const;
+	TYPE getWidthZ() const;
+	glm::tvec3<TYPE> getWidth() const;
+
+	/// Gets the 'x' position of the center.
+	TYPE getCenterX() const;
+	/// Gets the 'y' position of the center.
+	TYPE getCenterY() const;
+	/// Gets the 'z' position of the center.
+	TYPE getCenterZ() const;
 	/// Gets the 'x' position of the lower corner.
 	TYPE getLowerX() const;
 	/// Gets the 'y' position of the lower corner.
@@ -40,8 +45,8 @@ public:
 	/// Gets the 'z' position of the upper corner.
 	TYPE getUpperZ() const;
 
-	/// Gets the centre of the AABB
-	glm::tvec3<TYPE> getCentre() const;
+	/// Gets the center of the AABB
+	glm::tvec3<TYPE> getCenter() const;
 	/// Gets the position of the lower corner.
 	glm::tvec3<TYPE> getLowerCorner() const;
 	/// Gets the position of the upper corner.
@@ -127,11 +132,31 @@ private:
 	glm::tvec3<TYPE> _maxs;
 };
 
+template<typename TYPE>
+inline glm::tvec3<TYPE> AABB<TYPE>::getWidth() const {
+	return _maxs - _mins;
+}
+
+template<typename TYPE>
+inline TYPE AABB<TYPE>::getWidthX() const {
+	return _maxs.x - _mins.x;
+}
+
+template<typename TYPE>
+inline TYPE AABB<TYPE>::getWidthY() const {
+	return _maxs.y - _mins.y;
+}
+
+template<typename TYPE>
+inline TYPE AABB<TYPE>::getWidthZ() const {
+	return _maxs.z - _mins.z;
+}
+
 /**
  * @return The 'x' position of the centre.
  */
 template<typename TYPE>
-inline TYPE AABB<TYPE>::getCentreX() const {
+inline TYPE AABB<TYPE>::getCenterX() const {
 	return (_mins.x + _maxs.x) / 2;
 }
 
@@ -139,7 +164,7 @@ inline TYPE AABB<TYPE>::getCentreX() const {
  * @return The 'y' position of the centre.
  */
 template<typename TYPE>
-inline TYPE AABB<TYPE>::getCentreY() const {
+inline TYPE AABB<TYPE>::getCenterY() const {
 	return (_mins.y + _maxs.y) / 2;
 }
 
@@ -147,7 +172,7 @@ inline TYPE AABB<TYPE>::getCentreY() const {
  * @return The 'z' position of the centre.
  */
 template<typename TYPE>
-inline TYPE AABB<TYPE>::getCentreZ() const {
+inline TYPE AABB<TYPE>::getCenterZ() const {
 	return (_mins.z + _maxs.z) / 2;
 }
 
@@ -203,8 +228,8 @@ inline TYPE AABB<TYPE>::getUpperZ() const {
  * @return The position of the lower corner.
  */
 template<typename TYPE>
-inline glm::tvec3<TYPE> AABB<TYPE>::getCentre() const {
-	return glm::tvec3<TYPE>(getCentreX(), getCentreY(), getCentreZ());
+inline glm::tvec3<TYPE> AABB<TYPE>::getCenter() const {
+	return glm::tvec3<TYPE>(getCenterX(), getCenterY(), getCenterZ());
 }
 
 /**
@@ -631,17 +656,15 @@ inline bool intersects(const AABB<TYPE>& a, const AABB<TYPE>& b) {
 
 template<typename TYPE>
 void AABB<TYPE>::corners(glm::vec3 out[8], uint32_t indices[24]) const {
-	static const glm::vec4 vecs[8] = {
-		glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
-		glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
-		glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
-		glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
+	static const glm::vec3 vecs[8] = {
+		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(-0.5f, -0.5f,  0.5f),
+		glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3( 0.5f, -0.5f,  0.5f),
+		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(-0.5f, -0.5f, -0.5f),
+		glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3( 0.5f, -0.5f, -0.5f)
 	};
-
-	const glm::mat4& transform = glm::translate(glm::mat4(), getCentre());
-
+	const glm::vec3& width = getWidth() / 2.0f;
 	for (int i = 0; i < 8; ++i) {
-		out[i] = glm::vec3(transform * vecs[i]).xyz();
+		out[i] = vecs[i] * width;
 	}
 	if (indices == nullptr) {
 		return;

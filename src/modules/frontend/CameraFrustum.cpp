@@ -80,18 +80,13 @@ void CameraFrustum::render(const video::Camera& camera, const video::Camera& fru
 	}
 
 	core::AABB<float> aabb(out[1], out[6]);
-	// fill buffers
-	for (size_t i = 0; i < SDL_arraysize(out); ++i) {
-		aabb.accumulate(out[i]);
-	}
 
 	glm::vec3 aabbOut[8];
 	aabb.corners(aabbOut, nullptr);
 	glm::vec4 aabbOut4[SDL_arraysize(aabbOut)];
 	const glm::mat4& transform = glm::inverse(frustumCamera.projectionMatrix() * frustumCamera.viewMatrix());
 	for (size_t i = 0; i < SDL_arraysize(aabbOut); ++i) {
-		const glm::vec4& v = transform * glm::vec4(aabbOut[i], 1.0f);
-		aabbOut4[i] = glm::vec4(v.xyz() / v.w, 1.0f);
+		aabbOut4[i] = transform * glm::vec4(aabbOut[i], 1.0f);
 	}
 
 	core_assert_always(_aabbBuffer.update(_vertexAABBIndex, aabbOut4, sizeof(aabbOut4)));
