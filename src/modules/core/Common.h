@@ -156,3 +156,14 @@ auto operator()(T t) const {
 # define ENABLE_WARNING(gcc_option,clang_option,msvc_unused) DIAG_PRAGMA(GCC,warning DIAG_JOINSTR(-W,gcc_option))
 #endif
 #endif
+
+#include <vector>
+
+namespace core {
+
+template<class T>
+inline size_t vectorSize(const std::vector<T>& v) {
+	return v.size() * sizeof(T);
+}
+
+}

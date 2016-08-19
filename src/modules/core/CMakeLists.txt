@@ -41,6 +41,7 @@ set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
 	tests/AbstractTest.cpp
+	tests/CoreTest.cpp
 	tests/RectTest.cpp
 	tests/ByteStreamTest.cpp
 	tests/ThreadPoolTest.cpp
