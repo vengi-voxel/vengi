@@ -11,41 +11,60 @@ bool ShapeRenderer::init() {
 	return true;
 }
 
+bool ShapeRenderer::deleteMesh(uint32_t meshIndex) {
+	if (_currentMeshIndex <= meshIndex) {
+		return false;
+	}
+	_vbo[meshIndex].shutdown();
+	_vertexIndex[meshIndex] = -1;
+	_indexIndex[meshIndex] = -1;
+	return true;
+}
+
 int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
-	if (_currentMeshIndex >= MAX_MESHES) {
+	uint32_t meshIndex = _currentMeshIndex;
+	for (uint32_t i = 0u; i < _currentMeshIndex; ++i) {
+		if (!_vbo[i].isValid(0)) {
+			meshIndex = i;
+			break;
+		}
+	}
+
+	if (meshIndex >= MAX_MESHES) {
 		Log::error("Max meshes exceeded");
 		return -1;
 	}
 
 	std::vector<glm::vec4> vertices;
 	shapeBuilder.convertVertices(vertices);
-	_vertexIndex[_currentMeshIndex] = _vbo[_currentMeshIndex].create(&vertices[0], core::vectorSize(vertices));
-	if (_vertexIndex[_currentMeshIndex] == -1) {
+	_vertexIndex[meshIndex] = _vbo[meshIndex].create(&vertices[0], core::vectorSize(vertices));
+	if (_vertexIndex[meshIndex] == -1) {
 		Log::error("Could not create vbo for vertices");
 		return -1;
 	}
 
 	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
-	_indexIndex[_currentMeshIndex] = _vbo[_currentMeshIndex].create(&indices[0], core::vectorSize(indices), GL_ELEMENT_ARRAY_BUFFER);
-	if (_indexIndex[_currentMeshIndex] == -1) {
+	_indexIndex[meshIndex] = _vbo[meshIndex].create(&indices[0], core::vectorSize(indices), GL_ELEMENT_ARRAY_BUFFER);
+	if (_indexIndex[meshIndex] == -1) {
+		_vbo[meshIndex].shutdown();
 		Log::error("Could not create vbo for indices");
 		return -1;
 	}
 
 	const video::ShapeBuilder::Colors& colors = shapeBuilder.getColors();
-	const int32_t cIndex = _vbo[_currentMeshIndex].create(&colors[0], core::vectorSize(colors));
+	const int32_t cIndex = _vbo[meshIndex].create(&colors[0], core::vectorSize(colors));
 	if (cIndex == -1) {
+		_vbo[meshIndex].shutdown();
 		Log::error("Could not create vbo for color");
 		return -1;
 	}
 
 	// configure shader attributes
-	core_assert_always(_vbo[_currentMeshIndex].addAttribute(_colorShader.getLocationPos(), _vertexIndex[_currentMeshIndex], 4));
-	core_assert_always(_vbo[_currentMeshIndex].addAttribute(_colorShader.getLocationColor(), cIndex, 4));
+	core_assert_always(_vbo[meshIndex].addAttribute(_colorShader.getLocationPos(), _vertexIndex[meshIndex], 4));
+	core_assert_always(_vbo[meshIndex].addAttribute(_colorShader.getLocationColor(), cIndex, 4));
 
-	const int index = _currentMeshIndex;
 	++_currentMeshIndex;
-	return index;
+	return meshIndex;
 }
 
 void ShapeRenderer::shutdown() {

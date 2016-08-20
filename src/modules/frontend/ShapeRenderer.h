@@ -19,6 +19,8 @@ private:
 public:
 	bool init();
 
+	bool deleteMesh(uint32_t meshIndex);
+
 	int32_t createMesh(const video::ShapeBuilder& shapeBuilder);
 
 	void shutdown();
