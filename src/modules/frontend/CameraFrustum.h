@@ -1,24 +1,22 @@
 #pragma once
 
+#include "frontend/ShapeRenderer.h"
 #include "core/Common.h"
 #include "core/Color.h"
 #include "video/Camera.h"
 #include "video/VertexBuffer.h"
+#include "video/ShapeBuilder.h"
 #include "ColorShader.h"
 
 namespace frontend {
 
 class CameraFrustum {
 protected:
-	video::VertexBuffer _frustumBuffer;
-	video::VertexBuffer _aabbBuffer;
-	int32_t _vertexIndex = -1;
-	int32_t _indexIndex = -1;
-	int32_t _vertexAABBIndex = -1;
-	int32_t _indexAABBIndex = -1;
-	shader::ColorShader _colorShader;
 	video::ShapeBuilder _shapeBuilder;
+	frontend::ShapeRenderer _shapeRenderer;
 
+	int32_t _frustumMesh;
+	int32_t _aabbMesh;
 	bool _renderAABB = false;
 public:
 	bool init(const video::Camera& frustumCamera, const glm::vec4& color = core::Color::Red);

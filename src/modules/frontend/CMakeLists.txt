@@ -3,6 +3,7 @@ set(SRCS
 	ClientEntityId.h
 	Movement.h
 	CameraFrustum.cpp CameraFrustum.h
+	ShapeRenderer.cpp ShapeRenderer.h
 	Axis.h
 	Plane.h
 	WorldRenderer.h WorldRenderer.cpp

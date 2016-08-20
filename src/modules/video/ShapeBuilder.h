@@ -26,9 +26,10 @@ private:
 	Colors _colors;
 
 	glm::vec4 _color = core::Color::Red;
+	glm::vec3 _position;
 
 	inline void reserve(int vertices, int additionalIndices = 0) {
-		_colors.reserve(_colors.size() + vertices);
+		_colors.reserve(_colors.size() + vertices + additionalIndices);
 		_vertices.reserve(_vertices.size() + vertices);
 		_indices.reserve(_indices.size() + vertices * 3 + additionalIndices);
 		_texcoords.reserve(_texcoords.size() + vertices);
@@ -36,7 +37,7 @@ private:
 
 	inline void addVertex(const glm::vec3& vertex, const glm::vec2& uv) {
 		_colors.push_back(_color);
-		_vertices.push_back(vertex);
+		_vertices.push_back(_position + vertex);
 		_texcoords.push_back(uv);
 	}
 public:
@@ -45,13 +46,14 @@ public:
 		_vertices.clear();
 		_indices.clear();
 		_texcoords.clear();
+		_position = glm::vec3();
 	}
 
 	void aabb(const core::AABB<float>& aabb);
 	/**
 	 * @param[in] tesselation The amount of splits on the plane that should be made
 	 */
-	void plane(uint32_t tesselation = 10);
+	void plane(uint32_t tesselation = 10, float scale = 1.0f);
 	void frustum(const Camera& camera);
 	/**
 	 * @brief Frees the memory
@@ -66,13 +68,19 @@ public:
 	const Vertices& getVertices() const;
 	void convertVertices(std::vector<glm::vec4>& out) const;
 	const Indices& getIndices() const;
+	const Colors& getColors() const;
 	const Texcoords& getTexcoords() const;
 
 	void setColor(const glm::vec4& color);
+	void setPosition(const glm::vec3& position);
 };
 
 inline void ShapeBuilder::setColor(const glm::vec4& color) {
 	_color = color;
+}
+
+inline void ShapeBuilder::setPosition(const glm::vec3& position) {
+	_position = position;
 }
 
 inline const ShapeBuilder::Vertices& ShapeBuilder::getVertices() const {
@@ -89,6 +97,10 @@ inline void ShapeBuilder::convertVertices(std::vector<glm::vec4>& out) const {
 
 inline const ShapeBuilder::Indices& ShapeBuilder::getIndices() const {
 	return _indices;
+}
+
+inline const ShapeBuilder::Colors& ShapeBuilder::getColors() const {
+	return _colors;
 }
 
 inline const ShapeBuilder::Texcoords& ShapeBuilder::getTexcoords() const {

@@ -75,6 +75,7 @@ bool VertexBuffer::update(int32_t idx, const void* data, GLsizeiptr size) {
 	glBufferData(_targets[idx], size, data, GL_STATIC_DRAW);
 	glBindBuffer(_targets[idx], 0);
 	_size[idx] = size;
+	GL_checkError();
 
 	return true;
 }

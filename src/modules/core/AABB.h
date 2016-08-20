@@ -125,8 +125,6 @@ public:
 	void shrink(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
 	/// Shrinks this AABB by the amounts specified.
 	void shrink(const glm::tvec3<TYPE>& v3dAmount);
-
-	void corners(glm::vec3 out[8], uint32_t indices[24]) const;
 private:
 	glm::tvec3<TYPE> _mins;
 	glm::tvec3<TYPE> _maxs;
@@ -652,64 +650,6 @@ inline bool intersects(const AABB<TYPE>& a, const AABB<TYPE>& b) {
 
 	// Overlapping on all axes means AABBs are intersecting.
 	return true;
-}
-
-template<typename TYPE>
-void AABB<TYPE>::corners(glm::vec3 out[8], uint32_t indices[24]) const {
-	static const glm::vec3 vecs[8] = {
-		glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec3(-0.5f, -0.5f,  0.5f),
-		glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec3( 0.5f, -0.5f,  0.5f),
-		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec3(-0.5f, -0.5f, -0.5f),
-		glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec3( 0.5f, -0.5f, -0.5f)
-	};
-	const glm::vec3& width = getWidth() / 2.0f;
-	for (int i = 0; i < 8; ++i) {
-		out[i] = vecs[i] * width;
-	}
-	if (indices == nullptr) {
-		return;
-	}
-
-	uint32_t currentIndex = 0;
-
-	// front
-	indices[currentIndex++] = 0;
-	indices[currentIndex++] = 1;
-
-	indices[currentIndex++] = 1;
-	indices[currentIndex++] = 3;
-
-	indices[currentIndex++] = 3;
-	indices[currentIndex++] = 2;
-
-	indices[currentIndex++] = 2;
-	indices[currentIndex++] = 0;
-
-	// back
-	indices[currentIndex++] = 4;
-	indices[currentIndex++] = 5;
-
-	indices[currentIndex++] = 5;
-	indices[currentIndex++] = 7;
-
-	indices[currentIndex++] = 7;
-	indices[currentIndex++] = 6;
-
-	indices[currentIndex++] = 6;
-	indices[currentIndex++] = 4;
-
-	// connections
-	indices[currentIndex++] = 0;
-	indices[currentIndex++] = 4;
-
-	indices[currentIndex++] = 2;
-	indices[currentIndex++] = 6;
-
-	indices[currentIndex++] = 1;
-	indices[currentIndex++] = 5;
-
-	indices[currentIndex++] = 3;
-	indices[currentIndex++] = 7;
 }
 
 }

@@ -5,31 +5,23 @@
 #include "video/ShapeBuilder.h"
 #include "core/Color.h"
 #include "ColorShader.h"
+#include "frontend/ShapeRenderer.h"
 #include <algorithm>
 
 namespace frontend {
 
 class Plane {
 private:
-	shader::ColorShader _colorShader;
-	video::VertexBuffer _planeBuffer;
 	video::ShapeBuilder _shapeBuilder;
-	int32_t _iIndex = -1;
+	frontend::ShapeRenderer _shapeRenderer;
+	int32_t _planeMesh = -1;
 public:
 	void render(const video::Camera& camera) {
-		video::ScopedShader scoped(_colorShader);
-		_colorShader.setView(camera.viewMatrix());
-		_colorShader.setProjection(camera.projectionMatrix());
-		core_assert_always(_planeBuffer.bind());
-		const GLuint indices = _planeBuffer.elements(_iIndex, 1, sizeof(video::ShapeBuilder::Indices::value_type));
-		glDrawElements(GL_TRIANGLES, indices, GL_UNSIGNED_INT, 0);
-		_planeBuffer.unbind();
-		GL_checkError();
+		_shapeRenderer.render(_planeMesh, camera, GL_TRIANGLES);
 	}
 
 	void shutdown() {
-		_colorShader.shutdown();
-		_planeBuffer.shutdown();
+		_shapeRenderer.shutdown();
 		_shapeBuilder.shutdown();
 	}
 
@@ -40,33 +32,14 @@ public:
 	 * @param[in] color The color of the plane.
 	 */
 	bool init(const glm::vec3& position, int tesselation = 0, float scale = 100.0f, const glm::vec4& color = core::Color::White) {
-		if (!_colorShader.setup()) {
+		if (!_shapeRenderer.init()) {
 			return false;
 		}
-
-		_shapeBuilder.plane(tesselation);
-
-		const video::ShapeBuilder::Vertices& vertices = _shapeBuilder.getVertices();
-		const video::ShapeBuilder::Indices& indices = _shapeBuilder.getIndices();
-
-		std::vector<glm::vec4> verticesPlane;
-		verticesPlane.reserve(vertices.size());
-		for (const glm::vec3& v : vertices) {
-			verticesPlane.emplace_back(position + v * scale, 1.0f);
-		}
-
-		std::vector<glm::vec4> colorPlane(vertices.size());
-		std::fill(colorPlane.begin(), colorPlane.end(), color);
-
-		const size_t vecSize = vertices.size() * sizeof(glm::vec4);
-
-		const int32_t vIndex = _planeBuffer.create(&verticesPlane[0], vecSize);
-		const int32_t cIndex = _planeBuffer.create(&colorPlane[0], vecSize);
-		_iIndex = _planeBuffer.create(&indices[0], indices.size() * sizeof(video::ShapeBuilder::Indices::value_type), GL_ELEMENT_ARRAY_BUFFER);
-		core_assert(vIndex >= 0 && cIndex >= 0 && _iIndex >= 0);
-		_planeBuffer.addAttribute(_colorShader.getLocationPos(), vIndex, 4);
-		_planeBuffer.addAttribute(_colorShader.getLocationColor(), cIndex, 4);
-		return true;
+		_shapeBuilder.setColor(color);
+		_shapeBuilder.setPosition(position);
+		_shapeBuilder.plane(tesselation, scale);
+		_planeMesh = _shapeRenderer.createMesh(_shapeBuilder);
+		return _planeMesh >= 0;
 	};
 };
 
