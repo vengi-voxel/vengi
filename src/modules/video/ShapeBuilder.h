@@ -55,6 +55,7 @@ public:
 	 */
 	void plane(uint32_t tesselation = 10, float scale = 1.0f);
 	void frustum(const Camera& camera);
+	void axis(float scale);
 	/**
 	 * @brief Frees the memory
 	 */

@@ -77,6 +77,38 @@ void ShapeBuilder::frustum(const Camera& camera) {
 	_indices.push_back(video::FRUSTUM_VERTICES_MAX + 1);
 }
 
+void ShapeBuilder::axis(float scale) {
+	const glm::vec3 verticesAxis[] = {
+			 glm::vec3( 0.0f,   0.0f,   0.0f),
+			 glm::vec3(scale,   0.0f,   0.0f),
+			 glm::vec3( 0.0f,   0.0f,   0.0f),
+			 glm::vec3( 0.0f,  scale,   0.0f),
+			 glm::vec3( 0.0f,   0.0f,   0.0f),
+			 glm::vec3( 0.0f,   0.0f,  scale)};
+
+	static const float colorAxis[] = {
+			1.0f, 0.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 0.0f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
+			0.0f, 1.0f, 0.0f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f,
+			0.0f, 0.0f, 1.0f, 1.0f};
+
+	setColor(core::Color::Red);
+	addVertex(verticesAxis[0], glm::zero<glm::vec2>());
+	addVertex(verticesAxis[1], glm::zero<glm::vec2>());
+	setColor(core::Color::Green);
+	addVertex(verticesAxis[2], glm::zero<glm::vec2>());
+	addVertex(verticesAxis[3], glm::zero<glm::vec2>());
+	setColor(core::Color::Blue);
+	addVertex(verticesAxis[4], glm::zero<glm::vec2>());
+	addVertex(verticesAxis[5], glm::zero<glm::vec2>());
+
+	for (size_t i = 0; i < SDL_arraysize(verticesAxis); ++i) {
+		_indices.push_back(i);
+	}
+}
+
 void ShapeBuilder::plane(uint32_t tesselation, float scale) {
 	static const glm::vec2 uv0(0.0f, 1.0f);
 	static const glm::vec2 uv1(1.0f, 0.0f);
