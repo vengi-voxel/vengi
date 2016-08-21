@@ -1,12 +1,9 @@
 #pragma once
 
-#include "video/VertexBuffer.h"
 #include "video/Camera.h"
-#include "video/ShapeBuilder.h"
 #include "core/Color.h"
-#include "ColorShader.h"
+#include "video/ShapeBuilder.h"
 #include "frontend/ShapeRenderer.h"
-#include <algorithm>
 
 namespace frontend {
 
