@@ -27,12 +27,12 @@ protected:
 		const glm::ivec3& chunkPos = world.getChunkPos(vec);
 		ASSERT_EQ(glm::ivec3(chunkX, chunkY, chunkZ), chunkPos)
 			<< "Chunk position doesn't match the expected for chunk size: " << world.getChunkSize()
-			<< " at: " << vec;
+			<< " at: " << vec.x << ", " << vec.y << ", " << vec.z;
 
 		const glm::ivec3& meshPos = world.getMeshPos(vec);
 		ASSERT_EQ(glm::ivec3(meshX, meshY, meshZ), meshPos)
 			<< "Mesh position doesn't match the expected for mesh size: " << world.getMeshSize()
-			<< " at: " << vec;
+			<< " at: " << vec.x << ", " << vec.y << ", " << vec.z;
 	}
 };
 
