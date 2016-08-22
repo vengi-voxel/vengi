@@ -18,7 +18,7 @@ core::AppState TestCamera::onInit() {
 		_renderCamera[i].init(dimension());
 		_renderCamera[i].setAspectRatio(_aspect);
 		_renderCamera[i].setRotationType(video::CameraRotationType::Target);
-		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.001f, 0.0f));
+		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 
 		// TODO: per camera settings
 		_renderCamera[i].setPosition(glm::vec3(p, 10.0f, p));

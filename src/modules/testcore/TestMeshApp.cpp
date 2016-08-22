@@ -11,7 +11,7 @@ core::AppState TestMeshApp::onInit() {
 
 	_sunLight.init(glm::vec3(20.0f, 50.0f, -20.0), dimension());
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
-	_camera.setOmega(glm::vec3(0.0f, 0.001f, 0.0f));
+	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 	_camera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
 	_camera.setTargetDistance(50.0f);
 	_camera.setRotationType(video::CameraRotationType::Target);

@@ -86,7 +86,8 @@ void Camera::updateTarget() {
 }
 
 void Camera::update(long deltaFrame) {
-	rotate(_omega);
+	const float dt = deltaFrame / 1000.0f;
+	rotate(_omega * dt);
 	updateTarget();
 	updateOrientation();
 	updateViewMatrix();
