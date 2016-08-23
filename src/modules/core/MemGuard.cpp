@@ -44,13 +44,13 @@ void MemGuard::free(void* ptr) {
 		}
 	}
 
-	SDL_free(chunk);
+	core_free(chunk);
 }
 
 void* MemGuard::alloc(size_t size, bool zeroFill) {
 	size += _overheadSize;
 
-	Chunk* mem = static_cast<Chunk*>(SDL_malloc(size));
+	Chunk* mem = static_cast<Chunk*>(core_malloc(size));
 	if (zeroFill) {
 		SDL_memset(mem, 0, size);
 	}
