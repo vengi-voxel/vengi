@@ -7,6 +7,7 @@
 #include "io/IEventObserver.h"
 #include "core/GLM.h"
 #include "core/Var.h"
+#include "core/AABB.h"
 #include "Ray.h"
 #include <math.h>
 #include <ctime>
@@ -208,6 +209,8 @@ public:
 	FrustumResult testFrustum(const glm::vec3& position) const;
 	// TODO: use core::AABB here
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
+
+	core::AABB<float> aabb() const;
 };
 
 inline void Camera::init(const glm::ivec2& dimension) {

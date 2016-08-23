@@ -21,10 +21,7 @@ void CameraFrustum::render(const video::Camera& camera, const video::Camera& fru
 	_shapeBuilder.frustum(frustumCamera);
 	_shapeRenderer.update(_frustumMesh, _shapeBuilder);
 	if (_renderAABB) {
-		const video::ShapeBuilder::Vertices& vertices = _shapeBuilder.getVertices();
-		const glm::vec3& mins = vertices[1];
-		const glm::vec3& maxs = vertices[6];
-		const core::AABB<float> aabb(mins, maxs);
+		const core::AABB<float>& aabb = frustumCamera.aabb();
 		_shapeBuilder.clear();
 		_shapeBuilder.aabb(aabb);
 		if (_aabbMesh < 0) {
