@@ -56,16 +56,19 @@ public:
 	}
 
 	inline bool intersectsWith(const Rect& other) const {
-		if (getMaxX() <= other.getMinX() || getMinX() >= other.getMaxX())
+		if (getMaxX() <= other.getMinX() || getMinX() >= other.getMaxX()) {
 			return false;
-		if (getMaxZ() <= other.getMinZ() || getMinZ() >= other.getMaxZ())
+		}
+		if (getMaxZ() <= other.getMinZ() || getMinZ() >= other.getMaxZ()) {
 			return false;
+		}
 		return true;
 	}
 
 	inline void offset(TYPE dx, TYPE dz) {
-		if (getMaxRect() == *this)
+		if (getMaxRect() == *this) {
 			return;
+		}
 		_mins.x += dx;
 		_mins.y += dz;
 		_maxs.x += dx;
@@ -76,12 +79,12 @@ public:
 		if (getMaxRect() == *this) {
 			// special case because the length would exceed the max possible value of TYPE
 			if (std::numeric_limits<TYPE>::is_signed) {
-				static const std::array<Rect<TYPE>, 4> maxSplit = {
+				static const std::array<Rect<TYPE>, 4> maxSplit = {{
 					Rect<TYPE>(_mins.x, _mins.y, 0, 0),
 					Rect<TYPE>(0, _mins.y, _maxs.x, 0),
 					Rect<TYPE>(_mins.x, 0, 0, _maxs.y),
 					Rect<TYPE>(0, 0, _maxs.x, _maxs.y)
-				};
+				}};
 				return maxSplit;
 			}
 		}
@@ -90,24 +93,28 @@ public:
 		const TYPE halfX = lengthX / 2.0;
 		const TYPE lengthY = glm::abs(_maxs.y - _mins.y);
 		const TYPE halfY = lengthY / 2.0;
-		const std::array<Rect<TYPE>, 4> split = {
+		const std::array<Rect<TYPE>, 4> split = {{
 			Rect<TYPE>(_mins.x, _mins.y, _mins.x + halfX, _mins.y + halfY),
 			Rect<TYPE>(_mins.x + halfX, _mins.y, _maxs.x, _mins.y + halfY),
 			Rect<TYPE>(_mins.x, _mins.y + halfY, _mins.x + halfX, _maxs.y),
 			Rect<TYPE>(_mins.x + halfX, _mins.y + halfY, _maxs.x, _maxs.y)
-		};
+		}};
 		return split;
 	}
 
 	inline bool contains(const Rect& rect) const {
-		if (rect.getMaxX() > getMaxX())
+		if (rect.getMaxX() > getMaxX()) {
 			return false;
-		if (rect.getMaxZ() > getMaxZ())
+		}
+		if (rect.getMaxZ() > getMaxZ()) {
 			return false;
-		if (rect.getMinX() < getMinX())
+		}
+		if (rect.getMinX() < getMinX()) {
 			return false;
-		if (rect.getMinZ() < getMinZ())
+		}
+		if (rect.getMinZ() < getMinZ()) {
 			return false;
+		}
 		return true;
 	}
 };
