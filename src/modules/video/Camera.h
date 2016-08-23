@@ -315,7 +315,7 @@ inline void Camera::setFarPlane(float farPlane) {
 
 inline void Camera::setNearPlane(float nearPlane) {
 	_dirty |= DIRTY_PERSPECTIVE;
-	_nearPlane = nearPlane;
+	_nearPlane = std::max(0.1f, nearPlane);
 }
 
 inline const glm::mat4& Camera::orientation() const {
