@@ -211,6 +211,7 @@ public:
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 
 	core::AABB<float> aabb() const;
+	glm::vec4 sphereBoundingBox() const;
 };
 
 inline void Camera::init(const glm::ivec2& dimension) {

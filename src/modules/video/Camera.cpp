@@ -300,4 +300,22 @@ core::AABB<float> Camera::aabb() const {
 	return core::AABB<float>(mins, maxs);
 }
 
+glm::vec4 Camera::sphereBoundingBox() const {
+	const core::AABB<float> boundingBox = aabb();
+	const glm::vec3& mins = boundingBox.getLowerCorner();
+	const glm::vec3& maxs = boundingBox.getUpperCorner();
+
+	const glm::vec3 sphereCenter(
+			mins.x + (maxs.x - mins.x) / 2.0f,
+			mins.y + (maxs.x - mins.y) / 2.0f,
+			mins.z + (maxs.z - mins.z) / 2.0f);
+	const float sphereRadius = std::max({
+			(maxs.x - mins.x) / 2.0f,
+			(maxs.y - mins.y) / 2.0f,
+			(maxs.z - mins.z) / 2.0f});
+
+	return glm::vec4(sphereCenter, sphereRadius);
+}
+
+
 }
