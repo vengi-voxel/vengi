@@ -23,6 +23,7 @@ private:
 	Indices _indices;
 	Texcoords _texcoords;
 	Vertices _vertices;
+	Vertices _normals;
 	Colors _colors;
 
 	glm::vec4 _color = core::Color::Red;
@@ -31,13 +32,15 @@ private:
 	inline void reserve(int vertices, int additionalIndices = 0) {
 		_colors.reserve(_colors.size() + vertices + additionalIndices);
 		_vertices.reserve(_vertices.size() + vertices);
+		_normals.reserve(_normals.size() + vertices);
 		_indices.reserve(_indices.size() + vertices * 3 + additionalIndices);
 		_texcoords.reserve(_texcoords.size() + vertices);
 	}
 
-	inline void addVertex(const glm::vec3& vertex, const glm::vec2& uv) {
+	inline void addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal) {
 		_colors.push_back(_color);
 		_vertices.push_back(_position + vertex);
+		_normals.push_back(normal);
 		_texcoords.push_back(uv);
 	}
 public:
@@ -85,6 +88,7 @@ public:
 	 * @note They are normalized between -0.5 and 0.5 and their winding is counter clock wise
 	 */
 	const Vertices& getVertices() const;
+	const Vertices& getNormals() const;
 	void convertVertices(std::vector<glm::vec4>& out) const;
 	const Indices& getIndices() const;
 	const Colors& getColors() const;
@@ -104,6 +108,10 @@ inline void ShapeBuilder::setPosition(const glm::vec3& position) {
 
 inline const ShapeBuilder::Vertices& ShapeBuilder::getVertices() const {
 	return _vertices;
+}
+
+inline const ShapeBuilder::Vertices& ShapeBuilder::getNormals() const {
+	return _normals;
 }
 
 inline void ShapeBuilder::convertVertices(std::vector<glm::vec4>& out) const {
