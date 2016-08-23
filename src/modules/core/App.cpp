@@ -346,6 +346,15 @@ AppState App::onCleanup() {
 	core::Command::unregisterCommand("cvarlist");
 	core::Command::unregisterCommand("cmdlist");
 
+	const SDL_AssertData *item = SDL_GetAssertionReport();
+	while (item != nullptr) {
+		Log::warn("'%s', %s (%s:%d), triggered %u times, always ignore: %s.\n",
+				item->condition, item->function, item->filename, item->linenum,
+				item->trigger_count, item->always_ignore ? "yes" : "no");
+		item = item->next;
+	}
+	SDL_ResetAssertionReport();
+
 	return AppState::Destroy;
 }
 

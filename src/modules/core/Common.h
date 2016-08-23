@@ -45,7 +45,7 @@
 	}
 
 #ifndef core_assert
-#if SDL_ASSERT_LEVEL == 0
+#if SDL_ASSERT_LEVEL <= 0
 #define core_assert(condition) SDL_disabled_assert(condition)
 #else
 #define core_assert(condition) \
@@ -70,18 +70,18 @@
 #define core_assert_always SDL_assert_always
 
 #ifndef core_assert_msg
-#if SDL_ASSERT_LEVEL == 0
+#if SDL_ASSERT_LEVEL <= 0
 #define core_assert_msg(condition, format, ...) SDL_disabled_assert(condition)
 #else
 #define core_assert_msg(conditionCheck, format, ...) \
 	do { \
 		while (!(conditionCheck)) { \
-			char buf[1024]; \
+			static char buf[1024]; \
 			SDL_snprintf(buf, sizeof(buf) - 1, format, ##__VA_ARGS__); \
 			static struct SDL_AssertData sdl_assert_data = { \
 				0, 0, nullptr, 0, 0, 0, 0 \
 			}; \
-			sdl_assert_data.condition = buf; \
+			sdl_assert_data.condition = buf; /* also let it work for following calls */ \
 			const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
 			if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
 				continue; /* go again. */ \
