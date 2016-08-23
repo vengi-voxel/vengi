@@ -270,34 +270,7 @@ void Camera::updateFrustumPlanes() {
 }
 
 core::AABB<float> Camera::aabb() const {
-	static constexpr float max = std::numeric_limits<float>::max();
-	static constexpr float min = std::numeric_limits<float>::min();
-
-	glm::vec3 mins(max);
-	glm::vec3 maxs(min);
-
-	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
-		const glm::vec3& v = _frustumVertices[i];
-		if (v.x > maxs.x) {
-			maxs.x = v.x;
-		}
-		if (v.x < mins.x) {
-			mins.x = v.x;
-		}
-		if (v.y > maxs.y) {
-			maxs.y = v.y;
-		}
-		if (v.y < mins.y) {
-			mins.y = v.y;
-		}
-		if (v.z > maxs.z) {
-			maxs.z = v.z;
-		}
-		if (v.z < mins.z) {
-			mins.z = v.z;
-		}
-	}
-	return core::AABB<float>(mins, maxs);
+	return core::AABB<float>::construct(_frustumVertices, FRUSTUM_VERTICES_MAX);
 }
 
 glm::vec4 Camera::sphereBoundingBox() const {

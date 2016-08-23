@@ -11,10 +11,48 @@
 
 namespace core {
 
+/**
+ * @brief axis-aligned bounding box
+ */
 template<typename TYPE>
 class AABB {
 public:
 	AABB(const glm::tvec3<TYPE>& mins, const glm::tvec3<TYPE>& maxs);
+
+	static AABB construct(const glm::tvec3<TYPE>* vertices, size_t size) {
+		static constexpr TYPE max = std::numeric_limits<TYPE>::max();
+		static constexpr TYPE min = std::numeric_limits<TYPE>::min();
+
+		glm::tvec3<TYPE> mins(max);
+		glm::tvec3<TYPE> maxs(min);
+
+		for (size_t i = 0u; i < size; ++i) {
+			const glm::tvec3<TYPE>& v = vertices[i];
+			if (v.x > maxs.x) {
+				maxs.x = v.x;
+			}
+			if (v.x < mins.x) {
+				mins.x = v.x;
+			}
+			if (v.y > maxs.y) {
+				maxs.y = v.y;
+			}
+			if (v.y < mins.y) {
+				mins.y = v.y;
+			}
+			if (v.z > maxs.z) {
+				maxs.z = v.z;
+			}
+			if (v.z < mins.z) {
+				mins.z = v.z;
+			}
+		}
+		return core::AABB<TYPE>(mins, maxs);
+	}
+
+	static inline AABB construct(const std::vector<glm::tvec3<TYPE> >& vertices) {
+		return construct(&vertices[0], vertices.size());
+	}
 
 	/// Equality Operator.
 	bool operator==(const AABB& rhs) const;
