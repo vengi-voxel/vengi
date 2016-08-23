@@ -1,7 +1,6 @@
 #include "TestCamera.h"
 
 // TODO: zooming should update the far and near plane of the render camera (maybe alt + ctrl pressed)
-// TODO: onMouseMotion for renderCamera (maybe also while ctrl or alt is held)
 TestCamera::TestCamera(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
 	setCameraMotion(true);
@@ -55,6 +54,50 @@ core::AppState TestCamera::onCleanup() {
 		_frustums[i].shutdown();
 	}
 	return state;
+}
+
+void TestCamera::onMouseWheel(int32_t x, int32_t y) {
+	const SDL_Keymod mods = SDL_GetModState();
+	if (mods & KMOD_SHIFT) {
+		video::Camera& c = _renderCamera[_targetCamera];
+		if (mods & KMOD_CTRL) {
+			c.setNearPlane(c.nearPlane() + y);
+		} else {
+			c.setFarPlane(c.farPlane() + y);
+		}
+		return;
+	}
+
+	Super::onMouseWheel(x, y);
+}
+
+bool TestCamera::onKeyPress(int32_t key, int16_t modifier) {
+	const bool retVal = Super::onKeyPress(key, modifier);
+	if (key == SDLK_SPACE) {
+		_targetCamera++;
+		_targetCamera %= CAMERAS;
+	}
+
+	video::Camera& c = _renderCamera[_targetCamera];
+	if (modifier & KMOD_SHIFT) {
+		int delta = 0;
+		if (key == SDLK_MINUS || key == SDLK_KP_MINUS) {
+			delta = -1;
+		} else if (key == SDLK_PLUS || key == SDLK_KP_PLUS) {
+			delta = 1;
+		}
+
+		if (modifier & KMOD_CTRL) {
+			c.setNearPlane(c.nearPlane() + delta);
+		} else {
+			c.setFarPlane(c.farPlane() + delta);
+		}
+		if (delta != 0) {
+			return true;
+		}
+	}
+
+	return retVal;
 }
 
 void TestCamera::doRender() {
