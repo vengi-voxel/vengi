@@ -86,14 +86,6 @@ void ShapeBuilder::axis(float scale) {
 			 glm::vec3( 0.0f,   0.0f,   0.0f),
 			 glm::vec3( 0.0f,   0.0f,  scale)};
 
-	static const float colorAxis[] = {
-			1.0f, 0.0f, 0.0f, 1.0f,
-			1.0f, 0.0f, 0.0f, 1.0f,
-			0.0f, 1.0f, 0.0f, 1.0f,
-			0.0f, 1.0f, 0.0f, 1.0f,
-			0.0f, 0.0f, 1.0f, 1.0f,
-			0.0f, 0.0f, 1.0f, 1.0f};
-
 	setColor(core::Color::Red);
 	addVertex(verticesAxis[0], glm::zero<glm::vec2>());
 	addVertex(verticesAxis[1], glm::zero<glm::vec2>());
