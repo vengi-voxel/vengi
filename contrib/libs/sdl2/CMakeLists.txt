@@ -1,4 +1,4 @@
-find_package(SDL2)
+find_package(sdl2)
 
 set(SDL2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 # General source files
@@ -1492,5 +1492,5 @@ if (NOT SDL2_FOUND)
 	if (IOS)
 		set_property(TARGET sdl2 APPEND_STRING PROPERTY COMPILE_FLAGS " -fobjc-arc")
 	endif()
-	target_include_directories(sdl2 ${PROJECT_SOURCE_DIR}/src/libs/sdl2/include ${PROJECT_SOURCE_DIR}/src/libs/sdl2/src ${PROJECT_SOURCE_DIR}/src/libs/sdl2/config)
+	target_include_directories(sdl2 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/config)
 endif()
