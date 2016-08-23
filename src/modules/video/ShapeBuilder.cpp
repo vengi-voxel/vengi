@@ -2,6 +2,8 @@
 
 namespace video {
 
+// TODO: convert everything into triangles - if you wanna have lines, use glPolygonMode
+
 void ShapeBuilder::aabb(const core::AABB<float>& aabb) {
 	static const glm::vec3 vecs[8] = {
 		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
@@ -134,6 +136,61 @@ void ShapeBuilder::plane(uint32_t tesselation, float scale) {
 			_indices.emplace_back((y * strucWidth) + x + 1);
 			_indices.emplace_back(((y + 1) * strucWidth) + x + 1);
 		}
+	}
+}
+
+void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
+	static constexpr float pi = glm::pi<float>();
+	static constexpr float twoPi = glm::two_pi<float>();
+	const float du = 1.0f / numSlices;
+	const float dv = 1.0f / numStacks;
+
+	for (int stack = 0; stack <= numStacks; stack++) {
+		const float stackAngle = (pi * stack) / numStacks;
+		const float sinStack = glm::sin(stackAngle);
+		const float cosStack = glm::cos(stackAngle);
+		for (int slice = 0; slice <= numSlices; slice++) {
+			const float sliceAngle = (twoPi * slice) / numSlices;
+			const float sinSlice = glm::sin(sliceAngle);
+			const float cosSlice = glm::cos(sliceAngle);
+			const glm::vec3 norm(sinSlice * sinStack, cosSlice * sinStack, cosStack);
+			const glm::vec3 pos(norm * radius);
+			addVertex(pos, glm::vec2(du * slice, dv * stack));
+		}
+	}
+
+	// north-pole triangles
+	const int startVertexIndex = 0;
+	int rowA = startVertexIndex;
+	int rowB = rowA + numSlices + 1;
+	for (int slice = 0; slice < numSlices; slice++) {
+		_indices.push_back(rowA + slice);
+		_indices.push_back(rowB + slice);
+		_indices.push_back(rowB + slice + 1);
+	}
+
+	// stack triangles
+	for (int stack = 1; stack < numStacks - 1; stack++) {
+		rowA = startVertexIndex + stack * (numSlices + 1);
+		rowB = rowA + numSlices + 1;
+		for (int slice = 0; slice < numSlices; slice++) {
+			_indices.push_back(rowA + slice);
+			_indices.push_back(rowB + slice + 1);
+			_indices.push_back(rowA + slice + 1);
+
+			_indices.push_back(rowA + slice);
+			_indices.push_back(rowB + slice);
+			_indices.push_back(rowB + slice + 1);
+		}
+	}
+
+	// south-pole triangles
+	rowA = startVertexIndex + (numStacks - 1) * (numSlices + 1);
+	rowB = rowA + numSlices + 1;
+	for (int slice = 0; slice < numSlices; slice++) {
+		_indices.push_back(rowA + slice);
+		_indices.push_back(rowB + slice + 1);
+		_indices.push_back(rowA + slice + 1);
 	}
 }
 

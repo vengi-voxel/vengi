@@ -55,6 +55,24 @@ public:
 	 */
 	void plane(uint32_t tesselation = 10, float scale = 1.0f);
 	void frustum(const Camera& camera);
+	/**
+	 * Geometry layout for spheres is as follows (for 5 slices, 4 stacks):
+	 *
+	 * +  +  +  +  +  +        north pole
+	 * |\ |\ |\ |\ |\
+	 * | \| \| \| \| \
+	 * +--+--+--+--+--+        30 vertices (slices + 1) * (stacks + 1)
+	 * |\ |\ |\ |\ |\ |        30 triangles (2 * slices * stacks) - (2 * slices)
+	 * | \| \| \| \| \|        2 orphan vertices, but f*ck it
+	 * +--+--+--+--+--+
+	 * |\ |\ |\ |\ |\ |
+	 * | \| \| \| \| \|
+	 * +--+--+--+--+--+
+	 *  \ |\ |\ |\ |\ |
+	 *   \| \| \| \| \|
+	 * +  +  +  +  +  +        south pole
+	 */
+	void sphere(int numSlices, int numStacks, float radius);
 	void axis(float scale);
 	/**
 	 * @brief Frees the memory
