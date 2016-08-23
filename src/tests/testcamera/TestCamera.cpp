@@ -1,6 +1,5 @@
 #include "TestCamera.h"
 
-// TODO: zooming should update the far and near plane of the render camera (maybe alt + ctrl pressed)
 TestCamera::TestCamera(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
 	setCameraMotion(true);
@@ -16,12 +15,11 @@ core::AppState TestCamera::onInit() {
 		const float p = i * 10.0f + 1.0f;
 		_renderCamera[i].init(dimension());
 		_renderCamera[i].setAspectRatio(_aspect);
-		_renderCamera[i].setRotationType(video::CameraRotationType::Target);
 		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 
 		// TODO: per camera settings
 		_renderCamera[i].setPosition(glm::vec3(p, 10.0f, p));
-		_renderCamera[i].setTarget(glm::vec3(10.0f, 70.0f, 10.0f));
+		_renderCamera[i].lookAt(glm::vec3(10.0f, 70.0f, 10.0f));
 		_renderCamera[i].setNearPlane(5.0f);
 		_renderCamera[i].setFarPlane(40.0f);
 
@@ -54,6 +52,15 @@ core::AppState TestCamera::onCleanup() {
 		_frustums[i].shutdown();
 	}
 	return state;
+}
+
+void TestCamera::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
+	const SDL_Keymod mods = SDL_GetModState();
+	if (mods & KMOD_SHIFT) {
+		_renderCamera[_targetCamera].rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
+		return;
+	}
+	Super::onMouseMotion(x, y, relX, relY);
 }
 
 void TestCamera::onMouseWheel(int32_t x, int32_t y) {
