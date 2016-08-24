@@ -10,7 +10,7 @@ class ShaderTool: public core::App {
 protected:
 	struct Variable {
 		enum Type {
-			FLOAT, UNSIGNED_INT, INT, IVEC2, IVEC3, IVEC4, VEC2, VEC3, VEC4, MAT, SAMPLER2D, SAMPLER2DSHADOW, MAX
+			FLOAT, UNSIGNED_INT, INT, IVEC2, IVEC3, IVEC4, VEC2, VEC3, VEC4, MAT3, MAT4, SAMPLER2D, SAMPLER2DSHADOW, MAX
 		};
 		Type type;
 		std::string name;
@@ -52,6 +52,7 @@ protected:
 
 	bool parse(const std::string& src, bool vertex);
 	Variable::Type getType(const std::string& type) const;
+	int getComponents(const Variable::Type type) const;
 	std::string uniformSetterPostfix(const Variable::Type type, int amount) const;
 	void generateSrc() const;
 public:

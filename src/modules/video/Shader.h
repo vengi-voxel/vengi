@@ -49,6 +49,9 @@ protected:
 	ShaderVariables _uniforms;
 	ShaderVariables _attributes;
 
+	typedef std::unordered_map<int, int> AttributeComponents;
+	AttributeComponents _attributeComponents;
+
 	mutable uint32_t _time;
 
 	std::string _name;
@@ -124,6 +127,10 @@ public:
 	void addDefine(const std::string& name, const std::string& value);
 
 	void setUniformArraySize(const std::string& name, int size);
+	void setAttributeComponents(int location, int size);
+	int getAttributeComponents(int location) const;
+	int getAttributeComponents(const std::string& name) const;
+
 	/**
 	 * @return -1 if uniform wasn't found, or no size is known. If the uniform is known, but
 	 * it is no array, this might even return 0
@@ -187,13 +194,15 @@ public:
 	void setUniformf(int location, const glm::vec3& values) const;
 	void setUniformf(const std::string& name, const glm::vec4& values) const;
 	void setUniformf(int location, const glm::vec4& values) const;
-	void setVertexAttribute(const std::string& name, int size, int type, bool normalize, int stride, void* buffer) const;
-	void setVertexAttribute(int location, int size, int type, bool normalize, int stride, void* buffer) const;
+	void setVertexAttribute(const std::string& name, int size, int type, bool normalize, int stride, const void* buffer) const;
+	void setVertexAttribute(int location, int size, int type, bool normalize, int stride, const void* buffer) const;
+	void setVertexAttributeInt(const std::string& name, int size, int type, int stride, const void* buffer) const;
+	void setVertexAttributeInt(int location, int size, int type, int stride, const void* buffer) const;
 	void setAttributef(const std::string& name, float value1, float value2, float value3, float value4) const;
 	void disableVertexAttribute(const std::string& name) const;
 	void disableVertexAttribute(int location) const;
-	int enableVertexAttribute(const std::string& name) const;
-	void enableVertexAttribute(int location) const;
+	int enableVertexAttributeArray(const std::string& name) const;
+	void enableVertexAttributeArray(int location) const;
 	bool hasAttribute(const std::string& name) const;
 	bool hasUniform(const std::string& name) const;
 };
@@ -420,28 +429,50 @@ inline void Shader::setUniformf(int location, const glm::vec4& values) const {
 	setUniformf(location, values.x, values.y, values.z, values.w);
 }
 
-inline void Shader::setVertexAttribute(const std::string& name, int size, int type, bool normalize, int stride, void* buffer) const {
+inline void Shader::setVertexAttribute(const std::string& name, int size, int type, bool normalize, int stride, const void* buffer) const {
+	core_assert_msg(type == GL_FLOAT || type == GL_DOUBLE, "unexpected data type given: %x", type);
 	const int location = getAttributeLocation(name);
-	if (location == -1)
+	if (location == -1) {
 		return;
+	}
 	setVertexAttribute(location, size, type, normalize, stride, buffer);
 }
 
-inline void Shader::setVertexAttribute(int location, int size, int type, bool normalize, int stride, void* buffer) const {
+inline void Shader::setVertexAttribute(int location, int size, int type, bool normalize, int stride, const void* buffer) const {
+	core_assert_msg(getAttributeComponents(location) == -1 || getAttributeComponents(location) == size, "%i expected, but got %i components", getAttributeComponents(location), size);
 	glVertexAttribPointer(location, size, type, normalize, stride, buffer);
 	GL_checkError();
 }
 
+inline void Shader::setVertexAttributeInt(int location, int size, int type, int stride, const void* buffer) const {
+	core_assert_msg(getAttributeComponents(location) == -1 || getAttributeComponents(location) == size, "%i expected, but got %i components", getAttributeComponents(location), size);
+	glVertexAttribIPointer(location, size, type, stride, buffer);
+	GL_checkError();
+}
+
+inline void Shader::setVertexAttributeInt(const std::string& name, int size, int type, int stride, const void* buffer) const {
+	core_assert_msg(type != GL_FLOAT && type != GL_DOUBLE, "unexpected data type given: %x", type);
+	const int location = getAttributeLocation(name);
+	if (location == -1) {
+		return;
+	}
+	setVertexAttributeInt(location, size, type, stride, buffer);
+}
+
 inline void Shader::setAttributef(const std::string& name, float value1, float value2, float value3, float value4) const {
 	const int location = getAttributeLocation(name);
+	if (location == -1) {
+		return;
+	}
 	glVertexAttrib4f(location, value1, value2, value3, value4);
 	GL_checkError();
 }
 
 inline void Shader::disableVertexAttribute(const std::string& name) const {
 	const int location = getAttributeLocation(name);
-	if (location == -1)
+	if (location == -1) {
 		return;
+	}
 	disableVertexAttribute(location);
 }
 
@@ -450,17 +481,34 @@ inline void Shader::disableVertexAttribute(int location) const {
 	GL_checkError();
 }
 
-inline int Shader::enableVertexAttribute(const std::string& name) const {
+inline int Shader::enableVertexAttributeArray(const std::string& name) const {
 	int location = getAttributeLocation(name);
-	if (location == -1)
+	if (location == -1) {
 		return -1;
-	enableVertexAttribute(location);
+	}
+	enableVertexAttributeArray(location);
 	return location;
 }
 
-inline void Shader::enableVertexAttribute(int location) const {
+inline void Shader::enableVertexAttributeArray(int location) const {
 	glEnableVertexAttribArray(location);
 	GL_checkError();
+}
+
+inline int Shader::getAttributeComponents(int location) const {
+	auto i = _attributeComponents.find(location);
+	if (i != _attributeComponents.end()) {
+		return i->second;
+	}
+	return -1;
+}
+
+inline int Shader::getAttributeComponents(const std::string& name) const {
+	const int loc = getAttributeLocation(name);
+	if (loc == -1) {
+		return -1;
+	}
+	return getAttributeComponents(loc);
 }
 
 inline bool Shader::hasAttribute(const std::string& name) const {

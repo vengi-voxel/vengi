@@ -19,7 +19,8 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::VEC2,            2, "const glm::vec2",  Reference },
 	{ ShaderTool::Variable::VEC3,            3, "const glm::vec3",  Reference },
 	{ ShaderTool::Variable::VEC4,            4, "const glm::vec4",  Reference },
-	{ ShaderTool::Variable::MAT,             1, "const glm::mat4",  Reference },
+	{ ShaderTool::Variable::MAT3,            1, "const glm::mat3",  Reference },
+	{ ShaderTool::Variable::MAT4,            1, "const glm::mat4",  Reference },
 	{ ShaderTool::Variable::SAMPLER2D,       1, "int",              Value },
 	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int",              Value }
 };
@@ -82,7 +83,8 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 			return "Vec4v";
 		}
 		return "Vec4";
-	case Variable::MAT:
+	case Variable::MAT3:
+	case Variable::MAT4:
 		if (amount > 1) {
 			return "Matrixv";
 		}
@@ -99,6 +101,34 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 		return "i";
 	}
 	return "";
+}
+
+int ShaderTool::getComponents(const ShaderTool::Variable::Type type) const {
+	return cTypes[(int)type].typeSize;
+	switch (type) {
+	case Variable::FLOAT:
+	case Variable::UNSIGNED_INT:
+	case Variable::INT:
+		return 1;
+	case Variable::IVEC2:
+	case Variable::VEC2:
+		return 2;
+	case Variable::IVEC3:
+	case Variable::VEC3:
+		return 3;
+	case Variable::IVEC4:
+	case Variable::VEC4:
+		return 4;
+	case Variable::MAT3:
+		return 9;
+	case Variable::MAT4:
+		return 16;
+	case Variable::SAMPLER2D:
+	case Variable::SAMPLER2DSHADOW:
+	case Variable::MAX:
+		return -1;
+	}
+	return -1;
 }
 
 ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
@@ -126,8 +156,10 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
 		return Variable::IVEC3;
 	} else if (type == "ivec4") {
 		return Variable::IVEC4;
+	} else if (type == "mat3") {
+		return Variable::MAT3;
 	} else if (type == "mat4") {
-		return Variable::MAT;
+		return Variable::MAT4;
 	} else if (type == "sampler2D") {
 		return Variable::SAMPLER2D;
 	} else if (type == "sampler2DShadow") {
@@ -215,7 +247,15 @@ void ShaderTool::generateSrc() const {
 				attributes << ", ";
 			}
 		}
-		attributes << "});";
+		attributes << "});\n";
+
+		for (int i = 0; i < attributeSize; ++i) {
+			const Variable& v = _shaderStruct.attributes[i];
+			attributes << "\t\tconst int " << v.name << "Location = getAttributeLocation(\"" << v.name << "\");\n";
+			attributes << "\t\tif (" << v.name << "Location != -1) {\n";
+			attributes << "\t\t\tsetAttributeComponents(" << v.name << "Location, " << getComponents(v.type) << ");\n";
+			attributes << "\t\t}\n";
+		}
 	} else {
 		attributes << "// no attributes";
 	}
@@ -334,11 +374,11 @@ void ShaderTool::generateSrc() const {
 		setters << "\t\tif (!hasAttribute(\"" << v.name << "\")) {\n";
 		setters << "\t\t\treturn false;\n";
 		setters << "\t\t}\n";
-		setters << "\t\tconst int loc = enableVertexAttribute(\"" << v.name << "\");\n";
+		setters << "\t\tconst int loc = enableVertexAttributeArray(\"" << v.name << "\");\n";
 		setters << "\t\tif (isInt) {\n";
-		setters << "\t\t\tglVertexAttribIPointer(loc, size, type, stride, pointer);\n";
+		setters << "\t\t\tsetVertexAttributeInt(loc, size, type, stride, pointer);\n";
 		setters << "\t\t} else {\n";
-		setters << "\t\t\tglVertexAttribPointer(loc, size, type, normalize, stride, pointer);\n";
+		setters << "\t\t\tsetVertexAttribute(loc, size, type, normalize, stride, pointer);\n";
 		setters << "\t\t}\n";
 		setters << "\t\treturn true;\n";
 		setters << "\t}\n\n";

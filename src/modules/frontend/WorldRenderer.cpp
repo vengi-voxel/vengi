@@ -480,14 +480,15 @@ video::GLMeshData WorldRenderer::createMeshInternal(video::Shader& shader, voxel
 
 	updateMesh(mesh, meshData);
 
-	const int posLoc = shader.enableVertexAttribute("a_pos");
-	glVertexAttribIPointer(posLoc, 3, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
-			GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
+	const int posLoc = shader.enableVertexAttributeArray("a_pos");
+	const int components = sizeof(voxel::Vertex::position) / sizeof(decltype(voxel::Vertex::position)::value_type);
+	shader.setVertexAttributeInt(posLoc, components, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
 
+	const int locationInfo = shader.enableVertexAttributeArray("a_info");
+	// we are uploading two bytes at one here
 	static_assert(sizeof(voxel::Voxel) == sizeof(uint8_t), "Voxel type doesn't match");
-	const int locationInfo = shader.enableVertexAttribute("a_info");
-	glVertexAttribIPointer(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex),
-			GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
+	static_assert(sizeof(voxel::Vertex::ambientOcclusion) == sizeof(uint8_t), "AO type doesn't match");
+	shader.setVertexAttributeInt(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
 	GL_checkError();
 
 	return meshData;
@@ -518,9 +519,9 @@ video::GLMeshData WorldRenderer::createInstancedMesh(video::Shader& shader, voxe
 	core_assert(meshData.offsetBuffer > 0);
 	glBindBuffer(GL_ARRAY_BUFFER, meshData.offsetBuffer);
 
-	const int offsetLoc = shader.enableVertexAttribute("a_offset");
-	glVertexAttribPointer(offsetLoc, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3),
-			GL_OFFSET_CAST(offsetof(glm::vec3, x)));
+	const int offsetLoc = shader.enableVertexAttributeArray("a_offset");
+	const int components = sizeof(glm::vec3) / sizeof(glm::vec3::value_type);
+	shader.setVertexAttribute(offsetLoc, components, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), GL_OFFSET_CAST(offsetof(glm::vec3, x)));
 	glVertexAttribDivisor(offsetLoc, 1);
 	GL_checkError();
 

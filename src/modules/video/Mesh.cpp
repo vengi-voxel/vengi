@@ -205,34 +205,32 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 		glBindVertexArray(_vertexArrayObject);
 		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 		if (shader.hasAttribute("a_pos")) {
-			const int loc = shader.enableVertexAttribute("a_pos");
-			core_assert(loc >= 0);
-			glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _pos)));
+			const int loc = shader.enableVertexAttributeArray("a_pos");
+			const int components = sizeof(Vertex::_pos) / sizeof(decltype(Vertex::_pos)::value_type);
+			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _pos)));
 		}
 		if (shader.hasAttribute("a_texcoords")) {
-			const int loc = shader.enableVertexAttribute("a_texcoords");
-			core_assert(loc >= 0);
-			glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _uv)));
+			const int loc = shader.enableVertexAttributeArray("a_texcoords");
+			const int components = sizeof(Vertex::_uv) / sizeof(decltype(Vertex::_uv)::value_type);
+			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _uv)));
 		}
 		if (shader.hasAttribute("a_color")) {
-			const int loc = shader.enableVertexAttribute("a_color");
-			core_assert(loc >= 0);
-			glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _color)));
+			const int loc = shader.enableVertexAttributeArray("a_color");
+			const int components = sizeof(Vertex::_color) / sizeof(decltype(Vertex::_color)::value_type);
+			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _color)));
 		}
 		if (shader.hasAttribute("a_norm")) {
-			const int loc = shader.enableVertexAttribute("a_norm");
-			core_assert(loc >= 0);
-			glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _norm)));
+			const int loc = shader.enableVertexAttributeArray("a_norm");
+			const int components = sizeof(Vertex::_norm) / sizeof(decltype(Vertex::_norm)::value_type);
+			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _norm)));
 		}
 		if (shader.hasAttribute("a_boneids")) {
-			const int loc = shader.enableVertexAttribute("a_boneids");
-			core_assert(loc >= 0);
-			glVertexAttribIPointer(loc, NUM_BONES_PER_VEREX, GL_INT, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneIds)));
+			const int loc = shader.enableVertexAttributeArray("a_boneids");
+			shader.setVertexAttributeInt(loc, NUM_BONES_PER_VEREX, GL_INT, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneIds)));
 		}
 		if (shader.hasAttribute("a_boneweights")) {
-			const int loc = shader.enableVertexAttribute("a_boneweights");
-			core_assert(loc >= 0);
-			glVertexAttribPointer(loc, NUM_BONES_PER_VEREX, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneWeights)));
+			const int loc = shader.enableVertexAttributeArray("a_boneweights");
+			shader.setVertexAttribute(loc, NUM_BONES_PER_VEREX, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneWeights)));
 		}
 		glBindVertexArray(0);
 	}
@@ -528,7 +526,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 	struct MeshNormals {
 		struct AttributeData {
 			glm::vec4 vertex;
-			glm::vec4 color;
+			glm::vec3 color;
 		};
 		std::vector<AttributeData> data;
 
@@ -556,8 +554,8 @@ int Mesh::renderNormals(video::Shader& shader) {
 		const glm::vec4 pos = bonetrans * glm::vec4(v._pos, 1.0f);
 		const glm::vec4 norm = bonetrans * glm::vec4(v._norm, 0.0f);
 		const glm::vec4 extended = pos + 2.0f * norm;
-		normalData.data.push_back(MeshNormals::AttributeData{ pos,      core::Color::Red    });
-		normalData.data.push_back(MeshNormals::AttributeData{ extended, core::Color::Yellow });
+		normalData.data.push_back(MeshNormals::AttributeData{ pos,      core::Color::Red.xyz()    });
+		normalData.data.push_back(MeshNormals::AttributeData{ extended, core::Color::Yellow.xyz() });
 	}
 
 	glBindVertexArray(_vertexArrayObjectNormals);
@@ -565,14 +563,16 @@ int Mesh::renderNormals(video::Shader& shader) {
 	glBufferData(GL_ARRAY_BUFFER, normalData.size(), &normalData.data[0], GL_STATIC_DRAW);
 
 	if (shader.hasAttribute("a_pos")) {
-		const int loc = shader.enableVertexAttribute("a_pos");
+		const int loc = shader.enableVertexAttributeArray("a_pos");
 		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, vertex)));
+		const int components = sizeof(MeshNormals::AttributeData::vertex) / sizeof(decltype(MeshNormals::AttributeData::vertex)::value_type);
+		shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, vertex)));
 	}
 	if (shader.hasAttribute("a_color")) {
-		const int loc = shader.enableVertexAttribute("a_color");
+		const int loc = shader.enableVertexAttributeArray("a_color");
 		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, color)));
+		const int components = sizeof(MeshNormals::AttributeData::color) / sizeof(decltype(MeshNormals::AttributeData::color)::value_type);
+		shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, color)));
 	}
 
 	glLineWidth(4.0f);
