@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_map>
 #include "IProtocolHandler.h"
+#include "core/Log.h"
 
 namespace network {
 
@@ -19,7 +20,9 @@ public:
 	}
 
 	inline ProtocolHandlerPtr getHandler(const char* type) {
-		return _injector->get<IProtocolHandler>(type);
+		const ProtocolHandlerPtr& ptr = _injector->get<IProtocolHandler>(type);
+		::Log::debug("Trying to get handler for %s (%p)", type, ptr.get());
+		return ptr;
 	}
 };
 
