@@ -68,6 +68,10 @@ private:
 	GLuint _indexBuffer = 0u;
 	bool _readyToInit = false;
 
+	// animation related stuff
+	uint8_t _animationIndex = 0u;
+	float _timeInSeconds = 0.0f;
+
 	std::vector<GLMeshData> _meshData;
 	std::vector<image::ImagePtr> _images;
 	std::vector<TexturePtr> _textures;

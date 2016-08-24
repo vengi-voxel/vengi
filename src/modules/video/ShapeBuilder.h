@@ -26,7 +26,7 @@ private:
 	Vertices _normals;
 	Colors _colors;
 
-	glm::vec4 _color = core::Color::Red;
+	glm::vec4 _color = core::Color::White;
 	glm::vec3 _position;
 
 	inline void reserve(int vertices, int additionalIndices = 0) {

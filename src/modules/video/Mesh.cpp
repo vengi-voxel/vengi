@@ -196,6 +196,9 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 		glBindVertexArray(0);
 	}
 
+	_timeInSeconds = timeInSeconds;
+	_animationIndex = animationIndex;
+
 	if (&shader != _lastShader) {
 		core_assert(shader.isActive());
 		_lastShader = &shader;
@@ -238,7 +241,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 	if (size > 0) {
 		std::vector<glm::mat4> transforms;
 		transforms.resize(size);
-		boneTransform(timeInSeconds, transforms, animationIndex);
+		boneTransform(_timeInSeconds, transforms, _animationIndex);
 		shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], size);
 	}
 
@@ -524,7 +527,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 	core_assert(shader.isActive());
 	struct MeshNormals {
 		struct AttributeData {
-			glm::vec3 vertex;
+			glm::vec4 vertex;
 			glm::vec4 color;
 		};
 		std::vector<AttributeData> data;
@@ -545,8 +548,15 @@ int Mesh::renderNormals(video::Shader& shader) {
 	MeshNormals normalData;
 	normalData.reserve(_vertices.size() * 2);
 	for (const Vertex& v : _vertices) {
-		const glm::vec3 extended = v._pos + 2.0f * v._norm;
-		normalData.data.push_back(MeshNormals::AttributeData{ v._pos,   core::Color::Red    });
+		glm::mat4 bonetrans;
+		for (int i = 0; i < NUM_BONES_PER_VEREX; ++i) {
+			const glm::mat4& bmat = _boneInfo[v._boneIds[i]].finalTransformation * v._boneWeights[i];
+			bonetrans += bmat;
+		}
+		const glm::vec4 pos = bonetrans * glm::vec4(v._pos, 1.0f);
+		const glm::vec4 norm = bonetrans * glm::vec4(v._norm, 0.0f);
+		const glm::vec4 extended = pos + 2.0f * norm;
+		normalData.data.push_back(MeshNormals::AttributeData{ pos,      core::Color::Red    });
 		normalData.data.push_back(MeshNormals::AttributeData{ extended, core::Color::Yellow });
 	}
 
@@ -557,7 +567,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 	if (shader.hasAttribute("a_pos")) {
 		const int loc = shader.enableVertexAttribute("a_pos");
 		core_assert(loc >= 0);
-		glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, vertex)));
+		glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, vertex)));
 	}
 	if (shader.hasAttribute("a_color")) {
 		const int loc = shader.enableVertexAttribute("a_color");
