@@ -204,26 +204,21 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 		_lastShader = &shader;
 		glBindVertexArray(_vertexArrayObject);
 		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		if (shader.hasAttribute("a_pos")) {
-			const int loc = shader.enableVertexAttributeArray("a_pos");
-			const int components = sizeof(Vertex::_pos) / sizeof(decltype(Vertex::_pos)::value_type);
-			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _pos)));
+
+#define enable(attrib) \
+		if (shader.hasAttribute("a"#attrib)) { \
+			const int loc = shader.enableVertexAttributeArray("a"#attrib); \
+			const int components = sizeof(Vertex::attrib) / sizeof(decltype(Vertex::attrib)::value_type); \
+			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, attrib))); \
 		}
-		if (shader.hasAttribute("a_texcoords")) {
-			const int loc = shader.enableVertexAttributeArray("a_texcoords");
-			const int components = sizeof(Vertex::_uv) / sizeof(decltype(Vertex::_uv)::value_type);
-			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _uv)));
-		}
-		if (shader.hasAttribute("a_color")) {
-			const int loc = shader.enableVertexAttributeArray("a_color");
-			const int components = sizeof(Vertex::_color) / sizeof(decltype(Vertex::_color)::value_type);
-			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _color)));
-		}
-		if (shader.hasAttribute("a_norm")) {
-			const int loc = shader.enableVertexAttributeArray("a_norm");
-			const int components = sizeof(Vertex::_norm) / sizeof(decltype(Vertex::_norm)::value_type);
-			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _norm)));
-		}
+
+		enable(_pos);
+		enable(_texcoords);
+		enable(_color);
+		enable(_norm);
+
+#undef enable
+
 		if (shader.hasAttribute("a_boneids")) {
 			const int loc = shader.enableVertexAttributeArray("a_boneids");
 			shader.setVertexAttributeInt(loc, NUM_BONES_PER_VEREX, GL_INT, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneIds)));
