@@ -6,7 +6,7 @@
 
 #include "ui/Window.h"
 #include "core/Common.h"
-#include "core/EMailValidator.h"
+#include "util/EMailValidator.h"
 #include "../Client.h"
 
 namespace frontend {
@@ -33,7 +33,7 @@ public:
 				popup(_("error"), _("passwordsdonotmatch"));
 				return true;
 			}
-			if (!core::isValidEmail(email)) {
+			if (!util::isValidEmail(email)) {
 				popup(_("error"), _("emailinvalid"));
 				return true;
 			}

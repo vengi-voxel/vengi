@@ -7,7 +7,7 @@
 #include "ServerMessages_generated.h"
 #include "backend/entity/User.h"
 #include "core/Var.h"
-#include "core/EMailValidator.h"
+#include "util/EMailValidator.h"
 
 namespace backend {
 
@@ -27,7 +27,7 @@ void UserConnectHandler::execute(ENetPeer* peer, const void* raw) {
 	const auto* message = getMsg<network::UserConnect>(raw);
 
 	const std::string& email = message->email()->str();
-	if (!core::isValidEmail(email)) {
+	if (!util::isValidEmail(email)) {
 		sendAuthFailed(peer);
 		Log::warn("Invalid email given: '%s', %c", email.c_str(), email[0]);
 		return;

@@ -8,13 +8,11 @@ set(SRCS
 	Command.h Command.cpp
 	Common.h
 	Concurrency.h
-	EMailValidator.h
 	EventBus.h
 	GameConfig.h
 	GLM.cpp GLM.h
 	IFactoryRegistry.h
 	Input.h
-	KeybindingParser.h
 	Log.cpp Log.h
 	MemoryAllocator.h
 	MemGuard.cpp MemGuard.h
@@ -45,13 +43,11 @@ gtest_suite_files(tests
 	tests/RectTest.cpp
 	tests/ByteStreamTest.cpp
 	tests/ThreadPoolTest.cpp
-	tests/EMailValidatorTest.cpp
 	tests/EventBusTest.cpp
 	tests/QuadTreeTest.cpp
 	tests/VarTest.cpp
 	tests/CommandTest.cpp
 	tests/SetTest.cpp
 	tests/TokenizerTest.cpp
-	tests/KeybindingParserTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

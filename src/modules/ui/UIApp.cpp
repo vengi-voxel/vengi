@@ -276,9 +276,9 @@ core::AppState UIApp::onConstruct() {
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
 
 	core::Command::registerCommand("bindlist", [this] (const core::CmdArgs& args) {
-		for (core::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
+		for (util::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 			const int32_t key = i->first;
-			const core::CommandModifierPair& pair = i->second;
+			const util::CommandModifierPair& pair = i->second;
 			const char* keyName = SDL_GetKeyName(key);
 			const int16_t modifier = pair.second;
 			std::string modifierKey;
@@ -302,11 +302,11 @@ core::AppState UIApp::onConstruct() {
 			return;
 		}
 
-		core::KeybindingParser p(args[0], args[1]);
-		const core::BindMap& bindings = p.getBindings();
-		for (core::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
+		util::KeybindingParser p(args[0], args[1]);
+		const util::BindMap& bindings = p.getBindings();
+		for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
 			const uint32_t key = i->first;
-			const core::CommandModifierPair& pair = i->second;
+			const util::CommandModifierPair& pair = i->second;
 			auto range = _bindings.equal_range(key);
 			bool found = false;
 			for (auto it = range.first; it != range.second; ++it) {

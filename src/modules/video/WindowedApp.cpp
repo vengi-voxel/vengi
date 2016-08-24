@@ -142,7 +142,7 @@ bool WindowedApp::loadKeyBindings() {
 	const std::string& bindings = filesystem()->load("keybindings.cfg");
 	if (bindings.empty())
 		return false;
-	const core::KeybindingParser p(bindings);
+	const util::KeybindingParser p(bindings);
 	_bindings = p.getBindings();
 	return true;
 }
@@ -321,9 +321,9 @@ core::AppState WindowedApp::onCleanup() {
 
 	std::string keybindings;
 
-	for (core::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
+	for (util::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 		const int32_t key = i->first;
-		const core::CommandModifierPair& pair = i->second;
+		const util::CommandModifierPair& pair = i->second;
 		const std::string keyName = core::string::toLower(SDL_GetKeyName(key));
 		const int16_t modifier = pair.second;
 		std::string modifierKey;
