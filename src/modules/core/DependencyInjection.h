@@ -14,5 +14,5 @@
 #endif
 
 #ifdef DI_BOOST
-#include <di.hpp>
+#include <boost/di.hpp>
 #endif
