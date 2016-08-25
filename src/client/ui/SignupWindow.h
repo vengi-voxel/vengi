@@ -30,11 +30,11 @@ public:
 			const std::string& password = getStr("password");
 			const std::string& passwordVerify = getStr("password_verify");
 			if (password != passwordVerify) {
-				popup(_("error"), _("passwordsdonotmatch"));
+				popup(tr("error"), tr("passwordsdonotmatch"));
 				return true;
 			}
 			if (!util::isValidEmail(email)) {
-				popup(_("error"), _("emailinvalid"));
+				popup(tr("error"), tr("emailinvalid"));
 				return true;
 			}
 			_client->signup(email, password);

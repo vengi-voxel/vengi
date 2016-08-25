@@ -19,7 +19,7 @@ class UIApp;
 #define FLOAT_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_FLOAT, structtarget, structmember)
 #define IVEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_IVEC2, structtarget, structmember)
 #define VEC2_FIELD(name, structtarget, structmember) FIELD(name, ui::Window::T_VEC2, structtarget, structmember)
-#define _(id) ui::Window::getTranslation(tb::TBID(id))
+#define tr(id) ui::Window::getTranslation(tb::TBID(id))
 
 class Window: public tb::TBWindow, public io::IEventObserver {
 protected:

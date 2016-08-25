@@ -31,7 +31,7 @@ private:
 		Log::info("Trying to connect to server %s:%i", host->strVal().c_str(), port->intVal());
 		if (!_client->connect(port->intVal(), host->strVal())) {
 			Log::info("Failed to connect to server %s:%i", host->strVal().c_str(), port->intVal());
-			popup(_("error"), _("failed_to_connect"));
+			popup(tr("error"), tr("failed_to_connect"));
 		} else {
 			Close();
 		}

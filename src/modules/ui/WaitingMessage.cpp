@@ -25,7 +25,7 @@ void WaitingMessage::shutdown() {
 }
 
 void WaitingMessage::setTextId(const char *textId) {
-	_translatedStr = _(textId);
+	_translatedStr = tr(textId);
 }
 
 void WaitingMessage::reset() {
