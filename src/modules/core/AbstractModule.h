@@ -38,13 +38,13 @@ protected:
 class AbstractModule {
 protected:
 	AbstractModule() {
-		auto _injector = di::make_injector();
 	}
 
 	virtual ~AbstractModule() {}
 
 	template<class Class>
-	inline void bindSingleton() const {
+	inline auto bindSingleton() const {
+		return bind<Class>().in(di::SingletonScope);
 	}
 
 	template<class Class>

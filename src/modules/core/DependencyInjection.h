@@ -20,7 +20,9 @@ namespace di = fruit;
 namespace di = boost::di;
 namespace boost {
 namespace di {
-using SingletonScope = scopes::singleton;
+static constexpr auto SingletonScope = singleton;
+template <class T, class... Ts>
+using Injector = injector<T, Ts...>;
 }
 }
 #endif
