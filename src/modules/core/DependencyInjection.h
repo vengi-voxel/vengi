@@ -1,9 +1,18 @@
 #pragma once
 
-#include <sauce/sauce.h>
-#include <fruit/fruit.h>
-#include <di.hpp>
 
 #define DI_SAUCE
 //#define DI_BOOST
 //#define DI_FRUIT
+
+#ifdef DI_SAUCE
+#include <sauce/sauce.h>
+#endif
+
+#ifdef DI_FRUIT
+#include <fruit/fruit.h>
+#endif
+
+#ifdef DI_BOOST
+#include <di.hpp>
+#endif
