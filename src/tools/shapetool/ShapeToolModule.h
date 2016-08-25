@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <sauce/sauce.h>
-
 #include "core/AppModule.h"
 #include "video/MeshPool.h"
 

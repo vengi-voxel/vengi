@@ -7,8 +7,6 @@
 #include "Network.h"
 #include "MessageSender.h"
 #include "core/EventBus.h"
-#include <sauce/sauce.h>
-
 #define configureHandler(type, handler) bind<network::IProtocolHandler>().named(type).to<handler>();
 
 class NetworkModule: public sauce::AbstractModule {

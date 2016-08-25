@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <sauce/sauce.h>
-
 #include "AbstractModule.h"
 #include "App.h"
 
