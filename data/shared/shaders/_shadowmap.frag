@@ -9,6 +9,7 @@ uniform vec2 u_screensize;
 float calculateShadow(float ndotl) {
 	// perform perspective divide
 	vec3 lightPos = v_lightspacepos.xyz / v_lightspacepos.w;
+	// convert from -1, 1 to tex coords in the range 0, 1
 	vec2 smUV = (lightPos.xy + 1.0) * 0.5;
 	float depth = lightPos.z;
 	float s = sampleShadowPCF(u_shadowmap, smUV, u_screensize, depth);
