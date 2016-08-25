@@ -1,5 +1,7 @@
 #include "TestMeshApp.h"
 
+static constexpr uint32_t FL_RENDER_LINES = 1 << 0;
+
 TestMeshApp::TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
 	setCameraMotion(true);
@@ -86,7 +88,21 @@ void TestMeshApp::doRender() {
 		if (meshInitialized) {
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
+
+			const bool renderLines = (_flags & FL_RENDER_LINES) != 0 || (SDL_GetModState() & KMOD_SHIFT) != 0;
+
+			GLint polygonMode = GL_FILL;
+			if (renderLines) {
+				glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			}
+
 			core_assert_always(_mesh->render() > 0);
+
+			if (renderLines) {
+				glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
+			}
+
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glActiveTexture(GL_TEXTURE0);
@@ -112,4 +128,20 @@ core::AppState TestMeshApp::onCleanup() {
 	_mesh->shutdown();
 	_meshPool.shutdown();
 	return Super::onCleanup();
+}
+
+bool TestMeshApp::onKeyPress(int32_t key, int16_t modifier) {
+	const bool retVal = Super::onKeyPress(key, modifier);
+	if (key == SDLK_KP_SPACE || key == SDLK_SPACE) {
+		_flags |= FL_RENDER_LINES;
+	}
+	return retVal;
+}
+
+bool TestMeshApp::onKeyRelease(int32_t key) {
+	const bool retVal = Super::onKeyRelease(key);
+	if (key == SDLK_KP_SPACE || key == SDLK_SPACE) {
+		_flags &= ~FL_RENDER_LINES;
+	}
+	return retVal;
 }

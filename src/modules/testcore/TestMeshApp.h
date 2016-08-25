@@ -23,12 +23,15 @@ protected:
 	video::SunLight _sunLight;
 	shader::ShadowmapShader _shadowMapShader;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
+	uint32_t _flags = 0u;
 
 	virtual void renderPlane();
 	virtual void doRender() override;
 public:
 	TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
 
-	core::AppState onInit() override;
-	core::AppState onCleanup() override;
+	virtual core::AppState onInit() override;
+	virtual core::AppState onCleanup() override;
+	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
+	virtual bool onKeyRelease(int32_t key) override;
 };
