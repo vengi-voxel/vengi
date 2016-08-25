@@ -8,7 +8,6 @@ extern "C" {
 #include <enet/enet.h>
 }
 #include <memory>
-#include <sauce/sauce.h>
 #include <flatbuffers/flatbuffers.h>
 #include "core/Common.h"
 

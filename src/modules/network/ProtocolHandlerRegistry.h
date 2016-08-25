@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_map>
 #include "IProtocolHandler.h"
+#include <sauce/sauce.h>
 
 namespace network {
 
