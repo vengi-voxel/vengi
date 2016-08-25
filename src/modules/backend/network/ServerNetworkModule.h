@@ -18,7 +18,8 @@ namespace backend {
 class ServerNetworkModule: public NetworkModule {
 	template<typename Ctor>
 	inline void bindHandler(network::ClientMsgType type) const {
-		bind<network::IProtocolHandler>().named(network::EnumNameClientMsgType(type)).to<Ctor>();
+		const std::string typeName(network::EnumNameClientMsgType(type));
+		bind<network::IProtocolHandler>().named(typeName).to<Ctor>();
 	}
 
 	void configureHandlers() const override {

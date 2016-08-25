@@ -4,7 +4,7 @@ set(SRCS
 	Network.cpp Network.h
 	MessageSender.h MessageSender.cpp
 	NetworkEvents.h
-	ProtocolHandlerRegistry.h
+	ProtocolHandlerRegistry.h ProtocolHandlerRegistry.cpp
 )
 set(LIB network)
 add_library(${LIB} ${SRCS})
