@@ -37,14 +37,14 @@ protected:
 };
 
 template<typename AppClass, typename Module = AppModule<AppClass> >
-inline typename sauce::shared_ptr<sauce::Injector> getAppInjector() {
+inline typename std::shared_ptr<sauce::Injector> getAppInjector() {
 	sauce::Modules modules;
 	modules.template add<Module>();
 	return modules.createInjector();
 }
 
 template<typename AppClass, typename Module = AppModule<AppClass> >
-inline typename sauce::shared_ptr<AppClass> getApp() {
+inline typename std::shared_ptr<AppClass> getApp() {
 	return getAppInjector<AppClass, Module>()->template get<AppClass>();
 }
 
@@ -58,7 +58,7 @@ inline void addModule(sauce::Modules& modules, const Module& module, Modules&&..
 }
 
 template<typename AppClass, typename... Modules>
-inline typename sauce::shared_ptr<AppClass> getAppWithModules(Modules&&... mods) {
+inline typename std::shared_ptr<AppClass> getAppWithModules(Modules&&... mods) {
 	sauce::Modules modules;
 	addModule(modules, mods...);
 	return modules.createInjector()->template get<AppClass>();
