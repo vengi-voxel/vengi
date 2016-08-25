@@ -34,17 +34,25 @@ protected:
 #endif
 
 #ifdef DI_BOOST
+
 class AbstractModule {
 protected:
 	AbstractModule() {
 		auto _injector = di::make_injector();
 	}
 
+	virtual ~AbstractModule() {}
+
 	template<class Class>
 	inline void bindSingleton() const {
 	}
 
-	void configure() const {
+	template<class Class>
+	inline auto bind() const {
+		return di::bind<Class>();
+	}
+
+	virtual void configure() const {
 		bindSingleton<core::TimeProvider>();
 		bindSingleton<core::EventBus>();
 		bindSingleton<io::Filesystem>();
