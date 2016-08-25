@@ -29,7 +29,7 @@ public:
 	}
 protected:
 	virtual void configureApp() const override {
-		bind<AppClass>().template in<sauce::SingletonScope>().template to<AppClass(io::Filesystem &, core::EventBus &)>();
+		bind<AppClass>().template in<di::SingletonScope>().template to<AppClass(io::Filesystem &, core::EventBus &)>();
 	}
 
 	virtual void configureBindings() const override {
@@ -37,8 +37,8 @@ protected:
 };
 
 template<typename AppClass, typename Module = AppModule<AppClass> >
-inline typename std::shared_ptr<sauce::Injector> getAppInjector() {
-	sauce::Modules modules;
+inline typename std::shared_ptr<di::Injector> getAppInjector() {
+	di::Modules modules;
 	modules.template add<Module>();
 	return modules.createInjector();
 }
@@ -48,18 +48,18 @@ inline typename std::shared_ptr<AppClass> getApp() {
 	return getAppInjector<AppClass, Module>()->template get<AppClass>();
 }
 
-inline void addModule(sauce::Modules& modules) {
+inline void addModule(di::Modules& modules) {
 }
 
 template<typename Module, typename... Modules>
-inline void addModule(sauce::Modules& modules, const Module& module, Modules&&... mods) {
+inline void addModule(di::Modules& modules, const Module& module, Modules&&... mods) {
 	modules.add(module);
 	addModule(modules, mods...);
 }
 
 template<typename AppClass, typename... Modules>
 inline typename std::shared_ptr<AppClass> getAppWithModules(Modules&&... mods) {
-	sauce::Modules modules;
+	di::Modules modules;
 	addModule(modules, mods...);
 	return modules.createInjector()->template get<AppClass>();
 }

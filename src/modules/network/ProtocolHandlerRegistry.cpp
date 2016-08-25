@@ -3,7 +3,7 @@
 
 namespace network {
 
-ProtocolHandlerRegistry::ProtocolHandlerRegistry(std::shared_ptr<sauce::Injector> injector) :
+ProtocolHandlerRegistry::ProtocolHandlerRegistry(std::shared_ptr<di::Injector> injector) :
 		_injector(injector) {
 }
 

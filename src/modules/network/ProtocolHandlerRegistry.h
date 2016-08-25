@@ -13,9 +13,9 @@ namespace network {
 
 class ProtocolHandlerRegistry {
 private:
-	std::shared_ptr<sauce::Injector> _injector;
+	std::shared_ptr<di::Injector> _injector;
 public:
-	ProtocolHandlerRegistry(std::shared_ptr<sauce::Injector> injector);
+	ProtocolHandlerRegistry(std::shared_ptr<di::Injector> injector);
 
 	ProtocolHandlerPtr getHandler(const char* type);
 };

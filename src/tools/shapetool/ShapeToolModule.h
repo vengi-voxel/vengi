@@ -9,7 +9,7 @@
 
 class ShapeToolModule: public core::AbstractAppModule {
 	void configureApp() const override {
-		bind<ShapeTool>().in<sauce::SingletonScope>().to<ShapeTool(video::MeshPool &, io::Filesystem &, core::EventBus &, voxel::World &)>();
+		bind<ShapeTool>().in<di::SingletonScope>().to<ShapeTool(video::MeshPool &, io::Filesystem &, core::EventBus &, voxel::World &)>();
 	}
 
 	void configureBindings() const override {

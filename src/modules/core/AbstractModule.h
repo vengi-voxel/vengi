@@ -14,18 +14,37 @@
 namespace core {
 
 #ifdef DI_SAUCE
-class AbstractModule: public sauce::AbstractModule {
+class AbstractModule: public di::AbstractModule {
 public:
-	AbstractModule() : sauce::AbstractModule() {}
+	AbstractModule() : di::AbstractModule() {}
 protected:
 	template<class Class>
 	inline void bindSingleton() const {
-		typename sauce::BindClause<Class> bindClause = bind<Class>();
-		typename sauce::InClause<sauce::Named<Class, sauce::Unnamed>, sauce::SingletonScope> inClause = bindClause.template in<sauce::SingletonScope>();
+		typename di::BindClause<Class> bindClause = bind<Class>();
+		typename di::InClause<di::Named<Class, di::Unnamed>, sauce::SingletonScope> inClause = bindClause.template in<di::SingletonScope>();
 		inClause.template to<Class>();
 	}
 
 	void configure() const override {
+		bindSingleton<core::TimeProvider>();
+		bindSingleton<core::EventBus>();
+		bindSingleton<io::Filesystem>();
+	}
+};
+#endif
+
+#ifdef DI_BOOST
+class AbstractModule {
+protected:
+	AbstractModule() {
+		auto _injector = di::make_injector();
+	}
+
+	template<class Class>
+	inline void bindSingleton() const {
+	}
+
+	void configure() const {
 		bindSingleton<core::TimeProvider>();
 		bindSingleton<core::EventBus>();
 		bindSingleton<io::Filesystem>();

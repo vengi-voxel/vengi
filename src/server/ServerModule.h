@@ -20,7 +20,6 @@
 #include "attrib/ContainerProvider.h"
 
 using namespace backend;
-using namespace sauce;
 using namespace core;
 using namespace network;
 using namespace voxel;
@@ -29,17 +28,17 @@ using namespace io;
 
 class ServerModule: public core::AbstractAppModule {
 	void configureApp() const override {
-		bind<Server>().in<SingletonScope>().to<Server(Network&, ServerLoop&, TimeProvider&, Filesystem&, EventBus&)>();
+		bind<Server>().in<di::SingletonScope>().to<Server(Network&, ServerLoop&, TimeProvider&, Filesystem&, EventBus&)>();
 	}
 
 	void configureBindings() const override {
-		bind<PoiProvider>().in<SingletonScope>().to<PoiProvider(World&, TimeProvider&)>();
+		bind<PoiProvider>().in<di::SingletonScope>().to<PoiProvider(World&, TimeProvider&)>();
 		bindSingleton<ContainerProvider>();
-		bind<ServerLoop>().in<SingletonScope>().to<ServerLoop(Network&, SpawnMgr&, World&, EntityStorage&, EventBus&, AIRegistry&, ContainerProvider&, PoiProvider&)>();
+		bind<ServerLoop>().in<di::SingletonScope>().to<ServerLoop(Network&, SpawnMgr&, World&, EntityStorage&, EventBus&, AIRegistry&, ContainerProvider&, PoiProvider&)>();
 		bindSingleton<AIRegistry>();
-		bind<AILoader>().in<SingletonScope>().to<AILoader(AIRegistry&)>();
-		bind<EntityStorage>().in<SingletonScope>().to<EntityStorage(MessageSender&, World&, TimeProvider&, ContainerProvider&, PoiProvider&)>();
-		bind<SpawnMgr>().in<SingletonScope>().to<SpawnMgr(World&, EntityStorage&, MessageSender&, TimeProvider&, AILoader&, ContainerProvider&, PoiProvider&)>();
+		bind<AILoader>().in<di::SingletonScope>().to<AILoader(AIRegistry&)>();
+		bind<EntityStorage>().in<di::SingletonScope>().to<EntityStorage(MessageSender&, World&, TimeProvider&, ContainerProvider&, PoiProvider&)>();
+		bind<SpawnMgr>().in<di::SingletonScope>().to<SpawnMgr(World&, EntityStorage&, MessageSender&, TimeProvider&, AILoader&, ContainerProvider&, PoiProvider&)>();
 		bindSingleton<World>();
 	}
 };

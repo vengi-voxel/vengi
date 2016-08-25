@@ -12,7 +12,7 @@
 
 class ClientModule: public core::AbstractAppModule {
 	virtual void configureApp() const override {
-		bind<Client>().in<sauce::SingletonScope>().to<Client(video::MeshPool &, network::Network &, voxel::World &, network::MessageSender &, core::EventBus &, core::TimeProvider &, io::Filesystem &)>();
+		bind<Client>().in<di::SingletonScope>().to<Client(video::MeshPool &, network::Network &, voxel::World &, network::MessageSender &, core::EventBus &, core::TimeProvider &, io::Filesystem &)>();
 	}
 
 	virtual void configureBindings() const override {
