@@ -18,4 +18,9 @@ namespace di = fruit;
 #ifdef DI_BOOST
 #include <boost/di.hpp>
 namespace di = boost::di;
+namespace boost {
+namespace di {
+using SingletonScope = scopes::singleton;
+}
+}
 #endif
