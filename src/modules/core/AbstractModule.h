@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <sauce/sauce.h>
+#include "DependencyInjection.h"
 #include <utility>
 
 #include "core/TimeProvider.h"
@@ -13,6 +13,7 @@
 
 namespace core {
 
+#ifdef DI_SAUCE
 class AbstractModule: public sauce::AbstractModule {
 public:
 	AbstractModule() : sauce::AbstractModule() {}
@@ -30,5 +31,6 @@ protected:
 		bindSingleton<io::Filesystem>();
 	}
 };
+#endif
 
 }
