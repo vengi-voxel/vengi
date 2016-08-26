@@ -29,7 +29,12 @@ public:
 	}
 protected:
 	virtual void configureApp() const override {
+#ifdef DI_SAUCE
 		bind<AppClass>().template in<di::SingletonScope>().template to<AppClass(io::Filesystem &, core::EventBus &)>();
+#endif
+#ifdef DI_BOOST
+		bindSingleton<AppClass>();
+#endif
 	}
 
 	virtual void configureBindings() const override {
