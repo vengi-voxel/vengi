@@ -3,9 +3,14 @@
 
 namespace network {
 
+#ifdef DI_SAUCE
 ProtocolHandlerRegistry::ProtocolHandlerRegistry(std::shared_ptr<di::Injector> injector) :
 		_injector(injector) {
 }
+#else
+ProtocolHandlerRegistry::ProtocolHandlerRegistry() {
+}
+#endif
 
 ProtocolHandlerPtr ProtocolHandlerRegistry::getHandler(const char* type) {
 	const std::string typeName(type);

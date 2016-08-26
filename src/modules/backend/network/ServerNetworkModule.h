@@ -19,7 +19,7 @@ class ServerNetworkModule: public NetworkModule {
 	template<typename Ctor>
 	inline void bindHandler(network::ClientMsgType type) const {
 		const std::string typeName(network::EnumNameClientMsgType(type));
-		bind<network::IProtocolHandler>().named(typeName).to<Ctor>();
+		_bindHandler<Ctor>(typeName);
 	}
 
 	void configureHandlers() const override {

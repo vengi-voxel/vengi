@@ -12,7 +12,12 @@
 
 class ClientModule: public core::AbstractAppModule {
 	virtual void configureApp() const override {
+#ifdef DI_SAUCE
 		bind<Client>().in<di::SingletonScope>().to<Client(video::MeshPool &, network::Network &, voxel::World &, network::MessageSender &, core::EventBus &, core::TimeProvider &, io::Filesystem &)>();
+#endif
+#ifdef DI_BOOST
+		bindSingleton<Client>();
+#endif
 	}
 
 	virtual void configureBindings() const override {

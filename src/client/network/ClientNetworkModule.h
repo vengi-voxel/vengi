@@ -16,10 +16,11 @@
 #include "UserSpawnHandler.h"
 
 class ClientNetworkModule: public NetworkModule {
+protected:
 	template<typename Ctor>
 	inline void bindHandler(network::ServerMsgType type) const {
 		const std::string typeName(network::EnumNameServerMsgType(type));
-		bind<network::IProtocolHandler>().named(typeName).in<di::SingletonScope>().to<Ctor>();
+		_bindHandler<Ctor>(typeName);
 	}
 
 	void configureHandlers() const override {

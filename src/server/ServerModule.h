@@ -28,17 +28,31 @@ using namespace io;
 
 class ServerModule: public core::AbstractAppModule {
 	void configureApp() const override {
+#ifdef DI_SAUCE
 		bind<Server>().in<di::SingletonScope>().to<Server(Network&, ServerLoop&, TimeProvider&, Filesystem&, EventBus&)>();
+#endif
+#ifdef DI_BOOST
+		bindSingleton<Server>();
+#endif
 	}
 
 	void configureBindings() const override {
+#ifdef DI_SAUCE
 		bind<PoiProvider>().in<di::SingletonScope>().to<PoiProvider(World&, TimeProvider&)>();
-		bindSingleton<ContainerProvider>();
 		bind<ServerLoop>().in<di::SingletonScope>().to<ServerLoop(Network&, SpawnMgr&, World&, EntityStorage&, EventBus&, AIRegistry&, ContainerProvider&, PoiProvider&)>();
-		bindSingleton<AIRegistry>();
 		bind<AILoader>().in<di::SingletonScope>().to<AILoader(AIRegistry&)>();
 		bind<EntityStorage>().in<di::SingletonScope>().to<EntityStorage(MessageSender&, World&, TimeProvider&, ContainerProvider&, PoiProvider&)>();
 		bind<SpawnMgr>().in<di::SingletonScope>().to<SpawnMgr(World&, EntityStorage&, MessageSender&, TimeProvider&, AILoader&, ContainerProvider&, PoiProvider&)>();
+#endif
+#ifdef DI_BOOST
+		bindSingleton<PoiProvider>();
+		bindSingleton<ServerLoop>();
+		bindSingleton<AILoader>();
+		bindSingleton<EntityStorage>();
+		bindSingleton<SpawnMgr>();
+#endif
+		bindSingleton<AIRegistry>();
+		bindSingleton<ContainerProvider>();
 		bindSingleton<World>();
 	}
 };
