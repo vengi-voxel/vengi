@@ -5,8 +5,13 @@
 #include "Server.h"
 #include "core/Var.h"
 #include "core/Command.h"
-#include "backend/network/ServerNetworkModule.h"
-#include "ServerModule.h"
+#include "backend/poi/PoiProvider.h"
+#include "backend/entity/EntityStorage.h"
+#include "backend/entity/ai/AIRegistry.h"
+#include "backend/entity/ai/AILoader.h"
+#include "backend/loop/ServerLoop.h"
+#include "backend/spawn/SpawnMgr.h"
+
 #include <cstdlib>
 
 Server::Server(network::NetworkPtr network, backend::ServerLoopPtr serverLoop, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
@@ -57,5 +62,25 @@ core::AppState Server::onRunning() {
 }
 
 int main(int argc, char *argv[]) {
-	return core::getAppWithModules<Server>(ServerModule(), backend::ServerNetworkModule())->startMainLoop(argc, argv);
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const voxel::WorldPtr world = std::make_shared<voxel::World>();
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
+	const backend::AIRegistryPtr registry = std::make_shared<backend::AIRegistry>();
+	const attrib::ContainerProviderPtr containerProvider = std::make_shared<attrib::ContainerProvider>();
+
+	const network::ProtocolHandlerRegistryPtr protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+	const network::NetworkPtr network = std::make_shared<network::Network>(protocolHandlerRegistry, eventBus);
+	const network::MessageSenderPtr messageSender = std::make_shared<network::MessageSender>(network);
+
+	const backend::AILoaderPtr loader = std::make_shared<backend::AILoader>(registry);
+
+	const backend::PoiProviderPtr poiProvider = std::make_shared<backend::PoiProvider>(world, timeProvider);
+	const backend::EntityStoragePtr entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider);
+	const backend::SpawnMgrPtr spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider);
+
+	const backend::ServerLoopPtr serverLoop = std::make_shared<backend::ServerLoop>(network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider);
+
+	Server app(network, serverLoop, timeProvider, filesystem, eventBus);
+	return app.startMainLoop(argc, argv);
 }

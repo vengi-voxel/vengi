@@ -3,7 +3,6 @@
  */
 
 #include "NoiseTool.h"
-#include "core/AppModule.h"
 #include "ui/NoiseParametersWindow.h"
 
 NoiseTool::NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
@@ -22,5 +21,8 @@ core::AppState NoiseTool::onInit() {
 }
 
 int main(int argc, char *argv[]) {
-	return core::getApp<NoiseTool>()->startMainLoop(argc, argv);
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
+	NoiseTool app(filesystem, eventBus);
+	return app.startMainLoop(argc, argv);
 }

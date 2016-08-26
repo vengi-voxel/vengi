@@ -4,6 +4,7 @@
 
 #include "Client.h"
 #include "ClientMessages_generated.h"
+#include "ServerMessages_generated.h"
 #include "ui/LoginWindow.h"
 #include "ui/DisconnectWindow.h"
 #include "ui/AuthFailedWindow.h"
@@ -14,8 +15,17 @@
 #include "core/GLM.h"
 #include "core/Color.h"
 #include "video/GLDebug.h"
-#include "ClientModule.h"
-#include "network/ClientNetworkModule.h"
+#include "network/Network.h"
+#include "network/MessageSender.h"
+#include "network/IMsgProtocolHandler.h"
+#include "ServerMessages_generated.h"
+#include "network/AttribUpdateHandler.h"
+#include "network/SeedHandler.h"
+#include "network/AuthFailedHandler.h"
+#include "network/EntityRemoveHandler.h"
+#include "network/EntitySpawnHandler.h"
+#include "network/EntityUpdateHandler.h"
+#include "network/UserSpawnHandler.h"
 
 #include <restclient-cpp/restclient.h>
 #include <restclient-cpp/connection.h>
@@ -83,7 +93,7 @@ void Client::onEvent(const network::NewConnectionEvent& event) {
 	const std::string& password = core::Var::get(cfg::ClientPassword)->strVal();
 	Log::info("Trying to log into the server with %s", email.c_str());
 	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserConnect,
-			CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(password)).Union());
+			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(password)).Union());
 }
 
 void Client::onEvent(const voxel::WorldCreatedEvent& event) {
@@ -95,6 +105,15 @@ core::AppState Client::onInit() {
 	eventBus()->subscribe<network::NewConnectionEvent>(*this);
 	eventBus()->subscribe<network::DisconnectEvent>(*this);
 	eventBus()->subscribe<voxel::WorldCreatedEvent>(*this);
+
+	const network::ProtocolHandlerRegistryPtr& r = _network->registry();
+	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::AttribUpdate), std::make_shared<AttribUpdateHandler>());
+	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::EntitySpawn), std::make_shared<EntitySpawnHandler>());
+	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::EntityRemove), std::make_shared<EntityRemoveHandler>());
+	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::EntityUpdate), std::make_shared<EntityUpdateHandler>());
+	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::UserSpawn), std::make_shared<UserSpawnHandler>());
+	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::AuthFailed), std::make_shared<AuthFailedHandler>());
+	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::Seed), std::make_shared<SeedHandler>(_world));
 
 	core::AppState state = Super::onInit();
 	if (state != core::Running) {
@@ -291,7 +310,7 @@ void Client::authFailed() {
 
 void Client::disconnect() {
 	flatbuffers::FlatBufferBuilder fbb;
-	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserDisconnect, CreateUserDisconnect(fbb).Union());
+	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserDisconnect, network::CreateUserDisconnect(fbb).Union());
 }
 
 void Client::entityUpdate(frontend::ClientEntityId id, const glm::vec3& pos, float orientation) {
@@ -330,7 +349,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserConnected,
-			CreateUserConnected(fbb).Union());
+			network::CreateUserConnected(fbb).Union());
 }
 
 bool Client::connect(uint16_t port, const std::string& hostname) {
@@ -351,5 +370,14 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 }
 
 int main(int argc, char *argv[]) {
-	return core::getAppWithModules<Client>(ClientModule(), ClientNetworkModule())->startMainLoop(argc, argv);
+	const video::MeshPoolPtr meshPool = std::make_shared<video::MeshPool>();
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const voxel::WorldPtr world = std::make_shared<voxel::World>();
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
+	const network::ProtocolHandlerRegistryPtr protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+	const network::NetworkPtr network = std::make_shared<network::Network>(protocolHandlerRegistry, eventBus);
+	const network::MessageSenderPtr messageSender = std::make_shared<network::MessageSender>(network);
+	Client app(meshPool, network, world, messageSender, eventBus, timeProvider, filesystem);
+	return app.startMainLoop(argc, argv);
 }

@@ -3,7 +3,6 @@
  */
 
 #include "DatabaseTool.h"
-#include "core/AppModule.h"
 
 static const char *FieldTypeNames[] = {
 	CORE_STRINGIFY(STRING),
@@ -619,5 +618,8 @@ core::AppState DatabaseTool::onRunning() {
 }
 
 int main(int argc, char *argv[]) {
-	return core::getApp<DatabaseTool>()->startMainLoop(argc, argv);
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
+	DatabaseTool app(filesystem, eventBus);
+	return app.startMainLoop(argc, argv);
 }

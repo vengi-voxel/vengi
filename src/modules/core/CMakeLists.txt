@@ -1,14 +1,11 @@
 set(SRCS
     AABB.h
-	AbstractModule.h
 	App.cpp App.h
-	AppModule.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
 	Command.h Command.cpp
 	Common.h
 	Concurrency.h
-	DependencyInjection.h
 	EventBus.h
 	GameConfig.h
 	GLM.cpp GLM.h

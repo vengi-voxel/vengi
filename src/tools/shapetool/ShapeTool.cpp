@@ -3,7 +3,6 @@
  */
 
 #include "ShapeTool.h"
-#include "ShapeToolModule.h"
 #include "video/Shader.h"
 #include "video/GLDebug.h"
 #include "core/GLM.h"
@@ -224,5 +223,10 @@ void ShapeTool::reset(const voxel::WorldContext& ctx) {
 }
 
 int main(int argc, char *argv[]) {
-	return core::getApp<ShapeTool, ShapeToolModule>()->startMainLoop(argc, argv);
+	const video::MeshPoolPtr meshPool = std::make_shared<video::MeshPool>();
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const voxel::WorldPtr world = std::make_shared<voxel::World>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
+	ShapeTool app(meshPool, filesystem, eventBus, world);
+	return app.startMainLoop(argc, argv);
 }

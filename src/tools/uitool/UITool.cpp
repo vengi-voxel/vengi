@@ -4,7 +4,6 @@
 
 #include "UITool.h"
 #include "ui/Window.h"
-#include "core/AppModule.h"
 #include "ui/FontUtil.h"
 
 UITool::UITool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
@@ -66,5 +65,8 @@ core::AppState UITool::onCleanup() {
 }
 
 int main(int argc, char *argv[]) {
-	return core::getApp<UITool>()->startMainLoop(argc, argv);
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
+	UITool app(filesystem, eventBus);
+	return app.startMainLoop(argc, argv);
 }

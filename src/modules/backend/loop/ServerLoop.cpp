@@ -11,6 +11,12 @@
 #include "backend/entity/User.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "backend/entity/ai/AICommon.h"
+#include "ClientMessages_generated.h"
+#include "backend/network/UserConnectHandler.h"
+#include "backend/network/UserConnectedHandler.h"
+#include "backend/network/UserDisconnectHandler.h"
+#include "backend/network/AttackHandler.h"
+#include "backend/network/MoveHandler.h"
 
 namespace backend {
 
@@ -43,8 +49,15 @@ bool ServerLoop::init() {
 		Log::error("Failed to init the spawn manager");
 		return false;
 	}
-	const core::VarPtr& seed = core::Var::get(cfg::ServerSeed, "1");
 
+	const network::ProtocolHandlerRegistryPtr& r = _network->registry();
+	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::UserConnect), std::make_shared<UserConnectHandler>(_network, _entityStorage, _world));
+	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::UserConnected), std::make_shared<UserConnectedHandler>());
+	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::UserDisconnect), std::make_shared<UserDisconnectHandler>());
+	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::Attack), std::make_shared<AttackHandler>());
+	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::Move), std::make_shared<MoveHandler>());
+
+	const core::VarPtr& seed = core::Var::get(cfg::ServerSeed, "1");
 	_world->setSeed(seed->longVal());
 	if (_aiServer.start()) {
 		Log::info("Start the ai debug server on %s:%i", aiDebugServerInterface, aiDebugServerPort);

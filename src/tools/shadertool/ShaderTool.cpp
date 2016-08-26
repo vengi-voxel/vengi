@@ -3,7 +3,6 @@
  */
 
 #include "ShaderTool.h"
-#include "core/AppModule.h"
 #include "core/App.h"
 #include "core/Process.h"
 #include "core/Tokenizer.h"
@@ -549,5 +548,8 @@ core::AppState ShaderTool::onRunning() {
 }
 
 int main(int argc, char *argv[]) {
-	return core::getApp<ShaderTool>()->startMainLoop(argc, argv);
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
+	ShaderTool app(filesystem, eventBus);
+	return app.startMainLoop(argc, argv);
 }

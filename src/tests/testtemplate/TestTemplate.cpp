@@ -8,5 +8,9 @@ void TestTemplate::doRender() {
 }
 
 int main(int argc, char *argv[]) {
-	return core::getApp<TestTemplate>()->startMainLoop(argc, argv);
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
+	TestTemplate app(filesystem, eventBus);
+	return app.startMainLoop(argc, argv);
+
 }

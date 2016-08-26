@@ -114,5 +114,8 @@ void TestCamera::doRender() {
 }
 
 int main(int argc, char *argv[]) {
-	return core::getApp<TestCamera>()->startMainLoop(argc, argv);
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
+	TestCamera app(filesystem, eventBus);
+	return app.startMainLoop(argc, argv);
 }

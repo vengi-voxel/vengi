@@ -1,10 +1,8 @@
 project(client)
 set(SRCS
 	Client.h Client.cpp
-	ClientModule.h
 	network/AttribUpdateHandler.h
 	network/AuthFailedHandler.h
-	network/ClientNetworkModule.h
 	network/EntitySpawnHandler.h
 	network/SeedHandler.cpp
 	network/SeedHandler.h

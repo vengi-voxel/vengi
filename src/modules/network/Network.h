@@ -40,9 +40,15 @@ public:
 	ENetPeer* connect(uint16_t port, const std::string& hostname, int maxChannels = 1);
 	void disconnect();
 
+	const ProtocolHandlerRegistryPtr& registry();
+
 	// Shared methods
 	inline bool sendMessage(ENetPeer* peer, ENetPacket* packet, int channel = 0) { return enet_peer_send(peer, channel, packet) == 0; }
 };
+
+inline const ProtocolHandlerRegistryPtr& Network::registry() {
+	return _protocolHandlerRegistry;
+}
 
 typedef std::shared_ptr<Network> NetworkPtr;
 

@@ -53,5 +53,9 @@ core::AppState TestTexture::onCleanup() {
 }
 
 int main(int argc, char *argv[]) {
-	return core::getApp<TestTexture>()->startMainLoop(argc, argv);
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
+	TestTexture app(filesystem, eventBus);
+	return app.startMainLoop(argc, argv);
+
 }

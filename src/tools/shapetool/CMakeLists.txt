@@ -1,7 +1,6 @@
 project(shapetool)
 set(SRCS
 	ShapeTool.h ShapeTool.cpp
-	ShapeToolModule.h
 	ui/WorldParametersWindow.h
 	ui/TreeParametersWindow.h
 )

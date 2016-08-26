@@ -8,7 +8,6 @@ set(SRCS
 	network/UserConnectedHandler.h
 	network/UserDisconnectHandler.h
 	network/AttackHandler.h
-	network/ServerNetworkModule.h
 	network/MoveHandler.h
 	network/IUserProtocolHandler.h
 	entity/ai/condition/IsCloseToSelection.h
