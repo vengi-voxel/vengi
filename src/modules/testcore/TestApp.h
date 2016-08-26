@@ -9,7 +9,6 @@
 #include "video/Camera.h"
 #include "frontend/Axis.h"
 #include "frontend/Plane.h"
-#include "core/AppModule.h"
 
 class TestApp: public video::WindowedApp {
 private:
