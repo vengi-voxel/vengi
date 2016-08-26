@@ -12,8 +12,8 @@ extern int _argc;
 namespace core {
 
 void AbstractTest::SetUp() {
-	const core::EventBusPtr eventBus(new core::EventBus());
-	const io::FilesystemPtr filesystem(new io::Filesystem());
+	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
 	_testApp = new TestApp(filesystem, eventBus, this);
 	const bool isRunning = _testApp->_curState == AppState::Running;
 	ASSERT_TRUE(isRunning) << "Failed to setup the test app properly";
