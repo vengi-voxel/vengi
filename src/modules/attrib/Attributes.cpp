@@ -24,6 +24,7 @@ bool Attributes::onFrame(long dt) {
 	core::ScopedReadLock scopedLock(_attribLock);
 	_max = max;
 
+	// cap your currents to the max allowed value
 	for (ValuesIter i = _current.begin(); i != _current.end(); ++i) {
 		ValuesIter mi = _max.find(i->first);
 		if (mi == _max.end()) {

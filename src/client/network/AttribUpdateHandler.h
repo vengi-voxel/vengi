@@ -13,8 +13,12 @@ CLIENTPROTOHANDLERIMPL(AttribUpdate) {
 	if (!entity) {
 		return;
 	}
-	attrib::Attributes& attrib = entity->attrib();
+	attrib::ShadowAttributes& attrib = entity->attrib();
 	for (const AttribEntry* e : *attribs) {
-		attrib.setCurrent(e->type(), e->value());
+		if (e->current()) {
+			attrib.setCurrent(e->type(), e->value());
+		} else {
+			attrib.setMax(e->type(), e->value());
+		}
 	}
 }

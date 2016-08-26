@@ -52,6 +52,7 @@ table AttribEntry {
 	type:AttribType;
 	value:float;
 	mode:AttribMode;
+	current:bool = true;
 }
 
 table AttribUpdate {

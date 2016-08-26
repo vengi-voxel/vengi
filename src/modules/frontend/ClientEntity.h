@@ -8,7 +8,7 @@
 #include "ServerMessages_generated.h"
 #include "Shared_generated.h"
 #include "util/PosLerp.h"
-#include "attrib/Attributes.h"
+#include "attrib/ShadowAttributes.h"
 #include <vector>
 #include <functional>
 #include "video/Mesh.h"
@@ -23,7 +23,7 @@ private:
 	network::EntityType _type;
 	float _orientation;
 	video::MeshPtr _mesh;
-	attrib::Attributes _attrib;
+	attrib::ShadowAttributes _attrib;
 public:
 	ClientEntity(ClientEntityId id, network::EntityType type, const glm::vec3& pos, float orientation, const video::MeshPtr& mesh);
 	~ClientEntity();
@@ -41,11 +41,11 @@ public:
 	ClientEntityId id() const;
 
 	// components
-	attrib::Attributes& attrib();
+	attrib::ShadowAttributes& attrib();
 	const video::MeshPtr& mesh() const;
 };
 
-inline attrib::Attributes& ClientEntity::attrib() {
+inline attrib::ShadowAttributes& ClientEntity::attrib() {
 	return _attrib;
 }
 

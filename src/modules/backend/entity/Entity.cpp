@@ -58,7 +58,19 @@ void Entity::removeContainer(const std::string& id) {
 }
 
 bool Entity::update(long dt) {
-	_attribs.onFrame(dt);
+	if (_attribs.onFrame(dt)) {
+		// TODO: send current and max values to the clients
+		// TODO: collect which of them are dirty, and maintain a list of
+		// those that are for the owning client only or which of them must be broadcasted
+#if 0
+		ENetPeer* p = peer();
+		if (p != nullptr) {
+			flatbuffers::FlatBufferBuilder fbb;
+			std::vector<flatbuffers::Offset<network::AttribEntry>> *attribs;
+			_messageSender->sendServerMessage(p, fbb, network::ServerMsgType::AttribUpdate, CreateAttribUpdate(fbb, id(), attribs).Union());
+		}
+#endif
+	}
 	_cooldowns.update();
 	return true;
 }
