@@ -5,6 +5,8 @@
 #pragma once
 
 #include <unordered_set>
+#include <unordered_map>
+#include <algorithm>
 
 namespace core {
 
@@ -39,6 +41,16 @@ inline std::unordered_set<TYPE> setDifference(const std::unordered_set<TYPE>& in
 		if (in1.find(element) == in1.end())
 			out.insert(element);
 	return out;
+}
+
+template<typename KEY, typename VALUE>
+inline std::unordered_set<KEY> mapKeysDifference(const std::unordered_map<KEY, VALUE>& in1, const std::unordered_map<KEY, VALUE>& in2) {
+	std::unordered_set<KEY> keys1(in1.size());
+	std::unordered_set<KEY> keys2(in2.size());
+	auto key_selector = [](auto pair) {return pair.first;};
+	std::transform(in1.begin(), in1.end(), keys1.begin(), key_selector);
+	std::transform(in2.begin(), in2.end(), keys2.begin(), key_selector);
+	return setDifference(keys1, keys2);
 }
 
 }

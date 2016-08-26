@@ -3,6 +3,7 @@
  */
 
 #include "Attributes.h"
+#include "core/Set.h"
 
 namespace attrib {
 
@@ -22,6 +23,7 @@ bool Attributes::onFrame(long dt) {
 	calculateMax(max);
 
 	core::ScopedReadLock scopedLock(_attribLock);
+	//const std::unordered_set<Types>& diff = core::mapKeysDifference(_max, max);
 	_max = max;
 
 	// cap your currents to the max allowed value
