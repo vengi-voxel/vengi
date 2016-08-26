@@ -40,8 +40,9 @@ private:
 
 	void readInput();
 public:
-	ServerLoop(network::NetworkPtr network, SpawnMgrPtr spawnMgr, voxel::WorldPtr world, EntityStoragePtr entityStorage, core::EventBusPtr eventBus, AIRegistryPtr registry,
-			attrib::ContainerProviderPtr containerProvider, PoiProviderPtr poiProvider);
+	ServerLoop(const network::NetworkPtr& network, const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world,
+			const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
+			const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider);
 
 	bool init();
 	void shutdown();
