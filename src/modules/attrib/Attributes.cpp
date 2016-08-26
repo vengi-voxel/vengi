@@ -6,19 +6,44 @@
 
 namespace attrib {
 
-Attributes::Attributes() :
-		_dirty(false), _lock("Attributes"), _attribLock("Attributes2") {
+Attributes::Attributes(Attributes* parent) :
+		_dirty(false), _lock("Attributes"), _attribLock("Attributes2"), _parent(parent) {
 }
 
-bool Attributes::onFrame(long /*dt*/) {
-	if (!_dirty.exchange(false))
+bool Attributes::onFrame(long dt) {
+	if (_parent != nullptr) {
+		_parent->onFrame(dt);
+	}
+	if (!_dirty.exchange(false)) {
 		return false;
+	}
+
+	Values max;
+	calculateMax(max);
+
+	core::ScopedReadLock scopedLock(_attribLock);
+	_max = max;
+
+	for (ValuesIter i = _current.begin(); i != _current.end(); ++i) {
+		ValuesIter mi = _max.find(i->first);
+		if (mi == _max.end()) {
+			continue;
+		}
+		i->second = std::min(mi->second, i->second);
+	}
+	return true;
+}
+
+void Attributes::calculateMax(Values& max) const {
+	if (_parent != nullptr) {
+		_parent->calculateMax(max);
+	}
+
 	Containers containers;
 	{
 		core::ScopedReadLock scopedLock(_lock);
 		containers = _containers;
 	}
-	Values max;
 	for (const Container& c : containers) {
 		const Values& abs = c.absolute();
 		for (ValuesConstIter i = abs.begin(); i != abs.end(); ++i) {
@@ -31,16 +56,6 @@ bool Attributes::onFrame(long /*dt*/) {
 			max[i->first] *= 1.0 + (i->second * 0.01);
 		}
 	}
-	core::ScopedReadLock scopedLock(_attribLock);
-	_max = max;
-
-	for (ValuesIter i = _current.begin(); i != _current.end(); ++i) {
-		ValuesIter mi = _max.find(i->first);
-		if (mi == _max.end())
-			continue;
-		i->second = std::min(mi->second, i->second);
-	}
-	return true;
 }
 
 void Attributes::add(const Container& container) {
@@ -71,8 +86,9 @@ void Attributes::add(const ContainerPtr& container) {
 }
 
 void Attributes::remove(const ContainerPtr& container) {
-	if (!container)
+	if (!container) {
 		return;
+	}
 	core::ScopedWriteLock scopedLock(_lock);
 	_containers.erase(*container.get());
 	_containerPtrs.erase(container);
