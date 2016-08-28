@@ -555,7 +555,7 @@ bool DatabaseTool::parseTable(core::Tokenizer& tok, Table& table) const {
 			Log::error("constraint referenced field wasn't found: %s", c.field.c_str());
 			return false;
 		}
-		Log::info("transfer constraint to field for faster lookup for %s", c.field.c_str());
+		Log::debug("transfer constraint to field for faster lookup for %s", c.field.c_str());
 		table.fields[c.field].contraintMask |= c.types;
 		if (c.types & persistence::Model::PRIMARYKEY) {
 			++table.primaryKeys;
