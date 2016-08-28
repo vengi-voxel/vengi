@@ -45,8 +45,9 @@ protected:
 	core::ReadWriteLock _lock;
 	core::ReadWriteLock _attribLock;
 	Attributes* _parent;
+	std::string _name = "unnamed";
 
-	void calculateMax(Values& max) const;
+	void calculateMax(Values& absolutes, Values& percentages) const;
 
 public:
 	/**
@@ -56,9 +57,12 @@ public:
 	 * by a global player state.
 	 *
 	 * @note The parent is optional, it is not modified, except that if it is dirty an update will be
-	 * performed in @c onFrame()
+	 * performed in @c onFrame(). Only the max values are taken into account here (absolute and percentage
+	 * modifiers) - but not the currents.
 	 */
 	Attributes(Attributes* parent = nullptr);
+
+	void setName(const std::string& name);
 
 	/**
 	 * @brief Calculates the new max values for the currently assigned @c Container's
@@ -131,6 +135,10 @@ inline double Attributes::getMax(Types type) const {
 		return 0.0;
 	}
 	return i->second;
+}
+
+inline void Attributes::setName(const std::string& name) {
+	_name = name;
 }
 
 }

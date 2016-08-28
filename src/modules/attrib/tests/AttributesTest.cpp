@@ -2,12 +2,16 @@
  * @file
  */
 
-#include <gtest/gtest.h>
+#include "core/tests/AbstractTest.h"
 #include "attrib/Attributes.h"
 
 namespace attrib {
 
-TEST(Attributes, testCurrents) {
+class AttributesTest: public core::AbstractTest {
+public:
+};
+
+TEST_F(AttributesTest, testCurrents) {
 	Attributes attributes;
 	ContainerBuilder t("test");
 	t.addPercentage(Types::HEALTH, 100).addAbsolute(Types::HEALTH, 10);
@@ -18,7 +22,7 @@ TEST(Attributes, testCurrents) {
 	ASSERT_EQ(20, attributes.setCurrent(Types::HEALTH, 100));
 }
 
-TEST(Attributes, testAddRemove) {
+TEST_F(AttributesTest, testAddRemove) {
 	Attributes attributes;
 	ContainerBuilder test1("test1");
 	test1.addAbsolute(Types::HEALTH, 1);
@@ -36,6 +40,63 @@ TEST(Attributes, testAddRemove) {
 	attributes.remove(test1Remove.create());
 	ASSERT_TRUE(attributes.onFrame(1L));
 	ASSERT_EQ(1, attributes.getMax(Types::HEALTH));
+}
+
+TEST_F(AttributesTest, testParent) {
+	Attributes parent;
+	parent.setName("parent");
+	ContainerBuilder test1("test1");
+	test1.addAbsolute(Types::HEALTH, 1);
+	parent.add(test1.create());
+
+	Attributes attributes(&parent);
+	attributes.setName("parent");
+	ASSERT_TRUE(attributes.onFrame(1L));
+	ASSERT_EQ(1, attributes.getMax(Types::HEALTH));
+}
+
+TEST_F(AttributesTest, testCappedCurrent) {
+	Attributes attributes;
+	ContainerBuilder test1("test1");
+	test1.addAbsolute(Types::HEALTH, 1);
+	attributes.add(test1.create());
+
+	ASSERT_TRUE(attributes.onFrame(1L));
+	ASSERT_EQ(1, attributes.getMax(Types::HEALTH));
+	ASSERT_EQ(1, attributes.setCurrent(Types::HEALTH, 2));
+}
+
+TEST_F(AttributesTest, testParentPercentage) {
+	Attributes parent;
+	parent.setName("parent");
+	ContainerBuilder test1("test1");
+	test1.addAbsolute(Types::HEALTH, 1);
+	test1.addPercentage(Types::HEALTH, 100.0);
+	parent.add(test1.create());
+
+	Attributes attributes(&parent);
+	ASSERT_TRUE(attributes.onFrame(1L));
+	ASSERT_EQ(2, attributes.getMax(Types::HEALTH));
+}
+
+TEST_F(AttributesTest, testParentAndOwnPercentage) {
+	Attributes parent;
+	parent.setName("parent");
+	ContainerBuilder test1("test1");
+	test1.addAbsolute(Types::HEALTH, 1);
+	test1.addPercentage(Types::HEALTH, 100.0);
+	parent.add(test1.create());
+
+	Attributes attributes(&parent);
+
+	ContainerBuilder test2("test2");
+	test2.addAbsolute(Types::HEALTH, 99);
+	test2.addPercentage(Types::HEALTH, 10.0);
+	attributes.add(test2.create());
+
+	ASSERT_TRUE(attributes.onFrame(1L));
+	ASSERT_EQ(210, attributes.getMax(Types::HEALTH));
+	ASSERT_EQ(2, parent.getMax(Types::HEALTH));
 }
 
 }

@@ -12,15 +12,24 @@ Attributes::Attributes(Attributes* parent) :
 }
 
 bool Attributes::onFrame(long dt) {
+	bool updated = false;
 	if (_parent != nullptr) {
-		_parent->onFrame(dt);
+		updated = _parent->onFrame(dt);
+		if (updated) {
+			_dirty = true;
+		}
 	}
 	if (!_dirty.exchange(false)) {
-		return false;
+		return updated;
 	}
 
 	Values max;
-	calculateMax(max);
+	Values percentages;
+	calculateMax(max, percentages);
+
+	for (const auto& p : percentages) {
+		max[p.first] *= 1.0 + (p.second * 0.01);
+	}
 
 	core::ScopedReadLock scopedLock(_attribLock);
 	//const std::unordered_set<Types>& diff = core::mapKeysDifference(_max, max);
@@ -37,9 +46,9 @@ bool Attributes::onFrame(long dt) {
 	return true;
 }
 
-void Attributes::calculateMax(Values& max) const {
+void Attributes::calculateMax(Values& absolutes, Values& percentages) const {
 	if (_parent != nullptr) {
-		_parent->calculateMax(max);
+		_parent->calculateMax(absolutes, percentages);
 	}
 
 	Containers containers;
@@ -50,13 +59,13 @@ void Attributes::calculateMax(Values& max) const {
 	for (const Container& c : containers) {
 		const Values& abs = c.absolute();
 		for (ValuesConstIter i = abs.begin(); i != abs.end(); ++i) {
-			max[i->first] += i->second;
+			absolutes[i->first] += i->second;
 		}
 	}
 	for (const Container& c : containers) {
-		const Values& abs = c.percentage();
-		for (ValuesConstIter i = abs.begin(); i != abs.end(); ++i) {
-			max[i->first] *= 1.0 + (i->second * 0.01);
+		const Values& rel = c.percentage();
+		for (ValuesConstIter i = rel.begin(); i != rel.end(); ++i) {
+			percentages[i->first] += i->second;
 		}
 	}
 }
