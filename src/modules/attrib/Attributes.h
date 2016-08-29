@@ -36,6 +36,7 @@ namespace attrib {
  * the max values if @c Attributes::onFrame() was called.
  *
  * @sa ContainerProvider
+ * @sa ShadowAttributes
  */
 class Attributes {
 protected:

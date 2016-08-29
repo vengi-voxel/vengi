@@ -12,6 +12,8 @@ namespace attrib {
  * @brief ShadowAttributes can be used on the client side to just shadow the server side state.
  *
  * There is no max calculation done here, but just taken from the server. This class is not thread safe.
+ *
+ * @sa Attributes
  */
 class ShadowAttributes {
 protected:
