@@ -646,7 +646,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	const glm::vec3 sunLightPos(20.0f, 50.0f, -20.0f);
-	const glm::vec3 sunDirection = glm::vec3(glm::left.x, glm::down.y, 0.0f);
+	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
 	_sunLight.init(sunLightPos, sunDirection, dimension);
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);

@@ -84,7 +84,7 @@ void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM
 	const glm::mat4& viewProjInv = glm::inverse(viewMatrix() * projectionMatrix());
 	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
 		const glm::vec4& pos = viewProjInv * clipCorners[i];
-		out[i] = glm::vec3(pos.xyz() / pos.w);
+		out[i] = pos.xyz() / pos.w;
 	}
 }
 
