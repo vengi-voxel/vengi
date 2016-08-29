@@ -1,7 +1,5 @@
 /**
- * @mainpage SimpleAI documentation
- *
- * @section purpose Purpose
+ * @section SimpleAI documentation
  *
  * SimpleAI is a small C++ AI behaviour tree library
  *
