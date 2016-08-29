@@ -28,7 +28,7 @@ private:
 public:
 	SunLight();
 
-	void init(const glm::vec3& sunPos, const glm::ivec2& dimension);
+	void init(const glm::vec3& sunPos, const glm::vec3& sunDirection, const glm::ivec2& dimension);
 
 	void update(long dt, const Camera& camera);
 

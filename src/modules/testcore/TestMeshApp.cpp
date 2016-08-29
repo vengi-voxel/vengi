@@ -11,7 +11,9 @@ TestMeshApp::TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBu
 core::AppState TestMeshApp::onInit() {
 	core::AppState state = Super::onInit();
 
-	_sunLight.init(glm::vec3(20.0f, 50.0f, -20.0), dimension());
+	const glm::vec3 sunLightPos(20.0f, 50.0f, -20.0f);
+	const glm::vec3 sunDirection = glm::vec3(glm::left.x, glm::down.y, 0.0f);
+	_sunLight.init(sunLightPos, sunDirection, dimension());
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 	_camera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
