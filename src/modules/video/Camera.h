@@ -204,6 +204,10 @@ public:
 
 	void update(long deltaFrame);
 
+	/**
+	 * @brief Calculates the 8 vertices for a split frustum
+	 */
+	void splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM_VERTICES_MAX]);
 	void frustumCorners(glm::vec3 out[video::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
 	const glm::vec4& frustumPlane(FrustumPlanes plane) const;
 	FrustumResult testFrustum(const glm::vec3& position) const;

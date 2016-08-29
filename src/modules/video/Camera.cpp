@@ -69,6 +69,25 @@ void Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 	core_assert(!glm::any(glm::isinf(_quat)));
 }
 
+void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM_VERTICES_MAX]) {
+	static const glm::vec4 clipCorners[FRUSTUM_VERTICES_MAX] = {
+		glm::vec4(-1.0f,  1.0f, nearPlane, 1.0f ),
+		glm::vec4( 1.0f,  1.0f, nearPlane, 1.0f ),
+		glm::vec4( 1.0f, -1.0f, nearPlane, 1.0f ),
+		glm::vec4(-1.0f, -1.0f, nearPlane, 1.0f ),
+		glm::vec4(-1.0f,  1.0f, farPlane , 1.0f ),
+		glm::vec4( 1.0f,  1.0f, farPlane , 1.0f ),
+		glm::vec4( 1.0f, -1.0f, farPlane , 1.0f ),
+		glm::vec4(-1.0f, -1.0f, farPlane , 1.0f )
+	};
+
+	const glm::mat4& viewProjInv = glm::inverse(viewMatrix() * projectionMatrix());
+	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
+		const glm::vec4& pos = viewProjInv * clipCorners[i];
+		out[i] = glm::vec3(pos.xyz() / pos.w);
+	}
+}
+
 void Camera::updateTarget() {
 	if (_rotationType != CameraRotationType::Target) {
 		return;
