@@ -6,6 +6,7 @@
 #include "core/App.h"
 #include "core/Process.h"
 #include "core/Tokenizer.h"
+#include "core/GameConfig.h"
 #include "video/Shader.h"
 
 const ShaderTool::Types ShaderTool::cTypes[] = {
@@ -518,6 +519,11 @@ core::AppState ShaderTool::onRunning() {
 	parse(fragmentSrcSource, false);
 	parse(vertexSrcSource, true);
 	generateSrc();
+
+	// set some cvars to led the validation work properly
+	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
+	core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
+	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 
 	const std::string& fragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, true);
 	const std::string& vertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, true);
