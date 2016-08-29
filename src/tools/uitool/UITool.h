@@ -8,6 +8,9 @@
 #include "ui/TurboBadger.h"
 #include "ui/UIDummies.h"
 
+/**
+ * @brief This tool validates te ui files (*.tb.txt)
+ */
 class UITool: public core::App {
 private:
 	DummyRenderer _renderer;

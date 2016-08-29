@@ -10,6 +10,10 @@
 #include "persistence/Model.h"
 #include <sstream>
 
+/**
+ * @brief This tool will generate c++ code for *.tbl files. These files are a meta description of
+ * database tables.
+ */
 class DatabaseTool: public core::App {
 protected:
 	std::string _tableFile;

@@ -14,6 +14,9 @@
 #include "video/VertexBuffer.h"
 #include "voxel/World.h"
 
+/**
+ * @brief This tool will render the world as a client would, but with options to modify it.
+ */
 class ShapeTool: public ui::UIApp {
 protected:
 	using Super = ui::UIApp;

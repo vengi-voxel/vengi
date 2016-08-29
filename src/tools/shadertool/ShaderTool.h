@@ -6,6 +6,9 @@
 
 #include "core/App.h"
 
+/**
+ * @brief This tool validates the shaders and generated c++ code for them.
+ */
 class ShaderTool: public core::App {
 protected:
 	struct Variable {
