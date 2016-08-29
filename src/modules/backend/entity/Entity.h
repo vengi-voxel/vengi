@@ -44,7 +44,7 @@ protected:
 	network::MessageSenderPtr _messageSender;
 	attrib::ContainerProviderPtr _containerProvider;
 	attrib::Attributes _attribs;
-	std::unordered_set<attrib::Types> _dirtyTypes;
+	std::unordered_set<attrib::Type> _dirtyTypes;
 	cooldown::CooldownMgr _cooldowns;
 	network::EntityType _npcType = network::EntityType::NONE;
 	ENetPeer *_peer = nullptr;
@@ -59,7 +59,7 @@ protected:
 	virtual void visibleRemove(const EntitySet& entities);
 	void initAttribs();
 
-	void onAttribChange(attrib::Types type);
+	void onAttribChange(attrib::Type type);
 public:
 
 	Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider) :
@@ -82,7 +82,7 @@ public:
 	}
 
 	inline bool dead() const {
-		return _attribs.getCurrent(attrib::Types::HEALTH) < 0.00001;
+		return _attribs.getCurrent(attrib::Type::HEALTH) < 0.00001;
 	}
 
 	inline ENetPeer* peer() const {
@@ -99,11 +99,11 @@ public:
 	virtual float orientation() const = 0;
 	network::EntityType npcType() const;
 
-	inline double current(attrib::Types type) const {
+	inline double current(attrib::Type type) const {
 		return _attribs.getCurrent(type);
 	}
 
-	inline double max(attrib::Types type) const {
+	inline double max(attrib::Type type) const {
 		return _attribs.getMax(type);
 	}
 

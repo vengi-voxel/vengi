@@ -22,16 +22,16 @@ public:
 		return true;
 	}
 
-	inline void setMax(Types type, double value) {
+	inline void setMax(Type type, double value) {
 		_max[type] = value;
 	}
 
-	double setCurrent(Types type, double value) {
+	double setCurrent(Type type, double value) {
 		_current[type] = value;
 		return value;
 	}
 
-	double getCurrent(Types type) const {
+	double getCurrent(Type type) const {
 		auto i = _current.find(type);
 		if (i == _current.end()) {
 			return 0.0;
@@ -39,7 +39,7 @@ public:
 		return i->second;
 	}
 
-	double getMax(Types type) const {
+	double getMax(Type type) const {
 		auto i = _max.find(type);
 		if (i == _max.end()) {
 			return 0.0;

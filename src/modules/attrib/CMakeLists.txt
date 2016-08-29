@@ -1,6 +1,6 @@
 set(SRCS
 	Attributes.h Attributes.cpp
-	Types.h
+	AttributeType.h
 	Container.h Container.cpp
 	ContainerProvider.h ContainerProvider.cpp
 )

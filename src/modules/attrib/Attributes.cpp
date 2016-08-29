@@ -33,9 +33,9 @@ bool Attributes::onFrame(long dt) {
 
 	core::ScopedReadLock scopedLock(_attribLock);
 	if (!_listeners.empty()) {
-		const std::unordered_set<Types>& diff = core::mapFindChangedValues(_max, max);
+		const std::unordered_set<Type>& diff = core::mapFindChangedValues(_max, max);
 		for (const auto& listener : _listeners) {
-			for (const Types& e : diff) {
+			for (const Type& e : diff) {
 				listener(e);
 			}
 		}
@@ -120,7 +120,7 @@ void Attributes::remove(Container&& container) {
 	_dirty = true;
 }
 
-double Attributes::setCurrent(Types type, double value) {
+double Attributes::setCurrent(Type type, double value) {
 	core::ScopedWriteLock scopedLock(_attribLock);
 	auto i = _max.find(type);
 	if (i == _max.end()) {

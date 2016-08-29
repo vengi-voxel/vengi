@@ -24,8 +24,8 @@ void AICharacter::update(long dt, bool debuggingActive) {
 	if (debuggingActive) {
 		setAttribute(ai::attributes::POSITION, ai::Str::toString(getPosition()));
 		setAttribute(ai::attributes::ORIENTATION, std::to_string(ai::toDegrees(getOrientation())));
-		for (int i = 0; i < (int)attrib::Types::MAX; ++i) {
-			const attrib::Types attribType = (attrib::Types)i;
+		for (int i = 0; i < (int)attrib::Type::MAX; ++i) {
+			const attrib::Type attribType = (attrib::Type)i;
 			const attrib::Attributes& attribs =  _npc._attribs;
 			const double current = attribs.getCurrent(attribType);
 			const double max = attribs.getMax(attribType);

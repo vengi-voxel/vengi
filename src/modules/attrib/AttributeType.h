@@ -11,26 +11,26 @@
 
 namespace attrib {
 
-using Types = network::AttribType;
+using Type = network::AttribType;
 
-inline Types getType(const char* name) {
+inline Type getType(const char* name) {
 	const char **names = network::EnumNamesAttribType();
 	int i = 0;
 	while (*names) {
 		if (!strcmp(*names, name)) {
-			return static_cast<Types>(i);
+			return static_cast<Type>(i);
 		}
 		++i;
 		++names;
 	}
-	return Types::NONE;
+	return Type::NONE;
 }
 
 }
 
 namespace std {
-template<> struct hash<attrib::Types> {
-	inline size_t operator()(const attrib::Types &s) const {
+template<> struct hash<attrib::Type> {
+	inline size_t operator()(const attrib::Type &s) const {
 		return static_cast<size_t>(s);
 	}
 };

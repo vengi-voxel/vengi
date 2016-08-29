@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 
 namespace attrib {
@@ -21,16 +22,16 @@ public:
 			_name(name), _ctx(ctx) {
 	}
 
-	void addPercentage(Types type, double value) {
+	void addPercentage(Type type, double value) {
 		_percentage.insert(std::make_pair(type, value));
 	}
 
-	void addAbsolute(Types type, double value) {
+	void addAbsolute(Type type, double value) {
 		_absolute.insert(std::make_pair(type, value));
 	}
 
 	void createContainer() const {
-		_ctx->addContainer(ContainerPtr(new Container(_name, _percentage, _absolute)));
+		_ctx->addContainer(std::make_shared<Container>(_name, _percentage, _absolute));
 	}
 
 	inline const std::string& getName() const {

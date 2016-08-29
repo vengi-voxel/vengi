@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "commonlua/LUA.h"
 #include "ContainerProvider.h"
 #include "LUAContainer.h"
 

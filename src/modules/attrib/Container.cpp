@@ -10,12 +10,12 @@ ContainerBuilder::ContainerBuilder(const std::string& name) :
 		_name(name) {
 }
 
-ContainerBuilder& ContainerBuilder::addPercentage(Types type, double value) {
+ContainerBuilder& ContainerBuilder::addPercentage(Type type, double value) {
 	_percentage[type] = value;
 	return *this;
 }
 
-ContainerBuilder& ContainerBuilder::addAbsolute(Types type, double value) {
+ContainerBuilder& ContainerBuilder::addAbsolute(Type type, double value) {
 	_absolute[type] = value;
 	return *this;
 }

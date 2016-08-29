@@ -24,15 +24,15 @@ void Entity::initAttribs() {
 	core_assert_always(_attribs.onFrame(0L));
 
 	// the list of attribute types that should be set to max on spawn
-	static const attrib::Types types[] = {
-			attrib::Types::HEALTH,
-			attrib::Types::SPEED,
-			attrib::Types::VIEWDISTANCE,
-			attrib::Types::ATTACKRANGE,
-			attrib::Types::STRENGTH };
+	static const attrib::Type types[] = {
+			attrib::Type::HEALTH,
+			attrib::Type::SPEED,
+			attrib::Type::VIEWDISTANCE,
+			attrib::Type::ATTACKRANGE,
+			attrib::Type::STRENGTH };
 
 	for (size_t i = 0; i < SDL_arraysize(types); ++i) {
-		const attrib::Types type = static_cast<attrib::Types>(types[i]);
+		const attrib::Type type = static_cast<attrib::Type>(types[i]);
 		const double max = _attribs.getMax(type);
 		Log::debug("Set current for %s to %f", network::EnumNameAttribType(type), max);
 		_attribs.setCurrent(type, max);
@@ -40,7 +40,7 @@ void Entity::initAttribs() {
 	}
 }
 
-void Entity::onAttribChange(attrib::Types type) {
+void Entity::onAttribChange(attrib::Type type) {
 	_dirtyTypes.insert(type);
 }
 

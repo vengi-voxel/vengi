@@ -14,7 +14,8 @@ namespace attrib {
 /**
  * @brief Attributes are applied via @c Container instances
  *
- * Containers are providing attribute types with values assigned, we have absolute and relative values.
+ * Containers are providing attribute types (@c attrib::Type) with values assigned, we have absolute and
+ * relative values.
  *
  * The attributes system will calculate a final value by building the sum over all absolute values, and
  * multiplies them by the sum of all relative values for one particular attribute type. That means that
@@ -48,7 +49,7 @@ protected:
 	core::ReadWriteLock _attribLock;
 	Attributes* _parent;
 	std::string _name = "unnamed";
-	std::vector<std::function<void(Types)> > _listeners;
+	std::vector<std::function<void(Type)> > _listeners;
 
 	void calculateMax(Values& absolutes, Values& percentages) const;
 
@@ -116,23 +117,23 @@ public:
 	 * @param[in] type The attribute type
 	 * @param[in] value The value to assign to the specified type
 	 */
-	double setCurrent(Types type, double value);
+	double setCurrent(Type type, double value);
 	/**
 	 * @note Locks the object (attrib)
 	 *
 	 * @return The capped current value for the specified type
 	 */
-	double getCurrent(Types type) const;
+	double getCurrent(Type type) const;
 	/**
 	 * @note Locks the object (attrib)
 	 *
 	 * @return The current calculated max value for the specified type. This value is computed by the
 	 * @c Container's that were added before the last @c update() call happened.
 	 */
-	double getMax(Types type) const;
+	double getMax(Type type) const;
 };
 
-inline double Attributes::getCurrent(Types type) const {
+inline double Attributes::getCurrent(Type type) const {
 	core::ScopedReadLock scopedLock(_attribLock);
 	auto i = _current.find(type);
 	if (i == _current.end()) {
@@ -141,7 +142,7 @@ inline double Attributes::getCurrent(Types type) const {
 	return i->second;
 }
 
-inline double Attributes::getMax(Types type) const {
+inline double Attributes::getMax(Type type) const {
 	core::ScopedReadLock scopedLock(_attribLock);
 	auto i = _max.find(type);
 	if (i == _max.end()) {

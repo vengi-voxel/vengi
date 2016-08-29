@@ -17,8 +17,8 @@ User::User(ENetPeer* peer, EntityId id, const std::string& name, const network::
 	setPeer(peer);
 	const glm::vec3& poi = _poiProvider->getPointOfInterest();
 	_pos = poi;
-	_attribs.setCurrent(attrib::Types::SPEED, 60.0);
-	_attribs.setCurrent(attrib::Types::VIEWDISTANCE, 500.0);
+	_attribs.setCurrent(attrib::Type::SPEED, 60.0);
+	_attribs.setCurrent(attrib::Type::VIEWDISTANCE, 500.0);
 	_userTimeout = core::Var::get(cfg::ServerUserTimeout, "60000");
 }
 
@@ -91,7 +91,7 @@ bool User::update(long dt) {
 	_lastAction = _time;
 
 	glm::vec3 moveDelta = glm::vec3(0.0f);
-	const float speed = current(attrib::Types::SPEED) * static_cast<float>(dt) / 1000.0f;
+	const float speed = current(attrib::Type::SPEED) * static_cast<float>(dt) / 1000.0f;
 	if (isMove(network::MoveDirection::MOVELEFT)) {
 		moveDelta += glm::left * speed;
 	} else if (isMove(network::MoveDirection::MOVERIGHT)) {
