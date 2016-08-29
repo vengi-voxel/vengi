@@ -67,9 +67,22 @@ public:
 	 */
 	Attributes(Attributes* parent = nullptr);
 
+	/**
+	 * @brief One entity can have several instances of the attributes system, to distinguish them easier,
+	 * you can specify names for them.
+	 * @sa name()
+	 */
 	void setName(const std::string& name);
+	/**
+	 * @return The name of the attributes system instance.
+	 * @sa setName()
+	 */
 	const std::string& name() const;
 
+	/**
+	 * @brief Adds a new listener that will get notified whenever a @c attrib::Type value has changed.
+	 * @param f The functor, lambda or method object. It has to accept @c attrib::Type as parameter.
+	 */
 	template<class F>
 	void addListener(F&& f) {
 		_listeners.emplace_back(std::forward<F>(f));
