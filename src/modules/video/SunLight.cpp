@@ -15,8 +15,7 @@ void SunLight::init(const glm::vec3& sunPos, const glm::ivec2& dimension) {
 }
 
 void SunLight::update(long dt, const Camera& camera) {
-	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
-	camera.frustumCorners(out, nullptr);
+	const core::AABB<float>& aabb = camera.aabb();
 
 	/**
 	 * https://www.uni-koblenz.de/~cg/Studienarbeiten/ShadowMappingNicoHempe.pdf
@@ -29,10 +28,6 @@ void SunLight::update(long dt, const Camera& camera) {
 	 * steps 1 and 2 can be done in one step by combining the inverse view-projection
 	 * matrix of the camera with the inverse world matrix of the light.)
 	 */
-	core::AABB<float> aabb(out[0], out[1]);
-	for (int i = 0; i < video::FRUSTUM_VERTICES_MAX; ++i) {
-		aabb.accumulate(out[i]);
-	}
 	const core::RectFloat sceneBoundingBox(aabb.getLowerX(), aabb.getLowerZ(), aabb.getUpperX(), aabb.getUpperZ());
 	_sunCamera.updateSun(dt, sceneBoundingBox);
 }
