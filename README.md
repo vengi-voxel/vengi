@@ -35,4 +35,4 @@ Some of these dependencies might not be available as packages in your toolchain 
 You can just run ```make``` in the project root folder.
 
 # More information
-For more information, please check out the [wiki](https://gitlab.com/mgerhardy/engine/wikis/home)
+For more information, please check out the [wiki](https://gitlab.com/mgerhardy/engine/wikis/home) or the [doxygen](https://mgerhardy.gitlab.io/engine/) documentation.
