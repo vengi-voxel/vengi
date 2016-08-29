@@ -38,6 +38,8 @@ void main(void) {
 
 	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * u_debug_color;
 	o_color = vec4(mix(linearColor, v_fogcolor, fogval), v_color.a);
+	// TODO: uv debug
+	//o_color = vec4(calculateShadowUV(), 0.0, v_color.a); //, v_color.a);
 #else
 	o_color = v_color.xyz * v_ambientocclusion * u_debug_color;
 	o_pos = v_pos;
