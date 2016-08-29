@@ -18,22 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_config.h"
 
-#ifndef _SDL_androidaudio_h
-#define _SDL_androidaudio_h
+#ifndef _SDL_winrtgamebar_h
+#define _SDL_winrtgamebar_h
 
-#include "../SDL_sysaudio.h"
+#ifdef __cplusplus
+/* These are exported as C++ functions, rather than C, to fix a compilation
+   bug with MSVC 2013, for Windows 8.x builds. */
+extern void WINRT_InitGameBar(_THIS);
+extern void WINRT_QuitGameBar(_THIS);
+#endif
 
-/* Hidden "this" pointer for the audio functions */
-#define _THIS   SDL_AudioDevice *this
-
-struct SDL_PrivateAudioData
-{
-    /* Resume device if it was paused automatically */
-    int resume;
-};
-
-#endif /* _SDL_androidaudio_h */
+#endif /* _SDL_winrtmouse_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
