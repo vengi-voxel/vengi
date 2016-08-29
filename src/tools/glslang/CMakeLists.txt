@@ -1,0 +1,32 @@
+option(ENABLE_AMD_EXTENSIONS "Enables support of AMD-specific extensions" OFF)
+project(glslang)
+if(ENABLE_AMD_EXTENSIONS)
+	add_definitions(-DAMD_EXTENSIONS)
+endif(ENABLE_AMD_EXTENSIONS)
+
+if(WIN32)
+	set(CMAKE_DEBUG_POSTFIX "d")
+	include(ChooseMSVCCRT.cmake)
+	add_definitions(-DGLSLANG_OSINCLUDE_WIN32)
+elseif(UNIX)
+	add_definitions(-fPIC)
+	add_definitions(-DGLSLANG_OSINCLUDE_UNIX)
+else(WIN32)
+	message("unknown platform")
+endif(WIN32)
+
+function(glslang_set_link_args TARGET)
+	# For MinGW compiles, statically link against the GCC and C++ runtimes.
+	# This avoids the need to ship those runtimes as DLLs.
+	if(WIN32)
+		if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+			set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-static -static-libgcc -static-libstdc++")
+		endif()
+	endif(WIN32)
+endfunction(glslang_set_link_args)
+
+add_subdirectory(glslang)
+add_subdirectory(OGLCompilersDLL)
+add_subdirectory(StandAlone)
+add_subdirectory(SPIRV)
+add_subdirectory(hlsl)

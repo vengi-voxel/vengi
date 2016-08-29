@@ -1,14 +1,6 @@
 set(GAME_BASE_DIR data CACHE STRING "" FORCE)
 set(LIBS_DIR ${PROJECT_SOURCE_DIR}/contrib/libs)
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-	set(TOOLS_DIR ${ROOT_DIR}/tools/win32 CACHE STRING "" FORCE)
-elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-	set(TOOLS_DIR ${ROOT_DIR}/tools//osx CACHE STRING "" FORCE)
-else()
-	set(TOOLS_DIR ${ROOT_DIR}/tools//linux CACHE STRING "" FORCE)
-endif()
-
 macro(var_global VARIABLES)
 	foreach(VAR ${VARIABLES})
 		set(${VAR} ${${VAR}} CACHE STRING "" FORCE)
@@ -45,56 +37,51 @@ endmacro()
 macro(generate_shaders TARGET)
 	set(files ${ARGV})
 	list(REMOVE_AT files 0)
-	find_program(GLSL_VALIDATOR_EXECUTABLE NAMES glslangValidator PATHS ${TOOLS_DIR})
 	set(_headers)
 	set(GEN_DIR ${CMAKE_BINARY_DIR}/gen-shaders/${TARGET}/)
 	set(_template ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.h.in)
 	file(MAKE_DIRECTORY ${GEN_DIR})
 	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
-	if (GLSL_VALIDATOR_EXECUTABLE)
-		foreach (shader_dir "${TARGET}" shared)
-			set(_dir ${ROOT_DIR}/${GAME_BASE_DIR}/${shader_dir}/shaders)
-			if (IS_DIRECTORY ${_dir})
-				foreach (_file ${files})
-					if (EXISTS ${_dir}/${_file}.frag AND EXISTS ${_dir}/${_file}.vert)
-						convert_to_camel_case(${_file} _f)
-						set(_shaderfile "${_f}Shader.h")
-						set(_shader "${GEN_DIR}${_shaderfile}")
-						add_custom_command(
-							OUTPUT ${_shader}
-							COMMENT "Validate ${_file} and generate ${_shaderfile}"
-							COMMAND ${CMAKE_BINARY_DIR}/shadertool ${GLSL_VALIDATOR_EXECUTABLE} ${_file} ${_template} shader shaders/ ${GEN_DIR}
-							DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template}
-							WORKING_DIRECTORY ${_dir}
-						)
-						list(APPEND _headers ${_shader})
-					endif()
-				endforeach()
-			endif()
-		endforeach()
-		convert_to_camel_case(${TARGET} _filetarget)
-		set(_h ${GEN_DIR}/${_filetarget}Shaders.h)
-		file(WRITE ${_h}.in "#pragma once\n")
-		foreach(header_path ${_headers})
-			string(REPLACE "${GEN_DIR}" "" header "${header_path}")
-			file(APPEND ${_h}.in "#include \"${header}\"\n")
-		endforeach()
-		add_custom_command(
-			OUTPUT  ${_h}
-			COMMAND ${CMAKE_COMMAND}
-			ARGS    -E copy_if_different ${_h}.in ${_h}
-			COMMENT "Generate ${_h}"
-		)
-		add_custom_target(GenerateShaderBindings${TARGET}
-			DEPENDS ${_headers} ${_h}
-			COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
-		)
-		#target_sources(${TARGET} PUBLIC ${_headers} ${_h})
-		set_source_files_properties(${_headers} ${_h} ${_h}.in PROPERTIES GENERATED TRUE)
-		add_dependencies(${TARGET} GenerateShaderBindings${TARGET})
-	else()
-		message(WARNING "No ${GLSL_VALIDATOR_EXECUTABLE} found at ${TOOLS_DIR}")
-	endif()
+	foreach (shader_dir "${TARGET}" shared)
+		set(_dir ${ROOT_DIR}/${GAME_BASE_DIR}/${shader_dir}/shaders)
+		if (IS_DIRECTORY ${_dir})
+			foreach (_file ${files})
+				if (EXISTS ${_dir}/${_file}.frag AND EXISTS ${_dir}/${_file}.vert)
+					convert_to_camel_case(${_file} _f)
+					set(_shaderfile "${_f}Shader.h")
+					set(_shader "${GEN_DIR}${_shaderfile}")
+					add_custom_command(
+						OUTPUT ${_shader}
+						COMMENT "Validate ${_file} and generate ${_shaderfile}"
+						COMMAND ${CMAKE_BINARY_DIR}/shadertool ${CMAKE_BINARY_DIR}/glslangValidator ${_file} ${_template} shader shaders/ ${GEN_DIR}
+						DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template}
+						WORKING_DIRECTORY ${_dir}
+					)
+					list(APPEND _headers ${_shader})
+				endif()
+			endforeach()
+		endif()
+	endforeach()
+	convert_to_camel_case(${TARGET} _filetarget)
+	set(_h ${GEN_DIR}/${_filetarget}Shaders.h)
+	file(WRITE ${_h}.in "#pragma once\n")
+	foreach(header_path ${_headers})
+		string(REPLACE "${GEN_DIR}" "" header "${header_path}")
+		file(APPEND ${_h}.in "#include \"${header}\"\n")
+	endforeach()
+	add_custom_command(
+		OUTPUT  ${_h}
+		COMMAND ${CMAKE_COMMAND}
+		ARGS    -E copy_if_different ${_h}.in ${_h}
+		COMMENT "Generate ${_h}"
+	)
+	add_custom_target(GenerateShaderBindings${TARGET}
+		DEPENDS ${_headers} ${_h}
+		COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
+	)
+	#target_sources(${TARGET} PUBLIC ${_headers} ${_h})
+	set_source_files_properties(${_headers} ${_h} ${_h}.in PROPERTIES GENERATED TRUE)
+	add_dependencies(${TARGET} GenerateShaderBindings${TARGET})
 endmacro()
 
 macro(generate_db_models TARGET INPUT OUTPUT)
