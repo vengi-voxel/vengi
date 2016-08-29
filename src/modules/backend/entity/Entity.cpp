@@ -34,9 +34,14 @@ void Entity::initAttribs() {
 	for (size_t i = 0; i < SDL_arraysize(types); ++i) {
 		const attrib::Types type = static_cast<attrib::Types>(types[i]);
 		const double max = _attribs.getMax(type);
-		Log::debug("Set currrent for %s to %f", network::EnumNameAttribType(type), max);
+		Log::debug("Set current for %s to %f", network::EnumNameAttribType(type), max);
 		_attribs.setCurrent(type, max);
+		_dirtyTypes.insert(type);
 	}
+}
+
+void Entity::onAttribChange(attrib::Types type) {
+	_dirtyTypes.insert(type);
 }
 
 void Entity::addContainer(const std::string& id) {
@@ -58,7 +63,8 @@ void Entity::removeContainer(const std::string& id) {
 }
 
 bool Entity::update(long dt) {
-	if (_attribs.onFrame(dt)) {
+	_attribs.onFrame(dt);
+	if (!_dirtyTypes.empty()) {
 		// TODO: send current and max values to the clients
 		// TODO: collect which of them are dirty, and maintain a list of
 		// those that are for the owning client only or which of them must be broadcasted
@@ -70,6 +76,7 @@ bool Entity::update(long dt) {
 			_messageSender->sendServerMessage(p, fbb, network::ServerMsgType::AttribUpdate, CreateAttribUpdate(fbb, id(), attribs).Union());
 		}
 #endif
+		_dirtyTypes.clear();
 	}
 	_cooldowns.update();
 	return true;

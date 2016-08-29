@@ -44,6 +44,7 @@ protected:
 	network::MessageSenderPtr _messageSender;
 	attrib::ContainerProviderPtr _containerProvider;
 	attrib::Attributes _attribs;
+	std::unordered_set<attrib::Types> _dirtyTypes;
 	cooldown::CooldownMgr _cooldowns;
 	network::EntityType _npcType = network::EntityType::NONE;
 	ENetPeer *_peer = nullptr;
@@ -57,10 +58,13 @@ protected:
 	 */
 	virtual void visibleRemove(const EntitySet& entities);
 	void initAttribs();
+
+	void onAttribChange(attrib::Types type);
 public:
 
 	Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider) :
 			_visibleLock("Entity"), _entityId(id), _messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider) {
+		_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1));
 	}
 
 	void addContainer(const std::string& id);
