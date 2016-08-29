@@ -52,7 +52,7 @@ void main(void) {
 	v_ambientocclusion = aovalues[a_ao];
 
 #if cl_shadowmap == 1
-	v_lightspacepos = u_light * u_model * vec4(a_pos, 1.0);
+	v_lightspacepos = u_light * pos4;
 #endif
 
 #if cl_deferred == 0
