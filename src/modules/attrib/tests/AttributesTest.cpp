@@ -99,4 +99,30 @@ TEST_F(AttributesTest, testParentAndOwnPercentage) {
 	ASSERT_EQ(2, parent.getMax(Types::HEALTH));
 }
 
+TEST_F(AttributesTest, testListeners) {
+	Attributes parent;
+	parent.setName("parent");
+	ContainerBuilder test1("test1");
+	test1.addAbsolute(Types::SPEED, 1);
+	test1.addPercentage(Types::HEALTH, 100.0);
+	parent.add(test1.create());
+
+	int changes[static_cast<int>(Types::MAX)];
+	SDL_zero(changes);
+	Attributes attributes(&parent);
+	attributes.addListener([&] (Types type) {
+		++changes[static_cast<int>(type)];
+	});
+
+	ContainerBuilder test2("test2");
+	test2.addAbsolute(Types::HEALTH, 100);
+	test2.addPercentage(Types::HEALTH, 10.0);
+	attributes.add(test2.create());
+
+	ASSERT_TRUE(attributes.onFrame(1L));
+
+	ASSERT_EQ(changes[static_cast<int>(Types::HEALTH)], 1);
+	ASSERT_EQ(changes[static_cast<int>(Types::SPEED)], 1);
+}
+
 }

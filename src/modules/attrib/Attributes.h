@@ -6,6 +6,8 @@
 
 #include "Container.h"
 #include "core/ReadWriteLock.h"
+#include <queue>
+#include <functional>
 
 namespace attrib {
 
@@ -46,6 +48,7 @@ protected:
 	core::ReadWriteLock _attribLock;
 	Attributes* _parent;
 	std::string _name = "unnamed";
+	std::vector<std::function<void(Types)> > _listeners;
 
 	void calculateMax(Values& absolutes, Values& percentages) const;
 
@@ -63,6 +66,16 @@ public:
 	Attributes(Attributes* parent = nullptr);
 
 	void setName(const std::string& name);
+	const std::string& name() const;
+
+	template<class F>
+	void addListener(F&& f) {
+		_listeners.emplace_back(std::forward<F>(f));
+	}
+
+	void clearListeners() {
+		_listeners.clear();
+	}
 
 	/**
 	 * @brief Calculates the new max values for the currently assigned @c Container's
@@ -139,6 +152,10 @@ inline double Attributes::getMax(Types type) const {
 
 inline void Attributes::setName(const std::string& name) {
 	_name = name;
+}
+
+inline const std::string& Attributes::name() const {
+	return _name;
 }
 
 }

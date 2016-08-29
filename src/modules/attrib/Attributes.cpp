@@ -32,7 +32,14 @@ bool Attributes::onFrame(long dt) {
 	}
 
 	core::ScopedReadLock scopedLock(_attribLock);
-	//const std::unordered_set<Types>& diff = core::mapKeysDifference(_max, max);
+	if (!_listeners.empty()) {
+		const std::unordered_set<Types>& diff = core::mapFindChangedValues(_max, max);
+		for (const auto& listener : _listeners) {
+			for (const Types& e : diff) {
+				listener(e);
+			}
+		}
+	}
 	_max = max;
 
 	// cap your currents to the max allowed value

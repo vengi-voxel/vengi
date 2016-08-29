@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
+#include "GLM.h"
 
 namespace core {
 
@@ -51,6 +52,34 @@ inline std::unordered_set<KEY> mapKeysDifference(const std::unordered_map<KEY, V
 	std::transform(in1.begin(), in1.end(), keys1.begin(), key_selector);
 	std::transform(in2.begin(), in2.end(), keys2.begin(), key_selector);
 	return setDifference(keys1, keys2);
+}
+
+template<typename KEY, typename VALUE>
+inline std::unordered_set<KEY> mapFindChangedValues(const std::unordered_map<KEY, VALUE>& in1, const std::unordered_map<KEY, VALUE>& in2) {
+	std::unordered_set<KEY> result;
+	for (const auto& e : in1) {
+		const KEY& key = e.first;
+		const auto& i = in2.find(key);
+		if (i == in2.end()) {
+			result.insert(key);
+			continue;
+		}
+		const VALUE& oldValue = i->second;
+		const VALUE& newValue = e.second;
+		if (glm::abs(newValue - oldValue) > glm::epsilon<VALUE>()) {
+			result.insert(key);
+		}
+	}
+	for (const auto& e : in2) {
+		const KEY& key = e.first;
+		auto i = in1.find(key);
+		if (i == in2.end()) {
+			result.insert(key);
+			continue;
+		}
+	}
+
+	return result;
 }
 
 }
