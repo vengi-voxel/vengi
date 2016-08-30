@@ -25,7 +25,9 @@ float decodeDepth(vec4 rgba) {
  */
 float sampleShadow(sampler2D shadowMap, vec2 uv, float compare) {
 	float depth = decodeDepth($texture2D(shadowMap, uv));
-	depth += 0.001;
+	// shadow acne bias
+	const float bias = 0.001;
+	depth += bias;
 	return step(compare, depth);
 }
 
