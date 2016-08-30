@@ -45,6 +45,11 @@ core::AppState ShapeTool::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
+	core::Command::registerCommand("camsync", [&] (const core::CmdArgs& args) {
+		const video::Camera& sunCamera = _worldRenderer.sunLight().camera();
+		_camera.setQuaternion(sunCamera.quaternion());
+	});
+
 	_world->setSeed(1);
 	if (!_worldRenderer.onInit(_dimension)) {
 		return core::Cleanup;
