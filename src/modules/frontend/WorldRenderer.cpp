@@ -351,6 +351,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	if (_shadowMap->boolVal()) {
 		glDisable(GL_BLEND);
 		_depthBuffer.bind();
+		// put shadow acne into the dark
 		glCullFace(GL_FRONT);
 		// TODO: we need a bitmask for culling, because we need some kind of culling here, too...
 		drawCallsWorld  = renderWorldMeshes(_shadowMapShader,          camera, _meshDataOpaque, vertices, false);
