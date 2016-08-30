@@ -135,7 +135,13 @@ public:
 	bool extractNewMeshes(const glm::vec3& position, bool force = false);
 	int renderWorld(const video::Camera& camera, int* vertices = nullptr);
 	int renderEntities(const video::Camera& camera);
+
+	const video::SunLight& sunLight() const;
 };
+
+inline const video::SunLight& WorldRenderer::sunLight() const {
+	return _sunLight;
+}
 
 inline float WorldRenderer::getViewDistance() const {
 	return _viewDistance;
