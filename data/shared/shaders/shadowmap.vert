@@ -16,5 +16,5 @@ void main()
 	vec4 pos = u_light * u_model * vec4(a_pos, 1.0f);
 #endif
 	gl_Position = pos;
-	o_projZW = vec2(1.0 - pos.z, pos.w);
+	o_projZW = pos.zw;
 }
