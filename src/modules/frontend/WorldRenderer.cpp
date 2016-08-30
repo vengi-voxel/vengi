@@ -220,27 +220,28 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 
 	const bool deferred = _deferred->boolVal();
 
-	video::ScopedShader scoped(shader);
+	const video::Camera* actualCamera = &camera;
+	float viewDistance = _viewDistance;
 	if (_cameraSun->boolVal()) {
-		shaderSetUniformIf(shader, setUniformMatrix, "u_view", _sunLight.viewMatrix());
-		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", _sunLight.projectionMatrix());
-	} else {
-		shaderSetUniformIf(shader, setUniformMatrix, "u_view", camera.viewMatrix());
-		shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
+		actualCamera = &_sunLight.camera();
+		viewDistance = actualCamera->farPlane();
 	}
+	video::ScopedShader scoped(shader);
+	shaderSetUniformIf(shader, setUniformMatrix, "u_view", actualCamera->viewMatrix());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", actualCamera->projectionMatrix());
 	shaderSetUniformIf(shader, setUniformVec4v, "u_materialcolor[0]", &materialColors[0], materialColors.size());
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
-	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
+	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", viewDistance);
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunLight.direction());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix());
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
-	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
-	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
-	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix());
+	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(actualCamera->dimension()));
+	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
+	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	if (shadowMap) {
 		glActiveTexture(GL_TEXTURE1);
@@ -263,6 +264,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		}
 		const glm::vec3 mins(meshData.translation);
 		const glm::vec3 maxs = glm::vec3(meshData.translation) + bboxSize;
+		// don't use actualCamera here
 		if (culling && camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
 			++i;
 			continue;
@@ -312,7 +314,7 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	_gbuffer.bindForReading(false);
 	shader::DeferredLightDirShader& deferredShader = _deferredDirLightShader;
 	video::ScopedShader scoped(deferredShader);
-	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
+	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightdir", _sunLight.direction());
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
@@ -445,25 +447,31 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 
 	int drawCallsEntities = 0;
 
-	const glm::mat4& view = camera.viewMatrix();
-	const glm::mat4& projection = camera.projectionMatrix();
+	const video::Camera* actualCamera = &camera;
+	float viewDistance = _viewDistance;
+	if (_cameraSun->boolVal()) {
+		actualCamera = &_sunLight.camera();
+		viewDistance = actualCamera->farPlane();
+	}
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 	// TODO: deferred rendering
 	shader::MeshShader& shader = _meshShader;
 	video::ScopedShader scoped(shader);
-	shader.setUniformMatrix("u_view", view);
-	shader.setUniformMatrix("u_projection", projection);
+	shader.setUniformMatrix("u_view", actualCamera->viewMatrix());
+	shader.setUniformMatrix("u_projection", actualCamera->projectionMatrix());
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
-	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
-	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
-	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
-	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
-	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
+	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", viewDistance);
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunLight.direction());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix());
+	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
+	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(actualCamera->dimension()));
+	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
+	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	if (shadowMap) {
 		glActiveTexture(GL_TEXTURE1);

@@ -30,6 +30,8 @@ public:
 
 	void init(const glm::vec3& sunDirection, const glm::ivec2& dimension);
 
+	const Camera& camera() const;
+
 	void update(long dt, const Camera& camera);
 
 	glm::vec3 direction() const;
@@ -62,4 +64,8 @@ inline glm::mat4 video::SunLight::viewProjectionMatrix() const {
 
 inline const glm::mat4& video::SunLight::viewMatrix() const {
 	return _sunCamera.viewMatrix();
+}
+
+inline const video::Camera& video::SunLight::camera() const {
+	return _sunCamera;
 }

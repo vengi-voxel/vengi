@@ -78,7 +78,7 @@ void TestMeshApp::doRender() {
 		_meshShader.setFogrange(500.0f);
 		_meshShader.setViewdistance(500.0f);
 		_meshShader.setModel(glm::mat4());
-		_meshShader.setLightpos(_sunLight.direction() + _camera.position());
+		_meshShader.setLightdir(_sunLight.direction());
 		_meshShader.setTexture(0);
 		_meshShader.setDiffuseColor(_diffuseColor);
 		_meshShader.setScreensize(glm::vec2(_camera.dimension()));

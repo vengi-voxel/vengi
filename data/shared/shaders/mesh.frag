@@ -5,7 +5,7 @@ $in vec3 v_lightpos;
 $in vec4 v_color;
 uniform sampler2D u_texture;
 
-uniform vec3 u_lightpos;
+uniform vec3 u_lightdir;
 uniform vec3 u_diffuse_color;
 uniform float u_fogrange;
 uniform float u_viewdistance;
@@ -14,9 +14,8 @@ $out vec4 o_color;
 #include "_shadowmap.frag"
 
 void main(void) {
-	vec3 lightdir = normalize(u_lightpos - v_pos);
 	vec3 color = $texture2D(u_texture, v_texcoords).rgb + v_color.rgb;
-	float ndotl = dot(v_norm, lightdir);
+	float ndotl = dot(v_norm, u_lightdir);
 	float shadow = calculateShadow(ndotl);
 
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;

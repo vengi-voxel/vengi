@@ -6,7 +6,7 @@ uniform float u_debug_color;
 #include "_shadowmap.frag"
 
 #if cl_deferred == 0
-uniform vec3 u_lightpos;
+uniform vec3 u_lightdir;
 uniform vec3 u_diffuse_color;
 uniform float u_fogrange;
 uniform float u_viewdistance;
@@ -23,11 +23,10 @@ void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
 	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
-	vec3 lightdir = normalize(u_lightpos - v_pos);
-	float ndotl = dot(normal, lightdir);
-	float shadow = calculateShadow(ndotl);
 
 #if cl_deferred == 0
+	float ndotl = dot(normal, u_lightdir);
+	float shadow = calculateShadow(ndotl);
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
 	vec3 ambient = vec3(0.2);
 	vec3 lightvalue = (ambient + shadow) * diffuse;
