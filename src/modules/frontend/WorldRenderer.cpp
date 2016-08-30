@@ -232,6 +232,8 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);

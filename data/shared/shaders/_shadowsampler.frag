@@ -20,6 +20,7 @@ float decodeDepth(vec4 rgba) {
 
 /**
  * perform simple shadow map lookup returns 0.0 (unlit) or 1.0 (lit)
+ * http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping
  */
 float sampleShadow(sampler2D shadowMap, vec2 uv, float compare, float ndotl) {
 	float depth = decodeDepth($texture2D(shadowMap, uv));
@@ -31,6 +32,7 @@ float sampleShadow(sampler2D shadowMap, vec2 uv, float compare, float ndotl) {
 
 /**
  * perform percentage-closer shadow map lookup
+ * http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping
  */
 float sampleShadowPCF(sampler2D shadowMap, vec2 uv, vec2 smSize, float compare, float ndotl) {
 	float result = 0.0;
