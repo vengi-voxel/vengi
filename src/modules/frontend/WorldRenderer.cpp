@@ -203,6 +203,18 @@ void WorldRenderer::handleMeshQueue(video::Shader& shader) {
 	}
 }
 
+bool WorldRenderer::checkShaders() const {
+	static const std::string pos = "a_pos";
+	const int loc1 = _worldShader.getAttributeLocation(pos);
+	const int loc2 = _plantShader.getAttributeLocation(pos);
+	const int loc3 = _waterShader.getAttributeLocation(pos);
+	const int loc4 = _deferredDirLightShader.getAttributeLocation(pos);
+	const int loc5 = _shadowMapShader.getAttributeLocation(pos);
+	const bool same = loc1 == loc2 && loc2 == loc3 && loc3 == loc4 && loc4 == loc5;
+	core_assert_msg(same, "attribute locations for %s differ: %i, %i, %i, %i, %i", pos.c_str(), loc1, loc2, loc3, loc4, loc5);
+	return same;
+}
+
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, bool culling) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 
@@ -308,18 +320,6 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	glDrawArrays(GL_TRIANGLES, 0, _fullscreenQuad.elements(0));
 	_fullscreenQuad.unbind();
 	_gbuffer.unbind();
-}
-
-bool WorldRenderer::checkShaders() const {
-	static const std::string pos = "a_pos";
-	const int loc1 = _worldShader.getAttributeLocation(pos);
-	const int loc2 = _plantShader.getAttributeLocation(pos);
-	const int loc3 = _waterShader.getAttributeLocation(pos);
-	const int loc4 = _deferredDirLightShader.getAttributeLocation(pos);
-	const int loc5 = _shadowMapShader.getAttributeLocation(pos);
-	const bool same = loc1 == loc2 && loc2 == loc3 && loc3 == loc4 && loc4 == loc5;
-	core_assert_msg(same, "attribute locations for %s differ: %i, %i, %i, %i, %i", pos.c_str(), loc1, loc2, loc3, loc4, loc5);
-	return same;
 }
 
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
@@ -434,6 +434,68 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	return drawCallsWorld;
 }
 
+int WorldRenderer::renderEntities(const video::Camera& camera) {
+	if (_entities.empty()) {
+		return 0;
+	}
+	core_trace_gl_scoped(WorldRendererRenderEntities);
+
+	int drawCallsEntities = 0;
+
+	const glm::mat4& view = camera.viewMatrix();
+	const glm::mat4& projection = camera.projectionMatrix();
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	// TODO: deferred rendering
+	shader::MeshShader& shader = _meshShader;
+	video::ScopedShader scoped(shader);
+	shader.setUniformMatrix("u_view", view);
+	shader.setUniformMatrix("u_projection", projection);
+	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
+	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
+	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
+	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
+	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
+	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
+	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.modelViewProjectionMatrix());
+	const bool shadowMap = shader.hasUniform("u_shadowmap");
+	if (shadowMap) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
+		shaderSetUniformIf(shader, setUniformi, "u_shadowmap", 1);
+	}
+	for (const auto& e : _entities) {
+		const frontend::ClientEntityPtr& ent = e.second;
+		ent->update(_deltaFrame);
+		if (camera.testFrustum(ent->position()) == video::FrustumResult::Outside) {
+			continue;
+		}
+		const video::MeshPtr& mesh = ent->mesh();
+		if (!mesh->initMesh(shader)) {
+			continue;
+		}
+		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), ent->position());
+		const glm::mat4& scale = glm::scale(translate, glm::vec3(ent->scale()));
+		const glm::mat4& model = glm::rotate(scale, ent->orientation(), glm::up);
+		shader.setUniformMatrix("u_model", model, false);
+		drawCallsEntities += mesh->render();
+		GL_checkError();
+	}
+
+	if (shadowMap) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE0);
+	}
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	GL_checkError();
+	return drawCallsEntities;
+}
+
 void WorldRenderer::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	Log::debug("set voxel to %i at %i:%i:%i", voxel.getMaterial(), pos.x, pos.y, pos.z);
 	_world->setVoxel(pos, voxel);
@@ -536,68 +598,6 @@ void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	core_trace_scoped(WorldRendererOnSpawn);
 	_viewDistance = 1.0f;
 	extractMeshAroundCamera(_world->getMeshPos(pos), initialExtractionRadius);
-}
-
-int WorldRenderer::renderEntities(const video::Camera& camera) {
-	if (_entities.empty()) {
-		return 0;
-	}
-	core_trace_gl_scoped(WorldRendererRenderEntities);
-
-	int drawCallsEntities = 0;
-
-	const glm::mat4& view = camera.viewMatrix();
-	const glm::mat4& projection = camera.projectionMatrix();
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-	// TODO: deferred rendering
-	shader::MeshShader& shader = _meshShader;
-	video::ScopedShader scoped(shader);
-	shader.setUniformMatrix("u_view", view);
-	shader.setUniformMatrix("u_projection", projection);
-	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
-	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
-	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightpos", _sunLight.direction() + camera.position());
-	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
-	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
-	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
-	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.modelViewProjectionMatrix());
-	const bool shadowMap = shader.hasUniform("u_shadowmap");
-	if (shadowMap) {
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
-		shaderSetUniformIf(shader, setUniformi, "u_shadowmap", 1);
-	}
-	for (const auto& e : _entities) {
-		const frontend::ClientEntityPtr& ent = e.second;
-		ent->update(_deltaFrame);
-		if (camera.testFrustum(ent->position()) == video::FrustumResult::Outside) {
-			continue;
-		}
-		const video::MeshPtr& mesh = ent->mesh();
-		if (!mesh->initMesh(shader)) {
-			continue;
-		}
-		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), ent->position());
-		const glm::mat4& scale = glm::scale(translate, glm::vec3(ent->scale()));
-		const glm::mat4& model = glm::rotate(scale, ent->orientation(), glm::up);
-		shader.setUniformMatrix("u_model", model, false);
-		drawCallsEntities += mesh->render();
-		GL_checkError();
-	}
-
-	if (shadowMap) {
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glActiveTexture(GL_TEXTURE0);
-	}
-	glBindVertexArray(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	GL_checkError();
-	return drawCallsEntities;
 }
 
 bool WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
