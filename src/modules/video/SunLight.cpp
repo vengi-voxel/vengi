@@ -8,10 +8,11 @@ SunLight::SunLight() {
 	_sunCamera.setFarPlane(400.0f);
 }
 
-void SunLight::init(const glm::vec3& sunPos, const glm::vec3& sunDirection, const glm::ivec2& dimension) {
+void SunLight::init(const glm::vec3& sunDirection, const glm::ivec2& dimension) {
+	core_assert(sunDirection != glm::zero<glm::vec3>());
 	_sunCamera.init(dimension);
-	_sunCamera.setPosition(sunPos);
-	_sunCamera.lookAt(sunPos + sunDirection, glm::up);
+	_sunCamera.setPosition(glm::zero<glm::vec3>());
+	_sunCamera.lookAt(sunDirection, glm::up);
 }
 
 void SunLight::update(long dt, const Camera& camera) {

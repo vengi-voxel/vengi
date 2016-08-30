@@ -28,7 +28,7 @@ private:
 public:
 	SunLight();
 
-	void init(const glm::vec3& sunPos, const glm::vec3& sunDirection, const glm::ivec2& dimension);
+	void init(const glm::vec3& sunDirection, const glm::ivec2& dimension);
 
 	void update(long dt, const Camera& camera);
 
@@ -46,9 +46,6 @@ public:
 	glm::mat4 modelViewProjectionMatrix() const;
 
 	const glm::mat4& viewMatrix() const;
-
-	const glm::vec3& position() const;
-
 };
 
 }
@@ -66,13 +63,9 @@ inline glm::mat4 video::SunLight::modelViewProjectionMatrix() const {
 }
 
 inline glm::mat4 video::SunLight::modelMatrix() const {
-	return glm::translate(glm::mat4(1.0f), position());
+	return glm::translate(glm::mat4(1.0f), glm::zero<glm::vec3>());
 }
 
 inline const glm::mat4& video::SunLight::viewMatrix() const {
 	return _sunCamera.viewMatrix();
-}
-
-inline const glm::vec3& video::SunLight::position() const {
-	return _sunCamera.position();
 }
