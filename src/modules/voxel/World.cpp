@@ -26,7 +26,12 @@
 
 namespace voxel {
 
+//#define DEBUG_SCENE 2
+#ifdef DEBUG_SCENE
+#define PERSIST 0
+#else
 #define PERSIST 1
+#endif
 
 void World::Pager::erase(PagedVolume::PagerContext& pctx) {
 #if PERSIST
@@ -201,9 +206,7 @@ void World::createUnderground(TerrainContext& ctx) {
 void World::create(TerrainContext& ctx) {
 	core_trace_scoped(CreateWorld);
 	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
-#ifndef DEBUG_SCENE
-	WorldGenerator::createWorld(_ctx, ctx, _biomeManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
-#else
+#if DEBUG_SCENE == 1
 	auto& _volData = *ctx.getVolume();
 	_volData.setVoxel(1, 5, 1, createVoxel(21));
 	_volData.setVoxel(1, 4, 1, createVoxel(21));
@@ -230,6 +233,14 @@ void World::create(TerrainContext& ctx) {
 		pos.z = o.z();
 		_volData.setVoxel(pos, createVoxel(9));
 	}
+#elif DEBUG_SCENE == 2
+	ShapeGenerator::createPlane(ctx, glm::zero<glm::vec3>(), 300, 300, createVoxel(Grass1));
+	ShapeGenerator::createCone(ctx, glm::zero<glm::vec3>(), 10, 30, 10, createVoxel(Leaves1));
+	ShapeGenerator::createCone(ctx, glm::vec3(10, 0, 10), 10, 30, 10, createVoxel(Leaves2));
+	ShapeGenerator::createCone(ctx, glm::vec3(20, 0, 10), 15, 60, 15, createVoxel(Leaves3));
+	ShapeGenerator::createCone(ctx, glm::vec3(-20, 0, 10), 50, 40, 50, createVoxel(Leaves4));
+#else
+	WorldGenerator::createWorld(_ctx, ctx, _biomeManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
 #endif
 }
 
