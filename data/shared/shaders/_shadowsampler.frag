@@ -23,10 +23,10 @@ float decodeDepth(vec4 rgba) {
 /**
  * perform simple shadow map lookup returns 0.0 (unlit) or 1.0 (lit)
  */
-float sampleShadow(sampler2D shadowMap, vec2 uv, float compare) {
+float sampleShadow(sampler2D shadowMap, vec2 uv, float compare, float ndotl) {
 	float depth = decodeDepth($texture2D(shadowMap, uv));
 	// shadow acne bias
-	const float bias = 0.001;
+	float bias = clamp(0.001 * tan(acos(ndotl)), 0, 0.01);
 	depth += bias;
 	return step(compare, depth);
 }
@@ -34,12 +34,12 @@ float sampleShadow(sampler2D shadowMap, vec2 uv, float compare) {
 /**
  * perform percentage-closer shadow map lookup
  */
-float sampleShadowPCF(sampler2D shadowMap, vec2 uv, vec2 smSize, float compare) {
+float sampleShadowPCF(sampler2D shadowMap, vec2 uv, vec2 smSize, float compare, float ndotl) {
 	float result = 0.0;
 	for (int x = -2; x <= 2; x++) {
 		for (int y = -2; y <= 2; y++) {
 			vec2 off = vec2(x, y) / smSize;
-			result += sampleShadow(shadowMap, uv + off, compare);
+			result += sampleShadow(shadowMap, uv + off, compare, ndotl);
 		}
 	}
 	return result / 25.0;

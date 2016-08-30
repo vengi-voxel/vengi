@@ -16,9 +16,9 @@ $out vec4 o_color;
 void main(void) {
 	vec3 lightdir = normalize(u_lightpos - v_pos);
 	vec3 color = $texture2D(u_texture, v_texcoords).rgb + v_color.rgb;
-	float shadow = calculateShadow();
-
 	float ndotl = dot(v_norm, lightdir);
+	float shadow = calculateShadow(ndotl);
+
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
 	vec3 ambient = vec3(0.2);
 	vec3 lightvalue = (ambient + shadow) * diffuse;
