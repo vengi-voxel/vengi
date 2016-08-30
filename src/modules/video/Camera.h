@@ -125,6 +125,7 @@ public:
 	 */
 	const glm::mat4& orientation() const;
 	const glm::quat& quaternion() const;
+	void setQuaternion(const glm::quat& quat);
 
 	glm::vec3 forward() const;
 	glm::vec3 right() const;
@@ -354,6 +355,11 @@ inline glm::mat4 Camera::orthogonalMatrix() const {
 
 inline void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
 	_quat = glm::quat(glm::vec3(pitch, yaw, roll));
+	_dirty |= DIRTY_ORIENTATION;
+}
+
+inline void Camera::setQuaternion(const glm::quat& quat) {
+	_quat = quat;
 	_dirty |= DIRTY_ORIENTATION;
 }
 
