@@ -1,8 +1,3 @@
-const float bitScale = 256.0;
-const vec4 bitSh = vec4(bitScale * bitScale * bitScale, bitScale * bitScale, bitScale, 1.0);
-const vec4 bitMsk = vec4(0.0, vec3(1.0 / bitScale));
-const vec4 bitShifts = vec4(1.0) / bitSh;
-
 /**
  * float/rgba8 encoding/decoding so that we can use an RGBA8
  * shadow map instead of floating point render targets which might
@@ -11,12 +6,15 @@ const vec4 bitShifts = vec4(1.0) / bitSh;
  * http://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
  */
 vec4 encodeDepth(float v) {
-	vec4 comp = fract(v * bitSh);
-	comp -= comp.xxyw * bitMsk;
+	const vec4 bitSh = vec4(1.0, 255.0, 65025.0, 160581375.0);
+	vec4 comp = fract(bitSh * v);
+	const vec4 bitMsk = vec4(1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0, 0.0);
+	comp -= comp.yzww * bitMsk;
 	return comp;
 }
 
 float decodeDepth(vec4 rgba) {
+	const vec4 bitShifts = vec4(1.0, 1.0 / 255.0, 1.0 / 65025.0, 1.0 / 160581375.0);
 	return dot(rgba, bitShifts);
 }
 
