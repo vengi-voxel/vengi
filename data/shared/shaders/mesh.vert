@@ -23,11 +23,11 @@ void main(void) {
 	bonetrans     += u_bonetransforms[a_boneids[1]] * a_boneweights[1];
 	bonetrans     += u_bonetransforms[a_boneids[2]] * a_boneweights[2];
 	bonetrans     += u_bonetransforms[a_boneids[3]] * a_boneweights[3];
-	mat4 modelview = u_view * u_model;
-	vec4 pos4      = modelview * bonetrans * vec4(a_pos, 1.0);
+	vec4 mpos      = u_model * bonetrans * vec4(a_pos, 1.0);
+	vec4 pos4      = u_view * mpos;
 
 #if cl_shadowmap == 1
-	v_lightspacepos = u_light * u_model * vec4(a_pos, 1.0);
+	v_lightspacepos = u_light * mpos;
 #endif
 	// TODO: does this make sense without the projection applied. Afaik
 	// the w components division here is to correct perspective transforms
