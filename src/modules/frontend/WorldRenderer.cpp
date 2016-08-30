@@ -240,7 +240,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.modelViewProjectionMatrix());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix());
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	if (shadowMap) {
 		glActiveTexture(GL_TEXTURE1);
@@ -463,7 +463,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", camera.nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", camera.farPlane());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.modelViewProjectionMatrix());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix());
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	if (shadowMap) {
 		glActiveTexture(GL_TEXTURE1);

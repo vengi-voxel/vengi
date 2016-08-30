@@ -53,7 +53,7 @@ void TestMeshApp::doRender() {
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;
 	{
 		video::ScopedShader scoped(_shadowMapShader);
-		_shadowMapShader.setLight(_sunLight.modelViewProjectionMatrix());
+		_shadowMapShader.setLight(_sunLight.viewProjectionMatrix());
 		_shadowMapShader.setModel(glm::mat4());
 		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
 			glDisable(GL_BLEND);
@@ -82,7 +82,7 @@ void TestMeshApp::doRender() {
 		_meshShader.setTexture(0);
 		_meshShader.setDiffuseColor(_diffuseColor);
 		_meshShader.setScreensize(glm::vec2(_camera.dimension()));
-		_meshShader.setLight(_sunLight.modelViewProjectionMatrix());
+		_meshShader.setLight(_sunLight.viewProjectionMatrix());
 		_meshShader.setShadowmap(1);
 
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);

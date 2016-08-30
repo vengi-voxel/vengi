@@ -41,9 +41,7 @@ public:
 	 */
 	const glm::mat4& projectionMatrix() const;
 
-	glm::mat4 modelMatrix() const;
-
-	glm::mat4 modelViewProjectionMatrix() const;
+	glm::mat4 viewProjectionMatrix() const;
 
 	const glm::mat4& viewMatrix() const;
 };
@@ -58,12 +56,8 @@ inline const glm::mat4& video::SunLight::projectionMatrix() const {
 	return _sunCamera.projectionMatrix();
 }
 
-inline glm::mat4 video::SunLight::modelViewProjectionMatrix() const {
-	return projectionMatrix() * viewMatrix() * modelMatrix();
-}
-
-inline glm::mat4 video::SunLight::modelMatrix() const {
-	return glm::translate(glm::mat4(1.0f), glm::zero<glm::vec3>());
+inline glm::mat4 video::SunLight::viewProjectionMatrix() const {
+	return projectionMatrix() * viewMatrix();
 }
 
 inline const glm::mat4& video::SunLight::viewMatrix() const {
