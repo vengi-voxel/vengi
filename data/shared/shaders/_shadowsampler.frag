@@ -4,18 +4,27 @@
  * not be supported everywhere
  *
  * http://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
+ * http://www.gamedev.net/topic/486847-encoding-16-and-32-bit-floating-point-value-into-rgba-byte-texture/
+ *
+ * Only store values between 0.0 and 1.
  */
-vec4 encodeDepth(float v) {
-	const vec4 bitSh = vec4(1.0, 255.0, 65025.0, 160581375.0);
-	vec4 comp = fract(bitSh * v);
-	const vec4 bitMsk = vec4(1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0, 0.0);
-	comp -= comp.yzww * bitMsk;
+vec4 encodeDepth(float floatValue) {
+	const float toFixed = 255.0 / 256;
+	vec4 comp;
+	comp.r = fract(floatValue * toFixed * 1);
+	comp.g = fract(floatValue * toFixed * 255);
+	comp.b = fract(floatValue * toFixed * 255 * 255);
+	comp.a = fract(floatValue * toFixed * 255 * 255 * 255);
 	return comp;
 }
 
 float decodeDepth(vec4 rgba) {
-	const vec4 bitShifts = vec4(1.0, 1.0 / 255.0, 1.0 / 65025.0, 1.0 / 160581375.0);
-	return dot(rgba, bitShifts);
+	const float fromFixed = 256.0 / 255;
+	float val = rgba.r * fromFixed / (1);
+	val += rgba.g * fromFixed / (255);
+	val += rgba.b * fromFixed / (255 * 255);
+	val += rgba.a * fromFixed / (255 * 255 * 255);
+	return val;
 }
 
 /**
