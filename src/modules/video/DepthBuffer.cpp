@@ -58,11 +58,13 @@ bool DepthBuffer::init(const glm::ivec2& dimension) {
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _depthTexture, 0);
 	GL_checkError();
 
+#if 0
 	glGenRenderbuffers(1, &_rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, _rbo);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, dimension.x, dimension.y);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _rbo);
 	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _rbo);
+#endif
 
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
