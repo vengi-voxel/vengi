@@ -1,4 +1,5 @@
 #include "TestMeshApp.h"
+#include "core/Command.h"
 
 static constexpr uint32_t FL_RENDER_LINES = 1 << 0;
 
@@ -10,6 +11,18 @@ TestMeshApp::TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBu
 
 core::AppState TestMeshApp::onInit() {
 	core::AppState state = Super::onInit();
+
+	core::Command::registerCommand("loadmesh", [this] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			Log::error("Usage: %s <meshname>", args[0].c_str());
+			return;
+		}
+		const std::string mesh = args[1];
+		const video::MeshPtr& meshPtr = _meshPool.getMesh(mesh);
+		if (meshPtr->isLoading()) {
+			_mesh = meshPtr;
+		}
+	});
 
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
 	_sunLight.init(sunDirection, dimension());
