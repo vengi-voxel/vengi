@@ -175,11 +175,11 @@ bool Shader::reload() {
 
 bool Shader::init() {
 	createProgramFromShaders();
-	fetchAttributes();
-	fetchUniforms();
-	const bool success = _program != 0;
+	const bool success = _program != 0u;
 	_initialized = success;
 	if (_initialized) {
+		fetchAttributes();
+		fetchUniforms();
 		core::Singleton<ShaderManager>::getInstance().registerShader(this);
 	}
 	return success;
