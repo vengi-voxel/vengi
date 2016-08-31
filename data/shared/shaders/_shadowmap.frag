@@ -10,7 +10,7 @@ vec2 calculateShadowUV() {
 	// perform perspective divide
 	vec3 lightPos = v_lightspacepos.xyz / v_lightspacepos.w;
 	// convert from -1, 1 to tex coords in the range 0, 1
-	vec2 smUV = (lightPos.xy + 1.0) * 0.5;
+	vec2 smUV = lightPos.xy * 0.5 + 0.5;
 	return smUV;
 }
 
