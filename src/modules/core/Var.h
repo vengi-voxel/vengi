@@ -80,16 +80,24 @@ public:
 
 	template<class Functor>
 	static void visit(Functor func) {
-		ScopedReadLock lock(_lock);
-		for (auto i = _vars.begin(); i != _vars.end(); ++i) {
+		Var::VarMap varList;
+		{
+			ScopedReadLock lock(_lock);
+			varList = _vars;
+		}
+		for (auto i = varList.begin(); i != varList.end(); ++i) {
 			func(i->second);
 		}
 	}
 
 	template<class Functor>
-	static bool check(Functor func) {
-		ScopedReadLock lock(_lock);
-		for (auto i = _vars.begin(); i != _vars.end(); ++i) {
+	static bool check(Functor&& func) {
+		Var::VarMap varList;
+		{
+			ScopedReadLock lock(_lock);
+			varList = _vars;
+		}
+		for (auto i = varList.begin(); i != varList.end(); ++i) {
 			if (func(i->second)) {
 				return true;
 			}
@@ -98,11 +106,14 @@ public:
 	}
 
 	template<class Functor>
-	static void visitSorted(Functor func) {
-		ScopedReadLock lock(_lock);
+	static void visitSorted(Functor&& func) {
 		std::vector<VarPtr> varList;
-		for (auto i = _vars.begin(); i != _vars.end(); ++i) {
-			varList.push_back(i->second);
+		{
+			ScopedReadLock lock(_lock);
+			varList.reserve(_vars.size());
+			for (auto i = _vars.begin(); i != _vars.end(); ++i) {
+				varList.push_back(i->second);
+			}
 		}
 		std::sort(begin(varList), end(varList), [](const VarPtr& v1, const VarPtr& v2) {
 			return v1->name() < v2->name();
@@ -114,7 +125,12 @@ public:
 
 	template<class Functor>
 	void visitHistory(Functor func) {
-		for (auto i = _history.rbegin(); i != _history.rend(); ++i) {
+		std::vector<Value> history;
+		{
+			ScopedReadLock lock(_lock);
+			history = _history;
+		}
+		for (auto i = history.rbegin(); i != history.rend(); ++i) {
 			func(*i);
 		}
 	}
