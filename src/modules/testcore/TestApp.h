@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "video/WindowedApp.h"
+#include "ui/UIApp.h"
 #include "video/Mesh.h"
 #include "video/Camera.h"
 #include "frontend/Axis.h"
 #include "frontend/Plane.h"
 
-class TestApp: public video::WindowedApp {
+class TestApp: public ui::UIApp {
 private:
-	using Super = video::WindowedApp;
+	using Super = ui::UIApp;
 	bool _cameraMotion = false;
 	bool _renderPlane = false;
 	bool _renderAxis = true;
@@ -48,7 +48,7 @@ public:
 	virtual ~TestApp();
 
 	virtual core::AppState onInit() override;
-	virtual core::AppState onRunning() override;
+	virtual void beforeUI() override;
 	virtual core::AppState onCleanup() override;
 	virtual void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	virtual void onMouseWheel(int32_t x, int32_t y) override;

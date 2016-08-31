@@ -78,11 +78,8 @@ core::AppState TestApp::onInit() {
 	return state;
 }
 
-core::AppState TestApp::onRunning() {
-	const core::AppState state = Super::onRunning();
-	if (state == core::AppState::Cleanup) {
-		return state;
-	}
+void TestApp::beforeUI() {
+	Super::beforeUI();
 
 	if (_cameraMotion) {
 		SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
@@ -93,6 +90,7 @@ core::AppState TestApp::onRunning() {
 	_camera.move(moveDelta);
 
 	_camera.update(_deltaFrame);
+
 	if  (_renderPlane) {
 		_plane.render(_camera);
 	}
@@ -100,8 +98,6 @@ core::AppState TestApp::onRunning() {
 	if (_renderAxis) {
 		_axis.render(_camera);
 	}
-
-	return state;
 }
 
 core::AppState TestApp::onCleanup() {
