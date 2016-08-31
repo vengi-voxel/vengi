@@ -242,6 +242,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(actualCamera->dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
+	shaderSetUniformIf(shader, setUniformVec3, "u_campos", camera.position());
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	if (shadowMap) {
 		glActiveTexture(GL_TEXTURE1);
@@ -430,6 +431,11 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
 		_shadowMapRenderShader.setShadowmap(0);
+		shaderSetUniformIf(_shadowMapRenderShader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
+		shaderSetUniformIf(_shadowMapRenderShader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
+		shaderSetUniformIf(_shadowMapRenderShader, setUniformVec3, "u_lightdir", _sunLight.direction());
+		shaderSetUniformIf(_shadowMapRenderShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
+		shaderSetUniformIf(_shadowMapRenderShader, setUniformVec3, "u_campos", camera.position());
 		glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
 		_texturedFullscreenQuad.unbind();
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -472,6 +478,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(actualCamera->dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
+	shaderSetUniformIf(shader, setUniformVec3, "u_campos", camera.position());
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	if (shadowMap) {
 		glActiveTexture(GL_TEXTURE1);
