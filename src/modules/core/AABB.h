@@ -145,9 +145,9 @@ public:
 	bool isValid() const;
 
 	/// Moves the AABB by the amount specified.
-	void shift(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
+	AABB<TYPE>& shift(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
 	/// Moves the AABB by the amount specified.
-	void shift(const glm::tvec3<TYPE>& v3dAmount);
+	AABB<TYPE>& shift(const glm::tvec3<TYPE>& v3dAmount);
 	/// Moves the lower corner of the AABB by the amount specified.
 	void shiftLowerCorner(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
 	/// Moves the lower corner of the AABB by the amount specified.
@@ -575,18 +575,20 @@ inline bool AABB<TYPE>::isValid() const {
  * @param iAmountZ The amount to move the AABB by in 'z'.
  */
 template<typename TYPE>
-inline void AABB<TYPE>::shift(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ) {
+inline AABB<TYPE>& AABB<TYPE>::shift(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ) {
 	shiftLowerCorner(iAmountX, iAmountY, iAmountZ);
 	shiftUpperCorner(iAmountX, iAmountY, iAmountZ);
+	return *this;
 }
 
 /**
  * @param v3dAmount The amount to move the AABB by.
  */
 template<typename TYPE>
-inline void AABB<TYPE>::shift(const glm::tvec3<TYPE>& v3dAmount) {
+inline AABB<TYPE>& AABB<TYPE>::shift(const glm::tvec3<TYPE>& v3dAmount) {
 	shiftLowerCorner(v3dAmount);
 	shiftUpperCorner(v3dAmount);
+	return *this;
 }
 
 /**
