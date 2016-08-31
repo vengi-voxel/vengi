@@ -16,6 +16,9 @@ private:
 			if (_recompileErrors <= 5) {
 				return;
 			}
+		} else if (id == 131185) {
+			// ignore hints that GL_STATIC_DRAW is used...
+			return;
 		}
 		void (*log)(const char* msg, ...);
 		const char* sourceStr;
