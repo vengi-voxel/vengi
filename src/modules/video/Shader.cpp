@@ -170,6 +170,7 @@ bool Shader::loadProgram(const std::string& filename) {
 
 bool Shader::reload() {
 	const std::string name = _name;
+	shutdown();
 	return loadProgram(name);
 }
 
