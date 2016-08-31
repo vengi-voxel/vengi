@@ -43,16 +43,18 @@ int Command::execute(const std::string& command) {
 }
 
 bool Command::execute(const std::string& command, const CmdArgs& args) {
-	ScopedReadLock lock(_lock);
 	if ((command[0] == '+' || command[0] == '-') && args.empty()) {
 		Log::debug("Skip execution of %s - no arguments provided", command.c_str());
 		return false;
 	}
+	_lock.lockRead();
 	auto i = _cmds.find(command);
 	if (i == _cmds.end()) {
+		_lock.unlockRead();
 		return false;
 	}
-	const Command& cmd = i->second;
+	const Command cmd = i->second;
+	_lock.unlockRead();
 	cmd._func(args);
 	return true;
 }

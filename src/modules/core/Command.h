@@ -59,16 +59,18 @@ public:
 
 	template<class Functor>
 	static void visitSorted(Functor&& func) {
-		ScopedReadLock lock(_lock);
-		std::vector<Command> commandList;
-		for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
-			commandList.push_back(i->second);
+		std::vector<const Command*> commandList;
+		{
+			ScopedReadLock lock(_lock);
+			for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
+				commandList.push_back(&i->second);
+			}
 		}
-		std::sort(begin(commandList), end(commandList), [](const Command &v1, const Command &v2) {
-			return v1.name() < v2.name();
+		std::sort(commandList.begin(), commandList.end(), [] (const Command *v1, const Command *v2) {
+			return v1->name() < v2->name();
 		});
 		for (const auto& command : commandList) {
-			func(command);
+			func(*command);
 		}
 	}
 
