@@ -25,9 +25,21 @@ namespace video {
 #define FRAGMENT_POSTFIX ".frag"
 #endif
 
+#ifndef GEOMETRY_POSTFIX
+#define GEOMETRY_POSTFIX ".geom"
+#endif
+
 enum class ShaderType : GLenum {
+#ifdef GL_VERSION_4_3
+	Compute = GL_COMPUTE_SHADER,
+#endif
+#ifdef GL_VERSION_4_0
+	TesselationEval = GL_TESS_EVALUATION_SHADER,
+	TesselationControl = GL_TESS_CONTROL_SHADER,
+#endif
 	Vertex = GL_VERTEX_SHADER,
-	Fragment = GL_FRAGMENT_SHADER
+	Fragment = GL_FRAGMENT_SHADER,
+	Geometry = GL_GEOMETRY_SHADER
 };
 
 class Shader {

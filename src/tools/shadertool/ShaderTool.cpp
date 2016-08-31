@@ -510,6 +510,9 @@ core::AppState ShaderTool::onRunning() {
 		return core::AppState::Cleanup;
 	}
 
+	const std::string geometryFilename = shaderfile + GEOMETRY_POSTFIX;
+	const std::string geometryBuffer = filesystem()->load(geometryFilename);
+
 	video::Shader shader;
 	const std::string& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, false);
 	const std::string& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, false);
@@ -517,6 +520,10 @@ core::AppState ShaderTool::onRunning() {
 	_shaderStruct.filename = shaderfile;
 	_shaderStruct.name = shaderfile;
 	parse(fragmentSrcSource, false);
+	if (!geometryBuffer.empty()) {
+		const std::string& geometrySrcSource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, false);
+		parse(geometrySrcSource, false);
+	}
 	parse(vertexSrcSource, true);
 	generateSrc();
 
@@ -527,12 +534,17 @@ core::AppState ShaderTool::onRunning() {
 
 	const std::string& fragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, true);
 	const std::string& vertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, true);
+	const std::string& geometrySource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, true);
 
 	Log::debug("Writing shader file %s to %s", shaderfile.c_str(), filesystem()->homePath().c_str());
 	std::string finalFragmentFilename = _appname + "-" + fragmentFilename;
 	std::string finalVertexFilename = _appname + "-" + vertexFilename;
+	std::string finalGeometryFilename = _appname + "-" + geometryFilename;
 	filesystem()->write(finalFragmentFilename, fragmentSource);
 	filesystem()->write(finalVertexFilename, vertexSource);
+	if (!geometrySource.empty()) {
+		filesystem()->write(finalGeometryFilename, geometrySource);
+	}
 
 	Log::debug("Validating shader file %s", shaderfile.c_str());
 
@@ -544,10 +556,19 @@ core::AppState ShaderTool::onRunning() {
 	vertexArgs.push_back(filesystem()->homePath() + finalVertexFilename);
 	int vertexValidationExitCode = core::Process::exec(glslangValidatorBin, vertexArgs);
 
+	int geometryValidationExitCode = 0;
+	if (!geometrySource.empty()) {
+		std::vector<std::string> geometryArgs;
+		geometryArgs.push_back(filesystem()->homePath() + finalGeometryFilename);
+		geometryValidationExitCode = core::Process::exec(glslangValidatorBin, geometryArgs);
+	}
+
 	if (fragmentValidationExitCode != 0) {
 		_exitCode = fragmentValidationExitCode;
 	} else if (vertexValidationExitCode != 0) {
 		_exitCode = vertexValidationExitCode;
+	} else if (geometryValidationExitCode != 0) {
+		_exitCode = geometryValidationExitCode;
 	}
 
 	return core::AppState::Cleanup;

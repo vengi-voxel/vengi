@@ -131,6 +131,9 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 		case GL_FRAGMENT_SHADER:
 			strShaderType = "fragment";
 			break;
+		case GL_GEOMETRY_SHADER:
+			strShaderType = "geometry";
+			break;
 		default:
 			strShaderType = "unknown";
 			break;
@@ -163,6 +166,9 @@ bool Shader::loadProgram(const std::string& filename) {
 	const bool fragment = loadFromFile(filename + FRAGMENT_POSTFIX, ShaderType::Fragment);
 	if (!fragment)
 		return false;
+
+	// optional
+	loadFromFile(filename + GEOMETRY_POSTFIX, ShaderType::Geometry);
 
 	_name = filename;
 	return init();
@@ -341,6 +347,9 @@ std::string Shader::handleIncludes(const std::string& buffer) const {
 }
 
 std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, bool finalize) const {
+	if (buffer.empty()) {
+		return "";
+	}
 	std::string src;
 	src.append("#version ");
 	src.append(std::to_string(glslVersion));
@@ -425,9 +434,13 @@ void Shader::createProgramFromShaders() {
 
 	const GLuint vert = _shader[ShaderType::Vertex];
 	const GLuint frag = _shader[ShaderType::Fragment];
+	const GLuint geom = _shader[ShaderType::Geometry];
 
 	glAttachShader(_program, vert);
 	glAttachShader(_program, frag);
+	if (geom != 0) {
+		glAttachShader(_program, geom);
+	}
 	GL_checkError();
 
 	glLinkProgram(_program);
@@ -437,6 +450,9 @@ void Shader::createProgramFromShaders() {
 	if (status == GL_TRUE) {
 		glDetachShader(_program, vert);
 		glDetachShader(_program, frag);
+		if (geom != 0) {
+			glDetachShader(_program, geom);
+		}
 		return;
 	}
 	GLint infoLogLength;
