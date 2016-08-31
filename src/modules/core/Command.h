@@ -62,6 +62,7 @@ public:
 		std::vector<const Command*> commandList;
 		{
 			ScopedReadLock lock(_lock);
+			commandList.reserve(_cmds.size());
 			for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
 				commandList.push_back(&i->second);
 			}
