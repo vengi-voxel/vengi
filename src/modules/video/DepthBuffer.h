@@ -20,6 +20,10 @@ public:
 	void unbind();
 	uint8_t *read();
 
+	inline const glm::ivec2& dimension() const {
+		return _dimension;
+	}
+
 	inline GLuint getTexture() const {
 		return _depthTexture;
 	}
