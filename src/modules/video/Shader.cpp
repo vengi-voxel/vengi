@@ -28,11 +28,9 @@ int Shader::glslVersion = GLSLVersion::V330;
 
 Shader::Shader() :
 		_program(0), _initialized(false), _active(false), _time(0) {
-	core::Singleton<ShaderManager>::getInstance().registerShader(this);
 }
 
 Shader::~Shader() {
-	core::Singleton<ShaderManager>::getInstance().unregisterShader(this);
 	core_assert_msg(_program == 0u, "Shader %s was not properly shut down", _name.c_str());
 	shutdown();
 }
@@ -83,6 +81,8 @@ int Shader::getUniformArraySize(const std::string& name) const {
 }
 
 void Shader::shutdown() {
+	core::Singleton<ShaderManager>::getInstance().unregisterShader(this);
+
 	for (auto& shader : _shader) {
 		if (shader.second != 0) {
 			glDeleteShader(shader.second);
@@ -172,6 +172,8 @@ bool Shader::reload() {
 }
 
 bool Shader::init() {
+	core::Singleton<ShaderManager>::getInstance().registerShader(this);
+
 	createProgramFromShaders();
 	fetchAttributes();
 	fetchUniforms();
