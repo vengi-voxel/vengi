@@ -81,7 +81,9 @@ int Shader::getUniformArraySize(const std::string& name) const {
 }
 
 void Shader::shutdown() {
-	core::Singleton<ShaderManager>::getInstance().unregisterShader(this);
+	if (_initialized) {
+		core::Singleton<ShaderManager>::getInstance().unregisterShader(this);
+	}
 
 	for (auto& shader : _shader) {
 		if (shader.second != 0) {
@@ -172,13 +174,14 @@ bool Shader::reload() {
 }
 
 bool Shader::init() {
-	core::Singleton<ShaderManager>::getInstance().registerShader(this);
-
 	createProgramFromShaders();
 	fetchAttributes();
 	fetchUniforms();
 	const bool success = _program != 0;
 	_initialized = success;
+	if (_initialized) {
+		core::Singleton<ShaderManager>::getInstance().registerShader(this);
+	}
 	return success;
 }
 
