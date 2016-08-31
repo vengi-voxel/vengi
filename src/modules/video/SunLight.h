@@ -33,7 +33,7 @@ public:
 	 */
 	const glm::mat4& projectionMatrix() const;
 
-	glm::mat4 viewProjectionMatrix() const;
+	glm::mat4 viewProjectionMatrix(const Camera& camera) const;
 
 	const glm::mat4& viewMatrix() const;
 };
@@ -48,8 +48,8 @@ inline const glm::mat4& video::SunLight::projectionMatrix() const {
 	return _sunCamera.projectionMatrix();
 }
 
-inline glm::mat4 video::SunLight::viewProjectionMatrix() const {
-	return projectionMatrix() * viewMatrix();
+inline glm::mat4 video::SunLight::viewProjectionMatrix(const Camera& camera) const {
+	return glm::translate(projectionMatrix() * viewMatrix(), camera.position());
 }
 
 inline const glm::mat4& video::SunLight::viewMatrix() const {

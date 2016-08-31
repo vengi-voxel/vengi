@@ -28,7 +28,7 @@ void SunLight::init(const glm::vec3& sunDirection, const glm::ivec2& dimension) 
 }
 
 void SunLight::update(long dt, const Camera& camera) {
-	const core::AABB<float>& aabb = camera.aabb();
+	const core::AABB<float>& aabb = camera.aabb().shift(-camera.position());
 
 	_sunCamera.setFarPlane(camera.farPlane());
 	_sunCamera.setNearPlane(camera.nearPlane());
