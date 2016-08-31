@@ -318,11 +318,19 @@ inline float Camera::farPlane() const {
 }
 
 inline void Camera::setFarPlane(float farPlane) {
+	if (glm::epsilonEqual(_farPlane, farPlane, 0.00001f)) {
+		return;
+	}
+
 	_dirty |= DIRTY_PERSPECTIVE;
 	_farPlane = farPlane;
 }
 
 inline void Camera::setNearPlane(float nearPlane) {
+	if (glm::epsilonEqual(_nearPlane, nearPlane, 0.00001f)) {
+		return;
+	}
+
 	_dirty |= DIRTY_PERSPECTIVE;
 	_nearPlane = std::max(0.1f, nearPlane);
 }
