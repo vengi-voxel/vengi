@@ -39,7 +39,7 @@
 			_moveMask |= network::MoveDirection::flag; \
 		else \
 			_moveMask &= ~network::MoveDirection::flag; \
-	});
+	}).setHelp("Character movement");
 
 Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
 		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :

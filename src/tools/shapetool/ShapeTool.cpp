@@ -48,7 +48,7 @@ core::AppState ShapeTool::onInit() {
 	core::Command::registerCommand("camsync", [&] (const core::CmdArgs& args) {
 		const video::Camera& sunCamera = _worldRenderer.sunLight().camera();
 		_camera.setQuaternion(sunCamera.quaternion());
-	});
+	}).setHelp("Set the world camera rotation to be equal to the sun rotation");
 
 	_world->setSeed(1);
 	if (!_worldRenderer.onInit(_dimension)) {

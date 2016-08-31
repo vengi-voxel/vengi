@@ -271,9 +271,9 @@ core::AppState UIApp::onConstruct() {
 #ifdef DEBUG
 		tb::ShowDebugInfoSettingsWindow(&_root);
 #endif
-	});
+	}).setHelp("Show ui debug information - only available in debug builds");
 
-	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
+	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;}).setHelp("Quit the application");
 
 	core::Command::registerCommand("bindlist", [this] (const core::CmdArgs& args) {
 		for (util::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
@@ -294,7 +294,7 @@ core::AppState UIApp::onConstruct() {
 			const std::string& command = pair.first;
 			Log::info("%-15s %-10s %s", modifierKey.c_str(), keyName, command.c_str());
 		}
-	});
+	}).setHelp("Show all known key bindings");
 
 	core::Command::registerCommand("bind", [this] (const core::CmdArgs& args) {
 		if (args.size() != 2) {
@@ -322,7 +322,7 @@ core::AppState UIApp::onConstruct() {
 				Log::info("Added binding for key %s", args[0].c_str());
 			}
 		}
-	});
+	}).setHelp("Bind a command to a key");
 
 	return state;
 }

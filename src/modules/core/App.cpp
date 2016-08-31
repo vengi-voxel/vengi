@@ -139,7 +139,7 @@ AppState App::onConstruct() {
 		if (st) {
 			st->clearHistory();
 		}
-	});
+	}).setHelp("Clear the value history of a variable");
 	core::Command::registerCommand("toggle", [] (const core::CmdArgs& args) {
 		if (args.size() < 1) {
 			Log::error("not enough arguments given. Expecting a variable name at least");
@@ -169,7 +169,7 @@ AppState App::onConstruct() {
 		if (!changed) {
 			Log::error("Could not toggle %s", args[0].c_str());
 		}
-	});
+	}).setHelp("Toggle between true/false for a variable");
 	// show a specific variable
 	core::Command::registerCommand("show", [] (const core::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -182,7 +182,7 @@ AppState App::onConstruct() {
 		} else {
 			Log::info("not found");
 		}
-	});
+	}).setHelp("Show the value of a variable");
 	core::Command::registerCommand("cvarlist", [] (const core::CmdArgs& args) {
 		core::Var::visitSorted([&] (const core::VarPtr& var) {
 			if (!args.empty() && !core::string::matches(args[0], var->name())) {
@@ -206,7 +206,7 @@ AppState App::onConstruct() {
 			const std::string& value = core::string::format("\"%s\"", var->strVal().c_str());
 			Log::info("* %s %s = %s (%u)", flagsStr.c_str(), name.c_str(), value.c_str(), var->getHistorySize());
 		});
-	});
+	}).setHelp("Show the list of known variables (wildcards supported)");
 	core::Command::registerCommand("cmdlist", [] (const core::CmdArgs& args) {
 		core::Command::visitSorted([&] (const core::Command& cmd) {
 			if (!args.empty() && !core::string::matches(args[0], cmd.name())) {
@@ -214,7 +214,7 @@ AppState App::onConstruct() {
 			}
 			Log::info("* %s - %s", cmd.name().c_str(), cmd.help().c_str());
 		});
-	});
+	}).setHelp("Show the list of known commands (wildcards supported)");
 
 	Log::info("detected %u cpus", core::cpus());
 

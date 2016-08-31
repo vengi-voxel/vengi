@@ -6,6 +6,7 @@
 
 #include <string>
 #include <memory>
+#include <utility>
 #include <functional>
 #include <unordered_map>
 #include "String.h"
@@ -33,14 +34,16 @@ private:
 	typedef std::function<int(const std::string&, std::vector<std::string>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
-	Command(const std::string& name, FunctionType&& func);
+	Command(const std::string& name, FunctionType&& func) :
+		_name(name), _func(std::move(func)) {
+	}
 
 public:
-	static Command& registerCommand(const std::string& name, FunctionType&& func);
-
-	template<class Function>
-	static Command& registerCommand2(const std::string& name, Function&& func) {
-		return registerCommand(name, std::bind(std::forward<Function>(func)));
+	static Command& registerCommand(const std::string& name, FunctionType&& func) {
+		ScopedWriteLock lock(_lock);
+		const Command c(name, std::forward<FunctionType>(func));
+		_cmds.insert(std::make_pair(c.name(), c));
+		return _cmds.find(c.name())->second;
 	}
 
 	static void unregisterCommand(const std::string& name);
@@ -51,27 +54,31 @@ public:
 
 	template<class Functor>
 	static void visit(Functor&& func) {
-		ScopedReadLock lock(_lock);
-		for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
+		CommandMap commandList;
+		{
+			ScopedReadLock lock(_lock);
+			commandList = _cmds;
+		}
+		for (auto i = commandList.begin(); i != commandList.end(); ++i) {
 			func(i->second);
 		}
 	}
 
 	template<class Functor>
 	static void visitSorted(Functor&& func) {
-		std::vector<const Command*> commandList;
+		std::vector<Command> commandList;
 		{
 			ScopedReadLock lock(_lock);
 			commandList.reserve(_cmds.size());
 			for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
-				commandList.push_back(&i->second);
+				commandList.push_back(i->second);
 			}
 		}
-		std::sort(commandList.begin(), commandList.end(), [] (const Command *v1, const Command *v2) {
-			return v1->name() < v2->name();
+		std::sort(commandList.begin(), commandList.end(), [] (const Command &v1, const Command &v2) {
+			return v1.name() < v2.name();
 		});
 		for (const auto& command : commandList) {
-			func(*command);
+			func(command);
 		}
 	}
 

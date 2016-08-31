@@ -62,7 +62,7 @@ core::AppState TestApp::onInit() {
 			return;
 		}
 		_camera.setRotationType(video::CameraRotationType::Eye);
-	});
+	}).setHelp("Camera free look on toggle");
 
 	const glm::vec4& color = ::core::Color::Black;
 	glClearColor(color.r, color.g, color.b, color.a);

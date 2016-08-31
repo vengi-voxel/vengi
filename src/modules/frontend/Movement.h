@@ -21,7 +21,7 @@ constexpr int MOVEBACKWARD	=	1 << 3;
 			_moveMask |= (flag); \
 		else \
 			_moveMask &= ~(flag); \
-	});
+	}).setHelp("Camera movement");
 
 inline glm::vec3 getMoveDelta(float speed, int _moveMask) {
 	glm::vec3 moveDelta;

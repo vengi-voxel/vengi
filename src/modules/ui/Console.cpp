@@ -69,32 +69,32 @@ Console::Console() {
 bool Console::init() {
 	_font = getFont(20);
 
-	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); });
-	core::Command::registerCommand("clear", [&] (const core::CmdArgs& args) { clear(); });
+	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); }).setHelp("Toggle the in-game console");
+	core::Command::registerCommand("clear", [&] (const core::CmdArgs& args) { clear(); }).setHelp("Clear the text from the in-game console");
 	core::Command::registerCommand("logerror", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::error("%s", args[0].c_str());
-	});
+	}).setHelp("Log given message as error");
 	core::Command::registerCommand("loginfo", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::info("%s", args[0].c_str());
-	});
+	}).setHelp("Log given message as info");
 	core::Command::registerCommand("logdebug", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::debug("%s", args[0].c_str());
-	});
+	}).setHelp("Log given message as debug");
 	core::Command::registerCommand("logwarn", [&] (const core::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::warn("%s", args[0].c_str());
-	});
+	}).setHelp("Log given message as warn");
 	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
 	const std::string& content = fs->load(historyFilename);
 	core::string::splitString(content, _history, "\n");
