@@ -257,7 +257,7 @@ void PagedVolume::insertNewChunk(PagedVolume::Chunk* chunk, int32_t chunkX, int3
 	bool insertedSucessfully = false;
 	do {
 		if (_arrayChunks[index] == nullptr) {
-			_arrayChunks[index] = std::move(std::unique_ptr<Chunk>(chunk));
+			_arrayChunks[index] = std::unique_ptr<Chunk>(chunk);
 			insertedSucessfully = true;
 			break;
 		}
