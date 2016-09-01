@@ -32,9 +32,9 @@ public:
 
 		inline bool isCurrentPositionValid() const;
 
-		inline void setPosition(const glm::ivec3& v3dNewPos);
-		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
-		inline bool setVoxel(const Voxel& tValue);
+		inline void setPosition(const glm::ivec3& pos);
+		void setPosition(int32_t x, int32_t y, int32_t z);
+		inline bool setVoxel(const Voxel& voxel);
 
 		void movePositiveX();
 		void movePositiveY();
@@ -75,26 +75,26 @@ public:
 		inline Voxel peekVoxel1px1py1pz() const;
 
 	private:
-		RawVolume* mVolume;
+		RawVolume* _volume;
 
 		//The current position in the volume
-		int32_t mXPosInVolume;
-		int32_t mYPosInVolume;
-		int32_t mZPosInVolume;
+		int32_t _xPosInVolume;
+		int32_t _yPosInVolume;
+		int32_t _zPosInVolume;
 
 		//Other current position information
-		Voxel* mCurrentVoxel;
+		Voxel* _currentVoxel;
 
 		//Whether the current position is inside the volume
 		//FIXME - Replace these with flags
-		bool m_bIsCurrentPositionValidInX;
-		bool m_bIsCurrentPositionValidInY;
-		bool m_bIsCurrentPositionValidInZ;
+		bool _isCurrentPositionValidInX;
+		bool _isCurrentPositionValidInY;
+		bool _isCurrentPositionValidInZ;
 	};
 
 public:
 	/// Constructor for creating a fixed size volume.
-	RawVolume(const Region& regValid);
+	RawVolume(const Region& region);
 
 	/// Destructor
 	~RawVolume();
@@ -112,31 +112,31 @@ public:
 	int32_t getDepth() const;
 
 	/// Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
-	const Voxel& getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const;
+	const Voxel& getVoxel(int32_t x, int32_t y, int32_t z) const;
 	/// Gets a voxel at the position given by a 3D vector
-	inline const Voxel& getVoxel(const glm::ivec3& v3dPos) const;
+	inline const Voxel& getVoxel(const glm::ivec3& pos) const;
 
 	/// Sets the value used for voxels which are outside the volume
-	void setBorderValue(const Voxel& tBorder);
+	void setBorderValue(const Voxel& voxel);
 	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
-	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue);
+	void setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& voxel);
 	/// Sets the voxel at the position given by a 3D vector
-	inline void setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue);
+	inline void setVoxel(const glm::ivec3& pos, const Voxel& voxel);
 
 	/// Calculates approximatly how many bytes of memory the volume is currently using.
 	uint32_t calculateSizeInBytes();
 
 private:
-	void initialise(const Region& regValidRegion);
+	void initialise(const Region& region);
 
-	//The size of the volume
-	Region m_regValidRegion;
+	// The size of the volume
+	Region _region;
 
-	//The border value
-	Voxel m_tBorderValue;
+	// The border value
+	Voxel _borderVoxel;
 
-	//The voxel data
-	Voxel* m_pData;
+	// The voxel data
+	Voxel* _data;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,34 +145,34 @@ private:
 /// @param v3dPos The 3D position of the voxel
 /// @return The voxel value
 ////////////////////////////////////////////////////////////////////////////////
-inline const Voxel& RawVolume::getVoxel(const glm::ivec3& v3dPos) const {
-	return getVoxel(v3dPos.x, v3dPos.y, v3dPos.z);
+inline const Voxel& RawVolume::getVoxel(const glm::ivec3& pos) const {
+	return getVoxel(pos.x, pos.y, pos.z);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @param v3dPos the 3D position of the voxel
 /// @param tValue the value to which the voxel will be set
 ////////////////////////////////////////////////////////////////////////////////
-inline void RawVolume::setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue) {
-	setVoxel(v3dPos.x, v3dPos.y, v3dPos.z, tValue);
+inline void RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
+	setVoxel(pos.x, pos.y, pos.z, voxel);
 }
 
-#define CAN_GO_NEG_X(val) (val > this->mVolume->getEnclosingRegion().getLowerX())
-#define CAN_GO_POS_X(val) (val < this->mVolume->getEnclosingRegion().getUpperX())
-#define CAN_GO_NEG_Y(val) (val > this->mVolume->getEnclosingRegion().getLowerY())
-#define CAN_GO_POS_Y(val) (val < this->mVolume->getEnclosingRegion().getUpperY())
-#define CAN_GO_NEG_Z(val) (val > this->mVolume->getEnclosingRegion().getLowerZ())
-#define CAN_GO_POS_Z(val) (val < this->mVolume->getEnclosingRegion().getUpperZ())
+#define CAN_GO_NEG_X(val) (val > this->_volume->getEnclosingRegion().getLowerX())
+#define CAN_GO_POS_X(val) (val < this->_volume->getEnclosingRegion().getUpperX())
+#define CAN_GO_NEG_Y(val) (val > this->_volume->getEnclosingRegion().getLowerY())
+#define CAN_GO_POS_Y(val) (val < this->_volume->getEnclosingRegion().getUpperY())
+#define CAN_GO_NEG_Z(val) (val > this->_volume->getEnclosingRegion().getLowerZ())
+#define CAN_GO_POS_Z(val) (val < this->_volume->getEnclosingRegion().getUpperZ())
 
 inline const Voxel& RawVolume::Sampler::getVoxel() const {
 	if (this->isCurrentPositionValid()) {
-		return *mCurrentVoxel;
+		return *_currentVoxel;
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
 }
 
 inline bool RawVolume::Sampler::isCurrentPositionValid() const {
-	return m_bIsCurrentPositionValidInX && m_bIsCurrentPositionValidInY && m_bIsCurrentPositionValidInZ;
+	return _isCurrentPositionValidInX && _isCurrentPositionValidInY && _isCurrentPositionValidInZ;
 }
 
 inline void RawVolume::Sampler::setPosition(const glm::ivec3& v3dNewPos) {
@@ -181,200 +181,200 @@ inline void RawVolume::Sampler::setPosition(const glm::ivec3& v3dNewPos) {
 
 inline bool RawVolume::Sampler::setVoxel(const Voxel& tValue) {
 	//return m_bIsCurrentPositionValid ? *mCurrentVoxel : this->mVolume->getBorderValue();
-	if (this->m_bIsCurrentPositionValidInX && this->m_bIsCurrentPositionValidInY && this->m_bIsCurrentPositionValidInZ) {
-		*mCurrentVoxel = tValue;
+	if (this->_isCurrentPositionValidInX && this->_isCurrentPositionValidInY && this->_isCurrentPositionValidInZ) {
+		*_currentVoxel = tValue;
 		return true;
 	}
 	return false;
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1nx1ny1nz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel - 1 - this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->_xPosInVolume) && CAN_GO_NEG_Y(this->_yPosInVolume) && CAN_GO_NEG_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel - 1 - this->_volume->getWidth() - this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume - 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1nx1ny0pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume)) {
-		return *(mCurrentVoxel - 1 - this->mVolume->getWidth());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->_xPosInVolume) && CAN_GO_NEG_Y(this->_yPosInVolume)) {
+		return *(_currentVoxel - 1 - this->_volume->getWidth());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume - 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1nx1ny1pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel - 1 - this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->_xPosInVolume) && CAN_GO_NEG_Y(this->_yPosInVolume) && CAN_GO_POS_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel - 1 - this->_volume->getWidth() + this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume - 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1nx0py1nz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel - 1 - this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->_xPosInVolume) && CAN_GO_NEG_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel - 1 - this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume - 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1nx0py0pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume)) {
-		return *(mCurrentVoxel - 1);
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->_xPosInVolume)) {
+		return *(_currentVoxel - 1);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1nx0py1pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel - 1 + this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->_xPosInVolume) && CAN_GO_POS_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel - 1 + this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume + 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1nx1py1nz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel - 1 + this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->_xPosInVolume) && CAN_GO_POS_Y(this->_yPosInVolume) && CAN_GO_NEG_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel - 1 + this->_volume->getWidth() - this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume + 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1nx1py0pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume)) {
-		return *(mCurrentVoxel - 1 + this->mVolume->getWidth());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->_xPosInVolume) && CAN_GO_POS_Y(this->_yPosInVolume)) {
+		return *(_currentVoxel - 1 + this->_volume->getWidth());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume + 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1nx1py1pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel - 1 + this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_X(this->_xPosInVolume) && CAN_GO_POS_Y(this->_yPosInVolume) && CAN_GO_POS_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel - 1 + this->_volume->getWidth() + this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume + 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel0px1ny1nz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel - this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_Y(this->_yPosInVolume) && CAN_GO_NEG_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel - this->_volume->getWidth() - this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume - 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel0px1ny0pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_Y(this->mYPosInVolume)) {
-		return *(mCurrentVoxel - this->mVolume->getWidth());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_Y(this->_yPosInVolume)) {
+		return *(_currentVoxel - this->_volume->getWidth());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume - 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel0px1ny1pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel - this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_Y(this->_yPosInVolume) && CAN_GO_POS_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel - this->_volume->getWidth() + this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume - 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel0px0py1nz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_NEG_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel - this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_NEG_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel - this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume - 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel0px0py0pz() const {
 	if (this->isCurrentPositionValid()) {
-		return *mCurrentVoxel;
+		return *_currentVoxel;
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel0px0py1pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel + this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel + this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume + 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel0px1py1nz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel + this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_Y(this->_yPosInVolume) && CAN_GO_NEG_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel + this->_volume->getWidth() - this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume + 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel0px1py0pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_Y(this->mYPosInVolume)) {
-		return *(mCurrentVoxel + this->mVolume->getWidth());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_Y(this->_yPosInVolume)) {
+		return *(_currentVoxel + this->_volume->getWidth());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume + 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel0px1py1pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel + this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_Y(this->_yPosInVolume) && CAN_GO_POS_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel + this->_volume->getWidth() + this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume + 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1px1ny1nz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel + 1 - this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->_xPosInVolume) && CAN_GO_NEG_Y(this->_yPosInVolume) && CAN_GO_NEG_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel + 1 - this->_volume->getWidth() - this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume - 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1px1ny0pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume)) {
-		return *(mCurrentVoxel + 1 - this->mVolume->getWidth());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->_xPosInVolume) && CAN_GO_NEG_Y(this->_yPosInVolume)) {
+		return *(_currentVoxel + 1 - this->_volume->getWidth());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume - 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1px1ny1pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_NEG_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel + 1 - this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->_xPosInVolume) && CAN_GO_NEG_Y(this->_yPosInVolume) && CAN_GO_POS_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel + 1 - this->_volume->getWidth() + this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume - 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1px0py1nz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel + 1 - this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->_xPosInVolume) && CAN_GO_NEG_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel + 1 - this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume - 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1px0py0pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume)) {
-		return *(mCurrentVoxel + 1);
+	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->_xPosInVolume)) {
+		return *(_currentVoxel + 1);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1px0py1pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel + 1 + this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->_xPosInVolume) && CAN_GO_POS_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel + 1 + this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume + 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1px1py1nz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_NEG_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel + 1 + this->mVolume->getWidth() - this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->_xPosInVolume) && CAN_GO_POS_Y(this->_yPosInVolume) && CAN_GO_NEG_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel + 1 + this->_volume->getWidth() - this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume + 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1px1py0pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume)) {
-		return *(mCurrentVoxel + 1 + this->mVolume->getWidth());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->_xPosInVolume) && CAN_GO_POS_Y(this->_yPosInVolume)) {
+		return *(_currentVoxel + 1 + this->_volume->getWidth());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume + 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume);
 }
 
 inline Voxel RawVolume::Sampler::peekVoxel1px1py1pz() const {
-	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->mXPosInVolume) && CAN_GO_POS_Y(this->mYPosInVolume) && CAN_GO_POS_Z(this->mZPosInVolume)) {
-		return *(mCurrentVoxel + 1 + this->mVolume->getWidth() + this->mVolume->getWidth() * this->mVolume->getHeight());
+	if (this->isCurrentPositionValid() && CAN_GO_POS_X(this->_xPosInVolume) && CAN_GO_POS_Y(this->_yPosInVolume) && CAN_GO_POS_Z(this->_zPosInVolume)) {
+		return *(_currentVoxel + 1 + this->_volume->getWidth() + this->_volume->getWidth() * this->_volume->getHeight());
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume + 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
 }
 
 #undef CAN_GO_NEG_X

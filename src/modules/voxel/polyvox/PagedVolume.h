@@ -66,23 +66,23 @@ public:
 
 	private:
 		// This is updated by the PagedVolume and used to discard the least recently used chunks.
-		uint32_t m_uChunkLastAccessed = 0;
+		uint32_t _chunkLastAccessed = 0u;
 
 		uint32_t calculateSizeInBytes() const;
 		static uint32_t calculateSizeInBytes(uint32_t uSideLength);
 
-		Voxel* m_tData = nullptr;
-		uint16_t m_uSideLength = 0;
+		Voxel* _data = nullptr;
+		uint16_t _sideLength = 0u;
 
 		// This is so we can tell whether a uncompressed chunk has to be recompressed and whether
 		// a compressed chunk has to be paged back to disk, or whether they can just be discarded.
-		bool m_bDataModified = false;
+		bool _dataModified = false;
 
-		uint8_t m_uSideLengthPower = 0b0;
-		Pager* m_pPager;
+		uint8_t _sideLengthPower = 0b0;
+		Pager* _pager;
 
 		// Note: Do we really need to store this position here as well as in the block maps?
-		glm::ivec3 m_v3dChunkSpacePosition;
+		glm::ivec3 _chunkSpacePosition;
 
 		typedef std::recursive_mutex ChunkMutex;
 		typedef std::lock_guard<ChunkMutex> ChunkLockGuard;
@@ -167,24 +167,24 @@ public:
 		const Voxel& peekVoxel1px1py1pz() const;
 
 	private:
-		const PagedVolume* mVolume;
+		const PagedVolume* _volume;
 
 		//The current position in the volume
-		int32_t mXPosInVolume;
-		int32_t mYPosInVolume;
-		int32_t mZPosInVolume;
+		int32_t _xPosInVolume;
+		int32_t _yPosInVolume;
+		int32_t _zPosInVolume;
 
 		//Other current position information
-		Voxel* mCurrentVoxel = nullptr;
+		Voxel* _currentVoxel = nullptr;
 
-		uint16_t m_uXPosInChunk = 0u;
-		uint16_t m_uYPosInChunk = 0u;
-		uint16_t m_uZPosInChunk = 0u;
+		uint16_t _xPosInChunk = 0u;
+		uint16_t _yPosInChunk = 0u;
+		uint16_t _zPosInChunk = 0u;
 
 		// This should ideally be const, but that prevent automatic generation of an assignment operator (https://goo.gl/Sn7KpZ).
 		// We could provide one manually, but it's currently unused so there is no real test for if it works. I'm putting
 		// together a new release at the moment so I'd rathern not make 'risky' changes.
-		uint16_t m_uChunkSideLengthMinusOne;
+		uint16_t _chunkSideLengthMinusOne;
 	};
 
 public:
@@ -215,7 +215,7 @@ public:
 	Chunk* getChunk(const glm::ivec3& pos) const;
 
 	inline uint16_t getChunkSideLength() const {
-		return m_uChunkSideLength;
+		return _chunkSideLength;
 	}
 
 protected:
@@ -238,14 +238,14 @@ private:
 	// them in a glm::ivec3 as it avoids constructions and comparison overheads.
 	// They are also at the start of the class in the hope that they will be pulled
 	// into cache - I've got no idea if this actually makes a difference.
-	mutable int32_t m_v3dLastAccessedChunkX = 0;
-	mutable int32_t m_v3dLastAccessedChunkY = 0;
-	mutable int32_t m_v3dLastAccessedChunkZ = 0;
-	mutable Chunk* m_pLastAccessedChunk = nullptr;
+	mutable int32_t _lastAccessedChunkX = 0;
+	mutable int32_t _lastAccessedChunkY = 0;
+	mutable int32_t _lastAccessedChunkZ = 0;
+	mutable Chunk* _lastAccessedChunk = nullptr;
 
-	mutable uint32_t m_uTimestamper = 0;
+	mutable uint32_t _timestamper = 0u;
 
-	uint32_t m_uChunkCountLimit = 0;
+	uint32_t _chunkCountLimit = 0u;
 
 	// Chunks are stored in the following array which is used as a hash-table. Conventional wisdom is that such a hash-table
 	// should not be more than half full to avoid conflicts, and a practical chunk size seems to be 64^3. With this configuration
@@ -254,15 +254,15 @@ private:
 	// array will actually be used. None-the-less, we have chosen to use a fixed size array (rather than a vector) as it appears to
 	// be slightly faster (probably due to the extra pointer indirection in a vector?) and the actual size of this array should
 	// just be 1Mb or so.
-	static const uint32_t uChunkArraySize = 65536;
-	mutable std::unique_ptr<Chunk> m_arrayChunks[uChunkArraySize];
+	static const uint32_t CHUNKARRAYSIZE = 65536;
+	mutable std::unique_ptr<Chunk> _arrayChunks[CHUNKARRAYSIZE];
 
 	// The size of the chunks
-	uint16_t m_uChunkSideLength;
-	uint8_t m_uChunkSideLengthPower;
-	int32_t m_iChunkMask;
+	uint16_t _chunkSideLength;
+	uint8_t _chunkSideLengthPower;
+	int32_t _chunkMask;
 
-	Pager* m_pPager = nullptr;
+	Pager* _pager = nullptr;
 
 	typedef std::recursive_mutex VolumeMutex;
 	typedef std::lock_guard<VolumeMutex> VolumeLockGuard;
@@ -270,7 +270,7 @@ private:
 };
 
 inline const Voxel& PagedVolume::Sampler::getVoxel() const {
-	return *mCurrentVoxel;
+	return *_currentVoxel;
 }
 
 inline void PagedVolume::Sampler::setPosition(const glm::ivec3& v3dNewPos) {
@@ -278,7 +278,7 @@ inline void PagedVolume::Sampler::setPosition(const glm::ivec3& v3dNewPos) {
 }
 
 inline glm::ivec3 PagedVolume::Sampler::getPosition() const {
-	return glm::ivec3(mXPosInVolume, mYPosInVolume, mZPosInVolume);
+	return glm::ivec3(_xPosInVolume, _yPosInVolume, _zPosInVolume);
 }
 
 // These precomputed offset are used to determine how much we move our pointer by to move a single voxel in the x, y, or z direction given an x, y, or z starting position inside a chunk.
@@ -304,203 +304,203 @@ static const std::array<int32_t, 256> deltaZ = {{ 4, 28, 4, 220, 4, 28, 4, 1756,
 		4, 220, 4, 28, 4 }};
 
 #define CAN_GO_NEG_X(val) (val > 0)
-#define CAN_GO_POS_X(val)  (val < this->m_uChunkSideLengthMinusOne)
+#define CAN_GO_POS_X(val)  (val < this->_chunkSideLengthMinusOne)
 #define CAN_GO_NEG_Y(val) (val > 0)
-#define CAN_GO_POS_Y(val)  (val < this->m_uChunkSideLengthMinusOne)
+#define CAN_GO_POS_Y(val)  (val < this->_chunkSideLengthMinusOne)
 #define CAN_GO_NEG_Z(val) (val > 0)
-#define CAN_GO_POS_Z(val)  (val < this->m_uChunkSideLengthMinusOne)
+#define CAN_GO_POS_Z(val)  (val < this->_chunkSideLengthMinusOne)
 
-#define NEG_X_DELTA (-(deltaX[this->m_uXPosInChunk-1]))
-#define POS_X_DELTA (deltaX[this->m_uXPosInChunk])
-#define NEG_Y_DELTA (-(deltaY[this->m_uYPosInChunk-1]))
-#define POS_Y_DELTA (deltaY[this->m_uYPosInChunk])
-#define NEG_Z_DELTA (-(deltaZ[this->m_uZPosInChunk-1]))
-#define POS_Z_DELTA (deltaZ[this->m_uZPosInChunk])
+#define NEG_X_DELTA (-(deltaX[this->_xPosInChunk-1]))
+#define POS_X_DELTA (deltaX[this->_xPosInChunk])
+#define NEG_Y_DELTA (-(deltaY[this->_yPosInChunk-1]))
+#define POS_Y_DELTA (deltaY[this->_yPosInChunk])
+#define NEG_Z_DELTA (-(deltaZ[this->_zPosInChunk-1]))
+#define POS_Z_DELTA (deltaZ[this->_zPosInChunk])
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1ny1nz() const {
-	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + NEG_X_DELTA + NEG_Y_DELTA + NEG_Z_DELTA);
+	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + NEG_X_DELTA + NEG_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume - 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1ny0pz() const {
-	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk)) {
-		return *(mCurrentVoxel + NEG_X_DELTA + NEG_Y_DELTA);
+	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk)) {
+		return *(_currentVoxel + NEG_X_DELTA + NEG_Y_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume - 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1ny1pz() const {
-	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + NEG_X_DELTA + NEG_Y_DELTA + POS_Z_DELTA);
+	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + NEG_X_DELTA + NEG_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume - 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx0py1nz() const {
-	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + NEG_X_DELTA + NEG_Z_DELTA);
+	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + NEG_X_DELTA + NEG_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx0py0pz() const {
-	if (CAN_GO_NEG_X(this->m_uXPosInChunk)) {
-		return *(mCurrentVoxel + NEG_X_DELTA);
+	if (CAN_GO_NEG_X(this->_xPosInChunk)) {
+		return *(_currentVoxel + NEG_X_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx0py1pz() const {
-	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + NEG_X_DELTA + POS_Z_DELTA);
+	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + NEG_X_DELTA + POS_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1py1nz() const {
-	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + NEG_X_DELTA + POS_Y_DELTA + NEG_Z_DELTA);
+	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + NEG_X_DELTA + POS_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume + 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1py0pz() const {
-	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk)) {
-		return *(mCurrentVoxel + NEG_X_DELTA + POS_Y_DELTA);
+	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk)) {
+		return *(_currentVoxel + NEG_X_DELTA + POS_Y_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume + 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1nx1py1pz() const {
-	if (CAN_GO_NEG_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + NEG_X_DELTA + POS_Y_DELTA + POS_Z_DELTA);
+	if (CAN_GO_NEG_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + NEG_X_DELTA + POS_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume - 1, this->mYPosInVolume + 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume - 1, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1ny1nz() const {
-	if (CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + NEG_Y_DELTA + NEG_Z_DELTA);
+	if (CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + NEG_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume - 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1ny0pz() const {
-	if (CAN_GO_NEG_Y(this->m_uYPosInChunk)) {
-		return *(mCurrentVoxel + NEG_Y_DELTA);
+	if (CAN_GO_NEG_Y(this->_yPosInChunk)) {
+		return *(_currentVoxel + NEG_Y_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume - 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1ny1pz() const {
-	if (CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + NEG_Y_DELTA + POS_Z_DELTA);
+	if (CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + NEG_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume - 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px0py1nz() const {
-	if (CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + NEG_Z_DELTA);
+	if (CAN_GO_NEG_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + NEG_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px0py0pz() const {
-	return *mCurrentVoxel;
+	return *_currentVoxel;
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px0py1pz() const {
-	if (CAN_GO_POS_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + POS_Z_DELTA);
+	if (CAN_GO_POS_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + POS_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1py1nz() const {
-	if (CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + POS_Y_DELTA + NEG_Z_DELTA);
+	if (CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + POS_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume + 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1py0pz() const {
-	if (CAN_GO_POS_Y(this->m_uYPosInChunk)) {
-		return *(mCurrentVoxel + POS_Y_DELTA);
+	if (CAN_GO_POS_Y(this->_yPosInChunk)) {
+		return *(_currentVoxel + POS_Y_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume + 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel0px1py1pz() const {
-	if (CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + POS_Y_DELTA + POS_Z_DELTA);
+	if (CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + POS_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume, this->mYPosInVolume + 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1ny1nz() const {
-	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + POS_X_DELTA + NEG_Y_DELTA + NEG_Z_DELTA);
+	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + POS_X_DELTA + NEG_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume - 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1ny0pz() const {
-	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk)) {
-		return *(mCurrentVoxel + POS_X_DELTA + NEG_Y_DELTA);
+	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk)) {
+		return *(_currentVoxel + POS_X_DELTA + NEG_Y_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume - 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1ny1pz() const {
-	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_NEG_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + POS_X_DELTA + NEG_Y_DELTA + POS_Z_DELTA);
+	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_NEG_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + POS_X_DELTA + NEG_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume - 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume - 1, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px0py1nz() const {
-	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + POS_X_DELTA + NEG_Z_DELTA);
+	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + POS_X_DELTA + NEG_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px0py0pz() const {
-	if (CAN_GO_POS_X(this->m_uXPosInChunk)) {
-		return *(mCurrentVoxel + POS_X_DELTA);
+	if (CAN_GO_POS_X(this->_xPosInChunk)) {
+		return *(_currentVoxel + POS_X_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px0py1pz() const {
-	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + POS_X_DELTA + POS_Z_DELTA);
+	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + POS_X_DELTA + POS_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume, this->_zPosInVolume + 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1nz() const {
-	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + POS_X_DELTA + POS_Y_DELTA + NEG_Z_DELTA);
+	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_NEG_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + POS_X_DELTA + POS_Y_DELTA + NEG_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume + 1, this->mZPosInVolume - 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume - 1);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py0pz() const {
-	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk)) {
-		return *(mCurrentVoxel + POS_X_DELTA + POS_Y_DELTA);
+	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk)) {
+		return *(_currentVoxel + POS_X_DELTA + POS_Y_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume + 1, this->mZPosInVolume);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume);
 }
 
 inline const Voxel& PagedVolume::Sampler::peekVoxel1px1py1pz() const {
-	if (CAN_GO_POS_X(this->m_uXPosInChunk) && CAN_GO_POS_Y(this->m_uYPosInChunk) && CAN_GO_POS_Z(this->m_uZPosInChunk)) {
-		return *(mCurrentVoxel + POS_X_DELTA + POS_Y_DELTA + POS_Z_DELTA);
+	if (CAN_GO_POS_X(this->_xPosInChunk) && CAN_GO_POS_Y(this->_yPosInChunk) && CAN_GO_POS_Z(this->_zPosInChunk)) {
+		return *(_currentVoxel + POS_X_DELTA + POS_Y_DELTA + POS_Z_DELTA);
 	}
-	return this->mVolume->getVoxel(this->mXPosInVolume + 1, this->mYPosInVolume + 1, this->mZPosInVolume + 1);
+	return this->_volume->getVoxel(this->_xPosInVolume + 1, this->_yPosInVolume + 1, this->_zPosInVolume + 1);
 }
 
 #undef CAN_GO_NEG_X
@@ -526,15 +526,15 @@ inline bool PagedVolume::Chunk::containsPoint(int32_t x, int32_t y, int32_t z) c
 }
 
 inline Region PagedVolume::Chunk::getRegion() const {
-	 const glm::ivec3 mins = m_v3dChunkSpacePosition * static_cast<int32_t>(m_uSideLength);
-	 const glm::ivec3 maxs = mins + glm::ivec3(m_uSideLength - 1);
+	 const glm::ivec3 mins = _chunkSpacePosition * static_cast<int32_t>(_sideLength);
+	 const glm::ivec3 maxs = mins + glm::ivec3(_sideLength - 1);
 	 return Region(mins, maxs);
 }
 
 inline uint32_t PagedVolume::getPositionHash(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
 	// We generate a 16-bit hash here and assume this matches the range available in the chunk
 	// array. The assert here is just to make sure we take care if change this in the future.
-	static_assert(uChunkArraySize == 65536, "Chunk array size has changed, check if the hash calculation needs updating.");
+	static_assert(CHUNKARRAYSIZE == 65536, "Chunk array size has changed, check if the hash calculation needs updating.");
 	// Extract the lower five bits from each position component.
 	const uint32_t uChunkXLowerBits = static_cast<uint32_t>(uChunkX & 0x1F);
 	const uint32_t uChunkYLowerBits = static_cast<uint32_t>(uChunkY & 0x1F);

@@ -16,36 +16,36 @@ namespace voxel {
  * more of them meaning voxel access could be slower.
  */
 PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint16_t uChunkSideLength) :
-		m_uChunkSideLength(uChunkSideLength), m_pPager(pPager) {
+		_chunkSideLength(uChunkSideLength), _pager(pPager) {
 	// Validation of parameters
 	core_assert_msg(pPager, "You must provide a valid pager when constructing a PagedVolume");
 	core_assert_msg(uTargetMemoryUsageInBytes >= 1 * 1024 * 1024, "Target memory usage is too small to be practical");
-	core_assert_msg(m_uChunkSideLength != 0, "Chunk side length cannot be zero.");
-	core_assert_msg(m_uChunkSideLength <= 256, "Chunk size is too large to be practical.");
-	core_assert_msg(isPowerOf2(m_uChunkSideLength), "Chunk side length must be a power of two.");
+	core_assert_msg(_chunkSideLength != 0, "Chunk side length cannot be zero.");
+	core_assert_msg(_chunkSideLength <= 256, "Chunk size is too large to be practical.");
+	core_assert_msg(isPowerOf2(_chunkSideLength), "Chunk side length must be a power of two.");
 
 	// Used to perform multiplications and divisions by bit shifting.
-	m_uChunkSideLengthPower = logBase2(m_uChunkSideLength);
+	_chunkSideLengthPower = logBase2(_chunkSideLength);
 	// Use to perform modulo by bit operations
-	m_iChunkMask = m_uChunkSideLength - 1;
+	_chunkMask = _chunkSideLength - 1;
 
 	// Calculate the number of chunks based on the memory limit and the size of each chunk.
-	uint32_t uChunkSizeInBytes = PagedVolume::Chunk::calculateSizeInBytes(m_uChunkSideLength);
-	m_uChunkCountLimit = uTargetMemoryUsageInBytes / uChunkSizeInBytes;
+	uint32_t uChunkSizeInBytes = PagedVolume::Chunk::calculateSizeInBytes(_chunkSideLength);
+	_chunkCountLimit = uTargetMemoryUsageInBytes / uChunkSizeInBytes;
 
 	// Enforce sensible limits on the number of chunks.
 	const uint32_t uMinPracticalNoOfChunks = 32; // Enough to make sure a chunks and it's neighbours can be loaded, with a few to spare.
-	const uint32_t uMaxPracticalNoOfChunks = uChunkArraySize / 2; // A hash table should only become half-full to avoid too many clashes.
-	if (m_uChunkCountLimit < uMinPracticalNoOfChunks) {
+	const uint32_t uMaxPracticalNoOfChunks = CHUNKARRAYSIZE / 2; // A hash table should only become half-full to avoid too many clashes.
+	if (_chunkCountLimit < uMinPracticalNoOfChunks) {
 		Log::warn("Requested memory usage limit of %uMb is too low and cannot be adhered to. Chunk limit is at %i",
-				uTargetMemoryUsageInBytes / (1024 * 1024), m_uChunkCountLimit);
+				uTargetMemoryUsageInBytes / (1024 * 1024), _chunkCountLimit);
 	}
-	m_uChunkCountLimit = std::max(m_uChunkCountLimit, uMinPracticalNoOfChunks);
-	m_uChunkCountLimit = std::min(m_uChunkCountLimit, uMaxPracticalNoOfChunks);
+	_chunkCountLimit = std::max(_chunkCountLimit, uMinPracticalNoOfChunks);
+	_chunkCountLimit = std::min(_chunkCountLimit, uMaxPracticalNoOfChunks);
 
 	// Inform the user about the chosen memory configuration.
 	Log::debug("Memory usage limit for volume now set to %uiMb (%ui chunks of %uiKb each).",
-			(m_uChunkCountLimit * uChunkSizeInBytes) / (1024 * 1024), m_uChunkCountLimit, uChunkSizeInBytes / 1024);
+			(_chunkCountLimit * uChunkSizeInBytes) / (1024 * 1024), _chunkCountLimit, uChunkSizeInBytes / 1024);
 }
 
 /**
@@ -65,13 +65,13 @@ PagedVolume::~PagedVolume() {
  * @return The voxel value
  */
 const Voxel& PagedVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const {
-	const int32_t chunkX = uXPos >> m_uChunkSideLengthPower;
-	const int32_t chunkY = uYPos >> m_uChunkSideLengthPower;
-	const int32_t chunkZ = uZPos >> m_uChunkSideLengthPower;
+	const int32_t chunkX = uXPos >> _chunkSideLengthPower;
+	const int32_t chunkY = uYPos >> _chunkSideLengthPower;
+	const int32_t chunkZ = uZPos >> _chunkSideLengthPower;
 
-	const uint16_t xOffset = static_cast<uint16_t>(uXPos & m_iChunkMask);
-	const uint16_t yOffset = static_cast<uint16_t>(uYPos & m_iChunkMask);
-	const uint16_t zOffset = static_cast<uint16_t>(uZPos & m_iChunkMask);
+	const uint16_t xOffset = static_cast<uint16_t>(uXPos & _chunkMask);
+	const uint16_t yOffset = static_cast<uint16_t>(uYPos & _chunkMask);
+	const uint16_t zOffset = static_cast<uint16_t>(uZPos & _chunkMask);
 
 	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
 
@@ -79,9 +79,9 @@ const Voxel& PagedVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) 
 }
 
 PagedVolume::Chunk* PagedVolume::getChunk(const glm::ivec3& pos) const {
-	const int32_t chunkX = pos.x >> m_uChunkSideLengthPower;
-	const int32_t chunkY = pos.y >> m_uChunkSideLengthPower;
-	const int32_t chunkZ = pos.z >> m_uChunkSideLengthPower;
+	const int32_t chunkX = pos.x >> _chunkSideLengthPower;
+	const int32_t chunkY = pos.y >> _chunkSideLengthPower;
+	const int32_t chunkZ = pos.z >> _chunkSideLengthPower;
 	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
 	return pChunk;
 }
@@ -102,13 +102,13 @@ const Voxel& PagedVolume::getVoxel(const glm::ivec3& v3dPos) const {
  * @param uZPos the @c z position of the voxel
  */
 void PagedVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue) {
-	const int32_t chunkX = uXPos >> m_uChunkSideLengthPower;
-	const int32_t chunkY = uYPos >> m_uChunkSideLengthPower;
-	const int32_t chunkZ = uZPos >> m_uChunkSideLengthPower;
+	const int32_t chunkX = uXPos >> _chunkSideLengthPower;
+	const int32_t chunkY = uYPos >> _chunkSideLengthPower;
+	const int32_t chunkZ = uZPos >> _chunkSideLengthPower;
 
-	const uint16_t xOffset = static_cast<uint16_t>(uXPos - (chunkX << m_uChunkSideLengthPower));
-	const uint16_t yOffset = static_cast<uint16_t>(uYPos - (chunkY << m_uChunkSideLengthPower));
-	const uint16_t zOffset = static_cast<uint16_t>(uZPos - (chunkZ << m_uChunkSideLengthPower));
+	const uint16_t xOffset = static_cast<uint16_t>(uXPos - (chunkX << _chunkSideLengthPower));
+	const uint16_t yOffset = static_cast<uint16_t>(uYPos - (chunkY << _chunkSideLengthPower));
+	const uint16_t zOffset = static_cast<uint16_t>(uZPos - (chunkZ << _chunkSideLengthPower));
 
 	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
 
@@ -126,14 +126,14 @@ void PagedVolume::setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue) {
 void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, int amount) {
 	int32_t uYPos = 0;
 	while (amount > 0) {
-		const int32_t chunkX = uXPos >> m_uChunkSideLengthPower;
-		const int32_t chunkY = uYPos >> m_uChunkSideLengthPower;
-		const int32_t chunkZ = uZPos >> m_uChunkSideLengthPower;
-		const uint16_t xOffset = static_cast<uint16_t>(uXPos & m_iChunkMask);
-		const uint16_t zOffset = static_cast<uint16_t>(uZPos & m_iChunkMask);
+		const int32_t chunkX = uXPos >> _chunkSideLengthPower;
+		const int32_t chunkY = uYPos >> _chunkSideLengthPower;
+		const int32_t chunkZ = uZPos >> _chunkSideLengthPower;
+		const uint16_t xOffset = static_cast<uint16_t>(uXPos & _chunkMask);
+		const uint16_t zOffset = static_cast<uint16_t>(uZPos & _chunkMask);
 
 		Chunk* chunk = getChunk(chunkX, chunkY, chunkZ);
-		const int32_t n = std::min(amount, int32_t(chunk->m_uSideLength));
+		const int32_t n = std::min(amount, int32_t(chunk->_sideLength));
 
 		chunk->setVoxels(xOffset, zOffset, tArray, n);
 		amount -= n;
@@ -149,15 +149,15 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, i
 void PagedVolume::prefetch(const Region& regPrefetch) {
 	// Convert the start and end positions into chunk space coordinates
 	const glm::ivec3& lower = regPrefetch.getLowerCorner();
-	const glm::ivec3 v3dStart {lower.x >> m_uChunkSideLengthPower, lower.y >> m_uChunkSideLengthPower, lower.z >> m_uChunkSideLengthPower};
+	const glm::ivec3 v3dStart {lower.x >> _chunkSideLengthPower, lower.y >> _chunkSideLengthPower, lower.z >> _chunkSideLengthPower};
 
 	const glm::ivec3& upper = regPrefetch.getUpperCorner();
-	const glm::ivec3 v3dEnd {upper.x >> m_uChunkSideLengthPower, upper.y >> m_uChunkSideLengthPower, upper.z >> m_uChunkSideLengthPower};
+	const glm::ivec3 v3dEnd {upper.x >> _chunkSideLengthPower, upper.y >> _chunkSideLengthPower, upper.z >> _chunkSideLengthPower};
 
 	// Ensure we don't page in more chunks than the volume can hold.
 	const Region region(v3dStart, v3dEnd);
 	const uint32_t uNoOfChunks = static_cast<uint32_t>(region.getWidthInVoxels() * region.getHeightInVoxels() * region.getDepthInVoxels());
-	if (uNoOfChunks > m_uChunkCountLimit) {
+	if (uNoOfChunks > _chunkCountLimit) {
 		Log::warn("Attempting to prefetch more than the maximum number of chunks (this will cause thrashing).");
 	}
 
@@ -177,11 +177,11 @@ void PagedVolume::prefetch(const Region& regPrefetch) {
 void PagedVolume::flushAll() {
 	VolumeLockGuard scopedLock(_lock);
 	// Clear this pointer as all chunks are about to be removed.
-	m_pLastAccessedChunk = nullptr;
+	_lastAccessedChunk = nullptr;
 
 	// Erase all the most recently used chunks.
-	for (uint32_t index = 0; index < uChunkArraySize; index++) {
-		m_arrayChunks[index] = nullptr;
+	for (uint32_t index = 0; index < CHUNKARRAYSIZE; index++) {
+		_arrayChunks[index] = nullptr;
 	}
 }
 
@@ -198,17 +198,17 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY
 	{
 		VolumeLockGuard scopedLock(_lock);
 		do {
-			if (m_arrayChunks[index]) {
-				const glm::ivec3& entryPos = m_arrayChunks[index]->m_v3dChunkSpacePosition;
+			if (_arrayChunks[index]) {
+				const glm::ivec3& entryPos = _arrayChunks[index]->_chunkSpacePosition;
 				if (entryPos.x == chunkX && entryPos.y == chunkY && entryPos.z == chunkZ) {
-					chunk = m_arrayChunks[index].get();
-					chunk->m_uChunkLastAccessed = ++m_uTimestamper;
+					chunk = _arrayChunks[index].get();
+					chunk->_chunkLastAccessed = ++_timestamper;
 					break;
 				}
 			}
 
 			index++;
-			index %= uChunkArraySize;
+			index %= CHUNKARRAYSIZE;
 		} while (index != positionHash); // Keep searching until we get back to our start position
 	}
 
@@ -230,19 +230,19 @@ void PagedVolume::deleteOldestChunkIfNeeded() const {
 	uint32_t chunkCount = 0;
 	uint32_t oldestChunkIndex = 0;
 	uint32_t oldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
-	for (uint32_t index = 0; index < uChunkArraySize; index++) {
-		if (m_arrayChunks[index]) {
+	for (uint32_t index = 0; index < CHUNKARRAYSIZE; index++) {
+		if (_arrayChunks[index]) {
 			chunkCount++;
-			if (m_arrayChunks[index]->m_uChunkLastAccessed < oldestChunkTimestamp) {
-				oldestChunkTimestamp = m_arrayChunks[index]->m_uChunkLastAccessed;
+			if (_arrayChunks[index]->_chunkLastAccessed < oldestChunkTimestamp) {
+				oldestChunkTimestamp = _arrayChunks[index]->_chunkLastAccessed;
 				oldestChunkIndex = index;
 			}
 		}
 	}
 
 	// Check if we have too many chunks, and delete the oldest if so.
-	if (chunkCount > m_uChunkCountLimit) {
-		m_arrayChunks[oldestChunkIndex] = nullptr;
+	if (chunkCount > _chunkCountLimit) {
+		_arrayChunks[oldestChunkIndex] = nullptr;
 	}
 }
 
@@ -256,14 +256,14 @@ void PagedVolume::insertNewChunk(PagedVolume::Chunk* chunk, int32_t chunkX, int3
 	uint32_t index = positionHash;
 	bool insertedSucessfully = false;
 	do {
-		if (m_arrayChunks[index] == nullptr) {
-			m_arrayChunks[index] = std::move(std::unique_ptr<Chunk>(chunk));
+		if (_arrayChunks[index] == nullptr) {
+			_arrayChunks[index] = std::move(std::unique_ptr<Chunk>(chunk));
 			insertedSucessfully = true;
 			break;
 		}
 
 		index++;
-		index %= uChunkArraySize;
+		index %= CHUNKARRAYSIZE;
 	} while (index != positionHash); // Keep searching until we get back to our start position.
 
 	// This should never really happen unless we are failing to keep our number of active chunks
@@ -275,13 +275,13 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 	// The chunk was not found so we will create a new one.
 	glm::ivec3 pos(chunkX, chunkY, chunkZ);
 	Log::debug("create new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
-	PagedVolume::Chunk* chunk = new PagedVolume::Chunk(pos, m_uChunkSideLength, m_pPager);
-	chunk->m_uChunkLastAccessed = ++m_uTimestamper; // Important, as we may soon delete the oldest chunk
+	PagedVolume::Chunk* chunk = new PagedVolume::Chunk(pos, _chunkSideLength, _pager);
+	chunk->_chunkLastAccessed = ++_timestamper; // Important, as we may soon delete the oldest chunk
 
 	// Pass the chunk to the Pager to give it a chance to initialise it with any data
 	// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
-	const glm::ivec3 mins = chunk->m_v3dChunkSpacePosition * static_cast<int32_t>(chunk->m_uSideLength);
-	const glm::ivec3 maxs = mins + glm::ivec3(chunk->m_uSideLength - 1, chunk->m_uSideLength - 1, chunk->m_uSideLength - 1);
+	const glm::ivec3 mins = chunk->_chunkSpacePosition * static_cast<int32_t>(chunk->_sideLength);
+	const glm::ivec3 maxs = mins + glm::ivec3(chunk->_sideLength - 1, chunk->_sideLength - 1, chunk->_sideLength - 1);
 
 	PagerContext pctx;
 	pctx.region = Region(mins, maxs);
@@ -296,7 +296,7 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 
 	// Page the data in
 	// We'll use this later to decide if data needs to be paged out again.
-	chunk->m_bDataModified = m_pPager->pageIn(pctx);
+	chunk->_dataModified = _pager->pageIn(pctx);
 	Log::debug("finished creating new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
 
 	return chunk;
@@ -305,8 +305,8 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
 	{
 		VolumeLockGuard scopedLock(_lock);
-		if (chunkX == m_v3dLastAccessedChunkX && chunkY == m_v3dLastAccessedChunkY && chunkZ == m_v3dLastAccessedChunkZ && m_pLastAccessedChunk) {
-			return m_pLastAccessedChunk;
+		if (chunkX == _lastAccessedChunkX && chunkY == _lastAccessedChunkY && chunkZ == _lastAccessedChunkZ && _lastAccessedChunk) {
+			return _lastAccessedChunk;
 		}
 	}
 	Chunk* chunk = getExistingChunk(chunkX, chunkY, chunkZ);
@@ -317,10 +317,10 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
 	}
 
 	VolumeLockGuard scopedLock(_lock);
-	m_pLastAccessedChunk = chunk;
-	m_v3dLastAccessedChunkX = chunkX;
-	m_v3dLastAccessedChunkY = chunkY;
-	m_v3dLastAccessedChunkZ = chunkZ;
+	_lastAccessedChunk = chunk;
+	_lastAccessedChunkX = chunkX;
+	_lastAccessedChunkY = chunkY;
+	_lastAccessedChunkZ = chunkZ;
 
 	return chunk;
 }
@@ -331,72 +331,72 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
 uint32_t PagedVolume::calculateSizeInBytes() {
 	uint32_t uChunkCount = 0;
 	VolumeLockGuard scopedLock(_lock);
-	for (uint32_t uIndex = 0; uIndex < uChunkArraySize; uIndex++) {
-		if (m_arrayChunks[uIndex]) {
+	for (uint32_t uIndex = 0; uIndex < CHUNKARRAYSIZE; uIndex++) {
+		if (_arrayChunks[uIndex]) {
 			uChunkCount++;
 		}
 	}
 
 	// Note: We disregard the size of the other class members as they are likely to be very small compared to the size of the
 	// allocated voxel data. This also keeps the reported size as a power of two, which makes other memory calculations easier.
-	return PagedVolume::Chunk::calculateSizeInBytes(m_uChunkSideLength) * uChunkCount;
+	return PagedVolume::Chunk::calculateSizeInBytes(_chunkSideLength) * uChunkCount;
 }
 
 PagedVolume::Chunk::Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager) :
-		m_pPager(pPager), m_v3dChunkSpacePosition(v3dPosition) {
-	core_assert_msg(m_pPager, "No valid pager supplied to chunk constructor.");
+		_pager(pPager), _chunkSpacePosition(v3dPosition) {
+	core_assert_msg(_pager, "No valid pager supplied to chunk constructor.");
 	core_assert_msg(uSideLength <= 256, "Chunk side length cannot be greater than 256.");
 
 	// Compute the side length
-	m_uSideLength = uSideLength;
-	m_uSideLengthPower = logBase2(uSideLength);
+	_sideLength = uSideLength;
+	_sideLengthPower = logBase2(uSideLength);
 
 	// Allocate the data
-	const uint32_t uNoOfVoxels = m_uSideLength * m_uSideLength * m_uSideLength;
-	m_tData = new Voxel[uNoOfVoxels];
+	const uint32_t uNoOfVoxels = _sideLength * _sideLength * _sideLength;
+	_data = new Voxel[uNoOfVoxels];
 }
 
 PagedVolume::Chunk::~Chunk() {
-	if (m_bDataModified && m_pPager) {
+	if (_dataModified && _pager) {
 		// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
-		const glm::ivec3 v3dLower = m_v3dChunkSpacePosition * static_cast<int32_t>(m_uSideLength);
-		const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(m_uSideLength - 1, m_uSideLength - 1, m_uSideLength - 1);
+		const glm::ivec3 v3dLower = _chunkSpacePosition * static_cast<int32_t>(_sideLength);
+		const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(_sideLength - 1, _sideLength - 1, _sideLength - 1);
 
 		// Page the data out
 		PagerContext pctx;
 		pctx.region = Region(v3dLower, v3dUpper);
 		pctx.chunk = this;
 
-		m_pPager->pageOut(pctx);
+		_pager->pageOut(pctx);
 	}
 
-	delete[] m_tData;
-	m_tData = nullptr;
+	delete[] _data;
+	_data = nullptr;
 }
 
 bool PagedVolume::Chunk::isGenerated() const {
-	return m_bDataModified;
+	return _dataModified;
 }
 
 Voxel* PagedVolume::Chunk::getData() const {
-	return m_tData;
+	return _data;
 }
 
 uint32_t PagedVolume::Chunk::getDataSizeInBytes() const {
-	return m_uSideLength * m_uSideLength * m_uSideLength * sizeof(Voxel);
+	return _sideLength * _sideLength * _sideLength * sizeof(Voxel);
 }
 
 const Voxel& PagedVolume::Chunk::getVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos) const {
 	// This code is not usually expected to be called by the user, with the exception of when implementing paging
 	// of uncompressed data. It's a performance critical code path
-	core_assert_msg(uXPos < m_uSideLength, "Supplied position is outside of the chunk. asserted %u > %u", uXPos, m_uSideLength);
-	core_assert_msg(uYPos < m_uSideLength, "Supplied position is outside of the chunk. asserted %u > %u", uYPos, m_uSideLength);
-	core_assert_msg(uZPos < m_uSideLength, "Supplied position is outside of the chunk. asserted %u > %u", uZPos, m_uSideLength);
-	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
+	core_assert_msg(uXPos < _sideLength, "Supplied position is outside of the chunk. asserted %u > %u", uXPos, _sideLength);
+	core_assert_msg(uYPos < _sideLength, "Supplied position is outside of the chunk. asserted %u > %u", uYPos, _sideLength);
+	core_assert_msg(uZPos < _sideLength, "Supplied position is outside of the chunk. asserted %u > %u", uZPos, _sideLength);
+	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
 	ChunkLockGuard readLock(_voxelLock);
-	return m_tData[index];
+	return _data[index];
 }
 
 const Voxel& PagedVolume::Chunk::getVoxel(const glm::i16vec3& v3dPos) const {
@@ -406,29 +406,29 @@ const Voxel& PagedVolume::Chunk::getVoxel(const glm::i16vec3& v3dPos) const {
 void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, const Voxel& tValue) {
 	// This code is not usually expected to be called by the user, with the exception of when implementing paging
 	// of uncompressed data. It's a performance critical code path
-	core_assert_msg(uXPos < m_uSideLength, "Supplied position is outside of the chunk");
-	core_assert_msg(uYPos < m_uSideLength, "Supplied position is outside of the chunk");
-	core_assert_msg(uZPos < m_uSideLength, "Supplied position is outside of the chunk");
-	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
+	core_assert_msg(uXPos < _sideLength, "Supplied position is outside of the chunk");
+	core_assert_msg(uYPos < _sideLength, "Supplied position is outside of the chunk");
+	core_assert_msg(uZPos < _sideLength, "Supplied position is outside of the chunk");
+	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
-	m_tData[index] = tValue;
-	this->m_bDataModified = true;
+	_data[index] = tValue;
+	this->_dataModified = true;
 }
 
 void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uZPos, const Voxel* tValues, int amount) {
 	// This code is not usually expected to be called by the user, with the exception of when implementing paging
 	// of uncompressed data. It's a performance critical code path
-	core_assert_msg(amount <= m_uSideLength, "Supplied amount exceeds chunk boundaries");
-	core_assert_msg(uXPos < m_uSideLength, "Supplied x position is outside of the chunk");
-	core_assert_msg(uZPos < m_uSideLength, "Supplied z position is outside of the chunk");
-	core_assert_msg(m_tData, "No uncompressed data - chunk must be decompressed before accessing voxels.");
+	core_assert_msg(amount <= _sideLength, "Supplied amount exceeds chunk boundaries");
+	core_assert_msg(uXPos < _sideLength, "Supplied x position is outside of the chunk");
+	core_assert_msg(uZPos < _sideLength, "Supplied z position is outside of the chunk");
+	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	for (int y = 0; y < amount; ++y) {
 		const uint32_t index = morton256_x[uXPos] | morton256_y[y] | morton256_z[uZPos];
-		m_tData[index] = tValues[y];
+		_data[index] = tValues[y];
 	}
-	this->m_bDataModified = true;
+	this->_dataModified = true;
 }
 
 void PagedVolume::Chunk::setVoxel(const glm::i16vec3& v3dPos, const Voxel& tValue) {
@@ -437,7 +437,7 @@ void PagedVolume::Chunk::setVoxel(const glm::i16vec3& v3dPos, const Voxel& tValu
 
 uint32_t PagedVolume::Chunk::calculateSizeInBytes() const {
 	// Call through to the static version
-	return calculateSizeInBytes(m_uSideLength);
+	return calculateSizeInBytes(_sideLength);
 }
 
 uint32_t PagedVolume::Chunk::calculateSizeInBytes(uint32_t uSideLength) {
@@ -448,139 +448,139 @@ uint32_t PagedVolume::Chunk::calculateSizeInBytes(uint32_t uSideLength) {
 }
 
 #define CAN_GO_NEG_X(val) (val > 0)
-#define CAN_GO_POS_X(val)  (val < this->m_uChunkSideLengthMinusOne)
+#define CAN_GO_POS_X(val)  (val < this->_chunkSideLengthMinusOne)
 #define CAN_GO_NEG_Y(val) (val > 0)
-#define CAN_GO_POS_Y(val)  (val < this->m_uChunkSideLengthMinusOne)
+#define CAN_GO_POS_Y(val)  (val < this->_chunkSideLengthMinusOne)
 #define CAN_GO_NEG_Z(val) (val > 0)
-#define CAN_GO_POS_Z(val)  (val < this->m_uChunkSideLengthMinusOne)
+#define CAN_GO_POS_Z(val)  (val < this->_chunkSideLengthMinusOne)
 
-#define NEG_X_DELTA (-(deltaX[this->m_uXPosInChunk-1]))
-#define POS_X_DELTA (deltaX[this->m_uXPosInChunk])
-#define NEG_Y_DELTA (-(deltaY[this->m_uYPosInChunk-1]))
-#define POS_Y_DELTA (deltaY[this->m_uYPosInChunk])
-#define NEG_Z_DELTA (-(deltaZ[this->m_uZPosInChunk-1]))
-#define POS_Z_DELTA (deltaZ[this->m_uZPosInChunk])
+#define NEG_X_DELTA (-(deltaX[this->_xPosInChunk-1]))
+#define POS_X_DELTA (deltaX[this->_xPosInChunk])
+#define NEG_Y_DELTA (-(deltaY[this->_yPosInChunk-1]))
+#define POS_Y_DELTA (deltaY[this->_yPosInChunk])
+#define NEG_Z_DELTA (-(deltaZ[this->_zPosInChunk-1]))
+#define POS_Z_DELTA (deltaZ[this->_zPosInChunk])
 
 PagedVolume::Sampler::Sampler(const PagedVolume* volume) :
-		mVolume(volume), mXPosInVolume(0), mYPosInVolume(0), mZPosInVolume(0), m_uChunkSideLengthMinusOne(
-				volume->m_uChunkSideLength - 1) {
+		_volume(volume), _xPosInVolume(0), _yPosInVolume(0), _zPosInVolume(0), _chunkSideLengthMinusOne(
+				volume->_chunkSideLength - 1) {
 }
 
 PagedVolume::Sampler::~Sampler() {
 }
 
 void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
-	mXPosInVolume = xPos;
-	mYPosInVolume = yPos;
-	mZPosInVolume = zPos;
+	_xPosInVolume = xPos;
+	_yPosInVolume = yPos;
+	_zPosInVolume = zPos;
 
 	// Then we update the voxel pointer
-	const int32_t uXChunk = this->mXPosInVolume >> this->mVolume->m_uChunkSideLengthPower;
-	const int32_t uYChunk = this->mYPosInVolume >> this->mVolume->m_uChunkSideLengthPower;
-	const int32_t uZChunk = this->mZPosInVolume >> this->mVolume->m_uChunkSideLengthPower;
+	const int32_t uXChunk = this->_xPosInVolume >> this->_volume->_chunkSideLengthPower;
+	const int32_t uYChunk = this->_yPosInVolume >> this->_volume->_chunkSideLengthPower;
+	const int32_t uZChunk = this->_zPosInVolume >> this->_volume->_chunkSideLengthPower;
 
-	m_uXPosInChunk = static_cast<uint16_t>(this->mXPosInVolume - (uXChunk << this->mVolume->m_uChunkSideLengthPower));
-	m_uYPosInChunk = static_cast<uint16_t>(this->mYPosInVolume - (uYChunk << this->mVolume->m_uChunkSideLengthPower));
-	m_uZPosInChunk = static_cast<uint16_t>(this->mZPosInVolume - (uZChunk << this->mVolume->m_uChunkSideLengthPower));
+	_xPosInChunk = static_cast<uint16_t>(this->_xPosInVolume - (uXChunk << this->_volume->_chunkSideLengthPower));
+	_yPosInChunk = static_cast<uint16_t>(this->_yPosInVolume - (uYChunk << this->_volume->_chunkSideLengthPower));
+	_zPosInChunk = static_cast<uint16_t>(this->_zPosInVolume - (uZChunk << this->_volume->_chunkSideLengthPower));
 
-	uint32_t uVoxelIndexInChunk = morton256_x[m_uXPosInChunk] | morton256_y[m_uYPosInChunk] | morton256_z[m_uZPosInChunk];
+	uint32_t uVoxelIndexInChunk = morton256_x[_xPosInChunk] | morton256_y[_yPosInChunk] | morton256_z[_zPosInChunk];
 
-	Chunk* pCurrentChunk = this->mVolume->getChunk(uXChunk, uYChunk, uZChunk);
+	Chunk* pCurrentChunk = this->_volume->getChunk(uXChunk, uYChunk, uZChunk);
 
-	mCurrentVoxel = pCurrentChunk->m_tData + uVoxelIndexInChunk;
+	_currentVoxel = pCurrentChunk->_data + uVoxelIndexInChunk;
 }
 
 bool PagedVolume::Sampler::setVoxel(const Voxel& tValue) {
-	if (mCurrentVoxel == nullptr) {
+	if (_currentVoxel == nullptr) {
 		return false;
 	}
 	//Need to think what effect this has on any existing iterators.
 	//core_assert_msg(false, "This function cannot be used on PagedVolume samplers.");
-	*mCurrentVoxel = tValue;
+	*_currentVoxel = tValue;
 	return true;
 }
 
 void PagedVolume::Sampler::movePositiveX() {
-	mXPosInVolume++;
+	_xPosInVolume++;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_POS_X(this->m_uXPosInChunk)) {
+	if (CAN_GO_POS_X(this->_xPosInChunk)) {
 		//No need to compute new chunk.
-		mCurrentVoxel += POS_X_DELTA;
-		this->m_uXPosInChunk++;
+		_currentVoxel += POS_X_DELTA;
+		this->_xPosInChunk++;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume);
+		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
 	}
 }
 
 void PagedVolume::Sampler::movePositiveY() {
-	mYPosInVolume++;
+	_yPosInVolume++;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_POS_Y(this->m_uYPosInChunk)) {
+	if (CAN_GO_POS_Y(this->_yPosInChunk)) {
 		//No need to compute new chunk.
-		mCurrentVoxel += POS_Y_DELTA;
-		this->m_uYPosInChunk++;
+		_currentVoxel += POS_Y_DELTA;
+		this->_yPosInChunk++;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume);
+		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
 	}
 }
 
 void PagedVolume::Sampler::movePositiveZ() {
-	mZPosInVolume++;
+	_zPosInVolume++;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_POS_Z(this->m_uZPosInChunk)) {
+	if (CAN_GO_POS_Z(this->_zPosInChunk)) {
 		//No need to compute new chunk.
-		mCurrentVoxel += POS_Z_DELTA;
-		this->m_uZPosInChunk++;
+		_currentVoxel += POS_Z_DELTA;
+		this->_zPosInChunk++;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume);
+		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
 	}
 }
 
 void PagedVolume::Sampler::moveNegativeX() {
-	mXPosInVolume--;
+	_xPosInVolume--;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_NEG_X(this->m_uXPosInChunk)) {
+	if (CAN_GO_NEG_X(this->_xPosInChunk)) {
 		//No need to compute new chunk.
-		mCurrentVoxel += NEG_X_DELTA;
-		this->m_uXPosInChunk--;
+		_currentVoxel += NEG_X_DELTA;
+		this->_xPosInChunk--;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume);
+		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
 	}
 }
 
 void PagedVolume::Sampler::moveNegativeY() {
-	mYPosInVolume--;
+	_yPosInVolume--;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_NEG_Y(this->m_uYPosInChunk)) {
+	if (CAN_GO_NEG_Y(this->_yPosInChunk)) {
 		//No need to compute new chunk.
-		mCurrentVoxel += NEG_Y_DELTA;
-		this->m_uYPosInChunk--;
+		_currentVoxel += NEG_Y_DELTA;
+		this->_yPosInChunk--;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume);
+		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
 	}
 }
 
 void PagedVolume::Sampler::moveNegativeZ() {
-	mZPosInVolume--;
+	_zPosInVolume--;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_NEG_Z(this->m_uZPosInChunk)) {
+	if (CAN_GO_NEG_Z(this->_zPosInChunk)) {
 		//No need to compute new chunk.
-		mCurrentVoxel += NEG_Z_DELTA;
-		this->m_uZPosInChunk--;
+		_currentVoxel += NEG_Z_DELTA;
+		this->_zPosInChunk--;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->mXPosInVolume, this->mYPosInVolume, this->mZPosInVolume);
+		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
 	}
 }
 

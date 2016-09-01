@@ -7,6 +7,7 @@
 #include "polyvox/RawVolume.h"
 #include "polyvox/PagedVolume.h"
 #include "core/Trace.h"
+#include "core/Common.h"
 
 namespace voxel {
 
