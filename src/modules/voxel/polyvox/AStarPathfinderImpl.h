@@ -148,16 +148,12 @@ public:
 		closed.erase(iterToRemove);
 	}
 
-	inline iterator begin() {
-		return closed.begin();
-	}
-
 	inline iterator end() {
 		return closed.end();
 	}
 
 	inline iterator find(AllNodesContainer::iterator node) {
-		return std::find(closed.begin(), closed.end(), node);
+		return closed.find(node);
 	}
 
 private:
