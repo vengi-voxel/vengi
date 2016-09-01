@@ -55,8 +55,8 @@ struct Quad {
 };
 
 struct VertexData {
-	int32_t iIndex;
-	Voxel uMaterial;
+	int32_t index;
+	Voxel voxel;
 	uint8_t ambientOcclusion;
 };
 

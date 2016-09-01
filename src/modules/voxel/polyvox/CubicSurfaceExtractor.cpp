@@ -79,7 +79,7 @@ int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialI
 			face2.getMaterial() != voxel::Air && face2.getMaterial() != voxel::Water,
 			corner.getMaterial() != voxel::Air && corner.getMaterial() != voxel::Water);
 
-		if (rEntry.iIndex == -1) {
+		if (rEntry.index == -1) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
 			// The 0.5f offset is because vertices set between voxels in order to build cubes around them.
 			// see raycastWithEndpoints for this offset, too
@@ -88,16 +88,16 @@ int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialI
 			vertex.data = uMaterialIn;
 			vertex.ambientOcclusion = ambientOcclusion;
 
-			rEntry.iIndex = m_meshCurrent->addVertex(vertex);
-			rEntry.uMaterial = uMaterialIn;
+			rEntry.index = m_meshCurrent->addVertex(vertex);
+			rEntry.voxel = uMaterialIn;
 			rEntry.ambientOcclusion = vertex.ambientOcclusion;
 
-			return rEntry.iIndex;
+			return rEntry.index;
 		}
 
 		// If we have an existing vertex and the material matches then we can return it.
-		if (rEntry.uMaterial == uMaterialIn && rEntry.ambientOcclusion == ambientOcclusion) {
-			return rEntry.iIndex;
+		if (rEntry.voxel == uMaterialIn && rEntry.ambientOcclusion == ambientOcclusion) {
+			return rEntry.index;
 		}
 	}
 
