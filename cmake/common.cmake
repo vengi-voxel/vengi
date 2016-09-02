@@ -40,6 +40,7 @@ macro(check_ui_files TARGET)
 			${_filename}
 			COMMAND ${CMAKE_BINARY_DIR}/uitool ui/window/${_filename}
 			COMMENT "Validate ui file: ${_filename}"
+			DEPENDS uitool
 			WORKING_DIRECTORY ${_workingdir}
 		)
 		add_dependencies(${TARGET} ${_filename})
