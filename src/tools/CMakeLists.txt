@@ -1,7 +1,10 @@
 add_subdirectory(shadertool)
-add_subdirectory(shapetool)
-add_subdirectory(noisetool)
 add_subdirectory(databasetool)
 add_subdirectory(uitool)
 add_subdirectory(glslang)
-add_subdirectory(rcon)
+
+if (TOOLS)
+	add_subdirectory(shapetool)
+	add_subdirectory(noisetool)
+	add_subdirectory(rcon)
+endif()
