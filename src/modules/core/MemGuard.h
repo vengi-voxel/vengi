@@ -6,6 +6,7 @@
 
 #include "core/Common.h"
 #include "core/ReadWriteLock.h"
+#include <array>
 
 namespace core {
 

@@ -6,6 +6,15 @@
 #include "core/Var.h"
 #include "core/Log.h"
 #include <SDL.h>
+#if __WINDOWS__
+#include <windows.h>
+#include <direct.h>
+#include <wchar.h>
+#elif __LINUX__ or __MACOSX__
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
 
 namespace io {
 
@@ -81,8 +90,14 @@ bool Filesystem::syswrite(const std::string& filename, const std::string& string
 }
 
 bool Filesystem::createDir(const std::string& path) const {
-	// TODO: windows
-	return ::mkdir(path.c_str(), 0700);
+#if __WINDOWS__
+	WCHAR wpath[1024];
+	const int len = MultiByteToWideChar(CP_UTF8, 0, path.c_str(), -1, wpath, SDL_arraysize(wpath) - 1);
+	dest[len] = 0;
+	_wmkdir(wpath);
+#else
+	return mkdir(path.c_str(), 0700);
+#endif
 }
 
 }
