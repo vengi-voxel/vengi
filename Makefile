@@ -60,6 +60,7 @@ ARGS_TMP         := $(ARGS)
 ARGS              = "--args $(ARGS_TMP)"
 endif
 
+OS           := $(shell uname)
 MAKE_PID     := $$PPID
 JOB_FLAG     := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
 MAKE_OPTIONS := --no-print-directory -C $(BUILDDIR)
@@ -75,7 +76,11 @@ cmake:
 
 .PHONY: build
 build: cmake
+ifeq ($(OS),Linux)
 	$(Q)script -q --return -c "$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install" | grep -v Up-to-date
+else
+	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install
+endif
 
 clean:
 	$(Q)rm -rf $(BUILDDIR)
