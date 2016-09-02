@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <SDL.h>
+
 namespace core {
 
 /**
@@ -13,7 +15,12 @@ template<class T>
 class Singleton {
 public:
 	static T& getInstance() {
+		// XCode8 clang will support thread_local, but XCode7's doesn't
+#if __MACOSX__
+		static T theInstance;
+#else
 		static thread_local T theInstance;
+#endif
 		return theInstance;
 	}
 };
