@@ -99,7 +99,7 @@ set(SRCS
 )
 set(LIB ai)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} lua53)
+target_link_libraries(${LIB} lua53 glm)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_include_directories(${LIB} PUBLIC .)
 target_compile_definitions(${LIB} PRIVATE -DAI_EXCEPTIONS=0)
