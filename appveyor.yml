@@ -1,0 +1,29 @@
+version: 0.1-{build}
+
+os:
+  - Windows Server 2012 R2
+
+configuration: Release
+
+branches:
+  only:
+  - master
+
+clone_depth: 10
+
+before_build:
+  - cmake -DTOOLS=OFF -G "Visual Studio 12"
+
+build:
+  parallel: true
+  project: tests.sln
+
+artifacts:
+  - name: Tests
+    path: tests.exe
+
+test_script:
+  - cmd: tests.exe --gtest_output=xml:tests.xml
+
+on_finish:
+  - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\tests.xml))
