@@ -66,9 +66,9 @@ JOB_FLAG     := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID
 MAKE_OPTIONS := --no-print-directory -C $(BUILDDIR)
 
 ifeq ($(OS),Darwin)
-CMAKE_GENERATOR := "Xcode"
+CMAKE_GENERATOR ?= "Xcode"
 else
-CMAKE_GENERATOR := "Eclipse CDT4 - Unix Makefiles"
+CMAKE_GENERATOR ?= "Eclipse CDT4 - Unix Makefiles"
 endif
 
 all: build
