@@ -84,6 +84,8 @@ cmake:
 build: cmake
 ifeq ($(OS),Linux)
 	$(Q)script -q --return -c "$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install" | grep -v Up-to-date
+else ifeq ($(OS),Darwin)
+	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG)
 else
 	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install
 endif
