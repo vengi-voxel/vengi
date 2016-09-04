@@ -244,4 +244,10 @@ if (NOT ASSIMP_FOUND)
 
 	set(ASSIMP_BUILD_TEST NO)
 	configure_file(include/assimp/config.h.in ${CMAKE_BINARY_DIR}/assimp/config.h)
+
+	if(MSVC)
+		set_target_properties(assimp PROPERTIES COMPILE_FLAGS "/wd4267 /wd4152 /wd4204 /wd4242 /wd4244 /wd4668 /wd4996")
+	else()
+		set_target_properties(assimp PROPERTIES COMPILE_FLAGS "-Wno-sign-compare -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-variable -Wno-reorder -Wno-ignored-qualifiers -Wno-unused-but-set-variable")
+	endif()
 endif()
