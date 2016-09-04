@@ -67,9 +67,12 @@ MAKE_OPTIONS := --no-print-directory -C $(BUILDDIR)
 
 ifeq ($(OS),Darwin)
 CMAKE_GENERATOR ?= "Xcode"
+CMAKE_BINARY    ?= /Applications/CMake.app/Contents/bin/cmake
 else
 CMAKE_GENERATOR ?= "Eclipse CDT4 - Unix Makefiles"
+CMAKE_BINARY    ?= cmake
 endif
+INSTALL_DIR     ?= $(BUILDDIRPATH)$(OS)
 
 all: build
 
@@ -78,14 +81,14 @@ run: shapetool
 .PHONY: cmake
 cmake:
 	$(Q)mkdir -p $(BUILDDIR)
-	$(Q)cd $(BUILDDIR); cmake -G${CMAKE_GENERATOR} -DCMAKE_INSTALL_PREFIX=./linux -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(CURDIR) $(CMAKE_OPTIONS)
+	$(Q)cd $(BUILDDIR); $(CMAKE_BINARY) -G$(CMAKE_GENERATOR) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(CURDIR) $(CMAKE_OPTIONS)
 
 .PHONY: build
 build: cmake
 ifeq ($(OS),Linux)
 	$(Q)script -q --return -c "$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install" | grep -v Up-to-date
 else ifeq ($(OS),Darwin)
-	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG)
+	$(Q)xcodebuild build -target install -project engine.xcodeproj -configuration $(BUILD_TYPE)
 else
 	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install
 endif
