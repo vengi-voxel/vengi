@@ -88,7 +88,7 @@ build: cmake
 ifeq ($(OS),Linux)
 	$(Q)script -q --return -c "$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install" | grep -v Up-to-date
 else ifeq ($(OS),Darwin)
-	$(Q)xcodebuild build -target install -project engine.xcodeproj -configuration $(BUILD_TYPE)
+	$(Q)cd $(BUILDDIR); xcodebuild build -target install -project tests.xcodeproj -configuration $(BUILD_TYPE)
 else
 	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install
 endif
