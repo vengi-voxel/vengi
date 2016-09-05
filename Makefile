@@ -68,13 +68,10 @@ MAKE_OPTIONS := --no-print-directory -C $(BUILDDIR)
 ifeq ($(OS),Darwin)
 CMAKE_GENERATOR ?= "Xcode"
 CMAKE_BINARY    ?= /Applications/CMake.app/Contents/bin/cmake
-#TARGET_OPTIONS  := -target
-TARGET_OPTIONS  :=
 DARWIN          := 1
 else
 CMAKE_GENERATOR ?= "Eclipse CDT4 - Unix Makefiles"
 CMAKE_BINARY    ?= cmake
-TARGET_OPTIONS  :=
 LINUX           := 1
 endif
 INSTALL_DIR     ?= $(BUILDDIRPATH)$(OS)
