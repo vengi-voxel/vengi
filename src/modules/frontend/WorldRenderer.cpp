@@ -749,7 +749,7 @@ void WorldRenderer::onRunning(long dt) {
 			_colorTexture->upload(c.buffer, c.width, c.height, c.depth);
 			_colorTexture->unbind();
 			delete[] c.buffer;
-			//_noiseFuture.erase(future);
+			_noiseFuture.pop_back();
 		}
 	}
 
