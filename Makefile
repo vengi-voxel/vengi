@@ -70,10 +70,12 @@ CMAKE_GENERATOR ?= "Xcode"
 CMAKE_BINARY    ?= /Applications/CMake.app/Contents/bin/cmake
 #TARGET_OPTIONS  := -target
 TARGET_OPTIONS  :=
+DARWIN          := 1
 else
 CMAKE_GENERATOR ?= "Eclipse CDT4 - Unix Makefiles"
 CMAKE_BINARY    ?= cmake
 TARGET_OPTIONS  :=
+LINUX           := 1
 endif
 INSTALL_DIR     ?= $(BUILDDIRPATH)$(OS)
 
@@ -86,15 +88,21 @@ cmake:
 	$(Q)mkdir -p $(BUILDDIR)
 	$(Q)cd $(BUILDDIR); $(CMAKE_BINARY) -G$(CMAKE_GENERATOR) -DCMAKE_INSTALL_PREFIX=$(INSTALL_DIR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(CURDIR) $(CMAKE_OPTIONS)
 
+define COMPILE
+$(if $(LINUX),\
+	$(Q)script -q --return -c "$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1)" | grep -v Up-to-date \
+$(else),\
+	$(if $(DARWIN),\
+		$(Q)cd $(BUILDDIR); xcodebuild build -target $(1) install -project tests.xcodeproj -configuration $(BUILD_TYPE) \
+	$(else),\
+		$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1) \
+	)
+)
+endef
+
 .PHONY: build
 build: cmake
-ifeq ($(OS),Linux)
-	$(Q)script -q --return -c "$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install" | grep -v Up-to-date
-else ifeq ($(OS),Darwin)
-	$(Q)cd $(BUILDDIR); xcodebuild build $(TARGET_OPTIONS)  install -project tests.xcodeproj -configuration $(BUILD_TYPE)
-else
-	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) install
-endif
+	$(call COMPILE, install)
 
 clean:
 	$(Q)rm -rf $(BUILDDIR)
@@ -106,23 +114,25 @@ edit-local-config:
 	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
 
 doc: cmake
-	$(Q)$(MAKE) $(MAKE_OPTIONS) $(TARGET_OPTIONS) doc
+	$(call COMPILE, $@)
 
 server client shapetool shadertool noisetool databasetool uitool tests testmesh testcamera testdepthbuffer testtexture flatc: cmake
-	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(TARGET_OPTIONS) $@ copy-data-shared copy-data-$@ $(JOB_FLAG)
+	$(call COMPILE, $@)
+	$(call COMPILE, copy-data-shared)
+	$(call COMPILE, copy-data-$@)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
 rcon: cmake
-	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(TARGET_OPTIONS) $@ $(JOB_FLAG)
+	$(call COMPILE, $@)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
 test-material-color: cmake
-	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(TARGET_OPTIONS) tests $(JOB_FLAG)
+	$(call COMPILE, tests)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_color=yes --gtest_filter=MaterialTest* -- $(ARGS)
 	$(Q)xdg-open build/material.png
 
 test-ambient-occlusion: cmake
-	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(TARGET_OPTIONS) tests $(JOB_FLAG)
+	$(call COMPILE, tests)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_color=yes --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
 
 .PHONY: remotery
