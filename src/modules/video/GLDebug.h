@@ -120,13 +120,15 @@ public:
 			glSeverity = GL_DEBUG_SEVERITY_LOW_ARB;
 			break;
 		}
-		glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, glSeverity, 0, nullptr, GL_TRUE);
-		if (!_enabled) {
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			glDebugMessageCallbackARB(debugOutputCallback, nullptr);
-			GL_checkError();
-			_enabled = true;
-			Log::info("enable opengl debug messages");
+		if (glDebugMessageControlARB != nullptr) {
+			glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, glSeverity, 0, nullptr, GL_TRUE);
+			if (!_enabled) {
+				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+				glDebugMessageCallbackARB(debugOutputCallback, nullptr);
+				GL_checkError();
+				_enabled = true;
+				Log::info("enable opengl debug messages");
+			}
 		}
 #else
 		Log::warn("Opengl debug extensions are not implemented");
