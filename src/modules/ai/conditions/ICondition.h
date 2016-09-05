@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "common/MemoryAllocator.h"
+#include "common/Thread.h"
 
 #include "AIFactories.h"
 
@@ -76,9 +77,9 @@ private: \
 	CONDITION_CLASS(ConditionName) \
 public: \
 	static ConditionPtr& get() { \
-		thread_local ConditionName* c = nullptr; \
+		THREAD_LOCAL ConditionName* c = nullptr; \
 		if (c == nullptr) { c = new ConditionName; } \
-		thread_local ConditionPtr _instance(c); \
+		THREAD_LOCAL ConditionPtr _instance(c); \
 		return _instance; \
 	} \
 	CONDITION_FACTORY_SINGLETON

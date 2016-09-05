@@ -5,6 +5,7 @@
 #include "ICharacter.h"
 #include "AI.h"
 #include "common/MemoryAllocator.h"
+#include "common/Thread.h"
 
 namespace ai {
 
@@ -52,9 +53,9 @@ private: \
 FILTER_CLASS(FilterName) \
 public: \
 	static FilterPtr& get() { \
-		thread_local FilterName* c = nullptr; \
+		THREAD_LOCAL FilterName* c = nullptr; \
 		if (c == nullptr) { c = new FilterName; } \
-		thread_local FilterPtr _instance(c); \
+		THREAD_LOCAL FilterPtr _instance(c); \
 		return _instance; \
 	} \
 	FILTER_FACTORY_SINGLETON

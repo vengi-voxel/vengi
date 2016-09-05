@@ -62,4 +62,8 @@ public:
 	}
 };
 
+#ifndef THREAD_LOCAL
+#define THREAD_LOCAL thread_local
+#endif
+
 }
