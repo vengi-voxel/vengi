@@ -8,7 +8,6 @@
 namespace video {
 
 class ShaderTest : public core::AbstractTest {
-
 };
 
 TEST_F(ShaderTest, testInclude) {
@@ -20,15 +19,17 @@ TEST_F(ShaderTest, testInclude) {
 	Shader s;
 	const std::string &vert = s.getSource(ShaderType::Vertex, "#include \"foobar.vert\"");
 	const std::string &frag = s.getSource(ShaderType::Fragment, "#include \"foobar.frag\"");
-	ASSERT_TRUE(core::string::contains(vert, "SUCCESS"));
-	ASSERT_TRUE(core::string::contains(frag, "SUCCESS"));
+	ASSERT_TRUE(core::string::contains(vert, "SUCCESS")) << "vertex shader: " << vert;
+	ASSERT_TRUE(core::string::contains(frag, "SUCCESS")) << "fragment shader: " << frag;
 }
 
 TEST_F(ShaderTest, testCvar) {
-	core::Var::get("awesome_name", "true", core::CV_SHADER);
+	const core::VarPtr& v = core::Var::get("awesome_name", "true", core::CV_SHADER);
+	ASSERT_EQ(core::CV_SHADER, v->getFlags() & core::CV_SHADER);
+	ASSERT_EQ("true", v->strVal());
 	Shader s;
-	const std::string &vert = s.getSource(ShaderType::Vertex, "");
-	ASSERT_TRUE(core::string::contains(vert, "awesome_name"));
+	const std::string &vert = s.getSource(ShaderType::Vertex, "#define FOO");
+	ASSERT_TRUE(core::string::contains(vert, "awesome_name")) << "vertex shader: " << vert;
 }
 
 }

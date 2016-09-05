@@ -20,7 +20,7 @@ void AbstractTest::SetUp() {
 }
 
 void AbstractTest::TearDown() {
-	Var::shutdown();
+	core::Var::shutdown();
 	delete _testApp;
 }
 

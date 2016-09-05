@@ -115,7 +115,7 @@ public:
 				varList.push_back(i->second);
 			}
 		}
-		std::sort(begin(varList), end(varList), [](const VarPtr& v1, const VarPtr& v2) {
+		std::sort(varList.begin(), varList.end(), [] (const VarPtr& v1, const VarPtr& v2) {
 			return v1->name() < v2->name();
 		});
 		for (const VarPtr& var : varList) {
