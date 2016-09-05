@@ -14,12 +14,12 @@ class DatabaseModelTest: public core::AbstractTest {
 public:
 	void SetUp() override {
 		Super::SetUp();
-		::persistence::ConnectionPool::get().init();
+		core::Singleton<::persistence::ConnectionPool>::getInstance().init();
 	}
 
 	void TearDown() override {
 		Super::TearDown();
-		::persistence::ConnectionPool::get().shutdown();
+		core::Singleton<::persistence::ConnectionPool>::getInstance().shutdown();
 	}
 };
 

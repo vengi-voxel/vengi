@@ -11,13 +11,13 @@ class ConnectionPoolTest : public core::AbstractTest {
 };
 
 TEST_F(ConnectionPoolTest, testConnectionPoolSize) {
-	ConnectionPool& pool = ConnectionPool::get();
+	ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
 	ASSERT_EQ(2, pool.init());
 	pool.shutdown();
 }
 
 TEST_F(ConnectionPoolTest, testConnectionPoolGetConnection) {
-	ConnectionPool& pool = ConnectionPool::get();
+	ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
 	ASSERT_EQ(2, pool.init());
 	Connection* c = pool.connection();
 	ASSERT_NE(nullptr, c);
@@ -25,7 +25,7 @@ TEST_F(ConnectionPoolTest, testConnectionPoolGetConnection) {
 }
 
 TEST_F(ConnectionPoolTest, testConnectionPoolInvalidData) {
-	ConnectionPool& pool = ConnectionPool::get();
+	ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
 	ASSERT_EQ(2, pool.init("invalid", "invalid", "invalid", "invalid"));
 	ASSERT_EQ("invalid", core::Var::get(cfg::DatabaseName)->strVal());
 	Connection* c = pool.connection();

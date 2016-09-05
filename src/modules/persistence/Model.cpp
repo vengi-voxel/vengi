@@ -73,7 +73,7 @@ bool Model::checkLastResult(State& state, Connection* connection) const {
 
 bool Model::exec(const char* query) {
 	Log::debug("%s", query);
-	ScopedConnection scoped(ConnectionPool::get().connection());
+	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
 	if (scoped == false) {
 		Log::error("Could not execute query '%s' - could not acquire connection", query);
 		return false;
@@ -155,7 +155,7 @@ Model::PreparedStatement::PreparedStatement(Model* model, const std::string& nam
 
 Model::State Model::PreparedStatement::exec() {
 	Log::debug("prepared statement: '%s'", _statement.c_str());
-	ScopedConnection scoped(ConnectionPool::get().connection());
+	ScopedConnection scoped(core::Singleton<ConnectionPool>::getInstance().connection());
 	if (scoped == false) {
 		Log::error("Could not prepare query '%s' - could not acquire connection", _statement.c_str());
 		return State(nullptr);

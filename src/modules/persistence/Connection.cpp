@@ -5,6 +5,7 @@
 #include "Connection.h"
 #include "ConnectionPool.h"
 #include "core/Log.h"
+#include "core/Singleton.h"
 #include "config.h"
 
 namespace persistence {
@@ -89,7 +90,7 @@ void Connection::disconnect() {
 }
 
 void Connection::close() {
-	ConnectionPool::get().giveBack(this);
+	core::Singleton<ConnectionPool>::getInstance().giveBack(this);
 }
 
 }

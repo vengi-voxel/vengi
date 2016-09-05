@@ -33,7 +33,7 @@ ServerLoop::ServerLoop(const network::NetworkPtr& network, const SpawnMgrPtr& sp
 }
 
 bool ServerLoop::init() {
-	if (::persistence::ConnectionPool::get().init() <= 0) {
+	if (core::Singleton<::persistence::ConnectionPool>::getInstance().init() <= 0) {
 		Log::error("Failed to init the connection pool");
 		return false;
 	}
@@ -70,7 +70,7 @@ bool ServerLoop::init() {
 
 void ServerLoop::shutdown() {
 	_world->shutdown();
-	::persistence::ConnectionPool::get().shutdown();
+	core::Singleton<::persistence::ConnectionPool>::getInstance().shutdown();
 	_spawnMgr->shutdown();
 }
 

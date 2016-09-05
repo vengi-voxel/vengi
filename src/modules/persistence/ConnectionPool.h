@@ -4,6 +4,7 @@
 #include "Connection.h"
 #include "ScopedConnection.h"
 #include "core/Var.h"
+#include "core/Singleton.h"
 
 namespace persistence {
 
@@ -12,6 +13,7 @@ namespace persistence {
  */
 class ConnectionPool {
 	friend class Connection;
+	friend class core::Singleton<ConnectionPool>;
 protected:
 	int _min = -1;
 	int _max = -1;
@@ -29,11 +31,6 @@ public:
 
 	int init(const char *password = "engine", const char *user = "engine", const char *database = "engine", const char *host = "localhost");
 	void shutdown();
-
-	static ConnectionPool& get() {
-		thread_local ConnectionPool pool;
-		return pool;
-	}
 
 	/**
 	 * @brief Gets one connection from the pool
