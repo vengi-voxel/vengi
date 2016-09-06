@@ -122,6 +122,7 @@ void Camera::updateOrientation() {
 	}
 
 	_quat = glm::normalize(_quat);
+	core_assert(!glm::any(glm::isnan(_quat)));
 	_orientation = glm::mat4_cast(_quat);
 }
 
@@ -143,6 +144,7 @@ void Camera::updateViewMatrix() {
 	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON)) {
 		return;
 	}
+	core_assert(!glm::any(glm::isnan(_pos)));
 	_viewMatrix = glm::translate(orientation(), -_pos);
 }
 

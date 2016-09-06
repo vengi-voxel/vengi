@@ -289,6 +289,8 @@ inline void Camera::turn(float radians) {
 		return;
 	}
 	const glm::quat& quat = glm::angleAxis(radians, _quat * glm::up);
+	core_assert(!glm::any(glm::isnan(quat)));
+	core_assert(!glm::any(glm::isinf(quat)));
 	rotate(quat);
 }
 
@@ -301,7 +303,11 @@ inline void Camera::rotate(float radians, const glm::vec3& axis) {
 }
 
 inline void Camera::rotate(const glm::quat& rotation) {
+	core_assert(!glm::any(glm::isnan(rotation)));
+	core_assert(!glm::any(glm::isinf(rotation)));
 	_quat = rotation * _quat;
+	core_assert(!glm::any(glm::isnan(_quat)));
+	core_assert(!glm::any(glm::isinf(_quat)));
 	_dirty |= DIRTY_ORIENTATION;
 }
 
@@ -363,11 +369,15 @@ inline glm::mat4 Camera::orthogonalMatrix() const {
 
 inline void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
 	_quat = glm::quat(glm::vec3(pitch, yaw, roll));
+	core_assert(!glm::any(glm::isnan(_quat)));
+	core_assert(!glm::any(glm::isinf(_quat)));
 	_dirty |= DIRTY_ORIENTATION;
 }
 
 inline void Camera::setQuaternion(const glm::quat& quat) {
 	_quat = quat;
+	core_assert(!glm::any(glm::isnan(_quat)));
+	core_assert(!glm::any(glm::isinf(_quat)));
 	_dirty |= DIRTY_ORIENTATION;
 }
 
@@ -478,10 +488,14 @@ inline const glm::vec3& Camera::position() const {
 }
 
 inline void Camera::setOmega(const glm::vec3& omega) {
+	core_assert(!glm::any(glm::isnan(omega)));
+	core_assert(!glm::any(glm::isinf(omega)));
 	_omega = omega;
 }
 
 inline void Camera::setTarget(const glm::vec3& target) {
+	core_assert(!glm::any(glm::isnan(target)));
+	core_assert(!glm::any(glm::isinf(target)));
 	if (glm::all(glm::epsilonEqual(_target, target, 0.0001f))) {
 		return;
 	}
