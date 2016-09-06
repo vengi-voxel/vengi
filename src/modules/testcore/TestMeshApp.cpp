@@ -17,7 +17,7 @@ core::AppState TestMeshApp::onInit() {
 			Log::error("Usage: %s <meshname>", args[0].c_str());
 			return;
 		}
-		const std::string mesh = args[1];
+		const std::string& mesh = args[1];
 		const video::MeshPtr& meshPtr = _meshPool.getMesh(mesh);
 		if (meshPtr->isLoaded()) {
 			_mesh->shutdown();
