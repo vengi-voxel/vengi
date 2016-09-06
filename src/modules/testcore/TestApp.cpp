@@ -41,7 +41,7 @@ core::AppState TestApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.001");
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _dimension.x, _dimension.y, _aspect);
 	_camera.init(dimension());

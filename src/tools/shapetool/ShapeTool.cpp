@@ -38,7 +38,7 @@ core::AppState ShapeTool::onInit() {
 	}
 
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.1");
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
