@@ -64,61 +64,86 @@ void Attributes::calculateMax(Values& absolutes, Values& percentages) const {
 		core::ScopedReadLock scopedLock(_lock);
 		containers = _containers;
 	}
-	for (const Container& c : containers) {
+	for (const auto& e : containers) {
+		const Container& c = e.second;
+		const double stackCount = c.stackCount();
 		const Values& abs = c.absolute();
 		for (ValuesConstIter i = abs.begin(); i != abs.end(); ++i) {
-			absolutes[i->first] += i->second;
+			absolutes[i->first] += i->second * stackCount;
 		}
-	}
-	for (const Container& c : containers) {
 		const Values& rel = c.percentage();
 		for (ValuesConstIter i = rel.begin(); i != rel.end(); ++i) {
-			percentages[i->first] += i->second;
+			percentages[i->first] += i->second * stackCount;
 		}
 	}
 }
 
 void Attributes::add(const Container& container) {
 	core::ScopedWriteLock scopedLock(_lock);
-	_containers.insert(container);
-	_dirty = true;
-}
-
-void Attributes::remove(const Container& container) {
-	core::ScopedWriteLock scopedLock(_lock);
-	_containers.erase(container);
-	_dirty = true;
+	const auto& i = _containers.insert(std::make_pair(container.name(), container));
+	if (i.second) {
+		_dirty = true;
+		return;
+	}
+	if (i.first->second.increaseStackCount()) {
+		_dirty = true;
+	}
 }
 
 void Attributes::add(Container&& container) {
 	core::ScopedWriteLock scopedLock(_lock);
-	_containers.insert(container);
-	_dirty = true;
+	const auto& i = _containers.insert(std::make_pair(container.name(), container));
+	if (i.second) {
+		_dirty = true;
+		return;
+	}
+	if (i.first->second.increaseStackCount()) {
+		_dirty = true;
+	}
 }
 
 void Attributes::add(const ContainerPtr& container) {
-	if (!container)
+	if (!container) {
 		return;
+	}
 	core::ScopedWriteLock scopedLock(_lock);
-	_containerPtrs.insert(container);
-	_containers.insert(*container.get());
-	_dirty = true;
+	_containerPtrs.insert(std::make_pair(container->name(), container));
+	const auto& i = _containers.insert(std::make_pair(container->name(), *container.get()));
+	if (i.second) {
+		_dirty = true;
+		return;
+	}
+	if (i.first->second.increaseStackCount()) {
+		_dirty = true;
+	}
+}
+
+void Attributes::remove(const Container& container) {
+	remove(container.name());
 }
 
 void Attributes::remove(const ContainerPtr& container) {
 	if (!container) {
 		return;
 	}
-	core::ScopedWriteLock scopedLock(_lock);
-	_containers.erase(*container.get());
-	_containerPtrs.erase(container);
-	_dirty = true;
+	remove(container->name());
 }
 
-void Attributes::remove(Container&& container) {
+void Attributes::remove(const std::string& name) {
 	core::ScopedWriteLock scopedLock(_lock);
-	_containers.erase(container);
-	_dirty = true;
+	_containerPtrs.erase(name);
+	const auto& i = _containers.find(name);
+	if (i == _containers.end()) {
+		return;
+	}
+	if (i->second.decreaseStackCount()) {
+		_dirty = true;
+		return;
+	}
+	const auto& erased = _containers.erase(i);
+	if (erased != _containers.end()) {
+		_dirty = true;
+	}
 }
 
 double Attributes::setCurrent(Type type, double value) {
