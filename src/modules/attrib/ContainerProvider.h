@@ -19,7 +19,8 @@ private:
 public:
 	ContainerProvider();
 
-	bool init();
+	bool init(const std::string& file);
+	void reset();
 
 	void addContainer(const ContainerPtr& container);
 	ContainerPtr getContainer(const std::string& name) const;
@@ -30,5 +31,10 @@ public:
 };
 
 typedef std::shared_ptr<ContainerProvider> ContainerProviderPtr;
+
+inline void ContainerProvider::reset() {
+	_error = "";
+	_containers.clear();
+}
 
 }

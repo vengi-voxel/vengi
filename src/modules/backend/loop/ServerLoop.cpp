@@ -40,7 +40,7 @@ bool ServerLoop::init() {
 	persistence::UserStore u;
 	u.createTable();
 
-	if (!_containerProvider->init()) {
+	if (!_containerProvider->init("attributes.lua")) {
 		Log::error("Failed to load the attributes: %s", _containerProvider->error().c_str());
 		return false;
 	}

@@ -14,7 +14,9 @@ namespace attrib {
 ContainerProvider::ContainerProvider() {
 }
 
-bool ContainerProvider::init() {
+bool ContainerProvider::init(const std::string& file) {
+	_error = "";
+
 	lua::LUA lua;
 	luaL_Reg createContainer = { "createContainer", luaCreateContainer };
 	luaL_Reg eof = { nullptr, nullptr };
@@ -30,9 +32,10 @@ bool ContainerProvider::init() {
 
 	lua.reg("attrib", funcs);
 
-	const std::string& attributes = core::App::getInstance()->filesystem()->load("attributes.lua");
-	if (attributes.empty())
+	const std::string& attributes = core::App::getInstance()->filesystem()->load(file);
+	if (attributes.empty()) {
 		return false;
+	}
 
 	if (!lua.load(attributes)) {
 		_error = lua.getError();
