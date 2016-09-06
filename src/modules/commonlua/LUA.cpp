@@ -58,11 +58,6 @@ LUAType::LUAType(lua_State* state, const std::string& name) :
 	lua_setfield(_state, -2, "__index");
 }
 
-void LUAType::addFunction(const std::string& name, lua_CFunction func) {
-	lua_pushcfunction(_state, func);
-	lua_setfield(_state, -2, name.c_str());
-}
-
 LUA::LUA(bool debug) {
 	_state = luaL_newstate();
 

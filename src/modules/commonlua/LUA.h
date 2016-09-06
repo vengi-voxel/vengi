@@ -27,7 +27,12 @@ public:
 	virtual ~LUAType() {
 	}
 
-	void addFunction(const std::string& name, lua_CFunction func);
+	// only non-capturing lambdas can be converted to function pointers
+	template<class FUNC>
+	void addFunction(const std::string& name, FUNC&& func) {
+		lua_pushcfunction(_state, func);
+		lua_setfield(_state, -2, name.c_str());
+	}
 };
 
 class LUA {
