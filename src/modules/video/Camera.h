@@ -54,7 +54,7 @@ protected:
 	constexpr static uint32_t DIRTY_TARGET      = 1 << 3;
 	constexpr static uint32_t DIRTY_PERSPECTIVE = 1 << 4;
 
-	constexpr static uint32_t DIRTY_ALL = 0XFFFFFFFF;
+	constexpr static uint32_t DIRTY_ALL = ~0u;
 
 	inline bool isDirty(uint32_t flag) const {
 		return (_dirty & flag) != 0u;
