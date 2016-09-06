@@ -288,6 +288,8 @@ inline void Camera::turn(float radians) {
 	if (fabs(radians) < 0.00001f) {
 		return;
 	}
+	core_assert(!glm::any(glm::isnan(_quat)));
+	core_assert(!glm::any(glm::isinf(_quat)));
 	const glm::quat& quat = glm::angleAxis(radians, _quat * glm::up);
 	core_assert(!glm::any(glm::isnan(quat)));
 	core_assert(!glm::any(glm::isinf(quat)));
