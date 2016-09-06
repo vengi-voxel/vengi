@@ -59,8 +59,9 @@ void ContainerProvider::addContainer(const ContainerPtr& container) {
 		return;
 	}
 	Log::trace("register container %s", container->name().c_str());
-	if (_containers.find(container->name()) != _containers.end())
+	if (_containers.find(container->name()) != _containers.end()) {
 		Log::warn("overriding already existing container for %s", container->name().c_str());
+	}
 	_containers[container->name()] = container;
 }
 

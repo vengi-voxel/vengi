@@ -11,6 +11,18 @@
 
 namespace attrib {
 
+/**
+ * @brief LUA container provider.
+ *
+ * LUA file example:
+ * @code
+ * function init()
+ *  local example = attrib.createContainer("example")
+ *  example:absolute("ATTACKRANGE", 2.0)
+ *  example:register()
+ * end
+ * @endcode
+ */
 class ContainerProvider {
 public:
 	typedef std::unordered_map<std::string, ContainerPtr> Containers;
