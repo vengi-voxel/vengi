@@ -224,6 +224,7 @@ void Camera::updateFrustumVertices() {
 	for (int i = 0; i < video::FRUSTUM_VERTICES_MAX; ++i) {
 		const glm::vec4& v = transform * vecs[i];
 		_frustumVertices[i] = v.xyz() / v.w;
+		core_assert(!glm::any(glm::isnan(_frustumVertices[i])));
 	}
 }
 
@@ -289,6 +290,7 @@ void Camera::updateFrustumPlanes() {
 }
 
 core::AABB<float> Camera::aabb() const {
+	core_assert(!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE));
 	return core::AABB<float>::construct(_frustumVertices, FRUSTUM_VERTICES_MAX);
 }
 
