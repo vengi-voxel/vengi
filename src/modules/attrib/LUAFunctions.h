@@ -7,6 +7,7 @@
 #include "commonlua/LUA.h"
 #include "ContainerProvider.h"
 #include "LUAContainer.h"
+#include "core/String.h"
 
 namespace attrib {
 
@@ -42,7 +43,12 @@ static int luaContainerAddAbsolute(lua_State * l) {
 	LUAContainer *ctx = luaGetContainerContext(l, 1);
 	const char* type = luaL_checkstring(l, 2);
 	const double value = luaL_checknumber(l, 3);
-	ctx->addAbsolute(getType(type), value);
+	attrib::Type attribType = getType(type);
+	if (attribType == attrib::Type::NONE) {
+		const std::string& error = core::string::format("Unknown type given: %s", type);
+		lua::LUA::returnError(l, error);
+	}
+	ctx->addAbsolute(attribType, value);
 	return 0;
 }
 
@@ -50,7 +56,12 @@ static int luaContainerAddPercentage(lua_State * l) {
 	LUAContainer *ctx = luaGetContainerContext(l, 1);
 	const char* type = luaL_checkstring(l, 2);
 	const double value = luaL_checknumber(l, 3);
-	ctx->addPercentage(getType(type), value);
+	attrib::Type attribType = getType(type);
+	if (attribType == attrib::Type::NONE) {
+		const std::string& error = core::string::format("Unknown type given: %s", type);
+		lua::LUA::returnError(l, error);
+	}
+	ctx->addPercentage(attribType, value);
 	return 0;
 }
 

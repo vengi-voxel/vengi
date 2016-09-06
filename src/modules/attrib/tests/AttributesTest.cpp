@@ -8,7 +8,6 @@
 namespace attrib {
 
 class AttributesTest: public core::AbstractTest {
-public:
 };
 
 TEST_F(AttributesTest, testCurrents) {

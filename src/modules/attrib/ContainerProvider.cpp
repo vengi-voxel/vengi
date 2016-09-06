@@ -52,8 +52,9 @@ bool ContainerProvider::init() {
 }
 
 void ContainerProvider::addContainer(const ContainerPtr& container) {
-	if (!container)
+	if (!container) {
 		return;
+	}
 	Log::trace("register container %s", container->name().c_str());
 	if (_containers.find(container->name()) != _containers.end())
 		Log::warn("overriding already existing container for %s", container->name().c_str());
@@ -62,8 +63,9 @@ void ContainerProvider::addContainer(const ContainerPtr& container) {
 
 ContainerPtr ContainerProvider::getContainer(const std::string& name) const {
 	auto i = _containers.find(name);
-	if (i == _containers.end())
+	if (i == _containers.end()) {
 		return ContainerPtr();
+	}
 
 	return i->second;
 }

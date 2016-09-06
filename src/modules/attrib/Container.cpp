@@ -6,8 +6,8 @@
 
 namespace attrib {
 
-ContainerBuilder::ContainerBuilder(const std::string& name) :
-		_name(name) {
+ContainerBuilder::ContainerBuilder(const std::string& name, int stackLimit) :
+		_name(name), _stackLimit(stackLimit) {
 }
 
 ContainerBuilder& ContainerBuilder::addPercentage(Type type, double value) {
@@ -18,10 +18,6 @@ ContainerBuilder& ContainerBuilder::addPercentage(Type type, double value) {
 ContainerBuilder& ContainerBuilder::addAbsolute(Type type, double value) {
 	_absolute[type] = value;
 	return *this;
-}
-
-Container ContainerBuilder::create() {
-	return Container(_name, _percentage, _absolute);
 }
 
 }

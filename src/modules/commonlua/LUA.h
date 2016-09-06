@@ -39,7 +39,7 @@ public:
 	LUA(bool debug = false);
 	~LUA();
 
-	inline lua_State* getState() const;
+	lua_State* getState() const;
 
 	template<class T>
 	static void newGlobalData(lua_State *L, const std::string& prefix, T *userData) {
