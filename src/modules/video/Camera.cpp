@@ -150,7 +150,7 @@ Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	// project relative mouse cursor position [0.0-1.0] to [-1.0,1.0] and flip y axis
 	const float x = +(screenPos.x - 0.5f) * 2.0f;
 	const float y = -(screenPos.y - 0.5f) * 2.0f;
-	const glm::mat4& viewProjInverse = glm::inverse(_projectionMatrix * _viewMatrix);
+	const glm::mat4& viewProjInverse = glm::inverse(projectionMatrix() * viewMatrix());
 	const glm::vec4 near(x, y, 0.0f, 1.0f);
 	const glm::vec4 far(x, y, 1.0f, 1.0f);
 	const glm::vec4& origin = viewProjInverse * near;
