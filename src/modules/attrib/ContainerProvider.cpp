@@ -38,14 +38,14 @@ bool ContainerProvider::init(const std::string& file) {
 	}
 
 	if (!lua.load(attributes)) {
-		_error = lua.getError();
+		_error = lua.error();
 		return false;
 	}
 
 	// loads all the attributes
 	lua.newGlobalData<ContainerProvider>("Provider", this);
 	if (!lua.execute("init")) {
-		_error = lua.getError();
+		_error = lua.error();
 		return false;
 	}
 

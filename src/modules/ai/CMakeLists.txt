@@ -99,7 +99,7 @@ set(SRCS
 )
 set(LIB ai)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} lua53 glm)
+target_link_libraries(${LIB} commonlua glm)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_include_directories(${LIB} PUBLIC .)
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

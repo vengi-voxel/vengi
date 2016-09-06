@@ -12,11 +12,11 @@
 namespace attrib {
 
 static ContainerProvider* luaGetContext(lua_State * l) {
-	return lua::LUA::getGlobalData<ContainerProvider>(l, "Provider");
+	return lua::LUA::globalData<ContainerProvider>(l, "Provider");
 }
 
 static LUAContainer* luaGetContainerContext(lua_State * l, int n) {
-	return lua::LUA::getUserData<LUAContainer>(l, n, "Container");
+	return lua::LUA::userData<LUAContainer>(l, n, "Container");
 }
 
 static int luaCreateContainer(lua_State * l) {
