@@ -40,7 +40,7 @@ public:
 	const Containers& containers() const;
 
 	void addContainer(const ContainerPtr& container);
-	ContainerPtr getContainer(const std::string& name) const;
+	ContainerPtr container(const std::string& name) const;
 
 	/**
 	 * @return The last error that occured in an init() call

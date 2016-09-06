@@ -27,8 +27,8 @@ void AICharacter::update(long dt, bool debuggingActive) {
 		for (int i = 0; i < (int)attrib::Type::MAX; ++i) {
 			const attrib::Type attribType = (attrib::Type)i;
 			const attrib::Attributes& attribs =  _npc._attribs;
-			const double current = attribs.getCurrent(attribType);
-			const double max = attribs.getMax(attribType);
+			const double current = attribs.current(attribType);
+			const double max = attribs.max(attribType);
 			setAttribute(network::EnumNameAttribType(attribType), core::string::format("%f/%f", current, max));
 		}
 	}

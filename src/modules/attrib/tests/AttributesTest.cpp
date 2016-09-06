@@ -17,7 +17,7 @@ TEST_F(AttributesTest, testCurrents) {
 	ASSERT_FALSE(attributes.onFrame(1L));
 	attributes.add(t.create());
 	ASSERT_TRUE(attributes.onFrame(1L));
-	ASSERT_EQ(20, attributes.getMax(Type::HEALTH));
+	ASSERT_EQ(20, attributes.max(Type::HEALTH));
 	ASSERT_EQ(20, attributes.setCurrent(Type::HEALTH, 100));
 }
 
@@ -27,18 +27,18 @@ TEST_F(AttributesTest, testAddRemove) {
 	test1.addAbsolute(Type::HEALTH, 1);
 	attributes.add(test1.create());
 	ASSERT_TRUE(attributes.onFrame(1L));
-	ASSERT_EQ(1, attributes.getMax(Type::HEALTH));
+	ASSERT_EQ(1, attributes.max(Type::HEALTH));
 
 	ContainerBuilder test2("test2");
 	test2.addAbsolute(Type::HEALTH, 1);
 	attributes.add(test2.create());
 	ASSERT_TRUE(attributes.onFrame(1L));
-	ASSERT_EQ(2, attributes.getMax(Type::HEALTH));
+	ASSERT_EQ(2, attributes.max(Type::HEALTH));
 
 	ContainerBuilder test1Remove("test1");
 	attributes.remove(test1Remove.create());
 	ASSERT_TRUE(attributes.onFrame(1L));
-	ASSERT_EQ(1, attributes.getMax(Type::HEALTH));
+	ASSERT_EQ(1, attributes.max(Type::HEALTH));
 }
 
 TEST_F(AttributesTest, testParent) {
@@ -51,7 +51,7 @@ TEST_F(AttributesTest, testParent) {
 	Attributes attributes(&parent);
 	attributes.setName("parent");
 	ASSERT_TRUE(attributes.onFrame(1L));
-	ASSERT_EQ(1, attributes.getMax(Type::HEALTH));
+	ASSERT_EQ(1, attributes.max(Type::HEALTH));
 }
 
 TEST_F(AttributesTest, testCappedCurrent) {
@@ -61,7 +61,7 @@ TEST_F(AttributesTest, testCappedCurrent) {
 	attributes.add(test1.create());
 
 	ASSERT_TRUE(attributes.onFrame(1L));
-	ASSERT_EQ(1, attributes.getMax(Type::HEALTH));
+	ASSERT_EQ(1, attributes.max(Type::HEALTH));
 	ASSERT_EQ(1, attributes.setCurrent(Type::HEALTH, 2));
 }
 
@@ -75,7 +75,7 @@ TEST_F(AttributesTest, testParentPercentage) {
 
 	Attributes attributes(&parent);
 	ASSERT_TRUE(attributes.onFrame(1L));
-	ASSERT_EQ(2, attributes.getMax(Type::HEALTH));
+	ASSERT_EQ(2, attributes.max(Type::HEALTH));
 }
 
 TEST_F(AttributesTest, testParentAndOwnPercentage) {
@@ -94,8 +94,8 @@ TEST_F(AttributesTest, testParentAndOwnPercentage) {
 	attributes.add(test2.create());
 
 	ASSERT_TRUE(attributes.onFrame(1L));
-	ASSERT_EQ(210, attributes.getMax(Type::HEALTH));
-	ASSERT_EQ(2, parent.getMax(Type::HEALTH));
+	ASSERT_EQ(210, attributes.max(Type::HEALTH));
+	ASSERT_EQ(2, parent.max(Type::HEALTH));
 }
 
 TEST_F(AttributesTest, testListeners) {

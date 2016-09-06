@@ -33,7 +33,7 @@ void Entity::initAttribs() {
 
 	for (size_t i = 0; i < SDL_arraysize(types); ++i) {
 		const attrib::Type type = static_cast<attrib::Type>(types[i]);
-		const double max = _attribs.getMax(type);
+		const double max = _attribs.max(type);
 		Log::debug("Set current for %s to %f", network::EnumNameAttribType(type), max);
 		_attribs.setCurrent(type, max);
 		_dirtyTypes.insert(type);
@@ -45,7 +45,7 @@ void Entity::onAttribChange(attrib::Type type) {
 }
 
 void Entity::addContainer(const std::string& id) {
-	const attrib::ContainerPtr& c = _containerProvider->getContainer(id);
+	const attrib::ContainerPtr& c = _containerProvider->container(id);
 	if (!c) {
 		Log::error("could not add attribute container for %s", id.c_str());
 		return;
@@ -54,7 +54,7 @@ void Entity::addContainer(const std::string& id) {
 }
 
 void Entity::removeContainer(const std::string& id) {
-	const attrib::ContainerPtr& c = _containerProvider->getContainer(id);
+	const attrib::ContainerPtr& c = _containerProvider->container(id);
 	if (!c) {
 		Log::error("could not remove attribute container for %s", id.c_str());
 		return;

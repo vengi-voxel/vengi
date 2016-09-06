@@ -82,7 +82,7 @@ public:
 	}
 
 	inline bool dead() const {
-		return _attribs.getCurrent(attrib::Type::HEALTH) < 0.00001;
+		return _attribs.current(attrib::Type::HEALTH) < 0.00001;
 	}
 
 	inline ENetPeer* peer() const {
@@ -100,11 +100,11 @@ public:
 	network::EntityType npcType() const;
 
 	inline double current(attrib::Type type) const {
-		return _attribs.getCurrent(type);
+		return _attribs.current(type);
 	}
 
 	inline double max(attrib::Type type) const {
-		return _attribs.getMax(type);
+		return _attribs.max(type);
 	}
 
 	/**

@@ -64,7 +64,7 @@ void ContainerProvider::addContainer(const ContainerPtr& container) {
 	_containers[container->name()] = container;
 }
 
-ContainerPtr ContainerProvider::getContainer(const std::string& name) const {
+ContainerPtr ContainerProvider::container(const std::string& name) const {
 	auto i = _containers.find(name);
 	if (i == _containers.end()) {
 		return ContainerPtr();

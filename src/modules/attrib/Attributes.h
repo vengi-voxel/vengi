@@ -137,17 +137,17 @@ public:
 	 *
 	 * @return The capped current value for the specified type
 	 */
-	double getCurrent(Type type) const;
+	double current(Type type) const;
 	/**
 	 * @note Locks the object (attrib)
 	 *
 	 * @return The current calculated max value for the specified type. This value is computed by the
 	 * @c Container's that were added before the last @c update() call happened.
 	 */
-	double getMax(Type type) const;
+	double max(Type type) const;
 };
 
-inline double Attributes::getCurrent(Type type) const {
+inline double Attributes::current(Type type) const {
 	core::ScopedReadLock scopedLock(_attribLock);
 	auto i = _current.find(type);
 	if (i == _current.end()) {
@@ -156,7 +156,7 @@ inline double Attributes::getCurrent(Type type) const {
 	return i->second;
 }
 
-inline double Attributes::getMax(Type type) const {
+inline double Attributes::max(Type type) const {
 	core::ScopedReadLock scopedLock(_attribLock);
 	auto i = _max.find(type);
 	if (i == _max.end()) {

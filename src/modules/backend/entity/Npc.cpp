@@ -54,7 +54,7 @@ float Npc::orientation() const {
 }
 
 double Npc::applyDamage(Npc* attacker, double damage) {
-	double health = _attribs.getCurrent(attrib::Type::HEALTH);
+	double health = _attribs.current(attrib::Type::HEALTH);
 	if (health > 0.0) {
 		health = std::max(0.0, health - damage);
 		if (attacker != nullptr) {
@@ -67,11 +67,11 @@ double Npc::applyDamage(Npc* attacker, double damage) {
 }
 
 bool Npc::die() {
-	return applyDamage(nullptr, _attribs.getCurrent(attrib::Type::HEALTH)) > 0.0;
+	return applyDamage(nullptr, _attribs.current(attrib::Type::HEALTH)) > 0.0;
 }
 
 bool Npc::attack(ai::CharacterId id) {
-	const double strength = _attribs.getCurrent(attrib::Type::STRENGTH);
+	const double strength = _attribs.current(attrib::Type::STRENGTH);
 	if (strength <= 0.0) {
 		return false;
 	}
@@ -89,7 +89,7 @@ bool Npc::update(long dt) {
 	if (!Entity::update(dt)) {
 		return false;
 	}
-	_ai->getCharacter()->setSpeed(_attribs.getCurrent(attrib::Type::SPEED));
+	_ai->getCharacter()->setSpeed(_attribs.current(attrib::Type::SPEED));
 	return !dead();
 }
 

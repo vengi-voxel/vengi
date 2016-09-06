@@ -33,7 +33,7 @@ public:
 		return value;
 	}
 
-	double getCurrent(Type type) const {
+	double current(Type type) const {
 		auto i = _current.find(type);
 		if (i == _current.end()) {
 			return 0.0;
@@ -41,7 +41,7 @@ public:
 		return i->second;
 	}
 
-	double getMax(Type type) const {
+	double max(Type type) const {
 		auto i = _max.find(type);
 		if (i == _max.end()) {
 			return 0.0;
