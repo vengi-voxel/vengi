@@ -9,6 +9,7 @@ include(${SCRIPTS_CMAKE_DIR}/pack.cmake)
 include(CPack)
 
 option(UNITTESTS "Builds with tests" ON)
+option(VISUALTESTS "Builds with visual tests" ON)
 option(UNITTESTS_SANITIZER_THREADS "Builds tests with thread sanitizer" OFF)
 option(UNITTESTS_SANITIZER_UNDEFINED "Builds tests with undefined behaviour sanitizer" OFF)
 option(UNITTESTS_SANITIZER_LEAK "Builds tests with leak sanitizer" OFF)
