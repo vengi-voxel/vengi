@@ -232,8 +232,8 @@ void Camera::updateFrustumPlanes() {
 	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE)) {
 		return;
 	}
-	const glm::mat4 &v = _viewMatrix;
-	const glm::mat4 &p = _projectionMatrix;
+	const glm::mat4 &v = viewMatrix();
+	const glm::mat4 &p = projectionMatrix();
 
 	glm::mat4 clipMatrix;
 
