@@ -34,7 +34,7 @@ public:
 
 	/**
 	 * @param file The file to load
-	 * @return @c true on success, @c false if an error occured. In case of an error,
+	 * @return @c true on success, @c false if an error occurred. In case of an error,
 	 * you can call error() to get more information about it.
 	 * @note this can be called multiple times. But beware, if a @c Container with the same
 	 * name already exists, it will just be overwritten-
@@ -55,7 +55,7 @@ public:
 	ContainerPtr container(const std::string& name) const;
 
 	/**
-	 * @return The last error that occured in an init() call
+	 * @return The last error that occurred in an init() call
 	 */
 	inline const std::string& error() const {
 		return _error;
