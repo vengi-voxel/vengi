@@ -14,6 +14,7 @@ option(UNITTESTS_SANITIZER_UNDEFINED "Builds tests with undefined behaviour sani
 option(UNITTESTS_SANITIZER_LEAK "Builds tests with leak sanitizer" OFF)
 option(UNITTESTS_SANITIZER_ADDRESS "Builds tests with address sanitizer" OFF)
 option(TOOLS "Builds with tools" ON)
+option(SERVER "Builds with server" ON)
 option(USE_CCACHE "Use ccache" ON)
 set(SERVER_HOST "localhost" CACHE STRING "Host where the server is running on")
 set(SERVER_PORT "11337" CACHE STRING "Port where the server is listening on")
