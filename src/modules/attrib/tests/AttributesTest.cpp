@@ -98,6 +98,37 @@ TEST_F(AttributesTest, testParentAndOwnPercentage) {
 	ASSERT_EQ(2, parent.max(Type::HEALTH));
 }
 
+TEST_F(AttributesTest, testStackCount) {
+	Attributes attributes;
+	ContainerBuilder test1("test1", 4);
+	test1.addAbsolute(Type::HEALTH, 1);
+
+	attributes.add(test1.create());
+	ASSERT_TRUE(attributes.onFrame(1L));
+	ASSERT_EQ(1, attributes.max(Type::HEALTH));
+	ASSERT_EQ(1, attributes.setCurrent(Type::HEALTH, 2));
+
+	attributes.add(test1.create());
+	ASSERT_TRUE(attributes.onFrame(1L));
+	ASSERT_EQ(2, attributes.max(Type::HEALTH));
+	ASSERT_EQ(2, attributes.setCurrent(Type::HEALTH, 3));
+
+	attributes.add(test1.create());
+	ASSERT_TRUE(attributes.onFrame(1L));
+	ASSERT_EQ(3, attributes.max(Type::HEALTH));
+	ASSERT_EQ(3, attributes.setCurrent(Type::HEALTH, 4));
+
+	attributes.add(test1.create());
+	ASSERT_TRUE(attributes.onFrame(1L));
+	ASSERT_EQ(4, attributes.max(Type::HEALTH));
+	ASSERT_EQ(4, attributes.setCurrent(Type::HEALTH, 5));
+
+	attributes.add(test1.create());
+	ASSERT_FALSE(attributes.onFrame(1L));
+	ASSERT_EQ(4, attributes.max(Type::HEALTH));
+	ASSERT_EQ(4, attributes.setCurrent(Type::HEALTH, 6));
+}
+
 TEST_F(AttributesTest, testListeners) {
 	Attributes parent;
 	parent.setName("parent");
