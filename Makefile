@@ -87,7 +87,7 @@ cmake:
 
 define COMPILE
 $(if $(LINUX),\
-	$(Q)script -q --return -c "$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1)" | grep -v Up-to-date \
+	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1) \
 $(else),\
 	$(if $(DARWIN),\
 		$(Q)cd $(BUILDDIR); xcodebuild build -target $(1) install -project tests.xcodeproj -configuration $(BUILD_TYPE) \
