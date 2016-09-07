@@ -49,7 +49,7 @@ inline const glm::mat4& video::SunLight::projectionMatrix() const {
 }
 
 inline glm::mat4 video::SunLight::viewProjectionMatrix(const Camera& camera) const {
-	return glm::translate(projectionMatrix() * viewMatrix(), camera.position());
+	return glm::translate(projectionMatrix() * viewMatrix(), -camera.position());
 }
 
 inline const glm::mat4& video::SunLight::viewMatrix() const {
