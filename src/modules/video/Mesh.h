@@ -46,12 +46,13 @@ private:
 	typedef std::vector<Vertex> Vertices;
 	typedef std::vector<uint32_t> Indices;
 
+	glm::vec3 toVec3(const aiVector3D& vector) const;
 	glm::mat4 toMat4(const aiMatrix4x4& matrix) const;
 	glm::mat4 toMat4(const aiMatrix3x3& matrix) const;
 	void loadTextureImages(const aiScene* scene, const std::string& filename);
-	void calcInterpolatedScaling(aiVector3D& out, float animationTime, const aiNodeAnim* nodeAnim);
-	void calcInterpolatedRotation(aiQuaternion& out, float animationTime, const aiNodeAnim* nodeAnim);
-	void calcInterpolatedPosition(aiVector3D& out, float animationTime, const aiNodeAnim* nodeAnim);
+	glm::vec3 calcInterpolatedScaling(float animationTime, const aiNodeAnim* nodeAnim);
+	glm::mat4 calcInterpolatedRotation(float animationTime, const aiNodeAnim* nodeAnim);
+	glm::vec3 calcInterpolatedPosition(float animationTime, const aiNodeAnim* nodeAnim);
 	uint32_t findScaling(float animationTime, const aiNodeAnim* nodeAnim);
 	uint32_t findRotation(float animationTime, const aiNodeAnim* nodeAnim);
 	uint32_t findPosition(float animationTime, const aiNodeAnim* nodeAnim);
@@ -117,6 +118,10 @@ inline const glm::vec3 Mesh::mins() const {
 
 inline const glm::vec3 Mesh::maxs() const {
 	return _aabbMaxs;
+}
+
+inline glm::vec3 Mesh::toVec3(const aiVector3D& vector) const {
+	return glm::vec3(vector.x, vector.y, vector.z);
 }
 
 inline glm::mat4 Mesh::toMat4(const aiMatrix4x4& m) const {

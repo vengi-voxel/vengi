@@ -326,10 +326,9 @@ uint32_t Mesh::findScaling(float animationTime, const aiNodeAnim* nodeAnim) {
 	return 0u;
 }
 
-void Mesh::calcInterpolatedPosition(aiVector3D& out, float animationTime, const aiNodeAnim* nodeAnim) {
+glm::vec3 Mesh::calcInterpolatedPosition(float animationTime, const aiNodeAnim* nodeAnim) {
 	if (nodeAnim->mNumPositionKeys == 1) {
-		out = nodeAnim->mPositionKeys[0].mValue;
-		return;
+		return toVec3(nodeAnim->mPositionKeys[0].mValue);
 	}
 
 	const uint32_t positionIndex = findPosition(animationTime, nodeAnim);
@@ -338,17 +337,16 @@ void Mesh::calcInterpolatedPosition(aiVector3D& out, float animationTime, const 
 	const float deltaTime = (float) (nodeAnim->mPositionKeys[nextPositionIndex].mTime - nodeAnim->mPositionKeys[positionIndex].mTime);
 	const float factor = (animationTime - (float) nodeAnim->mPositionKeys[positionIndex].mTime) / deltaTime;
 	core_assert(factor >= 0.0f && factor <= 1.0f);
-	const aiVector3D& start = nodeAnim->mPositionKeys[positionIndex].mValue;
-	const aiVector3D& end = nodeAnim->mPositionKeys[nextPositionIndex].mValue;
-	const aiVector3D delta = end - start;
-	out = start + factor * delta;
+	const glm::vec3& start = toVec3(nodeAnim->mPositionKeys[positionIndex].mValue);
+	const glm::vec3& end = toVec3(nodeAnim->mPositionKeys[nextPositionIndex].mValue);
+	const glm::vec3 delta = end - start;
+	return start + factor * delta;
 }
 
-void Mesh::calcInterpolatedRotation(aiQuaternion& out, float animationTime, const aiNodeAnim* nodeAnim) {
+glm::mat4 Mesh::calcInterpolatedRotation(float animationTime, const aiNodeAnim* nodeAnim) {
 	// we need at least two values to interpolate...
 	if (nodeAnim->mNumRotationKeys == 1) {
-		out = nodeAnim->mRotationKeys[0].mValue;
-		return;
+		return toMat4(nodeAnim->mRotationKeys[0].mValue.GetMatrix());
 	}
 
 	const uint32_t rotationIndex = findRotation(animationTime, nodeAnim);
@@ -359,14 +357,15 @@ void Mesh::calcInterpolatedRotation(aiQuaternion& out, float animationTime, cons
 	core_assert(factor >= 0.0f && factor <= 1.0f);
 	const aiQuaternion& startRotationQ = nodeAnim->mRotationKeys[rotationIndex].mValue;
 	const aiQuaternion& endRotationQ = nodeAnim->mRotationKeys[nextRotationIndex].mValue;
+	aiQuaternion out;
 	aiQuaternion::Interpolate(out, startRotationQ, endRotationQ, factor);
 	out = out.Normalize();
+	return toMat4(out.GetMatrix());
 }
 
-void Mesh::calcInterpolatedScaling(aiVector3D& out, float animationTime, const aiNodeAnim* nodeAnim) {
+glm::vec3 Mesh::calcInterpolatedScaling(float animationTime, const aiNodeAnim* nodeAnim) {
 	if (nodeAnim->mNumScalingKeys == 1) {
-		out = nodeAnim->mScalingKeys[0].mValue;
-		return;
+		return toVec3(nodeAnim->mScalingKeys[0].mValue);
 	}
 
 	const uint32_t scalingIndex = findScaling(animationTime, nodeAnim);
@@ -375,10 +374,10 @@ void Mesh::calcInterpolatedScaling(aiVector3D& out, float animationTime, const a
 	const float deltaTime = (float) (nodeAnim->mScalingKeys[nextScalingIndex].mTime - nodeAnim->mScalingKeys[scalingIndex].mTime);
 	const float factor = (animationTime - (float) nodeAnim->mScalingKeys[scalingIndex].mTime) / deltaTime;
 	core_assert(factor >= 0.0f && factor <= 1.0f);
-	const aiVector3D& start = nodeAnim->mScalingKeys[scalingIndex].mValue;
-	const aiVector3D& end = nodeAnim->mScalingKeys[nextScalingIndex].mValue;
-	const aiVector3D delta = end - start;
-	out = start + factor * delta;
+	const glm::vec3& start = toVec3(nodeAnim->mScalingKeys[scalingIndex].mValue);
+	const glm::vec3& end = toVec3(nodeAnim->mScalingKeys[nextScalingIndex].mValue);
+	const glm::vec3 delta = end - start;
+	return start + factor * delta;
 }
 
 void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform) {
@@ -388,24 +387,20 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 
 	if (nodeAnim != nullptr) {
 		// Interpolate scaling and generate scaling transformation matrix
-		aiVector3D scaling;
-		calcInterpolatedScaling(scaling, animationTime, nodeAnim);
+		const glm::vec3& scaling = calcInterpolatedScaling(animationTime, nodeAnim);
 		const glm::mat4& scalingM = glm::scale(glm::mat4(), glm::vec3(scaling.x, scaling.y, scaling.z));
 
 		// Interpolate rotation and generate rotation transformation matrix
-		aiQuaternion rotationQ;
-		calcInterpolatedRotation(rotationQ, animationTime, nodeAnim);
-		const glm::mat4& rotationM = toMat4(rotationQ.GetMatrix());
+		const glm::mat4& rotationM = calcInterpolatedRotation(animationTime, nodeAnim);
 
 		// Interpolate translation and generate translation transformation matrix
-		aiVector3D translation;
-		calcInterpolatedPosition(translation, animationTime, nodeAnim);
+		const glm::vec3& translation = calcInterpolatedPosition(animationTime, nodeAnim);
 		const glm::mat4& translationM = glm::translate(glm::mat4(), glm::vec3(translation.x, translation.y, translation.z));
 
 		// Combine the above transformations
 		nodeTransformation = translationM * rotationM * scalingM;
 	} else {
-		nodeTransformation = toMat4((node->mTransformation));
+		nodeTransformation = toMat4(node->mTransformation);
 	}
 
 	const glm::mat4 globalTransformation = parentTransform * nodeTransformation;
