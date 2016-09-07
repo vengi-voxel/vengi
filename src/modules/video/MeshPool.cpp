@@ -36,10 +36,11 @@ std::string MeshPool::getName(const std::string& id) const {
 MeshPtr MeshPool::getMesh(const std::string& id) {
 	const std::string name = getName(id);
 	auto i = _meshes.find(name);
-	if (i != _meshes.end())
+	if (i != _meshes.end()) {
 		return i->second;
+	}
 
-	const MeshPtr mesh = std::make_shared<Mesh>();
+	const MeshPtr& mesh = std::make_shared<Mesh>();
 	core::App::getInstance()->threadPool().enqueue([=]() {mesh->loadMesh(name);});
 	_meshes[name] = mesh;
 	return mesh;
