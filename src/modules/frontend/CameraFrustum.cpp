@@ -21,7 +21,11 @@ void CameraFrustum::render(const video::Camera& camera, const video::Camera& fru
 	_shapeBuilder.frustum(frustumCamera);
 	_shapeRenderer.update(_frustumMesh, _shapeBuilder);
 	if (_renderAABB) {
-		const core::AABB<float>& aabb = frustumCamera.aabb();
+		core::AABB<float> aabb = frustumCamera.aabb();
+#if 0
+		aabb.shift(-aabb.getLowerCorner());
+		aabb.shift(-aabb.getCenter());
+#endif
 		_shapeBuilder.clear();
 		_shapeBuilder.aabb(aabb);
 		if (_aabbMesh < 0) {
