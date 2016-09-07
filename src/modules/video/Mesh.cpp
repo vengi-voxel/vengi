@@ -339,14 +339,14 @@ glm::vec3 Mesh::calcInterpolatedPosition(float animationTime, const aiNodeAnim* 
 	core_assert(factor >= 0.0f && factor <= 1.0f);
 	const glm::vec3& start = toVec3(nodeAnim->mPositionKeys[positionIndex].mValue);
 	const glm::vec3& end = toVec3(nodeAnim->mPositionKeys[nextPositionIndex].mValue);
-	const glm::vec3 delta = end - start;
+	const glm::vec3& delta = end - start;
 	return start + factor * delta;
 }
 
 glm::mat4 Mesh::calcInterpolatedRotation(float animationTime, const aiNodeAnim* nodeAnim) {
 	// we need at least two values to interpolate...
 	if (nodeAnim->mNumRotationKeys == 1) {
-		return toMat4(nodeAnim->mRotationKeys[0].mValue.GetMatrix());
+		return glm::mat4_cast(toQuat(nodeAnim->mRotationKeys[0].mValue));
 	}
 
 	const uint32_t rotationIndex = findRotation(animationTime, nodeAnim);
@@ -355,12 +355,10 @@ glm::mat4 Mesh::calcInterpolatedRotation(float animationTime, const aiNodeAnim* 
 	const float deltaTime = (float) (nodeAnim->mRotationKeys[nextRotationIndex].mTime - nodeAnim->mRotationKeys[rotationIndex].mTime);
 	const float factor = (animationTime - (float) nodeAnim->mRotationKeys[rotationIndex].mTime) / deltaTime;
 	core_assert(factor >= 0.0f && factor <= 1.0f);
-	const aiQuaternion& startRotationQ = nodeAnim->mRotationKeys[rotationIndex].mValue;
-	const aiQuaternion& endRotationQ = nodeAnim->mRotationKeys[nextRotationIndex].mValue;
-	aiQuaternion out;
-	aiQuaternion::Interpolate(out, startRotationQ, endRotationQ, factor);
-	out = out.Normalize();
-	return toMat4(out.GetMatrix());
+	const glm::quat& startRotationQ = toQuat(nodeAnim->mRotationKeys[rotationIndex].mValue);
+	const glm::quat& endRotationQ = toQuat(nodeAnim->mRotationKeys[nextRotationIndex].mValue);
+	const glm::quat& out = glm::normalize(glm::slerp(startRotationQ, endRotationQ, factor));
+	return glm::mat4_cast(out);
 }
 
 glm::vec3 Mesh::calcInterpolatedScaling(float animationTime, const aiNodeAnim* nodeAnim) {

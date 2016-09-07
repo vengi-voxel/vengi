@@ -47,6 +47,7 @@ private:
 	typedef std::vector<uint32_t> Indices;
 
 	glm::vec3 toVec3(const aiVector3D& vector) const;
+	glm::quat toQuat(const aiQuaternion& quat) const;
 	glm::mat4 toMat4(const aiMatrix4x4& matrix) const;
 	glm::mat4 toMat4(const aiMatrix3x3& matrix) const;
 	void loadTextureImages(const aiScene* scene, const std::string& filename);
@@ -122,6 +123,10 @@ inline const glm::vec3 Mesh::maxs() const {
 
 inline glm::vec3 Mesh::toVec3(const aiVector3D& vector) const {
 	return glm::vec3(vector.x, vector.y, vector.z);
+}
+
+inline glm::quat Mesh::toQuat(const aiQuaternion& quat) const {
+	return glm::quat(quat.w, quat.x, quat.y, quat.z);
 }
 
 inline glm::mat4 Mesh::toMat4(const aiMatrix4x4& m) const {
