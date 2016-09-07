@@ -495,9 +495,10 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		if (!mesh->initMesh(shader)) {
 			continue;
 		}
-		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), ent->position());
+		const glm::mat4& rotate = glm::rotate(glm::mat4(1.0f), ent->orientation(), glm::up);
+		const glm::mat4& translate = glm::translate(rotate, ent->position());
 		const glm::mat4& scale = glm::scale(translate, glm::vec3(ent->scale()));
-		const glm::mat4& model = glm::rotate(scale, ent->orientation(), glm::up);
+		const glm::mat4& model = scale;
 		shader.setUniformMatrix("u_model", model, false);
 		drawCallsEntities += mesh->render();
 		GL_checkError();
