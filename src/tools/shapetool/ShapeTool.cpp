@@ -60,6 +60,8 @@ core::AppState ShapeTool::onInit() {
 
 	_worldRenderer.onSpawn(_camera.position(), core::Var::get(cfg::ShapeToolExtractRadius, "1")->intVal());
 
+	_meshPool->init();
+
 	const char *meshName = "chr_skelett2_bake";
 	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
 	if (!mesh) {

@@ -144,6 +144,8 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
+	_meshPool->init();
+
 	if (!_worldRenderer.onInit(_dimension)) {
 		return core::Cleanup;
 	}

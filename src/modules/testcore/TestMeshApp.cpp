@@ -46,6 +46,8 @@ core::AppState TestMeshApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
+	_meshPool.init();
+
 	const std::string mesh = core::Var::get("mesh", "chr_skelett2_bake")->strVal();
 	_mesh = _meshPool.getMesh(mesh);
 	if (!_mesh->isLoading()) {

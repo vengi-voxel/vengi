@@ -5,6 +5,7 @@
 #include "MeshPool.h"
 #include "io/Filesystem.h"
 #include "core/App.h"
+#include <assimp/importerdesc.h>
 
 namespace video {
 
@@ -15,6 +16,18 @@ MeshPool::MeshPool() {
 
 MeshPool::~MeshPool() {
 	shutdown();
+}
+
+bool MeshPool::init() {
+	bool state = true;
+	for (const char **format = supportedFormats; *format != nullptr; format++) {
+		const std::string& f = core::string::toLower(*format);
+		if (aiGetImporterDesc(f.c_str()) == nullptr) {
+			Log::warn("Could not find an importer for %s", *format);
+			state = false;
+		}
+	}
+	return state;
 }
 
 void MeshPool::shutdown() {
