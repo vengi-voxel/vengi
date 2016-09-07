@@ -93,7 +93,7 @@ private:
 	void* _lastShader = nullptr;
 	std::string _filename;
 
-	void boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms, uint8_t animationIndex = 0u);
+	void boneTransform(float timeInSeconds, glm::mat4* transforms, size_t size, uint8_t animationIndex = 0u);
 public:
 	Mesh();
 	~Mesh();

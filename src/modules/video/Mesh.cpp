@@ -232,9 +232,9 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 
 	const int size = shader.getUniformArraySize("u_bonetransforms");
 	if (size > 0) {
-		std::vector<glm::mat4> transforms;
-		transforms.resize(size);
-		boneTransform(_timeInSeconds, transforms, _animationIndex);
+		core_assert(size == 100);
+		glm::mat4 transforms[100];
+		boneTransform(_timeInSeconds, &transforms[0], size, _animationIndex);
 		shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], size);
 	}
 
@@ -417,14 +417,15 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 	}
 }
 
-void Mesh::boneTransform(float timeInSeconds, std::vector<glm::mat4>& transforms, uint8_t animationIndex) {
+void Mesh::boneTransform(float timeInSeconds, glm::mat4* transforms, size_t size, uint8_t animationIndex) {
 	const glm::mat4 identity;
 
 	if (_numBones == 0 || _scene->mNumAnimations == 0) {
-		transforms.push_back(identity);
+		core_assert(size >= 1);
+		transforms[0] = identity;
 		return;
 	}
-	core_assert(_numBones <= transforms.size());
+	core_assert(_numBones <= size);
 
 	const aiAnimation* animation = _scene->mAnimations[animationIndex];
 	const float ticksPerSecond = (float) (animation->mTicksPerSecond != 0 ? animation->mTicksPerSecond : 25.0f);
