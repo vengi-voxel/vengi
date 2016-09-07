@@ -8,7 +8,7 @@
 
 namespace video {
 
-static const char* supportedFormats[] = { "dae", "fbx", "DAE", "FBX", nullptr };
+static const char* supportedFormats[] = { "dae", "fbx", "DAE", "FBX", "md5mesh", nullptr };
 
 MeshPool::MeshPool() {
 }
@@ -25,8 +25,9 @@ std::string MeshPool::getName(const std::string& id) const {
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
 	for (const char **format = supportedFormats; *format != nullptr; format++) {
 		const std::string name = "mesh/" + id + "." + *format;
-		if (filesystem->open(name)->exists())
+		if (filesystem->open(name)->exists()) {
 			return name;
+		}
 	}
 
 	return id;
