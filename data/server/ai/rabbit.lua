@@ -1,7 +1,7 @@
 require "ai.shared"
 
 function rabbitStayAlive (parentnode)
-	parentnode:addNode("Steer(SelectionFlee)", "fleefromhunter"):setCondition("And(Filter(SelectNpcsOfTypes{ANIMAL_WOLF}),IsCloseToSelection{10})")
+	parentnode:addNode("Steer(SelectionFlee)", "fleefromhunter"):setCondition("And(Filter(SelectEntitiesOfTypes{ANIMAL_WOLF}),IsCloseToSelection{10})")
 end
 
 function rabbit ()

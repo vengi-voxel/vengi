@@ -15,7 +15,7 @@ std::atomic<EntityId> Npc::_nextNpcId(5000000);
 Npc::Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider) :
 		Entity(_nextNpcId++, messageSender, timeProvider, containerProvider), _world(world), _poiProvider(poiProvider) {
-	_npcType = type;
+	_entityType = type;
 	_ai = std::make_shared<ai::AI>(behaviour);
 	_ai->setCharacter(std::make_shared<AICharacter>(_entityId, *this));
 }
@@ -36,13 +36,13 @@ void Npc::init(const glm::ivec3* pos) {
 			ai()->getId(), ai()->getBehaviour()->getName().c_str(), randomPos.x, randomPos.y, randomPos.z, material);
 	setHomePosition(randomPos);
 	_ai->getCharacter()->setPosition(glm::vec3(randomPos.x, randomPos.y, randomPos.z));
-	const char *typeName = network::EnumNameEntityType(_npcType);
+	const char *typeName = network::EnumNameEntityType(_entityType);
 	addContainer(typeName);
 	initAttribs();
 }
 
 std::string Npc::name() const {
-	return network::EnumNameEntityType(_npcType);
+	return network::EnumNameEntityType(_entityType);
 }
 
 void Npc::setPointOfInterest() {

@@ -45,7 +45,7 @@ void SpawnMgr::spawnEntity(ai::Zone& zone, network::EntityType start, network::E
 	zone.execute([start, end, offset, &count] (const ai::AIPtr& ai) {
 		const AICharacter& chr = ai::character_cast<AICharacter>(ai->getCharacter());
 		const Npc& npc = chr.getNpc();
-		const network::EntityType type = npc.npcType();
+		const network::EntityType type = npc.entityType();
 		if (type <= start || type >= end) {
 			return;
 		}

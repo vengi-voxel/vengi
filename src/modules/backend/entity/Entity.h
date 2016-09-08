@@ -47,7 +47,7 @@ protected:
 
 	std::unordered_set<attrib::DirtyValue> _dirtyTypes;
 	cooldown::CooldownMgr _cooldowns;
-	network::EntityType _npcType = network::EntityType::NONE;
+	network::EntityType _entityType = network::EntityType::NONE;
 	ENetPeer *_peer = nullptr;
 
 	/**
@@ -103,7 +103,7 @@ public:
 	 */
 	virtual const glm::vec3& pos() const = 0;
 	virtual float orientation() const = 0;
-	network::EntityType npcType() const;
+	network::EntityType entityType() const;
 
 	inline double current(attrib::Type type) const {
 		return _attribs.current(type);
@@ -195,8 +195,8 @@ public:
 	}
 };
 
-inline network::EntityType Entity::npcType() const {
-	return _npcType;
+inline network::EntityType Entity::entityType() const {
+	return _entityType;
 }
 
 }

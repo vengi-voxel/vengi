@@ -140,7 +140,7 @@ void Entity::sendEntitySpawn(const EntityPtr& entity) const {
 	const glm::vec3& pos = entity->pos();
 	const network::Vec3 vec3 { pos.x, pos.y, pos.z };
 	const EntityId entityId = id();
-	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntitySpawn, network::CreateEntitySpawn(fbb, entity->id(), entity->npcType(), &vec3, entityId).Union());
+	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntitySpawn, network::CreateEntitySpawn(fbb, entity->id(), entity->entityType(), &vec3, entityId).Union());
 }
 
 void Entity::sendEntityRemove(const EntityPtr& entity) const {

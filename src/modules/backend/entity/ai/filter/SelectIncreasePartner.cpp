@@ -13,7 +13,7 @@ void SelectIncreasePartner::filter(const AIPtr& entity) {
 	entities.clear();
 	backend::Npc& chr = ai::character_cast<AICharacter>(entity->getCharacter()).getNpc();
 	chr.visitVisible([&] (const backend::EntityPtr& e) {
-		if (chr.npcType() != e->npcType()) {
+		if (chr.entityType() != e->entityType()) {
 			return;
 		}
 		if (e->cooldownMgr().isCooldown(_cooldownId)) {

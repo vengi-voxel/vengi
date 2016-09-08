@@ -24,7 +24,7 @@ set(SRCS
 	entity/ai/filter/SelectPrey.cpp entity/ai/filter/SelectPrey.h
 	entity/ai/filter/SelectVisible.cpp entity/ai/filter/SelectVisible.h
 	entity/ai/filter/SelectIncreasePartner.cpp entity/ai/filter/SelectIncreasePartner.h
-	entity/ai/filter/SelectNpcsOfTypes.h
+	entity/ai/filter/SelectEntitiesOfTypes.h
 	poi/PoiProvider.cpp poi/PoiProvider.h
 	entity/Npc.cpp entity/Npc.h
 	entity/User.cpp entity/User.h

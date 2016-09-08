@@ -21,7 +21,7 @@
 #include "condition/IsOnCooldown.h"
 
 #include "filter/SelectVisible.h"
-#include "filter/SelectNpcsOfTypes.h"
+#include "filter/SelectEntitiesOfTypes.h"
 #include "filter/SelectIncreasePartner.h"
 #include "filter/SelectPrey.h"
 
@@ -33,7 +33,7 @@ void AIRegistry::init(const backend::SpawnMgrPtr& spawnMgr) {
 	registerFilterFactory("SelectVisible", SelectVisible::getFactory());
 	registerFilterFactory("SelectIncreasePartner", SelectIncreasePartner::getFactory());
 	registerFilterFactory("SelectPrey", SelectPrey::getFactory());
-	registerFilterFactory("SelectNpcsOfTypes", SelectNpcsOfTypes::getFactory());
+	registerFilterFactory("SelectEntitiesOfTypes", SelectEntitiesOfTypes::getFactory());
 	registerConditionFactory("IsCloseToSelection", IsCloseToSelection::getFactory());
 	registerConditionFactory("IsOnCooldown", IsOnCooldown::getFactory());
 	registerConditionFactory("IsSelectionAlive", IsSelectionAlive::getFactory());

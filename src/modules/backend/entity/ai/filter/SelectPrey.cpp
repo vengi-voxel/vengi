@@ -18,7 +18,7 @@ void SelectPrey::filter(const AIPtr& entity) {
 	FilteredEntities& entities = getFilteredEntities(entity);
 	backend::Npc& chr = ai::character_cast<AICharacter>(entity->getCharacter()).getNpc();
 	chr.visitVisible([&] (const backend::EntityPtr& e) {
-		if (e->npcType() == _npcType) {
+		if (e->entityType() == _npcType) {
 			entities.push_back(e->id());
 		}
 	});
