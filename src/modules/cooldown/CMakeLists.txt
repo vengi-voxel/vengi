@@ -5,7 +5,7 @@ set(SRCS
 )
 set(LIB cooldown)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} core)
+target_link_libraries(${LIB} core commonlua network)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests

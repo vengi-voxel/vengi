@@ -33,6 +33,16 @@ enum EntityType: int {
 	MAX_CHARACTERS,
 }
 
+enum CooldownType: int {
+	NONE,
+	// the cooldown for increasing the population
+	INCREASE,
+	// defines the delay between hunts
+	HUNT,
+	// the cooldown for removing a disconnected user from the server
+	LOGOUT
+}
+
 enum AttribType: int {
 	NONE,
 	HEALTH,

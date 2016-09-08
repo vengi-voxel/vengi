@@ -137,7 +137,7 @@ void ServerLoop::onEvent(const network::DisconnectEvent& event) {
 		return;
 	}
 	// TODO: handle this and abort on re-login
-	user->cooldownMgr().triggerCooldown(cooldown::LOGOUT);
+	user->cooldownMgr().triggerCooldown(cooldown::Type::LOGOUT);
 }
 
 void ServerLoop::onEvent(const network::NewConnectionEvent& event) {

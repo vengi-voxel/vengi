@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <functional>
 #include <cstring>
 #include "core/Common.h"
 #include "Shared_generated.h"
@@ -26,12 +25,4 @@ inline Type getType(const char* name) {
 	return Type::NONE;
 }
 
-}
-
-namespace std {
-template<> struct hash<attrib::Type> {
-	inline size_t operator()(const attrib::Type &s) const {
-		return static_cast<size_t>(s);
-	}
-};
 }

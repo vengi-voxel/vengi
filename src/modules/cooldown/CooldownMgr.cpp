@@ -4,6 +4,7 @@
 
 #include "CooldownMgr.h"
 #include "core/Common.h"
+#include "core/EnumHash.h"
 
 namespace cooldown {
 
@@ -16,14 +17,14 @@ unsigned long durations[] = {
 	10000ul,
 	100ul
 };
-static_assert(SDL_arraysize(durations) == CooldownType::MAX, "durations and types don't match");
+static_assert(SDL_arraysize(durations) == core::enumValue<Type>(Type::MAX) + 1, "durations and types don't match");
 }
 
 CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider) :
 		_timeProvider(timeProvider), _lock("CooldownMgr") {
 }
 
-CooldownTriggerState CooldownMgr::triggerCooldown(CooldownType type) {
+CooldownTriggerState CooldownMgr::triggerCooldown(Type type) {
 	core::ScopedWriteLock lock(_lock);
 	CooldownPtr cooldown = _cooldowns[type];
 	if (!cooldown) {
@@ -40,7 +41,7 @@ CooldownTriggerState CooldownMgr::triggerCooldown(CooldownType type) {
 	return CooldownTriggerState::SUCCESS;
 }
 
-CooldownPtr CooldownMgr::cooldown(CooldownType type) const {
+CooldownPtr CooldownMgr::cooldown(Type type) const {
 	core::ScopedReadLock lock(_lock);
 	auto i = _cooldowns.find(type);
 	if (i == _cooldowns.end())
@@ -48,11 +49,11 @@ CooldownPtr CooldownMgr::cooldown(CooldownType type) const {
 	return i->second;
 }
 
-unsigned long CooldownMgr::defaultDuration(CooldownType type) const {
-	return durations[type];
+unsigned long CooldownMgr::defaultDuration(Type type) const {
+	return durations[core::enumValue(type)];
 }
 
-bool CooldownMgr::resetCooldown(CooldownType type) {
+bool CooldownMgr::resetCooldown(Type type) {
 	const CooldownPtr& c = cooldown(type);
 	if (!c) {
 		return false;
@@ -61,7 +62,7 @@ bool CooldownMgr::resetCooldown(CooldownType type) {
 	return true;
 }
 
-bool CooldownMgr::cancelCooldown(CooldownType type) {
+bool CooldownMgr::cancelCooldown(Type type) {
 	const CooldownPtr& c = cooldown(type);
 	if (!c) {
 		return false;
@@ -70,7 +71,7 @@ bool CooldownMgr::cancelCooldown(CooldownType type) {
 	return true;
 }
 
-bool CooldownMgr::isCooldown(CooldownType type) {
+bool CooldownMgr::isCooldown(Type type) {
 	const CooldownPtr& c = cooldown(type);
 	if (!c || !c->running()) {
 		Log::trace("Cooldown of type %i is not running", type);

@@ -13,7 +13,7 @@ namespace backend {
 
 class TriggerCooldown: public Task {
 private:
-	cooldown::CooldownType _cooldownId;
+	cooldown::Type _cooldownId;
 public:
 	TriggerCooldown(const std::string& name, const std::string& parameters, const ConditionPtr& condition);
 	NODE_FACTORY(TriggerCooldown)

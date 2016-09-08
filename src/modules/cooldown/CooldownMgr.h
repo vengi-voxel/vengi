@@ -34,7 +34,7 @@ private:
 
 	typedef std::priority_queue<CooldownPtr, std::vector<CooldownPtr>, CooldownComparatorLess> CooldownQueue;
 	CooldownQueue _queue;
-	typedef std::unordered_map<CooldownType, CooldownPtr> Cooldowns;
+	typedef std::unordered_map<Type, CooldownPtr> Cooldowns;
 	Cooldowns _cooldowns;
 public:
 	CooldownMgr(const core::TimeProviderPtr& timeProvider);
@@ -42,25 +42,25 @@ public:
 	/**
 	 * @brief Tries to trigger the specified cooldown for the given entity
 	 */
-	CooldownTriggerState triggerCooldown(CooldownType type);
+	CooldownTriggerState triggerCooldown(Type type);
 
 	/**
 	 * @brief Reset a cooldown and restart it
 	 */
-	bool resetCooldown(CooldownType type);
+	bool resetCooldown(Type type);
 
-	unsigned long defaultDuration(CooldownType type) const;
-	CooldownPtr cooldown(CooldownType type) const;
+	unsigned long defaultDuration(Type type) const;
+	CooldownPtr cooldown(Type type) const;
 
 	/**
 	 * @brief Cancel an already running cooldown
 	 */
-	bool cancelCooldown(CooldownType type);
+	bool cancelCooldown(Type type);
 
 	/**
 	 * @brief Checks whether a user has the given cooldown running
 	 */
-	bool isCooldown(CooldownType type);
+	bool isCooldown(Type type);
 
 	/**
 	 * @brief Update cooldown states

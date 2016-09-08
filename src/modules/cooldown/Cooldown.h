@@ -14,14 +14,14 @@ namespace cooldown {
 
 class Cooldown {
 private:
-	CooldownType _type;
+	Type _type;
 	unsigned long _durationMillis;
 	unsigned long _startMillis;
 	unsigned long _expireMillis;
 	core::TimeProviderPtr _timeProvider;
 
 public:
-	Cooldown(CooldownType type, unsigned long durationMillis, const core::TimeProviderPtr& timeProvider) :
+	Cooldown(Type type, unsigned long durationMillis, const core::TimeProviderPtr& timeProvider) :
 			_type(type), _durationMillis(durationMillis), _startMillis(0ul), _expireMillis(0ul), _timeProvider(timeProvider) {
 	}
 
@@ -63,7 +63,7 @@ public:
 		return _startMillis;
 	}
 
-	inline CooldownType type() const {
+	inline Type type() const {
 		return _type;
 	}
 

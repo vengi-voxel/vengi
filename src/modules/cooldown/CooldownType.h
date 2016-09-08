@@ -6,27 +6,24 @@
 
 #include <functional>
 #include <string>
+#include "core/EnumHash.h"
+#include "Shared_generated.h"
 
 namespace cooldown {
 
-enum CooldownType {
-	NONE,
-	// the cooldown for increasing the population
-	INCREASE,
-	// defines the delay between hunts
-	HUNT,
-	// the cooldown for removing a disconnected user from the server
-	LOGOUT,
+using Type = network::CooldownType;
 
-	MAX
-};
-
+inline Type getType(const char* name) {
+	const char **names = network::EnumNamesCooldownType();
+	int i = 0;
+	while (*names) {
+		if (!strcmp(*names, name)) {
+			return static_cast<Type>(i);
+		}
+		++i;
+		++names;
+	}
+	return Type::NONE;
 }
 
-namespace std {
-template<> struct hash<cooldown::CooldownType> {
-	inline size_t operator()(const cooldown::CooldownType &c) const {
-		return std::hash<size_t>()(static_cast<size_t>(c));
-	}
-};
 }

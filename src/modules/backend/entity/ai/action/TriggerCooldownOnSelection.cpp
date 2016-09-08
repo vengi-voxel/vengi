@@ -10,9 +10,8 @@ namespace backend {
 
 TriggerCooldownOnSelection::TriggerCooldownOnSelection(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
 		Task(name, parameters, condition) {
-	_cooldownId = static_cast<cooldown::CooldownType>(core::string::toInt(parameters));
-	core_assert(_cooldownId > cooldown::NONE);
-	core_assert(_cooldownId < cooldown::MAX);
+	_cooldownId = static_cast<cooldown::Type>(core::string::toInt(parameters));
+	core_assert(_cooldownId != cooldown::Type::NONE);
 }
 
 TreeNodeStatus TriggerCooldownOnSelection::doAction(backend::AICharacter& chr, long deltaMillis) {

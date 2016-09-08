@@ -14,7 +14,7 @@ namespace backend {
 
 class TriggerCooldownOnSelection: public Task {
 private:
-	cooldown::CooldownType _cooldownId;
+	cooldown::Type _cooldownId;
 public:
 	TriggerCooldownOnSelection(const std::string& name, const std::string& parameters, const ConditionPtr& condition);
 	NODE_FACTORY(TriggerCooldownOnSelection)

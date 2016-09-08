@@ -17,13 +17,12 @@ namespace backend {
 
 class IsOnCooldown: public ICondition {
 private:
-	cooldown::CooldownType _cooldownId;
+	cooldown::Type _cooldownId;
 public:
 	IsOnCooldown(const std::string& parameters) :
 			ICondition("IsOnCooldown", parameters) {
-		_cooldownId = static_cast<cooldown::CooldownType>(core::string::toInt(parameters));
-		core_assert(_cooldownId > cooldown::NONE);
-		core_assert(_cooldownId < cooldown::MAX);
+		_cooldownId = static_cast<cooldown::Type>(core::string::toInt(parameters));
+		core_assert(_cooldownId != cooldown::Type::NONE);
 	}
 	CONDITION_FACTORY(IsOnCooldown)
 
