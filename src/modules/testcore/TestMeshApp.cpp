@@ -65,7 +65,7 @@ core::AppState TestMeshApp::onInit() {
 void TestMeshApp::doRender() {
 	_sunLight.update(_deltaFrame, _camera);
 	// TODO: support different animations...
-	const uint8_t animationIndex = 0u;
+	const uint8_t animationIndex = core::Var::get("animation", "0")->intVal();
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;
 	{
 		video::ScopedShader scoped(_shadowMapShader);
