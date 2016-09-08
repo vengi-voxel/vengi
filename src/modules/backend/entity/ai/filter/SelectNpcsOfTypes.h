@@ -22,19 +22,12 @@ public:
 
 	SelectNpcsOfTypes(const std::string& parameters) :
 			IFilter("SelectNpcsOfTypes", parameters) {
-		const char **names = network::EnumNamesEntityType();
 		std::vector<std::string> types;
 		core::string::splitString(parameters, types, ",");
 		for (const std::string& type : types) {
-			int i = 0;
-			while (*names) {
-				if (!strcmp(*names, type.c_str())) {
-					_npcTypes[i] = true;
-					break;
-				}
-				++i;
-				++names;
-			}
+			auto npcType = network::getEnum<network::EntityType>(type.c_str(), network::EnumNamesEntityType());
+			core_assert(npcType != network::EntityType::NONE);
+			_npcTypes[(int)npcType] = true;
 		}
 	}
 

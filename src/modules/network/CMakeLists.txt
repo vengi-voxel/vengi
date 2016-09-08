@@ -4,6 +4,7 @@ set(SRCS
 	Network.cpp Network.h
 	MessageSender.h MessageSender.cpp
 	NetworkEvents.h
+	ProtocolEnum.h
 	ProtocolHandlerRegistry.h ProtocolHandlerRegistry.cpp
 )
 set(LIB network)
