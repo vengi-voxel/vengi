@@ -228,7 +228,9 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	}
 	video::ScopedShader scoped(shader);
 	shaderSetUniformIf(shader, setUniformMatrix, "u_view", actualCamera->viewMatrix());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_view_inverse", glm::inverse(actualCamera->viewMatrix()));
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", actualCamera->projectionMatrix());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_projection_inverse", glm::inverse(actualCamera->projectionMatrix()));
 	shaderSetUniformIf(shader, setUniformVec4v, "u_materialcolor[0]", &materialColors[0], materialColors.size());
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
@@ -236,6 +238,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunLight.direction());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_light_inverse", glm::inverse(_sunLight.viewProjectionMatrix(camera)));
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
