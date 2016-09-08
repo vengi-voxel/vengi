@@ -16,7 +16,8 @@ TriggerCooldown::TriggerCooldown(const std::string& name, const std::string& par
 
 TreeNodeStatus TriggerCooldown::doAction(backend::AICharacter& chr, long deltaMillis) {
 	backend::Npc& npc = chr.getNpc();
-	if (npc.cooldownMgr().triggerCooldown(_cooldownId) == cooldown::CooldownTriggerState::SUCCESS) {
+	const cooldown::CooldownTriggerState s = npc.cooldownMgr().triggerCooldown(_cooldownId);
+	if (s == cooldown::CooldownTriggerState::SUCCESS) {
 		return FINISHED;
 	}
 	return FAILED;
