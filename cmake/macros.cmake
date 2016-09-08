@@ -358,7 +358,14 @@ macro(gtest_suite_end name)
 
 		add_executable(${name} ${srcs})
 		# add googletest lib dependency
-		target_link_libraries(${name} gtest ${deps})
+		find_package(GTest)
+		if (GTEST_FOUND)
+			target_include_directories(${name} PRIVATE ${GTEST_INCLUDE_DIRS})
+			target_link_libraries(${name} ${GTEST_LIBRARIES})
+		else()
+			target_link_libraries(${name} gtest)
+		endif()
+		target_link_libraries(${name} ${deps})
 		# generate a command line app
 		set_target_properties(${name} PROPERTIES FOLDER "tests")
 
