@@ -122,26 +122,26 @@ bool User::update(long dt) {
 }
 
 void User::sendSeed(long seed) const {
-	static flatbuffers::FlatBufferBuilder fbb;
+	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::Seed, network::CreateSeed(fbb, seed).Union());
 }
 
 void User::sendUserSpawn() const {
-	static flatbuffers::FlatBufferBuilder fbb;
+	flatbuffers::FlatBufferBuilder fbb;
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	// TODO: broadcast to visible
 	_messageSender->broadcastServerMessage(fbb, network::ServerMsgType::UserSpawn, network::CreateUserSpawn(fbb, id(), fbb.CreateString(_name), &pos).Union());
 }
 
 void User::sendEntityUpdate(const EntityPtr& entity) const {
-	static flatbuffers::FlatBufferBuilder fbb;
+	flatbuffers::FlatBufferBuilder fbb;
 	const glm::vec3& _pos = entity->pos();
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityUpdate, network::CreateEntityUpdate(fbb, entity->id(), &pos, entity->orientation()).Union());
 }
 
 void User::sendEntitySpawn(const EntityPtr& entity) const {
-	static flatbuffers::FlatBufferBuilder fbb;
+	flatbuffers::FlatBufferBuilder fbb;
 	const glm::vec3& pos = entity->pos();
 	const network::Vec3 vec3 { pos.x, pos.y, pos.z };
 	const EntityId entityId = id();
@@ -149,7 +149,7 @@ void User::sendEntitySpawn(const EntityPtr& entity) const {
 }
 
 void User::sendEntityRemove(const EntityPtr& entity) const {
-	static flatbuffers::FlatBufferBuilder fbb;
+	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityRemove, network::CreateEntityRemove(fbb, entity->id()).Union());
 }
 

@@ -78,7 +78,7 @@ void Entity::sendAttribUpdate() {
 		return;
 	}
 
-	static flatbuffers::FlatBufferBuilder fbb;
+	flatbuffers::FlatBufferBuilder fbb;
 	auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(_dirtyTypes.size(),
 		[&] (size_t i) {
 			const attrib::DirtyValue& dirtyValue = *_dirtyTypes.erase(_dirtyTypes.begin());
