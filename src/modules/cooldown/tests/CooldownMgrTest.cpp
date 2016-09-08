@@ -52,6 +52,8 @@ TEST(CooldownMgr, testMultipleCooldown) {
 	ASSERT_TRUE(mgr.isCooldown(Type::LOGOUT));
 	ASSERT_TRUE(mgr.isCooldown(Type::INCREASE));
 	mgr.update();
+	ASSERT_TRUE(mgr.isCooldown(Type::LOGOUT));
+	ASSERT_TRUE(mgr.isCooldown(Type::INCREASE));
 
 	const unsigned long logoutDuration = mgr.defaultDuration(Type::LOGOUT);
 	const unsigned long increaseDuration = mgr.defaultDuration(Type::INCREASE);

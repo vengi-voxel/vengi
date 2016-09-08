@@ -36,10 +36,12 @@ public:
 	}
 
 	inline void expire() {
+		// TODO: eventbus or state
 		reset();
 	}
 
 	inline void cancel() {
+		// TODO: eventbus or state
 		reset();
 	}
 
