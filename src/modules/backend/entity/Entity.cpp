@@ -63,26 +63,32 @@ void Entity::removeContainer(const std::string& id) {
 	_attribs.remove(c);
 }
 
+void Entity::sendAttribUpdate() {
+	// TODO: send current and max values to the clients
+	// TODO: collect which of them are dirty, and maintain a list of
+	// those that are for the owning client only or which of them must be broadcasted
+	std::vector<ENetPeer*> peers;
+	ENetPeer* p = peer();
+	if (p != nullptr) {
+		peers.push_back(p);
+	}
+	flatbuffers::FlatBufferBuilder fbb;
+	auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(_dirtyTypes.size(),
+		[&] (size_t i) {
+			attrib::Type type = *_dirtyTypes.erase(_dirtyTypes.begin());
+			// TODO:
+			double value = 0.0f;
+			network::AttribMode mode = network::AttribMode::PERCENTAGE;
+			bool current = false;
+			return network::CreateAttribEntry(fbb, type, value, mode, current);
+		});
+	_messageSender->sendServerMessage(peers, fbb, network::ServerMsgType::AttribUpdate, network::CreateAttribUpdate(fbb, id(), attribs).Union());
+}
+
 bool Entity::update(long dt) {
 	_attribs.onFrame(dt);
 	if (!_dirtyTypes.empty()) {
-		// TODO: send current and max values to the clients
-		// TODO: collect which of them are dirty, and maintain a list of
-		// those that are for the owning client only or which of them must be broadcasted
-		ENetPeer* p = peer();
-		if (p != nullptr) {
-			flatbuffers::FlatBufferBuilder fbb;
-			auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(_dirtyTypes.size(),
-				[&] (size_t i) {
-					attrib::Type type = *_dirtyTypes.erase(_dirtyTypes.begin());
-					// TODO:
-					double value = 0.0f;
-					network::AttribMode mode = network::AttribMode::PERCENTAGE;
-					bool current = false;
-					return network::CreateAttribEntry(fbb, type, value, mode, current);
-				});
-			_messageSender->sendServerMessage(p, fbb, network::ServerMsgType::AttribUpdate, network::CreateAttribUpdate(fbb, id(), attribs).Union());
-		}
+		sendAttribUpdate();
 		_dirtyTypes.clear();
 	}
 	_cooldowns.update();
