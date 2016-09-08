@@ -120,10 +120,12 @@ void Entity::updateVisible(const EntitySet& set) {
 		}
 	}
 
-	if (!add.empty())
+	if (!add.empty()) {
 		visibleAdd(add);
-	if (!remove.empty())
+	}
+	if (!remove.empty()) {
 		visibleRemove(remove);
+	}
 }
 
 }
