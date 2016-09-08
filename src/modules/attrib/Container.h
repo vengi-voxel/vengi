@@ -131,11 +131,3 @@ inline Container ContainerBuilder::create() const {
 }
 
 }
-
-namespace std {
-template<> struct hash<attrib::Container> {
-	inline size_t operator()(const attrib::Container &c) const {
-		return std::hash<std::string>()(c.name());
-	}
-};
-}
