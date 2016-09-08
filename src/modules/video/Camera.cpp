@@ -23,8 +23,14 @@ void Camera::move(const glm::vec3& delta) {
 	}
 	_dirty |= DIRTY_POSITON;
 	_pos += forward() * -delta.z;
+	core_assert(!glm::any(glm::isnan(_pos)));
+	core_assert(!glm::any(glm::isinf(_pos)));
 	_pos += right() * delta.x;
+	core_assert(!glm::any(glm::isnan(_pos)));
+	core_assert(!glm::any(glm::isinf(_pos)));
 	_pos += up() * delta.y;
+	core_assert(!glm::any(glm::isnan(_pos)));
+	core_assert(!glm::any(glm::isinf(_pos)));
 	if (_rotationType == CameraRotationType::Target) {
 		lookAt(_target, glm::up);
 		_dirty |= DIRTY_TARGET;
@@ -63,6 +69,8 @@ void Camera::slerp(const glm::vec3& radians, float factor) {
 
 void Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 	core_assert(position != _pos);
+	core_assert(!glm::any(glm::isnan(_pos)));
+	core_assert(!glm::any(glm::isinf(_pos)));
 	_quat = glm::quat_cast(glm::lookAt(_pos, position, upDirection));
 	_dirty |= DIRTY_ORIENTATION;
 	core_assert(!glm::any(glm::isnan(_quat)));
@@ -97,10 +105,14 @@ void Camera::updateTarget() {
 	}
 	const glm::vec3& backward = -forward();
 	const glm::vec3& newPosition = _target + backward * _distance;
+	core_assert(!glm::any(glm::isnan(_pos)));
+	core_assert(!glm::any(glm::isinf(_pos)));
 	if (glm::all(glm::epsilonEqual(_pos, newPosition, 0.0001f))) {
 		return;
 	}
 	_pos = newPosition;
+	core_assert(!glm::any(glm::isnan(_pos)));
+	core_assert(!glm::any(glm::isinf(_pos)));
 	_dirty |= DIRTY_POSITON;
 }
 
@@ -145,6 +157,7 @@ void Camera::updateViewMatrix() {
 		return;
 	}
 	core_assert(!glm::any(glm::isnan(_pos)));
+	core_assert(!glm::any(glm::isinf(_pos)));
 	_viewMatrix = glm::translate(orientation(), -_pos);
 }
 

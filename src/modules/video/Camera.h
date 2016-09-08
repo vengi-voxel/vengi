@@ -301,10 +301,14 @@ inline void Camera::rotate(float radians, const glm::vec3& axis) {
 		return;
 	}
 	const glm::quat& quat = glm::angleAxis(radians, axis);
+	core_assert(!glm::any(glm::isnan(quat)));
+	core_assert(!glm::any(glm::isinf(quat)));
 	rotate(quat);
 }
 
 inline void Camera::rotate(const glm::quat& rotation) {
+	core_assert(!glm::any(glm::isnan(_quat)));
+	core_assert(!glm::any(glm::isinf(_quat)));
 	core_assert(!glm::any(glm::isnan(rotation)));
 	core_assert(!glm::any(glm::isinf(rotation)));
 	_quat = rotation * _quat;

@@ -110,14 +110,8 @@ void Entity::updateVisible(const EntitySet& set) {
 	core_assert(stillVisible.size() + add.size() == _visible.size());
 	_visibleLock.unlockWrite();
 
-	ENetPeer* p = peer();
-	if (p != nullptr) {
-		for (const auto& e : stillVisible) {
-			const glm::vec3& _pos = e->pos();
-			const network::Vec3 posBuf {_pos.x, _pos.y, _pos.z};
-			flatbuffers::FlatBufferBuilder fbb;
-			_messageSender->sendServerMessage(p, fbb, network::ServerMsgType::EntityUpdate, CreateEntityUpdate(fbb, e->id(), &posBuf, e->orientation()).Union());
-		}
+	for (const auto& e : _visible) {
+		sendEntityUpdate(e);
 	}
 
 	if (!add.empty()) {
@@ -126,6 +120,35 @@ void Entity::updateVisible(const EntitySet& set) {
 	if (!remove.empty()) {
 		visibleRemove(remove);
 	}
+}
+
+void Entity::sendEntityUpdate(const EntityPtr& entity) const {
+	if (_peer == nullptr) {
+		return;
+	}
+	flatbuffers::FlatBufferBuilder fbb;
+	const glm::vec3& _pos = entity->pos();
+	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
+	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityUpdate, network::CreateEntityUpdate(fbb, entity->id(), &pos, entity->orientation()).Union());
+}
+
+void Entity::sendEntitySpawn(const EntityPtr& entity) const {
+	if (_peer == nullptr) {
+		return;
+	}
+	flatbuffers::FlatBufferBuilder fbb;
+	const glm::vec3& pos = entity->pos();
+	const network::Vec3 vec3 { pos.x, pos.y, pos.z };
+	const EntityId entityId = id();
+	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntitySpawn, network::CreateEntitySpawn(fbb, entity->id(), entity->npcType(), &vec3, entityId).Union());
+}
+
+void Entity::sendEntityRemove(const EntityPtr& entity) const {
+	if (_peer == nullptr) {
+		return;
+	}
+	flatbuffers::FlatBufferBuilder fbb;
+	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityRemove, network::CreateEntityRemove(fbb, entity->id()).Union());
 }
 
 }

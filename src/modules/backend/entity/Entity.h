@@ -61,6 +61,9 @@ protected:
 	void initAttribs();
 
 	void sendAttribUpdate();
+	void sendEntityUpdate(const EntityPtr& entity) const;
+	void sendEntitySpawn(const EntityPtr& entity) const;
+	void sendEntityRemove(const EntityPtr& entity) const;
 
 	void onAttribChange(const attrib::DirtyValue& v);
 public:

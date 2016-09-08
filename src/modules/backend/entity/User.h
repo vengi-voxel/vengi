@@ -114,9 +114,6 @@ public:
 	 * @brief Informs the user that the login was successful
 	 */
 	void sendUserSpawn() const;
-	void sendEntityUpdate(const EntityPtr& entity) const;
-	void sendEntitySpawn(const EntityPtr& entity) const;
-	void sendEntityRemove(const EntityPtr& entity) const;
 	void sendSeed(long seed) const;
 };
 
