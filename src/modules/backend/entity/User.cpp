@@ -64,6 +64,11 @@ void User::disconnect() {
 	Log::trace("disconnect user");
 }
 
+void User::reconnect() {
+	_attribs.markAsDirty();
+	Log::trace("reconnect user");
+}
+
 bool User::update(long dt) {
 	_time += dt;
 	if (!Entity::update(dt)) {

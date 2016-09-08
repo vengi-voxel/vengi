@@ -140,8 +140,8 @@ TEST_F(AttributesTest, testListeners) {
 	int changes[static_cast<int>(Type::MAX)];
 	SDL_zero(changes);
 	Attributes attributes(&parent);
-	attributes.addListener([&] (Type type, bool current, double value) {
-		++changes[static_cast<int>(type)];
+	attributes.addListener([&] (const DirtyValue& v) {
+		++changes[static_cast<int>(v.type)];
 	});
 
 	ContainerBuilder test2("test2");

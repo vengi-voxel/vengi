@@ -44,7 +44,8 @@ protected:
 	network::MessageSenderPtr _messageSender;
 	attrib::ContainerProviderPtr _containerProvider;
 	attrib::Attributes _attribs;
-	std::unordered_set<attrib::Type> _dirtyTypes;
+
+	std::unordered_set<attrib::DirtyValue> _dirtyTypes;
 	cooldown::CooldownMgr _cooldowns;
 	network::EntityType _npcType = network::EntityType::NONE;
 	ENetPeer *_peer = nullptr;
@@ -61,12 +62,12 @@ protected:
 
 	void sendAttribUpdate();
 
-	void onAttribChange(attrib::Type type, bool current, double value);
+	void onAttribChange(const attrib::DirtyValue& v);
 public:
 
 	Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider) :
 			_visibleLock("Entity"), _entityId(id), _messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider) {
-		_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+		_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1));
 	}
 
 	void addContainer(const std::string& id);

@@ -87,6 +87,8 @@ public:
 	 */
 	void disconnect();
 
+	void reconnect();
+
 	bool update(long dt) override;
 
 	/**

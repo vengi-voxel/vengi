@@ -37,7 +37,7 @@ bool Attributes::onFrame(long dt) {
 		const std::unordered_set<Type>& diff = core::mapFindChangedValues(_max, max);
 		for (const auto& listener : _listeners) {
 			for (const Type& e : diff) {
-				listener(e, false, max[e]);
+				listener(DirtyValue{e, false, max[e]});
 			}
 		}
 	}
@@ -152,16 +152,29 @@ double Attributes::setCurrent(Type type, double value) {
 	if (i == _max.end()) {
 		_current[type] = value;
 		for (const auto& listener : _listeners) {
-			listener(type, true, value);
+			listener(DirtyValue{type, true, value});
 		}
 		return value;
 	}
 	const double max = std::min(i->second, value);
 	_current[type] = max;
 	for (const auto& listener : _listeners) {
-		listener(type, true, max);
+		listener(DirtyValue{type, true, max});
 	}
 	return max;
+}
+
+void Attributes::markAsDirty() {
+	for (ValuesIter i = _current.begin(); i != _current.end(); ++i) {
+		for (const auto& listener : _listeners) {
+			listener(DirtyValue{i->first, true, i->second});
+		}
+	}
+	for (ValuesIter i = _max.begin(); i != _max.end(); ++i) {
+		for (const auto& listener : _listeners) {
+			listener(DirtyValue{i->first, false, i->second});
+		}
+	}
 }
 
 }

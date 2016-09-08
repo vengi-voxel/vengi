@@ -36,13 +36,12 @@ void Entity::initAttribs() {
 		const double max = _attribs.max(type);
 		Log::debug("Set current for %s to %f", network::EnumNameAttribType(type), max);
 		_attribs.setCurrent(type, max);
-		_dirtyTypes.insert(type);
 	}
 }
 
-void Entity::onAttribChange(attrib::Type type, bool current, double value) {
-	Log::debug("Attrib changed for type %s (current: %s) to value %f", network::EnumNameAttribType(type), (current ? "true" : "false"), value);
-	_dirtyTypes.insert(type);
+void Entity::onAttribChange(const attrib::DirtyValue& v) {
+	Log::debug("Attrib changed for type %s (current: %s) to value %f", network::EnumNameAttribType(v.type), (v.current ? "true" : "false"), v.value);
+	_dirtyTypes.insert(v);
 }
 
 void Entity::addContainer(const std::string& id) {
@@ -72,15 +71,22 @@ void Entity::sendAttribUpdate() {
 	if (p != nullptr) {
 		peers.push_back(p);
 	}
-	flatbuffers::FlatBufferBuilder fbb;
+
+	// TODO: broadcast to visible users
+
+	if (peers.empty()) {
+		return;
+	}
+
+	static flatbuffers::FlatBufferBuilder fbb;
 	auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(_dirtyTypes.size(),
 		[&] (size_t i) {
-			attrib::Type type = *_dirtyTypes.erase(_dirtyTypes.begin());
-			// TODO:
-			double value = 0.0f;
+			const attrib::DirtyValue& dirtyValue = *_dirtyTypes.erase(_dirtyTypes.begin());
+			double value = dirtyValue.value;
+			// TODO: maybe not needed?
 			network::AttribMode mode = network::AttribMode::PERCENTAGE;
-			bool current = false;
-			return network::CreateAttribEntry(fbb, type, value, mode, current);
+			bool current = dirtyValue.current;
+			return network::CreateAttribEntry(fbb, dirtyValue.type, value, mode, current);
 		});
 	_messageSender->sendServerMessage(peers, fbb, network::ServerMsgType::AttribUpdate, network::CreateAttribUpdate(fbb, id(), attribs).Union());
 }

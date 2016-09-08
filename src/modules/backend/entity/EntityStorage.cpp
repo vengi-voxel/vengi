@@ -45,13 +45,14 @@ EntityId EntityStorage::getUserId(const std::string& user, const std::string& pa
 
 UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std::string& passwd) {
 	EntityId id = getUserId(email, passwd);
-	Log::info("getting userid: %i", (int) id);
 	if (id <= 0) {
+		Log::warn("Could not get user id for email: %s", email.c_str());
 		return UserPtr();
 	}
 	auto i = _users.find(id);
 	if (i == _users.end()) {
 		static const std::string name = "NONAME";
+		Log::info("user %i connects with host %i on port %i", (int) id, peer->address.host, peer->address.port);
 		const UserPtr& u = std::make_shared<User>(peer, id, name, _messageSender, _world, _timeProvider, _containerProvider, _poiProvider);
 		registerUser(u);
 		return u;
@@ -60,6 +61,7 @@ UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std
 	if (u->host() == peer->address.host) {
 		Log::info("user %i reconnects with host %i on port %i", (int) id, peer->address.host, peer->address.port);
 		i->second->setPeer(peer);
+		i->second->reconnect();
 		return i->second;
 	}
 
