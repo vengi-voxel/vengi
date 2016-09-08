@@ -311,7 +311,7 @@ inline void Camera::rotate(const glm::quat& rotation) {
 	core_assert(!glm::any(glm::isinf(_quat)));
 	core_assert(!glm::any(glm::isnan(rotation)));
 	core_assert(!glm::any(glm::isinf(rotation)));
-	_quat = rotation * _quat;
+	_quat = glm::normalize(rotation * _quat);
 	core_assert(!glm::any(glm::isnan(_quat)));
 	core_assert(!glm::any(glm::isinf(_quat)));
 	_dirty |= DIRTY_ORIENTATION;
