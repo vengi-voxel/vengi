@@ -34,7 +34,7 @@ bool Attributes::onFrame(long dt) {
 
 	core::ScopedReadLock scopedLock(_attribLock);
 	if (!_listeners.empty()) {
-		const std::unordered_set<Type>& diff = core::mapFindChangedValues(_max, max);
+		const TypeSet& diff = core::mapFindChangedValues(_max, max);
 		for (const auto& listener : _listeners) {
 			for (const Type& e : diff) {
 				listener(DirtyValue{e, false, max[e]});

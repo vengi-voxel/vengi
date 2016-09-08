@@ -34,7 +34,7 @@ private:
 
 	typedef std::priority_queue<CooldownPtr, std::vector<CooldownPtr>, CooldownComparatorLess> CooldownQueue;
 	CooldownQueue _queue;
-	typedef std::unordered_map<Type, CooldownPtr> Cooldowns;
+	typedef std::unordered_map<Type, CooldownPtr, network::EnumHash<Type> > Cooldowns;
 	Cooldowns _cooldowns;
 public:
 	CooldownMgr(const core::TimeProviderPtr& timeProvider);

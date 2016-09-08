@@ -21,8 +21,9 @@ inline T getEnum(const char* name, const char **names) {
 
 template<class E>
 struct EnumHash {
-	inline std::size_t operator()(const E& k) const {
-		return std::hash<typename std::underlying_type<E>::type>()(k);
+	inline std::size_t operator()(const E& protocolEnum) const {
+		const int value = static_cast<int>(protocolEnum);
+		return std::hash<int>{}(value);
 	}
 };
 

@@ -21,13 +21,13 @@ CooldownTriggerState CooldownMgr::triggerCooldown(Type type) {
 		cooldown = std::make_shared<Cooldown>(type, defaultDuration(type), _timeProvider);
 		_cooldowns[type] = cooldown;
 	} else if (cooldown->running()) {
-		Log::error("Failed to trigger the cooldown of type %i: already running", type);
+		Log::error("Failed to trigger the cooldown of type %i: already running", core::enumValue(type));
 		return CooldownTriggerState::ALREADY_RUNNING;
 	}
 	cooldown->start();
 	_queue.push(cooldown);
 	Log::debug("Triggered the cooldown of type %i (expires in %lims, started at %li)",
-			type, cooldown->duration(), cooldown->startMillis());
+			core::enumValue(type), cooldown->duration(), cooldown->startMillis());
 	return CooldownTriggerState::SUCCESS;
 }
 
@@ -65,10 +65,11 @@ bool CooldownMgr::cancelCooldown(Type type) {
 bool CooldownMgr::isCooldown(Type type) {
 	const CooldownPtr& c = cooldown(type);
 	if (!c || !c->running()) {
-		Log::trace("Cooldown of type %i is not running", type);
+		Log::trace("Cooldown of type %i is not running", core::enumValue(type));
 		return false;
 	}
-	Log::debug("Cooldown of type %i is running and has a runtime of %lims", type, c->duration());
+	Log::debug("Cooldown of type %i is running and has a runtime of %lims",
+			core::enumValue(type), c->duration());
 	return true;
 }
 
@@ -88,7 +89,8 @@ void CooldownMgr::update() {
 		_lock.lockWrite();
 		_queue.pop();
 		_lock.unlockWrite();
-		Log::debug("Cooldown of type %i has just expired at %li", cooldown->type(), _timeProvider->tickTime());
+		Log::debug("Cooldown of type %i has just expired at %li",
+				core::enumValue(cooldown->type()), _timeProvider->tickTime());
 		cooldown->expire();
 	}
 }

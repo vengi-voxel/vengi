@@ -16,7 +16,8 @@ namespace attrib {
 class Container;
 
 typedef std::unordered_map<std::string, Container> Containers;
-typedef std::unordered_map<Type, double> Values;
+typedef std::unordered_map<Type, double, network::EnumHash<Type> > Values;
+typedef std::unordered_set<Type, network::EnumHash<Type> > TypeSet;
 typedef Values::const_iterator ValuesConstIter;
 typedef Values::iterator ValuesIter;
 
