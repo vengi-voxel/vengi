@@ -59,12 +59,14 @@ protected:
 	virtual void visibleRemove(const EntitySet& entities);
 	void initAttribs();
 
-	void onAttribChange(attrib::Type type);
+	void sendAttribUpdate();
+
+	void onAttribChange(attrib::Type type, bool current, double value);
 public:
 
 	Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider) :
 			_visibleLock("Entity"), _entityId(id), _messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider) {
-		_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1));
+		_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	}
 
 	void addContainer(const std::string& id);

@@ -50,7 +50,7 @@ protected:
 	core::ReadWriteLock _attribLock;
 	Attributes* _parent;
 	std::string _name = "unnamed";
-	std::vector<std::function<void(Type)> > _listeners;
+	std::vector<std::function<void(Type, bool, double)> > _listeners;
 
 	void calculateMax(Values& absolutes, Values& percentages) const;
 
@@ -81,7 +81,8 @@ public:
 
 	/**
 	 * @brief Adds a new listener that will get notified whenever a @c attrib::Type value has changed.
-	 * @param f The functor, lambda or method object. It has to accept @c attrib::Type as parameter.
+	 * @param f The functor, lambda or method object. It has to accept @c attrib::Type, bool (current == true,
+	 * max == false), and double as parameters.
 	 */
 	template<class F>
 	void addListener(F&& f) {

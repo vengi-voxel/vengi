@@ -40,7 +40,8 @@ void Entity::initAttribs() {
 	}
 }
 
-void Entity::onAttribChange(attrib::Type type) {
+void Entity::onAttribChange(attrib::Type type, bool current, double value) {
+	Log::debug("Attrib changed for type %s (current: %s) to value %f", network::EnumNameAttribType(type), (current ? "true" : "false"), value);
 	_dirtyTypes.insert(type);
 }
 

@@ -140,7 +140,7 @@ TEST_F(AttributesTest, testListeners) {
 	int changes[static_cast<int>(Type::MAX)];
 	SDL_zero(changes);
 	Attributes attributes(&parent);
-	attributes.addListener([&] (Type type) {
+	attributes.addListener([&] (Type type, bool current, double value) {
 		++changes[static_cast<int>(type)];
 	});
 
