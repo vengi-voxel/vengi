@@ -31,7 +31,6 @@ bool CooldownDuration::init(const std::string& filename) {
 		const Type type = getType(typeStr);
 		if (type == cooldown::Type::NONE) {
 			luaL_error(s, "%s is an invalid cooldown type", typeStr);
-			return 1;
 		}
 		const long millis = luaL_checkinteger(s, 2);
 		Log::info("set millis for %s to %li", typeStr, millis);
