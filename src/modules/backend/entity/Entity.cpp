@@ -68,14 +68,20 @@ bool Entity::update(long dt) {
 		// TODO: send current and max values to the clients
 		// TODO: collect which of them are dirty, and maintain a list of
 		// those that are for the owning client only or which of them must be broadcasted
-#if 0
 		ENetPeer* p = peer();
 		if (p != nullptr) {
 			flatbuffers::FlatBufferBuilder fbb;
-			std::vector<flatbuffers::Offset<network::AttribEntry>> *attribs;
-			_messageSender->sendServerMessage(p, fbb, network::ServerMsgType::AttribUpdate, CreateAttribUpdate(fbb, id(), attribs).Union());
+			auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(_dirtyTypes.size(),
+				[&] (size_t i) {
+					attrib::Type type = *_dirtyTypes.erase(_dirtyTypes.begin());
+					// TODO:
+					double value = 0.0f;
+					network::AttribMode mode = network::AttribMode::PERCENTAGE;
+					bool current = false;
+					return network::CreateAttribEntry(fbb, type, value, mode, current);
+				});
+			_messageSender->sendServerMessage(p, fbb, network::ServerMsgType::AttribUpdate, network::CreateAttribUpdate(fbb, id(), attribs).Union());
 		}
-#endif
 		_dirtyTypes.clear();
 	}
 	_cooldowns.update();
