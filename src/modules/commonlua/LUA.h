@@ -69,6 +69,12 @@ public:
 		return globalData<T>(_state, prefix);
 	}
 
+	template<class FUNC>
+	inline void registerGlobal(const char* name, FUNC&& f) const {
+		lua_pushcfunction(_state, f);
+		lua_setglobal(_state, name);
+	}
+
 	template<class T>
 	static T** newUserdata(lua_State *L, const std::string& prefix) {
 		T ** udata = (T **) lua_newuserdata(L, sizeof(T *));
@@ -115,7 +121,7 @@ public:
 
 	void setError(const std::string& error);
 	const std::string& error() const;
-	bool load(const std::string &file);
+	bool load(const std::string &luaString);
 	/**
 	 * @param[in] function function to be called
 	 */

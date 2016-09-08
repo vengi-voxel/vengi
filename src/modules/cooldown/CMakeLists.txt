@@ -1,6 +1,7 @@
 set(SRCS
 	CooldownMgr.h CooldownMgr.cpp
 	CooldownType.h
+	CooldownDuration.h CooldownDuration.cpp
 	CooldownTriggerState.h
 )
 set(LIB cooldown)
@@ -9,6 +10,7 @@ target_link_libraries(${LIB} core commonlua network)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
+	tests/CooldownDurationTest.cpp
 	tests/CooldownMgrTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

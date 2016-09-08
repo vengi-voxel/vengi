@@ -70,5 +70,4 @@ public:
 
 typedef std::shared_ptr<CooldownMgr> CooldownMgrPtr;
 
-#define createCooldown(...) std::make_shared<Cooldown>(__VA_ARGS__)
 }

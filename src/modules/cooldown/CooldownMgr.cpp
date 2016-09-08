@@ -4,21 +4,11 @@
 
 #include "CooldownMgr.h"
 #include "core/Common.h"
+#include "core/Singleton.h"
 #include "core/EnumHash.h"
+#include "CooldownDuration.h"
 
 namespace cooldown {
-
-namespace {
-
-// TODO: configuration from lua please
-unsigned long durations[] = {
-	0ul,
-	15000ul,
-	10000ul,
-	100ul
-};
-static_assert(SDL_arraysize(durations) == core::enumValue<Type>(Type::MAX) + 1, "durations and types don't match");
-}
 
 CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider) :
 		_timeProvider(timeProvider), _lock("CooldownMgr") {
@@ -28,7 +18,7 @@ CooldownTriggerState CooldownMgr::triggerCooldown(Type type) {
 	core::ScopedWriteLock lock(_lock);
 	CooldownPtr cooldown = _cooldowns[type];
 	if (!cooldown) {
-		cooldown = createCooldown(type, defaultDuration(type), _timeProvider);
+		cooldown = std::make_shared<Cooldown>(type, defaultDuration(type), _timeProvider);
 		_cooldowns[type] = cooldown;
 	} else if (cooldown->running()) {
 		Log::error("Failed to trigger the cooldown of type %i: already running", type);
@@ -44,13 +34,14 @@ CooldownTriggerState CooldownMgr::triggerCooldown(Type type) {
 CooldownPtr CooldownMgr::cooldown(Type type) const {
 	core::ScopedReadLock lock(_lock);
 	auto i = _cooldowns.find(type);
-	if (i == _cooldowns.end())
+	if (i == _cooldowns.end()) {
 		return CooldownPtr();
+	}
 	return i->second;
 }
 
 unsigned long CooldownMgr::defaultDuration(Type type) const {
-	return durations[core::enumValue(type)];
+	return core::Singleton<CooldownDuration>::getInstance().duration(type);
 }
 
 bool CooldownMgr::resetCooldown(Type type) {
