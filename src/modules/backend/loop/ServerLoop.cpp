@@ -6,6 +6,7 @@
 #include "core/Command.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
+#include "cooldown/CooldownDuration.h"
 #include "persistence/ConnectionPool.h"
 #include "DatabaseModels.h"
 #include "backend/entity/User.h"
@@ -39,6 +40,12 @@ bool ServerLoop::init() {
 	}
 	persistence::UserStore u;
 	u.createTable();
+
+	cooldown::CooldownDuration& d = core::Singleton<cooldown::CooldownDuration>::getInstance();
+	if (!d.init("cooldowns.lua")) {
+		Log::error("Failed to load the cooldown configuration: %s", d.error().c_str());
+		return false;
+	}
 
 	if (!_containerProvider->init("attributes.lua")) {
 		Log::error("Failed to load the attributes: %s", _containerProvider->error().c_str());
