@@ -172,7 +172,9 @@ engine_add_library(
 
 if (NOT ASSIMP_FOUND)
 	add_dependencies(assimp zlib)
-	target_link_libraries(assimp ${ZLIB_LIBRARIES})
+	if (ZLIB_LIBRARIES)
+		target_link_libraries(assimp ${ZLIB_LIBRARIES})
+	endif()
 	target_include_directories(assimp PUBLIC include/)
 	if (ZLIB_INCLUDE_DIRS)
 		target_include_directories(assimp PRIVATE ${ZLIB_INCLUDE_DIRS})
