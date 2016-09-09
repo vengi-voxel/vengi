@@ -10,7 +10,7 @@ namespace video {
 
 class DepthBuffer {
 public:
-	DepthBuffer();
+	DepthBuffer(bool depthAttachment = false);
 	~DepthBuffer();
 
 	bool init(const glm::ivec2& dimension);
@@ -28,6 +28,10 @@ public:
 		return _depthTexture;
 	}
 
+	inline bool depthAttachment() const {
+		return _depthAttachment;
+	}
+
 private:
 	GLint _viewport[4] = {0, 0, 0, 0};
 	GLint _oldFramebuffer = -1;
@@ -35,6 +39,7 @@ private:
 	GLuint _rbo = 0u;
 	GLuint _depthTexture = 0u;
 	glm::ivec2 _dimension;
+	bool _depthAttachment;
 };
 
 }
