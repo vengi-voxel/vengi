@@ -10,10 +10,9 @@ $out vec2 o_projZW;
 
 void main()
 {
-#ifdef INSTANCED
-	vec4 pos = vec4(a_offset, 0.0) + u_light * u_model * vec4(a_pos, 1.0f);
-#else
 	vec4 pos = u_light * u_model * vec4(a_pos, 1.0f);
+#ifdef INSTANCED
+	pos = vec4(a_offset, 0.0) + pos;
 #endif
 	gl_Position = pos;
 	o_projZW = pos.zw;
