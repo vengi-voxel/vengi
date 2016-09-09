@@ -9,9 +9,9 @@
 # To build either in debug mode, or in release mode
 #
 # Debugging
-## Run in gdb
+## Run in debugger
 #
-#  make tests GDB=1 ARGS=--gtest_filter=World*
+#  make tests DEBUG=1 ARGS=--gtest_filter=World*
 #
 # to only build the tests targets, and run it via gdb afterwards.
 # It will automatically start the execution and forward the arguments
@@ -25,6 +25,7 @@
 # and run the target(s)
 
 Q                 = @
+OS               := $(shell uname)
 LOCAL_CONFIG_DIR  = ~/.local/share/engine
 
 VALGRIND         ?=
@@ -34,12 +35,18 @@ else
 VALGRIND_CMD     ?= valgrind
 endif
 
-# TODO lldb command support on osx
-GDB              ?=
-ifeq ($(GDB),)
-GDB_CMD          ?=
+DEBUG            ?=
+ifeq ($(DEBUG),)
+DEBUG_CMD        ?=
 else
-GDB_CMD          ?= gdb -ex run --args
+DEBUGGER         := $(shell (gdb --help >/dev/null 2>&1 && echo GDB) || (lldb --help >/dev/null 2>&1 && echo LLDB))
+ifeq ($(DEBUGGER),GDB)
+DEBUG_CMD        ?= gdb -ex run --args
+else ifeq ($(DEBUGGER),LLDB)
+DEBUG_CMD        ?= lldb
+else
+DEBUG_CMD        ?=
+endif
 endif
 
 BUILD_TYPE       ?= Debug
@@ -61,7 +68,6 @@ ARGS_TMP         := $(ARGS)
 ARGS              = "--args $(ARGS_TMP)"
 endif
 
-OS           := $(shell uname)
 MAKE_PID     := $$PPID
 JOB_FLAG     := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
 MAKE_OPTIONS := --no-print-directory -C $(BUILDDIR)
@@ -70,10 +76,14 @@ ifeq ($(OS),Darwin)
 CMAKE_GENERATOR ?= "Xcode"
 CMAKE_BINARY    ?= /Applications/CMake.app/Contents/bin/cmake
 DARWIN          := 1
-else
+else ifeq ($(OS),Linux)
 CMAKE_GENERATOR ?= "Eclipse CDT4 - Unix Makefiles"
 CMAKE_BINARY    ?= cmake
 LINUX           := 1
+else
+CMAKE_GENERATOR ?= "MSYS Makefiles"
+CMAKE_BINARY    ?= cmake
+WINDOWS         := 1
 endif
 INSTALL_DIR     ?= $(BUILDDIRPATH)$(OS)
 
@@ -118,20 +128,20 @@ server client shapetool shadertool noisetool databasetool uitool tests testmesh 
 	$(call COMPILE, $@)
 	$(call COMPILE, copy-data-shared)
 	$(call COMPILE, copy-data-$@)
-	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
+	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
 rcon: cmake
 	$(call COMPILE, $@)
-	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) $(VOGL_CMD) ./$@ $(ARGS)
+	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 
 test-material-color: cmake
 	$(call COMPILE, tests)
-	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_color=yes --gtest_filter=MaterialTest* -- $(ARGS)
+	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) ./tests --gtest_color=yes --gtest_filter=MaterialTest* -- $(ARGS)
 	$(Q)xdg-open build/material.png
 
 test-ambient-occlusion: cmake
 	$(call COMPILE, tests)
-	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(GDB_CMD) ./tests --gtest_color=yes --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
+	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) ./tests --gtest_color=yes --gtest_filter=AmbientOcclusionTest* -- $(ARGS)
 
 .PHONY: remotery
 remotery:
