@@ -34,6 +34,7 @@ else
 VALGRIND_CMD     ?= valgrind
 endif
 
+# TODO lldb command support on osx
 GDB              ?=
 ifeq ($(GDB),)
 GDB_CMD          ?=
