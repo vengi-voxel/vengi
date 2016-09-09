@@ -64,8 +64,11 @@ void User::disconnect() {
 }
 
 void User::reconnect() {
-	_attribs.markAsDirty();
 	Log::trace("reconnect user");
+	_attribs.markAsDirty();
+	visitVisible([&] (const EntityPtr& e) {
+		sendEntitySpawn(e);
+	});
 }
 
 bool User::update(long dt) {
