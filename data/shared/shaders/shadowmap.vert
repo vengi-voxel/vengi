@@ -6,7 +6,6 @@ $in vec3 a_offset;
 
 uniform mat4 u_light;
 uniform mat4 u_model;
-$out vec2 o_projZW;
 
 void main()
 {
@@ -16,5 +15,4 @@ void main()
 	vec4 pos = u_light * u_model * vec4(a_pos, 1.0f);
 #endif
 	gl_Position = pos;
-	o_projZW = pos.zw;
 }

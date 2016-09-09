@@ -21,7 +21,7 @@ constexpr int MinExtractionCullingDistance = 1000;
 namespace frontend {
 
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
-		_clearColor(core::Color::LightBlue), _world(world), _depthBuffer(false) {
+		_clearColor(core::Color::LightBlue), _world(world), _depthBuffer(true) {
 }
 
 WorldRenderer::~WorldRenderer() {

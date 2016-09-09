@@ -6,29 +6,18 @@ uniform sampler2D u_shadowmap;
 $in vec4 v_lightspacepos;
 uniform vec2 u_screensize;
 
-vec2 calculateShadowUV() {
-	// perform perspective divide
-	vec3 lightPos = v_lightspacepos.xyz / v_lightspacepos.w;
-	// convert from -1, 1 to tex coords in the range 0, 1
-	vec2 smUV = lightPos.xy * 0.5 + 0.5;
-	return smUV;
-}
-
 float calculateShadow(float ndotl) {
-	// perform perspective divide
-	vec3 lightPos = v_lightspacepos.xyz / v_lightspacepos.w;
-	// convert from -1, 1 to tex coords in the range 0, 1
-	vec2 smUV = lightPos.xy * 0.5 + 0.5;
-	float depth = lightPos.z;
-	float s = sampleShadowPCF(u_shadowmap, smUV, u_screensize, depth, ndotl);
-	return max(s, 0.0);
+	float s = $texture2D(u_shadowmap, v_lightspacepos.xy).z;
+	float visibility = 0.5;
+	float bias = 0.005 * tan(acos(ndotl));
+	bias = clamp(bias, 0.0, 0.01);
+	if (s < v_lightspacepos.z - bias) {
+		visibility = 1.0;
+	}
+	return visibility;
 }
 
 #else
-
-vec2 calculateShadowUV() {
-	return vec2(0.0, 0.0);
-}
 
 float calculateShadow(float ndotl) {
 	return 1.0;
