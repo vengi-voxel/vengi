@@ -24,6 +24,7 @@ private:
 	core::TimeProviderPtr _timeProvider;
 	attrib::ContainerProviderPtr _containerProvider;
 	PoiProviderPtr _poiProvider;
+	cooldown::CooldownDurationPtr _cooldownDuration;
 	long _time;
 
 	void spawnEntity(ai::Zone& zone, network::EntityType start, network::EntityType end, int maxAmount);
@@ -31,7 +32,9 @@ private:
 	void spawnCharacters(ai::Zone& zone);
 
 public:
-	SpawnMgr(voxel::WorldPtr world, EntityStoragePtr entityStorage, network::MessageSenderPtr messageSender, core::TimeProviderPtr timeProvider, AILoaderPtr loader, attrib::ContainerProviderPtr containerProvider, PoiProviderPtr poiProvider);
+	SpawnMgr(const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const network::MessageSenderPtr& messageSender,
+			const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
+			const PoiProviderPtr& poiProvider, const cooldown::CooldownDurationPtr& cooldownDuration);
 	bool init();
 	void shutdown();
 

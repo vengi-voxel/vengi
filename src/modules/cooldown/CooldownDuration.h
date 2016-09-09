@@ -3,6 +3,7 @@
 #include "CooldownType.h"
 #include "core/EnumHash.h"
 #include "core/Log.h"
+#include <memory>
 
 namespace cooldown {
 
@@ -30,9 +31,11 @@ inline const std::string& CooldownDuration::error() const {
 
 inline long CooldownDuration::duration(Type type) const {
 	if (!_initialized) {
-		Log::warn("Trying to get cooldown duration without CooldownDuration::init() being called");
+		::Log::warn("Trying to get cooldown duration without CooldownDuration::init() being called");
 	}
 	return _durations[core::enumValue<Type>(type)];
 }
+
+typedef std::shared_ptr<CooldownDuration> CooldownDurationPtr;
 
 }

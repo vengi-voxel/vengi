@@ -10,8 +10,8 @@ namespace backend {
 
 User::User(ENetPeer* peer, EntityId id, const std::string& name, const network::MessageSenderPtr& messageSender,
 		const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
-		const PoiProviderPtr& poiProvider) :
-		Entity(id, messageSender, timeProvider, containerProvider), _peer(nullptr),
+		const cooldown::CooldownDurationPtr& cooldownDuration, const PoiProviderPtr& poiProvider) :
+		Entity(id, messageSender, timeProvider, containerProvider, cooldownDuration), _peer(nullptr),
 		_name(name), _world(world), _poiProvider(poiProvider), _pitch(0.0f), _yaw(0.0f),
 		_lastAction(0ul), _time(0ul) {
 	setPeer(peer);

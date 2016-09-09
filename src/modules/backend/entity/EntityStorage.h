@@ -45,6 +45,7 @@ private:
 	core::TimeProviderPtr _timeProvider;
 	attrib::ContainerProviderPtr _containerProvider;
 	PoiProviderPtr _poiProvider;
+	cooldown::CooldownDurationPtr _cooldownDuration;
 	long _time;
 
 	void registerUser(const UserPtr& user);
@@ -56,8 +57,8 @@ private:
 
 	EntityId getUserId(const std::string& user, const std::string& passwd) const;
 public:
-	EntityStorage(network::MessageSenderPtr messageSender, voxel::WorldPtr world, core::TimeProviderPtr timeProvider,
-			attrib::ContainerProviderPtr containerProvider, PoiProviderPtr poiProvider);
+	EntityStorage(const network::MessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
+			const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider, const cooldown::CooldownDurationPtr& cooldownDuration);
 
 	UserPtr login(ENetPeer* peer, const std::string& email, const std::string& passwd);
 	bool logout(EntityId userId);

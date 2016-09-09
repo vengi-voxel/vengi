@@ -14,8 +14,11 @@ namespace backend {
 
 static const long spawnTime = 15000L;
 
-SpawnMgr::SpawnMgr(voxel::WorldPtr world, EntityStoragePtr entityStorage, network::MessageSenderPtr messageSender, core::TimeProviderPtr timeProvider, AILoaderPtr loader, attrib::ContainerProviderPtr containerProvider, PoiProviderPtr poiProvider) :
-		_loader(loader), _world(world), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _time(15000L) {
+SpawnMgr::SpawnMgr(const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const network::MessageSenderPtr& messageSender,
+		const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
+		const PoiProviderPtr& poiProvider, const cooldown::CooldownDurationPtr& cooldownDuration) :
+		_loader(loader), _world(world), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),
+		_containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownDuration(cooldownDuration), _time(15000L) {
 }
 
 void SpawnMgr::shutdown() {
@@ -66,13 +69,13 @@ void SpawnMgr::spawnEntity(ai::Zone& zone, network::EntityType start, network::E
 
 int SpawnMgr::spawn(ai::Zone& zone, network::EntityType type, int amount, const glm::ivec3* pos) {
 	const char *typeName = network::EnumNameEntityType(type);
-	ai::TreeNodePtr behaviour = _loader->load(typeName);
+	const ai::TreeNodePtr& behaviour = _loader->load(typeName);
 	if (!behaviour) {
 		Log::error("could not load the behaviour tree %s", typeName);
 		return 0;
 	}
 	for (int x = 0; x < amount; ++x) {
-		const NpcPtr& npc = std::make_shared<Npc>(type, _entityStorage, behaviour, _world, _messageSender, _timeProvider, _containerProvider, _poiProvider);
+		const NpcPtr& npc = std::make_shared<Npc>(type, _entityStorage, behaviour, _world, _messageSender, _timeProvider, _containerProvider, _cooldownDuration, _poiProvider);
 		npc->init(pos);
 		// now let it tick
 		zone.addAI(npc->ai());

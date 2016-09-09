@@ -11,10 +11,10 @@
 
 namespace backend {
 
-EntityStorage::EntityStorage(network::MessageSenderPtr messageSender, voxel::WorldPtr world, core::TimeProviderPtr timeProvider,
-		attrib::ContainerProviderPtr containerProvider, PoiProviderPtr poiProvider) :
+EntityStorage::EntityStorage(const network::MessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
+		const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider, const cooldown::CooldownDurationPtr& cooldownDuration) :
 		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree), _messageSender(messageSender), _world(world), _timeProvider(
-				timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _time(0L) {
+				timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownDuration(cooldownDuration), _time(0L) {
 }
 
 core::RectFloat EntityStorage::Node::getRect() const {
@@ -53,7 +53,7 @@ UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std
 	if (i == _users.end()) {
 		static const std::string name = "NONAME";
 		Log::info("user %i connects with host %i on port %i", (int) id, peer->address.host, peer->address.port);
-		const UserPtr& u = std::make_shared<User>(peer, id, name, _messageSender, _world, _timeProvider, _containerProvider, _poiProvider);
+		const UserPtr& u = std::make_shared<User>(peer, id, name, _messageSender, _world, _timeProvider, _containerProvider, _cooldownDuration, _poiProvider);
 		registerUser(u);
 		return u;
 	}

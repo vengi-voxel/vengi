@@ -62,24 +62,26 @@ core::AppState Server::onRunning() {
 }
 
 int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const voxel::WorldPtr world = std::make_shared<voxel::World>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const backend::AIRegistryPtr registry = std::make_shared<backend::AIRegistry>();
-	const attrib::ContainerProviderPtr containerProvider = std::make_shared<attrib::ContainerProvider>();
+	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
+	const voxel::WorldPtr& world = std::make_shared<voxel::World>();
+	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
+	const backend::AIRegistryPtr& registry = std::make_shared<backend::AIRegistry>();
+	const attrib::ContainerProviderPtr& containerProvider = std::make_shared<attrib::ContainerProvider>();
 
-	const network::ProtocolHandlerRegistryPtr protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
-	const network::NetworkPtr network = std::make_shared<network::Network>(protocolHandlerRegistry, eventBus);
-	const network::MessageSenderPtr messageSender = std::make_shared<network::MessageSender>(network);
+	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+	const network::NetworkPtr& network = std::make_shared<network::Network>(protocolHandlerRegistry, eventBus);
+	const network::MessageSenderPtr& messageSender = std::make_shared<network::MessageSender>(network);
 
-	const backend::AILoaderPtr loader = std::make_shared<backend::AILoader>(registry);
+	const backend::AILoaderPtr& loader = std::make_shared<backend::AILoader>(registry);
 
-	const backend::PoiProviderPtr poiProvider = std::make_shared<backend::PoiProvider>(world, timeProvider);
-	const backend::EntityStoragePtr entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider);
-	const backend::SpawnMgrPtr spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider);
+	const cooldown::CooldownDurationPtr& cooldownDuration = std::make_shared<cooldown::CooldownDuration>();
 
-	const backend::ServerLoopPtr serverLoop = std::make_shared<backend::ServerLoop>(network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider);
+	const backend::PoiProviderPtr& poiProvider = std::make_shared<backend::PoiProvider>(world, timeProvider);
+	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownDuration);
+	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider, cooldownDuration);
+
+	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownDuration);
 
 	Server app(network, serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);

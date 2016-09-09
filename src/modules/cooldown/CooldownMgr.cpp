@@ -6,12 +6,11 @@
 #include "core/Common.h"
 #include "core/Singleton.h"
 #include "core/EnumHash.h"
-#include "CooldownDuration.h"
 
 namespace cooldown {
 
-CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider) :
-		_timeProvider(timeProvider), _lock("CooldownMgr") {
+CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownDurationPtr& cooldownDuration) :
+		_timeProvider(timeProvider), _cooldownDuration(cooldownDuration), _lock("CooldownMgr") {
 }
 
 CooldownTriggerState CooldownMgr::triggerCooldown(Type type) {
@@ -41,7 +40,7 @@ CooldownPtr CooldownMgr::cooldown(Type type) const {
 }
 
 unsigned long CooldownMgr::defaultDuration(Type type) const {
-	return core::Singleton<CooldownDuration>::getInstance().duration(type);
+	return _cooldownDuration->duration(type);
 }
 
 bool CooldownMgr::resetCooldown(Type type) {

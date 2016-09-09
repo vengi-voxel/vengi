@@ -68,8 +68,8 @@ protected:
 	void onAttribChange(const attrib::DirtyValue& v);
 public:
 
-	Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider) :
-			_visibleLock("Entity"), _entityId(id), _messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider) {
+	Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownDurationPtr& cooldownDuration) :
+			_visibleLock("Entity"), _entityId(id), _messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider, cooldownDuration) {
 		_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1));
 	}
 

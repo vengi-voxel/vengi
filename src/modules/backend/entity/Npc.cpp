@@ -13,8 +13,8 @@ namespace backend {
 std::atomic<EntityId> Npc::_nextNpcId(5000000);
 
 Npc::Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
-		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider) :
-		Entity(_nextNpcId++, messageSender, timeProvider, containerProvider), _world(world), _poiProvider(poiProvider) {
+		const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownDurationPtr& cooldownDuration, const PoiProviderPtr& poiProvider) :
+		Entity(_nextNpcId++, messageSender, timeProvider, containerProvider, cooldownDuration), _world(world), _poiProvider(poiProvider) {
 	_entityType = type;
 	_ai = std::make_shared<ai::AI>(behaviour);
 	_ai->setCharacter(std::make_shared<AICharacter>(_entityId, *this));

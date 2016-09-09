@@ -9,6 +9,7 @@
 #include "core/NonCopyable.h"
 #include "core/TimeProvider.h"
 #include "core/ReadWriteLock.h"
+#include "CooldownDuration.h"
 
 #include <memory>
 #include <unordered_map>
@@ -24,6 +25,7 @@ namespace cooldown {
 class CooldownMgr: public core::NonCopyable {
 private:
 	core::TimeProviderPtr _timeProvider;
+	cooldown::CooldownDurationPtr _cooldownDuration;
 	core::ReadWriteLock _lock;
 
 	struct CooldownComparatorLess: public std::binary_function<CooldownPtr, CooldownPtr, bool> {
@@ -37,7 +39,7 @@ private:
 	typedef std::unordered_map<Type, CooldownPtr, network::EnumHash<Type> > Cooldowns;
 	Cooldowns _cooldowns;
 public:
-	CooldownMgr(const core::TimeProviderPtr& timeProvider);
+	CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownDurationPtr& cooldownDuration);
 
 	/**
 	 * @brief Tries to trigger the specified cooldown for the given entity

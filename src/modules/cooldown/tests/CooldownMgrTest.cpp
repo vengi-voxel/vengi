@@ -12,15 +12,17 @@ namespace cooldown {
 class CooldownMgrTest : public core::AbstractTest {
 protected:
 	core::TimeProviderPtr _timeProvider;
+	cooldown::CooldownDurationPtr _cooldownDuration;
 	CooldownMgr _mgr;
 public:
 	CooldownMgrTest() :
-		_timeProvider(std::make_shared<core::TimeProvider>()), _mgr(_timeProvider) {
+		_timeProvider(std::make_shared<core::TimeProvider>()),
+		_cooldownDuration(std::make_shared<cooldown::CooldownDuration>()),
+		_mgr(_timeProvider, _cooldownDuration) {
 	}
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
-		core::Singleton<cooldown::CooldownDuration>::getInstance().init("cooldowns.lua");
 	}
 };
 
