@@ -29,6 +29,10 @@ Npc::~Npc() {
 	_ai->setZone(nullptr);
 }
 
+void Npc::init() {
+	Entity::init();
+}
+
 void Npc::init(const glm::ivec3* pos) {
 	const glm::ivec3& randomPos = pos ? *pos : _world->randomPos();
 	const int material = _world->getMaterial(randomPos.x, randomPos.y, randomPos.z);
@@ -36,9 +40,7 @@ void Npc::init(const glm::ivec3* pos) {
 			ai()->getId(), ai()->getBehaviour()->getName().c_str(), randomPos.x, randomPos.y, randomPos.z, material);
 	setHomePosition(randomPos);
 	_ai->getCharacter()->setPosition(glm::vec3(randomPos.x, randomPos.y, randomPos.z));
-	const char *typeName = network::EnumNameEntityType(_entityType);
-	addContainer(typeName);
-	initAttribs();
+	init();
 }
 
 std::string Npc::name() const {

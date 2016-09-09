@@ -26,12 +26,14 @@ private:
 
 	void moveToGround();
 
+	void init() override;
+
 public:
 	Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownDurationPtr& cooldownDuration, const PoiProviderPtr& poiProvider);
 	~Npc();
 
-	void init(const glm::ivec3* pos = nullptr);
+	void init(const glm::ivec3* pos);
 
 	voxel::WorldPtr world() const;
 	void setHomePosition(const glm::ivec3& pos);

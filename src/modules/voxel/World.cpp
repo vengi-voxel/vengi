@@ -90,10 +90,10 @@ World::~World() {
 }
 
 glm::ivec3 World::randomPos() const {
-	int lowestX = 0;
-	int lowestZ = 0;
-	int highestX = 0;
-	int highestZ = 0;
+	int lowestX = -100;
+	int lowestZ = -100;
+	int highestX = 100;
+	int highestZ = 100;
 	for (const glm::ivec3& gridPos : _meshesExtracted) {
 		lowestX = std::min(lowestX, gridPos.x);
 		lowestZ = std::min(lowestZ, gridPos.z);
@@ -110,8 +110,9 @@ glm::ivec3 World::randomPos() const {
 // The surface extractor outputs the mesh in an efficient compressed format which
 // is not directly suitable for rendering.
 bool World::scheduleMeshExtraction(const glm::ivec3& p) {
-	if (_cancelThreads)
+	if (_cancelThreads) {
 		return false;
+	}
 	const glm::ivec3& pos = getMeshPos(p);
 	auto i = _meshesExtracted.find(pos);
 	if (i != _meshesExtracted.end()) {
@@ -122,8 +123,9 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	_meshesExtracted.insert(pos);
 
 	_futures.push_back(_threadPool.enqueue([=] () {
-		if (_cancelThreads)
+		if (_cancelThreads) {
 			return;
+		}
 		core_trace_scoped(MeshExtraction);
 		const Region &region = getMeshRegion(pos);
 

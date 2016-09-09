@@ -20,7 +20,10 @@ void Entity::visibleRemove(const EntitySet& entities) {
 	}
 }
 
-void Entity::initAttribs() {
+void Entity::init() {
+	const char *typeName = network::EnumNameEntityType(_entityType);
+	addContainer(typeName);
+
 	core_assert_always(_attribs.onFrame(0L));
 
 	// the list of attribute types that should be set to max on spawn

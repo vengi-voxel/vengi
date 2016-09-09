@@ -18,8 +18,6 @@ User::User(ENetPeer* peer, EntityId id, const std::string& name, const network::
 	const glm::vec3& poi = _poiProvider->getPointOfInterest();
 	_pos = poi;
 	_entityType = network::EntityType::PLAYER;
-	_attribs.setCurrent(attrib::Type::SPEED, 60.0);
-	_attribs.setCurrent(attrib::Type::VIEWDISTANCE, 500.0);
 	_userTimeout = core::Var::get(cfg::ServerUserTimeout, "60000");
 }
 

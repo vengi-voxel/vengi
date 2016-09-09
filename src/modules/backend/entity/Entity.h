@@ -58,7 +58,6 @@ protected:
 	 * @brief Called with the set of entities that just get invisible for this entity
 	 */
 	virtual void visibleRemove(const EntitySet& entities);
-	void initAttribs();
 
 	void sendAttribUpdate();
 	void sendEntityUpdate(const EntityPtr& entity) const;
@@ -73,11 +72,11 @@ public:
 		_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1));
 	}
 
-	void addContainer(const std::string& id);
-	void removeContainer(const std::string& id);
-
 	virtual ~Entity() {
 	}
+
+	void addContainer(const std::string& id);
+	void removeContainer(const std::string& id);
 
 	inline cooldown::CooldownMgr& cooldownMgr() {
 		return _cooldowns;
@@ -164,6 +163,8 @@ public:
 	 * @return @c false if the entity should be removed from the world
 	 */
 	virtual bool update(long dt);
+
+	virtual void init();
 
 	/**
 	 * @return the size of this entity

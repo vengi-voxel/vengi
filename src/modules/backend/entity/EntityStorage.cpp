@@ -54,6 +54,7 @@ UserPtr EntityStorage::login(ENetPeer* peer, const std::string& email, const std
 		static const std::string name = "NONAME";
 		Log::info("user %i connects with host %i on port %i", (int) id, peer->address.host, peer->address.port);
 		const UserPtr& u = std::make_shared<User>(peer, id, name, _messageSender, _world, _timeProvider, _containerProvider, _cooldownDuration, _poiProvider);
+		u->init();
 		registerUser(u);
 		return u;
 	}
