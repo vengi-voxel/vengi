@@ -30,7 +30,7 @@ public:
 	};
 
 	static Factory& getInstance(const backend::SpawnMgrPtr& spawnMgr) {
-		thread_local Factory FACTORY(spawnMgr);
+		THREAD_LOCAL Factory FACTORY(spawnMgr);
 		return FACTORY;
 	}
 
@@ -38,7 +38,7 @@ public:
 			Task(name, parameters, condition), _spawnMgr(spawnMgr) {
 	}
 
-	TreeNodeStatus doAction(backend::AICharacter& chr, long deltaMillis) override {
+	TreeNodeStatus doAction(backend::AICharacter& chr, int64_t deltaMillis) override {
 		backend::Npc& npc = chr.getNpc();
 		const glm::ivec3 pos = glm::ivec3(npc.pos());
 		if (_spawnMgr->spawn(*npc.ai()->getZone(), npc.entityType(), 1, &pos) == 1)

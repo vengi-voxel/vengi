@@ -16,11 +16,11 @@ class Task: public ITask {
 public:
 	TASK_CLASS(Task)
 
-	TreeNodeStatus doAction(const AIPtr& entity, long deltaMillis) override {
+	TreeNodeStatus doAction(const AIPtr& entity, int64_t deltaMillis) override {
 		return doAction(ai::character_cast<AICharacter>(entity->getCharacter()), deltaMillis);
 	}
 
-	virtual TreeNodeStatus doAction(backend::AICharacter& chr, long deltaMillis) = 0;
+	virtual TreeNodeStatus doAction(backend::AICharacter& chr, int64_t deltaMillis) = 0;
 };
 
 #define AI_TASK(TaskName) \
@@ -29,9 +29,9 @@ struct TaskName: public Task { \
 			Task(name, parameters, condition) {} \
 	virtual ~TaskName() {} \
 	NODE_FACTORY(TaskName) \
-	TreeNodeStatus doAction(backend::AICharacter& chr, long deltaMillis) override; \
+	TreeNodeStatus doAction(backend::AICharacter& chr, int64_t deltaMillis) override; \
 }; \
-inline TreeNodeStatus TaskName::doAction(backend::AICharacter& chr, long deltaMillis)
+inline TreeNodeStatus TaskName::doAction(backend::AICharacter& chr, int64_t deltaMillis)
 
 }
 

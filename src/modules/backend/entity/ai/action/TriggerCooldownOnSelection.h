@@ -19,7 +19,7 @@ public:
 	TriggerCooldownOnSelection(const std::string& name, const std::string& parameters, const ConditionPtr& condition);
 	NODE_FACTORY(TriggerCooldownOnSelection)
 
-	TreeNodeStatus doAction(backend::AICharacter& chr, long deltaMillis) override;
+	TreeNodeStatus doAction(backend::AICharacter& chr, int64_t deltaMillis) override;
 };
 
 }

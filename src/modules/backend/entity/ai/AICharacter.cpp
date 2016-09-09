@@ -18,7 +18,7 @@ AICharacter::AICharacter(ai::CharacterId id, Npc& npc) :
 AICharacter::~AICharacter() {
 }
 
-void AICharacter::update(long dt, bool debuggingActive) {
+void AICharacter::update(int64_t dt, bool debuggingActive) {
 	_npc.moveToGround();
 
 	if (debuggingActive) {

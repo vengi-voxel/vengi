@@ -14,7 +14,7 @@ TriggerCooldownOnSelection::TriggerCooldownOnSelection(const std::string& name, 
 	core_assert(_cooldownId != cooldown::Type::NONE);
 }
 
-TreeNodeStatus TriggerCooldownOnSelection::doAction(backend::AICharacter& chr, long deltaMillis) {
+TreeNodeStatus TriggerCooldownOnSelection::doAction(backend::AICharacter& chr, int64_t deltaMillis) {
 	const FilteredEntities& selection = chr.getNpc().ai()->getFilteredEntities();
 	if (selection.empty())
 		return FAILED;

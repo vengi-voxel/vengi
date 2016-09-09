@@ -16,7 +16,7 @@ private:
 public:
 	AICharacter(ai::CharacterId id, Npc& npc);
 	~AICharacter();
-	void update(long dt, bool debuggingActive) override;
+	void update(int64_t dt, bool debuggingActive) override;
 
 	inline Npc& getNpc() const {
 		return _npc;
