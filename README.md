@@ -22,6 +22,7 @@ Voxel engine with procedural generated landscape.
  * turbobadger
  * sauce/fruit
  * gtest
+ * qt (for the rcon tool)
 
 Some of these dependencies might not be available as packages in your toolchain - most of them are also bundled with the application. But local installed headers always have the higher priority.
 
@@ -30,6 +31,9 @@ Some of these dependencies might not be available as packages in your toolchain 
 
 ## Arch Linux
     pacman [...]
+
+## MacPorts
+    port install qt5 postgresql95-server
 
 # Building
 You can just run ```make``` in the project root folder.
