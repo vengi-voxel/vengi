@@ -118,22 +118,9 @@ public:
 	 * @note This is thread safe
 	 */
 	template<typename Func>
-	void visitVisible(Func& func) {
+	void visitVisible(Func&& func) {
 		core::ScopedReadLock lock(_visibleLock);
 		for (const EntityPtr& e : _visible) {
-			func(e);
-		}
-	}
-
-	/**
-	 * @brief Allows to execute a functor/lambda on the visible objects
-	 *
-	 * @note This is thread safe
-	 */
-	template<typename Func>
-	void visitVisible(const Func& func) const {
-		const EntitySet& copy = visibleCopy();
-		for (const EntityPtr& e : copy) {
 			func(e);
 		}
 	}

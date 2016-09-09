@@ -41,6 +41,7 @@ void Npc::init(const glm::ivec3* pos) {
 	setHomePosition(randomPos);
 	_ai->getCharacter()->setPosition(glm::vec3(randomPos.x, randomPos.y, randomPos.z));
 	init();
+	_ai->getAggroMgr().setReduceByValue(0.1f);
 }
 
 std::string Npc::name() const {

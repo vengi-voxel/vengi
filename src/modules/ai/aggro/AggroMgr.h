@@ -20,6 +20,11 @@ protected:
 
 	mutable bool _dirty;
 
+	float _minAggro = 0.0f;
+	float _reduceRatioSecond = 0.0f;
+	float _reduceValueSecond = 0.0f;
+	ReductionType _reduceType = DISABLED;
+
 	class CharacterIdPredicate {
 	private:
 		const CharacterId& _id;
@@ -91,6 +96,27 @@ public:
 	virtual ~AggroMgr() {
 	}
 
+	inline void setReduceByRatio(float reduceRatioSecond, float minAggro) {
+		_reduceType = RATIO;
+		_reduceValueSecond = 0.0f;
+		_reduceRatioSecond = reduceRatioSecond;
+		_minAggro = minAggro;
+	}
+
+	inline void setReduceByValue(float reduceValueSecond) {
+		_reduceType = VALUE;
+		_reduceValueSecond = reduceValueSecond;
+		_reduceRatioSecond = 0.0f;
+		_minAggro = 0.0f;
+	}
+
+	inline void resetReduceValue() {
+		_reduceType = DISABLED;
+		_reduceValueSecond = 0.0f;
+		_reduceRatioSecond = 0.0f;
+		_minAggro = 0.0f;
+	}
+
 	/**
 	 * @brief this will update the aggro list according to the reduction type of an entry.
 	 * @param[in] deltaMillis The current milliseconds to use to update the aggro value of the entries.
@@ -116,7 +142,17 @@ public:
 		const CharacterIdPredicate p(id);
 		EntriesIter i = std::find_if(_entries.begin(), _entries.end(), p);
 		if (i == _entries.end()) {
-			const Entry newEntry(id, amount);
+			Entry newEntry(id, amount);
+			switch (_reduceType) {
+			case RATIO:
+				newEntry.setReduceByRatio(_reduceRatioSecond, _minAggro);
+				break;
+			case VALUE:
+				newEntry.setReduceByValue(_reduceValueSecond);
+				break;
+			default:
+				break;
+			}
 			_entries.push_back(newEntry);
 			_dirty = true;
 			return &_entries.back();
