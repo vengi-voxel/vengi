@@ -1,26 +1,24 @@
-require "ai.constants"
-
 function increasePopulation (parentnode)
 	local parallel = parentnode:addNode("Parallel", "increasepopulation")
-	parallel:setCondition("And(Not(IsOnCooldown{".. INCREASE_COOLDOWNID .."}),Filter(SelectIncreasePartner{".. INCREASE_COOLDOWNID .."}))")
+	parallel:setCondition("And(Not(IsOnCooldown{INCREASE}),Filter(SelectIncreasePartner{INCREASE}))")
 
 		parallel:addNode("Steer(SelectionSeek)", "followincreasepartner")
 		local spawn = parallel:addNode("Parallel", "spawn")
 		spawn:setCondition("IsCloseToSelection{1}")
 
 			spawn:addNode("Spawn", "spawn")
-			spawn:addNode("TriggerCooldown{".. INCREASE_COOLDOWNID .."}", "increasecooldown")
-			spawn:addNode("TriggerCooldownOnSelection{".. INCREASE_COOLDOWNID .."}", "increasecooldownonpartner")
+			spawn:addNode("TriggerCooldown{INCREASE}", "increasecooldown")
+			spawn:addNode("TriggerCooldownOnSelection{INCREASE}", "increasecooldownonpartner")
 end
 
 function hunt (parentnode)
 	local parallel = parentnode:addNode("Parallel", "hunt")
-	parallel:setCondition("Not(IsOnCooldown{".. HUNT_COOLDOWNID .."})")
+	parallel:setCondition("Not(IsOnCooldown{HUNT})")
 
 		parallel:addNode("Steer(SelectionSeek)", "follow"):setCondition("Filter(SelectPrey{ANIMAL_RABBIT})")
 		parallel:addNode("AttackOnSelection", "attack"):setCondition("IsCloseToSelection{1}")
 		parallel:addNode("SetPointOfInterest", "setpoi"):setCondition("IsCloseToSelection{1}")
-		parallel:addNode("TriggerCooldown{".. HUNT_COOLDOWNID .."}", "increasecooldown"):setCondition("Not(IsSelectionAlive)")
+		parallel:addNode("TriggerCooldown{HUNT}", "increasecooldown"):setCondition("Not(IsSelectionAlive)")
 end
 
 function idle (parentnode)

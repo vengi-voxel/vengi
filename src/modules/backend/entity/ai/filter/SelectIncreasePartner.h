@@ -21,7 +21,7 @@ public:
 
 	SelectIncreasePartner(const std::string& parameters = "") :
 			IFilter("SelectIncreasePartner", parameters) {
-		_cooldownId = static_cast<cooldown::Type>(core::string::toInt(parameters));
+		_cooldownId = cooldown::getType(parameters);
 		core_assert(_cooldownId != cooldown::Type::NONE);
 	}
 

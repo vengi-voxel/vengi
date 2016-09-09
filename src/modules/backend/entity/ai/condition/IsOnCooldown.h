@@ -21,7 +21,7 @@ private:
 public:
 	IsOnCooldown(const std::string& parameters) :
 			ICondition("IsOnCooldown", parameters) {
-		_cooldownId = static_cast<cooldown::Type>(core::string::toInt(parameters));
+		_cooldownId = cooldown::getType(parameters);
 		core_assert(_cooldownId != cooldown::Type::NONE);
 	}
 	CONDITION_FACTORY(IsOnCooldown)
