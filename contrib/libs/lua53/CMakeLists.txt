@@ -39,6 +39,8 @@ engine_add_library(
 	SRCS ${SRCS}
 	DEFINES LUA_USE_LONGJMP LUA_COMPAT_MODULE
 )
+# TODO: compile lua and luac binaries to check if there is no system wide installation
+# see common.cmake
 if (NOT LUA53_FOUND)
 	if (LINUX AND NOT ANDROID AND NOT EMSCRIPTEN)
 		target_compile_definitions(lua53 PUBLIC -DLUA_USE_LINUX)

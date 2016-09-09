@@ -63,7 +63,12 @@ public:
 };
 
 #ifndef THREAD_LOCAL
+#if defined(__APPLE__)
+// XCode8 clang will support thread_local
+#define THREAD_LOCAL static
+#else
 #define THREAD_LOCAL thread_local
+#endif
 #endif
 
 }
