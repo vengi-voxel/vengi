@@ -22,6 +22,7 @@ bool MeshPool::init() {
 	bool state = true;
 	for (const char **format = supportedFormats; *format != nullptr; format++) {
 		const std::string& f = core::string::toLower(*format);
+		// this method is not available in the macports version of assimp
 		if (aiGetImporterDesc(f.c_str()) == nullptr) {
 			Log::warn("Could not find an importer for %s", *format);
 			state = false;
