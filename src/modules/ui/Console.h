@@ -24,7 +24,7 @@ private:
 	bool _consoleActive = false;
 	SDL_LogOutputFunction _logFunction = nullptr;
 	core::VarPtr _autoEnable;
-	tb::TBFontFace *_font;
+	tb::TBFontFace *_font = nullptr;
 	std::string _commandLine;
 	// commandline character will get overwritten if this is true
 	bool _overwrite = false;

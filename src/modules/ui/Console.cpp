@@ -136,7 +136,9 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 	}
 
 	if (modifier & KMOD_CTRL) {
-		if (key == SDLK_a) {
+		if (key == SDLK_TAB) {
+			toggle();
+		} else if (key == SDLK_a) {
 			_cursorPos = 0;
 		} else if (key == SDLK_e) {
 			_cursorPos = _commandLine.size();
@@ -158,9 +160,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 	}
 
 	if (modifier & KMOD_SHIFT) {
-		if (key == SDLK_TAB) {
-			toggle();
-		} else if (key == SDLK_HOME) {
+		if (key == SDLK_HOME) {
 			_scrollPos = _messages.size() - _maxLines + 1;
 		} else if (key == SDLK_END) {
 			_scrollPos = 0;
