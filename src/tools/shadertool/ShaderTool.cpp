@@ -469,7 +469,13 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 				name = tokens[0];
 			}
 		}
-		v->push_back(Variable{typeEnum, name, arraySize});
+		auto findIter = std::find_if(v->begin(), v->end(), [&] (const Variable& var) { return var.name == name; });
+		if (findIter == v->end()) {
+			v->push_back(Variable{typeEnum, name, arraySize});
+		} else {
+			Log::warn("Found duplicate uniform %s (%s versus %s)",
+					name.c_str(), cTypes[(int)findIter->type].ctype, cTypes[(int)typeEnum].ctype);
+		}
 	}
 	return true;
 }
