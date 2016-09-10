@@ -21,7 +21,7 @@ constexpr int MinExtractionCullingDistance = 1000;
 namespace frontend {
 
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
-		_clearColor(core::Color::LightBlue), _world(world), _depthBuffer(false) {
+		_clearColor(core::Color::LightBlue), _world(world) {
 }
 
 WorldRenderer::~WorldRenderer() {
@@ -666,12 +666,14 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
 	_sunLight.init(sunDirection, dimension);
+	_depthMapFormat = core::Var::get(cfg::ClientDepthMapFormat, std::to_string((int)video::DepthBufferMode::RGBA), core::CV_SHADER | core::CV_READONLY);
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
 	_shadowMap = core::Var::get(cfg::ClientShadowMap);
 	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
 	_shadowMapDebug = core::Var::get(cfg::ClientShadowMapDebug, "false");
 	_cameraSun = core::Var::get(cfg::ClientCameraSun, "false");
+
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
 		const int ColorTextureOctaves = 2;
@@ -727,7 +729,7 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 		}
 	}
 
-	if (!_depthBuffer.init(dimension)) {
+	if (!_depthBuffer.init(dimension, (video::DepthBufferMode)_depthMapFormat->intVal())) {
 		return false;
 	}
 

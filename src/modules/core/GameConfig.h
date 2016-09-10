@@ -35,6 +35,7 @@ constexpr const char *ClientCameraSun = "cl_cameralookthroughsun";
 constexpr const char *ClientCameraMaxTargetDistance = "cl_cameramaxtargetdistance";
 
 constexpr const char *ClientDebugGeometry = "cl_debug_geometry";
+constexpr const char *ClientDepthMapFormat = "cl_depthmapformat";
 
 constexpr const char *ServerAutoRegister = "sv_autoregister";
 constexpr const char *ServerUserTimeout = "sv_usertimeout";

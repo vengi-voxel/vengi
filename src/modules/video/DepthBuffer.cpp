@@ -11,8 +11,7 @@
 
 namespace video {
 
-DepthBuffer::DepthBuffer(bool depthAttachment) :
-		_depthAttachment(depthAttachment) {
+DepthBuffer::DepthBuffer() {
 }
 
 DepthBuffer::~DepthBuffer() {
@@ -39,8 +38,9 @@ void DepthBuffer::shutdown() {
 	core_assert(_oldFramebuffer == -1);
 }
 
-bool DepthBuffer::init(const glm::ivec2& dimension) {
+bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode) {
 	_dimension = dimension;
+	_mode = mode;
 
 	glGenFramebuffers(1, &_fbo);
 	GL_setName(GL_FRAMEBUFFER, _fbo, "depthfbo");
@@ -54,15 +54,17 @@ bool DepthBuffer::init(const glm::ivec2& dimension) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-	if (_depthAttachment) {
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	if (depthAttachment()) {
+		if (_mode == DepthBufferMode::DEPTH_CMP) {
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		}
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	} else {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, dimension.x, dimension.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
-	if (_depthAttachment) {
+	if (depthAttachment()) {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
@@ -71,7 +73,7 @@ bool DepthBuffer::init(const glm::ivec2& dimension) {
 	}
 	GL_checkError();
 
-	if (!_depthAttachment) {
+	if (!depthAttachment()) {
 #if 0
 		glGenRenderbuffers(1, &_rbo);
 		glBindRenderbuffer(GL_RENDERBUFFER, _rbo);
@@ -103,7 +105,7 @@ void DepthBuffer::bind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 	//glClearDepth(0); // black
 	//glClearDepth(1); // white
-	if (_depthAttachment) {
+	if (depthAttachment()) {
 		glClear(GL_DEPTH_BUFFER_BIT);
 	} else {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -112,7 +114,7 @@ void DepthBuffer::bind() {
 }
 
 uint8_t *DepthBuffer::read() {
-	if (_depthAttachment) {
+	if (depthAttachment()) {
 		return nullptr;
 	}
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);

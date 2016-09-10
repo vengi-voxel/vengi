@@ -64,6 +64,7 @@ private:
 	voxel::WorldPtr _world;
 	video::GBuffer _gbuffer;
 	core::VarPtr _debugGeometry;
+	core::VarPtr _depthMapFormat;
 	core::VarPtr _deferred;
 	core::VarPtr _deferredDebug;
 	core::VarPtr _shadowMap;

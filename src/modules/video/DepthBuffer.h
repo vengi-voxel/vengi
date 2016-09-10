@@ -8,12 +8,18 @@
 
 namespace video {
 
+enum class DepthBufferMode {
+	RGBA,
+	DEPTH,
+	DEPTH_CMP
+};
+
 class DepthBuffer {
 public:
-	DepthBuffer(bool depthAttachment = false);
+	DepthBuffer();
 	~DepthBuffer();
 
-	bool init(const glm::ivec2& dimension);
+	bool init(const glm::ivec2& dimension, DepthBufferMode mode = DepthBufferMode::RGBA);
 	void shutdown();
 
 	void bind();
@@ -29,7 +35,7 @@ public:
 	}
 
 	inline bool depthAttachment() const {
-		return _depthAttachment;
+		return _mode == DepthBufferMode::DEPTH || _mode == DepthBufferMode::DEPTH_CMP;
 	}
 
 private:
@@ -39,7 +45,7 @@ private:
 	GLuint _rbo = 0u;
 	GLuint _depthTexture = 0u;
 	glm::ivec2 _dimension;
-	bool _depthAttachment;
+	DepthBufferMode _mode = DepthBufferMode::RGBA;
 };
 
 }
