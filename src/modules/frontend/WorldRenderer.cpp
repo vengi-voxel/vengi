@@ -665,7 +665,6 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
-	_sunLight.init(sunDirection, dimension);
 	_depthMapFormat = core::Var::get(cfg::ClientDepthMapFormat, std::to_string((int)video::DepthBufferMode::RGBA), core::CV_SHADER | core::CV_READONLY);
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
@@ -674,6 +673,7 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	_shadowMapDebug = core::Var::get(cfg::ClientShadowMapDebug, "false");
 	_cameraSun = core::Var::get(cfg::ClientCameraSun, "false");
 
+	_sunLight.init(sunDirection, dimension, (video::DepthBufferMode)_depthMapFormat->intVal());
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
 		const int ColorTextureOctaves = 2;

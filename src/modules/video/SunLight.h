@@ -3,6 +3,7 @@
 #include "core/GLM.h"
 #include "core/Rect.h"
 #include "Camera.h"
+#include "DepthBuffer.h"
 
 namespace video {
 
@@ -10,15 +11,16 @@ class SunLight {
 private:
 	class SunCamera : public Camera {
 	public:
-		void updateSun(long deltaFrame, const core::RectFloat& bbox);
+		void updateSun(long deltaFrame, const core::RectFloat& bbox, video::DepthBufferMode mode);
 	};
 
 	SunCamera _sunCamera;
+	video::DepthBufferMode _mode = video::DepthBufferMode::RGBA;
 
 public:
 	SunLight();
 
-	void init(const glm::vec3& sunDirection, const glm::ivec2& dimension);
+	void init(const glm::vec3& sunDirection, const glm::ivec2& dimension, video::DepthBufferMode mode);
 
 	const Camera& camera() const;
 
