@@ -1,3 +1,7 @@
+/**
+ * @brief Shader to fill the bound shadowmap with the depth values
+ */
+
 $in uvec3 a_pos;
 #ifdef INSTANCED
 // instanced rendering
@@ -12,10 +16,11 @@ $out vec2 o_projZW;
 
 void main()
 {
-	vec4 pos = u_light * u_model * vec4(a_pos, 1.0f);
+	vec4 worldpos = u_model * vec4(a_pos, 1.0f);
 #ifdef INSTANCED
-	pos = vec4(a_offset, 0.0) + pos;
+	worldpos = vec4(a_offset, 0.0) + worldpos;
 #endif
+	vec4 pos = u_light * worldpos;
 	gl_Position = pos;
 #if cl_depthmapformat == 0
 	o_projZW = pos.zw;

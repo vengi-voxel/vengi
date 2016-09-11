@@ -16,7 +16,8 @@ uniform vec2 u_screensize;
 
 vec2 calculateShadowUV() {
 	// convert from -1, 1 to tex coords in the range 0, 1
-	return v_lightspacepos.xy * 0.5 + 0.5;
+	vec2 uv = v_lightspacepos.xy / v_lightspacepos.w;
+	return uv * 0.5 + 0.5;
 }
 
 float calculateShadow(float ndotl) {
