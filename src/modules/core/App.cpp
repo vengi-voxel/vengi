@@ -126,16 +126,17 @@ AppState App::onConstruct() {
 	_filesystem->init(_organisation, _appname);
 
 	core::Command::registerCommand("set", [] (const core::CmdArgs& args) {
-		if (args.size() != 2)
+		if (args.size() != 2) {
 			return;
-		core::Var::get(args[0])->setVal(args[1]);
+		}
+		core::Var::get(args[0], "")->setVal(args[1]);
 	}).setHelp("Set a variable name");
 	core::Command::registerCommand("varclearhistory", [] (const core::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::error("not enough arguments given. Expecting a variable name");
 			return;
 		}
-		const VarPtr& st = core::Var::get(args[0], "", CV_NOTCREATEEMPTY);
+		const VarPtr& st = core::Var::get(args[0]);
 		if (st) {
 			st->clearHistory();
 		}
@@ -145,7 +146,7 @@ AppState App::onConstruct() {
 			Log::error("not enough arguments given. Expecting a variable name at least");
 			return;
 		}
-		const core::VarPtr& var = core::Var::get(args[0], "", CV_NOTCREATEEMPTY);
+		const core::VarPtr& var = core::Var::get(args[0]);
 		if (!var) {
 			Log::error("given var doesn't exist: %s", args[0].c_str());
 			return;
@@ -176,7 +177,7 @@ AppState App::onConstruct() {
 			Log::error("not enough arguments given. Expecting a variable name");
 			return;
 		}
-		const VarPtr& st = core::Var::get(args[0], "", CV_NOTCREATEEMPTY);
+		const VarPtr& st = core::Var::get(args[0]);
 		if (st) {
 			Log::info(" -> %s ", st->strVal().c_str());
 		} else {
@@ -244,7 +245,7 @@ AppState App::onInit() {
 				flagsMask &= CV_SHADER;
 			}
 		}
-		const VarPtr& v = core::Var::get(name, value, flagsMask);
+		const VarPtr& v = core::Var::get(name, value.c_str(), flagsMask);
 		core_assert(v->getFlags() == flagsMask);
 	}
 

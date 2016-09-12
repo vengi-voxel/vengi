@@ -91,7 +91,7 @@ void ServerLoop::readInput() {
 	core::Tokenizer t(input);
 	while (t.hasNext()) {
 		const std::string& var = t.next();
-		const core::VarPtr& varPtr = core::Var::get(var, "", core::CV_NOTCREATEEMPTY);
+		const core::VarPtr& varPtr = core::Var::get(var);
 		if (!varPtr) {
 			break;
 		}

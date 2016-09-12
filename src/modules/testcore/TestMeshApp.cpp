@@ -26,7 +26,7 @@ core::AppState TestMeshApp::onInit() {
 	});
 
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
-	const core::VarPtr& depthMapFormat = core::Var::get(cfg::ClientDepthMapFormat, std::to_string((int)video::DepthBufferMode::RGBA), core::CV_SHADER | core::CV_READONLY);
+	const core::VarPtr& depthMapFormat = core::Var::get(cfg::ClientDepthMapFormat, (int)video::DepthBufferMode::RGBA, core::CV_SHADER | core::CV_READONLY);
 	_sunLight.init(sunDirection, dimension(), (video::DepthBufferMode)depthMapFormat->intVal());
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));

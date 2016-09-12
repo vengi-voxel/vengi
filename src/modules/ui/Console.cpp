@@ -238,7 +238,7 @@ void Console::executeCommandLine() {
 		if (core::Command::execute(cmd, tokens)) {
 			continue;
 		}
-		const core::VarPtr& c = core::Var::get(cmd, "", core::CV_NOTCREATEEMPTY);
+		const core::VarPtr& c = core::Var::get(cmd);
 		if (!c) {
 			Log::info("unknown command: %s", cmd.c_str());
 			continue;

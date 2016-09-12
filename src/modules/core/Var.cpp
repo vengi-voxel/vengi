@@ -18,7 +18,7 @@ void Var::shutdown() {
 	_vars.clear();
 }
 
-VarPtr Var::get(const std::string& name, const std::string& value, int32_t flags) {
+VarPtr Var::get(const std::string& name, const char* value, int32_t flags) {
 	VarMap::iterator i;
 	bool missing;
 	{
@@ -29,17 +29,17 @@ VarPtr Var::get(const std::string& name, const std::string& value, int32_t flags
 
 	const uint32_t flagsMask = flags < 0 ? 0u : static_cast<uint32_t>(flags);
 	if (missing) {
-		if (value.empty() && (flagsMask & CV_NOTCREATEEMPTY) != 0) {
+		if (value == nullptr) {
 			return VarPtr();
 		}
-		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flagsMask & ~CV_NOTCREATEEMPTY);
+		const VarPtr& p = std::make_shared<make_shared_enabler>(name, value, flagsMask);
 		ScopedWriteLock lock(_lock);
 		_vars[name] = p;
 		return p;
 	}
 	const VarPtr& v = i->second;
-	if (flags >= 0 && flagsMask != CV_NOTCREATEEMPTY) {
-		v->_flags = flagsMask & ~CV_NOTCREATEEMPTY;
+	if (flags >= 0) {
+		v->_flags = flagsMask;
 	}
 	return v;
 }

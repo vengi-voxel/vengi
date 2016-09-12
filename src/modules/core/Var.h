@@ -14,17 +14,15 @@
 namespace core {
 
 const uint32_t CV_READONLY = 1 << 0;
-// don't create empty value config vars
-const uint32_t CV_NOTCREATEEMPTY = 1 << 1;
 // will not get saved to the file
-const uint32_t CV_NOPERSIST = 1 << 2;
+const uint32_t CV_NOPERSIST = 1 << 1;
 // will be put as define in every shader
-const uint32_t CV_SHADER = 1 << 3;
+const uint32_t CV_SHADER = 1 << 2;
 // will be broadcasted to all connected clients
-const uint32_t CV_REPLICATE = 1 << 4;
+const uint32_t CV_REPLICATE = 1 << 3;
 // user information that will be sent out to all connected clients
 // (e.g. user name)
-const uint32_t CV_USERINFO = 1 << 5;
+const uint32_t CV_USERINFO = 1 << 4;
 
 class Var;
 typedef std::shared_ptr<Var> VarPtr;
@@ -74,12 +72,19 @@ public:
 	 * @brief Creates a new or gets an already existing var
 	 *
 	 * @param[in] name The name that this var is registered under (must be unique)
-	 * @param[in] value The initial value of the var
+	 * @param[in] value The initial value of the var. If this is @c nullptr a new cvar
+	 * is not created by this call.
 	 * @param[in] flags A bitmask of var flags - e.g. @c CV_READONLY
 	 *
 	 * @note This is using a read/write lock to allow access from different threads.
 	 */
-	static VarPtr get(const std::string& name, const std::string& value = "", int32_t flags = -1);
+	static VarPtr get(const std::string& name, const char* value = nullptr, int32_t flags = -1);
+
+	static inline VarPtr get(const std::string& name, int value, int32_t flags = -1) {
+		const std::string& strVal = std::to_string(value);
+		return get(name, strVal.c_str(), flags);
+	}
+
 	static void shutdown();
 	virtual ~Var();
 

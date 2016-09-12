@@ -665,7 +665,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
 bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
-	_depthMapFormat = core::Var::get(cfg::ClientDepthMapFormat, std::to_string((int)video::DepthBufferMode::RGBA), core::CV_SHADER | core::CV_READONLY);
+	_depthMapFormat = core::Var::get(cfg::ClientDepthMapFormat, (int)video::DepthBufferMode::RGBA, core::CV_SHADER | core::CV_READONLY);
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry);
 	_deferred = core::Var::get(cfg::ClientDeferred);
 	_shadowMap = core::Var::get(cfg::ClientShadowMap);
