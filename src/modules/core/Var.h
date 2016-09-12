@@ -20,6 +20,11 @@ const uint32_t CV_NOTCREATEEMPTY = 1 << 1;
 const uint32_t CV_NOPERSIST = 1 << 2;
 // will be put as define in every shader
 const uint32_t CV_SHADER = 1 << 3;
+// will be broadcasted to all connected clients
+const uint32_t CV_REPLICATE = 1 << 4;
+// user information that will be sent out to all connected clients
+// (e.g. user name)
+const uint32_t CV_USERINFO = 1 << 5;
 
 class Var;
 typedef std::shared_ptr<Var> VarPtr;
