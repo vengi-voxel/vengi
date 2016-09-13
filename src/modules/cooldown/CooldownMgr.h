@@ -21,6 +21,7 @@ namespace cooldown {
 
 /**
  * @brief Cooldown manager that handles cooldowns for one entity
+ * @ingroup Cooldowns
  */
 class CooldownMgr: public core::NonCopyable {
 private:

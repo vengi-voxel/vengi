@@ -6,8 +6,19 @@
 
 namespace cooldown {
 
+/**
+ * @brief The cooldown trigger states
+ * @ingroup Cooldowns
+ */
 enum CooldownTriggerState {
-	SUCCESS, ALREADY_RUNNING
+	/**
+	 * @brief Cooldown was successfully triggered and is running now.
+	 */
+	SUCCESS,
+	/**
+	 * @brief There is already a cooldown of the same type running.
+	 */
+	ALREADY_RUNNING
 };
 
 }

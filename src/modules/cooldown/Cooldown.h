@@ -12,6 +12,10 @@
 
 namespace cooldown {
 
+/**
+ * @defgroup Cooldowns
+ * @{
+ */
 class Cooldown {
 private:
 	Type _type;
@@ -75,6 +79,10 @@ public:
 };
 
 typedef std::shared_ptr<Cooldown> CooldownPtr;
+
+/**
+ * @}
+ */
 
 }
 

@@ -11,7 +11,20 @@ CooldownDuration::CooldownDuration() {
 	}
 }
 
+long CooldownDuration::setDuration(Type type, long duration) {
+	const int t = core::enumValue<Type>(type);
+	const long old = _durations[t];
+	_durations[t] = duration;
+	return old;
+}
+
 bool CooldownDuration::init(const std::string& filename) {
+	if (filename.empty()) {
+		_error = "";
+		_initialized = true;
+		return true;
+	}
+
 	const std::string& cooldowns = core::App::getInstance()->filesystem()->load(filename);
 	if (cooldowns.empty()) {
 		_error = "Could not load file " + filename;

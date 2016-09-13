@@ -23,6 +23,7 @@ public:
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
+		_cooldownDuration->init("cooldowns.lua");
 	}
 };
 
