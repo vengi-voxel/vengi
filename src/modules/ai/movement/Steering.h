@@ -63,9 +63,10 @@ class SelectionSteering : public ISteering {
 protected:
 	glm::vec3 getSelectionTarget(const AIPtr& entity, std::size_t index) const {
 		const FilteredEntities& selection = entity->getFilteredEntities();
-		if (selection.empty() || selection.size() <= index)
+		if (selection.empty() || selection.size() <= index) {
 			return INFINITE;
-		Zone* zone = entity->getZone();
+		}
+		const Zone* zone = entity->getZone();
 		const CharacterId characterId = selection[index];
 		const AIPtr& ai = zone->getAI(characterId);
 		const ICharacterPtr character = ai->getCharacter();

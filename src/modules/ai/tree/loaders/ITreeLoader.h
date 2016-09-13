@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <cstdarg>
+#include <cstdio>
 
 namespace ai {
 
@@ -22,6 +24,11 @@ protected:
 	typedef std::map<std::string, TreeNodePtr> TreeMap;
 	TreeMap _treeMap;
 	ReadWriteLock _lock = {"treeloader"};
+
+	inline void resetError() {
+		ScopedWriteLock scopedLock(_lock);
+		_error = "";
+	}
 private:
 	std::string _error;		/**< make sure to set this member if your own implementation ran into an error. @sa ITreeLoader::getError */
 public:
@@ -85,10 +92,7 @@ public:
 		return TreeNodePtr();
 	}
 
-	void setError(const std::string& error) {
-		ScopedWriteLock scopedLock(_lock);
-		_error = error;
-	}
+	void setError(const char* msg, ...) __attribute__((format(printf, 2, 3)));
 
 	/**
 	 * @brief Gives access to the last error state of the @c ITreeLoader
@@ -97,5 +101,18 @@ public:
 		return _error;
 	}
 };
+
+inline void ITreeLoader::setError(const char* msg, ...) {
+	va_list args;
+	va_start(args, msg);
+	char buf[1024];
+	std::vsnprintf(buf, sizeof(buf), msg, args);
+	va_end(args);
+	if (buf[0] != '\0') {
+		ai::Log::debug("%s", buf);
+	}
+	ScopedWriteLock scopedLock(_lock);
+	_error = buf;
+}
 
 }

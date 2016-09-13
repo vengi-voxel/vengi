@@ -21,12 +21,9 @@ public:
 		if (isInfinite(target)) {
 			const MoveVector d(target, 0.0);
 		}
-		glm::vec3 v = ai->getCharacter()->getPosition() - target;
-		double orientation = 0.0;
-		if (glm::length2(v) > 0.0f) {
-			orientation = angle(glm::normalize(v) * speed);
-		}
-		const MoveVector d(v, orientation);
+		const glm::vec3& v = glm::normalize(ai->getCharacter()->getPosition() - target);
+		const double orientation = angle(v);
+		const MoveVector d(v * speed, orientation);
 		return d;
 	}
 };

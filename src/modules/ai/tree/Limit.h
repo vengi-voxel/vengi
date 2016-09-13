@@ -21,10 +21,11 @@ public:
 	Limit(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
 		TreeNode(name, parameters, condition) {
 		_type = "Limit";
-		if (!parameters.empty())
+		if (!parameters.empty()) {
 			_amount = ::atoi(parameters.c_str());
-		else
+		} else {
 			_amount = 1;
+		}
 	}
 
 	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
@@ -32,18 +33,21 @@ public:
 			ai_assert(false, "Limit can not have more than one child");
 		}
 
-		if (TreeNode::execute(entity, deltaMillis) == CANNOTEXECUTE)
+		if (TreeNode::execute(entity, deltaMillis) == CANNOTEXECUTE) {
 			return CANNOTEXECUTE;
+		}
 
 		const int alreadyExecuted = getLimitState(entity);
-		if (alreadyExecuted >= _amount)
+		if (alreadyExecuted >= _amount) {
 			return state(entity, FINISHED);
+		}
 
 		const TreeNodePtr& treeNode = *_children.begin();
 		const TreeNodeStatus status = treeNode->execute(entity, deltaMillis);
 		setLimitState(entity, alreadyExecuted + 1);
-		if (status == RUNNING)
+		if (status == RUNNING) {
 			return state(entity, RUNNING);
+		}
 		return state(entity, FAILED);
 	}
 };

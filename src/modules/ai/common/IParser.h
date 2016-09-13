@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Log.h"
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -12,16 +13,21 @@ private:
 	std::string _error;
 
 protected:
-	void setError(const std::string& error);
+	void setError(const char* msg, ...) __attribute__((format(printf, 2, 3)));
+
+	inline void resetError() {
+		_error = "";
+	}
 
 	inline std::string getBetween (const std::string& str, const std::string& tokenStart, const std::string& tokenEnd) {
 		const std::size_t start = str.find(tokenStart);
-		if (start == std::string::npos)
+		if (start == std::string::npos) {
 			return "";
+		}
 
 		const std::size_t end = str.find(tokenEnd);
 		if (end == std::string::npos) {
-			setError("syntax error - expected " + tokenEnd);
+			setError("syntax error - expected %s", tokenEnd.c_str());
 			return "";
 		}
 		const size_t startIndex = start + 1;
@@ -37,9 +43,18 @@ public:
 	const std::string& getError() const;
 };
 
-inline void IParser::setError(const std::string& error) {
-	_error = error;
+inline void IParser::setError(const char* msg, ...) {
+	va_list args;
+	va_start(args, msg);
+	char buf[1024];
+	std::vsnprintf(buf, sizeof(buf), msg, args);
+	va_end(args);
+	if (buf[0] != '\0') {
+		ai::Log::debug("%s", buf);
+	}
+	_error = buf;
 }
+
 
 inline const std::string& IParser::getError() const {
 	return _error;

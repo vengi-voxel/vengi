@@ -39,14 +39,15 @@ inline void ConditionParser::splitConditions(const std::string& string, std::vec
 	int inChildren = 0;
 	std::string token;
 	for (std::string::const_iterator i = string.begin(); i != string.end(); ++i) {
-		if (*i == '{')
+		if (*i == '{') {
 			++inParameter;
-		else if (*i == '}')
+		} else if (*i == '}') {
 			--inParameter;
-		else if (*i == '(')
+		} else if (*i == '(') {
 			++inChildren;
-		else if (*i == ')')
+		} else if (*i == ')') {
 			--inChildren;
+		}
 
 		if (inParameter == 0 && inChildren == 0) {
 			if (*i == ',') {
@@ -65,8 +66,9 @@ inline bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, c
 	splitConditions(conditionStr, conditions);
 	if (conditions.size() > 1) {
 		for (std::vector<std::string>::const_iterator i = conditions.begin(); i != conditions.end(); ++i) {
-			if (!fillInnerConditions(ctx, *i))
+			if (!fillInnerConditions(ctx, *i)) {
 				return false;
+			}
 		}
 	} else {
 		std::string parameters;
@@ -87,7 +89,7 @@ inline bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, c
 			const FilterFactoryContext ctxInner(parameters);
 			const FilterPtr& c = _aiFactory.createFilter(name, ctxInner);
 			if (!c) {
-				setError("could not create filter for " + name);
+				setError("could not create filter for %s", name.c_str());
 				return false;
 			}
 			ctx.filters.push_back(c);
@@ -102,12 +104,13 @@ inline bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, c
 					return false;
 				}
 				const std::string& inner = conditionStr.substr(n + 1, r - n - 1);
-				if (!fillInnerConditions(ctxInner, inner))
+				if (!fillInnerConditions(ctxInner, inner)) {
 					return false;
+				}
 			}
 			const ConditionPtr& c = _aiFactory.createCondition(name, ctxInner);
 			if (!c) {
-				setError("could not create inner condition for " + name);
+				setError("could not create inner condition for %s", name.c_str());
 				return false;
 			}
 			ctx.conditions.push_back(c);
@@ -117,6 +120,7 @@ inline bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, c
 }
 
 inline ConditionPtr ConditionParser::getCondition() {
+	resetError();
 	std::string parameters;
 	std::size_t n = _conditionString.find("(");
 	if (n == std::string::npos || _conditionString.find("{") < n) {
@@ -148,7 +152,7 @@ inline ConditionPtr ConditionParser::getCondition() {
 	}
 	const ConditionPtr& c = _aiFactory.createCondition(name, ctx);
 	if (!c) {
-		setError("could not create condition for " + name);
+		setError("could not create condition for %s", name.c_str());
 		return ConditionPtr();
 	}
 	return c;

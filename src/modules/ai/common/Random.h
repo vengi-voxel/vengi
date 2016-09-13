@@ -3,8 +3,7 @@
 #include <chrono>
 #include <random>
 #include <stdlib.h>
-
-#include "Thread.h"
+#include "common/Thread.h"
 
 namespace ai {
 

@@ -18,22 +18,24 @@ public:
 
 	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
 		if (_children.size() != 1) {
-			ai_assert(false, "Invert can not have more than one child");
+			ai_assert(false, "Invert must have exactly one child");
 		}
 
-		if (TreeNode::execute(entity, deltaMillis) == CANNOTEXECUTE)
+		if (TreeNode::execute(entity, deltaMillis) == CANNOTEXECUTE) {
 			return CANNOTEXECUTE;
+		}
 
 		const TreeNodePtr& treeNode = *_children.begin();
 		const TreeNodeStatus status = treeNode->execute(entity, deltaMillis);
-		if (status == FINISHED)
+		if (status == FINISHED) {
 			return state(entity, FAILED);
-		else if (status == FAILED)
+		} else if (status == FAILED) {
 			return state(entity, FINISHED);
-		else if (status == EXCEPTION)
+		} else if (status == EXCEPTION) {
 			return state(entity, EXCEPTION);
-		else if (status == CANNOTEXECUTE)
+		} else if (status == CANNOTEXECUTE) {
 			return state(entity, FINISHED);
+		}
 		return state(entity, RUNNING);
 	}
 };

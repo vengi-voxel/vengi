@@ -30,19 +30,16 @@ inline float toDegrees (float radians) {
 }
 
 inline glm::vec3 fromRadians(float radians) {
-	return glm::vec3(cosf(radians), 0.0f, sinf(radians));
+	return glm::vec3(glm::cos(radians), 0.0f, glm::sin(radians));
 }
 
 inline double angle(const glm::vec3& v) {
-	const double _angle = ::atan2(v.z, v.x);
+	const float _angle = glm::atan(v.z, v.x);
 	return _angle;
 }
 
 inline glm::vec3 advance (const glm::vec3& src, const glm::vec3& direction, const float scale) {
-	const float _x = src.x + scale * direction.x;
-	const float _y = src.y + scale * direction.y;
-	const float _z = src.z + scale * direction.z;
-	return glm::vec3(_x, _y, _z);
+	return src + (scale * direction);
 }
 
 template<typename T>

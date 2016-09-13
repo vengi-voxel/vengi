@@ -16,16 +16,18 @@ public:
 
 	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
 		if (_children.size() != 1) {
-			ai_assert(false, "Fail can not have more than one child");
+			ai_assert(false, "Fail must have exactly one child");
 		}
 
-		if (TreeNode::execute(entity, deltaMillis) == CANNOTEXECUTE)
+		if (TreeNode::execute(entity, deltaMillis) == CANNOTEXECUTE) {
 			return CANNOTEXECUTE;
+		}
 
 		const TreeNodePtr& treeNode = *_children.begin();
 		const TreeNodeStatus status = treeNode->execute(entity, deltaMillis);
-		if (status == RUNNING)
+		if (status == RUNNING) {
 			return state(entity, RUNNING);
+		}
 		return state(entity, FAILED);
 	}
 };

@@ -39,14 +39,15 @@ inline void TreeNodeParser::splitTasks(const std::string& string, std::vector<st
 	bool inChildren = false;
 	std::string token;
 	for (std::string::const_iterator i = string.begin(); i != string.end(); ++i) {
-		if (*i == '{')
+		if (*i == '{') {
 			inParameter = true;
-		else if (*i == '}')
+		} else if (*i == '}') {
 			inParameter = false;
-		else if (*i == '(')
+		} else if (*i == '(') {
 			inChildren = true;
-		else if (*i == ')')
+		} else if (*i == ')') {
 			inChildren = false;
+		}
 
 		if (!inParameter && !inChildren) {
 			if (*i == ',') {
@@ -77,6 +78,7 @@ inline SteeringPtr TreeNodeParser::getSteering (const std::string& nodeName) {
 }
 
 inline TreeNodePtr TreeNodeParser::getTreeNode(const std::string& name) {
+	resetError();
 	std::string nodeType;
 	std::string parameters;
 	std::size_t n = _taskString.find("(");
@@ -91,15 +93,17 @@ inline TreeNodePtr TreeNodeParser::getTreeNode(const std::string& name) {
 	}
 	const std::string& subTrees = getBetween(_taskString, "(", ")");
 	if (!subTrees.empty()) {
-		if (nodeType != "Steer")
+		if (nodeType != "Steer") {
 			return TreeNodePtr();
+		}
 		std::vector<std::string> tokens;
 		splitTasks(subTrees, tokens);
 		movement::Steerings steerings;
 		for (const std::string& nodeName : tokens) {
 			const SteeringPtr& steering = getSteering(nodeName);
-			if (!steering)
+			if (!steering) {
 				return TreeNodePtr();
+			}
 			steerings.push_back(steering);
 		}
 		const SteerNodeFactoryContext steerFactoryCtx(name.empty() ? nodeType : name, parameters, True::get(), steerings);

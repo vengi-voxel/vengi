@@ -47,8 +47,9 @@ public:
 			totalWeight += weight;
 		}
 
-		if (totalWeight <= 0.0000001f)
+		if (totalWeight <= 0.0000001f) {
 			return MoveVector(INFINITE, 0.0f);
+		}
 
 		const float scale = 1.0f / totalWeight;
 		return MoveVector(vecBlended * scale, fmodf(angularBlended * scale, glm::two_pi<float>()));

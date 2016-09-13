@@ -41,7 +41,8 @@
  * @endcode
  * or define SIMPLEAI_INCLUDE_LUA and/or SIMPLEAI_INCLUDE_XML
  *
- * SimpleAI uses a right handed coordinate system.
+ * SimpleAI uses a left handed coordinate system with y pointing upwards (meaning, if
+ * you are using a 2d game, only handle x and z).
  */
 #pragma once
 
