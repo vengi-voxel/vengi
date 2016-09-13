@@ -26,6 +26,7 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_windowevents_c.h"
 #include "../SDL_egl_c.h"
+#include "SDL_waylandevents_c.h"
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandtouch.h"
@@ -178,6 +179,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     wl_surface_set_user_data(data->surface, data);
     data->shell_surface = wl_shell_get_shell_surface(c->shell,
                                                      data->surface);
+    wl_shell_surface_set_class (data->shell_surface, c->classname);
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH    
     if (c->surface_extension) {
         data->extended_surface = qt_surface_extension_get_extended_surface(
@@ -213,6 +215,10 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     wl_region_add(region, 0, 0, window->w, window->h);
     wl_surface_set_opaque_region(data->surface, region);
     wl_region_destroy(region);
+
+    if (c->relative_mouse_mode) {
+        Wayland_input_lock_pointer(c->input);
+    }
 
     WAYLAND_wl_display_flush(c->display);
 
