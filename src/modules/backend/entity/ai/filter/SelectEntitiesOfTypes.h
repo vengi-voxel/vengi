@@ -14,6 +14,9 @@ using namespace ai;
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class SelectEntitiesOfTypes: public IFilter {
 private:
 	std::bitset<(int)network::EntityType::MAX> _entityTypes;

@@ -10,6 +10,9 @@ using namespace ai;
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class IsSelectionAlive: public ICondition {
 protected:
 public:

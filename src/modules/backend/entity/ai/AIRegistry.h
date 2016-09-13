@@ -14,6 +14,9 @@ namespace backend {
 class SpawnMgr;
 typedef std::shared_ptr<SpawnMgr> SpawnMgrPtr;
 
+/**
+ * @ingroup AI
+ */
 class AIRegistry: public ai::AIRegistry {
 public:
 	void init(const backend::SpawnMgrPtr& spawnMgr);

@@ -10,6 +10,9 @@ using namespace ai;
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class SelectVisible: public IFilter {
 public:
 	FILTER_FACTORY(SelectVisible)

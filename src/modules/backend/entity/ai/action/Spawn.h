@@ -12,6 +12,9 @@ using namespace ai;
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class Spawn: public Task {
 private:
 	backend::SpawnMgrPtr _spawnMgr;

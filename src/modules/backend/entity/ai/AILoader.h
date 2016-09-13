@@ -12,6 +12,9 @@
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class AILoader: public ai::LUATreeLoader {
 private:
 	AIRegistryPtr _registry;

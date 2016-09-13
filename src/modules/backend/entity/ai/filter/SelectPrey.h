@@ -13,6 +13,9 @@ using namespace ai;
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class SelectPrey: public IFilter {
 private:
 	network::EntityType _npcType;

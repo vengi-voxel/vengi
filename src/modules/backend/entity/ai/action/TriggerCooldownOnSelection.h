@@ -12,6 +12,9 @@ using namespace ai;
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class TriggerCooldownOnSelection: public Task {
 private:
 	cooldown::Type _cooldownId;

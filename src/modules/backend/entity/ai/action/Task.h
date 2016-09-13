@@ -12,6 +12,9 @@ using namespace ai;
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class Task: public ITask {
 public:
 	TASK_CLASS(Task)
@@ -24,6 +27,9 @@ public:
 };
 
 #define AI_TASK(TaskName) \
+/** \
+ * @ingroup AI \
+ */ \
 struct TaskName: public Task { \
 	TaskName(const std::string& name, const std::string& parameters, const ConditionPtr& condition) : \
 			Task(name, parameters, condition) {} \

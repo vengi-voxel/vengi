@@ -13,6 +13,9 @@ using namespace ai;
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class SelectIncreasePartner: public IFilter {
 private:
 	cooldown::Type _cooldownId;

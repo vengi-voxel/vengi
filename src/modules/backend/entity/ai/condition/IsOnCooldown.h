@@ -15,6 +15,9 @@ using namespace ai;
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class IsOnCooldown: public ICondition {
 private:
 	cooldown::Type _cooldownId;

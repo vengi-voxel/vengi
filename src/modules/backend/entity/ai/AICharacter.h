@@ -10,6 +10,9 @@ namespace backend {
 
 class Npc;
 
+/**
+ * @ingroup AI
+ */
 class AICharacter : public ai::ICharacter {
 private:
 	Npc& _npc;

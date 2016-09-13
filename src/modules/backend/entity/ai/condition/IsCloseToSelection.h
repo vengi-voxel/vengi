@@ -11,6 +11,9 @@ using namespace ai;
 
 namespace backend {
 
+/**
+ * @ingroup AI
+ */
 class IsCloseToSelection: public ICondition {
 protected:
 	int _distance;

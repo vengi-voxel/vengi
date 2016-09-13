@@ -1,4 +1,6 @@
 /**
+ * @defgroup AI
+ * @{
  * @section SimpleAI documentation
  *
  * SimpleAI is a small C++ AI behaviour tree library
@@ -135,3 +137,7 @@
 #ifdef SIMPLEAI_INCLUDE_XML
 #include "tree/loaders/xml/XMLTreeLoader.h"
 #endif
+
+/**
+ * @}
+ */
