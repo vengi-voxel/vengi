@@ -82,6 +82,12 @@ void Var::setVal(const std::string& value) {
 	if (_dirty) {
 		addValueToHistory(value);
 		++_currentHistoryPos;
+		if (_flags & CV_REPLICATE) {
+			_updateFlags |= NEEDS_REPLICATE;
+		}
+		if (_flags & CV_USERINFO) {
+			_updateFlags |= NEEDS_BROADCAST;
+		}
 	}
 }
 

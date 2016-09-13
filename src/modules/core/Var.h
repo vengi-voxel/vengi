@@ -53,6 +53,9 @@ protected:
 
 	const std::string _name;
 	uint32_t _flags;
+	static constexpr int NEEDS_REPLICATE = 1 << 0;
+	static constexpr int NEEDS_BROADCAST = 1 << 1;
+	uint8_t _updateFlags = 0u;
 
 	struct Value {
 		float _floatValue;
@@ -70,6 +73,8 @@ protected:
 
 	void addValueToHistory(const std::string& value);
 public:
+	~Var();
+
 	/**
 	 * @brief Creates a new or gets an already existing var
 	 *
@@ -88,10 +93,9 @@ public:
 	}
 
 	static void shutdown();
-	~Var();
 
 	template<class Functor>
-	static void visit(Functor func) {
+	static void visit(Functor&& func) {
 		Var::VarMap varList;
 		{
 			ScopedReadLock lock(_lock);
@@ -100,6 +104,24 @@ public:
 		for (auto i = varList.begin(); i != varList.end(); ++i) {
 			func(i->second);
 		}
+	}
+
+	template<class Functor>
+	static void visitBroadcast(Functor&& func) {
+		visit([&] (const VarPtr& var) {
+			if (var->_updateFlags & NEEDS_BROADCAST) {
+				func(var);
+			}
+		});
+	}
+
+	template<class Functor>
+	static void visitReplicate(Functor&& func) {
+		visit([&] (const VarPtr& var) {
+			if (var->_updateFlags & NEEDS_REPLICATE) {
+				func(var);
+			}
+		});
 	}
 
 	template<class Functor>
@@ -136,7 +158,7 @@ public:
 	}
 
 	template<class Functor>
-	void visitHistory(Functor func) {
+	void visitHistory(Functor&& func) {
 		std::vector<Value> history;
 		{
 			ScopedReadLock lock(_lock);
