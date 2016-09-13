@@ -111,6 +111,9 @@ void ServerLoop::readInput() {
 void ServerLoop::onFrame(long dt) {
 	readInput();
 	core_trace_scoped(ServerLoop);
+	core::Var::visitReplicate([] (const core::VarPtr& var) {
+		Log::info("TODO: %s needs replicate", var->name().c_str());
+	});
 	_network->update();
 	{ // TODO: move into own thread
 		core_trace_scoped(PoiUpdate);

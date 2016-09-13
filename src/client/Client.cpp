@@ -263,6 +263,9 @@ core::AppState Client::onRunning() {
 	_timeProvider->update(_now);
 	_waiting.update(_deltaFrame);
 	core::AppState state = Super::onRunning();
+	core::Var::visitBroadcast([] (const core::VarPtr& var) {
+		Log::info("TODO: %s needs broadcast", var->name().c_str());
+	});
 	sendMovement();
 	if (state == core::AppState::Running) {
 		_network->update();

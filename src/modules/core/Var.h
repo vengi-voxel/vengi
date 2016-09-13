@@ -27,7 +27,7 @@ const uint32_t CV_SHADER = 1 << 2;
 /** @brief will be broadcasted to all connected clients */
 const uint32_t CV_REPLICATE = 1 << 3;
 /** @brief user information that will be sent out to all connected clients (e.g. user name) */
-const uint32_t CV_USERINFO = 1 << 4;
+const uint32_t CV_BROADCAST = 1 << 4;
 
 class Var;
 typedef std::shared_ptr<Var> VarPtr;
@@ -111,6 +111,7 @@ public:
 		visit([&] (const VarPtr& var) {
 			if (var->_updateFlags & NEEDS_BROADCAST) {
 				func(var);
+				var->_updateFlags &= ~NEEDS_BROADCAST;
 			}
 		});
 	}
@@ -120,6 +121,7 @@ public:
 		visit([&] (const VarPtr& var) {
 			if (var->_updateFlags & NEEDS_REPLICATE) {
 				func(var);
+				var->_updateFlags &= ~NEEDS_REPLICATE;
 			}
 		});
 	}

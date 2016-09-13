@@ -85,7 +85,7 @@ void Var::setVal(const std::string& value) {
 		if (_flags & CV_REPLICATE) {
 			_updateFlags |= NEEDS_REPLICATE;
 		}
-		if (_flags & CV_USERINFO) {
+		if (_flags & CV_BROADCAST) {
 			_updateFlags |= NEEDS_BROADCAST;
 		}
 	}
