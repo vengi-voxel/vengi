@@ -13,15 +13,20 @@
 
 namespace core {
 
+/**
+ * @defgroup Var
+ * @{
+ */
+
+/** @brief Variable may only be modified at application start via command line */
 const uint32_t CV_READONLY = 1 << 0;
-// will not get saved to the file
+/** @brief will not get saved to the file */
 const uint32_t CV_NOPERSIST = 1 << 1;
-// will be put as define in every shader
+/** @brief will be put as define in every shader - a change will update the shaders at runtime */
 const uint32_t CV_SHADER = 1 << 2;
-// will be broadcasted to all connected clients
+/** @brief will be broadcasted to all connected clients */
 const uint32_t CV_REPLICATE = 1 << 3;
-// user information that will be sent out to all connected clients
-// (e.g. user name)
+/** @brief user information that will be sent out to all connected clients (e.g. user name) */
 const uint32_t CV_USERINFO = 1 << 4;
 
 class Var;
@@ -39,9 +44,6 @@ typedef std::shared_ptr<Var> VarPtr;
  * @code
  * core::Var::get("prefix_name");
  * @endcode
- * But beware, if the variable is not yet created, you will create a new variable with an empty string.
- * A later following call that specifies a saner default value would not count anymore (because the
- * variable already exists.
  */
 class Var {
 protected:
@@ -86,7 +88,7 @@ public:
 	}
 
 	static void shutdown();
-	virtual ~Var();
+	~Var();
 
 	template<class Functor>
 	static void visit(Functor func) {
@@ -267,5 +269,8 @@ inline unsigned int Var::uintVal() const {
 	return static_cast<unsigned int>(_history[_currentHistoryPos]._intValue);
 }
 
+/**
+ * @}
+ */
 
 }
