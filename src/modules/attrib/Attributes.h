@@ -35,6 +35,8 @@ template<> struct hash<attrib::DirtyValue> {
 namespace attrib {
 
 /**
+ * @defgroup Attributes
+ * @{
  * @brief Attributes are applied via @c Container instances
  *
  * Containers are providing attribute types (@c attrib::Type) with values assigned, we have absolute and
@@ -197,5 +199,9 @@ inline void Attributes::setName(const std::string& name) {
 inline const std::string& Attributes::name() const {
 	return _name;
 }
+
+/**
+ * @}
+ */
 
 }

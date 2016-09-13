@@ -26,6 +26,7 @@ typedef Values::iterator ValuesIter;
  * are applied to it and modify the final value for a @c Types with its provided absolute and percentage values.
  *
  * @sa Attributes
+ * @ingroup Attributes
  */
 class Container {
 protected:

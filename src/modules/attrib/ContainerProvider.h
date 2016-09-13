@@ -22,6 +22,7 @@ namespace attrib {
  *  example:register()
  * end
  * @endcode
+ * @ingroup Attributes
  */
 class ContainerProvider {
 public:

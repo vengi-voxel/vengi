@@ -14,6 +14,7 @@ namespace attrib {
  * There is no max calculation done here, but just taken from the server. This class is not thread safe.
  *
  * @sa Attributes
+ * @ingroup Attributes
  */
 class ShadowAttributes {
 protected:
