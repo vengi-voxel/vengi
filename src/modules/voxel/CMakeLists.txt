@@ -6,8 +6,6 @@ set(SRCS
 	World.cpp World.h
 	WorldPersister.h WorldPersister.cpp
 	WorldEvents.h
-	font/stb_truetype.h
-	font/VoxelFont.h font/VoxelFont.cpp
 	generator/CloudGenerator.h generator/CloudGenerator.cpp
 	generator/ShapeGenerator.h generator/ShapeGenerator.cpp
 	generator/TreeGenerator.h generator/TreeGenerator.cpp

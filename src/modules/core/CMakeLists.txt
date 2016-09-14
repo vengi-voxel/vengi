@@ -29,6 +29,7 @@ set(SRCS
 	TimeProvider.h TimeProvider.cpp
 	Tokenizer.h Tokenizer.cpp
 	Trace.cpp Trace.h
+	UTF8.h
 	Var.cpp Var.h
 )
 set(LIB core)
