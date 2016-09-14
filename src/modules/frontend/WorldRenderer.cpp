@@ -172,7 +172,7 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 	}
 }
 
-void WorldRenderer::handleMeshQueue(video::Shader& shader) {
+void WorldRenderer::handleMeshQueue(const video::Shader& shader) {
 	voxel::ChunkMeshData mesh(0, 0);
 	if (!_world->pop(mesh)) {
 		return;
@@ -521,7 +521,7 @@ void WorldRenderer::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	extractNewMeshes(pos, true);
 }
 
-void WorldRenderer::updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) {
+void WorldRenderer::updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) {
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
 	const voxel::IndexType* vecIndices = surfaceMesh.getRawIndexData();
 	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
@@ -540,7 +540,7 @@ void WorldRenderer::updateMesh(voxel::Mesh& surfaceMesh, video::GLMeshData& mesh
 	meshData.noOfIndices = numIndices;
 }
 
-video::GLMeshData WorldRenderer::createMeshInternal(video::Shader& shader, voxel::Mesh &mesh, int buffers) {
+video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers) {
 	core_trace_gl_scoped(WorldRendererCreateMesh);
 
 	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
@@ -576,7 +576,7 @@ video::GLMeshData WorldRenderer::createMeshInternal(video::Shader& shader, voxel
 }
 
 // TODO: generate bigger buffers and use glBufferSubData
-video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Mesh &mesh) {
+video::GLMeshData WorldRenderer::createMesh(const video::Shader& shader, const voxel::Mesh &mesh) {
 	const video::GLMeshData& meshData = createMeshInternal(shader, mesh, 2);
 	if (mesh.getNoOfIndices() == 0) {
 		return meshData;
@@ -589,7 +589,7 @@ video::GLMeshData WorldRenderer::createMesh(video::Shader& shader, voxel::Mesh &
 	return meshData;
 }
 
-video::GLMeshData WorldRenderer::createInstancedMesh(video::Shader& shader, voxel::Mesh &mesh, int amount) {
+video::GLMeshData WorldRenderer::createInstancedMesh(const video::Shader& shader, const voxel::Mesh &mesh, int amount) {
 	video::GLMeshData meshData = createMeshInternal(shader, mesh, 3);
 	if (mesh.getNoOfIndices() == 0) {
 		return meshData;
