@@ -143,5 +143,4 @@ void ShapeGenerator::createDome(TerrainContext& ctx, const glm::ivec3& pos, int 
 	}
 }
 
-
 }
