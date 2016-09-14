@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/Color.h"
-#include "voxel/polyvox/RawVolume.h"
 #include "voxel/polyvox/Mesh.h"
 #include <unordered_map>
 #include "stb_truetype.h"

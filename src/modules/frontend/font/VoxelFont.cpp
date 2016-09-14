@@ -62,7 +62,7 @@ bool VoxelFont::renderGlyphs(const char* string) {
 			}
 		}
 		stbtt_FreeBitmap(bitmap, nullptr);
-		voxel::Mesh* mesh = new voxel::Mesh(50, 10);
+		voxel::Mesh* mesh = new voxel::Mesh(8, 8);
 		voxel::extractCubicMesh(&v, v.getEnclosingRegion(), mesh, voxel::IsQuadNeeded(true));
 		_cache[c] = mesh;
 	}
