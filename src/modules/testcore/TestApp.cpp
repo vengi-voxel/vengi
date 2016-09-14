@@ -5,7 +5,7 @@
 #include "core/Command.h"
 #include "frontend/Movement.h"
 
-TestApp::TestApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
+TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
 		Super(filesystem, eventBus, 21000) {
 	init("engine", "test");
 }

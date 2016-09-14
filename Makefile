@@ -124,7 +124,7 @@ edit-local-config:
 doc: cmake
 	$(call COMPILE, $@)
 
-server client shapetool shadertool noisetool databasetool uitool tests testmesh testcamera testdepthbuffer testtexture flatc: cmake
+server client shapetool shadertool noisetool databasetool uitool tests testmesh testcamera testdepthbuffer testtexture testvoxelfont flatc: cmake
 	$(call COMPILE, $@)
 	$(call COMPILE, copy-data-shared)
 	$(call COMPILE, copy-data-$@)

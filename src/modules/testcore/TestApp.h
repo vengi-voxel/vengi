@@ -44,7 +44,7 @@ protected:
 	}
 
 public:
-	TestApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
+	TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus);
 	virtual ~TestApp();
 
 	virtual core::AppState onInit() override;
