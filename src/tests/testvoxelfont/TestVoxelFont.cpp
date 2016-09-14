@@ -19,8 +19,8 @@ core::AppState TestVoxelFont::onCleanup() {
 }
 
 void TestVoxelFont::doRender() {
-	// TODO:
-	//_voxelFont.render("Hello world!");
+	voxel::Mesh target(1000, 1000);
+	_voxelFont.render("Hello world!", target);
 }
 
 int main(int argc, char *argv[]) {

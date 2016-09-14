@@ -78,4 +78,7 @@ bool VoxelFont::renderGlyphs(const char* string) {
 	return true;
 }
 
+void VoxelFont::render(const char* string, voxel::Mesh& target) {
+}
+
 }

@@ -17,10 +17,12 @@ private:
 
 	bool renderGlyphs(const char* string);
 public:
+	~VoxelFont();
+
 	bool init(const char* font, int fontSize, const char* glyphs);
 	void shutdown();
 
-	~VoxelFont();
+	void render(const char* string, voxel::Mesh& target);
 };
 
 }
