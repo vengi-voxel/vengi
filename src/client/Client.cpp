@@ -153,6 +153,7 @@ core::AppState Client::onInit() {
 	RestClient::init();
 
 	_root.SetSkinBg(TBIDC("background"));
+	_voxelFont.init("font.ttf", 14, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ");
 
 	handleLogin();
 
@@ -224,6 +225,7 @@ core::AppState Client::onCleanup() {
 
 	Log::info("shutting down the client");
 	disconnect();
+	_voxelFont.shutdown();
 	_meshPool->shutdown();
 	_worldRenderer.shutdown();
 	core::AppState state = Super::onCleanup();

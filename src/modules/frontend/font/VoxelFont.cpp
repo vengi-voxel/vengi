@@ -1,5 +1,6 @@
 #include "VoxelFont.h"
 #include "core/App.h"
+#include "core/Log.h"
 #include "core/UTF8.h"
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
@@ -16,17 +17,24 @@ VoxelFont::~VoxelFont() {
 bool VoxelFont::init(const char* filename, int size, const char* glyphs) {
 	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(filename);
 	if (!file->exists()) {
+		Log::info("Failed to initialize voxel font, %s doesn't exist", filename);
 		return false;
 	}
 	file->read((void**)&_ttfBuffer);
 	if (_ttfBuffer == nullptr) {
+		Log::info("Failed to initialize voxel font, can not read %s", filename);
 		return false;
 	}
 	const int offset = stbtt_GetFontOffsetForIndex(_ttfBuffer, 0);
 	stbtt_InitFont(&_font, _ttfBuffer, offset);
 	_size = (int) (size * 1.3f); // FIX: Constant taken out of thin air because fonts get too small.
 	_scale = stbtt_ScaleForPixelHeight(&_font, (float)_size);
-	return renderGlyphs(glyphs);
+	if (!renderGlyphs(glyphs)) {
+		Log::info("Failed to initialize voxel font, failed to render glyphs for %s", filename);
+		return false;
+	}
+	Log::info("Initialized voxel font for %s", filename);
+	return true;
 }
 
 void VoxelFont::shutdown() {
@@ -50,6 +58,7 @@ bool VoxelFont::renderGlyphs(const char* string) {
 		int h;
 		unsigned char *bitmap = stbtt_GetCodepointBitmap(&_font, 0.0f, _scale, c, &w, &h, 0, 0);
 		if (bitmap == nullptr) {
+			Log::warn("Could not create mesh for character: %i", c);
 			continue;
 		}
 		voxel::Region region(0, 0, 0, w + 1, h + 1, 1);

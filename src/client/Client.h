@@ -10,6 +10,7 @@
 #include "ServerMessages_generated.h"
 #include "frontend/ClientEntity.h"
 #include "frontend/WorldRenderer.h"
+#include "frontend/font/VoxelFont.h"
 #include "util/PosLerp.h"
 #include "core/Var.h"
 #include "core/Common.h"
@@ -45,6 +46,7 @@ protected:
 	core::VarPtr _rotationSpeed;
 	core::VarPtr _maxTargetDistance;
 	frontend::ClientEntityPtr _player;
+	frontend::VoxelFont _voxelFont;
 	ui::WaitingMessage _waiting;
 
 	long _lastMovement = 0l;
