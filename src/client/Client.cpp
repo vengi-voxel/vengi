@@ -41,8 +41,8 @@
 			_moveMask &= ~network::MoveDirection::flag; \
 	}).setHelp("Character movement");
 
-Client::Client(video::MeshPoolPtr meshPool, network::NetworkPtr network, voxel::WorldPtr world, network::MessageSenderPtr messageSender,
-		core::EventBusPtr eventBus, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem) :
+Client::Client(const video::MeshPoolPtr& meshPool, const network::NetworkPtr& network, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
+		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem) :
 		Super(filesystem, eventBus, 17816), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
 		_timeProvider(timeProvider), _worldRenderer(world), _waiting(this) {
 	_world->setClientData(true);
@@ -377,14 +377,14 @@ bool Client::connect(uint16_t port, const std::string& hostname) {
 }
 
 int main(int argc, char *argv[]) {
-	const video::MeshPoolPtr meshPool = std::make_shared<video::MeshPool>();
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const voxel::WorldPtr world = std::make_shared<voxel::World>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const network::ProtocolHandlerRegistryPtr protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
-	const network::NetworkPtr network = std::make_shared<network::Network>(protocolHandlerRegistry, eventBus);
-	const network::MessageSenderPtr messageSender = std::make_shared<network::MessageSender>(network);
+	const video::MeshPoolPtr& meshPool = std::make_shared<video::MeshPool>();
+	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
+	const voxel::WorldPtr& world = std::make_shared<voxel::World>();
+	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
+	const network::ProtocolHandlerRegistryPtr& protocolHandlerRegistry = std::make_shared<network::ProtocolHandlerRegistry>();
+	const network::NetworkPtr& network = std::make_shared<network::Network>(protocolHandlerRegistry, eventBus);
+	const network::MessageSenderPtr& messageSender = std::make_shared<network::MessageSender>(network);
 	Client app(meshPool, network, world, messageSender, eventBus, timeProvider, filesystem);
 	return app.startMainLoop(argc, argv);
 }
