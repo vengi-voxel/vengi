@@ -96,9 +96,8 @@ void RawVolume::setBorderValue(const Voxel& tBorder) {
  * @param tValue the value to which the voxel will be set
  */
 void RawVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue) {
-	if (!this->_region.containsPoint(glm::ivec3(uXPos, uYPos, uZPos))) {
-		core_assert_msg(false, "Position is outside valid region");
-	}
+	core_assert_msg(this->_region.containsPoint(glm::ivec3(uXPos, uYPos, uZPos)), "Position is outside valid region %i:%i:%i",
+			uXPos, uYPos, uZPos);
 
 	const glm::ivec3& v3dLowerCorner = this->_region.getLowerCorner();
 	int32_t iLocalXPos = uXPos - v3dLowerCorner.x;
@@ -114,15 +113,9 @@ void RawVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxe
 void RawVolume::initialise(const Region& regValidRegion) {
 	this->_region = regValidRegion;
 
-	if (this->getWidth() <= 0) {
-		core_assert_msg(false, "Volume width must be greater than zero.");
-	}
-	if (this->getHeight() <= 0) {
-		core_assert_msg(false, "Volume height must be greater than zero.");
-	}
-	if (this->getDepth() <= 0) {
-		core_assert_msg(false, "Volume depth must be greater than zero.");
-	}
+	core_assert_msg(this->getWidth() > 0, "Volume width must be greater than zero.");
+	core_assert_msg(this->getHeight() > 0, "Volume height must be greater than zero.");
+	core_assert_msg(this->getDepth() > 0, "Volume depth must be greater than zero.");
 
 	//Create the data
 	_data = new Voxel[this->getWidth() * this->getHeight() * this->getDepth()];
