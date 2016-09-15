@@ -13,9 +13,10 @@ private:
 	static void debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) {
 		if (id == 131218) {
 			++_recompileErrors;
-			if (_recompileErrors <= 5) {
+			if (_recompileErrors <= 10) {
 				return;
 			}
+			_recompileErrors = 0;
 		} else if (id == 131185) {
 			// ignore hints that GL_STATIC_DRAW is used...
 			return;
