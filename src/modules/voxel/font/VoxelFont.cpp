@@ -2,6 +2,10 @@
 #include "core/App.h"
 #include "core/Log.h"
 #include "core/UTF8.h"
+#define STBTT_ASSERT core_assert
+#define STBTT_MALLOC core_malloc
+#define STBTT_REALLOC core_realloc
+#define STBTT_FREE core_free
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 #include "voxel/polyvox/RawVolume.h"
