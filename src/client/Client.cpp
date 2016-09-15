@@ -344,10 +344,6 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	removeState(CLIENT_CONNECTING);
 	Log::info("User %li (%s) logged in at pos %f:%f:%f with orientation: %f", id, name, pos.x, pos.y, pos.z, orientation);
 	_camera.setTarget(pos);
-	//const glm::vec3 lookAtPos(pos.x + 1, pos.y, pos.z);
-	// TODO: take orientation into account
-	//_camera.lookAt(lookAtPos);
-	// broken: _camera.setAngles(0.0f, orientation);
 	const video::MeshPtr& mesh = _meshPool->getMesh("chr_skelett2_bake");
 	const network::EntityType type = network::EntityType::PLAYER;
 	_player = std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, mesh);

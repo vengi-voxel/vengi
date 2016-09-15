@@ -94,7 +94,7 @@ public:
 	void signup(const std::string& email, const std::string& password);
 	void lostPassword(const std::string& email);
 	void disconnect();
-	// spawns our own player
+	/** @brief spawns our own player */
 	void spawn(frontend::ClientEntityId id, const char *name, const glm::vec3& pos, float orientation);
 
 	void entitySpawn(frontend::ClientEntityId id, network::EntityType type, float orientation, const glm::vec3& pos);
