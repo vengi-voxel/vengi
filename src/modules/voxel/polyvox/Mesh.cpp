@@ -9,6 +9,32 @@
 
 namespace voxel {
 
+bool Mesh::addMesh(const Mesh& mesh) {
+	if (mesh.getOffset() != getOffset()) {
+		return false;
+	}
+	const IndexType* indices = mesh.getRawIndexData();
+	const Vertex* vertices = mesh.getRawVertexData();
+	const size_t nIndices = mesh.getNoOfIndices();
+	const size_t nVertices = mesh.getNoOfVertices();
+
+	const size_t vSize = _vecVertices.size();
+	const size_t iSize = _vecIndices.size();
+
+	_vecVertices.reserve(vSize + nVertices);
+	_vecIndices.reserve(iSize + nIndices);
+
+	for (size_t i = 0; i < nVertices; ++i) {
+		_vecVertices.push_back(vertices[i]);
+	}
+	for (size_t i = 0; i < nIndices; ++i) {
+		// offset by the already added vertices
+		_vecIndices.push_back(indices[i] + vSize);
+	}
+
+	return true;
+}
+
 void Mesh::removeUnusedVertices() {
 	std::vector<bool> isVertexUsed(_vecVertices.size());
 	std::fill(isVertexUsed.begin(), isVertexUsed.end(), false);

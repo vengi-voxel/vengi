@@ -19,14 +19,25 @@ namespace voxel {
 typedef uint32_t IndexType;
 
 /**
- * A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
- * It supports different vertex types (which will vary depending on the surface extractor used and the contents
- * of the volume).
+ * @brief A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
+ *
+ * @note You are only able to store vertex ranges from 0 to 255 here, due to the limited data type of the position in
+ * the Vertex class.
  */
 class Mesh {
 public:
 	Mesh(int vertices, int indices);
 	~Mesh();
+
+	/**
+	 * @brief Transforms another mesh into this mesh class. The indices are offset.
+	 * @return @c true if the given mesh is compatible to this mesh instance, @c false
+	 * otherwise.
+	 * @note Incompatible mesh means that the offsets don't match. This is needed due to the limited range of vertices
+	 * due to the Vertex class position data type. Therefore we can merge meshes, but only if the offset is the same
+	 * (as we can't exceed the 0-255 range).
+	 */
+	bool addMesh(const Mesh& mesh);
 
 	size_t getNoOfVertices() const;
 	const Vertex& getVertex(IndexType index) const;
