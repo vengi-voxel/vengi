@@ -52,8 +52,19 @@ public:
 	 */
 	bool addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type = GL_FLOAT, bool normalized = false, int stride = 0, intptr_t offset = 0, uint8_t divisor = 0);
 
+	template<class T>
+	inline bool update(int32_t idx, const std::vector<T>& data) {
+		return update(idx, &data.front(), core::vectorSize(data));
+	}
+
 	bool update(int32_t idx, const void* data, GLsizeiptr size);
-	int32_t create(const void* data, GLsizeiptr size, GLenum target = GL_ARRAY_BUFFER);
+
+	template<class T>
+	inline int32_t create(const std::vector<T>& data, GLenum target = GL_ARRAY_BUFFER) {
+		return create(&data.front(), core::vectorSize(data), target);
+	}
+
+	int32_t create(const void* data = nullptr, GLsizeiptr size = 0, GLenum target = GL_ARRAY_BUFFER);
 	int32_t createFullscreenQuad();
 	int32_t createFullscreenTextureBuffer();
 	glm::ivec2 createFullscreenTexturedQuad();
