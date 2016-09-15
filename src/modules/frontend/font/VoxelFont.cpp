@@ -78,7 +78,47 @@ bool VoxelFont::renderGlyphs(const char* string) {
 	return true;
 }
 
-void VoxelFont::render(const char* string, voxel::Mesh& target) {
+// TODO: metrics support
+void VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices) {
+	const char **s = &string;
+	int x = 0;
+	int y = 0;
+	int charCount = 0;
+	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s), ++charCount) {
+		if (c == ' ') {
+			x += _size;
+			continue;
+		} else if (c == '\n') {
+			x = 0;
+			y += _size;
+		}
+		auto i = _cache.find(c);
+		if (i == _cache.end()) {
+			x += _size;
+			Log::warn("Could not find character glyph cache for %i", c);
+			continue;
+		}
+		const voxel::Mesh* mesh = i->second;
+		const voxel::IndexType* meshIndices = mesh->getRawIndexData();
+		const voxel::Vertex* meshVertices = mesh->getRawVertexData();
+		const size_t meshNumberIndices = mesh->getNoOfIndices();
+		const size_t meshNumberVertices = mesh->getNoOfVertices();
+
+		const size_t positionSize = pos.size();
+		const size_t indicesSize = indices.size();
+		pos.reserve(positionSize + meshNumberVertices);
+		indices.reserve(indicesSize + meshNumberIndices);
+
+		for (size_t i = 0; i < meshNumberVertices; ++i) {
+			glm::vec4 vp = glm::vec4(meshVertices[i].position, 1.0f);
+			vp.x += _size * charCount;
+			pos.push_back(vp);
+		}
+		for (size_t i = 0; i < meshNumberIndices; ++i) {
+			// offset by the already added vertices
+			indices.push_back(meshIndices[i] + positionSize);
+		}
+	}
 }
 
 }

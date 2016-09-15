@@ -22,7 +22,7 @@ public:
 	bool init(const char* font, int fontSize, const char* glyphs);
 	void shutdown();
 
-	void render(const char* string, voxel::Mesh& target);
+	void render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices);
 };
 
 }
