@@ -28,7 +28,7 @@ private:
 
 	glm::vec4 _color = core::Color::White;
 	glm::vec3 _position;
-
+public:
 	inline void reserve(int vertices, int additionalIndices = 0) {
 		_colors.reserve(_colors.size() + vertices + additionalIndices);
 		_vertices.reserve(_vertices.size() + vertices);
@@ -37,13 +37,17 @@ private:
 		_texcoords.reserve(_texcoords.size() + vertices);
 	}
 
+	inline void addIndex(uint32_t index) {
+		_indices.push_back(index);
+	}
+
 	inline void addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal) {
 		_colors.push_back(_color);
 		_vertices.push_back(_position + vertex);
 		_normals.push_back(normal);
 		_texcoords.push_back(uv);
 	}
-public:
+
 	inline void clear() {
 		_colors.clear();
 		_vertices.clear();

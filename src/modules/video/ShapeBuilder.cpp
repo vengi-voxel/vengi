@@ -19,43 +19,43 @@ void ShapeBuilder::aabb(const core::AABB<float>& aabb) {
 	}
 
 	// front
-	_indices.push_back(0);
-	_indices.push_back(1);
+	addIndex(0);
+	addIndex(1);
 
-	_indices.push_back(1);
-	_indices.push_back(3);
+	addIndex(1);
+	addIndex(3);
 
-	_indices.push_back(3);
-	_indices.push_back(2);
+	addIndex(3);
+	addIndex(2);
 
-	_indices.push_back(2);
-	_indices.push_back(0);
+	addIndex(2);
+	addIndex(0);
 
 	// back
-	_indices.push_back(4);
-	_indices.push_back(5);
+	addIndex(4);
+	addIndex(5);
 
-	_indices.push_back(5);
-	_indices.push_back(7);
+	addIndex(5);
+	addIndex(7);
 
-	_indices.push_back(7);
-	_indices.push_back(6);
+	addIndex(7);
+	addIndex(6);
 
-	_indices.push_back(6);
-	_indices.push_back(4);
+	addIndex(6);
+	addIndex(4);
 
 	// connections
-	_indices.push_back(0);
-	_indices.push_back(4);
+	addIndex(0);
+	addIndex(4);
 
-	_indices.push_back(2);
-	_indices.push_back(6);
+	addIndex(2);
+	addIndex(6);
 
-	_indices.push_back(1);
-	_indices.push_back(5);
+	addIndex(1);
+	addIndex(5);
 
-	_indices.push_back(3);
-	_indices.push_back(7);
+	addIndex(3);
+	addIndex(7);
 }
 
 void ShapeBuilder::frustum(const Camera& camera) {
@@ -73,10 +73,10 @@ void ShapeBuilder::frustum(const Camera& camera) {
 	addVertex(camera.target(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
 
 	for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
-		_indices.push_back(indices[i]);
+		addIndex(indices[i]);
 	}
-	_indices.push_back(video::FRUSTUM_VERTICES_MAX + 0);
-	_indices.push_back(video::FRUSTUM_VERTICES_MAX + 1);
+	addIndex(video::FRUSTUM_VERTICES_MAX + 0);
+	addIndex(video::FRUSTUM_VERTICES_MAX + 1);
 }
 
 void ShapeBuilder::axis(float scale) {
@@ -99,7 +99,7 @@ void ShapeBuilder::axis(float scale) {
 	addVertex(verticesAxis[5], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
 
 	for (size_t i = 0; i < SDL_arraysize(verticesAxis); ++i) {
-		_indices.push_back(i);
+		addIndex(i);
 	}
 }
 
@@ -164,9 +164,9 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 	int rowA = startVertexIndex;
 	int rowB = rowA + numSlices + 1;
 	for (int slice = 0; slice < numSlices; slice++) {
-		_indices.push_back(rowA + slice);
-		_indices.push_back(rowB + slice);
-		_indices.push_back(rowB + slice + 1);
+		addIndex(rowA + slice);
+		addIndex(rowB + slice);
+		addIndex(rowB + slice + 1);
 	}
 
 	// stack triangles
@@ -174,13 +174,13 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 		rowA = startVertexIndex + stack * (numSlices + 1);
 		rowB = rowA + numSlices + 1;
 		for (int slice = 0; slice < numSlices; slice++) {
-			_indices.push_back(rowA + slice);
-			_indices.push_back(rowB + slice + 1);
-			_indices.push_back(rowA + slice + 1);
+			addIndex(rowA + slice);
+			addIndex(rowB + slice + 1);
+			addIndex(rowA + slice + 1);
 
-			_indices.push_back(rowA + slice);
-			_indices.push_back(rowB + slice);
-			_indices.push_back(rowB + slice + 1);
+			addIndex(rowA + slice);
+			addIndex(rowB + slice);
+			addIndex(rowB + slice + 1);
 		}
 	}
 
@@ -188,9 +188,9 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 	rowA = startVertexIndex + (numStacks - 1) * (numSlices + 1);
 	rowB = rowA + numSlices + 1;
 	for (int slice = 0; slice < numSlices; slice++) {
-		_indices.push_back(rowA + slice);
-		_indices.push_back(rowB + slice + 1);
-		_indices.push_back(rowA + slice + 1);
+		addIndex(rowA + slice);
+		addIndex(rowB + slice + 1);
+		addIndex(rowA + slice + 1);
 	}
 }
 
