@@ -19,7 +19,7 @@ VoxelFont::~VoxelFont() {
 	shutdown();
 }
 
-bool VoxelFont::init(const char* filename, int size, bool mergeQuads, const char* glyphs) {
+bool VoxelFont::init(const char* filename, int size, int thickness, bool mergeQuads, const char* glyphs) {
 	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(filename);
 	if (!file->exists()) {
 		Log::info("Failed to initialize voxel font, %s doesn't exist", filename);
@@ -35,6 +35,7 @@ bool VoxelFont::init(const char* filename, int size, bool mergeQuads, const char
 	_size = (int) (size * 1.3f); // FIX: Constant taken out of thin air because fonts get too small.
 	_scale = stbtt_ScaleForPixelHeight(&_font, (float)_size);
 
+	_thickness = glm::max(1, thickness);
 	int lineGap;
 	stbtt_GetFontVMetrics(&_font, &_ascent, &_descent, &lineGap);
 	_ascent = (int) (_ascent * _scale + 0.5f);
@@ -63,11 +64,14 @@ void VoxelFont::shutdown() {
 	_ascent = 0;
 	_descent = 0;
 	_height = 0;
+	_thickness = 1;
+	_spaceWidth = 0;
 }
 
 bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
 	static const voxel::Voxel& voxel = voxel::createVoxel(voxel::Grass1);
 	const char **s = &string;
+	int spaceWidth = 0;
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
 		int w;
 		int h;
@@ -80,19 +84,25 @@ bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
 		int ix0, iy0, ix1, iy1;
 		stbtt_GetCodepointBitmapBox(&_font, c, 0, _scale, &ix0, &iy0, &ix1, &iy1);
 
-		// take the first valid characters with as space width
-		if (_spaceWidth == 0 || c == ' ') {
+		if (c == ' ') {
 			_spaceWidth = w;
 		}
 
-		voxel::Region region(0, 0, 0, w + 1 + ix0, h + 1 + glm::abs(iy0), 1);
+		// take the first valid characters with as space width
+		if (spaceWidth <= 0) {
+			spaceWidth = w;
+		}
+
+		voxel::Region region(0, 0, 0, w + 1 + ix0, h + 1 + glm::abs(iy0), _thickness);
 		voxel::RawVolume v(region);
 		Log::debug("voxelfont: width and height: %i:%i", w, h);
 		const int regionH = region.getHeightInCells();
 		for (int y = 0; y < h; ++y) {
 			for (int x = 0; x < w; ++x) {
 				if (bitmap[y * w + x] >= 25) {
-					v.setVoxel(glm::ivec3(x + ix0, regionH + iy0 - y, 0), voxel);
+					for (int i = 0; i < _thickness; ++i) {
+						v.setVoxel(glm::ivec3(x + ix0, regionH + iy0 - y, i), voxel);
+					}
 				}
 			}
 		}
@@ -104,6 +114,9 @@ bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
 		} else {
 			Log::debug("Could not extract mesh for character %i", c);
 		}
+	}
+	if (_spaceWidth == 0) {
+		_spaceWidth = spaceWidth;
 	}
 	return true;
 }

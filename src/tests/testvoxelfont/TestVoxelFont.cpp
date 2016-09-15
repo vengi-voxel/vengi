@@ -7,7 +7,7 @@ TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::Ev
 
 core::AppState TestVoxelFont::onInit() {
 	core::AppState state = Super::onInit();
-	if (!_voxelFont.init("font.ttf", 14, false, " Helowrd!")) {
+	if (!changeFontSize(0)) {
 		Log::error("Failed to start voxel font test application - could not load the given font file");
 		return core::AppState::Cleanup;
 	}
@@ -51,6 +51,50 @@ core::AppState TestVoxelFont::onCleanup() {
 	_indexBufferIndex = -1;
 	_colorBufferIndex = -1;
 	return state;
+}
+
+bool TestVoxelFont::changeFontSize(int delta) {
+	_voxelFont.shutdown();
+	_fontSize += delta;
+	if (_fontSize < 2) {
+		_fontSize = 2;
+	} else if (_fontSize > 250) {
+		_fontSize = 250;
+	}
+	return _voxelFont.init("font.ttf", _fontSize, 4, false, " Helowrd!");
+}
+
+void TestVoxelFont::onMouseWheel(int32_t x, int32_t y) {
+	const SDL_Keymod mods = SDL_GetModState();
+	if (mods & KMOD_SHIFT) {
+		changeFontSize(y);
+		return;
+	}
+
+	Super::onMouseWheel(x, y);
+}
+
+bool TestVoxelFont::onKeyPress(int32_t key, int16_t modifier) {
+	const bool retVal = Super::onKeyPress(key, modifier);
+	if (modifier & KMOD_SHIFT) {
+		int delta = 0;
+		if (key == SDLK_MINUS || key == SDLK_KP_MINUS) {
+			delta = -1;
+		} else if (key == SDLK_PLUS || key == SDLK_KP_PLUS) {
+			delta = 1;
+		}
+
+		if (modifier & KMOD_CTRL) {
+			changeFontSize(delta);
+		} else {
+			changeFontSize(delta);
+		}
+		if (delta != 0) {
+			return true;
+		}
+	}
+
+	return retVal;
 }
 
 void TestVoxelFont::doRender() {

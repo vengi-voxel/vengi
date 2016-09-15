@@ -21,10 +21,16 @@ private:
 	int32_t _indexBufferIndex = -1;
 	int32_t _colorBufferIndex = -1;
 
+	int _fontSize = 20;
+
 	void doRender() override;
+
+	bool changeFontSize(int delta);
 public:
 	TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus);
 
-	virtual core::AppState onInit() override;
-	virtual core::AppState onCleanup() override;
+	core::AppState onInit() override;
+	core::AppState onCleanup() override;
+	void onMouseWheel(int32_t x, int32_t y) override;
+	bool onKeyPress(int32_t key, int16_t modifier) override;
 };
