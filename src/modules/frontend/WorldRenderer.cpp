@@ -714,11 +714,11 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	}
 
 	const uint32_t fullscreenQuadVertexIndex = _fullscreenQuad.createFullscreenQuad();
-	_fullscreenQuad.addAttribute(_deferredDirLightShader.getAttributeLocation("a_pos"), fullscreenQuadVertexIndex, 3);
+	_fullscreenQuad.addAttribute(_deferredDirLightShader.getLocationPos(), fullscreenQuadVertexIndex, _deferredDirLightShader.getComponentsPos());
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
-	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationPos(), fullscreenQuadIndices.x, 3);
-	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationTexcoord(), fullscreenQuadIndices.y, 2);
+	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationPos(), fullscreenQuadIndices.x, _shadowMapRenderShader.getComponentsPos());
+	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationTexcoord(), fullscreenQuadIndices.y, _shadowMapRenderShader.getComponentsTexcoord());
 
 	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
