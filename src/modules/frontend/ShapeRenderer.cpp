@@ -37,14 +37,14 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 
 	std::vector<glm::vec4> vertices;
 	shapeBuilder.convertVertices(vertices);
-	_vertexIndex[meshIndex] = _vbo[meshIndex].create(&vertices[0], core::vectorSize(vertices));
+	_vertexIndex[meshIndex] = _vbo[meshIndex].create(vertices);
 	if (_vertexIndex[meshIndex] == -1) {
 		Log::error("Could not create vbo for vertices");
 		return -1;
 	}
 
 	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
-	_indexIndex[meshIndex] = _vbo[meshIndex].create(&indices[0], core::vectorSize(indices), GL_ELEMENT_ARRAY_BUFFER);
+	_indexIndex[meshIndex] = _vbo[meshIndex].create(indices, GL_ELEMENT_ARRAY_BUFFER);
 	if (_indexIndex[meshIndex] == -1) {
 		_vbo[meshIndex].shutdown();
 		Log::error("Could not create vbo for indices");
@@ -52,7 +52,7 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 	}
 
 	const video::ShapeBuilder::Colors& colors = shapeBuilder.getColors();
-	const int32_t cIndex = _vbo[meshIndex].create(&colors[0], core::vectorSize(colors));
+	const int32_t cIndex = _vbo[meshIndex].create(colors);
 	if (cIndex == -1) {
 		_vbo[meshIndex].shutdown();
 		Log::error("Could not create vbo for color");
@@ -78,7 +78,7 @@ void ShapeRenderer::shutdown() {
 void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder) {
 	std::vector<glm::vec4> vertices;
 	shapeBuilder.convertVertices(vertices);
-	core_assert_always(_vbo[meshIndex].update(_vertexIndex[meshIndex], &vertices[0], core::vectorSize(vertices)));
+	core_assert_always(_vbo[meshIndex].update(_vertexIndex[meshIndex], vertices));
 }
 
 void ShapeRenderer::renderAll(const video::Camera& camera, GLenum drawmode) {
