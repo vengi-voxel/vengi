@@ -384,6 +384,9 @@ void ShaderTool::generateSrc() const {
 		setters << "\t}\n\n";
 		setters << "\tinline int getLocation" << attributeName << "() const {\n";
 		setters << "\t\treturn getAttributeLocation(\"" << v.name << "\");\n";
+		setters << "\t}\n\n";
+		setters << "\tinline int getComponents" << attributeName << "() const {\n";
+		setters << "\t\treturn getAttributeComponents(\"" << v.name << "\");\n";
 		setters << "\t}\n";
 		if (i < attributeSize- - 2) {
 			setters << "\n";
