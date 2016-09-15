@@ -31,6 +31,7 @@ set(SRCS
 	Trace.cpp Trace.h
 	UTF8.h
 	Var.cpp Var.h
+	Vertex.h
 )
 set(LIB core)
 add_library(${LIB} ${SRCS})
