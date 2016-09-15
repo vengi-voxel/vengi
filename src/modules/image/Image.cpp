@@ -12,6 +12,11 @@
 #define STBI_REALLOC core_realloc
 #define STBI_FREE core_free
 
+#define STBIW_ASSERT core_assert
+#define STBIW_MALLOC core_malloc
+#define STBIW_REALLOC core_realloc
+#define STBIW_FREE core_free
+
 namespace image {
 
 #define STB_IMAGE_IMPLEMENTATION
