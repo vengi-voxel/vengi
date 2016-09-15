@@ -188,7 +188,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 		glBindVertexArray(_vertexArrayObject);
 
 		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * _vertices.size(), &_vertices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(MeshVertex) * _vertices.size(), &_vertices[0], GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _indices.size(), &_indices[0], GL_STATIC_DRAW);
@@ -208,8 +208,8 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 #define enable(attrib) \
 		if (shader.hasAttribute("a"#attrib)) { \
 			const int loc = shader.enableVertexAttributeArray("a"#attrib); \
-			const int components = sizeof(Vertex::attrib) / sizeof(decltype(Vertex::attrib)::value_type); \
-			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, attrib))); \
+			const int components = sizeof(MeshVertex::attrib) / sizeof(decltype(MeshVertex::attrib)::value_type); \
+			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), GL_OFFSET_CAST(offsetof(MeshVertex, attrib))); \
 		}
 
 		enable(_pos);
@@ -221,11 +221,11 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 
 		if (shader.hasAttribute("a_boneids")) {
 			const int loc = shader.enableVertexAttributeArray("a_boneids");
-			shader.setVertexAttributeInt(loc, NUM_BONES_PER_VEREX, GL_INT, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneIds)));
+			shader.setVertexAttributeInt(loc, NUM_BONES_PER_VEREX, GL_INT, sizeof(MeshVertex), GL_OFFSET_CAST(offsetof(MeshVertex, _boneIds)));
 		}
 		if (shader.hasAttribute("a_boneweights")) {
 			const int loc = shader.enableVertexAttributeArray("a_boneweights");
-			shader.setVertexAttribute(loc, NUM_BONES_PER_VEREX, GL_FLOAT, GL_FALSE, sizeof(Vertex), GL_OFFSET_CAST(offsetof(Vertex, _boneWeights)));
+			shader.setVertexAttribute(loc, NUM_BONES_PER_VEREX, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), GL_OFFSET_CAST(offsetof(MeshVertex, _boneWeights)));
 		}
 		glBindVertexArray(0);
 	}
@@ -239,23 +239,6 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 	}
 
 	return true;
-}
-
-void Mesh::Vertex::addBoneData(uint32_t boneID, float weight) {
-	if (weight <= 0.0f) {
-		return;
-	}
-
-	const int size = SDL_arraysize(_boneIds);
-	for (int i = 0; i < size; ++i) {
-		if (_boneIds[i] == 0u) {
-			_boneIds[i] = boneID;
-			_boneWeights[i] = weight;
-			return;
-		}
-	}
-
-	core_assert_msg(false, "more bones than we have space for - can't handle boneid %u with weight %f", boneID, weight);
 }
 
 void Mesh::loadBones(uint32_t meshIndex, const aiMesh* mesh) {
@@ -535,15 +518,15 @@ int Mesh::renderNormals(video::Shader& shader) {
 
 	MeshNormals normalData;
 	normalData.reserve(_vertices.size() * 2);
-	for (const Vertex& v : _vertices) {
+	for (const MeshVertex& v : _vertices) {
 		glm::mat4 bonetrans;
 		for (int i = 0; i < NUM_BONES_PER_VEREX; ++i) {
 			const glm::mat4& bmat = _boneInfo[v._boneIds[i]].finalTransformation * v._boneWeights[i];
 			bonetrans += bmat;
 		}
-		const glm::vec4 pos = bonetrans * glm::vec4(v._pos, 1.0f);
-		const glm::vec4 norm = bonetrans * glm::vec4(v._norm, 0.0f);
-		const glm::vec4 extended = pos + 2.0f * norm;
+		const glm::vec4& pos = bonetrans * glm::vec4(v._pos, 1.0f);
+		const glm::vec4& norm = bonetrans * glm::vec4(v._norm, 0.0f);
+		const glm::vec4& extended = pos + 2.0f * norm;
 		normalData.data.push_back(MeshNormals::AttributeData{ pos,      core::Color::Red.xyz()    });
 		normalData.data.push_back(MeshNormals::AttributeData{ extended, core::Color::Yellow.xyz() });
 	}

@@ -8,6 +8,7 @@
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/GLMeshData.h"
+#include "core/Vertex.h"
 #include <vector>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -19,31 +20,17 @@ namespace video {
 
 class Mesh : public io::IOResource {
 private:
-#define NUM_BONES_PER_VEREX 4
 	struct BoneInfo {
 		glm::mat4 boneOffset;
 		glm::mat4 finalTransformation;
 	};
 
-	struct Vertex {
-		glm::vec3 _pos;
-		glm::vec3 _norm;
-		glm::vec2 _texcoords;
-		glm::vec4 _color;
-		uint32_t _boneIds[NUM_BONES_PER_VEREX];
-		float _boneWeights[NUM_BONES_PER_VEREX];
-
-		Vertex(const glm::vec3& p, const glm::vec3& n, const glm::vec2& t, const glm::vec4& c) :
-				_pos(p), _norm(n), _texcoords(t), _color(c), _boneIds { 0u, 0u, 0u, 0u }, _boneWeights { 0.0f, 0.0f, 0.0f, 0.0f } {
+	struct MeshVertex : public core::Vertex {
+		MeshVertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) :
+				core::Vertex(glm::vec3(p.x, p.y, p.z), glm::vec3(n.x, n.y, n.z), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a)) {
 		}
-
-		Vertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) :
-				Vertex(glm::vec3(p.x, p.y, p.z), glm::vec3(n.x, n.y, n.z), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a)) {
-		}
-
-		void addBoneData(uint32_t boneID, float weight);
 	};
-	typedef std::vector<Vertex> Vertices;
+	typedef std::vector<MeshVertex> Vertices;
 	typedef std::vector<uint32_t> Indices;
 
 	glm::vec3 toVec3(const aiVector3D& vector) const;
