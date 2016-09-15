@@ -52,7 +52,18 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 	}
 
 	const video::ShapeBuilder::Colors& colors = shapeBuilder.getColors();
-	const int32_t cIndex = _vbo[meshIndex].create(colors);
+	int32_t cIndex;
+	if (_colorShader.getComponentsColor() == 4) {
+		cIndex = _vbo[meshIndex].create(colors);
+	} else {
+		core_assert(_colorShader.getComponentsColor() == 3);
+		std::vector<glm::vec3> colors3;
+		colors3.reserve(colors.size());
+		for (const auto c : colors) {
+			colors3.push_back(c.xyz());
+		}
+		cIndex = _vbo[meshIndex].create(colors3);
+	}
 	if (cIndex == -1) {
 		_vbo[meshIndex].shutdown();
 		Log::error("Could not create vbo for color");
