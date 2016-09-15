@@ -7,7 +7,7 @@ TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::Ev
 
 core::AppState TestVoxelFont::onInit() {
 	core::AppState state = Super::onInit();
-	if (!_voxelFont.init("font.ttf", 14, " Helowrd!")) {
+	if (!_voxelFont.init("font.ttf", 14, false, " Helowrd!")) {
 		Log::error("Failed to start voxel font test application - could not load the given font file");
 		return core::AppState::Cleanup;
 	}
@@ -71,7 +71,30 @@ void TestVoxelFont::doRender() {
 		requestQuit();
 		return;
 	}
-	colors.assign(positions.size(), core::Color::LightGreen.xyz());
+	colors.resize(positions.size());
+	class ColorGenerator {
+	private:
+		glm::vec3 _colors[2];
+		int _index = 0;
+		int _amount = 0;
+	public:
+		ColorGenerator (const glm::vec4& color1, const glm::vec4& color2) {
+			_colors[0] = color1.xyz();
+			_colors[1] = color2.xyz();
+		}
+
+		inline const glm::vec3& operator()() {
+			++_amount;
+			if (_amount >= 4) {
+				_index = _index + 1;
+				_index %= SDL_arraysize(_colors);
+				_amount = 0;
+			}
+			return _colors[_index];
+		}
+	};
+	ColorGenerator g(core::Color::LightGreen, core::Color::Red);
+	std::generate(colors.begin(), colors.end(), g);
 
 	if (!_vertexBuffer.update(_vertexBufferIndex, positions)) {
 		Log::error("Failed to update the vertex buffer");

@@ -69,7 +69,7 @@ bool performQuadMerging(std::list<Quad>& quads, Mesh* m_meshCurrent) {
 	return bDidMerge;
 }
 
-int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
+int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
 		Mesh* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ct++) {
 		VertexData& rEntry = existingVertices(uX, uY, ct);
@@ -96,7 +96,7 @@ int32_t addVertex(uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialI
 		}
 
 		// If we have an existing vertex and the material matches then we can return it.
-		if (rEntry.voxel == uMaterialIn && rEntry.ambientOcclusion == ambientOcclusion) {
+		if (reuseVertices && rEntry.voxel == uMaterialIn && rEntry.ambientOcclusion == ambientOcclusion) {
 			return rEntry.index;
 		}
 	}

@@ -14,7 +14,7 @@ VoxelFont::~VoxelFont() {
 	shutdown();
 }
 
-bool VoxelFont::init(const char* filename, int size, const char* glyphs) {
+bool VoxelFont::init(const char* filename, int size, bool mergeQuads, const char* glyphs) {
 	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(filename);
 	if (!file->exists()) {
 		Log::info("Failed to initialize voxel font, %s doesn't exist", filename);
@@ -36,7 +36,7 @@ bool VoxelFont::init(const char* filename, int size, const char* glyphs) {
 	_descent = (int) ((-_descent) * _scale + 0.5f);
 	_height = (int) ((_ascent - _descent + lineGap) * _scale + 0.5f);
 
-	if (!renderGlyphs(glyphs)) {
+	if (!renderGlyphs(glyphs, mergeQuads)) {
 		Log::info("Failed to initialize voxel font, failed to render glyphs for %s", filename);
 		return false;
 	}
@@ -60,7 +60,7 @@ void VoxelFont::shutdown() {
 	_height = 0;
 }
 
-bool VoxelFont::renderGlyphs(const char* string) {
+bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
 	static const voxel::Voxel& voxel = voxel::createVoxel(voxel::Grass1);
 	const char **s = &string;
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
@@ -83,7 +83,7 @@ bool VoxelFont::renderGlyphs(const char* string) {
 		}
 		stbtt_FreeBitmap(bitmap, nullptr);
 		voxel::Mesh* mesh = new voxel::Mesh(8, 8, true);
-		voxel::extractCubicMesh(&v, region, mesh, voxel::IsQuadNeeded(false));
+		voxel::extractCubicMesh(&v, region, mesh, voxel::IsQuadNeeded(false), mergeQuads, mergeQuads);
 		if (mesh->getNoOfIndices() > 0) {
 			_cache[c] = mesh;
 		} else {

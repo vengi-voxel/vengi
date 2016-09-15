@@ -24,11 +24,15 @@ private:
 	 */
 	int _descent = 0;
 
-	bool renderGlyphs(const char* string);
+	bool renderGlyphs(const char* string, bool mergeQuads);
 public:
 	~VoxelFont();
 
-	bool init(const char* font, int fontSize, const char* glyphs);
+	/**
+	 * @param[in] mergeQuads @c false if you want to set e.g. a different color to each voxel. @c true
+	 * if you want to keep the index and vertex count as small as possible.
+	 */
+	bool init(const char* font, int fontSize, bool mergeQuads, const char* glyphs);
 	void shutdown();
 
 	int render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices);
