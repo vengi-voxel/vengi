@@ -7,6 +7,9 @@
 
 namespace frontend {
 
+/**
+ * @brief Will take any TTF font and rasterizes into voxels
+ */
 class VoxelFont {
 private:
 	std::unordered_map<uint32_t, voxel::Mesh*> _cache;

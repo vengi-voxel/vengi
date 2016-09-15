@@ -11,6 +11,7 @@
 namespace frontend {
 
 VoxelFont::~VoxelFont() {
+	core_assert_always(_cache.empty());
 	shutdown();
 }
 
