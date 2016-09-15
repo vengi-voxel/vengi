@@ -29,6 +29,13 @@ bool VoxelFont::init(const char* filename, int size, const char* glyphs) {
 	stbtt_InitFont(&_font, _ttfBuffer, offset);
 	_size = (int) (size * 1.3f); // FIX: Constant taken out of thin air because fonts get too small.
 	_scale = stbtt_ScaleForPixelHeight(&_font, (float)_size);
+
+	int lineGap;
+	stbtt_GetFontVMetrics(&_font, &_ascent, &_descent, &lineGap);
+	_ascent = (int) (_ascent * _scale + 0.5f);
+	_descent = (int) ((-_descent) * _scale + 0.5f);
+	_height = (int) ((_ascent - _descent + lineGap) * _scale + 0.5f);
+
 	if (!renderGlyphs(glyphs)) {
 		Log::info("Failed to initialize voxel font, failed to render glyphs for %s", filename);
 		return false;
@@ -48,6 +55,9 @@ void VoxelFont::shutdown() {
 
 	_size = 0;
 	_scale = 0.0f;
+	_ascent = 0;
+	_descent = 0;
+	_height = 0;
 }
 
 bool VoxelFont::renderGlyphs(const char* string) {
@@ -58,51 +68,74 @@ bool VoxelFont::renderGlyphs(const char* string) {
 		int h;
 		unsigned char *bitmap = stbtt_GetCodepointBitmap(&_font, 0.0f, _scale, c, &w, &h, 0, 0);
 		if (bitmap == nullptr) {
-			Log::warn("Could not create mesh for character: %i", c);
+			Log::debug("Could not create voxelfont mesh for character: %i", c);
 			continue;
 		}
 		voxel::Region region(0, 0, 0, w + 1, h + 1, 1);
 		voxel::RawVolume v(region);
+		Log::debug("voxelfont: width and height: %i:%i", w, h);
 		for (int y = 0; y < h; ++y) {
 			for (int x = 0; x < w; ++x) {
-				if (bitmap[y * w + x] == 255) {
-					v.setVoxel(glm::ivec3(x, y, 0), voxel);
+				if (bitmap[y * w + x] >= 25) {
+					v.setVoxel(glm::ivec3(x, h - y, 0), voxel);
 				}
 			}
 		}
 		stbtt_FreeBitmap(bitmap, nullptr);
-		voxel::Mesh* mesh = new voxel::Mesh(8, 8);
-		voxel::extractCubicMesh(&v, v.getEnclosingRegion(), mesh, voxel::IsQuadNeeded(true));
-		_cache[c] = mesh;
+		voxel::Mesh* mesh = new voxel::Mesh(8, 8, true);
+		voxel::extractCubicMesh(&v, region, mesh, voxel::IsQuadNeeded(false));
+		if (mesh->getNoOfIndices() > 0) {
+			_cache[c] = mesh;
+		} else {
+			Log::debug("Could not extract mesh for character %i", c);
+		}
 	}
 	return true;
 }
 
-// TODO: metrics support
-void VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices) {
+int VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices) {
 	const char **s = &string;
-	int x = 0;
-	int y = 0;
+	int xBase = 0;
+	int yBase = 0;
 	int charCount = 0;
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s), ++charCount) {
 		if (c == ' ') {
-			x += _size;
+			xBase += _size;
 			continue;
 		} else if (c == '\n') {
-			x = 0;
-			y += _size;
-		}
-		auto i = _cache.find(c);
-		if (i == _cache.end()) {
-			x += _size;
-			Log::warn("Could not find character glyph cache for %i", c);
+			xBase = 0;
+			yBase += _height;
 			continue;
 		}
+
+		auto i = _cache.find(c);
+		if (i == _cache.end()) {
+			xBase += _size;
+			Log::trace("Could not find character glyph cache for %i", c);
+			continue;
+		}
+
+		int x = xBase;
+		int y = yBase;
+		int advanceWidth;
+		int leftSideBearing;
+		stbtt_GetCodepointHMetrics(&_font, c, &advanceWidth, &leftSideBearing);
+
+		const int advance = (int) (advanceWidth * _scale + 0.5f);
+		xBase += advance;
+
+		int ix0, iy0, ix1, iy1;
+		stbtt_GetCodepointBitmapBox(&_font, c, 0, _scale, &ix0, &iy0, &ix1, &iy1);
+		x += ix0;
+		y += iy0;
+
 		const voxel::Mesh* mesh = i->second;
 		const voxel::IndexType* meshIndices = mesh->getRawIndexData();
 		const voxel::Vertex* meshVertices = mesh->getRawVertexData();
 		const size_t meshNumberIndices = mesh->getNoOfIndices();
+		core_assert(meshNumberIndices > 0);
 		const size_t meshNumberVertices = mesh->getNoOfVertices();
+		core_assert(meshNumberVertices > 0);
 
 		const size_t positionSize = pos.size();
 		const size_t indicesSize = indices.size();
@@ -111,7 +144,8 @@ void VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vec
 
 		for (size_t i = 0; i < meshNumberVertices; ++i) {
 			glm::vec4 vp = glm::vec4(meshVertices[i].position, 1.0f);
-			vp.x += _size * charCount;
+			vp.x += x;
+			vp.y += y;
 			pos.push_back(vp);
 		}
 		for (size_t i = 0; i < meshNumberIndices; ++i) {
@@ -119,6 +153,7 @@ void VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vec
 			indices.push_back(meshIndices[i] + positionSize);
 		}
 	}
+	return charCount;
 }
 
 }

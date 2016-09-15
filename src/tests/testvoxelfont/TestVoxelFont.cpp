@@ -2,6 +2,7 @@
 
 TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
 		Super(filesystem, eventBus) {
+	setCameraMotion(true);
 }
 
 core::AppState TestVoxelFont::onInit() {
@@ -57,8 +58,20 @@ void TestVoxelFont::doRender() {
 	std::vector<glm::vec4> positions;
 	std::vector<uint32_t> indices;
 
-	_voxelFont.render("Hello world!", positions, indices);
-	colors.assign(positions.size(), core::Color::LightGreen);
+	const char* str = "Hello world!";
+	const int renderedChars = _voxelFont.render(str, positions, indices);
+	if (strlen(str) != renderedChars) {
+		Log::error("Failed to render string '%s' (chars: %i)", str, renderedChars);
+		requestQuit();
+		return;
+	}
+
+	if (indices.empty() || positions.empty()) {
+		Log::error("Failed to render voxel font");
+		requestQuit();
+		return;
+	}
+	colors.assign(positions.size(), core::Color::LightGreen.xyz());
 
 	if (!_vertexBuffer.update(_vertexBufferIndex, positions)) {
 		Log::error("Failed to update the vertex buffer");
