@@ -15,6 +15,7 @@ private:
 	int _size = 0;
 	float _scale = 0.0f;
 	int _height = 0;
+	int _spaceWidth = 0;
 	/**
 	 * ascent is the coordinate above the baseline the font extends;
 	 */

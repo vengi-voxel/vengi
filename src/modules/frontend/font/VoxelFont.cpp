@@ -71,13 +71,23 @@ bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
 			Log::debug("Could not create voxelfont mesh for character: %i", c);
 			continue;
 		}
-		voxel::Region region(0, 0, 0, w + 1, h + 1, 1);
+
+		int ix0, iy0, ix1, iy1;
+		stbtt_GetCodepointBitmapBox(&_font, c, 0, _scale, &ix0, &iy0, &ix1, &iy1);
+
+		// take the first valid characters with as space width
+		if (_spaceWidth == 0 || c == ' ') {
+			_spaceWidth = w;
+		}
+
+		voxel::Region region(0, 0, 0, w + 1 + ix0, h + 1 + glm::abs(iy0), 1);
 		voxel::RawVolume v(region);
 		Log::debug("voxelfont: width and height: %i:%i", w, h);
+		const int regionH = region.getHeightInCells();
 		for (int y = 0; y < h; ++y) {
 			for (int x = 0; x < w; ++x) {
 				if (bitmap[y * w + x] >= 25) {
-					v.setVoxel(glm::ivec3(x, h - y, 0), voxel);
+					v.setVoxel(glm::ivec3(x + ix0, regionH + iy0 - y, 0), voxel);
 				}
 			}
 		}
@@ -100,7 +110,7 @@ int VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vect
 	int charCount = 0;
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s), ++charCount) {
 		if (c == ' ') {
-			xBase += _size;
+			xBase += _spaceWidth;
 			continue;
 		} else if (c == '\n') {
 			xBase = 0;
@@ -120,14 +130,8 @@ int VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vect
 		int advanceWidth;
 		int leftSideBearing;
 		stbtt_GetCodepointHMetrics(&_font, c, &advanceWidth, &leftSideBearing);
-
 		const int advance = (int) (advanceWidth * _scale + 0.5f);
 		xBase += advance;
-
-		int ix0, iy0, ix1, iy1;
-		stbtt_GetCodepointBitmapBox(&_font, c, 0, _scale, &ix0, &iy0, &ix1, &iy1);
-		x += ix0;
-		y += iy0;
 
 		const voxel::Mesh* mesh = i->second;
 		const voxel::IndexType* meshIndices = mesh->getRawIndexData();
