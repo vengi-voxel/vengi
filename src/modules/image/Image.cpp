@@ -12,12 +12,13 @@
 #define STBI_REALLOC core_realloc
 #define STBI_FREE core_free
 
+namespace image {
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-
-namespace image {
 
 Image::Image(const std::string& name) :
 		io::IOResource(), _name(name) {
