@@ -26,8 +26,7 @@ int Shader::glslVersion = GLSLVersion::V300;
 int Shader::glslVersion = GLSLVersion::V330;
 #endif
 
-Shader::Shader() :
-		_program(0), _initialized(false), _active(false), _time(0) {
+Shader::Shader() {
 }
 
 Shader::~Shader() {

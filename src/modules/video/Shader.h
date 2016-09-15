@@ -47,9 +47,9 @@ protected:
 	typedef std::unordered_map<ShaderType, GLuint, EnumClassHash> ShaderMap;
 	ShaderMap _shader;
 
-	GLuint _program;
-	bool _initialized;
-	mutable bool _active;
+	GLuint _program = 0u;
+	bool _initialized = false;;
+	mutable bool _active = false;
 
 	typedef std::map<std::string, std::string> ShaderDefines;
 	ShaderDefines _defines;
@@ -64,7 +64,7 @@ protected:
 	typedef std::unordered_map<int, int> AttributeComponents;
 	AttributeComponents _attributeComponents;
 
-	mutable uint32_t _time;
+	mutable uint32_t _time = 0u;
 
 	std::string _name;
 
