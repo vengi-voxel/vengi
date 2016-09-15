@@ -5,7 +5,7 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "frontend/font/VoxelFont.h"
+#include "voxel/font/VoxelFont.h"
 #include "video/VertexBuffer.h"
 #include "FrontendShaders.h"
 
@@ -13,7 +13,7 @@ class TestVoxelFont: public TestApp {
 private:
 	using Super = TestApp;
 
-	frontend::VoxelFont _voxelFont;
+	voxel::VoxelFont _voxelFont;
 	video::VertexBuffer _vertexBuffer;
 	shader::ColorShader _colorShader;
 

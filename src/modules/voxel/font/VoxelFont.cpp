@@ -8,7 +8,7 @@
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 
-namespace frontend {
+namespace voxel {
 
 VoxelFont::~VoxelFont() {
 	core_assert_always(_cache.empty());

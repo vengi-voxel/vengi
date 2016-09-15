@@ -1,6 +1,4 @@
 set(SRCS
-	font/stb_truetype.h
-	font/VoxelFont.h font/VoxelFont.cpp
 	ClientEntity.h ClientEntity.cpp
 	ClientEntityId.h
 	Movement.h

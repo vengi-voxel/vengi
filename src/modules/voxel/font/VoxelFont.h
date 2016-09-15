@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include "stb_truetype.h"
 
-namespace frontend {
+namespace voxel {
 
 /**
  * @brief Will take any TTF font and rasterizes into voxels
