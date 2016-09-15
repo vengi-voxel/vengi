@@ -39,6 +39,8 @@ core::AppState TestVoxelFont::onInit() {
 	core_assert_always(_vertexBuffer.addAttribute(_colorShader.getLocationPos(), _vertexBufferIndex, _colorShader.getComponentsPos()));
 	core_assert_always(_vertexBuffer.addAttribute(_colorShader.getLocationColor(), _colorBufferIndex, _colorShader.getComponentsColor()));
 
+	_camera.setFarPlane(4000.0f);
+
 	return state;
 }
 
