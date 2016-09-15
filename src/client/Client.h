@@ -56,24 +56,11 @@ protected:
 
 	uint32_t _state = 0u;
 
-	inline void setState(uint32_t flag) {
-		_state |= flag;
-	}
+	void setState(uint32_t flag);
+	bool hasState(uint32_t flag) const;
+	void removeState(uint32_t flag);
 
-	inline bool hasState(uint32_t flag) const {
-		return (_state & flag) != 0;
-	}
-
-	inline void removeState(uint32_t flag) {
-		_state &= ~flag;
-	}
-
-	inline frontend::ClientEntityId id() const {
-		if (!_player) {
-			return -1;
-		}
-		return _player->id();
-	}
+	frontend::ClientEntityId id() const;
 
 	void sendMovement();
 	void handleLogin();
@@ -118,6 +105,25 @@ public:
 
 inline frontend::ClientEntityPtr Client::getEntity(frontend::ClientEntityId id) const {
 	return _worldRenderer.getEntity(id);
+}
+
+inline void Client::setState(uint32_t flag) {
+	_state |= flag;
+}
+
+inline bool Client::hasState(uint32_t flag) const {
+	return (_state & flag) != 0;
+}
+
+inline void Client::removeState(uint32_t flag) {
+	_state &= ~flag;
+}
+
+inline frontend::ClientEntityId Client::id() const {
+	if (!_player) {
+		return -1;
+	}
+	return _player->id();
 }
 
 typedef std::shared_ptr<Client> ClientPtr;
