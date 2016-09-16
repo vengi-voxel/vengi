@@ -69,6 +69,29 @@ void Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 	core_assert(!glm::any(glm::isinf(_quat)));
 }
 
+void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceWeight) const {
+	core_assert_always(bufSize >= splits * 2);
+	core_assert_always(splits >= 1);
+	const float near = nearPlane();
+	const float far = farPlane();
+	const int numSlices = splits * 2;
+	const float numSlicesf = float(numSlices);
+	const float ratio = far / near;
+	const float delta = far - near;
+
+	sliceBuf[0] = near;
+	sliceBuf[numSlices - 1] = far;
+
+	for (int farIndex = 1, nearIndex = 2; nearIndex < numSlices; farIndex += 2, nearIndex += 2) {
+		const float exponent = farIndex / numSlicesf;
+		const float one = sliceWeight * (near * glm::pow(ratio, exponent));
+		const float two = (1 - sliceWeight) * (near + delta * exponent);
+		const float nearPlaneSlice = one + two;
+		sliceBuf[nearIndex] = nearPlaneSlice;
+		sliceBuf[farIndex] = nearPlaneSlice * 1.005f;
+	}
+}
+
 void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM_VERTICES_MAX]) {
 	static const glm::vec4 clipCorners[FRUSTUM_VERTICES_MAX] = {
 		glm::vec4(-1.0f,  1.0f, nearPlane, 1.0f ),

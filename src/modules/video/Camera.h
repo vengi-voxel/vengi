@@ -206,6 +206,12 @@ public:
 	void update(long deltaFrame);
 
 	/**
+	 * @brief Split the current frustum by @c bufSize steps
+	 * @param[out] sliceBuf the target buffer for the near/far plane combos
+	 * @param[in] splits The amount of splits. The bufSize must be at least @code splits * 2 @encode
+	 */
+	void sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceWeight = 0.75f) const;
+	/**
 	 * @brief Calculates the 8 vertices for a split frustum
 	 */
 	void splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM_VERTICES_MAX]);
