@@ -9,22 +9,16 @@
  * Only store values between 0.0 and 1.
  */
 vec4 encodeDepth(float floatValue) {
-	const float toFixed = 255.0 / 256;
-	vec4 comp;
-	comp.r = fract(floatValue * toFixed * 1);
-	comp.g = fract(floatValue * toFixed * 255);
-	comp.b = fract(floatValue * toFixed * 255 * 255);
-	comp.a = fract(floatValue * toFixed * 255 * 255 * 255);
+	const vec4 shift = vec4(256 * 256 * 256, 256 * 256, 256, 1.0);
+	const vec4 mask = vec4(0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
+	vec4 comp = fract(floatValue * shift);
+	comp -= comp.xxyz * mask;
 	return comp;
 }
 
 float decodeDepth(vec4 rgba) {
-	const float fromFixed = 256.0 / 255;
-	float val = rgba.r * fromFixed / (1);
-	val += rgba.g * fromFixed / (255);
-	val += rgba.b * fromFixed / (255 * 255);
-	val += rgba.a * fromFixed / (255 * 255 * 255);
-	return val;
+	const vec4 shift = vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
+	return dot(rgba, shift);
 }
 
 /**
