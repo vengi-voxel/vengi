@@ -1,8 +1,7 @@
 #pragma once
 
+#include "core/Common.h"
 #include "CooldownType.h"
-#include "core/EnumHash.h"
-#include "core/Log.h"
 #include <memory>
 
 namespace cooldown {
@@ -19,7 +18,7 @@ static constexpr int DefaultDuration = 1000;
 class CooldownDuration {
 private:
 	bool _initialized = false;
-	long _durations[core::enumValue<Type>(Type::MAX) + 1];
+	long _durations[std::enum_value<Type>(Type::MAX) + 1];
 	std::string _error;
 public:
 	/**
@@ -64,7 +63,7 @@ inline long CooldownDuration::duration(Type type) const {
 	if (!_initialized) {
 		::Log::warn("Trying to get cooldown duration without CooldownDuration::init() being called");
 	}
-	return _durations[core::enumValue<Type>(type)];
+	return _durations[std::enum_value<Type>(type)];
 }
 
 typedef std::shared_ptr<CooldownDuration> CooldownDurationPtr;

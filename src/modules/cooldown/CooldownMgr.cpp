@@ -5,7 +5,6 @@
 #include "CooldownMgr.h"
 #include "core/Common.h"
 #include "core/Singleton.h"
-#include "core/EnumHash.h"
 
 namespace cooldown {
 
@@ -20,13 +19,13 @@ CooldownTriggerState CooldownMgr::triggerCooldown(Type type) {
 		cooldown = std::make_shared<Cooldown>(type, defaultDuration(type), _timeProvider);
 		_cooldowns[type] = cooldown;
 	} else if (cooldown->running()) {
-		Log::error("Failed to trigger the cooldown of type %i: already running", core::enumValue(type));
+		Log::error("Failed to trigger the cooldown of type %i: already running", std::enum_value(type));
 		return CooldownTriggerState::ALREADY_RUNNING;
 	}
 	cooldown->start();
 	_queue.push(cooldown);
 	Log::debug("Triggered the cooldown of type %i (expires in %lims, started at %li)",
-			core::enumValue(type), cooldown->duration(), cooldown->startMillis());
+			std::enum_value(type), cooldown->duration(), cooldown->startMillis());
 	return CooldownTriggerState::SUCCESS;
 }
 
@@ -64,11 +63,11 @@ bool CooldownMgr::cancelCooldown(Type type) {
 bool CooldownMgr::isCooldown(Type type) {
 	const CooldownPtr& c = cooldown(type);
 	if (!c || !c->running()) {
-		Log::trace("Cooldown of type %i is not running", core::enumValue(type));
+		Log::trace("Cooldown of type %i is not running", std::enum_value(type));
 		return false;
 	}
 	Log::debug("Cooldown of type %i is running and has a runtime of %lims",
-			core::enumValue(type), c->duration());
+			std::enum_value(type), c->duration());
 	return true;
 }
 
@@ -89,7 +88,7 @@ void CooldownMgr::update() {
 		_queue.pop();
 		_lock.unlockWrite();
 		Log::debug("Cooldown of type %i has just expired at %li",
-				core::enumValue(cooldown->type()), _timeProvider->tickTime());
+				std::enum_value(cooldown->type()), _timeProvider->tickTime());
 		cooldown->expire();
 	}
 }

@@ -12,7 +12,7 @@ CooldownDuration::CooldownDuration() {
 }
 
 long CooldownDuration::setDuration(Type type, long duration) {
-	const int t = core::enumValue<Type>(type);
+	const int t = std::enum_value<Type>(type);
 	const long old = _durations[t];
 	_durations[t] = duration;
 	return old;
@@ -47,7 +47,7 @@ bool CooldownDuration::init(const std::string& filename) {
 		}
 		const long millis = luaL_checkinteger(s, 2);
 		Log::info("set millis for %s to %li", typeStr, millis);
-		data->_durations[core::enumValue<Type>(type)] = millis;
+		data->_durations[std::enum_value<Type>(type)] = millis;
 		return 0;
 	});
 
