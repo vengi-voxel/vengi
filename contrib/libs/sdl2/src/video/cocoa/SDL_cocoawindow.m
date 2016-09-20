@@ -855,7 +855,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         button = SDL_BUTTON_MIDDLE;
         break;
     default:
-        button = [theEvent buttonNumber] + 1;
+        button = (int) [theEvent buttonNumber] + 1;
         break;
     }
     SDL_SendMouseButton(_data->window, 0, SDL_PRESSED, button);
@@ -896,7 +896,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         button = SDL_BUTTON_MIDDLE;
         break;
     default:
-        button = [theEvent buttonNumber] + 1;
+        button = (int) [theEvent buttonNumber] + 1;
         break;
     }
     SDL_SendMouseButton(_data->window, 0, SDL_RELEASED, button);
@@ -1158,7 +1158,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created
     }
 
     {
-        unsigned int style = [nswindow styleMask];
+        unsigned long style = [nswindow styleMask];
 
         if (style == NSBorderlessWindowMask) {
             window->flags |= SDL_WINDOW_BORDERLESS;
@@ -1209,7 +1209,7 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     NSRect rect;
     SDL_Rect bounds;
-    unsigned int style;
+    NSUInteger style;
     NSArray *screens = [NSScreen screens];
 
     Cocoa_GetDisplayBounds(_this, display, &bounds);

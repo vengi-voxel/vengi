@@ -32,6 +32,9 @@
 #if MACOSX_COREAUDIO
 #include <CoreAudio/CoreAudio.h>
 #include <CoreServices/CoreServices.h>
+#else
+#import <AVFoundation/AVFoundation.h>
+#import <UIKit/UIApplication.h>
 #endif
 
 #include <AudioToolbox/AudioToolbox.h>
@@ -54,6 +57,9 @@ struct SDL_PrivateAudioData
     SDL_atomic_t shutdown;
 #if MACOSX_COREAUDIO
     AudioDeviceID deviceID;
+#else
+    SDL_bool interrupted;
+    CFTypeRef interruption_listener;
 #endif
 };
 

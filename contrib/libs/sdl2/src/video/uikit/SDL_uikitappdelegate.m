@@ -76,6 +76,7 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     [UIApplication sharedApplication].idleTimerDisabled = disable;
 }
 
+#if !TARGET_OS_TV
 /* Load a launch image using the old UILaunchImageFile-era naming rules. */
 static UIImage *
 SDL_LoadLaunchImageNamed(NSString *name, int screenh)
@@ -114,6 +115,15 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
     return image;
 }
+#endif /* !TARGET_OS_TV */
+
+@interface SDLLaunchScreenController ()
+
+#if !TARGET_OS_TV
+- (NSUInteger)supportedInterfaceOrientations;
+#endif
+
+@end
 
 @implementation SDLLaunchScreenController
 
@@ -140,6 +150,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     }
 
     if (!self.view) {
+#if !TARGET_OS_TV
         NSArray *launchimages = [bundle objectForInfoDictionaryKey:@"UILaunchImages"];
         UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
         NSString *imagename = nil;
@@ -244,6 +255,9 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
             self.view = view;
         }
+#else /* !TARGET_OS_TV */
+        return nil;
+#endif
     }
 
     return self;
@@ -254,6 +268,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     /* Do nothing. */
 }
 
+#if !TARGET_OS_TV
 - (BOOL)shouldAutorotate
 {
     /* If YES, the launch image will be incorrectly rotated in some cases. */
@@ -267,6 +282,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
      * the ones set here (it will cause an exception in that case.) */
     return UIInterfaceOrientationMaskAll;
 }
+#endif /* !TARGET_OS_TV */
 
 @end
 
@@ -381,6 +397,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     SDL_SendAppEvent(SDL_APP_LOWMEMORY);
 }
 
+#if !TARGET_OS_TV
 - (void)application:(UIApplication *)application didChangeStatusBarOrientation:(UIInterfaceOrientation)oldStatusBarOrientation
 {
     BOOL isLandscape = UIInterfaceOrientationIsLandscape(application.statusBarOrientation);
@@ -408,6 +425,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         }
     }
 }
+#endif
 
 - (void)applicationWillResignActive:(UIApplication*)application
 {
@@ -446,17 +464,34 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     }
 }
 
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+- (void)sendDropFileForURL:(NSURL *)url
 {
     NSURL *fileURL = url.filePathURL;
     if (fileURL != nil) {
-        SDL_SendDropFile(NULL, [fileURL.path UTF8String]);
+        SDL_SendDropFile(NULL, fileURL.path.UTF8String);
     } else {
-        SDL_SendDropFile(NULL, [url.absoluteString UTF8String]);
+        SDL_SendDropFile(NULL, url.absoluteString.UTF8String);
     }
     SDL_SendDropComplete(NULL);
+}
+
+#if TARGET_OS_TV
+/* TODO: Use this on iOS 9+ as well? */
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+    /* TODO: Handle options */
+    [self sendDropFileForURL:url];
     return YES;
 }
+#endif /* TARGET_OS_TV */
+
+#if !TARGET_OS_TV
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    [self sendDropFileForURL:url];
+    return YES;
+}
+#endif /* !TARGET_OS_TV */
 
 @end
 
