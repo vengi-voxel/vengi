@@ -46,14 +46,16 @@ public:
 	lua_State* state() const;
 
 	template<class T>
-	static void newGlobalData(lua_State *L, const std::string& prefix, T *userData) {
+	static T* newGlobalData(lua_State *L, const std::string& prefix, T *userData) {
 		lua_pushlightuserdata(L, userData);
 		lua_setglobal(L, prefix.c_str());
+		return userData;
 	}
 
 	template<class T>
-	inline void newGlobalData(const std::string& prefix, T *userData) const {
+	inline T* newGlobalData(const std::string& prefix, T *userData) const {
 		newGlobalData(_state, prefix, userData);
+		return userData;
 	}
 
 	template<class T>
@@ -82,6 +84,16 @@ public:
 		luaL_getmetatable(L, name.c_str());
 		lua_setmetatable(L, -2);
 		return udata;
+	}
+
+	template<class T>
+	static T* newUserdata(lua_State *L, const std::string& prefix, T* data) {
+		T ** udata = (T **) lua_newuserdata(L, sizeof(T *));
+		const std::string name = META_PREFIX + prefix;
+		luaL_getmetatable(L, name.c_str());
+		lua_setmetatable(L, -2);
+		*udata = data;
+		return data;
 	}
 
 	template<class T>

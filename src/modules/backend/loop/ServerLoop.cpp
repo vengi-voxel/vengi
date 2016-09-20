@@ -6,6 +6,8 @@
 #include "core/Command.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
+#include "core/App.h"
+#include "io/Filesystem.h"
 #include "cooldown/CooldownDuration.h"
 #include "persistence/ConnectionPool.h"
 #include "DatabaseModels.h"
@@ -46,7 +48,8 @@ bool ServerLoop::init() {
 		return false;
 	}
 
-	if (!_containerProvider->init("attributes.lua")) {
+	const std::string& attributes = core::App::getInstance()->filesystem()->load("attributes.lua");
+	if (!_containerProvider->init(attributes)) {
 		Log::error("Failed to load the attributes: %s", _containerProvider->error().c_str());
 		return false;
 	}

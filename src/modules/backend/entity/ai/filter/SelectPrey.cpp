@@ -5,6 +5,7 @@
 #include "SelectPrey.h"
 #include "backend/entity/Npc.h"
 #include "core/Common.h"
+#include "core/String.h"
 
 namespace backend {
 

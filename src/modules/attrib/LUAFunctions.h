@@ -22,8 +22,7 @@ static LUAContainer* luaGetContainerContext(lua_State * l, int n) {
 static int luaCreateContainer(lua_State * l) {
 	ContainerProvider *ctx = luaGetContext(l);
 	const std::string name = luaL_checkstring(l, 1);
-	LUAContainer** udata = lua::LUA::newUserdata<LUAContainer>(l, "Container");
-	*udata = new LUAContainer(name, ctx);
+	lua::LUA::newUserdata<LUAContainer>(l, "Container", new LUAContainer(name, ctx));
 	return 1;
 }
 

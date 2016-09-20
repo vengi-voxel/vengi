@@ -31,16 +31,14 @@ private:
 	Containers _containers;
 	std::string _error;
 public:
-	ContainerProvider();
-
 	/**
-	 * @param file The file to load
+	 * @param luaScript The lua script string to load
 	 * @return @c true on success, @c false if an error occurred. In case of an error,
 	 * you can call error() to get more information about it.
 	 * @note this can be called multiple times. But beware, if a @c Container with the same
 	 * name already exists, it will just be overwritten-
 	 */
-	bool init(const std::string& file);
+	bool init(const std::string& luaScript);
 
 	/**
 	 * @brief Removes all known containers from previous init() calls

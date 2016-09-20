@@ -34,6 +34,18 @@
 #define core_free SDL_free
 #endif
 
+#ifndef core_memset
+#define core_memset SDL_memset
+#endif
+
+#ifndef core_zero
+#define core_zero SDL_zero
+#endif
+
+#ifndef core_zerop
+#define core_zerop SDL_zerop
+#endif
+
 #define core_stacktrace \
 	backward::StackTrace st; \
 	st.load_here(32); \

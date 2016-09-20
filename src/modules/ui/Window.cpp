@@ -6,6 +6,8 @@
 #include "UIApp.h"
 #include "core/GLM.h"
 #include "core/Singleton.h"
+#include "core/String.h"
+#include "core/Var.h"
 
 namespace ui {
 
@@ -32,6 +34,14 @@ Window::~Window() {
 void Window::OnDie() {
 	tb::TBWindow::OnDie();
 	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
+}
+
+float Window::getFloat(const char *nodeId) {
+	return core::string::toFloat(getStr(nodeId));
+}
+
+int Window::getInt(const char *nodeId) {
+	return core::string::toInt(getStr(nodeId));
 }
 
 Window* Window::getParent() const {

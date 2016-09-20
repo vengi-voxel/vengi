@@ -6,15 +6,14 @@
 #include "commonlua/LUA.h"
 #include "LUAFunctions.h"
 #include "core/Log.h"
-#include "core/App.h"
-#include "io/Filesystem.h"
 
 namespace attrib {
 
-ContainerProvider::ContainerProvider() {
-}
-
-bool ContainerProvider::init(const std::string& file) {
+bool ContainerProvider::init(const std::string& luaScript) {
+	if (luaScript.empty()) {
+		_error = "empty lua script given";
+		return false;
+	}
 	_error = "";
 
 	lua::LUA lua;
@@ -32,12 +31,7 @@ bool ContainerProvider::init(const std::string& file) {
 
 	lua.reg("attrib", funcs);
 
-	const std::string& attributes = core::App::getInstance()->filesystem()->load(file);
-	if (attributes.empty()) {
-		return false;
-	}
-
-	if (!lua.load(attributes)) {
+	if (!lua.load(luaScript)) {
 		_error = lua.error();
 		return false;
 	}

@@ -5,10 +5,14 @@
 #pragma once
 
 #include "TurboBadger.h"
-#include <cstdint>
-#include "core/Var.h"
-#include "core/String.h"
 #include "io/IEventObserver.h"
+#include <cstdint>
+#include <memory>
+
+namespace core {
+class Var;
+typedef std::shared_ptr<Var> VarPtr;
+}
 
 namespace ui {
 
@@ -74,13 +78,5 @@ public:
 
 	virtual void onWindowResize() override;
 };
-
-inline float Window::getFloat(const char *nodeId) {
-	return core::string::toFloat(getStr(nodeId));
-}
-
-inline int Window::getInt(const char *nodeId) {
-	return core::string::toInt(getStr(nodeId));
-}
 
 }

@@ -7,7 +7,6 @@
 #include "backend/entity/ai/AICommon.h"
 #include "cooldown/CooldownType.h"
 #include "core/Common.h"
-#include "core/String.h"
 #include "backend/entity/ai/AICharacter.h"
 #include "backend/entity/Npc.h"
 

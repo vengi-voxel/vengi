@@ -6,7 +6,6 @@
 
 #include "backend/entity/ai/AICommon.h"
 #include "backend/entity/ai/AICharacter.h"
-#include "core/String.h"
 
 using namespace ai;
 

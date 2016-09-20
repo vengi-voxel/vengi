@@ -4,9 +4,16 @@
 
 #include "SelectIncreasePartner.h"
 #include "backend/entity/Npc.h"
-#include "core/Log.h"
+#include "core/String.h"
+#include "core/Common.h"
 
 namespace backend {
+
+SelectIncreasePartner::SelectIncreasePartner(const std::string& parameters) :
+		IFilter("SelectIncreasePartner", parameters) {
+	_cooldownId = cooldown::getType(parameters);
+	core_assert(_cooldownId != cooldown::Type::NONE);
+}
 
 void SelectIncreasePartner::filter(const AIPtr& entity) {
 	FilteredEntities& entities = getFilteredEntities(entity);

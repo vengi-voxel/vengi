@@ -64,7 +64,7 @@ public:
 #define core_trace_gl_scoped(name)
 #define core_trace_scoped(name) core::TraceScoped(#name)
 #else
-#define core_trace_init() Log::info("Tracing disabled")
+#define core_trace_init() Log::debug("Tracing disabled")
 #define core_trace_begin_frame()
 #define core_trace_end_frame()
 #define core_trace_begin(name)

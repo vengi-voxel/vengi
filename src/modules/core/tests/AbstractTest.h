@@ -31,9 +31,9 @@ protected:
 	}
 
 public:
-	void SetUp() override;
+	virtual void SetUp() override;
 
-	void TearDown() override;
+	virtual void TearDown() override;
 };
 
 }

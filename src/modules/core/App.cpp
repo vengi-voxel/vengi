@@ -30,7 +30,6 @@ App::~App() {
 void App::init(const std::string& organisation, const std::string& appname) {
 	_organisation = organisation;
 	_appname = appname;
-	core_trace_init();
 }
 
 int App::startMainLoop(int argc, char *argv[]) {
@@ -217,7 +216,7 @@ AppState App::onConstruct() {
 		});
 	}).setHelp("Show the list of known commands (wildcards supported)");
 
-	Log::info("detected %u cpus", core::cpus());
+	Log::debug("detected %u cpus", core::cpus());
 
 	return AppState::Init;
 }
@@ -272,6 +271,9 @@ AppState App::onInit() {
 	// we might have changed the loglevel from the commandline
 	Log::init();
 	_logLevel = core::Var::get(cfg::CoreLogLevel);
+
+	core_trace_init();
+
 	return AppState::Running;
 }
 

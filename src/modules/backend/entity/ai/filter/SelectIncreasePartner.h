@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "core/String.h"
-#include "core/Common.h"
 #include "cooldown/CooldownType.h"
 #include "backend/entity/ai/AICommon.h"
 
@@ -22,11 +20,7 @@ private:
 public:
 	FILTER_FACTORY(SelectIncreasePartner)
 
-	SelectIncreasePartner(const std::string& parameters = "") :
-			IFilter("SelectIncreasePartner", parameters) {
-		_cooldownId = cooldown::getType(parameters);
-		core_assert(_cooldownId != cooldown::Type::NONE);
-	}
+	SelectIncreasePartner(const std::string& parameters = "");
 
 	void filter(const AIPtr& entity) override;
 };

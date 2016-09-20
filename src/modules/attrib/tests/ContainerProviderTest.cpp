@@ -12,12 +12,14 @@ class ContainerProviderTest: public core::AbstractTest {
 
 TEST_F(ContainerProviderTest, testLoadingSuccess) {
 	ContainerProvider p;
-	ASSERT_TRUE(p.init("testattributes.lua")) << p.error();
+	const std::string& attributes = core::App::getInstance()->filesystem()->load("testattributes.lua");
+	ASSERT_TRUE(p.init(attributes)) << p.error();
 }
 
 TEST_F(ContainerProviderTest, testLoadingUnknownType) {
 	ContainerProvider p;
-	ASSERT_FALSE(p.init("testattributes_fail.lua")) << p.error();
+	const std::string& attributes = core::App::getInstance()->filesystem()->load("testattributes_fail.lua");
+	ASSERT_FALSE(p.init(attributes)) << p.error();
 }
 
 }

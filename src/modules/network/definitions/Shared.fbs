@@ -52,3 +52,8 @@ enum AttribType: int {
 	ATTACKRANGE,
 	STRENGTH
 }
+
+enum ItemType: int {
+	NONE,
+	WEAPON
+}
