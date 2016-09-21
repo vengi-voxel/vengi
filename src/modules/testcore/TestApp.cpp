@@ -21,8 +21,8 @@ void TestApp::onWindowResize() {
 
 core::AppState TestApp::onInit() {
 	core::Var::get(cfg::ClientFullscreen, "false");
-	core::Var::get(cfg::ClientWindowWidth, "640");
-	core::Var::get(cfg::ClientWindowHeight, "480");
+	core::Var::get(cfg::ClientWindowWidth, "1024");
+	core::Var::get(cfg::ClientWindowHeight, "768");
 
 	const core::AppState state = Super::onInit();
 	_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
