@@ -56,15 +56,28 @@ void TestCamera::doRender() {
 void TestCamera::afterUI() {
 	Super::afterUI();
 	tb::TBStr str;
-	const char *camera;
-	if (_targetCamera == 0) {
-		camera = "AABB";
-	} else if (_targetCamera == 1) {
-		camera = "Frustum split";
-	} else {
-		camera = "Unknonw";
+	const char *cameraRotType;
+	const video::Camera& targetCamera = _renderCamera[_targetCamera];
+	video::CameraRotationType rotType = targetCamera.rotationType();
+	switch (rotType) {
+	case video::CameraRotationType::Target:
+		cameraRotType = "R: Target";
+		break;
+	case video::CameraRotationType::Eye:
+		cameraRotType = "R: Eye";
+		break;
 	}
-	enqueueShowStr(5, core::Color::White, "Camera: %s (%i)", camera, _targetCamera + 1);
+	const char *mode = "";
+	if (_targetCamera == 1) {
+		mode = "Frustum split";
+	}
+	enqueueShowStr(5, core::Color::White, "Camera: %s (%i) %s", cameraRotType, _targetCamera + 1, mode);
+	if (_frustums[_targetCamera].renderAABB()) {
+		const core::AABB<float>&& aabb = targetCamera.aabb();
+		enqueueShowStr(5, core::Color::White, "AABB(mins(%.2f:%.2f:%.2f), maxs(%.2f:%.2f:%.2f))", aabb.getLowerX(), aabb.getLowerY(), aabb.getLowerZ(), aabb.getUpperX(), aabb.getUpperY(), aabb.getUpperZ());
+	} else {
+		enqueueShowStr(5, core::Color::White, "");
+	}
 	enqueueShowStr(5, core::Color::Gray, "Space: toggle camera");
 	enqueueShowStr(5, core::Color::Gray, "Shift/MouseMove: rotate");
 	enqueueShowStr(5, core::Color::Gray, "Backspace: toggle aabb");
