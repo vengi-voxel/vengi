@@ -31,7 +31,7 @@ core::AppState TestCamera::onInit() {
 		if (targetCamera) {
 			_renderCamera[i].setRotationType(video::CameraRotationType::Target);
 		}
-		if (!_frustums[i].init(_renderCamera[i], colors[i])) {
+		if (!_frustums[i].init(_renderCamera[i], colors[i], renderSplitFrustum ? 4 : 0)) {
 			return core::AppState::Cleanup;
 		}
 		_frustums[i].setRenderAABB(renderAABB);

@@ -55,7 +55,8 @@ core::AppState TestMeshApp::onInit() {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
 	}
-	if (!_depthBuffer.init(_dimension, (video::DepthBufferMode)depthMapFormat->intVal())) {
+	const int maxDepthBuffers = _meshShader.getUniformArraySize("u_shadowmap");
+	if (!_depthBuffer.init(_dimension, (video::DepthBufferMode)depthMapFormat->intVal(), maxDepthBuffers)) {
 		Log::error("Failed to init the depthbuffer");
 		return core::AppState::Cleanup;
 	}
@@ -98,14 +99,17 @@ void TestMeshApp::doRender() {
 		_meshShader.setLightdir(_sunLight.direction());
 		_meshShader.setTexture(0);
 		_meshShader.setDiffuseColor(_diffuseColor);
-		_meshShader.setScreensize(glm::vec2(_camera.dimension()));
+		_meshShader.setDepthsize(glm::vec2(_sunLight.dimension()));
 		_meshShader.setLight(_sunLight.viewProjectionMatrix(_camera));
-		_meshShader.setShadowmap(1);
+		_meshShader.setShadowmap({1, 2});
 
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
+			const int maxDepthBuffers = _meshShader.getUniformArraySize("u_shadowmap");
+			for (int i = 0; i < maxDepthBuffers; ++i) {
+				glActiveTexture(GL_TEXTURE1 + i);
+				glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
+			}
 
 			const bool renderLines = (_flags & FL_RENDER_LINES) != 0 || (SDL_GetModState() & KMOD_SHIFT) != 0;
 

@@ -21,10 +21,10 @@ public:
 	DepthBuffer();
 	~DepthBuffer();
 
-	bool init(const glm::ivec2& dimension, DepthBufferMode mode = DepthBufferMode::RGBA);
+	bool init(const glm::ivec2& dimension, DepthBufferMode mode = DepthBufferMode::RGBA, int textureCount = 1);
 	void shutdown();
 
-	void bind();
+	void bind(bool read = false, int textureIndex = 0);
 	void unbind();
 	uint8_t *read();
 
@@ -32,8 +32,9 @@ public:
 		return _dimension;
 	}
 
-	inline GLuint getTexture() const {
-		return _depthTexture;
+	inline GLuint getTexture(int index = 0) const {
+		core_assert(index >= 0 && index < (int)SDL_arraysize(_depthTexture));
+		return _depthTexture[index];
 	}
 
 	inline bool depthAttachment() const {
@@ -45,7 +46,7 @@ private:
 	GLint _oldFramebuffer = -1;
 	GLuint _fbo = 0u;
 	GLuint _rbo = 0u;
-	GLuint _depthTexture = 0u;
+	GLuint _depthTexture[4] = {0u, 0u, 0u, 0u};
 	glm::ivec2 _dimension;
 	DepthBufferMode _mode = DepthBufferMode::RGBA;
 };

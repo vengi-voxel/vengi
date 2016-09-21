@@ -236,6 +236,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunLight.direction());
+	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_sunLight.dimension()));
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
@@ -243,11 +244,14 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
 	shaderSetUniformIf(shader, setUniformVec3, "u_campos", camera.position());
-	const bool shadowMap = shader.hasUniform("u_shadowmap");
+	const bool shadowMap = shader.hasUniform("u_shadowmap[0]");
 	if (shadowMap) {
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
-		shaderSetUniformIf(shader, setUniformi, "u_shadowmap", 1);
+		const int maxDepthBuffers = shader.getUniformArraySize("u_shadowmap");
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			glActiveTexture(GL_TEXTURE1 + i);
+			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
+			shaderSetUniformIf(shader, setUniformi, core::string::format("u_shadowmap[%i]", i), 1 + i);
+		}
 	}
 
 	const float chunkSize = (float)_world->getMeshSize();
@@ -303,8 +307,11 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	}
 
 	if (shadowMap) {
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		const int maxDepthBuffers = shader.getUniformArraySize("u_shadowmap");
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			glActiveTexture(GL_TEXTURE1 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 		glActiveTexture(GL_TEXTURE0);
 	}
 
@@ -351,19 +358,32 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	_sunLight.update(_deltaFrame, camera);
 
+	float planes[8];
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we do one pass for the gbuffer + the sun
 	if (_shadowMap->boolVal()) {
-		glDisable(GL_BLEND);
-		_depthBuffer.bind();
-		// put shadow acne into the dark
-		glCullFace(GL_FRONT);
-		// TODO: we need a bitmask for culling, because we need some kind of culling here, too...
-		drawCallsWorld  = renderWorldMeshes(_shadowMapShader,          camera, _meshDataOpaque, vertices, false);
-		drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, _meshDataPlant,  vertices, false);
-		glCullFace(GL_BACK);
-		_depthBuffer.unbind();
-		glEnable(GL_BLEND);
+		const int maxDepthBuffers = _worldShader.getUniformArraySize("u_shadowmap");
+		core_assert(maxDepthBuffers * 2 <= (int)SDL_arraysize(planes));
+		const video::Camera& sunCamera = _sunLight.camera();
+		sunCamera.sliceFrustum(planes, SDL_arraysize(planes), maxDepthBuffers);
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			// TODO: finish this
+			const float near = planes[i * 2 + 0];
+			const float far = planes[i * 2 + 1];
+			glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
+			sunCamera.splitFrustum(near, far, out);
+
+			glDisable(GL_BLEND);
+			_depthBuffer.bind(true, i);
+			// put shadow acne into the dark
+			glCullFace(GL_FRONT);
+			// TODO: we need a bitmask for culling, because we need some kind of culling here, too...
+			drawCallsWorld  = renderWorldMeshes(_shadowMapShader,          camera, _meshDataOpaque, vertices, false);
+			drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, _meshDataPlant,  vertices, false);
+			glCullFace(GL_BACK);
+			_depthBuffer.unbind();
+			glEnable(GL_BLEND);
+		}
 	}
 
 	_colorTexture->bind(0);
@@ -423,20 +443,23 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	if (_shadowMap->boolVal() && _shadowMapDebug->boolVal()) {
 		const int width = camera.width();
 		const int height = camera.height();
-		const GLsizei halfWidth = (GLsizei) (width / 2.0f);
-		const GLsizei halfHeight = (GLsizei) (height / 2.0f);
 		video::ScopedShader scopedShader(_shadowMapRenderShader);
-		video::ScopedViewPort scopedViewport(halfWidth, 0, halfWidth, halfHeight);
 		core_assert_always(_texturedFullscreenQuad.bind());
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
 		_shadowMapRenderShader.setShadowmap(0);
 		shaderSetUniformIf(_shadowMapRenderShader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
 		shaderSetUniformIf(_shadowMapRenderShader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 		shaderSetUniformIf(_shadowMapRenderShader, setUniformVec3, "u_lightdir", _sunLight.direction());
 		shaderSetUniformIf(_shadowMapRenderShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 		shaderSetUniformIf(_shadowMapRenderShader, setUniformVec3, "u_campos", camera.position());
-		glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
+		const int maxDepthBuffers = _worldShader.getUniformArraySize("u_shadowmap");
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			const GLsizei halfWidth = (GLsizei) (width / 4.0f);
+			const GLsizei halfHeight = (GLsizei) (height / 4.0f);
+			video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
+			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
+			glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
+		}
 		_texturedFullscreenQuad.unbind();
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
@@ -479,11 +502,14 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
 	shaderSetUniformIf(shader, setUniformVec3, "u_campos", camera.position());
-	const bool shadowMap = shader.hasUniform("u_shadowmap");
+	const bool shadowMap = shader.hasUniform("u_shadowmap[0]");
 	if (shadowMap) {
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture());
-		shaderSetUniformIf(shader, setUniformi, "u_shadowmap", 1);
+		const int maxDepthBuffers = shader.getUniformArraySize("u_shadowmap");
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			glActiveTexture(GL_TEXTURE1 + i);
+			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
+			shaderSetUniformIf(shader, setUniformi, core::string::format("u_shadowmap[%i]", i), 1 + i);
+		}
 	}
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
@@ -505,8 +531,11 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	}
 
 	if (shadowMap) {
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		const int maxDepthBuffers = shader.getUniformArraySize("u_shadowmap");
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			glActiveTexture(GL_TEXTURE1 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 		glActiveTexture(GL_TEXTURE0);
 	}
 	glBindVertexArray(0);
@@ -731,7 +760,8 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 		}
 	}
 
-	if (!_depthBuffer.init(dimension, (video::DepthBufferMode)_depthMapFormat->intVal())) {
+	const int maxDepthBuffers = _worldShader.getUniformArraySize("u_shadowmap");
+	if (!_depthBuffer.init(_sunLight.dimension(), (video::DepthBufferMode)_depthMapFormat->intVal(), maxDepthBuffers)) {
 		return false;
 	}
 
