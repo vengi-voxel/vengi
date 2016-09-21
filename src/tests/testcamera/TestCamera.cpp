@@ -12,7 +12,7 @@ core::AppState TestCamera::onInit() {
 	const glm::vec4 colors[CAMERAS] = { core::Color::Red, core::Color::Yellow };
 	static_assert(CAMERAS == 2, "Unexpected amount of cameras");
 	for (int i = 0; i < CAMERAS; ++i) {
-		const float p = i * 10.0f + 1.0f;
+		const float p = i * 100.0f + 1.0f;
 		_renderCamera[i].init(dimension());
 		_renderCamera[i].setAspectRatio(_aspect);
 		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
@@ -25,23 +25,57 @@ core::AppState TestCamera::onInit() {
 
 		_renderCamera[i].update(0l);
 
+		bool renderAABB = i == 0;
+		bool renderSplitFrustum = !renderAABB;
+		bool targetCamera = i == 0;
+		if (targetCamera) {
+			_renderCamera[i].setRotationType(video::CameraRotationType::Target);
+		}
 		if (!_frustums[i].init(_renderCamera[i], colors[i])) {
 			return core::AppState::Cleanup;
 		}
-		_frustums[i].setRenderAABB(true);
+		_frustums[i].setRenderAABB(renderAABB);
 	}
 
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setTarget(_renderCamera[_targetCamera].position());
+	_camera.setTargetDistance(200.0f);
 
 	return state;
 }
 
-core::AppState TestCamera::onRunning() {
-	core::AppState state = Super::onRunning();
+void TestCamera::doRender() {
 	for (int i = 0; i < CAMERAS; ++i) {
 		_renderCamera[i].update(_deltaFrame);
 	}
+	for (int i = 0; i < CAMERAS; ++i) {
+		_frustums[i].render(_camera, _renderCamera[i]);
+	}
+}
+
+void TestCamera::afterUI() {
+	Super::afterUI();
+	tb::TBStr str;
+	const char *camera;
+	if (_targetCamera == 0) {
+		camera = "AABB";
+	} else if (_targetCamera == 1) {
+		camera = "Frustum split";
+	} else {
+		camera = "Unknonw";
+	}
+	enqueueShowStr(5, core::Color::White, "Camera: %s (%i)", camera, _targetCamera + 1);
+	enqueueShowStr(5, core::Color::Gray, "Space: toggle camera");
+	enqueueShowStr(5, core::Color::Gray, "Shift/MouseMove: rotate");
+	enqueueShowStr(5, core::Color::Gray, "Backspace: toggle aabb");
+	enqueueShowStr(5, core::Color::Gray, "Shift/+ Shift/-: far plane");
+	enqueueShowStr(5, core::Color::Gray, "Ctrl/Shift/+ Ctrl/Shift/-: near plane");
+	enqueueShowStr(5, core::Color::Gray, "Shift/MouseWheel: far plane");
+	enqueueShowStr(5, core::Color::Gray, "Ctrl/Shift/MouseWheel: near plane");
+}
+
+core::AppState TestCamera::onRunning() {
+	core::AppState state = Super::onRunning();
 	_camera.setTarget(_renderCamera[_targetCamera].position());
 	return state;
 }
@@ -85,6 +119,11 @@ bool TestCamera::onKeyPress(int32_t key, int16_t modifier) {
 		_targetCamera %= CAMERAS;
 	}
 
+	if (key == SDLK_BACKSPACE) {
+		const bool aabb = _frustums[_targetCamera].renderAABB();
+		_frustums[_targetCamera].setRenderAABB(!aabb);
+	}
+
 	video::Camera& c = _renderCamera[_targetCamera];
 	if (modifier & KMOD_SHIFT) {
 		int delta = 0;
@@ -105,12 +144,6 @@ bool TestCamera::onKeyPress(int32_t key, int16_t modifier) {
 	}
 
 	return retVal;
-}
-
-void TestCamera::doRender() {
-	for (int i = 0; i < CAMERAS; ++i) {
-		_frustums[i].render(_camera, _renderCamera[i]);
-	}
 }
 
 int main(int argc, char *argv[]) {
