@@ -25,11 +25,17 @@ public:
 
 	void setRenderAABB(bool renderAABB);
 
+	bool renderAABB() const;
+
 	void render(const video::Camera& camera, const video::Camera& frustumCamera);
 };
 
 inline void CameraFrustum::setRenderAABB(bool renderAABB) {
 	_renderAABB = renderAABB;
+}
+
+inline bool CameraFrustum::renderAABB() const {
+	return _renderAABB;
 }
 
 }
