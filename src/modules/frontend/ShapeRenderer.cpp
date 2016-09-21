@@ -103,7 +103,10 @@ void ShapeRenderer::renderAll(const video::Camera& camera, GLenum drawmode) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
-		core_assert_always(_vbo[meshIndex].bind());
+		if (_vertexIndex[meshIndex] == -1) {
+			continue;
+		}
+		core_assert(_vbo[meshIndex].bind());
 		const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(uint32_t));
 		// TODO: use GL_TRIANGLES - see shapeBuilder todo comment
 		glDrawElements(drawmode, indices, GL_UNSIGNED_INT, 0);
