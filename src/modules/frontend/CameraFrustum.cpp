@@ -3,10 +3,11 @@
 
 namespace frontend {
 
-bool CameraFrustum::init(const video::Camera& frustumCamera, const glm::vec4& color) {
+bool CameraFrustum::init(const video::Camera& frustumCamera, const glm::vec4& color, int splitFrustum) {
+	_splitFrustum = splitFrustum;
 	_shapeRenderer.init();
 	_shapeBuilder.setColor(color);
-	_shapeBuilder.frustum(frustumCamera);
+	_shapeBuilder.frustum(frustumCamera, _splitFrustum);
 	_frustumMesh = _shapeRenderer.createMesh(_shapeBuilder);
 	return true;
 }
@@ -18,14 +19,10 @@ void CameraFrustum::shutdown() {
 
 void CameraFrustum::render(const video::Camera& camera, const video::Camera& frustumCamera) {
 	_shapeBuilder.clear();
-	_shapeBuilder.frustum(frustumCamera);
+	_shapeBuilder.frustum(frustumCamera, _splitFrustum);
 	_shapeRenderer.update(_frustumMesh, _shapeBuilder);
 	if (_renderAABB) {
-		core::AABB<float> aabb = frustumCamera.aabb();
-#if 0
-		aabb.shift(-aabb.getLowerCorner());
-		aabb.shift(-aabb.getCenter());
-#endif
+		const core::AABB<float>& aabb = frustumCamera.aabb();
 		_shapeBuilder.clear();
 		_shapeBuilder.aabb(aabb);
 		if (_aabbMesh < 0) {
