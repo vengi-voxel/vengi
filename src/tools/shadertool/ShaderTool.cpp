@@ -40,17 +40,17 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 		return "";
 	case Variable::FLOAT:
 		if (amount > 1) {
-			return "fv";
+			return "1fv";
 		}
 		return "f";
 	case Variable::UNSIGNED_INT:
 		if (amount > 1) {
-			return "uiv";
+			return "1uiv";
 		}
 		return "ui";
 	case Variable::INT:
 		if (amount > 1) {
-			return "iv";
+			return "1iv";
 		}
 		return "i";
 	case Variable::VEC2:
@@ -91,12 +91,12 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 		return "Matrix";
 	case Variable::SAMPLER2D:
 		if (amount > 1) {
-			return "iv";
+			return "1iv";
 		}
 		return "i";
 	case Variable::SAMPLER2DSHADOW:
 		if (amount > 1) {
-			return "iv";
+			return "1iv";
 		}
 		return "i";
 	}
@@ -160,9 +160,9 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
 		return Variable::MAT3;
 	} else if (type == "mat4") {
 		return Variable::MAT4;
-	} else if (type == "sampler2D") {
+	} else if (type == "sampler2D" || type == "sampler2DArray") {
 		return Variable::SAMPLER2D;
-	} else if (type == "sampler2DShadow") {
+	} else if (type == "sampler2DShadow" || type == "sampler2DArrayShadow") {
 		return Variable::SAMPLER2DSHADOW;
 	}
 	core_assert_msg(false, "unknown type given: %s", type.c_str());
@@ -266,6 +266,8 @@ void ShaderTool::generateSrc() const {
 	}
 	for (int i = 0; i < uniformSize; ++i) {
 		const Variable& v = _shaderStruct.uniforms[i];
+		const bool isInteger = v.type == Variable::SAMPLER2D || v.type == Variable::SAMPLER2DSHADOW
+				|| v.type == Variable::INT || v.type == Variable::UNSIGNED_INT;
 		std::string uniformName = "";
 		std::vector<std::string> nameParts;
 		core::string::splitString(v.name, nameParts, "_");
@@ -280,6 +282,9 @@ void ShaderTool::generateSrc() const {
 		}
 		setters << "\tinline bool set" << uniformName << "(";
 		const Types& cType = cTypes[v.type];
+		if (v.arraySize > 0 && isInteger) {
+			setters << "const ";
+		}
 		setters << cType.ctype;
 		if (v.arraySize == -1 || cType.passBy == PassBy::Pointer) {
 			setters << "*";

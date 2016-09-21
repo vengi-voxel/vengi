@@ -241,6 +241,9 @@ int Shader::getUniformLocation(const std::string& name) const {
 	ShaderVariables::const_iterator i = _uniforms.find(name);
 	if (i == _uniforms.end()) {
 		Log::error("can't find uniform %s in shader %s", name.c_str(), _name.c_str());
+		for (auto i : _uniforms) {
+			Log::error("uniform %s", i.first.c_str());
+		}
 		return -1;
 	}
 	return i->second;
@@ -277,8 +280,18 @@ int Shader::fetchUniforms() {
 		GLint size;
 		GLenum type;
 		glGetActiveUniform(_program, i, MAX_SHADER_VAR_NAME - 1, &length, &size, &type, name);
-		const int location = glGetUniformLocation(_program, name);
+		int location = glGetUniformLocation(_program, name);
 		_uniforms[name] = location;
+		const int l = strlen(name);
+		if (name[l - 1] == ']') {
+			name[l - 3] = '\0';
+		} else {
+			strncat(name, "[0]", MAX_SHADER_VAR_NAME);
+		}
+		location = glGetUniformLocation(_program, name);
+		if (location >= 0) {
+			_uniforms[name] = location;
+		}
 		Log::debug("uniform location for %s is %i (shader %s)", name, location, _name.c_str());
 	}
 	return numUniforms;

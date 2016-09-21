@@ -32,6 +32,7 @@ void Camera::move(const glm::vec3& delta) {
 }
 
 void Camera::rotate(const glm::vec3& radians) {
+	// TODO: what about rotationtype... should matter here, too, no?
 	switch(_type) {
 	case CameraType::FirstPerson:
 		turn(radians.y);
@@ -67,48 +68,6 @@ void Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 	_dirty |= DIRTY_ORIENTATION;
 	core_assert(!glm::any(glm::isnan(_quat)));
 	core_assert(!glm::any(glm::isinf(_quat)));
-}
-
-void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceWeight) const {
-	core_assert_always(bufSize >= splits * 2);
-	core_assert_always(splits >= 1);
-	const float near = nearPlane();
-	const float far = farPlane();
-	const int numSlices = splits * 2;
-	const float numSlicesf = float(numSlices);
-	const float ratio = far / near;
-	const float delta = far - near;
-
-	sliceBuf[0] = near;
-	sliceBuf[numSlices - 1] = far;
-
-	for (int farIndex = 1, nearIndex = 2; nearIndex < numSlices; farIndex += 2, nearIndex += 2) {
-		const float exponent = farIndex / numSlicesf;
-		const float one = sliceWeight * (near * glm::pow(ratio, exponent));
-		const float two = (1 - sliceWeight) * (near + delta * exponent);
-		const float nearPlaneSlice = one + two;
-		sliceBuf[nearIndex] = nearPlaneSlice;
-		sliceBuf[farIndex] = nearPlaneSlice * 1.005f;
-	}
-}
-
-void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM_VERTICES_MAX]) {
-	static const glm::vec4 clipCorners[FRUSTUM_VERTICES_MAX] = {
-		glm::vec4(-1.0f,  1.0f, nearPlane, 1.0f ),
-		glm::vec4( 1.0f,  1.0f, nearPlane, 1.0f ),
-		glm::vec4( 1.0f, -1.0f, nearPlane, 1.0f ),
-		glm::vec4(-1.0f, -1.0f, nearPlane, 1.0f ),
-		glm::vec4(-1.0f,  1.0f, farPlane , 1.0f ),
-		glm::vec4( 1.0f,  1.0f, farPlane , 1.0f ),
-		glm::vec4( 1.0f, -1.0f, farPlane , 1.0f ),
-		glm::vec4(-1.0f, -1.0f, farPlane , 1.0f )
-	};
-
-	const glm::mat4& viewProjInv = glm::inverse(viewMatrix() * projectionMatrix());
-	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
-		const glm::vec4& pos = viewProjInv * clipCorners[i];
-		out[i] = pos.xyz() / pos.w;
-	}
 }
 
 void Camera::updateTarget() {
@@ -231,6 +190,48 @@ FrustumResult Camera::testFrustum(const glm::vec3& mins, const glm::vec3& maxs) 
 	return result;
 }
 
+void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceWeight) const {
+	core_assert_always(bufSize >= splits * 2);
+	core_assert_always(splits >= 1);
+	const float near = nearPlane();
+	const float far = farPlane();
+	const int numSlices = splits * 2;
+	const float numSlicesf = float(numSlices);
+	const float ratio = far / near;
+	const float delta = far - near;
+
+	sliceBuf[0] = near;
+	sliceBuf[numSlices - 1] = far;
+
+	for (int farIndex = 1, nearIndex = 2; nearIndex < numSlices; farIndex += 2, nearIndex += 2) {
+		const float exponent = farIndex / numSlicesf;
+		const float one = sliceWeight * (near * glm::pow(ratio, exponent));
+		const float two = (1 - sliceWeight) * (near + delta * exponent);
+		const float nearPlaneSlice = one + two;
+		sliceBuf[nearIndex] = nearPlaneSlice;
+		sliceBuf[farIndex] = nearPlaneSlice * 1.005f;
+	}
+}
+
+void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM_VERTICES_MAX]) const {
+	static const glm::vec4 clipCorners[FRUSTUM_VERTICES_MAX] = {
+		glm::vec4(-1.0f,  1.0f, nearPlane, 1.0f ),
+		glm::vec4( 1.0f,  1.0f, nearPlane, 1.0f ),
+		glm::vec4( 1.0f, -1.0f, nearPlane, 1.0f ),
+		glm::vec4(-1.0f, -1.0f, nearPlane, 1.0f ),
+		glm::vec4(-1.0f,  1.0f, farPlane , 1.0f ),
+		glm::vec4( 1.0f,  1.0f, farPlane , 1.0f ),
+		glm::vec4( 1.0f, -1.0f, farPlane , 1.0f ),
+		glm::vec4(-1.0f, -1.0f, farPlane , 1.0f )
+	};
+
+	const glm::mat4& viewProjInv = glm::inverse(viewMatrix() * projectionMatrix());
+	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
+		const glm::vec4& pos = viewProjInv * clipCorners[i];
+		out[i] = pos.xyz() / pos.w;
+	}
+}
+
 void Camera::updateFrustumVertices() {
 	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE)) {
 		return;
@@ -255,27 +256,7 @@ void Camera::updateFrustumPlanes() {
 	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE)) {
 		return;
 	}
-	const glm::mat4 &v = viewMatrix();
-	const glm::mat4 &p = projectionMatrix();
-
-	glm::mat4 clipMatrix;
-
-	clipMatrix[0][0] = v[0][0] * p[0][0] + v[0][1] * p[1][0] + v[0][2] * p[2][0] + v[0][3] * p[3][0];
-	clipMatrix[1][0] = v[0][0] * p[0][1] + v[0][1] * p[1][1] + v[0][2] * p[2][1] + v[0][3] * p[3][1];
-	clipMatrix[2][0] = v[0][0] * p[0][2] + v[0][1] * p[1][2] + v[0][2] * p[2][2] + v[0][3] * p[3][2];
-	clipMatrix[3][0] = v[0][0] * p[0][3] + v[0][1] * p[1][3] + v[0][2] * p[2][3] + v[0][3] * p[3][3];
-	clipMatrix[0][1] = v[1][0] * p[0][0] + v[1][1] * p[1][0] + v[1][2] * p[2][0] + v[1][3] * p[3][0];
-	clipMatrix[1][1] = v[1][0] * p[0][1] + v[1][1] * p[1][1] + v[1][2] * p[2][1] + v[1][3] * p[3][1];
-	clipMatrix[2][1] = v[1][0] * p[0][2] + v[1][1] * p[1][2] + v[1][2] * p[2][2] + v[1][3] * p[3][2];
-	clipMatrix[3][1] = v[1][0] * p[0][3] + v[1][1] * p[1][3] + v[1][2] * p[2][3] + v[1][3] * p[3][3];
-	clipMatrix[0][2] = v[2][0] * p[0][0] + v[2][1] * p[1][0] + v[2][2] * p[2][0] + v[2][3] * p[3][0];
-	clipMatrix[1][2] = v[2][0] * p[0][1] + v[2][1] * p[1][1] + v[2][2] * p[2][1] + v[2][3] * p[3][1];
-	clipMatrix[2][2] = v[2][0] * p[0][2] + v[2][1] * p[1][2] + v[2][2] * p[2][2] + v[2][3] * p[3][2];
-	clipMatrix[3][2] = v[2][0] * p[0][3] + v[2][1] * p[1][3] + v[2][2] * p[2][3] + v[2][3] * p[3][3];
-	clipMatrix[0][3] = v[3][0] * p[0][0] + v[3][1] * p[1][0] + v[3][2] * p[2][0] + v[3][3] * p[3][0];
-	clipMatrix[1][3] = v[3][0] * p[0][1] + v[3][1] * p[1][1] + v[3][2] * p[2][1] + v[3][3] * p[3][1];
-	clipMatrix[2][3] = v[3][0] * p[0][2] + v[3][1] * p[1][2] + v[3][2] * p[2][2] + v[3][3] * p[3][2];
-	clipMatrix[3][3] = v[3][0] * p[0][3] + v[3][1] * p[1][3] + v[3][2] * p[2][3] + v[3][3] * p[3][3];
+	const glm::mat4& clipMatrix = viewMatrix() * projectionMatrix();
 
 	_frustumPlanes[int(FrustumPlanes::Right)].x = clipMatrix[3][0] - clipMatrix[0][0];
 	_frustumPlanes[int(FrustumPlanes::Right)].y = clipMatrix[3][1] - clipMatrix[0][1];

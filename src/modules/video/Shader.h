@@ -170,6 +170,12 @@ public:
 	void setUniformi(int location, int value1, int value2, int value3) const;
 	void setUniformi(const std::string& name, int value1, int value2, int value3, int value4) const;
 	void setUniformi(int location, int value1, int value2, int value3, int value4) const;
+	void setUniform1iv(const std::string& name, const int* values, int length) const;
+	void setUniform1iv(int location, const int* values, int length) const;
+	void setUniform2iv(const std::string& name, const int* values, int length) const;
+	void setUniform2iv(int location, const int* values, int length) const;
+	void setUniform3iv(int location, const int* values, int length) const;
+	void setUniform3iv(const std::string& name, const int* values, int length) const;
 	void setUniformf(const std::string& name, float value) const;
 	void setUniformf(int location, float value) const;
 	void setUniformf(const std::string& name, float value1, float value2) const;
@@ -183,11 +189,11 @@ public:
 	void setUniform2fv(const std::string& name, const float* values, int length) const;
 	void setUniform2fv(int location, const float* values, int length) const;
 	void setUniform3fv(const std::string& name, const float* values, int length) const;
+	void setUniform3fv(int location, const float* values, int length) const;
 	void setUniformVec2(const std::string& name, const glm::vec2& value) const;
 	void setUniformVec2v(const std::string& name, const glm::vec2* value, int length) const;
 	void setUniformVec3(const std::string& name, const glm::vec3& value) const;
 	void setUniformVec3v(const std::string& name, const glm::vec3* value, int length) const;
-	void setUniform3fv(int location, const float* values, int length) const;
 	void setUniform4fv(const std::string& name, const float* values, int length) const;
 	void setUniform4fv(int location, const float* values, int length) const;
 	void setUniformVec4(const std::string& name, const glm::vec4& value) const;
@@ -267,6 +273,36 @@ inline void Shader::setUniformi(const std::string& name, int value1, int value2,
 inline void Shader::setUniformi(int location, int value1, int value2, int value3, int value4) const {
 	glUniform4i(location, value1, value2, value3, value4);
 	GL_checkError();
+}
+
+inline void Shader::setUniform1iv(const std::string& name, const int* values, int length) const {
+	const int location = getUniformLocation(name);
+	setUniform1iv(location, values, length);
+}
+
+inline void Shader::setUniform1iv(int location, const int* values, int length) const {
+	glUniform1iv(location, length, values);
+	GL_checkError();
+}
+
+inline void Shader::setUniform2iv(const std::string& name, const int* values, int length) const {
+	const int location = getUniformLocation(name);
+	setUniform2iv(location, values, length);
+}
+
+inline void Shader::setUniform2iv(int location, const int* values, int length) const {
+	glUniform2iv(location, length / 2, values);
+	GL_checkError();
+}
+
+inline void Shader::setUniform3iv(int location, const int* values, int length) const {
+	glUniform3iv(location, length / 3, values);
+	GL_checkError();
+}
+
+inline void Shader::setUniform3iv(const std::string& name, const int* values, int length) const {
+	const int location = getUniformLocation(name);
+	setUniform3iv(location, values, length);
 }
 
 inline void Shader::setUniformf(const std::string& name, float value) const {
