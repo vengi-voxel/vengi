@@ -58,25 +58,55 @@ void ShapeBuilder::aabb(const core::AABB<float>& aabb) {
 	addIndex(7);
 }
 
-void ShapeBuilder::frustum(const Camera& camera) {
-	reserve(video::FRUSTUM_VERTICES_MAX + 2);
+void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
 	uint32_t indices[video::FRUSTUM_VERTICES_MAX * 3];
 	camera.frustumCorners(out, indices);
 
-	for (size_t i = 0; i < SDL_arraysize(out); ++i) {
-		addVertex(out[i], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+	const int targetLineVertices = camera.rotationType() == CameraRotationType::Target ? 2 : 0;
+
+	if (splitFrustum == -42) {
+		int indexOffset = 0;
+		float planes[splitFrustum * 2];
+
+		camera.sliceFrustum(planes, SDL_arraysize(planes), splitFrustum);
+
+		reserve(video::FRUSTUM_VERTICES_MAX * splitFrustum + targetLineVertices);
+
+		for (int s = 0; s < splitFrustum; ++s) {
+			const float near = planes[s * 2 + 0];
+			const float far = planes[s * 2 + 1];
+			Log::info("split at %f:%f (%i)", near, far, s);
+			camera.splitFrustum(near, far, out);
+
+			for (size_t i = 0; i < SDL_arraysize(out); ++i) {
+				addVertex(out[i], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+			}
+
+			for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
+				addIndex(indexOffset + indices[i]);
+			}
+			indexOffset += video::FRUSTUM_VERTICES_MAX;
+		}
+	} else {
+		reserve(video::FRUSTUM_VERTICES_MAX + targetLineVertices);
+
+		for (size_t i = 0; i < SDL_arraysize(out); ++i) {
+			addVertex(out[i], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+		}
+
+		for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
+			addIndex(indices[i]);
+		}
 	}
 
-	setColor(core::Color::Green);
-	addVertex(camera.position(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
-	addVertex(camera.target(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
-
-	for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
-		addIndex(indices[i]);
+	if (camera.rotationType() == CameraRotationType::Target) {
+		setColor(core::Color::Green);
+		addVertex(camera.position(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+		addVertex(camera.target(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+		addIndex(video::FRUSTUM_VERTICES_MAX + 0);
+		addIndex(video::FRUSTUM_VERTICES_MAX + 1);
 	}
-	addIndex(video::FRUSTUM_VERTICES_MAX + 0);
-	addIndex(video::FRUSTUM_VERTICES_MAX + 1);
 }
 
 void ShapeBuilder::axis(float scale) {

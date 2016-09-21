@@ -61,7 +61,7 @@ public:
 	 * @param[in] tesselation The amount of splits on the plane that should be made
 	 */
 	void plane(uint32_t tesselation = 10, float scale = 1.0f);
-	void frustum(const Camera& camera);
+	void frustum(const Camera& camera, int splitFrustum = 0);
 	/**
 	 * Geometry layout for spheres is as follows (for 5 slices, 4 stacks):
 	 *
