@@ -59,6 +59,7 @@ protected:
 	double _frameCounterResetRime = 0.0;
 	Console _console;
 	core::VarPtr _renderUI;
+	int _lastShowTextY = -1;
 
 	virtual bool onKeyRelease(int32_t key) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
@@ -71,6 +72,8 @@ protected:
 	virtual void OnWidgetFocusChanged(tb::TBWidget *widget, bool focused) override;
 
 	bool invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, bool down);
+	void showStr(int x, int y, const glm::vec4& color, const char *fmt, ...) __attribute__((format(printf, 5, 6)));
+	void enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) __attribute__((format(printf, 4, 5)));
 public:
 	UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport = 17815);
 	virtual ~UIApp();

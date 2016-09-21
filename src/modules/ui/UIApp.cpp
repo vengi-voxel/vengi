@@ -8,8 +8,10 @@
 
 #include "io/File.h"
 #include "core/Command.h"
+#include "core/Color.h"
 #include "core/Common.h"
 #include "ui_renderer_gl.h"
+#include <stdarg.h>
 
 namespace ui {
 
@@ -162,6 +164,28 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 		return false;
 	}
 	return _root.InvokeKey(key, special, mod, down);
+}
+
+void UIApp::showStr(int x, int y, const glm::vec4& color, const char *fmt, ...) {
+	static char buf[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	SDL_vsnprintf(buf, sizeof(buf), fmt, ap);
+	buf[sizeof(buf) - 1] = '\0';
+	_root.GetFont()->DrawString(x, y, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
+	va_end(ap);
+}
+
+void UIApp::enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) {
+	static char buf[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	SDL_vsnprintf(buf, sizeof(buf), fmt, ap);
+	buf[sizeof(buf) - 1] = '\0';
+	tb::TBFontFace* font = _root.GetFont();
+	font->DrawString(x, _lastShowTextY, tb::TBColor(color.r * 255.0f, color.g * 255.0f, color.b * 255.0f, color.a * 255.0f), buf);
+	_lastShowTextY += _root.GetFont()->GetHeight() + 5;
+	va_end(ap);
 }
 
 void UIApp::onMouseWheel(int32_t x, int32_t y) {
@@ -392,6 +416,8 @@ core::AppState UIApp::onRunning() {
 	}
 	core::AppState state = Super::onRunning();
 
+	_lastShowTextY = 5;
+
 	const bool running = state == core::AppState::Running;
 	if (running) {
 		{
@@ -417,9 +443,7 @@ core::AppState UIApp::onRunning() {
 				_frameCounter = 0;
 			}
 
-			tb::TBStr str;
-			str.SetFormatted("FPS: %d", fps);
-			_root.GetFont()->DrawString(5, 5, tb::TBColor(255, 255, 255), str);
+			enqueueShowStr(5, core::Color::White, "FPS: %d", fps);
 		}
 		{
 			core_trace_scoped(UIAppAfterUI);
