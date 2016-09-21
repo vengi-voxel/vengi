@@ -190,6 +190,9 @@ FrustumResult Camera::testFrustum(const glm::vec3& mins, const glm::vec3& maxs) 
 	return result;
 }
 
+/**
+ * http://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf
+ */
 void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceWeight) const {
 	core_assert_always(bufSize >= splits * 2);
 	core_assert_always(splits >= 1);
@@ -214,21 +217,28 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 }
 
 void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM_VERTICES_MAX]) const {
-	static const glm::vec4 clipCorners[FRUSTUM_VERTICES_MAX] = {
-		glm::vec4(-1.0f,  1.0f, nearPlane, 1.0f ),
-		glm::vec4( 1.0f,  1.0f, nearPlane, 1.0f ),
-		glm::vec4( 1.0f, -1.0f, nearPlane, 1.0f ),
-		glm::vec4(-1.0f, -1.0f, nearPlane, 1.0f ),
-		glm::vec4(-1.0f,  1.0f, farPlane , 1.0f ),
-		glm::vec4( 1.0f,  1.0f, farPlane , 1.0f ),
-		glm::vec4( 1.0f, -1.0f, farPlane , 1.0f ),
-		glm::vec4(-1.0f, -1.0f, farPlane , 1.0f )
+	static const glm::vec4 vecs[video::FRUSTUM_VERTICES_MAX] = {
+		glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
+		glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
+		glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
+		glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
 	};
 
-	const glm::mat4& viewProjInv = glm::inverse(viewMatrix() * projectionMatrix());
+	glm::mat4 proj(glm::uninitialize);
+	switch(_mode) {
+	case CameraMode::Orthogonal:
+		proj = glm::ortho(0.0f, (float)width(), (float)height(), 0.0f, nearPlane, farPlane);
+		break;
+	case CameraMode::Perspective:
+		proj = glm::perspective(glm::radians(_fieldOfView), _aspectRatio, nearPlane, farPlane);
+		break;
+	}
+
+	const glm::mat4& transform = glm::inverse(proj * viewMatrix());
 	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
-		const glm::vec4& pos = viewProjInv * clipCorners[i];
-		out[i] = pos.xyz() / pos.w;
+		const glm::vec4& v = transform * vecs[i];
+		out[i] = v.xyz() / v.w;
+		core_assert(!glm::any(glm::isnan(out[i])));
 	}
 }
 

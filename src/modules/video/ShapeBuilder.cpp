@@ -65,7 +65,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 	const int targetLineVertices = camera.rotationType() == CameraRotationType::Target ? 2 : 0;
 
-	if (splitFrustum == -42) {
+	if (splitFrustum > 0) {
 		int indexOffset = 0;
 		float planes[splitFrustum * 2];
 
@@ -76,7 +76,6 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 		for (int s = 0; s < splitFrustum; ++s) {
 			const float near = planes[s * 2 + 0];
 			const float far = planes[s * 2 + 1];
-			Log::info("split at %f:%f (%i)", near, far, s);
 			camera.splitFrustum(near, far, out);
 
 			for (size_t i = 0; i < SDL_arraysize(out); ++i) {
