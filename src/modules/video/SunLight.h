@@ -37,27 +37,33 @@ public:
 
 	glm::mat4 viewProjectionMatrix(const Camera& camera) const;
 
+	glm::ivec2 dimension() const;
+
 	const glm::mat4& viewMatrix() const;
 };
 
-}
-
-inline glm::vec3 video::SunLight::direction() const {
+inline glm::vec3 SunLight::direction() const {
 	return _sunCamera.direction();
 }
 
-inline const glm::mat4& video::SunLight::projectionMatrix() const {
+inline glm::ivec2 SunLight::dimension() const {
+	return _sunCamera.dimension();
+}
+
+inline const glm::mat4& SunLight::projectionMatrix() const {
 	return _sunCamera.projectionMatrix();
 }
 
-inline glm::mat4 video::SunLight::viewProjectionMatrix(const Camera& camera) const {
+inline glm::mat4 SunLight::viewProjectionMatrix(const Camera& camera) const {
 	return glm::translate(projectionMatrix() * viewMatrix(), -camera.position());
 }
 
-inline const glm::mat4& video::SunLight::viewMatrix() const {
+inline const glm::mat4& SunLight::viewMatrix() const {
 	return _sunCamera.viewMatrix();
 }
 
-inline const video::Camera& video::SunLight::camera() const {
+inline const video::Camera& SunLight::camera() const {
 	return _sunCamera;
+}
+
 }
