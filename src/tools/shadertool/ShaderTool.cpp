@@ -132,6 +132,7 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 	case Variable::SAMPLER1DSHADOW:
 	case Variable::SAMPLER2DSHADOW:
 		if (amount > 1) {
+			// https://www.opengl.org/wiki/Data_Type_%28GLSL%29#Opaque_arrays
 			if (video::Shader::glslVersion < video::GLSLVersion::V400) {
 				Log::warn("Sampler arrays are only allowed under special circumstances - don't do this for GLSL < 4.0");
 			}
