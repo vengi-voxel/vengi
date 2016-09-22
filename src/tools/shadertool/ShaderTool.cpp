@@ -472,6 +472,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 				name = tokens[0];
 			}
 		}
+		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
 		auto findIter = std::find_if(v->begin(), v->end(), [&] (const Variable& var) { return var.name == name; });
 		if (findIter == v->end()) {
 			v->push_back(Variable{typeEnum, name, arraySize});
