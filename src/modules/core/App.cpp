@@ -72,7 +72,7 @@ void App::onFrame() {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	} else {
 		const long now = currentMillis();
-		_deltaFrame = now - _now;
+		_deltaFrame = std::max(1l, now - _now);
 		_now = now;
 
 		switch (_curState) {
@@ -84,23 +84,33 @@ void App::onFrame() {
 		case AppState::Init: {
 			core_trace_scoped(AppOnInit);
 			_nextState = onInit();
+			_nextFrame = currentMillis();
 			break;
 		}
 		case AppState::Running: {
 			{
-				core_trace_scoped(AppOnBeforeRunning);
-				onBeforeRunning();
-			}
-			{
 				core_trace_scoped(AppOnRunning);
-				const AppState state = onRunning();
-				if (_nextState != AppState::Cleanup && _nextState != AppState::Destroy) {
-					_nextState = state;
+				if (_nextFrame > now) {
+					{
+						core_trace_scoped(AppOnBeforeRunning);
+						onBeforeRunning();
+					}
+					const AppState state = onRunning();
+					if (_nextState != AppState::Cleanup && _nextState != AppState::Destroy) {
+						_nextState = state;
+					}
+					if (AppState::Running == _nextState) {
+						core_trace_scoped(AppOnAfterRunning);
+						onAfterRunning();
+					}
 				}
-			}
-			if (AppState::Running == _nextState) {
-				core_trace_scoped(AppOnAfterRunning);
-				onAfterRunning();
+				const long delay = _nextFrame - now;
+				if (delay > 0) {
+					std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+				}
+				// TODO: put into cvar
+				const double fpsCap = 60.0f;
+				_nextFrame += 1000.0 / fpsCap;
 			}
 			break;
 		}

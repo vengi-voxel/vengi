@@ -35,6 +35,7 @@ protected:
 	long _now;
 	long _deltaFrame;
 	long _initTime;
+	double _nextFrame = 0;
 	int _exitCode = 0;
 	io::FilesystemPtr _filesystem;
 	core::EventBusPtr _eventBus;
