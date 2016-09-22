@@ -1315,8 +1315,6 @@ strncat_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
 errno_t
 strcpy_s(char *dest, rsize_t dmax, const char *src)
 {
-    rsize_t orig_dmax;
-    char *orig_dest;
     const char *overlap_bumper;
 
     if (dest == NULL) {
@@ -1339,10 +1337,6 @@ strcpy_s(char *dest, rsize_t dmax, const char *src)
     if (dest == src) {
         return RCNEGATE(EOK);
     }
-
-    /* hold base of dest in case src was not copied */
-    orig_dmax = dmax;
-    orig_dest = dest;
 
     if (dest < src) {
         overlap_bumper = src;
@@ -1708,21 +1702,6 @@ static rmtError Buffer_WriteU32(Buffer* buffer, rmtU32 value)
     return Buffer_Write(buffer, temp, sizeof(temp));
 }
 
-
-static rmtBool IsLittleEndian()
-{
-    // Not storing this in a global variable allows the compiler to more easily optimise
-    // this away altogether.
-    union
-    {
-        unsigned int i;
-        unsigned char c[sizeof(unsigned int)];
-    } u;
-    u.i = 1;
-    return u.c[0] == 1 ? RMT_TRUE : RMT_FALSE;
-}
-
-
 static rmtError Buffer_WriteU64(Buffer* buffer, rmtU64 value)
 {
     // Write as a double as Javascript DataView doesn't have a 64-bit integer read
@@ -1731,30 +1710,7 @@ static rmtError Buffer_WriteU64(Buffer* buffer, rmtU64 value)
         double d;
         unsigned char c[sizeof(double)];
     } u;
-    char temp[8];
     u.d = (double)value;
-    if (IsLittleEndian())
-    {
-        temp[0] = u.c[0];
-        temp[1] = u.c[1];
-        temp[2] = u.c[2];
-        temp[3] = u.c[3];
-        temp[4] = u.c[4];
-        temp[5] = u.c[5];
-        temp[6] = u.c[6];
-        temp[7] = u.c[7];
-    }
-    else
-    {
-        temp[0] = u.c[7];
-        temp[1] = u.c[6];
-        temp[2] = u.c[5];
-        temp[3] = u.c[4];
-        temp[4] = u.c[3];
-        temp[5] = u.c[2];
-        temp[6] = u.c[1];
-        temp[7] = u.c[0];
-    }
     return Buffer_Write(buffer, u.c, sizeof(u.c));
 }
 
