@@ -9,6 +9,9 @@
 
 namespace stock {
 
+/**
+ * @ingroup Stock
+ */
 class ItemProvider {
 public:
 	typedef std::array<const ItemData*, 4096> ItemDataContainer;

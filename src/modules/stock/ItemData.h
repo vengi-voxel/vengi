@@ -35,6 +35,7 @@ using ItemId = uint32_t;
  *
  * @note This is 'static' data - meaning that if you own 100 items of the same type, they
  * share one instance of this class.
+ * @ingroup Stock
  */
 class ItemData {
 protected:

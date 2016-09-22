@@ -11,6 +11,9 @@ namespace stock {
 
 using ItemAmount = int64_t;
 
+/**
+ * @ingroup Stock
+ */
 class Item {
 protected:
 	static constexpr uint32_t ItemInContainer = 1 << 0;

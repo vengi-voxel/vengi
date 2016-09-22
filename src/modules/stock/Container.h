@@ -11,6 +11,9 @@ namespace stock {
 
 class Item;
 
+/**
+ * @ingroup Stock
+ */
 class Container {
 public:
 	struct ContainerItem {

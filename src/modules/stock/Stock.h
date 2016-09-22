@@ -11,6 +11,8 @@
 namespace stock {
 
 /**
+ * @defgroup Stock
+ * @{
  * @brief The Stock class manages Items. All the items that someone owns are stored in this class.
  *
  * The stock handler is taking responsibility for putting the items into it's Inventory. The Inventory itself
@@ -61,5 +63,9 @@ inline const Inventory& Stock::inventory() const {
 inline Inventory& Stock::inventory() {
 	return _inventory;
 }
+
+/**
+ * @}
+ */
 
 }

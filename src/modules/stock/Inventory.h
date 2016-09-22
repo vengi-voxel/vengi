@@ -10,6 +10,9 @@ namespace stock {
 
 // TODO: container move operations with filters
 //       if might e.g. cost currency to move from one container to another
+/**
+ * @ingroup Stock
+ */
 class Inventory {
 private:
 	std::array<Container, 16>  _containers;

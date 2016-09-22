@@ -23,6 +23,9 @@ static constexpr uint8_t ItemMaxWidth = 8;
 static constexpr ItemShapeType ItemRowLength = 0xff; /* ItemMaxWidth bits */
 static_assert(ItemMaxWidth * ItemMaxHeight <= ItemBits, "width and height doesn't fit into the shapetype");
 
+/**
+ * @ingroup Stock
+ */
 class ItemShape {
 private:
 	ItemShapeType _shape = 0;
@@ -67,6 +70,9 @@ inline ItemShape::operator ItemShapeType() const {
 	return _shape;
 }
 
+/**
+ * @ingroup Stock
+ */
 class ContainerShape {
 private:
 	ContainerShapeType _containerShape[ContainerMaxHeight];
