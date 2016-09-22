@@ -8,6 +8,7 @@
 #include "core/Tokenizer.h"
 #include "core/GameConfig.h"
 #include "video/Shader.h"
+#include "video/GLVersion.h"
 
 const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::DOUBLE,          1, "double",            Value,     "double" },
@@ -131,7 +132,9 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 	case Variable::SAMPLER1DSHADOW:
 	case Variable::SAMPLER2DSHADOW:
 		if (amount > 1) {
-			Log::warn("Sampler arrays are only allowed under special circumstances - don't do this for GLSL < 4.0");
+			if (video::Shader::glslVersion < video::GLSLVersion::V400) {
+				Log::warn("Sampler arrays are only allowed under special circumstances - don't do this for GLSL < 4.0");
+			}
 			return "1iv";
 		}
 		return "i";
