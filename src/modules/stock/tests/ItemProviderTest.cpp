@@ -2,12 +2,12 @@
  * @file
  */
 
-#include "stock/tests/AbstractStockTest.h"
+#include "core/tests/AbstractTest.h"
 #include "stock/ItemProvider.h"
 
 namespace stock {
 
-class ItemProviderTest: public AbstractStockTest {
+class ItemProviderTest: public core::AbstractTest {
 };
 
 TEST_F(ItemProviderTest, testResetAndDuplicate) {

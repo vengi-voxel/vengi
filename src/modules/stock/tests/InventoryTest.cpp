@@ -3,43 +3,10 @@
  */
 
 #include "stock/tests/AbstractStockTest.h"
-#include "stock/Inventory.h"
 
 namespace stock {
 
 class InventoryTest: public AbstractStockTest {
-protected:
-	Inventory _inv;
-	const uint8_t _containerId = 0u;
-	const Container* _container;
-	Item* _item1;
-	Item* _item2;
-
-public:
-	virtual void SetUp() override {
-		AbstractStockTest::SetUp();
-		_itemData1->setSize(1, 2);
-		_itemData2->setSize(1, 1);
-
-		ContainerShape shape;
-		shape.addRect(0, 1, 1, 1);
-		shape.addRect(1, 1, 4, 4);
-		ASSERT_TRUE(_inv.initContainer(_containerId, shape));
-
-		_container = _inv.container(_containerId);
-
-		_item1 = _provider.createItem(_itemData1->id());
-		_item2 = _provider.createItem(_itemData2->id());
-		ASSERT_EQ(2, _item1->shape().size());
-		ASSERT_EQ(1, _item2->shape().size());
-	}
-
-	virtual void TearDown() override {
-		AbstractStockTest::TearDown();
-		delete _item1;
-		delete _item2;
-		_item1 = _item2 = nullptr;
-	}
 };
 
 TEST_F(InventoryTest, testAddValidLocation) {
