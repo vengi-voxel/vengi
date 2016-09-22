@@ -13,7 +13,12 @@ class ShaderTool: public core::App {
 protected:
 	struct Variable {
 		enum Type {
-			FLOAT, UNSIGNED_INT, INT, IVEC2, IVEC3, IVEC4, VEC2, VEC3, VEC4, MAT3, MAT4, SAMPLER2D, SAMPLER2DSHADOW, MAX
+			FLOAT, UNSIGNED_INT, INT,
+			UVEC2, UVEC3, UVEC4, IVEC2, IVEC3, IVEC4, VEC2, VEC3, VEC4,
+			MAT3, MAT4,
+			SAMPLER1D, SAMPLER2D, SAMPLER3D,
+			SAMPLERCUBEMAP,
+			SAMPLER1DSHADOW, SAMPLER2DSHADOW, MAX
 		};
 		Type type;
 		std::string name;
@@ -31,6 +36,7 @@ protected:
 		int typeSize;
 		const char* ctype;
 		PassBy passBy;
+		const char* glsltype;
 	};
 
 	static const Types cTypes[];

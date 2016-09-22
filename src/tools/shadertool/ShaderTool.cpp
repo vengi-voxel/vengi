@@ -10,19 +10,26 @@
 #include "video/Shader.h"
 
 const ShaderTool::Types ShaderTool::cTypes[] = {
-	{ ShaderTool::Variable::FLOAT,           1, "float",            Value },
-	{ ShaderTool::Variable::UNSIGNED_INT,    1, "unsigned int",     Value },
-	{ ShaderTool::Variable::INT,             1, "int",              Value },
-	{ ShaderTool::Variable::IVEC2,           2, "const glm::ivec2", Reference },
-	{ ShaderTool::Variable::IVEC3,           3, "const glm::ivec3", Reference },
-	{ ShaderTool::Variable::IVEC4,           4, "const glm::ivec4", Reference },
-	{ ShaderTool::Variable::VEC2,            2, "const glm::vec2",  Reference },
-	{ ShaderTool::Variable::VEC3,            3, "const glm::vec3",  Reference },
-	{ ShaderTool::Variable::VEC4,            4, "const glm::vec4",  Reference },
-	{ ShaderTool::Variable::MAT3,            1, "const glm::mat3",  Reference },
-	{ ShaderTool::Variable::MAT4,            1, "const glm::mat4",  Reference },
-	{ ShaderTool::Variable::SAMPLER2D,       1, "int",              Value },
-	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int",              Value }
+	{ ShaderTool::Variable::FLOAT,           1, "float",            Value,     "float" },
+	{ ShaderTool::Variable::UNSIGNED_INT,    1, "unsigned int",     Value,     "uint" },
+	{ ShaderTool::Variable::INT,             1, "int",              Value,     "int" },
+	{ ShaderTool::Variable::UVEC2,           2, "const glm::ivec2", Reference, "uvec2" },
+	{ ShaderTool::Variable::UVEC3,           3, "const glm::ivec3", Reference, "uvec3" },
+	{ ShaderTool::Variable::UVEC4,           4, "const glm::ivec4", Reference, "uvec4" },
+	{ ShaderTool::Variable::IVEC2,           2, "const glm::ivec2", Reference, "ivec2" },
+	{ ShaderTool::Variable::IVEC3,           3, "const glm::ivec3", Reference, "ivec3" },
+	{ ShaderTool::Variable::IVEC4,           4, "const glm::ivec4", Reference, "ivec4" },
+	{ ShaderTool::Variable::VEC2,            2, "const glm::vec2",  Reference, "vec2" },
+	{ ShaderTool::Variable::VEC3,            3, "const glm::vec3",  Reference, "vec3" },
+	{ ShaderTool::Variable::VEC4,            4, "const glm::vec4",  Reference, "vec4" },
+	{ ShaderTool::Variable::MAT3,            1, "const glm::mat3",  Reference, "mat3" },
+	{ ShaderTool::Variable::MAT4,            1, "const glm::mat4",  Reference, "mat4" },
+	{ ShaderTool::Variable::SAMPLER1D,       1, "int",              Value,     "sampler1D" },
+	{ ShaderTool::Variable::SAMPLER2D,       1, "int",              Value,     "sampler2D" },
+	{ ShaderTool::Variable::SAMPLER3D,       1, "int",              Value,     "sampler3D" },
+	{ ShaderTool::Variable::SAMPLERCUBEMAP,  1, "int",              Value,     "samplerCube" },
+	{ ShaderTool::Variable::SAMPLER1DSHADOW, 1, "int",              Value,     "sampler1DShadow" },
+	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int",              Value,     "sampler2DShadow" }
 };
 
 ShaderTool::ShaderTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
@@ -53,16 +60,19 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 			return "1iv";
 		}
 		return "i";
+	case Variable::UVEC2:
 	case Variable::VEC2:
 		if (amount > 1) {
 			return "Vec2v";
 		}
 		return "Vec2";
+	case Variable::UVEC3:
 	case Variable::VEC3:
 		if (amount > 1) {
 			return "Vec3v";
 		}
 		return "Vec3";
+	case Variable::UVEC4:
 	case Variable::VEC4:
 		if (amount > 1) {
 			return "Vec4v";
@@ -89,11 +99,11 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 			return "Matrixv";
 		}
 		return "Matrix";
+	case Variable::SAMPLER1D:
 	case Variable::SAMPLER2D:
-		if (amount > 1) {
-			return "1iv";
-		}
-		return "i";
+	case Variable::SAMPLER3D:
+	case Variable::SAMPLERCUBEMAP:
+	case Variable::SAMPLER1DSHADOW:
 	case Variable::SAMPLER2DSHADOW:
 		if (amount > 1) {
 			return "1iv";
@@ -105,67 +115,16 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 
 int ShaderTool::getComponents(const ShaderTool::Variable::Type type) const {
 	return cTypes[(int)type].typeSize;
-	switch (type) {
-	case Variable::FLOAT:
-	case Variable::UNSIGNED_INT:
-	case Variable::INT:
-		return 1;
-	case Variable::IVEC2:
-	case Variable::VEC2:
-		return 2;
-	case Variable::IVEC3:
-	case Variable::VEC3:
-		return 3;
-	case Variable::IVEC4:
-	case Variable::VEC4:
-		return 4;
-	case Variable::MAT3:
-		return 9;
-	case Variable::MAT4:
-		return 16;
-	case Variable::SAMPLER2D:
-	case Variable::SAMPLER2DSHADOW:
-	case Variable::MAX:
-		return -1;
-	}
-	return -1;
 }
 
 ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
-	if (type == "float") {
-		return Variable::FLOAT;
-	} else if (type == "int") {
-		return Variable::INT;
-	} else if (type == "uint") {
-		return Variable::INT;
-	} else if (type == "vec2") {
-		return Variable::VEC2;
-	} else if (type == "vec3") {
-		return Variable::VEC3;
-	} else if (type == "vec4") {
-		return Variable::VEC4;
-	} else if (type == "uvec2") {
-		return Variable::VEC2;
-	} else if (type == "uvec3") {
-		return Variable::VEC3;
-	} else if (type == "uvec4") {
-		return Variable::VEC4;
-	} else if (type == "ivec2") {
-		return Variable::IVEC2;
-	} else if (type == "ivec3") {
-		return Variable::IVEC3;
-	} else if (type == "ivec4") {
-		return Variable::IVEC4;
-	} else if (type == "mat3") {
-		return Variable::MAT3;
-	} else if (type == "mat4") {
-		return Variable::MAT4;
-	} else if (type == "sampler2D" || type == "sampler2DArray") {
-		return Variable::SAMPLER2D;
-	} else if (type == "sampler2DShadow" || type == "sampler2DArrayShadow") {
-		return Variable::SAMPLER2DSHADOW;
+	int max = std::enum_value(Variable::MAX);
+	for (int i = 0; i < max; ++i) {
+		if (type == cTypes[i].glsltype) {
+			return cTypes[i].type;
+		}
 	}
-	core_assert_msg(false, "unknown type given: %s", type.c_str());
+	core_assert_msg(false, "Unknown type given: %s", type.c_str());
 	return Variable::FLOAT;
 }
 
@@ -266,8 +225,9 @@ void ShaderTool::generateSrc() const {
 	}
 	for (int i = 0; i < uniformSize; ++i) {
 		const Variable& v = _shaderStruct.uniforms[i];
-		const bool isInteger = v.type == Variable::SAMPLER2D || v.type == Variable::SAMPLER2DSHADOW
-				|| v.type == Variable::INT || v.type == Variable::UNSIGNED_INT;
+		const bool isInteger = v.type == Variable::SAMPLER1D || v.type == Variable::SAMPLER2D || v.type == Variable::SAMPLER3D
+				|| v.type == Variable::SAMPLER2DSHADOW || v.type == Variable::SAMPLER1DSHADOW
+				|| v.type == Variable::SAMPLERCUBEMAP || v.type == Variable::INT || v.type == Variable::UNSIGNED_INT;
 		std::string uniformName = "";
 		std::vector<std::string> nameParts;
 		core::string::splitString(v.name, nameParts, "_");
@@ -481,7 +441,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 		if (findIter == v->end()) {
 			v->push_back(Variable{typeEnum, name, arraySize});
 		} else {
-			Log::warn("Found duplicate uniform %s (%s versus %s)",
+			Log::warn("Found duplicate variable %s (%s versus %s)",
 					name.c_str(), cTypes[(int)findIter->type].ctype, cTypes[(int)typeEnum].ctype);
 		}
 	}
