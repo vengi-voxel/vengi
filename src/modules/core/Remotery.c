@@ -1656,7 +1656,7 @@ static void Buffer_Destructor(Buffer* buffer)
 }
 
 
-static rmtError Buffer_Write(Buffer* buffer, void* data, rmtU32 length)
+static rmtError Buffer_Write(Buffer* buffer, const void* data, rmtU32 length)
 {
     assert(buffer != NULL);
 
@@ -1684,17 +1684,10 @@ static rmtError Buffer_Write(Buffer* buffer, void* data, rmtU32 length)
     return RMT_ERROR_NONE;
 }
 
-
-static rmtError Buffer_WriteString(Buffer* buffer, rmtPStr string)
-{
-    assert(string != NULL);
-    return Buffer_Write(buffer, (void*)string, (rmtU32)strnlen_s(string, 2048));
-}
-
 static rmtError Buffer_WriteStringZ(Buffer* buffer, rmtPStr string)
 {
     assert(string != NULL);
-    return Buffer_Write(buffer, (void*)string, (rmtU32)strnlen_s(string, 2048) + 1);
+    return Buffer_Write(buffer, (const void*)string, (rmtU32)strnlen_s(string, 2048) + 1);
 }
 
 
@@ -1892,7 +1885,6 @@ static rmtError HashTable_Insert(HashTable* table, rmtU32 key, rmtU32 value)
 static rmtError HashTable_Resize(HashTable* table)
 {
     rmtU32 old_max_nb_slots = table->max_nb_slots;
-    rmtU32 new_nb_occupied_slots = 0;
     HashSlot* new_slots = NULL;
     HashSlot* old_slots = table->slots;
 
@@ -1918,7 +1910,7 @@ static rmtError HashTable_Resize(HashTable* table)
     for (rmtU32 i = 0; i < old_max_nb_slots; i++)
     {
         HashSlot* slot = old_slots + i;
-        if (slot->key != NULL)
+        if (slot->key != 0)
             HashTable_Insert(table, slot->key, slot->key);
     }
 
