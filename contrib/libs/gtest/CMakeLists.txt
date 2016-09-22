@@ -11,4 +11,6 @@ engine_add_library(
 	SRCS ${SRCS}
 	DEFINES ${DEFINES}
 )
-target_include_directories(gtest PUBLIC . include/)
+if (NOT GTEST_FOUND)
+	target_include_directories(gtest PUBLIC . include/)
+endif()
