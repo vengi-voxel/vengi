@@ -27,6 +27,8 @@
     @SAFEC:         Safe C Library excerpts
     @OBJALLOC:      Reusable Object Allocator
     @DYNBUF:        Dynamic Buffer
+    @HASHTABLE:     Integer pair hash map for inserts/finds. No removes for added simplicity.
+    @STRINGTABLE:	Map from string hash to string offset in local buffer
     @SOCKETS:       Sockets TCP/IP Wrapper
     @SHA1:          SHA-1 Cryptographic Hash Function
     @BASE64:        Base-64 encoder
@@ -34,7 +36,6 @@
     @WEBSOCKETS:    WebSockets
     @MESSAGEQ:      Multiple producer, single consumer message queue
     @NETWORK:       Network Server
-    @JSON:          Basic, text-based JSON serialisation
     @SAMPLE:        Base Sample Description (CPU by default)
     @SAMPLETREE:    A tree of samples with their allocator
     @TSAMPLER:      Per-Thread Sampler
@@ -105,12 +106,6 @@ static rmtBool g_SettingsInitialized = RMT_FALSE;
     #endif
 
     #ifdef RMT_PLATFORM_LINUX
-
-        // Required when compiling with -std=c99 or -std=c11 for clock_gettime
-        // Not great; would be better to compile with -std=gnu99/gnu11 instead
-        // However, this puts less burden on the user
-        #define _POSIX_C_SOURCE 199309L
-
         #include <time.h>
         #include <sys/prctl.h>
     #endif
@@ -182,8 +177,10 @@ static void rmtFree( void* ptr )
     g_Settings.free( g_Settings.mm_context, ptr );
 }
 
-
+#if RMT_USE_OPENGL
 // DLL/Shared Library functions
+
+#if defined (RMT_PLATFORM_WINDOWS)
 static void* rmtLoadLibrary(const char* path)
 {
     #if defined(RMT_PLATFORM_WINDOWS)
@@ -194,6 +191,7 @@ static void* rmtLoadLibrary(const char* path)
         return NULL;
     #endif
 }
+#endif
 
 static void rmtFreeLibrary(void* handle)
 {
@@ -221,7 +219,7 @@ static void* rmtGetProcAddress(void* handle, const char* symbol)
         return NULL;
     #endif
 }
-
+#endif
 
 /*
 ------------------------------------------------------------------------------------------------------------------------
@@ -1060,6 +1058,7 @@ static void Thread_Destructor(Thread* thread)
 // NOTE: Microsoft also has its own version of these functions so I'm do some hacky PP to remove them
 #define strnlen_s strnlen_s_safe_c
 #define strncat_s strncat_s_safe_c
+#define strcpy_s strcpy_s_safe_c
 
 
 #define RSIZE_MAX_STR (4UL << 10)   /* 4KB */
@@ -1309,6 +1308,84 @@ strncat_s (char *dest, rsize_t dmax, const char *src, rsize_t slen)
     /*
      * the entire src was not copied, so the string will be nulled.
      */
+    return RCNEGATE(ESNOSPC);
+}
+
+
+errno_t
+strcpy_s(char *dest, rsize_t dmax, const char *src)
+{
+    rsize_t orig_dmax;
+    char *orig_dest;
+    const char *overlap_bumper;
+
+    if (dest == NULL) {
+        return RCNEGATE(ESNULLP);
+    }
+
+    if (dmax == 0) {
+        return RCNEGATE(ESZEROL);
+    }
+
+    if (dmax > RSIZE_MAX_STR) {
+        return RCNEGATE(ESLEMAX);
+    }
+
+    if (src == NULL) {
+        *dest = '\0';
+        return RCNEGATE(ESNULLP);
+    }
+
+    if (dest == src) {
+        return RCNEGATE(EOK);
+    }
+
+    /* hold base of dest in case src was not copied */
+    orig_dmax = dmax;
+    orig_dest = dest;
+
+    if (dest < src) {
+        overlap_bumper = src;
+
+        while (dmax > 0) {
+            if (dest == overlap_bumper) {
+                return RCNEGATE(ESOVRLP);
+            }
+
+            *dest = *src;
+            if (*dest == '\0') {
+                return RCNEGATE(EOK);
+            }
+
+            dmax--;
+            dest++;
+            src++;
+        }
+
+    }
+    else {
+        overlap_bumper = dest;
+
+        while (dmax > 0) {
+            if (src == overlap_bumper) {
+                return RCNEGATE(ESOVRLP);
+            }
+
+            *dest = *src;
+            if (*dest == '\0') {
+                return RCNEGATE(EOK);
+            }
+
+            dmax--;
+            dest++;
+            src++;
+        }
+    }
+
+    /*
+    * the entire src must have been copied, if not reset dest
+    * to null the string.
+    */
     return RCNEGATE(ESNOSPC);
 }
 
@@ -1614,6 +1691,338 @@ static rmtError Buffer_WriteString(Buffer* buffer, rmtPStr string)
     return Buffer_Write(buffer, (void*)string, (rmtU32)strnlen_s(string, 2048));
 }
 
+static rmtError Buffer_WriteStringZ(Buffer* buffer, rmtPStr string)
+{
+    assert(string != NULL);
+    return Buffer_Write(buffer, (void*)string, (rmtU32)strnlen_s(string, 2048) + 1);
+}
+
+
+static void U32ToByteArray(rmtU8* dest, rmtU32 value)
+{
+    // Commit as little-endian
+    dest[0] = value & 255;
+    dest[1] = (value >> 8) & 255;
+    dest[2] = (value >> 16) & 255;
+    dest[3] = value >> 24;
+}
+
+
+static rmtError Buffer_WriteU32(Buffer* buffer, rmtU32 value)
+{
+    rmtU8 temp[4];
+    U32ToByteArray(temp, value);
+    return Buffer_Write(buffer, temp, sizeof(temp));
+}
+
+
+static rmtBool IsLittleEndian()
+{
+    // Not storing this in a global variable allows the compiler to more easily optimise
+    // this away altogether.
+    union
+    {
+        unsigned int i;
+        unsigned char c[sizeof(unsigned int)];
+    } u;
+    u.i = 1;
+    return u.c[0] == 1 ? RMT_TRUE : RMT_FALSE;
+}
+
+
+static rmtError Buffer_WriteU64(Buffer* buffer, rmtU64 value)
+{
+    // Write as a double as Javascript DataView doesn't have a 64-bit integer read
+    union
+    {
+        double d;
+        unsigned char c[sizeof(double)];
+    } u;
+    char temp[8];
+    u.d = (double)value;
+    if (IsLittleEndian())
+    {
+        temp[0] = u.c[0];
+        temp[1] = u.c[1];
+        temp[2] = u.c[2];
+        temp[3] = u.c[3];
+        temp[4] = u.c[4];
+        temp[5] = u.c[5];
+        temp[6] = u.c[6];
+        temp[7] = u.c[7];
+    }
+    else
+    {
+        temp[0] = u.c[7];
+        temp[1] = u.c[6];
+        temp[2] = u.c[5];
+        temp[3] = u.c[4];
+        temp[4] = u.c[3];
+        temp[5] = u.c[2];
+        temp[6] = u.c[1];
+        temp[7] = u.c[0];
+    }
+    return Buffer_Write(buffer, u.c, sizeof(u.c));
+}
+
+
+static rmtError Buffer_WriteStringWithLength(Buffer* buffer, rmtPStr string)
+{
+    rmtU32 length = (rmtU32)strnlen_s(string, 2048);
+    rmtError error;
+
+    error = Buffer_WriteU32(buffer, length);
+    if (error != RMT_ERROR_NONE)
+        return error;
+
+    return Buffer_Write(buffer, (void*)string, length);
+}
+
+
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+   @HASHTABLE: Integer pair hash map for inserts/finds. No removes for added simplicity.
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+
+
+#define RMT_NOT_FOUND 0xFFFFFFFF
+
+
+typedef struct
+{
+    // Non-zero, pre-hashed key
+    rmtU32 key;
+
+    // Value that's not equal to RMT_NOT_FOUND
+    rmtU32 value;
+} HashSlot;
+
+
+typedef struct
+{
+    // Stats
+    rmtU32 max_nb_slots;
+    rmtU32 nb_slots;
+
+    // Data
+    HashSlot* slots;
+} HashTable;
+
+
+static rmtError HashTable_Constructor(HashTable* table, rmtU32 max_nb_slots)
+{
+    // Default initialise
+    assert(table != NULL);
+    table->max_nb_slots = max_nb_slots;
+    table->nb_slots = 0;
+
+    // Allocate and clear the hash slots
+    table->slots = (HashSlot*)rmtMalloc(table->max_nb_slots * sizeof(HashSlot));
+    if (table->slots == NULL)
+        return RMT_ERROR_MALLOC_FAIL;
+    memset(table->slots, 0, table->max_nb_slots * sizeof(HashSlot));
+
+    return RMT_ERROR_NONE;
+}
+
+
+static void HashTable_Destructor(HashTable* table)
+{
+    assert(table != NULL);
+
+    if (table->slots != NULL)
+    {
+        rmtFree(table->slots);
+        table->slots = NULL;
+    }
+}
+
+
+static rmtError HashTable_Resize(HashTable* table);
+
+
+static rmtError HashTable_Insert(HashTable* table, rmtU32 key, rmtU32 value)
+{
+    HashSlot* slot = NULL;
+    rmtError error = RMT_ERROR_NONE;
+
+    // Calculate initial slot location for this key
+    rmtU32 index_mask = table->max_nb_slots - 1;
+    rmtU32 index = key & index_mask;
+
+    assert(key != 0);
+    assert(value != RMT_NOT_FOUND);
+
+    // Linear probe for free slot, reusing any existing key matches
+    // There will always be at least one free slot due to load factor management
+    while (table->slots[index].key)
+    {
+        if (table->slots[index].key == key)
+        {
+            // Counter occupied slot increments below
+            table->nb_slots--;
+            break;
+        }
+
+        index = (index + 1) & index_mask;
+    }
+
+    // Just verify that I've got no errors in the code above
+    assert(index < table->max_nb_slots);
+
+    // Add to the table
+    slot = table->slots + index;
+    slot->key = key;
+    slot->value = value;
+    table->nb_slots++;
+
+    // Resize when load factor is greater than 2/3
+    if (table->nb_slots > (table->max_nb_slots * 2) / 3)
+        error = HashTable_Resize(table);
+
+    return error;
+}
+
+
+static rmtError HashTable_Resize(HashTable* table)
+{
+    rmtU32 old_max_nb_slots = table->max_nb_slots;
+    rmtU32 new_nb_occupied_slots = 0;
+    HashSlot* new_slots = NULL;
+    HashSlot* old_slots = table->slots;
+
+    // Increase the table size
+    rmtU32 new_max_nb_slots = table->max_nb_slots;
+    if (new_max_nb_slots < 8192 * 4)
+        new_max_nb_slots *= 4;
+    else
+        new_max_nb_slots *= 2;
+
+    // Allocate and clear a new table
+    new_slots = (HashSlot*)rmtMalloc(new_max_nb_slots * sizeof(HashSlot));
+    if (new_slots == NULL)
+        return RMT_ERROR_MALLOC_FAIL;
+    memset(new_slots, 0, new_max_nb_slots * sizeof(HashSlot));
+
+    // Update fields of the table after successful allocation only
+    table->slots = new_slots;
+    table->max_nb_slots = new_max_nb_slots;
+    table->nb_slots = 0;
+
+    // Reinsert all objects into the new table
+    for (rmtU32 i = 0; i < old_max_nb_slots; i++)
+    {
+        HashSlot* slot = old_slots + i;
+        if (slot->key != NULL)
+            HashTable_Insert(table, slot->key, slot->key);
+    }
+
+    free(old_slots);
+
+    return RMT_ERROR_NONE;
+}
+
+
+static rmtU32 HashTable_Find(HashTable* table, rmtU32 key)
+{
+    // Calculate initial slot location for this key
+    rmtU32 index_mask = table->max_nb_slots - 1;
+    rmtU32 index = key & index_mask;
+
+    // Linear probe for matching hash
+    while (table->slots[index].key)
+    {
+        HashSlot* slot = table->slots + index;
+
+        if (slot->key == key)
+            return slot->value;
+
+        index = (index + 1) & index_mask;
+    }
+
+    return RMT_NOT_FOUND;
+}
+
+
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+   @STRINGTABLE: Map from string hash to string offset in local buffer
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+
+
+typedef struct
+{
+    // Growable dynamic array of strings added so far
+    Buffer* text;
+
+    // Map from text hash to text location in the buffer
+    HashTable* text_map;
+} StringTable;
+
+
+static rmtError StringTable_Constructor(StringTable* table)
+{
+    rmtError error;
+
+    // Default initialise
+    assert(table != NULL);
+    table->text = NULL;
+    table->text_map = NULL;
+
+    // Allocate reasonably storage for initial sample names
+
+    New_1(Buffer, table->text, 8 * 1024);
+    if (error != RMT_ERROR_NONE)
+        return error;
+
+    New_1(HashTable, table->text_map, 1 * 1024);
+    if (error != RMT_ERROR_NONE)
+        return error;
+
+    return RMT_ERROR_NONE;
+}
+
+
+static void StringTable_Destructor(StringTable* table)
+{
+    assert(table != NULL);
+
+    Delete(HashTable, table->text_map);
+    Delete(Buffer, table->text);
+}
+
+
+static rmtPStr StringTable_Find(StringTable* table, rmtU32 name_hash)
+{
+    rmtU32 text_offset = HashTable_Find(table->text_map, name_hash);
+    if (text_offset != RMT_NOT_FOUND)
+        return (rmtPStr)(table->text->data + text_offset);
+    return NULL;
+}
+
+
+static void StringTable_Insert(StringTable* table, rmtU32 name_hash, rmtPStr name)
+{
+    // Only add to the buffer if the string isn't already there
+    rmtU32 text_offset = HashTable_Find(table->text_map, name_hash);
+    if (text_offset == RMT_NOT_FOUND)
+    {
+        // TODO: Allocation errors aren't being passed on to the caller
+        text_offset = table->text->bytes_used;
+        Buffer_WriteStringZ(table->text, name);
+        HashTable_Insert(table->text_map, name_hash, text_offset);
+    }
+}
 
 
 /*
@@ -1624,6 +2033,8 @@ static rmtError Buffer_WriteString(Buffer* buffer, rmtPStr string)
 ------------------------------------------------------------------------------------------------------------------------
 */
 
+
+
 #ifndef RMT_PLATFORM_WINDOWS
     typedef int SOCKET;
     #define INVALID_SOCKET -1
@@ -1631,6 +2042,8 @@ static rmtError Buffer_WriteString(Buffer* buffer, rmtPStr string)
     #define SD_SEND SHUT_WR
     #define closesocket close
 #endif
+
+
 typedef struct
 {
     SOCKET socket;
@@ -1695,10 +2108,11 @@ static void TCPSocket_Destructor(TCPSocket* tcp_socket)
 }
 
 
-static rmtError TCPSocket_RunServer(TCPSocket* tcp_socket, rmtU16 port)
+static rmtError TCPSocket_RunServer(TCPSocket* tcp_socket, rmtU16 port, rmtBool limit_connections_to_localhost)
 {
     SOCKET s = INVALID_SOCKET;
     struct sockaddr_in sin;
+    int enable = 1;
     #ifdef RMT_PLATFORM_WINDOWS
         u_long nonblock = 1;
     #endif
@@ -1711,11 +2125,25 @@ static rmtError TCPSocket_RunServer(TCPSocket* tcp_socket, rmtU16 port)
     if (s == SOCKET_ERROR)
         return RMT_ERROR_SOCKET_CREATE_FAIL;
 
+    // set SO_REUSEADDR so binding doesn't fail when restarting the application
+    // (otherwise the same port can't be reused within TIME_WAIT)
+    // I'm not checking for errors because if this fails (unlikely) we might still
+    // be able to bind to the socket anyway
+    #ifdef RMT_PLATFORM_POSIX
+        setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+    #elif defined(RMT_PLATFORM_WINDOWS)
+        // windows also needs SO_EXCLUSEIVEADDRUSE,
+        // see http://www.andy-pearce.com/blog/posts/2013/Feb/so_reuseaddr-on-windows/
+        setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&enable, sizeof(enable));
+        enable = 1;
+        setsockopt(s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (char *)&enable, sizeof(enable));
+    #endif
+
     // Bind the socket to the incoming port
     sin.sin_family = AF_INET;
-    sin.sin_addr.s_addr = INADDR_ANY;
+    sin.sin_addr.s_addr = htonl(limit_connections_to_localhost ? INADDR_LOOPBACK : INADDR_ANY);
     sin.sin_port = htons(port);
-    if (bind(s, (struct sockaddr*)&sin, sizeof(sin)) == SOCKET_ERROR)
+    if (bind(s, (const struct sockaddr*)&sin, sizeof(sin)) == SOCKET_ERROR)
         return RMT_ERROR_SOCKET_BIND_FAIL;
 
     // Connection is valid, remaining code is socket state modification
@@ -1830,6 +2258,18 @@ static rmtError TCPSocket_AcceptConnection(TCPSocket* tcp_socket, TCPSocket** cl
     if (s == SOCKET_ERROR)
         return RMT_ERROR_SOCKET_ACCEPT_FAIL;
 
+#ifdef SO_NOSIGPIPE
+    // On POSIX systems, send() may send a SIGPIPE signal when writing to an
+    // already closed connection. By setting this option, we prevent the
+    // signal from being emitted and send will instead return an error and set
+    // errno to EPIPE.
+    //
+    // This is supported on BSD platforms and not on Linux.
+    {
+        int flag = 1;
+        setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE, &flag, sizeof(flag));
+    }
+#endif
     // Create a client socket for the new connection
     assert(client_socket != NULL);
     New_0(TCPSocket, *client_socket);
@@ -1885,7 +2325,14 @@ static rmtError TCPSocket_Send(TCPSocket* tcp_socket, const void* data, rmtU32 l
     while (cur_data < end_data)
     {
         // Attempt to send the remaining chunk of data
-        int bytes_sent = (int)send(tcp_socket->socket, cur_data, (int)(end_data - cur_data), 0);
+        int bytes_sent;
+        int send_flags = 0;
+#ifdef MSG_NOSIGNAL
+        // On Linux this prevents send from emitting a SIGPIPE signal
+        // Equivalent on BSD to the SO_NOSIGPIPE option.
+        send_flags = MSG_NOSIGNAL;
+#endif
+        bytes_sent = (int)send(tcp_socket->socket, cur_data, (int)(end_data - cur_data), send_flags);
 
         if (bytes_sent == SOCKET_ERROR || bytes_sent == 0)
         {
@@ -2570,12 +3017,12 @@ static void WebSocket_Destructor(WebSocket* web_socket)
 }
 
 
-static rmtError WebSocket_RunServer(WebSocket* web_socket, rmtU32 port, enum WebSocketMode mode)
+static rmtError WebSocket_RunServer(WebSocket* web_socket, rmtU16 port, rmtBool limit_connections_to_localhost, enum WebSocketMode mode)
 {
     // Create the server's listening socket
     assert(web_socket != NULL);
     web_socket->mode = mode;
-    return TCPSocket_RunServer(web_socket->tcp_socket, (rmtU16)port);
+    return TCPSocket_RunServer(web_socket->tcp_socket, port, limit_connections_to_localhost);
 }
 
 
@@ -3020,6 +3467,8 @@ static void MessageQueue_ConsumeNextMessage(MessageQueue* queue, Message* messag
 */
 
 
+typedef void(*Server_ReceiveHandler)(void*, char*);
+
 
 typedef struct
 {
@@ -3030,31 +3479,39 @@ typedef struct
     rmtU32 last_ping_time;
 
     rmtU16 port;
+    rmtBool limit_connections_to_localhost;
+
+    // Handler for receiving messages from the client
+    Server_ReceiveHandler receive_handler;
+    void* receive_handler_context;
 } Server;
 
 
-static rmtError Server_CreateListenSocket(Server* server, rmtU16 port)
+static rmtError Server_CreateListenSocket(Server* server, rmtU16 port, rmtBool limit_connections_to_localhost)
 {
     rmtError error = RMT_ERROR_NONE;
 
     New_1(WebSocket, server->listen_socket, NULL);
     if (error == RMT_ERROR_NONE)
-        error = WebSocket_RunServer(server->listen_socket, port, WEBSOCKET_TEXT);
+        error = WebSocket_RunServer(server->listen_socket, port, limit_connections_to_localhost, WEBSOCKET_BINARY);
 
     return error;
 }
 
 
-static rmtError Server_Constructor(Server* server, rmtU16 port)
+static rmtError Server_Constructor(Server* server, rmtU16 port, rmtBool limit_connections_to_localhost)
 {
     assert(server != NULL);
     server->listen_socket = NULL;
     server->client_socket = NULL;
     server->last_ping_time = 0;
     server->port = port;
+    server->limit_connections_to_localhost = limit_connections_to_localhost;
+    server->receive_handler = NULL;
+    server->receive_handler_context = NULL;
 
     // Create the listening WebSocket
-    return Server_CreateListenSocket(server, port);
+    return Server_CreateListenSocket(server, port, limit_connections_to_localhost);
 }
 
 
@@ -3126,17 +3583,9 @@ static rmtError Server_ReceiveMessage(Server* server, char message_first_byte, r
     if (message_length < 4)
         return RMT_ERROR_NONE;
 
-    // Silly check for console input message ('CONI')
-    // (don't want to add safe strcmp to lib yet)
-    if (message_data[0] == 'C' && message_data[1] == 'O' && message_data[2] == 'N' && message_data[3] == 'I')
-    {
-        // Pass on to any registered handler
-        if (g_Settings.input_handler != NULL)
-            g_Settings.input_handler(message_data + 4, g_Settings.input_handler_context);
-
-        rmt_LogText("Console message received...");
-        rmt_LogText(message_data + 4);
-    }
+    // Dispatch to handler
+    if (server->receive_handler)
+        server->receive_handler(server->receive_handler_context, message_data);
 
     return RMT_ERROR_NONE;
 }
@@ -3150,7 +3599,7 @@ static void Server_Update(Server* server)
 
     // Recreate the listening socket if it's been destroyed earlier
     if (server->listen_socket == NULL)
-        Server_CreateListenSocket(server, server->port);
+        Server_CreateListenSocket(server, server->port, server->limit_connections_to_localhost);
 
     if (server->listen_socket != NULL && server->client_socket == NULL)
     {
@@ -3171,29 +3620,43 @@ static void Server_Update(Server* server)
 
     else
     {
-        // Check for any incoming messages
-        char message_first_byte;
-        rmtU32 message_length;
-        rmtError error = WebSocket_Receive(server->client_socket, &message_first_byte, &message_length, 1, 0);
-        if (error == RMT_ERROR_NONE)
+        // Loop checking for incoming messages
+        for (;;)
         {
-            // Parse remaining message
-            error = Server_ReceiveMessage(server, message_first_byte, message_length);
-            if (error != RMT_ERROR_NONE)
-                Server_DisconnectClient(server);
-        }
-        else if (error == RMT_ERROR_SOCKET_RECV_NO_DATA)
-        {
-            // no data available
-        }
-        else if (error == RMT_ERROR_SOCKET_RECV_TIMEOUT)
-        {
-            // data not available yet, can afford to ignore as we're only reading the first byte
-        }
-        else
-        {
+            // Inspect first byte to see if a message is there
+            char message_first_byte;
+            rmtU32 message_length;
+            rmtError error = WebSocket_Receive(server->client_socket, &message_first_byte, &message_length, 1, 0);
+            if (error == RMT_ERROR_NONE)
+            {
+                // Parse remaining message
+                error = Server_ReceiveMessage(server, message_first_byte, message_length);
+                if (error != RMT_ERROR_NONE)
+                {
+                    Server_DisconnectClient(server);
+                    break;
+                }
+
+                // Check for more...
+                continue;
+            }
+
+            // Passable errors...
+            if (error == RMT_ERROR_SOCKET_RECV_NO_DATA)
+            {
+                // No data available
+                break;
+            }
+
+            if (error == RMT_ERROR_SOCKET_RECV_TIMEOUT)
+            {
+                // Data not available yet, can afford to ignore as we're only reading the first byte
+                break;
+            }
+
             // Anything else is an error that may have closed the connection
             Server_DisconnectClient(server);
+            break;
         }
     }
 
@@ -3201,115 +3664,10 @@ static void Server_Update(Server* server)
     cur_time = msTimer_Get();
     if (cur_time - server->last_ping_time > 1000)
     {
-        rmtPStr ping_message = "{ \"id\": \"PING\" }";
-        Server_Send(server, ping_message, (rmtU32)strlen(ping_message), 20);
+        rmtPStr ping_message = "PING";
+        Server_Send(server, ping_message, (rmtU32)strlen(ping_message), 4);
         server->last_ping_time = cur_time;
     }
-}
-
-
-
-/*
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-   @JSON: Basic, text-based JSON serialisation
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-*/
-
-
-
-//
-// Simple macro for hopefully making the serialisation a little clearer by hiding the error handling
-//
-#define JSON_ERROR_CHECK(stmt) { error = stmt; if (error != RMT_ERROR_NONE) return error; }
-
-
-
-static rmtError json_OpenObject(Buffer* buffer)
-{
-    return Buffer_Write(buffer, (void*)"{", 1);
-}
-
-
-static rmtError json_CloseObject(Buffer* buffer)
-{
-    return Buffer_Write(buffer, (void*)"}", 1);
-}
-
-
-static rmtError json_Comma(Buffer* buffer)
-{
-    return Buffer_Write(buffer, (void*)",", 1);
-}
-
-
-static rmtError json_Colon(Buffer* buffer)
-{
-    return Buffer_Write(buffer, (void*)":", 1);
-}
-
-
-static rmtError json_String(Buffer* buffer, rmtPStr string)
-{
-    rmtError error;
-    JSON_ERROR_CHECK(Buffer_Write(buffer, (void*)"\"", 1));
-    JSON_ERROR_CHECK(Buffer_WriteString(buffer, string));
-    return Buffer_Write(buffer, (void*)"\"", 1);
-}
-
-
-static rmtError json_FieldStr(Buffer* buffer, rmtPStr name, rmtPStr value)
-{
-    rmtError error;
-    JSON_ERROR_CHECK(json_String(buffer, name));
-    JSON_ERROR_CHECK(json_Colon(buffer));
-    return json_String(buffer, value);
-}
-
-
-static rmtError json_FieldU64(Buffer* buffer, rmtPStr name, rmtU64 value)
-{
-    static char temp_buf[32];
-
-    char* end;
-    char* tptr;
-
-    json_String(buffer, name);
-    json_Colon(buffer);
-
-    if (value == 0)
-        return Buffer_Write(buffer, (void*)"0", 1);
-
-    // Null terminate and start at the end
-    end = temp_buf + sizeof(temp_buf) - 1;
-    *end = 0;
-    tptr = end;
-
-    // Loop through the value with radix 10
-    do
-    {
-        rmtU64 next_value = value / 10;
-        *--tptr = (char)('0' + (value - next_value * 10));
-        value = next_value;
-    } while (value);
-
-    return Buffer_Write(buffer, tptr, (rmtU32)(end - tptr));
-}
-
-
-static rmtError json_OpenArray(Buffer* buffer, rmtPStr name)
-{
-    rmtError error;
-    JSON_ERROR_CHECK(json_String(buffer, name));
-    JSON_ERROR_CHECK(json_Colon(buffer));
-    return Buffer_Write(buffer, (void*)"[", 1);
-}
-
-
-static rmtError json_CloseArray(Buffer* buffer)
-{
-    return Buffer_Write(buffer, (void*)"]", 1);
 }
 
 
@@ -3322,6 +3680,9 @@ static rmtError json_CloseArray(Buffer* buffer)
 ------------------------------------------------------------------------------------------------------------------------
 */
 
+
+
+#define SAMPLE_NAME_LEN 128
 
 
 enum SampleType
@@ -3344,8 +3705,7 @@ typedef struct Sample
     // Used to anonymously copy sample data without knowning its type
     rmtU32 size_bytes;
 
-    // Sample name and unique hash
-    rmtPStr name;
+    // Hash generated from sample name
     rmtU32 name_hash;
 
     // Unique, persistent ID among all samples
@@ -3380,7 +3740,6 @@ static rmtError Sample_Constructor(Sample* sample)
 
     sample->type = SampleType_CPU;
     sample->size_bytes = sizeof(Sample);
-    sample->name = NULL;
     sample->name_hash = 0;
     sample->unique_id = 0;
     sample->unique_id_html_colour[0] = '#';
@@ -3405,9 +3764,8 @@ static void Sample_Destructor(Sample* sample)
 }
 
 
-static void Sample_Prepare(Sample* sample, rmtPStr name, rmtU32 name_hash, Sample* parent)
+static void Sample_Prepare(Sample* sample, rmtU32 name_hash, Sample* parent)
 {
-    sample->name = name;
     sample->name_hash = name_hash;
     sample->unique_id = 0;
     sample->parent = parent;
@@ -3421,53 +3779,39 @@ static void Sample_Prepare(Sample* sample, rmtPStr name, rmtU32 name_hash, Sampl
 }
 
 
-static rmtError json_SampleArray(Buffer* buffer, Sample* first_sample, rmtPStr name);
+#define BIN_ERROR_CHECK(stmt) { error = stmt; if (error != RMT_ERROR_NONE) return error; }
 
 
-static rmtError json_Sample(Buffer* buffer, Sample* sample)
+static rmtError bin_SampleArray(Buffer* buffer, Sample* first_sample);
+
+
+static rmtError bin_Sample(Buffer* buffer, Sample* sample)
 {
     rmtError error;
 
     assert(sample != NULL);
 
-    JSON_ERROR_CHECK(json_OpenObject(buffer));
+    BIN_ERROR_CHECK(Buffer_WriteU32(buffer, sample->name_hash));
+    BIN_ERROR_CHECK(Buffer_WriteU32(buffer, sample->unique_id));
+    BIN_ERROR_CHECK(Buffer_Write(buffer, sample->unique_id_html_colour, 7));
+    BIN_ERROR_CHECK(Buffer_WriteU64(buffer, sample->us_start));
+    BIN_ERROR_CHECK(Buffer_WriteU64(buffer, maxS64(sample->us_length, 0)));
+    BIN_ERROR_CHECK(bin_SampleArray(buffer, sample));
 
-        JSON_ERROR_CHECK(json_FieldStr(buffer, "name", sample->name));
-        JSON_ERROR_CHECK(json_Comma(buffer));
-        JSON_ERROR_CHECK(json_FieldU64(buffer, "id", sample->unique_id));
-        JSON_ERROR_CHECK(json_Comma(buffer));
-        JSON_ERROR_CHECK(json_FieldStr(buffer, "colour", (rmtPStr)sample->unique_id_html_colour));
-        JSON_ERROR_CHECK(json_Comma(buffer));
-        JSON_ERROR_CHECK(json_FieldU64(buffer, "us_start", sample->us_start));
-        JSON_ERROR_CHECK(json_Comma(buffer));
-        JSON_ERROR_CHECK(json_FieldU64(buffer, "us_length", maxS64(sample->us_length, 0)));
-
-        if (sample->first_child != NULL)
-        {
-            JSON_ERROR_CHECK(json_Comma(buffer));
-            JSON_ERROR_CHECK(json_SampleArray(buffer, sample->first_child, "children"));
-        }
-
-    return json_CloseObject(buffer);
+    return RMT_ERROR_NONE;
 }
 
 
-static rmtError json_SampleArray(Buffer* buffer, Sample* first_sample, rmtPStr name)
+static rmtError bin_SampleArray(Buffer* buffer, Sample* parent_sample)
 {
     rmtError error;
-
     Sample* sample;
 
-    JSON_ERROR_CHECK(json_OpenArray(buffer, name));
+    BIN_ERROR_CHECK(Buffer_WriteU32(buffer, parent_sample->nb_children));
+    for (sample = parent_sample->first_child; sample != NULL; sample = sample->next_sibling)
+        BIN_ERROR_CHECK(bin_Sample(buffer, sample));
 
-    for (sample = first_sample; sample != NULL; sample = sample->next_sibling)
-    {
-        JSON_ERROR_CHECK(json_Sample(buffer, sample));
-        if (sample->next_sibling != NULL)
-            JSON_ERROR_CHECK(json_Comma(buffer));
-    }
-
-    return json_CloseArray(buffer);
+    return RMT_ERROR_NONE;
 }
 
 
@@ -3515,7 +3859,7 @@ static rmtError SampleTree_Constructor(SampleTree* tree, rmtU32 sample_size, Obj
     error = ObjectAllocator_Alloc(tree->allocator, (void**)&tree->root);
     if (error != RMT_ERROR_NONE)
         return error;
-    Sample_Prepare(tree->root, "<Root Sample>", 0, NULL);
+    Sample_Prepare(tree->root, 0, NULL);
     tree->current_parent = tree->root;
 
     return RMT_ERROR_NONE;
@@ -3548,7 +3892,7 @@ static rmtU32 HashCombine(rmtU32 hash_a, rmtU32 hash_b)
 }
 
 
-static rmtError SampleTree_Push(SampleTree* tree, rmtPStr name, rmtU32 name_hash, rmtU32 flags, Sample** sample)
+static rmtError SampleTree_Push(SampleTree* tree, rmtU32 name_hash, rmtU32 flags, Sample** sample)
 {
     Sample* parent;
     rmtError error;
@@ -3583,7 +3927,7 @@ static rmtError SampleTree_Push(SampleTree* tree, rmtPStr name, rmtU32 name_hash
     error = ObjectAllocator_Alloc(tree->allocator, (void**)sample);
     if (error != RMT_ERROR_NONE)
         return error;
-    Sample_Prepare(*sample, name, name_hash, parent);
+    Sample_Prepare(*sample, name_hash, parent);
 
     // Generate a unique ID for this sample in the tree
     unique_id = parent->unique_id;
@@ -3715,12 +4059,13 @@ typedef struct ThreadSampler
     // Store a unique sample tree for each type
     SampleTree* sample_trees[SampleType_Count];
 
+    // Table of all sample names encountered on this thread
+    StringTable* names;
+
     // Next in the global list of active thread samplers
     struct ThreadSampler* volatile next;
 
 } ThreadSampler;
-
-static rmtS32 countThreads = 0;
 
 static rmtError ThreadSampler_Constructor(ThreadSampler* thread_sampler)
 {
@@ -3732,6 +4077,7 @@ static rmtError ThreadSampler_Constructor(ThreadSampler* thread_sampler)
     // Set defaults
     for (i = 0; i < SampleType_Count; i++)
         thread_sampler->sample_trees[i] = NULL;
+    thread_sampler->names = NULL;
     thread_sampler->next = NULL;
 
     // Set the initial name to Thread0 etc. or use the existing Linux name.
@@ -3739,13 +4085,21 @@ static rmtError ThreadSampler_Constructor(ThreadSampler* thread_sampler)
     #if defined(RMT_PLATFORM_LINUX) && RMT_USE_POSIX_THREADNAMES
     prctl(PR_GET_NAME,thread_sampler->name,0,0,0);
     #else
-    strncat_s(thread_sampler->name, sizeof(thread_sampler->name), "Thread", 6);
-    itoahex_s(thread_sampler->name + 6, sizeof(thread_sampler->name) - 6, AtomicAdd(&countThreads, 1));
+    {
+        static rmtS32 countThreads = 0;
+        strncat_s(thread_sampler->name, sizeof(thread_sampler->name), "Thread", 6);
+        itoahex_s(thread_sampler->name + 6, sizeof(thread_sampler->name) - 6, AtomicAdd(&countThreads, 1));
+    }
     #endif
 
     // Create the CPU sample tree only - the rest are created on-demand as they need
     // extra context information to function correctly.
     New_3(SampleTree, thread_sampler->sample_trees[SampleType_CPU], sizeof(Sample), (ObjConstructor)Sample_Constructor, (ObjDestructor)Sample_Destructor);
+    if (error != RMT_ERROR_NONE)
+        return error;
+
+    // Create sample name string table
+    New_0(StringTable, thread_sampler->names);
     if (error != RMT_ERROR_NONE)
         return error;
 
@@ -3758,14 +4112,17 @@ static void ThreadSampler_Destructor(ThreadSampler* ts)
     int i;
 
     assert(ts != NULL);
+
+    Delete(StringTable, ts->names);
+
     for (i = 0; i < SampleType_Count; i++)
         Delete(SampleTree, ts->sample_trees[i]);
 }
 
 
-static rmtError ThreadSampler_Push(SampleTree* tree, rmtPStr name, rmtU32 name_hash, rmtU32 flags, Sample** sample)
+static rmtError ThreadSampler_Push(SampleTree* tree, rmtU32 name_hash, rmtU32 flags, Sample** sample)
 {
-    return SampleTree_Push(tree, name, name_hash, flags, sample);
+    return SampleTree_Push(tree, name_hash, flags, sample);
 }
 
 
@@ -3789,6 +4146,34 @@ static rmtBool ThreadSampler_Pop(ThreadSampler* ts, MessageQueue* queue, Sample*
 
     return RMT_FALSE;
 }
+
+
+static rmtU32 ThreadSampler_GetNameHash(ThreadSampler* ts, rmtPStr name, rmtU32* hash_cache)
+{
+    rmtU32 name_hash = 0;
+
+    // Hash cache provided?
+    if (hash_cache != NULL)
+    {
+        // Calculate the hash first time round only
+        if (*hash_cache == 0)
+        {
+            assert(name != NULL);
+            *hash_cache = MurmurHash3_x86_32(name, (int)strnlen_s(name, 256), 0);
+
+            // Also add to the string table on its first encounter
+            StringTable_Insert(ts->names, *hash_cache, name);
+        }
+
+        return *hash_cache;
+    }
+
+    // Have to recalculate and speculatively insert the name every time when no cache storage exists
+    name_hash = MurmurHash3_x86_32(name, (int)strnlen_s(name, 256), 0);
+    StringTable_Insert(ts->names, name_hash, name);
+    return name_hash;
+}
+
 
 
 
@@ -3831,8 +4216,8 @@ struct Remotery
     // Queue between clients and main remotery thread
     MessageQueue* mq_to_rmt_thread;
 
-    // A dynamically-sized buffer used for encoding the sample tree as JSON and sending to the client
-    Buffer* json_buf;
+    // A dynamically-sized buffer used for binary-encoding the sample tree and sending to the client
+    Buffer* bin_buf;
 
     // The main server thread
     Thread* thread;
@@ -3926,7 +4311,7 @@ static rmtError Remotery_SendLogTextMessage(Remotery* rmt, Message* message)
 }
 
 
-static rmtError json_SampleTree(Buffer* buffer, Msg_SampleTree* msg)
+static rmtError bin_SampleTree(Buffer* buffer, Msg_SampleTree* msg)
 {
     Sample* root_sample;
     char thread_name[64];
@@ -3954,25 +4339,27 @@ static rmtError json_SampleTree(Buffer* buffer, Msg_SampleTree* msg)
         strncat_s(thread_name, sizeof(thread_name), " (OpenGL)", 9);
 
     // Get digest hash of samples so that viewer can efficiently rebuild its tables
+    rmt_BeginCPUSample(GetSampleDigest, RMTSF_Aggregate);
     GetSampleDigest(root_sample, &digest_hash, &nb_samples);
+    rmt_EndCPUSample();
 
-    // Build the sample data
-    JSON_ERROR_CHECK(json_OpenObject(buffer));
+    // Write global message header
+    BIN_ERROR_CHECK(Buffer_Write(buffer, "SMPL    ", 8));
 
-        JSON_ERROR_CHECK(json_FieldStr(buffer, "id", "SAMPLES"));
-        JSON_ERROR_CHECK(json_Comma(buffer));
-        JSON_ERROR_CHECK(json_FieldStr(buffer, "thread_name", thread_name));
-        JSON_ERROR_CHECK(json_Comma(buffer));
-        JSON_ERROR_CHECK(json_FieldU64(buffer, "nb_samples", nb_samples));
-        JSON_ERROR_CHECK(json_Comma(buffer));
-        JSON_ERROR_CHECK(json_FieldU64(buffer, "sample_digest", digest_hash));
-        JSON_ERROR_CHECK(json_Comma(buffer));
-        JSON_ERROR_CHECK(json_SampleArray(buffer, root_sample, "samples"));
+    // Write sample message header
+    BIN_ERROR_CHECK(Buffer_WriteStringWithLength(buffer, thread_name));
+    BIN_ERROR_CHECK(Buffer_WriteU32(buffer, nb_samples));
+    BIN_ERROR_CHECK(Buffer_WriteU32(buffer, digest_hash));
 
-    JSON_ERROR_CHECK(json_CloseObject(buffer));
+    // Write entire sample tree
+    BIN_ERROR_CHECK(bin_Sample(buffer, root_sample));
+
+    // Patch message size
+    U32ToByteArray(buffer->data + 4, buffer->bytes_used);
 
     return RMT_ERROR_NONE;
 }
+
 
 
 #if RMT_USE_CUDA
@@ -4018,9 +4405,15 @@ static rmtError Remotery_SendSampleTreeMessage(Remotery* rmt, Message* message)
 
     // Serialise the sample tree and send to the viewer with a reasonably long timeout as the size
     // of the sample data may be large
-    error = json_SampleTree(rmt->json_buf, sample_tree);
+    rmt_BeginCPUSample(bin_SampleTree, RMTSF_Aggregate);
+    error = bin_SampleTree(rmt->bin_buf, sample_tree);
+    rmt_EndCPUSample();
     if (error == RMT_ERROR_NONE)
-        error = Server_Send(rmt->server, rmt->json_buf->data, rmt->json_buf->bytes_used, 5000);
+    {
+        rmt_BeginCPUSample(Server_Send, RMTSF_Aggregate);
+        error = Server_Send(rmt->server, rmt->bin_buf->data, rmt->bin_buf->bytes_used, 50000);
+        rmt_EndCPUSample();
+    }
 
     // Release the sample tree back to its allocator
     FreeSampleTree(sample, sample_tree->allocator);
@@ -4060,7 +4453,9 @@ static rmtError Remotery_ConsumeMessageQueue(Remotery* rmt)
                 error = Remotery_SendLogTextMessage(rmt, message);
                 break;
             case MsgID_SampleTree:
+                rmt_BeginCPUSample(SendSampleTreeMessage, RMTSF_Aggregate);
                 error = Remotery_SendSampleTreeMessage(rmt, message);
+                rmt_EndCPUSample();
                 break;
         }
 
@@ -4148,6 +4543,65 @@ static rmtError Remotery_ThreadMain(Thread* thread)
 }
 
 
+static void Remotery_ReceiveMessage(void* context, char* message_data)
+{
+    Remotery* rmt = (Remotery*)context;
+
+    // Manual dispatch on 4-byte message headers (message ID is little-endian encoded)
+    #define FOURCC(a, b, c, d) (rmtU32)( ((d) << 24) | ((c) << 16) | ((b) << 8) | (a) )
+    rmtU32 message_id = *(rmtU32*)message_data;
+
+    switch (message_id)
+    {
+        case FOURCC('C', 'O', 'N', 'I'):
+        {
+            // Pass on to any registered handler
+            if (g_Settings.input_handler != NULL)
+                g_Settings.input_handler(message_data + 4, g_Settings.input_handler_context);
+
+            rmt_LogText("Console message received...");
+            rmt_LogText(message_data + 4);
+            break;
+        }
+
+        case FOURCC('G', 'S', 'M', 'P'):
+        {
+            // Convert name hash to integer
+            char* end = NULL;
+            rmtU32 name_hash = (rmtU32)strtoul(message_data + 4, &end, 10);
+
+            // Search all threads for a matching string hash
+            ThreadSampler* ts;
+            for (ts = rmt->first_thread_sampler; ts != NULL; ts = ts->next)
+            {
+                rmtPStr name = StringTable_Find(ts->names, name_hash);
+                if (name != NULL)
+                {
+                    // Construct a response message containing the matching name
+                    rmtU8 response[256];
+                    rmtU32 name_length = (rmtU32)strnlen_s(name, 256 - 12);
+                    response[0] = 'S';
+                    response[1] = 'S';
+                    response[2] = 'M';
+                    response[3] = 'P';
+                    U32ToByteArray(response + 4, name_hash);
+                    U32ToByteArray(response + 8, name_length);
+                    memcpy(response + 12, name, name_length);
+
+                    // Send back immediately as we're on the server thread
+                    Server_Send(rmt->server, response, 12 + name_length, 10);
+                    break;
+                }
+            }
+
+            break;
+        }
+    }
+
+    #undef FOURCC
+}
+
+
 static rmtError Remotery_Constructor(Remotery* rmt)
 {
     rmtError error;
@@ -4159,16 +4613,28 @@ static rmtError Remotery_Constructor(Remotery* rmt)
     rmt->thread_sampler_tls_handle = TLS_INVALID_HANDLE;
     rmt->first_thread_sampler = NULL;
     rmt->mq_to_rmt_thread = NULL;
-    rmt->json_buf = NULL;
+    rmt->bin_buf = NULL;
     rmt->thread = NULL;
+
+    #if RMT_USE_CUDA
+        rmt->cuda.CtxSetCurrent = NULL;
+        rmt->cuda.EventCreate = NULL;
+        rmt->cuda.EventDestroy = NULL;
+        rmt->cuda.EventElapsedTime = NULL;
+        rmt->cuda.EventQuery = NULL;
+        rmt->cuda.EventRecord = NULL;
+    #endif
+
+    #if RMT_USE_D3D11
+        rmt->d3d11 = NULL;
+    #endif
+
+    #if RMT_USE_OPENGL
+        rmt->opengl = NULL;
+    #endif
 
     // Kick-off the timer
     usTimer_Init(&rmt->timer);
-
-    // Set as the global instance before creating any threads that uses it for sampling itself
-    assert(g_Remotery == NULL);
-    g_Remotery = rmt;
-    g_RemoteryCreated = RMT_TRUE;
 
     // Allocate a TLS handle for the thread sampler
     error = tlsAlloc(&rmt->thread_sampler_tls_handle);
@@ -4176,44 +4642,40 @@ static rmtError Remotery_Constructor(Remotery* rmt)
         return error;
 
     // Create the server
-    New_1( Server, rmt->server, g_Settings.port );
+    New_2(Server, rmt->server, g_Settings.port, g_Settings.limit_connections_to_localhost);
     if (error != RMT_ERROR_NONE)
         return error;
+
+    // Setup incoming message handler
+    rmt->server->receive_handler = Remotery_ReceiveMessage;
+    rmt->server->receive_handler_context = rmt;
 
     // Create the main message thread with only one page
     New_1(MessageQueue, rmt->mq_to_rmt_thread, g_Settings.messageQueueSizeInBytes);
     if (error != RMT_ERROR_NONE)
         return error;
 
-    // Create the JSON serialisation buffer
-    New_1(Buffer, rmt->json_buf, 4096);
+    // Create the binary serialisation buffer
+    New_1(Buffer, rmt->bin_buf, 4096);
     if (error != RMT_ERROR_NONE)
         return error;
 
-    #if RMT_USE_CUDA
-
-        rmt->cuda.CtxSetCurrent = NULL;
-        rmt->cuda.EventCreate = NULL;
-        rmt->cuda.EventDestroy = NULL;
-        rmt->cuda.EventElapsedTime = NULL;
-        rmt->cuda.EventQuery = NULL;
-        rmt->cuda.EventRecord = NULL;
-
-    #endif
-
     #if RMT_USE_D3D11
-        rmt->d3d11 = NULL;
         error = D3D11_Create(&rmt->d3d11);
         if (error != RMT_ERROR_NONE)
             return error;
     #endif
 
     #if RMT_USE_OPENGL
-        rmt->opengl = NULL;
         error = OpenGL_Create(&rmt->opengl);
         if (error != RMT_ERROR_NONE)
             return error;
     #endif
+
+    // Set as the global instance before creating any threads that uses it for sampling itself
+    assert(g_Remotery == NULL);
+    g_Remotery = rmt;
+    g_RemoteryCreated = RMT_TRUE;
 
     // Ensure global instance writes complete before other threads get a chance to use it
     WriteFence();
@@ -4231,11 +4693,11 @@ static void Remotery_Destructor(Remotery* rmt)
     // Join the remotery thread before clearing the global object as the thread is profiling itself
     Delete(Thread, rmt->thread);
 
-    // Ensure this is the module that created it
-    assert(g_RemoteryCreated == RMT_TRUE);
-    assert(g_Remotery == rmt);
-    g_Remotery = NULL;
-    g_RemoteryCreated = RMT_FALSE;
+    if (g_RemoteryCreated)
+    {
+      g_Remotery = NULL;
+      g_RemoteryCreated = RMT_FALSE;
+    }
 
     #if RMT_USE_D3D11
         Delete(D3D11, rmt->d3d11);
@@ -4245,7 +4707,7 @@ static void Remotery_Destructor(Remotery* rmt)
         Delete(OpenGL, rmt->opengl);
     #endif
 
-    Delete(Buffer, rmt->json_buf);
+    Delete(Buffer, rmt->bin_buf);
     Delete(MessageQueue, rmt->mq_to_rmt_thread);
 
     Remotery_DestroyThreadSamplers(rmt);
@@ -4357,9 +4819,10 @@ RMT_API rmtSettings* _rmt_Settings(void)
     if( g_SettingsInitialized == RMT_FALSE )
     {
         g_Settings.port = 0x4597;
+        g_Settings.limit_connections_to_localhost = RMT_FALSE;
         g_Settings.msSleepBetweenServerUpdates = 10;
-        g_Settings.messageQueueSizeInBytes = 64 * 1024;
-        g_Settings.maxNbMessagesPerUpdate = 100;
+        g_Settings.messageQueueSizeInBytes = 128 * 1024;
+        g_Settings.maxNbMessagesPerUpdate = 10;
         g_Settings.malloc = CRTMalloc;
         g_Settings.free = CRTFree;
         g_Settings.realloc = CRTRealloc;
@@ -4390,6 +4853,9 @@ RMT_API rmtError _rmt_CreateGlobalInstance(Remotery** remotery)
 
 RMT_API void _rmt_DestroyGlobalInstance(Remotery* remotery)
 {
+    // Ensure this is the module that created it
+    assert(g_RemoteryCreated == RMT_TRUE);
+    assert(g_Remotery == remotery);
     Delete(Remotery, remotery);
 }
 
@@ -4456,7 +4922,6 @@ static void SetDebuggerThreadName(const char* name)
 RMT_API void _rmt_SetCurrentThreadName(rmtPStr thread_name)
 {
     ThreadSampler* ts;
-    rsize_t slen;
 
     if (g_Remotery == NULL)
         return;
@@ -4465,26 +4930,21 @@ RMT_API void _rmt_SetCurrentThreadName(rmtPStr thread_name)
     if (Remotery_GetThreadSampler(g_Remotery, &ts) != RMT_ERROR_NONE)
         return;
 
-    // Use strcat to strcpy the thread name over
-    slen = strnlen_s(thread_name, sizeof(ts->name));
-    ts->name[0] = 0;
-    strncat_s(ts->name, sizeof(ts->name), thread_name, slen);
-
-    // Apply to the debugger
+    // Copy name and apply to the debugger
+    strcpy_s(ts->name, sizeof(ts->name), thread_name);
     SetDebuggerThreadName(thread_name);
 }
 
 
-static rmtBool QueueLine(MessageQueue* queue, char* text, rmtU32 size, struct ThreadSampler* thread_sampler)
+static rmtBool QueueLine(MessageQueue* queue, unsigned char* text, rmtU32 size, struct ThreadSampler* thread_sampler)
 {
     Message* message;
 
     assert(queue != NULL);
 
-    // String/JSON block/null terminate
-    text[size++] = '\"';
-    text[size++] = '}';
-    text[size] = 0;
+    // Prefix with text size
+    rmtU32 text_size = size - 8;
+    U32ToByteArray(text + 4, text_size);
 
     // Allocate some space for the line
     message = MessageQueue_AllocMessage(queue, size, thread_sampler);
@@ -4499,13 +4959,10 @@ static rmtBool QueueLine(MessageQueue* queue, char* text, rmtU32 size, struct Th
 }
 
 
-static const char log_message[] = "{ \"id\": \"LOG\", \"text\": \"";
-
-
 RMT_API void _rmt_LogText(rmtPStr text)
 {
     int start_offset, prev_offset, i;
-    char line_buffer[1024] = { 0 };
+    unsigned char line_buffer[1024] = { 0 };
     ThreadSampler* ts;
 
     if (g_Remotery == NULL)
@@ -4513,9 +4970,12 @@ RMT_API void _rmt_LogText(rmtPStr text)
 
     Remotery_GetThreadSampler(g_Remotery, &ts);
 
-    // Start the line buffer off with the JSON message markup
-    strncat_s(line_buffer, sizeof(line_buffer), log_message, sizeof(log_message));
-    start_offset = (int)strnlen_s(line_buffer, sizeof(line_buffer) - 1);
+    // Start the line with the message header
+    line_buffer[0] = 'L';
+    line_buffer[1] = 'O';
+    line_buffer[2] = 'G';
+    line_buffer[3] = 'M';
+    start_offset = 8;
 
     // There might be newlines in the buffer, so split them into multiple network calls
     prev_offset = start_offset;
@@ -4567,26 +5027,6 @@ RMT_API void _rmt_LogText(rmtPStr text)
 }
 
 
-static rmtU32 GetNameHash(rmtPStr name, rmtU32* hash_cache)
-{
-    // Hash cache provided?
-    if (hash_cache != NULL)
-    {
-        // Calculate the hash first time round only
-        if (*hash_cache == 0)
-        {
-            assert(name != NULL);
-            *hash_cache = MurmurHash3_x86_32(name, (int)strnlen_s(name, 256), 0);
-        }
-
-        return *hash_cache;
-    }
-
-    // Have to recalculate every time when no cache storage exists
-    return MurmurHash3_x86_32(name, (int)strnlen_s(name, 256), 0);
-}
-
-
 RMT_API void _rmt_BeginCPUSample(rmtPStr name, rmtU32 flags, rmtU32* hash_cache)
 {
     // 'hash_cache' stores a pointer to a sample name's hash value. Internally this is used to identify unique callstacks and it
@@ -4605,8 +5045,8 @@ RMT_API void _rmt_BeginCPUSample(rmtPStr name, rmtU32 flags, rmtU32* hash_cache)
     if (Remotery_GetThreadSampler(g_Remotery, &ts) == RMT_ERROR_NONE)
     {
         Sample* sample;
-        rmtU32 name_hash = GetNameHash(name, hash_cache);
-        if (ThreadSampler_Push(ts->sample_trees[SampleType_CPU], name, name_hash, flags, &sample) == RMT_ERROR_NONE)
+        rmtU32 name_hash = ThreadSampler_GetNameHash(ts, name, hash_cache);
+        if (ThreadSampler_Push(ts->sample_trees[SampleType_CPU], name_hash, flags, &sample) == RMT_ERROR_NONE)
         {
             // If this is an aggregate sample, store the time in 'end' as we want to preserve 'start'
             if (sample->us_length != 0)
@@ -4880,7 +5320,7 @@ RMT_API void _rmt_BeginCUDASample(rmtPStr name, rmtU32* hash_cache, void* stream
     {
         rmtError error;
         Sample* sample;
-        rmtU32 name_hash = GetNameHash(name, hash_cache);
+        rmtU32 name_hash = ThreadSampler_GetNameHash(ts, name, hash_cache);
 
         // Create the CUDA tree on-demand as the tree needs an up-front-created root.
         // This is not possible to create on initialisation as a CUDA binding is not yet available.
@@ -4902,7 +5342,7 @@ RMT_API void _rmt_BeginCUDASample(rmtPStr name, rmtU32* hash_cache, void* stream
         }
 
         // Push the same and record its event
-        if (ThreadSampler_Push(*cuda_tree, name, name_hash, 0, &sample) == RMT_ERROR_NONE)
+        if (ThreadSampler_Push(*cuda_tree, name_hash, 0, &sample) == RMT_ERROR_NONE)
         {
             CUDASample* cuda_sample = (CUDASample*)sample;
             CUDAEventRecord(cuda_sample->event_start, stream);
@@ -5271,7 +5711,7 @@ RMT_API void _rmt_BeginD3D11Sample(rmtPStr name, rmtU32* hash_cache)
     {
         rmtError error;
         Sample* sample;
-        rmtU32 name_hash = GetNameHash(name, hash_cache);
+        rmtU32 name_hash = ThreadSampler_GetNameHash(ts, name, hash_cache);
 
         // Create the D3D11 tree on-demand as the tree needs an up-front-created root.
         // This is not possible to create on initialisation as a D3D11 binding is not yet available.
@@ -5288,7 +5728,7 @@ RMT_API void _rmt_BeginD3D11Sample(rmtPStr name, rmtU32* hash_cache)
             New_3(ObjectAllocator, d3d11->timestamp_allocator, sizeof(D3D11Timestamp), (ObjConstructor)D3D11Timestamp_Constructor, (ObjDestructor)D3D11Timestamp_Destructor);
 
         // Push the sample
-        if (ThreadSampler_Push(*d3d_tree, name, name_hash, 0, &sample) == RMT_ERROR_NONE)
+        if (ThreadSampler_Push(*d3d_tree, name_hash, 0, &sample) == RMT_ERROR_NONE)
         {
             D3D11Sample* d3d_sample = (D3D11Sample*)sample;
 
@@ -5856,7 +6296,7 @@ RMT_API void _rmt_BeginOpenGLSample(rmtPStr name, rmtU32* hash_cache)
     {
         rmtError error;
         Sample* sample;
-        rmtU32 name_hash = GetNameHash(name, hash_cache);
+        rmtU32 name_hash = ThreadSampler_GetNameHash(ts, name, hash_cache);
 
         OpenGL* opengl = g_Remotery->opengl;
 
@@ -5876,7 +6316,7 @@ RMT_API void _rmt_BeginOpenGLSample(rmtPStr name, rmtU32* hash_cache)
             New_3(ObjectAllocator, opengl->timestamp_allocator, sizeof(OpenGLTimestamp), (ObjConstructor)OpenGLTimestamp_Constructor, (ObjDestructor)OpenGLTimestamp_Destructor);
 
         // Push the sample
-        if (ThreadSampler_Push(*ogl_tree, name, name_hash, 0, &sample) == RMT_ERROR_NONE)
+        if (ThreadSampler_Push(*ogl_tree, name_hash, 0, &sample) == RMT_ERROR_NONE)
         {
             OpenGLSample* ogl_sample = (OpenGLSample*)sample;
 
@@ -5986,3 +6426,4 @@ RMT_API void _rmt_EndOpenGLSample(void)
 
 
 #endif // RMT_ENABLED
+

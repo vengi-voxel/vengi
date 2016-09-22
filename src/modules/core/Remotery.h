@@ -1,7 +1,3 @@
-/**
- * @file
- */
-
 
 
 /*
@@ -84,17 +80,6 @@ documented just below this comment.
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 */
-
-
-
-// Compiler identification
-#if defined(_MSC_VER)
-    #define RMT_COMPILER_MSVC
-#elif defined(__GNUC__)
-    #define RMT_COMPILER_GNUC
-#elif defined(__clang__)
-    #define RMT_COMPILER_CLANG
-#endif
 
 
 // Platform identification
@@ -325,7 +310,14 @@ typedef void (*rmtInputHandlerPtr)(const char* text, void* context);
 // Struture to fill in to modify Remotery default settings
 typedef struct rmtSettings
 {
+    // Which port to listen for incoming connections on
     rmtU16 port;
+
+    // Only allow connections on localhost?
+    // For dev builds you may want to access your game from other devices but if
+    // you distribute a game to your players with Remotery active, probably best
+    // to limit connections to localhost.
+    rmtBool limit_connections_to_localhost;
 
     // How long to sleep between server updates, hopefully trying to give
     // a little CPU back to other threads.
