@@ -96,8 +96,7 @@ protected:
 	void distributePlants(int amount, video::GLMeshData& meshData);
 	void fillPlantPositionsFromMeshes();
 
-	bool isDistanceCulled(int distance2) const;
-	int getDistance2(const glm::ivec3& pos) const;
+	int getDistanceSquare(const glm::ivec3& pos) const;
 	// schedule mesh extraction around the grid position with the given radius
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 

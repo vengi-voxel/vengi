@@ -218,10 +218,12 @@ bool WorldRenderer::checkShaders() const {
 void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const video::Camera& camera) const {
 	int meshesCount = 0;
 	int visibleCount = 0;
+	const float cullingThreshold = _world->getMeshSize() * 3;
+	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
 	for (auto i = meshes.begin(); i != meshes.end();) {
 		video::GLMeshData& meshData = *i;
-		const float distance = getDistance2(meshData.translation);
-		if (isDistanceCulled(distance)) {
+		const float distance = getDistanceSquare(meshData.translation);
+		if (distance >= maxAllowedDistance) {
 			_world->allowReExtraction(meshData.translation);
 			meshData.shutdown();
 			Log::info("Remove mesh from %i:%i", meshData.translation.x, meshData.translation.z);
@@ -691,12 +693,13 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int r
 	if (meshGridPos == _lastGridPosition) {
 		return;
 	}
+	Log::debug("set last grid position to %i:%i", meshGridPos.x, meshGridPos.z);
 	_lastGridPosition = meshGridPos;
 	glm::ivec3 pos = meshGridPos;
 	pos.y = 0;
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
-		const float distance = getDistance2(pos);
+		const float distance = getDistanceSquare(pos);
 		if (distance <= glm::pow(MinExtractionCullingDistance, 2)) {
 			_world->scheduleMeshExtraction(pos);
 		}
@@ -814,16 +817,10 @@ void WorldRenderer::onRunning(long dt) {
 	}
 }
 
-int WorldRenderer::getDistance2(const glm::ivec3& pos) const {
+int WorldRenderer::getDistanceSquare(const glm::ivec3& pos) const {
 	const glm::ivec3 dist = pos - _lastGridPosition;
 	const int distance = dist.x * dist.x + dist.z * dist.z;
 	return distance;
-}
-
-bool WorldRenderer::isDistanceCulled(int distance2) const {
-	const float cullingThreshold = _world->getMeshSize() * 3;
-	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
-	return distance2 >= maxAllowedDistance;
 }
 
 }
