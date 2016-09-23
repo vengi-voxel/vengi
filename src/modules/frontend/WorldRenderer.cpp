@@ -216,6 +216,8 @@ bool WorldRenderer::checkShaders() const {
 }
 
 void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const video::Camera& camera) const {
+	int meshesCount = 0;
+	int visibleCount = 0;
 	for (auto i = meshes.begin(); i != meshes.end();) {
 		video::GLMeshData& meshData = *i;
 		const float distance = getDistance2(meshData.translation);
@@ -226,11 +228,15 @@ void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const vi
 			i = meshes.erase(i);
 			continue;
 		}
-		if (camera.testFrustum(meshData.aabb) != video::FrustumResult::Outside) {
+		const video::FrustumResult result = camera.testFrustum(meshData.aabb);
+		if (result != video::FrustumResult::Outside) {
 			visible.push_back(&meshData);
+			++visibleCount;
 		}
+		++meshesCount;
 		++i;
 	}
+	Log::trace("%i meshes left after culling, %i meshes overall", visibleCount, meshesCount);
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, const GLMeshesVisible& meshes, int* vertices) {
