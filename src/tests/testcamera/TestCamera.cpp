@@ -9,8 +9,8 @@ TestCamera::TestCamera(io::FilesystemPtr filesystem, core::EventBusPtr eventBus)
 
 core::AppState TestCamera::onInit() {
 	core::AppState state = Super::onInit();
-	const glm::vec4 colors[CAMERAS] = { core::Color::Red, core::Color::Yellow };
-	static_assert(CAMERAS == 2, "Unexpected amount of cameras");
+	const glm::vec4 colors[CAMERAS] = { core::Color::Red, core::Color::Yellow, core::Color::Pink };
+	static_assert(CAMERAS == 3, "Unexpected amount of cameras");
 	for (int i = 0; i < CAMERAS; ++i) {
 		const float p = i * 100.0f + 1.0f;
 		_renderCamera[i].init(dimension());
@@ -28,8 +28,12 @@ core::AppState TestCamera::onInit() {
 		bool renderAABB = i == 0;
 		bool renderSplitFrustum = !renderAABB;
 		bool targetCamera = i == 0;
+		bool ortho = i == 2;
 		if (targetCamera) {
 			_renderCamera[i].setRotationType(video::CameraRotationType::Target);
+		}
+		if (ortho) {
+			_renderCamera[i].setMode(video::CameraMode::Orthogonal);
 		}
 		if (!_frustums[i].init(_renderCamera[i], colors[i], renderSplitFrustum ? 4 : 0)) {
 			return core::AppState::Cleanup;

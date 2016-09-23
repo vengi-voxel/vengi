@@ -14,7 +14,7 @@ class TestCamera: public TestApp {
 private:
 	using Super = TestApp;
 
-	static constexpr int CAMERAS = 2;
+	static constexpr int CAMERAS = 3;
 	frontend::CameraFrustum _frustums[CAMERAS];
 	// the cameras to render the frustums for
 	video::Camera _renderCamera[CAMERAS];
