@@ -106,7 +106,7 @@ void TestVoxelFont::doRender() {
 
 	const char* str = "Hello world!";
 	const int renderedChars = _voxelFont.render(str, positions, indices);
-	if (strlen(str) != renderedChars) {
+	if ((int)strlen(str) != renderedChars) {
 		Log::error("Failed to render string '%s' (chars: %i)", str, renderedChars);
 		requestQuit();
 		return;
