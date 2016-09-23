@@ -257,8 +257,6 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	const bool distanceCulling = cullingMask & CullingDistance;
 	const bool frustumCulling = cullingMask & CullingFrustum;
 	const bool sunCulling = cullingMask & CullingSun;
-	const float chunkSize = (float)_world->getMeshSize();
-	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
 	const bool debugGeometry = _debugGeometry->boolVal();
 	int drawCallsWorld = 0;
 	for (auto i = meshes.begin(); i != meshes.end();) {
@@ -270,15 +268,12 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 			i = meshes.erase(i);
 			continue;
 		}
-		glm::vec3 mins = glm::vec3(meshData.translation);
 		const video::Camera* cullingCamera = &camera;
 		if (false && sunCulling) {
 			cullingCamera = &_sunLight.camera();
-			mins = glm::zero<glm::vec3>();
 		}
-		glm::vec3 maxs = mins + bboxSize;
 		// don't use actualCamera here
-		if (frustumCulling && cullingCamera->testFrustum(mins, maxs) == video::FrustumResult::Outside) {
+		if (frustumCulling && cullingCamera->testFrustum(meshData.aabb) == video::FrustumResult::Outside) {
 			++i;
 			continue;
 		}
@@ -583,6 +578,12 @@ video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader,
 	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
 	video::GLMeshData meshData;
 	meshData.translation = mesh.getOffset();
+
+	const float chunkSize = (float)_world->getMeshSize();
+	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
+
+	const glm::vec3 mins = glm::vec3(meshData.translation);
+	meshData.aabb = core::AABB<float>(mins, mins + bboxSize);
 	meshData.scale = glm::vec3(1.0f);
 
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");

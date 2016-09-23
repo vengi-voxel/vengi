@@ -259,6 +259,7 @@ void Camera::updateFrustumVertices() {
 		const glm::vec4& v = transform * vecs[i];
 		_frustumVertices[i] = v.xyz() / v.w;
 		core_assert(!glm::any(glm::isnan(_frustumVertices[i])));
+		core_assert(!glm::any(glm::isinf(_frustumVertices[i])));
 	}
 }
 
