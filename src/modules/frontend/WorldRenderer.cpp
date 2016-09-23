@@ -580,10 +580,8 @@ video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader,
 	meshData.translation = mesh.getOffset();
 
 	const float chunkSize = (float)_world->getMeshSize();
-	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
-
-	const glm::vec3 mins = glm::vec3(meshData.translation);
-	meshData.aabb = core::AABB<float>(mins, mins + bboxSize);
+	const glm::vec3& mins = glm::vec3(meshData.translation);
+	meshData.aabb = core::AABB<float>(mins, mins + chunkSize);
 	meshData.scale = glm::vec3(1.0f);
 
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
