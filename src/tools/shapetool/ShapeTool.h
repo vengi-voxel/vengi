@@ -31,6 +31,7 @@ protected:
 	frontend::ClientEntityPtr _entity;
 
 	bool _resetTriggered = false;
+	bool _lineModeRendering = false;
 	uint8_t _moveMask = 0;
 	int _drawCallsWorld = 0;
 	int _vertices = 0;

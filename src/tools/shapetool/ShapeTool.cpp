@@ -40,6 +40,13 @@ core::AppState ShapeTool::onInit() {
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
+	core::Command::registerCommand("+linemode", [&] (const core::CmdArgs& args) { \
+		if (args.empty()) {
+			return;
+		}
+		_lineModeRendering = args[0] == "true";
+	}).setHelp("Toggle line rendering mode");
+
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
@@ -106,10 +113,14 @@ void ShapeTool::beforeUI() {
 	_worldRenderer.extractNewMeshes(_camera.position());
 	_worldRenderer.onRunning(_deltaFrame);
 	_vertices = 0;
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if (_lineModeRendering) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
 	_drawCallsWorld = _worldRenderer.renderWorld(_camera, &_vertices);
 	_drawCallsEntities = _worldRenderer.renderEntities(_camera);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	if (_lineModeRendering) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 }
 
 void ShapeTool::afterUI() {
