@@ -218,12 +218,16 @@ public:
 	void frustumCorners(glm::vec3 out[video::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
 	const glm::vec4& frustumPlane(FrustumPlanes plane) const;
 	FrustumResult testFrustum(const glm::vec3& position) const;
-	// TODO: use core::AABB here
+	FrustumResult testFrustum(const core::AABB<float>& aabb) const;
 	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
 
 	core::AABB<float> aabb() const;
 	glm::vec4 sphereBoundingBox() const;
 };
+
+inline FrustumResult Camera::testFrustum(const core::AABB<float>& aabb) const {
+	return testFrustum(aabb.getLowerCorner(), aabb.getUpperCorner());
+}
 
 inline void Camera::init(const glm::ivec2& dimension) {
 	_dimension = dimension;
