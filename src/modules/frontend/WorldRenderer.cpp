@@ -215,7 +215,25 @@ bool WorldRenderer::checkShaders() const {
 	return same;
 }
 
-int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, uint8_t cullingMask) {
+void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const video::Camera& camera) const {
+	for (auto i = meshes.begin(); i != meshes.end();) {
+		video::GLMeshData& meshData = *i;
+		const float distance = getDistance2(meshData.translation);
+		if (isDistanceCulled(distance)) {
+			_world->allowReExtraction(meshData.translation);
+			meshData.shutdown();
+			Log::info("Remove mesh from %i:%i", meshData.translation.x, meshData.translation.z);
+			i = meshes.erase(i);
+			continue;
+		}
+		if (camera.testFrustum(meshData.aabb) != video::FrustumResult::Outside) {
+			visible.push_back(&meshData);
+		}
+		++i;
+	}
+}
+
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, const GLMeshesVisible& meshes, int* vertices) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 
 	const bool deferred = _deferred->boolVal();
@@ -254,40 +272,21 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		}
 	}
 
-	const bool distanceCulling = cullingMask & CullingDistance;
-	const bool frustumCulling = cullingMask & CullingFrustum;
-	const bool sunCulling = cullingMask & CullingSun;
 	const bool debugGeometry = _debugGeometry->boolVal();
 	int drawCallsWorld = 0;
 	for (auto i = meshes.begin(); i != meshes.end();) {
-		video::GLMeshData& meshData = *i;
-		const float distance = getDistance2(meshData.translation);
-		if (distanceCulling && isDistanceCulled(distance, true)) {
-			_world->allowReExtraction(meshData.translation);
-			meshData.shutdown();
-			i = meshes.erase(i);
-			continue;
-		}
-		const video::Camera* cullingCamera = &camera;
-		if (false && sunCulling) {
-			cullingCamera = &_sunLight.camera();
-		}
-		// don't use actualCamera here
-		if (frustumCulling && cullingCamera->testFrustum(meshData.aabb) == video::FrustumResult::Outside) {
-			++i;
-			continue;
-		}
-		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
-		const glm::mat4& model = glm::scale(translate, meshData.scale);
+		video::GLMeshData* meshData = *i;
+		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(meshData->translation));
+		const glm::mat4& model = glm::scale(translate, meshData->scale);
 		shaderSetUniformIf(shader, setUniformMatrix, "u_model", model);
-		meshData.bindVAO();
+		meshData->bindVAO();
 
 		if (debugGeometry && !deferred) {
 			shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 		}
-		meshData.draw();
+		meshData->draw();
 		if (vertices != nullptr) {
-			*vertices += meshData.noOfVertices;
+			*vertices += meshData->noOfVertices;
 		}
 		GL_checkError();
 
@@ -298,7 +297,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 			glLineWidth(2);
 			glPolygonOffset(-2, -2);
 			shaderSetUniformIf(shader, setUniformf, "u_debug_color", 0.0);
-			glDrawElements(GL_TRIANGLES, meshData.noOfIndices, meshData.indexType, 0);
+			glDrawElements(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, 0);
 			glDisable(GL_LINE_SMOOTH);
 			glDisable(GL_POLYGON_OFFSET_LINE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -361,10 +360,18 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	_sunLight.update(_deltaFrame, camera);
 
+	GLMeshesVisible opaque;
+	GLMeshesVisible plant;
+	GLMeshesVisible water;
+	cull(_meshDataOpaque, opaque, camera);
+	cull(_meshDataPlant, plant, camera);
+	cull(_meshDataWater, water, camera);
+
 	float planes[8];
+	const bool shadowMap = _shadowMap->boolVal();
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we do one pass for the gbuffer + the sun
-	if (_shadowMap->boolVal()) {
+	if (shadowMap) {
 		const int maxDepthBuffers = _worldShader.getUniformArraySize("u_shadowmap");
 		core_assert(maxDepthBuffers * 2 <= (int)SDL_arraysize(planes));
 		const video::Camera& sunCamera = _sunLight.camera();
@@ -380,8 +387,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_depthBuffer.bind(true, i);
 			// put shadow acne into the dark
 			glCullFace(GL_FRONT);
-			drawCallsWorld += renderWorldMeshes(_shadowMapShader,          camera, _meshDataOpaque, vertices, CullingSun);
-			drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, _meshDataPlant,  vertices, CullingSun);
+			drawCallsWorld += renderWorldMeshes(_shadowMapShader,          camera, opaque, vertices);
+			drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, plant,  vertices);
 			glCullFace(GL_BACK);
 			_depthBuffer.unbind();
 			glEnable(GL_BLEND);
@@ -398,9 +405,9 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	drawCallsWorld += renderWorldMeshes(_worldShader, camera, _meshDataOpaque, vertices);
-	drawCallsWorld += renderWorldMeshes(_plantShader, camera, _meshDataPlant,  vertices);
-	drawCallsWorld += renderWorldMeshes(_waterShader, camera, _meshDataWater,  vertices);
+	drawCallsWorld += renderWorldMeshes(_worldShader, camera, opaque, vertices);
+	drawCallsWorld += renderWorldMeshes(_plantShader, camera, plant,  vertices);
+	drawCallsWorld += renderWorldMeshes(_waterShader, camera, water,  vertices);
 
 	_colorTexture->unbind();
 
@@ -442,7 +449,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		GL_checkError();
 	}
 
-	if (_shadowMap->boolVal() && _shadowMapDebug->boolVal()) {
+	if (shadowMap && _shadowMapDebug->boolVal()) {
 		const int width = camera.width();
 		const int height = camera.height();
 		video::ScopedShader scopedShader(_shadowMapRenderShader);
@@ -684,7 +691,7 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int r
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
 		const float distance = getDistance2(pos);
-		if (!isDistanceCulled(distance, false)) {
+		if (distance <= glm::pow(MinExtractionCullingDistance, 2)) {
 			_world->scheduleMeshExtraction(pos);
 		}
 		o.next();
@@ -807,13 +814,10 @@ int WorldRenderer::getDistance2(const glm::ivec3& pos) const {
 	return distance;
 }
 
-bool WorldRenderer::isDistanceCulled(int distance2, bool queryForRendering) const {
+bool WorldRenderer::isDistanceCulled(int distance2) const {
 	const float cullingThreshold = _world->getMeshSize() * 3;
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
-	if ((!queryForRendering && distance2 > glm::pow(MinExtractionCullingDistance, 2)) && distance2 >= maxAllowedDistance) {
-		return true;
-	}
-	return false;
+	return distance2 >= maxAllowedDistance;
 }
 
 }

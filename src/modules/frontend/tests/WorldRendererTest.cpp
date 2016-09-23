@@ -44,10 +44,4 @@ TEST_F(WorldRendererTest, testCreate) {
 	ASSERT_GT(mesh.opaqueMesh.getNoOfIndices(), 0u);
 }
 
-TEST_F(WorldRendererTest, testDistanceCulling) {
-	_renderer->onSpawn(glm::zero<glm::vec3>(), 1);
-	_renderer->setViewDistance(100.0f);
-	const float viewDistance = _renderer->getViewDistance() + 2;
-	ASSERT_TRUE(_renderer->isDistanceCulled(viewDistance * viewDistance, true));
-}
 }

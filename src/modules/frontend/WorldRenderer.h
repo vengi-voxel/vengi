@@ -27,10 +27,6 @@ namespace frontend {
 
 class WorldRenderer {
 protected:
-	static constexpr uint8_t CullingDistance = (1 << 0);
-	static constexpr uint8_t CullingFrustum  = (1 << 1);
-	static constexpr uint8_t CullingSun      = (1 << 2) | CullingFrustum;
-
 	struct NoiseGenerationTask {
 		NoiseGenerationTask(uint8_t *_buffer, int _width, int _height, int _depth) :
 				buffer(_buffer), width(_width), height(_height), depth(_depth) {
@@ -47,6 +43,7 @@ protected:
 
 	// Index/vertex buffer data
 	typedef std::list<video::GLMeshData> GLMeshDatas;
+	typedef std::list<video::GLMeshData*> GLMeshesVisible;
 	GLMeshDatas _meshDataOpaque;
 	GLMeshDatas _meshDataWater;
 	GLMeshDatas _meshDataPlant;
@@ -99,14 +96,13 @@ protected:
 	void distributePlants(int amount, video::GLMeshData& meshData);
 	void fillPlantPositionsFromMeshes();
 
-	// we might want to get an answer for this question in two contexts, once for 'should-i-render-this' and once for
-	// 'should-i-create/destroy-the-mesh'.
-	bool isDistanceCulled(int distance2, bool queryForRendering = true) const;
+	bool isDistanceCulled(int distance2) const;
 	int getDistance2(const glm::ivec3& pos) const;
 	// schedule mesh extraction around the grid position with the given radius
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
-	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, uint8_t cullingMask = CullingDistance | CullingFrustum);
+	void cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const video::Camera& camera) const;
+	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, const GLMeshesVisible& meshes, int* vertices);
 	void renderWorldDeferred(const video::Camera& camera, const int width, const int height);
 
 	bool checkShaders() const;
