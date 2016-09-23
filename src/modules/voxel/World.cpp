@@ -26,7 +26,7 @@
 
 namespace voxel {
 
-//#define DEBUG_SCENE 2
+//#define DEBUG_SCENE 3
 #ifdef DEBUG_SCENE
 #define PERSIST 0
 #else
@@ -241,6 +241,17 @@ void World::create(TerrainContext& ctx) {
 	ShapeGenerator::createCone(ctx, glm::vec3(10, 0, 10), 10, 30, 10, createVoxel(Leaves2));
 	ShapeGenerator::createCone(ctx, glm::vec3(20, 0, 10), 15, 60, 15, createVoxel(Leaves3));
 	ShapeGenerator::createCone(ctx, glm::vec3(-20, 0, 10), 50, 40, 50, createVoxel(Leaves4));
+#elif DEBUG_SCENE == 3
+	const Region& region = ctx.region;
+	const int width = region.getWidthInVoxels();
+	const int depth = region.getDepthInVoxels();
+	const int lowerX = region.getLowerX();
+	const int lowerZ = region.getLowerZ();
+	for (int z = lowerZ; z < lowerZ + depth; ++z) {
+		for (int x = lowerX; x < lowerX + width; ++x) {
+			ctx.setVoxel(glm::ivec3(x, 0, z), createVoxel(Dirt1));
+		}
+	}
 #else
 	WorldGenerator::createWorld(_ctx, ctx, _biomeManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
 #endif
