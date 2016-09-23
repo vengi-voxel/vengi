@@ -30,7 +30,7 @@ protected:
 
 	WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport = 17815);
 
-	bool loadKeyBindings();
+	bool loadKeyBindings(const std::string& filename = "keybindings.cfg");
 
 	virtual ~WindowedApp() {
 	}

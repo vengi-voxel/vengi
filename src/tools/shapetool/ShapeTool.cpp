@@ -23,6 +23,8 @@ ShapeTool::~ShapeTool() {
 	core::Command::unregisterCommand("+move_left");
 	core::Command::unregisterCommand("+move_upt");
 	core::Command::unregisterCommand("+move_down");
+	core::Command::unregisterCommand("+linemode");
+	core::Command::unregisterCommand("camsync");
 }
 
 core::AppState ShapeTool::onInit() {
@@ -139,6 +141,7 @@ void ShapeTool::afterUI() {
 	enqueueShowStr(x, core::Color::Gray, "ESC: toggle ui/move through world");
 	enqueueShowStr(x, core::Color::Gray, "+/-: change move speed");
 	enqueueShowStr(x, core::Color::Gray, "LMB: perform raycast to voxel under cursor");
+	enqueueShowStr(x, core::Color::Gray, "l: line mode rendering");
 
 	Super::afterUI();
 }

@@ -138,12 +138,13 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 	return false;
 }
 
-bool WindowedApp::loadKeyBindings() {
-	const std::string& bindings = filesystem()->load("keybindings.cfg");
-	if (bindings.empty())
+bool WindowedApp::loadKeyBindings(const std::string& filename) {
+	const std::string& bindings = filesystem()->load(filename);
+	if (bindings.empty()) {
 		return false;
+	}
 	const util::KeybindingParser p(bindings);
-	_bindings = p.getBindings();
+	_bindings.insert(p.getBindings().begin(), p.getBindings().end());
 	return true;
 }
 
@@ -161,8 +162,9 @@ core::AppState WindowedApp::onInit() {
 	SDL_StopTextInput();
 
 	if (!loadKeyBindings()) {
-		Log::error("failed to init the keybindings");
+		Log::error("failed to init the global keybindings");
 	}
+	loadKeyBindings(_appname + "-keybindings.cfg");
 
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 
