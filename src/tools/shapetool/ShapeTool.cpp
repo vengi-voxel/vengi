@@ -106,36 +106,29 @@ void ShapeTool::beforeUI() {
 	_worldRenderer.extractNewMeshes(_camera.position());
 	_worldRenderer.onRunning(_deltaFrame);
 	_vertices = 0;
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	_drawCallsWorld = _worldRenderer.renderWorld(_camera, &_vertices);
 	_drawCallsEntities = _worldRenderer.renderEntities(_camera);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void ShapeTool::afterUI() {
-	tb::TBStr drawCallsWorld;
-	drawCallsWorld.SetFormatted("drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
-	tb::TBStr drawCallsEntity;
-	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
-	tb::TBStr position;
 	const glm::vec3& pos = _camera.position();
-	position.SetFormatted("pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
-	tb::TBStr extractions;
 	int meshes;
 	int extracted;
 	int pending;
-	_worldRenderer.stats(meshes, extracted, pending);
-	extractions.SetFormatted("pending: %i, meshes: %i, extracted: %i", pending, meshes, extracted);
-	tb::TBFontFace *font = _root.GetFont();
-	const tb::TBColor color(255, 255, 255);
+	int active;
+	_worldRenderer.stats(meshes, extracted, pending, active);
 	const int x = 5;
-	int y = 20;
-	const int lineHeight = font->GetHeight() + 2;
-	font->DrawString(x, y, color, drawCallsEntity);
-	y += lineHeight;
-	font->DrawString(x, y, color, drawCallsWorld);
-	y += lineHeight;
-	font->DrawString(x, y, color, position);
-	y += lineHeight;
-	font->DrawString(x, y, color, extractions);
+	enqueueShowStr(x, core::Color::White, "drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
+	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
+	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
+	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i", pending, meshes, extracted, active);
+
+	enqueueShowStr(x, core::Color::Gray, "ESC: toggle ui/move through world");
+	enqueueShowStr(x, core::Color::Gray, "+/-: change move speed");
+	enqueueShowStr(x, core::Color::Gray, "LMB: perform raycast to voxel under cursor");
+
 	Super::afterUI();
 }
 
@@ -198,6 +191,8 @@ void ShapeTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 	voxel::Voxel voxel;
 	if (_world->raycast(ray.origin, ray.direction, _worldRenderer.getViewDistance(), hit, voxel)) {
 		_worldRenderer.setVoxel(hit, voxel::createVoxel(voxel::Air));
+		Log::info("Raycast hit %i:%i:%i", hit.x, hit.y, hit.z);
+		// TODO: store to place trees at that position
 	} else {
 		Log::warn("Raycast didn't hit anything");
 	}

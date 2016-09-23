@@ -254,6 +254,17 @@ void Camera::updateFrustumVertices() {
 		glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
 	};
 
+	if (_mode == CameraMode::Orthogonal) {
+		const glm::mat4& transform = viewMatrix() * projectionMatrix();
+		for (int i = 0; i < video::FRUSTUM_VERTICES_MAX; ++i) {
+			const glm::vec4& v = transform * vecs[i];
+			_frustumVertices[i] = v.xyz();
+			core_assert(!glm::any(glm::isnan(_frustumVertices[i])));
+			core_assert(!glm::any(glm::isinf(_frustumVertices[i])));
+		}
+		return;
+	}
+
 	const glm::mat4& transform = glm::inverse(projectionMatrix() * viewMatrix());
 	for (int i = 0; i < video::FRUSTUM_VERTICES_MAX; ++i) {
 		const glm::vec4& v = transform * vecs[i];

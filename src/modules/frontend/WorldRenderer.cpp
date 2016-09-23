@@ -693,8 +693,9 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int r
 	}
 }
 
-void WorldRenderer::stats(int& meshes, int& extracted, int& pending) const {
+void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active) const {
 	_world->stats(meshes, extracted, pending);
+	active = _meshDataOpaque.size();
 }
 
 bool WorldRenderer::onInit(const glm::ivec2& dimension) {

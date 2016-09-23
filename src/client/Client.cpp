@@ -198,18 +198,19 @@ void Client::beforeUI() {
 }
 
 void Client::afterUI() {
-	tb::TBStr drawCallsWorld;
-	drawCallsWorld.SetFormatted("drawcalls world: %i", _drawCallsWorld);
-	tb::TBStr drawCallsEntity;
-	drawCallsEntity.SetFormatted("drawcalls entities: %i", _drawCallsEntities);
-	tb::TBFontFace *font = _root.GetFont();
-	font->DrawString(5, 20, tb::TBColor(255, 255, 255), drawCallsEntity);
-	font->DrawString(5, 35, tb::TBColor(255, 255, 255), drawCallsWorld);
 	const glm::vec3& pos = _camera.position();
 	const glm::vec3& target = _camera.target();
-	tb::TBStr position;
-	position.SetFormatted("pos: %.2f:%.2f:%.2f (target: %.2f:%.2f:%.2f)", pos.x, pos.y, pos.z, target.x, target.y, target.z);
-	font->DrawString(5, 50, tb::TBColor(255, 255, 255), position);
+	int meshes;
+	int extracted;
+	int pending;
+	int active;
+	_worldRenderer.stats(meshes, extracted, pending, active);
+	const int x = 5;
+	enqueueShowStr(x, core::Color::White, "drawcalls world: %i", _drawCallsWorld);
+	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
+	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
+	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i", pending, meshes, extracted, active);
+	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f (target: %.2f:%.2f:%.2f)", pos.x, pos.y, pos.z, target.x, target.y, target.z);
 
 	if (hasState(CLIENT_CONNECTING)) {
 		_waiting.render();

@@ -128,7 +128,7 @@ public:
 	bool addEntity(const ClientEntityPtr& entity);
 	bool removeEntity(ClientEntityId id);
 
-	void stats(int& meshes, int& extracted, int& pending) const;
+	void stats(int& meshes, int& extracted, int& pending, int& active) const;
 
 	// world coordinates x/z
 	void deleteMesh(const glm::ivec3& pos);
