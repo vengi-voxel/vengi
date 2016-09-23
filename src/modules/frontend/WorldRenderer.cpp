@@ -218,11 +218,12 @@ bool WorldRenderer::checkShaders() const {
 void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const video::Camera& camera) const {
 	int meshesCount = 0;
 	int visibleCount = 0;
-	const float cullingThreshold = _world->getMeshSize() * 3;
+	const float cullingThreshold = _world->getMeshSize();
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
 	for (auto i = meshes.begin(); i != meshes.end();) {
 		video::GLMeshData& meshData = *i;
-		const float distance = getDistanceSquare(meshData.translation);
+		const int distance = getDistanceSquare(meshData.translation);
+		Log::trace("distance is: %i (%i)", distance, maxAllowedDistance);
 		if (distance >= maxAllowedDistance) {
 			_world->allowReExtraction(meshData.translation);
 			meshData.shutdown();
