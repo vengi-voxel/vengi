@@ -26,7 +26,11 @@
 namespace frontend {
 
 class WorldRenderer {
-private:
+protected:
+	static constexpr uint8_t CullingDistance = (1 << 0);
+	static constexpr uint8_t CullingFrustum  = (1 << 1);
+	static constexpr uint8_t CullingSun      = (1 << 2) | CullingFrustum;
+
 	struct NoiseGenerationTask {
 		NoiseGenerationTask(uint8_t *_buffer, int _width, int _height, int _depth) :
 				buffer(_buffer), width(_width), height(_height), depth(_depth) {
@@ -102,7 +106,7 @@ private:
 	// schedule mesh extraction around the grid position with the given radius
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
-	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, bool culling = true);
+	int renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, uint8_t cullingMask = CullingDistance | CullingFrustum);
 	void renderWorldDeferred(const video::Camera& camera, const int width, const int height);
 
 	bool checkShaders() const;
@@ -130,6 +134,7 @@ public:
 	void deleteMesh(const glm::ivec3& pos);
 
 	float getViewDistance() const;
+	void setViewDistance(float viewDistance);
 
 	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 
@@ -146,6 +151,10 @@ inline const video::SunLight& WorldRenderer::sunLight() const {
 
 inline float WorldRenderer::getViewDistance() const {
 	return _viewDistance;
+}
+
+inline void WorldRenderer::setViewDistance(float viewDistance) {
+	_viewDistance = viewDistance;
 }
 
 }

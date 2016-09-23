@@ -215,7 +215,7 @@ bool WorldRenderer::checkShaders() const {
 	return same;
 }
 
-int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, bool culling) {
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, GLMeshDatas& meshes, int* vertices, uint8_t cullingMask) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 
 	const bool deferred = _deferred->boolVal();
@@ -254,6 +254,9 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		}
 	}
 
+	const bool distanceCulling = cullingMask & CullingDistance;
+	const bool frustumCulling = cullingMask & CullingFrustum;
+	const bool sunCulling = cullingMask & CullingSun;
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3 bboxSize(chunkSize, chunkSize, chunkSize);
 	const bool debugGeometry = _debugGeometry->boolVal();
@@ -261,16 +264,21 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	for (auto i = meshes.begin(); i != meshes.end();) {
 		video::GLMeshData& meshData = *i;
 		const float distance = getDistance2(meshData.translation);
-		if (culling && isDistanceCulled(distance, true)) {
+		if (distanceCulling && isDistanceCulled(distance, true)) {
 			_world->allowReExtraction(meshData.translation);
 			meshData.shutdown();
 			i = meshes.erase(i);
 			continue;
 		}
-		const glm::vec3 mins(meshData.translation);
-		const glm::vec3 maxs = glm::vec3(meshData.translation) + bboxSize;
+		glm::vec3 mins = glm::vec3(meshData.translation);
+		const video::Camera* cullingCamera = &camera;
+		if (false && sunCulling) {
+			cullingCamera = &_sunLight.camera();
+			mins = glm::zero<glm::vec3>();
+		}
+		glm::vec3 maxs = mins + bboxSize;
 		// don't use actualCamera here
-		if (culling && camera.testFrustum(mins, maxs) == video::FrustumResult::Outside) {
+		if (frustumCulling && cullingCamera->testFrustum(mins, maxs) == video::FrustumResult::Outside) {
 			++i;
 			continue;
 		}
@@ -377,9 +385,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_depthBuffer.bind(true, i);
 			// put shadow acne into the dark
 			glCullFace(GL_FRONT);
-			// TODO: we need a bitmask for culling, because we need some kind of culling here, too...
-			drawCallsWorld  = renderWorldMeshes(_shadowMapShader,          camera, _meshDataOpaque, vertices, false);
-			drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, _meshDataPlant,  vertices, false);
+			drawCallsWorld += renderWorldMeshes(_shadowMapShader,          camera, _meshDataOpaque, vertices, CullingSun);
+			drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, _meshDataPlant,  vertices, CullingSun);
 			glCullFace(GL_BACK);
 			_depthBuffer.unbind();
 			glEnable(GL_BLEND);
@@ -397,7 +404,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	drawCallsWorld += renderWorldMeshes(_worldShader, camera, _meshDataOpaque, vertices);
-	drawCallsWorld += renderWorldMeshes(_plantShader, camera, _meshDataPlant,  vertices, false);
+	drawCallsWorld += renderWorldMeshes(_plantShader, camera, _meshDataPlant,  vertices);
 	drawCallsWorld += renderWorldMeshes(_waterShader, camera, _meshDataWater,  vertices);
 
 	_colorTexture->unbind();
