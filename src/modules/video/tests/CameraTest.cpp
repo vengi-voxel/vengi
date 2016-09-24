@@ -31,6 +31,7 @@ TEST_F(CameraTest, testMotion) {
 
 TEST_F(CameraTest, testCullingPerspective) {
 	Camera camera;
+	camera.setMode(CameraMode::Perspective);
 	camera.setPosition(glm::vec3(0.0, 1.0, 0.0));
 	camera.lookAt(glm::vec3(0.0), glm::forward);
 	camera.update(0l);
