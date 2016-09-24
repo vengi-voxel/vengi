@@ -29,4 +29,14 @@ TEST_F(CameraTest, testMotion) {
 	camera.update(0l);
 }
 
+TEST_F(CameraTest, testCullingPerspective) {
+	Camera camera;
+	camera.setPosition(glm::vec3(0.0, 1.0, 0.0));
+	camera.lookAt(glm::vec3(0.0), glm::forward);
+	camera.update(0l);
+	ASSERT_EQ(video::FrustumResult::Outside, camera.testFrustum(glm::vec3(0.0, 1.0, 0.0)));
+	ASSERT_EQ(video::FrustumResult::Inside, camera.testFrustum(glm::vec3(0.0, 0.0, 0.0)));
+	ASSERT_EQ(video::FrustumResult::Intersect, camera.testFrustum(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
+}
+
 }
