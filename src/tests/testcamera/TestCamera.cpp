@@ -112,6 +112,7 @@ void TestCamera::afterUI() {
 	enqueueShowStr(5, core::Color::Gray, "Ctrl/Shift/+ Ctrl/Shift/-: near plane");
 	enqueueShowStr(5, core::Color::Gray, "Shift/MouseWheel: far plane");
 	enqueueShowStr(5, core::Color::Gray, "Ctrl/Shift/MouseWheel: near plane");
+	enqueueShowStr(5, core::Color::LightGray, "Sphere: red = outside, green = inside, purple = touching");
 }
 
 core::AppState TestCamera::onRunning() {
