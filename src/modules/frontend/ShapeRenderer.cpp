@@ -90,6 +90,20 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	std::vector<glm::vec4> vertices;
 	shapeBuilder.convertVertices(vertices);
 	core_assert_always(_vbo[meshIndex].update(_vertexIndex[meshIndex], vertices));
+	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
+	_vbo[meshIndex].update(_indexIndex[meshIndex], indices);
+	const video::ShapeBuilder::Colors& colors = shapeBuilder.getColors();
+	if (_colorShader.getComponentsColor() == 4) {
+		_vbo[meshIndex].update(_colorIndex[meshIndex], colors);
+	} else {
+		core_assert(_colorShader.getComponentsColor() == 3);
+		std::vector<glm::vec3> colors3;
+		colors3.reserve(colors.size());
+		for (const auto c : colors) {
+			colors3.push_back(c.xyz());
+		}
+		_vbo[meshIndex].update(_colorIndex[meshIndex], colors3);
+	}
 }
 
 void ShapeRenderer::renderAll(const video::Camera& camera, GLenum drawmode) const {
