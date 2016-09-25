@@ -4,9 +4,7 @@
 #include "core/Common.h"
 #include "core/Color.h"
 #include "video/Camera.h"
-#include "video/VertexBuffer.h"
 #include "video/ShapeBuilder.h"
-#include "ColorShader.h"
 
 namespace frontend {
 
