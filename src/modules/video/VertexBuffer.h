@@ -29,7 +29,7 @@ private:
 		uint8_t divisor = 0; // for instanced rendering
 	};
 	std::vector<Attribute> _attributes;
-	GLuint _vao;
+	mutable GLuint _vao;
 public:
 	VertexBuffer(const void* data, GLsizeiptr size, GLenum target = GL_ARRAY_BUFFER);
 	VertexBuffer();
@@ -68,8 +68,8 @@ public:
 	int32_t createFullscreenQuad();
 	int32_t createFullscreenTextureBuffer();
 	glm::ivec2 createFullscreenTexturedQuad();
-	bool bind();
-	void unbind();
+	bool bind() const;
+	void unbind() const;
 	GLuint size(int32_t idx) const;
 	GLuint elements(int32_t idx, int components = 3, size_t componentSize = sizeof(float)) const;
 	bool isValid(int32_t idx) const;

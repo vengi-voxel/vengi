@@ -22,7 +22,7 @@ bool VertexBuffer::addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, i
 	return true;
 }
 
-bool VertexBuffer::bind() {
+bool VertexBuffer::bind() const {
 	if (!isValid(0)) {
 		return false;
 	}
@@ -56,7 +56,7 @@ bool VertexBuffer::bind() {
 	return true;
 }
 
-void VertexBuffer::unbind() {
+void VertexBuffer::unbind() const {
 	if (_vao != 0) {
 		glBindVertexArray(0);
 	} else {
