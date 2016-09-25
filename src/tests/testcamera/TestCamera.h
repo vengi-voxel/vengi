@@ -6,6 +6,8 @@
 
 #include "testcore/TestApp.h"
 #include "frontend/CameraFrustum.h"
+#include "FrustumEntity.h"
+#include <array>
 
 /**
  * @brief Renders the view frustum of a camera
@@ -18,6 +20,8 @@ private:
 	frontend::CameraFrustum _frustums[CAMERAS];
 	// the cameras to render the frustums for
 	video::Camera _renderCamera[CAMERAS];
+
+	std::array<FrustumEntity, 25> _entities;
 
 	int _targetCamera = 0;
 

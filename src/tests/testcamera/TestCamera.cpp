@@ -3,13 +3,30 @@
 TestCamera::TestCamera(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
 	setCameraMotion(true);
-	setRenderPlane(true);
+	//setRenderPlane(true);
 	setRenderAxis(true);
 	//_renderPlaneLines = true;
 }
 
 core::AppState TestCamera::onInit() {
 	core::AppState state = Super::onInit();
+
+	const float nearPlane = 5.0f;
+
+	const int ents = _entities.size();
+	const int rows = ents / 5;
+	const int cols = ents / rows;
+	const float distance = 20.0f;
+	const float deltaY = rows / 2.0f * -distance;
+	const float deltaX = cols / 2.0f * -distance;
+	core_assert(ents - rows * cols == 0);
+	for (int row = 0; row < rows; ++row) {
+		for (int col = 0; col < cols; ++col) {
+			const glm::vec3 p(deltaX + distance * col, deltaY + distance * row, nearPlane + 1.0f);
+			_entities[row * cols + col].setPosition(p).init();
+		}
+	}
+
 	const glm::vec4 colors[CAMERAS] = { core::Color::Red, core::Color::Yellow, core::Color::Pink };
 	static_assert(CAMERAS == 3, "Unexpected amount of cameras");
 	for (int i = 0; i < CAMERAS; ++i) {
@@ -24,7 +41,7 @@ core::AppState TestCamera::onInit() {
 
 		_renderCamera[i].setPosition(glm::zero<glm::vec3>());
 		_renderCamera[i].lookAt(glm::vec3(10.0f, 70.0f, 10.0f));
-		_renderCamera[i].setNearPlane(5.0f);
+		_renderCamera[i].setNearPlane(nearPlane);
 		_renderCamera[i].setFarPlane(40.0f);
 
 		_renderCamera[i].update(0l);
@@ -55,6 +72,10 @@ void TestCamera::resetCameraPosition() {
 void TestCamera::doRender() {
 	video::Camera& c = _renderCamera[_targetCamera];
 	c.update(_deltaFrame);
+	for (FrustumEntity& e : _entities) {
+		e.cull(c);
+		e.render(_camera);
+	}
 	_frustums[_targetCamera].render(_camera, c);
 }
 
@@ -95,7 +116,8 @@ void TestCamera::afterUI() {
 
 core::AppState TestCamera::onRunning() {
 	core::AppState state = Super::onRunning();
-	_camera.setTarget(_renderCamera[_targetCamera].position());
+	const video::Camera& c = _renderCamera[_targetCamera];
+	_camera.setTarget(c.position());
 	return state;
 }
 
@@ -104,6 +126,12 @@ core::AppState TestCamera::onCleanup() {
 	for (int i = 0; i < CAMERAS; ++i) {
 		_frustums[i].shutdown();
 	}
+
+	const int ents = _entities.size();
+	for (int i = 0; i < ents; ++i) {
+		_entities[i].shutdown();
+	}
+
 	return state;
 }
 
