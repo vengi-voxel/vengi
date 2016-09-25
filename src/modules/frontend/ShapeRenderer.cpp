@@ -92,7 +92,7 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	core_assert_always(_vbo[meshIndex].update(_vertexIndex[meshIndex], vertices));
 }
 
-void ShapeRenderer::renderAll(const video::Camera& camera, GLenum drawmode) {
+void ShapeRenderer::renderAll(const video::Camera& camera, GLenum drawmode) const {
 	video::ScopedShader scoped(_colorShader);
 	core_assert_always(_colorShader.setView(camera.viewMatrix()));
 	core_assert_always(_colorShader.setProjection(camera.projectionMatrix()));
@@ -118,7 +118,7 @@ void ShapeRenderer::renderAll(const video::Camera& camera, GLenum drawmode) {
 	GL_checkError();
 }
 
-void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, GLenum drawmode) {
+void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, GLenum drawmode) const {
 	video::ScopedShader scoped(_colorShader);
 	core_assert_always(_colorShader.setView(camera.viewMatrix()));
 	core_assert_always(_colorShader.setProjection(camera.projectionMatrix()));

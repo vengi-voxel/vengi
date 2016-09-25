@@ -28,9 +28,9 @@ public:
 
 	void update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder);
 
-	void render(uint32_t meshIndex, const video::Camera& camera, GLenum drawmode = GL_TRIANGLES);
+	void render(uint32_t meshIndex, const video::Camera& camera, GLenum drawmode = GL_TRIANGLES) const;
 
-	void renderAll(const video::Camera& camera, GLenum drawmode = GL_TRIANGLES);
+	void renderAll(const video::Camera& camera, GLenum drawmode = GL_TRIANGLES) const;
 };
 
 }
