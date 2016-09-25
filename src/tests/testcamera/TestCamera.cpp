@@ -31,7 +31,7 @@ core::AppState TestCamera::onInit() {
 	static_assert(CAMERAS == 3, "Unexpected amount of cameras");
 	for (int i = 0; i < CAMERAS; ++i) {
 		bool renderAABB = i == 0;
-		bool renderSplitFrustum = !renderAABB;
+		bool renderSplitFrustum = i == 1;
 		bool targetCamera = i == 0;
 		bool ortho = i == 2;
 
