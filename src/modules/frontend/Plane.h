@@ -13,8 +13,17 @@ private:
 	frontend::ShapeRenderer _shapeRenderer;
 	int32_t _planeMesh = -1;
 public:
-	void render(const video::Camera& camera) {
-		_shapeRenderer.render(_planeMesh, camera, GL_TRIANGLES);
+	void render(const video::Camera& camera, bool lines = false) {
+		const GLenum mode = lines ? GL_LINES : GL_TRIANGLES;
+		GLboolean state;
+		glGetBooleanv(GL_CULL_FACE, &state);
+		if (state) {
+			glDisable(GL_CULL_FACE);
+		}
+		_shapeRenderer.render(_planeMesh, camera, mode);
+		if (state) {
+			glEnable(GL_CULL_FACE);
+		}
 	}
 
 	void shutdown() {
