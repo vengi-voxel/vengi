@@ -22,6 +22,7 @@ private:
 	int _targetCamera = 0;
 
 	void doRender() override;
+	void resetCameraPosition();
 public:
 	TestCamera(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
 

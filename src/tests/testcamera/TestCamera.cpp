@@ -3,8 +3,9 @@
 TestCamera::TestCamera(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
 	setCameraMotion(true);
-	setRenderPlane(false);
+	setRenderPlane(true);
 	setRenderAxis(true);
+	//_renderPlaneLines = true;
 }
 
 core::AppState TestCamera::onInit() {
@@ -17,14 +18,11 @@ core::AppState TestCamera::onInit() {
 		bool targetCamera = i == 0;
 		bool ortho = i == 2;
 
-		const float p = i * 100.0f + 1.0f;
-
 		_renderCamera[i].init(ortho ? glm::ivec2(100, 50) : dimension());
 		_renderCamera[i].setAspectRatio(_aspect);
 		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 
-		// TODO: per camera settings
-		_renderCamera[i].setPosition(glm::vec3(p, 10.0f, p));
+		_renderCamera[i].setPosition(glm::zero<glm::vec3>());
 		_renderCamera[i].lookAt(glm::vec3(10.0f, 70.0f, 10.0f));
 		_renderCamera[i].setNearPlane(5.0f);
 		_renderCamera[i].setFarPlane(40.0f);
@@ -43,20 +41,21 @@ core::AppState TestCamera::onInit() {
 		_frustums[i].setRenderAABB(renderAABB);
 	}
 
-	_camera.setRotationType(video::CameraRotationType::Target);
-	_camera.setTarget(_renderCamera[_targetCamera].position());
-	_camera.setTargetDistance(200.0f);
+	resetCameraPosition();
 
 	return state;
 }
 
+void TestCamera::resetCameraPosition() {
+	_camera.setPosition(glm::vec3(0.0f, 100.0f, 250.0f));
+	_camera.setAngles(0.0f, 0.0f, 0.0f);
+	_camera.lookAt(glm::vec3(0.0001f));
+}
+
 void TestCamera::doRender() {
-	for (int i = 0; i < CAMERAS; ++i) {
-		_renderCamera[i].update(_deltaFrame);
-	}
-	for (int i = 0; i < CAMERAS; ++i) {
-		_frustums[i].render(_camera, _renderCamera[i]);
-	}
+	video::Camera& c = _renderCamera[_targetCamera];
+	c.update(_deltaFrame);
+	_frustums[_targetCamera].render(_camera, c);
 }
 
 void TestCamera::afterUI() {
@@ -87,6 +86,7 @@ void TestCamera::afterUI() {
 	enqueueShowStr(5, core::Color::Gray, "Space: toggle camera");
 	enqueueShowStr(5, core::Color::Gray, "Shift/MouseMove: rotate");
 	enqueueShowStr(5, core::Color::Gray, "Backspace: toggle aabb");
+	enqueueShowStr(5, core::Color::Gray, "ESC: reset position");
 	enqueueShowStr(5, core::Color::Gray, "Shift/+ Shift/-: far plane");
 	enqueueShowStr(5, core::Color::Gray, "Ctrl/Shift/+ Ctrl/Shift/-: near plane");
 	enqueueShowStr(5, core::Color::Gray, "Shift/MouseWheel: far plane");
@@ -141,6 +141,10 @@ bool TestCamera::onKeyPress(int32_t key, int16_t modifier) {
 	if (key == SDLK_BACKSPACE) {
 		const bool aabb = _frustums[_targetCamera].renderAABB();
 		_frustums[_targetCamera].setRenderAABB(!aabb);
+	}
+
+	if (key == SDLK_ESCAPE) {
+		resetCameraPosition();
 	}
 
 	video::Camera& c = _renderCamera[_targetCamera];
