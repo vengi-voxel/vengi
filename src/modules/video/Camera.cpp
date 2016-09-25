@@ -10,6 +10,13 @@
 
 namespace video {
 
+static const glm::vec4 cornerVecs[video::FRUSTUM_VERTICES_MAX] = {
+	glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
+	glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
+	glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
+	glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
+};
+
 Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _pos(glm::vec3()), _omega(0.0f) {
 }
@@ -218,13 +225,6 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 }
 
 void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM_VERTICES_MAX]) const {
-	static const glm::vec4 vecs[video::FRUSTUM_VERTICES_MAX] = {
-		glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
-		glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
-		glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
-		glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
-	};
-
 	glm::mat4 proj(glm::uninitialize);
 	switch(_mode) {
 	case CameraMode::Orthogonal:
@@ -237,7 +237,7 @@ void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM
 
 	const glm::mat4& transform = glm::inverse(proj * viewMatrix());
 	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
-		const glm::vec4& v = transform * vecs[i];
+		const glm::vec4& v = transform * cornerVecs[i];
 		out[i] = v.xyz() / v.w;
 		core_assert(!glm::any(glm::isnan(out[i])));
 	}
@@ -248,16 +248,9 @@ void Camera::updateFrustumVertices() {
 		return;
 	}
 
-	static const glm::vec4 vecs[video::FRUSTUM_VERTICES_MAX] = {
-		glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
-		glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
-		glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
-		glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
-	};
-
 	const glm::mat4& transform = (_mode == CameraMode::Orthogonal) ? glm::affineInverse(viewMatrix()) : glm::inverse(projectionMatrix() * viewMatrix());
 	for (int i = 0; i < video::FRUSTUM_VERTICES_MAX; ++i) {
-		const glm::vec4& v = transform * vecs[i];
+		const glm::vec4& v = transform * cornerVecs[i];
 		_frustumVertices[i] = v.xyz() / v.w;
 		core_assert(!glm::any(glm::isnan(_frustumVertices[i])));
 		core_assert(!glm::any(glm::isinf(_frustumVertices[i])));
