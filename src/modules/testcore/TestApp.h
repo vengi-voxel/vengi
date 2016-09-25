@@ -23,6 +23,7 @@ protected:
 	core::VarPtr _rotationSpeed;
 	uint8_t _moveMask = 0;
 	float _cameraSpeed = 0.1f;
+	bool _renderPlaneLines = false;
 
 	virtual void doRender() = 0;
 
