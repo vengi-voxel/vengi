@@ -12,8 +12,14 @@ core::AppState TestCamera::onInit() {
 	const glm::vec4 colors[CAMERAS] = { core::Color::Red, core::Color::Yellow, core::Color::Pink };
 	static_assert(CAMERAS == 3, "Unexpected amount of cameras");
 	for (int i = 0; i < CAMERAS; ++i) {
+		bool renderAABB = i == 0;
+		bool renderSplitFrustum = !renderAABB;
+		bool targetCamera = i == 0;
+		bool ortho = i == 2;
+
 		const float p = i * 100.0f + 1.0f;
-		_renderCamera[i].init(dimension());
+
+		_renderCamera[i].init(ortho ? glm::ivec2(100, 50) : dimension());
 		_renderCamera[i].setAspectRatio(_aspect);
 		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 
@@ -25,10 +31,6 @@ core::AppState TestCamera::onInit() {
 
 		_renderCamera[i].update(0l);
 
-		bool renderAABB = i == 0;
-		bool renderSplitFrustum = !renderAABB;
-		bool targetCamera = i == 0;
-		bool ortho = i == 2;
 		if (targetCamera) {
 			_renderCamera[i].setRotationType(video::CameraRotationType::Target);
 		}
