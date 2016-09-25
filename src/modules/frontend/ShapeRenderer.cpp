@@ -18,6 +18,7 @@ bool ShapeRenderer::deleteMesh(uint32_t meshIndex) {
 	_vbo[meshIndex].shutdown();
 	_vertexIndex[meshIndex] = -1;
 	_indexIndex[meshIndex] = -1;
+	_colorIndex[meshIndex] = -1;
 	return true;
 }
 
@@ -52,9 +53,8 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 	}
 
 	const video::ShapeBuilder::Colors& colors = shapeBuilder.getColors();
-	int32_t cIndex;
 	if (_colorShader.getComponentsColor() == 4) {
-		cIndex = _vbo[meshIndex].create(colors);
+		_colorIndex[meshIndex] = _vbo[meshIndex].create(colors);
 	} else {
 		core_assert(_colorShader.getComponentsColor() == 3);
 		std::vector<glm::vec3> colors3;
@@ -62,9 +62,9 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 		for (const auto c : colors) {
 			colors3.push_back(c.xyz());
 		}
-		cIndex = _vbo[meshIndex].create(colors3);
+		_colorIndex[meshIndex] = _vbo[meshIndex].create(colors3);
 	}
-	if (cIndex == -1) {
+	if (_colorIndex[meshIndex] == -1) {
 		_vbo[meshIndex].shutdown();
 		Log::error("Could not create vbo for color");
 		return -1;
@@ -72,7 +72,7 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 
 	// configure shader attributes
 	core_assert_always(_vbo[meshIndex].addAttribute(_colorShader.getLocationPos(), _vertexIndex[meshIndex], _colorShader.getComponentsPos()));
-	core_assert_always(_vbo[meshIndex].addAttribute(_colorShader.getLocationColor(), cIndex, _colorShader.getComponentsColor()));
+	core_assert_always(_vbo[meshIndex].addAttribute(_colorShader.getLocationColor(), _colorIndex[meshIndex], _colorShader.getComponentsColor()));
 
 	++_currentMeshIndex;
 	return meshIndex;

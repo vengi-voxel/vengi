@@ -13,6 +13,7 @@ private:
 	video::VertexBuffer _vbo[MAX_MESHES];
 	int32_t _vertexIndex[MAX_MESHES];
 	int32_t _indexIndex[MAX_MESHES];
+	int32_t _colorIndex[MAX_MESHES];
 	uint32_t _currentMeshIndex = 0u;
 	shader::ColorShader _colorShader;
 
