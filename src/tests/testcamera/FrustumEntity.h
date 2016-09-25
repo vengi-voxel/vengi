@@ -61,6 +61,7 @@ public:
 		_result = result;
 		glm::vec4 color = _color;
 		switch (result) {
+		// TODO: we are currently only checking points here...
 		case video::FrustumResult::Intersect:
 			color = core::Color::Purple;
 			break;

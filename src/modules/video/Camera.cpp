@@ -145,6 +145,7 @@ glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
 }
 
 FrustumResult Camera::testFrustum(const glm::vec3& position) const {
+	core_assert(!isDirty(DIRTY_ALL));
 	FrustumResult result = FrustumResult::Inside;
 	for (int i = 0; i < FRUSTUM_PLANES_MAX; i++) {
 		const glm::vec3 normal(_frustumPlanes[i]);
