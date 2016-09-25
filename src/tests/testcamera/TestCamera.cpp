@@ -72,11 +72,11 @@ void TestCamera::resetCameraPosition() {
 void TestCamera::doRender() {
 	video::Camera& c = _renderCamera[_targetCamera];
 	c.update(_deltaFrame);
+	_frustums[_targetCamera].render(_camera, c);
 	for (FrustumEntity& e : _entities) {
 		e.cull(c);
 		e.render(_camera);
 	}
-	_frustums[_targetCamera].render(_camera, c);
 }
 
 void TestCamera::afterUI() {
