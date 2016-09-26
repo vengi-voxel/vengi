@@ -107,6 +107,7 @@ core::AppState TestApp::onCleanup() {
 	core::Command::unregisterCommand("+move_left");
 	core::Command::unregisterCommand("+move_upt");
 	core::Command::unregisterCommand("+move_down");
+	core::Command::unregisterCommand("+cam_freelook");
 	return Super::onCleanup();
 }
 
