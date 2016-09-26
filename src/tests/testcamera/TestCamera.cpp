@@ -106,7 +106,7 @@ void TestCamera::afterUI() {
 	enqueueShowStr(5, core::Color::Gray, "Space: toggle camera");
 	enqueueShowStr(5, core::Color::Gray, "Shift/MouseMove: rotate");
 	enqueueShowStr(5, core::Color::Gray, "Backspace: toggle aabb");
-	enqueueShowStr(5, core::Color::Gray, "ESC: reset position");
+	enqueueShowStr(5, core::Color::Gray, "0: reset position");
 	enqueueShowStr(5, core::Color::Gray, "Shift/+ Shift/-: far plane");
 	enqueueShowStr(5, core::Color::Gray, "Ctrl/Shift/+ Ctrl/Shift/-: near plane");
 	enqueueShowStr(5, core::Color::Gray, "Shift/MouseWheel: far plane");
@@ -171,7 +171,7 @@ bool TestCamera::onKeyPress(int32_t key, int16_t modifier) {
 		_frustums[_targetCamera].setRenderAABB(!aabb);
 	}
 
-	if (key == SDLK_ESCAPE) {
+	if (key == SDLK_0) {
 		resetCameraPosition();
 	}
 
