@@ -14,13 +14,13 @@ namespace ui {
 static const std::string EMPTY = "";
 
 Window::Window(UIApp* app) :
-		tb::TBWindow(), _app(app) {
+		Super(), _app(app) {
 	app->addChild(this);
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 }
 
 Window::Window(Window* parent) :
-		tb::TBWindow(), _app(nullptr) {
+		Super(), _app(nullptr) {
 	// if this is null, make sure to add the window on your own
 	if (parent != nullptr) {
 		parent->AddChild(this);
@@ -32,7 +32,7 @@ Window::~Window() {
 }
 
 void Window::OnDie() {
-	tb::TBWindow::OnDie();
+	Super::OnDie();
 	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
 }
 
@@ -313,7 +313,7 @@ bool Window::loadResource(tb::TBNode &node) {
 }
 
 bool Window::OnEvent(const tb::TBWidgetEvent &ev) {
-	return TBWindow::OnEvent(ev);
+	return Super::OnEvent(ev);
 }
 
 void Window::onWindowResize() {

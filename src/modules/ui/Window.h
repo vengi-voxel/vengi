@@ -27,6 +27,7 @@ class UIApp;
 
 class Window: public tb::TBWindow, public io::IEventObserver {
 protected:
+	using Super = tb::TBWindow;
 	UIApp* _app;
 	float _percentWidth = 0.0f;
 	float _percentHeight = 0.0f;
