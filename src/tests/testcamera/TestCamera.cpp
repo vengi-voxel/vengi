@@ -79,7 +79,6 @@ void TestCamera::doRender() {
 }
 
 void TestCamera::afterUI() {
-	Super::afterUI();
 	tb::TBStr str;
 	const char *cameraRotType;
 	const video::Camera& targetCamera = _renderCamera[_targetCamera];
@@ -112,6 +111,7 @@ void TestCamera::afterUI() {
 	enqueueShowStr(5, core::Color::Gray, "Shift/MouseWheel: far plane");
 	enqueueShowStr(5, core::Color::Gray, "Ctrl/Shift/MouseWheel: near plane");
 	enqueueShowStr(5, core::Color::LightGray, "Sphere: red = outside, green = inside, purple = touching");
+	Super::afterUI();
 }
 
 core::AppState TestCamera::onRunning() {

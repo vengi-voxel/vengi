@@ -138,7 +138,6 @@ void ShapeTool::afterUI() {
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
 	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i", pending, meshes, extracted, active);
 
-	enqueueShowStr(x, core::Color::Gray, "ESC: toggle ui/move through world");
 	enqueueShowStr(x, core::Color::Gray, "+/-: change move speed");
 	enqueueShowStr(x, core::Color::Gray, "LMB: perform raycast to voxel under cursor");
 	enqueueShowStr(x, core::Color::Gray, "l: line mode rendering");

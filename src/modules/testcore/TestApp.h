@@ -51,6 +51,7 @@ public:
 
 	virtual core::AppState onInit() override;
 	virtual void beforeUI() override;
+	virtual void afterUI() override;
 	virtual core::AppState onCleanup() override;
 	virtual void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	virtual void onMouseWheel(int32_t x, int32_t y) override;

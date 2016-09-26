@@ -4,6 +4,7 @@
 #include "core/Color.h"
 #include "core/Command.h"
 #include "frontend/Movement.h"
+#include "ui/TestAppWindow.h"
 
 TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
 		Super(filesystem, eventBus, 21000) {
@@ -75,6 +76,10 @@ core::AppState TestApp::onInit() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	SDL_SetRelativeMouseMode(SDL_FALSE);
+
+	new testcore::TestAppWindow(this);
+
 	return state;
 }
 
@@ -101,6 +106,11 @@ void TestApp::beforeUI() {
 	if (_renderAxis) {
 		_axis.render(_camera);
 	}
+}
+
+void TestApp::afterUI() {
+	Super::afterUI();
+	enqueueShowStr(5, core::Color::Gray, "ESC: toggle camera free look");
 }
 
 core::AppState TestApp::onCleanup() {
