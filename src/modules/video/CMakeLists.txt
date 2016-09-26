@@ -13,11 +13,13 @@ set(SRCS
 	DepthBuffer.cpp DepthBuffer.h
 	Cubemap.cpp Cubemap.h
 	Texture.cpp Texture.h
+	Types.h
 	Mesh.cpp Mesh.h
 	MeshPool.cpp MeshPool.h
 	ShapeBuilder.cpp ShapeBuilder.h
 	ScopedViewPort.h
 	ScopedFrameBuffer.h
+	ScopedPolygonMode.h
 	SunLight.h SunLight.cpp
 )
 set(LIB video)

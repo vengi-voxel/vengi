@@ -92,7 +92,7 @@ void TestApp::beforeUI() {
 	_camera.update(_deltaFrame);
 
 	if  (_renderPlane) {
-		_plane.render(_camera, _renderPlaneLines);
+		_plane.render(_camera);
 	}
 	doRender();
 	if (_renderAxis) {

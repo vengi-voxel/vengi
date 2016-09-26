@@ -3,6 +3,7 @@
 #include "core/Common.h"
 #include "core/AABB.h"
 #include "video/Camera.h"
+#include "video/GLFunc.h"
 #include "core/Color.h"
 #include <stdint.h>
 #include <vector>
@@ -25,6 +26,7 @@ private:
 	Vertices _vertices;
 	Vertices _normals;
 	Colors _colors;
+	Primitive _primitive = Primitive::Triangles;
 
 	glm::vec4 _color = core::Color::White;
 	glm::vec3 _position;
@@ -39,6 +41,15 @@ public:
 
 	inline void addIndex(uint32_t index) {
 		_indices.push_back(index);
+	}
+
+	inline void setPrimitive(Primitive primitive) {
+		core_assert(_vertices.empty() || primitive == _primitive);
+		_primitive = primitive;
+	}
+
+	inline Primitive primitive() const {
+		return _primitive;
 	}
 
 	inline void addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal) {

@@ -5,6 +5,7 @@ namespace video {
 // TODO: convert everything into triangles - if you wanna have lines, use glPolygonMode
 
 void ShapeBuilder::aabb(const core::AABB<float>& aabb) {
+	setPrimitive(Primitive::Lines);
 	static const glm::vec3 vecs[8] = {
 		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
 		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
@@ -59,6 +60,7 @@ void ShapeBuilder::aabb(const core::AABB<float>& aabb) {
 }
 
 void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
+	setPrimitive(Primitive::Lines);
 	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
 	uint32_t indices[video::FRUSTUM_VERTICES_MAX * 3];
 	camera.frustumCorners(out, indices);
@@ -109,6 +111,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 }
 
 void ShapeBuilder::axis(float scale) {
+	setPrimitive(Primitive::Lines);
 	const glm::vec3 verticesAxis[] = {
 			 glm::vec3( 0.0f,   0.0f,   0.0f),
 			 glm::vec3(scale,   0.0f,   0.0f),
@@ -133,6 +136,7 @@ void ShapeBuilder::axis(float scale) {
 }
 
 void ShapeBuilder::plane(uint32_t tesselation, float scale) {
+	setPrimitive(Primitive::Triangles);
 	static const glm::vec2 uv0(0.0f, 1.0f);
 	static const glm::vec2 uv1(1.0f, 0.0f);
 	static const glm::vec2 uv2(0.0f, 0.0f);
@@ -169,6 +173,7 @@ void ShapeBuilder::plane(uint32_t tesselation, float scale) {
 }
 
 void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
+	setPrimitive(Primitive::Triangles);
 	static constexpr float pi = glm::pi<float>();
 	static constexpr float twoPi = glm::two_pi<float>();
 	const float du = 1.0f / numSlices;

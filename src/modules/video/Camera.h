@@ -8,6 +8,7 @@
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/AABB.h"
+#include "Types.h"
 #include "Ray.h"
 #include <math.h>
 #include <ctime>
@@ -62,6 +63,7 @@ protected:
 
 	CameraType _type;
 	CameraMode _mode;
+	PolygonMode _polygonMode = PolygonMode::Solid;
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
 	glm::ivec2 _dimension;
@@ -110,6 +112,9 @@ public:
 
 	CameraRotationType rotationType() const;
 	void setRotationType(CameraRotationType rotationType);
+
+	PolygonMode polygonMode() const;
+	void setPolygonMode(PolygonMode polygonMode);
 
 	float nearPlane() const;
 	void setNearPlane(float nearPlane);
@@ -268,6 +273,14 @@ inline CameraRotationType Camera::rotationType() const {
 inline void Camera::setRotationType(CameraRotationType rotationType) {
 	_dirty |= DIRTY_TARGET;
 	_rotationType = rotationType;
+}
+
+inline PolygonMode Camera::polygonMode() const {
+	return _polygonMode;
+}
+
+inline void Camera::setPolygonMode(PolygonMode polygonMode) {
+	_polygonMode = polygonMode;
 }
 
 inline float Camera::pitch() const {

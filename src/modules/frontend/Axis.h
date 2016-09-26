@@ -14,7 +14,7 @@ public:
 	void render(const video::Camera& camera) {
 		glDisable(GL_DEPTH_TEST);
 		glLineWidth(4.0f);
-		_shapeRenderer.renderAll(camera, GL_LINES);
+		_shapeRenderer.renderAll(camera);
 		glLineWidth(1.0f);
 		glEnable(GL_DEPTH_TEST);
 	}

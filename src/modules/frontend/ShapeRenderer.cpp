@@ -1,6 +1,7 @@
 #include "ShapeRenderer.h"
 #include "video/GLFunc.h"
 #include "video/Shader.h"
+#include "video/ScopedPolygonMode.h"
 
 namespace frontend {
 
@@ -19,6 +20,7 @@ bool ShapeRenderer::deleteMesh(uint32_t meshIndex) {
 	_vertexIndex[meshIndex] = -1;
 	_indexIndex[meshIndex] = -1;
 	_colorIndex[meshIndex] = -1;
+	_primitives[meshIndex] = video::Primitive::Triangles;
 	return true;
 }
 
@@ -74,6 +76,8 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 	core_assert_always(_vbo[meshIndex].addAttribute(_colorShader.getLocationPos(), _vertexIndex[meshIndex], _colorShader.getComponentsPos()));
 	core_assert_always(_vbo[meshIndex].addAttribute(_colorShader.getLocationColor(), _colorIndex[meshIndex], _colorShader.getComponentsColor()));
 
+	_primitives[meshIndex] = shapeBuilder.primitive();
+
 	++_currentMeshIndex;
 	return meshIndex;
 }
@@ -104,51 +108,36 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 		}
 		_vbo[meshIndex].update(_colorIndex[meshIndex], colors3);
 	}
+	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 
-void ShapeRenderer::renderAll(const video::Camera& camera, GLenum drawmode) const {
+void ShapeRenderer::renderAll(const video::Camera& camera) const {
 	video::ScopedShader scoped(_colorShader);
 	core_assert_always(_colorShader.setView(camera.viewMatrix()));
 	core_assert_always(_colorShader.setProjection(camera.projectionMatrix()));
 
-	GLint polygonMode = GL_FILL;
-	if (drawmode == GL_LINES) {
-		glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	}
+	video::ScopedPolygonMode polygonMode(camera.polygonMode());
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
 			continue;
 		}
 		core_assert(_vbo[meshIndex].bind());
 		const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(uint32_t));
-		// TODO: use GL_TRIANGLES - see shapeBuilder todo comment
-		glDrawElements(drawmode, indices, GL_UNSIGNED_INT, 0);
+		glDrawElements(std::enum_value(_primitives[meshIndex]), indices, GL_UNSIGNED_INT, 0);
 		_vbo[meshIndex].unbind();
-	}
-	if (drawmode == GL_LINES) {
-		glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 	}
 	GL_checkError();
 }
 
-void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, GLenum drawmode) const {
+void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera) const {
 	video::ScopedShader scoped(_colorShader);
 	core_assert_always(_colorShader.setView(camera.viewMatrix()));
 	core_assert_always(_colorShader.setProjection(camera.projectionMatrix()));
 
 	core_assert_always(_vbo[meshIndex].bind());
 	const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(uint32_t));
-	GLint polygonMode = GL_FILL;
-	if (drawmode == GL_LINES) {
-		glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	}
-	// TODO: use GL_TRIANGLES - see shapeBuilder todo comment
-	glDrawElements(drawmode, indices, GL_UNSIGNED_INT, 0);
-	if (drawmode == GL_LINES) {
-		glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
-	}
+	video::ScopedPolygonMode polygonMode(camera.polygonMode());
+	glDrawElements(std::enum_value(_primitives[meshIndex]), indices, GL_UNSIGNED_INT, 0);
 	_vbo[meshIndex].unbind();
 	GL_checkError();
 }

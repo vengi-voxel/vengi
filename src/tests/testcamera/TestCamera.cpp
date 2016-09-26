@@ -5,7 +5,6 @@ TestCamera::TestCamera(io::FilesystemPtr filesystem, core::EventBusPtr eventBus)
 	setCameraMotion(true);
 	//setRenderPlane(true);
 	setRenderAxis(true);
-	//_renderPlaneLines = true;
 }
 
 core::AppState TestCamera::onInit() {

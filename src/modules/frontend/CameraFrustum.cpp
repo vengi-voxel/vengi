@@ -34,7 +34,7 @@ void CameraFrustum::render(const video::Camera& camera, const video::Camera& fru
 		_shapeRenderer.deleteMesh(_aabbMesh);
 		_aabbMesh = -1;
 	}
-	_shapeRenderer.renderAll(camera, GL_LINES);
+	_shapeRenderer.renderAll(camera);
 }
 
 }
