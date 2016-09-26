@@ -47,10 +47,17 @@ public:
 	TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus);
 	virtual ~TestApp();
 
+	video::Camera& camera();
+
 	virtual core::AppState onInit() override;
 	virtual void beforeUI() override;
 	virtual core::AppState onCleanup() override;
 	virtual void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	virtual void onMouseWheel(int32_t x, int32_t y) override;
+	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual void onWindowResize() override;
 };
+
+inline video::Camera& TestApp::camera() {
+	return _camera;
+}
