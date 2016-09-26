@@ -1,7 +1,6 @@
 #include "TestMeshApp.h"
 #include "core/Command.h"
-
-static constexpr uint32_t FL_RENDER_LINES = 1 << 0;
+#include "video/ScopedPolygonMode.h"
 
 TestMeshApp::TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus) {
@@ -74,6 +73,7 @@ void TestMeshApp::doRender() {
 		_shadowMapShader.setLight(_sunLight.viewProjectionMatrix(_camera));
 		_shadowMapShader.setModel(glm::mat4());
 		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
+			video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
 			glDisable(GL_BLEND);
 			glCullFace(GL_FRONT);
 			_depthBuffer.bind();
@@ -111,20 +111,8 @@ void TestMeshApp::doRender() {
 				glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
 			}
 
-			const bool renderLines = (_flags & FL_RENDER_LINES) != 0 || (SDL_GetModState() & KMOD_SHIFT) != 0;
-
-			GLint polygonMode = GL_FILL;
-			if (renderLines) {
-				glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			}
-
+			video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
 			core_assert_always(_mesh->render() > 0);
-
-			if (renderLines) {
-				glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
-			}
-
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glActiveTexture(GL_TEXTURE0);
@@ -150,20 +138,4 @@ core::AppState TestMeshApp::onCleanup() {
 	_mesh->shutdown();
 	_meshPool.shutdown();
 	return Super::onCleanup();
-}
-
-bool TestMeshApp::onKeyPress(int32_t key, int16_t modifier) {
-	const bool retVal = Super::onKeyPress(key, modifier);
-	if (key == SDLK_KP_SPACE || key == SDLK_SPACE) {
-		_flags |= FL_RENDER_LINES;
-	}
-	return retVal;
-}
-
-bool TestMeshApp::onKeyRelease(int32_t key) {
-	const bool retVal = Super::onKeyRelease(key);
-	if (key == SDLK_KP_SPACE || key == SDLK_SPACE) {
-		_flags &= ~FL_RENDER_LINES;
-	}
-	return retVal;
 }
