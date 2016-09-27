@@ -129,12 +129,17 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 - (instancetype)init
 {
+    return [self initWithNibName:nil bundle:[NSBundle mainBundle]];
+}
+
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
     if (!(self = [super initWithNibName:nil bundle:nil])) {
         return nil;
     }
 
-    NSBundle *bundle = [NSBundle mainBundle];
-    NSString *screenname = [bundle objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
+    NSString *screenname = nibNameOrNil;
+    NSBundle *bundle = nibBundleOrNil;
     BOOL atleastiOS8 = UIKit_IsSystemVersionAtLeast(8.0);
 
     /* Launch screens were added in iOS 8. Otherwise we use launch images. */
@@ -150,14 +155,15 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     }
 
     if (!self.view) {
-#if !TARGET_OS_TV
         NSArray *launchimages = [bundle objectForInfoDictionaryKey:@"UILaunchImages"];
-        UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
         NSString *imagename = nil;
         UIImage *image = nil;
 
         int screenw = (int)([UIScreen mainScreen].bounds.size.width + 0.5);
         int screenh = (int)([UIScreen mainScreen].bounds.size.height + 0.5);
+
+#if !TARGET_OS_TV
+        UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
 
         /* We always want portrait-oriented size, to match UILaunchImageSize. */
         if (screenw > screenh) {
@@ -165,14 +171,13 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
             screenw = screenh;
             screenh = width;
         }
+#endif
 
         /* Xcode 5 introduced a dictionary of launch images in Info.plist. */
         if (launchimages) {
             for (NSDictionary *dict in launchimages) {
-                UIInterfaceOrientationMask orientmask = UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
-                NSString *minversion   = dict[@"UILaunchImageMinimumOSVersion"];
-                NSString *sizestring   = dict[@"UILaunchImageSize"];
-                NSString *orientstring = dict[@"UILaunchImageOrientation"];
+                NSString *minversion = dict[@"UILaunchImageMinimumOSVersion"];
+                NSString *sizestring = dict[@"UILaunchImageSize"];
 
                 /* Ignore this image if the current version is too low. */
                 if (minversion && !UIKit_IsSystemVersionAtLeast(minversion.doubleValue)) {
@@ -186,6 +191,10 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                         continue;
                     }
                 }
+
+#if !TARGET_OS_TV
+                UIInterfaceOrientationMask orientmask = UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
+                NSString *orientstring = dict[@"UILaunchImageOrientation"];
 
                 if (orientstring) {
                     if ([orientstring isEqualToString:@"PortraitUpsideDown"]) {
@@ -203,6 +212,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                 if ((orientmask & (1 << curorient)) == 0) {
                     continue;
                 }
+#endif
 
                 imagename = dict[@"UILaunchImageName"];
             }
@@ -210,7 +220,9 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
             if (imagename) {
                 image = [UIImage imageNamed:imagename];
             }
-        } else {
+        }
+#if !TARGET_OS_TV
+        else {
             imagename = [bundle objectForInfoDictionaryKey:@"UILaunchImageFile"];
 
             if (imagename) {
@@ -221,11 +233,13 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                 image = SDL_LoadLaunchImageNamed(@"Default", screenh);
             }
         }
+#endif
 
         if (image) {
             UIImageView *view = [[UIImageView alloc] initWithFrame:[UIScreen mainScreen].bounds];
             UIImageOrientation imageorient = UIImageOrientationUp;
 
+#if !TARGET_OS_TV
             /* Bugs observed / workaround tested in iOS 8.3, 7.1, and 6.1. */
             if (UIInterfaceOrientationIsLandscape(curorient)) {
                 if (atleastiOS8 && image.size.width < image.size.height) {
@@ -249,15 +263,13 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
                     }
                 }
             }
+#endif
 
             /* Create the properly oriented image. */
             view.image = [[UIImage alloc] initWithCGImage:image.CGImage scale:image.scale orientation:imageorient];
 
             self.view = view;
         }
-#else /* !TARGET_OS_TV */
-        return nil;
-#endif
     }
 
     return self;
@@ -357,9 +369,32 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
      * displayed (e.g. if resources are loaded before SDL_GL_SwapWindow is
      * called), so we show the launch screen programmatically until the first
      * time events are pumped. */
-    UIViewController *viewcontroller = [[SDLLaunchScreenController alloc] init];
+    UIViewController *vc = nil;
+    NSString *screenname = nil;
 
-    if (viewcontroller.view) {
+    /* tvOS only uses a plain launch image. */
+#if !TARGET_OS_TV
+    screenname = [bundle objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
+
+    if (screenname && UIKit_IsSystemVersionAtLeast(8.0)) {
+        @try {
+            /* The launch storyboard is actually a nib in some older versions of
+             * Xcode. We'll try to load it as a storyboard first, as it's more
+             * modern. */
+            UIStoryboard *storyboard = [UIStoryboard storyboardWithName:screenname bundle:bundle];
+            vc = [storyboard instantiateInitialViewController];
+        }
+        @catch (NSException *exception) {
+            /* Do nothing (there's more code to execute below). */
+        }
+    }
+#endif
+
+    if (vc == nil) {
+        vc = [[SDLLaunchScreenController alloc] initWithNibName:screenname bundle:bundle];
+    }
+
+    if (vc.view) {
         launchWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
 
         /* We don't want the launch window immediately hidden when a real SDL
@@ -370,7 +405,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
          * other windows when possible. */
         launchWindow.hidden = NO;
 
-        launchWindow.rootViewController = viewcontroller;
+        launchWindow.rootViewController = vc;
     }
 #endif
 
