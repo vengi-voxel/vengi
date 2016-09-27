@@ -86,12 +86,8 @@ bool TestVoxelFont::onKeyPress(int32_t key, int16_t modifier) {
 			delta = 1;
 		}
 
-		if (modifier & KMOD_CTRL) {
-			changeFontSize(delta);
-		} else {
-			changeFontSize(delta);
-		}
 		if (delta != 0) {
+			changeFontSize(delta);
 			return true;
 		}
 	}
