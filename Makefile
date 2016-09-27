@@ -43,7 +43,7 @@ DEBUGGER         := $(shell (gdb --help >/dev/null 2>&1 && echo GDB) || (lldb --
 ifeq ($(DEBUGGER),GDB)
 DEBUG_CMD        ?= gdb -ex run --args
 else ifeq ($(DEBUGGER),LLDB)
-DEBUG_CMD        ?= lldb
+DEBUG_CMD        ?= lldb -b -o run
 else
 DEBUG_CMD        ?=
 endif
