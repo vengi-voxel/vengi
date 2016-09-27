@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Container.h"
+#include <array>
 
 namespace stock {
 
