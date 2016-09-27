@@ -3,7 +3,7 @@ set(SRCS
 )
 set(LIB commonlua)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} core selene)
+target_link_libraries(${LIB} core lua53) #selene
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
