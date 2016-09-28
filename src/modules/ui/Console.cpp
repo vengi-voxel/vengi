@@ -151,6 +151,8 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 			clear();
 		} else if (key == SDLK_w) {
 			cursorDeleteWord();
+		} else if (key == SDLK_v) {
+			insertClipboard();
 		} else if (key == SDLK_LEFT) {
 			cursorWordLeft();
 		} else if (key == SDLK_RIGHT) {
@@ -255,6 +257,32 @@ void Console::executeCommandLine() {
 	clearCommandLine();
 }
 
+bool Console::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
+	if (!_consoleActive) {
+		return false;
+	}
+
+	if (button != SDL_BUTTON_MIDDLE) {
+		return false;
+	}
+
+	return insertClipboard();
+}
+
+bool Console::insertClipboard() {
+	if (!SDL_HasClipboardText()) {
+		return false;
+	}
+
+	const char *str = SDL_GetClipboardText();
+	if (str == nullptr) {
+		return false;
+	}
+
+	insertText(str);
+	return true;
+}
+
 bool Console::onMouseWheel(int32_t x, int32_t y) {
 	if (!_consoleActive) {
 		return false;
@@ -269,16 +297,20 @@ bool Console::onMouseWheel(int32_t x, int32_t y) {
 	return true;
 }
 
-bool Console::onTextInput(const std::string& text) {
-	if (!_consoleActive) {
-		return false;
-	}
-
+void Console::insertText(const std::string& text) {
 	if (_overwrite && _cursorPos < int(_commandLine.size())) {
 		cursorDelete();
 	}
 	_commandLine.insert(_commandLine.begin() + _cursorPos, text.begin(), text.end());
 	_cursorPos += text.size();
+}
+
+bool Console::onTextInput(const std::string& text) {
+	if (!_consoleActive) {
+		return false;
+	}
+
+	insertText(text);
 
 	return true;
 }

@@ -57,6 +57,8 @@ private:
 	void cursorDelete(bool moveCursor = true);
 	void cursorDeleteWord();
 
+	bool insertClipboard();
+	void insertText(const std::string& text);
 	void drawString(int x, int y, const std::string& str, int len = TB_ALL_TO_TERMINATION);
 
 public:
@@ -71,6 +73,7 @@ public:
 	bool onTextInput(const std::string& text);
 	bool onKeyPress(int32_t key, int16_t modifier);
 	bool onMouseWheel(int32_t x, int32_t y);
+	bool onMouseButtonPress(int32_t x, int32_t y, uint8_t button);
 
 	void autoComplete();
 

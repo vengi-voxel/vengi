@@ -205,7 +205,7 @@ void UIApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 }
 
 void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
-	if (_console.isActive()) {
+	if (_console.onMouseButtonPress(x, y, button)) {
 		return;
 	}
 	if (button != SDL_BUTTON_LEFT) {
