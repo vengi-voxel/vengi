@@ -30,7 +30,7 @@ namespace voxel {
 #ifdef DEBUG_SCENE
 #define PERSIST 0
 #else
-#define PERSIST 0
+#define PERSIST 1
 #endif
 
 void World::Pager::erase(PagedVolume::PagerContext& pctx) {
