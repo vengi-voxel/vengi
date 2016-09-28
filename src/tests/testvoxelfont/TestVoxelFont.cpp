@@ -95,6 +95,12 @@ bool TestVoxelFont::onKeyPress(int32_t key, int16_t modifier) {
 	return retVal;
 }
 
+void TestVoxelFont::afterUI() {
+	enqueueShowStr(5, core::Color::Gray, "Shift/+ Shift/-: Change font size");
+	enqueueShowStr(5, core::Color::Gray, "Shift/Mousewheel: Change font size");
+	Super::afterUI();
+}
+
 void TestVoxelFont::doRender() {
 	std::vector<glm::vec3> colors;
 	std::vector<glm::vec4> positions;
