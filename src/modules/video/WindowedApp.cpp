@@ -302,6 +302,10 @@ core::AppState WindowedApp::onInit() {
 	ExtGLLoadFunctions();
 	glViewport(0, 0, _width, _height);
 
+	float lineWidth[2];
+	glGetFloatv(GL_LINE_WIDTH_RANGE, lineWidth);
+	Log::debug("GL_LINE_WIDTH_RANGE %f - %f", lineWidth[0], lineWidth[1]);
+
 	if (multisampling) {
 		glEnable(GL_MULTISAMPLE);
 	}
