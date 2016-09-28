@@ -22,7 +22,7 @@ PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint
 	core_assert_msg(uTargetMemoryUsageInBytes >= 1 * 1024 * 1024, "Target memory usage is too small to be practical");
 	core_assert_msg(_chunkSideLength != 0, "Chunk side length cannot be zero.");
 	core_assert_msg(_chunkSideLength <= 256, "Chunk size is too large to be practical.");
-	core_assert_msg(isPowerOf2(_chunkSideLength), "Chunk side length must be a power of two.");
+	core_assert_msg(glm::isPowerOfTwo(_chunkSideLength), "Chunk side length must be a power of two.");
 
 	// Used to perform multiplications and divisions by bit shifting.
 	_chunkSideLengthPower = logBase2(_chunkSideLength);
@@ -413,7 +413,7 @@ void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
 	_data[index] = tValue;
-	this->_dataModified = true;
+	_dataModified = true;
 }
 
 void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uZPos, const Voxel* tValues, int amount) {
@@ -428,7 +428,7 @@ void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uZPos, const Voxel* 
 		const uint32_t index = morton256_x[uXPos] | morton256_y[y] | morton256_z[uZPos];
 		_data[index] = tValues[y];
 	}
-	this->_dataModified = true;
+	_dataModified = true;
 }
 
 void PagedVolume::Chunk::setVoxel(const glm::i16vec3& v3dPos, const Voxel& tValue) {
@@ -475,19 +475,19 @@ void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos)
 	_zPosInVolume = zPos;
 
 	// Then we update the voxel pointer
-	const int32_t uXChunk = this->_xPosInVolume >> this->_volume->_chunkSideLengthPower;
-	const int32_t uYChunk = this->_yPosInVolume >> this->_volume->_chunkSideLengthPower;
-	const int32_t uZChunk = this->_zPosInVolume >> this->_volume->_chunkSideLengthPower;
+	const int32_t xChunk = _xPosInVolume >> _volume->_chunkSideLengthPower;
+	const int32_t yChunk = _yPosInVolume >> _volume->_chunkSideLengthPower;
+	const int32_t zChunk = _zPosInVolume >> _volume->_chunkSideLengthPower;
 
-	_xPosInChunk = static_cast<uint16_t>(this->_xPosInVolume - (uXChunk << this->_volume->_chunkSideLengthPower));
-	_yPosInChunk = static_cast<uint16_t>(this->_yPosInVolume - (uYChunk << this->_volume->_chunkSideLengthPower));
-	_zPosInChunk = static_cast<uint16_t>(this->_zPosInVolume - (uZChunk << this->_volume->_chunkSideLengthPower));
+	_xPosInChunk = static_cast<uint16_t>(_xPosInVolume - (xChunk << _volume->_chunkSideLengthPower));
+	_yPosInChunk = static_cast<uint16_t>(_yPosInVolume - (yChunk << _volume->_chunkSideLengthPower));
+	_zPosInChunk = static_cast<uint16_t>(_zPosInVolume - (zChunk << _volume->_chunkSideLengthPower));
 
-	uint32_t uVoxelIndexInChunk = morton256_x[_xPosInChunk] | morton256_y[_yPosInChunk] | morton256_z[_zPosInChunk];
+	uint32_t voxelIndexInChunk = morton256_x[_xPosInChunk] | morton256_y[_yPosInChunk] | morton256_z[_zPosInChunk];
 
-	Chunk* pCurrentChunk = this->_volume->getChunk(uXChunk, uYChunk, uZChunk);
+	Chunk* currentChunk = _volume->getChunk(xChunk, yChunk, zChunk);
 
-	_currentVoxel = pCurrentChunk->_data + uVoxelIndexInChunk;
+	_currentVoxel = currentChunk->_data + voxelIndexInChunk;
 }
 
 bool PagedVolume::Sampler::setVoxel(const Voxel& tValue) {
@@ -504,13 +504,13 @@ void PagedVolume::Sampler::movePositiveX() {
 	_xPosInVolume++;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_POS_X(this->_xPosInChunk)) {
+	if (CAN_GO_POS_X(_xPosInChunk)) {
 		//No need to compute new chunk.
 		_currentVoxel += POS_X_DELTA;
-		this->_xPosInChunk++;
+		_xPosInChunk++;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
+		setPosition(_xPosInVolume, _yPosInVolume, _zPosInVolume);
 	}
 }
 
@@ -518,13 +518,13 @@ void PagedVolume::Sampler::movePositiveY() {
 	_yPosInVolume++;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_POS_Y(this->_yPosInChunk)) {
+	if (CAN_GO_POS_Y(_yPosInChunk)) {
 		//No need to compute new chunk.
 		_currentVoxel += POS_Y_DELTA;
-		this->_yPosInChunk++;
+		_yPosInChunk++;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
+		setPosition(_xPosInVolume, _yPosInVolume, _zPosInVolume);
 	}
 }
 
@@ -532,13 +532,13 @@ void PagedVolume::Sampler::movePositiveZ() {
 	_zPosInVolume++;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_POS_Z(this->_zPosInChunk)) {
+	if (CAN_GO_POS_Z(_zPosInChunk)) {
 		//No need to compute new chunk.
 		_currentVoxel += POS_Z_DELTA;
-		this->_zPosInChunk++;
+		_zPosInChunk++;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
+		setPosition(_xPosInVolume, _yPosInVolume, _zPosInVolume);
 	}
 }
 
@@ -546,13 +546,13 @@ void PagedVolume::Sampler::moveNegativeX() {
 	_xPosInVolume--;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_NEG_X(this->_xPosInChunk)) {
+	if (CAN_GO_NEG_X(_xPosInChunk)) {
 		//No need to compute new chunk.
 		_currentVoxel += NEG_X_DELTA;
-		this->_xPosInChunk--;
+		_xPosInChunk--;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
+		setPosition(_xPosInVolume, _yPosInVolume, _zPosInVolume);
 	}
 }
 
@@ -560,13 +560,13 @@ void PagedVolume::Sampler::moveNegativeY() {
 	_yPosInVolume--;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_NEG_Y(this->_yPosInChunk)) {
+	if (CAN_GO_NEG_Y(_yPosInChunk)) {
 		//No need to compute new chunk.
 		_currentVoxel += NEG_Y_DELTA;
-		this->_yPosInChunk--;
+		_yPosInChunk--;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
+		setPosition(_xPosInVolume, _yPosInVolume, _zPosInVolume);
 	}
 }
 
@@ -574,13 +574,13 @@ void PagedVolume::Sampler::moveNegativeZ() {
 	_zPosInVolume--;
 
 	// Then we update the voxel pointer
-	if (CAN_GO_NEG_Z(this->_zPosInChunk)) {
+	if (CAN_GO_NEG_Z(_zPosInChunk)) {
 		//No need to compute new chunk.
 		_currentVoxel += NEG_Z_DELTA;
-		this->_zPosInChunk--;
+		_zPosInChunk--;
 	} else {
 		//We've hit the chunk boundary. Just calling setPosition() is the easiest way to resolve this.
-		setPosition(this->_xPosInVolume, this->_yPosInVolume, this->_zPosInVolume);
+		setPosition(_xPosInVolume, _yPosInVolume, _zPosInVolume);
 	}
 }
 
