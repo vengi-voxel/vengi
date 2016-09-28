@@ -442,7 +442,7 @@ float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec
 
 	//Having computed hVal, we now apply some random bias to break ties.
 	//This needs to be deterministic on the input position. This random
-	//bias means it is much les likely that two paths are exactly the same
+	//bias means it is much less likely that two paths are exactly the same
 	//length, and so far fewer nodes must be expanded to find the shortest path.
 	//See http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html#S12
 
@@ -450,7 +450,7 @@ float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec
 	//(or perhaps GCC vs. VS) versions of the code. This is probably because of the way
 	//sorting inside the std::set works (i.e. one system swaps values which are identical
 	//while the other one doesn't - both approaches are valid). For the same reason we want
-	//to make sure that position (x,y,z) has a differnt hash from e.g. position (x,z,y).
+	//to make sure that position (x,y,z) has a different hash from e.g. position (x,z,y).
 	const uint32_t aX = (a.x << 16) & 0x00FF0000;
 	const uint32_t aY = (a.y << 8) & 0x0000FF00;
 	const uint32_t aZ = (a.z) & 0x000000FF;
