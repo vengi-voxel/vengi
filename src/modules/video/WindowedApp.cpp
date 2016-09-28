@@ -302,9 +302,32 @@ core::AppState WindowedApp::onInit() {
 	ExtGLLoadFunctions();
 	glViewport(0, 0, _width, _height);
 
-	float lineWidth[2];
-	glGetFloatv(GL_LINE_WIDTH_RANGE, lineWidth);
-	Log::debug("GL_LINE_WIDTH_RANGE %f - %f", lineWidth[0], lineWidth[1]);
+#define ADD(enumname, size) {enumname, #enumname, size}
+	struct {
+		GLenum e;
+		const char *name;
+		int size;
+	} values[] = {
+		ADD(GL_ALIASED_LINE_WIDTH_RANGE, 2),
+		ADD(GL_SMOOTH_LINE_WIDTH_RANGE, 2),
+		ADD(GL_SMOOTH_LINE_WIDTH_GRANULARITY, 1)
+	};
+#undef ADD
+	for (size_t i = 0; i < SDL_arraysize(values); ++i) {
+		float buf[values[i].size];
+		glGetFloatv(values[i].e, buf);
+		if (values[i].size == 1) {
+			Log::debug("%s %f", values[i].name, buf[0]);
+		} else if (values[i].size == 2) {
+			Log::debug("%s %f - %f", values[i].name, buf[0], buf[1]);
+		} else if (values[i].size == 3) {
+			Log::debug("%s %f - %f - %f", values[i].name, buf[0], buf[1], buf[2]);
+		} else if (values[i].size == 4) {
+			Log::debug("%s %f - %f - %f - %f", values[i].name, buf[0], buf[1], buf[2], buf[3]);
+		} else {
+			Log::warn("%s - unhandled buf size", values[i].name);
+		}
+	}
 
 	if (multisampling) {
 		glEnable(GL_MULTISAMPLE);
