@@ -6,17 +6,29 @@
 
 #include <vector>
 #include "video/Shader.h"
+#include "core/Singleton.h"
 
 namespace $namespace$ {
 
 class $name$ : public video::Shader {
+private:
+	using Super = video::Shader;
+	int _setupCalls = 0;
 public:
+	static inline $name$& getInstance() {
+		return core::Singleton<$name$>::getInstance();
+	}
+
 	/**
 	 * @brief Load the vertex and fragment shaders and verifies that its attributes and uniforms are used.
 	 * @note If an attribute or an uniform isn't active, a message will be printed about that fact - but
 	 * the setup process won't fail.
 	 */
 	bool setup() {
+		++_setupCalls;
+		if (_initialized) {
+			return true;
+		}
 		if (!loadProgram("$filename$")) {
 			return false;
 		}
@@ -25,6 +37,15 @@ public:
 $uniformarrayinfo$
 		return true;
 	}
+
+	void shutdown() override {
+		core_assert(_setupCalls > 0);
+		--_setupCalls;
+		if (_setupCalls == 0) {
+			Super::shutdown();
+		}
+	}
+
 $setters$
 };
 

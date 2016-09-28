@@ -81,7 +81,7 @@ public:
 
 	static int glslVersion;
 
-	void shutdown();
+	virtual void shutdown();
 
 	bool load(const std::string& name, const std::string& buffer, ShaderType shaderType);
 

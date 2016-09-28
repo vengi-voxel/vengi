@@ -17,9 +17,11 @@ private:
 	int32_t _colorIndex[MAX_MESHES];
 	video::Primitive _primitives[MAX_MESHES];
 	uint32_t _currentMeshIndex = 0u;
-	shader::ColorShader _colorShader;
+	shader::ColorShader& _colorShader;
 
 public:
+	ShapeRenderer();
+
 	bool init();
 
 	bool deleteMesh(uint32_t meshIndex);

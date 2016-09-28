@@ -5,6 +5,10 @@
 
 namespace frontend {
 
+ShapeRenderer::ShapeRenderer() :
+		_colorShader(shader::ColorShader::getInstance()) {
+}
+
 bool ShapeRenderer::init() {
 	if (!_colorShader.setup()) {
 		return false;
