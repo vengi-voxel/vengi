@@ -14,11 +14,13 @@
 #include <glm/common.hpp>
 #include <glm/trigonometric.hpp>
 
+#include <glm/gtc/round.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/packing.hpp>
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/epsilon.hpp>
