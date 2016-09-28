@@ -3,7 +3,7 @@
 #include "video/ScopedPolygonMode.h"
 
 TestMeshApp::TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		Super(filesystem, eventBus) {
+		Super(filesystem, eventBus), _colorShader(shader::ColorShader::getInstance()) {
 	setCameraMotion(true);
 	setRenderPlane(false);
 }

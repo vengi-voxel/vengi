@@ -1,7 +1,7 @@
 #include "TestVoxelFont.h"
 
 TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
-		Super(filesystem, eventBus) {
+		Super(filesystem, eventBus), _colorShader(shader::ColorShader::getInstance()) {
 	setCameraMotion(true);
 }
 

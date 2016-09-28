@@ -15,7 +15,7 @@ private:
 
 	voxel::VoxelFont _voxelFont;
 	video::VertexBuffer _vertexBuffer;
-	shader::ColorShader _colorShader;
+	shader::ColorShader& _colorShader;
 
 	int32_t _vertexBufferIndex = -1;
 	int32_t _indexBufferIndex = -1;
