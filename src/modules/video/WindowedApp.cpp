@@ -214,8 +214,9 @@ core::AppState WindowedApp::onInit() {
 	const bool fullscreen = core::Var::get(cfg::ClientFullscreen, "true")->boolVal();
 
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
-	if (fullscreen)
+	if (fullscreen) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
+	}
 
 	const int videoDrivers = SDL_GetNumVideoDrivers();
 	for (int i = 0; i < videoDrivers; ++i) {
@@ -271,8 +272,9 @@ core::AppState WindowedApp::onInit() {
 
 	SDL_DisableScreenSaver();
 
-	if (SDL_SetWindowBrightness(_window, 1.0f) == -1)
+	if (SDL_SetWindowBrightness(_window, 1.0f) == -1) {
 		sdlCheckError();
+	}
 
 	const bool grabMouse = false;
 	if (grabMouse && (!fullscreen || displays > 1)) {
