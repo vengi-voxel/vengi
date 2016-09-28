@@ -11,7 +11,187 @@
 extern "C" {
 #endif
 
-void ExtGLLoadFunctions(void) {
+void _GLPrintVariable(GLenum e, const char* name) {
+	switch (e) {
+	case GL_BLEND:
+	case GL_COLOR_LOGIC_OP:
+	case GL_CULL_FACE:
+	case GL_DEPTH_TEST:
+	case GL_DEPTH_WRITEMASK:
+	case GL_DITHER:
+	case GL_DOUBLEBUFFER:
+	case GL_LINE_SMOOTH:
+	case GL_PACK_LSB_FIRST:
+	case GL_PACK_SWAP_BYTES:
+	case GL_POLYGON_OFFSET_FILL:
+	case GL_POLYGON_OFFSET_LINE:
+	case GL_POLYGON_OFFSET_POINT:
+	case GL_POLYGON_SMOOTH:
+	case GL_SAMPLE_COVERAGE_INVERT:
+	case GL_SCISSOR_TEST:
+	case GL_STENCIL_TEST:
+	case GL_STEREO:
+	case GL_TEXTURE_1D:
+	case GL_TEXTURE_2D:
+	case GL_TEXTURE_3D:
+	case GL_TEXTURE_CUBE_MAP:
+	case GL_UNPACK_LSB_FIRST:
+	case GL_UNPACK_SWAP_BYTES:
+	case GL_VERTEX_PROGRAM_POINT_SIZE:
+	{
+		GLboolean params[1];
+		glGetBooleanv(e, params);
+		GL_checkError();
+		Log::info("%s: %i", name, (int)params[0]);
+		break;
+	}
+
+	case GL_ACTIVE_TEXTURE:
+	case GL_ARRAY_BUFFER_BINDING:
+	case GL_BLEND_DST_ALPHA:
+	case GL_BLEND_DST_RGB:
+	case GL_BLEND_EQUATION_RGB:
+	case GL_BLEND_EQUATION_ALPHA:
+	case GL_BLEND_SRC_ALPHA:
+	case GL_BLEND_SRC_RGB:
+	case GL_CULL_FACE_MODE:
+	case GL_CURRENT_PROGRAM:
+	case GL_DEPTH_FUNC:
+	case GL_DRAW_BUFFER0:
+	case GL_DRAW_BUFFER1:
+	case GL_DRAW_BUFFER2:
+	case GL_DRAW_BUFFER3:
+	case GL_DRAW_BUFFER4:
+	case GL_DRAW_BUFFER5:
+	case GL_DRAW_BUFFER6:
+	case GL_DRAW_BUFFER7:
+	case GL_DRAW_BUFFER8:
+	case GL_DRAW_BUFFER9:
+	case GL_DRAW_BUFFER10:
+	case GL_DRAW_BUFFER11:
+	case GL_DRAW_BUFFER12:
+	case GL_DRAW_BUFFER13:
+	case GL_DRAW_BUFFER14:
+	case GL_DRAW_BUFFER15:
+	case GL_ELEMENT_ARRAY_BUFFER_BINDING:
+	case GL_FRAGMENT_SHADER_DERIVATIVE_HINT:
+	case GL_FRONT_FACE:
+	case GL_LINE_SMOOTH_HINT:
+	case GL_LOGIC_OP_MODE:
+	case GL_MAX_3D_TEXTURE_SIZE:
+	case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
+	case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
+	case GL_MAX_DRAW_BUFFERS:
+	case GL_MAX_ELEMENTS_INDICES:
+	case GL_MAX_ELEMENTS_VERTICES:
+	case GL_MAX_FRAGMENT_UNIFORM_COMPONENTS:
+	case GL_MAX_TEXTURE_IMAGE_UNITS:
+	case GL_MAX_TEXTURE_SIZE:
+	case GL_MAX_VARYING_FLOATS:
+	case GL_MAX_VERTEX_ATTRIBS:
+	case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
+	case GL_MAX_VERTEX_UNIFORM_COMPONENTS:
+	case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
+	case GL_PACK_ALIGNMENT:
+	case GL_PACK_IMAGE_HEIGHT:
+	case GL_PACK_ROW_LENGTH:
+	case GL_PACK_SKIP_IMAGES:
+	case GL_PACK_SKIP_PIXELS:
+	case GL_PACK_SKIP_ROWS:
+	case GL_PIXEL_PACK_BUFFER_BINDING:
+	case GL_PIXEL_UNPACK_BUFFER_BINDING:
+	case GL_POLYGON_SMOOTH_HINT:
+	case GL_READ_BUFFER:
+	case GL_SAMPLE_BUFFERS:
+	case GL_SAMPLES:
+	case GL_STENCIL_BACK_FAIL:
+	case GL_STENCIL_BACK_FUNC:
+	case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
+	case GL_STENCIL_BACK_PASS_DEPTH_PASS:
+	case GL_STENCIL_BACK_REF:
+	case GL_STENCIL_BACK_VALUE_MASK:
+	case GL_STENCIL_BACK_WRITEMASK:
+	case GL_STENCIL_CLEAR_VALUE:
+	case GL_STENCIL_FAIL:
+	case GL_STENCIL_FUNC:
+	case GL_STENCIL_PASS_DEPTH_FAIL:
+	case GL_STENCIL_PASS_DEPTH_PASS:
+	case GL_STENCIL_REF:
+	case GL_STENCIL_VALUE_MASK:
+	case GL_STENCIL_WRITEMASK:
+	case GL_SUBPIXEL_BITS:
+	case GL_TEXTURE_BINDING_1D:
+	case GL_TEXTURE_BINDING_2D:
+	case GL_TEXTURE_BINDING_3D:
+	case GL_TEXTURE_BINDING_CUBE_MAP:
+	case GL_TEXTURE_COMPRESSION_HINT:
+	case GL_UNPACK_ALIGNMENT:
+	case GL_UNPACK_IMAGE_HEIGHT:
+	case GL_UNPACK_ROW_LENGTH:
+	case GL_UNPACK_SKIP_IMAGES:
+	case GL_UNPACK_SKIP_PIXELS:
+	case GL_UNPACK_SKIP_ROWS:
+	{
+		GLint params[1];
+		glGetIntegerv(e, params);
+		GL_checkError();
+		Log::info("%s: %i", name, (int)params[0]);
+		break;
+	}
+
+	case GL_MAX_VIEWPORT_DIMS:
+	case GL_POLYGON_MODE:
+	{
+		GLint params[2];
+		glGetIntegerv(e, params);
+		GL_checkError();
+		Log::info("%s: %i", name, (int)params[0]);
+		break;
+	}
+
+	case GL_SCISSOR_BOX:
+	case GL_VIEWPORT:
+	{
+		GLint params[4];
+		glGetIntegerv(e, params);
+		GL_checkError();
+		Log::info("%s: %i:%i:%i:%i", name, params[0], params[1], params[2], params[3]);
+		break;
+	}
+
+	case GL_DEPTH_CLEAR_VALUE:
+	case GL_DEPTH_RANGE:
+	case GL_LINE_WIDTH:
+	case GL_SMOOTH_LINE_WIDTH_GRANULARITY:
+	case GL_MAX_TEXTURE_LOD_BIAS:
+	case GL_POINT_FADE_THRESHOLD_SIZE:
+	case GL_POINT_SIZE:
+	case GL_POINT_SIZE_GRANULARITY:
+	case GL_POLYGON_OFFSET_FACTOR:
+	case GL_POLYGON_OFFSET_UNITS:
+	case GL_SAMPLE_COVERAGE_VALUE:
+	{
+		GLdouble params[1];
+		glGetDoublev(e, params);
+		GL_checkError();
+		Log::info("%s: %f", name, params[0]);
+		break;
+	}
+
+	case GL_ALIASED_LINE_WIDTH_RANGE:
+	case GL_SMOOTH_LINE_WIDTH_RANGE:
+	case GL_SMOOTH_POINT_SIZE_RANGE:
+	{
+		GLdouble params[2];
+		glGetDoublev(e, params);
+		GL_checkError();
+		Log::info("%s: %f:%f", name, params[0], params[1]);
+		break;
+	}
+	}
+}
+
+void GLLoadFunctions(void) {
 	/* GL_VERSION_1_2 */
 
 	glpfDrawRangeElements = (PFNGLDRAWRANGEELEMENTS_PROC*) SDL_GL_GetProcAddress("glDrawRangeElements");

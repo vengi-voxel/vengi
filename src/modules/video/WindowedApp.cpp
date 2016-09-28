@@ -299,34 +299,25 @@ core::AppState WindowedApp::onInit() {
 	_dimension = glm::ivec2(_width, _height);
 	_aspect = _width / static_cast<float>(_height);
 
-	ExtGLLoadFunctions();
+	GLLoadFunctions();
 	glViewport(0, 0, _width, _height);
 
-#define ADD(enumname, size) {enumname, #enumname, size}
-	struct {
-		GLenum e;
-		const char *name;
-		int size;
-	} values[] = {
-		ADD(GL_ALIASED_LINE_WIDTH_RANGE, 2),
-		ADD(GL_SMOOTH_LINE_WIDTH_RANGE, 2),
-		ADD(GL_SMOOTH_LINE_WIDTH_GRANULARITY, 1)
-	};
-#undef ADD
-	for (size_t i = 0; i < SDL_arraysize(values); ++i) {
-		float buf[values[i].size];
-		glGetFloatv(values[i].e, buf);
-		if (values[i].size == 1) {
-			Log::debug("%s %f", values[i].name, buf[0]);
-		} else if (values[i].size == 2) {
-			Log::debug("%s %f - %f", values[i].name, buf[0], buf[1]);
-		} else if (values[i].size == 3) {
-			Log::debug("%s %f - %f - %f", values[i].name, buf[0], buf[1], buf[2]);
-		} else if (values[i].size == 4) {
-			Log::debug("%s %f - %f - %f - %f", values[i].name, buf[0], buf[1], buf[2], buf[3]);
-		} else {
-			Log::warn("%s - unhandled buf size", values[i].name);
-		}
+	Log::info("OpenGL limits:");
+	GLPrintVariable(GL_ALIASED_LINE_WIDTH_RANGE);
+	GLPrintVariable(GL_SMOOTH_LINE_WIDTH_RANGE);
+	GLPrintVariable(GL_SMOOTH_LINE_WIDTH_GRANULARITY);
+	GLPrintVariable(GL_MAX_TEXTURE_SIZE);
+	GLPrintVariable(GL_MAX_DRAW_BUFFERS);
+	GLPrintVariable(GL_MAX_ELEMENTS_INDICES);
+	GLPrintVariable(GL_MAX_ELEMENTS_VERTICES);
+	GLPrintVariable(GL_MAX_FRAGMENT_INPUT_COMPONENTS);
+
+	int numExts;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
+	Log::info("OpenGL extensions:");
+	for (int i = 0; i < numExts; i++) {
+		const char *extensionStr = (const char *) glGetStringi(GL_EXTENSIONS, i);
+		Log::info("%s", extensionStr);
 	}
 
 	if (multisampling) {

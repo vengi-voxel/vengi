@@ -1975,7 +1975,9 @@ GLAPI PFNGLGETDEBUGMESSAGELOGARB_PROC* glpfGetDebugMessageLogARB;
 #define GL_VERSION_3_3
 #define GL_ARB_debug_output
 
-void ExtGLLoadFunctions();
+void GLLoadFunctions();
+void _GLPrintVariable(GLenum e, const char *name);
+#define GLPrintVariable(e) _GLPrintVariable(e, #e)
 
 #ifdef __cplusplus
 }
