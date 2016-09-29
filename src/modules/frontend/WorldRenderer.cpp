@@ -303,10 +303,11 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glEnable(GL_POLYGON_OFFSET_LINE);
 			glEnable(GL_LINE_SMOOTH);
-			glLineWidth(2);
+			glLineWidth(_lineWidth);
 			glPolygonOffset(-2, -2);
 			shaderSetUniformIf(shader, setUniformf, "u_debug_color", 0.0);
 			glDrawElements(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, 0);
+			glLineWidth(1.0f);
 			glDisable(GL_LINE_SMOOTH);
 			glDisable(GL_POLYGON_OFFSET_LINE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -792,6 +793,10 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	if (!_gbuffer.init(dimension)) {
 		return false;
 	}
+
+	GLdouble buf[2];
+	glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
+	_lineWidth = std::min((float)buf[1], _lineWidth);
 
 	return true;
 }

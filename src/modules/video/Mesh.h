@@ -61,6 +61,8 @@ private:
 	uint8_t _animationIndex = 0u;
 	float _timeInSeconds = 0.0f;
 
+	float _lineWidth = 2.0f;
+
 	std::vector<GLMeshData> _meshData;
 	std::vector<image::ImagePtr> _images;
 	std::vector<TexturePtr> _textures;

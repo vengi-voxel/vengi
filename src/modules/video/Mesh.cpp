@@ -194,6 +194,10 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _indices.size(), &_indices[0], GL_STATIC_DRAW);
 
 		glBindVertexArray(0);
+
+		GLdouble buf[2];
+		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
+		_lineWidth = std::min((float)buf[1], _lineWidth);
 	}
 
 	_timeInSeconds = timeInSeconds;
@@ -548,7 +552,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 		shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, color)));
 	}
 
-	glLineWidth(4.0f);
+	glLineWidth(_lineWidth);
 	glDrawArrays(GL_LINES, 0, normalData.data.size());
 	glLineWidth(1.0f);
 
