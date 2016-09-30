@@ -86,6 +86,7 @@ void Frustum::split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_M
  * https://fgiesen.wordpress.com/2012/08/31/frustum-planes-from-the-projection-matrix/
  */
 void Frustum::updatePlanes(const glm::mat4& view, const glm::mat4& projection) {
+	// world space
 	const glm::mat4 &clipMatrix = projection * view;
 
 	const glm::vec4& rx = glm::row(clipMatrix, 0);
