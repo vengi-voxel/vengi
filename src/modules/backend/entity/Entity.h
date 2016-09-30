@@ -172,14 +172,13 @@ public:
 	}
 
 	/**
-	 * @brief the region rect is where the player currently is - surrounded by 9 other fields.
-	 * this is used e.g. for visibility calculation
+	 * @brief the view rect defines which rect the entity can see right now.
+	 * This is used e.g. for visibility calculation
 	 */
-	core::RectFloat regionRect() const {
+	core::RectFloat viewRect() const {
 		const glm::vec3 p = pos();
-		static const float regionSize = current(attrib::Type::VIEWDISTANCE);
-		static const float regionHalf = regionSize / 2.0;
-		return core::RectFloat(p.x - regionHalf, p.z - regionHalf, p.x + regionHalf, p.z + regionHalf);
+		const float viewDistance = current(attrib::Type::VIEWDISTANCE);
+		return core::RectFloat(p.x - viewDistance, p.z - viewDistance, p.x + viewDistance, p.z + viewDistance);
 	}
 };
 

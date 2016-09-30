@@ -148,11 +148,13 @@ bool EntityStorage::updateEntity(const EntityPtr& entity, long dt) {
 	if (!entity->update(dt)) {
 		return false;
 	}
-	const core::RectFloat& rect = entity->regionRect();
+	const core::RectFloat& rect = entity->viewRect();
 	const auto& contents = _quadTreeCache.query(rect);
 	EntitySet set;
 	set.reserve(contents.size());
 	for (const Node& node : contents) {
+		// TODO: check the distance - the rect might contain more than the circle would...
+		// TODO: frustum check
 		set.insert(node.entity);
 	}
 	set.erase(entity);
