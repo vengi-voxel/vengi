@@ -11,7 +11,7 @@ namespace core {
 static void rmtInputHandler(const char* text, void* context) {
 	Log::info("typed '%s' to console", text);
 	if (core::Command::execute(text) <= 0) {
-		const VarPtr& var = core::Var::get(text, nullptr);
+		const VarPtr& var = core::Var::get(text);
 		if (var) {
 			core_trace_msg(var->strVal().c_str());
 			return;
