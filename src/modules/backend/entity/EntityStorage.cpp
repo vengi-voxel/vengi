@@ -80,7 +80,7 @@ bool EntityStorage::logout(EntityId userId) {
 }
 
 void EntityStorage::addNpc(const NpcPtr& npc) {
-	_npcs.insert(std::make_pair(npc->id(), std::move(npc)));
+	_npcs.insert(std::make_pair(npc->id(), npc));
 }
 
 bool EntityStorage::removeNpc(ai::CharacterId id) {
