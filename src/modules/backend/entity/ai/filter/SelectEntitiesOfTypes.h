@@ -17,7 +17,7 @@ namespace backend {
  */
 class SelectEntitiesOfTypes: public IFilter {
 private:
-	std::bitset<(int)network::EntityType::MAX> _entityTypes;
+	std::bitset<std::enum_value(network::EntityType::MAX)> _entityTypes;
 public:
 	FILTER_FACTORY(SelectEntitiesOfTypes)
 

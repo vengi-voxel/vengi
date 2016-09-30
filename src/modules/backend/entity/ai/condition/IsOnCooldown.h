@@ -24,7 +24,7 @@ public:
 	IsOnCooldown(const std::string& parameters) :
 			ICondition("IsOnCooldown", parameters) {
 		_cooldownId = cooldown::getType(parameters);
-		core_assert(_cooldownId != cooldown::Type::NONE);
+		core_assert_always(_cooldownId != cooldown::Type::NONE);
 	}
 	CONDITION_FACTORY(IsOnCooldown)
 
@@ -32,7 +32,6 @@ public:
 		const AICharacter& chr = ai::character_cast<AICharacter>(entity->getCharacter());
 		return chr.getNpc().cooldownMgr().isCooldown(_cooldownId);
 	}
-
 };
 
 }

@@ -21,21 +21,24 @@ protected:
 public:
 	IsCloseToSelection(const std::string& parameters) :
 			ICondition("IsCloseToSelection", parameters) {
-		if (_parameters.empty())
+		if (_parameters.empty()) {
 			_distance = 1;
-		else
+		} else {
 			_distance = std::stoi(_parameters);
+		}
 	}
 	CONDITION_FACTORY(IsCloseToSelection)
 
 	bool evaluate(const AIPtr& entity) override {
 		ai::Zone* zone = entity->getZone();
-		if (zone == nullptr)
+		if (zone == nullptr) {
 			return false;
+		}
 
 		const FilteredEntities& selection = entity->getFilteredEntities();
-		if (selection.empty())
+		if (selection.empty()) {
 			return false;
+		}
 
 		const AIPtr& ai = zone->getAI(selection[0]);
 		const Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();

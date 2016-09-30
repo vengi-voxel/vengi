@@ -12,8 +12,9 @@ namespace backend {
 
 AI_TASK(GoHome) {
 	backend::Npc& npc = chr.getNpc();
-	if (npc.route(npc.homePosition()))
+	if (npc.route(npc.homePosition())) {
 		return FINISHED;
+	}
 	return FAILED;
 }
 

@@ -13,10 +13,12 @@ namespace backend {
 AI_TASK(AttackOnSelection) {
 	backend::Npc& npc = chr.getNpc();
 	const FilteredEntities& selection = npc.ai()->getFilteredEntities();
-	if (selection.empty())
+	if (selection.empty()) {
 		return FAILED;
-	if (npc.attack(selection[0]))
+	}
+	if (npc.attack(selection[0])) {
 		return FINISHED;
+	}
 	return FAILED;
 }
 

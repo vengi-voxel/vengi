@@ -12,7 +12,7 @@ namespace backend {
 SelectPrey::SelectPrey(const std::string& parameters) :
 		IFilter("SelectPrey", parameters), _npcType(network::EntityType::NONE) {
 	_npcType = network::getEnum<network::EntityType>(parameters.c_str(), network::EnumNamesEntityType());
-	core_assert(_npcType != network::EntityType::NONE);
+	core_assert_always(_npcType != network::EntityType::NONE);
 }
 
 void SelectPrey::filter(const AIPtr& entity) {
