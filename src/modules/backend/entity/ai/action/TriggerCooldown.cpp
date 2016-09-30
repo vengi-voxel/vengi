@@ -11,7 +11,7 @@ namespace backend {
 TriggerCooldown::TriggerCooldown(const std::string& name, const std::string& parameters, const ConditionPtr& condition) :
 		Task(name, parameters, condition) {
 	_cooldownId = cooldown::getType(parameters);
-	core_assert(_cooldownId != cooldown::Type::NONE);
+	core_assert_always(_cooldownId != cooldown::Type::NONE);
 }
 
 TreeNodeStatus TriggerCooldown::doAction(backend::AICharacter& chr, int64_t deltaMillis) {
