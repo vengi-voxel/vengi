@@ -12,7 +12,7 @@ namespace backend {
 SelectIncreasePartner::SelectIncreasePartner(const std::string& parameters) :
 		IFilter("SelectIncreasePartner", parameters) {
 	_cooldownId = cooldown::getType(parameters);
-	core_assert(_cooldownId != cooldown::Type::NONE);
+	core_assert_always(_cooldownId != cooldown::Type::NONE);
 }
 
 void SelectIncreasePartner::filter(const AIPtr& entity) {
