@@ -23,11 +23,19 @@ public:
 	}
 
 	void addPercentage(Type type, double value) {
-		_percentage.insert(std::make_pair(type, value));
+		auto i = _percentage.insert(std::make_pair(type, value));
+		if (!i.second) {
+			_percentage.erase(type);
+			_percentage.insert(std::make_pair(type, value));
+		}
 	}
 
 	void addAbsolute(Type type, double value) {
-		_absolute.insert(std::make_pair(type, value));
+		auto i = _absolute.insert(std::make_pair(type, value));
+		if (!i.second) {
+			_absolute.erase(type);
+			_absolute.insert(std::make_pair(type, value));
+		}
 	}
 
 	void createContainer() const {
