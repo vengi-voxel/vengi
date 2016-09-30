@@ -43,7 +43,7 @@
 #endif//
 
 // Report platform detection
-#if(defined(GLM_MESSAGES) && !defined(GLM_MESSAGE_PLATFORM_DISPLAYED))
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_PLATFORM_DISPLAYED)
 #	define GLM_MESSAGE_PLATFORM_DISPLAYED
 #	if(GLM_PLATFORM & GLM_PLATFORM_QNXNTO)
 #		pragma message("GLM: QNX platform detected")

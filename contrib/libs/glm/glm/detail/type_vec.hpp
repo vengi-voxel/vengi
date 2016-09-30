@@ -17,14 +17,22 @@ namespace detail
 		} type;
 	};
 
-	template <typename T, std::size_t size>
-	struct storage<T, size, true>
-	{
-		typedef GLM_ALIGNED_STRUCT(size) type {
-			uint8 data[size];
-		} type;
-	};
+	#define GLM_ALIGNED_STORAGE_TYPE_STRUCT(x) \
+		template <typename T> \
+		struct storage<T, x, true> { \
+			GLM_ALIGNED_STRUCT(x) type { \
+				uint8 data[x]; \
+			}; \
+		};
 
+	GLM_ALIGNED_STORAGE_TYPE_STRUCT(1)
+	GLM_ALIGNED_STORAGE_TYPE_STRUCT(2)
+	GLM_ALIGNED_STORAGE_TYPE_STRUCT(4)
+	GLM_ALIGNED_STORAGE_TYPE_STRUCT(8)
+	GLM_ALIGNED_STORAGE_TYPE_STRUCT(16)
+	GLM_ALIGNED_STORAGE_TYPE_STRUCT(32)
+	GLM_ALIGNED_STORAGE_TYPE_STRUCT(64)
+		
 #	if GLM_ARCH & GLM_ARCH_SSE2_BIT
 		template <>
 		struct storage<float, 16, true>

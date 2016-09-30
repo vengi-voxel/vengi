@@ -6,7 +6,7 @@
 namespace glm{
 namespace detail
 {
-#	ifdef GLM_SWIZZLE
+#	if GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
 	template <precision P, int E0, int E1, int E2, int E3>
 	struct _swizzle_base1<4, float, P, glm::tvec4, E0,E1,E2,E3, true> : public _swizzle_base0<float, 4>
 	{ 
@@ -49,7 +49,7 @@ namespace detail
 			return Result;
 		}
 	};
-#	endif//GLM_SWIZZLE
+#	endif// GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
 
 	template <precision P>
 	struct compute_vec4_add<float, P, true>
@@ -458,7 +458,7 @@ namespace detail
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<int32, aligned_highp>::tvec4(int32 a, int32 b, int32 c, int32 d) :
 		data(_mm_set_epi32(d, c, b, a))
 	{}
-/*
+
 	template <>
 	template <>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<float, aligned_lowp>::tvec4(int32 a, int32 b, int32 c, int32 d) :
@@ -476,7 +476,6 @@ namespace detail
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<float, aligned_highp>::tvec4(int32 a, int32 b, int32 c, int32 d) :
 		data(_mm_castsi128_ps(_mm_set_epi32(d, c, b, a)))
 	{}
-*/
 }//namespace glm
 
 #endif//GLM_ARCH & GLM_ARCH_SSE2_BIT

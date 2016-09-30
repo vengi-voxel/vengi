@@ -3,6 +3,22 @@
 
 #pragma once
 
+#if defined(GLM_FORCE_SWIZZLE) && defined(GLM_FORCE_UNRESTRICTED_GENTYPE)
+#	error "Both GLM_FORCE_SWIZZLE and GLM_FORCE_UNRESTRICTED_GENTYPE can't be defined at the same time"
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////
+// Messages
+
+#define GLM_MESSAGES_ENABLED 1
+#define GLM_MESSAGES_DISABLE 0
+
+#if defined(GLM_FORCE_MESSAGES)
+#	define GLM_MESSAGES GLM_MESSAGES_ENABLED
+#else
+#	define GLM_MESSAGES GLM_MESSAGES_DISABLE
+#endif
+
 #include <cassert>
 #include <cstddef>
 #include "../simd/platform.h"
@@ -16,13 +32,13 @@
 #define GLM_VERSION_PATCH			9
 #define GLM_VERSION_REVISION		0
 
-#if(defined(GLM_MESSAGES) && !defined(GLM_MESSAGE_VERSION_DISPLAYED))
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_VERSION_DISPLAYED)
 #	define GLM_MESSAGE_VERSION_DISPLAYED
 #	pragma message ("GLM: version 0.9.9.0")
 #endif//GLM_MESSAGES
 
 // Report compiler detection
-#if defined(GLM_MESSAGES) && !defined(GLM_MESSAGE_COMPILER_DISPLAYED)
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_COMPILER_DISPLAYED)
 #	define GLM_MESSAGE_COMPILER_DISPLAYED
 #	if GLM_COMPILER & GLM_COMPILER_CUDA
 #		pragma message("GLM: CUDA compiler detected")
@@ -54,7 +70,7 @@
 #	error "GLM_MODEL undefined, your compiler may not be supported by GLM. Add #define GLM_MODEL 0 to ignore this message."
 #endif//GLM_MODEL
 
-#if defined(GLM_MESSAGES) && !defined(GLM_MESSAGE_MODEL_DISPLAYED)
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_MODEL_DISPLAYED)
 #	define GLM_MESSAGE_MODEL_DISPLAYED
 #	if(GLM_MODEL == GLM_MODEL_64)
 #		pragma message("GLM: 64 bits model")
@@ -63,7 +79,7 @@
 #	endif//GLM_MODEL
 #endif//GLM_MESSAGES
 
-#if defined(GLM_MESSAGES) && !defined(GLM_MESSAGE_ARCH_DISPLAYED)
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_ARCH_DISPLAYED)
 #	define GLM_MESSAGE_ARCH_DISPLAYED
 #	if(GLM_ARCH == GLM_ARCH_PURE)
 #		pragma message("GLM: Platform independent code")
@@ -230,7 +246,7 @@
 #	endif
 #endif
 
-#if defined(GLM_MESSAGES) && !defined(GLM_MESSAGE_LANG_DISPLAYED)
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_LANG_DISPLAYED)
 #	define GLM_MESSAGE_LANG_DISPLAYED
 
 #	if GLM_LANG & GLM_LANG_CXX1Z_FLAG
@@ -263,7 +279,7 @@
 // http://gcc.gnu.org/projects/cxx0x.html
 // http://msdn.microsoft.com/en-us/library/vstudio/hh567368(v=vs.120).aspx
 
-#if GLM_COMPILER & (GLM_COMPILER_LLVM | GLM_COMPILER_APPLE_CLANG)
+#if GLM_COMPILER & GLM_COMPILER_CLANG
 #	if defined(_LIBCPP_VERSION) && GLM_LANG & GLM_LANG_CXX11_FLAG
 #		define GLM_HAS_CXX11_STL 1
 #	else
@@ -337,7 +353,9 @@
 #endif
 
 // N2346
-#if GLM_COMPILER & GLM_COMPILER_CLANG
+#if defined(GLM_FORCE_UNRESTRICTED_GENTYPE)
+#	define GLM_HAS_DEFAULTED_FUNCTIONS 0
+#elif GLM_COMPILER & GLM_COMPILER_CLANG
 #	define GLM_HAS_DEFAULTED_FUNCTIONS __has_feature(cxx_defaulted_functions)
 #elif GLM_LANG & GLM_LANG_CXX11_FLAG
 #	define GLM_HAS_DEFAULTED_FUNCTIONS 1
@@ -398,6 +416,19 @@
 		((GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_COMPILER >= GLM_COMPILER_INTEL13)) || \
 		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2012)) || \
 		((GLM_COMPILER & GLM_COMPILER_CUDA) && (GLM_COMPILER >= GLM_COMPILER_CUDA50))))
+#endif
+
+// N2341 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2341.pdf
+#if GLM_COMPILER & GLM_COMPILER_CLANG
+#	define GLM_HAS_ALIGNOF __has_feature(c_alignof)
+#elif GLM_LANG & GLM_LANG_CXX11_FLAG
+#	define GLM_HAS_ALIGNOF 1
+#else
+#	define GLM_HAS_ALIGNOF ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
+		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC48)) || \
+		((GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_COMPILER >= GLM_COMPILER_INTEL15)) || \
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2015)) || \
+		((GLM_COMPILER & GLM_COMPILER_CUDA) && (GLM_COMPILER >= GLM_COMPILER_CUDA70))))
 #endif
 
 //
@@ -524,11 +555,20 @@
 ///////////////////////////////////////////////////////////////////////////////////
 // Swizzle operators
 
-// User defines: GLM_SWIZZLE
+// User defines: GLM_FORCE_SWIZZLE
 
-#if defined(GLM_MESSAGES) && !defined(GLM_MESSAGE_SWIZZLE_DISPLAYED)
+#define GLM_SWIZZLE_ENABLED 1
+#define GLM_SWIZZLE_DISABLE 0
+
+#if defined(GLM_FORCE_SWIZZLE)
+#	define GLM_SWIZZLE GLM_SWIZZLE_ENABLED
+#else
+#	define GLM_SWIZZLE GLM_SWIZZLE_DISABLE
+#endif
+
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_SWIZZLE_DISPLAYED)
 #	define GLM_MESSAGE_SWIZZLE_DISPLAYED
-#	if defined(GLM_SWIZZLE)
+#	if GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
 #		pragma message("GLM: Swizzling operators enabled")
 #	else
 #		pragma message("GLM: Swizzling operators disabled, #define GLM_SWIZZLE to enable swizzle operators")
@@ -536,11 +576,19 @@
 #endif//GLM_MESSAGES
 
 ///////////////////////////////////////////////////////////////////////////////////
-// Clip control
+// Allows using not basic types as genType
 
-#ifdef GLM_DEPTH_ZERO_TO_ONE // Legacy 0.9.8 development
-#	error Define GLM_FORCE_DEPTH_ZERO_TO_ONE instead of GLM_DEPTH_ZERO_TO_ONE to use 0 to 1 clip space.
-#endif
+// #define GLM_FORCE_UNRESTRICTED_GENTYPE
+
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_UNRESTRICTED_GENTYPE_DISPLAYED)
+#	define GLM_MESSAGE_UNRESTRICTED_GENTYPE_DISPLAYED
+#	ifdef GLM_FORCE_UNRESTRICTED_GENTYPE
+#		pragma message("GLM: Use unrestricted genType")
+#	endif
+#endif//GLM_MESSAGES
+
+///////////////////////////////////////////////////////////////////////////////////
+// Clip control
 
 #define GLM_DEPTH_ZERO_TO_ONE				0x00000001
 #define GLM_DEPTH_NEGATIVE_ONE_TO_ONE		0x00000002
@@ -551,13 +599,18 @@
 #	define GLM_DEPTH_CLIP_SPACE GLM_DEPTH_NEGATIVE_ONE_TO_ONE
 #endif
 
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_DEPTH_DISPLAYED)
+#	define GLM_MESSAGE_DEPTH_DISPLAYED
+#	if GLM_DEPTH_CLIP_SPACE == GLM_DEPTH_ZERO_TO_ONE
+#		pragma message("GLM: Depth clip space: Zero to one")
+#	else
+#		pragma message("GLM: Depth clip space: negative one to one")
+#	endif
+#endif//GLM_MESSAGES
+
 ///////////////////////////////////////////////////////////////////////////////////
 // Coordinate system, define GLM_FORCE_LEFT_HANDED before including GLM
 // to use left handed coordinate system by default.
-
-#ifdef GLM_LEFT_HANDED // Legacy 0.9.8 development
-#	error Define GLM_FORCE_LEFT_HANDED instead of GLM_LEFT_HANDED left handed coordinate system by default.
-#endif
 
 #define GLM_LEFT_HANDED				0x00000001	// For DirectX, Metal, Vulkan
 #define GLM_RIGHT_HANDED			0x00000002	// For OpenGL, default in GLM
@@ -566,7 +619,16 @@
 #	define GLM_COORDINATE_SYSTEM GLM_LEFT_HANDED
 #else
 #	define GLM_COORDINATE_SYSTEM GLM_RIGHT_HANDED
-#endif 
+#endif
+
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_HANDED_DISPLAYED)
+#	define GLM_MESSAGE_HANDED_DISPLAYED
+#	if GLM_COORDINATE_SYSTEM == GLM_LEFT_HANDED
+#		pragma message("GLM: Coordinate system: left handed")
+#	else
+#		pragma message("GLM: Coordinate system: right handed")
+#	endif
+#endif//GLM_MESSAGES
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Qualifiers
@@ -583,7 +645,7 @@
 #	else
 #		define GLM_VECTOR_CALL
 #	endif
-#elif GLM_COMPILER & (GLM_COMPILER_GCC | GLM_COMPILER_CLANG | GLM_COMPILER_CUDA | GLM_COMPILER_INTEL)
+#elif GLM_COMPILER & (GLM_COMPILER_GCC | GLM_COMPILER_CLANG | GLM_COMPILER_INTEL)
 #	define GLM_DEPRECATED __attribute__((__deprecated__))
 #	define GLM_ALIGN(x) __attribute__((aligned(x)))
 #	define GLM_ALIGNED_STRUCT(x) struct __attribute__((aligned(x)))
@@ -599,6 +661,14 @@
 #	else
 #		define GLM_VECTOR_CALL
 #	endif
+#elif GLM_COMPILER & GLM_COMPILER_CUDA
+#	define GLM_DEPRECATED
+#	define GLM_ALIGN(x) __align__(x)
+#	define GLM_ALIGNED_STRUCT(x) struct __align__(x)
+#	define GLM_ALIGNED_TYPEDEF(type, name, alignment) typedef type name __align__(x)
+#	define GLM_RESTRICT_FUNC __restrict__
+#	define GLM_RESTRICT __restrict__
+#	define GLM_VECTOR_CALL
 #else
 #	define GLM_DEPRECATED
 #	define GLM_ALIGN
@@ -666,7 +736,7 @@ namespace glm
 #	endif
 }//namespace glm
 
-#if defined(GLM_MESSAGES) && !defined(GLM_MESSAGE_FORCE_SIZE_T_LENGTH)
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_FORCE_SIZE_T_LENGTH)
 #	define GLM_MESSAGE_FORCE_SIZE_T_LENGTH
 #	if defined GLM_FORCE_SIZE_T_LENGTH
 #		pragma message("GLM: .length() returns glm::length_t, a typedef of std::size_t")

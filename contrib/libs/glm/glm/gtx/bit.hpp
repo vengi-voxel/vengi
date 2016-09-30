@@ -16,7 +16,7 @@
 // Dependencies
 #include "../gtc/bitfield.hpp"
 
-#if(defined(GLM_MESSAGES))
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_bit extension is deprecated, include GLM_GTC_bitfield and GLM_GTC_integer instead")
 #endif
 
@@ -28,6 +28,10 @@ namespace glm
 	/// @see gtx_bit
 	template <typename genIUType>
 	GLM_FUNC_DECL genIUType highestBitValue(genIUType Value);
+
+	/// @see gtx_bit
+	template <typename genIUType>
+	GLM_FUNC_DECL genIUType lowestBitValue(genIUType Value);
 
 	/// Find the highest bit set to 1 in a integer variable and return its value.
 	///

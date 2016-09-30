@@ -26,6 +26,21 @@ namespace glm
 	}
 
 	///////////////////
+	// lowestBitValue
+
+	template <typename genIUType>
+	GLM_FUNC_QUALIFIER genIUType lowestBitValue(genIUType Value)
+	{
+		return (Value & (~Value + 1));
+	}
+
+	template <typename T, precision P, template <typename, precision> class vecType>
+	GLM_FUNC_QUALIFIER vecType<T, P> lowestBitValue(vecType<T, P> const & v)
+	{
+		return detail::functor1<T, T, P, vecType>::call(lowestBitValue, v);
+	}
+
+	///////////////////
 	// powerOfTwoAbove
 
 	template <typename genType>

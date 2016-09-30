@@ -37,7 +37,7 @@ namespace detail
 	template <typename T, precision P, bool Aligned>
 	struct compute_vec4_add
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
 		{
 			return tvec4<T, P>(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 		}
@@ -46,7 +46,7 @@ namespace detail
 	template <typename T, precision P, bool Aligned>
 	struct compute_vec4_sub
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
 		{
 			return tvec4<T, P>(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 		}
@@ -55,7 +55,7 @@ namespace detail
 	template <typename T, precision P, bool Aligned>
 	struct compute_vec4_mul
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
 		{
 			return tvec4<T, P>(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
 		}
@@ -64,7 +64,7 @@ namespace detail
 	template <typename T, precision P, bool Aligned>
 	struct compute_vec4_div
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
 		{
 			return tvec4<T, P>(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
 		}
@@ -73,7 +73,7 @@ namespace detail
 	template <typename T, precision P, bool Aligned>
 	struct compute_vec4_mod
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
 		{
 			return tvec4<T, P>(a.x % b.x, a.y % b.y, a.z % b.z, a.w % b.w);
 		}
@@ -82,7 +82,7 @@ namespace detail
 	template <typename T, precision P, int IsInt, std::size_t Size, bool Aligned>
 	struct compute_vec4_and
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
 		{
 			return tvec4<T, P>(a.x & b.x, a.y & b.y, a.z & b.z, a.w & b.w);
 		}
@@ -91,7 +91,7 @@ namespace detail
 	template <typename T, precision P, int IsInt, std::size_t Size, bool Aligned>
 	struct compute_vec4_or
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
 		{
 			return tvec4<T, P>(a.x | b.x, a.y | b.y, a.z | b.z, a.w | b.w);
 		}
@@ -100,7 +100,7 @@ namespace detail
 	template <typename T, precision P, int IsInt, std::size_t Size, bool Aligned>
 	struct compute_vec4_xor
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
 		{
 			return tvec4<T, P>(a.x ^ b.x, a.y ^ b.y, a.z ^ b.z, a.w ^ b.w);
 		}
@@ -109,7 +109,7 @@ namespace detail
 	template <typename T, precision P, int IsInt, std::size_t Size, bool Aligned>
 	struct compute_vec4_shift_left
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
 		{
 			return tvec4<T, P>(a.x << b.x, a.y << b.y, a.z << b.z, a.w << b.w);
 		}
@@ -118,7 +118,7 @@ namespace detail
 	template <typename T, precision P, int IsInt, std::size_t Size, bool Aligned>
 	struct compute_vec4_shift_right
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & a, tvec4<T, P> const & b)
 		{
 			return tvec4<T, P>(a.x >> b.x, a.y >> b.y, a.z >> b.z, a.w >> b.w);
 		}
@@ -127,7 +127,7 @@ namespace detail
 	template <typename T, precision P, int IsInt, std::size_t Size, bool Aligned>
 	struct compute_vec4_equal
 	{
-		static bool call(tvec4<T, P> const & v1, tvec4<T, P> const & v2)
+		GLM_FUNC_QUALIFIER static bool call(tvec4<T, P> const & v1, tvec4<T, P> const & v2)
 		{
 			return (v1.x == v2.x) && (v1.y == v2.y) && (v1.z == v2.z) && (v1.w == v2.w);
 		}
@@ -136,7 +136,7 @@ namespace detail
 	template <typename T, precision P, int IsInt, std::size_t Size, bool Aligned>
 	struct compute_vec4_nequal
 	{
-		static bool call(tvec4<T, P> const & v1, tvec4<T, P> const & v2)
+		GLM_FUNC_QUALIFIER static bool call(tvec4<T, P> const & v1, tvec4<T, P> const & v2)
 		{
 			return (v1.x != v2.x) || (v1.y != v2.y) || (v1.z != v2.z) || (v1.w != v2.w);
 		}
@@ -145,7 +145,7 @@ namespace detail
 	template <typename T, precision P, int IsInt, std::size_t Size, bool Aligned>
 	struct compute_vec4_bitwise_not
 	{
-		static tvec4<T, P> call(tvec4<T, P> const & v)
+		GLM_FUNC_QUALIFIER static tvec4<T, P> call(tvec4<T, P> const & v)
 		{
 			return tvec4<T, P>(~v.x, ~v.y, ~v.z, ~v.w);
 		}
@@ -196,7 +196,7 @@ namespace detail
 
 	template <typename T, precision P>
 	template <typename A, typename B, typename C, typename D>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR tvec4<T, P>::tvec4(A a, B b, C c, D d) :
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<T, P>::tvec4(A a, B b, C c, D d) :
 		x(static_cast<T>(a)),
 		y(static_cast<T>(b)),
 		z(static_cast<T>(c)),

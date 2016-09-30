@@ -60,7 +60,7 @@
 #include <cassert>
 #include "fwd.hpp"
 
-#if(defined(GLM_MESSAGES) && !defined(GLM_MESSAGE_CORE_INCLUDED_DISPLAYED))
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_CORE_INCLUDED_DISPLAYED)
 #	define GLM_MESSAGE_CORE_INCLUDED_DISPLAYED
 #	pragma message("GLM: Core library included")
 #endif//GLM_MESSAGES

@@ -190,7 +190,7 @@ namespace detail
 
 #	if GLM_ARCH == GLM_ARCH_X86
 	template <typename T, precision P, template <typename, precision> class vecType, bool Aligned>
-	struct compute_sign<T, P, vecType, Aligned>
+	struct compute_sign<T, P, vecType, false, Aligned>
 	{
 		GLM_FUNC_QUALIFIER static vecType<T, P> call(vecType<T, P> const & x)
 		{
@@ -439,7 +439,13 @@ namespace detail
 	template <typename genType>
 	GLM_FUNC_QUALIFIER genType mod(genType x, genType y)
 	{
-		return mod(tvec1<genType>(x), y).x;
+#		if GLM_COMPILER & GLM_COMPILER_CUDA
+			// Another Cuda compiler bug https://github.com/g-truc/glm/issues/530
+			tvec1<genType, defaultp> Result(mod(tvec1<genType, defaultp>(x), y));
+			return Result.x;
+#		else
+			return mod(tvec1<genType, defaultp>(x), y).x;
+#		endif
 	}
 
 	template <typename T, precision P, template <typename, precision> class vecType>

@@ -20,7 +20,7 @@
 #include "../gtc/quaternion.hpp"
 #include "../gtc/matrix_transform.hpp"
 
-#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_matrix_decompose extension included")
 #endif
 

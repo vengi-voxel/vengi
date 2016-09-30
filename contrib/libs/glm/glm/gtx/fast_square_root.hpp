@@ -19,7 +19,7 @@
 #include "../exponential.hpp"
 #include "../geometric.hpp"
 
-#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_fast_square_root extension included")
 #endif
 

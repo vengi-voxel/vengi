@@ -317,6 +317,10 @@ namespace detail
 	template <typename T, glm::precision P, template <typename, glm::precision> class vecType>
 	GLM_FUNC_QUALIFIER vecType<int, P> bitCount(vecType<T, P> const & v)
 	{
+	#if GLM_COMPILER & GLM_COMPILER_VC
+	#pragma warning(push)
+	#pragma warning(disable : 4310) //cast truncates constant value
+	#endif
 		vecType<typename detail::make_unsigned<T>::type, P> x(*reinterpret_cast<vecType<typename detail::make_unsigned<T>::type, P> const *>(&v));
 		x = detail::compute_bitfieldBitCountStep<typename detail::make_unsigned<T>::type, P, vecType, detail::is_aligned<P>::value, sizeof(T) * 8>=  2>::call(x, typename detail::make_unsigned<T>::type(0x5555555555555555ull), typename detail::make_unsigned<T>::type( 1));
 		x = detail::compute_bitfieldBitCountStep<typename detail::make_unsigned<T>::type, P, vecType, detail::is_aligned<P>::value, sizeof(T) * 8>=  4>::call(x, typename detail::make_unsigned<T>::type(0x3333333333333333ull), typename detail::make_unsigned<T>::type( 2));
@@ -325,6 +329,9 @@ namespace detail
 		x = detail::compute_bitfieldBitCountStep<typename detail::make_unsigned<T>::type, P, vecType, detail::is_aligned<P>::value, sizeof(T) * 8>= 32>::call(x, typename detail::make_unsigned<T>::type(0x0000FFFF0000FFFFull), typename detail::make_unsigned<T>::type(16));
 		x = detail::compute_bitfieldBitCountStep<typename detail::make_unsigned<T>::type, P, vecType, detail::is_aligned<P>::value, sizeof(T) * 8>= 64>::call(x, typename detail::make_unsigned<T>::type(0x00000000FFFFFFFFull), typename detail::make_unsigned<T>::type(32));
 		return vecType<int, P>(x);
+	#if GLM_COMPILER & GLM_COMPILER_VC
+	#pragma warning(pop)
+	#endif
 	}
 
 	// findLSB

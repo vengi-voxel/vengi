@@ -16,7 +16,7 @@
 #include "../glm.hpp"
 #include <cstdlib>
 
-#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_std_based_type extension included")
 #endif
 

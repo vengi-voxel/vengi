@@ -19,7 +19,7 @@
 #include "../detail/precision.hpp"
 #include "../detail/type_vec2.hpp"
 
-#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTC_functions extension included")
 #endif
 

@@ -4,9 +4,7 @@
 namespace glm
 {
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat3x3<T, P> shearX2D(
-		const tmat3x3<T, P>& m, 
-		T s)
+	GLM_FUNC_QUALIFIER tmat3x3<T, P> shearX2D(tmat3x3<T, P> const& m, T s)
 	{
 		tmat3x3<T, P> r(1);
 		r[0][1] = s;
@@ -14,9 +12,7 @@ namespace glm
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat3x3<T, P> shearY2D(
-		const tmat3x3<T, P>& m, 
-		T s)
+	GLM_FUNC_QUALIFIER tmat3x3<T, P> shearY2D(tmat3x3<T, P> const& m, T s)
 	{
 		tmat3x3<T, P> r(1);
 		r[1][0] = s;
@@ -24,10 +20,7 @@ namespace glm
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat4x4<T, P> shearX3D(
-		const tmat4x4<T, P>& m, 
-		T s, 
-		T t)
+	GLM_FUNC_QUALIFIER tmat4x4<T, P> shearX3D(tmat4x4<T, P> const& m, T s, T t)
 	{
 		tmat4x4<T, P> r(1);
 		r[1][0] = s;
@@ -36,10 +29,7 @@ namespace glm
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat4x4<T, P> shearY3D(
-		const tmat4x4<T, P>& m, 
-		T s, 
-		T t)
+	GLM_FUNC_QUALIFIER tmat4x4<T, P> shearY3D(tmat4x4<T, P> const& m, T s, T t)
 	{
 		tmat4x4<T, P> r(1);
 		r[0][1] = s;
@@ -48,10 +38,7 @@ namespace glm
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat4x4<T, P> shearZ3D(
-		const tmat4x4<T, P>& m, 
-		T s, 
-		T t)
+	GLM_FUNC_QUALIFIER tmat4x4<T, P> shearZ3D(tmat4x4<T, P> const& m, T s, T t)
 	{
 		tmat4x4<T, P> r(1);
 		r[0][2] = s;
@@ -60,35 +47,31 @@ namespace glm
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat3x3<T, P> reflect2D(
-		const tmat3x3<T, P>& m, 
-		const tvec3<T, P>& normal)
+	GLM_FUNC_QUALIFIER tmat3x3<T, P> reflect2D(tmat3x3<T, P> const& m, tvec3<T, P> const& normal)
 	{
-		tmat3x3<T, P> r(1);
-		r[0][0] = 1 - 2 * normal.x * normal.x;
-		r[0][1] = -2 * normal.x * normal.y;
-		r[1][0] = -2 * normal.x * normal.y;
-		r[1][1] = 1 - 2 * normal.y * normal.y;
+		tmat3x3<T, P> r(static_cast<T>(1));
+		r[0][0] = static_cast<T>(1) - static_cast<T>(2) * normal.x * normal.x;
+		r[0][1] = -static_cast<T>(2) * normal.x * normal.y;
+		r[1][0] = -static_cast<T>(2) * normal.x * normal.y;
+		r[1][1] = static_cast<T>(1) - static_cast<T>(2) * normal.y * normal.y;
 		return m * r;
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat4x4<T, P> reflect3D(
-		const tmat4x4<T, P>& m, 
-		const tvec3<T, P>& normal)
+	GLM_FUNC_QUALIFIER tmat4x4<T, P> reflect3D(tmat4x4<T, P> const& m, tvec3<T, P> const& normal)
 	{
-		tmat4x4<T, P> r(1);
-		r[0][0] = 1 - 2 * normal.x * normal.x;
-		r[0][1] = -2 * normal.x * normal.y;
-		r[0][2] = -2 * normal.x * normal.z;
+		tmat4x4<T, P> r(static_cast<T>(1));
+		r[0][0] = static_cast<T>(1) - static_cast<T>(2) * normal.x * normal.x;
+		r[0][1] = -static_cast<T>(2) * normal.x * normal.y;
+		r[0][2] = -static_cast<T>(2) * normal.x * normal.z;
 
-		r[1][0] = -2 * normal.x * normal.y;
-		r[1][1] = 1 - 2 * normal.y * normal.y;
-		r[1][2] = -2 * normal.y * normal.z;
+		r[1][0] = -static_cast<T>(2) * normal.x * normal.y;
+		r[1][1] = static_cast<T>(1) - static_cast<T>(2) * normal.y * normal.y;
+		r[1][2] = -static_cast<T>(2) * normal.y * normal.z;
 
-		r[2][0] = -2 * normal.x * normal.z;
-		r[2][1] = -2 * normal.y * normal.z;
-		r[2][2] = 1 - 2 * normal.z * normal.z;
+		r[2][0] = -static_cast<T>(2) * normal.x * normal.z;
+		r[2][1] = -static_cast<T>(2) * normal.y * normal.z;
+		r[2][2] = static_cast<T>(1) - static_cast<T>(2) * normal.z * normal.z;
 		return m * r;
 	}
 
@@ -97,11 +80,11 @@ namespace glm
 		const tmat3x3<T, P>& m, 
 		const tvec3<T, P>& normal)
 	{
-		tmat3x3<T, P> r(1);
-		r[0][0] = 1 - normal.x * normal.x;
+		tmat3x3<T, P> r(static_cast<T>(1));
+		r[0][0] = static_cast<T>(1) - normal.x * normal.x;
 		r[0][1] = - normal.x * normal.y;
 		r[1][0] = - normal.x * normal.y;
-		r[1][1] = 1 - normal.y * normal.y;
+		r[1][1] = static_cast<T>(1) - normal.y * normal.y;
 		return m * r;
 	}
 
@@ -110,26 +93,24 @@ namespace glm
 		const tmat4x4<T, P>& m, 
 		const tvec3<T, P>& normal)
 	{
-		tmat4x4<T, P> r(1);
-		r[0][0] = 1 - normal.x * normal.x;
+		tmat4x4<T, P> r(static_cast<T>(1));
+		r[0][0] = static_cast<T>(1) - normal.x * normal.x;
 		r[0][1] = - normal.x * normal.y;
 		r[0][2] = - normal.x * normal.z;
 		r[1][0] = - normal.x * normal.y;
-		r[1][1] = 1 - normal.y * normal.y;
+		r[1][1] = static_cast<T>(1) - normal.y * normal.y;
 		r[1][2] = - normal.y * normal.z;
 		r[2][0] = - normal.x * normal.z;
 		r[2][1] = - normal.y * normal.z;
-		r[2][2] = 1 - normal.z * normal.z;
+		r[2][2] = static_cast<T>(1) - normal.z * normal.z;
 		return m * r;
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tmat4x4<T, P> scaleBias(
-		T scale, 
-		T bias)
+	GLM_FUNC_QUALIFIER tmat4x4<T, P> scaleBias(T scale, T bias)
 	{
 		tmat4x4<T, P> result;
-		result[3] = tvec4<T, P>(tvec3<T, P>(bias), T(1));
+		result[3] = tvec4<T, P>(tvec3<T, P>(bias), static_cast<T>(1));
 		result[0][0] = scale;
 		result[1][1] = scale;
 		result[2][2] = scale;
@@ -137,10 +118,7 @@ namespace glm
 	}
 
 	template <typename T, precision P> 
-	GLM_FUNC_QUALIFIER tmat4x4<T, P> scaleBias(
-		const tmat4x4<T, P>& m, 
-		T scale, 
-		T bias)
+	GLM_FUNC_QUALIFIER tmat4x4<T, P> scaleBias(tmat4x4<T, P> const& m, T scale, T bias)
 	{
 		return m * scaleBias(scale, bias);
 	}

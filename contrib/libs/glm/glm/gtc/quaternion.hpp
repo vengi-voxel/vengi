@@ -21,7 +21,7 @@
 #include "../vec4.hpp"
 #include "../gtc/constants.hpp"
 
-#if(defined(GLM_MESSAGES) && !defined(GLM_EXT_INCLUDED))
+#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTC_quaternion extension included")
 #endif
 
@@ -43,7 +43,7 @@ namespace glm
 #		if GLM_HAS_ALIGNED_TYPE
 #			if GLM_COMPILER & GLM_COMPILER_GCC
 #				pragma GCC diagnostic push
-#				pragma GCC diagnostic ignored "-pedantic"
+#				pragma GCC diagnostic ignored "-Wpedantic"
 #			endif
 #			if GLM_COMPILER & GLM_COMPILER_CLANG
 #				pragma clang diagnostic push

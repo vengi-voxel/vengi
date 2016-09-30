@@ -5,7 +5,7 @@
 
 #include "../fwd.hpp"
 #include "type_vec.hpp"
-#ifdef GLM_SWIZZLE
+#if GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
 #	if GLM_HAS_UNRESTRICTED_UNIONS
 #		include "_swizzle.hpp"
 #	else
@@ -30,7 +30,7 @@ namespace glm
 #		if GLM_HAS_ALIGNED_TYPE
 #			if GLM_COMPILER & GLM_COMPILER_GCC
 #				pragma GCC diagnostic push
-#				pragma GCC diagnostic ignored "-pedantic"
+#				pragma GCC diagnostic ignored "-Wpedantic"
 #			endif
 #			if GLM_COMPILER & GLM_COMPILER_CLANG
 #				pragma clang diagnostic push
@@ -44,7 +44,7 @@ namespace glm
 				T r;
 				T s;
 /*
-#				ifdef GLM_SWIZZLE
+#				if GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
 					_GLM_SWIZZLE1_2_MEMBERS(T, P, tvec2, x)
 					_GLM_SWIZZLE1_2_MEMBERS(T, P, tvec2, r)
 					_GLM_SWIZZLE1_2_MEMBERS(T, P, tvec2, s)
@@ -66,7 +66,7 @@ namespace glm
 #		else
 			union {T x, r, s;};
 /*
-#			ifdef GLM_SWIZZLE
+#			if GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
 				GLM_SWIZZLE_GEN_VEC_FROM_VEC1(T, P, tvec2, tvec2, tvec3, tvec4)
 #			endif//GLM_SWIZZLE*/
 #		endif
@@ -110,13 +110,13 @@ namespace glm
 
 		// -- Swizzle constructors --
 /*
-#		if(GLM_HAS_UNRESTRICTED_UNIONS && defined(GLM_SWIZZLE))
+#		if(GLM_HAS_UNRESTRICTED_UNIONS && (GLM_SWIZZLE == GLM_SWIZZLE_ENABLED))
 			template <int E0>
 			GLM_FUNC_DECL tvec1(detail::_swizzle<1, T, P, tvec1, E0, -1,-2,-3> const & that)
 			{
 				*this = that();
 			}
-#		endif//(GLM_HAS_UNRESTRICTED_UNIONS && defined(GLM_SWIZZLE))
+#		endif//(GLM_HAS_UNRESTRICTED_UNIONS && (GLM_SWIZZLE == GLM_SWIZZLE_ENABLED))
 */
 		// -- Unary arithmetic operators --
 
