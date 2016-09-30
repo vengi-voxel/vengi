@@ -51,7 +51,6 @@ constexpr const char *CoreLogLevel = "core_loglevel";
 
 // The size of the chunk that is extracted with each step
 constexpr const char *VoxelMeshSize = "voxel_meshsize";
-constexpr const char *VoxelPlainTerrain = "voxel_plainterrain";
 
 constexpr const char *DatabaseName = "db_name";
 constexpr const char *DatabaseHost = "db_host";

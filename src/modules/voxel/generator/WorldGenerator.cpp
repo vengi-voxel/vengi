@@ -25,9 +25,6 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 	const int lowerX = region.getLowerX();
 	const int lowerZ = region.getLowerZ();
 	core_assert(region.getLowerY() >= 0);
-	// TODO: kill me
-	const core::VarPtr& plainTerrain = core::Var::get(cfg::VoxelPlainTerrain, "false");
-	const bool plainTerrainBool = plainTerrain->boolVal();
 	Voxel voxels[MAX_TERRAIN_HEIGHT];
 
 	// TODO: the 2d noise doesn't neep the same resolution - we can optimize this a lot
@@ -43,31 +40,24 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, Bi
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
-			if (plainTerrainBool) {
-				for (int y = 0; y < ni; ++y) {
-					const Voxel& voxel = biomManager.getVoxelType(x, y, z, false);
+			static constexpr Voxel air = createVoxel(Air);
+			static constexpr Voxel water = createVoxel(Water);
+			voxels[0] = createVoxel(Dirt1);
+			for (int y = ni - 1; y >= 1; --y) {
+				const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
+				const float noiseVal = noise::norm(
+						noise::Simplex::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
+								worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
+				const float finalDensity = noiseNormalized + noiseVal;
+				if (finalDensity > worldCtx.caveDensityThreshold) {
+					const bool cave = y < ni - 1;
+					const Voxel& voxel = biomManager.getVoxelType(x, y, z, cave);
 					voxels[y] = voxel;
-				}
-			} else {
-				static constexpr Voxel air = createVoxel(Air);
-				static constexpr Voxel water = createVoxel(Water);
-				voxels[0] = createVoxel(Dirt1);
-				for (int y = ni - 1; y >= 1; --y) {
-					const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
-					const float noiseVal = noise::norm(
-							noise::Simplex::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
-									worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
-					const float finalDensity = noiseNormalized + noiseVal;
-					if (finalDensity > worldCtx.caveDensityThreshold) {
-						const bool cave = y < ni - 1;
-						const Voxel& voxel = biomManager.getVoxelType(x, y, z, cave);
-						voxels[y] = voxel;
+				} else {
+					if (y <= MAX_WATER_HEIGHT) {
+						voxels[y] = water;
 					} else {
-						if (y <= MAX_WATER_HEIGHT) {
-							voxels[y] = water;
-						} else {
-							voxels[y] = air;
-						}
+						voxels[y] = air;
 					}
 				}
 			}
