@@ -1,6 +1,8 @@
 set(SRCS
 	SimplexNoise.h SimplexNoise.cpp
 )
+# TODO: maybe provide two noise modules, one noisefast (for e.g. client only stuff) and one noise-slow for stuff that must be cross plattform
+
 set(LIB noise)
 add_library(${LIB} ${SRCS})
 target_link_libraries(${LIB} core)
