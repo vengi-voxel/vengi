@@ -89,6 +89,9 @@ public:
 
 	static VarPtr getSafe(const std::string& name);
 
+	static std::string str(const std::string& name);
+	static bool boolean(const std::string& name);
+
 	static inline VarPtr get(const std::string& name, int value, int32_t flags = -1) {
 		const std::string& strVal = std::to_string(value);
 		return get(name, strVal.c_str(), flags);

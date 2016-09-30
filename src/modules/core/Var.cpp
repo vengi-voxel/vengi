@@ -24,6 +24,22 @@ VarPtr Var::getSafe(const std::string& name) {
 	return var;
 }
 
+std::string Var::str(const std::string& name) {
+	const VarPtr& var = get(name);
+	if (!var) {
+		return "";
+	}
+	return var->strVal();
+}
+
+bool Var::boolean(const std::string& name) {
+	const VarPtr& var = get(name);
+	if (!var) {
+		return false;
+	}
+	return var->boolVal();
+}
+
 VarPtr Var::get(const std::string& name, const char* value, int32_t flags) {
 	VarMap::iterator i;
 	bool missing;
