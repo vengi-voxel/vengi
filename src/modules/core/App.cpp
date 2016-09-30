@@ -90,7 +90,7 @@ void App::onFrame() {
 		case AppState::Running: {
 			{
 				core_trace_scoped(AppOnRunning);
-				if (_nextFrame > now) {
+				if (_framesPerSecondsCap < 1.0 || _nextFrame > now) {
 					{
 						core_trace_scoped(AppOnBeforeRunning);
 						onBeforeRunning();
@@ -104,13 +104,13 @@ void App::onFrame() {
 						onAfterRunning();
 					}
 				}
-				const long delay = _nextFrame - now;
-				if (delay > 0) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+				if (_framesPerSecondsCap > 1.0) {
+					const long delay = _nextFrame - now;
+					if (delay > 0) {
+						std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+					}
+					_nextFrame += 1000.0 / _framesPerSecondsCap;
 				}
-				// TODO: put into cvar
-				const double fpsCap = 60.0f;
-				_nextFrame += 1000.0 / fpsCap;
 			}
 			break;
 		}

@@ -36,12 +36,17 @@ protected:
 	long _deltaFrame;
 	long _initTime;
 	double _nextFrame = 0;
+	double _framesPerSecondsCap = 0.0;
 	int _exitCode = 0;
 	io::FilesystemPtr _filesystem;
 	core::EventBusPtr _eventBus;
 	static App* _staticInstance;
 	core::ThreadPool _threadPool;
 	core::VarPtr _logLevel;
+
+	void setFramesPerSecondsCap(double framesPerSecondsCap) {
+		_framesPerSecondsCap = framesPerSecondsCap;
+	}
 
 public:
 	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport, size_t threadPoolSize = 1);
