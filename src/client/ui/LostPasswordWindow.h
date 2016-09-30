@@ -20,7 +20,7 @@ public:
 		core_assert_always(loadResourceFile("ui/window/lostpassword.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 
-		setText("email", core::Var::get(cfg::ClientEmail)->strVal());
+		setText("email", core::Var::getSafe(cfg::ClientEmail)->strVal());
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {

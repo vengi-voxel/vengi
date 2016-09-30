@@ -89,8 +89,8 @@ void Client::onEvent(const network::DisconnectEvent& event) {
 
 void Client::onEvent(const network::NewConnectionEvent& event) {
 	flatbuffers::FlatBufferBuilder fbb;
-	const std::string& email = core::Var::get(cfg::ClientEmail)->strVal();
-	const std::string& password = core::Var::get(cfg::ClientPassword)->strVal();
+	const std::string& email = core::Var::getSafe(cfg::ClientEmail)->strVal();
+	const std::string& password = core::Var::getSafe(cfg::ClientPassword)->strVal();
 	Log::info("Trying to log into the server with %s", email.c_str());
 	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserConnect,
 			network::CreateUserConnect(fbb, fbb.CreateString(email), fbb.CreateString(password)).Union());
@@ -161,10 +161,10 @@ core::AppState Client::onInit() {
 }
 
 void Client::handleLogin() {
-	const core::VarPtr& autoLoginVar = core::Var::get(cfg::ClientAutoLogin);
+	const core::VarPtr& autoLoginVar = core::Var::getSafe(cfg::ClientAutoLogin);
 	if (autoLoginVar->boolVal()) {
-		const int port = core::Var::get(cfg::ClientPort)->intVal();
-		const std::string& host = core::Var::get(cfg::ClientHost)->strVal();
+		const int port = core::Var::getSafe(cfg::ClientPort)->intVal();
+		const std::string& host = core::Var::getSafe(cfg::ClientHost)->strVal();
 		Log::info("Trying to connect to server %s:%i", host.c_str(), port);
 		if (!connect(port, host)) {
 			autoLoginVar->setVal(false);
@@ -287,7 +287,7 @@ void Client::onWindowResize() {
 }
 
 void Client::signup(const std::string& email, const std::string& password) {
-	RestClient::Connection conn(core::Var::get(cfg::HTTPBaseURL)->strVal());
+	RestClient::Connection conn(core::Var::getSafe(cfg::HTTPBaseURL)->strVal());
 	conn.AppendHeader("Content-Type", "text/json");
 	const RestClient::Response r = conn.post("signup",
 		"{"
@@ -300,7 +300,7 @@ void Client::signup(const std::string& email, const std::string& password) {
 }
 
 void Client::lostPassword(const std::string& email) {
-	RestClient::Connection conn(core::Var::get(cfg::HTTPBaseURL)->strVal());
+	RestClient::Connection conn(core::Var::getSafe(cfg::HTTPBaseURL)->strVal());
 	conn.AppendHeader("Content-Type", "text/json");
 	const RestClient::Response r = conn.post("lostpassword", "{\"email\": \"" + email + "\"}");
 	if (r.code != 200) {
@@ -310,7 +310,7 @@ void Client::lostPassword(const std::string& email) {
 
 void Client::authFailed() {
 	removeState(CLIENT_CONNECTING);
-	core::Var::get(cfg::ClientAutoLogin)->setVal(false);
+	core::Var::getSafe(cfg::ClientAutoLogin)->setVal(false);
 	// TODO: stack (push/pop in UIApp) window support
 	ui::Window* main = new frontend::LoginWindow(this);
 	new frontend::AuthFailedWindow(main);

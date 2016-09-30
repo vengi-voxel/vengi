@@ -720,9 +720,9 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
 	_depthMapFormat = core::Var::get(cfg::ClientDepthMapFormat, (int)video::DepthBufferMode::RGBA, core::CV_SHADER | core::CV_READONLY);
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false");
-	_deferred = core::Var::get(cfg::ClientDeferred);
+	_deferred = core::Var::getSafe(cfg::ClientDeferred);
 	core_assert(_deferred);
-	_shadowMap = core::Var::get(cfg::ClientShadowMap);
+	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	core_assert(_shadowMap);
 	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
 	_shadowMapDebug = core::Var::get(cfg::ClientShadowMapDebug, "false");

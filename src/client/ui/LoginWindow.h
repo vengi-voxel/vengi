@@ -23,8 +23,8 @@ private:
 		const std::string& email = getStr("email");
 		const std::string& password = getStr("password");
 
-		core::Var::get(cfg::ClientEmail)->setVal(email);
-		core::Var::get(cfg::ClientPassword)->setVal(password);
+		core::Var::getSafe(cfg::ClientEmail)->setVal(email);
+		core::Var::getSafe(cfg::ClientPassword)->setVal(password);
 
 		const core::VarPtr& port = core::Var::get(cfg::ClientPort, SERVER_PORT);
 		const core::VarPtr& host = core::Var::get(cfg::ClientHost, SERVER_HOST);
@@ -68,7 +68,7 @@ public:
 				return true;
 			} else if (ev.target->GetID() == TBIDC("autologin")) {
 				const bool s = isToggled("autologin");
-				core::Var::get(cfg::ClientAutoLogin)->setVal(s);
+				core::Var::getSafe(cfg::ClientAutoLogin)->setVal(s);
 				return true;
 			}
 		}

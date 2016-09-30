@@ -280,7 +280,7 @@ AppState App::onInit() {
 	}
 	// we might have changed the loglevel from the commandline
 	Log::init();
-	_logLevel = core::Var::get(cfg::CoreLogLevel);
+	_logLevel = core::Var::getSafe(cfg::CoreLogLevel);
 
 	core_trace_init();
 
