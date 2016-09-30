@@ -15,7 +15,7 @@ function init()
 
 	local rabbit = attrib.createContainer("ANIMAL_RABBIT")
 	animalDefault(rabbit)
-	rabbit:absolute("SPEED", 60.0)
+	rabbit:absolute("SPEED", 39.5)
 	rabbit:register()
 
 	local player = attrib.createContainer("PLAYER")
