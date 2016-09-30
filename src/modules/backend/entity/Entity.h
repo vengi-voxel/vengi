@@ -177,7 +177,7 @@ public:
 	 */
 	core::RectFloat regionRect() const {
 		const glm::vec3 p = pos();
-		static const float regionSize = 1000.0f;
+		static const float regionSize = current(attrib::Type::VIEWDISTANCE);
 		static const float regionHalf = regionSize / 2.0;
 		return core::RectFloat(p.x - regionHalf, p.z - regionHalf, p.x + regionHalf, p.z + regionHalf);
 	}
