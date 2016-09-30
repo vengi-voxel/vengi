@@ -139,7 +139,6 @@ void EntityStorage::updateQuadTree() {
 	}
 	for (auto i : _users) {
 		const UserPtr& user = i.second;
-		// this user is an ghost light
 		_quadTree.insert(Node { user });
 	}
 }
