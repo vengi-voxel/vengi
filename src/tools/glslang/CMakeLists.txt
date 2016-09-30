@@ -30,3 +30,5 @@ add_subdirectory(OGLCompilersDLL)
 add_subdirectory(StandAlone)
 add_subdirectory(SPIRV)
 add_subdirectory(hlsl)
+
+set_target_properties(glslang PROPERTIES COMPILE_FLAGS "-Wno-reorder")
