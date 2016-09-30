@@ -5,7 +5,14 @@ set(LIB noise)
 add_library(${LIB} ${SRCS})
 target_link_libraries(${LIB} core)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
-target_compile_options(${LIB} PRIVATE -march=native PRIVATE -O3)
+#set(MARCH native)
+set(MARCH generic)
+# http://christian-seiler.de/projekte/fpmath/
+if (NOT MSVC)
+	target_compile_options(${LIB} PRIVATE -O3 PRIVATE -mtune=${MARCH} PRIVATE -ffloat-store)
+else()
+	# TODO: MSVC
+endif()
 
 gtest_suite_files(tests
 	tests/SimplexNoiseTest.cpp
