@@ -23,8 +23,8 @@ private:
 		const std::string& email = getStr("email");
 		const std::string& password = getStr("password");
 
-		core::Var::getSafe(cfg::ClientEmail)->setVal(email);
-		core::Var::getSafe(cfg::ClientPassword)->setVal(password);
+		core::Var::get(cfg::ClientEmail, email.c_str())->setVal(email);
+		core::Var::get(cfg::ClientPassword, password.c_str())->setVal(password);
 
 		const core::VarPtr& port = core::Var::get(cfg::ClientPort, SERVER_PORT);
 		const core::VarPtr& host = core::Var::get(cfg::ClientHost, SERVER_HOST);
@@ -43,9 +43,9 @@ public:
 		core_assert_always(loadResourceFile("ui/window/login.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 
-		setText("email", core::Var::get(cfg::ClientEmail)->strVal());
-		setText("password", core::Var::get(cfg::ClientPassword)->strVal());
-		toggleViaVar("autologin", core::Var::get(cfg::ClientAutoLogin));
+		setText("email", core::Var::str(cfg::ClientEmail));
+		setText("password", core::Var::str(cfg::ClientPassword));
+		toggle("autologin", core::Var::boolean(cfg::ClientAutoLogin));
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {

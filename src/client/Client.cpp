@@ -127,7 +127,7 @@ core::AppState Client::onInit() {
 	}
 
 	core::Var::get(cfg::ClientName, "noname");
-	core::Var::get(cfg::ClientPassword, "nopassword");
+	core::Var::get(cfg::ClientPassword, "");
 	core::Var::get(cfg::HTTPBaseURL, "https://localhost/");
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
