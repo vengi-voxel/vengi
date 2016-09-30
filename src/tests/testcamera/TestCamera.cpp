@@ -43,14 +43,14 @@ core::AppState TestCamera::onInit() {
 		_renderCamera[i].setNearPlane(nearPlane);
 		_renderCamera[i].setFarPlane(40.0f);
 
-		_renderCamera[i].update(0l);
-
 		if (targetCamera) {
 			_renderCamera[i].setRotationType(video::CameraRotationType::Target);
 		}
 		if (ortho) {
 			_renderCamera[i].setMode(video::CameraMode::Orthogonal);
 		}
+		_renderCamera[i].update(0l);
+
 		if (!_frustums[i].init(_renderCamera[i], colors[i], renderSplitFrustum ? 4 : 0)) {
 			return core::AppState::Cleanup;
 		}
