@@ -18,6 +18,12 @@ void Var::shutdown() {
 	_vars.clear();
 }
 
+VarPtr Var::getSafe(const std::string& name) {
+	const VarPtr& var = get(name);
+	core_assert_msg(var, "var %s doesn't exist yet", name.c_str());
+	return var;
+}
+
 VarPtr Var::get(const std::string& name, const char* value, int32_t flags) {
 	VarMap::iterator i;
 	bool missing;

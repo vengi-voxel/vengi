@@ -87,6 +87,8 @@ public:
 	 */
 	static VarPtr get(const std::string& name, const char* value = nullptr, int32_t flags = -1);
 
+	static VarPtr getSafe(const std::string& name);
+
 	static inline VarPtr get(const std::string& name, int value, int32_t flags = -1) {
 		const std::string& strVal = std::to_string(value);
 		return get(name, strVal.c_str(), flags);
