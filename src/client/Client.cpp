@@ -161,7 +161,7 @@ core::AppState Client::onInit() {
 }
 
 void Client::handleLogin() {
-	const core::VarPtr& autoLoginVar = core::Var::getSafe(cfg::ClientAutoLogin);
+	const core::VarPtr& autoLoginVar = core::Var::get(cfg::ClientAutoLogin, "false");
 	if (autoLoginVar->boolVal()) {
 		const int port = core::Var::getSafe(cfg::ClientPort)->intVal();
 		const std::string& host = core::Var::getSafe(cfg::ClientHost)->strVal();
