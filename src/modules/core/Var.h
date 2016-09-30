@@ -87,9 +87,19 @@ public:
 	 */
 	static VarPtr get(const std::string& name, const char* value = nullptr, int32_t flags = -1);
 
+	/**
+	 * @note Same as get(), but uses @c core_assert if no var could be found with the given name.
+	 */
 	static VarPtr getSafe(const std::string& name);
 
+	/**
+	 * @return @c empty string if var with given name wasn't found, otherwise the value of the var
+	 */
 	static std::string str(const std::string& name);
+
+	/**
+	 * @return @c false if var with given name wasn't found, otherwise the bool value of the var
+	 */
 	static bool boolean(const std::string& name);
 
 	static inline VarPtr get(const std::string& name, int value, int32_t flags = -1) {
