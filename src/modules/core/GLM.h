@@ -2,7 +2,6 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_SWIZZLE
-#define GLM_SWIZZLE // TODO: deprecated - remove me someday
 
 #include <glm/glm.hpp>
 
