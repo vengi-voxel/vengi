@@ -10,13 +10,6 @@
 
 namespace video {
 
-static const glm::vec4 cornerVecs[video::FRUSTUM_VERTICES_MAX] = {
-	glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
-	glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
-	glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
-	glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
-};
-
 Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _pos(glm::vec3()), _omega(0.0f) {
 }
@@ -151,53 +144,6 @@ glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
 	return ray.origin + ray.direction * screenPos.z;
 }
 
-FrustumResult Camera::testFrustum(const glm::vec3& position) const {
-	core_assert(!isDirty(DIRTY_ALL));
-	FrustumResult result = FrustumResult::Inside;
-	for (int i = 0; i < FRUSTUM_PLANES_MAX; i++) {
-		const glm::vec3 normal(_frustumPlanes[i]);
-		const float pos = _frustumPlanes[i].w;
-		if (glm::dot(normal, position) + pos < 0.0f) {
-			return FrustumResult::Outside;
-		}
-	}
-	return result;
-}
-
-FrustumResult Camera::testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const {
-	FrustumResult result = FrustumResult::Inside;
-	for (uint i = 0; i < FRUSTUM_PLANES_MAX; i++) {
-		const float pos = _frustumPlanes[i].w;
-		const glm::vec3 normal(_frustumPlanes[i]);
-
-		glm::vec3 positiveVertex = mins;
-		if (normal.x >= 0.0f)
-			positiveVertex.x = maxs.x;
-		if (normal.y >= 0.0f)
-			positiveVertex.y = maxs.y;
-		if (normal.z >= 0.0f)
-			positiveVertex.z = maxs.z;
-
-		if (glm::dot(normal, positiveVertex) + pos < 0.0f) {
-			return FrustumResult::Outside;
-		}
-
-		glm::vec3 negativeVertex = maxs;
-		if (normal.x >= 0.0f)
-			negativeVertex.x = mins.x;
-		if (normal.y >= 0.0f)
-			negativeVertex.y = mins.y;
-		if (normal.z >= 0.0f)
-			negativeVertex.z = mins.z;
-
-		if (glm::dot(normal, negativeVertex) + pos < 0.0f) {
-			result = FrustumResult::Intersect;
-		}
-	}
-
-	return result;
-}
-
 /**
  * http://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf
  */
@@ -224,7 +170,7 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 	}
 }
 
-void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM_VERTICES_MAX]) const {
+void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[core::FRUSTUM_VERTICES_MAX]) const {
 	glm::mat4 proj(glm::uninitialize);
 	switch(_mode) {
 	case CameraMode::Orthogonal:
@@ -236,11 +182,7 @@ void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM
 	}
 
 	const glm::mat4& transform = glm::inverse(proj * viewMatrix());
-	for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
-		const glm::vec4& v = transform * cornerVecs[i];
-		out[i] = v.xyz() / v.w;
-		core_assert(!glm::any(glm::isnan(out[i])));
-	}
+	frustum().split(transform, out);
 }
 
 void Camera::updateFrustumVertices() {
@@ -248,61 +190,20 @@ void Camera::updateFrustumVertices() {
 		return;
 	}
 
-	const glm::mat4& transform = (_mode == CameraMode::Orthogonal) ? glm::affineInverse(viewMatrix()) : glm::inverse(projectionMatrix() * viewMatrix());
-	for (int i = 0; i < video::FRUSTUM_VERTICES_MAX; ++i) {
-		const glm::vec4& v = transform * cornerVecs[i];
-		_frustumVertices[i] = v.xyz() / v.w;
-		core_assert(!glm::any(glm::isnan(_frustumVertices[i])));
-		core_assert(!glm::any(glm::isinf(_frustumVertices[i])));
-	}
+	_frustum.updateVertices(viewMatrix(), projectionMatrix());
 }
 
 void Camera::updateFrustumPlanes() {
 	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE)) {
 		return;
 	}
-	const glm::mat4 &v = viewMatrix();
-	const glm::mat4 &p = projectionMatrix();
-	const glm::mat4 &clipMatrix = p * v;
 
-	_frustumPlanes[int(FrustumPlanes::Right)].x = clipMatrix[3][0] - clipMatrix[0][0];
-	_frustumPlanes[int(FrustumPlanes::Right)].y = clipMatrix[3][1] - clipMatrix[0][1];
-	_frustumPlanes[int(FrustumPlanes::Right)].z = clipMatrix[3][2] - clipMatrix[0][2];
-	_frustumPlanes[int(FrustumPlanes::Right)].w = clipMatrix[3][3] - clipMatrix[0][3];
-
-	_frustumPlanes[int(FrustumPlanes::Left)].x = clipMatrix[3][0] + clipMatrix[0][0];
-	_frustumPlanes[int(FrustumPlanes::Left)].y = clipMatrix[3][1] + clipMatrix[0][1];
-	_frustumPlanes[int(FrustumPlanes::Left)].z = clipMatrix[3][2] + clipMatrix[0][2];
-	_frustumPlanes[int(FrustumPlanes::Left)].w = clipMatrix[3][3] + clipMatrix[0][3];
-
-	_frustumPlanes[int(FrustumPlanes::Bottom)].x = clipMatrix[3][0] + clipMatrix[1][0];
-	_frustumPlanes[int(FrustumPlanes::Bottom)].y = clipMatrix[3][1] + clipMatrix[1][1];
-	_frustumPlanes[int(FrustumPlanes::Bottom)].z = clipMatrix[3][2] + clipMatrix[1][2];
-	_frustumPlanes[int(FrustumPlanes::Bottom)].w = clipMatrix[3][3] + clipMatrix[1][3];
-
-	_frustumPlanes[int(FrustumPlanes::Top)].x = clipMatrix[3][0] - clipMatrix[1][0];
-	_frustumPlanes[int(FrustumPlanes::Top)].y = clipMatrix[3][1] - clipMatrix[1][1];
-	_frustumPlanes[int(FrustumPlanes::Top)].z = clipMatrix[3][2] - clipMatrix[1][2];
-	_frustumPlanes[int(FrustumPlanes::Top)].w = clipMatrix[3][3] - clipMatrix[1][3];
-
-	_frustumPlanes[int(FrustumPlanes::Far)].x = clipMatrix[3][0] - clipMatrix[2][0];
-	_frustumPlanes[int(FrustumPlanes::Far)].y = clipMatrix[3][1] - clipMatrix[2][1];
-	_frustumPlanes[int(FrustumPlanes::Far)].z = clipMatrix[3][2] - clipMatrix[2][2];
-	_frustumPlanes[int(FrustumPlanes::Far)].w = clipMatrix[3][3] - clipMatrix[2][3];
-
-	_frustumPlanes[int(FrustumPlanes::Near)].x = clipMatrix[3][0] + clipMatrix[2][0];
-	_frustumPlanes[int(FrustumPlanes::Near)].y = clipMatrix[3][1] + clipMatrix[2][1];
-	_frustumPlanes[int(FrustumPlanes::Near)].z = clipMatrix[3][2] + clipMatrix[2][2];
-	_frustumPlanes[int(FrustumPlanes::Near)].w = clipMatrix[3][3] + clipMatrix[2][3];
-
-	for (int i = 0; i < FRUSTUM_PLANES_MAX; i++) {
-		_frustumPlanes[i] = glm::normalize(_frustumPlanes[i]);
-	}
+	_frustum.updatePlanes(viewMatrix(), projectionMatrix());
 }
 
 core::AABB<float> Camera::aabb() const {
 	core_assert(!isDirty(DIRTY_ORIENTATION | DIRTY_POSITON | DIRTY_PERSPECTIVE));
-	return core::AABB<float>::construct(_frustumVertices, FRUSTUM_VERTICES_MAX);
+	return frustum().aabb();
 }
 
 glm::vec4 Camera::sphereBoundingBox() const {
@@ -321,6 +222,5 @@ glm::vec4 Camera::sphereBoundingBox() const {
 
 	return glm::vec4(sphereCenter, sphereRadius);
 }
-
 
 }

@@ -13,7 +13,7 @@ private:
 	glm::vec4 _color;
 	glm::vec3 _position;
 	float _radius;
-	video::FrustumResult _result = video::FrustumResult::Outside;
+	bool _result = false;
 
 public:
 	FrustumEntity(const glm::vec4& color = core::Color::Red, float radius = 5.0f) :
@@ -53,25 +53,15 @@ public:
 	}
 
 	void cull(const video::Camera& cullCamera) {
-		video::FrustumResult result = cullCamera.testFrustum(_position);
+		const bool result = cullCamera.isVisible(_position);
 		if (_result == result) {
 			return;
 		}
-		Log::debug("culling result changed to %i", std::enum_value(result));
 		_result = result;
-		glm::vec4 color = _color;
-		switch (result) {
-		// TODO: we are currently only checking points here...
-		case video::FrustumResult::Intersect:
-			color = core::Color::Purple;
-			break;
-		case video::FrustumResult::Inside:
-			color = core::Color::Green;
-			break;
-		case video::FrustumResult::Outside:
-		default:
-			break;
-		}
+
+		Log::debug("culling result changed to %i", (int)result);
+		const glm::vec4& color = result ? core::Color::Green : _color;
+
 		_shapeBuilder.clear();
 		_shapeBuilder.setPosition(_position);
 		_shapeBuilder.setColor(color);

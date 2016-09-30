@@ -8,6 +8,7 @@
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/AABB.h"
+#include "core/Frustum.h"
 #include "Types.h"
 #include "Ray.h"
 #include <math.h>
@@ -28,23 +29,6 @@ enum class CameraRotationType {
 enum class CameraMode {
 	Perspective,
 	Orthogonal
-};
-
-enum class FrustumPlanes {
-	Right,
-	Left,
-	Top,
-	Bottom,
-	Far,
-	Near
-};
-static const uint8_t FRUSTUM_PLANES_MAX = 6;
-static const uint8_t FRUSTUM_VERTICES_MAX = 8;
-
-enum class FrustumResult {
-	Outside,
-	Inside,
-	Intersect
 };
 
 class Camera {
@@ -93,8 +77,8 @@ protected:
 	void updateOrientation();
 	void updateProjectionMatrix();
 	void updateTarget();
-	glm::vec4 _frustumPlanes[FRUSTUM_PLANES_MAX];
-	glm::vec3 _frustumVertices[FRUSTUM_VERTICES_MAX];
+
+	core::Frustum _frustum;
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 	~Camera();
@@ -219,20 +203,15 @@ public:
 	/**
 	 * @brief Calculates the 8 vertices for a split frustum
 	 */
-	void splitFrustum(float nearPlane, float farPlane, glm::vec3 out[FRUSTUM_VERTICES_MAX]) const;
-	void frustumCorners(glm::vec3 out[video::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
-	const glm::vec4& frustumPlane(FrustumPlanes plane) const;
-	FrustumResult testFrustum(const glm::vec3& position) const;
-	FrustumResult testFrustum(const core::AABB<float>& aabb) const;
-	FrustumResult testFrustum(const glm::vec3& mins, const glm::vec3& maxs) const;
-
+	void splitFrustum(float nearPlane, float farPlane, glm::vec3 out[core::FRUSTUM_VERTICES_MAX]) const;
+	void frustumCorners(glm::vec3 out[core::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
+	const core::Frustum& frustum() const;
+	bool isVisible(const glm::vec3& position) const;
+	bool isVisible(const core::AABB<float>& aabb) const;
+	bool isVisible(const glm::vec3& mins, const glm::vec3& maxs) const;
 	core::AABB<float> aabb() const;
 	glm::vec4 sphereBoundingBox() const;
 };
-
-inline FrustumResult Camera::testFrustum(const core::AABB<float>& aabb) const {
-	return testFrustum(aabb.getLowerCorner(), aabb.getUpperCorner());
-}
 
 inline void Camera::init(const glm::ivec2& dimension) {
 	_dimension = dimension;
@@ -419,61 +398,24 @@ inline const glm::mat4& Camera::projectionMatrix() const {
 	return _projectionMatrix;
 }
 
-inline const glm::vec4& Camera::frustumPlane(FrustumPlanes plane) const {
-	return _frustumPlanes[int(plane)];
+inline const core::Frustum& Camera::frustum() const {
+	return _frustum;
 }
 
-inline void Camera::frustumCorners(glm::vec3 out[video::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const {
-	if (out != nullptr) {
-		for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
-			out[i] = _frustumVertices[i];
-		}
-	}
+inline bool Camera::isVisible(const glm::vec3& pos) const {
+	return frustum().isVisible(pos);
+}
 
-	if (indices == nullptr) {
-		return;
-	}
+inline bool Camera::isVisible(const core::AABB<float>& aabb) const {
+	return isVisible(aabb.getLowerCorner(), aabb.getUpperCorner());
+}
 
-	uint32_t currentIndex = 0;
+inline bool Camera::isVisible(const glm::vec3& mins, const glm::vec3& maxs) const {
+	return frustum().isVisible(mins, maxs);
+}
 
-	// near plane
-	indices[currentIndex++] = 0;
-	indices[currentIndex++] = 1;
-
-	indices[currentIndex++] = 1;
-	indices[currentIndex++] = 3;
-
-	indices[currentIndex++] = 3;
-	indices[currentIndex++] = 2;
-
-	indices[currentIndex++] = 2;
-	indices[currentIndex++] = 0;
-
-	// far plane
-	indices[currentIndex++] = 4;
-	indices[currentIndex++] = 5;
-
-	indices[currentIndex++] = 5;
-	indices[currentIndex++] = 7;
-
-	indices[currentIndex++] = 7;
-	indices[currentIndex++] = 6;
-
-	indices[currentIndex++] = 6;
-	indices[currentIndex++] = 4;
-
-	// connections
-	indices[currentIndex++] = 0;
-	indices[currentIndex++] = 4;
-
-	indices[currentIndex++] = 2;
-	indices[currentIndex++] = 6;
-
-	indices[currentIndex++] = 1;
-	indices[currentIndex++] = 5;
-
-	indices[currentIndex++] = 3;
-	indices[currentIndex++] = 7;
+inline void Camera::frustumCorners(glm::vec3 out[core::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const {
+	frustum().corners(out, indices);
 }
 
 inline float Camera::fieldOfView() const {

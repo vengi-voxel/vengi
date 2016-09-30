@@ -15,7 +15,7 @@ core::AppState TestCamera::onInit() {
 	const int ents = _entities.size();
 	const int rows = ents / 5;
 	const int cols = ents / rows;
-	const float distance = 20.0f;
+	const float distance = 40.0f;
 	const float deltaY = rows / 2.0f * -distance;
 	const float deltaX = cols / 2.0f * -distance;
 	core_assert(ents - rows * cols == 0);

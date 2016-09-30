@@ -7,6 +7,7 @@ set(SRCS
 	Common.h
 	Concurrency.h
 	EventBus.h
+	Frustum.cpp Frustum.h
 	GameConfig.h
 	GLM.cpp GLM.h
 	IFactoryRegistry.h
@@ -15,6 +16,7 @@ set(SRCS
 	MemoryAllocator.h
 	MemGuard.cpp MemGuard.h
 	NonCopyable.h
+	Plane.h Plane.cpp
 	Process.cpp Process.h
 	QuadTree.h
 	Random.cpp Random.h
@@ -49,5 +51,7 @@ gtest_suite_files(tests
 	tests/CommandTest.cpp
 	tests/SetTest.cpp
 	tests/TokenizerTest.cpp
+	tests/FrustumTest.cpp
+	tests/PlaneTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

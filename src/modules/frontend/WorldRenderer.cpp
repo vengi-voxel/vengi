@@ -231,8 +231,7 @@ void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const vi
 			i = meshes.erase(i);
 			continue;
 		}
-		const video::FrustumResult result = camera.testFrustum(meshData.aabb);
-		if (result != video::FrustumResult::Outside) {
+		if (camera.isVisible(meshData.aabb)) {
 			visible.push_back(&meshData);
 			++visibleCount;
 		}
@@ -390,7 +389,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			// TODO: finish this
 			const float near = planes[i * 2 + 0];
 			const float far = planes[i * 2 + 1];
-			glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
+			glm::vec3 out[core::FRUSTUM_VERTICES_MAX];
 			sunCamera.splitFrustum(near, far, out);
 
 			glDisable(GL_BLEND);
@@ -533,7 +532,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_deltaFrame);
-		if (camera.testFrustum(ent->position()) == video::FrustumResult::Outside) {
+		if (!camera.isVisible(ent->position())) {
 			continue;
 		}
 		const video::MeshPtr& mesh = ent->mesh();

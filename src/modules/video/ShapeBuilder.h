@@ -2,6 +2,7 @@
 
 #include "core/Common.h"
 #include "core/AABB.h"
+#include "core/Plane.h"
 #include "video/Camera.h"
 #include "video/GLFunc.h"
 #include "core/Color.h"
@@ -73,6 +74,7 @@ public:
 	 */
 	void plane(uint32_t tesselation = 10, float scale = 1.0f);
 	void frustum(const Camera& camera, int splitFrustum = 0);
+	void plane(const core::Plane& plane, bool normal);
 	/**
 	 * Geometry layout for spheres is as follows (for 5 slices, 4 stacks):
 	 *

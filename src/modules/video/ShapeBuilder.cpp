@@ -59,10 +59,69 @@ void ShapeBuilder::aabb(const core::AABB<float>& aabb) {
 	addIndex(7);
 }
 
+void ShapeBuilder::plane(const core::Plane& plane, bool normals) {
+	setPrimitive(Primitive::Lines);
+	const glm::vec3& planeNormal = plane.norm();
+	const float planeScale = plane.dist();
+
+	const glm::vec3& right = glm::cross(planeNormal, glm::up);
+	const glm::vec3& up = glm::cross(right, planeNormal);
+	const glm::mat4 rot(
+		right.x, up.x, -planeNormal.x, 0.0f,
+		right.y, up.y, -planeNormal.y, 0.0f,
+		right.z, up.z, -planeNormal.z, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f);
+	const glm::mat4& trans = glm::translate(planeNormal * planeScale);
+	const glm::mat4& result = trans * rot;
+
+	static const glm::vec4 corners[] = {
+		glm::vec4(-planeScale, -planeScale, 0.0f, 1.0f),
+		glm::vec4(-planeScale,  planeScale, 0.0f, 1.0f),
+		glm::vec4( planeScale,  planeScale, 0.0f, 1.0f),
+		glm::vec4( planeScale, -planeScale, 0.0f, 1.0f)
+	};
+
+	setColor(core::Color::Green);
+	for (uint32_t i = 0; i < SDL_arraysize(corners); ++i) {
+		const glm::vec4& v = result * corners[i];
+		addVertex(v.xyz(), glm::zero<glm::vec2>(), planeNormal);
+	}
+
+	const float normalVecScale = 10.0f;
+	const glm::vec3& pvn = planeNormal * normalVecScale;
+	setColor(core::Color::Red);
+	addVertex(glm::zero<glm::vec3>(), glm::zero<glm::vec2>(), planeNormal);
+	addVertex(pvn, glm::zero<glm::vec2>(), planeNormal);
+
+	addIndex(0);
+	addIndex(1);
+
+	addIndex(1);
+	addIndex(3);
+
+	addIndex(0);
+	addIndex(2);
+
+	addIndex(3);
+	addIndex(0);
+
+	addIndex(3);
+	addIndex(1);
+
+	addIndex(1);
+	addIndex(2);
+
+	addIndex(2);
+	addIndex(3);
+
+	addIndex(4);
+	addIndex(5);
+}
+
 void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	setPrimitive(Primitive::Lines);
-	glm::vec3 out[video::FRUSTUM_VERTICES_MAX];
-	uint32_t indices[video::FRUSTUM_VERTICES_MAX * 3];
+	glm::vec3 out[core::FRUSTUM_VERTICES_MAX];
+	uint32_t indices[core::FRUSTUM_VERTICES_MAX * 3];
 	camera.frustumCorners(out, indices);
 
 	const int targetLineVertices = camera.rotationType() == CameraRotationType::Target ? 2 : 0;
@@ -73,7 +132,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 		camera.sliceFrustum(planes, SDL_arraysize(planes), splitFrustum);
 
-		reserve(video::FRUSTUM_VERTICES_MAX * splitFrustum + targetLineVertices);
+		reserve(core::FRUSTUM_VERTICES_MAX * splitFrustum + targetLineVertices);
 
 		for (int s = 0; s < splitFrustum; ++s) {
 			const float near = planes[s * 2 + 0];
@@ -87,10 +146,10 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 			for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
 				addIndex(indexOffset + indices[i]);
 			}
-			indexOffset += video::FRUSTUM_VERTICES_MAX;
+			indexOffset += core::FRUSTUM_VERTICES_MAX;
 		}
 	} else {
-		reserve(video::FRUSTUM_VERTICES_MAX + targetLineVertices);
+		reserve(core::FRUSTUM_VERTICES_MAX + targetLineVertices);
 
 		for (size_t i = 0; i < SDL_arraysize(out); ++i) {
 			addVertex(out[i], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
@@ -105,8 +164,8 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 		setColor(core::Color::Green);
 		addVertex(camera.position(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
 		addVertex(camera.target(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
-		addIndex(video::FRUSTUM_VERTICES_MAX + 0);
-		addIndex(video::FRUSTUM_VERTICES_MAX + 1);
+		addIndex(core::FRUSTUM_VERTICES_MAX + 0);
+		addIndex(core::FRUSTUM_VERTICES_MAX + 1);
 	}
 }
 
