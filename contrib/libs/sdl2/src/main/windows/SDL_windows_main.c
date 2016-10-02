@@ -110,9 +110,10 @@ OutOfMemory(void)
 
 #if defined(_MSC_VER)
 /* The VC++ compiler needs main/wmain defined */
-# define console_ansi_main main
 # if UNICODE
 #  define console_wmain wmain
+# else
+#  define console_ansi_main main
 # endif
 #endif
 
@@ -141,12 +142,13 @@ int
 console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 {
     int retval = 0;
-    char **argv = SDL_stack_alloc(char*, argc);
+    char **argv = SDL_stack_alloc(char*, argc + 1);
     int i;
 
     for (i = 0; i < argc; ++i) {
         argv[i] = WIN_StringToUTF8(wargv[i]);
     }
+    argv[argc] = NULL;
 
     retval = main_utf8(argc, argv);
 

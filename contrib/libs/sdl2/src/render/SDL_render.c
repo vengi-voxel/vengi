@@ -1106,6 +1106,8 @@ SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         renderer->viewport.y = 0;
         renderer->viewport.w = texture->w;
         renderer->viewport.h = texture->h;
+        SDL_zero(renderer->clip_rect);
+        renderer->clipping_enabled = SDL_FALSE;
         renderer->scale.x = 1.0f;
         renderer->scale.y = 1.0f;
         renderer->logical_w = texture->w;
@@ -1455,6 +1457,7 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
     if (count < 1) {
         return 0;
     }
+
     /* Don't draw while we're hidden */
     if (renderer->hidden) {
         return 0;
@@ -1564,6 +1567,7 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
     if (count < 2) {
         return 0;
     }
+
     /* Don't draw while we're hidden */
     if (renderer->hidden) {
         return 0;
@@ -1637,6 +1641,7 @@ SDL_RenderDrawRects(SDL_Renderer * renderer,
     if (renderer->hidden) {
         return 0;
     }
+
     for (i = 0; i < count; ++i) {
         if (SDL_RenderDrawRect(renderer, &rects[i]) < 0) {
             return -1;
@@ -1678,6 +1683,7 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
     if (count < 1) {
         return 0;
     }
+
     /* Don't draw while we're hidden */
     if (renderer->hidden) {
         return 0;
@@ -1716,6 +1722,11 @@ SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         return SDL_SetError("Texture was not created with this renderer");
     }
 
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
     real_srcrect.x = 0;
     real_srcrect.y = 0;
     real_srcrect.w = texture->w;
@@ -1738,11 +1749,6 @@ SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
 
     if (texture->native) {
         texture = texture->native;
-    }
-
-    /* Don't draw while we're hidden */
-    if (renderer->hidden) {
-        return 0;
     }
 
     frect.x = real_dstrect.x * renderer->scale.x;
@@ -1779,6 +1785,11 @@ SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
         return SDL_SetError("Renderer does not support RenderCopyEx");
     }
 
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
     real_srcrect.x = 0;
     real_srcrect.y = 0;
     real_srcrect.w = texture->w;
@@ -1802,8 +1813,9 @@ SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
         texture = texture->native;
     }
 
-    if(center) real_center = *center;
-    else {
+    if (center) {
+        real_center = *center;
+    } else {
         real_center.x = real_dstrect.w/2;
         real_center.y = real_dstrect.h/2;
     }
