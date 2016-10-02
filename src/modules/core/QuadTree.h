@@ -5,6 +5,7 @@
 #pragma once
 
 #include <vector>
+#include <array>
 #include <algorithm>
 #include <unordered_map>
 #include "Rect.h"
@@ -17,8 +18,6 @@ class QuadTree {
 public:
 	typedef typename std::vector<NODE> Contents;
 private:
-	class QuadTreeNode;
-	typedef typename std::vector<QuadTreeNode> Nodes;
 	class QuadTreeNode {
 		friend class QuadTree;
 	private:
@@ -26,11 +25,10 @@ private:
 		int _depth;
 		const Rect<TYPE> _area;
 		Contents _contents;
-		Nodes _nodes;
+		std::vector<QuadTreeNode> _nodes;
 
 		QuadTreeNode(const Rect<TYPE>& bounds, int maxDepth, int depth) :
 				_maxDepth(maxDepth), _depth(depth), _area(bounds) {
-			_nodes.reserve(4);
 		}
 
 		void createNodes() {
@@ -38,7 +36,9 @@ private:
 				return;
 			}
 
-			const std::array<Rect<TYPE>, 4>& subareas = _area.split();
+			std::array<Rect<TYPE>, 4> subareas;
+			_area.split(subareas);
+			_nodes.reserve(4);
 			_nodes.push_back(QuadTreeNode(subareas[0], _maxDepth, _depth + 1));
 			_nodes.push_back(QuadTreeNode(subareas[1], _maxDepth, _depth + 1));
 			_nodes.push_back(QuadTreeNode(subareas[2], _maxDepth, _depth + 1));
@@ -62,16 +62,15 @@ private:
 			return _contents;
 		}
 
-		Contents getAllContents() const {
-			Contents results;
-
-			for (auto& node : _nodes) {
-				const Contents& childNodes = node.getAllContents();
-				results.insert(results.begin(), childNodes.begin(), childNodes.end());
+		void getAllContents(Contents& results) const {
+			if (!_nodes.empty()) {
+				_nodes[0].getAllContents(results);
+				_nodes[1].getAllContents(results);
+				_nodes[2].getAllContents(results);
+				_nodes[3].getAllContents(results);
 			}
 
-			results.insert(results.begin(), _contents.begin(), _contents.end());
-			return results;
+			results.insert(results.end(), _contents.begin(), _contents.end());
 		}
 
 		bool remove(const NODE& item) {
@@ -80,14 +79,16 @@ private:
 				return false;
 			}
 			for (auto& node : _nodes) {
-				if (!node._area.contains(area))
+				if (!node._area.contains(area)) {
 					continue;
+				}
 				return node.remove(item);
 			}
 
 			auto i = std::find(_contents.begin(), _contents.end(), item);
-			if (i == _contents.end())
+			if (i == _contents.end()) {
 				return false;
+			}
 			_contents.erase(i);
 			return true;
 		}
@@ -103,8 +104,9 @@ private:
 			}
 
 			for (auto& node : _nodes) {
-				if (!node._area.contains(area))
+				if (!node._area.contains(area)) {
 					continue;
+				}
 				node.insert(item);
 				return true;
 			}
@@ -114,15 +116,10 @@ private:
 		}
 
 		inline bool isEmpty() const {
-			if (_nodes.empty() && _contents.empty())
-				return true;
-
-			return false;
+			return _nodes.empty() && _contents.empty();
 		}
 
-		Contents query(const Rect<TYPE>& queryArea) const {
-			Contents results;
-
+		void query(const Rect<TYPE>& queryArea, Contents& results) const {
 			for (auto& item : _contents) {
 				const Rect<TYPE>& area = item.getRect();
 				if (queryArea.intersectsWith(area)) {
@@ -136,43 +133,21 @@ private:
 				}
 
 				if (node._area.contains(queryArea)) {
-					const Contents& contents = node.query(queryArea);
-					if (!contents.empty()) {
-						results.reserve(results.size() + contents.size());
-						results.insert(results.end(), contents.begin(), contents.end());
-					}
+					node.query(queryArea, results);
 					// the queried area is completely part of the node
 					break;
 				}
 
 				if (queryArea.contains(node._area)) {
-					const Contents& contents = node.getAllContents();
-					if (!contents.empty()) {
-						results.reserve(results.size() + contents.size());
-						results.insert(results.end(), contents.begin(), contents.end());
-					}
+					node.getAllContents(results);
 					// the whole node content is part of the query
 					continue;
 				}
 
 				if (node._area.intersectsWith(queryArea)) {
-					const Contents& contents = node.query(queryArea);
-					if (!contents.empty()) {
-						results.reserve(results.size() + contents.size());
-						results.insert(results.end(), contents.begin(), contents.end());
-					}
+					node.query(queryArea, results);
 				}
 			}
-			return results;
-		}
-
-		inline std::string indent() const {
-			std::string indent;
-			for (int i = 0; i < _depth; ++i) {
-				indent.push_back(' ');
-				indent.push_back(' ');
-			}
-			return indent;
 		}
 	};
 
@@ -204,9 +179,9 @@ public:
 		return false;
 	}
 
-	inline Contents query(const Rect<TYPE>& area) const {
+	inline void query(const Rect<TYPE>& area, Contents& results) const {
 		core_trace_scoped(QuadTreeQuery);
-		return _root.query(area);
+		_root.query(area, results);
 	}
 
 	void clear() {
@@ -226,8 +201,10 @@ public:
 		return _dirty;
 	}
 
-	inline Contents getContents() const {
-		return _root.getAllContents();
+	inline void getContents(Contents& results) const {
+		results.clear();
+		results.reserve(count());
+		_root.getAllContents(results);
 	}
 };
 
@@ -251,19 +228,23 @@ public:
 	}
 
 #if CACHE
-	inline const typename QuadTree<NODE, TYPE>::Contents& query(const Rect<TYPE>& area) {
+	inline void query(const Rect<TYPE>& area, typename QuadTree<NODE, TYPE>::Contents& contents) {
 		if (_tree.isDirty()) {
 			_tree.markAsClean();
 			clear();
 		}
+		// TODO: normalize to quad tree cells to improve the cache hits
 		auto iter = _cache.find(area);
-		if (iter != _cache.end())
-			return iter->second;
-		auto insertIter = _cache.insert(std::make_pair(area, std::move(_tree.query(area))));
-		return insertIter->first;
+		if (iter != _cache.end()) {
+			contents.reserve(iter->second.size());
+			contents = iter->second;
+			return;
+		}
+		_tree.query(area, contents);
+		auto insertIter = _cache.insert(std::make_pair(area, contents));
 #else
-	inline typename QuadTree<NODE, TYPE>::Contents query(const Rect<TYPE>& area) {
-		return _tree.query(area);
+	inline void query(const Rect<TYPE>& area, typename QuadTree<NODE, TYPE>::Contents& contents) {
+		_tree.query(area, contents);
 #endif
 	}
 };

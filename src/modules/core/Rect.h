@@ -16,6 +16,11 @@ private:
 	glm::tvec2<TYPE> _mins;
 	glm::tvec2<TYPE> _maxs;
 public:
+	Rect() :
+			_mins(glm::tvec2<TYPE>((TYPE)0)),
+			_maxs(glm::tvec2<TYPE>((TYPE)0)) {
+	}
+
 	Rect(TYPE minX, TYPE minZ, TYPE maxX, TYPE maxZ) :
 			_mins(minX, minZ), _maxs(maxX, maxZ) {
 		core_assert(_mins.x < _maxs.x);
@@ -28,9 +33,9 @@ public:
 		core_assert(_mins.y < _maxs.y);
 	}
 
-	static inline Rect<TYPE> getMaxRect() {
-		static const TYPE lowest = std::numeric_limits<TYPE>::lowest();
-		static const TYPE max = std::numeric_limits<TYPE>::max();
+	static const Rect<TYPE>& getMaxRect() {
+		static constexpr TYPE lowest = std::numeric_limits<TYPE>::lowest();
+		static constexpr TYPE max = std::numeric_limits<TYPE>::max();
 		static const Rect<TYPE> maxRect(lowest, lowest, max, max);
 		return maxRect;
 	}
@@ -75,7 +80,7 @@ public:
 		_maxs.y += dz;
 	}
 
-	std::array<Rect<TYPE>, 4> split() const {
+	void split(std::array<Rect<TYPE>, 4>& result) const {
 		if (getMaxRect() == *this) {
 			// special case because the length would exceed the max possible value of TYPE
 			if (std::numeric_limits<TYPE>::is_signed) {
@@ -85,7 +90,8 @@ public:
 					Rect<TYPE>(_mins.x, 0, 0, _maxs.y),
 					Rect<TYPE>(0, 0, _maxs.x, _maxs.y)
 				}};
-				return maxSplit;
+				result = maxSplit;
+				return;
 			}
 		}
 
@@ -93,13 +99,10 @@ public:
 		const TYPE halfX = lengthX / 2.0;
 		const TYPE lengthY = glm::abs(_maxs.y - _mins.y);
 		const TYPE halfY = lengthY / 2.0;
-		const std::array<Rect<TYPE>, 4> split = {{
-			Rect<TYPE>(_mins.x, _mins.y, _mins.x + halfX, _mins.y + halfY),
-			Rect<TYPE>(_mins.x + halfX, _mins.y, _maxs.x, _mins.y + halfY),
-			Rect<TYPE>(_mins.x, _mins.y + halfY, _mins.x + halfX, _maxs.y),
-			Rect<TYPE>(_mins.x + halfX, _mins.y + halfY, _maxs.x, _maxs.y)
-		}};
-		return split;
+		result[0] = Rect<TYPE>(_mins.x, _mins.y, _mins.x + halfX, _mins.y + halfY);
+		result[1] = Rect<TYPE>(_mins.x + halfX, _mins.y, _maxs.x, _mins.y + halfY);
+		result[2] = Rect<TYPE>(_mins.x, _mins.y + halfY, _mins.x + halfX, _maxs.y);
+		result[3] = Rect<TYPE>(_mins.x + halfX, _mins.y + halfY, _maxs.x, _maxs.y);
 	}
 
 	inline bool contains(const Rect& rect) const {

@@ -57,17 +57,20 @@ TEST(QuadTreeTest, testMax) {
 TEST(QuadTreeTest, testQuery) {
 	core::QuadTree<Item, float> quadTree(RectFloat(0, 0, 100, 100));
 	{
-		const QuadTree<Item, float>::Contents& contents = quadTree.query(RectFloat(50, 50, 60, 60));
+		QuadTree<Item, float>::Contents contents;
+		quadTree.query(RectFloat(50, 50, 60, 60), contents);
 		ASSERT_EQ(0u, contents.size())<<"expected to find nothing in an empty tree";
 	}
 	const Item item1(RectFloat(51, 51, 53, 53), 1);
 	ASSERT_TRUE(quadTree.insert(item1));
 	{
-		const QuadTree<Item, float>::Contents& contents = quadTree.query(RectFloat::getMaxRect());
+		QuadTree<Item, float>::Contents contents;
+		quadTree.query(RectFloat::getMaxRect(), contents);
 		ASSERT_EQ(1u, contents.size())<<"expected to find one entry for the max rect";
 	}
 	{
-		const QuadTree<Item, float>::Contents& contents = quadTree.query(item1.getRect());
+		QuadTree<Item, float>::Contents contents;
+		quadTree.query(item1.getRect(), contents);
 		ASSERT_EQ(1u, contents.size())<<"expected to find one entry for the item rect";
 	}
 }

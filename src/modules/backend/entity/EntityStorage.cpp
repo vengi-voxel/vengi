@@ -148,7 +148,10 @@ bool EntityStorage::updateEntity(const EntityPtr& entity, long dt) {
 		return false;
 	}
 	const core::RectFloat& rect = entity->viewRect();
-	const auto& contents = _quadTreeCache.query(rect);
+	// TODO: maybe move into the entity instance to reduce memory allocations.
+	core::QuadTree<Node, float>::Contents contents;
+	contents.reserve(entity->visibleCount() + 10);
+	_quadTreeCache.query(rect, contents);
 	EntitySet set;
 	set.reserve(contents.size());
 	for (const Node& node : contents) {

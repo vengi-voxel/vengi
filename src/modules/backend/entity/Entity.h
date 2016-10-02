@@ -112,6 +112,10 @@ public:
 		return _attribs.max(type);
 	}
 
+	inline int visibleCount() const {
+		return _visible.size();
+	}
+
 	/**
 	 * @brief Allows to execute a functor/lambda on the visible objects
 	 *
