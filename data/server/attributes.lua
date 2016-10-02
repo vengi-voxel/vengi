@@ -9,13 +9,13 @@ end
 function init()
 	local wolf = attrib.createContainer("ANIMAL_WOLF")
 	animalDefault(wolf)
-	wolf:absolute("VIEWDISTANCE", 100.0)
+	wolf:absolute("VIEWDISTANCE", 500.0)
 	wolf:absolute("ATTACKRANGE", 2.0)
 	wolf:register()
 
 	local rabbit = attrib.createContainer("ANIMAL_RABBIT")
 	animalDefault(rabbit)
-	rabbit:absolute("SPEED", 39.5)
+	rabbit:absolute("SPEED", 20)
 	rabbit:register()
 
 	local player = attrib.createContainer("PLAYER")
