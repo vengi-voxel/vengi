@@ -23,6 +23,7 @@
 #include "AddAction.h"
 #include "DeleteAction.h"
 #include "SettingsDialog.h"
+#include "Settings.h"
 
 namespace ai {
 namespace debug {
@@ -89,6 +90,11 @@ void AIDebuggerWidget::onSelected() {
 	_nodeTree->updateTreeWidget();
 	_tree->expandAll();
 	_aggroTable->updateAggroTable();
+	if (Settings::getCenterOnSelection()) {
+		_mapWidget->center(id);
+	} else {
+		_mapWidget->makeVisible(id);
+	}
 }
 
 void AIDebuggerWidget::onNamesReceived() {

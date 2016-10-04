@@ -4,6 +4,9 @@
 #pragma once
 
 #include <QGraphicsItemGroup>
+#include <QGraphicsTextItem>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsLineItem>
 #include <QStyleOptionGraphicsItem>
 #include <server/AIStubTypes.h>
 
@@ -21,9 +24,15 @@ class MapItem: public QGraphicsItemGroup {
 protected:
 	const AIStateWorld _state;
 	AIDebugger& _aiDebugger;
+
+	QGraphicsEllipseItem *_body = nullptr;
+	QGraphicsLineItem *_direction = nullptr;
+	QGraphicsTextItem *_nameItem = nullptr;
 public:
 	MapItem(QGraphicsItem* parent, const AIStateWorld& state, AIDebugger& aiDebugger);
 	virtual ~MapItem();
+
+	void updateState(const AIStateWorld& state);
 
 protected:
 	virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;

@@ -1,8 +1,10 @@
 /**
  * @file
  */
+
 #include "SettingsDialog.h"
 #include "Settings.h"
+#include <SimpleAI.h>
 #include <QColorDialog>
 #include <QGroupBox>
 #include <QLabel>
@@ -32,10 +34,18 @@ QGroupBox* SettingsDialog::createMapView() {
 	showGrid->setChecked(Settings::getGrid());
 	connect(showGrid, &QCheckBox::stateChanged, this, &SettingsDialog::setShowGrid);
 
+	QCheckBox* centerOnSelection = new QCheckBox(this);
+	centerOnSelection->setChecked(Settings::getCenterOnSelection());
+	connect(centerOnSelection, &QCheckBox::stateChanged, this, &SettingsDialog::setCenterOnSelection);
+
 	QLineEdit* gridInterval = new QLineEdit(this);
 	gridInterval->setText(QString::number(Settings::getGridInterval()));
 	gridInterval->setValidator(new QIntValidator(0, 10000, gridInterval));
 	connect(gridInterval, &QLineEdit::textChanged, this, &SettingsDialog::setGridInterval);
+
+	QLineEdit* nameAttribute = new QLineEdit(this);
+	nameAttribute->setText(Settings::getNameAttribute(attributes::NAME));
+	connect(nameAttribute, &QLineEdit::textChanged, this, &SettingsDialog::setNameAttribute);
 
 	QLineEdit* itemSize = new QLineEdit(this);
 	itemSize->setText(QString::number(Settings::getItemSize()));
@@ -55,8 +65,16 @@ QGroupBox* SettingsDialog::createMapView() {
 	layout->addWidget(itemSize, row, 1);
 	++row;
 
+	layout->addWidget(new QLabel(tr("Name attribute"), this), row, 0, Qt::AlignTop);
+	layout->addWidget(nameAttribute, row, 1);
+	++row;
+
 	layout->addWidget(new QLabel(tr("Background"), this), row, 0, Qt::AlignTop);
 	layout->addWidget(bgColor, row, 1);
+	++row;
+
+	layout->addWidget(new QLabel(tr("Center on selection"), this), row, 0, Qt::AlignTop);
+	layout->addWidget(centerOnSelection, row, 1);
 	++row;
 
 	mapView->setLayout(layout);
@@ -73,6 +91,14 @@ void SettingsDialog::setItemSize(const QString& value) {
 
 void SettingsDialog::setShowGrid(int value) {
 	Settings::setGrid(value != 0);
+}
+
+void SettingsDialog::setCenterOnSelection(int value) {
+	Settings::setCenterOnSelection(value != 0);
+}
+
+void SettingsDialog::setNameAttribute(const QString& attribute) {
+	Settings::setNameAttribute(attribute);
 }
 
 void SettingsDialog::addMainWidgets(QBoxLayout& layout) {

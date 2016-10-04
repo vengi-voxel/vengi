@@ -30,15 +30,13 @@ void MapView::scalingTime(qreal x) {
 }
 
 void MapView::wheelEvent(QWheelEvent * event) {
-	int numDegrees = event->delta() / 8;
-	int numSteps = numDegrees / 15;
+	const int numDegrees = event->delta() / 8;
+	const int numSteps = numDegrees / 15;
 	_numScheduledScalings += numSteps;
-	if (_numScheduledScalings * numSteps < 0) {
-		_numScheduledScalings = numSteps;
-	}
 
 	QTimeLine *anim = new QTimeLine(350, this);
 	anim->setUpdateInterval(20);
+	anim->setProperty("numsteps", QVariant::fromValue(numSteps));
 
 	connect(anim, SIGNAL(valueChanged(qreal)), SLOT(scalingTime(qreal)));
 	connect(anim, SIGNAL(finished()), SLOT(animFinished()));
@@ -46,15 +44,12 @@ void MapView::wheelEvent(QWheelEvent * event) {
 }
 
 void MapView::animFinished() {
-	if (_numScheduledScalings > 0) {
-		--_numScheduledScalings;
-	} else {
-		++_numScheduledScalings;
-	}
+	const int reduce = sender()->property("numsteps").toInt();
+	_numScheduledScalings -= reduce;
 	sender()->~QObject();
 }
 
-MapItem* MapView::createMapItem(const AIStateWorld& state) {
+MapItem* MapView::createOrUpdateMapItem(const AIStateWorld& state) {
 	auto i = _items.find(state.getId());
 	MapItem* item;
 	if (i == _items.end()) {
@@ -62,7 +57,7 @@ MapItem* MapView::createMapItem(const AIStateWorld& state) {
 	} else {
 		item = i.value();
 	}
-	item->setPos((qreal)state.getPosition().x, (qreal)state.getPosition().z);
+	item->updateState(state);
 	if (_debugger.isSelected(state)) {
 		item->setZValue(std::numeric_limits<qreal>::max());
 	} else {
@@ -111,7 +106,7 @@ void MapView::updateMapView() {
 	const AIDebugger::Entities& e = _debugger.getEntities();
 	for (AIDebugger::EntitiesIter i = e.begin(); i != e.end(); ++i) {
 		copy.remove(i->getId());
-		createMapItem(*i);
+		createOrUpdateMapItem(*i);
 	}
 
 	// remove the remaining entities - they are no longer part of the snapshot
@@ -119,6 +114,24 @@ void MapView::updateMapView() {
 		_scene.removeItem(i.value());
 		_items.remove(i.key());
 	}
+}
+
+bool MapView::center(CharacterId id) {
+	auto i = _items.find(id);
+	if (i == _items.end()) {
+		return false;
+	}
+	centerOn(i.value());
+	return true;
+}
+
+bool MapView::makeVisible(CharacterId id) {
+	auto i = _items.find(id);
+	if (i == _items.end()) {
+		return false;
+	}
+	ensureVisible(i.value());
+	return true;
 }
 
 }

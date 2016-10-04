@@ -28,8 +28,7 @@ int AggroTableModel::columnCount(const QModelIndex & /*parent*/) const {
 	return 2;
 }
 
-QVariant AggroTableModel::headerData(int section, Qt::Orientation orientation,
-		int role) const {
+QVariant AggroTableModel::headerData(int section, Qt::Orientation orientation, int role) const {
 	if (orientation != Qt::Horizontal)
 		return QVariant();
 

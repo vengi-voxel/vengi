@@ -8,66 +8,96 @@
 #include <QPainter>
 #include <QFont>
 #include <QDebug>
-#include <QGraphicsEllipseItem>
-#include <QGraphicsLineItem>
 #include <cmath>
 #include <QVector2D>
 
 namespace ai {
 namespace debug {
 
+namespace {
+const float OrientationScale = 2.0f;
+}
+
 MapItem::MapItem(QGraphicsItem* parent, const AIStateWorld& state, AIDebugger& aiDebugger) :
 		QGraphicsItemGroup(parent), _state(state), _aiDebugger(aiDebugger) {
-	const bool selected = _aiDebugger.isSelected(state);
 	setFlag(QGraphicsItem::ItemIsSelectable);
 
-	const qreal size = Settings::getItemSize();
-	QColor color = selected ? QColor::fromRgb(200, 200, 0, 255) : QColor::fromRgb(255, 0, 0, 128);
-	QGraphicsEllipseItem *body = new QGraphicsEllipseItem(0.0, 0.0, size, size);
-	addToGroup(body);
+	_body = new QGraphicsEllipseItem(0.0, 0.0, 0.0, 0.0);
+	_direction = new QGraphicsLineItem(0.0, 0.0, 0.0, 0.0);
+	_nameItem = new QGraphicsTextItem(_body);
+	_nameItem->setDefaultTextColor(Settings::getNameColor());
 
-	QVector2D end(::cosf(state.getOrientation()), ::sinf(state.getOrientation()));
-	end.normalize();
-	const qreal center = size / 2.0;
-	QGraphicsLineItem *direction = new QGraphicsLineItem(center, center, center + center * end.x(), center + center * end.y());
-	addToGroup(direction);
-
-	direction->setSelected(selected);
-	body->setSelected(selected);
+	addToGroup(_body);
+	addToGroup(_direction);
+	addToGroup(_nameItem);
 
 	setAcceptHoverEvents(true);
 	setAcceptedMouseButtons(Qt::AllButtons);
+}
+
+MapItem::~MapItem() {
+}
+
+void MapItem::updateState(const AIStateWorld& state) {
+	const qreal size = Settings::getItemSize();
+	setPos((qreal)state.getPosition().x, (qreal)state.getPosition().z);
+	_body->setRect(-size / 2.0, -size / 2.0, size, size);
+
 	const CharacterAttributes& attributes = _state.getAttributes();
-	CharacterAttributes::const_iterator name = attributes.find(attributes::NAME);
+	const QString& nameAttribute = Settings::getNameAttribute(attributes::NAME);
+	CharacterAttributes::const_iterator name = attributes.find(nameAttribute.toStdString());
 	if (name != attributes.end()) {
-		setToolTip(QString::fromStdString(name->second));
+		const QString& nameStr = QString::fromStdString(name->second);
+		setToolTip(nameStr);
+		_nameItem->setPlainText(nameStr);
 	} else {
-		setToolTip(QString::number(_state.getId()));
+		const QString& nameStr = QString::number(_state.getId());
+		setToolTip(nameStr);
+		_nameItem->setPlainText(nameStr);
 	}
-	CharacterAttributes::const_iterator group = attributes.find(attributes::GROUP);
+
+	const bool selected = _aiDebugger.isSelected(state);
+	if (selected) {
+		static const QPen pen(QColor::fromRgb(255, 0, 0, 255));
+		_body->setPen(pen);
+	} else {
+		static const QPen pen(QColor::fromRgb(0, 0, 0, 255));
+		_body->setPen(pen);
+	}
+	_direction->setSelected(selected);
+	_body->setSelected(selected);
+	// TODO: get color from settings
+	QColor color = QColor::fromRgb(200, 200, 0, 255);
+	_body->setBrush(color);
+
+	QVector2D end(::cosf(state.getOrientation()) * OrientationScale, ::sinf(state.getOrientation()) * OrientationScale);
+	end.normalize();
+	const qreal center = size / 2.0;
+	_direction->setLine(0.0, 0.0, center * end.x(), center * end.y());
+
+	const QString& groupAttribute = Settings::getGroupAttribute(attributes::GROUP);
+	CharacterAttributes::const_iterator group = attributes.find(groupAttribute.toStdString());
 	if (group != attributes.end()) {
+		// TODO: get color from settings
+		QColor colorGroup = QColor::fromRgb(200, 200, 0, 255);
 		const int groupId = atoi(group->second.c_str());
 		if (groupId > 0) {
 			const int b = groupId * 113 % 255;
 			const int component = groupId % 3;
 			switch (component) {
 			case 0:
-				color.setRed(b);
+				colorGroup.setRed(b);
 				break;
 			case 1:
-				color.setGreen(b);
+				colorGroup.setGreen(b);
 				break;
 			default:
-				color.setBlue(b);
+				colorGroup.setBlue(b);
 				break;
 			}
 		}
+		_body->setBrush(colorGroup);
 	}
-
-	body->setBrush(color);
-}
-
-MapItem::~MapItem() {
 }
 
 void MapItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {

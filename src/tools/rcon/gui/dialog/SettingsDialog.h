@@ -18,7 +18,8 @@ private slots:
 	void setShowGrid(int value);
 	void setGridInterval(const QString& value);
 	void setItemSize(const QString& value);
-
+	void setCenterOnSelection(int value);
+	void setNameAttribute(const QString& attribute);
 public:
 	SettingsDialog();
 

@@ -52,8 +52,36 @@ public:
 		return getSettings().value("mapview/bgcolor", defaultVal).value<QColor>();
 	}
 
+	static QColor getNameColor(const QColor& defaultVal = QColor(255, 255, 255)) {
+		return getSettings().value("mapview/namecolor", defaultVal).value<QColor>();
+	}
+
 	static bool getGrid(bool defaultVal = true) {
 		return getSettings().value("mapview/showgrid", defaultVal).toBool();
+	}
+
+	static QString getNameAttribute(const QString& defaultVal) {
+		return getSettings().value("mapview/nameattribute", defaultVal).toString();
+	}
+
+	static void setNameAttribute(const QString& attribute) {
+		return getSettings().setValue("mapview/nameattribute", attribute);
+	}
+
+	static QString getGroupAttribute(const QString& defaultVal) {
+		return getSettings().value("mapview/groupattribute", defaultVal).toString();
+	}
+
+	static void setGroupAttribute(const QString& attribute) {
+		return getSettings().setValue("mapview/groupattribute", attribute);
+	}
+
+	static bool getCenterOnSelection(bool defaultVal = false) {
+		return getSettings().value("mapview/centeronselection", defaultVal).toBool();
+	}
+
+	static void setCenterOnSelection(bool val) {
+		getSettings().setValue("mapview/centeronselection", val);
 	}
 
 	static void setGridColor(const QColor& val) {
@@ -62,6 +90,10 @@ public:
 
 	static void setBackgroundColor(const QColor& val) {
 		getSettings().setValue("mapview/bgcolor", val);
+	}
+
+	static void setNameColor(const QColor& val) {
+		getSettings().setValue("mapview/namecolor", val);
 	}
 
 	static void setGrid(bool val) {

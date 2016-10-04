@@ -101,6 +101,7 @@ public:
 	bool isSelected(const ai::AIStateWorld& ai) const;
 	const CharacterId& getSelected() const;
 	void select(const ai::AIStateWorld& ai);
+	void select(ai::CharacterId id);
 	void togglePause();
 	void unselect();
 	void step();

@@ -40,11 +40,13 @@ public:
 	void wheelEvent(QWheelEvent * event) override;
 
 	virtual void updateMapView();
+	bool center(CharacterId id);
+	bool makeVisible(CharacterId id);
 
 	/**
 	 * @brief Creates a @c MapItem and allows you to create your own instances to render extra details
 	 */
-	virtual MapItem* createMapItem(const AIStateWorld& state);
+	virtual MapItem* createOrUpdateMapItem(const AIStateWorld& state);
 
 	virtual void drawBackground(QPainter* painter, const QRectF& rect) override;
 };
