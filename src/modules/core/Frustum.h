@@ -55,6 +55,18 @@ public:
 	const Plane& plane(FrustumPlanes frustumPlane) const;
 
 	const Plane& operator[](size_t idx) const;
+
+	/**
+	 * @brief Checks whether a given point is within a defined frustum (2d)
+	 * @param eye World position of the eye
+	 * @param orientation The orientation the eye is facing to (radians)
+	 * @param target World position of the target
+	 * @param fieldOfView the field of view of the eye in radians
+	 * @return @c true if the given target can be seen from the given eye position in that
+	 * particular orientation, @c false otherwise.
+	 * @note 0.5 is 120 degree frustum (cos(60))
+	 */
+	static bool isVisible(const glm::vec3& eye, float orientation, const glm::vec3& target, float fieldOfView = 0.5);
 };
 
 inline const Plane& Frustum::operator[](size_t idx) const {

@@ -195,4 +195,20 @@ FrustumResult Frustum::test(const glm::vec3& mins, const glm::vec3& maxs) const 
 	return result;
 }
 
+bool Frustum::isVisible(const glm::vec3& eye, float orientation, const glm::vec3& target, float fieldOfView) {
+	glm::vec2 direction(glm::uninitialize);
+	direction.x = target.x - eye.x;
+	direction.y = target.z - eye.z;
+	direction = glm::normalize(direction);
+	const float angle = ::atan2(direction.y, direction.x);
+
+	float delta;
+	if (angle > orientation) {
+		delta = angle - orientation;
+	} else {
+		delta = orientation - angle;
+	}
+	return delta <= fieldOfView;
+}
+
 }

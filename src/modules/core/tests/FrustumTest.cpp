@@ -127,4 +127,12 @@ TEST_F(FrustumTest, testCullingPoint) {
 	ASSERT_FALSE(_frustum.isVisible(glm::right * _farPlane + 1.0f)) << glm::to_string(glm::right * _farPlane + 1.0f) << " should be culled because it's outside the frustum";
 }
 
+TEST_F(FrustumTest, testStaticFrustumCheck) {
+	ASSERT_TRUE(Frustum::isVisible(glm::vec3(0.0, 0.0, 0.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f), glm::radians(10.0f)));
+	ASSERT_FALSE(Frustum::isVisible(glm::vec3(0.0, 0.0, 0.0f), glm::radians(45.0f), glm::vec3(-1.0f, 0.0f, 1.0f), glm::radians(10.0f)));
+	ASSERT_FALSE(Frustum::isVisible(glm::vec3(0.0, 0.0, 0.0f), glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(10.0f)));
+	ASSERT_FALSE(Frustum::isVisible(glm::vec3(0.0, 0.0, 0.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(10.0f)));
+}
+
+
 }

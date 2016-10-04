@@ -52,10 +52,6 @@ void Npc::setPointOfInterest() {
 	_poiProvider->addPointOfInterest(pos());
 }
 
-float Npc::orientation() const {
-	return _ai->getCharacter()->getOrientation();
-}
-
 double Npc::applyDamage(Npc* attacker, double damage) {
 	double health = _attribs.current(attrib::Type::HEALTH);
 	if (health > 0.0) {
@@ -84,15 +80,13 @@ bool Npc::attack(ai::CharacterId id) {
 	});
 }
 
-const glm::vec3& Npc::pos() const {
-	return _ai->getCharacter()->getPosition();
-}
-
 bool Npc::update(long dt) {
 	if (!Entity::update(dt)) {
 		return false;
 	}
-	_ai->getCharacter()->setSpeed(_attribs.current(attrib::Type::SPEED));
+	ai::ICharacterPtr character = _ai->getCharacter();
+	character->setSpeed(_attribs.current(attrib::Type::SPEED));
+	character->setOrientation(orientation());
 	return !dead();
 }
 

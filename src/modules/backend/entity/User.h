@@ -13,33 +13,22 @@ namespace backend {
 
 class User : public Entity {
 private:
-	ENetPeer* _peer;
 	std::string _name;
 	std::string _password;
 	std::string _email;
-	glm::vec3 _pos;
 	uint32_t _host;
 	voxel::WorldPtr _world;
 	PoiProviderPtr _poiProvider;
 	network::MoveDirection _moveMask = network::MoveDirection::NONE;
-	float _pitch;
-	float _yaw;
-	uint64_t _lastAction;
-	uint64_t _time;
+	float _yaw = 0.0f;
+	uint64_t _lastAction = 0u;
+	uint64_t _time = 0u;
 	core::VarPtr _userTimeout;
 	flatbuffers::FlatBufferBuilder _entityUpdateFbb;
 
-	inline bool isMove(network::MoveDirection dir) const {
-		return (_moveMask & dir) != network::MoveDirection::NONE;
-	}
-
-	inline void addMove(network::MoveDirection dir) {
-		_moveMask |= dir;
-	}
-
-	inline void removeMove(network::MoveDirection dir) {
-		_moveMask &= ~dir;
-	}
+	bool isMove(network::MoveDirection dir) const;
+	void addMove(network::MoveDirection dir);
+	void removeMove(network::MoveDirection dir);
 
 protected:
 	void visibleAdd(const EntitySet& entities) override;
@@ -50,35 +39,19 @@ public:
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownDurationPtr& cooldownDuration,
 			const PoiProviderPtr& poiProvider);
 
-	void setEntityId(EntityId id) {
-		_entityId = id;
-	}
+	void setEntityId(EntityId id);
 
-	void setPassword(const std::string& pw){
-		_password = pw;
-	}
+	void setPassword(const std::string& password);
 
-	void setEmail(const std::string& mail){
-		_email = mail;
-	}
+	void setEmail(const std::string& mail);
 
-	inline const std::string& name() const {
-		return _name;
-	}
+	const std::string& name() const;
 
-	inline const std::string& password() const {
-		return _password;
-	}
+	const std::string& password() const;
 
-	inline const std::string& email() const {
-		return _email;
-	}
+	const std::string& email() const;
 
-	void changeMovement(network::MoveDirection bitmask, float pitch, float yaw) {
-		_moveMask = bitmask;
-		_pitch = pitch;
-		_yaw = yaw;
-	}
+	void changeMovement(network::MoveDirection bitmask, float pitch, float yaw);
 
 	void attack(EntityId id);
 
@@ -101,22 +74,54 @@ public:
 		return _host;
 	}
 
-	const glm::vec3& pos() const override {
-		return _pos;
-	}
-
-	void setPos(const glm::vec3& pos);
-
-	float orientation() const override {
-		return _pitch;
-	}
-
 	/**
 	 * @brief Informs the user that the login was successful
 	 */
 	void sendUserSpawn() const;
 	void sendSeed(long seed) const;
 };
+
+inline bool User::isMove(network::MoveDirection dir) const {
+	return (_moveMask & dir) != network::MoveDirection::NONE;
+}
+
+inline void User::addMove(network::MoveDirection dir) {
+	_moveMask |= dir;
+}
+
+inline void User::removeMove(network::MoveDirection dir) {
+	_moveMask &= ~dir;
+}
+
+inline void User::setEntityId(EntityId id) {
+	_entityId = id;
+}
+
+inline void User::setPassword(const std::string& pw) {
+	_password = pw;
+}
+
+inline void User::setEmail(const std::string& mail) {
+	_email = mail;
+}
+
+inline const std::string& User::name() const {
+	return _name;
+}
+
+inline const std::string& User::password() const {
+	return _password;
+}
+
+inline const std::string& User::email() const {
+	return _email;
+}
+
+inline void User::changeMovement(network::MoveDirection bitmask, float pitch, float yaw) {
+	_moveMask = bitmask;
+	_orientation = pitch;
+	_yaw = yaw;
+}
 
 typedef std::shared_ptr<User> UserPtr;
 

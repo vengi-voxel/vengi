@@ -11,9 +11,8 @@ namespace backend {
 User::User(ENetPeer* peer, EntityId id, const std::string& name, const network::MessageSenderPtr& messageSender,
 		const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider,
 		const cooldown::CooldownDurationPtr& cooldownDuration, const PoiProviderPtr& poiProvider) :
-		Entity(id, messageSender, timeProvider, containerProvider, cooldownDuration), _peer(nullptr),
-		_name(name), _world(world), _poiProvider(poiProvider), _pitch(0.0f), _yaw(0.0f),
-		_lastAction(0ul), _time(0ul) {
+		Entity(id, messageSender, timeProvider, containerProvider, cooldownDuration),
+		_name(name), _world(world), _poiProvider(poiProvider) {
 	setPeer(peer);
 	const glm::vec3& poi = _poiProvider->getPointOfInterest();
 	_pos = poi;
@@ -32,14 +31,6 @@ void User::visibleRemove(const EntitySet& entities) {
 	Entity::visibleRemove(entities);
 	for (const EntityPtr& e : entities) {
 		sendEntityRemove(e);
-	}
-}
-
-void User::setPos(const glm::vec3& pos) {
-	const int y = _world->findFloor(pos.x, pos.z, voxel::isFloor);
-	_pos = pos;
-	if (_pos.y < y) {
-		_pos.y = y;
 	}
 }
 
@@ -110,10 +101,10 @@ bool User::update(long dt) {
 		moveDelta += glm::backward * speed;
 	}
 
-	_pos += glm::quat(glm::vec3(_pitch, _yaw, 0.0f)) * moveDelta;
+	_pos += glm::quat(glm::vec3(orientation(), _yaw, 0.0f)) * moveDelta;
 	// TODO: if not flying...
 	_pos.y = _world->findFloor(_pos.x, _pos.z, voxel::isFloor);
-	Log::trace("move: dt %li, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", dt, speed, _pos.x, _pos.y, _pos.z, _pitch, _yaw);
+	Log::trace("move: dt %li, speed: %f p(%f:%f:%f), pitch: %f, yaw: %f", dt, speed, _pos.x, _pos.y, _pos.z, orientation(), _yaw);
 
 	const network::Vec3 pos { _pos.x, _pos.y, _pos.z };
 	_messageSender->sendServerMessage(_peer, _entityUpdateFbb,

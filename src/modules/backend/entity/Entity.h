@@ -50,6 +50,10 @@ protected:
 	network::EntityType _entityType = network::EntityType::NONE;
 	ENetPeer *_peer = nullptr;
 
+	glm::vec3 _pos;
+	float _orientation = 0.0f;
+	float _size = 1.0f;
+
 	/**
 	 * @brief Called with the set of entities that just get visible for this entity
 	 */
@@ -66,51 +70,35 @@ protected:
 
 	void onAttribChange(const attrib::DirtyValue& v);
 public:
-
-	Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownDurationPtr& cooldownDuration) :
-			_visibleLock("Entity"), _entityId(id), _messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider, cooldownDuration) {
-		_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1));
-	}
-
-	virtual ~Entity() {
-	}
+	Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider,
+			const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownDurationPtr& cooldownDuration);
+	virtual ~Entity();
 
 	void addContainer(const std::string& id);
 	void removeContainer(const std::string& id);
 
-	inline cooldown::CooldownMgr& cooldownMgr() {
-		return _cooldowns;
-	}
+	cooldown::CooldownMgr& cooldownMgr();
 
-	inline EntityId id() const {
-		return _entityId;
-	}
+	EntityId id() const;
 
-	inline bool dead() const {
-		return _attribs.current(attrib::Type::HEALTH) < 0.00001;
-	}
+	bool dead() const;
 
-	inline ENetPeer* peer() const {
-		if (_peer != nullptr && _peer->state == ENET_PEER_STATE_DISCONNECTED)
-			return nullptr;
-		return _peer;
-	}
+	ENetPeer* peer() const;
 
 	/**
 	 * @note The implementation behind this must ensure thread safety
 	 * @return the current position in world coordinates
 	 */
-	virtual const glm::vec3& pos() const = 0;
-	virtual float orientation() const = 0;
+	glm::vec3 pos() const;
+	void setPos(const glm::vec3& pos);
+
+	float orientation() const;
+
 	network::EntityType entityType() const;
 
-	inline double current(attrib::Type type) const {
-		return _attribs.current(type);
-	}
+	double current(attrib::Type type) const;
 
-	inline double max(attrib::Type type) const {
-		return _attribs.max(type);
-	}
+	double max(attrib::Type type) const;
 
 	inline int visibleCount() const {
 		return _visible.size();
@@ -118,7 +106,6 @@ public:
 
 	/**
 	 * @brief Allows to execute a functor/lambda on the visible objects
-	 *
 	 * @note This is thread safe
 	 */
 	template<typename Func>
@@ -131,7 +118,6 @@ public:
 
 	/**
 	 * @brief Creates a copy of the currently visible objects. If you don't need a copy, use the @c Entity::visibleVisible method.
-	 *
 	 * @note This is thread safe
 	 */
 	inline EntitySet visibleCopy() const {
@@ -158,36 +144,76 @@ public:
 	virtual void init();
 
 	/**
-	 * @return the size of this entity
+	 * @return the size of this entity that is used for the visibility checks
 	 */
-	inline float size() const {
-		return 1.0f;
-	}
+	float size() const;
 
 	/**
 	 * @brief Calculates the two dimensional rect that defines the size of the entity.
 	 * @note The position is in the center of this rectangle.
 	 * @note This is in world coordinates.
 	 */
-	inline core::RectFloat rect() const {
-		const glm::vec3 p = pos();
-		const float halfSize = size() / 2.0f;
-		return core::RectFloat(p.x - halfSize, p.z - halfSize, p.x + halfSize, p.z + halfSize);
-	}
+	core::RectFloat rect() const;
 
 	/**
 	 * @brief the view rect defines which rect the entity can see right now.
 	 * This is used e.g. for visibility calculation
 	 */
-	core::RectFloat viewRect() const {
-		const glm::vec3 p = pos();
-		const float viewDistance = current(attrib::Type::VIEWDISTANCE);
-		return core::RectFloat(p.x - viewDistance, p.z - viewDistance, p.x + viewDistance, p.z + viewDistance);
-	}
+	core::RectFloat viewRect() const;
+
+	/**
+	 * @brief Check whether the given position can be seen by the entity.
+	 * @param[in] position The position to check
+	 * @return @c true if the position is in the current frustum of the entity.
+	 */
+	bool inFrustum(const glm::vec3& position) const;
 };
+
+inline double Entity::current(attrib::Type type) const {
+	return _attribs.current(type);
+}
+
+inline double Entity::max(attrib::Type type) const {
+	return _attribs.max(type);
+}
 
 inline network::EntityType Entity::entityType() const {
 	return _entityType;
+}
+
+inline glm::vec3 Entity::pos() const {
+	return _pos;
+}
+
+inline void Entity::setPos(const glm::vec3& pos) {
+	_pos = pos;
+}
+
+inline float Entity::size() const {
+	return _size;
+}
+
+inline float Entity::orientation() const {
+	return _orientation;
+}
+
+inline cooldown::CooldownMgr& Entity::cooldownMgr() {
+	return _cooldowns;
+}
+
+inline EntityId Entity::id() const {
+	return _entityId;
+}
+
+inline bool Entity::dead() const {
+	return _attribs.current(attrib::Type::HEALTH) < 0.00001;
+}
+
+inline ENetPeer* Entity::peer() const {
+	if (_peer != nullptr && _peer->state == ENET_PEER_STATE_DISCONNECTED) {
+		return nullptr;
+	}
+	return _peer;
 }
 
 }

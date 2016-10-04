@@ -5,8 +5,17 @@
 #include "Entity.h"
 #include "core/Set.h"
 #include "core/Common.h"
+#include "core/Frustum.h"
 
 namespace backend {
+
+Entity::Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownDurationPtr& cooldownDuration) :
+		_visibleLock("Entity"), _entityId(id), _messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider, cooldownDuration) {
+	_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1));
+}
+
+Entity::~Entity() {
+}
 
 void Entity::visibleAdd(const EntitySet& entities) {
 	for (const EntityPtr& e : entities) {
@@ -152,6 +161,23 @@ void Entity::sendEntityRemove(const EntityPtr& entity) const {
 	}
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendServerMessage(_peer, fbb, network::ServerMsgType::EntityRemove, network::CreateEntityRemove(fbb, entity->id()).Union());
+}
+
+bool Entity::inFrustum(const glm::vec3& position) const {
+	// TODO: field of view should depend on attrib type
+	return core::Frustum::isVisible(pos(), orientation(), position);
+}
+
+core::RectFloat Entity::rect() const {
+	const glm::vec3 p = pos();
+	const float halfSize = size() / 2.0f;
+	return core::RectFloat(p.x - halfSize, p.z - halfSize, p.x + halfSize, p.z + halfSize);
+}
+
+core::RectFloat Entity::viewRect() const {
+	const glm::vec3 p = pos();
+	const float viewDistance = current(attrib::Type::VIEWDISTANCE);
+	return core::RectFloat(p.x - viewDistance, p.z - viewDistance, p.x + viewDistance, p.z + viewDistance);
 }
 
 }
