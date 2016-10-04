@@ -34,8 +34,9 @@ set(SRCS
 	lzio.c
 	)
 
+set(LIB lua53)
 engine_add_library(
-	LIB lua53
+	LIB ${LIB}
 	SRCS ${SRCS}
 	DEFINES LUA_USE_LONGJMP LUA_COMPAT_MODULE
 )
@@ -43,13 +44,15 @@ engine_add_library(
 # see common.cmake
 if (NOT LUA53_FOUND)
 	if (LINUX AND NOT ANDROID AND NOT EMSCRIPTEN)
-		target_compile_definitions(lua53 PUBLIC -DLUA_USE_LINUX)
+		target_compile_definitions(${LIB} PUBLIC -DLUA_USE_LINUX)
 	elseif(DARWIN)
-		target_compile_definitions(lua53 PUBLIC -DLUA_USE_MACOSX)
+		target_compile_definitions(${LIB} PUBLIC -DLUA_USE_MACOSX)
+	elseif(WINDOWS)
+		target_compile_definitions(${LIB} PUBLIC -DLUA_USE_WINDOWS)
 	endif()
-	target_compile_definitions(lua53 PRIVATE "-DLUA_USE_APICHECK")
+	target_compile_definitions(${LIB} PRIVATE "-DLUA_USE_APICHECK")
 	if (ANDROID OR EMSCRIPTEN)
-		target_compile_definitions(lua53 PUBLIC -D\"lua_getlocaledecpoint\(\)='.'\")
-		target_compile_definitions(lua53 PUBLIC -DLUA_ANSI -DLUA_USE_C89)
+		target_compile_definitions(${LIB} PUBLIC -D\"lua_getlocaledecpoint\(\)='.'\")
+		target_compile_definitions(${LIB} PUBLIC -DLUA_ANSI -DLUA_USE_C89)
 	endif()
 endif()
