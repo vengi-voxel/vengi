@@ -1,3 +1,5 @@
+#pragma once
+
 #include "AIApplication.h"
 #include "RconAIDebugger.h"
 #include "AIDebuggerWidget.h"
