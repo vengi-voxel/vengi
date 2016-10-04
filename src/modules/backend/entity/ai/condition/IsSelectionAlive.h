@@ -25,9 +25,14 @@ public:
 			return false;
 		}
 		const Zone* zone = entity->getZone();
-		const AIPtr& ai = zone->getAI(selection[0]);
-		AICharacter& chr = ai->getCharacterCast<AICharacter>();
-		return !chr.getNpc().dead();
+		for (CharacterId id : selection) {
+			const AIPtr& ai = zone->getAI(id);
+			AICharacter& chr = ai->getCharacterCast<AICharacter>();
+			if (chr.getNpc().dead()) {
+				return false;
+			}
+		}
+		return true;
 	}
 };
 

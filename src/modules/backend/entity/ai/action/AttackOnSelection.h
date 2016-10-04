@@ -16,10 +16,11 @@ AI_TASK(AttackOnSelection) {
 	if (selection.empty()) {
 		return FAILED;
 	}
-	if (npc.attack(selection[0])) {
-		return FINISHED;
+	bool attacked = false;
+	for (CharacterId id : selection) {
+		attacked |= npc.attack(id);
 	}
-	return FAILED;
+	return attacked ? FINISHED : FAILED;
 }
 
 }
