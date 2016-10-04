@@ -167,6 +167,7 @@ public:
 	 * @return @c true if the position is in the current frustum of the entity.
 	 */
 	bool inFrustum(const glm::vec3& position) const;
+	bool inFrustum(const Entity& other) const;
 };
 
 inline double Entity::current(attrib::Type type) const {
@@ -214,6 +215,10 @@ inline ENetPeer* Entity::peer() const {
 		return nullptr;
 	}
 	return _peer;
+}
+
+inline bool Entity::inFrustum(const Entity& other) const {
+	return inFrustum(other.pos());
 }
 
 }

@@ -156,8 +156,9 @@ bool EntityStorage::updateEntity(const EntityPtr& entity, long dt) {
 	set.reserve(contents.size());
 	for (const QuadTreeNode& node : contents) {
 		// TODO: check the distance - the rect might contain more than the circle would...
-		// TODO: frustum check
-		set.insert(node.entity);
+		if (entity->inFrustum(*node.entity.get())) {
+			set.insert(node.entity);
+		}
 	}
 	set.erase(entity);
 	entity->updateVisible(set);
