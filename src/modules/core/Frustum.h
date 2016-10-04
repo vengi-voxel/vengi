@@ -64,9 +64,8 @@ public:
 	 * @param fieldOfView the field of view of the eye in radians
 	 * @return @c true if the given target can be seen from the given eye position in that
 	 * particular orientation, @c false otherwise.
-	 * @note 0.5 is 120 degree frustum (cos(60))
 	 */
-	static bool isVisible(const glm::vec3& eye, float orientation, const glm::vec3& target, float fieldOfView = 0.5);
+	static bool isVisible(const glm::vec3& eye, float orientation, const glm::vec3& target, float fieldOfView);
 };
 
 inline const Plane& Frustum::operator[](size_t idx) const {

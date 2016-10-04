@@ -164,8 +164,11 @@ void Entity::sendEntityRemove(const EntityPtr& entity) const {
 }
 
 bool Entity::inFrustum(const glm::vec3& position) const {
-	// TODO: field of view should depend on attrib type
-	return core::Frustum::isVisible(pos(), orientation(), position);
+	const double fieldOfView = current(attrib::Type::FIELDOFVIEW);
+	if (fieldOfView <= 1.0) {
+		return false;
+	}
+	return core::Frustum::isVisible(pos(), orientation(), position, glm::radians(fieldOfView));
 }
 
 core::RectFloat Entity::rect() const {

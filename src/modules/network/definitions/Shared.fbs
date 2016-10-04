@@ -50,7 +50,9 @@ enum AttribType: int {
 	SPEED,
 	VIEWDISTANCE,
 	ATTACKRANGE,
-	STRENGTH
+	STRENGTH,
+	// field of view in degrees
+	FIELDOFVIEW
 }
 
 enum ItemType: int {

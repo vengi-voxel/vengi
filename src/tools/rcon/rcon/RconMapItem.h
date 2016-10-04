@@ -6,6 +6,7 @@
 
 namespace rcon {
 
+// TODO: render FIELDOFVIEW and HEALTH
 class RconMapItem: public ai::debug::MapItem {
 private:
 	using Super = ai::debug::MapItem;
