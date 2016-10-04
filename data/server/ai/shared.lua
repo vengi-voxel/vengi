@@ -13,9 +13,9 @@ end
 
 function hunt (parentnode)
 	local parallel = parentnode:addNode("Parallel", "hunt")
-	parallel:setCondition("Not(IsOnCooldown{HUNT})")
+	parallel:setCondition("And(Not(IsOnCooldown{HUNT}),Filter(SelectPrey{ANIMAL_RABBIT}))")
 
-		parallel:addNode("Steer(SelectionSeek)", "follow"):setCondition("Filter(SelectPrey{ANIMAL_RABBIT})")
+		parallel:addNode("Steer(SelectionSeek)", "follow")
 		parallel:addNode("AttackOnSelection", "attack"):setCondition("IsCloseToSelection{1}")
 		parallel:addNode("SetPointOfInterest", "setpoi"):setCondition("IsCloseToSelection{1}")
 		parallel:addNode("TriggerCooldown{HUNT}", "increasecooldown"):setCondition("Not(IsSelectionAlive)")
