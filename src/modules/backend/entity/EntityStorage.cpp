@@ -17,11 +17,11 @@ EntityStorage::EntityStorage(const network::MessageSenderPtr& messageSender, con
 				timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownDuration(cooldownDuration), _time(0L) {
 }
 
-core::RectFloat EntityStorage::Node::getRect() const {
+core::RectFloat EntityStorage::QuadTreeNode::getRect() const {
 	return entity->rect();
 }
 
-bool EntityStorage::Node::operator==(const Node& rhs) const {
+bool EntityStorage::QuadTreeNode::operator==(const QuadTreeNode& rhs) const {
 	return rhs.entity == entity;
 }
 
@@ -29,14 +29,14 @@ void EntityStorage::registerUser(const UserPtr& user) {
 	_users[user->id()] = user;
 }
 
-EntityId EntityStorage::getUserId(const std::string& user, const std::string& passwd) const {
-	persistence::UserStore userStore(&user, &passwd, nullptr);
+EntityId EntityStorage::getUserId(const std::string& email, const std::string& password) const {
+	persistence::UserStore userStore(&email, &password, nullptr);
 	EntityId checkId = userStore.userid();
 
 	if (checkId == 0) {
 		const core::VarPtr& autoReg = core::Var::get(cfg::ServerAutoRegister, "true");
 		if (autoReg->boolVal()) {
-			userStore.insert(user, passwd, ::persistence::Timestamp::now());
+			userStore.insert(email, password, ::persistence::Timestamp::now());
 			checkId = userStore.userid();
 		}
 	}
@@ -88,7 +88,7 @@ bool EntityStorage::removeNpc(ai::CharacterId id) {
 	if (i == _npcs.end()) {
 		return false;
 	}
-	_quadTree.remove(Node { i->second });
+	_quadTree.remove(QuadTreeNode { i->second });
 	_npcs.erase(id);
 	return true;
 }
@@ -123,7 +123,7 @@ void EntityStorage::onFrame(long dt) {
 		NpcPtr npc = i->second;
 		if (!updateEntity(npc, deltaLastTick)) {
 			Log::info("remove npc %li", npc->id());
-			_quadTree.remove(Node { npc });
+			_quadTree.remove(QuadTreeNode { npc });
 			i = _npcs.erase(i);
 		} else {
 			++i;
@@ -135,11 +135,11 @@ void EntityStorage::updateQuadTree() {
 	// TODO: a full rebuild is not needed every frame
 	_quadTree.clear();
 	for (auto i : _npcs) {
-		_quadTree.insert(Node { i.second });
+		_quadTree.insert(QuadTreeNode { i.second });
 	}
 	for (auto i : _users) {
 		const UserPtr& user = i.second;
-		_quadTree.insert(Node { user });
+		_quadTree.insert(QuadTreeNode { user });
 	}
 }
 
@@ -149,12 +149,12 @@ bool EntityStorage::updateEntity(const EntityPtr& entity, long dt) {
 	}
 	const core::RectFloat& rect = entity->viewRect();
 	// TODO: maybe move into the entity instance to reduce memory allocations.
-	core::QuadTree<Node, float>::Contents contents;
+	core::QuadTree<QuadTreeNode, float>::Contents contents;
 	contents.reserve(entity->visibleCount() + 10);
 	_quadTreeCache.query(rect, contents);
 	EntitySet set;
 	set.reserve(contents.size());
-	for (const Node& node : contents) {
+	for (const QuadTreeNode& node : contents) {
 		// TODO: check the distance - the rect might contain more than the circle would...
 		// TODO: frustum check
 		set.insert(node.entity);

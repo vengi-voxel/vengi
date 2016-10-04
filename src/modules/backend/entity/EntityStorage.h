@@ -16,6 +16,11 @@ namespace backend {
 class User;
 typedef std::shared_ptr<User> UserPtr;
 
+/**
+ * @brief Manages the Entity instances of the backend.
+ *
+ * This includes calling the Entity::update() method as well as performing the visibility calculations.
+ */
 class EntityStorage {
 private:
 	typedef std::unordered_map<EntityId, UserPtr> Users;
@@ -26,19 +31,15 @@ private:
 	typedef Npcs::iterator NpcsIter;
 	Npcs _npcs;
 
-	/**
-	 * this node contains either a user or a npc - but never both
-	 * this is used for the quadtree
-	 */
-	struct Node {
+	struct QuadTreeNode {
 		EntityPtr entity;
 
 		core::RectFloat getRect() const;
-		bool operator==(const Node& rhs) const;
+		bool operator==(const QuadTreeNode& rhs) const;
 	};
 
-	core::QuadTree<Node, float> _quadTree;
-	core::QuadTreeCache<Node, float> _quadTreeCache;
+	core::QuadTree<QuadTreeNode, float> _quadTree;
+	core::QuadTreeCache<QuadTreeNode, float> _quadTreeCache;
 
 	network::MessageSenderPtr _messageSender;
 	voxel::WorldPtr _world;
@@ -55,12 +56,12 @@ private:
 	bool updateEntity(const EntityPtr& entity, long dt);
 	void updateQuadTree();
 
-	EntityId getUserId(const std::string& user, const std::string& passwd) const;
+	EntityId getUserId(const std::string& email, const std::string& password) const;
 public:
 	EntityStorage(const network::MessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
 			const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider, const cooldown::CooldownDurationPtr& cooldownDuration);
 
-	UserPtr login(ENetPeer* peer, const std::string& email, const std::string& passwd);
+	UserPtr login(ENetPeer* peer, const std::string& email, const std::string& password);
 	bool logout(EntityId userId);
 
 	void addNpc(const NpcPtr& npc);
