@@ -14,6 +14,7 @@ namespace backend {
 /**
  * @ingroup AI
  */
+// TODO: remove me and use SelectEntitiesOfTypes instead
 class SelectPrey: public IFilter {
 private:
 	network::EntityType _npcType;
