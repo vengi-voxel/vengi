@@ -40,12 +40,17 @@ public:
 			return false;
 		}
 
-		const AIPtr& ai = zone->getAI(selection[0]);
-		const Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
-		const glm::vec3& pos = npc.pos();
-		const glm::vec3& ownPos = entity->getCharacter()->getPosition();
-		const float distance = glm::distance(pos, ownPos);
-		return distance <= _distance;
+		for (CharacterId id : selection) {
+			const AIPtr& ai = zone->getAI(id);
+			const Npc& npc = ai->getCharacterCast<AICharacter>().getNpc();
+			const glm::vec3& pos = npc.pos();
+			const glm::vec3& ownPos = entity->getCharacter()->getPosition();
+			const float distance = glm::distance(pos, ownPos);
+			if (distance > _distance) {
+				return false;
+			}
+		}
+		return true;
 	}
 };
 
