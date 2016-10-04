@@ -18,6 +18,16 @@ AICharacter::AICharacter(ai::CharacterId id, Npc& npc) :
 AICharacter::~AICharacter() {
 }
 
+void AICharacter::setPosition(const glm::vec3& position) {
+	Super::setPosition(position);
+	_npc.setPos(position);
+}
+
+void AICharacter::setOrientation(float orientation) {
+	Super::setOrientation(orientation);
+	_npc.setOrientation(orientation);
+}
+
 void AICharacter::update(int64_t dt, bool debuggingActive) {
 	_npc.moveToGround();
 

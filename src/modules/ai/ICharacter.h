@@ -60,10 +60,10 @@ public:
 	bool operator !=(const ICharacter& character) const;
 
 	CharacterId getId() const;
-	void setPosition(const glm::vec3& position);
+	virtual void setPosition(const glm::vec3& position);
 
 	const glm::vec3& getPosition() const;
-	void setOrientation(float orientation);
+	virtual void setOrientation(float orientation);
 	/**
 	 * @return the radians around the y (up) axis
 	 */
@@ -71,12 +71,12 @@ public:
 	/**
 	 * @brief Sets the speed for the character in m/s
 	 */
-	void setSpeed(float speed);
+	virtual void setSpeed(float speed);
 	/**
 	 * @return The speed for the character in m/s
 	 */
 	float getSpeed() const;
-	void setAttribute(const std::string& key, const std::string& value);
+	virtual void setAttribute(const std::string& key, const std::string& value);
 	const CharacterAttributes& getAttributes() const;
 	/**
 	 * @brief override this method to let your own @c ICharacter implementation

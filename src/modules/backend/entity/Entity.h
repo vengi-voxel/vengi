@@ -93,6 +93,7 @@ public:
 	void setPos(const glm::vec3& pos);
 
 	float orientation() const;
+	void setOrientation(float orientation);
 
 	network::EntityType entityType() const;
 
@@ -196,6 +197,10 @@ inline float Entity::size() const {
 
 inline float Entity::orientation() const {
 	return _orientation;
+}
+
+inline void Entity::setOrientation(float orientation) {
+	_orientation = orientation;
 }
 
 inline cooldown::CooldownMgr& Entity::cooldownMgr() {

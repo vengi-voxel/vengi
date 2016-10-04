@@ -21,8 +21,7 @@ inline float toRadians (float degree) {
 }
 
 inline bool isInfinite (const glm::vec3& vec) {
-	const auto& inf = glm::isinf(vec);
-	return inf.x && inf.y && inf.z;
+	return glm::any(glm::isinf(vec));
 }
 
 inline float toDegrees (float radians) {
