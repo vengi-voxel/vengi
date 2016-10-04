@@ -21,8 +21,9 @@ public:
 
 	bool evaluate(const AIPtr& entity) override {
 		const FilteredEntities& selection = entity->getFilteredEntities();
-		if (selection.empty())
-			return true;
+		if (selection.empty()) {
+			return false;
+		}
 		const Zone* zone = entity->getZone();
 		const AIPtr& ai = zone->getAI(selection[0]);
 		AICharacter& chr = ai->getCharacterCast<AICharacter>();
