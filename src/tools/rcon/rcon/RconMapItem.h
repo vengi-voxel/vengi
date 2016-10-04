@@ -25,7 +25,7 @@ public:
 		addToGroup(_attackCircle);
 	}
 
-	virtual void updateState(const ai::AIStateWorld& state) {
+	virtual void updateState(const ai::AIStateWorld& state) override {
 		Super::updateState(state);
 		updateAttrib(network::AttribType::VIEWDISTANCE, _visibilityCircle);
 		updateAttrib(network::AttribType::ATTACKRANGE, _attackCircle);
