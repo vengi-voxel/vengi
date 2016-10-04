@@ -49,11 +49,15 @@ void MapView::animFinished() {
 	sender()->~QObject();
 }
 
+MapItem* MapView::createMapItem(const AIStateWorld& state) {
+	return new MapItem(nullptr, state, _debugger);
+}
+
 MapItem* MapView::createOrUpdateMapItem(const AIStateWorld& state) {
 	auto i = _items.find(state.getId());
 	MapItem* item;
 	if (i == _items.end()) {
-		item = new MapItem(nullptr, state, _debugger);
+		item = createMapItem(state);
 	} else {
 		item = i.value();
 	}

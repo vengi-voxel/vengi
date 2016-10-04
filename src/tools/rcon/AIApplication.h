@@ -22,13 +22,17 @@ class AINodeStaticResolver;
 class AIApplication: public QApplication {
 Q_OBJECT
 protected:
-	AIDebugger* _debugger;
-	AINodeStaticResolver* _resolver;
-	AIDebuggerWidget* _widget;
+	AIDebugger* _debugger = nullptr;
+	AINodeStaticResolver* _resolver = nullptr;
+	AIDebuggerWidget* _widget = nullptr;
 	QMainWindow _window;
 public:
 	AIApplication(int argc, char** argv);
 	virtual ~AIApplication();
+
+	virtual void init();
+
+	virtual AIDebugger* createDebugger();
 };
 
 }

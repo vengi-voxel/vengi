@@ -37,16 +37,17 @@ public:
 	MapView(AIDebugger& debugger);
 	virtual ~MapView();
 
-	void wheelEvent(QWheelEvent * event) override;
+	virtual void wheelEvent(QWheelEvent * event) override;
 
 	virtual void updateMapView();
-	bool center(CharacterId id);
-	bool makeVisible(CharacterId id);
+	virtual bool center(CharacterId id);
+	virtual bool makeVisible(CharacterId id);
 
+	virtual MapItem* createOrUpdateMapItem(const AIStateWorld& state);
 	/**
 	 * @brief Creates a @c MapItem and allows you to create your own instances to render extra details
 	 */
-	virtual MapItem* createOrUpdateMapItem(const AIStateWorld& state);
+	virtual MapItem* createMapItem(const AIStateWorld& state);
 
 	virtual void drawBackground(QPainter* painter, const QRectF& rect) override;
 };

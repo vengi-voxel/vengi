@@ -32,7 +32,7 @@ public:
 	MapItem(QGraphicsItem* parent, const AIStateWorld& state, AIDebugger& aiDebugger);
 	virtual ~MapItem();
 
-	void updateState(const AIStateWorld& state);
+	virtual void updateState(const AIStateWorld& state);
 
 protected:
 	virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;

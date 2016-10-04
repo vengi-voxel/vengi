@@ -18,6 +18,9 @@ namespace debug {
 
 AIApplication::AIApplication(int argc, char** argv) :
 		QApplication(argc, argv) {
+}
+
+void AIApplication::init() {
 #ifdef Q_WS_X11
 	QApplication::setGraphicsSystem(QLatin1String("raster"));
 #endif
@@ -30,7 +33,7 @@ AIApplication::AIApplication(int argc, char** argv) :
 #endif
 
 	_resolver = new AINodeStaticResolver();
-	_debugger = new AIDebugger(*_resolver);
+	_debugger = createDebugger();
 	_widget = new AIDebuggerWidget(*_debugger, *_resolver, true);
 
 	_window.setCentralWidget(_widget);
@@ -55,9 +58,6 @@ AIApplication::AIApplication(int argc, char** argv) :
 		const short port = args.at(2).toShort();
 		qDebug() << "connect to " << hostname << " on port " << port;
 		_widget->connectToAIServer(hostname, port);
-	} else {
-		qDebug() << "connect to 127.0.0.1 on port 11338";
-		_widget->connectToAIServer("127.0.0.1", 11338);
 	}
 
 	QTranslator qtTranslator;
@@ -74,6 +74,10 @@ AIApplication::~AIApplication() {
 	delete _debugger;
 	delete _resolver;
 	delete _widget;
+}
+
+AIDebugger* AIApplication::createDebugger() {
+	return new AIDebugger(*_resolver);
 }
 
 }

@@ -41,6 +41,10 @@ set(SRCS
 	Main.cpp
 	AIApplication.cpp
 	AIDebugger.cpp
+	rcon/RconAIApplication.h
+	rcon/RconAIDebugger.h
+	rcon/RconMapItem.h
+	rcon/RconMapView.h
 	gui/AIDebuggerWidget.cpp
 	gui/AINodeStaticResolver.cpp
 	gui/dialog/AddDialog.cpp
@@ -84,6 +88,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 qt5_use_modules(${PROJECT_NAME} Widgets Gui Network)
+target_link_libraries(${PROJECT_NAME} network)
 
 message(STATUS "Build the rcon")
 

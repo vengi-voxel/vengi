@@ -64,8 +64,6 @@ void MapItem::updateState(const AIStateWorld& state) {
 		static const QPen pen(QColor::fromRgb(0, 0, 0, 255));
 		_body->setPen(pen);
 	}
-	_direction->setSelected(selected);
-	_body->setSelected(selected);
 	// TODO: get color from settings
 	QColor color = QColor::fromRgb(200, 200, 0, 255);
 	_body->setBrush(color);

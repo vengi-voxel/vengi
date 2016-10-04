@@ -1,8 +1,8 @@
 /**
  * @file
  */
-#include "AIApplication.h"
-#include "AIDebugger.h"
+#include "rcon/RconAIApplication.h"
+#include "rcon/RconAIDebugger.h"
 #include "AIDebuggerWidget.h"
 
 #ifdef AI_PROFILER
@@ -14,6 +14,7 @@ int main(int argc, char **argv) {
 	ProfilerStart("simpleai-debugger.prof");
 #endif
 
-	ai::debug::AIApplication app(argc, argv);
+	rcon::RconAIApplication app(argc, argv);
+	app.init();
 	return app.exec();
 }
