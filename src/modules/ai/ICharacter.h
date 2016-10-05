@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #pragma once
 
 #include "common/NonCopyable.h"
@@ -60,30 +63,54 @@ public:
 	bool operator !=(const ICharacter& character) const;
 
 	CharacterId getId() const;
+	/**
+	 * @note This is virtual because you might want to override this in your implementation to
+	 * make sure that the new position is also forwarded to your AI controlled entity.
+	 */
 	virtual void setPosition(const glm::vec3& position);
 
 	const glm::vec3& getPosition() const;
+	/**
+	 * @note This is virtual because you might want to override this in your implementation to
+	 * make sure that the new orientation is also forwarded to your AI controlled entity.
+	 *
+	 * @see getOrientation()
+	 */
 	virtual void setOrientation(float orientation);
 	/**
 	 * @return the radians around the y (up) axis
+	 *
+	 * @see setOrientation()
 	 */
 	float getOrientation() const;
 	/**
 	 * @brief Sets the speed for the character in m/s
+	 *
+	 * @see getSpeed()
 	 */
 	virtual void setSpeed(float speed);
 	/**
 	 * @return The speed for the character in m/s
+	 *
+	 * @see setSpeed()
 	 */
 	float getSpeed() const;
+	/**
+	 * @brief Set an attribute that can be used for debugging
+	 * @see AI::isDebuggingActive()
+	 */
 	virtual void setAttribute(const std::string& key, const std::string& value);
+	/**
+	 * @brief Get the debugger attributes.
+	 */
 	const CharacterAttributes& getAttributes() const;
 	/**
 	 * @brief override this method to let your own @c ICharacter implementation
 	 * tick with the @c Zone::update
 	 *
-	 * @param dt the time delta in millis since the last update was executed
-	 * @param debuggingActive @c true if the debugging for this entity is activated
+	 * @param[in] dt the time delta in millis since the last update was executed
+	 * @param[in] debuggingActive @c true if the debugging for this entity is activated. This
+	 * can be used to determine whether it's useful to do setAttribute() calls.
 	 */
 	virtual void update(int64_t dt, bool debuggingActive) {
 		(void)dt;

@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #pragma once
 
 #include "common/NonCopyable.h"

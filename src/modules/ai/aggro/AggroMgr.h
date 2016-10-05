@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * @defgroup Aggro
+ * @{
+ * The aggro manager can be used to create interactions between AI controlled entities.
+ */
 #pragma once
 
 #include <vector>
@@ -187,3 +194,7 @@ public:
 };
 
 }
+
+/**
+ * @}
+ */

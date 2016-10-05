@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @ingroup Filter
+ */
 #pragma once
 
 #include "filter/IFilter.h"

@@ -1,3 +1,8 @@
+/**
+ * @file
+ */
+#pragma once
+
 #include "Network.h"
 #include "IProtocolMessage.h"
 #include "IProtocolHandler.h"

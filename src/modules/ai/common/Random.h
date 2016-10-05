@@ -1,7 +1,21 @@
+/**
+ * @file
+ */
 #pragma once
+
+/**
+ * @file
+ * @defgroup Random
+ * @{
+ * Everything that uses randomness in SimpleAI should use these helper methods.
+ * You can query random values in a thread safe way and can modify the seed - which
+ * really might ease debugging at some points.
+ */
 
 #include <chrono>
 #include <random>
+#include <algorithm>
+#include <iterator>
 #include <stdlib.h>
 #include "common/Thread.h"
 
@@ -38,4 +52,25 @@ inline I randomElement(I begin, I end) {
 	return begin;
 }
 
+/**
+ * @brief Helper function to cut the input vector down to @c n random elements.
+ */
+template<typename T>
+inline void randomElements(std::vector<T>& vec, int n) {
+	if (n >= (int)vec.size()) {
+		return;
+	}
+	std::shuffle(vec.begin(), vec.end(), randomEngine());
+	vec.resize(n);
 }
+
+template<typename I>
+inline void shuffle(I begin, I end) {
+	std::shuffle(begin, end, randomEngine());
+}
+
+}
+
+/**
+ * @}
+ */

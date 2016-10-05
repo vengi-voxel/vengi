@@ -25,9 +25,9 @@ protected:
 	const AIStateWorld _state;
 	AIDebugger& _aiDebugger;
 
-	QGraphicsEllipseItem *_body = nullptr;
-	QGraphicsLineItem *_direction = nullptr;
-	QGraphicsTextItem *_nameItem = nullptr;
+	QGraphicsEllipseItem *_body;
+	QGraphicsLineItem *_direction;
+	QGraphicsTextItem *_nameItem;
 public:
 	MapItem(QGraphicsItem* parent, const AIStateWorld& state, AIDebugger& aiDebugger);
 	virtual ~MapItem();

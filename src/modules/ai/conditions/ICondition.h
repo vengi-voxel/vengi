@@ -33,6 +33,10 @@ public: \
 	virtual ~ConditionName() { \
 	}
 
+/**
+ * @brief A condition factory macro to ease and unify the registration at AIRegistry.
+ * You still have to implement the Factory::create method.
+ */
 #define CONDITION_FACTORY_NO_IMPL(ConditionName) \
 public: \
 	class Factory: public IConditionFactory { \
@@ -44,6 +48,9 @@ public: \
 		return FACTORY; \
 	}
 
+/**
+ * @brief A condition factory macro to ease and unify the registration at AIRegistry.
+ */
 #define CONDITION_FACTORY(ConditionName) \
 public: \
 	class Factory: public IConditionFactory { \
@@ -57,6 +64,11 @@ public: \
 		return FACTORY; \
 	}
 
+/**
+ * @brief A condition factory singleton macro to ease and unify the registration at AIRegistry.
+ * Nothing from the given context is taken, if you need this, use the instance based factory,
+ * not the singleton based.
+ */
 #define CONDITION_FACTORY_SINGLETON \
 public: \
 	class Factory: public IConditionFactory { \
@@ -116,6 +128,9 @@ protected:
 		return id;
 	}
 
+	/**
+	 * @brief Every node has an id to identify it. It's unique per type.
+	 */
 	int _id;
 	const std::string _name;
 	const std::string _parameters;

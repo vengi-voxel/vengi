@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #pragma once
 
 #include "TreeNode.h"

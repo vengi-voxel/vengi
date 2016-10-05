@@ -22,8 +22,8 @@ MapItem::MapItem(QGraphicsItem* parent, const AIStateWorld& state, AIDebugger& a
 		QGraphicsItemGroup(parent), _state(state), _aiDebugger(aiDebugger) {
 	setFlag(QGraphicsItem::ItemIsSelectable);
 
-	_body = new QGraphicsEllipseItem(0.0, 0.0, 0.0, 0.0);
-	_direction = new QGraphicsLineItem(0.0, 0.0, 0.0, 0.0);
+	_body = new QGraphicsEllipseItem(0.0, 0.0, 0.0, 0.0, this);
+	_direction = new QGraphicsLineItem(0.0, 0.0, 0.0, 0.0, this);
 	_nameItem = new QGraphicsTextItem(_body);
 	_nameItem->setDefaultTextColor(Settings::getNameColor());
 

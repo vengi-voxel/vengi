@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #pragma once
 
 #include <unordered_map>
@@ -128,6 +131,9 @@ public:
 	 */
 	bool isPause() const;
 
+	/**
+	 * @return @c true if the owning entity is currently under debugging, @c false otherwise
+	 */
 	bool isDebuggingActive() const;
 
 	/**

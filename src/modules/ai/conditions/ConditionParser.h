@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #pragma once
 
 #include "conditions/ICondition.h"
@@ -23,6 +26,7 @@ private:
 
 	void splitConditions(const std::string& string, std::vector<std::string>& tokens) const;
 	bool fillInnerConditions(ConditionFactoryContext& ctx, const std::string& inner);
+	bool fillInnerFilters(FilterFactoryContext& ctx, const std::string& inner);
 
 public:
 	ConditionParser(const IAIFactory& aiFactory, const std::string& conditionString) :
@@ -61,6 +65,53 @@ inline void ConditionParser::splitConditions(const std::string& string, std::vec
 	tokens.push_back(token);
 }
 
+inline bool ConditionParser::fillInnerFilters(FilterFactoryContext& ctx, const std::string& filterStr) {
+	std::vector<std::string> conditions;
+	splitConditions(filterStr, conditions);
+	if (conditions.size() > 1) {
+		for (std::vector<std::string>::const_iterator i = conditions.begin(); i != conditions.end(); ++i) {
+			if (!fillInnerFilters(ctx, *i)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	std::string parameters;
+	std::size_t n = filterStr.find("(");
+	if (n == std::string::npos || filterStr.find("{") < n) {
+		parameters = getBetween(filterStr, "{", "}");
+		n = filterStr.find("{");
+	}
+
+	std::string name;
+	if (n != std::string::npos) {
+		name = filterStr.substr(0, n);
+	} else {
+		name = filterStr;
+	}
+	FilterFactoryContext ctxInner(parameters);
+	n = filterStr.find("(");
+	if (n != std::string::npos) {
+		const std::size_t r = filterStr.rfind(")");
+		if (r == std::string::npos) {
+			setError("syntax error, missing closing brace");
+			return false;
+		}
+		const std::string& inner = filterStr.substr(n + 1, r - n - 1);
+		if (!fillInnerFilters(ctxInner, inner)) {
+			return false;
+		}
+	}
+	const FilterPtr& c = _aiFactory.createFilter(name, ctxInner);
+	if (!c) {
+		setError("could not create filter for %s", name.c_str());
+		return false;
+	}
+	ctx.filters.push_back(c);
+	return true;
+}
+
 inline bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, const std::string& conditionStr) {
 	std::vector<std::string> conditions;
 	splitConditions(conditionStr, conditions);
@@ -86,7 +137,19 @@ inline bool ConditionParser::fillInnerConditions(ConditionFactoryContext& ctx, c
 		}
 		// filter condition is a little bit special and deserves some extra attention
 		if (ctx.filter) {
-			const FilterFactoryContext ctxInner(parameters);
+			FilterFactoryContext ctxInner(parameters);
+			n = conditionStr.find("(");
+			if (n != std::string::npos) {
+				const std::size_t r = conditionStr.rfind(")");
+				if (r == std::string::npos) {
+					setError("syntax error, missing closing brace");
+					return false;
+				}
+				const std::string& inner = conditionStr.substr(n + 1, r - n - 1);
+				if (!fillInnerFilters(ctxInner, inner)) {
+					return false;
+				}
+			}
 			const FilterPtr& c = _aiFactory.createFilter(name, ctxInner);
 			if (!c) {
 				setError("could not create filter for %s", name.c_str());

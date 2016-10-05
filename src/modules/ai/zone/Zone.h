@@ -1,3 +1,16 @@
+/**
+ * @file
+ *
+ * @defgroup Zone
+ * @{
+ * A zone is a logical unit that groups AI instances.
+ *
+ * Zones should have unique names - this is for the debug server to print the zone names to
+ * debug them properly.
+ *
+ * Each zone has a dedicated ai::GroupMgr instance. For more detailed information, just check out
+ * the [sourcecode](src/ai/zone/Zone.h).
+ */
 #pragma once
 
 #include "ICharacter.h"

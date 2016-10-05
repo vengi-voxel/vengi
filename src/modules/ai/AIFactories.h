@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #pragma once
 
 #include "IAIFactory.h"
@@ -31,6 +34,7 @@ struct SteerNodeFactoryContext {
 struct FilterFactoryContext {
 	// Parameters for the filter - can get hand over to the ctor in your factory implementation.
 	std::string parameters;
+	Filters filters;
 	explicit FilterFactoryContext(const std::string& _parameters) :
 		parameters(_parameters) {
 	}

@@ -1,8 +1,10 @@
+/**
+ * @file
+ */
 #pragma once
 
 #include "tree/Selector.h"
 #include "AI.h"
-#include <algorithm>
 
 namespace ai {
 
@@ -18,12 +20,13 @@ public:
 	SELECTOR_CLASS(RandomSelector)
 
 	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
-		if (Selector::execute(entity, deltaMillis) == CANNOTEXECUTE)
+		if (Selector::execute(entity, deltaMillis) == CANNOTEXECUTE) {
 			return CANNOTEXECUTE;
+		}
 
 		TreeNodes childrenShuffled = _children;
 		const std::size_t size = childrenShuffled.size();
-		std::random_shuffle(childrenShuffled.begin(), childrenShuffled.end());
+		ai::shuffle(childrenShuffled.begin(), childrenShuffled.end());
 		TreeNodeStatus overallResult = FINISHED;
 		std::size_t i;
 		for (i = 0; i < size; ++i) {
