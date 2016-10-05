@@ -58,7 +58,12 @@ LUAType::LUAType(lua_State* state, const std::string& name) :
 	lua_setfield(_state, -2, "__index");
 }
 
-LUA::LUA(bool debug) {
+LUA::LUA(lua_State *state) :
+		_state(state), _destroy(false) {
+}
+
+LUA::LUA(bool debug) :
+		_destroy(true) {
 	_state = luaL_newstate();
 
 	luaL_openlibs(_state);
@@ -78,7 +83,10 @@ LUA::LUA(bool debug) {
 }
 
 LUA::~LUA() {
-	lua_close(_state);
+	if (_destroy) {
+		lua_close(_state);
+		_state = nullptr;
+	}
 }
 
 void LUA::reg(const std::string& prefix, luaL_Reg* funcs) {

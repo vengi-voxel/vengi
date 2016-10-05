@@ -13,6 +13,7 @@ extern "C" {
 #include <memory>
 
 #include "core/Log.h"
+#include "core/NonCopyable.h"
 
 namespace lua {
 
@@ -34,13 +35,16 @@ public:
 	}
 };
 
-class LUA {
+class LUA : public core::NonCopyable {
 private:
 	lua_State *_state;
 	std::string _error;
+	bool _destroy;
 
 public:
-	LUA(bool debug = false);
+	explicit LUA(lua_State *state);
+
+	explicit LUA(bool debug = false);
 	~LUA();
 
 	lua_State* state() const;
