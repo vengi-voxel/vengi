@@ -139,9 +139,9 @@ Exporter::ExportFormatEntry gExporters[] =
 
 #ifndef ASSIMP_BUILD_NO_GLTF_EXPORTER
     Exporter::ExportFormatEntry( "gltf", "GL Transmission Format", "gltf", &ExportSceneGLTF,
-        aiProcess_JoinIdenticalVertices /*| aiProcess_SortByPType*/),
+        aiProcess_JoinIdenticalVertices | aiProcess_Triangulate /*| aiProcess_SortByPType*/),
     Exporter::ExportFormatEntry( "glb", "GL Transmission Format (binary)", "glb", &ExportSceneGLB,
-        aiProcess_JoinIdenticalVertices /*| aiProcess_SortByPType*/),
+        aiProcess_JoinIdenticalVertices | aiProcess_Triangulate /*| aiProcess_SortByPType*/),
 #endif
 
 #ifndef ASSIMP_BUILD_NO_ASSBIN_EXPORTER
@@ -321,7 +321,7 @@ aiReturn Exporter :: Export( const aiScene* pScene, const char* pFormatId, const
 
                 // Always create a full copy of the scene. We might optimize this one day,
                 // but for now it is the most pragmatic way.
-                aiScene* scenecopy_tmp;
+                aiScene* scenecopy_tmp = NULL;
                 SceneCombiner::CopyScene(&scenecopy_tmp,pScene);
 
                 std::unique_ptr<aiScene> scenecopy(scenecopy_tmp);

@@ -202,6 +202,16 @@ SET(ASSIMP_LOADER_SRCS "")
 SET(ASSIMP_IMPORTERS_ENABLED "") # list of enabled importers
 SET(ASSIMP_IMPORTERS_DISABLED "") # disabled list (used to print)
 
+ADD_ASSIMP_IMPORTER( AMF
+  AMFImporter.hpp
+  AMFImporter_Macro.hpp
+  AMFImporter_Node.hpp
+  AMFImporter.cpp
+  AMFImporter_Geometry.cpp
+  AMFImporter_Material.cpp
+  AMFImporter_Postprocess.cpp
+)
+
 ADD_ASSIMP_IMPORTER( 3DS
   3DSConverter.cpp
   3DSHelper.h
@@ -433,7 +443,8 @@ ADD_ASSIMP_IMPORTER( BLEND
 ADD_ASSIMP_IMPORTER( IFC
   IFCLoader.cpp
   IFCLoader.h
-  IFCReaderGen.cpp
+  IFCReaderGen1.cpp
+  IFCReaderGen2.cpp
   IFCReaderGen.h
   IFCUtil.h
   IFCUtil.cpp
@@ -599,6 +610,23 @@ ADD_ASSIMP_IMPORTER( X
   XFileExporter.cpp
 )
 
+ADD_ASSIMP_IMPORTER(X3D
+  X3DImporter.cpp
+  X3DImporter.hpp
+  X3DImporter_Geometry2D.cpp
+  X3DImporter_Geometry3D.cpp
+  X3DImporter_Group.cpp
+  X3DImporter_Light.cpp
+  X3DImporter_Macro.hpp
+  X3DImporter_Metadata.cpp
+  X3DImporter_Networking.cpp
+  X3DImporter_Node.hpp
+  X3DImporter_Postprocess.cpp
+  X3DImporter_Rendering.cpp
+  X3DImporter_Shape.cpp
+  X3DImporter_Texturing.cpp
+)
+
 ADD_ASSIMP_IMPORTER( GLTF
   glTFAsset.h
   glTFAsset.inl
@@ -617,7 +645,6 @@ ADD_ASSIMP_IMPORTER( 3MF
     D3MFOpcPackage.h
     D3MFOpcPackage.cpp
 )
-
 
 SET( Step_SRCS
   StepExporter.h
@@ -661,7 +688,6 @@ SET( Clipper_SRCS
 )
 SOURCE_GROUP( Clipper FILES ${Clipper_SRCS})
 
-
 SET( Poly2Tri_SRCS
   ../contrib/poly2tri/poly2tri/common/shapes.cc
   ../contrib/poly2tri/poly2tri/common/shapes.h
@@ -701,7 +727,54 @@ SET ( openddl_parser_SRCS
 )
 SOURCE_GROUP( openddl_parser FILES ${openddl_parser_SRCS})
 
+SET ( open3dgc_SRCS
+  ../contrib/Open3DGC/o3dgcAdjacencyInfo.h
+  ../contrib/Open3DGC/o3dgcArithmeticCodec.cpp
+  ../contrib/Open3DGC/o3dgcArithmeticCodec.h
+  ../contrib/Open3DGC/o3dgcBinaryStream.h
+  ../contrib/Open3DGC/o3dgcCommon.h
+  ../contrib/Open3DGC/o3dgcDVEncodeParams.h
+  ../contrib/Open3DGC/o3dgcDynamicVectorDecoder.cpp
+  ../contrib/Open3DGC/o3dgcDynamicVectorDecoder.h
+  ../contrib/Open3DGC/o3dgcDynamicVectorEncoder.cpp
+  ../contrib/Open3DGC/o3dgcDynamicVectorEncoder.h
+  ../contrib/Open3DGC/o3dgcDynamicVector.h
+  ../contrib/Open3DGC/o3dgcFIFO.h
+  ../contrib/Open3DGC/o3dgcIndexedFaceSet.h
+  ../contrib/Open3DGC/o3dgcIndexedFaceSet.inl
+  ../contrib/Open3DGC/o3dgcSC3DMCDecoder.h
+  ../contrib/Open3DGC/o3dgcSC3DMCDecoder.inl
+  ../contrib/Open3DGC/o3dgcSC3DMCEncodeParams.h
+  ../contrib/Open3DGC/o3dgcSC3DMCEncoder.h
+  ../contrib/Open3DGC/o3dgcSC3DMCEncoder.inl
+  ../contrib/Open3DGC/o3dgcTimer.h
+  ../contrib/Open3DGC/o3dgcTools.cpp
+  ../contrib/Open3DGC/o3dgcTriangleFans.cpp
+  ../contrib/Open3DGC/o3dgcTriangleFans.h
+  ../contrib/Open3DGC/o3dgcTriangleListDecoder.h
+  ../contrib/Open3DGC/o3dgcTriangleListDecoder.inl
+  ../contrib/Open3DGC/o3dgcTriangleListEncoder.h
+  ../contrib/Open3DGC/o3dgcTriangleListEncoder.inl
+  ../contrib/Open3DGC/o3dgcVector.h
+  ../contrib/Open3DGC/o3dgcVector.inl
+)
+SOURCE_GROUP( open3dgc FILES ${open3dgc_SRCS})
+
+# Check dependencies for glTF importer with Open3DGC-compression.
+# RT-extensions is used in "contrib/Open3DGC/o3dgcTimer.h" for collecting statistics. Pointed file
+# has implementation for different platforms: WIN32, __MACH__ and other ("else" block).
+FIND_PACKAGE(RT QUIET)
+IF (RT_FOUND OR MSVC)
+  SET( ASSIMP_IMPORTER_GLTF_USE_OPEN3DGC 1 )
+  ADD_DEFINITIONS( -DASSIMP_IMPORTER_GLTF_USE_OPEN3DGC=1 )
+ELSE ()
+  SET (open3dgc_SRCS "")
+  MESSAGE (INFO " RT-extension not found. glTF import/export will be built without Open3DGC-compression.")
+  #!TODO: off course is better to remove statistics timers from o3dgc codec. Or propose to choose what to use.
+ENDIF ()
+
 INCLUDE_DIRECTORIES( "../contrib/rapidjson/include" )
+INCLUDE_DIRECTORIES( "../contrib" )
 
 # VC2010 fixes
 if(MSVC10)
@@ -748,6 +821,7 @@ SET( assimp_src
   ${Poly2Tri_SRCS}
   ${Clipper_SRCS}
   ${openddl_parser_SRCS}
+  ${open3dgc_SRCS}
   # Necessary to show the headers in the project when using the VC++ generator:
 
   ${PUBLIC_HEADERS}
@@ -821,6 +895,11 @@ if (UNZIP_FOUND)
 else (UNZIP_FOUND)
   INCLUDE_DIRECTORIES("../")
 endif (UNZIP_FOUND)
+
+# Add RT-extension library for glTF importer with Open3DGC-compression.
+IF (RT_FOUND AND ASSIMP_IMPORTER_GLTF_USE_OPEN3DGC)
+  TARGET_LINK_LIBRARIES(assimp ${RT_LIBRARY})
+ENDIF (RT_FOUND AND ASSIMP_IMPORTER_GLTF_USE_OPEN3DGC)
 
 INSTALL( TARGETS assimp
   LIBRARY DESTINATION ${ASSIMP_LIB_INSTALL_DIR}

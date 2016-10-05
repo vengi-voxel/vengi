@@ -152,6 +152,20 @@ set(SRCS
 	code/OgreMaterial.cpp
 	code/MakeVerboseFormat.cpp
 	code/NFFLoader.cpp
+	code/X3DImporter.cpp
+	code/X3DImporter.hpp
+	code/X3DImporter_Geometry2D.cpp
+	code/X3DImporter_Geometry3D.cpp
+	code/X3DImporter_Group.cpp
+	code/X3DImporter_Light.cpp
+	code/X3DImporter_Macro.hpp
+	code/X3DImporter_Metadata.cpp
+	code/X3DImporter_Networking.cpp
+	code/X3DImporter_Node.hpp
+	code/X3DImporter_Postprocess.cpp
+	code/X3DImporter_Rendering.cpp
+	code/X3DImporter_Shape.cpp
+	code/X3DImporter_Texturing.cpp
 	contrib/openddlparser/code/DDLNode.cpp
 	contrib/openddlparser/code/Value.cpp
 	contrib/openddlparser/code/OpenDDLExport.cpp
@@ -229,6 +243,8 @@ if (NOT ASSIMP_FOUND)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_GLTF_IMPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_C4D_IMPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_3MF_IMPORTER)
+	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_AMF_IMPORTER)
+	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_X3D_IMPORTER)
 
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_COLLADA_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_XFILE_EXPORTER)
