@@ -362,6 +362,8 @@ inline glm::vec3 Camera::up() const {
 inline glm::mat4 Camera::orthogonalMatrix() const {
 	const float w = width();
 	const float h = height();
+	core_assert_msg(w > 0.0f, "Invalid dimension given: width must be greater than zero but is %f", w);
+	core_assert_msg(h > 0.0f, "Invalid dimension given: height must be greater than zero but is %f", h);
 	return glm::ortho(0.0f, w, h, 0.0f, nearPlane(), farPlane());
 }
 
