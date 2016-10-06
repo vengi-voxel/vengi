@@ -1,5 +1,6 @@
 set(SRCS
 	SimplexNoise.h SimplexNoise.cpp
+	SphereNoise.h SphereNoise.cpp
 )
 # TODO: maybe provide two noise modules, one noisefast (for e.g. client only stuff) and one noise-slow for stuff that must be cross plattform
 
