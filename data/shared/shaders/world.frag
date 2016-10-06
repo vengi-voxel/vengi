@@ -20,8 +20,8 @@ $out vec3 o_norm;
 #endif
 
 void main(void) {
-	vec3 fdx = dFdx(v_pos.xyz);
-	vec3 fdy = dFdy(v_pos.xyz);
+	vec3 fdx = dFdx(v_pos);
+	vec3 fdy = dFdy(v_pos);
 	vec3 normal = normalize(cross(fdx, fdy));
 
 #if cl_deferred == 0
