@@ -16,6 +16,9 @@
 
 namespace frontend {
 
+/**
+ * @brief Entity representation for the client side.
+ */
 class ClientEntity {
 private:
 	util::PosLerp _posLerp;

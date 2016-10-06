@@ -8,6 +8,12 @@
 
 namespace frontend {
 
+/**
+ * @brief Renderer for the shapes that you can build with the ShapeBuilder.
+ *
+ * @see video::ShapeBuilder
+ * @see video::VertexBuffer
+ */
 class ShapeRenderer {
 private:
 	static constexpr int MAX_MESHES = 16;

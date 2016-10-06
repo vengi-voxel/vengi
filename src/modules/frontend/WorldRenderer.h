@@ -25,6 +25,9 @@
 
 namespace frontend {
 
+/**
+ * @brief Class that performs the rendering and extraction of the needed chunks.
+ */
 class WorldRenderer {
 protected:
 	struct NoiseGenerationTask {
@@ -117,7 +120,7 @@ public:
 	void onRunning(long dt);
 	void shutdown();
 
-	// called to initialed the player position
+	/** @brief called to initialed the player position */
 	void onSpawn(const glm::vec3& pos, int initialExtractionRadius = 5);
 
 	ClientEntityPtr getEntity(ClientEntityId id) const;
@@ -126,7 +129,7 @@ public:
 
 	void stats(int& meshes, int& extracted, int& pending, int& active) const;
 
-	// world coordinates x/z
+	/** @brief world coordinates x/z */
 	void deleteMesh(const glm::ivec3& pos);
 
 	float getViewDistance() const;

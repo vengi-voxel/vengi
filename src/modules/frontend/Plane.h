@@ -7,6 +7,12 @@
 
 namespace frontend {
 
+/**
+ * @brief Renders a plane
+ *
+ * @see video::ShapeBuilder
+ * @see ShapeRenderer
+ */
 class Plane {
 private:
 	video::ShapeBuilder _shapeBuilder;

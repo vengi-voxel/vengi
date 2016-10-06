@@ -6,6 +6,12 @@
 
 namespace frontend {
 
+/**
+ * @brief Renders a world axis (xyz)
+ *
+ * @see video::ShapeBuilder
+ * @see ShapeRenderer
+ */
 class Axis {
 private:
 	video::ShapeBuilder _shapeBuilder;

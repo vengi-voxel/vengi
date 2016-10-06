@@ -8,6 +8,12 @@
 
 namespace frontend {
 
+/**
+ * @brief Renders a video::Camera core::Frustum
+ *
+ * @see video::ShapeBuilder
+ * @see ShapeRenderer
+ */
 class CameraFrustum {
 protected:
 	video::ShapeBuilder _shapeBuilder;
