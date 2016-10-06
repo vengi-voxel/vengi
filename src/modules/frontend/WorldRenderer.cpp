@@ -14,6 +14,7 @@
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "MaterialColor.h"
+#include "PlantDistributor.h"
 
 constexpr int MinCullingDistance = 500;
 constexpr int MinExtractionCullingDistance = 1000;
@@ -116,35 +117,6 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 	return true;
 }
 
-void WorldRenderer::distributePlants(int amount, video::GLMeshData& meshData) {
-	core_trace_scoped(WorldRendererDistributePlants);
-	const glm::ivec3& pos = meshData.translation;
-	std::vector<glm::vec3>& translations = meshData.instancedPositions;
-	core::Random random(_world->seed() + pos.x + pos.y + pos.z);
-	const int size = _world->getMeshSize();
-	const voxel::BiomeManager& biomeMgr = _world->getBiomeManager();
-	for (;;) {
-		if (amount-- <= 0) {
-			return;
-		}
-		const int lx = random.random(1, size - 1);
-		const int nx = pos.x + lx;
-		const int lz = random.random(1, size - 1);
-		const int nz = pos.z + lz;
-		const int y = _world->findFloor(nx, nz, voxel::isFloor);
-		if (y == -1) {
-			continue;
-		}
-		const glm::ivec3 translation(nx, y, nz);
-		if (!biomeMgr.hasPlants(translation)) {
-			continue;
-		}
-
-		translations.push_back(translation);
-		Log::trace("plant at %i:%i:%i (%i)", nx, y, nz, (int)translations.size());
-	}
-}
-
 // redistribute the plants on the meshes that are already extracted
 void WorldRenderer::fillPlantPositionsFromMeshes() {
 	const int plantMeshAmount = _meshDataPlant.size();
@@ -193,7 +165,7 @@ void WorldRenderer::handleMeshQueue(const video::Shader& shader) {
 	// Now add the mesh to the list of meshes to render.
 	video::GLMeshData meshDataOpaque = createMesh(shader, mesh.opaqueMesh);
 	if (meshDataOpaque.noOfIndices > 0) {
-		distributePlants(100, meshDataOpaque);
+		distributePlants(_world, 100, meshDataOpaque.translation, meshDataOpaque.instancedPositions);
 		_meshDataOpaque.push_back(meshDataOpaque);
 		fillPlantPositionsFromMeshes();
 	}

@@ -4,6 +4,7 @@ set(SRCS
 	Movement.h
 	CameraFrustum.cpp CameraFrustum.h
 	ShapeRenderer.cpp ShapeRenderer.h
+	PlantDistributor.cpp PlantDistributor.h
 	Axis.h
 	Plane.h
 	WorldRenderer.h WorldRenderer.cpp

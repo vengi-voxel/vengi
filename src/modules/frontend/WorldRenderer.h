@@ -97,7 +97,6 @@ protected:
 	video::GLMeshData createInstancedMesh(const video::Shader& shader, const voxel::Mesh &mesh, int amount);
 	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData);
 	void handleMeshQueue(const video::Shader& shader);
-	void distributePlants(int amount, video::GLMeshData& meshData);
 	void fillPlantPositionsFromMeshes();
 
 	int getDistanceSquare(const glm::ivec3& pos) const;
