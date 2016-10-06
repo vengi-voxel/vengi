@@ -133,12 +133,7 @@ bool Frustum::isVisible(const glm::vec3& mins, const glm::vec3& maxs) const {
 		pos.y = normal.y > 0.0f ? maxs.y : mins.y;
 		pos.z = normal.z > 0.0f ? maxs.z : mins.z;
 
-		float d = 0.0f;
-		d += pos.x * normal.x;
-		d += pos.y * normal.y;
-		d += pos.z * normal.z;
-		d += p.dist();
-		if (d < 0.0f) {
+		if (p.isBackSide(pos)) {
 			return false;
 		}
 	}
