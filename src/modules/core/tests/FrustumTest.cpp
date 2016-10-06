@@ -22,6 +22,7 @@ public:
 
 	void SetUp() override {
 		core::AbstractTest::SetUp();
+		/* Looking from origin to 1,0,0 (right) */
 		_view = glm::lookAt(glm::vec3(0.0f), glm::right, glm::up);
 		_projection = glm::perspective(glm::radians(45.0f), 0.75f, _nearPlane, _farPlane);
 		updateVP(_view, _projection);
@@ -63,22 +64,24 @@ TEST_F(FrustumTest, testCullingSphere) {
 	ASSERT_TRUE(_frustum.isVisible(glm::right * _farPlane / 2.0f + _nearPlane, 1.0f));
 }
 
-/**
- * Looking from origin to 1,0,0 (right) and checking soem aabbs to be culled
- */
-TEST_F(FrustumTest, testCullingAABB) {
-	{
-		core::AABB<float> aabb(glm::vec3(0.0f), glm::vec3(100.0f));
-		ASSERT_TRUE(_frustum.isVisible(aabb.getLowerCorner(), aabb.getUpperCorner())) << "mins(" <<
-				glm::to_string(aabb.getLowerCorner()) << "), maxs(" << glm::to_string(aabb.getUpperCorner()) << ") " << " is not visible but should be: frustummins(" <<
-				glm::to_string(_aabb.getLowerCorner()) << "), frustummaxs(" << glm::to_string(_aabb.getUpperCorner()) << ")";
-	}
-	{
-		core::AABB<float> aabb(glm::vec3(-200.0f), glm::vec3(-100.0f));
-		ASSERT_FALSE(_frustum.isVisible(aabb.getLowerCorner(), aabb.getUpperCorner())) << "mins(" <<
-				glm::to_string(aabb.getLowerCorner()) << "), maxs(" << glm::to_string(aabb.getUpperCorner()) << ") " << " is not visible but should be: frustummins(" <<
-				glm::to_string(_aabb.getLowerCorner()) << "), frustummaxs(" << glm::to_string(_aabb.getUpperCorner()) << ")";
-	}
+TEST_F(FrustumTest, testCullingAABBPositive) {
+	const core::AABB<float> aabb(glm::vec3(0.0f), glm::vec3(100.0f));
+	SCOPED_TRACE(core::string::format("mins(%s), maxs(%s), frustummins(%s), frustummaxs(%s)",
+			glm::to_string(aabb.getLowerCorner()).c_str(),
+			glm::to_string(aabb.getUpperCorner()).c_str(),
+			glm::to_string(_aabb.getLowerCorner()).c_str(),
+			glm::to_string(_aabb.getUpperCorner()).c_str()));
+	ASSERT_TRUE(_frustum.isVisible(aabb.getLowerCorner(), aabb.getUpperCorner())) << "AABB is not visible but should be";
+}
+
+TEST_F(FrustumTest, testCullingAABBNegative) {
+	const core::AABB<float> aabb(glm::vec3(-200.0f), glm::vec3(-100.0f));
+	SCOPED_TRACE(core::string::format("mins(%s), maxs(%s), frustummins(%s), frustummaxs(%s)",
+			glm::to_string(aabb.getLowerCorner()).c_str(),
+			glm::to_string(aabb.getUpperCorner()).c_str(),
+			glm::to_string(_aabb.getLowerCorner()).c_str(),
+			glm::to_string(_aabb.getUpperCorner()).c_str()));
+	ASSERT_FALSE(_frustum.isVisible(aabb.getLowerCorner(), aabb.getUpperCorner())) << "AABB is not visible but should be";
 }
 
 TEST_F(FrustumTest, testDistanceToPlane) {
@@ -95,9 +98,6 @@ TEST_F(FrustumTest, testDistanceToPlane) {
 	}
 }
 
-/**
- * Looking from origin to 1,0,0 (right) and checking some coordinates to be culled
- */
 TEST_F(FrustumTest, testCullingPoint) {
 	SCOPED_TRACE(core::string::format(
 			"mins(%s), maxs(%s)",
