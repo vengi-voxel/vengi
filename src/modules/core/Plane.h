@@ -80,15 +80,15 @@ inline const glm::vec3& Plane::norm() const {
 }
 
 inline float Plane::distanceToPlane(const glm::vec3& point) const {
-	return glm::dot(norm(), point) - dist();
+	return glm::dot(norm(), point) + dist();
 }
 
 inline bool Plane::isBackSide(const glm::vec3& point) const {
-	return distanceToPlane(point) < -glm::epsilon<float>();
+	return distanceToPlane(point) < 0.0f;
 }
 
 inline bool Plane::isFrontSide(const glm::vec3& point) const {
-	return distanceToPlane(point) > glm::epsilon<float>();
+	return distanceToPlane(point) > 0.0f;
 }
 
 inline float Plane::dist() const {

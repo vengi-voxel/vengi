@@ -179,7 +179,7 @@ FrustumResult Frustum::test(const glm::vec3& mins, const glm::vec3& maxs) const 
 		positiveVertex.y = normal.y > 0.0f ? maxs.y : mins.y;
 		positiveVertex.z = normal.z > 0.0f ? maxs.z : mins.z;
 
-		if (p.distanceToPlane(positiveVertex) < 0.0f) {
+		if (p.isBackSide(positiveVertex)) {
 			return FrustumResult::Outside;
 		}
 
@@ -187,7 +187,7 @@ FrustumResult Frustum::test(const glm::vec3& mins, const glm::vec3& maxs) const 
 		negativeVertex.x = normal.x > 0.0f ? mins.x : maxs.x;
 		negativeVertex.y = normal.y > 0.0f ? mins.y : maxs.y;
 		negativeVertex.z = normal.z > 0.0f ? mins.z : maxs.z;
-		if (p.distanceToPlane(negativeVertex) < 0.0f) {
+		if (p.isBackSide(negativeVertex)) {
 			result = FrustumResult::Intersect;
 		}
 	}

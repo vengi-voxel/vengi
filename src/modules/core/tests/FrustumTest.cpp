@@ -84,18 +84,15 @@ TEST_F(FrustumTest, testCullingAABBNegative) {
 	ASSERT_FALSE(_frustum.isVisible(aabb.getLowerCorner(), aabb.getUpperCorner())) << "AABB is not visible but should be";
 }
 
-TEST_F(FrustumTest, testDistanceToPlane) {
-	// TODO: check these values whether they are correct or not, they were just taken from the function call - so this is not really a valid test.
-	// just a test that ensures that the results don't change in the future
-	const float distances[FRUSTUM_PLANES_MAX] = {
-			1.0f, 1.0f, 1.0f, 1.0f, 2.2004402f, -0.20044008
-	};
-	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
-		const Plane& plane = _frustum[i];
-		SCOPED_TRACE(core::string::format("frustum side: %u", i));
-		ASSERT_FLOAT_EQ(distances[i], plane.distanceToPlane(glm::right)) << glm::to_string(glm::right) << " is not visible but should be: mins(" <<
-				glm::to_string(_aabb.getLowerCorner()) << "), maxs(" << glm::to_string(_aabb.getUpperCorner()) << ")";
-	}
+TEST_F(FrustumTest, testInsideOutsidePoint) {
+	ASSERT_EQ(core::FrustumResult::Inside, _frustum.test(glm::vec3(_nearPlane, 0.0, 0.0)));
+	ASSERT_EQ(core::FrustumResult::Outside, _frustum.test(glm::vec3(0.0, 0.0, 0.0)));
+}
+
+TEST_F(FrustumTest, testIntersectionInsideOutsideAABB) {
+	ASSERT_EQ(core::FrustumResult::Inside, _frustum.test(glm::vec3(_farPlane / 2.0f - 0.5f, -0.5, -0.5), glm::vec3(_farPlane / 2.0f + 0.5f, 0.5, 0.5)));
+	ASSERT_EQ(core::FrustumResult::Outside, _frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(-0.5, -0.5, -0.5)));
+	ASSERT_EQ(core::FrustumResult::Intersect, _frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 }
 
 TEST_F(FrustumTest, testCullingPoint) {
