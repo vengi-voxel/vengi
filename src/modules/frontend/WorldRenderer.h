@@ -51,6 +51,10 @@ protected:
 	GLMeshDatas _meshDataWater;
 	GLMeshDatas _meshDataPlant;
 
+	GLMeshesVisible _visibleOpaque;
+	GLMeshesVisible _visiblePlant;
+	GLMeshesVisible _visibleWater;
+
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
 

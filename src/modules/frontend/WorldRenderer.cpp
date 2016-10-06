@@ -188,6 +188,7 @@ bool WorldRenderer::checkShaders() const {
 }
 
 void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const video::Camera& camera) const {
+	visible.clear();
 	int meshesCount = 0;
 	int visibleCount = 0;
 	const float cullingThreshold = _world->getMeshSize();
@@ -341,12 +342,9 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	_sunLight.update(_deltaFrame, camera);
 
-	GLMeshesVisible opaque;
-	GLMeshesVisible plant;
-	GLMeshesVisible water;
-	cull(_meshDataOpaque, opaque, camera);
-	cull(_meshDataPlant, plant, camera);
-	cull(_meshDataWater, water, camera);
+	cull(_meshDataOpaque, _visibleOpaque, camera);
+	cull(_meshDataPlant, _visiblePlant, camera);
+	cull(_meshDataWater, _visibleWater, camera);
 
 	float planes[8];
 	const bool shadowMap = _shadowMap->boolVal();
@@ -368,8 +366,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_depthBuffer.bind(true, i);
 			// put shadow acne into the dark
 			glCullFace(GL_FRONT);
-			drawCallsWorld += renderWorldMeshes(_shadowMapShader,          camera, opaque, vertices);
-			drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, plant,  vertices);
+			drawCallsWorld += renderWorldMeshes(_shadowMapShader,          camera, _visibleOpaque, vertices);
+			drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, _visiblePlant,  vertices);
 			glCullFace(GL_BACK);
 			_depthBuffer.unbind();
 			glEnable(GL_BLEND);
@@ -386,9 +384,9 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	drawCallsWorld += renderWorldMeshes(_worldShader, camera, opaque, vertices);
-	drawCallsWorld += renderWorldMeshes(_plantShader, camera, plant,  vertices);
-	drawCallsWorld += renderWorldMeshes(_waterShader, camera, water,  vertices);
+	drawCallsWorld += renderWorldMeshes(_worldShader, camera, _visibleOpaque, vertices);
+	drawCallsWorld += renderWorldMeshes(_plantShader, camera, _visiblePlant,  vertices);
+	drawCallsWorld += renderWorldMeshes(_waterShader, camera, _visibleWater,  vertices);
 
 	_colorTexture->unbind();
 
