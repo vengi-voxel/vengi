@@ -49,8 +49,13 @@ TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 	camera.lookAt(glm::vec3(0.0), glm::forward);
 	camera.update(0l);
 	const core::Frustum& frustum = camera.frustum();
-	ASSERT_EQ(core::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.1, 0.0)));
-	ASSERT_EQ(core::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.1, 0.0)));
+	SCOPED_TRACE(core::string::format("mins(%s), maxs(%s), frustummins(%s), frustummaxs(%s)",
+			glm::to_string(camera.aabb().getLowerCorner()).c_str(),
+			glm::to_string(camera.aabb().getUpperCorner()).c_str(),
+			glm::to_string(frustum.aabb().getLowerCorner()).c_str(),
+			glm::to_string(frustum.aabb().getUpperCorner()).c_str()));
+	ASSERT_EQ(core::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
+	ASSERT_EQ(core::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
 	ASSERT_EQ(core::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 }
 
