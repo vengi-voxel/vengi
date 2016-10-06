@@ -21,7 +21,7 @@ core::AppState TestCamera::onInit() {
 	core_assert(ents - rows * cols == 0);
 	for (int row = 0; row < rows; ++row) {
 		for (int col = 0; col < cols; ++col) {
-			const glm::vec3 p(deltaX + distance * col, deltaY + distance * row, nearPlane + 1.0f);
+			const glm::vec3 p(deltaX + distance * col, deltaY + distance * row, 50.0f);
 			_entities[row * cols + col].setPosition(p).init();
 		}
 	}

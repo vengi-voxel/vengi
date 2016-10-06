@@ -101,7 +101,8 @@ void TestMeshApp::doRender() {
 		_meshShader.setDiffuseColor(_diffuseColor);
 		_meshShader.setDepthsize(glm::vec2(_sunLight.dimension()));
 		_meshShader.setLight(_sunLight.viewProjectionMatrix(_camera));
-		_meshShader.setShadowmap({1, 2});
+		_meshShader.setShadowmap1(1);
+		_meshShader.setShadowmap2(2);
 
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
