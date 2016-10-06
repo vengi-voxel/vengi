@@ -28,6 +28,8 @@ void main(void) {
 
 #if cl_shadowmap == 1
 	v_lightspacepos = u_light * mpos;
+	v_texcoord1     = u_shadowmapmatrix1 * v_lightspacepos;
+	v_texcoord2     = u_shadowmapmatrix2 * v_lightspacepos;
 #endif
 	// TODO: does this make sense without the projection applied. Afaik
 	// the w components division here is to correct perspective transforms

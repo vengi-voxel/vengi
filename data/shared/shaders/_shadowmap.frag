@@ -7,11 +7,15 @@
 // 2 depth attachment with depth comparision (sampler2DShadow is needed)
 
 #if cl_depthmapformat == 2
-uniform sampler2DShadow u_shadowmap[2];
+uniform sampler2DShadow u_shadowmap1;
+uniform sampler2DShadow u_shadowmap2;
 #else
-uniform sampler2D u_shadowmap[2];
+uniform sampler2D u_shadowmap1;
+uniform sampler2D u_shadowmap2;
 #endif
 $in vec4 v_lightspacepos;
+$in vec4 v_texcoord1;
+$in vec4 v_texcoord2;
 uniform vec2 u_depthsize;
 
 vec2 calculateShadowUV() {
@@ -35,9 +39,16 @@ float calculateShadow(float ndotl) {
 	}
 	return visibility;
 #else
+	vec2 texcoord1 = v_texcoord1.xy / v_texcoord1.w;
+	vec2 texcoord2 = v_texcoord2.xy / v_texcoord2.w;
+	bool selection0 = all(lessThan(texcoord1, vec2(0.99))) && all(greaterThan(texcoord1, vec2(0.01)));
+	bool selection1 = all(lessThan(texcoord2, vec2(0.99))) && all(greaterThan(texcoord2, vec2(0.01)));
 	vec2 smUV = calculateShadowUV();
 	float depth = v_lightspacepos.z;
-	return sampleShadowPCF(u_shadowmap[0], smUV, u_depthsize, depth, ndotl);
+	if (selection1) {
+		return sampleShadowPCF(u_shadowmap2, smUV, u_depthsize, depth, ndotl);
+	}
+	return sampleShadowPCF(u_shadowmap1, smUV, u_depthsize, depth, ndotl);
 #endif
 }
 
