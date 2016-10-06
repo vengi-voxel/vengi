@@ -67,12 +67,11 @@ inline void Plane::set(const glm::vec4& data) {
 
 inline void Plane::set(const glm::vec3& norm, float dist) {
 	_norm = norm;
-	_dist = dist;
+	_dist = -dist;
 }
 
 inline void Plane::set(const glm::vec3& norm, const glm::vec3& point) {
 	set(norm, glm::dot(norm, point));
-	normalize();
 }
 
 inline const glm::vec3& Plane::norm() const {

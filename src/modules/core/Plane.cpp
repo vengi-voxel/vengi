@@ -6,9 +6,12 @@ Plane::Plane()  {
 }
 
 void Plane::normalize() {
-	const float scale = 1.0f / glm::length(norm());
-	_norm *= scale;
-	_dist *= scale;
+	const float length = glm::length(norm());
+	if (length > 0.0f) {
+		const float scale = 1.0f / length;
+		_norm *= scale;
+		_dist *= scale;
+	}
 }
 
 void Plane::set(const glm::vec3& point1, const glm::vec3& point2, const glm::vec3& point3) {

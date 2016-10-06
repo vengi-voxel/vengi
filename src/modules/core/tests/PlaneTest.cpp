@@ -12,17 +12,24 @@ class PlaneTest : public core::AbstractTest {
 
 TEST_F(PlaneTest, testOrigin) {
 	const Plane p(glm::up, glm::vec3(0.0f));
-	ASSERT_TRUE(p.isFrontSide(glm::up)) << p.distanceToPlane(glm::up);
-	ASSERT_TRUE(p.isBackSide(glm::down)) << p.distanceToPlane(glm::down);
+	EXPECT_TRUE(p.isFrontSide(glm::up)) << p.distanceToPlane(glm::up);
+	EXPECT_TRUE(p.isBackSide(glm::down)) << p.distanceToPlane(glm::down);
 }
 
-TEST_F(PlaneTest, testWithDistance) {
+TEST_F(PlaneTest, testWithNormalUpwards) {
 	const float y = 10.0;
-	const Plane p(glm::up, glm::vec3(0.0, y, 0.0f));
-	const glm::vec3 pos1 = glm::up * y + 0.01f;
-	const glm::vec3 pos2 = glm::up * y - 0.01f;
-	ASSERT_TRUE(p.isFrontSide(pos1)) << p.distanceToPlane(pos1);
-	ASSERT_TRUE(p.isBackSide(pos2)) << p.distanceToPlane(pos2);
+	const Plane p(glm::up, glm::vec3(0.0f, y, 0.0f));
+	EXPECT_TRUE(p.isBackSide(glm::up));
+	EXPECT_TRUE(p.isBackSide(glm::vec3(0.0f, y - 0.1f, 0.0f)));
+	EXPECT_TRUE(p.isFrontSide(glm::vec3(0.0f, y + 0.1f, 0.0f)));
+}
+
+TEST_F(PlaneTest, testWithNormalLeft) {
+	const float x = 10.0;
+	const Plane p(glm::left, glm::vec3(x, 0.0f, 0.0f));
+	EXPECT_TRUE(p.isFrontSide(glm::zero<glm::vec3>()));
+	EXPECT_TRUE(p.isBackSide(glm::vec3(x + 0.1f, 0.0f, 0.0f)));
+	EXPECT_TRUE(p.isFrontSide(glm::vec3(x - 0.1f, 0.0f, 0.0f)));
 }
 
 }
