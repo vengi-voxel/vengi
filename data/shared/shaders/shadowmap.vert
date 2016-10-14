@@ -10,9 +10,7 @@ $in vec3 a_offset;
 
 uniform mat4 u_light;
 uniform mat4 u_model;
-#if cl_depthmapformat == 0
 $out vec2 o_projZW;
-#endif
 
 void main()
 {
@@ -22,7 +20,5 @@ void main()
 #endif
 	vec4 pos = u_light * worldpos;
 	gl_Position = pos;
-#if cl_depthmapformat == 0
 	o_projZW = pos.zw;
-#endif
 }

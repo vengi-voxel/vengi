@@ -27,8 +27,7 @@ core::AppState TestMeshApp::onInit() {
 	});
 
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
-	const core::VarPtr& depthMapFormat = core::Var::get(cfg::ClientDepthMapFormat, (int)video::DepthBufferMode::RGBA, core::CV_SHADER | core::CV_READONLY);
-	_sunLight.init(sunDirection, dimension(), (video::DepthBufferMode)depthMapFormat->intVal());
+	_sunLight.init(sunDirection, dimension());
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 	_camera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -57,7 +56,7 @@ core::AppState TestMeshApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
-	if (!_depthBuffer.init(_dimension, (video::DepthBufferMode)depthMapFormat->intVal(), maxDepthBuffers)) {
+	if (!_depthBuffer.init(_dimension, video::DepthBufferMode::RGBA, maxDepthBuffers)) {
 		Log::error("Failed to init the depthbuffer");
 		return core::AppState::Cleanup;
 	}

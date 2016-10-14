@@ -11,16 +11,15 @@ class SunLight {
 private:
 	class SunCamera : public Camera {
 	public:
-		void updateSun(long deltaFrame, const core::RectFloat& bbox, video::DepthBufferMode mode);
+		void updateSun(long deltaFrame, const core::RectFloat& bbox);
 	};
 
 	SunCamera _sunCamera;
-	video::DepthBufferMode _mode = video::DepthBufferMode::RGBA;
 
 public:
 	SunLight();
 
-	void init(const glm::vec3& sunDirection, const glm::ivec2& dimension, video::DepthBufferMode mode);
+	void init(const glm::vec3& sunDirection, const glm::ivec2& dimension);
 
 	const Camera& camera() const;
 
