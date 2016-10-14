@@ -8,7 +8,7 @@
  *
  * Only store values between 0.0 and 1.
  */
-vec4 encodeDepth(float floatValue) {
+vec4 floatToRGBA(float floatValue) {
 	const vec4 shift = vec4(256 * 256 * 256, 256 * 256, 256, 1.0);
 	const vec4 mask = vec4(0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
 	vec4 comp = fract(floatValue * shift);
@@ -16,7 +16,7 @@ vec4 encodeDepth(float floatValue) {
 	return comp;
 }
 
-float decodeDepth(vec4 rgba) {
+float RGBAToFloat(vec4 rgba) {
 	const vec4 shift = vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
 	return dot(rgba, shift);
 }

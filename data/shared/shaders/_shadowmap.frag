@@ -1,4 +1,4 @@
-#include "_shadowsampler.frag"
+#include "_common.frag"
 
 #if cl_shadowmap == 1
 
@@ -7,7 +7,7 @@
  * http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping
  */
 float sampleShadow(sampler2D shadowMap, vec2 uv, float compare, float ndotl) {
-	float depth = decodeDepth($texture2D(shadowMap, uv));
+	float depth = RGBAToFloat($texture2D(shadowMap, uv));
 	// shadow acne bias
 	float bias = clamp(0.001 * tan(acos(ndotl)), 0, 0.01);
 	depth += bias;
