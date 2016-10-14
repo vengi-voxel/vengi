@@ -74,7 +74,7 @@ std::string File::getFileName() const {
 }
 
 std::string File::getExtension() const {
-	const char *ext = ::strrchr(getName().c_str(), '.');
+	const char *ext = SDL_strrchr(getName().c_str(), '.');
 	if (ext == nullptr) {
 		return "";
 	}
