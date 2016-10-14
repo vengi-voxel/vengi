@@ -40,6 +40,14 @@ public:
 	}
 
 	virtual ~ITreeLoader() {
+		_error = "";
+		_treeMap.clear();
+	}
+
+	void shutdown() {
+		ScopedWriteLock scopedLock(_lock);
+		_error = "";
+		_treeMap.clear();
 	}
 
 	inline const IAIFactory& getAIFactory() const {
@@ -112,7 +120,7 @@ inline void ITreeLoader::setError(const char* msg, ...) {
 	std::vsnprintf(buf, sizeof(buf), msg, args);
 	va_end(args);
 	if (buf[0] != '\0') {
-		ai::Log::debug("%s", buf);
+		ai_log_debug("%s", buf);
 	}
 	ScopedWriteLock scopedLock(_lock);
 	_error = buf;

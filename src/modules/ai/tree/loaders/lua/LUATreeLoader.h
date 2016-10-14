@@ -118,7 +118,6 @@ private:
 		}
 	};
 
-
 	class LUATree {
 	private:
 		std::string _name;
@@ -172,8 +171,7 @@ private:
 	static int luaMain_CreateTree(lua_State * l) {
 		LUATreeLoader *ctx = luaGetContext(l);
 		const std::string name = luaL_checkstring(l, 1);
-		LUATree** udata = lua::LUA::newUserdata<LUATree>(l, "Tree");
-		*udata = new LUATree(name, ctx);
+		lua::LUA::newUserdata<LUATree>(l, "Tree", new LUATree(name, ctx));
 		return 1;
 	}
 
@@ -223,16 +221,13 @@ private:
 		TreeNodeParser parser(ctx->getAIFactory(), id);
 		const TreeNodePtr& node = parser.getTreeNode(name);
 		if (!node) {
-			lua::LUA::returnError(l, "Could not create a node for " + id);
-			return 0;
+			return lua::LUA::returnError(l, "Could not create a node for " + id);
 		}
 
-		LUANode** udata = lua::LUA::newUserdata<LUANode>(l, "Node");
-		*udata = new LUANode(node, ctx, ctx->getAIFactory());
-		if (!ctx->setRoot(*udata)) {
+		LUANode* udata = lua::LUA::newUserdata<LUANode>(l, "Node", new LUANode(node, ctx, ctx->getAIFactory()));
+		if (!ctx->setRoot(udata)) {
 			LUATreeLoader *loader = luaGetContext(l);
-			lua::LUA::returnError(l, loader->getError());
-			return 0;
+			return lua::LUA::returnError(l, loader->getError());
 		}
 		return 1;
 	}
@@ -241,12 +236,11 @@ private:
 		LUANode *node = luaGetNodeContext(l, 1);
 		const std::string id = luaL_checkstring(l, 2);
 		const std::string name = luaL_checkstring(l, 3);
-		LUANode** udata = lua::LUA::newUserdata<LUANode>(l, "Node");
 
 		TreeNodeFactoryContext factoryCtx(name, "", True::get());
-		*udata = node->addChild(id, factoryCtx);
-		if (*udata == nullptr) {
-			lua::LUA::returnError(l, "Could not create a node for " + id);
+		LUANode* udata = lua::LUA::newUserdata<LUANode>(l, "Node", node->addChild(id, factoryCtx));
+		if (udata == nullptr) {
+			return lua::LUA::returnError(l, "Could not create a node for " + id);
 		}
 		return 1;
 	}
@@ -255,17 +249,15 @@ private:
 		LUATreeLoader *ctx = luaGetContext(l);
 		LUANode *node = luaGetNodeContext(l, 1);
 		const std::string conditionExpression = luaL_checkstring(l, 2);
-		LUACondition** udata = lua::LUA::newUserdata<LUACondition>(l, "Condition");
 
 		ConditionParser parser(ctx->getAIFactory(), conditionExpression);
 		const ConditionPtr& condition = parser.getCondition();
 		if (!condition) {
-			lua::LUA::returnError(l, "Could not create a condition for " + conditionExpression + ": " + parser.getError());
-			return 0;
+			return lua::LUA::returnError(l, "Could not create a condition for " + conditionExpression + ": " + parser.getError());
 		}
 
-		*udata = new LUACondition(condition);
-		node->setCondition(*udata);
+		LUACondition* udata = lua::LUA::newUserdata<LUACondition>(l, "Condition", new LUACondition(condition));
+		node->setCondition(udata);
 		return 1;
 	}
 
@@ -273,12 +265,12 @@ public:
 	LUATreeLoader(const IAIFactory& aiFactory) :
 			ITreeLoader(aiFactory) {
 	}
+
 	/**
 	 * @brief this will initialize the loader once with all the defined behaviours from the given lua string.
 	 */
 	bool init(const std::string& luaString) {
-		resetError();
-		_treeMap.clear();
+		shutdown();
 
 		lua::LUA lua;
 		luaL_Reg createTree = { "createTree", luaMain_CreateTree };
@@ -312,7 +304,12 @@ public:
 			return false;
 		}
 
-		if (_treeMap.empty()) {
+		bool empty;
+		{
+			ScopedReadLock scopedLock(_lock);
+			empty = _treeMap.empty();
+		}
+		if (empty) {
 			setError("No behaviour trees specified");
 			return false;
 		}

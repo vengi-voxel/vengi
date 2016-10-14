@@ -3,14 +3,14 @@
  */
 #pragma once
 
+#include "common/Types.h"
+#include "common/MemoryAllocator.h"
+#include "conditions/ICondition.h"
+#include "conditions/True.h"
 #include <vector>
 #include <string>
 #include <memory>
 #include <algorithm>
-#include "common/MemoryAllocator.h"
-#include "common/Types.h"
-#include "conditions/ICondition.h"
-#include "conditions/True.h"
 
 namespace ai {
 

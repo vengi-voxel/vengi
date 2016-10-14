@@ -9,22 +9,37 @@
 #include <cassert>
 #include <cstdio>
 
+/**
+ * @brief Logging macro to provide your own loggers
+ */
 #ifndef ai_log
 #define ai_log(...) ai::Log::info(__VA_ARGS__)
 #endif
 
+/**
+ * @brief Logging macro to provide your own loggers
+ */
 #ifndef ai_log_error
 #define ai_log_error(...) ai::Log::error(__VA_ARGS__)
 #endif
 
+/**
+ * @brief Logging macro to provide your own loggers
+ */
 #ifndef ai_log_warn
 #define ai_log_warn(...) ai::Log::warn(__VA_ARGS__)
 #endif
 
+/**
+ * @brief Logging macro to provide your own loggers
+ */
 #ifndef ai_log_debug
 #define ai_log_debug(...) ai::Log::debug(__VA_ARGS__)
 #endif
 
+/**
+ * @brief Logging macro to provide your own loggers
+ */
 #ifndef ai_log_trace
 #define ai_log_trace(...) ai::Log::trace(__VA_ARGS__)
 #endif
@@ -33,19 +48,26 @@
 #define __PRETTY_FUNCTION__ __FUNCSIG__
 #endif
 
+/**
+ * @brief Provide your own assert - this is also executed in non DEBUG mode
+ */
 #ifndef ai_assert_always
 	#if (__clang_analyzer__)
 		#define ai_assert_always(condition, ...) assert(condition)
 	#else
 		#define ai_assert_always(condition, ...) \
 			if ( !(condition) ) { \
-				ai::Log::error(__VA_ARGS__); \
-				ai::Log::error("%s:%i", __FILE__, __LINE__); \
+				ai_log_error(__VA_ARGS__); \
+				ai_log_error("%s:%i", __FILE__, __LINE__); \
 				assert(condition); \
 			}
 	#endif
 #endif
 
+/**
+ * @brief Provide your own assert - this is only executed in DEBUG mode
+ * @see ai_assert_always
+ */
 #ifndef ai_assert
 	#ifdef DEBUG
 		#define ai_assert ai_assert_always
@@ -54,6 +76,10 @@
 	#endif
 #endif
 
+/**
+ * @brief If you compile with RTTI activated, you get additional sanity checks when using this
+ * macro to perform your @c static_cast calls
+ */
 template<class T, class S>
 inline T ai_assert_cast(const S object) {
 #ifdef __cpp_rtti
@@ -65,8 +91,19 @@ inline T ai_assert_cast(const S object) {
 #define AI_STRINGIFY_INTERNAL(x) #x
 #define AI_STRINGIFY(x) AI_STRINGIFY_INTERNAL(x)
 
+/**
+ * @brief If you want to use exceptions in your code and want them to be catched by the library
+ * just set this to 1
+ */
 #ifndef AI_EXCEPTIONS
 #define AI_EXCEPTIONS 0
+#endif
+
+/**
+ * @brief Enable lua sanity checks by default
+ */
+#ifndef AI_LUA_SANTITY
+#define AI_LUA_SANTITY 1
 #endif
 
 #ifdef _WIN32
@@ -116,6 +153,9 @@ namespace ai {
  */
 typedef int CharacterId;
 
+/**
+ * @brief ICharacter attributes for the remote \ref debugger
+ */
 typedef std::unordered_map<std::string, std::string> CharacterAttributes;
 
 }

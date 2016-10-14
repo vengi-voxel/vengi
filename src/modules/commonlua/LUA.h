@@ -109,9 +109,9 @@ public:
 	/**
 	 * Aborts the lua execution with the given error message
 	 */
-	static void returnError(lua_State *L, const std::string& error) {
+	static int returnError(lua_State *L, const std::string& error) {
 		Log::error("LUA error: %s", error.c_str());
-		luaL_error(L, "%s", error.c_str());
+		return luaL_error(L, "%s", error.c_str());
 	}
 
 	void global(const std::string& name);
