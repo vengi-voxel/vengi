@@ -268,8 +268,8 @@ extern "C" {
  *  this is problematic. This functionality can be disabled by setting this
  *  hint.
  *
- *  As of SDL 2.0.4, SDL_EnableScreenSaver and SDL_DisableScreenSaver accomplish
- *  the same thing on iOS. They should be preferred over this hint.
+ *  As of SDL 2.0.4, SDL_EnableScreenSaver() and SDL_DisableScreenSaver()
+ *  accomplish the same thing on iOS. They should be preferred over this hint.
  *
  *  This variable can be set to the following values:
  *    "0"       - Enable idle timer
@@ -689,6 +689,17 @@ extern "C" {
 #define SDL_HINT_BMP_SAVE_LEGACY_FORMAT "SDL_BMP_SAVE_LEGACY_FORMAT"
 
 /**
+ * \brief Tell SDL not to name threads on Windows.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - SDL will raise the 0x406D1388 Exception to name threads.
+ *               This is the default behavior of SDL <= 2.0.4. (default)
+ *   "1"       - SDL will not raise this exception, and threads will be unnamed.
+ *               For .NET languages this is required when running under a debugger.
+ */
+#define SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING "SDL_WINDOWS_DISABLE_THREAD_NAMING"
+
+/**
  *  \brief  An enumeration of hint priorities
  */
 typedef enum
@@ -726,6 +737,13 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
  *  \return The string value of a hint variable.
  */
 extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
+
+/**
+ *  \brief Get a hint
+ *
+ *  \return The boolean value of a hint variable.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool default_value);
 
 /**
  *  \brief Add a function to watch a particular hint

@@ -169,7 +169,10 @@ Wayland_CreateDevice(int devindex)
     device->CreateWindow = Wayland_CreateWindow;
     device->ShowWindow = Wayland_ShowWindow;
     device->SetWindowFullscreen = Wayland_SetWindowFullscreen;
+    device->MaximizeWindow = Wayland_MaximizeWindow;
+    device->RestoreWindow = Wayland_RestoreWindow;
     device->SetWindowSize = Wayland_SetWindowSize;
+    device->SetWindowTitle = Wayland_SetWindowTitle;
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
 
@@ -337,6 +340,11 @@ Wayland_VideoInit(_THIS)
 
     _this->driverdata = data;
 
+    data->xkb_context = WAYLAND_xkb_context_new(0);
+    if (!data->xkb_context) {
+        return SDL_SetError("Failed to create XKB context");
+    }
+
     data->display = WAYLAND_wl_display_connect(NULL);
     if (data->display == NULL) {
         return SDL_SetError("Failed to connect to a Wayland display");
@@ -354,11 +362,6 @@ Wayland_VideoInit(_THIS)
 
     // Second roundtrip to receive all output events.
     WAYLAND_wl_display_roundtrip(data->display);
-
-    data->xkb_context = WAYLAND_xkb_context_new(0);
-    if (!data->xkb_context) {
-        return SDL_SetError("Failed to create XKB context");
-    }
 
     Wayland_InitMouse();
 

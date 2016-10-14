@@ -380,8 +380,8 @@ X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
         X11_XSetICFocus(data->ic);
     }
 #endif
-#ifdef SDL_USE_IBUS
-    SDL_IBus_SetFocus(SDL_TRUE);
+#ifdef SDL_USE_IME
+    SDL_IME_SetFocus(SDL_TRUE);
 #endif
 }
 
@@ -403,8 +403,8 @@ X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
         X11_XUnsetICFocus(data->ic);
     }
 #endif
-#ifdef SDL_USE_IBUS
-    SDL_IBus_SetFocus(SDL_FALSE);
+#ifdef SDL_USE_IME
+    SDL_IME_SetFocus(SDL_FALSE);
 #endif
 }
 
@@ -536,13 +536,18 @@ static void
 X11_DispatchEvent(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
-    Display *display = videodata->display;
+    Display *display;
     SDL_WindowData *data;
     XEvent xevent;
     int orig_event_type;
     KeyCode orig_keycode;
     XClientMessageEvent m;
     int i;
+
+    if (!videodata) {
+        return;
+    }
+    display = videodata->display;
 
     SDL_zero(xevent);           /* valgrind fix. --ryan. */
     X11_XNextEvent(display, &xevent);
@@ -761,11 +766,7 @@ X11_DispatchEvent(_THIS)
             if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
                 int min_keycode, max_keycode;
                 X11_XDisplayKeycodes(display, &min_keycode, &max_keycode);
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-                keysym = X11_XkbKeycodeToKeysym(display, keycode, 0, 0);
-#else
-                keysym = X11_XKeycodeToKeysym(display, keycode, 0);
-#endif
+                keysym = X11_KeyCodeToSym(_this, keycode, xevent.xkey.state >> 13);
                 fprintf(stderr,
                         "The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL mailing list <sdl@libsdl.org> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
                         keycode, keycode - min_keycode, keysym,
@@ -785,9 +786,9 @@ X11_DispatchEvent(_THIS)
             X11_XLookupString(&xevent.xkey, text, sizeof(text), &keysym, NULL);
 #endif
 
-#ifdef SDL_USE_IBUS
+#ifdef SDL_USE_IME
             if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-                handled_by_ime = SDL_IBus_ProcessKeyEvent(keysym, keycode);
+                handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode);
             }
 #endif
             if (!handled_by_ime) {
@@ -859,10 +860,10 @@ X11_DispatchEvent(_THIS)
                 xevent.xconfigure.y != data->last_xconfigure.y) {
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
                                     xevent.xconfigure.x, xevent.xconfigure.y);
-#ifdef SDL_USE_IBUS
+#ifdef SDL_USE_IME
                 if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-                    /* Update IBus candidate list position */
-                    SDL_IBus_UpdateTextRect(NULL);
+                    /* Update IME candidate list position */
+                    SDL_IME_UpdateTextRect(NULL);
                 }
 #endif
             }
@@ -1034,8 +1035,7 @@ X11_DispatchEvent(_THIS)
                 if (data->last_focus_event_time) {
                     const int X11_FOCUS_CLICK_TIMEOUT = 10;
                     if (!SDL_TICKS_PASSED(SDL_GetTicks(), data->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
-                        const char *hint = SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH);
-                        ignore_click = (!hint || *hint == '0');
+                        ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
                     }
                     data->last_focus_event_time = 0;
                 }
@@ -1407,9 +1407,9 @@ X11_PumpEvents(_THIS)
         X11_DispatchEvent(_this);
     }
 
-#ifdef SDL_USE_IBUS
+#ifdef SDL_USE_IME
     if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-        SDL_IBus_PumpEvents();
+        SDL_IME_PumpEvents();
     }
 #endif
 

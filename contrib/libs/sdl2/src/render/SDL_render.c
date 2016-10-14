@@ -234,12 +234,11 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
         return NULL;
     }
 
-    hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
-    if (hint) {
-        if (*hint == '0') {
-            flags &= ~SDL_RENDERER_PRESENTVSYNC;
-        } else {
+    if (SDL_GetHint(SDL_HINT_RENDER_VSYNC)) {
+        if (SDL_GetHintBoolean(SDL_HINT_RENDER_VSYNC, SDL_TRUE)) {
             flags |= SDL_RENDERER_PRESENTVSYNC;
+        } else {
+            flags &= ~SDL_RENDERER_PRESENTVSYNC;
         }
     }
 
@@ -1771,7 +1770,7 @@ SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_FRect frect;
     SDL_FPoint fcenter;
 
-    if (flip == SDL_FLIP_NONE && angle == 0) { /* fast path when we don't need rotation or flipping */
+    if (flip == SDL_FLIP_NONE && (int)(angle/360) == angle/360) { /* fast path when we don't need rotation or flipping */
         return SDL_RenderCopy(renderer, texture, srcrect, dstrect);
     }
 

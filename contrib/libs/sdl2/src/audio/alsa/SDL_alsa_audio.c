@@ -314,9 +314,20 @@ ALSA_PlayDevice(_THIS)
     swizzle_alsa_channels(this, this->hidden->mixbuf, frames_left);
 
     while ( frames_left > 0 && SDL_AtomicGet(&this->enabled) ) {
-        /* !!! FIXME: This works, but needs more testing before going live */
-        /* ALSA_snd_pcm_wait(this->hidden->pcm_handle, -1); */
-        int status = ALSA_snd_pcm_writei(this->hidden->pcm_handle,
+        int status;
+
+        /* This wait is a work-around for a hang when USB devices are
+           unplugged.  Normally it should not result in any waiting,
+           but in the case of a USB unplug, it serves as a way to
+           join the playback thread after the timeout occurs */
+        status = ALSA_snd_pcm_wait(this->hidden->pcm_handle, 1000);
+        if (status == 0) {
+            /*fprintf(stderr, "ALSA timeout waiting for available buffer space\n");*/
+            SDL_OpenedAudioDeviceDisconnected(this);
+            return;
+        }
+
+        status = ALSA_snd_pcm_writei(this->hidden->pcm_handle,
                                          sample_buf, frames_left);
 
         if (status < 0) {
@@ -402,7 +413,12 @@ static void
 ALSA_CloseDevice(_THIS)
 {
     if (this->hidden->pcm_handle) {
-        ALSA_snd_pcm_drain(this->hidden->pcm_handle);
+	/* Wait for the submitted audio to drain
+           ALSA_snd_pcm_drop() can hang, so don't use that.
+         */
+        Uint32 delay = ((this->spec.samples * 1000) / this->spec.freq) * 2;
+        SDL_Delay(delay);
+
         ALSA_snd_pcm_close(this->hidden->pcm_handle);
     }
     SDL_free(this->hidden->mixbuf);
@@ -768,16 +784,61 @@ ALSA_HotplugThread(void *arg)
             ALSA_Device *unseen = devices;
             ALSA_Device *seen = NULL;
             ALSA_Device *prev;
-            int i;
+            int i, j;
+            const char *match = NULL;
+            int bestmatch = 0xFFFF;
+            size_t match_len = 0;
+            int defaultdev = -1;
+            static const char * const prefixes[] = {
+                "hw:", "sysdefault:", "default:", NULL
+            };
 
+            /* Apparently there are several different ways that ALSA lists
+               actual hardware. It could be prefixed with "hw:" or "default:"
+               or "sysdefault:" and maybe others. Go through the list and see
+               if we can find a preferred prefix for the system. */
             for (i = 0; hints[i]; i++) {
                 char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
                 if (!name) {
                     continue;
                 }
 
+                /* full name, not a prefix */
+                if ((defaultdev == -1) && (SDL_strcmp(name, "default") == 0)) {
+                    defaultdev = i;
+                }
+
+                for (j = 0; prefixes[j]; j++) {
+                    const char *prefix = prefixes[j];
+                    const size_t prefixlen = SDL_strlen(prefix);
+                    if (SDL_strncmp(name, prefix, prefixlen) == 0) {
+                        if (j < bestmatch) {
+                            bestmatch = j;
+                            match = prefix;
+                            match_len = prefixlen;
+                        }
+                    }
+                }
+
+                free(name);
+            }
+
+            /* look through the list of device names to find matches */
+            for (i = 0; hints[i]; i++) {
+                char *name;
+
+                /* if we didn't find a device name prefix we like at all... */
+                if ((!match) && (defaultdev != i)) {
+                    continue;  /* ...skip anything that isn't the default device. */
+                }
+
+                name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
+                if (!name) {
+                    continue;
+                }
+
                 /* only want physical hardware interfaces */
-                if (SDL_strncmp(name, "hw:", 3) == 0) {
+                if (!match || (SDL_strncmp(name, match, match_len) == 0)) {
                     char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
                     const SDL_bool isoutput = (ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0);
                     const SDL_bool isinput = (ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0);

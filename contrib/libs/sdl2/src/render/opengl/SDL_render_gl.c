@@ -390,7 +390,6 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     GL_RenderData *data;
-    const char *hint;
     GLint value;
     Uint32 window_flags;
     int profile_mask = 0, major = 0, minor = 0;
@@ -528,8 +527,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     /* Check for shader support */
-    hint = SDL_GetHint(SDL_HINT_RENDER_OPENGL_SHADERS);
-    if (!hint || *hint != '0') {
+    if (SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_SHADERS, SDL_TRUE)) {
         data->shaders = GL_CreateShaderContext();
     }
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
@@ -594,7 +592,6 @@ static int
 GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
     SDL_GL_GetDrawableSize(renderer->window, w, h);
-
     return 0;
 }
 
@@ -1022,7 +1019,7 @@ GL_UpdateViewport(SDL_Renderer * renderer)
     } else {
         int w, h;
 
-        SDL_GetRendererOutputSize(renderer, &w, &h);
+        SDL_GL_GetDrawableSize(renderer->window, &w, &h);
         data->glViewport(renderer->viewport.x, (h - renderer->viewport.y - renderer->viewport.h),
                          renderer->viewport.w, renderer->viewport.h);
     }
@@ -1060,7 +1057,7 @@ GL_UpdateClipRect(SDL_Renderer * renderer)
         } else {
             int w, h;
 
-            SDL_GetRendererOutputSize(renderer, &w, &h);
+            SDL_GL_GetDrawableSize(renderer->window, &w, &h);
             data->glScissor(renderer->viewport.x + rect->x, h - renderer->viewport.y - rect->y - rect->h, rect->w, rect->h);
         }
     } else {
@@ -1422,7 +1419,7 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
-    Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ABGR8888;
+    Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ARGB8888;
     void *temp_pixels;
     int temp_pitch;
     GLint internalFormat;
@@ -1440,6 +1437,7 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     }
 
     if (!convert_format(data, temp_format, &internalFormat, &format, &type)) {
+        SDL_free(temp_pixels);
         return SDL_SetError("Texture format %s not supported by OpenGL",
                             SDL_GetPixelFormatName(temp_format));
     }

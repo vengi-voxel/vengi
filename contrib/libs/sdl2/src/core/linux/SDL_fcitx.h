@@ -18,19 +18,23 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef _SDL_fcitx_h
+#define _SDL_fcitx_h
+
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11keyboard_h
-#define _SDL_x11keyboard_h
+#include "SDL_stdinc.h"
+#include "SDL_rect.h"
 
-extern int X11_InitKeyboard(_THIS);
-extern void X11_UpdateKeymap(_THIS);
-extern void X11_QuitKeyboard(_THIS);
-extern void X11_StartTextInput(_THIS);
-extern void X11_StopTextInput(_THIS);
-extern void X11_SetTextInputRect(_THIS, SDL_Rect *rect);
-extern KeySym X11_KeyCodeToSym(_THIS, KeyCode, unsigned char group);
+extern SDL_bool SDL_Fcitx_Init(void);
+extern void SDL_Fcitx_Quit(void);
+extern void SDL_Fcitx_SetFocus(SDL_bool focused);
+extern void SDL_Fcitx_Reset(void);
+extern SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode);
+extern void SDL_Fcitx_UpdateTextRect(SDL_Rect *rect);
+extern void SDL_Fcitx_PumpEvents();
 
-#endif /* _SDL_x11keyboard_h */
+#endif /* _SDL_fcitx_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
