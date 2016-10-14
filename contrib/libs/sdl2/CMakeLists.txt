@@ -909,6 +909,8 @@ elseif(UNIX AND NOT APPLE)
       endif()
     endif()
 
+    check_include_file("fcitx/frontend.h" HAVE_FCITX_FRONTEND_H)
+
   endif()
 
   if(INPUT_TSLIB)
