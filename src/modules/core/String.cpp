@@ -28,21 +28,26 @@ static bool patternMatchMulti (const char* pattern, const char* text) {
 
 	for (;;) {
 		c = *p++;
-		if (c != '?' && c != '*')
+		if (c != '?' && c != '*') {
 			break;
-		if (*t++ == '\0' && c == '?')
+		}
+		if (*t++ == '\0' && c == '?') {
 			return false;
+		}
 	}
 
-	if (c == '\0')
+	if (c == '\0') {
 		return true;
+	}
 
-	const int l = strlen(t);
+	const int l = SDL_strlen(t);
 	for (int i = 0; i < l; ++i) {
-		if (*t == c && patternMatch(p - 1, t))
+		if (*t == c && patternMatch(p - 1, t)) {
 			return true;
-		if (*t++ == '\0')
+		}
+		if (*t++ == '\0') {
 			return false;
+		}
 	}
 	return false;
 }
@@ -57,13 +62,15 @@ static bool patternMatch(const char *pattern, const char *text) {
 		case '*':
 			return patternMatchMulti(p, t);
 		case '?':
-			if (*t == '\0')
+			if (*t == '\0') {
 				return false;
+			}
 			++t;
 			break;
 		default:
-			if (c != *t++)
+			if (c != *t++) {
 				return false;
+			}
 			break;
 		}
 	}
