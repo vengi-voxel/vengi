@@ -2,6 +2,8 @@
 #include "core/Command.h"
 #include "video/ScopedPolygonMode.h"
 
+#define MaxDepthBufferUniformName "u_farplanes"
+
 TestMeshApp::TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
 		Super(filesystem, eventBus), _colorShader(shader::ColorShader::getInstance()) {
 	setCameraMotion(true);
@@ -54,7 +56,7 @@ core::AppState TestMeshApp::onInit() {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
 	}
-	const int maxDepthBuffers = _meshShader.getUniformArraySize("u_shadowmap");
+	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
 	if (!_depthBuffer.init(_dimension, (video::DepthBufferMode)depthMapFormat->intVal(), maxDepthBuffers)) {
 		Log::error("Failed to init the depthbuffer");
 		return core::AppState::Cleanup;
@@ -106,7 +108,7 @@ void TestMeshApp::doRender() {
 
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
-			const int maxDepthBuffers = _meshShader.getUniformArraySize("u_shadowmap");
+			const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
 			for (int i = 0; i < maxDepthBuffers; ++i) {
 				glActiveTexture(GL_TEXTURE1 + i);
 				glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
