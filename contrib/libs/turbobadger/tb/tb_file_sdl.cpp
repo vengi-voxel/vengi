@@ -20,9 +20,9 @@ public:
 	virtual long Size()
 	{
 		long oldpos = SDL_RWtell(file);
-		SDL_RWseek(file, 0, SEEK_END);
+		SDL_RWseek(file, 0, RW_SEEK_END);
 		long num_bytes = SDL_RWtell(file);
-		SDL_RWseek(file, oldpos, SEEK_SET);
+		SDL_RWseek(file, oldpos, RW_SEEK_SET);
 		return num_bytes;
 	}
 	virtual size_t Read(void *buf, size_t elemSize, size_t count)
