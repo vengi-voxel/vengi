@@ -26,7 +26,16 @@ macro(check_lua_files TARGET)
 			add_dependencies(${TARGET} ${_file})
 		endforeach()
 	else()
-		message(WARNING "No ${DEFAULT_LUA_EXECUTABLE} found")
+		foreach(_file ${files})
+			add_custom_target(
+				${_file}
+				COMMAND ${LUA_EXECUTABLE} ${_file}
+				COMMENT "Validate ${_file}"
+				DEPENDS luac
+				WORKING_DIRECTORY ${ROOT_DIR}/data/${TARGET}
+			)
+			add_dependencies(${TARGET} ${_file})
+		endforeach()
 	endif()
 endmacro()
 
