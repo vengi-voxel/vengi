@@ -21,10 +21,14 @@ private:
 		~TestApp();
 
 		virtual AppState onInit() override;
+		virtual AppState onCleanup() override;
 	};
 
 protected:
 	TestApp *_testApp;
+
+	virtual void onCleanupApp() {
+	}
 
 	virtual bool onInitApp() {
 		return true;

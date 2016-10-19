@@ -35,6 +35,12 @@ AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::
 	}
 }
 
+AppState AbstractTest::TestApp::onCleanup() {
+	AppState state = core::App::onCleanup();
+	_test->onCleanupApp();
+	return state;
+}
+
 AppState AbstractTest::TestApp::onInit() {
 	AppState state = core::App::onInit();
 	if (hasArg("debug")) {

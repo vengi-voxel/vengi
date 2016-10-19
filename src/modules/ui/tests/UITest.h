@@ -13,6 +13,12 @@ class UITest: public core::AbstractTest {
 protected:
 	DummyRenderer _renderer;
 
+	virtual void onCleanupApp() override {
+		tb::TBAnimationManager::AbortAllAnimations();
+		tb::TBWidgetsAnimationManager::Shutdown();
+		tb::tb_core_shutdown();
+	}
+
 	virtual bool onInitApp() override {
 		if (!tb::tb_core_init(&_renderer)) {
 			Log::error("failed to initialize the ui");
