@@ -38,8 +38,9 @@ typedef std::vector<CharacterId> FilteredEntities;
  *
  * You can set single @c AI instances to no longer update their state by calling @c AI::setPause
  */
-class AI : public NonCopyable {
+class AI : public NonCopyable, public std::enable_shared_from_this<AI> {
 	friend class TreeNode;
+	friend class LUAAIRegistry;
 	friend class IFilter;
 	friend class Filter;
 	friend class Server;
@@ -61,6 +62,10 @@ protected:
 	 * @sa @code IFilter
 	 */
 	mutable FilteredEntities _filteredEntities;
+
+	void setFilteredEntities(const FilteredEntities& filteredEntities);
+
+	void addFilteredEntity(CharacterId id);
 
 	/**
 	 * Often @c Selector states must be stored to continue in the next step at a particular
@@ -159,6 +164,8 @@ public:
 		return *static_cast<CharacterType*>(_character.get());
 	}
 
+	int64_t getTime() const;
+
 	CharacterId getId() const;
 
 	/**
@@ -180,6 +187,14 @@ public:
 	 * @note If you call this from outside of the behaviour tree tick, you will run into race conditions.
 	 */
 	const FilteredEntities& getFilteredEntities() const;
+
+	/**
+	 * If the object is currently maintained by a shared_ptr, you can get a shared_ptr from a raw pointer
+	 * instance that shares the state with the already existing shared_ptrs around.
+	 */
+	inline std::shared_ptr<AI> ptr() {
+		return shared_from_this();
+	}
 };
 
 inline TreeNodePtr AI::getBehaviour() const {
@@ -222,6 +237,14 @@ inline const FilteredEntities& AI::getFilteredEntities() const {
 	return _filteredEntities;
 }
 
+inline void AI::setFilteredEntities(const FilteredEntities& filteredEntities) {
+	_filteredEntities = filteredEntities;
+}
+
+inline void AI::addFilteredEntity(CharacterId id) {
+	_filteredEntities.push_back(id);
+}
+
 inline bool AI::isDebuggingActive() const {
 	return _debuggingActive;
 }
@@ -236,6 +259,10 @@ inline Zone* AI::getZone() const {
 
 inline bool AI::hasZone() const {
 	return _zone != nullptr;
+}
+
+inline int64_t AI::getTime() const {
+	return _time;
 }
 
 inline CharacterId AI::getId() const {

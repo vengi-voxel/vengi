@@ -1,8 +1,9 @@
 /**
  * @file
  * @brief Condition related stuff
- *
- * @sa ICondition
+ * @defgroup Condition
+ * @{
+ * @sa ai{ICondition}
  */
 
 #pragma once
@@ -49,7 +50,7 @@ public: \
 	}
 
 /**
- * @brief A condition factory macro to ease and unify the registration at AIRegistry.
+ * @brief A condition factory macro to ease and unify the registration at @ai{AIRegistry}.
  */
 #define CONDITION_FACTORY(ConditionName) \
 public: \
@@ -65,7 +66,7 @@ public: \
 	}
 
 /**
- * @brief A condition factory singleton macro to ease and unify the registration at AIRegistry.
+ * @brief A condition factory singleton macro to ease and unify the registration at @ai{AIRegistry}.
  * Nothing from the given context is taken, if you need this, use the instance based factory,
  * not the singleton based.
  */
@@ -89,9 +90,9 @@ private: \
 	CONDITION_CLASS(ConditionName) \
 public: \
 	static ConditionPtr& get() { \
-		THREAD_LOCAL ConditionName* c = nullptr; \
+		AI_THREAD_LOCAL ConditionName* c = nullptr; \
 		if (c == nullptr) { c = new ConditionName; } \
-		THREAD_LOCAL ConditionPtr _instance(c); \
+		AI_THREAD_LOCAL ConditionPtr _instance(c); \
 		return _instance; \
 	} \
 	CONDITION_FACTORY_SINGLETON
@@ -117,7 +118,7 @@ typedef Conditions::iterator ConditionsIter;
 typedef Conditions::const_iterator ConditionsConstIter;
 
 /**
- * @brief A condition can be placed on a @c TreeNode to decide which node is going to get executed. In general they are stateless.
+ * @brief A condition can be placed on a @ai{TreeNode} to decide which node is going to get executed. In general they are stateless.
  * If they are not, it should explicitly get noted.
  */
 class ICondition : public MemObject {
@@ -136,11 +137,11 @@ protected:
 	const std::string _parameters;
 
 	/**
-	 * @brief Override this method to get a more detailed result in @c getNameWithConditions
+	 * @brief Override this method to get a more detailed result in @c getNameWithConditions()
 	 *
 	 * @param[out] s The string stream to write your details to
 	 * @param[in,out] entity The entity that is used to evaluate a condition
-	 * @sa getNameWithConditions
+	 * @sa getNameWithConditions()
 	 */
 	virtual void getConditionNameWithValue(std::stringstream& s, const AIPtr& entity) {
 		(void)entity;
@@ -174,7 +175,7 @@ public:
 	/**
 	 * @brief Returns the full condition string with all related conditions and results of the evaluation method
 	 * @param[in,out] entity The entity that is used to evaluate the condition
-	 * @sa getConditionNameWithValue
+	 * @sa getConditionNameWithValue()
 	 */
 	inline std::string getNameWithConditions(const AIPtr& entity) {
 		std::stringstream s;
@@ -196,3 +197,7 @@ inline const std::string& ICondition::getParameters() const {
 }
 
 }
+
+/**
+ * @}
+ */

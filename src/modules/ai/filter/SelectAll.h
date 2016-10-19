@@ -18,7 +18,7 @@ public:
 	void filter (const AIPtr& entity) override;
 };
 
-inline void SelectAll::filter (const AIPtr& entity) {
+inline void SelectAll::filter (const AIPtr& /*entity*/) {
 }
 
 }

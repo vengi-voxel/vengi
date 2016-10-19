@@ -229,6 +229,9 @@ TAB_SIZE               = 4
 # newlines.
 
 ALIASES                =
+ALIASES               += ai{1}="@ref ai::\1 \"\1\""
+ALIASES               += movement{1}="@ref ai::movement::\1 \"\1\""
+ALIASES               += debug{1}="@ref ai::debug::\1 \"\1\""
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"

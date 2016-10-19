@@ -1,10 +1,11 @@
 /**
  * @file
+ * @ingroup LUA
  */
 #pragma once
 
 #include "Steering.h"
-#include "commonlua/LUA.h"
+#include "LUAFunctions.h"
 
 namespace ai {
 namespace movement {
@@ -13,10 +14,6 @@ namespace movement {
  * @see @ai{LUAAIRegistry}
  */
 class LUASteering : public ISteering {
-public:
-	static inline const char *luaAIMetaName() {
-		return "entity";
-	}
 protected:
 	mutable lua_State* _s;
 	std::string _type;
@@ -50,16 +47,9 @@ protected:
 		lua_getfield(_s, LUA_REGISTRYINDEX, name.c_str());
 
 		// first parameter is ai
-		AI ** udata = (AI **) lua_newuserdata(_s, sizeof(AI *));
-		luaL_getmetatable(_s, luaAIMetaName());
-#if AI_LUA_SANTITY > 0
-		if (!lua_istable(_s, -1)) {
-			ai_log_error("LUA steering: metatable for %s doesn't exist", luaAIMetaName());
+		if (luaAI_pushai(_s, entity) == 0) {
 			return MoveVector(INFINITE, 0.0f);
 		}
-#endif
-		lua_setmetatable(_s, -2);
-		*udata = entity.get();
 
 		// second parameter is speed
 		lua_pushnumber(_s, speed);
@@ -134,9 +124,9 @@ public:
 			return executeLUA(entity, speed);
 #if AI_EXCEPTIONS
 		} catch (...) {
-			ai_log_error("Exception while running lua steering")
-			return MoveVector(INFINITE, 0.0f);
+			ai_log_error("Exception while running lua steering");
 		}
+		return MoveVector(INFINITE, 0.0f);
 #endif
 	}
 };

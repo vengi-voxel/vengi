@@ -31,9 +31,7 @@ public:
 	}
 
 	TreeNodeStatus execute(const AIPtr& entity, int64_t deltaMillis) override {
-		if (_children.size() != 1) {
-			ai_assert(false, "Limit can not have more than one child");
-		}
+		ai_assert(_children.size() == 1, "Limit must have exactly one node");
 
 		if (TreeNode::execute(entity, deltaMillis) == CANNOTEXECUTE) {
 			return CANNOTEXECUTE;

@@ -110,8 +110,20 @@ add_library(${LIB} ${SRCS})
 target_link_libraries(${LIB} commonlua glm)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_include_directories(${LIB} PUBLIC .)
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	target_compile_definitions(${LIB} PRIVATE -DAI_EXCEPTIONS=0 -DTHREAD_LOCAL=static)
-else()
-	target_compile_definitions(${LIB} PRIVATE -DAI_EXCEPTIONS=0)
-endif()
+target_compile_definitions(${LIB} PUBLIC -DAI_INCLUDE_LUA=1)
+
+gtest_suite_files(tests
+	tests/AggroTest.cpp
+	tests/GeneralTest.cpp
+	tests/GroupTest.cpp
+	tests/LUAAIRegistryTest.cpp
+	tests/LUATreeLoaderTest.cpp
+	tests/MessageTest.cpp
+	tests/MovementTest.cpp
+	tests/NodeTest.cpp
+	tests/ParserTest.cpp
+	tests/TestShared.cpp
+	tests/ThreadTest.cpp
+	tests/ZoneTest.cpp
+)
+gtest_suite_deps(tests ${LIB})

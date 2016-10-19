@@ -13,6 +13,7 @@ DISABLE_WARNING(shadow,shadow,0)
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/gtc/epsilon.hpp>
 ENABLE_WARNING(shadow,shadow,0)
 #include <limits>
 #include <cmath>

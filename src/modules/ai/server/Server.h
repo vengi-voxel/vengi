@@ -35,17 +35,17 @@ class UpdateNodeHandler;
 class NopHandler;
 
 /**
- * @brief The server can serialize the state of the AI and broadcast it to all connected clients.
+ * @brief The server can serialize the state of the @ai{AI} and broadcast it to all connected clients.
  *
- * If you start a server, you can add the @c AI instances to it by calling @c addZone. If you do so, make
- * sure to remove it when you remove that particular @c Zone instance from your world. You should not do that
+ * If you start a server, you can add the @ai{AI} instances to it by calling @ai{addZone()}. If you do so, make
+ * sure to remove it when you remove that particular @ai{Zone} instance from your world. You should not do that
  * from different threads. The server should only be managed from one thread.
  *
- * The server will broadcast the world state - that is: It will send out an @c AIStateMessage to all connected
- * clients. If someone selected a particular @c AI instance by sending @c AISelectMessage to the server, it
- * will also broadcast an @c AICharacterDetailsMessage to all connected clients.
+ * The server will broadcast the world state - that is: It will send out an @ai{AIStateMessage} to all connected
+ * clients. If someone selected a particular @ai{AI} instance by sending @ai{AISelectMessage} to the server, it
+ * will also broadcast an @ai{AICharacterDetailsMessage} to all connected clients.
  *
- * You can only debug one Zone at the same time. The debugging session is shared between all connected clients.
+ * You can only debug one @ai{Zone} at the same time. The debugging session is shared between all connected clients.
  */
 class Server: public INetworkListener {
 protected:
@@ -125,11 +125,11 @@ public:
 	bool start();
 
 	/**
-	 * @brief Update the specified node with the given values for the specified character and all the
+	 * @brief Update the specified node with the given values for the specified @ai{ICharacter} and all the
 	 * other characters that are using the same behaviour tree instance
 	 *
 	 * @param[in] characterId The id of the character where we want to update the specified node
-	 * @param[in] nodeId The id of the @c ITreeNode to update with the new values
+	 * @param[in] nodeId The id of the @ai{TreeNode} to update with the new values
 	 * @param[in] name The new name for the node
 	 * @param[in] type The new node type (including parameters)
 	 * @param[in] condition The new condition (including parameters)
@@ -140,41 +140,41 @@ public:
 	bool updateNode(const CharacterId& characterId, int32_t nodeId, const std::string& name, const std::string& type, const std::string& condition);
 
 	/**
-	 * @brief Add a new node with the given values to the specified character and all the
+	 * @brief Add a new node with the given values to the specified @ai{ICharacter} and all the
 	 * other characters that are using the same behaviour tree instance
 	 *
-	 * @param[in] characterId The id of the character where we want to add the specified node
-	 * @param[in] parentNodeId The id of the @c ITreeNode to attach the new @c ITreeNode as children
+	 * @param[in] characterId The id of the @ai{ICharacter} where we want to add the specified node
+	 * @param[in] parentNodeId The id of the @ai{TreeNode} to attach the new @ai{TreeNode} as children
 	 * @param[in] name The new name for the node
 	 * @param[in] type The new node type (including parameters)
 	 * @param[in] condition The new condition (including parameters)
 	 *
-	 * @see @c TreeNodeParser
-	 * @see @c ConditionParser
+	 * @see @ai{TreeNodeParser}
+	 * @see @ai{ConditionParser}
 	 */
 	bool addNode(const CharacterId& characterId, int32_t parentNodeId, const std::string& name, const std::string& type, const std::string& condition);
 
 	/**
-	 * @brief Delete the specified node from the character's behaviour tree and all the
+	 * @brief Delete the specified node from the @ai{ICharacter}'s behaviour tree and all the
 	 * other characters that are using the same behaviour tree instance
 	 *
-	 * @param[in] characterId The id of the character where we want to delete the specified node
-	 * @param[in] nodeId The id of the @c ITreeNode to delete
+	 * @param[in] characterId The id of the @ai{ICharacter} where we want to delete the specified node
+	 * @param[in] nodeId The id of the @ai{TreeNode} to delete
 	 */
 	bool deleteNode(const CharacterId& characterId, int32_t nodeId);
 
 	/**
 	 * @brief Adds a new zone to this server instance that can be debugged. The server does not own this pointer
-	 * so it also doesn't free it. Every @c Zone that is added here, will be part of the @c AINamesMessage.
+	 * so it also doesn't free it. Every @ai{Zone} that is added here, will be part of the @ai{AINamesMessage}.
 	 *
-	 * @param zone The @c Zone that should be made available for debugging.
+	 * @param zone The @ai{Zone} that should be made available for debugging.
 	 *
 	 * @note This locks the server instance
 	 */
 	void addZone(Zone* zone);
 
 	/**
-	 * @brief Removes a @c Zone from the server. After this call the given zone is no longer available for debugging
+	 * @brief Removes a @ai{Zone} from the server. After this call the given zone is no longer available for debugging
 	 * purposes.
 	 *
 	 * @note This locks the server instance
@@ -189,23 +189,23 @@ public:
 	void setDebug(const std::string& zoneName);
 
 	/**
-	 * @brief Resets the ai states
+	 * @brief Resets the @ai{AI} states
 	 */
 	void reset();
 
 	/**
-	 * @brief Select a particular character (resp. @c AI instance) and send detail
+	 * @brief Select a particular character (resp. @ai{AI} instance) and send detail
 	 * information to all the connected clients for this entity.
 	 */
 	void select(const ClientId& clientId, const CharacterId& id);
 
 	/**
-	 * @brief Will pause/unpause the execution of the behaviour trees for all watched @c AI instances.
+	 * @brief Will pause/unpause the execution of the behaviour trees for all watched @ai{AI} instances.
 	 */
 	void pause(const ClientId& clientId, bool pause);
 
 	/**
-	 * @brief Performs one step of the ai in pause mode
+	 * @brief Performs one step of the @ai{AI} in pause mode
 	 */
 	void step(int64_t stepMillis = 1L);
 

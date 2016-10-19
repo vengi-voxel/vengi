@@ -28,21 +28,21 @@ const char* const ORIENTATION = "Orientation";
 }
 
 /**
- * @brief Class that should be extended by the ai controlled entity class.
+ * @brief Class that should be extended by the @ai{AI} controlled entity class.
  *
- * It uses a @c CharacterId to identify the character in the game. The @c AI class
+ * It uses a @ai{CharacterId} to identify the character in the game. The @ai{AI} class
  * has a reference to its controlled @c ICharacter instance.
  *
- * @note Update the values of the @c ICharacter class only in in the @c ICharacter::update
- * method or from within the @c Zone callbacks. Otherwise you will run into race conditions
+ * @note Update the values of the @c ICharacter class only in in the @ai{ICharacter::update()}
+ * method or from within the @ai{Zone} callbacks. Otherwise you will run into race conditions
  * if you run with multiple threads.
  *
  * You often need access to your world your character is living in. You need access to this
- * data to resolve the @c CharacterId's in the @c IFilter implementations, to interact with
+ * data to resolve the @ai{CharacterId}'s in the @ai{IFilter} implementations, to interact with
  * other entities that are not SimpleAI controlled and so on. You can use the provided
- * @c character_cast function in your @c TreeNode, @c IFilter or @¢ ICondition implementations.
+ * @ai{character_cast} function in your @ai{TreeNode}, @ai{IFilter} or @ai{ICondition} implementations.
  */
-class ICharacter : public NonCopyable {
+class ICharacter : public NonCopyable, public std::enable_shared_from_this<ICharacter> {
 protected:
 	const CharacterId _id;
 	glm::vec3 _position;
@@ -115,6 +115,14 @@ public:
 	virtual void update(int64_t dt, bool debuggingActive) {
 		(void)dt;
 		(void)debuggingActive;
+	}
+
+	/**
+	 * If the object is currently maintained by a shared_ptr, you can get a shared_ptr from a raw pointer
+	 * instance that shares the state with the already existing shared_ptrs around.
+	 */
+	inline std::shared_ptr<ICharacter> ptr() {
+		return shared_from_this();
 	}
 };
 

@@ -325,23 +325,27 @@ inline const GroupMgr& Zone::getGroupMgr() const {
 }
 
 inline bool Zone::doAddAI(const AIPtr& ai) {
-	if (ai == nullptr)
+	if (ai == nullptr) {
 		return false;
+	}
 	const CharacterId& id = ai->getCharacter()->getId();
-	if (_ais.find(id) != _ais.end())
+	if (_ais.find(id) != _ais.end()) {
 		return false;
+	}
 	_ais.insert(std::make_pair(id, ai));
 	ai->setZone(this);
 	return true;
 }
 
 inline bool Zone::doRemoveAI(const AIPtr& ai) {
-	if (!ai)
+	if (!ai) {
 		return false;
+	}
 	const CharacterId& id = ai->getCharacter()->getId();
 	AIMapIter i = _ais.find(id);
-	if (i == _ais.end())
+	if (i == _ais.end()) {
 		return false;
+	}
 	i->second->setZone(nullptr);
 	_groupManager.removeFromAllGroups(i->second);
 	_ais.erase(i);
@@ -350,15 +354,17 @@ inline bool Zone::doRemoveAI(const AIPtr& ai) {
 
 inline bool Zone::doDestroyAI(const CharacterId& id) {
 	AIMapIter i = _ais.find(id);
-	if (i == _ais.end())
+	if (i == _ais.end()) {
 		return false;
+	}
 	_ais.erase(i);
 	return true;
 }
 
 inline bool Zone::addAI(const AIPtr& ai) {
-	if (!ai)
+	if (!ai) {
 		return false;
+	}
 	ScopedWriteLock scopedLock(_scheduleLock);
 	_scheduledAdd.push_back(ai);
 	return true;
@@ -371,8 +377,9 @@ inline bool Zone::destroyAI(const CharacterId& id) {
 }
 
 inline bool Zone::removeAI(const AIPtr& ai) {
-	if (!ai)
+	if (!ai) {
 		return false;
+	}
 	ScopedWriteLock scopedLock(_scheduleLock);
 	_scheduledRemove.push_back(ai);
 	return true;
@@ -396,8 +403,9 @@ inline void Zone::update(int64_t dt) {
 	}
 
 	auto func = [&] (const AIPtr& ai) {
-		if (ai->isPause())
+		if (ai->isPause()) {
 			return;
+		}
 		ai->update(dt, _debug);
 		ai->getBehaviour()->execute(ai, dt);
 	};

@@ -140,7 +140,7 @@ public:
 	const std::string& getParameters() const;
 
 	/**
-	 * @brief Updates the custom name of this @c ITreeNode
+	 * @brief Updates the custom name of this @c TreeNode
 	 *
 	 * @param[in] name The name to set - empty strings are ignored here
 	 */

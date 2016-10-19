@@ -1,5 +1,6 @@
 /**
  * @file
+ * @ingroup Condition
  */
 #pragma once
 

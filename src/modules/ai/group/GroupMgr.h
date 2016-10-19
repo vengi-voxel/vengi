@@ -21,7 +21,7 @@ namespace ai {
  * @note Keep in mind that if you destroy an @c AI somewhere in the game, to also
  * remove it from the groups.
  *
- * Every @c Zone has its own GroupMgr instance. It is automatically updated with the zone.
+ * Every @ai{Zone} has its own @c GroupMgr instance. It is automatically updated with the zone.
  * The average group position is only updated once per @c update() call.
  */
 class GroupMgr {
@@ -60,15 +60,15 @@ public:
 	}
 
 	/**
-	 * @brief Adds a new group member to the given @c GroupId. If the group does not yet
-	 * exists, it it created and the given @c AI instance will be the leader of the
+	 * @brief Adds a new group member to the given @ai{GroupId}. If the group does not yet
+	 * exists, it it created and the given @ai{AI} instance will be the leader of the
 	 * group.
 	 *
 	 * @sa remove()
 	 *
-	 * @param ai The @c AI to add to the group. Keep
+	 * @param ai The @ai{AI} to add to the group. Keep
 	 * in mind that you have to remove it manually from any group
-	 * whenever you destroy the @c AI instance.
+	 * whenever you destroy the @ai{AI} instance.
 	 * @return @c true if the add to the group was successful.
 	 *
 	 * @note This method performs a write lock on the group manager
@@ -78,14 +78,14 @@ public:
 	void update(int64_t deltaTime);
 
 	/**
-	 * @brief Removes a group member from the given @c GroupId. If the member
+	 * @brief Removes a group member from the given @ai{GroupId}. If the member
 	 * is the group leader, a new leader will be picked randomly. If after the
 	 * removal of the member only one other member is left in the group, the
 	 * group is destroyed.
 	 *
-	 * @param ai The @c AI to remove from this the group.
-	 * @return @c true if the given ai was removed from the group,
-	 * @c false if the removal failed (e.g. the ai instance was not part of
+	 * @param ai The @ai{AI} to remove from this the group.
+	 * @return @c true if the given @ai{AI} was removed from the group,
+	 * @c false if the removal failed (e.g. the @ai{AI} instance was not part of
 	 * the group)
 	 *
 	 * @note This method performs a write lock on the group manager
@@ -93,8 +93,8 @@ public:
 	bool remove(GroupId id, const AIPtr& ai);
 
 	/**
-	 * @brief Use this method to remove a @c AI instance from all the group it is
-	 * part of. Useful if you e.g. destroy a @c AI instance.
+	 * @brief Use this method to remove a @ai{AI} instance from all the group it is
+	 * part of. Useful if you e.g. destroy a @ai{AI} instance.
 	 *
 	 * @note This method performs a write lock on the group manager
 	 */
@@ -111,7 +111,7 @@ public:
 	glm::vec3 getPosition(GroupId id) const;
 
 	/**
-	 * @return The @c ICharacter object of the leader, or @c nullptr if no such group exists.
+	 * @return The @ai{ICharacter} object of the leader, or @c nullptr if no such group exists.
 	 *
 	 * @note This method performs a read lock on the group manager
 	 */

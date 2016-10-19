@@ -4,7 +4,7 @@
  * @section purpose Purpose
  *
  * SimpleAI is a small and (hopefully) easy to use C++ library for behaviour
- * tree based AI. It's main focus is about games - but of course it can be
+ * tree based @ai{AI}. It's main focus is about games - but of course it can be
  * used for other things, too. The project is released under the MIT license
  * and thus can be used for open source as well as commercial and closed
  * source projects. If you use it, it would be nice to provide a link to the
@@ -110,24 +110,24 @@
  * state of every spawned @ai{AI} entity.
  *
  * @section using Using it:
- * * Make sure your game character extends @ai{ICharacter} or includes it as component.
+ * * Make sure your character extends @ai{ICharacter} or includes it as component.
  * * Implement your behaviour tree loader by extending the class @ai{ITreeloader}.
  * * Extend the @debug{AIDebugger} to deliver your own @debug{MapView} that renders the map of
- *   your game.
- * * Add your own condition, filter and task factories to the @ai{AIRegistry}.
- * * Assign attributes to your game characters that should be shown in the
+ *   your application.
+ * * Add your own condition, filter and task factories to the @ai{AIRegistry} or via @ai{LUAAIRegistry}.
+ * * Assign attributes to your characters that should be shown in the
  *   debuggers live view.
  *
- * As the name states, it should be easy to use and to integrate into your game. You
+ * As the name states, it should be easy to use and to integrate into your application. You
  * have the ability to create new customized actions, override existing ones with your
  * own implementations and so on.
  *
- * To integrate the @ai{AI} into your game, your game entity class should implement or include
+ * To integrate the @ai{AI} into your application, your entity class should implement or include
  * the @ai{ICharacter} interface. You only have to call the @ai{ICharacter::update()} method
- * to get the AI and the character updated. You can view the included `simpleai-run` tool
+ * to get the @ai{AI} and the character updated. You can view the included `simpleai-run` tool
  * for getting an idea on how to do this.
  *
- * Once this step is done, you can go on with creating new actions for your game. All you
+ * Once this step is done, you can go on with creating new actions for your application. All you
  * have to do for this is to extend @ai{ITask}. The entity instance given to the
  * @ai{ITask::doAction()} method contains the @ai{ICharacter} that you bound to your
  * application entity.
@@ -136,6 +136,8 @@
  * existing @ai{LUATreeLoader} is to add them to the registry. Just call
  * @ai{AIRegistry::registerNodeFactory()} on your @ai{AIRegistry} instance and you are ready
  * to write @ai{LUA} scripts with it. Again, as a reference, just check out the example code.
+ * You can also create nodes, conditions, filter and steering methods via LUA directly. See
+ * @ai{LUAAIRegistry} for more information about this.
  *
  * Note the usage of a few macros that makes your life easier:
  * * @ai{TASK_CLASS}
@@ -165,7 +167,7 @@
  * you to show the characters in their "natural" environment instead of on
  * a boring plane. You can choose which entities should be available for
  * remote debugging. The included `Server` class handles the serialization
- * of the entities. You can create one instance of a server per game map
+ * of the entities. You can create one instance of a server per application map
  * you have. Once you add an entity to the server, it gets automatically
  * serialized and is broadcasted to all connected clients. If no client is
  * connected, nothing is serialized and thus the remote debugging has almost
@@ -228,7 +230,7 @@
  * You can control how to allocate memory by defining your own allocator class via @c AI_ALLOCATOR_CLASS
  *
  * SimpleAI uses a left handed coordinate system with y pointing upwards (meaning, if
- * you are using a 2d game, only handle x and z).
+ * you are using a 2d application, only handle x and z).
  */
 #pragma once
 

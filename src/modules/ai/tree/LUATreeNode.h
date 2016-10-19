@@ -1,10 +1,11 @@
 /**
  * @file
+ * @ingroup LUA
  */
 #pragma once
 
 #include "tree/TreeNode.h"
-#include "commonlua/LUA.h"
+#include "LUAFunctions.h"
 
 namespace ai {
 
@@ -12,10 +13,6 @@ namespace ai {
  * @see @ai{LUAAIRegistry}
  */
 class LUATreeNode : public TreeNode {
-public:
-	static inline const char *luaAIMetaName() {
-		return "entity";
-	}
 protected:
 	lua_State* _s;
 
@@ -48,16 +45,9 @@ protected:
 		lua_getfield(_s, LUA_REGISTRYINDEX, name.c_str());
 
 		// first parameter is ai
-		AI ** udata = (AI **) lua_newuserdata(_s, sizeof(AI *));
-		luaL_getmetatable(_s, luaAIMetaName());
-#if AI_LUA_SANTITY > 0
-		if (!lua_istable(_s, -1)) {
-			ai_log_error("LUA node: metatable for %s doesn't exist", luaAIMetaName());
+		if (luaAI_pushai(_s, entity) == 0) {
 			return TreeNodeStatus::EXCEPTION;
 		}
-#endif
-		lua_setmetatable(_s, -2);
-		*udata = entity.get();
 
 		// second parameter is dt
 		lua_pushinteger(_s, deltaMillis);
@@ -136,8 +126,8 @@ public:
 #if AI_EXCEPTIONS
 		} catch (...) {
 			ai_log_error("Exception while running lua tree node")
-			return state(entity, EXCEPTION);
 		}
+		return state(entity, EXCEPTION);
 #endif
 	}
 };

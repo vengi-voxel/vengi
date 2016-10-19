@@ -1,10 +1,12 @@
 /**
  * @file
+ * @ingroup LUA
+ * @ingroup Filter
  */
 #pragma once
 
 #include "IFilter.h"
-#include "commonlua/LUA.h"
+#include "LUAFunctions.h"
 
 namespace ai {
 
@@ -44,17 +46,9 @@ protected:
 		lua_getfield(_s, LUA_REGISTRYINDEX, name.c_str());
 
 		// first parameter is ai
-		AI ** udata = (AI **) lua_newuserdata(_s, sizeof(AI *));
-		luaL_getmetatable(_s, LUATreeNode::luaAIMetaName());
-#if AI_LUA_SANTITY > 0
-		if (!lua_istable(_s, -1)) {
-			ai_log_error("LUA filter: metatable for %s doesn't exist", LUATreeNode::luaAIMetaName());
+		if (luaAI_pushai(_s, entity) == 0) {
 			return;
 		}
-#endif
-		lua_setmetatable(_s, -2);
-		*udata = entity.get();
-
 #if AI_LUA_SANTITY > 0
 		if (!lua_isfunction(_s, -3)) {
 			ai_log_error("LUA filter: expected to find a function on stack -3");
@@ -111,9 +105,9 @@ public:
 			filterLUA(entity);
 #if AI_EXCEPTIONS
 		} catch (...) {
-			ai_log_error("Exception while evaluating lua filter")
-			return false;
+			ai_log_error("Exception while evaluating lua filter");
 		}
+		return false;
 #endif
 	}
 };

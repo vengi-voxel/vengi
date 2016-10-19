@@ -33,7 +33,7 @@ public:
 	};
 
 	static Factory& getInstance(const backend::SpawnMgrPtr& spawnMgr) {
-		THREAD_LOCAL Factory FACTORY(spawnMgr);
+		AI_THREAD_LOCAL Factory FACTORY(spawnMgr);
 		return FACTORY;
 	}
 

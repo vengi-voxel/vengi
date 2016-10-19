@@ -43,8 +43,9 @@ protected:
 			return state(entity, doAction(entity, deltaMillis));
 #if AI_EXCEPTIONS
 		} catch (...) {
-			return state(entity, EXCEPTION);
+			ai_log_error("Exception while running task %s of type %s", _name.c_str(), _type.c_str());
 		}
+		return state(entity, EXCEPTION);
 #endif
 	}
 public:
