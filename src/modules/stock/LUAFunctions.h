@@ -40,6 +40,7 @@ static int luaItemDataGetShape(lua_State * l) {
 }
 
 static int luaItemDataGC(lua_State * l) {
+	// this is deleted in the ItemProvider
 	return 0;
 }
 
