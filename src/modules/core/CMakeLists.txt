@@ -6,7 +6,7 @@ set(SRCS
 	Command.h Command.cpp
 	Common.h
 	Concurrency.h
-	EventBus.h
+	EventBus.cpp EventBus.h
 	Frustum.cpp Frustum.h
 	GameConfig.h
 	GLM.cpp GLM.h
