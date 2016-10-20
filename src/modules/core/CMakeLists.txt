@@ -11,7 +11,7 @@ set(SRCS
 	GameConfig.h
 	GLM.cpp GLM.h
 	IFactoryRegistry.h
-	Input.h
+	Input.cpp Input.h
 	Log.cpp Log.h
 	MemoryAllocator.h
 	MemGuard.cpp MemGuard.h

@@ -27,8 +27,6 @@
 
 #pragma once
 
-#include "String.h"
-#include "Trace.h"
 #include <vector>
 #include <queue>
 #include <memory>
