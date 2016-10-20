@@ -26,7 +26,7 @@ set(SRCS
 	Set.h
 	Singleton.h
 	String.cpp String.h
-	ThreadPool.h
+	ThreadPool.cpp ThreadPool.h
 	TimeProvider.h TimeProvider.cpp
 	Tokenizer.h Tokenizer.cpp
 	Trace.cpp Trace.h
