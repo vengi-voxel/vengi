@@ -114,8 +114,13 @@ private:
 	EventBusHandlerReferenceMap _handlers;
 
 public:
-	EventBus() :
+	/**
+	 * @param[in] initialHandlerSize Used to calculate the amount of memory that is reserved in the
+	 * handler map to reduce memory allocations.
+	 */
+	EventBus(const int initialHandlerSize = 64) :
 			_lock("EventBus") {
+		_handlers.reserve(initialHandlerSize);
 	}
 
 	/**
