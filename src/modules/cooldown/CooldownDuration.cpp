@@ -37,9 +37,7 @@ bool CooldownDuration::init(const std::string& filename) {
 	lua.newGlobalData<CooldownDuration>("CooldownDuration", this);
 
 	lua.registerGlobal("addCooldown", [] (lua_State* s) {
-		lua_getglobal(s, "CooldownDuration");
-		CooldownDuration* data = (CooldownDuration*) lua_touserdata(s, -1);
-		lua_pop(s, 1);
+		CooldownDuration* data = lua::LUA::globalData<CooldownDuration>(s, "CooldownDuration");
 		const char *typeStr = luaL_checkstring(s, 1);
 		const Type type = getType(typeStr);
 		if (type == cooldown::Type::NONE) {
