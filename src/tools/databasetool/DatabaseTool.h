@@ -22,7 +22,7 @@ protected:
 	struct Constraint {
 		std::string field;
 		// bitmask from persistence::Model::ConstraintType
-		int types;
+		uint32_t types;
 	};
 
 	typedef std::map<std::string, Constraint> Constraints;

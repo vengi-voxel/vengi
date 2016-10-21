@@ -28,7 +28,7 @@ bool Model::isPrimaryKey(const std::string& fieldname) const {
 		return false;
 	}
 
-	return (i->contraintMask & Model::PRIMARYKEY) != 0;
+	return (i->contraintMask & std::enum_value(ConstraintType::PRIMARYKEY)) != 0;
 }
 
 Model::PreparedStatement Model::prepare(const std::string& name, const std::string& statement) {
@@ -130,17 +130,17 @@ bool Model::fillModelValues(Model::State& state) {
 		}
 		Log::debug("Try to set '%s' to '%s'", name, value);
 		switch (f.type) {
-		case Model::STRING:
-		case Model::PASSWORD:
+		case FieldType::STRING:
+		case FieldType::PASSWORD:
 			setValue(f, std::string(value));
 			break;
-		case Model::INT:
+		case FieldType::INT:
 			setValue(f, core::string::toInt(value));
 			break;
-		case Model::LONG:
+		case FieldType::LONG:
 			setValue(f, core::string::toLong(value));
 			break;
-		case Model::TIMESTAMP: {
+		case FieldType::TIMESTAMP: {
 			setValue(f, Timestamp(core::string::toLong(value)));
 			break;
 		}

@@ -28,9 +28,9 @@ DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::Even
 
 bool DatabaseTool::needsInitCPP(persistence::Model::FieldType type) const {
 	switch (type) {
-	case persistence::Model::PASSWORD:
-	case persistence::Model::STRING:
-	case persistence::Model::TIMESTAMP:
+	case persistence::Model::FieldType::PASSWORD:
+	case persistence::Model::FieldType::STRING:
+	case persistence::Model::FieldType::TIMESTAMP:
 		return false;
 	default:
 		return true;
@@ -39,21 +39,21 @@ bool DatabaseTool::needsInitCPP(persistence::Model::FieldType type) const {
 
 std::string DatabaseTool::getCPPInit(persistence::Model::FieldType type) const {
 	switch (type) {
-	case persistence::Model::PASSWORD:
-	case persistence::Model::STRING:
+	case persistence::Model::FieldType::PASSWORD:
+	case persistence::Model::FieldType::STRING:
 		return "\"\"";
-	case persistence::Model::TIMESTAMP:
-	case persistence::Model::LONG:
+	case persistence::Model::FieldType::TIMESTAMP:
+	case persistence::Model::FieldType::LONG:
 		return "0l";
-	case persistence::Model::INT:
+	case persistence::Model::FieldType::INT:
 		return "0";
 	}
 }
 
 std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool function, bool pointer) const {
 	switch (type) {
-	case persistence::Model::PASSWORD:
-	case persistence::Model::STRING:
+	case persistence::Model::FieldType::PASSWORD:
+	case persistence::Model::FieldType::STRING:
 		if (function) {
 			if (pointer) {
 				return "const std::string*";
@@ -61,7 +61,7 @@ std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool fu
 			return "const std::string&";
 		}
 		return "std::string";
-	case persistence::Model::TIMESTAMP:
+	case persistence::Model::FieldType::TIMESTAMP:
 		if (function) {
 			if (pointer) {
 				return "const ::persistence::Timestamp*";
@@ -69,12 +69,12 @@ std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool fu
 			return "const ::persistence::Timestamp";
 		}
 		return "::persistence::Timestamp";
-	case persistence::Model::LONG:
+	case persistence::Model::FieldType::LONG:
 		if (pointer) {
 			return "int64_t*";
 		}
 		return "int64_t";
-	case persistence::Model::INT:
+	case persistence::Model::FieldType::INT:
 		if (pointer) {
 			return "int32_t*";
 		}
@@ -84,8 +84,8 @@ std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool fu
 
 std::string DatabaseTool::getDbType(const persistence::Model::Field& field) const {
 	switch (field.type) {
-	case persistence::Model::PASSWORD:
-	case persistence::Model::STRING: {
+	case persistence::Model::FieldType::PASSWORD:
+	case persistence::Model::FieldType::STRING: {
 		std::string type = "CHAR(";
 		if (field.length > 0) {
 			type += std::to_string(field.length);
@@ -95,15 +95,15 @@ std::string DatabaseTool::getDbType(const persistence::Model::Field& field) cons
 		type += ')';
 		return type;
 	}
-	case persistence::Model::TIMESTAMP:
+	case persistence::Model::FieldType::TIMESTAMP:
 		return "TIMESTAMP";
-	case persistence::Model::LONG:
-		if ((field.contraintMask & persistence::Model::AUTOINCREMENT) != 0) {
+	case persistence::Model::FieldType::LONG:
+		if (field.isAutoincrement()) {
 			return "";
 		}
 		return "BIGINT";
-	case persistence::Model::INT:
-		if ((field.contraintMask & persistence::Model::AUTOINCREMENT) != 0) {
+	case persistence::Model::FieldType::INT:
+		if (field.isAutoincrement()) {
 			return "";
 		}
 		return "INT";
@@ -112,20 +112,20 @@ std::string DatabaseTool::getDbType(const persistence::Model::Field& field) cons
 
 std::string DatabaseTool::getDbFlags(const Table& table, const persistence::Model::Field& field) const {
 	std::stringstream ss;
-	if (field.contraintMask & persistence::Model::AUTOINCREMENT) {
-		if (field.type == ::persistence::Model::LONG) {
+	if (field.isAutoincrement()) {
+		if (field.type == persistence::Model::FieldType::LONG) {
 			ss << " BIGSERIAL";
 		} else {
 			ss << " SERIAL";
 		}
 	}
-	if (field.contraintMask & persistence::Model::NOTNULL) {
+	if (field.isNotNull()) {
 		ss << " NOT NULL";
 	}
-	if ((field.contraintMask & persistence::Model::PRIMARYKEY) != 0 && table.primaryKeys == 1) {
+	if (field.isPrimaryKey() && table.primaryKeys == 1) {
 		ss << " PRIMARY KEY";
 	}
-	if (field.contraintMask & persistence::Model::UNIQUE) {
+	if (field.isUnique()) {
 		ss << " UNIQUE";
 	}
 	if (!field.defaultVal.empty()) {
@@ -173,7 +173,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		const persistence::Model::Field& f = entry.second;
 		src << "\t\t_fields.push_back(Field{";
 		src << "\"" << f.name << "\"";
-		src << ", " << FieldTypeNames[f.type];
+		src << ", FieldType::" << FieldTypeNames[std::enum_value(f.type)];
 		src << ", " << f.contraintMask;
 		src << ", \"" << f.defaultVal << "\"";
 		src << ", " << f.length;
@@ -192,7 +192,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
-		if ((f.contraintMask & persistence::Model::PRIMARYKEY) != 0) {
+		if (f.isPrimaryKey()) {
 			continue;
 		}
 		const std::string& cpptype = getCPPType(f.type, true, true);
@@ -217,13 +217,13 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		loadNonPk << "\t\t}\n";
 
 		loadNonPkAdd << "\t\tif (" << f.name << " != nullptr) {\n";
-		if (f.type == persistence::Model::TIMESTAMP) {
+		if (f.type == persistence::Model::FieldType::TIMESTAMP) {
 			loadNonPkAdd << "\t\t\tif (" << f.name << "->isNow()) {\n";
 			loadNonPkAdd << "\t\t\t\t__p_.add(\"NOW()\");\n";
 			loadNonPkAdd << "\t\t\t} else {\n";
 			loadNonPkAdd << "\t\t\t\t__p_.add(" << f.name << "->time()" << ");\n";
 			loadNonPkAdd << "\t\t\t}\n";
-		} else if (f.type == persistence::Model::PASSWORD) {
+		} else if (f.type == persistence::Model::FieldType::PASSWORD) {
 			loadNonPkAdd << "\t\t\t__p_.addPassword(" << "*" << f.name << ");\n";
 		} else {
 			loadNonPkAdd << "\t\t\t__p_.add(" << "*" << f.name << ");\n";
@@ -252,7 +252,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 	int insertValues = 0;
 	for (auto entry : table.fields) {
 		const persistence::Model::Field& f = entry.second;
-		if ((f.contraintMask & persistence::Model::PRIMARYKEY) != 0) {
+		if (f.isPrimaryKey()) {
 			const std::string& cpptype = getCPPType(f.type, true);
 			if (primaryKeys > 0) {
 				src << ", ";
@@ -267,7 +267,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 			loadadd << ".add(" << f.name << ")";
 			src << cpptype << " " << f.name;
 		}
-		if ((f.contraintMask & persistence::Model::AUTOINCREMENT) == 0) {
+		if (!f.isAutoincrement()) {
 			if (insertValues > 0) {
 				insertvalues << ", ";
 				insert << ", ";
@@ -278,7 +278,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 			insert << "\\\"" << f.name << "\\\"";
 			sep(insertvalues, insertValues);
 			// TODO: length check if type is string
-			if (f.type == persistence::Model::PASSWORD) {
+			if (f.type == persistence::Model::FieldType::PASSWORD) {
 				insertadd << ".addPassword(" << f.name << ")";
 			} else {
 				insertadd << ".add(" << f.name << ")";
@@ -348,7 +348,7 @@ bool DatabaseTool::generateClassForTable(const Table& table, std::stringstream& 
 		bool firstPrimaryKey = true;
 		for (auto entry : table.fields) {
 			const persistence::Model::Field& f = entry.second;
-			if ((f.contraintMask & persistence::Model::PRIMARYKEY) == 0) {
+			if (!f.isPrimaryKey()) {
 				continue;
 			}
 			if (!firstPrimaryKey) {
@@ -423,7 +423,7 @@ bool DatabaseTool::parseField(core::Tokenizer& tok, Table& table) const {
 				return false;
 			}
 			const std::string& type = tok.next();
-			persistence::Model::FieldType typeMapping = persistence::Model::STRING;
+			persistence::Model::FieldType typeMapping = persistence::Model::FieldType::STRING;
 			bool foundType = false;
 			for (int i = 0; i < persistence::Model::MAX_FIELDTYPES; ++i) {
 				if (core::string::iequals(type, FieldTypeNames[i])) {
@@ -441,9 +441,9 @@ bool DatabaseTool::parseField(core::Tokenizer& tok, Table& table) const {
 			auto i = table.contraints.find(fieldname);
 			if (i != table.contraints.end()) {
 				Constraint& c = i->second;
-				c.types |= persistence::Model::NOTNULL;
+				c.types |= std::enum_value(persistence::Model::ConstraintType::NOTNULL);
 			} else {
-				table.contraints.insert(std::make_pair(fieldname, Constraint{fieldname, persistence::Model::NOTNULL}));
+				table.contraints.insert(std::make_pair(fieldname, Constraint{fieldname, std::enum_value(persistence::Model::ConstraintType::NOTNULL)}));
 			}
 		} else if (token == "default") {
 			if (!tok.hasNext()) {
@@ -486,14 +486,14 @@ bool DatabaseTool::parseConstraints(core::Tokenizer& tok, Table& table) const {
 			return false;
 		}
 		const std::string& type = tok.next();
-		int typeMapping = 0;
-		for (int i = 0; i < persistence::Model::MAX_CONSTRAINTTYPES; ++i) {
+		uint32_t typeMapping = 0u;
+		for (uint32_t i = 0; i < persistence::Model::MAX_CONSTRAINTTYPES; ++i) {
 			if (core::string::iequals(type, ConstraintTypeNames[i])) {
-				typeMapping = 1 << (persistence::Model::ConstraintType)i;
+				typeMapping = 1 << i;
 				break;
 			}
 		}
-		if (typeMapping == 0) {
+		if (typeMapping == 0u) {
 			Log::error("invalid field type for field constraint %s: %s", token.c_str(), type.c_str());
 			return false;
 		}
@@ -557,7 +557,7 @@ bool DatabaseTool::parseTable(core::Tokenizer& tok, Table& table) const {
 		}
 		Log::debug("transfer constraint to field for faster lookup for %s", c.field.c_str());
 		table.fields[c.field].contraintMask |= c.types;
-		if (c.types & persistence::Model::PRIMARYKEY) {
+		if ((c.types & std::enum_value(persistence::Model::ConstraintType::PRIMARYKEY)) != 0) {
 			++table.primaryKeys;
 		}
 	}

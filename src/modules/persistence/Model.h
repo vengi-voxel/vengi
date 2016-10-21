@@ -23,7 +23,7 @@ class Connection;
 class Model {
 public:
 	// don't change the order - code generator relies on this
-	enum ConstraintType {
+	enum class ConstraintType {
 		UNIQUE = 1 << 0,
 		PRIMARYKEY = 1 << 1,
 		AUTOINCREMENT = 1 << 2,
@@ -32,7 +32,7 @@ public:
 	static constexpr int MAX_CONSTRAINTTYPES = 4;
 
 	// don't change the order - code generator relies on this
-	enum FieldType {
+	enum class FieldType {
 		STRING,
 		LONG,
 		INT,
@@ -43,12 +43,28 @@ public:
 
 	struct Field {
 		std::string name;
-		FieldType type = Model::STRING;
+		FieldType type = FieldType::STRING;
 		// bitmask from ConstraintType
-		int contraintMask = 0;
+		uint32_t contraintMask = 0u;
 		std::string defaultVal = "";
 		int length = 0;
 		intptr_t offset = 0;
+
+		inline bool isAutoincrement() const {
+			return (contraintMask & std::enum_value(ConstraintType::AUTOINCREMENT)) != 0u;
+		}
+
+		inline bool isNotNull() const {
+			return (contraintMask & std::enum_value(ConstraintType::NOTNULL)) != 0u;
+		}
+
+		inline bool isPrimaryKey() const {
+			return (contraintMask & std::enum_value(ConstraintType::PRIMARYKEY)) != 0u;
+		}
+
+		inline bool isUnique() const {
+			return (contraintMask & std::enum_value(ConstraintType::UNIQUE)) != 0u;
+		}
 	};
 	typedef std::vector<Field> Fields;
 
@@ -125,22 +141,22 @@ public:
 		}
 
 		inline PreparedStatement& add(const std::string& type) {
-			return add(type, Model::STRING);
+			return add(type, FieldType::STRING);
 		}
 
 		inline PreparedStatement& addPassword(const std::string& password) {
-			return add(password, Model::PASSWORD);
+			return add(password, FieldType::PASSWORD);
 		}
 
 		inline PreparedStatement& add(const char* type, FieldType fieldType) {
-			return add(std::string(type), Model::STRING);
+			return add(std::string(type), FieldType::STRING);
 		}
 
 		inline PreparedStatement& add(const Timestamp& type) {
 			if (type.isNow()) {
-				return add("NOW()", Model::TIMESTAMP);
+				return add("NOW()", FieldType::TIMESTAMP);
 			}
-			return add(type.time(), Model::TIMESTAMP);
+			return add(type.time(), FieldType::TIMESTAMP);
 		}
 
 		State exec();
