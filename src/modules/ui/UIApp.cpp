@@ -252,7 +252,7 @@ bool UIApp::onTextInput(const std::string& text) {
 	}
 	const char *c = text.c_str();
 	for (;;) {
-		const int key = core::string::getUTF8Next(&c);
+		const int key = core::string::utf8Next(&c);
 		if (key == -1) {
 			return true;
 		}

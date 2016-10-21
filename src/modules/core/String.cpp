@@ -82,5 +82,13 @@ bool matches (const std::string& pattern, const std::string& text)
 	return patternMatch(pattern.c_str(), text.c_str());
 }
 
+std::string concat(std::string_view first, std::string_view second) {
+	std::string target;
+	target.reserve(first.size() + second.size());
+	target.append(first.data(), first.size());
+	target.append(second.data(), second.size());
+	return target;
+}
+
 }
 }

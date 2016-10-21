@@ -342,11 +342,11 @@ std::string Shader::handleIncludes(const std::string& buffer) const {
 				if (*cEnd != '"')
 					continue;
 
-				const std::string& dir = core::string::extractPath(_name);
-				const std::string includeFile(cStart + 1, cEnd);
-				const std::string& includeBuffer = core::App::getInstance()->filesystem()->load(dir + includeFile);
+				const std::string_view dir = core::string::extractPath(_name);
+				const std::string_view includeFile(cStart + 1, (size_t)(cEnd - (cStart + 1)));
+				const std::string& includeBuffer = core::App::getInstance()->filesystem()->load(core::string::concat(dir, includeFile));
 				if (includeBuffer.empty()) {
-					Log::error("could not load shader include %s from dir %s (shader %s)", includeFile.c_str(), dir.c_str(), _name.c_str());
+					Log::error("could not load shader include %s from dir %s (shader %s)", includeFile.data(), dir.data(), _name.c_str());
 				}
 				src.append(includeBuffer);
 				break;

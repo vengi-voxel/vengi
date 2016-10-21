@@ -1,12 +1,9 @@
 #include "Tokenizer.h"
 
 namespace core {
-Tokenizer::Tokenizer(const std::string& string, const char *sep) :
-		Tokenizer(string.c_str(), sep) {
-}
 
-Tokenizer::Tokenizer(const char* s, const char *sep) :
-		_posIndex(0u) {
+Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep) :
+		_posIndex(0u), _len((int32_t)len) {
 	bool lastCharIsSep = false;
 	for (;;) {
 		char c = skip(&s);
@@ -20,9 +17,11 @@ Tokenizer::Tokenizer(const char* s, const char *sep) :
 		std::string token;
 		if (c == '"') {
 			++s;
+			--_len;
 			for (;;) {
 				c = *s++;
-				if (c == '"' || c == '\0') {
+				--_len;
+				if (c == '"' || c == '\0' || _len <= 0) {
 					_tokens.push_back(token);
 					break;
 				} else if (c == '\\') {
@@ -45,18 +44,21 @@ Tokenizer::Tokenizer(const char* s, const char *sep) :
 		if (lastCharIsSep) {
 			_tokens.push_back("");
 			++s;
+			--_len;
 			continue;
 		}
 		token.push_back(c);
 		for (;;) {
 			++s;
+			--_len;
 			c = *s;
-			if (c < ' ') {
+			if (c < ' ' || _len <= 0) {
 				break;
 			}
 			lastCharIsSep = isSeparator(c, sep);
 			if (lastCharIsSep) {
 				++s;
+				--_len;
 				break;
 			}
 			token.push_back(c);
@@ -78,13 +80,18 @@ bool Tokenizer::isSeparator(char c, const char *sep) {
 	return false;
 }
 
-char Tokenizer::skip(const char **s) const {
+char Tokenizer::skip(const char **s) {
+	if (_len <= 0) {
+		return '\0';
+	}
 	char c;
 	while ((c = **s) <= ' ') {
-		if (c == '\0') {
+		if (c == '\0' || _len <= 0) {
 			return '\0';
 		}
-		*s += core::string::getUTF8LengthForCharacter(c);
+		const size_t cl = core::string::utf8LengthChar(c);
+		_len -= cl;
+		*s += cl;
 	}
 
 	// skip multiline and singleline comments
@@ -92,16 +99,21 @@ char Tokenizer::skip(const char **s) const {
 		const char next = (*s)[1];
 		if (next == '*') {
 			int l = 0;
+			_len -= 2;
 			*s += 2;
 			const char* data = *s;
 			while (data[l] != '\0' && data[l] != '*' && data[l + 1] != '\0' && data[l + 1] != '/') {
 				++l;
 			}
 			*s += l + 2;
+			_len -= l + 2;
 			return skip(s);
 		} else if (next == '/') {
 			while (**s != '\0' && **s != '\n') {
 				(*s)++;
+				if (--_len <= 0) {
+					return '\0';
+				}
 			}
 			return skip(s);
 		}

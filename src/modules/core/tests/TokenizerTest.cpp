@@ -7,6 +7,35 @@
 
 namespace core {
 
+TEST(TokenizerTest, testTokenizerEmptyLengthExceedsString) {
+	core::Tokenizer t("", 100, ";");
+	ASSERT_EQ(0u, t.size());
+}
+
+TEST(TokenizerTest, testTokenizerLengthExceedsString) {
+	core::Tokenizer t("abc;def", 100, ";");
+	ASSERT_EQ(2u, t.size());
+}
+
+TEST(TokenizerTest, testTokenizerOnlyFirstMatch) {
+	core::Tokenizer t("abc;def", 3, ";");
+	ASSERT_EQ(1u, t.size());
+}
+
+TEST(TokenizerTest, testTokenizerSecondMatchButEmptyString) {
+	core::Tokenizer t("abc;def", 4, ";");
+	ASSERT_EQ(2u, t.size());
+	ASSERT_EQ(t.tokens()[0], "abc");
+	ASSERT_EQ(t.tokens()[1], "");
+}
+
+TEST(TokenizerTest, testTokenizerSecondMatchButOnlyOneChar) {
+	core::Tokenizer t("abc;def", 5, ";");
+	ASSERT_EQ(2u, t.size());
+	ASSERT_EQ(t.tokens()[0], "abc");
+	ASSERT_EQ(t.tokens()[1], "d");
+}
+
 TEST(TokenizerTest, testTokenizerEmpty) {
 	core::Tokenizer t("", ";");
 	ASSERT_EQ(0u, t.size());

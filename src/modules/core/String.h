@@ -13,6 +13,15 @@
 #include <stdarg.h>
 #include <SDL.h>
 
+#if __cplusplus <= 201411
+#include <experimental/string_view>
+namespace std {
+using string_view = std::experimental::string_view;
+}
+#else
+#include <string_view>
+#endif
+
 namespace core {
 namespace string {
 
@@ -39,7 +48,7 @@ inline bool isUTF8Multibyte(char c) {
 	return (c & 0xc0) == 0x80;
 }
 
-inline size_t getUTF8LengthForCharacter(const unsigned char c) {
+inline size_t utf8LengthChar(const unsigned char c) {
 	if (c < 0x80)
 		return 1;
 	if (c < 0xc0)
@@ -54,7 +63,7 @@ inline size_t getUTF8LengthForCharacter(const unsigned char c) {
 	return 0;
 }
 
-inline size_t getUTF8LengthForInt(int c) {
+inline size_t utf8LengthInt(int c) {
 	if (c <= 0x7F)
 		return 1;
 	if (c <= 0x07FF)
@@ -66,7 +75,7 @@ inline size_t getUTF8LengthForInt(int c) {
 	return 0;
 }
 
-inline int getUTF8Next (const char** str)
+inline int utf8Next (const char** str)
 {
 	const char* s = *str;
 	if (s[0] == '\0')
@@ -94,7 +103,7 @@ inline int getUTF8Next (const char** str)
 		return -1;
 	}
 
-	const int utf8Length = getUTF8LengthForCharacter(buf[0]);
+	const int utf8Length = utf8LengthChar(buf[0]);
 	for (int i = 1; i < utf8Length; ++i) {
 		if (!isUTF8Multibyte(buf[i]))
 			return -1;
@@ -114,12 +123,12 @@ inline int getUTF8Next (const char** str)
 	return character;
 }
 
-inline size_t getUTF8Length(const std::string& str) {
+inline size_t utf8Length(const std::string& str) {
 	size_t result = 0;
 	const char *string = str.c_str();
 
 	while (string[0] != '\0') {
-		const int n = getUTF8LengthForCharacter((const unsigned char) *string);
+		const int n = utf8LengthChar((const unsigned char) *string);
 		string += n;
 		result++;
 	}
@@ -203,8 +212,8 @@ inline std::string replaceAll(const std::string& str, const std::string& searchS
 	return sNew;
 }
 
-inline std::string cutAfterFirstMatch(const std::string& str, const std::string& pattern, size_t start = 0) {
-	std::string::size_type pos = str.find_first_of(pattern, 0);
+inline std::string_view cutAfterFirstMatch(const std::string_view str, const std::string& pattern, size_t start = 0) {
+	std::string_view::size_type pos = str.find_first_of(pattern, 0);
 	return str.substr(start, pos);
 }
 
@@ -212,7 +221,7 @@ inline std::string cutAfterFirstMatch(const std::string& str, const std::string&
  * @brief extract path with trailing /
  * @note Assumed to be normalized (no \ , only /)
  */
-inline std::string extractPath(const std::string& str) {
+inline std::string_view extractPath(const std::string_view str) {
 	const size_t pos = str.rfind("/");
 	if (pos == std::string::npos) {
 		return "";
@@ -230,7 +239,7 @@ inline bool contains(const std::string& str, const std::string& search) {
 	return str.rfind(search) != std::string::npos;
 }
 
-inline std::string ltrim(const std::string &str) {
+inline std::string_view ltrim(const std::string_view str) {
 	size_t startpos = str.find_first_not_of(" \t");
 	if (std::string::npos != startpos) {
 		return str.substr(startpos);
@@ -238,7 +247,7 @@ inline std::string ltrim(const std::string &str) {
 	return str;
 }
 
-inline std::string rtrim(const std::string &str) {
+inline std::string_view rtrim(const std::string_view str) {
 	size_t endpos = str.find_last_not_of(" \t");
 	if (std::string::npos != endpos) {
 		return str.substr(0, endpos + 1);
@@ -246,7 +255,7 @@ inline std::string rtrim(const std::string &str) {
 	return str;
 }
 
-inline std::string trim(const std::string &str) {
+inline std::string_view trim(const std::string_view &str) {
 	return ltrim(rtrim(str));
 }
 
@@ -264,6 +273,9 @@ inline bool iequals(const std::string& a, const std::string& b) {
 }
 
 extern bool matches (const std::string& pattern, const std::string& text);
+
+// pass by copy to prevent aliasing
+extern std::string concat(std::string_view first, std::string_view second);
 
 }
 }
