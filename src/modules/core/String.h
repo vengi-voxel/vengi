@@ -197,19 +197,31 @@ inline bool endsWith(const std::string& string, const std::string& end) {
 	return false;
 }
 
-inline std::string replaceAll(const std::string& str, const std::string& searchStr, const std::string& replaceStr) {
-	if (str.empty())
+inline std::string replaceAll(const std::string& str, const std::string& searchStr, const char* replaceStr, size_t replaceStrSize) {
+	if (str.empty()) {
 		return str;
+	}
 	std::string sNew = str;
 	std::string::size_type loc;
-	const std::string::size_type replaceLength = replaceStr.length();
 	const std::string::size_type searchLength = searchStr.length();
 	std::string::size_type lastPosition = 0;
 	while (std::string::npos != (loc = sNew.find(searchStr, lastPosition))) {
 		sNew.replace(loc, searchLength, replaceStr);
-		lastPosition = loc + replaceLength;
+		lastPosition = loc + replaceStrSize;
 	}
 	return sNew;
+}
+
+inline std::string replaceAll(const std::string& str, const std::string& searchStr, const char* replaceStr) {
+	return replaceAll(str, searchStr, replaceStr, strlen(replaceStr));
+}
+
+inline std::string replaceAll(const std::string& str, const std::string& searchStr, const std::string_view& replaceStr) {
+	return replaceAll(str, searchStr, replaceStr.data(), replaceStr.size());
+}
+
+inline std::string replaceAll(const std::string& str, const std::string& searchStr, const std::string& replaceStr) {
+	return replaceAll(str, searchStr, replaceStr.data(), replaceStr.size());
 }
 
 inline std::string_view cutAfterFirstMatch(const std::string_view str, const std::string& pattern, size_t start = 0) {
@@ -255,7 +267,7 @@ inline std::string_view rtrim(const std::string_view str) {
 	return str;
 }
 
-inline std::string_view trim(const std::string_view &str) {
+inline std::string_view trim(const std::string_view str) {
 	return ltrim(rtrim(str));
 }
 

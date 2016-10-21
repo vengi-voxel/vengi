@@ -193,9 +193,7 @@ void ShaderTool::generateSrc() const {
 	if (filename.empty()) {
 		filename = name;
 	}
-	const std::string classname = filename;
-	filename += ".h";
-	src = core::string::replaceAll(src, "$name$", classname);
+	src = core::string::replaceAll(src, "$name$", filename);
 	src = core::string::replaceAll(src, "$namespace$", _namespaceSrc);
 	src = core::string::replaceAll(src, "$filename$", _shaderDirectory + _shaderStruct.filename);
 	std::stringstream uniforms;
@@ -395,7 +393,7 @@ void ShaderTool::generateSrc() const {
 
 	src = core::string::replaceAll(src, "$attributes$", attributes.str());
 	src = core::string::replaceAll(src, "$setters$", setters.str());
-	const std::string targetFile = _sourceDirectory + filename;
+	const std::string targetFile = _sourceDirectory + filename + ".h";
 	Log::debug("Generate shader bindings for %s at %s", _shaderStruct.name.c_str(), targetFile.c_str());
 	core::App::getInstance()->filesystem()->syswrite(targetFile, src);
 }
