@@ -8,8 +8,8 @@
 
 namespace cooldown {
 
-CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownDurationPtr& cooldownDuration) :
-		_timeProvider(timeProvider), _cooldownDuration(cooldownDuration), _lock("CooldownMgr") {
+CooldownMgr::CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
+		_timeProvider(timeProvider), _cooldownProvider(cooldownProvider), _lock("CooldownMgr") {
 }
 
 CooldownTriggerState CooldownMgr::triggerCooldown(Type type) {
@@ -39,7 +39,7 @@ CooldownPtr CooldownMgr::cooldown(Type type) const {
 }
 
 unsigned long CooldownMgr::defaultDuration(Type type) const {
-	return _cooldownDuration->duration(type);
+	return _cooldownProvider->duration(type);
 }
 
 bool CooldownMgr::resetCooldown(Type type) {

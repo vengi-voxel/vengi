@@ -61,11 +61,11 @@ inline const std::string& CooldownProvider::error() const {
 
 inline long CooldownProvider::duration(Type type) const {
 	if (!_initialized) {
-		::Log::warn("Trying to get cooldown duration without CooldownDuration::init() being called");
+		::Log::warn("Trying to get cooldown duration without CooldownProvider::init() being called");
 	}
 	return _durations[std::enum_value<Type>(type)];
 }
 
-typedef std::shared_ptr<CooldownProvider> CooldownDurationPtr;
+typedef std::shared_ptr<CooldownProvider> CooldownProviderPtr;
 
 }

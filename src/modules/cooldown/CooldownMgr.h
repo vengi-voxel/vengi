@@ -26,7 +26,7 @@ namespace cooldown {
 class CooldownMgr: public core::NonCopyable {
 private:
 	core::TimeProviderPtr _timeProvider;
-	cooldown::CooldownDurationPtr _cooldownDuration;
+	cooldown::CooldownProviderPtr _cooldownProvider;
 	core::ReadWriteLock _lock;
 
 	struct CooldownComparatorLess: public std::binary_function<CooldownPtr, CooldownPtr, bool> {
@@ -40,7 +40,7 @@ private:
 	typedef std::unordered_map<Type, CooldownPtr, network::EnumHash<Type> > Cooldowns;
 	Cooldowns _cooldowns;
 public:
-	CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownDurationPtr& cooldownDuration);
+	CooldownMgr(const core::TimeProviderPtr& timeProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 
 	/**
 	 * @brief Tries to trigger the specified cooldown for the given entity

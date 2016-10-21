@@ -77,13 +77,13 @@ int main(int argc, char *argv[]) {
 
 	const backend::AILoaderPtr& loader = std::make_shared<backend::AILoader>(registry);
 
-	const cooldown::CooldownDurationPtr& cooldownDuration = std::make_shared<cooldown::CooldownProvider>();
+	const cooldown::CooldownProviderPtr& cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 
 	const backend::PoiProviderPtr& poiProvider = std::make_shared<backend::PoiProvider>(world, timeProvider);
-	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownDuration);
-	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider, cooldownDuration);
+	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownProvider);
+	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 
-	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownDuration);
+	const backend::ServerLoopPtr& serverLoop = std::make_shared<backend::ServerLoop>(network, spawnMgr, world, entityStorage, eventBus, registry, containerProvider, poiProvider, cooldownProvider);
 
 	Server app(network, serverLoop, timeProvider, filesystem, eventBus);
 	return app.startMainLoop(argc, argv);

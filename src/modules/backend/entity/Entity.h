@@ -71,7 +71,7 @@ protected:
 	void onAttribChange(const attrib::DirtyValue& v);
 public:
 	Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider,
-			const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownDurationPtr& cooldownDuration);
+			const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 	virtual ~Entity();
 
 	void addContainer(const std::string& id);

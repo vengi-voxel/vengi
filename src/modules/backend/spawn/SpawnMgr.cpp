@@ -16,9 +16,9 @@ static const long spawnTime = 15000L;
 
 SpawnMgr::SpawnMgr(const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const network::MessageSenderPtr& messageSender,
 		const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
-		const PoiProviderPtr& poiProvider, const cooldown::CooldownDurationPtr& cooldownDuration) :
+		const PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
 		_loader(loader), _world(world), _entityStorage(entityStorage), _messageSender(messageSender), _timeProvider(timeProvider),
-		_containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownDuration(cooldownDuration), _time(15000L) {
+		_containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _time(15000L) {
 }
 
 void SpawnMgr::shutdown() {
@@ -75,7 +75,7 @@ int SpawnMgr::spawn(ai::Zone& zone, network::EntityType type, int amount, const 
 		return 0;
 	}
 	for (int x = 0; x < amount; ++x) {
-		const NpcPtr& npc = std::make_shared<Npc>(type, _entityStorage, behaviour, _world, _messageSender, _timeProvider, _containerProvider, _cooldownDuration, _poiProvider);
+		const NpcPtr& npc = std::make_shared<Npc>(type, _entityStorage, behaviour, _world, _messageSender, _timeProvider, _containerProvider, _cooldownProvider, _poiProvider);
 		npc->init(pos);
 		// now let it tick
 		zone.addAI(npc->ai());

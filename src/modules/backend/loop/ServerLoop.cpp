@@ -28,9 +28,9 @@ constexpr int aiDebugServerPort = 11338;
 constexpr const char* aiDebugServerInterface = "127.0.0.1";
 
 ServerLoop::ServerLoop(const network::NetworkPtr& network, const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
-		const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider, const cooldown::CooldownDurationPtr& cooldownDuration) :
+		const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
 		_network(network), _spawnMgr(spawnMgr), _world(world), _zone("Zone"), _aiServer(*registry, aiDebugServerPort, aiDebugServerInterface),
-		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownDuration(cooldownDuration) {
+		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider) {
 	_world->setClientData(false);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
 	_eventBus->subscribe<network::DisconnectEvent>(*this);
@@ -44,8 +44,8 @@ bool ServerLoop::init() {
 	persistence::UserStore u;
 	u.createTable();
 
-	if (!_cooldownDuration->init("cooldowns.lua")) {
-		Log::error("Failed to load the cooldown configuration: %s", _cooldownDuration->error().c_str());
+	if (!_cooldownProvider->init("cooldowns.lua")) {
+		Log::error("Failed to load the cooldown configuration: %s", _cooldownProvider->error().c_str());
 		return false;
 	}
 

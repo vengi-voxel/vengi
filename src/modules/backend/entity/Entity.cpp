@@ -9,8 +9,8 @@
 
 namespace backend {
 
-Entity::Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownDurationPtr& cooldownDuration) :
-		_visibleLock("Entity"), _entityId(id), _messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider, cooldownDuration) {
+Entity::Entity(EntityId id, const network::MessageSenderPtr& messageSender, const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
+		_visibleLock("Entity"), _entityId(id), _messageSender(messageSender), _containerProvider(containerProvider), _cooldowns(timeProvider, cooldownProvider) {
 	_attribs.addListener(std::bind(&Entity::onAttribChange, this, std::placeholders::_1));
 }
 

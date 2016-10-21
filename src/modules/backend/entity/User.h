@@ -36,7 +36,7 @@ protected:
 
 public:
 	User(ENetPeer* peer, EntityId id, const std::string& name, const network::MessageSenderPtr& messageSender, const voxel::WorldPtr& world,
-			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownDurationPtr& cooldownDuration,
+			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
 			const PoiProviderPtr& poiProvider);
 
 	void setEntityId(EntityId id);

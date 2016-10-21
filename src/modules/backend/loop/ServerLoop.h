@@ -36,7 +36,7 @@ private:
 	AIRegistryPtr _registry;
 	attrib::ContainerProviderPtr _containerProvider;
 	PoiProviderPtr _poiProvider;
-	cooldown::CooldownDurationPtr _cooldownDuration;
+	cooldown::CooldownProviderPtr _cooldownProvider;
 	core::Input _input;
 
 	void readInput();
@@ -44,7 +44,7 @@ public:
 	ServerLoop(const network::NetworkPtr& network, const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world,
 			const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
 			const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider,
-			const cooldown::CooldownDurationPtr& cooldownDuration);
+			const cooldown::CooldownProviderPtr& cooldownProvider);
 
 	bool init();
 	void shutdown();
