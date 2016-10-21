@@ -1,24 +1,25 @@
-#include "CooldownDuration.h"
+#include "CooldownProvider.h"
+
 #include "commonlua/LUA.h"
 #include "core/App.h"
 #include <SDL.h>
 
 namespace cooldown {
 
-CooldownDuration::CooldownDuration() {
+CooldownProvider::CooldownProvider() {
 	for (size_t i = 0u; i < SDL_arraysize(_durations); ++i) {
 		_durations[i] = DefaultDuration;
 	}
 }
 
-long CooldownDuration::setDuration(Type type, long duration) {
+long CooldownProvider::setDuration(Type type, long duration) {
 	const int t = std::enum_value<Type>(type);
 	const long old = _durations[t];
 	_durations[t] = duration;
 	return old;
 }
 
-bool CooldownDuration::init(const std::string& filename) {
+bool CooldownProvider::init(const std::string& filename) {
 	if (filename.empty()) {
 		_error = "";
 		_initialized = true;
@@ -34,10 +35,10 @@ bool CooldownDuration::init(const std::string& filename) {
 	_error = "";
 
 	lua::LUA lua;
-	lua.newGlobalData<CooldownDuration>("CooldownDuration", this);
+	lua.newGlobalData<CooldownProvider>("Provider", this);
 
 	lua.registerGlobal("addCooldown", [] (lua_State* s) {
-		CooldownDuration* data = lua::LUA::globalData<CooldownDuration>(s, "CooldownDuration");
+		CooldownProvider* data = lua::LUA::globalData<CooldownProvider>(s, "Provider");
 		const char *typeStr = luaL_checkstring(s, 1);
 		const Type type = getType(typeStr);
 		if (type == cooldown::Type::NONE) {

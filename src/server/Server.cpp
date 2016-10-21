@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
 
 	const backend::AILoaderPtr& loader = std::make_shared<backend::AILoader>(registry);
 
-	const cooldown::CooldownDurationPtr& cooldownDuration = std::make_shared<cooldown::CooldownDuration>();
+	const cooldown::CooldownDurationPtr& cooldownDuration = std::make_shared<cooldown::CooldownProvider>();
 
 	const backend::PoiProviderPtr& poiProvider = std::make_shared<backend::PoiProvider>(world, timeProvider);
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownDuration);

@@ -15,7 +15,7 @@ static constexpr int DefaultDuration = 1000;
  * @brief Manages the cooldown durations
  * @ingroup Cooldowns
  */
-class CooldownDuration {
+class CooldownProvider {
 private:
 	bool _initialized = false;
 	long _durations[std::enum_value<Type>(Type::MAX) + 1];
@@ -24,7 +24,7 @@ public:
 	/**
 	 * @brief Ctor to init all available cooldowns to the DefaultDuration
 	 */
-	CooldownDuration();
+	CooldownProvider();
 
 	/**
 	 * @return The duration in millis for the given cooldown type
@@ -55,17 +55,17 @@ public:
 	const std::string& error() const;
 };
 
-inline const std::string& CooldownDuration::error() const {
+inline const std::string& CooldownProvider::error() const {
 	return _error;
 }
 
-inline long CooldownDuration::duration(Type type) const {
+inline long CooldownProvider::duration(Type type) const {
 	if (!_initialized) {
 		::Log::warn("Trying to get cooldown duration without CooldownDuration::init() being called");
 	}
 	return _durations[std::enum_value<Type>(type)];
 }
 
-typedef std::shared_ptr<CooldownDuration> CooldownDurationPtr;
+typedef std::shared_ptr<CooldownProvider> CooldownDurationPtr;
 
 }

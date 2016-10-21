@@ -4,7 +4,8 @@
 
 #include "core/tests/AbstractTest.h"
 #include "cooldown/CooldownMgr.h"
-#include "cooldown/CooldownDuration.h"
+
+#include "../CooldownProvider.h"
 #include "core/Singleton.h"
 
 namespace cooldown {
@@ -17,7 +18,7 @@ protected:
 public:
 	CooldownMgrTest() :
 		_timeProvider(std::make_shared<core::TimeProvider>()),
-		_cooldownDuration(std::make_shared<cooldown::CooldownDuration>()),
+		_cooldownDuration(std::make_shared<cooldown::CooldownProvider>()),
 		_mgr(_timeProvider, _cooldownDuration) {
 	}
 

@@ -9,7 +9,7 @@
 #include "core/NonCopyable.h"
 #include "core/TimeProvider.h"
 #include "core/ReadWriteLock.h"
-#include "CooldownDuration.h"
+#include "CooldownProvider.h"
 
 #include <memory>
 #include <unordered_map>

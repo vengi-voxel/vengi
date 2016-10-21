@@ -3,12 +3,13 @@
  */
 
 #include "ServerLoop.h"
+
 #include "core/Command.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
-#include "cooldown/CooldownDuration.h"
+#include "cooldown/CooldownProvider.h"
 #include "persistence/ConnectionPool.h"
 #include "DatabaseModels.h"
 #include "backend/entity/User.h"
