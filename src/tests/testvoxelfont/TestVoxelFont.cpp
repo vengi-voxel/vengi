@@ -1,7 +1,7 @@
 #include "TestVoxelFont.h"
 
-TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
-		Super(filesystem, eventBus), _colorShader(shader::ColorShader::getInstance()) {
+TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, eventBus, timeProvider), _colorShader(shader::ColorShader::getInstance()) {
 	setCameraMotion(true);
 }
 
@@ -175,6 +175,7 @@ void TestVoxelFont::doRender() {
 int main(int argc, char *argv[]) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	TestVoxelFont app(filesystem, eventBus);
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	TestVoxelFont app(filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

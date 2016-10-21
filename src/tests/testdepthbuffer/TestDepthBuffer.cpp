@@ -1,8 +1,8 @@
 #include "TestDepthBuffer.h"
 #include "video/ScopedViewPort.h"
 
-TestDepthBuffer::TestDepthBuffer(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		Super(filesystem, eventBus) {
+TestDepthBuffer::TestDepthBuffer(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, eventBus, timeProvider) {
 }
 
 void TestDepthBuffer::doRender() {
@@ -43,6 +43,7 @@ core::AppState TestDepthBuffer::onCleanup() {
 int main(int argc, char *argv[]) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	TestDepthBuffer app(filesystem, eventBus);
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	TestDepthBuffer app(filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

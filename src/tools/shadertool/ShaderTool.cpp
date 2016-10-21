@@ -44,8 +44,8 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int32_t",           Value,     "sampler2DShadow" }
 };
 
-ShaderTool::ShaderTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		core::App(filesystem, eventBus, 0) {
+ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		core::App(filesystem, eventBus, timeProvider, 0) {
 	init("engine", "shadertool");
 	static_assert(Variable::MAX == SDL_arraysize(cTypes), "mismatch in glsl types");
 }
@@ -587,6 +587,7 @@ core::AppState ShaderTool::onRunning() {
 int main(int argc, char *argv[]) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	ShaderTool app(filesystem, eventBus);
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	ShaderTool app(filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

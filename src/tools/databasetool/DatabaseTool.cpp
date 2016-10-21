@@ -19,8 +19,8 @@ static const char *ConstraintTypeNames[] = {
 	CORE_STRINGIFY(NOTNULL)
 };
 
-DatabaseTool::DatabaseTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		core::App(filesystem, eventBus, 0) {
+DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		core::App(filesystem, eventBus, timeProvider, 0) {
 	init("engine", "databasetool");
 	static_assert(SDL_arraysize(FieldTypeNames) == persistence::Model::MAX_FIELDTYPES, "Invalid field type mapping");
 	static_assert(SDL_arraysize(ConstraintTypeNames) == persistence::Model::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
@@ -620,6 +620,7 @@ core::AppState DatabaseTool::onRunning() {
 int main(int argc, char *argv[]) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	DatabaseTool app(filesystem, eventBus);
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	DatabaseTool app(filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

@@ -75,7 +75,7 @@ protected:
 	void showStr(int x, int y, const glm::vec4& color, const char *fmt, ...) __attribute__((format(printf, 5, 6)));
 	void enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) __attribute__((format(printf, 4, 5)));
 public:
-	UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport = 17815);
+	UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport = 17815);
 	virtual ~UIApp();
 
 	virtual void beforeUI() {

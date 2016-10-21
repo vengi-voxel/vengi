@@ -4,8 +4,8 @@
 
 #define MaxDepthBufferUniformName "u_farplanes"
 
-TestMeshApp::TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		Super(filesystem, eventBus), _colorShader(shader::ColorShader::getInstance()) {
+TestMeshApp::TestMeshApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, eventBus, timeProvider), _colorShader(shader::ColorShader::getInstance()) {
 	setCameraMotion(true);
 	setRenderPlane(false);
 }

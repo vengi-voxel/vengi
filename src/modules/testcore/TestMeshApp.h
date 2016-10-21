@@ -27,7 +27,7 @@ protected:
 	virtual void renderPlane();
 	virtual void doRender() override;
 public:
-	TestMeshApp(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
+	TestMeshApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	virtual core::AppState onInit() override;
 	virtual core::AppState onCleanup() override;

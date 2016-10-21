@@ -6,8 +6,8 @@
 #include "ui/Window.h"
 #include "ui/FontUtil.h"
 
-UITool::UITool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		core::App(filesystem, eventBus, 0) {
+UITool::UITool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		core::App(filesystem, eventBus, timeProvider, 0) {
 	init("engine", "uitool");
 }
 
@@ -67,6 +67,7 @@ core::AppState UITool::onCleanup() {
 int main(int argc, char *argv[]) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	UITool app(filesystem, eventBus);
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	UITool app(filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

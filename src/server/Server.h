@@ -14,9 +14,10 @@ private:
 	bool _quit;
 	network::NetworkPtr _network;
 	backend::ServerLoopPtr _serverLoop;
-	core::TimeProviderPtr _timeProvider;
 public:
-	Server(network::NetworkPtr network, backend::ServerLoopPtr serverLoop, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
+	Server(const network::NetworkPtr& network, const backend::ServerLoopPtr& serverLoop,
+			const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
+			const core::EventBusPtr& eventBus);
 
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;

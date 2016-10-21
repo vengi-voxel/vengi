@@ -56,7 +56,7 @@ protected:
 	bool generateClassForTable(const Table& table, std::stringstream& src) const;
 	bool generateSrc() const;
 public:
-	DatabaseTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
+	DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	core::AppState onRunning() override;
 };

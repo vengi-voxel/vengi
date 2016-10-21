@@ -16,7 +16,7 @@ private:
 	DummyRenderer _renderer;
 	tb::TBWidget _root;
 public:
-	UITool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
+	UITool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	core::AppState onInit() override;
 	core::AppState onRunning() override;

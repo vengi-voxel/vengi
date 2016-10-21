@@ -14,8 +14,11 @@
 
 #include <cstdlib>
 
-Server::Server(network::NetworkPtr network, backend::ServerLoopPtr serverLoop, core::TimeProviderPtr timeProvider, io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		core::App(filesystem, eventBus, 15678), _quit(false), _network(network), _serverLoop(serverLoop), _timeProvider(timeProvider) {
+Server::Server(const network::NetworkPtr& network, const backend::ServerLoopPtr& serverLoop,
+		const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
+		const core::EventBusPtr& eventBus) :
+		core::App(filesystem, eventBus, timeProvider, 15678), _quit(false), _network(network),
+		_serverLoop(serverLoop) {
 	init("engine", "server");
 }
 
@@ -55,7 +58,6 @@ core::AppState Server::onRunning() {
 	if (_quit) {
 		return core::Cleanup;
 	}
-	_timeProvider->update(_now);
 	core::App::onRunning();
 	_serverLoop->onFrame(_deltaFrame);
 	return core::Running;

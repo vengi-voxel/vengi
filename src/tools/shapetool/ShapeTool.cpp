@@ -12,8 +12,8 @@
 #include "frontend/Movement.h"
 
 // tool for testing the world createXXX functions without starting the application
-ShapeTool::ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world) :
-		Super(filesystem, eventBus), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
+ShapeTool::ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world) :
+		Super(filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
 	init("engine", "shapetool");
 	_world->setClientData(true);
 }
@@ -242,6 +242,7 @@ int main(int argc, char *argv[]) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const voxel::WorldPtr world = std::make_shared<voxel::World>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	ShapeTool app(meshPool, filesystem, eventBus, world);
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	ShapeTool app(meshPool, filesystem, eventBus, timeProvider, world);
 	return app.startMainLoop(argc, argv);
 }

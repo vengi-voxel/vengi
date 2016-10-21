@@ -67,7 +67,7 @@ protected:
 	std::string uniformSetterPostfix(const Variable::Type type, int amount) const;
 	void generateSrc() const;
 public:
-	ShaderTool(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
+	ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	~ShaderTool();
 
 	core::AppState onRunning() override;

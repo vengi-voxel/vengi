@@ -2,8 +2,8 @@
 #include "core/Color.h"
 #include "video/Camera.h"
 
-TestTexture::TestTexture(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		Super(filesystem, eventBus) {
+TestTexture::TestTexture(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, eventBus, timeProvider) {
 }
 
 core::AppState TestTexture::onInit() {
@@ -55,7 +55,8 @@ core::AppState TestTexture::onCleanup() {
 int main(int argc, char *argv[]) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	TestTexture app(filesystem, eventBus);
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	TestTexture app(filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 
 }

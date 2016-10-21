@@ -17,7 +17,7 @@ private:
 	protected:
 		AbstractTest* _test = nullptr;
 	public:
-		TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, AbstractTest* test);
+		TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test);
 		~TestApp();
 
 		virtual AppState onInit() override;

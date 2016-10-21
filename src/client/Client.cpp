@@ -43,8 +43,8 @@
 
 Client::Client(const video::MeshPoolPtr& meshPool, const network::NetworkPtr& network, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
 		const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem) :
-		Super(filesystem, eventBus, 17816), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
-		_timeProvider(timeProvider), _worldRenderer(world), _waiting(this) {
+		Super(filesystem, eventBus, timeProvider, 17816), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
+		_worldRenderer(world), _waiting(this) {
 	_world->setClientData(true);
 	init("engine", "client");
 }
@@ -263,7 +263,6 @@ bool Client::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 core::AppState Client::onRunning() {
-	_timeProvider->update(_now);
 	_waiting.update(_deltaFrame);
 	core::AppState state = Super::onRunning();
 	core::Var::visitBroadcast([] (const core::VarPtr& var) {

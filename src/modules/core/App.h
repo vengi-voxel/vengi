@@ -10,6 +10,7 @@
 #include "Var.h"
 #include "Trace.h"
 #include "EventBus.h"
+#include "TimeProvider.h"
 #include "core/ThreadPool.h"
 #include "io/Filesystem.h"
 
@@ -19,6 +20,9 @@ enum AppState {
 	Construct, Init, Running, Cleanup, Destroy, Blocked, NumAppStates, InvalidAppState,
 };
 
+/**
+ * @brief The app class controls the main loop of every application.
+ */
 class App {
 protected:
 	core::Trace _trace;
@@ -42,14 +46,19 @@ protected:
 	core::EventBusPtr _eventBus;
 	static App* _staticInstance;
 	core::ThreadPool _threadPool;
+	core::TimeProviderPtr _timeProvider;
 	core::VarPtr _logLevel;
 
+	/**
+	 * @brief There is no fps limit per default, but you set one on a per-app basis
+	 * @param[in] framesPerSecondsCap The frames to cap the application loop at
+	 */
 	void setFramesPerSecondsCap(double framesPerSecondsCap) {
 		_framesPerSecondsCap = framesPerSecondsCap;
 	}
 
 public:
-	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport, size_t threadPoolSize = 1);
+	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport, size_t threadPoolSize = 1);
 	virtual ~App();
 
 	void init(const std::string& organisation, const std::string& appname);
@@ -90,6 +99,8 @@ public:
 
 	core::ThreadPool& threadPool();
 
+	core::TimeProviderPtr timeProvider() const;
+
 	core::EventBusPtr eventBus() const;
 
 	std::string currentWorkingDir() const;
@@ -101,11 +112,15 @@ public:
 };
 
 inline long App::currentMillis() const {
-	return static_cast<long>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+	return _timeProvider->currentTime();
 }
 
 inline io::FilesystemPtr App::filesystem() const {
 	return _filesystem;
+}
+
+inline core::TimeProviderPtr App::timeProvider() const {
+	return _timeProvider;
 }
 
 inline core::ThreadPool& App::threadPool() {

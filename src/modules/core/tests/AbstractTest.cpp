@@ -14,7 +14,8 @@ namespace core {
 void AbstractTest::SetUp() {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	_testApp = new TestApp(filesystem, eventBus, this);
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	_testApp = new TestApp(filesystem, eventBus, timeProvider, this);
 	const bool isRunning = _testApp->_curState == AppState::Running;
 	ASSERT_TRUE(isRunning) << "Failed to setup the test app properly";
 }
@@ -24,8 +25,8 @@ void AbstractTest::TearDown() {
 	delete _testApp;
 }
 
-AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, AbstractTest* test) :
-		core::App(filesystem, eventBus, 10000), _test(test) {
+AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
+		core::App(filesystem, eventBus, timeProvider, 10000), _test(test) {
 	init("engine", "test");
 	_argc = ::_argc;
 	_argv = ::_argv;

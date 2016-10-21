@@ -6,8 +6,8 @@
 #include "frontend/Movement.h"
 #include "ui/TestAppWindow.h"
 
-TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
-		Super(filesystem, eventBus, 21000) {
+TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, eventBus, timeProvider, 21000) {
 	init("engine", "test");
 }
 

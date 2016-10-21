@@ -18,7 +18,7 @@ private:
 
 	void doRender() override;
 public:
-	TestTexture(io::FilesystemPtr filesystem, core::EventBusPtr eventBus);
+	TestTexture(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;

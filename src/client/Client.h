@@ -14,8 +14,6 @@
 #include "util/PosLerp.h"
 #include "core/Var.h"
 #include "core/Common.h"
-#include "core/EventBus.h"
-#include "core/TimeProvider.h"
 #include "voxel/WorldEvents.h"
 #include "network/Network.h"
 #include "network/MessageSender.h"
@@ -37,7 +35,6 @@ protected:
 	network::NetworkPtr _network;
 	voxel::WorldPtr _world;
 	network::MessageSenderPtr _messageSender;
-	core::TimeProviderPtr _timeProvider;
 	frontend::WorldRenderer _worldRenderer;
 	ENetPeer* _peer = nullptr;
 	flatbuffers::FlatBufferBuilder _moveFbb;

@@ -98,8 +98,8 @@ int mapKey(int32_t key) {
 
 tb::UIRendererGL _renderer;
 
-UIApp::UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport) :
-		Super(filesystem, eventBus, traceport), _quit(false) {
+UIApp::UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
+		Super(filesystem, eventBus, timeProvider, traceport), _quit(false) {
 }
 
 UIApp::~UIApp() {

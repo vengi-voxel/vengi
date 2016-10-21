@@ -28,7 +28,7 @@ protected:
 	KeyMap _keys;
 	util::BindMap _bindings;
 
-	WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport = 17815);
+	WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport = 17815);
 
 	bool loadKeyBindings(const std::string& filename = "keybindings.cfg");
 

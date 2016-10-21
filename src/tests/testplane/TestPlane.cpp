@@ -1,7 +1,7 @@
 #include "TestPlane.h"
 
-TestPlane::TestPlane(io::FilesystemPtr filesystem, core::EventBusPtr eventBus) :
-		Super(filesystem, eventBus) {
+TestPlane::TestPlane(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, eventBus, timeProvider) {
 	setCameraMotion(true);
 	setRenderAxis(true);
 }
@@ -32,6 +32,7 @@ core::AppState TestPlane::onCleanup() {
 int main(int argc, char *argv[]) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	TestPlane app(filesystem, eventBus);
+	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	TestPlane app(filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

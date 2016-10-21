@@ -44,7 +44,7 @@ protected:
 	}
 
 public:
-	TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus);
+	TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	virtual ~TestApp();
 
 	video::Camera& camera();

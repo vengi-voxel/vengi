@@ -16,9 +16,10 @@ namespace core {
 
 App* App::_staticInstance;
 
-App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport, size_t threadPoolSize) :
+App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport, size_t threadPoolSize) :
 		_trace(traceport), _argc(0), _argv(nullptr), _curState(AppState::Construct), _nextState(AppState::InvalidAppState),
-		_suspendRequested(false), _deltaFrame(0L), _initTime(0L), _filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core") {
+		_suspendRequested(false), _deltaFrame(0L), _initTime(0L), _filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core"),
+		_timeProvider(timeProvider) {
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 	_now = currentMillis();
 	_staticInstance = this;
@@ -57,7 +58,7 @@ void App::remBlocker(AppState blockedState) {
 
 void App::onFrame() {
 	core_trace_scoped(AppOnFrame);
-	if ((_nextState != AppState::InvalidAppState) && (_nextState != _curState)) {
+	if (_nextState != AppState::InvalidAppState && _nextState != _curState) {
 		if (_blockers.find(_nextState) != _blockers.end()) {
 			if (AppState::Blocked != _curState) {
 				_curState = AppState::Blocked;
@@ -73,6 +74,7 @@ void App::onFrame() {
 	} else {
 		const long now = currentMillis();
 		_deltaFrame = std::max(1l, now - _now);
+		_timeProvider->update(now);
 		_now = now;
 
 		switch (_curState) {

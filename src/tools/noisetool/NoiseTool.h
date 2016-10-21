@@ -11,7 +11,7 @@
  */
 class NoiseTool: public ui::UIApp {
 public:
-	NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus);
+	NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	core::AppState onInit() override;
 };

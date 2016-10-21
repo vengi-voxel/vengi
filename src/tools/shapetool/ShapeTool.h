@@ -45,7 +45,7 @@ protected:
 	void afterUI() override;
 
 public:
-	ShapeTool(video::MeshPoolPtr meshPool, io::FilesystemPtr filesystem, core::EventBusPtr eventBus, voxel::WorldPtr world);
+	ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world);
 	~ShapeTool();
 
 	void reset(const voxel::WorldContext& ctx);

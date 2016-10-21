@@ -30,8 +30,8 @@ inline void checkError(const char *file, unsigned int line, const char *function
 #define sdlCheckError() checkError(__FILE__, __LINE__, __PRETTY_FUNCTION__)
 }
 
-WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, uint16_t traceport) :
-		App(filesystem, eventBus, traceport), _window(nullptr), _glcontext(nullptr), _dimension(-1), _aspect(1.0f) {
+WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
+		App(filesystem, eventBus, timeProvider, traceport), _window(nullptr), _glcontext(nullptr), _dimension(-1), _aspect(1.0f) {
 }
 
 void WindowedApp::onAfterRunning() {

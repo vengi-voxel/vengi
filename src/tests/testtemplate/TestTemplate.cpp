@@ -1,7 +1,7 @@
 #include "TestTemplate.h"
 
-TestTemplate::TestTemplate(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus) :
-		Super(filesystem, eventBus) {
+TestTemplate::TestTemplate(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, eventBus, timeProvider) {
 }
 
 core::AppState TestTemplate::onInit() {
