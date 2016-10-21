@@ -12,6 +12,11 @@ struct SDL_RWops;
 
 namespace io {
 
+/**
+ * @brief Wrapper for file based io.
+ *
+ * @see FileSystem
+ */
 class File : public IOResource {
 protected:
 	SDL_RWops* _file;

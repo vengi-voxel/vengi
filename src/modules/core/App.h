@@ -95,12 +95,21 @@ public:
 	 */
 	long currentMillis() const;
 
+	/**
+	 * @brief Access to the FileSystem
+	 */
 	io::FilesystemPtr filesystem() const;
 
 	core::ThreadPool& threadPool();
 
+	/**
+	 * @brief Access to the global TimeProvider
+	 */
 	core::TimeProviderPtr timeProvider() const;
 
+	/**
+	 * @brief Access to the global EventBus
+	 */
 	core::EventBusPtr eventBus() const;
 
 	std::string currentWorkingDir() const;

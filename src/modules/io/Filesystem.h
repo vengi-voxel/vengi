@@ -10,6 +10,11 @@
 
 namespace io {
 
+/**
+ * @brief Hide platform specific details about the io handling for files.
+ *
+ * @note You can load file synchronous or asynchronous with a callback.
+ */
 class Filesystem {
 private:
 	core::ThreadPool _threadPool;
@@ -43,7 +48,7 @@ public:
 	 * @brief Loads a file asynchronously and executes the given @c CompleteHandle once some result is available.
 	 */
 	template<class CompleteHandle>
-	void loadAsync(const std::string& filename, CompleteHandle completeHandle) {
+	void loadAsync(const std::string& filename, CompleteHandle&& completeHandle) {
 		_threadPool.enqueue([=]() {
 			io::FilePtr f(new io::File(filename));
 			completeHandle(f);

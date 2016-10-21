@@ -11,6 +11,9 @@
 
 namespace image {
 
+/**
+ * @brief Wrapper for image loading
+ */
 class Image: public io::IOResource {
 private:
 	std::string _name;
