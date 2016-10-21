@@ -4,6 +4,7 @@ add_subdirectory(uitool)
 add_subdirectory(glslang)
 
 if (TOOLS)
+	add_subdirectory(voxedit)
 	add_subdirectory(shapetool)
 	add_subdirectory(noisetool)
 	add_subdirectory(rcon)
