@@ -33,7 +33,10 @@ Trace::Trace(uint16_t port) :
 		settings->realloc = SDL_realloc;
 #endif
 	}
-	rmt_CreateGlobalInstance(&_remotery);
+	const rmtError rmtInstError = rmt_CreateGlobalInstance(&_remotery);
+	if (rmtInstError != RMT_ERROR_NONE) {
+		Log::error("Failed to init remotery");
+	}
 #if USE_EMTRACE
 	emscripten_trace_configure("http://localhost:5000/", "Engine");
 #endif
