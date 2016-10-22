@@ -21,6 +21,18 @@ TEST_F(CameraTest, testLookAt) {
 	EXPECT_FLOAT_EQ(0.0f, camera.roll());
 }
 
+TEST_F(CameraTest, testConversion) {
+	// TODO: finish this
+	Camera camera;
+	camera.init(glm::vec2(1024, 768));
+	camera.setPosition(glm::vec3(0.0, 1.0, 0.0));
+	camera.lookAt(glm::vec3(0.0), glm::forward);
+	camera.update(0l);
+	glm::vec3 p;
+	camera.worldToScreen(glm::vec3(0.0f), p.x, p.y);
+	const glm::vec3& w = camera.screenToWorld(p);
+}
+
 TEST_F(CameraTest, testMotion) {
 	Camera camera;
 	camera.setPosition(glm::vec3(0.0, 1.0, 0.0));

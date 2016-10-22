@@ -191,6 +191,7 @@ public:
 	 * @param[in] projection The projection matrix
 	 */
 	glm::vec3 screenToWorld(const glm::vec3& screenPos) const;
+	void worldToScreen(const glm::vec3& worldPos, float& x, float& y) const;
 
 	void update(long deltaFrame);
 

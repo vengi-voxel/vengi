@@ -144,6 +144,15 @@ glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
 	return ray.origin + ray.direction * screenPos.z;
 }
 
+void Camera::worldToScreen(const glm::vec3& worldPos, float& x, float& y) const {
+	const glm::mat4& transform = projectionMatrix() * glm::inverse(viewMatrix());
+	const glm::vec4& screenspace = transform * glm::vec4(worldPos, 1.0f);
+	x = screenspace.x / screenspace.w;
+	y = screenspace.y / screenspace.w;
+	x = (x + 1) * 0.5f * width();
+	y = (1 - y) * 0.5f * height();
+}
+
 /**
  * http://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf
  */
