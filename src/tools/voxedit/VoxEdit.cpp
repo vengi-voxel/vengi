@@ -44,7 +44,8 @@ bool VoxEdit::newFile(bool force) {
 	if (_rawVolume != nullptr) {
 		delete _rawVolume;
 	}
-	const voxel::Region region(glm::ivec3(-512), glm::ivec3(512));
+	const int size = 64;
+	const voxel::Region region(glm::ivec3(-size), glm::ivec3(size));
 	_rawVolume = new voxel::RawVolume(region);
 	// TODO
 	return false;
@@ -157,7 +158,7 @@ void VoxEdit::beforeUI() {
 
 	if (_extract) {
 		_extract = false;
-		voxel::extractCubicMesh(_rawVolume, _rawVolume->getEnclosingRegion(), _mesh, voxel::IsQuadNeeded(false), true, true);
+		voxel::extractCubicMesh(_rawVolume, _rawVolume->getEnclosingRegion(), _mesh, voxel::IsQuadNeeded(false));
 		const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
 		const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
 		const size_t meshNumberIndices = _mesh->getNoOfIndices();
@@ -220,7 +221,6 @@ void VoxEdit::doRender() {
 
 void VoxEdit::afterUI() {
 	Super::afterUI();
-	enqueueShowStr(5, core::Color::Gray, "ESC: toggle camera free look");
 }
 
 core::AppState VoxEdit::onCleanup() {
@@ -273,10 +273,15 @@ void VoxEdit::onMouseWheel(int32_t x, int32_t y) {
 
 void VoxEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 	Super::onMouseButtonPress(x, y, button);
-	const glm::vec3 v((float)x / (float)width(), (float)y / (float)height(), 0.0f);
+	const glm::vec3 v((float)x / (float)width(), 1.0f - (float)y / (float)height(), 1.0f);
 	glm::vec3 worldPos = _camera.screenToWorld(v);
-	Log::info("clicked to screen at %i:%i (%f:%f:%f)", x, y, worldPos.x, worldPos.y, worldPos.z);
-	worldPos.y = 0.0f;
+	worldPos.y *= height();
+	worldPos.x *= width();
+	if (!_rawVolume->getEnclosingRegion().containsPoint(worldPos)) {
+		Log::warn("Point (%f:%f:%f) is not part of the volume", worldPos.x, worldPos.y, worldPos.z);
+		return;
+	}
+	Log::debug("clicked to screen at %i:%i (%f:%f:%f)", x, y, worldPos.x, worldPos.y, worldPos.z);
 	_rawVolume->setVoxel(worldPos, voxel::createVoxel(voxel::Grass1));
 	_dirty = true;
 	_extract = true;
