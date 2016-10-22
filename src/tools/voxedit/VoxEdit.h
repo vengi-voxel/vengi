@@ -9,6 +9,9 @@
 #include "video/Camera.h"
 #include "frontend/Axis.h"
 #include "frontend/Plane.h"
+#include "video/VertexBuffer.h"
+#include "FrontendShaders.h"
+#include "voxel/polyvox/Mesh.h"
 
 /**
  * @brief This tool provides a UI to create noise images on-the-fly.
@@ -26,8 +29,20 @@ private:
 	uint8_t _moveMask = 0;
 	float _cameraSpeed = 0.1f;
 	bool _dirty = false;
+	bool _extract = false;
 	core::VarPtr _lastDirectory;
 	voxel::RawVolume* _rawVolume;
+	voxel::Mesh* _mesh;
+	std::vector<glm::vec4> _pos;
+	std::vector<uint32_t> _indices;
+	std::vector<glm::vec3> _colors;
+
+	video::VertexBuffer _vertexBuffer;
+	shader::ColorShader& _colorShader;
+
+	int32_t _vertexBufferIndex = -1;
+	int32_t _indexBufferIndex = -1;
+	int32_t _colorBufferIndex = -1;
 
 	void doRender();
 	bool isDirty() const;

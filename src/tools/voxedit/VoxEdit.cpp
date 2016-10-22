@@ -11,9 +11,11 @@
 #include "video/ScopedViewPort.h"
 #include "core/Color.h"
 #include "frontend/Movement.h"
+#include "voxel/polyvox/CubicSurfaceExtractor.h"
+#include "voxel/IsQuadNeeded.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		ui::UIApp(filesystem, eventBus, timeProvider), _rawVolume(nullptr) {
+		ui::UIApp(filesystem, eventBus, timeProvider), _rawVolume(nullptr), _mesh(nullptr), _colorShader(shader::ColorShader::getInstance()) {
 	init("engine", "voxedit");
 }
 
@@ -29,6 +31,8 @@ bool VoxEdit::saveFile(std::string_view file) {
 
 bool VoxEdit::loadFile(std::string_view file) {
 	// TODO
+	_extract = true;
+	_dirty = false;
 	return false;
 }
 
@@ -42,7 +46,6 @@ bool VoxEdit::newFile(bool force) {
 	}
 	const voxel::Region region(glm::ivec3(-512), glm::ivec3(512));
 	_rawVolume = new voxel::RawVolume(region);
-
 	// TODO
 	return false;
 }
@@ -71,6 +74,33 @@ core::AppState VoxEdit::onInit() {
 		return core::AppState::Cleanup;
 	}
 
+	if (!_colorShader.setup()) {
+		Log::error("Failed to initialize the color shader");
+		return core::AppState::Cleanup;
+	}
+
+	_vertexBufferIndex = _vertexBuffer.create();
+	if (_vertexBufferIndex == -1) {
+		Log::error("Could not create the vertex buffer object");
+		return core::AppState::Cleanup;
+	}
+
+	_indexBufferIndex = _vertexBuffer.create(nullptr, 0, GL_ELEMENT_ARRAY_BUFFER);
+	if (_indexBufferIndex == -1) {
+		Log::error("Could not create the vertex buffer object for the indices");
+		return core::AppState::Cleanup;
+	}
+
+	_colorBufferIndex = _vertexBuffer.create();
+	if (_colorBufferIndex == -1) {
+		Log::error("Could not create the vertex buffer object for the colors");
+		return core::AppState::Cleanup;
+	}
+
+	// configure shader attributes
+	core_assert_always(_vertexBuffer.addAttribute(_colorShader.getLocationPos(), _vertexBufferIndex, _colorShader.getComponentsPos()));
+	core_assert_always(_vertexBuffer.addAttribute(_colorShader.getLocationColor(), _colorBufferIndex, _colorShader.getComponentsColor()));
+
 	_lastDirectory = core::Var::get("ve_lastdirectory", "");
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
@@ -84,6 +114,8 @@ core::AppState VoxEdit::onInit() {
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
+
+	_mesh = new voxel::Mesh(128, 128, true);
 
 	registerWindows(this);
 	registerActions(this);
@@ -123,6 +155,44 @@ void VoxEdit::beforeUI() {
 
 	_camera.update(_deltaFrame);
 
+	if (_extract) {
+		_extract = false;
+		voxel::extractCubicMesh(_rawVolume, _rawVolume->getEnclosingRegion(), _mesh, voxel::IsQuadNeeded(false), true, true);
+		const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
+		const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
+		const size_t meshNumberIndices = _mesh->getNoOfIndices();
+		if (meshNumberIndices == 0) {
+			_pos.clear();
+			_indices.clear();
+			_colors.clear();
+		} else {
+			const size_t meshNumberVertices = _mesh->getNoOfVertices();
+			_pos.reserve(meshNumberVertices);
+			_indices.reserve(meshNumberIndices);
+			for (size_t i = 0; i < meshNumberVertices; ++i) {
+				_pos.emplace_back(meshVertices[i].position, 1.0f);
+			}
+			for (size_t i = 0; i < meshNumberIndices; ++i) {
+				_indices.push_back(meshIndices[i]);
+			}
+			if (!_vertexBuffer.update(_vertexBufferIndex, _pos)) {
+				Log::error("Failed to update the vertex buffer");
+				requestQuit();
+				return;
+			}
+			if (!_vertexBuffer.update(_indexBufferIndex, _indices)) {
+				Log::error("Failed to update the index buffer");
+				requestQuit();
+				return;
+			}
+			if (!_vertexBuffer.update(_colorBufferIndex, _colors)) {
+				Log::error("Failed to update the color buffer");
+				requestQuit();
+				return;
+			}
+		}
+	}
+
 	if  (_renderPlane) {
 		_plane.render(_camera);
 	}
@@ -133,6 +203,19 @@ void VoxEdit::beforeUI() {
 }
 
 void VoxEdit::doRender() {
+	if (_pos.empty()) {
+		return;
+	}
+	video::ScopedShader scoped(_colorShader);
+	core_assert_always(_colorShader.setView(_camera.viewMatrix()));
+	core_assert_always(_colorShader.setProjection(_camera.projectionMatrix()));
+
+	core_assert_always(_vertexBuffer.bind());
+	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(uint32_t));
+	core_assert(nIndices > 0);
+	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
+	_vertexBuffer.unbind();
+	GL_checkError();
 }
 
 void VoxEdit::afterUI() {
@@ -143,6 +226,12 @@ void VoxEdit::afterUI() {
 core::AppState VoxEdit::onCleanup() {
 	_axis.shutdown();
 	_plane.shutdown();
+	_vertexBuffer.shutdown();
+	_colorShader.shutdown();
+	_vertexBufferIndex = -1;
+	_indexBufferIndex = -1;
+	_colorBufferIndex = -1;
+
 	core::Command::unregisterCommand("+move_right");
 	core::Command::unregisterCommand("+move_left");
 	core::Command::unregisterCommand("+move_upt");
@@ -152,6 +241,10 @@ core::AppState VoxEdit::onCleanup() {
 	if (_rawVolume != nullptr) {
 		delete _rawVolume;
 	}
+	if (_mesh != nullptr) {
+		delete _mesh;
+	}
+	_mesh = nullptr;
 	_rawVolume = nullptr;
 	// TODO: cvar with tmpFilename to load on next start
 
@@ -185,6 +278,8 @@ void VoxEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 	Log::info("clicked to screen at %i:%i (%f:%f:%f)", x, y, worldPos.x, worldPos.y, worldPos.z);
 	worldPos.y = 0.0f;
 	_rawVolume->setVoxel(worldPos, voxel::createVoxel(voxel::Grass1));
+	_dirty = true;
+	_extract = true;
 }
 
 void VoxEdit::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
