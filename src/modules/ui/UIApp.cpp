@@ -9,6 +9,7 @@
 #include "io/File.h"
 #include "core/Command.h"
 #include "core/Color.h"
+#include "core/UTF8.h"
 #include "core/Common.h"
 #include "ui_renderer_gl.h"
 #include <stdarg.h>
@@ -252,7 +253,7 @@ bool UIApp::onTextInput(const std::string& text) {
 	}
 	const char *c = text.c_str();
 	for (;;) {
-		const int key = core::string::utf8Next(&c);
+		const int key = core::utf8::next(&c);
 		if (key == -1) {
 			return true;
 		}

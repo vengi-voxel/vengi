@@ -75,54 +75,6 @@ inline size_t utf8LengthInt(int c) {
 	return 0;
 }
 
-inline int utf8Next (const char** str)
-{
-	const char* s = *str;
-	if (s[0] == '\0')
-		return -1;
-
-	const unsigned char* buf = reinterpret_cast<const unsigned char*>(s);
-
-	int character;
-	int min;
-	if (buf[0] < 0x80) {
-		min = 0;
-		character = buf[0];
-	} else if (buf[0] < 0xc0) {
-		return -1;
-	} else if (buf[0] < 0xe0) {
-		min = 1 << 7;
-		character = buf[0] & 0x1f;
-	} else if (buf[0] < 0xf0) {
-		min = 1 << (5 + 6);
-		character = buf[0] & 0x0f;
-	} else if (buf[0] < 0xf8) {
-		min = 1 << (4 + 6 + 6);
-		character = buf[0] & 0x07;
-	} else {
-		return -1;
-	}
-
-	const int utf8Length = utf8LengthChar(buf[0]);
-	for (int i = 1; i < utf8Length; ++i) {
-		if (!isUTF8Multibyte(buf[i]))
-			return -1;
-		character = (character << 6) | (buf[i] & 0x3F);
-	}
-
-	if (character < min)
-		return -1;
-
-	if (0xD800 <= character && character <= 0xDFFF)
-		return -1;
-
-	if (0x110000 <= character)
-		return -1;
-
-	*str += utf8Length;
-	return character;
-}
-
 inline size_t utf8Length(const std::string& str) {
 	size_t result = 0;
 	const char *string = str.c_str();
