@@ -48,6 +48,10 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 }
 
+bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entries, const std::string& filter) const {
+	return false;
+}
+
 io::FilePtr Filesystem::open(const std::string& filename) const {
 	if (io::File(filename).exists()) {
 		Log::debug("loading file %s from current working dir", filename.c_str());

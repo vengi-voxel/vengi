@@ -43,6 +43,18 @@ public:
 
 	bool exists(const std::string& filename) const;
 
+	struct DirEntry {
+		const std::string name;
+		enum class Type {
+			SYMLINK,
+			FILE,
+			DIR
+		};
+		Type type;
+	};
+
+	bool list(const std::string& directory, std::vector<DirEntry>& entries, const std::string& filter = "") const;
+
 	io::FilePtr open(const std::string& filename) const;
 
 	std::string load(const std::string& filename) const;
