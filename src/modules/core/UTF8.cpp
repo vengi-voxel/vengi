@@ -7,10 +7,44 @@
 namespace core {
 namespace utf8 {
 
-/**
- * @brief Extract the next utf8 char from the given stream and advances the stream pointer by the char length
- * @return -1 on end of string
- */
+size_t lengthChar(uint8_t c) {
+	if (c < 0x80)
+		return 1;
+	if (c < 0xc0)
+		return 0;
+	if (c < 0xe0)
+		return 2;
+	if (c < 0xf0)
+		return 3;
+	if (c < 0xf8)
+		return 4;
+	/* 5 and 6 byte sequences are no longer valid. */
+	return 0;
+}
+
+size_t lengthInt(int c) {
+	if (c <= 0x7F)
+		return 1;
+	if (c <= 0x07FF)
+		return 2;
+	if (c <= 0xFFFF)
+		return 3;
+	if (c <= 0x10FFFF) /* highest defined Unicode code */
+		return 4;
+	return 0;
+}
+
+size_t length(const char* str) {
+	size_t result = 0;
+
+	while (str[0] != '\0') {
+		const int n = lengthChar((const unsigned char) *str);
+		str += n;
+		result++;
+	}
+	return result;
+}
+
 int next(const char** str) {
 	const char* s = *str;
 	if (s[0] == '\0') {

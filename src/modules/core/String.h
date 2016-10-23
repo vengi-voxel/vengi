@@ -44,49 +44,6 @@ inline std::string bits(T in, int newlineAfter = -1) {
 	return std::string(bitstr);
 }
 
-inline bool isUTF8Multibyte(char c) {
-	return (c & 0xc0) == 0x80;
-}
-
-inline size_t utf8LengthChar(const unsigned char c) {
-	if (c < 0x80)
-		return 1;
-	if (c < 0xc0)
-		return 0;
-	if (c < 0xe0)
-		return 2;
-	if (c < 0xf0)
-		return 3;
-	if (c < 0xf8)
-		return 4;
-	/* 5 and 6 byte sequences are no longer valid. */
-	return 0;
-}
-
-inline size_t utf8LengthInt(int c) {
-	if (c <= 0x7F)
-		return 1;
-	if (c <= 0x07FF)
-		return 2;
-	if (c <= 0xFFFF)
-		return 3;
-	if (c <= 0x10FFFF) /* highest defined Unicode code */
-		return 4;
-	return 0;
-}
-
-inline size_t utf8Length(const std::string& str) {
-	size_t result = 0;
-	const char *string = str.c_str();
-
-	while (string[0] != '\0') {
-		const int n = utf8LengthChar((const unsigned char) *string);
-		string += n;
-		result++;
-	}
-	return result;
-}
-
 extern std::string format(const char *msg, ...)  SDL_PRINTF_VARARG_FUNC(1);
 
 inline int toInt(const char*str) {
@@ -113,27 +70,9 @@ inline float toFloat(const std::string& str) {
 	return SDL_atof(str.c_str());
 }
 
-inline void splitString(const std::string& string, std::vector<std::string>& tokens, const std::string& delimiters = " \t\r\n\f\v") {
-	// Skip delimiters at beginning.
-	std::string::size_type lastPos = string.find_first_not_of(delimiters, 0);
-	// Find first "non-delimiter".
-	std::string::size_type pos = string.find_first_of(delimiters, lastPos);
+extern void splitString(const std::string& string, std::vector<std::string>& tokens, const std::string& delimiters = " \t\r\n\f\v");
 
-	while (std::string::npos != pos || std::string::npos != lastPos) {
-		// Found a token, add it to the vector.
-		tokens.push_back(string.substr(lastPos, pos - lastPos));
-		// Skip delimiters.  Note the "not_of"
-		lastPos = string.find_first_not_of(delimiters, pos);
-		// Find next "non-delimiter"
-		pos = string.find_first_of(delimiters, lastPos);
-	}
-}
-
-inline std::string toLower(const std::string& string) {
-	std::string convert = string;
-	std::transform(convert.begin(), convert.end(), convert.begin(), (int (*)(int)) std::tolower);
-	return convert;
-}
+extern std::string toLower(const std::string& string);
 
 inline bool startsWith(const std::string& string, const std::string& token) {
 	return !string.compare(0, token.size(), token);
@@ -149,20 +88,7 @@ inline bool endsWith(const std::string& string, const std::string& end) {
 	return false;
 }
 
-inline std::string replaceAll(const std::string& str, const std::string& searchStr, const char* replaceStr, size_t replaceStrSize) {
-	if (str.empty()) {
-		return str;
-	}
-	std::string sNew = str;
-	std::string::size_type loc;
-	const std::string::size_type searchLength = searchStr.length();
-	std::string::size_type lastPosition = 0;
-	while (std::string::npos != (loc = sNew.find(searchStr, lastPosition))) {
-		sNew.replace(loc, searchLength, replaceStr);
-		lastPosition = loc + replaceStrSize;
-	}
-	return sNew;
-}
+extern std::string replaceAll(const std::string& str, const std::string& searchStr, const char* replaceStr, size_t replaceStrSize);
 
 inline std::string replaceAll(const std::string& str, const std::string& searchStr, const char* replaceStr) {
 	return replaceAll(str, searchStr, replaceStr, strlen(replaceStr));

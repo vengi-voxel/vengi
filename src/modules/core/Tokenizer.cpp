@@ -1,4 +1,5 @@
 #include "Tokenizer.h"
+#include "UTF8.h"
 
 namespace core {
 
@@ -89,7 +90,7 @@ char Tokenizer::skip(const char **s) {
 		if (c == '\0' || _len <= 0) {
 			return '\0';
 		}
-		const size_t cl = core::string::utf8LengthChar(c);
+		const size_t cl = core::utf8::lengthChar(c);
 		_len -= cl;
 		*s += cl;
 	}
