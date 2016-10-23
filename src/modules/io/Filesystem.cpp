@@ -49,9 +49,14 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		_homePath = prefPath;
 		SDL_free(prefPath);
 	}
+	const fs::space_info& s = fs::space(fs::path(_homePath));
+	constexpr uintmax_t div = 1024 * 1024;
+	const uint32_t capacity = s.capacity / div;
+	const uint32_t free = s.free / div;
+	const uint32_t available = s.available / div;
 
 	Log::debug("basepath: %s", _basePath.c_str());
-	Log::debug("homepath: %s", _homePath.c_str());
+	Log::debug("homepath: %s (capacity: %i MB, free: %i MB, available: %i MB)", _homePath.c_str(), capacity, free, available);
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 }
