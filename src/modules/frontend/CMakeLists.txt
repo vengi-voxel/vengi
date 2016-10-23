@@ -5,6 +5,7 @@ set(SRCS
 	CameraFrustum.cpp CameraFrustum.h
 	ShapeRenderer.cpp ShapeRenderer.h
 	PlantDistributor.cpp PlantDistributor.h
+	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	Axis.h
 	Plane.h
 	WorldRenderer.h WorldRenderer.cpp

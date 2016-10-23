@@ -1,7 +1,7 @@
 #include "TestVoxelFont.h"
 
 TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, eventBus, timeProvider), _colorShader(shader::ColorShader::getInstance()) {
+		Super(filesystem, eventBus, timeProvider) {
 	setCameraMotion(true);
 }
 
@@ -12,32 +12,10 @@ core::AppState TestVoxelFont::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!_colorShader.setup()) {
-		Log::error("Failed to initialize the color shader");
+	if (!_rawVolumeRenderer.init()) {
+		Log::error("Failed to initialize the raw volume renderer");
 		return core::AppState::Cleanup;
 	}
-
-	_vertexBufferIndex = _vertexBuffer.create();
-	if (_vertexBufferIndex == -1) {
-		Log::error("Could not create the vertex buffer object");
-		return core::AppState::Cleanup;
-	}
-
-	_indexBufferIndex = _vertexBuffer.create(nullptr, 0, GL_ELEMENT_ARRAY_BUFFER);
-	if (_indexBufferIndex == -1) {
-		Log::error("Could not create the vertex buffer object for the indices");
-		return core::AppState::Cleanup;
-	}
-
-	_colorBufferIndex = _vertexBuffer.create();
-	if (_colorBufferIndex == -1) {
-		Log::error("Could not create the vertex buffer object for the colors");
-		return core::AppState::Cleanup;
-	}
-
-	// configure shader attributes
-	core_assert_always(_vertexBuffer.addAttribute(_colorShader.getLocationPos(), _vertexBufferIndex, _colorShader.getComponentsPos()));
-	core_assert_always(_vertexBuffer.addAttribute(_colorShader.getLocationColor(), _colorBufferIndex, _colorShader.getComponentsColor()));
 
 	_camera.setFarPlane(4000.0f);
 
@@ -47,11 +25,8 @@ core::AppState TestVoxelFont::onInit() {
 core::AppState TestVoxelFont::onCleanup() {
 	core::AppState state = Super::onCleanup();
 	_voxelFont.shutdown();
-	_vertexBuffer.shutdown();
-	_colorShader.shutdown();
-	_vertexBufferIndex = -1;
-	_indexBufferIndex = -1;
-	_colorBufferIndex = -1;
+	voxel::RawVolume* old = _rawVolumeRenderer.shutdown();
+	delete old;
 	return state;
 }
 
@@ -144,32 +119,12 @@ void TestVoxelFont::doRender() {
 	ColorGenerator g(core::Color::LightGreen, core::Color::Red);
 	std::generate(colors.begin(), colors.end(), g);
 
-	if (!_vertexBuffer.update(_vertexBufferIndex, positions)) {
-		Log::error("Failed to update the vertex buffer");
-		requestQuit();
-		return;
-	}
-	if (!_vertexBuffer.update(_indexBufferIndex, indices)) {
-		Log::error("Failed to update the index buffer");
-		requestQuit();
-		return;
-	}
-	if (!_vertexBuffer.update(_colorBufferIndex, colors)) {
-		Log::error("Failed to update the color buffer");
+	if (!_rawVolumeRenderer.update(positions, indices, colors)) {
 		requestQuit();
 		return;
 	}
 
-	video::ScopedShader scoped(_colorShader);
-	core_assert_always(_colorShader.setView(_camera.viewMatrix()));
-	core_assert_always(_colorShader.setProjection(_camera.projectionMatrix()));
-
-	core_assert_always(_vertexBuffer.bind());
-	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(uint32_t));
-	core_assert(nIndices > 0);
-	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
-	_vertexBuffer.unbind();
-	GL_checkError();
+	_rawVolumeRenderer.render(_camera);
 }
 
 int main(int argc, char *argv[]) {

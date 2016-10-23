@@ -6,6 +6,7 @@
 
 #include "testcore/TestApp.h"
 #include "voxel/font/VoxelFont.h"
+#include "frontend/RawVolumeRenderer.h"
 #include "video/VertexBuffer.h"
 #include "FrontendShaders.h"
 
@@ -14,12 +15,7 @@ private:
 	using Super = TestApp;
 
 	voxel::VoxelFont _voxelFont;
-	video::VertexBuffer _vertexBuffer;
-	shader::ColorShader& _colorShader;
-
-	int32_t _vertexBufferIndex = -1;
-	int32_t _indexBufferIndex = -1;
-	int32_t _colorBufferIndex = -1;
+	frontend::RawVolumeRenderer _rawVolumeRenderer;
 
 	int _fontSize = 20;
 
