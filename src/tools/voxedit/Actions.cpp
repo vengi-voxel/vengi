@@ -2,11 +2,19 @@
 #include "VoxEdit.h"
 #include "core/Command.h"
 
-void registerActions(VoxEdit* tool) {
-	auto fileCompleter = [] (const std::string& str, std::vector<std::string>& matches) -> int {
-		// TODO:
-		// core::App::getInstance()->filesystem()->listDir(_lastDirectory->strVal());
-		return 0;
+void registerActions(VoxEdit* tool, const core::VarPtr& lastDirectory) {
+	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
+		std::vector<io::Filesystem::DirEntry> entries;
+		const std::string filter = str + "*";
+		core::App::getInstance()->filesystem()->list(lastDirectory->strVal(), entries, filter);
+		int i = 0;
+		for (const io::Filesystem::DirEntry& entry : entries) {
+			if (entry.type == io::Filesystem::DirEntry::Type::file) {
+				matches.push_back(entry.name);
+				++i;
+			}
+		}
+		return i;
 	};
 
 	core::Command::registerCommand("save", [tool] (const core::CmdArgs& args) {

@@ -102,7 +102,7 @@ core::AppState VoxEdit::onInit() {
 	core_assert_always(_vertexBuffer.addAttribute(_colorShader.getLocationPos(), _vertexBufferIndex, _colorShader.getComponentsPos()));
 	core_assert_always(_vertexBuffer.addAttribute(_colorShader.getLocationColor(), _colorBufferIndex, _colorShader.getComponentsColor()));
 
-	_lastDirectory = core::Var::get("ve_lastdirectory", "");
+	_lastDirectory = core::Var::get("ve_lastdirectory", core::App::getInstance()->filesystem()->homePath().c_str());
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _dimension.x, _dimension.y, _aspect);
@@ -119,7 +119,7 @@ core::AppState VoxEdit::onInit() {
 	_mesh = new voxel::Mesh(128, 128, true);
 
 	registerWindows(this);
-	registerActions(this);
+	registerActions(this, _lastDirectory);
 
 	// TODO: if tmpfile exists, load that one
 	newFile();
