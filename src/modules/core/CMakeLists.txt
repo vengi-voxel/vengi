@@ -30,7 +30,7 @@ set(SRCS
 	TimeProvider.h TimeProvider.cpp
 	Tokenizer.h Tokenizer.cpp
 	Trace.cpp Trace.h
-	UTF8.h
+	UTF8.cpp UTF8.h
 	Var.cpp Var.h
 	Vertex.h
 )
