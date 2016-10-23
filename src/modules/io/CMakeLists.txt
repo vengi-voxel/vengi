@@ -8,7 +8,7 @@ set(LIB io)
 add_library(${LIB} ${SRCS})
 # TODO: pick one di framework
 set(EXTRA_LIBS "")
-if (NOT MSVC)
+if (NOT MSVC AND NOT DARWIN)
 	# TODO: stdc++fs is only valid for gcc until c++17 shipped, then it is part of the standard lib
 	list(APPEND EXTRA_LIBS stdc++fs)
 endif()
