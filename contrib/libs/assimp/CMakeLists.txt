@@ -17,7 +17,8 @@ set(SRCS
 	code/BaseImporter.cpp
 	code/CSMLoader.cpp
 	code/SMDLoader.cpp
-	code/IFCReaderGen.cpp
+	code/IFCReaderGen1.cpp
+	code/IFCReaderGen2.cpp
 	code/FindInvalidDataProcess.cpp
 	code/ScenePreprocessor.cpp
 	code/BVHLoader.cpp
