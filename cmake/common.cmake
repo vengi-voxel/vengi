@@ -29,7 +29,7 @@ macro(check_lua_files TARGET)
 		foreach(_file ${files})
 			add_custom_target(
 				${_file}
-				COMMAND ${LUA_EXECUTABLE} ${_file}
+				COMMAND ${CMAKE_BINARY_DIR}/luac ${_file}
 				COMMENT "Validate ${_file}"
 				DEPENDS luac
 				WORKING_DIRECTORY ${ROOT_DIR}/data/${TARGET}
