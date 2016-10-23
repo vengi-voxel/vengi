@@ -162,7 +162,12 @@ inline bool iequals(const std::string& a, const std::string& b) {
 	return true;
 }
 
-extern bool matches (const std::string& pattern, const std::string& text);
+/**
+ * @brief Performs a pattern/wildcard based string match
+ * @param[in] pattern The pattern can deal with wildcards like * and ?
+ * @param[in] text The text to match against the pattern
+ */
+extern bool matches(const std::string& pattern, const std::string& text);
 
 // pass by copy to prevent aliasing
 extern std::string concat(std::string_view first, std::string_view second);

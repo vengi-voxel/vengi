@@ -115,8 +115,7 @@ static bool patternMatch(const char *pattern, const char *text) {
 	return *t == '\0';
 }
 
-bool matches (const std::string& pattern, const std::string& text)
-{
+bool matches (const std::string& pattern, const std::string& text) {
 	return patternMatch(pattern.c_str(), text.c_str());
 }
 

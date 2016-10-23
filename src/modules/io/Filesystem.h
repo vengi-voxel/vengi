@@ -45,10 +45,13 @@ public:
 
 	struct DirEntry {
 		const std::string name;
-		enum class Type {
-			SYMLINK,
-			FILE,
-			DIR
+		enum class Type : uint8_t {
+			symlink,
+			file,
+			dir,
+			fifo,
+			socket,
+			unknown
 		};
 		Type type;
 	};

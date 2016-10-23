@@ -16,6 +16,14 @@
 #include <sys/stat.h>
 #endif
 
+#if __cplusplus <= 201411
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::std::filesystem;
+#endif
+
 namespace io {
 
 Filesystem::Filesystem() :
@@ -49,6 +57,36 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 }
 
 bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entries, const std::string& filter) const {
+	const fs::path path(directory);
+	for (const fs::directory_entry& p: fs::directory_iterator(path)) {
+		const std::string& s = p.path().string();
+		if (!filter.empty() && !core::string::matches(filter, s)) {
+			continue;
+		}
+		const fs::file_type fileType = p.status().type();
+		DirEntry::Type type = DirEntry::Type::unknown;
+		switch (fileType) {
+		case fs::file_type::regular:
+			type = DirEntry::Type::file;
+			break;
+		case fs::file_type::directory:
+			type = DirEntry::Type::dir;
+			break;
+		case fs::file_type::symlink:
+			type = DirEntry::Type::symlink;
+			break;
+		case fs::file_type::fifo:
+			type = DirEntry::Type::fifo;
+			break;
+		case fs::file_type::socket:
+			type = DirEntry::Type::socket;
+			break;
+		default:
+			break;
+		}
+		const DirEntry d{s, type};
+		entries.push_back(d);
+	}
 	return false;
 }
 
@@ -94,14 +132,7 @@ bool Filesystem::syswrite(const std::string& filename, const std::string& string
 }
 
 bool Filesystem::createDir(const std::string& path) const {
-#if __WINDOWS__
-	WCHAR wpath[1024];
-	const int len = MultiByteToWideChar(CP_UTF8, 0, path.c_str(), -1, wpath, SDL_arraysize(wpath) - 1);
-	dest[len] = 0;
-	_wmkdir(wpath);
-#else
-	return mkdir(path.c_str(), 0700);
-#endif
+	return fs::create_directories(fs::path(path));
 }
 
 }
