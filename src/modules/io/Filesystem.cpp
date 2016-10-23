@@ -48,7 +48,7 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 }
 
-io::FilePtr Filesystem::open(const std::string& filename) {
+io::FilePtr Filesystem::open(const std::string& filename) const {
 	if (io::File(filename).exists()) {
 		Log::debug("loading file %s from current working dir", filename.c_str());
 		return std::make_shared<io::File>(filename);
@@ -62,7 +62,7 @@ io::FilePtr Filesystem::open(const std::string& filename) {
 	return std::make_shared<io::File>(_basePath + filename);
 }
 
-std::string Filesystem::load(const std::string& filename) {
+std::string Filesystem::load(const std::string& filename) const {
 	const io::FilePtr& f = open(filename);
 	return f->load();
 }

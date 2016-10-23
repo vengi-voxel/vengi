@@ -39,7 +39,7 @@ std::string MeshPool::getName(const std::string& id) const {
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
 	for (const char **format = supportedFormats; *format != nullptr; format++) {
 		const std::string name = "mesh/" + id + "." + *format;
-		if (filesystem->open(name)->exists()) {
+		if (filesystem->exists(name)) {
 			return name;
 		}
 	}

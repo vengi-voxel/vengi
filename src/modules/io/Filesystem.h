@@ -41,9 +41,11 @@ public:
 	 */
 	const std::string& homePath() const;
 
-	io::FilePtr open(const std::string& filename);
+	bool exists(const std::string& filename) const;
 
-	std::string load(const std::string& filename);
+	io::FilePtr open(const std::string& filename) const;
+
+	std::string load(const std::string& filename) const;
 	/**
 	 * @brief Loads a file asynchronously and executes the given @c CompleteHandle once some result is available.
 	 */
@@ -65,6 +67,10 @@ public:
 
 	bool createDir(const std::string& dir) const;
 };
+
+inline bool Filesystem::exists(const std::string& filename) const {
+	return open(filename)->exists();
+}
 
 inline const std::string& Filesystem::basePath() const {
 	return _basePath;
