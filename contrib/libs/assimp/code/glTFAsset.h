@@ -128,6 +128,7 @@ namespace glTF
     struct BufferView; // here due to cross-reference
     struct Texture;
     struct Light;
+    struct Skin;
 
 
     // Vec/matrix types, as raw float arrays
@@ -234,6 +235,32 @@ namespace glTF
     {
         BufferViewTarget_ARRAY_BUFFER = 34962,
         BufferViewTarget_ELEMENT_ARRAY_BUFFER = 34963
+    };
+
+    //! Values for the Sampler::magFilter field
+    enum SamplerMagFilter
+    {
+        SamplerMagFilter_Nearest = 9728,
+        SamplerMagFilter_Linear = 9729
+    };
+
+    //! Values for the Sampler::minFilter field
+    enum SamplerMinFilter
+    {
+        SamplerMinFilter_Nearest = 9728,
+        SamplerMinFilter_Linear = 9729,
+        SamplerMinFilter_Nearest_Mipmap_Nearest = 9984,
+        SamplerMinFilter_Linear_Mipmap_Nearest = 9985,
+        SamplerMinFilter_Nearest_Mipmap_Linear = 9986,
+        SamplerMinFilter_Linear_Mipmap_Linear = 9987
+    };
+
+    //! Values for the Sampler::wrapS and Sampler::wrapT field
+    enum SamplerWrap
+    {
+        SamplerWrap_Clamp_To_Edge = 33071,
+        SamplerWrap_Mirrored_Repeat = 33648,
+        SamplerWrap_Repeat = 10497
     };
 
     //! Values for the Texture::format and Texture::internalFormat fields
@@ -377,8 +404,8 @@ namespace glTF
         ComponentType componentType; //!< The datatype of components in the attribute. (required)
         unsigned int count;          //!< The number of attributes referenced by this accessor. (required)
         AttribType::Value type;      //!< Specifies if the attribute is a scalar, vector, or matrix. (required)
-        //std::vector<float> max;    //!< Maximum value of each component in this attribute.
-        //std::vector<float> min;    //!< Minimum value of each component in this attribute.
+        std::vector<float> max;      //!< Maximum value of each component in this attribute.
+        std::vector<float> min;      //!< Minimum value of each component in this attribute.
 
         unsigned int GetNumComponents();
         unsigned int GetBytesPerComponent();
@@ -427,25 +454,6 @@ namespace glTF
 
         Accessor() {}
         void Read(Value& obj, Asset& r);
-    };
-
-
-    struct Animation : public Object
-    {
-        struct Channel
-        {
-
-        };
-
-        struct Target
-        {
-
-        };
-
-        struct Sampler
-        {
-
-        };
     };
 
     //! A buffer points to binary geometry, animation, or skins.
@@ -799,6 +807,12 @@ namespace glTF
         Ref<Camera> camera;
         Ref<Light>  light;
 
+        std::vector< Ref<Node> > skeletons;       //!< The ID of skeleton nodes. Each of which is the root of a node hierarchy.
+        Ref<Skin>  skin;                          //!< The ID of the skin referenced by this node.
+        std::string jointName;                    //!< Name used when this node is a joint in a skin.
+
+        Ref<Node> parent;                         //!< This is not part of the glTF specification. Used as a helper.
+
         Node() {}
         void Read(Value& obj, Asset& r);
     };
@@ -812,8 +826,14 @@ namespace glTF
 
     struct Sampler : public Object
     {
+        SamplerMagFilter magFilter; //!< The texture magnification filter. (required)
+        SamplerMinFilter minFilter; //!< The texture minification filter. (required)
+        SamplerWrap wrapS;          //!< The texture wrapping in the S direction. (required)
+        SamplerWrap wrapT;          //!< The texture wrapping in the T direction. (required)
+
         Sampler() {}
         void Read(Value& obj, Asset& r);
+        void SetDefaults();
     };
 
     struct Scene : public Object
@@ -832,6 +852,11 @@ namespace glTF
 
     struct Skin : public Object
     {
+        Nullable<mat4> bindShapeMatrix;       //!< Floating-point 4x4 transformation matrix stored in column-major order.
+        Ref<Accessor> inverseBindMatrices;    //!< The ID of the accessor containing the floating-point 4x4 inverse-bind matrices.
+        std::vector<Ref<Node>> jointNames;    //!< Joint names of the joints (nodes with a jointName property) in this skin.
+        std::string name;                     //!< The user-defined name of this object.
+
         Skin() {}
         void Read(Value& obj, Asset& r);
     };
@@ -860,8 +885,8 @@ namespace glTF
     //! A texture and its sampler.
     struct Texture : public Object
     {
-        //Ref<Sampler> source; //!< The ID of the sampler used by this texture. (required)
-        Ref<Image> source; //!< The ID of the image used by this texture. (required)
+        Ref<Sampler> sampler; //!< The ID of the sampler used by this texture. (required)
+        Ref<Image> source;    //!< The ID of the image used by this texture. (required)
 
         //TextureFormat format; //!< The texture's format. (default: TextureFormat_RGBA)
         //TextureFormat internalFormat; //!< The texture's internal format. (default: TextureFormat_RGBA)
@@ -902,6 +927,44 @@ namespace glTF
         void SetDefaults();
     };
 
+    struct Animation : public Object
+    {
+        struct AnimSampler {
+            std::string id;               //!< The ID of this sampler.
+            std::string input;            //!< The ID of a parameter in this animation to use as key-frame input.
+            std::string interpolation;    //!< Type of interpolation algorithm to use between key-frames.
+            std::string output;           //!< The ID of a parameter in this animation to use as key-frame output.
+        };
+
+        struct AnimChannel {
+            std::string sampler;         //!< The ID of one sampler present in the containing animation's samplers property.
+
+            struct AnimTarget {
+                Ref<Node> id;            //!< The ID of the node to animate.
+                std::string path;        //!< The name of property of the node to animate ("translation", "rotation", or "scale").
+            } target;
+        };
+
+        struct AnimParameters {
+            Ref<Accessor> TIME;           //!< Accessor reference to a buffer storing a array of floating point scalar values.
+            Ref<Accessor> rotation;       //!< Accessor reference to a buffer storing a array of four-component floating-point vectors.
+            Ref<Accessor> scale;          //!< Accessor reference to a buffer storing a array of three-component floating-point vectors.
+            Ref<Accessor> translation;    //!< Accessor reference to a buffer storing a array of three-component floating-point vectors.
+        };
+
+        // AnimChannel Channels[3];            //!< Connect the output values of the key-frame animation to a specific node in the hierarchy.
+        // AnimParameters Parameters;          //!< The samplers that interpolate between the key-frames.
+        // AnimSampler Samplers[3];            //!< The parameterized inputs representing the key-frame data.
+
+        std::vector<AnimChannel> Channels;            //!< Connect the output values of the key-frame animation to a specific node in the hierarchy.
+        AnimParameters Parameters;                    //!< The samplers that interpolate between the key-frames.
+        std::vector<AnimSampler> Samplers;         //!< The parameterized inputs representing the key-frame data.
+
+        Animation() {}
+        void Read(Value& obj, Asset& r);
+    };
+
+
     //! Base class for LazyDict that acts as an interface
     class LazyDictBase
     {
@@ -921,7 +984,7 @@ namespace glTF
     //! (Implemented in glTFAssetWriter.h)
     template<class T>
     void WriteLazyDict(LazyDict<T>& d, AssetWriter& w);
-    
+
 
     //! Manages lazy loading of the glTF top-level objects, and keeps a reference to them by ID
     //! It is the owner the loaded objects, so when it is destroyed it also deletes them
@@ -934,7 +997,7 @@ namespace glTF
         typedef typename std::gltf_unordered_map< std::string, unsigned int > Dict;
 
         std::vector<T*>  mObjs;      //! The read objects
-        Dict             mObjsById;  //! The read objects accesible by id
+        Dict             mObjsById;  //! The read objects accessible by id
         const char*      mDictId;    //! ID of the dictionary object
         const char*      mExtId;     //! ID of the extension defining the dictionary
         Value*           mDict;      //! JSON dictionary object
@@ -954,7 +1017,7 @@ namespace glTF
 
         Ref<T> Get(const char* id);
         Ref<T> Get(unsigned int i);
-		Ref<T> Get(const std::string& pID) { return Get(pID.c_str()); }
+        Ref<T> Get(const std::string& pID) { return Get(pID.c_str()); }
 
         Ref<T> Create(const char* id);
         Ref<T> Create(const std::string& id)
@@ -983,7 +1046,7 @@ namespace glTF
         int version; //!< The glTF format version (should be 1)
 
         void Read(Document& doc);
-        
+
         AssetMetadata()
             : premultipliedAlpha(false)
             , version(0)
@@ -1049,10 +1112,10 @@ namespace glTF
         LazyDict<Mesh>        meshes;
         LazyDict<Node>        nodes;
         //LazyDict<Program>   programs;
-        //LazyDict<Sampler>   samplers;
+        LazyDict<Sampler>     samplers;
         LazyDict<Scene>       scenes;
         //LazyDict<Shader>    shaders;
-        //LazyDict<Skin>      skins;
+        LazyDict<Skin>      skins;
         //LazyDict<Technique> techniques;
         LazyDict<Texture>     textures;
 
@@ -1074,10 +1137,10 @@ namespace glTF
             , meshes        (*this, "meshes")
             , nodes         (*this, "nodes")
             //, programs    (*this, "programs")
-            //, samplers    (*this, "samplers")
+            , samplers      (*this, "samplers")
             , scenes        (*this, "scenes")
             //, shaders     (*this, "shaders")
-            //, skins       (*this, "skins")
+            , skins       (*this, "skins")
             //, techniques  (*this, "techniques")
             , textures      (*this, "textures")
             , lights        (*this, "lights", "KHR_materials_common")

@@ -10,6 +10,7 @@ set(SRCS
 	code/OptimizeMeshes.cpp
 	code/FBXProperties.cpp
 	code/BlenderScene.cpp
+	code/CInterfaceIOWrapper.cpp
 	code/StepExporter.cpp
 	code/OgreStructs.cpp
 	code/Version.cpp
@@ -152,6 +153,8 @@ set(SRCS
 	code/OgreMaterial.cpp
 	code/MakeVerboseFormat.cpp
 	code/NFFLoader.cpp
+	code/X3DExporter.cpp
+	code/X3DExporter.hpp
 	code/X3DImporter.cpp
 	code/X3DImporter.hpp
 	code/X3DImporter_Geometry2D.cpp
@@ -256,6 +259,7 @@ if (NOT ASSIMP_FOUND)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_GLTF_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_ASSBIN_EXPORTER)
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_ASSXML_EXPORTER)
+	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_X3D_EXPORTER)
 
 	target_compile_definitions(assimp PRIVATE -DASSIMP_BUILD_NO_OWN_ZLIB)
 	target_compile_definitions(assimp PRIVATE -DOPENDDLPARSER_BUILD=1)

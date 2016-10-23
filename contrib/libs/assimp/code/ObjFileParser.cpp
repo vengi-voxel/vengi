@@ -140,6 +140,9 @@ void ObjFileParser::parseFile()
                     if (numComponents == 3) {
                         // read in vertex definition
                         getVector3(m_pModel->m_Vertices);
+                    } else if (numComponents == 4) {
+                        // read in vertex definition (homogeneous coords)
+                        getHomogeneousVector3(m_pModel->m_Vertices);
                     } else if (numComponents == 6) {
                         // read vertex and vertex-color
                         getTwoVectors3(m_pModel->m_Vertices, m_pModel->m_VertexColors);
@@ -179,10 +182,20 @@ void ObjFileParser::parseFile()
 
         case 'm': // Parse a material library or merging group ('mg')
             {
-                if (*(m_DataIt + 1) == 'g')
+                std::string name;
+
+                getName(m_DataIt, m_DataItEnd, name);
+
+                size_t nextSpace = name.find(" ");
+                if (nextSpace != std::string::npos)
+                    name = name.substr(0, nextSpace);
+
+                if (name == "mg")
                     getGroupNumberAndResolution();
-                else
+                else if(name == "mtllib")
                     getMaterialLib();
+				else
+					goto pf_skip_line;
             }
             break;
 
@@ -206,6 +219,8 @@ void ObjFileParser::parseFile()
 
         default:
             {
+pf_skip_line:
+
                 m_DataIt = skipLine<DataArrayIt>( m_DataIt, m_DataItEnd, m_uiLine );
             }
             break;
@@ -317,6 +332,26 @@ void ObjFileParser::getVector3( std::vector<aiVector3D> &point3d_array ) {
     z = ( ai_real ) fast_atof( m_buffer );
 
     point3d_array.push_back( aiVector3D( x, y, z ) );
+    m_DataIt = skipLine<DataArrayIt>( m_DataIt, m_DataItEnd, m_uiLine );
+}
+
+void ObjFileParser::getHomogeneousVector3( std::vector<aiVector3D> &point3d_array ) {
+    ai_real x, y, z, w;
+    copyNextWord(m_buffer, Buffersize);
+    x = (ai_real) fast_atof(m_buffer);
+
+    copyNextWord(m_buffer, Buffersize);
+    y = (ai_real) fast_atof(m_buffer);
+
+    copyNextWord( m_buffer, Buffersize );
+    z = ( ai_real ) fast_atof( m_buffer );
+
+    copyNextWord( m_buffer, Buffersize );
+    w = ( ai_real ) fast_atof( m_buffer );
+
+    ai_assert( w != 0 );
+
+    point3d_array.push_back( aiVector3D( x/w, y/w, z/w ) );
     m_DataIt = skipLine<DataArrayIt>( m_DataIt, m_DataItEnd, m_uiLine );
 }
 
@@ -602,6 +637,10 @@ void ObjFileParser::getMaterialLib()
     // Check for existence
     const std::string strMatName(pStart, &(*m_DataIt));
     std::string absName;
+
+	// Check if directive is valid.
+	if(!strMatName.length()) throw DeadlyImportError("File name of the material is absent.");
+
     if ( m_pIO->StackSize() > 0 ) {
         std::string path = m_pIO->CurrentDirectory();
         if ( '/' != *path.rbegin() ) {

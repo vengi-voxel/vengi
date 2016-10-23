@@ -46,9 +46,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "X3DImporter.hpp"
 #include "X3DImporter_Macro.hpp"
+#include "StringUtils.h"
 
-namespace Assimp
-{
+namespace Assimp {
 
 // <DirectionalLight
 // DEF=""               ID
@@ -69,7 +69,7 @@ void X3DImporter::ParseNode_Lighting_DirectionalLight()
     bool global = false;
     float intensity = 1;
     bool on = true;
-    CX3DImporter_NodeElement* ne;
+    CX3DImporter_NodeElement* ne( nullptr );
 
 	MACRO_ATTRREAD_LOOPBEG;
 		MACRO_ATTRREAD_CHECKUSEDEF_RET(def, use);
@@ -95,7 +95,7 @@ void X3DImporter::ParseNode_Lighting_DirectionalLight()
 			if(!def.empty())
 				ne->ID = def;
 			else
-				ne->ID = "DirectionalLight_" + std::to_string((size_t)ne);// make random name
+				ne->ID = "DirectionalLight_" + to_string((size_t)ne);// make random name
 
 			((CX3DImporter_NodeElement_Light*)ne)->AmbientIntensity = ambientIntensity;
 			((CX3DImporter_NodeElement_Light*)ne)->Color = color;
@@ -141,7 +141,7 @@ void X3DImporter::ParseNode_Lighting_PointLight()
     aiVector3D location( 0, 0, 0 );
     bool on = true;
     float radius = 100;
-    CX3DImporter_NodeElement* ne;
+    CX3DImporter_NodeElement* ne( nullptr );
 
 	MACRO_ATTRREAD_LOOPBEG;
 		MACRO_ATTRREAD_CHECKUSEDEF_RET(def, use);
@@ -178,7 +178,7 @@ void X3DImporter::ParseNode_Lighting_PointLight()
 			// Assimp want a node with name similar to a light. "Why? I don't no." )
 			ParseHelper_Group_Begin(false);
 			// make random name
-			if(ne->ID.empty()) ne->ID = "PointLight_" + std::to_string((size_t)ne);
+			if(ne->ID.empty()) ne->ID = "PointLight_" + to_string((size_t)ne);
 
 			NodeElement_Cur->ID = ne->ID;// assign name to node and return to light element.
 			ParseHelper_Node_Exit();
@@ -222,7 +222,7 @@ void X3DImporter::ParseNode_Lighting_SpotLight()
     aiVector3D location( 0, 0, 0 );
     bool on = true;
     float radius = 100;
-    CX3DImporter_NodeElement* ne;
+    CX3DImporter_NodeElement* ne( nullptr );
 
 	MACRO_ATTRREAD_LOOPBEG;
 		MACRO_ATTRREAD_CHECKUSEDEF_RET(def, use);
@@ -268,7 +268,7 @@ void X3DImporter::ParseNode_Lighting_SpotLight()
 			// Assimp want a node with name similar to a light. "Why? I don't no." )
 			ParseHelper_Group_Begin(false);
 			// make random name
-			if(ne->ID.empty()) ne->ID = "SpotLight_" + std::to_string((size_t)ne);
+			if(ne->ID.empty()) ne->ID = "SpotLight_" + to_string((size_t)ne);
 
 			NodeElement_Cur->ID = ne->ID;// assign name to node and return to light element.
 			ParseHelper_Node_Exit();

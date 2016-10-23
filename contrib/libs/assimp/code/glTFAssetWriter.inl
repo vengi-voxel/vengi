@@ -56,7 +56,16 @@ namespace glTF {
         inline Value& MakeValue(Value& val, float(&r)[N], MemoryPoolAllocator<>& al) {
             val.SetArray();
             val.Reserve(N, al);
-			for (decltype(N) i = 0; i < N; ++i) {
+            for (decltype(N) i = 0; i < N; ++i) {
+                val.PushBack(r[i], al);
+            }
+            return val;
+        }
+
+        inline Value& MakeValue(Value& val, const std::vector<float> & r, MemoryPoolAllocator<>& al) {
+            val.SetArray();
+            val.Reserve(r.size(), al);
+            for (unsigned int i = 0; i < r.size(); ++i) {
                 val.PushBack(r[i], al);
             }
             return val;
@@ -85,11 +94,73 @@ namespace glTF {
         obj.AddMember("componentType", int(a.componentType), w.mAl);
         obj.AddMember("count", a.count, w.mAl);
         obj.AddMember("type", StringRef(AttribType::ToString(a.type)), w.mAl);
+
+        Value vTmpMax, vTmpMin;
+        obj.AddMember("max", MakeValue(vTmpMax, a.max, w.mAl), w.mAl);
+        obj.AddMember("min", MakeValue(vTmpMin, a.min, w.mAl), w.mAl);
     }
 
     inline void Write(Value& obj, Animation& a, AssetWriter& w)
     {
+        /****************** Channels *******************/
+        Value channels;
+        channels.SetArray();
+        channels.Reserve(unsigned(a.Channels.size()), w.mAl);
 
+        for (size_t i = 0; i < unsigned(a.Channels.size()); ++i) {
+            Animation::AnimChannel& c = a.Channels[i];
+            Value valChannel;
+            valChannel.SetObject();
+            {
+                valChannel.AddMember("sampler", c.sampler, w.mAl);
+
+                Value valTarget;
+                valTarget.SetObject();
+                {
+                    valTarget.AddMember("id", StringRef(c.target.id->id), w.mAl);
+                    valTarget.AddMember("path", c.target.path, w.mAl);
+                }
+                valChannel.AddMember("target", valTarget, w.mAl);
+            }
+            channels.PushBack(valChannel, w.mAl);
+        }
+        obj.AddMember("channels", channels, w.mAl);
+
+        /****************** Parameters *******************/
+        Value valParameters;
+        valParameters.SetObject();
+        {
+            if (a.Parameters.TIME) {
+                valParameters.AddMember("TIME", StringRef(a.Parameters.TIME->id), w.mAl);
+            }
+            if (a.Parameters.rotation) {
+                valParameters.AddMember("rotation", StringRef(a.Parameters.rotation->id), w.mAl);
+            }
+            if (a.Parameters.scale) {
+                valParameters.AddMember("scale", StringRef(a.Parameters.scale->id), w.mAl);
+            }
+            if (a.Parameters.translation) {
+                valParameters.AddMember("translation", StringRef(a.Parameters.translation->id), w.mAl);
+            }
+        }
+        obj.AddMember("parameters", valParameters, w.mAl);
+
+        /****************** Samplers *******************/
+        Value valSamplers;
+        valSamplers.SetObject();
+
+        for (size_t i = 0; i < unsigned(a.Samplers.size()); ++i) {
+            Animation::AnimSampler& s = a.Samplers[i];
+            Value valSampler;
+            valSampler.SetObject();
+            {
+                valSampler.AddMember("input", s.input, w.mAl);
+                valSampler.AddMember("interpolation", s.interpolation, w.mAl);
+                valSampler.AddMember("output", s.output, w.mAl);
+            }
+            valSamplers.AddMember(StringRef(s.id), valSampler, w.mAl);
+        }
+        obj.AddMember("samplers", valSamplers, w.mAl);
     }
 
     inline void Write(Value& obj, Buffer& b, AssetWriter& w)
@@ -285,7 +356,7 @@ namespace glTF {
             }
             primitives.PushBack(prim, w.mAl);
         }
-    
+
         obj.AddMember("primitives", primitives, w.mAl);
     }
 
@@ -314,6 +385,16 @@ namespace glTF {
         AddRefsVector(obj, "children", n.children, w.mAl);
 
         AddRefsVector(obj, "meshes", n.meshes, w.mAl);
+
+        AddRefsVector(obj, "skeletons", n.skeletons, w.mAl);
+
+        if (n.skin) {
+            obj.AddMember("skin", Value(n.skin->id, w.mAl).Move(), w.mAl);
+        }
+
+        if (!n.jointName.empty()) {
+          obj.AddMember("jointName", n.jointName, w.mAl);
+        }
     }
 
     inline void Write(Value& obj, Program& b, AssetWriter& w)
@@ -323,7 +404,18 @@ namespace glTF {
 
     inline void Write(Value& obj, Sampler& b, AssetWriter& w)
     {
-
+        if (b.wrapS) {
+            obj.AddMember("wrapS", b.wrapS, w.mAl);
+        }
+        if (b.wrapT) {
+            obj.AddMember("wrapT", b.wrapT, w.mAl);
+        }
+        if (b.magFilter) {
+            obj.AddMember("magFilter", b.magFilter, w.mAl);
+        }
+        if (b.minFilter) {
+            obj.AddMember("minFilter", b.minFilter, w.mAl);
+        }
     }
 
     inline void Write(Value& scene, Scene& s, AssetWriter& w)
@@ -338,6 +430,24 @@ namespace glTF {
 
     inline void Write(Value& obj, Skin& b, AssetWriter& w)
     {
+        /****************** jointNames *******************/
+        Value vJointNames;
+        vJointNames.SetArray();
+        vJointNames.Reserve(unsigned(b.jointNames.size()), w.mAl);
+
+        for (size_t i = 0; i < unsigned(b.jointNames.size()); ++i) {
+            vJointNames.PushBack(StringRef(b.jointNames[i]->jointName), w.mAl);
+        }
+        obj.AddMember("jointNames", vJointNames, w.mAl);
+
+        if (b.bindShapeMatrix.isPresent) {
+            Value val;
+            obj.AddMember("bindShapeMatrix", MakeValue(val, b.bindShapeMatrix.value, w.mAl).Move(), w.mAl);
+        }
+
+        if (b.inverseBindMatrices) {
+            obj.AddMember("inverseBindMatrices", Value(b.inverseBindMatrices->id, w.mAl).Move(), w.mAl);
+        }
 
     }
 
@@ -350,6 +460,9 @@ namespace glTF {
     {
         if (tex.source) {
             obj.AddMember("source", Value(tex.source->id, w.mAl).Move(), w.mAl);
+        }
+        if (tex.sampler) {
+            obj.AddMember("sampler", Value(tex.sampler->id, w.mAl).Move(), w.mAl);
         }
     }
 
@@ -487,13 +600,15 @@ namespace glTF {
         }
     }
 
-    
+
     inline void AssetWriter::WriteMetadata()
     {
         Value asset;
         asset.SetObject();
         {
-            asset.AddMember("version", mAsset.asset.version, mAl);
+            char versionChar[10];
+            ai_snprintf(versionChar, sizeof(versionChar), "%d", mAsset.asset.version);
+            asset.AddMember("version", Value(versionChar, mAl).Move(), mAl);
 
             asset.AddMember("generator", Value(mAsset.asset.generator, mAl).Move(), mAl);
         }
