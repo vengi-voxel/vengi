@@ -49,7 +49,8 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		_homePath = prefPath;
 		SDL_free(prefPath);
 	}
-	const fs::space_info& s = fs::space(fs::path(_homePath));
+	std::error_code errorCode;
+	const fs::space_info& s = fs::space(fs::path(_homePath), errorCode);
 	constexpr uintmax_t div = 1024 * 1024;
 	const uint32_t capacity = s.capacity / div;
 	const uint32_t free = s.free / div;
@@ -63,7 +64,8 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 
 bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entries, const std::string& filter) const {
 	const fs::path path(directory);
-	for (const fs::directory_entry& p: fs::directory_iterator(path)) {
+	std::error_code errorCode;
+	for (const fs::directory_entry& p: fs::directory_iterator(path, errorCode)) {
 		const std::string& s = p.path().string();
 		if (!filter.empty() && !core::string::matches(filter, s)) {
 			continue;
@@ -92,7 +94,7 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entri
 		const DirEntry d{s, type};
 		entries.push_back(d);
 	}
-	return false;
+	return (bool)errorCode;
 }
 
 io::FilePtr Filesystem::open(const std::string& filename) const {
@@ -137,7 +139,8 @@ bool Filesystem::syswrite(const std::string& filename, const std::string& string
 }
 
 bool Filesystem::createDir(const std::string& path) const {
-	return fs::create_directories(fs::path(path));
+	std::error_code errorCode;
+	return fs::create_directories(fs::path(path), errorCode);
 }
 
 }
