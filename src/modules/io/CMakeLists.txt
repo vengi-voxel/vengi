@@ -7,9 +7,7 @@ set(SRCS
 
 if (LINUX OR DARWIN)
 	list(APPEND SRCS FilesystemUnix.cpp)
-endif()
-
-if (WINDOWS)
+elseif (WINDOWS)
 	list(APPEND SRCS FilesystemWindows.cpp)
 endif()
 
