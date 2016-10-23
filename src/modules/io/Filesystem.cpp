@@ -6,25 +6,6 @@
 #include "core/Var.h"
 #include "core/Log.h"
 #include <SDL.h>
-#if __WINDOWS__
-#include <windows.h>
-#include <direct.h>
-#include <wchar.h>
-#elif __LINUX__ or __MACOSX__
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#endif
-
-#ifndef __MACOSX__
-#if __cplusplus <= 201411
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::std::filesystem;
-#endif
-#endif
 
 namespace io {
 
@@ -51,58 +32,10 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		_homePath = prefPath;
 		SDL_free(prefPath);
 	}
-#ifndef __MACOSX__
-	std::error_code errorCode;
-	const fs::space_info& s = fs::space(fs::path(_homePath), errorCode);
-	constexpr uintmax_t div = 1024 * 1024;
-	const uint32_t capacity = s.capacity / div;
-	const uint32_t free = s.free / div;
-	const uint32_t available = s.available / div;
-
 	Log::debug("basepath: %s", _basePath.c_str());
-	Log::debug("homepath: %s (capacity: %i MB, free: %i MB, available: %i MB)", _homePath.c_str(), capacity, free, available);
-#endif
+	Log::debug("homepath: %s", _homePath.c_str());
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
-}
-
-bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entries, const std::string& filter) const {
-#ifdef __MACOSX__
-	return false;
-#else
-	const fs::path path(directory);
-	std::error_code errorCode;
-	for (const fs::directory_entry& p: fs::directory_iterator(path, errorCode)) {
-		const std::string& s = p.path().string();
-		if (!filter.empty() && !core::string::matches(filter, s)) {
-			continue;
-		}
-		const fs::file_type fileType = p.status().type();
-		DirEntry::Type type = DirEntry::Type::unknown;
-		switch (fileType) {
-		case fs::file_type::regular:
-			type = DirEntry::Type::file;
-			break;
-		case fs::file_type::directory:
-			type = DirEntry::Type::dir;
-			break;
-		case fs::file_type::symlink:
-			type = DirEntry::Type::symlink;
-			break;
-		case fs::file_type::fifo:
-			type = DirEntry::Type::fifo;
-			break;
-		case fs::file_type::socket:
-			type = DirEntry::Type::socket;
-			break;
-		default:
-			break;
-		}
-		const DirEntry d{s, type};
-		entries.push_back(d);
-	}
-	return (bool)errorCode;
-#endif
 }
 
 io::FilePtr Filesystem::open(const std::string& filename) const {
@@ -144,15 +77,6 @@ bool Filesystem::syswrite(const std::string& filename, const uint8_t* content, s
 bool Filesystem::syswrite(const std::string& filename, const std::string& string) {
 	const uint8_t* buf = reinterpret_cast<const uint8_t*>(string.c_str());
 	return syswrite(filename, buf, string.size());
-}
-
-bool Filesystem::createDir(const std::string& path) const {
-#ifdef __MACOSX__
-	return mkdir(path.c_str(), 0700);
-#else
-	std::error_code errorCode;
-	return fs::create_directories(fs::path(path), errorCode);
-#endif
 }
 
 }

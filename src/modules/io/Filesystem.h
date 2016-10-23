@@ -44,13 +44,10 @@ public:
 	bool exists(const std::string& filename) const;
 
 	struct DirEntry {
-		const std::string name;
+		std::string name;
 		enum class Type : uint8_t {
-			symlink,
 			file,
 			dir,
-			fifo,
-			socket,
 			unknown
 		};
 		Type type;
