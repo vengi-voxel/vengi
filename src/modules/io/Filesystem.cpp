@@ -16,12 +16,14 @@
 #include <sys/stat.h>
 #endif
 
+#ifndef __MACOSX__
 #if __cplusplus <= 201411
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
 #else
 #include <filesystem>
 namespace fs = std::std::filesystem;
+#endif
 #endif
 
 namespace io {
@@ -49,6 +51,7 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 		_homePath = prefPath;
 		SDL_free(prefPath);
 	}
+#ifndef __MACOSX__
 	std::error_code errorCode;
 	const fs::space_info& s = fs::space(fs::path(_homePath), errorCode);
 	constexpr uintmax_t div = 1024 * 1024;
@@ -58,11 +61,15 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 
 	Log::debug("basepath: %s", _basePath.c_str());
 	Log::debug("homepath: %s (capacity: %i MB, free: %i MB, available: %i MB)", _homePath.c_str(), capacity, free, available);
+#endif
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 }
 
 bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entries, const std::string& filter) const {
+#ifdef __MACOSX__
+	return false;
+#else
 	const fs::path path(directory);
 	std::error_code errorCode;
 	for (const fs::directory_entry& p: fs::directory_iterator(path, errorCode)) {
@@ -95,6 +102,7 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entri
 		entries.push_back(d);
 	}
 	return (bool)errorCode;
+#endif
 }
 
 io::FilePtr Filesystem::open(const std::string& filename) const {
@@ -139,8 +147,12 @@ bool Filesystem::syswrite(const std::string& filename, const std::string& string
 }
 
 bool Filesystem::createDir(const std::string& path) const {
+#ifdef __MACOSX__
+	return mkdir(path.c_str(), 0700);
+#else
 	std::error_code errorCode;
 	return fs::create_directories(fs::path(path), errorCode);
+#endif
 }
 
 }
