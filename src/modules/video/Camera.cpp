@@ -129,28 +129,25 @@ void Camera::updateViewMatrix() {
 }
 
 Ray Camera::screenRay(const glm::vec2& screenPos) const {
-	// project relative mouse cursor position [0.0-1.0] to [-1.0,1.0] and flip y axis
+	// project screen position [0.0-1.0] to [-1.0,1.0] and flip y axis
+	// to bring them into homogeneous space
 	const float x = +(screenPos.x - 0.5f) * 2.0f;
 	const float y = -(screenPos.y - 0.5f) * 2.0f;
-	const glm::mat4& viewProjInverse = glm::inverse(projectionMatrix() * viewMatrix());
-	const glm::vec4 near(x, y, 0.0f, 1.0f);
+	const glm::vec4 near(x, y, -1.0f, 1.0f);
 	const glm::vec4 far(x, y, 1.0f, 1.0f);
+
+	// bring into object space
+	const glm::mat4& viewProjInverse = glm::inverse(projectionMatrix() * viewMatrix());
 	const glm::vec4& origin = viewProjInverse * near;
-	return Ray(glm::vec3(origin), glm::normalize(glm::vec3(viewProjInverse * far - origin)));
+	const glm::vec4& farPlanePoint = viewProjInverse * far;
+
+	const glm::vec4& distance = farPlanePoint - origin;
+	return Ray(origin.xyz(), glm::normalize(distance.xyz()));
 }
 
 glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
 	const Ray& ray = screenRay(glm::vec2(screenPos));
 	return ray.origin + ray.direction * screenPos.z;
-}
-
-void Camera::worldToScreen(const glm::vec3& worldPos, float& x, float& y) const {
-	const glm::mat4& transform = projectionMatrix() * glm::inverse(viewMatrix());
-	const glm::vec4& screenspace = transform * glm::vec4(worldPos, 1.0f);
-	x = screenspace.x / screenspace.w;
-	y = screenspace.y / screenspace.w;
-	x = (x + 1) * 0.5f * width();
-	y = (1 - y) * 0.5f * height();
 }
 
 /**

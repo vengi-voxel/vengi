@@ -190,7 +190,9 @@ public:
 	void slerp(const glm::vec3& radians, float factor);
 
 	/**
-	 * @brief Converts mouse coordinates into a ray
+	 * @brief Converts normalized mouse coordinates into a ray
+	 * @param[in] screenPos normalized screen position [0.0-1.0]
+	 * @return Ray instance with origin and direction
 	 */
 	Ray screenRay(const glm::vec2& screenPos) const;
 
@@ -200,7 +202,6 @@ public:
 	 * @param[in] projection The projection matrix
 	 */
 	glm::vec3 screenToWorld(const glm::vec3& screenPos) const;
-	void worldToScreen(const glm::vec3& worldPos, float& x, float& y) const;
 
 	void update(long deltaFrame);
 

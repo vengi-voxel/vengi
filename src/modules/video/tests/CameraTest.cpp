@@ -8,32 +8,38 @@
 namespace video {
 
 class CameraTest : public core::AbstractTest {
+protected:
+	// looking straight down is the default
+	Camera setup(const glm::vec2& dimension = glm::vec2(1024, 768), const glm::vec3& position = glm::vec3(0.0, 1.0, 0.0), const glm::vec3& lookAt = glm::vec3(0.0), const glm::vec3& lookAlong = glm::forward) {
+		Camera camera;
+		camera.init(dimension);
+		camera.setPosition(position);
+		camera.lookAt(lookAt, lookAlong);
+		camera.update(0l);
+		return camera;
+	}
 };
 
+::std::ostream& operator<<(::std::ostream& ostream, const Ray& val) {
+	return ostream << "origin: " << glm::to_string(val.origin) << " - direction: " << glm::to_string(val.direction);
+}
+
 TEST_F(CameraTest, testLookAt) {
-	Camera camera;
-	camera.setPosition(glm::vec3(0.0, 1.0, 0.0));
-	camera.lookAt(glm::vec3(0.0), glm::forward);
-	camera.update(0l);
-	// looking straight down
+	Camera camera = setup();
 	EXPECT_FLOAT_EQ(glm::half_pi<float>(), camera.pitch());
 	EXPECT_FLOAT_EQ(0.0f, camera.yaw());
 	EXPECT_FLOAT_EQ(0.0f, camera.roll());
 }
 
-TEST_F(CameraTest, testConversion) {
-	// TODO: finish this
-	Camera camera;
-	camera.init(glm::vec2(1024, 768));
-	camera.setPosition(glm::vec3(0.0, 1.0, 0.0));
-	camera.lookAt(glm::vec3(0.0), glm::forward);
-	camera.update(0l);
-	glm::vec3 p;
-	camera.worldToScreen(glm::vec3(0.0f), p.x, p.y);
-	const glm::vec3& w = camera.screenToWorld(p);
+TEST_F(CameraTest, testScreenRay) {
+	Camera camera = setup();
+	const Ray& ray = camera.screenRay(glm::vec2(0.5f));
+	ASSERT_EQ(glm::down, ray.direction) << ray;
+	ASSERT_EQ(glm::vec3(), ray.origin) << ray;
 }
 
 TEST_F(CameraTest, testMotion) {
+	// TODO: finish this
 	Camera camera;
 	camera.setPosition(glm::vec3(0.0, 1.0, 0.0));
 	camera.lookAt(glm::vec3(0.0), glm::forward);

@@ -4,12 +4,17 @@
 
 namespace video {
 
+/**
+ * @brief Defines origin and direction of a ray
+ */
 class Ray {
 public:
 	Ray(const glm::vec3 _origin, const glm::vec3 _direction) :
 			origin(_origin), direction(_direction) {
-		core_assert(!glm::any(glm::isnan(origin)));
-		core_assert(!glm::any(glm::isnan(direction)));
+	}
+
+	inline bool isValid() const {
+		return !glm::any(glm::isnan(origin)) && !glm::any(glm::isnan(direction));
 	}
 
 	const glm::vec3 origin;
