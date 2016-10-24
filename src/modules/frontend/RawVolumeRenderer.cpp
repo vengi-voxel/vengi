@@ -54,18 +54,21 @@ bool RawVolumeRenderer::extract() {
 	if (_rawVolume == nullptr) {
 		return false;
 	}
+
+	if (_mesh == nullptr) {
+		return false;
+	}
+
 	voxel::extractCubicMesh(_rawVolume, _rawVolume->getEnclosingRegion(), _mesh, voxel::IsQuadNeeded(false));
 	const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
 	const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
 	const size_t meshNumberIndices = _mesh->getNoOfIndices();
+	_pos.clear();
+	_indices.clear();
+	_colors.clear();
 	if (meshNumberIndices == 0) {
-		_pos.clear();
-		_indices.clear();
-		_colors.clear();
+		return true;
 	} else {
-		_pos.clear();
-		_indices.clear();
-		_colors.clear();
 		const size_t meshNumberVertices = _mesh->getNoOfVertices();
 		_pos.reserve(meshNumberVertices);
 		_indices.reserve(meshNumberIndices);

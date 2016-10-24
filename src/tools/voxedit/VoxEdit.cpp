@@ -41,7 +41,7 @@ bool VoxEdit::newFile(bool force) {
 	}
 	_dirty = false;
 	const int size = 64;
-	const voxel::Region region(glm::ivec3(-size), glm::ivec3(size));
+	const voxel::Region region(glm::ivec3(0), glm::ivec3(size));
 	voxel::RawVolume* old = _rawVolumeRenderer.setVolume(new voxel::RawVolume(region));
 	delete old;
 	// TODO
@@ -191,7 +191,13 @@ void VoxEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 		extract = rawVolume->setVoxel(result.previousVoxel, voxel::createVoxel(voxel::Grass1));
 	} else {
 		Log::info("didn't hit voxel");
-		extract = rawVolume->setVoxel(glm::ivec3(0), voxel::createVoxel(voxel::Grass1));
+		int y = 0;
+		do {
+			if (y >= rawVolume->getEnclosingRegion().getHeightInCells()) {
+				break;
+			}
+			extract = rawVolume->setVoxel(glm::ivec3(0, ++y, 0), voxel::createVoxel(voxel::Grass1));
+		} while (!extract);
 	}
 	if (extract) {
 		Log::info("placed voxel");
