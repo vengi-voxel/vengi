@@ -41,6 +41,13 @@ public:
 		}
 	}
 
+	void setPosition(const glm::ivec3& position) {
+		TBWidget *widget = GetWidgetByID("treepos");
+		tb::TBStr str;
+		str.SetFormatted("%i:%i", position.x, position.z);
+		widget->SetText(str);
+	}
+
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
 		if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("ok")) || ev.special_key == tb::TB_KEY_ENTER) {
 			fillFields(TREEFIELDS, SDL_arraysize(TREEFIELDS), &_ctx);

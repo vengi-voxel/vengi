@@ -89,7 +89,7 @@ core::AppState ShapeTool::onInit() {
 	_entity->lerpPosition(targetPos, _entity->orientation());
 
 	new WorldParametersWindow(this);
-	new TreeParametersWindow(this);
+	_treeParameterWindow = new TreeParametersWindow(this);
 
 	return state;
 }
@@ -197,17 +197,11 @@ void ShapeTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 		return;
 	}
 
-	Log::debug("Click to %u:%u", x, y);
-	const glm::vec2 mousePos = glm::vec2(float(x), float(y)) / glm::vec2(dimension());
-	const video::Ray& ray = _camera.screenRay(mousePos);
+	const video::Ray& ray = _camera.mouseRay(glm::ivec2(x, y));
 	glm::ivec3 hit;
 	voxel::Voxel voxel;
 	if (_world->raycast(ray.origin, ray.direction, _worldRenderer.getViewDistance(), hit, voxel)) {
-		_worldRenderer.setVoxel(hit, voxel::createVoxel(voxel::Air));
-		Log::info("Raycast hit %i:%i:%i", hit.x, hit.y, hit.z);
-		// TODO: store to place trees at that position
-	} else {
-		Log::warn("Raycast didn't hit anything");
+		_treeParameterWindow->setPosition(hit);
 	}
 }
 
