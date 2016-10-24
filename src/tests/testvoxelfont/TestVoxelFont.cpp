@@ -32,14 +32,11 @@ core::AppState TestVoxelFont::onCleanup() {
 }
 
 bool TestVoxelFont::changeFontSize(int delta) {
+	_vertices = 0;
+	_indices = 0;
 	_voxelFont.shutdown();
-	_fontSize += delta;
-	if (_fontSize < 2) {
-		_fontSize = 2;
-	} else if (_fontSize > 250) {
-		_fontSize = 250;
-	}
-	if (!_voxelFont.init("font.ttf", _fontSize, 4, false, " Helowrd!")) {
+	_fontSize = glm::clamp(_fontSize + delta, 2, 250);
+	if (!_voxelFont.init("font.ttf", _fontSize, _thickness, _mergeQuads, " Helowrd!")) {
 		return false;
 	}
 
@@ -86,6 +83,8 @@ bool TestVoxelFont::changeFontSize(int delta) {
 	if (!_rawVolumeRenderer.update(positions, indices, colors)) {
 		return false;
 	}
+	_vertices = positions.size();
+	_indices = indices.size();
 
 	return true;
 }
@@ -115,12 +114,37 @@ bool TestVoxelFont::onKeyPress(int32_t key, int16_t modifier) {
 			return true;
 		}
 	}
+	if (modifier & KMOD_CTRL) {
+		int delta = 0;
+		if (key == SDLK_MINUS || key == SDLK_KP_MINUS) {
+			delta = -1;
+		} else if (key == SDLK_PLUS || key == SDLK_KP_PLUS) {
+			delta = 1;
+		}
+
+		if (delta != 0) {
+			_thickness = glm::clamp(_thickness + delta, 1, 250);
+			changeFontSize(0);
+			return true;
+		}
+	}
+	if (key == SDLK_SPACE) {
+		_mergeQuads ^= true;
+		changeFontSize(0);
+		return true;
+	}
 
 	return retVal;
 }
 
 void TestVoxelFont::afterUI() {
 	enqueueShowStr(5, core::Color::White, "Fontsize: %i", _fontSize);
+	enqueueShowStr(5, core::Color::White, "Thickness: %i", _thickness);
+	const char *state = _mergeQuads ? "true" : "false";
+	enqueueShowStr(5, core::Color::White, "Merge Quads: %s", state);
+	enqueueShowStr(5, core::Color::White, "Font vertices: %i, indices: %i", _vertices, _indices);
+	enqueueShowStr(5, core::Color::Gray, "Ctrl/+ Ctrl/-: Change font thickness");
+	enqueueShowStr(5, core::Color::Gray, "Space: Toggle merge quads");
 	enqueueShowStr(5, core::Color::Gray, "Shift/+ Shift/-: Change font size");
 	enqueueShowStr(5, core::Color::Gray, "Shift/Mousewheel: Change font size");
 	Super::afterUI();
