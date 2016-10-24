@@ -29,6 +29,7 @@ private:
 	bool _extract = false;
 	core::VarPtr _lastDirectory;
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
+	voxel::Voxel _currentVoxel;
 
 	bool isDirty() const;
 public:

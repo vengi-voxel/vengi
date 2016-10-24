@@ -98,6 +98,8 @@ core::AppState VoxEdit::onInit() {
 
 	SDL_SetRelativeMouseMode(SDL_FALSE);
 
+	_currentVoxel = voxel::createVoxel(voxel::Grass1);
+
 	return state;
 }
 
@@ -121,6 +123,7 @@ void VoxEdit::beforeUI() {
 		_plane.render(_camera);
 	}
 	_rawVolumeRenderer.render(_camera);
+	// TODO: render rawvolume planes
 	if (_renderAxis) {
 		_axis.render(_camera);
 	}
@@ -179,23 +182,32 @@ void VoxEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 		return;
 	}
 
+	const bool placeVoxel = button == SDL_BUTTON_LEFT;
+	const bool deleteVoxel = button == SDL_BUTTON_RIGHT;
+	const bool copyVoxel = button == SDL_BUTTON_MIDDLE;
+
 	voxel::Voxel voxel;
-	const glm::vec2 v((float)x / (float)width(), 1.0f - (float)y / (float)height());
-	const video::Ray& ray = _camera.screenRay(v);
-	Log::info("Ray: %s: %s", glm::to_string(ray.origin).c_str(), glm::to_string(ray.direction).c_str());
-	const voxel::PickResult& result = voxel::pickVoxel(rawVolume, ray.origin, ray.direction * _camera.farPlane(), voxel::createVoxel(voxel::Air));
-	bool extract;
+	const video::Ray& ray = _camera.mouseRay(glm::ivec2(x, y));
+	const glm::vec3 dirWithLength = ray.direction * _camera.farPlane();
+	const voxel::PickResult& result = voxel::pickVoxel(rawVolume, ray.origin, dirWithLength, voxel::createVoxel(voxel::Air));
+	bool extract = false;
 	if (result.didHit) {
-		Log::info("hit voxel");
-		extract = rawVolume->setVoxel(result.previousVoxel, voxel::createVoxel(voxel::Grass1));
+		if (copyVoxel) {
+			_currentVoxel = rawVolume->getVoxel(result.hitVoxel);
+		} else if (placeVoxel) {
+			extract = rawVolume->setVoxel(result.hitVoxel, _currentVoxel);
+		} else if (deleteVoxel) {
+			extract = rawVolume->setVoxel(result.hitVoxel, voxel::createVoxel(voxel::Air));
+		}
 	} else {
+		// TODO: intersection with the plane of the rawvolume
 		Log::info("didn't hit voxel");
 		int y = 0;
 		do {
 			if (y >= rawVolume->getEnclosingRegion().getHeightInCells()) {
 				break;
 			}
-			extract = rawVolume->setVoxel(glm::ivec3(0, ++y, 0), voxel::createVoxel(voxel::Grass1));
+			extract = rawVolume->setVoxel(glm::ivec3(0, ++y, 0), _currentVoxel);
 		} while (!extract);
 	}
 	if (extract) {
