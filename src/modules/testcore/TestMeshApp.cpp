@@ -1,6 +1,5 @@
 #include "TestMeshApp.h"
 #include "core/Command.h"
-#include "video/ScopedPolygonMode.h"
 
 #define MaxDepthBufferUniformName "u_farplanes"
 
@@ -74,7 +73,6 @@ void TestMeshApp::doRender() {
 		_shadowMapShader.setLight(_sunLight.viewProjectionMatrix(_camera));
 		_shadowMapShader.setModel(glm::mat4());
 		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
-			video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
 			glDisable(GL_BLEND);
 			glCullFace(GL_FRONT);
 			_depthBuffer.bind();
@@ -113,7 +111,6 @@ void TestMeshApp::doRender() {
 				glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
 			}
 
-			video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
 			core_assert_always(_mesh->render() > 0);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, 0);

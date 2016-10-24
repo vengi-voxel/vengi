@@ -5,6 +5,7 @@
 #include "core/Command.h"
 #include "frontend/Movement.h"
 #include "ui/TestAppWindow.h"
+#include "video/ScopedPolygonMode.h"
 
 TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 21000) {
@@ -102,7 +103,10 @@ void TestApp::beforeUI() {
 	if  (_renderPlane) {
 		_plane.render(_camera);
 	}
-	doRender();
+	{
+		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
+		doRender();
+	}
 	if (_renderAxis) {
 		_axis.render(_camera);
 	}

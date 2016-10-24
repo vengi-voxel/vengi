@@ -120,7 +120,6 @@ void ShapeRenderer::renderAll(const video::Camera& camera) const {
 	core_assert_always(_colorShader.setView(camera.viewMatrix()));
 	core_assert_always(_colorShader.setProjection(camera.projectionMatrix()));
 
-	video::ScopedPolygonMode polygonMode(camera.polygonMode());
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
 			continue;
@@ -140,7 +139,6 @@ void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera) cons
 
 	core_assert_always(_vbo[meshIndex].bind());
 	const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(uint32_t));
-	video::ScopedPolygonMode polygonMode(camera.polygonMode());
 	glDrawElements(std::enum_value(_primitives[meshIndex]), indices, GL_UNSIGNED_INT, 0);
 	_vbo[meshIndex].unbind();
 	GL_checkError();
