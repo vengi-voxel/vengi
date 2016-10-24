@@ -5,6 +5,8 @@
 #include "video/Camera.h"
 #include "FrontendShaders.h"
 #include "voxel/polyvox/Mesh.h"
+#include "frontend/ShapeRenderer.h"
+#include "video/ShapeBuilder.h"
 
 namespace frontend {
 
@@ -21,14 +23,21 @@ protected:
 	std::vector<uint32_t> _indices;
 	std::vector<glm::vec3> _colors;
 
+	video::ShapeBuilder _shapeBuilder;
+	frontend::ShapeRenderer _shapeRenderer;
+
 	video::VertexBuffer _vertexBuffer;
 	shader::ColorShader& _colorShader;
 
 	int32_t _vertexBufferIndex = -1;
 	int32_t _indexBufferIndex = -1;
 	int32_t _colorBufferIndex = -1;
+
+	int32_t _aabbMeshIndex = -1;
+
+	bool _renderAABB;
 public:
-	RawVolumeRenderer();
+	RawVolumeRenderer(bool renderAABB = false);
 
 	void render(const video::Camera& camera);
 

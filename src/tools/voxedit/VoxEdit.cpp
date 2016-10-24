@@ -14,7 +14,7 @@
 #include "voxel/polyvox/Picking.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		ui::UIApp(filesystem, eventBus, timeProvider) {
+		ui::UIApp(filesystem, eventBus, timeProvider), _rawVolumeRenderer(true) {
 	init("engine", "voxedit");
 }
 

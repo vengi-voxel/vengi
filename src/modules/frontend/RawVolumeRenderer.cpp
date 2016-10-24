@@ -5,8 +5,8 @@
 
 namespace frontend {
 
-RawVolumeRenderer::RawVolumeRenderer() :
-		_rawVolume(nullptr), _mesh(nullptr), _colorShader(shader::ColorShader::getInstance()) {
+RawVolumeRenderer::RawVolumeRenderer(bool renderAABB) :
+		_rawVolume(nullptr), _mesh(nullptr), _colorShader(shader::ColorShader::getInstance()), _renderAABB(renderAABB) {
 }
 
 bool RawVolumeRenderer::update(const std::vector<glm::vec4>& positions, const std::vector<uint32_t>& indices, const std::vector<glm::vec3>& colors) {
@@ -41,12 +41,29 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	core_assert(nIndices > 0);
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
 	_vertexBuffer.unbind();
+
+	if (_renderAABB) {
+		_shapeRenderer.render(_aabbMeshIndex, camera);
+	}
+
 	GL_checkError();
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(voxel::RawVolume* volume) {
 	voxel::RawVolume* old = _rawVolume;
 	_rawVolume = volume;
+	if (_rawVolume) {
+		const voxel::Region& region = _rawVolume->getEnclosingRegion();
+		const core::AABB<float> aabb(region.getLowerCorner(), region.getUpperCorner());
+		_shapeBuilder.aabb(aabb);
+		if (_aabbMeshIndex == -1) {
+			_aabbMeshIndex = _shapeRenderer.createMesh(_shapeBuilder);
+		} else {
+			_shapeRenderer.update(_aabbMeshIndex, _shapeBuilder);
+		}
+	} else {
+		_shapeBuilder.clear();
+	}
 	return old;
 }
 
@@ -103,6 +120,11 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
+	if (!_shapeRenderer.init()) {
+		Log::error("Failed to initialize the shape renderer");
+		return false;
+	}
+
 	_vertexBufferIndex = _vertexBuffer.create();
 	if (_vertexBufferIndex == -1) {
 		Log::error("Could not create the vertex buffer object");
@@ -136,12 +158,15 @@ voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	_vertexBufferIndex = -1;
 	_indexBufferIndex = -1;
 	_colorBufferIndex = -1;
+	_aabbMeshIndex = -1;
 	if (_mesh != nullptr) {
 		delete _mesh;
 	}
 	_mesh = nullptr;
 	voxel::RawVolume* old = _rawVolume;
 	_rawVolume = nullptr;
+	_shapeRenderer.shutdown();
+	_shapeBuilder.shutdown();
 	return old;
 }
 
