@@ -119,14 +119,6 @@ void VoxEdit::beforeUI() {
 
 	_camera.update(_deltaFrame);
 
-	if (_extract) {
-		_extract = false;
-		if (!_rawVolumeRenderer.extract()) {
-			requestQuit();
-			return;
-		}
-	}
-
 	if  (_renderPlane) {
 		_plane.render(_camera);
 	}
@@ -134,6 +126,14 @@ void VoxEdit::beforeUI() {
 	if (_renderAxis) {
 		_axis.render(_camera);
 	}
+}
+
+core::AppState VoxEdit::onRunning() {
+	if (_extract) {
+		_extract = false;
+		_rawVolumeRenderer.extract();
+	}
+	return Super::onRunning();
 }
 
 core::AppState VoxEdit::onCleanup() {
@@ -185,25 +185,19 @@ void VoxEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 	const glm::vec2 v((float)x / (float)width(), 1.0f - (float)y / (float)height());
 	const video::Ray& ray = _camera.screenRay(v);
 	const voxel::PickResult& result = voxel::pickVoxel(rawVolume, ray.origin, ray.direction * _camera.farPlane(), voxel::createVoxel(voxel::Air));
+	bool extract;
 	if (result.didHit) {
 		Log::info("hit voxel");
-		rawVolume->setVoxel(result.previousVoxel, voxel::createVoxel(voxel::Grass1));
+		extract = rawVolume->setVoxel(result.previousVoxel, voxel::createVoxel(voxel::Grass1));
 	} else {
 		Log::info("didn't hit voxel");
-		rawVolume->setVoxel(result.previousVoxel, voxel::createVoxel(voxel::Grass1));
+		extract = rawVolume->setVoxel(glm::ivec3(0), voxel::createVoxel(voxel::Grass1));
 	}
-#if 0
-	worldPos.y *= height();
-	worldPos.x *= width();
-	if (!rawVolume->getEnclosingRegion().containsPoint(worldPos)) {
-		Log::warn("Point (%f:%f:%f) is not part of the volume", worldPos.x, worldPos.y, worldPos.z);
-		return;
+	if (extract) {
+		Log::info("placed voxel");
 	}
-	Log::debug("clicked to screen at %i:%i (%f:%f:%f)", x, y, worldPos.x, worldPos.y, worldPos.z);
-	rawVolume->setVoxel(worldPos, voxel::createVoxel(voxel::Grass1));
-#endif
-	_dirty = true;
-	_extract = true;
+	_extract |= extract;
+	_dirty |= extract;
 }
 
 void VoxEdit::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {

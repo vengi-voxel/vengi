@@ -17,7 +17,7 @@ class VoxEdit: public ui::UIApp {
 private:
 	using Super = ui::UIApp;
 	bool _cameraMotion = true;
-	bool _renderPlane = true;
+	bool _renderPlane = false;
 	bool _renderAxis = true;
 	video::Camera _camera;
 	frontend::Axis _axis;
@@ -41,6 +41,7 @@ public:
 	core::AppState onInit() override;
 	void beforeUI() override;
 	core::AppState onCleanup() override;
+	core::AppState onRunning() override;
 	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	void onMouseWheel(int32_t x, int32_t y) override;
 	void onMouseButtonPress(int32_t x, int32_t y, uint8_t button) override;
