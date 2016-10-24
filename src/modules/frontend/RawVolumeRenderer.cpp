@@ -29,6 +29,10 @@ bool RawVolumeRenderer::update(const std::vector<glm::vec4>& positions, const st
 }
 
 void RawVolumeRenderer::render(const video::Camera& camera) {
+	if (_renderAABB) {
+		_shapeRenderer.render(_aabbMeshIndex, camera);
+	}
+
 	if (_pos.empty()) {
 		return;
 	}
@@ -42,19 +46,16 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
 	_vertexBuffer.unbind();
 
-	if (_renderAABB) {
-		_shapeRenderer.render(_aabbMeshIndex, camera);
-	}
-
 	GL_checkError();
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(voxel::RawVolume* volume) {
 	voxel::RawVolume* old = _rawVolume;
 	_rawVolume = volume;
-	if (_rawVolume) {
+	if (_rawVolume != nullptr) {
 		const voxel::Region& region = _rawVolume->getEnclosingRegion();
 		const core::AABB<float> aabb(region.getLowerCorner(), region.getUpperCorner());
+		_shapeBuilder.clear();
 		_shapeBuilder.aabb(aabb);
 		if (_aabbMeshIndex == -1) {
 			_aabbMeshIndex = _shapeRenderer.createMesh(_shapeBuilder);

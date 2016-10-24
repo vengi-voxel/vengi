@@ -83,7 +83,7 @@ core::AppState VoxEdit::onInit() {
 	registerActions(this, _lastDirectory);
 
 	// TODO: if tmpfile exists, load that one
-	newFile();
+	newFile(true);
 
 	const glm::vec4& color = ::core::Color::Black;
 	glClearColor(color.r, color.g, color.b, color.a);
