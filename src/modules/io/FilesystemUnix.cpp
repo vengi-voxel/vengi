@@ -1,4 +1,5 @@
 #include "Filesystem.h"
+#include "core/String.h"
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -47,13 +48,19 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 		if (::stat(name.c_str(), &st) == -1) {
 			continue;
 		}
+		DirEntry::Type type = DirEntry::Type::unknown;
 		if (st.st_mode & S_IFDIR) {
-			if (strcmp(d->d_name, ".") && strcmp(d->d_name, "..")) {
-				entities.push_back(DirEntry{d->d_name, DirEntry::Type::dir});
+			if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, "..")) {
+				continue;
 			}
+			type = DirEntry::Type::dir;
 		} else {
-			entities.push_back(DirEntry{d->d_name, DirEntry::Type::file});
+			type = DirEntry::Type::file;
 		}
+		if (!core::string::matches(filter, d->d_name)) {
+			continue;
+		}
+		entities.push_back(DirEntry{d->d_name, type});
 	}
 
 	::closedir(dir);

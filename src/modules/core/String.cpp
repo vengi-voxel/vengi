@@ -115,8 +115,11 @@ static bool patternMatch(const char *pattern, const char *text) {
 	return *t == '\0';
 }
 
-bool matches (const std::string& pattern, const std::string& text) {
-	return patternMatch(pattern.c_str(), text.c_str());
+bool matches (const std::string& pattern, const char* text) {
+	if (pattern.empty()) {
+		return true;
+	}
+	return patternMatch(pattern.c_str(), text);
 }
 
 std::string concat(std::string_view first, std::string_view second) {

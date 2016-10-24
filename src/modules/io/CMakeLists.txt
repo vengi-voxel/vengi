@@ -19,5 +19,6 @@ set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
 	tests/FilesystemTest.cpp
+	tests/FileTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

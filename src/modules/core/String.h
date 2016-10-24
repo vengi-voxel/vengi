@@ -167,7 +167,10 @@ inline bool iequals(const std::string& a, const std::string& b) {
  * @param[in] pattern The pattern can deal with wildcards like * and ?
  * @param[in] text The text to match against the pattern
  */
-extern bool matches(const std::string& pattern, const std::string& text);
+extern bool matches(const std::string& pattern, const char* text);
+inline bool matches(const std::string& pattern, const std::string& text) {
+	return matches(pattern, text.c_str());
+}
 
 // pass by copy to prevent aliasing
 extern std::string concat(std::string_view first, std::string_view second);

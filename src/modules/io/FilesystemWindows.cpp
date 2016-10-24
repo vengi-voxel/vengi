@@ -1,4 +1,5 @@
 #include "Filesystem.h"
+#include "core/String.h"
 #include <windows.h>
 #include <direct.h>
 #include <wchar.h>
@@ -51,13 +52,19 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 	}
 
 	do {
+		DirEntry::Type type = DirEntry::Type::unknown;
 		if (findinfo.attrib & _A_SUBDIR) {
-			if (strcmp(findinfo.name, ".") && strcmp(findinfo.name, "..")) {
-				entities.push_back(DirEntry{findinfo.name, DirEntry::Type::dir});
+			if (!strcmp(findinfo.name, ".") || !strcmp(findinfo.name, "..")) {
+				continue;
 			}
+			type = DirEntry::Type::dir;
 		} else {
-			entities.push_back(DirEntry{findinfo.name, DirEntry::Type::file});
+			type = DirEntry::Type::file;
 		}
+		if (!core::string::matches(filter, findinfo.name)) {
+			continue;
+		}
+		entities.push_back(DirEntry{findinfo.name, type});
 	} while (_findnext(dir, &findinfo) != -1);
 
 	_findclose(dir);
