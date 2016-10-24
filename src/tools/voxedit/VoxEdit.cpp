@@ -55,14 +55,6 @@ void VoxEdit::onWindowResize() {
 
 core::AppState VoxEdit::onInit() {
 	const core::AppState state = Super::onInit();
-	_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
-	Log::init();
-	if (state == core::AppState::Cleanup) {
-		return state;
-	}
-
-	GLDebug::enable(GLDebug::Medium);
-
 	if (!_axis.init()) {
 		return core::AppState::Cleanup;
 	}
