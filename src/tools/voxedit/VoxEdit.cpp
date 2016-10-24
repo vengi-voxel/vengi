@@ -147,7 +147,8 @@ void VoxEdit::beforeUI() {
 core::AppState VoxEdit::onCleanup() {
 	_axis.shutdown();
 	_plane.shutdown();
-	_rawVolumeRenderer.shutdown();
+	voxel::RawVolume* old = _rawVolumeRenderer.shutdown();
+	delete old;
 
 	core::Command::unregisterCommand("+move_right");
 	core::Command::unregisterCommand("+move_left");
