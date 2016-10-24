@@ -195,6 +195,7 @@ public:
 	 * @return Ray instance with origin and direction
 	 */
 	Ray screenRay(const glm::vec2& screenPos) const;
+	Ray mouseRay(const glm::ivec2& screenPos) const;
 
 	/**
 	 * @brief Converts normalized screen coordinates [0.0-1.0] into world coordinates.

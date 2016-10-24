@@ -33,12 +33,12 @@ TEST_F(CameraTest, testLookAt) {
 	EXPECT_FLOAT_EQ(0.0f, camera.roll());
 }
 
-TEST_F(CameraTest, testScreenRay) {
+TEST_F(CameraTest, testScreenRayStraightDown) {
 	Camera camera = setup();
 	// get the world position from the center of the screen
 	const Ray& ray = camera.screenRay(glm::vec2(0.5f));
-	ASSERT_EQ(glm::down, ray.direction) << ray;
-	ASSERT_EQ(glm::vec3(0.0f), ray.origin) << ray;
+	ASSERT_TRUE(glm::all(glm::epsilonEqual(glm::down, ray.direction, 0.00001f))) << ray << " - " << ray.direction.x << ", " << ray.direction.y << ", " << ray.direction.z;
+	ASSERT_TRUE(glm::all(glm::epsilonEqual(camera.position(), ray.origin, 0.00001f))) << ray << " - " << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
 }
 
 TEST_F(CameraTest, testMotion) {
