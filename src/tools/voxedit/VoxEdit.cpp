@@ -11,6 +11,7 @@
 #include "video/ScopedViewPort.h"
 #include "core/Color.h"
 #include "frontend/Movement.h"
+#include "voxel/polyvox/Picking.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		ui::UIApp(filesystem, eventBus, timeProvider) {
@@ -70,7 +71,6 @@ core::AppState VoxEdit::onInit() {
 	_lastDirectory = core::Var::get("ve_lastdirectory", core::App::getInstance()->filesystem()->homePath().c_str());
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
-	Log::info("Set window dimensions: %ix%i (aspect: %f)", _dimension.x, _dimension.y, _aspect);
 	_camera.init(dimension());
 	_camera.setAspectRatio(_aspect);
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
@@ -181,8 +181,18 @@ void VoxEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 		return;
 	}
 
-	const glm::vec3 v((float)x / (float)width(), 1.0f - (float)y / (float)height(), 1.0f);
-	glm::vec3 worldPos = _camera.screenToWorld(v);
+	voxel::Voxel voxel;
+	const glm::vec2 v((float)x / (float)width(), 1.0f - (float)y / (float)height());
+	const video::Ray& ray = _camera.screenRay(v);
+	const voxel::PickResult& result = voxel::pickVoxel(rawVolume, ray.origin, ray.direction * _camera.farPlane(), voxel::createVoxel(voxel::Air));
+	if (result.didHit) {
+		Log::info("hit voxel");
+		rawVolume->setVoxel(result.previousVoxel, voxel::createVoxel(voxel::Grass1));
+	} else {
+		Log::info("didn't hit voxel");
+		rawVolume->setVoxel(result.previousVoxel, voxel::createVoxel(voxel::Grass1));
+	}
+#if 0
 	worldPos.y *= height();
 	worldPos.x *= width();
 	if (!rawVolume->getEnclosingRegion().containsPoint(worldPos)) {
@@ -191,6 +201,7 @@ void VoxEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 	}
 	Log::debug("clicked to screen at %i:%i (%f:%f:%f)", x, y, worldPos.x, worldPos.y, worldPos.z);
 	rawVolume->setVoxel(worldPos, voxel::createVoxel(voxel::Grass1));
+#endif
 	_dirty = true;
 	_extract = true;
 }

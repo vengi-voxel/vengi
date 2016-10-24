@@ -98,9 +98,9 @@ typedef RaycastResults::RaycastResult RaycastResult;
  *
  * @return A RaycastResults designating whether the ray hit anything or not
  */
-template<typename Callback>
-RaycastResult raycastWithEndpoints(const PagedVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
-	PagedVolume::Sampler sampler(volData);
+template<typename Callback, class Volume>
+RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+	typename Volume::Sampler sampler(volData);
 
 	//The doRaycast function is assuming that it is iterating over the areas defined between
 	//voxels. We actually want to define the areas as being centered on voxels (as this is
@@ -188,7 +188,7 @@ RaycastResult raycastWithEndpoints(const PagedVolume* volData, const glm::vec3& 
  * passes from start to end without @a callback returning @a false, it
  * returns RaycastResults::Completed.
  *
- * @note These has been confusion in the past with people not @realising
+ * @note These has been confusion in the past with people not realising
  * that the length of the direction vector is important. Most graphics API can provide
  * a camera position and view direction for picking purposes, but the view direction is
  * usually normalised (i.e. of length one). If you use this view direction directly you
@@ -203,10 +203,10 @@ RaycastResult raycastWithEndpoints(const PagedVolume* volData, const glm::vec3& 
  *
  * @return A RaycastResults designating whether the ray hit anything or not
  */
-template<typename Callback>
-RaycastResult raycastWithDirection(const PagedVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback&& callback) {
+template<typename Callback, class Volume>
+RaycastResult raycastWithDirection(const Volume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback&& callback) {
 	const glm::vec3 v3dEnd = v3dStart + v3dDirectionAndLength;
-	return raycastWithEndpoints<Callback>(volData, v3dStart, v3dEnd, std::forward<Callback>(callback));
+	return raycastWithEndpoints<Callback, Volume>(volData, v3dStart, v3dEnd, std::forward<Callback>(callback));
 }
 
 }

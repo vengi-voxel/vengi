@@ -25,7 +25,7 @@ class RawVolume : public core::NonCopyable {
 public:
 	class Sampler {
 	public:
-		Sampler(RawVolume* volume);
+		Sampler(const RawVolume* volume);
 		~Sampler();
 
 		inline const Voxel& getVoxel() const;
@@ -35,6 +35,7 @@ public:
 		inline void setPosition(const glm::ivec3& pos);
 		void setPosition(int32_t x, int32_t y, int32_t z);
 		inline bool setVoxel(const Voxel& voxel);
+		glm::ivec3 getPosition() const;
 
 		void movePositiveX();
 		void movePositiveY();
@@ -75,7 +76,7 @@ public:
 		inline Voxel peekVoxel1px1py1pz() const;
 
 	private:
-		RawVolume* _volume;
+		const RawVolume* _volume;
 
 		//The current position in the volume
 		int32_t _xPosInVolume;
@@ -163,6 +164,10 @@ inline void RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 #define CAN_GO_POS_Y(val) (val < this->_volume->getEnclosingRegion().getUpperY())
 #define CAN_GO_NEG_Z(val) (val > this->_volume->getEnclosingRegion().getLowerZ())
 #define CAN_GO_POS_Z(val) (val < this->_volume->getEnclosingRegion().getUpperZ())
+
+inline glm::ivec3 RawVolume::Sampler::getPosition() const {
+	return glm::ivec3(_xPosInVolume, _yPosInVolume, _zPosInVolume);
+}
 
 inline const Voxel& RawVolume::Sampler::getVoxel() const {
 	if (this->isCurrentPositionValid()) {

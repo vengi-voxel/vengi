@@ -131,7 +131,7 @@ uint32_t RawVolume::calculateSizeInBytes() {
 	return this->getWidth() * this->getHeight() * this->getDepth() * sizeof(Voxel);
 }
 
-RawVolume::Sampler::Sampler(RawVolume* volume) :
+RawVolume::Sampler::Sampler(const RawVolume* volume) :
 		_volume(volume), _xPosInVolume(0), _yPosInVolume(0), _zPosInVolume(0), _currentVoxel(nullptr), _isCurrentPositionValidInX(
 				false), _isCurrentPositionValidInY(false), _isCurrentPositionValidInZ(false) {
 }
@@ -158,7 +158,7 @@ void RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 
 		_currentVoxel = this->_volume->_data + uVoxelIndex;
 	} else {
-		_currentVoxel = 0;
+		_currentVoxel = nullptr;
 	}
 }
 
