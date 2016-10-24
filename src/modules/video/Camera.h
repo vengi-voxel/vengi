@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "io/IEventObserver.h"
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/AABB.h"
@@ -31,6 +30,16 @@ enum class CameraMode {
 	Orthogonal
 };
 
+/**
+ * @brief Camera class with frustum culling
+ *
+ * @par Coordinate spaces
+ * @li object coordinates (the raw coordinates passed to glVertex, glVertexPointer etc)
+ * @li eye coordinates (after the model-view matrix has been applied)
+ * @li clip coordinates (after the projection matrix has been applied)
+ * @li normalized device coordinates (after division by W)
+ * @li window coordinates (after the viewport and depth-range transformations).
+ */
 class Camera {
 protected:
 	constexpr static uint32_t DIRTY_ORIENTATION = 1 << 0;
