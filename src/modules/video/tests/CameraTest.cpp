@@ -12,6 +12,8 @@ protected:
 	// looking straight down is the default
 	Camera setup(const glm::vec2& dimension = glm::vec2(1024, 768), const glm::vec3& position = glm::vec3(0.0, 1.0, 0.0), const glm::vec3& lookAt = glm::vec3(0.0), const glm::vec3& lookAlong = glm::forward) {
 		Camera camera;
+		camera.setNearPlane(0.1f);
+		camera.setFarPlane(100.0f);
 		camera.init(dimension);
 		camera.setPosition(position);
 		camera.lookAt(lookAt, lookAlong);
@@ -33,9 +35,10 @@ TEST_F(CameraTest, testLookAt) {
 
 TEST_F(CameraTest, testScreenRay) {
 	Camera camera = setup();
+	// get the world position from the center of the screen
 	const Ray& ray = camera.screenRay(glm::vec2(0.5f));
 	ASSERT_EQ(glm::down, ray.direction) << ray;
-	ASSERT_EQ(glm::vec3(), ray.origin) << ray;
+	ASSERT_EQ(glm::vec3(0.0f), ray.origin) << ray;
 }
 
 TEST_F(CameraTest, testMotion) {

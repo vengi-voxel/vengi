@@ -109,7 +109,7 @@ void ShapeTool::beforeUI() {
 
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	_camera.setFieldOfView(45.0f);
-	_camera.setAspectRatio(_aspect);
+	_camera.init(dimension());
 	_camera.update(_deltaFrame);
 
 	_worldRenderer.extractNewMeshes(_camera.position());

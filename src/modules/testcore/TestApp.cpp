@@ -18,7 +18,6 @@ TestApp::~TestApp() {
 void TestApp::onWindowResize() {
 	Super::onWindowResize();
 	_camera.init(dimension());
-	_camera.setAspectRatio(_aspect);
 }
 
 core::AppState TestApp::onInit() {
@@ -47,7 +46,6 @@ core::AppState TestApp::onInit() {
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _dimension.x, _dimension.y, _aspect);
 	_camera.init(dimension());
-	_camera.setAspectRatio(_aspect);
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	_camera.lookAt(glm::vec3(0.0001f));
 

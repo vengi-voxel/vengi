@@ -51,7 +51,6 @@ bool VoxEdit::newFile(bool force) {
 void VoxEdit::onWindowResize() {
 	Super::onWindowResize();
 	_camera.init(dimension());
-	_camera.setAspectRatio(_aspect);
 }
 
 core::AppState VoxEdit::onInit() {
@@ -72,7 +71,6 @@ core::AppState VoxEdit::onInit() {
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
 	_camera.init(dimension());
-	_camera.setAspectRatio(_aspect);
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	_camera.lookAt(glm::vec3(0.0001f));
 

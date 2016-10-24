@@ -185,7 +185,7 @@ void Client::beforeUI() {
 			_camera.setTarget(pos);
 		}
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
-		_camera.setAspectRatio(_aspect);
+		_camera.init(dimension());
 		_camera.update(_deltaFrame);
 
 		_drawCallsWorld = _worldRenderer.renderWorld(_camera);

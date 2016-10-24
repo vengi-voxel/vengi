@@ -226,6 +226,7 @@ public:
 
 inline void Camera::init(const glm::ivec2& dimension) {
 	_dimension = dimension;
+	_aspectRatio = _dimension.x / static_cast<float>(_dimension.y);
 }
 
 inline const glm::ivec2& Camera::dimension() const {
