@@ -36,6 +36,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	if (_pos.empty()) {
 		return;
 	}
+
 	video::ScopedShader scoped(_colorShader);
 	core_assert_always(_colorShader.setView(camera.viewMatrix()));
 	core_assert_always(_colorShader.setProjection(camera.projectionMatrix()));

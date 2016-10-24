@@ -3,6 +3,7 @@ set(SRCS
 	Actions.h Actions.cpp
 	VoxEdit.h VoxEdit.cpp
 	ui/ToolWindow.h
+	ui/CameraWindow.h
 	ui/VoxEditUI.h ui/VoxEditUI.cpp
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)

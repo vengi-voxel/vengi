@@ -144,35 +144,44 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 		}
 
 		if (tx <= ty && tx <= tz) {
-			if (i == iend)
+			if (i == iend) {
 				break;
+			}
 			tx += deltatx;
 			i += di;
 
-			if (di == 1)
+			if (di == 1) {
 				sampler.movePositiveX();
-			if (di == -1)
+			}
+			if (di == -1) {
 				sampler.moveNegativeX();
+			}
 		} else if (ty <= tz) {
-			if (j == jend)
+			if (j == jend) {
 				break;
+			}
 			ty += deltaty;
 			j += dj;
 
-			if (dj == 1)
+			if (dj == 1) {
 				sampler.movePositiveY();
-			if (dj == -1)
+			}
+			if (dj == -1) {
 				sampler.moveNegativeY();
+			}
 		} else {
-			if (k == kend)
+			if (k == kend) {
 				break;
+			}
 			tz += deltatz;
 			k += dk;
 
-			if (dk == 1)
+			if (dk == 1) {
 				sampler.movePositiveZ();
-			if (dk == -1)
+			}
+			if (dk == -1) {
 				sampler.moveNegativeZ();
+			}
 		}
 	}
 

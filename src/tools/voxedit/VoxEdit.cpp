@@ -12,6 +12,7 @@
 #include "core/Color.h"
 #include "frontend/Movement.h"
 #include "voxel/polyvox/Picking.h"
+#include "video/ScopedPolygonMode.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _rawVolumeRenderer(true) {
@@ -122,7 +123,10 @@ void VoxEdit::beforeUI() {
 	if  (_renderPlane) {
 		_plane.render(_camera);
 	}
-	_rawVolumeRenderer.render(_camera);
+	{
+		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
+		_rawVolumeRenderer.render(_camera);
+	}
 	// TODO: render rawvolume planes
 	if (_renderAxis) {
 		_axis.render(_camera);
@@ -177,8 +181,8 @@ void VoxEdit::onMouseWheel(int32_t x, int32_t y) {
 void VoxEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 	Super::onMouseButtonPress(x, y, button);
 
-	voxel::RawVolume* rawVolume = _rawVolumeRenderer.volume();
-	if (rawVolume == nullptr) {
+	voxel::RawVolume* volume = _rawVolumeRenderer.volume();
+	if (volume == nullptr) {
 		return;
 	}
 
@@ -186,33 +190,32 @@ void VoxEdit::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 	const bool deleteVoxel = button == SDL_BUTTON_RIGHT;
 	const bool copyVoxel = button == SDL_BUTTON_MIDDLE;
 
+	if (!placeVoxel && !deleteVoxel && !copyVoxel) {
+		return;
+	}
+
 	voxel::Voxel voxel;
 	const video::Ray& ray = _camera.mouseRay(glm::ivec2(x, y));
 	const glm::vec3 dirWithLength = ray.direction * _camera.farPlane();
-	const voxel::PickResult& result = voxel::pickVoxel(rawVolume, ray.origin, dirWithLength, voxel::createVoxel(voxel::Air));
+	const voxel::PickResult& result = voxel::pickVoxel(volume, ray.origin, dirWithLength, volume->getBorderValue());
+	const voxel::Region& region = volume->getEnclosingRegion();
 	bool extract = false;
-	if (result.didHit) {
+	// TODO: ui option to override
+	bool override = !placeVoxel;
+	if (result.didHit && override) {
 		if (copyVoxel) {
-			_currentVoxel = rawVolume->getVoxel(result.hitVoxel);
+			_currentVoxel = volume->getVoxel(result.hitVoxel);
 		} else if (placeVoxel) {
-			extract = rawVolume->setVoxel(result.hitVoxel, _currentVoxel);
+			extract = volume->setVoxel(result.hitVoxel, _currentVoxel);
 		} else if (deleteVoxel) {
-			extract = rawVolume->setVoxel(result.hitVoxel, voxel::createVoxel(voxel::Air));
+			extract = volume->setVoxel(result.hitVoxel, volume->getBorderValue());
 		}
-	} else {
-		// TODO: intersection with the plane of the rawvolume
-		Log::info("didn't hit voxel");
-		int y = 0;
-		do {
-			if (y >= rawVolume->getEnclosingRegion().getHeightInCells()) {
-				break;
-			}
-			extract = rawVolume->setVoxel(glm::ivec3(0, ++y, 0), _currentVoxel);
-		} while (!extract);
+	} else if (result.validPreviousVoxel) {
+		if (placeVoxel) {
+			extract = volume->setVoxel(result.previousVoxel, _currentVoxel);
+		}
 	}
-	if (extract) {
-		Log::info("placed voxel");
-	}
+
 	_extract |= extract;
 	_dirty |= extract;
 }

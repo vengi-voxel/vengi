@@ -17,6 +17,8 @@ struct PickResult {
 	/** Did the picking operation hit anything */
 	bool didHit = false;
 
+	bool validPreviousVoxel = false;
+
 	/** The location of the solid voxel it hit */
 	glm::ivec3 hitVoxel;
 
@@ -52,7 +54,10 @@ public:
 			return false;
 		}
 
-		_result.previousVoxel = sampler.getPosition();
+		if (sampler.isCurrentPositionValid()) {
+			_result.validPreviousVoxel = true;
+			_result.previousVoxel = sampler.getPosition();
+		}
 		if (_makeVisible) {
 			sampler.setVoxel(createVoxel(Grass1));
 		}

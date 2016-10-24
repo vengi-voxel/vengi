@@ -123,6 +123,10 @@ public:
 
 		const Voxel& getVoxel() const;
 
+		inline bool isCurrentPositionValid() const {
+			return true;
+		}
+
 		void setPosition(const glm::ivec3& v3dNewPos);
 		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
 		bool setVoxel(const Voxel& tValue);
