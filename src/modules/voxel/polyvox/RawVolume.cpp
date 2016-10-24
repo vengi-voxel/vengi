@@ -95,16 +95,20 @@ void RawVolume::setBorderValue(const Voxel& tBorder) {
  * @param uZPos the @c z position of the voxel
  * @param tValue the value to which the voxel will be set
  */
-void RawVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue) {
+bool RawVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue) {
 	core_assert_msg(this->_region.containsPoint(glm::ivec3(uXPos, uYPos, uZPos)), "Position is outside valid region %i:%i:%i",
 			uXPos, uYPos, uZPos);
 
 	const glm::ivec3& v3dLowerCorner = this->_region.getLowerCorner();
-	int32_t iLocalXPos = uXPos - v3dLowerCorner.x;
-	int32_t iLocalYPos = uYPos - v3dLowerCorner.y;
-	int32_t iLocalZPos = uZPos - v3dLowerCorner.z;
-
-	_data[iLocalXPos + iLocalYPos * this->getWidth() + iLocalZPos * this->getWidth() * this->getHeight()] = tValue;
+	const int32_t iLocalXPos = uXPos - v3dLowerCorner.x;
+	const int32_t iLocalYPos = uYPos - v3dLowerCorner.y;
+	const int32_t iLocalZPos = uZPos - v3dLowerCorner.z;
+	const int index = iLocalXPos + iLocalYPos * this->getWidth() + iLocalZPos * this->getWidth() * this->getHeight();
+	if (_data[index] == tValue) {
+		return false;
+	}
+	_data[index] = tValue;
+	return true;
 }
 
 /**

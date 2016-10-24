@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Color.h"
 #include <array>
 
 namespace frontend {

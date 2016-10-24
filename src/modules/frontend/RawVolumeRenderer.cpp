@@ -1,6 +1,7 @@
 #include "RawVolumeRenderer.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
+#include "frontend/MaterialColor.h"
 
 namespace frontend {
 
@@ -49,8 +50,10 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(voxel::RawVolume* volume) {
 	return old;
 }
 
-
 bool RawVolumeRenderer::extract() {
+	if (_rawVolume == nullptr) {
+		return false;
+	}
 	voxel::extractCubicMesh(_rawVolume, _rawVolume->getEnclosingRegion(), _mesh, voxel::IsQuadNeeded(false));
 	const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
 	const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
@@ -60,11 +63,17 @@ bool RawVolumeRenderer::extract() {
 		_indices.clear();
 		_colors.clear();
 	} else {
+		_pos.clear();
+		_indices.clear();
+		_colors.clear();
 		const size_t meshNumberVertices = _mesh->getNoOfVertices();
 		_pos.reserve(meshNumberVertices);
 		_indices.reserve(meshNumberIndices);
+		_colors.reserve(meshNumberVertices);
+		const MaterialColorArray& materialColors = getMaterialColors();
 		for (size_t i = 0; i < meshNumberVertices; ++i) {
 			_pos.emplace_back(meshVertices[i].position, 1.0f);
+			_colors.emplace_back(materialColors[meshVertices[i].data.getMaterial()]);
 		}
 		for (size_t i = 0; i < meshNumberIndices; ++i) {
 			_indices.push_back(meshIndices[i]);

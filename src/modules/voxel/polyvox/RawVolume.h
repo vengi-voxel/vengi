@@ -83,7 +83,7 @@ public:
 		int32_t _yPosInVolume;
 		int32_t _zPosInVolume;
 
-		//Other current position information
+		/** Other current position information */
 		Voxel* _currentVoxel;
 
 		//Whether the current position is inside the volume
@@ -120,9 +120,9 @@ public:
 	/// Sets the value used for voxels which are outside the volume
 	void setBorderValue(const Voxel& voxel);
 	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
-	void setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& voxel);
+	bool setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& voxel);
 	/// Sets the voxel at the position given by a 3D vector
-	inline void setVoxel(const glm::ivec3& pos, const Voxel& voxel);
+	bool setVoxel(const glm::ivec3& pos, const Voxel& voxel);
 
 	/// Calculates approximatly how many bytes of memory the volume is currently using.
 	uint32_t calculateSizeInBytes();
@@ -130,32 +130,32 @@ public:
 private:
 	void initialise(const Region& region);
 
-	// The size of the volume
+	/** The size of the volume */
 	Region _region;
 
-	// The border value
+	/** The border value */
 	Voxel _borderVoxel;
 
-	// The voxel data
+	/** The voxel data */
 	Voxel* _data;
 };
 
-////////////////////////////////////////////////////////////////////////////////
-/// This version of the function is provided so that the wrap mode does not need
-/// to be specified as a template parameter, as it may be confusing to some users.
-/// @param v3dPos The 3D position of the voxel
-/// @return The voxel value
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief This version of the function is provided so that the wrap mode does not need
+ * to be specified as a template parameter, as it may be confusing to some users.
+ * @param v3dPos The 3D position of the voxel
+ * @return The voxel value
+ */
 inline const Voxel& RawVolume::getVoxel(const glm::ivec3& pos) const {
 	return getVoxel(pos.x, pos.y, pos.z);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// @param v3dPos the 3D position of the voxel
-/// @param tValue the value to which the voxel will be set
-////////////////////////////////////////////////////////////////////////////////
-inline void RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
-	setVoxel(pos.x, pos.y, pos.z, voxel);
+/**
+ * @param v3dPos the 3D position of the voxel
+ * @param tValue the value to which the voxel will be set
+ */
+inline bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
+	return setVoxel(pos.x, pos.y, pos.z, voxel);
 }
 
 #define CAN_GO_NEG_X(val) (val > this->_volume->getEnclosingRegion().getLowerX())
