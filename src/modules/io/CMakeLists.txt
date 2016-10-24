@@ -1,6 +1,7 @@
 set(SRCS
 	EventHandler.cpp EventHandler.h IEventObserver.h
 	Filesystem.cpp Filesystem.h
+	FileStream.cpp FileStream.h
 	File.cpp File.h
 	IOResource.h
 )
@@ -19,6 +20,7 @@ set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
 	tests/FilesystemTest.cpp
+	tests/FileStreamTest.cpp
 	tests/FileTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

@@ -18,6 +18,7 @@ namespace io {
  * @see FileSystem
  */
 class File : public IOResource {
+	friend class FileStream;
 protected:
 	SDL_RWops* _file;
 	const std::string _rawPath;
