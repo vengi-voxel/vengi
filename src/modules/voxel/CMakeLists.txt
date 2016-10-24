@@ -42,6 +42,7 @@ gtest_suite_files(tests
 	tests/WorldPersisterTest.cpp
 	tests/LSystemGeneratorTest.cpp
 	tests/PolyVoxTest.cpp
+	tests/PickingTest.cpp
 	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
 )

@@ -8,7 +8,7 @@ namespace voxel {
 
 class PolyVoxTest: public AbstractVoxelTest {
 protected:
-	bool pageIn(const Region& region, PagedVolume::Chunk* chunk) override {
+	bool pageIn(const voxel::Region& region, PagedVolume::Chunk* chunk) override {
 		chunk->setVoxel(1, 2, 1, createVoxel(25));
 
 		chunk->setVoxel(0, 1, 0, createVoxel(11));
@@ -73,7 +73,7 @@ TEST_F(PolyVoxTest, testSamplerPeekWithTipOfTheGeom) {
 }
 
 TEST_F(PolyVoxTest, testFullSamplerLoop) {
-	const Region& region = _ctx.region;
+	const voxel::Region& region = _ctx.region;
 	PagedVolume::Sampler volumeSampler(&_volData);
 
 	ASSERT_EQ(0, region.getLowerX());
@@ -222,7 +222,7 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 TEST_F(PolyVoxTest, testRegion) {
 	const glm::ivec3 mins(0, 0, 0);
 	const glm::ivec3 maxs(15, 15, 15);
-	Region region(mins, maxs);
+	voxel::Region region(mins, maxs);
 	ASSERT_TRUE(region.containsPoint(mins));
 	ASSERT_TRUE(region.containsPoint(maxs));
 	ASSERT_FALSE(region.containsPoint(mins, 1));
