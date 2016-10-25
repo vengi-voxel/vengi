@@ -129,6 +129,7 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 		wrap(stream.readInt(numBytesChildrenChunks))
 
 		if (chunkId == FourCC('P','A','C','K')) {
+			Log::debug("Found pack chunk with %u bytes", numBytesChunk);
 			// 4. Chunk id 'PACK' : if it is absent, only one model in the file
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -140,6 +141,7 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 				Log::warn("We are right now only loading the first model of a vox file");
 			}
 		} else if (chunkId == FourCC('S','I','Z','E')) {
+			Log::debug("Found size chunk with %u bytes", numBytesChunk);
 			// 5. Chunk id 'SIZE' : model size
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -148,6 +150,7 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 			// 4        | int        | size y
 			// 4        | int        | size z : gravity direction
 			// -------------------------------------------------------------------------------
+			// we have to flip the axis here
 			uint32_t x, y, z;
 			wrap(stream.readInt(x))
 			wrap(stream.readInt(z))
@@ -160,6 +163,7 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 			}
 			volume = new RawVolume(region);
 		} else if (chunkId == FourCC('X','Y','Z','I')) {
+			Log::debug("Found voxel chunk with %u bytes", numBytesChunk);
 			// 6. Chunk id 'XYZI' : model voxels
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -175,6 +179,7 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 			}
 			Log::debug("Found voxel chunk with %u voxels", numVoxels);
 			for (uint32_t i = 0; i < numVoxels; ++i) {
+				// we have to flip the axis here
 				uint8_t x, y, z, colorIndex;
 				wrap(stream.readByte(x))
 				wrap(stream.readByte(z))
@@ -184,7 +189,7 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 				volume->setVoxel(x, y, z, createVoxel(Grass1));
 			}
 		} else if (chunkId == FourCC('R','G','B','A')) {
-			Log::debug("Found palette chunk");
+			Log::debug("Found palette chunk with %u bytes", numBytesChunk);
 			// 7. Chunk id 'RGBA' : palette
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -197,13 +202,13 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 			//                       |     palette[i + 1] = ReadRGBA();
 			//                       | }
 			// -------------------------------------------------------------------------------
-			for (int i = 0; i <= 254; i++) {
+			for (int i = 0; i <= 255; i++) {
 				uint32_t rgba;
 				wrap(stream.readInt(rgba))
 				palette[i + 1] = rgba;
 			}
 		} else if (chunkId == FourCC('M','A','T','T')) {
-			Log::debug("Found material chunk");
+			Log::debug("Found material chunk with %u bytes", numBytesChunk);
 			// 9. Chunk id 'MATT' : material, if it is absent, it is diffuse material
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
