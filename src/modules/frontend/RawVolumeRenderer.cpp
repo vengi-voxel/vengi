@@ -35,16 +35,25 @@ bool RawVolumeRenderer::init(const glm::ivec2& dimension) {
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
 	_sunLight.init(sunDirection, dimension);
 
-	const int posLoc = _worldShader.enableVertexAttributeArray("a_pos");
-	const int components = sizeof(voxel::Vertex::position) / sizeof(decltype(voxel::Vertex::position)::value_type);
-	_worldShader.setVertexAttributeInt(posLoc, components, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
+	video::VertexBuffer::Attribute attributePos;
+	attributePos.bufferIndex = _vertexBufferIndex;
+	attributePos.index = _worldShader.getLocationPos();
+	attributePos.stride = sizeof(voxel::Vertex);
+	attributePos.size = _worldShader.getComponentsPos();
+	attributePos.type = GL_UNSIGNED_BYTE;
+	attributePos.typeIsInt = true;
+	attributePos.offset = offsetof(voxel::Vertex, position);
+	_vertexBuffer.addAttribute(attributePos);
 
-	const int locationInfo = _worldShader.enableVertexAttributeArray("a_info");
-	// we are uploading two bytes at once here
-	static_assert(sizeof(voxel::Voxel) == sizeof(uint8_t), "Voxel type doesn't match");
-	static_assert(sizeof(voxel::Vertex::ambientOcclusion) == sizeof(uint8_t), "AO type doesn't match");
-	_worldShader.setVertexAttributeInt(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
-	GL_checkError();
+	video::VertexBuffer::Attribute attributeInfo;
+	attributeInfo.bufferIndex = _vertexBufferIndex;
+	attributeInfo.index = _worldShader.getLocationInfo();
+	attributeInfo.stride = sizeof(voxel::Vertex);
+	attributeInfo.size = _worldShader.getComponentsInfo();
+	attributeInfo.type = GL_UNSIGNED_BYTE;
+	attributeInfo.typeIsInt = true;
+	attributeInfo.offset = offsetof(voxel::Vertex, ambientOcclusion);
+	_vertexBuffer.addAttribute(attributeInfo);
 
 	_mesh = new voxel::Mesh(128, 128, true);
 
@@ -60,6 +69,39 @@ bool RawVolumeRenderer::update(const std::vector<voxel::Vertex>& vertices, const
 		Log::error("Failed to update the index buffer");
 		return false;
 	}
+	return true;
+}
+
+bool RawVolumeRenderer::extract() {
+	if (_rawVolume == nullptr) {
+		return false;
+	}
+
+	if (_mesh == nullptr) {
+		return false;
+	}
+
+	voxel::extractCubicMesh(_rawVolume, _rawVolume->getEnclosingRegion(), _mesh, voxel::IsQuadNeeded(false));
+	const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
+	const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
+	const size_t meshNumberIndices = _mesh->getNoOfIndices();
+	if (meshNumberIndices == 0) {
+		Log::info("empty volume");
+		_vertexBuffer.update(_vertexBufferIndex, nullptr, 0);
+		_vertexBuffer.update(_indexBufferIndex, nullptr, 0);
+	} else {
+		Log::info("empty volume");
+		const size_t meshNumberVertices = _mesh->getNoOfVertices();
+		if (!_vertexBuffer.update(_vertexBufferIndex, meshVertices, sizeof(voxel::Vertex) * meshNumberVertices)) {
+			Log::error("Failed to update the vertex buffer");
+			return false;
+		}
+		if (!_vertexBuffer.update(_indexBufferIndex, meshIndices, sizeof(voxel::IndexType) * meshNumberIndices)) {
+			Log::error("Failed to update the index buffer");
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -130,37 +172,6 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(voxel::RawVolume* volume) {
 		_shapeBuilder.clear();
 	}
 	return old;
-}
-
-bool RawVolumeRenderer::extract() {
-	if (_rawVolume == nullptr) {
-		return false;
-	}
-
-	if (_mesh == nullptr) {
-		return false;
-	}
-
-	voxel::extractCubicMesh(_rawVolume, _rawVolume->getEnclosingRegion(), _mesh, voxel::IsQuadNeeded(false));
-	const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
-	const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
-	const size_t meshNumberIndices = _mesh->getNoOfIndices();
-	if (meshNumberIndices == 0) {
-		_vertexBuffer.update(_vertexBufferIndex, nullptr, 0);
-		_vertexBuffer.update(_indexBufferIndex, nullptr, 0);
-		return true;
-	} else {
-		const size_t meshNumberVertices = _mesh->getNoOfVertices();
-		if (!_vertexBuffer.update(_vertexBufferIndex, meshVertices, sizeof(voxel::Vertex) * meshNumberVertices)) {
-			Log::error("Failed to update the vertex buffer");
-			return false;
-		}
-		if (!_vertexBuffer.update(_indexBufferIndex, meshIndices, sizeof(voxel::IndexType) * meshNumberIndices)) {
-			Log::error("Failed to update the index buffer");
-			return false;
-		}
-	}
-	return true;
 }
 
 voxel::RawVolume* RawVolumeRenderer::shutdown() {
