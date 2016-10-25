@@ -13,6 +13,7 @@
 #include "frontend/Movement.h"
 #include "voxel/polyvox/Picking.h"
 #include "video/ScopedPolygonMode.h"
+#include "voxel/VoxLoader.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _rawVolumeRenderer(true) {
@@ -30,10 +31,20 @@ bool VoxEdit::saveFile(std::string_view file) {
 }
 
 bool VoxEdit::loadFile(std::string_view file) {
-	// TODO
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
+	if (!(bool)filePtr) {
+		return false;
+	}
+	voxel::VoxLoader loader;
+	voxel::RawVolume* newVolume = loader.load(filePtr);
+	if (newVolume == nullptr) {
+		return false;
+	}
+	voxel::RawVolume* old = _rawVolumeRenderer.setVolume(newVolume);
+	delete old;
 	_extract = true;
 	_dirty = false;
-	return false;
+	return true;
 }
 
 bool VoxEdit::newFile(bool force) {
