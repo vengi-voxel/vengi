@@ -20,25 +20,25 @@ FileStream::FileStream(SDL_RWops* rwops) :
 FileStream::~FileStream() {
 }
 
-int FileStream::peekInt(int32_t& val) const {
+int FileStream::peekInt(uint32_t& val) const {
 	const int retVal = peek(val);
 	if (retVal == 0) {
-		const int32_t swapped = SDL_SwapLE32(val);
+		const uint32_t swapped = SDL_SwapLE32(val);
 		val = swapped;
 	}
 	return retVal;
 }
 
-int FileStream::peekShort(int16_t& val) const {
+int FileStream::peekShort(uint16_t& val) const {
 	const int retVal = peek(val);
 	if (retVal == 0) {
-		const int16_t swapped = SDL_SwapLE16(val);
+		const uint16_t swapped = SDL_SwapLE16(val);
 		val = swapped;
 	}
 	return retVal;
 }
 
-int FileStream::peekByte(int8_t& val) const {
+int FileStream::peekByte(uint8_t& val) const {
 	const int retVal = peek(val);
 	return retVal;
 }
@@ -87,7 +87,7 @@ bool FileStream::readFormat(const char *fmt, ...) {
 		const char typeID = *fmt++;
 		switch (typeID) {
 		case 'b': {
-			int8_t val;
+			uint8_t val;
 			if (readByte(val) != 0) {
 				return false;
 			}
@@ -95,7 +95,7 @@ bool FileStream::readFormat(const char *fmt, ...) {
 			break;
 		}
 		case 's': {
-			int16_t val;
+			uint16_t val;
 			if (readShort(val) != 0) {
 				return false;
 			}
@@ -103,7 +103,7 @@ bool FileStream::readFormat(const char *fmt, ...) {
 			break;
 		}
 		case 'i': {
-			int32_t val;
+			uint32_t val;
 			if (readInt(val) != 0) {
 				return false;
 			}
@@ -111,7 +111,7 @@ bool FileStream::readFormat(const char *fmt, ...) {
 			break;
 		}
 		case 'l': {
-			int64_t val;
+			uint64_t val;
 			if (readLong(val) != 0) {
 				return false;
 			}
@@ -132,7 +132,7 @@ bool FileStream::readString(int length, char *strbuff) {
 		if (_pos >= _size) {
 			return false;
 		}
-		int8_t chr;
+		uint8_t chr;
 		if (readByte(chr) != 0) {
 			return false;
 		}
@@ -147,7 +147,7 @@ bool FileStream::readString(int length, char *strbuff) {
 	return true;
 }
 
-int FileStream::readByte(int8_t& val) {
+int FileStream::readByte(uint8_t& val) {
 	const int retVal = peek(val);
 	if (retVal == 0) {
 		_pos += sizeof(val);
@@ -155,7 +155,7 @@ int FileStream::readByte(int8_t& val) {
 	return retVal;
 }
 
-int FileStream::readShort(int16_t& val) {
+int FileStream::readShort(uint16_t& val) {
 	const int retVal = peek(val);
 	if (retVal == 0) {
 		_pos += sizeof(val);
@@ -168,28 +168,28 @@ int FileStream::readShort(int16_t& val) {
 int FileStream::readFloat(float& val) {
 	union toint {
 		float f;
-		int32_t i;
+		uint32_t i;
 	} tmp;
 	const int retVal = readInt(tmp.i);
 	val = tmp.f;
 	return retVal;
 }
 
-int FileStream::readInt(int32_t& val) {
+int FileStream::readInt(uint32_t& val) {
 	const int retVal = peek(val);
 	if (retVal == 0) {
 		_pos += sizeof(val);
-		const int32_t swapped = SDL_SwapLE32(val);
+		const uint32_t swapped = SDL_SwapLE32(val);
 		val = swapped;
 	}
 	return retVal;
 }
 
-int FileStream::readLong(int64_t& val) {
+int FileStream::readLong(uint64_t& val) {
 	const int retVal = peek(val);
 	if (retVal == 0) {
 		_pos += sizeof(val);
-		const int64_t swapped = SDL_SwapLE64(val);
+		const uint64_t swapped = SDL_SwapLE64(val);
 		val = swapped;
 	}
 	return retVal;
@@ -209,19 +209,19 @@ bool FileStream::addString(const std::string& string) {
 	return addByte(uint8_t('\0'));
 }
 
-bool FileStream::addShort(int16_t word) {
-	const int16_t swappedWord = SDL_SwapLE16(word);
-	return write<int16_t>(swappedWord);
+bool FileStream::addShort(uint16_t word) {
+	const uint16_t swappedWord = SDL_SwapLE16(word);
+	return write<uint16_t>(swappedWord);
 }
 
-bool FileStream::addInt(int32_t dword) {
-	int32_t swappedDWord = SDL_SwapLE32(dword);
-	return write<int32_t>(swappedDWord);
+bool FileStream::addInt(uint32_t dword) {
+	uint32_t swappedDWord = SDL_SwapLE32(dword);
+	return write<uint32_t>(swappedDWord);
 }
 
-bool FileStream::addLong(int64_t dword) {
-	int64_t swappedDWord = SDL_SwapLE64(dword);
-	return write<int64_t>(swappedDWord);
+bool FileStream::addLong(uint64_t dword) {
+	uint64_t swappedDWord = SDL_SwapLE64(dword);
+	return write<uint64_t>(swappedDWord);
 }
 
 bool FileStream::addFloat(float value) {

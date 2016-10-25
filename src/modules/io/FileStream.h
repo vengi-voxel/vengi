@@ -35,9 +35,9 @@ public:
 
 	bool addBool(bool value);
 	bool addByte(uint8_t byte);
-	bool addShort(int16_t word);
-	bool addInt(int32_t dword);
-	bool addLong(int64_t dword);
+	bool addShort(uint16_t word);
+	bool addInt(uint32_t dword);
+	bool addLong(uint64_t dword);
 	bool addFloat(float value);
 	bool addString(const std::string& string);
 	bool addFormat(const char *fmt, ...);
@@ -52,19 +52,18 @@ public:
 			return -1;
 		}
 		uint8_t buf[bufSize];
-		int amount = bufSize;
 		SDL_RWseek(_rwops, _pos, RW_SEEK_SET);
-		for (;;) {
-			const int read = SDL_RWread(_rwops, &buf[bufSize - amount], amount, 1);
-			if (read <= 0) {
-				return -1;
-			}
-			amount -= read;
-			if (amount == 0) {
-				break;
-			}
-			// we should never get negative here
-			core_assert_always(amount > 0);
+		uint8_t *b = buf;
+
+		size_t completeBytesRead = 0;
+		size_t bytesRead = 1;
+		while (completeBytesRead < bufSize && bytesRead != 0) {
+			bytesRead = SDL_RWread(_rwops, b, 1, (bufSize - completeBytesRead));
+			b += bytesRead;
+			completeBytesRead += bytesRead;
+		}
+		if (completeBytesRead != bufSize) {
+			return -1;
 		}
 		const Ret *word = (const Ret*) (void*) buf;
 		val = *word;
@@ -79,16 +78,18 @@ public:
 		for (size_t i = 0; i < bufSize; ++i) {
 			buf[i] = uint8_t(val >> (i * CHAR_BIT));
 		}
-		int amount = bufSize;
-		do {
-			const size_t written = SDL_RWwrite(_rwops, &buf[bufSize - amount], amount, 1);
-			if (written == 0) {
-				return false;
-			}
-			amount -= written;
-			// we should never get negative here
-			core_assert_always(amount > 0);
-		} while (amount > 0);
+
+		uint8_t *b = buf;
+		size_t completeBytesWritten = 0;
+		size_t bytesWritten = 1;
+		while (completeBytesWritten < bufSize && bytesWritten != 0) {
+			bytesWritten = SDL_RWwrite(_rwops, b, 1, (bufSize - completeBytesWritten));
+			b += bytesWritten;
+			completeBytesWritten += bytesWritten;
+		}
+		if (completeBytesWritten != bufSize) {
+			return false;
+		}
 		_pos += sizeof(val);
 		return true;
 	}
@@ -103,10 +104,10 @@ public:
 	}
 
 	bool readBool();
-	int readByte(int8_t& val);
-	int readShort(int16_t& val);
-	int readInt(int32_t& val);
-	int readLong(int64_t& val);
+	int readByte(uint8_t& val);
+	int readShort(uint16_t& val);
+	int readInt(uint32_t& val);
+	int readLong(uint64_t& val);
 	int readFloat(float& val);
 	/**
 	 * @brief Read a fixed-width string from a file. It may be null-terminated, but
@@ -118,9 +119,9 @@ public:
 	bool readString(int length, char *strbuff);
 	bool readFormat(const char *fmt, ...);
 
-	int peekInt(int32_t& val) const;
-	int peekShort(int16_t& val) const;
-	int peekByte(int8_t& val) const;
+	int peekInt(uint32_t& val) const;
+	int peekShort(uint16_t& val) const;
+	int peekByte(uint8_t& val) const;
 
 	void append(const uint8_t *buf, size_t size);
 
@@ -180,7 +181,7 @@ inline bool FileStream::addBool(bool value) {
 }
 
 inline bool FileStream::readBool() {
-	int8_t boolean;
+	uint8_t boolean;
 	if (readByte(boolean) != 0) {
 		return false;
 	}

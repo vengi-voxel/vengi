@@ -1,5 +1,6 @@
 set(SRCS
 	font/stb_truetype.h
+	VoxLoader.h VoxLoader.cpp
 	font/VoxelFont.h font/VoxelFont.cpp
 	BiomeManager.h BiomeManager.cpp
 	LodCreator.h
@@ -45,5 +46,6 @@ gtest_suite_files(tests
 	tests/PickingTest.cpp
 	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
+	tests/VoxLoaderTest.cpp
 )
 gtest_suite_deps(tests ${LIB})
