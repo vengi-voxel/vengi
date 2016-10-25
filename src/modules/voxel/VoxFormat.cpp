@@ -1,4 +1,4 @@
-#include "VoxLoader.h"
+#include "VoxFormat.h"
 #include "io/FileStream.h"
 #include "core/Common.h"
 
@@ -10,7 +10,11 @@ namespace voxel {
 		return nullptr; \
 	}
 
-RawVolume* VoxLoader::load(const io::FilePtr& file) {
+bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
+	return false;
+}
+
+RawVolume* VoxFormat::load(const io::FilePtr& file) {
 	if (!(bool)file || !file->exists()) {
 		Log::error("Could not load vox file: File doesn't exist");
 		return nullptr;

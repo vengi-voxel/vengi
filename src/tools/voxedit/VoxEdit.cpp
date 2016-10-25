@@ -13,7 +13,7 @@
 #include "frontend/Movement.h"
 #include "voxel/polyvox/Picking.h"
 #include "video/ScopedPolygonMode.h"
-#include "voxel/VoxLoader.h"
+#include "voxel/VoxFormat.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _rawVolumeRenderer(true) {
@@ -25,9 +25,15 @@ bool VoxEdit::saveFile(std::string_view file) {
 		// nothing to save yet
 		return true;
 	}
-	_dirty = false;
-	// TODO
-	return false;
+	voxel::RawVolume* volume = _rawVolumeRenderer.volume();
+	if (volume == nullptr) {
+		return false;
+	}
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
+	if (voxel::VoxFormat::save(volume, filePtr)) {
+		_dirty = false;
+	}
+	return !_dirty;
 }
 
 bool VoxEdit::loadFile(std::string_view file) {
@@ -35,8 +41,7 @@ bool VoxEdit::loadFile(std::string_view file) {
 	if (!(bool)filePtr) {
 		return false;
 	}
-	voxel::VoxLoader loader;
-	voxel::RawVolume* newVolume = loader.load(filePtr);
+	voxel::RawVolume* newVolume = voxel::VoxFormat::load(filePtr);
 	if (newVolume == nullptr) {
 		return false;
 	}
@@ -155,7 +160,7 @@ core::AppState VoxEdit::onCleanup() {
 	core::Command::unregisterCommand("+move_upt");
 	core::Command::unregisterCommand("+move_down");
 
-	// TODO: saveFile(tmpFilename);
+	// saveFile(tmpFilename);
 	// TODO: cvar with tmpFilename to load on next start
 
 	return Super::onCleanup();
