@@ -17,11 +17,6 @@ VertexBuffer::VertexBuffer() :
 		_vao(0) {
 }
 
-bool VertexBuffer::addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type, bool normalized, int stride, intptr_t offset, uint8_t divisor, bool typeIsInt) {
-	_attributes.push_back(Attribute{attributeIndex, bufferIndex, size, stride, offset, type, divisor, normalized, typeIsInt});
-	return true;
-}
-
 bool VertexBuffer::addAttribute(const VertexBuffer::Attribute& attribute) {
 	_attributes.push_back(attribute);
 	return true;

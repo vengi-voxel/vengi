@@ -86,11 +86,9 @@ bool RawVolumeRenderer::extract() {
 	const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
 	const size_t meshNumberIndices = _mesh->getNoOfIndices();
 	if (meshNumberIndices == 0) {
-		Log::info("empty volume");
 		_vertexBuffer.update(_vertexBufferIndex, nullptr, 0);
 		_vertexBuffer.update(_indexBufferIndex, nullptr, 0);
 	} else {
-		Log::info("empty volume");
 		const size_t meshNumberVertices = _mesh->getNoOfVertices();
 		if (!_vertexBuffer.update(_vertexBufferIndex, meshVertices, sizeof(voxel::Vertex) * meshNumberVertices)) {
 			Log::error("Failed to update the vertex buffer");

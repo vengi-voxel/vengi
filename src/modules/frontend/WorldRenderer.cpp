@@ -743,12 +743,23 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 		return false;
 	}
 
-	const uint32_t fullscreenQuadVertexIndex = _fullscreenQuad.createFullscreenQuad();
-	_fullscreenQuad.addAttribute(_deferredDirLightShader.getLocationPos(), fullscreenQuadVertexIndex, _deferredDirLightShader.getComponentsPos());
+	video::VertexBuffer::Attribute attributePosLightDeferred;
+	attributePosLightDeferred.bufferIndex = _fullscreenQuad.createFullscreenQuad();
+	attributePosLightDeferred.index = _deferredDirLightShader.getLocationPos();
+	attributePosLightDeferred.size = _deferredDirLightShader.getComponentsPos();
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
-	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationPos(), fullscreenQuadIndices.x, _shadowMapRenderShader.getComponentsPos());
-	_texturedFullscreenQuad.addAttribute(_shadowMapRenderShader.getLocationTexcoord(), fullscreenQuadIndices.y, _shadowMapRenderShader.getComponentsTexcoord());
+	video::VertexBuffer::Attribute attributePos;
+	attributePos.bufferIndex = fullscreenQuadIndices.x;
+	attributePos.index = _shadowMapRenderShader.getLocationPos();
+	attributePos.size = _shadowMapRenderShader.getComponentsPos();
+	_texturedFullscreenQuad.addAttribute(attributePos);
+
+	video::VertexBuffer::Attribute attributeTexcoord;
+	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
+	attributeTexcoord.index = _shadowMapRenderShader.getLocationTexcoord();
+	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();
+	_texturedFullscreenQuad.addAttribute(attributeTexcoord);
 
 	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);

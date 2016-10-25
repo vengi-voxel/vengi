@@ -77,8 +77,17 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 	}
 
 	// configure shader attributes
-	core_assert_always(_vbo[meshIndex].addAttribute(_colorShader.getLocationPos(), _vertexIndex[meshIndex], _colorShader.getComponentsPos()));
-	core_assert_always(_vbo[meshIndex].addAttribute(_colorShader.getLocationColor(), _colorIndex[meshIndex], _colorShader.getComponentsColor()));
+	video::VertexBuffer::Attribute attributePos;
+	attributePos.bufferIndex = _vertexIndex[meshIndex];
+	attributePos.index = _colorShader.getLocationPos();
+	attributePos.size = _colorShader.getComponentsPos();
+	_vbo[meshIndex].addAttribute(attributePos);
+
+	video::VertexBuffer::Attribute attributeColor;
+	attributeColor.bufferIndex = _colorIndex[meshIndex];
+	attributeColor.index = _colorShader.getLocationColor();
+	attributeColor.size = _colorShader.getComponentsColor();
+	_vbo[meshIndex].addAttribute(attributeColor);
 
 	_primitives[meshIndex] = shapeBuilder.primitive();
 
