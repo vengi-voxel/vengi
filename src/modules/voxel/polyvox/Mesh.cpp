@@ -67,6 +67,7 @@ void Mesh::removeUnusedVertices() {
 	for (size_t triCt = 0; triCt < _vecIndices.size(); triCt++) {
 		_vecIndices[triCt] = newPos[_vecIndices[triCt]];
 	}
+	_vecIndices.resize(_vecIndices.size());
 }
 
 }
