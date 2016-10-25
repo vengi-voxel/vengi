@@ -587,10 +587,10 @@ video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader,
 	}
 
 	meshData.create(buffers);
+	meshData.bindVAO();
 
 	updateMesh(mesh, meshData);
 
-	meshData.bindVAO();
 	const int posLoc = shader.enableVertexAttributeArray("a_pos");
 	const int components = sizeof(voxel::Vertex::position) / sizeof(decltype(voxel::Vertex::position)::value_type);
 	shader.setVertexAttributeInt(posLoc, components, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
@@ -750,6 +750,7 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	attributePosLightDeferred.bufferIndex = _fullscreenQuad.createFullscreenQuad();
 	attributePosLightDeferred.index = _deferredDirLightShader.getLocationPos();
 	attributePosLightDeferred.size = _deferredDirLightShader.getComponentsPos();
+	_fullscreenQuad.addAttribute(attributePosLightDeferred);
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
 	video::VertexBuffer::Attribute attributePos;
