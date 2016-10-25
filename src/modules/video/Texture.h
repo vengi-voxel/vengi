@@ -20,7 +20,7 @@ private:
 
 public:
 	// creates an empty dummy texture with the given name
-	Texture(const std::string& name);
+	Texture(const std::string& name, uint32_t empty = 0x00000000);
 	// create a texture with the given name and uploads it
 	Texture(const std::string& name, const uint8_t* data, int width, int height, int depth);
 	~Texture();
@@ -37,6 +37,11 @@ typedef std::shared_ptr<Texture> TexturePtr;
 // creates empty texture with placeholder pixel in
 inline TexturePtr createEmptyTexture(const std::string& name) {
 	return TexturePtr(new Texture(name));
+}
+
+// creates white texture with placeholder pixel in
+inline TexturePtr createWhiteTexture(const std::string& name) {
+	return TexturePtr(new Texture(name, 0xFFFFFFFF));
 }
 
 inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {

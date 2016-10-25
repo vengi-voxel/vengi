@@ -9,10 +9,9 @@
 
 namespace video {
 
-Texture::Texture(const std::string& name) :
+Texture::Texture(const std::string& name, uint32_t empty) :
 		io::IOResource(), _name(name) {
 	glGenTextures(1, &_handle);
-	static const int empty = 0x00000000;
 	upload((const uint8_t*)&empty, 1, 1, 4);
 	unbind();
 	GL_checkError();
