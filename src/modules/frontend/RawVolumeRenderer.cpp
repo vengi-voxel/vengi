@@ -7,8 +7,10 @@ namespace frontend {
 
 const std::string MaxDepthBufferUniformName = "u_farplanes";
 
-RawVolumeRenderer::RawVolumeRenderer(bool renderAABB) :
-		_rawVolume(nullptr), _mesh(nullptr), _worldShader(shader::WorldShader::getInstance()), _renderAABB(renderAABB) {
+RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe) :
+		_rawVolume(nullptr), _mesh(nullptr),
+		_worldShader(shader::WorldShader::getInstance()), _renderAABB(renderAABB),
+		_renderWireframe(renderWireframe) {
 }
 
 bool RawVolumeRenderer::init(const glm::ivec2& dimension) {
@@ -168,18 +170,19 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glEnable(GL_POLYGON_OFFSET_LINE);
-	glEnable(GL_LINE_SMOOTH);
-	glLineWidth(1.0f);
-	glPolygonOffset(-2, -2);
-	shaderSetUniformIf(_worldShader, setUniformf, "u_debug_color", 0.0);
-	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
-	glLineWidth(1.0f);
-	glDisable(GL_LINE_SMOOTH);
-	glDisable(GL_POLYGON_OFFSET_LINE);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	GL_checkError();
+	if (_renderWireframe && camera.polygonMode() == video::PolygonMode::Solid) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glEnable(GL_POLYGON_OFFSET_LINE);
+		glEnable(GL_LINE_SMOOTH);
+		glLineWidth(1.0f);
+		glPolygonOffset(-2, -2);
+		shaderSetUniformIf(_worldShader, setUniformf, "u_debug_color", 0.0);
+		glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
+		glLineWidth(1.0f);
+		glDisable(GL_LINE_SMOOTH);
+		glDisable(GL_POLYGON_OFFSET_LINE);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 
 	_vertexBuffer.unbind();
 

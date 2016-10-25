@@ -40,9 +40,10 @@ protected:
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 
+	bool _renderWireframe = false;
 	bool _renderAABB;
 public:
-	RawVolumeRenderer(bool renderAABB = false);
+	RawVolumeRenderer(bool renderAABB = false, bool renderWireframe = false);
 
 	void render(const video::Camera& camera);
 
