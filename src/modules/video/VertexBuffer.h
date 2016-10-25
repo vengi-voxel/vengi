@@ -12,22 +12,39 @@
 namespace video {
 
 class VertexBuffer {
+public:
+	struct Attribute {
+		/** shader attribute index */
+		uint32_t index = 0u;
+		/** The internal buffer index that was returned by @c create() */
+		uint32_t bufferIndex = 0u;
+		/** The size behind your attribute (not sizeof but lengthof). */
+		int size = 0;
+		/** the amount of bytes between each attribute instance */
+		int stride = 0;
+		/** the offset of the buffer to start reading from */
+		intptr_t offset = 0;
+		/** The data type behind your attribute - also see @c typeIsInt */
+		GLenum type = GL_FLOAT;
+		/**
+		 * The rate by which the attribute advances during instanced rendering. It basically means the number of
+		 * times the entire set of vertices is rendered before the attribute is updated from the buffer. By default,
+		 * the divisor is zero. This causes regular vertex attributes to be updated from vertex to vertex. If the divisor
+		 * is 10 it means that the first 10 instances will use the first piece of data from the buffer, the next 10 instances
+		 * will use the second, etc. We want to have a dedicated WVP matrix for each instance so we use a divisor of 1.
+		 */
+		uint8_t divisor = 0;
+		bool normalized = false;
+		/** use glVertexAttribPointer or glVertexAttribIPointer for uploading */
+		bool typeIsInt = false;
+	};
 private:
 	static constexpr int MAX_HANDLES = 6;
 	GLuint _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
 	GLuint _handles[MAX_HANDLES] = {GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE};
 	GLenum _targets[MAX_HANDLES] = {GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE};
 	GLuint _handleIdx = 0;
-	struct Attribute {
-		uint32_t index;
-		uint32_t bufferIndex;
-		int size;
-		GLenum type;
-		int stride;
-		intptr_t offset;
-		bool normalized = false;
-		uint8_t divisor = 0; // for instanced rendering
-	};
+
 	std::vector<Attribute> _attributes;
 	mutable GLuint _vao;
 public:
@@ -50,11 +67,16 @@ public:
 	 * is 10 it means that the first 10 instances will use the first piece of data from the buffer, the next 10 instances
 	 * will use the second, etc. We want to have a dedicated WVP matrix for each instance so we use a divisor of 1.
 	 */
-	bool addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type = GL_FLOAT, bool normalized = false, int stride = 0, intptr_t offset = 0, uint8_t divisor = 0);
+	bool addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type = GL_FLOAT, bool normalized = false, int stride = 0, intptr_t offset = 0, uint8_t divisor = 0, bool typeIsInt = false);
+	bool addAttribute(const Attribute& attribute);
 
 	template<class T>
 	inline bool update(int32_t idx, const std::vector<T>& data) {
-		return update(idx, &data.front(), core::vectorSize(data));
+		const T* dataPtr = nullptr;
+		if (!data.empty()) {
+			dataPtr = &data.front();
+		}
+		return update(idx, dataPtr, core::vectorSize(data));
 	}
 
 	bool update(int32_t idx, const void* data, GLsizeiptr size);

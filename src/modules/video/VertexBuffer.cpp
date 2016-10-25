@@ -17,8 +17,13 @@ VertexBuffer::VertexBuffer() :
 		_vao(0) {
 }
 
-bool VertexBuffer::addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type, bool normalized, int stride, intptr_t offset, uint8_t divisor) {
-	_attributes.push_back(Attribute{attributeIndex, bufferIndex, size, type, stride, offset, normalized, divisor});
+bool VertexBuffer::addAttribute(uint32_t attributeIndex, uint32_t bufferIndex, int size, GLenum type, bool normalized, int stride, intptr_t offset, uint8_t divisor, bool typeIsInt) {
+	_attributes.push_back(Attribute{attributeIndex, bufferIndex, size, stride, offset, type, divisor, normalized, typeIsInt});
+	return true;
+}
+
+bool VertexBuffer::addAttribute(const VertexBuffer::Attribute& attribute) {
+	_attributes.push_back(attribute);
 	return true;
 }
 
@@ -41,14 +46,20 @@ bool VertexBuffer::bind() const {
 		}
 		glBindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
 		glEnableVertexAttribArray(a.index);
-		// TODO: add glVertexAttribIPointer support here
-		glVertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
+		if (a.typeIsInt) {
+			glVertexAttribIPointer(a.index, a.size, a.type, a.stride, GL_OFFSET_CAST(a.offset));
+		} else {
+			glVertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
+		}
 		if (a.divisor > 0) {
 			glVertexAttribDivisor(a.index, a.divisor);
 		}
 	}
 	for (unsigned int i = 0; i < _handleIdx; ++i) {
 		if (_targets[i] != GL_ELEMENT_ARRAY_BUFFER) {
+			continue;
+		}
+		if (_size[i] == 0u) {
 			continue;
 		}
 		glBindBuffer(_targets[i], _handles[i]);
