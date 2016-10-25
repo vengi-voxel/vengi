@@ -233,4 +233,12 @@ bool FileStream::addFloat(float value) {
 	return addInt(tmp.i);
 }
 
+int FileStream::seek(int64_t position) {
+	if (position >= _size || position < 0) {
+		return -1;
+	}
+	_pos = position;
+	return 0;
+}
+
 }

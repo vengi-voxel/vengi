@@ -42,6 +42,8 @@ public:
 	bool addString(const std::string& string);
 	bool addFormat(const char *fmt, ...);
 
+	int seek(int64_t position);
+
 	/**
 	 * @return A value of @c 0 indicates no error
 	 */

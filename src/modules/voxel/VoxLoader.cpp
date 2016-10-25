@@ -127,6 +127,8 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 		wrap(stream.readInt(numBytesChunk))
 		uint32_t numBytesChildrenChunks;
 		wrap(stream.readInt(numBytesChildrenChunks))
+		const int64_t currentChunkPos = stream.pos();
+		const int64_t nextChunkPos = currentChunkPos + numBytesChunk + numBytesChildrenChunks;
 
 		if (chunkId == FourCC('P','A','C','K')) {
 			Log::debug("Found pack chunk with %u bytes", numBytesChunk);
@@ -202,7 +204,7 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 			//                       |     palette[i + 1] = ReadRGBA();
 			//                       | }
 			// -------------------------------------------------------------------------------
-			for (int i = 0; i <= 255; i++) {
+			for (int i = 0; i <= 254; i++) {
 				uint32_t rgba;
 				wrap(stream.readInt(rgba))
 				palette[i + 1] = rgba;
@@ -255,6 +257,7 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 				wrap(stream.readFloat(materialPropertyValue))
 			}
 		}
+		stream.seek(nextChunkPos);
 	} while (stream.remaining() > 0);
 
 	return volume;
