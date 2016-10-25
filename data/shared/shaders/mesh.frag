@@ -7,6 +7,7 @@ uniform sampler2D u_texture;
 
 uniform vec3 u_lightdir;
 uniform vec3 u_diffuse_color;
+uniform vec3 u_ambient_color;
 uniform float u_fogrange;
 uniform float u_viewdistance;
 $out vec4 o_color;
@@ -19,7 +20,7 @@ void main(void) {
 	float shadow = calculateShadow(ndotl);
 
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
-	vec3 ambient = vec3(0.2);
+	vec3 ambient = u_ambient_color;
 	vec3 lightvalue = (ambient + shadow) * diffuse;
 
 	float fogstart = max(u_viewdistance - u_fogrange, 0.0);

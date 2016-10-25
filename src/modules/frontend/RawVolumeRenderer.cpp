@@ -124,7 +124,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	glDepthMask(GL_TRUE);
 
 	video::ScopedShader scoped(_worldShader);
-	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	const MaterialColorArray& materialColors = getMaterialColors();
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_model", glm::mat4());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_view", camera.viewMatrix());
@@ -139,6 +138,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	shaderSetUniformIf(_worldShader, setUniformf, "u_depthsize", glm::vec2(_sunLight.dimension()));
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 	shaderSetUniformIf(_worldShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
+	shaderSetUniformIf(_worldShader, setUniformVec3, "u_ambient_color", _ambientColor);
 	shaderSetUniformIf(_worldShader, setUniformf, "u_debug_color", 1.0);
 	shaderSetUniformIf(_worldShader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 	shaderSetUniformIf(_worldShader, setUniformf, "u_nearplane", camera.nearPlane());

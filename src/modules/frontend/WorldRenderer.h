@@ -68,6 +68,7 @@ protected:
 	glm::vec4 _clearColor;
 	video::TexturePtr _colorTexture;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
+	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	// the position of the last extraction - we only care for x and z here
 	glm::ivec3 _lastGridPosition = { std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min() };
 	voxel::WorldPtr _world;

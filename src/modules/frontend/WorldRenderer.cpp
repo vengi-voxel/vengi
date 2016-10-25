@@ -240,6 +240,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_sunLight.dimension()));
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
+	shaderSetUniformIf(shader, setUniformVec3, "u_ambient_color", _ambientColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(actualCamera->dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
@@ -310,6 +311,7 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	video::ScopedShader scoped(deferredShader);
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightdir", _sunLight.direction());
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
+	shaderSetUniformIf(deferredShader, setUniformVec3, "u_ambient_color", _ambientColor);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_norm", video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
@@ -492,6 +494,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
+	shaderSetUniformIf(shader, setUniformVec3, "u_ambient_color", _ambientColor);
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(actualCamera->dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());

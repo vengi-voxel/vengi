@@ -98,6 +98,7 @@ void TestMeshApp::doRender() {
 		_meshShader.setLightdir(_sunLight.direction());
 		_meshShader.setTexture(0);
 		_meshShader.setDiffuseColor(_diffuseColor);
+		_meshShader.setAmbientColor(_ambientColor);
 		_meshShader.setDepthsize(glm::vec2(_sunLight.dimension()));
 		_meshShader.setLight(_sunLight.viewProjectionMatrix(_camera));
 		_meshShader.setShadowmap1(1);
