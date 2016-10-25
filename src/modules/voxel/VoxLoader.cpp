@@ -256,6 +256,8 @@ RawVolume* VoxLoader::load(const io::FilePtr& file) {
 				float materialPropertyValue;
 				wrap(stream.readFloat(materialPropertyValue))
 			}
+		} else {
+			Log::warn("Unknown chunk in vox file: %u", chunkId);
 		}
 		stream.seek(nextChunkPos);
 	} while (stream.remaining() > 0);
