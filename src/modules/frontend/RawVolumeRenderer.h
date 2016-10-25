@@ -8,6 +8,8 @@
 #include "frontend/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "video/SunLight.h"
+#include "video/Texture.h"
+#include "video/DepthBuffer.h"
 
 namespace frontend {
 
@@ -26,7 +28,10 @@ protected:
 
 	video::VertexBuffer _vertexBuffer;
 	shader::WorldShader& _worldShader;
+	video::DepthBuffer _depthBuffer;
 	video::SunLight _sunLight;
+
+	video::TexturePtr _whiteTexture;;
 
 	int32_t _vertexBufferIndex = -1;
 	int32_t _indexBufferIndex = -1;

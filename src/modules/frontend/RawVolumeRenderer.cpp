@@ -5,6 +5,8 @@
 
 namespace frontend {
 
+const std::string MaxDepthBufferUniformName = "u_farplanes";
+
 RawVolumeRenderer::RawVolumeRenderer(bool renderAABB) :
 		_rawVolume(nullptr), _mesh(nullptr), _worldShader(shader::WorldShader::getInstance()), _renderAABB(renderAABB) {
 }
@@ -35,6 +37,11 @@ bool RawVolumeRenderer::init(const glm::ivec2& dimension) {
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
 	_sunLight.init(sunDirection, dimension);
 
+	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	if (!_depthBuffer.init(_sunLight.dimension(), video::DepthBufferMode::RGBA, maxDepthBuffers)) {
+		return false;
+	}
+
 	video::VertexBuffer::Attribute attributePos;
 	attributePos.bufferIndex = _vertexBufferIndex;
 	attributePos.index = _worldShader.getLocationPos();
@@ -54,6 +61,8 @@ bool RawVolumeRenderer::init(const glm::ivec2& dimension) {
 	attributeInfo.typeIsInt = true;
 	attributeInfo.offset = offsetof(voxel::Vertex, ambientOcclusion);
 	_vertexBuffer.addAttribute(attributeInfo);
+
+	_whiteTexture = video::createWhiteTexture("**whitetexture**");
 
 	_mesh = new voxel::Mesh(128, 128, true);
 
@@ -123,6 +132,8 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	glEnable(GL_CULL_FACE);
 	glDepthMask(GL_TRUE);
 
+	_whiteTexture->bind(0);
+
 	video::ScopedShader scoped(_worldShader);
 	const MaterialColorArray& materialColors = getMaterialColors();
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_model", glm::mat4());
@@ -144,11 +155,44 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	shaderSetUniformIf(_worldShader, setUniformf, "u_nearplane", camera.nearPlane());
 	shaderSetUniformIf(_worldShader, setUniformf, "u_farplane", camera.farPlane());
 	shaderSetUniformIf(_worldShader, setUniformVec3, "u_campos", camera.position());
-
+	const bool shadowMap = _worldShader.hasUniform("u_shadowmap1");
+	if (shadowMap) {
+		const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			glActiveTexture(GL_TEXTURE1 + i);
+			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
+			shaderSetUniformIf(_worldShader, setUniformi, core::string::format("u_shadowmap%i", 1 + i), 1 + i);
+		}
+	}
 	core_assert_always(_vertexBuffer.bind());
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glEnable(GL_POLYGON_OFFSET_LINE);
+	glEnable(GL_LINE_SMOOTH);
+	glLineWidth(1.0f);
+	glPolygonOffset(-2, -2);
+	shaderSetUniformIf(_worldShader, setUniformf, "u_debug_color", 0.0);
+	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
+	glLineWidth(1.0f);
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_POLYGON_OFFSET_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	GL_checkError();
+
 	_vertexBuffer.unbind();
+
+	_whiteTexture->unbind();
+
+	if (shadowMap) {
+		const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			glActiveTexture(GL_TEXTURE1 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+		glActiveTexture(GL_TEXTURE0);
+	}
 
 	GL_checkError();
 }
@@ -183,9 +227,12 @@ voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	}
 	_mesh = nullptr;
 	voxel::RawVolume* old = _rawVolume;
+	_whiteTexture->shutdown();
+	_whiteTexture = video::TexturePtr();
 	_rawVolume = nullptr;
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
+	_depthBuffer.shutdown();
 	return old;
 }
 
