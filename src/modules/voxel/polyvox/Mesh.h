@@ -30,6 +30,11 @@ public:
 	~Mesh();
 
 	/**
+	 * @brief Calculate the memory amount this mesh is using
+	 */
+	size_t size();
+
+	/**
 	 * @brief Transforms another mesh into this mesh class. The indices are offset.
 	 * @return @c true if the given mesh is compatible to this mesh instance, @c false
 	 * otherwise.
