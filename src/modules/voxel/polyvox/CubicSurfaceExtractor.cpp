@@ -10,15 +10,15 @@ inline bool isSameVertex(const Vertex& v1, const Vertex& v2) {
 	return v1.data == v2.data && v1.ambientOcclusion == v2.ambientOcclusion;
 }
 
-bool mergeQuads(Quad& q1, Quad& q2, Mesh* m_meshCurrent) {
-	const Vertex& v11 = m_meshCurrent->getVertex(q1.vertices[0]);
-	const Vertex& v21 = m_meshCurrent->getVertex(q2.vertices[0]);
-	const Vertex& v12 = m_meshCurrent->getVertex(q1.vertices[1]);
-	const Vertex& v22 = m_meshCurrent->getVertex(q2.vertices[1]);
-	const Vertex& v13 = m_meshCurrent->getVertex(q1.vertices[2]);
-	const Vertex& v23 = m_meshCurrent->getVertex(q2.vertices[2]);
-	const Vertex& v14 = m_meshCurrent->getVertex(q1.vertices[3]);
-	const Vertex& v24 = m_meshCurrent->getVertex(q2.vertices[3]);
+bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
+	const Vertex& v11 = meshCurrent->getVertex(q1.vertices[0]);
+	const Vertex& v21 = meshCurrent->getVertex(q2.vertices[0]);
+	const Vertex& v12 = meshCurrent->getVertex(q1.vertices[1]);
+	const Vertex& v22 = meshCurrent->getVertex(q2.vertices[1]);
+	const Vertex& v13 = meshCurrent->getVertex(q1.vertices[2]);
+	const Vertex& v23 = meshCurrent->getVertex(q2.vertices[2]);
+	const Vertex& v14 = meshCurrent->getVertex(q1.vertices[3]);
+	const Vertex& v24 = meshCurrent->getVertex(q2.vertices[3]);
 	if (isSameVertex(v11, v21) && isSameVertex(v12, v22) && isSameVertex(v13, v23) && isSameVertex(v14, v24)) {
 		//Now check whether quad 2 is adjacent to quad one by comparing vertices.
 		//Adjacent quads must share two vertices, and the second quad could be to the
@@ -46,7 +46,7 @@ bool mergeQuads(Quad& q1, Quad& q2, Mesh* m_meshCurrent) {
 	return false;
 }
 
-bool performQuadMerging(std::list<Quad>& quads, Mesh* m_meshCurrent) {
+bool performQuadMerging(std::list<Quad>& quads, Mesh* meshCurrent) {
 	bool bDidMerge = false;
 	for (typename std::list<Quad>::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
 		typename std::list<Quad>::iterator innerIter = outerIter;
@@ -55,7 +55,7 @@ bool performQuadMerging(std::list<Quad>& quads, Mesh* m_meshCurrent) {
 			Quad& q1 = *outerIter;
 			Quad& q2 = *innerIter;
 
-			const bool result = mergeQuads(q1, q2, m_meshCurrent);
+			const bool result = mergeQuads(q1, q2, meshCurrent);
 
 			if (result) {
 				bDidMerge = true;
@@ -69,8 +69,8 @@ bool performQuadMerging(std::list<Quad>& quads, Mesh* m_meshCurrent) {
 	return bDidMerge;
 }
 
-int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
-		Mesh* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
+int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array<3, VertexData>& existingVertices,
+		Mesh* meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ct++) {
 		VertexData& rEntry = existingVertices(uX, uY, ct);
 
@@ -85,18 +85,18 @@ int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, con
 			// see raycastWithEndpoints for this offset, too
 			Vertex vertex;
 			vertex.position = { uX, uY, uZ };
-			vertex.data = uMaterialIn;
+			vertex.data = materialIn;
 			vertex.ambientOcclusion = ambientOcclusion;
 
-			rEntry.index = m_meshCurrent->addVertex(vertex);
-			rEntry.voxel = uMaterialIn;
+			rEntry.index = meshCurrent->addVertex(vertex);
+			rEntry.voxel = materialIn;
 			rEntry.ambientOcclusion = vertex.ambientOcclusion;
 
 			return rEntry.index;
 		}
 
 		// If we have an existing vertex and the material matches then we can return it.
-		if (reuseVertices && rEntry.voxel == uMaterialIn && rEntry.ambientOcclusion == ambientOcclusion) {
+		if (reuseVertices && rEntry.voxel == materialIn && rEntry.ambientOcclusion == ambientOcclusion) {
 			return rEntry.index;
 		}
 	}

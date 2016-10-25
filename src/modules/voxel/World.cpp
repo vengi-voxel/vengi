@@ -142,6 +142,10 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		ChunkMeshData data(region.getWidthInVoxels() * region.getDepthInVoxels() * 6, std::numeric_limits<uint16_t>::max() * 4);
 		extractCubicMesh(_volumeData, region, &data.opaqueMesh, IsQuadNeeded(false));
 		extractCubicMesh(_volumeData, region, &data.waterMesh, IsQuadNeeded(true));
+#if 0
+		Log::info("opaque mesh size: %i", (int)data.opaqueMesh.size());
+		Log::info("water mesh size: %i", (int)data.waterMesh.size());
+#endif
 		LockGuard lock(_rwLock);
 		_meshQueue.push_back(std::move(data));
 	}));
