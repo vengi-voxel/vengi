@@ -72,7 +72,7 @@ core::AppState VoxEdit::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!_rawVolumeRenderer.init()) {
+	if (!_rawVolumeRenderer.init(dimension())) {
 		return core::AppState::Cleanup;
 	}
 

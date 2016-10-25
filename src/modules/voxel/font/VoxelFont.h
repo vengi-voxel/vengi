@@ -4,6 +4,7 @@
 #include "voxel/polyvox/Mesh.h"
 #include <unordered_map>
 #include "stb_truetype.h"
+#include "core/UTF8.h"
 
 namespace voxel {
 
@@ -30,6 +31,64 @@ private:
 	int _descent = 0;
 
 	bool renderGlyphs(const char* string, bool mergeQuads);
+
+	template<class T, class FUNC>
+	int render(const char* string, std::vector<T>& out, std::vector<uint32_t>& indices, FUNC&& func) {
+		const char **s = &string;
+		int xBase = 0;
+		int yBase = 0;
+		int charCount = 0;
+		for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s), ++charCount) {
+			if (c == ' ') {
+				xBase += _spaceWidth;
+				continue;
+			} else if (c == '\n') {
+				xBase = 0;
+				yBase += _height;
+				continue;
+			}
+
+			auto i = _cache.find(c);
+			if (i == _cache.end()) {
+				xBase += _size;
+				Log::trace("Could not find character glyph cache for %i", c);
+				continue;
+			}
+
+			int x = xBase;
+			int y = yBase;
+			int advanceWidth;
+			int leftSideBearing;
+			stbtt_GetCodepointHMetrics(&_font, c, &advanceWidth, &leftSideBearing);
+			const int advance = (int) (advanceWidth * _scale + 0.5f);
+			xBase += advance;
+
+			const voxel::Mesh* mesh = i->second;
+			const voxel::IndexType* meshIndices = mesh->getRawIndexData();
+			const voxel::Vertex* meshVertices = mesh->getRawVertexData();
+			const size_t meshNumberIndices = mesh->getNoOfIndices();
+			core_assert(meshNumberIndices > 0);
+			const size_t meshNumberVertices = mesh->getNoOfVertices();
+			core_assert(meshNumberVertices > 0);
+
+			const size_t positionSize = out.size();
+			const size_t indicesSize = indices.size();
+			out.reserve(positionSize + meshNumberVertices);
+			indices.reserve(indicesSize + meshNumberIndices);
+
+			for (size_t i = 0; i < meshNumberVertices; ++i) {
+				const voxel::Vertex& vp = meshVertices[i];
+				func(vp, out, x, y);
+			}
+			for (size_t i = 0; i < meshNumberIndices; ++i) {
+				// offset by the already added vertices
+				indices.push_back(meshIndices[i] + positionSize);
+			}
+		}
+		return charCount;
+	}
+
+
 public:
 	~VoxelFont();
 
@@ -41,6 +100,7 @@ public:
 	void shutdown();
 
 	int render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices);
+	int render(const char* string, std::vector<voxel::Vertex>& vertices, std::vector<uint32_t>& indices);
 };
 
 }

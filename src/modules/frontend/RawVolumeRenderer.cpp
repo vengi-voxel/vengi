@@ -6,11 +6,53 @@
 namespace frontend {
 
 RawVolumeRenderer::RawVolumeRenderer(bool renderAABB) :
-		_rawVolume(nullptr), _mesh(nullptr), _colorShader(shader::ColorShader::getInstance()), _renderAABB(renderAABB) {
+		_rawVolume(nullptr), _mesh(nullptr), _worldShader(shader::WorldShader::getInstance()), _renderAABB(renderAABB) {
 }
 
-bool RawVolumeRenderer::update(const std::vector<glm::vec4>& positions, const std::vector<uint32_t>& indices, const std::vector<glm::vec3>& colors) {
-	if (!_vertexBuffer.update(_vertexBufferIndex, positions)) {
+bool RawVolumeRenderer::init(const glm::ivec2& dimension) {
+	if (!_worldShader.setup()) {
+		Log::error("Failed to initialize the color shader");
+		return false;
+	}
+
+	if (!_shapeRenderer.init()) {
+		Log::error("Failed to initialize the shape renderer");
+		return false;
+	}
+
+	_vertexBufferIndex = _vertexBuffer.create();
+	if (_vertexBufferIndex == -1) {
+		Log::error("Could not create the vertex buffer object");
+		return false;
+	}
+
+	_indexBufferIndex = _vertexBuffer.create(nullptr, 0, GL_ELEMENT_ARRAY_BUFFER);
+	if (_indexBufferIndex == -1) {
+		Log::error("Could not create the vertex buffer object for the indices");
+		return false;
+	}
+
+	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
+	_sunLight.init(sunDirection, dimension);
+
+	const int posLoc = _worldShader.enableVertexAttributeArray("a_pos");
+	const int components = sizeof(voxel::Vertex::position) / sizeof(decltype(voxel::Vertex::position)::value_type);
+	_worldShader.setVertexAttributeInt(posLoc, components, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
+
+	const int locationInfo = _worldShader.enableVertexAttributeArray("a_info");
+	// we are uploading two bytes at once here
+	static_assert(sizeof(voxel::Voxel) == sizeof(uint8_t), "Voxel type doesn't match");
+	static_assert(sizeof(voxel::Vertex::ambientOcclusion) == sizeof(uint8_t), "AO type doesn't match");
+	_worldShader.setVertexAttributeInt(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
+	GL_checkError();
+
+	_mesh = new voxel::Mesh(128, 128, true);
+
+	return true;
+}
+
+bool RawVolumeRenderer::update(const std::vector<voxel::Vertex>& vertices, const std::vector<voxel::IndexType>& indices) {
+	if (!_vertexBuffer.update(_vertexBufferIndex, vertices)) {
 		Log::error("Failed to update the vertex buffer");
 		return false;
 	}
@@ -18,13 +60,6 @@ bool RawVolumeRenderer::update(const std::vector<glm::vec4>& positions, const st
 		Log::error("Failed to update the index buffer");
 		return false;
 	}
-	if (!_vertexBuffer.update(_colorBufferIndex, colors)) {
-		Log::error("Failed to update the color buffer");
-		return false;
-	}
-	_pos = positions;
-	_indices = indices;
-	_colors = colors;
 	return true;
 }
 
@@ -33,17 +68,45 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
 
-	if (_pos.empty()) {
+	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(uint32_t));
+	if (nIndices == 0) {
 		return;
 	}
 
-	video::ScopedShader scoped(_colorShader);
-	core_assert_always(_colorShader.setView(camera.viewMatrix()));
-	core_assert_always(_colorShader.setProjection(camera.projectionMatrix()));
+	_sunLight.update(0.0f, camera);
+
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LEQUAL);
+	// Cull triangles whose normal is not towards the camera
+	glEnable(GL_CULL_FACE);
+	glDepthMask(GL_TRUE);
+
+	video::ScopedShader scoped(_worldShader);
+	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
+	const MaterialColorArray& materialColors = getMaterialColors();
+	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_model", glm::mat4());
+	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_view", camera.viewMatrix());
+	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_projection", camera.projectionMatrix());
+	shaderSetUniformIf(_worldShader, setUniformVec4v, "u_materialcolor[0]", &materialColors[0], materialColors.size());
+	shaderSetUniformIf(_worldShader, setUniformi, "u_texture", 0);
+	shaderSetUniformIf(_worldShader, setUniformf, "u_fogrange", 250.0f);
+	shaderSetUniformIf(_worldShader, setUniformf, "u_viewdistance", camera.farPlane());
+	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
+	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
+	shaderSetUniformIf(_worldShader, setUniformVec3, "u_lightdir", _sunLight.direction());
+	shaderSetUniformIf(_worldShader, setUniformf, "u_depthsize", glm::vec2(_sunLight.dimension()));
+	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
+	shaderSetUniformIf(_worldShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
+	shaderSetUniformIf(_worldShader, setUniformf, "u_debug_color", 1.0);
+	shaderSetUniformIf(_worldShader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
+	shaderSetUniformIf(_worldShader, setUniformf, "u_nearplane", camera.nearPlane());
+	shaderSetUniformIf(_worldShader, setUniformf, "u_farplane", camera.farPlane());
+	shaderSetUniformIf(_worldShader, setUniformVec3, "u_campos", camera.position());
 
 	core_assert_always(_vertexBuffer.bind());
-	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(uint32_t));
-	core_assert(nIndices > 0);
+	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
 	_vertexBuffer.unbind();
 
@@ -82,84 +145,29 @@ bool RawVolumeRenderer::extract() {
 	const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
 	const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
 	const size_t meshNumberIndices = _mesh->getNoOfIndices();
-	_pos.clear();
-	_indices.clear();
-	_colors.clear();
 	if (meshNumberIndices == 0) {
+		_vertexBuffer.update(_vertexBufferIndex, nullptr, 0);
+		_vertexBuffer.update(_indexBufferIndex, nullptr, 0);
 		return true;
 	} else {
 		const size_t meshNumberVertices = _mesh->getNoOfVertices();
-		_pos.reserve(meshNumberVertices);
-		_indices.reserve(meshNumberIndices);
-		_colors.reserve(meshNumberVertices);
-		const MaterialColorArray& materialColors = getMaterialColors();
-		for (size_t i = 0; i < meshNumberVertices; ++i) {
-			_pos.emplace_back(meshVertices[i].position, 1.0f);
-			_colors.emplace_back(materialColors[meshVertices[i].data.getMaterial()]);
-		}
-		for (size_t i = 0; i < meshNumberIndices; ++i) {
-			_indices.push_back(meshIndices[i]);
-		}
-		if (!_vertexBuffer.update(_vertexBufferIndex, _pos)) {
+		if (!_vertexBuffer.update(_vertexBufferIndex, meshVertices, sizeof(voxel::Vertex) * meshNumberVertices)) {
 			Log::error("Failed to update the vertex buffer");
 			return false;
 		}
-		if (!_vertexBuffer.update(_indexBufferIndex, _indices)) {
+		if (!_vertexBuffer.update(_indexBufferIndex, meshIndices, sizeof(voxel::IndexType) * meshNumberIndices)) {
 			Log::error("Failed to update the index buffer");
 			return false;
 		}
-		if (!_vertexBuffer.update(_colorBufferIndex, _colors)) {
-			Log::error("Failed to update the color buffer");
-			return false;
-		}
 	}
-	return true;
-}
-
-bool RawVolumeRenderer::init() {
-	if (!_colorShader.setup()) {
-		Log::error("Failed to initialize the color shader");
-		return false;
-	}
-
-	if (!_shapeRenderer.init()) {
-		Log::error("Failed to initialize the shape renderer");
-		return false;
-	}
-
-	_vertexBufferIndex = _vertexBuffer.create();
-	if (_vertexBufferIndex == -1) {
-		Log::error("Could not create the vertex buffer object");
-		return false;
-	}
-
-	_indexBufferIndex = _vertexBuffer.create(nullptr, 0, GL_ELEMENT_ARRAY_BUFFER);
-	if (_indexBufferIndex == -1) {
-		Log::error("Could not create the vertex buffer object for the indices");
-		return false;
-	}
-
-	_colorBufferIndex = _vertexBuffer.create();
-	if (_colorBufferIndex == -1) {
-		Log::error("Could not create the vertex buffer object for the colors");
-		return false;
-	}
-
-	// configure shader attributes
-	core_assert_always(_vertexBuffer.addAttribute(_colorShader.getLocationPos(), _vertexBufferIndex, _colorShader.getComponentsPos()));
-	core_assert_always(_vertexBuffer.addAttribute(_colorShader.getLocationColor(), _colorBufferIndex, _colorShader.getComponentsColor()));
-
-	_mesh = new voxel::Mesh(128, 128, true);
-
 	return true;
 }
 
 voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	_vertexBuffer.shutdown();
-	_colorShader.shutdown();
+	_worldShader.shutdown();
 	_vertexBufferIndex = -1;
 	_indexBufferIndex = -1;
-	_colorBufferIndex = -1;
 	_aabbMeshIndex = -1;
 	if (_mesh != nullptr) {
 		delete _mesh;

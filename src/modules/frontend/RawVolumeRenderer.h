@@ -7,6 +7,7 @@
 #include "voxel/polyvox/Mesh.h"
 #include "frontend/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
+#include "video/SunLight.h"
 
 namespace frontend {
 
@@ -19,19 +20,16 @@ class RawVolumeRenderer {
 protected:
 	voxel::RawVolume* _rawVolume;
 	voxel::Mesh* _mesh;
-	std::vector<glm::vec4> _pos;
-	std::vector<uint32_t> _indices;
-	std::vector<glm::vec3> _colors;
 
 	video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;
 
 	video::VertexBuffer _vertexBuffer;
-	shader::ColorShader& _colorShader;
+	shader::WorldShader& _worldShader;
+	video::SunLight _sunLight;
 
 	int32_t _vertexBufferIndex = -1;
 	int32_t _indexBufferIndex = -1;
-	int32_t _colorBufferIndex = -1;
 
 	int32_t _aabbMeshIndex = -1;
 
@@ -45,7 +43,7 @@ public:
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
 	 */
-	bool update(const std::vector<glm::vec4>& positions, const std::vector<uint32_t>& indices, const std::vector<glm::vec3>& colors);
+	bool update(const std::vector<voxel::Vertex>& vertices, const std::vector<voxel::IndexType>& indices);
 
 	/**
 	 * @brief Reextract the whole volume region and updates the vertex buffers.
@@ -69,7 +67,7 @@ public:
 	/**
 	 * @sa shutdown()
 	 */
-	bool init();
+	bool init(const glm::ivec2& dimension);
 
 	/**
 	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.

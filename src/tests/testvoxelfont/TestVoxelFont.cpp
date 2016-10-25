@@ -8,7 +8,7 @@ TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::Ev
 core::AppState TestVoxelFont::onInit() {
 	core::AppState state = Super::onInit();
 
-	if (!_rawVolumeRenderer.init()) {
+	if (!_rawVolumeRenderer.init(dimension())) {
 		Log::error("Failed to initialize the raw volume renderer");
 		return core::AppState::Cleanup;
 	}
@@ -40,50 +40,25 @@ bool TestVoxelFont::changeFontSize(int delta) {
 		return false;
 	}
 
-	std::vector<glm::vec3> colors;
-	std::vector<glm::vec4> positions;
-	std::vector<uint32_t> indices;
+	std::vector<voxel::Vertex> vertices;
+	std::vector<voxel::IndexType> indices;
 
 	const char* str = "Hello world!";
-	const int renderedChars = _voxelFont.render(str, positions, indices);
+	const int renderedChars = _voxelFont.render(str, vertices, indices);
 	if ((int)strlen(str) != renderedChars) {
 		Log::error("Failed to render string '%s' (chars: %i)", str, renderedChars);
 		return false;
 	}
 
-	if (indices.empty() || positions.empty()) {
+	if (indices.empty() || vertices.empty()) {
 		Log::error("Failed to render voxel font");
 		return false;
 	}
-	colors.resize(positions.size());
-	class ColorGenerator {
-	private:
-		glm::vec3 _colors[2];
-		int _index = 0;
-		int _amount = 0;
-	public:
-		ColorGenerator (const glm::vec4& color1, const glm::vec4& color2) {
-			_colors[0] = color1.xyz();
-			_colors[1] = color2.xyz();
-		}
 
-		inline const glm::vec3& operator()() {
-			++_amount;
-			if (_amount >= 4) {
-				_index = _index + 1;
-				_index %= SDL_arraysize(_colors);
-				_amount = 0;
-			}
-			return _colors[_index];
-		}
-	};
-	ColorGenerator g(core::Color::LightGreen, core::Color::Red);
-	std::generate(colors.begin(), colors.end(), g);
-
-	if (!_rawVolumeRenderer.update(positions, indices, colors)) {
+	if (!_rawVolumeRenderer.update(vertices, indices)) {
 		return false;
 	}
-	_vertices = positions.size();
+	_vertices = vertices.size();
 	_indices = indices.size();
 
 	return true;

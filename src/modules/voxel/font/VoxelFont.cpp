@@ -1,7 +1,6 @@
 #include "VoxelFont.h"
 #include "core/App.h"
 #include "core/Common.h"
-#include "core/UTF8.h"
 #define STBTT_ASSERT core_assert
 #define STBTT_MALLOC core_malloc
 #define STBTT_REALLOC core_realloc
@@ -124,60 +123,21 @@ bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
 }
 
 int VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices) {
-	const char **s = &string;
-	int xBase = 0;
-	int yBase = 0;
-	int charCount = 0;
-	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s), ++charCount) {
-		if (c == ' ') {
-			xBase += _spaceWidth;
-			continue;
-		} else if (c == '\n') {
-			xBase = 0;
-			yBase += _height;
-			continue;
-		}
+	return render(string, pos, indices, [] (const voxel::Vertex& vertex, std::vector<glm::vec4>& pos, int x, int y) {
+		glm::vec4 vp = glm::vec4(vertex.position, 1.0f);
+		vp.x += x;
+		vp.y += y;
+		pos.push_back(vp);
+	});
+}
 
-		auto i = _cache.find(c);
-		if (i == _cache.end()) {
-			xBase += _size;
-			Log::trace("Could not find character glyph cache for %i", c);
-			continue;
-		}
-
-		int x = xBase;
-		int y = yBase;
-		int advanceWidth;
-		int leftSideBearing;
-		stbtt_GetCodepointHMetrics(&_font, c, &advanceWidth, &leftSideBearing);
-		const int advance = (int) (advanceWidth * _scale + 0.5f);
-		xBase += advance;
-
-		const voxel::Mesh* mesh = i->second;
-		const voxel::IndexType* meshIndices = mesh->getRawIndexData();
-		const voxel::Vertex* meshVertices = mesh->getRawVertexData();
-		const size_t meshNumberIndices = mesh->getNoOfIndices();
-		core_assert(meshNumberIndices > 0);
-		const size_t meshNumberVertices = mesh->getNoOfVertices();
-		core_assert(meshNumberVertices > 0);
-
-		const size_t positionSize = pos.size();
-		const size_t indicesSize = indices.size();
-		pos.reserve(positionSize + meshNumberVertices);
-		indices.reserve(indicesSize + meshNumberIndices);
-
-		for (size_t i = 0; i < meshNumberVertices; ++i) {
-			glm::vec4 vp = glm::vec4(meshVertices[i].position, 1.0f);
-			vp.x += x;
-			vp.y += y;
-			pos.push_back(vp);
-		}
-		for (size_t i = 0; i < meshNumberIndices; ++i) {
-			// offset by the already added vertices
-			indices.push_back(meshIndices[i] + positionSize);
-		}
-	}
-	return charCount;
+int VoxelFont::render(const char* string, std::vector<voxel::Vertex>& vertices, std::vector<uint32_t>& indices) {
+	return render(string, vertices, indices, [] (const voxel::Vertex& vertex, std::vector<voxel::Vertex>& vertices, int x, int y) {
+		voxel::Vertex copy = vertex;
+		copy.position.x += x;
+		copy.position.y += y;
+		vertices.push_back(copy);
+	});
 }
 
 }
