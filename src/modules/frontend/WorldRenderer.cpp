@@ -584,17 +584,17 @@ video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader,
 	}
 
 	meshData.create(buffers);
-	meshData.bindVAO();
 
 	updateMesh(mesh, meshData);
 
+	meshData.bindVAO();
 	const int posLoc = shader.enableVertexAttributeArray("a_pos");
 	const int components = sizeof(voxel::Vertex::position) / sizeof(decltype(voxel::Vertex::position)::value_type);
 	shader.setVertexAttributeInt(posLoc, components, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
 
 	const int locationInfo = shader.enableVertexAttributeArray("a_info");
 	// we are uploading two bytes at once here
-	static_assert(sizeof(voxel::Voxel) == sizeof(uint8_t), "Voxel type doesn't match");
+	static_assert(sizeof(voxel::Vertex::data) == sizeof(uint8_t), "Voxel type doesn't match");
 	static_assert(sizeof(voxel::Vertex::ambientOcclusion) == sizeof(uint8_t), "AO type doesn't match");
 	shader.setVertexAttributeInt(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
 	GL_checkError();
