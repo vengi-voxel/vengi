@@ -488,12 +488,26 @@ inline void Shader::setVertexAttribute(const std::string& name, int size, int ty
 
 inline void Shader::setVertexAttribute(int location, int size, int type, bool normalize, int stride, const void* buffer) const {
 	core_assert_msg(getAttributeComponents(location) == -1 || getAttributeComponents(location) == size, "%i expected, but got %i components", getAttributeComponents(location), size);
+#ifdef DEBUG
+#if SDL_ASSERT_LEVEL > 0
+	GLint vao = -1;
+	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &vao);
+	core_assert_msg(vao > 0, "No vertex array object is bound");
+#endif
+#endif
 	glVertexAttribPointer(location, size, type, normalize, stride, buffer);
 	GL_checkError();
 }
 
 inline void Shader::setVertexAttributeInt(int location, int size, int type, int stride, const void* buffer) const {
 	core_assert_msg(getAttributeComponents(location) == -1 || getAttributeComponents(location) == size, "%i expected, but got %i components", getAttributeComponents(location), size);
+#ifdef DEBUG
+#if SDL_ASSERT_LEVEL > 0
+	GLint vao = -1;
+	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &vao);
+	core_assert_msg(vao > 0, "No vertex array object is bound");
+#endif
+#endif
 	glVertexAttribIPointer(location, size, type, stride, buffer);
 	GL_checkError();
 }
