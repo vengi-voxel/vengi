@@ -6,6 +6,7 @@ set(SRCS
 	WaitingMessage.h WaitingMessage.cpp
 	Console.cpp Console.h
 	ui_renderer_gl.cpp ui_renderer_gl.h
+	ui_widgets.cpp ui_widgets.h
 )
 set(LIB ui)
 add_library(${LIB} ${SRCS})
