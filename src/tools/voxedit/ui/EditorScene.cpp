@@ -101,7 +101,16 @@ bool EditorScene::loadModel(std::string_view file) {
 	return true;
 }
 
+void EditorScene::resetCamera() {
+	_camera.setPosition(glm::vec3(50.0f, 50.0f, 100.0f));
+	_camera.lookAt(glm::vec3(0.0001f));
+}
+
 bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
+	if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("editorscene"))) {
+		resetCamera();
+		return true;
+	}
 	const int x = ev.target_x;
 	const int y = ev.target_y;
 	ui::UIRect rect = GetRect();
@@ -161,8 +170,7 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	const ui::UIApp* app = (ui::UIApp*)core::App::getInstance();
 	const glm::ivec2& d = app->dimension();
 	_camera.init(glm::ivec2(), d);
-	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
-	_camera.lookAt(glm::vec3(0.0001f));
+	resetCamera();
 
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);

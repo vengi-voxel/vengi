@@ -38,6 +38,7 @@ private:
 
 	bool isDirty() const;
 	void executeAction(int32_t x, int32_t y);
+	void resetCamera();
 public:
 	UIWIDGET_SUBCLASS(EditorScene, tb::TBWidget);
 

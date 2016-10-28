@@ -46,5 +46,5 @@ TBLayout: distribution: gravity, axis: y
 							TBWidget
 						TBButton
 							@include definitions>menubutton
-							text Noise
-							id noise
+							text Reset View
+							id resetcamera
