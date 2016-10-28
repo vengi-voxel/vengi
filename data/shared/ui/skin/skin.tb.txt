@@ -105,7 +105,7 @@ elements
 		type StretchBorder
 		cut 11
 		expand 6
-		padding 10
+		padding 2
 	TBSectionHeader
 		bitmap window_mover_bg_tile.png
 		type Tile
@@ -278,7 +278,7 @@ elements
 		bitmap window.png
 		cut 16
 		expand 12
-		padding 10
+		padding 2
 		overrides
 			element TBWindow.selected
 				state selected
@@ -470,3 +470,17 @@ elements
 		bitmap remove.png
 		type Image
 		padding 5
+
+	accent_color
+		text-color #001111
+
+	container
+		type StretchBox
+		bitmap window.png
+		cut 16
+		expand 12
+		padding 0
+
+	separator
+		bitmap item_separator_x.png
+		type Stretch Image

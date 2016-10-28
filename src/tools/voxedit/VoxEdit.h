@@ -5,10 +5,6 @@
 #pragma once
 
 #include "ui/UIApp.h"
-#include "frontend/RawVolumeRenderer.h"
-#include "video/Camera.h"
-#include "frontend/Axis.h"
-#include "frontend/Plane.h"
 
 /**
  * @brief This tool provides a UI to create noise images on-the-fly.
@@ -16,29 +12,8 @@
 class VoxEdit: public ui::UIApp {
 private:
 	using Super = ui::UIApp;
-	bool _cameraMotion = true;
-	bool _renderAxis = true;
-	video::Camera _camera;
-	frontend::Axis _axis;
-	core::VarPtr _rotationSpeed;
-	uint8_t _moveMask = 0;
-	float _cameraSpeed = 0.1f;
-	bool _dirty = false;
-	bool _extract = false;
 	core::VarPtr _lastDirectory;
-	frontend::RawVolumeRenderer _rawVolumeRenderer;
-	voxel::Voxel _currentVoxel;
 
-	enum class Action {
-		None,
-		PlaceVoxel,
-		CopyVoxel,
-		DeleteVoxel
-	};
-	Action _action = Action::None;
-
-	bool isDirty() const;
-	void executeAction(int32_t x, int32_t y);
 public:
 	VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
@@ -47,17 +22,7 @@ public:
 	bool newFile(bool force = false);
 
 	core::AppState onInit() override;
-	void beforeUI() override;
 	core::AppState onCleanup() override;
 	core::AppState onRunning() override;
-	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
-	void onMouseWheel(int32_t x, int32_t y) override;
-	void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
-	void onMouseButtonPress(int32_t x, int32_t y, uint8_t button) override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
-	void onWindowResize() override;
 };
-
-inline bool VoxEdit::isDirty() const {
-	return _dirty;
-}

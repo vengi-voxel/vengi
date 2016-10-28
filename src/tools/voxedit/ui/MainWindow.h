@@ -11,11 +11,12 @@
 /**
  * @brief Voxel editing tools panel
  */
-class ToolWindow: public ui::Window {
+class MainWindow: public ui::Window {
 public:
-	ToolWindow(VoxEdit* tool) :
+	MainWindow(VoxEdit* tool) :
 			ui::Window(tool) {
-		core_assert_always(loadResourceFile("ui/window/tool.tb.txt"));
+		SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
+		core_assert_always(loadResourceFile("ui/window/main.tb.txt"));
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
