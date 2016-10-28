@@ -8,16 +8,22 @@
 class EditorScene: public ui::Widget {
 private:
 	using Super = ui::Widget;
-	bool _renderAxis = true;
 	video::Camera _camera;
 	frontend::Axis _axis;
 	core::VarPtr _rotationSpeed;
-	uint8_t _moveMask = 0;
-	float _cameraSpeed = 0.1f;
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
+
+	float _cameraSpeed = 0.1f;
+
+	voxel::Voxel _currentVoxel;
+
 	bool _dirty = false;
 	bool _extract = false;
-	voxel::Voxel _currentVoxel;
+	bool _renderAxis = true;
+	uint8_t _moveMask = 0;
+
+	int _mouseX = 0;
+	int _mouseY = 0;
 
 	enum class Action {
 		None,
