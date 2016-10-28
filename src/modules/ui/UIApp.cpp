@@ -498,6 +498,8 @@ core::AppState UIApp::onCleanup() {
 	core::Command::unregisterCommand("bindlist");
 	core::Command::unregisterCommand("bind");
 
+	_root.DeleteAllChildren();
+
 	_console.shutdown();
 	_renderer.shutdown();
 
