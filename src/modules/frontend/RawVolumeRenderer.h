@@ -75,8 +75,9 @@ public:
 	/**
 	 * @sa shutdown()
 	 */
-	bool init(const glm::ivec2& dimension);
+	bool init();
 
+	bool onResize(const glm::ivec2& position, const glm::ivec2& dimension);
 	/**
 	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.
 	 *

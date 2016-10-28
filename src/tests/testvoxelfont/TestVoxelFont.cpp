@@ -8,7 +8,11 @@ TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::Ev
 core::AppState TestVoxelFont::onInit() {
 	core::AppState state = Super::onInit();
 
-	if (!_rawVolumeRenderer.init(dimension())) {
+	if (!_rawVolumeRenderer.init()) {
+		Log::error("Failed to initialize the raw volume renderer");
+		return core::AppState::Cleanup;
+	}
+	if (!_rawVolumeRenderer.onResize(glm::ivec2(), dimension())) {
 		Log::error("Failed to initialize the raw volume renderer");
 		return core::AppState::Cleanup;
 	}

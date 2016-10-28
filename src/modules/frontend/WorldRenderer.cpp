@@ -694,7 +694,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active
 	active = _meshDataOpaque.size();
 }
 
-bool WorldRenderer::onInit(const glm::ivec2& dimension) {
+bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false");
 	_deferred = core::Var::getSafe(cfg::ClientDeferred);
@@ -706,7 +706,7 @@ bool WorldRenderer::onInit(const glm::ivec2& dimension) {
 	_cameraSun = core::Var::get(cfg::ClientCameraSun, "false");
 
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
-	_sunLight.init(sunDirection, dimension);
+	_sunLight.init(sunDirection, position, dimension);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
 		const int ColorTextureOctaves = 2;

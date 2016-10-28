@@ -60,6 +60,9 @@ protected:
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
 	glm::ivec2 _dimension;
+	// the position that is used for ortho projection matrices
+	glm::ivec2 _position;
+	// the position of the camera in thw world
 	glm::vec3 _pos;
 	glm::quat _quat;
 	uint32_t _dirty = DIRTY_ALL;
@@ -92,10 +95,19 @@ public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 	~Camera();
 
-	void init(const glm::ivec2& dimension);
+	void init(const glm::ivec2& position, const glm::ivec2& dimension);
 	const glm::ivec2& dimension() const;
 	int width() const;
 	int height() const;
+
+	/**
+	 * @note Not the world position of the camera - but for controlling the viewport
+	 */
+	int x() const;
+	/**
+	 * @note Not the world position of the camera - but for controlling the viewport
+	 */
+	int y() const;
 
 	CameraType type() const;
 	void setType(CameraType type);
@@ -225,11 +237,6 @@ public:
 	glm::vec4 sphereBoundingBox() const;
 };
 
-inline void Camera::init(const glm::ivec2& dimension) {
-	_dimension = dimension;
-	_aspectRatio = _dimension.x / static_cast<float>(_dimension.y);
-}
-
 inline const glm::ivec2& Camera::dimension() const {
 	return _dimension;
 }
@@ -240,6 +247,14 @@ inline int Camera::width() const {
 
 inline int Camera::height() const {
 	return _dimension.y;
+}
+
+inline int Camera::x() const {
+	return _position.x;
+}
+
+inline int Camera::y() const {
+	return _position.y;
 }
 
 inline void Camera::setType(CameraType type) {
@@ -373,11 +388,13 @@ inline glm::vec3 Camera::up() const {
 }
 
 inline glm::mat4 Camera::orthogonalMatrix() const {
-	const float w = width();
-	const float h = height();
+	const float _x = x();
+	const float _y = y();
+	const float w = _y + width();
+	const float h = _y + height();
 	core_assert_msg(w > 0.0f, "Invalid dimension given: width must be greater than zero but is %f", w);
 	core_assert_msg(h > 0.0f, "Invalid dimension given: height must be greater than zero but is %f", h);
-	return glm::ortho(0.0f, w, h, 0.0f, nearPlane(), farPlane());
+	return glm::ortho(_x, w, h, _y, nearPlane(), farPlane());
 }
 
 inline void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {

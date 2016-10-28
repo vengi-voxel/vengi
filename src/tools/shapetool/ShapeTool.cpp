@@ -60,10 +60,10 @@ core::AppState ShapeTool::onInit() {
 	}).setHelp("Set the world camera rotation to be equal to the sun rotation");
 
 	_world->setSeed(1);
-	if (!_worldRenderer.onInit(_dimension)) {
+	if (!_worldRenderer.onInit(glm::ivec2(), _dimension)) {
 		return core::Cleanup;
 	}
-	_camera.init(dimension());
+	_camera.init(glm::ivec2(), dimension());
 	_camera.setPosition(glm::vec3(50.0f, 100.0f, 50.0f));
 	_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
@@ -109,7 +109,7 @@ void ShapeTool::beforeUI() {
 
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	_camera.setFieldOfView(45.0f);
-	_camera.init(dimension());
+	_camera.init(glm::ivec2(), dimension());
 	_camera.update(_deltaFrame);
 
 	_worldRenderer.extractNewMeshes(_camera.position());
@@ -167,7 +167,7 @@ core::AppState ShapeTool::onCleanup() {
 
 void ShapeTool::onWindowResize() {
 	Super::onWindowResize();
-	_camera.init(dimension());
+	_camera.init(glm::ivec2(), dimension());
 }
 
 bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {

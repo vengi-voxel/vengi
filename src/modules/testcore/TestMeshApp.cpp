@@ -26,7 +26,7 @@ core::AppState TestMeshApp::onInit() {
 	});
 
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
-	_sunLight.init(sunDirection, dimension());
+	_sunLight.init(sunDirection, glm::ivec2(), dimension());
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 	_camera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));

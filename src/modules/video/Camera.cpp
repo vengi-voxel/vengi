@@ -17,6 +17,13 @@ Camera::Camera(CameraType type, CameraMode mode) :
 Camera::~Camera() {
 }
 
+void Camera::init(const glm::ivec2& position, const glm::ivec2& dimension) {
+	_position = position;
+	_dimension = dimension;
+	_aspectRatio = _dimension.x / static_cast<float>(_dimension.y);
+	_dirty = DIRTY_ALL;
+}
+
 void Camera::move(const glm::vec3& delta) {
 	if (glm::all(glm::epsilonEqual(delta, glm::vec3(), 0.0001f))) {
 		return;

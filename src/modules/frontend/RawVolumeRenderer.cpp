@@ -13,7 +13,7 @@ RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe) :
 		_renderWireframe(renderWireframe) {
 }
 
-bool RawVolumeRenderer::init(const glm::ivec2& dimension) {
+bool RawVolumeRenderer::init() {
 	if (!_worldShader.setup()) {
 		Log::error("Failed to initialize the color shader");
 		return false;
@@ -33,14 +33,6 @@ bool RawVolumeRenderer::init(const glm::ivec2& dimension) {
 	_indexBufferIndex = _vertexBuffer.create(nullptr, 0, GL_ELEMENT_ARRAY_BUFFER);
 	if (_indexBufferIndex == -1) {
 		Log::error("Could not create the vertex buffer object for the indices");
-		return false;
-	}
-
-	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
-	_sunLight.init(sunDirection, dimension);
-
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-	if (!_depthBuffer.init(_sunLight.dimension(), video::DepthBufferMode::RGBA, maxDepthBuffers)) {
 		return false;
 	}
 
@@ -68,6 +60,18 @@ bool RawVolumeRenderer::init(const glm::ivec2& dimension) {
 
 	_mesh = new voxel::Mesh(128, 128, true);
 
+	return true;
+}
+
+bool RawVolumeRenderer::onResize(const glm::ivec2& position, const glm::ivec2& dimension) {
+	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
+	_sunLight.init(sunDirection, position, dimension);
+
+	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	_depthBuffer.shutdown();
+	if (!_depthBuffer.init(_sunLight.dimension(), video::DepthBufferMode::RGBA, maxDepthBuffers)) {
+		return false;
+	}
 	return true;
 }
 

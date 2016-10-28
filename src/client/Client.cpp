@@ -134,7 +134,7 @@ core::AppState Client::onInit() {
 	GL_checkError();
 
 	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "250.0");
-	_camera.init(dimension());
+	_camera.init(glm::ivec2(), dimension());
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setTargetDistance(_maxTargetDistance->floatVal());
 	_waiting.init();
@@ -146,7 +146,7 @@ core::AppState Client::onInit() {
 
 	_meshPool->init();
 
-	if (!_worldRenderer.onInit(_dimension)) {
+	if (!_worldRenderer.onInit(glm::ivec2(), _dimension)) {
 		return core::Cleanup;
 	}
 
@@ -185,7 +185,7 @@ void Client::beforeUI() {
 			_camera.setTarget(pos);
 		}
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
-		_camera.init(dimension());
+		_camera.init(glm::ivec2(), dimension());
 		_camera.update(_deltaFrame);
 
 		_drawCallsWorld = _worldRenderer.renderWorld(_camera);
@@ -282,7 +282,7 @@ core::AppState Client::onRunning() {
 
 void Client::onWindowResize() {
 	Super::onWindowResize();
-	_camera.init(dimension());
+	_camera.init(glm::ivec2(), dimension());
 }
 
 void Client::signup(const std::string& email, const std::string& password) {
