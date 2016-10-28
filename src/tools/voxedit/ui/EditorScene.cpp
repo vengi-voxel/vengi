@@ -102,34 +102,34 @@ bool EditorScene::loadModel(std::string_view file) {
 }
 
 bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
-	// TODO: once we have widget here, use the widget (not _root) luke
-	//const ui::UIRect& rect = _root.GetRect();
-	//_root.ConvertToRoot(x, y);
-
 	const int x = ev.target_x;
 	const int y = ev.target_y;
-	/*if (ev.type == tb::EVENT_TYPE_RIGHT_POINTER_DOWN) {
-		_action = Action::DeleteVoxel;
-		executeAction(x, y);
-		return true;
-	} else*/ if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
-		_action = Action::PlaceVoxel;
-		executeAction(x, y);
+	ui::UIRect rect = GetRect();
+	GetParentRoot()->ConvertToRoot(rect.x, rect.y);
+	const int tx = x - rect.x;
+	const int ty = y - rect.y;
+	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
+		if (ev.modifierkeys & tb::TB_CTRL) {
+			_action = Action::DeleteVoxel;
+		} else {
+			_action = Action::PlaceVoxel;
+		}
+		executeAction(tx, ty);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		_action = Action::None;
-		executeAction(x, y);
+		executeAction(tx, ty);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_MOVE) {
 		const bool current = SDL_GetRelativeMouseMode();
 		if (current) {
-			const int deltaX = ev.target_x - _mouseX;
-			const int deltaY = ev.target_y - _mouseY;
+			const int deltaX = x - _mouseX;
+			const int deltaY = y - _mouseY;
 			_camera.rotate(glm::vec3(deltaY, deltaX, 0.0f) * _rotationSpeed->floatVal());
 		}
-		_mouseX = ev.target_x;
-		_mouseY = ev.target_y;
-		executeAction(x, y);
+		_mouseX = x;
+		_mouseY = y;
+		executeAction(tx, ty);
 		return true;
 	}
 	return Super::OnEvent(ev);
