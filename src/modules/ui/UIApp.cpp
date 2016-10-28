@@ -412,6 +412,7 @@ core::AppState UIApp::onInit() {
 
 	_root.SetRect(tb::TBRect(0, 0, _dimension.x, _dimension.y));
 	_root.SetSkinBg(TBIDC("background"));
+	_root.SetGravity(tb::WIDGET_GRAVITY_ALL);
 
 	_console.init();
 
