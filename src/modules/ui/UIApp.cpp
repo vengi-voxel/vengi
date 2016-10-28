@@ -247,6 +247,8 @@ void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 			hover->ConvertFromRoot(x, y);
 			tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, x, y, false, modKeys);
 			hover->InvokeEvent(ev);
+		} else {
+			_root.InvokePointerUp(x, y, modKeys, false);
 		}
 	} else {
 		_root.InvokePointerUp(x, y, modKeys, false);
