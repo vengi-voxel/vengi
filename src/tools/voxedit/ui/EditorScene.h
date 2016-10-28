@@ -3,6 +3,7 @@
 #include "ui/TurboBadger.h"
 #include "frontend/RawVolumeRenderer.h"
 #include "video/Camera.h"
+#include "video/FrameBuffer.h"
 #include "frontend/Axis.h"
 
 class EditorScene: public ui::Widget {
@@ -11,7 +12,9 @@ private:
 	video::Camera _camera;
 	frontend::Axis _axis;
 	core::VarPtr _rotationSpeed;
+	video::FrameBuffer _frameBuffer;
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
+	tb::UIBitmapGL _bitmap;
 
 	float _cameraSpeed = 0.1f;
 
@@ -47,13 +50,15 @@ public:
 
 	bool newModel(bool force = false);
 
+	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
+
+	virtual void OnProcess() override;
+
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
 
-	virtual void OnPaint(const PaintProps &paint_props) override;
+	virtual void OnPaint(const PaintProps &paintProps) override;
 
 	virtual void OnResized(int oldWidth, int oldHeight) override;
-
-	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 };
 
 inline bool EditorScene::isDirty() const {

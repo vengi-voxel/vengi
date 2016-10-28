@@ -8,16 +8,19 @@
 #include "voxel/polyvox/Picking.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedScissor.h"
+#include "video/ScopedFrameBuffer.h"
 #include "voxel/VoxFormat.h"
+#include "ui/UIApp.h"
 
 EditorScene::EditorScene() :
-		ui::Widget(), _rawVolumeRenderer(true) {
+		ui::Widget(), _rawVolumeRenderer(true), _bitmap((tb::UIRendererGL*)tb::g_renderer) {
 	_currentVoxel = voxel::createVoxel(voxel::Grass1);
 	SetIsFocusable(true);
 }
 
 EditorScene::~EditorScene() {
 	_axis.shutdown();
+	_frameBuffer.shutdown();
 	voxel::RawVolume* old = _rawVolumeRenderer.shutdown();
 	delete old;
 }
@@ -133,6 +136,41 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 }
 
 void EditorScene::OnPaint(const PaintProps &paintProps) {
+	Super::OnPaint(paintProps);
+	const glm::ivec2& dimension = _frameBuffer.dimension();
+	tb::g_renderer->DrawBitmap(GetRect(), tb::TBRect(0, 0, dimension.x, dimension.y), &_bitmap);
+}
+
+void EditorScene::OnResized(int oldWidth, int oldHeight) {
+	Super::OnResized(oldWidth, oldHeight);
+
+	const ui::UIRect& rect = GetRect();
+	_rawVolumeRenderer.onResize(glm::ivec2(rect.x, rect.y), glm::ivec2(rect.w, rect.h));
+}
+
+void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
+	Super::OnInflate(info);
+	_axis.init();
+
+	_rawVolumeRenderer.init();
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+
+	const ui::UIApp* app = (ui::UIApp*)core::App::getInstance();
+	const glm::ivec2& d = app->dimension();
+	_camera.init(glm::ivec2(), d);
+	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
+	_camera.lookAt(glm::vec3(0.0001f));
+
+	_frameBuffer.init(d);
+	_bitmap.Init(d.x, d.y, _frameBuffer.texture());
+
+	registerMoveCmd("+move_right", MOVERIGHT);
+	registerMoveCmd("+move_left", MOVELEFT);
+	registerMoveCmd("+move_forward", MOVEFORWARD);
+	registerMoveCmd("+move_backward", MOVEBACKWARD);
+}
+
+void EditorScene::OnProcess() {
 	const long deltaFrame = core::App::getInstance()->deltaFrame();
 	const float speed = _cameraSpeed * static_cast<float>(deltaFrame);
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
@@ -143,11 +181,7 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 		_rawVolumeRenderer.extract();
 	}
 
-	GLint v[4];
-	glGetIntegerv(GL_VIEWPORT, v);
-	tb::TBRect r = GetRect();
-	tb::TBRect padr = GetPaddingRect();
-	glViewport(padr.x, v[3] - r.h + padr.y, padr.w, padr.h);
+	_frameBuffer.bind(false);
 	{
 		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
 		_rawVolumeRenderer.render(_camera);
@@ -155,34 +189,9 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 	if (_renderAxis) {
 		_axis.render(_camera);
 	}
-
-	glViewport(v[0], v[1], v[2], v[3]);
-	Super::OnPaint(paintProps);
+	_frameBuffer.unbind();
 }
 
-void EditorScene::OnResized(int oldWidth, int oldHeight) {
-	Super::OnResized(oldWidth, oldHeight);
-
-	const ui::UIRect& rect = GetRect();
-	_rawVolumeRenderer.onResize(glm::ivec2(rect.x, rect.y), glm::ivec2(rect.w, rect.h));
-	_camera.init(glm::ivec2(rect.x, rect.y), glm::ivec2(rect.w, rect.h));
-}
-
-void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
-	Super::OnInflate(info);
-	_axis.init();
-
-	_rawVolumeRenderer.init();
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
-
-	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
-	_camera.lookAt(glm::vec3(0.0001f));
-
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
-}
 
 namespace tb {
 TB_WIDGET_FACTORY(EditorScene, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
