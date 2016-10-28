@@ -30,7 +30,7 @@ private:
 public:
 	TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
-	void afterUI() override;
+	void afterRootWidget() override;
 
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;

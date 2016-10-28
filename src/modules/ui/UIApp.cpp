@@ -360,7 +360,7 @@ void UIApp::OnWidgetFocusChanged(tb::TBWidget *widget, bool focused) {
 	}
 }
 
-void UIApp::afterUI() {
+void UIApp::afterRootWidget() {
 	const tb::TBRect rect(0, 0, _dimension.x, _dimension.y);
 	_console.render(rect, _deltaFrame);
 }
@@ -448,7 +448,7 @@ core::AppState UIApp::onRunning() {
 		}
 		{
 			core_trace_scoped(UIAppAfterUI);
-			afterUI();
+			afterRootWidget();
 		}
 		if (renderUI) {
 			core_trace_scoped(UIAppEndPaint);

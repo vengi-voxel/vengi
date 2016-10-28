@@ -116,7 +116,7 @@ bool TestVoxelFont::onKeyPress(int32_t key, int16_t modifier) {
 	return retVal;
 }
 
-void TestVoxelFont::afterUI() {
+void TestVoxelFont::afterRootWidget() {
 	enqueueShowStr(5, core::Color::White, "Fontsize: %i", _fontSize);
 	enqueueShowStr(5, core::Color::White, "Thickness: %i", _thickness);
 	const char *state = _mergeQuads ? "true" : "false";
@@ -126,7 +126,7 @@ void TestVoxelFont::afterUI() {
 	enqueueShowStr(5, core::Color::Gray, "Space: Toggle merge quads");
 	enqueueShowStr(5, core::Color::Gray, "Shift/+ Shift/-: Change font size");
 	enqueueShowStr(5, core::Color::Gray, "Shift/Mousewheel: Change font size");
-	Super::afterUI();
+	Super::afterRootWidget();
 }
 
 void TestVoxelFont::doRender() {

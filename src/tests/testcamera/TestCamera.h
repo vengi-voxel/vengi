@@ -34,7 +34,7 @@ public:
 	core::AppState onRunning() override;
 	core::AppState onCleanup() override;
 
-	void afterUI() override;
+	void afterRootWidget() override;
 
 	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	void onMouseWheel(int32_t x, int32_t y) override;

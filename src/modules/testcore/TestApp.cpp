@@ -110,8 +110,8 @@ void TestApp::beforeUI() {
 	}
 }
 
-void TestApp::afterUI() {
-	Super::afterUI();
+void TestApp::afterRootWidget() {
+	Super::afterRootWidget();
 	enqueueShowStr(5, core::Color::Gray, "ESC: toggle camera free look");
 }
 

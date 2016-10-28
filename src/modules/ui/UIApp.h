@@ -84,7 +84,7 @@ public:
 	// hook that is called directory before the ui is rendered. Your last chance to let the app contribute
 	// something in the ui context and the ui drawcalls (like debug text or rendering an in-game console on
 	// top of the ui)
-	virtual void afterUI();
+	virtual void afterRootWidget();
 
 	void addChild(Window* window);
 

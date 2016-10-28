@@ -197,7 +197,7 @@ void Client::beforeUI() {
 	}
 }
 
-void Client::afterUI() {
+void Client::afterRootWidget() {
 	const glm::vec3& pos = _camera.position();
 	const glm::vec3& target = _camera.target();
 	int meshes;
@@ -216,7 +216,7 @@ void Client::afterUI() {
 		_waiting.render();
 	}
 
-	Super::afterUI();
+	Super::afterRootWidget();
 }
 
 core::AppState Client::onCleanup() {

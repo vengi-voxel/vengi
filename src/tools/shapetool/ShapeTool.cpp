@@ -125,7 +125,7 @@ void ShapeTool::beforeUI() {
 	}
 }
 
-void ShapeTool::afterUI() {
+void ShapeTool::afterRootWidget() {
 	const glm::vec3& pos = _camera.position();
 	int meshes;
 	int extracted;
@@ -142,7 +142,7 @@ void ShapeTool::afterUI() {
 	enqueueShowStr(x, core::Color::Gray, "LMB: perform raycast to voxel under cursor");
 	enqueueShowStr(x, core::Color::Gray, "l: line mode rendering");
 
-	Super::afterUI();
+	Super::afterRootWidget();
 }
 
 core::AppState ShapeTool::onRunning() {
