@@ -9,30 +9,32 @@
 namespace video {
 
 class FrameBuffer {
+	friend class ScopedFrameBuffer;
 private:
-	GLuint _framebuffer;
+	GLuint _fbo = 0u;
+	GLuint _texture = 0u;
+
+	glm::ivec2 _dimension;
+
 	GLint _oldFramebuffer = -1;
-	int _attached;
+	GLint _viewport[4] = {0, 0, 0, 0};
 public:
 	FrameBuffer();
 	~FrameBuffer();
 
+	bool init(const glm::ivec2& dimension);
 	void shutdown();
 
-	bool isSuccessful();
-
-	/**
-	 * @note Call glViewport after the framebuffer was bound
-	 */
-	void bind();
+	void bind(bool read = false);
 	void unbind();
-	/**
-	 * @param[in] texture The texture handle
-	 * @param[in] attachmentType Possible values are @c GL_COLOR_ATTACHMENT0..GL_COLOR_ATTACHMENTn, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT
-	 */
-	void attachTexture(GLuint texture, GLenum attachmentType);
-	void attachRenderBuffer(GLenum internalformat, GLenum attachment, GLsizei width, GLsizei height);
-	void drawBuffers(GLsizei n, const GLenum *buffers);
+
+	inline GLuint texture() const {
+		return _texture;
+	}
+
+	inline glm::ivec2 dimension() const {
+		return _dimension;
+	}
 };
 
 }

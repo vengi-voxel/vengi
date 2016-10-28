@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GLFunc.h"
+#include "FrameBuffer.h"
 
 namespace video {
 
@@ -11,6 +11,10 @@ public:
 	ScopedFrameBuffer() {
 		glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_handle);
 		GL_checkError();
+	}
+
+	explicit ScopedFrameBuffer(const FrameBuffer& fbo) :
+			ScopedFrameBuffer(fbo._fbo) {
 	}
 
 	explicit ScopedFrameBuffer(GLint bindHandle) {
