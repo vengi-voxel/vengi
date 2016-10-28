@@ -90,6 +90,8 @@ public:
 	void requestQuit();
 	void requestSuspend();
 
+	long deltaFrame() const;
+
 	/**
 	 * @return the millis since the epoch
 	 */
@@ -119,6 +121,10 @@ public:
 		return _staticInstance;
 	}
 };
+
+inline long App::deltaFrame() const {
+	return _deltaFrame;
+}
 
 inline long App::currentMillis() const {
 	return _timeProvider->currentTime();
