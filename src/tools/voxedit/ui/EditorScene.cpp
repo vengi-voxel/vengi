@@ -155,9 +155,12 @@ void EditorScene::OnResized(int oldWidth, int oldHeight) {
 
 	const ui::UIRect& rect = GetRect();
 	_frameBuffer.shutdown();
-	_frameBuffer.init(glm::ivec2(rect.w, rect.h));
+	const glm::ivec2 dimension(rect.w, rect.h);
+	const glm::ivec2 position(rect.x, rect.y);
+	_frameBuffer.init(dimension);
 	_bitmap.Init(rect.w, rect.h, _frameBuffer.texture());
-	_rawVolumeRenderer.onResize(glm::ivec2(rect.x, rect.y), glm::ivec2(rect.w, rect.h));
+	_rawVolumeRenderer.onResize(position, dimension);
+	_camera.init(position, dimension);
 }
 
 void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
@@ -167,9 +170,6 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	_rawVolumeRenderer.init();
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
-	const ui::UIApp* app = (ui::UIApp*)core::App::getInstance();
-	const glm::ivec2& d = app->dimension();
-	_camera.init(glm::ivec2(), d);
 	resetCamera();
 
 	registerMoveCmd("+move_right", MOVERIGHT);
