@@ -189,6 +189,7 @@ void EditorScene::OnProcess() {
 		_rawVolumeRenderer.extract();
 	}
 
+	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
 	_frameBuffer.bind(false);
 	{
 		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
