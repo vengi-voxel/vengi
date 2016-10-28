@@ -20,6 +20,8 @@ public:
 
 	bool Init(int width, int height, uint32 *data);
 
+	bool Init(int width, int height, GLuint texture);
+
 	virtual int Width() override {
 		return m_w;
 	}
@@ -33,6 +35,7 @@ public:
 	UIRendererGL *m_renderer;
 	int m_w, m_h;
 	GLuint m_texture;
+	bool m_destroy = true;
 };
 
 class UIRendererGL: public TBRendererBatcher {

@@ -28,6 +28,7 @@
 #include <tb_widgets_listener.h>
 #include <tb_node_tree.h>
 #include <tb_message_window.h>
+#include "ui_renderer_gl.h"
 
 #define UIWIDGET_SUBCLASS(clazz, baseclazz) \
 	virtual const char *GetClassName() const override { return #clazz; } \

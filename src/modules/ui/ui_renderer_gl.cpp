@@ -36,7 +36,18 @@ UIBitmapGL::~UIBitmapGL() {
 		BindBitmap(nullptr);
 	}
 
-	glDeleteTextures(1, &m_texture);
+	if (m_destroy) {
+		glDeleteTextures(1, &m_texture);
+	}
+}
+
+bool UIBitmapGL::Init(int width, int height, GLuint texture) {
+	m_w = width;
+	m_h = height;
+	m_texture = texture;
+	m_destroy = false;
+	SetData(nullptr);
+	return true;
 }
 
 bool UIBitmapGL::Init(int width, int height, uint32 *data) {
@@ -45,6 +56,8 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 
 	m_w = width;
 	m_h = height;
+
+	m_destroy = true;
 
 	glGenTextures(1, &m_texture);
 	BindBitmap(this);
@@ -61,7 +74,9 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 void UIBitmapGL::SetData(uint32 *data) {
 	m_renderer->FlushBitmap(this);
 	BindBitmap(this);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_w, m_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	if (data != nullptr) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_w, m_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
 	TB_IF_DEBUG_SETTING(RENDER_BATCHES, dbg_bitmap_validations++);
 }
 
