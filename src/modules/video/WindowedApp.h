@@ -34,6 +34,24 @@ protected:
 
 	virtual ~WindowedApp() {
 	}
+
+	inline void centerMouseCursor() {
+		SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
+	}
+
+	inline bool isRelativeMouseMode() const {
+		return SDL_GetRelativeMouseMode();
+	}
+
+	inline void toggleRelativeMouseMode() {
+		const bool current = isRelativeMouseMode();
+		setRelativeMouseMode(current ? false : true);
+	}
+
+	inline void setRelativeMouseMode(bool mode) {
+		SDL_SetRelativeMouseMode(mode ? SDL_TRUE : SDL_FALSE);
+	}
+
 public:
 	inline const glm::ivec2& dimension() const {
 		return _dimension;

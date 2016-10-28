@@ -172,10 +172,8 @@ void ShapeTool::onWindowResize() {
 
 bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 	if (key == SDLK_ESCAPE) {
-		const SDL_bool current = SDL_GetRelativeMouseMode();
-		const SDL_bool mode = current ? SDL_FALSE : SDL_TRUE;
-		SDL_SetRelativeMouseMode(mode);
-		if (mode) {
+		toggleRelativeMouseMode();
+		if (isRelativeMouseMode()) {
 			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_INVISIBLE);
 		} else {
 			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_VISIBLE);
@@ -207,7 +205,7 @@ void ShapeTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 
 void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	Super::onMouseMotion(x, y, relX, relY);
-	const bool current = SDL_GetRelativeMouseMode();
+	const bool current = isRelativeMouseMode();
 	if (!current) {
 		return;
 	}
