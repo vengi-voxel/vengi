@@ -19,6 +19,7 @@ set(SRCS
 	ShapeBuilder.cpp ShapeBuilder.h
 	ScopedViewPort.h
 	ScopedFrameBuffer.h
+	ScopedScissor.h
 	ScopedPolygonMode.h
 	SunLight.h SunLight.cpp
 )
