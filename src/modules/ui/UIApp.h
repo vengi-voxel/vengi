@@ -74,12 +74,20 @@ protected:
 	bool invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, bool down);
 	void showStr(int x, int y, const glm::vec4& color, const char *fmt, ...) __attribute__((format(printf, 5, 6)));
 	void enqueueShowStr(int x, const glm::vec4& color, const char *fmt, ...) __attribute__((format(printf, 4, 5)));
+
+	tb::MODIFIER_KEYS getModifierKeys() const;
 public:
 	UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport = 17815);
 	virtual ~UIApp();
 
 	virtual void beforeUI() {
 	}
+
+	template<class T>
+	T* getWidgetByType(const char *name);
+
+	Widget* getWidget(const char *name);
+	Widget* getWidgetAt(int x, int y, bool includeChildren = true);
 
 	// hook that is called directory before the ui is rendered. Your last chance to let the app contribute
 	// something in the ui context and the ui drawcalls (like debug text or rendering an in-game console on
@@ -88,10 +96,18 @@ public:
 
 	void addChild(Window* window);
 
+	void doLayout();
+
+	virtual void onWindowResize() override;
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;
 	virtual core::AppState onRunning() override;
 	virtual core::AppState onCleanup() override;
 };
+
+template<class T>
+inline T* UIApp::getWidgetByType(const char *name) {
+	return _root.GetWidgetByIDAndType<T>(tb::TBID(name));
+}
 
 }

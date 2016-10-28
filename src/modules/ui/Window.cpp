@@ -36,6 +36,10 @@ void Window::OnDie() {
 	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
 }
 
+bool Window::OnEvent(const tb::TBWidgetEvent &ev) {
+	return Super::OnEvent(ev);
+}
+
 float Window::getFloat(const char *nodeId) {
 	return core::string::toFloat(getStr(nodeId));
 }
@@ -310,10 +314,6 @@ bool Window::loadResource(tb::TBNode &node) {
 	// Alternatively, we could add the window after setting it up properly.
 	EnsureFocus();
 	return true;
-}
-
-bool Window::OnEvent(const tb::TBWidgetEvent &ev) {
-	return Super::OnEvent(ev);
 }
 
 void Window::onWindowResize() {

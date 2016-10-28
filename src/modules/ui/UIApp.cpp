@@ -195,14 +195,14 @@ void UIApp::onMouseWheel(int32_t x, int32_t y) {
 	}
 	int posX, posY;
 	SDL_GetMouseState(&posX, &posY);
-	_root.InvokeWheel(posX, posY, x, -y, mapModifier(SDL_GetModState()));
+	_root.InvokeWheel(posX, posY, x, -y, getModifierKeys());
 }
 
 void UIApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	if (_console.isActive()) {
 		return;
 	}
-	_root.InvokePointerMove(x, y, mapModifier(SDL_GetModState()), false);
+	_root.InvokePointerMove(x, y, getModifierKeys(), false);
 }
 
 void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
@@ -227,23 +227,29 @@ void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 	lastY = y;
 	lastTime = time;
 
-	_root.InvokePointerDown(x, y, counter, mapModifier(SDL_GetModState()), false);
+	const tb::MODIFIER_KEYS modKeys = getModifierKeys();
+	_root.InvokePointerDown(x, y, counter, modKeys, false);
+}
+
+tb::MODIFIER_KEYS UIApp::getModifierKeys() const {
+	return mapModifier(SDL_GetModState());
 }
 
 void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 	if (_console.isActive()) {
 		return;
 	}
+	const tb::MODIFIER_KEYS modKeys = getModifierKeys();
 	if (button == SDL_BUTTON_RIGHT) {
-		_root.InvokePointerMove(x, y, mapModifier(SDL_GetModState()), false);
+		_root.InvokePointerMove(x, y, modKeys, false);
 		tb::TBWidget* hover = tb::TBWidget::hovered_widget;
 		if (hover != nullptr) {
 			hover->ConvertFromRoot(x, y);
-			tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, x, y, false, mapModifier(SDL_GetModState()));
+			tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU, x, y, false, modKeys);
 			hover->InvokeEvent(ev);
 		}
 	} else {
-		_root.InvokePointerUp(x, y, mapModifier(SDL_GetModState()), false);
+		_root.InvokePointerUp(x, y, modKeys, false);
 	}
 }
 
@@ -280,7 +286,7 @@ bool UIApp::onKeyRelease(int32_t key) {
 		return true;
 	}
 	Super::onKeyRelease(key);
-	const tb::MODIFIER_KEYS mod = mapModifier(SDL_GetModState());
+	const tb::MODIFIER_KEYS mod = getModifierKeys();
 	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
 		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU);
 		ev.modifierkeys = mod;
@@ -288,6 +294,11 @@ bool UIApp::onKeyRelease(int32_t key) {
 		return true;
 	}
 	return invokeKey(mapKey(key), mapSpecialKey(key), mod, false);
+}
+
+void UIApp::onWindowResize() {
+	Super::onWindowResize();
+	// TODO: event for ui
 }
 
 core::AppState UIApp::onConstruct() {
@@ -409,6 +420,18 @@ core::AppState UIApp::onInit() {
 
 void UIApp::addChild(Window* window) {
 	_root.AddChild(window);
+}
+
+Widget* UIApp::getWidget(const char *name) {
+	return _root.GetWidgetByID(tb::TBID(name));
+}
+
+Widget* UIApp::getWidgetAt(int x, int y, bool includeChildren) {
+	return _root.GetWidgetAt(x, y, includeChildren);
+}
+
+void UIApp::doLayout() {
+	_root.InvalidateLayout(tb::TBWidget::INVALIDATE_LAYOUT_RECURSIVE);
 }
 
 core::AppState UIApp::onRunning() {
