@@ -145,6 +145,9 @@ void EditorScene::OnResized(int oldWidth, int oldHeight) {
 	Super::OnResized(oldWidth, oldHeight);
 
 	const ui::UIRect& rect = GetRect();
+	_frameBuffer.shutdown();
+	_frameBuffer.init(glm::ivec2(rect.w, rect.h));
+	_bitmap.Init(rect.w, rect.h, _frameBuffer.texture());
 	_rawVolumeRenderer.onResize(glm::ivec2(rect.x, rect.y), glm::ivec2(rect.w, rect.h));
 }
 
@@ -160,9 +163,6 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	_camera.init(glm::ivec2(), d);
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	_camera.lookAt(glm::vec3(0.0001f));
-
-	_frameBuffer.init(d);
-	_bitmap.Init(d.x, d.y, _frameBuffer.texture());
 
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
