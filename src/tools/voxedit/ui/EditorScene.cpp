@@ -64,6 +64,10 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 	_dirty |= extract;
 }
 
+EditorScene::Action EditorScene::action() const {
+	return _uiAction;
+}
+
 void EditorScene::setAction(EditorScene::Action action) {
 	_uiAction = action;
 }

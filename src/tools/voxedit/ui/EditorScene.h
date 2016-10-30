@@ -40,7 +40,6 @@ private:
 	Action _action = Action::None;
 	Action _uiAction = Action::PlaceVoxel;
 
-	bool isDirty() const;
 	void executeAction(int32_t x, int32_t y);
 	void render();
 public:
@@ -49,11 +48,13 @@ public:
 	EditorScene();
 	~EditorScene();
 
+	bool isDirty() const;
 	void resetCamera();
 	bool saveModel(std::string_view file);
 	bool loadModel(std::string_view file);
-	bool newModel(bool force = false);
+	bool newModel(bool force);
 	void setAction(Action action);
+	Action action() const;
 
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;
