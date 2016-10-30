@@ -140,9 +140,11 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_MOVE) {
 		const bool current = SDL_GetRelativeMouseMode();
 		if (current) {
-			const int deltaX = x - _mouseX;
-			const int deltaY = y - _mouseY;
-			_camera.rotate(glm::vec3(deltaY, deltaX, 0.0f) * _rotationSpeed->floatVal());
+			const float yaw = x - _mouseX;
+			const float pitch = y - _mouseY;
+			const float s = _rotationSpeed->floatVal();
+			_camera.yaw(yaw * s);
+			_camera.pitch(pitch * s);
 		}
 		_mouseX = x;
 		_mouseY = y;
