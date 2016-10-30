@@ -114,9 +114,9 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	const int x = ev.target_x;
 	const int y = ev.target_y;
 	ui::UIRect rect = GetRect();
-	GetParentRoot()->ConvertToRoot(rect.x, rect.y);
-	const int tx = x - rect.x;
-	const int ty = y - rect.y;
+	ConvertToRoot(rect.x, rect.y);
+	const int tx = x + rect.x;
+	const int ty = y + rect.y;
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		if (ev.modifierkeys & tb::TB_CTRL) {
 			_action = Action::DeleteVoxel;
