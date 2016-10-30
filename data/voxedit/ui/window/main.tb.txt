@@ -28,11 +28,29 @@ TBLayout: distribution: gravity, axis: y
 					TBEditField: text: "Palette", is-focusable: 0, styling: 1, readonly: 1, adapt-to-content: 1, skin: accent_color
 						font: size: 11
 					TBLayout: distribution: gravity, id: palettecontainer
+
 					TBSeparator: gravity: left right, skin: separator
+
 					TBEditField: text: "Tools", is-focusable: 0, styling: 1, readonly: 1, adapt-to-content: 1, skin: accent_color
 						font: size: 11
-					TBLayout: distribution: gravity, id: toolscontainer
-						TBWidget: gravity: top bottom
+
+					TBButton
+						@include definitions>menubutton
+						text Override
+						id actionoverride
+					TBButton
+						@include definitions>menubutton
+						text Place
+						id actionplace
+					TBButton
+						@include definitions>menubutton
+						text Copy
+						id actioncopy
+					TBButton
+						@include definitions>menubutton
+						text Delete
+						id actiondelete
+					TBWidget: gravity: top bottom
 				TBLayout: distribution: gravity, axis: y
 					TBLayout: gravity: left right, id: toolbarcontainer
 					TBSeparator: gravity: left right, skin: separator

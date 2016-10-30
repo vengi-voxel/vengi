@@ -50,10 +50,9 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 	const glm::vec3 dirWithLength = ray.direction * _camera.farPlane();
 	const voxel::PickResult& result = voxel::pickVoxel(volume, ray.origin, dirWithLength, voxel::createVoxel(voxel::Air));
 	bool extract = false;
-	const bool override = SDL_GetModState() & KMOD_CTRL;
 	if (result.didHit && _action == Action::CopyVoxel) {
 		_currentVoxel = volume->getVoxel(result.hitVoxel);
-	} else if (result.didHit && _action == Action::PlaceVoxel && override) {
+	} else if (result.didHit && _action == Action::OverrideVoxel) {
 		extract = volume->setVoxel(result.hitVoxel, _currentVoxel);
 	} else if (result.didHit && _action == Action::DeleteVoxel) {
 		extract = volume->setVoxel(result.hitVoxel, voxel::createVoxel(voxel::Air));
@@ -63,6 +62,10 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 
 	_extract |= extract;
 	_dirty |= extract;
+}
+
+void EditorScene::setAction(EditorScene::Action action) {
+	_uiAction = action;
 }
 
 bool EditorScene::newModel(bool force) {
@@ -126,10 +129,14 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	const int ty = y + rect.y;
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		//Log::info("x: %i, y: %i, rect.x: %i, rect.y: %i", x, y, rect.x, rect.y);
-		if (ev.modifierkeys & tb::TB_CTRL) {
+		if (ev.modifierkeys & tb::TB_ALT) {
+			_action = Action::CopyVoxel;
+		} else if (ev.modifierkeys & tb::TB_SHIFT) {
+			_action = Action::OverrideVoxel;
+		} else if (ev.modifierkeys & tb::TB_CTRL) {
 			_action = Action::DeleteVoxel;
 		} else {
-			_action = Action::PlaceVoxel;
+			_action = _uiAction;
 		}
 		executeAction(tx, ty);
 		return true;

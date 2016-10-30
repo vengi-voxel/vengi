@@ -7,6 +7,15 @@
 #include "frontend/Axis.h"
 
 class EditorScene: public ui::Widget {
+public:
+	enum class Action {
+		None,
+		PlaceVoxel,
+		CopyVoxel,
+		DeleteVoxel,
+		OverrideVoxel
+	};
+
 private:
 	using Super = ui::Widget;
 	video::Camera _camera;
@@ -28,13 +37,8 @@ private:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
-	enum class Action {
-		None,
-		PlaceVoxel,
-		CopyVoxel,
-		DeleteVoxel
-	};
 	Action _action = Action::None;
+	Action _uiAction = Action::PlaceVoxel;
 
 	bool isDirty() const;
 	void executeAction(int32_t x, int32_t y);
@@ -49,6 +53,7 @@ public:
 	bool saveModel(std::string_view file);
 	bool loadModel(std::string_view file);
 	bool newModel(bool force = false);
+	void setAction(Action action);
 
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;

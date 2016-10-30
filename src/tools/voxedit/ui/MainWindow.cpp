@@ -20,9 +20,23 @@ bool MainWindow::init() {
 }
 
 bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
-	if (ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("resetcamera")) {
-		_scene->resetCamera();
-		return true;
+	if (ev.type == tb::EVENT_TYPE_CLICK) {
+		if (ev.target->GetID() == TBIDC("resetcamera")) {
+			_scene->resetCamera();
+			return true;
+		} else if (ev.target->GetID() == TBIDC("actionoverride")) {
+			_scene->setAction(EditorScene::Action::OverrideVoxel);
+			return true;
+		} else if (ev.target->GetID() == TBIDC("actiondelete")) {
+			_scene->setAction(EditorScene::Action::DeleteVoxel);
+			return true;
+		} else if (ev.target->GetID() == TBIDC("actioncopy")) {
+			_scene->setAction(EditorScene::Action::CopyVoxel);
+			return true;
+		} else if (ev.target->GetID() == TBIDC("actionplace")) {
+			_scene->setAction(EditorScene::Action::PlaceVoxel);
+			return true;
+		}
 	}
 	return ui::Window::OnEvent(ev);
 }
