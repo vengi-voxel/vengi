@@ -112,6 +112,7 @@ bool EditorScene::loadModel(std::string_view file) {
 }
 
 void EditorScene::resetCamera() {
+	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setPosition(glm::vec3(50.0f, 50.0f, 100.0f));
 	_camera.lookAt(glm::vec3(0.0001f));
 }
