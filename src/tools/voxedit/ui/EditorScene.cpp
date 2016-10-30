@@ -154,10 +154,13 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 void EditorScene::OnPaint(const PaintProps &paintProps) {
 	Super::OnPaint(paintProps);
 	const glm::ivec2& dimension = _frameBuffer.dimension();
-	const tb::TBRect destRect(0, 0, dimension.x, dimension.y);
+	ui::UIRect rect = GetRect();
+	int x = rect.x;
+	int y = rect.y;
+	ConvertToRoot(x, y);
 	// the fbo is flipped in memory, we have to deal with it here
-	const tb::TBRect srcRect(0, dimension.y, dimension.x, -dimension.y);
-	tb::g_renderer->DrawBitmap(destRect, srcRect, &_bitmap);
+	const tb::TBRect srcRect(x, dimension.y - y, rect.w, -rect.h);
+	tb::g_renderer->DrawBitmap(rect, srcRect, &_bitmap);
 }
 
 void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
