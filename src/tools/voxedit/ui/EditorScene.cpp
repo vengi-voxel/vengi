@@ -117,10 +117,6 @@ void EditorScene::resetCamera() {
 }
 
 bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
-	if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("editorscene"))) {
-		resetCamera();
-		return true;
-	}
 	const int x = ev.target_x;
 	const int y = ev.target_y;
 	ui::UIRect rect = GetRect();

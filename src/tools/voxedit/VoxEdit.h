@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui/UIApp.h"
+#include "ui/MainWindow.h"
 
 /**
  * @brief This tool provides a UI to create noise images on-the-fly.
@@ -13,6 +14,7 @@ class VoxEdit: public ui::UIApp {
 private:
 	using Super = ui::UIApp;
 	core::VarPtr _lastDirectory;
+	MainWindow* _mainWindow;
 
 public:
 	VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

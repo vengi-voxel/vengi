@@ -3,43 +3,26 @@
  */
 
 #include "VoxEdit.h"
-#include "Actions.h"
 #include "ui/MainWindow.h"
 #include "core/Color.h"
 #include "core/Command.h"
 #include "video/GLFunc.h"
-#include "ui/EditorScene.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		ui::UIApp(filesystem, eventBus, timeProvider) {
+		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr) {
 	init("engine", "voxedit");
 }
 
 bool VoxEdit::saveFile(std::string_view file) {
-	EditorScene* scene = getWidgetByType<EditorScene>("editorscene");
-	if (scene == nullptr) {
-		Log::error("Failed to save: Could not get the editor scene node");
-		return false;
-	}
-	return scene->saveModel(file);
+	return _mainWindow->save(file);
 }
 
 bool VoxEdit::loadFile(std::string_view file) {
-	EditorScene* scene = getWidgetByType<EditorScene>("editorscene");
-	if (scene == nullptr) {
-		Log::error("Failed to load: Could not get the editor scene node");
-		return false;
-	}
-	return scene->loadModel(file);
+	return _mainWindow->load(file);
 }
 
 bool VoxEdit::newFile(bool force) {
-	EditorScene* scene = getWidgetByType<EditorScene>("editorscene");
-	if (scene == nullptr) {
-		Log::error("Failed to create new scene: Could not get the editor scene node");
-		return false;
-	}
-	return scene->newModel(force);
+	return _mainWindow->createNew(force);
 }
 
 core::AppState VoxEdit::onInit() {
@@ -47,15 +30,49 @@ core::AppState VoxEdit::onInit() {
 
 	_lastDirectory = core::Var::get("ve_lastdirectory", core::App::getInstance()->filesystem()->homePath().c_str());
 
-	new MainWindow(this);
-
-	ui::Widget* widget = getWidget("editorcontainer");
-	if (widget == nullptr) {
-		Log::error("Could not get editorcontainer widget from ui definition");
+	_mainWindow = new MainWindow(this);
+	if (!_mainWindow->init()) {
+		Log::error("Failed to initialize the main window");
 		return core::AppState::Cleanup;
 	}
 
-	registerActions(this, _lastDirectory);
+	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
+		std::vector<io::Filesystem::DirEntry> entries;
+		const std::string filter = str + "*";
+		core::App::getInstance()->filesystem()->list(_lastDirectory->strVal(), entries, filter);
+		int i = 0;
+		for (const io::Filesystem::DirEntry& entry : entries) {
+			if (entry.type == io::Filesystem::DirEntry::Type::file) {
+				matches.push_back(entry.name);
+				++i;
+			}
+		}
+		return i;
+	};
+
+	core::Command::registerCommand("save", [this] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			Log::error("Usage: save <filename>");
+			return;
+		}
+		if (!saveFile(args[0])) {
+			Log::error("Failed to save to file %s", args[0].c_str());
+		}
+	}).setArgumentCompleter(fileCompleter).setHelp("Save the current state to the given file");
+
+	core::Command::registerCommand("load", [this] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			Log::error("Usage: load <filename>");
+			return;
+		}
+		if (!loadFile(args[0])) {
+			Log::error("Failed to load file %s", args[0].c_str());
+		}
+	}).setArgumentCompleter(fileCompleter).setHelp("Load a scene from the given file");
+
+	core::Command::registerCommand("new", [this] (const core::CmdArgs& args) {
+		newFile(false);
+	}).setHelp("Create a new scene");
 
 	// TODO: if tmpfile exists, load that one
 	newFile(true);

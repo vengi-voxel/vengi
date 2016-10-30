@@ -38,7 +38,6 @@ private:
 
 	bool isDirty() const;
 	void executeAction(int32_t x, int32_t y);
-	void resetCamera();
 	void render();
 public:
 	UIWIDGET_SUBCLASS(EditorScene, tb::TBWidget);
@@ -46,18 +45,14 @@ public:
 	EditorScene();
 	~EditorScene();
 
+	void resetCamera();
 	bool saveModel(std::string_view file);
-
 	bool loadModel(std::string_view file);
-
 	bool newModel(bool force = false);
 
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
-
 	virtual void OnProcess() override;
-
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
-
 	virtual void OnPaint(const PaintProps &paintProps) override;
 };
 

@@ -1,9 +1,8 @@
 project(voxedit)
 set(SRCS
-	Actions.h Actions.cpp
 	VoxEdit.h VoxEdit.cpp
 	ui/EditorScene.h ui/EditorScene.cpp
-	ui/MainWindow.h
+	ui/MainWindow.h ui/MainWindow.cpp
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
 target_link_libraries(${PROJECT_NAME} frontend util voxel)

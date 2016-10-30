@@ -6,20 +6,28 @@
 
 #include "ui/Window.h"
 #include "core/Common.h"
-#include "../VoxEdit.h"
+#include "core/String.h"
+
+class EditorScene;
+namespace ui {
+class UIApp;
+}
 
 /**
  * @brief Voxel editing tools panel
  */
 class MainWindow: public ui::Window {
+private:
+	EditorScene* _scene;
 public:
-	MainWindow(VoxEdit* tool) :
-			ui::Window(tool) {
-		SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
-		core_assert_always(loadResourceFile("ui/window/main.tb.txt"));
-	}
+	MainWindow(ui::UIApp* tool);
 
-	bool OnEvent(const tb::TBWidgetEvent &ev) override {
-		return ui::Window::OnEvent(ev);
-	}
+	bool init();
+
+	bool OnEvent(const tb::TBWidgetEvent &ev) override;
+
+	bool save(std::string_view file);
+	bool load(std::string_view file);
+	bool createNew(bool force);
+
 };

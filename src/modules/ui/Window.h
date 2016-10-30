@@ -74,10 +74,21 @@ public:
 	bool loadResourceData(const char *data);
 	bool loadResource(tb::TBNode &node);
 
+	template<class T>
+	T* getWidgetByType(const char *name);
+
+	Widget* getWidget(const char *name);
+	Widget* getWidgetAt(int x, int y, bool includeChildren = true);
+
 	virtual void OnDie() override;
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
 
 	virtual void onWindowResize() override;
 };
+
+template<class T>
+inline T* Window::getWidgetByType(const char *name) {
+	return GetWidgetByIDAndType<T>(tb::TBID(name));
+}
 
 }
