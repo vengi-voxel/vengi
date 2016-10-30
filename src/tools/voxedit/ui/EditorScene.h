@@ -39,6 +39,7 @@ private:
 	bool isDirty() const;
 	void executeAction(int32_t x, int32_t y);
 	void resetCamera();
+	void render();
 public:
 	UIWIDGET_SUBCLASS(EditorScene, tb::TBWidget);
 
@@ -58,8 +59,6 @@ public:
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
 
 	virtual void OnPaint(const PaintProps &paintProps) override;
-
-	virtual void OnResized(int oldWidth, int oldHeight) override;
 };
 
 inline bool EditorScene::isDirty() const {

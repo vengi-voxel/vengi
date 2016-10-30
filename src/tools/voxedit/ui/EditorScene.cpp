@@ -12,6 +12,9 @@
 #include "voxel/VoxFormat.h"
 #include "ui/UIApp.h"
 
+// TODO: remove me once the fbo y-flipped problem is fixed
+#define FRAMEBUFFER 1
+
 EditorScene::EditorScene() :
 		ui::Widget(), _rawVolumeRenderer(true), _bitmap((tb::UIRendererGL*)tb::g_renderer) {
 	_currentVoxel = voxel::createVoxel(voxel::Grass1);
@@ -23,6 +26,16 @@ EditorScene::~EditorScene() {
 	_frameBuffer.shutdown();
 	voxel::RawVolume* old = _rawVolumeRenderer.shutdown();
 	delete old;
+}
+
+void EditorScene::render() {
+	{
+		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
+		_rawVolumeRenderer.render(_camera);
+	}
+	if (_renderAxis) {
+		_axis.render(_camera);
+	}
 }
 
 void EditorScene::executeAction(int32_t x, int32_t y) {
@@ -118,6 +131,7 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	const int tx = x + rect.x;
 	const int ty = y + rect.y;
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
+		//Log::info("x: %i, y: %i, rect.x: %i, rect.y: %i", x, y, rect.x, rect.y);
 		if (ev.modifierkeys & tb::TB_CTRL) {
 			_action = Action::DeleteVoxel;
 		} else {
@@ -146,21 +160,14 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 
 void EditorScene::OnPaint(const PaintProps &paintProps) {
 	Super::OnPaint(paintProps);
+#if FRAMEBUFFER > 0
 	const glm::ivec2& dimension = _frameBuffer.dimension();
-	tb::g_renderer->DrawBitmap(GetRect(), tb::TBRect(0, 0, dimension.x, dimension.y), &_bitmap);
-}
-
-void EditorScene::OnResized(int oldWidth, int oldHeight) {
-	Super::OnResized(oldWidth, oldHeight);
-
-	const ui::UIRect& rect = GetRect();
-	_frameBuffer.shutdown();
-	const glm::ivec2 dimension(rect.w, rect.h);
-	const glm::ivec2 position(rect.x, rect.y);
-	_frameBuffer.init(dimension);
-	_bitmap.Init(rect.w, rect.h, _frameBuffer.texture());
-	_rawVolumeRenderer.onResize(position, dimension);
-	_camera.init(position, dimension);
+	const tb::TBRect destRect(0, 0, dimension.x, dimension.y);
+	const tb::TBRect srcRect(0, dimension.y, dimension.x, -dimension.y);
+	tb::g_renderer->DrawBitmap(destRect, srcRect, &_bitmap);
+#else
+	render();
+#endif
 }
 
 void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
@@ -169,6 +176,12 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 
 	_rawVolumeRenderer.init();
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+	const ui::UIApp* app = (ui::UIApp*)core::App::getInstance();
+	const glm::ivec2& d = app->dimension();
+	_camera.init(glm::ivec2(), d);
+	_frameBuffer.init(d);
+	_bitmap.Init(d.x, d.y, _frameBuffer.texture());
+	_rawVolumeRenderer.onResize(glm::ivec2(), d);
 
 	resetCamera();
 
@@ -188,19 +201,13 @@ void EditorScene::OnProcess() {
 		_extract = false;
 		_rawVolumeRenderer.extract();
 	}
-
+#if FRAMEBUFFER > 0
 	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
 	_frameBuffer.bind(false);
-	{
-		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
-		_rawVolumeRenderer.render(_camera);
-	}
-	if (_renderAxis) {
-		_axis.render(_camera);
-	}
+	render();
 	_frameBuffer.unbind();
+#endif
 }
-
 
 namespace tb {
 TB_WIDGET_FACTORY(EditorScene, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
