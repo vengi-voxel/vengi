@@ -263,7 +263,8 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		} else {
 			Log::warn("Unknown chunk in vox file: %u", chunkId);
 		}
-		stream.seek(nextChunkPos);
+		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
+		wrap(stream.seek(nextChunkPos));
 	} while (stream.remaining() > 0);
 
 	return volume;

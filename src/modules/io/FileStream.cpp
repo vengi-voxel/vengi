@@ -234,7 +234,7 @@ bool FileStream::addFloat(float value) {
 }
 
 int FileStream::seek(int64_t position) {
-	if (position >= _size || position < 0) {
+	if (position > _size || position < 0) {
 		return -1;
 	}
 	_pos = position;
