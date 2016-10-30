@@ -12,9 +12,6 @@
 #include "voxel/VoxFormat.h"
 #include "ui/UIApp.h"
 
-// TODO: remove me once the fbo y-flipped problem is fixed
-#define FRAMEBUFFER 1
-
 EditorScene::EditorScene() :
 		ui::Widget(), _rawVolumeRenderer(true), _bitmap((tb::UIRendererGL*)tb::g_renderer) {
 	_currentVoxel = voxel::createVoxel(voxel::Grass1);
@@ -160,14 +157,11 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 
 void EditorScene::OnPaint(const PaintProps &paintProps) {
 	Super::OnPaint(paintProps);
-#if FRAMEBUFFER > 0
 	const glm::ivec2& dimension = _frameBuffer.dimension();
 	const tb::TBRect destRect(0, 0, dimension.x, dimension.y);
+	// the fbo is flipped in memory, we have to deal with it here
 	const tb::TBRect srcRect(0, dimension.y, dimension.x, -dimension.y);
 	tb::g_renderer->DrawBitmap(destRect, srcRect, &_bitmap);
-#else
-	render();
-#endif
 }
 
 void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
@@ -201,12 +195,10 @@ void EditorScene::OnProcess() {
 		_extract = false;
 		_rawVolumeRenderer.extract();
 	}
-#if FRAMEBUFFER > 0
 	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
 	_frameBuffer.bind(false);
 	render();
 	_frameBuffer.unbind();
-#endif
 }
 
 namespace tb {
