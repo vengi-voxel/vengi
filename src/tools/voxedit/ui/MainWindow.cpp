@@ -24,10 +24,6 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		_scene->resetCamera();
 		return true;
 	}
-	if (ev.type == tb::EVENT_TYPE_CLICK) {
-		Log::info("event %i (%p, %p)", ev.type, ev.target, _scene);
-	}
-
 	return ui::Window::OnEvent(ev);
 }
 
