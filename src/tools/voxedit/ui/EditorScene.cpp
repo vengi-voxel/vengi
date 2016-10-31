@@ -12,7 +12,8 @@
 #include "ui/UIApp.h"
 
 EditorScene::EditorScene() :
-		ui::Widget(), _rawVolumeRenderer(true), _bitmap((tb::UIRendererGL*)tb::g_renderer) {
+		ui::Widget(), _rawVolumeRenderer(true), _cursorRenderer(false, false, false),
+		_bitmap((tb::UIRendererGL*)tb::g_renderer) {
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
@@ -31,6 +32,8 @@ EditorScene::~EditorScene() {
 	_frameBuffer.shutdown();
 	voxel::RawVolume* old = _rawVolumeRenderer.shutdown();
 	delete old;
+	old = _cursorRenderer.shutdown();
+	delete old;
 }
 
 void EditorScene::render() {
@@ -38,6 +41,7 @@ void EditorScene::render() {
 	{
 		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
 		_rawVolumeRenderer.render(_camera);
+		_cursorRenderer.render(_camera);
 	}
 	if (_renderAxis) {
 		_axis.render(_camera);
@@ -67,6 +71,8 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 	bool extract = false;
 	if (_result.didHit && _action == Action::CopyVoxel) {
 		_currentVoxel = volume->getVoxel(_result.hitVoxel);
+		_cursorRenderer.volume()->clear();
+		_cursorRenderer.volume()->setVoxel(_result.hitVoxel, _currentVoxel);
 	} else if (_result.didHit && _action == Action::OverrideVoxel) {
 		extract = volume->setVoxel(_result.hitVoxel, _currentVoxel);
 	} else if (_result.didHit && _action == Action::DeleteVoxel) {
@@ -102,6 +108,9 @@ bool EditorScene::newModel(bool force) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(_size));
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	voxel::RawVolume* old = _rawVolumeRenderer.setVolume(volume);
+	delete old;
+	voxel::RawVolume* cursorVolume = new voxel::RawVolume(region);
+	old = _cursorRenderer.setVolume(cursorVolume);
 	delete old;
 	_result = voxel::PickResult();
 	_extract = true;
@@ -183,14 +192,14 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 			const float s = _rotationSpeed->floatVal();
 			_camera.turn(yaw * s);
 			_camera.pitch(pitch * s);
-		} else {
-			const int deltaX = x - _mouseX;
-			const int deltaY = y - _mouseY;
-			const int minMove = 2;
-			// prevent micro movement from executing the action over and over again
-			if (deltaX <= minMove && deltaY <= minMove) {
-				return Super::OnEvent(ev);
-			}
+			return true;
+		}
+		const int deltaX = std::abs(x - _mouseX);
+		const int deltaY = std::abs(y - _mouseY);
+		const int minMove = 2;
+		// prevent micro movement from executing the action over and over again
+		if (deltaX <= minMove && deltaY <= minMove) {
+			return Super::OnEvent(ev);
 		}
 		_mouseX = x;
 		_mouseY = y;
@@ -218,6 +227,7 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	_axis.init();
 
 	_rawVolumeRenderer.init();
+	_cursorRenderer.init();
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 	const ui::UIApp* app = (ui::UIApp*)core::App::getInstance();
 	const glm::ivec2& d = app->dimension();
@@ -255,6 +265,14 @@ void EditorScene::OnProcess() {
 		voxel::RawVolume* volume = _rawVolumeRenderer.volume();
 		if (volume != nullptr) {
 			_result = voxel::pickVoxel(volume, ray.origin, dirWithLength, voxel::createVoxel(voxel::Air));
+
+			_cursorRenderer.volume()->clear();
+			if (_result.didHit) {
+				_cursorRenderer.volume()->setVoxel(_result.hitVoxel, _currentVoxel);
+			} else if (_result.validPreviousVoxel) {
+				_cursorRenderer.volume()->setVoxel(_result.previousVoxel, _currentVoxel);
+			}
+			_cursorRenderer.extract();
 		}
 	}
 

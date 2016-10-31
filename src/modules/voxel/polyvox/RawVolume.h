@@ -127,6 +127,8 @@ public:
 	/// Calculates approximatly how many bytes of memory the volume is currently using.
 	uint32_t calculateSizeInBytes();
 
+	void clear();
+
 private:
 	void initialise(const Region& region);
 

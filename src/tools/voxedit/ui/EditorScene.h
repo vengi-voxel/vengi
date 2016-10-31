@@ -24,6 +24,7 @@ private:
 	core::VarPtr _rotationSpeed;
 	video::FrameBuffer _frameBuffer;
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
+	frontend::RawVolumeRenderer _cursorRenderer;
 	tb::UIBitmapGL _bitmap;
 
 	float _cameraSpeed = 0.1f;

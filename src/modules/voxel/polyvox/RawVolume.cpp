@@ -125,6 +125,10 @@ void RawVolume::initialise(const Region& regValidRegion) {
 	_data = new Voxel[this->getWidth() * this->getHeight() * this->getDepth()];
 
 	// Clear to zeros
+	clear();
+}
+
+void RawVolume::clear() {
 	std::fill(_data, _data + this->getWidth() * this->getHeight() * this->getDepth(), Voxel());
 }
 
