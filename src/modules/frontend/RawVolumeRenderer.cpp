@@ -123,8 +123,25 @@ bool RawVolumeRenderer::extract() {
 
 void RawVolumeRenderer::render(const video::Camera& camera) {
 	core_trace_scoped(RawVolumeRendererRender);
+
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LEQUAL);
+	// Cull triangles whose normal is not towards the camera
+	glEnable(GL_CULL_FACE);
+	glDepthMask(GL_TRUE);
+
 	if (_renderGrid) {
-		_shapeRenderer.render(_gridMeshIndex, camera);
+		// TODO: backface culling for aabb planes
+		_shapeRenderer.render(_gridMeshIndexXYFar, camera);
+		_shapeRenderer.render(_gridMeshIndexXYNear, camera);
+
+		_shapeRenderer.render(_gridMeshIndexXZFar, camera);
+		_shapeRenderer.render(_gridMeshIndexXZNear, camera);
+
+		_shapeRenderer.render(_gridMeshIndexYZFar, camera);
+		_shapeRenderer.render(_gridMeshIndexYZNear, camera);
 	} else if (_renderAABB) {
 		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
@@ -135,14 +152,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	}
 
 	_sunLight.update(0.0f, camera);
-
-	// Enable depth test
-	glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LEQUAL);
-	// Cull triangles whose normal is not towards the camera
-	glEnable(GL_CULL_FACE);
-	glDepthMask(GL_TRUE);
 
 	_whiteTexture->bind(0);
 
@@ -224,12 +233,53 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(voxel::RawVolume* volume) {
 		} else {
 			_shapeRenderer.update(_aabbMeshIndex, _shapeBuilder);
 		}
+
 		_shapeBuilder.clear();
-		_shapeBuilder.aabb(aabb, true, 1.0f);
-		if (_gridMeshIndex == -1) {
-			_gridMeshIndex = _shapeRenderer.createMesh(_shapeBuilder);
+		_shapeBuilder.aabbGridXY(aabb, false);
+		if (_gridMeshIndexXYFar == -1) {
+			_gridMeshIndexXYFar = _shapeRenderer.createMesh(_shapeBuilder);
 		} else {
-			_shapeRenderer.update(_gridMeshIndex, _shapeBuilder);
+			_shapeRenderer.update(_gridMeshIndexXYFar, _shapeBuilder);
+		}
+
+		_shapeBuilder.clear();
+		_shapeBuilder.aabbGridXZ(aabb, false);
+		if (_gridMeshIndexXZFar == -1) {
+			_gridMeshIndexXZFar = _shapeRenderer.createMesh(_shapeBuilder);
+		} else {
+			_shapeRenderer.update(_gridMeshIndexXZFar, _shapeBuilder);
+		}
+
+		_shapeBuilder.clear();
+		_shapeBuilder.aabbGridYZ(aabb, false);
+		if (_gridMeshIndexYZFar == -1) {
+			_gridMeshIndexYZFar = _shapeRenderer.createMesh(_shapeBuilder);
+		} else {
+			_shapeRenderer.update(_gridMeshIndexYZFar, _shapeBuilder);
+		}
+
+		_shapeBuilder.clear();
+		_shapeBuilder.aabbGridXY(aabb, true);
+		if (_gridMeshIndexXYNear == -1) {
+			_gridMeshIndexXYNear = _shapeRenderer.createMesh(_shapeBuilder);
+		} else {
+			_shapeRenderer.update(_gridMeshIndexXYNear, _shapeBuilder);
+		}
+
+		_shapeBuilder.clear();
+		_shapeBuilder.aabbGridXZ(aabb, true);
+		if (_gridMeshIndexXZNear == -1) {
+			_gridMeshIndexXZNear = _shapeRenderer.createMesh(_shapeBuilder);
+		} else {
+			_shapeRenderer.update(_gridMeshIndexXZNear, _shapeBuilder);
+		}
+
+		_shapeBuilder.clear();
+		_shapeBuilder.aabbGridYZ(aabb, true);
+		if (_gridMeshIndexYZNear == -1) {
+			_gridMeshIndexYZNear = _shapeRenderer.createMesh(_shapeBuilder);
+		} else {
+			_shapeRenderer.update(_gridMeshIndexYZNear, _shapeBuilder);
 		}
 	} else {
 		_shapeBuilder.clear();
@@ -243,7 +293,12 @@ voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	_vertexBufferIndex = -1;
 	_indexBufferIndex = -1;
 	_aabbMeshIndex = -1;
-	_gridMeshIndex = -1;
+	_gridMeshIndexXYNear = -1;
+	_gridMeshIndexXYFar = -1;
+	_gridMeshIndexXZNear = -1;
+	_gridMeshIndexXZFar = -1;
+	_gridMeshIndexYZNear = -1;
+	_gridMeshIndexYZFar = -1;
 	if (_mesh != nullptr) {
 		delete _mesh;
 	}
