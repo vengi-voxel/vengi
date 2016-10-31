@@ -7,10 +7,10 @@ namespace frontend {
 
 const std::string MaxDepthBufferUniformName = "u_farplanes";
 
-RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe) :
+RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe, bool renderGrid) :
 		_rawVolume(nullptr), _mesh(nullptr),
 		_worldShader(shader::WorldShader::getInstance()), _renderAABB(renderAABB),
-		_renderWireframe(renderWireframe) {
+		_renderGrid(renderGrid), _renderWireframe(renderWireframe) {
 }
 
 bool RawVolumeRenderer::init() {
@@ -119,7 +119,9 @@ bool RawVolumeRenderer::extract() {
 }
 
 void RawVolumeRenderer::render(const video::Camera& camera) {
-	if (_renderAABB) {
+	if (_renderGrid) {
+		_shapeRenderer.render(_gridMeshIndex, camera);
+	} else if (_renderAABB) {
 		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
 
@@ -211,11 +213,18 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(voxel::RawVolume* volume) {
 		const voxel::Region& region = _rawVolume->getEnclosingRegion();
 		const core::AABB<float> aabb(region.getLowerCorner(), region.getUpperCorner());
 		_shapeBuilder.clear();
-		_shapeBuilder.aabb(aabb);
+		_shapeBuilder.aabb(aabb, false);
 		if (_aabbMeshIndex == -1) {
 			_aabbMeshIndex = _shapeRenderer.createMesh(_shapeBuilder);
 		} else {
 			_shapeRenderer.update(_aabbMeshIndex, _shapeBuilder);
+		}
+		_shapeBuilder.clear();
+		_shapeBuilder.aabb(aabb, true, 1.0f);
+		if (_gridMeshIndex == -1) {
+			_gridMeshIndex = _shapeRenderer.createMesh(_shapeBuilder);
+		} else {
+			_shapeRenderer.update(_gridMeshIndex, _shapeBuilder);
 		}
 	} else {
 		_shapeBuilder.clear();
@@ -229,6 +238,7 @@ voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	_vertexBufferIndex = -1;
 	_indexBufferIndex = -1;
 	_aabbMeshIndex = -1;
+	_gridMeshIndex = -1;
 	if (_mesh != nullptr) {
 		delete _mesh;
 	}

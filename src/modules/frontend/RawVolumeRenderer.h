@@ -37,13 +37,15 @@ protected:
 	int32_t _indexBufferIndex = -1;
 
 	int32_t _aabbMeshIndex = -1;
+	int32_t _gridMeshIndex = -1;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 
 	bool _renderAABB;
+	bool _renderGrid;
 	bool _renderWireframe;
 public:
-	RawVolumeRenderer(bool renderAABB = false, bool renderWireframe = false);
+	RawVolumeRenderer(bool renderAABB = false, bool renderWireframe = false, bool renderGrid = false);
 
 	void render(const video::Camera& camera);
 
