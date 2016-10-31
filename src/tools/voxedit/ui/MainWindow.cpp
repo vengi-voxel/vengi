@@ -47,15 +47,15 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		_scene->resetCamera();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("new")) {
-		_scene->newModel(true);
+		createNew(true);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("load")) {
 		// TODO:
-		_scene->loadModel("magicavoxel.vox");
+		load("magicavoxel.vox");
 		return true;
 	} else if (ev.target->GetID() == TBIDC("save")) {
 		// TODO:
-		_scene->saveModel("magicavoxel.vox");
+		save("magicavoxel.vox");
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(_showGrid->GetValue() == 1);
