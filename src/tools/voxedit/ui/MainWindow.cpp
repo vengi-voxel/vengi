@@ -43,11 +43,24 @@ static const struct {
 };
 
 bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
+	if (ev.target->GetID() == TBIDC("unsaved_changes_new")) {
+		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
+			_scene->newModel(true);
+		}
+		return true;
+	} else if (ev.target->GetID() == TBIDC("unsaved_changes_load")) {
+		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
+			// TODO: filename
+			_scene->loadModel("magicavoxel.vox");
+		}
+		return true;
+	}
+
 	if (ev.target->GetID() == TBIDC("resetcamera")) {
 		_scene->resetCamera();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("new")) {
-		createNew(true);
+		createNew(false);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("load")) {
 		// TODO:
@@ -120,9 +133,19 @@ bool MainWindow::save(std::string_view file) {
 }
 
 bool MainWindow::load(std::string_view file) {
+	if (_scene->isDirty()) {
+		popup("Unsaved Modifications",
+				"There are unsaved modifications.\nDo you wish to discard them and load?",
+				ui::Window::PopupType::YesNo, "unsaved_changes_load");
+	}
 	return _scene->loadModel(file);
 }
 
 bool MainWindow::createNew(bool force) {
+	if (!force && _scene->isDirty()) {
+		popup("Unsaved Modifications",
+				"There are unsaved modifications.\nDo you wish to discard them and close?",
+				ui::Window::PopupType::YesNo, "unsaved_changes_new");
+	}
 	return _scene->newModel(force);
 }

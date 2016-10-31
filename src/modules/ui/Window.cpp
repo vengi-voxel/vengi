@@ -186,9 +186,11 @@ bool Window::loadResourceFile(const char *filename) {
 	return loadResource(node);
 }
 
-void Window::popup(const std::string& title, const std::string& str) {
-	tb::TBMessageWindow *win = new tb::TBMessageWindow(this, TBIDC(""));
-	win->Show(title.c_str(), str.c_str());
+void Window::popup(const std::string& title, const std::string& str, PopupType type, const char *id) {
+	tb::TBMessageWindow *win = new tb::TBMessageWindow(this, TBIDC(id));
+	tb::TBMessageWindowSettings settings((tb::TB_MSG)std::enum_value(type), tb::TBID(0u));
+	settings.dimmer = true;
+	win->Show(title.c_str(), str.c_str(), &settings);
 }
 
 void Window::setText(const char *nodeId, const std::string& text) {

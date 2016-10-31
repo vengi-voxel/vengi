@@ -57,7 +57,12 @@ public:
 	Window(Window* parent);
 	virtual ~Window();
 
-	void popup(const std::string& title, const std::string& str);
+	enum class PopupType {
+		Ok = tb::TB_MSG_OK,
+		OkCancel = tb::TB_MSG_OK_CANCEL,
+		YesNo = tb::TB_MSG_YES_NO
+	};
+	void popup(const std::string& title, const std::string& str, PopupType type = PopupType::Ok, const char *id = "");
 
 	Window* getParent() const;
 	UIApp* getApp() const;
