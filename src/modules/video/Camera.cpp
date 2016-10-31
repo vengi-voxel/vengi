@@ -51,7 +51,6 @@ void Camera::rotate(const glm::vec3& radians) {
 		roll(radians.z);
 		break;
 	}
-	_dirty |= DIRTY_ORIENTATION;
 }
 
 inline void Camera::slerp(const glm::quat& quat, float factor) {
