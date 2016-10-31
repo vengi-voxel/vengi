@@ -19,23 +19,28 @@ bool MainWindow::init() {
 	return true;
 }
 
+static const struct {
+	tb::TBID id;
+	EditorScene::Action action;
+} actions[] = {
+	{TBIDC("actionoverride"),	EditorScene::Action::OverrideVoxel},
+	{TBIDC("actiondelete"),		EditorScene::Action::DeleteVoxel},
+	{TBIDC("actioncopy"),		EditorScene::Action::CopyVoxel},
+	{TBIDC("actionplace"),		EditorScene::Action::PlaceVoxel},
+};
+
 bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (ev.target->GetID() == TBIDC("resetcamera")) {
 			_scene->resetCamera();
 			return true;
-		} else if (ev.target->GetID() == TBIDC("actionoverride")) {
-			_scene->setAction(EditorScene::Action::OverrideVoxel);
-			return true;
-		} else if (ev.target->GetID() == TBIDC("actiondelete")) {
-			_scene->setAction(EditorScene::Action::DeleteVoxel);
-			return true;
-		} else if (ev.target->GetID() == TBIDC("actioncopy")) {
-			_scene->setAction(EditorScene::Action::CopyVoxel);
-			return true;
-		} else if (ev.target->GetID() == TBIDC("actionplace")) {
-			_scene->setAction(EditorScene::Action::PlaceVoxel);
-			return true;
+		} else {
+			for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
+				if (ev.target->GetID() == actions[i].id) {
+					_scene->setAction(actions[i].action);
+					return true;
+				}
+			}
 		}
 	} else if (ev.type == tb::EVENT_TYPE_CHANGED) {
 		if (tb::TBSelectDropdown *select = GetWidgetByIDAndType<tb::TBSelectDropdown>(TBIDC("cammode"))) {
