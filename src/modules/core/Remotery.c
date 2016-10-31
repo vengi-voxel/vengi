@@ -1383,7 +1383,7 @@ strcpy_s(char *dest, rsize_t dmax, const char *src)
     return RCNEGATE(ESNOSPC);
 }
 
-
+#if !(defined(RMT_PLATFORM_LINUX) && RMT_USE_POSIX_THREADNAMES)
 
 /* very simple integer to hex */
 static const char* hex_encoding_table = "0123456789ABCDEF";
@@ -1420,6 +1420,7 @@ static void itoahex_s( char *dest, rsize_t dmax, rmtS32 value )
     }
 }
 
+#endif
 
 /*
 ------------------------------------------------------------------------------------------------------------------------
