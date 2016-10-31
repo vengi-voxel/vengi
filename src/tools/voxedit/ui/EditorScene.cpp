@@ -192,6 +192,8 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 			const float s = _rotationSpeed->floatVal();
 			_camera.turn(yaw * s);
 			_camera.pitch(pitch * s);
+			_mouseX = x;
+			_mouseY = y;
 			return true;
 		}
 		const int deltaX = std::abs(x - _mouseX);

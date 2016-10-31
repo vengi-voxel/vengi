@@ -36,7 +36,7 @@ private:
 	bool _renderAxis = true;
 	uint8_t _moveMask = 0;
 
-	int _size = 64;
+	int _size = 32;
 
 	int _mouseX = 0;
 	int _mouseY = 0;
