@@ -74,6 +74,15 @@ public:
 	 */
 	voxel::RawVolume* volume();
 
+	bool renderAABB() const;
+	void setRenderAABB(bool renderAABB);
+
+	bool renderGrid() const;
+	void setRenderGrid(bool renderGrid);
+
+	bool renderWireframe() const;
+	void setRenderWireframe(bool renderWireframe);
+
 	/**
 	 * @sa shutdown()
 	 */
@@ -90,6 +99,30 @@ public:
 
 inline voxel::RawVolume* RawVolumeRenderer::volume() {
 	return _rawVolume;
+}
+
+inline bool RawVolumeRenderer::renderAABB() const {
+	return _renderAABB;
+}
+
+inline bool RawVolumeRenderer::renderGrid() const {
+	return _renderGrid;
+}
+
+inline bool RawVolumeRenderer::renderWireframe() const {
+	return _renderWireframe;
+}
+
+inline void RawVolumeRenderer::setRenderAABB(bool renderAABB) {
+	_renderAABB = renderAABB;
+}
+
+inline void RawVolumeRenderer::setRenderGrid(bool renderGrid) {
+	_renderGrid = renderGrid;
+}
+
+inline void RawVolumeRenderer::setRenderWireframe(bool renderWireframe) {
+	_renderWireframe = renderWireframe;
 }
 
 }
