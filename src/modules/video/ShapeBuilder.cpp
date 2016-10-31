@@ -2,10 +2,63 @@
 
 namespace video {
 
-// TODO: convert everything into triangles - if you wanna have lines, use glPolygonMode
-
-void ShapeBuilder::aabb(const core::AABB<float>& aabb) {
+void ShapeBuilder::aabbGridXY(const core::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
+	const glm::vec3& width = aabb.getWidth();
+	const glm::vec3& halfWidth = width / 2.0f;
+	const glm::vec3& center = aabb.getCenter();
+	const float wx = halfWidth.x + center.x;
+	const float wy = halfWidth.y + center.y;
+	const float wz = near ? 0.0f : center.z + halfWidth.z;
+	for (float x = 0.0f; x < width.x; x += stepWidth) {
+		addIndex(addVertex(glm::vec3(x, 0.0f, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(x, wy, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+	}
+	for (float y = 0.0f; y < width.y; y += stepWidth) {
+		addIndex(addVertex(glm::vec3(0.0f, y, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(wx, y, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+	}
+}
+
+void ShapeBuilder::aabbGridYZ(const core::AABB<float>& aabb, bool near, float stepWidth) {
+	setPrimitive(Primitive::Lines);
+	const glm::vec3& width = aabb.getWidth();
+	const glm::vec3& halfWidth = width / 2.0f;
+	const glm::vec3& center = aabb.getCenter();
+	const float wx = near ? 0.0f : center.x + halfWidth.x;
+	const float wy = halfWidth.y + center.y;
+	const float wz = halfWidth.z + center.z;
+	for (float y = 0.0f; y < width.y; y += stepWidth) {
+		addIndex(addVertex(glm::vec3(wx, y, 0.0f), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(wx, y, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+	}
+	for (float z = 0.0f; z < width.z; z += stepWidth) {
+		addIndex(addVertex(glm::vec3(wx, 0.0f, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(wx, wy, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+	}
+}
+
+void ShapeBuilder::aabbGridXZ(const core::AABB<float>& aabb, bool near, float stepWidth) {
+	setPrimitive(Primitive::Lines);
+	const glm::vec3& width = aabb.getWidth();
+	const glm::vec3& halfWidth = width / 2.0f;
+	const glm::vec3& center = aabb.getCenter();
+	const float wx = halfWidth.x + center.x;
+	const float wy = near ? 0.0f : center.y + halfWidth.y;
+	const float wz = halfWidth.z + center.z;
+	for (float x = 0.0f; x < width.x; x += stepWidth) {
+		addIndex(addVertex(glm::vec3(x, wy, 0.0f), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(x, wy, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+	}
+	for (float z = 0.0f; z < width.z; z += stepWidth) {
+		addIndex(addVertex(glm::vec3(0.0f, wy, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(wx, wy, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+	}
+}
+
+void ShapeBuilder::aabb(const core::AABB<float>& aabb, bool renderGrid, float stepWidth) {
+	setPrimitive(Primitive::Lines);
+	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	static const glm::vec3 vecs[8] = {
 		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
 		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
@@ -13,54 +66,66 @@ void ShapeBuilder::aabb(const core::AABB<float>& aabb) {
 		glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3( 1.0f, -1.0f, -1.0f)
 	};
 	reserve(SDL_arraysize(vecs));
-	const glm::vec3& width = aabb.getWidth() / 2.0f;
+	const glm::vec3& width = aabb.getWidth();
+	const glm::vec3& halfWidth = width / 2.0f;
 	const glm::vec3& center = aabb.getCenter();
 	for (size_t i = 0; i < SDL_arraysize(vecs); ++i) {
-		addVertex(vecs[i] * width + center, glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+		addVertex(vecs[i] * halfWidth + center, glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
 	}
 
 	// front
-	addIndex(0);
-	addIndex(1);
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 1);
 
-	addIndex(1);
-	addIndex(3);
+	addIndex(startIndex + 1);
+	addIndex(startIndex + 3);
 
-	addIndex(3);
-	addIndex(2);
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 2);
 
-	addIndex(2);
-	addIndex(0);
+	addIndex(startIndex + 2);
+	addIndex(startIndex + 0);
 
 	// back
-	addIndex(4);
-	addIndex(5);
+	addIndex(startIndex + 4);
+	addIndex(startIndex + 5);
 
-	addIndex(5);
-	addIndex(7);
+	addIndex(startIndex + 5);
+	addIndex(startIndex + 7);
 
-	addIndex(7);
-	addIndex(6);
+	addIndex(startIndex + 7);
+	addIndex(startIndex + 6);
 
-	addIndex(6);
-	addIndex(4);
+	addIndex(startIndex + 6);
+	addIndex(startIndex + 4);
 
 	// connections
-	addIndex(0);
-	addIndex(4);
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 4);
 
-	addIndex(2);
-	addIndex(6);
+	addIndex(startIndex + 2);
+	addIndex(startIndex + 6);
 
-	addIndex(1);
-	addIndex(5);
+	addIndex(startIndex + 1);
+	addIndex(startIndex + 5);
 
-	addIndex(3);
-	addIndex(7);
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 7);
+
+	if (renderGrid) {
+		aabbGridXY(aabb, false, stepWidth);
+		aabbGridXZ(aabb, false, stepWidth);
+		aabbGridYZ(aabb, false, stepWidth);
+
+		aabbGridXY(aabb, true, stepWidth);
+		aabbGridXZ(aabb, true, stepWidth);
+		aabbGridYZ(aabb, true, stepWidth);
+	}
 }
 
 void ShapeBuilder::plane(const core::Plane& plane, bool normals) {
 	setPrimitive(Primitive::Lines);
+	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	const glm::vec3& planeNormal = plane.norm();
 	const float planeScale = plane.dist();
 
@@ -93,33 +158,34 @@ void ShapeBuilder::plane(const core::Plane& plane, bool normals) {
 	addVertex(glm::zero<glm::vec3>(), glm::zero<glm::vec2>(), planeNormal);
 	addVertex(pvn, glm::zero<glm::vec2>(), planeNormal);
 
-	addIndex(0);
-	addIndex(1);
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 1);
 
-	addIndex(1);
-	addIndex(3);
+	addIndex(startIndex + 1);
+	addIndex(startIndex + 3);
 
-	addIndex(0);
-	addIndex(2);
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 2);
 
-	addIndex(3);
-	addIndex(0);
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 0);
 
-	addIndex(3);
-	addIndex(1);
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 1);
 
-	addIndex(1);
-	addIndex(2);
+	addIndex(startIndex + 1);
+	addIndex(startIndex + 2);
 
-	addIndex(2);
-	addIndex(3);
+	addIndex(startIndex + 2);
+	addIndex(startIndex + 3);
 
-	addIndex(4);
-	addIndex(5);
+	addIndex(startIndex + 4);
+	addIndex(startIndex + 5);
 }
 
 void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	setPrimitive(Primitive::Lines);
+	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	glm::vec3 out[core::FRUSTUM_VERTICES_MAX];
 	uint32_t indices[core::FRUSTUM_VERTICES_MAX * 3];
 	camera.frustumCorners(out, indices);
@@ -127,7 +193,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	const int targetLineVertices = camera.rotationType() == CameraRotationType::Target ? 2 : 0;
 
 	if (splitFrustum > 0) {
-		int indexOffset = 0;
+		int indexOffset = startIndex;
 		float planes[splitFrustum * 2];
 
 		camera.sliceFrustum(planes, SDL_arraysize(planes), splitFrustum);
@@ -156,7 +222,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 		}
 
 		for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
-			addIndex(indices[i]);
+			addIndex(startIndex + indices[i]);
 		}
 	}
 
@@ -164,13 +230,14 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 		setColor(core::Color::Green);
 		addVertex(camera.position(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
 		addVertex(camera.target(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
-		addIndex(core::FRUSTUM_VERTICES_MAX + 0);
-		addIndex(core::FRUSTUM_VERTICES_MAX + 1);
+		addIndex(startIndex + core::FRUSTUM_VERTICES_MAX + 0);
+		addIndex(startIndex + core::FRUSTUM_VERTICES_MAX + 1);
 	}
 }
 
 void ShapeBuilder::axis(float scale) {
 	setPrimitive(Primitive::Lines);
+	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	const glm::vec3 verticesAxis[] = {
 			 glm::vec3( 0.0f,   0.0f,   0.0f),
 			 glm::vec3(scale,   0.0f,   0.0f),
@@ -190,12 +257,13 @@ void ShapeBuilder::axis(float scale) {
 	addVertex(verticesAxis[5], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
 
 	for (size_t i = 0; i < SDL_arraysize(verticesAxis); ++i) {
-		addIndex(i);
+		addIndex(startIndex + i);
 	}
 }
 
 void ShapeBuilder::plane(uint32_t tesselation, float scale) {
 	setPrimitive(Primitive::Triangles);
+	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	static const glm::vec2 uv0(0.0f, 1.0f);
 	static const glm::vec2 uv1(1.0f, 0.0f);
 	static const glm::vec2 uv2(0.0f, 0.0f);
@@ -221,18 +289,19 @@ void ShapeBuilder::plane(uint32_t tesselation, float scale) {
 
 	for (size_t y = 0; y < tesselation + 1; ++y) {
 		for (size_t x = 0; x < tesselation + 1; ++x) {
-			_indices.emplace_back((y * strucWidth) + x);
-			_indices.emplace_back((y * strucWidth) + x + 1);
-			_indices.emplace_back(((y + 1) * strucWidth) + x);
-			_indices.emplace_back(((y + 1) * strucWidth) + x);
-			_indices.emplace_back((y * strucWidth) + x + 1);
-			_indices.emplace_back(((y + 1) * strucWidth) + x + 1);
+			addIndex(startIndex + (y * strucWidth) + x);
+			addIndex(startIndex + (y * strucWidth) + x + 1);
+			addIndex(startIndex + ((y + 1) * strucWidth) + x);
+			addIndex(startIndex + ((y + 1) * strucWidth) + x);
+			addIndex(startIndex + (y * strucWidth) + x + 1);
+			addIndex(startIndex + ((y + 1) * strucWidth) + x + 1);
 		}
 	}
 }
 
 void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 	setPrimitive(Primitive::Triangles);
+	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	static constexpr float pi = glm::pi<float>();
 	static constexpr float twoPi = glm::two_pi<float>();
 	const float du = 1.0f / numSlices;
@@ -253,8 +322,7 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 	}
 
 	// north-pole triangles
-	const int startVertexIndex = 0;
-	int rowA = startVertexIndex;
+	int rowA = startIndex;
 	int rowB = rowA + numSlices + 1;
 	for (int slice = 0; slice < numSlices; slice++) {
 		addIndex(rowA + slice);
@@ -264,7 +332,7 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 
 	// stack triangles
 	for (int stack = 1; stack < numStacks - 1; stack++) {
-		rowA = startVertexIndex + stack * (numSlices + 1);
+		rowA = startIndex + stack * (numSlices + 1);
 		rowB = rowA + numSlices + 1;
 		for (int slice = 0; slice < numSlices; slice++) {
 			addIndex(rowA + slice);
@@ -278,7 +346,7 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 	}
 
 	// south-pole triangles
-	rowA = startVertexIndex + (numStacks - 1) * (numSlices + 1);
+	rowA = startIndex + (numStacks - 1) * (numSlices + 1);
 	rowB = rowA + numSlices + 1;
 	for (int slice = 0; slice < numSlices; slice++) {
 		addIndex(rowA + slice);

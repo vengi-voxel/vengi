@@ -53,11 +53,12 @@ public:
 		return _primitive;
 	}
 
-	inline void addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal) {
+	inline uint32_t addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal) {
 		_colors.push_back(_color);
 		_vertices.push_back(_position + vertex);
 		_normals.push_back(normal);
 		_texcoords.push_back(uv);
+		return (uint32_t)_vertices.size() - 1;
 	}
 
 	inline void clear() {
@@ -67,8 +68,11 @@ public:
 		_texcoords.clear();
 		_position = glm::vec3();
 	}
+	void aabbGridXY(const core::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
+	void aabbGridYZ(const core::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
+	void aabbGridXZ(const core::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
 
-	void aabb(const core::AABB<float>& aabb);
+	void aabb(const core::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
 	/**
 	 * @param[in] tesselation The amount of splits on the plane that should be made
 	 */
