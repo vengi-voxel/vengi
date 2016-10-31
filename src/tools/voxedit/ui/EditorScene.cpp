@@ -14,11 +14,20 @@
 
 EditorScene::EditorScene() :
 		ui::Widget(), _rawVolumeRenderer(true), _bitmap((tb::UIRendererGL*)tb::g_renderer) {
+	registerMoveCmd("+move_right", MOVERIGHT);
+	registerMoveCmd("+move_left", MOVELEFT);
+	registerMoveCmd("+move_forward", MOVEFORWARD);
+	registerMoveCmd("+move_backward", MOVEBACKWARD);
 	_currentVoxel = voxel::createVoxel(voxel::Grass1);
 	SetIsFocusable(true);
 }
 
 EditorScene::~EditorScene() {
+	core::Command::unregisterCommand("+move_right");
+	core::Command::unregisterCommand("+move_left");
+	core::Command::unregisterCommand("+move_upt");
+	core::Command::unregisterCommand("+move_down");
+
 	_axis.shutdown();
 	_frameBuffer.shutdown();
 	voxel::RawVolume* old = _rawVolumeRenderer.shutdown();
@@ -86,13 +95,12 @@ bool EditorScene::newModel(bool force) {
 		return false;
 	}
 	_dirty = false;
-	const int size = 64;
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(size));
+	const voxel::Region region(glm::ivec3(0), glm::ivec3(_size));
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	voxel::RawVolume* old = _rawVolumeRenderer.setVolume(volume);
 	delete old;
-	// TODO
-	return false;
+	_extract = true;
+	return true;
 }
 
 bool EditorScene::saveModel(std::string_view file) {
@@ -208,11 +216,6 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	_rawVolumeRenderer.onResize(glm::ivec2(), d);
 
 	resetCamera();
-
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
 }
 
 void EditorScene::OnProcess() {

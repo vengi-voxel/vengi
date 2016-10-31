@@ -24,7 +24,6 @@ public:
 	bool newFile(bool force = false);
 
 	core::AppState onInit() override;
-	core::AppState onCleanup() override;
 	core::AppState onRunning() override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 };

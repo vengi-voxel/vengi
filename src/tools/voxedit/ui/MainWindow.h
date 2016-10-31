@@ -20,6 +20,10 @@ class MainWindow: public ui::Window {
 private:
 	EditorScene* _scene;
 
+	tb::TBCheckBox *_showGrid = nullptr;
+	tb::TBCheckBox *_showAABB = nullptr;
+	tb::TBCheckBox *_showAxis = nullptr;
+
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
 public:

@@ -479,7 +479,7 @@ elements
 		bitmap window.png
 		cut 16
 		expand 12
-		padding 0
+		padding 10
 
 	separator
 		bitmap item_separator_x.png

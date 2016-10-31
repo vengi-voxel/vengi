@@ -74,7 +74,6 @@ core::AppState VoxEdit::onInit() {
 		newFile(false);
 	}).setHelp("Create a new scene");
 
-	// TODO: if tmpfile exists, load that one
 	newFile(true);
 
 	const glm::vec4& color = ::core::Color::Black;
@@ -104,18 +103,6 @@ core::AppState VoxEdit::onRunning() {
 	}
 
 	return state;
-}
-
-core::AppState VoxEdit::onCleanup() {
-	core::Command::unregisterCommand("+move_right");
-	core::Command::unregisterCommand("+move_left");
-	core::Command::unregisterCommand("+move_upt");
-	core::Command::unregisterCommand("+move_down");
-
-	// saveFile(tmpFilename);
-	// TODO: cvar with tmpFilename to load on next start
-
-	return Super::onCleanup();
 }
 
 bool VoxEdit::onKeyPress(int32_t key, int16_t modifier) {

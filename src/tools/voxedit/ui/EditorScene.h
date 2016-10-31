@@ -34,6 +34,8 @@ private:
 	bool _renderAxis = true;
 	uint8_t _moveMask = 0;
 
+	int _size = 64;
+
 	int _mouseX = 0;
 	int _mouseY = 0;
 
@@ -67,11 +69,39 @@ public:
 	void setAction(Action action);
 	Action action() const;
 
+	float cameraSpeed() const;
+	void setCameraSpeed(float cameraSpeed);
+
+	bool renderAxis() const;
+	void setRenderAxis(bool renderAxis);
+
+	bool renderAABB() const;
+	void setRenderAABB(bool renderAABB);
+
+	bool renderGrid() const;
+	void setRenderGrid(bool renderGrid);
+
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
 	virtual void OnPaint(const PaintProps &paintProps) override;
 };
+
+inline bool EditorScene::renderAABB() const {
+	return _rawVolumeRenderer.renderAABB();
+}
+
+inline void EditorScene::setRenderAABB(bool renderAABB) {
+	_rawVolumeRenderer.setRenderAABB(renderAABB);
+}
+
+inline bool EditorScene::renderGrid() const {
+	return _rawVolumeRenderer.renderGrid();
+}
+
+inline void EditorScene::setRenderGrid(bool renderGrid) {
+	_rawVolumeRenderer.setRenderGrid(renderGrid);
+}
 
 inline long EditorScene::actionExecutionDelay() const {
 	return _actionExecutionDelay;
@@ -79,6 +109,22 @@ inline long EditorScene::actionExecutionDelay() const {
 
 inline void EditorScene::setActionExecutionDelay(long actionExecutionDelay) {
 	_actionExecutionDelay = actionExecutionDelay;
+}
+
+inline bool EditorScene::renderAxis() const {
+	return _renderAxis;
+}
+
+inline void EditorScene::setRenderAxis(bool renderAxis) {
+	_renderAxis = renderAxis;
+}
+
+inline float EditorScene::cameraSpeed() const {
+	return _cameraSpeed;
+}
+
+inline void EditorScene::setCameraSpeed(float cameraSpeed) {
+	_cameraSpeed = cameraSpeed;
 }
 
 inline bool EditorScene::isDirty() const {

@@ -38,4 +38,7 @@
 namespace ui {
 using Widget = tb::TBWidget;
 using UIRect = tb::TBRect;
+using UICheckBox = tb::TBCheckBox;
+using UIRadioButton = tb::TBRadioButton;
+using UITextField = tb::TBTextField;
 }

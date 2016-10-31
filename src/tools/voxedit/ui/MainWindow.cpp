@@ -16,6 +16,19 @@ bool MainWindow::init() {
 		Log::error("Failed to init the main window: Could not get the editor scene node with id 'editorscene'");
 		return false;
 	}
+
+	_showAABB = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowaabb"));
+	_showGrid = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowgrid"));
+	_showAxis = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowaxis"));
+	if (_showAABB == nullptr || _showGrid == nullptr || _showAxis == nullptr) {
+		Log::error("Could not load all required widgets");
+		return false;
+	}
+
+	_showAABB->SetValue(_scene->renderAABB() ? 1 : 0);
+	_showGrid->SetValue(_scene->renderGrid() ? 1 : 0);
+	_showAxis->SetValue(_scene->renderAxis() ? 1 : 0);
+
 	return true;
 }
 
@@ -33,6 +46,26 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("resetcamera")) {
 		_scene->resetCamera();
 		return true;
+	} else if (ev.target->GetID() == TBIDC("new")) {
+		_scene->newModel(true);
+		return true;
+	} else if (ev.target->GetID() == TBIDC("load")) {
+		// TODO:
+		_scene->loadModel("magicavoxel.vox");
+		return true;
+	} else if (ev.target->GetID() == TBIDC("save")) {
+		// TODO:
+		_scene->saveModel("magicavoxel.vox");
+		return true;
+	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
+		_scene->setRenderGrid(_showGrid->GetValue() == 1);
+		return true;
+	} else if (ev.target->GetID() == TBIDC("optionshowaxis")) {
+		_scene->setRenderAxis(_showAxis->GetValue() == 1);
+		return true;
+	} else if (ev.target->GetID() == TBIDC("optionshowaabb")) {
+		_scene->setRenderAABB(_showAABB->GetValue() == 1);
+		return true;
 	}
 	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
 		if (ev.target->GetID() == actions[i].id) {
@@ -44,8 +77,12 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 }
 
 bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
-	if (tb::TBSelectDropdown *select = GetWidgetByIDAndType<tb::TBSelectDropdown>(TBIDC("cammode"))) {
-		const int value = select->GetValue();
+	if (ev.target->GetID() == TBIDC("cammode")) {
+		tb::TBSelectDropdown *widget = GetWidgetByIDAndType<tb::TBSelectDropdown>(TBIDC("cammode"));
+		if (widget == nullptr) {
+			return false;
+		}
+		const int value = widget->GetValue();
 		video::PolygonMode mode = video::PolygonMode::Solid;
 		switch (value) {
 		case 1:
