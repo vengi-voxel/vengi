@@ -4,8 +4,9 @@
 
 namespace voxel {
 
-void mergeRawVolumes(RawVolume* destination, const RawVolume* source, const Voxel& emptyVoxel) {
+int mergeRawVolumes(RawVolume* destination, const RawVolume* source, const Voxel& emptyVoxel) {
 	core_trace_scoped(MergeRawVolumes);
+	int cnt = 0;
 	RawVolume::Sampler srcSampler(source);
 	RawVolume::Sampler dstSampler(destination);
 	const Region& destRegion = destination->getEnclosingRegion();
@@ -23,9 +24,11 @@ void mergeRawVolumes(RawVolume* destination, const RawVolume* source, const Voxe
 				}
 				dstSampler.setPosition(x, y, z);
 				dstSampler.setVoxel(voxel);
+				++cnt;
 			}
 		}
 	}
+	return cnt;
 }
 
 }

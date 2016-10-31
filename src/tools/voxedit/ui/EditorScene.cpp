@@ -272,23 +272,20 @@ void EditorScene::OnProcess() {
 		const voxel::Voxel& air = voxel::createVoxel(voxel::Air);
 		_result = voxel::pickVoxel(_modelVolume, ray.origin, dirWithLength, air);
 
-		bool cursorAvailable = false;
-		_cursorVolume->clear();
-		if (_result.didHit) {
-			cursorAvailable |= _cursorVolume->setVoxel(_result.hitVoxel, _currentVoxel);
-		} else if (_result.validPreviousVoxel) {
-			cursorAvailable |= _cursorVolume->setVoxel(_result.previousVoxel, _currentVoxel);
+		if (_result.validPreviousVoxel) {
+			_cursorVolume->clear();
+			_cursorVolume->setVoxel(_result.previousVoxel, _currentVoxel);
+		} else if (_result.didHit) {
+			_cursorVolume->clear();
+			_cursorVolume->setVoxel(_result.hitVoxel, _currentVoxel);
 		}
 
 		core_trace_scoped(EditorSceneOnProcessMergeRawVolumes);
 		voxel::RawVolume* volume = _rawVolumeRenderer.volume();
 		volume->clear();
-		if (cursorAvailable) {
-			voxel::mergeRawVolumes(volume, _cursorVolume, air);
-		} else {
-			Log::info("No cursor voxel");
-		}
+		voxel::mergeRawVolumes(volume, _cursorVolume, air);
 		voxel::mergeRawVolumes(volume, _modelVolume, air);
+		_extract = true;
 	}
 
 	if (_extract) {
