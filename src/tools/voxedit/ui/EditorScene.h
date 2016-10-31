@@ -24,7 +24,8 @@ private:
 	core::VarPtr _rotationSpeed;
 	video::FrameBuffer _frameBuffer;
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
-	frontend::RawVolumeRenderer _cursorRenderer;
+	voxel::RawVolume* _cursorVolume;
+	voxel::RawVolume* _modelVolume;
 	tb::UIBitmapGL _bitmap;
 
 	float _cameraSpeed = 0.1f;
@@ -55,6 +56,12 @@ private:
 
 	void executeAction(int32_t x, int32_t y);
 	void render();
+
+	void newVolume();
+	void setNewVolume(voxel::RawVolume *volume);
+
+	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
+	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 public:
 	UIWIDGET_SUBCLASS(EditorScene, tb::TBWidget);
 

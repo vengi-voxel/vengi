@@ -17,8 +17,8 @@ void rescaleCubicVolume(PagedVolume* source, const Region& sourceRegion, RawVolu
 	core_assert_msg(sourceRegion.getHeightInVoxels() == destRegion.getHeightInVoxels() * 2, "Wrong height - %i versus %i!", sourceRegion.getHeightInVoxels(), destRegion.getHeightInVoxels() * 2);
 	core_assert_msg(sourceRegion.getDepthInVoxels() == destRegion.getDepthInVoxels() * 2, "Wrong depth - %i versus %i!", sourceRegion.getDepthInVoxels(), destRegion.getDepthInVoxels() * 2);
 
-	typename PagedVolume::Sampler srcSampler(source);
-	typename RawVolume::Sampler dstSampler(destination);
+	PagedVolume::Sampler srcSampler(source);
+	RawVolume::Sampler dstSampler(destination);
 
 	// First of all we iterate over all destination voxels and compute their color as the
 	// average of the colors of the eight corresponding voxels in the higher resolution version.

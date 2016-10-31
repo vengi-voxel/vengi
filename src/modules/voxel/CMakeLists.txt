@@ -30,6 +30,7 @@ set(SRCS
 	polyvox/Utility.h
 	polyvox/Vertex.h
 	polyvox/Voxel.h
+	polyvox/VolumeMerger.h
 )
 set(LIB voxel)
 add_library(${LIB} ${SRCS})

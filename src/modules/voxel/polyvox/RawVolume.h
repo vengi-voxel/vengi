@@ -145,7 +145,7 @@ private:
 /**
  * @brief This version of the function is provided so that the wrap mode does not need
  * to be specified as a template parameter, as it may be confusing to some users.
- * @param v3dPos The 3D position of the voxel
+ * @param pos The 3D position of the voxel
  * @return The voxel value
  */
 inline const Voxel& RawVolume::getVoxel(const glm::ivec3& pos) const {
@@ -153,8 +153,9 @@ inline const Voxel& RawVolume::getVoxel(const glm::ivec3& pos) const {
 }
 
 /**
- * @param v3dPos the 3D position of the voxel
- * @param tValue the value to which the voxel will be set
+ * @param pos the 3D position of the voxel
+ * @param voxel the value to which the voxel will be set
+ * @return @c true if the voxel was placed, @c false if it was already the same voxel
  */
 inline bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 	return setVoxel(pos.x, pos.y, pos.z, voxel);
