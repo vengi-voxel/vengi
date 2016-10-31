@@ -154,7 +154,7 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 			const float yaw = x - _mouseX;
 			const float pitch = y - _mouseY;
 			const float s = _rotationSpeed->floatVal();
-			_camera.yaw(yaw * s);
+			_camera.turn(yaw * s);
 			_camera.pitch(pitch * s);
 		}
 		_mouseX = x;
