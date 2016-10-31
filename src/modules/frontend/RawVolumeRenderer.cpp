@@ -123,6 +123,9 @@ bool RawVolumeRenderer::extract() {
 
 void RawVolumeRenderer::render(const video::Camera& camera) {
 	core_trace_scoped(RawVolumeRendererRender);
+	if (_rawVolume == nullptr) {
+		return;
+	}
 
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
@@ -133,15 +136,36 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	glDepthMask(GL_TRUE);
 
 	if (_renderGrid) {
-		// TODO: backface culling for aabb planes
-		_shapeRenderer.render(_gridMeshIndexXYFar, camera);
-		_shapeRenderer.render(_gridMeshIndexXYNear, camera);
+		const voxel::Region& region = _rawVolume->getEnclosingRegion();
+		const glm::vec3& center = glm::vec3(region.getCentre());
+		const glm::vec3& halfWidth = glm::vec3(region.getDimensionsInCells()) / 2.0f;
+		const core::Plane planeLeft  (glm::left,     center + glm::vec3(-halfWidth.x, 0.0f, 0.0f));
+		const core::Plane planeRight (glm::right,    center + glm::vec3( halfWidth.x, 0.0f, 0.0f));
+		const core::Plane planeBottom(glm::down,     center + glm::vec3(0.0f, -halfWidth.y, 0.0f));
+		const core::Plane planeTop   (glm::up,       center + glm::vec3(0.0f,  halfWidth.y, 0.0f));
+		const core::Plane planeNear  (glm::forward,  center + glm::vec3(0.0f, 0.0f, -halfWidth.z));
+		const core::Plane planeFar   (glm::backward, center + glm::vec3(0.0f, 0.0f,  halfWidth.z));
 
-		_shapeRenderer.render(_gridMeshIndexXZFar, camera);
-		_shapeRenderer.render(_gridMeshIndexXZNear, camera);
+		if (planeFar.isBackSide(camera.position())) {
+			_shapeRenderer.render(_gridMeshIndexXYFar, camera);
+		}
+		if (planeNear.isBackSide(camera.position())) {
+			_shapeRenderer.render(_gridMeshIndexXYNear, camera);
+		}
 
-		_shapeRenderer.render(_gridMeshIndexYZFar, camera);
-		_shapeRenderer.render(_gridMeshIndexYZNear, camera);
+		if (planeBottom.isBackSide(camera.position())) {
+			_shapeRenderer.render(_gridMeshIndexXZNear, camera);
+		}
+		if (planeTop.isBackSide(camera.position())) {
+			_shapeRenderer.render(_gridMeshIndexXZFar, camera);
+		}
+
+		if (planeLeft.isBackSide(camera.position())) {
+			_shapeRenderer.render(_gridMeshIndexYZNear, camera);
+		}
+		if (planeRight.isBackSide(camera.position())) {
+			_shapeRenderer.render(_gridMeshIndexYZFar, camera);
+		}
 	} else if (_renderAABB) {
 		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
