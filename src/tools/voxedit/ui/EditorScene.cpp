@@ -252,6 +252,7 @@ void EditorScene::OnProcess() {
 	}
 
 	if (_lastRaytraceX != _mouseX || _lastRaytraceY != _mouseY) {
+		core_trace_scoped(EditorSceneOnProcessUpdateRay);
 		_lastRaytraceX = _mouseX;
 		_lastRaytraceY = _mouseY;
 
@@ -272,6 +273,7 @@ void EditorScene::OnProcess() {
 			} else if (_result.validPreviousVoxel) {
 				_cursorRenderer.volume()->setVoxel(_result.previousVoxel, _currentVoxel);
 			}
+			core_trace_scoped(EditorSceneOnProcessExtractCursor);
 			_cursorRenderer.extract();
 		}
 	}
