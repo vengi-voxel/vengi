@@ -37,6 +37,10 @@ private:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
+	long _actionExecutionDelay = 25l;
+	long _lastActionExecution = 0l;
+	Action _lastAction = Action::None;
+
 	Action _action = Action::None;
 	Action _uiAction = Action::PlaceVoxel;
 
@@ -50,11 +54,16 @@ public:
 
 	video::Camera& camera();
 
-	bool isDirty() const;
 	void resetCamera();
+
+	bool isDirty() const;
 	bool saveModel(std::string_view file);
 	bool loadModel(std::string_view file);
 	bool newModel(bool force);
+
+	void setActionExecutionDelay(long actionExecutionDelay);
+	long actionExecutionDelay() const;
+
 	void setAction(Action action);
 	Action action() const;
 
@@ -63,6 +72,14 @@ public:
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
 	virtual void OnPaint(const PaintProps &paintProps) override;
 };
+
+inline long EditorScene::actionExecutionDelay() const {
+	return _actionExecutionDelay;
+}
+
+inline void EditorScene::setActionExecutionDelay(long actionExecutionDelay) {
+	_actionExecutionDelay = actionExecutionDelay;
+}
 
 inline bool EditorScene::isDirty() const {
 	return _dirty;

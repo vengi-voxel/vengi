@@ -45,6 +45,15 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 		return;
 	}
 
+	const long now = core::App::getInstance()->currentMillis();
+	if (_lastAction == _action) {
+		if (now - _lastActionExecution < _actionExecutionDelay) {
+			return;
+		}
+	}
+	_lastAction = _action;
+	_lastActionExecution = now;
+
 	voxel::Voxel voxel;
 	const video::Ray& ray = _camera.mouseRay(glm::ivec2(x, y));
 	const glm::vec3 dirWithLength = ray.direction * _camera.farPlane();
@@ -156,6 +165,14 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 			const float s = _rotationSpeed->floatVal();
 			_camera.turn(yaw * s);
 			_camera.pitch(pitch * s);
+		} else {
+			const int deltaX = x - _mouseX;
+			const int deltaY = y - _mouseY;
+			const int minMove = 2;
+			// prevent micro movement from executing the action over and over again
+			if (deltaX <= minMove && deltaY <= minMove) {
+				return Super::OnEvent(ev);
+			}
 		}
 		_mouseX = x;
 		_mouseY = y;

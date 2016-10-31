@@ -19,6 +19,9 @@ class UIApp;
 class MainWindow: public ui::Window {
 private:
 	EditorScene* _scene;
+
+	bool handleClickEvent(const tb::TBWidgetEvent &ev);
+	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
 public:
 	MainWindow(ui::UIApp* tool);
 
