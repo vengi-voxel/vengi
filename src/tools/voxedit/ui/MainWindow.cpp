@@ -38,6 +38,26 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
+
+	if (ev.type == tb::EVENT_TYPE_CHANGED) {
+		if (tb::TBSelectDropdown *select = GetWidgetByIDAndType<tb::TBSelectDropdown>(TBIDC("cammode"))) {
+			const int value = select->GetValue();
+			video::PolygonMode mode = video::PolygonMode::Solid;
+			switch (value) {
+			case 1:
+				mode = video::PolygonMode::Points;
+				break;
+			case 2:
+				mode = video::PolygonMode::WireFrame;
+				break;
+			default:
+			case 0:
+				break;
+			}
+			_scene->camera().setPolygonMode(mode);
+		}
+	}
+
 	return ui::Window::OnEvent(ev);
 }
 
