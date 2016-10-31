@@ -5,6 +5,7 @@
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "frontend/Axis.h"
+#include "voxel/polyvox/Picking.h"
 
 class EditorScene: public ui::Widget {
 public:
@@ -39,12 +40,17 @@ private:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
-	long _actionExecutionDelay = 25l;
+	int _lastRaytraceX = -1;
+	int _lastRaytraceY = -1;
+
+	long _actionExecutionDelay = 5l;
 	long _lastActionExecution = 0l;
 	Action _lastAction = Action::None;
 
 	Action _action = Action::None;
 	Action _uiAction = Action::PlaceVoxel;
+
+	voxel::PickResult _result;
 
 	void executeAction(int32_t x, int32_t y);
 	void render();

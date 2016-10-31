@@ -5,7 +5,6 @@
 #include "video/GLDebug.h"
 #include "video/ScopedViewPort.h"
 #include "core/Color.h"
-#include "voxel/polyvox/Picking.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedScissor.h"
 #include "video/ScopedFrameBuffer.h"
@@ -35,6 +34,7 @@ EditorScene::~EditorScene() {
 }
 
 void EditorScene::render() {
+	core_trace_scoped(EditorSceneRender);
 	{
 		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
 		_rawVolumeRenderer.render(_camera);
@@ -49,6 +49,7 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 		return;
 	}
 
+	core_trace_scoped(EditorSceneExecuteAction);
 	voxel::RawVolume* volume = _rawVolumeRenderer.volume();
 	if (volume == nullptr) {
 		return;
@@ -63,19 +64,21 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 	_lastAction = _action;
 	_lastActionExecution = now;
 
-	voxel::Voxel voxel;
-	const video::Ray& ray = _camera.mouseRay(glm::ivec2(x, y));
-	const glm::vec3 dirWithLength = ray.direction * _camera.farPlane();
-	const voxel::PickResult& result = voxel::pickVoxel(volume, ray.origin, dirWithLength, voxel::createVoxel(voxel::Air));
 	bool extract = false;
-	if (result.didHit && _action == Action::CopyVoxel) {
-		_currentVoxel = volume->getVoxel(result.hitVoxel);
-	} else if (result.didHit && _action == Action::OverrideVoxel) {
-		extract = volume->setVoxel(result.hitVoxel, _currentVoxel);
-	} else if (result.didHit && _action == Action::DeleteVoxel) {
-		extract = volume->setVoxel(result.hitVoxel, voxel::createVoxel(voxel::Air));
-	} else if (result.validPreviousVoxel && _action == Action::PlaceVoxel) {
-		extract = volume->setVoxel(result.previousVoxel, _currentVoxel);
+	if (_result.didHit && _action == Action::CopyVoxel) {
+		_currentVoxel = volume->getVoxel(_result.hitVoxel);
+	} else if (_result.didHit && _action == Action::OverrideVoxel) {
+		extract = volume->setVoxel(_result.hitVoxel, _currentVoxel);
+	} else if (_result.didHit && _action == Action::DeleteVoxel) {
+		extract = volume->setVoxel(_result.hitVoxel, voxel::createVoxel(voxel::Air));
+	} else if (_result.validPreviousVoxel && _action == Action::PlaceVoxel) {
+		extract = volume->setVoxel(_result.previousVoxel, _currentVoxel);
+	} else if (_result.didHit && _action == Action::PlaceVoxel) {
+		extract = volume->setVoxel(_result.hitVoxel, _currentVoxel);
+	}
+
+	if (extract) {
+		_lastRaytraceX = _lastRaytraceY = -1;
 	}
 
 	_extract |= extract;
@@ -91,6 +94,7 @@ void EditorScene::setAction(EditorScene::Action action) {
 }
 
 bool EditorScene::newModel(bool force) {
+	core_trace_scoped(EditorSceneNewModel);
 	if (_dirty && !force) {
 		return false;
 	}
@@ -99,11 +103,14 @@ bool EditorScene::newModel(bool force) {
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	voxel::RawVolume* old = _rawVolumeRenderer.setVolume(volume);
 	delete old;
+	_result = voxel::PickResult();
 	_extract = true;
+	_lastRaytraceX = _lastRaytraceY = -1;
 	return true;
 }
 
 bool EditorScene::saveModel(std::string_view file) {
+	core_trace_scoped(EditorSceneSaveModel);
 	if (!_dirty) {
 		// nothing to save yet
 		return true;
@@ -120,6 +127,7 @@ bool EditorScene::saveModel(std::string_view file) {
 }
 
 bool EditorScene::loadModel(std::string_view file) {
+	core_trace_scoped(EditorSceneLoadModel);
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
 	if (!(bool)filePtr) {
 		return false;
@@ -132,6 +140,7 @@ bool EditorScene::loadModel(std::string_view file) {
 	delete old;
 	_extract = true;
 	_dirty = false;
+	_lastRaytraceX = _lastRaytraceY = -1;
 	return true;
 }
 
@@ -142,6 +151,7 @@ void EditorScene::resetCamera() {
 }
 
 bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
+	core_trace_scoped(EditorSceneOnEvent);
 	const int x = ev.target_x;
 	const int y = ev.target_y;
 	ui::UIRect rect = GetRect();
@@ -191,6 +201,7 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 }
 
 void EditorScene::OnPaint(const PaintProps &paintProps) {
+	core_trace_scoped(EditorSceneOnPaint);
 	Super::OnPaint(paintProps);
 	const glm::ivec2& dimension = _frameBuffer.dimension();
 	ui::UIRect rect = GetRect();
@@ -219,6 +230,7 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 }
 
 void EditorScene::OnProcess() {
+	core_trace_scoped(EditorSceneOnProcess);
 	const long deltaFrame = core::App::getInstance()->deltaFrame();
 	const float speed = _cameraSpeed * static_cast<float>(deltaFrame);
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
@@ -228,7 +240,26 @@ void EditorScene::OnProcess() {
 		_extract = false;
 		_rawVolumeRenderer.extract();
 	}
+
+	if (_lastRaytraceX != _mouseX || _lastRaytraceY != _mouseY) {
+		_lastRaytraceX = _mouseX;
+		_lastRaytraceY = _mouseY;
+
+		ui::UIRect rect = GetRect();
+		ConvertToRoot(rect.x, rect.y);
+		const int tx = _mouseX + rect.x;
+		const int ty = _mouseY + rect.y;
+		voxel::Voxel voxel;
+		const video::Ray& ray = _camera.mouseRay(glm::ivec2(tx, ty));
+		const glm::vec3 dirWithLength = ray.direction * _camera.farPlane();
+		voxel::RawVolume* volume = _rawVolumeRenderer.volume();
+		if (volume != nullptr) {
+			_result = voxel::pickVoxel(volume, ray.origin, dirWithLength, voxel::createVoxel(voxel::Air));
+		}
+	}
+
 	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
+	core_trace_scoped(EditorSceneRenderFramebuffer);
 	_frameBuffer.bind(false);
 	render();
 	_frameBuffer.unbind();

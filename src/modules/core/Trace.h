@@ -12,7 +12,7 @@
 #endif
 
 #define RMT_ENABLED 0
-
+#define RMT_USE_POSIX_THREADNAMES 1
 // disable remotery via -DRMT_ENABLED=0
 #include "Remotery.h"
 

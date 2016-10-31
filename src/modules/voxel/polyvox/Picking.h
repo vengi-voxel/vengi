@@ -72,6 +72,7 @@ public:
 /** Pick the first solid voxel along a vector */
 template<typename VolumeType>
 PickResult pickVoxel(VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, const Voxel& emptyVoxelExample, bool makeVisible = false) {
+	core_trace_scoped(pickVoxel);
 	RaycastPickingFunctor<VolumeType> functor(emptyVoxelExample, makeVisible);
 	raycastWithDirection(volData, v3dStart, v3dDirectionAndLength, functor);
 	return functor._result;

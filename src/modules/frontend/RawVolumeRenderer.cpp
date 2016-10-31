@@ -64,6 +64,7 @@ bool RawVolumeRenderer::init() {
 }
 
 bool RawVolumeRenderer::onResize(const glm::ivec2& position, const glm::ivec2& dimension) {
+	core_trace_scoped(RawVolumeRendererOnResize);
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
 	_sunLight.init(sunDirection, position, dimension);
 
@@ -76,6 +77,7 @@ bool RawVolumeRenderer::onResize(const glm::ivec2& position, const glm::ivec2& d
 }
 
 bool RawVolumeRenderer::update(const std::vector<voxel::Vertex>& vertices, const std::vector<voxel::IndexType>& indices) {
+	core_trace_scoped(RawVolumeRendererUpdate);
 	if (!_vertexBuffer.update(_vertexBufferIndex, vertices)) {
 		Log::error("Failed to update the vertex buffer");
 		return false;
@@ -88,6 +90,7 @@ bool RawVolumeRenderer::update(const std::vector<voxel::Vertex>& vertices, const
 }
 
 bool RawVolumeRenderer::extract() {
+	core_trace_scoped(RawVolumeRendererExtract);
 	if (_rawVolume == nullptr) {
 		return false;
 	}
@@ -119,6 +122,7 @@ bool RawVolumeRenderer::extract() {
 }
 
 void RawVolumeRenderer::render(const video::Camera& camera) {
+	core_trace_scoped(RawVolumeRendererRender);
 	if (_renderGrid) {
 		_shapeRenderer.render(_gridMeshIndex, camera);
 	} else if (_renderAABB) {
@@ -207,6 +211,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(voxel::RawVolume* volume) {
+	core_trace_scoped(RawVolumeRendererSetVolume);
 	voxel::RawVolume* old = _rawVolume;
 	_rawVolume = volume;
 	if (_rawVolume != nullptr) {

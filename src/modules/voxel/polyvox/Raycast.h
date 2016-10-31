@@ -100,6 +100,7 @@ typedef RaycastResults::RaycastResult RaycastResult;
  */
 template<typename Callback, class Volume>
 RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+	core_trace_scoped(raycastWithEndpoints);
 	typename Volume::Sampler sampler(volData);
 
 	//The doRaycast function is assuming that it is iterating over the areas defined between
