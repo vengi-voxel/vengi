@@ -37,9 +37,7 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			_scene->setAction(EditorScene::Action::PlaceVoxel);
 			return true;
 		}
-	}
-
-	if (ev.type == tb::EVENT_TYPE_CHANGED) {
+	} else if (ev.type == tb::EVENT_TYPE_CHANGED) {
 		if (tb::TBSelectDropdown *select = GetWidgetByIDAndType<tb::TBSelectDropdown>(TBIDC("cammode"))) {
 			const int value = select->GetValue();
 			video::PolygonMode mode = video::PolygonMode::Solid;
@@ -55,6 +53,7 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 				break;
 			}
 			_scene->camera().setPolygonMode(mode);
+			return true;
 		}
 	}
 
