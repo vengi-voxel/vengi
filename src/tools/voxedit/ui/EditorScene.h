@@ -48,6 +48,8 @@ public:
 	EditorScene();
 	~EditorScene();
 
+	video::Camera& camera();
+
 	bool isDirty() const;
 	void resetCamera();
 	bool saveModel(std::string_view file);
@@ -64,4 +66,8 @@ public:
 
 inline bool EditorScene::isDirty() const {
 	return _dirty;
+}
+
+inline video::Camera& EditorScene::camera() {
+	return _camera;
 }
