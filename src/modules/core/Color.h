@@ -5,6 +5,7 @@
 #pragma once
 
 #include "GLM.h"
+#include <vector>
 
 namespace core {
 
@@ -41,6 +42,7 @@ public:
 		LightBrown,
 		DarkBrown;
 
+	static int getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>& colors);
 	static glm::vec4 FromRGB(const unsigned int rgbInt, const float a = 1.0f);
 	static glm::vec4 FromRGBA(const unsigned int rgbaInt);
 	static glm::vec4 FromHSB(const float h, const float s, const float b, const float a = 1.0f);

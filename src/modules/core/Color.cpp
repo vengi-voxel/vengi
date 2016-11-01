@@ -39,6 +39,46 @@ const glm::vec4 Color::Brown        = glm::vec4(107.f,  66,  38, 255) / glm::vec
 const glm::vec4 Color::LightBrown   = glm::vec4(150.f, 107,  72, 255) / glm::vec4(Color::magnitude);
 const glm::vec4 Color::DarkBrown    = glm::vec4( 82.f,  43,  26, 255) / glm::vec4(Color::magnitude);
 
+/**
+ * @brief Get the nearest matching color index from the list
+ * @param color The color to find the closest match to in the given @c colors array
+ * @return index in the colors vector or the first entry if non was found
+ */
+int Color::getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>& colors) {
+	const float weightHue = 0.8f;
+	const float weightSaturation = 0.1f;
+	const float weightValue = 0.1f;
+
+	float minDistance = std::numeric_limits<float>::lowest();
+
+	int minIndex = 0;
+
+	float hue;
+	float saturation;
+	float brightness;
+	core::Color::GetHSB(color, hue, saturation, brightness);
+
+	for (size_t i = 0; i < colors.size(); ++i) {
+		float chue;
+		float csaturation;
+		float cbrightness;
+		core::Color::GetHSB(colors[i], chue, csaturation, cbrightness);
+
+		const float dH = chue - hue;
+		const float dS = csaturation - saturation;
+		const float dV = cbrightness - brightness;
+		const float val = weightHue * glm::pow(dH, 2) +
+				weightValue * glm::pow(dV, 2) +
+				weightSaturation * glm::pow(dS, 2);
+		const float curDistance = sqrtf(val);
+		if (curDistance < minDistance) {
+			minDistance = curDistance;
+			minIndex = i;
+		}
+	}
+	return minIndex;
+}
+
 glm::vec4 Color::FromRGB(const unsigned int rgbInt, const float a) {
 	return glm::vec4(static_cast<float>(rgbInt >> 16 & 0xFF) / Color::magnitude, static_cast<float>(rgbInt >> 8 & 0xFF) / Color::magnitude,
 			static_cast<float>(rgbInt & 0xFF) / Color::magnitude, a);
