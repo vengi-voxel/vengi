@@ -13,7 +13,7 @@ protected:
 
 	VoxelType findVoxelType(const glm::vec4& color) const;
 	glm::vec4 findClosestMatch(const glm::vec4& color) const;
-	glm::vec4 paletteColor(uint32_t index);
+	glm::vec4 paletteColor(uint32_t index) const;
 public:
 	virtual ~VoxFileFormat() {
 	}

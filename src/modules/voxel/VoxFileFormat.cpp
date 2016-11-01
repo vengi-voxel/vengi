@@ -18,7 +18,7 @@ VoxelType VoxFileFormat::findVoxelType(const glm::vec4& color) const {
 	return VoxelType::Invalid;
 }
 
-glm::vec4 VoxFileFormat::paletteColor(uint32_t index) {
+glm::vec4 VoxFileFormat::paletteColor(uint32_t index) const {
 	if (index >= _paletteSize) {
 		return core::Color::Black;
 	}
@@ -27,6 +27,8 @@ glm::vec4 VoxFileFormat::paletteColor(uint32_t index) {
 
 glm::vec4 VoxFileFormat::findClosestMatch(const glm::vec4& color) const {
 	if (_paletteSize > 0) {
+		const int index = core::Color::getClosestMatch(color, _palette);
+		return paletteColor(index);
 	}
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	const int index = core::Color::getClosestMatch(color, materialColors);

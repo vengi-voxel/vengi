@@ -49,7 +49,7 @@ int Color::getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>&
 	const float weightSaturation = 0.1f;
 	const float weightValue = 0.1f;
 
-	float minDistance = std::numeric_limits<float>::lowest();
+	float minDistance = std::numeric_limits<float>::max();
 
 	int minIndex = 0;
 
