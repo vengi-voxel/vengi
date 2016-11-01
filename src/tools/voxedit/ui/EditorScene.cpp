@@ -167,7 +167,12 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 		mesh->vertices[v].z = vertex._pos.z;
 	}
 
-	vx_mesh_t* result = vx_voxelize(mesh, 0.03, 0.03, 0.03, 0.02);
+	const glm::vec3& maxs = meshPtr->maxs();
+	const float size = _size;
+	const glm::vec3& scale = maxs / size;
+	const float precision = scale.x / 10.0f;
+
+	vx_mesh_t* result = vx_voxelize(mesh, scale.x, scale.y, scale.z, precision);
 
 	Log::info("Number of vertices: %i", (int)result->nvertices);
 	Log::info("Number of indices: %i", (int)result->nindices);

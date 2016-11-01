@@ -89,8 +89,8 @@ public:
 	Mesh();
 	~Mesh();
 
-	const glm::vec3 mins() const;
-	const glm::vec3 maxs() const;
+	const glm::vec3& mins() const;
+	const glm::vec3& maxs() const;
 
 	const std::string& filename() const;
 
@@ -116,11 +116,11 @@ inline const std::string& Mesh::filename() const {
 	return _filename;
 }
 
-inline const glm::vec3 Mesh::mins() const {
+inline const glm::vec3& Mesh::mins() const {
 	return _aabbMins;
 }
 
-inline const glm::vec3 Mesh::maxs() const {
+inline const glm::vec3& Mesh::maxs() const {
 	return _aabbMaxs;
 }
 
