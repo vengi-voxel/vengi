@@ -128,15 +128,15 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		0xff880000, 0xff770000, 0xff550000, 0xff440000, 0xff220000, 0xff110000, 0xffeeeeee, 0xffdddddd, 0xffbbbbbb, 0xffaaaaaa, 0xff888888, 0xff777777, 0xff555555, 0xff444444, 0xff222222, 0xff111111
 	};
 
+	_paletteSize = SDL_arraysize(palette);
+	_palette = new glm::vec4[_paletteSize];
+
 	// convert to our palette
 	for (uint32_t i = 0; i < SDL_arraysize(palette); ++i) {
 		const uint32_t p = palette[i];
 		const glm::vec4& color = core::Color::FromRGBA(p);
-		const glm::vec4& finalColor = findClosestMatch(color);
-		palette[i] = core::Color::GetRGBA(finalColor);
+		_palette[i] = findClosestMatch(color);
 	}
-
-	_paletteSize = SDL_arraysize(palette);
 
 	do {
 		uint32_t chunkId;
@@ -175,9 +175,9 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 			wrap(stream.readInt(x))
 			wrap(stream.readInt(z))
 			wrap(stream.readInt(y))
-			glm::ivec3 maxs(x, y, z);
+			glm::ivec3 maxsregion((int32_t)x, (int32_t)y, (int32_t)z);
 			Log::debug("Found size chunk: (%u:%u:%u)", x, y, z);
-			Region region(glm::ivec3(0), maxs);
+			Region region(glm::ivec3(0), maxsregion);
 			if (volume != nullptr) {
 				delete volume;
 			}
@@ -226,8 +226,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				uint32_t rgba;
 				wrap(stream.readInt(rgba))
 				const glm::vec4& color = core::Color::FromRGBA(rgba);
-				const glm::vec4& finalColor = findClosestMatch(color);
-				palette[i + 1] = core::Color::GetRGBA(finalColor);
+				_palette[i + 1] = findClosestMatch(color);
 			}
 		} else if (chunkId == FourCC('M','A','T','T')) {
 			Log::debug("Found material chunk with %u bytes", numBytesChunk);

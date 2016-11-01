@@ -8,7 +8,10 @@
 
 namespace voxel {
 
-// material types 0 - 255 (8 bits)
+/**
+ * @brief material types 0 - 255 (8 bits)
+ * @note there must not be any gap in the ordinals.
+ */
 enum class VoxelType : uint8_t {
 	// this must be 0
 	Air = 0,
@@ -40,6 +43,7 @@ enum class VoxelType : uint8_t {
 	Dirt4 = 26,
 
 	Max,
+	Min = Air,
 	Invalid = 255
 };
 

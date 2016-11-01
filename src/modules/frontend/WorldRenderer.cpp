@@ -227,6 +227,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		actualCamera = &_sunLight.camera();
 		viewDistance = actualCamera->farPlane();
 	}
+
 	video::ScopedShader scoped(shader);
 	shaderSetUniformIf(shader, setUniformMatrix, "u_view", actualCamera->viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", actualCamera->projectionMatrix());
@@ -542,7 +543,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 }
 
 void WorldRenderer::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
-	Log::debug("set voxel to %i at %i:%i:%i", voxel.getMaterial(), pos.x, pos.y, pos.z);
+	Log::debug("set voxel to %i at %i:%i:%i", (int)std::enum_value(voxel.getMaterial()), pos.x, pos.y, pos.z);
 	_world->setVoxel(pos, voxel);
 	extractNewMeshes(pos, true);
 }
@@ -743,6 +744,14 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 	if (!_shadowMapRenderShader.setup()) {
+		return false;
+	}
+
+	const int shaderMaterialColorsArraySize = _worldShader.getUniformArraySize("u_materialcolor");
+	const int materialColorsArraySize = voxel::getMaterialColors().size();
+	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
+		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
+				shaderMaterialColorsArraySize, materialColorsArraySize);
 		return false;
 	}
 

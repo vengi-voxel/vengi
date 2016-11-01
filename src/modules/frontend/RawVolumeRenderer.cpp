@@ -19,6 +19,14 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
+	const int shaderMaterialColorsArraySize = _worldShader.getUniformArraySize("u_materialcolor");
+	const int materialColorsArraySize = voxel::getMaterialColors().size();
+	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
+		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
+				shaderMaterialColorsArraySize, materialColorsArraySize);
+		return false;
+	}
+
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to initialize the shape renderer");
 		return false;

@@ -8,7 +8,7 @@ set(SRCS
 	LodCreator.h
 	Spiral.h
 	Constants.h
-	MaterialColor.h
+	MaterialColor.h MaterialColor.cpp
 	World.cpp World.h
 	WorldPersister.h WorldPersister.cpp
 	WorldEvents.h
