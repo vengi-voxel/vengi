@@ -16,6 +16,7 @@ set(SRCS
 	generator/LSystemGenerator.h generator/LSystemGenerator.cpp
 	generator/PlantGenerator.h generator/PlantGenerator.cpp
 	generator/PlanetGenerator.h generator/PlanetGenerator.cpp
+	generator/GeneratorContext.h
 	polyvox/Array.h
 	polyvox/AStarPathfinder.h
 	polyvox/AStarPathfinderImpl.h

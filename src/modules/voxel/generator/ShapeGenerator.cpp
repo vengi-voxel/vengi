@@ -9,7 +9,7 @@
 
 namespace voxel {
 
-void ShapeGenerator::createCirclePlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
+void ShapeGenerator::createCirclePlane(GeneratorContext& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
 	const double minRadius = std::min(xRadius, zRadius);
@@ -28,7 +28,7 @@ void ShapeGenerator::createCirclePlane(TerrainContext& ctx, const glm::ivec3& ce
 	}
 }
 
-void ShapeGenerator::createCube(TerrainContext& ctx, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
+void ShapeGenerator::createCube(GeneratorContext& ctx, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const int widthLow = width / 2;
@@ -45,7 +45,7 @@ void ShapeGenerator::createCube(TerrainContext& ctx, const glm::ivec3& center, i
 	}
 }
 
-void ShapeGenerator::createCubeNoCenter(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void ShapeGenerator::createCubeNoCenter(GeneratorContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int w = glm::abs(width);
 	const int h = glm::abs(height);
 	const int d = glm::abs(depth);
@@ -69,7 +69,7 @@ void ShapeGenerator::createCubeNoCenter(TerrainContext& ctx, const glm::ivec3& p
 	}
 }
 
-glm::ivec3 ShapeGenerator::createL(TerrainContext& ctx, const glm::ivec3& pos, int width, int depth, int height, int thickness, const Voxel& voxel) {
+glm::ivec3 ShapeGenerator::createL(GeneratorContext& ctx, const glm::ivec3& pos, int width, int depth, int height, int thickness, const Voxel& voxel) {
 	glm::ivec3 p = pos;
 	if (width != 0) {
 		createCubeNoCenter(ctx, p, width, thickness, thickness, voxel);
@@ -90,11 +90,11 @@ glm::ivec3 ShapeGenerator::createL(TerrainContext& ctx, const glm::ivec3& pos, i
 	return p;
 }
 
-void ShapeGenerator::createPlane(TerrainContext& ctx, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
+void ShapeGenerator::createPlane(GeneratorContext& ctx, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
 	createCube(ctx, center, width, 1, depth, voxel);
 }
 
-void ShapeGenerator::createEllipse(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void ShapeGenerator::createEllipse(GeneratorContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);
@@ -108,7 +108,7 @@ void ShapeGenerator::createEllipse(TerrainContext& ctx, const glm::ivec3& pos, i
 	}
 }
 
-void ShapeGenerator::createCone(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void ShapeGenerator::createCone(GeneratorContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);
@@ -122,14 +122,14 @@ void ShapeGenerator::createCone(TerrainContext& ctx, const glm::ivec3& pos, int 
 }
 
 // http://members.chello.at/~easyfilter/bresenham.html
-void ShapeGenerator::createLine(TerrainContext& ctx, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel) {
+void ShapeGenerator::createLine(GeneratorContext& ctx, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel) {
 	voxel::raycastWithEndpoints(ctx.getVolume(), start, end, [&] (PagedVolume::Sampler& sampler) {
 		sampler.setVoxel(voxel);
 		return true;
 	});
 }
 
-void ShapeGenerator::createDome(TerrainContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void ShapeGenerator::createDome(GeneratorContext& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);

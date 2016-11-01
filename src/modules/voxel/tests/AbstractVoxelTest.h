@@ -49,7 +49,7 @@ protected:
 
 	Pager _pager;
 	PagedVolume _volData;
-	TerrainContext _ctx;
+	GeneratorContext _ctx;
 	core::Random _random;
 	long _seed = 0;
 

@@ -17,7 +17,7 @@ constexpr int WORLDGEN_SERVER = WORLDGEN_TREES;
 
 class WorldGenerator {
 public:
-	static void createWorld(WorldContext& worldCtx, TerrainContext& ctx, BiomeManager& biomManager, long seed, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ);
+	static void createWorld(WorldContext& worldCtx, GeneratorContext& ctx, BiomeManager& biomManager, long seed, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ);
 };
 
 }

@@ -54,12 +54,12 @@ struct LSystemContext {
 class LSystemGenerator {
 CORE_CLASS(LSystemGenerator)
 private:
-	static void expand_r(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random, char c, int generations);
-	static bool evaluateState(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, char c);
-	static void generateVoxel(const LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx);
+	static void expand_r(LSystemState* state, GeneratorContext& terrainCtx, const LSystemContext& ctx, core::Random& random, char c, int generations);
+	static bool evaluateState(LSystemState* state, GeneratorContext& terrainCtx, const LSystemContext& ctx, char c);
+	static void generateVoxel(const LSystemState* state, GeneratorContext& terrainCtx, const LSystemContext& ctx);
 public:
-	static void expand(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random, const std::string& axiom, int generations);
-	static void generate(TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random);
+	static void expand(LSystemState* state, GeneratorContext& terrainCtx, const LSystemContext& ctx, core::Random& random, const std::string& axiom, int generations);
+	static void generate(GeneratorContext& terrainCtx, const LSystemContext& ctx, core::Random& random);
 };
 
 }

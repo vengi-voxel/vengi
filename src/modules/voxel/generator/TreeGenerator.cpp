@@ -10,7 +10,7 @@
 
 namespace voxel {
 
-int TreeGenerator::findFloor(const TerrainContext& ctx, int x, int z) {
+int TreeGenerator::findFloor(const GeneratorContext& ctx, int x, int z) {
 	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; i--) {
 		const int material = ctx.getVoxel(x, i, z).getMaterial();
 		if (isLeaves(material)) {
@@ -23,7 +23,7 @@ int TreeGenerator::findFloor(const TerrainContext& ctx, int x, int z) {
 	return -1;
 }
 
-void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomManager, core::Random& random) {
+void TreeGenerator::createTrees(GeneratorContext& ctx, const BiomeManager& biomManager, core::Random& random) {
 	const Region& region = ctx.region;
 	const int amount = biomManager.getAmountOfTrees(region);
 	for (int i = 0; i < amount; ++i) {
@@ -90,7 +90,7 @@ void TreeGenerator::createTrees(TerrainContext& ctx, const BiomeManager& biomMan
 	}
 }
 
-void TreeGenerator::addTree(TerrainContext& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
+void TreeGenerator::addTree(GeneratorContext& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
 	int top = (int) pos.y + trunkHeight;
 	static constexpr Voxel voxel = createVoxel(Wood1);
 	const VoxelType leavesType = random.random(Leaves1, Leaves10);

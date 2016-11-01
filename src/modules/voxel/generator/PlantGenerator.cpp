@@ -1,6 +1,7 @@
 #include "PlantGenerator.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
+#include "voxel/generator/GeneratorContext.h"
 
 namespace voxel {
 

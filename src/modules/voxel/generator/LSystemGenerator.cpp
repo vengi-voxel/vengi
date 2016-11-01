@@ -8,7 +8,7 @@
 
 namespace voxel {
 
-void LSystemGenerator::generateVoxel(const LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx) {
+void LSystemGenerator::generateVoxel(const LSystemState* state, GeneratorContext& terrainCtx, const LSystemContext& ctx) {
 	core_assert(state->lastVoxelType != '\0');
 	auto i = ctx.voxels.find(state->lastVoxelType);
 	core_assert_msg(i != ctx.voxels.end(), "no voxel registered for %c", state->lastVoxelType);
@@ -20,7 +20,7 @@ void LSystemGenerator::generateVoxel(const LSystemState* state, TerrainContext& 
 	terrainCtx.setVoxel(state->pos, voxel);
 }
 
-bool LSystemGenerator::evaluateState(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, char c) {
+bool LSystemGenerator::evaluateState(LSystemState* state, GeneratorContext& terrainCtx, const LSystemContext& ctx, char c) {
 	switch (c) {
 	case LSystemAlphabet::X_FORWARD:
 		for (int i = 0; i < ctx.xFactor; ++i) {
@@ -74,7 +74,7 @@ bool LSystemGenerator::evaluateState(LSystemState* state, TerrainContext& terrai
 	return false;
 }
 
-void LSystemGenerator::expand(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random, const std::string& axiomStr, int generations) {
+void LSystemGenerator::expand(LSystemState* state, GeneratorContext& terrainCtx, const LSystemContext& ctx, core::Random& random, const std::string& axiomStr, int generations) {
 	std::vector<LSystemState> newStates;
 	LSystemState *currentState = state;
 	for (const char *axiom = axiomStr.c_str(); *axiom != '\0'; ++axiom) {
@@ -112,7 +112,7 @@ void LSystemGenerator::expand(LSystemState* state, TerrainContext& terrainCtx, c
 	}
 }
 
-void LSystemGenerator::expand_r(LSystemState* state, TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random, char c, int generations) {
+void LSystemGenerator::expand_r(LSystemState* state, GeneratorContext& terrainCtx, const LSystemContext& ctx, core::Random& random, char c, int generations) {
 	if (generations <= 0) {
 		return;
 	}
@@ -127,7 +127,7 @@ void LSystemGenerator::expand_r(LSystemState* state, TerrainContext& terrainCtx,
 	expand(state, terrainCtx, ctx, random, iter->second, generations - 1);
 }
 
-void LSystemGenerator::generate(TerrainContext& terrainCtx, const LSystemContext& ctx, core::Random& random) {
+void LSystemGenerator::generate(GeneratorContext& terrainCtx, const LSystemContext& ctx, core::Random& random) {
 	LSystemState initState;
 	initState.pos = ctx.start;
 	expand(&initState, terrainCtx, ctx, random, ctx.axiom, ctx.generations);

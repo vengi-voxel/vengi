@@ -15,7 +15,7 @@
 
 namespace voxel {
 
-void WorldGenerator::createWorld(WorldContext& worldCtx, TerrainContext& ctx, BiomeManager& biomManager, long seed, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
+void WorldGenerator::createWorld(WorldContext& worldCtx, GeneratorContext& ctx, BiomeManager& biomManager, long seed, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
 	const Region& region = ctx.region;
 	// TODO: find a better way to add the current chunk to the seed
 	core::Random random(seed + ctx.region.getLowerCorner().x * ctx.region.getLowerCorner().z);

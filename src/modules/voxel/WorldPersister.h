@@ -9,13 +9,13 @@
 
 namespace voxel {
 
-class TerrainContext;
+class GeneratorContext;
 
 class WorldPersister {
 public:
-	bool load(TerrainContext& ctx, long seed);
-	bool save(TerrainContext& ctx, long seed);
-	void erase(TerrainContext& ctx, long seed);
+	bool load(GeneratorContext& ctx, long seed);
+	bool save(GeneratorContext& ctx, long seed);
+	void erase(GeneratorContext& ctx, long seed);
 	std::string getWorldName(const Region& region, long seed) const;
 };
 

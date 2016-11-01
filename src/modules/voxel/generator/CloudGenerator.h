@@ -12,7 +12,7 @@ namespace voxel {
 class CloudGenerator {
 public:
 	static glm::ivec2 randomPosWithoutHeight(const Region& region, int border, core::Random& random);
-	static void createClouds(TerrainContext& ctx, const BiomeManager& biomManager, core::Random& random);
+	static void createClouds(GeneratorContext& ctx, const BiomeManager& biomManager, core::Random& random);
 };
 
 }

@@ -206,9 +206,9 @@ private:
 	};
 
 	// don't access the volume in anything that is called here
-	void create(TerrainContext& ctx);
+	void create(GeneratorContext& ctx);
 
-	void createUnderground(TerrainContext& ctx);
+	void createUnderground(GeneratorContext& ctx);
 
 	void cleanupFutures();
 	Region getChunkRegion(const glm::ivec3& pos) const;
