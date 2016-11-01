@@ -11,8 +11,8 @@
 // TODO: voxelizer via assimp
 // TODO: export via assimp exporters
 // TODO: cursor volume shape generators
-VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr) {
+VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
+		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init("engine", "voxedit");
 }
 
@@ -24,14 +24,26 @@ bool VoxEdit::loadFile(std::string_view file) {
 	return _mainWindow->load(file);
 }
 
+bool VoxEdit::voxelizeFile(std::string_view file) {
+	return _mainWindow->voxelize(file);
+}
+
 bool VoxEdit::newFile(bool force) {
 	return _mainWindow->createNew(force);
+}
+
+core::AppState VoxEdit::onCleanup() {
+	const core::AppState state = Super::onCleanup();
+	_meshPool->shutdown();
+	return state;
 }
 
 core::AppState VoxEdit::onInit() {
 	const core::AppState state = Super::onInit();
 
 	_lastDirectory = core::Var::get("ve_lastdirectory", core::App::getInstance()->filesystem()->homePath().c_str());
+
+	_meshPool->init();
 
 	_mainWindow = new MainWindow(this);
 	if (!_mainWindow->init()) {
@@ -70,6 +82,16 @@ core::AppState VoxEdit::onInit() {
 		}
 		if (!loadFile(args[0])) {
 			Log::error("Failed to load file %s", args[0].c_str());
+		}
+	}).setArgumentCompleter(fileCompleter).setHelp("Load a scene from the given file");
+
+	core::Command::registerCommand("voxelize", [this] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			Log::error("Usage: voxelize <filename>");
+			return;
+		}
+		if (!voxelizeFile(args[0])) {
+			Log::error("Failed to voxelize file %s", args[0].c_str());
 		}
 	}).setArgumentCompleter(fileCompleter).setHelp("Load a scene from the given file");
 
@@ -120,9 +142,10 @@ bool VoxEdit::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 int main(int argc, char *argv[]) {
-	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	VoxEdit app(filesystem, eventBus, timeProvider);
+	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
+	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
+	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const video::MeshPoolPtr& meshPool = std::make_shared<video::MeshPool>();
+	VoxEdit app(filesystem, eventBus, timeProvider, meshPool);
 	return app.startMainLoop(argc, argv);
 }

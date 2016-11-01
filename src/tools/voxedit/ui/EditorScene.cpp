@@ -11,6 +11,8 @@
 #include "voxel/VoxFormat.h"
 #include "voxel/polyvox/VolumeMerger.h"
 #include "ui/UIApp.h"
+#define VOXELIZER_IMPLEMENTATION
+#include "../voxelizer.h"
 
 EditorScene::EditorScene() :
 		ui::Widget(), _rawVolumeRenderer(true), _cursorVolume(nullptr), _modelVolume(nullptr),
@@ -147,6 +149,32 @@ bool EditorScene::saveModel(std::string_view file) {
 		_dirty = false;
 	}
 	return !_dirty;
+}
+
+bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
+	const video::Mesh::Vertices& positions = meshPtr->vertices();
+	const video::Mesh::Indices& indices = meshPtr->indices();
+	vx_mesh_t* mesh = vx_mesh_alloc(positions.size(), indices.size());
+
+	for (size_t f = 0; f < indices.size(); f++) {
+		mesh->indices[f] = indices[f];
+	}
+
+	for (size_t v = 0; v < positions.size() / 3; v++) {
+		const core::Vertex& vertex = positions[v];
+		mesh->vertices[v].x = vertex._pos.x;
+		mesh->vertices[v].y = vertex._pos.y;
+		mesh->vertices[v].z = vertex._pos.z;
+	}
+
+	vx_mesh_t* result = vx_voxelize(mesh, 0.03, 0.03, 0.03, 0.02);
+
+	Log::info("Number of vertices: %i", (int)result->nvertices);
+	Log::info("Number of indices: %i", (int)result->nindices);
+
+	vx_mesh_free(result);
+	vx_mesh_free(mesh);
+	return false;
 }
 
 bool EditorScene::loadModel(std::string_view file) {

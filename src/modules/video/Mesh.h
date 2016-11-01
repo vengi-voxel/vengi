@@ -19,6 +19,10 @@
 namespace video {
 
 class Mesh : public io::IOResource {
+public:
+	typedef std::vector<core::Vertex> Vertices;
+	typedef std::vector<uint32_t> Indices;
+
 private:
 	struct BoneInfo {
 		glm::mat4 boneOffset;
@@ -30,8 +34,6 @@ private:
 				core::Vertex(glm::vec3(p.x, p.y, p.z), glm::vec3(n.x, n.y, n.z), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a)) {
 		}
 	};
-	typedef std::vector<MeshVertex> Vertices;
-	typedef std::vector<uint32_t> Indices;
 
 	glm::vec3 toVec3(const aiVector3D& vector) const;
 	glm::quat toQuat(const aiQuaternion& quat) const;
@@ -91,12 +93,24 @@ public:
 	const glm::vec3 maxs() const;
 
 	const std::string& filename() const;
+
+	const Vertices& vertices() const;
+	const Indices& indices() const;
+
 	void shutdown();
 	bool loadMesh(const std::string& filename);
 	bool initMesh(Shader& shader, float timeInSeconds = 0.0f, uint8_t animationIndex = 0u);
 	int render();
 	int renderNormals(video::Shader& shader);
 };
+
+inline const Mesh::Vertices& Mesh::vertices() const {
+	return _vertices;
+}
+
+inline const Mesh::Indices& Mesh::indices() const {
+	return _indices;
+}
 
 inline const std::string& Mesh::filename() const {
 	return _filename;

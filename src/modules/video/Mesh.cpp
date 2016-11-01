@@ -142,7 +142,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 				_aabbMaxs.z = pos.z;
 			}
 
-			_vertices.emplace_back(pos, normal, texCoord, color);
+			_vertices.push_back(MeshVertex(pos, normal, texCoord, color));
 		}
 		loadBones(i, mesh);
 	}
@@ -522,7 +522,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 
 	MeshNormals normalData;
 	normalData.reserve(_vertices.size() * 2);
-	for (const MeshVertex& v : _vertices) {
+	for (const core::Vertex& v : _vertices) {
 		glm::mat4 bonetrans;
 		for (int i = 0; i < NUM_BONES_PER_VEREX; ++i) {
 			const glm::mat4& bmat = _boneInfo[v._boneIds[i]].finalTransformation * v._boneWeights[i];

@@ -1,8 +1,9 @@
 #include "MainWindow.h"
 #include "EditorScene.h"
+#include "../VoxEdit.h"
 
-MainWindow::MainWindow(ui::UIApp* tool) :
-		ui::Window(tool), _scene(nullptr) {
+MainWindow::MainWindow(VoxEdit* tool) :
+		ui::Window(tool), _scene(nullptr), _voxedit(tool) {
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 }
 
@@ -50,8 +51,13 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (ev.target->GetID() == TBIDC("unsaved_changes_load")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			// TODO: filename
-			_scene->loadModel("magicavoxel.vox");
+			_scene->loadModel(_loadFile);
+		}
+		return true;
+	} else if (ev.target->GetID() == TBIDC("unsaved_changes_voxelize")) {
+		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
+			const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(_voxelizeFile, false);
+			_scene->voxelizeModel(mesh);
 		}
 		return true;
 	}
@@ -132,8 +138,20 @@ bool MainWindow::save(std::string_view file) {
 	return _scene->saveModel(file);
 }
 
+bool MainWindow::voxelize(std::string_view file) {
+	if (_scene->isDirty()) {
+		_voxelizeFile = std::string(file);
+		popup("Unsaved Modifications",
+				"There are unsaved modifications.\nDo you wish to discard them and load?",
+				ui::Window::PopupType::YesNo, "unsaved_changes_voxelize");
+	}
+	const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
+	return _scene->voxelizeModel(mesh);
+}
+
 bool MainWindow::load(std::string_view file) {
 	if (_scene->isDirty()) {
+		_loadFile = std::string(file);
 		popup("Unsaved Modifications",
 				"There are unsaved modifications.\nDo you wish to discard them and load?",
 				ui::Window::PopupType::YesNo, "unsaved_changes_load");

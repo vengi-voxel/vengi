@@ -6,6 +6,7 @@
 #include "video/FrameBuffer.h"
 #include "frontend/Axis.h"
 #include "voxel/polyvox/Picking.h"
+#include "video/MeshPool.h"
 
 class EditorScene: public ui::Widget {
 public:
@@ -73,6 +74,7 @@ public:
 	void resetCamera();
 
 	bool isDirty() const;
+	bool voxelizeModel(const video::MeshPtr& mesh);
 	bool saveModel(std::string_view file);
 	bool loadModel(std::string_view file);
 	bool newModel(bool force);

@@ -35,19 +35,19 @@ void MeshPool::shutdown() {
 	_meshes.clear();
 }
 
-std::string MeshPool::getName(const std::string& id) const {
+std::string MeshPool::getName(const std::string_view& id) const {
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
 	for (const char **format = supportedFormats; *format != nullptr; format++) {
-		const std::string name = "mesh/" + id + "." + *format;
+		const std::string name = core::string::format("mesh/%s.%s", id.data(), *format);
 		if (filesystem->exists(name)) {
 			return name;
 		}
 	}
 
-	return id;
+	return std::string(id);
 }
 
-MeshPtr MeshPool::getMesh(const std::string& id) {
+MeshPtr MeshPool::getMesh(const std::string_view& id, bool async) {
 	const std::string name = getName(id);
 	auto i = _meshes.find(name);
 	if (i != _meshes.end()) {
@@ -55,7 +55,11 @@ MeshPtr MeshPool::getMesh(const std::string& id) {
 	}
 
 	const MeshPtr& mesh = std::make_shared<Mesh>();
-	core::App::getInstance()->threadPool().enqueue([=]() {mesh->loadMesh(name);});
+	if (async) {
+		core::App::getInstance()->threadPool().enqueue([=]() {mesh->loadMesh(name);});
+	} else {
+		mesh->loadMesh(name);
+	}
 	_meshes[name] = mesh;
 	return mesh;
 }
