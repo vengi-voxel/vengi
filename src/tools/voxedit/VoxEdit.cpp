@@ -8,6 +8,9 @@
 #include "core/Command.h"
 #include "video/GLFunc.h"
 
+// TODO: voxelizer via assimp
+// TODO: export via assimp exporters
+// TODO: cursor volume shape generators
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr) {
 	init("engine", "voxedit");
