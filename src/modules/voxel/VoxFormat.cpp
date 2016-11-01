@@ -5,6 +5,7 @@
 #include "VoxFormat.h"
 #include "io/FileStream.h"
 #include "core/Common.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxel {
 
@@ -109,7 +110,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 
 	// 8. Default Palette : if chunk 'RGBA' is absent
 	// -------------------------------------------------------------------------------
-	uint32_t palette[256] = {
+	static const uint32_t palette[256] = {
 		0x00000000, 0xffffffff, 0xffccffff, 0xff99ffff, 0xff66ffff, 0xff33ffff, 0xff00ffff, 0xffffccff, 0xffccccff, 0xff99ccff, 0xff66ccff, 0xff33ccff, 0xff00ccff, 0xffff99ff, 0xffcc99ff, 0xff9999ff,
 		0xff6699ff, 0xff3399ff, 0xff0099ff, 0xffff66ff, 0xffcc66ff, 0xff9966ff, 0xff6666ff, 0xff3366ff, 0xff0066ff, 0xffff33ff, 0xffcc33ff, 0xff9933ff, 0xff6633ff, 0xff3333ff, 0xff0033ff, 0xffff00ff,
 		0xffcc00ff, 0xff9900ff, 0xff6600ff, 0xff3300ff, 0xff0000ff, 0xffffffcc, 0xffccffcc, 0xff99ffcc, 0xff66ffcc, 0xff33ffcc, 0xff00ffcc, 0xffffcccc, 0xffcccccc, 0xff99cccc, 0xff66cccc, 0xff33cccc,
@@ -128,15 +129,17 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		0xff880000, 0xff770000, 0xff550000, 0xff440000, 0xff220000, 0xff110000, 0xffeeeeee, 0xffdddddd, 0xffbbbbbb, 0xffaaaaaa, 0xff888888, 0xff777777, 0xff555555, 0xff444444, 0xff222222, 0xff111111
 	};
 
-	const size_t paletteSize = SDL_arraysize(palette);
+	const int paletteSize = SDL_arraysize(palette);
 	_palette.reserve(paletteSize);
-	// convert to our palette
-	for (uint32_t i = 0; i < SDL_arraysize(palette); ++i) {
-		const uint32_t p = palette[i];
-		const glm::vec4& color = core::Color::FromRGBA(p);
-		_palette[i] = findClosestMatch(color);
-	}
 	_paletteSize = paletteSize;
+	// convert to our palette
+	const MaterialColorArray& materialColors = getMaterialColors();
+	for (int i = 0; i < paletteSize; ++i) {
+		const uint32_t p = palette[i];
+		const glm::vec4& color = core::Color::FromRGBA(SDL_SwapBE32(p));
+		const int index = core::Color::getClosestMatch(color, materialColors);
+		_palette[i] = materialColors[index];
+	}
 
 	do {
 		uint32_t chunkId;
@@ -205,7 +208,8 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				wrap(stream.readByte(z))
 				wrap(stream.readByte(y))
 				wrap(stream.readByte(colorIndex))
-				const VoxelType type = findVoxelType(paletteColor(colorIndex));
+				const glm::vec4& color = paletteColor(colorIndex);
+				const VoxelType type = findVoxelType(color);
 				volume->setVoxel(x, y, z, createVoxel(type));
 			}
 		} else if (chunkId == FourCC('R','G','B','A')) {
@@ -222,14 +226,13 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 			//                       |     palette[i + 1] = ReadRGBA();
 			//                       | }
 			// -------------------------------------------------------------------------------
-			_paletteSize = 0;
 			for (int i = 0; i <= 254; i++) {
 				uint32_t rgba;
 				wrap(stream.readInt(rgba))
-				const glm::vec4& color = core::Color::FromRGBA(rgba);
-				_palette[i + 1] = findClosestMatch(color);
+				const glm::vec4& color = core::Color::FromRGBA(SDL_SwapBE32(rgba));
+				const int index = core::Color::getClosestMatch(color, materialColors);
+				_palette[i + 1] = materialColors[index];
 			}
-			_paletteSize = paletteSize;
 		} else if (chunkId == FourCC('M','A','T','T')) {
 			Log::debug("Found material chunk with %u bytes", numBytesChunk);
 			// 9. Chunk id 'MATT' : material, if it is absent, it is diffuse material
