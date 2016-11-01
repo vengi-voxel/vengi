@@ -86,8 +86,8 @@ public:
 	template<class T>
 	T* getWidgetByType(const char *name);
 
-	Widget* getWidget(const char *name);
-	Widget* getWidgetAt(int x, int y, bool includeChildren = true);
+	tb::TBWidget* getWidget(const char *name);
+	tb::TBWidget* getWidgetAt(int x, int y, bool includeChildren = true);
 
 	// hook that is called directory before the ui is rendered. Your last chance to let the app contribute
 	// something in the ui context and the ui drawcalls (like debug text or rendering an in-game console on

@@ -82,8 +82,8 @@ public:
 	template<class T>
 	T* getWidgetByType(const char *name);
 
-	Widget* getWidget(const char *name);
-	Widget* getWidgetAt(int x, int y, bool includeChildren = true);
+	tb::TBWidget* getWidget(const char *name);
+	tb::TBWidget* getWidgetAt(int x, int y, bool includeChildren = true);
 
 	virtual void OnDie() override;
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;

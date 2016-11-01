@@ -36,7 +36,6 @@
 		{ return GetTypeId<clazz>() == type_id ? true : baseclazz::IsOfTypeId(type_id); }
 
 namespace ui {
-using Widget = tb::TBWidget;
 using UIRect = tb::TBRect;
 using UICheckBox = tb::TBCheckBox;
 using UIRadioButton = tb::TBRadioButton;

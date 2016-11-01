@@ -425,11 +425,11 @@ void UIApp::addChild(Window* window) {
 	_root.AddChild(window);
 }
 
-Widget* UIApp::getWidget(const char *name) {
+tb::TBWidget* UIApp::getWidget(const char *name) {
 	return _root.GetWidgetByID(tb::TBID(name));
 }
 
-Widget* UIApp::getWidgetAt(int x, int y, bool includeChildren) {
+tb::TBWidget* UIApp::getWidgetAt(int x, int y, bool includeChildren) {
 	return _root.GetWidgetAt(x, y, includeChildren);
 }
 

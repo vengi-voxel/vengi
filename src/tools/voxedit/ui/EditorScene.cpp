@@ -50,7 +50,6 @@ void EditorScene::newVolume() {
 }
 
 void EditorScene::setNewVolume(voxel::RawVolume *volume) {
-	core_assert(volume != nullptr);
 	delete _modelVolume;
 	_modelVolume = volume;
 
@@ -195,7 +194,7 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		executeAction(tx, ty);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_MOVE) {
-		const bool current = SDL_GetRelativeMouseMode();
+		const bool current = isRelativeMouseMode();
 		if (current) {
 			const float yaw = x - _mouseX;
 			const float pitch = y - _mouseY;
@@ -219,6 +218,10 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 	return Super::OnEvent(ev);
+}
+
+void EditorScene::OnFocusChanged(bool focused) {
+	Super::OnFocusChanged(focused);
 }
 
 void EditorScene::OnPaint(const PaintProps &paintProps) {
@@ -251,6 +254,7 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 }
 
 void EditorScene::OnProcess() {
+	Super::OnProcess();
 	core_trace_scoped(EditorSceneOnProcess);
 	const long deltaFrame = core::App::getInstance()->deltaFrame();
 	const float speed = _cameraSpeed * static_cast<float>(deltaFrame);
@@ -283,7 +287,10 @@ void EditorScene::OnProcess() {
 		core_trace_scoped(EditorSceneOnProcessMergeRawVolumes);
 		voxel::RawVolume* volume = _rawVolumeRenderer.volume();
 		volume->clear();
-		voxel::mergeRawVolumes(volume, _cursorVolume, air);
+		const bool current = isRelativeMouseMode();
+		if (!current) {
+			voxel::mergeRawVolumes(volume, _cursorVolume, air);
+		}
 		voxel::mergeRawVolumes(volume, _modelVolume, air);
 		_extract = true;
 	}

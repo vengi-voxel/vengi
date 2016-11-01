@@ -331,11 +331,11 @@ void Window::onWindowResize() {
 	SetRect(windowRect);
 }
 
-Widget* Window::getWidget(const char *name) {
+tb::TBWidget* Window::getWidget(const char *name) {
 	return GetWidgetByID(tb::TBID(name));
 }
 
-Widget* Window::getWidgetAt(int x, int y, bool includeChildren) {
+tb::TBWidget* Window::getWidgetAt(int x, int y, bool includeChildren) {
 	return GetWidgetAt(x, y, includeChildren);
 }
 

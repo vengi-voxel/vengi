@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui/TurboBadger.h"
+#include "ui/Widget.h"
 #include "frontend/RawVolumeRenderer.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
@@ -63,7 +63,7 @@ private:
 	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
 	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 public:
-	UIWIDGET_SUBCLASS(EditorScene, tb::TBWidget);
+	UIWIDGET_SUBCLASS(EditorScene, Super);
 
 	EditorScene();
 	~EditorScene();
@@ -95,6 +95,7 @@ public:
 	bool renderGrid() const;
 	void setRenderGrid(bool renderGrid);
 
+	virtual void OnFocusChanged(bool focused) override;
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;

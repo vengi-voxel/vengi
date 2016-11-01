@@ -2,6 +2,7 @@ set(SRCS
 	UIApp.cpp UIApp.h
 	TurboBadger.h
 	Window.cpp Window.h
+	Widget.h
 	FontUtil.h
 	WaitingMessage.h WaitingMessage.cpp
 	Console.cpp Console.h
