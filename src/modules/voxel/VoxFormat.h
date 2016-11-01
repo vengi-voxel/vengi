@@ -1,7 +1,10 @@
+/**
+ * @file
+ */
+
 #pragma once
 
-#include "voxel/polyvox/RawVolume.h"
-#include "io/File.h"
+#include "VoxFileFormat.h"
 
 namespace voxel {
 
@@ -10,10 +13,10 @@ namespace voxel {
  *
  * https://github.com/ephtracy/voxel-model.git
  */
-class VoxFormat {
+class VoxFormat : public VoxFileFormat {
 public:
-	static RawVolume* load(const io::FilePtr& file);
-	static bool save(const RawVolume* volume, const io::FilePtr& file);
+	RawVolume* load(const io::FilePtr& file) override;
+	bool save(const RawVolume* volume, const io::FilePtr& file) override;
 };
 
 }

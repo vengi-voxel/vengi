@@ -136,13 +136,7 @@ bool FileStream::readString(int length, char *strbuff) {
 		if (readByte(chr) != 0) {
 			return false;
 		}
-		if (chr == '\0') {
-			break;
-		}
-		strbuff += chr;
-	}
-	if (length > 0) {
-		_pos += length;
+		strbuff[i] = chr;
 	}
 	return true;
 }
@@ -183,6 +177,15 @@ int FileStream::readInt(uint32_t& val) {
 		val = swapped;
 	}
 	return retVal;
+}
+
+int FileStream::readBuf(uint8_t *buf, size_t bufSize) {
+	for (size_t i = 0; i < bufSize; ++i) {
+		if (readByte(buf[i]) == -1) {
+			return -1;
+		}
+	}
+	return 0;
 }
 
 int FileStream::readLong(uint64_t& val) {

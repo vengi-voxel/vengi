@@ -105,6 +105,8 @@ public:
 		return retVal;
 	}
 
+	int readBuf(uint8_t *buf, size_t bufSize);
+
 	bool readBool();
 	int readByte(uint8_t& val);
 	int readShort(uint16_t& val);

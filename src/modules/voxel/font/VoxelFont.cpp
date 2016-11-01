@@ -70,7 +70,7 @@ void VoxelFont::shutdown() {
 }
 
 bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
-	static const voxel::Voxel& voxel = voxel::createVoxel(voxel::Grass1);
+	static const voxel::Voxel& voxel = voxel::createVoxel(VoxelType::Grass1);
 	const char **s = &string;
 	int spaceWidth = 0;
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {

@@ -9,42 +9,44 @@
 namespace voxel {
 
 // material types 0 - 255 (8 bits)
-typedef uint8_t VoxelType;
+enum class VoxelType : uint8_t {
+	// this must be 0
+	Air = 0,
+	Grass1 = 1,
+	Wood1 = 2,
+	Leaves1 = 3,
+	Leaves2 = 4,
+	Leaves3 = 5,
+	Leaves4 = 6,
+	Leaves5 = 7,
+	Leaves6 = 8,
+	Leaves7 = 9,
+	Leaves8 = 10,
+	Leaves9 = 11,
+	Leaves10 = 12,
+	Rock1 = 13,
+	Rock2 = 14,
+	Rock3 = 15,
+	Rock4 = 16,
+	Sand1 = 17,
+	Sand2 = 18,
+	Sand3 = 19,
+	Sand4 = 20,
+	Cloud = 21,
+	Water = 22,
+	Dirt1 = 23,
+	Dirt2 = 24,
+	Dirt3 = 25,
+	Dirt4 = 26,
 
-static const VoxelType Invalid = -1;
-// this must be 0
-static const VoxelType Air = 0;
-static const VoxelType Grass1 = 1;
-static const VoxelType Wood1 = 2;
-static const VoxelType Leaves1 = 3;
-static const VoxelType Leaves2 = 4;
-static const VoxelType Leaves3 = 5;
-static const VoxelType Leaves4 = 6;
-static const VoxelType Leaves5 = 7;
-static const VoxelType Leaves6 = 8;
-static const VoxelType Leaves7 = 9;
-static const VoxelType Leaves8 = 10;
-static const VoxelType Leaves9 = 11;
-static const VoxelType Leaves10 = 12;
-static const VoxelType Rock1 = 13;
-static const VoxelType Rock2 = 14;
-static const VoxelType Rock3 = 15;
-static const VoxelType Rock4 = 16;
-static const VoxelType Sand1 = 17;
-static const VoxelType Sand2 = 18;
-static const VoxelType Sand3 = 19;
-static const VoxelType Sand4 = 20;
-static const VoxelType Cloud = 21;
-static const VoxelType Water = 22;
-static const VoxelType Dirt1 = 23;
-static const VoxelType Dirt2 = 24;
-static const VoxelType Dirt3 = 25;
-static const VoxelType Dirt4 = 26;
+	Max,
+	Invalid = 255
+};
 
 class Voxel {
 public:
 	constexpr Voxel() :
-			_material(Air) {
+			_material(VoxelType::Air) {
 	}
 
 	constexpr Voxel(VoxelType material) :
@@ -80,39 +82,39 @@ constexpr Voxel createVoxel(VoxelType type) {
 }
 
 inline bool isBlocked(VoxelType material) {
-	return material != Air;
+	return material != VoxelType::Air;
 }
 
 inline bool isWater(VoxelType material) {
-	return material == Water;
+	return material == VoxelType::Water;
 }
 
 inline bool isLeaves(VoxelType material) {
-	return material >= Leaves1 && material <= Leaves10;
+	return material >= VoxelType::Leaves1 && material <= VoxelType::Leaves10;
 }
 
 inline bool isAir(VoxelType material) {
-	return material == Air;
+	return material == VoxelType::Air;
 }
 
 inline bool isWood(VoxelType material) {
-	return material == Wood1;
+	return material == VoxelType::Wood1;
 }
 
 inline bool isGrass(VoxelType material) {
-	return material == Grass1;
+	return material == VoxelType::Grass1;
 }
 
 inline bool isRock(VoxelType material) {
-	return material == Rock1 ||material == Rock2 || material == Rock3 || material == Rock4;
+	return material == VoxelType::Rock1 ||material == VoxelType::Rock2 || material == VoxelType::Rock3 || material == VoxelType::Rock4;
 }
 
 inline bool isSand(VoxelType material) {
-	return material == Sand1 ||material == Sand2 || material == Sand3 || material == Sand4;
+	return material == VoxelType::Sand1 ||material == VoxelType::Sand2 || material == VoxelType::Sand3 || material == VoxelType::Sand4;
 }
 
 inline bool isDirt(VoxelType material) {
-	return material == Dirt1 ||material == Dirt2 || material == Dirt3 || material == Dirt4;
+	return material == VoxelType::Dirt1 ||material == VoxelType::Dirt2 || material == VoxelType::Dirt3 || material == VoxelType::Dirt4;
 }
 
 inline bool isFloor(VoxelType material) {

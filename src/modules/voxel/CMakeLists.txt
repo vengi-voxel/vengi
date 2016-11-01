@@ -1,11 +1,14 @@
 set(SRCS
 	font/stb_truetype.h
+	VoxFileFormat.h VoxFileFormat.cpp
 	VoxFormat.h VoxFormat.cpp
+	QB2Format.h QB2Format.cpp
 	font/VoxelFont.h font/VoxelFont.cpp
 	BiomeManager.h BiomeManager.cpp
 	LodCreator.h
 	Spiral.h
 	Constants.h
+	MaterialColor.h
 	World.cpp World.h
 	WorldPersister.h WorldPersister.cpp
 	WorldEvents.h

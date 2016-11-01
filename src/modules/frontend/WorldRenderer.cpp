@@ -13,7 +13,7 @@
 #include <SDL.h>
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/polyvox/RawVolume.h"
-#include "MaterialColor.h"
+#include "voxel/MaterialColor.h"
 #include "PlantDistributor.h"
 
 constexpr int MinCullingDistance = 500;
@@ -217,7 +217,7 @@ void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const vi
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera& camera, const GLMeshesVisible& meshes, int* vertices) {
-	const MaterialColorArray& materialColors = getMaterialColors();
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 
 	const bool deferred = _deferred->boolVal();
 

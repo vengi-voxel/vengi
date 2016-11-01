@@ -51,7 +51,7 @@ void rescaleCubicVolume(PagedVolume* source, const Region& sourceRegion, RawVolu
 					const Voxel& voxel = srcSampler.getVoxel();
 					destination->setVoxel(dstPos, voxel);
 				} else {
-					const Voxel& voxel = createVoxel(Air);
+					const Voxel& voxel = createVoxel(VoxelType::Air);
 					destination->setVoxel(dstPos, voxel);
 				}
 			}

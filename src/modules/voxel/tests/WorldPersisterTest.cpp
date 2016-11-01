@@ -23,7 +23,7 @@ TEST_F(WorldPersisterTest, testSaveLoad) {
 	ASSERT_TRUE(_ctx.getChunk() != chunk2) << "Chunks should be different";
 	_ctx.setChunk(chunk2);
 	ASSERT_TRUE(persister.load(_ctx, _seed)) << "Could not load volume chunk";
-	ASSERT_EQ(Grass1, _volData.getVoxel(32, 32, 32).getMaterial());
+	ASSERT_EQ(VoxelType::Grass1, _volData.getVoxel(32, 32, 32).getMaterial());
 }
 
 }

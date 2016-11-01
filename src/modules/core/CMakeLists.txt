@@ -33,10 +33,11 @@ set(SRCS
 	UTF8.cpp UTF8.h
 	Var.cpp Var.h
 	Vertex.h
+	Zip.h
 )
 set(LIB core)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} io glm ${CMAKE_DL_LIBS})
+target_link_libraries(${LIB} io glm zlib ${CMAKE_DL_LIBS})
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests

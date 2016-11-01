@@ -1,7 +1,7 @@
 #include "RawVolumeRenderer.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
-#include "frontend/MaterialColor.h"
+#include "voxel/MaterialColor.h"
 
 namespace frontend {
 
@@ -180,7 +180,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_whiteTexture->bind(0);
 
 	video::ScopedShader scoped(_worldShader);
-	const MaterialColorArray& materialColors = getMaterialColors();
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_model", glm::mat4());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_view", camera.viewMatrix());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_projection", camera.projectionMatrix());

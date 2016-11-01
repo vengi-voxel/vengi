@@ -6,7 +6,7 @@
 #include "image/Image.h"
 #include "core/GLM.h"
 #include "core/Color.h"
-#include "frontend/MaterialColor.h"
+#include "voxel/MaterialColor.h"
 
 namespace frontend {
 
@@ -26,8 +26,9 @@ TEST_F(MaterialTest, testMaterial) {
 	const int h = 1024;
 	uint8_t buffer[w * h * components];
 
-	const MaterialColorArray& materialColors = getMaterialColors();
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	const int amount = materialColors.size();
+	ASSERT_GT(amount, 0) << "No material colors are defined";
 	auto line_height = h / amount;
 
 	int y = 0;

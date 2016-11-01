@@ -19,7 +19,7 @@ EditorScene::EditorScene() :
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
-	_currentVoxel = voxel::createVoxel(voxel::Grass1);
+	_currentVoxel = voxel::createVoxel(voxel::VoxelType::Grass1);
 	SetIsFocusable(true);
 }
 
@@ -96,7 +96,7 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 	} else if (_result.didHit && _action == Action::OverrideVoxel) {
 		extract = setVoxel(_result.hitVoxel, _currentVoxel);
 	} else if (_result.didHit && _action == Action::DeleteVoxel) {
-		extract = setVoxel(_result.hitVoxel, voxel::createVoxel(voxel::Air));
+		extract = setVoxel(_result.hitVoxel, voxel::createVoxel(voxel::VoxelType::Air));
 	} else if (_result.validPreviousVoxel && _action == Action::PlaceVoxel) {
 		extract = setVoxel(_result.previousVoxel, _currentVoxel);
 	} else if (_result.didHit && _action == Action::PlaceVoxel) {
@@ -142,7 +142,8 @@ bool EditorScene::saveModel(std::string_view file) {
 		return false;
 	}
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
-	if (voxel::VoxFormat::save(_modelVolume, filePtr)) {
+	voxel::VoxFormat f;
+	if (f.save(_modelVolume, filePtr)) {
 		_dirty = false;
 	}
 	return !_dirty;
@@ -154,7 +155,8 @@ bool EditorScene::loadModel(std::string_view file) {
 	if (!(bool)filePtr) {
 		return false;
 	}
-	voxel::RawVolume* newVolume = voxel::VoxFormat::load(filePtr);
+	voxel::VoxFormat f;
+	voxel::RawVolume* newVolume = f.load(filePtr);
 	if (newVolume == nullptr) {
 		return false;
 	}
@@ -273,7 +275,7 @@ void EditorScene::OnProcess() {
 		const int ty = _mouseY + rect.y;
 		const video::Ray& ray = _camera.mouseRay(glm::ivec2(tx, ty));
 		const glm::vec3& dirWithLength = ray.direction * _camera.farPlane();
-		const voxel::Voxel& air = voxel::createVoxel(voxel::Air);
+		const voxel::Voxel& air = voxel::createVoxel(voxel::VoxelType::Air);
 		_result = voxel::pickVoxel(_modelVolume, ray.origin, dirWithLength, air);
 
 		if (_result.validPreviousVoxel) {

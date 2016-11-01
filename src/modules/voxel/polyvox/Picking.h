@@ -59,7 +59,7 @@ public:
 			_result.previousVoxel = sampler.getPosition();
 		}
 		if (_makeVisible) {
-			sampler.setVoxel(createVoxel(Grass1));
+			sampler.setVoxel(createVoxel(VoxelType::Grass1));
 		}
 		return true;
 	}

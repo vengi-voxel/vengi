@@ -19,7 +19,7 @@ struct Biome {
 	}
 
 	constexpr Biome() :
-			Biome(createVoxel(Grass1), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f) {
+			Biome(createVoxel(VoxelType::Grass1), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f) {
 	}
 	const Voxel voxel;
 	const int16_t yMin;
@@ -32,9 +32,9 @@ class BiomeManager {
 private:
 	std::vector<Biome> bioms;
 
-	static constexpr Voxel INVALID = createVoxel(Air);
-	static constexpr Voxel ROCK = createVoxel(Rock1);
-	static constexpr Voxel GRASS = createVoxel(Grass1);
+	static constexpr Voxel INVALID = createVoxel(VoxelType::Air);
+	static constexpr Voxel ROCK = createVoxel(VoxelType::Rock1);
+	static constexpr Voxel GRASS = createVoxel(VoxelType::Grass1);
 	static constexpr Biome DEFAULT = {};
 
 public:

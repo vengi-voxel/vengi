@@ -40,9 +40,9 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, GeneratorContext& ctx, 
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
-			static constexpr Voxel air = createVoxel(Air);
-			static constexpr Voxel water = createVoxel(Water);
-			voxels[0] = createVoxel(Dirt1);
+			static constexpr Voxel air = createVoxel(VoxelType::Air);
+			static constexpr Voxel water = createVoxel(VoxelType::Water);
+			voxels[0] = createVoxel(VoxelType::Dirt1);
 			for (int y = ni - 1; y >= 1; --y) {
 				const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
 				const float noiseVal = noise::norm(

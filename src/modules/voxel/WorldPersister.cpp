@@ -88,7 +88,7 @@ bool WorldPersister::load(GeneratorContext& ctx, long seed) {
 			for (int x = 0; x < width; ++x) {
 				core_assert_msg(voxelBuf.getSize() >= 1, "Failed to load %s (x: %i, y: %i, z: %i)", f->getName().c_str(), x, y, z);
 				static_assert(sizeof(VoxelType) == sizeof(uint8_t), "Voxel type size changed");
-				const VoxelType material = voxelBuf.readByte();
+				const VoxelType material = (VoxelType)voxelBuf.readByte();
 				const Voxel& voxel = createVoxel(material);
 				chunk->setVoxel(x, y, z, voxel);
 			}
@@ -110,7 +110,7 @@ bool WorldPersister::save(GeneratorContext& ctx, long seed) {
 			for (int x = 0; x < width; ++x) {
 				const Voxel& voxel = chunk->getVoxel(x, y, z);
 				static_assert(sizeof(VoxelType) == sizeof(uint8_t), "Voxel type size changed");
-				voxelStream.addByte(voxel.getMaterial());
+				voxelStream.addByte(std::enum_value(voxel.getMaterial()));
 			}
 		}
 	}

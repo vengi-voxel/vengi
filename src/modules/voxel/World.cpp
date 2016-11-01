@@ -71,12 +71,12 @@ World::World() :
 		_pager(*this), _threadPool(core::halfcpus(), "World"), _random(_seed) {
 	_meshSize = core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
-	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Sand1));
-	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.1f, 0.9f, createVoxel(Sand2));
-	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, createVoxel(Dirt1));
-	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createVoxel(Grass1));
-	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, createVoxel(Rock1));
-	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 30, MAX_MOUNTAIN_HEIGHT + 1, 0.32f, 0.32f, createVoxel(Rock2));
+	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 1, 0.5f, 0.5f, createVoxel(VoxelType::Sand1));
+	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.1f, 0.9f, createVoxel(VoxelType::Sand2));
+	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, createVoxel(VoxelType::Dirt1));
+	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createVoxel(VoxelType::Grass1));
+	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, createVoxel(VoxelType::Rock1));
+	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 30, MAX_MOUNTAIN_HEIGHT + 1, 0.32f, 0.32f, createVoxel(VoxelType::Rock2));
 }
 
 World::~World() {
@@ -184,7 +184,7 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 	core_trace_scoped(FindPath);
 	static auto f = [] (const voxel::PagedVolume* volData, const glm::ivec3& v3dPos) {
 		const voxel::Voxel& voxel = volData->getVoxel(v3dPos);
-		return voxel.getMaterial() != Air;
+		return voxel.getMaterial() != VoxelType::Air;
 	};
 
 	const AStarPathfinderParams<voxel::PagedVolume> params(_volumeData, start, end, &listResult, 1.0f, 10000,
@@ -205,7 +205,7 @@ void World::reset() {
 
 void World::createUnderground(GeneratorContext& ctx) {
 	const glm::ivec3 startPos(1, 1, 1);
-	const Voxel& voxel = createVoxel(Grass1);
+	const Voxel& voxel = createVoxel(VoxelType::Grass1);
 	ShapeGenerator::createPlane(ctx, startPos, 10, 10, voxel);
 }
 
@@ -240,11 +240,11 @@ void World::create(GeneratorContext& ctx) {
 		_volData.setVoxel(pos, createVoxel(9));
 	}
 #elif DEBUG_SCENE == 2
-	ShapeGenerator::createPlane(ctx, glm::zero<glm::vec3>(), 300, 300, createVoxel(Grass1));
-	ShapeGenerator::createCone(ctx, glm::zero<glm::vec3>(), 10, 30, 10, createVoxel(Leaves1));
-	ShapeGenerator::createCone(ctx, glm::vec3(10, 0, 10), 10, 30, 10, createVoxel(Leaves2));
-	ShapeGenerator::createCone(ctx, glm::vec3(20, 0, 10), 15, 60, 15, createVoxel(Leaves3));
-	ShapeGenerator::createCone(ctx, glm::vec3(-20, 0, 10), 50, 40, 50, createVoxel(Leaves4));
+	ShapeGenerator::createPlane(ctx, glm::zero<glm::vec3>(), 300, 300, createVoxel(VoxelType::Grass1));
+	ShapeGenerator::createCone(ctx, glm::zero<glm::vec3>(), 10, 30, 10, createVoxel(VoxelType::Leaves1));
+	ShapeGenerator::createCone(ctx, glm::vec3(10, 0, 10), 10, 30, 10, createVoxel(VoxelType::Leaves2));
+	ShapeGenerator::createCone(ctx, glm::vec3(20, 0, 10), 15, 60, 15, createVoxel(VoxelType::Leaves3));
+	ShapeGenerator::createCone(ctx, glm::vec3(-20, 0, 10), 50, 40, 50, createVoxel(VoxelType::Leaves4));
 #elif DEBUG_SCENE == 3
 	const Region& region = ctx.region;
 	const int width = region.getWidthInVoxels();
@@ -253,7 +253,7 @@ void World::create(GeneratorContext& ctx) {
 	const int lowerZ = region.getLowerZ();
 	for (int z = lowerZ; z < lowerZ + depth; ++z) {
 		for (int x = lowerX; x < lowerX + width; ++x) {
-			ctx.setVoxel(glm::ivec3(x, 0, z), createVoxel(Dirt1));
+			ctx.setVoxel(glm::ivec3(x, 0, z), createVoxel(VoxelType::Dirt1));
 		}
 	}
 #else

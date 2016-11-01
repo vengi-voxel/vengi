@@ -7,7 +7,7 @@
 #include "core/Color.h"
 #include <array>
 
-namespace frontend {
+namespace voxel {
 
 // this size must match the color uniform size in the shader
 typedef std::array<glm::vec4, 32> MaterialColorArray;

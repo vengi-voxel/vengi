@@ -12,7 +12,7 @@ namespace voxel {
 
 int TreeGenerator::findFloor(const GeneratorContext& ctx, int x, int z) {
 	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; i--) {
-		const int material = ctx.getVoxel(x, i, z).getMaterial();
+		const VoxelType material = ctx.getVoxel(x, i, z).getMaterial();
 		if (isLeaves(material)) {
 			return -1;
 		}
@@ -92,13 +92,12 @@ void TreeGenerator::createTrees(GeneratorContext& ctx, const BiomeManager& biomM
 
 void TreeGenerator::addTree(GeneratorContext& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
 	int top = (int) pos.y + trunkHeight;
-	static constexpr Voxel voxel = createVoxel(Wood1);
-	const VoxelType leavesType = random.random(Leaves1, Leaves10);
+	static constexpr Voxel voxel = createVoxel(VoxelType::Wood1);
+	const VoxelType leavesType = (VoxelType)random.random(std::enum_value(VoxelType::Leaves1), std::enum_value(VoxelType::Leaves10));
 	const Voxel leavesVoxel = createVoxel(leavesType);
 
 	if (type == TreeType::LSYSTEM) {
 		// TODO: select leave type via rule
-		const VoxelType leavesType = random.random(Leaves1, Leaves10);
 		const Voxel leavesVoxel = createVoxel(leavesType);
 		LSystemContext lsystemCtx;
 		// TODO: improve rule

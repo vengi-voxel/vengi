@@ -75,9 +75,9 @@ int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, con
 		VertexData& rEntry = existingVertices(uX, uY, ct);
 
 		const uint8_t ambientOcclusion = vertexAmbientOcclusion(
-			face1.getMaterial() != voxel::Air && face1.getMaterial() != voxel::Water,
-			face2.getMaterial() != voxel::Air && face2.getMaterial() != voxel::Water,
-			corner.getMaterial() != voxel::Air && corner.getMaterial() != voxel::Water);
+			!isAir(face1.getMaterial()) && !isWater(face1.getMaterial()),
+			!isAir(face2.getMaterial()) && !isWater(face2.getMaterial()),
+			!isAir(corner.getMaterial()) && !isWater(corner.getMaterial()));
 
 		if (rEntry.index == -1) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.

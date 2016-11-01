@@ -35,9 +35,9 @@ protected:
 				for (int x = 0; x < region.getWidthInVoxels(); ++x) {
 					const glm::ivec3 pos(x, y, z);
 					const int distance = (pos - center).length();
-					Voxel uVoxelValue = createVoxel(Air);
+					Voxel uVoxelValue = createVoxel(VoxelType::Air);
 					if (distance <= 30) {
-						uVoxelValue = createVoxel(Grass1);
+						uVoxelValue = createVoxel(VoxelType::Grass1);
 					}
 
 					chunk->setVoxel(x, y, z, uVoxelValue);
