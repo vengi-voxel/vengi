@@ -128,15 +128,15 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		0xff880000, 0xff770000, 0xff550000, 0xff440000, 0xff220000, 0xff110000, 0xffeeeeee, 0xffdddddd, 0xffbbbbbb, 0xffaaaaaa, 0xff888888, 0xff777777, 0xff555555, 0xff444444, 0xff222222, 0xff111111
 	};
 
-	_paletteSize = SDL_arraysize(palette);
-	_palette = new glm::vec4[_paletteSize];
-
+	const size_t paletteSize = SDL_arraysize(palette);
+	_palette.reserve(paletteSize);
 	// convert to our palette
 	for (uint32_t i = 0; i < SDL_arraysize(palette); ++i) {
 		const uint32_t p = palette[i];
 		const glm::vec4& color = core::Color::FromRGBA(p);
 		_palette[i] = findClosestMatch(color);
 	}
+	_paletteSize = paletteSize;
 
 	do {
 		uint32_t chunkId;
@@ -222,12 +222,14 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 			//                       |     palette[i + 1] = ReadRGBA();
 			//                       | }
 			// -------------------------------------------------------------------------------
+			_paletteSize = 0;
 			for (int i = 0; i <= 254; i++) {
 				uint32_t rgba;
 				wrap(stream.readInt(rgba))
 				const glm::vec4& color = core::Color::FromRGBA(rgba);
 				_palette[i + 1] = findClosestMatch(color);
 			}
+			_paletteSize = paletteSize;
 		} else if (chunkId == FourCC('M','A','T','T')) {
 			Log::debug("Found material chunk with %u bytes", numBytesChunk);
 			// 9. Chunk id 'MATT' : material, if it is absent, it is diffuse material

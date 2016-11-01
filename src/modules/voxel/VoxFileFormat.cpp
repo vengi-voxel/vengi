@@ -1,6 +1,7 @@
 #include "VoxFileFormat.h"
 #include "MaterialColor.h"
 #include "core/Log.h"
+#include <limits>
 
 namespace voxel {
 
@@ -25,10 +26,11 @@ glm::vec4 VoxFileFormat::paletteColor(uint32_t index) {
 }
 
 glm::vec4 VoxFileFormat::findClosestMatch(const glm::vec4& color) const {
-	// TODO:
 	if (_paletteSize > 0) {
 	}
-	return color;
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	const int index = core::Color::getClosestMatch(color, materialColors);
+	return materialColors[index];
 }
 
 }

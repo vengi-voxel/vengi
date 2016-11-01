@@ -8,7 +8,7 @@ namespace voxel {
 
 class VoxFileFormat {
 protected:
-	glm::vec4 *_palette = nullptr;
+	std::vector<glm::vec4> _palette;
 	size_t _paletteSize = 0;
 
 	VoxelType findVoxelType(const glm::vec4& color) const;

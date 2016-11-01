@@ -175,8 +175,8 @@ bool QB2Format::loadFromStream(io::FileStream& stream) {
 
 		uint32_t colorCount;
 		wrap(stream.readInt(colorCount));
-		_palette = new glm::vec4[colorCount];
-		_paletteSize = colorCount;
+		_paletteSize = 0;
+		_palette.reserve(colorCount);
 		for (uint32_t i = 0; i < colorCount; ++i) {
 			uint8_t colorByteR;
 			uint8_t colorByteG;
@@ -196,6 +196,7 @@ bool QB2Format::loadFromStream(io::FileStream& stream) {
 			const glm::vec4& finalColor = findClosestMatch(color);
 			_palette[i] = finalColor;
 		}
+		_paletteSize = colorCount;
 	}
 
 	if (strncmp(buf, "DATATREE", sizeof(buf))) {
