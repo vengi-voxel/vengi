@@ -35,8 +35,13 @@
 
 namespace core {
 
-int Process::exec (const std::string& command, const std::vector<std::string>& arguments) {
+int Process::exec (const std::string& command, const std::vector<std::string>& arguments, size_t bufSize, char *output) {
 #if __LINUX__ or __MACOSX__
+	int link[2];
+	if (::pipe(link) < 0) {
+		Log::error("pipe failed: %s", strerror(errno));
+		return -1;
+	}
 	const pid_t childPid = ::fork();
 	if (childPid < 0) {
 		Log::error("fork failed: %s", strerror(errno));
@@ -53,14 +58,21 @@ int Process::exec (const std::string& command, const std::vector<std::string>& a
 				break;
 		}
 		argv[argc] = nullptr;
+		::dup2(link[1], STDOUT_FILENO);
+		::close(link[0]);
+		::close(link[1]);
 		// we are the child
 		::execv(command.c_str(), const_cast<char* const*>(argv));
 
 		// this should never get called
 		Log::error("failed to run '%s' with %i parameters: %s (%i)", command.c_str(), (int)arguments.size(), strerror(errno), errno);
-		::exit(10);
+		::exit(-1);
 	}
 
+	close(link[1]);
+	if (bufSize > 0) {
+		read(link[0], output, bufSize);
+	}
 	// we are the parent and are blocking until the child stopped
 	int status;
 	const pid_t pid = ::wait(&status);
@@ -77,8 +89,9 @@ int Process::exec (const std::string& command, const std::vector<std::string>& a
 	}
 
 	Log::debug("child process returned with code %d", WEXITSTATUS(status));
-	if (WEXITSTATUS(status) >= 5)
+	if (WEXITSTATUS(status) != 0) {
 		return -1;
+	}
 
 	// success
 	return 0;
