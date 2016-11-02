@@ -74,6 +74,12 @@ public:
 	 */
 	voxel::RawVolume* setVolume(voxel::RawVolume* volume);
 
+	size_t numVertices() const;
+	const voxel::Vertex* vertices() const;
+
+	size_t numIndices() const;
+	const voxel::IndexType* indices() const;
+
 	/**
 	 * @sa setVolume()
 	 */

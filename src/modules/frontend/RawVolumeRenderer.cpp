@@ -345,4 +345,32 @@ voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	return old;
 }
 
+size_t RawVolumeRenderer::numVertices() const {
+	if (_mesh == nullptr) {
+		return 0u;
+	}
+	return _mesh->getNoOfVertices();
+}
+
+const voxel::Vertex* RawVolumeRenderer::vertices() const {
+	if (_mesh == nullptr) {
+		return 0u;
+	}
+	return _mesh->getRawVertexData();
+}
+
+size_t RawVolumeRenderer::numIndices() const {
+	if (_mesh == nullptr) {
+		return 0u;
+	}
+	return _mesh->getNoOfIndices();
+}
+
+const voxel::IndexType* RawVolumeRenderer::indices() const {
+	if (_mesh == nullptr) {
+		return 0u;
+	}
+	return _mesh->getRawIndexData();
+}
+
 }

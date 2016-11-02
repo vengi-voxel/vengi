@@ -14,6 +14,7 @@
 #include "ui/UIApp.h"
 #define VOXELIZER_IMPLEMENTATION
 #include "../voxelizer.h"
+#include <assimp/Exporter.hpp>
 
 EditorScene::EditorScene() :
 		ui::Widget(), _rawVolumeRenderer(true), _cursorVolume(nullptr), _modelVolume(nullptr),
@@ -190,8 +191,49 @@ bool EditorScene::exportModel(std::string_view file) {
 		return false;
 	}
 
-	//const std::string& ext = filePtr->getExtension();
-	// TODO: assimp exporters
+	const std::string& ext = filePtr->getExtension();
+	Assimp::Exporter exporter;
+	Assimp::ExportProperties settings;
+	// TODO: exporter.SetIOHandler(&iosystem);
+	const size_t num = exporter.GetExportFormatCount();
+	for (size_t i = 0; i < num; ++i) {
+		const aiExportFormatDesc* desc = exporter.GetExportFormatDescription(i);
+		if (ext == desc->fileExtension) {
+			Log::debug("Export %s to %s (%s)", ext.c_str(), desc->id, desc->description);
+			aiScene scene;
+			aiMesh mesh;
+			aiMaterial material;
+
+			mesh.mNumVertices = _rawVolumeRenderer.numVertices();
+			std::vector<aiVector3D> vertices(mesh.mNumVertices);
+			const voxel::Vertex* voxels = _rawVolumeRenderer.vertices();
+			for (size_t i = 0; i < mesh.mNumVertices; ++i) {
+				const voxel::Vertex& v = voxels[i];
+				vertices[i] = aiVector3D(v.position.x, v.position.y, v.position.z);
+			}
+			mesh.mVertices = &vertices.front();
+			for (int i = 0; i < AI_MAX_NUMBER_OF_COLOR_SETS; ++i) {
+				// TODO:
+				mesh.mColors[i] = nullptr;
+			}
+			aiFace face;
+			face.mNumIndices = (unsigned int)_rawVolumeRenderer.numIndices();
+			face.mIndices = (unsigned int*)_rawVolumeRenderer.indices();
+
+			mesh.mFaces = &face;
+			mesh.mNumFaces = 1;
+
+			aiMesh* meshes[] = { &mesh };
+			scene.mMeshes = meshes;
+
+			aiReturn ret = exporter.Export(&scene, desc->id, file.data(), 0, &settings);
+			if (ret == aiReturn_SUCCESS) {
+				return false;
+			}
+		} else {
+			Log::debug("Don't export %s to %s (%s, '%s')", ext.c_str(), desc->id, desc->description, desc->fileExtension);
+		}
+	}
 	return false;
 }
 
