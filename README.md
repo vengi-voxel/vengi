@@ -17,8 +17,7 @@ Voxel engine with procedural generated landscape.
  * postgresql-server-dev >= 9.5
  * libpq
  * flatbuffers
- * nativefiledialog
- * gtk-3 (linux / nativefiledialog)
+ * nativefiledialog (+gtk3 or qt on linux)
  * enet
  * zlib
  * turbobadger
@@ -29,7 +28,7 @@ Voxel engine with procedural generated landscape.
 Some of these dependencies might not be available as packages in your toolchain - most of them are also bundled with the application. But local installed headers always have the higher priority.
 
 ## Debian
-    apt-get install libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev libenet-dev libgtk-3-dev
+    apt-get install libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev libenet-dev libgtk-3-dev qt5-default qttools5-dev qttools5-dev-tools
 
 ## Arch Linux
     pacman [...]
