@@ -142,7 +142,7 @@ bool MainWindow::voxelize(std::string_view file) {
 	if (_scene->isDirty()) {
 		_voxelizeFile = std::string(file);
 		popup("Unsaved Modifications",
-				"There are unsaved modifications.\nDo you wish to discard them and load?",
+				"There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?",
 				ui::Window::PopupType::YesNo, "unsaved_changes_voxelize");
 	}
 	const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
