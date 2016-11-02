@@ -118,12 +118,6 @@ calc_swizzle32(const SDL_PixelFormat * srcfmt, const SDL_PixelFormat * dstfmt)
         16, 8, 0, 24,
         0, NULL
     };
-    if (!srcfmt) {
-        srcfmt = &default_pixel_format;
-    }
-    if (!dstfmt) {
-        dstfmt = &default_pixel_format;
-    }
     const vector unsigned char plus = VECUINT8_LITERAL(0x00, 0x00, 0x00, 0x00,
                                                        0x04, 0x04, 0x04, 0x04,
                                                        0x08, 0x08, 0x08, 0x08,
@@ -131,11 +125,20 @@ calc_swizzle32(const SDL_PixelFormat * srcfmt, const SDL_PixelFormat * dstfmt)
                                                        0x0C);
     vector unsigned char vswiz;
     vector unsigned int srcvec;
+    Uint32 rmask, gmask, bmask, amask;
+
+    if (!srcfmt) {
+        srcfmt = &default_pixel_format;
+    }
+    if (!dstfmt) {
+        dstfmt = &default_pixel_format;
+    }
+
 #define RESHIFT(X) (3 - ((X) >> 3))
-    Uint32 rmask = RESHIFT(srcfmt->Rshift) << (dstfmt->Rshift);
-    Uint32 gmask = RESHIFT(srcfmt->Gshift) << (dstfmt->Gshift);
-    Uint32 bmask = RESHIFT(srcfmt->Bshift) << (dstfmt->Bshift);
-    Uint32 amask;
+    rmask = RESHIFT(srcfmt->Rshift) << (dstfmt->Rshift);
+    gmask = RESHIFT(srcfmt->Gshift) << (dstfmt->Gshift);
+    bmask = RESHIFT(srcfmt->Bshift) << (dstfmt->Bshift);
+
     /* Use zero for alpha if either surface doesn't have alpha */
     if (dstfmt->Amask) {
         amask =
@@ -147,6 +150,7 @@ calc_swizzle32(const SDL_PixelFormat * srcfmt, const SDL_PixelFormat * dstfmt)
                           0xFFFFFFFF);
     }
 #undef RESHIFT
+
     ((unsigned int *) (char *) &srcvec)[0] = (rmask | gmask | bmask | amask);
     vswiz = vec_add(plus, (vector unsigned char) vec_splat(srcvec, 0));
     return (vswiz);

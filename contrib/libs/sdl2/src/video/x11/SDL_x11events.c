@@ -568,15 +568,25 @@ X11_DispatchEvent(_THIS)
         printf("Filtered event type = %d display = %d window = %d\n",
                xevent.type, xevent.xany.display, xevent.xany.window);
 #endif
+        /* Make sure dead key press/release events are sent */
+        /* But only if we're using one of the DBus IMEs, otherwise
+           some XIM IMEs will generate duplicate events */
         if (orig_keycode) {
-            /* Make sure dead key press/release events are sent */
+#if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX_FRONTEND_H)
             SDL_Scancode scancode = videodata->key_layout[orig_keycode];
+            videodata->filter_code = orig_keycode;
+            videodata->filter_time = xevent.xkey.time;
+
             if (orig_event_type == KeyPress) {
                 SDL_SendKeyboardKey(SDL_PRESSED, scancode);
             } else {
                 SDL_SendKeyboardKey(SDL_RELEASED, scancode);
             }
+#endif
         }
+        return;
+    } else if (orig_keycode == videodata->filter_code && xevent.xkey.time == videodata->filter_time) {
+        /* This is a duplicate event, resent by an IME - skip it. */
         return;
     }
 
