@@ -71,6 +71,9 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("load")) {
 		load("");
 		return true;
+	} else if (ev.target->GetID() == TBIDC("export")) {
+		exportFile("");
+		return true;
 	} else if (ev.target->GetID() == TBIDC("save")) {
 		save("");
 		return true;
@@ -164,6 +167,19 @@ bool MainWindow::voxelize(std::string_view file) {
 			"There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?",
 			ui::Window::PopupType::YesNo, "unsaved_changes_voxelize");
 	return false;
+}
+
+bool MainWindow::exportFile(std::string_view file) {
+	std::string f;
+	if (file.empty()) {
+		// TODO: extract extension - filter
+		f = _voxedit->openDialog("vox,qbt");
+		if (f.empty()) {
+			return false;
+		}
+		file = f;
+	}
+	return _scene->exportModel(file);
 }
 
 bool MainWindow::load(std::string_view file) {

@@ -38,6 +38,7 @@ public:
 	bool voxelize(std::string_view file);
 	bool save(std::string_view file);
 	bool load(std::string_view file);
+	bool exportFile(std::string_view file);
 	bool createNew(bool force);
 
 };

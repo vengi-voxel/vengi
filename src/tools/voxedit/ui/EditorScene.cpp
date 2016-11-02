@@ -183,6 +183,18 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 	return false;
 }
 
+bool EditorScene::exportModel(std::string_view file) {
+	core_trace_scoped(EditorSceneExportModel);
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
+	if (!(bool)filePtr) {
+		return false;
+	}
+
+	//const std::string& ext = filePtr->getExtension();
+	// TODO: assimp exporters
+	return false;
+}
+
 bool EditorScene::loadModel(std::string_view file) {
 	core_trace_scoped(EditorSceneLoadModel);
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));

@@ -77,6 +77,7 @@ public:
 	bool voxelizeModel(const video::MeshPtr& mesh);
 	bool saveModel(std::string_view file);
 	bool loadModel(std::string_view file);
+	bool exportModel(std::string_view file);
 	bool newModel(bool force);
 
 	void setActionExecutionDelay(long actionExecutionDelay);

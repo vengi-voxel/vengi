@@ -24,6 +24,7 @@ public:
 	bool saveFile(std::string_view file);
 	bool loadFile(std::string_view file);
 	bool voxelizeFile(std::string_view file);
+	bool exportFile(std::string_view file);
 	bool newFile(bool force = false);
 
 	video::MeshPoolPtr meshPool() const;

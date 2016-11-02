@@ -32,6 +32,10 @@ bool VoxEdit::newFile(bool force) {
 	return _mainWindow->createNew(force);
 }
 
+bool VoxEdit::exportFile(std::string_view file) {
+	return _mainWindow->exportFile(file);
+}
+
 core::AppState VoxEdit::onCleanup() {
 	const core::AppState state = Super::onCleanup();
 	_meshPool->shutdown();
@@ -74,6 +78,16 @@ core::AppState VoxEdit::onInit() {
 			Log::error("Failed to save to file %s", args[0].c_str());
 		}
 	}).setArgumentCompleter(fileCompleter).setHelp("Save the current state to the given file");
+
+	core::Command::registerCommand("export", [this] (const core::CmdArgs& args) {
+		if (args.empty()) {
+			Log::error("Usage: export <filename>");
+			return;
+		}
+		if (!exportFile(args[0])) {
+			Log::error("Failed to export to file %s", args[0].c_str());
+		}
+	}).setArgumentCompleter(fileCompleter).setHelp("Export the current state to the given file");
 
 	core::Command::registerCommand("load", [this] (const core::CmdArgs& args) {
 		if (args.empty()) {

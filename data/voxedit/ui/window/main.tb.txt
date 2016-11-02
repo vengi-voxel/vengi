@@ -25,6 +25,11 @@ TBLayout: distribution: gravity, axis: y
 							@include definitions>menubutton
 							text Load
 							id load
+						TBButton
+							gravity: left
+							@include definitions>menubutton
+							text Export
+							id export
 						TBLayout: gravity: left right
 							TBWidget
 						TBSelectDropdown: gravity: left top
