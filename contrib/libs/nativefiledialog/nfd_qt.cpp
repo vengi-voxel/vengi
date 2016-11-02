@@ -9,7 +9,6 @@
 #include <string.h>
 #include <QApplication>
 #include <QFileDialog>
-#include "nfd.h"
 #include "nfd_common.h"
 
 const char NOPATH_MSG[] = "The selected path is out of memory.";
@@ -48,8 +47,7 @@ static void AddFiltersToDialog( QFileDialog &dialog, const char *filterList )
 }
 
 static nfdresult_t NFD_QTOpenDialog(QFileDialog::AcceptMode acceptMode, QFileDialog::FileMode fileMode,
-        const nfdchar_t *prompt, const char *filterList, const nfdchar_t *defaultFilename,
-        const nfdchar_t *defaultPath, nfdchar_t **outPath, nfdpathset_t *outPaths) {
+        const char *filterList, const nfdchar_t *defaultPath, nfdchar_t **outPath, nfdpathset_t *outPaths) {
     int argc = 0;
     QApplication app( argc, nullptr );
 
@@ -64,14 +62,6 @@ static nfdresult_t NFD_QTOpenDialog(QFileDialog::AcceptMode acceptMode, QFileDia
     {
         dialog.setDirectory( defaultPath );
     }
-    if ( defaultFilename )
-    {
-        dialog.selectFile( defaultFilename );
-    }
-    if ( prompt )
-    {
-        dialog.setLabelText( QFileDialog::LookIn, prompt );
-    }
 
     nfdresult_t result = NFD_CANCEL;
     dialog.show();
@@ -82,11 +72,11 @@ static nfdresult_t NFD_QTOpenDialog(QFileDialog::AcceptMode acceptMode, QFileDia
 
     for (;;) {
         app.processEvents();
-        if (dialog.isHidden()) {
+        /*if (dialog.isHidden()) {
             NFDi_SetError(DIALOG_CLOSED_MSG);
             result = NFD_ERROR;
             break;
-        }
+        }*/
         const int dialogResult = dialog.result();
         if ( dialogResult != 0 )
         {
@@ -153,6 +143,7 @@ static nfdresult_t NFD_QTOpenDialog(QFileDialog::AcceptMode acceptMode, QFileDia
                     p_buf += byteLen;
                     ++count;
                 }
+                result = NFD_OKAY;
             }
             break;
         }
@@ -163,20 +154,20 @@ static nfdresult_t NFD_QTOpenDialog(QFileDialog::AcceptMode acceptMode, QFileDia
 
 nfdresult_t NFD_OpenDialog( const char *filterList, const nfdchar_t *defaultPath, nfdchar_t **outPath )
 {
-    return NFD_QTOpenDialog(QFileDialog::AcceptOpen, QFileDialog::ExistingFile, nullptr, filterList, nullptr, defaultPath, outPath, nullptr);
+    return NFD_QTOpenDialog(QFileDialog::AcceptOpen, QFileDialog::ExistingFile, filterList, defaultPath, outPath, nullptr);
 }
 
 nfdresult_t NFD_OpenDialogMultiple( const nfdchar_t *filterList, const nfdchar_t *defaultPath, nfdpathset_t *outPaths )
 {
-    return NFD_QTOpenDialog(QFileDialog::AcceptOpen, QFileDialog::ExistingFiles, nullptr, filterList, nullptr, defaultPath, nullptr, outPaths);
+    return NFD_QTOpenDialog(QFileDialog::AcceptOpen, QFileDialog::ExistingFiles, filterList, defaultPath, nullptr, outPaths);
 }
 
-nfdresult_t NFD_SaveDialog( const nfdchar_t *filterList, const nfdchar_t *defaultPath, const nfdchar_t *defaultFilename, nfdchar_t **outPath )
+nfdresult_t NFD_SaveDialog( const nfdchar_t *filterList, const nfdchar_t *defaultPath, nfdchar_t **outPath )
 {
-    return NFD_QTOpenDialog(QFileDialog::AcceptSave, QFileDialog::ExistingFile, nullptr, filterList, nullptr, defaultPath, outPath, nullptr);
+    return NFD_QTOpenDialog(QFileDialog::AcceptSave, QFileDialog::ExistingFile, filterList, defaultPath, outPath, nullptr);
 }
 
-nfdresult_t NFD_ChooseDirectory( const nfdchar_t *prompt, const nfdchar_t *defaultPath, nfdchar_t **outPath )
+nfdresult_t NFD_PickFolder( const nfdchar_t *defaultPath, nfdchar_t **outPath )
 {
-    return NFD_QTOpenDialog(QFileDialog::AcceptOpen, QFileDialog::Directory, prompt, nullptr, nullptr, defaultPath, outPath, nullptr);
+    return NFD_QTOpenDialog(QFileDialog::AcceptOpen, QFileDialog::Directory, nullptr, defaultPath, outPath, nullptr);
 }

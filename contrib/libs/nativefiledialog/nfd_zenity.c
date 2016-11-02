@@ -146,7 +146,7 @@ nfdresult_t NFD_OpenDialogMultiple( const nfdchar_t *filterList, const nfdchar_t
     return NFD_OKAY;
 }
 
-nfdresult_t NFD_SaveDialog( const nfdchar_t *filterList, const nfdchar_t *defaultPath, const nfdchar_t *defaultFilename, nfdchar_t **outPath )
+nfdresult_t NFD_SaveDialog( const nfdchar_t *filterList, const nfdchar_t *defaultPath, nfdchar_t **outPath )
 {
     const char *arguments[] =
     {
@@ -165,7 +165,7 @@ nfdresult_t NFD_SaveDialog( const nfdchar_t *filterList, const nfdchar_t *defaul
     return NFD_OKAY;
 }
 
-nfdresult_t NFD_ChooseDirectory( const nfdchar_t *prompt, const nfdchar_t *defaultPath, nfdchar_t **outPath )
+nfdresult_t NFD_PickFolder( const nfdchar_t *defaultPath, nfdchar_t **outPath )
 {
     const char *arguments[] = {
         "--file-selection",

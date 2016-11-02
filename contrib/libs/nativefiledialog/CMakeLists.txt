@@ -1,11 +1,11 @@
 set(LIB nativefiledialog)
-set(SRCS nfd_common.c nfd.h)
+set(SRCS common.h nfd_common.h nfd_common.c nfd.h)
 
 set(EXTRA_INCLUDE_DIRS)
 set(EXTRA_LIBRARIES)
 
 if (APPLE)
-	set(SRCS ${SRCS} nfd_cocoa.mm)
+	set(SRCS ${SRCS} nfd_cocoa.m)
 	set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} AppKit)
 endif()
 

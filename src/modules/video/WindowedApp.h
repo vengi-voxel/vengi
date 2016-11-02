@@ -65,11 +65,18 @@ public:
 		return _dimension.y;
 	}
 
+	enum class OpenFileMode {
+		Save, Open, Directory
+	};
+
 	/**
 	 * @param filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
 	 * @return The selected string of the file - or an empty string
 	 */
-	std::string openFileDialog(const std::string& filter = "");
+	std::string fileDialog(OpenFileMode mode, const std::string& filter = "");
+	std::string saveDialog(const std::string& filter = "");
+	std::string openDialog(const std::string& filter = "");
+	std::string directoryDialog();
 
 	virtual core::AppState onRunning() override;
 	virtual void onAfterRunning() override;
@@ -80,5 +87,17 @@ public:
 	virtual core::AppState onCleanup() override;
 	virtual void onWindowResize() override;
 };
+
+inline std::string WindowedApp::saveDialog(const std::string& filter) {
+	return fileDialog(OpenFileMode::Save, filter);
+}
+
+inline std::string WindowedApp::openDialog(const std::string& filter) {
+	return fileDialog(OpenFileMode::Open, filter);
+}
+
+inline std::string WindowedApp::directoryDialog() {
+	return fileDialog(OpenFileMode::Directory);
+}
 
 }

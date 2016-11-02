@@ -69,12 +69,10 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		createNew(false);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("load")) {
-		// TODO:
-		load("magicavoxel.vox");
+		load("");
 		return true;
 	} else if (ev.target->GetID() == TBIDC("save")) {
-		// TODO:
-		save("magicavoxel.vox");
+		save("");
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(_showGrid->GetValue() == 1);
@@ -135,28 +133,58 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 }
 
 bool MainWindow::save(std::string_view file) {
+	if (file.empty()) {
+		const std::string& f = _voxedit->saveDialog("vox,qbt");
+		if (f.empty()) {
+			return false;
+		}
+		return _scene->saveModel(f);
+	}
+
 	return _scene->saveModel(file);
 }
 
 bool MainWindow::voxelize(std::string_view file) {
-	if (_scene->isDirty()) {
-		_voxelizeFile = std::string(file);
-		popup("Unsaved Modifications",
-				"There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?",
-				ui::Window::PopupType::YesNo, "unsaved_changes_voxelize");
+	std::string f;
+	if (file.empty()) {
+		f = _voxedit->openDialog("vox,qbt");
+		if (f.empty()) {
+			return false;
+		}
+		file = f;
 	}
-	const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
-	return _scene->voxelizeModel(mesh);
+
+	if (!_scene->isDirty()) {
+		const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
+		return _scene->voxelizeModel(mesh);
+	}
+
+	_voxelizeFile = std::string(file);
+	popup("Unsaved Modifications",
+			"There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?",
+			ui::Window::PopupType::YesNo, "unsaved_changes_voxelize");
+	return false;
 }
 
 bool MainWindow::load(std::string_view file) {
-	if (_scene->isDirty()) {
-		_loadFile = std::string(file);
-		popup("Unsaved Modifications",
-				"There are unsaved modifications.\nDo you wish to discard them and load?",
-				ui::Window::PopupType::YesNo, "unsaved_changes_load");
+	std::string f;
+	if (file.empty()) {
+		f = _voxedit->openDialog("vox,qbt");
+		if (f.empty()) {
+			return false;
+		}
+		file = f;
 	}
-	return _scene->loadModel(file);
+
+	if (!_scene->isDirty()) {
+		return _scene->loadModel(file);
+	}
+
+	_loadFile = std::string(file);
+	popup("Unsaved Modifications",
+			"There are unsaved modifications.\nDo you wish to discard them and load?",
+			ui::Window::PopupType::YesNo, "unsaved_changes_load");
+	return false;
 }
 
 bool MainWindow::createNew(bool force) {

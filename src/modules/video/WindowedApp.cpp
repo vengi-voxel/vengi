@@ -368,14 +368,30 @@ core::AppState WindowedApp::onCleanup() {
 	return App::onCleanup();
 }
 
-std::string WindowedApp::openFileDialog(const std::string& filter) {
+std::string WindowedApp::fileDialog(OpenFileMode mode, const std::string& filter) {
 	nfdchar_t *outPath = nullptr;
-	nfdresult_t result = NFD_OpenDialog(filter.c_str(), "", &outPath);
+	nfdresult_t result;
+	if (mode == OpenFileMode::Open) {
+		result = NFD_OpenDialog(filter.c_str(), nullptr, &outPath);
+	} else if (mode == OpenFileMode::Save) {
+		result = NFD_SaveDialog(filter.c_str(), nullptr, &outPath);
+	} else {
+		result = NFD_PickFolder(nullptr, &outPath);
+	}
 	if (outPath && result == NFD_OKAY) {
+		Log::info("Selected %s", outPath);
 		std::string path = outPath;
 		free(outPath);
 		SDL_RaiseWindow(_window);
 		return path;
+	} else if (result == NFD_CANCEL) {
+		Log::info("Cancel selection");
+	} else if (result == NFD_ERROR) {
+		const char *error = NFD_GetError();
+		if (error == nullptr) {
+			error = "Unknown";
+		}
+		Log::info("Error: %s", error);
 	}
 	free(outPath);
 	SDL_RaiseWindow(_window);
