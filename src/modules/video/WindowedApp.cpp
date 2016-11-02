@@ -383,6 +383,7 @@ std::string WindowedApp::fileDialog(OpenFileMode mode, const std::string& filter
 		std::string path = outPath;
 		free(outPath);
 		SDL_RaiseWindow(_window);
+		SDL_SetWindowInputFocus(_window);
 		return path;
 	} else if (result == NFD_CANCEL) {
 		Log::info("Cancel selection");
@@ -395,6 +396,7 @@ std::string WindowedApp::fileDialog(OpenFileMode mode, const std::string& filter
 	}
 	free(outPath);
 	SDL_RaiseWindow(_window);
+	SDL_SetWindowInputFocus(_window);
 	return "";
 }
 
