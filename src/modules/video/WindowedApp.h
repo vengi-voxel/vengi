@@ -65,6 +65,12 @@ public:
 		return _dimension.y;
 	}
 
+	/**
+	 * @param filter png,jpg;psd The default filter is for png and jpg files. A second filter is available for psd files. There is a wildcard option in a dropdown.
+	 * @return The selected string of the file - or an empty string
+	 */
+	std::string openFileDialog(const std::string& filter = "");
+
 	virtual core::AppState onRunning() override;
 	virtual void onAfterRunning() override;
 	virtual bool onKeyRelease(int32_t key) override;

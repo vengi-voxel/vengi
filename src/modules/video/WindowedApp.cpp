@@ -14,6 +14,7 @@
 #include "core/Remotery.h"
 #include "core/Singleton.h"
 #include "ShaderManager.h"
+#include <nfd.h>
 
 namespace video {
 
@@ -364,8 +365,21 @@ core::AppState WindowedApp::onCleanup() {
 	Log::info("%s", keybindings.c_str());
 	filesystem()->write("keybindings.cfg", keybindings);
 
-
 	return App::onCleanup();
+}
+
+std::string WindowedApp::openFileDialog(const std::string& filter) {
+	nfdchar_t *outPath = nullptr;
+	nfdresult_t result = NFD_OpenDialog(filter.c_str(), "", &outPath);
+	if (outPath && result == NFD_OKAY) {
+		std::string path = outPath;
+		free(outPath);
+		SDL_RaiseWindow(_window);
+		return path;
+	}
+	free(outPath);
+	SDL_RaiseWindow(_window);
+	return "";
 }
 
 }
