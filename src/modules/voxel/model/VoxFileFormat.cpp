@@ -1,6 +1,7 @@
 #include "VoxFileFormat.h"
-#include "MaterialColor.h"
+#include "voxel/MaterialColor.h"
 #include "core/Log.h"
+#include "core/Color.h"
 #include <limits>
 
 namespace voxel {

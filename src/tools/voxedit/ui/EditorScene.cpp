@@ -8,7 +8,8 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedScissor.h"
 #include "video/ScopedFrameBuffer.h"
-#include "voxel/VoxFormat.h"
+#include "voxel/model/VoxFormat.h"
+#include "voxel/model/QB2Format.h"
 #include "voxel/polyvox/VolumeMerger.h"
 #include "ui/UIApp.h"
 #define VOXELIZER_IMPLEMENTATION

@@ -1,8 +1,8 @@
 set(SRCS
 	font/stb_truetype.h
-	VoxFileFormat.h VoxFileFormat.cpp
-	VoxFormat.h VoxFormat.cpp
-	QB2Format.h QB2Format.cpp
+	model/VoxFileFormat.h model/VoxFileFormat.cpp
+	model/VoxFormat.h model/VoxFormat.cpp
+	model/QB2Format.h model/QB2Format.cpp
 	font/VoxelFont.h font/VoxelFont.cpp
 	BiomeManager.h BiomeManager.cpp
 	LodCreator.h
@@ -52,5 +52,6 @@ gtest_suite_files(tests
 	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
 	tests/VoxFormatTest.cpp
+	tests/QB2FormatTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

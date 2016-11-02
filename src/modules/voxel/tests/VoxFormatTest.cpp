@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/VoxFormat.h"
+#include "voxel/model/VoxFormat.h"
 
 namespace voxel {
 

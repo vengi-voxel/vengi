@@ -5,6 +5,7 @@
 #include "QB2Format.h"
 #include "core/Common.h"
 #include "core/Zip.h"
+#include "core/Color.h"
 
 namespace voxel {
 

@@ -2,7 +2,6 @@
 
 #include "voxel/polyvox/RawVolume.h"
 #include "io/File.h"
-#include "core/Color.h"
 
 namespace voxel {
 
