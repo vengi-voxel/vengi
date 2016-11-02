@@ -164,7 +164,7 @@ nfdresult_t NFD_OpenDialogMultiple( const nfdchar_t *filterList, const nfdchar_t
 
 nfdresult_t NFD_SaveDialog( const nfdchar_t *filterList, const nfdchar_t *defaultPath, nfdchar_t **outPath )
 {
-    return NFD_QTOpenDialog(QFileDialog::AcceptSave, QFileDialog::ExistingFile, filterList, defaultPath, outPath, nullptr);
+    return NFD_QTOpenDialog(QFileDialog::AcceptSave, QFileDialog::AnyFile, filterList, defaultPath, outPath, nullptr);
 }
 
 nfdresult_t NFD_PickFolder( const nfdchar_t *defaultPath, nfdchar_t **outPath )
