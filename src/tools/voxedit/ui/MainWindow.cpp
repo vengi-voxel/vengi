@@ -172,8 +172,7 @@ bool MainWindow::voxelize(std::string_view file) {
 bool MainWindow::exportFile(std::string_view file) {
 	std::string f;
 	if (file.empty()) {
-		// TODO: extract extension - filter
-		f = _voxedit->openDialog("vox,qbt");
+		f = _voxedit->saveDialog();
 		if (f.empty()) {
 			return false;
 		}
