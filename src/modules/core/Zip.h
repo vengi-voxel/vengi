@@ -52,16 +52,14 @@ public:
 		avail_in = (uInt)inputBufSize;
 		next_out = (Bytef*)outputBuf;
 		avail_out = (uInt)outputBufSize;
-		const int ret = inflate(this, Z_NO_FLUSH);
-		if (ret != Z_OK && ret != Z_STREAM_END) {
-			return false;
-		}
-		return true;
+		const int ret = inflate(this, Z_SYNC_FLUSH);
+		return ret == Z_OK;
 	}
 
 	bool compress(const uint8_t *inputBuf, size_t inputBufSize,
 			uint8_t* outputBuf, size_t outputBufSize) {
-		// TODO:
+		next_in = (z_const Bytef*)inputBuf;
+		avail_in = (uInt)inputBufSize;
 		next_out = (Bytef*)outputBuf;
 		avail_out = (uInt)outputBufSize;
 		const int ret = deflate(this, Z_FINISH);
