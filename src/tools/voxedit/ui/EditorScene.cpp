@@ -284,12 +284,12 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		executeAction(tx, ty);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_WHEEL && ev.delta_y != 0) {
-		const glm::vec3& moveDelta = glm::forward * _cameraSpeed * (float)(ev.delta_y * 100);
+		const glm::vec3& moveDelta = glm::backward * _cameraSpeed * (float)(ev.delta_y * 100);
 		_camera.move(moveDelta);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_MOVE) {
 		const bool current = isRelativeMouseMode();
-		if (current) {
+		if (current || (_action == Action::None && (ev.modifierkeys & tb::TB_ALT))) {
 			const float yaw = x - _mouseX;
 			const float pitch = y - _mouseY;
 			const float s = _rotationSpeed->floatVal();
