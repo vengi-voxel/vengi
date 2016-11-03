@@ -11,6 +11,7 @@ RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe, bool
 		_rawVolume(nullptr), _mesh(nullptr),
 		_worldShader(shader::WorldShader::getInstance()), _renderAABB(renderAABB),
 		_renderGrid(renderGrid), _renderWireframe(renderWireframe) {
+	_sunDirection = glm::vec3(glm::left.x, glm::down.y, 0.0f);
 }
 
 bool RawVolumeRenderer::init() {
@@ -73,8 +74,7 @@ bool RawVolumeRenderer::init() {
 
 bool RawVolumeRenderer::onResize(const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(RawVolumeRendererOnResize);
-	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
-	_sunLight.init(sunDirection, position, dimension);
+	_sunLight.init(_sunDirection, position, dimension);
 
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	_depthBuffer.shutdown();

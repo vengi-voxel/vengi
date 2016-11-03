@@ -24,6 +24,7 @@ EditorScene::EditorScene() :
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 	_currentVoxel = voxel::createVoxel(voxel::VoxelType::Grass1);
+	_rawVolumeRenderer.setAmbientColor(core::Color::White.xyz());
 	SetIsFocusable(true);
 }
 

@@ -45,6 +45,7 @@ protected:
 	int32_t _gridMeshIndexYZFar = -1;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
+	glm::vec3 _sunDirection;
 
 	bool _renderAABB;
 	bool _renderGrid;
@@ -94,6 +95,9 @@ public:
 	bool renderWireframe() const;
 	void setRenderWireframe(bool renderWireframe);
 
+	void setAmbientColor(const glm::vec3& color);
+	void setSunDirection(const glm::vec3& sunDirection);
+
 	/**
 	 * @sa shutdown()
 	 */
@@ -107,6 +111,14 @@ public:
 	 */
 	voxel::RawVolume* shutdown();
 };
+
+inline void RawVolumeRenderer::setSunDirection(const glm::vec3& sunDirection) {
+	_sunDirection = sunDirection;
+}
+
+inline void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {
+	_ambientColor = color;
+}
 
 inline voxel::RawVolume* RawVolumeRenderer::volume() {
 	return _rawVolume;
