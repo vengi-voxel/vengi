@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <cstring>
 #include <sstream>
 #include <cstdlib>
 #include <climits>
