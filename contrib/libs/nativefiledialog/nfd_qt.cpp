@@ -12,7 +12,7 @@
 #include "nfd_common.h"
 
 const char NOPATH_MSG[] = "The selected path is out of memory.";
-const char DIALOG_CLOSED_MSG[] = "Dialog was closed.";
+//const char DIALOG_CLOSED_MSG[] = "Dialog was closed.";
 const char NOMEM_MSG[] = "Out of memory.";
 
 static void AddFiltersToDialog( QFileDialog &dialog, const char *filterList )
