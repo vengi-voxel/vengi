@@ -73,42 +73,30 @@ core::AppState VoxEdit::onInit() {
 	};
 
 	core::Command::registerCommand("save", [this] (const core::CmdArgs& args) {
-		if (args.empty()) {
-			Log::error("Usage: save <filename>");
-			return;
-		}
-		if (!saveFile(args[0])) {
-			Log::error("Failed to save to file %s", args[0].c_str());
+		std::string_view file = args.empty() ? "" : args[0];
+		if (!saveFile(file)) {
+			Log::error("Failed to save to file %s", file.data());
 		}
 	}).setArgumentCompleter(fileCompleter).setHelp("Save the current state to the given file");
 
 	core::Command::registerCommand("export", [this] (const core::CmdArgs& args) {
-		if (args.empty()) {
-			Log::error("Usage: export <filename>");
-			return;
-		}
-		if (!exportFile(args[0])) {
-			Log::error("Failed to export to file %s", args[0].c_str());
+		std::string_view file = args.empty() ? "" : args[0];
+		if (!exportFile(file)) {
+			Log::error("Failed to export to file %s", file.data());
 		}
 	}).setArgumentCompleter(fileCompleter).setHelp("Export the current state to the given file");
 
 	core::Command::registerCommand("load", [this] (const core::CmdArgs& args) {
-		if (args.empty()) {
-			Log::error("Usage: load <filename>");
-			return;
-		}
-		if (!loadFile(args[0])) {
-			Log::error("Failed to load file %s", args[0].c_str());
+		std::string_view file = args.empty() ? "" : args[0];
+		if (!loadFile(file)) {
+			Log::error("Failed to load file %s", file.data());
 		}
 	}).setArgumentCompleter(fileCompleter).setHelp("Load a scene from the given file");
 
 	core::Command::registerCommand("voxelize", [this] (const core::CmdArgs& args) {
-		if (args.empty()) {
-			Log::error("Usage: voxelize <filename>");
-			return;
-		}
-		if (!voxelizeFile(args[0])) {
-			Log::error("Failed to voxelize file %s", args[0].c_str());
+		std::string_view file = args.empty() ? "" : args[0];
+		if (!voxelizeFile(file)) {
+			Log::error("Failed to voxelize file %s", file.data());
 		}
 	}).setArgumentCompleter(fileCompleter).setHelp("Load a scene from the given file");
 

@@ -36,6 +36,7 @@ private:
 	bool _dirty = false;
 	bool _extract = false;
 	bool _renderAxis = true;
+	bool _mouseDown = false;
 	uint8_t _moveMask = 0;
 
 	float _angle = 0.0f;
@@ -52,13 +53,19 @@ private:
 	long _lastActionExecution = 0l;
 	Action _lastAction = Action::None;
 
+	// the action to execute on mouse move
 	Action _action = Action::None;
+	// the key action - has a higher priority than the ui action
+	Action _keyAction = Action::None;
+	// action that is selected via ui
 	Action _uiAction = Action::PlaceVoxel;
 
 	voxel::PickResult _result;
 
 	void executeAction(int32_t x, int32_t y);
 	void render();
+
+	bool actionRequiresExistingVoxel(Action action) const;
 
 	void newVolume();
 	void setNewVolume(voxel::RawVolume *volume);
@@ -154,4 +161,8 @@ inline bool EditorScene::isDirty() const {
 
 inline video::Camera& EditorScene::camera() {
 	return _camera;
+}
+
+inline bool EditorScene::actionRequiresExistingVoxel(Action action) const {
+	return action == Action::CopyVoxel || action == Action::DeleteVoxel || action == Action::OverrideVoxel;
 }

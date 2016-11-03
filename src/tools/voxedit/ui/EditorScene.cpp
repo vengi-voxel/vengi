@@ -83,7 +83,7 @@ void EditorScene::render() {
 }
 
 void EditorScene::executeAction(int32_t x, int32_t y) {
-	if (_action == Action::None) {
+	if (_action == Action::None || !_mouseDown) {
 		return;
 	}
 
@@ -128,19 +128,19 @@ void EditorScene::setInternalAction(EditorScene::Action action) {
 	}
 	switch (action) {
 	case Action::None:
-		Log::info("Action: None");
+		Log::debug("Action: None");
 		break;
 	case Action::PlaceVoxel:
-		Log::info("Action: PlaceVoxel");
+		Log::debug("Action: PlaceVoxel");
 		break;
 	case Action::CopyVoxel:
-		Log::info("Action: CopyVoxel");
+		Log::debug("Action: CopyVoxel");
 		break;
 	case Action::DeleteVoxel:
-		Log::info("Action: DeleteVoxel");
+		Log::debug("Action: DeleteVoxel");
 		break;
 	case Action::OverrideVoxel:
-		Log::info("Action: OverrideVoxel");
+		Log::debug("Action: OverrideVoxel");
 		break;
 	}
 	_action = action;
@@ -294,22 +294,40 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	const int tx = x + rect.x;
 	const int ty = y + rect.y;
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
-		//Log::info("x: %i, y: %i, rect.x: %i, rect.y: %i", x, y, rect.x, rect.y);
-		if (ev.modifierkeys & tb::TB_ALT) {
-			setInternalAction(Action::CopyVoxel);
-		} else if (ev.modifierkeys & tb::TB_SHIFT) {
-			setInternalAction(Action::OverrideVoxel);
-		} else if (ev.modifierkeys & tb::TB_CTRL) {
-			setInternalAction(Action::DeleteVoxel);
+		_mouseDown = true;
+		if (_keyAction != Action::None) {
+			setInternalAction(_keyAction);
 		} else {
 			setInternalAction(_uiAction);
 		}
 		executeAction(tx, ty);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
-		_action = Action::None;
-		executeAction(tx, ty);
+		_mouseDown = false;
+		setInternalAction(Action::None);
 		return true;
+	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
+		if (ev.modifierkeys) {
+			if (ev.modifierkeys & tb::TB_ALT) {
+				_keyAction = Action::CopyVoxel;
+			} else if (ev.modifierkeys & tb::TB_SHIFT) {
+				_keyAction = Action::OverrideVoxel;
+			} else if (ev.modifierkeys & tb::TB_CTRL) {
+				_keyAction = Action::DeleteVoxel;
+			}
+			if (_mouseDown) {
+				setInternalAction(_keyAction);
+			}
+			return true;
+		}
+	} else if (ev.type == tb::EVENT_TYPE_KEY_UP) {
+		if (ev.modifierkeys && _keyAction != Action::None) {
+			_keyAction = Action::None;
+			if (_mouseDown) {
+				setInternalAction(_uiAction);
+			}
+			return true;
+		}
 	} else if (ev.type == tb::EVENT_TYPE_WHEEL && ev.delta_y != 0) {
 		const glm::vec3& moveDelta = glm::backward * _cameraSpeed * (float)(ev.delta_y * 100);
 		_camera.move(moveDelta);
@@ -325,13 +343,6 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 			_mouseX = x;
 			_mouseY = y;
 			return true;
-		}
-		const int deltaX = std::abs(x - _mouseX);
-		const int deltaY = std::abs(y - _mouseY);
-		const int minMove = 2;
-		// prevent micro movement from executing the action over and over again
-		if (deltaX <= minMove && deltaY <= minMove) {
-			return Super::OnEvent(ev);
 		}
 		_mouseX = x;
 		_mouseY = y;
@@ -400,7 +411,7 @@ void EditorScene::OnProcess() {
 		const voxel::Voxel& air = voxel::createVoxel(voxel::VoxelType::Air);
 		_result = voxel::pickVoxel(_modelVolume, ray.origin, dirWithLength, air);
 
-		if (_result.validPreviousVoxel) {
+		if (_result.validPreviousVoxel && (!_result.didHit || !actionRequiresExistingVoxel(_action))) {
 			_cursorVolume->clear();
 			_cursorVolume->setVoxel(_result.previousVoxel, _currentVoxel);
 		} else if (_result.didHit) {

@@ -64,57 +64,41 @@ static nfdresult_t NFD_QTOpenDialog(QFileDialog::AcceptMode acceptMode, QFileDia
     }
 
     nfdresult_t result = NFD_CANCEL;
-    dialog.show();
-    app.processEvents();
-    dialog.activateWindow();
-    app.processEvents();
-    dialog.raise();
-
-    for (;;) {
-        app.processEvents();
-        /*if (dialog.isHidden()) {
-            NFDi_SetError(DIALOG_CLOSED_MSG);
-            result = NFD_ERROR;
-            break;
-        }*/
-        const int dialogResult = dialog.result();
-        if ( dialogResult != 0 )
+    if (dialog.exec()) {
+        const QStringList& selectedFiles = dialog.selectedFiles();
+        if ( selectedFiles.empty() )
         {
-            const QStringList& selectedFiles = dialog.selectedFiles();
-            if ( selectedFiles.empty() )
+            result = NFD_CANCEL;
+        }
+        else if ( outPath )
+        {
+            const QString& entry = selectedFiles.at( 0 );
+            const size_t len = entry.size();
+            const QByteArray& ba = entry.toLatin1();
+            const char *cstr = ba.data();
+            *outPath = (nfdchar_t*)NFDi_Malloc( len + 1 );
+            memcpy( *outPath, cstr, len + 1 );
+            if ( !*outPath )
             {
-                result = NFD_CANCEL;
-                break;
+                NFDi_SetError( NOPATH_MSG );
+                result = NFD_ERROR;
             }
-            if ( outPath )
+            else
             {
-                const QString& entry = selectedFiles.at( 0 );
-                const size_t len = entry.size();
-                const QByteArray& ba = entry.toLatin1();
-                const char *cstr = ba.data();
-                *outPath = (nfdchar_t*)NFDi_Malloc( len + 1 );
-                memcpy( *outPath, cstr, len + 1 );
-                if ( !*outPath )
-                {
-                    NFDi_SetError( NOPATH_MSG );
-                    result = NFD_ERROR;
-                }
-                else
-                {
-                    result = NFD_OKAY;
-                }
+                result = NFD_OKAY;
             }
-            else if ( outPaths )
+        }
+        else if ( outPaths )
+        {
+            outPaths->count = (size_t) selectedFiles.size();
+            outPaths->indices = (size_t *)NFDi_Malloc( sizeof( size_t ) * outPaths->count );
+            if ( !outPaths->indices )
             {
-                outPaths->count = (size_t) selectedFiles.size();
-                outPaths->indices = (size_t *)NFDi_Malloc( sizeof( size_t ) * outPaths->count );
-                if ( !outPaths->indices )
-                {
-                    NFDi_SetError( NOMEM_MSG );
-                    result = NFD_ERROR;
-                    break;
-                }
-
+                NFDi_SetError( NOMEM_MSG );
+                result = NFD_ERROR;
+            }
+            else
+            {
                 size_t bufSize = 0;
                 QListIterator<QString> iter( selectedFiles );
                 while ( iter.hasNext() )
@@ -145,7 +129,6 @@ static nfdresult_t NFD_QTOpenDialog(QFileDialog::AcceptMode acceptMode, QFileDia
                 }
                 result = NFD_OKAY;
             }
-            break;
         }
     }
     app.quit();
