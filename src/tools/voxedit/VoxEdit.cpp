@@ -11,6 +11,8 @@
 // TODO: voxelizer via assimp
 // TODO: export via assimp exporters
 // TODO: cursor volume shape generators
+// TODO: palette widget
+// TODO: voxel cursor tools
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init("engine", "voxedit");

@@ -67,11 +67,21 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 			break;
 		mouseButtonRelease(event.button.x, event.button.y, event.button.button);
 		break;
-	case SDL_MOUSEWHEEL:
-		if (event.wheel.which == SDL_TOUCH_MOUSEID)
+	case SDL_MOUSEWHEEL: {
+		if (event.wheel.which == SDL_TOUCH_MOUSEID) {
 			break;
-		mouseWheel(event.wheel.x, event.wheel.y);
+		}
+		int x = event.wheel.x;
+		int y = event.wheel.y;
+		if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
+			x *= -1;
+			y *= -1;
+		}
+		x = glm::clamp(x, -1, 1);
+		y = glm::clamp(y, -1, 1);
+		mouseWheel(x, y);
 		break;
+	}
 	case SDL_CONTROLLERAXISMOTION:
 		controllerMotion(event.caxis.axis, event.caxis.value, event.caxis.which);
 		break;
