@@ -140,12 +140,6 @@ namespace glm
 	// -- Component accesses --
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR typename tvec3<T, P>::length_type tvec3<T, P>::length() const
-	{
-		return 3;
-	}
-
-	template <typename T, precision P>
 	GLM_FUNC_QUALIFIER T & tvec3<T, P>::operator[](typename tvec3<T, P>::length_type i)
 	{
 		assert(i >= 0 && i < this->length());

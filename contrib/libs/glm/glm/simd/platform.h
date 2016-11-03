@@ -86,10 +86,11 @@
 
 // Visual C++ defines
 #define GLM_COMPILER_VC				0x01000000
-#define GLM_COMPILER_VC2010			0x01000090
-#define GLM_COMPILER_VC2012			0x010000A0
-#define GLM_COMPILER_VC2013			0x010000B0
-#define GLM_COMPILER_VC2015			0x010000C0
+#define GLM_COMPILER_VC10			0x01000090
+#define GLM_COMPILER_VC11			0x010000A0
+#define GLM_COMPILER_VC12			0x010000B0
+#define GLM_COMPILER_VC14			0x010000C0
+#define GLM_COMPILER_VC15			0x010000D0
 
 // GCC defines
 #define GLM_COMPILER_GCC			0x02000000
@@ -126,14 +127,17 @@
 
 // Clang
 #define GLM_COMPILER_CLANG			0x20000000
-#define GLM_COMPILER_CLANG32			0x20000030
-#define GLM_COMPILER_CLANG33			0x20000040
-#define GLM_COMPILER_CLANG34			0x20000050
-#define GLM_COMPILER_CLANG35			0x20000060
-#define GLM_COMPILER_CLANG36			0x20000070
-#define GLM_COMPILER_CLANG37			0x20000080
-#define GLM_COMPILER_CLANG38			0x20000090
-#define GLM_COMPILER_CLANG39			0x200000A0
+#define GLM_COMPILER_CLANG32		0x20000030
+#define GLM_COMPILER_CLANG33		0x20000040
+#define GLM_COMPILER_CLANG34		0x20000050
+#define GLM_COMPILER_CLANG35		0x20000060
+#define GLM_COMPILER_CLANG36		0x20000070
+#define GLM_COMPILER_CLANG37		0x20000080
+#define GLM_COMPILER_CLANG38		0x20000090
+#define GLM_COMPILER_CLANG39		0x200000A0
+#define GLM_COMPILER_CLANG40		0x200000B0
+#define GLM_COMPILER_CLANG41		0x200000C0
+#define GLM_COMPILER_CLANG42		0x200000D0
 
 // Build model
 #define GLM_MODEL_32				0x00000010
@@ -165,8 +169,8 @@
 #	if !defined(CUDA_VERSION) && !defined(GLM_FORCE_CUDA)
 #		include <cuda.h>  // make sure version is defined since nvcc does not define it itself!
 #	endif
-#	if CUDA_VERSION < 3000
-#		error "GLM requires CUDA 3.0 or higher"
+#	if CUDA_VERSION < 7000
+#		error "GLM requires CUDA 7.0 or higher"
 #	else
 #		define GLM_COMPILER GLM_COMPILER_CUDA
 #	endif
@@ -208,8 +212,14 @@
 #			define GLM_COMPILER GLM_COMPILER_CLANG38
 #		elif __clang_major__ == 3 && __clang_minor__ >= 9
 #			define GLM_COMPILER GLM_COMPILER_CLANG39
+#		elif __clang_major__ == 4 && __clang_minor__ == 0
+#			define GLM_COMPILER GLM_COMPILER_CLANG40
+#		elif __clang_major__ == 4 && __clang_minor__ == 1
+#			define GLM_COMPILER GLM_COMPILER_CLANG41
+#		elif __clang_major__ == 4 && __clang_minor__ >= 2
+#			define GLM_COMPILER GLM_COMPILER_CLANG42
 #		elif __clang_major__ >= 4
-#			define GLM_COMPILER GLM_COMPILER_CLANG39
+#			define GLM_COMPILER GLM_COMPILER_CLANG42
 #		else
 #			define GLM_COMPILER GLM_COMPILER_CLANG
 #		endif
@@ -218,15 +228,17 @@
 // Visual C++
 #elif defined(_MSC_VER)
 #	if _MSC_VER < 1600
-#		error "GLM requires Visual C++ 2010 or higher"
+#		error "GLM requires Visual C++ 10 - 2010 or higher"
 #	elif _MSC_VER == 1600
-#		define GLM_COMPILER GLM_COMPILER_VC2010
+#		define GLM_COMPILER GLM_COMPILER_VC11
 #	elif _MSC_VER == 1700
-#		define GLM_COMPILER GLM_COMPILER_VC2012
+#		define GLM_COMPILER GLM_COMPILER_VC11
 #	elif _MSC_VER == 1800
-#		define GLM_COMPILER GLM_COMPILER_VC2013
-#	elif _MSC_VER >= 1900
-#		define GLM_COMPILER GLM_COMPILER_VC2015
+#		define GLM_COMPILER GLM_COMPILER_VC12
+#	elif _MSC_VER == 1900
+#		define GLM_COMPILER GLM_COMPILER_VC14
+#	elif _MSC_VER >= 1910
+#		define GLM_COMPILER GLM_COMPILER_VC15
 #	else//_MSC_VER
 #		define GLM_COMPILER GLM_COMPILER_VC
 #	endif//_MSC_VER

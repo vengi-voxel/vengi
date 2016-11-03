@@ -55,6 +55,16 @@ namespace detail
 		return detail::compute_rgbToSrgb<T, P, vecType>::call(ColorLinear, static_cast<T>(0.41666));
 	}
 
+	// Based on Ian Taylor http://chilliant.blogspot.fr/2012/08/srgb-approximations-for-hlsl.html
+	template <>
+	GLM_FUNC_QUALIFIER tvec3<float, lowp> convertLinearToSRGB(tvec3<float, lowp> const& ColorLinear)
+	{
+		tvec3<float, lowp> S1 = sqrt(ColorLinear);
+		tvec3<float, lowp> S2 = sqrt(S1);
+		tvec3<float, lowp> S3 = sqrt(S2);
+		return 0.662002687f * S1 + 0.684122060f * S2 - 0.323583601f * S3 - 0.0225411470f * ColorLinear;
+	}
+
 	template <typename T, precision P, template <typename, precision> class vecType>
 	GLM_FUNC_QUALIFIER vecType<T, P> convertLinearToSRGB(vecType<T, P> const& ColorLinear, T Gamma)
 	{
@@ -66,7 +76,7 @@ namespace detail
 	{
 		return detail::compute_srgbToRgb<T, P, vecType>::call(ColorSRGB, static_cast<T>(2.4));
 	}
-	
+
 	template <typename T, precision P, template <typename, precision> class vecType>
 	GLM_FUNC_QUALIFIER vecType<T, P> convertSRGBToLinear(vecType<T, P> const& ColorSRGB, T Gamma)
 	{

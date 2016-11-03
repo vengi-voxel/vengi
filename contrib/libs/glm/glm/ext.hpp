@@ -104,6 +104,7 @@
 #endif
 #include "./gtx/transform.hpp"
 #include "./gtx/transform2.hpp"
+#include "./gtx/vec_swizzle.hpp"
 #include "./gtx/vector_angle.hpp"
 #include "./gtx/vector_query.hpp"
 #include "./gtx/wrap.hpp"

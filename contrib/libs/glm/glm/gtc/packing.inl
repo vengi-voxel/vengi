@@ -639,6 +639,22 @@ namespace detail
 		return vec3(Unpack.data.x, Unpack.data.y, Unpack.data.z) * pow(2.0f, Unpack.data.w - 15.f - 9.f);
 	}
 
+	// Based on Brian Karis http://graphicrants.blogspot.fr/2009/04/rgbm-color-encoding.html
+	template <typename T, precision P>
+	GLM_FUNC_QUALIFIER tvec4<T, P> packRGBM(tvec3<T, P> const & rgb)
+	{
+		tvec3<T, P> const Color(rgb * static_cast<T>(1.0 / 6.0));
+		T Alpha = clamp(max(max(Color.x, Color.y), max(Color.z, static_cast<T>(1e-6))), static_cast<T>(0), static_cast<T>(1));
+		Alpha = ceil(Alpha * static_cast<T>(255.0)) / static_cast<T>(255.0);
+		return tvec4<T, P>(Color / Alpha, Alpha);
+	}
+
+	template <typename T, precision P>
+	GLM_FUNC_QUALIFIER tvec3<T, P> unpackRGBM(tvec4<T, P> const & rgbm)
+	{
+		return tvec3<T, P>(rgbm.x, rgbm.y, rgbm.z) * rgbm.w * static_cast<T>(6);
+	}
+
 	template <precision P, template <typename, precision> class vecType>
 	GLM_FUNC_QUALIFIER vecType<uint16, P> packHalf(vecType<float, P> const & v)
 	{

@@ -341,21 +341,21 @@ namespace detail
 
 #	if !GLM_HAS_DEFAULTED_FUNCTIONS
 		template <>
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR tvec4<float, aligned_lowp>::tvec4()
+		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<float, aligned_lowp>::tvec4()
 #			ifndef GLM_FORCE_NO_CTOR_INIT
 				: data(_mm_setzero_ps())
 #			endif
 		{}
 
 		template <>
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR tvec4<float, aligned_mediump>::tvec4()
+		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<float, aligned_mediump>::tvec4()
 #			ifndef GLM_FORCE_NO_CTOR_INIT
 			: data(_mm_setzero_ps())
 #			endif
 		{}
 
 		template <>
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR tvec4<float, aligned_highp>::tvec4()
+		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<float, aligned_highp>::tvec4()
 #			ifndef GLM_FORCE_NO_CTOR_INIT
 			: data(_mm_setzero_ps())
 #			endif

@@ -451,6 +451,8 @@ namespace glm
 	/// The first vector component specifies the 11 least-significant bits of the result; 
 	/// the last component specifies the 10 most-significant bits.
 	///
+	/// packF3x9_E1x5 allows encoding into RGBE / RGB9E5 format
+	///
 	/// @see gtc_packing
 	/// @see vec3 unpackF3x9_E1x5(uint32 const & p)
 	GLM_FUNC_DECL uint32 packF3x9_E1x5(vec3 const & v);
@@ -460,10 +462,33 @@ namespace glm
 	/// 
 	/// The first component of the returned vector will be extracted from the least significant bits of the input; 
 	/// the last component will be extracted from the most significant bits.
-	/// 
+	///
+	/// unpackF3x9_E1x5 allows decoding RGBE / RGB9E5 data
+	///
 	/// @see gtc_packing
 	/// @see uint32 packF3x9_E1x5(vec3 const & v)
 	GLM_FUNC_DECL vec3 unpackF3x9_E1x5(uint32 p);
+
+	/// Returns an unsigned integer vector obtained by converting the components of a floating-point vector
+	/// to the 16-bit floating-point representation found in the OpenGL Specification.
+	/// The first vector component specifies the 16 least-significant bits of the result; 
+	/// the forth component specifies the 16 most-significant bits.
+	/// 
+	/// @see gtc_packing
+	/// @see tvec3<T, P> unpackRGBM(tvec4<T, P> const & p)
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.4 Floating-Point Pack and Unpack Functions</a>
+	template <typename T, precision P>
+	GLM_FUNC_DECL tvec4<T, P> packRGBM(tvec3<T, P> const & rgb);
+
+	/// Returns a floating-point vector with components obtained by reinterpreting an integer vector as 16-bit floating-point numbers and converting them to 32-bit floating-point values.
+	/// The first component of the vector is obtained from the 16 least-significant bits of v;
+	/// the forth component is obtained from the 16 most-significant bits of v.
+	/// 
+	/// @see gtc_packing
+	/// @see tvec4<T, P> packRGBM(tvec3<float, P> const & v)
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.4 Floating-Point Pack and Unpack Functions</a>
+	template <typename T, precision P>
+	GLM_FUNC_DECL tvec3<T, P> unpackRGBM(tvec4<T, P> const & rgbm);
 
 	/// Returns an unsigned integer vector obtained by converting the components of a floating-point vector
 	/// to the 16-bit floating-point representation found in the OpenGL Specification.

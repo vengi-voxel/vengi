@@ -156,7 +156,7 @@ namespace detail
 
 #	if !GLM_HAS_DEFAULTED_FUNCTIONS || !defined(GLM_FORCE_NO_CTOR_INIT)
 		template <typename T, precision P>
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR tvec4<T, P>::tvec4()
+		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<T, P>::tvec4()
 #			ifndef GLM_FORCE_NO_CTOR_INIT
 				: x(0), y(0), z(0), w(0)
 #			endif
@@ -165,21 +165,21 @@ namespace detail
 
 #	if !GLM_HAS_DEFAULTED_FUNCTIONS
 		template <typename T, precision P>
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR tvec4<T, P>::tvec4(tvec4<T, P> const & v)
+		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<T, P>::tvec4(tvec4<T, P> const & v)
 			: x(v.x), y(v.y), z(v.z), w(v.w)
 		{}
 #	endif//!GLM_HAS_DEFAULTED_FUNCTIONS
 
 	template <typename T, precision P>
 	template <precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR tvec4<T, P>::tvec4(tvec4<T, Q> const & v)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<T, P>::tvec4(tvec4<T, Q> const & v)
 		: x(v.x), y(v.y), z(v.z), w(v.w)
 	{}
 
 	// -- Explicit basic constructors --
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR tvec4<T, P>::tvec4(ctor)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD tvec4<T, P>::tvec4(ctor)
 	{}
 
 	template <typename T, precision P>
@@ -205,7 +205,7 @@ namespace detail
 
 	template <typename T, precision P>
 	template <typename A, typename B, typename C, typename D>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR tvec4<T, P>::tvec4(tvec1<A, P> const & a, tvec1<B, P> const & b, tvec1<C, P> const & c, tvec1<D, P> const & d) :
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR tvec4<T, P>::tvec4(tvec1<A, P> const & a, tvec1<B, P> const & b, tvec1<C, P> const & c, tvec1<D, P> const & d) :
 		x(static_cast<T>(a.x)),
 		y(static_cast<T>(b.x)),
 		z(static_cast<T>(c.x)),
@@ -323,12 +323,6 @@ namespace detail
 	{}
 
 	// -- Component accesses --
-
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR typename tvec4<T, P>::length_type tvec4<T, P>::length() const
-	{
-		return 4;
-	}
 
 	template <typename T, precision P>
 	GLM_FUNC_QUALIFIER T & tvec4<T, P>::operator[](typename tvec4<T, P>::length_type i)
