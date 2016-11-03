@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "EditorScene.h"
+#include "PaletteWidget.h"
 #include "../VoxEdit.h"
 
 MainWindow::MainWindow(VoxEdit* tool) :
@@ -15,6 +16,11 @@ bool MainWindow::init() {
 	_scene = getWidgetByType<EditorScene>("editorscene");
 	if (_scene == nullptr) {
 		Log::error("Failed to init the main window: Could not get the editor scene node with id 'editorscene'");
+		return false;
+	}
+
+	if (getWidgetByType<PaletteWidget>("palettecontainer") == nullptr) {
+		Log::error("Failed to init the main window: Could not get the editor scene node with id 'palettecontainer'");
 		return false;
 	}
 

@@ -49,7 +49,9 @@ TBLayout: distribution: gravity, axis: y
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBEditField: text: "Palette", is-focusable: 0, styling: 1, readonly: 1, adapt-to-content: 1, skin: accent_color
 						font: size: 11
-					TBLayout: distribution: gravity, id: palettecontainer
+					TBLayout: distribution: gravity
+						PaletteWidget: id: palettecontainer, gravity: left top bottom
+							color: #ffffff
 
 					TBSeparator: gravity: left right, skin: separator
 
