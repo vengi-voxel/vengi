@@ -17,8 +17,29 @@
 namespace ui {
 
 namespace {
-static inline tb::MODIFIER_KEYS mapModifier(int16_t modifier) {
+static inline tb::MODIFIER_KEYS mapModifier(int32_t key, int16_t modifier) {
 	tb::MODIFIER_KEYS code = tb::TB_MODIFIER_NONE;
+	switch (key) {
+	case SDLK_LCTRL:
+	case SDLK_RCTRL:
+		code |= tb::TB_CTRL;
+		break;
+	case SDLK_LSHIFT:
+	case SDLK_RSHIFT:
+		code |= tb::TB_SHIFT;
+		break;
+	case SDLK_LALT:
+	case SDLK_RALT:
+		code |= tb::TB_ALT;
+		break;
+	case SDLK_LGUI:
+	case SDLK_RGUI:
+		code |= tb::TB_SUPER;
+		break;
+	case SDLK_MODE:
+		break;
+	}
+
 	if (modifier & KMOD_ALT)
 		code |= tb::TB_ALT;
 	if (modifier & KMOD_CTRL)
@@ -246,7 +267,7 @@ void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
 }
 
 tb::MODIFIER_KEYS UIApp::getModifierKeys() const {
-	return mapModifier(SDL_GetModState());
+	return mapModifier(0, SDL_GetModState());
 }
 
 void UIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
@@ -294,7 +315,7 @@ bool UIApp::onKeyPress(int32_t key, int16_t modifier) {
 		return true;
 	}
 
-	return invokeKey(mapKey(key), mapSpecialKey(key), mapModifier(modifier), true);
+	return invokeKey(mapKey(key), mapSpecialKey(key), mapModifier(key, modifier), true);
 }
 
 bool UIApp::onKeyRelease(int32_t key) {
@@ -302,7 +323,8 @@ bool UIApp::onKeyRelease(int32_t key) {
 		return true;
 	}
 	Super::onKeyRelease(key);
-	const tb::MODIFIER_KEYS mod = getModifierKeys();
+	tb::MODIFIER_KEYS mod = getModifierKeys();
+	mod |= mapModifier(key, 0);
 	if (key == SDLK_MENU && tb::TBWidget::focused_widget) {
 		tb::TBWidgetEvent ev(tb::EVENT_TYPE_CONTEXT_MENU);
 		ev.modifierkeys = mod;

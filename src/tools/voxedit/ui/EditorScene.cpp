@@ -123,6 +123,9 @@ EditorScene::Action EditorScene::action() const {
 }
 
 void EditorScene::setInternalAction(EditorScene::Action action) {
+	if (action == _action) {
+		return;
+	}
 	switch (action) {
 	case Action::None:
 		Log::info("Action: None");
