@@ -27,10 +27,12 @@ class UIApp;
 
 class Window: public tb::TBWindow, public io::IEventObserver {
 protected:
+	tb::TBWidget _root;
 	using Super = tb::TBWindow;
 	UIApp* _app;
 	float _percentWidth = 0.0f;
 	float _percentHeight = 0.0f;
+	std::string _filename;
 
 public:
 	static inline const char *getTranslation(const tb::TBID& id) {
@@ -75,6 +77,7 @@ public:
 	void toggleViaVar(const char *checkBoxNodeId, const core::VarPtr& var);
 	void toggle(const char *checkBoxNodeId, bool state);
 
+	bool refreshFromResourceFile();
 	bool loadResourceFile(const char *filename);
 	bool loadResourceData(const char *data);
 	bool loadResource(tb::TBNode &node);
