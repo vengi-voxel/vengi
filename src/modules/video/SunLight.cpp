@@ -23,8 +23,7 @@ SunLight::SunLight() {
 void SunLight::init(const glm::vec3& sunDirection, const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_assert(sunDirection != glm::zero<glm::vec3>());
 	_sunCamera.init(position, dimension);
-	_sunCamera.setPosition(-sunDirection);
-	_sunCamera.lookAt(glm::zero<glm::vec3>(), glm::up);
+	setDirection(sunDirection);
 }
 
 void SunLight::update(long dt, const Camera& camera) {

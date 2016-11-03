@@ -26,6 +26,7 @@ public:
 	void update(long dt, const Camera& camera);
 
 	glm::vec3 direction() const;
+	void setDirection(const glm::vec3& direction);
 
 	/**
 	 * @brief Because we're modeling a directional light source all its light rays are parallel.
@@ -40,6 +41,11 @@ public:
 
 	const glm::mat4& viewMatrix() const;
 };
+
+inline void SunLight::setDirection(const glm::vec3& sunDirection) {
+	_sunCamera.setPosition(-sunDirection);
+	_sunCamera.lookAt(glm::zero<glm::vec3>(), glm::up);
+}
 
 inline glm::vec3 SunLight::direction() const {
 	return _sunCamera.direction();

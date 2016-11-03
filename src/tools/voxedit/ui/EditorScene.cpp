@@ -14,7 +14,9 @@
 #include "ui/UIApp.h"
 #define VOXELIZER_IMPLEMENTATION
 #include "../voxelizer.h"
+// TODO: move functionality of exporting vertices via assimp into own class
 #include <assimp/Exporter.hpp>
+#include <assimp/mesh.h>
 
 EditorScene::EditorScene() :
 		ui::Widget(), _rawVolumeRenderer(true), _cursorVolume(nullptr), _modelVolume(nullptr),
@@ -24,7 +26,7 @@ EditorScene::EditorScene() :
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 	_currentVoxel = voxel::createVoxel(voxel::VoxelType::Grass1);
-	_rawVolumeRenderer.setAmbientColor(core::Color::White.xyz());
+	//_rawVolumeRenderer.setAmbientColor(core::Color::White.xyz());
 	SetIsFocusable(true);
 }
 
@@ -356,6 +358,9 @@ void EditorScene::OnProcess() {
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
 	_camera.update(deltaFrame);
+	_angle += deltaFrame * 0.001f;
+	const glm::vec3 direction(glm::sin(_angle), 0.5f, glm::cos(_angle));
+	_rawVolumeRenderer.setSunDirection(direction);
 
 	if (_lastRaytraceX != _mouseX || _lastRaytraceY != _mouseY) {
 		core_trace_scoped(EditorSceneOnProcessUpdateRay);

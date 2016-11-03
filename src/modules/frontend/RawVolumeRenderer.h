@@ -114,6 +114,7 @@ public:
 
 inline void RawVolumeRenderer::setSunDirection(const glm::vec3& sunDirection) {
 	_sunDirection = sunDirection;
+	_sunLight.setDirection(_sunDirection);
 }
 
 inline void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {

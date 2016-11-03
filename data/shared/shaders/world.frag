@@ -30,7 +30,7 @@ void main(void) {
 	float shadow = calculateShadow(ndotl);
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
 	vec3 ambient = u_ambient_color;
-	vec3 lightvalue = (ambient + shadow) * diffuse;
+	vec3 lightvalue = ambient + (shadow * diffuse);
 
 	float fogstart = max(u_viewdistance - u_fogrange, 0.0);
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
