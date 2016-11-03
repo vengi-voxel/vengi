@@ -45,7 +45,6 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		keyRelease((int32_t) event.key.keysym.sym);
 		break;
 	case SDL_KEYDOWN:
-		// we are handling this on our own
 		keyPress((int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
 		break;
 	case SDL_MOUSEMOTION: {

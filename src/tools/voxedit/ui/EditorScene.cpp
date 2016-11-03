@@ -122,6 +122,27 @@ EditorScene::Action EditorScene::action() const {
 	return _uiAction;
 }
 
+void EditorScene::setInternalAction(EditorScene::Action action) {
+	switch (action) {
+	case Action::None:
+		Log::info("Action: None");
+		break;
+	case Action::PlaceVoxel:
+		Log::info("Action: PlaceVoxel");
+		break;
+	case Action::CopyVoxel:
+		Log::info("Action: CopyVoxel");
+		break;
+	case Action::DeleteVoxel:
+		Log::info("Action: DeleteVoxel");
+		break;
+	case Action::OverrideVoxel:
+		Log::info("Action: OverrideVoxel");
+		break;
+	}
+	_action = action;
+}
+
 void EditorScene::setAction(EditorScene::Action action) {
 	_uiAction = action;
 }
@@ -272,13 +293,13 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		//Log::info("x: %i, y: %i, rect.x: %i, rect.y: %i", x, y, rect.x, rect.y);
 		if (ev.modifierkeys & tb::TB_ALT) {
-			_action = Action::CopyVoxel;
+			setInternalAction(Action::CopyVoxel);
 		} else if (ev.modifierkeys & tb::TB_SHIFT) {
-			_action = Action::OverrideVoxel;
+			setInternalAction(Action::OverrideVoxel);
 		} else if (ev.modifierkeys & tb::TB_CTRL) {
-			_action = Action::DeleteVoxel;
+			setInternalAction(Action::DeleteVoxel);
 		} else {
-			_action = _uiAction;
+			setInternalAction(_uiAction);
 		}
 		executeAction(tx, ty);
 		return true;

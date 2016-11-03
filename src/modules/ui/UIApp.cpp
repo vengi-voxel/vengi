@@ -17,7 +17,7 @@
 namespace ui {
 
 namespace {
-tb::MODIFIER_KEYS mapModifier(int16_t modifier) {
+static inline tb::MODIFIER_KEYS mapModifier(int16_t modifier) {
 	tb::MODIFIER_KEYS code = tb::TB_MODIFIER_NONE;
 	if (modifier & KMOD_ALT)
 		code |= tb::TB_ALT;
@@ -30,7 +30,7 @@ tb::MODIFIER_KEYS mapModifier(int16_t modifier) {
 	return code;
 }
 
-tb::SPECIAL_KEY mapSpecialKey(int32_t key) {
+static tb::SPECIAL_KEY mapSpecialKey(int32_t key) {
 	switch (key) {
 	case SDLK_F1:
 		return tb::TB_KEY_F1;
@@ -89,9 +89,23 @@ tb::SPECIAL_KEY mapSpecialKey(int32_t key) {
 	return tb::TB_KEY_UNDEFINED;
 }
 
-int mapKey(int32_t key) {
-	if (mapSpecialKey(key) == tb::TB_KEY_UNDEFINED)
-		return key;
+static inline int mapKey(int32_t key) {
+	switch (key) {
+	case SDLK_LCTRL:
+	case SDLK_LSHIFT:
+	case SDLK_LALT:
+	case SDLK_LGUI:
+	case SDLK_RCTRL:
+	case SDLK_RSHIFT:
+	case SDLK_RALT:
+	case SDLK_RGUI:
+	case SDLK_MODE:
+		break;
+	default:
+		if (mapSpecialKey(key) == tb::TB_KEY_UNDEFINED) {
+			return key;
+		}
+	}
 	return 0;
 }
 
@@ -112,7 +126,7 @@ bool UIApp::invokeKey(int key, tb::SPECIAL_KEY special, tb::MODIFIER_KEYS mod, b
 #else
 	bool shortcutKey = (mod & tb::TB_CTRL) ? true : false;
 #endif
-	if (tb::TBWidget::focused_widget && down && shortcutKey) {
+	if (tb::TBWidget::focused_widget && down && shortcutKey && key != 0) {
 		bool reverseKey = (mod & tb::TB_SHIFT) ? true : false;
 		if (key >= 'a' && key <= 'z') {
 			key += 'A' - 'a';

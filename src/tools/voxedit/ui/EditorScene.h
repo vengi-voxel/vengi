@@ -63,6 +63,7 @@ private:
 	void newVolume();
 	void setNewVolume(voxel::RawVolume *volume);
 
+	void setInternalAction(Action action);
 	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
 	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 public:
