@@ -642,7 +642,7 @@ vx_mesh_t* vx_voxelize(vx_mesh_t* m,
 
     table = vx__hash_table_alloc(VOXELIZER_HASH_TABLE_SIZE);
 
-    for (int i = 0; i < m->nindices; i += 3) {
+    for (size_t i = 0; i < m->nindices; i += 3) {
         vx_triangle_t triangle;
 
         VX_ASSERT(m->indices[i+0] < m->nvertices);
