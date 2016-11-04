@@ -80,7 +80,7 @@ void UIBitmapGL::SetData(uint32 *data) {
 	TB_IF_DEBUG_SETTING(RENDER_BATCHES, dbg_bitmap_validations++);
 }
 
-UIRendererGL::UIRendererGL() {
+UIRendererGL::UIRendererGL() : _white(this) {
 }
 
 void UIRendererGL::shutdown() {
@@ -102,6 +102,9 @@ bool UIRendererGL::init() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	GL_checkError();
+
+	uint32_t data = 0xffffffff;
+	_white.Init(1, 1, &data);
 	return true;
 }
 
@@ -148,9 +151,17 @@ void UIRendererGL::EndPaint() {
 	GL_checkError();
 }
 
+void UIRendererGL::bindBitmap(TBBitmap *bitmap) {
+	GLuint texture = bitmap ? static_cast<UIBitmapGL*>(bitmap)->m_texture : _white.m_texture;
+	if (texture != g_current_texture) {
+		g_current_texture = texture;
+		glBindTexture(GL_TEXTURE_2D, g_current_texture);
+	}
+}
+
 TBBitmap *UIRendererGL::CreateBitmap(int width, int height, uint32 *data) {
 	UIBitmapGL *bitmap = new UIBitmapGL(this);
-	if (!bitmap || !bitmap->Init(width, height, data)) {
+	if (!bitmap->Init(width, height, data)) {
 		delete bitmap;
 		return nullptr;
 	}
@@ -158,7 +169,7 @@ TBBitmap *UIRendererGL::CreateBitmap(int width, int height, uint32 *data) {
 }
 
 void UIRendererGL::RenderBatch(Batch *batch) {
-	BindBitmap(batch->bitmap);
+	bindBitmap(batch->bitmap);
 	if (g_current_batch != batch) {
 		g_current_batch = batch;
 	}
