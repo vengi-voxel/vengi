@@ -31,7 +31,7 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 			const glm::ivec4 color(colors[i] * 255.0f);
 			const int transX = x * _padding + x * _width;
 			const int transY = y * _padding + y * _height;
-			const tb::TBColor tbColor(color.r, color.g, color.b);
+			const tb::TBColor tbColor(color.r, color.g, color.b, color.a);
 			tb::g_renderer->Translate(transX, transY);
 			tb::g_renderer->DrawRectFill(renderRect, tbColor);
 			tb::g_renderer->DrawRect(renderRect, tbBorderColor);
@@ -41,7 +41,7 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 	}
 	{
 		const glm::vec4& selectionColor = colors[std::enum_value(_voxelType)] * 255.0f;
-		const tb::TBColor tbSelectionColor(selectionColor.r, selectionColor.g, selectionColor.b);
+		const tb::TBColor tbSelectionColor(selectionColor.r, selectionColor.g, selectionColor.b, selectionColor.a);
 		const int y = i / xAmount;
 		const int selectionY = (y + 1) * _padding + (y + 1) * _height;
 		const tb::TBRect selectionRect(0, 0, rect.w, renderRect.h);
