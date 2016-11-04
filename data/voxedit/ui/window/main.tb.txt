@@ -76,38 +76,38 @@ TBLayout: distribution: gravity, axis: y
 						TBLayout: position: left top, axis: y
 							TBClickLabel
 								text Single
-								TBSkinImage: skin: voxedit-voxel
+								TBSkinImage: skin: voxedit-cursor-single
 								TBRadioButton
 									value 1
 									id shapesingle
 									@include definitions>cursorbutton
 							TBClickLabel
 								text Sphere
-								TBSkinImage: skin: voxedit-voxel
+								TBSkinImage: skin: voxedit-cursor-circle
 								TBRadioButton
 									id shapesphere
 									@include definitions>cursorbutton
 							TBClickLabel
 								text Plane
-								TBSkinImage: skin: voxedit-voxel
+								TBSkinImage: skin: voxedit-cursor-plane
 								TBRadioButton
 									id shapeplane
 									@include definitions>cursorbutton
 							TBClickLabel
 								text Cone
-								TBSkinImage: skin: voxedit-voxel
+								TBSkinImage: skin: voxedit-cursor-cone
 								TBRadioButton
 									id shapecone
 									@include definitions>cursorbutton
 							TBClickLabel
 								text Dome
-								TBSkinImage: skin: voxedit-voxel
+								TBSkinImage: skin: voxedit-cursor-dome
 								TBRadioButton
 									id shapedome
 									@include definitions>cursorbutton
 							TBClickLabel
 								text Circle
-								TBSkinImage: skin: voxedit-voxel
+								TBSkinImage: skin: voxedit-cursor-circle
 								TBRadioButton
 									id shapecircle
 									@include definitions>cursorbutton
@@ -141,5 +141,6 @@ TBLayout: distribution: gravity, axis: y
 						TBLayout: gravity: left right
 							TBWidget
 						TBButton: @include: definitions>menubutton, text: Reset View, id: resetcamera
+							TBSkinImage: skin: voxedit-reset-camera
 						TBButton: @include: definitions>menubutton, text: Quit, id: quit
 							TBSkinImage: skin: voxedit-quit
