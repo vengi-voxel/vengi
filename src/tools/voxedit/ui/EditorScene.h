@@ -96,6 +96,8 @@ public:
 	void setAction(Action action);
 	Action action() const;
 
+	void setVoxelType(voxel::VoxelType type);
+
 	float cameraSpeed() const;
 	void setCameraSpeed(float cameraSpeed);
 

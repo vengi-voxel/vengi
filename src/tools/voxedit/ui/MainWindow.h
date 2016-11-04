@@ -10,6 +10,7 @@
 
 class EditorScene;
 class VoxEdit;
+class PaletteWidget;
 
 /**
  * @brief Voxel editing tools panel
@@ -18,6 +19,7 @@ class MainWindow: public ui::Window {
 private:
 	EditorScene* _scene;
 	VoxEdit* _voxedit;
+	PaletteWidget* _paletteWidget;
 
 	std::string _voxelizeFile;
 	std::string _loadFile;
@@ -34,6 +36,7 @@ public:
 	bool init();
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
+	void OnProcess() override;
 
 	bool voxelize(std::string_view file);
 	bool save(std::string_view file);

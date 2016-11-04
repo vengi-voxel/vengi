@@ -53,7 +53,7 @@ TBLayout: distribution: gravity, axis: y
 						PaletteWidget: id: palettecontainer
 							width: 20
 							height: 20
-							padding: 2
+							padding: 3
 							lp: width: 216, height: 296
 
 					TBSeparator: gravity: left right, skin: separator

@@ -285,6 +285,10 @@ void EditorScene::resetCamera() {
 	_camera.lookAt(glm::vec3(0.0001f));
 }
 
+void EditorScene::setVoxelType(voxel::VoxelType type) {
+	_currentVoxel = voxel::createVoxel(type);
+}
+
 bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	core_trace_scoped(EditorSceneOnEvent);
 	const int x = ev.target_x;

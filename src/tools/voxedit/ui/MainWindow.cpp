@@ -4,7 +4,7 @@
 #include "../VoxEdit.h"
 
 MainWindow::MainWindow(VoxEdit* tool) :
-		ui::Window(tool), _scene(nullptr), _voxedit(tool) {
+		ui::Window(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 }
 
@@ -19,7 +19,8 @@ bool MainWindow::init() {
 		return false;
 	}
 
-	if (getWidgetByType<PaletteWidget>("palettecontainer") == nullptr) {
+	_paletteWidget = getWidgetByType<PaletteWidget>("palettecontainer");
+	if (_paletteWidget == nullptr) {
 		Log::error("Failed to init the main window: Could not get the editor scene node with id 'palettecontainer'");
 		return false;
 	}
@@ -125,6 +126,14 @@ bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 	return false;
+}
+
+void MainWindow::OnProcess() {
+	Super::OnProcess();
+	if (_paletteWidget->isDirty()) {
+		_scene->setVoxelType(_paletteWidget->voxelType());
+		_paletteWidget->markAsClean();
+	}
 }
 
 bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
