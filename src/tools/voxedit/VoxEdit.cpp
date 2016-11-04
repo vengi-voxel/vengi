@@ -13,7 +13,6 @@
 // TODO: cursor volume shape generators
 // TODO: voxel cursor tools
 // TODO: it is possible to place a voxel outside the maxs region
-// TODO: highlight current action/tool in the ui
 // TODO: rotate whole volume
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {

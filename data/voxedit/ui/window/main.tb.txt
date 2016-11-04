@@ -1,80 +1,62 @@
 WindowInfo
 	fullscreen 1
+
 definitions
 	menubutton
 		lp: height: 28
 		skin TBButton.flat
+	toolbutton
+		group-id tools
+
 TBLayout: distribution: gravity, axis: y
 	TBContainer: gravity: all, id: maincontainer
 		TBLayout: distribution: gravity, axis: y
 			TBLayout: distribution: gravity
 				TBContainer: skin: container, gravity: left right
 					TBLayout: distribution: gravity
-						TBButton
-							gravity: left
-							@include definitions>menubutton
-							text New
-							id new
-						TBButton
-							gravity: left
-							@include definitions>menubutton
-							text Save
-							id save
-						TBButton
-							gravity: left
-							@include definitions>menubutton
-							text Load
-							id load
-						TBButton
-							gravity: left
-							@include definitions>menubutton
-							text Export
-							id export
+						TBButton: gravity: left, @include: definitions>menubutton, text: New, id: new
+						TBButton: gravity: left, @include: definitions>menubutton, text: Save, id: save
+						TBButton: gravity: left, @include: definitions>menubutton, text: Load, id: load
+						TBButton: gravity: left, @include: definitions>menubutton, text: Export, id: export
 						TBLayout: gravity: left right
 							TBWidget
-						TBSelectDropdown: gravity: left top
-							@include definitions>menubutton
-							id cammode
+						TBSelectDropdown: gravity: left top, @include: definitions>menubutton, id: cammode
 							items
-								item
-									text "FILL"
-									id 0
-								item
-									text "POINTS"
-									id 1
-								item
-									text "LINES"
-									id 2
+								item: text: "FILL", id: 0
+								item: text: "POINTS", id: 1
+								item: text: "LINES", id: 2
 			TBLayout: distribution: gravity, position: top
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBSection: value: 1, text: "Palette"
 						TBLayout: position: left top, axis: y
-							PaletteWidget: id: palettecontainer
-								width: 20
-								height: 20
-								padding: 3
+							PaletteWidget: id: palettecontainer, width: 20, height: 20, padding: 3
 								lp: width: 216, height: 296
 
 					TBSeparator: gravity: left right, skin: separator
 
 					TBSection: value: 1, text: "Tools"
 						TBLayout: position: left top, axis: y
-							TBButton
-								@include definitions>menubutton
-								text Override
-								id actionoverride
-							TBButton
-								@include definitions>menubutton
+							TBClickLabel
 								text Place
-								id actionplace
-							TBButton
-								@include definitions>menubutton
+								TBRadioButton
+									value 1
+									id actionplace
+									@include definitions>toolbutton
+							TBClickLabel
+								text Override
+								TBRadioButton
+									id actionoverride
+									@include definitions>toolbutton
+							TBClickLabel
 								text Copy
-								id actioncopy
-							TBButton
-								@include definitions>menubutton
+								TBRadioButton
+									id actioncopy
+									@include definitions>toolbutton
+							TBClickLabel
 								text Delete
-								id actiondelete
+								TBRadioButton
+									id actiondelete
+									@include definitions>toolbutton
 					TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y
