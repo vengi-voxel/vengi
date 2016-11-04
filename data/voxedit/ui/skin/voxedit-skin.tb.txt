@@ -45,6 +45,8 @@ elements
 		bitmap voxedit-override.png
 	voxedit-export
 		bitmap voxedit-export.png
+	voxedit-selection
+		bitmap voxedit-selection.png
 
 	grid-button
 		bitmap voxedit-show-grid.png
