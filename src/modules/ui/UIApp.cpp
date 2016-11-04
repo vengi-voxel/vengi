@@ -424,7 +424,13 @@ core::AppState UIApp::onInit() {
 		Log::warn("could not load the translation");
 	}
 
-	if (!tb::g_tb_skin->Load("ui/skin/skin.tb.txt", nullptr)) {
+	if (_applicationSkin.empty()) {
+		const std::string skin = "ui/skin/" + _appname + "-skin.tb.txt";
+		if (filesystem()->exists(skin)) {
+			_applicationSkin = skin;
+		}
+	}
+	if (!tb::g_tb_skin->Load("ui/skin/skin.tb.txt", _applicationSkin.empty() ? nullptr : _applicationSkin.c_str())) {
 		Log::error("could not load the skin");
 		return core::AppState::Cleanup;
 	}
