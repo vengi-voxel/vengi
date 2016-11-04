@@ -6,7 +6,9 @@ class PaletteWidget: public ui::Widget {
 private:
 	using Super = ui::Widget;
 protected:
-	tb::TBColor _color;
+	int _width = 0;
+	int _height = 0;
+	int _padding = 0;
 public:
 	UIWIDGET_SUBCLASS(PaletteWidget, Super);
 
