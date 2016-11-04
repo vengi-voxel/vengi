@@ -7,6 +7,8 @@ definitions
 		skin TBButton.flat
 	toolbutton
 		group-id tools
+	cursorbutton
+		group-id cursor
 
 TBLayout: distribution: gravity, axis: y
 	TBContainer: gravity: all, id: maincontainer
@@ -38,7 +40,7 @@ TBLayout: distribution: gravity, axis: y
 					TBSection: value: 1, text: "Palette"
 						TBLayout: position: left top, axis: y
 							PaletteWidget: id: palettecontainer, width: 20, height: 20, padding: 3
-								lp: width: 216, height: 296
+								lp: width: 207, height: 115
 
 					TBSeparator: gravity: left right, skin: separator
 
@@ -69,6 +71,47 @@ TBLayout: distribution: gravity, axis: y
 								TBRadioButton
 									id actiondelete
 									@include definitions>toolbutton
+
+					TBSection: value: 1, text: "Shapes"
+						TBLayout: position: left top, axis: y
+							TBClickLabel
+								text Single
+								TBSkinImage: skin: voxedit-voxel
+								TBRadioButton
+									value 1
+									id shapesingle
+									@include definitions>cursorbutton
+							TBClickLabel
+								text Sphere
+								TBSkinImage: skin: voxedit-voxel
+								TBRadioButton
+									id shapesphere
+									@include definitions>cursorbutton
+							TBClickLabel
+								text Plane
+								TBSkinImage: skin: voxedit-voxel
+								TBRadioButton
+									id shapeplane
+									@include definitions>cursorbutton
+							TBClickLabel
+								text Cone
+								TBSkinImage: skin: voxedit-voxel
+								TBRadioButton
+									id shapecone
+									@include definitions>cursorbutton
+							TBClickLabel
+								text Dome
+								TBSkinImage: skin: voxedit-voxel
+								TBRadioButton
+									id shapedome
+									@include definitions>cursorbutton
+							TBClickLabel
+								text Circle
+								TBSkinImage: skin: voxedit-voxel
+								TBRadioButton
+									id shapecircle
+									@include definitions>cursorbutton
+
 					TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y
