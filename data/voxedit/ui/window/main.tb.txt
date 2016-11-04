@@ -92,10 +92,12 @@ TBLayout: distribution: gravity, axis: y
 						TBCheckBox: id: optionshowaxis
 					TBClickLabel: text: Bounding box
 						TBCheckBox: id: optionshowaabb
-					// TODO:
-					// executionDelay
-					// size
-					// cameraSpeed
+					TBClickLabel: text: Size
+						TBSlider: id: size, axis: x, min: 1, max: 128, value: 64
+					TBClickLabel: text: Click delay
+						TBSlider: id: executiondelay, axis: x, min: 0.01, max: 0.5, value: 0.01
+					TBClickLabel: text: Camera speed
+						TBSlider: id: cameraspeed, axis: x, min: 0.01, max: 0.5, value: 0.01
 					TBWidget: gravity: top bottom
 
 			TBLayout: distribution: gravity
