@@ -25,7 +25,8 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 	for (int y = 0; y < yAmount; ++y) {
 		for (int x = 0; x < xAmount; ++x) {
 			if (i >= max) {
-				return;
+				y = yAmount;
+				break;
 			}
 			const glm::ivec4 color(colors[i] * 255.0f);
 			const int transX = x * _padding + x * _width;
@@ -38,16 +39,31 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 			++i;
 		}
 	}
-	// TODO: draw current selection
+	{
+		const glm::vec4& selectionColor = colors[std::enum_value(_voxelType)] * 255.0f;
+		const tb::TBColor tbSelectionColor(selectionColor.r, selectionColor.g, selectionColor.b);
+		const int y = i / xAmount;
+		const int selectionY = (y + 1) * _padding + (y + 1) * _height;
+		const tb::TBRect selectionRect(0, 0, rect.w, renderRect.h);
+		tb::g_renderer->Translate(0, selectionY);
+		tb::g_renderer->DrawRectFill(selectionRect, tbSelectionColor);
+		tb::g_renderer->DrawRect(selectionRect, tbBorderColor);
+		tb::g_renderer->Translate(0, -selectionY);
+	}
 }
 
 bool PaletteWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		const tb::TBRect rect = GetRect();
+		const int min = std::enum_value(voxel::VoxelType::Min);
+		const int max = std::enum_value(voxel::VoxelType::Max);
 		const int xAmount = rect.w / (_width + _padding);
 		const int col = ev.target_x / (_width + _padding);
 		const int row = ev.target_y / (_height + _padding);
 		const int index = row * xAmount + col;
+		if (index >= max) {
+			return false;
+		}
 		_voxelType = (voxel::VoxelType)index;
 		_dirty = true;
 		return true;

@@ -25,7 +25,6 @@ EditorScene::EditorScene() :
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
-	_currentVoxel = voxel::createVoxel(voxel::VoxelType::Grass1);
 	//_rawVolumeRenderer.setAmbientColor(core::Color::White.xyz());
 	SetIsFocusable(true);
 }
@@ -286,6 +285,7 @@ void EditorScene::resetCamera() {
 }
 
 void EditorScene::setVoxelType(voxel::VoxelType type) {
+	Log::info("Change voxel to %i", std::enum_value(type));
 	_currentVoxel = voxel::createVoxel(type);
 }
 

@@ -10,8 +10,8 @@ protected:
 	int _width = 0;
 	int _height = 0;
 	int _padding = 0;
-	bool _dirty = false;
-	voxel::VoxelType _voxelType = voxel::VoxelType::Air;
+	bool _dirty = true;
+	voxel::VoxelType _voxelType = voxel::VoxelType::Grass1;
 public:
 	UIWIDGET_SUBCLASS(PaletteWidget, Super);
 

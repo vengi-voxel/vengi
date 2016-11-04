@@ -1,6 +1,5 @@
 #include "RawVolumeRenderer.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
-#include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
 
 namespace frontend {
@@ -107,7 +106,18 @@ bool RawVolumeRenderer::extract() {
 		return false;
 	}
 
-	voxel::extractCubicMesh(_rawVolume, _rawVolume->getEnclosingRegion(), _mesh, voxel::IsQuadNeeded(false));
+	struct CustomIsQuadNeeded {
+		inline bool operator()(const voxel::Voxel& back, const voxel::Voxel& front, voxel::Voxel& materialToUse, voxel::FaceNames face, int x, int z) const {
+			if (back.getMaterial() != voxel::VoxelType::Air
+					&& front.getMaterial() == voxel::VoxelType::Air) {
+				materialToUse = back;
+				return true;
+			}
+			return false;
+		}
+	};
+
+	voxel::extractCubicMesh(_rawVolume, _rawVolume->getEnclosingRegion(), _mesh, CustomIsQuadNeeded());
 	const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
 	const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
 	const size_t meshNumberIndices = _mesh->getNoOfIndices();
