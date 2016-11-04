@@ -19,7 +19,7 @@
 #include <assimp/mesh.h>
 
 EditorScene::EditorScene() :
-		ui::Widget(), _rawVolumeRenderer(true), _cursorVolume(nullptr), _modelVolume(nullptr),
+		ui::Widget(), _rawVolumeRenderer(true, false, true), _cursorVolume(nullptr), _modelVolume(nullptr),
 		_bitmap((tb::UIRendererGL*)tb::g_renderer) {
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);

@@ -30,6 +30,8 @@ private:
 
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
+
+	void quit();
 public:
 	MainWindow(VoxEdit* tool);
 
@@ -37,6 +39,7 @@ public:
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 	void OnProcess() override;
+	void OnDie() override;
 
 	bool voxelize(std::string_view file);
 	bool save(std::string_view file);

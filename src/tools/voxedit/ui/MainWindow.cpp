@@ -56,6 +56,11 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			_scene->newModel(true);
 		}
 		return true;
+	} else if (ev.target->GetID() == TBIDC("unsaved_changes_quit")) {
+		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
+			Close();
+		}
+		return true;
 	} else if (ev.target->GetID() == TBIDC("unsaved_changes_load")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_scene->loadModel(_loadFile);
@@ -71,6 +76,9 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 
 	if (ev.target->GetID() == TBIDC("resetcamera")) {
 		_scene->resetCamera();
+		return true;
+	} else if (ev.target->GetID() == TBIDC("quit")) {
+		quit();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("new")) {
 		createNew(false);
@@ -148,6 +156,21 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 	}
 
 	return ui::Window::OnEvent(ev);
+}
+
+void MainWindow::OnDie() {
+	Super::OnDie();
+	_app->requestQuit();
+}
+
+void MainWindow::quit() {
+	if (_scene->isDirty()) {
+		popup("Unsaved Modifications",
+				"There are unsaved modifications.\nDo you wish to discard them and quit?",
+				ui::Window::PopupType::YesNo, "unsaved_changes_quit");
+		return;
+	}
+	 Close();
 }
 
 bool MainWindow::save(std::string_view file) {
