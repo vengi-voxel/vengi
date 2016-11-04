@@ -15,9 +15,17 @@ TBLayout: distribution: gravity, axis: y
 				TBContainer: skin: container, gravity: left right
 					TBLayout: distribution: gravity
 						TBButton: gravity: left, @include: definitions>menubutton, text: New, id: new
+							TBSkinImage: skin: voxedit-new
 						TBButton: gravity: left, @include: definitions>menubutton, text: Save, id: save
+							TBSkinImage: skin: voxedit-save
 						TBButton: gravity: left, @include: definitions>menubutton, text: Load, id: load
+							TBSkinImage: skin: voxedit-load
 						TBButton: gravity: left, @include: definitions>menubutton, text: Export, id: export
+							TBSkinImage: skin: voxedit-export
+						TBButton: gravity: left, @include: definitions>menubutton, text: Undo, id: undo
+							TBSkinImage: skin: voxedit-undo
+						TBButton: gravity: left, @include: definitions>menubutton, text: Redo, id: redo
+							TBSkinImage: skin: voxedit-redo
 						TBLayout: gravity: left right
 							TBWidget
 						TBSelectDropdown: gravity: left top, @include: definitions>menubutton, id: cammode
@@ -38,22 +46,26 @@ TBLayout: distribution: gravity, axis: y
 						TBLayout: position: left top, axis: y
 							TBClickLabel
 								text Place
+								TBSkinImage: skin: voxedit-voxel
 								TBRadioButton
 									value 1
 									id actionplace
 									@include definitions>toolbutton
 							TBClickLabel
 								text Override
+								TBSkinImage: skin: voxedit-override
 								TBRadioButton
 									id actionoverride
 									@include definitions>toolbutton
 							TBClickLabel
 								text Copy
+								TBSkinImage: skin: voxedit-copy
 								TBRadioButton
 									id actioncopy
 									@include definitions>toolbutton
 							TBClickLabel
 								text Delete
+								TBSkinImage: skin: voxedit-delete
 								TBRadioButton
 									id actiondelete
 									@include definitions>toolbutton
@@ -67,7 +79,7 @@ TBLayout: distribution: gravity, axis: y
 					TBSection: value: 0, text: "Options"
 						TBLayout: position: left top, axis: y
 							TBClickLabel: text: Show grid
-								TBCheckBox: id: optionshowgrid
+								TBCheckBox: id: optionshowgrid, skin: grid-button
 							TBClickLabel: text: Show axis
 								TBCheckBox: id: optionshowaxis
 							TBClickLabel: text: Bounding box
@@ -87,3 +99,4 @@ TBLayout: distribution: gravity, axis: y
 							TBWidget
 						TBButton: @include: definitions>menubutton, text: Reset View, id: resetcamera
 						TBButton: @include: definitions>menubutton, text: Quit, id: quit
+							TBSkinImage: skin: voxedit-quit

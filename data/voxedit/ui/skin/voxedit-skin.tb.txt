@@ -1,0 +1,45 @@
+elements
+	voxedit-copy
+		bitmap voxedit-copy.png
+	voxedit-delete
+		bitmap voxedit-delete.png
+	voxedit-flip-horizontal
+		bitmap voxedit-flip-horizontal.png
+	voxedit-flip-vertical
+		bitmap voxedit-flip-vertical.png
+	voxedit-load
+		bitmap voxedit-load.png
+	voxedit-new
+		bitmap voxedit-new.png
+	voxedit-options
+		bitmap voxedit-options.png
+	voxedit-quit
+		bitmap voxedit-quit.png
+	voxedit-redo
+		bitmap voxedit-redo.png
+	voxedit-rotate-left
+		bitmap voxedit-rotate-left.png
+	voxedit-rotate-right
+		bitmap voxedit-rotate-right.png
+	voxedit-save
+		bitmap voxedit-save.png
+	voxedit-show-grid
+		bitmap voxedit-show-grid.png
+	voxedit-undo
+		bitmap voxedit-undo.png
+	voxedit-voxel
+		bitmap voxedit-voxel.png
+
+	grid-button
+		bitmap voxedit-show-grid.png
+		children
+			element grid-button.selected
+				state selected
+			element grid-button.pressed
+				state pressed
+	grid-button.selected
+		bitmap voxedit-show-grid-selected.png
+		type Image
+	grid-button.pressed
+		bitmap voxedit-show-grid-selected.png
+		type Image

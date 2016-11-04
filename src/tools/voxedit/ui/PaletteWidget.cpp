@@ -38,6 +38,7 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 			++i;
 		}
 	}
+	// TODO: draw current selection
 }
 
 bool PaletteWidget::OnEvent(const tb::TBWidgetEvent &ev) {
