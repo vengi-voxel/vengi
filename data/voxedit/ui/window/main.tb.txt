@@ -71,12 +71,6 @@ TBLayout: distribution: gravity, axis: y
 								TBRadioButton
 									id actiondelete
 									@include definitions>toolbutton
-							TBClickLabel
-								text Select
-								TBSkinImage: skin: voxedit-selection
-								TBRadioButton
-									id actionselect
-									@include definitions>toolbutton
 
 					TBSection: value: 1, text: "Shapes"
 						TBLayout: position: left top, axis: y
@@ -125,6 +119,40 @@ TBLayout: distribution: gravity, axis: y
 						EditorScene: id: editorscene, gravity: left right top bottom
 
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
+					TBSection: value: 1, text: "Select"
+						lp: width: 150
+						TBLayout: position: left top, axis: y
+							TBClickLabel
+								text Single
+								TBSkinImage: skin: voxedit-selection
+								TBRadioButton
+									id actionselectsingle
+									@include definitions>toolbutton
+							TBClickLabel
+								text Same
+								TBSkinImage: skin: voxedit-selection
+								TBRadioButton
+									id actionselectsame
+									@include definitions>toolbutton
+							TBClickLabel
+								text Horizontal
+								TBSkinImage: skin: voxedit-selection
+								TBRadioButton
+									id actionselecthorizontal
+									@include definitions>toolbutton
+							TBClickLabel
+								text Vertical
+								TBSkinImage: skin: voxedit-selection
+								TBRadioButton
+									id actionselectvertical
+									@include definitions>toolbutton
+							TBClickLabel
+								text Edge
+								TBSkinImage: skin: voxedit-selection
+								TBRadioButton
+									id actionselectedge
+									@include definitions>toolbutton
+
 					TBSection: value: 0, text: "Options"
 						TBLayout: position: left top, axis: y
 							TBClickLabel: text: Show grid
@@ -139,6 +167,7 @@ TBLayout: distribution: gravity, axis: y
 								TBSlider: id: executiondelay, axis: x, min: 0, max: 50, value: 1
 							TBClickLabel: text: Camera speed
 								TBSlider: id: cameraspeed, axis: x, min: 0.05, max: 0.2, value: 0.01
+
 					TBWidget: gravity: top bottom
 
 			TBLayout: distribution: gravity

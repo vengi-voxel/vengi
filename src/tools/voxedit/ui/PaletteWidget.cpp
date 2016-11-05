@@ -55,7 +55,6 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 bool PaletteWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		const tb::TBRect rect = GetRect();
-		const int min = std::enum_value(voxel::VoxelType::Min);
 		const int max = std::enum_value(voxel::VoxelType::Max);
 		const int xAmount = rect.w / (_width + _padding);
 		const int col = ev.target_x / (_width + _padding);

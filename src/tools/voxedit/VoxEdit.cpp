@@ -17,6 +17,7 @@
 // TODO: extrude
 // TODO: selection
 // TODO: select by voxel type
+// TODO: layers
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init("engine", "voxedit");
@@ -32,6 +33,10 @@ bool VoxEdit::loadFile(std::string_view file) {
 
 bool VoxEdit::voxelizeFile(std::string_view file) {
 	return _mainWindow->voxelize(file);
+}
+
+void VoxEdit::select(const glm::ivec3& pos) {
+	_mainWindow->select(pos);
 }
 
 bool VoxEdit::newFile(bool force) {
@@ -106,6 +111,17 @@ core::AppState VoxEdit::onInit() {
 	core::Command::registerCommand("new", [this] (const core::CmdArgs& args) {
 		newFile(false);
 	}).setHelp("Create a new scene");
+
+	core::Command::registerCommand("select", [this] (const core::CmdArgs& args) {
+		if (args.size() != 3) {
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		const glm::ivec3 pos(x, y, z);
+		select(pos);
+	}).setHelp("Select voxels");
 
 	newFile(true);
 

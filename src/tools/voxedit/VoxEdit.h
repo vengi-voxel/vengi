@@ -26,6 +26,7 @@ public:
 	bool voxelizeFile(std::string_view file);
 	bool exportFile(std::string_view file);
 	bool newFile(bool force = false);
+	void select(const glm::ivec3& pos);
 
 	video::MeshPoolPtr meshPool() const;
 

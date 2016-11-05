@@ -12,6 +12,20 @@
 #include "voxel/model/QB2Format.h"
 #include "voxel/polyvox/VolumeMerger.h"
 #include "ui/UIApp.h"
+#include "select/Single.h"
+
+static const struct Selection {
+	EditorScene::SelectType type;
+	selections::Select& select;
+} selectionsArray[] = {
+	{EditorScene::SelectType::Single, selections::Single::get()},
+	{EditorScene::SelectType::Same, selections::Single::get()},
+	{EditorScene::SelectType::LineVertical, selections::Single::get()},
+	{EditorScene::SelectType::LineHorizontal, selections::Single::get()},
+	{EditorScene::SelectType::Edge, selections::Single::get()}
+};
+static_assert(SDL_arraysize(selectionsArray) == std::enum_value(EditorScene::SelectType::Max), "Array size doesn't match selection modes");
+
 #define VOXELIZER_IMPLEMENTATION
 #include "../voxelizer.h"
 // TODO: move functionality of exporting vertices via assimp into own class
@@ -19,14 +33,17 @@
 #include <assimp/mesh.h>
 
 EditorScene::EditorScene() :
-		ui::Widget(), _rawVolumeRenderer(true, false, true), _cursorVolume(nullptr), _modelVolume(nullptr),
-		_bitmap((tb::UIRendererGL*)tb::g_renderer) {
+		ui::Widget(), _rawVolumeRenderer(true, false, true), _rawVolumeSelectionRenderer(false, false, false),
+		_cursorVolume(nullptr), _cursorPositionVolume(nullptr), _modelVolume(nullptr),
+		_bitmap((tb::UIRendererGL*) tb::g_renderer) {
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 	//_rawVolumeRenderer.setAmbientColor(core::Color::White.xyz());
 	SetIsFocusable(true);
+	_cursorVolume = new voxel::RawVolume(voxel::Region(0, 1));
+	_cursorVolume->setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Grass1));
 }
 
 EditorScene::~EditorScene() {
@@ -37,9 +54,11 @@ EditorScene::~EditorScene() {
 
 	_axis.shutdown();
 	_frameBuffer.shutdown();
+	delete _cursorPositionVolume;
 	delete _cursorVolume;
 	delete _modelVolume;
 	delete _rawVolumeRenderer.shutdown();
+	delete _rawVolumeSelectionRenderer.shutdown();
 }
 
 const voxel::Voxel& EditorScene::getVoxel(const glm::ivec3& pos) const {
@@ -60,9 +79,10 @@ void EditorScene::setNewVolume(voxel::RawVolume *volume) {
 	_modelVolume = volume;
 
 	const voxel::Region& region = volume->getEnclosingRegion();
-	delete _cursorVolume;
-	_cursorVolume = new voxel::RawVolume(region);
+	delete _cursorPositionVolume;
+	_cursorPositionVolume = new voxel::RawVolume(region);
 
+	delete _rawVolumeSelectionRenderer.setVolume(new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(new voxel::RawVolume(region));
 
 	_extract = true;
@@ -76,8 +96,20 @@ void EditorScene::render() {
 		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
 		_rawVolumeRenderer.render(_camera);
 	}
+	{
+		video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame);
+		_rawVolumeSelectionRenderer.render(_camera);
+	}
 	if (_renderAxis) {
 		_axis.render(_camera);
+	}
+}
+
+void EditorScene::select(const glm::ivec3& pos) {
+	voxel::RawVolume* selectionVolume = _rawVolumeSelectionRenderer.volume();
+	const Selection& mode = selectionsArray[std::enum_value(_selectionType)];
+	if (mode.select.execute(_modelVolume, selectionVolume, pos)) {
+		_selectionExtract = true;
 	}
 }
 
@@ -99,6 +131,8 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 	bool extract = false;
 	if (_result.didHit && _action == Action::CopyVoxel) {
 		_currentVoxel = getVoxel(_result.hitVoxel);
+	} else if (_result.didHit && _action == Action::SelectVoxels) {
+		select(_result.hitVoxel);
 	} else if (_result.didHit && _action == Action::OverrideVoxel) {
 		extract = setVoxel(_result.hitVoxel, _currentVoxel);
 	} else if (_result.didHit && _action == Action::DeleteVoxel) {
@@ -147,6 +181,14 @@ void EditorScene::setInternalAction(EditorScene::Action action) {
 
 void EditorScene::setAction(EditorScene::Action action) {
 	_uiAction = action;
+}
+
+void EditorScene::setSelectionType(SelectType type) {
+	_selectionType = type;
+}
+
+EditorScene::SelectType EditorScene::selectionType() const {
+	return _selectionType;
 }
 
 bool EditorScene::newModel(bool force) {
@@ -267,13 +309,16 @@ bool EditorScene::loadModel(std::string_view file) {
 	core_trace_scoped(EditorSceneLoadModel);
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
 	if (!(bool)filePtr) {
+		Log::error("Failed to open model file %s", file.data());
 		return false;
 	}
 	voxel::VoxFormat f;
 	voxel::RawVolume* newVolume = f.load(filePtr);
 	if (newVolume == nullptr) {
+		Log::error("Failed to load model file %s", file.data());
 		return false;
 	}
+	Log::info("Loaded model file %s", file.data());
 	setNewVolume(newVolume);
 	return true;
 }
@@ -378,6 +423,8 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	_axis.init();
 
 	_rawVolumeRenderer.init();
+	_rawVolumeSelectionRenderer.init();
+
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 	const ui::UIApp* app = (ui::UIApp*)core::App::getInstance();
 	const glm::ivec2& d = app->dimension();
@@ -385,6 +432,7 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	_frameBuffer.init(d);
 	_bitmap.Init(d.x, d.y, _frameBuffer.texture());
 	_rawVolumeRenderer.onResize(glm::ivec2(), d);
+	_rawVolumeSelectionRenderer.onResize(glm::ivec2(), d);
 
 	resetCamera();
 }
@@ -400,7 +448,6 @@ void EditorScene::OnProcess() {
 	_angle += deltaFrame * 0.001f;
 	const glm::vec3 direction(glm::sin(_angle), 0.5f, glm::cos(_angle));
 	_rawVolumeRenderer.setSunDirection(direction);
-
 	if (_lastRaytraceX != _mouseX || _lastRaytraceY != _mouseY) {
 		core_trace_scoped(EditorSceneOnProcessUpdateRay);
 		_lastRaytraceX = _mouseX;
@@ -416,11 +463,16 @@ void EditorScene::OnProcess() {
 		_result = voxel::pickVoxel(_modelVolume, ray.origin, dirWithLength, air);
 
 		if (_result.validPreviousVoxel && (!_result.didHit || !actionRequiresExistingVoxel(_action))) {
-			_cursorVolume->clear();
-			_cursorVolume->setVoxel(_result.previousVoxel, _currentVoxel);
+			_cursorPositionVolume->clear();
+			const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
+			const glm::ivec3& cursorPos = _result.previousVoxel - center;
+			voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, cursorPos);
 		} else if (_result.didHit) {
-			_cursorVolume->clear();
-			_cursorVolume->setVoxel(_result.hitVoxel, _currentVoxel);
+			_cursorPositionVolume->clear();
+			const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
+			const glm::ivec3& cursorPos = _result.previousVoxel - center;
+			voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, cursorPos);
+			_cursorPositionVolume->setVoxel(_result.hitVoxel, _currentVoxel);
 		}
 
 		core_trace_scoped(EditorSceneOnProcessMergeRawVolumes);
@@ -428,15 +480,19 @@ void EditorScene::OnProcess() {
 		volume->clear();
 		const bool current = isRelativeMouseMode();
 		if (!current) {
-			voxel::mergeRawVolumes(volume, _cursorVolume, air);
+			voxel::mergeRawVolumesSameDimension(volume, _cursorPositionVolume);
 		}
-		voxel::mergeRawVolumes(volume, _modelVolume, air);
+		voxel::mergeRawVolumesSameDimension(volume, _modelVolume);
 		_extract = true;
 	}
 
 	if (_extract) {
 		_extract = false;
 		_rawVolumeRenderer.extract();
+	}
+	if (_selectionExtract) {
+		_selectionExtract = false;
+		_rawVolumeSelectionRenderer.extract();
 	}
 
 	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);

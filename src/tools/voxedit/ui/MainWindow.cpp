@@ -240,6 +240,10 @@ bool MainWindow::load(std::string_view file) {
 	return false;
 }
 
+void MainWindow::select(const glm::ivec3& pos) {
+	_scene->select(pos);
+}
+
 bool MainWindow::createNew(bool force) {
 	if (!force && _scene->isDirty()) {
 		popup("Unsaved Modifications",

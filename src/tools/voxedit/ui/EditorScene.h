@@ -14,8 +14,19 @@ public:
 		None,
 		PlaceVoxel,
 		CopyVoxel,
+		SelectVoxels,
 		DeleteVoxel,
 		OverrideVoxel
+	};
+
+	enum class SelectType {
+		Single,
+		Same,
+		LineVertical,
+		LineHorizontal,
+		Edge,
+
+		Max
 	};
 
 private:
@@ -25,7 +36,9 @@ private:
 	core::VarPtr _rotationSpeed;
 	video::FrameBuffer _frameBuffer;
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
+	frontend::RawVolumeRenderer _rawVolumeSelectionRenderer;
 	voxel::RawVolume* _cursorVolume;
+	voxel::RawVolume* _cursorPositionVolume;
 	voxel::RawVolume* _modelVolume;
 	tb::UIBitmapGL _bitmap;
 
@@ -35,9 +48,11 @@ private:
 
 	bool _dirty = false;
 	bool _extract = false;
+	bool _selectionExtract = false;
 	bool _renderAxis = true;
 	bool _mouseDown = false;
 	uint8_t _moveMask = 0;
+	SelectType _selectionType = SelectType::Single;
 
 	float _angle = 0.0f;
 
@@ -89,6 +104,11 @@ public:
 	bool loadModel(std::string_view file);
 	bool exportModel(std::string_view file);
 	bool newModel(bool force);
+
+	void select(const glm::ivec3& pos);
+
+	SelectType selectionType() const;
+	void setSelectionType(SelectType type);
 
 	void setActionExecutionDelay(long actionExecutionDelay);
 	long actionExecutionDelay() const;
