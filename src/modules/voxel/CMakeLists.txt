@@ -3,6 +3,7 @@ set(SRCS
 	model/VoxFileFormat.h model/VoxFileFormat.cpp
 	model/VoxFormat.h model/VoxFormat.cpp
 	model/QB2Format.h model/QB2Format.cpp
+	model/MeshExporter.h model/MeshExporter.cpp
 	font/VoxelFont.h font/VoxelFont.cpp
 	BiomeManager.h BiomeManager.cpp
 	LodCreator.h
@@ -38,7 +39,7 @@ set(SRCS
 )
 set(LIB voxel)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} core noise zlib)
+target_link_libraries(${LIB} core noise zlib assimp)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_compile_options(${LIB} PRIVATE -march=native PRIVATE -O3)
 

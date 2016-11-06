@@ -75,6 +75,8 @@ public:
 	 */
 	voxel::RawVolume* setVolume(voxel::RawVolume* volume);
 
+	const voxel::Mesh* mesh() const;
+
 	size_t numVertices() const;
 	const voxel::Vertex* vertices() const;
 
@@ -147,6 +149,10 @@ inline void RawVolumeRenderer::setRenderGrid(bool renderGrid) {
 
 inline void RawVolumeRenderer::setRenderWireframe(bool renderWireframe) {
 	_renderWireframe = renderWireframe;
+}
+
+inline const voxel::Mesh* RawVolumeRenderer::mesh() const {
+	return _mesh;
 }
 
 }
