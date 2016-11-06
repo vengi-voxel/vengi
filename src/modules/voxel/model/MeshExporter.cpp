@@ -1,4 +1,6 @@
 #include "MeshExporter.h"
+#include "core/Log.h"
+#include "core/GLM.h"
 #include <assimp/Exporter.hpp>
 #include <assimp/mesh.h>
 #include <assimp/scene.h>
