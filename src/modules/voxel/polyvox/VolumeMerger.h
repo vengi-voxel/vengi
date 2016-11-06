@@ -13,7 +13,7 @@ public:
 	}
 
 	inline bool operator() (const voxel::Voxel& voxel) const {
-		return voxel == _voxel;
+		return voxel != _voxel;
 	}
 };
 
