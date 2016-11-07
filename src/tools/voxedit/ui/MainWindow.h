@@ -28,6 +28,8 @@ private:
 	tb::TBCheckBox *_showAABB = nullptr;
 	tb::TBCheckBox *_showAxis = nullptr;
 
+	std::string _exportFilter;
+
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
 

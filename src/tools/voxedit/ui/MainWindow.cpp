@@ -2,6 +2,7 @@
 #include "EditorScene.h"
 #include "PaletteWidget.h"
 #include "../VoxEdit.h"
+#include <assimp/Exporter.hpp>
 
 MainWindow::MainWindow(VoxEdit* tool) :
 		ui::Window(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
@@ -36,6 +37,16 @@ bool MainWindow::init() {
 	_showAABB->SetValue(_scene->renderAABB() ? 1 : 0);
 	_showGrid->SetValue(_scene->renderGrid() ? 1 : 0);
 	_showAxis->SetValue(_scene->renderAxis() ? 1 : 0);
+
+	Assimp::Exporter exporter;
+	const size_t num = exporter.GetExportFormatCount();
+	for (size_t i = 0; i < num; ++i) {
+		const aiExportFormatDesc* desc = exporter.GetExportFormatDescription(i);
+		_exportFilter.append(desc->fileExtension);
+		if (i < num - 1) {
+			_exportFilter.append(";");
+		}
+	}
 
 	return true;
 }
@@ -210,7 +221,10 @@ bool MainWindow::voxelize(std::string_view file) {
 bool MainWindow::exportFile(std::string_view file) {
 	std::string f;
 	if (file.empty()) {
-		f = _voxedit->saveDialog();
+		if (_exportFilter.empty()) {
+			return false;
+		}
+		f = _voxedit->saveDialog(_exportFilter);
 		if (f.empty()) {
 			return false;
 		}
