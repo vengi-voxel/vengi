@@ -130,7 +130,7 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 	const bool didHit = result.didHit;
 	const voxel::Voxel& currentVoxel = mdl.currentVoxel();
 	if (didHit && action == Action::CopyVoxel) {
-		mdl._currentVoxel = getVoxel(hitVoxel);
+		mdl.setVoxelType(getVoxel(hitVoxel).getMaterial());
 	} else if (didHit && action == Action::SelectVoxels) {
 		select(hitVoxel);
 	} else if (didHit && action == Action::OverrideVoxel) {
@@ -176,7 +176,7 @@ void EditorScene::setInternalAction(Action action) {
 	if (action == mdl.action()) {
 		return;
 	}
-	mdl._action = action;
+	mdl.setAction(action);
 	switch (action) {
 	case Action::None:
 		Log::debug("Action: None");
@@ -482,7 +482,7 @@ void EditorScene::OnProcess() {
 	if (mdl._modelVolume == nullptr) {
 		return;
 	}
-	mdl._angle += deltaFrame * 0.001f;
+	mdl.setAngle(mdl.angle() + deltaFrame * 0.001f);
 	const float angle = mdl.angle();
 	const glm::vec3 direction(glm::sin(angle), 0.5f, glm::cos(angle));
 	mdl._rawVolumeRenderer.setSunDirection(direction);

@@ -10,6 +10,9 @@
 class EditorModel {
 private:
 	int _initialized = 0;
+	float _angle = 0.0f;
+	voxel::Voxel _currentVoxel;
+	int _size = 32;
 public:
 	EditorModel();
 	~EditorModel();
@@ -33,15 +36,17 @@ public:
 
 	bool renderAxis() const;
 	Action action() const;
+	void setAction(Action action);
 	Action keyAction() const;
 	Action uiAction() const;
 	float angle() const;
+	void setAngle(float angle);
 
 	void setVoxelType(voxel::VoxelType type);
 
 	voxel::PickResult& result();
 
-	float _angle = 0.0f;
+public:
 	bool _renderAxis = true;
 	uint8_t _moveMask = 0;
 
@@ -54,7 +59,6 @@ public:
 	bool _empty = true;
 	bool _selectionExtract = false;
 	SelectType _selectionType = SelectType::Single;
-	int _size = 32;
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
 	long _actionExecutionDelay = 5l;
@@ -71,7 +75,6 @@ public:
 	voxel::RawVolume* _cursorVolume = nullptr;
 	voxel::RawVolume* _cursorPositionVolume = nullptr;
 	voxel::RawVolume* _modelVolume = nullptr;
-	voxel::Voxel _currentVoxel;
 };
 
 inline void EditorModel::setVoxelType(voxel::VoxelType type) {
@@ -95,12 +98,20 @@ inline Action EditorModel::action() const {
 	return _action;
 }
 
+inline void EditorModel::setAction(Action action) {
+	_action = action;
+}
+
 inline Action EditorModel::keyAction() const {
 	return _keyAction;
 }
 
 inline float EditorModel::angle() const {
 	return _angle;
+}
+
+inline void EditorModel::setAngle(float angle) {
+	_angle = angle;
 }
 
 inline Action EditorModel::uiAction() const {
