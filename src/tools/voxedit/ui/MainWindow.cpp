@@ -59,11 +59,13 @@ bool MainWindow::init() {
 static const struct {
 	tb::TBID id;
 	EditorScene::Action action;
+	bool availableOnEmpty;
 } actions[] = {
-	{TBIDC("actionoverride"),	EditorScene::Action::OverrideVoxel},
-	{TBIDC("actiondelete"),		EditorScene::Action::DeleteVoxel},
-	{TBIDC("actioncopy"),		EditorScene::Action::CopyVoxel},
-	{TBIDC("actionplace"),		EditorScene::Action::PlaceVoxel},
+	{TBIDC("actionoverride"),	EditorScene::Action::OverrideVoxel, false},
+	{TBIDC("actiondelete"),		EditorScene::Action::DeleteVoxel, false},
+	{TBIDC("actioncopy"),		EditorScene::Action::CopyVoxel, false},
+	{TBIDC("actionplace"),		EditorScene::Action::PlaceVoxel, true},
+	{TBIDC("actionselect"),		EditorScene::Action::SelectVoxels, false}
 };
 
 bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
@@ -170,6 +172,25 @@ void MainWindow::OnProcess() {
 	}
 	if (_redoButton != nullptr) {
 		_redoButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
+	}
+	bool needReset = false;
+	tb::TBWidget* alternative = nullptr;
+	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
+		tb::TBWidget* w = GetWidgetByID(actions[i].id);
+		if (w == nullptr) {
+			continue;
+		}
+		if (!actions[i].availableOnEmpty) {
+			if (!needReset && w->GetValue() == 1) {
+				needReset = true;
+			}
+			w->SetState(tb::WIDGET_STATE_DISABLED, empty);
+		} else if (alternative == nullptr) {
+			alternative = w;
+		}
+	}
+	if (needReset && alternative != nullptr) {
+		alternative->SetValue(1);
 	}
 }
 
