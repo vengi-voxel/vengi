@@ -48,6 +48,7 @@ private:
 
 	bool _dirty = false;
 	bool _extract = false;
+	bool _empty = true;
 	bool _selectionExtract = false;
 	bool _renderAxis = true;
 	bool _mouseDown = false;
@@ -99,6 +100,7 @@ public:
 	void resetCamera();
 
 	bool isDirty() const;
+	bool isEmpty() const;
 	bool voxelizeModel(const video::MeshPtr& mesh);
 	bool saveModel(std::string_view file);
 	bool loadModel(std::string_view file);

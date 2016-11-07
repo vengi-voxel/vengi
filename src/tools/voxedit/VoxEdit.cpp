@@ -12,6 +12,7 @@
 // TODO: export via assimp exporters
 // TODO: cursor volume shape generators
 // TODO: voxel cursor tools
+// TODO: undo/redo
 // TODO: it is possible to place a voxel outside the maxs region
 // TODO: rotate whole volume
 // TODO: extrude

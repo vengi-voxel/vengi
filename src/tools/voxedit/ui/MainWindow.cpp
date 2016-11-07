@@ -26,6 +26,11 @@ bool MainWindow::init() {
 		return false;
 	}
 
+	_exportButton = getWidget("export");
+	_saveButton = getWidget("save");
+	_undoButton = getWidget("undo");
+	_redoButton = getWidget("redo");
+
 	_showAABB = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowaabb"));
 	_showGrid = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowgrid"));
 	_showAxis = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowaxis"));
@@ -153,6 +158,19 @@ void MainWindow::OnProcess() {
 		_scene->setVoxelType(_paletteWidget->voxelType());
 		_paletteWidget->markAsClean();
 	}
+	const bool empty = _scene->isEmpty();
+	if (_exportButton != nullptr) {
+		_exportButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
+	}
+	if (_saveButton != nullptr) {
+		_saveButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
+	}
+	if (_undoButton != nullptr) {
+		_undoButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
+	}
+	if (_redoButton != nullptr) {
+		_redoButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
+	}
 }
 
 bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
@@ -221,6 +239,9 @@ bool MainWindow::voxelize(std::string_view file) {
 bool MainWindow::exportFile(std::string_view file) {
 	std::string f;
 	if (file.empty()) {
+		if (_scene->isEmpty()) {
+			return false;
+		}
 		if (_exportFilter.empty()) {
 			return false;
 		}

@@ -20,6 +20,10 @@ private:
 	EditorScene* _scene;
 	VoxEdit* _voxedit;
 	PaletteWidget* _paletteWidget;
+	tb::TBWidget* _exportButton = nullptr;
+	tb::TBWidget* _saveButton = nullptr;
+	tb::TBWidget* _undoButton = nullptr;
+	tb::TBWidget* _redoButton = nullptr;
 
 	std::string _voxelizeFile;
 	std::string _loadFile;

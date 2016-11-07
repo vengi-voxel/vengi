@@ -83,6 +83,7 @@ void EditorScene::setNewVolume(voxel::RawVolume *volume) {
 	delete _rawVolumeSelectionRenderer.setVolume(new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(new voxel::RawVolume(region));
 
+	_empty = true;
 	_extract = true;
 	_dirty = false;
 	_lastRaytraceX = _lastRaytraceY = -1;
@@ -251,6 +252,10 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 	vx_mesh_free(result);
 	vx_mesh_free(mesh);
 	return false;
+}
+
+bool EditorScene::isEmpty() const {
+	return _empty;
 }
 
 bool EditorScene::exportModel(std::string_view file) {
@@ -440,7 +445,7 @@ void EditorScene::OnProcess() {
 		if (!current) {
 			voxel::mergeRawVolumesSameDimension(volume, _cursorPositionVolume);
 		}
-		voxel::mergeRawVolumesSameDimension(volume, _modelVolume);
+		_empty = voxel::mergeRawVolumesSameDimension(volume, _modelVolume) == 0;
 		_extract = true;
 	}
 
