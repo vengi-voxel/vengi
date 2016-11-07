@@ -170,7 +170,18 @@ core::AppState WindowedApp::onInit() {
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 
 	SDL_DisplayMode displayMode;
-	SDL_GetDesktopDisplayMode(0, &displayMode);
+	const int numDisplays = std::max(0, SDL_GetNumVideoDisplays());
+	const int displayIndex = glm::clamp(core::Var::get(cfg::ClientWindowDisplay, 0)->intVal(), 0, numDisplays);
+	SDL_GetDesktopDisplayMode(displayIndex, &displayMode);
+
+	for (int i = 0; i < numDisplays; ++i) {
+		SDL_Rect dr;
+		if (SDL_GetDisplayBounds(i, &dr) == -1) {
+			continue;
+		}
+		Log::info("Display %i: %i:%i x %i:%i", i, dr.x, dr.y, dr.w, dr.h);
+	}
+
 	const char *name = SDL_GetPixelFormatName(displayMode.format);
 	int width = core::Var::get(cfg::ClientWindowWidth, displayMode.w)->intVal();
 	int height = core::Var::get(cfg::ClientWindowHeight, displayMode.h)->intVal();
@@ -225,15 +236,14 @@ core::AppState WindowedApp::onInit() {
 	}
 
 	Log::info("driver: %s", SDL_GetCurrentVideoDriver());
-	const int displays = SDL_GetNumVideoDisplays();
-	Log::info("found %i displays", displays);
-	if (fullscreen && displays > 1) {
+	Log::info("found %i displays (use %i)", numDisplays, displayIndex);
+	if (fullscreen && numDisplays > 1) {
 		width = displayMode.w;
 		height = displayMode.h;
 		Log::info("use fake fullscreen for the first display: %i:%i", width, height);
 	}
 
-	_window = SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+	_window = SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
 	if (!_window) {
 		sdlCheckError();
 		return core::AppState::Cleanup;
@@ -278,7 +288,7 @@ core::AppState WindowedApp::onInit() {
 	}
 
 	const bool grabMouse = false;
-	if (grabMouse && (!fullscreen || displays > 1)) {
+	if (grabMouse && (!fullscreen || numDisplays > 1)) {
 		SDL_SetWindowGrab(_window, SDL_TRUE);
 	}
 
