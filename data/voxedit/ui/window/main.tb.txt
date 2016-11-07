@@ -6,9 +6,11 @@ definitions
 		lp: height: 28
 		skin TBButton.flat
 	toolbutton
-		group-id tools
+		group-id toolgroup
 	cursorbutton
-		group-id cursor
+		group-id cursorgroup
+	selectbutton
+		group-id selectgroup
 
 TBLayout: distribution: gravity, axis: y
 	TBContainer: gravity: all, id: maincontainer
@@ -126,32 +128,33 @@ TBLayout: distribution: gravity, axis: y
 								text Single
 								TBSkinImage: skin: voxedit-selection
 								TBRadioButton
+									value 1
 									id actionselectsingle
-									@include definitions>toolbutton
+									@include definitions>selectbutton
 							TBClickLabel
 								text Same
 								TBSkinImage: skin: voxedit-selection
 								TBRadioButton
 									id actionselectsame
-									@include definitions>toolbutton
+									@include definitions>selectbutton
 							TBClickLabel
 								text Horizontal
 								TBSkinImage: skin: voxedit-selection
 								TBRadioButton
 									id actionselecthorizontal
-									@include definitions>toolbutton
+									@include definitions>selectbutton
 							TBClickLabel
 								text Vertical
 								TBSkinImage: skin: voxedit-selection
 								TBRadioButton
 									id actionselectvertical
-									@include definitions>toolbutton
+									@include definitions>selectbutton
 							TBClickLabel
 								text Edge
 								TBSkinImage: skin: voxedit-selection
 								TBRadioButton
 									id actionselectedge
-									@include definitions>toolbutton
+									@include definitions>selectbutton
 
 					TBSection: value: 0, text: "Options"
 						TBLayout: position: left top, axis: y
