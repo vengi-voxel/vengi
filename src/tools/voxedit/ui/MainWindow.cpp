@@ -30,6 +30,10 @@ bool MainWindow::init() {
 	_sceneLeft = getWidgetByType<EditorScene>("editorsceneleft");
 	_sceneFront = getWidgetByType<EditorScene>("editorscenefront");
 
+	_scene->addReference(_sceneTop);
+	_scene->addReference(_sceneLeft);
+	_scene->addReference(_sceneFront);
+
 	_fourViewAvailable = _sceneTop != nullptr && _sceneLeft != nullptr && _sceneFront != nullptr;
 
 	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
@@ -50,7 +54,7 @@ bool MainWindow::init() {
 	tb::TBWidget *viewPortToggleWidget = getWidget("toggleviewport");
 	if (viewPortToggleWidget != nullptr) {
 		const int value = viewPortToggleWidget->GetValue();
-		const tb::WIDGET_VISIBILITY vis = value ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_INVISIBLE;
+		const tb::WIDGET_VISIBILITY vis = value ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
 		if (_sceneTop != nullptr) {
 			_sceneTop->SetVisibility(vis);
 		}
@@ -173,7 +177,7 @@ bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("toggleviewport")) {
 		tb::TBWidget *widget = getWidget("toggleviewport");
 		const int value = widget->GetValue();
-		const tb::WIDGET_VISIBILITY vis = value ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_INVISIBLE;
+		const tb::WIDGET_VISIBILITY vis = value ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
 		if (_sceneTop != nullptr) {
 			_sceneTop->SetVisibility(vis);
 		}
@@ -183,7 +187,6 @@ bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		if (_sceneFront != nullptr) {
 			_sceneFront->SetVisibility(vis);
 		}
-		_scene->InvalidateLayout(tb::TBWidget::INVALIDATE_LAYOUT_RECURSIVE);
 		return true;
 	}
 

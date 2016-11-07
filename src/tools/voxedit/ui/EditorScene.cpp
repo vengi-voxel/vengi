@@ -72,6 +72,21 @@ void EditorScene::newVolume() {
 	setNewVolume(new voxel::RawVolume(region));
 }
 
+void EditorScene::setupReference(EditorScene* ref) {
+	ref->_rawVolumeRenderer.setVolume(_rawVolumeRenderer.volume());
+	ref->_rawVolumeSelectionRenderer.setVolume(_rawVolumeSelectionRenderer.volume());
+	ref->_modelVolume = _modelVolume;
+	ref->_cursorPositionVolume = _cursorPositionVolume;
+	ref->_cursorVolume = _cursorVolume;
+}
+
+void EditorScene::addReference(EditorScene* ref) {
+	_references.push_back(ref);
+	delete ref->_cursorVolume;
+	ref->_cursorVolume = nullptr;
+	setupReference(ref);
+}
+
 void EditorScene::setNewVolume(voxel::RawVolume *volume) {
 	delete _modelVolume;
 	_modelVolume = volume;
@@ -82,6 +97,10 @@ void EditorScene::setNewVolume(voxel::RawVolume *volume) {
 
 	delete _rawVolumeSelectionRenderer.setVolume(new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(new voxel::RawVolume(region));
+
+	for (EditorScene* ref : _references) {
+		setupReference(ref);
+	}
 
 	_empty = true;
 	_extract = true;

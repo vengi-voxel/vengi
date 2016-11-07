@@ -41,6 +41,7 @@ private:
 	voxel::RawVolume* _cursorPositionVolume;
 	voxel::RawVolume* _modelVolume;
 	tb::UIBitmapGL _bitmap;
+	std::vector<EditorScene*> _references;
 
 	float _cameraSpeed = 0.1f;
 
@@ -83,6 +84,7 @@ private:
 
 	bool actionRequiresExistingVoxel(Action action) const;
 
+	void setupReference(EditorScene* ref);
 	void newVolume();
 	void setNewVolume(voxel::RawVolume *volume);
 
@@ -131,6 +133,8 @@ public:
 
 	bool renderGrid() const;
 	void setRenderGrid(bool renderGrid);
+
+	void addReference(EditorScene* scene);
 
 	virtual void OnFocusChanged(bool focused) override;
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
