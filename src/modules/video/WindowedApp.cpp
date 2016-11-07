@@ -235,12 +235,14 @@ core::AppState WindowedApp::onInit() {
 		Log::info("available driver: %s", SDL_GetVideoDriver(i));
 	}
 
+	SDL_Rect displayBounds;
+	SDL_GetDisplayBounds(displayIndex, &displayBounds);
 	Log::info("driver: %s", SDL_GetCurrentVideoDriver());
-	Log::info("found %i displays (use %i)", numDisplays, displayIndex);
+	Log::info("found %i displays (use %i at %i:%i)", numDisplays, displayIndex, displayBounds.x, displayBounds.y);
 	if (fullscreen && numDisplays > 1) {
 		width = displayMode.w;
 		height = displayMode.h;
-		Log::info("use fake fullscreen for the first display: %i:%i", width, height);
+		Log::info("use fake fullscreen for display %i: %i:%i", displayIndex, width, height);
 	}
 
 	_window = SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
