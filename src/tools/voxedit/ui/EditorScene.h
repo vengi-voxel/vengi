@@ -149,6 +149,9 @@ inline bool EditorScene::renderAABB() const {
 
 inline void EditorScene::setRenderAABB(bool renderAABB) {
 	_rawVolumeRenderer.setRenderAABB(renderAABB);
+	for (EditorScene* ref : _references) {
+		ref->setRenderAABB(renderAABB);
+	}
 }
 
 inline bool EditorScene::renderGrid() const {
@@ -157,6 +160,9 @@ inline bool EditorScene::renderGrid() const {
 
 inline void EditorScene::setRenderGrid(bool renderGrid) {
 	_rawVolumeRenderer.setRenderGrid(renderGrid);
+	for (EditorScene* ref : _references) {
+		ref->setRenderGrid(renderGrid);
+	}
 }
 
 inline long EditorScene::actionExecutionDelay() const {
@@ -165,6 +171,9 @@ inline long EditorScene::actionExecutionDelay() const {
 
 inline void EditorScene::setActionExecutionDelay(long actionExecutionDelay) {
 	_actionExecutionDelay = actionExecutionDelay;
+	for (EditorScene* ref : _references) {
+		ref->setActionExecutionDelay(actionExecutionDelay);
+	}
 }
 
 inline bool EditorScene::renderAxis() const {
@@ -173,6 +182,9 @@ inline bool EditorScene::renderAxis() const {
 
 inline void EditorScene::setRenderAxis(bool renderAxis) {
 	_renderAxis = renderAxis;
+	for (EditorScene* ref : _references) {
+		ref->setRenderAxis(renderAxis);
+	}
 }
 
 inline float EditorScene::cameraSpeed() const {
@@ -181,6 +193,9 @@ inline float EditorScene::cameraSpeed() const {
 
 inline void EditorScene::setCameraSpeed(float cameraSpeed) {
 	_cameraSpeed = cameraSpeed;
+	for (EditorScene* ref : _references) {
+		ref->setCameraSpeed(cameraSpeed);
+	}
 }
 
 inline bool EditorScene::isDirty() const {
