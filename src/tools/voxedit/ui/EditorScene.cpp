@@ -34,10 +34,6 @@ EditorScene::EditorScene() :
 		Super(), _rawVolumeRenderer(true, false, true), _rawVolumeSelectionRenderer(false, false, false),
 		_cursorVolume(nullptr), _cursorPositionVolume(nullptr), _modelVolume(nullptr),
 		_bitmap((tb::UIRendererGL*) tb::g_renderer) {
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
 	//_rawVolumeRenderer.setAmbientColor(core::Color::White.xyz());
 	SetIsFocusable(true);
 	_cursorVolume = new voxel::RawVolume(voxel::Region(0, 1));
@@ -45,18 +41,18 @@ EditorScene::EditorScene() :
 }
 
 EditorScene::~EditorScene() {
-	core::Command::unregisterCommand("+move_right");
-	core::Command::unregisterCommand("+move_left");
-	core::Command::unregisterCommand("+move_upt");
-	core::Command::unregisterCommand("+move_down");
-
 	_axis.shutdown();
 	_frameBuffer.shutdown();
-	delete _cursorPositionVolume;
-	delete _cursorVolume;
-	delete _modelVolume;
-	delete _rawVolumeRenderer.shutdown();
-	delete _rawVolumeSelectionRenderer.shutdown();
+	if (!_reference) {
+		delete _cursorPositionVolume;
+		delete _cursorVolume;
+		delete _modelVolume;
+		delete _rawVolumeRenderer.shutdown();
+		delete _rawVolumeSelectionRenderer.shutdown();
+	} else {
+		_rawVolumeRenderer.shutdown();
+		_rawVolumeSelectionRenderer.shutdown();
+	}
 }
 
 const voxel::Voxel& EditorScene::getVoxel(const glm::ivec3& pos) const {
@@ -78,6 +74,9 @@ void EditorScene::setupReference(EditorScene* ref) {
 	ref->_modelVolume = _modelVolume;
 	ref->_cursorPositionVolume = _cursorPositionVolume;
 	ref->_cursorVolume = _cursorVolume;
+	ref->_reference = true;
+
+	ref->resetCamera();
 }
 
 void EditorScene::addReference(EditorScene* ref) {
@@ -106,6 +105,7 @@ void EditorScene::setNewVolume(voxel::RawVolume *volume) {
 	_extract = true;
 	_dirty = false;
 	_lastRaytraceX = _lastRaytraceY = -1;
+	resetCamera();
 }
 
 void EditorScene::render() {
@@ -307,8 +307,24 @@ bool EditorScene::loadModel(std::string_view file) {
 
 void EditorScene::resetCamera() {
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	_camera.setPosition(glm::vec3(50.0f, 50.0f, 100.0f));
-	_camera.lookAt(glm::vec3(0.0001f));
+	if (_modelVolume == nullptr) {
+		return;
+	}
+	const voxel::Region& region = _modelVolume->getEnclosingRegion();
+	const glm::ivec3& center = region.getCentre();
+	if (_camMode == SceneCameraMode::Free) {
+		_camera.setPosition(glm::vec3(-center));
+		_camera.lookAt(glm::vec3(0.0001f));
+	} else if (_camMode == SceneCameraMode::Top) {
+		_camera.setPosition(glm::vec3(center.x, region.getHeightInCells() + center.y, center.z));
+		_camera.lookAt(glm::down);
+	} else if (_camMode == SceneCameraMode::Left) {
+		_camera.setPosition(glm::vec3(region.getWidthInCells() + center.x, center.y, center.z));
+		_camera.lookAt(glm::right);
+	} else if (_camMode == SceneCameraMode::Front) {
+		_camera.setPosition(glm::vec3(center.x, center.y, region.getDepthInCells() + center.z));
+		_camera.lookAt(glm::backward);
+	}
 }
 
 void EditorScene::setVoxelType(voxel::VoxelType type) {
@@ -371,8 +387,10 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 			const float yaw = x - _mouseX;
 			const float pitch = y - _mouseY;
 			const float s = _rotationSpeed->floatVal();
-			_camera.turn(yaw * s);
-			_camera.pitch(pitch * s);
+			if (_camMode == SceneCameraMode::Free) {
+				_camera.turn(yaw * s);
+				_camera.pitch(pitch * s);
+			}
 			_mouseX = x;
 			_mouseY = y;
 			return true;
@@ -387,6 +405,31 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 
 void EditorScene::OnFocusChanged(bool focused) {
 	Super::OnFocusChanged(focused);
+	if (focused) {
+		registerMoveCmd("+move_right", MOVERIGHT);
+		registerMoveCmd("+move_left", MOVELEFT);
+		registerMoveCmd("+move_forward", MOVEFORWARD);
+		registerMoveCmd("+move_backward", MOVEBACKWARD);
+	} else {
+		core::Command::unregisterCommand("+move_right");
+		core::Command::unregisterCommand("+move_left");
+		core::Command::unregisterCommand("+move_upt");
+		core::Command::unregisterCommand("+move_down");
+	}
+}
+
+void EditorScene::OnResized(int oldw, int oldh) {
+	core_trace_scoped(EditorSceneOnResized);
+	Super::OnResized(oldw, oldh);
+	const tb::TBRect& rect = GetRect();
+	const glm::ivec2 pos(0, 0);
+	const glm::ivec2 dim(rect.w, rect.h);
+	_camera.init(pos, dim);
+	_frameBuffer.shutdown();
+	_frameBuffer.init(dim);
+	_bitmap.Init(dim.x, dim.y, _frameBuffer.texture());
+	_rawVolumeRenderer.onResize(pos, dim);
+	_rawVolumeSelectionRenderer.onResize(pos, dim);
 }
 
 void EditorScene::OnPaint(const PaintProps &paintProps) {
@@ -394,11 +437,8 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 	Super::OnPaint(paintProps);
 	const glm::ivec2& dimension = _frameBuffer.dimension();
 	ui::UIRect rect = GetRect();
-	int x = rect.x;
-	int y = rect.y;
-	ConvertToRoot(x, y);
 	// the fbo is flipped in memory, we have to deal with it here
-	const tb::TBRect srcRect(x, dimension.y - y, rect.w, -rect.h);
+	const tb::TBRect srcRect(0, dimension.y, rect.w, -rect.h);
 	tb::g_renderer->DrawBitmap(rect, srcRect, &_bitmap);
 }
 
@@ -406,17 +446,25 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	Super::OnInflate(info);
 	_axis.init();
 
+	const char *cameraMode = info.node->GetValueString("camera", "free");
+	if (!strcmp(cameraMode, "top")) {
+		_camMode = SceneCameraMode::Top;
+		_camera.setMode(video::CameraMode::Orthogonal);
+	} else if (!strcmp(cameraMode, "front")) {
+		_camMode = SceneCameraMode::Front;
+		_camera.setMode(video::CameraMode::Orthogonal);
+	} else if (!strcmp(cameraMode, "left")) {
+		_camMode = SceneCameraMode::Left;
+		_camera.setMode(video::CameraMode::Orthogonal);
+	} else {
+		_camMode = SceneCameraMode::Free;
+		_camera.setMode(video::CameraMode::Perspective);
+	}
+
 	_rawVolumeRenderer.init();
 	_rawVolumeSelectionRenderer.init();
 
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
-	const ui::UIApp* app = (ui::UIApp*)core::App::getInstance();
-	const glm::ivec2& d = app->dimension();
-	_camera.init(glm::ivec2(), d);
-	_frameBuffer.init(d);
-	_bitmap.Init(d.x, d.y, _frameBuffer.texture());
-	_rawVolumeRenderer.onResize(glm::ivec2(), d);
-	_rawVolumeSelectionRenderer.onResize(glm::ivec2(), d);
 
 	resetCamera();
 }

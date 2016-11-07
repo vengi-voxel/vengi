@@ -32,7 +32,7 @@ public:
 		return _texture;
 	}
 
-	inline glm::ivec2 dimension() const {
+	inline const glm::ivec2& dimension() const {
 		return _dimension;
 	}
 };

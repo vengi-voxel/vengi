@@ -47,6 +47,7 @@ private:
 
 	voxel::Voxel _currentVoxel;
 
+	bool _reference = false;
 	bool _dirty = false;
 	bool _extract = false;
 	bool _empty = true;
@@ -76,6 +77,12 @@ private:
 	Action _keyAction = Action::None;
 	// action that is selected via ui
 	Action _uiAction = Action::PlaceVoxel;
+
+	enum class SceneCameraMode {
+		Free, Top, Left, Front
+	};
+
+	SceneCameraMode _camMode = SceneCameraMode::Free;
 
 	voxel::PickResult _result;
 
@@ -141,6 +148,7 @@ public:
 	virtual void OnProcess() override;
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
 	virtual void OnPaint(const PaintProps &paintProps) override;
+	virtual void OnResized(int oldw, int oldh) override;
 };
 
 inline bool EditorScene::renderAABB() const {
