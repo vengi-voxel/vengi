@@ -67,7 +67,9 @@ public:
 	void resetLastTrace();
 
 public:
+	// TODO: maybe move into scene
 	bool _renderAxis = true;
+	// TODO: move into scene
 	uint8_t _moveMask = 0;
 
 	float _cameraSpeed = 0.1f;
