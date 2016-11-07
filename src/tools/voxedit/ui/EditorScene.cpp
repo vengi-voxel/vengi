@@ -410,6 +410,9 @@ void EditorScene::OnProcess() {
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
 	_camera.update(deltaFrame);
+	if (_modelVolume == nullptr) {
+		return;
+	}
 	_angle += deltaFrame * 0.001f;
 	const glm::vec3 direction(glm::sin(_angle), 0.5f, glm::cos(_angle));
 	_rawVolumeRenderer.setSunDirection(direction);

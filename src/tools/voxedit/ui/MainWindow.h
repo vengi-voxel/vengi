@@ -18,6 +18,9 @@ class PaletteWidget;
 class MainWindow: public ui::Window {
 private:
 	EditorScene* _scene;
+	EditorScene* _sceneTop = nullptr;
+	EditorScene* _sceneLeft = nullptr;
+	EditorScene* _sceneFront = nullptr;
 	VoxEdit* _voxedit;
 	PaletteWidget* _paletteWidget;
 	tb::TBWidget* _exportButton = nullptr;
@@ -33,6 +36,7 @@ private:
 	tb::TBCheckBox *_showAxis = nullptr;
 
 	std::string _exportFilter;
+	bool _fourViewAvailable = false;
 
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);

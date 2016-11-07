@@ -26,6 +26,14 @@ bool MainWindow::init() {
 		return false;
 	}
 
+	_sceneTop = getWidgetByType<EditorScene>("editorscenetop");
+	_sceneLeft = getWidgetByType<EditorScene>("editorsceneleft");
+	_sceneFront = getWidgetByType<EditorScene>("editorscenefront");
+
+	_fourViewAvailable = _sceneTop != nullptr && _sceneLeft != nullptr && _sceneFront != nullptr;
+
+	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
+	toggleViewPort->SetState(tb::WIDGET_STATE_DISABLED, !_fourViewAvailable);
 	_exportButton = getWidget("export");
 	_saveButton = getWidget("save");
 	_undoButton = getWidget("undo");
@@ -37,6 +45,21 @@ bool MainWindow::init() {
 	if (_showAABB == nullptr || _showGrid == nullptr || _showAxis == nullptr) {
 		Log::error("Could not load all required widgets");
 		return false;
+	}
+
+	tb::TBWidget *viewPortToggleWidget = getWidget("toggleviewport");
+	if (viewPortToggleWidget != nullptr) {
+		const int value = viewPortToggleWidget->GetValue();
+		const tb::WIDGET_VISIBILITY vis = value ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_INVISIBLE;
+		if (_sceneTop != nullptr) {
+			_sceneTop->SetVisibility(vis);
+		}
+		if (_sceneLeft != nullptr) {
+			_sceneLeft->SetVisibility(vis);
+		}
+		if (_sceneFront != nullptr) {
+			_sceneFront->SetVisibility(vis);
+		}
 	}
 
 	_showAABB->SetValue(_scene->renderAABB() ? 1 : 0);
@@ -131,10 +154,7 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 
 bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("cammode")) {
-		tb::TBSelectDropdown *widget = GetWidgetByIDAndType<tb::TBSelectDropdown>(TBIDC("cammode"));
-		if (widget == nullptr) {
-			return false;
-		}
+		tb::TBWidget *widget = getWidget("cammode");
 		const int value = widget->GetValue();
 		video::PolygonMode mode = video::PolygonMode::Solid;
 		switch (value) {
@@ -150,7 +170,23 @@ bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		}
 		_scene->camera().setPolygonMode(mode);
 		return true;
+	} else if (ev.target->GetID() == TBIDC("toggleviewport")) {
+		tb::TBWidget *widget = getWidget("toggleviewport");
+		const int value = widget->GetValue();
+		const tb::WIDGET_VISIBILITY vis = value ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_INVISIBLE;
+		if (_sceneTop != nullptr) {
+			_sceneTop->SetVisibility(vis);
+		}
+		if (_sceneLeft != nullptr) {
+			_sceneLeft->SetVisibility(vis);
+		}
+		if (_sceneFront != nullptr) {
+			_sceneFront->SetVisibility(vis);
+		}
+		_scene->InvalidateLayout(tb::TBWidget::INVALIDATE_LAYOUT_RECURSIVE);
+		return true;
 	}
+
 	return false;
 }
 

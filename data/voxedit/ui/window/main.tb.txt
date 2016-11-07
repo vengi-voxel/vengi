@@ -123,8 +123,14 @@ TBLayout: distribution: gravity, axis: y
 					TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y
-					TBLayout: distribution: gravity, id: editorcontainer, skin: container
-						EditorScene: id: editorscene, gravity: left right top bottom
+					TBLayout: distribution: gravity, id: editorcontainer
+						TBLayout: distribution: gravity, axis: y
+							TBLayout: distribution: gravity, axis: x
+								EditorScene: id: editorscene, gravity: left right top bottom, skin: container
+								EditorScene: id: editorscenetop, gravity: left right top bottom, skin: container
+							TBLayout: distribution: gravity, axis: x
+								EditorScene: id: editorsceneleft, gravity: left right top bottom, skin: container
+								EditorScene: id: editorscenefront, gravity: left right top bottom, skin: container
 
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBSection: value: 1, text: "Select"
@@ -188,3 +194,5 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-reset-camera
 						TBButton: @include: definitions>menubutton, text: Quit, id: quit
 							TBSkinImage: skin: voxedit-quit
+						TBClickLabel: text: Viewport
+							TBCheckBox: id: toggleviewport
