@@ -173,24 +173,19 @@ void MainWindow::OnProcess() {
 	if (_redoButton != nullptr) {
 		_redoButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
 	}
-	bool needReset = false;
-	tb::TBWidget* alternative = nullptr;
 	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
 		tb::TBWidget* w = GetWidgetByID(actions[i].id);
 		if (w == nullptr) {
 			continue;
 		}
-		if (!actions[i].availableOnEmpty) {
-			if (!needReset && w->GetValue() == 1) {
-				needReset = true;
+		if (!actions[i].availableOnEmpty && empty) {
+			if (w->GetState(tb::WIDGET_STATE_SELECTED)) {
+				w->SetState(tb::WIDGET_STATE_SELECTED, false);
 			}
-			w->SetState(tb::WIDGET_STATE_DISABLED, empty);
-		} else if (alternative == nullptr) {
-			alternative = w;
+			w->SetState(tb::WIDGET_STATE_DISABLED, true);
+		} else {
+			w->SetState(tb::WIDGET_STATE_DISABLED, false);
 		}
-	}
-	if (needReset && alternative != nullptr) {
-		alternative->SetValue(1);
 	}
 }
 

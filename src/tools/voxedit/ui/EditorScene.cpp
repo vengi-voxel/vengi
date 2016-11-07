@@ -31,7 +31,7 @@ static_assert(SDL_arraysize(selectionsArray) == std::enum_value(EditorScene::Sel
 #include "../voxelizer.h"
 
 EditorScene::EditorScene() :
-		ui::Widget(), _rawVolumeRenderer(true, false, true), _rawVolumeSelectionRenderer(false, false, false),
+		Super(), _rawVolumeRenderer(true, false, true), _rawVolumeSelectionRenderer(false, false, false),
 		_cursorVolume(nullptr), _cursorPositionVolume(nullptr), _modelVolume(nullptr),
 		_bitmap((tb::UIRendererGL*) tb::g_renderer) {
 	registerMoveCmd("+move_right", MOVERIGHT);
@@ -345,8 +345,10 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		_camera.move(moveDelta);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_MOVE) {
-		const bool current = isRelativeMouseMode();
-		if (current || (_action == Action::None && (ev.modifierkeys & tb::TB_ALT))) {
+		const bool relative = isRelativeMouseMode();
+		const bool middle = isMiddleMouseButtonPressed();
+		const bool alt = _action == Action::None && (ev.modifierkeys & tb::TB_ALT);
+		if (relative || middle || alt) {
 			const float yaw = x - _mouseX;
 			const float pitch = y - _mouseY;
 			const float s = _rotationSpeed->floatVal();
