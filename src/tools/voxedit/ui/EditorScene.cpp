@@ -41,25 +41,28 @@ EditorScene::EditorScene() :
 	//_rawVolumeRenderer.setAmbientColor(core::Color::White.xyz());
 	SetIsFocusable(true);
 	SetAutoFocusState(true);
-	m().init();
 }
 
 EditorScene::~EditorScene() {
 	_axis.shutdown();
 	_frameBuffer.shutdown();
-	m().shutdown();
+	EditorModel& mdl = m();
+	mdl.shutdown();
 }
 
 const voxel::Voxel& EditorScene::getVoxel(const glm::ivec3& pos) const {
-	return m()._modelVolume->getVoxel(pos);
+	const EditorModel& mdl = m();
+	return mdl.getVoxel(pos);
 }
 
 bool EditorScene::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
-	return m()._modelVolume->setVoxel(pos, voxel);
+	EditorModel& mdl = m();
+	return mdl.setVoxel(pos, voxel);
 }
 
 void EditorScene::newVolume() {
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(m()._size));
+	const EditorModel& mdl = m();
+	const voxel::Region region(glm::ivec3(0), glm::ivec3(mdl.size()));
 	setNewVolume(new voxel::RawVolume(region));
 }
 
@@ -74,74 +77,70 @@ void EditorScene::addReference(EditorScene* ref) {
 }
 
 void EditorScene::setNewVolume(voxel::RawVolume *volume) {
-	delete m()._modelVolume;
-	m()._modelVolume = volume;
-
-	const voxel::Region& region = volume->getEnclosingRegion();
-	delete m()._cursorPositionVolume;
-	m()._cursorPositionVolume = new voxel::RawVolume(region);
-
-	delete m()._rawVolumeSelectionRenderer.setVolume(new voxel::RawVolume(region));
-	delete m()._rawVolumeRenderer.setVolume(new voxel::RawVolume(region));
-
-	m()._empty = true;
-	m()._extract = true;
-	m()._dirty = false;
-	m()._lastRaytraceX = m()._lastRaytraceY = -1;
+	EditorModel& mdl = m();
+	mdl.setNewVolume(volume);
 	resetCamera();
 }
 
 void EditorScene::render() {
 	core_trace_scoped(EditorSceneRender);
+	EditorModel& mdl = m();
 	{
 		video::ScopedPolygonMode polygonMode(_camera.polygonMode());
-		m()._rawVolumeRenderer.render(_camera);
+		mdl.render(_camera);
 	}
 	{
 		video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame);
-		m()._rawVolumeSelectionRenderer.render(_camera);
+		mdl.render(_camera);
 	}
-	if (m()._renderAxis) {
+	if (mdl.renderAxis()) {
 		_axis.render(_camera);
 	}
 }
 
 void EditorScene::select(const glm::ivec3& pos) {
-	voxel::RawVolume* selectionVolume = m()._rawVolumeSelectionRenderer.volume();
-	const Selection& mode = selectionsArray[std::enum_value(m()._selectionType)];
-	if (mode.select.execute(m()._modelVolume, selectionVolume, pos)) {
-		m()._selectionExtract = true;
+	EditorModel& mdl = m();
+	voxel::RawVolume* selectionVolume = mdl._rawVolumeSelectionRenderer.volume();
+	const Selection& mode = selectionsArray[std::enum_value(mdl._selectionType)];
+	if (mode.select.execute(mdl._modelVolume, selectionVolume, pos)) {
+		mdl._selectionExtract = true;
 	}
 }
 
 void EditorScene::executeAction(int32_t x, int32_t y) {
-	if (m()._action == Action::None || !_mouseDown) {
+	EditorModel& mdl = m();
+	const Action action = mdl.action();
+	if (action == Action::None || !_mouseDown) {
 		return;
 	}
 
 	core_trace_scoped(EditorSceneExecuteAction);
 	const long now = core::App::getInstance()->currentMillis();
-	if (m()._lastAction == m()._action) {
-		if (now - m()._lastActionExecution < m()._actionExecutionDelay) {
+	if (mdl._lastAction == action) {
+		if (now - mdl._lastActionExecution < mdl._actionExecutionDelay) {
 			return;
 		}
 	}
-	m()._lastAction = m()._action;
-	m()._lastActionExecution = now;
+	mdl._lastAction = action;
+	mdl._lastActionExecution = now;
 
 	bool extract = false;
-	if (m()._result.didHit && m()._action == Action::CopyVoxel) {
-		m()._currentVoxel = getVoxel(m()._result.hitVoxel);
-	} else if (m()._result.didHit && m()._action == Action::SelectVoxels) {
-		select(m()._result.hitVoxel);
-	} else if (m()._result.didHit && m()._action == Action::OverrideVoxel) {
-		extract = setVoxel(m()._result.hitVoxel, m()._currentVoxel);
-	} else if (m()._result.didHit && m()._action == Action::DeleteVoxel) {
-		extract = setVoxel(m()._result.hitVoxel, voxel::createVoxel(voxel::VoxelType::Air));
-	} else if (m()._result.validPreviousVoxel && m()._action == Action::PlaceVoxel) {
-		extract = setVoxel(m()._result.previousVoxel, m()._currentVoxel);
-	} else if (m()._result.didHit && m()._action == Action::PlaceVoxel) {
-		extract = setVoxel(m()._result.hitVoxel, m()._currentVoxel);
+	voxel::PickResult& result = mdl.result();
+	const glm::ivec3& hitVoxel = result.hitVoxel;
+	const bool didHit = result.didHit;
+	const voxel::Voxel& currentVoxel = mdl.currentVoxel();
+	if (didHit && action == Action::CopyVoxel) {
+		mdl._currentVoxel = getVoxel(hitVoxel);
+	} else if (didHit && action == Action::SelectVoxels) {
+		select(hitVoxel);
+	} else if (didHit && action == Action::OverrideVoxel) {
+		extract = setVoxel(hitVoxel, currentVoxel);
+	} else if (didHit && action == Action::DeleteVoxel) {
+		extract = setVoxel(hitVoxel, voxel::createVoxel(voxel::VoxelType::Air));
+	} else if (result.validPreviousVoxel && action == Action::PlaceVoxel) {
+		extract = setVoxel(result.previousVoxel, currentVoxel);
+	} else if (didHit && action == Action::PlaceVoxel) {
+		extract = setVoxel(hitVoxel, currentVoxel);
 	}
 
 	if (extract) {
@@ -149,31 +148,35 @@ void EditorScene::executeAction(int32_t x, int32_t y) {
 	}
 
 	if (extract) {
-		m()._extract = true;
-		m()._extract = true;
+		mdl._extract = true;
+		mdl._dirty = true;
 	}
 }
 
 void EditorScene::resetLastTrace() {
-	m()._lastRaytraceX = m()._lastRaytraceY = -1;
+	EditorModel& mdl = m();
+	mdl._lastRaytraceX = mdl._lastRaytraceY = -1;
 }
 
 Action EditorScene::action() const {
-	return m()._uiAction;
+	const EditorModel& mdl = m();
+	return mdl._uiAction;
 }
 
 void EditorScene::setKeyAction(Action action) {
-	if (action == m()._keyAction) {
+	EditorModel& mdl = m();
+	if (action == mdl.keyAction()) {
 		return;
 	}
-	m()._keyAction = action;
+	mdl._keyAction = action;
 }
 
 void EditorScene::setInternalAction(Action action) {
-	if (action == m()._action) {
+	EditorModel& mdl = m();
+	if (action == mdl.action()) {
 		return;
 	}
-	m()._action = action;
+	mdl._action = action;
 	switch (action) {
 	case Action::None:
 		Log::debug("Action: None");
@@ -197,45 +200,50 @@ void EditorScene::setInternalAction(Action action) {
 }
 
 void EditorScene::setAction(Action action) {
-	m()._uiAction = action;
+	EditorModel& mdl = m();
+	mdl._uiAction = action;
 }
 
 void EditorScene::setSelectionType(SelectType type) {
-	m()._selectionType = type;
+	EditorModel& mdl = m();
+	mdl._selectionType = type;
 }
 
 SelectType EditorScene::selectionType() const {
-	return m()._selectionType;
+	EditorModel& mdl = m();
+	return mdl._selectionType;
 }
 
 bool EditorScene::newModel(bool force) {
 	core_trace_scoped(EditorSceneNewModel);
-	if (m()._dirty && !force) {
+	EditorModel& mdl = m();
+	if (mdl.dirty() && !force) {
 		return false;
 	}
-	m()._dirty = false;
+	mdl._dirty = false;
 	newVolume();
-	m()._result = voxel::PickResult();
-	m()._extract = true;
+	mdl._result = voxel::PickResult();
+	mdl._extract = true;
 	resetLastTrace();
 	return true;
 }
 
 bool EditorScene::saveModel(std::string_view file) {
 	core_trace_scoped(EditorSceneSaveModel);
-	if (!m()._dirty) {
+	EditorModel& mdl = m();
+	if (!mdl.dirty()) {
 		// nothing to save yet
 		return true;
 	}
-	if (m()._modelVolume == nullptr) {
+	if (mdl._modelVolume == nullptr) {
 		return false;
 	}
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
 	voxel::VoxFormat f;
-	if (f.save(m()._modelVolume, filePtr)) {
-		m()._dirty = false;
+	if (f.save(mdl._modelVolume, filePtr)) {
+		mdl._dirty = false;
 	}
-	return !m()._dirty;
+	return !mdl.dirty();
 }
 
 bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
@@ -255,7 +263,8 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 	}
 
 	const glm::vec3& maxs = meshPtr->maxs();
-	const float size = m()._size;
+	const EditorModel& mdl = m();
+	const float size = mdl.size();
 	const glm::vec3& scale = maxs / size;
 	const float precision = scale.x / 10.0f;
 
@@ -270,7 +279,8 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 }
 
 bool EditorScene::isEmpty() const {
-	return m()._empty;
+	const EditorModel& mdl = m();
+	return mdl.empty();
 }
 
 bool EditorScene::exportModel(std::string_view file) {
@@ -280,7 +290,8 @@ bool EditorScene::exportModel(std::string_view file) {
 		return false;
 	}
 
-	return voxel::exportMesh(m()._rawVolumeRenderer.mesh(), filePtr->getName().c_str());
+	const EditorModel& mdl = m();
+	return voxel::exportMesh(mdl._rawVolumeRenderer.mesh(), filePtr->getName().c_str());
 }
 
 bool EditorScene::loadModel(std::string_view file) {
@@ -306,10 +317,11 @@ void EditorScene::resetCamera() {
 		ref->resetCamera();
 	}
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	if (m()._modelVolume == nullptr) {
+	const EditorModel& mdl = m();
+	if (mdl._modelVolume == nullptr) {
 		return;
 	}
-	const voxel::Region& region = m()._modelVolume->getEnclosingRegion();
+	const voxel::Region& region = mdl._modelVolume->getEnclosingRegion();
 	const glm::ivec3& center = region.getCentre();
 	if (_camMode == SceneCameraMode::Free) {
 		_camera.setPosition(glm::vec3(-center));
@@ -327,8 +339,8 @@ void EditorScene::resetCamera() {
 }
 
 void EditorScene::setVoxelType(voxel::VoxelType type) {
-	Log::info("Change voxel to %i", std::enum_value(type));
-	m()._currentVoxel = voxel::createVoxel(type);
+	EditorModel& mdl = m();
+	mdl.setVoxelType(type);
 }
 
 bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
@@ -339,13 +351,13 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	ConvertToRoot(rect.x, rect.y);
 	const int tx = x + rect.x;
 	const int ty = y + rect.y;
+	EditorModel& mdl = m();
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		_mouseDown = true;
-		Log::info("pointer down");
-		if (m()._keyAction != Action::None) {
-			setInternalAction(m()._keyAction);
+		if (mdl.keyAction() != Action::None) {
+			setInternalAction(mdl.keyAction());
 		} else {
-			setInternalAction(m()._uiAction);
+			setInternalAction(mdl.uiAction());
 		}
 		executeAction(tx, ty);
 		return true;
@@ -363,26 +375,26 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 				setKeyAction(Action::DeleteVoxel);
 			}
 			if (_mouseDown) {
-				setInternalAction(m()._keyAction);
+				setInternalAction(mdl.keyAction());
 			}
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_UP) {
-		if (ev.modifierkeys && m()._keyAction != Action::None) {
-			m()._keyAction = Action::None;
+		if (ev.modifierkeys && mdl.keyAction() != Action::None) {
+			mdl._keyAction = Action::None;
 			if (_mouseDown) {
-				setInternalAction(m()._uiAction);
+				setInternalAction(mdl.uiAction());
 			}
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_WHEEL && ev.delta_y != 0) {
-		const glm::vec3& moveDelta = glm::backward * m()._cameraSpeed * (float)(ev.delta_y * 100);
+		const glm::vec3& moveDelta = glm::backward * mdl._cameraSpeed * (float)(ev.delta_y * 100);
 		_camera.move(moveDelta);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_MOVE) {
 		const bool relative = isRelativeMouseMode();
 		const bool middle = isMiddleMouseButtonPressed();
-		const bool alt = m()._action == Action::None && (ev.modifierkeys & tb::TB_ALT);
+		const bool alt = mdl.action() == Action::None && (ev.modifierkeys & tb::TB_ALT);
 		if (relative || middle || alt) {
 			const float yaw = x - _mouseX;
 			const float pitch = y - _mouseY;
@@ -417,8 +429,8 @@ void EditorScene::OnResized(int oldw, int oldh) {
 	_frameBuffer.shutdown();
 	_frameBuffer.init(dim);
 	_bitmap.Init(dim.x, dim.y, _frameBuffer.texture());
-	m()._rawVolumeRenderer.onResize(pos, dim);
-	m()._rawVolumeSelectionRenderer.onResize(pos, dim);
+	EditorModel& mdl = m();
+	mdl.onResize(pos, dim);
 }
 
 void EditorScene::OnPaint(const PaintProps &paintProps) {
@@ -450,8 +462,8 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 		_camera.setMode(video::CameraMode::Perspective);
 	}
 
-	m()._rawVolumeRenderer.init();
-	m()._rawVolumeSelectionRenderer.init();
+	EditorModel& mdl = m();
+	mdl.init();
 
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
@@ -461,60 +473,63 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 void EditorScene::OnProcess() {
 	Super::OnProcess();
 	core_trace_scoped(EditorSceneOnProcess);
+	EditorModel& mdl = m();
 	const long deltaFrame = core::App::getInstance()->deltaFrame();
-	const float speed = m()._cameraSpeed * static_cast<float>(deltaFrame);
-	const glm::vec3& moveDelta = getMoveDelta(speed, m()._moveMask);
+	const float speed = mdl._cameraSpeed * static_cast<float>(deltaFrame);
+	const glm::vec3& moveDelta = getMoveDelta(speed, mdl._moveMask);
 	_camera.move(moveDelta);
 	_camera.update(deltaFrame);
-	if (m()._modelVolume == nullptr) {
+	if (mdl._modelVolume == nullptr) {
 		return;
 	}
-	m()._angle += deltaFrame * 0.001f;
-	const glm::vec3 direction(glm::sin(m()._angle), 0.5f, glm::cos(m()._angle));
-	m()._rawVolumeRenderer.setSunDirection(direction);
-	if (m()._lastRaytraceX != _mouseX || m()._lastRaytraceY != _mouseY) {
+	mdl._angle += deltaFrame * 0.001f;
+	const float angle = mdl.angle();
+	const glm::vec3 direction(glm::sin(angle), 0.5f, glm::cos(angle));
+	mdl._rawVolumeRenderer.setSunDirection(direction);
+	if (mdl._lastRaytraceX != _mouseX || mdl._lastRaytraceY != _mouseY) {
 		core_trace_scoped(EditorSceneOnProcessUpdateRay);
-		m()._lastRaytraceX = _mouseX;
-		m()._lastRaytraceY = _mouseY;
+		mdl._lastRaytraceX = _mouseX;
+		mdl._lastRaytraceY = _mouseY;
 
 		const int tx = _mouseX;
 		const int ty = _mouseY;
 		const video::Ray& ray = _camera.mouseRay(glm::ivec2(tx, ty));
 		const glm::vec3& dirWithLength = ray.direction * _camera.farPlane();
 		const voxel::Voxel& air = voxel::createVoxel(voxel::VoxelType::Air);
-		m()._result = voxel::pickVoxel(m()._modelVolume, ray.origin, dirWithLength, air);
+		const voxel::PickResult& result = mdl.result();
+		mdl._result = voxel::pickVoxel(mdl._modelVolume, ray.origin, dirWithLength, air);
 
-		if (m()._result.validPreviousVoxel && (!m()._result.didHit || !actionRequiresExistingVoxel(m()._action))) {
-			m()._cursorPositionVolume->clear();
-			const glm::ivec3& center = m()._cursorVolume->getEnclosingRegion().getCentre();
-			const glm::ivec3& cursorPos = m()._result.previousVoxel - center;
-			voxel::mergeRawVolumes(m()._cursorPositionVolume, m()._cursorVolume, cursorPos);
-		} else if (m()._result.didHit) {
-			m()._cursorPositionVolume->clear();
-			const glm::ivec3& center = m()._cursorVolume->getEnclosingRegion().getCentre();
-			const glm::ivec3& cursorPos = m()._result.previousVoxel - center;
-			voxel::mergeRawVolumes(m()._cursorPositionVolume, m()._cursorVolume, cursorPos);
-			m()._cursorPositionVolume->setVoxel(m()._result.hitVoxel, m()._currentVoxel);
+		if (result.validPreviousVoxel && (!result.didHit || !actionRequiresExistingVoxel(mdl.action()))) {
+			mdl._cursorPositionVolume->clear();
+			const glm::ivec3& center = mdl._cursorVolume->getEnclosingRegion().getCentre();
+			const glm::ivec3& cursorPos = result.previousVoxel - center;
+			voxel::mergeRawVolumes(mdl._cursorPositionVolume, mdl._cursorVolume, cursorPos);
+		} else if (result.didHit) {
+			mdl._cursorPositionVolume->clear();
+			const glm::ivec3& center = mdl._cursorVolume->getEnclosingRegion().getCentre();
+			const glm::ivec3& cursorPos = result.previousVoxel - center;
+			voxel::mergeRawVolumes(mdl._cursorPositionVolume, mdl._cursorVolume, cursorPos);
+			mdl._cursorPositionVolume->setVoxel(result.hitVoxel, mdl.currentVoxel());
 		}
 
 		core_trace_scoped(EditorSceneOnProcessMergeRawVolumes);
-		voxel::RawVolume* volume = m()._rawVolumeRenderer.volume();
+		voxel::RawVolume* volume = mdl._rawVolumeRenderer.volume();
 		volume->clear();
 		const bool current = isRelativeMouseMode();
 		if (!current) {
-			voxel::mergeRawVolumesSameDimension(volume, m()._cursorPositionVolume);
+			voxel::mergeRawVolumesSameDimension(volume, mdl._cursorPositionVolume);
 		}
-		m()._empty = voxel::mergeRawVolumesSameDimension(volume, m()._modelVolume) == 0;
-		m()._extract = true;
+		mdl._empty = voxel::mergeRawVolumesSameDimension(volume, mdl._modelVolume) == 0;
+		mdl._extract = true;
 	}
 
-	if (m()._extract) {
-		m()._extract = false;
-		m()._rawVolumeRenderer.extract();
+	if (mdl._extract) {
+		mdl._extract = false;
+		mdl._rawVolumeRenderer.extract();
 	}
-	if (m()._selectionExtract) {
-		m()._selectionExtract = false;
-		m()._rawVolumeSelectionRenderer.extract();
+	if (mdl._selectionExtract) {
+		mdl._selectionExtract = false;
+		mdl._rawVolumeSelectionRenderer.extract();
 	}
 
 	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
@@ -525,56 +540,67 @@ void EditorScene::OnProcess() {
 }
 
 bool EditorScene::renderAABB() const {
-	return m()._rawVolumeRenderer.renderAABB();
+	const EditorModel& mdl = m();
+	return mdl._rawVolumeRenderer.renderAABB();
 }
 
 void EditorScene::setRenderAABB(bool renderAABB) {
-	m()._rawVolumeRenderer.setRenderAABB(renderAABB);
+	EditorModel& mdl = m();
+	mdl._rawVolumeRenderer.setRenderAABB(renderAABB);
 	for (EditorScene* ref : _references) {
 		ref->setRenderAABB(renderAABB);
 	}
 }
 
 bool EditorScene::renderGrid() const {
-	return m()._rawVolumeRenderer.renderGrid();
+	const EditorModel& mdl = m();
+	return mdl._rawVolumeRenderer.renderGrid();
 }
 
 void EditorScene::setRenderGrid(bool renderGrid) {
-	m()._rawVolumeRenderer.setRenderGrid(renderGrid);
+	EditorModel& mdl = m();
+	mdl._rawVolumeRenderer.setRenderGrid(renderGrid);
 	for (EditorScene* ref : _references) {
 		ref->setRenderGrid(renderGrid);
 	}
 }
 
 inline long EditorScene::actionExecutionDelay() const {
-	return m()._actionExecutionDelay;
+	const EditorModel& mdl = m();
+	return mdl._actionExecutionDelay;
 }
 
 void EditorScene::setActionExecutionDelay(long actionExecutionDelay) {
-	m()._actionExecutionDelay = actionExecutionDelay;
+	EditorModel& mdl = m();
+	mdl._actionExecutionDelay = actionExecutionDelay;
 	for (EditorScene* ref : _references) {
 		ref->setActionExecutionDelay(actionExecutionDelay);
 	}
 }
 
 bool EditorScene::renderAxis() const {
-	return m()._renderAxis;
+	const EditorModel& mdl = m();
+	return mdl._renderAxis;
 }
 
 void EditorScene::setRenderAxis(bool renderAxis) {
-	m()._renderAxis = renderAxis;
+	EditorModel& mdl = m();
+	mdl._renderAxis = renderAxis;
 }
 
 float EditorScene::cameraSpeed() const {
-	return m()._cameraSpeed;
+	const EditorModel& mdl = m();
+	return mdl._cameraSpeed;
 }
 
 void EditorScene::setCameraSpeed(float cameraSpeed) {
-	m()._cameraSpeed = cameraSpeed;
+	EditorModel& mdl = m();
+	mdl._cameraSpeed = cameraSpeed;
 }
 
 bool EditorScene::isDirty() const {
-	return m()._dirty;
+	const EditorModel& mdl = m();
+	return mdl.dirty();
 }
 
 namespace tb {

@@ -14,8 +14,32 @@ public:
 	EditorModel();
 	~EditorModel();
 
+	void onResize(const glm::ivec2& pos, const glm::ivec2& size);
+
+	const voxel::Voxel& currentVoxel() const;
+
 	void init();
 	void shutdown();
+
+	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
+	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) const;
+	bool dirty() const;
+	bool empty() const;
+	float size() const;
+
+	void setNewVolume(voxel::RawVolume* volume);
+
+	void render(const video::Camera& camera);
+
+	bool renderAxis() const;
+	Action action() const;
+	Action keyAction() const;
+	Action uiAction() const;
+	float angle() const;
+
+	void setVoxelType(voxel::VoxelType type);
+
+	voxel::PickResult& result();
 
 	float _angle = 0.0f;
 	bool _renderAxis = true;
@@ -49,3 +73,36 @@ public:
 	voxel::RawVolume* _modelVolume = nullptr;
 	voxel::Voxel _currentVoxel;
 };
+
+inline void EditorModel::setVoxelType(voxel::VoxelType type) {
+	Log::info("Change voxel to %i", std::enum_value(type));
+	_currentVoxel = voxel::createVoxel(type);
+}
+
+inline const voxel::Voxel& EditorModel::currentVoxel() const {
+	return _currentVoxel;
+}
+
+inline voxel::PickResult& EditorModel::result() {
+	return _result;
+}
+
+inline bool EditorModel::renderAxis() const {
+	return _renderAxis;
+}
+
+inline Action EditorModel::action() const {
+	return _action;
+}
+
+inline Action EditorModel::keyAction() const {
+	return _keyAction;
+}
+
+inline float EditorModel::angle() const {
+	return _angle;
+}
+
+inline Action EditorModel::uiAction() const {
+	return _uiAction;
+}
