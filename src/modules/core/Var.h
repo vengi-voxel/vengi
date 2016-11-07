@@ -232,6 +232,16 @@ public:
 	inline void setVal(bool value) {
 		setVal(value ? "true" : "false");
 	}
+	inline void setVal(int value) {
+		char buf[32];
+		SDL_snprintf(buf, sizeof(buf), "%i", value);
+		setVal(buf);
+	}
+	inline void setVal(float value) {
+		char buf[32];
+		SDL_snprintf(buf, sizeof(buf), "%f", value);
+		setVal(buf);
+	}
 	/**
 	 * @return The string value of this var
 	 */
