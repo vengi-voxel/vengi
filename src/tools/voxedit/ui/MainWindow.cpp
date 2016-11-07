@@ -158,7 +158,7 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 
 bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("cammode")) {
-		tb::TBWidget *widget = getWidget("cammode");
+		tb::TBWidget *widget = ev.target;
 		const int value = widget->GetValue();
 		video::PolygonMode mode = video::PolygonMode::Solid;
 		switch (value) {
@@ -175,7 +175,7 @@ bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		_scene->camera().setPolygonMode(mode);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("toggleviewport")) {
-		tb::TBWidget *widget = getWidget("toggleviewport");
+		tb::TBWidget *widget = ev.target;
 		const int value = widget->GetValue();
 		const tb::WIDGET_VISIBILITY vis = value ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
 		if (_sceneTop != nullptr) {
