@@ -436,9 +436,6 @@ bool EditorScene::renderAABB() const {
 void EditorScene::setRenderAABB(bool renderAABB) {
 	EditorModel& mdl = m();
 	mdl.rawVolumeRenderer().setRenderAABB(renderAABB);
-	for (EditorScene* ref : _references) {
-		ref->setRenderAABB(renderAABB);
-	}
 }
 
 bool EditorScene::renderGrid() const {
@@ -449,9 +446,6 @@ bool EditorScene::renderGrid() const {
 void EditorScene::setRenderGrid(bool renderGrid) {
 	EditorModel& mdl = m();
 	mdl.rawVolumeRenderer().setRenderGrid(renderGrid);
-	for (EditorScene* ref : _references) {
-		ref->setRenderGrid(renderGrid);
-	}
 }
 
 inline long EditorScene::actionExecutionDelay() const {
@@ -462,9 +456,6 @@ inline long EditorScene::actionExecutionDelay() const {
 void EditorScene::setActionExecutionDelay(long actionExecutionDelay) {
 	EditorModel& mdl = m();
 	mdl._actionExecutionDelay = actionExecutionDelay;
-	for (EditorScene* ref : _references) {
-		ref->setActionExecutionDelay(actionExecutionDelay);
-	}
 }
 
 bool EditorScene::renderAxis() const {
