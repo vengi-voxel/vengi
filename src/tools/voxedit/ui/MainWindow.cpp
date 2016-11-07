@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "EditorScene.h"
 #include "PaletteWidget.h"
+#include "EditorModel.h"
 #include "../VoxEdit.h"
 #include <assimp/Exporter.hpp>
 
@@ -85,14 +86,14 @@ bool MainWindow::init() {
 
 static const struct {
 	tb::TBID id;
-	EditorScene::Action action;
+	Action action;
 	bool availableOnEmpty;
 } actions[] = {
-	{TBIDC("actionoverride"),	EditorScene::Action::OverrideVoxel, false},
-	{TBIDC("actiondelete"),		EditorScene::Action::DeleteVoxel, false},
-	{TBIDC("actioncopy"),		EditorScene::Action::CopyVoxel, false},
-	{TBIDC("actionplace"),		EditorScene::Action::PlaceVoxel, true},
-	{TBIDC("actionselect"),		EditorScene::Action::SelectVoxels, false}
+	{TBIDC("actionoverride"),	Action::OverrideVoxel, false},
+	{TBIDC("actiondelete"),		Action::DeleteVoxel, false},
+	{TBIDC("actioncopy"),		Action::CopyVoxel, false},
+	{TBIDC("actionplace"),		Action::PlaceVoxel, true},
+	{TBIDC("actionselect"),		Action::SelectVoxels, false}
 };
 
 bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
