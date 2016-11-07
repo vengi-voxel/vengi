@@ -54,5 +54,6 @@ gtest_suite_files(tests
 	tests/AmbientOcclusionTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/QB2FormatTest.cpp
+	tests/MeshExporterTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

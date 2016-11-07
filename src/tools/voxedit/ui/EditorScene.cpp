@@ -173,6 +173,9 @@ void EditorScene::setInternalAction(EditorScene::Action action) {
 	case Action::OverrideVoxel:
 		Log::debug("Action: OverrideVoxel");
 		break;
+	case Action::SelectVoxels:
+		Log::debug("Action: SelectVoxel");
+		break;
 	}
 	_action = action;
 }

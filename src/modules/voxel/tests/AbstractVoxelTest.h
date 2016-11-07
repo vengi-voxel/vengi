@@ -29,14 +29,14 @@ protected:
 	};
 
 	virtual bool pageIn(const Region& region, PagedVolume::Chunk* chunk) {
-		const glm::ivec3 center(region.getWidthInVoxels() / 2, region.getHeightInVoxels() / 2, region.getDepthInVoxels() / 2);
+		const glm::vec3 center(region.getCentre());
 		for (int z = 0; z < region.getDepthInVoxels(); ++z) {
 			for (int y = 0; y < region.getHeightInVoxels(); ++y) {
 				for (int x = 0; x < region.getWidthInVoxels(); ++x) {
-					const glm::ivec3 pos(x, y, z);
-					const int distance = (pos - center).length();
+					const glm::vec3 pos(x, y, z);
+					const float distance = glm::distance(pos, center);
 					Voxel uVoxelValue = createVoxel(VoxelType::Air);
-					if (distance <= 30) {
+					if (distance <= 30.0f) {
 						uVoxelValue = createVoxel(VoxelType::Grass1);
 					}
 
