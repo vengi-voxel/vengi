@@ -30,16 +30,12 @@ private:
 
 	SceneCameraMode _camMode = SceneCameraMode::Free;
 
-	void executeAction(int32_t x, int32_t y);
 	void render();
-
-	bool actionRequiresExistingVoxel(Action action) const;
 
 	void setupReference(EditorScene* ref);
 	void newVolume();
 	void setNewVolume(voxel::RawVolume *volume);
 
-	void resetLastTrace();
 	void setKeyAction(Action action);
 	void setInternalAction(Action action);
 	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
@@ -99,8 +95,4 @@ public:
 
 inline video::Camera& EditorScene::camera() {
 	return _camera;
-}
-
-inline bool EditorScene::actionRequiresExistingVoxel(Action action) const {
-	return action == Action::CopyVoxel || action == Action::DeleteVoxel || action == Action::OverrideVoxel;
 }

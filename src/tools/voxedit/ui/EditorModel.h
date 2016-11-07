@@ -13,6 +13,10 @@ private:
 	float _angle = 0.0f;
 	voxel::Voxel _currentVoxel;
 	int _size = 32;
+	frontend::RawVolumeRenderer _rawVolumeRenderer;
+	frontend::RawVolumeRenderer _rawVolumeSelectionRenderer;
+
+	bool actionRequiresExistingVoxel(Action action) const;
 public:
 	EditorModel();
 	~EditorModel();
@@ -43,15 +47,28 @@ public:
 	void setAngle(float angle);
 
 	void setVoxelType(voxel::VoxelType type);
+	voxel::RawVolume* modelVolume();
+	const voxel::RawVolume* modelVolume() const;
+
+	frontend::RawVolumeRenderer& rawVolumeRenderer();
+	const frontend::RawVolumeRenderer& rawVolumeRenderer() const;
+
+	frontend::RawVolumeRenderer& rawVolumeSelectionRenderer();
+	const frontend::RawVolumeRenderer& rawVolumeSelectionRenderer() const;
 
 	voxel::PickResult& result();
+
+	bool extractVolume();
+	bool extractSelectionVolume();
+
+	void trace(int mouseX, int mouseY, bool skipCursor, const video::Camera& camera);
+	void select(const glm::ivec3& pos);
+	void executeAction(int32_t x, int32_t y, bool mouseDown, long now);
+	void resetLastTrace();
 
 public:
 	bool _renderAxis = true;
 	uint8_t _moveMask = 0;
-
-	frontend::RawVolumeRenderer _rawVolumeRenderer;
-	frontend::RawVolumeRenderer _rawVolumeSelectionRenderer;
 
 	float _cameraSpeed = 0.1f;
 	bool _dirty = false;
@@ -114,6 +131,34 @@ inline void EditorModel::setAngle(float angle) {
 	_angle = angle;
 }
 
+inline voxel::RawVolume* EditorModel::modelVolume() {
+	return _modelVolume;
+}
+
+inline const voxel::RawVolume* EditorModel::modelVolume() const {
+	return _modelVolume;
+}
+
 inline Action EditorModel::uiAction() const {
 	return _uiAction;
+}
+
+inline frontend::RawVolumeRenderer& EditorModel::rawVolumeRenderer() {
+	return _rawVolumeRenderer;
+}
+
+inline const frontend::RawVolumeRenderer& EditorModel::rawVolumeRenderer() const {
+	return _rawVolumeRenderer;
+}
+
+inline frontend::RawVolumeRenderer& EditorModel::rawVolumeSelectionRenderer() {
+	return _rawVolumeSelectionRenderer;
+}
+
+inline const frontend::RawVolumeRenderer& EditorModel::rawVolumeSelectionRenderer() const {
+	return _rawVolumeSelectionRenderer;
+}
+
+inline bool EditorModel::actionRequiresExistingVoxel(Action action) const {
+	return action == Action::CopyVoxel || action == Action::DeleteVoxel || action == Action::OverrideVoxel;
 }

@@ -10,22 +10,8 @@
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
 #include "voxel/model/MeshExporter.h"
-#include "voxel/polyvox/VolumeMerger.h"
 #include "ui/UIApp.h"
-#include "select/Single.h"
 #include "EditorModel.h"
-
-static const struct Selection {
-	SelectType type;
-	selections::Select& select;
-} selectionsArray[] = {
-	{SelectType::Single, selections::Single::get()},
-	{SelectType::Same, selections::Single::get()},
-	{SelectType::LineVertical, selections::Single::get()},
-	{SelectType::LineHorizontal, selections::Single::get()},
-	{SelectType::Edge, selections::Single::get()}
-};
-static_assert(SDL_arraysize(selectionsArray) == std::enum_value(SelectType::Max), "Array size doesn't match selection modes");
 
 static inline EditorModel& m() {
 	static EditorModel editorModel;
@@ -98,66 +84,6 @@ void EditorScene::render() {
 	}
 }
 
-void EditorScene::select(const glm::ivec3& pos) {
-	EditorModel& mdl = m();
-	voxel::RawVolume* selectionVolume = mdl._rawVolumeSelectionRenderer.volume();
-	const Selection& mode = selectionsArray[std::enum_value(mdl._selectionType)];
-	if (mode.select.execute(mdl._modelVolume, selectionVolume, pos)) {
-		mdl._selectionExtract = true;
-	}
-}
-
-void EditorScene::executeAction(int32_t x, int32_t y) {
-	EditorModel& mdl = m();
-	const Action action = mdl.action();
-	if (action == Action::None || !_mouseDown) {
-		return;
-	}
-
-	core_trace_scoped(EditorSceneExecuteAction);
-	const long now = core::App::getInstance()->currentMillis();
-	if (mdl._lastAction == action) {
-		if (now - mdl._lastActionExecution < mdl._actionExecutionDelay) {
-			return;
-		}
-	}
-	mdl._lastAction = action;
-	mdl._lastActionExecution = now;
-
-	bool extract = false;
-	voxel::PickResult& result = mdl.result();
-	const glm::ivec3& hitVoxel = result.hitVoxel;
-	const bool didHit = result.didHit;
-	const voxel::Voxel& currentVoxel = mdl.currentVoxel();
-	if (didHit && action == Action::CopyVoxel) {
-		mdl.setVoxelType(getVoxel(hitVoxel).getMaterial());
-	} else if (didHit && action == Action::SelectVoxels) {
-		select(hitVoxel);
-	} else if (didHit && action == Action::OverrideVoxel) {
-		extract = setVoxel(hitVoxel, currentVoxel);
-	} else if (didHit && action == Action::DeleteVoxel) {
-		extract = setVoxel(hitVoxel, voxel::createVoxel(voxel::VoxelType::Air));
-	} else if (result.validPreviousVoxel && action == Action::PlaceVoxel) {
-		extract = setVoxel(result.previousVoxel, currentVoxel);
-	} else if (didHit && action == Action::PlaceVoxel) {
-		extract = setVoxel(hitVoxel, currentVoxel);
-	}
-
-	if (extract) {
-		resetLastTrace();
-	}
-
-	if (extract) {
-		mdl._extract = true;
-		mdl._dirty = true;
-	}
-}
-
-void EditorScene::resetLastTrace() {
-	EditorModel& mdl = m();
-	mdl._lastRaytraceX = mdl._lastRaytraceY = -1;
-}
-
 Action EditorScene::action() const {
 	const EditorModel& mdl = m();
 	return mdl._uiAction;
@@ -210,7 +136,7 @@ void EditorScene::setSelectionType(SelectType type) {
 }
 
 SelectType EditorScene::selectionType() const {
-	EditorModel& mdl = m();
+	const EditorModel& mdl = m();
 	return mdl._selectionType;
 }
 
@@ -224,7 +150,7 @@ bool EditorScene::newModel(bool force) {
 	newVolume();
 	mdl._result = voxel::PickResult();
 	mdl._extract = true;
-	resetLastTrace();
+	mdl.resetLastTrace();
 	return true;
 }
 
@@ -235,12 +161,12 @@ bool EditorScene::saveModel(std::string_view file) {
 		// nothing to save yet
 		return true;
 	}
-	if (mdl._modelVolume == nullptr) {
+	if (mdl.modelVolume() == nullptr) {
 		return false;
 	}
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
 	voxel::VoxFormat f;
-	if (f.save(mdl._modelVolume, filePtr)) {
+	if (f.save(mdl.modelVolume(), filePtr)) {
 		mdl._dirty = false;
 	}
 	return !mdl.dirty();
@@ -291,7 +217,7 @@ bool EditorScene::exportModel(std::string_view file) {
 	}
 
 	const EditorModel& mdl = m();
-	return voxel::exportMesh(mdl._rawVolumeRenderer.mesh(), filePtr->getName().c_str());
+	return voxel::exportMesh(mdl.rawVolumeRenderer().mesh(), filePtr->getName().c_str());
 }
 
 bool EditorScene::loadModel(std::string_view file) {
@@ -318,10 +244,11 @@ void EditorScene::resetCamera() {
 	}
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	const EditorModel& mdl = m();
-	if (mdl._modelVolume == nullptr) {
+	const voxel::RawVolume* volume = mdl.modelVolume();
+	if (volume == nullptr) {
 		return;
 	}
-	const voxel::Region& region = mdl._modelVolume->getEnclosingRegion();
+	const voxel::Region& region = volume->getEnclosingRegion();
 	const glm::ivec3& center = region.getCentre();
 	if (_camMode == SceneCameraMode::Free) {
 		_camera.setPosition(glm::vec3(-center));
@@ -351,6 +278,7 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	ConvertToRoot(rect.x, rect.y);
 	const int tx = x + rect.x;
 	const int ty = y + rect.y;
+	const long now = core::App::getInstance()->currentMillis();
 	EditorModel& mdl = m();
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		_mouseDown = true;
@@ -359,7 +287,7 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		} else {
 			setInternalAction(mdl.uiAction());
 		}
-		executeAction(tx, ty);
+		mdl.executeAction(tx, ty, _mouseDown, now);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		_mouseDown = false;
@@ -409,10 +337,14 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		}
 		_mouseX = x;
 		_mouseY = y;
-		executeAction(tx, ty);
+		mdl.executeAction(tx, ty, _mouseDown, now);
 		return true;
 	}
 	return Super::OnEvent(ev);
+}
+
+void EditorScene::select(const glm::ivec3& pos) {
+	m().select(pos);
 }
 
 void EditorScene::OnFocusChanged(bool focused) {
@@ -479,58 +411,15 @@ void EditorScene::OnProcess() {
 	const glm::vec3& moveDelta = getMoveDelta(speed, mdl._moveMask);
 	_camera.move(moveDelta);
 	_camera.update(deltaFrame);
-	if (mdl._modelVolume == nullptr) {
+	if (mdl.modelVolume() == nullptr) {
 		return;
 	}
 	mdl.setAngle(mdl.angle() + deltaFrame * 0.001f);
 	const float angle = mdl.angle();
 	const glm::vec3 direction(glm::sin(angle), 0.5f, glm::cos(angle));
-	mdl._rawVolumeRenderer.setSunDirection(direction);
-	if (mdl._lastRaytraceX != _mouseX || mdl._lastRaytraceY != _mouseY) {
-		core_trace_scoped(EditorSceneOnProcessUpdateRay);
-		mdl._lastRaytraceX = _mouseX;
-		mdl._lastRaytraceY = _mouseY;
-
-		const int tx = _mouseX;
-		const int ty = _mouseY;
-		const video::Ray& ray = _camera.mouseRay(glm::ivec2(tx, ty));
-		const glm::vec3& dirWithLength = ray.direction * _camera.farPlane();
-		const voxel::Voxel& air = voxel::createVoxel(voxel::VoxelType::Air);
-		const voxel::PickResult& result = mdl.result();
-		mdl._result = voxel::pickVoxel(mdl._modelVolume, ray.origin, dirWithLength, air);
-
-		if (result.validPreviousVoxel && (!result.didHit || !actionRequiresExistingVoxel(mdl.action()))) {
-			mdl._cursorPositionVolume->clear();
-			const glm::ivec3& center = mdl._cursorVolume->getEnclosingRegion().getCentre();
-			const glm::ivec3& cursorPos = result.previousVoxel - center;
-			voxel::mergeRawVolumes(mdl._cursorPositionVolume, mdl._cursorVolume, cursorPos);
-		} else if (result.didHit) {
-			mdl._cursorPositionVolume->clear();
-			const glm::ivec3& center = mdl._cursorVolume->getEnclosingRegion().getCentre();
-			const glm::ivec3& cursorPos = result.previousVoxel - center;
-			voxel::mergeRawVolumes(mdl._cursorPositionVolume, mdl._cursorVolume, cursorPos);
-			mdl._cursorPositionVolume->setVoxel(result.hitVoxel, mdl.currentVoxel());
-		}
-
-		core_trace_scoped(EditorSceneOnProcessMergeRawVolumes);
-		voxel::RawVolume* volume = mdl._rawVolumeRenderer.volume();
-		volume->clear();
-		const bool current = isRelativeMouseMode();
-		if (!current) {
-			voxel::mergeRawVolumesSameDimension(volume, mdl._cursorPositionVolume);
-		}
-		mdl._empty = voxel::mergeRawVolumesSameDimension(volume, mdl._modelVolume) == 0;
-		mdl._extract = true;
-	}
-
-	if (mdl._extract) {
-		mdl._extract = false;
-		mdl._rawVolumeRenderer.extract();
-	}
-	if (mdl._selectionExtract) {
-		mdl._selectionExtract = false;
-		mdl._rawVolumeSelectionRenderer.extract();
-	}
+	mdl.rawVolumeRenderer().setSunDirection(direction);
+	const bool skipCursor = isRelativeMouseMode();
+	mdl.trace(_mouseX, _mouseY, skipCursor, _camera);
 
 	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
 	core_trace_scoped(EditorSceneRenderFramebuffer);
@@ -541,12 +430,12 @@ void EditorScene::OnProcess() {
 
 bool EditorScene::renderAABB() const {
 	const EditorModel& mdl = m();
-	return mdl._rawVolumeRenderer.renderAABB();
+	return mdl.rawVolumeRenderer().renderAABB();
 }
 
 void EditorScene::setRenderAABB(bool renderAABB) {
 	EditorModel& mdl = m();
-	mdl._rawVolumeRenderer.setRenderAABB(renderAABB);
+	mdl.rawVolumeRenderer().setRenderAABB(renderAABB);
 	for (EditorScene* ref : _references) {
 		ref->setRenderAABB(renderAABB);
 	}
@@ -554,12 +443,12 @@ void EditorScene::setRenderAABB(bool renderAABB) {
 
 bool EditorScene::renderGrid() const {
 	const EditorModel& mdl = m();
-	return mdl._rawVolumeRenderer.renderGrid();
+	return mdl.rawVolumeRenderer().renderGrid();
 }
 
 void EditorScene::setRenderGrid(bool renderGrid) {
 	EditorModel& mdl = m();
-	mdl._rawVolumeRenderer.setRenderGrid(renderGrid);
+	mdl.rawVolumeRenderer().setRenderGrid(renderGrid);
 	for (EditorScene* ref : _references) {
 		ref->setRenderGrid(renderGrid);
 	}
