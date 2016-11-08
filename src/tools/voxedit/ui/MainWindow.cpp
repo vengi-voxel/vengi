@@ -93,6 +93,17 @@ static const struct {
 	{TBIDC("actionselect"),		Action::SelectVoxels, false}
 };
 
+static const struct {
+	tb::TBID id;
+	SelectType type;
+} selectionmodes[] = {
+	{TBIDC("actionselectsingle"),		SelectType::Single},
+	{TBIDC("actionselectsame"),			SelectType::Same},
+	{TBIDC("actionselecthorizontal"),	SelectType::LineHorizontal},
+	{TBIDC("actionselectvertical"),		SelectType::LineVertical},
+	{TBIDC("actionselectedge"),			SelectType::Edge}
+};
+
 bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
@@ -159,6 +170,12 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
 		if (ev.target->GetID() == actions[i].id) {
 			_scene->setAction(actions[i].action);
+			return true;
+		}
+	}
+	for (uint32_t i = 0; i < SDL_arraysize(selectionmodes); ++i) {
+		if (ev.target->GetID() == selectionmodes[i].id) {
+			_scene->setSelectionType(selectionmodes[i].type);
 			return true;
 		}
 	}

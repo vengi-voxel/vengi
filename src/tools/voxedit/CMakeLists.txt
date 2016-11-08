@@ -3,11 +3,15 @@ set(SRCS
 	ui/editorscene/EditorScene.h ui/editorscene/EditorScene.cpp
 	ui/editorscene/Model.h ui/editorscene/Model.cpp
 	ui/editorscene/Controller.h ui/editorscene/Controller.cpp
-	ui/editorscene/select/Select.h
-	ui/editorscene/select/Single.h
-	ui/editorscene/SelectType.h
 	ui/editorscene/Action.h
 	ui/editorscene/voxelizer.h
+	ui/editorscene/select/Edge.h
+	ui/editorscene/select/LineHorizontal.h
+	ui/editorscene/select/LineVertical.h
+	ui/editorscene/select/Same.h
+	ui/editorscene/select/Single.h
+	ui/editorscene/select/Select.h
+	ui/editorscene/SelectType.h
 
 	ui/palette/PaletteWidget.h ui/palette/PaletteWidget.cpp
 
