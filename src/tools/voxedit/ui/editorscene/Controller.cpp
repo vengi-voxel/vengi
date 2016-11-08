@@ -56,7 +56,7 @@ void Controller::zoom(float level) {
 	const float value = _cameraSpeed * level;
 	const glm::vec3& moveDelta = glm::backward * value;
 	_camera.move(moveDelta);
-	const float targetDistance = glm::clamp(_camera.targetDistance() - value, 0.0f, 1000.0f);
+	const float targetDistance = glm::clamp(_camera.targetDistance() + value, 0.0f, 1000.0f);
 	_camera.setTargetDistance(targetDistance);
 }
 
