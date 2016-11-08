@@ -71,7 +71,7 @@ public:
 
 	void setMousePos(int x, int y);
 
-	void trace(bool skipCursor, const video::Camera& camera);
+	bool trace(bool skipCursor, const video::Camera& camera);
 	void select(const glm::ivec3& pos);
 	void executeAction(bool mouseDown, long now);
 	void resetLastTrace();

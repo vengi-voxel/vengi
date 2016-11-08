@@ -223,7 +223,11 @@ bool Model::extractVolume() {
 	return false;
 }
 
-void Model::trace(bool skipCursor, const video::Camera& camera) {
+bool Model::trace(bool skipCursor, const video::Camera& camera) {
+	if (_modelVolume == nullptr) {
+		return false;
+	}
+
 	if (_lastRaytraceX != _mouseX || _lastRaytraceY != _mouseY) {
 		core_trace_scoped(EditorSceneOnProcessUpdateRay);
 		_lastRaytraceX = _mouseX;
@@ -261,4 +265,6 @@ void Model::trace(bool skipCursor, const video::Camera& camera) {
 
 	extractVolume();
 	extractSelectionVolume();
+
+	return true;
 }

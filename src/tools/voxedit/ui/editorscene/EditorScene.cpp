@@ -291,13 +291,10 @@ void EditorScene::OnProcess() {
 	const long deltaFrame = core::App::getInstance()->deltaFrame();
 	_controller.update(deltaFrame);
 
-	Model& mdl = m();
-	if (mdl.modelVolume() == nullptr) {
+	const bool skipCursor = isRelativeMouseMode();
+	if (!m().trace(skipCursor, _controller.camera())) {
 		return;
 	}
-
-	const bool skipCursor = isRelativeMouseMode();
-	mdl.trace(skipCursor, _controller.camera());
 
 	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
 	core_trace_scoped(EditorSceneRenderFramebuffer);
