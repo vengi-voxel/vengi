@@ -15,8 +15,6 @@
 // TODO: it is possible to place a voxel outside the maxs region
 // TODO: rotate whole volume
 // TODO: extrude
-// TODO: selection
-// TODO: select by voxel type
 // TODO: layers
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {

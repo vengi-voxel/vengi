@@ -122,13 +122,13 @@ TBLayout: distribution: gravity, axis: y
 
 					TBSection: value: 1, text: "Locks"
 						TBLayout: position: left top, axis: y
-							TBClickLabel: text: X
+							TBClickLabel: text: axis
 								TBSkinImage: skin: voxedit-axis-x
 								TBCheckBox: id: lockx
-							TBClickLabel: text: Y
+							TBClickLabel: text: axis
 								TBSkinImage: skin: voxedit-axis-y
 								TBCheckBox: id: locky
-							TBClickLabel: text: Z
+							TBClickLabel: text: axis
 								TBSkinImage: skin: voxedit-axis-z
 								TBCheckBox: id: lockz
 
