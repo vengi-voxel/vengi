@@ -41,7 +41,7 @@ private:
 
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
-
+	void resetCameras();
 	void quit();
 public:
 	MainWindow(VoxEdit* tool);

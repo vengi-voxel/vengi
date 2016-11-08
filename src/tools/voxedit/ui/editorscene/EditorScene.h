@@ -16,8 +16,6 @@ private:
 	frontend::Axis _axis;
 	video::FrameBuffer _frameBuffer;
 	tb::UIBitmapGL _bitmap;
-	std::vector<EditorScene*> _references;
-	EditorScene* _parent = nullptr;
 	Controller _controller;
 	glm::ivec2 _mousePos;
 	std::string _cameraMode;
@@ -66,8 +64,6 @@ public:
 
 	bool renderGrid() const;
 	void setRenderGrid(bool renderGrid);
-
-	void addReference(EditorScene* scene);
 
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;

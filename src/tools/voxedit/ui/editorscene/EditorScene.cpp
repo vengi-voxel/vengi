@@ -32,12 +32,6 @@ EditorScene::~EditorScene() {
 	m().shutdown();
 }
 
-void EditorScene::addReference(EditorScene* ref) {
-	_references.push_back(ref);
-	ref->_parent = this;
-	ref->resetCamera();
-}
-
 void EditorScene::render() {
 	core_trace_scoped(EditorSceneRender);
 	Model& mdl = m();
@@ -80,7 +74,6 @@ bool EditorScene::newModel(bool force) {
 	if (!m().newVolume(force)) {
 		return false;
 	}
-	resetCamera();
 	return true;
 }
 
@@ -138,14 +131,10 @@ bool EditorScene::loadModel(std::string_view file) {
 	if (!m().load(file)) {
 		return false;
 	}
-	resetCamera();
 	return true;
 }
 
 void EditorScene::resetCamera() {
-	for (EditorScene* ref : _references) {
-		ref->resetCamera();
-	}
 	_controller.resetCamera(m().modelVolume());
 }
 

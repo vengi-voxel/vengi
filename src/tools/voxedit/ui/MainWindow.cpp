@@ -30,10 +30,6 @@ bool MainWindow::init() {
 	_sceneLeft = getWidgetByType<EditorScene>("editorsceneleft");
 	_sceneFront = getWidgetByType<EditorScene>("editorscenefront");
 
-	_scene->addReference(_sceneTop);
-	_scene->addReference(_sceneLeft);
-	_scene->addReference(_sceneFront);
-
 	_fourViewAvailable = _sceneTop != nullptr && _sceneLeft != nullptr && _sceneFront != nullptr;
 
 	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
@@ -101,6 +97,7 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_scene->newModel(true);
+			resetCameras();
 		}
 		return true;
 	} else if (ev.target->GetID() == TBIDC("unsaved_changes_quit")) {
@@ -111,6 +108,7 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("unsaved_changes_load")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_scene->loadModel(_loadFile);
+			resetCameras();
 		}
 		return true;
 	} else if (ev.target->GetID() == TBIDC("unsaved_changes_voxelize")) {
@@ -320,6 +318,19 @@ bool MainWindow::exportFile(std::string_view file) {
 	return _scene->exportModel(file);
 }
 
+void MainWindow::resetCameras() {
+	_scene->resetCamera();
+	if (_sceneTop != nullptr) {
+		_sceneTop->resetCamera();
+	}
+	if (_sceneLeft != nullptr) {
+		_sceneLeft->resetCamera();
+	}
+	if (_sceneFront != nullptr) {
+		_sceneFront->resetCamera();
+	}
+}
+
 bool MainWindow::load(std::string_view file) {
 	std::string f;
 	if (file.empty()) {
@@ -331,7 +342,11 @@ bool MainWindow::load(std::string_view file) {
 	}
 
 	if (!_scene->isDirty()) {
-		return _scene->loadModel(file);
+		if (_scene->loadModel(file)) {
+			resetCameras();
+			return true;
+		}
+		return false;
 	}
 
 	_loadFile = std::string(file);
@@ -351,5 +366,9 @@ bool MainWindow::createNew(bool force) {
 				"There are unsaved modifications.\nDo you wish to discard them and close?",
 				ui::Window::PopupType::YesNo, "unsaved_changes_new");
 	}
-	return _scene->newModel(force);
+	if (_scene->newModel(force)) {
+		resetCameras();
+		return true;
+	}
+	return false;
 }
