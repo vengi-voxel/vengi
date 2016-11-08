@@ -29,6 +29,9 @@ public:
 	void init();
 	void shutdown();
 
+	bool save(std::string_view file);
+	bool load(std::string_view file);
+
 	bool newVolume(bool force);
 
 	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;

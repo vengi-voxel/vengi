@@ -7,8 +7,6 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedScissor.h"
 #include "video/ScopedFrameBuffer.h"
-#include "voxel/model/VoxFormat.h"
-#include "voxel/model/QB2Format.h"
 #include "voxel/model/MeshExporter.h"
 #include "ui/UIApp.h"
 #include "Model.h"
@@ -120,20 +118,7 @@ bool EditorScene::newModel(bool force) {
 
 bool EditorScene::saveModel(std::string_view file) {
 	core_trace_scoped(EditorSceneSaveModel);
-	EditorModel& mdl = m();
-	if (!mdl.dirty()) {
-		// nothing to save yet
-		return true;
-	}
-	if (mdl.modelVolume() == nullptr) {
-		return false;
-	}
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
-	voxel::VoxFormat f;
-	if (f.save(mdl.modelVolume(), filePtr)) {
-		mdl._dirty = false;
-	}
-	return !mdl.dirty();
+	return m().save(file);
 }
 
 bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
@@ -186,19 +171,9 @@ bool EditorScene::exportModel(std::string_view file) {
 
 bool EditorScene::loadModel(std::string_view file) {
 	core_trace_scoped(EditorSceneLoadModel);
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
-	if (!(bool)filePtr) {
-		Log::error("Failed to open model file %s", file.data());
+	if (!m().load(file)) {
 		return false;
 	}
-	voxel::VoxFormat f;
-	voxel::RawVolume* newVolume = f.load(filePtr);
-	if (newVolume == nullptr) {
-		Log::error("Failed to load model file %s", file.data());
-		return false;
-	}
-	Log::info("Loaded model file %s", file.data());
-	m().setNewVolume(newVolume);
 	resetCamera();
 	return true;
 }

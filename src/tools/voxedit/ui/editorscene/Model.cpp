@@ -1,6 +1,8 @@
 #include "Model.h"
 #include "voxel/polyvox/VolumeMerger.h"
 #include "select/Single.h"
+#include "voxel/model/VoxFormat.h"
+#include "voxel/model/QB2Format.h"
 
 static const struct Selection {
 	SelectType type;
@@ -20,6 +22,39 @@ EditorModel::EditorModel() :
 
 EditorModel::~EditorModel() {
 	shutdown();
+}
+
+bool EditorModel::save(std::string_view file) {
+	if (!dirty()) {
+		// nothing to save yet
+		return true;
+	}
+	if (modelVolume() == nullptr) {
+		return false;
+	}
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
+	voxel::VoxFormat f;
+	if (f.save(modelVolume(), filePtr)) {
+		_dirty = false;
+	}
+	return !dirty();
+}
+
+bool EditorModel::load(std::string_view file) {
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
+	if (!(bool)filePtr) {
+		Log::error("Failed to open model file %s", file.data());
+		return false;
+	}
+	voxel::VoxFormat f;
+	voxel::RawVolume* newVolume = f.load(filePtr);
+	if (newVolume == nullptr) {
+		Log::error("Failed to load model file %s", file.data());
+		return false;
+	}
+	Log::info("Loaded model file %s", file.data());
+	setNewVolume(newVolume);
+	return true;
 }
 
 void EditorModel::select(const glm::ivec3& pos) {
