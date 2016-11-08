@@ -22,6 +22,33 @@
 #define CORE_CLASS(name) \
 	friend class name##Test;
 
+#define CORE_ENUM_BIT_OPERATIONS(EnumClassName) \
+	inline constexpr EnumClassName operator&(EnumClassName __x, EnumClassName __y) { \
+		return static_cast<EnumClassName>(static_cast<int>(__x) & static_cast<int>(__y)); \
+	} \
+	inline constexpr EnumClassName operator|(EnumClassName __x, EnumClassName __y) { \
+		return static_cast<EnumClassName>(static_cast<int>(__x) | static_cast<int>(__y)); \
+	} \
+	inline constexpr EnumClassName operator^(EnumClassName __x, EnumClassName __y) { \
+		return static_cast<EnumClassName>(static_cast<int>(__x) ^ static_cast<int>(__y)); \
+	} \
+	inline constexpr EnumClassName operator~(EnumClassName __x) { \
+		return static_cast<EnumClassName>(~static_cast<int>(__x)); \
+	} \
+	inline EnumClassName& operator&=(EnumClassName & __x, EnumClassName __y) { \
+		__x = __x & __y; \
+		return __x; \
+	} \
+	inline EnumClassName& operator|=(EnumClassName & __x, EnumClassName __y) { \
+		__x = __x | __y; \
+		return __x; \
+	} \
+	inline EnumClassName& operator^=(EnumClassName & __x, EnumClassName __y) { \
+		__x = __x ^ __y; \
+		return __x; \
+	}
+
+
 #ifndef core_malloc
 #define core_malloc SDL_malloc
 #endif
