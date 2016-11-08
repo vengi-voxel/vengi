@@ -48,7 +48,7 @@ void EditorScene::render() {
 	}
 	{
 		video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame);
-		mdl.render(camera);
+		mdl.renderSelection(camera);
 	}
 	if (mdl.renderAxis()) {
 		_axis.render(camera);

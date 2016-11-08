@@ -46,6 +46,7 @@ public:
 	void setNewVolume(voxel::RawVolume* volume);
 
 	void render(const video::Camera& camera);
+	void renderSelection(const video::Camera& camera);
 
 	bool renderAxis() const;
 	Action action() const;

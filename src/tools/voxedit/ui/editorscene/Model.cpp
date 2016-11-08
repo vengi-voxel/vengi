@@ -171,6 +171,10 @@ void Model::render(const video::Camera& camera) {
 	_rawVolumeRenderer.render(camera);
 }
 
+void Model::renderSelection(const video::Camera& camera) {
+	_rawVolumeSelectionRenderer.render(camera);
+}
+
 void Model::onResize(const glm::ivec2& pos, const glm::ivec2& size) {
 	_rawVolumeRenderer.onResize(pos, size);
 	_rawVolumeSelectionRenderer.onResize(pos, size);
