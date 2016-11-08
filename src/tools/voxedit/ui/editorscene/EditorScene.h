@@ -20,6 +20,7 @@ private:
 	EditorScene* _parent = nullptr;
 	Controller _controller;
 	glm::ivec2 _mousePos;
+	std::string _cameraMode;
 
 	void render();
 

@@ -238,6 +238,8 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 	// the fbo is flipped in memory, we have to deal with it here
 	const tb::TBRect srcRect(0, dimension.y, rect.w, -rect.h);
 	tb::g_renderer->DrawBitmap(rect, srcRect, &_bitmap);
+	tb::TBFontFace* font = GetFont();
+	font->DrawString(0, 0, tb::TBColor(255.0f, 255.0f, 255.0f, 255.0f), _cameraMode.c_str());
 }
 
 void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
@@ -254,6 +256,7 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	} else if (!strcmp(cameraMode, "left")) {
 		mode = Controller::SceneCameraMode::Left;
 	}
+	_cameraMode = cameraMode;
 	_controller.init(mode);
 }
 
