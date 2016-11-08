@@ -117,12 +117,18 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 	auto range = _bindings.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {
 		const std::string& command = i->second.first;
-		const int mod = i->second.second;
+		const int16_t mod = i->second.second;
 		if (mod == KMOD_NONE && modifier != 0 && modifier != KMOD_NUM) {
 			continue;
 		}
-		if (mod != KMOD_NONE && !(modifier & mod)) {
-			continue;
+		if (mod != KMOD_NONE) {
+			if (!(modifier & mod)) {
+				continue;
+			}
+			const uint16_t flipped = (modifier & ~mod);
+			if (flipped & (KMOD_CTRL | KMOD_ALT | KMOD_SHIFT) != 0) {
+				continue;
+			}
 		}
 		if (_keys.find(key) == _keys.end()) {
 			if (command[0] == '+') {
