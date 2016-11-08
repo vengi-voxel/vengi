@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/Trace.h"
 #include "Voxel.h"
 #include "Picking.h"
 #include "Raycast.h"

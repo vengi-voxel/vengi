@@ -1,6 +1,5 @@
 #pragma once
 
-#include "frontend/Movement.h"
 #include "voxel/polyvox/Picking.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "frontend/RawVolumeRenderer.h"
@@ -13,7 +12,6 @@
 class EditorModel {
 private:
 	int _initialized = 0;
-	float _angle = 0.0f;
 	voxel::Voxel _currentVoxel;
 	int _size = 32;
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
@@ -31,6 +29,8 @@ public:
 	void init();
 	void shutdown();
 
+	bool newVolume(bool force);
+
 	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
 	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) const;
 	bool dirty() const;
@@ -46,8 +46,6 @@ public:
 	void setAction(Action action);
 	Action keyAction() const;
 	Action uiAction() const;
-	float angle() const;
-	void setAngle(float angle);
 
 	void setVoxelType(voxel::VoxelType type);
 	voxel::RawVolume* modelVolume();
@@ -122,14 +120,6 @@ inline void EditorModel::setAction(Action action) {
 
 inline Action EditorModel::keyAction() const {
 	return _keyAction;
-}
-
-inline float EditorModel::angle() const {
-	return _angle;
-}
-
-inline void EditorModel::setAngle(float angle) {
-	_angle = angle;
 }
 
 inline voxel::RawVolume* EditorModel::modelVolume() {

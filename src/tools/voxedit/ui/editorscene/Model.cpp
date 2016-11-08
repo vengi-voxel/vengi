@@ -92,6 +92,21 @@ void EditorModel::setNewVolume(voxel::RawVolume* volume) {
 	_lastRaytraceX = _lastRaytraceY = -1;
 }
 
+bool EditorModel::newVolume(bool force) {
+	if (dirty() && !force) {
+		return false;
+	}
+	_dirty = false;
+	_result = voxel::PickResult();
+	_extract = true;
+	resetLastTrace();
+
+	const voxel::Region region(glm::ivec3(0), glm::ivec3(size()));
+	setNewVolume(new voxel::RawVolume(region));
+
+	return true;
+}
+
 bool EditorModel::dirty() const {
 	return _dirty;
 }

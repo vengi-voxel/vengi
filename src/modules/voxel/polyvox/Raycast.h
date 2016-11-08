@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/Trace.h"
 
 namespace voxel {
 namespace RaycastResults {

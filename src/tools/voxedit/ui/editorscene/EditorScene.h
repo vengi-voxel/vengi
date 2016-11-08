@@ -22,9 +22,6 @@ private:
 
 	void render();
 
-	void newVolume();
-	void setNewVolume(voxel::RawVolume *volume);
-
 	void setKeyAction(Action action);
 	void setInternalAction(Action action);
 public:
@@ -80,5 +77,5 @@ public:
 };
 
 inline video::Camera& EditorScene::camera() {
-	return _controller._camera;
+	return _controller.camera();
 }

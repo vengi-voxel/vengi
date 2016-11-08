@@ -35,28 +35,16 @@ EditorScene::~EditorScene() {
 	mdl.shutdown();
 }
 
-void EditorScene::newVolume() {
-	const EditorModel& mdl = m();
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(mdl.size()));
-	setNewVolume(new voxel::RawVolume(region));
-}
-
 void EditorScene::addReference(EditorScene* ref) {
 	_references.push_back(ref);
 	ref->_parent = this;
 	ref->resetCamera();
 }
 
-void EditorScene::setNewVolume(voxel::RawVolume *volume) {
-	EditorModel& mdl = m();
-	mdl.setNewVolume(volume);
-	resetCamera();
-}
-
 void EditorScene::render() {
 	core_trace_scoped(EditorSceneRender);
 	EditorModel& mdl = m();
-	const video::Camera& camera = _controller._camera;
+	const video::Camera& camera = _controller.camera();
 	{
 		video::ScopedPolygonMode polygonMode(camera.polygonMode());
 		mdl.render(camera);
@@ -123,15 +111,10 @@ SelectType EditorScene::selectionType() const {
 
 bool EditorScene::newModel(bool force) {
 	core_trace_scoped(EditorSceneNewModel);
-	EditorModel& mdl = m();
-	if (mdl.dirty() && !force) {
+	if (!m().newVolume(force)) {
 		return false;
 	}
-	mdl._dirty = false;
-	newVolume();
-	mdl._result = voxel::PickResult();
-	mdl._extract = true;
-	mdl.resetLastTrace();
+	resetCamera();
 	return true;
 }
 
@@ -215,7 +198,8 @@ bool EditorScene::loadModel(std::string_view file) {
 		return false;
 	}
 	Log::info("Loaded model file %s", file.data());
-	setNewVolume(newVolume);
+	m().setNewVolume(newVolume);
+	resetCamera();
 	return true;
 }
 
@@ -223,27 +207,7 @@ void EditorScene::resetCamera() {
 	for (EditorScene* ref : _references) {
 		ref->resetCamera();
 	}
-	_controller._camera.setAngles(0.0f, 0.0f, 0.0f);
-	const EditorModel& mdl = m();
-	const voxel::RawVolume* volume = mdl.modelVolume();
-	if (volume == nullptr) {
-		return;
-	}
-	const voxel::Region& region = volume->getEnclosingRegion();
-	const glm::ivec3& center = region.getCentre();
-	if (_controller._camMode == Controller::SceneCameraMode::Free) {
-		_controller._camera.setPosition(glm::vec3(-center));
-		_controller._camera.lookAt(glm::vec3(0.0001f));
-	} else if (_controller._camMode == Controller::SceneCameraMode::Top) {
-		_controller._camera.setPosition(glm::vec3(center.x, region.getHeightInCells() + center.y, center.z));
-		_controller._camera.lookAt(glm::down);
-	} else if (_controller._camMode == Controller::SceneCameraMode::Left) {
-		_controller._camera.setPosition(glm::vec3(region.getWidthInCells() + center.x, center.y, center.z));
-		_controller._camera.lookAt(glm::right);
-	} else if (_controller._camMode == Controller::SceneCameraMode::Front) {
-		_controller._camera.setPosition(glm::vec3(center.x, center.y, region.getDepthInCells() + center.z));
-		_controller._camera.lookAt(glm::backward);
-	}
+	_controller.resetCamera(m().modelVolume());
 }
 
 void EditorScene::setVoxelType(voxel::VoxelType type) {
@@ -261,17 +225,18 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	const int ty = y + rect.y;
 	const long now = core::App::getInstance()->currentMillis();
 	EditorModel& mdl = m();
+	bool& mouseDown = _controller._mouseDown;
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
-		_controller._mouseDown = true;
+		mouseDown = true;
 		if (mdl.keyAction() != Action::None) {
 			setInternalAction(mdl.keyAction());
 		} else {
 			setInternalAction(mdl.uiAction());
 		}
-		mdl.executeAction(tx, ty, _controller._mouseDown, now);
+		mdl.executeAction(tx, ty, mouseDown, now);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
-		_controller._mouseDown = false;
+		mouseDown = false;
 		setInternalAction(Action::None);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
@@ -283,42 +248,29 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 			} else if (ev.modifierkeys & tb::TB_CTRL) {
 				setKeyAction(Action::DeleteVoxel);
 			}
-			if (_controller._mouseDown) {
+			if (mouseDown) {
 				setInternalAction(mdl.keyAction());
 			}
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_UP) {
 		if (ev.modifierkeys && mdl.keyAction() != Action::None) {
-			mdl._keyAction = Action::None;
-			if (_controller._mouseDown) {
+			setKeyAction(Action::None);
+			if (mouseDown) {
 				setInternalAction(mdl.uiAction());
 			}
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_WHEEL && ev.delta_y != 0) {
-		const glm::vec3& moveDelta = glm::backward * _controller._cameraSpeed * (float)(ev.delta_y * 100);
-		_controller._camera.move(moveDelta);
+		_controller.zoom((float)(ev.delta_y * 100));
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_MOVE) {
 		const bool relative = isRelativeMouseMode();
 		const bool middle = isMiddleMouseButtonPressed();
 		const bool alt = mdl.action() == Action::None && (ev.modifierkeys & tb::TB_ALT);
-		if (relative || middle || alt) {
-			const float yaw = x - _controller._mouseX;
-			const float pitch = y - _controller._mouseY;
-			const float s = _controller._rotationSpeed->floatVal();
-			if (_controller._camMode == Controller::SceneCameraMode::Free) {
-				_controller._camera.turn(yaw * s);
-				_controller._camera.pitch(pitch * s);
-			}
-			_controller._mouseX = x;
-			_controller._mouseY = y;
-			return true;
+		if (_controller.move(relative || middle || alt, x, y)) {
+			mdl.executeAction(tx, ty, mouseDown, now);
 		}
-		_controller._mouseX = x;
-		_controller._mouseY = y;
-		mdl.executeAction(tx, ty, _controller._mouseDown, now);
 		return true;
 	}
 	return Super::OnEvent(ev);
@@ -338,7 +290,7 @@ void EditorScene::OnResized(int oldw, int oldh) {
 	const tb::TBRect& rect = GetRect();
 	const glm::ivec2 pos(0, 0);
 	const glm::ivec2 dim(rect.w, rect.h);
-	_controller._camera.init(pos, dim);
+	_controller.onResize(pos, dim);
 	_frameBuffer.shutdown();
 	_frameBuffer.init(dim);
 	_bitmap.Init(dim.x, dim.y, _frameBuffer.texture());
@@ -359,48 +311,35 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	Super::OnInflate(info);
 	_axis.init();
-
-	const char *cameraMode = info.node->GetValueString("camera", "free");
-	if (!strcmp(cameraMode, "top")) {
-		_controller._camMode = Controller::SceneCameraMode::Top;
-		_controller._camera.setMode(video::CameraMode::Orthogonal);
-	} else if (!strcmp(cameraMode, "front")) {
-		_controller._camMode = Controller::SceneCameraMode::Front;
-		_controller._camera.setMode(video::CameraMode::Orthogonal);
-	} else if (!strcmp(cameraMode, "left")) {
-		_controller._camMode = Controller::SceneCameraMode::Left;
-		_controller._camera.setMode(video::CameraMode::Orthogonal);
-	} else {
-		_controller._camMode = Controller::SceneCameraMode::Free;
-		_controller._camera.setMode(video::CameraMode::Perspective);
-	}
-
 	EditorModel& mdl = m();
 	mdl.init();
 
-	_controller._rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
-
-	resetCamera();
+	Controller::SceneCameraMode mode = Controller::SceneCameraMode::Free;
+	const char *cameraMode = info.node->GetValueString("camera", "free");
+	if (!strcmp(cameraMode, "top")) {
+		mode = Controller::SceneCameraMode::Top;
+	} else if (!strcmp(cameraMode, "front")) {
+		mode = Controller::SceneCameraMode::Front;
+	} else if (!strcmp(cameraMode, "left")) {
+		mode = Controller::SceneCameraMode::Left;
+	}
+	_controller.init(mode);
 }
 
 void EditorScene::OnProcess() {
 	Super::OnProcess();
 	core_trace_scoped(EditorSceneOnProcess);
-	EditorModel& mdl = m();
+
 	const long deltaFrame = core::App::getInstance()->deltaFrame();
-	const float speed = _controller._cameraSpeed * static_cast<float>(deltaFrame);
-	const glm::vec3& moveDelta = getMoveDelta(speed, _controller._moveMask);
-	_controller._camera.move(moveDelta);
-	_controller._camera.update(deltaFrame);
+	_controller.update(deltaFrame);
+
+	EditorModel& mdl = m();
 	if (mdl.modelVolume() == nullptr) {
 		return;
 	}
-	mdl.setAngle(mdl.angle() + deltaFrame * 0.001f);
-	const float angle = mdl.angle();
-	const glm::vec3 direction(glm::sin(angle), 0.5f, glm::cos(angle));
-	mdl.rawVolumeRenderer().setSunDirection(direction);
+
 	const bool skipCursor = isRelativeMouseMode();
-	mdl.trace(_controller._mouseX, _controller._mouseY, skipCursor, _controller._camera);
+	mdl.trace(_controller._mouseX, _controller._mouseY, skipCursor, _controller.camera());
 
 	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
 	core_trace_scoped(EditorSceneRenderFramebuffer);
