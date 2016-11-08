@@ -69,7 +69,9 @@ void Camera::slerp(const glm::vec3& radians, float factor) {
 }
 
 void Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
-	core_assert(position != _pos);
+	if (position == _pos) {
+		return;
+	}
 	_quat = glm::quat_cast(glm::lookAt(_pos, position, upDirection));
 	_dirty |= DIRTY_ORIENTATION;
 	core_assert(!glm::any(glm::isnan(_quat)));
