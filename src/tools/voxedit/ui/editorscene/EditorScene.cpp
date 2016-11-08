@@ -19,7 +19,7 @@ static inline EditorModel& m() {
 }
 
 #define VOXELIZER_IMPLEMENTATION
-#include "../voxelizer.h"
+#include "voxelizer.h"
 
 EditorScene::EditorScene() :
 		Super(),

@@ -9,7 +9,6 @@
 #include "video/GLFunc.h"
 
 // TODO: voxelizer via assimp
-// TODO: export via assimp exporters
 // TODO: cursor volume shape generators
 // TODO: voxel cursor tools
 // TODO: undo/redo

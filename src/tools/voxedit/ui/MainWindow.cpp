@@ -1,7 +1,6 @@
 #include "MainWindow.h"
-#include "EditorScene.h"
-#include "PaletteWidget.h"
-#include "EditorModel.h"
+#include "editorscene/EditorScene.h"
+#include "palette/PaletteWidget.h"
 #include "../VoxEdit.h"
 #include <assimp/Exporter.hpp>
 
