@@ -8,6 +8,7 @@ namespace video {
 class ScopedPolygonMode {
 private:
 	GLint _polygonMode = GL_NONE;
+	GLint _polygonOffsetMode = GL_NONE;
 public:
 	inline ScopedPolygonMode(const video::PolygonMode mode) {
 		if (mode == video::PolygonMode::Solid) {
@@ -15,13 +16,40 @@ public:
 		}
 		glGetIntegerv(GL_POLYGON_MODE, &_polygonMode);
 		glPolygonMode(GL_FRONT_AND_BACK, std::enum_value(mode));
+		GL_checkError();
+	}
+
+	inline ScopedPolygonMode(const video::PolygonMode mode, const glm::vec2& offset) {
+		if (mode == video::PolygonMode::Solid) {
+			return;
+		}
+		glGetIntegerv(GL_POLYGON_MODE, &_polygonMode);
+		glPolygonMode(GL_FRONT_AND_BACK, std::enum_value(mode));
+		if (mode == video::PolygonMode::Points) {
+			_polygonOffsetMode = GL_POLYGON_OFFSET_POINT;
+		} else if (mode == video::PolygonMode::WireFrame) {
+			_polygonOffsetMode = GL_POLYGON_OFFSET_LINE;
+		} else if (mode == video::PolygonMode::Solid) {
+			_polygonOffsetMode = GL_POLYGON_OFFSET_FILL;
+		}
+		if (_polygonOffsetMode != GL_NONE) {
+			glEnable(_polygonOffsetMode);
+			glPolygonOffset(offset.x, offset.y);
+		}
+		GL_checkError();
 	}
 
 	inline ~ScopedPolygonMode() {
 		if (_polygonMode == GL_NONE) {
 			return;
 		}
+
+		if (_polygonOffsetMode != GL_NONE) {
+			glDisable(_polygonOffsetMode);
+		}
+
 		glPolygonMode(GL_FRONT_AND_BACK, _polygonMode);
+		GL_checkError();
 	}
 };
 
