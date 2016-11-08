@@ -6,20 +6,18 @@
 #include <SDL.h>
 
 class Controller {
+public:
+	enum class SceneCameraMode : uint8_t {
+		Free, Top, Left, Front
+	};
+
 private:
 	float _angle = 0.0f;
-
-	inline bool isRelativeMouseMode() const {
-		return SDL_GetRelativeMouseMode() == SDL_TRUE ? true : false;
-	}
-
-	inline bool isMiddleMouseButtonPressed() const {
-		return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON(SDL_BUTTON_MIDDLE);
-	}
-
-	inline bool isRightMouseButtonPressed() const {
-		return SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON(SDL_BUTTON_RIGHT);
-	}
+	float _cameraSpeed = 0.1f;
+	uint8_t _moveMask = 0;
+	SceneCameraMode _camMode = SceneCameraMode::Free;
+	core::VarPtr _rotationSpeed;
+	video::Camera _camera;
 
 public:
 #if 0
@@ -33,21 +31,9 @@ public:
 	core::Command::unregisterCommand("+move_upt");
 	core::Command::unregisterCommand("+move_down");
 #endif
-	video::Camera _camera;
-	core::VarPtr _rotationSpeed;
 	bool _mouseDown = false;
 	int _mouseX = 0;
 	int _mouseY = 0;
-
-	enum class SceneCameraMode {
-		Free, Top, Left, Front
-	};
-
-	SceneCameraMode _camMode = SceneCameraMode::Free;
-
-	uint8_t _moveMask = 0;
-
-	float _cameraSpeed = 0.1f;
 
 	void init(Controller::SceneCameraMode mode);
 	void resetCamera(const voxel::RawVolume* volume);
@@ -63,7 +49,18 @@ public:
 
 	float angle() const;
 	void setAngle(float angle);
+
+	float cameraSpeed() const;
+	void setCameraSpeed(float cameraSpeed);
 };
+
+inline float Controller::cameraSpeed() const {
+	return _cameraSpeed;
+}
+
+inline void Controller::setCameraSpeed(float cameraSpeed) {
+	_cameraSpeed = cameraSpeed;
+}
 
 inline video::Camera& Controller::camera() {
 	return _camera;

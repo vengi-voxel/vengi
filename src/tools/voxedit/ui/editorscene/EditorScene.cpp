@@ -11,8 +11,8 @@
 #include "ui/UIApp.h"
 #include "Model.h"
 
-static inline EditorModel& m() {
-	static EditorModel editorModel;
+static inline Model& m() {
+	static Model editorModel;
 	return editorModel;
 }
 
@@ -29,8 +29,7 @@ EditorScene::EditorScene() :
 EditorScene::~EditorScene() {
 	_axis.shutdown();
 	_frameBuffer.shutdown();
-	EditorModel& mdl = m();
-	mdl.shutdown();
+	m().shutdown();
 }
 
 void EditorScene::addReference(EditorScene* ref) {
@@ -41,7 +40,7 @@ void EditorScene::addReference(EditorScene* ref) {
 
 void EditorScene::render() {
 	core_trace_scoped(EditorSceneRender);
-	EditorModel& mdl = m();
+	Model& mdl = m();
 	const video::Camera& camera = _controller.camera();
 	{
 		video::ScopedPolygonMode polygonMode(camera.polygonMode());
@@ -57,54 +56,23 @@ void EditorScene::render() {
 }
 
 void EditorScene::setKeyAction(Action action) {
-	EditorModel& mdl = m();
-	if (action == mdl.keyAction()) {
-		return;
-	}
-	mdl._keyAction = action;
+	m()._keyAction = action;
 }
 
 void EditorScene::setInternalAction(Action action) {
-	EditorModel& mdl = m();
-	if (action == mdl.action()) {
-		return;
-	}
-	mdl.setAction(action);
-	switch (action) {
-	case Action::None:
-		Log::debug("Action: None");
-		break;
-	case Action::PlaceVoxel:
-		Log::debug("Action: PlaceVoxel");
-		break;
-	case Action::CopyVoxel:
-		Log::debug("Action: CopyVoxel");
-		break;
-	case Action::DeleteVoxel:
-		Log::debug("Action: DeleteVoxel");
-		break;
-	case Action::OverrideVoxel:
-		Log::debug("Action: OverrideVoxel");
-		break;
-	case Action::SelectVoxels:
-		Log::debug("Action: SelectVoxel");
-		break;
-	}
+	m().setAction(action);
 }
 
 void EditorScene::setAction(Action action) {
-	EditorModel& mdl = m();
-	mdl._uiAction = action;
+	m()._uiAction = action;
 }
 
 void EditorScene::setSelectionType(SelectType type) {
-	EditorModel& mdl = m();
-	mdl._selectionType = type;
+	m()._selectionType = type;
 }
 
 SelectType EditorScene::selectionType() const {
-	const EditorModel& mdl = m();
-	return mdl._selectionType;
+	return m()._selectionType;
 }
 
 bool EditorScene::newModel(bool force) {
@@ -138,8 +106,7 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 	}
 
 	const glm::vec3& maxs = meshPtr->maxs();
-	const EditorModel& mdl = m();
-	const float size = mdl.size();
+	const float size = m().size();
 	const glm::vec3& scale = maxs / size;
 	const float precision = scale.x / 10.0f;
 
@@ -154,8 +121,7 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 }
 
 bool EditorScene::isEmpty() const {
-	const EditorModel& mdl = m();
-	return mdl.empty();
+	return m().empty();
 }
 
 bool EditorScene::exportModel(std::string_view file) {
@@ -164,9 +130,7 @@ bool EditorScene::exportModel(std::string_view file) {
 	if (!(bool)filePtr) {
 		return false;
 	}
-
-	const EditorModel& mdl = m();
-	return voxel::exportMesh(mdl.rawVolumeRenderer().mesh(), filePtr->getName().c_str());
+	return voxel::exportMesh(m().rawVolumeRenderer().mesh(), filePtr->getName().c_str());
 }
 
 bool EditorScene::loadModel(std::string_view file) {
@@ -186,20 +150,13 @@ void EditorScene::resetCamera() {
 }
 
 void EditorScene::setVoxelType(voxel::VoxelType type) {
-	EditorModel& mdl = m();
-	mdl.setVoxelType(type);
+	m().setVoxelType(type);
 }
 
 bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	core_trace_scoped(EditorSceneOnEvent);
-	const int x = ev.target_x;
-	const int y = ev.target_y;
-	ui::UIRect rect = GetRect();
-	ConvertToRoot(rect.x, rect.y);
-	const int tx = x + rect.x;
-	const int ty = y + rect.y;
 	const long now = core::App::getInstance()->currentMillis();
-	EditorModel& mdl = m();
+	Model& mdl = m();
 	bool& mouseDown = _controller._mouseDown;
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		mouseDown = true;
@@ -208,7 +165,7 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		} else {
 			setInternalAction(mdl.uiAction());
 		}
-		mdl.executeAction(tx, ty, mouseDown, now);
+		mdl.executeAction(mouseDown, now);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		mouseDown = false;
@@ -243,9 +200,10 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		const bool relative = isRelativeMouseMode();
 		const bool middle = isMiddleMouseButtonPressed();
 		const bool alt = mdl.action() == Action::None && (ev.modifierkeys & tb::TB_ALT);
-		if (_controller.move(relative || middle || alt, x, y)) {
-			mdl.executeAction(tx, ty, mouseDown, now);
+		if (_controller.move(relative || middle || alt, ev.target_x, ev.target_y)) {
+			mdl.executeAction(mouseDown, now);
 		}
+		mdl.setMousePos(ev.target_x, ev.target_y);
 		return true;
 	}
 	return Super::OnEvent(ev);
@@ -269,8 +227,7 @@ void EditorScene::OnResized(int oldw, int oldh) {
 	_frameBuffer.shutdown();
 	_frameBuffer.init(dim);
 	_bitmap.Init(dim.x, dim.y, _frameBuffer.texture());
-	EditorModel& mdl = m();
-	mdl.onResize(pos, dim);
+	m().onResize(pos, dim);
 }
 
 void EditorScene::OnPaint(const PaintProps &paintProps) {
@@ -286,8 +243,7 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	Super::OnInflate(info);
 	_axis.init();
-	EditorModel& mdl = m();
-	mdl.init();
+	m().init();
 
 	Controller::SceneCameraMode mode = Controller::SceneCameraMode::Free;
 	const char *cameraMode = info.node->GetValueString("camera", "free");
@@ -303,18 +259,21 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 
 void EditorScene::OnProcess() {
 	Super::OnProcess();
+	if (!GetVisibilityCombined()) {
+		return;
+	}
 	core_trace_scoped(EditorSceneOnProcess);
 
 	const long deltaFrame = core::App::getInstance()->deltaFrame();
 	_controller.update(deltaFrame);
 
-	EditorModel& mdl = m();
+	Model& mdl = m();
 	if (mdl.modelVolume() == nullptr) {
 		return;
 	}
 
 	const bool skipCursor = isRelativeMouseMode();
-	mdl.trace(_controller._mouseX, _controller._mouseY, skipCursor, _controller.camera());
+	mdl.trace(skipCursor, _controller.camera());
 
 	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
 	core_trace_scoped(EditorSceneRenderFramebuffer);
@@ -324,56 +283,40 @@ void EditorScene::OnProcess() {
 }
 
 bool EditorScene::renderAABB() const {
-	const EditorModel& mdl = m();
-	return mdl.rawVolumeRenderer().renderAABB();
+	return m().rawVolumeRenderer().renderAABB();
 }
 
 void EditorScene::setRenderAABB(bool renderAABB) {
-	EditorModel& mdl = m();
+	Model& mdl = m();
 	mdl.rawVolumeRenderer().setRenderAABB(renderAABB);
 }
 
 bool EditorScene::renderGrid() const {
-	const EditorModel& mdl = m();
-	return mdl.rawVolumeRenderer().renderGrid();
+	return m().rawVolumeRenderer().renderGrid();
 }
 
 void EditorScene::setRenderGrid(bool renderGrid) {
-	EditorModel& mdl = m();
-	mdl.rawVolumeRenderer().setRenderGrid(renderGrid);
+	m().rawVolumeRenderer().setRenderGrid(renderGrid);
 }
 
 inline long EditorScene::actionExecutionDelay() const {
-	const EditorModel& mdl = m();
-	return mdl._actionExecutionDelay;
+	return m()._actionExecutionDelay;
 }
 
 void EditorScene::setActionExecutionDelay(long actionExecutionDelay) {
-	EditorModel& mdl = m();
-	mdl._actionExecutionDelay = actionExecutionDelay;
+	m()._actionExecutionDelay = actionExecutionDelay;
 }
 
 bool EditorScene::renderAxis() const {
-	const EditorModel& mdl = m();
-	return mdl._renderAxis;
+	return m()._renderAxis;
 }
 
 void EditorScene::setRenderAxis(bool renderAxis) {
-	EditorModel& mdl = m();
-	mdl._renderAxis = renderAxis;
-}
-
-float EditorScene::cameraSpeed() const {
-	return _controller._cameraSpeed;
-}
-
-void EditorScene::setCameraSpeed(float cameraSpeed) {
-	_controller._cameraSpeed = cameraSpeed;
+	m()._renderAxis = renderAxis;
 }
 
 bool EditorScene::isDirty() const {
-	const EditorModel& mdl = m();
-	return mdl.dirty();
+	return m().dirty();
 }
 
 namespace tb {

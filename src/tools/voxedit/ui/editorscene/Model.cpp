@@ -16,15 +16,15 @@ static const struct Selection {
 };
 static_assert(SDL_arraysize(selectionsArray) == std::enum_value(SelectType::Max), "Array size doesn't match selection modes");
 
-EditorModel::EditorModel() :
+Model::Model() :
 		_rawVolumeRenderer(true, false, true), _rawVolumeSelectionRenderer(false, false, false) {
 }
 
-EditorModel::~EditorModel() {
+Model::~Model() {
 	shutdown();
 }
 
-bool EditorModel::save(std::string_view file) {
+bool Model::save(std::string_view file) {
 	if (!dirty()) {
 		// nothing to save yet
 		return true;
@@ -40,7 +40,7 @@ bool EditorModel::save(std::string_view file) {
 	return !dirty();
 }
 
-bool EditorModel::load(std::string_view file) {
+bool Model::load(std::string_view file) {
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
 	if (!(bool)filePtr) {
 		Log::error("Failed to open model file %s", file.data());
@@ -57,7 +57,7 @@ bool EditorModel::load(std::string_view file) {
 	return true;
 }
 
-void EditorModel::select(const glm::ivec3& pos) {
+void Model::select(const glm::ivec3& pos) {
 	voxel::RawVolume* selectionVolume = _rawVolumeSelectionRenderer.volume();
 	const Selection& mode = selectionsArray[std::enum_value(_selectionType)];
 	if (mode.select.execute(_modelVolume, selectionVolume, pos)) {
@@ -65,7 +65,13 @@ void EditorModel::select(const glm::ivec3& pos) {
 	}
 }
 
-void EditorModel::executeAction(int32_t x, int32_t y, bool mouseDown, long now) {
+void Model::setMousePos(int x, int y) {
+	Log::trace("Set model mouse coordinates to %i:%i", x, y);
+	_mouseX = x;
+	_mouseY = y;
+}
+
+void Model::executeAction(bool mouseDown, long now) {
 	if (_action == Action::None || !mouseDown) {
 		return;
 	}
@@ -106,11 +112,11 @@ void EditorModel::executeAction(int32_t x, int32_t y, bool mouseDown, long now) 
 	}
 }
 
-void EditorModel::resetLastTrace() {
+void Model::resetLastTrace() {
 	_lastRaytraceX = _lastRaytraceY = -1;
 }
 
-void EditorModel::setNewVolume(voxel::RawVolume* volume) {
+void Model::setNewVolume(voxel::RawVolume* volume) {
 	delete _modelVolume;
 	_modelVolume = volume;
 
@@ -124,10 +130,10 @@ void EditorModel::setNewVolume(voxel::RawVolume* volume) {
 	_empty = true;
 	_extract = true;
 	_dirty = false;
-	_lastRaytraceX = _lastRaytraceY = -1;
+	resetLastTrace();
 }
 
-bool EditorModel::newVolume(bool force) {
+bool Model::newVolume(bool force) {
 	if (dirty() && !force) {
 		return false;
 	}
@@ -142,36 +148,37 @@ bool EditorModel::newVolume(bool force) {
 	return true;
 }
 
-bool EditorModel::dirty() const {
+bool Model::dirty() const {
 	return _dirty;
 }
 
-float EditorModel::size() const {
+float Model::size() const {
 	return _size;
 }
 
-bool EditorModel::empty() const {
+bool Model::empty() const {
 	return _empty;
 }
 
-const voxel::Voxel& EditorModel::getVoxel(const glm::ivec3& pos) const {
+const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 	return _modelVolume->getVoxel(pos);
 }
 
-bool EditorModel::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) const {
+bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) const {
+	Log::info("Set voxel %i to v(%i:%i:%i)", std::enum_value(voxel.getMaterial()), pos.x, pos.y, pos.z);
 	return _modelVolume->setVoxel(pos, voxel);
 }
 
-void EditorModel::render(const video::Camera& camera) {
+void Model::render(const video::Camera& camera) {
 	_rawVolumeRenderer.render(camera);
 }
 
-void EditorModel::onResize(const glm::ivec2& pos, const glm::ivec2& size) {
+void Model::onResize(const glm::ivec2& pos, const glm::ivec2& size) {
 	_rawVolumeRenderer.onResize(pos, size);
 	_rawVolumeSelectionRenderer.onResize(pos, size);
 }
 
-void EditorModel::init() {
+void Model::init() {
 	if (_initialized++ > 0) {
 		return;
 	}
@@ -181,7 +188,7 @@ void EditorModel::init() {
 	_rawVolumeSelectionRenderer.init();
 }
 
-void EditorModel::shutdown() {
+void Model::shutdown() {
 	if (--_initialized > 0) {
 		return;
 	}
@@ -195,7 +202,7 @@ void EditorModel::shutdown() {
 	delete _rawVolumeSelectionRenderer.shutdown();
 }
 
-bool EditorModel::extractSelectionVolume() {
+bool Model::extractSelectionVolume() {
 	if (_selectionExtract) {
 		_selectionExtract = false;
 		_rawVolumeSelectionRenderer.extract();
@@ -204,7 +211,7 @@ bool EditorModel::extractSelectionVolume() {
 	return false;
 }
 
-bool EditorModel::extractVolume() {
+bool Model::extractVolume() {
 	if (_extract) {
 		_extract = false;
 		_rawVolumeRenderer.extract();
@@ -213,15 +220,13 @@ bool EditorModel::extractVolume() {
 	return false;
 }
 
-void EditorModel::trace(int mouseX, int mouseY, bool skipCursor, const video::Camera& camera) {
-	if (_lastRaytraceX != mouseX || _lastRaytraceY != mouseY) {
+void Model::trace(bool skipCursor, const video::Camera& camera) {
+	if (_lastRaytraceX != _mouseX || _lastRaytraceY != _mouseY) {
 		core_trace_scoped(EditorSceneOnProcessUpdateRay);
-		_lastRaytraceX = mouseX;
-		_lastRaytraceY = mouseY;
+		_lastRaytraceX = _mouseX;
+		_lastRaytraceY = _mouseY;
 
-		const int tx = mouseX;
-		const int ty = mouseY;
-		const video::Ray& ray = camera.mouseRay(glm::ivec2(tx, ty));
+		const video::Ray& ray = camera.mouseRay(glm::ivec2(_mouseX, _mouseY));
 		const glm::vec3& dirWithLength = ray.direction * camera.farPlane();
 		const voxel::Voxel& air = voxel::createVoxel(voxel::VoxelType::Air);
 		_result = voxel::pickVoxel(modelVolume(), ray.origin, dirWithLength, air);

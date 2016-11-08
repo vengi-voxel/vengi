@@ -9,7 +9,7 @@
 /**
  * The model is shared across all viewports
  */
-class EditorModel {
+class Model {
 private:
 	int _initialized = 0;
 	voxel::Voxel _currentVoxel;
@@ -17,10 +17,13 @@ private:
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
 	frontend::RawVolumeRenderer _rawVolumeSelectionRenderer;
 
+	int _mouseX = 0;
+	int _mouseY = 0;
+
 	bool actionRequiresExistingVoxel(Action action) const;
 public:
-	EditorModel();
-	~EditorModel();
+	Model();
+	~Model();
 
 	void onResize(const glm::ivec2& pos, const glm::ivec2& size);
 
@@ -65,9 +68,11 @@ public:
 	bool extractVolume();
 	bool extractSelectionVolume();
 
-	void trace(int mouseX, int mouseY, bool skipCursor, const video::Camera& camera);
+	void setMousePos(int x, int y);
+
+	void trace(bool skipCursor, const video::Camera& camera);
 	void select(const glm::ivec3& pos);
-	void executeAction(int32_t x, int32_t y, bool mouseDown, long now);
+	void executeAction(bool mouseDown, long now);
 	void resetLastTrace();
 
 public:
@@ -96,63 +101,63 @@ public:
 	voxel::RawVolume* _modelVolume = nullptr;
 };
 
-inline void EditorModel::setVoxelType(voxel::VoxelType type) {
+inline void Model::setVoxelType(voxel::VoxelType type) {
 	Log::info("Change voxel to %i", std::enum_value(type));
 	_currentVoxel = voxel::createVoxel(type);
 }
 
-inline const voxel::Voxel& EditorModel::currentVoxel() const {
+inline const voxel::Voxel& Model::currentVoxel() const {
 	return _currentVoxel;
 }
 
-inline voxel::PickResult& EditorModel::result() {
+inline voxel::PickResult& Model::result() {
 	return _result;
 }
 
-inline bool EditorModel::renderAxis() const {
+inline bool Model::renderAxis() const {
 	return _renderAxis;
 }
 
-inline Action EditorModel::action() const {
+inline Action Model::action() const {
 	return _action;
 }
 
-inline void EditorModel::setAction(Action action) {
+inline void Model::setAction(Action action) {
 	_action = action;
 }
 
-inline Action EditorModel::keyAction() const {
+inline Action Model::keyAction() const {
 	return _keyAction;
 }
 
-inline voxel::RawVolume* EditorModel::modelVolume() {
+inline voxel::RawVolume* Model::modelVolume() {
 	return _modelVolume;
 }
 
-inline const voxel::RawVolume* EditorModel::modelVolume() const {
+inline const voxel::RawVolume* Model::modelVolume() const {
 	return _modelVolume;
 }
 
-inline Action EditorModel::uiAction() const {
+inline Action Model::uiAction() const {
 	return _uiAction;
 }
 
-inline frontend::RawVolumeRenderer& EditorModel::rawVolumeRenderer() {
+inline frontend::RawVolumeRenderer& Model::rawVolumeRenderer() {
 	return _rawVolumeRenderer;
 }
 
-inline const frontend::RawVolumeRenderer& EditorModel::rawVolumeRenderer() const {
+inline const frontend::RawVolumeRenderer& Model::rawVolumeRenderer() const {
 	return _rawVolumeRenderer;
 }
 
-inline frontend::RawVolumeRenderer& EditorModel::rawVolumeSelectionRenderer() {
+inline frontend::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() {
 	return _rawVolumeSelectionRenderer;
 }
 
-inline const frontend::RawVolumeRenderer& EditorModel::rawVolumeSelectionRenderer() const {
+inline const frontend::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() const {
 	return _rawVolumeSelectionRenderer;
 }
 
-inline bool EditorModel::actionRequiresExistingVoxel(Action action) const {
+inline bool Model::actionRequiresExistingVoxel(Action action) const {
 	return action == Action::CopyVoxel || action == Action::DeleteVoxel || action == Action::OverrideVoxel;
 }

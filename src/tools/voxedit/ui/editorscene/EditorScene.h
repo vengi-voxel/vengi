@@ -19,6 +19,7 @@ private:
 	std::vector<EditorScene*> _references;
 	EditorScene* _parent = nullptr;
 	Controller _controller;
+	glm::ivec2 _mousePos;
 
 	void render();
 
@@ -75,6 +76,14 @@ public:
 	virtual void OnPaint(const PaintProps &paintProps) override;
 	virtual void OnResized(int oldw, int oldh) override;
 };
+
+inline float EditorScene::cameraSpeed() const {
+	return _controller.cameraSpeed();
+}
+
+inline void EditorScene::setCameraSpeed(float cameraSpeed) {
+	_controller.setCameraSpeed(cameraSpeed);
+}
 
 inline video::Camera& EditorScene::camera() {
 	return _controller.camera();
