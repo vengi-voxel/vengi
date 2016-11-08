@@ -59,9 +59,9 @@ int mergeRawVolumes(RawVolume* destination, const RawVolume* source, const glm::
 	const int32_t depth = glm::min(srcRegion.getDepthInVoxels(), destRegion.getDepthInVoxels());
 	const int32_t height = glm::min(srcRegion.getHeightInVoxels(), destRegion.getHeightInVoxels());
 	const int32_t width = glm::min(srcRegion.getWidthInVoxels(), destRegion.getWidthInVoxels());
-	for (int32_t z = sourceOffset.z; z < depth; z++) {
-		for (int32_t y = sourceOffset.y; y < height; y++) {
-			for (int32_t x = sourceOffset.x; x < width; x++) {
+	for (int32_t z = sourceOffset.z; z < sourceOffset.z + depth; z++) {
+		for (int32_t y = sourceOffset.y; y < sourceOffset.y + height; y++) {
+			for (int32_t x = sourceOffset.x; x < sourceOffset.x + width; x++) {
 				srcSampler.setPosition(x - sourceOffset.x, y - sourceOffset.y, z - sourceOffset.z);
 				const Voxel& voxel = srcSampler.getVoxel();
 				if (!mergeCondition(voxel)) {
