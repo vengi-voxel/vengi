@@ -163,7 +163,7 @@ const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 }
 
 bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) const {
-	Log::info("Set voxel %i to v(%i:%i:%i)", std::enum_value(voxel.getMaterial()), pos.x, pos.y, pos.z);
+	Log::debug("Set voxel %i to v(%i:%i:%i)", std::enum_value(voxel.getMaterial()), pos.x, pos.y, pos.z);
 	return _modelVolume->setVoxel(pos, voxel);
 }
 

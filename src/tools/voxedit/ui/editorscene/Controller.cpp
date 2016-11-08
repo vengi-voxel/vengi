@@ -3,11 +3,13 @@
 
 void Controller::resetCamera(const voxel::RawVolume* volume) {
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
+
 	if (volume == nullptr) {
 		return;
 	}
 	const voxel::Region& region = volume->getEnclosingRegion();
 	const glm::ivec3& center = region.getCentre();
+	_camera.setTarget(center);
 	if (_camMode == Controller::SceneCameraMode::Free) {
 		_camera.setPosition(glm::vec3(-center));
 		_camera.lookAt(glm::vec3(0.0001f));
@@ -21,6 +23,10 @@ void Controller::resetCamera(const voxel::RawVolume* volume) {
 		_camera.setPosition(glm::vec3(center.x, center.y, region.getDepthInCells() + center.z));
 		_camera.lookAt(glm::backward);
 	}
+}
+
+void Controller::changeCameraRotationType(video::CameraRotationType type) {
+	_camera.setRotationType(type);
 }
 
 void Controller::update(long deltaFrame) {
@@ -45,12 +51,15 @@ void Controller::init(Controller::SceneCameraMode mode) {
 }
 
 void Controller::onResize(const glm::ivec2& pos, const glm::ivec2& size) {
-	_camera.init(pos, size);
+	_camera.init(glm::ivec2(), size);
 }
 
 void Controller::zoom(float level) {
-	const glm::vec3& moveDelta = glm::backward * _cameraSpeed * level;
+	const float value = _cameraSpeed * level;
+	const glm::vec3& moveDelta = glm::backward * value;
 	_camera.move(moveDelta);
+	const float targetDistance = glm::clamp(_camera.targetDistance() - value, 0.0f, 1000.0f);
+	_camera.setTargetDistance(targetDistance);
 }
 
 bool Controller::move(bool rotate, int x, int y) {

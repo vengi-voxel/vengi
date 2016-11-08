@@ -33,7 +33,6 @@ public:
 	~EditorScene();
 
 	video::Camera& camera();
-
 	void resetCamera();
 
 	bool isDirty() const;

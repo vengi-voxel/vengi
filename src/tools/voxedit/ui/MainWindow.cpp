@@ -46,7 +46,8 @@ bool MainWindow::init() {
 	_showAABB = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowaabb"));
 	_showGrid = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowgrid"));
 	_showAxis = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowaxis"));
-	if (_showAABB == nullptr || _showGrid == nullptr || _showAxis == nullptr) {
+	_freeLook = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionfreelook"));
+	if (_showAABB == nullptr || _showGrid == nullptr || _showAxis == nullptr || _freeLook == nullptr) {
 		Log::error("Could not load all required widgets");
 		return false;
 	}
@@ -69,6 +70,7 @@ bool MainWindow::init() {
 	_showAABB->SetValue(_scene->renderAABB() ? 1 : 0);
 	_showGrid->SetValue(_scene->renderGrid() ? 1 : 0);
 	_showAxis->SetValue(_scene->renderAxis() ? 1 : 0);
+	_freeLook->SetValue(_scene->camera().rotationType() == video::CameraRotationType::Eye ? 1 : 0);
 
 	Assimp::Exporter exporter;
 	const size_t num = exporter.GetExportFormatCount();
@@ -138,13 +140,22 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		save("");
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
-		_scene->setRenderGrid(_showGrid->GetValue() == 1);
+		_scene->setRenderGrid(ev.target->GetValue() == 1);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowaxis")) {
-		_scene->setRenderAxis(_showAxis->GetValue() == 1);
+		_scene->setRenderAxis(ev.target->GetValue() == 1);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowaabb")) {
-		_scene->setRenderAABB(_showAABB->GetValue() == 1);
+		_scene->setRenderAABB(ev.target->GetValue() == 1);
+		return true;
+	} else if (ev.target->GetID() == TBIDC("optionfreelook")) {
+		const int v = ev.target->GetValue();
+		video::Camera& c = _scene->camera();
+		if (v) {
+			c.setRotationType(video::CameraRotationType::Eye);
+		} else {
+			c.setRotationType(video::CameraRotationType::Target);
+		}
 		return true;
 	}
 	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
