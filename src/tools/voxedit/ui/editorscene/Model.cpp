@@ -16,18 +16,10 @@ static_assert(SDL_arraysize(selectionsArray) == std::enum_value(SelectType::Max)
 
 EditorModel::EditorModel() :
 		_rawVolumeRenderer(true, false, true), _rawVolumeSelectionRenderer(false, false, false) {
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
 }
 
 EditorModel::~EditorModel() {
 	shutdown();
-	core::Command::unregisterCommand("+move_right");
-	core::Command::unregisterCommand("+move_left");
-	core::Command::unregisterCommand("+move_upt");
-	core::Command::unregisterCommand("+move_down");
 }
 
 void EditorModel::select(const glm::ivec3& pos) {

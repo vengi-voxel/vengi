@@ -2,6 +2,7 @@ project(voxedit)
 set(SRCS
 	ui/editorscene/EditorScene.h ui/editorscene/EditorScene.cpp
 	ui/editorscene/Model.h ui/editorscene/Model.cpp
+	ui/editorscene/Controller.h
 	ui/editorscene/select/Select.h
 	ui/editorscene/select/Single.h
 	ui/editorscene/SelectType.h

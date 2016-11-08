@@ -7,6 +7,9 @@
 #include "Action.h"
 #include "SelectType.h"
 
+/**
+ * The model is shared across all viewports
+ */
 class EditorModel {
 private:
 	int _initialized = 0;
@@ -69,10 +72,6 @@ public:
 public:
 	// TODO: maybe move into scene
 	bool _renderAxis = true;
-	// TODO: move into scene
-	uint8_t _moveMask = 0;
-
-	float _cameraSpeed = 0.1f;
 	bool _dirty = false;
 	bool _extract = false;
 	bool _empty = true;

@@ -5,30 +5,20 @@
 #include "video/FrameBuffer.h"
 #include "frontend/Axis.h"
 #include "video/MeshPool.h"
-#include "Action.h"
 #include "voxel/polyvox/RawVolume.h"
+#include "Action.h"
 #include "SelectType.h"
+#include "Controller.h"
 
 class EditorScene: public ui::Widget {
 private:
 	using Super = ui::Widget;
-	video::Camera _camera;
 	frontend::Axis _axis;
 	video::FrameBuffer _frameBuffer;
-	core::VarPtr _rotationSpeed;
 	tb::UIBitmapGL _bitmap;
 	std::vector<EditorScene*> _references;
 	EditorScene* _parent = nullptr;
-
-	bool _mouseDown = false;
-	int _mouseX = 0;
-	int _mouseY = 0;
-
-	enum class SceneCameraMode {
-		Free, Top, Left, Front
-	};
-
-	SceneCameraMode _camMode = SceneCameraMode::Free;
+	Controller _controller;
 
 	void render();
 
@@ -90,5 +80,5 @@ public:
 };
 
 inline video::Camera& EditorScene::camera() {
-	return _camera;
+	return _controller._camera;
 }
