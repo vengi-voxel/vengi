@@ -81,6 +81,34 @@ bool MainWindow::init() {
 	return true;
 }
 
+void MainWindow::toggleQuadViewport() {
+	bool vis = false;
+	if (_sceneTop != nullptr) {
+		vis = _sceneTop->GetVisibilityCombined();
+	}
+	if (!vis && _sceneLeft != nullptr) {
+		vis = _sceneLeft->GetVisibilityCombined();
+	}
+	if (!vis && _sceneFront != nullptr) {
+		vis = _sceneFront->GetVisibilityCombined();
+	}
+
+	setQuadViewport(!vis);
+}
+
+void MainWindow::setQuadViewport(bool active) {
+	const tb::WIDGET_VISIBILITY vis = active ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
+	if (_sceneTop != nullptr) {
+		_sceneTop->SetVisibility(vis);
+	}
+	if (_sceneLeft != nullptr) {
+		_sceneLeft->SetVisibility(vis);
+	}
+	if (_sceneFront != nullptr) {
+		_sceneFront->SetVisibility(vis);
+	}
+}
+
 static const struct {
 	tb::TBID id;
 	Action action;
@@ -203,16 +231,7 @@ bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("toggleviewport")) {
 		tb::TBWidget *widget = ev.target;
 		const int value = widget->GetValue();
-		const tb::WIDGET_VISIBILITY vis = value ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
-		if (_sceneTop != nullptr) {
-			_sceneTop->SetVisibility(vis);
-		}
-		if (_sceneLeft != nullptr) {
-			_sceneLeft->SetVisibility(vis);
-		}
-		if (_sceneFront != nullptr) {
-			_sceneFront->SetVisibility(vis);
-		}
+		setQuadViewport(value == 1);
 		return true;
 	}
 

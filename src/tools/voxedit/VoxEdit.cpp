@@ -87,6 +87,10 @@ core::AppState VoxEdit::onInit() {
 		}
 	}).setArgumentCompleter(fileCompleter).setHelp("Save the current state to the given file");
 
+	core::Command::registerCommand("toggleviewport", [this] (const core::CmdArgs& args) {
+		this->_mainWindow->toggleQuadViewport();
+	}).setArgumentCompleter(fileCompleter).setHelp("Toggle quad view on/off");
+
 	core::Command::registerCommand("export", [this] (const core::CmdArgs& args) {
 		std::string_view file = args.empty() ? "" : args[0];
 		if (!exportFile(file)) {
