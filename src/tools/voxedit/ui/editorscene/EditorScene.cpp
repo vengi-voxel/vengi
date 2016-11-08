@@ -153,6 +153,47 @@ void EditorScene::setVoxelType(voxel::VoxelType type) {
 	m().setVoxelType(type);
 }
 
+void EditorScene::select(const glm::ivec3& pos) {
+	m().select(pos);
+}
+
+bool EditorScene::renderAABB() const {
+	return m().rawVolumeRenderer().renderAABB();
+}
+
+void EditorScene::setRenderAABB(bool renderAABB) {
+	Model& mdl = m();
+	mdl.rawVolumeRenderer().setRenderAABB(renderAABB);
+}
+
+bool EditorScene::renderGrid() const {
+	return m().rawVolumeRenderer().renderGrid();
+}
+
+void EditorScene::setRenderGrid(bool renderGrid) {
+	m().rawVolumeRenderer().setRenderGrid(renderGrid);
+}
+
+inline long EditorScene::actionExecutionDelay() const {
+	return m()._actionExecutionDelay;
+}
+
+void EditorScene::setActionExecutionDelay(long actionExecutionDelay) {
+	m()._actionExecutionDelay = actionExecutionDelay;
+}
+
+bool EditorScene::renderAxis() const {
+	return m()._renderAxis;
+}
+
+void EditorScene::setRenderAxis(bool renderAxis) {
+	m()._renderAxis = renderAxis;
+}
+
+bool EditorScene::isDirty() const {
+	return m().dirty();
+}
+
 bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	core_trace_scoped(EditorSceneOnEvent);
 	const long now = core::App::getInstance()->currentMillis();
@@ -207,14 +248,6 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 	return Super::OnEvent(ev);
-}
-
-void EditorScene::select(const glm::ivec3& pos) {
-	m().select(pos);
-}
-
-void EditorScene::OnFocusChanged(bool focused) {
-	Super::OnFocusChanged(focused);
 }
 
 void EditorScene::OnResized(int oldw, int oldh) {
@@ -282,43 +315,6 @@ void EditorScene::OnProcess() {
 	_frameBuffer.bind(false);
 	render();
 	_frameBuffer.unbind();
-}
-
-bool EditorScene::renderAABB() const {
-	return m().rawVolumeRenderer().renderAABB();
-}
-
-void EditorScene::setRenderAABB(bool renderAABB) {
-	Model& mdl = m();
-	mdl.rawVolumeRenderer().setRenderAABB(renderAABB);
-}
-
-bool EditorScene::renderGrid() const {
-	return m().rawVolumeRenderer().renderGrid();
-}
-
-void EditorScene::setRenderGrid(bool renderGrid) {
-	m().rawVolumeRenderer().setRenderGrid(renderGrid);
-}
-
-inline long EditorScene::actionExecutionDelay() const {
-	return m()._actionExecutionDelay;
-}
-
-void EditorScene::setActionExecutionDelay(long actionExecutionDelay) {
-	m()._actionExecutionDelay = actionExecutionDelay;
-}
-
-bool EditorScene::renderAxis() const {
-	return m()._renderAxis;
-}
-
-void EditorScene::setRenderAxis(bool renderAxis) {
-	m()._renderAxis = renderAxis;
-}
-
-bool EditorScene::isDirty() const {
-	return m().dirty();
 }
 
 namespace tb {

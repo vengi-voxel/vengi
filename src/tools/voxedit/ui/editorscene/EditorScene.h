@@ -69,7 +69,6 @@ public:
 
 	void addReference(EditorScene* scene);
 
-	virtual void OnFocusChanged(bool focused) override;
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
