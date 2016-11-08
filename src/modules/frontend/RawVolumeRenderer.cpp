@@ -346,8 +346,10 @@ voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	}
 	_mesh = nullptr;
 	voxel::RawVolume* old = _rawVolume;
-	_whiteTexture->shutdown();
-	_whiteTexture = video::TexturePtr();
+	if (_whiteTexture) {
+		_whiteTexture->shutdown();
+		_whiteTexture = video::TexturePtr();
+	}
 	_rawVolume = nullptr;
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
