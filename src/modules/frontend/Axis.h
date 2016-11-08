@@ -3,6 +3,7 @@
 #include "video/Camera.h"
 #include "video/ShapeBuilder.h"
 #include "frontend/ShapeRenderer.h"
+#include "video/ScopedLineWidth.h"
 
 namespace frontend {
 
@@ -20,9 +21,9 @@ private:
 public:
 	void render(const video::Camera& camera) {
 		glDisable(GL_DEPTH_TEST);
-		glLineWidth(_lineWidth);
+
+		video::ScopedLineWidth width(_lineWidth);
 		_shapeRenderer.renderAll(camera);
-		glLineWidth(1.0f);
 		glEnable(GL_DEPTH_TEST);
 	}
 
@@ -36,9 +37,6 @@ public:
 			return false;
 		}
 		_shapeBuilder.axis(20.0f);
-		GLdouble buf[2];
-		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		_lineWidth = std::min((float)buf[1], _lineWidth);
 		return _shapeRenderer.createMesh(_shapeBuilder) >= 0;
 	};
 };

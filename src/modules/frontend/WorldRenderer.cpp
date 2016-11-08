@@ -15,6 +15,8 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/MaterialColor.h"
 #include "PlantDistributor.h"
+#include "video/ScopedLineWidth.h"
+#include "video/ScopedPolygonMode.h"
 
 constexpr int MinCullingDistance = 500;
 constexpr int MinExtractionCullingDistance = 1000;
@@ -276,17 +278,10 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 		GL_checkError();
 
 		if (debugGeometry && !deferred) {
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			glEnable(GL_POLYGON_OFFSET_LINE);
-			glEnable(GL_LINE_SMOOTH);
-			glLineWidth(_lineWidth);
-			glPolygonOffset(-2, -2);
+			video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(-2.0f));
+			video::ScopedLineWidth lineWidth(_lineWidth, true);
 			shaderSetUniformIf(shader, setUniformf, "u_debug_color", 0.0);
 			glDrawElements(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, 0);
-			glLineWidth(1.0f);
-			glDisable(GL_LINE_SMOOTH);
-			glDisable(GL_POLYGON_OFFSET_LINE);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			GL_checkError();
 		}
 

@@ -14,8 +14,7 @@ public:
 			return false;
 		}
 		const voxel::Voxel& voxel = model->getVoxel(pos);
-		selection->setVoxel(pos, voxel);
-		return true;
+		return selection->setVoxel(pos, voxel);
 	}
 };
 

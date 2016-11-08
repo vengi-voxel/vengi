@@ -1,6 +1,8 @@
 #include "RawVolumeRenderer.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
+#include "video/ScopedLineWidth.h"
+#include "video/ScopedPolygonMode.h"
 
 namespace frontend {
 
@@ -232,17 +234,10 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
 
 	if (_renderWireframe && camera.polygonMode() == video::PolygonMode::Solid) {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glEnable(GL_POLYGON_OFFSET_LINE);
-		glEnable(GL_LINE_SMOOTH);
-		glLineWidth(1.0f);
-		glPolygonOffset(-2, -2);
+		video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(-2.0f));
+		video::ScopedLineWidth lineWidth(2.0f, true);
 		shaderSetUniformIf(_worldShader, setUniformf, "u_debug_color", 0.0);
 		glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
-		glLineWidth(1.0f);
-		glDisable(GL_LINE_SMOOTH);
-		glDisable(GL_POLYGON_OFFSET_LINE);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
 	_vertexBuffer.unbind();
