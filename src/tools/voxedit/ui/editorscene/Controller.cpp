@@ -11,7 +11,7 @@ void Controller::resetCamera(const voxel::RawVolume* volume) {
 	const glm::ivec3& center = region.getCentre();
 	_camera.setTarget(center);
 	if (_camMode == Controller::SceneCameraMode::Free) {
-		_camera.setPosition(glm::vec3(-center));
+		_camera.setPosition(glm::vec3(-center.x, region.getHeightInVoxels() + center.y, -center.z));
 	} else if (_camMode == Controller::SceneCameraMode::Top) {
 		_camera.setPosition(glm::vec3(center.x, region.getHeightInCells() + center.y, center.z));
 	} else if (_camMode == Controller::SceneCameraMode::Left) {
@@ -34,6 +34,7 @@ void Controller::update(long deltaFrame) {
 }
 
 void Controller::init(Controller::SceneCameraMode mode) {
+	_camera.setRotationType(video::CameraRotationType::Target);
 	switch (mode) {
 	case SceneCameraMode::Top:
 	case SceneCameraMode::Front:
