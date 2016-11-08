@@ -32,14 +32,11 @@ private:
 
 	void render();
 
-	void setupReference(EditorScene* ref);
 	void newVolume();
 	void setNewVolume(voxel::RawVolume *volume);
 
 	void setKeyAction(Action action);
 	void setInternalAction(Action action);
-	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
-	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 public:
 	UIWIDGET_SUBCLASS(EditorScene, Super);
 
@@ -67,7 +64,6 @@ public:
 	long actionExecutionDelay() const;
 
 	void setAction(Action action);
-	Action action() const;
 
 	void setVoxelType(voxel::VoxelType type);
 

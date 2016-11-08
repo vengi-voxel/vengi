@@ -36,30 +36,16 @@ EditorScene::~EditorScene() {
 	mdl.shutdown();
 }
 
-const voxel::Voxel& EditorScene::getVoxel(const glm::ivec3& pos) const {
-	const EditorModel& mdl = m();
-	return mdl.getVoxel(pos);
-}
-
-bool EditorScene::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
-	EditorModel& mdl = m();
-	return mdl.setVoxel(pos, voxel);
-}
-
 void EditorScene::newVolume() {
 	const EditorModel& mdl = m();
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(mdl.size()));
 	setNewVolume(new voxel::RawVolume(region));
 }
 
-void EditorScene::setupReference(EditorScene* ref) {
-	ref->_parent = this;
-	ref->resetCamera();
-}
-
 void EditorScene::addReference(EditorScene* ref) {
 	_references.push_back(ref);
-	setupReference(ref);
+	ref->_parent = this;
+	ref->resetCamera();
 }
 
 void EditorScene::setNewVolume(voxel::RawVolume *volume) {
@@ -82,11 +68,6 @@ void EditorScene::render() {
 	if (mdl.renderAxis()) {
 		_axis.render(_camera);
 	}
-}
-
-Action EditorScene::action() const {
-	const EditorModel& mdl = m();
-	return mdl._uiAction;
 }
 
 void EditorScene::setKeyAction(Action action) {
