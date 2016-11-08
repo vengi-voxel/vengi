@@ -33,7 +33,9 @@ bool MainWindow::init() {
 	_fourViewAvailable = _sceneTop != nullptr && _sceneLeft != nullptr && _sceneFront != nullptr;
 
 	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
-	toggleViewPort->SetState(tb::WIDGET_STATE_DISABLED, !_fourViewAvailable);
+	if (toggleViewPort != nullptr) {
+		toggleViewPort->SetState(tb::WIDGET_STATE_DISABLED, !_fourViewAvailable);
+	}
 	_exportButton = getWidget("export");
 	_saveButton = getWidget("save");
 	_undoButton = getWidget("undo");
@@ -106,6 +108,10 @@ void MainWindow::setQuadViewport(bool active) {
 	}
 	if (_sceneFront != nullptr) {
 		_sceneFront->SetVisibility(vis);
+	}
+	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
+	if (toggleViewPort != nullptr) {
+		toggleViewPort->SetValue(active ? 1 : 0);
 	}
 }
 
