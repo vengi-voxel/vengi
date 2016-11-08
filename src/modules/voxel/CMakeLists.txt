@@ -55,5 +55,6 @@ gtest_suite_files(tests
 	tests/VoxFormatTest.cpp
 	tests/QB2FormatTest.cpp
 	tests/MeshExporterTest.cpp
+	tests/VolumeMergerTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

@@ -184,6 +184,7 @@ void Model::init() {
 	if (_initialized++ > 0) {
 		return;
 	}
+	// TODO: shapes
 	_cursorVolume = new voxel::RawVolume(voxel::Region(0, 1));
 	_cursorVolume->setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Grass1));
 	_rawVolumeRenderer.init();
