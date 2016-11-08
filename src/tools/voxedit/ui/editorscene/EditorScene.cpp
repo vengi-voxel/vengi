@@ -26,7 +26,6 @@ EditorScene::EditorScene() :
 		_bitmap((tb::UIRendererGL*) tb::g_renderer) {
 	//_rawVolumeRenderer.setAmbientColor(core::Color::White.xyz());
 	SetIsFocusable(true);
-	SetAutoFocusState(true);
 }
 
 EditorScene::~EditorScene() {
