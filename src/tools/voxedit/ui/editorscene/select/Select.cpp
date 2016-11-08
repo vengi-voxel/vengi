@@ -53,7 +53,7 @@ bool Select::sixDirectionsExecute(voxel::RawVolume::Sampler& model, voxel::RawVo
 	const voxel::Voxel& v = model.getVoxel();
 	if (v == voxel) {
 		selection.setPosition(model.getPosition());
-		if (selection.setVoxel(model.getVoxel())) {
+		if (selection.setVoxel(voxel)) {
 			goSixDirections(model, selection, voxel);
 			return true;
 		}
@@ -69,24 +69,38 @@ void Select::goSixDirections(voxel::RawVolume::Sampler& model, voxel::RawVolume:
 	model.setPosition(pos);
 
 	model.moveNegativeY();
-	sixDirectionsExecute(model, selection, voxel);
+	selection.setPosition(model.getPosition());
+	if (selection.getVoxel().getMaterial() == voxel::VoxelType::Air) {
+		sixDirectionsExecute(model, selection, voxel);
+	}
 	model.setPosition(pos);
 
 	model.moveNegativeZ();
-	sixDirectionsExecute(model, selection, voxel);
+	selection.setPosition(model.getPosition());
+	if (selection.getVoxel().getMaterial() == voxel::VoxelType::Air) {
+		sixDirectionsExecute(model, selection, voxel);
+	}
 	model.setPosition(pos);
 
 	model.movePositiveX();
-	sixDirectionsExecute(model, selection, voxel);
+	selection.setPosition(model.getPosition());
+	if (selection.getVoxel().getMaterial() == voxel::VoxelType::Air) {
+		sixDirectionsExecute(model, selection, voxel);
+	}
 	model.setPosition(pos);
 
 	model.movePositiveY();
-	sixDirectionsExecute(model, selection, voxel);
+	selection.setPosition(model.getPosition());
+	if (selection.getVoxel().getMaterial() == voxel::VoxelType::Air) {
+		sixDirectionsExecute(model, selection, voxel);
+	}
 	model.setPosition(pos);
 
 	model.movePositiveZ();
-	sixDirectionsExecute(model, selection, voxel);
-	model.setPosition(pos);
+	selection.setPosition(model.getPosition());
+	if (selection.getVoxel().getMaterial() == voxel::VoxelType::Air) {
+		sixDirectionsExecute(model, selection, voxel);
+	}
 
 	selection.setPosition(pos);
 	model.setPosition(pos);

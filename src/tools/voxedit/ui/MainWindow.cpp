@@ -33,12 +33,12 @@ static const struct {
 	tb::TBID id;
 	Shape shape;
 } shapes[] = {
-	{TBIDC("shapecone"), Shape::Cone},
-	{TBIDC("shapesingle"), Shape::Single},
-	{TBIDC("shapesphere"), Shape::Sphere},
-	{TBIDC("shapecircle"), Shape::Circle},
-	{TBIDC("shapedome"), Shape::Dome},
-	{TBIDC("shapeplane"), Shape::Plane}
+	{TBIDC("shapecone"),	Shape::Cone},
+	{TBIDC("shapesingle"),	Shape::Single},
+	{TBIDC("shapesphere"),	Shape::Sphere},
+	{TBIDC("shapecircle"),	Shape::Circle},
+	{TBIDC("shapedome"),	Shape::Dome},
+	{TBIDC("shapeplane"),	Shape::Plane}
 };
 
 MainWindow::MainWindow(VoxEdit* tool) :

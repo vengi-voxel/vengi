@@ -69,13 +69,15 @@ void Camera::slerp(const glm::vec3& radians, float factor) {
 }
 
 bool Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
-	if (position == _pos) {
+	if (glm::all(glm::epsilonEqual(_pos, position, 0.0001f))) {
 		return false;
 	}
 	_quat = glm::quat_cast(glm::lookAt(_pos, position, upDirection));
 	_dirty |= DIRTY_ORIENTATION;
-	core_assert(!glm::any(glm::isnan(_quat)));
-	core_assert(!glm::any(glm::isinf(_quat)));
+	core_assert_msg(!glm::any(glm::isnan(_quat)), "upDirection(%f:%f:%f), position(%f:%f:%f), _pos(%f:%f:%f)",
+			upDirection.x, upDirection.y, upDirection.z, position.x, position.y, position.z, _pos.x, _pos.y, _pos.z);
+	core_assert_msg(!glm::any(glm::isinf(_quat)), "upDirection(%f:%f:%f), position(%f:%f:%f), _pos(%f:%f:%f)",
+			upDirection.x, upDirection.y, upDirection.z, position.x, position.y, position.z, _pos.x, _pos.y, _pos.z);
 	return true;
 }
 

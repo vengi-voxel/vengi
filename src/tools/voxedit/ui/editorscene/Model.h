@@ -14,6 +14,15 @@ namespace voxedit {
  */
 class Model {
 private:
+	enum class CursorShapeState {
+		/** just switched the shape type */
+		New,
+		/** clicked into the volume but didn't yet configure the cursor shape - e.g. modify the circle size */
+		Configure,
+		/** fully created the cursor volume, can be placed on click */
+		Created
+	};
+
 	int _initialized = 0;
 	voxel::Voxel _currentVoxel;
 	int _size = 32;
@@ -25,6 +34,7 @@ private:
 
 	SelectType _selectionType = SelectType::Single;
 	Shape _cursorShape = Shape::Single;
+	CursorShapeState _cursorShapeState = CursorShapeState::New;
 
 	bool actionRequiresExistingVoxel(Action action) const;
 public:
@@ -118,7 +128,11 @@ inline Shape Model::cursorShape() const {
 }
 
 inline void Model::setCursorShape(Shape type) {
+	if (_cursorShape == type) {
+		return;
+	}
 	_cursorShape = type;
+	_cursorShapeState = CursorShapeState::New;
 }
 
 inline void Model::setSelectionType(SelectType type) {
@@ -187,7 +201,8 @@ inline const frontend::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() co
 }
 
 inline bool Model::actionRequiresExistingVoxel(Action action) const {
-	return action == Action::CopyVoxel || action == Action::DeleteVoxel || action == Action::OverrideVoxel;
+	return action == Action::CopyVoxel || action == Action::DeleteVoxel
+			|| action == Action::OverrideVoxel || action == Action::SelectVoxels;
 }
 
 }
