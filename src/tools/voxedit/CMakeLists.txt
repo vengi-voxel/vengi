@@ -4,6 +4,7 @@ set(SRCS
 	ui/editorscene/Model.h ui/editorscene/Model.cpp
 	ui/editorscene/Controller.h ui/editorscene/Controller.cpp
 	ui/editorscene/Action.h
+	ui/editorscene/Shape.h
 	ui/editorscene/voxelizer.h
 	ui/editorscene/select/Edge.h ui/editorscene/select/Edge.cpp
 	ui/editorscene/select/LineHorizontal.h ui/editorscene/select/LineHorizontal.cpp

@@ -4,6 +4,43 @@
 #include "../VoxEdit.h"
 #include <assimp/Exporter.hpp>
 
+namespace voxedit {
+
+static const struct {
+	tb::TBID id;
+	Action action;
+	bool availableOnEmpty;
+} actions[] = {
+	{TBIDC("actionoverride"),	Action::OverrideVoxel, false},
+	{TBIDC("actiondelete"),		Action::DeleteVoxel, false},
+	{TBIDC("actioncopy"),		Action::CopyVoxel, false},
+	{TBIDC("actionplace"),		Action::PlaceVoxel, true},
+	{TBIDC("actionselect"),		Action::SelectVoxels, false}
+};
+
+static const struct {
+	tb::TBID id;
+	SelectType type;
+} selectionmodes[] = {
+	{TBIDC("actionselectsingle"),		SelectType::Single},
+	{TBIDC("actionselectsame"),			SelectType::Same},
+	{TBIDC("actionselecthorizontal"),	SelectType::LineHorizontal},
+	{TBIDC("actionselectvertical"),		SelectType::LineVertical},
+	{TBIDC("actionselectedge"),			SelectType::Edge}
+};
+
+static const struct {
+	tb::TBID id;
+	Shape shape;
+} shapes[] = {
+	{TBIDC("shapecone"), Shape::Cone},
+	{TBIDC("shapesingle"), Shape::Single},
+	{TBIDC("shapesphere"), Shape::Sphere},
+	{TBIDC("shapecircle"), Shape::Circle},
+	{TBIDC("shapedome"), Shape::Dome},
+	{TBIDC("shapeplane"), Shape::Plane}
+};
+
 MainWindow::MainWindow(VoxEdit* tool) :
 		ui::Window(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
@@ -115,29 +152,6 @@ void MainWindow::setQuadViewport(bool active) {
 	}
 }
 
-static const struct {
-	tb::TBID id;
-	Action action;
-	bool availableOnEmpty;
-} actions[] = {
-	{TBIDC("actionoverride"),	Action::OverrideVoxel, false},
-	{TBIDC("actiondelete"),		Action::DeleteVoxel, false},
-	{TBIDC("actioncopy"),		Action::CopyVoxel, false},
-	{TBIDC("actionplace"),		Action::PlaceVoxel, true},
-	{TBIDC("actionselect"),		Action::SelectVoxels, false}
-};
-
-static const struct {
-	tb::TBID id;
-	SelectType type;
-} selectionmodes[] = {
-	{TBIDC("actionselectsingle"),		SelectType::Single},
-	{TBIDC("actionselectsame"),			SelectType::Same},
-	{TBIDC("actionselecthorizontal"),	SelectType::LineHorizontal},
-	{TBIDC("actionselectvertical"),		SelectType::LineVertical},
-	{TBIDC("actionselectedge"),			SelectType::Edge}
-};
-
 bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
@@ -210,6 +224,12 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	for (uint32_t i = 0; i < SDL_arraysize(selectionmodes); ++i) {
 		if (ev.target->GetID() == selectionmodes[i].id) {
 			_scene->setSelectionType(selectionmodes[i].type);
+			return true;
+		}
+	}
+	for (uint32_t i = 0; i < SDL_arraysize(shapes); ++i) {
+		if (ev.target->GetID() == shapes[i].id) {
+			_scene->setCursorShape(shapes[i].shape);
 			return true;
 		}
 	}
@@ -413,4 +433,6 @@ bool MainWindow::createNew(bool force) {
 		return true;
 	}
 	return false;
+}
+
 }

@@ -12,6 +12,8 @@ class EditorScene;
 class VoxEdit;
 class PaletteWidget;
 
+namespace voxedit {
+
 /**
  * @brief Voxel editing tools panel
  */
@@ -61,3 +63,5 @@ public:
 	bool createNew(bool force);
 	void select(const glm::ivec3& pos);
 };
+
+}

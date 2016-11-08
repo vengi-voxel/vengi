@@ -8,6 +8,8 @@
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
 
+namespace voxedit {
+
 static const struct Selection {
 	SelectType type;
 	selections::Select& select;
@@ -270,4 +272,6 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 	extractSelectionVolume();
 
 	return true;
+}
+
 }

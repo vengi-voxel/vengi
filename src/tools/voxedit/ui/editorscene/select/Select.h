@@ -2,6 +2,7 @@
 
 #include "voxel/polyvox/RawVolume.h"
 
+namespace voxedit {
 namespace selections {
 
 #define SelectionSingleton(Class) static Class& get() { static Class instance; return instance; }
@@ -23,4 +24,5 @@ public:
 	virtual bool execute(const voxel::RawVolume *model, voxel::RawVolume *selection, const glm::ivec3& pos) const;
 };
 
+}
 }

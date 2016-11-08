@@ -13,8 +13,10 @@
 #include "ui/UIApp.h"
 #include "Model.h"
 
-static inline Model& m() {
-	static Model editorModel;
+using namespace voxedit;
+
+static inline voxedit::Model& m() {
+	static voxedit::Model editorModel;
 	return editorModel;
 }
 
@@ -63,6 +65,14 @@ void EditorScene::setInternalAction(Action action) {
 
 void EditorScene::setAction(Action action) {
 	m()._uiAction = action;
+}
+
+voxedit::Shape EditorScene::cursorShape() const {
+	return m().cursorShape();
+}
+
+void EditorScene::setCursorShape(voxedit::Shape type) {
+	m().setCursorShape(type);
 }
 
 void EditorScene::setSelectionType(SelectType type) {

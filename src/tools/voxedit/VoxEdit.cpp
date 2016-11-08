@@ -60,7 +60,7 @@ core::AppState VoxEdit::onInit() {
 
 	_meshPool->init();
 
-	_mainWindow = new MainWindow(this);
+	_mainWindow = new voxedit::MainWindow(this);
 	if (!_mainWindow->init()) {
 		Log::error("Failed to initialize the main window");
 		return core::AppState::Cleanup;

@@ -7,6 +7,7 @@
 #include "video/MeshPool.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "Action.h"
+#include "Shape.h"
 #include "SelectType.h"
 #include "Controller.h"
 
@@ -16,14 +17,14 @@ private:
 	frontend::Axis _axis;
 	video::FrameBuffer _frameBuffer;
 	tb::UIBitmapGL _bitmap;
-	Controller _controller;
+	voxedit::Controller _controller;
 	glm::ivec2 _mousePos;
 	std::string _cameraMode;
 
 	void render();
 
-	void setKeyAction(Action action);
-	void setInternalAction(Action action);
+	void setKeyAction(voxedit::Action action);
+	void setInternalAction(voxedit::Action action);
 public:
 	UIWIDGET_SUBCLASS(EditorScene, Super);
 
@@ -43,13 +44,16 @@ public:
 
 	void select(const glm::ivec3& pos);
 
-	SelectType selectionType() const;
-	void setSelectionType(SelectType type);
+	voxedit::SelectType selectionType() const;
+	void setSelectionType(voxedit::SelectType type);
+
+	voxedit::Shape cursorShape() const;
+	void setCursorShape(voxedit::Shape type);
 
 	void setActionExecutionDelay(long actionExecutionDelay);
 	long actionExecutionDelay() const;
 
-	void setAction(Action action);
+	void setAction(voxedit::Action action);
 
 	void setVoxelType(voxel::VoxelType type);
 

@@ -1,5 +1,6 @@
 #include "Select.h"
 
+namespace voxedit {
 namespace selections {
 
 Select::~Select() {
@@ -112,4 +113,5 @@ bool Select::execute(const voxel::RawVolume *model, voxel::RawVolume *selection,
 	return execute(m, s);
 }
 
+}
 }

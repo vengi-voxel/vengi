@@ -15,7 +15,7 @@ class VoxEdit: public ui::UIApp {
 private:
 	using Super = ui::UIApp;
 	core::VarPtr _lastDirectory;
-	MainWindow* _mainWindow;
+	voxedit::MainWindow* _mainWindow;
 	video::MeshPoolPtr _meshPool;
 
 public:

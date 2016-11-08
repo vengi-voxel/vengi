@@ -5,6 +5,9 @@
 #include "frontend/RawVolumeRenderer.h"
 #include "Action.h"
 #include "SelectType.h"
+#include "Shape.h"
+
+namespace voxedit {
 
 /**
  * The model is shared across all viewports
@@ -21,6 +24,7 @@ private:
 	int _mouseY = 0;
 
 	SelectType _selectionType = SelectType::Single;
+	Shape _cursorShape = Shape::Single;
 
 	bool actionRequiresExistingVoxel(Action action) const;
 public:
@@ -81,6 +85,9 @@ public:
 	void setSelectionType(SelectType type);
 	SelectType selectionType() const;
 
+	Shape cursorShape() const;
+	void setCursorShape(Shape type);
+
 public:
 	// TODO: maybe move into scene
 	bool _renderAxis = true;
@@ -105,6 +112,14 @@ public:
 	voxel::RawVolume* _cursorPositionVolume = nullptr;
 	voxel::RawVolume* _modelVolume = nullptr;
 };
+
+inline Shape Model::cursorShape() const {
+	return _cursorShape;
+}
+
+inline void Model::setCursorShape(Shape type) {
+	_cursorShape = type;
+}
 
 inline void Model::setSelectionType(SelectType type) {
 	_selectionType = type;
@@ -173,4 +188,6 @@ inline const frontend::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() co
 
 inline bool Model::actionRequiresExistingVoxel(Action action) const {
 	return action == Action::CopyVoxel || action == Action::DeleteVoxel || action == Action::OverrideVoxel;
+}
+
 }

@@ -5,6 +5,8 @@
 #include "video/Camera.h"
 #include <SDL.h>
 
+namespace voxedit {
+
 class Controller {
 public:
 	enum class SceneCameraMode : uint8_t {
@@ -73,4 +75,6 @@ inline float Controller::angle() const {
 
 inline void Controller::setAngle(float angle) {
 	_angle = angle;
+}
+
 }

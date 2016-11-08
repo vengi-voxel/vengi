@@ -2,6 +2,7 @@
 
 #include "Select.h"
 
+namespace voxedit {
 namespace selections {
 
 class LineHorizontal : public Select {
@@ -11,4 +12,5 @@ public:
 	bool execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const override;
 };
 
+}
 }

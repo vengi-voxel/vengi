@@ -1,6 +1,8 @@
 #include "Controller.h"
 #include "frontend/Movement.h"
 
+namespace voxedit {
+
 void Controller::resetCamera(const voxel::RawVolume* volume) {
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 
@@ -76,4 +78,6 @@ bool Controller::move(bool rotate, int x, int y) {
 	_mouseX = x;
 	_mouseY = y;
 	return true;
+}
+
 }

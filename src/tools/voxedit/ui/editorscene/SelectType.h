@@ -1,5 +1,7 @@
 #pragma once
 
+namespace voxedit {
+
 enum class SelectType {
 	Single,
 	Same,
@@ -9,3 +11,5 @@ enum class SelectType {
 
 	Max
 };
+
+}

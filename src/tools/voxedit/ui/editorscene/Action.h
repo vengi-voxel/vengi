@@ -1,5 +1,7 @@
 #pragma once
 
+namespace voxedit {
+
 enum class Action {
 	None,
 	PlaceVoxel,
@@ -8,3 +10,5 @@ enum class Action {
 	DeleteVoxel,
 	OverrideVoxel
 };
+
+}

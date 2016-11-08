@@ -1,5 +1,6 @@
 #include "Same.h"
 
+namespace voxedit {
 namespace selections {
 
 bool Same::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
@@ -15,4 +16,5 @@ bool Same::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& 
 	return true;
 }
 
+}
 }

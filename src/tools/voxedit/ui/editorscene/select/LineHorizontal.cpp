@@ -1,5 +1,6 @@
 #include "LineHorizontal.h"
 
+namespace voxedit {
 namespace selections {
 
 bool LineHorizontal::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
@@ -16,4 +17,5 @@ bool LineHorizontal::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume:
 	return true;
 }
 
+}
 }
