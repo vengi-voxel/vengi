@@ -11,7 +11,7 @@
 #include "voxel/model/QB2Format.h"
 #include "voxel/model/MeshExporter.h"
 #include "ui/UIApp.h"
-#include "EditorModel.h"
+#include "Model.h"
 
 static inline EditorModel& m() {
 	static EditorModel editorModel;

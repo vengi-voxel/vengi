@@ -1,4 +1,4 @@
-#include "EditorModel.h"
+#include "Model.h"
 #include "voxel/polyvox/VolumeMerger.h"
 #include "select/Single.h"
 

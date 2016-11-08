@@ -1,10 +1,10 @@
 project(voxedit)
 set(SRCS
-	ui/editorscene/EditorModel.h ui/editorscene/EditorModel.cpp
 	ui/editorscene/EditorScene.h ui/editorscene/EditorScene.cpp
+	ui/editorscene/Model.h ui/editorscene/Model.cpp
 	ui/editorscene/select/Select.h
 	ui/editorscene/select/Single.h
-	ui/editorscene/SelectionType.h
+	ui/editorscene/SelectType.h
 	ui/editorscene/Action.h
 	ui/editorscene/voxelizer.h
 

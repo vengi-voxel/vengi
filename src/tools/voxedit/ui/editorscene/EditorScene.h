@@ -6,8 +6,8 @@
 #include "frontend/Axis.h"
 #include "video/MeshPool.h"
 #include "Action.h"
-#include "SelectionType.h"
 #include "voxel/polyvox/RawVolume.h"
+#include "SelectType.h"
 
 class EditorScene: public ui::Widget {
 private:

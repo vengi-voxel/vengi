@@ -5,7 +5,7 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "frontend/RawVolumeRenderer.h"
 #include "Action.h"
-#include "SelectionType.h"
+#include "SelectType.h"
 
 class EditorModel {
 private:
