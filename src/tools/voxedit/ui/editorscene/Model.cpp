@@ -66,7 +66,6 @@ void Model::select(const glm::ivec3& pos) {
 }
 
 void Model::setMousePos(int x, int y) {
-	Log::trace("Set model mouse coordinates to %i:%i", x, y);
 	_mouseX = x;
 	_mouseY = y;
 }

@@ -62,11 +62,11 @@ void EditorScene::setAction(Action action) {
 }
 
 void EditorScene::setSelectionType(SelectType type) {
-	m()._selectionType = type;
+	m().setSelectionType(type);
 }
 
 SelectType EditorScene::selectionType() const {
-	return m()._selectionType;
+	return m().selectionType();
 }
 
 bool EditorScene::newModel(bool force) {

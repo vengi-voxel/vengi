@@ -20,6 +20,8 @@ private:
 	int _mouseX = 0;
 	int _mouseY = 0;
 
+	SelectType _selectionType = SelectType::Single;
+
 	bool actionRequiresExistingVoxel(Action action) const;
 public:
 	Model();
@@ -76,6 +78,9 @@ public:
 	void executeAction(bool mouseDown, long now);
 	void resetLastTrace();
 
+	void setSelectionType(SelectType type);
+	SelectType selectionType() const;
+
 public:
 	// TODO: maybe move into scene
 	bool _renderAxis = true;
@@ -83,7 +88,6 @@ public:
 	bool _extract = false;
 	bool _empty = true;
 	bool _selectionExtract = false;
-	SelectType _selectionType = SelectType::Single;
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
 	long _actionExecutionDelay = 5l;
@@ -101,6 +105,14 @@ public:
 	voxel::RawVolume* _cursorPositionVolume = nullptr;
 	voxel::RawVolume* _modelVolume = nullptr;
 };
+
+inline void Model::setSelectionType(SelectType type) {
+	_selectionType = type;
+}
+
+inline SelectType Model::selectionType() const {
+	return _selectionType;
+}
 
 inline void Model::setVoxelType(voxel::VoxelType type) {
 	Log::info("Change voxel to %i", std::enum_value(type));
