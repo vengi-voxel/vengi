@@ -102,14 +102,12 @@ void Model::executeAction(bool mouseDown, long now) {
 		extract = setVoxel(hitVoxel, _currentVoxel);
 	}
 
-	if (extract) {
-		resetLastTrace();
+	if (!extract) {
+		return;
 	}
-
-	if (extract) {
-		_extract = true;
-		_dirty = true;
-	}
+	resetLastTrace();
+	_extract = true;
+	_dirty = true;
 }
 
 void Model::resetLastTrace() {
