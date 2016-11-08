@@ -2,7 +2,7 @@
 
 namespace voxedit {
 
-enum class Action {
+enum class Action : uint8_t {
 	None,
 	PlaceVoxel,
 	CopyVoxel,

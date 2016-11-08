@@ -2,7 +2,7 @@
 
 namespace voxedit {
 
-enum class Shape {
+enum class Shape : uint8_t {
 	Single,
 	Cone,
 	Dome,

@@ -14,11 +14,11 @@ static const struct Selection {
 	SelectType type;
 	selections::Select& select;
 } selectionsArray[] = {
-	{SelectType::Single, selections::Single::get()},
-	{SelectType::Same, selections::Same::get()},
-	{SelectType::LineVertical, selections::LineVertical::get()},
-	{SelectType::LineHorizontal, selections::LineHorizontal::get()},
-	{SelectType::Edge, selections::Edge::get()}
+	{SelectType::Single,			selections::Single::get()},
+	{SelectType::Same,				selections::Same::get()},
+	{SelectType::LineVertical,		selections::LineVertical::get()},
+	{SelectType::LineHorizontal,	selections::LineHorizontal::get()},
+	{SelectType::Edge,				selections::Edge::get()}
 };
 static_assert(SDL_arraysize(selectionsArray) == std::enum_value(SelectType::Max), "Array size doesn't match selection modes");
 
@@ -133,6 +133,8 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	_empty = true;
 	_extract = true;
 	_dirty = false;
+	_lastPlacement = glm::ivec3(-1);
+	_result = voxel::PickResult();
 	resetLastTrace();
 }
 
@@ -140,14 +142,8 @@ bool Model::newVolume(bool force) {
 	if (dirty() && !force) {
 		return false;
 	}
-	_dirty = false;
-	_result = voxel::PickResult();
-	_extract = true;
-	resetLastTrace();
-
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size()));
 	setNewVolume(new voxel::RawVolume(region));
-
 	return true;
 }
 
@@ -167,9 +163,25 @@ const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 	return _modelVolume->getVoxel(pos);
 }
 
-bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) const {
-	Log::debug("Set voxel %i to v(%i:%i:%i)", std::enum_value(voxel.getMaterial()), pos.x, pos.y, pos.z);
-	return _modelVolume->setVoxel(pos, voxel);
+bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) const {
+	if (_lockedAxis & Axis::X) {
+		if (_lastPlacement.x >= 0) {
+			pos.x = _lastPlacement.x;
+		}
+	}
+	if (_lockedAxis & Axis::Y) {
+		if (_lastPlacement.y >= 0) {
+			pos.y = _lastPlacement.y;
+		}
+	}
+	if (_lockedAxis & Axis::Z) {
+		if (_lastPlacement.z >= 0) {
+			pos.z = _lastPlacement.z;
+		}
+	}
+	const bool placed = _modelVolume->setVoxel(pos, voxel);
+	_lastPlacement = pos;
+	return placed;
 }
 
 void Model::render(const video::Camera& camera) {

@@ -8,6 +8,7 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "Action.h"
 #include "Shape.h"
+#include "Axis.h"
 #include "SelectType.h"
 #include "Controller.h"
 
@@ -56,6 +57,9 @@ public:
 	void setAction(voxedit::Action action);
 
 	void setVoxelType(voxel::VoxelType type);
+
+	voxedit::Axis lockedAxis() const;
+	void setLockedAxis(voxedit::Axis axis, bool unlock);
 
 	float cameraSpeed() const;
 	void setCameraSpeed(float cameraSpeed);

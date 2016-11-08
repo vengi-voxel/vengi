@@ -75,6 +75,14 @@ void EditorScene::setCursorShape(voxedit::Shape type) {
 	m().setCursorShape(type);
 }
 
+voxedit::Axis EditorScene::lockedAxis() const {
+	return m().lockedAxis();
+}
+
+void EditorScene::setLockedAxis(voxedit::Axis axis, bool unlock) {
+	m().setLockedAxis(axis, unlock);
+}
+
 void EditorScene::setSelectionType(SelectType type) {
 	m().setSelectionType(type);
 }

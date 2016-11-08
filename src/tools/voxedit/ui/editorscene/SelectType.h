@@ -2,7 +2,7 @@
 
 namespace voxedit {
 
-enum class SelectType {
+enum class SelectType : uint8_t {
 	Single,
 	Same,
 	LineVertical,

@@ -259,6 +259,12 @@ bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		const int value = widget->GetValue();
 		setQuadViewport(value == 1);
 		return true;
+	} else if (ev.target->GetID() == TBIDC("lockx")) {
+		_scene->setLockedAxis(Axis::X, ev.target->GetValue() != 1);
+	} else if (ev.target->GetID() == TBIDC("locky")) {
+		_scene->setLockedAxis(Axis::Y, ev.target->GetValue() != 1);
+	} else if (ev.target->GetID() == TBIDC("lockz")) {
+		_scene->setLockedAxis(Axis::Z, ev.target->GetValue() != 1);
 	}
 
 	return false;

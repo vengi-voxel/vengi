@@ -6,6 +6,7 @@
 #include "Action.h"
 #include "SelectType.h"
 #include "Shape.h"
+#include "Axis.h"
 
 namespace voxedit {
 
@@ -35,6 +36,8 @@ private:
 	SelectType _selectionType = SelectType::Single;
 	Shape _cursorShape = Shape::Single;
 	CursorShapeState _cursorShapeState = CursorShapeState::New;
+	glm::ivec3 _lastPlacement;
+	Axis _lockedAxis = Axis::None;
 
 	bool actionRequiresExistingVoxel(Action action) const;
 public:
@@ -54,7 +57,7 @@ public:
 	bool newVolume(bool force);
 
 	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
-	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) const;
+	bool setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) const;
 	bool dirty() const;
 	bool empty() const;
 	float size() const;
@@ -98,6 +101,9 @@ public:
 	Shape cursorShape() const;
 	void setCursorShape(Shape type);
 
+	Axis lockedAxis() const;
+	void setLockedAxis(Axis axis, bool unlock);
+
 public:
 	// TODO: maybe move into scene
 	bool _renderAxis = true;
@@ -133,6 +139,18 @@ inline void Model::setCursorShape(Shape type) {
 	}
 	_cursorShape = type;
 	_cursorShapeState = CursorShapeState::New;
+}
+
+inline Axis Model::lockedAxis() const {
+	return _lockedAxis;
+}
+
+inline void Model::setLockedAxis(Axis axis, bool unlock) {
+	if (unlock) {
+		_lockedAxis &= ~axis;
+	} else {
+		_lockedAxis |= axis;
+	}
 }
 
 inline void Model::setSelectionType(SelectType type) {
