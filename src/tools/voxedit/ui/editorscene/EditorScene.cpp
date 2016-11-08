@@ -221,20 +221,19 @@ void EditorScene::OnResized(int oldw, int oldh) {
 	core_trace_scoped(EditorSceneOnResized);
 	Super::OnResized(oldw, oldh);
 	const tb::TBRect& rect = GetRect();
-	const glm::ivec2 pos(0, 0);
 	const glm::ivec2 dim(rect.w, rect.h);
-	_controller.onResize(pos, dim);
+	_controller.onResize(dim);
 	_frameBuffer.shutdown();
 	_frameBuffer.init(dim);
 	_bitmap.Init(dim.x, dim.y, _frameBuffer.texture());
-	m().onResize(pos, dim);
+	m().onResize(dim);
 }
 
 void EditorScene::OnPaint(const PaintProps &paintProps) {
 	core_trace_scoped(EditorSceneOnPaint);
 	Super::OnPaint(paintProps);
 	const glm::ivec2& dimension = _frameBuffer.dimension();
-	ui::UIRect rect = GetRect();
+	const ui::UIRect& rect = GetRect();
 	// the fbo is flipped in memory, we have to deal with it here
 	const tb::TBRect srcRect(0, dimension.y, rect.w, -rect.h);
 	tb::g_renderer->DrawBitmap(rect, srcRect, &_bitmap);

@@ -39,7 +39,7 @@ public:
 	void resetCamera(const voxel::RawVolume* volume);
 	void changeCameraRotationType(video::CameraRotationType type);
 
-	void onResize(const glm::ivec2& pos, const glm::ivec2& size);
+	void onResize(const glm::ivec2& size);
 
 	void update(long deltaFrame);
 

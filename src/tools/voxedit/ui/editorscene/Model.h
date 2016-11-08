@@ -25,7 +25,7 @@ public:
 	Model();
 	~Model();
 
-	void onResize(const glm::ivec2& pos, const glm::ivec2& size);
+	void onResize(const glm::ivec2& size);
 
 	const voxel::Voxel& currentVoxel() const;
 
