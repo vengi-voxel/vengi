@@ -207,6 +207,7 @@ TBLayout: distribution: gravity, axis: y
 						TBButton: @include: definitions>menubutton, text: Reset View, id: resetcamera
 							TBSkinImage: skin: voxedit-reset-camera
 						TBClickLabel: text: Quad view
+							TBSkinImage: skin: voxedit-quadview
 							TBCheckBox: id: toggleviewport
 						TBButton: @include: definitions>menubutton, text: Quit, id: quit
 							TBSkinImage: skin: voxedit-quit

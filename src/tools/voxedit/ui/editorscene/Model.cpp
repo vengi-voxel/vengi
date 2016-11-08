@@ -163,18 +163,18 @@ const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 	return _modelVolume->getVoxel(pos);
 }
 
-bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) const {
-	if (_lockedAxis & Axis::X) {
+bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) {
+	if ((_lockedAxis & Axis::X) != Axis::None) {
 		if (_lastPlacement.x >= 0) {
 			pos.x = _lastPlacement.x;
 		}
 	}
-	if (_lockedAxis & Axis::Y) {
+	if ((_lockedAxis & Axis::Y) != Axis::None) {
 		if (_lastPlacement.y >= 0) {
 			pos.y = _lastPlacement.y;
 		}
 	}
-	if (_lockedAxis & Axis::Z) {
+	if ((_lockedAxis & Axis::Z) != Axis::None) {
 		if (_lastPlacement.z >= 0) {
 			pos.z = _lastPlacement.z;
 		}

@@ -47,6 +47,14 @@ elements
 		bitmap voxedit-export.png
 	voxedit-selection
 		bitmap voxedit-selection.png
+	voxedit-axis-x
+		bitmap voxedit-axis-x.png
+	voxedit-axis-y
+		bitmap voxedit-axis-y.png
+	voxedit-axis-z
+		bitmap voxedit-axis-z.png
+	voxedit-quadview
+		bitmap voxedit-quadview.png
 
 	grid-button
 		bitmap voxedit-show-grid.png
