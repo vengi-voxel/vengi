@@ -239,18 +239,12 @@ void Model::trace(bool skipCursor, const video::Camera& camera) {
 				_cursorPositionVolume->clear();
 				const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
 				const glm::ivec3& cursorPos = _result.previousVoxel - center;
-				Log::info("1 center(%i:%i:%i), cursorPos(%i:%i:%i)", center.x, center.y, center.z, cursorPos.x, cursorPos.y, cursorPos.z);
-				if (voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, cursorPos) <= 0) {
-					Log::error("Failed to merge the cursor volume");
-				}
+				voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, cursorPos);
 			} else if (_result.didHit) {
 				_cursorPositionVolume->clear();
 				const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
 				const glm::ivec3& cursorPos = _result.previousVoxel - center;
-				Log::info("2 center(%i:%i:%i), cursorPos(%i:%i:%i)", center.x, center.y, center.z, cursorPos.x, cursorPos.y, cursorPos.z);
-				if (voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, cursorPos) <= 0) {
-					Log::error("Failed to merge the cursor volume");
-				}
+				voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, cursorPos);
 				_cursorPositionVolume->setVoxel(_result.hitVoxel, currentVoxel());
 			}
 		}
