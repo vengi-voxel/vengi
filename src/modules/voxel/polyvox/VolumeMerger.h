@@ -71,9 +71,10 @@ int mergeRawVolumes(RawVolume* destination, const RawVolume* source, const glm::
 				if (!mergeCondition(voxel)) {
 					continue;
 				}
-				dstSampler.setPosition(x, y, z);
-				dstSampler.setVoxel(voxel);
-				++cnt;
+				if (dstSampler.setPosition(x, y, z)) {
+					dstSampler.setVoxel(voxel);
+					++cnt;
+				}
 			}
 		}
 	}
