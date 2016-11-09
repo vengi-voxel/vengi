@@ -126,7 +126,7 @@ bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
 				continue;
 			}
 			const uint16_t flipped = (modifier & ~mod);
-			if (flipped & (KMOD_CTRL | KMOD_ALT | KMOD_SHIFT) != 0) {
+			if ((flipped & (KMOD_CTRL | KMOD_ALT | KMOD_SHIFT)) != 0) {
 				continue;
 			}
 		}
