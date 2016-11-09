@@ -71,9 +71,10 @@ core::AppState VoxEdit::onInit() {
 	}
 
 	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
+		const std::string& dir = _lastDirectory->strVal().empty() ? "." : _lastDirectory->strVal();
 		std::vector<io::Filesystem::DirEntry> entries;
 		const std::string filter = str + "*";
-		core::App::getInstance()->filesystem()->list(_lastDirectory->strVal(), entries, filter);
+		core::App::getInstance()->filesystem()->list(dir, entries, filter);
 		int i = 0;
 		for (const io::Filesystem::DirEntry& entry : entries) {
 			if (entry.type == io::Filesystem::DirEntry::Type::file) {
