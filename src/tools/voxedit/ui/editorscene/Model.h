@@ -162,14 +162,6 @@ inline Shape Model::cursorShape() const {
 	return _cursorShape;
 }
 
-inline void Model::setCursorShape(Shape type) {
-	if (_cursorShape == type) {
-		return;
-	}
-	_cursorShape = type;
-	_cursorShapeState = CursorShapeState::New;
-}
-
 inline Axis Model::lockedAxis() const {
 	return _lockedAxis;
 }

@@ -130,6 +130,9 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	delete _cursorPositionVolume;
 	_cursorPositionVolume = new voxel::RawVolume(region);
 
+	delete _cursorVolume;
+	_cursorVolume = new voxel::RawVolume(region);
+
 	delete _rawVolumeSelectionRenderer.setVolume(new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(new voxel::RawVolume(region));
 
@@ -246,9 +249,6 @@ void Model::init() {
 	if (_initialized++ > 0) {
 		return;
 	}
-	// TODO: shapes
-	_cursorVolume = new voxel::RawVolume(voxel::Region(0, 1));
-	_cursorVolume->setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Grass1));
 	_rawVolumeRenderer.init();
 	_rawVolumeSelectionRenderer.init();
 }
@@ -338,6 +338,18 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 	extractSelectionVolume();
 
 	return true;
+}
+
+void Model::setCursorShape(Shape type) {
+	if (_cursorShape == type) {
+		return;
+	}
+	_cursorShape = type;
+	_cursorShapeState = CursorShapeState::New;
+	if (_cursorShape == Shape::Single) {
+		_cursorVolume->setVoxel(_cursorVolume->getEnclosingRegion().getCentre(), _currentVoxel);
+		_cursorShapeState = CursorShapeState::Created;
+	}
 }
 
 }
