@@ -60,6 +60,7 @@ private:
 	void rotatez();
 	void toggleviewport();
 	void togglefreelook();
+	void unselectall();
 	bool voxelize(std::string_view file);
 	bool save(std::string_view file);
 	bool load(std::string_view file);

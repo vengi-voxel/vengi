@@ -104,6 +104,7 @@ core::AppState VoxEdit::onInit() {
 	COMMAND_FILE(load, "Load a scene from the given file");
 	COMMAND_FILE(voxelize, "Load a scene from the given file");
 
+	COMMAND_MAINWINDOW(unselectall, "Unselect every voxel");
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
 	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");
 	COMMAND_MAINWINDOW(rotatez, "Rotate the volume around the z axis");
@@ -164,6 +165,9 @@ bool VoxEdit::onKeyPress(int32_t key, int16_t modifier) {
 		}
 	}
 	_rotateMode = key == SDLK_r;
+	if (key == SDLK_a) {
+		_mainWindow->unselectall();
+	}
 	return false;
 }
 

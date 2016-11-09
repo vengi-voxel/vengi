@@ -69,9 +69,15 @@ bool Model::load(std::string_view file) {
 void Model::select(const glm::ivec3& pos) {
 	voxel::RawVolume* selectionVolume = _rawVolumeSelectionRenderer.volume();
 	const Selection& mode = selectionsArray[std::enum_value(_selectionType)];
+	// TODO: unselect
 	if (mode.select.execute(_modelVolume, selectionVolume, pos)) {
 		_selectionExtract = true;
 	}
+}
+
+void Model::unselectAll() {
+	_rawVolumeSelectionRenderer.volume()->clear();
+	_selectionExtract = true;
 }
 
 void Model::setMousePos(int x, int y) {

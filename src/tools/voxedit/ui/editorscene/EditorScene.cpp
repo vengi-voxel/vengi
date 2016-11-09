@@ -192,6 +192,10 @@ void EditorScene::setVoxelType(voxel::VoxelType type) {
 	m().setVoxelType(type);
 }
 
+void EditorScene::unselectAll() {
+	m().unselectAll();
+}
+
 void EditorScene::select(const glm::ivec3& pos) {
 	m().select(pos);
 }

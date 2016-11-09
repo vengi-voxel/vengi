@@ -134,6 +134,10 @@ void MainWindow::toggleviewport() {
 	setQuadViewport(!vis);
 }
 
+void MainWindow::unselectall() {
+	_scene->unselectAll();
+}
+
 void MainWindow::togglefreelook() {
 	if (_freeLook == nullptr) {
 		return;

@@ -45,6 +45,7 @@ public:
 
 	void rotate(int angleX, int angleY, int angleZ);
 
+	void unselectAll();
 	void select(const glm::ivec3& pos);
 
 	voxedit::SelectType selectionType() const;

@@ -110,6 +110,7 @@ public:
 
 	bool trace(bool skipCursor, const video::Camera& camera);
 	void select(const glm::ivec3& pos);
+	void unselectAll();
 	void executeAction(bool mouseDown, long now);
 	void resetLastTrace();
 
