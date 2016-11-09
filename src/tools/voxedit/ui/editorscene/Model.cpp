@@ -196,6 +196,18 @@ bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) {
 	return placed;
 }
 
+void Model::copy() {
+	// TODO: copy from selection volume into cursor volume
+}
+
+void Model::paste() {
+	// TODO: insert cursor volume into model volume
+}
+
+void Model::cut() {
+	// TODO: delete selected volume from model volume
+}
+
 void Model::undo() {
 	if (!canUndo()) {
 		return;

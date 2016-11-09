@@ -348,6 +348,12 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			undo();
 		} else if (ev.ref_id == TBIDC("redo")) {
 			redo();
+		} else if (ev.ref_id == TBIDC("copy")) {
+			copy();
+		} else if (ev.ref_id == TBIDC("paste")) {
+			paste();
+		} else if (ev.ref_id == TBIDC("cut")) {
+			cut();
 		}
 	}
 
@@ -357,6 +363,18 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 void MainWindow::OnDie() {
 	Super::OnDie();
 	_app->requestQuit();
+}
+
+void MainWindow::copy() {
+	_scene->copy();
+}
+
+void MainWindow::paste() {
+	_scene->paste();
+}
+
+void MainWindow::cut() {
+	_scene->cut();
 }
 
 void MainWindow::undo() {

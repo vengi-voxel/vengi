@@ -54,6 +54,9 @@ public:
 	void OnProcess() override;
 	void OnDie() override;
 
+	void copy();
+	void paste();
+	void cut();
 	void undo();
 	void redo();
 	void rotateX();

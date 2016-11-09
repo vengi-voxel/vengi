@@ -83,7 +83,7 @@ core::AppState VoxEdit::onInit() {
 
 	core::Command::registerCommand("toggleviewport", [this] (const core::CmdArgs& args) {
 		this->_mainWindow->toggleQuadViewport();
-	}).setArgumentCompleter(fileCompleter).setHelp("Toggle quad view on/off");
+	}).setHelp("Toggle quad view on/off");
 
 	core::Command::registerCommand("rotate", [this] (const core::CmdArgs& args) {
 		const int size = args.size();
@@ -97,7 +97,7 @@ core::AppState VoxEdit::onInit() {
 		} else {
 			Log::info("Unknown axis given - valid options are x, y and z");
 		}
-	}).setArgumentCompleter(fileCompleter).setHelp("Rotate the volume");
+	}).setHelp("Rotate the volume");
 
 	core::Command::registerCommand("export", [this] (const core::CmdArgs& args) {
 		std::string_view file = args.empty() ? "" : args[0];
@@ -106,13 +106,20 @@ core::AppState VoxEdit::onInit() {
 		}
 	}).setArgumentCompleter(fileCompleter).setHelp("Export the current state to the given file");
 
-	core::Command::registerCommand("undo", [this] (const core::CmdArgs& args) {
-		_mainWindow->undo();
-	}).setArgumentCompleter(fileCompleter).setHelp("Undo your last step");
+	core::Command::registerCommand("undo", [this] (const core::CmdArgs& args) {_mainWindow->undo();})
+		.setHelp("Undo your last step");
 
-	core::Command::registerCommand("redo", [this] (const core::CmdArgs& args) {
-		_mainWindow->redo();
-	}).setArgumentCompleter(fileCompleter).setHelp("Redo your last step");
+	core::Command::registerCommand("redo", [this] (const core::CmdArgs& args) {_mainWindow->redo();})
+		.setHelp("Redo your last step");
+
+	core::Command::registerCommand("copy", [this] (const core::CmdArgs& args) {_mainWindow->copy();})
+		.setHelp("Copy selection into cursor");
+
+	core::Command::registerCommand("paste", [this] (const core::CmdArgs& args) {_mainWindow->paste();})
+		.setHelp("Insert cursor volume into model volume");
+
+	core::Command::registerCommand("cut", [this] (const core::CmdArgs& args) {_mainWindow->cut();})
+		.setHelp("Delete selected volume from model volume");
 
 	core::Command::registerCommand("load", [this] (const core::CmdArgs& args) {
 		std::string_view file = args.empty() ? "" : args[0];

@@ -139,6 +139,18 @@ bool EditorScene::isEmpty() const {
 	return m().empty();
 }
 
+void EditorScene::copy() {
+	return m().copy();
+}
+
+void EditorScene::paste() {
+	return m().paste();
+}
+
+void EditorScene::cut() {
+	return m().cut();
+}
+
 void EditorScene::undo() {
 	return m().undo();
 }

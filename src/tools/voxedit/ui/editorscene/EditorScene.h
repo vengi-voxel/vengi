@@ -75,6 +75,9 @@ public:
 	bool renderGrid() const;
 	void setRenderGrid(bool renderGrid);
 
+	void copy();
+	void paste();
+	void cut();
 	void undo();
 	void redo();
 	bool canUndo() const;

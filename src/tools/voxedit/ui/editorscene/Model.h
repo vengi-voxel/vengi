@@ -58,6 +58,10 @@ public:
 	void init();
 	void shutdown();
 
+	void copy();
+	void paste();
+	void cut();
+
 	void undo();
 	void redo();
 	bool canUndo() const;
