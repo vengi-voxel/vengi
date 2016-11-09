@@ -188,7 +188,7 @@ bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) {
 }
 
 void Model::copy() {
-	// TODO: copy from selection volume into cursor volume
+	voxel::mergeRawVolumes(_cursorVolume, _rawVolumeSelectionRenderer.volume(), glm::ivec3(0));
 }
 
 void Model::paste() {
