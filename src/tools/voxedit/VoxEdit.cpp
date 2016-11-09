@@ -10,12 +10,9 @@
 
 // TODO: voxelizer via assimp
 // TODO: cursor volume shape generators
-// TODO: voxel cursor tools
 // TODO: undo/redo
 // TODO: it is possible to place a voxel outside the maxs region
-// TODO: rotate whole volume
 // TODO: extrude
-// TODO: layers
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init("engine", "voxedit");
