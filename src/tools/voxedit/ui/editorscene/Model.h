@@ -43,6 +43,7 @@ private:
 	CursorShapeState _cursorShapeState = CursorShapeState::New;
 	glm::ivec3 _lastPlacement;
 	Axis _lockedAxis = Axis::None;
+	glm::ivec3 _cursorPos;
 
 	bool actionRequiresExistingVoxel(Action action) const;
 	void clearUndoStates();

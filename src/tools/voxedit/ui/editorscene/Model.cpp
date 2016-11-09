@@ -201,14 +201,11 @@ void Model::copy() {
 }
 
 void Model::paste() {
-	if (_result.didHit) {
-		voxel::mergeRawVolumes(_modelVolume, _cursorVolume, _result.hitVoxel);
-	} else if (_result.validPreviousVoxel) {
-		voxel::mergeRawVolumes(_modelVolume, _cursorVolume, _result.previousVoxel);
-	}
+	voxel::mergeRawVolumes(_modelVolume, _cursorVolume, _cursorPos);
 }
 
 void Model::cut() {
+	voxel::mergeRawVolumes(_cursorVolume, _rawVolumeSelectionRenderer.volume(), glm::ivec3(0));
 	// TODO: delete selected volume from model volume
 }
 
@@ -325,12 +322,14 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 				const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
 				const glm::ivec3& cursorPos = _result.previousVoxel - center;
 				voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, cursorPos);
+				_cursorPos = cursorPos;
 			} else if (_result.didHit) {
 				_cursorPositionVolume->clear();
 				const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
-				const glm::ivec3& cursorPos = _result.previousVoxel - center;
+				const glm::ivec3& cursorPos = _result.hitVoxel - center;
 				voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, cursorPos);
 				_cursorPositionVolume->setVoxel(_result.hitVoxel, currentVoxel());
+				_cursorPos = cursorPos;
 			}
 		}
 
