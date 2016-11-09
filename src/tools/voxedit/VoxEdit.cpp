@@ -84,20 +84,6 @@ core::AppState VoxEdit::onInit() {
 		return i;
 	};
 
-	core::Command::registerCommand("rotate", [this] (const core::CmdArgs& args) {
-		const int size = args.size();
-		const char axis = size < 1 ? 'x' : args[0][0];
-		if (axis == 'x') {
-			this->_mainWindow->rotateX();
-		} else if (axis == 'y') {
-			this->_mainWindow->rotateY();
-		} else if (axis == 'z') {
-			this->_mainWindow->rotateZ();
-		} else {
-			Log::info("Unknown axis given - valid options are x, y and z");
-		}
-	}).setHelp("Rotate the volume");
-
 	core::Command::registerCommand("select", [this] (const core::CmdArgs& args) {
 		if (args.size() != 3) {
 			Log::info("Expected to get x, y and z coordinates");
@@ -117,6 +103,9 @@ core::AppState VoxEdit::onInit() {
 	COMMAND_FILE(load, "Load a scene from the given file");
 	COMMAND_FILE(voxelize, "Load a scene from the given file");
 
+	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
+	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");
+	COMMAND_MAINWINDOW(rotatez, "Rotate the volume around the z axis");
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
 	COMMAND_MAINWINDOW(redo, "Redo your last step");
 	COMMAND_MAINWINDOW(copy, "Copy selection into cursor");
@@ -165,11 +154,11 @@ bool VoxEdit::onKeyPress(int32_t key, int16_t modifier) {
 	}
 	if (_rotateMode) {
 		if (key == SDLK_x) {
-			_mainWindow->rotateX();
+			_mainWindow->rotatex();
 		} else if (key == SDLK_y) {
-			_mainWindow->rotateY();
+			_mainWindow->rotatey();
 		} else if (key == SDLK_z) {
-			_mainWindow->rotateZ();
+			_mainWindow->rotatez();
 		}
 	}
 	_rotateMode = key == SDLK_r;

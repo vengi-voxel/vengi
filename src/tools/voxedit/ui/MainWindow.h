@@ -59,9 +59,9 @@ public:
 	void cut();
 	void undo();
 	void redo();
-	void rotateX();
-	void rotateY();
-	void rotateZ();
+	void rotatex();
+	void rotatey();
+	void rotatez();
 	void toggleviewport();
 	void setQuadViewport(bool active);
 	bool voxelize(std::string_view file);

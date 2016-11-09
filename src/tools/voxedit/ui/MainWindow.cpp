@@ -120,15 +120,15 @@ bool MainWindow::init() {
 	return true;
 }
 
-void MainWindow::rotateX() {
+void MainWindow::rotatex() {
 	_scene->rotate(90, 0, 0);
 }
 
-void MainWindow::rotateY() {
+void MainWindow::rotatey() {
 	_scene->rotate(0, 90, 0);
 }
 
-void MainWindow::rotateZ() {
+void MainWindow::rotatez() {
 	_scene->rotate(0, 0, 90);
 }
 
@@ -215,13 +215,13 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		undo();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("rotatex")) {
-		rotateX();
+		rotatex();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("rotatey")) {
-		rotateY();
+		rotatey();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("rotatez")) {
-		rotateZ();
+		rotatez();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);
