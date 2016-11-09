@@ -8,6 +8,16 @@
 #include "core/Command.h"
 #include "video/GLFunc.h"
 
+#define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
+#define COMMAND_FILE(command, help) \
+	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
+		std::string_view file = args.empty() ? "" : args[0]; \
+		if (!command##File(file)) { \
+			Log::error("Failed to " #command " to file %s", file.data()); \
+		} \
+	}).setArgumentCompleter(fileCompleter).setHelp(help)
+#define COMMAND_CALL(command, call, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {call;}).setHelp(help)
+
 // TODO: voxelizer via assimp
 // TODO: cursor volume shape generators
 // TODO: it is possible to place a voxel outside the maxs region
@@ -74,17 +84,6 @@ core::AppState VoxEdit::onInit() {
 		return i;
 	};
 
-	core::Command::registerCommand("save", [this] (const core::CmdArgs& args) {
-		std::string_view file = args.empty() ? "" : args[0];
-		if (!saveFile(file)) {
-			Log::error("Failed to save to file %s", file.data());
-		}
-	}).setArgumentCompleter(fileCompleter).setHelp("Save the current state to the given file");
-
-	core::Command::registerCommand("toggleviewport", [this] (const core::CmdArgs& args) {
-		this->_mainWindow->toggleQuadViewport();
-	}).setHelp("Toggle quad view on/off");
-
 	core::Command::registerCommand("rotate", [this] (const core::CmdArgs& args) {
 		const int size = args.size();
 		const char axis = size < 1 ? 'x' : args[0][0];
@@ -99,48 +98,9 @@ core::AppState VoxEdit::onInit() {
 		}
 	}).setHelp("Rotate the volume");
 
-	core::Command::registerCommand("export", [this] (const core::CmdArgs& args) {
-		std::string_view file = args.empty() ? "" : args[0];
-		if (!exportFile(file)) {
-			Log::error("Failed to export to file %s", file.data());
-		}
-	}).setArgumentCompleter(fileCompleter).setHelp("Export the current state to the given file");
-
-	core::Command::registerCommand("undo", [this] (const core::CmdArgs& args) {_mainWindow->undo();})
-		.setHelp("Undo your last step");
-
-	core::Command::registerCommand("redo", [this] (const core::CmdArgs& args) {_mainWindow->redo();})
-		.setHelp("Redo your last step");
-
-	core::Command::registerCommand("copy", [this] (const core::CmdArgs& args) {_mainWindow->copy();})
-		.setHelp("Copy selection into cursor");
-
-	core::Command::registerCommand("paste", [this] (const core::CmdArgs& args) {_mainWindow->paste();})
-		.setHelp("Insert cursor volume into model volume");
-
-	core::Command::registerCommand("cut", [this] (const core::CmdArgs& args) {_mainWindow->cut();})
-		.setHelp("Delete selected volume from model volume");
-
-	core::Command::registerCommand("load", [this] (const core::CmdArgs& args) {
-		std::string_view file = args.empty() ? "" : args[0];
-		if (!loadFile(file)) {
-			Log::error("Failed to load file %s", file.data());
-		}
-	}).setArgumentCompleter(fileCompleter).setHelp("Load a scene from the given file");
-
-	core::Command::registerCommand("voxelize", [this] (const core::CmdArgs& args) {
-		std::string_view file = args.empty() ? "" : args[0];
-		if (!voxelizeFile(file)) {
-			Log::error("Failed to voxelize file %s", file.data());
-		}
-	}).setArgumentCompleter(fileCompleter).setHelp("Load a scene from the given file");
-
-	core::Command::registerCommand("new", [this] (const core::CmdArgs& args) {
-		newFile(false);
-	}).setHelp("Create a new scene");
-
 	core::Command::registerCommand("select", [this] (const core::CmdArgs& args) {
 		if (args.size() != 3) {
+			Log::info("Expected to get x, y and z coordinates");
 			return;
 		}
 		const int x = core::string::toInt(args[0]);
@@ -148,7 +108,21 @@ core::AppState VoxEdit::onInit() {
 		const int z = core::string::toInt(args[2]);
 		const glm::ivec3 pos(x, y, z);
 		select(pos);
-	}).setHelp("Select voxels");
+	}).setHelp("Select voxels from the given position");
+
+	COMMAND_CALL("new", newFile(), "Create a new scene");
+
+	COMMAND_FILE(save, "Save the current state to the given file");
+	COMMAND_FILE(export, "Export the current state to the given file");
+	COMMAND_FILE(load, "Load a scene from the given file");
+	COMMAND_FILE(voxelize, "Load a scene from the given file");
+
+	COMMAND_MAINWINDOW(undo, "Undo your last step");
+	COMMAND_MAINWINDOW(redo, "Redo your last step");
+	COMMAND_MAINWINDOW(copy, "Copy selection into cursor");
+	COMMAND_MAINWINDOW(paste, "Insert cursor volume into model volume");
+	COMMAND_MAINWINDOW(cut, "Delete selected volume from model volume");
+	COMMAND_MAINWINDOW(toggleviewport, "Toggle quad view on/off");
 
 	newFile(true);
 

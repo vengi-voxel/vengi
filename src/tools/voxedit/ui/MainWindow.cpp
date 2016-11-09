@@ -132,7 +132,7 @@ void MainWindow::rotateZ() {
 	_scene->rotate(0, 0, 90);
 }
 
-void MainWindow::toggleQuadViewport() {
+void MainWindow::toggleviewport() {
 	bool vis = false;
 	if (_sceneTop != nullptr) {
 		vis = _sceneTop->GetVisibilityCombined();

@@ -62,7 +62,7 @@ public:
 	void rotateX();
 	void rotateY();
 	void rotateZ();
-	void toggleQuadViewport();
+	void toggleviewport();
 	void setQuadViewport(bool active);
 	bool voxelize(std::string_view file);
 	bool save(std::string_view file);
