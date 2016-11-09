@@ -12,6 +12,13 @@ definitions
 	selectbutton
 		group-id selectgroup
 
+cameramode
+	TBSelectDropdown: gravity: right top, @include: definitions>menubutton, id: cammode
+		items
+			item: text: "FILL", id: 0
+			item: text: "POINTS", id: 1
+			item: text: "LINES", id: 2
+
 TBLayout: distribution: gravity, axis: y
 	TBContainer: gravity: all, id: maincontainer
 		TBLayout: distribution: gravity, axis: y
@@ -32,11 +39,6 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-redo
 						TBLayout: gravity: left right
 							TBWidget
-						TBSelectDropdown: gravity: left top, @include: definitions>menubutton, id: cammode
-							items
-								item: text: "FILL", id: 0
-								item: text: "POINTS", id: 1
-								item: text: "LINES", id: 2
 			TBLayout: distribution: gravity, position: top
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBSection: value: 1, text: "Palette"
@@ -75,7 +77,7 @@ TBLayout: distribution: gravity, axis: y
 									@include definitions>toolbutton
 							TBClickLabel
 								text Select
-								TBSkinImage: skin: voxedit-select
+								TBSkinImage: skin: voxedit-selection
 								TBRadioButton
 									id actionselect
 									@include definitions>toolbutton
@@ -120,7 +122,7 @@ TBLayout: distribution: gravity, axis: y
 									id shapecircle
 									@include definitions>cursorbutton
 
-					TBSection: value: 1, text: "Locks"
+					TBSection: value: 1, text: "Lock axes"
 						TBLayout: position: left top, axis: x
 							TBClickLabel
 								TBSkinImage: skin: voxedit-axis-x
@@ -132,7 +134,7 @@ TBLayout: distribution: gravity, axis: y
 								TBSkinImage: skin: voxedit-axis-z
 								TBCheckBox: id: lockz
 
-					TBSection: value: 1, text: "Rotate"
+					TBSection: value: 1, text: "Rotate on axis"
 						TBLayout: position: left top, axis: x
 							TBButton: id: rotatex, @include: definitions>menubutton
 								TBSkinImage: skin: voxedit-axis-x
@@ -148,10 +150,14 @@ TBLayout: distribution: gravity, axis: y
 						TBLayout: distribution: gravity, axis: y
 							TBLayout: distribution: gravity, axis: x
 								EditorScene: id: editorscene, gravity: left right top bottom, skin: container, camera: free
+									@include cameramode
 								EditorScene: id: editorscenetop, gravity: left right top bottom, skin: container, camera: top
+									@include cameramode
 							TBLayout: distribution: gravity, axis: x
 								EditorScene: id: editorsceneleft, gravity: left right top bottom, skin: container, camera: left
+									@include cameramode
 								EditorScene: id: editorscenefront, gravity: left right top bottom, skin: container, camera: front
+									@include cameramode
 
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBSection: value: 1, text: "Select"

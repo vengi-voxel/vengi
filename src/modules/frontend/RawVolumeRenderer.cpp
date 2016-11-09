@@ -234,7 +234,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
 
 	if (_renderWireframe && camera.polygonMode() == video::PolygonMode::Solid) {
-		video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(-2.0f));
+		video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(2.0f));
 		video::ScopedLineWidth lineWidth(2.0f, true);
 		shaderSetUniformIf(_worldShader, setUniformf, "u_debug_color", 0.0);
 		glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);

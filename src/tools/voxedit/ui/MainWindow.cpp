@@ -260,21 +260,26 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("cammode")) {
 		tb::TBWidget *widget = ev.target;
-		const int value = widget->GetValue();
-		video::PolygonMode mode = video::PolygonMode::Solid;
-		switch (value) {
-		case 1:
-			mode = video::PolygonMode::Points;
-			break;
-		case 2:
-			mode = video::PolygonMode::WireFrame;
-			break;
-		default:
-		case 0:
-			break;
+		tb::TBWidget *parent = widget->GetParent();
+		tb::TB_TYPE_ID typeId = GetTypeId<EditorScene>();
+		if (parent->IsOfTypeId(typeId)) {
+			const int value = widget->GetValue();
+			video::PolygonMode mode = video::PolygonMode::Solid;
+			switch (value) {
+			case 1:
+				mode = video::PolygonMode::Points;
+				break;
+			case 2:
+				mode = video::PolygonMode::WireFrame;
+				break;
+			default:
+			case 0:
+				break;
+			}
+			((EditorScene*)parent)->camera().setPolygonMode(mode);
+			return true;
 		}
-		_scene->camera().setPolygonMode(mode);
-		return true;
+		return false;
 	} else if (ev.target->GetID() == TBIDC("toggleviewport")) {
 		tb::TBWidget *widget = ev.target;
 		const int value = widget->GetValue();
