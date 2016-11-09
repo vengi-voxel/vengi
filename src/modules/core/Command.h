@@ -52,6 +52,14 @@ public:
 
 	static bool execute(const std::string& command, const CmdArgs& args);
 
+	static Command* getCommand(const std::string& name) {
+		auto i = _cmds.find(name);
+		if (i == _cmds.end()) {
+			return nullptr;
+		}
+		return &i->second;
+	}
+
 	template<class Functor>
 	static void visit(Functor&& func) {
 		CommandMap commandList;
