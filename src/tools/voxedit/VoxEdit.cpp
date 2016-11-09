@@ -91,10 +91,16 @@ core::AppState VoxEdit::onInit() {
 
 	core::Command::registerCommand("rotate", [this] (const core::CmdArgs& args) {
 		const int size = args.size();
-		const int angleX = size < 1 ? 0 : core::string::toInt(args[0]);
-		const int angleY = size < 2 ? 0 : core::string::toInt(args[1]);
-		const int angleZ = size < 3 ? 0 : core::string::toInt(args[2]);
-		this->_mainWindow->rotate(angleX, angleY, angleZ);
+		const char axis = size < 1 ? 'x' : args[0][0];
+		if (axis == 'x') {
+			this->_mainWindow->rotateX();
+		} else if (axis == 'y') {
+			this->_mainWindow->rotateY();
+		} else if (axis == 'z') {
+			this->_mainWindow->rotateZ();
+		} else {
+			Log::info("Unknown axis given - valid options are x, y and z");
+		}
 	}).setArgumentCompleter(fileCompleter).setHelp("Rotate the volume");
 
 	core::Command::registerCommand("export", [this] (const core::CmdArgs& args) {
@@ -172,6 +178,16 @@ bool VoxEdit::onKeyPress(int32_t key, int16_t modifier) {
 		toggleRelativeMouseMode();
 		return true;
 	}
+	if (_rotateMode) {
+		if (key == SDLK_x) {
+			_mainWindow->rotateX();
+		} else if (key == SDLK_y) {
+			_mainWindow->rotateY();
+		} else if (key == SDLK_z) {
+			_mainWindow->rotateZ();
+		}
+	}
+	_rotateMode = key == SDLK_r;
 	return false;
 }
 

@@ -54,7 +54,9 @@ public:
 	void OnProcess() override;
 	void OnDie() override;
 
-	void rotate(int angleX, int angleY, int angleZ);
+	void rotateX();
+	void rotateY();
+	void rotateZ();
 	void toggleQuadViewport();
 	void setQuadViewport(bool active);
 	bool voxelize(std::string_view file);

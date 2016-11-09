@@ -120,8 +120,16 @@ bool MainWindow::init() {
 	return true;
 }
 
-void MainWindow::rotate(int angleX, int angleY, int angleZ) {
-	_scene->rotate(angleX, angleY, angleZ);
+void MainWindow::rotateX() {
+	_scene->rotate(90, 0, 0);
+}
+
+void MainWindow::rotateY() {
+	_scene->rotate(0, 90, 0);
+}
+
+void MainWindow::rotateZ() {
+	_scene->rotate(0, 0, 90);
 }
 
 void MainWindow::toggleQuadViewport() {
@@ -201,13 +209,13 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		save("");
 		return true;
 	} else if (ev.target->GetID() == TBIDC("rotatex")) {
-		rotate(90, 0, 0);
+		rotateX();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("rotatey")) {
-		rotate(0, 90, 0);
+		rotateY();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("rotatez")) {
-		rotate(0, 0, 90);
+		rotateZ();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);
