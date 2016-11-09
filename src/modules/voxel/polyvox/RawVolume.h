@@ -33,7 +33,7 @@ public:
 		inline bool isCurrentPositionValid() const;
 
 		inline void setPosition(const glm::ivec3& pos);
-		void setPosition(int32_t x, int32_t y, int32_t z);
+		bool setPosition(int32_t x, int32_t y, int32_t z);
 		inline bool setVoxel(const Voxel& voxel);
 		glm::ivec3 getPosition() const;
 

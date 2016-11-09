@@ -154,7 +154,7 @@ RawVolume::Sampler::Sampler(const RawVolume* volume) :
 RawVolume::Sampler::~Sampler() {
 }
 
-void RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
+bool RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	_xPosInVolume = xPos;
 	_yPosInVolume = yPos;
 	_zPosInVolume = zPos;
@@ -172,9 +172,10 @@ void RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 		const int32_t uVoxelIndex = iLocalXPos + iLocalYPos * this->_volume->getWidth() + iLocalZPos * this->_volume->getWidth() * this->_volume->getHeight();
 
 		_currentVoxel = this->_volume->_data + uVoxelIndex;
-	} else {
-		_currentVoxel = nullptr;
+		return true;
 	}
+	_currentVoxel = nullptr;
+	return false;
 }
 
 void RawVolume::Sampler::movePositiveX() {
