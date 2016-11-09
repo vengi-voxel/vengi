@@ -406,31 +406,41 @@ void Console::autoComplete() {
 	const std::string& lastCmd = allCommands.empty() ? "" : allCommands.back();
 	const std::vector<std::string> strings = core::Tokenizer(lastCmd, " ").tokens();
 	std::string baseSearchString = "";
-	if (strings.size() == 1) {
+	bool parameter = _commandLine[_cursorPos] == ' ' || strings.size() > 1;
+	if (parameter) {
+		const core::Command* cmd = core::Command::getCommand(strings.front());
+		if (cmd != nullptr) {
+			if (strings.back() == strings.front()) {
+				cmd->complete("", matches);
+			} else {
+				cmd->complete(strings.back(), matches);
+			}
+		}
+	} else {
 		// try to complete the already existing command
 		baseSearchString = strings.back();
-	}
-	core::Command::visitSorted([&] (const core::Command& cmd) {
-		if (strings.empty() || strings.size() == 1) {
-			// match the command name itself
-			if (core::string::matches(baseSearchString + "*", cmd.name())) {
-				matches.push_back(cmd.name());
+		core::Command::visitSorted([&] (const core::Command& cmd) {
+			if (strings.empty() || strings.size() == 1) {
+				// match the command name itself
+				if (core::string::matches(baseSearchString + "*", cmd.name())) {
+					matches.push_back(cmd.name());
+				}
+			} else {
+				// match parameters for the command
+				cmd.complete(strings.back(), matches);
 			}
-		} else {
-			// match parameters for the command
-			cmd.complete(strings.back(), matches);
+		});
+		if (!strings.empty()) {
+			// try to complete the last string as it can be used as a parameter to the command
+			baseSearchString = strings.back();
 		}
-	});
-	if (!strings.empty()) {
-		// try to complete the last string as it can be used as a parameter to the command
-		baseSearchString = strings.back();
+		baseSearchString += '*';
+		core::Var::visitSorted([&] (const core::VarPtr& var) {
+			if (core::string::matches(baseSearchString, var->name())) {
+				matches.push_back(var->name());
+			}
+		});
 	}
-	baseSearchString += '*';
-	core::Var::visitSorted([&] (const core::VarPtr& var) {
-		if (core::string::matches(baseSearchString, var->name())) {
-			matches.push_back(var->name());
-		}
-	});
 
 	if (matches.empty()) {
 		return;
