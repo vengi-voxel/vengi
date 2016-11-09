@@ -150,7 +150,7 @@ bool Model::newVolume(bool force) {
 
 void Model::rotate(int angleX, int angleY, int angleZ) {
 	const voxel::RawVolume* model = modelVolume();
-	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ));
+	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), false);
 	setNewVolume(newVolume);
 }
 

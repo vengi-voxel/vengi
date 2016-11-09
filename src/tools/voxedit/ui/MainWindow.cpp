@@ -200,6 +200,15 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("save")) {
 		save("");
 		return true;
+	} else if (ev.target->GetID() == TBIDC("rotatex")) {
+		rotate(90, 0, 0);
+		return true;
+	} else if (ev.target->GetID() == TBIDC("rotatey")) {
+		rotate(0, 90, 0);
+		return true;
+	} else if (ev.target->GetID() == TBIDC("rotatez")) {
+		rotate(0, 0, 90);
+		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);
 		return true;

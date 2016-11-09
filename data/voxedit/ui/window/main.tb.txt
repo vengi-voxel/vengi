@@ -121,16 +121,22 @@ TBLayout: distribution: gravity, axis: y
 									@include definitions>cursorbutton
 
 					TBSection: value: 1, text: "Locks"
-						TBLayout: position: left top, axis: y
-							TBClickLabel: text: axis
+						TBLayout: position: left top, axis: x
+							TBCheckBox: id: lockx
 								TBSkinImage: skin: voxedit-axis-x
-								TBCheckBox: id: lockx
-							TBClickLabel: text: axis
+							TBCheckBox: id: locky
 								TBSkinImage: skin: voxedit-axis-y
-								TBCheckBox: id: locky
-							TBClickLabel: text: axis
+							TBCheckBox: id: lockz
 								TBSkinImage: skin: voxedit-axis-z
-								TBCheckBox: id: lockz
+
+					TBSection: value: 1, text: "Rotate"
+						TBLayout: position: left top, axis: x
+							TBButton: id: rotatex, @include: definitions>menubutton
+								TBSkinImage: skin: voxedit-axis-x
+							TBButton: id: rotatey, @include: definitions>menubutton
+								TBSkinImage: skin: voxedit-axis-y
+							TBButton: id: rotatez, @include: definitions>menubutton
+								TBSkinImage: skin: voxedit-axis-z
 
 					TBWidget: gravity: top bottom
 

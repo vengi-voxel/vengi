@@ -35,14 +35,8 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, bool i
 		const glm::ivec4& newMaxs = rot * maxs;
 		const glm::ivec3 vertices[] = { newMins.xyz(), newMaxs.xyz() };
 		core::AABB<int> aabb = core::AABB<int>::construct(vertices, SDL_arraysize(vertices));
-		Log::info("1 angles(%s)", glm::to_string(angles).c_str());
-		Log::info("1 newins(%s)/newmaxs(%s)", glm::to_string(newMins).c_str(), glm::to_string(newMaxs).c_str());
-		Log::info("1 srcregion(%s/%s)", glm::to_string(srcRegion.getLowerCorner()).c_str(), glm::to_string(srcRegion.getUpperCorner()).c_str());
-		Log::info("1 destregion(%s/%s)", glm::to_string(aabb.getLowerCorner()).c_str(), glm::to_string(aabb.getUpperCorner()).c_str());
-		Log::info("3 center(%s)", glm::to_string(aabb.getCenter()).c_str());
 		aabb.shift(-aabb.getLowerCorner());
 		destRegion = voxel::Region(aabb.getLowerCorner(), aabb.getUpperCorner());
-		Log::info("2 destregion(%s/%s)", glm::to_string(aabb.getLowerCorner()).c_str(), glm::to_string(aabb.getUpperCorner()).c_str());
 	} else {
 		destRegion = srcRegion;
 	}
@@ -67,7 +61,6 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, bool i
 					continue;
 				}
 				const glm::ivec3& volumePos = newPos.xyz();
-				Log::info("pos(%i:%i:%i), volumePos(%i:%i:%i)", pos.x, pos.y, pos.z, volumePos.x, volumePos.y, volumePos.z);
 				destination->setVoxel(volumePos, v);
 			}
 		}
