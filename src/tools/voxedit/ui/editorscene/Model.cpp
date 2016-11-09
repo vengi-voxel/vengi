@@ -175,6 +175,9 @@ const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 }
 
 bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) {
+	if (getVoxel(pos) == voxel) {
+		return false;
+	}
 	if ((_lockedAxis & Axis::X) != Axis::None) {
 		if (_lastPlacement.x >= 0) {
 			pos.x = _lastPlacement.x;
