@@ -112,6 +112,7 @@ core::AppState VoxEdit::onInit() {
 	COMMAND_MAINWINDOW(paste, "Insert cursor volume into model volume");
 	COMMAND_MAINWINDOW(cut, "Delete selected volume from model volume");
 	COMMAND_MAINWINDOW(toggleviewport, "Toggle quad view on/off");
+	COMMAND_MAINWINDOW(togglefreelook, "Toggle free look on/off");
 
 	newFile(true);
 

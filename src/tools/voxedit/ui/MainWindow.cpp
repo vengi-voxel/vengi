@@ -72,6 +72,8 @@ bool MainWindow::init() {
 	tb::TBWidget* toggleViewPort = getWidget("toggleviewport");
 	if (toggleViewPort != nullptr) {
 		toggleViewPort->SetState(tb::WIDGET_STATE_DISABLED, !_fourViewAvailable);
+		const int value = toggleViewPort->GetValue();
+		setQuadViewport(value == 1);
 	}
 	_exportButton = getWidget("export");
 	_saveButton = getWidget("save");
@@ -85,21 +87,6 @@ bool MainWindow::init() {
 	if (_showAABB == nullptr || _showGrid == nullptr || _showAxis == nullptr || _freeLook == nullptr) {
 		Log::error("Could not load all required widgets");
 		return false;
-	}
-
-	tb::TBWidget *viewPortToggleWidget = getWidget("toggleviewport");
-	if (viewPortToggleWidget != nullptr) {
-		const int value = viewPortToggleWidget->GetValue();
-		const tb::WIDGET_VISIBILITY vis = value ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
-		if (_sceneTop != nullptr) {
-			_sceneTop->SetVisibility(vis);
-		}
-		if (_sceneLeft != nullptr) {
-			_sceneLeft->SetVisibility(vis);
-		}
-		if (_sceneFront != nullptr) {
-			_sceneFront->SetVisibility(vis);
-		}
 	}
 
 	_showAABB->SetValue(_scene->renderAABB() ? 1 : 0);
@@ -145,6 +132,20 @@ void MainWindow::toggleviewport() {
 	}
 
 	setQuadViewport(!vis);
+}
+
+void MainWindow::togglefreelook() {
+	if (_freeLook == nullptr) {
+		return;
+	}
+	const int v = _freeLook->GetValue();
+	_freeLook->SetValue(v == 0 ? 1 : 0);
+	video::Camera& c = _scene->camera();
+	if (v == 0) {
+		c.setRotationType(video::CameraRotationType::Eye);
+	} else {
+		c.setRotationType(video::CameraRotationType::Target);
+	}
 }
 
 void MainWindow::setQuadViewport(bool active) {
@@ -233,13 +234,7 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		_scene->setRenderAABB(ev.target->GetValue() == 1);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionfreelook")) {
-		const int v = ev.target->GetValue();
-		video::Camera& c = _scene->camera();
-		if (v) {
-			c.setRotationType(video::CameraRotationType::Eye);
-		} else {
-			c.setRotationType(video::CameraRotationType::Target);
-		}
+		togglefreelook();
 		return true;
 	}
 	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
