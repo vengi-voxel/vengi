@@ -252,4 +252,16 @@ inline bool Model::actionRequiresExistingVoxel(Action action) const {
 			|| action == Action::OverrideVoxel || action == Action::SelectVoxels;
 }
 
+inline bool Model::dirty() const {
+	return _dirty;
+}
+
+inline float Model::size() const {
+	return _size;
+}
+
+inline bool Model::empty() const {
+	return _empty;
+}
+
 }

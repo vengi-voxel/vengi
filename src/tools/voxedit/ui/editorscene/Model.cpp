@@ -158,18 +158,6 @@ void Model::rotate(int angleX, int angleY, int angleZ) {
 	setNewVolume(newVolume);
 }
 
-bool Model::dirty() const {
-	return _dirty;
-}
-
-float Model::size() const {
-	return _size;
-}
-
-bool Model::empty() const {
-	return _empty;
-}
-
 const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 	return _modelVolume->getVoxel(pos);
 }
