@@ -143,7 +143,9 @@ bool RawVolumeRenderer::extract() {
 
 void RawVolumeRenderer::render(const video::Camera& camera) {
 	core_trace_scoped(RawVolumeRendererRender);
-	if (_rawVolume == nullptr) {
+
+	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(uint32_t));
+	if (nIndices == 0) {
 		return;
 	}
 
@@ -188,11 +190,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		}
 	} else if (_renderAABB) {
 		_shapeRenderer.render(_aabbMeshIndex, camera);
-	}
-
-	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(uint32_t));
-	if (nIndices == 0) {
-		return;
 	}
 
 	_sunLight.update(0.0f, camera);
