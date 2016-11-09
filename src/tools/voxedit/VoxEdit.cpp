@@ -89,6 +89,14 @@ core::AppState VoxEdit::onInit() {
 		this->_mainWindow->toggleQuadViewport();
 	}).setArgumentCompleter(fileCompleter).setHelp("Toggle quad view on/off");
 
+	core::Command::registerCommand("rotate", [this] (const core::CmdArgs& args) {
+		const int size = args.size();
+		const int angleX = size < 1 ? 0 : core::string::toInt(args[0]);
+		const int angleY = size < 2 ? 0 : core::string::toInt(args[1]);
+		const int angleZ = size < 3 ? 0 : core::string::toInt(args[2]);
+		this->_mainWindow->rotate(angleX, angleY, angleZ);
+	}).setArgumentCompleter(fileCompleter).setHelp("Rotate the volume");
+
 	core::Command::registerCommand("export", [this] (const core::CmdArgs& args) {
 		std::string_view file = args.empty() ? "" : args[0];
 		if (!exportFile(file)) {

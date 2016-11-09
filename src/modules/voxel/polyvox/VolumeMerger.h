@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "RawVolume.h"
@@ -46,7 +50,7 @@ int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume* source
 }
 
 /**
- * This version can deal with source volumes that are smaller or equal sized to the destination volume
+ * @note This version can deal with source volumes that are smaller or equal sized to the destination volume
  */
 template<typename MergeCondition = MergeConditionSkipVoxelType>
 int mergeRawVolumes(RawVolume* destination, const RawVolume* source, const glm::ivec3& sourceOffset, MergeCondition mergeCondition = MergeCondition()) {

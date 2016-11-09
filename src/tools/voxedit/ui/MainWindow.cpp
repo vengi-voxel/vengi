@@ -120,6 +120,10 @@ bool MainWindow::init() {
 	return true;
 }
 
+void MainWindow::rotate(int angleX, int angleY, int angleZ) {
+	_scene->rotate(angleX, angleY, angleZ);
+}
+
 void MainWindow::toggleQuadViewport() {
 	bool vis = false;
 	if (_sceneTop != nullptr) {

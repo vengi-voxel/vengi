@@ -43,6 +43,8 @@ public:
 	bool exportModel(std::string_view file);
 	bool newModel(bool force);
 
+	void rotate(int angleX, int angleY, int angleZ);
+
 	void select(const glm::ivec3& pos);
 
 	voxedit::SelectType selectionType() const;

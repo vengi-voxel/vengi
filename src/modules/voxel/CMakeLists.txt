@@ -36,6 +36,7 @@ set(SRCS
 	polyvox/Vertex.h
 	polyvox/Voxel.h
 	polyvox/VolumeMerger.h
+	polyvox/VolumeRotator.h polyvox/VolumeRotator.cpp
 )
 set(LIB voxel)
 add_library(${LIB} ${SRCS})
@@ -56,5 +57,6 @@ gtest_suite_files(tests
 	tests/QB2FormatTest.cpp
 	tests/MeshExporterTest.cpp
 	tests/VolumeMergerTest.cpp
+	tests/VolumeRotatorTest.cpp
 )
 gtest_suite_deps(tests ${LIB})

@@ -91,6 +91,10 @@ SelectType EditorScene::selectionType() const {
 	return m().selectionType();
 }
 
+void EditorScene::rotate(int angleX, int angleY, int angleZ) {
+	m().rotate(angleX, angleY, angleZ);
+}
+
 bool EditorScene::newModel(bool force) {
 	core_trace_scoped(EditorSceneNewModel);
 	if (!m().newVolume(force)) {

@@ -1,12 +1,13 @@
 #include "Model.h"
 #include "voxel/polyvox/VolumeMerger.h"
+#include "voxel/polyvox/VolumeRotator.h"
+#include "voxel/model/VoxFormat.h"
+#include "voxel/model/QB2Format.h"
 #include "select/Edge.h"
 #include "select/LineHorizontal.h"
 #include "select/LineVertical.h"
 #include "select/Same.h"
 #include "select/Single.h"
-#include "voxel/model/VoxFormat.h"
-#include "voxel/model/QB2Format.h"
 
 namespace voxedit {
 
@@ -145,6 +146,12 @@ bool Model::newVolume(bool force) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size()));
 	setNewVolume(new voxel::RawVolume(region));
 	return true;
+}
+
+void Model::rotate(int angleX, int angleY, int angleZ) {
+	const voxel::RawVolume* model = modelVolume();
+	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ));
+	setNewVolume(newVolume);
 }
 
 bool Model::dirty() const {

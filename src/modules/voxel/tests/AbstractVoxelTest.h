@@ -47,6 +47,10 @@ protected:
 		return true;
 	}
 
+	inline std::string str(const voxel::Region& region) const {
+		return "mins(" + glm::to_string(region.getLowerCorner()) + "), maxs(" + glm::to_string(region.getUpperCorner()) + ")";
+	}
+
 	Pager _pager;
 	PagedVolume _volData;
 	GeneratorContext _ctx;

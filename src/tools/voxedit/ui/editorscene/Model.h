@@ -64,6 +64,8 @@ public:
 
 	void setNewVolume(voxel::RawVolume* volume);
 
+	void rotate(int angleX, int angleY, int angleZ);
+
 	void render(const video::Camera& camera);
 	void renderSelection(const video::Camera& camera);
 
