@@ -122,12 +122,15 @@ TBLayout: distribution: gravity, axis: y
 
 					TBSection: value: 1, text: "Locks"
 						TBLayout: position: left top, axis: x
-							TBCheckBox: id: lockx
+							TBClickLabel
 								TBSkinImage: skin: voxedit-axis-x
-							TBCheckBox: id: locky
+								TBCheckBox: id: lockx
+							TBClickLabel
 								TBSkinImage: skin: voxedit-axis-y
-							TBCheckBox: id: lockz
+								TBCheckBox: id: locky
+							TBClickLabel
 								TBSkinImage: skin: voxedit-axis-z
+								TBCheckBox: id: lockz
 
 					TBSection: value: 1, text: "Rotate"
 						TBLayout: position: left top, axis: x
