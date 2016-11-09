@@ -34,7 +34,7 @@ protected:
 	}
 };
 
-TEST_F(VolumeRotatorTest, testRotateY90Steps) {
+TEST_F(VolumeRotatorTest, DISABLED_testRotateY90Steps) {
 	rotateY90Steps(0);
 	rotateY90Steps(90);
 	rotateY90Steps(180);
@@ -43,7 +43,7 @@ TEST_F(VolumeRotatorTest, testRotateY90Steps) {
 	rotateY90Steps(720);
 }
 
-TEST_F(VolumeRotatorTest, testRotate45Y) {
+TEST_F(VolumeRotatorTest, DISABLED_testRotate45Y) {
 	const voxel::Region region(0, 10);
 	voxel::RawVolume smallVolume(region);
 	glm::ivec3 pos = region.getCentre();
