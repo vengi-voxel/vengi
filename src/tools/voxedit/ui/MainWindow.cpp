@@ -262,24 +262,18 @@ bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		tb::TBWidget *widget = ev.target;
 		tb::TBWidget *parent = widget->GetParent();
 		tb::TB_TYPE_ID typeId = GetTypeId<EditorScene>();
-		if (parent->IsOfTypeId(typeId)) {
-			const int value = widget->GetValue();
-			video::PolygonMode mode = video::PolygonMode::Solid;
-			switch (value) {
-			case 1:
-				mode = video::PolygonMode::Points;
-				break;
-			case 2:
-				mode = video::PolygonMode::WireFrame;
-				break;
-			default:
-			case 0:
-				break;
-			}
-			((EditorScene*)parent)->camera().setPolygonMode(mode);
-			return true;
+		if (!parent->IsOfTypeId(typeId)) {
+			return false;
 		}
-		return false;
+		const int value = widget->GetValue();
+		video::PolygonMode mode = video::PolygonMode::Solid;
+		if (value == 1) {
+			mode = video::PolygonMode::Points;
+		} else if (value == 2) {
+			mode = video::PolygonMode::WireFrame;
+		}
+		((EditorScene*)parent)->camera().setPolygonMode(mode);
+		return true;
 	} else if (ev.target->GetID() == TBIDC("toggleviewport")) {
 		tb::TBWidget *widget = ev.target;
 		const int value = widget->GetValue();
@@ -287,10 +281,13 @@ bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (ev.target->GetID() == TBIDC("lockx")) {
 		_scene->setLockedAxis(Axis::X, ev.target->GetValue() != 1);
+		return true;
 	} else if (ev.target->GetID() == TBIDC("locky")) {
 		_scene->setLockedAxis(Axis::Y, ev.target->GetValue() != 1);
+		return true;
 	} else if (ev.target->GetID() == TBIDC("lockz")) {
 		_scene->setLockedAxis(Axis::Z, ev.target->GetValue() != 1);
+		return true;
 	}
 
 	return false;
