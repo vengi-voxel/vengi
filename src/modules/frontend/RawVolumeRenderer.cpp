@@ -144,19 +144,6 @@ bool RawVolumeRenderer::extract() {
 void RawVolumeRenderer::render(const video::Camera& camera) {
 	core_trace_scoped(RawVolumeRendererRender);
 
-	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(uint32_t));
-	if (nIndices == 0) {
-		return;
-	}
-
-	// Enable depth test
-	glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LEQUAL);
-	// Cull triangles whose normal is not towards the camera
-	glEnable(GL_CULL_FACE);
-	glDepthMask(GL_TRUE);
-
 	if (_renderGrid) {
 		const voxel::Region& region = _rawVolume->getEnclosingRegion();
 		const glm::vec3& center = glm::vec3(region.getCentre());
@@ -192,7 +179,20 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
 
+	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(uint32_t));
+	if (nIndices == 0) {
+		return;
+	}
+
 	_sunLight.update(0.0f, camera);
+
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LEQUAL);
+	// Cull triangles whose normal is not towards the camera
+	glEnable(GL_CULL_FACE);
+	glDepthMask(GL_TRUE);
 
 	_whiteTexture->bind(0);
 
