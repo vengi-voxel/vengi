@@ -2,7 +2,6 @@
 #include "core/Common.h"
 #include "core/Var.h"
 #include "video/GLDebug.h"
-#include "video/ScopedViewPort.h"
 #include "core/Color.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedScissor.h"
