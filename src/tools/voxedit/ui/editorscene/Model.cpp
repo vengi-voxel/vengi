@@ -195,7 +195,11 @@ void Model::copy() {
 }
 
 void Model::paste() {
-	// TODO: insert cursor volume into model volume
+	if (_result.didHit) {
+		voxel::mergeRawVolumes(_modelVolume, _cursorVolume, _result.hitVoxel);
+	} else if (_result.validPreviousVoxel) {
+		voxel::mergeRawVolumes(_modelVolume, _cursorVolume, _result.previousVoxel);
+	}
 }
 
 void Model::cut() {
