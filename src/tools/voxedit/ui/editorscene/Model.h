@@ -26,8 +26,8 @@ private:
 	};
 
 	std::vector<voxel::RawVolume*> _undoStates;
-	int _undoIndex = 0;
-	static constexpr int _maxUndoStates = 16;
+	uint8_t _undoIndex = 0u;
+	static constexpr int _maxUndoStates = 64;
 
 	int _initialized = 0;
 	voxel::Voxel _currentVoxel;
@@ -45,9 +45,8 @@ private:
 	Axis _lockedAxis = Axis::None;
 
 	bool actionRequiresExistingVoxel(Action action) const;
-
+	void clearUndoStates();
 	void markUndo();
-
 public:
 	Model();
 	~Model();
@@ -149,6 +148,9 @@ inline bool Model::canUndo() const {
 }
 
 inline bool Model::canRedo() const {
+	if (_undoStates.empty()) {
+		return false;
+	}
 	return _undoIndex < _undoStates.size() - 1;
 }
 

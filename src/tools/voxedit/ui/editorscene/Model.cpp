@@ -61,6 +61,7 @@ bool Model::load(std::string_view file) {
 		return false;
 	}
 	Log::info("Loaded model file %s", file.data());
+	clearUndoStates();
 	setNewVolume(newVolume);
 	return true;
 }
@@ -145,6 +146,7 @@ bool Model::newVolume(bool force) {
 		return false;
 	}
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size()));
+	clearUndoStates();
 	setNewVolume(new voxel::RawVolume(region));
 	return true;
 }
@@ -152,6 +154,7 @@ bool Model::newVolume(bool force) {
 void Model::rotate(int angleX, int angleY, int angleZ) {
 	const voxel::RawVolume* model = modelVolume();
 	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), false);
+	markUndo();
 	setNewVolume(newVolume);
 }
 
@@ -187,11 +190,9 @@ bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) {
 			pos.z = _lastPlacement.z;
 		}
 	}
+	markUndo();
 	const bool placed = _modelVolume->setVoxel(pos, voxel);
 	_lastPlacement = pos;
-	if (placed) {
-		markUndo();
-	}
 	return placed;
 }
 
@@ -261,10 +262,15 @@ void Model::shutdown() {
 	_modelVolume = nullptr;
 	delete _rawVolumeRenderer.shutdown();
 	delete _rawVolumeSelectionRenderer.shutdown();
+	clearUndoStates();
+}
+
+void Model::clearUndoStates() {
 	for (voxel::RawVolume* vol : _undoStates) {
 		delete vol;
 	}
 	_undoStates.clear();
+	_undoIndex = 0u;
 }
 
 bool Model::extractSelectionVolume() {

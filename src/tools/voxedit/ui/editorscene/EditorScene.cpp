@@ -96,10 +96,7 @@ void EditorScene::rotate(int angleX, int angleY, int angleZ) {
 
 bool EditorScene::newModel(bool force) {
 	core_trace_scoped(EditorSceneNewModel);
-	if (!m().newVolume(force)) {
-		return false;
-	}
-	return true;
+	return m().newVolume(force);
 }
 
 bool EditorScene::saveModel(std::string_view file) {
