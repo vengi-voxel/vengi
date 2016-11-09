@@ -18,6 +18,7 @@ namespace voxedit {
  * @brief Voxel editing tools panel
  */
 class MainWindow: public ui::Window {
+	friend class ::VoxEdit;
 private:
 	EditorScene* _scene;
 	EditorScene* _sceneTop = nullptr;
@@ -41,19 +42,14 @@ private:
 	std::string _exportFilter;
 	bool _fourViewAvailable = false;
 
+	void setQuadViewport(bool active);
+
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
 	void resetCameras();
 	void quit();
-public:
-	MainWindow(VoxEdit* tool);
 
-	bool init();
-
-	bool OnEvent(const tb::TBWidgetEvent &ev) override;
-	void OnProcess() override;
-	void OnDie() override;
-
+	// commands
 	void copy();
 	void paste();
 	void cut();
@@ -63,13 +59,20 @@ public:
 	void rotatey();
 	void rotatez();
 	void toggleviewport();
-	void setQuadViewport(bool active);
 	bool voxelize(std::string_view file);
 	bool save(std::string_view file);
 	bool load(std::string_view file);
 	bool exportFile(std::string_view file);
 	bool createNew(bool force);
 	void select(const glm::ivec3& pos);
+
+public:
+	MainWindow(VoxEdit* tool);
+	bool init();
+
+	bool OnEvent(const tb::TBWidgetEvent &ev) override;
+	void OnProcess() override;
+	void OnDie() override;
 };
 
 }
