@@ -7,11 +7,17 @@
 namespace voxel {
 
 RawVolume::RawVolume(const Region& regValid) :
-		_region(regValid), _borderVoxel() {
-	this->setBorderValue(Voxel());
-
+		_region(regValid) {
+	setBorderValue(Voxel());
 	//Create a volume of the right size.
 	initialise(regValid);
+}
+
+RawVolume::RawVolume(const RawVolume* copy) :
+		_region(copy->getEnclosingRegion()) {
+	setBorderValue(copy->getBorderValue());
+	_data = new Voxel[getWidth() * getHeight() * getDepth()];
+	memcpy(_data, copy->_data, calculateSizeInBytes());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

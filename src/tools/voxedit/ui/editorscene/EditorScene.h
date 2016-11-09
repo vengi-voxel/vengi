@@ -75,6 +75,11 @@ public:
 	bool renderGrid() const;
 	void setRenderGrid(bool renderGrid);
 
+	void undo();
+	void redo();
+	bool canUndo() const;
+	bool canRedo() const;
+
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;

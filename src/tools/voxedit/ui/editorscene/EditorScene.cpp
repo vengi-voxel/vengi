@@ -142,6 +142,22 @@ bool EditorScene::isEmpty() const {
 	return m().empty();
 }
 
+void EditorScene::undo() {
+	return m().undo();
+}
+
+void EditorScene::redo() {
+	return m().redo();
+}
+
+bool EditorScene::canUndo() const {
+	return m().canUndo();
+}
+
+bool EditorScene::canRedo() const {
+	return m().canRedo();
+}
+
 bool EditorScene::exportModel(std::string_view file) {
 	core_trace_scoped(EditorSceneExportModel);
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));

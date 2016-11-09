@@ -7,6 +7,7 @@
 #include "SelectType.h"
 #include "Shape.h"
 #include "Axis.h"
+#include <vector>
 
 namespace voxedit {
 
@@ -24,6 +25,10 @@ private:
 		Created
 	};
 
+	std::vector<voxel::RawVolume*> _undoStates;
+	int _undoIndex = 0;
+	static constexpr int _maxUndoStates = 16;
+
 	int _initialized = 0;
 	voxel::Voxel _currentVoxel;
 	int _size = 32;
@@ -40,6 +45,9 @@ private:
 	Axis _lockedAxis = Axis::None;
 
 	bool actionRequiresExistingVoxel(Action action) const;
+
+	void markUndo();
+
 public:
 	Model();
 	~Model();
@@ -50,6 +58,11 @@ public:
 
 	void init();
 	void shutdown();
+
+	void undo();
+	void redo();
+	bool canUndo() const;
+	bool canRedo() const;
 
 	bool save(std::string_view file);
 	bool load(std::string_view file);
@@ -130,6 +143,14 @@ public:
 	voxel::RawVolume* _cursorPositionVolume = nullptr;
 	voxel::RawVolume* _modelVolume = nullptr;
 };
+
+inline bool Model::canUndo() const {
+	return _undoIndex > 0;
+}
+
+inline bool Model::canRedo() const {
+	return _undoIndex < _undoStates.size() - 1;
+}
 
 inline Shape Model::cursorShape() const {
 	return _cursorShape;

@@ -10,7 +10,6 @@
 
 // TODO: voxelizer via assimp
 // TODO: cursor volume shape generators
-// TODO: undo/redo
 // TODO: it is possible to place a voxel outside the maxs region
 // TODO: extrude
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
@@ -106,6 +105,14 @@ core::AppState VoxEdit::onInit() {
 			Log::error("Failed to export to file %s", file.data());
 		}
 	}).setArgumentCompleter(fileCompleter).setHelp("Export the current state to the given file");
+
+	core::Command::registerCommand("undo", [this] (const core::CmdArgs& args) {
+		_mainWindow->undo();
+	}).setArgumentCompleter(fileCompleter).setHelp("Undo your last step");
+
+	core::Command::registerCommand("redo", [this] (const core::CmdArgs& args) {
+		_mainWindow->redo();
+	}).setArgumentCompleter(fileCompleter).setHelp("Redo your last step");
 
 	core::Command::registerCommand("load", [this] (const core::CmdArgs& args) {
 		std::string_view file = args.empty() ? "" : args[0];

@@ -208,6 +208,12 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("save")) {
 		save("");
 		return true;
+	} else if (ev.target->GetID() == TBIDC("redo")) {
+		redo();
+		return true;
+	} else if (ev.target->GetID() == TBIDC("undo")) {
+		undo();
+		return true;
 	} else if (ev.target->GetID() == TBIDC("rotatex")) {
 		rotateX();
 		return true;
@@ -307,10 +313,10 @@ void MainWindow::OnProcess() {
 		_saveButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
 	}
 	if (_undoButton != nullptr) {
-		_undoButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
+		_undoButton->SetState(tb::WIDGET_STATE_DISABLED, empty || !_scene->canUndo());
 	}
 	if (_redoButton != nullptr) {
-		_redoButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
+		_redoButton->SetState(tb::WIDGET_STATE_DISABLED, empty || !_scene->canRedo());
 	}
 	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
 		tb::TBWidget* w = GetWidgetByID(actions[i].id);
@@ -337,6 +343,12 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		if (handleChangeEvent(ev)) {
 			return true;
 		}
+	} else if (ev.type == tb::EVENT_TYPE_SHORTCUT) {
+		if (ev.ref_id == TBIDC("undo")) {
+			undo();
+		} else if (ev.ref_id == TBIDC("redo")) {
+			redo();
+		}
 	}
 
 	return ui::Window::OnEvent(ev);
@@ -345,6 +357,14 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 void MainWindow::OnDie() {
 	Super::OnDie();
 	_app->requestQuit();
+}
+
+void MainWindow::undo() {
+	_scene->undo();
+}
+
+void MainWindow::redo() {
+	_scene->redo();
 }
 
 void MainWindow::quit() {

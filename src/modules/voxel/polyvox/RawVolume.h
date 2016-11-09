@@ -96,6 +96,7 @@ public:
 public:
 	/// Constructor for creating a fixed size volume.
 	RawVolume(const Region& region);
+	RawVolume(const RawVolume* copy);
 
 	/// Destructor
 	~RawVolume();

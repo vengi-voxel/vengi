@@ -25,6 +25,7 @@ static_assert(SDL_arraysize(selectionsArray) == std::enum_value(SelectType::Max)
 
 Model::Model() :
 		_rawVolumeRenderer(true, false, true), _rawVolumeSelectionRenderer(false, false, false) {
+	_undoStates.reserve(_maxUndoStates);
 }
 
 Model::~Model() {
@@ -188,7 +189,40 @@ bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) {
 	}
 	const bool placed = _modelVolume->setVoxel(pos, voxel);
 	_lastPlacement = pos;
+	if (placed) {
+		markUndo();
+	}
 	return placed;
+}
+
+void Model::undo() {
+	if (!canUndo()) {
+		return;
+	}
+	setNewVolume(new voxel::RawVolume(_undoStates[--_undoIndex]));
+}
+
+void Model::redo() {
+	// nothing to redo
+	if (!canRedo()) {
+		return;
+	}
+	setNewVolume(new voxel::RawVolume(_undoStates[++_undoIndex]));
+}
+
+void Model::markUndo() {
+	auto i = _undoStates.begin();
+	std::advance(i, _undoIndex);
+	for (auto iter = i; iter < _undoStates.end(); ++iter) {
+		delete *iter;
+	}
+	_undoStates.erase(i, _undoStates.end());
+	_undoStates.push_back(new voxel::RawVolume(_modelVolume));
+	while (_undoStates.size() > _maxUndoStates) {
+		delete *_undoStates.begin();
+		_undoStates.erase(_undoStates.begin());
+	}
+	_undoIndex = _undoStates.size();
 }
 
 void Model::render(const video::Camera& camera) {
@@ -227,6 +261,10 @@ void Model::shutdown() {
 	_modelVolume = nullptr;
 	delete _rawVolumeRenderer.shutdown();
 	delete _rawVolumeSelectionRenderer.shutdown();
+	for (voxel::RawVolume* vol : _undoStates) {
+		delete vol;
+	}
+	_undoStates.clear();
 }
 
 bool Model::extractSelectionVolume() {

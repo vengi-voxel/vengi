@@ -54,6 +54,8 @@ public:
 	void OnProcess() override;
 	void OnDie() override;
 
+	void undo();
+	void redo();
 	void rotateX();
 	void rotateY();
 	void rotateZ();
