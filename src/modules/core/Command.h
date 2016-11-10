@@ -28,11 +28,18 @@ private:
 	static CommandMap _cmds;
 	static ReadWriteLock _lock;
 
+	static int _delayFrames;
+	static std::vector<std::string> _delayedTokens;
+
 	std::string _name;
 	std::string _help;
 	FunctionType _func;
 	typedef std::function<int(const std::string&, std::vector<std::string>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
+
+	Command() :
+			_name(""), _func() {
+	}
 
 	Command(const std::string& name, FunctionType&& func) :
 		_name(name), _func(std::move(func)) {
@@ -47,6 +54,11 @@ public:
 	}
 
 	static void unregisterCommand(const std::string& name);
+
+	/**
+	 * @brief Executes delayed (by wait command e.g.) commands that are still in the command buffer
+	 */
+	static int executeDelayed();
 
 	static int execute(const std::string& command);
 

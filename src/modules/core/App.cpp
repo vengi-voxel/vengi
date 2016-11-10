@@ -301,6 +301,8 @@ AppState App::onRunning() {
 		_logLevel->markClean();
 	}
 
+	core::Command::executeDelayed();
+
 	return AppState::Cleanup;
 }
 
