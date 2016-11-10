@@ -195,6 +195,13 @@ TBLayout: distribution: gravity, axis: y
 									id actionselectedge
 									@include definitions>selectbutton
 
+					TBSection: text: "Operations"
+						TBLayout: position: left top, axis: y
+							TBButton: @include: definitions>menubutton, text: Crop, id: crop
+								TBSkinImage: skin: voxedit-crop
+							TBButton: @include: definitions>menubutton, text: Extend, id: extend
+								TBSkinImage: skin: voxedit-extend
+
 					TBSection: value: 0, text: "Options"
 						TBLayout: position: left top, axis: y
 							TBClickLabel: text: Show grid
