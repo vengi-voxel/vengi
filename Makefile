@@ -52,7 +52,8 @@ endif
 BUILD_TYPE       ?= Debug
 # override this in your Makefile.local to use a different directory
 BUILDDIRPATH     ?= ./
-BUILDDIR         ?= $(BUILDDIRPATH)build-$(shell echo $(BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
+#BUILDDIR         ?= $(BUILDDIRPATH)build-$(shell echo $(BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
+BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)
 
 CMAKE_OPTIONS    ?=
 
