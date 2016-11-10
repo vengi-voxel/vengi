@@ -2,22 +2,23 @@
  * @file
  */
 
-#include "NoiseParametersWindow.h"
+#include "NoiseToolWindow.h"
+
 #include "noise/SimplexNoise.h"
 
-NoiseParametersWindow::NoiseParametersWindow(ui::UIApp* tool) :
+NoiseToolWindow::NoiseToolWindow(ui::UIApp* tool) :
 		ui::Window(tool) {
 }
 
-bool NoiseParametersWindow::init() {
-	if (!loadResourceFile("ui/window/noiseparameters.tb.txt")) {
+bool NoiseToolWindow::init() {
+	if (!loadResourceFile("ui/window/noisetool-main.tb.txt")) {
 		Log::error("Failed to init the main window: Could not load the ui definition");
 		return false;
 	}
 	return true;
 }
 
-void NoiseParametersWindow::make2DNoise(bool append, bool gray, bool seamless, bool alpha, float amplitude, float frequency, int octaves, float persistence) {
+void NoiseToolWindow::make2DNoise(bool append, bool gray, bool seamless, bool alpha, float amplitude, float frequency, int octaves, float persistence) {
 	tb::TBStr idStr;
 	idStr.SetFormatted("2d-%i-%i-%i-%f-%f-%i-%f", gray ? 1 : 0, seamless ? 1 : 0, alpha ? 1 : 0, amplitude, frequency, octaves, persistence);
 	cleanup(idStr);
@@ -47,14 +48,14 @@ void NoiseParametersWindow::make2DNoise(bool append, bool gray, bool seamless, b
 	addImage(idStr, append, buffer, width, height);
 }
 
-void NoiseParametersWindow::cleanup(const tb::TBStr& idStr) {
+void NoiseToolWindow::cleanup(const tb::TBStr& idStr) {
 	tb::TBBitmapFragment *existingFragment = tb::g_tb_skin->GetFragmentManager()->GetFragment(tb::TBID(idStr.CStr()));
 	if (existingFragment != nullptr) {
 		tb::g_tb_skin->GetFragmentManager()->FreeFragment(existingFragment);
 	}
 }
 
-void NoiseParametersWindow::addImage(const tb::TBStr& idStr, bool append, uint8_t* buffer, int width, int height) {
+void NoiseToolWindow::addImage(const tb::TBStr& idStr, bool append, uint8_t* buffer, int width, int height) {
 	tb::TBLayout* layout = GetWidgetByIDAndType<tb::TBLayout>("imagelayout");
 	if (layout == nullptr) {
 		Log::error("could not find layout node");
@@ -84,32 +85,61 @@ void NoiseParametersWindow::addImage(const tb::TBStr& idStr, bool append, uint8_
 	layout->OnInflateChild(imageWidget);
 }
 
-bool NoiseParametersWindow::OnEvent(const tb::TBWidgetEvent &ev) {
-	if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("ok")) || ev.special_key == tb::TB_KEY_ENTER) {
-		const float amplitude = getFloat("amplitude");
-		const float frequency = getFloat("frequency");
-		const bool enableoctaves = isToggled("enableoctaves");
-		const bool gray = isToggled("gray");
-		const bool append = isToggled("append");
-		const bool alpha = isToggled("alpha");
-		const bool seamless = isToggled("seamless");
-		const int octaves = enableoctaves ? getInt("octaves") : 1;
-		const float persistence = enableoctaves ? getFloat("persistence") : 1.0f;
-		Log::info("seamless: %i, gray: %i, amplitude: %f, freq: %f, oct: %i, persist: %f",
-				seamless ? 1 : 0, gray ? 1 : 0, amplitude, frequency, octaves, persistence);
-		make2DNoise(append, gray, seamless, alpha, amplitude, frequency, octaves, persistence);
-		return true;
-	}
-	if ((ev.type == tb::EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("remove")) || ev.special_key == tb::TB_KEY_DELETE) {
-		TBWidget *image = ev.target->GetParent();
-		image->GetParent()->RemoveChild(image);
-		delete image;
-		return true;
+bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
+	if (ev.type == tb::EVENT_TYPE_CLICK) {
+		if (ev.target->GetID() == TBIDC("remove")) {
+			TBWidget *image = ev.target->GetParent();
+			removeImage(image);
+			return true;
+		} else if (ev.target->GetID() == TBIDC("ok")) {
+			generateImage();
+			return true;
+		} else if (ev.target->GetID() == TBIDC("quit")) {
+			Close();
+			return true;
+		}
+	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
+		if (ev.special_key == tb::TB_KEY_DELETE) {
+			//removeImage();
+			return true;
+		} else if (ev.special_key == tb::TB_KEY_ENTER) {
+			generateImage();
+			return true;
+		}
+	} else if (ev.type == tb::EVENT_TYPE_SHORTCUT) {
+		if (ev.ref_id == TBIDC("new")) {
+			//removeImage();
+			generateImage();
+			return true;
+		} else if (ev.target->GetID() == TBIDC("cut")) {
+			//removeImage();
+			return true;
+		}
 	}
 	return ui::Window::OnEvent(ev);
 }
 
-void NoiseParametersWindow::OnDie() {
+void NoiseToolWindow::generateImage() {
+	const float amplitude = getFloat("amplitude");
+	const float frequency = getFloat("frequency");
+	const bool enableoctaves = isToggled("enableoctaves");
+	const bool gray = isToggled("gray");
+	const bool append = isToggled("append");
+	const bool alpha = isToggled("alpha");
+	const bool seamless = isToggled("seamless");
+	const int octaves = enableoctaves ? getInt("octaves") : 1;
+	const float persistence = enableoctaves ? getFloat("persistence") : 1.0f;
+	Log::info("seamless: %i, gray: %i, amplitude: %f, freq: %f, oct: %i, persist: %f",
+			seamless ? 1 : 0, gray ? 1 : 0, amplitude, frequency, octaves, persistence);
+	make2DNoise(append, gray, seamless, alpha, amplitude, frequency, octaves, persistence);
+}
+
+void NoiseToolWindow::removeImage(TBWidget *image) {
+	image->GetParent()->RemoveChild(image);
+	delete image;
+}
+
+void NoiseToolWindow::OnDie() {
 	ui::Window::OnDie();
 	requestQuit();
 }

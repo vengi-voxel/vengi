@@ -1,8 +1,8 @@
-#include "MainWindow.h"
 #include "editorscene/EditorScene.h"
 #include "palette/PaletteWidget.h"
 #include "../VoxEdit.h"
 #include <assimp/Exporter.hpp>
+#include "VoxEditWindow.h"
 
 namespace voxedit {
 
@@ -41,13 +41,13 @@ static const struct {
 	{TBIDC("shapeplane"),	Shape::Plane}
 };
 
-MainWindow::MainWindow(VoxEdit* tool) :
+VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		ui::Window(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 }
 
-bool MainWindow::init() {
-	if (!loadResourceFile("ui/window/main.tb.txt")) {
+bool VoxEditWindow::init() {
+	if (!loadResourceFile("ui/window/voxedit-main.tb.txt")) {
 		Log::error("Failed to init the main window: Could not load the ui definition");
 		return false;
 	}
@@ -107,19 +107,19 @@ bool MainWindow::init() {
 	return true;
 }
 
-void MainWindow::rotatex() {
+void VoxEditWindow::rotatex() {
 	_scene->rotate(90, 0, 0);
 }
 
-void MainWindow::rotatey() {
+void VoxEditWindow::rotatey() {
 	_scene->rotate(0, 90, 0);
 }
 
-void MainWindow::rotatez() {
+void VoxEditWindow::rotatez() {
 	_scene->rotate(0, 0, 90);
 }
 
-void MainWindow::toggleviewport() {
+void VoxEditWindow::toggleviewport() {
 	bool vis = false;
 	if (_sceneTop != nullptr) {
 		vis = _sceneTop->GetVisibilityCombined();
@@ -134,11 +134,11 @@ void MainWindow::toggleviewport() {
 	setQuadViewport(!vis);
 }
 
-void MainWindow::unselectall() {
+void VoxEditWindow::unselectall() {
 	_scene->unselectAll();
 }
 
-void MainWindow::togglefreelook() {
+void VoxEditWindow::togglefreelook() {
 	if (_freeLook == nullptr) {
 		return;
 	}
@@ -152,7 +152,7 @@ void MainWindow::togglefreelook() {
 	}
 }
 
-void MainWindow::setQuadViewport(bool active) {
+void VoxEditWindow::setQuadViewport(bool active) {
 	const tb::WIDGET_VISIBILITY vis = active ? tb::WIDGET_VISIBILITY_VISIBLE : tb::WIDGET_VISIBILITY_GONE;
 	if (_sceneTop != nullptr) {
 		_sceneTop->SetVisibility(vis);
@@ -169,7 +169,7 @@ void MainWindow::setQuadViewport(bool active) {
 	}
 }
 
-bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
+bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_scene->newModel(true);
@@ -262,7 +262,7 @@ bool MainWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	return false;
 }
 
-bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
+bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("cammode")) {
 		tb::TBWidget *widget = ev.target;
 		tb::TBWidget *parent = widget->GetParent();
@@ -298,7 +298,7 @@ bool MainWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	return false;
 }
 
-void MainWindow::OnProcess() {
+void VoxEditWindow::OnProcess() {
 	Super::OnProcess();
 	if (_paletteWidget->isDirty()) {
 		_scene->setVoxelType(_paletteWidget->voxelType());
@@ -333,7 +333,7 @@ void MainWindow::OnProcess() {
 	}
 }
 
-bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
+bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (handleClickEvent(ev)) {
 			return true;
@@ -359,42 +359,42 @@ bool MainWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 	return ui::Window::OnEvent(ev);
 }
 
-void MainWindow::OnDie() {
+void VoxEditWindow::OnDie() {
 	Super::OnDie();
-	_app->requestQuit();
+	requestQuit();
 }
 
-void MainWindow::copy() {
+void VoxEditWindow::copy() {
 	_scene->copy();
 }
 
-void MainWindow::paste() {
+void VoxEditWindow::paste() {
 	_scene->paste();
 }
 
-void MainWindow::cut() {
+void VoxEditWindow::cut() {
 	_scene->cut();
 }
 
-void MainWindow::undo() {
+void VoxEditWindow::undo() {
 	_scene->undo();
 }
 
-void MainWindow::redo() {
+void VoxEditWindow::redo() {
 	_scene->redo();
 }
 
-void MainWindow::quit() {
+void VoxEditWindow::quit() {
 	if (_scene->isDirty()) {
 		popup("Unsaved Modifications",
 				"There are unsaved modifications.\nDo you wish to discard them and quit?",
 				ui::Window::PopupType::YesNo, "unsaved_changes_quit");
 		return;
 	}
-	 Close();
+	Close();
 }
 
-bool MainWindow::save(std::string_view file) {
+bool VoxEditWindow::save(std::string_view file) {
 	if (file.empty()) {
 		const std::string& f = _voxedit->saveDialog("vox,qbt");
 		if (f.empty()) {
@@ -406,7 +406,7 @@ bool MainWindow::save(std::string_view file) {
 	return _scene->saveModel(file);
 }
 
-bool MainWindow::voxelize(std::string_view file) {
+bool VoxEditWindow::voxelize(std::string_view file) {
 	std::string f;
 	if (file.empty()) {
 		f = _voxedit->openDialog("vox,qbt");
@@ -428,7 +428,7 @@ bool MainWindow::voxelize(std::string_view file) {
 	return false;
 }
 
-bool MainWindow::exportFile(std::string_view file) {
+bool VoxEditWindow::exportFile(std::string_view file) {
 	std::string f;
 	if (file.empty()) {
 		if (_scene->isEmpty()) {
@@ -446,7 +446,7 @@ bool MainWindow::exportFile(std::string_view file) {
 	return _scene->exportModel(file);
 }
 
-void MainWindow::resetCameras() {
+void VoxEditWindow::resetCameras() {
 	_scene->resetCamera();
 	if (_sceneTop != nullptr) {
 		_sceneTop->resetCamera();
@@ -459,7 +459,7 @@ void MainWindow::resetCameras() {
 	}
 }
 
-bool MainWindow::load(std::string_view file) {
+bool VoxEditWindow::load(std::string_view file) {
 	std::string f;
 	if (file.empty()) {
 		f = _voxedit->openDialog("vox,qbt");
@@ -484,11 +484,11 @@ bool MainWindow::load(std::string_view file) {
 	return false;
 }
 
-void MainWindow::select(const glm::ivec3& pos) {
+void VoxEditWindow::select(const glm::ivec3& pos) {
 	_scene->select(pos);
 }
 
-bool MainWindow::createNew(bool force) {
+bool VoxEditWindow::createNew(bool force) {
 	if (!force && _scene->isDirty()) {
 		popup("Unsaved Modifications",
 				"There are unsaved modifications.\nDo you wish to discard them and close?",

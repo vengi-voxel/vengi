@@ -3,10 +3,10 @@
  */
 
 #include "VoxEdit.h"
-#include "ui/MainWindow.h"
 #include "core/Color.h"
 #include "core/Command.h"
 #include "video/GLFunc.h"
+#include "ui/VoxEditWindow.h"
 
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \
@@ -64,7 +64,7 @@ core::AppState VoxEdit::onInit() {
 
 	_meshPool->init();
 
-	_mainWindow = new voxedit::MainWindow(this);
+	_mainWindow = new voxedit::VoxEditWindow(this);
 	if (!_mainWindow->init()) {
 		Log::error("Failed to initialize the main window");
 		return core::AppState::Cleanup;

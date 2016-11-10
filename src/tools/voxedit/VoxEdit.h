@@ -5,8 +5,8 @@
 #pragma once
 
 #include "ui/UIApp.h"
-#include "ui/MainWindow.h"
 #include "video/MeshPool.h"
+#include "ui/VoxEditWindow.h"
 
 /**
  * @brief This tool provides a UI to create noise images on-the-fly.
@@ -15,7 +15,7 @@ class VoxEdit: public ui::UIApp {
 private:
 	using Super = ui::UIApp;
 	core::VarPtr _lastDirectory;
-	voxedit::MainWindow* _mainWindow;
+	voxedit::VoxEditWindow* _mainWindow;
 	video::MeshPoolPtr _meshPool;
 	bool _rotateMode = false;
 

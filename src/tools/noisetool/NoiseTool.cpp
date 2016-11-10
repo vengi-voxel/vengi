@@ -3,7 +3,8 @@
  */
 
 #include "NoiseTool.h"
-#include "ui/NoiseParametersWindow.h"
+
+#include "ui/NoiseToolWindow.h"
 
 NoiseTool::NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		ui::UIApp(filesystem, eventBus, timeProvider) {
@@ -16,7 +17,7 @@ core::AppState NoiseTool::onInit() {
 		return state;
 	}
 
-	NoiseParametersWindow* mainWindow = new NoiseParametersWindow(this);
+	NoiseToolWindow* mainWindow = new NoiseToolWindow(this);
 	if (!mainWindow->init()) {
 		return core::AppState::Cleanup;
 	}

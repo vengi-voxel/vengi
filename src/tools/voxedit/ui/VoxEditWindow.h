@@ -17,7 +17,7 @@ namespace voxedit {
 /**
  * @brief Voxel editing tools panel
  */
-class MainWindow: public ui::Window {
+class VoxEditWindow: public ui::Window {
 	friend class ::VoxEdit;
 private:
 	EditorScene* _scene;
@@ -69,7 +69,7 @@ private:
 	void select(const glm::ivec3& pos);
 
 public:
-	MainWindow(VoxEdit* tool);
+	VoxEditWindow(VoxEdit* tool);
 	bool init();
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
