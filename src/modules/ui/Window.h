@@ -68,6 +68,7 @@ public:
 
 	Window* getParent() const;
 	UIApp* getApp() const;
+	void requestQuit();
 
 	std::string getStr(const char* nodeId);
 	float getFloat(const char *nodeId);

@@ -352,4 +352,8 @@ tb::TBWidget* Window::getWidgetAt(int x, int y, bool includeChildren) {
 	return GetWidgetAt(x, y, includeChildren);
 }
 
+void Window::requestQuit() {
+	_app->requestQuit();
+}
+
 }
