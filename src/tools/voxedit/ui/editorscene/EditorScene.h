@@ -84,6 +84,9 @@ public:
 	bool canUndo() const;
 	bool canRedo() const;
 
+	void crop();
+	void extend(int size = 1);
+
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;

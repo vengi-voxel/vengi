@@ -73,6 +73,7 @@ public:
 	void aabbGridXZ(const core::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
 
 	void aabb(const core::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
+	void aabb(const core::AABB<int>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
 	/**
 	 * @param[in] tesselation The amount of splits on the plane that should be made
 	 */
@@ -118,6 +119,11 @@ public:
 	void setColor(const glm::vec4& color);
 	void setPosition(const glm::vec3& position);
 };
+
+inline void ShapeBuilder::aabb(const core::AABB<int>& aabb, bool renderGrid, float stepWidth) {
+	const core::AABB<float> converted(glm::vec3(aabb.getLowerCorner()), glm::vec3(aabb.getUpperCorner()));
+	this->aabb(converted, renderGrid, stepWidth);
+}
 
 inline void ShapeBuilder::setColor(const glm::vec4& color) {
 	_color = color;

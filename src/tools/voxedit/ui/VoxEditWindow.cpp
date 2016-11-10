@@ -201,6 +201,12 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("quit")) {
 		quit();
 		return true;
+	} else if (ev.target->GetID() == TBIDC("crop")) {
+		crop();
+		return true;
+	} else if (ev.target->GetID() == TBIDC("extend")) {
+		extend();
+		return true;
 	} else if (ev.target->GetID() == TBIDC("new")) {
 		createNew(false);
 		return true;
@@ -260,6 +266,14 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		}
 	}
 	return false;
+}
+
+void VoxEditWindow::crop() {
+	_scene->crop();
+}
+
+void VoxEditWindow::extend(int size) {
+	_scene->extend(size);
 }
 
 bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {

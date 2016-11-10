@@ -52,15 +52,15 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, bool i
 				if (v.getMaterial() == VoxelType::Air) {
 					continue;
 				}
-				const glm::ivec4 pos(x - srcCenter.x, y - srcCenter.y, z - srcCenter.z, 1);
-				glm::ivec4 newPos = rot * pos;
+				const glm::vec4 pos(x - srcCenter.x, y - srcCenter.y, z - srcCenter.z, 1);
+				glm::vec4 newPos = rot * pos;
 				newPos.x += srcCenter.x;
 				newPos.y += srcCenter.y;
 				newPos.z += srcCenter.z;
-				if (!destRegion.containsPoint(newPos.x, newPos.y, newPos.z)) {
+				const glm::ivec3 volumePos(glm::ivec3(glm::round(newPos)));
+				if (!destRegion.containsPoint(volumePos)) {
 					continue;
 				}
-				const glm::ivec3& volumePos = newPos.xyz();
 				destination->setVoxel(volumePos, v);
 			}
 		}

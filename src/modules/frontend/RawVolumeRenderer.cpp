@@ -259,7 +259,8 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(voxel::RawVolume* volume) {
 	_rawVolume = volume;
 	if (_rawVolume != nullptr) {
 		const voxel::Region& region = _rawVolume->getEnclosingRegion();
-		const core::AABB<float> aabb(region.getLowerCorner(), region.getUpperCorner());
+		const core::AABB<int>& intaabb = region.aabb();
+		const core::AABB<float> aabb(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
 		_shapeBuilder.clear();
 		_shapeBuilder.aabb(aabb, false);
 		if (_aabbMeshIndex == -1) {

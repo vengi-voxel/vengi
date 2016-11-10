@@ -5,6 +5,8 @@
 #pragma once
 
 #include "RawVolume.h"
+#include "core/Common.h"
+#include "core/Trace.h"
 
 namespace voxel {
 
@@ -21,57 +23,31 @@ public:
 	}
 };
 
-template<typename MergeCondition = MergeConditionSkipVoxelType>
-int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume* source, MergeCondition mergeCondition = MergeCondition()) {
-	core_trace_scoped(MergeRawVolumes);
-	int cnt = 0;
-	RawVolume::Sampler srcSampler(source);
-	RawVolume::Sampler dstSampler(destination);
-	const Region& destRegion = destination->getEnclosingRegion();
-	core_assert_always(destRegion == source->getEnclosingRegion());
-	const int32_t depth = destRegion.getDepthInVoxels();
-	const int32_t height = destRegion.getHeightInVoxels();
-	const int32_t width = destRegion.getWidthInVoxels();
-	for (int32_t z = 0; z < depth; z++) {
-		for (int32_t y = 0; y < height; y++) {
-			for (int32_t x = 0; x < width; x++) {
-				srcSampler.setPosition(x, y, z);
-				const Voxel& voxel = srcSampler.getVoxel();
-				if (!mergeCondition(voxel)) {
-					continue;
-				}
-				dstSampler.setPosition(x, y, z);
-				dstSampler.setVoxel(voxel);
-				++cnt;
-			}
-		}
-	}
-	return cnt;
-}
-
 /**
  * @note This version can deal with source volumes that are smaller or equal sized to the destination volume
  */
 template<typename MergeCondition = MergeConditionSkipVoxelType>
-int mergeRawVolumes(RawVolume* destination, const RawVolume* source, const glm::ivec3& sourceOffset, MergeCondition mergeCondition = MergeCondition()) {
+int mergeRawVolumes(RawVolume* destination, const RawVolume* source, const Region& destReg, const Region& sourceReg, MergeCondition mergeCondition = MergeCondition()) {
 	core_trace_scoped(MergeRawVolumes);
 	int cnt = 0;
 	RawVolume::Sampler srcSampler(source);
 	RawVolume::Sampler dstSampler(destination);
-	const Region& destRegion = destination->getEnclosingRegion();
-	const Region& srcRegion = source->getEnclosingRegion();
-	const int32_t depth = glm::min(srcRegion.getDepthInVoxels(), destRegion.getDepthInVoxels());
-	const int32_t height = glm::min(srcRegion.getHeightInVoxels(), destRegion.getHeightInVoxels());
-	const int32_t width = glm::min(srcRegion.getWidthInVoxels(), destRegion.getWidthInVoxels());
-	for (int32_t z = sourceOffset.z; z < sourceOffset.z + depth; z++) {
-		for (int32_t y = sourceOffset.y; y < sourceOffset.y + height; y++) {
-			for (int32_t x = sourceOffset.x; x < sourceOffset.x + width; x++) {
-				srcSampler.setPosition(x - sourceOffset.x, y - sourceOffset.y, z - sourceOffset.z);
+
+	core_assert(source->getEnclosingRegion().containsRegion(sourceReg));
+	core_assert(destination->getEnclosingRegion().containsRegion(destReg));
+
+	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
+		const int destZ = destReg.getLowerZ() + z - sourceReg.getLowerZ();
+		for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
+			const int destY = destReg.getLowerY() + y - sourceReg.getLowerY();
+			for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
+				core_assert_always(srcSampler.setPosition(x, y, z));
 				const Voxel& voxel = srcSampler.getVoxel();
 				if (!mergeCondition(voxel)) {
 					continue;
 				}
-				if (dstSampler.setPosition(x, y, z)) {
+				const int destX = destReg.getLowerX() + x - sourceReg.getLowerX();
+				if (dstSampler.setPosition(destX, destY, destZ)) {
 					dstSampler.setVoxel(voxel);
 					++cnt;
 				}
@@ -79,6 +55,12 @@ int mergeRawVolumes(RawVolume* destination, const RawVolume* source, const glm::
 		}
 	}
 	return cnt;
+}
+
+template<typename MergeCondition = MergeConditionSkipVoxelType>
+inline int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume* source, MergeCondition mergeCondition = MergeCondition()) {
+	core_assert(source->getEnclosingRegion() == destination->getEnclosingRegion());
+	return mergeRawVolumes(destination, source, destination->getEnclosingRegion(), source->getEnclosingRegion());
 }
 
 }

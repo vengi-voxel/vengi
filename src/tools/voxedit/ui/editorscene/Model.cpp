@@ -1,5 +1,6 @@
 #include "Model.h"
 #include "voxel/polyvox/VolumeMerger.h"
+#include "voxel/polyvox/VolumeCropper.h"
 #include "voxel/polyvox/VolumeRotator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
@@ -85,6 +86,36 @@ void Model::setMousePos(int x, int y) {
 	_mouseY = y;
 }
 
+void Model::crop() {
+	if (_empty) {
+		Log::info("Empty volumes can't be cropped");
+		return;
+	}
+	voxel::RawVolume* newVolume = voxel::cropVolume(_modelVolume, voxel::createVoxel(voxel::VoxelType::Air));
+	if (newVolume == nullptr) {
+		Log::info("Failed to crop the model volume");
+		return;
+	}
+	const glm::ivec3& oldMaxs = _modelVolume->getEnclosingRegion().getUpperCorner();
+	const glm::ivec3& newMaxs = newVolume->getEnclosingRegion().getUpperCorner();
+	const glm::ivec3 delta = oldMaxs - newMaxs;
+	voxel::mergeRawVolumes(newVolume, _modelVolume, delta);
+	markUndo();
+	setNewVolume(newVolume);
+}
+
+void Model::extend(int size) {
+	voxel::Region region = _modelVolume->getEnclosingRegion();
+	region.grow(size);
+	if (!region.isValid()) {
+		return;
+	}
+	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
+	voxel::mergeRawVolumes(newVolume, _modelVolume, glm::ivec3(size));
+	markUndo();
+	setNewVolume(newVolume);
+}
+
 void Model::executeAction(bool mouseDown, long now) {
 	if (_action == Action::None || !mouseDown) {
 		return;
@@ -154,7 +185,7 @@ bool Model::newVolume(bool force) {
 	if (dirty() && !force) {
 		return false;
 	}
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(size()));
+	const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
 	clearUndoStates();
 	setNewVolume(new voxel::RawVolume(region));
 	return true;
@@ -321,13 +352,19 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 				_cursorPositionVolume->clear();
 				const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
 				const glm::ivec3& cursorPos = _result.previousVoxel - center;
-				voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, cursorPos);
+				// TODO
+				const voxel::Region srcRegion = _cursorVolume->getEnclosingRegion();
+				const voxel::Region destRegion = srcRegion + cursorPos;
+				voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, destRegion, srcRegion);
 				_cursorPos = cursorPos;
 			} else if (_result.didHit) {
 				_cursorPositionVolume->clear();
 				const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
 				const glm::ivec3& cursorPos = _result.hitVoxel - center;
-				voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, cursorPos);
+				// TODO
+				const voxel::Region srcRegion;
+				const voxel::Region destRegion;
+				voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, destRegion, srcRegion);
 				_cursorPositionVolume->setVoxel(_result.hitVoxel, currentVoxel());
 				_cursorPos = cursorPos;
 			}

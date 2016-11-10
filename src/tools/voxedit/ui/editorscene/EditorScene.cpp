@@ -104,6 +104,14 @@ bool EditorScene::saveModel(std::string_view file) {
 	return m().save(file);
 }
 
+void EditorScene::crop() {
+	m().crop();
+}
+
+void EditorScene::extend(int size) {
+	m().extend(size);
+}
+
 bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 	const video::Mesh::Vertices& positions = meshPtr->vertices();
 	const video::Mesh::Indices& indices = meshPtr->indices();

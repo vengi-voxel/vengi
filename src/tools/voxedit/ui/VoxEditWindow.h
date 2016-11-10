@@ -58,6 +58,8 @@ private:
 	void rotatex();
 	void rotatey();
 	void rotatez();
+	void crop();
+	void extend(int size = 1);
 	void toggleviewport();
 	void togglefreelook();
 	void unselectall();

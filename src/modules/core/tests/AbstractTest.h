@@ -10,6 +10,34 @@
 
 namespace core {
 
+inline ::std::ostream& operator<<(::std::ostream& os, const glm::mat4& mat) {
+	return os << "mat4x4[" << glm::to_string(mat) << "]";
+}
+
+inline ::std::ostream& operator<<(::std::ostream& os, const glm::mat3& mat) {
+	return os << "mat3x3[" << glm::to_string(mat) << "]";
+}
+
+template<typename T>
+inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec4<T>& vec) {
+	return os << "vec4[" << glm::to_string(vec) << "]";
+}
+
+template<typename T>
+inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec3<T>& vec) {
+	return os << "vec3[" << glm::to_string(vec) << "]";
+}
+
+template<typename T>
+inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec2<T>& vec) {
+	return os << "vec2[" << glm::to_string(vec) << "]";
+}
+
+template<typename T>
+inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec1<T>& vec) {
+	return os << "vec1[" << glm::to_string(vec) << "]";
+}
+
 class AbstractTest: public testing::Test {
 private:
 	class TestApp: public core::App {

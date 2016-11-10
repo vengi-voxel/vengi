@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/AABB.h"
 
 #include <iostream>
 #include <algorithm>
@@ -48,6 +49,9 @@ public:
 	bool operator==(const Region& rhs) const;
 	/// Inequality Operator.
 	bool operator!=(const Region& rhs) const;
+
+	/// Moves the Region by the amount specified.
+	Region& operator+=(const glm::ivec3& v3dAmount);
 
 	/// Gets the 'x' position of the centre.
 	int32_t getCentreX() const;
@@ -176,6 +180,8 @@ public:
 	/// Shrinks this region by the amounts specified.
 	void shrink(const glm::ivec3& v3dAmount);
 
+	core::AABB<int> aabb() const;
+
 private:
 	int32_t m_iLowerX;
 	int32_t m_iLowerY;
@@ -184,6 +190,10 @@ private:
 	int32_t m_iUpperY;
 	int32_t m_iUpperZ;
 };
+
+inline core::AABB<int> Region::aabb() const {
+	return core::AABB<int>(getLowerCorner(), getUpperCorner() + 1);
+}
 
 /**
  * @return The 'x' position of the centre.
@@ -487,6 +497,17 @@ inline bool Region::operator==(const Region& rhs) const {
  */
 inline bool Region::operator!=(const Region& rhs) const {
 	return !(*this == rhs);
+}
+
+inline Region& Region::operator+=(const glm::ivec3& v3dAmount) {
+	shift(v3dAmount);
+	return *this;
+}
+
+inline Region operator+(const Region& region, const glm::ivec3& v3dAmount) {
+	Region copy(region);
+	copy.shift(v3dAmount);
+	return copy;
 }
 
 /**

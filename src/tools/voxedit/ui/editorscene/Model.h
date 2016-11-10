@@ -63,6 +63,9 @@ public:
 	void paste();
 	void cut();
 
+	void crop();
+	void extend(int size = 1);
+
 	void undo();
 	void redo();
 	bool canUndo() const;

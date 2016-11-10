@@ -108,6 +108,8 @@ core::AppState VoxEdit::onInit() {
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
 	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");
 	COMMAND_MAINWINDOW(rotatez, "Rotate the volume around the z axis");
+	COMMAND_MAINWINDOW(crop, "Crop your volume");
+	COMMAND_MAINWINDOW(extend, "Extend your volume");
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
 	COMMAND_MAINWINDOW(redo, "Redo your last step");
 	COMMAND_MAINWINDOW(copy, "Copy selection into cursor");

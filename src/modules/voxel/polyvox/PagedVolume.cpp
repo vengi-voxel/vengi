@@ -44,7 +44,7 @@ PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint
 	_chunkCountLimit = std::min(_chunkCountLimit, uMaxPracticalNoOfChunks);
 
 	// Inform the user about the chosen memory configuration.
-	Log::debug("Memory usage limit for volume now set to %uiMb (%ui chunks of %uiKb each).",
+	Log::debug("Memory usage limit for volume now set to %uMb (%u chunks of %uKb each).",
 			(_chunkCountLimit * uChunkSizeInBytes) / (1024 * 1024), _chunkCountLimit, uChunkSizeInBytes / 1024);
 }
 

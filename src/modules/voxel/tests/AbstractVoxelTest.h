@@ -4,12 +4,52 @@
 
 #include "core/tests/AbstractTest.h"
 #include "voxel/polyvox/PagedVolume.h"
+#include "voxel/polyvox/RawVolume.h"
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/WorldContext.h"
 #include "voxel/Constants.h"
 #include "core/Random.h"
+#include "core/Common.h"
 
 namespace voxel {
+
+inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {
+	return os << "region["
+			<< "center(" << glm::to_string(region.getCentre()) << "), "
+			<< "mins(" << glm::to_string(region.getLowerCorner()) << "), "
+			<< "maxs(" << glm::to_string(region.getUpperCorner()) << ")"
+			<< "]";
+}
+
+inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Voxel& voxel) {
+	return os << "voxel[" << (int)std::enum_value(voxel.getMaterial()) << "]";
+}
+
+inline ::std::ostream& operator<<(::std::ostream& os, const voxel::RawVolume& volume) {
+	const voxel::Region& region = volume.getEnclosingRegion();
+	os << "volume[" << region;
+	const int threshold = 6;
+	if (volume.getDepth() <= threshold && volume.getWidth() <= threshold && volume.getHeight() <= threshold) {
+		const int32_t lowerX = region.getLowerX();
+		const int32_t lowerY = region.getLowerY();
+		const int32_t lowerZ = region.getLowerZ();
+		const int32_t upperX = region.getUpperX();
+		const int32_t upperY = region.getUpperY();
+		const int32_t upperZ = region.getUpperZ();
+		os << "\n";
+		for (int32_t z = lowerZ; z <= upperZ; ++z) {
+			for (int32_t y = lowerY; y <= upperY; ++y) {
+				for (int32_t x = lowerX; x <= upperX; ++x) {
+					const glm::ivec3 pos(x, y, z);
+					const voxel::Voxel& voxel = volume.getVoxel(pos);
+					os << x << ", " << y << ", " << z << ": " << voxel << "\n";
+				}
+			}
+		}
+	}
+	os << "]";
+	return os;
+}
 
 class AbstractVoxelTest: public core::AbstractTest {
 protected:
