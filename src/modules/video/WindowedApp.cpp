@@ -263,7 +263,14 @@ core::AppState WindowedApp::onInit() {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glv.minorVersion);
 	Log::info("got gl context: %i.%i", glv.majorVersion, glv.minorVersion);
 
-	const bool vsync = core::Var::get(cfg::ClientVSync, "false")->boolVal();
+	const char *defaultSyncValue =
+#ifdef DEBUG
+			"false"
+#else
+			"true"
+#endif
+	;
+	const bool vsync = core::Var::get(cfg::ClientVSync, defaultSyncValue)->boolVal();
 	if (vsync) {
 		if (SDL_GL_SetSwapInterval(-1) == -1) {
 			if (SDL_GL_SetSwapInterval(1) == -1) {
