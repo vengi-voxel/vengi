@@ -71,7 +71,6 @@ bool Model::load(std::string_view file) {
 void Model::select(const glm::ivec3& pos) {
 	voxel::RawVolume* selectionVolume = _rawVolumeSelectionRenderer.volume();
 	const Selection& mode = selectionsArray[std::enum_value(_selectionType)];
-	// TODO: unselect
 	if (mode.select.execute(_modelVolume, selectionVolume, pos)) {
 		_selectionExtract = true;
 	}
@@ -136,20 +135,19 @@ void Model::executeAction(bool mouseDown, long now) {
 	_lastActionExecution = now;
 
 	bool extract = false;
-	const glm::ivec3& hitVoxel = _result.hitVoxel;
 	const bool didHit = _result.didHit;
 	if (didHit && _action == Action::CopyVoxel) {
-		setVoxelType(getVoxel(hitVoxel).getMaterial());
+		setVoxelType(getVoxel(_cursorPos).getMaterial());
 	} else if (didHit && _action == Action::SelectVoxels) {
-		select(hitVoxel);
+		select(_cursorPos);
 	} else if (didHit && _action == Action::OverrideVoxel) {
-		extract = setVoxel(hitVoxel, _currentVoxel);
+		extract = placeCursor();
 	} else if (didHit && _action == Action::DeleteVoxel) {
-		extract = setVoxel(hitVoxel, voxel::createVoxel(voxel::VoxelType::Air));
+		extract = setVoxel(_cursorPos, voxel::createVoxel(voxel::VoxelType::Air));
 	} else if (_result.validPreviousVoxel && _action == Action::PlaceVoxel) {
-		extract = setVoxel(_result.previousVoxel, _currentVoxel);
+		extract = placeCursor();
 	} else if (didHit && _action == Action::PlaceVoxel) {
-		extract = setVoxel(hitVoxel, _currentVoxel);
+		extract = placeCursor();
 	}
 
 	if (!extract) {
@@ -158,6 +156,10 @@ void Model::executeAction(bool mouseDown, long now) {
 	resetLastTrace();
 	_extract = true;
 	_dirty = true;
+}
+
+bool Model::placeCursor() {
+	return voxel::mergeRawVolumesSameDimension(_modelVolume, _cursorPositionVolume) > 0;
 }
 
 void Model::resetLastTrace() {
@@ -381,7 +383,7 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 					}
 
 					if (directVoxel) {
-						_cursorPositionVolume->setVoxel(_result.hitVoxel, currentVoxel());
+						//_cursorPositionVolume->setVoxel(_result.hitVoxel, currentVoxel());
 					}
 				}
 			}
@@ -403,6 +405,7 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 	return true;
 }
 
+// TODO: scale via s x v (scale, axis, value)
 bool Model::setCursorShape(Shape type, bool force) {
 	if (_cursorShape == type && !force) {
 		return false;

@@ -48,6 +48,7 @@ private:
 	bool actionRequiresExistingVoxel(Action action) const;
 	void clearUndoStates();
 	void markUndo();
+	bool placeCursor();
 public:
 	Model();
 	~Model();
@@ -136,7 +137,7 @@ public:
 	bool _selectionExtract = false;
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
-	long _actionExecutionDelay = 5l;
+	long _actionExecutionDelay = 20l;
 	long _lastActionExecution = 0l;
 	Action _lastAction = Action::None;
 	// the action to execute on mouse move
