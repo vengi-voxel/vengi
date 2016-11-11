@@ -171,7 +171,7 @@ void World::placeTree(const TreeContext& ctx) {
 	const Region& region = getChunkRegion(getMeshPos(pos));
 	GeneratorContext tctx(_volumeData, _volumeData->getChunk(pos));
 	tctx.region = region;
-	TreeGenerator::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
+	tree::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
 }
 
 bool World::allowReExtraction(const glm::ivec3& pos) {

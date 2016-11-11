@@ -3,15 +3,16 @@
  */
 
 #include "TreeGenerator.h"
+#include "GeneratorContext.h"
 #include "ShapeGenerator.h"
 #include "LSystemGenerator.h"
-#include "voxel/WorldContext.h"
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/Spiral.h"
 
 namespace voxel {
+namespace tree {
 
-int TreeGenerator::findFloor(const GeneratorContext& ctx, int x, int z) {
+static int findFloor(const GeneratorContext& ctx, int x, int z) {
 	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; i--) {
 		const VoxelType material = ctx.getVoxel(x, i, z).getMaterial();
 		if (isLeaves(material)) {
@@ -24,7 +25,7 @@ int TreeGenerator::findFloor(const GeneratorContext& ctx, int x, int z) {
 	return -1;
 }
 
-void TreeGenerator::createTrees(GeneratorContext& ctx, const BiomeManager& biomManager, core::Random& random) {
+void createTrees(GeneratorContext& ctx, const BiomeManager& biomManager, core::Random& random) {
 	const Region& region = ctx.region;
 	const int amount = biomManager.getAmountOfTrees(region);
 	for (int i = 0; i < amount; ++i) {
@@ -91,7 +92,7 @@ void TreeGenerator::createTrees(GeneratorContext& ctx, const BiomeManager& biomM
 	}
 }
 
-void TreeGenerator::addTree(GeneratorContext& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
+void addTree(GeneratorContext& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
 	int top = (int) pos.y + trunkHeight;
 	static constexpr Voxel voxel = createVoxel(VoxelType::Wood1);
 	const VoxelType leavesType = (VoxelType)random.random(std::enum_value(VoxelType::Leaves1), std::enum_value(VoxelType::Leaves10));
@@ -316,4 +317,5 @@ void TreeGenerator::addTree(GeneratorContext& ctx, const glm::ivec3& pos, TreeTy
 	}
 }
 
+}
 }
