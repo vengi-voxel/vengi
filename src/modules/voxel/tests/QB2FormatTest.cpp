@@ -10,7 +10,7 @@ namespace voxel {
 class QB2FormatTest: public AbstractVoxelTest {
 };
 
-TEST_F(QB2FormatTest, IGNORE_testLoad) {
+TEST_F(QB2FormatTest, DISABLED_testLoad) {
 	const io::FilePtr& file = core::App::getInstance()->filesystem()->open("qubicle.qbt");
 	ASSERT_TRUE((bool)file) << "Could not open qbt file";
 	QB2Format f;

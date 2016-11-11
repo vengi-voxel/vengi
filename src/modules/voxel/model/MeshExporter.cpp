@@ -110,7 +110,7 @@ bool exportMesh(const Mesh* mesh, const char *filename) {
 		const aiExportFormatDesc* desc = exporter.GetExportFormatDescription(i);
 		if (!strcmp(ext, desc->fileExtension)) {
 			Log::debug("Export %s to %s (%s)", ext, desc->id, desc->description);
-			doExport(exporter, mesh, desc->id, filename);
+			return doExport(exporter, mesh, desc->id, filename);
 		} else {
 			Log::debug("Don't export %s to %s (%s, '%s')", ext, desc->id, desc->description, desc->fileExtension);
 		}
