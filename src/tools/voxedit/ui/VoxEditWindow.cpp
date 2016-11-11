@@ -62,6 +62,8 @@ bool VoxEditWindow::init() {
 		Log::error("Failed to init the main window: Could not get the editor scene node with id 'palettecontainer'");
 		return false;
 	}
+	_scene->setVoxelType(_paletteWidget->voxelType());
+	_paletteWidget->markAsClean();
 
 	_sceneTop = getWidgetByType<EditorScene>("editorscenetop");
 	_sceneLeft = getWidgetByType<EditorScene>("editorsceneleft");

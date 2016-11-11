@@ -17,7 +17,7 @@ namespace voxel {
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, bool increaseSize) {
+RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const Voxel& empty, bool increaseSize) {
 	const glm::quat& quat = glm::normalize(
 			  glm::angleAxis(glm::radians(angles.x), glm::right)
 			* glm::angleAxis(glm::radians(angles.y), glm::up)
@@ -29,10 +29,10 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, bool i
 	voxel::Region destRegion;
 
 	if (increaseSize) {
-		const glm::ivec4 mins(srcRegion.getLowerCorner(), 1);
-		const glm::ivec4 maxs(srcRegion.getUpperCorner(), 1);
-		const glm::ivec4& newMins = rot * mins;
-		const glm::ivec4& newMaxs = rot * maxs;
+		const glm::vec4 mins(glm::vec3(srcRegion.getLowerCorner()) + 0.5f, 1.0f);
+		const glm::vec4 maxs(glm::vec3(srcRegion.getUpperCorner()) + 0.5f, 1.0f);
+		const glm::vec4& newMins = rot * mins;
+		const glm::vec4& newMaxs = rot * maxs;
 		const glm::ivec3 vertices[] = { newMins.xyz(), newMaxs.xyz() };
 		core::AABB<int> aabb = core::AABB<int>::construct(vertices, SDL_arraysize(vertices));
 		aabb.shift(-aabb.getLowerCorner());
@@ -41,6 +41,8 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, bool i
 		destRegion = srcRegion;
 	}
 	voxel::RawVolume* destination = new RawVolume(destRegion);
+	voxel::RawVolume::Sampler destSampler(destination);
+	voxel::RawVolume::Sampler srcSampler(source);
 
 	const int32_t depth = srcRegion.getDepthInVoxels();
 	const int32_t height = srcRegion.getHeightInVoxels();
@@ -48,20 +50,22 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, bool i
 	for (int32_t z = 0; z < depth; z++) {
 		for (int32_t y = 0; y < height; y++) {
 			for (int32_t x = 0; x < width; x++) {
-				const Voxel& v = source->getVoxel(x, y, z);
-				if (v.getMaterial() == VoxelType::Air) {
+				srcSampler.setPosition(x, y, z);
+				const Voxel& v = srcSampler.getVoxel();
+				if (v == empty) {
 					continue;
 				}
-				const glm::vec4 pos(x - srcCenter.x, y - srcCenter.y, z - srcCenter.z, 1);
-				glm::vec4 newPos = rot * pos;
-				newPos.x += srcCenter.x;
-				newPos.y += srcCenter.y;
-				newPos.z += srcCenter.z;
-				const glm::ivec3 volumePos(glm::ivec3(glm::round(newPos)));
+				const glm::vec4 pos(x - srcCenter.x + 0.5f, y - srcCenter.y + 0.5f, z - srcCenter.z + 0.5f, 1.0f);
+				const glm::vec4 newPos = rot * pos;
+				const glm::ivec3 volumePos(glm::ivec3(newPos) + srcCenter);
 				if (!destRegion.containsPoint(volumePos)) {
 					continue;
 				}
-				destination->setVoxel(volumePos, v);
+
+				destSampler.setPosition(volumePos);
+				if (destSampler.getVoxel() == empty) {
+					destSampler.setVoxel(v);
+				}
 			}
 		}
 	}

@@ -99,7 +99,9 @@ void Model::crop() {
 	const glm::ivec3& oldMaxs = _modelVolume->getEnclosingRegion().getUpperCorner();
 	const glm::ivec3& newMaxs = newVolume->getEnclosingRegion().getUpperCorner();
 	const glm::ivec3 delta = oldMaxs - newMaxs;
-	voxel::mergeRawVolumes(newVolume, _modelVolume, delta);
+	const voxel::Region srcRegion(glm::ivec3(0), delta);
+	const voxel::Region& destRegion = newVolume->getEnclosingRegion();
+	voxel::mergeRawVolumes(newVolume, _modelVolume, destRegion, srcRegion);
 	markUndo();
 	setNewVolume(newVolume);
 }
@@ -111,7 +113,9 @@ void Model::extend(int size) {
 		return;
 	}
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
-	voxel::mergeRawVolumes(newVolume, _modelVolume, glm::ivec3(size));
+	const voxel::Region& destRegion = _modelVolume->getEnclosingRegion();
+	const voxel::Region& srcRegion = _modelVolume->getEnclosingRegion();
+	voxel::mergeRawVolumes(newVolume, _modelVolume, destRegion, srcRegion);
 	markUndo();
 	setNewVolume(newVolume);
 }
@@ -169,6 +173,7 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 
 	delete _cursorVolume;
 	_cursorVolume = new voxel::RawVolume(region);
+	core_assert_always(setCursorShape(Shape::Single, true));
 
 	delete _rawVolumeSelectionRenderer.setVolume(new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(new voxel::RawVolume(region));
@@ -193,7 +198,7 @@ bool Model::newVolume(bool force) {
 
 void Model::rotate(int angleX, int angleY, int angleZ) {
 	const voxel::RawVolume* model = modelVolume();
-	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), false);
+	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::createVoxel(voxel::VoxelType::Air), false);
 	markUndo();
 	setNewVolume(newVolume);
 }
@@ -228,15 +233,17 @@ bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) {
 }
 
 void Model::copy() {
-	voxel::mergeRawVolumes(_cursorVolume, _rawVolumeSelectionRenderer.volume(), glm::ivec3(0));
+	voxel::mergeRawVolumesSameDimension(_cursorVolume, _rawVolumeSelectionRenderer.volume());
 }
 
 void Model::paste() {
-	voxel::mergeRawVolumes(_modelVolume, _cursorVolume, _cursorPos);
+	const voxel::Region& srcRegion = _cursorVolume->getEnclosingRegion();
+	const voxel::Region destRegion = srcRegion + _cursorPos;
+	voxel::mergeRawVolumes(_modelVolume, _cursorVolume, destRegion, srcRegion);
 }
 
 void Model::cut() {
-	voxel::mergeRawVolumes(_cursorVolume, _rawVolumeSelectionRenderer.volume(), glm::ivec3(0));
+	voxel::mergeRawVolumesSameDimension(_cursorVolume, _rawVolumeSelectionRenderer.volume());
 	// TODO: delete selected volume from model volume
 }
 
@@ -348,25 +355,32 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 		_result = voxel::pickVoxel(modelVolume(), ray.origin, dirWithLength, air);
 
 		if (!skipCursor) {
-			if (_result.validPreviousVoxel && (!_result.didHit || !actionRequiresExistingVoxel(action()))) {
+			const bool prevVoxel = _result.validPreviousVoxel && (!_result.didHit || !actionRequiresExistingVoxel(action()));
+			const bool directVoxel = _result.didHit;
+			if (prevVoxel) {
+				_cursorPos = _result.previousVoxel;
+			} else if (directVoxel) {
+				_cursorPos = _result.hitVoxel;
+			}
+
+			if (prevVoxel || directVoxel) {
 				_cursorPositionVolume->clear();
-				const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
-				const glm::ivec3& cursorPos = _result.previousVoxel - center;
-				// TODO
-				const voxel::Region srcRegion = _cursorVolume->getEnclosingRegion();
-				const voxel::Region destRegion = srcRegion + cursorPos;
-				voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, destRegion, srcRegion);
-				_cursorPos = cursorPos;
-			} else if (_result.didHit) {
-				_cursorPositionVolume->clear();
-				const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
-				const glm::ivec3& cursorPos = _result.hitVoxel - center;
-				// TODO
-				const voxel::Region srcRegion;
-				const voxel::Region destRegion;
-				voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, destRegion, srcRegion);
-				_cursorPositionVolume->setVoxel(_result.hitVoxel, currentVoxel());
-				_cursorPos = cursorPos;
+				const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume, voxel::createVoxel(voxel::VoxelType::Air)));
+				const voxel::Region& srcRegion = cropped->getEnclosingRegion();
+				const voxel::Region& destRegion = _cursorPositionVolume->getEnclosingRegion();
+				const glm::ivec3& lower = destRegion.getLowerCorner() + _cursorPos - srcRegion.getCentre();
+				if (destRegion.containsPoint(lower)) {
+					const glm::ivec3& regionUpperCorner = destRegion.getUpperCorner();
+					glm::ivec3 upper = lower + srcRegion.getDimensionsInVoxels();
+					if (!destRegion.containsPoint(upper)) {
+						upper = regionUpperCorner;
+					}
+					voxel::mergeRawVolumes(_cursorPositionVolume, _cursorVolume, voxel::Region(lower, upper), srcRegion);
+				}
+
+				if (directVoxel) {
+					_cursorPositionVolume->setVoxel(_result.hitVoxel, currentVoxel());
+				}
 			}
 		}
 
@@ -386,16 +400,22 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 	return true;
 }
 
-void Model::setCursorShape(Shape type) {
-	if (_cursorShape == type) {
-		return;
+bool Model::setCursorShape(Shape type, bool force) {
+	if (_cursorShape == type && !force) {
+		return false;
 	}
 	_cursorShape = type;
 	_cursorShapeState = CursorShapeState::New;
 	if (_cursorShape == Shape::Single) {
-		_cursorVolume->setVoxel(_cursorVolume->getEnclosingRegion().getCentre(), _currentVoxel);
+		const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
+		Log::info("%s", glm::to_string(center).c_str());
+		_cursorVolume->setVoxel(center, _currentVoxel);
 		_cursorShapeState = CursorShapeState::Created;
+		return true;
+	} else {
+		Log::info("Unsupported cursor shape");
 	}
+	return false;
 }
 
 }

@@ -122,7 +122,7 @@ public:
 	SelectType selectionType() const;
 
 	Shape cursorShape() const;
-	void setCursorShape(Shape type);
+	bool setCursorShape(Shape type, bool force = false);
 
 	Axis lockedAxis() const;
 	void setLockedAxis(Axis axis, bool unlock);
@@ -147,7 +147,9 @@ public:
 	Action _uiAction = Action::PlaceVoxel;
 	voxel::PickResult _result;
 
+	// the shape of the cursor at the center of the volume
 	voxel::RawVolume* _cursorVolume = nullptr;
+	// the cursor shape at the position of the traced voxel - same size as the model volume
 	voxel::RawVolume* _cursorPositionVolume = nullptr;
 	voxel::RawVolume* _modelVolume = nullptr;
 };

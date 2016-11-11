@@ -8,6 +8,6 @@
 
 namespace voxel {
 
-extern RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, bool increaseSize = true);
+extern RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const Voxel& empty, bool increaseSize = true);
 
 }
