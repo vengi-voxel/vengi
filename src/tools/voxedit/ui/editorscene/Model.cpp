@@ -4,27 +4,10 @@
 #include "voxel/polyvox/VolumeRotator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
-#include "select/Edge.h"
-#include "select/LineHorizontal.h"
-#include "select/LineVertical.h"
-#include "select/Same.h"
-#include "select/Single.h"
 #include "tool/Crop.h"
 #include "tool/Expand.h"
 
 namespace voxedit {
-
-static const struct Selection {
-	SelectType type;
-	selections::Select& select;
-} selectionsArray[] = {
-	{SelectType::Single,			selections::Single::get()},
-	{SelectType::Same,				selections::Same::get()},
-	{SelectType::LineVertical,		selections::LineVertical::get()},
-	{SelectType::LineHorizontal,	selections::LineHorizontal::get()},
-	{SelectType::Edge,				selections::Edge::get()}
-};
-static_assert(SDL_arraysize(selectionsArray) == std::enum_value(SelectType::Max), "Array size doesn't match selection modes");
 
 Model::Model() :
 		_rawVolumeRenderer(true, false, true), _rawVolumeSelectionRenderer(false, false, false) {
@@ -70,10 +53,7 @@ bool Model::load(std::string_view file) {
 
 void Model::select(const glm::ivec3& pos) {
 	voxel::RawVolume* selectionVolume = _rawVolumeSelectionRenderer.volume();
-	const Selection& mode = selectionsArray[std::enum_value(_selectionType)];
-	if (mode.select.execute(_modelVolume, selectionVolume, pos)) {
-		_selectionExtract = true;
-	}
+	_selectionExtract |= _selectionHandler.select(_modelVolume, selectionVolume, pos);
 }
 
 void Model::unselectAll() {

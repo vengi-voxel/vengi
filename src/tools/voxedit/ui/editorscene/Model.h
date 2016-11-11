@@ -4,7 +4,7 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "frontend/RawVolumeRenderer.h"
 #include "Action.h"
-#include "SelectType.h"
+#include "SelectionHandler.h"
 #include "ShapeHandler.h"
 #include "UndoHandler.h"
 #include "Axis.h"
@@ -20,6 +20,7 @@ private:
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
 	frontend::RawVolumeRenderer _rawVolumeSelectionRenderer;
 	UndoHandler _undoHandler;
+	SelectionHandler _selectionHandler;
 	ShapeHandler _shapeHandler;
 
 	int _initialized = 0;
@@ -30,7 +31,6 @@ private:
 	glm::ivec3 _lastPlacement;
 	glm::ivec3 _cursorPos;
 
-	SelectType _selectionType = SelectType::Single;
 	Axis _lockedAxis = Axis::None;
 
 	void markUndo();
@@ -174,11 +174,11 @@ inline const UndoHandler& Model::undoHandler() const {
 }
 
 inline void Model::setSelectionType(SelectType type) {
-	_selectionType = type;
+	_selectionHandler.setSelectionType(type);
 }
 
 inline SelectType Model::selectionType() const {
-	return _selectionType;
+	return _selectionHandler.selectionType();
 }
 
 inline voxel::PickResult& Model::result() {

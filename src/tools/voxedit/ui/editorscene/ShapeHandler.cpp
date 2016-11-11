@@ -1,4 +1,5 @@
 #include "ShapeHandler.h"
+#include "voxel/polyvox/RawVolume.h"
 #include "voxel/generator/ShapeGenerator.h"
 #include "voxel/polyvox/VolumeMerger.h"
 

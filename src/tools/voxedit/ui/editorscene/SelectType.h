@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace voxedit {
 
 enum class SelectType : uint8_t {

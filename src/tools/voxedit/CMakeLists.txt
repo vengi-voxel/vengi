@@ -21,6 +21,7 @@ set(SRCS
 	ui/editorscene/tool/Crop.h ui/editorscene/tool/Crop.cpp
 	ui/editorscene/tool/Expand.h ui/editorscene/tool/Expand.cpp
 
+	ui/editorscene/SelectionHandler.h ui/editorscene/SelectionHandler.cpp
 	ui/editorscene/SelectType.h
 
 	ui/palette/PaletteWidget.h ui/palette/PaletteWidget.cpp

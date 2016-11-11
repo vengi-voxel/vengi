@@ -2,7 +2,10 @@
 
 #include "Shape.h"
 #include "voxel/polyvox/Voxel.h"
-#include "voxel/polyvox/RawVolume.h"
+
+namespace voxel {
+class RawVolume;
+}
 
 namespace voxedit {
 
@@ -37,7 +40,6 @@ inline Shape ShapeHandler::cursorShape() const {
 }
 
 inline void ShapeHandler::setVoxelType(voxel::VoxelType type) {
-	Log::info("Change voxel to %i", std::enum_value(type));
 	_currentVoxel = voxel::createVoxel(type);
 }
 

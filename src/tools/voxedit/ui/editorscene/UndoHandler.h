@@ -1,7 +1,11 @@
 #pragma once
 
-#include "voxel/polyvox/RawVolume.h"
 #include <vector>
+#include <cstdint>
+
+namespace voxel {
+class RawVolume;
+}
 
 namespace voxedit {
 

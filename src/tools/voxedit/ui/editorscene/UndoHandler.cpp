@@ -1,4 +1,5 @@
 #include "UndoHandler.h"
+#include "voxel/polyvox/RawVolume.h"
 
 namespace voxedit {
 
