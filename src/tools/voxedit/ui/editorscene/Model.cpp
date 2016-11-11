@@ -9,6 +9,8 @@
 #include "select/LineVertical.h"
 #include "select/Same.h"
 #include "select/Single.h"
+#include "tool/Crop.h"
+#include "tool/Expand.h"
 
 namespace voxedit {
 
@@ -93,31 +95,19 @@ void Model::crop() {
 		Log::info("Empty volumes can't be cropped");
 		return;
 	}
-	voxel::RawVolume* newVolume = voxel::cropVolume(_modelVolume, voxel::createVoxel(voxel::VoxelType::Air));
+	voxel::RawVolume* newVolume = voxedit::tool::crop(_modelVolume);
 	if (newVolume == nullptr) {
-		Log::info("Failed to crop the model volume");
 		return;
 	}
-	const glm::ivec3& oldMaxs = _modelVolume->getEnclosingRegion().getUpperCorner();
-	const glm::ivec3& newMaxs = newVolume->getEnclosingRegion().getUpperCorner();
-	const glm::ivec3 delta = oldMaxs - newMaxs;
-	const voxel::Region srcRegion(glm::ivec3(0), delta);
-	const voxel::Region& destRegion = newVolume->getEnclosingRegion();
-	voxel::mergeRawVolumes(newVolume, _modelVolume, destRegion, srcRegion);
 	markUndo();
 	setNewVolume(newVolume);
 }
 
 void Model::extend(int size) {
-	voxel::Region region = _modelVolume->getEnclosingRegion();
-	region.shiftUpperCorner(size, size, size);
-	if (!region.isValid()) {
+	voxel::RawVolume* newVolume = voxedit::tool::expand(_modelVolume, size);
+	if (newVolume == nullptr) {
 		return;
 	}
-	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
-	const voxel::Region& destRegion = _modelVolume->getEnclosingRegion();
-	const voxel::Region& srcRegion = _modelVolume->getEnclosingRegion();
-	voxel::mergeRawVolumes(newVolume, _modelVolume, destRegion, srcRegion);
 	markUndo();
 	setNewVolume(newVolume);
 }

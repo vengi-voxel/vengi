@@ -10,12 +10,17 @@ set(SRCS
 	ui/editorscene/UndoHandler.h ui/editorscene/UndoHandler.cpp
 	ui/editorscene/Axis.h
 	ui/editorscene/voxelizer.h
+
 	ui/editorscene/select/Edge.h ui/editorscene/select/Edge.cpp
 	ui/editorscene/select/LineHorizontal.h ui/editorscene/select/LineHorizontal.cpp
 	ui/editorscene/select/LineVertical.h ui/editorscene/select/LineVertical.cpp
 	ui/editorscene/select/Same.h ui/editorscene/select/Same.cpp
 	ui/editorscene/select/Single.h
 	ui/editorscene/select/Select.h ui/editorscene/select/Select.cpp
+
+	ui/editorscene/tool/Crop.h ui/editorscene/tool/Crop.cpp
+	ui/editorscene/tool/Expand.h ui/editorscene/tool/Expand.cpp
+
 	ui/editorscene/SelectType.h
 
 	ui/palette/PaletteWidget.h ui/palette/PaletteWidget.cpp

@@ -17,22 +17,21 @@ namespace voxedit {
  */
 class Model {
 private:
-	int _initialized = 0;
-	int _size = 32;
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
 	frontend::RawVolumeRenderer _rawVolumeSelectionRenderer;
+	UndoHandler _undoHandler;
+	ShapeHandler _shapeHandler;
 
+	int _initialized = 0;
+	int _size = 32;
 	int _mouseX = 0;
 	int _mouseY = 0;
 
-	SelectType _selectionType = SelectType::Single;
-
 	glm::ivec3 _lastPlacement;
-	Axis _lockedAxis = Axis::None;
 	glm::ivec3 _cursorPos;
 
-	UndoHandler _undoHandler;
-	ShapeHandler _shapeHandler;
+	SelectType _selectionType = SelectType::Single;
+	Axis _lockedAxis = Axis::None;
 
 	void markUndo();
 	bool placeCursor();
