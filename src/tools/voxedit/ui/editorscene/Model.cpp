@@ -331,10 +331,8 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 						}
 						voxel::mergeRawVolumes(_cursorPositionVolume, cropped.get(), voxel::Region(lower, upper), srcRegion);
 					}
-
-					if (directVoxel) {
-						//_cursorPositionVolume->setVoxel(_result.hitVoxel, currentVoxel());
-					}
+				} else {
+					Log::error("Failed to crop cursor volume");
 				}
 			}
 		}
