@@ -417,17 +417,22 @@ bool Model::setCursorShape(Shape type, bool force) {
 	int height = 3;
 	int depth = 3;
 	if (_cursorShape == Shape::Single) {
+		startCursorUpdate();
 		_cursorVolume->setVoxel(center, _currentVoxel);
-		_cursorShapeState = CursorShapeState::Created;
+		finishCursorUpdate();
 		return true;
 	} else if (_cursorShape == Shape::Dome) {
+		startCursorUpdate();
 		voxel::shape::createDome(*_cursorVolume, center, width, height, depth, _currentVoxel);
 	} else if (_cursorShape == Shape::Cone) {
+		startCursorUpdate();
 		voxel::shape::createCone(*_cursorVolume, center, width, height, depth, _currentVoxel);
 	} else if (_cursorShape == Shape::Plane) {
+		startCursorUpdate();
 		voxel::shape::createPlane(*_cursorVolume, center, width, depth, _currentVoxel);
 	} else if (_cursorShape == Shape::Circle) {
 		const double radius = 3.0;
+		startCursorUpdate();
 		voxel::shape::createCirclePlane(*_cursorVolume, center, width, depth, radius, _currentVoxel);
 	} else if (_cursorShape == Shape::Sphere) {
 		Log::info("Unsupported cursor shape - sphere not yet implemented");
@@ -435,6 +440,15 @@ bool Model::setCursorShape(Shape type, bool force) {
 		Log::info("Unsupported cursor shape");
 	}
 	return false;
+}
+
+void Model::startCursorUpdate() {
+	Log::info("change cursor shape to %i", (int)_cursorShape);
+	_cursorVolume->clear();
+}
+
+void Model::finishCursorUpdate() {
+	_cursorShapeState = CursorShapeState::Created;
 }
 
 }

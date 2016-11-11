@@ -49,6 +49,8 @@ private:
 	void clearUndoStates();
 	void markUndo();
 	bool placeCursor();
+	void startCursorUpdate();
+	void finishCursorUpdate();
 public:
 	Model();
 	~Model();
