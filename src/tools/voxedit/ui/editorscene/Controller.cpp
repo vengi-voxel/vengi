@@ -29,9 +29,6 @@ void Controller::changeCameraRotationType(video::CameraRotationType type) {
 }
 
 void Controller::update(long deltaFrame) {
-	const float speed = _cameraSpeed * static_cast<float>(deltaFrame);
-	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
-	_camera.move(moveDelta);
 	_camera.update(deltaFrame);
 }
 

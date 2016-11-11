@@ -67,7 +67,7 @@ void EditorScene::setAction(Action action) {
 }
 
 voxedit::Shape EditorScene::cursorShape() const {
-	return m().cursorShape();
+	return m().shapeHandler().cursorShape();
 }
 
 void EditorScene::setCursorShape(voxedit::Shape type) {
@@ -168,11 +168,11 @@ void EditorScene::redo() {
 }
 
 bool EditorScene::canUndo() const {
-	return m().canUndo();
+	return m().undoHandler().canUndo();
 }
 
 bool EditorScene::canRedo() const {
-	return m().canRedo();
+	return m().undoHandler().canRedo();
 }
 
 bool EditorScene::exportModel(std::string_view file) {
@@ -197,7 +197,7 @@ void EditorScene::resetCamera() {
 }
 
 void EditorScene::setVoxelType(voxel::VoxelType type) {
-	m().setVoxelType(type);
+	m().shapeHandler().setVoxelType(type);
 }
 
 void EditorScene::unselectAll() {

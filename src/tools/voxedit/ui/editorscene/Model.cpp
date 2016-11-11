@@ -4,7 +4,6 @@
 #include "voxel/polyvox/VolumeRotator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
-#include "voxel/generator/ShapeGenerator.h"
 #include "select/Edge.h"
 #include "select/LineHorizontal.h"
 #include "select/LineVertical.h"
@@ -27,7 +26,6 @@ static_assert(SDL_arraysize(selectionsArray) == std::enum_value(SelectType::Max)
 
 Model::Model() :
 		_rawVolumeRenderer(true, false, true), _rawVolumeSelectionRenderer(false, false, false) {
-	_undoStates.reserve(_maxUndoStates);
 }
 
 Model::~Model() {
@@ -63,7 +61,7 @@ bool Model::load(std::string_view file) {
 		return false;
 	}
 	Log::info("Loaded model file %s", file.data());
-	clearUndoStates();
+	_undoHandler.clearUndoStates();
 	setNewVolume(newVolume);
 	return true;
 }
@@ -84,6 +82,10 @@ void Model::unselectAll() {
 void Model::setMousePos(int x, int y) {
 	_mouseX = x;
 	_mouseY = y;
+}
+
+void Model::markUndo() {
+	_undoHandler.markUndo(_modelVolume);
 }
 
 void Model::crop() {
@@ -137,7 +139,7 @@ void Model::executeAction(bool mouseDown, long now) {
 	bool extract = false;
 	const bool didHit = _result.didHit;
 	if (didHit && _action == Action::CopyVoxel) {
-		setVoxelType(getVoxel(_cursorPos).getMaterial());
+		shapeHandler().setVoxelType(getVoxel(_cursorPos).getMaterial());
 	} else if (didHit && _action == Action::SelectVoxels) {
 		select(_cursorPos);
 	} else if (didHit && _action == Action::OverrideVoxel) {
@@ -158,8 +160,24 @@ void Model::executeAction(bool mouseDown, long now) {
 	_dirty = true;
 }
 
+void Model::undo() {
+	voxel::RawVolume* v = _undoHandler.undo();
+	if (v == nullptr) {
+		return;
+	}
+	setNewVolume(v);
+}
+
+void Model::redo() {
+	voxel::RawVolume* v = _undoHandler.redo();
+	if (v == nullptr) {
+		return;
+	}
+	setNewVolume(v);
+}
+
 bool Model::placeCursor() {
-	return voxel::mergeRawVolumesSameDimension(_modelVolume, _cursorPositionVolume) > 0;
+	return _shapeHandler.placeCursor(_modelVolume, _cursorPositionVolume);
 }
 
 void Model::resetLastTrace() {
@@ -176,7 +194,7 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 
 	delete _cursorVolume;
 	_cursorVolume = new voxel::RawVolume(region);
-	core_assert_always(setCursorShape(Shape::Single, true));
+	core_assert_always(_shapeHandler.setCursorShape(Shape::Single, _cursorVolume, true));
 
 	delete _rawVolumeSelectionRenderer.setVolume(new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(new voxel::RawVolume(region));
@@ -194,7 +212,7 @@ bool Model::newVolume(bool force) {
 		return false;
 	}
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
-	clearUndoStates();
+	_undoHandler.clearUndoStates();
 	setNewVolume(new voxel::RawVolume(region));
 	return true;
 }
@@ -250,36 +268,6 @@ void Model::cut() {
 	// TODO: delete selected volume from model volume
 }
 
-void Model::undo() {
-	if (!canUndo()) {
-		return;
-	}
-	setNewVolume(new voxel::RawVolume(_undoStates[--_undoIndex]));
-}
-
-void Model::redo() {
-	// nothing to redo
-	if (!canRedo()) {
-		return;
-	}
-	setNewVolume(new voxel::RawVolume(_undoStates[++_undoIndex]));
-}
-
-void Model::markUndo() {
-	auto i = _undoStates.begin();
-	std::advance(i, _undoIndex);
-	for (auto iter = i; iter < _undoStates.end(); ++iter) {
-		delete *iter;
-	}
-	_undoStates.erase(i, _undoStates.end());
-	_undoStates.push_back(new voxel::RawVolume(_modelVolume));
-	while (_undoStates.size() > _maxUndoStates) {
-		delete *_undoStates.begin();
-		_undoStates.erase(_undoStates.begin());
-	}
-	_undoIndex = _undoStates.size();
-}
-
 void Model::render(const video::Camera& camera) {
 	_rawVolumeRenderer.render(camera);
 }
@@ -313,15 +301,7 @@ void Model::shutdown() {
 	_modelVolume = nullptr;
 	delete _rawVolumeRenderer.shutdown();
 	delete _rawVolumeSelectionRenderer.shutdown();
-	clearUndoStates();
-}
-
-void Model::clearUndoStates() {
-	for (voxel::RawVolume* vol : _undoStates) {
-		delete vol;
-	}
-	_undoStates.clear();
-	_undoIndex = 0u;
+	_undoHandler.clearUndoStates();
 }
 
 bool Model::extractSelectionVolume() {
@@ -403,52 +383,6 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 	extractSelectionVolume();
 
 	return true;
-}
-
-// TODO: scale via s x v (scale, axis, value)
-bool Model::setCursorShape(Shape type, bool force) {
-	if (_cursorShape == type && !force) {
-		return false;
-	}
-	_cursorShape = type;
-	_cursorShapeState = CursorShapeState::New;
-	const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
-	int width = 3;
-	int height = 3;
-	int depth = 3;
-	if (_cursorShape == Shape::Single) {
-		startCursorUpdate();
-		_cursorVolume->setVoxel(center, _currentVoxel);
-		finishCursorUpdate();
-		return true;
-	} else if (_cursorShape == Shape::Dome) {
-		startCursorUpdate();
-		voxel::shape::createDome(*_cursorVolume, center, width, height, depth, _currentVoxel);
-	} else if (_cursorShape == Shape::Cone) {
-		startCursorUpdate();
-		voxel::shape::createCone(*_cursorVolume, center, width, height, depth, _currentVoxel);
-	} else if (_cursorShape == Shape::Plane) {
-		startCursorUpdate();
-		voxel::shape::createPlane(*_cursorVolume, center, width, depth, _currentVoxel);
-	} else if (_cursorShape == Shape::Circle) {
-		const double radius = 3.0;
-		startCursorUpdate();
-		voxel::shape::createCirclePlane(*_cursorVolume, center, width, depth, radius, _currentVoxel);
-	} else if (_cursorShape == Shape::Sphere) {
-		Log::info("Unsupported cursor shape - sphere not yet implemented");
-	} else {
-		Log::info("Unsupported cursor shape");
-	}
-	return false;
-}
-
-void Model::startCursorUpdate() {
-	Log::info("change cursor shape to %i", (int)_cursorShape);
-	_cursorVolume->clear();
-}
-
-void Model::finishCursorUpdate() {
-	_cursorShapeState = CursorShapeState::Created;
 }
 
 }

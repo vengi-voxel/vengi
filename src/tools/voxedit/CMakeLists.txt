@@ -5,6 +5,9 @@ set(SRCS
 	ui/editorscene/Controller.h ui/editorscene/Controller.cpp
 	ui/editorscene/Action.h
 	ui/editorscene/Shape.h
+	ui/editorscene/SelectionHandler.h
+	ui/editorscene/ShapeHandler.h ui/editorscene/ShapeHandler.cpp
+	ui/editorscene/UndoHandler.h ui/editorscene/UndoHandler.cpp
 	ui/editorscene/Axis.h
 	ui/editorscene/voxelizer.h
 	ui/editorscene/select/Edge.h ui/editorscene/select/Edge.cpp

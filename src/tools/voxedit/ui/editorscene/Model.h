@@ -5,7 +5,8 @@
 #include "frontend/RawVolumeRenderer.h"
 #include "Action.h"
 #include "SelectType.h"
-#include "Shape.h"
+#include "ShapeHandler.h"
+#include "UndoHandler.h"
 #include "Axis.h"
 #include <vector>
 
@@ -16,21 +17,7 @@ namespace voxedit {
  */
 class Model {
 private:
-	enum class CursorShapeState {
-		/** just switched the shape type */
-		New,
-		/** clicked into the volume but didn't yet configure the cursor shape - e.g. modify the circle size */
-		Configure,
-		/** fully created the cursor volume, can be placed on click */
-		Created
-	};
-
-	std::vector<voxel::RawVolume*> _undoStates;
-	uint8_t _undoIndex = 0u;
-	static constexpr int _maxUndoStates = 64;
-
 	int _initialized = 0;
-	voxel::Voxel _currentVoxel;
 	int _size = 32;
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
 	frontend::RawVolumeRenderer _rawVolumeSelectionRenderer;
@@ -39,25 +26,22 @@ private:
 	int _mouseY = 0;
 
 	SelectType _selectionType = SelectType::Single;
-	Shape _cursorShape = Shape::Single;
-	CursorShapeState _cursorShapeState = CursorShapeState::New;
+
 	glm::ivec3 _lastPlacement;
 	Axis _lockedAxis = Axis::None;
 	glm::ivec3 _cursorPos;
 
-	bool actionRequiresExistingVoxel(Action action) const;
-	void clearUndoStates();
+	UndoHandler _undoHandler;
+	ShapeHandler _shapeHandler;
+
 	void markUndo();
 	bool placeCursor();
-	void startCursorUpdate();
-	void finishCursorUpdate();
+	bool actionRequiresExistingVoxel(Action action) const;
 public:
 	Model();
 	~Model();
 
 	void onResize(const glm::ivec2& size);
-
-	const voxel::Voxel& currentVoxel() const;
 
 	void init();
 	void shutdown();
@@ -68,11 +52,6 @@ public:
 
 	void crop();
 	void extend(int size = 1);
-
-	void undo();
-	void redo();
-	bool canUndo() const;
-	bool canRedo() const;
 
 	bool save(std::string_view file);
 	bool load(std::string_view file);
@@ -98,7 +77,6 @@ public:
 	Action keyAction() const;
 	Action uiAction() const;
 
-	void setVoxelType(voxel::VoxelType type);
 	voxel::RawVolume* modelVolume();
 	const voxel::RawVolume* modelVolume() const;
 
@@ -124,11 +102,18 @@ public:
 	void setSelectionType(SelectType type);
 	SelectType selectionType() const;
 
-	Shape cursorShape() const;
-	bool setCursorShape(Shape type, bool force = false);
-
 	Axis lockedAxis() const;
 	void setLockedAxis(Axis axis, bool unlock);
+
+	void undo();
+	void redo();
+
+	UndoHandler& undoHandler();
+	const UndoHandler& undoHandler() const;
+
+	void setCursorShape(Shape shape);
+	ShapeHandler& shapeHandler();
+	const ShapeHandler& shapeHandler() const;
 
 public:
 	// TODO: maybe move into scene
@@ -157,21 +142,6 @@ public:
 	voxel::RawVolume* _modelVolume = nullptr;
 };
 
-inline bool Model::canUndo() const {
-	return _undoIndex > 0;
-}
-
-inline bool Model::canRedo() const {
-	if (_undoStates.empty()) {
-		return false;
-	}
-	return _undoIndex < _undoStates.size() - 1;
-}
-
-inline Shape Model::cursorShape() const {
-	return _cursorShape;
-}
-
 inline Axis Model::lockedAxis() const {
 	return _lockedAxis;
 }
@@ -184,21 +154,32 @@ inline void Model::setLockedAxis(Axis axis, bool unlock) {
 	}
 }
 
+inline void Model::setCursorShape(Shape shape) {
+	_shapeHandler.setCursorShape(shape, _cursorVolume, true);
+}
+
+inline ShapeHandler& Model::shapeHandler() {
+	return _shapeHandler;
+}
+
+inline const ShapeHandler& Model::shapeHandler() const {
+	return _shapeHandler;
+}
+
+inline UndoHandler& Model::undoHandler() {
+	return _undoHandler;
+}
+
+inline const UndoHandler& Model::undoHandler() const {
+	return _undoHandler;
+}
+
 inline void Model::setSelectionType(SelectType type) {
 	_selectionType = type;
 }
 
 inline SelectType Model::selectionType() const {
 	return _selectionType;
-}
-
-inline void Model::setVoxelType(voxel::VoxelType type) {
-	Log::info("Change voxel to %i", std::enum_value(type));
-	_currentVoxel = voxel::createVoxel(type);
-}
-
-inline const voxel::Voxel& Model::currentVoxel() const {
-	return _currentVoxel;
 }
 
 inline voxel::PickResult& Model::result() {
