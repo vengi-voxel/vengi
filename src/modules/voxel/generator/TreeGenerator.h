@@ -6,8 +6,12 @@
 
 #include "ShapeGenerator.h"
 #include "voxel/BiomeManager.h"
+#include "core/Random.h"
+#include "voxel/WorldContext.h"
 
 namespace voxel {
+
+class GeneratorContext;
 
 class TreeGenerator {
 private:

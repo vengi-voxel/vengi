@@ -5,10 +5,13 @@
 #pragma once
 
 #include "ShapeGenerator.h"
+#include "core/Random.h"
 #include <unordered_map>
 #include <string>
 
 namespace voxel {
+
+class GeneratorContext;
 
 enum LSystemAlphabet {
 	X_FORWARD = 'X',

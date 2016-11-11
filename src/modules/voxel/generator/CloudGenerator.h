@@ -6,8 +6,11 @@
 
 #include "ShapeGenerator.h"
 #include "voxel/BiomeManager.h"
+#include "core/Random.h"
 
 namespace voxel {
+
+class GeneratorContext;
 
 class CloudGenerator {
 public:

@@ -4,6 +4,7 @@
 #include "voxel/polyvox/VolumeRotator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
+#include "voxel/generator/ShapeGenerator.h"
 #include "select/Edge.h"
 #include "select/LineHorizontal.h"
 #include "select/LineVertical.h"
@@ -408,11 +409,25 @@ bool Model::setCursorShape(Shape type, bool force) {
 	}
 	_cursorShape = type;
 	_cursorShapeState = CursorShapeState::New;
+	const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
+	int width = 3;
+	int height = 3;
+	int depth = 3;
 	if (_cursorShape == Shape::Single) {
-		const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
 		_cursorVolume->setVoxel(center, _currentVoxel);
 		_cursorShapeState = CursorShapeState::Created;
 		return true;
+	} else if (_cursorShape == Shape::Dome) {
+		voxel::shape::createDome(*_cursorVolume, center, width, height, depth, _currentVoxel);
+	} else if (_cursorShape == Shape::Cone) {
+		voxel::shape::createCone(*_cursorVolume, center, width, height, depth, _currentVoxel);
+	} else if (_cursorShape == Shape::Plane) {
+		voxel::shape::createPlane(*_cursorVolume, center, width, depth, _currentVoxel);
+	} else if (_cursorShape == Shape::Circle) {
+		const double radius = 3.0;
+		voxel::shape::createCirclePlane(*_cursorVolume, center, width, depth, radius, _currentVoxel);
+	} else if (_cursorShape == Shape::Sphere) {
+		Log::info("Unsupported cursor shape - sphere not yet implemented");
 	} else {
 		Log::info("Unsupported cursor shape");
 	}

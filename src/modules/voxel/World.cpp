@@ -206,7 +206,7 @@ void World::reset() {
 void World::createUnderground(GeneratorContext& ctx) {
 	const glm::ivec3 startPos(1, 1, 1);
 	const Voxel& voxel = createVoxel(VoxelType::Grass1);
-	ShapeGenerator::createPlane(ctx, startPos, 10, 10, voxel);
+	shape::createPlane(ctx, startPos, 10, 10, voxel);
 }
 
 void World::create(GeneratorContext& ctx) {

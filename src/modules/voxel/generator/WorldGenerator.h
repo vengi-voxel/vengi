@@ -9,6 +9,9 @@
 
 namespace voxel {
 
+class GeneratorContext;
+struct WorldContext;
+
 constexpr int WORLDGEN_TREES = 1 << 0;
 constexpr int WORLDGEN_CLOUDS = 1 << 1;
 

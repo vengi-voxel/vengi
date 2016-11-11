@@ -27,10 +27,10 @@ void CloudGenerator::createClouds(GeneratorContext& ctx, const BiomeManager& bio
 		if (!biomManager.hasClouds(chunkCloudCenterPos)) {
 			continue;
 		}
-		ShapeGenerator::createEllipse(ctx, chunkCloudCenterPos, 10, height, 10, voxel);
+		shape::createEllipse(ctx, chunkCloudCenterPos, 10, height, 10, voxel);
 		chunkCloudCenterPos.x -= 5;
 		chunkCloudCenterPos.y -= 5 + i;
-		ShapeGenerator::createEllipse(ctx, chunkCloudCenterPos, 20, height, 20, voxel);
+		shape::createEllipse(ctx, chunkCloudCenterPos, 20, height, 20, voxel);
 	}
 }
 
