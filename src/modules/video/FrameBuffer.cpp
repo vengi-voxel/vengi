@@ -32,6 +32,12 @@ bool FrameBuffer::init(const glm::ivec2& dimension) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, dimension.x, dimension.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+
+	glGenRenderbuffers(1, &_depth);
+	glBindRenderbuffer(GL_RENDERBUFFER, _depth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, dimension.x, dimension.y);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depth);
+
 	GL_checkError();
 
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
@@ -50,10 +56,14 @@ void FrameBuffer::shutdown() {
 	if (_fbo != 0) {
 		glDeleteFramebuffers(1, &_fbo);
 	}
+	if (_depth != 0) {
+		glDeleteRenderbuffers(1, &_depth);
+	}
 	if (_texture != 0) {
 		glDeleteTextures(1, &_texture);
 		_texture = 0;
 	}
+	_depth = 0;
 	_fbo = 0;
 	core_assert(_oldFramebuffer == -1);
 }
@@ -69,7 +79,7 @@ void FrameBuffer::bind(bool read) {
 	if (!read) {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
 	}
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void FrameBuffer::unbind() {

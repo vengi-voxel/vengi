@@ -13,6 +13,7 @@ class FrameBuffer {
 private:
 	GLuint _fbo = 0u;
 	GLuint _texture = 0u;
+	GLuint _depth = 0u;
 
 	glm::ivec2 _dimension;
 
