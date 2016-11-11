@@ -108,7 +108,7 @@ void Model::crop() {
 
 void Model::extend(int size) {
 	voxel::Region region = _modelVolume->getEnclosingRegion();
-	region.grow(size);
+	region.shiftUpperCorner(size, size, size);
 	if (!region.isValid()) {
 		return;
 	}
