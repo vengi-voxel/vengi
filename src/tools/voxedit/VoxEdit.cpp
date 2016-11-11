@@ -97,6 +97,17 @@ core::AppState VoxEdit::onInit() {
 		select(pos);
 	}).setHelp("Select voxels from the given position");
 
+	core::Command::registerCommand("rotate", [this] (const core::CmdArgs& args) {
+		if (args.size() != 3) {
+			Log::info("Expected to get x, y and z angles in degrees");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		this->_mainWindow->rotate(x, y, z);
+	}).setHelp("Select voxels from the given position");
+
 	COMMAND_CALL("new", newFile(), "Create a new scene");
 
 	COMMAND_FILE(save, "Save the current state to the given file");

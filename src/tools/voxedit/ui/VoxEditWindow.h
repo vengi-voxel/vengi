@@ -58,6 +58,7 @@ private:
 	void rotatex();
 	void rotatey();
 	void rotatez();
+	void rotate(int x, int y, int z);
 	void crop();
 	void extend(int size = 1);
 	void toggleviewport();
@@ -78,5 +79,18 @@ public:
 	void OnProcess() override;
 	void OnDie() override;
 };
+
+inline void VoxEditWindow::rotatex() {
+	rotate(90, 0, 0);
+}
+
+inline void VoxEditWindow::rotatey() {
+	rotate(0, 90, 0);
+}
+
+inline void VoxEditWindow::rotatez() {
+	rotate(0, 0, 90);
+}
+
 
 }

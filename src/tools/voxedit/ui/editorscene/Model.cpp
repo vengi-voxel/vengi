@@ -410,7 +410,6 @@ bool Model::setCursorShape(Shape type, bool force) {
 	_cursorShapeState = CursorShapeState::New;
 	if (_cursorShape == Shape::Single) {
 		const glm::ivec3& center = _cursorVolume->getEnclosingRegion().getCentre();
-		Log::info("%s", glm::to_string(center).c_str());
 		_cursorVolume->setVoxel(center, _currentVoxel);
 		_cursorShapeState = CursorShapeState::Created;
 		return true;

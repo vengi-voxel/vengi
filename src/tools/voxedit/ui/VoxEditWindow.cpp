@@ -109,16 +109,8 @@ bool VoxEditWindow::init() {
 	return true;
 }
 
-void VoxEditWindow::rotatex() {
-	_scene->rotate(90, 0, 0);
-}
-
-void VoxEditWindow::rotatey() {
-	_scene->rotate(0, 90, 0);
-}
-
-void VoxEditWindow::rotatez() {
-	_scene->rotate(0, 0, 90);
+void VoxEditWindow::rotate(int x, int y, int z) {
+	_scene->rotate(x, y, z);
 }
 
 void VoxEditWindow::toggleviewport() {
