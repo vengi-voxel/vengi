@@ -5,7 +5,6 @@
 #include "ServerLoop.h"
 
 #include "core/Command.h"
-#include "core/Tokenizer.h"
 #include "core/Log.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
@@ -21,6 +20,7 @@
 #include "backend/network/UserDisconnectHandler.h"
 #include "backend/network/AttackHandler.h"
 #include "backend/network/MoveHandler.h"
+#include "util/CommandHandler.h"
 
 namespace backend {
 
@@ -89,27 +89,8 @@ void ServerLoop::readInput() {
 	if (input == nullptr) {
 		return;
 	}
-	if (core::Command::execute(input) != 0) {
-		return;
-	}
-	core::Tokenizer t(input);
-	while (t.hasNext()) {
-		const std::string& var = t.next();
-		const core::VarPtr& varPtr = core::Var::get(var);
-		if (!varPtr) {
-			break;
-		}
-		if (!t.hasNext()) {
-			if (varPtr) {
-				Log::info("%s = %s", varPtr->name().c_str(), varPtr->strVal().c_str());
-			} else {
-				Log::error("unknown command");
-			}
-			break;
-		}
-		const std::string& value = t.next();
-		varPtr->setVal(value);
-	}
+
+	util::executeCommands(input);
 }
 
 void ServerLoop::onFrame(long dt) {

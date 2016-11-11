@@ -34,7 +34,7 @@ set(SRCS
 )
 set(LIB backend)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} network io core util voxel attrib cooldown persistence ai stock)
+target_link_libraries(${LIB} network io core util voxel attrib cooldown persistence ai stock util)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 generate_db_models(${LIB} ${ROOT_DIR}/data/server/database/tables.tbl DatabaseModels.h)
 

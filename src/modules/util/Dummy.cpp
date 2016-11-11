@@ -1,5 +1,0 @@
-/**
- * @file
- */
-
-#include "IProgressMonitor.h"
