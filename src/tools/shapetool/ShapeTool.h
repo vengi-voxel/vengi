@@ -14,8 +14,6 @@
 #include "video/VertexBuffer.h"
 #include "voxel/World.h"
 
-class TreeParametersWindow;
-
 /**
  * @brief This tool will render the world as a client would, but with options to modify it.
  */
@@ -31,7 +29,6 @@ protected:
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;
-	TreeParametersWindow* _treeParameterWindow = nullptr;
 
 	bool _resetTriggered = false;
 	bool _lineModeRendering = false;
@@ -40,7 +37,6 @@ protected:
 	int _vertices = 0;
 	int _drawCallsEntities = 0;
 
-	void onMouseButtonPress(int32_t x, int32_t y, uint8_t button) override;
 	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize() override;

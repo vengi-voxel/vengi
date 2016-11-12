@@ -11,14 +11,10 @@
 #include "LodCreator.h"
 #include "core/Random.h"
 #include "core/Concurrency.h"
-#include "generator/ShapeGenerator.h"
-#include "generator/TreeGenerator.h"
-#include "generator/CloudGenerator.h"
 #include "generator/WorldGenerator.h"
 #include <SDL.h>
 #include "polyvox/AStarPathfinder.h"
 #include "polyvox/CubicSurfaceExtractor.h"
-#include "polyvox/RawVolume.h"
 #include "polyvox/Voxel.h"
 #include "Constants.h"
 #include "IsQuadNeeded.h"
@@ -160,14 +156,6 @@ Region World::getRegion(const glm::ivec3& pos, int size) const {
 
 void World::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	_volumeData->setVoxel(pos, voxel);
-}
-
-void World::placeTree(const TreeContext& ctx) {
-	core_trace_scoped(PlaceTree);
-	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y, isFloor), ctx.pos.y);
-	const Region& region = getChunkRegion(getMeshPos(pos));
-	GeneratorContext tctx(_volumeData, _volumeData->getChunk(pos), region);
-	tree::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
 }
 
 bool World::allowReExtraction(const glm::ivec3& pos) {

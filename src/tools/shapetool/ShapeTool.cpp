@@ -8,7 +8,6 @@
 #include "core/GLM.h"
 #include "core/Color.h"
 #include "ui/WorldParametersWindow.h"
-#include "ui/TreeParametersWindow.h"
 #include "frontend/Movement.h"
 
 // tool for testing the world createXXX functions without starting the application
@@ -89,7 +88,6 @@ core::AppState ShapeTool::onInit() {
 	_entity->lerpPosition(targetPos, _entity->orientation());
 
 	new WorldParametersWindow(this);
-	_treeParameterWindow = new TreeParametersWindow(this);
 
 	return state;
 }
@@ -188,21 +186,6 @@ bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 	return Super::onKeyPress(key, modifier);
 }
 
-void ShapeTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
-	Super::onMouseButtonPress(x, y, button);
-
-	if (button != SDL_BUTTON_LEFT) {
-		return;
-	}
-
-	const video::Ray& ray = _camera.mouseRay(glm::ivec2(x, y));
-	glm::ivec3 hit;
-	voxel::Voxel voxel;
-	if (_world->raycast(ray.origin, ray.direction, _worldRenderer.getViewDistance(), hit, voxel)) {
-		_treeParameterWindow->setPosition(hit);
-	}
-}
-
 void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	Super::onMouseMotion(x, y, relX, relY);
 	const bool current = isRelativeMouseMode();
@@ -210,12 +193,6 @@ void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) 
 		return;
 	}
 	_camera.rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
-}
-
-void ShapeTool::placeTree(const voxel::TreeContext& ctx) {
-	_world->placeTree(ctx);
-	regenerate(ctx.pos);
-	// TODO: might have affected more than one chunk
 }
 
 void ShapeTool::regenerate(const glm::ivec2& pos) {

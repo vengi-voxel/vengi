@@ -285,10 +285,6 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 		int size = random.random(12, maxSize);
 		const TreeType treeType = (TreeType)random.random(0, int(TreeType::MAX) - 1);
 		switch (treeType) {
-		default:
-			height = random.random(10, 14);
-			trunkHeight = random.random(5, 9);
-			break;
 		case TreeType::FIR:
 			height = random.random(20, 28);
 			trunkHeight = random.random(40, 56);
@@ -315,8 +311,11 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 			trunkHeight = random.random(6, 15);
 			trunkWidth = 4;
 			break;
+		default:
+			height = random.random(10, 14);
+			trunkHeight = random.random(5, 9);
+			break;
 		}
-
 		addTree(volume, pos, treeType, trunkHeight, trunkWidth, size, size, height, random);
 	}
 }

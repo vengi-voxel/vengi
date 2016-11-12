@@ -102,7 +102,6 @@ public:
 	BiomeManager& getBiomeManager();
 	const BiomeManager& getBiomeManager() const;
 
-	void placeTree(const TreeContext& ctx);
 	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 
 	/**
