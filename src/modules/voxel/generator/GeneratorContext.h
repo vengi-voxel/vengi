@@ -22,6 +22,22 @@ public:
 		}
 	}
 
+	inline operator PagedVolume& () const {
+		return *_pagedVolume;
+	}
+
+	inline operator const PagedVolume& () const {
+		return *_pagedVolume;
+	}
+
+	inline operator PagedVolume* () const {
+		return _pagedVolume;
+	}
+
+	inline operator const PagedVolume* () const {
+		return _pagedVolume;
+	}
+
 	inline PagedVolume::Chunk* getChunk() const {
 		return _chunk;
 	}
