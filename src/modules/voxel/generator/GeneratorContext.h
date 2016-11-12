@@ -15,20 +15,11 @@ public:
 	Region region;
 	Region maxRegion = Region::MaxRegion;
 
-	GeneratorContext(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk) :
-			_pagedVolume(voxelStorage), _chunk(chunk) {
+	GeneratorContext(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk, const Region& _region) :
+			_pagedVolume(voxelStorage), _chunk(chunk), region(_region) {
 		if (_chunk != nullptr) {
 			_validRegion = _chunk->getRegion();
 		}
-	}
-
-	void setChunk(PagedVolume::Chunk* chunk) {
-		_chunk = chunk;
-		_validRegion = chunk->getRegion();
-	}
-
-	void setVoxelStorage(PagedVolume* voxelStorage) {
-		_pagedVolume = voxelStorage;
 	}
 
 	inline PagedVolume::Chunk* getChunk() const {
@@ -41,10 +32,6 @@ public:
 
 	inline bool setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 		return setVoxel(pos.x, pos.y, pos.z, voxel);
-	}
-
-	inline bool canGetVoxel(int x, int y, int z) const {
-		return maxRegion.containsPoint(x, y, z);
 	}
 
 	inline const Voxel& getVoxel(const glm::ivec3& pos) const {

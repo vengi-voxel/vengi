@@ -94,7 +94,7 @@ protected:
 	long _seed = 0;
 
 	AbstractVoxelTest() :
-			_pager(this), _volData(&_pager, 16 * 1024 * 1024, 64), _ctx(&_volData, nullptr) {
+			_pager(this), _volData(&_pager, 16 * 1024 * 1024, 64), _ctx(nullptr, nullptr, voxel::Region()) {
 	}
 
 public:
@@ -103,8 +103,7 @@ public:
 		core::AbstractTest::SetUp();
 		_random.setSeed(_seed);
 		const voxel::Region region(glm::ivec3(0, 0, 0), glm::ivec3(63, 63, 63));
-		_ctx.region = region;
-		_ctx.setChunk(_volData.getChunk(region.getCentre()));
+		_ctx = GeneratorContext(&_volData, _volData.getChunk(region.getCentre()), region);
 	}
 };
 

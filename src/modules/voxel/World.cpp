@@ -35,8 +35,7 @@ namespace voxel {
 
 void World::Pager::erase(PagedVolume::PagerContext& pctx) {
 #if PERSIST
-	GeneratorContext ctx(_world._volumeData, pctx.chunk);
-	ctx.region = pctx.region;
+	GeneratorContext ctx(_world._volumeData, pctx.chunk, pctx.region);
 	_worldPersister.erase(ctx, _world.seed());
 #endif
 }
@@ -45,8 +44,7 @@ bool World::Pager::pageIn(PagedVolume::PagerContext& pctx) {
 	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
-	GeneratorContext ctx(_world._volumeData, pctx.chunk);
-	ctx.region = pctx.region;
+	GeneratorContext ctx(_world._volumeData, pctx.chunk, pctx.region);
 #if PERSIST
 	if (_world._persist && _worldPersister.load(ctx, _world.seed())) {
 		return false;
@@ -61,8 +59,7 @@ void World::Pager::pageOut(PagedVolume::PagerContext& pctx) {
 	if (!_world._persist) {
 		return;
 	}
-	GeneratorContext ctx(_world._volumeData, pctx.chunk);
-	ctx.region = pctx.region;
+	GeneratorContext ctx(_world._volumeData, pctx.chunk, pctx.region);
 	_worldPersister.save(ctx, _world.seed());
 #endif
 }
@@ -169,8 +166,7 @@ void World::placeTree(const TreeContext& ctx) {
 	core_trace_scoped(PlaceTree);
 	const glm::ivec3 pos(ctx.pos.x, findFloor(ctx.pos.x, ctx.pos.y, isFloor), ctx.pos.y);
 	const Region& region = getChunkRegion(getMeshPos(pos));
-	GeneratorContext tctx(_volumeData, _volumeData->getChunk(pos));
-	tctx.region = region;
+	GeneratorContext tctx(_volumeData, _volumeData->getChunk(pos), region);
 	tree::addTree(tctx, pos, ctx.type, ctx.trunkHeight, ctx.trunkWidth, ctx.width, ctx.depth, ctx.height, _random);
 }
 
