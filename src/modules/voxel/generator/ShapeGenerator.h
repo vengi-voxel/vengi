@@ -11,8 +11,8 @@
 namespace voxel {
 namespace shape {
 
-template<class CTX>
-void createCirclePlane(CTX& ctx, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
+template<class Volume>
+void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
 	const double minRadius = std::min(xRadius, zRadius);
@@ -26,13 +26,13 @@ void createCirclePlane(CTX& ctx, const glm::ivec3& center, int width, int depth,
 				continue;
 			}
 			const glm::ivec3 pos(center.x + x, center.y, center.z + z);
-			ctx.setVoxel(pos, voxel);
+			volume.setVoxel(pos, voxel);
 		}
 	}
 }
 
-template<class CTX>
-void createCube(CTX& ctx, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
+template<class Volume>
+void createCube(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const int widthLow = width / 2;
@@ -43,14 +43,14 @@ void createCube(CTX& ctx, const glm::ivec3& center, int width, int height, int d
 		for (int y = -heightLow; y < heightHigh; ++y) {
 			for (int z = -depthLow; z < depthHigh; ++z) {
 				const glm::ivec3 pos(center.x + x, center.y + y, center.z + z);
-				ctx.setVoxel(pos, voxel);
+				volume.setVoxel(pos, voxel);
 			}
 		}
 	}
 }
 
-template<class CTX>
-void createCubeNoCenter(CTX& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+template<class Volume>
+void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int w = glm::abs(width);
 	const int h = glm::abs(height);
 	const int d = glm::abs(depth);
@@ -65,7 +65,7 @@ void createCubeNoCenter(CTX& ctx, const glm::ivec3& pos, int width, int height, 
 		for (int y = 0; y < h; ++y) {
 			p.z = pos.z;
 			for (int z = 0; z < d; ++z) {
-				ctx.setVoxel(p, voxel);
+				volume.setVoxel(p, voxel);
 				p.z += sd;
 			}
 			p.y += sh;
@@ -74,24 +74,24 @@ void createCubeNoCenter(CTX& ctx, const glm::ivec3& pos, int width, int height, 
 	}
 }
 
-template<class CTX>
-void createPlane(CTX& ctx, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
-	createCube(ctx, center, width, 1, depth, voxel);
+template<class Volume>
+void createPlane(Volume& volume, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
+	createCube(volume, center, width, 1, depth, voxel);
 }
 
-template<class CTX>
-glm::ivec3 createL(CTX& ctx, const glm::ivec3& pos, int width, int depth, int height, int thickness, const Voxel& voxel) {
+template<class Volume>
+glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, int height, int thickness, const Voxel& voxel) {
 	glm::ivec3 p = pos;
 	if (width != 0) {
-		createCubeNoCenter(ctx, p, width, thickness, thickness, voxel);
+		createCubeNoCenter(volume, p, width, thickness, thickness, voxel);
 		p.x += width;
-		createCubeNoCenter(ctx, p, thickness, height, thickness, voxel);
+		createCubeNoCenter(volume, p, thickness, height, thickness, voxel);
 		p.x += thickness / 2;
 		p.z += thickness / 2;
 	} else if (depth != 0) {
-		createCubeNoCenter(ctx, p, thickness, thickness, depth, voxel);
+		createCubeNoCenter(volume, p, thickness, thickness, depth, voxel);
 		p.z += depth;
-		createCubeNoCenter(ctx, p, thickness, height, thickness, voxel);
+		createCubeNoCenter(volume, p, thickness, height, thickness, voxel);
 		p.x += thickness / 2;
 		p.z += thickness / 2;
 	} else {
@@ -101,8 +101,8 @@ glm::ivec3 createL(CTX& ctx, const glm::ivec3& pos, int width, int depth, int he
 	return p;
 }
 
-template<class CTX>
-void createEllipse(CTX& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+template<class Volume>
+void createEllipse(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);
@@ -112,12 +112,12 @@ void createEllipse(CTX& ctx, const glm::ivec3& pos, int width, int height, int d
 		const double percent = glm::abs(y / heightFactor);
 		const double circleRadius = glm::pow(adjustedMinRadius + 0.5, 2.0) - glm::pow(percent, 2.0);
 		const glm::ivec3 planePos(pos.x, pos.y + y, pos.z);
-		createCirclePlane(ctx, planePos, width, depth, circleRadius, voxel);
+		createCirclePlane(volume, planePos, width, depth, circleRadius, voxel);
 	}
 }
 
-template<class CTX>
-void createCone(CTX& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+template<class Volume>
+void createCone(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);
@@ -126,12 +126,12 @@ void createCone(CTX& ctx, const glm::ivec3& pos, int width, int height, int dept
 		const double percent = 1.0 - ((y + heightLow) / double(height));
 		const double circleRadius = glm::pow(percent * minRadius, 2.0);
 		const glm::ivec3 planePos(pos.x, pos.y + y, pos.z);
-		createCirclePlane(ctx, planePos, width, depth, circleRadius, voxel);
+		createCirclePlane(volume, planePos, width, depth, circleRadius, voxel);
 	}
 }
 
-template<class CTX>
-void createDome(CTX& ctx, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+template<class Volume>
+void createDome(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);
@@ -141,14 +141,14 @@ void createDome(CTX& ctx, const glm::ivec3& pos, int width, int height, int dept
 		const double percent = glm::abs((y + heightLow) / heightFactor);
 		const double circleRadius = glm::pow(minRadius, 2.0) - glm::pow(percent, 2.0);
 		const glm::ivec3 planePos(pos.x, pos.y + y, pos.z);
-		createCirclePlane(ctx, planePos, width, depth, circleRadius, voxel);
+		createCirclePlane(volume, planePos, width, depth, circleRadius, voxel);
 	}
 }
 
 // http://members.chello.at/~easyfilter/bresenham.html
-template<class CTX>
-void createLine(CTX& ctx, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel) {
-	voxel::raycastWithEndpoints(ctx.getVolume(), start, end, [&] (auto& sampler) {
+template<class Volume>
+void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel) {
+	voxel::raycastWithEndpoints(&volume, start, end, [&] (auto& sampler) {
 		sampler.setVoxel(voxel);
 		return true;
 	});

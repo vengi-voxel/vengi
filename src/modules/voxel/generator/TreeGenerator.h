@@ -14,10 +14,10 @@
 namespace voxel {
 namespace tree {
 
-template<class CTX>
-static int findFloor(const CTX& ctx, int x, int z) {
+template<class Volume>
+static int findFloor(const Volume& volume, int x, int z) {
 	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; i--) {
-		const VoxelType material = ctx.getVoxel(x, i, z).getMaterial();
+		const VoxelType material = volume.getVoxel(x, i, z).getMaterial();
 		if (isLeaves(material)) {
 			return -1;
 		}
@@ -28,8 +28,8 @@ static int findFloor(const CTX& ctx, int x, int z) {
 	return -1;
 }
 
-template<class CTX>
-void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
+template<class Volume>
+void addTree(Volume& volume, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
 	int top = (int) pos.y + trunkHeight;
 	static constexpr Voxel voxel = createVoxel(VoxelType::Wood1);
 	const VoxelType leavesType = (VoxelType)random.random(std::enum_value(VoxelType::Leaves1), std::enum_value(VoxelType::Leaves10));
@@ -45,10 +45,10 @@ void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, in
 		lsystemCtx.voxels.emplace('A', leavesVoxel);
 		lsystemCtx.generations = 2;
 		lsystemCtx.start = pos;
-		LSystemGenerator::generate(ctx, lsystemCtx, random);
+		LSystemGenerator::generate(volume, lsystemCtx, random);
 		return;
 	} else if (type == TreeType::CACTUS) {
-		shape::createCubeNoCenter(ctx, pos, trunkWidth, trunkHeight, trunkWidth, leavesVoxel);
+		shape::createCubeNoCenter(volume, pos, trunkWidth, trunkHeight, trunkWidth, leavesVoxel);
 		std::vector<int> branches = {1, 2, 3, 4};
 		random.shuffle(branches.begin(), branches.end());
 		const int n = random.random(2, 4);
@@ -64,26 +64,26 @@ void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, in
 			switch (branches[i]) {
 			case 1:
 				branch.x += delta;
-				shape::createL(ctx, branch, 0, branchSize, branchHeight, thickness, leavesVoxel);
+				shape::createL(volume, branch, 0, branchSize, branchHeight, thickness, leavesVoxel);
 				break;
 			case 2:
 				branch.x += delta;
-				shape::createL(ctx, branch, 0, -branchSize, branchHeight, thickness, leavesVoxel);
+				shape::createL(volume, branch, 0, -branchSize, branchHeight, thickness, leavesVoxel);
 				break;
 			case 3:
 				branch.z += delta;
-				shape::createL(ctx, branch, branchSize, 0, branchHeight, thickness, leavesVoxel);
+				shape::createL(volume, branch, branchSize, 0, branchHeight, thickness, leavesVoxel);
 				break;
 			case 4:
 				branch.z += delta;
-				shape::createL(ctx, branch, -branchSize, 0, branchHeight, thickness, leavesVoxel);
+				shape::createL(volume, branch, -branchSize, 0, branchHeight, thickness, leavesVoxel);
 				break;
 			}
 		}
 		return;
 	} else if (type == TreeType::BRANCHESELLIPSIS) {
-		shape::createCubeNoCenter(ctx, pos - glm::ivec3(1), trunkWidth + 2, 1, trunkWidth + 2, voxel);
-		shape::createCubeNoCenter(ctx, pos, trunkWidth, trunkHeight, trunkWidth, voxel);
+		shape::createCubeNoCenter(volume, pos - glm::ivec3(1), trunkWidth + 2, 1, trunkWidth + 2, voxel);
+		shape::createCubeNoCenter(volume, pos, trunkWidth, trunkHeight, trunkWidth, voxel);
 		if (trunkHeight >= 8) {
 			std::vector<int> branches = {1, 2, 3, 4};
 			random.shuffle(branches.begin(), branches.end());
@@ -101,26 +101,26 @@ void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, in
 				switch (branches[i]) {
 				case 1:
 					branch.x += delta;
-					leavesPos = shape::createL(ctx, branch, 0, branchSize, branchHeight, thickness, voxel);
+					leavesPos = shape::createL(volume, branch, 0, branchSize, branchHeight, thickness, voxel);
 					break;
 				case 2:
 					branch.x += delta;
-					leavesPos = shape::createL(ctx, branch, 0, -branchSize, branchHeight, thickness, voxel);
+					leavesPos = shape::createL(volume, branch, 0, -branchSize, branchHeight, thickness, voxel);
 					break;
 				case 3:
 					branch.z += delta;
-					leavesPos = shape::createL(ctx, branch, branchSize, 0, branchHeight, thickness, voxel);
+					leavesPos = shape::createL(volume, branch, branchSize, 0, branchHeight, thickness, voxel);
 					break;
 				case 4:
 					branch.z += delta;
-					leavesPos = shape::createL(ctx, branch, -branchSize, 0, branchHeight, thickness, voxel);
+					leavesPos = shape::createL(volume, branch, -branchSize, 0, branchHeight, thickness, voxel);
 					break;
 				}
 				leavesPos.y += branchHeight / 2;
-				shape::createEllipse(ctx, leavesPos, branchHeight, branchHeight, branchHeight, leavesVoxel);
+				shape::createEllipse(volume, leavesPos, branchHeight, branchHeight, branchHeight, leavesVoxel);
 			}
 			const glm::ivec3 leafesPos(pos.x + trunkWidth / 2, top + height / 2, pos.z + trunkWidth / 2);
-			shape::createEllipse(ctx, leafesPos, width, height, depth, leavesVoxel);
+			shape::createEllipse(volume, leafesPos, width, height, depth, leavesVoxel);
 		}
 		return;
 	}
@@ -135,26 +135,26 @@ void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, in
 				}
 				glm::ivec3 finalPos(x, y, z);
 				if (y == pos.y) {
-					finalPos.y = findFloor(ctx, x, z);
+					finalPos.y = findFloor(volume, x, z);
 					if (finalPos.y < 0) {
 						continue;
 					}
 					for (int i = finalPos.y + 1; i <= y; ++i) {
-						ctx.setVoxel(finalPos.x, i, finalPos.z, voxel);
+						volume.setVoxel(finalPos.x, i, finalPos.z, voxel);
 					}
 				}
 
-				ctx.setVoxel(finalPos, voxel);
+				volume.setVoxel(finalPos, voxel);
 			}
 		}
 	}
 
 	if (type == TreeType::ELLIPSIS) {
 		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
-		shape::createEllipse(ctx, leafesPos, width, height, depth, leavesVoxel);
+		shape::createEllipse(volume, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::CONE) {
 		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
-		shape::createCone(ctx, leafesPos, width, height, depth, leavesVoxel);
+		shape::createCone(volume, leafesPos, width, height, depth, leavesVoxel);
 	} else if (type == TreeType::FIR) {
 		const int branches = 12;
 		const float stepWidth = glm::radians(360.0f / branches);
@@ -166,7 +166,7 @@ void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, in
 
 		const int halfHeight = ((amount - 1) * stepHeight) / 2;
 		glm::ivec3 center(pos.x, top - halfHeight, pos.z);
-		shape::createCube(ctx, center, trunkWidth * 3, halfHeight * 2, trunkWidth * 3, leavesVoxel);
+		shape::createCube(volume, center, trunkWidth * 3, halfHeight * 2, trunkWidth * 3, leavesVoxel);
 
 		for (int n = 0; n < amount; ++n) {
 			for (int b = 0; b < branches; ++b) {
@@ -178,12 +178,12 @@ void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, in
 				end.y -= randomZ;
 				end.x -= x * w;
 				end.z -= z * w;
-				shape::createLine(ctx, start, end, leavesVoxel);
+				shape::createLine(*volume.getVolume(), start, end, leavesVoxel);
 				glm::ivec3 end2 = end;
 				end2.y -= 4;
 				end2.x -= x * w * 1.8;
 				end2.z -= z * w * 1.8;
-				shape::createLine(ctx, end, end2, leavesVoxel);
+				shape::createLine(*volume.getVolume(), end, end2, leavesVoxel);
 				angle += stepWidth;
 				w += 1.0 / (double)(b + 1);
 			}
@@ -200,9 +200,9 @@ void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, in
 		int currentDepth = 2;
 		glm::ivec3 leavesPos(pos.x, top, pos.z);
 		for (int i = 0; i < steps; ++i) {
-			shape::createDome(ctx, leavesPos, currentWidth, singleLeaveHeight, currentDepth, leavesVoxel);
+			shape::createDome(volume, leavesPos, currentWidth, singleLeaveHeight, currentDepth, leavesVoxel);
 			leavesPos.y -= singleStepDelta;
-			shape::createDome(ctx, leavesPos, currentWidth + 1, singleLeaveHeight, currentDepth + 1, leavesVoxel);
+			shape::createDome(volume, leavesPos, currentWidth + 1, singleLeaveHeight, currentDepth + 1, leavesVoxel);
 			currentDepth += stepDepth;
 			currentWidth += stepWidth;
 			leavesPos.y -= singleLeaveHeight;
@@ -210,10 +210,10 @@ void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, in
 	} else if (type == TreeType::DOME) {
 		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
 		if (random.randomf() < 0.5f) {
-			shape::createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
+			shape::createDome(volume, leafesPos, width, height, depth, leavesVoxel);
 		} else {
 			const glm::ivec3 trunkPos(pos.x, top, pos.z);
-			shape::createDome(ctx, leafesPos, width, height, depth, leavesVoxel);
+			shape::createDome(volume, leafesPos, width, height, depth, leavesVoxel);
 			int branches = 6;
 			const float stepWidth = glm::radians(360.0f / branches);
 			float angle = random.random(0, glm::two_pi<float>());
@@ -226,17 +226,17 @@ void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, in
 				const int randomZ = random.random(4, 8);
 				glm::ivec3 end = start;
 				end.y -= randomZ;
-				shape::createLine(ctx, start, end, leavesVoxel);
+				shape::createLine(*volume.getVolume(), start, end, leavesVoxel);
 				angle += stepWidth;
 			}
 		}
 	} else if (type == TreeType::CUBE) {
 		const glm::ivec3 leafesPos(pos.x, top + height / 2, pos.z);
-		shape::createCube(ctx, leafesPos, width, height, depth, leavesVoxel);
+		shape::createCube(volume, leafesPos, width, height, depth, leavesVoxel);
 		// TODO: use CreatePlane
-		shape::createCube(ctx, leafesPos, width + 2, height - 2, depth - 2, leavesVoxel);
-		shape::createCube(ctx, leafesPos, width - 2, height + 2, depth - 2, leavesVoxel);
-		shape::createCube(ctx, leafesPos, width - 2, height - 2, depth + 2, leavesVoxel);
+		shape::createCube(volume, leafesPos, width + 2, height - 2, depth - 2, leavesVoxel);
+		shape::createCube(volume, leafesPos, width - 2, height + 2, depth - 2, leavesVoxel);
+		shape::createCube(volume, leafesPos, width - 2, height - 2, depth + 2, leavesVoxel);
 		if (random.randomf() < 0.5f) {
 			Spiral o;
 			o.next();
@@ -247,16 +247,15 @@ void addTree(CTX& ctx, const glm::ivec3& pos, TreeType type, int trunkHeight, in
 				glm::ivec3 leafesPos2 = leafesPos;
 				leafesPos2.x += o.x() * halfWidth;
 				leafesPos2.z += o.z() * halfDepth;
-				shape::createEllipse(ctx, leafesPos2, halfWidth, halfHeight, halfDepth, leavesVoxel);
+				shape::createEllipse(volume, leafesPos2, halfWidth, halfHeight, halfDepth, leavesVoxel);
 				o.next(2);
 			}
 		}
 	}
 }
 
-template<class CTX>
-void createTrees(CTX& ctx, const BiomeManager& biomManager, core::Random& random) {
-	const Region& region = ctx.region;
+template<class Volume>
+void createTrees(Volume& volume, const Region& region, const BiomeManager& biomManager, core::Random& random) {
 	const int amount = biomManager.getAmountOfTrees(region);
 	for (int i = 0; i < amount; ++i) {
 		const int regionBorder = 8;
@@ -268,7 +267,7 @@ void createTrees(CTX& ctx, const BiomeManager& biomManager, core::Random& random
 
 		const int rndValZ = random.random(regionBorder, region.getDepthInVoxels() - regionBorder);
 		glm::ivec3 pos(region.getLowerX() + rndValX, -1, region.getLowerZ() + rndValZ);
-		const int y = findFloor(ctx, pos.x, pos.z);
+		const int y = findFloor(volume, pos.x, pos.z);
 		if (y < 0) {
 			continue;
 		}
@@ -318,7 +317,7 @@ void createTrees(CTX& ctx, const BiomeManager& biomManager, core::Random& random
 			break;
 		}
 
-		addTree(ctx, pos, treeType, trunkHeight, trunkWidth, size, size, height, random);
+		addTree(volume, pos, treeType, trunkHeight, trunkWidth, size, size, height, random);
 	}
 }
 

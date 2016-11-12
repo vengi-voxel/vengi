@@ -70,7 +70,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, GeneratorContext& ctx, 
 	}
 	if ((flags & WORLDGEN_TREES) != 0) {
 		core_trace_scoped(Trees);
-		voxel::tree::createTrees(ctx, biomManager, random);
+		voxel::tree::createTrees(ctx, ctx.region, biomManager, random);
 	}
 }
 

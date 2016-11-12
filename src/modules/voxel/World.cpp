@@ -209,7 +209,7 @@ void World::create(GeneratorContext& ctx) {
 	core_trace_scoped(CreateWorld);
 	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
 #if DEBUG_SCENE == 1
-	auto& _volData = *ctx.getVolume();
+	auto& _volData =  *_volumeData;
 	_volData.setVoxel(1, 5, 1, createVoxel(21));
 	_volData.setVoxel(1, 4, 1, createVoxel(21));
 	_volData.setVoxel(1, 3, 1, createVoxel(21));
