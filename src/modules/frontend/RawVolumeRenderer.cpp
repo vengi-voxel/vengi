@@ -108,6 +108,13 @@ bool RawVolumeRenderer::extract() {
 		return false;
 	}
 
+	/// implementation of a function object for deciding when
+	/// the cubic surface extractor should insert a face between two voxels.
+	///
+	/// The criteria used here are that the voxel in front of the potential
+	/// quad should have a value of zero (which would typically indicate empty
+	/// space) while the voxel behind the potential quad would have a value
+	/// geater than zero (typically indicating it is solid).
 	struct CustomIsQuadNeeded {
 		inline bool operator()(const voxel::Voxel& back, const voxel::Voxel& front, voxel::Voxel& materialToUse, voxel::FaceNames face, int x, int z) const {
 			if (back.getMaterial() != voxel::VoxelType::Air
@@ -119,7 +126,9 @@ bool RawVolumeRenderer::extract() {
 		}
 	};
 
-	voxel::extractCubicMesh(_rawVolume, _rawVolume->getEnclosingRegion(), _mesh, CustomIsQuadNeeded());
+	voxel::Region r = _rawVolume->getEnclosingRegion();
+	r.shiftUpperCorner(1, 1, 1);
+	voxel::extractCubicMesh(_rawVolume, r, _mesh, CustomIsQuadNeeded());
 	const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
 	const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
 	const size_t meshNumberIndices = _mesh->getNoOfIndices();
