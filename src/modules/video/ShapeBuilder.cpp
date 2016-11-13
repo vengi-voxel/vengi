@@ -10,11 +10,11 @@ void ShapeBuilder::aabbGridXY(const core::AABB<float>& aabb, bool near, float st
 	const float wx = halfWidth.x + center.x;
 	const float wy = halfWidth.y + center.y;
 	const float wz = near ? 0.0f : center.z + halfWidth.z;
-	for (float x = 0.0f; x < width.x; x += stepWidth) {
+	for (float x = 0.0f; x <= width.x; x += stepWidth) {
 		addIndex(addVertex(glm::vec3(x, 0.0f, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 		addIndex(addVertex(glm::vec3(x, wy, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 	}
-	for (float y = 0.0f; y < width.y; y += stepWidth) {
+	for (float y = 0.0f; y <= width.y; y += stepWidth) {
 		addIndex(addVertex(glm::vec3(0.0f, y, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 		addIndex(addVertex(glm::vec3(wx, y, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 	}
@@ -28,11 +28,11 @@ void ShapeBuilder::aabbGridYZ(const core::AABB<float>& aabb, bool near, float st
 	const float wx = near ? 0.0f : center.x + halfWidth.x;
 	const float wy = halfWidth.y + center.y;
 	const float wz = halfWidth.z + center.z;
-	for (float y = 0.0f; y < width.y; y += stepWidth) {
+	for (float y = 0.0f; y <= width.y; y += stepWidth) {
 		addIndex(addVertex(glm::vec3(wx, y, 0.0f), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 		addIndex(addVertex(glm::vec3(wx, y, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 	}
-	for (float z = 0.0f; z < width.z; z += stepWidth) {
+	for (float z = 0.0f; z <= width.z; z += stepWidth) {
 		addIndex(addVertex(glm::vec3(wx, 0.0f, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 		addIndex(addVertex(glm::vec3(wx, wy, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 	}
@@ -46,11 +46,11 @@ void ShapeBuilder::aabbGridXZ(const core::AABB<float>& aabb, bool near, float st
 	const float wx = halfWidth.x + center.x;
 	const float wy = near ? 0.0f : center.y + halfWidth.y;
 	const float wz = halfWidth.z + center.z;
-	for (float x = 0.0f; x < width.x; x += stepWidth) {
+	for (float x = 0.0f; x <= width.x; x += stepWidth) {
 		addIndex(addVertex(glm::vec3(x, wy, 0.0f), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 		addIndex(addVertex(glm::vec3(x, wy, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 	}
-	for (float z = 0.0f; z < width.z; z += stepWidth) {
+	for (float z = 0.0f; z <= width.z; z += stepWidth) {
 		addIndex(addVertex(glm::vec3(0.0f, wy, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 		addIndex(addVertex(glm::vec3(wx, wy, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
 	}
