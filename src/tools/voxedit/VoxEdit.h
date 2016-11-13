@@ -18,6 +18,7 @@ private:
 	voxedit::VoxEditWindow* _mainWindow;
 	video::MeshPoolPtr _meshPool;
 	bool _rotateMode = false;
+	bool _scaleMode = false;
 
 public:
 	VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool);

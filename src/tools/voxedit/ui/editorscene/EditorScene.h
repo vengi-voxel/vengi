@@ -55,6 +55,7 @@ public:
 
 	voxedit::Shape cursorShape() const;
 	void setCursorShape(voxedit::Shape type);
+	void scaleCursorShape(const glm::vec3& scale);
 
 	void setActionExecutionDelay(long actionExecutionDelay);
 	long actionExecutionDelay() const;

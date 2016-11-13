@@ -113,6 +113,10 @@ void VoxEditWindow::rotate(int x, int y, int z) {
 	_scene->rotate(x, y, z);
 }
 
+void VoxEditWindow::scale(const glm::vec3& scale) {
+	_scene->scaleCursorShape(scale);
+}
+
 void VoxEditWindow::toggleviewport() {
 	bool vis = false;
 	if (_sceneTop != nullptr) {

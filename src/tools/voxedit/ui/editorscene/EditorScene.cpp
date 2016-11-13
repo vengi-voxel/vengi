@@ -74,6 +74,10 @@ void EditorScene::setCursorShape(voxedit::Shape type) {
 	m().setCursorShape(type);
 }
 
+void EditorScene::scaleCursorShape(const glm::vec3& scale) {
+	return m().scaleCursorShape(scale);
+}
+
 voxedit::Axis EditorScene::lockedAxis() const {
 	return m().lockedAxis();
 }
@@ -291,7 +295,11 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_WHEEL && ev.delta_y != 0) {
-		_controller.zoom((float)(ev.delta_y * 100));
+		if (ev.modifierkeys & tb::TB_SHIFT) {
+			scaleCursorShape(glm::vec3(ev.delta_y * 2));
+		} else {
+			_controller.zoom((float)(ev.delta_y * 100));
+		}
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_MOVE) {
 		const bool relative = isRelativeMouseMode();

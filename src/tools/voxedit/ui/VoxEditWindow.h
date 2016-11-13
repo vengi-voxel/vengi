@@ -59,6 +59,10 @@ private:
 	void rotatey();
 	void rotatez();
 	void rotate(int x, int y, int z);
+	void scalex();
+	void scaley();
+	void scalez();
+	void scale(const glm::vec3& scale);
 	void crop();
 	void extend(int size = 1);
 	void toggleviewport();
@@ -90,6 +94,18 @@ inline void VoxEditWindow::rotatey() {
 
 inline void VoxEditWindow::rotatez() {
 	rotate(0, 0, 90);
+}
+
+inline void VoxEditWindow::scalex() {
+	scale(glm::vec3(2, 0, 0));
+}
+
+inline void VoxEditWindow::scaley() {
+	scale(glm::vec3(0, 2, 0));
+}
+
+inline void VoxEditWindow::scalez() {
+	scale(glm::vec3(0, 0, 2));
 }
 
 

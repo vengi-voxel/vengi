@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/GLM.h"
 #include "Shape.h"
 #include "voxel/polyvox/Voxel.h"
 
@@ -13,16 +14,10 @@ class ShapeHandler {
 private:
 	voxel::Voxel _currentVoxel;
 	Shape _cursorShape = Shape::Single;
-	enum class ShapeState {
-		/** just switched the shape type */
-		New,
-		/** clicked into the volume but didn't yet configure the cursor shape - e.g. modify the circle size */
-		Configure,
-		/** fully created the cursor volume, can be placed on click */
-		Created
-	};
-	ShapeState _cursorShapeState = ShapeState::New;
+	glm::ivec3 _scale;
+	void createCursorShape(voxel::RawVolume* cursorVolume);
 public:
+	bool scaleCursorShape(const glm::vec3& scale, voxel::RawVolume* cursorVolume);
 	bool setCursorShape(Shape type, voxel::RawVolume* cursorVolume, bool force);
 	bool placeCursor(voxel::RawVolume* modelVolume, const voxel::RawVolume* cursorPositionVolume);
 

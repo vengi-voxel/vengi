@@ -24,7 +24,7 @@ private:
 	ShapeHandler _shapeHandler;
 
 	int _initialized = 0;
-	int _size = 32;
+	int _size = 8;
 	int _mouseX = 0;
 	int _mouseY = 0;
 
@@ -32,6 +32,24 @@ private:
 	glm::ivec3 _cursorPos;
 
 	Axis _lockedAxis = Axis::None;
+
+	bool _dirty = false;
+	bool _extract = false;
+	bool _empty = true;
+	bool _selectionExtract = false;
+	int _lastRaytraceX = -1;
+	int _lastRaytraceY = -1;
+	long _lastActionExecution = 0l;
+	Action _lastAction = Action::None;
+	// the action to execute on mouse move
+	Action _action = Action::None;
+	voxel::PickResult _result;
+
+	// the shape of the cursor at the center of the volume
+	voxel::RawVolume* _cursorVolume = nullptr;
+	// the cursor shape at the position of the traced voxel - same size as the model volume
+	voxel::RawVolume* _cursorPositionVolume = nullptr;
+	voxel::RawVolume* _modelVolume = nullptr;
 
 	void markUndo();
 	bool placeCursor();
@@ -112,6 +130,7 @@ public:
 	UndoHandler& undoHandler();
 	const UndoHandler& undoHandler() const;
 
+	void scaleCursorShape(const glm::vec3& scale);
 	void setCursorShape(Shape shape);
 	ShapeHandler& shapeHandler();
 	const ShapeHandler& shapeHandler() const;
@@ -119,28 +138,11 @@ public:
 public:
 	// TODO: maybe move into scene
 	bool _renderAxis = true;
-	bool _dirty = false;
-	bool _extract = false;
-	bool _empty = true;
-	bool _selectionExtract = false;
-	int _lastRaytraceX = -1;
-	int _lastRaytraceY = -1;
-	long _actionExecutionDelay = 20l;
-	long _lastActionExecution = 0l;
-	Action _lastAction = Action::None;
-	// the action to execute on mouse move
-	Action _action = Action::None;
 	// the key action - has a higher priority than the ui action
 	Action _keyAction = Action::None;
 	// action that is selected via ui
 	Action _uiAction = Action::PlaceVoxel;
-	voxel::PickResult _result;
-
-	// the shape of the cursor at the center of the volume
-	voxel::RawVolume* _cursorVolume = nullptr;
-	// the cursor shape at the position of the traced voxel - same size as the model volume
-	voxel::RawVolume* _cursorPositionVolume = nullptr;
-	voxel::RawVolume* _modelVolume = nullptr;
+	long _actionExecutionDelay = 20l;
 };
 
 inline Axis Model::lockedAxis() const {
@@ -155,8 +157,14 @@ inline void Model::setLockedAxis(Axis axis, bool unlock) {
 	}
 }
 
+inline void Model::scaleCursorShape(const glm::vec3& scale) {
+	_shapeHandler.scaleCursorShape(scale, _cursorVolume);
+	resetLastTrace();
+}
+
 inline void Model::setCursorShape(Shape shape) {
 	_shapeHandler.setCursorShape(shape, _cursorVolume, true);
+	resetLastTrace();
 }
 
 inline ShapeHandler& Model::shapeHandler() {

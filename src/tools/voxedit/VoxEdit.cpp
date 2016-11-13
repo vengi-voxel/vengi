@@ -119,6 +119,9 @@ core::AppState VoxEdit::onInit() {
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
 	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");
 	COMMAND_MAINWINDOW(rotatez, "Rotate the volume around the z axis");
+	COMMAND_MAINWINDOW(scalex, "Scale the cursor volume in x direction");
+	COMMAND_MAINWINDOW(scaley, "Scale the cursor volume in y direction");
+	COMMAND_MAINWINDOW(scalez, "Scale the cursor volume in z direction");
 	COMMAND_MAINWINDOW(crop, "Crop your volume");
 	COMMAND_MAINWINDOW(extend, "Extend your volume");
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
@@ -177,7 +180,17 @@ bool VoxEdit::onKeyPress(int32_t key, int16_t modifier) {
 			_mainWindow->rotatez();
 		}
 	}
+	if (_scaleMode) {
+		if (key == SDLK_x) {
+			_mainWindow->scalex();
+		} else if (key == SDLK_y) {
+			_mainWindow->scaley();
+		} else if (key == SDLK_z) {
+			_mainWindow->scalez();
+		}
+	}
 	_rotateMode = key == SDLK_r;
+	_scaleMode = key == SDLK_s;
 	if (key == SDLK_a) {
 		_mainWindow->unselectall();
 	}
