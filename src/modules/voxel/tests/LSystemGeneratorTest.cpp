@@ -13,13 +13,13 @@ class LSystemGeneratorTest: public AbstractVoxelTest {
 };
 
 TEST_F(LSystemGeneratorTest, testStatePushPop) {
-	LSystemContext lsystemCtx;
+	LSystemGenerator::LSystemContext lsystemCtx;
 	// we change the coordinates in x, y and z directions once, then we push a new state and pop that
 	// new state again - which means, that we don't modify the initial state => hence the 1, 1, 1
 	lsystemCtx.axiom = "AXYZ[XYZ]";
 	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood1));
 
-	LSystemState state;
+	LSystemGenerator::LSystemState state;
 	LSystemGenerator::expand(&state, _ctx, lsystemCtx, _random, lsystemCtx.axiom, lsystemCtx.generations);
 
 	ASSERT_EQ(1, state.pos.x);
@@ -28,11 +28,11 @@ TEST_F(LSystemGeneratorTest, testStatePushPop) {
 }
 
 TEST_F(LSystemGeneratorTest, testStatePushPopPositionChangeToInit) {
-	LSystemContext lsystemCtx;
+	LSystemGenerator::LSystemContext lsystemCtx;
 	lsystemCtx.axiom = "AXYZ[XYZ]xyz";
 	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood1));
 
-	LSystemState state;
+	LSystemGenerator::LSystemState state;
 	LSystemGenerator::expand(&state, _ctx, lsystemCtx, _random, lsystemCtx.axiom, lsystemCtx.generations);
 
 	ASSERT_EQ(0, state.pos.x);
@@ -41,13 +41,13 @@ TEST_F(LSystemGeneratorTest, testStatePushPopPositionChangeToInit) {
 }
 
 TEST_F(LSystemGeneratorTest, testMultipleStates) {
-	LSystemContext lsystemCtx;
+	LSystemGenerator::LSystemContext lsystemCtx;
 	lsystemCtx.axiom = "AY[xYA]AY[XYA]AY";
 	lsystemCtx.productionRules.emplace('A', lsystemCtx.axiom);
 	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood1));
 	lsystemCtx.generations = 2;
 
-	LSystemState state;
+	LSystemGenerator::LSystemState state;
 	LSystemGenerator::expand(&state, _ctx, lsystemCtx, _random, lsystemCtx.axiom, lsystemCtx.generations);
 
 	ASSERT_EQ(0, state.pos.x);
@@ -56,11 +56,11 @@ TEST_F(LSystemGeneratorTest, testMultipleStates) {
 }
 
 TEST_F(LSystemGeneratorTest, testStatePositionChangeTwice) {
-	LSystemContext lsystemCtx;
+	LSystemGenerator::LSystemContext lsystemCtx;
 	lsystemCtx.axiom = "AXYZXYZ";
 	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood1));
 
-	LSystemState state;
+	LSystemGenerator::LSystemState state;
 	LSystemGenerator::expand(&state, _ctx, lsystemCtx, _random, lsystemCtx.axiom, lsystemCtx.generations);
 
 	ASSERT_EQ(2, state.pos.x);
@@ -69,7 +69,7 @@ TEST_F(LSystemGeneratorTest, testStatePositionChangeTwice) {
 }
 
 TEST_F(LSystemGeneratorTest, testGenerateVoxels) {
-	LSystemContext lsystemCtx;
+	LSystemGenerator::LSystemContext lsystemCtx;
 	lsystemCtx.axiom = "AB";
 	lsystemCtx.generations = 2;
 

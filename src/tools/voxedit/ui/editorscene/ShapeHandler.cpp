@@ -2,6 +2,8 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/generator/ShapeGenerator.h"
 #include "voxel/polyvox/VolumeMerger.h"
+#include "core/Random.h"
+#include "voxel/generator/TreeGenerator.h"
 
 namespace voxedit {
 
@@ -33,7 +35,9 @@ bool ShapeHandler::setCursorShape(Shape type, voxel::RawVolume* cursorVolume, bo
 		cursorVolume->clear();
 		voxel::shape::createCirclePlane(*cursorVolume, center, width, depth, radius, _currentVoxel);
 	} else if (_cursorShape == Shape::Sphere) {
-		Log::info("Unsupported cursor shape - sphere not yet implemented");
+		cursorVolume->clear();
+		core::Random random;
+		voxel::tree::addTree(*cursorVolume, center, voxel::TreeType::PINE, 10, 4, 20, 20, 20, random);
 	} else {
 		Log::info("Unsupported cursor shape");
 	}

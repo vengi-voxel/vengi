@@ -38,7 +38,7 @@ void addTree(Volume& volume, const glm::ivec3& pos, TreeType type, int trunkHeig
 	if (type == TreeType::LSYSTEM) {
 		// TODO: select leave type via rule
 		const Voxel leavesVoxel = createVoxel(leavesType);
-		LSystemContext lsystemCtx;
+		LSystemGenerator::LSystemContext lsystemCtx;
 		// TODO: improve rule
 		lsystemCtx.axiom = "AY[xYA]AY[XYA]AY";
 		lsystemCtx.productionRules.emplace('A', lsystemCtx.axiom);
@@ -178,12 +178,12 @@ void addTree(Volume& volume, const glm::ivec3& pos, TreeType type, int trunkHeig
 				end.y -= randomZ;
 				end.x -= x * w;
 				end.z -= z * w;
-				shape::createLine(*volume.getVolume(), start, end, leavesVoxel);
+				shape::createLine(volume, start, end, leavesVoxel);
 				glm::ivec3 end2 = end;
 				end2.y -= 4;
 				end2.x -= x * w * 1.8;
 				end2.z -= z * w * 1.8;
-				shape::createLine(*volume.getVolume(), end, end2, leavesVoxel);
+				shape::createLine(volume, end, end2, leavesVoxel);
 				angle += stepWidth;
 				w += 1.0 / (double)(b + 1);
 			}
@@ -226,7 +226,7 @@ void addTree(Volume& volume, const glm::ivec3& pos, TreeType type, int trunkHeig
 				const int randomZ = random.random(4, 8);
 				glm::ivec3 end = start;
 				end.y -= randomZ;
-				shape::createLine(*volume.getVolume(), start, end, leavesVoxel);
+				shape::createLine(volume, start, end, leavesVoxel);
 				angle += stepWidth;
 			}
 		}

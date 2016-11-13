@@ -9,6 +9,10 @@
 #include "voxel/polyvox/Raycast.h"
 
 namespace voxel {
+
+class RawVolume;
+class PagedVolume;
+
 namespace shape {
 
 template<class Volume>
@@ -146,13 +150,8 @@ void createDome(Volume& volume, const glm::ivec3& pos, int width, int height, in
 }
 
 // http://members.chello.at/~easyfilter/bresenham.html
-template<class Volume>
-void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel) {
-	voxel::raycastWithEndpoints(&volume, start, end, [&] (auto& sampler) {
-		sampler.setVoxel(voxel);
-		return true;
-	});
-}
+extern void createLine(PagedVolume& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel);
+extern void createLine(RawVolume& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel);
 
 }
 }
