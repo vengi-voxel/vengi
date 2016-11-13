@@ -16,7 +16,6 @@ public:
 private:
 	float _angle = 0.0f;
 	float _cameraSpeed = 0.1f;
-	uint8_t _moveMask = 0;
 	SceneCameraMode _camMode = SceneCameraMode::Free;
 	core::VarPtr _rotationSpeed;
 	video::Camera _camera;

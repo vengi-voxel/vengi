@@ -20,6 +20,7 @@ bool ShapeHandler::setCursorShape(Shape type, voxel::RawVolume* cursorVolume, bo
 	int depth = 3;
 	if (_cursorShape == Shape::Single) {
 		cursorVolume->clear();
+		cursorVolume->setVoxel(center, _currentVoxel);
 		return true;
 	} else if (_cursorShape == Shape::Dome) {
 		cursorVolume->clear();
