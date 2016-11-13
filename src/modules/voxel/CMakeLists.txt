@@ -21,7 +21,8 @@ set(SRCS
 	generator/CactusGenerator.h
 	generator/PlantGenerator.h generator/PlantGenerator.cpp
 	generator/PlanetGenerator.h generator/PlanetGenerator.cpp
-	generator/GeneratorContext.h
+	generator/PagedVolumeWrapper.h
+	generator/RawVolumeWrapper.h
 	polyvox/Array.h
 	polyvox/AStarPathfinder.h
 	polyvox/AStarPathfinderImpl.h

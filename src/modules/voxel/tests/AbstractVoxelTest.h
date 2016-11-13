@@ -89,7 +89,7 @@ protected:
 
 	Pager _pager;
 	PagedVolume _volData;
-	GeneratorContext _ctx;
+	PagedVolumeWrapper _ctx;
 	core::Random _random;
 	long _seed = 0;
 
@@ -103,7 +103,7 @@ public:
 		core::AbstractTest::SetUp();
 		_random.setSeed(_seed);
 		const voxel::Region region(glm::ivec3(0, 0, 0), glm::ivec3(63, 63, 63));
-		_ctx = GeneratorContext(&_volData, _volData.getChunk(region.getCentre()), region);
+		_ctx = PagedVolumeWrapper(&_volData, _volData.getChunk(region.getCentre()), region);
 	}
 };
 

@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "generator/GeneratorContext.h"
 #include "polyvox/PagedVolume.h"
 #include "polyvox/Region.h"
 #include <unordered_set>
+#include "generator/PagedVolumeWrapper.h"
 
 namespace voxel {
 

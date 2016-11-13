@@ -9,7 +9,7 @@
 
 namespace voxel {
 
-class GeneratorContext;
+class PagedVolumeWrapper;
 struct WorldContext;
 
 constexpr int WORLDGEN_TREES = 1 << 0;
@@ -20,7 +20,7 @@ constexpr int WORLDGEN_SERVER = WORLDGEN_TREES;
 
 class WorldGenerator {
 public:
-	static void createWorld(WorldContext& worldCtx, GeneratorContext& ctx, BiomeManager& biomManager, long seed, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ);
+	static void createWorld(WorldContext& worldCtx, PagedVolumeWrapper& ctx, BiomeManager& biomManager, long seed, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ);
 };
 
 }

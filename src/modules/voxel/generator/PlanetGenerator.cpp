@@ -3,7 +3,7 @@
 
 namespace voxel {
 
-void createPlanet(GeneratorContext& ctx, const glm::vec3& center, const Voxel& voxel, float scale) {
+void createPlanet(PagedVolumeWrapper& ctx, const glm::vec3& center, const Voxel& voxel, float scale) {
 #if 0
 	for (int lon = -180; lon < 180; ++lon) {
 		for (int lat = -90; lat <= 90; ++lat) {

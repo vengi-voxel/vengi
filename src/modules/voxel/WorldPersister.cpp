@@ -19,7 +19,7 @@ std::string WorldPersister::getWorldName(const Region& region, long seed) const 
 	return core::string::format("world_%li_%i_%i_%i.wld", seed, region.getLowerX(), region.getLowerY(), region.getLowerZ());
 }
 
-void WorldPersister::erase(GeneratorContext& ctx, long seed) {
+void WorldPersister::erase(PagedVolumeWrapper& ctx, long seed) {
 #if 0
 	PagedVolume::Chunk* chunk = ctx.getChunk();
 	const core::App* app = core::App::getInstance();
@@ -30,7 +30,7 @@ void WorldPersister::erase(GeneratorContext& ctx, long seed) {
 #endif
 }
 
-bool WorldPersister::load(GeneratorContext& ctx, long seed) {
+bool WorldPersister::load(PagedVolumeWrapper& ctx, long seed) {
 	PagedVolume::Chunk* chunk = ctx.getChunk();
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
@@ -97,7 +97,7 @@ bool WorldPersister::load(GeneratorContext& ctx, long seed) {
 	return true;
 }
 
-bool WorldPersister::save(GeneratorContext& ctx, long seed) {
+bool WorldPersister::save(PagedVolumeWrapper& ctx, long seed) {
 	PagedVolume::Chunk* chunk = ctx.getChunk();
 	core::ByteStream voxelStream;
 	const Region& region = ctx.region;

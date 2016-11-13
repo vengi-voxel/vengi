@@ -9,13 +9,13 @@
 
 namespace voxel {
 
-class GeneratorContext;
+class PagedVolumeWrapper;
 
 class WorldPersister {
 public:
-	bool load(GeneratorContext& ctx, long seed);
-	bool save(GeneratorContext& ctx, long seed);
-	void erase(GeneratorContext& ctx, long seed);
+	bool load(PagedVolumeWrapper& ctx, long seed);
+	bool save(PagedVolumeWrapper& ctx, long seed);
+	void erase(PagedVolumeWrapper& ctx, long seed);
 	std::string getWorldName(const Region& region, long seed) const;
 };
 

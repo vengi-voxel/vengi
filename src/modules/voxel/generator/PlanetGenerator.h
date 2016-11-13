@@ -8,8 +8,8 @@
 
 namespace voxel {
 
-class GeneratorContext;
+class PagedVolumeWrapper;
 
-extern void createPlanet(GeneratorContext& ctx, const glm::vec3& center, const Voxel& voxel, float scale = 1.0f);
+extern void createPlanet(PagedVolumeWrapper& ctx, const glm::vec3& center, const Voxel& voxel, float scale = 1.0f);
 
 }

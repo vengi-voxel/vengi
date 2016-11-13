@@ -31,7 +31,7 @@ namespace voxel {
 
 void World::Pager::erase(PagedVolume::PagerContext& pctx) {
 #if PERSIST
-	GeneratorContext ctx(_world._volumeData, pctx.chunk, pctx.region);
+	PagedVolumeWrapper ctx(_world._volumeData, pctx.chunk, pctx.region);
 	_worldPersister.erase(ctx, _world.seed());
 #endif
 }
@@ -40,7 +40,7 @@ bool World::Pager::pageIn(PagedVolume::PagerContext& pctx) {
 	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
-	GeneratorContext ctx(_world._volumeData, pctx.chunk, pctx.region);
+	PagedVolumeWrapper ctx(_world._volumeData, pctx.chunk, pctx.region);
 #if PERSIST
 	if (_world._persist && _worldPersister.load(ctx, _world.seed())) {
 		return false;
@@ -55,7 +55,7 @@ void World::Pager::pageOut(PagedVolume::PagerContext& pctx) {
 	if (!_world._persist) {
 		return;
 	}
-	GeneratorContext ctx(_world._volumeData, pctx.chunk, pctx.region);
+	PagedVolumeWrapper ctx(_world._volumeData, pctx.chunk, pctx.region);
 	_worldPersister.save(ctx, _world.seed());
 #endif
 }
@@ -187,13 +187,13 @@ void World::reset() {
 	_cancelThreads = true;
 }
 
-void World::createUnderground(GeneratorContext& ctx) {
+void World::createUnderground(PagedVolumeWrapper& ctx) {
 	const glm::ivec3 startPos(1, 1, 1);
 	const Voxel& voxel = createVoxel(VoxelType::Grass1);
 	shape::createPlane(ctx, startPos, 10, 10, voxel);
 }
 
-void World::create(GeneratorContext& ctx) {
+void World::create(PagedVolumeWrapper& ctx) {
 	core_trace_scoped(CreateWorld);
 	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
 #if DEBUG_SCENE == 1
