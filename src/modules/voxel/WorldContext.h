@@ -19,23 +19,8 @@ enum class TreeType : int32_t {
 	CUBE,
 	PINE,
 	FIR,
-	LSYSTEM,
-	CACTUS,
 	MAX
 };
-
-static const char *TreeTypeStr[] = {
-	"DOME",
-	"CONE",
-	"ELLIPSIS",
-	"BRANCHESELLIPSIS",
-	"CUBE",
-	"PINE",
-	"FIR",
-	"LSYSTEM",
-	"CACTUS"
-};
-static_assert(SDL_arraysize(TreeTypeStr) == (int)TreeType::MAX, "TreeType and TreeTypeStr didn't match");
 
 /**
  * @brief Cuts the given world coordinate down to mesh tile vectors

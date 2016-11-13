@@ -18,6 +18,7 @@ set(SRCS
 	generator/TreeGenerator.h
 	generator/WorldGenerator.h generator/WorldGenerator.cpp
 	generator/LSystemGenerator.h
+	generator/CactusGenerator.h
 	generator/PlantGenerator.h generator/PlantGenerator.cpp
 	generator/PlanetGenerator.h generator/PlanetGenerator.cpp
 	generator/GeneratorContext.h

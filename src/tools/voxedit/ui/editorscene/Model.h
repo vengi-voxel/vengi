@@ -87,6 +87,8 @@ public:
 
 	voxel::PickResult& result();
 
+	void lsystem(const std::string& axiom, int generations);
+
 	bool extractVolume();
 	bool extractSelectionVolume();
 

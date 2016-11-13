@@ -48,6 +48,8 @@ public:
 	void unselectAll();
 	void select(const glm::ivec3& pos);
 
+	void lsystem(const std::string& axiom, int generations = 2);
+
 	voxedit::SelectType selectionType() const;
 	void setSelectionType(voxedit::SelectType type);
 

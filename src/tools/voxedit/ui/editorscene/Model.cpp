@@ -2,10 +2,12 @@
 #include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/polyvox/VolumeCropper.h"
 #include "voxel/polyvox/VolumeRotator.h"
+#include "voxel/generator/LSystemGenerator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
 #include "tool/Crop.h"
 #include "tool/Expand.h"
+#include "core/Random.h"
 
 namespace voxedit {
 
@@ -290,6 +292,17 @@ bool Model::extractVolume() {
 		return true;
 	}
 	return false;
+}
+
+void Model::lsystem(const std::string& axiom, int generations) {
+	voxel::LSystemGenerator::LSystemContext lsystemCtx;
+	lsystemCtx.axiom = axiom;
+	lsystemCtx.productionRules.emplace('A', lsystemCtx.axiom);
+	lsystemCtx.voxels.emplace('A', _shapeHandler.currentVoxel());
+	lsystemCtx.generations = generations;
+	lsystemCtx.start = _cursorPos;
+	core::Random random;
+	voxel::LSystemGenerator::generate(*_modelVolume, lsystemCtx, random);
 }
 
 bool Model::trace(bool skipCursor, const video::Camera& camera) {

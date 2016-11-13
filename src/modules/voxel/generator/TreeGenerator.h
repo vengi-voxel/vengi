@@ -29,59 +29,13 @@ static int findFloor(const Volume& volume, int x, int z) {
 }
 
 template<class Volume>
-void addTree(Volume& volume, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
+void createTree(Volume& volume, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
 	int top = (int) pos.y + trunkHeight;
 	static constexpr Voxel voxel = createVoxel(VoxelType::Wood1);
 	const VoxelType leavesType = (VoxelType)random.random(std::enum_value(VoxelType::Leaves1), std::enum_value(VoxelType::Leaves10));
 	const Voxel leavesVoxel = createVoxel(leavesType);
 
-	if (type == TreeType::LSYSTEM) {
-		// TODO: select leave type via rule
-		const Voxel leavesVoxel = createVoxel(leavesType);
-		LSystemGenerator::LSystemContext lsystemCtx;
-		// TODO: improve rule
-		lsystemCtx.axiom = "AY[xYA]AY[XYA]AY";
-		lsystemCtx.productionRules.emplace('A', lsystemCtx.axiom);
-		lsystemCtx.voxels.emplace('A', leavesVoxel);
-		lsystemCtx.generations = 2;
-		lsystemCtx.start = pos;
-		LSystemGenerator::generate(volume, lsystemCtx, random);
-		return;
-	} else if (type == TreeType::CACTUS) {
-		shape::createCubeNoCenter(volume, pos, trunkWidth, trunkHeight, trunkWidth, leavesVoxel);
-		std::vector<int> branches = {1, 2, 3, 4};
-		random.shuffle(branches.begin(), branches.end());
-		const int n = random.random(2, 4);
-		for (int i = 0; i < n; ++i) {
-			const int thickness = std::max(2, trunkWidth / 2);
-			const int branchHeight = trunkHeight / 2;
-			const int branchSize = random.random(thickness * 2, std::max(thickness * 2, trunkWidth));
-
-			glm::ivec3 branch = pos;
-			branch.y = random.random(pos.y + 2, top - 2);
-
-			const int delta = (trunkWidth - thickness) / 2;
-			switch (branches[i]) {
-			case 1:
-				branch.x += delta;
-				shape::createL(volume, branch, 0, branchSize, branchHeight, thickness, leavesVoxel);
-				break;
-			case 2:
-				branch.x += delta;
-				shape::createL(volume, branch, 0, -branchSize, branchHeight, thickness, leavesVoxel);
-				break;
-			case 3:
-				branch.z += delta;
-				shape::createL(volume, branch, branchSize, 0, branchHeight, thickness, leavesVoxel);
-				break;
-			case 4:
-				branch.z += delta;
-				shape::createL(volume, branch, -branchSize, 0, branchHeight, thickness, leavesVoxel);
-				break;
-			}
-		}
-		return;
-	} else if (type == TreeType::BRANCHESELLIPSIS) {
+	if (type == TreeType::BRANCHESELLIPSIS) {
 		shape::createCubeNoCenter(volume, pos - glm::ivec3(1), trunkWidth + 2, 1, trunkWidth + 2, voxel);
 		shape::createCubeNoCenter(volume, pos, trunkWidth, trunkHeight, trunkWidth, voxel);
 		if (trunkHeight >= 8) {
@@ -301,11 +255,6 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 			height = random.random(20, 28);
 			trunkHeight = random.random(10, 14);
 			break;
-		case TreeType::CACTUS:
-			height = random.random(20, 28);
-			trunkHeight = random.random(10, 14);
-			trunkWidth = 4;
-			break;
 		case TreeType::BRANCHESELLIPSIS:
 			height = random.random(10, 14);
 			trunkHeight = random.random(6, 15);
@@ -316,7 +265,7 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 			trunkHeight = random.random(5, 9);
 			break;
 		}
-		addTree(volume, pos, treeType, trunkHeight, trunkWidth, size, size, height, random);
+		createTree(volume, pos, treeType, trunkHeight, trunkWidth, size, size, height, random);
 	}
 }
 

@@ -192,6 +192,11 @@ bool EditorScene::loadModel(std::string_view file) {
 	return true;
 }
 
+void EditorScene::lsystem(const std::string& axiom, int generations) {
+	// TODO: improve this stuff
+	m().lsystem("AY[xYA]AY[XYA]AY", generations);
+}
+
 void EditorScene::resetCamera() {
 	_controller.resetCamera(m().modelVolume());
 }

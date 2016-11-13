@@ -38,7 +38,7 @@ bool ShapeHandler::setCursorShape(Shape type, voxel::RawVolume* cursorVolume, bo
 	} else if (_cursorShape == Shape::Sphere) {
 		cursorVolume->clear();
 		core::Random random;
-		voxel::tree::addTree(*cursorVolume, center, voxel::TreeType::PINE, 10, 4, 20, 20, 20, random);
+		voxel::tree::createTree(*cursorVolume, center, voxel::TreeType::PINE, 10, 4, 20, 20, 20, random);
 	} else {
 		Log::info("Unsupported cursor shape");
 	}
