@@ -8,6 +8,7 @@
 #include "core/Common.h"
 #include "core/String.h"
 #include "editorscene/Axis.h"
+#include "voxel/WorldContext.h"
 
 class EditorScene;
 class VoxEdit;
@@ -47,6 +48,11 @@ private:
 	std::string _exportFilter;
 	bool _fourViewAvailable = false;
 
+	void addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id = nullptr);
+
+	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _treeItems;
+	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _fileItems;
+
 	enum class ModifierMode {
 		None,
 		Rotate,
@@ -59,12 +65,13 @@ private:
 	char _modeNumberBuf[MODENUMBERBUFSIZE];
 	long _lastModePress = -1l;
 	void executeMode();
+	void createTree(voxel::TreeType type);
 
 	void setQuadViewport(bool active);
 
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);
-	void resetCameras();
+	void resetcamera();
 	void quit();
 
 	// commands

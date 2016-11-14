@@ -78,6 +78,8 @@ public:
 	void addBlocker(AppState blockedState);
 	void remBlocker(AppState blockedState);
 
+	const std::string& appname() const;
+
 	/**
 	 * @note Only valid after
 	 */
@@ -148,6 +150,10 @@ inline core::EventBusPtr App::eventBus() const {
 
 inline std::string App::currentWorkingDir() const {
 	return _filesystem->basePath();
+}
+
+inline const std::string& App::appname() const {
+	return _appname;
 }
 
 }

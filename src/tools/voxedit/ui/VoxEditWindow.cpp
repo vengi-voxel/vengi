@@ -41,6 +41,22 @@ static const struct {
 	{TBIDC("shapeplane"),	Shape::Plane}
 };
 
+static const struct {
+	const char *name;
+	const char *id;
+	tb::TBID tbid;
+	voxel::TreeType type;
+} treeTypes[] = {
+	{"Pine",		"tree_pine",		TBIDC("tree_pine"),			voxel::TreeType::Pine},
+	{"Dome",		"tree_dome",		TBIDC("tree_dome"),			voxel::TreeType::Dome},
+	{"Cone",		"tree_cone",		TBIDC("tree_cone"),			voxel::TreeType::Cone},
+	{"Fir",			"tree_fir",			TBIDC("tree_fir"),			voxel::TreeType::Fir},
+	{"Ellipsis2",	"tree_ellipsis2",	TBIDC("tree_ellipsis2"),	voxel::TreeType::BranchesEllipsis},
+	{"Ellipsis",	"tree_ellipsis",	TBIDC("tree_ellipsis"),		voxel::TreeType::Ellipsis},
+	{"Cube",		"tree_cube",		TBIDC("tree_cube"),			voxel::TreeType::Cube},
+};
+static_assert((int)SDL_arraysize(treeTypes) == (int)voxel::TreeType::Max, "Missing support for tree types in the ui");
+
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		ui::Window(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
@@ -110,7 +126,33 @@ bool VoxEditWindow::init() {
 		}
 	}
 
+	for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
+		addMenuItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
+	}
+
+	addMenuItem(_fileItems, "New");
+	addMenuItem(_fileItems, "Load");
+	addMenuItem(_fileItems, "Save");
+	addMenuItem(_fileItems, "Export");
+	addMenuItem(_fileItems, "Quit");
+
 	return true;
+}
+
+void VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id) {
+	tb::TBGenericStringItem* item;
+	if (id == nullptr) {
+		const std::string& lowerId = core::string::toLower(text);
+		item = new tb::TBGenericStringItem(text, TBIDC(lowerId.c_str()));
+		const std::string& iconId = _app->appname() + lowerId;
+		item->SetSkinImage(TBIDC(iconId.c_str()));
+	} else {
+		item = new tb::TBGenericStringItem(text, TBIDC(id));
+		char buf[128];
+		SDL_snprintf(buf, sizeof(buf), "%s-%s", _app->appname().c_str(), id);
+		item->SetSkinImage(TBIDC(buf));
+	}
+	items.AddItem(item);
 }
 
 void VoxEditWindow::rotate(int x, int y, int z) {
@@ -240,11 +282,21 @@ void VoxEditWindow::setQuadViewport(bool active) {
 	}
 }
 
+void VoxEditWindow::createTree(voxel::TreeType type) {
+	voxel::TreeContext ctx;
+	ctx.type = type;
+	_scene->createTree(ctx);
+}
+
+static inline bool isAny(const tb::TBWidgetEvent& ev, const tb::TBID& id) {
+	return ev.target->GetID() == id || ev.ref_id == id;
+}
+
 bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_scene->newModel(true);
-			resetCameras();
+			resetcamera();
 		}
 		return true;
 	} else if (ev.target->GetID() == TBIDC("unsaved_changes_quit")) {
@@ -255,7 +307,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("unsaved_changes_load")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_scene->loadModel(_loadFile);
-			resetCameras();
+			resetcamera();
 		}
 		return true;
 	} else if (ev.target->GetID() == TBIDC("unsaved_changes_voxelize")) {
@@ -266,43 +318,43 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 
-	if (ev.target->GetID() == TBIDC("resetcamera")) {
+	if (isAny(ev, TBIDC("resetcamera"))) {
 		_scene->resetCamera();
 		return true;
-	} else if (ev.target->GetID() == TBIDC("quit")) {
+	} else if (isAny(ev, TBIDC("quit"))) {
 		quit();
 		return true;
-	} else if (ev.target->GetID() == TBIDC("crop")) {
+	} else if (isAny(ev, TBIDC("crop"))) {
 		crop();
 		return true;
-	} else if (ev.target->GetID() == TBIDC("extend")) {
+	} else if (isAny(ev, TBIDC("extend"))) {
 		extend();
 		return true;
-	} else if (ev.target->GetID() == TBIDC("new")) {
+	} else if (isAny(ev, TBIDC("new"))) {
 		createNew(false);
 		return true;
-	} else if (ev.target->GetID() == TBIDC("load")) {
+	} else if (isAny(ev, TBIDC("load"))) {
 		load("");
 		return true;
-	} else if (ev.target->GetID() == TBIDC("export")) {
+	} else if (isAny(ev, TBIDC("export"))) {
 		exportFile("");
 		return true;
-	} else if (ev.target->GetID() == TBIDC("save")) {
+	} else if (isAny(ev, TBIDC("save"))) {
 		save("");
 		return true;
-	} else if (ev.target->GetID() == TBIDC("redo")) {
+	} else if (isAny(ev, TBIDC("redo"))) {
 		redo();
 		return true;
-	} else if (ev.target->GetID() == TBIDC("undo")) {
+	} else if (isAny(ev, TBIDC("undo"))) {
 		undo();
 		return true;
-	} else if (ev.target->GetID() == TBIDC("rotatex")) {
+	} else if (isAny(ev, TBIDC("rotatex"))) {
 		rotatex();
 		return true;
-	} else if (ev.target->GetID() == TBIDC("rotatey")) {
+	} else if (isAny(ev, TBIDC("rotatey"))) {
 		rotatey();
 		return true;
-	} else if (ev.target->GetID() == TBIDC("rotatez")) {
+	} else if (isAny(ev, TBIDC("rotatez"))) {
 		rotatez();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("lsystem")) {
@@ -314,9 +366,15 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		ctx.start = _scene->cursorPosition();
 		_scene->lsystem(ctx);
 		return true;
-	} else if (ev.target->GetID() == TBIDC("tree")) {
-		voxel::TreeContext ctx;
-		_scene->createTree(ctx);
+	} else if (ev.target->GetID() == TBIDC("menu_tree")) {
+		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_popup"))) {
+			menu->Show(&_treeItems, tb::TBPopupAlignment());
+		}
+		return true;
+	} else if (ev.target->GetID() == TBIDC("menu_file")) {
+		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_file"))) {
+			menu->Show(&_fileItems, tb::TBPopupAlignment());
+		}
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);
@@ -332,23 +390,31 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
-		if (ev.target->GetID() == actions[i].id) {
+		if (isAny(ev, actions[i].id)) {
 			_scene->setAction(actions[i].action);
 			return true;
 		}
 	}
 	for (uint32_t i = 0; i < SDL_arraysize(selectionmodes); ++i) {
-		if (ev.target->GetID() == selectionmodes[i].id) {
+		if (isAny(ev, selectionmodes[i].id)) {
 			_scene->setSelectionType(selectionmodes[i].type);
 			return true;
 		}
 	}
 	for (uint32_t i = 0; i < SDL_arraysize(shapes); ++i) {
-		if (ev.target->GetID() == shapes[i].id) {
+		if (isAny(ev, shapes[i].id)) {
 			_scene->setCursorShape(shapes[i].shape);
 			return true;
 		}
 	}
+	for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
+		if (isAny(ev, treeTypes[i].tbid)) {
+			createTree(treeTypes[i].type);
+			return true;
+		}
+	}
+	Log::debug("Unknown event %s - %s", ev.target->GetID().debug_string.CStr(), ev.ref_id.debug_string.CStr());
+
 	return false;
 }
 
@@ -619,7 +685,7 @@ bool VoxEditWindow::exportFile(std::string_view file) {
 	return _scene->exportModel(file);
 }
 
-void VoxEditWindow::resetCameras() {
+void VoxEditWindow::resetcamera() {
 	_scene->resetCamera();
 	if (_sceneTop != nullptr) {
 		_sceneTop->resetCamera();
@@ -644,7 +710,7 @@ bool VoxEditWindow::load(std::string_view file) {
 
 	if (!_scene->isDirty()) {
 		if (_scene->loadModel(file)) {
-			resetCameras();
+			resetcamera();
 			return true;
 		}
 		return false;
@@ -668,7 +734,7 @@ bool VoxEditWindow::createNew(bool force) {
 				ui::Window::PopupType::YesNo, "unsaved_changes_new");
 	}
 	if (_scene->newModel(force)) {
-		resetCameras();
+		resetcamera();
 		return true;
 	}
 	return false;

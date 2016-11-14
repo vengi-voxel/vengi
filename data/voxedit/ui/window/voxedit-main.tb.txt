@@ -28,21 +28,15 @@ TBLayout: distribution: gravity, axis: y
 			TBLayout: distribution: gravity
 				TBContainer: skin: container, gravity: left right
 					TBLayout: distribution: gravity
-						TBButton: gravity: left, @include: definitions>menubutton, text: New, id: new
-							TBSkinImage: skin: voxedit-new
-						TBButton: gravity: left, @include: definitions>menubutton, text: Save, id: save
-							TBSkinImage: skin: voxedit-save
-						TBButton: gravity: left, @include: definitions>menubutton, text: Load, id: load
-							TBSkinImage: skin: voxedit-load
-						TBButton: gravity: left, @include: definitions>menubutton, text: Export, id: export
-							TBSkinImage: skin: voxedit-export
+						TBButton: gravity: left, @include: definitions>menubutton, text: File, id: menu_file
+							TBSkinImage: skin: voxedit-file
 						TBButton: gravity: left, @include: definitions>menubutton, text: Undo, id: undo
 							TBSkinImage: skin: voxedit-undo
 						TBButton: gravity: left, @include: definitions>menubutton, text: Redo, id: redo
 							TBSkinImage: skin: voxedit-redo
 						TBLayout: gravity: left right
 							TBWidget
-						TBButton: gravity: left, @include: definitions>menubutton, text: Tree, id: tree
+						TBButton: gravity: left, @include: definitions>menubutton, text: Tree, id: menu_tree
 							TBSkinImage: skin: voxedit-tree
 						TBButton: gravity: left, @include: definitions>menubutton, text: L-System, id: lsystem
 							TBSkinImage: skin: voxedit-lsystem
@@ -244,5 +238,3 @@ TBLayout: distribution: gravity, axis: y
 						TBClickLabel: text: Quad view
 							TBSkinImage: skin: voxedit-quadview
 							TBCheckBox: id: toggleviewport
-						TBButton: @include: definitions>menubutton, text: Quit, id: quit
-							TBSkinImage: skin: voxedit-quit

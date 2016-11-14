@@ -140,6 +140,7 @@ core::AppState VoxEdit::onInit() {
 	COMMAND_MAINWINDOW(rotatemode, "Activates the rotate mode");
 	COMMAND_MAINWINDOW(scalemode, "Activates the scale mode");
 	COMMAND_MAINWINDOW(movemode, "Activates the move mode");
+	COMMAND_MAINWINDOW(resetcamera, "Reset cameras");
 
 	newFile(true);
 
