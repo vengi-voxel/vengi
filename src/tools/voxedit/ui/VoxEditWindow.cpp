@@ -301,6 +301,18 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("rotatez")) {
 		rotatez();
 		return true;
+	} else if (ev.target->GetID() == TBIDC("lsystem")) {
+		voxel::LSystemGenerator::LSystemContext ctx;
+		ctx.axiom = "AY[xYA]AY[XYA]AY";
+		ctx.productionRules.emplace('A', ctx.axiom);
+		ctx.voxels.emplace('A', voxel::createVoxel(_paletteWidget->voxelType()));
+		ctx.generations = 2;
+		ctx.start = _scene->cursorPosition();
+		_scene->lsystem(ctx);
+		return true;
+	} else if (ev.target->GetID() == TBIDC("tree")) {
+		_scene->createTree();
+		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);
 		return true;

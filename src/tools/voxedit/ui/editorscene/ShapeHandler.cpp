@@ -49,7 +49,7 @@ void ShapeHandler::createCursorShape(voxel::RawVolume* cursorVolume) {
 		voxel::shape::createCirclePlane(*cursorVolume, cursorPos, _scale.x, _scale.z, radius, _currentVoxel);
 	} else if (_cursorShape == Shape::Sphere) {
 		cursorVolume->clear();
-		voxel::shape::createEllipse(*cursorVolume, cursorPos, _scale.x, _scale.x, _scale.x, _currentVoxel);
+		voxel::shape::createEllipse(*cursorVolume, cursorPos, _scale.x, _scale.y, _scale.z, _currentVoxel);
 	} else {
 		Log::info("Unsupported cursor shape");
 	}

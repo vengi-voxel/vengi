@@ -78,6 +78,10 @@ void EditorScene::scaleCursorShape(const glm::vec3& scale) {
 	return m().scaleCursorShape(scale);
 }
 
+const glm::ivec3& EditorScene::cursorPosition() const {
+	return m().cursorPosition();
+}
+
 voxedit::Axis EditorScene::lockedAxis() const {
 	return m().lockedAxis();
 }
@@ -201,14 +205,6 @@ bool EditorScene::loadModel(std::string_view file) {
 }
 
 void EditorScene::lsystem(const voxel::LSystemGenerator::LSystemContext& ctx) {
-#if 0
-	voxel::LSystemGenerator::LSystemContext ctx;
-	ctx.axiom = "AY[xYA]AY[XYA]AY";
-	ctx.productionRules.emplace('A', ctx.axiom);
-	ctx.voxels.emplace('A', m().shapeHandler().currentVoxel());
-	ctx.generations = generations;
-	ctx.start = m().cursorPosition();
-#endif
 	m().lsystem(ctx);
 }
 

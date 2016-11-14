@@ -53,6 +53,8 @@ public:
 	void lsystem(const voxel::LSystemGenerator::LSystemContext& ctx);
 	void createTree();
 
+	const glm::ivec3& cursorPosition() const;
+
 	voxedit::SelectType selectionType() const;
 	void setSelectionType(voxedit::SelectType type);
 

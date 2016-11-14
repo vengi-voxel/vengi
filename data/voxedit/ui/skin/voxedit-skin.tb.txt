@@ -55,6 +55,10 @@ elements
 		bitmap voxedit-axis-z.png
 	voxedit-quadview
 		bitmap voxedit-quadview.png
+	voxedit-tree
+		bitmap voxedit-tree.png
+	voxedit-extend
+		bitmap voxedit-extend.png
 
 	grid-button
 		bitmap voxedit-show-grid.png
