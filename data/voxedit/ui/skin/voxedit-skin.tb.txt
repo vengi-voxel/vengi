@@ -59,6 +59,10 @@ elements
 		bitmap voxedit-tree.png
 	voxedit-extend
 		bitmap voxedit-extend.png
+	voxedit-crop
+		bitmap voxedit-crop.png
+	voxedit-lsystem
+		bitmap voxedit-lsystem.png
 
 	grid-button
 		bitmap voxedit-show-grid.png
