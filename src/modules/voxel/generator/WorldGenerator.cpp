@@ -66,7 +66,7 @@ void WorldGenerator::createWorld(WorldContext& worldCtx, PagedVolumeWrapper& ctx
 	}
 	if ((flags & WORLDGEN_CLOUDS) != 0) {
 		core_trace_scoped(Clouds);
-		CloudGenerator::createClouds(ctx, biomManager, random);
+		voxel::cloud::createClouds(ctx, biomManager, random);
 	}
 	if ((flags & WORLDGEN_TREES) != 0) {
 		core_trace_scoped(Trees);
