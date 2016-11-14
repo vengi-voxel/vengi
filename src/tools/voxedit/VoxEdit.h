@@ -17,8 +17,6 @@ private:
 	core::VarPtr _lastDirectory;
 	voxedit::VoxEditWindow* _mainWindow;
 	video::MeshPoolPtr _meshPool;
-	bool _rotateMode = false;
-	bool _scaleMode = false;
 
 public:
 	VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool);
@@ -35,7 +33,6 @@ public:
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;
 	core::AppState onRunning() override;
-	bool onKeyPress(int32_t key, int16_t modifier) override;
 };
 
 inline video::MeshPoolPtr VoxEdit::meshPool() const {

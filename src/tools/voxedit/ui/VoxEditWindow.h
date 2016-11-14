@@ -7,6 +7,7 @@
 #include "ui/Window.h"
 #include "core/Common.h"
 #include "core/String.h"
+#include "editorscene/Axis.h"
 
 class EditorScene;
 class VoxEdit;
@@ -42,6 +43,19 @@ private:
 	std::string _exportFilter;
 	bool _fourViewAvailable = false;
 
+	enum class ModifierMode {
+		None,
+		Rotate,
+		Scale,
+		Move
+	};
+	ModifierMode _mode = ModifierMode::None;
+	voxedit::Axis _axis = voxedit::Axis::None;
+	static constexpr int MODENUMBERBUFSIZE = 64;
+	char _modeNumberBuf[MODENUMBERBUFSIZE];
+	long _lastModePress = -1l;
+	void executeMode();
+
 	void setQuadViewport(bool active);
 
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
@@ -62,11 +76,18 @@ private:
 	void scalex();
 	void scaley();
 	void scalez();
-	void scale(const glm::vec3& scale);
+	void scale(float x, float y, float z);
+	void movex();
+	void movey();
+	void movez();
+	void move(int x, int y, int z);
 	void crop();
 	void extend(int size = 1);
 	void toggleviewport();
 	void togglefreelook();
+	void movemode();
+	void scalemode();
+	void rotatemode();
 	void unselectall();
 	bool voxelize(std::string_view file);
 	bool save(std::string_view file);
@@ -96,16 +117,28 @@ inline void VoxEditWindow::rotatez() {
 	rotate(0, 0, 90);
 }
 
+inline void VoxEditWindow::movex() {
+	move(1, 0, 0);
+}
+
+inline void VoxEditWindow::movey() {
+	move(0, 1, 0);
+}
+
+inline void VoxEditWindow::movez() {
+	move(0, 0, 1);
+}
+
 inline void VoxEditWindow::scalex() {
-	scale(glm::vec3(2, 0, 0));
+	scale(2.0f, 0.0f, 0.0f);
 }
 
 inline void VoxEditWindow::scaley() {
-	scale(glm::vec3(0, 2, 0));
+	scale(0.0f, 2.0f, 0.0f);
 }
 
 inline void VoxEditWindow::scalez() {
-	scale(glm::vec3(0, 0, 2));
+	scale(0.0f, 0.0f, 2.0f);
 }
 
 

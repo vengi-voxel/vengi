@@ -97,6 +97,10 @@ core::AppState VoxEdit::onInit() {
 		select(pos);
 	}).setHelp("Select voxels from the given position");
 
+	core::Command::registerCommand("togglerelativemousemode", [this] (const core::CmdArgs& args) {
+		toggleRelativeMouseMode();
+	}).setHelp("Toggle relative mouse mode which provides free look");
+
 	core::Command::registerCommand("rotate", [this] (const core::CmdArgs& args) {
 		if (args.size() != 3) {
 			Log::info("Expected to get x, y and z angles in degrees");
@@ -131,6 +135,9 @@ core::AppState VoxEdit::onInit() {
 	COMMAND_MAINWINDOW(cut, "Delete selected volume from model volume");
 	COMMAND_MAINWINDOW(toggleviewport, "Toggle quad view on/off");
 	COMMAND_MAINWINDOW(togglefreelook, "Toggle free look on/off");
+	COMMAND_MAINWINDOW(rotatemode, "Activates the rotate mode");
+	COMMAND_MAINWINDOW(scalemode, "Activates the scale mode");
+	COMMAND_MAINWINDOW(movemode, "Activates the move mode");
 
 	newFile(true);
 
@@ -159,42 +166,7 @@ core::AppState VoxEdit::onRunning() {
 	if (current) {
 		centerMouseCursor();
 	}
-
 	return state;
-}
-
-bool VoxEdit::onKeyPress(int32_t key, int16_t modifier) {
-	if (Super::onKeyPress(key, modifier)) {
-		return true;
-	}
-	if (key == SDLK_ESCAPE) {
-		toggleRelativeMouseMode();
-		return true;
-	}
-	if (_rotateMode) {
-		if (key == SDLK_x) {
-			_mainWindow->rotatex();
-		} else if (key == SDLK_y) {
-			_mainWindow->rotatey();
-		} else if (key == SDLK_z) {
-			_mainWindow->rotatez();
-		}
-	}
-	if (_scaleMode) {
-		if (key == SDLK_x) {
-			_mainWindow->scalex();
-		} else if (key == SDLK_y) {
-			_mainWindow->scaley();
-		} else if (key == SDLK_z) {
-			_mainWindow->scalez();
-		}
-	}
-	_rotateMode = key == SDLK_r;
-	_scaleMode = key == SDLK_s;
-	if (key == SDLK_a) {
-		_mainWindow->unselectall();
-	}
-	return false;
 }
 
 int main(int argc, char *argv[]) {

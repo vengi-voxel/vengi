@@ -2,7 +2,8 @@
 #include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/polyvox/VolumeCropper.h"
 #include "voxel/polyvox/VolumeRotator.h"
-#include "voxel/generator/LSystemGenerator.h"
+#include "voxel/generator/TreeGenerator.h"
+#include "voxel/generator/RawVolumeWrapper.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
 #include "tool/Crop.h"
@@ -196,6 +197,16 @@ void Model::rotate(int angleX, int angleY, int angleZ) {
 	setNewVolume(newVolume);
 }
 
+void Model::move(int x, int y, int z) {
+	// TODO: implement move
+#if 0
+	const voxel::RawVolume* model = modelVolume();
+	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::createVoxel(voxel::VoxelType::Air), false);
+	markUndo();
+	setNewVolume(newVolume);
+#endif
+}
+
 const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 	return _modelVolume->getVoxel(pos);
 }
@@ -294,15 +305,19 @@ bool Model::extractVolume() {
 	return false;
 }
 
-void Model::lsystem(const std::string& axiom, int generations) {
-	voxel::LSystemGenerator::LSystemContext lsystemCtx;
-	lsystemCtx.axiom = axiom;
-	lsystemCtx.productionRules.emplace('A', lsystemCtx.axiom);
-	lsystemCtx.voxels.emplace('A', _shapeHandler.currentVoxel());
-	lsystemCtx.generations = generations;
-	lsystemCtx.start = _cursorPos;
+void Model::lsystem(const voxel::LSystemGenerator::LSystemContext& lsystemCtx) {
 	core::Random random;
-	voxel::LSystemGenerator::generate(*_modelVolume, lsystemCtx, random);
+	voxel::generate::RawVolumeWrapper wrapper(_modelVolume);
+	voxel::LSystemGenerator::generate(wrapper, lsystemCtx, random);
+}
+
+void Model::createTree() {
+	core::Random random;
+	const voxel::Region& region = _modelVolume->getEnclosingRegion();
+	glm::ivec3 cursorPos = region.getCentre();
+	cursorPos.y = region.getLowerY();
+	voxel::generate::RawVolumeWrapper wrapper(_modelVolume);
+	voxel::tree::createTreePine(wrapper, cursorPos, 20, 1, 16, 16, 16, random);
 }
 
 bool Model::trace(bool skipCursor, const video::Camera& camera) {

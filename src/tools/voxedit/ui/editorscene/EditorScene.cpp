@@ -98,6 +98,10 @@ void EditorScene::rotate(int angleX, int angleY, int angleZ) {
 	m().rotate(angleX, angleY, angleZ);
 }
 
+void EditorScene::move(int x, int y, int z) {
+	m().move(x, y, z);
+}
+
 bool EditorScene::newModel(bool force) {
 	core_trace_scoped(EditorSceneNewModel);
 	return m().newVolume(force);
@@ -196,9 +200,20 @@ bool EditorScene::loadModel(std::string_view file) {
 	return true;
 }
 
-void EditorScene::lsystem(const std::string& axiom, int generations) {
-	// TODO: improve this stuff
-	m().lsystem("AY[xYA]AY[XYA]AY", generations);
+void EditorScene::lsystem(const voxel::LSystemGenerator::LSystemContext& ctx) {
+#if 0
+	voxel::LSystemGenerator::LSystemContext ctx;
+	ctx.axiom = "AY[xYA]AY[XYA]AY";
+	ctx.productionRules.emplace('A', ctx.axiom);
+	ctx.voxels.emplace('A', m().shapeHandler().currentVoxel());
+	ctx.generations = generations;
+	ctx.start = m().cursorPosition();
+#endif
+	m().lsystem(ctx);
+}
+
+void EditorScene::createTree() {
+	m().createTree();
 }
 
 void EditorScene::resetCamera() {

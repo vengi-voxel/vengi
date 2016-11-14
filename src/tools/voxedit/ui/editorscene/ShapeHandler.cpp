@@ -3,17 +3,14 @@
 #include "voxel/generator/ShapeGenerator.h"
 #include "voxel/polyvox/VolumeMerger.h"
 #include "core/Random.h"
-#include "voxel/generator/TreeGenerator.h"
-#include "voxel/generator/RawVolumeWrapper.h"
 
 namespace voxedit {
 
-// TODO: scale via s x v (scale, axis, value)
 bool ShapeHandler::scaleCursorShape(const glm::vec3& scale, voxel::RawVolume* cursorVolume) {
 	const glm::ivec3 before = _scale;
 	_scale *= scale;
 	const voxel::Region& r = cursorVolume->getEnclosingRegion();
-	_scale = glm::clamp(_scale, glm::ivec3(1), r.getUpperCorner());
+	_scale = glm::clamp(_scale, glm::ivec3(1), r.getDimensionsInVoxels());
 	if (_scale == before) {
 		return false;
 	}
@@ -52,12 +49,6 @@ void ShapeHandler::createCursorShape(voxel::RawVolume* cursorVolume) {
 		voxel::shape::createCirclePlane(*cursorVolume, cursorPos, _scale.x, _scale.z, radius, _currentVoxel);
 	} else if (_cursorShape == Shape::Sphere) {
 		cursorVolume->clear();
-#if 0
-		core::Random random;
-		cursorPos.y = cursorRegion.getLowerY();
-		voxel::generate::RawVolumeWrapper wrapper(cursorVolume);
-		voxel::tree::createTreePine(wrapper, cursorPos, 20, 1, 16, 16, 16, random);
-#endif
 		voxel::shape::createEllipse(*cursorVolume, cursorPos, _scale.x, _scale.x, _scale.x, _currentVoxel);
 	} else {
 		Log::info("Unsupported cursor shape");

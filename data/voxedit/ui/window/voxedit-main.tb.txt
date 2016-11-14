@@ -39,6 +39,10 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-redo
 						TBLayout: gravity: left right
 							TBWidget
+						TBButton: gravity: left, @include: definitions>menubutton, text: Tree, id: tree
+							TBSkinImage: skin: voxedit-tree
+						TBButton: gravity: left, @include: definitions>menubutton, text: L-System, id: lsystem
+							TBSkinImage: skin: voxedit-lsystem
 			TBLayout: distribution: gravity, position: top
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBSection: value: 1, text: "Palette"
@@ -195,7 +199,7 @@ TBLayout: distribution: gravity, axis: y
 									id actionselectedge
 									@include definitions>selectbutton
 
-					TBSection: text: "Operations"
+					TBSection: value: 1, text: "Operations"
 						TBLayout: position: left top, axis: y
 							TBButton: @include: definitions>menubutton, text: Crop, id: crop
 								TBSkinImage: skin: voxedit-crop

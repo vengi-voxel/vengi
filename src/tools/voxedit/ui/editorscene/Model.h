@@ -2,6 +2,7 @@
 
 #include "voxel/polyvox/Picking.h"
 #include "voxel/polyvox/RawVolume.h"
+#include "voxel/generator/LSystemGenerator.h"
 #include "frontend/RawVolumeRenderer.h"
 #include "Action.h"
 #include "SelectionHandler.h"
@@ -24,7 +25,7 @@ private:
 	ShapeHandler _shapeHandler;
 
 	int _initialized = 0;
-	int _size = 8;
+	int _size = 32;
 	int _mouseX = 0;
 	int _mouseY = 0;
 
@@ -60,6 +61,8 @@ public:
 
 	void onResize(const glm::ivec2& size);
 
+	const glm::ivec3& cursorPosition() const;
+
 	void init();
 	void shutdown();
 
@@ -84,6 +87,7 @@ public:
 	void setNewVolume(voxel::RawVolume* volume);
 
 	void rotate(int angleX, int angleY, int angleZ);
+	void move(int x, int y, int z);
 
 	void render(const video::Camera& camera);
 	void renderSelection(const video::Camera& camera);
@@ -105,7 +109,8 @@ public:
 
 	voxel::PickResult& result();
 
-	void lsystem(const std::string& axiom, int generations);
+	void lsystem(const voxel::LSystemGenerator::LSystemContext& lsystemCtx);
+	void createTree();
 
 	bool extractVolume();
 	bool extractSelectionVolume();
@@ -254,6 +259,10 @@ inline float Model::size() const {
 
 inline bool Model::empty() const {
 	return _empty;
+}
+
+inline const glm::ivec3& Model::cursorPosition() const {
+	return _cursorPos;
 }
 
 }

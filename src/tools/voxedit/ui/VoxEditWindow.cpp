@@ -113,8 +113,59 @@ void VoxEditWindow::rotate(int x, int y, int z) {
 	_scene->rotate(x, y, z);
 }
 
-void VoxEditWindow::scale(const glm::vec3& scale) {
-	_scene->scaleCursorShape(scale);
+void VoxEditWindow::scale(float x, float y, float z) {
+	_scene->scaleCursorShape(glm::vec3(x, y, z));
+}
+
+void VoxEditWindow::move(int x, int y, int z) {
+	_scene->move(x, y, z);
+}
+
+void VoxEditWindow::executeMode() {
+	if (_mode == ModifierMode::None) {
+		return;
+	}
+
+	Log::info("buf: %s", _modeNumberBuf);
+	if (_modeNumberBuf[0] != '\0') {
+		if (_mode == ModifierMode::Scale) {
+			const float value = core::string::toFloat(_modeNumberBuf);
+			glm::vec3 values(1.0f, 1.0f, 1.0f);
+			if ((_axis & voxedit::Axis::X) != voxedit::Axis::None) {
+				values.x = value;
+			}
+			if ((_axis & voxedit::Axis::Y) != voxedit::Axis::None) {
+				values.y = value;
+			}
+			if ((_axis & voxedit::Axis::Z) != voxedit::Axis::None) {
+				values.z = value;
+			}
+			scale(values.x, values.y, values.z);
+		} else {
+			const int value = core::string::toInt(_modeNumberBuf);
+			glm::ivec3 values(0, 0, 0);
+			if ((_axis & voxedit::Axis::X) != voxedit::Axis::None) {
+				values.x = value;
+			}
+			if ((_axis & voxedit::Axis::Y) != voxedit::Axis::None) {
+				values.y = value;
+			}
+			if ((_axis & voxedit::Axis::Z) != voxedit::Axis::None) {
+				values.z = value;
+			}
+
+			if (_mode == ModifierMode::Rotate) {
+				rotate(values.x, values.y, values.z);
+			} else if (_mode == ModifierMode::Move) {
+				move(values.x, values.y, values.z);
+			}
+		}
+	}
+
+	_modeNumberBuf[0] = '\0';
+	_lastModePress = -1l;
+	_axis = voxedit::Axis::None;
+	_mode = ModifierMode::None;
 }
 
 void VoxEditWindow::toggleviewport() {
@@ -134,6 +185,24 @@ void VoxEditWindow::toggleviewport() {
 
 void VoxEditWindow::unselectall() {
 	_scene->unselectAll();
+}
+
+void VoxEditWindow::rotatemode() {
+	_mode = ModifierMode::Rotate;
+	_axis = voxedit::Axis::None;
+	_modeNumberBuf[0] = '\0';
+}
+
+void VoxEditWindow::scalemode() {
+	_mode = ModifierMode::Scale;
+	_axis = voxedit::Axis::None;
+	_modeNumberBuf[0] = '\0';
+}
+
+void VoxEditWindow::movemode() {
+	_mode = ModifierMode::Move;
+	_axis = voxedit::Axis::None;
+	_modeNumberBuf[0] = '\0';
 }
 
 void VoxEditWindow::togglefreelook() {
@@ -312,6 +381,11 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 
 void VoxEditWindow::OnProcess() {
 	Super::OnProcess();
+
+	if (_lastModePress > 0l && _app->timeProvider()->tickTime() - _lastModePress > 1500l) {
+		executeMode();
+	}
+
 	if (_paletteWidget->isDirty()) {
 		_scene->setVoxelType(_paletteWidget->voxelType());
 		_paletteWidget->markAsClean();
@@ -365,6 +439,31 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			paste();
 		} else if (ev.ref_id == TBIDC("cut")) {
 			cut();
+		}
+	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
+		const int key = ev.key;
+		if (_axis != voxedit::Axis::None) {
+			if ((key >= SDLK_0 && key <= SDLK_9) || (key >= SDLK_KP_0 && key <= SDLK_KP_9) || key == SDLK_PERIOD || key == SDLK_KP_PERIOD) {
+				int l = SDL_strlen(_modeNumberBuf);
+				if (l < MODENUMBERBUFSIZE - 1) {
+					_modeNumberBuf[l++] = (uint8_t)key;
+					_modeNumberBuf[l] = '\0';
+					_lastModePress = _app->timeProvider()->tickTime();
+				}
+			} else if (key == SDLK_KP_ENTER || key == SDLK_RETURN) {
+				executeMode();
+			}
+		}
+
+		if (_mode != ModifierMode::None) {
+			if (key == SDLK_x) {
+				_axis |= voxedit::Axis::X;
+			} else if (key == SDLK_y) {
+				_axis |= voxedit::Axis::Y;
+			} else if (key == SDLK_z) {
+				_axis |= voxedit::Axis::Z;
+			}
+			_lastModePress = _app->timeProvider()->tickTime();
 		}
 	}
 

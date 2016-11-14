@@ -6,6 +6,7 @@
 #include "frontend/Axis.h"
 #include "video/MeshPool.h"
 #include "voxel/polyvox/RawVolume.h"
+#include "voxel/generator/LSystemGenerator.h"
 #include "Action.h"
 #include "Shape.h"
 #include "Axis.h"
@@ -44,11 +45,13 @@ public:
 	bool newModel(bool force);
 
 	void rotate(int angleX, int angleY, int angleZ);
+	void move(int x, int y, int z);
 
 	void unselectAll();
 	void select(const glm::ivec3& pos);
 
-	void lsystem(const std::string& axiom, int generations = 2);
+	void lsystem(const voxel::LSystemGenerator::LSystemContext& ctx);
+	void createTree();
 
 	voxedit::SelectType selectionType() const;
 	void setSelectionType(voxedit::SelectType type);
