@@ -421,6 +421,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	for (uint32_t i = 0; i < SDL_arraysize(selectionmodes); ++i) {
 		if (isAny(ev, selectionmodes[i].id)) {
 			_scene->setSelectionType(selectionmodes[i].type);
+			setAction(Action::SelectVoxels);
 			return true;
 		}
 	}
@@ -439,6 +440,38 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	Log::debug("Unknown event %s - %s", ev.target->GetID().debug_string.CStr(), ev.ref_id.debug_string.CStr());
 
 	return false;
+}
+
+void VoxEditWindow::setSelectionType(SelectType type) {
+	for (uint32_t i = 0; i < SDL_arraysize(selectionmodes); ++i) {
+		if (selectionmodes[i].type != type) {
+			continue;
+		}
+		tb::TBWidget* widget = GetWidgetByID(selectionmodes[i].id);
+		if (widget != nullptr) {
+			widget->SetValue(1);
+		}
+		_scene->setSelectionType(type);
+		setAction(Action::SelectVoxels);
+		break;
+	}
+}
+
+void VoxEditWindow::setAction(Action action) {
+	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
+		if (actions[i].action != action) {
+			continue;
+		}
+		if (_scene->isEmpty() && !actions[i].availableOnEmpty) {
+			continue;
+		}
+		tb::TBWidget* widget = GetWidgetByID(actions[i].id);
+		if (widget != nullptr) {
+			widget->SetValue(1);
+		}
+		_scene->setAction(action);
+		break;
+	}
 }
 
 void VoxEditWindow::crop() {

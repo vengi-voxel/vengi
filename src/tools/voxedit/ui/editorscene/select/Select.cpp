@@ -123,7 +123,7 @@ bool Select::execute(const voxel::RawVolume *model, voxel::RawVolume *selection,
 		return false;
 	}
 	voxel::RawVolume::Sampler s(selection);
-	s.setVoxel(currentVoxel);
+	s.setPosition(pos);
 	return execute(m, s);
 }
 

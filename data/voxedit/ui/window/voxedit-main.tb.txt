@@ -47,7 +47,7 @@ TBLayout: distribution: gravity, axis: y
 							PaletteWidget: id: palettecontainer, width: 20, height: 20, padding: 3
 								lp: width: 207, height: 115
 
-					TBSection: value: 1, text: "Tools"
+					TBSection: value: 1, text: "Tools", is-group-root: 1
 						TBLayout: position: left top, axis: y
 							TBClickLabel
 								text Place
@@ -81,7 +81,7 @@ TBLayout: distribution: gravity, axis: y
 									id actionselect
 									@include definitions>toolbutton
 
-					TBSection: value: 1, text: "Shapes"
+					TBSection: value: 1, text: "Shapes", is-group-root: 1
 						TBLayout: position: left top, axis: y
 							TBClickLabel
 								text Single
@@ -167,7 +167,7 @@ TBLayout: distribution: gravity, axis: y
 									@include cameramode
 
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
-					TBSection: value: 1, text: "Select"
+					TBSection: value: 1, text: "Select", is-group-root: 1
 						lp: width: 150
 						TBLayout: position: left top, axis: y
 							TBClickLabel

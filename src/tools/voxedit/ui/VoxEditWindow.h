@@ -9,6 +9,8 @@
 #include "core/String.h"
 #include "editorscene/Axis.h"
 #include "voxel/WorldContext.h"
+#include "editorscene/Action.h"
+#include "editorscene/SelectType.h"
 
 class EditorScene;
 class VoxEdit;
@@ -74,6 +76,8 @@ private:
 	void createTree(voxel::TreeType type);
 
 	void setQuadViewport(bool active);
+	void setSelectionType(SelectType type);
+	void setAction(Action action);
 
 	bool handleClickEvent(const tb::TBWidgetEvent &ev);
 	bool handleChangeEvent(const tb::TBWidgetEvent &ev);

@@ -8,9 +8,9 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/generator/LSystemGenerator.h"
 #include "voxel/generator/TreeGenerator.h"
-#include "Action.h"
 #include "Shape.h"
 #include "Axis.h"
+#include "Action.h"
 #include "SelectType.h"
 #include "Controller.h"
 
