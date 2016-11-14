@@ -208,7 +208,7 @@ bool EditorScene::loadModel(std::string_view file) {
 	return true;
 }
 
-void EditorScene::lsystem(const voxel::LSystemGenerator::LSystemContext& ctx) {
+void EditorScene::lsystem(const voxel::lsystem::LSystemContext& ctx) {
 	m().lsystem(ctx);
 }
 

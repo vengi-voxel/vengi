@@ -289,10 +289,10 @@ bool Model::extractVolume() {
 	return false;
 }
 
-void Model::lsystem(const voxel::LSystemGenerator::LSystemContext& lsystemCtx) {
+void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
 	core::Random random;
 	voxel::generate::RawVolumeWrapper wrapper(_modelVolume);
-	voxel::LSystemGenerator::generate(wrapper, lsystemCtx, random);
+	voxel::lsystem::generate(wrapper, lsystemCtx, random);
 }
 
 void Model::createTree(voxel::TreeContext ctx) {

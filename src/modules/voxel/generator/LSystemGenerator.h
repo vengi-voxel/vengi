@@ -12,7 +12,7 @@
 #include "core/Log.h"
 
 namespace voxel {
-namespace LSystemGenerator {
+namespace lsystem {
 
 enum LSystemAlphabet {
 	X_FORWARD = 'X',

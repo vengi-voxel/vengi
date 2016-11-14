@@ -51,7 +51,7 @@ public:
 	void unselectAll();
 	void select(const glm::ivec3& pos);
 
-	void lsystem(const voxel::LSystemGenerator::LSystemContext& ctx);
+	void lsystem(const voxel::lsystem::LSystemContext& ctx);
 	void createTree(const voxel::TreeContext& ctx);
 
 	const glm::ivec3& cursorPosition() const;

@@ -111,7 +111,7 @@ public:
 
 	voxel::PickResult& result();
 
-	void lsystem(const voxel::LSystemGenerator::LSystemContext& lsystemCtx);
+	void lsystem(const voxel::lsystem::LSystemContext& lsystemCtx);
 	void createTree(voxel::TreeContext ctx);
 
 	bool extractVolume();

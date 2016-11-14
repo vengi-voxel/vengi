@@ -358,7 +358,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		rotatez();
 		return true;
 	} else if (ev.target->GetID() == TBIDC("lsystem")) {
-		voxel::LSystemGenerator::LSystemContext ctx;
+		voxel::lsystem::LSystemContext ctx;
 		ctx.axiom = "AY[xYA]AY[XYA]AY";
 		ctx.productionRules.emplace('A', ctx.axiom);
 		ctx.voxels.emplace('A', voxel::createVoxel(_paletteWidget->voxelType()));
