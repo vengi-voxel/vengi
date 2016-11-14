@@ -343,7 +343,7 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 
 			if (prevVoxel || directVoxel) {
 				_cursorPositionVolume->clear();
-				const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume, voxel::createVoxel(voxel::VoxelType::Air)));
+				const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume, air));
 				if (cropped) {
 					const voxel::Region& srcRegion = cropped->getEnclosingRegion();
 					const voxel::Region& destRegion = _cursorPositionVolume->getEnclosingRegion();
