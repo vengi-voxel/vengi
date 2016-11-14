@@ -3,6 +3,7 @@
 #include "voxel/polyvox/Picking.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/generator/LSystemGenerator.h"
+#include "voxel/generator/TreeGenerator.h"
 #include "frontend/RawVolumeRenderer.h"
 #include "Action.h"
 #include "SelectionHandler.h"
@@ -111,7 +112,7 @@ public:
 	voxel::PickResult& result();
 
 	void lsystem(const voxel::LSystemGenerator::LSystemContext& lsystemCtx);
-	void createTree();
+	void createTree(voxel::TreeType type);
 
 	bool extractVolume();
 	bool extractSelectionVolume();

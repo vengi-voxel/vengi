@@ -12,14 +12,14 @@
 namespace voxel {
 
 enum class TreeType : int32_t {
-	DOME,
-	CONE,
-	ELLIPSIS,
-	BRANCHESELLIPSIS,
-	CUBE,
-	PINE,
-	FIR,
-	MAX
+	Dome,
+	Cone,
+	Ellipsis,
+	BranchesEllipsis,
+	Cube,
+	Pine,
+	Fir,
+	Max
 };
 
 /**
@@ -43,14 +43,13 @@ static inline glm::ivec3 getGridBoundaryPos(const glm::ivec3& pos, int size) {
 }
 
 struct TreeContext {
-	TreeType type = TreeType::DOME;
+	TreeType type = TreeType::Dome;
 	int trunkHeight = 6;
 	int trunkWidth = 2;
 	int width = 10;
 	int height = 10;
 	int depth = 10;
-	// y-level is automatically determined
-	glm::ivec2 pos = glm::ivec2(0, 0);
+	glm::ivec3 pos;
 };
 
 struct IVec3HashEquals {

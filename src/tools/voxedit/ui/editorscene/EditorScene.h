@@ -7,6 +7,7 @@
 #include "video/MeshPool.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/generator/LSystemGenerator.h"
+#include "voxel/generator/TreeGenerator.h"
 #include "Action.h"
 #include "Shape.h"
 #include "Axis.h"
@@ -51,7 +52,7 @@ public:
 	void select(const glm::ivec3& pos);
 
 	void lsystem(const voxel::LSystemGenerator::LSystemContext& ctx);
-	void createTree();
+	void createTree(voxel::TreeType type);
 
 	const glm::ivec3& cursorPosition() const;
 	void setCursorPosition(const glm::ivec3& pos);

@@ -2,7 +2,6 @@
 #include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/polyvox/VolumeCropper.h"
 #include "voxel/polyvox/VolumeRotator.h"
-#include "voxel/generator/TreeGenerator.h"
 #include "voxel/generator/RawVolumeWrapper.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
@@ -296,13 +295,16 @@ void Model::lsystem(const voxel::LSystemGenerator::LSystemContext& lsystemCtx) {
 	voxel::LSystemGenerator::generate(wrapper, lsystemCtx, random);
 }
 
-void Model::createTree() {
+void Model::createTree(voxel::TreeType type) {
 	core::Random random;
 	const voxel::Region& region = _modelVolume->getEnclosingRegion();
 	glm::ivec3 cursorPos = region.getCentre();
 	cursorPos.y = region.getLowerY();
 	voxel::generate::RawVolumeWrapper wrapper(_modelVolume);
-	voxel::tree::createTreePine(wrapper, cursorPos, 20, 1, 16, 16, 16, random);
+	voxel::TreeContext ctx;
+	ctx.type = type;
+	ctx.pos = cursorPos;
+	voxel::tree::createTree(wrapper, ctx, random);
 }
 
 bool Model::trace(bool skipCursor, const video::Camera& camera) {
