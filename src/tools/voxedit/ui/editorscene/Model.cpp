@@ -215,21 +215,6 @@ bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) {
 	if (getVoxel(pos) == voxel) {
 		return false;
 	}
-	if ((_lockedAxis & Axis::X) != Axis::None) {
-		if (_lastPlacement.x >= 0) {
-			pos.x = _lastPlacement.x;
-		}
-	}
-	if ((_lockedAxis & Axis::Y) != Axis::None) {
-		if (_lastPlacement.y >= 0) {
-			pos.y = _lastPlacement.y;
-		}
-	}
-	if ((_lockedAxis & Axis::Z) != Axis::None) {
-		if (_lastPlacement.z >= 0) {
-			pos.z = _lastPlacement.z;
-		}
-	}
 	markUndo();
 	const bool placed = _modelVolume->setVoxel(pos, voxel);
 	_lastPlacement = pos;
@@ -338,11 +323,23 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 		if (!skipCursor) {
 			const bool prevVoxel = _result.validPreviousVoxel && (!_result.didHit || !actionRequiresExistingVoxel(action()));
 			const bool directVoxel = _result.didHit;
+			glm::ivec3 cursorPos;
 			if (prevVoxel) {
-				_cursorPos = _result.previousVoxel;
+				cursorPos = _result.previousVoxel;
 			} else if (directVoxel) {
-				_cursorPos = _result.hitVoxel;
+				cursorPos = _result.hitVoxel;
 			}
+
+			if ((_lockedAxis & Axis::X) != Axis::None) {
+				cursorPos.x = _cursorPos.x;
+			}
+			if ((_lockedAxis & Axis::Y) != Axis::None) {
+				cursorPos.y = _cursorPos.y;
+			}
+			if ((_lockedAxis & Axis::Z) != Axis::None) {
+				cursorPos.z = _cursorPos.z;
+			}
+			_cursorPos = cursorPos;
 
 			if (prevVoxel || directVoxel) {
 				_cursorPositionVolume->clear();

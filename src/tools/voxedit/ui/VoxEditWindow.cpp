@@ -82,6 +82,10 @@ bool VoxEditWindow::init() {
 	_undoButton = getWidget("undo");
 	_redoButton = getWidget("redo");
 
+	_cursorX = getWidgetByType<tb::TBEditField>("cursorx");
+	_cursorY = getWidgetByType<tb::TBEditField>("cursory");
+	_cursorZ = getWidgetByType<tb::TBEditField>("cursorz");
+
 	_showAABB = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowaabb"));
 	_showGrid = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowgrid"));
 	_showAxis = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowaxis"));
@@ -386,6 +390,36 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("lockz")) {
 		_scene->setLockedAxis(Axis::Z, ev.target->GetValue() != 1);
 		return true;
+	} else if (ev.target->GetID() == TBIDC("cursorx")) {
+		const tb::TBStr& str = ev.target->GetText();
+		if (str.IsEmpty()) {
+			return true;
+		}
+		const int val = core::string::toInt(str);
+		glm::ivec3 pos = _scene->cursorPosition();
+		pos.x = val;
+		_scene->setCursorPosition(pos);
+		return true;
+	} else if (ev.target->GetID() == TBIDC("cursory")) {
+		const tb::TBStr& str = ev.target->GetText();
+		if (str.IsEmpty()) {
+			return true;
+		}
+		const int val = core::string::toInt(str);
+		glm::ivec3 pos = _scene->cursorPosition();
+		pos.y = val;
+		_scene->setCursorPosition(pos);
+		return true;
+	} else if (ev.target->GetID() == TBIDC("cursorz")) {
+		const tb::TBStr& str = ev.target->GetText();
+		if (str.IsEmpty()) {
+			return true;
+		}
+		const int val = core::string::toInt(str);
+		glm::ivec3 pos = _scene->cursorPosition();
+		pos.z = val;
+		_scene->setCursorPosition(pos);
+		return true;
 	}
 
 	return false;
@@ -415,6 +449,21 @@ void VoxEditWindow::OnProcess() {
 	if (_redoButton != nullptr) {
 		_redoButton->SetState(tb::WIDGET_STATE_DISABLED, empty || !_scene->canRedo());
 	}
+	const glm::ivec3& pos = _scene->cursorPosition();
+	char buf[64];
+	if (_cursorX != nullptr) {
+		SDL_snprintf(buf, sizeof(buf), "%i", pos.x);
+		_cursorX->SetText(buf);
+	}
+	if (_cursorY != nullptr) {
+		SDL_snprintf(buf, sizeof(buf), "%i", pos.y);
+		_cursorY->SetText(buf);
+	}
+	if (_cursorZ != nullptr) {
+		SDL_snprintf(buf, sizeof(buf), "%i", pos.z);
+		_cursorZ->SetText(buf);
+	}
+
 	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
 		tb::TBWidget* w = GetWidgetByID(actions[i].id);
 		if (w == nullptr) {

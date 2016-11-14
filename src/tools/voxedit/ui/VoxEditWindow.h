@@ -32,6 +32,10 @@ private:
 	tb::TBWidget* _undoButton = nullptr;
 	tb::TBWidget* _redoButton = nullptr;
 
+	tb::TBEditField* _cursorX = nullptr;
+	tb::TBEditField* _cursorY = nullptr;
+	tb::TBEditField* _cursorZ = nullptr;
+
 	std::string _voxelizeFile;
 	std::string _loadFile;
 

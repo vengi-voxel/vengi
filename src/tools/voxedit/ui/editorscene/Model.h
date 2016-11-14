@@ -62,6 +62,7 @@ public:
 	void onResize(const glm::ivec2& size);
 
 	const glm::ivec3& cursorPosition() const;
+	void setCursorPosition(const glm::ivec3& pos);
 
 	void init();
 	void shutdown();
@@ -263,6 +264,13 @@ inline bool Model::empty() const {
 
 inline const glm::ivec3& Model::cursorPosition() const {
 	return _cursorPos;
+}
+
+inline void Model::setCursorPosition(const glm::ivec3& pos) {
+	if (!_modelVolume->getEnclosingRegion().containsPoint(pos)) {
+		return;
+	}
+	_cursorPos = pos;
 }
 
 }

@@ -5,6 +5,9 @@ definitions
 	menubutton
 		lp: height: 28
 		skin TBButton.flat
+	menutextfield
+		lp: height: 28
+		gravity: left right
 	toolbutton
 		group-id toolgroup
 	cursorbutton
@@ -49,8 +52,6 @@ TBLayout: distribution: gravity, axis: y
 						TBLayout: position: left top, axis: y
 							PaletteWidget: id: palettecontainer, width: 20, height: 20, padding: 3
 								lp: width: 207, height: 115
-
-					TBSeparator: gravity: left right, skin: separator
 
 					TBSection: value: 1, text: "Tools"
 						TBLayout: position: left top, axis: y
@@ -126,17 +127,23 @@ TBLayout: distribution: gravity, axis: y
 									id shapecircle
 									@include definitions>cursorbutton
 
-					TBSection: value: 1, text: "Lock axes"
-						TBLayout: position: left top, axis: x
-							TBClickLabel
-								TBSkinImage: skin: voxedit-axis-x
-								TBCheckBox: id: lockx
-							TBClickLabel
-								TBSkinImage: skin: voxedit-axis-y
-								TBCheckBox: id: locky
-							TBClickLabel
-								TBSkinImage: skin: voxedit-axis-z
-								TBCheckBox: id: lockz
+					TBSection: value: 1, text: "Cursor"
+						TBLayout: position: left top, axis: y, distribution: gravity
+							TBLayout: axis: x
+								TBEditField: @include: definitions>menutextfield, id: cursorx, type: number, placeholder: x
+								TBClickLabel
+									TBSkinImage: skin: voxedit-axis-x
+									TBCheckBox: id: lockx
+							TBLayout: axis: x
+								TBEditField: @include: definitions>menutextfield, id: cursory, type: number, placeholder: y
+								TBClickLabel
+									TBSkinImage: skin: voxedit-axis-y
+									TBCheckBox: id: locky
+							TBLayout: axis: x
+								TBEditField: @include: definitions>menutextfield, id: cursorz, type: number, placeholder: z
+								TBClickLabel
+									TBSkinImage: skin: voxedit-axis-z
+									TBCheckBox: id: lockz
 
 					TBSection: value: 1, text: "Rotate on axis"
 						TBLayout: position: left top, axis: x
@@ -146,6 +153,8 @@ TBLayout: distribution: gravity, axis: y
 								TBSkinImage: skin: voxedit-axis-y
 							TBButton: id: rotatez, @include: definitions>menubutton
 								TBSkinImage: skin: voxedit-axis-z
+
+					TBSeparator: gravity: left right, skin: separator
 
 					TBWidget: gravity: top bottom
 
@@ -206,6 +215,8 @@ TBLayout: distribution: gravity, axis: y
 							TBButton: @include: definitions>menubutton, text: Extend, id: extend
 								TBSkinImage: skin: voxedit-extend
 
+					TBWidget: gravity: top bottom
+
 					TBSection: value: 0, text: "Options"
 						TBLayout: position: left top, axis: y
 							TBClickLabel: text: Show grid
@@ -222,8 +233,6 @@ TBLayout: distribution: gravity, axis: y
 								TBSlider: id: executiondelay, axis: x, min: 0, max: 50, value: 1
 							TBClickLabel: text: Camera speed
 								TBSlider: id: cameraspeed, axis: x, min: 0.05, max: 0.2, value: 0.01
-
-					TBWidget: gravity: top bottom
 
 			TBLayout: distribution: gravity
 				TBContainer: skin: container, gravity: left right
