@@ -315,7 +315,8 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		_scene->lsystem(ctx);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("tree")) {
-		_scene->createTree(voxel::TreeType::Pine);
+		voxel::TreeContext ctx;
+		_scene->createTree(ctx);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);

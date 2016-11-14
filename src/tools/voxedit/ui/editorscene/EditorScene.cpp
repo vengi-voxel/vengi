@@ -212,8 +212,8 @@ void EditorScene::lsystem(const voxel::LSystemGenerator::LSystemContext& ctx) {
 	m().lsystem(ctx);
 }
 
-void EditorScene::createTree(voxel::TreeType type) {
-	m().createTree(type);
+void EditorScene::createTree(const voxel::TreeContext& ctx) {
+	m().createTree(ctx);
 }
 
 void EditorScene::resetCamera() {

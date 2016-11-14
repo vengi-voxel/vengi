@@ -42,13 +42,16 @@ static inline glm::ivec3 getGridBoundaryPos(const glm::ivec3& pos, int size) {
 	return glm::ivec3(chunkPos.x * size, 0, chunkPos.z * size);
 }
 
+/**
+ * @brief Context to create a tree.
+ */
 struct TreeContext {
 	TreeType type = TreeType::Dome;
-	int trunkHeight = 6;
-	int trunkWidth = 2;
-	int width = 10;
-	int height = 10;
-	int depth = 10;
+	int trunkHeight = 4;
+	int trunkWidth = 1;
+	int leavesWidth = 12;
+	int leavesHeight = 20;
+	int leavesDepth = 12;
 	glm::ivec3 pos;
 };
 

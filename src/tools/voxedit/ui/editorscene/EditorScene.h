@@ -52,7 +52,7 @@ public:
 	void select(const glm::ivec3& pos);
 
 	void lsystem(const voxel::LSystemGenerator::LSystemContext& ctx);
-	void createTree(voxel::TreeType type);
+	void createTree(const voxel::TreeContext& ctx);
 
 	const glm::ivec3& cursorPosition() const;
 	void setCursorPosition(const glm::ivec3& pos);
