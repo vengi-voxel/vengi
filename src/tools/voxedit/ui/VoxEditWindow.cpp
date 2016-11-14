@@ -86,10 +86,10 @@ bool VoxEditWindow::init() {
 	_cursorY = getWidgetByType<tb::TBEditField>("cursory");
 	_cursorZ = getWidgetByType<tb::TBEditField>("cursorz");
 
-	_showAABB = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowaabb"));
-	_showGrid = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowgrid"));
-	_showAxis = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionshowaxis"));
-	_freeLook = GetWidgetByIDAndType<tb::TBCheckBox>(TBIDC("optionfreelook"));
+	_showAABB = getWidgetByType<tb::TBCheckBox>("optionshowaabb");
+	_showGrid = getWidgetByType<tb::TBCheckBox>("optionshowgrid");
+	_showAxis = getWidgetByType<tb::TBCheckBox>("optionshowaxis");
+	_freeLook = getWidgetByType<tb::TBCheckBox>("optionfreelook");
 	if (_showAABB == nullptr || _showGrid == nullptr || _showAxis == nullptr || _freeLook == nullptr) {
 		Log::error("Could not load all required widgets");
 		return false;
