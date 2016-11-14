@@ -24,6 +24,7 @@
 // TODO: render locked axis as plane
 // TODO: shift locked axis
 // TODO: scale/move/rotate selections - not only the cursor
+// TODO: copy/paste full volume - assert in volume merger
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init("engine", "voxedit");
