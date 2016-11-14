@@ -148,7 +148,7 @@ void VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringIt
 	if (id == nullptr) {
 		const std::string& lowerId = core::string::toLower(text);
 		item = new tb::TBGenericStringItem(text, TBIDC(lowerId.c_str()));
-		const std::string& iconId = _app->appname() + lowerId;
+		const std::string& iconId = _app->appname() + "-" + lowerId;
 		item->SetSkinImage(TBIDC(iconId.c_str()));
 	} else {
 		item = new tb::TBGenericStringItem(text, TBIDC(id));
