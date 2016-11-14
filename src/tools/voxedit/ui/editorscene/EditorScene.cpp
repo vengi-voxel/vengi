@@ -345,7 +345,9 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 	core_trace_scoped(EditorSceneOnPaint);
 	Super::OnPaint(paintProps);
 	const glm::ivec2& dimension = _frameBuffer.dimension();
-	const ui::UIRect& rect = GetRect();
+	ui::UIRect rect = GetRect();
+	rect.x = 0;
+	rect.y = 0;
 	// the fbo is flipped in memory, we have to deal with it here
 	const tb::TBRect srcRect(0, dimension.y, rect.w, -rect.h);
 	tb::g_renderer->DrawBitmap(rect, srcRect, &_bitmap);
