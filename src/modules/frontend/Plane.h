@@ -2,6 +2,7 @@
 
 #include "video/Camera.h"
 #include "core/Color.h"
+#include "core/Plane.h"
 #include "video/ShapeBuilder.h"
 #include "frontend/ShapeRenderer.h"
 
@@ -42,14 +43,34 @@ public:
 	 * @param[in] scale The vertices are in the normalized coordinate space between -0.5 and 0.5 - we have to scale them up to the size we need
 	 * @param[in] color The color of the plane.
 	 */
-	bool init(const glm::vec3& position, int tesselation = 0, float scale = 100.0f, const glm::vec4& color = core::Color::White) {
+	bool init() {
 		if (!_shapeRenderer.init()) {
 			return false;
 		}
+		return true;
+	}
+
+	bool plane(const glm::vec3& position, int tesselation = 0, float scale = 100.0f, const glm::vec4& color = core::Color::White) {
 		_shapeBuilder.setColor(color);
 		_shapeBuilder.setPosition(position);
 		_shapeBuilder.plane(tesselation, scale);
-		_planeMesh = _shapeRenderer.createMesh(_shapeBuilder);
+		if (_planeMesh >= 0) {
+			_shapeRenderer.update(_planeMesh, _shapeBuilder);
+		} else {
+			_planeMesh = _shapeRenderer.createMesh(_shapeBuilder);
+		}
+		return _planeMesh >= 0;
+	};
+
+	bool plane(const glm::vec3& position, const core::Plane& plane, const glm::vec4& color = core::Color::White) {
+		_shapeBuilder.setColor(color);
+		_shapeBuilder.setPosition(position);
+		_shapeBuilder.plane(plane, false);
+		if (_planeMesh >= 0) {
+			_shapeRenderer.update(_planeMesh, _shapeBuilder);
+		} else {
+			_planeMesh = _shapeRenderer.createMesh(_shapeBuilder);
+		}
 		return _planeMesh >= 0;
 	};
 };

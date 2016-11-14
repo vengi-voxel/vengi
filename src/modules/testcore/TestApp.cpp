@@ -37,7 +37,7 @@ core::AppState TestApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!_plane.init(glm::zero<glm::vec3>())) {
+	if (!_plane.init() || !_plane.plane(glm::zero<glm::vec3>())) {
 		return core::AppState::Cleanup;
 	}
 
