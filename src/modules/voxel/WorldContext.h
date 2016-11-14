@@ -47,12 +47,39 @@ static inline glm::ivec3 getGridBoundaryPos(const glm::ivec3& pos, int size) {
  */
 struct TreeContext {
 	TreeType type = TreeType::Dome;
+	// the trunk dimension
 	int trunkHeight = 4;
 	int trunkWidth = 1;
+	// the leave shape dimension
 	int leavesWidth = 12;
 	int leavesHeight = 20;
 	int leavesDepth = 12;
+	// the position of the trunk center
 	glm::ivec3 pos;
+
+	inline int treeBottom() const {
+		return pos.y;
+	}
+
+	inline int treeTop() const {
+		return treeBottom() + trunkHeight;
+	}
+
+	inline int leavesBottom() const {
+		return leavesTop() - leavesHeight;
+	}
+
+	inline int leavesTop() const {
+		return treeTop();
+	}
+
+	inline int leavesCenter() const {
+		return leavesBottom() + leavesHeight / 2;
+	}
+
+	inline glm::ivec3 leavesCenterV() const {
+		return glm::ivec3(pos.x, leavesCenter(), pos.z);
+	}
 };
 
 struct IVec3HashEquals {

@@ -36,7 +36,7 @@ static inline Voxel getLeavesVoxel(core::Random& random) {
 
 template<class Volume>
 void createTreeBranchEllipsis(Volume& volume, const TreeContext& ctx, core::Random& random) {
-	const int top = (int) ctx.pos.y + ctx.trunkHeight;
+	const int top = ctx.treeTop();
 	static constexpr Voxel voxel = createVoxel(VoxelType::Wood1);
 	shape::createCubeNoCenter(volume, ctx.pos - glm::ivec3(1), ctx.trunkWidth + 2, 1, ctx.trunkWidth + 2, voxel);
 	shape::createCubeNoCenter(volume, ctx.pos, ctx.trunkWidth, ctx.trunkHeight, ctx.trunkWidth, voxel);
@@ -84,7 +84,7 @@ void createTreeBranchEllipsis(Volume& volume, const TreeContext& ctx, core::Rand
 
 template<class Volume>
 static void createTrunk(Volume& volume, const TreeContext& ctx) {
-	const int top = ctx.pos.y + ctx.trunkHeight;
+	const int top = ctx.treeTop();
 	static constexpr Voxel voxel = createVoxel(VoxelType::Wood1);
 	for (int y = ctx.pos.y; y < top; ++y) {
 		const int trunkWidthY = ctx.trunkWidth + std::max(0, 2 - (y - ctx.pos.y));
@@ -113,7 +113,7 @@ static void createTrunk(Volume& volume, const TreeContext& ctx) {
 
 template<class Volume>
 void createTreeEllipsis(Volume& volume, const TreeContext& ctx, core::Random& random) {
-	const int top = (int) ctx.pos.y + ctx.trunkHeight;
+	const int top = ctx.pos.y + ctx.trunkHeight;
 	const Voxel leavesVoxel = getLeavesVoxel(random);
 
 	createTrunk(volume, ctx);
@@ -124,7 +124,7 @@ void createTreeEllipsis(Volume& volume, const TreeContext& ctx, core::Random& ra
 
 template<class Volume>
 void createTreeCone(Volume& volume, const TreeContext& ctx, core::Random& random) {
-	int top = (int) ctx.pos.y + ctx.trunkHeight;
+	const int top = ctx.treeTop();
 	const Voxel leavesVoxel = getLeavesVoxel(random);
 
 	createTrunk(volume, ctx);
@@ -135,7 +135,7 @@ void createTreeCone(Volume& volume, const TreeContext& ctx, core::Random& random
 
 template<class Volume>
 void createTreeFir(Volume& volume, const TreeContext& ctx, core::Random& random) {
-	const int top = (int) ctx.pos.y + ctx.trunkHeight;
+	const int top = ctx.treeTop();
 	const Voxel leavesVoxel = getLeavesVoxel(random);
 
 	createTrunk(volume, ctx);
@@ -204,7 +204,7 @@ void createTreePine(Volume& volume, const TreeContext& ctx, core::Random& random
 
 template<class Volume>
 void createTreeDome(Volume& volume, const TreeContext& ctx, core::Random& random) {
-	const int top = (int) ctx.pos.y + ctx.trunkHeight;
+	const int top = ctx.treeTop();
 	const Voxel leavesVoxel = getLeavesVoxel(random);
 
 	createTrunk(volume, ctx);
@@ -235,7 +235,7 @@ void createTreeDome(Volume& volume, const TreeContext& ctx, core::Random& random
 
 template<class Volume>
 void createTreeCube(Volume& volume, const TreeContext& ctx, core::Random& random) {
-	const int top = (int) ctx.pos.y + ctx.trunkHeight;
+	const int top = ctx.treeTop();
 	const Voxel leavesVoxel = getLeavesVoxel(random);
 
 	createTrunk(volume, ctx);
