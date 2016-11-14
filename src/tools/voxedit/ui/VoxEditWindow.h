@@ -37,6 +37,10 @@ private:
 	tb::TBEditField* _cursorY = nullptr;
 	tb::TBEditField* _cursorZ = nullptr;
 
+	tb::TBCheckBox* _lockedX = nullptr;
+	tb::TBCheckBox* _lockedY = nullptr;
+	tb::TBCheckBox* _lockedZ = nullptr;
+
 	std::string _voxelizeFile;
 	std::string _loadFile;
 
@@ -47,6 +51,7 @@ private:
 
 	std::string _exportFilter;
 	bool _fourViewAvailable = false;
+	bool _lockedDirty = false;
 
 	void addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id = nullptr);
 
@@ -57,7 +62,8 @@ private:
 		None,
 		Rotate,
 		Scale,
-		Move
+		Move,
+		Lock
 	};
 	ModifierMode _mode = ModifierMode::None;
 	voxedit::Axis _axis = voxedit::Axis::None;
@@ -99,6 +105,7 @@ private:
 	void movemode();
 	void scalemode();
 	void rotatemode();
+	void togglelockaxis();
 	void unselectall();
 	bool voxelize(std::string_view file);
 	bool save(std::string_view file);

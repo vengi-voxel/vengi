@@ -137,9 +137,10 @@ core::AppState VoxEdit::onInit() {
 	COMMAND_MAINWINDOW(cut, "Delete selected volume from model volume");
 	COMMAND_MAINWINDOW(toggleviewport, "Toggle quad view on/off");
 	COMMAND_MAINWINDOW(togglefreelook, "Toggle free look on/off");
-	COMMAND_MAINWINDOW(rotatemode, "Activates the rotate mode");
-	COMMAND_MAINWINDOW(scalemode, "Activates the scale mode");
-	COMMAND_MAINWINDOW(movemode, "Activates the move mode");
+	COMMAND_MAINWINDOW(rotatemode, "Activates the rotate mode (next keys are axis x, y, or z and the rotation value in degrees)");
+	COMMAND_MAINWINDOW(scalemode, "Activates the scale mode (next keys are axis x, y, or z and the numeric scale value)");
+	COMMAND_MAINWINDOW(movemode, "Activates the move mode (next keys are axis x, y, or z and the translation values in voxels)");
+	COMMAND_MAINWINDOW(togglelockaxis, "Activates the lock mode (next key is axis x, y, or z)");
 	COMMAND_MAINWINDOW(resetcamera, "Reset cameras");
 
 	newFile(true);

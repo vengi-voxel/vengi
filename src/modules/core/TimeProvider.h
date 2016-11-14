@@ -23,7 +23,7 @@ public:
 	 * @brief The tick time gives you the time in milliseconds when the tick was started.
 	 * @note Updated once per tick
 	 */
-	unsigned long tickTime() const {
+	inline unsigned long tickTime() const {
 		return _tickTime;
 	}
 

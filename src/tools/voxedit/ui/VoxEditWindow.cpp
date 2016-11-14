@@ -102,6 +102,10 @@ bool VoxEditWindow::init() {
 	_cursorY = getWidgetByType<tb::TBEditField>("cursory");
 	_cursorZ = getWidgetByType<tb::TBEditField>("cursorz");
 
+	_lockedX = getWidgetByType<tb::TBCheckBox>("lockx");
+	_lockedY = getWidgetByType<tb::TBCheckBox>("locky");
+	_lockedZ = getWidgetByType<tb::TBCheckBox>("lockz");
+
 	_showAABB = getWidgetByType<tb::TBCheckBox>("optionshowaabb");
 	_showGrid = getWidgetByType<tb::TBCheckBox>("optionshowgrid");
 	_showAxis = getWidgetByType<tb::TBCheckBox>("optionshowaxis");
@@ -156,23 +160,28 @@ void VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringIt
 }
 
 void VoxEditWindow::rotate(int x, int y, int z) {
+	Log::debug("execute rotate by %i:%i:%i", x, y, z);
 	_scene->rotate(x, y, z);
 }
 
 void VoxEditWindow::scale(float x, float y, float z) {
+	Log::debug("execute scale by %f:%f:%f", x, y, z);
 	_scene->scaleCursorShape(glm::vec3(x, y, z));
 }
 
 void VoxEditWindow::move(int x, int y, int z) {
+	Log::debug("execute move by %i:%i:%i", x, y, z);
 	_scene->move(x, y, z);
 }
 
 void VoxEditWindow::executeMode() {
 	if (_mode == ModifierMode::None) {
+		_modeNumberBuf[0] = '\0';
+		_lastModePress = -1l;
+		_axis = voxedit::Axis::None;
 		return;
 	}
 
-	Log::info("buf: %s", _modeNumberBuf);
 	if (_modeNumberBuf[0] != '\0') {
 		if (_mode == ModifierMode::Scale) {
 			const float value = core::string::toFloat(_modeNumberBuf);
@@ -206,6 +215,14 @@ void VoxEditWindow::executeMode() {
 				move(values.x, values.y, values.z);
 			}
 		}
+	}
+	if (_mode == ModifierMode::Lock) {
+		const voxedit::Axis locked = _scene->lockedAxis();
+#define VOXEDIT_LOCK(axis) if ((_axis & axis) != voxedit::Axis::None) { _scene->setLockedAxis(axis, (locked & axis) != voxedit::Axis::None); _lockedDirty = true; }
+		VOXEDIT_LOCK(voxedit::Axis::X)
+		VOXEDIT_LOCK(voxedit::Axis::Y)
+		VOXEDIT_LOCK(voxedit::Axis::Z)
+#undef VOXEDIT_LOCK
 	}
 
 	_modeNumberBuf[0] = '\0';
@@ -247,6 +264,12 @@ void VoxEditWindow::scalemode() {
 
 void VoxEditWindow::movemode() {
 	_mode = ModifierMode::Move;
+	_axis = voxedit::Axis::None;
+	_modeNumberBuf[0] = '\0';
+}
+
+void VoxEditWindow::togglelockaxis() {
+	_mode = ModifierMode::Lock;
 	_axis = voxedit::Axis::None;
 	_modeNumberBuf[0] = '\0';
 }
@@ -518,17 +541,32 @@ void VoxEditWindow::OnProcess() {
 	}
 	const glm::ivec3& pos = _scene->cursorPosition();
 	char buf[64];
-	if (_cursorX != nullptr) {
+	if (_cursorX != nullptr && !_cursorX->GetState(tb::WIDGET_STATE_FOCUSED)) {
 		SDL_snprintf(buf, sizeof(buf), "%i", pos.x);
 		_cursorX->SetText(buf);
 	}
-	if (_cursorY != nullptr) {
+	if (_cursorY != nullptr && !_cursorY->GetState(tb::WIDGET_STATE_FOCUSED)) {
 		SDL_snprintf(buf, sizeof(buf), "%i", pos.y);
 		_cursorY->SetText(buf);
 	}
-	if (_cursorZ != nullptr) {
+	if (_cursorZ != nullptr && !_cursorZ->GetState(tb::WIDGET_STATE_FOCUSED)) {
 		SDL_snprintf(buf, sizeof(buf), "%i", pos.z);
 		_cursorZ->SetText(buf);
+	}
+
+	if (_lockedDirty) {
+		_lockedDirty = false;
+		Log::info("_lockedDirty = true;");
+		const voxedit::Axis axis = _scene->lockedAxis();
+		if (_lockedX != nullptr) {
+			_lockedX->SetValue((axis & voxedit::Axis::X) != voxedit::Axis::None);
+		}
+		if (_lockedY != nullptr) {
+			_lockedY->SetValue((axis & voxedit::Axis::Y) != voxedit::Axis::None);
+		}
+		if (_lockedZ != nullptr) {
+			_lockedZ->SetValue((axis & voxedit::Axis::Z) != voxedit::Axis::None);
+		}
 	}
 
 	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
@@ -585,11 +623,14 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 
 		if (_mode != ModifierMode::None) {
 			if (key == SDLK_x) {
+				Log::debug("Set axis to x");
 				_axis |= voxedit::Axis::X;
 			} else if (key == SDLK_y) {
 				_axis |= voxedit::Axis::Y;
+				Log::debug("Set axis to y");
 			} else if (key == SDLK_z) {
 				_axis |= voxedit::Axis::Z;
+				Log::debug("Set axis to z");
 			}
 			_lastModePress = _app->timeProvider()->tickTime();
 		}
