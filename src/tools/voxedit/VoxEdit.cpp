@@ -19,9 +19,11 @@
 #define COMMAND_CALL(command, call, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {call;}).setHelp(help)
 
 // TODO: voxelizer via assimp
-// TODO: cursor volume shape generators
-// TODO: it is possible to place a voxel outside the maxs region
 // TODO: extrude
+// TODO: fill tool
+// TODO: render locked axis as plane
+// TODO: shift locked axis
+// TODO: scale/move/rotate selections - not only the cursor
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init("engine", "voxedit");
