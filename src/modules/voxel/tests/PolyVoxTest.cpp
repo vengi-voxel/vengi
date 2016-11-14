@@ -73,7 +73,7 @@ TEST_F(PolyVoxTest, testSamplerPeekWithTipOfTheGeom) {
 }
 
 TEST_F(PolyVoxTest, testFullSamplerLoop) {
-	const voxel::Region& region = _ctx.region;
+	const voxel::Region& region = _ctx.region();
 	PagedVolume::Sampler volumeSampler(&_volData);
 
 	ASSERT_EQ(0, region.getLowerX());

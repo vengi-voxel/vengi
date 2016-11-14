@@ -18,14 +18,18 @@ private:
 	PagedVolume* _pagedVolume;
 	PagedVolume::Chunk* _chunk;
 	Region _validRegion;
+	Region _region;
 public:
-	Region region;
 
-	PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk, const Region& _region) :
-			_pagedVolume(voxelStorage), _chunk(chunk), region(_region) {
+	PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk, const Region& region) :
+			_pagedVolume(voxelStorage), _chunk(chunk), _region(region) {
 		if (_chunk != nullptr) {
 			_validRegion = _chunk->getRegion();
 		}
+	}
+
+	inline const Region& region() const {
+		return _region;
 	}
 
 	inline operator PagedVolume& () const {

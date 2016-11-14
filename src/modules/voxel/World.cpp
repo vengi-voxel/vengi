@@ -241,7 +241,7 @@ void World::create(PagedVolumeWrapper& ctx) {
 		}
 	}
 #else
-	WorldGenerator::createWorld(_ctx, ctx, _biomeManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
+	world::createWorld(_ctx, ctx, _biomeManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
 #endif
 }
 

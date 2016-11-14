@@ -38,6 +38,10 @@ public:
 		return _volume;
 	}
 
+	inline const Region& region() const {
+		return _region;
+	}
+
 	inline const Voxel& getVoxel(const glm::ivec3& pos) const {
 		return _volume->getVoxel(pos.x, pos.y, pos.z);
 	}

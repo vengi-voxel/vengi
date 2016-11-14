@@ -17,7 +17,7 @@ class MeshExporterTest: public AbstractVoxelTest {
 
 TEST_F(MeshExporterTest, testExport) {
 	Mesh mesh(100, 100, true);
-	extractCubicMesh(&_volData, _ctx.region, &mesh, IsQuadNeeded(false));
+	extractCubicMesh(&_volData, _ctx.region(), &mesh, IsQuadNeeded(false));
 	ASSERT_GE(mesh.getNoOfVertices(), 8u);
 	ASSERT_GE(mesh.getNoOfIndices(), 8u);
 	const char *filename = "meshexportertest.obj";
