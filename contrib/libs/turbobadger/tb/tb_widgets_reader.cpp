@@ -178,16 +178,16 @@ void TBEditField::OnInflate(const INFLATE_INFO &info)
 	SetReadOnly(info.node->GetValueInt("readonly", 0) ? true : false);
 	SetWrapping(info.node->GetValueInt("wrap", GetWrapping()) ? true : false);
 	SetAdaptToContentSize(info.node->GetValueInt("adapt-to-content", GetAdaptToContentSize()) ? true : false);
+	if (const char *virtual_width = info.node->GetValueString("virtual-width", nullptr))
+		SetVirtualWidth(g_tb_skin->GetDimensionConverter()->GetPxFromString(virtual_width, GetVirtualWidth()));
+	if (const char *text = info.node->GetValueString("placeholder", nullptr))
+		SetPlaceholderText(text);
 	if (const char *text_align = info.node->GetValueString("text-align", nullptr))
 	{
 		if (!strcmp(text_align, "left"))		SetTextAlign(TB_TEXT_ALIGN_LEFT);
 		else if (!strcmp(text_align, "center"))	SetTextAlign(TB_TEXT_ALIGN_CENTER);
 		else if (!strcmp(text_align, "right"))	SetTextAlign(TB_TEXT_ALIGN_RIGHT);
 	}
-	if (const char *virtual_width = info.node->GetValueString("virtual-width", nullptr))
-		SetVirtualWidth(g_tb_skin->GetDimensionConverter()->GetPxFromString(virtual_width, GetVirtualWidth()));
-	if (const char *text = info.node->GetValueString("placeholder", nullptr))
-		SetPlaceholderText(text);
 	if (const char *type = info.node->GetValueString("type", nullptr))
 	{
 		if (stristr(type, "text"))			SetEditType(EDIT_TYPE_TEXT);
