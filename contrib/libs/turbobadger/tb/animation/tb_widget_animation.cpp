@@ -212,11 +212,9 @@ void TBWidgetsAnimationManager::OnWidgetAdded(TBWidget *parent, TBWidget *widget
 {
 	if (TBWindow *window = TBSafeCast<TBWindow>(widget))
 	{
-		if (window->GetAnimate()) {
-			// Fade in new windows
-			if (TBAnimationObject *anim = new TBWidgetAnimationOpacity(window, TB_ALMOST_ZERO_OPACITY, 1.f, false))
-				TBAnimationManager::StartAnimation(anim, ANIMATION_CURVE_BEZIER);
-		}
+		// Fade in new windows
+		if (TBAnimationObject *anim = new TBWidgetAnimationOpacity(window, TB_ALMOST_ZERO_OPACITY, 1.f, false))
+			TBAnimationManager::StartAnimation(anim, ANIMATION_CURVE_BEZIER);
 	}
 	if (TBMessageWindow *window = TBSafeCast<TBMessageWindow>(widget))
 	{

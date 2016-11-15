@@ -39,9 +39,6 @@ public:
 	TBWindow();
 	virtual ~TBWindow();
 
-	inline bool GetAnimate() const { return m_animate; }
-	void SetAnimate(bool animate) { m_animate = animate; }
-
 	/** Close this window.
 		Warning: This window will be deleted after this call! */
 	void Close();
@@ -109,7 +106,6 @@ protected:
 	TBWidget m_close_button;
 	WINDOW_SETTINGS m_settings;
 	TBWidgetSafePointer m_last_focus;
-	bool m_animate = false;
 	TBWindow *GetTopMostOtherWindow(bool only_activable_windows);
 	void SetWindowActiveState(bool active);
 	void DeActivate();
