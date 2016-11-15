@@ -20,9 +20,15 @@ static const struct Selection {
 };
 static_assert(SDL_arraysize(selectionsArray) == std::enum_value(SelectType::Max), "Array size doesn't match selection modes");
 
+void SelectionHandler::unselectAll() {
+	_selectedVoxels = 0;
+}
+
 bool SelectionHandler::select(const voxel::RawVolume* volume, voxel::RawVolume* selectionVolume, const glm::ivec3& pos) {
 	const Selection& mode = selectionsArray[std::enum_value(_selectionType)];
-	return mode.select.execute(volume, selectionVolume, pos);
+	const int newSelectedVoxels = mode.select.execute(volume, selectionVolume, pos);
+	_selectedVoxels += newSelectedVoxels;
+	return newSelectedVoxels > 0;
 }
 
 }

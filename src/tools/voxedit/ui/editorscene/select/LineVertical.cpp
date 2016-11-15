@@ -3,18 +3,21 @@
 namespace voxedit {
 namespace selections {
 
-bool LineVertical::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
-	selection.setVoxel(model.getVoxel());
+int LineVertical::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
+	int cnt = 0;
+	if (selection.setVoxel(model.getVoxel())) {
+		++cnt;
+	}
 	const glm::ivec3& pos = model.getPosition();
 
-	goUp(model, selection);
+	goUp(model, selection, cnt);
 	selection.setPosition(pos);
 	model.setPosition(pos);
 
-	goDown(model, selection);
+	goDown(model, selection, cnt);
 	selection.setPosition(pos);
 	model.setPosition(pos);
-	return true;
+	return cnt;
 }
 
 }

@@ -9,19 +9,19 @@ namespace selections {
 
 class Select {
 protected:
-	bool sixDirectionsExecute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, const voxel::Voxel& voxel) const;
-	void goLeft(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const;
-	void goRight(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const;
-	void goUp(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const;
-	void goDown(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const;
-	void goSixDirections(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, const voxel::Voxel voxel) const;
+	bool sixDirectionsExecute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, const voxel::Voxel& voxel, int& cnt) const;
+	void goLeft(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, int& cnt) const;
+	void goRight(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, int& cnt) const;
+	void goUp(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, int& cnt) const;
+	void goDown(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, int& cnt) const;
+	void goSixDirections(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, const voxel::Voxel voxel, int& cnt) const;
 
-	virtual bool execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const;
+	virtual int execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const;
 
 public:
 	virtual ~Select();
 
-	virtual bool execute(const voxel::RawVolume *model, voxel::RawVolume *selection, const glm::ivec3& pos) const;
+	virtual int execute(const voxel::RawVolume *model, voxel::RawVolume *selection, const glm::ivec3& pos) const;
 };
 
 }

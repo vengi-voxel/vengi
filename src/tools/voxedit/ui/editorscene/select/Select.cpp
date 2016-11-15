@@ -6,47 +6,59 @@ namespace selections {
 Select::~Select() {
 }
 
-void Select::goUp(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
+void Select::goUp(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, int& cnt) const {
 	model.movePositiveY();
 	if (!model.isCurrentPositionValid()) {
 		return;
 	}
 	selection.movePositiveY();
-	selection.setVoxel(model.getVoxel());
-	goUp(model, selection);
+	const bool ret = selection.setVoxel(model.getVoxel());
+	if (ret) {
+		++cnt;
+	}
+	goUp(model, selection, cnt);
 }
 
-void Select::goDown(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
+void Select::goDown(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, int& cnt) const {
 	model.moveNegativeY();
 	if (!model.isCurrentPositionValid()) {
 		return;
 	}
 	selection.moveNegativeY();
-	selection.setVoxel(model.getVoxel());
-	goDown(model, selection);
+	const bool ret = selection.setVoxel(model.getVoxel());
+	if (ret) {
+		++cnt;
+	}
+	goDown(model, selection, cnt);
 }
 
-void Select::goLeft(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
+void Select::goLeft(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, int& cnt) const {
 	model.moveNegativeX();
 	if (!model.isCurrentPositionValid()) {
 		return;
 	}
 	selection.moveNegativeX();
-	selection.setVoxel(model.getVoxel());
-	goLeft(model, selection);
+	const bool ret = selection.setVoxel(model.getVoxel());
+	if (ret) {
+		++cnt;
+	}
+	goLeft(model, selection, cnt);
 }
 
-void Select::goRight(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
+void Select::goRight(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, int& cnt) const {
 	model.movePositiveX();
 	if (!model.isCurrentPositionValid()) {
 		return;
 	}
 	selection.movePositiveX();
-	selection.setVoxel(model.getVoxel());
-	goRight(model, selection);
+	const bool ret = selection.setVoxel(model.getVoxel());
+	if (ret) {
+		++cnt;
+	}
+	goRight(model, selection, cnt);
 }
 
-bool Select::sixDirectionsExecute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, const voxel::Voxel& voxel) const {
+bool Select::sixDirectionsExecute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, const voxel::Voxel& voxel, int& cnt) const {
 	if (!model.isCurrentPositionValid()) {
 		return false;
 	}
@@ -54,73 +66,74 @@ bool Select::sixDirectionsExecute(voxel::RawVolume::Sampler& model, voxel::RawVo
 	if (v == voxel) {
 		selection.setPosition(model.getPosition());
 		if (selection.setVoxel(voxel)) {
-			goSixDirections(model, selection, voxel);
+			++cnt;
+			goSixDirections(model, selection, voxel, cnt);
 			return true;
 		}
 	}
 	return false;
 }
 
-void Select::goSixDirections(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, const voxel::Voxel voxel) const {
+void Select::goSixDirections(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection, const voxel::Voxel voxel, int& cnt) const {
 	const glm::ivec3& pos = model.getPosition();
 
 	model.moveNegativeX();
-	sixDirectionsExecute(model, selection, voxel);
+	sixDirectionsExecute(model, selection, voxel, cnt);
 	model.setPosition(pos);
 
 	model.moveNegativeY();
 	selection.setPosition(model.getPosition());
 	if (selection.getVoxel().getMaterial() == voxel::VoxelType::Air) {
-		sixDirectionsExecute(model, selection, voxel);
+		sixDirectionsExecute(model, selection, voxel, cnt);
 	}
 	model.setPosition(pos);
 
 	model.moveNegativeZ();
 	selection.setPosition(model.getPosition());
 	if (selection.getVoxel().getMaterial() == voxel::VoxelType::Air) {
-		sixDirectionsExecute(model, selection, voxel);
+		sixDirectionsExecute(model, selection, voxel, cnt);
 	}
 	model.setPosition(pos);
 
 	model.movePositiveX();
 	selection.setPosition(model.getPosition());
 	if (selection.getVoxel().getMaterial() == voxel::VoxelType::Air) {
-		sixDirectionsExecute(model, selection, voxel);
+		sixDirectionsExecute(model, selection, voxel, cnt);
 	}
 	model.setPosition(pos);
 
 	model.movePositiveY();
 	selection.setPosition(model.getPosition());
 	if (selection.getVoxel().getMaterial() == voxel::VoxelType::Air) {
-		sixDirectionsExecute(model, selection, voxel);
+		sixDirectionsExecute(model, selection, voxel, cnt);
 	}
 	model.setPosition(pos);
 
 	model.movePositiveZ();
 	selection.setPosition(model.getPosition());
 	if (selection.getVoxel().getMaterial() == voxel::VoxelType::Air) {
-		sixDirectionsExecute(model, selection, voxel);
+		sixDirectionsExecute(model, selection, voxel, cnt);
 	}
 
 	selection.setPosition(pos);
 	model.setPosition(pos);
 }
 
-bool Select::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
-	return selection.setVoxel(model.getVoxel());
+int Select::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
+	return selection.setVoxel(model.getVoxel()) ? 1 : 0;
 }
 
-bool Select::execute(const voxel::RawVolume *model, voxel::RawVolume *selection, const glm::ivec3& pos) const {
+int Select::execute(const voxel::RawVolume *model, voxel::RawVolume *selection, const glm::ivec3& pos) const {
 	if (!model->getRegion().containsPoint(pos)) {
 		Log::error("Given position is outside of the region");
-		return false;
+		return 0;
 	}
 	voxel::RawVolume::Sampler m(model);
 
 	m.setPosition(pos);
 	const voxel::Voxel& currentVoxel = m.getVoxel();
 	if (currentVoxel.getMaterial() == voxel::VoxelType::Air) {
-		return false;
+		return 0;
 	}
 	voxel::RawVolume::Sampler s(selection);
 	s.setPosition(pos);

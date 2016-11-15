@@ -9,7 +9,7 @@ class Same : public Select {
 public:
 	SelectionSingleton(Same)
 
-	bool execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const override;
+	int execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const override;
 };
 
 }

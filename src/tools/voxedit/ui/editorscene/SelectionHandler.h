@@ -11,12 +11,14 @@ namespace voxedit {
 
 class SelectionHandler {
 private:
+	int _selectedVoxels = 0;
 	SelectType _selectionType = SelectType::Single;
 public:
 	void setSelectionType(SelectType type);
 	SelectType selectionType() const;
 
 	bool select(const voxel::RawVolume* volume, voxel::RawVolume* selectionVolume, const glm::ivec3& pos);
+	void unselectAll();
 };
 
 inline void SelectionHandler::setSelectionType(SelectType type) {

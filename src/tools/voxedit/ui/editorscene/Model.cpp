@@ -61,6 +61,7 @@ void Model::select(const glm::ivec3& pos) {
 }
 
 void Model::unselectAll() {
+	_selectionHandler.unselectAll();
 	_rawVolumeSelectionRenderer.volume()->clear();
 	_selectionExtract = true;
 }

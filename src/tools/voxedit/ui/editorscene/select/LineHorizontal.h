@@ -9,7 +9,7 @@ class LineHorizontal : public Select {
 public:
 	SelectionSingleton(LineHorizontal)
 
-	bool execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const override;
+	int execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const override;
 };
 
 }
