@@ -83,7 +83,7 @@ const glm::ivec3& EditorScene::cursorPosition() const {
 }
 
 void EditorScene::setCursorPosition(const glm::ivec3& pos) {
-	return m().setCursorPosition(pos);
+	m().setCursorPosition(pos);
 }
 
 voxedit::Axis EditorScene::lockedAxis() const {
@@ -383,10 +383,7 @@ void EditorScene::OnProcess() {
 	const long deltaFrame = core::App::getInstance()->deltaFrame();
 	_controller.update(deltaFrame);
 
-	const bool skipCursor = isRelativeMouseMode();
-	if (!m().trace(skipCursor, _controller.camera())) {
-		return;
-	}
+	m().trace(_controller.camera());
 
 	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
 	core_trace_scoped(EditorSceneRenderFramebuffer);

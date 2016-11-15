@@ -110,6 +110,8 @@ public:
 	/// Sets the 'z' position of the upper corner.
 	void setUpperZ(int32_t iZ);
 
+	glm::ivec3 moveInto(int32_t x, int32_t y, int32_t z) const;
+
 	/// Sets the position of the lower corner.
 	void setLowerCorner(const glm::ivec3& v3dLowerCorner);
 	/// Sets the position of the upper corner.

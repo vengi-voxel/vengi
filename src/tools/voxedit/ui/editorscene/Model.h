@@ -63,7 +63,7 @@ public:
 	void onResize(const glm::ivec2& size);
 
 	const glm::ivec3& cursorPosition() const;
-	void setCursorPosition(const glm::ivec3& pos);
+	void setCursorPosition(glm::ivec3 pos);
 
 	void init();
 	void shutdown();
@@ -119,7 +119,7 @@ public:
 
 	void setMousePos(int x, int y);
 
-	bool trace(bool skipCursor, const video::Camera& camera);
+	bool trace(const video::Camera& camera);
 	void select(const glm::ivec3& pos);
 	void unselectAll();
 	void executeAction(bool mouseDown, long now);
@@ -265,13 +265,6 @@ inline bool Model::empty() const {
 
 inline const glm::ivec3& Model::cursorPosition() const {
 	return _cursorPos;
-}
-
-inline void Model::setCursorPosition(const glm::ivec3& pos) {
-	if (!_modelVolume->getRegion().containsPoint(pos)) {
-		return;
-	}
-	_cursorPos = pos;
 }
 
 }

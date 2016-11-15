@@ -303,7 +303,50 @@ void Model::createTree(voxel::TreeContext ctx) {
 	voxel::tree::createTree(wrapper, ctx, random);
 }
 
-bool Model::trace(bool skipCursor, const video::Camera& camera) {
+void Model::setCursorPosition(glm::ivec3 pos) {
+	if ((_lockedAxis & Axis::X) != Axis::None) {
+		pos.x = _cursorPos.x;
+	}
+	if ((_lockedAxis & Axis::Y) != Axis::None) {
+		pos.y = _cursorPos.y;
+	}
+	if ((_lockedAxis & Axis::Z) != Axis::None) {
+		pos.z = _cursorPos.z;
+	}
+
+	const voxel::Region& region = _modelVolume->getRegion();
+	if (!region.containsPoint(pos)) {
+		pos = region.moveInto(pos.x, pos.y, pos.z);
+	}
+	_cursorPos = pos;
+
+	_cursorPositionVolume->clear();
+	static constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air);
+	const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume, air));
+	if (cropped) {
+		const voxel::Region& srcRegion = cropped->getRegion();
+		const voxel::Region& destRegion = _cursorPositionVolume->getRegion();
+		const glm::ivec3& lower = destRegion.getLowerCorner() + _cursorPos - srcRegion.getCentre();
+		if (destRegion.containsPoint(lower)) {
+			const glm::ivec3& regionUpperCorner = destRegion.getUpperCorner();
+			glm::ivec3 upper = lower + srcRegion.getDimensionsInVoxels();
+			if (!destRegion.containsPoint(upper)) {
+				upper = regionUpperCorner;
+			}
+			voxel::mergeRawVolumes(_cursorPositionVolume, cropped.get(), voxel::Region(lower, upper), srcRegion);
+		}
+	} else {
+		Log::error("Failed to crop cursor volume");
+	}
+
+	voxel::RawVolume* volume = rawVolumeRenderer().volume();
+	volume->clear();
+	voxel::mergeRawVolumesSameDimension(volume, _cursorPositionVolume);
+	_empty = voxel::mergeRawVolumesSameDimension(volume, modelVolume()) == 0;
+	_extract = true;
+}
+
+bool Model::trace(const video::Camera& camera) {
 	if (_modelVolume == nullptr) {
 		return false;
 	}
@@ -315,59 +358,31 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 
 		const video::Ray& ray = camera.mouseRay(glm::ivec2(_mouseX, _mouseY));
 		const glm::vec3& dirWithLength = ray.direction * camera.farPlane();
-		const voxel::Voxel& air = voxel::createVoxel(voxel::VoxelType::Air);
+		static constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air);
 		_result = voxel::pickVoxel(modelVolume(), ray.origin, dirWithLength, air);
 
-		if (!skipCursor) {
-			const bool prevVoxel = _result.validPreviousVoxel && (!_result.didHit || !actionRequiresExistingVoxel(action()));
-			const bool directVoxel = _result.didHit;
-			glm::ivec3 cursorPos;
-			if (prevVoxel) {
-				cursorPos = _result.previousVoxel;
-			} else if (directVoxel) {
-				cursorPos = _result.hitVoxel;
-			}
-
-			if (prevVoxel || directVoxel) {
-				if ((_lockedAxis & Axis::X) != Axis::None) {
-					cursorPos.x = _cursorPos.x;
-				}
-				if ((_lockedAxis & Axis::Y) != Axis::None) {
-					cursorPos.y = _cursorPos.y;
-				}
-				if ((_lockedAxis & Axis::Z) != Axis::None) {
-					cursorPos.z = _cursorPos.z;
-				}
-				_cursorPos = cursorPos;
-
-				_cursorPositionVolume->clear();
-				const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume, air));
-				if (cropped) {
-					const voxel::Region& srcRegion = cropped->getRegion();
-					const voxel::Region& destRegion = _cursorPositionVolume->getRegion();
-					const glm::ivec3& lower = destRegion.getLowerCorner() + _cursorPos - srcRegion.getCentre();
-					if (destRegion.containsPoint(lower)) {
-						const glm::ivec3& regionUpperCorner = destRegion.getUpperCorner();
-						glm::ivec3 upper = lower + srcRegion.getDimensionsInVoxels();
-						if (!destRegion.containsPoint(upper)) {
-							upper = regionUpperCorner;
-						}
-						voxel::mergeRawVolumes(_cursorPositionVolume, cropped.get(), voxel::Region(lower, upper), srcRegion);
-					}
-				} else {
-					Log::error("Failed to crop cursor volume");
-				}
-			}
+		const bool prevVoxel = _result.validPreviousVoxel && (!_result.didHit || !actionRequiresExistingVoxel(action()));
+		const bool directVoxel = _result.didHit;
+		glm::ivec3 cursorPos;
+		if (prevVoxel) {
+			cursorPos = _result.previousVoxel;
+		} else if (directVoxel) {
+			cursorPos = _result.hitVoxel;
 		}
 
 		core_trace_scoped(EditorSceneOnProcessMergeRawVolumes);
 		voxel::RawVolume* volume = rawVolumeRenderer().volume();
 		volume->clear();
-		if (!skipCursor) {
-			voxel::mergeRawVolumesSameDimension(volume, _cursorPositionVolume);
+		if (prevVoxel || directVoxel) {
+			setCursorPosition(cursorPos);
+		} else {
+			voxel::RawVolume* volume = rawVolumeRenderer().volume();
+			volume->clear();
+			_empty = voxel::mergeRawVolumesSameDimension(volume, modelVolume()) == 0;
+			_extract = true;
 		}
-		_empty = voxel::mergeRawVolumesSameDimension(volume, modelVolume()) == 0;
-		_extract = true;
+
+		voxel::mergeRawVolumesSameDimension(volume, _cursorPositionVolume);
 	}
 
 	extractVolume();
