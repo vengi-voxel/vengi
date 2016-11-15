@@ -1700,9 +1700,9 @@ bool TBStyleEdit::KeyDown(int key, SPECIAL_KEY special_key, MODIFIER_KEYS modifi
 		caret.Place(TBPoint(caret.wanted_x, caret.y - layout_height));
 	else if (special_key == TB_KEY_PAGE_DOWN)
 		caret.Place(TBPoint(caret.wanted_x, caret.y + layout_height + old_caret_elm->line_height));
-	else if (special_key == TB_KEY_HOME && modifierkeys & TB_CTRL)
+	else if (special_key == TB_KEY_HOME && (modifierkeys & TB_CTRL))
 		caret.Place(TBPoint(0, 0));
-	else if (special_key == TB_KEY_END && modifierkeys & TB_CTRL)
+	else if (special_key == TB_KEY_END && (modifierkeys & TB_CTRL))
 		caret.Place(TBPoint(32000, blocks.GetLast()->ypos + blocks.GetLast()->height));
 	else if (special_key == TB_KEY_HOME)
 		caret.Place(TBPoint(0, caret.y));

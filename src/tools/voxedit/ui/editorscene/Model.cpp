@@ -297,11 +297,8 @@ void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
 
 void Model::createTree(voxel::TreeContext ctx) {
 	core::Random random;
-	const voxel::Region& region = _modelVolume->getEnclosingRegion();
-	glm::ivec3 cursorPos = region.getCentre();
-	cursorPos.y = region.getLowerY();
 	voxel::generate::RawVolumeWrapper wrapper(_modelVolume);
-	ctx.pos = cursorPos;
+	ctx.pos = _cursorPos;
 	voxel::tree::createTree(wrapper, ctx, random);
 }
 

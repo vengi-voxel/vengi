@@ -7,7 +7,9 @@ definitions
 		skin TBButton.flat
 	menutextfield
 		lp: height: 28
-		gravity: left right
+		gravity left right
+		text-align right
+		type number
 	toolbutton
 		group-id toolgroup
 	cursorbutton
@@ -124,17 +126,17 @@ TBLayout: distribution: gravity, axis: y
 					TBSection: value: 1, text: "Cursor"
 						TBLayout: position: left top, axis: y, distribution: gravity
 							TBLayout: axis: x
-								TBEditField: @include: definitions>menutextfield, id: cursorx, type: number, placeholder: x
+								TBEditField: @include: definitions>menutextfield, id: cursorx, placeholder: x
 								TBClickLabel
 									TBSkinImage: skin: voxedit-axis-x
 									TBCheckBox: id: lockx
 							TBLayout: axis: x
-								TBEditField: @include: definitions>menutextfield, id: cursory, type: number, placeholder: y
+								TBEditField: @include: definitions>menutextfield, id: cursory, placeholder: y
 								TBClickLabel
 									TBSkinImage: skin: voxedit-axis-y
 									TBCheckBox: id: locky
 							TBLayout: axis: x
-								TBEditField: @include: definitions>menutextfield, id: cursorz, type: number, placeholder: z
+								TBEditField: @include: definitions>menutextfield, id: cursorz, placeholder: z
 								TBClickLabel
 									TBSkinImage: skin: voxedit-axis-z
 									TBCheckBox: id: lockz

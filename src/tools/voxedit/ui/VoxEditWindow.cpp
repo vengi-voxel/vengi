@@ -575,18 +575,21 @@ void VoxEditWindow::OnProcess() {
 		_redoButton->SetState(tb::WIDGET_STATE_DISABLED, empty || !_scene->canRedo());
 	}
 	const glm::ivec3& pos = _scene->cursorPosition();
-	char buf[64];
-	if (_cursorX != nullptr && !_cursorX->GetState(tb::WIDGET_STATE_FOCUSED)) {
-		SDL_snprintf(buf, sizeof(buf), "%i", pos.x);
-		_cursorX->SetText(buf);
-	}
-	if (_cursorY != nullptr && !_cursorY->GetState(tb::WIDGET_STATE_FOCUSED)) {
-		SDL_snprintf(buf, sizeof(buf), "%i", pos.y);
-		_cursorY->SetText(buf);
-	}
-	if (_cursorZ != nullptr && !_cursorZ->GetState(tb::WIDGET_STATE_FOCUSED)) {
-		SDL_snprintf(buf, sizeof(buf), "%i", pos.z);
-		_cursorZ->SetText(buf);
+	if (_lastCursorPos != pos) {
+		_lastCursorPos = pos;
+		char buf[64];
+		if (_cursorX != nullptr) {
+			SDL_snprintf(buf, sizeof(buf), "%i", pos.x);
+			_cursorX->SetText(buf);
+		}
+		if (_cursorY != nullptr) {
+			SDL_snprintf(buf, sizeof(buf), "%i", pos.y);
+			_cursorY->SetText(buf);
+		}
+		if (_cursorZ != nullptr) {
+			SDL_snprintf(buf, sizeof(buf), "%i", pos.z);
+			_cursorZ->SetText(buf);
+		}
 	}
 
 	if (_lockedDirty) {
@@ -651,7 +654,7 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 					_modeNumberBuf[l] = '\0';
 					_lastModePress = _app->timeProvider()->tickTime();
 				}
-			} else if (key == SDLK_KP_ENTER || key == SDLK_RETURN) {
+			} else if (ev.special_key == tb::TB_KEY_ENTER) {
 				executeMode();
 			}
 		}

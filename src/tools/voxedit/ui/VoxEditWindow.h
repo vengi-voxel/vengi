@@ -55,6 +55,8 @@ private:
 	bool _fourViewAvailable = false;
 	bool _lockedDirty = false;
 
+	glm::ivec3 _lastCursorPos;
+
 	void addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id = nullptr);
 
 	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _treeItems;
