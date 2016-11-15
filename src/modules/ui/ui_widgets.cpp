@@ -76,7 +76,7 @@ void TBColorWidget::OnPaint(const PaintProps &paint_props)
 	local_rect.y = 0;
 	float old_opacity = g_renderer->GetOpacity();
 	g_renderer->SetOpacity(alpha_);
-	g_renderer->DrawRectFill(local_rect, color_);
+	g_tb_skin->PaintRectFill(local_rect, color_);
 	g_renderer->SetOpacity(old_opacity);
 }
 
@@ -108,12 +108,12 @@ void TBColorWheel::OnPaint(const PaintProps &paint_props)
 	TBRect local_rect ( 0,0,4,4 ); // AND draw a marker where we clicked.
 	local_rect.x = markerx_ - 2;
 	local_rect.y = markery_ - 2;
-	g_renderer->DrawRect( local_rect, markercolor_);
+	g_tb_skin->PaintRectFill( local_rect, markercolor_);
 	local_rect.x -= 1;
 	local_rect.y -= 1;
 	local_rect.w += 2;
 	local_rect.h += 2;
-	g_renderer->DrawRect( local_rect, markercolor_);  // draw double box
+	g_tb_skin->PaintRectFill( local_rect, markercolor_);  // draw double box
 }
 
 bool TBColorWheel::OnEvent(const TBWidgetEvent &ev)

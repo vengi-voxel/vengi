@@ -33,8 +33,8 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 			const int transY = y * _padding + y * _height;
 			const tb::TBColor tbColor(color.r, color.g, color.b, color.a);
 			tb::g_renderer->Translate(transX, transY);
-			tb::g_renderer->DrawRectFill(renderRect, tbColor);
-			tb::g_renderer->DrawRect(renderRect, tbBorderColor);
+			tb::g_tb_skin->PaintRectFill(renderRect, tbColor);
+			tb::g_tb_skin->PaintRect(renderRect, tbBorderColor, 1);
 			tb::g_renderer->Translate(-transX, -transY);
 			++i;
 		}
@@ -46,8 +46,8 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 		const int selectionY = (y + 1) * _padding + (y + 1) * _height;
 		const tb::TBRect selectionRect(0, 0, rect.w, renderRect.h);
 		tb::g_renderer->Translate(0, selectionY);
-		tb::g_renderer->DrawRectFill(selectionRect, tbSelectionColor);
-		tb::g_renderer->DrawRect(selectionRect, tbBorderColor);
+		tb::g_tb_skin->PaintRectFill(selectionRect, tbSelectionColor);
+		tb::g_tb_skin->PaintRect(selectionRect, tbBorderColor, 1);
 		tb::g_renderer->Translate(0, -selectionY);
 	}
 }

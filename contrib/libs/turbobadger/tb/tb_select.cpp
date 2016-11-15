@@ -47,8 +47,8 @@ TBSelectList::TBSelectList()
 
 TBSelectList::~TBSelectList()
 {
-	m_container.GetContentRoot()->RemoveChild(&m_layout);
-	RemoveChild(&m_container);
+	m_layout.RemoveFromParent();
+	m_container.RemoveFromParent();
 	SetSource(nullptr);
 }
 
@@ -72,7 +72,7 @@ void TBSelectList::OnItemChanged(int index)
 	if (TBWidget *widget = CreateAndAddItemAfter(index, old_widget))
 		widget->SetStateRaw(old_state);
 
-	old_widget->GetParent()->RemoveChild(old_widget);
+	old_widget->RemoveFromParent();
 	delete old_widget;
 }
 
@@ -139,7 +139,7 @@ void TBSelectList::ValidateList()
 	// Remove old items
 	while (TBWidget *child = m_layout.GetContentRoot()->GetFirstChild())
 	{
-		child->GetParent()->RemoveChild(child);
+		child->RemoveFromParent();
 		delete child;
 	}
 	if (!m_source || !m_source->GetNumItems())

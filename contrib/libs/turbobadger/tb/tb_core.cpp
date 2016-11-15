@@ -8,7 +8,6 @@
 #include "tb_widgets_reader.h"
 #include "tb_language.h"
 #include "tb_font_renderer.h"
-#include "tb_addon.h"
 #include "tb_system.h"
 #include "animation/tb_animation.h"
 #include "image/tb_image_manager.h"
@@ -32,13 +31,12 @@ bool tb_core_init(TBRenderer *renderer)
 #ifdef TB_IMAGE
 	g_image_manager = new TBImageManager();
 #endif
-	return TBInitAddons();
+	return true;
 }
 
 void tb_core_shutdown()
 {
 	TBAnimationManager::AbortAllAnimations();
-	TBShutdownAddons();
 #ifdef TB_IMAGE
 	delete g_image_manager;
 #endif

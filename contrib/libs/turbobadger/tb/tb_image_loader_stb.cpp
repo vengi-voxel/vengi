@@ -47,31 +47,23 @@ public:
 
 TBImageLoader *TBImageLoader::CreateFromFile(const char *filename)
 {
-	if (TBFile *file = TBFile::Open(filename, TBFile::MODE_READ))
+	TBTempBuffer buf;
+	if (buf.AppendFile(filename))
 	{
-		long size = file->Size();
-		TBTempBuffer buf;
-		if (buf.Reserve(size))
+		int w, h, comp;
+		if (unsigned char *img_data = stbi_load_from_memory(
+			(unsigned char*) buf.GetData(), buf.GetAppendPos(), &w, &h, &comp, 4))
 		{
-			size = file->Read(buf.GetData(), 1, size);
-
-			int w, h, comp;
-			if (unsigned char *img_data = stbi_load_from_memory(
-				(unsigned char*) buf.GetData(), size, &w, &h, &comp, 4))
+			if (STBI_Loader *img = new STBI_Loader())
 			{
-				if (STBI_Loader *img = new STBI_Loader())
-				{
-					img->width = w;
-					img->height = h;
-					img->data = img_data;
-					delete file;
-					return img;
-				}
-				else
-					stbi_image_free(img_data);
+				img->width = w;
+				img->height = h;
+				img->data = img_data;
+				return img;
 			}
+			else
+				stbi_image_free(img_data);
 		}
-		delete file;
 	}
 	return nullptr;
 }

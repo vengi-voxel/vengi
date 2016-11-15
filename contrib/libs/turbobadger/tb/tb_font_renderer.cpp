@@ -6,6 +6,7 @@
 #include "tb_font_renderer.h"
 #include "tb_renderer.h"
 #include "tb_system.h"
+#include "tb_skin.h"
 #include <math.h>
 
 namespace tb {
@@ -60,12 +61,12 @@ void TBFontEffect::SetBlurRadius(int blur_radius)
 		float *kernel = (float *) m_kernel.GetData();
 		float stdDevSq2 = (float) m_blur_radius / 2.f;
 		stdDevSq2 = 2.f * stdDevSq2 * stdDevSq2;
-		float scale = 1.f / sqrt(3.1415f * stdDevSq2);
+		float scale = 1.f / sqrtf(3.1415f * stdDevSq2);
 		float sum = 0;
 		for (int k = 0; k < 2 * m_blur_radius + 1; k++)
 		{
 			float x = (float) (k - m_blur_radius);
-			float kval = scale * exp(-(x * x / stdDevSq2));
+			float kval = scale * expf(-(x * x / stdDevSq2));
 			kernel[k] = kval;
 			sum += kval;
 		}
@@ -391,7 +392,7 @@ void TBFontFace::DrawString(int x, int y, const TBColor &color, const char *str,
 		}
 		else if (!m_font_renderer) // This is the test font. Use same glyph width as height and draw square.
 		{
-			g_renderer->DrawRect(TBRect(x, y, m_metrics.height / 3, m_metrics.height), color);
+			g_tb_skin->PaintRect(TBRect(x, y, m_metrics.height / 3, m_metrics.height), color, 1);
 			x += m_metrics.height / 3 + 1;
 		}
 	}

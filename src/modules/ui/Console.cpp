@@ -559,7 +559,7 @@ void Console::render(const tb::TBRect &rect, long deltaFrame) {
 		return;
 	}
 
-	tb::g_renderer->DrawRectFill(rect, consoleBgColor);
+	tb::g_tb_skin->PaintRectFill(rect, consoleBgColor);
 
 	const int lineHeight = _font->GetFontDescription().GetSize();
 	_maxLines = rect.h / lineHeight;

@@ -443,7 +443,7 @@ void TBLayout::OnPaintChildren(const PaintProps &paint_props)
 
 		old_clip_rect = g_renderer->SetClipRect(clip_rect, true);
 
-		TB_IF_DEBUG_SETTING(LAYOUT_CLIPPING, g_renderer->DrawRect(clip_rect, TBColor(255, 0, 0, 200)));
+		TB_IF_DEBUG_SETTING(LAYOUT_CLIPPING, g_tb_skin->PaintRect(clip_rect, TBColor(255, 0, 0, 200), 1));
 	}
 
 	// Paint children

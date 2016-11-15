@@ -52,39 +52,39 @@ TBTextFragmentContentHR::TBTextFragmentContentHR(int32 width_in_percent, int32 h
 {
 }
 
-void TBTextFragmentContentHR::Paint(TBTextFragment *fragment, int32 translate_x, int32 translate_y, TBTextProps *props)
+void TBTextFragmentContentHR::Paint(const TBPaintProps *props, TBTextFragment *fragment)
 {
-	int x = translate_x + fragment->xpos;
-	int y = translate_y + fragment->ypos;
+	int x = props->translate_x + fragment->xpos;
+	int y = props->translate_y + fragment->ypos;
 
-	int w = fragment->block->styledit->layout_width * width_in_percent / 100;
-	x += (fragment->block->styledit->layout_width - w) / 2;
+	int w = props->block->styledit->layout_width * width_in_percent / 100;
+	x += (props->block->styledit->layout_width - w) / 2;
 
-	TBStyleEditListener *listener = fragment->block->styledit->listener;
-	listener->DrawRectFill(TBRect(x, y, w, height), props->data->text_color);
+	TBStyleEditListener *listener = props->block->styledit->listener;
+	listener->DrawRectFill(TBRect(x, y, w, height), props->props->data->text_color);
 }
 
-int32 TBTextFragmentContentHR::GetWidth(TBFontFace *font, TBTextFragment *fragment) { return MAX(fragment->block->styledit->layout_width, 0); }
+int32 TBTextFragmentContentHR::GetWidth(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment) { return Max(block->styledit->layout_width, 0); }
 
-int32 TBTextFragmentContentHR::GetHeight(TBFontFace *font, TBTextFragment *fragment) { return height; }
+int32 TBTextFragmentContentHR::GetHeight(const TBBlock *block, TBFontFace *font, TBTextFragment *fragment) { return height; }
 
 // ============================================================================
 
-void TBTextFragmentContentUnderline::Paint(TBTextFragment *fragment, int32 translate_x, int32 translate_y, TBTextProps *props)
+void TBTextFragmentContentUnderline::Paint(const TBPaintProps *props, TBTextFragment *fragment)
 {
-	if (TBTextProps::Data *data = props->Push())
+	if (TBTextProps::Data *data = props->props->Push())
 		data->underline = true;
 }
 
-void TBTextFragmentContentTextColor::Paint(TBTextFragment *fragment, int32 translate_x, int32 translate_y, TBTextProps *props)
+void TBTextFragmentContentTextColor::Paint(const TBPaintProps *props, TBTextFragment *fragment)
 {
-	if (TBTextProps::Data *data = props->Push())
+	if (TBTextProps::Data *data = props->props->Push())
 		data->text_color = color;
 }
 
-void TBTextFragmentContentStylePop::Paint(TBTextFragment *fragment, int32 translate_x, int32 translate_y, TBTextProps *props)
+void TBTextFragmentContentStylePop::Paint(const TBPaintProps *props, TBTextFragment *fragment)
 {
-	props->Pop();
+	props->props->Pop();
 }
 
 } // namespace tb

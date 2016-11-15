@@ -114,6 +114,7 @@ bool TBSkinCondition::GetCondition(TBSkinConditionContext &context) const
 
 TBSkin::TBSkin()
 	: m_listener(nullptr)
+	, m_color_frag(nullptr)
 	, m_default_disabled_opacity(0.3f)
 	, m_default_placeholder_opacity(0.2f)
 	, m_default_spacing(0)
@@ -231,6 +232,7 @@ void TBSkin::UnloadBitmaps()
 
 	// Clear all fragments and bitmaps.
 	m_frag_manager.Clear();
+	m_color_frag = nullptr;
 }
 
 bool TBSkin::ReloadBitmaps()
@@ -283,6 +285,11 @@ bool TBSkin::ReloadBitmapsInternal()
 				success = false;
 		}
 	}
+	// Create fragment used for color fills. Use 2x2px and inset source rect to center 0x0
+	// to avoid filtering artifacts.
+	uint32 data[4] = { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff };
+	m_color_frag = m_frag_manager.CreateNewFragment(TBID((uint32)0), false, 2, 2, 2, data);
+	m_color_frag->m_rect = m_color_frag->m_rect.Shrink(1, 1);
 	return success;
 }
 
@@ -374,8 +381,8 @@ TBSkinElement *TBSkin::PaintSkin(const TBRect &dst_rect, TBSkinElement *element,
 	}
 
 	// Paint ugly rectangles on invalid skin elements in debug builds.
-	TB_IF_DEBUG(if (paint_error_highlight) g_renderer->DrawRect(dst_rect.Expand(1, 1), TBColor(255, 205, 0)));
-	TB_IF_DEBUG(if (paint_error_highlight) g_renderer->DrawRect(dst_rect.Shrink(1, 1), TBColor(255, 0, 0)));
+	TB_IF_DEBUG(if (paint_error_highlight) g_tb_skin->PaintRect(dst_rect.Expand(1, 1), TBColor(255, 205, 0), 1));
+	TB_IF_DEBUG(if (paint_error_highlight) g_tb_skin->PaintRect(dst_rect.Shrink(1, 1), TBColor(255, 0, 0), 1));
 
 	element->is_painting = false;
 	return return_element;
@@ -435,11 +442,34 @@ TBRect TBSkin::GetFlippedRect(const TBRect &src_rect, TBSkinElement *element) co
 	return tmp_rect;
 }
 
+void TBSkin::PaintRect(const TBRect &dst_rect, const TBColor &color, int thickness)
+{
+	if (dst_rect.w < thickness * 2 || dst_rect.h < thickness * 2)
+	{
+		PaintRectFill(dst_rect, color);
+		return;
+	}
+	// Top
+	PaintRectFill(TBRect(dst_rect.x, dst_rect.y, dst_rect.w, thickness), color);
+	// Bottom
+	PaintRectFill(TBRect(dst_rect.x, dst_rect.y + dst_rect.h - thickness, dst_rect.w, thickness), color);
+	// Left
+	PaintRectFill(TBRect(dst_rect.x, dst_rect.y + thickness, thickness, dst_rect.h - thickness * 2), color);
+	// Right
+	PaintRectFill(TBRect(dst_rect.x + dst_rect.w - thickness, dst_rect.y + thickness, thickness, dst_rect.h - thickness * 2), color);
+}
+
+void TBSkin::PaintRectFill(const TBRect &dst_rect, const TBColor &color)
+{
+	if (!dst_rect.IsEmpty())
+		g_renderer->DrawBitmapColored(dst_rect, TBRect(), color, m_color_frag);
+}
+
 void TBSkin::PaintElementBGColor(const TBRect &dst_rect, TBSkinElement *element)
 {
 	if (element->bg_color == 0)
 		return;
-	g_renderer->DrawRectFill(dst_rect, element->bg_color);
+	PaintRectFill(dst_rect, element->bg_color);
 }
 
 void TBSkin::PaintElementImage(const TBRect &dst_rect, TBSkinElement *element)
@@ -570,6 +600,8 @@ TBSkinElement::~TBSkinElement()
 
 int TBSkinElement::GetIntrinsicMinWidth() const
 {
+	if (bitmap && type == SKIN_ELEMENT_TYPE_IMAGE)
+		return bitmap->Width() - expand * 2;
 	// Sizes below the skin cut size would start to shrink the skin below pretty,
 	// so assume that's the default minimum size if it's not specified (minus expansion)
 	return cut * 2 - expand * 2;
@@ -577,6 +609,8 @@ int TBSkinElement::GetIntrinsicMinWidth() const
 
 int TBSkinElement::GetIntrinsicMinHeight() const
 {
+	if (bitmap && type == SKIN_ELEMENT_TYPE_IMAGE)
+		return bitmap->Height() - expand * 2;
 	// Sizes below the skin cut size would start to shrink the skin below pretty,
 	// so assume that's the default minimum size if it's not specified (minus expansion)
 	return cut * 2 - expand * 2;

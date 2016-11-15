@@ -114,7 +114,7 @@ bool TBListBackend::GrowIfNeeded()
 {
 	int capacity = GetCapacity();
 	if (GetNumItems() == capacity)
-		return Reserve(CLAMP(4, capacity * 2, 1024));
+		return Reserve(capacity == 0 ? 4 : capacity * 2);
 	return true;
 }
 

@@ -60,7 +60,7 @@ TBImage::~TBImage()
 
 bool TBImage::IsEmpty() const
 {
-	return m_image_rep && m_image_rep->fragment;
+	return !(m_image_rep && m_image_rep->fragment);
 }
 
 int TBImage::Width() const

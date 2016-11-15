@@ -59,8 +59,7 @@ void TBWidgetAnimationOpacity::OnAnimationStop(bool aborted)
 	if (m_die && !aborted)
 	{
 		TBWidgetSafePointer the_widget(m_widget);
-		if (m_widget->GetParent())
-			m_widget->GetParent()->RemoveChild(m_widget);
+		m_widget->RemoveFromParent();
 		if (the_widget.Get())
 			delete the_widget.Get();
 	}

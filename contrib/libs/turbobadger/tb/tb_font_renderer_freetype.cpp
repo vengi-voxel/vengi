@@ -27,13 +27,12 @@ static TBHashTableOf<FreetypeFace> ft_face_cache;
 class FreetypeFace
 {
 public:
-	FreetypeFace() : hashID(0), ttf_buffer(nullptr), m_face(0), refCount(1) { }
+	FreetypeFace() : hashID(0), m_face(0), refCount(1) { }
 	~FreetypeFace()
 	{
 		if (hashID)
 			ft_face_cache.Remove(hashID);
 		FT_Done_Face(m_face);
-		delete [] ttf_buffer;
 	}
 	void Release()
 	{
@@ -43,7 +42,7 @@ public:
 	}
 
 	uint32 hashID;
-	unsigned char *ttf_buffer;
+	TBTempBuffer ttf_buffer;
 	FT_Face m_face;
 	unsigned int refCount;
 };
@@ -148,20 +147,11 @@ bool FreetypeFontRenderer::Load(const char *filename, int size)
 	if (!m_face)
 		return false;
 
-	TBFile *f = TBFile::Open(filename, TBFile::MODE_READ);
-	if (!f)
+	if (!m_face->ttf_buffer.AppendFile(filename))
 		return false;
 
-	size_t ttf_buf_size = f->Size();
-	m_face->ttf_buffer = new unsigned char[ttf_buf_size];
-	if (m_face->ttf_buffer)
-		ttf_buf_size = f->Read(m_face->ttf_buffer, 1, ttf_buf_size);
-	delete f;
-
-	if (!m_face->ttf_buffer)
-		return false;
-
-	if (FT_New_Memory_Face(g_freetype, m_face->ttf_buffer, ttf_buf_size, 0, &m_face->m_face))
+	unsigned char *ttf_ptr = (unsigned char *) m_face->ttf_buffer.GetData();
+	if (FT_New_Memory_Face(g_freetype, ttf_ptr, m_face->ttf_buffer.GetAppendPos(), 0, &m_face->m_face))
 		return false;
 	return Load(m_face, size);
 }

@@ -25,7 +25,7 @@ TBMessageWindow::~TBMessageWindow()
 	TBWidgetListener::RemoveGlobalListener(this);
 	if (TBWidget *dimmer = m_dimmer.Get())
 	{
-		dimmer->GetParent()->RemoveChild(dimmer);
+		dimmer->RemoveFromParent();
 		delete dimmer;
 	}
 }

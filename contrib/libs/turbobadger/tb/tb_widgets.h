@@ -242,6 +242,9 @@ public:
 	LayoutParams() : min_w(UNSPECIFIED), min_h(UNSPECIFIED)
 					, max_w(UNSPECIFIED), max_h(UNSPECIFIED)
 					, pref_w(UNSPECIFIED), pref_h(UNSPECIFIED) {}
+	LayoutParams(int w, int h) : min_w(w), min_h(h)
+								, max_w(w), max_h(h)
+								, pref_w(w), pref_h(h) {}
 
 	/** Set both min max and preferred width to the given width. */
 	void SetWidth(int width) { min_w = max_w = pref_w = width; }
@@ -469,6 +472,9 @@ public:
 
 	/** Remove child from this widget without deleting it. */
 	void RemoveChild(TBWidget *child, WIDGET_INVOKE_INFO info = WIDGET_INVOKE_INFO_NORMAL);
+
+	/** Remove this widget from parent if it has one. */
+	void RemoveFromParent() { if (m_parent) m_parent->RemoveChild(this); }
 
 	/** Remove and delete all children in this widget.
 		Note: This won't invoke Die so there's no chance for widgets to survive or
@@ -964,11 +970,6 @@ public:
 		by GetCalculatedFontDescription) */
 	TBFontFace *GetFont() const;
 
-	TBStr GetTooltip() const { return m_tooltip; }
-
-	bool SetTooltip(const char *tooltip) {
-		return m_tooltip.Set(tooltip);
-	}
 private:
 	friend class TBWidgetListener;	///< It does iteration of m_listeners for us.
 	TBWidget *m_parent;				///< The parent of this widget
@@ -990,7 +991,6 @@ private:
 	LayoutParams *m_layout_params;	///< Layout params, or nullptr.
 	TBScroller *m_scroller;
 	TBLongClickTimer *m_long_click_timer;
-	TBStr m_tooltip;
 	union {
 		struct {
 			uint16 is_group_root : 1;

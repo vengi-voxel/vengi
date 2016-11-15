@@ -6,6 +6,7 @@
 #include "tb_font_renderer.h"
 #include "tb_renderer.h"
 #include "tb_system.h"
+#include "tb_tempbuffer.h"
 
 #ifdef TB_FONT_RENDERER_STB
 
@@ -32,21 +33,19 @@ public:
 	virtual void GetGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp);
 private:
 	stbtt_fontinfo font;
-	unsigned char *ttf_buffer;
+	TBTempBuffer ttf_buffer;
 	unsigned char *render_data;
 	int font_size;
 	float scale;
 };
 
 STBFontRenderer::STBFontRenderer()
-	: ttf_buffer(nullptr)
-	, render_data(nullptr)
+	: render_data(nullptr)
 {
 }
 
 STBFontRenderer::~STBFontRenderer()
 {
-	delete [] ttf_buffer;
 	delete [] render_data;
 }
 
@@ -84,20 +83,11 @@ void STBFontRenderer::GetGlyphMetrics(TBGlyphMetrics *metrics, UCS4 cp)
 
 bool STBFontRenderer::Load(const char *filename, int size)
 {
-	TBFile *f = TBFile::Open(filename, TBFile::MODE_READ);
-	if (!f)
+	if (!ttf_buffer.AppendFile(filename))
 		return false;
 
-	size_t ttf_buf_size = f->Size();
-	ttf_buffer = new unsigned char[ttf_buf_size];
-	if (ttf_buffer)
-		ttf_buf_size = f->Read(ttf_buffer, 1, ttf_buf_size);
-	delete f;
-
-	if (!ttf_buffer)
-		return false;
-
-	stbtt_InitFont(&font, ttf_buffer, stbtt_GetFontOffsetForIndex(ttf_buffer, 0));
+	const unsigned char *ttf_ptr = (const unsigned char *) ttf_buffer.GetData();
+	stbtt_InitFont(&font, ttf_ptr, stbtt_GetFontOffsetForIndex(ttf_ptr, 0));
 
 	font_size = (int) (size * 1.3f); // FIX: Constant taken out of thin air because fonts get too small.
 	scale = stbtt_ScaleForPixelHeight(&font, (float)font_size);
