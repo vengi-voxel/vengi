@@ -18,12 +18,18 @@ namespace voxel {
  * memory.
  */
 RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const Voxel& empty, bool increaseSize) {
+#if 1
+	const float pitch = glm::radians(angles.x);
+	const float yaw = glm::radians(angles.y);
+	const float roll = glm::radians(angles.z);
+	const glm::mat4& rot = glm::eulerAngleXYZ(pitch, yaw, roll);
+#else
 	const glm::quat& quat = glm::normalize(
 			  glm::angleAxis(glm::radians(angles.x), glm::right)
 			* glm::angleAxis(glm::radians(angles.y), glm::up)
 			* glm::angleAxis(glm::radians(angles.z), glm::backward));
 	const glm::mat4& rot = glm::mat4_cast(quat);
-
+#endif
 	const voxel::Region& srcRegion = source->getRegion();
 	const glm::ivec3& srcCenter = srcRegion.getCentre();
 	voxel::Region destRegion;
