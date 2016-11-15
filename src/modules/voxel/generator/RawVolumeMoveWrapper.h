@@ -56,15 +56,29 @@ public:
 		return setVoxel(pos.x, pos.y, pos.z, voxel);
 	}
 
-	/**
-	 * @return @c false if the voxel was not placed because the given position is outside of the valid region, @c
-	 * true if the voxel was placed in the region.
-	 * @note The return values have a different meaning as for the wrapped RawVolume.
-	 */
 	inline bool setVoxel(int x, int y, int z, const Voxel& voxel) {
 		if (!_region.containsPoint(x, y, z)) {
-			// TODO:
-			return false;
+			const glm::ivec3& size = _region.getDimensionsInVoxels();
+			int nx = x - _region.getLowerX();
+			int ny = y - _region.getLowerY();
+			int nz = z - _region.getLowerZ();
+			while (nx < 0) {
+				nx += _region.getWidthInVoxels();
+			}
+			while (ny < 0) {
+				ny += _region.getHeightInVoxels();
+			}
+			while (nz < 0) {
+				nz += _region.getDepthInVoxels();
+			}
+			const int ox = nx % size.x;
+			const int oy = ny % size.y;
+			const int oz = nz % size.z;
+			core_assert_msg(_region.containsPoint(ox, oy, oz),
+					"shifted(%i:%i:%i) is outside the valid region for pos(%i:%i:%i), size(%i:%i:%i)",
+					ox, oy, oz, x, y, z, size.x, size.y, size.z);
+			_volume->setVoxel(ox, oy, oz, voxel);
+			return true;
 		}
 		_volume->setVoxel(x, y, z, voxel);
 		return true;
