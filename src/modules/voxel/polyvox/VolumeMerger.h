@@ -26,29 +26,21 @@ public:
 /**
  * @note This version can deal with source volumes that are smaller or equal sized to the destination volume
  */
-template<typename MergeCondition = MergeConditionSkipVoxelType>
-int mergeRawVolumes(RawVolume* destination, const RawVolume* source, const Region& destReg, const Region& sourceReg, MergeCondition mergeCondition = MergeCondition()) {
+template<typename MergeCondition = MergeConditionSkipVoxelType, class Volume1, class Volume2>
+int mergeRawVolumes(Volume1* destination, const Volume2* source, const Region& destReg, const Region& sourceReg, MergeCondition mergeCondition = MergeCondition()) {
 	core_trace_scoped(MergeRawVolumes);
 	int cnt = 0;
-	RawVolume::Sampler srcSampler(source);
-	RawVolume::Sampler dstSampler(destination);
-
-	core_assert(source->getRegion().containsRegion(sourceReg));
-	core_assert(destination->getRegion().containsRegion(destReg));
-
 	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
 		const int destZ = destReg.getLowerZ() + z - sourceReg.getLowerZ();
 		for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
 			const int destY = destReg.getLowerY() + y - sourceReg.getLowerY();
 			for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
-				core_assert_always(srcSampler.setPosition(x, y, z));
-				const Voxel& voxel = srcSampler.getVoxel();
+				const Voxel& voxel = source->getVoxel(x, y, z);
 				if (!mergeCondition(voxel)) {
 					continue;
 				}
 				const int destX = destReg.getLowerX() + x - sourceReg.getLowerX();
-				if (dstSampler.setPosition(destX, destY, destZ)) {
-					dstSampler.setVoxel(voxel);
+				if (destination->setVoxel(destX, destY, destZ, voxel)) {
 					++cnt;
 				}
 			}

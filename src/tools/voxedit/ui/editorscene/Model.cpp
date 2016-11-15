@@ -229,7 +229,8 @@ void Model::copy() {
 void Model::paste() {
 	const voxel::Region& srcRegion = _cursorVolume->getRegion();
 	const voxel::Region destRegion = srcRegion + _cursorPos;
-	voxel::mergeRawVolumes(_modelVolume, _cursorVolume, destRegion, srcRegion);
+	voxel::generate::RawVolumeWrapper wrapper(_modelVolume);
+	voxel::mergeRawVolumes(&wrapper, _cursorVolume, destRegion, srcRegion);
 }
 
 void Model::cut() {
@@ -336,7 +337,8 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 			if (!destRegion.containsPoint(upper)) {
 				upper = regionUpperCorner;
 			}
-			voxel::mergeRawVolumes(_cursorPositionVolume, cropped.get(), voxel::Region(lower, upper), srcRegion);
+			voxel::generate::RawVolumeWrapper wrapper(_cursorPositionVolume);
+			voxel::mergeRawVolumes(&wrapper, cropped.get(), voxel::Region(lower, upper), srcRegion);
 		}
 	} else {
 		Log::error("Failed to crop cursor volume");

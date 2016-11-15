@@ -22,8 +22,7 @@
 // TODO: extrude
 // TODO: fill tool
 // TODO: render locked axis as plane
-// TODO: scale/move/rotate selections - not only the cursor
-// TODO: copy/paste full volume - assert in volume merger
+// TODO: scale/move/rotate selections - not only the cursor or whole model
 // TODO: tree parameter window
 // TODO: lsystem parameter window
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
