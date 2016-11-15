@@ -327,18 +327,18 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 				cursorPos = _result.hitVoxel;
 			}
 
-			if ((_lockedAxis & Axis::X) != Axis::None) {
-				cursorPos.x = _cursorPos.x;
-			}
-			if ((_lockedAxis & Axis::Y) != Axis::None) {
-				cursorPos.y = _cursorPos.y;
-			}
-			if ((_lockedAxis & Axis::Z) != Axis::None) {
-				cursorPos.z = _cursorPos.z;
-			}
-			_cursorPos = cursorPos;
-
 			if (prevVoxel || directVoxel) {
+				if ((_lockedAxis & Axis::X) != Axis::None) {
+					cursorPos.x = _cursorPos.x;
+				}
+				if ((_lockedAxis & Axis::Y) != Axis::None) {
+					cursorPos.y = _cursorPos.y;
+				}
+				if ((_lockedAxis & Axis::Z) != Axis::None) {
+					cursorPos.z = _cursorPos.z;
+				}
+				_cursorPos = cursorPos;
+
 				_cursorPositionVolume->clear();
 				const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume, air));
 				if (cropped) {
