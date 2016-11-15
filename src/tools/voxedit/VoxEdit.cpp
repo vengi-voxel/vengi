@@ -22,7 +22,6 @@
 // TODO: extrude
 // TODO: fill tool
 // TODO: render locked axis as plane
-// TODO: shift locked axis
 // TODO: scale/move/rotate selections - not only the cursor
 // TODO: copy/paste full volume - assert in volume merger
 // TODO: tree parameter window

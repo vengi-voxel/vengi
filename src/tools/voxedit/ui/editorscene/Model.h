@@ -63,7 +63,7 @@ public:
 	void onResize(const glm::ivec2& size);
 
 	const glm::ivec3& cursorPosition() const;
-	void setCursorPosition(glm::ivec3 pos);
+	void setCursorPosition(glm::ivec3 pos, bool force = false);
 
 	void init();
 	void shutdown();

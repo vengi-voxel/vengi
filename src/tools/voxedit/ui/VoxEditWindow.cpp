@@ -523,7 +523,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		const int val = core::string::toInt(str);
 		glm::ivec3 pos = _scene->cursorPosition();
 		pos.x = val;
-		_scene->setCursorPosition(pos);
+		_scene->setCursorPosition(pos, true);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("cursory")) {
 		const tb::TBStr& str = ev.target->GetText();
@@ -533,7 +533,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		const int val = core::string::toInt(str);
 		glm::ivec3 pos = _scene->cursorPosition();
 		pos.y = val;
-		_scene->setCursorPosition(pos);
+		_scene->setCursorPosition(pos, true);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("cursorz")) {
 		const tb::TBStr& str = ev.target->GetText();
@@ -543,7 +543,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		const int val = core::string::toInt(str);
 		glm::ivec3 pos = _scene->cursorPosition();
 		pos.z = val;
-		_scene->setCursorPosition(pos);
+		_scene->setCursorPosition(pos, true);
 		return true;
 	}
 
@@ -580,15 +580,21 @@ void VoxEditWindow::OnProcess() {
 		char buf[64];
 		if (_cursorX != nullptr) {
 			SDL_snprintf(buf, sizeof(buf), "%i", pos.x);
-			_cursorX->SetText(buf);
+			if (strcmp(_cursorX->GetText().CStr(), buf)) {
+				_cursorX->SetText(buf);
+			}
 		}
 		if (_cursorY != nullptr) {
 			SDL_snprintf(buf, sizeof(buf), "%i", pos.y);
-			_cursorY->SetText(buf);
+			if (strcmp(_cursorY->GetText().CStr(), buf)) {
+				_cursorY->SetText(buf);
+			}
 		}
 		if (_cursorZ != nullptr) {
 			SDL_snprintf(buf, sizeof(buf), "%i", pos.z);
-			_cursorZ->SetText(buf);
+			if (strcmp(_cursorZ->GetText().CStr(), buf)) {
+				_cursorZ->SetText(buf);
+			}
 		}
 	}
 

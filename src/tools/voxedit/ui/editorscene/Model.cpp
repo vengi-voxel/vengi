@@ -304,15 +304,17 @@ void Model::createTree(voxel::TreeContext ctx) {
 	voxel::tree::createTree(wrapper, ctx, random);
 }
 
-void Model::setCursorPosition(glm::ivec3 pos) {
-	if ((_lockedAxis & Axis::X) != Axis::None) {
-		pos.x = _cursorPos.x;
-	}
-	if ((_lockedAxis & Axis::Y) != Axis::None) {
-		pos.y = _cursorPos.y;
-	}
-	if ((_lockedAxis & Axis::Z) != Axis::None) {
-		pos.z = _cursorPos.z;
+void Model::setCursorPosition(glm::ivec3 pos, bool force) {
+	if (!force) {
+		if ((_lockedAxis & Axis::X) != Axis::None) {
+			pos.x = _cursorPos.x;
+		}
+		if ((_lockedAxis & Axis::Y) != Axis::None) {
+			pos.y = _cursorPos.y;
+		}
+		if ((_lockedAxis & Axis::Z) != Axis::None) {
+			pos.z = _cursorPos.z;
+		}
 	}
 
 	const voxel::Region& region = _modelVolume->getRegion();

@@ -82,8 +82,8 @@ const glm::ivec3& EditorScene::cursorPosition() const {
 	return m().cursorPosition();
 }
 
-void EditorScene::setCursorPosition(const glm::ivec3& pos) {
-	m().setCursorPosition(pos);
+void EditorScene::setCursorPosition(const glm::ivec3& pos, bool force) {
+	m().setCursorPosition(pos, force);
 }
 
 voxedit::Axis EditorScene::lockedAxis() const {

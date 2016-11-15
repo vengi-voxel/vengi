@@ -55,7 +55,7 @@ public:
 	void createTree(const voxel::TreeContext& ctx);
 
 	const glm::ivec3& cursorPosition() const;
-	void setCursorPosition(const glm::ivec3& pos);
+	void setCursorPosition(const glm::ivec3& pos, bool force = false);
 
 	voxedit::SelectType selectionType() const;
 	void setSelectionType(voxedit::SelectType type);
