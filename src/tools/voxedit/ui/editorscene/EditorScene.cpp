@@ -221,7 +221,7 @@ void EditorScene::resetCamera() {
 }
 
 void EditorScene::setVoxelType(voxel::VoxelType type) {
-	m().shapeHandler().setVoxelType(type);
+	m().setVoxelType(type);
 }
 
 void EditorScene::unselectAll() {

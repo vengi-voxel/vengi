@@ -169,7 +169,7 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 
 	delete _cursorVolume;
 	_cursorVolume = new voxel::RawVolume(region);
-	core_assert_always(_shapeHandler.setCursorShape(Shape::Single, _cursorVolume, true));
+	setCursorShape(Shape::Single);
 
 	delete _rawVolumeSelectionRenderer.setVolume(new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(new voxel::RawVolume(region));

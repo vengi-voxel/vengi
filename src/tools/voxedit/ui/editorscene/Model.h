@@ -139,6 +139,7 @@ public:
 
 	void scaleCursorShape(const glm::vec3& scale);
 	void setCursorShape(Shape shape);
+	void setVoxelType(voxel::VoxelType type);
 	ShapeHandler& shapeHandler();
 	const ShapeHandler& shapeHandler() const;
 
@@ -167,6 +168,13 @@ inline void Model::setLockedAxis(Axis axis, bool unlock) {
 inline void Model::scaleCursorShape(const glm::vec3& scale) {
 	_shapeHandler.scaleCursorShape(scale, _cursorVolume);
 	resetLastTrace();
+}
+
+inline void Model::setVoxelType(voxel::VoxelType type) {
+	_shapeHandler.setVoxelType(type);
+	if (_cursorVolume != nullptr) {
+		_shapeHandler.setCursorShape(_shapeHandler.cursorShape(), _cursorVolume, true);
+	}
 }
 
 inline void Model::setCursorShape(Shape shape) {
