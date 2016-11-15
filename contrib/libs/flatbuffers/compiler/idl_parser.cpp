@@ -219,7 +219,7 @@ CheckedError Parser::ParseHexNum(int nibbles, int64_t *val) {
       return Error("escape code must be followed by " + NumToString(nibbles) +
                    " hex digits");
   std::string target(cursor_, cursor_ + nibbles);
-  *val = StringToUInt(target.c_str(), 16);
+  *val = StringToUInt(target.c_str(), nullptr, 16);
   cursor_ += nibbles;
   return NoError();
 }
@@ -352,6 +352,7 @@ CheckedError Parser::Next() {
           cursor_++;
           // TODO: make nested.
           while (*cursor_ != '*' || cursor_[1] != '/') {
+            if (*cursor_ == '\n') line_++;
             if (!*cursor_) return Error("end of file in comment");
             cursor_++;
           }
@@ -447,7 +448,7 @@ CheckedError Parser::Next() {
               cursor_++;
               while (isxdigit(static_cast<unsigned char>(*cursor_))) cursor_++;
               attribute_.append(start + 2, cursor_);
-              attribute_ = NumToString(StringToUInt(attribute_.c_str(), 16));
+              attribute_ = NumToString(StringToUInt(attribute_.c_str(), nullptr, 16));
               token_ = kTokenIntegerConstant;
               return NoError();
           }
@@ -656,6 +657,11 @@ CheckedError Parser::ParseField(StructDef &struct_def) {
         return Error(
               "only int, uint, long and ulong data types support hashing.");
     }
+  }
+  auto cpp_type = field->attributes.Lookup("cpp_type");
+  if (cpp_type) {
+    if (!hash_name)
+      return Error("cpp_type can only be used with a hashed field");
   }
   if (field->deprecated && struct_def.fixed)
     return Error("can't deprecate fields in a struct");
@@ -1093,10 +1099,15 @@ CheckedError Parser::ParseSingleValue(Value &e) {
       NEXT();
     } else {  // Numeric constant in string.
       if (IsInteger(e.type.base_type)) {
-        // TODO(wvo): do we want to check for garbage after the number?
-        e.constant = NumToString(StringToInt(attribute_.c_str()));
+        char *end;
+        e.constant = NumToString(StringToInt(attribute_.c_str(), &end));
+        if (*end)
+          return Error("invalid integer: " + attribute_);
       } else if (IsFloat(e.type.base_type)) {
-        e.constant = NumToString(strtod(attribute_.c_str(), nullptr));
+        char *end;
+        e.constant = NumToString(strtod(attribute_.c_str(), &end));
+        if (*end)
+          return Error("invalid float: " + attribute_);
       } else {
         assert(0);  // Shouldn't happen, we covered all types.
         e.constant = "0";
@@ -1341,10 +1352,11 @@ CheckedError Parser::ParseDecl() {
     auto align = static_cast<size_t>(atoi(force_align->constant.c_str()));
     if (force_align->type.base_type != BASE_TYPE_INT ||
         align < struct_def->minalign ||
-        align > 16 ||
+        align > FLATBUFFERS_MAX_ALIGNMENT ||
         align & (align - 1))
       return Error("force_align must be a power of two integer ranging from the"
-            "struct\'s natural alignment to 16");
+                   "struct\'s natural alignment to " +
+                   NumToString(FLATBUFFERS_MAX_ALIGNMENT));
     struct_def->minalign = align;
   }
   struct_def->PadLastField(struct_def->minalign);
@@ -1746,6 +1758,9 @@ CheckedError Parser::SkipAnyJsonValue() {
     case kTokenFloatConstant:
       EXPECT(kTokenFloatConstant);
       break;
+    case kTokenNull:
+      EXPECT(kTokenNull);
+      break;
     default:
       return Error(std::string("Unexpected token:") + std::string(1, static_cast<char>(token_)));
   }
@@ -1977,7 +1992,8 @@ std::set<std::string> Parser::GetIncludedFilesRecursive(
 // Schema serialization functionality:
 
 template<typename T> bool compareName(const T* a, const T* b) {
-    return a->name < b->name;
+    return a->defined_namespace->GetFullyQualifiedName(a->name)
+        < b->defined_namespace->GetFullyQualifiedName(b->name);
 }
 
 template<typename T> void AssignIndices(const std::vector<T *> &defvec) {
@@ -2023,8 +2039,9 @@ Offset<reflection::Object> StructDef::Serialize(FlatBufferBuilder *builder,
       (*it)->Serialize(builder,
                        static_cast<uint16_t>(it - fields.vec.begin()), parser));
   }
+  auto qualified_name = defined_namespace->GetFullyQualifiedName(name);
   return reflection::CreateObject(*builder,
-                                  builder->CreateString(name),
+                                  builder->CreateString(qualified_name),
                                   builder->CreateVectorOfSortedTables(
                                     &field_offsets),
                                   fixed,
@@ -2061,8 +2078,9 @@ Offset<reflection::Enum> EnumDef::Serialize(FlatBufferBuilder *builder,
   for (auto it = vals.vec.begin(); it != vals.vec.end(); ++it) {
     enumval_offsets.push_back((*it)->Serialize(builder));
   }
+  auto qualified_name = defined_namespace->GetFullyQualifiedName(name);
   return reflection::CreateEnum(*builder,
-                                builder->CreateString(name),
+                                builder->CreateString(qualified_name),
                                 builder->CreateVector(enumval_offsets),
                                 is_union,
                                 underlying_type.Serialize(builder),
