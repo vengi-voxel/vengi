@@ -26,10 +26,11 @@ template<class Volume>
 void createClouds(Volume& ctx, const BiomeManager& biomManager, core::Random& random) {
 	const int amount = 4;
 	static constexpr Voxel voxel = createVoxel(VoxelType::Cloud);
+	const voxel::Region& region = ctx.getRegion();
 	for (int i = 0; i < amount; ++i) {
 		const int height = 10;
-		const glm::ivec2& pos = randomPosWithoutHeight(ctx.region(), 20, random);
-		glm::ivec3 chunkCloudCenterPos(pos.x, ctx.region().getUpperY() - height, pos.y);
+		const glm::ivec2& pos = randomPosWithoutHeight(region, 20, random);
+		glm::ivec3 chunkCloudCenterPos(pos.x, region.getUpperY() - height, pos.y);
 		if (!biomManager.hasClouds(chunkCloudCenterPos)) {
 			continue;
 		}

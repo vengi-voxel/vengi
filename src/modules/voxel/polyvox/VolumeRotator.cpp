@@ -24,7 +24,7 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 			* glm::angleAxis(glm::radians(angles.z), glm::backward));
 	const glm::mat4& rot = glm::mat4_cast(quat);
 
-	const voxel::Region& srcRegion = source->getEnclosingRegion();
+	const voxel::Region& srcRegion = source->getRegion();
 	const glm::ivec3& srcCenter = srcRegion.getCentre();
 	voxel::Region destRegion;
 

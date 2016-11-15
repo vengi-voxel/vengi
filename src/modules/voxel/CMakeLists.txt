@@ -23,6 +23,7 @@ set(SRCS
 	generator/PlanetGenerator.h generator/PlanetGenerator.cpp
 	generator/PagedVolumeWrapper.h
 	generator/RawVolumeWrapper.h
+	generator/RawVolumeMoveWrapper.h
 	polyvox/Array.h
 	polyvox/AStarPathfinder.h
 	polyvox/AStarPathfinderImpl.h
@@ -38,6 +39,7 @@ set(SRCS
 	polyvox/Vertex.h
 	polyvox/Voxel.h
 	polyvox/VolumeMerger.h
+	polyvox/VolumeMover.h
 	polyvox/VolumeRotator.h polyvox/VolumeRotator.cpp
 	polyvox/VolumeCropper.h polyvox/VolumeCropper.cpp
 )

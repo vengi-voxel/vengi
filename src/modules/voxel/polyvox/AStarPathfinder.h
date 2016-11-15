@@ -189,7 +189,7 @@ const glm::ivec3 arrayPathfinderCorners[8] = {
 template<typename VolumeType>
 bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3dPos) {
 	//Voxels are considered valid candidates for the path if they are inside the volume...
-	if (!volData->getEnclosingRegion().containsPoint(v3dPos)) {
+	if (!volData->getRegion().containsPoint(v3dPos)) {
 		return false;
 	}
 

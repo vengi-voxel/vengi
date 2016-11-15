@@ -14,7 +14,7 @@ RawVolume::RawVolume(const Region& regValid) :
 }
 
 RawVolume::RawVolume(const RawVolume* copy) :
-		_region(copy->getEnclosingRegion()) {
+		_region(copy->getRegion()) {
 	setBorderValue(copy->getBorderValue());
 	_data = new Voxel[getWidth() * getHeight() * getDepth()];
 	memcpy(_data, copy->_data, calculateSizeInBytes());
@@ -40,7 +40,7 @@ const Voxel& RawVolume::getBorderValue() const {
 /**
  * @return A Region representing the extent of the volume.
  */
-const Region& RawVolume::getEnclosingRegion() const {
+const Region& RawVolume::getRegion() const {
 	return _region;
 }
 
@@ -159,9 +159,9 @@ bool RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	_yPosInVolume = yPos;
 	_zPosInVolume = zPos;
 
-	_isCurrentPositionValidInX = this->_volume->getEnclosingRegion().containsPointInX(xPos);
-	_isCurrentPositionValidInY = this->_volume->getEnclosingRegion().containsPointInY(yPos);
-	_isCurrentPositionValidInZ = this->_volume->getEnclosingRegion().containsPointInZ(zPos);
+	_isCurrentPositionValidInX = this->_volume->getRegion().containsPointInX(xPos);
+	_isCurrentPositionValidInY = this->_volume->getRegion().containsPointInY(yPos);
+	_isCurrentPositionValidInZ = this->_volume->getRegion().containsPointInZ(zPos);
 
 	// Then we update the voxel pointer
 	if (this->isCurrentPositionValid()) {
@@ -184,7 +184,7 @@ void RawVolume::Sampler::movePositiveX() {
 
 	_xPosInVolume++;
 
-	_isCurrentPositionValidInX = this->_volume->getEnclosingRegion().containsPointInX(this->_xPosInVolume);
+	_isCurrentPositionValidInX = this->_volume->getRegion().containsPointInX(this->_xPosInVolume);
 
 	// Then we update the voxel pointer
 	if (this->isCurrentPositionValid() && bIsOldPositionValid) {
@@ -200,7 +200,7 @@ void RawVolume::Sampler::movePositiveY() {
 
 	_yPosInVolume++;
 
-	_isCurrentPositionValidInY = this->_volume->getEnclosingRegion().containsPointInY(this->_yPosInVolume);
+	_isCurrentPositionValidInY = this->_volume->getRegion().containsPointInY(this->_yPosInVolume);
 
 	// Then we update the voxel pointer
 	if (this->isCurrentPositionValid() && bIsOldPositionValid) {
@@ -216,7 +216,7 @@ void RawVolume::Sampler::movePositiveZ() {
 
 	_zPosInVolume++;
 
-	_isCurrentPositionValidInZ = this->_volume->getEnclosingRegion().containsPointInZ(this->_zPosInVolume);
+	_isCurrentPositionValidInZ = this->_volume->getRegion().containsPointInZ(this->_zPosInVolume);
 
 	// Then we update the voxel pointer
 	if (this->isCurrentPositionValid() && bIsOldPositionValid) {
@@ -232,7 +232,7 @@ void RawVolume::Sampler::moveNegativeX() {
 
 	_xPosInVolume--;
 
-	_isCurrentPositionValidInX = this->_volume->getEnclosingRegion().containsPointInX(this->_xPosInVolume);
+	_isCurrentPositionValidInX = this->_volume->getRegion().containsPointInX(this->_xPosInVolume);
 
 	// Then we update the voxel pointer
 	if (this->isCurrentPositionValid() && bIsOldPositionValid) {
@@ -248,7 +248,7 @@ void RawVolume::Sampler::moveNegativeY() {
 
 	_yPosInVolume--;
 
-	_isCurrentPositionValidInY = this->_volume->getEnclosingRegion().containsPointInY(this->_yPosInVolume);
+	_isCurrentPositionValidInY = this->_volume->getRegion().containsPointInY(this->_yPosInVolume);
 
 	// Then we update the voxel pointer
 	if (this->isCurrentPositionValid() && bIsOldPositionValid) {
@@ -264,7 +264,7 @@ void RawVolume::Sampler::moveNegativeZ() {
 
 	_zPosInVolume--;
 
-	_isCurrentPositionValidInZ = this->_volume->getEnclosingRegion().containsPointInZ(this->_zPosInVolume);
+	_isCurrentPositionValidInZ = this->_volume->getRegion().containsPointInZ(this->_zPosInVolume);
 
 	// Then we update the voxel pointer
 	if (this->isCurrentPositionValid() && bIsOldPositionValid) {

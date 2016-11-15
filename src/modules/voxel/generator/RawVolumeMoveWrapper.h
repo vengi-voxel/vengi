@@ -10,15 +10,17 @@ namespace voxel {
 namespace generate {
 
 /**
- * @brief A wrapper for a RawVolume that performs a sanity check for the setVoxel call.
+ * @brief A wrapper for a RawVolume that performs a sanity check for the setVoxel call. But in relation to
+ * the normal RawVolumeWrapper class, this class moves voxel in from the other side if they are outside
+ * the valid region.
  */
-class RawVolumeWrapper {
+class RawVolumeMoveWrapper {
 private:
 	RawVolume* _volume;
 	const Region& _region;
 
 public:
-	RawVolumeWrapper(voxel::RawVolume* volume) :
+	RawVolumeMoveWrapper(voxel::RawVolume* volume) :
 			_volume(volume), _region(volume->getRegion()) {
 	}
 
@@ -61,6 +63,7 @@ public:
 	 */
 	inline bool setVoxel(int x, int y, int z, const Voxel& voxel) {
 		if (!_region.containsPoint(x, y, z)) {
+			// TODO:
 			return false;
 		}
 		_volume->setVoxel(x, y, z, voxel);

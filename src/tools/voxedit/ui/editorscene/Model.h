@@ -268,7 +268,7 @@ inline const glm::ivec3& Model::cursorPosition() const {
 }
 
 inline void Model::setCursorPosition(const glm::ivec3& pos) {
-	if (!_modelVolume->getEnclosingRegion().containsPoint(pos)) {
+	if (!_modelVolume->getRegion().containsPoint(pos)) {
 		return;
 	}
 	_cursorPos = pos;

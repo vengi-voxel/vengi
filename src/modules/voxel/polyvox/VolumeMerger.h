@@ -33,8 +33,8 @@ int mergeRawVolumes(RawVolume* destination, const RawVolume* source, const Regio
 	RawVolume::Sampler srcSampler(source);
 	RawVolume::Sampler dstSampler(destination);
 
-	core_assert(source->getEnclosingRegion().containsRegion(sourceReg));
-	core_assert(destination->getEnclosingRegion().containsRegion(destReg));
+	core_assert(source->getRegion().containsRegion(sourceReg));
+	core_assert(destination->getRegion().containsRegion(destReg));
 
 	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
 		const int destZ = destReg.getLowerZ() + z - sourceReg.getLowerZ();
@@ -59,8 +59,8 @@ int mergeRawVolumes(RawVolume* destination, const RawVolume* source, const Regio
 
 template<typename MergeCondition = MergeConditionSkipVoxelType>
 inline int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume* source, MergeCondition mergeCondition = MergeCondition()) {
-	core_assert(source->getEnclosingRegion() == destination->getEnclosingRegion());
-	return mergeRawVolumes(destination, source, destination->getEnclosingRegion(), source->getEnclosingRegion());
+	core_assert(source->getRegion() == destination->getRegion());
+	return mergeRawVolumes(destination, source, destination->getRegion(), source->getRegion());
 }
 
 }

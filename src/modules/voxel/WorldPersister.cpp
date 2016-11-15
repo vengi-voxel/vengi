@@ -34,7 +34,7 @@ bool WorldPersister::load(PagedVolumeWrapper& ctx, long seed) {
 	PagedVolume::Chunk* chunk = ctx.getChunk();
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
-	const Region& region = ctx.region();
+	const Region& region = ctx.getRegion();
 	const std::string& filename = getWorldName(region, seed);
 	const io::FilePtr& f = filesystem->open(filename);
 	if (!f->exists()) {
@@ -100,7 +100,7 @@ bool WorldPersister::load(PagedVolumeWrapper& ctx, long seed) {
 bool WorldPersister::save(PagedVolumeWrapper& ctx, long seed) {
 	PagedVolume::Chunk* chunk = ctx.getChunk();
 	core::ByteStream voxelStream;
-	const Region& region = ctx.region();
+	const Region& region = ctx.getRegion();
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();

@@ -26,7 +26,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Voxel& voxel)
 }
 
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::RawVolume& volume) {
-	const voxel::Region& region = volume.getEnclosingRegion();
+	const voxel::Region& region = volume.getRegion();
 	os << "volume[" << region;
 	const int threshold = 6;
 	if (volume.getDepth() <= threshold && volume.getWidth() <= threshold && volume.getHeight() <= threshold) {

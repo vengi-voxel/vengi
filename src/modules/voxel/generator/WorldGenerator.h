@@ -30,9 +30,9 @@ namespace world {
 
 template<class Volume>
 extern void createWorld(WorldContext& worldCtx, Volume& volume, BiomeManager& biomManager, long seed, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
-	const Region& region = volume.region();
+	const Region& region = volume.getRegion();
 	// TODO: find a better way to add the current chunk to the seed
-	core::Random random(seed + volume.region().getLowerCorner().x * volume.region().getLowerCorner().z);
+	core::Random random(seed + region.getLowerCorner().x * region.getLowerCorner().z);
 	Log::debug("Create new chunk at %i:%i:%i", region.getCentreX(), region.getCentreY(), region.getCentreZ());
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
@@ -84,7 +84,7 @@ extern void createWorld(WorldContext& worldCtx, Volume& volume, BiomeManager& bi
 	}
 	if ((flags & WORLDGEN_TREES) != 0) {
 		core_trace_scoped(Trees);
-		voxel::tree::createTrees(volume, volume.region(), biomManager, random);
+		voxel::tree::createTrees(volume, region, biomManager, random);
 	}
 }
 

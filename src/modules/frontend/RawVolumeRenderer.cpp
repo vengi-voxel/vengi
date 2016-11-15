@@ -126,7 +126,7 @@ bool RawVolumeRenderer::extract() {
 		}
 	};
 
-	voxel::Region r = _rawVolume->getEnclosingRegion();
+	voxel::Region r = _rawVolume->getRegion();
 	r.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(_rawVolume, r, _mesh, CustomIsQuadNeeded());
 	const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
@@ -154,7 +154,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	if (_renderGrid) {
-		const voxel::Region& region = _rawVolume->getEnclosingRegion();
+		const voxel::Region& region = _rawVolume->getRegion();
 		const glm::vec3& center = glm::vec3(region.getCentre());
 		const glm::vec3& halfWidth = glm::vec3(region.getDimensionsInCells()) / 2.0f;
 		const core::Plane planeLeft  (glm::left,     center + glm::vec3(-halfWidth.x, 0.0f, 0.0f));
@@ -267,7 +267,7 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(voxel::RawVolume* volume) {
 	voxel::RawVolume* old = _rawVolume;
 	_rawVolume = volume;
 	if (_rawVolume != nullptr) {
-		const voxel::Region& region = _rawVolume->getEnclosingRegion();
+		const voxel::Region& region = _rawVolume->getRegion();
 		const core::AABB<int>& intaabb = region.aabb();
 		const core::AABB<float> aabb(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
 		_shapeBuilder.clear();

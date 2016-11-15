@@ -111,7 +111,7 @@ bool Select::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler
 }
 
 bool Select::execute(const voxel::RawVolume *model, voxel::RawVolume *selection, const glm::ivec3& pos) const {
-	if (!model->getEnclosingRegion().containsPoint(pos)) {
+	if (!model->getRegion().containsPoint(pos)) {
 		Log::error("Given position is outside of the region");
 		return false;
 	}

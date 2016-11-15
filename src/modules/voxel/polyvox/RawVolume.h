@@ -104,7 +104,7 @@ public:
 	/// Gets the value used for voxels which are outside the volume
 	const Voxel& getBorderValue() const;
 	/// Gets a Region representing the extents of the Volume.
-	const Region& getEnclosingRegion() const;
+	const Region& getRegion() const;
 
 	/// Gets the width of the volume in voxels.
 	int32_t getWidth() const;
@@ -162,12 +162,12 @@ inline bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 	return setVoxel(pos.x, pos.y, pos.z, voxel);
 }
 
-#define CAN_GO_NEG_X(val) (val > this->_volume->getEnclosingRegion().getLowerX())
-#define CAN_GO_POS_X(val) (val < this->_volume->getEnclosingRegion().getUpperX())
-#define CAN_GO_NEG_Y(val) (val > this->_volume->getEnclosingRegion().getLowerY())
-#define CAN_GO_POS_Y(val) (val < this->_volume->getEnclosingRegion().getUpperY())
-#define CAN_GO_NEG_Z(val) (val > this->_volume->getEnclosingRegion().getLowerZ())
-#define CAN_GO_POS_Z(val) (val < this->_volume->getEnclosingRegion().getUpperZ())
+#define CAN_GO_NEG_X(val) (val > this->_volume->getRegion().getLowerX())
+#define CAN_GO_POS_X(val) (val < this->_volume->getRegion().getUpperX())
+#define CAN_GO_NEG_Y(val) (val > this->_volume->getRegion().getLowerY())
+#define CAN_GO_POS_Y(val) (val < this->_volume->getRegion().getUpperY())
+#define CAN_GO_NEG_Z(val) (val > this->_volume->getRegion().getLowerZ())
+#define CAN_GO_POS_Z(val) (val < this->_volume->getRegion().getUpperZ())
 
 inline glm::ivec3 RawVolume::Sampler::getPosition() const {
 	return glm::ivec3(_xPosInVolume, _yPosInVolume, _zPosInVolume);

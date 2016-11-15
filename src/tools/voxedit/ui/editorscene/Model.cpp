@@ -2,7 +2,9 @@
 #include "voxel/polyvox/VolumeMerger.h"
 #include "voxel/polyvox/VolumeCropper.h"
 #include "voxel/polyvox/VolumeRotator.h"
+#include "voxel/polyvox/VolumeMover.h"
 #include "voxel/generator/RawVolumeWrapper.h"
+#include "voxel/generator/RawVolumeMoveWrapper.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
 #include "tool/Crop.h"
@@ -160,7 +162,7 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	delete _modelVolume;
 	_modelVolume = volume;
 
-	const voxel::Region& region = volume->getEnclosingRegion();
+	const voxel::Region& region = volume->getRegion();
 	delete _cursorPositionVolume;
 	_cursorPositionVolume = new voxel::RawVolume(region);
 
@@ -197,13 +199,12 @@ void Model::rotate(int angleX, int angleY, int angleZ) {
 }
 
 void Model::move(int x, int y, int z) {
-	// TODO: implement move
-#if 0
-	const voxel::RawVolume* model = modelVolume();
-	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::createVoxel(voxel::VoxelType::Air), false);
+	voxel::RawVolume* model = modelVolume();
+	voxel::RawVolume* newVolume = new voxel::RawVolume(model->getRegion());
+	voxel::generate::RawVolumeMoveWrapper wrapper(newVolume);
+	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z), voxel::createVoxel(voxel::VoxelType::Air));
 	markUndo();
 	setNewVolume(newVolume);
-#endif
 }
 
 const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
@@ -225,7 +226,7 @@ void Model::copy() {
 }
 
 void Model::paste() {
-	const voxel::Region& srcRegion = _cursorVolume->getEnclosingRegion();
+	const voxel::Region& srcRegion = _cursorVolume->getRegion();
 	const voxel::Region destRegion = srcRegion + _cursorPos;
 	voxel::mergeRawVolumes(_modelVolume, _cursorVolume, destRegion, srcRegion);
 }
@@ -342,8 +343,8 @@ bool Model::trace(bool skipCursor, const video::Camera& camera) {
 				_cursorPositionVolume->clear();
 				const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume, air));
 				if (cropped) {
-					const voxel::Region& srcRegion = cropped->getEnclosingRegion();
-					const voxel::Region& destRegion = _cursorPositionVolume->getEnclosingRegion();
+					const voxel::Region& srcRegion = cropped->getRegion();
+					const voxel::Region& destRegion = _cursorPositionVolume->getRegion();
 					const glm::ivec3& lower = destRegion.getLowerCorner() + _cursorPos - srcRegion.getCentre();
 					if (destRegion.containsPoint(lower)) {
 						const glm::ivec3& regionUpperCorner = destRegion.getUpperCorner();

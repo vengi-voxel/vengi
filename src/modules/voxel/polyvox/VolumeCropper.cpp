@@ -8,7 +8,7 @@ namespace voxel {
 
 RawVolume* cropVolume(const RawVolume* volume, const Voxel& emptyVoxel) {
 	core_trace_scoped(CropRawVolume);
-	const voxel::Region& region = volume->getEnclosingRegion();
+	const voxel::Region& region = volume->getRegion();
 	const int32_t lowerX = region.getLowerX();
 	const int32_t lowerY = region.getLowerY();
 	const int32_t lowerZ = region.getLowerZ();

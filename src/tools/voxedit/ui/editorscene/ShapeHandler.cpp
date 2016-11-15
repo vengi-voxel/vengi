@@ -9,7 +9,7 @@ namespace voxedit {
 bool ShapeHandler::scaleCursorShape(const glm::vec3& scale, voxel::RawVolume* cursorVolume) {
 	const glm::ivec3 before = _scale;
 	_scale *= scale;
-	const voxel::Region& r = cursorVolume->getEnclosingRegion();
+	const voxel::Region& r = cursorVolume->getRegion();
 	_scale = glm::clamp(_scale, glm::ivec3(1), r.getDimensionsInVoxels());
 	if (_scale == before) {
 		return false;
@@ -29,7 +29,7 @@ bool ShapeHandler::setCursorShape(Shape type, voxel::RawVolume* cursorVolume, bo
 }
 
 void ShapeHandler::createCursorShape(voxel::RawVolume* cursorVolume) {
-	const voxel::Region& cursorRegion = cursorVolume->getEnclosingRegion();
+	const voxel::Region& cursorRegion = cursorVolume->getRegion();
 	glm::ivec3 cursorPos = cursorRegion.getCentre();
 	if (_cursorShape == Shape::Single) {
 		cursorVolume->clear();

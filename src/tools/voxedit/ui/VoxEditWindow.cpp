@@ -623,6 +623,19 @@ void VoxEditWindow::OnProcess() {
 	}
 }
 
+static inline bool isValidNumberKey(int key) {
+	if ((key >= SDLK_0 && key <= SDLK_9) || (key >= SDLK_KP_0 && key <= SDLK_KP_9)) {
+		return true;
+	}
+	if (key == SDLK_PERIOD || key == SDLK_KP_PERIOD) {
+		return true;
+	}
+	if (key == SDLK_PLUS || key == SDLK_MINUS || key == SDLK_KP_PLUS || key == SDLK_KP_MINUS) {
+		return true;
+	}
+	return false;
+}
+
 bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (handleClickEvent(ev)) {
@@ -647,7 +660,7 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
 		const int key = ev.key;
 		if (_axis != voxedit::Axis::None) {
-			if ((key >= SDLK_0 && key <= SDLK_9) || (key >= SDLK_KP_0 && key <= SDLK_KP_9) || key == SDLK_PERIOD || key == SDLK_KP_PERIOD) {
+			if (isValidNumberKey(key)) {
 				int l = SDL_strlen(_modeNumberBuf);
 				if (l < MODENUMBERBUFSIZE - 1) {
 					_modeNumberBuf[l++] = (uint8_t)key;

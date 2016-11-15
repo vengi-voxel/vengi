@@ -28,7 +28,7 @@ public:
 		}
 	}
 
-	inline const Region& region() const {
+	inline const Region& getRegion() const {
 		return _region;
 	}
 
