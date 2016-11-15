@@ -25,6 +25,8 @@
 // TODO: shift locked axis
 // TODO: scale/move/rotate selections - not only the cursor
 // TODO: copy/paste full volume - assert in volume merger
+// TODO: tree parameter window
+// TODO: lsystem parameter window
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init("engine", "voxedit");
@@ -113,7 +115,7 @@ core::AppState VoxEdit::onInit() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		this->_mainWindow->rotate(x, y, z);
-	}).setHelp("Select voxels from the given position");
+	}).setHelp("Rotate voxels by the given angles (in degree)");
 
 	COMMAND_CALL("new", newFile(), "Create a new scene");
 
