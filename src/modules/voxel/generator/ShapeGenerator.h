@@ -15,6 +15,15 @@ class PagedVolume;
 
 namespace shape {
 
+/**
+ * @brief Creates a filled circle
+ * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in] center The position to place the object at
+ * @param[in] width The width (x-axis) of the object
+ * @param[in] depth The height (z-axis) of the object
+ * @param[in] radius The radius that defines the circle
+ * @param[in] voxel The Voxel to build the object with
+ */
 template<class Volume>
 void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
 	const int xRadius = width / 2;
@@ -24,8 +33,9 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int 
 	const double ratioZ = zRadius / minRadius;
 
 	for (int z = -zRadius; z <= zRadius; ++z) {
+		const double distanceZ = glm::pow(z / ratioZ, 2.0);
 		for (int x = -xRadius; x <= xRadius; ++x) {
-			const double distance = glm::pow(x / ratioX, 2.0) + glm::pow(z / ratioZ, 2.0);
+			const double distance = glm::pow(x / ratioX, 2.0) + distanceZ;
 			if (distance > radius) {
 				continue;
 			}
@@ -35,6 +45,16 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int 
 	}
 }
 
+/**
+ * @brief Creates a cube with the given position being the center of the cube
+ * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in] center The position to place the object at
+ * @param[in] width The width (x-axis) of the object
+ * @param[in] height The height (y-axis) of the object
+ * @param[in] depth The height (z-axis) of the object
+ * @param[in] voxel The Voxel to build the object with
+ * @sa createCubeNoCenter()
+ */
 template<class Volume>
 void createCube(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
@@ -53,6 +73,17 @@ void createCube(Volume& volume, const glm::ivec3& center, int width, int height,
 	}
 }
 
+/**
+ * @brief Creates a cube with the ground surface starting exactly on the given y coordinate, x and z are the lower left
+ * corner here.
+ * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in] pos The position to place the object at (lower left corner)
+ * @param[in] width The width (x-axis) of the object
+ * @param[in] height The height (y-axis) of the object
+ * @param[in] depth The height (z-axis) of the object
+ * @param[in] voxel The Voxel to build the object with
+ * @sa createCube()
+ */
 template<class Volume>
 void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int w = glm::abs(width);
@@ -78,11 +109,28 @@ void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int he
 	}
 }
 
+/**
+ * @brief Creates a plane
+ * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in] center The position to place the object at
+ * @param[in] width The width (x-axis) of the object
+ * @param[in] depth The height (z-axis) of the object
+ * @param[in] voxel The Voxel to build the object with
+ */
 template<class Volume>
 void createPlane(Volume& volume, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
 	createCube(volume, center, width, 1, depth, voxel);
 }
 
+/**
+ * @brief Creates a L form
+ * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in] pos The position to place the object at (lower left corner)
+ * @param[in] width The width (x-axis) of the object
+ * @param[in] height The height (y-axis) of the object
+ * @param[in] depth The height (z-axis) of the object
+ * @param[in] voxel The Voxel to build the object with
+ */
 template<class Volume>
 glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, int height, int thickness, const Voxel& voxel) {
 	glm::ivec3 p = pos;
@@ -105,46 +153,78 @@ glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, 
 	return p;
 }
 
+/**
+ * @brief Creates an ellipsis
+ * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in] center The position to place the object at
+ * @param[in] width The width (x-axis) of the object
+ * @param[in] height The height (y-axis) of the object
+ * @param[in] depth The height (z-axis) of the object
+ * @param[in] voxel The Voxel to build the object with
+ */
 template<class Volume>
-void createEllipse(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void createEllipse(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);
 	const double adjustedMinRadius = minDimension / 2.0;
 	const double heightFactor = heightLow / adjustedMinRadius;
-	for (int y = -heightLow; y <= heightHigh; ++y) {
+	const int start = heightLow - 1;
+	const double minRadius = glm::pow(adjustedMinRadius + 0.5, 2.0);
+	for (int y = -start; y <= heightHigh; ++y) {
 		const double percent = glm::abs(y / heightFactor);
-		const double circleRadius = glm::pow(adjustedMinRadius + 0.5, 2.0) - glm::pow(percent, 2.0);
-		const glm::ivec3 planePos(pos.x, pos.y + y, pos.z);
+		const double circleRadius = minRadius - glm::pow(percent, 2.0);
+		const glm::ivec3 planePos(center.x, center.y + y, center.z);
 		createCirclePlane(volume, planePos, width, depth, circleRadius, voxel);
 	}
 }
 
+/**
+ * @brief Creates a cone
+ * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in] center The position to place the object at
+ * @param[in] width The width (x-axis) of the object
+ * @param[in] height The height (y-axis) of the object
+ * @param[in] depth The height (z-axis) of the object
+ * @param[in] voxel The Voxel to build the object with
+ */
 template<class Volume>
-void createCone(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void createCone(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);
 	const double minRadius = minDimension / 2.0;
-	for (int y = -heightLow; y <= heightHigh; ++y) {
-		const double percent = 1.0 - ((y + heightLow) / double(height));
+	const double dHeight = (double)height;
+	const int start = heightLow - 1;
+	for (int y = -start; y <= heightHigh; ++y) {
+		const double percent = 1.0 - ((y + start) / dHeight);
 		const double circleRadius = glm::pow(percent * minRadius, 2.0);
-		const glm::ivec3 planePos(pos.x, pos.y + y, pos.z);
+		const glm::ivec3 planePos(center.x, center.y + y, center.z);
 		createCirclePlane(volume, planePos, width, depth, circleRadius, voxel);
 	}
 }
 
+/**
+ * @brief Creates a dome
+ * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in] center The position to place the object at
+ * @param[in] width The width (x-axis) of the object
+ * @param[in] height The height (y-axis) of the object
+ * @param[in] depth The height (z-axis) of the object
+ * @param[in] voxel The Voxel to build the object with
+ */
 template<class Volume>
-void createDome(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
+void createDome(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
 	const double minDimension = std::min(width, depth);
-	const double minRadius = minDimension / 2.0;
-	const double heightFactor = height / (minDimension - 1.0) / 2.0;
-	for (int y = -heightLow; y <= heightHigh; ++y) {
-		const double percent = glm::abs((y + heightLow) / heightFactor);
-		const double circleRadius = glm::pow(minRadius, 2.0) - glm::pow(percent, 2.0);
-		const glm::ivec3 planePos(pos.x, pos.y + y, pos.z);
+	const double minRadius = glm::pow(minDimension / 2.0, 2.0);
+	const double heightFactor = height / (minDimension / 2.0);
+	const int start = heightLow - 1;
+	for (int y = -start; y <= heightHigh; ++y) {
+		const double percent = glm::abs((y + start) / heightFactor);
+		const double circleRadius = minRadius - glm::pow(percent, 2.0);
+		const glm::ivec3 planePos(center.x, center.y + y, center.z);
 		createCirclePlane(volume, planePos, width, depth, circleRadius, voxel);
 	}
 }

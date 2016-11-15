@@ -13,10 +13,12 @@ namespace voxel {
 
 enum class TreeType : int32_t {
 	Dome,
+	DomeHangingLeaves,
 	Cone,
 	Ellipsis,
 	BranchesEllipsis,
 	Cube,
+	CubeSideCubes,
 	Pine,
 	Fir,
 	Max
@@ -47,15 +49,12 @@ static inline glm::ivec3 getGridBoundaryPos(const glm::ivec3& pos, int size) {
  */
 struct TreeContext {
 	TreeType type = TreeType::Dome;
-	// the trunk dimension
-	int trunkHeight = 4;
-	int trunkWidth = 1;
-	// the leave shape dimension
-	int leavesWidth = 12;
-	int leavesHeight = 20;
-	int leavesDepth = 12;
-	// the position of the trunk center
-	glm::ivec3 pos;
+	int trunkHeight = 24;	/**< The height of the trunk - it's basically also the height of the tree */
+	int trunkWidth = 2;
+	int leavesWidth = 8;	/**< the leave shape width */
+	int leavesHeight = 16;	/**< the leave shape height - counting downward from the trunk top */
+	int leavesDepth = 8;	/**< the leave shape depth */
+	glm::ivec3 pos;			/**< the position of the trunk bottom center */
 
 	inline int treeBottom() const {
 		return pos.y;
@@ -73,12 +72,24 @@ struct TreeContext {
 		return treeTop();
 	}
 
+	inline glm::ivec3 leavesTopV() const {
+		return glm::ivec3(pos.x, leavesTop(), pos.z);
+	}
+
 	inline int leavesCenter() const {
-		return leavesBottom() + leavesHeight / 2;
+		return leavesTop() - leavesHeight / 2;
+	}
+
+	inline int trunkCenter() const {
+		return treeBottom() + trunkHeight / 2;
 	}
 
 	inline glm::ivec3 leavesCenterV() const {
 		return glm::ivec3(pos.x, leavesCenter(), pos.z);
+	}
+
+	inline glm::ivec3 trunkCenterV() const {
+		return glm::ivec3(pos.x, trunkCenter(), pos.z);
 	}
 };
 
