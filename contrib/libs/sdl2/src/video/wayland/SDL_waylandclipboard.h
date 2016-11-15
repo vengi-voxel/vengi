@@ -18,26 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _SDL_internal_h
-#define _SDL_internal_h
+#include "../../SDL_internal.h"
 
-/* Many of SDL's features require _GNU_SOURCE on various platforms */
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef _SDL_waylandclipboard_h
+#define _SDL_waylandclipboard_h
 
-#include "dynapi/SDL_dynapi.h"
+extern int Wayland_SetClipboardText(_THIS, const char *text);
+extern char *Wayland_GetClipboardText(_THIS);
+extern SDL_bool Wayland_HasClipboardText(_THIS);
 
-#if SDL_DYNAMIC_API
-#include "dynapi/SDL_dynapi_overrides.h"
-/* force DECLSPEC and SDLCALL off...it's all internal symbols now.
-   These will have actual #defines during SDL_dynapi.c only */
-#define DECLSPEC
-#define SDLCALL
-#endif
-
-#include "SDL_config.h"
-
-#endif /* _SDL_internal_h */
+#endif /* _SDL_waylandclipboard_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

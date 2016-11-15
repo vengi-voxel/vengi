@@ -2518,7 +2518,7 @@ D3D11_RenderDrawPoints(SDL_Renderer * renderer,
 
     vertices = SDL_stack_alloc(VertexPositionColor, count);
     for (i = 0; i < count; ++i) {
-        const VertexPositionColor v = { { points[i].x, points[i].y, 0.0f }, { 0.0f, 0.0f }, { r, g, b, a } };
+        const VertexPositionColor v = { { points[i].x + 0.5f, points[i].y + 0.5f, 0.0f }, { 0.0f, 0.0f }, { r, g, b, a } };
         vertices[i] = v;
     }
 
@@ -2557,7 +2557,7 @@ D3D11_RenderDrawLines(SDL_Renderer * renderer,
 
     vertices = SDL_stack_alloc(VertexPositionColor, count);
     for (i = 0; i < count; ++i) {
-        const VertexPositionColor v = { { points[i].x, points[i].y, 0.0f }, { 0.0f, 0.0f }, { r, g, b, a } };
+        const VertexPositionColor v = { { points[i].x + 0.5f, points[i].y + 0.5f, 0.0f }, { 0.0f, 0.0f }, { r, g, b, a } };
         vertices[i] = v;
     }
 
@@ -2576,6 +2576,12 @@ D3D11_RenderDrawLines(SDL_Renderer * renderer,
         NULL);
 
     D3D11_RenderFinishDrawOp(renderer, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, count);
+
+    if (points[0].x != points[count - 1].x || points[0].y != points[count - 1].y) {
+        ID3D11DeviceContext_IASetPrimitiveTopology(rendererData->d3dContext, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+        ID3D11DeviceContext_Draw(rendererData->d3dContext, 1, count - 1);
+    }
+
     SDL_stack_free(vertices);
     return 0;
 }
