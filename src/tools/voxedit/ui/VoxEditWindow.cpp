@@ -382,15 +382,6 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (isAny(ev, TBIDC("rotatez"))) {
 		rotatez();
 		return true;
-	} else if (ev.target->GetID() == TBIDC("lsystem")) {
-		voxel::lsystem::LSystemContext ctx;
-		ctx.axiom = "AY[xYA]AY[XYA]AY";
-		ctx.productionRules.emplace('A', ctx.axiom);
-		ctx.voxels.emplace('A', voxel::createVoxel(_paletteWidget->voxelType()));
-		ctx.generations = 2;
-		ctx.start = _scene->cursorPosition();
-		_scene->lsystem(ctx);
-		return true;
 	} else if (ev.target->GetID() == TBIDC("menu_tree")) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_popup"))) {
 			menu->Show(&_treeItems, tb::TBPopupAlignment());
@@ -399,6 +390,20 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("menu_file")) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_file"))) {
 			menu->Show(&_fileItems, tb::TBPopupAlignment());
+		}
+		return true;
+	} else if (ev.target->GetID() == TBIDC("lsystem")) {
+		tb::TBEditField* axiom = getWidgetByType<tb::TBEditField>("lsystem_axiom");
+		if (axiom != nullptr) {
+			const tb::TBStr& axiomStr = ev.target->GetText();
+			Log::info("execute lsystem %s", axiomStr.CStr());
+			voxel::lsystem::LSystemContext ctx;
+			ctx.axiom = axiomStr.CStr();
+			ctx.productionRules.emplace('A', ctx.axiom);
+			ctx.voxels.emplace('A', voxel::createVoxel(_paletteWidget->voxelType()));
+			ctx.generations = 2;
+			ctx.start = _scene->cursorPosition();
+			_scene->lsystem(ctx);
 		}
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {

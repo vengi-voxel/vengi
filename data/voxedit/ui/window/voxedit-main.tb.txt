@@ -40,8 +40,6 @@ TBLayout: distribution: gravity, axis: y
 							TBWidget
 						TBButton: gravity: left, @include: definitions>menubutton, text: Tree, id: menu_tree
 							TBSkinImage: skin: voxedit-tree
-						TBButton: gravity: left, @include: definitions>menubutton, text: L-System, id: lsystem
-							TBSkinImage: skin: voxedit-lsystem
 			TBLayout: distribution: gravity, position: top
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBSection: value: 1, text: "Palette"
@@ -210,6 +208,12 @@ TBLayout: distribution: gravity, axis: y
 								TBSkinImage: skin: voxedit-crop
 							TBButton: @include: definitions>menubutton, text: Extend, id: extend
 								TBSkinImage: skin: voxedit-extend
+
+					TBSection: value: 1, text: "L-System"
+						TBLayout: position: left top, axis: x
+							TBSkinImage: skin: voxedit-lsystem
+							TBEditField: id: lsystem_axiom, gravity: left right
+							TBButton: @include: definitions>menubutton, text: Ok, id: lsystem
 
 					TBWidget: gravity: top bottom
 
