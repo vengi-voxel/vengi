@@ -44,7 +44,7 @@ struct LSystemContext {
 	// each type is mapped to a voxel
 	std::unordered_map<char, Voxel> voxels;
 
-	// how often should be generate?
+	// how often should we evaluate?
 	int generations = 1;
 
 	// where to put the first voxel at
