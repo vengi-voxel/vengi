@@ -627,7 +627,7 @@ static inline bool isValidNumberKey(int key) {
 	if ((key >= SDLK_0 && key <= SDLK_9) || (key >= SDLK_KP_0 && key <= SDLK_KP_9)) {
 		return true;
 	}
-	if (key == SDLK_PERIOD || key == SDLK_KP_PERIOD) {
+	if (key == SDLK_PERIOD || key == SDLK_KP_PERIOD || key == SDLK_COMMA || key == SDLK_KP_COMMA) {
 		return true;
 	}
 	if (key == SDLK_PLUS || key == SDLK_MINUS || key == SDLK_KP_PLUS || key == SDLK_KP_MINUS) {
