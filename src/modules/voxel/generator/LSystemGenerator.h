@@ -111,23 +111,25 @@ static bool evaluateState(LSystemState* state, Volume& volume, const LSystemCont
 	case LSystemAlphabet::STATEPOP:
 	case LSystemAlphabet::RANDOMBEGIN:
 	case LSystemAlphabet::RANDOMEND:
+		Log::error("Illegal character found: %c", c);
 		return false;
 	default:
 		break;
 	}
 	auto i = ctx.voxels.find(c);
 	if (ctx.voxels.end() == i) {
+		Log::error("Could not find a voxel for %c", c);
 		return false;
 	}
 	state->lastVoxelType = c;
-	return false;
+	return true;
 }
 
 template<class Volume>
-static void expand_r(LSystemState* state, Volume& volume, const LSystemContext& ctx, core::Random& random, char c, int generations);
+static bool expand_r(LSystemState* state, Volume& volume, const LSystemContext& ctx, core::Random& random, char c, int generations);
 
 template<class Volume>
-static void expand(LSystemState* state, Volume& volume, const LSystemContext& ctx, core::Random& random, const std::string& axiomStr, int generations) {
+static bool expand(LSystemState* state, Volume& volume, const LSystemContext& ctx, core::Random& random, const std::string& axiomStr, int generations) {
 	std::vector<LSystemState> newStates;
 	LSystemState *currentState = state;
 	for (const char *axiom = axiomStr.c_str(); *axiom != '\0'; ++axiom) {
@@ -136,12 +138,16 @@ static void expand(LSystemState* state, Volume& volume, const LSystemContext& ct
 			newStates.emplace_back(*currentState);
 			currentState = &newStates.back();
 		} else if (chr == LSystemAlphabet::STATEPOP) {
-			core_assert(!newStates.empty());
+			if (newStates.empty()) {
+				Log::error("Could not pop a state - the stack is empty");
+				return false;
+			}
 			newStates.pop_back();
-			if (newStates.empty())
+			if (newStates.empty()) {
 				currentState = state;
-			else
+			} else {
 				currentState = &newStates.back();
+			}
 		} else if (chr == LSystemAlphabet::RANDOMEND) {
 			continue;
 		} else if (chr == LSystemAlphabet::RANDOMBEGIN) {
@@ -160,32 +166,35 @@ static void expand(LSystemState* state, Volume& volume, const LSystemContext& ct
 				}
 			}
 		} else {
-			expand_r(currentState, volume, ctx, random, chr, generations);
+			if (!expand_r(currentState, volume, ctx, random, chr, generations)) {
+				return false;
+			}
 		}
 	}
+	return true;
 }
 
 template<class Volume>
-static void expand_r(LSystemState* state, Volume& volume, const LSystemContext& ctx, core::Random& random, char c, int generations) {
+static bool expand_r(LSystemState* state, Volume& volume, const LSystemContext& ctx, core::Random& random, char c, int generations) {
 	if (generations <= 0) {
-		return;
+		return true;
 	}
 
 	if (!evaluateState(state, volume, ctx, c)) {
-		Log::trace("Current pos is %i:%i:%i\n", state->pos.x, state->pos.y, state->pos.z);
+		return false;
 	}
 	auto iter = ctx.productionRules.find(c);
 	if (iter == ctx.productionRules.end()) {
-		return;
+		return true;
 	}
-	expand(state, volume, ctx, random, iter->second, generations - 1);
+	return expand(state, volume, ctx, random, iter->second, generations - 1);
 }
 
 template<class Volume>
-void generate(Volume& volume, const LSystemContext& ctx, core::Random& random) {
+bool generate(Volume& volume, const LSystemContext& ctx, core::Random& random) {
 	LSystemState initState;
 	initState.pos = ctx.start;
-	expand(&initState, volume, ctx, random, ctx.axiom, ctx.generations);
+	return expand(&initState, volume, ctx, random, ctx.axiom, ctx.generations);
 }
 
 }

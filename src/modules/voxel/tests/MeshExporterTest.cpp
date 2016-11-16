@@ -3,7 +3,6 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "voxel/generator/LSystemGenerator.h"
 #include "voxel/polyvox/Region.h"
 #include "voxel/polyvox/PagedVolume.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
