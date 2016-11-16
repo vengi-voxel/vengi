@@ -4,12 +4,10 @@
 
 #pragma once
 
-#include "ShapeGenerator.h"
 #include "core/Random.h"
+#include "core/Log.h"
 #include <unordered_map>
 #include <string>
-#include "voxel/WorldContext.h"
-#include "core/Log.h"
 
 namespace voxel {
 namespace lsystem {
