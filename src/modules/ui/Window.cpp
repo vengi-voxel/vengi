@@ -257,7 +257,16 @@ bool Window::loadResourceData(const char *data) {
 	return loadResource(node);
 }
 
+static void printNodeTree(const std::string& filename, tb::TBNode &node) {
+	for (tb::TBNode *child = node.GetFirstChild(); child; child = child->GetNext()) {
+		Log::trace("File: %s: node found: '%s' = '%s'", filename.c_str(), child->GetName(), child->GetValue().GetString());
+		printNodeTree(filename, *child);
+	}
+}
+
 bool Window::loadResource(tb::TBNode &node) {
+	printNodeTree(_filename, node);
+
 	tb::g_widgets_reader->LoadNodeTree(&_root, &node);
 
 	// Get title from the WindowInfo section (or use "" if not specified)

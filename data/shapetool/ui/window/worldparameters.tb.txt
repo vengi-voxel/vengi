@@ -1,8 +1,6 @@
 // TODO: allow to modify the chunk size
 // better positioning
-// move tree window into this one - maybe with tabs
 // allow to control the amount of extracted chunks
-// allow to pick the position for trees by clicking into the world
 WindowInfo
 	title @worldparametersheadline
 	position 500 0
