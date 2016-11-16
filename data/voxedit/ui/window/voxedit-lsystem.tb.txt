@@ -2,18 +2,52 @@ WindowInfo
 	title L-System
 	position 500 0
 
-TBLayout: distribution: available, axis: y, gravity: all
-	TBLayout: axis: x, gravity: left right top, size: available
-		TBTextField: text: Axiom, gravity: left, size: gravity
-			lp: width: 100
-		TBWidget: gravity: left right, size: available
-		TBEditField: id: axiom, gravity: right, size: available
-			gravity: left right
-	TBLayout: axis: x, gravity: left right top, size: available
-		TBTextField: text: Generations, gravity: left
-			lp: width: 100
-		TBWidget: gravity: left
-			lp: width: 20
-		TBInlineSelect: id: generations, min: 1, max: 100, value: 2, gravity: left right
-	TBButton: text: Ok, id: ok, autofocus: 1, gravity: right, size: gravity
-		lp: width: 100
+TBLayout: distribution: gravity, axis: y
+	TBContainer: gravity: all, id: maincontainer
+		TBLayout: distribution: gravity, axis: y
+			TBLayout: distribution: gravity
+				TBLayout: distribution: gravity, gravity: left right
+					TBButton: gravity: left, id: load, text: Load
+						TBSkinImage: skin: voxedit-load
+					TBButton: gravity: left, id: save, text: Save
+						TBSkinImage: skin: voxedit-save
+					TBLayout: gravity: left right
+						TBWidget
+
+			TBSeparator: gravity: left right, skin: separator
+
+			TBLayout: distribution: gravity, position: top
+				TBLayout: distribution: gravity, axis: y
+					TBLayout: distribution: gravity, id: editorcontainer
+						TBLayout: distribution: gravity, axis: y
+							TBLayout: axis: x, distribution: gravity
+								TBTextField: text: Axiom, gravity: left
+									lp: width: 100
+								TBEditField: id: axiom, gravity: left, text-align: left, multiline: 1
+									lp: height: 60
+									gravity: left right
+								TBLayout: gravity: left right
+									TBWidget
+							TBLayout: axis: x, distribution: gravity
+								TBTextField: text: Generations, gravity: left, text-align: left
+									lp: width: 100
+								TBInlineSelect: id: generations, min: 1, max: 100, value: 2, gravity: left
+								TBLayout: gravity: left right
+									TBWidget
+
+							TBSeparator: gravity: left right, skin: separator
+
+							TBTextField: text: Production rules
+							TBLayout: axis: x, distribution: gravity
+								TBLayout: axis: y, position: left top, distribution: gravity
+									TBSelectList: id: productionrules, gravity: left right top bottom
+									TBLayout: distribution: gravity
+										TBEditField
+											id add_name
+											gravity left right
+											placeholder Name
+										TBButton
+											id add_rule
+											text Add
+							TBButton: text: Ok, id: ok, autofocus: 1, gravity: right, size: gravity
+								lp: width: 100

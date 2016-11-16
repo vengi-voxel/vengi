@@ -16,6 +16,7 @@ private:
 	EditorScene* _scene;
 	tb::TBEditField* _axiom = nullptr;
 	tb::TBInlineSelect* _generations = nullptr;
+	tb::TBSelectList* _productionRules = nullptr;
 public:
 	LSystemWindow(ui::Window* window, EditorScene* scene);
 

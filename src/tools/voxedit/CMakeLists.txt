@@ -26,6 +26,13 @@ set(SRCS
 
 	ui/palette/PaletteWidget.h ui/palette/PaletteWidget.cpp
 
+	ui/lsystem/RuleItem.h
+	ui/lsystem/RuleItemSource.cpp
+	ui/lsystem/RuleItemSource.h
+	ui/lsystem/RuleItemWidget.cpp
+	ui/lsystem/RuleItemWidget.h
+	ui/lsystem/SyntaxHighlighter.h
+
 	ui/VoxEditWindow.h ui/VoxEditWindow.cpp
 	ui/LSystemWindow.h ui/LSystemWindow.cpp
 
