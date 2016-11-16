@@ -23,9 +23,9 @@ TBLayout: distribution: gravity, axis: y
 							TBLayout: axis: x, distribution: gravity
 								TBTextField: text: Axiom, gravity: left
 									lp: width: 100
-								TBEditField: id: axiom, gravity: left, text-align: left, multiline: 1
+								TBEditField: id: axiom, text-align: left, multiline: 1, gravity: left right
+									text: "AY[xYA]AY[XYA]AY"
 									lp: height: 60
-									gravity: left right
 								TBLayout: gravity: left right
 									TBWidget
 							TBLayout: axis: x, distribution: gravity
@@ -49,5 +49,5 @@ TBLayout: distribution: gravity, axis: y
 										TBButton
 											id add_rule
 											text Add
-							TBButton: text: Ok, id: ok, autofocus: 1, gravity: right, size: gravity
-								lp: width: 100
+							TBButton: text: Ok, id: ok, autofocus: 1, gravity: left right, size: gravity
+							TBButton: text: Cancel, id: cancel, gravity: left right, size: gravity

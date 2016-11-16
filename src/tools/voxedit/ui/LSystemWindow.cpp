@@ -36,6 +36,9 @@ LSystemWindow::LSystemWindow(ui::Window* window, EditorScene* scene) :
 	_productionRules->GetScrollContainer()->SetScrollMode(tb::SCROLL_MODE_Y_AUTO);
 
 	_axiom->GetStyleEdit()->SetSyntaxHighlighter(&highlighter);
+	if (!ctx.axiom.empty()) {
+		_axiom->SetText(ctx.axiom.c_str());
+	}
 }
 
 bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
@@ -57,8 +60,17 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			Log::info("evaluate lsystem axiom %s with %i generations", ctx.axiom.c_str(), ctx.generations);
 			_scene->lsystem(ctx);
 			return true;
+		} else if (ev.target->GetID() == TBIDC("cancel")) {
+			Close();
+			return true;
 		} else if (ev.target->GetID() == TBIDC("add_rule")) {
 			productionRules.AddItem(new RuleItem("Ax", 'A'));
+			return true;
+		}
+	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
+		if (ev.special_key == tb::TB_KEY_ESC) {
+			Close();
+			return true;
 		}
 	}
 	return Super::OnEvent(ev);
