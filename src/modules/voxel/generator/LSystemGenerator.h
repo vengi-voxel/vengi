@@ -38,6 +38,12 @@ enum LSystemAlphabet {
 struct LSystemState {
 	glm::ivec3 pos;
 	char lastVoxelType = '\0';
+
+	// how many voxels should be generated in each direction when the axiom evaluation
+	// hits a voxel
+	int xFactor = 1;
+	int yFactor = 1;
+	int zFactor = 1;
 };
 
 /**
@@ -61,60 +67,60 @@ struct LSystemContext {
 
 	/** where to put the first voxel at */
 	glm::ivec3 start;
-
-	int xFactor = 1;
-	int yFactor = 1;
-	int zFactor = 1;
 };
 
 template<class Volume>
-static void generateVoxel(const LSystemState* state, Volume& volume, const LSystemContext& ctx) {
-	core_assert(state->lastVoxelType != '\0');
+static bool generateVoxel(const LSystemState* state, Volume& volume, const LSystemContext& ctx) {
+	if (state->lastVoxelType == '\0') {
+		Log::error("No voxel set in generation step");
+		return false;
+	}
 	auto i = ctx.voxels.find(state->lastVoxelType);
-	core_assert_msg(i != ctx.voxels.end(), "no voxel registered for %c", state->lastVoxelType);
 	if (ctx.voxels.end() == i) {
-		return;
+		Log::error("Could not find a voxel for %c in the lsystem", state->lastVoxelType);
+		return false;
 	}
 	const Voxel& voxel = i->second;
 	Log::trace("add voxel %c to %i:%i:%i\n", state->lastVoxelType, state->pos.x, state->pos.y, state->pos.z);
 	volume.setVoxel(state->pos, voxel);
+	return true;
 }
 
 template<class Volume>
 static bool evaluateState(LSystemState* state, Volume& volume, const LSystemContext& ctx, char c) {
 	switch (c) {
 	case LSystemAlphabet::X_FORWARD:
-		for (int i = 0; i < ctx.xFactor; ++i) {
+		for (int i = 0; i < state->xFactor; ++i) {
 			++state->pos.x;
 			generateVoxel(state, volume, ctx);
 		}
 		return true;
 	case LSystemAlphabet::X_BACK:
-		for (int i = 0; i < ctx.xFactor; ++i) {
+		for (int i = 0; i < state->xFactor; ++i) {
 			--state->pos.x;
 			generateVoxel(state, volume, ctx);
 		}
 		return true;
 	case LSystemAlphabet::Y_UPWARDS:
-		for (int i = 0; i < ctx.yFactor; ++i) {
+		for (int i = 0; i < state->yFactor; ++i) {
 			++state->pos.y;
 			generateVoxel(state, volume, ctx);
 		}
 		return true;
 	case LSystemAlphabet::Y_DOWN:
-		for (int i = 0; i < ctx.yFactor; ++i) {
+		for (int i = 0; i < state->yFactor; ++i) {
 			--state->pos.y;
 			generateVoxel(state, volume, ctx);
 		}
 		return true;
 	case LSystemAlphabet::Z_FORWARD:
-		for (int i = 0; i < ctx.zFactor; ++i) {
+		for (int i = 0; i < state->zFactor; ++i) {
 			++state->pos.z;
 			generateVoxel(state, volume, ctx);
 		}
 		return true;
 	case LSystemAlphabet::Z_BACK:
-		for (int i = 0; i < ctx.zFactor; ++i) {
+		for (int i = 0; i < state->zFactor; ++i) {
 			--state->pos.z;
 			generateVoxel(state, volume, ctx);
 		}
