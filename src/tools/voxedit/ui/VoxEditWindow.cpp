@@ -151,12 +151,12 @@ void VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringIt
 	if (id == nullptr) {
 		const std::string& lowerId = core::string::toLower(text);
 		item = new tb::TBGenericStringItem(text, TBIDC(lowerId.c_str()));
-		const std::string& iconId = _app->appname() + "-" + lowerId;
+		const std::string& iconId = core::App::getInstance()->appname() + "-" + lowerId;
 		item->SetSkinImage(TBIDC(iconId.c_str()));
 	} else {
 		item = new tb::TBGenericStringItem(text, TBIDC(id));
 		char buf[128];
-		SDL_snprintf(buf, sizeof(buf), "%s-%s", _app->appname().c_str(), id);
+		SDL_snprintf(buf, sizeof(buf), "%s-%s", core::App::getInstance()->appname().c_str(), id);
 		item->SetSkinImage(TBIDC(buf));
 	}
 	items.AddItem(item);
@@ -548,7 +548,7 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 void VoxEditWindow::OnProcess() {
 	Super::OnProcess();
 
-	if (_lastModePress > 0l && _app->timeProvider()->tickTime() - _lastModePress > 1500l) {
+	if (_lastModePress > 0l && core::App::getInstance()->timeProvider()->tickTime() - _lastModePress > 1500l) {
 		executeMode();
 	}
 
@@ -666,7 +666,7 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 				if (l < MODENUMBERBUFSIZE - 1) {
 					_modeNumberBuf[l++] = (uint8_t)key;
 					_modeNumberBuf[l] = '\0';
-					_lastModePress = _app->timeProvider()->tickTime();
+					_lastModePress = core::App::getInstance()->timeProvider()->tickTime();
 				}
 			} else if (ev.special_key == tb::TB_KEY_ENTER) {
 				executeMode();
@@ -684,7 +684,7 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 				_axis |= voxedit::Axis::Z;
 				Log::debug("Set axis to z");
 			}
-			_lastModePress = _app->timeProvider()->tickTime();
+			_lastModePress = core::App::getInstance()->timeProvider()->tickTime();
 		}
 	}
 

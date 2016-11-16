@@ -16,8 +16,6 @@ static const std::string EMPTY = "";
 Window::Window(UIApp* app) :
 		Super(), _app(app) {
 	app->addChild(this);
-	_root.SetGravity(tb::WIDGET_GRAVITY_ALL);
-	AddChild(&_root);
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 }
 
@@ -27,12 +25,11 @@ Window::Window(Window* parent) :
 	if (parent != nullptr) {
 		parent->AddChild(this);
 	}
-	AddChild(&_root);
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 }
 
 Window::~Window() {
-	RemoveChild(&_root);
+	RemoveFromParent();
 }
 
 void Window::OnDie() {
@@ -177,14 +174,6 @@ void Window::fillFields(const Field* fields, int fieldAmount, void* basePtr) {
 	}
 }
 
-bool Window::refreshFromResourceFile() {
-	if (_filename.empty()) {
-		return false;
-	}
-	_root.DeleteAllChildren();
-	return loadResourceFile(_filename.c_str());
-}
-
 bool Window::loadResourceFile(const char *filename) {
 	_filename = filename;
 	tb::TBNode node;
@@ -267,7 +256,7 @@ static void printNodeTree(const std::string& filename, tb::TBNode &node) {
 bool Window::loadResource(tb::TBNode &node) {
 	printNodeTree(_filename, node);
 
-	tb::g_widgets_reader->LoadNodeTree(&_root, &node);
+	tb::g_widgets_reader->LoadNodeTree(this, &node);
 
 	// Get title from the WindowInfo section (or use "" if not specified)
 	SetText(node.GetValueString("WindowInfo>title", ""));
@@ -366,7 +355,7 @@ tb::TBWidget* Window::getWidgetAt(int x, int y, bool includeChildren) {
 }
 
 void Window::requestQuit() {
-	_app->requestQuit();
+	core::App::getInstance()->requestQuit();
 }
 
 }

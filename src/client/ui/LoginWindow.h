@@ -58,7 +58,7 @@ public:
 				doLogin();
 				return true;
 			} else if (ev.target->GetID() == TBIDC("cancel")) {
-				_app->requestQuit();
+				requestQuit();
 				return true;
 			} else if (ev.target->GetID() == TBIDC("signup")) {
 				new SignupWindow(_client);
