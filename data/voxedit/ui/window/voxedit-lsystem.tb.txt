@@ -1,0 +1,7 @@
+WindowInfo
+	title L-System
+	position 500 0
+
+TBLayout: distribution: gravity, axis: y
+	TBEditField: id: lsystem_axiom, gravity: left right
+	TBButton: text: Ok, id: lsystem, autofocus: 1

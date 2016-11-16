@@ -27,6 +27,7 @@ set(SRCS
 	ui/palette/PaletteWidget.h ui/palette/PaletteWidget.cpp
 
 	ui/VoxEditWindow.h ui/VoxEditWindow.cpp
+	ui/LSystemWindow.h ui/LSystemWindow.cpp
 
 	VoxEdit.h VoxEdit.cpp
 )

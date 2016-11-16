@@ -318,19 +318,22 @@ bool TBNode::ReadFile(const char *filename, TB_NODE_READ_FLAGS flags)
 	return false;
 }
 
-void TBNode::ReadData(const char *data, TB_NODE_READ_FLAGS flags)
+bool TBNode::ReadData(const char *data, TB_NODE_READ_FLAGS flags)
 {
-	ReadData(data, strlen(data), flags);
+	return ReadData(data, strlen(data), flags);
 }
 
-void TBNode::ReadData(const char *data, int data_len, TB_NODE_READ_FLAGS flags)
+bool TBNode::ReadData(const char *data, int data_len, TB_NODE_READ_FLAGS flags)
 {
 	if (!(flags & TB_NODE_READ_FLAGS_APPEND))
 		Clear();
 	DataParser p;
 	TBNodeTarget t(this, "{data}");
-	p.Read(data, data_len, &t);
-	TBNodeRefTree::ResolveConditions(this);
+	if (p.Read(data, data_len, &t)) {
+		TBNodeRefTree::ResolveConditions(this);
+		return true;
+	}
+	return false;
 }
 
 void TBNode::Clear()

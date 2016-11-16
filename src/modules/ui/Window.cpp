@@ -195,7 +195,9 @@ bool Window::loadResourceFile(const char *filename) {
 		return false;
 	}
 	const std::string& data = file->load();
-	node.ReadData(data.c_str(), (int)data.size(), tb::TB_NODE_READ_FLAGS_NONE);
+	if (!node.ReadData(data.c_str(), (int)data.size(), tb::TB_NODE_READ_FLAGS_NONE)) {
+		return false;
+	}
 	return loadResource(node);
 }
 
@@ -249,7 +251,9 @@ std::string Window::getStr(const char *nodeId) {
 
 bool Window::loadResourceData(const char *data) {
 	tb::TBNode node;
-	node.ReadData(data);
+	if (!node.ReadData(data)) {
+		return false;
+	}
 	return loadResource(node);
 }
 

@@ -1,8 +1,9 @@
+#include "VoxEditWindow.h"
+#include "LSystemWindow.h"
 #include "editorscene/EditorScene.h"
 #include "palette/PaletteWidget.h"
 #include "../VoxEdit.h"
 #include <assimp/Exporter.hpp>
-#include "VoxEditWindow.h"
 
 namespace voxedit {
 
@@ -392,19 +393,8 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			menu->Show(&_fileItems, tb::TBPopupAlignment());
 		}
 		return true;
-	} else if (ev.target->GetID() == TBIDC("lsystem")) {
-		tb::TBEditField* axiom = getWidgetByType<tb::TBEditField>("lsystem_axiom");
-		if (axiom != nullptr) {
-			const tb::TBStr& axiomStr = ev.target->GetText();
-			Log::info("execute lsystem %s", axiomStr.CStr());
-			voxel::lsystem::LSystemContext ctx;
-			ctx.axiom = axiomStr.CStr();
-			ctx.productionRules.emplace('A', ctx.axiom);
-			ctx.voxels.emplace('A', voxel::createVoxel(_paletteWidget->voxelType()));
-			ctx.generations = 2;
-			ctx.start = _scene->cursorPosition();
-			_scene->lsystem(ctx);
-		}
+	} else if (ev.target->GetID() == TBIDC("dialog_lsystem")) {
+		new LSystemWindow(this);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);

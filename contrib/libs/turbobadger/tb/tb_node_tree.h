@@ -40,10 +40,10 @@ public:
 	bool ReadFile(const char *filename, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
 
 	/** Read a tree of nodes from a null terminated string buffer. */
-	void ReadData(const char *data, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
+	bool ReadData(const char *data, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
 
 	/** Read a tree of nodes from a buffer with a known length. */
-	void ReadData(const char *data, int data_len, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
+	bool ReadData(const char *data, int data_len, TB_NODE_READ_FLAGS flags = TB_NODE_READ_FLAGS_NONE);
 
 	/** Clear the contens of this node. */
 	void Clear();
