@@ -37,6 +37,10 @@ public:
 		return _volume;
 	}
 
+	inline RawVolume* getVolume() const {
+		return _volume;
+	}
+
 	inline const Region& getRegion() const {
 		return _region;
 	}

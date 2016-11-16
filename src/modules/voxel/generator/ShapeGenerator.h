@@ -12,6 +12,8 @@ namespace voxel {
 
 class RawVolume;
 class PagedVolume;
+class RawVolumeWrapper;
+class PagedVolumeWrapper;
 
 namespace shape {
 
@@ -229,9 +231,10 @@ void createDome(Volume& volume, const glm::ivec3& center, int width, int height,
 	}
 }
 
-// http://members.chello.at/~easyfilter/bresenham.html
 extern void createLine(PagedVolume& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel);
 extern void createLine(RawVolume& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel);
+extern void createLine(PagedVolumeWrapper& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel);
+extern void createLine(RawVolumeWrapper& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel);
 
 }
 }
