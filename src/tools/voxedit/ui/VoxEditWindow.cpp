@@ -65,6 +65,9 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
 }
 
+VoxEditWindow::~VoxEditWindow() {
+}
+
 bool VoxEditWindow::init() {
 	if (!loadResourceFile("ui/window/voxedit-main.tb.txt")) {
 		Log::error("Failed to init the main window: Could not load the ui definition");
@@ -132,16 +135,6 @@ bool VoxEditWindow::init() {
 			_exportFilter.append(";");
 		}
 	}
-
-	for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
-		addMenuItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
-	}
-
-	addMenuItem(_fileItems, "New");
-	addMenuItem(_fileItems, "Load");
-	addMenuItem(_fileItems, "Save");
-	addMenuItem(_fileItems, "Export");
-	addMenuItem(_fileItems, "Quit");
 
 	return true;
 }
@@ -385,12 +378,22 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (ev.target->GetID() == TBIDC("menu_tree")) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_popup"))) {
-			menu->Show(&_treeItems, tb::TBPopupAlignment());
+			tb::TBSelectItemSourceList<tb::TBGenericStringItem>* treeItems = new tb::TBSelectItemSourceList<tb::TBGenericStringItem>();
+			for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
+				addMenuItem(*treeItems, treeTypes[i].name, treeTypes[i].id);
+			}
+			menu->Show(treeItems, tb::TBPopupAlignment());
 		}
 		return true;
 	} else if (ev.target->GetID() == TBIDC("menu_file")) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_file"))) {
-			menu->Show(&_fileItems, tb::TBPopupAlignment());
+			tb::TBSelectItemSourceList<tb::TBGenericStringItem>* fileItems = new tb::TBSelectItemSourceList<tb::TBGenericStringItem>();
+			addMenuItem(*fileItems, "New");
+			addMenuItem(*fileItems, "Load");
+			addMenuItem(*fileItems, "Save");
+			addMenuItem(*fileItems, "Export");
+			addMenuItem(*fileItems, "Quit");
+			menu->Show(fileItems, tb::TBPopupAlignment());
 		}
 		return true;
 	} else if (ev.target->GetID() == TBIDC("dialog_lsystem")) {

@@ -20,7 +20,6 @@ public:
 	LSystemWindow(ui::Window* window, EditorScene* scene);
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
-	void OnInflate(const tb::INFLATE_INFO &info) override;
 };
 
 }

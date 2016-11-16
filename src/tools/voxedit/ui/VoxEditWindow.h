@@ -59,9 +59,6 @@ private:
 
 	void addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id = nullptr);
 
-	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _treeItems;
-	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _fileItems;
-
 	enum class ModifierMode {
 		None,
 		Rotate,
@@ -122,6 +119,7 @@ private:
 
 public:
 	VoxEditWindow(VoxEdit* tool);
+	~VoxEditWindow();
 	bool init();
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;

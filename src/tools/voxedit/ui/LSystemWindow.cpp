@@ -9,36 +9,35 @@
 namespace voxedit {
 
 namespace {
-voxel::lsystem::LSystemContext ctx;
 
 class LSystemHighlighter : public tb::TBSyntaxHighlighter {
 public:
 	void OnBeforePaintFragment(const tb::TBPaintProps *props, tb::TBTextFragment *fragment) override {
-		Log::info("Render %s", props->block->str.CStr());
 	}
 
 	void OnAfterPaintFragment(const tb::TBPaintProps *props, tb::TBTextFragment *fragment) override {
 	}
 };
 
+voxel::lsystem::LSystemContext ctx;
+LSystemHighlighter highlighter;
+
 }
 
 LSystemWindow::LSystemWindow(ui::Window* window, EditorScene* scene) :
 		Super(window), _scene(scene) {
 	core_assert_always(loadResourceFile("ui/window/voxedit-lsystem.tb.txt"));
-}
-
-void LSystemWindow::OnInflate(const tb::INFLATE_INFO &info) {
-	Super::OnInflate(info);
 	_axiom = getWidgetByType<tb::TBEditField>("axiom");
 	_generations = getWidgetByType<tb::TBInlineSelect>("generations");
+
+	core_assert_msg(_axiom != nullptr, "TBEditField with name 'axiom' wasn't found");
+	core_assert_msg(_generations != nullptr, "TBInlineSelect with name 'generations' wasn't found");
 
 	if (_axiom == nullptr || _generations == nullptr) {
 		Close();
 		return;
 	}
 
-	LSystemHighlighter highlighter;
 	_axiom->GetStyleEdit()->SetSyntaxHighlighter(&highlighter);
 }
 
