@@ -1,6 +1,5 @@
 #include "PlantGenerator.h"
 
-#include "PagedVolumeWrapper.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 
