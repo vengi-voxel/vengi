@@ -2,6 +2,18 @@ WindowInfo
 	title L-System
 	position 500 0
 
-TBLayout: distribution: gravity, axis: y
-	TBEditField: id: lsystem_axiom, gravity: left right
-	TBButton: text: Ok, id: lsystem, autofocus: 1
+TBLayout: distribution: available, axis: y, gravity: all
+	TBLayout: axis: x, gravity: left right top, size: available
+		TBTextField: text: Axiom, gravity: left, size: gravity
+			lp: width: 100
+		TBWidget: gravity: left right, size: available
+		TBEditField: id: axiom, gravity: right, size: available
+			gravity: left right
+	TBLayout: axis: x, gravity: left right top, size: available
+		TBTextField: text: Generations, gravity: left
+			lp: width: 100
+		TBWidget: gravity: left
+			lp: width: 20
+		TBInlineSelect: id: generations, min: 1, max: 100, value: 2, gravity: left right
+	TBButton: text: Ok, id: ok, autofocus: 1, gravity: right, size: gravity
+		lp: width: 100

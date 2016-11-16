@@ -91,38 +91,38 @@ static bool evaluateState(LSystemState* state, Volume& volume, const LSystemCont
 	switch (c) {
 	case LSystemAlphabet::X_FORWARD:
 		for (int i = 0; i < state->xFactor; ++i) {
-			++state->pos.x;
 			generateVoxel(state, volume, ctx);
+			++state->pos.x;
 		}
 		return true;
 	case LSystemAlphabet::X_BACK:
 		for (int i = 0; i < state->xFactor; ++i) {
-			--state->pos.x;
 			generateVoxel(state, volume, ctx);
+			--state->pos.x;
 		}
 		return true;
 	case LSystemAlphabet::Y_UPWARDS:
 		for (int i = 0; i < state->yFactor; ++i) {
-			++state->pos.y;
 			generateVoxel(state, volume, ctx);
+			++state->pos.y;
 		}
 		return true;
 	case LSystemAlphabet::Y_DOWN:
 		for (int i = 0; i < state->yFactor; ++i) {
-			--state->pos.y;
 			generateVoxel(state, volume, ctx);
+			--state->pos.y;
 		}
 		return true;
 	case LSystemAlphabet::Z_FORWARD:
 		for (int i = 0; i < state->zFactor; ++i) {
-			++state->pos.z;
 			generateVoxel(state, volume, ctx);
+			++state->pos.z;
 		}
 		return true;
 	case LSystemAlphabet::Z_BACK:
 		for (int i = 0; i < state->zFactor; ++i) {
-			--state->pos.z;
 			generateVoxel(state, volume, ctx);
+			--state->pos.z;
 		}
 		return true;
 	case LSystemAlphabet::STATEPUSH:

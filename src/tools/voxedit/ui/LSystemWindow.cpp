@@ -4,33 +4,60 @@
 
 #include "LSystemWindow.h"
 #include "voxel/generator/LSystemGenerator.h"
+#include "editorscene/EditorScene.h"
 
 namespace voxedit {
 
 namespace {
 voxel::lsystem::LSystemContext ctx;
+
+class LSystemHighlighter : public tb::TBSyntaxHighlighter {
+public:
+	void OnBeforePaintFragment(const tb::TBPaintProps *props, tb::TBTextFragment *fragment) override {
+		Log::info("Render %s", props->block->str.CStr());
+	}
+
+	void OnAfterPaintFragment(const tb::TBPaintProps *props, tb::TBTextFragment *fragment) override {
+	}
+};
+
 }
 
-LSystemWindow::LSystemWindow(ui::Window* window) :
-		Super(window) {
+LSystemWindow::LSystemWindow(ui::Window* window, EditorScene* scene) :
+		Super(window), _scene(scene) {
 	core_assert_always(loadResourceFile("ui/window/voxedit-lsystem.tb.txt"));
 }
 
-bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
-/*
-	tb::TBEditField* axiom = getWidgetByType<tb::TBEditField>("lsystem_axiom");
-	if (axiom != nullptr) {
-		const tb::TBStr& axiomStr = ev.target->GetText();
-		Log::info("execute lsystem %s", axiomStr.CStr());
-		ctx.axiom = axiomStr.CStr();
-		ctx.productionRules.emplace('A', ctx.axiom);
-		ctx.voxels.emplace('A', voxel::createVoxel(_paletteWidget->voxelType()));
-		ctx.generations = 2;
-		ctx.start = _scene->cursorPosition();
-		_scene->lsystem(ctx);
+void LSystemWindow::OnInflate(const tb::INFLATE_INFO &info) {
+	Super::OnInflate(info);
+	_axiom = getWidgetByType<tb::TBEditField>("axiom");
+	_generations = getWidgetByType<tb::TBInlineSelect>("generations");
+
+	if (_axiom == nullptr || _generations == nullptr) {
+		Close();
+		return;
 	}
-	*/
-	return Super::OnEvent(ev);
+
+	LSystemHighlighter highlighter;
+	_axiom->GetStyleEdit()->SetSyntaxHighlighter(&highlighter);
+}
+
+bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
+	if (ev.type != tb::EVENT_TYPE_CLICK) {
+		return Super::OnEvent(ev);
+	}
+	if (ev.target->GetID() != TBIDC("ok")) {
+		return Super::OnEvent(ev);
+	}
+	const tb::TBStr& axiomStr = _axiom->GetText();
+	ctx.axiom = axiomStr.CStr();
+	ctx.productionRules.emplace('A', ctx.axiom);
+	ctx.voxels.emplace('A', voxel::createVoxel(voxel::VoxelType::Grass1));
+	ctx.generations = _generations->GetValue();
+	ctx.start = _scene->cursorPosition();
+	Log::info("evaluate lsystem axiom %s with %i generations", ctx.axiom.c_str(), ctx.generations);
+	_scene->lsystem(ctx);
+	return true;
 }
 
 }

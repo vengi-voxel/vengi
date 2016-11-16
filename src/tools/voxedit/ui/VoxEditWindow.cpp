@@ -394,7 +394,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		}
 		return true;
 	} else if (ev.target->GetID() == TBIDC("dialog_lsystem")) {
-		new LSystemWindow(this);
+		new LSystemWindow(this, _scene);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);
