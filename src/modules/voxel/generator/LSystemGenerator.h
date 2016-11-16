@@ -36,7 +36,7 @@ enum LSystemAlphabet {
  * @brief The current state of the evaluation
  */
 struct LSystemState {
-	glm::ivec3 pos;
+	glm::vec4 pos;
 	char lastVoxelType = '\0';
 
 	// how many voxels should be generated in each direction when the axiom evaluation
@@ -81,7 +81,8 @@ static bool generateVoxel(const LSystemState* state, Volume& volume, const LSyst
 		return false;
 	}
 	const Voxel& voxel = i->second;
-	Log::trace("add voxel %c to %i:%i:%i\n", state->lastVoxelType, state->pos.x, state->pos.y, state->pos.z);
+	const glm::ivec3 pos(glm::round(state->pos));
+	Log::trace("add voxel %c to %i:%i:%i\n", state->lastVoxelType, pos.x, pos.y, pos.z);
 	volume.setVoxel(state->pos, voxel);
 	return true;
 }
@@ -212,7 +213,7 @@ static bool expand_r(LSystemState* state, Volume& volume, const LSystemContext& 
 template<class Volume>
 bool generate(Volume& volume, const LSystemContext& ctx, core::Random& random) {
 	LSystemState initState;
-	initState.pos = ctx.start;
+	initState.pos = glm::vec4(ctx.start, 1.0f);
 	return expand(&initState, volume, ctx, random, ctx.axiom, ctx.generations);
 }
 
