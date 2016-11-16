@@ -5,16 +5,13 @@
 #include "WorldRenderer.h"
 #include "core/Color.h"
 #include "video/GLFunc.h"
-#include "video/ScopedViewPort.h"
 #include "voxel/Spiral.h"
 #include "core/App.h"
 #include "noise/SimplexNoise.h"
 #include "core/Var.h"
-#include <SDL.h>
-#include "voxel/polyvox/CubicSurfaceExtractor.h"
-#include "voxel/polyvox/RawVolume.h"
 #include "voxel/MaterialColor.h"
-#include "PlantDistributor.h"
+#include "frontend/PlantDistributor.h"
+#include "video/ScopedViewPort.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
 

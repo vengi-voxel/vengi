@@ -4,21 +4,16 @@
 
 #pragma once
 
-#include "ShapeGenerator.h"
 #include "voxel/BiomeManager.h"
 #include "TreeGenerator.h"
 #include "CloudGenerator.h"
-#include "LSystemGenerator.h"
-#include "core/Var.h"
-#include "core/GameConfig.h"
 #include "core/Trace.h"
 #include "noise/SimplexNoise.h"
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/WorldContext.h"
 
 namespace voxel {
-
-struct WorldContext;
+namespace world {
 
 constexpr int WORLDGEN_TREES = 1 << 0;
 constexpr int WORLDGEN_CLOUDS = 1 << 1;
@@ -26,10 +21,9 @@ constexpr int WORLDGEN_CLOUDS = 1 << 1;
 constexpr int WORLDGEN_CLIENT = WORLDGEN_TREES | WORLDGEN_CLOUDS;
 constexpr int WORLDGEN_SERVER = WORLDGEN_TREES;
 
-namespace world {
-
 template<class Volume>
 extern void createWorld(WorldContext& worldCtx, Volume& volume, BiomeManager& biomManager, long seed, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
+	core_trace_scoped(WorldGeneration);
 	const Region& region = volume.getRegion();
 	// TODO: find a better way to add the current chunk to the seed
 	core::Random random(seed + region.getLowerCorner().x * region.getLowerCorner().z);

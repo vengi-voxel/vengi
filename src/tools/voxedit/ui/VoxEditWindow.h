@@ -8,7 +8,7 @@
 #include "core/Common.h"
 #include "core/String.h"
 #include "editorscene/Axis.h"
-#include "voxel/WorldContext.h"
+#include "voxel/TreeContext.h"
 #include "editorscene/Action.h"
 #include "editorscene/SelectType.h"
 

@@ -3,13 +3,13 @@
  */
 
 #include "WorldPersister.h"
-#include "WorldContext.h"
-#include <zlib.h>
+#include "voxel/polyvox/PagedVolumeWrapper.h"
+#include "voxel/Constants.h"
 #include "core/App.h"
 #include "core/Common.h"
 #include "core/String.h"
 #include "core/ByteStream.h"
-#include "Constants.h"
+#include <zlib.h>
 
 namespace voxel {
 

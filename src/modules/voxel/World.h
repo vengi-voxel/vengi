@@ -24,6 +24,7 @@
 #include "core/Var.h"
 #include "core/Random.h"
 #include "core/Log.h"
+#include <unordered_set>
 
 namespace voxel {
 
@@ -35,6 +36,19 @@ struct ChunkMeshData {
 	Mesh opaqueMesh;
 	Mesh waterMesh;
 };
+
+struct IVec3HashEquals {
+	size_t operator()(const glm::ivec3& k) const {
+		// TODO: find a better hash function - we have a lot of collisions here
+		return std::hash<int>()(k.x) ^ std::hash<int>()(k.y) ^ std::hash<int>()(k.z);
+	}
+
+	bool operator()(const glm::ivec3& a, const glm::ivec3& b) const {
+		return a == b;
+	}
+};
+
+typedef std::unordered_set<glm::ivec3, IVec3HashEquals> PositionSet;
 
 class World {
 public:

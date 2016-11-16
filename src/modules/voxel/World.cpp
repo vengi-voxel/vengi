@@ -8,16 +8,16 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "io/File.h"
-#include "LodCreator.h"
 #include "core/Random.h"
 #include "core/Concurrency.h"
-#include "generator/WorldGenerator.h"
-#include <SDL.h>
-#include "polyvox/AStarPathfinder.h"
-#include "polyvox/CubicSurfaceExtractor.h"
-#include "polyvox/Voxel.h"
-#include "Constants.h"
-#include "IsQuadNeeded.h"
+#include "voxel/LodCreator.h"
+#include "voxel/generator/WorldGenerator.h"
+#include "voxel/polyvox/AStarPathfinder.h"
+#include "voxel/polyvox/CubicSurfaceExtractor.h"
+#include "voxel/polyvox/PagedVolumeWrapper.h"
+#include "voxel/polyvox/Voxel.h"
+#include "voxel/Constants.h"
+#include "voxel/IsQuadNeeded.h"
 #include "voxel/Spiral.h"
 
 namespace voxel {
@@ -195,7 +195,7 @@ void World::createUnderground(PagedVolumeWrapper& ctx) {
 
 void World::create(PagedVolumeWrapper& ctx) {
 	core_trace_scoped(CreateWorld);
-	const int flags = _clientData ? WORLDGEN_CLIENT : WORLDGEN_SERVER;
+	const int flags = _clientData ? world::WORLDGEN_CLIENT : world::WORLDGEN_SERVER;
 #if DEBUG_SCENE == 1
 	auto& _volData =  *_volumeData;
 	_volData.setVoxel(1, 5, 1, createVoxel(21));

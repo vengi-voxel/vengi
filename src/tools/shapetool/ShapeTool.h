@@ -48,7 +48,6 @@ public:
 	~ShapeTool();
 
 	void reset(const voxel::WorldContext& ctx);
-	void placeTree(const voxel::TreeContext& ctx);
 	void regenerate(const glm::ivec2& pos);
 
 	core::AppState onInit() override;

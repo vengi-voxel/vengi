@@ -8,6 +8,7 @@ set(SRCS
 	BiomeManager.h BiomeManager.cpp
 	LodCreator.h
 	Spiral.h
+	TreeContext.h
 	Constants.h
 	MaterialColor.h MaterialColor.cpp
 	World.cpp World.h
