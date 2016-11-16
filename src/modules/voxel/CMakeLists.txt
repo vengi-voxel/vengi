@@ -22,8 +22,6 @@ set(SRCS
 	generator/PlantGenerator.h generator/PlantGenerator.cpp
 	generator/PlanetGenerator.h generator/PlanetGenerator.cpp
 	generator/PagedVolumeWrapper.h
-	generator/RawVolumeWrapper.h
-	generator/RawVolumeMoveWrapper.h
 	polyvox/Array.h
 	polyvox/AStarPathfinder.h
 	polyvox/AStarPathfinderImpl.h
@@ -32,6 +30,8 @@ set(SRCS
 	polyvox/Morton.h
 	polyvox/PagedVolume.h polyvox/PagedVolume.cpp
 	polyvox/RawVolume.h polyvox/RawVolume.cpp
+	polyvox/RawVolumeWrapper.h
+	polyvox/RawVolumeMoveWrapper.h
 	polyvox/Raycast.h
 	polyvox/Picking.h
 	polyvox/Region.h polyvox/Region.cpp

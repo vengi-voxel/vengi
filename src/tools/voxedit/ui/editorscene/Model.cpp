@@ -3,8 +3,8 @@
 #include "voxel/polyvox/VolumeCropper.h"
 #include "voxel/polyvox/VolumeRotator.h"
 #include "voxel/polyvox/VolumeMover.h"
-#include "voxel/generator/RawVolumeWrapper.h"
-#include "voxel/generator/RawVolumeMoveWrapper.h"
+#include "voxel/polyvox//RawVolumeWrapper.h"
+#include "voxel/polyvox//RawVolumeMoveWrapper.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
 #include "tool/Crop.h"
@@ -202,7 +202,7 @@ void Model::rotate(int angleX, int angleY, int angleZ) {
 void Model::move(int x, int y, int z) {
 	voxel::RawVolume* model = modelVolume();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->getRegion());
-	voxel::generate::RawVolumeMoveWrapper wrapper(newVolume);
+	voxel::RawVolumeMoveWrapper wrapper(newVolume);
 	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z), voxel::createVoxel(voxel::VoxelType::Air));
 	markUndo();
 	setNewVolume(newVolume);
@@ -229,7 +229,7 @@ void Model::copy() {
 void Model::paste() {
 	const voxel::Region& srcRegion = _cursorVolume->getRegion();
 	const voxel::Region destRegion = srcRegion + _cursorPos;
-	voxel::generate::RawVolumeWrapper wrapper(_modelVolume);
+	voxel::RawVolumeWrapper wrapper(_modelVolume);
 	voxel::mergeRawVolumes(&wrapper, _cursorVolume, destRegion, srcRegion);
 }
 
@@ -294,13 +294,13 @@ bool Model::extractVolume() {
 
 void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
 	core::Random random;
-	voxel::generate::RawVolumeWrapper wrapper(_modelVolume);
+	voxel::RawVolumeWrapper wrapper(_modelVolume);
 	voxel::lsystem::generate(wrapper, lsystemCtx, random);
 }
 
 void Model::createTree(voxel::TreeContext ctx) {
 	core::Random random;
-	voxel::generate::RawVolumeWrapper wrapper(_modelVolume);
+	voxel::RawVolumeWrapper wrapper(_modelVolume);
 	ctx.pos = _cursorPos;
 	voxel::tree::createTree(wrapper, ctx, random);
 }
@@ -337,7 +337,7 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 			if (!destRegion.containsPoint(upper)) {
 				upper = regionUpperCorner;
 			}
-			voxel::generate::RawVolumeWrapper wrapper(_cursorPositionVolume);
+			voxel::RawVolumeWrapper wrapper(_cursorPositionVolume);
 			voxel::mergeRawVolumes(&wrapper, cropped.get(), voxel::Region(lower, upper), srcRegion);
 		}
 	} else {

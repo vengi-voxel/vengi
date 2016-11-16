@@ -7,7 +7,6 @@
 #include "voxel/polyvox/RawVolume.h"
 
 namespace voxel {
-namespace generate {
 
 /**
  * @brief A wrapper for a RawVolume that performs a sanity check for the setVoxel call. But in relation to
@@ -74,5 +73,4 @@ public:
 	}
 };
 
-}
 }
