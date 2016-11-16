@@ -14,6 +14,9 @@
 namespace voxel {
 namespace lsystem {
 
+/**
+ * @brief Valid characters that can be used in an axiom
+ */
 enum LSystemAlphabet {
 	X_FORWARD = 'X',
 	X_BACK = 'x',
@@ -21,33 +24,42 @@ enum LSystemAlphabet {
 	Y_DOWN = 'y',
 	Z_FORWARD = 'Z',
 	Z_BACK = 'z',
+	// state stack modifiers
 	STATEPUSH = '[',
 	STATEPOP = ']',
+	// begin of a section that might or might not be included in the evaluation
 	RANDOMBEGIN = '(',
 	RANDOMEND = ')'
 };
 
+/**
+ * @brief The current state of the evaluation
+ */
 struct LSystemState {
 	glm::ivec3 pos;
 	char lastVoxelType = '\0';
 };
 
-// https://en.wikipedia.org/wiki/L-system
+/**
+ * @brief The context defines what is going to be generated in the evaluation phase.
+ * https://en.wikipedia.org/wiki/L-system
+ */
 struct LSystemContext {
-	// the initial state (e.g. ABA)
+	/** the initial state (e.g. ABA) */
 	std::string axiom;
 
-	// e.g. A -> AB, B -> A
-	// everything that doesn't have a production rule is a terminal char
+	/** everything that doesn't have a production rule is a terminal char
+	 * e.g. A -> AB, B -> A
+	 */
 	std::unordered_map<char, std::string> productionRules;
 
-	// each type is mapped to a voxel
+	/** each type is mapped to a voxel */
 	std::unordered_map<char, Voxel> voxels;
 
-	// how often should we evaluate?
+	/** how often should we evaluate and apply production rules recursivly ? */
 	int generations = 1;
 
-	// where to put the first voxel at
+	/** where to put the first voxel at */
 	glm::ivec3 start;
 
 	int xFactor = 1;
@@ -165,10 +177,8 @@ static bool expand(LSystemState* state, Volume& volume, const LSystemContext& ct
 					}
 				}
 			}
-		} else {
-			if (!expand_r(currentState, volume, ctx, random, chr, generations)) {
-				return false;
-			}
+		} else if (!expand_r(currentState, volume, ctx, random, chr, generations)) {
+			return false;
 		}
 	}
 	return true;
@@ -183,10 +193,13 @@ static bool expand_r(LSystemState* state, Volume& volume, const LSystemContext& 
 	if (!evaluateState(state, volume, ctx, c)) {
 		return false;
 	}
+	// check whether there are further production rules for this character.
+	// if there are none, quit the evaluation here
 	auto iter = ctx.productionRules.find(c);
 	if (iter == ctx.productionRules.end()) {
 		return true;
 	}
+	// evaluate the new production rule
 	return expand(state, volume, ctx, random, iter->second, generations - 1);
 }
 
