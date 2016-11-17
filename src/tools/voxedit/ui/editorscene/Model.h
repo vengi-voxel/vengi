@@ -10,6 +10,7 @@
 #include "ShapeHandler.h"
 #include "UndoHandler.h"
 #include "Axis.h"
+#include "voxel/WorldContext.h"
 #include <vector>
 
 namespace voxedit {
@@ -84,7 +85,7 @@ public:
 	bool setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel);
 	bool dirty() const;
 	bool empty() const;
-	float size() const;
+	int size() const;
 
 	void setNewVolume(voxel::RawVolume* volume);
 
@@ -114,6 +115,7 @@ public:
 	void noise(int octaves, float frequency, float persistence);
 	void lsystem(const voxel::lsystem::LSystemContext& lsystemCtx);
 	void createTree(voxel::TreeContext ctx);
+	void world(const voxel::WorldContext& ctx);
 
 	bool extractVolume();
 	bool extractSelectionVolume();
@@ -264,7 +266,7 @@ inline bool Model::dirty() const {
 	return _dirty;
 }
 
-inline float Model::size() const {
+inline int Model::size() const {
 	return _size;
 }
 

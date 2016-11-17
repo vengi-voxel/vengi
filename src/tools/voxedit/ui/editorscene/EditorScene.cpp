@@ -216,6 +216,10 @@ void EditorScene::lsystem(const voxel::lsystem::LSystemContext& ctx) {
 	m().lsystem(ctx);
 }
 
+void EditorScene::world(const voxel::WorldContext& ctx) {
+	m().world(ctx);
+}
+
 void EditorScene::createTree(const voxel::TreeContext& ctx) {
 	m().createTree(ctx);
 }

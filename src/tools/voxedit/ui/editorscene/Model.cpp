@@ -6,6 +6,7 @@
 #include "voxel/polyvox//RawVolumeWrapper.h"
 #include "voxel/polyvox//RawVolumeMoveWrapper.h"
 #include "voxel/generator/NoiseGenerator.h"
+#include "voxel/generator/WorldGenerator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
 #include "tool/Crop.h"
@@ -296,19 +297,31 @@ bool Model::extractVolume() {
 void Model::noise(int octaves, float frequency, float persistence) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
+	markUndo();
 	voxel::noise::generate(wrapper, octaves, frequency, persistence, random);
 }
 
 void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
+	markUndo();
 	voxel::lsystem::generate(wrapper, lsystemCtx, random);
+}
+
+void Model::world(const voxel::WorldContext& ctx) {
+	markUndo();
+	const voxel::Region region(glm::ivec3(0), glm::ivec3(127, 63, 127));
+	setNewVolume(new voxel::RawVolume(region));
+	voxel::BiomeManager mgr;
+	voxel::RawVolumeWrapper wrapper(_modelVolume);
+	voxel::world::createWorld(ctx, wrapper, mgr, 1L, voxel::world::WORLDGEN_CLIENT, 0, 0);
 }
 
 void Model::createTree(voxel::TreeContext ctx) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
 	ctx.pos = _cursorPos;
+	markUndo();
 	voxel::tree::createTree(wrapper, ctx, random);
 }
 

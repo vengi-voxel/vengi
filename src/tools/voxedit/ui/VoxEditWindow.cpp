@@ -1,6 +1,7 @@
 #include "VoxEditWindow.h"
 #include "LSystemWindow.h"
 #include "NoiseWindow.h"
+#include "WorldWindow.h"
 #include "editorscene/EditorScene.h"
 #include "palette/PaletteWidget.h"
 #include "../VoxEdit.h"
@@ -402,6 +403,9 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (ev.target->GetID() == TBIDC("dialog_noise")) {
 		new NoiseWindow(this, _scene);
+		return true;
+	} else if (ev.target->GetID() == TBIDC("dialog_world")) {
+		new WorldWindow(this, _scene);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);

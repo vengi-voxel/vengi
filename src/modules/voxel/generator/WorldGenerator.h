@@ -22,7 +22,7 @@ constexpr int WORLDGEN_CLIENT = WORLDGEN_TREES | WORLDGEN_CLOUDS;
 constexpr int WORLDGEN_SERVER = WORLDGEN_TREES;
 
 template<class Volume>
-extern void createWorld(WorldContext& worldCtx, Volume& volume, BiomeManager& biomManager, long seed, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
+extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManager& biomManager, long seed, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
 	core_trace_scoped(WorldGeneration);
 	const Region& region = volume.getRegion();
 	// TODO: find a better way to add the current chunk to the seed
@@ -39,12 +39,12 @@ extern void createWorld(WorldContext& worldCtx, Volume& volume, BiomeManager& bi
 	for (int z = lowerZ; z < lowerZ + depth; ++z) {
 		for (int x = lowerX; x < lowerX + width; ++x) {
 			const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
-			const float landscapeNoise = noise::Simplex::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
+			const float landscapeNoise = ::noise::Simplex::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 					worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
-			const float noiseNormalized = noise::norm(landscapeNoise);
-			const float mountainNoise = noise::Simplex::Noise2D(noisePos2d, worldCtx.mountainNoiseOctaves,
+			const float noiseNormalized = ::noise::norm(landscapeNoise);
+			const float mountainNoise = ::noise::Simplex::Noise2D(noisePos2d, worldCtx.mountainNoiseOctaves,
 			worldCtx.mountainNoisePersistence, worldCtx.mountainNoiseFrequency, worldCtx.mountainNoiseAmplitude);
-			const float mountainNoiseNormalized = noise::norm(mountainNoise);
+			const float mountainNoiseNormalized = ::noise::norm(mountainNoise);
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
@@ -53,8 +53,8 @@ extern void createWorld(WorldContext& worldCtx, Volume& volume, BiomeManager& bi
 			voxels[0] = createVoxel(VoxelType::Dirt1);
 			for (int y = ni - 1; y >= 1; --y) {
 				const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
-				const float noiseVal = noise::norm(
-						noise::Simplex::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
+				const float noiseVal = ::noise::norm(
+						::noise::Simplex::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
 								worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
 				const float finalDensity = noiseNormalized + noiseVal;
 				if (finalDensity > worldCtx.caveDensityThreshold) {

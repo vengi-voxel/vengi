@@ -11,12 +11,9 @@ void generate(Volume& volume, int octaves, float frequency, float persistence, c
 	const Region& region = volume.getRegion();
 	Log::debug("Create new chunk at %i:%i:%i", region.getCentreX(), region.getCentreY(), region.getCentreZ());
 	const int width = region.getWidthInVoxels();
-	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
 	const int lowerX = region.getLowerX();
-	const int lowerY = region.getLowerY();
 	const int lowerZ = region.getLowerZ();
-	Voxel voxels[MAX_TERRAIN_HEIGHT];
 
 	const int noiseSeedOffsetX = random.random(0, 1000);
 	const int noiseSeedOffsetZ = random.random(0, 1000);

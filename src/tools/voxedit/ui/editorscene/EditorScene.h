@@ -8,6 +8,7 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/generator/LSystemGenerator.h"
 #include "voxel/generator/TreeGenerator.h"
+#include "voxel/WorldContext.h"
 #include "Shape.h"
 #include "Axis.h"
 #include "Action.h"
@@ -54,6 +55,7 @@ public:
 	void noise(int octaves, float frequency, float persistence);
 	void lsystem(const voxel::lsystem::LSystemContext& ctx);
 	void createTree(const voxel::TreeContext& ctx);
+	void world(const voxel::WorldContext& ctx);
 
 	const glm::ivec3& cursorPosition() const;
 	void setCursorPosition(const glm::ivec3& pos, bool force = false);
