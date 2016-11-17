@@ -111,6 +111,7 @@ public:
 
 	voxel::PickResult& result();
 
+	void noise(int octaves, float frequency, float persistence);
 	void lsystem(const voxel::lsystem::LSystemContext& lsystemCtx);
 	void createTree(voxel::TreeContext ctx);
 

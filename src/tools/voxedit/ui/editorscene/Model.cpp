@@ -5,6 +5,7 @@
 #include "voxel/polyvox/VolumeMover.h"
 #include "voxel/polyvox//RawVolumeWrapper.h"
 #include "voxel/polyvox//RawVolumeMoveWrapper.h"
+#include "voxel/generator/NoiseGenerator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QB2Format.h"
 #include "tool/Crop.h"
@@ -290,6 +291,12 @@ bool Model::extractVolume() {
 		return true;
 	}
 	return false;
+}
+
+void Model::noise(int octaves, float frequency, float persistence) {
+	core::Random random;
+	voxel::RawVolumeWrapper wrapper(_modelVolume);
+	voxel::noise::generate(wrapper, octaves, frequency, persistence, random);
 }
 
 void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {

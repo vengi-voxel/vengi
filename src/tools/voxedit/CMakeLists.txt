@@ -35,6 +35,7 @@ set(SRCS
 
 	ui/VoxEditWindow.h ui/VoxEditWindow.cpp
 	ui/LSystemWindow.h ui/LSystemWindow.cpp
+	ui/NoiseWindow.h ui/NoiseWindow.cpp
 
 	VoxEdit.h VoxEdit.cpp
 )

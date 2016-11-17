@@ -51,6 +51,7 @@ public:
 	void unselectAll();
 	void select(const glm::ivec3& pos);
 
+	void noise(int octaves, float frequency, float persistence);
 	void lsystem(const voxel::lsystem::LSystemContext& ctx);
 	void createTree(const voxel::TreeContext& ctx);
 

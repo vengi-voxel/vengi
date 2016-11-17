@@ -28,6 +28,7 @@ LSystemWindow::LSystemWindow(ui::Window* window, EditorScene* scene) :
 	core_assert_msg(_productionRules != nullptr, "TBSelectList with name 'productionrules' wasn't found");
 
 	if (_axiom == nullptr || _generations == nullptr || _productionRules == nullptr) {
+		Log::error("Not all needed widgets were found");
 		Close();
 		return;
 	}

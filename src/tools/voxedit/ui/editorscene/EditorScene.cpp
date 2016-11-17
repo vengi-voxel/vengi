@@ -208,6 +208,10 @@ bool EditorScene::loadModel(std::string_view file) {
 	return true;
 }
 
+void EditorScene::noise(int octaves, float frequency, float persistence) {
+	m().noise(octaves, frequency, persistence);
+}
+
 void EditorScene::lsystem(const voxel::lsystem::LSystemContext& ctx) {
 	m().lsystem(ctx);
 }
