@@ -103,6 +103,7 @@ private:
 	void move(int x, int y, int z);
 	void crop();
 	void extend(int size = 1);
+	void setCursorPosition(int x, int y, int z);
 	void toggleviewport();
 	void togglefreelook();
 	void movemode();

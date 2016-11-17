@@ -157,6 +157,10 @@ void VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringIt
 	items.AddItem(item);
 }
 
+void VoxEditWindow::setCursorPosition(int x, int y, int z) {
+	_scene->setCursorPosition(glm::ivec3(x, y, z), true);
+}
+
 void VoxEditWindow::rotate(int x, int y, int z) {
 	Log::debug("execute rotate by %i:%i:%i", x, y, z);
 	_scene->rotate(x, y, z);

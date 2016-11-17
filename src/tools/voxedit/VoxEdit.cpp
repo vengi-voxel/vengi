@@ -115,6 +115,17 @@ core::AppState VoxEdit::onInit() {
 		this->_mainWindow->rotate(x, y, z);
 	}).setHelp("Rotate voxels by the given angles (in degree)");
 
+	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
+		if (args.size() != 3) {
+			Log::info("Expected to get x, y and z coordinates");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		this->_mainWindow->setCursorPosition(x, y, z);
+	}).setHelp("Set the cursor to the specified position");
+
 	COMMAND_CALL("new", newFile(), "Create a new scene");
 
 	COMMAND_FILE(save, "Save the current state to the given file");
