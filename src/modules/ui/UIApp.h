@@ -54,7 +54,7 @@ protected:
 
 	bool _quit;
 	tb::TBWidget _root;
-	int fps = 0;
+	int _fps = 0;
 	uint32_t _frameCounter = 0;
 	double _frameCounterResetRime = 0.0;
 	Console _console;

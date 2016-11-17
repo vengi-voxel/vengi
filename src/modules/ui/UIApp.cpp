@@ -490,6 +490,16 @@ core::AppState UIApp::onRunning() {
 			core_trace_scoped(UIAppBeforeUI);
 			beforeUI();
 		}
+
+		++_frameCounter;
+
+		double time = _now;
+		if (time > _frameCounterResetRime + 1000) {
+			_fps = (int) round((_frameCounter / (time - _frameCounterResetRime)) * 1000);
+			_frameCounterResetRime = time;
+			_frameCounter = 0;
+		}
+
 		const bool renderUI = _renderUI->boolVal();
 		if (renderUI) {
 			core_trace_scoped(UIAppUpdateUI);
@@ -500,16 +510,7 @@ core::AppState UIApp::onRunning() {
 			_renderer.BeginPaint(_dimension.x, _dimension.y);
 			_root.InvokePaint(tb::TBWidget::PaintProps());
 
-			++_frameCounter;
-
-			double time = tb::TBSystem::GetTimeMS();
-			if (time > _frameCounterResetRime + 1000) {
-				fps = (int) round((_frameCounter / (time - _frameCounterResetRime)) * 1000);
-				_frameCounterResetRime = time;
-				_frameCounter = 0;
-			}
-
-			enqueueShowStr(5, core::Color::White, "FPS: %d", fps);
+			enqueueShowStr(5, core::Color::White, "FPS: %d", _fps);
 		}
 		{
 			core_trace_scoped(UIAppAfterUI);
