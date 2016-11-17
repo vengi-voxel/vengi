@@ -237,30 +237,16 @@ void UIApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	_root.InvokePointerMove(x, y, getModifierKeys(), false);
 }
 
-void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
+void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	if (_console.onMouseButtonPress(x, y, button)) {
 		return;
 	}
 	if (button != SDL_BUTTON_LEFT) {
 		return;
 	}
-	static double lastTime = 0;
-	static int lastX = 0;
-	static int lastY = 0;
-	static int counter = 1;
-
-	const double time = tb::TBSystem::GetTimeMS();
-	if (time < lastTime + 600 && lastX == x && lastY == y) {
-		++counter;
-	} else {
-		counter = 1;
-	}
-	lastX = x;
-	lastY = y;
-	lastTime = time;
 
 	const tb::MODIFIER_KEYS modKeys = getModifierKeys();
-	_root.InvokePointerDown(x, y, counter, modKeys, false);
+	_root.InvokePointerDown(x, y, clicks, modKeys, false);
 }
 
 tb::MODIFIER_KEYS UIApp::getModifierKeys() const {

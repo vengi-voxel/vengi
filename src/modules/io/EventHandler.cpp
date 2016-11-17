@@ -59,7 +59,7 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 	case SDL_MOUSEBUTTONDOWN:
 		if (event.button.which == SDL_TOUCH_MOUSEID)
 			break;
-		mouseButtonPress(event.button.x, event.button.y, event.button.button);
+		mouseButtonPress(event.button.x, event.button.y, event.button.button, event.button.clicks);
 		break;
 	case SDL_MOUSEBUTTONUP:
 		if (event.button.which == SDL_TOUCH_MOUSEID)
@@ -261,9 +261,9 @@ void EventHandler::controllerButtonRelease(const std::string& button, uint32_t i
 	}
 }
 
-void EventHandler::mouseButtonPress(int32_t x, int32_t y, uint8_t button) {
+void EventHandler::mouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	for (IEventObserver* observer : _observers) {
-		observer->onMouseButtonPress(x, y, button);
+		observer->onMouseButtonPress(x, y, button, clicks);
 	}
 }
 

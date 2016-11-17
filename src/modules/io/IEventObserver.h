@@ -50,7 +50,7 @@ public:
 	virtual void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	}
 
-	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
+	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	}
 
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
