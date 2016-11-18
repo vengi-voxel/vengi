@@ -17,6 +17,9 @@ private:
 	tb::TBEditField* _axiom = nullptr;
 	tb::TBInlineSelect* _generations = nullptr;
 	tb::TBSelectList* _productionRules = nullptr;
+
+	void save(const std::string& file);
+	void load(const std::string& file);
 public:
 	LSystemWindow(ui::Window* window, EditorScene* scene);
 

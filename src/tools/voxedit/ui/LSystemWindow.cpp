@@ -9,6 +9,7 @@
 #include "lsystem/RuleItemSource.h"
 #include "lsystem/RuleItemWidget.h"
 #include "lsystem/SyntaxHighlighter.h"
+#include "ui/UIApp.h"
 
 namespace voxedit {
 
@@ -67,6 +68,12 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		} else if (ev.target->GetID() == TBIDC("add_rule")) {
 			productionRules.AddItem(new RuleItem("Ax", 'A'));
 			return true;
+		} else if (ev.target->GetID() == TBIDC("voxedit-load")) {
+			load(((ui::UIApp*)core::App::getInstance())->openDialog("txt"));
+			return true;
+		} else if (ev.target->GetID() == TBIDC("voxedit-save")) {
+			save(((ui::UIApp*)core::App::getInstance())->saveDialog("txt"));
+			return true;
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
 		if (ev.special_key == tb::TB_KEY_ESC) {
@@ -75,6 +82,29 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		}
 	}
 	return Super::OnEvent(ev);
+}
+
+void LSystemWindow::save(const std::string& file) {
+	if (file.empty()) {
+		return;
+	}
+
+	const tb::TBStr& axiom = _axiom->GetText();
+	const int generations = _generations->GetValue();
+	const int n = productionRules.GetNumItems();
+	for (int i = 0; i < n; ++i) {
+		RuleItem* item = productionRules.GetItem(i);
+		const char character = item->character();
+		const tb::TBStr& productionRule = item->str;
+		// TODO: save me... json?
+	}
+}
+
+void LSystemWindow::load(const std::string& file) {
+	if (file.empty()) {
+		return;
+	}
+	// TODO: load me
 }
 
 }
