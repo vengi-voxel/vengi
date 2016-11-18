@@ -12,6 +12,7 @@ set(SRCS
 	GLM.cpp GLM.h
 	IFactoryRegistry.h
 	Input.cpp Input.h
+	JSON.h json.hpp
 	Log.cpp Log.h
 	MemoryAllocator.h
 	MemGuard.cpp MemGuard.h
