@@ -22,7 +22,10 @@ void AbstractTest::SetUp() {
 }
 
 void AbstractTest::TearDown() {
+	// prevent cvars from begin saved and reloaded for the next fiture in the test
+	core::Var::shutdown();
 	delete _testApp;
+	_testApp = nullptr;
 }
 
 AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
