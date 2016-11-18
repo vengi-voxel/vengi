@@ -67,10 +67,12 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			Close();
 			return true;
 		} else if (ev.target->GetID() == TBIDC("lsystem_add_rule")) {
-			tb::TBWidget* w = getWidget("lsystem_add_rule_string");
-			if (w != nullptr) {
-				const tb::TBStr& str = w->GetText();
-				productionRules.AddItem(new RuleItem(str.CStr(), 'A'));
+			tb::TBWidget* wStr = getWidget("lsystem_add_rule_string");
+			tb::TBWidget* wChar = getWidget("lsystem_add_rule_character");
+			if (wStr != nullptr && wChar != nullptr) {
+				const tb::TBStr& str = wStr->GetText();
+				const tb::TBStr& character = wChar->GetText();
+				productionRules.AddItem(new RuleItem(str.CStr(), character[0]));
 			}
 			return true;
 		} else if (ev.target->GetID() == TBIDC("lsystem_load")) {
@@ -85,6 +87,14 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			Close();
 			return true;
 		}
+	} else if (ev.type == tb::EVENT_TYPE_CHANGED) {
+		if (ev.target->GetID() == TBIDC("lsystem_add_rule_character")) {
+			const tb::TBStr& str = ev.target->GetText();
+			if (str.Length() > 1) {
+				const char buf[] = {str[0], '\0'};
+				ev.target->SetText(buf);
+			}
+		}
 	}
 	return Super::OnEvent(ev);
 }
@@ -97,7 +107,7 @@ void LSystemWindow::save(const std::string& file) {
 	const tb::TBStr& axiom = _axiom->GetText();
 	const int generations = _generations->GetValue();
 	const int n = productionRules.GetNumItems();
-	std::vector<core::json> elements;
+	std::vector<core::json> rules;
 	for (int i = 0; i < n; ++i) {
 		RuleItem* item = productionRules.GetItem(i);
 		const char character = item->character();
@@ -107,12 +117,16 @@ void LSystemWindow::save(const std::string& file) {
 			{"character", buf},
 			{"rule", productionRule.CStr()}
 		};
-		elements.emplace_back(jsonRule);
+		rules.emplace_back(jsonRule);
 	}
+	std::vector<core::json> voxels;
+	// TODO: save voxels
+
 	core::json j = {
 		{"axiom", axiom.CStr()},
 		{"generations", generations},
-		{"rules", elements},
+		{"voxels", voxels},
+		{"rules", rules},
 	};
 	const std::string& jsonStr = j.dump(4);
 	if (!core::App::getInstance()->filesystem()->syswrite(file, jsonStr)) {
@@ -138,11 +152,22 @@ void LSystemWindow::load(const std::string& file) {
 		const int generations = j["generations"];
 		_generations->SetValue(generations);
 		productionRules.DeleteAllItems();
-		const auto& array = j["rules"];
-		for (auto& object: array) {
-			const std::string& chr = object["character"];
-			const std::string& rule = object["rule"];
+		const auto& rules = j["rules"];
+		for (auto& jsonRule: rules) {
+			const std::string& chr = jsonRule["character"];
+			const std::string& rule = jsonRule["rule"];
 			productionRules.AddItem(new RuleItem(rule.c_str(), chr[0]));
+		}
+		const auto& voxels = j["voxels"];
+		for (auto& jsonVoxel: voxels) {
+			const std::string& chr = jsonVoxel["character"];
+			const int rawValue = jsonVoxel["type"];
+			if (rawValue < 0 || rawValue >= std::enum_value(voxel::VoxelType::Max)) {
+				Log::warn("Skip %s with type %i", chr.c_str(), rawValue);
+				continue;
+			}
+			const voxel::VoxelType type = (voxel::VoxelType)rawValue;
+			// TODO: add voxels
 		}
 	} catch (...) {
 		Log::error("Failed to parse %s", file.c_str());

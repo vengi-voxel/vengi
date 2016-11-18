@@ -43,6 +43,11 @@ TBLayout: distribution: gravity, axis: y
 									TBSelectList: id: productionrules, gravity: left right top bottom
 									TBLayout: distribution: gravity
 										TBEditField
+											id lsystem_add_rule_character
+											gravity left
+											placeholder Character
+											lp: max-width: 30
+										TBEditField
 											id lsystem_add_rule_string
 											gravity left right
 											placeholder Name
