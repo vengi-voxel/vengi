@@ -26,11 +26,9 @@ set(SRCS
 	SunLight.h SunLight.cpp
 )
 set(LIB video)
-find_package(OpenGL REQUIRED)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} core image assimp zlib nativefiledialog ${OPENGL_LIBRARIES})
+target_link_libraries(${LIB} core image util assimp zlib nativefiledialog)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
-target_include_directories(${LIB} PUBLIC ${OPENGL_INCLUDE_DIRS})
 
 gtest_suite_files(tests
 	tests/ShaderTest.cpp

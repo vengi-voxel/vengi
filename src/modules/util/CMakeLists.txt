@@ -4,6 +4,7 @@ set(SRCS
 	EMailValidator.h
 	KeybindingParser.h
 	CommandHandler.h CommandHandler.cpp
+	KeybindingHandler.h KeybindingHandler.cpp
 )
 set(LIB util)
 add_library(${LIB} ${SRCS})
