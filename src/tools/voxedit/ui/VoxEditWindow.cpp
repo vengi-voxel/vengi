@@ -753,7 +753,7 @@ void VoxEditWindow::quit() {
 
 bool VoxEditWindow::save(std::string_view file) {
 	if (file.empty()) {
-		const std::string& f = _voxedit->saveDialog("vox,qbt");
+		const std::string& f = _voxedit->saveDialog("vox,qbt,qb");
 		if (f.empty()) {
 			return false;
 		}
@@ -766,7 +766,7 @@ bool VoxEditWindow::save(std::string_view file) {
 bool VoxEditWindow::voxelize(std::string_view file) {
 	std::string f;
 	if (file.empty()) {
-		f = _voxedit->openDialog("vox,qbt");
+		f = _voxedit->openDialog("vox,qbt,qb");
 		if (f.empty()) {
 			return false;
 		}
@@ -819,7 +819,7 @@ void VoxEditWindow::resetcamera() {
 bool VoxEditWindow::load(std::string_view file) {
 	std::string f;
 	if (file.empty()) {
-		f = _voxedit->openDialog("vox,qbt");
+		f = _voxedit->openDialog("vox,qbt,qb");
 		if (f.empty()) {
 			return false;
 		}
