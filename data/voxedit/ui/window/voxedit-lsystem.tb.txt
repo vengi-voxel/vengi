@@ -7,9 +7,9 @@ TBLayout: distribution: gravity, axis: y
 		TBLayout: distribution: gravity, axis: y
 			TBLayout: distribution: gravity
 				TBLayout: distribution: gravity, gravity: left right
-					TBButton: gravity: left, id: load, text: Load
+					TBButton: gravity: left, id: lsystem_load, text: Load
 						TBSkinImage: skin: voxedit-load
-					TBButton: gravity: left, id: save, text: Save
+					TBButton: gravity: left, id: lsystem_save, text: Save
 						TBSkinImage: skin: voxedit-save
 					TBLayout: gravity: left right
 						TBWidget
@@ -18,7 +18,7 @@ TBLayout: distribution: gravity, axis: y
 
 			TBLayout: distribution: gravity, position: top
 				TBLayout: distribution: gravity, axis: y
-					TBLayout: distribution: gravity, id: editorcontainer
+					TBLayout: distribution: gravity
 						TBLayout: distribution: gravity, axis: y
 							TBLayout: axis: x, distribution: gravity
 								TBTextField: text: Axiom, gravity: left
@@ -43,11 +43,11 @@ TBLayout: distribution: gravity, axis: y
 									TBSelectList: id: productionrules, gravity: left right top bottom
 									TBLayout: distribution: gravity
 										TBEditField
-											id add_name
+											id lsystem_add_rule_string
 											gravity left right
 											placeholder Name
 										TBButton
-											id add_rule
+											id lsystem_add_rule
 											text Add
-							TBButton: text: Ok, id: ok, autofocus: 1, gravity: left right, size: gravity
-							TBButton: text: Cancel, id: cancel, gravity: left right, size: gravity
+							TBButton: text: Ok, id: lsystem_ok, autofocus: 1, gravity: left right, size: gravity
+							TBButton: text: Cancel, id: lsystem_cancel, gravity: left right, size: gravity

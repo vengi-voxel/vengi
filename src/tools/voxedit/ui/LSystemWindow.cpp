@@ -10,6 +10,7 @@
 #include "lsystem/RuleItemWidget.h"
 #include "lsystem/SyntaxHighlighter.h"
 #include "ui/UIApp.h"
+#include "core/JSON.h"
 
 namespace voxedit {
 
@@ -45,7 +46,7 @@ LSystemWindow::LSystemWindow(ui::Window* window, EditorScene* scene) :
 
 bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_CLICK) {
-		if (ev.target->GetID() == TBIDC("ok")) {
+		if (ev.target->GetID() == TBIDC("lsystem_ok")) {
 			const tb::TBStr& axiomStr = _axiom->GetText();
 			ctx.axiom = axiomStr.CStr();
 			const int n = productionRules.GetNumItems();
@@ -62,16 +63,20 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			Log::info("evaluate lsystem axiom %s with %i generations", ctx.axiom.c_str(), ctx.generations);
 			_scene->lsystem(ctx);
 			return true;
-		} else if (ev.target->GetID() == TBIDC("cancel")) {
+		} else if (ev.target->GetID() == TBIDC("lsystem_cancel")) {
 			Close();
 			return true;
-		} else if (ev.target->GetID() == TBIDC("add_rule")) {
-			productionRules.AddItem(new RuleItem("Ax", 'A'));
+		} else if (ev.target->GetID() == TBIDC("lsystem_add_rule")) {
+			tb::TBWidget* w = getWidget("lsystem_add_rule_string");
+			if (w != nullptr) {
+				const tb::TBStr& str = w->GetText();
+				productionRules.AddItem(new RuleItem(str.CStr(), 'A'));
+			}
 			return true;
-		} else if (ev.target->GetID() == TBIDC("voxedit-load")) {
+		} else if (ev.target->GetID() == TBIDC("lsystem_load")) {
 			load(((ui::UIApp*)core::App::getInstance())->openDialog("txt"));
 			return true;
-		} else if (ev.target->GetID() == TBIDC("voxedit-save")) {
+		} else if (ev.target->GetID() == TBIDC("lsystem_save")) {
 			save(((ui::UIApp*)core::App::getInstance())->saveDialog("txt"));
 			return true;
 		}
@@ -92,19 +97,56 @@ void LSystemWindow::save(const std::string& file) {
 	const tb::TBStr& axiom = _axiom->GetText();
 	const int generations = _generations->GetValue();
 	const int n = productionRules.GetNumItems();
+	std::vector<core::json> elements;
 	for (int i = 0; i < n; ++i) {
 		RuleItem* item = productionRules.GetItem(i);
 		const char character = item->character();
 		const tb::TBStr& productionRule = item->str;
-		// TODO: save me... json?
+		const char buf[] = {character, '\0'};
+		const core::json jsonRule = {
+			{"character", buf},
+			{"rule", productionRule.CStr()}
+		};
+		elements.emplace_back(jsonRule);
 	}
+	core::json j = {
+		{"axiom", axiom.CStr()},
+		{"generations", generations},
+		{"rules", elements},
+	};
+	const std::string& jsonStr = j.dump(4);
+	if (!core::App::getInstance()->filesystem()->syswrite(file, jsonStr)) {
+		Log::error("Failed to write file %s", file.c_str());
+	} else {
+		Log::info("Saved file %s", file.c_str());
+	}
+	Log::info("%s", jsonStr.c_str());
 }
 
 void LSystemWindow::load(const std::string& file) {
 	if (file.empty()) {
 		return;
 	}
-	// TODO: load me
+	const std::string& jsonStr = core::App::getInstance()->filesystem()->load(file);
+	if (jsonStr.empty()) {
+		return;
+	}
+	try {
+		core::json j = core::json::parse(jsonStr);
+		const std::string axiom = j["axiom"];
+		_axiom->SetText(axiom.c_str());
+		const int generations = j["generations"];
+		_generations->SetValue(generations);
+		productionRules.DeleteAllItems();
+		const auto& array = j["rules"];
+		for (auto& object: array) {
+			const std::string& chr = object["character"];
+			const std::string& rule = object["rule"];
+			productionRules.AddItem(new RuleItem(rule.c_str(), chr[0]));
+		}
+	} catch (...) {
+		Log::error("Failed to parse %s", file.c_str());
+	}
 }
 
 }
