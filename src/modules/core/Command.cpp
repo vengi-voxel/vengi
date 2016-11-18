@@ -109,6 +109,11 @@ bool Command::execute(const std::string& command, const CmdArgs& args) {
 	return true;
 }
 
+void Command::shutdown() {
+	ScopedWriteLock lock(_lock);
+	_cmds.clear();
+}
+
 void Command::unregisterCommand(const std::string& name) {
 	ScopedWriteLock lock(_lock);
 	_cmds.erase(name);

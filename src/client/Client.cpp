@@ -50,10 +50,6 @@ Client::Client(const video::MeshPoolPtr& meshPool, const network::NetworkPtr& ne
 }
 
 Client::~Client() {
-	core::Command::unregisterCommand("+move_right");
-	core::Command::unregisterCommand("+move_left");
-	core::Command::unregisterCommand("+move_upt");
-	core::Command::unregisterCommand("+move_down");
 }
 
 void Client::sendMovement() {

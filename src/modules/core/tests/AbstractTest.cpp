@@ -5,6 +5,7 @@
 #include "AbstractTest.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "core/Command.h"
 
 extern char **_argv;
 extern int _argc;
@@ -21,7 +22,6 @@ void AbstractTest::SetUp() {
 }
 
 void AbstractTest::TearDown() {
-	core::Var::shutdown();
 	delete _testApp;
 }
 

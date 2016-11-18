@@ -44,8 +44,10 @@ Trace::Trace(uint16_t port) :
 }
 
 Trace::~Trace() {
-	rmt_DestroyGlobalInstance(_remotery);
-	_remotery = nullptr;
+	if (_remotery != nullptr) {
+		rmt_DestroyGlobalInstance(_remotery);
+		_remotery = nullptr;
+	}
 #if USE_EMSCTRACE
 	emscripten_trace_close();
 #endif

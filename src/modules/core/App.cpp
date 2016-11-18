@@ -356,12 +356,8 @@ AppState App::onCleanup() {
 		Log::warn("don't save the config variables");
 	}
 
-	core::Command::unregisterCommand("set");
-	core::Command::unregisterCommand("varclearhistory");
-	core::Command::unregisterCommand("toggle");
-	core::Command::unregisterCommand("show");
-	core::Command::unregisterCommand("cvarlist");
-	core::Command::unregisterCommand("cmdlist");
+	core::Command::shutdown();
+	core::Var::shutdown();
 
 	const SDL_AssertData *item = SDL_GetAssertionReport();
 	while (item != nullptr) {

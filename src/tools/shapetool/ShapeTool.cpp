@@ -18,12 +18,6 @@ ShapeTool::ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr
 }
 
 ShapeTool::~ShapeTool() {
-	core::Command::unregisterCommand("+move_right");
-	core::Command::unregisterCommand("+move_left");
-	core::Command::unregisterCommand("+move_upt");
-	core::Command::unregisterCommand("+move_down");
-	core::Command::unregisterCommand("+linemode");
-	core::Command::unregisterCommand("camsync");
 }
 
 core::AppState ShapeTool::onInit() {

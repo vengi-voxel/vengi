@@ -117,11 +117,6 @@ void TestApp::afterRootWidget() {
 core::AppState TestApp::onCleanup() {
 	_axis.shutdown();
 	_plane.shutdown();
-	core::Command::unregisterCommand("+move_right");
-	core::Command::unregisterCommand("+move_left");
-	core::Command::unregisterCommand("+move_upt");
-	core::Command::unregisterCommand("+move_down");
-	core::Command::unregisterCommand("+cam_freelook");
 	return Super::onCleanup();
 }
 

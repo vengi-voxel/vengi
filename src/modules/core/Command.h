@@ -55,6 +55,8 @@ public:
 
 	static void unregisterCommand(const std::string& name);
 
+	static void shutdown();
+
 	/**
 	 * @brief Executes delayed (by wait command e.g.) commands that are still in the command buffer
 	 */
