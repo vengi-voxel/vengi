@@ -25,7 +25,7 @@
 // TODO: render locked axis as plane
 // TODO: scale/move/rotate selections - not only the cursor or whole model
 // TODO: tree parameter window
-// TODO: lsystem parameter window needs the voxel options
+// TODO: lsystem parameter window needs the voxel options and should show information about the used alphabet
 // TODO: clouds and cactus should also be included in the generation
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
