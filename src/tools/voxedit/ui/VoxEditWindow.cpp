@@ -317,32 +317,7 @@ static inline bool isAny(const tb::TBWidgetEvent& ev, const tb::TBID& id) {
 	return ev.target->GetID() == id || ev.ref_id == id;
 }
 
-bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
-	if (ev.target->GetID() == TBIDC("unsaved_changes_new")) {
-		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			_scene->newModel(true);
-			resetcamera();
-		}
-		return true;
-	} else if (ev.target->GetID() == TBIDC("unsaved_changes_quit")) {
-		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			Close();
-		}
-		return true;
-	} else if (ev.target->GetID() == TBIDC("unsaved_changes_load")) {
-		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			_scene->loadModel(_loadFile);
-			resetcamera();
-		}
-		return true;
-	} else if (ev.target->GetID() == TBIDC("unsaved_changes_voxelize")) {
-		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
-			const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(_voxelizeFile, false);
-			_scene->voxelizeModel(mesh);
-		}
-		return true;
-	}
-
+bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	if (isAny(ev, TBIDC("resetcamera"))) {
 		_scene->resetCamera();
 		return true;
@@ -382,7 +357,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (isAny(ev, TBIDC("rotatez"))) {
 		rotatez();
 		return true;
-	} else if (ev.target->GetID() == TBIDC("menu_tree")) {
+	} else if (isAny(ev, TBIDC("menu_tree"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_popup"))) {
 			tb::TBSelectItemSourceList<tb::TBGenericStringItem>* treeItems = new tb::TBSelectItemSourceList<tb::TBGenericStringItem>();
 			for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
@@ -391,7 +366,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			menu->Show(treeItems, tb::TBPopupAlignment());
 		}
 		return true;
-	} else if (ev.target->GetID() == TBIDC("menu_file")) {
+	} else if (isAny(ev, TBIDC("menu_file"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_file"))) {
 			tb::TBSelectItemSourceList<tb::TBGenericStringItem>* fileItems = new tb::TBSelectItemSourceList<tb::TBGenericStringItem>();
 			addMenuItem(*fileItems, "New");
@@ -402,28 +377,61 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			menu->Show(fileItems, tb::TBPopupAlignment());
 		}
 		return true;
-	} else if (ev.target->GetID() == TBIDC("dialog_lsystem")) {
+	} else if (isAny(ev, TBIDC("dialog_lsystem"))) {
 		new LSystemWindow(this, _scene);
 		return true;
-	} else if (ev.target->GetID() == TBIDC("dialog_noise")) {
+	} else if (isAny(ev, TBIDC("dialog_noise"))) {
 		new NoiseWindow(this, _scene);
 		return true;
-	} else if (ev.target->GetID() == TBIDC("dialog_world")) {
+	} else if (isAny(ev, TBIDC("dialog_world"))) {
 		new WorldWindow(this, _scene);
 		return true;
-	} else if (ev.target->GetID() == TBIDC("optionshowgrid")) {
+	} else if (isAny(ev, TBIDC("optionshowgrid"))) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);
 		return true;
-	} else if (ev.target->GetID() == TBIDC("optionshowaxis")) {
+	} else if (isAny(ev, TBIDC("optionshowaxis"))) {
 		_scene->setRenderAxis(ev.target->GetValue() == 1);
 		return true;
-	} else if (ev.target->GetID() == TBIDC("optionshowaabb")) {
+	} else if (isAny(ev, TBIDC("optionshowaabb"))) {
 		_scene->setRenderAABB(ev.target->GetValue() == 1);
 		return true;
-	} else if (ev.target->GetID() == TBIDC("optionfreelook")) {
+	} else if (isAny(ev, TBIDC("optionfreelook"))) {
 		togglefreelook();
 		return true;
 	}
+	return false;
+}
+
+bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
+	if (ev.target->GetID() == TBIDC("unsaved_changes_new")) {
+		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
+			_scene->newModel(true);
+			resetcamera();
+		}
+		return true;
+	} else if (ev.target->GetID() == TBIDC("unsaved_changes_quit")) {
+		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
+			Close();
+		}
+		return true;
+	} else if (ev.target->GetID() == TBIDC("unsaved_changes_load")) {
+		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
+			_scene->loadModel(_loadFile);
+			resetcamera();
+		}
+		return true;
+	} else if (ev.target->GetID() == TBIDC("unsaved_changes_voxelize")) {
+		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
+			const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(_voxelizeFile, false);
+			_scene->voxelizeModel(mesh);
+		}
+		return true;
+	}
+
+	if (handleEvent(ev)) {
+		return true;
+	}
+
 	for (uint32_t i = 0; i < SDL_arraysize(actions); ++i) {
 		if (isAny(ev, actions[i].id)) {
 			_scene->setAction(actions[i].action);
@@ -653,7 +661,11 @@ static inline bool isValidNumberKey(int key) {
 }
 
 bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
-	if (ev.type == tb::EVENT_TYPE_CLICK) {
+	if (ev.type == tb::EVENT_TYPE_CUSTOM) {
+		if (handleEvent(ev)) {
+			return true;
+		}
+	} else if (ev.type == tb::EVENT_TYPE_CLICK) {
 		if (handleClickEvent(ev)) {
 			return true;
 		}
@@ -686,9 +698,7 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			} else if (ev.special_key == tb::TB_KEY_ENTER) {
 				executeMode();
 			}
-		}
-
-		if (_mode != ModifierMode::None) {
+		} else if (_mode != ModifierMode::None) {
 			if (key == SDLK_x) {
 				Log::debug("Set axis to x");
 				_axis |= voxedit::Axis::X;

@@ -58,6 +58,7 @@ private:
 	glm::ivec3 _lastCursorPos;
 
 	void addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id = nullptr);
+	bool handleEvent(const tb::TBWidgetEvent &ev);
 
 	enum class ModifierMode {
 		None,

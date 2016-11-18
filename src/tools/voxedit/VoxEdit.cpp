@@ -17,6 +17,7 @@
 		} \
 	}).setArgumentCompleter(fileCompleter).setHelp(help)
 #define COMMAND_CALL(command, call, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {call;}).setHelp(help)
+#define COMMAND_MAINWINDOW_EVENT(command, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);event.ref_id = TBIDC(command);_mainWindow->InvokeEvent(event);}).setHelp(help)
 
 // TODO: voxelizer via assimp
 // TODO: extrude
@@ -125,6 +126,10 @@ core::AppState VoxEdit::onInit() {
 		const int z = core::string::toInt(args[2]);
 		this->_mainWindow->setCursorPosition(x, y, z);
 	}).setHelp("Set the cursor to the specified position");
+
+	COMMAND_MAINWINDOW_EVENT("dialog_lsystem", "Opens the lsystem dialog");
+	COMMAND_MAINWINDOW_EVENT("dialog_world", "Opens the world dialog");
+	COMMAND_MAINWINDOW_EVENT("dialog_noise", "Opens the noise dialog");
 
 	COMMAND_CALL("new", newFile(), "Create a new scene");
 

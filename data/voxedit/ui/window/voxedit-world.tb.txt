@@ -4,38 +4,44 @@ WindowInfo
 TBLayout: distribution: gravity, axis: y
 	TBContainer: gravity: all, id: maincontainer
 		TBLayout: distribution: gravity, axis: y
-			TBSection: text: "Landscape surface (2dNoise)", value: 1
-				TBLayout: axis: y
-					TBClickLabel: text: Octaves
-						TBInlineSelect: id: landscapeoctaves, min: 1, max: 10
-					TBClickLabel: text: Frequency
-						TBEditField: id: landscapefrequency
-					TBClickLabel: text: Amplitude
-						TBEditField: id: landscapeamplitude
-					TBClickLabel: text: Persistence
-						TBEditField: id: landscapepersistence
-			TBSection: text: "Mountain (2dNoise)", value: 1
-				TBLayout: axis: y
-					TBClickLabel: text: Octaves
-						TBInlineSelect: id: mountainoctaves, min: 1, max: 10
-					TBClickLabel: text: Frequency
-						TBEditField: id: mountainfrequency, type: number
-					TBClickLabel: text: Amplitude
-						TBEditField: id: mountainamplitude, type: number
-					TBClickLabel: text: Persistence
-						TBEditField: id: mountainpersistence, type: number
-			TBSection: text: "Caves (3dNoise)", value: 1
-				TBLayout: axis: y
-					TBClickLabel: text: Octaves
-						TBInlineSelect: id: caveoctaves, min: 1, max: 10
-					TBClickLabel: text: Frequency
-						TBEditField: id: cavefrequency, type: number
-					TBClickLabel: text: Amplitude
-						TBEditField: id: caveamplitude, type: number
-					TBClickLabel: text: Persistence
-						TBEditField: id: cavepersistence, type: number
-					TBClickLabel: text: Threshold
-						TBEditField: id: cavedensitythreshold, type: number
+			TBContainer: position: top left
+				TBLayout: axis: y, position: top left
+					TBTextField: text: "Landscape surface (2dNoise)", value: 1, skin: TBButtom, gravity: left right
+					TBLayout: axis: y, position: top left
+						TBClickLabel: text: Octaves
+							TBInlineSelect: id: landscapeoctaves, min: 1, max: 10
+						TBClickLabel: text: Frequency
+							TBEditField: id: landscapefrequency
+						TBClickLabel: text: Amplitude
+							TBEditField: id: landscapeamplitude
+						TBClickLabel: text: Persistence
+							TBEditField: id: landscapepersistence
+			TBContainer: position: top left
+				TBLayout: axis: y, position: top left
+					TBTextField: text: "Mountain (2dNoise)", value: 1, skin: TBButtom, gravity: left right
+					TBLayout: axis: y, position: top left
+						TBClickLabel: text: Octaves
+							TBInlineSelect: id: mountainoctaves, min: 1, max: 10
+						TBClickLabel: text: Frequency
+							TBEditField: id: mountainfrequency, type: number
+						TBClickLabel: text: Amplitude
+							TBEditField: id: mountainamplitude, type: number
+						TBClickLabel: text: Persistence
+							TBEditField: id: mountainpersistence, type: number
+			TBContainer: position: top left
+				TBLayout: axis: y, position: top left
+					TBTextField: text: "Caves (3dNoise)", value: 1, skin: TBButtom, gravity: left right
+					TBLayout: axis: y, position: top left
+						TBClickLabel: text: Octaves
+							TBInlineSelect: id: caveoctaves, min: 1, max: 10
+						TBClickLabel: text: Frequency
+							TBEditField: id: cavefrequency, type: number
+						TBClickLabel: text: Amplitude
+							TBEditField: id: caveamplitude, type: number
+						TBClickLabel: text: Persistence
+							TBEditField: id: cavepersistence, type: number
+						TBClickLabel: text: Threshold
+							TBEditField: id: cavedensitythreshold, type: number
 
 			TBSeparator: gravity: left right, skin: separator
 
