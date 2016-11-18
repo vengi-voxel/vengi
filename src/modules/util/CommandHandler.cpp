@@ -28,6 +28,7 @@ void executeCommands(const std::string& _commandLine) {
 				Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
 		} else {
 			c->setVal(core::string::eraseAllSpaces(tokens[0]));
+			const std::string raw = R"(""""""""""""""""""""""")";
 		}
 	}
 }

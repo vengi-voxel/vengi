@@ -7,15 +7,16 @@
 
 namespace util {
 
-static const char *CFG =
-		"w +foo\n"
-		"alt+w \"somecommand +\"\n"
-		"lalt+l \"someothercommand +\"\n"
-		"CTRL+a +bar\n"
-		"CTRL+w +bar\n"
-		"SHIFT+w +xyz\n"
-		"SHIFT+ctrl+ALT+w allmodscommand\n"
-		"ctrl+SHIFT+w ctrlshiftmodcommand\n";
+static const std::string CFG = R"(
+w +foo
+alt+w "somecommand +"
+lalt+l "someothercommand +"
+CTRL+a +bar
+CTRL+w +bar
+SHIFT+w +xyz
+SHIFT+ctrl+ALT+w allmodscommand
+ctrl+SHIFT+w ctrlshiftmodcommand
+)";
 
 TEST(KeybindingParserTest, testParsing) {
 	KeybindingParser p(CFG);

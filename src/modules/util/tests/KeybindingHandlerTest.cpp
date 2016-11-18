@@ -9,14 +9,15 @@
 
 namespace util {
 
-static const char *CFG =
-		"w +foo\n"
-		"lalt+w \"somecommand +\"\n"
-		"RCTRL+a +bar\n"
-		"CTRL+w +bar\n"
-		"SHIFT+w +xyz\n"
-		"SHIFT+ctrl+ALT+w allmodscommand\n"
-		"ctrl+SHIFT+w ctrlshiftmodcommand\n";
+static const std::string CFG = R"(
+w +foo
+lalt+w "somecommand +"
+RCTRL+a +bar
+CTRL+w +bar
+SHIFT+w +xyz
+SHIFT+ctrl+ALT+w allmodscommand
+ctrl+SHIFT+w ctrlshiftmodcommand
+)";
 
 class KeybindingHandlerTest : public core::AbstractTest {
 protected:
