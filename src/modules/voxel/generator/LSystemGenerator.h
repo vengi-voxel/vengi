@@ -28,7 +28,8 @@ enum LSystemAlphabet {
 	STATEPOP = ']',
 	// begin of a section that might or might not be included in the evaluation
 	RANDOMBEGIN = '(',
-	RANDOMEND = ')'
+	RANDOMEND = ')',
+	RESETVOXELTOEMPTY = '0'
 };
 
 /**
@@ -71,7 +72,7 @@ struct LSystemContext {
 template<class Volume>
 static bool generateVoxel(const LSystemState* state, Volume& volume, const LSystemContext& ctx) {
 	if (state->lastVoxelType == '\0') {
-		Log::error("No voxel set in generation step");
+		Log::debug("No voxel set in generation step");
 		return false;
 	}
 	auto i = ctx.voxels.find(state->lastVoxelType);
@@ -131,13 +132,16 @@ static bool evaluateState(LSystemState* state, Volume& volume, const LSystemCont
 	case LSystemAlphabet::RANDOMEND:
 		Log::error("Illegal character found: %c", c);
 		return false;
+	case LSystemAlphabet::RESETVOXELTOEMPTY:
+		state->lastVoxelType = '\0';
+		break;
 	default:
 		break;
 	}
 	auto i = ctx.voxels.find(c);
 	if (ctx.voxels.end() == i) {
-		Log::error("Could not find a voxel for %c", c);
-		return false;
+		Log::debug("Could not find a voxel for %c - maybe only a production rule", c);
+		return true;
 	}
 	state->lastVoxelType = c;
 	return true;
