@@ -9,7 +9,6 @@ namespace noise {
 template<class Volume>
 void generate(Volume& volume, int octaves, float frequency, float persistence, core::Random& random) {
 	const Region& region = volume.getRegion();
-	Log::debug("Create new chunk at %i:%i:%i", region.getCentreX(), region.getCentreY(), region.getCentreZ());
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
 	const int lowerX = region.getLowerX();
