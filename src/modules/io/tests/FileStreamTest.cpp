@@ -34,6 +34,10 @@ TEST_F(FileStreamTest, testFileStream) {
 	ASSERT_EQ('d', chr);
 	ASSERT_EQ(0, stream.peekByte(chr));
 	ASSERT_EQ('o', chr);
+	char buf[8];
+	stream.readString(6, buf);
+	buf[6] = '\0';
+	ASSERT_STREQ("owInfo", buf);
 }
 
 }
