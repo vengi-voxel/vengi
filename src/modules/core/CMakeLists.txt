@@ -14,6 +14,7 @@ set(SRCS
 	Input.cpp Input.h
 	JSON.h json.hpp
 	Log.cpp Log.h
+	MD5.cpp MD5.h
 	MemoryAllocator.h
 	MemGuard.cpp MemGuard.h
 	NonCopyable.h
@@ -51,6 +52,7 @@ gtest_suite_files(tests
 	tests/QuadTreeTest.cpp
 	tests/VarTest.cpp
 	tests/CommandTest.cpp
+	tests/MD5Test.cpp
 	tests/SetTest.cpp
 	tests/TokenizerTest.cpp
 	tests/FrustumTest.cpp
