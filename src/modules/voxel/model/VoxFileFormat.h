@@ -10,6 +10,8 @@ protected:
 	std::vector<glm::vec4> _palette;
 	size_t _paletteSize = 0;
 
+	const glm::vec4& getColor(const Voxel& voxel) const;
+	const glm::vec4& getColor(VoxelType type) const;
 	VoxelType findVoxelType(const glm::vec4& color) const;
 	glm::vec4 findClosestMatch(const glm::vec4& color) const;
 	glm::vec4 paletteColor(uint32_t index) const;

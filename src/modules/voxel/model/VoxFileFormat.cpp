@@ -6,6 +6,15 @@
 
 namespace voxel {
 
+const glm::vec4& VoxFileFormat::getColor(VoxelType type) const {
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	return materialColors[std::enum_value(type)];
+}
+
+const glm::vec4& VoxFileFormat::getColor(const Voxel& voxel) const {
+	return getColor(voxel.getMaterial());
+}
+
 VoxelType VoxFileFormat::findVoxelType(const glm::vec4& color) const {
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	const int min = std::enum_value(VoxelType::Min) + 1;
