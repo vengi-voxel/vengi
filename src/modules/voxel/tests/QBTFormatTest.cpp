@@ -3,17 +3,17 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxel/model/QB2Format.h"
+#include "voxel/model/QBTFormat.h"
 
 namespace voxel {
 
-class QB2FormatTest: public AbstractVoxFormatTest {
+class QBTFormatTest: public AbstractVoxFormatTest {
 };
 
-TEST_F(QB2FormatTest, DISABLED_testLoad) {
+TEST_F(QBTFormatTest, DISABLED_testLoad) {
 	const io::FilePtr& file = core::App::getInstance()->filesystem()->open("qubicle.qbt");
 	ASSERT_TRUE((bool)file) << "Could not open qbt file";
-	QB2Format f;
+	QBTFormat f;
 	RawVolume* volume = f.load(file);
 	ASSERT_NE(nullptr, volume) << "Could not load qbt file";
 	delete volume;

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "QB2Format.h"
+#include "QBTFormat.h"
 #include "core/Common.h"
 #include "core/Zip.h"
 #include "core/Color.h"
@@ -13,15 +13,15 @@ static const bool MergeCompounds = true;
 
 #define wrap(read) \
 	if (read != 0) { \
-		Log::error("Could not load qb2 file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
+		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
 		return false; \
 	}
 
-bool QB2Format::save(const RawVolume* volume, const io::FilePtr& file) {
+bool QBTFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	return false;
 }
 
-bool QB2Format::skipNode(io::FileStream& stream) {
+bool QBTFormat::skipNode(io::FileStream& stream) {
 	// node type, can be ignored
 	uint32_t nodeTypeId;
 	wrap(stream.readInt(nodeTypeId));
@@ -31,7 +31,7 @@ bool QB2Format::skipNode(io::FileStream& stream) {
 	return true;
 }
 
-bool QB2Format::loadCompound(io::FileStream& stream) {
+bool QBTFormat::loadCompound(io::FileStream& stream) {
 	if (!loadMatrix(stream)) {
 		return false;
 	}
@@ -48,7 +48,7 @@ bool QB2Format::loadCompound(io::FileStream& stream) {
 	return true;
 }
 
-bool QB2Format::loadMatrix(io::FileStream& stream) {
+bool QBTFormat::loadMatrix(io::FileStream& stream) {
 	char buf[1024];
 	uint32_t nameLength;
 	wrap(stream.readInt(nameLength));
@@ -83,7 +83,7 @@ bool QB2Format::loadMatrix(io::FileStream& stream) {
 
 	core::Zip z;
 	if (!z.uncompress(voxelData, voxelDataSize, voxelDataDecompressed, voxelDataSizeDecompressed)) {
-		Log::error("Could not load qb2 file: Failed to extract zip data");
+		Log::error("Could not load qbt file: Failed to extract zip data");
 		delete [] voxelData;
 		delete [] voxelDataDecompressed;
 		return false;
@@ -116,7 +116,7 @@ bool QB2Format::loadMatrix(io::FileStream& stream) {
 	return volume;
 }
 
-bool QB2Format::loadModel(io::FileStream& stream) {
+bool QBTFormat::loadModel(io::FileStream& stream) {
 	uint32_t childCount;
 	wrap(stream.readInt(childCount));
 	for (uint32_t i = 0; i < childCount; i++) {
@@ -128,7 +128,7 @@ bool QB2Format::loadModel(io::FileStream& stream) {
 }
 
 
-bool QB2Format::loadNode(io::FileStream& stream) {
+bool QBTFormat::loadNode(io::FileStream& stream) {
 	uint32_t nodeTypeID;
 	wrap(stream.readInt(nodeTypeID));
 	uint32_t dataSize;
@@ -149,12 +149,12 @@ bool QB2Format::loadNode(io::FileStream& stream) {
 	return true;
 }
 
-bool QB2Format::loadFromStream(io::FileStream& stream) {
+bool QBTFormat::loadFromStream(io::FileStream& stream) {
 	uint32_t header;
 	wrap(stream.readInt(header))
 	constexpr uint32_t headerMagic = FourCC('Q','B',' ','2');
 	if (header != headerMagic) {
-		Log::error("Could not load qb2 file: Invalid magic found (%u vs %u)", header, headerMagic);
+		Log::error("Could not load qbt file: Invalid magic found (%u vs %u)", header, headerMagic);
 		return false;
 	}
 
@@ -201,16 +201,16 @@ bool QB2Format::loadFromStream(io::FileStream& stream) {
 	}
 
 	if (strncmp(buf, "DATATREE", sizeof(buf))) {
-		Log::error("Could not load qb2 file: Expected to find DATATREE");
+		Log::error("Could not load qbt file: Expected to find DATATREE");
 		return false;
 	}
 
 	return loadNode(stream);
 }
 
-RawVolume* QB2Format::load(const io::FilePtr& file) {
+RawVolume* QBTFormat::load(const io::FilePtr& file) {
 	if (!(bool)file || !file->exists()) {
-		Log::error("Could not load qb2 file: File doesn't exist");
+		Log::error("Could not load qbt file: File doesn't exist");
 		return nullptr;
 	}
 	io::FileStream stream(file.get());

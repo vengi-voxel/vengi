@@ -12,9 +12,11 @@ namespace voxel {
 /**
  * @brief Qubicle Binary Tree (qbt) is the successor of the widespread voxel exchange format Qubicle Binary.
  *
+ * @see QBFormat
+ *
  * http://minddesk.com/learn/article.php?id=47
  */
-class QB2Format : public VoxFileFormat {
+class QBTFormat : public VoxFileFormat {
 private:
 	bool skipNode(io::FileStream& stream);
 	bool loadMatrix(io::FileStream& stream);

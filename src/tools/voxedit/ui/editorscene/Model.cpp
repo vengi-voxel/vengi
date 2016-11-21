@@ -8,7 +8,7 @@
 #include "voxel/generator/NoiseGenerator.h"
 #include "voxel/generator/WorldGenerator.h"
 #include "voxel/model/VoxFormat.h"
-#include "voxel/model/QB2Format.h"
+#include "voxel/model/QBTFormat.h"
 #include "tool/Crop.h"
 #include "tool/Expand.h"
 #include "core/Random.h"
@@ -29,7 +29,7 @@ bool Model::save(std::string_view file) {
 	}
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file), io::FileMode::Write);
 	if (filePtr->extension() == "qbt") {
-		voxel::QB2Format f;
+		voxel::QBTFormat f;
 		if (f.save(modelVolume(), filePtr)) {
 			_dirty = false;
 			return true;
@@ -53,7 +53,7 @@ bool Model::load(std::string_view file) {
 	voxel::RawVolume* newVolume;
 
 	if (filePtr->extension() == "qbt") {
-		voxel::QB2Format f;
+		voxel::QBTFormat f;
 		newVolume = f.load(filePtr);
 	} else if (filePtr->extension() == "vox") {
 		voxel::VoxFormat f;

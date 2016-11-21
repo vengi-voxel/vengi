@@ -2,7 +2,7 @@ set(SRCS
 	font/stb_truetype.h
 	model/VoxFileFormat.h model/VoxFileFormat.cpp
 	model/VoxFormat.h model/VoxFormat.cpp
-	model/QB2Format.h model/QB2Format.cpp
+	model/QBTFormat.h model/QBTFormat.cpp
 	model/MeshExporter.h model/MeshExporter.cpp
 	font/VoxelFont.h font/VoxelFont.cpp
 	BiomeManager.h BiomeManager.cpp
@@ -62,7 +62,7 @@ gtest_suite_files(tests
 	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
 	tests/VoxFormatTest.cpp
-	tests/QB2FormatTest.cpp
+	tests/QBTFormatTest.cpp
 	tests/MeshExporterTest.cpp
 	tests/VolumeMergerTest.cpp
 	tests/VolumeRotatorTest.cpp
