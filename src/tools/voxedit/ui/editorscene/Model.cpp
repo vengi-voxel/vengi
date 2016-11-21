@@ -24,19 +24,24 @@ Model::~Model() {
 }
 
 bool Model::save(std::string_view file) {
-	if (!dirty()) {
-		// nothing to save yet
-		return true;
-	}
 	if (modelVolume() == nullptr) {
 		return false;
 	}
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
-	voxel::VoxFormat f;
-	if (f.save(modelVolume(), filePtr)) {
-		_dirty = false;
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file), io::FileMode::Write);
+	if (filePtr->extension() == "qbt") {
+		voxel::QB2Format f;
+		if (f.save(modelVolume(), filePtr)) {
+			_dirty = false;
+			return true;
+		}
+	} else if (filePtr->extension() == "vox") {
+		voxel::VoxFormat f;
+		if (f.save(modelVolume(), filePtr)) {
+			_dirty = false;
+			return true;
+		}
 	}
-	return !dirty();
+	return false;
 }
 
 bool Model::load(std::string_view file) {
@@ -45,8 +50,17 @@ bool Model::load(std::string_view file) {
 		Log::error("Failed to open model file %s", file.data());
 		return false;
 	}
-	voxel::VoxFormat f;
-	voxel::RawVolume* newVolume = f.load(filePtr);
+	voxel::RawVolume* newVolume;
+
+	if (filePtr->extension() == "qbt") {
+		voxel::QB2Format f;
+		newVolume = f.load(filePtr);
+	} else if (filePtr->extension() == "vox") {
+		voxel::VoxFormat f;
+		newVolume = f.load(filePtr);
+	} else {
+		newVolume = nullptr;
+	}
 	if (newVolume == nullptr) {
 		Log::error("Failed to load model file %s", file.data());
 		return false;
