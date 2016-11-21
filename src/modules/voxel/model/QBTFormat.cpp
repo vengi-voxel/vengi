@@ -40,9 +40,13 @@ bool QBTFormat::loadCompound(io::FileStream& stream) {
 	for (uint32_t i = 0; i < childCount; ++i) {
 		if (MergeCompounds) {
 			// if you don't need the datatree you can skip child nodes
-			skipNode(stream);
+			if (!skipNode(stream)) {
+				return false;
+			}
 		} else {
-			loadNode(stream);
+			if (!loadNode(stream)) {
+				return false;
+			}
 		}
 	}
 	return true;
