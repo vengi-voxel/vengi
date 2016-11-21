@@ -9,6 +9,7 @@
 #include "voxel/generator/WorldGenerator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QBTFormat.h"
+#include "voxel/model/QBFormat.h"
 #include "tool/Crop.h"
 #include "tool/Expand.h"
 #include "core/Random.h"
@@ -40,6 +41,12 @@ bool Model::save(std::string_view file) {
 			_dirty = false;
 			return true;
 		}
+	} else if (filePtr->extension() == "qb") {
+		voxel::QBFormat f;
+		if (f.save(modelVolume(), filePtr)) {
+			_dirty = false;
+			return true;
+		}
 	}
 	return false;
 }
@@ -57,6 +64,9 @@ bool Model::load(std::string_view file) {
 		newVolume = f.load(filePtr);
 	} else if (filePtr->extension() == "vox") {
 		voxel::VoxFormat f;
+		newVolume = f.load(filePtr);
+	} else if (filePtr->extension() == "qb") {
+		voxel::QBFormat f;
 		newVolume = f.load(filePtr);
 	} else {
 		newVolume = nullptr;

@@ -9,6 +9,8 @@ namespace voxel {
 
 class AbstractVoxFormatTest: public AbstractVoxelTest {
 protected:
+	static const voxel::Voxel Empty;
+
 	io::FilePtr open(const std::string_view filename, io::FileMode mode = io::FileMode::Read) {
 		const io::FilePtr& file = core::App::getInstance()->filesystem()->open(std::string(filename), mode);
 		return file;

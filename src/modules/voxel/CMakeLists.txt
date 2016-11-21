@@ -3,6 +3,7 @@ set(SRCS
 	model/VoxFileFormat.h model/VoxFileFormat.cpp
 	model/VoxFormat.h model/VoxFormat.cpp
 	model/QBTFormat.h model/QBTFormat.cpp
+	model/QBFormat.h model/QBFormat.cpp
 	model/MeshExporter.h model/MeshExporter.cpp
 	font/VoxelFont.h font/VoxelFont.cpp
 	BiomeManager.h BiomeManager.cpp
@@ -53,7 +54,7 @@ target_compile_options(${LIB} PRIVATE -march=native PRIVATE -O3)
 
 gtest_suite_files(tests
 	tests/AbstractVoxelTest.h
-	tests/AbstractVoxFormatTest.h
+	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
 	tests/WorldTest.cpp
 	tests/WorldPersisterTest.cpp
 	tests/LSystemGeneratorTest.cpp
@@ -63,6 +64,7 @@ gtest_suite_files(tests
 	tests/AmbientOcclusionTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/QBTFormatTest.cpp
+	tests/QBFormatTest.cpp
 	tests/MeshExporterTest.cpp
 	tests/VolumeMergerTest.cpp
 	tests/VolumeRotatorTest.cpp
