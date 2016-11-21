@@ -9,7 +9,7 @@
 namespace io {
 
 FileStream::FileStream(File* file) :
-		FileStream(file->_file) {
+		FileStream(file->_file != nullptr ? file->_file : file->createRWOps()) {
 }
 
 FileStream::FileStream(SDL_RWops* rwops) :
