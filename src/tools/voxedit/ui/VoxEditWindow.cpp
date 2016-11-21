@@ -757,10 +757,20 @@ bool VoxEditWindow::save(std::string_view file) {
 		if (f.empty()) {
 			return false;
 		}
-		return _scene->saveModel(f);
+		if (!_scene->saveModel(f)) {
+			Log::warn("Failed to save the model");
+			return false;
+		}
+		Log::info("Saved the model to %s", f.data());
+		return true;
 	}
 
-	return _scene->saveModel(file);
+	if (!_scene->saveModel(file)) {
+		Log::warn("Failed to save the model");
+		return false;
+	}
+	Log::info("Saved the model to %s", file.data());
+	return true;
 }
 
 bool VoxEditWindow::voxelize(std::string_view file) {
