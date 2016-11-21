@@ -29,8 +29,13 @@ std::string File::load() {
 	return std::string(includeBuffer, includeLen);
 }
 
-long File::write(const unsigned char *buf, size_t len) const {
+SDL_RWops* File::createRWOps() const {
 	SDL_RWops *rwops = SDL_RWFromFile(_rawPath.c_str(), "wb");
+	return rwops;
+}
+
+long File::write(const unsigned char *buf, size_t len) const {
+	SDL_RWops *rwops = createRWOps();
 	if (!rwops) {
 		return -1L;
 	}
