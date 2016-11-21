@@ -55,7 +55,7 @@ public:
 
 	bool list(const std::string& directory, std::vector<DirEntry>& entries, const std::string& filter = "") const;
 
-	io::FilePtr open(const std::string& filename) const;
+	io::FilePtr open(const std::string& filename, FileMode mode = FileMode::Read) const;
 
 	std::string load(const std::string& filename) const;
 	/**
@@ -64,7 +64,7 @@ public:
 	template<class CompleteHandle>
 	void loadAsync(const std::string& filename, CompleteHandle&& completeHandle) {
 		_threadPool.enqueue([=]() {
-			io::FilePtr f(new io::File(filename));
+			const io::FilePtr& f = std::make_shared<io::File>(filename, FileMode::Read);
 			completeHandle(f);
 		});
 	}

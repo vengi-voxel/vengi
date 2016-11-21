@@ -193,11 +193,11 @@ bool EditorScene::canRedo() const {
 
 bool EditorScene::exportModel(std::string_view file) {
 	core_trace_scoped(EditorSceneExportModel);
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file), io::FileMode::Write);
 	if (!(bool)filePtr) {
 		return false;
 	}
-	return voxel::exportMesh(m().rawVolumeRenderer().mesh(), filePtr->getName().c_str());
+	return voxel::exportMesh(m().rawVolumeRenderer().mesh(), filePtr->name().c_str());
 }
 
 bool EditorScene::loadModel(std::string_view file) {

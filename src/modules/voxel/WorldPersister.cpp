@@ -40,12 +40,12 @@ bool WorldPersister::load(PagedVolumeWrapper& ctx, long seed) {
 	if (!f->exists()) {
 		return false;
 	}
-	Log::trace("Try to load world %s", f->getName().c_str());
+	Log::trace("Try to load world %s", f->name().c_str());
 	uint8_t *fileBuf;
 	// TODO: load async, put world into state loading, and do the real loading in onFrame if the file is fully loaded
 	const int fileLen = f->read((void **) &fileBuf);
 	if (!fileBuf || fileLen <= 0) {
-		Log::error("Failed to load the world from %s", f->getName().c_str());
+		Log::error("Failed to load the world from %s", f->name().c_str());
 		return false;
 	}
 	std::unique_ptr<uint8_t[]> smartBuf(fileBuf);
@@ -57,12 +57,12 @@ bool WorldPersister::load(PagedVolumeWrapper& ctx, long seed) {
 	bs.readFormat("ib", &len, &version);
 
 	if (version != WORLD_FILE_VERSION) {
-		Log::error("file %s has a wrong version number %i (expected %i)", f->getName().c_str(), version, WORLD_FILE_VERSION);
+		Log::error("file %s has a wrong version number %i (expected %i)", f->name().c_str(), version, WORLD_FILE_VERSION);
 		return false;
 	}
 	const int sizeLimit = 1024;
 	if (len > 1000l * 1000l * sizeLimit) {
-		Log::error("extracted memory would be more than %i MB for the file %s", sizeLimit, f->getName().c_str());
+		Log::error("extracted memory would be more than %i MB for the file %s", sizeLimit, f->name().c_str());
 		return false;
 	}
 
@@ -86,7 +86,7 @@ bool WorldPersister::load(PagedVolumeWrapper& ctx, long seed) {
 	for (int z = 0; z < depth; ++z) {
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
-				core_assert_msg(voxelBuf.getSize() >= 1, "Failed to load %s (x: %i, y: %i, z: %i)", f->getName().c_str(), x, y, z);
+				core_assert_msg(voxelBuf.getSize() >= 1, "Failed to load %s (x: %i, y: %i, z: %i)", f->name().c_str(), x, y, z);
 				static_assert(sizeof(VoxelType) == sizeof(uint8_t), "Voxel type size changed");
 				const VoxelType material = (VoxelType)voxelBuf.readByte();
 				const Voxel& voxel = createVoxel(material);

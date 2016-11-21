@@ -38,18 +38,18 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 }
 
-io::FilePtr Filesystem::open(const std::string& filename) const {
-	if (io::File(filename).exists()) {
+io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
+	if (io::File(filename, FileMode::Read).exists()) {
 		Log::debug("loading file %s from current working dir", filename.c_str());
-		return std::make_shared<io::File>(filename);
+		return std::make_shared<io::File>(filename, mode);
 	}
 	const std::string homePath = _homePath + filename;
-	if (io::File(homePath).exists()) {
+	if (io::File(homePath, FileMode::Read).exists()) {
 		Log::debug("loading file %s from %s", filename.c_str(), _homePath.c_str());
-		return std::make_shared<io::File>(homePath);
+		return std::make_shared<io::File>(homePath, mode);
 	}
 	Log::debug("loading file %s from %s (doesn't exist at %s)", filename.c_str(), _basePath.c_str(), homePath.c_str());
-	return std::make_shared<io::File>(_basePath + filename);
+	return std::make_shared<io::File>(_basePath + filename, mode);
 }
 
 std::string Filesystem::load(const std::string& filename) const {
@@ -58,8 +58,8 @@ std::string Filesystem::load(const std::string& filename) const {
 }
 
 bool Filesystem::write(const std::string& filename, const uint8_t* content, size_t length) {
-	io::File f(_homePath + filename);
-	createDir(f.getPath());
+	io::File f(_homePath + filename, FileMode::Write);
+	createDir(f.path());
 	return f.write(content, length) == static_cast<long>(length);
 }
 
@@ -69,8 +69,8 @@ bool Filesystem::write(const std::string& filename, const std::string& string) {
 }
 
 bool Filesystem::syswrite(const std::string& filename, const uint8_t* content, size_t length) {
-	io::File f(filename);
-	createDir(f.getPath());
+	io::File f(filename, FileMode::Write);
+	createDir(f.path());
 	return f.write(content, length) == static_cast<long>(length);
 }
 

@@ -7,15 +7,30 @@
 
 namespace io {
 
-File::File(const std::string& rawPath) :
-		IOResource(), _file(SDL_RWFromFile(rawPath.c_str(), "rb")), _rawPath(rawPath) {
+File::File(const std::string& rawPath, FileMode mode) :
+		IOResource(), _rawPath(rawPath), _mode(mode) {
+	_file = createRWops(mode);
 }
 
 File::~File() {
 	close();
 }
 
-const std::string& File::getName() const {
+bool File::exists() const {
+	if (_mode == FileMode::Read) {
+		return _file != nullptr;
+	}
+
+	// try to open in read mode
+	SDL_RWops* ops = createRWops(FileMode::Read);
+	if (ops != nullptr) {
+		SDL_RWclose(ops);
+		return true;
+	}
+	return false;
+}
+
+const std::string& File::name() const {
 	return _rawPath;
 }
 
@@ -29,20 +44,23 @@ std::string File::load() {
 	return std::string(includeBuffer, includeLen);
 }
 
-SDL_RWops* File::createRWOps() const {
-	SDL_RWops *rwops = SDL_RWFromFile(_rawPath.c_str(), "wb");
+SDL_RWops* File::createRWops(FileMode mode) const {
+	const char *fmode = "rb";
+	if (mode == FileMode::Write) {
+		fmode = "wb";
+	}
+	SDL_RWops *rwops = SDL_RWFromFile(_rawPath.c_str(), fmode);
 	return rwops;
 }
 
 long File::write(const unsigned char *buf, size_t len) const {
-	SDL_RWops *rwops = createRWOps();
-	if (!rwops) {
+	if (_mode != FileMode::Write) {
 		return -1L;
 	}
 
 	int remaining = len;
 	while (remaining) {
-		const size_t written = SDL_RWwrite(rwops, buf, 1, remaining);
+		const size_t written = SDL_RWwrite(_file, buf, 1, remaining);
 		if (written == 0) {
 			return -1L;
 		}
@@ -51,13 +69,11 @@ long File::write(const unsigned char *buf, size_t len) const {
 		buf += written;
 	}
 
-	SDL_RWclose(rwops);
-
 	return len;
 }
 
-std::string File::getPath() const {
-	const std::string& name = getName();
+std::string File::path() const {
+	const std::string& name = this->name();
 	const size_t pos = name.rfind("/");
 	if (pos == std::string::npos) {
 		return "";
@@ -65,8 +81,8 @@ std::string File::getPath() const {
 	return name.substr(0, pos);
 }
 
-std::string File::getFileName() const {
-	std::string name = getName();
+std::string File::fileName() const {
+	std::string name = this->name();
 	const size_t pathPos = name.rfind("/");
 	if (pathPos != std::string::npos) {
 		name = name.substr(pathPos + 1);
@@ -78,8 +94,8 @@ std::string File::getFileName() const {
 	return name;
 }
 
-std::string File::getExtension() const {
-	const char *ext = SDL_strrchr(getName().c_str(), '.');
+std::string File::extension() const {
+	const char *ext = SDL_strrchr(name().c_str(), '.');
 	if (ext == nullptr) {
 		return "";
 	}
@@ -141,6 +157,10 @@ int File::read(void *buffer, int n) {
 }
 
 int File::read(void *buf, size_t size, size_t maxnum) {
+	if (_mode != FileMode::Read) {
+		_state = IOSTATE_FAILED;
+		return -1;
+	}
 	const int n = SDL_RWread(_file, buf, size, maxnum);
 	if (n == 0) {
 		_state = IOSTATE_LOADED;

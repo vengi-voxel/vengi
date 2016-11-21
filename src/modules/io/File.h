@@ -12,6 +12,10 @@ struct SDL_RWops;
 
 namespace io {
 
+enum class FileMode {
+	Read, Write
+};
+
 /**
  * @brief Wrapper for file based io.
  *
@@ -22,6 +26,7 @@ class File : public IOResource {
 protected:
 	SDL_RWops* _file;
 	const std::string _rawPath;
+	FileMode _mode;
 
 	void close();
 	int read(void *buf, size_t size, size_t maxnum);
@@ -29,25 +34,48 @@ protected:
 	long seek(long offset, int seekType) const;
 
 public:
-	File(const std::string& rawPath);
+	File(const std::string& rawPath, FileMode mode);
 	virtual ~File();
 
-	bool exists() const;
-	long length() const;
-	std::string getExtension() const;
-	std::string getPath() const;
-	std::string getFileName() const;
+	/**
+	 * @return The FileMode the file was opened with
+	 */
+	FileMode mode();
 
-	SDL_RWops* createRWOps() const;
+	bool exists() const;
+	/**
+	 * @return -1 on error, otherwise the length of the file
+	 */
+	long length() const;
+	/**
+	 * @return The extension of the file - or en ampty string
+	 * if no extension was found
+	 */
+	std::string extension() const;
+	/**
+	 * @return The path of the file, without the name - or an
+	 * empty string if no path component was found
+	 */
+	std::string path() const;
+	/**
+	 * @return Just the base file name component part - without
+	 * path and extension
+	 */
+	std::string fileName() const;
+	/**
+	 * @return The full raw path of the file
+	 */
+	const std::string& name() const;
+
+	SDL_RWops* createRWops(FileMode mode) const;
 	long write(const unsigned char *buf, size_t len) const;
 	int read(void **buffer);
 	int read(void *buffer, int n);
-	const std::string& getName() const;
 	std::string load();
 };
 
-inline bool File::exists() const {
-	return _file != nullptr;
+inline FileMode File::mode() {
+	return _mode;
 }
 
 typedef std::shared_ptr<File> FilePtr;

@@ -61,7 +61,7 @@ inline ImagePtr createEmptyImage(const std::string& name) {
 }
 
 inline ImagePtr loadImage(const io::FilePtr& file, bool async = true) {
-	const ImagePtr& i = createEmptyImage(file->getName());
+	const ImagePtr& i = createEmptyImage(file->name());
 	if (async) {
 		core::App::getInstance()->threadPool().enqueue([=] () { i->load(file); });
 	} else {

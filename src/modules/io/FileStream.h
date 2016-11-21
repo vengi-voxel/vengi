@@ -83,8 +83,8 @@ public:
 
 		uint8_t *b = buf;
 		size_t completeBytesWritten = 0;
-		size_t bytesWritten = 1;
-		while (completeBytesWritten < bufSize && bytesWritten != 0) {
+		int32_t bytesWritten = 1;
+		while (completeBytesWritten < bufSize && bytesWritten > 0) {
 			bytesWritten = SDL_RWwrite(_rwops, b, 1, (bufSize - completeBytesWritten));
 			b += bytesWritten;
 			completeBytesWritten += bytesWritten;

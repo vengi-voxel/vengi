@@ -10,9 +10,9 @@ namespace io {
 class FileStreamTest : public core::AbstractTest {
 };
 
-TEST_F(FileStreamTest, testFileStream) {
+TEST_F(FileStreamTest, testFileStreamRead) {
 	const FilePtr& file = core::App::getInstance()->filesystem()->open("ui/window/testapp.tb.txt");
-	ASSERT_TRUE((bool)file) << "Could not open filename " << file->getFileName();
+	ASSERT_TRUE((bool)file) << "Could not open filename " << file->fileName();
 	FileStream stream(file.get());
 	uint8_t chr;
 	uint32_t magic;
@@ -38,6 +38,17 @@ TEST_F(FileStreamTest, testFileStream) {
 	stream.readString(6, buf);
 	buf[6] = '\0';
 	ASSERT_STREQ("owInfo", buf);
+}
+
+TEST_F(FileStreamTest, testFileStreamWrite) {
+	const FilePtr& file = core::App::getInstance()->filesystem()->open("filestream-writetest", io::FileMode::Write);
+	File* fileRaw = file.get();
+	FileStream stream(fileRaw);
+	ASSERT_TRUE(stream.addInt(1));
+	ASSERT_EQ(4l, file->length());
+	ASSERT_TRUE(stream.addInt(1));
+	ASSERT_EQ(8l, file->length());
+	ASSERT_TRUE(file->exists());
 }
 
 }
