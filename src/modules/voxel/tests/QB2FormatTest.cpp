@@ -2,12 +2,12 @@
  * @file
  */
 
-#include "AbstractVoxelTest.h"
+#include "AbstractVoxFormatTest.h"
 #include "voxel/model/QB2Format.h"
 
 namespace voxel {
 
-class QB2FormatTest: public AbstractVoxelTest {
+class QB2FormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(QB2FormatTest, DISABLED_testLoad) {

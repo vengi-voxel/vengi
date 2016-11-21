@@ -53,6 +53,7 @@ target_compile_options(${LIB} PRIVATE -march=native PRIVATE -O3)
 
 gtest_suite_files(tests
 	tests/AbstractVoxelTest.h
+	tests/AbstractVoxFormatTest.h
 	tests/WorldTest.cpp
 	tests/WorldPersisterTest.cpp
 	tests/LSystemGeneratorTest.cpp
