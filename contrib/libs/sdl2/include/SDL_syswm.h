@@ -25,8 +25,8 @@
  *  Include file for SDL custom system window manager hooks.
  */
 
-#ifndef _SDL_syswm_h
-#define _SDL_syswm_h
+#ifndef SDL_syswm_h_
+#define SDL_syswm_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -201,6 +201,7 @@ struct SDL_SysWMinfo
         {
             HWND window;                /**< The window handle */
             HDC hdc;                    /**< The window device context */
+            HINSTANCE hinstance;        /**< The instance handle */
         } win;
 #endif
 #if defined(SDL_VIDEO_DRIVER_WINRT)
@@ -316,6 +317,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowWMInfo(SDL_Window * window,
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_syswm_h */
+#endif /* SDL_syswm_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

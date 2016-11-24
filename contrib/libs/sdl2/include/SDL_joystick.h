@@ -36,8 +36,8 @@
  *
  */
 
-#ifndef _SDL_joystick_h
-#define _SDL_joystick_h
+#ifndef SDL_joystick_h_
+#define SDL_joystick_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -60,7 +60,9 @@ extern "C" {
  *  SDL_Init(): SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS
  */
 
-/* The joystick structure used to identify an SDL joystick */
+/**
+ * The joystick structure used to identify an SDL joystick
+ */
 struct _SDL_Joystick;
 typedef struct _SDL_Joystick SDL_Joystick;
 
@@ -308,6 +310,6 @@ extern DECLSPEC SDL_JoystickPowerLevel SDLCALL SDL_JoystickCurrentPowerLevel(SDL
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_joystick_h */
+#endif /* SDL_joystick_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

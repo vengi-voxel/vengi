@@ -127,6 +127,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
     data->window = window;
     data->hwnd = hwnd;
     data->hdc = GetDC(hwnd);
+    data->hinstance = (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     data->created = created;
     data->mouse_button_flags = 0;
     data->videodata = videodata;
@@ -697,9 +698,19 @@ WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     const SDL_WindowData *data = (const SDL_WindowData *) window->driverdata;
     if (info->version.major <= SDL_MAJOR_VERSION) {
+        int versionnum = SDL_VERSIONNUM(info->version.major, info->version.minor, info->version.patch);
+
         info->subsystem = SDL_SYSWM_WINDOWS;
         info->info.win.window = data->hwnd;
-        info->info.win.hdc = data->hdc;
+
+        if (versionnum >= SDL_VERSIONNUM(2, 0, 4)) {
+            info->info.win.hdc = data->hdc;
+        }
+
+        if (versionnum >= SDL_VERSIONNUM(2, 0, 5)) {
+            info->info.win.hinstance = data->hinstance;
+        }
+
         return SDL_TRUE;
     } else {
         SDL_SetError("Application not compiled with SDL %d.%d\n",

@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11opengles_h
-#define _SDL_x11opengles_h
+#ifndef SDL_x11opengles_h_
+#define SDL_x11opengles_h_
 
 #if SDL_VIDEO_OPENGL_EGL
 
@@ -30,6 +30,9 @@
 
 typedef struct SDL_PrivateGLESData
 {
+  /* 1401 If the struct-declaration-list contains no named members, the behavior is undefined. */
+  /* warning: empty struct has size 0 in C, size 1 in C++ [-Wc++-compat] */
+  int dummy; 
 } SDL_PrivateGLESData;
 
 /* OpenGLES functions */
@@ -48,6 +51,6 @@ extern int X11_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext contex
 
 #endif /* SDL_VIDEO_OPENGL_EGL */
 
-#endif /* _SDL_x11opengles_h */
+#endif /* SDL_x11opengles_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

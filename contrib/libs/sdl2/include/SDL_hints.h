@@ -36,8 +36,8 @@
  *  to how they would like the library to work.
  */
 
-#ifndef _SDL_hints_h
-#define _SDL_hints_h
+#ifndef SDL_h_ints_h
+#define SDL_h_ints_h
 
 #include "SDL_stdinc.h"
 
@@ -401,6 +401,33 @@ extern "C" {
 #define SDL_HINT_TIMER_RESOLUTION "SDL_TIMER_RESOLUTION"
 
 
+/**
+ *  \brief  A variable describing the content orientation on QtWayland-based platforms.
+ *
+ *  On QtWayland platforms, windows are rotated client-side to allow for custom
+ *  transitions. In order to correctly position overlays (e.g. volume bar) and
+ *  gestures (e.g. events view, close/minimize gestures), the system needs to
+ *  know in which orientation the application is currently drawing its contents.
+ *
+ *  This does not cause the window to be rotated or resized, the application
+ *  needs to take care of drawing the content in the right orientation (the
+ *  framebuffer is always in portrait mode).
+ *
+ *  This variable can be one of the following values:
+ *    "primary" (default), "portrait", "landscape", "inverted-portrait", "inverted-landscape"
+ */
+#define SDL_HINT_QTWAYLAND_CONTENT_ORIENTATION "SDL_QTWAYLAND_CONTENT_ORIENTATION"
+
+/**
+ *  \brief  Flags to set on QtWayland windows to integrate with the native window manager.
+ *
+ *  On QtWayland platforms, this hint controls the flags to set on the windows.
+ *  For example, on Sailfish OS "OverridesSystemGestures" disables swipe gestures.
+ *
+ *  This variable is a space-separated list of the following values (empty = no flags):
+ *    "OverridesSystemGestures", "StaysOnTop", "BypassWindowManager"
+ */
+#define SDL_HINT_QTWAYLAND_WINDOW_FLAGS "SDL_QTWAYLAND_WINDOW_FLAGS"
 
 /**
 *  \brief  A string specifying SDL's threads stack size in bytes or "0" for the backend's default size
@@ -754,13 +781,17 @@ extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 extern DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool default_value);
 
 /**
+ * \brief type definition of the hint callback function.
+ */
+typedef void (*SDL_HintCallback)(void *userdata, const char *name, const char *oldValue, const char *newValue);
+
+/**
  *  \brief Add a function to watch a particular hint
  *
  *  \param name The hint to watch
  *  \param callback The function to call when the hint value changes
  *  \param userdata A pointer to pass to the callback function
  */
-typedef void (*SDL_HintCallback)(void *userdata, const char *name, const char *oldValue, const char *newValue);
 extern DECLSPEC void SDLCALL SDL_AddHintCallback(const char *name,
                                                  SDL_HintCallback callback,
                                                  void *userdata);
@@ -790,6 +821,6 @@ extern DECLSPEC void SDLCALL SDL_ClearHints(void);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_hints_h */
+#endif /* SDL_h_ints_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
