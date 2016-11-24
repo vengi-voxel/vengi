@@ -46,16 +46,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_METADATA_H_INC
 #define AI_METADATA_H_INC
 
-#include <assert.h>
-
 #if defined(_MSC_VER) && (_MSC_VER <= 1500)
 #include "Compiler/pstdint.h"
 #else
 #include <limits.h>
 #include <stdint.h>
 #endif
-
-
 
 // -------------------------------------------------------------------------------
 /**
@@ -76,8 +72,6 @@ typedef enum aiMetadataType
     FORCE_32BIT = INT_MAX
 #endif
 } aiMetadataType;
-
-
 
 // -------------------------------------------------------------------------------
 /**
@@ -101,6 +95,7 @@ struct aiMetadataEntry
   * Helper functions to get the aiType enum entry for a type
   */
  // -------------------------------------------------------------------------------
+
 inline aiMetadataType GetAiType( bool ) { return AI_BOOL; }
 inline aiMetadataType GetAiType( int32_t ) { return AI_INT32; }
 inline aiMetadataType GetAiType( uint64_t ) { return AI_UINT64; }
@@ -179,7 +174,6 @@ struct aiMetadata
                 case FORCE_32BIT:
 #endif
                 default:
-                    assert(false);
                     break;
                 }
             }
@@ -190,13 +184,13 @@ struct aiMetadata
         }
     }
 
-
-
     template<typename T>
-    inline void Set( unsigned index, const std::string& key, const T& value )
+    inline  bool Set( unsigned index, const std::string& key, const T& value )
     {
         // In range assertion
-        assert(index < mNumProperties);
+        if ( index >= mNumProperties ) {
+            return false;
+        }
 
         // Set metadata key
         mKeys[index] = key;
@@ -205,13 +199,17 @@ struct aiMetadata
         mValues[index].mType = GetAiType(value);
         // Copy the given value to the dynamic storage
         mValues[index].mData = new T(value);
+
+        return true;
     }
 
     template<typename T>
     inline bool Get( unsigned index, T& value )
     {
         // In range assertion
-        assert(index < mNumProperties);
+        if ( index >= mNumProperties ) {
+            return false;
+        }
 
         // Return false if the output data type does
         // not match the found value's data type
@@ -226,7 +224,8 @@ struct aiMetadata
     }
 
     template<typename T>
-    inline bool Get( const aiString& key, T& value )
+    inline 
+    bool Get( const aiString& key, T& value )
     {
         // Search for the given key
         for (unsigned i=0; i<mNumProperties; ++i)
