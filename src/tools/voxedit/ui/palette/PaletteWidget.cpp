@@ -12,8 +12,8 @@ PaletteWidget::~PaletteWidget() {
 void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 	Super::OnPaint(paint_props);
 	const tb::TBRect rect = GetRect();
-	const int xAmount = rect.w / (_width + _padding);
-	const int yAmount = rect.h / (_height + _padding);
+	const int xAmount = (rect.w + 2 * _padding) / (_width + _padding);
+	const int yAmount = (rect.h + 2 * _padding) / (_height + _padding);
 	const tb::TBRect renderRect(0, 0, _width, _height);
 	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
 	const glm::vec4& borderColor = core::Color::Black;
@@ -70,10 +70,21 @@ bool PaletteWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 	return Super::OnEvent(ev);
 }
 
+tb::PreferredSize PaletteWidget::OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) {
+	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
+	const int size = colors.size();
+	int maxAmountY = size / _amountX;
+	if (size % _amountX) {
+		++maxAmountY;
+	}
+	return tb::PreferredSize(_amountX * _width + (_amountX - 2) * _padding, maxAmountY * _height + std::max(0, maxAmountY - 2) * _padding);
+}
+
 void PaletteWidget::OnInflate(const tb::INFLATE_INFO &info) {
 	_width = info.node->GetValueInt("width", 20);
 	_height = info.node->GetValueInt("height", 20);
 	_padding = info.node->GetValueInt("padding", 2);
+	_amountX = info.node->GetValueInt("amount-x", 8);
 	Super::OnInflate(info);
 }
 

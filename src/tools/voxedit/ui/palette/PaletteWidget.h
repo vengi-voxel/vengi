@@ -10,6 +10,7 @@ protected:
 	int _width = 0;
 	int _height = 0;
 	int _padding = 0;
+	int _amountX = 0;
 	bool _dirty = true;
 	voxel::VoxelType _voxelType = voxel::VoxelType::Grass1;
 public:
@@ -22,6 +23,7 @@ public:
 	void markAsClean();
 	bool isDirty() const;
 
+	tb::PreferredSize OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
 	void OnPaint(const PaintProps &paint_props) override;
 	void OnInflate(const tb::INFLATE_INFO &info) override;
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
