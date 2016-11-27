@@ -309,10 +309,18 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 
 RawVolume* QBFormat::loadFromStream(io::FileStream& stream) {
 	wrap(stream.readInt(_version))
-	wrap(stream.readInt((uint32_t&)_colorFormat))
-	wrap(stream.readInt((uint32_t&)_zAxisOrientation))
-	wrap(stream.readInt((uint32_t&)_compressed))
-	wrap(stream.readInt((uint32_t&)_visibilityMaskEncoded))
+	uint32_t colorFormat;
+	wrap(stream.readInt(colorFormat))
+	_colorFormat = (ColorFormat)colorFormat;
+	uint32_t zAxisOrientation;
+	wrap(stream.readInt(zAxisOrientation))
+	_zAxisOrientation = (ZAxisOrientation)zAxisOrientation;
+	uint32_t compressed;
+	wrap(stream.readInt(compressed))
+	_compressed = (Compression)compressed;
+	uint32_t visibilityMaskEncoded;
+	wrap(stream.readInt(visibilityMaskEncoded))
+	_visibilityMaskEncoded = (VisibilityMask)visibilityMaskEncoded;
 
 	uint32_t numMatrices;
 	wrap(stream.readInt(numMatrices))
