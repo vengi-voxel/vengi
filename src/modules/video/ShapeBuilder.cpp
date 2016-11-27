@@ -149,7 +149,7 @@ void ShapeBuilder::plane(const core::Plane& plane, bool normals) {
 	setColor(core::Color::Green);
 	for (uint32_t i = 0; i < SDL_arraysize(corners); ++i) {
 		const glm::vec4& v = result * corners[i];
-		addVertex(v.xyz(), glm::zero<glm::vec2>(), planeNormal);
+		addVertex(glm::vec3(v), glm::zero<glm::vec2>(), planeNormal);
 	}
 
 	const float normalVecScale = 10.0f;

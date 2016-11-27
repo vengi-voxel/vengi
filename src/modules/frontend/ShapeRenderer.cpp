@@ -66,7 +66,7 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 		std::vector<glm::vec3> colors3;
 		colors3.reserve(colors.size());
 		for (const auto c : colors) {
-			colors3.push_back(c.xyz());
+			colors3.push_back(glm::vec3(c));
 		}
 		_colorIndex[meshIndex] = _vbo[meshIndex].create(colors3);
 	}
@@ -117,7 +117,7 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 		std::vector<glm::vec3> colors3;
 		colors3.reserve(colors.size());
 		for (const auto c : colors) {
-			colors3.push_back(c.xyz());
+			colors3.push_back(glm::vec3(c));
 		}
 		_vbo[meshIndex].update(_colorIndex[meshIndex], colors3);
 	}

@@ -76,7 +76,7 @@ core::AABB<float> Frustum::aabb() const {
 void Frustum::split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_MAX]) const {
 	for (uint8_t i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
 		const glm::vec4& v = transform * cornerVecs[i];
-		out[i] = v.xyz() / v.w;
+		out[i] = glm::vec3(v) / v.w;
 		core_assert(!glm::any(glm::isnan(out[i])));
 	}
 }
@@ -106,7 +106,7 @@ void Frustum::updateVertices(const glm::mat4& view, const glm::mat4& projection)
 	const glm::mat4& transform = glm::inverse(projection * view);
 	for (uint8_t i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
 		const glm::vec4& v = transform * cornerVecs[i];
-		_frustumVertices[i] = v.xyz() / v.w;
+		_frustumVertices[i] = glm::vec3(v) / v.w;
 		core_assert(!glm::any(glm::isnan(_frustumVertices[i])));
 		core_assert(!glm::any(glm::isinf(_frustumVertices[i])));
 	}

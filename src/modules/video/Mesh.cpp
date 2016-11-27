@@ -531,8 +531,8 @@ int Mesh::renderNormals(video::Shader& shader) {
 		const glm::vec4& pos = bonetrans * glm::vec4(v._pos, 1.0f);
 		const glm::vec4& norm = bonetrans * glm::vec4(v._norm, 0.0f);
 		const glm::vec4& extended = pos + 2.0f * norm;
-		normalData.data.push_back(MeshNormals::AttributeData{ pos,      core::Color::Red.xyz()    });
-		normalData.data.push_back(MeshNormals::AttributeData{ extended, core::Color::Yellow.xyz() });
+		normalData.data.push_back(MeshNormals::AttributeData{ pos,      glm::vec3(core::Color::Red)    });
+		normalData.data.push_back(MeshNormals::AttributeData{ extended, glm::vec3(core::Color::Yellow) });
 	}
 
 	glBindVertexArray(_vertexArrayObjectNormals);

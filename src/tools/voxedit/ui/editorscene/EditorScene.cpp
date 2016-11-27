@@ -25,7 +25,7 @@ static inline voxedit::Model& m() {
 EditorScene::EditorScene() :
 		Super(),
 		_bitmap((tb::UIRendererGL*) tb::g_renderer) {
-	//_rawVolumeRenderer.setAmbientColor(core::Color::White.xyz());
+	//_rawVolumeRenderer.setAmbientColor(glm::vec3(core::Color::White));
 	SetIsFocusable(true);
 }
 

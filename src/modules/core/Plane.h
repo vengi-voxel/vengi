@@ -61,7 +61,7 @@ inline void Plane::transform(const glm::mat4& mat) {
 }
 
 inline void Plane::set(const glm::vec4& data) {
-	_norm = data.xyz();
+	_norm = glm::vec3(data);
 	_dist = data.w;
 }
 

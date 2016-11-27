@@ -1,7 +1,6 @@
 #pragma once
 
 #define GLM_FORCE_RADIANS
-#define GLM_FORCE_SWIZZLE
 
 #include <glm/glm.hpp>
 
@@ -24,6 +23,7 @@
 #include <glm/gtc/noise.hpp>
 #include <glm/gtc/epsilon.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/compatibility.hpp>
