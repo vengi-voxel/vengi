@@ -13,7 +13,7 @@ struct IsQuadNeeded {
 private:
 	inline bool is(bool negative, const Voxel& v) const {
 		const VoxelType m = v.getMaterial();
-		if (m == VoxelType::Air) {
+		if (!isBlocked(m)) {
 			return negative;
 		} else if (!_water && m == VoxelType::Water) {
 			return negative;
@@ -29,7 +29,7 @@ public:
 
 	inline bool operator()(const Voxel& back, const Voxel& front, Voxel& materialToUse, FaceNames face, int x, int z) const {
 		if (_water) {
-			if (front.getMaterial() == VoxelType::Air && back.getMaterial() == VoxelType::Water && face == PositiveY) {
+			if (!isBlocked(front.getMaterial()) && back.getMaterial() == VoxelType::Water && face == PositiveY) {
 				materialToUse = back;
 				return true;
 			}

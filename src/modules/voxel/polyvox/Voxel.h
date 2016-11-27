@@ -10,7 +10,7 @@ namespace voxel {
 
 /**
  * @brief material types 0 - 255 (8 bits)
- * @note there must not be any gap in the ordinals.
+ * This is basically the index in the color array
  */
 enum class VoxelType : uint8_t {
 	// this must be 0
@@ -41,10 +41,6 @@ enum class VoxelType : uint8_t {
 	Dirt2 = 24,
 	Dirt3 = 25,
 	Dirt4 = 26,
-
-	Max = 254,
-	Min = Air,
-	Invalid = 255
 };
 
 class Voxel {

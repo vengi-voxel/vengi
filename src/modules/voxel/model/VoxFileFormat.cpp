@@ -17,17 +17,15 @@ const glm::vec4& VoxFileFormat::getColor(const Voxel& voxel) const {
 
 VoxelType VoxFileFormat::findVoxelType(const glm::vec4& color) const {
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	const int min = std::enum_value(VoxelType::Min) + 1;
-	const int max = std::enum_value(VoxelType::Max);
-	core_assert(max <= (int)materialColors.size());
-	for (int i = min; i < max; ++i) {
+	const int max = (int)materialColors.size();
+	for (int i = 0; i < max; ++i) {
 		if (!glm::all(glm::epsilonEqual(materialColors[i], color, 0.0001f))) {
 			continue;
 		}
 		return (VoxelType)i;
 	}
 	Log::error("Could not find any matching voxeltype for color: %s", glm::to_string(color * 255.0f).c_str());
-	return VoxelType::Invalid;
+	return VoxelType::Air;
 }
 
 glm::vec4 VoxFileFormat::paletteColor(uint32_t index) const {

@@ -168,7 +168,7 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 	core_trace_scoped(FindPath);
 	static auto f = [] (const voxel::PagedVolume* volData, const glm::ivec3& v3dPos) {
 		const voxel::Voxel& voxel = volData->getVoxel(v3dPos);
-		return voxel.getMaterial() != VoxelType::Air;
+		return isBlocked(voxel.getMaterial());
 	};
 
 	const AStarPathfinderParams<voxel::PagedVolume> params(_volumeData, start, end, &listResult, 1.0f, 10000,

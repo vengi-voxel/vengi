@@ -11,6 +11,7 @@
 #include "lsystem/SyntaxHighlighter.h"
 #include "ui/UIApp.h"
 #include "core/JSON.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxedit {
 
@@ -162,7 +163,8 @@ void LSystemWindow::load(const std::string& file) {
 		for (auto& jsonVoxel: voxels) {
 			const std::string& chr = jsonVoxel["character"];
 			const int rawValue = jsonVoxel["type"];
-			if (rawValue < 0 || rawValue >= std::enum_value(voxel::VoxelType::Max)) {
+			const int max = voxel::getMaterialColors().size();
+			if (rawValue < 0 || rawValue >= max) {
 				Log::warn("Skip %s with type %i", chr.c_str(), rawValue);
 				continue;
 			}

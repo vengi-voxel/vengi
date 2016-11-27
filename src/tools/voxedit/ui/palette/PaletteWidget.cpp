@@ -27,10 +27,8 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
 	const glm::vec4& borderColor = core::Color::Black;
 	const tb::TBColor tbBorderColor(borderColor.r, borderColor.g, borderColor.b);
-	const int min = std::enum_value(voxel::VoxelType::Min);
-	const int max = std::enum_value(voxel::VoxelType::Max);
-	int i = min;
-	core_assert(max <= (int)colors.size());
+	const int max = colors.size();
+	int i = 0;
 	for (int y = 0; y < yAmount; ++y) {
 		for (int x = 0; x < xAmount; ++x) {
 			if (i >= max) {
@@ -52,7 +50,7 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 bool PaletteWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		const tb::TBRect rect = GetRect();
-		const int max = std::enum_value(voxel::VoxelType::Max);
+		const int max = voxel::getMaterialColors().size();
 		const int xAmount = rect.w / (_width + _padding);
 		const int col = ev.target_x / (_width + _padding);
 		const int row = ev.target_y / (_height + _padding);

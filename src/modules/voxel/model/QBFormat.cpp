@@ -36,7 +36,7 @@ const int NEXT_SLICE_FLAG = 6;
 #define wrapColor(read) \
 	if (read != 0) { \
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
-		return voxel::VoxelType::Invalid; \
+		return voxel::VoxelType::Air; \
 	}
 
 #define setBit(val, index) val &= (1 << (index))
@@ -267,9 +267,6 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
 					const voxel::VoxelType type = getVoxelType(stream);
-					if (type == voxel::VoxelType::Invalid) {
-						return nullptr;
-					}
 					setVoxel(volume, x, y, z, offset, type);
 				}
 			}
@@ -298,9 +295,6 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 			}
 
 			const voxel::VoxelType type = getVoxelType(stream);
-			if (type == voxel::VoxelType::Invalid) {
-				return nullptr;
-			}
 			for (uint32_t j = 0; j < count; ++j, ++index) {
 				const int x = (index + 1) % size.x;
 				const int y = (index + 1) / size.x;
