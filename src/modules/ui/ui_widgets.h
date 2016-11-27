@@ -35,67 +35,64 @@ namespace tb {
 
 // fruxo recommends : Subclass TBWidget and override OnPaint. From
 // there you can paint solid colors using g_tb_skin->PaintRectFill.
-class TBColorWidget : public TBWidget
-{
+class TBColorWidget: public TBWidget {
 public:
-    TBOBJECT_SUBCLASS(TBColorWidget, TBWidget);    // For safe typecasting
+	TBOBJECT_SUBCLASS(TBColorWidget, TBWidget);    // For safe typecasting
 
-    TBColorWidget();
+	TBColorWidget();
 
-    void SetColor ( const char * );
-    void SetColor (float r, float g, float b, float a);
+	void SetColor(const char *);
+	void SetColor(float r, float g, float b, float a);
 
-    void SetAlpha ( float );
+	void SetAlpha(float);
 
-    const TBColor& GetColor() const { return color_; }
-    float GetAlpha() const { return alpha_; }
+	const TBColor& GetColor() const {
+		return color_;
+	}
+	float GetAlpha() const {
+		return alpha_;
+	}
 
-    virtual void OnInflate(const INFLATE_INFO &info);
-    virtual void OnPaint(const PaintProps &paint_props);
+	virtual void OnInflate(const INFLATE_INFO &info);
+	virtual void OnPaint(const PaintProps &paint_props);
 
 private:
 
-    TBColor color_;
-    float alpha_;
+	TBColor color_;
+	float alpha_;
 };
 
 class TBColorWheel : public TBWidget
 {
 public:
-    TBOBJECT_SUBCLASS(TBColorWheel, TBWidget);    // For safe typecasting
+	TBOBJECT_SUBCLASS(TBColorWheel, TBWidget);    // For safe typecasting
 
-    TBColorWheel();
+	TBColorWheel();
 
-    virtual void OnInflate(const INFLATE_INFO &info);
-    virtual void OnPaint(const PaintProps &paint_props);
-    virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual void OnInflate(const INFLATE_INFO &info);
+	virtual void OnPaint(const PaintProps &paint_props);
+	virtual bool OnEvent(const TBWidgetEvent &ev);
 
-    float GetHue() const { return hue_; }
-    float GetSaturation() const { return saturation_; }
-    void SetHueSaturation ( float hue, float saturation );
+	float GetHue() const {
+		return hue_;
+	}
+	float GetSaturation() const {
+		return saturation_;
+	}
+	void SetHueSaturation(float hue, float saturation);
 
-    void SetMarkerX ( int );
-    void SetMarkerY( int );
-    void SetMarkerColor ( const char * );
+	void SetMarkerX(int);
+	void SetMarkerY(int);
+	void SetMarkerColor(const char *);
 
 private:
-    void CalcHueSaturation ( int, int ); // maths.
+	void CalcHueSaturation(int, int); // maths.
 
-    int markerx_;
-    int markery_; // where we clicked, put a box there
-    TBColor markercolor_; // what color box, default = black
-    float hue_;   // varies with the angle
-    float saturation_; // varies with the radius.
-};
-
-class TBEventBlocker : public TBWidgetListener {
-public:
-    TBEventBlocker() : TBWidgetListener() { }
-
-    /** Called when a event is about to be invoked on a widget. This make it possible
-        to intercept events before they are handled, and block it (by returning true --like here ).
-        Note, if returning true, other global listeners will still also be notified. */
-    virtual bool OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) { return true; } 
+	int markerx_;
+	int markery_; // where we clicked, put a box there
+	TBColor markercolor_; // what color box, default = black
+	float hue_;   // varies with the angle
+	float saturation_; // varies with the radius.
 };
 
 } // namespace tb

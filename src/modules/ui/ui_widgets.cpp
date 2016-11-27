@@ -35,30 +35,27 @@ namespace tb {
 
 // == TBColorWidget =======================================
 
-TBColorWidget::TBColorWidget() : color_(), alpha_ ( 1.0f)
-{
+TBColorWidget::TBColorWidget() :
+		TBWidget(), color_(), alpha_(1.0f) {
 }
 
-void TBColorWidget::SetColor ( const char *name )
-{
-	if (name)
+void TBColorWidget::SetColor(const char *name) {
+	if (name) {
 		color_.SetFromString(name, strlen(name));
+	}
 	InvalidateSkinStates();
 	Invalidate();
 }
 
-void TBColorWidget::SetColor(float r, float g, float b, float a)
-{
+void TBColorWidget::SetColor(float r, float g, float b, float a) {
 	color_.Set(TBColor(r, g, b, a));
 
 	InvalidateSkinStates();
 	Invalidate();
 }
 
-void TBColorWidget::SetAlpha ( float value )
-{
-	if ( value < 0.0 || value > 1.0 )
-	{
+void TBColorWidget::SetAlpha(float value) {
+	if (value < 0.0 || value > 1.0) {
 		alpha_ = 1.0;
 		return;
 	}
@@ -69,8 +66,7 @@ void TBColorWidget::SetAlpha ( float value )
 	Invalidate();
 }
 
-void TBColorWidget::OnPaint(const PaintProps &paint_props)
-{
+void TBColorWidget::OnPaint(const PaintProps &paint_props) {
 	TBRect local_rect = GetRect();
 	local_rect.x = 0;
 	local_rect.y = 0;
@@ -80,10 +76,10 @@ void TBColorWidget::OnPaint(const PaintProps &paint_props)
 	g_renderer->SetOpacity(old_opacity);
 }
 
-void TBColorWidget::OnInflate(const INFLATE_INFO &info)
-{
-	if (const char *colr = info.node->GetValueString("color", nullptr))
-		SetColor(colr);
+void TBColorWidget::OnInflate(const INFLATE_INFO &info) {
+	if (const char *color = info.node->GetValueString("color", nullptr)) {
+		SetColor(color);
+	}
 	TBWidget::OnInflate(info);
 }
 
@@ -93,44 +89,35 @@ TB_WIDGET_FACTORY(TBColorWidget, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
 // == TBColorWheel =======================================
 
 TBColorWheel::TBColorWheel() :
-	markerx_(128),
-	markery_(128),
-	markercolor_(),
-	hue_(0.0),
-	saturation_(0.0)
-{
+		TBWidget(), markerx_(128), markery_(128), markercolor_(), hue_(0.0), saturation_(0.0) {
 }
 
-void TBColorWheel::OnPaint(const PaintProps &paint_props)
-{
+void TBColorWheel::OnPaint(const PaintProps &paint_props) {
 	TBWidget::OnPaint(paint_props);  // draw the widget stuff
 
-	TBRect local_rect ( 0,0,4,4 ); // AND draw a marker where we clicked.
+	TBRect local_rect(0, 0, 4, 4); // AND draw a marker where we clicked.
 	local_rect.x = markerx_ - 2;
 	local_rect.y = markery_ - 2;
-	g_tb_skin->PaintRectFill( local_rect, markercolor_);
+	g_tb_skin->PaintRectFill(local_rect, markercolor_);
 	local_rect.x -= 1;
 	local_rect.y -= 1;
 	local_rect.w += 2;
 	local_rect.h += 2;
-	g_tb_skin->PaintRectFill( local_rect, markercolor_);  // draw double box
+	g_tb_skin->PaintRectFill(local_rect, markercolor_);  // draw double box
 }
 
-bool TBColorWheel::OnEvent(const TBWidgetEvent &ev)
-{
-	if (ev.target == this && ev.type == EVENT_TYPE_CLICK)
-	{
-		 SetMarkerX ( ev.target_x );
-		 SetMarkerY ( ev.target_y );
-		 CalcHueSaturation( markerx_, markery_ );
-		 TBWidgetEvent ev(EVENT_TYPE_CHANGED);
-		 InvokeEvent(ev);
+bool TBColorWheel::OnEvent(const TBWidgetEvent &ev) {
+	if (ev.target == this && ev.type == EVENT_TYPE_CLICK) {
+		SetMarkerX(ev.target_x);
+		SetMarkerY(ev.target_y);
+		CalcHueSaturation(markerx_, markery_);
+		TBWidgetEvent ev(EVENT_TYPE_CHANGED);
+		InvokeEvent(ev);
 	}
 	return TBWidget::OnEvent(ev);
 }
 
-void TBColorWheel::SetHueSaturation ( float hue, float saturation )
-{
+void TBColorWheel::SetHueSaturation(float hue, float saturation) {
 	// suppose to set the marker position to match HS here
 
 	hue_ = hue * 360.0;
@@ -139,8 +126,7 @@ void TBColorWheel::SetHueSaturation ( float hue, float saturation )
 	Invalidate();
 }
 
-void TBColorWheel::CalcHueSaturation ( int rawx, int rawy )
-{
+void TBColorWheel::CalcHueSaturation(int rawx, int rawy) {
 	TBRect rect = GetRect();
 	int centerx = rect.w / 2;
 	int centery = rect.h / 2;
@@ -150,44 +136,45 @@ void TBColorWheel::CalcHueSaturation ( int rawx, int rawy )
 	float X2 = centerx;
 	float Y2 = centery;
 	float angle = 0.0;
-	float xd = X2-X1;
-	float yd = Y2-Y1;
+	float xd = X2 - X1;
+	float yd = Y2 - Y1;
 	float dx = sqrt(xd * xd + yd * yd);
 
 	// angle in degrees
 	angle = atan2(Y2 - Y1, X2 - X1) * 180 / 3.14159265358979323846;
-	if (angle < 0) angle += 360.0;
+	if (angle < 0) {
+		angle += 360.0;
+	}
 
 	// if the distance > 128, can we calculate the line point at 128 and set the marker there?
 
-	if( dx > 128.0 ) dx = 128.0;  // limit value
+	if (dx > 128.0) {
+		dx = 128.0;  // limit value
+	}
 
 	saturation_ = dx;
 	hue_ = angle;
 }
 
-void TBColorWheel::SetMarkerX ( int value )
-{
+void TBColorWheel::SetMarkerX(int value) {
 	markerx_ = value;
 }
 
-void TBColorWheel::SetMarkerY ( int value )
-{
+void TBColorWheel::SetMarkerY(int value) {
 	markery_ = value;
 }
 
-void TBColorWheel::SetMarkerColor ( const char *name )
-{
-	if ( name )
+void TBColorWheel::SetMarkerColor(const char *name) {
+	if (name) {
 		markercolor_.SetFromString(name, strlen(name));
- 
+	}
 	Invalidate();
 }
 
-void TBColorWheel::OnInflate(const INFLATE_INFO &info)
-{
-	if (const char *colr = info.node->GetValueString("color", nullptr))
+void TBColorWheel::OnInflate(const INFLATE_INFO &info) {
+	if (const char *colr = info.node->GetValueString("color", nullptr)) {
 		SetMarkerColor(colr);
+	}
 	TBWidget::OnInflate(info);
 }
 
