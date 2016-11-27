@@ -118,7 +118,7 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 		GLint infoLogLength = 0;
 		glGetShaderiv(_shader[shaderType], GL_INFO_LOG_LENGTH, &infoLogLength);
 
-		std::unique_ptr<GLchar> strInfoLog(new GLchar[infoLogLength + 1]);
+		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
 		glGetShaderInfoLog(_shader[shaderType], infoLogLength, nullptr, strInfoLog.get());
 		const std::string errorLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 
