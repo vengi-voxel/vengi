@@ -74,7 +74,7 @@ long File::write(const unsigned char *buf, size_t len) const {
 
 std::string File::path() const {
 	const std::string& name = this->name();
-	const size_t pos = name.rfind("/");
+	const size_t pos = name.rfind('/');
 	if (pos == std::string::npos) {
 		return "";
 	}
@@ -83,11 +83,11 @@ std::string File::path() const {
 
 std::string File::fileName() const {
 	std::string name = this->name();
-	const size_t pathPos = name.rfind("/");
+	const size_t pathPos = name.rfind('/');
 	if (pathPos != std::string::npos) {
 		name = name.substr(pathPos + 1);
 	}
-	const size_t extPos = name.rfind(".");
+	const size_t extPos = name.rfind('.');
 	if (extPos != std::string::npos) {
 		name = name.substr(0, extPos);
 	}
