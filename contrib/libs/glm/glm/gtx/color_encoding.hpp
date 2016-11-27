@@ -1,11 +1,11 @@
-/// @ref gtc_color_encoding
-/// @file glm/gtc/color_encoding.hpp
+/// @ref gtx_color_encoding
+/// @file glm/gtx/color_encoding.hpp
 ///
 /// @see core (dependence)
-/// @see gtc_color_encoding (dependence)
+/// @see gtx_color_encoding (dependence)
 ///
-/// @defgroup gtc_color_encoding GLM_GTC_color_encoding
-/// @ingroup gtc
+/// @defgroup gtx_color_encoding GLM_GTX_color_encoding
+/// @ingroup gtx
 ///
 /// @brief Allow to perform bit operations on integer values
 ///
@@ -25,20 +25,20 @@
 
 namespace glm
 {
-	/// @addtogroup gtc_color_encoding
+	/// @addtogroup gtx_color_encoding
 	/// @{
 
 	/// Convert a linear sRGB color to D65 YUV.
 	template <typename T, precision P>
 	GLM_FUNC_DECL tvec3<T, P> convertLinearSRGBToD65XYZ(tvec3<T, P> const& ColorLinearSRGB);
 
+	/// Convert a linear sRGB color to D50 YUV.
+	template <typename T, precision P>
+	GLM_FUNC_DECL tvec3<T, P> convertLinearSRGBToD50XYZ(tvec3<T, P> const& ColorLinearSRGB);
+
 	/// Convert a D65 YUV color to linear sRGB.
 	template <typename T, precision P>
 	GLM_FUNC_DECL tvec3<T, P> convertD65XYZToLinearSRGB(tvec3<T, P> const& ColorD65XYZ);
-
-	/// Convert a D50 YUV color to D65 YUV.
-	template <typename T, precision P>
-	GLM_FUNC_DECL tvec3<T, P> convertD50XYZToD65XYZ(tvec3<T, P> const& ColorD50XYZ);
 
 	/// Convert a D65 YUV color to D50 YUV.
 	template <typename T, precision P>

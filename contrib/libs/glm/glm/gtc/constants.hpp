@@ -2,7 +2,6 @@
 /// @file glm/gtc/constants.hpp
 ///
 /// @see core (dependence)
-/// @see gtc_half_float (dependence)
 ///
 /// @defgroup gtc_constants GLM_GTC_constants
 /// @ingroup gtc

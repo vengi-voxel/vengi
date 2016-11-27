@@ -14,7 +14,7 @@ namespace detail
 	template <typename T>
 	GLM_FUNC_QUALIFIER T mod289(T const & x)
 	{
-		return x - floor(x * static_cast<T>(1.0) / static_cast<T>(289.0)) * static_cast<T>(289.0);
+		return x - floor(x * (static_cast<T>(1.0) / static_cast<T>(289.0))) * static_cast<T>(289.0);
 	}
 
 	template <typename T>

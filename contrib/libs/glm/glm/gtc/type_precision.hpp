@@ -2,7 +2,6 @@
 /// @file glm/gtc/type_precision.hpp
 ///
 /// @see core (dependence)
-/// @see gtc_half_float (dependence)
 /// @see gtc_quaternion (dependence)
 ///
 /// @defgroup gtc_type_precision GLM_GTC_type_precision

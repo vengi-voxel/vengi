@@ -38,9 +38,9 @@ namespace glm
 		)
 		{
 			tvec3<T, P> result;
-			result.x/*Y */ = rgbColor.g / T(2) + (rgbColor.r + rgbColor.b) / T(4);
+			result.x/*Y */ = rgbColor.g * static_cast<T>(0.5) + (rgbColor.r + rgbColor.b) * static_cast<T>(0.25);
 			result.y/*Co*/ = rgbColor.r - rgbColor.b;
-			result.z/*Cg*/ = rgbColor.g - (rgbColor.r + rgbColor.b) / T(2);
+			result.z/*Cg*/ = rgbColor.g - (rgbColor.r + rgbColor.b) * static_cast<T>(0.5);
 			return result;
 		}
 
@@ -50,9 +50,9 @@ namespace glm
 		)
 		{
 			tvec3<T, P> result;
-			T tmp = YCoCgRColor.x - (YCoCgRColor.z / T(2));
+			T tmp = YCoCgRColor.x - (YCoCgRColor.z * static_cast<T>(0.5));
 			result.g = YCoCgRColor.z + tmp;
-			result.b = tmp - (YCoCgRColor.y / T(2));
+			result.b = tmp - (YCoCgRColor.y * static_cast<T>(0.5));
 			result.r = result.b + YCoCgRColor.y;
 			return result;
 		}

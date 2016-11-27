@@ -2,7 +2,6 @@
 /// @file glm/gtx/extended_min_max.hpp
 ///
 /// @see core (dependence)
-/// @see gtx_half_float (dependence)
 ///
 /// @defgroup gtx_extented_min_max GLM_GTX_extented_min_max
 /// @ingroup gtx
@@ -15,6 +14,10 @@
 
 // Dependency:
 #include "../glm.hpp"
+
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#	error "GLM: GLM_GTX_extented_min_max is an experimetal extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
+#endif
 
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_extented_min_max extension included")

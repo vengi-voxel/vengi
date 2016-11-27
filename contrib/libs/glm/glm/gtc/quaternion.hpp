@@ -2,7 +2,6 @@
 /// @file glm/gtc/quaternion.hpp
 ///
 /// @see core (dependence)
-/// @see gtc_half_float (dependence)
 /// @see gtc_constants (dependence)
 ///
 /// @defgroup gtc_quaternion GLM_GTC_quaternion

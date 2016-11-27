@@ -12,6 +12,10 @@
 
 #pragma once
 
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#	error "GLM: GLM_GTX_type_trait is an experimetal extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
+#endif
+
 // Dependency:
 #include "../detail/type_vec2.hpp"
 #include "../detail/type_vec3.hpp"

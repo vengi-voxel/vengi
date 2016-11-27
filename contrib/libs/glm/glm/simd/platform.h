@@ -422,6 +422,9 @@
 #elif GLM_ARCH & GLM_ARCH_AVX_BIT
 #	include <immintrin.h>
 #elif GLM_ARCH & GLM_ARCH_SSE42_BIT
+#	if GLM_COMPILER & GLM_COMPILER_CLANG
+#		include <popcntintrin.h>
+#	endif
 #	include <nmmintrin.h>
 #elif GLM_ARCH & GLM_ARCH_SSE41_BIT
 #	include <smmintrin.h>

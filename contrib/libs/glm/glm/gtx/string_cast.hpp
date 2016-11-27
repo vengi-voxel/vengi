@@ -2,7 +2,6 @@
 /// @file glm/gtx/string_cast.hpp
 ///
 /// @see core (dependence)
-/// @see gtc_half_float (dependence)
 /// @see gtx_integer (dependence)
 /// @see gtx_quaternion (dependence)
 ///
@@ -22,6 +21,10 @@
 #include "../gtc/quaternion.hpp"
 #include "../gtx/dual_quaternion.hpp"
 #include <string>
+
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#	error "GLM: GLM_GTX_string_cast is an experimetal extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
+#endif
 
 #if(GLM_COMPILER & GLM_COMPILER_CUDA)
 #	error "GLM_GTX_string_cast is not supported on CUDA compiler"

@@ -2,7 +2,6 @@
 /// @file glm/gtc/epsilon.hpp
 /// 
 /// @see core (dependence)
-/// @see gtc_half_float (dependence)
 /// @see gtc_quaternion (dependence)
 ///
 /// @defgroup gtc_epsilon GLM_GTC_epsilon

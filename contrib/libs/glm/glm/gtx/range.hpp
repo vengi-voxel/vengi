@@ -15,6 +15,10 @@
 // Dependencies
 #include "../detail/setup.hpp"
 
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#	error "GLM: GLM_GTX_range is an experimetal extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
+#endif
+
 #if !GLM_HAS_RANGE_FOR
 #	error "GLM_GTX_range requires C++11 suppport or 'range for'"
 #endif

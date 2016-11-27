@@ -2,7 +2,6 @@
 /// @file glm/gtc/type_ptr.hpp
 ///
 /// @see core (dependence)
-/// @see gtc_half_float (dependence)
 /// @see gtc_quaternion (dependence)
 ///
 /// @defgroup gtc_type_ptr GLM_GTC_type_ptr

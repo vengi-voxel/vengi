@@ -2,7 +2,6 @@
 /// @file glm/gtc/functions.hpp
 /// 
 /// @see core (dependence)
-/// @see gtc_half_float (dependence)
 /// @see gtc_quaternion (dependence)
 ///
 /// @defgroup gtc_functions GLM_GTC_functions

@@ -14,8 +14,8 @@ namespace glm
 			rgbColor = tvec3<T, P>(hsv.z);
 		else
 		{
-			T sector = floor(hsv.x / T(60));
-			T frac = (hsv.x / T(60)) - sector;
+			T sector = floor(hsv.x * (T(1) / T(60)));
+			T frac = (hsv.x * (T(1) / T(60))) - sector;
 			// factorial part of h
 			T o = hsv.z * (T(1) - hsv.y);
 			T p = hsv.z * (T(1) - hsv.y * frac);

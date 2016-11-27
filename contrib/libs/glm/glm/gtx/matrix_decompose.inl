@@ -147,47 +147,34 @@ namespace detail
 		//     ret.rotateZ = 0;
 		// }
 
-		T s, t, x, y, z, w;
-
-		t = Row[0][0] + Row[1][1] + Row[2][2] + static_cast<T>(1);
-
-		if(t > static_cast<T>(1e-4))
+		int i, j, k = 0;
+		float root, trace = Row[0].x + Row[1].y + Row[2].z;
+		if(trace > static_cast<T>(0))
 		{
-			s = static_cast<T>(0.5) / sqrt(t);
-			w = static_cast<T>(0.25) / s;
-			x = (Row[2][1] - Row[1][2]) * s;
-			y = (Row[0][2] - Row[2][0]) * s;
-			z = (Row[1][0] - Row[0][1]) * s;
-		}
-		else if(Row[0][0] > Row[1][1] && Row[0][0] > Row[2][2])
-		{ 
-			s = sqrt (static_cast<T>(1) + Row[0][0] - Row[1][1] - Row[2][2]) * static_cast<T>(2); // S=4*qx 
-			x = static_cast<T>(0.25) * s;
-			y = (Row[0][1] + Row[1][0]) / s; 
-			z = (Row[0][2] + Row[2][0]) / s; 
-			w = (Row[2][1] - Row[1][2]) / s;
-		}
-		else if(Row[1][1] > Row[2][2])
-		{ 
-			s = sqrt (static_cast<T>(1) + Row[1][1] - Row[0][0] - Row[2][2]) * static_cast<T>(2); // S=4*qy
-			x = (Row[0][1] + Row[1][0]) / s; 
-			y = static_cast<T>(0.25) * s;
-			z = (Row[1][2] + Row[2][1]) / s; 
-			w = (Row[0][2] - Row[2][0]) / s;
-		}
+			root = sqrt(trace + static_cast<T>(1.0));
+			Orientation.w = static_cast<T>(0.5) * root;
+			root = static_cast<T>(0.5) / root;
+			Orientation.x = root * (Row[1].z - Row[2].y);
+			Orientation.y = root * (Row[2].x - Row[0].z);
+			Orientation.z = root * (Row[0].y - Row[1].x);
+		} // End if > 0
 		else
-		{ 
-			s = sqrt(static_cast<T>(1) + Row[2][2] - Row[0][0] - Row[1][1]) * static_cast<T>(2); // S=4*qz
-			x = (Row[0][2] + Row[2][0]) / s;
-			y = (Row[1][2] + Row[2][1]) / s; 
-			z = static_cast<T>(0.25) * s;
-			w = (Row[1][0] - Row[0][1]) / s;
-		}
+		{
+			static int Next[3] = {1, 2, 0};
+			i = 0;
+			if(Row[1].y > Row[0].x) i = 1;
+			if(Row[2].z > Row[i][i]) i = 2;
+			j = Next[i];
+			k = Next[j];
 
-		Orientation.x = x;
-		Orientation.y = y;
-		Orientation.z = z;
-		Orientation.w = w;
+			root = sqrt(Row[i][i] - Row[j][j] - Row[k][k] + static_cast<T>(1.0));
+
+			Orientation[i] = static_cast<T>(0.5) * root;
+			root = static_cast<T>(0.5) / root;
+			Orientation[j] = root * (Row[i][j] + Row[j][i]);
+			Orientation[k] = root * (Row[i][k] + Row[k][i]);
+			Orientation.w = root * (Row[j][k] - Row[k][j]);
+		} // End if <= 0
 
 		return true;
 	}

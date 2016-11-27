@@ -1,6 +1,22 @@
+/// @ref gtx_vec_swizzle
+/// @file glm/gtx/vec_swizzle.hpp
+///
+/// @see core (dependence)
+///
+/// @defgroup gtx_vec_swizzle GLM_GTX_vec_swizzle
+/// @ingroup gtx
+///
+/// @brief Functions to perform swizzle operation.
+///
+/// <glm/gtx/vec_swizzle.hpp> need to be included to use these functionalities.
+
 #pragma once
 
-#include <glm/glm.hpp>
+#include "../glm.hpp"
+
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#	error "GLM: GLM_GTX_vec_swizzle is an experimetal extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
+#endif
 
 namespace glm {
 	// xx

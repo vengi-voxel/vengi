@@ -1,5 +1,5 @@
-﻿/// @ref gtc_color_encoding
-/// @file glm/gtc/color_encoding.inl
+﻿/// @ref gtx_color_encoding
+/// @file glm/gtx/color_encoding.inl
 
 namespace glm
 {
@@ -14,16 +14,6 @@ namespace glm
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tvec3<T, P> convertD65XYZToLinearSRGB(tvec3<T, P> const& ColorD65XYZ)
-	{
-		tvec3<T, P> const M(0.41847f, -0.091169f, 0.0009209f);
-		tvec3<T, P> const N(-0.15866f, 0.25243f, 0.015708f);
-		tvec3<T, P> const O(0.0009209f, -0.0025498f, 0.1786f);
-
-		return M * ColorD65XYZ + N * ColorD65XYZ + O * ColorD65XYZ;
-	}
-
-	template <typename T, precision P>
 	GLM_FUNC_QUALIFIER tvec3<T, P> convertLinearSRGBToD50XYZ(tvec3<T, P> const& ColorLinearSRGB)
 	{
 		tvec3<T, P> const M(0.436030342570117f, 0.222438466210245f, 0.013897440074263f);
@@ -34,13 +24,13 @@ namespace glm
 	}
 
 	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tvec3<T, P> convertD50XYZToLinearSRGB(tvec3<T, P> const& ColorD50XYZ)
+	GLM_FUNC_QUALIFIER tvec3<T, P> convertD65XYZToLinearSRGB(tvec3<T, P> const& ColorD65XYZ)
 	{
-		tvec3<T, P> const M();
-		tvec3<T, P> const N();
-		tvec3<T, P> const O();
+		tvec3<T, P> const M(0.41847f, -0.091169f, 0.0009209f);
+		tvec3<T, P> const N(-0.15866f, 0.25243f, 0.015708f);
+		tvec3<T, P> const O(0.0009209f, -0.0025498f, 0.1786f);
 
-		return M * ColorD50XYZ + N * ColorD50XYZ + O * ColorD50XYZ;
+		return M * ColorD65XYZ + N * ColorD65XYZ + O * ColorD65XYZ;
 	}
 
 	template <typename T, precision P>
@@ -53,13 +43,4 @@ namespace glm
 		return M * ColorD65XYZ + N * ColorD65XYZ + O * ColorD65XYZ;
 	}
 
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tvec3<T, P> convertD50XYZToD65XYZ(tvec3<T, P> const& ColorD50XYZ)
-	{
-		tvec3<T, P> const M();
-		tvec3<T, P> const N();
-		tvec3<T, P> const O();
-
-		return M * ColorD50XYZ + N * ColorD50XYZ + O * ColorD50XYZ;
-	}
 }//namespace glm

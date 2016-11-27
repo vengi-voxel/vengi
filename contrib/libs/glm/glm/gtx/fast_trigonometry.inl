@@ -8,10 +8,10 @@ namespace detail
 	GLM_FUNC_QUALIFIER vecType<T, P> taylorCos(vecType<T, P> const & x)
 	{
 		return static_cast<T>(1)
-			- (x * x) / 2.f
-			+ (x * x * x * x) / 24.f
-			- (x * x * x * x * x * x) / 720.f
-			+ (x * x * x * x * x * x * x * x) / 40320.f;
+			- (x * x) * (1.f / 2.f)
+			+ ((x * x) * (x * x)) * (1.f / 24.f)
+			- (((x * x) * (x * x)) * (x * x)) * (1.f / 720.f)
+			+ (((x * x) * (x * x)) * ((x * x) * (x * x))) * (1.f / 40320.f);
 	}
 
 	template <typename T>

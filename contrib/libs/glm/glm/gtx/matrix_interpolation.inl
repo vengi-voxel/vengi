@@ -25,12 +25,12 @@ namespace glm
 				return;
 			}
 			angle = static_cast<T>(3.1415926535897932384626433832795);
-			T xx = (mat[0][0] + (T)1.0) / (T)2.0;
-			T yy = (mat[1][1] + (T)1.0) / (T)2.0;
-			T zz = (mat[2][2] + (T)1.0) / (T)2.0;
-			T xy = (mat[1][0] + mat[0][1]) / (T)4.0;
-			T xz = (mat[2][0] + mat[0][2]) / (T)4.0;
-			T yz = (mat[2][1] + mat[1][2]) / (T)4.0;
+			T xx = (mat[0][0] + (T)1.0) * (T)0.5;
+			T yy = (mat[1][1] + (T)1.0) * (T)0.5;
+			T zz = (mat[2][2] + (T)1.0) * (T)0.5;
+			T xy = (mat[1][0] + mat[0][1]) * (T)0.25;
+			T xz = (mat[2][0] + mat[0][2]) * (T)0.25;
+			T yz = (mat[2][1] + mat[1][2]) * (T)0.25;
 			if((xx > yy) && (xx > zz))
 			{
 				if (xx < epsilon) {
@@ -72,7 +72,7 @@ namespace glm
 		T s = sqrt((mat[2][1] - mat[1][2]) * (mat[2][1] - mat[1][2]) + (mat[2][0] - mat[0][2]) * (mat[2][0] - mat[0][2]) + (mat[1][0] - mat[0][1]) * (mat[1][0] - mat[0][1]));
 		if (glm::abs(s) < T(0.001))
 			s = (T)1.0;
-		angle = acos((mat[0][0] + mat[1][1] + mat[2][2] - (T)1.0) / (T)2.0);
+		angle = acos((mat[0][0] + mat[1][1] + mat[2][2] - (T)1.0) * (T)0.5);
 		axis.x = (mat[1][2] - mat[2][1]) / s;
 		axis.y = (mat[2][0] - mat[0][2]) / s;
 		axis.z = (mat[0][1] - mat[1][0]) / s;

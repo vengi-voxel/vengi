@@ -101,7 +101,7 @@ namespace detail
 		GLM_FUNC_QUALIFIER static genFIType call(genFIType x)
 		{
 			GLM_STATIC_ASSERT(
-				!std::numeric_limits<genFIType>::is_signed && std::numeric_limits<genFIType>::is_integer || GLM_UNRESTRICTED_GENTYPE,
+				(!std::numeric_limits<genFIType>::is_signed && std::numeric_limits<genFIType>::is_integer) || GLM_UNRESTRICTED_GENTYPE,
 				"'abs' only accept floating-point and integer scalar or vector inputs");
 			return x;
 		}
