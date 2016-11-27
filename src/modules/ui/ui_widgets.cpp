@@ -36,19 +36,19 @@ namespace tb {
 // == TBColorWidget =======================================
 
 TBColorWidget::TBColorWidget() :
-		TBWidget(), color_(), value_(0) {
+		TBWidget(), _color(), _value(0) {
 }
 
 void TBColorWidget::SetValue(int value) {
-	if (value == value_) {
+	if (value == _value) {
 		return;
 	}
-	value_ = value;
-	const int red   = (value_ >> 24) & 0xFF;
-	const int green = (value_ >> 16) & 0xFF;
-	const int blue  = (value_ >>  8) & 0xFF;
-	const int alpha = (value_ >>  0) & 0xFF;
-	color_ = TBColor(red, green, blue, alpha);
+	_value = value;
+	const int red   = (_value >> 24) & 0xFF;
+	const int green = (_value >> 16) & 0xFF;
+	const int blue  = (_value >>  8) & 0xFF;
+	const int alpha = (_value >>  0) & 0xFF;
+	_color = TBColor(red, green, blue, alpha);
 
 	InvalidateSkinStates();
 	Invalidate();
@@ -61,8 +61,8 @@ void TBColorWidget::SetColor(const char *name) {
 	if (!name) {
 		return;
 	}
-	color_.SetFromString(name, strlen(name));
-	SetValue((uint32)color_);
+	_color.SetFromString(name, strlen(name));
+	SetValue((uint32)_color);
 }
 
 void TBColorWidget::SetColor(int r, int g, int b, int a) {
@@ -73,7 +73,7 @@ void TBColorWidget::OnPaint(const PaintProps &paint_props) {
 	TBRect local_rect = GetRect();
 	local_rect.x = 0;
 	local_rect.y = 0;
-	g_tb_skin->PaintRectFill(local_rect, color_);
+	g_tb_skin->PaintRectFill(local_rect, _color);
 }
 
 void TBColorWidget::OnInflate(const INFLATE_INFO &info) {
@@ -89,7 +89,7 @@ TB_WIDGET_FACTORY(TBColorWidget, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
 // == TBColorWheel =======================================
 
 TBColorWheel::TBColorWheel() :
-		TBWidget(), markerx_(128), markery_(128), markercolor_(), hue_(0.0), saturation_(0.0) {
+		TBWidget(), markerx_(128), markery_(128), markercolor_(), _hue(0.0), saturation_(0.0) {
 }
 
 void TBColorWheel::OnPaint(const PaintProps &paint_props) {
@@ -120,7 +120,7 @@ bool TBColorWheel::OnEvent(const TBWidgetEvent &ev) {
 void TBColorWheel::SetHueSaturation(float hue, float saturation) {
 	// suppose to set the marker position to match HS here
 
-	hue_ = hue * 360.0;
+	_hue = hue * 360.0;
 	saturation_ = saturation * 128.0;
 
 	Invalidate();
@@ -153,7 +153,7 @@ void TBColorWheel::CalcHueSaturation(int rawx, int rawy) {
 	}
 
 	saturation_ = dx;
-	hue_ = angle;
+	_hue = angle;
 }
 
 void TBColorWheel::SetMarkerX(int value) {

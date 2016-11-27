@@ -45,18 +45,18 @@ public:
 	void SetColor(int r, int g, int b, int a);
 
 	const TBColor& GetColor() const {
-		return color_;
+		return _color;
 	}
 
 	virtual void SetValue(int value) override;
-	virtual int GetValue() override { return (int) value_; }
+	virtual int GetValue() override { return (int) _value; }
 
 	virtual void OnInflate(const INFLATE_INFO &info) override;
 	virtual void OnPaint(const PaintProps &paint_props) override;
 
 private:
-	TBColor color_;
-	uint32 value_;
+	TBColor _color;
+	uint32 _value;
 };
 
 class TBColorWheel : public TBWidget
@@ -71,7 +71,7 @@ public:
 	virtual bool OnEvent(const TBWidgetEvent &ev) override;
 
 	float GetHue() const {
-		return hue_;
+		return _hue;
 	}
 	float GetSaturation() const {
 		return saturation_;
@@ -88,7 +88,7 @@ private:
 	int markerx_;
 	int markery_; // where we clicked, put a box there
 	TBColor markercolor_; // what color box, default = black
-	float hue_;   // varies with the angle
+	float _hue;   // varies with the angle
 	float saturation_; // varies with the radius.
 };
 
