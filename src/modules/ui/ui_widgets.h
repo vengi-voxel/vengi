@@ -25,6 +25,7 @@
 //
 #pragma once
 
+#include "core/Common.h"
 #include "tb_widgets.h"
 #include "tb_layout.h"
 #include "tb_msg.h"
@@ -37,7 +38,9 @@ namespace tb {
 // there you can paint solid colors using g_tb_skin->PaintRectFill.
 class TBColorWidget: public TBWidget {
 public:
-	TBOBJECT_SUBCLASS(TBColorWidget, TBWidget);    // For safe typecasting
+	DISABLE_WARNING(inconsistent-missing-override,inconsistent-missing-override,0)
+	TBOBJECT_SUBCLASS(TBColorWidget, TBWidget);
+	ENABLE_WARNING(inconsistent-missing-override,inconsistent-missing-override,0)
 
 	TBColorWidget();
 
@@ -62,7 +65,9 @@ private:
 class TBColorWheel : public TBWidget
 {
 public:
-	TBOBJECT_SUBCLASS(TBColorWheel, TBWidget);    // For safe typecasting
+	DISABLE_WARNING(inconsistent-missing-override,inconsistent-missing-override,0)
+	TBOBJECT_SUBCLASS(TBColorWheel, TBWidget);
+	ENABLE_WARNING(inconsistent-missing-override,inconsistent-missing-override,0)
 
 	TBColorWheel();
 
