@@ -279,14 +279,15 @@ int Shader::fetchUniforms() {
 		GLsizei length;
 		GLint size;
 		GLenum type;
-		glGetActiveUniform(_program, i, MAX_SHADER_VAR_NAME - 1, &length, &size, &type, name);
+		glGetActiveUniform(_program, i, sizeof(name) - 1, &length, &size, &type, name);
 		int location = glGetUniformLocation(_program, name);
 		_uniforms[name] = location;
 		const int l = strlen(name);
 		if (name[l - 1] == ']') {
+			// TODO: doesn't this assume that the array is never like [10] but only like [9]?
 			name[l - 3] = '\0';
 		} else {
-			strncat(name, "[0]", MAX_SHADER_VAR_NAME);
+			strncat(name, "[0]", sizeof(name) - l);
 		}
 		location = glGetUniformLocation(_program, name);
 		if (location >= 0) {
