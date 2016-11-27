@@ -39,7 +39,7 @@ static void defaultNoticeProcessor(void *arg, const char *message) {
 }
 
 bool Connection::connect() {
-	std::string conninfo = "";
+	std::string conninfo;
 
 	const char *host = nullptr;
 	if (!_host.empty()) {

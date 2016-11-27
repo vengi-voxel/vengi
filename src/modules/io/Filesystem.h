@@ -53,7 +53,7 @@ public:
 		Type type;
 	};
 
-	bool list(const std::string& directory, std::vector<DirEntry>& entries, const std::string& filter = "") const;
+	bool list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter = "") const;
 
 	io::FilePtr open(const std::string& filename, FileMode mode = FileMode::Read) const;
 

@@ -45,11 +45,11 @@ public:
 	static int getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>& colors);
 	static glm::vec4 FromRGB(const unsigned int rgbInt, const float a = 1.0f);
 	static glm::vec4 FromRGBA(const unsigned int rgbaInt);
-	static glm::vec4 FromHSB(const float h, const float s, const float b, const float a = 1.0f);
+	static glm::vec4 FromHSB(const float hue, const float saturation, const float brightness, const float alpha = 1.0f);
 
 	static unsigned int GetRGB(const glm::vec4&);
 	static unsigned int GetRGBA(const glm::vec4&);
-	static void GetHSB(const glm::vec4&, float& h, float& s, float& b);
+	static void GetHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);
 
 	static float Brightness(const glm::vec4&);
 	static float Intensity(const glm::vec4&);

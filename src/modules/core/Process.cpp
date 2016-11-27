@@ -54,14 +54,15 @@ int Process::exec (const std::string& command, const std::vector<std::string>& a
 		argv[argc++] = command.c_str();
 		for (const std::string& arg : arguments) {
 			argv[argc++] = arg.c_str();
-			if (argc >= 63)
+			if (argc >= 63) {
 				break;
+			}
 		}
 		argv[argc] = nullptr;
 		::dup2(link[1], STDOUT_FILENO);
 		::close(link[0]);
 		::close(link[1]);
-		if (workdingDirectory) {
+		if (workdingDirectory != nullptr) {
 			::chdir(workdingDirectory);
 		}
 		// we are the child

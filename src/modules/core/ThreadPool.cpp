@@ -11,8 +11,9 @@ namespace core {
 ThreadPool::ThreadPool(size_t threads, const char *name) :
 		_stop(false) {
 	_workers.reserve(threads);
-	if (name == nullptr)
+	if (name == nullptr) {
 		name = "ThreadPool";
+	}
 	for (size_t i = 0; i < threads; ++i) {
 		_workers.emplace_back([this, name, i] {
 			const std::string n = core::string::format("%s-%i", name, (int)i);
@@ -40,8 +41,9 @@ ThreadPool::ThreadPool(size_t threads, const char *name) :
 ThreadPool::~ThreadPool() {
 	_stop = true;
 	_condition.notify_all();
-	for (std::thread &worker : _workers)
+	for (std::thread &worker : _workers) {
 		worker.join();
+	}
 }
 
 }

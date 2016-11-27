@@ -38,7 +38,7 @@ std::string File::load() {
 	char *includeBuffer;
 	const int includeLen = read((void **) &includeBuffer);
 	std::unique_ptr<char[]> p(includeBuffer);
-	if (!includeBuffer || includeLen <= 0) {
+	if (includeBuffer == nullptr || includeLen <= 0) {
 		return "";
 	}
 	return std::string(includeBuffer, includeLen);
@@ -59,7 +59,7 @@ long File::write(const unsigned char *buf, size_t len) const {
 	}
 
 	int remaining = len;
-	while (remaining) {
+	while (remaining != 0) {
 		const size_t written = SDL_RWwrite(_file, buf, 1, remaining);
 		if (written == 0) {
 			return -1L;
@@ -135,7 +135,7 @@ int File::read(void *buffer, int n) {
 
 	seek(0, RW_SEEK_SET);
 
-	while (remaining) {
+	while (remaining != 0u) {
 		size_t block = remaining;
 		if (block > blockSize) {
 			block = blockSize;

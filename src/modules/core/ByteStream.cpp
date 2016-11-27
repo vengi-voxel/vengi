@@ -18,8 +18,9 @@ ByteStream::~ByteStream() {
 
 int32_t ByteStream::peekInt() const {
 	const int l = 4;
-	if (size() < l)
+	if (size() < l) {
 		return -1;
+	}
 	uint8_t buf[l];
 	VectorBuffer::const_iterator it = begin();
 	for (int i = 0; i < l; ++i) {
@@ -32,8 +33,9 @@ int32_t ByteStream::peekInt() const {
 
 int16_t ByteStream::peekShort() const {
 	const int l = 2;
-	if (size() < l)
+	if (size() < l) {
 		return -1;
+	}
 	uint8_t buf[l];
 	VectorBuffer::const_iterator it = begin();
 	for (int i = 0; i < l; ++i) {
@@ -49,7 +51,7 @@ void ByteStream::addFormat(const char *fmt, ...) {
 
 	va_start(ap, fmt);
 
-	while (*fmt) {
+	while (*fmt != '\0') {
 		const char typeID = *fmt++;
 		switch (typeID) {
 		case 'b':
@@ -77,7 +79,7 @@ void ByteStream::readFormat(const char *fmt, ...) {
 
 	va_start(ap, fmt);
 
-	while (*fmt) {
+	while (*fmt != '\0') {
 		const char typeID = *fmt++;
 		switch (typeID) {
 		case 'b':
@@ -108,8 +110,9 @@ std::string ByteStream::readString() {
 		const char chr = *std::next(begin(), size);
 		++size;
 		core_assert(size <= this->size());
-		if (chr == '\0')
+		if (chr == '\0') {
 			break;
+		}
 		strbuff += chr;
 	}
 	_pos += size;

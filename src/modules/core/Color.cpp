@@ -166,8 +166,9 @@ void Color::GetHSB(const glm::vec4& color, float& hue, float& saturation, float&
 		hue = 4.f + g - r;
 	}
 	hue /= 6.f;
-	if (hue < 0.f)
+	if (hue < 0.f) {
 		hue += 1.f;
+	}
 	saturation = (brightness - minBrightness) / brightness;
 }
 
@@ -188,14 +189,18 @@ glm::vec4 Color::Brighter(const glm::vec4& color, float f) {
 	static float min = 21.f / magnitude;
 	glm::vec3 result = glm::vec3(color);
 	f = std::pow(scaleFactor, f);
-	if (glm::all(glm::epsilonEqual(glm::vec3(), result, 0.00001f)))
+	if (glm::all(glm::epsilonEqual(glm::vec3(), result, 0.00001f))) {
 		return glm::vec4(min / f, min / f, min / f, color.a);
-	if (result.r > 0.f && result.r < min)
+	}
+	if (result.r > 0.f && result.r < min) {
 		result.r = min;
-	if (result.g > 0.f && result.g < min)
+	}
+	if (result.g > 0.f && result.g < min) {
 		result.g = min;
-	if (result.b > 0.f && result.b < min)
+	}
+	if (result.b > 0.f && result.b < min) {
 		result.b = min;
+	}
 	return glm::vec4(glm::clamp(result / f, 0.f, 1.f), color.a);
 }
 

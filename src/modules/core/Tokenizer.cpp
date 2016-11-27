@@ -25,7 +25,8 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep) :
 				if (c == '"' || c == '\0' || _len <= 0) {
 					_tokens.push_back(token);
 					break;
-				} else if (c == '\\') {
+				}
+				if (c == '\\') {
 					const char next = *s;
 					if (next == 'n') {
 						c = '\n';
@@ -109,7 +110,8 @@ char Tokenizer::skip(const char **s) {
 			*s += l + 2;
 			_len -= l + 2;
 			return skip(s);
-		} else if (next == '/') {
+		}
+		if (next == '/') {
 			while (**s != '\0' && **s != '\n') {
 				(*s)++;
 				if (--_len <= 0) {

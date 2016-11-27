@@ -49,7 +49,7 @@ bool FileStream::addFormat(const char *fmt, ...) {
 
 	va_start(ap, fmt);
 
-	while (*fmt) {
+	while (*fmt != '\0') {
 		const char typeID = *fmt++;
 		switch (typeID) {
 		case 'b':
@@ -84,7 +84,7 @@ bool FileStream::addFormat(const char *fmt, ...) {
 bool FileStream::readFormat(const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
-	while (*fmt) {
+	while (*fmt != '\0') {
 		const char typeID = *fmt++;
 		switch (typeID) {
 		case 'b': {

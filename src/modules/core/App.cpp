@@ -153,7 +153,7 @@ AppState App::onConstruct() {
 		}
 	}).setHelp("Clear the value history of a variable");
 	core::Command::registerCommand("toggle", [] (const core::CmdArgs& args) {
-		if (args.size() < 1) {
+		if (args.empty()) {
 			Log::error("not enough arguments given. Expecting a variable name at least");
 			return;
 		}
@@ -337,7 +337,7 @@ AppState App::onCleanup() {
 		Log::debug("save the config variables");
 		std::stringstream ss;
 		core::Var::visitSorted([&](const core::VarPtr& var) {
-			if (var->getFlags() & core::CV_NOPERSIST) {
+			if ((var->getFlags() & core::CV_NOPERSIST) != 0u) {
 				return;
 			}
 			const uint32_t flags = var->getFlags();
@@ -363,7 +363,7 @@ AppState App::onCleanup() {
 	while (item != nullptr) {
 		Log::warn("'%s', %s (%s:%d), triggered %u times, always ignore: %s.\n",
 				item->condition, item->function, item->filename, item->linenum,
-				item->trigger_count, item->always_ignore ? "yes" : "no");
+				item->trigger_count, item->always_ignore != 0 ? "yes" : "no");
 		item = item->next;
 	}
 	SDL_ResetAssertionReport();

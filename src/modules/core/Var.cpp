@@ -96,7 +96,7 @@ bool Var::useHistory(uint32_t historyIndex) {
 }
 
 void Var::setVal(const std::string& value) {
-	if (_flags & CV_READONLY) {
+	if ((_flags & CV_READONLY) != 0u) {
 		Log::error("%s is write protected", _name.c_str());
 		return;
 	}
@@ -104,10 +104,10 @@ void Var::setVal(const std::string& value) {
 	if (_dirty) {
 		addValueToHistory(value);
 		++_currentHistoryPos;
-		if (_flags & CV_REPLICATE) {
+		if ((_flags & CV_REPLICATE) != 0u) {
 			_updateFlags |= NEEDS_REPLICATE;
 		}
-		if (_flags & CV_BROADCAST) {
+		if ((_flags & CV_BROADCAST) != 0u) {
 			_updateFlags |= NEEDS_BROADCAST;
 		}
 	}

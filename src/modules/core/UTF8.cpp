@@ -8,29 +8,38 @@ namespace core {
 namespace utf8 {
 
 size_t lengthChar(uint8_t c) {
-	if (c < 0x80)
+	if (c < 0x80) {
 		return 1;
-	if (c < 0xc0)
+	}
+	if (c < 0xc0) {
 		return 0;
-	if (c < 0xe0)
+	}
+	if (c < 0xe0) {
 		return 2;
-	if (c < 0xf0)
+	}
+	if (c < 0xf0) {
 		return 3;
-	if (c < 0xf8)
+	}
+	if (c < 0xf8) {
 		return 4;
+	}
 	/* 5 and 6 byte sequences are no longer valid. */
 	return 0;
 }
 
 size_t lengthInt(int c) {
-	if (c <= 0x7F)
+	if (c <= 0x7F) {
 		return 1;
-	if (c <= 0x07FF)
+	}
+	if (c <= 0x07FF) {
 		return 2;
-	if (c <= 0xFFFF)
+	}
+	if (c <= 0xFFFF) {
 		return 3;
-	if (c <= 0x10FFFF) /* highest defined Unicode code */
+	}
+	if (c <= 0x10FFFF) { /* highest defined Unicode code */
 		return 4;
+	}
 	return 0;
 }
 

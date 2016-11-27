@@ -170,15 +170,16 @@ static void MD5Update (struct MD5Context *ctx, unsigned char const* buf, unsigne
 	/* Update bitcount */
 
 	uint32_t t = ctx->bits[0];
-	if ((ctx->bits[0] = t + ((uint32_t) len << 3)) < t)
+	if ((ctx->bits[0] = t + ((uint32_t) len << 3)) < t) {
 		ctx->bits[1]++; /* Carry from low to high */
+	}
 	ctx->bits[1] += len >> 29;
 
 	t = (t >> 3) & 0x3f; /* Bytes already in shsInfo->data */
 
 	/* Handle any leading odd-sized chunks */
 
-	if (t) {
+	if (t != 0u) {
 		unsigned char* p = (unsigned char*) ctx->in + t;
 
 		t = 64 - t;
@@ -246,8 +247,9 @@ static void MD5Final (struct MD5Context *ctx, unsigned char* digest)
 	MD5Transform(ctx->buf, (uint32_t*) ctx->in);
 	byteReverse((unsigned char*) ctx->buf, 4);
 
-	if (digest != nullptr)
+	if (digest != nullptr) {
 		memcpy(digest, ctx->buf, 16);
+	}
 	memset(ctx, 0, sizeof(*ctx)); /* In case it's sensitive */
 }
 

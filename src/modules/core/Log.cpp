@@ -16,8 +16,9 @@ void Log::init() {
 }
 
 void Log::trace(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_VERBOSE)
+	if (_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
 		return;
+	}
 	va_list args;
 	va_start(args, msg);
 	char buf[bufSize];
@@ -28,8 +29,9 @@ void Log::trace(const char* msg, ...) {
 }
 
 void Log::debug(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_DEBUG)
+	if (_logLevel > SDL_LOG_PRIORITY_DEBUG) {
 		return;
+	}
 	va_list args;
 	va_start(args, msg);
 	char buf[bufSize];
@@ -40,8 +42,9 @@ void Log::debug(const char* msg, ...) {
 }
 
 void Log::info(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_INFO)
+	if (_logLevel > SDL_LOG_PRIORITY_INFO) {
 		return;
+	}
 	va_list args;
 	va_start(args, msg);
 	char buf[bufSize];
@@ -52,8 +55,9 @@ void Log::info(const char* msg, ...) {
 }
 
 void Log::warn(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_WARN)
+	if (_logLevel > SDL_LOG_PRIORITY_WARN) {
 		return;
+	}
 	va_list args;
 	va_start(args, msg);
 	char buf[bufSize];
@@ -64,8 +68,9 @@ void Log::warn(const char* msg, ...) {
 }
 
 void Log::error(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_ERROR)
+	if (_logLevel > SDL_LOG_PRIORITY_ERROR) {
 		return;
+	}
 	va_list args;
 	va_start(args, msg);
 	char buf[bufSize];

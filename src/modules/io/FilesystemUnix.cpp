@@ -49,7 +49,7 @@ bool Filesystem::list(const std::string& directory, std::vector<DirEntry>& entit
 			continue;
 		}
 		DirEntry::Type type = DirEntry::Type::unknown;
-		if (st.st_mode & S_IFDIR) {
+		if ((st.st_mode & S_IFDIR) != 0u) {
 			if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, "..")) {
 				continue;
 			}

@@ -19,7 +19,7 @@ protected:
 	char skip(const char **s);
 	bool isSeparator(char c, const char *sep);
 public:
-	Tokenizer(const char* string, std::size_t len, const char *sep = " (){};");
+	Tokenizer(const char* s, std::size_t len, const char *sep = " (){};");
 
 	Tokenizer(const std::string_view string, const char *sep) : Tokenizer(string.data(), string.length(), sep) {}
 	Tokenizer(const char* string, const char *sep = " (){};") : Tokenizer(string, strlen(string), sep) {}

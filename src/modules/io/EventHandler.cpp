@@ -48,22 +48,26 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		keyPress((int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
 		break;
 	case SDL_MOUSEMOTION: {
-		if (event.motion.which == SDL_TOUCH_MOUSEID)
+		if (event.motion.which == SDL_TOUCH_MOUSEID) {
 			break;
+		}
 		SDL_Window *window = SDL_GetWindowFromID(event.motion.windowID);
-		if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS))
+		if ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) == 0u) {
 			break;
+		}
 		mouseMotion(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
 		break;
 	}
 	case SDL_MOUSEBUTTONDOWN:
-		if (event.button.which == SDL_TOUCH_MOUSEID)
+		if (event.button.which == SDL_TOUCH_MOUSEID) {
 			break;
+		}
 		mouseButtonPress(event.button.x, event.button.y, event.button.button, event.button.clicks);
 		break;
 	case SDL_MOUSEBUTTONUP:
-		if (event.button.which == SDL_TOUCH_MOUSEID)
+		if (event.button.which == SDL_TOUCH_MOUSEID) {
 			break;
+		}
 		mouseButtonRelease(event.button.x, event.button.y, event.button.button);
 		break;
 	case SDL_MOUSEWHEEL: {
@@ -305,8 +309,9 @@ void EventHandler::fingerRelease(int64_t finger, float x, float y) {
 }
 
 void EventHandler::fingerMotion(int64_t finger, float x, float y, float dx, float dy) {
-	if (_multiGesture)
+	if (_multiGesture) {
 		return;
+	}
 	for (IEventObserver* observer : _observers) {
 		observer->onFingerMotion(finger, x, y, dx, dy);
 	}
