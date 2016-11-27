@@ -79,3 +79,6 @@ elements
 	grid-button.pressed
 		bitmap voxedit-show-grid-selected.png
 		type Image
+	color-picker
+		type StretchBox
+		bitmap voxedit-color-picker.png
