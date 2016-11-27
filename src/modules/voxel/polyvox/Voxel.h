@@ -42,7 +42,7 @@ enum class VoxelType : uint8_t {
 	Dirt3 = 25,
 	Dirt4 = 26,
 
-	Max,
+	Max = 254,
 	Min = Air,
 	Invalid = 255
 };
