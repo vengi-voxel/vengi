@@ -165,7 +165,6 @@ core::AppState WindowedApp::onInit() {
 		Log::info("Display %i: %i:%i x %i:%i", i, dr.x, dr.y, dr.w, dr.h);
 	}
 
-	const char *name = SDL_GetPixelFormatName(displayMode.format);
 	int width = core::Var::get(cfg::ClientWindowWidth, displayMode.w)->intVal();
 	int height = core::Var::get(cfg::ClientWindowHeight, displayMode.h)->intVal();
 
@@ -289,7 +288,7 @@ core::AppState WindowedApp::onInit() {
 	Log::info("possible display modes:");
 	for (int i = 0; i < modes; i++) {
 		SDL_GetDisplayMode(screen, i, &displayMode);
-		name = SDL_GetPixelFormatName(displayMode.format);
+		const char *name = SDL_GetPixelFormatName(displayMode.format);
 		Log::info("%ix%i@%iHz %s", displayMode.w, displayMode.h, displayMode.refresh_rate, name);
 	}
 
