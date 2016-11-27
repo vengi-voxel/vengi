@@ -215,7 +215,7 @@ AppState App::onConstruct() {
 				flagsStr[3]  = 'D';
 			}
 			const std::string& name = core::string::format("%-28s", var->name().c_str());
-			const std::string& value = core::string::format("\"%s\"", var->strVal().c_str());
+			const std::string& value = core::string::format(R"("%s")", var->strVal().c_str());
 			Log::info("* %s %s = %s (%u)", flagsStr.c_str(), name.c_str(), value.c_str(), var->getHistorySize());
 		});
 	}).setHelp("Show the list of known variables (wildcards supported)");
@@ -348,7 +348,7 @@ AppState App::onCleanup() {
 			if ((flags & CV_SHADER) == CV_SHADER) {
 				flagsStr.append("S");
 			}
-			ss << "\"" << var->name() << "\" \"" << var->strVal() << "\" \"" << flagsStr << "\"" << std::endl;
+			ss << R"(")" << var->name() << R"(" ")" << var->strVal() << R"(" ")" << flagsStr << R"(")" << std::endl;
 		});
 		const std::string& str = ss.str();
 		_filesystem->write(_appname + ".vars", str);
