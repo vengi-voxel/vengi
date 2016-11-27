@@ -92,6 +92,11 @@ all: build
 
 run: shapetool
 
+.PHONY: clangtidy
+clangtidy:
+	$(Q)mkdir -p $(BUILDDIR)/tidy
+	$(Q)cd $(BUILDDIR)/tidy; $(CMAKE_BINARY) -DCMAKE_CXX_CLANG_TIDY:STRING="clang-tidy-4.0;-checks=modernize-use-override;-fix" $(CURDIR) $(CMAKE_OPTIONS) && cmake --build .
+
 .PHONY: cmake
 cmake:
 	$(Q)mkdir -p $(BUILDDIR)
