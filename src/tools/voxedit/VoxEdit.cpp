@@ -4,6 +4,7 @@
 
 #include "VoxEdit.h"
 #include "core/Color.h"
+#include "voxel/MaterialColor.h"
 #include "core/Command.h"
 #include "video/GLFunc.h"
 #include "ui/VoxEditWindow.h"
@@ -64,6 +65,11 @@ core::AppState VoxEdit::onCleanup() {
 
 core::AppState VoxEdit::onInit() {
 	const core::AppState state = Super::onInit();
+
+	if (!voxel::initDefaultMaterialColors()) {
+		Log::error("Failed to initialize the palette data");
+		return core::Cleanup;
+	}
 
 	_lastDirectory = core::Var::get("ve_lastdirectory", core::App::getInstance()->filesystem()->homePath().c_str());
 

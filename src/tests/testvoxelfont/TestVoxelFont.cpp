@@ -1,4 +1,5 @@
 #include "TestVoxelFont.h"
+#include "voxel/MaterialColor.h"
 
 TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
@@ -8,6 +9,10 @@ TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::Ev
 core::AppState TestVoxelFont::onInit() {
 	core::AppState state = Super::onInit();
 
+	if (!voxel::initDefaultMaterialColors()) {
+		Log::error("Failed to initialize the palette data");
+		return core::Cleanup;
+	}
 	if (!_rawVolumeRenderer.init()) {
 		Log::error("Failed to initialize the raw volume renderer");
 		return core::AppState::Cleanup;

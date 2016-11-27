@@ -26,6 +26,7 @@
 #include "network/EntitySpawnHandler.h"
 #include "network/EntityUpdateHandler.h"
 #include "network/UserSpawnHandler.h"
+#include "voxel/MaterialColor.h"
 
 #include <restclient-cpp/restclient.h>
 #include <restclient-cpp/connection.h>
@@ -141,6 +142,11 @@ core::AppState Client::onInit() {
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
 	_meshPool->init();
+
+	if (!voxel::initDefaultMaterialColors()) {
+		Log::error("Failed to initialize the palette data");
+		return core::Cleanup;
+	}
 
 	if (!_worldRenderer.onInit(glm::ivec2(), _dimension)) {
 		return core::Cleanup;

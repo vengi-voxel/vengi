@@ -105,6 +105,7 @@ public:
 		_random.setSeed(_seed);
 		const voxel::Region region(glm::ivec3(0, 0, 0), glm::ivec3(63, 63, 63));
 		_ctx = PagedVolumeWrapper(&_volData, _volData.getChunk(region.getCentre()), region);
+		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 	}
 };
 

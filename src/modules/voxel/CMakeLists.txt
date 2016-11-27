@@ -48,7 +48,7 @@ set(SRCS
 )
 set(LIB voxel)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} core noise zlib assimp)
+target_link_libraries(${LIB} core noise zlib image assimp)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_compile_options(${LIB} PRIVATE -march=native PRIVATE -O3)
 

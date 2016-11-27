@@ -9,8 +9,8 @@
 #include "core/Color.h"
 #include "ui/WorldParametersWindow.h"
 #include "frontend/Movement.h"
+#include "voxel/MaterialColor.h"
 
-// tool for testing the world createXXX functions without starting the application
 ShapeTool::ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world) :
 		Super(filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
 	init("engine", "shapetool");
@@ -51,6 +51,11 @@ core::AppState ShapeTool::onInit() {
 		const video::Camera& sunCamera = _worldRenderer.sunLight().camera();
 		_camera.setQuaternion(sunCamera.quaternion());
 	}).setHelp("Set the world camera rotation to be equal to the sun rotation");
+
+	if (!voxel::initDefaultMaterialColors()) {
+		Log::error("Failed to initialize the palette data");
+		return core::Cleanup;
+	}
 
 	_world->setSeed(1);
 	if (!_worldRenderer.onInit(glm::ivec2(), _dimension)) {

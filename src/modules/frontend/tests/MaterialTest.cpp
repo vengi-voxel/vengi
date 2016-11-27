@@ -26,6 +26,7 @@ TEST_F(MaterialTest, testMaterial) {
 	const int h = 1024;
 	uint8_t buffer[w * h * components];
 
+	ASSERT_TRUE(voxel::initDefaultMaterialColors());
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	const int amount = materialColors.size();
 	ASSERT_GT(amount, 0) << "No material colors are defined";
