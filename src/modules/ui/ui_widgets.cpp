@@ -40,7 +40,7 @@ TBColorWidget::TBColorWidget() :
 }
 
 void TBColorWidget::SetValue(int value) {
-	if (value == _value) {
+	if ((uint32)value == _value) {
 		return;
 	}
 	_value = value;
