@@ -36,44 +36,37 @@ namespace tb {
 // == TBColorWidget =======================================
 
 TBColorWidget::TBColorWidget() :
-		TBWidget(), color_(), alpha_(1.0f) {
+		TBWidget(), color_(), value_(0) {
+}
+
+void TBColorWidget::SetValue(int value) {
+	value_ = value;
+	const int red   = (value_ >> 24) & 0xFF;
+	const int green = (value_ >> 16) & 0xFF;
+	const int blue  = (value_ >>  8) & 0xFF;
+	const int alpha = (value_ >>  0) & 0xFF;
+	color_ = TBColor(red, green, blue, alpha);
+	InvalidateSkinStates();
+	Invalidate();
 }
 
 void TBColorWidget::SetColor(const char *name) {
-	if (name) {
-		color_.SetFromString(name, strlen(name));
-	}
-	InvalidateSkinStates();
-	Invalidate();
-}
-
-void TBColorWidget::SetColor(float r, float g, float b, float a) {
-	color_.Set(TBColor(r, g, b, a));
-
-	InvalidateSkinStates();
-	Invalidate();
-}
-
-void TBColorWidget::SetAlpha(float value) {
-	if (value < 0.0 || value > 1.0) {
-		alpha_ = 1.0;
+	if (!name) {
 		return;
 	}
+	color_.SetFromString(name, strlen(name));
+	SetValue((uint32)color_);
+}
 
-	alpha_ = value;
-
-	InvalidateSkinStates();
-	Invalidate();
+void TBColorWidget::SetColor(int r, int g, int b, int a) {
+	SetValue((uint32)TBColor(r, g, b, a));
 }
 
 void TBColorWidget::OnPaint(const PaintProps &paint_props) {
 	TBRect local_rect = GetRect();
 	local_rect.x = 0;
 	local_rect.y = 0;
-	float old_opacity = g_renderer->GetOpacity();
-	g_renderer->SetOpacity(alpha_);
 	g_tb_skin->PaintRectFill(local_rect, color_);
-	g_renderer->SetOpacity(old_opacity);
 }
 
 void TBColorWidget::OnInflate(const INFLATE_INFO &info) {

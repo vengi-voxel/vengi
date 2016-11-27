@@ -42,24 +42,21 @@ public:
 	TBColorWidget();
 
 	void SetColor(const char *);
-	void SetColor(float r, float g, float b, float a);
-
-	void SetAlpha(float);
+	void SetColor(int r, int g, int b, int a);
 
 	const TBColor& GetColor() const {
 		return color_;
 	}
-	float GetAlpha() const {
-		return alpha_;
-	}
 
-	virtual void OnInflate(const INFLATE_INFO &info);
-	virtual void OnPaint(const PaintProps &paint_props);
+	virtual void SetValue(int value) override;
+	virtual int GetValue() override { return (int) value_; }
+
+	virtual void OnInflate(const INFLATE_INFO &info) override;
+	virtual void OnPaint(const PaintProps &paint_props) override;
 
 private:
-
 	TBColor color_;
-	float alpha_;
+	uint32 value_;
 };
 
 class TBColorWheel : public TBWidget
@@ -69,9 +66,9 @@ public:
 
 	TBColorWheel();
 
-	virtual void OnInflate(const INFLATE_INFO &info);
-	virtual void OnPaint(const PaintProps &paint_props);
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual void OnInflate(const INFLATE_INFO &info) override;
+	virtual void OnPaint(const PaintProps &paint_props) override;
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
 
 	float GetHue() const {
 		return hue_;

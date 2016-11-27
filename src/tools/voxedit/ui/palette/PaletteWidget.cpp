@@ -25,7 +25,6 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 	for (int y = 0; y < yAmount; ++y) {
 		for (int x = 0; x < xAmount; ++x) {
 			if (i >= max) {
-				y = yAmount;
 				break;
 			}
 			const glm::ivec4 color(colors[i] * 255.0f);
@@ -38,17 +37,6 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 			tb::g_renderer->Translate(-transX, -transY);
 			++i;
 		}
-	}
-	{
-		const glm::vec4& selectionColor = colors[std::enum_value(_voxelType)] * 255.0f;
-		const tb::TBColor tbSelectionColor(selectionColor.r, selectionColor.g, selectionColor.b, selectionColor.a);
-		const int y = i / xAmount;
-		const int selectionY = (y + 1) * _padding + (y + 1) * _height;
-		const tb::TBRect selectionRect(0, 0, rect.w, renderRect.h);
-		tb::g_renderer->Translate(0, selectionY);
-		tb::g_tb_skin->PaintRectFill(selectionRect, tbSelectionColor);
-		tb::g_tb_skin->PaintRect(selectionRect, tbBorderColor, 1);
-		tb::g_renderer->Translate(0, -selectionY);
 	}
 }
 
@@ -63,6 +51,9 @@ bool PaletteWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 		if (index >= max) {
 			return false;
 		}
+		const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
+		const glm::ivec4& color = colors[index];
+		SetValue(core::Color::GetRGBA(color));
 		_voxelType = (voxel::VoxelType)index;
 		_dirty = true;
 		return true;
