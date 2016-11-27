@@ -40,11 +40,9 @@ namespace {
  */
 template<typename VolumeType>
 class RaycastPickingFunctor {
-private:
-	bool _makeVisible;
 public:
-	RaycastPickingFunctor(const Voxel& emptyVoxelExample, bool makeVisible) :
-			_makeVisible(makeVisible), _emptyVoxelExample(emptyVoxelExample), _result() {
+	RaycastPickingFunctor(const Voxel& emptyVoxelExample) :
+			_emptyVoxelExample(emptyVoxelExample), _result() {
 	}
 
 	bool operator()(typename VolumeType::Sampler& sampler) {
@@ -59,9 +57,6 @@ public:
 			_result.validPreviousVoxel = true;
 			_result.previousVoxel = sampler.getPosition();
 		}
-		if (_makeVisible) {
-			sampler.setVoxel(createVoxel(VoxelType::Grass1));
-		}
 		return true;
 	}
 	const Voxel& _emptyVoxelExample;
@@ -72,9 +67,9 @@ public:
 
 /** Pick the first solid voxel along a vector */
 template<typename VolumeType>
-PickResult pickVoxel(const VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, const Voxel& emptyVoxelExample, bool makeVisible = false) {
+PickResult pickVoxel(const VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, const Voxel& emptyVoxelExample) {
 	core_trace_scoped(pickVoxel);
-	RaycastPickingFunctor<VolumeType> functor(emptyVoxelExample, makeVisible);
+	RaycastPickingFunctor<VolumeType> functor(emptyVoxelExample);
 	raycastWithDirection(volData, v3dStart, v3dDirectionAndLength, functor);
 	return functor._result;
 }
