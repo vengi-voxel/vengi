@@ -40,10 +40,6 @@ inline int PaletteWidget::GetValue() {
 	return (int) _value;
 }
 
-inline void PaletteWidget::SetValue(int value) {
-	_value = value;
-}
-
 inline void PaletteWidget::markAsClean() {
 	_dirty = false;
 }

@@ -9,6 +9,15 @@ PaletteWidget::PaletteWidget() :
 PaletteWidget::~PaletteWidget() {
 }
 
+void PaletteWidget::SetValue(int value) {
+	if (value == _value) {
+		return;
+	}
+	_value = value;
+	tb::TBWidgetEvent ev(tb::EVENT_TYPE_CHANGED);
+	InvokeEvent(ev);
+}
+
 void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 	Super::OnPaint(paint_props);
 	const tb::TBRect rect = GetRect();
@@ -80,5 +89,5 @@ void PaletteWidget::OnInflate(const tb::INFLATE_INFO &info) {
 }
 
 namespace tb {
-TB_WIDGET_FACTORY(PaletteWidget, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
+TB_WIDGET_FACTORY(PaletteWidget, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
 }

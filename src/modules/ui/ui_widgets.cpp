@@ -40,14 +40,21 @@ TBColorWidget::TBColorWidget() :
 }
 
 void TBColorWidget::SetValue(int value) {
+	if (value == value_) {
+		return;
+	}
 	value_ = value;
 	const int red   = (value_ >> 24) & 0xFF;
 	const int green = (value_ >> 16) & 0xFF;
 	const int blue  = (value_ >>  8) & 0xFF;
 	const int alpha = (value_ >>  0) & 0xFF;
 	color_ = TBColor(red, green, blue, alpha);
+
 	InvalidateSkinStates();
 	Invalidate();
+
+	tb::TBWidgetEvent ev(tb::EVENT_TYPE_CHANGED);
+	InvokeEvent(ev);
 }
 
 void TBColorWidget::SetColor(const char *name) {
@@ -76,7 +83,7 @@ void TBColorWidget::OnInflate(const INFLATE_INFO &info) {
 	TBWidget::OnInflate(info);
 }
 
-TB_WIDGET_FACTORY(TBColorWidget, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
+TB_WIDGET_FACTORY(TBColorWidget, TBValue::TYPE_INT, WIDGET_Z_TOP) {}
 
 
 // == TBColorWheel =======================================
