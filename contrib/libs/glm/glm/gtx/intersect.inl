@@ -23,21 +23,75 @@ namespace glm
 		return false;
 	}
 
-	template <typename genType>
+	template <typename T, precision P>
 	GLM_FUNC_QUALIFIER bool intersectRayTriangle
 	(
-		genType const & orig, genType const & dir,
-		genType const & v0, genType const & v1, genType const & v2,
-		genType & baryPosition
+		tvec3<T, P> const& orig, tvec3<T, P> const& dir,
+		tvec3<T, P> const& vert0, tvec3<T, P> const& vert1, tvec3<T, P> const& vert2,
+		tvec2<T, P>& baryPosition, T& distance
 	)
 	{
-		genType e1 = v1 - v0;
-		genType e2 = v2 - v0;
+		// find vectors for two edges sharing vert0
+		tvec3<T, P> const edge1 = vert1 - vert0;
+		tvec3<T, P> const edge2 = vert2 - vert0;
 
-		genType p = glm::cross(dir, e2);
+		// begin calculating determinant - also used to calculate U parameter
+		tvec3<T, P> const p = glm::cross(dir, edge2);
 
-		typename genType::value_type a = glm::dot(e1, p);
+		// if determinant is near zero, ray lies in plane of triangle
+		T const det = glm::dot(edge1, p);
 
+		tvec3<T, P> qvec;
+
+		if(det > std::numeric_limits<T>::epsilon())
+		{
+			// calculate distance from vert0 to ray origin
+			tvec3<T, P> const tvec = orig - vert0;
+
+			// calculate U parameter and test bounds
+			baryPosition.x = glm::dot(tvec, p);
+			if(baryPosition.x < static_cast<T>(0) || baryPosition.x > det)
+				return false;
+
+			// prepare to test V parameter
+			qvec = glm::cross(tvec, edge1);
+
+			// calculate V parameter and test bounds
+			baryPosition.y = glm::dot(dir, qvec);
+			if((baryPosition.y < static_cast<T>(0)) || ((baryPosition.x + baryPosition.y) > det))
+				return false;
+		}
+		else if(det < -std::numeric_limits<T>::epsilon())
+		{
+			// calculate distance from vert0 to ray origin
+			tvec3<T, P> const tvec = orig - vert0;
+
+			// calculate U parameter and test bounds
+			baryPosition.x = glm::dot(tvec, p);
+			if((baryPosition.x > static_cast<T>(0)) || (baryPosition.x < det))
+				return false;
+
+			// prepare to test V parameter
+			qvec = glm::cross(tvec, edge1);
+
+			// calculate V parameter and test bounds
+			baryPosition.y = glm::dot(dir, qvec);
+			if((baryPosition.y > static_cast<T>(0)) || (baryPosition.x + baryPosition.y < det))
+				return false;
+		}
+		else
+			return false; // ray is parallel to the plane of the triangle
+
+		T inv_det = static_cast<T>(1) / det;
+
+		// calculate distance, ray intersects triangle
+		distance = glm::dot(edge2, qvec) * inv_det;
+		baryPosition *= inv_det;
+
+		return true;
+	}
+
+/*
 		typename genType::value_type Epsilon = std::numeric_limits<typename genType::value_type>::epsilon();
 		if(a < Epsilon && a > -Epsilon)
 			return false;
@@ -62,6 +116,7 @@ namespace glm
 
 		return baryPosition.z >= typename genType::value_type(0.0f);
 	}
+*/
 
 	template <typename genType>
 	GLM_FUNC_QUALIFIER bool intersectLineTriangle
