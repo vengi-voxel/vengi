@@ -90,17 +90,21 @@ void Entity::sendAttribUpdate() {
 		return;
 	}
 
-	flatbuffers::FlatBufferBuilder fbb;
-	auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(_dirtyTypes.size(),
-		[&] (size_t i) {
-			const attrib::DirtyValue& dirtyValue = *_dirtyTypes.erase(_dirtyTypes.begin());
-			double value = dirtyValue.value;
-			// TODO: maybe not needed?
-			network::AttribMode mode = network::AttribMode::PERCENTAGE;
-			bool current = dirtyValue.current;
-			return network::CreateAttribEntry(fbb, dirtyValue.type, value, mode, current);
-		});
-	_messageSender->sendServerMessage(peers, fbb, network::ServerMsgType::AttribUpdate, network::CreateAttribUpdate(fbb, id(), attribs).Union());
+	std::unordered_set<attrib::DirtyValue> dirtyTypes = _dirtyTypes;
+	if (!dirtyTypes.empty()) {
+		flatbuffers::FlatBufferBuilder fbb;
+		auto attribs = fbb.CreateVector<flatbuffers::Offset<network::AttribEntry>>(dirtyTypes.size(),
+			[&] (size_t i) {
+				const attrib::DirtyValue& dirtyValue = *dirtyTypes.begin();
+				dirtyTypes.erase(dirtyTypes.begin());
+				const double value = dirtyValue.value;
+				// TODO: maybe not needed?
+				const network::AttribMode mode = network::AttribMode::PERCENTAGE;
+				const bool current = dirtyValue.current;
+				return network::CreateAttribEntry(fbb, dirtyValue.type, value, mode, current);
+			});
+		_messageSender->sendServerMessage(peers, fbb, network::ServerMsgType::AttribUpdate, network::CreateAttribUpdate(fbb, id(), attribs).Union());
+	}
 }
 
 bool Entity::update(long dt) {
