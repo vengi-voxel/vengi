@@ -21,7 +21,9 @@ TEST_F(BiomeManagerTest, testBasic) {
 	ASSERT_FALSE(isSand(mgr.getBiome(glm::ivec3(0, 6, 0))->voxel.getMaterial()));
 
 	for (int i = 0; i <= 4; ++i) {
-		ASSERT_TRUE(isSand(mgr.getBiome(glm::ivec3(0, i, 0))->voxel.getMaterial()));
+		const glm::ivec3 pos(0, i, 0);
+		const Biome* biome = mgr.getBiome(pos);
+		ASSERT_TRUE(isSand(biome->voxel.getMaterial())) << glm::to_string(pos) << " biome position doesn't lead to sand " << biome->voxel;
 	}
 }
 

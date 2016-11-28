@@ -36,9 +36,13 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 	core_assert(region.getLowerY() >= 0);
 	Voxel voxels[MAX_TERRAIN_HEIGHT];
 
-	// TODO: the 2d noise doesn't neep the same resolution - we can optimize this a lot
+	glm::ivec3 pos(glm::uninitialize);
+
+	// TODO: the 2d noise doesn't neep the same resolution - we can optimize this a lot, we can lerp/glm::mix here
 	for (int z = lowerZ; z < lowerZ + depth; ++z) {
+		pos.z = z;
 		for (int x = lowerX; x < lowerX + width; ++x) {
+			pos.x = x;
 			const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 			const float landscapeNoise = ::noise::Simplex::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 					worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
@@ -53,6 +57,7 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 			const Voxel& water = createRandomColorVoxel(VoxelType::Water);
 			voxels[0] = createRandomColorVoxel(VoxelType::Dirt);
 			for (int y = ni - 1; y >= 1; --y) {
+				pos.y = y;
 				const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
 				const float noiseVal = ::noise::norm(
 						::noise::Simplex::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
@@ -60,7 +65,7 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 				const float finalDensity = noiseNormalized + noiseVal;
 				if (finalDensity > worldCtx.caveDensityThreshold) {
 					const bool cave = y < ni - 1;
-					const Voxel& voxel = biomManager.getVoxel(x, y, z, cave);
+					const Voxel& voxel = biomManager.getVoxel(pos, cave);
 					voxels[y] = voxel;
 				} else {
 					if (y <= MAX_WATER_HEIGHT) {

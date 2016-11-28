@@ -15,37 +15,37 @@ BiomeManager::BiomeManager() {
 BiomeManager::~BiomeManager() {
 }
 
-bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperature, const Voxel& type) {
-	bioms.emplace_back(type, int16_t(lower), int16_t(upper), humidity, temperature);
+bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperature, const Voxel& voxel, bool underGround) {
+	bioms.emplace_back(voxel, int16_t(lower), int16_t(upper), humidity, temperature, underGround);
 	return true;
 }
 
 float BiomeManager::getHumidity(const glm::ivec3& pos) const {
-	core_trace_scoped(BiomeGetHumidity)
+	core_trace_scoped(BiomeGetHumidity);
 	const glm::vec2 noisePos(pos.x, pos.z);
 	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.0f, 0.001f, 1.0f);
 	return noise::norm(n);
 }
 
 float BiomeManager::getTemperature(const glm::ivec3& pos) const {
-	core_trace_scoped(BiomeGetTemperature)
+	core_trace_scoped(BiomeGetTemperature);
 	const glm::vec2 noisePos(pos.x, pos.z);
 	// TODO: apply y value
 	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.2f, 0.01f, 1.2f);
 	return noise::norm(n);
 }
 
-const Biome* BiomeManager::getBiome(const glm::ivec3& pos) const {
-	core_trace_scoped(BiomeGetBiome)
+const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) const {
+	core_trace_scoped(BiomeGetBiome);
 	const float humidity = getHumidity(pos);
 	const float temperature = getTemperature(pos);
 
 	const Biome *biomeBestMatch = &DEFAULT;
 	float distMin = std::numeric_limits<float>::max();
 
-	core_trace_scoped(BiomeGetBiomeLoop)
+	core_trace_scoped(BiomeGetBiomeLoop);
 	for (const Biome& biome : bioms) {
-		if (pos.y > biome.yMax || pos.y < biome.yMin) {
+		if (pos.y > biome.yMax || pos.y < biome.yMin || biome.underground != underground) {
 			continue;
 		}
 		const float dTemperature = temperature - biome.temperature;
@@ -60,7 +60,7 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos) const {
 }
 
 int BiomeManager::getAmountOfTrees(const Region& region) const {
-	core_trace_scoped(BiomeGetAmountOfTrees)
+	core_trace_scoped(BiomeGetAmountOfTrees);
 	const glm::ivec3&pos = region.getCentre();
 	const Biome* biome = getBiome(pos);
 	const int maxDim = region.getDepthInCells();
@@ -74,7 +74,7 @@ int BiomeManager::getAmountOfTrees(const Region& region) const {
 }
 
 bool BiomeManager::hasTrees(const glm::ivec3& pos) const {
-	core_trace_scoped(BiomeHasTrees)
+	core_trace_scoped(BiomeHasTrees);
 	if (pos.y < MAX_WATER_HEIGHT) {
 		return false;
 	}
@@ -89,7 +89,7 @@ bool BiomeManager::hasTrees(const glm::ivec3& pos) const {
 }
 
 bool BiomeManager::hasClouds(const glm::ivec3& pos) const {
-	core_trace_scoped(BiomeHasClouds)
+	core_trace_scoped(BiomeHasClouds);
 	if (pos.y <= MAX_MOUNTAIN_HEIGHT) {
 		return false;
 	}
@@ -98,7 +98,7 @@ bool BiomeManager::hasClouds(const glm::ivec3& pos) const {
 }
 
 bool BiomeManager::hasPlants(const glm::ivec3& pos) const {
-	core_trace_scoped(BiomeHasPlants)
+	core_trace_scoped(BiomeHasPlants);
 	// TODO:
 	return hasTrees(pos);
 }
