@@ -165,7 +165,10 @@ void PagedVolume::prefetch(const Region& regPrefetch) {
 	for (int32_t x = v3dStart.x; x <= v3dEnd.x; ++x) {
 		for (int32_t y = v3dStart.y; y <= v3dEnd.y; ++y) {
 			for (int32_t z = v3dStart.z; z <= v3dEnd.z; ++z) {
-				getChunk(x, y, z);
+				const Chunk* chunk = getExistingChunk(x, y, z);
+				if (chunk == nullptr) {
+					createNewChunk(x, y, z);
+				}
 			}
 		}
 	}
