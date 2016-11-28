@@ -38,7 +38,7 @@ void MeshPool::shutdown() {
 std::string MeshPool::getName(const std::string_view& id) const {
 	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
 	for (const char **format = supportedFormats; *format != nullptr; format++) {
-		const std::string name = core::string::format("mesh/%s.%s", id.data(), *format);
+		const std::string& name = core::string::format("mesh/%s.%s", id.data(), *format);
 		if (filesystem->exists(name)) {
 			return name;
 		}
@@ -48,7 +48,7 @@ std::string MeshPool::getName(const std::string_view& id) const {
 }
 
 MeshPtr MeshPool::getMesh(const std::string_view& id, bool async) {
-	const std::string name = getName(id);
+	const std::string& name = getName(id);
 	auto i = _meshes.find(name);
 	if (i != _meshes.end()) {
 		return i->second;
