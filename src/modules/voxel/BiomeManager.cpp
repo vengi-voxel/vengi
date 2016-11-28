@@ -31,6 +31,7 @@ float BiomeManager::getTemperature(const glm::ivec3& pos) const {
 	core_trace_scoped(BiomeGetTemperature);
 	const glm::vec2 noisePos(pos.x, pos.z);
 	// TODO: apply y value
+	// const float scaleY = pos.y / (float)MAX_HEIGHT;
 	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.2f, 0.01f, 1.2f);
 	return noise::norm(n);
 }
