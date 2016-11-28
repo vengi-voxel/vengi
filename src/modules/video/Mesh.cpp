@@ -439,7 +439,7 @@ const aiNodeAnim* Mesh::findNodeAnim(const aiAnimation* animation, const std::st
 }
 
 void Mesh::loadTextureImages(const aiScene* scene, const std::string& filename) {
-	std::string::size_type slashIndex = filename.find_last_of("/");
+	std::string::size_type slashIndex = filename.find_last_of('/');
 	std::string dir;
 
 	if (slashIndex == std::string::npos) {
