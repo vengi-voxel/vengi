@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Region.h"
-#include "Vertex.h"
+#include "VoxelVertex.h"
 #include <algorithm>
 #include <cstdlib>
 #include <list>
@@ -45,8 +45,8 @@ public:
 	bool addMesh(const Mesh& mesh);
 
 	size_t getNoOfVertices() const;
-	const Vertex& getVertex(IndexType index) const;
-	const Vertex* getRawVertexData() const;
+	const VoxelVertex& getVertex(IndexType index) const;
+	const VoxelVertex* getRawVertexData() const;
 
 	size_t getNoOfIndices() const;
 	IndexType getIndex(IndexType index) const;
@@ -55,7 +55,7 @@ public:
 	const glm::ivec3& getOffset() const;
 	void setOffset(const glm::ivec3& offset);
 
-	IndexType addVertex(const Vertex& vertex);
+	IndexType addVertex(const VoxelVertex& vertex);
 	void addTriangle(IndexType index0, IndexType index1, IndexType index2);
 
 	void clear();
@@ -64,7 +64,7 @@ public:
 
 private:
 	std::vector<IndexType> _vecIndices;
-	std::vector<Vertex> _vecVertices;
+	std::vector<VoxelVertex> _vecVertices;
 	glm::ivec3 _offset;
 	bool _mayGetResized;
 };
@@ -85,11 +85,11 @@ inline size_t Mesh::getNoOfVertices() const {
 	return _vecVertices.size();
 }
 
-inline const Vertex& Mesh::getVertex(IndexType index) const {
+inline const VoxelVertex& Mesh::getVertex(IndexType index) const {
 	return _vecVertices[index];
 }
 
-inline const Vertex* Mesh::getRawVertexData() const {
+inline const VoxelVertex* Mesh::getRawVertexData() const {
 	return _vecVertices.data();
 }
 
@@ -127,7 +127,7 @@ inline void Mesh::addTriangle(IndexType index0, IndexType index1, IndexType inde
 	_vecIndices.push_back(index2);
 }
 
-inline IndexType Mesh::addVertex(const Vertex& vertex) {
+inline IndexType Mesh::addVertex(const VoxelVertex& vertex) {
 	// We should not add more vertices than our chosen index type will let us index.
 	core_assert_msg(_vecVertices.size() < std::numeric_limits<IndexType>::max(), "Mesh has more vertices that the chosen index type allows.");
 	if (!_mayGetResized) {

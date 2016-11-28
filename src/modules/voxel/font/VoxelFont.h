@@ -65,7 +65,7 @@ private:
 
 			const voxel::Mesh* mesh = i->second;
 			const voxel::IndexType* meshIndices = mesh->getRawIndexData();
-			const voxel::Vertex* meshVertices = mesh->getRawVertexData();
+			const voxel::VoxelVertex* meshVertices = mesh->getRawVertexData();
 			const size_t meshNumberIndices = mesh->getNoOfIndices();
 			core_assert(meshNumberIndices > 0);
 			const size_t meshNumberVertices = mesh->getNoOfVertices();
@@ -77,7 +77,7 @@ private:
 			indices.reserve(indicesSize + meshNumberIndices);
 
 			for (size_t i = 0; i < meshNumberVertices; ++i) {
-				const voxel::Vertex& vp = meshVertices[i];
+				const voxel::VoxelVertex& vp = meshVertices[i];
 				func(vp, out, x, y);
 			}
 			for (size_t i = 0; i < meshNumberIndices; ++i) {
@@ -100,7 +100,7 @@ public:
 	void shutdown();
 
 	int render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices);
-	int render(const char* string, std::vector<voxel::Vertex>& vertices, std::vector<uint32_t>& indices);
+	int render(const char* string, std::vector<voxel::VoxelVertex>& vertices, std::vector<uint32_t>& indices);
 };
 
 }

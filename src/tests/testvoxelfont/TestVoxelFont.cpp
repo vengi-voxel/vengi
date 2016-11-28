@@ -49,7 +49,7 @@ bool TestVoxelFont::changeFontSize(int delta) {
 		return false;
 	}
 
-	std::vector<voxel::Vertex> vertices;
+	std::vector<voxel::VoxelVertex> vertices;
 	std::vector<voxel::IndexType> indices;
 
 	const char* str = "Hello world!";

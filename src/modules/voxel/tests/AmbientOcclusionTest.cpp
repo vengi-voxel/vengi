@@ -43,7 +43,7 @@ TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
 
 	Mesh mesh(1000, 1000);
 	extractCubicMesh(&_volData, _ctx.getRegion(), &mesh, IsQuadNeeded(false));
-	const Vertex* vertices = mesh.getRawVertexData();
+	const VoxelVertex* vertices = mesh.getRawVertexData();
 	const int amount = mesh.getNoOfVertices();
 	// TODO: this was the amount before ao
 	//ASSERT_EQ(116, amount);
@@ -51,7 +51,7 @@ TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
 	// TODO: replace magic constant
 	const int noAO = 3;
 	for (int i = 0; i < amount; ++i) {
-		const Vertex& v = vertices[i];
+		const VoxelVertex& v = vertices[i];
 		const int x = v.position.x;
 		const int y = v.position.y;
 		const int z = v.position.z;

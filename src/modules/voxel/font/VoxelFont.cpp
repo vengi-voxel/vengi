@@ -124,7 +124,7 @@ bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
 }
 
 int VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vector<uint32_t>& indices) {
-	return render(string, pos, indices, [] (const voxel::Vertex& vertex, std::vector<glm::vec4>& pos, int x, int y) {
+	return render(string, pos, indices, [] (const voxel::VoxelVertex& vertex, std::vector<glm::vec4>& pos, int x, int y) {
 		glm::vec4 vp = glm::vec4(vertex.position, 1.0f);
 		vp.x += x;
 		vp.y += y;
@@ -132,9 +132,9 @@ int VoxelFont::render(const char* string, std::vector<glm::vec4>& pos, std::vect
 	});
 }
 
-int VoxelFont::render(const char* string, std::vector<voxel::Vertex>& vertices, std::vector<uint32_t>& indices) {
-	return render(string, vertices, indices, [] (const voxel::Vertex& vertex, std::vector<voxel::Vertex>& vertices, int x, int y) {
-		voxel::Vertex copy = vertex;
+int VoxelFont::render(const char* string, std::vector<voxel::VoxelVertex>& vertices, std::vector<uint32_t>& indices) {
+	return render(string, vertices, indices, [] (const voxel::VoxelVertex& vertex, std::vector<voxel::VoxelVertex>& vertices, int x, int y) {
+		voxel::VoxelVertex copy = vertex;
 		copy.position.x += x;
 		copy.position.y += y;
 		vertices.push_back(copy);

@@ -6,19 +6,19 @@
 
 namespace voxel {
 
-inline bool isSameVertex(const Vertex& v1, const Vertex& v2) {
+inline bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
 	return v1.colorIndex == v2.colorIndex && v1.ambientOcclusion == v2.ambientOcclusion;
 }
 
 bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
-	const Vertex& v11 = meshCurrent->getVertex(q1.vertices[0]);
-	const Vertex& v21 = meshCurrent->getVertex(q2.vertices[0]);
-	const Vertex& v12 = meshCurrent->getVertex(q1.vertices[1]);
-	const Vertex& v22 = meshCurrent->getVertex(q2.vertices[1]);
-	const Vertex& v13 = meshCurrent->getVertex(q1.vertices[2]);
-	const Vertex& v23 = meshCurrent->getVertex(q2.vertices[2]);
-	const Vertex& v14 = meshCurrent->getVertex(q1.vertices[3]);
-	const Vertex& v24 = meshCurrent->getVertex(q2.vertices[3]);
+	const VoxelVertex& v11 = meshCurrent->getVertex(q1.vertices[0]);
+	const VoxelVertex& v21 = meshCurrent->getVertex(q2.vertices[0]);
+	const VoxelVertex& v12 = meshCurrent->getVertex(q1.vertices[1]);
+	const VoxelVertex& v22 = meshCurrent->getVertex(q2.vertices[1]);
+	const VoxelVertex& v13 = meshCurrent->getVertex(q1.vertices[2]);
+	const VoxelVertex& v23 = meshCurrent->getVertex(q2.vertices[2]);
+	const VoxelVertex& v14 = meshCurrent->getVertex(q1.vertices[3]);
+	const VoxelVertex& v24 = meshCurrent->getVertex(q2.vertices[3]);
 	if (isSameVertex(v11, v21) && isSameVertex(v12, v22) && isSameVertex(v13, v23) && isSameVertex(v14, v24)) {
 		//Now check whether quad 2 is adjacent to quad one by comparing vertices.
 		//Adjacent quads must share two vertices, and the second quad could be to the
@@ -83,7 +83,7 @@ int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, con
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
 			// The 0.5f offset is because vertices set between voxels in order to build cubes around them.
 			// see raycastWithEndpoints for this offset, too
-			Vertex vertex;
+			VoxelVertex vertex;
 			vertex.position = { uX, uY, uZ };
 			vertex.colorIndex = materialIn.getColor();
 			vertex.material = materialIn.getMaterial();

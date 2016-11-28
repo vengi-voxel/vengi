@@ -49,21 +49,21 @@ bool RawVolumeRenderer::init() {
 	video::VertexBuffer::Attribute attributePos;
 	attributePos.bufferIndex = _vertexBufferIndex;
 	attributePos.index = _worldShader.getLocationPos();
-	attributePos.stride = sizeof(voxel::Vertex);
+	attributePos.stride = sizeof(voxel::VoxelVertex);
 	attributePos.size = _worldShader.getComponentsPos();
 	attributePos.type = GL_UNSIGNED_BYTE;
 	attributePos.typeIsInt = true;
-	attributePos.offset = offsetof(voxel::Vertex, position);
+	attributePos.offset = offsetof(voxel::VoxelVertex, position);
 	_vertexBuffer.addAttribute(attributePos);
 
 	video::VertexBuffer::Attribute attributeInfo;
 	attributeInfo.bufferIndex = _vertexBufferIndex;
 	attributeInfo.index = _worldShader.getLocationInfo();
-	attributeInfo.stride = sizeof(voxel::Vertex);
+	attributeInfo.stride = sizeof(voxel::VoxelVertex);
 	attributeInfo.size = _worldShader.getComponentsInfo();
 	attributeInfo.type = GL_UNSIGNED_BYTE;
 	attributeInfo.typeIsInt = true;
-	attributeInfo.offset = offsetof(voxel::Vertex, ambientOcclusion);
+	attributeInfo.offset = offsetof(voxel::VoxelVertex, ambientOcclusion);
 	_vertexBuffer.addAttribute(attributeInfo);
 
 	_whiteTexture = video::createWhiteTexture("**whitetexture**");
@@ -85,7 +85,7 @@ bool RawVolumeRenderer::onResize(const glm::ivec2& position, const glm::ivec2& d
 	return true;
 }
 
-bool RawVolumeRenderer::update(const std::vector<voxel::Vertex>& vertices, const std::vector<voxel::IndexType>& indices) {
+bool RawVolumeRenderer::update(const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices) {
 	core_trace_scoped(RawVolumeRendererUpdate);
 	if (!_vertexBuffer.update(_vertexBufferIndex, vertices)) {
 		Log::error("Failed to update the vertex buffer");
@@ -129,14 +129,14 @@ bool RawVolumeRenderer::extract() {
 	r.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(_rawVolume, r, _mesh, CustomIsQuadNeeded());
 	const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
-	const voxel::Vertex* meshVertices = _mesh->getRawVertexData();
+	const voxel::VoxelVertex* meshVertices = _mesh->getRawVertexData();
 	const size_t meshNumberIndices = _mesh->getNoOfIndices();
 	if (meshNumberIndices == 0) {
 		_vertexBuffer.update(_vertexBufferIndex, nullptr, 0);
 		_vertexBuffer.update(_indexBufferIndex, nullptr, 0);
 	} else {
 		const size_t meshNumberVertices = _mesh->getNoOfVertices();
-		if (!_vertexBuffer.update(_vertexBufferIndex, meshVertices, sizeof(voxel::Vertex) * meshNumberVertices)) {
+		if (!_vertexBuffer.update(_vertexBufferIndex, meshVertices, sizeof(voxel::VoxelVertex) * meshNumberVertices)) {
 			Log::error("Failed to update the vertex buffer");
 			return false;
 		}
@@ -365,7 +365,7 @@ size_t RawVolumeRenderer::numVertices() const {
 	return _mesh->getNoOfVertices();
 }
 
-const voxel::Vertex* RawVolumeRenderer::vertices() const {
+const voxel::VoxelVertex* RawVolumeRenderer::vertices() const {
 	if (_mesh == nullptr) {
 		return 0u;
 	}

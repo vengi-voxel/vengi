@@ -14,13 +14,13 @@ namespace voxel {
  * @brief Represents a vertex in a mesh and includes position and ambient occlusion
  * as well as color and material information.
  */
-struct Vertex {
+struct VoxelVertex {
 	glm::u8vec3 position;
 	uint8_t ambientOcclusion;
 	uint8_t colorIndex;
 	VoxelType material;
 	uint8_t padding[2];
 };
-static_assert(sizeof(Vertex) == 8, "Unexpected size of the vertex struct");
+static_assert(sizeof(VoxelVertex) == 8, "Unexpected size of the vertex struct");
 
 }

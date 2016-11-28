@@ -17,9 +17,9 @@ static bool doExport(Assimp::Exporter& exporter, const Mesh* mesh, const char *e
 
 	aimesh.mNumVertices = mesh->getNoOfVertices();
 	aiVector3D* vertices = new aiVector3D[aimesh.mNumVertices];
-	const voxel::Vertex* voxels = mesh->getRawVertexData();
+	const voxel::VoxelVertex* voxels = mesh->getRawVertexData();
 	for (size_t i = 0; i < aimesh.mNumVertices; ++i) {
-		const voxel::Vertex& v = voxels[i];
+		const voxel::VoxelVertex& v = voxels[i];
 		vertices[i] = aiVector3D(v.position.x, v.position.y, v.position.z);
 	}
 	aimesh.mName = "";
@@ -47,7 +47,7 @@ static bool doExport(Assimp::Exporter& exporter, const Mesh* mesh, const char *e
 	const MaterialColorArray& colorArray = getMaterialColors();
 	aiColor4D* colors = new aiColor4D[aimesh.mNumVertices];
 	for (unsigned int i = 0; i < aimesh.mNumVertices; ++i) {
-		const voxel::Vertex& v = voxels[i];
+		const voxel::VoxelVertex& v = voxels[i];
 		const glm::vec4& c = colorArray[v.colorIndex];
 		colors[i] = aiColor4D(c.r, c.g, c.b, c.a);
 	}

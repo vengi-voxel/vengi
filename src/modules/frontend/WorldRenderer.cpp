@@ -538,12 +538,12 @@ void WorldRenderer::updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
 	const voxel::IndexType* vecIndices = surfaceMesh.getRawIndexData();
 	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
-	const voxel::Vertex* vecVertices = surfaceMesh.getRawVertexData();
+	const voxel::VoxelVertex* vecVertices = surfaceMesh.getRawVertexData();
 	const uint32_t numVertices = surfaceMesh.getNoOfVertices();
 
 	core_assert(meshData.vertexBuffer > 0);
 	glBindBuffer(GL_ARRAY_BUFFER, meshData.vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(voxel::Vertex), vecVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(voxel::VoxelVertex), vecVertices, GL_STATIC_DRAW);
 
 	core_assert(meshData.indexBuffer > 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
@@ -579,14 +579,14 @@ video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader,
 	updateMesh(mesh, meshData);
 
 	const int posLoc = shader.enableVertexAttributeArray("a_pos");
-	const int components = sizeof(voxel::Vertex::position) / sizeof(decltype(voxel::Vertex::position)::value_type);
-	shader.setVertexAttributeInt(posLoc, components, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, position)));
+	const int components = sizeof(voxel::VoxelVertex::position) / sizeof(decltype(voxel::VoxelVertex::position)::value_type);
+	shader.setVertexAttributeInt(posLoc, components, GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertex), GL_OFFSET_CAST(offsetof(voxel::VoxelVertex, position)));
 
 	const int locationInfo = shader.enableVertexAttributeArray("a_info");
 	// we are uploading two bytes at once here
-	static_assert(sizeof(voxel::Vertex::colorIndex) == sizeof(uint8_t), "Voxel type doesn't match");
-	static_assert(sizeof(voxel::Vertex::ambientOcclusion) == sizeof(uint8_t), "AO type doesn't match");
-	shader.setVertexAttributeInt(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::Vertex), GL_OFFSET_CAST(offsetof(voxel::Vertex, ambientOcclusion)));
+	static_assert(sizeof(voxel::VoxelVertex::colorIndex) == sizeof(uint8_t), "Voxel type doesn't match");
+	static_assert(sizeof(voxel::VoxelVertex::ambientOcclusion) == sizeof(uint8_t), "AO type doesn't match");
+	shader.setVertexAttributeInt(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertex), GL_OFFSET_CAST(offsetof(voxel::VoxelVertex, ambientOcclusion)));
 	GL_checkError();
 
 	return meshData;

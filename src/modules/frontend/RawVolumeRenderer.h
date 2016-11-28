@@ -59,7 +59,7 @@ public:
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
 	 */
-	bool update(const std::vector<voxel::Vertex>& vertices, const std::vector<voxel::IndexType>& indices);
+	bool update(const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices);
 
 	/**
 	 * @brief Reextract the whole volume region and updates the vertex buffers.
@@ -78,7 +78,7 @@ public:
 	const voxel::Mesh* mesh() const;
 
 	size_t numVertices() const;
-	const voxel::Vertex* vertices() const;
+	const voxel::VoxelVertex* vertices() const;
 
 	size_t numIndices() const;
 	const voxel::IndexType* indices() const;

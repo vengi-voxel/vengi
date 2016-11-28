@@ -7,7 +7,7 @@
 #include "Array.h"
 #include "Mesh.h"
 #include "Voxel.h"
-#include "Vertex.h"
+#include "VoxelVertex.h"
 #include "Region.h"
 #include <vector>
 #include <list>
@@ -84,7 +84,7 @@ extern bool performQuadMerging(std::list<Quad>& quads, Mesh* m_meshCurrent);
 extern int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
 		Mesh* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner);
 
-inline bool isQuadFlipped(const Vertex& v00, const Vertex& v01, const Vertex& v10, const Vertex& v11) {
+inline bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
 	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
 }
 

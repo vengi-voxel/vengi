@@ -39,7 +39,7 @@ set(SRCS
 	polyvox/Picking.h
 	polyvox/Region.h polyvox/Region.cpp
 	polyvox/Utility.h
-	polyvox/Vertex.h
+	polyvox/VoxelVertex.h
 	polyvox/Voxel.h
 	polyvox/VolumeMerger.h
 	polyvox/VolumeMover.h

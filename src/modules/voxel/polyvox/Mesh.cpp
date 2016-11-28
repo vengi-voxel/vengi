@@ -12,7 +12,7 @@ namespace voxel {
 size_t Mesh::size() {
 	constexpr size_t classSize = sizeof(*this);
 	const size_t indicesSize = _vecIndices.size() * sizeof(IndexType);
-	const size_t verticesSize = _vecVertices.size() * sizeof(Vertex);
+	const size_t verticesSize = _vecVertices.size() * sizeof(VoxelVertex);
 	const size_t contentSize = indicesSize + verticesSize;
 	return classSize + contentSize;
 }
@@ -22,7 +22,7 @@ bool Mesh::addMesh(const Mesh& mesh) {
 		return false;
 	}
 	const IndexType* indices = mesh.getRawIndexData();
-	const Vertex* vertices = mesh.getRawVertexData();
+	const VoxelVertex* vertices = mesh.getRawVertexData();
 	const size_t nIndices = mesh.getNoOfIndices();
 	const size_t nVertices = mesh.getNoOfVertices();
 
