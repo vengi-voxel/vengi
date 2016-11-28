@@ -119,8 +119,6 @@ public:
 	 * @brief Bind the shader program
 	 *
 	 * @return @c true if is is useable now, @c false if not
-	 *
-	 * @see
 	 */
 	virtual bool activate() const;
 

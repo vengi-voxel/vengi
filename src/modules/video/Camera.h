@@ -212,7 +212,6 @@ public:
 	/**
 	 * @brief Converts normalized screen coordinates [0.0-1.0] into world coordinates.
 	 * @param[in] screenPos The normalized screen coordinates. The z component defines the length of the ray
-	 * @param[in] projection The projection matrix
 	 */
 	glm::vec3 screenToWorld(const glm::vec3& screenPos) const;
 

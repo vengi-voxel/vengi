@@ -399,8 +399,8 @@ inline void AABB<TYPE>::accumulate(const AABB& reg) {
 
 /**
  * Constructs a AABB and sets the lower and upper corners to the specified values.
- * @param v3dLowerCorner The desired lower corner of the AABB.
- * @param v3dUpperCorner The desired upper corner of the AABB.
+ * @param mins The desired lower corner of the AABB.
+ * @param maxs The desired upper corner of the AABB.
  */
 template<typename TYPE>
 inline AABB<TYPE>::AABB(const glm::tvec3<TYPE>& mins, const glm::tvec3<TYPE>& maxs) : _mins(mins), _maxs(maxs) {
