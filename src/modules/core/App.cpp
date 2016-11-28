@@ -57,7 +57,7 @@ void App::remBlocker(AppState blockedState) {
 }
 
 void App::onFrame() {
-	core_trace_scoped(AppOnFrame);
+	core_trace_begin_frame();
 	if (_nextState != AppState::InvalidAppState && _nextState != _curState) {
 		if (_blockers.find(_nextState) != _blockers.end()) {
 			if (AppState::Blocked != _curState) {
@@ -131,6 +131,7 @@ void App::onFrame() {
 			break;
 		}
 	}
+	core_trace_end_frame();
 }
 
 AppState App::onConstruct() {
