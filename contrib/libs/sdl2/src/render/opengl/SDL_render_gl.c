@@ -493,7 +493,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         PFNGLDEBUGMESSAGECALLBACKARBPROC glDebugMessageCallbackARBFunc = (PFNGLDEBUGMESSAGECALLBACKARBPROC) SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
 
         data->GL_ARB_debug_output_supported = SDL_TRUE;
-        data->glGetPointerv(GL_DEBUG_CALLBACK_FUNCTION_ARB, (GLvoid **)&data->next_error_callback);
+        data->glGetPointerv(GL_DEBUG_CALLBACK_FUNCTION_ARB, (GLvoid **)(char *)&data->next_error_callback);
         data->glGetPointerv(GL_DEBUG_CALLBACK_USER_PARAM_ARB, &data->next_error_userparam);
         glDebugMessageCallbackARBFunc(GL_HandleDebugMessage, renderer);
 
@@ -1430,16 +1430,19 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 
     GL_ActivateRenderer(renderer);
 
+    if (!convert_format(data, temp_format, &internalFormat, &format, &type)) {
+        return SDL_SetError("Texture format %s not supported by OpenGL",
+                            SDL_GetPixelFormatName(temp_format));
+    }
+
+    if (!rect->w || !rect->h) {
+        return 0;  /* nothing to do. */
+    }
+
     temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
     temp_pixels = SDL_malloc(rect->h * temp_pitch);
     if (!temp_pixels) {
         return SDL_OutOfMemory();
-    }
-
-    if (!convert_format(data, temp_format, &internalFormat, &format, &type)) {
-        SDL_free(temp_pixels);
-        return SDL_SetError("Texture format %s not supported by OpenGL",
-                            SDL_GetPixelFormatName(temp_format));
     }
 
     SDL_GetRendererOutputSize(renderer, &w, &h);
