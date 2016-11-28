@@ -5,3 +5,4 @@
 /.settings
 /Makefile.local
 /typescript
+gmon.out
