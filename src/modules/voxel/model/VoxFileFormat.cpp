@@ -16,16 +16,7 @@ const glm::vec4& VoxFileFormat::getColor(const Voxel& voxel) const {
 }
 
 VoxelType VoxFileFormat::findVoxelType(const glm::vec4& color) const {
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	const int max = (int)materialColors.size();
-	for (int i = 0; i < max; ++i) {
-		if (!glm::all(glm::epsilonEqual(materialColors[i], color, 0.0001f))) {
-			continue;
-		}
-		return (VoxelType)i;
-	}
-	Log::error("Could not find any matching voxeltype for color: %s", glm::to_string(color * 255.0f).c_str());
-	return VoxelType::Air;
+	return voxel::getVoxelType(color);
 }
 
 glm::vec4 VoxFileFormat::paletteColor(uint32_t index) const {
