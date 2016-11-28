@@ -56,6 +56,11 @@ public:
 		core_assert_msg(!_materialColors.empty(), "Failed to initialize the material colors");
 		return _materialColors;
 	}
+
+	inline Voxel createRandomColorVoxel(VoxelType type) {
+		// TODO:
+		return voxel::createVoxel(type, 1);
+	}
 };
 
 bool initMaterialColors(const io::FilePtr& file) {
@@ -75,18 +80,8 @@ const MaterialColorArray& getMaterialColors() {
 	return core::Singleton<MaterialColor>::getInstance().getColors();
 }
 
-VoxelType getVoxelType(const glm::vec4& color) {
-	const voxel::MaterialColorArray& materialColors = getMaterialColors();
-	const int max = (int)materialColors.size();
-	for (int i = 0; i < max; ++i) {
-		if (!glm::all(glm::epsilonEqual(materialColors[i], color, 0.0001f))) {
-			continue;
-		}
-		return (VoxelType)i;
-	}
-
-	const int index = core::Color::getClosestMatch(color, materialColors);
-	return (VoxelType)index;
+Voxel createRandomColorVoxel(VoxelType type) {
+	return core::Singleton<MaterialColor>::getInstance().createRandomColorVoxel(type);
 }
 
 }

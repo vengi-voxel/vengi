@@ -221,8 +221,6 @@ private:
 	// don't access the volume in anything that is called here
 	void create(PagedVolumeWrapper& ctx);
 
-	void createUnderground(PagedVolumeWrapper& ctx);
-
 	void cleanupFutures();
 	Region getChunkRegion(const glm::ivec3& pos) const;
 	Region getMeshRegion(const glm::ivec3& pos) const;

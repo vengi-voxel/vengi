@@ -8,6 +8,7 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/WorldContext.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/Constants.h"
 #include "core/Random.h"
 #include "core/Common.h"
@@ -76,9 +77,9 @@ protected:
 				for (int x = 0; x < region.getWidthInVoxels(); ++x) {
 					const glm::vec3 pos(x, y, z);
 					const float distance = glm::distance(pos, center);
-					Voxel uVoxelValue = createVoxel(VoxelType::Air);
+					Voxel uVoxelValue;
 					if (distance <= 30.0f) {
-						uVoxelValue = createVoxel(VoxelType::Grass1);
+						uVoxelValue = createRandomColorVoxel(VoxelType::Grass);
 					}
 
 					chunk->setVoxel(x, y, z, uVoxelValue);

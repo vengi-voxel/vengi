@@ -142,7 +142,7 @@ public:
 
 	void scaleCursorShape(const glm::vec3& scale);
 	void setCursorShape(Shape shape);
-	void setVoxelType(voxel::VoxelType type);
+	void setVoxel(const voxel::Voxel& voxel);
 	ShapeHandler& shapeHandler();
 	const ShapeHandler& shapeHandler() const;
 
@@ -173,8 +173,8 @@ inline void Model::scaleCursorShape(const glm::vec3& scale) {
 	resetLastTrace();
 }
 
-inline void Model::setVoxelType(voxel::VoxelType type) {
-	_shapeHandler.setVoxelType(type);
+inline void Model::setVoxel(const voxel::Voxel& type) {
+	_shapeHandler.setVoxel(type);
 	if (_cursorVolume != nullptr) {
 		_shapeHandler.setCursorShape(_shapeHandler.cursorShape(), _cursorVolume, true);
 	}

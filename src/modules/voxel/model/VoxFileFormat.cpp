@@ -15,26 +15,23 @@ const glm::vec4& VoxFileFormat::getColor(const Voxel& voxel) const {
 	return getColor(voxel.getMaterial());
 }
 
-VoxelType VoxFileFormat::findVoxelType(const glm::vec4& color) const {
-	return voxel::getVoxelType(color);
-}
-
-glm::vec4 VoxFileFormat::paletteColor(uint32_t index) const {
-	if (index >= _paletteSize) {
-		return voxel::getMaterialColors()[1];
+uint8_t VoxFileFormat::convertPaletteIndex(uint32_t paletteIndex) const {
+	if (paletteIndex >= _paletteSize) {
+		return 1;
 	}
-	return _palette[index];
+	return _palette[paletteIndex];
 }
 
 glm::vec4 VoxFileFormat::findClosestMatch(const glm::vec4& color) const {
-	if (_paletteSize > 0) {
-		const int index = core::Color::getClosestMatch(color, _palette);
-		return paletteColor(index);
-	}
+	const int index = findClosestIndex(color);
+	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
+	return materialColors[index];
+}
+
+uint8_t VoxFileFormat::findClosestIndex(const glm::vec4& color) const {
 	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
 	materialColors.erase(materialColors.begin());
-	const int index = core::Color::getClosestMatch(color, materialColors);
-	return materialColors[index];
+	return core::Color::getClosestMatch(color, materialColors) + 1;
 }
 
 }

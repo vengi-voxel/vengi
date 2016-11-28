@@ -10,59 +10,55 @@ namespace voxel {
 
 /**
  * @brief material types 0 - 255 (8 bits)
- * This is basically the index in the color array
  */
 enum class VoxelType : uint8_t {
 	// this must be 0
 	Air = 0,
-	Grass1 = 1,
-	Wood1 = 2,
-	Leaves1 = 3,
-	Leaves2 = 4,
-	Leaves3 = 5,
-	Leaves4 = 6,
-	Leaves5 = 7,
-	Leaves6 = 8,
-	Leaves7 = 9,
-	Leaves8 = 10,
-	Leaves9 = 11,
-	Leaves10 = 12,
-	Rock1 = 13,
-	Rock2 = 14,
-	Rock3 = 15,
-	Rock4 = 16,
-	Sand1 = 17,
-	Sand2 = 18,
-	Sand3 = 19,
-	Sand4 = 20,
-	Cloud = 21,
-	Water = 22,
-	Dirt1 = 23,
-	Dirt2 = 24,
-	Dirt3 = 25,
-	Dirt4 = 26,
+	Water,
+	Generic,
+	Grass,
+	Wood,
+	Leaves,
+	Rock,
+	Sand,
+	Cloud,
+	Dirt
 };
 
 class Voxel {
 public:
 	constexpr Voxel() :
-			_material(VoxelType::Air) {
+		_material(VoxelType::Air), _colorIndex(0) {
 	}
 
-	constexpr Voxel(VoxelType material) :
-			_material(material) {
+	constexpr Voxel(VoxelType material, uint8_t colorIndex) :
+		_material(material), _colorIndex(colorIndex) {
 	}
 
 	constexpr Voxel(const Voxel& voxel) :
-			_material(voxel._material) {
+		_material(voxel._material), _colorIndex(voxel._colorIndex) {
 	}
 
+	/**
+	 * @brief Compares by the material type
+	 */
 	inline bool operator==(const Voxel& rhs) const {
 		return _material == rhs._material;
 	}
 
+	/**
+	 * @brief Compares by the material type
+	 */
 	inline bool operator!=(const Voxel& rhs) const {
 		return !(*this == rhs);
+	}
+
+	inline uint8_t getColor() const {
+		return _colorIndex;
+	}
+
+	inline void setColor(uint8_t colorIndex) {
+		_colorIndex = colorIndex;
 	}
 
 	inline VoxelType getMaterial() const {
@@ -75,10 +71,11 @@ public:
 
 private:
 	VoxelType _material;
+	uint8_t _colorIndex;
 };
 
-constexpr Voxel createVoxel(VoxelType type) {
-	return Voxel(type);
+constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex) {
+	return Voxel(type, colorIndex);
 }
 
 inline bool isBlocked(VoxelType material) {
@@ -90,7 +87,7 @@ inline bool isWater(VoxelType material) {
 }
 
 inline bool isLeaves(VoxelType material) {
-	return material >= VoxelType::Leaves1 && material <= VoxelType::Leaves10;
+	return material == VoxelType::Leaves;
 }
 
 inline bool isAir(VoxelType material) {
@@ -98,23 +95,23 @@ inline bool isAir(VoxelType material) {
 }
 
 inline bool isWood(VoxelType material) {
-	return material == VoxelType::Wood1;
+	return material == VoxelType::Wood;
 }
 
 inline bool isGrass(VoxelType material) {
-	return material == VoxelType::Grass1;
+	return material == VoxelType::Grass;
 }
 
 inline bool isRock(VoxelType material) {
-	return material == VoxelType::Rock1 ||material == VoxelType::Rock2 || material == VoxelType::Rock3 || material == VoxelType::Rock4;
+	return material == VoxelType::Rock;
 }
 
 inline bool isSand(VoxelType material) {
-	return material == VoxelType::Sand1 ||material == VoxelType::Sand2 || material == VoxelType::Sand3 || material == VoxelType::Sand4;
+	return material == VoxelType::Sand;
 }
 
 inline bool isDirt(VoxelType material) {
-	return material == VoxelType::Dirt1 ||material == VoxelType::Dirt2 || material == VoxelType::Dirt3 || material == VoxelType::Dirt4;
+	return material == VoxelType::Dirt;
 }
 
 inline bool isFloor(VoxelType material) {

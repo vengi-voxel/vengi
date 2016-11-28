@@ -15,7 +15,8 @@ private:
 	voxel::Voxel _voxel;
 public:
 	MergeConditionSkipVoxelType(voxel::VoxelType type = voxel::VoxelType::Air) :
-			_voxel(type) {
+			_voxel(type, 0) {
+		// the color index doesn't matter here
 	}
 
 	inline bool operator() (const voxel::Voxel& voxel) const {

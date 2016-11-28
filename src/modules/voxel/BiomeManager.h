@@ -8,6 +8,7 @@
 #include "Constants.h"
 #include "polyvox/Region.h"
 #include "polyvox/Voxel.h"
+#include "MaterialColor.h"
 
 namespace voxel {
 
@@ -18,8 +19,8 @@ struct Biome {
 					_temperature) {
 	}
 
-	constexpr Biome() :
-			Biome(createVoxel(VoxelType::Grass1), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f) {
+	Biome() :
+			Biome(createRandomColorVoxel(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f) {
 	}
 	const Voxel voxel;
 	const int16_t yMin;
@@ -32,10 +33,7 @@ class BiomeManager {
 private:
 	std::vector<Biome> bioms;
 
-	static constexpr Voxel INVALID = createVoxel(VoxelType::Air);
-	static constexpr Voxel ROCK = createVoxel(VoxelType::Rock1);
-	static constexpr Voxel GRASS = createVoxel(VoxelType::Grass1);
-	static constexpr Biome DEFAULT = {};
+	static const Biome DEFAULT;
 
 public:
 	BiomeManager();
@@ -44,16 +42,16 @@ public:
 	bool addBiom(int lower, int upper, float humidity, float temperature, const Voxel& type);
 
 	// this lookup must be really really fast - it is executed once per generated voxel
-	inline const Voxel& getVoxelType(const glm::ivec3& pos, bool underground = false) const {
+	inline Voxel getVoxel(const glm::ivec3& pos, bool underground = false) const {
 		if (underground) {
-			return ROCK;
+			return createRandomColorVoxel(VoxelType::Rock);
 		}
 		const Biome* biome = getBiome(pos);
 		return biome->voxel;
 	}
 
-	inline const Voxel& getVoxelType(int x, int y, int z, bool underground = false) const {
-		return getVoxelType(glm::ivec3(x, y, z), underground);
+	inline Voxel getVoxel(int x, int y, int z, bool underground = false) const {
+		return getVoxel(glm::ivec3(x, y, z), underground);
 	}
 
 	float getHumidity(const glm::ivec3& pos) const;

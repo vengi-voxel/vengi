@@ -19,9 +19,8 @@ void createCactus(Volume& volume, const glm::ivec3& pos, TreeType type, int trun
 	std::vector<int> branches = {1, 2, 3, 4};
 	random.shuffle(branches.begin(), branches.end());
 	int top = (int) pos.y + trunkHeight;
-	static constexpr Voxel voxel = createVoxel(VoxelType::Wood1);
-	const VoxelType leavesType = (VoxelType)random.random(std::enum_value(VoxelType::Leaves1), std::enum_value(VoxelType::Leaves10));
-	const Voxel leavesVoxel = createVoxel(leavesType);
+	static constexpr Voxel voxel = createRandomColorVoxel(VoxelType::Wood);
+	const Voxel leavesVoxel = createRandomColorVoxel(VoxelType::Leaves);
 	const int n = random.random(2, 4);
 	shape::createCubeNoCenter(volume, pos, trunkWidth, trunkHeight, trunkWidth, leavesVoxel);
 	for (int i = 0; i < n; ++i) {

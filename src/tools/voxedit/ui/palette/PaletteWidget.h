@@ -12,8 +12,8 @@ protected:
 	int _padding = 0;
 	int _amountX = 0;
 	bool _dirty = true;
+	// the palette index
 	int _value = 0;
-	voxel::VoxelType _voxelType = voxel::VoxelType::Grass1;
 public:
 	UIWIDGET_SUBCLASS(PaletteWidget, Super);
 
@@ -32,12 +32,8 @@ public:
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };
 
-inline voxel::VoxelType PaletteWidget::voxelType() const {
-	return _voxelType;
-}
-
 inline int PaletteWidget::GetValue() {
-	return (int) _value;
+	return _value;
 }
 
 inline void PaletteWidget::markAsClean() {

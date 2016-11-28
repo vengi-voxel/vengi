@@ -109,9 +109,9 @@ bool QBTFormat::loadMatrix(io::FileStream& stream) {
 #endif
 
 				const glm::vec4& color = core::Color::FromRGBA(red | green | blue | alpha);
-				const glm::vec4& finalColor = findClosestMatch(color);
-				const VoxelType type = findVoxelType(finalColor);
-				volume->setVoxel(x, y, z, createVoxel(type));
+				const uint8_t index = findClosestIndex(color);
+				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+				volume->setVoxel(x, y, z, voxel);
 			}
 		}
 	}
@@ -198,8 +198,8 @@ bool QBTFormat::loadFromStream(io::FileStream& stream) {
 			const uint32_t alpha = ((uint32_t)255) << 0;
 
 			const glm::vec4& color = core::Color::FromRGBA(red | green | blue | alpha);
-			const glm::vec4& finalColor = findClosestMatch(color);
-			_palette[i] = finalColor;
+			const uint8_t index = findClosestIndex(color);
+			_palette[i] = index;
 		}
 		_paletteSize = colorCount;
 	}

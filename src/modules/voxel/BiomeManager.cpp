@@ -7,10 +7,7 @@
 
 namespace voxel {
 
-constexpr Voxel BiomeManager::INVALID;
-constexpr Voxel BiomeManager::ROCK;
-constexpr Voxel BiomeManager::GRASS;
-constexpr Biome BiomeManager::DEFAULT;
+const Biome BiomeManager::DEFAULT;
 
 BiomeManager::BiomeManager() {
 }

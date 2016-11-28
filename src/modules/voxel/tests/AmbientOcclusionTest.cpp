@@ -19,27 +19,27 @@ protected:
 TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
 	_volData.flushAll();
 
-	_volData.setVoxel(1, 2, 1, createVoxel(VoxelType::Grass1));
+	_volData.setVoxel(1, 2, 1, createVoxel(VoxelType::Grass, 0));
 
-	_volData.setVoxel(0, 1, 0, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(1, 1, 0, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(2, 1, 0, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(0, 1, 1, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(1, 1, 1, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(2, 1, 1, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(0, 1, 2, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(1, 1, 2, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(2, 1, 2, createVoxel(VoxelType::Grass1));
+	_volData.setVoxel(0, 1, 0, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(1, 1, 0, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(2, 1, 0, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(0, 1, 1, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(1, 1, 1, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(2, 1, 1, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(0, 1, 2, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(1, 1, 2, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(2, 1, 2, createVoxel(VoxelType::Grass, 0));
 
-	_volData.setVoxel(0, 0, 0, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(1, 0, 0, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(2, 0, 0, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(0, 0, 1, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(1, 0, 1, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(2, 0, 1, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(0, 0, 2, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(1, 0, 2, createVoxel(VoxelType::Grass1));
-	_volData.setVoxel(2, 0, 2, createVoxel(VoxelType::Grass1));
+	_volData.setVoxel(0, 0, 0, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(1, 0, 0, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(2, 0, 0, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(0, 0, 1, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(1, 0, 1, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(2, 0, 1, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(0, 0, 2, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(1, 0, 2, createVoxel(VoxelType::Grass, 0));
+	_volData.setVoxel(2, 0, 2, createVoxel(VoxelType::Grass, 0));
 
 	Mesh mesh(1000, 1000);
 	extractCubicMesh(&_volData, _ctx.getRegion(), &mesh, IsQuadNeeded(false));

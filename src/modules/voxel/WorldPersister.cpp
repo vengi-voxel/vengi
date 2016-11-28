@@ -89,7 +89,8 @@ bool WorldPersister::load(PagedVolumeWrapper& ctx, long seed) {
 				core_assert_msg(voxelBuf.getSize() >= 1, "Failed to load %s (x: %i, y: %i, z: %i)", f->name().c_str(), x, y, z);
 				static_assert(sizeof(VoxelType) == sizeof(uint8_t), "Voxel type size changed");
 				const VoxelType material = (VoxelType)voxelBuf.readByte();
-				const Voxel& voxel = createVoxel(material);
+				const uint8_t colorIndex = voxelBuf.readByte();
+				const Voxel& voxel = createVoxel(material, colorIndex);
 				chunk->setVoxel(x, y, z, voxel);
 			}
 		}
@@ -111,6 +112,7 @@ bool WorldPersister::save(PagedVolumeWrapper& ctx, long seed) {
 				const Voxel& voxel = chunk->getVoxel(x, y, z);
 				static_assert(sizeof(VoxelType) == sizeof(uint8_t), "Voxel type size changed");
 				voxelStream.addByte(std::enum_value(voxel.getMaterial()));
+				voxelStream.addByte(voxel.getColor());
 			}
 		}
 	}

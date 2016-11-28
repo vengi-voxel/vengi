@@ -140,13 +140,13 @@ void Model::executeAction(bool mouseDown, long now) {
 	bool extract = false;
 	const bool didHit = _result.didHit;
 	if (didHit && _action == Action::CopyVoxel) {
-		shapeHandler().setVoxelType(getVoxel(_cursorPos).getMaterial());
+		shapeHandler().setVoxel(getVoxel(_cursorPos));
 	} else if (didHit && _action == Action::SelectVoxels) {
 		select(_cursorPos);
 	} else if (didHit && _action == Action::OverrideVoxel) {
 		extract = placeCursor();
 	} else if (didHit && _action == Action::DeleteVoxel) {
-		extract = setVoxel(_cursorPos, voxel::createVoxel(voxel::VoxelType::Air));
+		extract = setVoxel(_cursorPos, voxel::Voxel());
 	} else if (_result.validPreviousVoxel && _action == Action::PlaceVoxel) {
 		extract = placeCursor();
 	} else if (didHit && _action == Action::PlaceVoxel) {
@@ -220,7 +220,7 @@ bool Model::newVolume(bool force) {
 
 void Model::rotate(int angleX, int angleY, int angleZ) {
 	const voxel::RawVolume* model = modelVolume();
-	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::createVoxel(voxel::VoxelType::Air), false);
+	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), false);
 	markUndo();
 	setNewVolume(newVolume);
 }
@@ -229,7 +229,7 @@ void Model::move(int x, int y, int z) {
 	voxel::RawVolume* model = modelVolume();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->getRegion());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
-	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z), voxel::createVoxel(voxel::VoxelType::Air));
+	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z), voxel::Voxel());
 	markUndo();
 	setNewVolume(newVolume);
 }
@@ -369,7 +369,7 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	_cursorPos = pos;
 
 	_cursorPositionVolume->clear();
-	static constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air);
+	static constexpr voxel::Voxel air;
 	const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume, air));
 	if (cropped) {
 		const voxel::Region& srcRegion = cropped->getRegion();
@@ -407,7 +407,7 @@ bool Model::trace(const video::Camera& camera) {
 
 		const video::Ray& ray = camera.mouseRay(glm::ivec2(_mouseX, _mouseY));
 		const glm::vec3& dirWithLength = ray.direction * camera.farPlane();
-		static constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air);
+		static constexpr voxel::Voxel air;
 		_result = voxel::pickVoxel(modelVolume(), ray.origin, dirWithLength, air);
 
 		const bool prevVoxel = _result.validPreviousVoxel && (!_result.didHit || !actionRequiresExistingVoxel(action()));

@@ -2,6 +2,7 @@
 
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
+#include "voxel/MaterialColor.h"
 #include "core/GLM.h"
 
 namespace voxel {
@@ -24,12 +25,12 @@ void PlantGenerator::shutdown() {
 }
 
 void PlantGenerator::createFlower(int size, glm::ivec3 pos, RawVolume& volume) const {
-	const Voxel stalk = createVoxel(VoxelType::Grass1);
+	const Voxel stalk = createRandomColorVoxel(VoxelType::Grass);
 	for (int i = 0; i < size - 2; ++i) {
 		volume.setVoxel(pos, stalk);
 		++pos.y;
 	}
-	volume.setVoxel(pos, createVoxel(VoxelType::Leaves10));
+	volume.setVoxel(pos, createRandomColorVoxel(VoxelType::Leaves));
 	--pos.x;
 	volume.setVoxel(pos, stalk);
 	--pos.z;
@@ -44,7 +45,7 @@ void PlantGenerator::createFlower(int size, glm::ivec3 pos, RawVolume& volume) c
 
 void PlantGenerator::createGrass(int size, glm::ivec3 pos, RawVolume& volume) const {
 	// TODO: use noise
-	const Voxel stalk = createVoxel(VoxelType::Grass1);
+	const Voxel stalk = createRandomColorVoxel(VoxelType::Grass);
 	glm::ivec3 p = pos;
 	for (int i = 0; i < size; ++i) {
 		volume.setVoxel(p, stalk);
@@ -67,7 +68,7 @@ void PlantGenerator::createGrass(int size, glm::ivec3 pos, RawVolume& volume) co
 }
 
 void PlantGenerator::createMushroom(int size, glm::ivec3 pos, RawVolume& volume) const {
-	const Voxel stalk = createVoxel(VoxelType::Grass1);
+	const Voxel stalk = createRandomColorVoxel(VoxelType::Grass);
 	for (int i = 0; i < 3; ++i) {
 		volume.setVoxel(pos, stalk);
 		++pos.y;
@@ -82,7 +83,7 @@ void PlantGenerator::createMushroom(int size, glm::ivec3 pos, RawVolume& volume)
 		const int radius = height / 2;
 		const double ratio = radius / minRadius;
 
-		const Voxel voxel = createVoxel(VoxelType::Leaves10);
+		const Voxel voxel = createRandomColorVoxel(VoxelType::Leaves);
 		for (int z = -radius; z <= radius; ++z) {
 			for (int x = -radius; x <= radius; ++x) {
 				const double distance = glm::pow(x / ratio, 2.0) + glm::pow(z / ratio, 2.0);
@@ -99,7 +100,7 @@ void PlantGenerator::createMushroom(int size, glm::ivec3 pos, RawVolume& volume)
 bool PlantGenerator::generatePlant(int size, PlantType type, Mesh *result) {
 	const Region region(0, 0, 0, size, size, size);
 	RawVolume volume(region);
-	volume.setBorderValue(createVoxel(VoxelType::Air));
+	volume.setBorderValue(Voxel());
 	glm::ivec3 pos = region.getCentre();
 	pos.y = 0;
 	switch (type) {

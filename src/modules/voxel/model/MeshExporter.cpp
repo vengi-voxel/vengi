@@ -48,7 +48,7 @@ static bool doExport(Assimp::Exporter& exporter, const Mesh* mesh, const char *e
 	aiColor4D* colors = new aiColor4D[aimesh.mNumVertices];
 	for (unsigned int i = 0; i < aimesh.mNumVertices; ++i) {
 		const voxel::Vertex& v = voxels[i];
-		const glm::vec4& c = colorArray[std::enum_value(v.data.getMaterial())];
+		const glm::vec4& c = colorArray[v.colorIndex];
 		colors[i] = aiColor4D(c.r, c.g, c.b, c.a);
 	}
 	aimesh.mColors[0] = colors;

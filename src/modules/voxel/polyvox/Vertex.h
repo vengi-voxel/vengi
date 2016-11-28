@@ -11,15 +11,15 @@
 namespace voxel {
 
 /**
- * Represents a vertex in a mesh and includes position and normal information.
- * There is also a 'data' member, which usually stores the (possibly interpolated)
- * value of the voxel(s) which caused the vertex to be generated.
+ * @brief Represents a vertex in a mesh and includes position and ambient occlusion
+ * as well as color and material information.
  */
 struct Vertex {
 	glm::u8vec3 position;
 	uint8_t ambientOcclusion;
-	Voxel data;
-	uint8_t padding[3];
+	uint8_t colorIndex;
+	VoxelType material;
+	uint8_t padding[2];
 };
 static_assert(sizeof(Vertex) == 8, "Unexpected size of the vertex struct");
 

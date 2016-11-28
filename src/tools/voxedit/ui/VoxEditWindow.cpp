@@ -86,7 +86,9 @@ bool VoxEditWindow::init() {
 		Log::error("Failed to init the main window: Could not get the editor scene node with id 'palettecontainer'");
 		return false;
 	}
-	_scene->setVoxelType(_paletteWidget->voxelType());
+	const int8_t index = (uint8_t)_paletteWidget->GetValue();
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+	_scene->setVoxel(voxel);
 	_paletteWidget->markAsClean();
 
 	_sceneTop = getWidgetByType<EditorScene>("editorscenetop");
@@ -576,7 +578,9 @@ void VoxEditWindow::OnProcess() {
 	}
 
 	if (_paletteWidget->isDirty()) {
-		_scene->setVoxelType(_paletteWidget->voxelType());
+		const int8_t index = (uint8_t)_paletteWidget->GetValue();
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+		_scene->setVoxel(voxel);
 		_paletteWidget->markAsClean();
 	}
 	const bool empty = _scene->isEmpty();

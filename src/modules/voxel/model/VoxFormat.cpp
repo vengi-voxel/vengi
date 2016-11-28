@@ -138,7 +138,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		const uint32_t p = palette[i];
 		const glm::vec4& color = core::Color::FromRGBA(SDL_SwapBE32(p));
 		const int index = core::Color::getClosestMatch(color, materialColors);
-		_palette[i] = materialColors[index];
+		_palette[i] = index;
 	}
 
 	do {
@@ -208,9 +208,9 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				wrap(stream.readByte(z))
 				wrap(stream.readByte(y))
 				wrap(stream.readByte(colorIndex))
-				const glm::vec4& color = paletteColor(colorIndex);
-				const VoxelType type = findVoxelType(color);
-				volume->setVoxel(x, y, z, createVoxel(type));
+				const uint8_t index = convertPaletteIndex(colorIndex);
+				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+				volume->setVoxel(x, y, z, voxel);
 			}
 		} else if (chunkId == FourCC('R','G','B','A')) {
 			Log::debug("Found palette chunk with %u bytes", numBytesChunk);
@@ -231,7 +231,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				wrap(stream.readInt(rgba))
 				const glm::vec4& color = core::Color::FromRGBA(SDL_SwapBE32(rgba));
 				const int index = core::Color::getClosestMatch(color, materialColors);
-				_palette[i + 1] = materialColors[index];
+				_palette[i + 1] = (uint8_t)index;
 			}
 		} else if (chunkId == FourCC('M','A','T','T')) {
 			Log::debug("Found material chunk with %u bytes", numBytesChunk);

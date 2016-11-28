@@ -11,6 +11,7 @@
 #include "noise/SimplexNoise.h"
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/WorldContext.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxel {
 namespace world {
@@ -48,9 +49,9 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
-			static constexpr Voxel air = createVoxel(VoxelType::Air);
-			static constexpr Voxel water = createVoxel(VoxelType::Water);
-			voxels[0] = createVoxel(VoxelType::Dirt1);
+			static constexpr Voxel air;
+			const Voxel& water = createRandomColorVoxel(VoxelType::Water);
+			voxels[0] = createRandomColorVoxel(VoxelType::Dirt);
 			for (int y = ni - 1; y >= 1; --y) {
 				const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
 				const float noiseVal = ::noise::norm(
@@ -59,7 +60,7 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 				const float finalDensity = noiseNormalized + noiseVal;
 				if (finalDensity > worldCtx.caveDensityThreshold) {
 					const bool cave = y < ni - 1;
-					const Voxel& voxel = biomManager.getVoxelType(x, y, z, cave);
+					const Voxel& voxel = biomManager.getVoxel(x, y, z, cave);
 					voxels[y] = voxel;
 				} else {
 					if (y <= MAX_WATER_HEIGHT) {

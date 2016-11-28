@@ -36,7 +36,7 @@ const int NEXT_SLICE_FLAG = 6;
 #define wrapColor(read) \
 	if (read != 0) { \
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read) " - still %i bytes left", (int)stream.remaining()); \
-		return voxel::VoxelType::Air; \
+		return voxel::Voxel(); \
 	}
 
 #define setBit(val, index) val &= (1 << (index))
@@ -76,7 +76,7 @@ bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 		axisIndex2 = 0;
 	}
 
-	const voxel::Voxel Empty = voxel::createVoxel(voxel::VoxelType::Air);
+	constexpr voxel::Voxel Empty;
 	const int32_t EmptyColor = core::Color::GetRGB(getColor(Empty));
 
 	const glm::ivec3& mins = region.getLowerCorner();
@@ -187,19 +187,19 @@ bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	return true;
 }
 
-void QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, voxel::VoxelType type) {
+void QBFormat::setVoxel(voxel::RawVolume* volume, uint32_t x, uint32_t y, uint32_t z, const glm::ivec3& offset, const voxel::Voxel& voxel) {
 	const int32_t fx = offset.x + x;
 	const int32_t fy = offset.y + y;
 	const int32_t fz = offset.z + z;
-	Log::debug("Set voxel %i to %i:%i:%i", (int)type, fx, fy, fz);
+	Log::debug("Set voxel %i to %i:%i:%i", (int)voxel.getMaterial(), fx, fy, fz);
 	if (_zAxisOrientation == ZAxisOrientation::Right) {
-		volume->setVoxel(fx, fy, fz, createVoxel(type));
+		volume->setVoxel(fx, fy, fz, voxel);
 	} else {
-		volume->setVoxel(fz, fy, fx, createVoxel(type));
+		volume->setVoxel(fz, fy, fx, voxel);
 	}
 }
 
-voxel::VoxelType QBFormat::getVoxelType(io::FileStream& stream) {
+voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	uint8_t red;
 	uint8_t green;
 	uint8_t blue;
@@ -210,7 +210,7 @@ voxel::VoxelType QBFormat::getVoxelType(io::FileStream& stream) {
 	wrapColor(stream.readByte(alpha))
 	Log::debug("Red: %i, Green: %i, Blue: %i, Alpha: %i", (int)red, (int)green, (int)blue, (int)alpha);
 	if (alpha == 0) {
-		return voxel::VoxelType::Air;
+		return voxel::Voxel();
 	}
 	glm::vec4 color;
 	if (_colorFormat == ColorFormat::RGBA) {
@@ -218,9 +218,8 @@ voxel::VoxelType QBFormat::getVoxelType(io::FileStream& stream) {
 	} else {
 		color = core::Color::FromRGBA(((uint32_t)blue) << 24 | ((uint32_t)green) << 16 | ((uint32_t)red) << 8 | ((uint32_t)255) << 0);
 	}
-	const glm::vec4& finalColor = findClosestMatch(color);
-	const voxel::VoxelType type = findVoxelType(finalColor);
-	return type;
+	const uint8_t index = findClosestIndex(color);
+	return voxel::createVoxel(voxel::VoxelType::Generic, index);
 }
 
 voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
@@ -266,8 +265,8 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
-					const voxel::VoxelType type = getVoxelType(stream);
-					setVoxel(volume, x, y, z, offset, type);
+					const voxel::Voxel& voxel = getVoxel(stream);
+					setVoxel(volume, x, y, z, offset, voxel);
 				}
 			}
 		}
@@ -294,11 +293,11 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 				Log::debug("%u voxels of the same type", count);
 			}
 
-			const voxel::VoxelType type = getVoxelType(stream);
+			const voxel::Voxel& voxel = getVoxel(stream);
 			for (uint32_t j = 0; j < count; ++j, ++index) {
 				const int x = (index + 1) % size.x;
 				const int y = (index + 1) / size.x;
-				setVoxel(volume, x, y, z, offset, type);
+				setVoxel(volume, x, y, z, offset, voxel);
 			}
 		}
 		++z;

@@ -60,8 +60,7 @@ bool PaletteWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 		}
 		const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
 		const glm::ivec4& color = colors[index];
-		SetValue(core::Color::GetRGBA(color));
-		_voxelType = (voxel::VoxelType)index;
+		SetValue(index);
 		_dirty = true;
 		return true;
 	}

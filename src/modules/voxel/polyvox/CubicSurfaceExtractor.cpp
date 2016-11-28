@@ -7,7 +7,7 @@
 namespace voxel {
 
 inline bool isSameVertex(const Vertex& v1, const Vertex& v2) {
-	return v1.data == v2.data && v1.ambientOcclusion == v2.ambientOcclusion;
+	return v1.colorIndex == v2.colorIndex && v1.ambientOcclusion == v2.ambientOcclusion;
 }
 
 bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
@@ -85,7 +85,8 @@ int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, con
 			// see raycastWithEndpoints for this offset, too
 			Vertex vertex;
 			vertex.position = { uX, uY, uZ };
-			vertex.data = materialIn;
+			vertex.colorIndex = materialIn.getColor();
+			vertex.material = materialIn.getMaterial();
 			vertex.ambientOcclusion = ambientOcclusion;
 
 			rEntry.index = meshCurrent->addVertex(vertex);

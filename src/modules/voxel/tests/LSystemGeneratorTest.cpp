@@ -17,7 +17,7 @@ TEST_F(LSystemGeneratorTest, testStatePushPop) {
 	// we change the coordinates in x, y and z directions once, then we push a new state and pop that
 	// new state again - which means, that we don't modify the initial state => hence the 1, 1, 1
 	lsystemCtx.axiom = "AXYZ[XYZ]";
-	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood1));
+	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood, 0));
 
 	lsystem::LSystemState state;
 	ASSERT_TRUE(lsystem::expand(&state, _ctx, lsystemCtx, _random, lsystemCtx.axiom, lsystemCtx.generations));
@@ -30,7 +30,7 @@ TEST_F(LSystemGeneratorTest, testStatePushPop) {
 TEST_F(LSystemGeneratorTest, testStatePushPopPositionChangeToInit) {
 	lsystem::LSystemContext lsystemCtx;
 	lsystemCtx.axiom = "AXYZ[XYZ]xyz";
-	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood1));
+	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood, 0));
 
 	lsystem::LSystemState state;
 	ASSERT_TRUE(lsystem::expand(&state, _ctx, lsystemCtx, _random, lsystemCtx.axiom, lsystemCtx.generations));
@@ -44,7 +44,7 @@ TEST_F(LSystemGeneratorTest, testMultipleStates) {
 	lsystem::LSystemContext lsystemCtx;
 	lsystemCtx.axiom = "AY[xYA]AY[XYA]AY";
 	lsystemCtx.productionRules.emplace('A', lsystemCtx.axiom);
-	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood1));
+	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood, 0));
 	lsystemCtx.generations = 2;
 
 	lsystem::LSystemState state;
@@ -58,7 +58,7 @@ TEST_F(LSystemGeneratorTest, testMultipleStates) {
 TEST_F(LSystemGeneratorTest, testStatePositionChangeTwice) {
 	lsystem::LSystemContext lsystemCtx;
 	lsystemCtx.axiom = "AXYZXYZ";
-	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood1));
+	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood, 0));
 
 	lsystem::LSystemState state;
 	ASSERT_TRUE(lsystem::expand(&state, _ctx, lsystemCtx, _random, lsystemCtx.axiom, lsystemCtx.generations));
@@ -76,9 +76,9 @@ TEST_F(LSystemGeneratorTest, testGenerateVoxels) {
 	lsystemCtx.productionRules.emplace('A', "XAxYAXBXXYYZZ");
 	lsystemCtx.productionRules.emplace('B', "A[zC]");
 
-	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood1));
-	lsystemCtx.voxels.emplace('B', createVoxel(VoxelType::Grass1));
-	lsystemCtx.voxels.emplace('C', createVoxel(VoxelType::Leaves4));
+	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood, 0));
+	lsystemCtx.voxels.emplace('B', createVoxel(VoxelType::Grass, 0));
+	lsystemCtx.voxels.emplace('C', createVoxel(VoxelType::Leaves, 0));
 
 	ASSERT_TRUE(lsystem::generate(_ctx, lsystemCtx, _random));
 }

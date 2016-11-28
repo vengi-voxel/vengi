@@ -23,7 +23,7 @@ public:
 
 	const voxel::Voxel& currentVoxel() const;
 	Shape cursorShape() const;
-	void setVoxelType(voxel::VoxelType type);
+	void setVoxel(const voxel::Voxel& type);
 };
 
 inline const voxel::Voxel& ShapeHandler::currentVoxel() const {
@@ -34,8 +34,8 @@ inline Shape ShapeHandler::cursorShape() const {
 	return _cursorShape;
 }
 
-inline void ShapeHandler::setVoxelType(voxel::VoxelType type) {
-	_currentVoxel = voxel::createVoxel(type);
+inline void ShapeHandler::setVoxel(const voxel::Voxel& type) {
+	_currentVoxel = type;
 }
 
 }

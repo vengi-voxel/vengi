@@ -22,12 +22,7 @@
 
 namespace voxel {
 
-//#define DEBUG_SCENE 3
-#ifdef DEBUG_SCENE
-#define PERSIST 0
-#else
 #define PERSIST 1
-#endif
 
 void World::Pager::erase(PagedVolume::PagerContext& pctx) {
 #if PERSIST
@@ -64,12 +59,10 @@ World::World() :
 		_pager(*this), _threadPool(core::halfcpus(), "World"), _random(_seed) {
 	_meshSize = core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
-	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 1, 0.5f, 0.5f, createVoxel(VoxelType::Sand1));
-	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.1f, 0.9f, createVoxel(VoxelType::Sand2));
-	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, createVoxel(VoxelType::Dirt1));
-	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createVoxel(VoxelType::Grass1));
-	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, createVoxel(VoxelType::Rock1));
-	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 30, MAX_MOUNTAIN_HEIGHT + 1, 0.32f, 0.32f, createVoxel(VoxelType::Rock2));
+	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.5f, 0.5f, createRandomColorVoxel(VoxelType::Sand));
+	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, createRandomColorVoxel(VoxelType::Dirt));
+	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createRandomColorVoxel(VoxelType::Grass));
+	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, createRandomColorVoxel(VoxelType::Rock));
 }
 
 World::~World() {
@@ -187,62 +180,10 @@ void World::reset() {
 	_cancelThreads = true;
 }
 
-void World::createUnderground(PagedVolumeWrapper& ctx) {
-	const glm::ivec3 startPos(1, 1, 1);
-	const Voxel& voxel = createVoxel(VoxelType::Grass1);
-	shape::createPlane(ctx, startPos, 10, 10, voxel);
-}
-
 void World::create(PagedVolumeWrapper& ctx) {
 	core_trace_scoped(CreateWorld);
 	const int flags = _clientData ? world::WORLDGEN_CLIENT : world::WORLDGEN_SERVER;
-#if DEBUG_SCENE == 1
-	auto& _volData =  *_volumeData;
-	_volData.setVoxel(1, 5, 1, createVoxel(21));
-	_volData.setVoxel(1, 4, 1, createVoxel(21));
-	_volData.setVoxel(1, 3, 1, createVoxel(21));
-	_volData.setVoxel(1, 2, 1, createVoxel(21));
-
-	_volData.setVoxel(0, 1, 0, createVoxel(19));
-	_volData.setVoxel(1, 1, 0, createVoxel(18));
-	_volData.setVoxel(2, 1, 0, createVoxel(17));
-	_volData.setVoxel(0, 1, 1, createVoxel(16));
-	_volData.setVoxel(1, 1, 1, createVoxel(15));
-	_volData.setVoxel(2, 1, 1, createVoxel(14));
-	_volData.setVoxel(0, 1, 2, createVoxel(13));
-	_volData.setVoxel(1, 1, 2, createVoxel(12));
-	_volData.setVoxel(2, 1, 2, createVoxel(11));
-
-	int radius = 10;
-	const int sideLength = radius * 2 + 1;
-	const int amount = sideLength * (sideLength - 1) + sideLength;
-	voxel::Spiral o;
-	glm::vec3 pos;
-	for (int i = 0; i < amount; ++i, o.next()) {
-		pos.x = o.x();
-		pos.z = o.z();
-		_volData.setVoxel(pos, createVoxel(9));
-	}
-#elif DEBUG_SCENE == 2
-	ShapeGenerator::createPlane(ctx, glm::zero<glm::vec3>(), 300, 300, createVoxel(VoxelType::Grass1));
-	ShapeGenerator::createCone(ctx, glm::zero<glm::vec3>(), 10, 30, 10, createVoxel(VoxelType::Leaves1));
-	ShapeGenerator::createCone(ctx, glm::vec3(10, 0, 10), 10, 30, 10, createVoxel(VoxelType::Leaves2));
-	ShapeGenerator::createCone(ctx, glm::vec3(20, 0, 10), 15, 60, 15, createVoxel(VoxelType::Leaves3));
-	ShapeGenerator::createCone(ctx, glm::vec3(-20, 0, 10), 50, 40, 50, createVoxel(VoxelType::Leaves4));
-#elif DEBUG_SCENE == 3
-	const Region& region = ctx.region;
-	const int width = region.getWidthInVoxels();
-	const int depth = region.getDepthInVoxels();
-	const int lowerX = region.getLowerX();
-	const int lowerZ = region.getLowerZ();
-	for (int z = lowerZ; z < lowerZ + depth; ++z) {
-		for (int x = lowerX; x < lowerX + width; ++x) {
-			ctx.setVoxel(glm::ivec3(x, 0, z), createVoxel(VoxelType::Dirt1));
-		}
-	}
-#else
 	world::createWorld(_ctx, ctx, _biomeManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
-#endif
 }
 
 void World::cleanupFutures() {

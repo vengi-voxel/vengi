@@ -228,8 +228,8 @@ void EditorScene::resetCamera() {
 	_controller.resetCamera(m().modelVolume());
 }
 
-void EditorScene::setVoxelType(voxel::VoxelType type) {
-	m().setVoxelType(type);
+void EditorScene::setVoxel(const voxel::Voxel& voxel) {
+	m().setVoxel(voxel);
 }
 
 void EditorScene::unselectAll() {

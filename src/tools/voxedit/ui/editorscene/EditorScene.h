@@ -72,7 +72,7 @@ public:
 
 	void setAction(voxedit::Action action);
 
-	void setVoxelType(voxel::VoxelType type);
+	void setVoxel(const voxel::Voxel& voxel);
 
 	voxedit::Axis lockedAxis() const;
 	void setLockedAxis(voxedit::Axis axis, bool unlock);

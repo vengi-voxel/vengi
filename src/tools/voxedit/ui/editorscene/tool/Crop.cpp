@@ -7,7 +7,7 @@ namespace voxedit {
 namespace tool {
 
 voxel::RawVolume* crop(const voxel::RawVolume* source) {
-	voxel::RawVolume* newVolume = voxel::cropVolume(source, voxel::createVoxel(voxel::VoxelType::Air));
+	voxel::RawVolume* newVolume = voxel::cropVolume(source, voxel::Voxel());
 	if (newVolume == nullptr) {
 		Log::info("Failed to crop the model volume");
 		return nullptr;

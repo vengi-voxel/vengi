@@ -12,7 +12,7 @@ class VolumeMergerTest: public AbstractVoxelTest {
 
 TEST_F(VolumeMergerTest, testMergeDifferentSize) {
 	voxel::RawVolume smallVolume(voxel::Region(0, 1));
-	const voxel::Voxel vox = createVoxel(VoxelType::Grass1);
+	const voxel::Voxel vox = createVoxel(VoxelType::Grass, 0);
 	ASSERT_TRUE(smallVolume.setVoxel(0, 0, 0, vox));
 
 	const voxel::Region region(0, 10);
@@ -48,13 +48,13 @@ TEST_F(VolumeMergerTest, testOffsets) {
 	voxel::Region regionSmall = voxel::Region(0, 3);
 	voxel::RawVolume smallVolume(regionSmall);
 	voxel::RawVolume bigVolume(regionBig);
-	ASSERT_TRUE(bigVolume.setVoxel(regionBig.getCentre(), createVoxel(voxel::VoxelType::Grass1)));
-	ASSERT_TRUE(bigVolume.setVoxel(regionBig.getUpperCorner(), createVoxel(voxel::VoxelType::Grass1)));
+	ASSERT_TRUE(bigVolume.setVoxel(regionBig.getCentre(), createVoxel(voxel::VoxelType::Grass, 0)));
+	ASSERT_TRUE(bigVolume.setVoxel(regionBig.getUpperCorner(), createVoxel(voxel::VoxelType::Grass, 0)));
 	const voxel::Region srcRegion(regionBig.getCentre(), regionBig.getUpperCorner());
 	const voxel::Region& destRegion = smallVolume.getRegion();
 	ASSERT_EQ(2, voxel::mergeRawVolumes(&smallVolume, &bigVolume, destRegion, srcRegion)) << smallVolume << ", " << bigVolume;
-	ASSERT_EQ(smallVolume.getVoxel(regionSmall.getLowerCorner()), createVoxel(voxel::VoxelType::Grass1)) << smallVolume << ", " << bigVolume;
-	ASSERT_EQ(smallVolume.getVoxel(regionSmall.getUpperCorner()), createVoxel(voxel::VoxelType::Grass1)) << smallVolume << ", " << bigVolume;
+	ASSERT_EQ(smallVolume.getVoxel(regionSmall.getLowerCorner()), createVoxel(voxel::VoxelType::Grass, 0)) << smallVolume << ", " << bigVolume;
+	ASSERT_EQ(smallVolume.getVoxel(regionSmall.getUpperCorner()), createVoxel(voxel::VoxelType::Grass, 0)) << smallVolume << ", " << bigVolume;
 }
 
 }

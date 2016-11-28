@@ -10,6 +10,7 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxel {
 
@@ -70,7 +71,7 @@ void VoxelFont::shutdown() {
 }
 
 bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
-	static const voxel::Voxel& voxel = voxel::createVoxel(VoxelType::Grass1);
+	static const voxel::Voxel& voxel = voxel::createRandomColorVoxel(VoxelType::Grass);
 	const char **s = &string;
 	int spaceWidth = 0;
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {

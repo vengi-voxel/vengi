@@ -2,6 +2,7 @@
 
 #include "core/Random.h"
 #include "noise/SimplexNoise.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxel {
 namespace noise {
@@ -17,8 +18,8 @@ void generate(Volume& volume, int octaves, float frequency, float persistence, c
 	const int noiseSeedOffsetX = random.random(0, 1000);
 	const int noiseSeedOffsetZ = random.random(0, 1000);
 
-	static constexpr Voxel grass = createVoxel(VoxelType::Grass1);
-	static constexpr Voxel dirt = createVoxel(VoxelType::Dirt1);
+	const Voxel& grass = createRandomColorVoxel(VoxelType::Grass);
+	const Voxel& dirt = createRandomColorVoxel(VoxelType::Dirt);
 
 	glm::vec2 p(noiseSeedOffsetX + lowerX, noiseSeedOffsetZ + lowerZ);
 	for (int x = lowerX; x < lowerX + width; ++x, p.x += 1.0f) {
