@@ -8,6 +8,7 @@
 
 namespace core {
 
+#if RMT_ENABLED
 static void rmtInputHandler(const char* text, void* context) {
 	Log::info("typed '%s' to console", text);
 	if (core::Command::execute(text) <= 0) {
@@ -19,9 +20,10 @@ static void rmtInputHandler(const char* text, void* context) {
 		core_trace_msg("Could not handle input");
 	}
 }
+#endif
 
-Trace::Trace(uint16_t port) :
-		_remotery(nullptr) {
+Trace::Trace(uint16_t port) {
+#if RMT_ENABLED
 	rmtSettings* settings = rmt_Settings();
 	if (settings != nullptr) {
 		settings->port = port;
@@ -37,6 +39,7 @@ Trace::Trace(uint16_t port) :
 	if (rmtInstError != RMT_ERROR_NONE) {
 		Log::error("Failed to init remotery");
 	}
+#endif
 #if USE_EMTRACE
 	emscripten_trace_configure("http://localhost:5000/", "Engine");
 #endif
@@ -44,10 +47,12 @@ Trace::Trace(uint16_t port) :
 }
 
 Trace::~Trace() {
+#if RMT_ENABLED
 	if (_remotery != nullptr) {
 		rmt_DestroyGlobalInstance(_remotery);
 		_remotery = nullptr;
 	}
+#endif
 #if USE_EMSCTRACE
 	emscripten_trace_close();
 #endif
