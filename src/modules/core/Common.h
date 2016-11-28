@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "GLM.h"
 #include "Log.h"
+#include <glm/vec3.hpp>
 #include <cmath>
 #include <utility>
 #include <limits>

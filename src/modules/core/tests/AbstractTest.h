@@ -3,10 +3,12 @@
  */
 
 #include <gtest/gtest.h>
-
 #include "core/App.h"
 #include "core/EventBus.h"
 #include "io/Filesystem.h"
+#include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 namespace core {
 

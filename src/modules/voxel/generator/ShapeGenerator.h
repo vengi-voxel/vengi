@@ -7,6 +7,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include "core/Common.h"
 #include "voxel/polyvox/Raycast.h"
+#include "core/GLM.h"
 
 namespace voxel {
 

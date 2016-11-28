@@ -6,6 +6,7 @@
 #include "image/Image.h"
 #include "core/Singleton.h"
 #include "core/App.h"
+#include "core/GLM.h"
 #include "io/Filesystem.h"
 
 namespace voxel {

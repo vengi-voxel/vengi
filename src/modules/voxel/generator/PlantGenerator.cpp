@@ -2,6 +2,7 @@
 
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
+#include "core/GLM.h"
 
 namespace voxel {
 

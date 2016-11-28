@@ -5,6 +5,7 @@
 #include "EventHandler.h"
 #include "IEventObserver.h"
 #include "core/Common.h"
+#include "core/GLM.h"
 #include <SDL.h>
 
 namespace io {

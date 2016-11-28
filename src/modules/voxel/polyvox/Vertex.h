@@ -6,6 +6,7 @@
 
 #include "core/Common.h"
 #include "Voxel.h"
+#include <glm/fwd.hpp>
 
 namespace voxel {
 

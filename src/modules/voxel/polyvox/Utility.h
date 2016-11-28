@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include <glm/gtc/round.hpp>
 #include <cstdint>
 
 namespace voxel {

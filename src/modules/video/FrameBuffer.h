@@ -5,6 +5,7 @@
 #pragma once
 
 #include "GLFunc.h"
+#include <glm/vec2.hpp>
 
 namespace video {
 

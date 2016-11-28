@@ -5,6 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/polyvox/Picking.h"
+#include "core/GLM.h"
 
 namespace voxel {
 

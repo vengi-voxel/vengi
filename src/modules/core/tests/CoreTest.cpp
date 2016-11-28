@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "core/Common.h"
+#include <glm/vec4.hpp>
 
 namespace core {
 

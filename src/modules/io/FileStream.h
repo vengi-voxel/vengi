@@ -10,6 +10,7 @@
 #include <cstdarg>
 #include <SDL_endian.h>
 #include "core/Common.h"
+#include <climits>
 
 namespace io {
 

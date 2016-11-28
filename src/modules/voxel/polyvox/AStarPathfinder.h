@@ -6,6 +6,7 @@
 
 #include "AStarPathfinderImpl.h"
 #include "core/Common.h"
+#include "core/GLM.h"
 
 #include <functional>
 #include <list>
