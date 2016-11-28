@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "GLM.h"
+#include <glm/vec4.hpp>
 #include <vector>
 
 namespace core {

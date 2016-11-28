@@ -3,6 +3,7 @@
  */
 
 #include "Color.h"
+#include "core/GLM.h"
 
 #include <algorithm>
 #include <cmath>
@@ -149,15 +150,15 @@ unsigned int Color::GetRGBA(const glm::vec4& color) {
 
 void Color::GetHSB(const glm::vec4& color, float& hue, float& saturation, float& brightness) {
 	brightness = Brightness(color);
-	float minBrightness = std::min(color.r, std::min(color.g, color.b));
+	const float minBrightness = std::min(color.r, std::min(color.g, color.b));
 	if (std::fabs(brightness - minBrightness) < std::numeric_limits<float>::epsilon()) {
 		hue = 0.f;
 		saturation = 0.f;
 		return;
 	}
-	float r = (brightness - color.r) / (brightness - minBrightness);
-	float g = (brightness - color.g) / (brightness - minBrightness);
-	float b = (brightness - color.b) / (brightness - minBrightness);
+	const float r = (brightness - color.r) / (brightness - minBrightness);
+	const float g = (brightness - color.g) / (brightness - minBrightness);
+	const float b = (brightness - color.b) / (brightness - minBrightness);
 	if (std::fabs(color.r - brightness) < std::numeric_limits<float>::epsilon()) {
 		hue = b - g;
 	} else if (std::fabs(color.g - brightness) < std::numeric_limits<float>::epsilon()) {
