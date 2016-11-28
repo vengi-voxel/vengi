@@ -68,7 +68,7 @@ public:
 	bool extract();
 
 	/**
-	 * @param[in,out] volume
+	 * @param[in,out] volume The RawVolume pointer
 	 * @return The old volume that was managed by the class, @c nullptr if there was none
 	 *
 	 * @sa volume()
