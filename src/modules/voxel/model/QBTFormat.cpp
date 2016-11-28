@@ -192,10 +192,10 @@ bool QBTFormat::loadFromStream(io::FileStream& stream) {
 			wrap(stream.readByte(colorByteB));
 			wrap(stream.readByte(colorByteVisMask));
 
-			const uint32_t red   = ((uint32_t)colorByteR) << 0;
-			const uint32_t green = ((uint32_t)colorByteG) << 8;
-			const uint32_t blue  = ((uint32_t)colorByteB) << 16;
-			const uint32_t alpha = ((uint32_t)255) << 24;
+			const uint32_t red   = ((uint32_t)colorByteR) << 24;
+			const uint32_t green = ((uint32_t)colorByteG) << 16;
+			const uint32_t blue  = ((uint32_t)colorByteB) << 8;
+			const uint32_t alpha = ((uint32_t)255) << 0;
 
 			const glm::vec4& color = core::Color::FromRGBA(red | green | blue | alpha);
 			const glm::vec4& finalColor = findClosestMatch(color);
