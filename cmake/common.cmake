@@ -71,9 +71,18 @@ endif()
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
-check_cxx_compiler_flag("-pg" COMPILER_SUPPORTS_GNUPROF)
-if (COMPILER_SUPPORTS_CXX14)
-	set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_DEBUG} -pg")
+if (USE_GPROF)
+	check_cxx_compiler_flag("-pg" COMPILER_SUPPORTS_GNUPROF)
+	if (COMPILER_SUPPORTS_GNUPROF)
+		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg")
+	endif()
+endif()
+
+if (USE_DOXYGEN_CHECK)
+	check_cxx_compiler_flag("-Wdocumentation" COMPILER_SUPPORTS_WDOCUMENTATION)
+	if (COMPILER_SUPPORTS_WDOCUMENTATION)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdocumentation")
+	endif()
 endif()
 
 # thread sanitizer doesn't work in combination with address and leak

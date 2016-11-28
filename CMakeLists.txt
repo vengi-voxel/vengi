@@ -17,6 +17,8 @@ option(UNITTESTS_SANITIZER_ADDRESS "Builds tests with address sanitizer" OFF)
 option(TOOLS "Builds with tools" ON)
 option(SERVER "Builds with server" ON)
 option(USE_CCACHE "Use ccache" ON)
+option(USE_GPROF "Use gprof - will become slow" OFF)
+option(USE_DOXYGEN_CHECK "Use -Wdocumentation if available" OFF)
 set(SERVER_HOST "localhost" CACHE STRING "Host where the server is running on")
 set(SERVER_PORT "11337" CACHE STRING "Port where the server is listening on")
 
