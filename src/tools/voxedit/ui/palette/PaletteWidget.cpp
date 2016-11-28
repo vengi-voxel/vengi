@@ -58,8 +58,6 @@ bool PaletteWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 		if (index >= max) {
 			return false;
 		}
-		const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
-		const glm::ivec4& color = colors[index];
 		SetValue(index);
 		_dirty = true;
 		return true;
