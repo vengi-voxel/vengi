@@ -934,7 +934,7 @@ void X3DImporter::GeometryHelper_CoordIdxStr2FacesArr(const std::list<int32_t>& 
 				default: prim_type |= aiPrimitiveType_POLYGON; break;
 			}
 
-			tface.mNumIndices = ts;
+			tface.mNumIndices = static_cast<unsigned int>(ts);
 			tface.mIndices = new unsigned int[ts];
 			memcpy(tface.mIndices, inds.data(), ts * sizeof(unsigned int));
 			pFaces.push_back(tface);
@@ -1329,7 +1329,7 @@ aiMesh* X3DImporter::GeometryHelper_MakeMesh(const std::list<int32_t>& pCoordIdx
     size_t ts = faces.size();
 	// faces
 	tmesh->mFaces = new aiFace[ts];
-	tmesh->mNumFaces = ts;
+	tmesh->mNumFaces = static_cast<unsigned int>(ts);
 	for(size_t i = 0; i < ts; i++) tmesh->mFaces[i] = faces.at(i);
 
 	// vertices
@@ -1337,7 +1337,7 @@ aiMesh* X3DImporter::GeometryHelper_MakeMesh(const std::list<int32_t>& pCoordIdx
 
 	ts = pVertices.size();
 	tmesh->mVertices = new aiVector3D[ts];
-	tmesh->mNumVertices = ts;
+	tmesh->mNumVertices = static_cast<unsigned int>(ts);
     for ( size_t i = 0; i < ts; i++ )
     {
         tmesh->mVertices[ i ] = *vit++;
@@ -1480,10 +1480,11 @@ void X3DImporter::ParseNode_Head()
 				XML_CheckNode_MustBeEmpty();
 
 				// adding metadata from <head> as MetaString from <Scene>
-				CX3DImporter_NodeElement_MetaString* ms = new CX3DImporter_NodeElement_MetaString(NodeElement_Cur);
+                bool added( false );
+                CX3DImporter_NodeElement_MetaString* ms = new CX3DImporter_NodeElement_MetaString(NodeElement_Cur);
 
 				ms->Name = mReader->getAttributeValueSafe("name");
-				// name can not be empty
+				// name must not be empty
 				if(!ms->Name.empty())
 				{
 					ms->Value.push_back(mReader->getAttributeValueSafe("content"));
@@ -1491,8 +1492,13 @@ void X3DImporter::ParseNode_Head()
                     if ( NodeElement_Cur != nullptr )
                     {
                         NodeElement_Cur->Child.push_back( ms );
+                        added = true;
                     }
 				}
+                // if an error has occurred, release instance
+                if ( !added ) {
+                    delete ms;
+                }
 			}// if(XML_CheckNode_NameEqual("meta"))
 		}// if(mReader->getNodeType() == irr::io::EXN_ELEMENT)
 		else if(mReader->getNodeType() == irr::io::EXN_ELEMENT_END)
@@ -1695,7 +1701,7 @@ void X3DImporter::InternReadFile(const std::string& pFile, aiScene* pScene, IOSy
 		{
 			std::list<aiMesh*>::const_iterator it = mesh_list.begin();
 
-			pScene->mNumMeshes = mesh_list.size();
+			pScene->mNumMeshes = static_cast<unsigned int>(mesh_list.size());
 			pScene->mMeshes = new aiMesh*[pScene->mNumMeshes];
 			for(size_t i = 0; i < pScene->mNumMeshes; i++) pScene->mMeshes[i] = *it++;
 		}
@@ -1704,7 +1710,7 @@ void X3DImporter::InternReadFile(const std::string& pFile, aiScene* pScene, IOSy
 		{
 			std::list<aiMaterial*>::const_iterator it = mat_list.begin();
 
-			pScene->mNumMaterials = mat_list.size();
+			pScene->mNumMaterials = static_cast<unsigned int>(mat_list.size());
 			pScene->mMaterials = new aiMaterial*[pScene->mNumMaterials];
 			for(size_t i = 0; i < pScene->mNumMaterials; i++) pScene->mMaterials[i] = *it++;
 		}
@@ -1713,7 +1719,7 @@ void X3DImporter::InternReadFile(const std::string& pFile, aiScene* pScene, IOSy
 		{
 			std::list<aiLight*>::const_iterator it = light_list.begin();
 
-			pScene->mNumLights = light_list.size();
+			pScene->mNumLights = static_cast<unsigned int>(light_list.size());
 			pScene->mLights = new aiLight*[pScene->mNumLights];
 			for(size_t i = 0; i < pScene->mNumLights; i++) pScene->mLights[i] = *it++;
 		}
