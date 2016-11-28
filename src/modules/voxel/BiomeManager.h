@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/Trace.h"
 #include "Constants.h"
 #include "polyvox/Region.h"
 #include "polyvox/Voxel.h"

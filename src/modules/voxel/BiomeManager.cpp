@@ -21,12 +21,14 @@ bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperatu
 }
 
 float BiomeManager::getHumidity(const glm::ivec3& pos) const {
+	core_trace_scoped(BiomeGetHumidity)
 	const glm::vec2 noisePos(pos.x, pos.z);
 	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.0f, 0.001f, 1.0f);
 	return noise::norm(n);
 }
 
 float BiomeManager::getTemperature(const glm::ivec3& pos) const {
+	core_trace_scoped(BiomeGetTemperature)
 	const glm::vec2 noisePos(pos.x, pos.z);
 	// TODO: apply y value
 	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.2f, 0.01f, 1.2f);
@@ -34,12 +36,14 @@ float BiomeManager::getTemperature(const glm::ivec3& pos) const {
 }
 
 const Biome* BiomeManager::getBiome(const glm::ivec3& pos) const {
+	core_trace_scoped(BiomeGetBiome)
 	const float humidity = getHumidity(pos);
 	const float temperature = getTemperature(pos);
 
 	const Biome *biomeBestMatch = &DEFAULT;
 	float distMin = std::numeric_limits<float>::max();
 
+	core_trace_scoped(BiomeGetBiomeLoop)
 	for (const Biome& biome : bioms) {
 		if (pos.y > biome.yMax || pos.y < biome.yMin) {
 			continue;
@@ -56,6 +60,7 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos) const {
 }
 
 int BiomeManager::getAmountOfTrees(const Region& region) const {
+	core_trace_scoped(BiomeGetAmountOfTrees)
 	const glm::ivec3&pos = region.getCentre();
 	const Biome* biome = getBiome(pos);
 	const int maxDim = region.getDepthInCells();
@@ -69,6 +74,7 @@ int BiomeManager::getAmountOfTrees(const Region& region) const {
 }
 
 bool BiomeManager::hasTrees(const glm::ivec3& pos) const {
+	core_trace_scoped(BiomeHasTrees)
 	if (pos.y < MAX_WATER_HEIGHT) {
 		return false;
 	}
@@ -83,6 +89,7 @@ bool BiomeManager::hasTrees(const glm::ivec3& pos) const {
 }
 
 bool BiomeManager::hasClouds(const glm::ivec3& pos) const {
+	core_trace_scoped(BiomeHasClouds)
 	if (pos.y <= MAX_MOUNTAIN_HEIGHT) {
 		return false;
 	}
@@ -91,6 +98,7 @@ bool BiomeManager::hasClouds(const glm::ivec3& pos) const {
 }
 
 bool BiomeManager::hasPlants(const glm::ivec3& pos) const {
+	core_trace_scoped(BiomeHasPlants)
 	// TODO:
 	return hasTrees(pos);
 }
