@@ -25,3 +25,8 @@ public:
 };
 
 }
+
+#define UI_WIDGET_FACTORY(classname, sync_type, add_child_z) \
+namespace tb { \
+TB_WIDGET_FACTORY(classname, sync_type, add_child_z) {} \
+}
