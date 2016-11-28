@@ -57,7 +57,7 @@ public:
 		return _materialColors;
 	}
 
-	inline Voxel createRandomColorVoxel(VoxelType type) {
+	inline Voxel createRandomColorVoxel(VoxelType type, core::Random& random) const {
 		// TODO:
 		return voxel::createVoxel(type, 1);
 	}
@@ -81,7 +81,12 @@ const MaterialColorArray& getMaterialColors() {
 }
 
 Voxel createRandomColorVoxel(VoxelType type) {
-	return core::Singleton<MaterialColor>::getInstance().createRandomColorVoxel(type);
+	core::Random random;
+	return createRandomColorVoxel(type, random);
+}
+
+Voxel createRandomColorVoxel(VoxelType type, core::Random& random) {
+	return core::Singleton<MaterialColor>::getInstance().createRandomColorVoxel(type, random);
 }
 
 }

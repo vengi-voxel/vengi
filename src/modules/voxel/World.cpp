@@ -59,11 +59,11 @@ World::World() :
 		_pager(*this), _threadPool(core::halfcpus(), "World"), _random(_seed) {
 	_meshSize = core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
 	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
-	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.5f, 0.5f, createRandomColorVoxel(VoxelType::Sand));
-	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, createRandomColorVoxel(VoxelType::Dirt));
-	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createRandomColorVoxel(VoxelType::Grass));
-	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, createRandomColorVoxel(VoxelType::Rock));
-	_biomeManager.addBiom(0, MAX_TERRAIN_HEIGHT - 1, 0.4f, 0.5f, createRandomColorVoxel(VoxelType::Rock), true);
+	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.5f, 0.5f, createRandomColorVoxel(VoxelType::Sand, _random));
+	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, createRandomColorVoxel(VoxelType::Dirt, _random));
+	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, createRandomColorVoxel(VoxelType::Grass, _random));
+	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, createRandomColorVoxel(VoxelType::Rock, _random));
+	_biomeManager.addBiom(0, MAX_TERRAIN_HEIGHT - 1, 0.4f, 0.5f, createRandomColorVoxel(VoxelType::Rock, _random), true);
 }
 
 World::~World() {

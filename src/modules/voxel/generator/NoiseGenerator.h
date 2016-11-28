@@ -18,8 +18,8 @@ void generate(Volume& volume, int octaves, float frequency, float persistence, c
 	const int noiseSeedOffsetX = random.random(0, 1000);
 	const int noiseSeedOffsetZ = random.random(0, 1000);
 
-	const Voxel& grass = createRandomColorVoxel(VoxelType::Grass);
-	const Voxel& dirt = createRandomColorVoxel(VoxelType::Dirt);
+	const Voxel& grass = createRandomColorVoxel(VoxelType::Grass, random);
+	const Voxel& dirt = createRandomColorVoxel(VoxelType::Dirt, random);
 
 	glm::vec2 p(noiseSeedOffsetX + lowerX, noiseSeedOffsetZ + lowerZ);
 	for (int x = lowerX; x < lowerX + width; ++x, p.x += 1.0f) {

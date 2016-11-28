@@ -8,6 +8,7 @@
 #include "core/Color.h"
 #include "io/File.h"
 #include <vector>
+#include "core/Random.h"
 
 namespace voxel {
 
@@ -18,5 +19,6 @@ extern bool initDefaultMaterialColors();
 extern bool initMaterialColors(const io::FilePtr& file);
 extern const MaterialColorArray& getMaterialColors();
 extern Voxel createRandomColorVoxel(VoxelType type);
+extern Voxel createRandomColorVoxel(VoxelType type, core::Random& random);
 
 }

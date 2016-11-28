@@ -54,8 +54,8 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
 			static constexpr Voxel air;
-			const Voxel& water = createRandomColorVoxel(VoxelType::Water);
-			voxels[0] = createRandomColorVoxel(VoxelType::Dirt);
+			const Voxel& water = createRandomColorVoxel(VoxelType::Water, random);
+			voxels[0] = createRandomColorVoxel(VoxelType::Dirt, random);
 			for (int y = ni - 1; y >= 1; --y) {
 				pos.y = y;
 				const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);

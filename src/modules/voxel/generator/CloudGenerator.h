@@ -24,7 +24,7 @@ static glm::ivec2 randomPosWithoutHeight(const Region& region, int border, core:
 template<class Volume>
 void createClouds(Volume& ctx, const BiomeManager& biomManager, core::Random& random) {
 	const int amount = 4;
-	const Voxel& voxel = createRandomColorVoxel(VoxelType::Cloud);
+	const Voxel& voxel = createRandomColorVoxel(VoxelType::Cloud, random);
 	const voxel::Region& region = ctx.getRegion();
 	for (int i = 0; i < amount; ++i) {
 		const int height = 10;
