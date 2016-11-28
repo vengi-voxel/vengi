@@ -58,9 +58,9 @@ public:
 #define core_trace_end_frame() emscripten_trace_record_frame_end()
 #define core_trace_begin(name) emscripten_trace_enter_context(#name)
 #define core_trace_end() emscripten_trace_exit_context()
-#define core_trace_gl_begin(name)
-#define core_trace_gl_begin_dynamic(name)
-#define core_trace_gl_end()
+#define core_trace_gl_begin(name) core_trace_begin(name)
+#define core_trace_gl_begin_dynamic(name) core_trace_begin(name)
+#define core_trace_gl_end() core_trace_end()
 #define core_trace_msg(message)
 #define core_trace_thread(name)
 #define core_trace_gl_scoped(name)
@@ -77,7 +77,7 @@ public:
 #define core_trace_msg(message)
 #define core_trace_thread(name)
 #define core_trace_gl_scoped(name)
-#define core_trace_scoped(name) core::TraceScoped(#name)
+#define core_trace_scoped(name)
 #endif
 
 
