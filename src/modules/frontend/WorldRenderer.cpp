@@ -534,12 +534,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	return drawCallsEntities;
 }
 
-void WorldRenderer::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
-	Log::debug("set voxel to %i at %i:%i:%i", (int)std::enum_value(voxel.getMaterial()), pos.x, pos.y, pos.z);
-	_world->setVoxel(pos, voxel);
-	extractNewMeshes(pos, true);
-}
-
 void WorldRenderer::updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) {
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
 	const voxel::IndexType* vecIndices = surfaceMesh.getRawIndexData();

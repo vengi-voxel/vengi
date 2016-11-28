@@ -138,8 +138,6 @@ public:
 	float getViewDistance() const;
 	void setViewDistance(float viewDistance);
 
-	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
-
 	bool extractNewMeshes(const glm::vec3& position, bool force = false);
 	int renderWorld(const video::Camera& camera, int* vertices = nullptr);
 	int renderEntities(const video::Camera& camera);
