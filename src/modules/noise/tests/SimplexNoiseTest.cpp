@@ -40,8 +40,9 @@ protected:
 				for (int i = 0; i < n; ++i) {
 					buffer[index++] = color;
 				}
-				if (components == 4)
+				if (components == 4) {
 					buffer[index] = 255;
+				}
 			}
 		}
 		ASSERT_TRUE(WriteImage(filename, buffer));
