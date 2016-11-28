@@ -89,6 +89,7 @@ public:
 		return result == RaycastResults::Interupted;
 	}
 
+	bool init();
 	void shutdown();
 	void reset();
 	bool isReset() const;
@@ -227,7 +228,7 @@ private:
 	Region getRegion(const glm::ivec3& pos, int size) const;
 
 	Pager _pager;
-	PagedVolume *_volumeData;
+	PagedVolume *_volumeData = nullptr;
 	BiomeManager _biomeManager;
 	WorldContext _ctx;
 	mutable std::mt19937 _engine;

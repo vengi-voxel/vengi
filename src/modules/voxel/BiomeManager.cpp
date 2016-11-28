@@ -7,12 +7,19 @@
 
 namespace voxel {
 
-const Biome BiomeManager::DEFAULT;
+static const Biome& getDefault() {
+	static const Biome biome(createRandomColorVoxel(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false);
+	return biome;
+}
 
 BiomeManager::BiomeManager() {
 }
 
 BiomeManager::~BiomeManager() {
+}
+
+bool BiomeManager::init() {
+	return true;
 }
 
 bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperature, const Voxel& voxel, bool underGround) {
@@ -41,7 +48,7 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	const float humidity = getHumidity(pos);
 	const float temperature = getTemperature(pos);
 
-	const Biome *biomeBestMatch = &DEFAULT;
+	const Biome *biomeBestMatch = &getDefault();
 	float distMin = std::numeric_limits<float>::max();
 
 	core_trace_scoped(BiomeGetBiomeLoop);

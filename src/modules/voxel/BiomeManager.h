@@ -13,16 +13,20 @@
 
 namespace voxel {
 
-struct Biome {
+class Biome {
+private:
+	friend class BiomeManager;
+	Biome() :
+			Biome(createVoxel(VoxelType::Grass, 0), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
+	}
+
+public:
 	constexpr Biome(const Voxel& _voxel, int16_t _yMin, int16_t _yMax,
 			float _humidity, float _temperature, bool _underground) :
 			voxel(_voxel), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(
 					_temperature), underground(_underground) {
 	}
 
-	Biome() :
-			Biome(createRandomColorVoxel(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
-	}
 	const Voxel voxel;
 	const int16_t yMin;
 	const int16_t yMax;
@@ -35,11 +39,11 @@ class BiomeManager {
 private:
 	std::vector<Biome> bioms;
 
-	static const Biome DEFAULT;
-
 public:
 	BiomeManager();
 	~BiomeManager();
+
+	bool init();
 
 	bool addBiom(int lower, int upper, float humidity, float temperature, const Voxel& voxel, bool underGround = false);
 

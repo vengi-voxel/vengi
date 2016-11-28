@@ -337,6 +337,7 @@ void Model::world(const voxel::WorldContext& ctx) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(127, 63, 127));
 	setNewVolume(new voxel::RawVolume(region));
 	voxel::BiomeManager mgr;
+	mgr.init();
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
 	voxel::world::createWorld(ctx, wrapper, mgr, 1L, voxel::world::WORLDGEN_CLIENT, 0, 0);
 }

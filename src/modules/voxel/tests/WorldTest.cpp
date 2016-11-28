@@ -38,6 +38,7 @@ protected:
 
 TEST_F(WorldTest, DISABLED_testExtraction) {
 	World world;
+	ASSERT_TRUE(world.init());
 	int expected = 0;
 	for (int i = 0; i < 1024; ++i) {
 		const glm::ivec3 pos { i, 0, i };
@@ -72,6 +73,7 @@ TEST_F(WorldTest, DISABLED_testExtraction) {
 // -64 - -1 => meshPos -64
 TEST_F(WorldTest, testChunkAndmeshPos) {
 	World world;
+	ASSERT_TRUE(world.init());
 	const int chunkSize = world.getChunkSize();
 	//const int halfChunkSize = chunkSize / 2;
 	const int meshSize = world.getMeshSize();

@@ -21,6 +21,7 @@
 #include "backend/network/AttackHandler.h"
 #include "backend/network/MoveHandler.h"
 #include "util/CommandHandler.h"
+#include "voxel/MaterialColor.h"
 
 namespace backend {
 
@@ -66,6 +67,16 @@ bool ServerLoop::init() {
 	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::UserDisconnect), std::make_shared<UserDisconnectHandler>());
 	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::Attack), std::make_shared<AttackHandler>());
 	r->registerHandler(network::EnumNameClientMsgType(network::ClientMsgType::Move), std::make_shared<MoveHandler>());
+
+	if (!voxel::initDefaultMaterialColors()) {
+		Log::error("Failed to initialize the palette data");
+		return false;
+	}
+
+	if (!_world->init()) {
+		Log::error("Failed to init the world");
+		return false;
+	}
 
 	const core::VarPtr& seed = core::Var::get(cfg::ServerSeed, "1");
 	_world->setSeed(seed->longVal());

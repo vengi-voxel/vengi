@@ -12,6 +12,7 @@ class BiomeManagerTest: public AbstractVoxelTest {
 
 TEST_F(BiomeManagerTest, testBasic) {
 	BiomeManager mgr;
+	ASSERT_TRUE(mgr.init());
 	ASSERT_TRUE(mgr.addBiom(0, 1, 1.0f, 1.0f, createVoxel(VoxelType::Wood, 0)));
 	ASSERT_TRUE(mgr.addBiom(1, 2, 1.0f, 1.0f, createVoxel(VoxelType::Sand, 0)));
 	ASSERT_TRUE(mgr.addBiom(2, 3, 1.0f, 1.0f, createVoxel(VoxelType::Grass, 0)));
@@ -29,6 +30,7 @@ TEST_F(BiomeManagerTest, testBasic) {
 
 TEST_F(BiomeManagerTest, testHumidityTemperature) {
 	BiomeManager mgr;
+	ASSERT_TRUE(mgr.init());
 	const glm::ivec3 p1(1, 0, 1);
 	const float h1 = mgr.getHumidity(p1);
 	const float t1 = mgr.getTemperature(p1);

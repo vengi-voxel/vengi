@@ -148,6 +148,10 @@ core::AppState Client::onInit() {
 		return core::Cleanup;
 	}
 
+	if (!_world->init()) {
+		return core::AppState::Cleanup;
+	}
+
 	if (!_worldRenderer.onInit(glm::ivec2(), _dimension)) {
 		return core::Cleanup;
 	}

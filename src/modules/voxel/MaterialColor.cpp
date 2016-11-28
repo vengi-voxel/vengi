@@ -8,6 +8,10 @@
 #include "core/App.h"
 #include "core/GLM.h"
 #include "io/Filesystem.h"
+#include "commonlua/LUA.h"
+#include "commonlua/LUAFunctions.h"
+#include <unordered_map>
+#include <algorithm>
 
 namespace voxel {
 
@@ -15,19 +19,21 @@ class MaterialColor {
 private:
 	image::Image _image;
 	MaterialColorArray _materialColors;
+	typedef std::vector<uint8_t> Indices;
+	std::unordered_map<VoxelType, Indices> _colorMapping;
 	bool _initialized = false;
 public:
 	MaterialColor() :
 			_image("**palette**") {
 	}
 
-	bool init(const io::FilePtr& file) {
+	bool init(const io::FilePtr& paletteFile, const io::FilePtr& luaFile) {
 		if (_initialized) {
 			Log::debug("MaterialColors are already initialized");
 			return true;
 		}
 		_initialized = true;
-		if (!_image.load(file)) {
+		if (!_image.load(paletteFile)) {
 			Log::error("MaterialColors: failed to load image");
 			return false;
 		}
@@ -40,7 +46,10 @@ public:
 			Log::error("Palette image has invalid dimensions: %i:%i", _image.width(), _image.height());
 			return false;
 		}
-		core_assert(_image.depth() == 4);
+		if (_image.depth() != 4) {
+			Log::error("Palette image has invalid depth: %i", _image.depth());
+			return false;
+		}
 		_materialColors.reserve(colors);
 		const uint32_t* paletteData = (const uint32_t*)_image.data();
 		for (int i = 0; i < colors; ++i) {
@@ -48,7 +57,102 @@ public:
 			++paletteData;
 		}
 		Log::info("Set up %i material colors", (int)_materialColors.size());
-		return _materialColors.size() == 256u;
+
+		if (_materialColors.size() != (size_t)colors) {
+			return false;
+		}
+
+		struct IndexVectors {
+			Indices water;
+			Indices grass;
+			Indices wood;
+			Indices leaves;
+			Indices rock;
+			Indices sand;
+			Indices cloud;
+			Indices dirt;
+			Indices generic;
+		} iv;
+		iv.generic.resize(colors - 1);
+		// 0 is VoxelType::Air - don't add it
+		std::iota(std::begin(iv.generic), std::end(iv.generic), 1);
+
+		lua::LUA lua;
+#define LUA_ACCESS(name) \
+	luaL_Reg add##name = { #name, [] (lua_State* l) -> int { \
+		IndexVectors* v = lua::LUA::globalData<IndexVectors>(l, "indexvector"); \
+		const int index = luaL_checknumber(l, -1); \
+		core_assert_msg(v != nullptr, "Could not find globl indexvector"); \
+		v->name.push_back(index); \
+		/*v->generic.erase(std::remove(v->generic.begin(), v->generic.end(), index), v->generic.end());*/ \
+		return 0; \
+	}};
+		LUA_ACCESS(water);
+		LUA_ACCESS(grass);
+		LUA_ACCESS(wood);
+		LUA_ACCESS(leaves);
+		LUA_ACCESS(rock);
+		LUA_ACCESS(sand);
+		LUA_ACCESS(cloud);
+		LUA_ACCESS(dirt);
+
+		luaL_Reg getmaterial = { "material", [] (lua_State* l) -> int {
+			MaterialColor* mc = lua::LUA::globalData<MaterialColor>(l, "MaterialColor");
+			lua_newtable(l);
+			const MaterialColorArray& colors = mc->getColors();
+			lua_newtable(l);
+			const int top = lua_gettop(l);
+			for (size_t i = 0; i < colors.size(); ++i) {
+				lua_pushinteger(l, i);
+				clua_push<glm::vec4>(l, colors[i]);
+				lua_settable(l, top);
+			}
+			return 1;
+		}};
+
+		clua_vecregister<glm::vec4>(lua.state());
+
+		luaL_Reg eof = { nullptr, nullptr };
+		luaL_Reg funcs[] = { addwater, addgrass, addwood, addleaves, addrock, addsand, addcloud, adddirt, getmaterial, eof };
+		lua.newGlobalData<IndexVectors>("indexvector", &iv);
+		lua.newGlobalData<MaterialColor>("MaterialColor", this);
+		lua.reg("MAT", funcs);
+
+#undef LUA_ACCESS
+		const std::string& luaString = luaFile->load();
+		if (luaString.empty()) {
+			Log::error("Could not load lua script file: %s", luaFile->fileName().c_str());
+			return false;
+		}
+		if (!lua.load(luaString)) {
+			Log::error("Could not load lua script: %s. Failed with error: %s",
+					luaFile->fileName().c_str(), lua.error().c_str());
+			return false;
+		}
+		if (!lua.execute("init")) {
+			Log::error("Could not execute lua script file: %s. Failed with error: %s",
+					luaFile->fileName().c_str(), lua.error().c_str());
+			return false;
+		}
+
+		_colorMapping[VoxelType::Water] = std::move(iv.water);
+		_colorMapping[VoxelType::Grass] = std::move(iv.grass);
+		_colorMapping[VoxelType::Wood] = std::move(iv.wood);
+		_colorMapping[VoxelType::Leaves] = std::move(iv.leaves);
+		_colorMapping[VoxelType::Rock] = std::move(iv.rock);
+		_colorMapping[VoxelType::Sand] = std::move(iv.sand);
+		_colorMapping[VoxelType::Cloud] = std::move(iv.cloud);
+		_colorMapping[VoxelType::Dirt] = std::move(iv.dirt);
+		_colorMapping[VoxelType::Generic] = std::move(iv.generic);
+
+		for (const auto& e : _colorMapping) {
+			if (e.second.empty()) {
+				Log::error("No colors are defined for VoxelType: %i", (int)std::enum_value(e.first));
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	inline const MaterialColorArray& getColors() const {
@@ -57,27 +161,71 @@ public:
 		return _materialColors;
 	}
 
+	inline Voxel createColorVoxel(VoxelType type, uint32_t colorIndex) {
+		core_assert_msg(_initialized, "Material colors are not yet initialized");
+		uint8_t index = 0;
+		if (type != VoxelType::Air) {
+			auto i = _colorMapping.find(type);
+			if (i == _colorMapping.end()) {
+				Log::error("Failed to get color indices for voxel type %i", (int)type);
+			} else {
+				const Indices& indices = i->second;
+				if (indices.empty()) {
+					Log::error("Failed to get color indices for voxel type %i", (int)type);
+				} else {
+					colorIndex %= (uint32_t)indices.size();
+					index = indices[colorIndex];
+				}
+			}
+		}
+		return voxel::createVoxel(type, index);
+	}
+
 	inline Voxel createRandomColorVoxel(VoxelType type, core::Random& random) const {
-		// TODO:
-		return voxel::createVoxel(type, 1);
+		core_assert_msg(_initialized, "Material colors are not yet initialized");
+		uint8_t index = 0;
+		if (type != VoxelType::Air) {
+			auto i = _colorMapping.find(type);
+			if (i == _colorMapping.end()) {
+				Log::error("Failed to get color indices for voxel type %i", (int)type);
+			} else {
+				const Indices& indices = i->second;
+				if (indices.empty()) {
+					Log::error("Failed to get color indices for voxel type %i", (int)type);
+				} else {
+					index = *random.randomElement(indices.begin(), indices.end());
+				}
+			}
+		}
+		return voxel::createVoxel(type, index);
 	}
 };
 
-bool initMaterialColors(const io::FilePtr& file) {
-	if (!file->exists()) {
-		Log::error("Failed to load %s", file->name().c_str());
+static MaterialColor& getInstance() {
+	static MaterialColor color;
+	return color;
+}
+
+bool initMaterialColors(const io::FilePtr& paletteFile, const io::FilePtr& luaFile) {
+	if (!paletteFile->exists()) {
+		Log::error("Failed to load %s", paletteFile->name().c_str());
 		return false;
 	}
-	return core::Singleton<MaterialColor>::getInstance().init(file);
+	if (!luaFile->exists()) {
+		Log::error("Failed to load %s", luaFile->name().c_str());
+		return false;
+	}
+	return getInstance().init(paletteFile, luaFile);
 }
 
 bool initDefaultMaterialColors() {
-	const io::FilePtr& file = core::App::getInstance()->filesystem()->open("palette-nippon.png");
-	return initMaterialColors(file);
+	const io::FilePtr& paletteFile = core::App::getInstance()->filesystem()->open("palette-nippon.png");
+	const io::FilePtr& luaFile = core::App::getInstance()->filesystem()->open("palette-nippon.lua");
+	return initMaterialColors(paletteFile, luaFile);
 }
 
 const MaterialColorArray& getMaterialColors() {
-	return core::Singleton<MaterialColor>::getInstance().getColors();
+	return getInstance().getColors();
 }
 
 Voxel createRandomColorVoxel(VoxelType type) {
@@ -85,8 +233,12 @@ Voxel createRandomColorVoxel(VoxelType type) {
 	return createRandomColorVoxel(type, random);
 }
 
+Voxel createColorVoxel(VoxelType type, uint32_t colorIndex) {
+	return getInstance().createColorVoxel(type, colorIndex);
+}
+
 Voxel createRandomColorVoxel(VoxelType type, core::Random& random) {
-	return core::Singleton<MaterialColor>::getInstance().createRandomColorVoxel(type, random);
+	return getInstance().createRandomColorVoxel(type, random);
 }
 
 }

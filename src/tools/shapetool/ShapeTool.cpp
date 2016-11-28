@@ -57,6 +57,10 @@ core::AppState ShapeTool::onInit() {
 		return core::Cleanup;
 	}
 
+	if (!_world->init()) {
+		return core::AppState::Cleanup;
+	}
+
 	_world->setSeed(1);
 	if (!_worldRenderer.onInit(glm::ivec2(), _dimension)) {
 		return core::Cleanup;

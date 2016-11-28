@@ -38,6 +38,10 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 
 	glm::ivec3 pos(glm::uninitialize);
 
+	const Voxel& water = createColorVoxel(VoxelType::Water, seed);
+	const Voxel& dirt = createColorVoxel(VoxelType::Dirt, seed);
+	static constexpr Voxel air;
+
 	// TODO: the 2d noise doesn't neep the same resolution - we can optimize this a lot, we can lerp/glm::mix here
 	for (int z = lowerZ; z < lowerZ + depth; ++z) {
 		pos.z = z;
@@ -53,9 +57,7 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 			const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 			const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
 			const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
-			static constexpr Voxel air;
-			const Voxel& water = createRandomColorVoxel(VoxelType::Water, random);
-			voxels[0] = createRandomColorVoxel(VoxelType::Dirt, random);
+			voxels[0] = dirt;
 			for (int y = ni - 1; y >= 1; --y) {
 				pos.y = y;
 				const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
