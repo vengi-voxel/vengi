@@ -56,13 +56,8 @@ TBLayout: distribution: gravity, axis: y
 					TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y
-					TBLayout: distribution: gravity, id: editorcontainer
+					TBLayout: distribution: gravity, id: editorcontainer, axis: y
 						TBScrollContainer
-							adapt-content 1
-							scroll-mode y
-							lp
-								min-width 1080
-								min-height 800
 							TBLayout
 								id imagelayout
 								axis y

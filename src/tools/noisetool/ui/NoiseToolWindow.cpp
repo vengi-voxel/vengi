@@ -15,6 +15,13 @@ bool NoiseToolWindow::init() {
 		Log::error("Failed to init the main window: Could not load the ui definition");
 		return false;
 	}
+
+	_editorContainer = getWidget("editorcontainer");
+	if (_editorContainer == nullptr) {
+		Log::error("Failed to init the main window: No editorcontainer widget found");
+		return false;
+	}
+
 	return true;
 }
 
@@ -22,8 +29,11 @@ void NoiseToolWindow::make2DNoise(bool append, bool gray, bool seamless, bool al
 	tb::TBStr idStr;
 	idStr.SetFormatted("2d-%i-%i-%i-%f-%f-%i-%f", gray ? 1 : 0, seamless ? 1 : 0, alpha ? 1 : 0, amplitude, frequency, octaves, persistence);
 	cleanup(idStr);
-	const int height = 768;
-	const int width = seamless ? height : 1024;
+	const tb::TBRect& rect = _editorContainer->GetPaddingRect();
+	const int height = rect.h;
+	// TODO: this 30 is the scrollbar - how to do this properly?
+	const int width = seamless ? height : rect.w - 30;
+	Log::info("Width: %i, Height: %i", width, height);
 	core_assert(!seamless || width == height);
 	const int components = 4;
 	uint8_t buffer[width * height * components];
