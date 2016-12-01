@@ -111,8 +111,11 @@ bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
 		if (ev.special_key == tb::TB_KEY_DELETE) {
-			//removeImage();
-			return true;
+			TBWidget *lastImage =_imageLayout->GetLastChild();
+			if (lastImage != nullptr) {
+				removeImage(lastImage);
+				return true;
+			}
 		} else if (ev.special_key == tb::TB_KEY_ENTER) {
 			generateImage();
 			return true;
