@@ -13,7 +13,7 @@
 
 ShapeTool::ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world) :
 		Super(filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
-	init("engine", "shapetool");
+	init(ORGANISATION, "shapetool");
 	_world->setClientData(true);
 }
 

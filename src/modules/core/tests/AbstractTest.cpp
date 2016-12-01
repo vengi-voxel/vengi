@@ -30,7 +30,7 @@ void AbstractTest::TearDown() {
 
 AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
 		core::App(filesystem, eventBus, timeProvider, 10000), _test(test) {
-	init("engine", "test");
+	init(ORGANISATION, "test");
 	_argc = ::_argc;
 	_argv = ::_argv;
 	while (_curState < AppState::Running) {

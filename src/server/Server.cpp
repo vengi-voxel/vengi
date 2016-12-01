@@ -19,7 +19,7 @@ Server::Server(const network::NetworkPtr& network, const backend::ServerLoopPtr&
 		const core::EventBusPtr& eventBus) :
 		core::App(filesystem, eventBus, timeProvider, 15678), _quit(false), _network(network),
 		_serverLoop(serverLoop) {
-	init("engine", "server");
+	init(ORGANISATION, "server");
 }
 
 core::AppState Server::onInit() {

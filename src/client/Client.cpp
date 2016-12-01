@@ -47,7 +47,7 @@ Client::Client(const video::MeshPoolPtr& meshPool, const network::NetworkPtr& ne
 		Super(filesystem, eventBus, timeProvider, 17816), _camera(), _meshPool(meshPool), _network(network), _world(world), _messageSender(messageSender),
 		_worldRenderer(world), _waiting(this) {
 	_world->setClientData(true);
-	init("engine", "client");
+	init(ORGANISATION, "client");
 }
 
 Client::~Client() {

@@ -8,7 +8,7 @@
 
 NoiseTool::NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		ui::UIApp(filesystem, eventBus, timeProvider) {
-	init("engine", "noisetool");
+	init(ORGANISATION, "noisetool");
 }
 
 core::AppState NoiseTool::onInit() {

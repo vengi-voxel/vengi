@@ -8,7 +8,7 @@
 
 UITool::UITool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		core::App(filesystem, eventBus, timeProvider, 0) {
-	init("engine", "uitool");
+	init(ORGANISATION, "uitool");
 }
 
 core::AppState UITool::onInit() {

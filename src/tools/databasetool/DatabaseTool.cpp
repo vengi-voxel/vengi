@@ -21,7 +21,7 @@ static const char *ConstraintTypeNames[] = {
 
 DatabaseTool::DatabaseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		core::App(filesystem, eventBus, timeProvider, 0) {
-	init("engine", "databasetool");
+	init(ORGANISATION, "databasetool");
 	static_assert(SDL_arraysize(FieldTypeNames) == persistence::Model::MAX_FIELDTYPES, "Invalid field type mapping");
 	static_assert(SDL_arraysize(ConstraintTypeNames) == persistence::Model::MAX_CONSTRAINTTYPES, "Invalid constraint type mapping");
 }

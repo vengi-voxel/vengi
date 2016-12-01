@@ -46,7 +46,7 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 
 ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		core::App(filesystem, eventBus, timeProvider, 0) {
-	init("engine", "shadertool");
+	init(ORGANISATION, "shadertool");
 	static_assert(Variable::MAX == SDL_arraysize(cTypes), "mismatch in glsl types");
 }
 

@@ -30,7 +30,7 @@
 // TODO: clouds and cactus should also be included in the generation
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
-	init("engine", "voxedit");
+	init(ORGANISATION, "voxedit");
 }
 
 bool VoxEdit::saveFile(std::string_view file) {

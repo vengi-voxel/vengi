@@ -14,6 +14,8 @@
 #include "core/ThreadPool.h"
 #include "io/Filesystem.h"
 
+#define ORGANISATION "engine"
+
 namespace core {
 
 enum AppState {
