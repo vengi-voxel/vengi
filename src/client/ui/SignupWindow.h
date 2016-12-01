@@ -17,7 +17,7 @@ private:
 public:
 	SignupWindow(Client* client) :
 			ui::Window(client), _client(client) {
-		core_assert_always(loadResourceFile("ui/window/signup.tb.txt"));
+		core_assert_always(loadResourceFile("ui/window/client-signup.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 	}
 

@@ -40,7 +40,7 @@ private:
 public:
 	LoginWindow(Client* client) :
 			ui::Window(client), _client(client) {
-		core_assert_always(loadResourceFile("ui/window/login.tb.txt"));
+		core_assert_always(loadResourceFile("ui/window/client-login.tb.txt"));
 		SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 
 		setText("email", core::Var::str(cfg::ClientEmail));

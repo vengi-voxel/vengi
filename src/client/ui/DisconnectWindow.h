@@ -13,7 +13,7 @@ class DisconnectWindow: public ui::Window {
 public:
 	DisconnectWindow(Window* parent) :
 			ui::Window(parent) {
-		core_assert_always(loadResourceFile("ui/window/disconnect.tb.txt"));
+		core_assert_always(loadResourceFile("ui/window/client-disconnect.tb.txt"));
 	}
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override {
