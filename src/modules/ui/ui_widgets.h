@@ -10,7 +10,7 @@ class ColorWidget: public ui::Widget {
 private:
 	using Super = ui::Widget;
 public:
-	TBOBJECT_SUBCLASS(ColorWidget, Super);
+	UIWIDGET_SUBCLASS(ColorWidget, Super);
 
 	ColorWidget();
 
