@@ -22,7 +22,7 @@ bool NoiseToolWindow::init() {
 		return false;
 	}
 
-	_imageLayout = GetWidgetByIDAndType<tb::TBLayout>("imagelayout");
+	_imageLayout = getWidgetByType<tb::TBLayout>("imagelayout");
 	if (_imageLayout == nullptr) {
 		Log::error("Failed to init the main window: No imagelayout widget found");
 		return false;
@@ -39,7 +39,7 @@ void NoiseToolWindow::make2DNoise(bool append, bool gray, bool seamless, bool al
 	const int height = rect.h;
 	// TODO: this 30 is the scrollbar - how to do this properly?
 	const int width = seamless ? height : rect.w - 30;
-	Log::info("Width: %i, Height: %i", width, height);
+	Log::debug("Width: %i, Height: %i", width, height);
 	core_assert(!seamless || width == height);
 	const int components = 4;
 	uint8_t buffer[width * height * components];
@@ -65,9 +65,11 @@ void NoiseToolWindow::make2DNoise(bool append, bool gray, bool seamless, bool al
 }
 
 void NoiseToolWindow::cleanup(const tb::TBStr& idStr) {
-	tb::TBBitmapFragment *existingFragment = tb::g_tb_skin->GetFragmentManager()->GetFragment(tb::TBID(idStr.CStr()));
+	tb::TBBitmapFragmentManager *fragMgr = tb::g_tb_skin->GetFragmentManager();
+	const tb::TBID id(idStr.CStr());
+	tb::TBBitmapFragment *existingFragment = fragMgr->GetFragment(id);
 	if (existingFragment != nullptr) {
-		tb::g_tb_skin->GetFragmentManager()->FreeFragment(existingFragment);
+		fragMgr->FreeFragment(existingFragment);
 	}
 }
 
