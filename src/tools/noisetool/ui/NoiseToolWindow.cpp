@@ -22,6 +22,12 @@ bool NoiseToolWindow::init() {
 		return false;
 	}
 
+	_imageLayout = GetWidgetByIDAndType<tb::TBLayout>("imagelayout");
+	if (_imageLayout == nullptr) {
+		Log::error("Failed to init the main window: No imagelayout widget found");
+		return false;
+	}
+
 	return true;
 }
 
@@ -66,13 +72,8 @@ void NoiseToolWindow::cleanup(const tb::TBStr& idStr) {
 }
 
 void NoiseToolWindow::addImage(const tb::TBStr& idStr, bool append, uint8_t* buffer, int width, int height) {
-	tb::TBLayout* layout = GetWidgetByIDAndType<tb::TBLayout>("imagelayout");
-	if (layout == nullptr) {
-		Log::error("could not find layout node");
-		return;
-	}
 	if (!append) {
-		layout->DeleteAllChildren();
+		_imageLayout->DeleteAllChildren();
 	}
 	tb::TBImageWidget* imageWidget = new tb::TBImageWidget();
 	tb::TBTextField* caption = new tb::TBTextField();
@@ -91,8 +92,8 @@ void NoiseToolWindow::addImage(const tb::TBStr& idStr, bool append, uint8_t* buf
 
 	const tb::TBImage& image = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)buffer, width, height);
 	imageWidget->SetImage(image);
-	layout->AddChild(imageWidget, tb::WIDGET_Z_TOP);
-	layout->OnInflateChild(imageWidget);
+	_imageLayout->AddChild(imageWidget, tb::WIDGET_Z_TOP);
+	_imageLayout->OnInflateChild(imageWidget);
 }
 
 bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
