@@ -11,6 +11,7 @@ protected:
 	int _height = 0;
 	int _padding = 0;
 	int _amountX = 0;
+	int _amountY = 0;
 	bool _dirty = true;
 	// the palette index
 	int _value = 0;
@@ -29,6 +30,7 @@ public:
 	tb::PreferredSize OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
 	void OnPaint(const PaintProps &paint_props) override;
 	void OnInflate(const tb::INFLATE_INFO &info) override;
+	void OnResized(int oldWidth, int oldHeight) override;
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };
 
