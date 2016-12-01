@@ -92,7 +92,7 @@ void NoiseToolWindow::addImage(const tb::TBStr& idStr, bool append, uint8_t* buf
 
 	const tb::TBImage& image = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)buffer, width, height);
 	imageWidget->SetImage(image);
-	_imageLayout->AddChild(imageWidget, tb::WIDGET_Z_TOP);
+	_imageLayout->AddChild(imageWidget, tb::WIDGET_Z_BOTTOM);
 	_imageLayout->OnInflateChild(imageWidget);
 }
 
