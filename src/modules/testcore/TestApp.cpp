@@ -94,7 +94,6 @@ void TestApp::beforeUI() {
 	const float speed = _cameraSpeed * static_cast<float>(_deltaFrame);
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
-
 	_camera.update(_deltaFrame);
 
 	if  (_renderPlane) {

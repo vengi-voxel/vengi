@@ -118,8 +118,7 @@ void UIRendererGL::BeginPaint(int render_target_w, int render_target_h) {
 	_shader.activate();
 
 	const glm::mat4& ortho = glm::ortho(0.0f, (float) render_target_w, (float) render_target_h, 0.0f, -1.0f, 1.0f);
-	_shader.setUniformMatrix("u_projection", ortho, false);
-	GL_checkError();
+	_shader.setProjection(ortho);
 
 	g_current_texture = (GLuint) -1;
 	g_current_batch = nullptr;
