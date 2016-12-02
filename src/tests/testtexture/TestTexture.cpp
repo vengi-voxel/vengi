@@ -7,8 +7,8 @@ TestTexture::TestTexture(const io::FilesystemPtr& filesystem, const core::EventB
 }
 
 core::AppState TestTexture::onInit() {
-	_camera.setMode(video::CameraMode::Orthogonal);
 	const core::AppState state = Super::onInit();
+	_camera.setMode(video::CameraMode::Orthogonal);
 	_camera.setPosition(glm::vec3(_dimension.x / 2.0f, -_dimension.y / 2.0f, -50.0f));
 
 	if (!_textureShader.setup()) {
@@ -22,7 +22,7 @@ core::AppState TestTexture::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
+	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createTexturedQuad(glm::vec2(0), dimension());
 	video::VertexBuffer::Attribute attributePos;
 	attributePos.bufferIndex = fullscreenQuadIndices.x;
 	attributePos.index = _textureShader.getLocationPos();
@@ -42,16 +42,17 @@ core::AppState TestTexture::onInit() {
 }
 
 void TestTexture::doRender() {
+	glViewport(0, 0, dimension().x, dimension().y);
 	video::ScopedShader scoped(_textureShader);
-	_textureShader.setView(_camera.viewMatrix());
 	_textureShader.setProjection(_camera.projectionMatrix());
-	_textureShader.setModel(glm::scale(glm::mat4(), glm::vec3(_dimension.x / 2, _dimension.y / 2, 1.0)));
 	_textureShader.setTexture(0);
 	_texture->bind();
-	core_assert_always(_texturedFullscreenQuad.bind());
-	glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
+	_texturedFullscreenQuad.bind();
+	const int elements = _texturedFullscreenQuad.elements(0);
+	glDrawArrays(GL_TRIANGLES, 0, elements);
 	_texturedFullscreenQuad.unbind();
 	_texture->unbind();
+	GL_checkError();
 }
 
 core::AppState TestTexture::onCleanup() {

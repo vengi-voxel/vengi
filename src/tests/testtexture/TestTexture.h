@@ -6,7 +6,7 @@
 
 #include "testcore/TestApp.h"
 #include "video/Texture.h"
-#include "TesttextureShaders.h"
+#include "FrontendShaders.h"
 #include "video/VertexBuffer.h"
 
 class TestTexture: public TestApp {
