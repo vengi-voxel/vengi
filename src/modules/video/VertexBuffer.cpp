@@ -59,6 +59,7 @@ bool VertexBuffer::bind() const {
 		}
 		glBindBuffer(_targets[i], _handles[i]);
 	}
+	GL_checkError();
 	return true;
 }
 
