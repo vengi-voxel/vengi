@@ -44,11 +44,11 @@ core::AppState TestTexture::onInit() {
 void TestTexture::doRender() {
 	glViewport(0, 0, dimension().x, dimension().y);
 	video::ScopedShader scoped(_textureShader);
-	_textureShader.setProjection(_camera.projectionMatrix());
-	_textureShader.setTexture(0);
+	const glm::mat4& ortho = glm::ortho(0.0f, (float) dimension().x, (float) dimension().y, 0.0f, -1.0f, 1.0f);
+	_textureShader.setProjection(ortho);
 	_texture->bind();
 	_texturedFullscreenQuad.bind();
-	const int elements = _texturedFullscreenQuad.elements(0);
+	const int elements = _texturedFullscreenQuad.elements(0, 2);
 	glDrawArrays(GL_TRIANGLES, 0, elements);
 	_texturedFullscreenQuad.unbind();
 	_texture->unbind();
