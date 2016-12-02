@@ -41,7 +41,7 @@ public:
 class UIRendererGL: public TBRendererBatcher {
 private:
 	UIBitmapGL _white;
-	shader::UiShader _shader;
+	shader::TextureShader _shader;
 	GLuint _buffer = 0u;
 	GLuint _vao = 0u;
 
