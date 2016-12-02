@@ -25,7 +25,6 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 	const glm::vec4& borderColor = core::Color::Black;
 	const tb::TBColor tbBorderColor(borderColor.r, borderColor.g, borderColor.b);
 	const int max = colors.size();
-	const tb::TBRect& padding = GetPaddingRect();
 	int i = 0;
 	for (int y = 0; y < _amountY; ++y) {
 		for (int x = 0; x < _amountX; ++x) {
@@ -33,8 +32,8 @@ void PaletteWidget::OnPaint(const PaintProps &paint_props) {
 				break;
 			}
 			const glm::ivec4 color(colors[i] * 255.0f);
-			const int transX = padding.x + x * _width;
-			const int transY = padding.y + y * _height;
+			const int transX = x * _width;
+			const int transY = y * _height;
 			const tb::TBColor tbColor(color.r, color.g, color.b, color.a);
 			tb::g_renderer->Translate(transX, transY);
 			tb::g_tb_skin->PaintRectFill(renderRect, tbColor);
