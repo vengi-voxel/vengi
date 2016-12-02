@@ -265,7 +265,11 @@ inline CameraType Camera::type() const {
 }
 
 inline void Camera::setMode(CameraMode mode) {
+	if (mode == _mode) {
+		return;
+	}
 	_mode = mode;
+	_dirty = DIRTY_ALL;
 }
 
 inline CameraMode Camera::mode() const {
