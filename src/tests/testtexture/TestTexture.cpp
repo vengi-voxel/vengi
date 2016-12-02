@@ -56,7 +56,9 @@ void TestTexture::doRender() {
 
 core::AppState TestTexture::onCleanup() {
 	_textureShader.shutdown();
-	_texture->shutdown();
+	if (_texture) {
+		_texture->shutdown();
+	}
 	_texturedFullscreenQuad.shutdown();
 	return Super::onCleanup();
 }
