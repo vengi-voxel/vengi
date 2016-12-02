@@ -5,6 +5,7 @@
 #pragma once
 
 #include "video/GLFunc.h"
+#include "video/VertexBuffer.h"
 #include "UiShaders.h"
 
 #include <renderers/tb_renderer_batcher.h>
@@ -42,8 +43,8 @@ class UIRendererGL: public TBRendererBatcher {
 private:
 	UIBitmapGL _white;
 	shader::TextureShader _shader;
-	GLuint _buffer = 0u;
-	GLuint _vao = 0u;
+	video::VertexBuffer _vbo;
+	int32_t _bufferIndex = -1;
 
 	void bindBitmap(TBBitmap *bitmap);
 

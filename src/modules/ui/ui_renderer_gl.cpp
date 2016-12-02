@@ -85,6 +85,7 @@ UIRendererGL::UIRendererGL() : _white(this) {
 
 void UIRendererGL::shutdown() {
 	_shader.shutdown();
+	_vbo.shutdown();
 }
 
 bool UIRendererGL::init() {
@@ -92,62 +93,80 @@ bool UIRendererGL::init() {
 		Log::error("Could not load the ui shader");
 		return false;
 	}
-	glGenVertexArrays(1, &_vao);
-	glGenBuffers(1, &_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, _buffer);
-	glBindVertexArray(_vao);
-	_shader.initColor(sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].col)), GL_UNSIGNED_BYTE, 4, false, true);
-	_shader.initTexcoord(sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].u)));
-	_shader.initPos(sizeof(Vertex), GL_OFFSET_CAST(offsetof(Batch, vertex[0].x)));
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	GL_checkError();
+
+	_bufferIndex = _vbo.create();
+	if (_bufferIndex < 0) {
+		Log::error("Failed to create ui vbo");
+		return false;
+	}
+
+	video::VertexBuffer::Attribute attributeColor;
+	attributeColor.bufferIndex = _bufferIndex;
+	attributeColor.index = _shader.getLocationColor();
+	attributeColor.size = _shader.getComponentsColor();
+	attributeColor.stride = sizeof(Vertex);
+	attributeColor.offset = offsetof(Vertex, col);
+	attributeColor.type = GL_UNSIGNED_BYTE;
+	attributeColor.normalized = true; // TODO: why true?
+	_vbo.addAttribute(attributeColor);
+
+	video::VertexBuffer::Attribute attributeTexCoord;
+	attributeTexCoord.bufferIndex = _bufferIndex;
+	attributeTexCoord.index = _shader.getLocationTexcoord();
+	attributeTexCoord.size = _shader.getComponentsTexcoord();
+	attributeTexCoord.stride = sizeof(Vertex);
+	attributeTexCoord.offset = offsetof(Vertex, u);
+	_vbo.addAttribute(attributeTexCoord);
+
+	video::VertexBuffer::Attribute attributePosition;
+	attributePosition.bufferIndex = _bufferIndex;
+	attributePosition.index = _shader.getLocationPos();
+	attributePosition.size = _shader.getComponentsPos();
+	attributePosition.stride = sizeof(Vertex);
+	attributePosition.offset = offsetof(Vertex, x);
+	_vbo.addAttribute(attributePosition);
 
 	uint32_t data = 0xffffffff;
 	_white.Init(1, 1, &data);
 	return true;
 }
 
-void UIRendererGL::BeginPaint(int render_target_w, int render_target_h) {
+void UIRendererGL::BeginPaint(int renderTargetW, int renderTargetH) {
 #ifdef TB_RUNTIME_DEBUG_INFO
 	dbg_bitmap_validations = 0;
 #endif
 
-	TBRendererBatcher::BeginPaint(render_target_w, render_target_h);
+	TBRendererBatcher::BeginPaint(renderTargetW, renderTargetH);
 
 	_shader.activate();
 
-	const glm::mat4& ortho = glm::ortho(0.0f, (float) render_target_w, (float) render_target_h, 0.0f, -1.0f, 1.0f);
+	const glm::mat4& ortho = glm::ortho(0.0f, (float) renderTargetW, (float) renderTargetH, 0.0f, -1.0f, 1.0f);
 	_shader.setProjection(ortho);
 
 	g_current_texture = (GLuint) -1;
 	g_current_batch = nullptr;
 
-	glViewport(0, 0, render_target_w, render_target_h);
-	glScissor(0, 0, render_target_w, render_target_h);
+	glViewport(0, 0, renderTargetW, renderTargetH);
+	glScissor(0, 0, renderTargetW, renderTargetH);
 
 	glEnable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glBindVertexArray(_vao);
-	core_assert(_buffer > 0);
-	glBindBuffer(GL_ARRAY_BUFFER, _buffer);
 	GL_checkError();
+
+	core_assert_always(_vbo.bind());
 }
 
 void UIRendererGL::EndPaint() {
 	TBRendererBatcher::EndPaint();
+	_vbo.unbind();
 	_shader.deactivate();
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 #ifdef TB_RUNTIME_DEBUG_INFO
 	if (TB_DEBUG_SETTING(RENDER_BATCHES))
 		TBDebugPrint("Frame caused %d bitmap validations.\n", dbg_bitmap_validations);
 #endif
-	GL_checkError();
 }
 
 void UIRendererGL::bindBitmap(TBBitmap *bitmap) {
@@ -172,10 +191,8 @@ void UIRendererGL::RenderBatch(Batch *batch) {
 	if (g_current_batch != batch) {
 		g_current_batch = batch;
 	}
-	GL_checkError();
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * batch->vertex_count, batch->vertex, GL_STATIC_DRAW);
-
-	glDrawArrays(GL_TRIANGLES, 0, batch->vertex_count);
+	core_assert_always(_vbo.update(_bufferIndex, batch->vertex, sizeof(Vertex) * batch->vertex_count));
+	glDrawArrays(GL_TRIANGLES, 0, _vbo.elements(_bufferIndex, 2));
 	GL_checkError();
 }
 
