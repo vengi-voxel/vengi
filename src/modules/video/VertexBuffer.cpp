@@ -124,6 +124,18 @@ int32_t VertexBuffer::createFullscreenTextureBuffer() {
 	return create(vecs, sizeof(vecs));
 }
 
+glm::ivec2 VertexBuffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension) {
+	// counter clock wise winding
+	const glm::vec2 vecs[] = {
+		glm::vec2(xy.x, xy.y), glm::vec2(xy.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y),
+		glm::vec2(xy.x + dimension.x, xy.y), glm::vec2(xy.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y + dimension.y),
+	};
+	glm::ivec2 indices;
+	indices.x = create(vecs, sizeof(vecs));
+	indices.y = createFullscreenTextureBuffer();
+	return indices;
+}
+
 glm::ivec2 VertexBuffer::createFullscreenTexturedQuad() {
 	glm::ivec2 indices;
 	indices.x = createFullscreenQuad();

@@ -73,9 +73,20 @@ public:
 	}
 
 	int32_t create(const void* data = nullptr, GLsizeiptr size = 0, GLenum target = GL_ARRAY_BUFFER);
+	/**
+	 * @brief Fullscreen buffer with normalized device coordinates with 3 float components
+	 */
 	int32_t createFullscreenQuad();
+	/**
+	 * @brief Full texture coordinate buffer with 2 float components
+	 */
 	int32_t createFullscreenTextureBuffer();
 	glm::ivec2 createFullscreenTexturedQuad();
+	/**
+	 * @brief Screen coordinate buffer with 2 float components for vertices and 2 float components for texcoords
+	 * @return Two vertex buffers, the first one contains the vertices, the second contains the texcoords
+	 */
+	glm::ivec2 createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension);
 	bool bind() const;
 	void unbind() const;
 	GLuint size(int32_t idx) const;
