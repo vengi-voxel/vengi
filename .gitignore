@@ -6,3 +6,4 @@
 /Makefile.local
 /typescript
 gmon.out
+/*.sync

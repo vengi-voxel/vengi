@@ -156,3 +156,48 @@ remotery:
 .PHONY: tags
 tags:
 	$(Q)ctags -R src
+
+define UPDATE_GIT
+	$(Q)if [ ! -d $(1).sync ]; then \
+		git clone $(2) $(1).sync; \
+	else \
+		cd $(1).sync && git pull --rebase && cd ..; \
+	fi;
+endef
+
+define UPDATE_HG
+	$(Q)if [ ! -d $(1).sync ]; then \
+		hg clone $(2) $(1).sync; \
+	else \
+		cd $(1).sync && hg pull && hg update && cd ..; \
+	fi;
+endef
+
+# TODO turbobadger (but currently we have custom patches)
+updatelibs:
+	$(call UPDATE_GIT,assimp,https://github.com/assimp/assimp.git)
+	rm -rf contrib/libs/assimp/code/* contrib/libs/assimp/include/*
+	cp -r assimp.sync/code/* contrib/libs/assimp/code
+	cp -r assimp.sync/include/* contrib/libs/assimp/include
+	git checkout contrib/libs/assimp/include/assimp/revision.h
+	$(call UPDATE_GIT,flatbuffers,https://github.com/google/flatbuffers.git)
+	rm -rf contrib/libs/flatbuffers/flatbuffers/* contrib/libs/flatbuffers/compiler/*
+	mkdir -p contrib/libs/flatbuffers/compiler/src
+	cp -r flatbuffers.sync/include/flatbuffers/* contrib/libs/flatbuffers/flatbuffers
+	cp -r flatbuffers.sync/src/* contrib/libs/flatbuffers/compiler
+	cp -r flatbuffers.sync/grpc/src/* contrib/libs/flatbuffers/compiler/src
+	rm contrib/libs/flatbuffers/compiler/flathash.cpp
+	$(call UPDATE_GIT,libenet,https://github.com/lsalzman/enet.git)
+	cp -r libenet.sync/*.[ch] contrib/libs/libenet
+	cp -r libenet.sync/include/* contrib/libs/libenet/include
+	$(call UPDATE_GIT,glm,https://github.com/g-truc/glm.git)
+	rm -rf contrib/libs/glm/glm/*
+	cp -r glm.sync/glm/* contrib/libs/glm/glm
+	rm contrib/libs/glm/glm/CMakeLists.txt
+	$(call UPDATE_HG,sdl2,https://hg.libsdl.org/SDL)
+	rm -rf contrib/libs/sdl2/src/* contrib/libs/sdl2/include/*
+	cp -r sdl2.sync/src/* contrib/libs/sdl2/src
+	cp -r sdl2.sync/include/* contrib/libs/sdl2/include
+	mv contrib/libs/sdl2/include/SDL_config.h contrib/libs/sdl2/config/
+	rm contrib/libs/sdl2/include/SDL_config.h.in
+	git add contrib/libs
