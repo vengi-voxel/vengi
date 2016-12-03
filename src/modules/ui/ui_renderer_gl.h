@@ -24,6 +24,8 @@ public:
 
 	bool Init(int width, int height, GLuint texture);
 
+	void bind();
+
 	virtual int Width() override {
 		return _w;
 	}
@@ -34,6 +36,7 @@ public:
 
 	virtual void SetData(uint32 *data) override;
 public:
+	static GLuint g_current_texture;
 	UIRendererGL *_renderer;
 	int _w, _h;
 	GLuint _texture;

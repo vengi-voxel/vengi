@@ -12,19 +12,10 @@
 namespace tb {
 
 #ifdef TB_RUNTIME_DEBUG_INFO
-uint32 dbg_bitmap_validations = 0;
+static uint32 dbg_bitmap_validations = 0;
 #endif
 
-GLuint g_current_texture = (GLuint) -1;
-TBRendererBatcher::Batch *g_current_batch = nullptr;
-
-void BindBitmap(TBBitmap *bitmap) {
-	GLuint texture = bitmap ? static_cast<UIBitmapGL*>(bitmap)->_texture : 0;
-	if (texture != g_current_texture) {
-		g_current_texture = texture;
-		glBindTexture(GL_TEXTURE_2D, g_current_texture);
-	}
-}
+GLuint UIBitmapGL::g_current_texture = (GLuint) -1;
 
 UIBitmapGL::UIBitmapGL(UIRendererGL *renderer) :
 		_renderer(renderer), _w(0), _h(0), _texture(0) {
@@ -32,12 +23,16 @@ UIBitmapGL::UIBitmapGL(UIRendererGL *renderer) :
 
 UIBitmapGL::~UIBitmapGL() {
 	_renderer->FlushBitmap(this);
-	if (_texture == g_current_texture) {
-		BindBitmap(nullptr);
-	}
 
 	if (_destroy) {
 		glDeleteTextures(1, &_texture);
+	}
+}
+
+void UIBitmapGL::bind() {
+	if (_texture != g_current_texture) {
+		g_current_texture = _texture;
+		glBindTexture(GL_TEXTURE_2D, _texture);
 	}
 }
 
@@ -60,7 +55,7 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 	_destroy = true;
 
 	glGenTextures(1, &_texture);
-	BindBitmap(this);
+	bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -73,7 +68,7 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 
 void UIBitmapGL::SetData(uint32 *data) {
 	_renderer->FlushBitmap(this);
-	BindBitmap(this);
+	bind();
 	if (data != nullptr) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _w, _h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
@@ -161,8 +156,7 @@ void UIRendererGL::BeginPaint(int, int) {
 
 	_shader.activate();
 
-	g_current_texture = (GLuint) -1;
-	g_current_batch = nullptr;
+	UIBitmapGL::g_current_texture = (GLuint) -1;
 
 	glViewport(0, 0, renderTargetW, renderTargetH);
 	glScissor(0, 0, renderTargetW, renderTargetH);
@@ -188,11 +182,11 @@ void UIRendererGL::EndPaint() {
 }
 
 void UIRendererGL::bindBitmap(TBBitmap *bitmap) {
-	GLuint texture = bitmap ? static_cast<UIBitmapGL*>(bitmap)->_texture : _white._texture;
-	if (texture != g_current_texture) {
-		g_current_texture = texture;
-		glBindTexture(GL_TEXTURE_2D, g_current_texture);
+	if (bitmap == nullptr) {
+		_white.bind();
+		return;
 	}
+	static_cast<UIBitmapGL*>(bitmap)->bind();
 }
 
 TBBitmap *UIRendererGL::CreateBitmap(int width, int height, uint32 *data) {
@@ -206,9 +200,6 @@ TBBitmap *UIRendererGL::CreateBitmap(int width, int height, uint32 *data) {
 
 void UIRendererGL::RenderBatch(Batch *batch) {
 	bindBitmap(batch->bitmap);
-	if (g_current_batch != batch) {
-		g_current_batch = batch;
-	}
 	core_assert_always(_vbo.update(_bufferIndex, batch->vertex, sizeof(Vertex) * batch->vertex_count));
 	glDrawArrays(GL_TRIANGLES, 0, _vbo.elements(_bufferIndex, _shader.getComponentsPos()));
 	GL_checkError();
