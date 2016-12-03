@@ -1,6 +1,7 @@
 #include "TestTexture.h"
 #include "core/Color.h"
 #include "video/Camera.h"
+#include "video/ScopedViewPort.h"
 
 TestTexture::TestTexture(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
@@ -43,7 +44,7 @@ core::AppState TestTexture::onInit() {
 }
 
 void TestTexture::doRender() {
-	glViewport(0, 0, dimension().x, dimension().y);
+	video::ScopedViewPort viewPort(0, 0, dimension().x, dimension().y);
 	video::ScopedShader scoped(_textureShader);
 	_textureShader.setProjection(_camera.projectionMatrix());
 	_texture->bind();
