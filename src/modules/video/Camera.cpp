@@ -18,6 +18,9 @@ Camera::~Camera() {
 }
 
 void Camera::init(const glm::ivec2& position, const glm::ivec2& dimension) {
+	if (_position == position && _dimension == dimension) {
+		return;
+	}
 	_position = position;
 	_dimension = dimension;
 	_aspectRatio = _dimension.x / static_cast<float>(_dimension.y);
