@@ -55,6 +55,7 @@ public:
 
 	bool init(const glm::ivec2& dimensions);
 	void shutdown();
+	void onWindowResize(const glm::ivec2& dimensions);
 
 	virtual void BeginPaint(int renderTargetW, int renderTargetH) override;
 	virtual void EndPaint() override;

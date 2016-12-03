@@ -319,7 +319,7 @@ bool UIApp::onKeyRelease(int32_t key) {
 
 void UIApp::onWindowResize() {
 	Super::onWindowResize();
-	// TODO: event for ui
+	_renderer.onWindowResize(dimension());
 }
 
 core::AppState UIApp::onConstruct() {

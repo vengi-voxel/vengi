@@ -89,6 +89,13 @@ void UIRendererGL::shutdown() {
 	_vbo.shutdown();
 }
 
+void UIRendererGL::onWindowResize(const glm::ivec2& dimensions) {
+	_camera.init(glm::ivec2(0), dimensions);
+	_camera.update(0L);
+	video::ScopedShader scoped(_shader);
+	_shader.setProjection(_camera.projectionMatrix());
+}
+
 bool UIRendererGL::init(const glm::ivec2& dimensions) {
 	if (!_shader.setup()) {
 		Log::error("Could not load the ui shader");
@@ -134,18 +141,25 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 
 	uint32_t data = 0xffffffff;
 	_white.Init(1, 1, &data);
+
+	_shader.activate();
+	_shader.setProjection(_camera.projectionMatrix());
+	_shader.deactivate();
+
 	return true;
 }
 
-void UIRendererGL::BeginPaint(int renderTargetW, int renderTargetH) {
+void UIRendererGL::BeginPaint(int, int) {
 #ifdef TB_RUNTIME_DEBUG_INFO
 	dbg_bitmap_validations = 0;
 #endif
 
+	const int renderTargetW = _camera.width();
+	const int renderTargetH = _camera.height();
+
 	TBRendererBatcher::BeginPaint(renderTargetW, renderTargetH);
 
 	_shader.activate();
-	_shader.setProjection(_camera.projectionMatrix());
 
 	g_current_texture = (GLuint) -1;
 	g_current_batch = nullptr;
