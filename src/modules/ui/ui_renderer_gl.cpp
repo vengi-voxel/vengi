@@ -80,7 +80,8 @@ void UIBitmapGL::SetData(uint32 *data) {
 	TB_IF_DEBUG_SETTING(RENDER_BATCHES, dbg_bitmap_validations++);
 }
 
-UIRendererGL::UIRendererGL() : _white(this) {
+UIRendererGL::UIRendererGL() :
+		_white(this), _camera(video::CameraType::FirstPerson, video::CameraMode::Orthogonal) {
 }
 
 void UIRendererGL::shutdown() {
@@ -88,7 +89,7 @@ void UIRendererGL::shutdown() {
 	_vbo.shutdown();
 }
 
-bool UIRendererGL::init() {
+bool UIRendererGL::init(const glm::ivec2& dimensions) {
 	if (!_shader.setup()) {
 		Log::error("Could not load the ui shader");
 		return false;
@@ -99,6 +100,11 @@ bool UIRendererGL::init() {
 		Log::error("Failed to create ui vbo");
 		return false;
 	}
+
+	_camera.setNearPlane(-1.0f);
+	_camera.setFarPlane(1.0f);
+	_camera.init(glm::ivec2(0), dimensions);
+	_camera.update(0L);
 
 	video::VertexBuffer::Attribute attributeColor;
 	attributeColor.bufferIndex = _bufferIndex;
@@ -139,9 +145,7 @@ void UIRendererGL::BeginPaint(int renderTargetW, int renderTargetH) {
 	TBRendererBatcher::BeginPaint(renderTargetW, renderTargetH);
 
 	_shader.activate();
-
-	const glm::mat4& ortho = glm::ortho(0.0f, (float) renderTargetW, (float) renderTargetH, 0.0f, -1.0f, 1.0f);
-	_shader.setProjection(ortho);
+	_shader.setProjection(_camera.projectionMatrix());
 
 	g_current_texture = (GLuint) -1;
 	g_current_batch = nullptr;

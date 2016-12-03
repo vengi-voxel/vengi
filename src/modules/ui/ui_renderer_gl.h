@@ -5,6 +5,7 @@
 #pragma once
 
 #include "video/GLFunc.h"
+#include "video/Camera.h"
 #include "video/VertexBuffer.h"
 #include "UiShaders.h"
 
@@ -43,6 +44,7 @@ class UIRendererGL: public TBRendererBatcher {
 private:
 	UIBitmapGL _white;
 	shader::TextureShader _shader;
+	video::Camera _camera;
 	video::VertexBuffer _vbo;
 	int32_t _bufferIndex = -1;
 
@@ -51,16 +53,16 @@ private:
 public:
 	UIRendererGL();
 
-	bool init();
+	bool init(const glm::ivec2& dimensions);
 	void shutdown();
 
-	virtual void BeginPaint(int render_target_w, int render_target_h);
-	virtual void EndPaint();
+	virtual void BeginPaint(int renderTargetW, int renderTargetH) override;
+	virtual void EndPaint() override;
 
-	virtual TBBitmap *CreateBitmap(int width, int height, uint32 *data);
+	virtual TBBitmap *CreateBitmap(int width, int height, uint32 *data) override;
 
-	virtual void RenderBatch(Batch *batch);
-	virtual void SetClipRect(const TBRect &rect);
+	virtual void RenderBatch(Batch *batch) override;
+	virtual void SetClipRect(const TBRect &rect) override;
 };
 
 }

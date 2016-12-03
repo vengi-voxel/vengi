@@ -421,7 +421,7 @@ core::AppState UIApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!_renderer.init()) {
+	if (!_renderer.init(dimension())) {
 		Log::error("could not init ui renderer");
 		return core::AppState::Cleanup;
 	}
