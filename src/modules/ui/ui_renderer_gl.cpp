@@ -16,10 +16,10 @@ uint32 dbg_bitmap_validations = 0;
 #endif
 
 GLuint g_current_texture = (GLuint) -1;
-TBRendererBatcher::Batch *g_current_batch = 0;
+TBRendererBatcher::Batch *g_current_batch = nullptr;
 
 void BindBitmap(TBBitmap *bitmap) {
-	GLuint texture = bitmap ? static_cast<UIBitmapGL*>(bitmap)->m_texture : 0;
+	GLuint texture = bitmap ? static_cast<UIBitmapGL*>(bitmap)->_texture : 0;
 	if (texture != g_current_texture) {
 		g_current_texture = texture;
 		glBindTexture(GL_TEXTURE_2D, g_current_texture);
@@ -27,25 +27,25 @@ void BindBitmap(TBBitmap *bitmap) {
 }
 
 UIBitmapGL::UIBitmapGL(UIRendererGL *renderer) :
-		m_renderer(renderer), m_w(0), m_h(0), m_texture(0) {
+		_renderer(renderer), _w(0), _h(0), _texture(0) {
 }
 
 UIBitmapGL::~UIBitmapGL() {
-	m_renderer->FlushBitmap(this);
-	if (m_texture == g_current_texture) {
+	_renderer->FlushBitmap(this);
+	if (_texture == g_current_texture) {
 		BindBitmap(nullptr);
 	}
 
-	if (m_destroy) {
-		glDeleteTextures(1, &m_texture);
+	if (_destroy) {
+		glDeleteTextures(1, &_texture);
 	}
 }
 
 bool UIBitmapGL::Init(int width, int height, GLuint texture) {
-	m_w = width;
-	m_h = height;
-	m_texture = texture;
-	m_destroy = false;
+	_w = width;
+	_h = height;
+	_texture = texture;
+	_destroy = false;
 	SetData(nullptr);
 	return true;
 }
@@ -54,12 +54,12 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 	core_assert(width == TBGetNearestPowerOfTwo(width));
 	core_assert(height == TBGetNearestPowerOfTwo(height));
 
-	m_w = width;
-	m_h = height;
+	_w = width;
+	_h = height;
 
-	m_destroy = true;
+	_destroy = true;
 
-	glGenTextures(1, &m_texture);
+	glGenTextures(1, &_texture);
 	BindBitmap(this);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -72,10 +72,10 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 }
 
 void UIBitmapGL::SetData(uint32 *data) {
-	m_renderer->FlushBitmap(this);
+	_renderer->FlushBitmap(this);
 	BindBitmap(this);
 	if (data != nullptr) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_w, m_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _w, _h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 	TB_IF_DEBUG_SETTING(RENDER_BATCHES, dbg_bitmap_validations++);
 }
@@ -188,7 +188,7 @@ void UIRendererGL::EndPaint() {
 }
 
 void UIRendererGL::bindBitmap(TBBitmap *bitmap) {
-	GLuint texture = bitmap ? static_cast<UIBitmapGL*>(bitmap)->m_texture : _white.m_texture;
+	GLuint texture = bitmap ? static_cast<UIBitmapGL*>(bitmap)->_texture : _white._texture;
 	if (texture != g_current_texture) {
 		g_current_texture = texture;
 		glBindTexture(GL_TEXTURE_2D, g_current_texture);

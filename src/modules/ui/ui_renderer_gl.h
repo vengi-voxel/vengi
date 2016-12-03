@@ -25,19 +25,19 @@ public:
 	bool Init(int width, int height, GLuint texture);
 
 	virtual int Width() override {
-		return m_w;
+		return _w;
 	}
 
 	virtual int Height() override {
-		return m_h;
+		return _h;
 	}
 
 	virtual void SetData(uint32 *data) override;
 public:
-	UIRendererGL *m_renderer;
-	int m_w, m_h;
-	GLuint m_texture;
-	bool m_destroy = true;
+	UIRendererGL *_renderer;
+	int _w, _h;
+	GLuint _texture;
+	bool _destroy = true;
 };
 
 class UIRendererGL: public TBRendererBatcher {
