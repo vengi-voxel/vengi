@@ -80,10 +80,10 @@ protected:
 	core::VarPtr _shadowMapDebug;
 	core::VarPtr _cameraSun;
 	video::VertexBuffer _fullscreenQuad;
-	video::VertexBuffer _texturedFullscreenQuad;
+	video::VertexBuffer _shadowMapDebugBuffer;
 	video::DepthBuffer _depthBuffer;
 
-	shader::ShadowmapRenderShader _shadowMapRenderShader;
+	shader::ShadowmapRenderShader _shadowMapDebugShader;
 	shader::WorldShader _worldShader;
 	shader::WorldInstancedShader _plantShader;
 	shader::ShadowmapInstancedShader _shadowMapInstancedShader;

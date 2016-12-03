@@ -46,8 +46,8 @@ void WorldRenderer::reset() {
 void WorldRenderer::shutdown() {
 	_gbuffer.shutdown();
 	_fullscreenQuad.shutdown();
-	_texturedFullscreenQuad.shutdown();
-	_shadowMapRenderShader.shutdown();
+	_shadowMapDebugBuffer.shutdown();
+	_shadowMapDebugShader.shutdown();
 	_shadowMapInstancedShader.shutdown();
 	_worldShader.shutdown();
 	_plantShader.shutdown();
@@ -432,24 +432,24 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	if (shadowMap && _shadowMapDebug->boolVal()) {
 		const int width = camera.width();
 		const int height = camera.height();
-		video::ScopedShader scopedShader(_shadowMapRenderShader);
-		core_assert_always(_texturedFullscreenQuad.bind());
+		video::ScopedShader scopedShader(_shadowMapDebugShader);
+		core_assert_always(_shadowMapDebugBuffer.bind());
 		glActiveTexture(GL_TEXTURE0);
-		_shadowMapRenderShader.setShadowmap(0);
-		shaderSetUniformIf(_shadowMapRenderShader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
-		shaderSetUniformIf(_shadowMapRenderShader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
-		shaderSetUniformIf(_shadowMapRenderShader, setUniformVec3, "u_lightdir", _sunLight.direction());
-		shaderSetUniformIf(_shadowMapRenderShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
-		shaderSetUniformIf(_shadowMapRenderShader, setUniformVec3, "u_campos", camera.position());
+		_shadowMapDebugShader.setShadowmap(0);
+		shaderSetUniformIf(_shadowMapDebugShader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
+		shaderSetUniformIf(_shadowMapDebugShader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
+		shaderSetUniformIf(_shadowMapDebugShader, setUniformVec3, "u_lightdir", _sunLight.direction());
+		shaderSetUniformIf(_shadowMapDebugShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
+		shaderSetUniformIf(_shadowMapDebugShader, setUniformVec3, "u_campos", camera.position());
 		const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			const GLsizei halfWidth = (GLsizei) (width / 4.0f);
 			const GLsizei halfHeight = (GLsizei) (height / 4.0f);
 			video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
 			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
-			glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
+			glDrawArrays(GL_TRIANGLES, 0, _shadowMapDebugBuffer.elements(0));
 		}
-		_texturedFullscreenQuad.unbind();
+		_shadowMapDebugBuffer.unbind();
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
@@ -729,7 +729,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	if (!_deferredDirLightShader.setup()) {
 		return false;
 	}
-	if (!_shadowMapRenderShader.setup()) {
+	if (!_shadowMapDebugShader.setup()) {
 		return false;
 	}
 
@@ -747,18 +747,18 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	attributePosLightDeferred.size = _deferredDirLightShader.getComponentsPos();
 	_fullscreenQuad.addAttribute(attributePosLightDeferred);
 
-	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
+	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad();
 	video::VertexBuffer::Attribute attributePos;
 	attributePos.bufferIndex = fullscreenQuadIndices.x;
-	attributePos.index = _shadowMapRenderShader.getLocationPos();
-	attributePos.size = _shadowMapRenderShader.getComponentsPos();
-	_texturedFullscreenQuad.addAttribute(attributePos);
+	attributePos.index = _shadowMapDebugShader.getLocationPos();
+	attributePos.size = _shadowMapDebugShader.getComponentsPos();
+	_shadowMapDebugBuffer.addAttribute(attributePos);
 
 	video::VertexBuffer::Attribute attributeTexcoord;
 	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
-	attributeTexcoord.index = _shadowMapRenderShader.getLocationTexcoord();
-	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();
-	_texturedFullscreenQuad.addAttribute(attributeTexcoord);
+	attributeTexcoord.index = _shadowMapDebugShader.getLocationTexcoord();
+	attributeTexcoord.size = _shadowMapDebugShader.getComponentsTexcoord();
+	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
 
 	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
