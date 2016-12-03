@@ -110,8 +110,10 @@ int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
 int32_t VertexBuffer::createFullscreenQuad() {
 	// counter clock wise winding
 	static const glm::vec3 vecs[] = {
-		glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3(1.0f,  1.0f, 0.0f),
-		glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(1.0f, -1.0f, 0.0f)
+		// left bottom, right bottom, right top
+		glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3( 1.0f,  1.0f, 0.0f),
+		// left bottom, right top, left top
+		glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3( 1.0f,  1.0f, 0.0f), glm::vec3(-1.0f,  1.0f, 0.0f)
 	};
 	return create(vecs, sizeof(vecs));
 }
@@ -119,17 +121,19 @@ int32_t VertexBuffer::createFullscreenQuad() {
 int32_t VertexBuffer::createFullscreenTextureBuffer() {
 	// counter clock wise winding
 	//
-	//        1/1
+	// 0/0    1/0
 	// ----------
 	// |        |
 	// |        |
 	// |        |
 	// ----------
-	// 0/0
+	// 0/1    1/1
 	//
 	static const glm::vec2 vecs[] = {
-		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f),
-		glm::vec2(0.0f, 1.0f), glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f)
+		// left bottom, right bottom, right top
+		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 1.0f), glm::vec2(1.0f, 0.0f),
+		// left bottom, right top, left top
+		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec2(0.0f, 0.0f)
 	};
 	return create(vecs, sizeof(vecs));
 }
@@ -137,10 +141,10 @@ int32_t VertexBuffer::createFullscreenTextureBuffer() {
 glm::ivec2 VertexBuffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension) {
 	// counter clock wise winding
 	const glm::vec2 vecs[] = {
-		// left top, right bottom, right top
-		glm::vec2(xy.x, xy.y), glm::vec2(xy.x + dimension.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y),
-		// left top, left bottom, right bottom
-		glm::vec2(xy.x + dimension.x, xy.y), glm::vec2(xy.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y + dimension.y)
+		// left bottom, right bottom, right top
+		glm::vec2(xy.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y),
+		// left bottom, right top, left top
+		glm::vec2(xy.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y), glm::vec2(xy.x, xy.y)
 	};
 	glm::ivec2 indices;
 	indices.x = create(vecs, sizeof(vecs));
