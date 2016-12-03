@@ -87,6 +87,7 @@ public:
 	 * @return Two vertex buffers, the first one contains the vertices, the second contains the texcoords
 	 */
 	glm::ivec2 createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension);
+	int32_t createWhiteColorForQuad();
 	bool bind() const;
 	void unbind() const;
 	GLuint size(int32_t idx) const;

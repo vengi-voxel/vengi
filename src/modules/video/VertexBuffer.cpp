@@ -149,6 +149,13 @@ int32_t VertexBuffer::createFullscreenTextureBuffer() {
 	return create(vecs, sizeof(vecs));
 }
 
+int32_t VertexBuffer::createWhiteColorForQuad() {
+	static const glm::vec4 color[] = {
+		glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f)
+	};
+	return create(color, sizeof(color));
+}
+
 glm::ivec2 VertexBuffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension) {
 	// counter clock wise winding
 	//
