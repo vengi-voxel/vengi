@@ -109,6 +109,17 @@ int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
 
 int32_t VertexBuffer::createFullscreenQuad() {
 	// counter clock wise winding
+	//
+	// -1/1    1/1
+	// -------------
+	// |     |     |
+	// |     |0/0  |
+	// -------------
+	// |     |     |
+	// |     |     |
+	// -------------
+	// -1/-1    1/-1
+	//
 	static const glm::vec3 vecs[] = {
 		// left bottom, right bottom, right top
 		glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3( 1.0f,  1.0f, 0.0f),
@@ -140,6 +151,17 @@ int32_t VertexBuffer::createFullscreenTextureBuffer() {
 
 glm::ivec2 VertexBuffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension) {
 	// counter clock wise winding
+	//
+	// -1/1    1/1
+	// -------------
+	// |     |     |
+	// |     |0/0  |
+	// -------------
+	// |     |     |
+	// |     |     |
+	// -------------
+	// -1/-1    1/-1
+	//
 	const glm::vec2 vecs[] = {
 		// left bottom, right bottom, right top
 		glm::vec2(xy.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y),
