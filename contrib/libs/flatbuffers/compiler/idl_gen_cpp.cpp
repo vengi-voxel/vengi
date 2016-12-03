@@ -332,7 +332,7 @@ class CppGenerator : public BaseGenerator {
                ">";
       case BASE_TYPE_STRUCT:
         if (IsStruct(type)) {
-          if (invector) {
+          if (invector || field.native_inline) {
             return WrapInNameSpace(*type.struct_def);
           } else {
             return GenTypeNativePtr(WrapInNameSpace(*type.struct_def), &field,
@@ -411,6 +411,16 @@ class CppGenerator : public BaseGenerator {
            NativeName(struct_def.name) +
            " *_o, const flatbuffers::rehasher_function_t *rehasher" +
            (predecl ? " = nullptr" : "") + ")";
+  }
+
+  std::string TablePackSignature(StructDef &struct_def, bool inclass) {
+    return std::string(inclass ? "static " : "") +
+           "flatbuffers::Offset<" + struct_def.name + "> " +
+           (inclass ? "" : struct_def.name + "::") +
+           "Pack(flatbuffers::FlatBufferBuilder &_fbb, " +
+           "const " + NativeName(struct_def.name) + "* _o, " +
+           "const flatbuffers::rehasher_function_t *_rehasher" +
+           (inclass ? " = nullptr" : "") + ")";
   }
 
   std::string TableUnPackSignature(StructDef &struct_def, bool inclass) {
@@ -691,6 +701,9 @@ class CppGenerator : public BaseGenerator {
       // table.
       code += "struct " + NativeName(struct_def.name);
       code += " : public flatbuffers::NativeTable {\n";
+      code += "  typedef " + struct_def.name + " TableType;\n";
+      // Generate GetFullyQualifiedName
+      GenFullyQualifiedNameGetter(NativeName(struct_def.name), code);
       for (auto it = struct_def.fields.vec.begin();
            it != struct_def.fields.vec.end(); ++it) {
         auto &field = **it;
@@ -711,6 +724,10 @@ class CppGenerator : public BaseGenerator {
     code += "struct " + struct_def.name;
     code += " FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table";
     code += " {\n";
+    if (parser_.opts.generate_object_based_api) {
+      code += "  typedef " + NativeName(struct_def.name) +
+              " NativeTableType;\n";
+    }
     // Generate GetFullyQualifiedName
     GenFullyQualifiedNameGetter(struct_def.name, code);
     // Generate field id constants.
@@ -874,6 +891,7 @@ class CppGenerator : public BaseGenerator {
     if (parser_.opts.generate_object_based_api) {
       // Generate the UnPack() pre declaration.
       code += "  " + TableUnPackSignature(struct_def, true) + ";\n";
+      code += "  " + TablePackSignature(struct_def, true) + ";\n";
     }
 
     code += "};\n\n";  // End of table.
@@ -1016,7 +1034,7 @@ class CppGenerator : public BaseGenerator {
         return val + "->str()";
       case BASE_TYPE_STRUCT:
         if (IsStruct(type)) {
-          if (invector) {
+          if (invector || afield.native_inline) {
             return "*" + val;
           } else {
             return GenTypeNativePtr(WrapInNameSpace(*type.struct_def),
@@ -1059,7 +1077,11 @@ class CppGenerator : public BaseGenerator {
               code += "{ for (flatbuffers::uoffset_t _i = 0;";
               code += " _i < _e->size(); _i++) { ";
               code += dest + ".push_back(";
-              std::string indexing = "_e->Get(_i)";
+              std::string indexing;
+              if (field.value.type.enum_def) {
+                indexing += "(" + field.value.type.enum_def->name + ")";
+              }
+              indexing += "_e->Get(_i)";
               if (field.value.type.element == BASE_TYPE_BOOL)
                 indexing += "!=0";
               code += GenUnpackVal(field.value.type.VectorType(),
@@ -1100,6 +1122,12 @@ class CppGenerator : public BaseGenerator {
         }
       }
       code += "  return _o;\n}\n\n";
+
+      // Generate the X::Pack member function that simply calls the global
+      // CreateX function.
+      code += "inline " + TablePackSignature(struct_def, false) + " {\n";
+      code += "  return Create" + struct_def.name + "(_fbb, _o, _rehasher);\n";
+      code += "}\n\n";
 
       // Generate a CreateX method that works with an unpacked C++ object.
       code += TableCreateSignature(struct_def, false) + " {\n";
@@ -1151,15 +1179,27 @@ class CppGenerator : public BaseGenerator {
                     code += "_fbb.CreateVectorOfStructs(" + accessor + ")";
                   } else {
                     code += "_fbb.CreateVector<flatbuffers::Offset<";
-                    code += vector_type.struct_def->name + ">>(" + accessor;
+                    code += WrapInNameSpace(*vector_type.struct_def) + ">>(" +
+                            accessor;
                     code += ".size(), [&](size_t i) { return Create";
                     code += vector_type.struct_def->name + "(_fbb, " + accessor;
                     code += "[i]" + GenPtrGet(field) + ", rehasher); })";
                   }
                   break;
-                default:
+                case BASE_TYPE_BOOL:
                   code += "_fbb.CreateVector(" + accessor + ")";
                   break;
+                default: {
+                  std::string args = accessor;
+                  if (field.value.type.enum_def) {
+                    const std::string basetype = GenTypeBasic(
+                        field.value.type.enum_def->underlying_type, false);
+                    args = "(const " + basetype + "*)" + accessor +
+                           ".data(), " + accessor + ".size()";
+                  }
+                  code += "_fbb.CreateVector(" + args + ")";
+                  break;
+                }
               }
               code += postfix;
               break;
@@ -1169,7 +1209,11 @@ class CppGenerator : public BaseGenerator {
               break;
             case BASE_TYPE_STRUCT:
               if (IsStruct(field.value.type)) {
-                code += ptrprefix + accessor + GenPtrGet(field) + postfix;
+                if (field.native_inline) {
+                  code += "&" + accessor;
+                } else {
+                  code += ptrprefix + accessor + GenPtrGet(field) + postfix;
+                }
               } else {
                 code += ptrprefix + "Create";
                 code += field.value.type.struct_def->name;
