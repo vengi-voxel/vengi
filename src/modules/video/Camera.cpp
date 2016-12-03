@@ -243,4 +243,40 @@ glm::vec4 Camera::sphereBoundingBox() const {
 	return glm::vec4(sphereCenter, sphereRadius);
 }
 
+glm::mat4 Camera::orthogonalMatrix() const {
+	const float _x = x();
+	const float _y = y();
+	const float w = _x + width();
+	const float h = _y + height();
+	core_assert_msg(w > 0.0f, "Invalid dimension given: width must be greater than zero but is %f", w);
+	core_assert_msg(h > 0.0f, "Invalid dimension given: height must be greater than zero but is %f", h);
+	return glm::ortho(_x, w, h, _y, nearPlane(), farPlane());
+}
+
+glm::mat4 Camera::perspectiveMatrix() const {
+	return glm::perspective(glm::radians(_fieldOfView), _aspectRatio, nearPlane(), farPlane());
+}
+
+void Camera::setNearPlane(float nearPlane) {
+	if (glm::epsilonEqual(_nearPlane, nearPlane, 0.00001f)) {
+		return;
+	}
+
+	_dirty |= DIRTY_PERSPECTIVE;
+	if (_mode == CameraMode::Orthogonal) {
+		_nearPlane = nearPlane;
+	} else {
+		_nearPlane = std::max(0.1f, nearPlane);
+	}
+}
+
+void Camera::setFarPlane(float farPlane) {
+	if (glm::epsilonEqual(_farPlane, farPlane, 0.00001f)) {
+		return;
+	}
+
+	_dirty |= DIRTY_PERSPECTIVE;
+	_farPlane = farPlane;
+}
+
 }

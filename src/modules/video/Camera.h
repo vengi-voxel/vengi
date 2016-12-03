@@ -352,24 +352,6 @@ inline float Camera::farPlane() const {
 	return _farPlane;
 }
 
-inline void Camera::setFarPlane(float farPlane) {
-	if (glm::epsilonEqual(_farPlane, farPlane, 0.00001f)) {
-		return;
-	}
-
-	_dirty |= DIRTY_PERSPECTIVE;
-	_farPlane = farPlane;
-}
-
-inline void Camera::setNearPlane(float nearPlane) {
-	if (glm::epsilonEqual(_nearPlane, nearPlane, 0.00001f)) {
-		return;
-	}
-
-	_dirty |= DIRTY_PERSPECTIVE;
-	_nearPlane = std::max(0.1f, nearPlane);
-}
-
 inline const glm::mat4& Camera::orientation() const {
 	return _orientation;
 }
@@ -388,16 +370,6 @@ inline glm::vec3 Camera::right() const {
 
 inline glm::vec3 Camera::up() const {
 	return glm::conjugate(_quat) * glm::up;
-}
-
-inline glm::mat4 Camera::orthogonalMatrix() const {
-	const float _x = x();
-	const float _y = y();
-	const float w = _y + width();
-	const float h = _y + height();
-	core_assert_msg(w > 0.0f, "Invalid dimension given: width must be greater than zero but is %f", w);
-	core_assert_msg(h > 0.0f, "Invalid dimension given: height must be greater than zero but is %f", h);
-	return glm::ortho(_x, w, h, _y, nearPlane(), farPlane());
 }
 
 inline void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
@@ -469,10 +441,6 @@ inline float Camera::aspectRatio() const {
 inline void Camera::setAspectRatio(float aspect) {
 	_dirty |= DIRTY_PERSPECTIVE;
 	_aspectRatio = aspect;
-}
-
-inline glm::mat4 Camera::perspectiveMatrix() const {
-	return glm::perspective(glm::radians(_fieldOfView), _aspectRatio, nearPlane(), farPlane());
 }
 
 inline glm::vec3 Camera::direction() const {
