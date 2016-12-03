@@ -49,7 +49,7 @@ void TestTexture::doRender() {
 	_textureShader.setProjection(_camera.projectionMatrix());
 	_texture->bind();
 	_texturedFullscreenQuad.bind();
-	const int elements = _texturedFullscreenQuad.elements(0, 2);
+	const int elements = _texturedFullscreenQuad.elements(0, _textureShader.getComponentsPos());
 	glDrawArrays(GL_TRIANGLES, 0, elements);
 	_texturedFullscreenQuad.unbind();
 	_texture->unbind();

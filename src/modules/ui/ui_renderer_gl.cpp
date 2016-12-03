@@ -192,7 +192,7 @@ void UIRendererGL::RenderBatch(Batch *batch) {
 		g_current_batch = batch;
 	}
 	core_assert_always(_vbo.update(_bufferIndex, batch->vertex, sizeof(Vertex) * batch->vertex_count));
-	glDrawArrays(GL_TRIANGLES, 0, _vbo.elements(_bufferIndex, 2));
+	glDrawArrays(GL_TRIANGLES, 0, _vbo.elements(_bufferIndex, _shader.getComponentsPos()));
 	GL_checkError();
 }
 
