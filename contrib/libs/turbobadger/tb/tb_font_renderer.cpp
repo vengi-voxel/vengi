@@ -13,7 +13,7 @@ namespace tb {
 
 // ================================================================================================
 
-static void blurGlyph(unsigned char* src, int srcw, int srch, int srcStride, unsigned char* dst, int dstw, int dsth, int dstStride, float* temp, float* kernel, int kernelRadius)
+static void blurGlyph(const unsigned char* src, int srcw, int srch, int srcStride, unsigned char* dst, int dstw, int dsth, int dstStride, float* temp, const float* kernel, int kernelRadius)
 {
 	for (int y = 0; y < srch; y++)
 	{

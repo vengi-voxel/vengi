@@ -55,6 +55,10 @@ enum EVENT_TYPE {
 	EVENT_TYPE_POINTER_DOWN,
 	EVENT_TYPE_POINTER_UP,
 	EVENT_TYPE_POINTER_MOVE,
+	EVENT_TYPE_TOUCH_DOWN,
+	EVENT_TYPE_TOUCH_UP,
+	EVENT_TYPE_TOUCH_MOVE,
+	EVENT_TYPE_TOUCH_CANCEL,
 	EVENT_TYPE_WHEEL,
 
 	/** Invoked after changing text in a TBTextField, changing selected item
@@ -139,6 +143,10 @@ public:
 	bool IsPointerEvent() const { return	type == EVENT_TYPE_POINTER_DOWN ||
 											type == EVENT_TYPE_POINTER_UP ||
 											type == EVENT_TYPE_POINTER_MOVE; }
+	bool IsTouchEvent() const { return		type == EVENT_TYPE_TOUCH_DOWN ||
+											type == EVENT_TYPE_TOUCH_UP ||
+											type == EVENT_TYPE_TOUCH_MOVE ||
+											type == EVENT_TYPE_TOUCH_CANCEL; }
 	bool IsKeyEvent() const { return	type == EVENT_TYPE_KEY_DOWN ||
 										type == EVENT_TYPE_KEY_UP; }
 };
@@ -929,6 +937,17 @@ public:
 	bool InvokePointerDown(int x, int y, int click_count, MODIFIER_KEYS modifierkeys, bool touch);
 	bool InvokePointerUp(int x, int y, MODIFIER_KEYS modifierkeys, bool touch);
 	void InvokePointerMove(int x, int y, MODIFIER_KEYS modifierkeys, bool touch);
+	void InvokePointerCancel();
+
+	/** Invoke touch events with ref_id set as the given id.
+		Note: For id 0, it will invoke EVENT_TYPE_POINTER_DOWN (with touch flag set to true), and EVENT_TYPE_TOUCH_DOWN
+		for other id > 0. This results in normal interaction for first finger, and optional handling of other
+		simultaneous interaction. GetTouchInfo(id) can be used to get additional interaction info. */
+	bool InvokeTouchDown(int x, int y, uint32 id, int click_count, MODIFIER_KEYS modifierkeys);
+	bool InvokeTouchUp(int x, int y, uint32 id, MODIFIER_KEYS modifierkeys);
+	void InvokeTouchMove(int x, int y, uint32 id, MODIFIER_KEYS modifierkeys);
+	void InvokeTouchCancel(uint32 id);
+
 	bool InvokeWheel(int x, int y, int delta_x, int delta_y, MODIFIER_KEYS modifierkeys);
 
 	/** Invoke the EVENT_TYPE_KEY_DOWN and EVENT_TYPE_KEY_UP events on the currently focused widget.
@@ -1019,9 +1038,9 @@ public:
 #endif // TB_RUNTIME_DEBUG_INFO
 
 	// TBWidget related globals
-	static TBWidget *hovered_widget;		///< The currently hovered widget, or nullptr.
-	static TBWidget *captured_widget;		///< The currently captured widget, or nullptr.
-	static TBWidget *focused_widget;		///< The currently focused widget, or nullptr.
+	static TBWidget *hovered_widget;	///< The currently hovered widget, or nullptr.
+	static TBWidget *captured_widget;	///< The currently captured widget, or nullptr.
+	static TBWidget *focused_widget;	///< The currently focused widget, or nullptr.
 	static int pointer_down_widget_x;	///< Pointer x position on down event, relative to the captured widget.
 	static int pointer_down_widget_y;	///< Pointer y position on down event, relative to the captured widget.
 	static int pointer_move_widget_x;	///< Pointer x position on last pointer event, relative to the captured widget (if any) or hovered widget.
@@ -1030,6 +1049,16 @@ public:
 	static bool update_widget_states;	///< true if something has called InvalidateStates() and it still hasn't been updated.
 	static bool update_skin_states;		///< true if something has called InvalidateStates() and skin still hasn't been updated.
 	static bool show_focus_state;		///< true if the focused state should be painted automatically.
+	struct TOUCH_INFO {
+		TBWidget *hovered_widget;		///< The currently hovered widget, or nullptr.
+		TBWidget *captured_widget;		///< The currently captured widget, or nullptr.
+		int down_widget_x;				///< Touch x position on down event, relative to the captured widget.
+		int down_widget_y;				///< Touch y position on down event, relative to the captured widget.
+		int move_widget_x;				///< Touch x position on last touch event, relative to the captured widget.
+		int move_widget_y;				///< Touch y position on last touch event, relative to the captured widget.
+	};
+	/** Return TOUCH_INFO for the given id, or nullptr if no touch is active for that id. */
+	static TOUCH_INFO *GetTouchInfo(uint32 id);
 private:
 	/** Return this widget or the nearest parent that is scrollable
 		in the given axis, or nullptr if there is none. */

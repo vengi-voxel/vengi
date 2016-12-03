@@ -53,8 +53,8 @@ template<class T> const T *TBSafeCast(const TBTypedObject *obj) {
 
 /** Implement the methods for safe typecasting without requiring RTTI. */
 #define TBOBJECT_SUBCLASS(clazz, baseclazz) \
-	virtual const char *GetClassName() const { return #clazz; } \
-	virtual bool IsOfTypeId(const tb::TB_TYPE_ID type_id) const \
+	virtual const char *GetClassName() const override { return #clazz; } \
+	virtual bool IsOfTypeId(const tb::TB_TYPE_ID type_id) const override \
 		{ return GetTypeId<clazz>() == type_id ? true : baseclazz::IsOfTypeId(type_id); }
 
 } // namespace tb

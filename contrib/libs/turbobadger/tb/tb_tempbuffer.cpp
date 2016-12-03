@@ -18,7 +18,7 @@ static char *p_realloc(char *buf, size_t size) { return (char *) realloc(buf, si
 static void p_free(char *buf) { free(buf); }
 
 TBTempBuffer::TBTempBuffer()
-	: m_data(0)
+	: m_data(nullptr)
 	, m_data_size(0)
 	, m_append_pos(0)
 {

@@ -26,7 +26,7 @@ namespace tb {
 double TBSystem::GetTimeMS()
 {
 	struct timeval now;
-	gettimeofday( &now, NULL );
+	gettimeofday( &now, nullptr );
 	return now.tv_usec/1000 + now.tv_sec*1000;
 }
 

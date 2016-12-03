@@ -81,7 +81,6 @@
 /** Defines for implementations of TBClipboard. */
 //#define TB_CLIPBOARD_DUMMY // Cross platform. Not integrating with the OS.
 //#define TB_CLIPBOARD_GLFW // Cross platform using glfw API.
-//#define TB_CLIPBOARD_SDL2 // Cross platform using SDL2 API.
 //#define TB_CLIPBOARD_WINDOWS
 
 /** Defines for implementations of TBSystem. */

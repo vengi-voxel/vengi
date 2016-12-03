@@ -67,6 +67,7 @@ public:
 	public: \
 		classname##WidgetFactory() \
 			: TBWidgetFactory(#classname, sync_type) { Register(); } \
+		virtual ~classname##WidgetFactory() {} \
 		virtual TBWidget *Create(INFLATE_INFO *info) \
 		{ \
 			classname *widget = new classname(); \

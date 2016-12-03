@@ -32,6 +32,27 @@ bool TBWidget::update_widget_states = true;
 bool TBWidget::update_skin_states = true;
 bool TBWidget::show_focus_state = false;
 
+static TBHashTableAutoDeleteOf<TBWidget::TOUCH_INFO> s_touch_info;
+
+TBWidget::TOUCH_INFO *TBWidget::GetTouchInfo(uint32 id)
+{
+	return s_touch_info.Get(id);
+}
+
+static TBWidget::TOUCH_INFO *NewTouchInfo(uint32 id)
+{
+	assert(!s_touch_info.Get(id));
+	TBWidget::TOUCH_INFO *ti = new TBWidget::TOUCH_INFO;
+	memset(ti, 0, sizeof(TBWidget::TOUCH_INFO));
+	s_touch_info.Add(id, ti);
+	return ti;
+}
+
+static void DeleteTouchInfo(uint32 id)
+{
+	s_touch_info.Delete(id);
+}
+
 // == TBLongClickTimer ==================================================================
 
 /** One shot timer for long click event */
@@ -84,12 +105,23 @@ TBWidget::~TBWidget()
 	assert(!m_parent); ///< A widget must be removed from parent before deleted
 	m_packed.is_dying = true;
 
+	// Unreference from pointer capture
 	if (this == hovered_widget)
 		hovered_widget = nullptr;
 	if (this == captured_widget)
 		captured_widget = nullptr;
 	if (this == focused_widget)
 		focused_widget = nullptr;
+
+	// Unreference from touch info
+	TBHashTableIteratorOf<TOUCH_INFO> it(&s_touch_info);
+	while (TOUCH_INFO *ti = it.GetNextContent())
+	{
+		if (this == ti->hovered_widget)
+			ti->hovered_widget = nullptr;
+		if (this == ti->captured_widget)
+			ti->captured_widget = nullptr;
+	}
 
 	TBWidgetListener::InvokeWidgetDelete(this);
 	DeleteAllChildren();
@@ -1374,8 +1406,8 @@ void TBWidget::MaybeInvokeLongClickOrContextMenu(bool touch)
 void TBWidget::InvokePointerMove(int x, int y, MODIFIER_KEYS modifierkeys, bool touch)
 {
 	SetHoveredWidget(GetWidgetAt(x, y, true), touch);
-	TBWidget *target = captured_widget ? captured_widget : hovered_widget;
 
+	TBWidget *target = captured_widget ? captured_widget : hovered_widget;
 	if (target)
 	{
 		target->ConvertFromRoot(x, y);
@@ -1443,6 +1475,97 @@ void TBWidget::HandlePanningOnMove(int x, int y)
 			pointer_down_widget_x += new_translation_x - old_translation_x + start_compensation_x;
 			pointer_down_widget_y += new_translation_y - old_translation_y + start_compensation_y;
 		}
+	}
+}
+
+void TBWidget::InvokePointerCancel()
+{
+	if (captured_widget)
+		captured_widget->ReleaseCapture();
+}
+
+bool TBWidget::InvokeTouchDown(int x, int y, uint32 id, int click_count, MODIFIER_KEYS modifierkeys)
+{
+	if (id == 0)
+		return InvokePointerDown(x, y, click_count, modifierkeys, true);
+
+	TOUCH_INFO *ti = NewTouchInfo(id);
+	if (!ti)
+		return false;
+
+	if (!ti->captured_widget)
+		ti->captured_widget = GetWidgetAt(x, y, true);
+	if (ti->captured_widget && !ti->captured_widget->GetState(WIDGET_STATE_DISABLED))
+		ti->hovered_widget = ti->captured_widget;
+
+	if (ti->captured_widget)
+	{
+		ti->captured_widget->ConvertFromRoot(x, y);
+		ti->move_widget_x = ti->down_widget_x = x;
+		ti->move_widget_y = ti->down_widget_y = y;
+		TBWidgetEvent ev(EVENT_TYPE_TOUCH_DOWN, x, y, true, modifierkeys);
+		ev.count = click_count;
+		ev.ref_id = id;
+		ti->captured_widget->InvokeEvent(ev);
+		return true;
+	}
+	return false;
+}
+
+bool TBWidget::InvokeTouchUp(int x, int y, uint32 id, MODIFIER_KEYS modifierkeys)
+{
+	if (id == 0)
+		return InvokePointerUp(x, y, modifierkeys, true);
+	TOUCH_INFO *ti = GetTouchInfo(id);
+	if (ti && ti->captured_widget)
+	{
+		ti->captured_widget->ConvertFromRoot(x, y);
+		TBWidgetEvent ev(EVENT_TYPE_TOUCH_UP, x, y, true, modifierkeys);
+		ev.ref_id = id;
+		ti->captured_widget->InvokeEvent(ev);
+		DeleteTouchInfo(id);
+		return true;
+	}
+	return false;
+}
+
+void TBWidget::InvokeTouchMove(int x, int y, uint32 id, MODIFIER_KEYS modifierkeys)
+{
+	if (id == 0)
+		return InvokePointerMove(x, y, modifierkeys, true);
+
+	TOUCH_INFO *ti = GetTouchInfo(id);
+	if (!ti)
+		return;
+
+	ti->hovered_widget = GetWidgetAt(x, y, true);
+	if (ti->captured_widget)
+	{
+		ti->captured_widget->ConvertFromRoot(x, y);
+		ti->move_widget_x = x;
+		ti->move_widget_y = y;
+		TBWidgetEvent ev(EVENT_TYPE_TOUCH_MOVE, x, y, true, modifierkeys);
+		ev.ref_id = id;
+		if (ti->captured_widget->InvokeEvent(ev))
+			return;
+	}
+}
+
+void TBWidget::InvokeTouchCancel(uint32 id)
+{
+	if (id == 0)
+		return InvokePointerCancel();
+
+	TOUCH_INFO *ti = GetTouchInfo(id);
+	if (ti)
+	{
+		if (ti->captured_widget)
+		{
+			TBWidgetEvent ev(EVENT_TYPE_TOUCH_CANCEL, 0, 0, true);
+			ev.ref_id = id;
+			ti->captured_widget->InvokeEvent(ev);
+		}
+		DeleteTouchInfo(id);
 	}
 }
 
