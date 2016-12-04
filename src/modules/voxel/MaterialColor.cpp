@@ -19,8 +19,7 @@ class MaterialColor {
 private:
 	image::Image _image;
 	MaterialColorArray _materialColors;
-	typedef std::vector<uint8_t> Indices;
-	std::unordered_map<VoxelType, Indices> _colorMapping;
+	std::unordered_map<VoxelType, MaterialColorIndices> _colorMapping;
 	bool _initialized = false;
 public:
 	MaterialColor() :
@@ -63,15 +62,15 @@ public:
 		}
 
 		struct IndexVectors {
-			Indices water;
-			Indices grass;
-			Indices wood;
-			Indices leaves;
-			Indices rock;
-			Indices sand;
-			Indices cloud;
-			Indices dirt;
-			Indices generic;
+			MaterialColorIndices water;
+			MaterialColorIndices grass;
+			MaterialColorIndices wood;
+			MaterialColorIndices leaves;
+			MaterialColorIndices rock;
+			MaterialColorIndices sand;
+			MaterialColorIndices cloud;
+			MaterialColorIndices dirt;
+			MaterialColorIndices generic;
 		} iv;
 		iv.generic.resize(colors - 1);
 		// 0 is VoxelType::Air - don't add it
@@ -161,6 +160,15 @@ public:
 		return _materialColors;
 	}
 
+	inline const MaterialColorIndices& getColorIndices(VoxelType type) const {
+		auto i = _colorMapping.find(type);
+		if (i == _colorMapping.end()) {
+			static MaterialColorIndices Empty(0);
+			return Empty;
+		}
+		return i->second;
+	}
+
 	inline Voxel createColorVoxel(VoxelType type, uint32_t colorIndex) {
 		core_assert_msg(_initialized, "Material colors are not yet initialized");
 		uint8_t index = 0;
@@ -169,7 +177,7 @@ public:
 			if (i == _colorMapping.end()) {
 				Log::error("Failed to get color indices for voxel type %i", (int)type);
 			} else {
-				const Indices& indices = i->second;
+				const MaterialColorIndices& indices = i->second;
 				if (indices.empty()) {
 					Log::error("Failed to get color indices for voxel type %i", (int)type);
 				} else {
@@ -189,7 +197,7 @@ public:
 			if (i == _colorMapping.end()) {
 				Log::error("Failed to get color indices for voxel type %i", (int)type);
 			} else {
-				const Indices& indices = i->second;
+				const MaterialColorIndices& indices = i->second;
 				if (indices.empty()) {
 					Log::error("Failed to get color indices for voxel type %i", (int)type);
 				} else {
@@ -226,6 +234,10 @@ bool initDefaultMaterialColors() {
 
 const MaterialColorArray& getMaterialColors() {
 	return getInstance().getColors();
+}
+
+const MaterialColorIndices& getMaterialIndices(VoxelType type) {
+	return getInstance().getColorIndices(type);
 }
 
 Voxel createRandomColorVoxel(VoxelType type) {
