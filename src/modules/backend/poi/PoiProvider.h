@@ -39,7 +39,7 @@ private:
 	core::TimeProviderPtr _timeProvider;
 	core::ReadWriteLock _lock;
 public:
-	PoiProvider(voxel::WorldPtr world, core::TimeProviderPtr timeProvider);
+	PoiProvider(const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider);
 
 	void update(long dt);
 

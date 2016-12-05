@@ -9,7 +9,7 @@
 
 namespace backend {
 
-PoiProvider::PoiProvider(voxel::WorldPtr world, core::TimeProviderPtr timeProvider) :
+PoiProvider::PoiProvider(const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider) :
 		_world(world), _timeProvider(timeProvider), _lock("PoiProvider") {
 }
 
@@ -31,7 +31,7 @@ void PoiProvider::update(long /*dt*/) {
 
 void PoiProvider::addPointOfInterest(const glm::vec3& pos) {
 	core::ScopedWriteLock scoped(_lock);
-	_pois.push_back(Poi { pos, _timeProvider->tickTime() });
+	_pois.emplace_back(Poi{pos, _timeProvider->tickTime()});
 
 	struct PoiComparatorLess: public std::binary_function<Poi, Poi, bool> {
 		inline bool operator()(const Poi& x, const Poi& y) const {
@@ -47,8 +47,9 @@ size_t PoiProvider::getPointOfInterestCount() const {
 }
 
 glm::vec3 PoiProvider::getPointOfInterest() const {
-	if (_pois.empty())
+	if (_pois.empty()) {
 		return _world->randomPos();
+	}
 	return _world->random().randomElement(_pois.begin(), _pois.end())->pos;
 }
 
