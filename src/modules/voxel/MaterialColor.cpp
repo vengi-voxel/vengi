@@ -65,7 +65,12 @@ public:
 			MaterialColorIndices water;
 			MaterialColorIndices grass;
 			MaterialColorIndices wood;
-			MaterialColorIndices leaves;
+			MaterialColorIndices leaf;
+			MaterialColorIndices leaffir;
+			MaterialColorIndices leafpine;
+			MaterialColorIndices flower;
+			MaterialColorIndices bloom;
+			MaterialColorIndices mushroom;
 			MaterialColorIndices rock;
 			MaterialColorIndices sand;
 			MaterialColorIndices cloud;
@@ -89,7 +94,12 @@ public:
 		LUA_ACCESS(water);
 		LUA_ACCESS(grass);
 		LUA_ACCESS(wood);
-		LUA_ACCESS(leaves);
+		LUA_ACCESS(flower);
+		LUA_ACCESS(bloom);
+		LUA_ACCESS(mushroom);
+		LUA_ACCESS(leaf);
+		LUA_ACCESS(leaffir);
+		LUA_ACCESS(leafpine);
 		LUA_ACCESS(rock);
 		LUA_ACCESS(sand);
 		LUA_ACCESS(cloud);
@@ -112,7 +122,9 @@ public:
 		clua_vecregister<glm::vec4>(lua.state());
 
 		luaL_Reg eof = { nullptr, nullptr };
-		luaL_Reg funcs[] = { addwater, addgrass, addwood, addleaves, addrock, addsand, addcloud, adddirt, getmaterial, eof };
+		luaL_Reg funcs[] = { addwater, addgrass, addwood, addflower, addbloom,
+				addmushroom, addleaf, addleaffir, addleafpine, addrock, addsand,
+				addcloud, adddirt, getmaterial, eof };
 		lua.newGlobalData<IndexVectors>("indexvector", &iv);
 		lua.newGlobalData<MaterialColor>("MaterialColor", this);
 		lua.reg("MAT", funcs);
@@ -137,8 +149,13 @@ public:
 		_colorMapping[VoxelType::Water] = std::move(iv.water);
 		_colorMapping[VoxelType::Grass] = std::move(iv.grass);
 		_colorMapping[VoxelType::Wood] = std::move(iv.wood);
-		_colorMapping[VoxelType::Leaves] = std::move(iv.leaves);
+		_colorMapping[VoxelType::Leaf] = std::move(iv.leaf);
+		_colorMapping[VoxelType::LeafFir] = std::move(iv.leaffir);
+		_colorMapping[VoxelType::LeafPine] = std::move(iv.leafpine);
 		_colorMapping[VoxelType::Rock] = std::move(iv.rock);
+		_colorMapping[VoxelType::Flower] = std::move(iv.flower);
+		_colorMapping[VoxelType::Bloom] = std::move(iv.bloom);
+		_colorMapping[VoxelType::Mushroom] = std::move(iv.mushroom);
 		_colorMapping[VoxelType::Sand] = std::move(iv.sand);
 		_colorMapping[VoxelType::Cloud] = std::move(iv.cloud);
 		_colorMapping[VoxelType::Dirt] = std::move(iv.dirt);

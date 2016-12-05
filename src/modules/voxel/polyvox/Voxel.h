@@ -18,7 +18,12 @@ enum class VoxelType : uint8_t {
 	Generic,
 	Grass,
 	Wood,
-	Leaves,
+	Leaf,
+	LeafFir,
+	LeafPine,
+	Flower,
+	Bloom,
+	Mushroom,
 	Rock,
 	Sand,
 	Cloud,
@@ -87,7 +92,7 @@ inline bool isWater(VoxelType material) {
 }
 
 inline bool isLeaves(VoxelType material) {
-	return material == VoxelType::Leaves;
+	return material == VoxelType::Leaf;
 }
 
 inline bool isAir(VoxelType material) {

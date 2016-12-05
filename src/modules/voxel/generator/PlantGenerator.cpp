@@ -30,7 +30,7 @@ void PlantGenerator::createFlower(int size, glm::ivec3 pos, RawVolume& volume) c
 		volume.setVoxel(pos, stalk);
 		++pos.y;
 	}
-	volume.setVoxel(pos, createRandomColorVoxel(VoxelType::Leaves));
+	volume.setVoxel(pos, createRandomColorVoxel(VoxelType::Flower));
 	--pos.x;
 	volume.setVoxel(pos, stalk);
 	--pos.z;
@@ -83,7 +83,7 @@ void PlantGenerator::createMushroom(int size, glm::ivec3 pos, RawVolume& volume)
 		const int radius = height / 2;
 		const double ratio = radius / minRadius;
 
-		const Voxel voxel = createRandomColorVoxel(VoxelType::Leaves);
+		const Voxel voxel = createRandomColorVoxel(VoxelType::Mushroom);
 		for (int z = -radius; z <= radius; ++z) {
 			for (int x = -radius; x <= radius; ++x) {
 				const double distance = glm::pow(x / ratio, 2.0) + glm::pow(z / ratio, 2.0);

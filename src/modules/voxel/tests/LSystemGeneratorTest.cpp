@@ -78,7 +78,7 @@ TEST_F(LSystemGeneratorTest, testGenerateVoxels) {
 
 	lsystemCtx.voxels.emplace('A', createVoxel(VoxelType::Wood, 0));
 	lsystemCtx.voxels.emplace('B', createVoxel(VoxelType::Grass, 0));
-	lsystemCtx.voxels.emplace('C', createVoxel(VoxelType::Leaves, 0));
+	lsystemCtx.voxels.emplace('C', createVoxel(VoxelType::Leaf, 0));
 
 	ASSERT_TRUE(lsystem::generate(_ctx, lsystemCtx, _random));
 }

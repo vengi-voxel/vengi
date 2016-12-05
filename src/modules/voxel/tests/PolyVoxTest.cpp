@@ -15,17 +15,17 @@ protected:
 		chunk->setVoxel(1, 1, 0, createVoxel(VoxelType::Dirt, 0));
 		chunk->setVoxel(2, 1, 0, createVoxel(VoxelType::Dirt, 0));
 		chunk->setVoxel(0, 1, 1, createVoxel(VoxelType::Dirt, 0));
-		chunk->setVoxel(1, 1, 1, createVoxel(VoxelType::Leaves, 0));
-		chunk->setVoxel(2, 1, 1, createVoxel(VoxelType::Leaves, 0));
-		chunk->setVoxel(0, 1, 2, createVoxel(VoxelType::Leaves, 0));
-		chunk->setVoxel(1, 1, 2, createVoxel(VoxelType::Leaves, 0));
-		chunk->setVoxel(2, 1, 2, createVoxel(VoxelType::Leaves, 0));
+		chunk->setVoxel(1, 1, 1, createVoxel(VoxelType::Leaf, 0));
+		chunk->setVoxel(2, 1, 1, createVoxel(VoxelType::Leaf, 0));
+		chunk->setVoxel(0, 1, 2, createVoxel(VoxelType::Leaf, 0));
+		chunk->setVoxel(1, 1, 2, createVoxel(VoxelType::Leaf, 0));
+		chunk->setVoxel(2, 1, 2, createVoxel(VoxelType::Leaf, 0));
 
-		chunk->setVoxel(0, 0, 0, createVoxel(VoxelType::Leaves, 0));
-		chunk->setVoxel(1, 0, 0, createVoxel(VoxelType::Leaves, 0));
-		chunk->setVoxel(2, 0, 0, createVoxel(VoxelType::Leaves, 0));
-		chunk->setVoxel(0, 0, 1, createVoxel(VoxelType::Leaves, 0));
-		chunk->setVoxel(1, 0, 1, createVoxel(VoxelType::Leaves, 0));
+		chunk->setVoxel(0, 0, 0, createVoxel(VoxelType::Leaf, 0));
+		chunk->setVoxel(1, 0, 0, createVoxel(VoxelType::Leaf, 0));
+		chunk->setVoxel(2, 0, 0, createVoxel(VoxelType::Leaf, 0));
+		chunk->setVoxel(0, 0, 1, createVoxel(VoxelType::Leaf, 0));
+		chunk->setVoxel(1, 0, 1, createVoxel(VoxelType::Leaf, 0));
 		chunk->setVoxel(2, 0, 1, createVoxel(VoxelType::Rock, 0));
 		chunk->setVoxel(0, 0, 2, createVoxel(VoxelType::Rock, 0));
 		chunk->setVoxel(1, 0, 2, createVoxel(VoxelType::Rock, 0));
@@ -37,14 +37,14 @@ protected:
 TEST_F(PolyVoxTest, testSamplerPeek) {
 	PagedVolume::Chunk* chunk = _volData.getChunk(glm::ivec3(0, 0, 0));
 	ASSERT_EQ(VoxelType::Grass, chunk->getVoxel(1, 2, 1).getMaterial());
-	ASSERT_EQ(VoxelType::Leaves, chunk->getVoxel(1, 1, 1).getMaterial());
-	ASSERT_EQ(VoxelType::Leaves, chunk->getVoxel(1, 0, 1).getMaterial());
+	ASSERT_EQ(VoxelType::Leaf, chunk->getVoxel(1, 1, 1).getMaterial());
+	ASSERT_EQ(VoxelType::Leaf, chunk->getVoxel(1, 0, 1).getMaterial());
 
 	PagedVolume::Sampler sampler(&_volData);
 	sampler.setPosition(1, 1, 1);
 	ASSERT_EQ(VoxelType::Grass, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different ";
-	ASSERT_EQ(VoxelType::Leaves, sampler.getVoxel().getMaterial()) << "The current voxel should have a different material";
-	ASSERT_EQ(VoxelType::Leaves, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
+	ASSERT_EQ(VoxelType::Leaf, sampler.getVoxel().getMaterial()) << "The current voxel should have a different material";
+	ASSERT_EQ(VoxelType::Leaf, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
 TEST_F(PolyVoxTest, testSamplerPeekWithMovingX) {
@@ -52,8 +52,8 @@ TEST_F(PolyVoxTest, testSamplerPeekWithMovingX) {
 	sampler.setPosition(0, 1, 1);
 	sampler.movePositiveX();
 	ASSERT_EQ(VoxelType::Grass, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different ";
-	ASSERT_EQ(VoxelType::Leaves, sampler.getVoxel().getMaterial()) << "The current voxel should have a different material";
-	ASSERT_EQ(VoxelType::Leaves, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
+	ASSERT_EQ(VoxelType::Leaf, sampler.getVoxel().getMaterial()) << "The current voxel should have a different material";
+	ASSERT_EQ(VoxelType::Leaf, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
 TEST_F(PolyVoxTest, testSamplerPeekWithAir) {
@@ -69,7 +69,7 @@ TEST_F(PolyVoxTest, testSamplerPeekWithTipOfTheGeom) {
 	sampler.setPosition(1, 2, 1);
 	ASSERT_EQ(VoxelType::Air, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different material";
 	ASSERT_EQ(VoxelType::Grass, sampler.getVoxel().getMaterial()) << "The current voxel should have a different material";
-	ASSERT_EQ(VoxelType::Leaves, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
+	ASSERT_EQ(VoxelType::Leaf, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
 TEST_F(PolyVoxTest, testFullSamplerLoop) {
@@ -110,13 +110,13 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 				if (y == 0) {
 					if (x == 0 && z == 0) {
 						ASSERT_EQ(VoxelType::Air, voxelLeft.getMaterial()) << "Wrong left voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelRight.getMaterial()) << "Wrong right voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelBehind.getMaterial()) << "Wrong behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelRight.getMaterial()) << "Wrong right voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelBehind.getMaterial()) << "Wrong behind voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelBefore.getMaterial()) << "Wrong before voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelLeftBefore.getMaterial()) << "Wrong left before voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelRightBefore.getMaterial()) << "Wrong right before voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelLeftBehind.getMaterial()) << "Wrong left behind voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelRightBehind.getMaterial()) << "Wrong right behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelRightBehind.getMaterial()) << "Wrong right behind voxel " << x << ":" << y << ":" << z;
 
 						ASSERT_EQ(VoxelType::Dirt, voxelAbove.getMaterial()) << "Wrong above voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelAboveLeft.getMaterial()) << "Wrong above left voxel " << x << ":" << y << ":" << z;
@@ -126,29 +126,29 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 						ASSERT_EQ(VoxelType::Air, voxelAboveLeftBefore.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelAboveRightBefore.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelAboveLeftBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelAboveRightBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelAboveRightBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
 
 						ASSERT_EQ(VoxelType::Air, voxelBelow.getMaterial()) << "Wrong below voxel " << x << ":" << y << ":" << z;
 					}
 					if (x == 1 && z == 1) {
-						ASSERT_EQ(VoxelType::Leaves, voxelLeft.getMaterial()) << "Wrong left voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelLeft.getMaterial()) << "Wrong left voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Rock, voxelRight.getMaterial()) << "Wrong right voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Rock, voxelBehind.getMaterial()) << "Wrong behind voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelBefore.getMaterial()) << "Wrong before voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelLeftBefore.getMaterial()) << "Wrong left before voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelRightBefore.getMaterial()) << "Wrong right before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelBefore.getMaterial()) << "Wrong before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelLeftBefore.getMaterial()) << "Wrong left before voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelRightBefore.getMaterial()) << "Wrong right before voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Rock, voxelLeftBehind.getMaterial()) << "Wrong left behind voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Rock, voxelRightBehind.getMaterial()) << "Wrong right behind voxel " << x << ":" << y << ":" << z;
 
-						ASSERT_EQ(VoxelType::Leaves, voxelAbove.getMaterial()) << "Wrong above voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelAbove.getMaterial()) << "Wrong above voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Dirt, voxelAboveLeft.getMaterial()) << "Wrong above left voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelAboveRight.getMaterial()) << "Wrong above right voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelAboveBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelAboveRight.getMaterial()) << "Wrong above right voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelAboveBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Dirt, voxelAboveBefore.getMaterial()) << "Wrong above before voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Dirt, voxelAboveLeftBefore.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Dirt, voxelAboveRightBefore.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelAboveLeftBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelAboveRightBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelAboveLeftBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelAboveRightBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
 
 						ASSERT_EQ(VoxelType::Air, voxelBelow.getMaterial()) << "Wrong below voxel " << x << ":" << y << ":" << z;
 					}
@@ -161,7 +161,7 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 						ASSERT_EQ(VoxelType::Air, voxelLeftBefore.getMaterial()) << "Wrong left before voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelRightBefore.getMaterial()) << "Wrong right before voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelLeftBehind.getMaterial()) << "Wrong left behind voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelRightBehind.getMaterial()) << "Wrong right behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelRightBehind.getMaterial()) << "Wrong right behind voxel " << x << ":" << y << ":" << z;
 
 						ASSERT_EQ(VoxelType::Air, voxelAbove.getMaterial()) << "Wrong above voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelAboveLeft.getMaterial()) << "Wrong above left voxel " << x << ":" << y << ":" << z;
@@ -173,17 +173,17 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 						ASSERT_EQ(VoxelType::Air, voxelAboveLeftBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Grass, voxelAboveRightBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
 
-						ASSERT_EQ(VoxelType::Leaves, voxelBelow.getMaterial()) << "Wrong below voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelBelow.getMaterial()) << "Wrong below voxel " << x << ":" << y << ":" << z;
 					}
 					if (x == 1 && z == 1) {
 						ASSERT_EQ(VoxelType::Dirt, voxelLeft.getMaterial()) << "Wrong left voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelRight.getMaterial()) << "Wrong right voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelBehind.getMaterial()) << "Wrong behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelRight.getMaterial()) << "Wrong right voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelBehind.getMaterial()) << "Wrong behind voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Dirt, voxelBefore.getMaterial()) << "Wrong before voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Dirt, voxelLeftBefore.getMaterial()) << "Wrong left before voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Dirt, voxelRightBefore.getMaterial()) << "Wrong right before voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelLeftBehind.getMaterial()) << "Wrong left behind voxel " << x << ":" << y << ":" << z;
-						ASSERT_EQ(VoxelType::Leaves, voxelRightBehind.getMaterial()) << "Wrong right behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelLeftBehind.getMaterial()) << "Wrong left behind voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelRightBehind.getMaterial()) << "Wrong right behind voxel " << x << ":" << y << ":" << z;
 
 						ASSERT_EQ(VoxelType::Grass, voxelAbove.getMaterial()) << "Wrong above voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelAboveLeft.getMaterial()) << "Wrong above left voxel " << x << ":" << y << ":" << z;
@@ -195,7 +195,7 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 						ASSERT_EQ(VoxelType::Air, voxelAboveLeftBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
 						ASSERT_EQ(VoxelType::Air, voxelAboveRightBehind.getMaterial()) << "Wrong above behind voxel " << x << ":" << y << ":" << z;
 
-						ASSERT_EQ(VoxelType::Leaves, voxelBelow.getMaterial()) << "Wrong below voxel " << x << ":" << y << ":" << z;
+						ASSERT_EQ(VoxelType::Leaf, voxelBelow.getMaterial()) << "Wrong below voxel " << x << ":" << y << ":" << z;
 					}
 				} else if (y == 2) {
 					// 25
