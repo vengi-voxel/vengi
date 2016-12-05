@@ -6,6 +6,8 @@
 
 #include "core/Common.h"
 #include "core/Trace.h"
+#include "PagedVolume.h"
+#include "RawVolume.h"
 
 namespace voxel {
 namespace RaycastResults {
@@ -188,6 +190,16 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 	}
 
 	return RaycastResults::Completed;
+}
+
+template<typename Callback>
+inline RaycastResult raycastWithEndpointsVolume(const PagedVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+	return raycastWithEndpoints(volData, v3dStart, v3dEnd, callback);
+}
+
+template<typename Callback>
+inline RaycastResult raycastWithEndpointsVolume(const RawVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+	return raycastWithEndpoints(volData, v3dStart, v3dEnd, callback);
 }
 
 /**

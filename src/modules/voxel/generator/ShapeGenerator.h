@@ -27,7 +27,7 @@ namespace shape {
  * @param[in] radius The radius that defines the circle
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume>
+template<class Volume, class Voxel>
 void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
@@ -58,7 +58,7 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int 
  * @param[in] voxel The Voxel to build the object with
  * @sa createCubeNoCenter()
  */
-template<class Volume>
+template<class Volume, class Voxel>
 void createCube(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
@@ -87,7 +87,7 @@ void createCube(Volume& volume, const glm::ivec3& center, int width, int height,
  * @param[in] voxel The Voxel to build the object with
  * @sa createCube()
  */
-template<class Volume>
+template<class Volume, class Voxel>
 void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
 	const int w = glm::abs(width);
 	const int h = glm::abs(height);
@@ -120,7 +120,7 @@ void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int he
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume>
+template<class Volume, class Voxel>
 void createPlane(Volume& volume, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
 	createCube(volume, center, width, 1, depth, voxel);
 }
@@ -134,7 +134,7 @@ void createPlane(Volume& volume, const glm::ivec3& center, int width, int depth,
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume>
+template<class Volume, class Voxel>
 glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, int height, int thickness, const Voxel& voxel) {
 	glm::ivec3 p = pos;
 	if (width != 0) {
@@ -165,7 +165,7 @@ glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, 
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume>
+template<class Volume, class Voxel>
 void createEllipse(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
@@ -191,7 +191,7 @@ void createEllipse(Volume& volume, const glm::ivec3& center, int width, int heig
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume>
+template<class Volume, class Voxel>
 void createCone(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
@@ -216,7 +216,7 @@ void createCone(Volume& volume, const glm::ivec3& center, int width, int height,
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
-template<class Volume>
+template<class Volume, class Voxel>
 void createDome(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
 	const int heightHigh = height - heightLow;
@@ -232,10 +232,13 @@ void createDome(Volume& volume, const glm::ivec3& center, int width, int height,
 	}
 }
 
-extern void createLine(PagedVolume& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel);
-extern void createLine(RawVolume& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel);
-extern void createLine(PagedVolumeWrapper& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel);
-extern void createLine(RawVolumeWrapper& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel);
+template<class Volume, class Voxel>
+void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const Voxel& voxel) {
+	voxel::raycastWithEndpointsVolume(volume, start, end, [&] (auto& sampler) {
+		sampler.setVoxel(voxel);
+		return true;
+	});
+}
 
 }
 }
