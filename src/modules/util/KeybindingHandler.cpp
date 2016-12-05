@@ -55,7 +55,7 @@ bool executeCommandsForBinding(std::unordered_map<int32_t, int16_t>& keys, const
 	for (auto i = range.first; i != range.second; ++i) {
 		const std::string& command = i->second.first;
 		const int16_t mod = i->second.second;
-		if (!isValidForBinding(modMask, command, mod)) {
+		if (!isValidForBinding(modifier, command, mod)) {
 			continue;
 		}
 		if (keys.find(key) == keys.end()) {
