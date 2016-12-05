@@ -134,7 +134,7 @@ engine_add_library(
 )
 target_include_directories(turbobadger PUBLIC tb)
 target_link_libraries(turbobadger sdl2)
-set_target_properties(turbobadger PROPERTIES COMPILE_FLAGS "-Wno-unused-variable")
+set_target_properties(turbobadger PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-inconsistent-missing-override")
 
 if (WINDOWS)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
