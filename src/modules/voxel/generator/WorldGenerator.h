@@ -67,8 +67,12 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 				const float finalDensity = noiseNormalized + noiseVal;
 				if (finalDensity > worldCtx.caveDensityThreshold) {
 					const bool cave = y < ni - 1;
-					const Voxel& voxel = biomManager.getVoxel(pos, cave);
-					voxels[y] = voxel;
+					if (!cave && y <= MAX_WATER_HEIGHT) {
+						voxels[y] = water;
+					} else {
+						const Voxel& voxel = biomManager.getVoxel(pos, cave);
+						voxels[y] = voxel;
+					}
 				} else {
 					if (y <= MAX_WATER_HEIGHT) {
 						voxels[y] = water;
