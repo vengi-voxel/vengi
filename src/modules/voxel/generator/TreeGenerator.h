@@ -15,25 +15,6 @@
 namespace voxel {
 namespace tree {
 
-struct RandomVoxel {
-	const MaterialColorIndices& indices;
-	core::Random random;
-	const VoxelType type;
-
-	RandomVoxel(VoxelType _type) :
-			indices(getMaterialIndices(_type)), type(_type) {
-	}
-
-	RandomVoxel(VoxelType _type, core::Random& _random) :
-			indices(getMaterialIndices(_type)), random(_random), type(_type) {
-	}
-
-	inline operator Voxel() const {
-		auto i = random.randomElement(indices.begin(), indices.end());
-		return Voxel(type, *i);
-	}
-};
-
 /**
  * @brief Looks for a suitable height level for placing a tree
  * @return @c -1 if no suitable floor for placing a tree was found
