@@ -6,7 +6,7 @@ function init()
 		MAT.grass(i)
 	end
 
-	for i in range(121, 122) do
+	for i in range(102, 103) do
 		MAT.sand(i)
 	end
 
@@ -31,23 +31,17 @@ function init()
 		MAT.mushroom(i)
 	end
 
-	for i in range(197, 198) do
-		MAT.water(i)
-	end
+	MAT.water(197)
 
-	for i in range(191, 193) do
+	for i in range(191, 192) do
 		MAT.cloud(i)
 	end
 
 	MAT.wood(67)
 	MAT.wood(81)
 
-	for i in range(235, 241) do
-		MAT.rock(i)
-	end
-	for i in range(249, 252) do
-		MAT.rock(i)
-	end
+	MAT.rock(248)
+	MAT.rock(250)
 
 	for i in range(65, 71) do
 		MAT.dirt(i)

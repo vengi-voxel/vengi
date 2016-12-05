@@ -217,6 +217,8 @@ public:
 				const MaterialColorIndices& indices = i->second;
 				if (indices.empty()) {
 					Log::error("Failed to get color indices for voxel type %i", (int)type);
+				} else if (indices.size() == 1) {
+					index = indices.front();
 				} else {
 					index = *random.randomElement(indices.begin(), indices.end());
 				}
