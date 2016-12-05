@@ -30,7 +30,11 @@ bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperatu
 float BiomeManager::getHumidity(const glm::ivec3& pos) const {
 	core_trace_scoped(BiomeGetHumidity);
 	const glm::vec2 noisePos(pos.x, pos.z);
-	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.0f, 0.001f, 1.0f);
+	const int octaves = 1;
+	const float persistence = 1.0f;
+	const float frequency = 0.001f;
+	const float amplitude = 1.0f;
+	const float n = noise::Simplex::Noise2D(noisePos, octaves, persistence, frequency, amplitude);
 	return noise::norm(n);
 }
 
@@ -39,7 +43,11 @@ float BiomeManager::getTemperature(const glm::ivec3& pos) const {
 	const glm::vec2 noisePos(pos.x, pos.z);
 	// TODO: apply y value
 	// const float scaleY = pos.y / (float)MAX_HEIGHT;
-	const float n = noise::Simplex::Noise2D(noisePos, 1, 1.2f, 0.01f, 1.2f);
+	const int octaves = 1;
+	const float persistence = 1.2f;
+	const float frequency = 0.01f;
+	const float amplitude = 1.2f;
+	const float n = noise::Simplex::Noise2D(noisePos, octaves, persistence, frequency, amplitude);
 	return noise::norm(n);
 }
 
