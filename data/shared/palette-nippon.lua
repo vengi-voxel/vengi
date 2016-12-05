@@ -2,17 +2,14 @@ require "lua.shared"
 
 function init()
 	m = MAT.material()
-	for i in range(117, 118) do
-		MAT.grass(i)
-	end
 
-	for i in range(102, 103) do
-		MAT.sand(i)
-	end
+	MAT.grass(117)
 
-	for i in range(133, 135) do
-		MAT.leaf(i)
-	end
+	MAT.sand(102)
+
+	MAT.leaf(133)
+	MAT.leaf(134)
+	MAT.leaf(135)
 
 	MAT.leaffir(161)
 	MAT.leaffir(162)
@@ -33,17 +30,13 @@ function init()
 
 	MAT.water(197)
 
-	for i in range(191, 192) do
-		MAT.cloud(i)
-	end
+	MAT.cloud(191)
+	MAT.cloud(192)
 
 	MAT.wood(67)
 	MAT.wood(81)
 
 	MAT.rock(248)
-	MAT.rock(250)
 
-	for i in range(65, 71) do
-		MAT.dirt(i)
-	end
+	MAT.dirt(65)
 end
