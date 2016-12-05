@@ -30,7 +30,7 @@ private:
 	core::ReadWriteLock _lock;
 
 	struct CooldownComparatorLess: public std::binary_function<CooldownPtr, CooldownPtr, bool> {
-		inline bool operator()(const CooldownPtr x, const CooldownPtr y) const {
+		inline bool operator()(const CooldownPtr& x, const CooldownPtr& y) const {
 			return std::less<Cooldown>()(*x.get(), *y.get());
 		}
 	};
