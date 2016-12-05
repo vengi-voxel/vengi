@@ -10,6 +10,7 @@
 #include "polyvox/Region.h"
 #include "polyvox/Voxel.h"
 #include "MaterialColor.h"
+#include <glm/glm.hpp>
 
 namespace voxel {
 
@@ -17,22 +18,38 @@ class Biome {
 private:
 	friend class BiomeManager;
 	Biome() :
-			Biome(createVoxel(VoxelType::Grass, 0), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
+			Biome(VoxelType::Grass, getMaterialIndices(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
 	}
 
 public:
-	constexpr Biome(const Voxel& _voxel, int16_t _yMin, int16_t _yMax,
+	Biome(VoxelType _type, const MaterialColorIndices& _indices, int16_t _yMin, int16_t _yMax,
 			float _humidity, float _temperature, bool _underground) :
-			voxel(_voxel), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(
-					_temperature), underground(_underground) {
+			indices(_indices), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(
+					_temperature), underground(_underground), type(_type) {
 	}
 
-	const Voxel voxel;
+	const MaterialColorIndices indices;
 	const int16_t yMin;
 	const int16_t yMax;
 	const float humidity;
 	const float temperature;
 	const bool underground;
+	const VoxelType type;
+
+	inline Voxel voxel(core::Random& random) const {
+		return Voxel(type, *random.randomElement(indices.begin(), indices.end()));
+	}
+
+	inline Voxel voxel(core::Random& random, uint8_t colorIndex) const {
+		const uint8_t max = indices.size() - 1u;
+		const uint8_t min = 0u;
+		return Voxel(type, glm::clamp(colorIndex, min, max));
+	}
+
+	inline Voxel voxel() const {
+		thread_local core::Random random;
+		return voxel(random);
+	}
 };
 
 class BiomeManager {
@@ -45,13 +62,13 @@ public:
 
 	bool init();
 
-	bool addBiom(int lower, int upper, float humidity, float temperature, const Voxel& voxel, bool underGround = false);
+	bool addBiom(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround = false);
 
 	// this lookup must be really really fast - it is executed once per generated voxel
 	inline Voxel getVoxel(const glm::ivec3& pos, bool underground = false) const {
 		core_trace_scoped(BiomeGetVoxel);
 		const Biome* biome = getBiome(pos, underground);
-		return biome->voxel;
+		return biome->voxel();
 	}
 
 	inline Voxel getVoxel(int x, int y, int z, bool underground = false) const {

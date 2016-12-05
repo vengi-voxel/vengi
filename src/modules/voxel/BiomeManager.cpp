@@ -8,7 +8,7 @@
 namespace voxel {
 
 static const Biome& getDefault() {
-	static const Biome biome(createRandomColorVoxel(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false);
+	static const Biome biome(VoxelType::Grass, getMaterialIndices(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false);
 	return biome;
 }
 
@@ -22,8 +22,9 @@ bool BiomeManager::init() {
 	return true;
 }
 
-bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperature, const Voxel& voxel, bool underGround) {
-	bioms.emplace_back(voxel, int16_t(lower), int16_t(upper), humidity, temperature, underGround);
+bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround) {
+	const MaterialColorIndices& indices = getMaterialIndices(type);
+	bioms.emplace_back(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround);
 	return true;
 }
 
@@ -95,7 +96,7 @@ bool BiomeManager::hasTrees(const glm::ivec3& pos) const {
 		return false;
 	}
 	const Biome* biome = getBiome(pos);
-	if (!isGrass(biome->voxel.getMaterial())) {
+	if (!isGrass(biome->type)) {
 		return false;
 	}
 	if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
