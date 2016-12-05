@@ -2,6 +2,7 @@
 
 #include "voxel/polyvox/Mesh.h"
 #include "voxel/polyvox/RawVolume.h"
+#include "core/Random.h"
 
 namespace voxel {
 
@@ -16,6 +17,7 @@ enum PlantType {
 class PlantGenerator {
 private:
 	Mesh* _meshes[MaxPlantTypes];
+	core::Random _random;
 
 	void createFlower(int size, glm::ivec3 pos, RawVolume& volume) const;
 	void createGrass(int size, glm::ivec3 pos, RawVolume& volume) const;

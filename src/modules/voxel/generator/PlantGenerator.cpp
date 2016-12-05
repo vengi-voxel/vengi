@@ -25,13 +25,13 @@ void PlantGenerator::shutdown() {
 }
 
 void PlantGenerator::createFlower(int size, glm::ivec3 pos, RawVolume& volume) const {
-	const RandomVoxel stalk(VoxelType::Grass);
+	const RandomVoxel stalk(VoxelType::Grass, _random);
 	for (int i = 0; i < size - 2; ++i) {
 		volume.setVoxel(pos, stalk);
 		++pos.y;
 	}
-	volume.setVoxel(pos, RandomVoxel(VoxelType::Bloom));
-	const RandomVoxel voxel(VoxelType::Flower);
+	volume.setVoxel(pos, RandomVoxel(VoxelType::Bloom, _random));
+	const RandomVoxel voxel(VoxelType::Flower, _random);
 	--pos.x;
 	volume.setVoxel(pos, stalk);
 	--pos.z;
@@ -46,7 +46,7 @@ void PlantGenerator::createFlower(int size, glm::ivec3 pos, RawVolume& volume) c
 
 void PlantGenerator::createGrass(int size, glm::ivec3 pos, RawVolume& volume) const {
 	// TODO: use noise
-	const RandomVoxel stalk(VoxelType::Grass);
+	const RandomVoxel stalk(VoxelType::Grass, _random);
 	glm::ivec3 p = pos;
 	for (int i = 0; i < size; ++i) {
 		volume.setVoxel(p, stalk);
@@ -69,7 +69,7 @@ void PlantGenerator::createGrass(int size, glm::ivec3 pos, RawVolume& volume) co
 }
 
 void PlantGenerator::createMushroom(int size, glm::ivec3 pos, RawVolume& volume) const {
-	const RandomVoxel voxel(VoxelType::Mushroom);
+	const RandomVoxel voxel(VoxelType::Mushroom, _random);
 	for (int i = 0; i < 3; ++i) {
 		volume.setVoxel(pos, voxel);
 		++pos.y;
