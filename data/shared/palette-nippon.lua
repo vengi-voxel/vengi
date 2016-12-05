@@ -2,7 +2,7 @@ require "lua.shared"
 
 function init()
 	m = MAT.material()
-	for i in range(117, 120) do
+	for i in range(117, 118) do
 		MAT.grass(i)
 	end
 
