@@ -33,21 +33,32 @@ extern Voxel createRandomColorVoxel(VoxelType type, core::Random& random);
  */
 extern Voxel createColorVoxel(VoxelType type, uint32_t colorIndex);
 
-struct RandomVoxel {
+class RandomVoxel {
+private:
 	const MaterialColorIndices& indices;
 	const core::Random& random;
 	const VoxelType type;
-
-	RandomVoxel(VoxelType _type, const core::Random& _random) :
-			indices(getMaterialIndices(_type)), random(_random), type(_type) {
+	int _sameCount;
+	mutable int _amount = 1;
+	mutable uint8_t _currentIndex = 0u;
+public:
+	RandomVoxel(VoxelType _type, const core::Random& _random, int sameCount = 3) :
+			indices(getMaterialIndices(_type)), random(_random), type(_type), _sameCount(sameCount) {
 	}
 
 	inline operator Voxel() const {
 		if (indices.size() == 1) {
 			return Voxel(type, indices.front());
 		}
-		auto i = random.randomElement(indices.begin(), indices.end());
-		return Voxel(type, *i);
+		if (_amount == 1) {
+			auto i = random.randomElement(indices.begin(), indices.end());
+			_currentIndex = *i;
+		}
+		++_amount;
+		if (_amount >= _sameCount) {
+			_amount = 1;
+		}
+		return Voxel(type, _currentIndex);
 	}
 };
 
