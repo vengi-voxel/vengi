@@ -587,6 +587,8 @@ video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader,
 	static_assert(sizeof(voxel::VoxelVertex::colorIndex) == sizeof(uint8_t), "Voxel color size doesn't match");
 	static_assert(sizeof(voxel::VoxelVertex::ambientOcclusion) == sizeof(uint8_t), "AO type size doesn't match");
 	static_assert(sizeof(voxel::VoxelVertex::material) == sizeof(uint8_t), "Material type size doesn't match");
+	static_assert(offsetof(voxel::VoxelVertex, ambientOcclusion) < offsetof(voxel::VoxelVertex, colorIndex), "Layout change of VoxelVertex without change in upload");
+	static_assert(offsetof(voxel::VoxelVertex, ambientOcclusion) < offsetof(voxel::VoxelVertex, material), "Layout change of VoxelVertex without change in upload");
 	shader.setVertexAttributeInt(locationInfo, 3, GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertex), GL_OFFSET_CAST(offsetof(voxel::VoxelVertex, ambientOcclusion)));
 	GL_checkError();
 
