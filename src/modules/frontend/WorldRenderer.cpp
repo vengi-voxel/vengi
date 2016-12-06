@@ -584,9 +584,10 @@ video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader,
 
 	const int locationInfo = shader.enableVertexAttributeArray("a_info");
 	// we are uploading two bytes at once here
-	static_assert(sizeof(voxel::VoxelVertex::colorIndex) == sizeof(uint8_t), "Voxel type doesn't match");
-	static_assert(sizeof(voxel::VoxelVertex::ambientOcclusion) == sizeof(uint8_t), "AO type doesn't match");
-	shader.setVertexAttributeInt(locationInfo, 2, GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertex), GL_OFFSET_CAST(offsetof(voxel::VoxelVertex, ambientOcclusion)));
+	static_assert(sizeof(voxel::VoxelVertex::colorIndex) == sizeof(uint8_t), "Voxel color size doesn't match");
+	static_assert(sizeof(voxel::VoxelVertex::ambientOcclusion) == sizeof(uint8_t), "AO type size doesn't match");
+	static_assert(sizeof(voxel::VoxelVertex::material) == sizeof(uint8_t), "Material type size doesn't match");
+	shader.setVertexAttributeInt(locationInfo, 3, GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertex), GL_OFFSET_CAST(offsetof(voxel::VoxelVertex, ambientOcclusion)));
 	GL_checkError();
 
 	return meshData;

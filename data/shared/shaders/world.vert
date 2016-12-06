@@ -1,6 +1,6 @@
 // attributes from the VAOs
 $in uvec3 a_pos;
-$in uvec2 a_info;
+$in uvec3 a_info;
 
 #ifdef INSTANCED
 // instanced rendering
@@ -34,7 +34,8 @@ $out vec3 v_fogcolor;
 
 void main(void) {
 	uint a_ao = a_info[0];
-	uint a_material = a_info[1];
+	uint a_colorindex = a_info[1];
+	uint a_material = a_info[2];
 #ifdef INSTANCED
 	vec4 pos4 = vec4(a_offset, 0.0) + u_model * vec4(a_pos, 1.0);
 #else
@@ -42,10 +43,14 @@ void main(void) {
 #endif
 	v_pos = pos4.xyz;
 
-	int materialColorIndex = int(a_material) + materialoffset;
+	int materialColorIndex = int(a_colorindex) + materialoffset;
 	vec3 materialColor = u_materialcolor[materialColorIndex % MATERIALCOLORS].rgb;
 	vec3 colornoise = texture(u_texture, abs(pos4.xz) / 256.0 / 10.0).rgb;
-	v_color = vec4(materialColor * colornoise * 1.8, u_materialcolor[a_material].a);
+	float alpha = u_materialcolor[a_colorindex].a;
+	if (a_material == 1u) {
+		alpha = 0.6;
+	}
+	v_color = vec4(materialColor * colornoise * 1.8, alpha);
 	v_color = clamp(v_color, 0.0, 1.0);
 
 	const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
