@@ -15,6 +15,7 @@ set(SRCS
 	World.cpp World.h
 	WorldPersister.h WorldPersister.cpp
 	WorldEvents.h
+	WorldContext.h WorldContext.cpp
 	generator/CloudGenerator.h
 	generator/ShapeGenerator.h
 	generator/TreeGenerator.h
