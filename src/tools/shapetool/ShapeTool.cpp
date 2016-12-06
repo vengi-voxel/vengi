@@ -105,9 +105,15 @@ void ShapeTool::beforeUI() {
 	}
 
 	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
-	glm::vec3 moveDelta = getMoveDelta(speed, _moveMask);;
+	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);;
 	_camera.move(moveDelta);
-
+	if (!_freelook) {
+		const glm::vec3& position = _camera.position();
+		const int y = _world->findFloor(position.x, position.z, [] (voxel::VoxelType type) {
+			return voxel::isFloor(type);
+		});
+		_camera.setPosition(glm::vec3(position.x, y + 10, position.z));
+	}
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	_camera.setFieldOfView(45.0f);
 	_camera.init(glm::ivec2(), dimension());

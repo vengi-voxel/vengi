@@ -33,6 +33,7 @@ protected:
 	bool _resetTriggered = false;
 	bool _lineModeRendering = false;
 	uint8_t _moveMask = 0;
+	bool _freelook = false;
 	int _drawCallsWorld = 0;
 	int _vertices = 0;
 	int _drawCallsEntities = 0;
