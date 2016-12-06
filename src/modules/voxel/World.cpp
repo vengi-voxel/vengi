@@ -174,6 +174,7 @@ bool World::init() {
 	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
 	// TODO: move into lua
 	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.5f, 0.5f, VoxelType::Sand);
+	_biomeManager.addBiom(0, MAX_TERRAIN_HEIGHT - 1, 0.1f, 0.9f, VoxelType::Sand);
 	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, VoxelType::Dirt);
 	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, VoxelType::Grass);
 	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, VoxelType::Rock);
