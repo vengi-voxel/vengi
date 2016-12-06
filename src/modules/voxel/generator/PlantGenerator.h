@@ -20,7 +20,7 @@ private:
 	core::Random _random;
 
 	void createFlower(int size, glm::ivec3 pos, RawVolume& volume) const;
-	void createGrass(int size, glm::ivec3 pos, RawVolume& volume) const;
+	void createGrass(int size, const glm::ivec3& pos, RawVolume& volume) const;
 	void createMushroom(int size, glm::ivec3 pos, RawVolume& volume) const;
 
 public:

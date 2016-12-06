@@ -44,7 +44,7 @@ void PlantGenerator::createFlower(int size, glm::ivec3 pos, RawVolume& volume) c
 	volume.setVoxel(pos, stalk);
 }
 
-void PlantGenerator::createGrass(int size, glm::ivec3 pos, RawVolume& volume) const {
+void PlantGenerator::createGrass(int size, const glm::ivec3& pos, RawVolume& volume) const {
 	// TODO: use noise
 	const RandomVoxel stalk(VoxelType::Grass, _random);
 	glm::ivec3 p = pos;
