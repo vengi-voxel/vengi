@@ -228,7 +228,7 @@ void createTreeDomeHangingLeaves(Volume& volume, const TreeContext& ctx, core::R
 	const float stepWidth = glm::radians(360.0f / (float)branches);
 	float angle = random.randomf(0.0f, glm::two_pi<float>());
 	// leaves falling down
-	const int y = ctx.leavesBottom();
+	const int y = ctx.leavesBottom() + 1;
 	for (int b = 0; b < branches; ++b) {
 		const float x = glm::cos(angle);
 		const float z = glm::sin(angle);
