@@ -19,7 +19,7 @@ set(SRCS
 	generator/CloudGenerator.h
 	generator/ShapeGenerator.h
 	generator/TreeGenerator.h
-	generator/WorldGenerator.h
+	generator/WorldGenerator.h generator/WorldGenerator.cpp
 	generator/LSystemGenerator.h
 	generator/NoiseGenerator.h
 	generator/CactusGenerator.h
