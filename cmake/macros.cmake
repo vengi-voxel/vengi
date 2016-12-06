@@ -50,6 +50,7 @@ macro(generate_shaders TARGET)
 					convert_to_camel_case(${_file} _f)
 					set(_shaderfile "${_f}Shader.h")
 					set(_shader "${GEN_DIR}${_shaderfile}")
+					# TODO: there are includes in those files.... so we also might depend on other glsl files
 					add_custom_command(
 						OUTPUT ${_shader}
 						COMMENT "Validate ${_file} and generate ${_shaderfile}"
@@ -63,6 +64,7 @@ macro(generate_shaders TARGET)
 		endif()
 	endforeach()
 	convert_to_camel_case(${TARGET} _filetarget)
+	# TODO: not regenerated if files were added, renamed or removed
 	set(_h ${GEN_DIR}/${_filetarget}Shaders.h)
 	file(WRITE ${_h}.in "#pragma once\n")
 	foreach(header_path ${_headers})
