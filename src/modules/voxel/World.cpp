@@ -209,8 +209,9 @@ void World::cleanupFutures() {
 
 void World::prefetch(const glm::vec3& pos) {
 	_futures.push_back(_threadPool.enqueue([=] () {
-		if (_cancelThreads)
+		if (_cancelThreads) {
 			return;
+		}
 		_volumeData->prefetch(getRegion(pos, 1024));
 	}));
 }

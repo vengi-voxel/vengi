@@ -151,8 +151,9 @@ public:
 	 */
 	inline bool pop(ChunkMeshData& item) {
 		LockGuard lock(_rwLock);
-		if (_meshQueue.empty())
+		if (_meshQueue.empty()) {
 			return false;
+		}
 		item = _meshQueue.front();
 		_meshQueue.pop_front();
 		return true;

@@ -13,6 +13,41 @@ class WorldTest: public AbstractVoxelTest {
 private:
 	int _chunkMeshPositionTest = 0;
 protected:
+	void extract(int expected) {
+		World world;
+		ASSERT_TRUE(world.init());
+		world.setSeed(0);
+		for (int i = 0; i < expected; ++i) {
+			const glm::ivec3 pos { i * 1024, 0, i };
+			world.scheduleMeshExtraction(pos);
+		}
+
+		int meshes;
+		int extracted;
+		int pending;
+		world.stats(meshes, extracted, pending);
+
+		ASSERT_EQ(pending, expected);
+
+		extracted = 0;
+		auto start = std::chrono::high_resolution_clock::now();
+		for (;;) {
+			ChunkMeshData meshData(0, 0);
+			while (!world.pop(meshData)) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				auto end = std::chrono::high_resolution_clock::now();
+				std::chrono::duration<double, std::milli> elapsed = end - start;
+				const double millis = elapsed.count();
+				ASSERT_LT(millis, 120 * 1000);
+			}
+			world.stats(meshes, extracted, pending);
+			if (extracted == expected) {
+				break;
+			}
+			ASSERT_GT(pending, 0) << "Nothing left in the mesh creation phase";
+		}
+		world.shutdown();
+	}
 
 	void chunkMeshPositionTest(
 			const World& world,
@@ -36,34 +71,12 @@ protected:
 	}
 };
 
-TEST_F(WorldTest, DISABLED_testExtraction) {
-	World world;
-	ASSERT_TRUE(world.init());
-	int expected = 0;
-	for (int i = 0; i < 1024; ++i) {
-		const glm::ivec3 pos { i, 0, i };
-		if (world.scheduleMeshExtraction(pos))
-			++expected;
-	}
+TEST_F(WorldTest, testExtractionMultiple) {
+	extract(4);
+}
 
-	ASSERT_GT(expected, 10);
-
-	int extracted = 0;
-	auto start = std::chrono::high_resolution_clock::now();
-	for (;;) {
-		ChunkMeshData meshData(0, 0);
-		while (!world.pop(meshData)) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-			auto end = std::chrono::high_resolution_clock::now();
-			std::chrono::duration<double, std::milli> elapsed = end - start;
-			const double millis = elapsed.count();
-			ASSERT_LT(millis, 120 * 1000);
-		}
-		++extracted;
-		if (extracted == expected) {
-			break;
-		}
-	}
+TEST_F(WorldTest, testExtractionSingle) {
+	extract(1);
 }
 
 // e.g. chunksize = 64 and meshsize = 64
