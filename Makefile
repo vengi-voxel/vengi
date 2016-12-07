@@ -49,13 +49,19 @@ DEBUG_CMD        ?=
 endif
 endif
 
+CMAKE_OPTIONS    ?=
+
+GPROF            ?=
 BUILD_TYPE       ?= Debug
 # override this in your Makefile.local to use a different directory
 BUILDDIRPATH     ?= ./
 #BUILDDIR         ?= $(BUILDDIRPATH)build-$(shell echo $(BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
+ifeq ($(GPROF),)
 BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)
-
-CMAKE_OPTIONS    ?=
+else
+BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)/gprof
+CMAKE_OPTIONS    += -DUSE_GPROF=True
+endif
 
 #VOGL_OPTIONS     ?= --vogl_force_debug_context --vogl_exit_after_x_frames 2000
 VOGL_OPTIONS     ?= --vogl_force_debug_context
