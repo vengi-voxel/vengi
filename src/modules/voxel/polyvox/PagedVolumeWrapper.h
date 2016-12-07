@@ -87,13 +87,13 @@ public:
 	inline bool setVoxels(int x, int z, const Voxel* voxels, int amount) {
 		if (_validRegion.containsPoint(x, 0, z)) {
 			// first part goes into the chunk
-			const int w = _validRegion.getWidthInVoxels();
-			_chunk->setVoxels(x - _validRegion.getLowerX(), z - _validRegion.getLowerZ(), voxels, std::min(w, amount));
-			amount -= w;
+			const int h = _validRegion.getHeightInVoxels();
+			_chunk->setVoxels(x - _validRegion.getLowerX(), z - _validRegion.getLowerZ(), voxels, std::min(h, amount));
+			amount -= h;
 			if (amount > 0) {
 				// everything else goes into the volume
 				core_assert(_pagedVolume != nullptr);
-				_pagedVolume->setVoxels(x, z, voxels + w, amount);
+				_pagedVolume->setVoxels(x, z, voxels + h, amount);
 			}
 			return true;
 		}
