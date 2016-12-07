@@ -19,7 +19,7 @@ protected:
 		world.setSeed(0);
 		for (int i = 0; i < expected; ++i) {
 			const glm::ivec3 pos { i * 1024, 0, i };
-			world.scheduleMeshExtraction(pos);
+			ASSERT_TRUE(world.scheduleMeshExtraction(pos)) << "Failed to schedule mesh extraction for " << glm::to_string(pos);
 		}
 
 		int meshes;
@@ -27,7 +27,7 @@ protected:
 		int pending;
 		world.stats(meshes, extracted, pending);
 
-		ASSERT_EQ(pending, expected);
+		ASSERT_EQ(pending, expected) << "Failed to schedule mesh extraction, expected to have " << expected << " jobs pending";
 
 		extracted = 0;
 		auto start = std::chrono::high_resolution_clock::now();
@@ -38,7 +38,7 @@ protected:
 				auto end = std::chrono::high_resolution_clock::now();
 				std::chrono::duration<double, std::milli> elapsed = end - start;
 				const double millis = elapsed.count();
-				ASSERT_LT(millis, 120 * 1000);
+				ASSERT_LT(millis, 120 * 1000) << "Took too long to got a finished mesh from the queue";
 			}
 			world.stats(meshes, extracted, pending);
 			if (extracted == expected) {
