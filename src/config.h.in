@@ -9,3 +9,4 @@
 #define SERVER_PORT "@SERVER_PORT@"
 
 #cmakedefine01 RELEASE
+#cmakedefine01 USE_GPROF

@@ -4,6 +4,7 @@
 
 #include "AbstractVoxelTest.h"
 #include "voxel/World.h"
+#include "config.h"
 #include <chrono>
 #include <string>
 
@@ -35,10 +36,12 @@ protected:
 			ChunkMeshData meshData(0, 0);
 			while (!world.pop(meshData)) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+#if USE_GPROF == 0
 				auto end = std::chrono::high_resolution_clock::now();
 				std::chrono::duration<double, std::milli> elapsed = end - start;
 				const double millis = elapsed.count();
 				ASSERT_LT(millis, 120 * 1000) << "Took too long to got a finished mesh from the queue";
+#endif
 			}
 			world.stats(meshes, extracted, pending);
 			if (extracted == expected) {
