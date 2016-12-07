@@ -6,9 +6,20 @@
 #include "Var.h"
 #include "Command.h"
 
+#if USE_EMTRACE
+#include <emscripten/trace.h>
+#endif
+
+#define RMT_ENABLED 0
+#define RMT_USE_POSIX_THREADNAMES 1
+// disable remotery via -DRMT_ENABLED=0
+#include "Remotery.h"
+
 namespace core {
 
 #if RMT_ENABLED
+static Remotery* _remotery = nullptr;
+
 static void rmtInputHandler(const char* text, void* context) {
 	Log::info("typed '%s' to console", text);
 	if (core::Command::execute(text) <= 0) {
@@ -39,11 +50,10 @@ Trace::Trace(uint16_t port) {
 	if (rmtInstError != RMT_ERROR_NONE) {
 		Log::error("Failed to init remotery");
 	}
-#endif
-#if USE_EMTRACE
+#elif USE_EMTRACE
 	emscripten_trace_configure("http://localhost:5000/", "Engine");
 #endif
-	core_trace_thread("MainThread");
+	traceThread("MainThread");
 }
 
 Trace::~Trace() {
@@ -52,19 +62,111 @@ Trace::~Trace() {
 		rmt_DestroyGlobalInstance(_remotery);
 		_remotery = nullptr;
 	}
-#endif
-#if USE_EMSCTRACE
+#elif USE_EMTRACE
 	emscripten_trace_close();
 #endif
 }
 
 TraceScoped::TraceScoped(const char* name, const char *msg) {
-	core_trace_begin(name);
-	core_trace_msg(msg);
+	traceBegin(name);
+	traceMessage(msg);
 }
 
 TraceScoped::~TraceScoped() {
-	core_trace_end();
+	traceEnd();
+}
+
+TraceGLScoped::TraceGLScoped(const char* name, const char *msg) {
+	traceGLBegin(name);
+	traceMessage(msg);
+}
+
+TraceGLScoped::~TraceGLScoped() {
+	traceGLEnd();
+}
+
+void traceInit() {
+#if RMT_ENABLED > 0
+	Log::info("Remotery active");
+#elif USE_EMTRACE
+	Log::info("emtrace active");
+#endif
+}
+
+void traceBeginFrame() {
+#if USE_EMTRACE
+	emscripten_trace_record_frame_start();
+#else
+	traceBegin("Frame");
+#endif
+}
+
+void traceEndFrame() {
+#if USE_EMTRACE
+	emscripten_trace_record_frame_end();
+#else
+	traceEnd();
+#endif
+}
+
+void traceBegin(const char* name) {
+#if RMT_ENABLED > 0
+	rmt_BeginCPUSample(name, 0);
+#elif USE_EMTRACE
+	emscripten_trace_enter_context(name);
+#else
+	// TODO:
+#endif
+}
+
+void traceEnd() {
+#if RMT_ENABLED > 0
+	rmt_EndCPUSample();
+#elif USE_EMTRACE
+	emscripten_trace_exit_context();
+#else
+	// TODO:
+#endif
+}
+
+void traceGLBegin(const char* name) {
+#if RMT_ENABLED > 0
+#if RMT_USE_OPENGL
+	rmt_BeginOpenGLSample(name);
+	//rmt_BeginOpenGLSampleDynamic(name);
+#else
+	rmt_ScopedCPUSample(name, 0);
+#endif
+#else
+	traceBegin(name);
+#endif
+}
+
+void traceGLEnd() {
+#if RMT_ENABLED > 0
+	rmt_EndOpenGLSample();
+#else
+	traceEnd();
+#endif
+}
+
+void traceMessage(const char* message) {
+	if (message == nullptr) {
+		return;
+	}
+#if RMT_ENABLED > 0
+	rmt_LogText(message);
+#else
+	Log::trace("%s", message);
+#endif
+}
+
+void traceThread(const char* name) {
+#if RMT_ENABLED > 0
+	rmt_SetCurrentThreadName(name);
+#else
+	traceMessage(name);
+#endif
 }
 
 }
