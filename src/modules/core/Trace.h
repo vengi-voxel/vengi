@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "Log.h"
-#include <SDL_platform.h>
+#include <cstdint>
 
 namespace core {
 
@@ -48,7 +47,7 @@ extern void traceThread(const char* name);
 #define core_trace_gl_end() core::traceGLEnd()
 #define core_trace_msg(message) core::traceMessage(message)
 #define core_trace_thread(name) core::traceThread(name)
-#define core_trace_gl_scoped(name) core::TraceGLScoped(#name)
-#define core_trace_scoped(name) core::TraceScoped(#name)
+#define core_trace_gl_scoped(name) core::TraceGLScoped name(#name)
+#define core_trace_scoped(name) core::TraceScoped name(#name)
 
 }
