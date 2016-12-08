@@ -231,7 +231,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformMatrix, "u_viewprojection", actualCamera->viewProjectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_view", actualCamera->viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", actualCamera->projectionMatrix());
-	shaderSetUniformIf(shader, setUniformVec4v, "u_materialcolor[0]", &materialColors[0], materialColors.size());
+	shaderSetUniformIf(shader, setUniformVec4v, "u_materialcolor", &materialColors[0], materialColors.size());
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", viewDistance);
