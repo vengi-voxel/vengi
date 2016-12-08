@@ -18,7 +18,7 @@
 #include "core/command/CommandHandler.h"
 #endif
 
-#define MICROPROFILE_EMABLED 0
+#define MICROPROFILE_EMABLED 1
 #if MICROPROFILE_EMABLED
 #define MICROPROFILE_IMPL
 #define MICROPROFILE_GPU_TIMERS 0
@@ -27,6 +27,8 @@
 #endif
 #include "trace/microprofile.h"
 #include "trace/microprofile.cpp"
+#include <unordered_map>
+thread_local std::unordered_map<const char*, MicroProfileToken> _tokens;
 #endif
 
 namespace core {
@@ -151,7 +153,17 @@ void traceBegin(const char* name) {
 #elif USE_EMTRACE
 	emscripten_trace_enter_context(name);
 #elif MICROPROFILE_EMABLED
-	MICROPROFILE_ENTERI(name, name, 0xffffffff);
+	const char *group = "Main";
+	const uint32_t color = 0xff00ff;
+	auto i = _tokens.find(name);
+	MicroProfileToken token;
+	if (i == _tokens.end()) {
+		MicroProfileGetTokenC(&token, group, name, color, MicroProfileTokenTypeCpu);
+		_tokens.insert(std::make_pair(name, token));
+	} else {
+		token = i->second;
+	}
+	MicroProfileEnter(token);
 #endif
 }
 
@@ -161,7 +173,7 @@ void traceEnd() {
 #elif USE_EMTRACE
 	emscripten_trace_exit_context();
 #elif MICROPROFILE_EMABLED
-	MICROPROFILE_LEAVE();
+	MicroProfileLeave();
 #endif
 }
 
@@ -170,14 +182,18 @@ void traceGLBegin(const char* name) {
 	rmtU32 rmt_sample_hash = 0;
 	_rmt_BeginOpenGLSample(name, 0, &rmt_sample_hash);
 	//_rmt_BeginOpenGLSampleDynamic(name, 0, &rmt_sample_hash);
+#elif MICROPROFILE_EMABLED && MICROPROFILE_GPU_TIMERS_GL
+	// TODO:
 #else
 	traceBegin(name);
 #endif
 }
 
 void traceGLEnd() {
-#if RMT_ENABLED
+#if RMT_ENABLED && RMT_USE_OPENGL
 	rmt_EndOpenGLSample();
+#elif MICROPROFILE_EMABLED && MICROPROFILE_GPU_TIMERS_GL
+	// TODO:
 #else
 	traceEnd();
 #endif
