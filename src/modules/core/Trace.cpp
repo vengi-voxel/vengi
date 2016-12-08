@@ -29,6 +29,7 @@
 #include "trace/microprofile.cpp"
 #include <unordered_map>
 thread_local std::unordered_map<const char*, MicroProfileToken> _tokens;
+thread_local const char *_threadName = nullptr;
 #endif
 
 namespace core {
@@ -155,7 +156,7 @@ void traceBegin(const char* name) {
 #elif USE_EMTRACE
 	emscripten_trace_enter_context(name);
 #elif MICROPROFILE_EMABLED
-	const char *group = "Main";
+	const char *group = _threadName;
 	const uint32_t color = 0xff00ff;
 	auto i = _tokens.find(name);
 	MicroProfileToken token;
@@ -216,6 +217,7 @@ void traceThread(const char* name) {
 #if RMT_ENABLED
 	rmt_SetCurrentThreadName(name);
 #elif MICROPROFILE_EMABLED
+	_threadName = name;
 	MicroProfileOnThreadCreate(name);
 #else
 	traceMessage(name);
