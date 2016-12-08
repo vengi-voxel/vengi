@@ -228,6 +228,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	}
 
 	video::ScopedShader scoped(shader);
+	shaderSetUniformIf(shader, setUniformMatrix, "u_viewprojection", actualCamera->viewProjectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_view", actualCamera->viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", actualCamera->projectionMatrix());
 	shaderSetUniformIf(shader, setUniformVec4v, "u_materialcolor[0]", &materialColors[0], materialColors.size());

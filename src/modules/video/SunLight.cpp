@@ -12,6 +12,7 @@ void SunLight::SunCamera::updateSun(long deltaFrame, const core::RectFloat& bbox
 	_projectionMatrix = normalizeDepth * glm::ortho(bbox.getMinX(), bbox.getMaxX(), bbox.getMinZ(), bbox.getMaxZ(), nearPlane(), farPlane());
 	updateFrustumPlanes();
 	updateFrustumVertices();
+	_viewProjectionMatrix = projectionMatrix() * viewMatrix();
 	_dirty = 0;
 }
 

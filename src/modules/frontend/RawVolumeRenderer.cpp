@@ -206,6 +206,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 
 	video::ScopedShader scoped(_worldShader);
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_viewprojection", camera.viewProjectionMatrix());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_model", glm::mat4());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_view", camera.viewMatrix());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_projection", camera.projectionMatrix());

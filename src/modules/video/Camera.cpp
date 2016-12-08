@@ -111,6 +111,7 @@ void Camera::update(long deltaFrame) {
 	updateProjectionMatrix();
 	updateFrustumPlanes();
 	updateFrustumVertices();
+	_viewProjectionMatrix = projectionMatrix() * viewMatrix();
 	_dirty = 0;
 }
 

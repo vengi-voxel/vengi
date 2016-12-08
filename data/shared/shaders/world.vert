@@ -13,8 +13,7 @@ $in vec3 a_offset;
 int materialoffset = MATERIALOFFSET;
 
 uniform mat4 u_model;
-uniform mat4 u_view;
-uniform mat4 u_projection;
+uniform mat4 u_viewprojection;
 uniform sampler2D u_texture;
 #define MATERIALCOLORS 256
 // use the size here directly to let the shadertool be able
@@ -67,5 +66,5 @@ void main(void) {
 	v_fogcolor = u_materialcolor[0].rgb;
 #endif
 
-	gl_Position = u_projection * u_view * pos4;
+	gl_Position = u_viewprojection * pos4;
 }

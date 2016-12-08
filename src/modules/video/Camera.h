@@ -69,6 +69,7 @@ protected:
 
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projectionMatrix;
+	glm::mat4 _viewProjectionMatrix;
 	glm::mat4 _orientation;
 
 	// rotation speed over time for all three axis
@@ -151,6 +152,7 @@ public:
 	glm::mat4 perspectiveMatrix() const;
 	const glm::mat4& viewMatrix() const;
 	const glm::mat4& projectionMatrix() const;
+	const glm::mat4& viewProjectionMatrix() const;
 
 	float fieldOfView() const;
 	void setFieldOfView(float angles);
@@ -403,6 +405,10 @@ inline const glm::mat4& Camera::viewMatrix() const {
 
 inline const glm::mat4& Camera::projectionMatrix() const {
 	return _projectionMatrix;
+}
+
+inline const glm::mat4& Camera::viewProjectionMatrix() const {
+	return _viewProjectionMatrix;
 }
 
 inline const core::Frustum& Camera::frustum() const {
