@@ -111,11 +111,10 @@ void traceEndFrame() {
 
 void traceBegin(const char* name) {
 #if RMT_ENABLED > 0
-	rmt_BeginCPUSample(name, 0);
+	rmtU32 rmt_sample_hash = 0;
+	_rmt_BeginCPUSample(name, 0, &rmt_sample_hash);
 #elif USE_EMTRACE
 	emscripten_trace_enter_context(name);
-#else
-	// TODO:
 #endif
 }
 
@@ -124,19 +123,14 @@ void traceEnd() {
 	rmt_EndCPUSample();
 #elif USE_EMTRACE
 	emscripten_trace_exit_context();
-#else
-	// TODO:
 #endif
 }
 
 void traceGLBegin(const char* name) {
-#if RMT_ENABLED > 0
-#if RMT_USE_OPENGL
-	rmt_BeginOpenGLSample(name);
-	//rmt_BeginOpenGLSampleDynamic(name);
-#else
-	rmt_ScopedCPUSample(name, 0);
-#endif
+#if RMT_ENABLED && RMT_USE_OPENGL
+	rmtU32 rmt_sample_hash = 0;
+	_rmt_BeginOpenGLSample(name, 0, &rmt_sample_hash);
+	//_rmt_BeginOpenGLSampleDynamic(name, 0, &rmt_sample_hash);
 #else
 	traceBegin(name);
 #endif
