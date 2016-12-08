@@ -369,6 +369,8 @@ AppState App::onCleanup() {
 	}
 	SDL_ResetAssertionReport();
 
+	core_trace_shutdown();
+
 	return AppState::Destroy;
 }
 

@@ -28,6 +28,9 @@ public:
 };
 
 extern void traceInit();
+extern void traceGLInit();
+extern void traceShutdown();
+extern void traceGLShutdown();
 extern void traceBeginFrame();
 extern void traceEndFrame();
 extern void traceBegin(const char* name);
@@ -38,6 +41,9 @@ extern void traceMessage(const char* name);
 extern void traceThread(const char* name);
 
 #define core_trace_init() core::traceInit()
+#define core_trace_gl_init() core::traceGLInit()
+#define core_trace_shutdown() core::traceShutdown()
+#define core_trace_gl_shutdown() core::traceGLShutdown()
 #define core_trace_begin_frame() core::traceBeginFrame()
 #define core_trace_end_frame() core::traceEndFrame()
 #define core_trace_begin(name) core::traceBegin(#name)
@@ -49,5 +55,4 @@ extern void traceThread(const char* name);
 #define core_trace_thread(name) core::traceThread(name)
 #define core_trace_gl_scoped(name) core::TraceGLScoped name(#name)
 #define core_trace_scoped(name) core::TraceScoped name(#name)
-
 }

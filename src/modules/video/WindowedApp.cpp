@@ -11,7 +11,6 @@
 #include "core/Color.h"
 #include "core/command/Command.h"
 #include "GLVersion.h"
-#include "core/Remotery.h"
 #include "core/Singleton.h"
 #include "ShaderManager.h"
 #include "util/KeybindingHandler.h"
@@ -326,7 +325,7 @@ core::AppState WindowedApp::onInit() {
 		glEnable(GL_MULTISAMPLE);
 	}
 
-	rmt_BindOpenGL();
+	core_trace_gl_init();
 
 	return state;
 }
@@ -341,7 +340,7 @@ core::AppState WindowedApp::onCleanup() {
 	SDL_GL_DeleteContext(_glcontext);
 	SDL_DestroyWindow(_window);
 	SDL_Quit();
-	rmt_UnbindOpenGL();
+	core_trace_gl_shutdown();
 
 	std::string keybindings;
 

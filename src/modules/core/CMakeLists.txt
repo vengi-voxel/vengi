@@ -1,10 +1,12 @@
 set(SRCS
-    AABB.h
+	AABB.h
+	command/CommandHandler.h command/CommandHandler.cpp
+	command/Command.h command/Command.cpp
+	trace/Remotery.c trace/Remotery.h
+	trace/microprofile.h
 	App.cpp App.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
-	command/CommandHandler.h command/CommandHandler.cpp
-	command/Command.h command/Command.cpp
 	Common.h
 	Concurrency.h
 	EventBus.cpp EventBus.h
@@ -25,7 +27,6 @@ set(SRCS
 	Random.cpp Random.h
 	ReadWriteLock.h
 	Rect.h
-	Remotery.c Remotery.h
 	Set.h
 	Singleton.h
 	String.cpp String.h

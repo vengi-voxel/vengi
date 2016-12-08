@@ -10,13 +10,18 @@
 #include <emscripten/trace.h>
 #endif
 
-#define RMT_ENABLED 1
+#define RMT_ENABLED 0
+#if RMT_ENABLED
 #define RMT_USE_POSIX_THREADNAMES 1
 // disable remotery via -DRMT_ENABLED=0
-#include "Remotery.h"
-
-#if RMT_ENABLED
+#include "trace/Remotery.h"
 #include "core/command/CommandHandler.h"
+#endif
+
+#define MICROPROFILE_EMABLED 0
+#if MICROPROFILE_EMABLED
+#include "trace/microprofile.h"
+#include "trace/microprofile.cpp"
 #endif
 
 namespace core {
@@ -61,6 +66,8 @@ Trace::~Trace() {
 	}
 #elif USE_EMTRACE
 	emscripten_trace_close();
+#elif MICROPROFILE_EMABLED
+	MicroProfileShutdown();
 #endif
 }
 
@@ -85,9 +92,30 @@ TraceGLScoped::~TraceGLScoped() {
 void traceInit() {
 #if RMT_ENABLED
 	Log::info("Remotery active");
-	rmt_BindOpenGL();
 #elif USE_EMTRACE
 	Log::info("emtrace active");
+#elif MICROPROFILE_ENABLED
+	MicroProfileInit();
+	MicroProfileSetEnableAllGroups(true);
+	MicroProfileSetForceMetaCounters(true);
+	MicroProfileStartContextSwitchTrace();
+#endif
+}
+
+void traceGLInit() {
+#if RMT_ENABLED
+	rmt_BindOpenGL();
+#endif
+}
+
+void traceShutdown() {
+}
+
+void traceGLShutdown() {
+#if RMT_ENABLED
+	rmt_UnbindOpenGL();
+#elif MICROPROFILE_ENABLED
+	MicroProfileGpuShutdown();
 #endif
 }
 
@@ -104,6 +132,9 @@ void traceEndFrame() {
 	emscripten_trace_record_frame_end();
 #else
 	traceEnd();
+#if MICROPROFILE_EMABLED
+	MicroProfileFlip(nullptr);
+#endif
 #endif
 }
 
@@ -112,6 +143,8 @@ void traceBegin(const char* name) {
 	_rmt_BeginCPUSample(name, 0, nullptr);
 #elif USE_EMTRACE
 	emscripten_trace_enter_context(name);
+#elif MICROPROFILE_EMABLED
+	MICROPROFILE_ENTERI(name, name, 0xffffffff);
 #endif
 }
 
@@ -120,6 +153,8 @@ void traceEnd() {
 	rmt_EndCPUSample();
 #elif USE_EMTRACE
 	emscripten_trace_exit_context();
+#elif MICROPROFILE_EMABLED
+	MICROPROFILE_LEAVE();
 #endif
 }
 
@@ -155,6 +190,8 @@ void traceMessage(const char* message) {
 void traceThread(const char* name) {
 #if RMT_ENABLED
 	rmt_SetCurrentThreadName(name);
+#elif MICROPROFILE_EMABLED
+	MicroProfileOnThreadCreate(name);
 #else
 	traceMessage(name);
 #endif
