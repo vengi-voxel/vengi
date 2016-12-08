@@ -11,7 +11,7 @@
 #include "ui/HudWindow.h"
 #include "ui/FontUtil.h"
 #include "ui/Window.h"
-#include "core/Command.h"
+#include "core/command/Command.h"
 #include "core/GLM.h"
 #include "core/Color.h"
 #include "video/GLDebug.h"

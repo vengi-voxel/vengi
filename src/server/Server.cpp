@@ -4,7 +4,7 @@
 
 #include "Server.h"
 #include "core/Var.h"
-#include "core/Command.h"
+#include "core/command/Command.h"
 #include "backend/poi/PoiProvider.h"
 #include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AIRegistry.h"

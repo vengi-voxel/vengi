@@ -4,7 +4,7 @@
 
 #include "ServerLoop.h"
 
-#include "core/Command.h"
+#include "core/command/Command.h"
 #include "core/Log.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
@@ -20,7 +20,7 @@
 #include "backend/network/UserDisconnectHandler.h"
 #include "backend/network/AttackHandler.h"
 #include "backend/network/MoveHandler.h"
-#include "core/CommandHandler.h"
+#include "core/command/CommandHandler.h"
 #include "voxel/MaterialColor.h"
 
 namespace backend {

@@ -1,5 +1,5 @@
 #include "CommandHandler.h"
-#include "core/Command.h"
+#include "core/command/Command.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
 #include "core/Var.h"

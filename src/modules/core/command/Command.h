@@ -9,8 +9,8 @@
 #include <utility>
 #include <functional>
 #include <unordered_map>
-#include "String.h"
-#include "ReadWriteLock.h"
+#include "core/String.h"
+#include "core/ReadWriteLock.h"
 
 namespace core {
 

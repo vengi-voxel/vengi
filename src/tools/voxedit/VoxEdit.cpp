@@ -5,7 +5,7 @@
 #include "VoxEdit.h"
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
-#include "core/Command.h"
+#include "core/command/Command.h"
 #include "video/GLFunc.h"
 #include "ui/VoxEditWindow.h"
 

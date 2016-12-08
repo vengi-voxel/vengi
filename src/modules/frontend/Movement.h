@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/Command.h"
+#include "core/command/Command.h"
 #include "core/GLM.h"
 
 constexpr int MOVERIGHT		=	1 << 0;

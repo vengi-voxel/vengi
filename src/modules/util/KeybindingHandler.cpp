@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "core/Command.h"
+#include "core/command/Command.h"
 #include "KeybindingHandler.h"
 #include <SDL.h>
 

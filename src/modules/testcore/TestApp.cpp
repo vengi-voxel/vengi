@@ -1,7 +1,7 @@
 #include "TestApp.h"
 #include "video/GLDebug.h"
 #include "core/Color.h"
-#include "core/Command.h"
+#include "core/command/Command.h"
 #include "frontend/Movement.h"
 #include "ui/TestAppWindow.h"
 #include "video/ScopedPolygonMode.h"

@@ -3,8 +3,8 @@ set(SRCS
 	App.cpp App.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
-	CommandHandler.h CommandHandler.cpp
-	Command.h Command.cpp
+	command/CommandHandler.h command/CommandHandler.cpp
+	command/Command.h command/Command.cpp
 	Common.h
 	Concurrency.h
 	EventBus.cpp EventBus.h

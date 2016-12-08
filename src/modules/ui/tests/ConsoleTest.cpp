@@ -5,7 +5,7 @@
 #include "core/tests/AbstractTest.h"
 #include "ui/Console.h"
 #include "core/Var.h"
-#include "core/Command.h"
+#include "core/command/Command.h"
 
 namespace ui {
 

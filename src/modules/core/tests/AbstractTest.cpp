@@ -5,7 +5,7 @@
 #include "AbstractTest.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/Command.h"
+#include "core/command/Command.h"
 
 extern char **_argv;
 extern int _argc;

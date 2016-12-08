@@ -3,8 +3,8 @@
  */
 
 #include "Trace.h"
-#include "Var.h"
-#include "Command.h"
+#include "core/Var.h"
+#include "core/command/Command.h"
 
 #if USE_EMTRACE
 #include <emscripten/trace.h>
@@ -16,7 +16,7 @@
 #include "Remotery.h"
 
 #if RMT_ENABLED
-#include "core/CommandHandler.h"
+#include "core/command/CommandHandler.h"
 #endif
 
 namespace core {

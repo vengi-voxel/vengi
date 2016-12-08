@@ -1,12 +1,12 @@
 #include "Console.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
-#include "core/Command.h"
+#include "core/command/Command.h"
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Tokenizer.h"
 #include "ui/FontUtil.h"
-#include "core/CommandHandler.h"
+#include "core/command/CommandHandler.h"
 
 namespace ui {
 

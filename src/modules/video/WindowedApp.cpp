@@ -9,7 +9,7 @@
 #include "GLFunc.h"
 #include "Shader.h"
 #include "core/Color.h"
-#include "core/Command.h"
+#include "core/command/Command.h"
 #include "GLVersion.h"
 #include "core/Remotery.h"
 #include "core/Singleton.h"

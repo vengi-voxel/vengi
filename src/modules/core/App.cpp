@@ -4,7 +4,7 @@
 
 #include "App.h"
 #include "Var.h"
-#include "Command.h"
+#include "command/Command.h"
 #include "Common.h"
 #include "Log.h"
 #include "Tokenizer.h"

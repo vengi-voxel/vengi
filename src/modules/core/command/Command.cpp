@@ -3,7 +3,7 @@
  */
 
 #include "Command.h"
-#include "Tokenizer.h"
+#include "core/Tokenizer.h"
 
 namespace core {
 

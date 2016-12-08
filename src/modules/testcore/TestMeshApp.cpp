@@ -1,5 +1,5 @@
 #include "TestMeshApp.h"
-#include "core/Command.h"
+#include "core/command/Command.h"
 
 #define MaxDepthBufferUniformName "u_farplanes"
 
