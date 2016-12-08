@@ -2,6 +2,7 @@
 
 #include "GLFunc.h"
 #include "core/Common.h"
+#include "BufferLockMode.h"
 
 namespace video {
 
@@ -23,6 +24,8 @@ namespace video {
 class UniformBuffer {
 private:
 	GLuint _handle;
+	GLsizeiptr _size = 0;
+
 public:
 	UniformBuffer();
 	~UniformBuffer();
@@ -31,6 +34,9 @@ public:
 
 	GLuint handle() const;
 	void create(GLsizeiptr size, const void *data);
+
+	void* lock(BufferLockMode mode);
+	void unlock();
 
 	/**
 	 * @param[in] index The index of the uniform block to bind the buffer to

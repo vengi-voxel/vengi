@@ -10,6 +10,7 @@ set(SRCS
 	Camera.cpp Camera.h
 	GLMeshData.h
 	GLDebug.h
+	BufferLockMode.h
 	DepthBuffer.cpp DepthBuffer.h
 	Cubemap.cpp Cubemap.h
 	Texture.cpp Texture.h
