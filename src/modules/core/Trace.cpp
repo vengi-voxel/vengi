@@ -20,6 +20,11 @@
 
 #define MICROPROFILE_EMABLED 0
 #if MICROPROFILE_EMABLED
+#define MICROPROFILE_IMPL
+#define MICROPROFILE_GPU_TIMERS 0
+#if MICROPROFILE_GPU_TIMERS
+#define MICROPROFILE_GPU_TIMERS_GL 1
+#endif
 #include "trace/microprofile.h"
 #include "trace/microprofile.cpp"
 #endif
