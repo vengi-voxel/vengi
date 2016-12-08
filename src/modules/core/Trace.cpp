@@ -112,7 +112,7 @@ void traceInit() {
 }
 
 void traceGLInit() {
-#if RMT_ENABLED
+#if RMT_ENABLED && RMT_USE_OPENGL
 	rmt_BindOpenGL();
 #endif
 }
@@ -121,7 +121,7 @@ void traceShutdown() {
 }
 
 void traceGLShutdown() {
-#if RMT_ENABLED
+#if RMT_ENABLED && RMT_USE_OPENGL
 	rmt_UnbindOpenGL();
 #elif MICROPROFILE_ENABLED
 	MicroProfileGpuShutdown();
