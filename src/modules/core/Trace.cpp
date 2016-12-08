@@ -53,6 +53,11 @@ Trace::Trace(uint16_t port) {
 	}
 #elif USE_EMTRACE
 	emscripten_trace_configure("http://localhost:5000/", "Engine");
+#elif MICROPROFILE_ENABLED
+	MicroProfileInit();
+	MicroProfileSetEnableAllGroups(true);
+	MicroProfileSetForceMetaCounters(true);
+	MicroProfileStartContextSwitchTrace();
 #endif
 	traceThread("MainThread");
 }
@@ -95,10 +100,7 @@ void traceInit() {
 #elif USE_EMTRACE
 	Log::info("emtrace active");
 #elif MICROPROFILE_ENABLED
-	MicroProfileInit();
-	MicroProfileSetEnableAllGroups(true);
-	MicroProfileSetForceMetaCounters(true);
-	MicroProfileStartContextSwitchTrace();
+	Log::info("microprofile active");
 #endif
 }
 
