@@ -115,8 +115,10 @@ void traceInit() {
 void traceGLInit() {
 #if RMT_ENABLED && RMT_USE_OPENGL
 	rmt_BindOpenGL();
-#elif MICROPROFILE_ENABLED && MICROPROFILE_GPU_TIMERS_GL
+#elif MICROPROFILE_ENABLED
+#if MICROPROFILE_GPU_TIMERS_GL
 	MicroProfileGpuInitGL();
+#endif
 #endif
 }
 
@@ -126,7 +128,7 @@ void traceShutdown() {
 void traceGLShutdown() {
 #if RMT_ENABLED && RMT_USE_OPENGL
 	rmt_UnbindOpenGL();
-#elif MICROPROFILE_ENABLED && MICROPROFILE_GPU_TIMERS_GL
+#elif MICROPROFILE_ENABLED && MICROPROFILE_GPU_TIMERS
 	MicroProfileGpuShutdown();
 #endif
 }
@@ -192,7 +194,7 @@ void traceGLBegin(const char* name) {
 	rmtU32 rmt_sample_hash = 0;
 	_rmt_BeginOpenGLSample(name, 0, &rmt_sample_hash);
 	//_rmt_BeginOpenGLSampleDynamic(name, 0, &rmt_sample_hash);
-#elif MICROPROFILE_EMABLED && MICROPROFILE_GPU_TIMERS_GL
+#elif MICROPROFILE_EMABLED && MICROPROFILE_GPU_TIMERS
 	MicroProfileEnterGpu(getToken(MicroProfileTokenTypeGpu, name), MicroProfileGetGlobalGpuThreadLog());
 #else
 	traceBegin(name);
@@ -202,7 +204,7 @@ void traceGLBegin(const char* name) {
 void traceGLEnd() {
 #if RMT_ENABLED && RMT_USE_OPENGL
 	rmt_EndOpenGLSample();
-#elif MICROPROFILE_EMABLED && MICROPROFILE_GPU_TIMERS_GL
+#elif MICROPROFILE_EMABLED && MICROPROFILE_GPU_TIMERS
 	MicroProfileLeaveGpu(MicroProfileGetGlobalGpuThreadLog());
 #else
 	traceEnd();
