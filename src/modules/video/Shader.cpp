@@ -11,6 +11,7 @@
 #include "core/Var.h"
 #include "core/Singleton.h"
 #include "ShaderManager.h"
+#include "UniformBuffer.h"
 
 #ifndef MAX_SHADER_VAR_NAME
 #define MAX_SHADER_VAR_NAME 128
@@ -229,7 +230,7 @@ void Shader::addDefine(const std::string& name, const std::string& value) {
 }
 
 int Shader::getAttributeLocation(const std::string& name) const {
-	ShaderVariables::const_iterator i = _attributes.find(name);
+	ShaderAttributes::const_iterator i = _attributes.find(name);
 	if (i == _attributes.end()) {
 		Log::error("can't find attribute %s in shader %s", name.c_str(), _name.c_str());
 		return -1;
@@ -238,7 +239,7 @@ int Shader::getAttributeLocation(const std::string& name) const {
 }
 
 int Shader::getUniformLocation(const std::string& name) const {
-	ShaderVariables::const_iterator i = _uniforms.find(name);
+	ShaderUniforms::const_iterator i = _uniforms.find(name);
 	if (i == _uniforms.end()) {
 		Log::error("can't find uniform %s in shader %s", name.c_str(), _name.c_str());
 		for (auto i : _uniforms) {
@@ -246,11 +247,16 @@ int Shader::getUniformLocation(const std::string& name) const {
 		}
 		return -1;
 	}
-	return i->second;
+	return i->second.location;
+}
+
+void Shader::setUniformBuffer(const std::string& name, const UniformBuffer& buffer) {
+	glUniformBlockBinding(_program, getUniformLocation(name), 0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, buffer.handle());
 }
 
 GLuint Shader::getUniformBlockLocation(const std::string& name) const {
-	return glGetUniformBlockIndex(_program, name.c_str());
+	return getUniformLocation(name);
 }
 
 GLuint Shader::getUniformBlockSize(const std::string& name) const {
@@ -269,33 +275,10 @@ std::vector<GLint> Shader::getUniformBlockOffsets(const char **names, int amount
 }
 
 int Shader::fetchUniforms() {
-	char name[MAX_SHADER_VAR_NAME];
-	int numUniforms = 0;
-	glGetProgramiv(_program, GL_ACTIVE_UNIFORMS, &numUniforms);
-	GL_checkError();
-
 	_uniforms.clear();
-	for (int i = 0; i < numUniforms; i++) {
-		GLsizei length;
-		GLint size;
-		GLenum type;
-		glGetActiveUniform(_program, i, sizeof(name) - 1, &length, &size, &type, name);
-		int location = glGetUniformLocation(_program, name);
-		_uniforms[name] = location;
-		const int l = strlen(name);
-		if (name[l - 1] == ']') {
-			// TODO: doesn't this assume that the array is never like [10] but only like [9]?
-			name[l - 3] = '\0';
-		} else {
-			strncat(name, "[0]", sizeof(name) - l);
-		}
-		location = glGetUniformLocation(_program, name);
-		if (location >= 0) {
-			_uniforms[name] = location;
-		}
-		Log::debug("uniform location for %s is %i (shader %s)", name, location, _name.c_str());
-	}
-	return numUniforms;
+	int n = fillUniforms(GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
+	n += fillUniforms(GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
+	return n;
 }
 
 int Shader::fetchAttributes() {

@@ -17,6 +17,8 @@
 
 namespace video {
 
+class UniformBuffer;
+
 #ifndef VERTEX_POSTFIX
 #define VERTEX_POSTFIX ".vert"
 #endif
@@ -57,9 +59,14 @@ protected:
 	typedef std::unordered_map<std::string, int> ShaderUniformArraySizes;
 	ShaderUniformArraySizes _uniformArraySizes;
 
-	typedef std::unordered_map<std::string, int> ShaderVariables;
-	ShaderVariables _uniforms;
-	ShaderVariables _attributes;
+	struct Uniform {
+		int location;
+		bool block;
+	};
+	typedef std::unordered_map<std::string, Uniform> ShaderUniforms;
+	ShaderUniforms _uniforms;
+	typedef std::unordered_map<std::string, int> ShaderAttributes;
+	ShaderAttributes _attributes;
 
 	typedef std::unordered_map<int, int> AttributeComponents;
 	AttributeComponents _attributeComponents;
@@ -67,6 +74,34 @@ protected:
 	mutable uint32_t _time = 0u;
 
 	std::string _name;
+
+	template<typename GetName, typename GetLocation>
+	int fillUniforms(GLenum activeEnum, GLenum activeMaxLengthEnum, GetName getName, GetLocation getLocation, bool block) {
+		int numUniforms = 0;
+		glGetProgramiv(_program, activeEnum, &numUniforms);
+		int uniformNameSize = 0;
+		glGetProgramiv(_program, activeMaxLengthEnum, &uniformNameSize);
+		char name[uniformNameSize + 1];
+
+		for (int i = 0; i < numUniforms; i++) {
+			getName(_program, i, uniformNameSize, nullptr, name);
+			int location = getLocation(_program, name);
+			_uniforms[name] = Uniform{location, block};
+			char* array = strchr(name, '[');
+			if (array != nullptr) {
+				*array = '\0';
+			} else {
+				const int l = strlen(name);
+				strncat(name, "[0]", sizeof(name) - l);
+			}
+			location = glGetUniformLocation(_program, name);
+			if (location >= 0) {
+				_uniforms[name] = Uniform{location, block};
+			}
+			Log::debug("uniform location for %s is %i (shader %s)", name, location, _name.c_str());
+		}
+		return numUniforms;
+	}
 
 	int fetchUniforms();
 
@@ -158,6 +193,7 @@ public:
 	// these offsets can be used to e.g. memcpy the data in.
 	std::vector<GLint> getUniformBlockOffsets(const char **names, int amount) const;
 
+	void setUniformBuffer(const std::string& name, const UniformBuffer& buffer);
 	void setUniformui(const std::string& name, unsigned int value) const;
 	void setUniformui(int location, unsigned int value) const;
 	void setUniformi(const std::string& name, int value) const;
@@ -221,6 +257,7 @@ public:
 	void enableVertexAttributeArray(int location) const;
 	bool hasAttribute(const std::string& name) const;
 	bool hasUniform(const std::string& name) const;
+	bool isUniformBlock(const std::string& name) const;
 };
 
 inline void Shader::setUniformi(const std::string& name, int value) const {
@@ -577,6 +614,14 @@ inline bool Shader::hasAttribute(const std::string& name) const {
 
 inline bool Shader::hasUniform(const std::string& name) const {
 	return _uniforms.find(name) != _uniforms.end();
+}
+
+inline bool Shader::isUniformBlock(const std::string& name) const {
+	auto i = _uniforms.find(name);
+	if (i == _uniforms.end()) {
+		return false;
+	}
+	return i->second.block;
 }
 
 inline bool Shader::isActive() const {
