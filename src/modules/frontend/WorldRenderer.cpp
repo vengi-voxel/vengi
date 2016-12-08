@@ -352,6 +352,9 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		core_assert(maxDepthBuffers * 2 <= (int)SDL_arraysize(planes));
 		const video::Camera& sunCamera = _sunLight.camera();
 		sunCamera.sliceFrustum(planes, SDL_arraysize(planes), maxDepthBuffers);
+		glDisable(GL_BLEND);
+		// put shadow acne into the dark
+		glCullFace(GL_FRONT);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			// TODO: finish this
 			const float near = planes[i * 2 + 0];
@@ -363,16 +366,13 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 				shaderSetUniformIf(_worldShader, setUniformf, core::string::format("u_farplanes[%i]", uniformIndex).c_str(), planes[planeIndex]);
 			}
 
-			glDisable(GL_BLEND);
 			_depthBuffer.bind(true, i);
-			// put shadow acne into the dark
-			glCullFace(GL_FRONT);
 			drawCallsWorld += renderWorldMeshes(_shadowMapShader,          camera, _visibleOpaque, vertices);
 			drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, camera, _visiblePlant,  vertices);
-			glCullFace(GL_BACK);
 			_depthBuffer.unbind();
-			glEnable(GL_BLEND);
 		}
+		glCullFace(GL_BACK);
+		glEnable(GL_BLEND);
 	}
 
 	_colorTexture->bind(0);
