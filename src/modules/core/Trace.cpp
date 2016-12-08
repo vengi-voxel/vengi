@@ -150,23 +150,30 @@ void traceEndFrame() {
 #endif
 }
 
+#if MICROPROFILE_EMABLED
+static inline MicroProfileToken getToken(MicroProfileTokenType type, const char *name, uint32_t color = 0xff00ff, const char *group = nullptr) {
+	if (group == nullptr) {
+		group = _threadName;
+	}
+	auto i = _tokens.find(name);
+	MicroProfileToken token;
+	if (i == _tokens.end()) {
+		MicroProfileGetTokenC(&token, group, name, color, type);
+		_tokens.insert(std::make_pair(name, token));
+	} else {
+		token = i->second;
+	}
+	return token;
+}
+#endif
+
 void traceBegin(const char* name) {
 #if RMT_ENABLED
 	_rmt_BeginCPUSample(name, 0, nullptr);
 #elif USE_EMTRACE
 	emscripten_trace_enter_context(name);
 #elif MICROPROFILE_EMABLED
-	const char *group = _threadName;
-	const uint32_t color = 0xff00ff;
-	auto i = _tokens.find(name);
-	MicroProfileToken token;
-	if (i == _tokens.end()) {
-		MicroProfileGetTokenC(&token, group, name, color, MicroProfileTokenTypeCpu);
-		_tokens.insert(std::make_pair(name, token));
-	} else {
-		token = i->second;
-	}
-	MicroProfileEnter(token);
+	MicroProfileEnter(getToken(MicroProfileTokenTypeCpu, name));
 #endif
 }
 
@@ -186,7 +193,7 @@ void traceGLBegin(const char* name) {
 	_rmt_BeginOpenGLSample(name, 0, &rmt_sample_hash);
 	//_rmt_BeginOpenGLSampleDynamic(name, 0, &rmt_sample_hash);
 #elif MICROPROFILE_EMABLED && MICROPROFILE_GPU_TIMERS_GL
-	// TODO:
+	MicroProfileEnterGpu(getToken(MicroProfileTokenTypeGpu, name), MicroProfileGetGlobalGpuThreadLog());
 #else
 	traceBegin(name);
 #endif
@@ -196,7 +203,7 @@ void traceGLEnd() {
 #if RMT_ENABLED && RMT_USE_OPENGL
 	rmt_EndOpenGLSample();
 #elif MICROPROFILE_EMABLED && MICROPROFILE_GPU_TIMERS_GL
-	// TODO:
+	MicroProfileLeaveGpu(MicroProfileGetGlobalGpuThreadLog());
 #else
 	traceEnd();
 #endif
@@ -213,7 +220,7 @@ void traceMessage(const char* message) {
 #endif
 }
 
-void traceThread(const char* name) {
+void traceThread(const	 char* name) {
 #if RMT_ENABLED
 	rmt_SetCurrentThreadName(name);
 #elif MICROPROFILE_EMABLED
