@@ -248,8 +248,9 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
 	shaderSetUniformIf(shader, setUniformVec3, "u_campos", camera.position());
 	const bool shadowMap = shader.hasUniform("u_shadowmap1");
+	int maxDepthBuffers = 0;
 	if (shadowMap) {
-		const int maxDepthBuffers = shader.getUniformArraySize(MaxDepthBufferUniformName);
+		maxDepthBuffers = shader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			glActiveTexture(GL_TEXTURE1 + i);
 			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
@@ -288,7 +289,6 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const video::Camera&
 	}
 
 	if (shadowMap) {
-		const int maxDepthBuffers = shader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			glActiveTexture(GL_TEXTURE1 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
@@ -348,8 +348,9 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	const bool shadowMap = _shadowMap->boolVal();
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we do one pass for the gbuffer + the sun
+	int maxDepthBuffers = 0;
 	if (shadowMap) {
-		const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+		maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 		core_assert(maxDepthBuffers * 2 <= (int)SDL_arraysize(planes));
 		const video::Camera& sunCamera = _sunLight.camera();
 		sunCamera.sliceFrustum(planes, SDL_arraysize(planes), maxDepthBuffers);
@@ -442,7 +443,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		shaderSetUniformIf(_shadowMapDebugShader, setUniformVec3, "u_lightdir", _sunLight.direction());
 		shaderSetUniformIf(_shadowMapDebugShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 		shaderSetUniformIf(_shadowMapDebugShader, setUniformVec3, "u_campos", camera.position());
-		const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			const GLsizei halfWidth = (GLsizei) (width / 4.0f);
 			const GLsizei halfHeight = (GLsizei) (height / 4.0f);
@@ -494,8 +494,9 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
 	shaderSetUniformIf(shader, setUniformVec3, "u_campos", camera.position());
 	const bool shadowMap = shader.hasUniform("u_shadowmap1");
+	int maxDepthBuffers = 0;
 	if (shadowMap) {
-		const int maxDepthBuffers = shader.getUniformArraySize(MaxDepthBufferUniformName);
+		maxDepthBuffers = shader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			glActiveTexture(GL_TEXTURE1 + i);
 			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
@@ -522,7 +523,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	}
 
 	if (shadowMap) {
-		const int maxDepthBuffers = shader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			glActiveTexture(GL_TEXTURE1 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);

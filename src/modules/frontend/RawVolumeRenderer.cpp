@@ -227,8 +227,9 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	shaderSetUniformIf(_worldShader, setUniformf, "u_farplane", camera.farPlane());
 	shaderSetUniformIf(_worldShader, setUniformVec3, "u_campos", camera.position());
 	const bool shadowMap = _worldShader.hasUniform("u_shadowmap1");
+	int maxDepthBuffers = 0;
 	if (shadowMap) {
-		const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+		maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			glActiveTexture(GL_TEXTURE1 + i);
 			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
@@ -251,7 +252,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_whiteTexture->unbind();
 
 	if (shadowMap) {
-		const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			glActiveTexture(GL_TEXTURE1 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
