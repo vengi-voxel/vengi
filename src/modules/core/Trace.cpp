@@ -10,7 +10,7 @@
 #include <emscripten/trace.h>
 #endif
 
-#define RMT_ENABLED 0
+#define RMT_ENABLED 1
 #define RMT_USE_POSIX_THREADNAMES 1
 // disable remotery via -DRMT_ENABLED=0
 #include "Remotery.h"
@@ -55,6 +55,7 @@ Trace::Trace(uint16_t port) {
 Trace::~Trace() {
 #if RMT_ENABLED
 	if (_remotery != nullptr) {
+		rmt_UnbindOpenGL();
 		rmt_DestroyGlobalInstance(_remotery);
 		_remotery = nullptr;
 	}
@@ -84,6 +85,7 @@ TraceGLScoped::~TraceGLScoped() {
 void traceInit() {
 #if RMT_ENABLED
 	Log::info("Remotery active");
+	rmt_BindOpenGL();
 #elif USE_EMTRACE
 	Log::info("emtrace active");
 #endif
@@ -107,8 +109,7 @@ void traceEndFrame() {
 
 void traceBegin(const char* name) {
 #if RMT_ENABLED
-	rmtU32 rmt_sample_hash = 0;
-	_rmt_BeginCPUSample(name, 0, &rmt_sample_hash);
+	_rmt_BeginCPUSample(name, 0, nullptr);
 #elif USE_EMTRACE
 	emscripten_trace_enter_context(name);
 #endif
