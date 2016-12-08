@@ -100,7 +100,7 @@ void traceInit() {
 #elif USE_EMTRACE
 	Log::info("emtrace active");
 #elif MICROPROFILE_ENABLED
-	Log::info("microprofile active");
+	Log::info("microprofile active on port " CORE_STRINGIFY(MICROPROFILE_WEBSERVER_PORT));
 #endif
 }
 
