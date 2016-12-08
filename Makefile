@@ -159,6 +159,10 @@ test-ambient-occlusion: cmake
 remotery:
 	$(Q)xdg-open file://$(CURDIR)/tools/remotery/index.html
 
+.PHONY: microprofile
+microprofile:
+	$(Q)xdg-open http://127.0.0.1:1338
+
 .PHONY: tags
 tags:
 	$(Q)ctags -R src
