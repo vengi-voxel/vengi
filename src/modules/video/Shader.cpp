@@ -72,7 +72,7 @@ void Shader::setAttributeComponents(int location, int size) {
 
 int Shader::getUniformArraySize(const std::string& name) const {
 	ShaderUniformArraySizes::const_iterator i = _uniformArraySizes.find(name);
-	if (i == _uniforms.end()) {
+	if (i == _uniformArraySizes.end()) {
 		Log::trace("can't find uniform %s in shader %s - unknown array size", name.c_str(), _name.c_str());
 		return -1;
 	}
