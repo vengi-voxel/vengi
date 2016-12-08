@@ -29,6 +29,7 @@ public:
 
 	void shutdown();
 
+	GLuint handle() const;
 	void create(GLsizeiptr size, const void *data);
 
 	/**
@@ -36,5 +37,9 @@ public:
 	 */
 	void bind(GLuint index);
 };
+
+inline GLuint UniformBuffer::handle() const {
+	return _handle;
+}
 
 }
