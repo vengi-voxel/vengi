@@ -20,7 +20,7 @@
 #include "backend/network/UserDisconnectHandler.h"
 #include "backend/network/AttackHandler.h"
 #include "backend/network/MoveHandler.h"
-#include "util/CommandHandler.h"
+#include "core/CommandHandler.h"
 #include "voxel/MaterialColor.h"
 
 namespace backend {
@@ -101,7 +101,7 @@ void ServerLoop::readInput() {
 		return;
 	}
 
-	util::executeCommands(input);
+	core::executeCommands(input);
 }
 
 void ServerLoop::onFrame(long dt) {

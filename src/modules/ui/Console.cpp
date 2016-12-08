@@ -6,7 +6,7 @@
 #include "core/Color.h"
 #include "core/Tokenizer.h"
 #include "ui/FontUtil.h"
-#include "util/CommandHandler.h"
+#include "core/CommandHandler.h"
 
 namespace ui {
 
@@ -233,7 +233,7 @@ void Console::executeCommandLine() {
 	_history.push_back(_commandLine);
 	_historyPos = _history.size();
 
-	util::executeCommands(_commandLine);
+	core::executeCommands(_commandLine);
 	clearCommandLine();
 }
 

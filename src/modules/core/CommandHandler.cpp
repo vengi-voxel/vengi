@@ -5,7 +5,7 @@
 #include "core/Var.h"
 #include "core/String.h"
 
-namespace util {
+namespace core {
 
 void executeCommands(const std::string& _commandLine) {
 	const std::vector<std::string> commands = core::Tokenizer(_commandLine, ";").tokens();

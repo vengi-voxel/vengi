@@ -15,21 +15,17 @@
 // disable remotery via -DRMT_ENABLED=0
 #include "Remotery.h"
 
+#if RMT_ENABLED
+#include "core/CommandHandler.h"
+#endif
+
 namespace core {
 
 #if RMT_ENABLED
 static Remotery* _remotery = nullptr;
 
 static void rmtInputHandler(const char* text, void* context) {
-	Log::info("typed '%s' to console", text);
-	if (core::Command::execute(text) <= 0) {
-		const VarPtr& var = core::Var::get(text);
-		if (var) {
-			core_trace_msg(var->strVal().c_str());
-			return;
-		}
-		core_trace_msg("Could not handle input");
-	}
+	core::executeCommands(text);
 }
 #endif
 
@@ -86,7 +82,7 @@ TraceGLScoped::~TraceGLScoped() {
 }
 
 void traceInit() {
-#if RMT_ENABLED > 0
+#if RMT_ENABLED
 	Log::info("Remotery active");
 #elif USE_EMTRACE
 	Log::info("emtrace active");
@@ -110,7 +106,7 @@ void traceEndFrame() {
 }
 
 void traceBegin(const char* name) {
-#if RMT_ENABLED > 0
+#if RMT_ENABLED
 	rmtU32 rmt_sample_hash = 0;
 	_rmt_BeginCPUSample(name, 0, &rmt_sample_hash);
 #elif USE_EMTRACE
@@ -119,7 +115,7 @@ void traceBegin(const char* name) {
 }
 
 void traceEnd() {
-#if RMT_ENABLED > 0
+#if RMT_ENABLED
 	rmt_EndCPUSample();
 #elif USE_EMTRACE
 	emscripten_trace_exit_context();
@@ -137,7 +133,7 @@ void traceGLBegin(const char* name) {
 }
 
 void traceGLEnd() {
-#if RMT_ENABLED > 0
+#if RMT_ENABLED
 	rmt_EndOpenGLSample();
 #else
 	traceEnd();
@@ -148,7 +144,7 @@ void traceMessage(const char* message) {
 	if (message == nullptr) {
 		return;
 	}
-#if RMT_ENABLED > 0
+#if RMT_ENABLED
 	rmt_LogText(message);
 #else
 	Log::trace("%s", message);
@@ -156,7 +152,7 @@ void traceMessage(const char* message) {
 }
 
 void traceThread(const char* name) {
-#if RMT_ENABLED > 0
+#if RMT_ENABLED
 	rmt_SetCurrentThreadName(name);
 #else
 	traceMessage(name);

@@ -3,6 +3,7 @@ set(SRCS
 	App.cpp App.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
+	CommandHandler.h CommandHandler.cpp
 	Command.h Command.cpp
 	Common.h
 	Concurrency.h

@@ -3,7 +3,6 @@ set(SRCS
 	PosLerp.h
 	EMailValidator.h
 	KeybindingParser.h KeybindingParser.cpp
-	CommandHandler.h CommandHandler.cpp
 	KeybindingHandler.h KeybindingHandler.cpp
 )
 set(LIB util)
