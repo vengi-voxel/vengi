@@ -126,8 +126,7 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 
 void ShapeRenderer::renderAll(const video::Camera& camera) const {
 	video::ScopedShader scoped(_colorShader);
-	core_assert_always(_colorShader.setView(camera.viewMatrix()));
-	core_assert_always(_colorShader.setProjection(camera.projectionMatrix()));
+	core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
 
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
@@ -143,8 +142,7 @@ void ShapeRenderer::renderAll(const video::Camera& camera) const {
 
 void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera) const {
 	video::ScopedShader scoped(_colorShader);
-	core_assert_always(_colorShader.setView(camera.viewMatrix()));
-	core_assert_always(_colorShader.setProjection(camera.projectionMatrix()));
+	core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
 
 	core_assert_always(_vbo[meshIndex].bind());
 	const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(uint32_t));

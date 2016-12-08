@@ -120,8 +120,7 @@ void TestMeshApp::doRender() {
 	}
 	if (meshInitialized) {
 		video::ScopedShader scoped(_colorShader);
-		_colorShader.setView(_camera.viewMatrix());
-		_colorShader.setProjection(_camera.projectionMatrix());
+		_colorShader.setViewprojection(_camera.viewProjectionMatrix());
 		core_assert_always(_mesh->renderNormals(_colorShader) > 0);
 	}
 }
