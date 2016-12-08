@@ -96,7 +96,7 @@ protected:
 	long _seed = 0;
 
 	AbstractVoxelTest() :
-			_pager(this), _volData(&_pager, 16 * 1024 * 1024, 64), _ctx(nullptr, nullptr, voxel::Region()) {
+			_pager(this), _volData(&_pager, 128 * 1024 * 1024, 64), _ctx(nullptr, nullptr, voxel::Region()) {
 	}
 
 public:
