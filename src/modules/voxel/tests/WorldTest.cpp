@@ -18,6 +18,7 @@ protected:
 		World world;
 		ASSERT_TRUE(world.init());
 		world.setSeed(0);
+		world.setPersist(false);
 		for (int i = 0; i < expected; ++i) {
 			const glm::ivec3 pos { i * 1024, 0, i };
 			ASSERT_TRUE(world.scheduleMeshExtraction(pos)) << "Failed to schedule mesh extraction for " << glm::to_string(pos);
