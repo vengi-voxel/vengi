@@ -38,6 +38,8 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::MAT4X3,          1, "const glm::mat4x3", Reference, "mat4x3" },
 	{ ShaderTool::Variable::SAMPLER1D,       1, "int32_t",           Value,     "sampler1D" },
 	{ ShaderTool::Variable::SAMPLER2D,       1, "int32_t",           Value,     "sampler2D" },
+	{ ShaderTool::Variable::SAMPLER2DARRAY,  1, "int32_t",           Value,     "sampler2DArray" },
+	{ ShaderTool::Variable::SAMPLER2DARRAYSHADOW, 1, "int32_t",      Value,     "sampler2DArrayShadow" },
 	{ ShaderTool::Variable::SAMPLER3D,       1, "int32_t",           Value,     "sampler3D" },
 	{ ShaderTool::Variable::SAMPLERCUBEMAP,  1, "int32_t",           Value,     "samplerCube" },
 	{ ShaderTool::Variable::SAMPLER1DSHADOW, 1, "int32_t",           Value,     "sampler1DShadow" },
@@ -131,6 +133,8 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 	case Variable::SAMPLER3D:
 	case Variable::SAMPLER1DSHADOW:
 	case Variable::SAMPLER2DSHADOW:
+	case Variable::SAMPLER2DARRAY:
+	case Variable::SAMPLER2DARRAYSHADOW:
 		if (amount > 1) {
 			// https://www.opengl.org/wiki/Data_Type_%28GLSL%29#Opaque_arrays
 			if (video::Shader::glslVersion < video::GLSLVersion::V400) {
@@ -399,7 +403,7 @@ void ShaderTool::generateSrc() const {
 }
 
 bool ShaderTool::parse(const std::string& buffer, bool vertex) {
-	core::Tokenizer tok(buffer);
+	core::Tokenizer tok(buffer, " ;");
 	while (tok.hasNext()) {
 		const std::string token = tok.next();
 		Log::trace("token: %s", token.c_str());
@@ -442,6 +446,21 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			type = tok.next();
 		}
 		std::string name = tok.next();
+		// uniform block
+		if (name == "{") {
+			Log::info("Found uniform buffer: %s", type.c_str());
+			if (!tok.hasNext()) {
+				Log::error("Could not get type for uniform buffer %s", type.c_str());
+				return false;
+			}
+			type = tok.next();
+			if (!tok.hasNext()) {
+				Log::error("Could not get name for uniform buffer");
+				return false;
+			}
+			name = tok.next();
+			Log::trace("type: %s, name: %s", type.c_str(), name.c_str());
+		}
 		const Variable::Type typeEnum = getType(type);
 		bool isArray = false;
 		std::string number;
@@ -572,10 +591,16 @@ core::AppState ShaderTool::onRunning() {
 	}
 
 	if (fragmentValidationExitCode != 0) {
+		Log::error("Failed to validate fragment shader");
+		Log::warn("%s %s%s", glslangValidatorBin.c_str(), filesystem()->homePath().c_str(), finalFragmentFilename.c_str());
 		_exitCode = fragmentValidationExitCode;
 	} else if (vertexValidationExitCode != 0) {
+		Log::error("Failed to validate vertex shader");
+		Log::warn("%s %s%s", glslangValidatorBin.c_str(), filesystem()->homePath().c_str(), finalVertexFilename.c_str());
 		_exitCode = vertexValidationExitCode;
 	} else if (geometryValidationExitCode != 0) {
+		Log::error("Failed to validate geometry shader");
+		Log::warn("%s %s%s", glslangValidatorBin.c_str(), filesystem()->homePath().c_str(), finalGeometryFilename.c_str());
 		_exitCode = geometryValidationExitCode;
 	}
 
