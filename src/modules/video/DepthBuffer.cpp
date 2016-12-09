@@ -99,7 +99,26 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 
 	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		Log::error("FB error, status: %i", (int)status);
+		switch (status) {
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+			Log::error("FB error, incomplete attachment");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+			Log::error("FB error, incomplete missing attachment");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+			Log::error("FB error, incomplete draw buffer");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+			Log::error("FB error, incomplete read buffer");
+			break;
+		case GL_FRAMEBUFFER_UNSUPPORTED:
+			Log::error("FB error, framebuffer unsupported");
+			break;
+		default:
+			Log::error("FB error, status: %i", (int)status);
+			break;
+		}
 		return false;
 	}
 
