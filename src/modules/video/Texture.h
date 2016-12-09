@@ -12,6 +12,16 @@
 
 namespace video {
 
+enum class TextureType {
+	Texture2D = GL_TEXTURE_2D,
+	TextureArray2D = GL_TEXTURE_2D_ARRAY
+};
+
+enum class TextureFormat {
+	RGBA = GL_RGBA,
+	RGB = GL_RGB
+};
+
 class Texture: public io::IOResource {
 private:
 	std::string _name;
