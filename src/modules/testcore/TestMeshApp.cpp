@@ -109,7 +109,7 @@ void TestMeshApp::doRender() {
 			const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
 			for (int i = 0; i < maxDepthBuffers; ++i) {
 				glActiveTexture(GL_TEXTURE1 + i);
-				glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
+				glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture(i));
 			}
 
 			core_assert_always(_mesh->render() > 0);

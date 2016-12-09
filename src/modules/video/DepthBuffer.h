@@ -5,6 +5,7 @@
 #pragma once
 
 #include "GLFunc.h"
+#include "Texture.h"
 #include <glm/vec2.hpp>
 
 namespace video {
@@ -33,9 +34,13 @@ public:
 		return _dimension;
 	}
 
-	inline GLuint getTexture(int index = 0) const {
+	inline GLuint texture(int index = 0) const {
 		core_assert(index >= 0 && index < (int)SDL_arraysize(_depthTexture));
 		return _depthTexture[index];
+	}
+
+	TextureType textureType() const {
+		return TextureType::Texture2D;
 	}
 
 	inline bool depthAttachment() const {

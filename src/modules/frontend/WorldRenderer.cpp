@@ -252,7 +252,7 @@ int WorldRenderer::renderWorldMeshes(bool shadowPass, video::Shader& shader, con
 		maxDepthBuffers = shader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			glActiveTexture(GL_TEXTURE1 + i);
-			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
+			glBindTexture(GL_TEXTURE_2D, _depthBuffer.texture(i));
 			shaderSetUniformIf(shader, setUniformi, core::string::format("u_shadowmap%i", 1 + i), 1 + i);
 		}
 	}
@@ -446,7 +446,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			const GLsizei halfWidth = (GLsizei) (width / 4.0f);
 			const GLsizei halfHeight = (GLsizei) (height / 4.0f);
 			video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
-			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
+			glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture(i));
 			glDrawArrays(GL_TRIANGLES, 0, _shadowMapDebugBuffer.elements(0));
 		}
 		_shadowMapDebugBuffer.unbind();
@@ -498,7 +498,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		maxDepthBuffers = shader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			glActiveTexture(GL_TEXTURE1 + i);
-			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
+			glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture(i));
 			shaderSetUniformIf(shader, setUniformi, core::string::format("u_shadowmap%i", 1 + i), 1 + i);
 		}
 	}

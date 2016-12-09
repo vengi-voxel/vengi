@@ -234,7 +234,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			glActiveTexture(GL_TEXTURE1 + i);
-			glBindTexture(GL_TEXTURE_2D, _depthBuffer.getTexture(i));
+			glBindTexture(GL_TEXTURE_2D, _depthBuffer.texture(i));
 			shaderSetUniformIf(_worldShader, setUniformi, core::string::format("u_shadowmap%i", 1 + i), 1 + i);
 		}
 	}

@@ -5,6 +5,7 @@
 #include "DepthBuffer.h"
 #include "GLFunc.h"
 #include "ScopedFrameBuffer.h"
+#include "Texture.h"
 
 #include <cstddef>
 #include "core/Common.h"
@@ -51,23 +52,26 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 	GL_setName(GL_FRAMEBUFFER, _fbo, "depthfbo");
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);
 
+	const TextureType type = textureType();
+	const GLenum glType = std::enum_value(type);
 	glGenTextures(textureCount, _depthTexture);
 	for (int i = 0; i < textureCount; ++i) {
 		GL_setName(GL_TEXTURE, _depthTexture, "depthtexture");
-		glBindTexture(GL_TEXTURE_2D, _depthTexture[i]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		glBindTexture(glType, _depthTexture[i]);
+		glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(glType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(glType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
 		if (depthAttachment()) {
 			if (_mode == DepthBufferMode::DEPTH_CMP) {
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+				glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+				glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 			}
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+			glTexImage2D(glType, 0, GL_DEPTH_COMPONENT, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 		} else {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, dimension.x, dimension.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+			glTexImage2D(glType, 0, GL_RGBA8, dimension.x, dimension.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 		}
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
