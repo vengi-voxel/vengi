@@ -46,6 +46,9 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	_materialBuffer.create(materialColors.size() * sizeof(voxel::MaterialColorArray::value_type), &materialColors.front());
+
 	video::VertexBuffer::Attribute attributePos;
 	attributePos.bufferIndex = _vertexBufferIndex;
 	attributePos.index = _worldShader.getLocationPos();
@@ -205,12 +208,11 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_whiteTexture->bind(0);
 
 	video::ScopedShader scoped(_worldShader);
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_viewprojection", camera.viewProjectionMatrix());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_model", glm::mat4());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_view", camera.viewMatrix());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_projection", camera.projectionMatrix());
-	shaderSetUniformIf(_worldShader, setUniformVec4v, "u_materialcolor", &materialColors[0], materialColors.size());
+	shaderSetUniformIf(_worldShader, setUniformBuffer, "u_materialblock", _materialBuffer);
 	shaderSetUniformIf(_worldShader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(_worldShader, setUniformf, "u_fogrange", 250.0f);
 	shaderSetUniformIf(_worldShader, setUniformf, "u_viewdistance", camera.farPlane());
@@ -356,6 +358,7 @@ voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_depthBuffer.shutdown();
+	_materialBuffer.shutdown();
 	return old;
 }
 

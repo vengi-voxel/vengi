@@ -10,6 +10,7 @@
 #include "video/Texture.h"
 #include "video/Camera.h"
 #include "video/VertexBuffer.h"
+#include "video/UniformBuffer.h"
 #include "video/GBuffer.h"
 #include "video/DepthBuffer.h"
 #include "video/SunLight.h"
@@ -82,6 +83,7 @@ protected:
 	video::VertexBuffer _fullscreenQuad;
 	video::VertexBuffer _shadowMapDebugBuffer;
 	video::DepthBuffer _depthBuffer;
+	video::UniformBuffer _materialBuffer;
 
 	shader::ShadowmapRenderShader _shadowMapDebugShader;
 	shader::WorldShader _worldShader;

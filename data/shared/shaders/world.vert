@@ -16,9 +16,11 @@ uniform mat4 u_model;
 uniform mat4 u_viewprojection;
 uniform sampler2D u_texture;
 #define MATERIALCOLORS 256
-// use the size here directly to let the shadertool be able
-// to generate the setters with the correct sizes
-uniform vec4 u_materialcolor[256];
+layout(std140) uniform u_materialblock {
+	// use the size here directly to let the shadertool be able
+	// to generate the setters with the correct sizes
+	vec4 u_materialcolor[256];
+};
 
 $out vec3 v_pos;
 $out vec4 v_color;

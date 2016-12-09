@@ -6,6 +6,7 @@
 #include "FrontendShaders.h"
 #include "voxel/polyvox/Mesh.h"
 #include "frontend/ShapeRenderer.h"
+#include "video/UniformBuffer.h"
 #include "video/ShapeBuilder.h"
 #include "video/SunLight.h"
 #include "video/Texture.h"
@@ -35,6 +36,7 @@ protected:
 
 	int32_t _vertexBufferIndex = -1;
 	int32_t _indexBufferIndex = -1;
+	video::UniformBuffer _materialBuffer;
 
 	int32_t _aabbMeshIndex = -1;
 	int32_t _gridMeshIndexXYNear = -1;

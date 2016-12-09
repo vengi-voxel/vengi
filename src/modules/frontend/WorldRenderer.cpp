@@ -56,6 +56,7 @@ void WorldRenderer::shutdown() {
 	_shadowMapShader.shutdown();
 	_deferredDirLightShader.shutdown();
 	_depthBuffer.shutdown();
+	_materialBuffer.shutdown();
 	reset();
 	_colorTexture->shutdown();
 	_colorTexture = video::TexturePtr();
@@ -216,7 +217,6 @@ void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const vi
 }
 
 int WorldRenderer::renderWorldMeshes(bool shadowPass, video::Shader& shader, const video::Camera& camera, const GLMeshesVisible& meshes, int* vertices) {
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	const bool deferred = _deferred->boolVal();
 
 	const video::Camera* actualCamera = &camera;
@@ -230,7 +230,7 @@ int WorldRenderer::renderWorldMeshes(bool shadowPass, video::Shader& shader, con
 	shaderSetUniformIf(shader, setUniformMatrix, "u_viewprojection", actualCamera->viewProjectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_view", actualCamera->viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", actualCamera->projectionMatrix());
-	shaderSetUniformIf(shader, setUniformVec4v, "u_materialcolor", &materialColors[0], materialColors.size());
+	shaderSetUniformIf(shader, setUniformBuffer, "u_materialblock", _materialBuffer);
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", viewDistance);
@@ -776,6 +776,9 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	if (!_depthBuffer.init(_sunLight.dimension(), video::DepthBufferMode::RGBA, maxDepthBuffers)) {
 		return false;
 	}
+
+	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	_materialBuffer.create(materialColors.size() * sizeof(voxel::MaterialColorArray::value_type), &materialColors.front());
 
 	if (!_gbuffer.init(dimension)) {
 		return false;
