@@ -41,7 +41,7 @@ public:
 	/**
 	 * @param[in] index The index of the uniform block to bind the buffer to
 	 */
-	void bind(GLuint index = 0) const;
+	bool bind(GLuint index = 0) const;
 };
 
 inline GLuint UniformBuffer::handle() const {

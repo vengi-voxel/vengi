@@ -52,10 +52,13 @@ void UniformBuffer::create(GLsizeiptr size, const void *data) {
 /**
  * @param[in] index The index of the uniform block to bind the buffer to
  */
-void UniformBuffer::bind(GLuint index) const {
-	core_assert(_handle != 0u);
+bool UniformBuffer::bind(GLuint index) const {
+	if (_handle == 0u) {
+		return false;
+	}
 	// Bind the buffer object to the uniform block.
 	glBindBufferBase(GL_UNIFORM_BUFFER, index, _handle);
+	return true;
 }
 
 }
