@@ -356,6 +356,11 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		glDisable(GL_BLEND);
 		// put shadow acne into the dark
 		glCullFace(GL_FRONT);
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		const float shadowBiasSlope = 2;
+		const float shadowBias = 0.09f;
+		const float shadowRangeZ = camera.farPlane() * 3;
+		glPolygonOffset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
 		_depthBuffer.bind();
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			// TODO: finish this
@@ -375,6 +380,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_depthBuffer.unbind();
 		glCullFace(GL_BACK);
 		glEnable(GL_BLEND);
+		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
 	_colorTexture->bind(0);
