@@ -25,7 +25,7 @@ public:
 	bool init(const glm::ivec2& dimension, DepthBufferMode mode = DepthBufferMode::RGBA, int textureCount = 1);
 	void shutdown();
 
-	void bind(bool read = false, int textureIndex = 0);
+	bool bind(bool read = false, int textureIndex = 0);
 	void unbind();
 	uint8_t *read();
 

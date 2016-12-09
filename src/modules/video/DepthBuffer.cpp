@@ -102,7 +102,7 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 	return true;
 }
 
-void DepthBuffer::bind(bool read, int textureIndex) {
+bool DepthBuffer::bind(bool read, int textureIndex) {
 	core_assert(_oldFramebuffer == -1);
 	core_assert(textureIndex >= 0);
 	core_assert(textureIndex < (int)SDL_arraysize(_depthTexture));
@@ -124,6 +124,7 @@ void DepthBuffer::bind(bool read, int textureIndex) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	GL_checkError();
+	return true;
 }
 
 uint8_t *DepthBuffer::read() {
