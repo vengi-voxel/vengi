@@ -356,6 +356,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		glDisable(GL_BLEND);
 		// put shadow acne into the dark
 		glCullFace(GL_FRONT);
+		_depthBuffer.bind();
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			// TODO: finish this
 			const float near = planes[i * 2 + 0];
@@ -367,11 +368,11 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 				shaderSetUniformIf(_worldShader, setUniformf, core::string::format("u_farplanes[%i]", uniformIndex).c_str(), planes[planeIndex]);
 			}
 
-			_depthBuffer.bind(false, i);
+			_depthBuffer.bindTexture(false, i);
 			drawCallsWorld += renderWorldMeshes(true, _shadowMapShader,          camera, _visibleOpaque, vertices);
 			drawCallsWorld += renderWorldMeshes(true, _shadowMapInstancedShader, camera, _visiblePlant,  vertices);
-			_depthBuffer.unbind();
 		}
+		_depthBuffer.unbind();
 		glCullFace(GL_BACK);
 		glEnable(GL_BLEND);
 	}

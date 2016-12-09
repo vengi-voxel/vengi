@@ -125,16 +125,23 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 	return true;
 }
 
-bool DepthBuffer::bind(bool read, int textureIndex) {
+bool DepthBuffer::bind() {
 	core_assert(_oldFramebuffer == -1);
-	core_assert(textureIndex >= 0);
-	core_assert(textureIndex < (int)SDL_arraysize(_depthTexture));
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
 	GL_checkError();
 
 	glGetIntegerv(GL_VIEWPORT, _viewport);
 	glViewport(0, 0, _dimension.x, _dimension.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	return true;
+}
+
+bool DepthBuffer::bindTexture(bool read, int textureIndex) {
+	core_assert(textureIndex >= 0);
+	core_assert(textureIndex < (int)SDL_arraysize(_depthTexture));
+	if (textureIndex < 0 || textureIndex >= (int)SDL_arraysize(_depthTexture)) {
+		return false;
+	}
 	if (depthAttachment()) {
 		if (!read) {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture[textureIndex], 0);

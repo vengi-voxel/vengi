@@ -76,6 +76,7 @@ void TestMeshApp::doRender() {
 			glDisable(GL_BLEND);
 			glCullFace(GL_FRONT);
 			_depthBuffer.bind();
+			_depthBuffer.bindTexture(false, 0);
 			core_assert_always(_mesh->render() > 0);
 			_depthBuffer.unbind();
 			glCullFace(GL_BACK);
