@@ -26,32 +26,50 @@ class Texture: public io::IOResource {
 private:
 	std::string _name;
 	GLuint _handle;
+	TextureType _type;
+	TextureFormat _format;
 	int _boundUnit = 0;
 
 public:
 	// creates an empty dummy texture with the given name
-	Texture(const std::string& name, uint32_t empty = 0x00000000);
+	Texture(TextureType type, const std::string& name, uint32_t empty = 0x00000000);
 	// create a texture with the given name and uploads it
-	Texture(const std::string& name, const uint8_t* data, int width, int height, int depth);
+	Texture(TextureType type, TextureFormat format, const std::string& name, const uint8_t* data, int width, int height, int index = 1);
 	~Texture();
 	void shutdown();
 
+	operator GLuint () const;
+	TextureType type() const;
+	GLuint handle() const;
+
 	// updates the texture with the new data
-	void upload(const uint8_t* data, int width, int height, int depth);
+	void upload(TextureFormat format, const uint8_t* data, int width, int height, int index = 1);
 	void bind(int unit = 0);
 	void unbind();
 };
+
+inline Texture::operator GLuint () const {
+	return _handle;
+}
+
+inline TextureType Texture::type() const {
+	return _type;
+}
+
+inline GLuint Texture::handle() const {
+	return _handle;
+}
 
 typedef std::shared_ptr<Texture> TexturePtr;
 
 // creates empty texture with placeholder pixel in
 inline TexturePtr createEmptyTexture(const std::string& name) {
-	return TexturePtr(new Texture(name));
+	return TexturePtr(new Texture(TextureType::Texture2D, name));
 }
 
 // creates white texture with placeholder pixel in
 inline TexturePtr createWhiteTexture(const std::string& name) {
-	return TexturePtr(new Texture(name, 0xFFFFFFFF));
+	return TexturePtr(new Texture(TextureType::Texture2D, name, 0xFFFFFFFF));
 }
 
 inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {
@@ -63,7 +81,13 @@ inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 		Log::warn("Could not load texture from image %s", image->name().c_str());
 		return TexturePtr();
 	}
-	TexturePtr t(new Texture(image->name(), image->data(), image->width(), image->height(), image->depth()));
+	TextureFormat format;
+	if (image->depth() == 4) {
+		format = TextureFormat::RGBA;
+	} else {
+		format = TextureFormat::RGB;
+	}
+	TexturePtr t(new Texture(TextureType::Texture2D, format, image->name(), image->data(), image->width(), image->height(), 1));
 	return t;
 }
 

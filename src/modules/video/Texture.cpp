@@ -9,18 +9,18 @@
 
 namespace video {
 
-Texture::Texture(const std::string& name, uint32_t empty) :
-		io::IOResource(), _name(name) {
+Texture::Texture(TextureType type, const std::string& name, uint32_t empty) :
+		io::IOResource(), _name(name), _type(type), _format(TextureFormat::RGBA) {
 	glGenTextures(1, &_handle);
-	upload((const uint8_t*)&empty, 1, 1, 4);
+	upload(_format, (const uint8_t*)&empty, 1, 1, 1);
 	unbind();
 	GL_checkError();
 }
 
-Texture::Texture(const std::string& name, const uint8_t* data, int width, int height, int depth) :
-		io::IOResource(), _name(name) {
+Texture::Texture(TextureType type, TextureFormat format, const std::string& name, const uint8_t* data, int width, int height, int index) :
+		io::IOResource(), _name(name), _type(type), _format(format) {
 	glGenTextures(1, &_handle);
-	upload(data, width, height, depth);
+	upload(_format, data, width, height, index);
 	unbind();
 	GL_checkError();
 }
@@ -39,15 +39,24 @@ void Texture::shutdown() {
 	}
 }
 
-void Texture::upload(const uint8_t* data, int width, int height, int depth) {
-	const GLenum mode = depth == 4 ? GL_RGBA : GL_RGB;
-	bind();
-	glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode, GL_UNSIGNED_BYTE, (const void*)data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+void Texture::upload(TextureFormat format, const uint8_t* data, int width, int height, int index) {
+	_format = format;
+	bind(0);
+	const GLenum glformat = std::enum_value(_format);
+	const GLenum gltype = std::enum_value(_type);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	if (_type == TextureType::Texture2D) {
+		glTexImage2D(gltype, 0, (int)glformat, width, height, 0, glformat, GL_UNSIGNED_BYTE, (const void*)data);
+//		glTexSubImage2D(gltype, 0, 0, 0, width, height, glformat, GL_UNSIGNED_BYTE, (const void*) data);
+	} else {
+		glTexSubImage3D(gltype, 0, 0, 0, 0, width, height, index, glformat, GL_UNSIGNED_BYTE, (const void*) data);
+	}
+
+	glTexParameteri(gltype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(gltype, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(gltype, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(gltype, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(gltype, GL_TEXTURE_MAX_LEVEL, 0);
 	_state = io::IOSTATE_LOADED;
 	GL_checkError();
 }
@@ -56,7 +65,7 @@ void Texture::bind(int unit) {
 	if (unit != 0) {
 		glActiveTexture(GL_TEXTURE0 + unit);
 	}
-	glBindTexture(GL_TEXTURE_2D, _handle);
+	glBindTexture(std::enum_value(_type), _handle);
 	GL_checkError();
 	_boundUnit = unit;
 	if (unit != 0) {
@@ -68,7 +77,7 @@ void Texture::unbind() {
 	if (_boundUnit != 0) {
 		glActiveTexture(GL_TEXTURE0 + _boundUnit);
 	}
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(std::enum_value(_type), 0);
 	GL_checkError();
 	if (_boundUnit != 0) {
 		glActiveTexture(GL_TEXTURE0);
