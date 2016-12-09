@@ -27,7 +27,7 @@ void* UniformBuffer::lock(BufferLockMode mode) {
 }
 
 void UniformBuffer::unlock() {
-	if (_handle == 0) {
+	if (_handle == 0u) {
 		return;
 	}
 	glBindBuffer(GL_UNIFORM_BUFFER, _handle);
@@ -37,6 +37,9 @@ void UniformBuffer::unlock() {
 
 
 void UniformBuffer::create(GLsizeiptr size, const void *data) {
+	if (_handle != 0u) {
+		shutdown();
+	}
 	_size = size;
 	glGenBuffers(1, &_handle);
 	if (data != nullptr) {
@@ -49,7 +52,7 @@ void UniformBuffer::create(GLsizeiptr size, const void *data) {
 /**
  * @param[in] index The index of the uniform block to bind the buffer to
  */
-void UniformBuffer::bind(GLuint index) {
+void UniformBuffer::bind(GLuint index) const {
 	core_assert(_handle != 0u);
 	// Bind the buffer object to the uniform block.
 	glBindBufferBase(GL_UNIFORM_BUFFER, index, _handle);
