@@ -239,20 +239,35 @@ int Shader::getAttributeLocation(const std::string& name) const {
 }
 
 int Shader::getUniformLocation(const std::string& name) const {
+	const Uniform* uniform = getUniform(name);
+	if (uniform == nullptr) {
+		return -1;
+	}
+	return uniform->location;
+}
+
+const Shader::Uniform* Shader::getUniform(const std::string& name) const {
 	ShaderUniforms::const_iterator i = _uniforms.find(name);
 	if (i == _uniforms.end()) {
 		Log::error("can't find uniform %s in shader %s", name.c_str(), _name.c_str());
 		for (auto i : _uniforms) {
 			Log::error("uniform %s", i.first.c_str());
 		}
-		return -1;
+		return nullptr;
 	}
-	return i->second.location;
+	return &i->second;
 }
 
-void Shader::setUniformBuffer(const std::string& name, const UniformBuffer& buffer) {
-	glUniformBlockBinding(_program, getUniformLocation(name), 0);
-	buffer.bind();
+bool Shader::setUniformBuffer(const std::string& name, const UniformBuffer& buffer) {
+	const Uniform* uniform = getUniform(name);
+	if (uniform == nullptr) {
+		return false;
+	}
+	if (!uniform->block) {
+		return false;
+	}
+	glUniformBlockBinding(_program, uniform->location, 0);
+	return buffer.bind();
 }
 
 GLuint Shader::getUniformBlockLocation(const std::string& name) const {

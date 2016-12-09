@@ -75,6 +75,8 @@ protected:
 
 	std::string _name;
 
+	const Uniform* getUniform(const std::string& name) const;
+
 	template<typename GetName, typename GetLocation>
 	int fillUniforms(GLenum activeEnum, GLenum activeMaxLengthEnum, GetName getName, GetLocation getLocation, bool block) {
 		int numUniforms = 0;
@@ -193,7 +195,7 @@ public:
 	// these offsets can be used to e.g. memcpy the data in.
 	std::vector<GLint> getUniformBlockOffsets(const char **names, int amount) const;
 
-	void setUniformBuffer(const std::string& name, const UniformBuffer& buffer);
+	bool setUniformBuffer(const std::string& name, const UniformBuffer& buffer);
 	void setUniformui(const std::string& name, unsigned int value) const;
 	void setUniformui(int location, unsigned int value) const;
 	void setUniformi(const std::string& name, int value) const;
