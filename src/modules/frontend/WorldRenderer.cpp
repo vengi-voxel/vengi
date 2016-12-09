@@ -234,7 +234,6 @@ int WorldRenderer::renderWorldMeshes(bool shadowPass, video::Shader& shader, con
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", viewDistance);
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunLight.direction());
 	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_sunLight.dimension()));
@@ -444,7 +443,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		core_assert_always(_shadowMapDebugBuffer.bind());
 		glActiveTexture(GL_TEXTURE0);
 		_shadowMapDebugShader.setShadowmap(0);
-		shaderSetUniformIf(_shadowMapDebugShader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
 		shaderSetUniformIf(_shadowMapDebugShader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 		shaderSetUniformIf(_shadowMapDebugShader, setUniformVec3, "u_lightdir", _sunLight.direction());
 		shaderSetUniformIf(_shadowMapDebugShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
@@ -490,7 +488,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", viewDistance);
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunLight.direction());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
