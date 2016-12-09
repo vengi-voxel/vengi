@@ -2,6 +2,13 @@
 
 #if cl_shadowmap == 1
 
+uniform sampler2D u_shadowmap1;
+uniform sampler2D u_shadowmap2;
+$in vec4 v_lightspacepos;
+$in vec4 v_texcoord1;
+$in vec4 v_texcoord2;
+uniform vec2 u_depthsize;
+
 /**
  * perform simple shadow map lookup returns 0.0 (unlit) or 1.0 (lit)
  * http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping
@@ -28,13 +35,6 @@ float sampleShadowPCF(sampler2D shadowMap, vec2 uv, vec2 smSize, float compare, 
 	}
 	return result / 25.0;
 }
-
-uniform sampler2D u_shadowmap1;
-uniform sampler2D u_shadowmap2;
-$in vec4 v_lightspacepos;
-$in vec4 v_texcoord1;
-$in vec4 v_texcoord2;
-uniform vec2 u_depthsize;
 
 vec2 calculateShadowUV() {
 	// convert from -1, 1 to tex coords in the range 0, 1
