@@ -252,7 +252,7 @@ int Shader::getUniformLocation(const std::string& name) const {
 
 void Shader::setUniformBuffer(const std::string& name, const UniformBuffer& buffer) {
 	glUniformBlockBinding(_program, getUniformLocation(name), 0);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, buffer.handle());
+	buffer.bind();
 }
 
 GLuint Shader::getUniformBlockLocation(const std::string& name) const {
