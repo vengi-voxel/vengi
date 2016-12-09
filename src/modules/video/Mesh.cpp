@@ -239,7 +239,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 		core_assert(size == 100);
 		glm::mat4 transforms[100];
 		boneTransform(_timeInSeconds, &transforms[0], size, _animationIndex);
-		shader.setUniformMatrixv("u_bonetransforms[0]", &transforms[0], size);
+		shader.setUniformMatrixv("u_bonetransforms", &transforms[0], size);
 	}
 
 	return true;

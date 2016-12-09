@@ -209,9 +209,6 @@ void ShaderTool::generateSrc() const {
 			std::string uniformName = _shaderStruct.uniforms[i].name;
 			uniforms << "\"";
 			uniforms << uniformName;
-			if (_shaderStruct.uniforms[i].arraySize == -1 || _shaderStruct.uniforms[i].arraySize > 1) {
-				uniforms << "[0]";
-			}
 			uniforms << "\"";
 			if (i < uniformSize - 1) {
 				uniforms << ", ";
@@ -305,17 +302,11 @@ void ShaderTool::generateSrc() const {
 		setters << ") const {\n";
 
 		setters << "\t\tif (!hasUniform(\"" << v.name;
-		if (v.arraySize == -1 || v.arraySize > 1) {
-			setters << "[0]";
-		}
 		setters << "\")) {\n";
 		setters << "\t\t\treturn false;\n";
 		setters << "\t\t}\n";
 		setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
 		setters << "(\"" << v.name;
-		if (v.arraySize == -1 || v.arraySize > 1) {
-			setters << "[0]";
-		}
 		setters << "\", " << v.name;
 		if (v.arraySize > 0) {
 			setters << ", " << v.arraySize;

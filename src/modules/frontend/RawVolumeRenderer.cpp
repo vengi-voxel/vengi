@@ -210,7 +210,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_model", glm::mat4());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_view", camera.viewMatrix());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_projection", camera.projectionMatrix());
-	shaderSetUniformIf(_worldShader, setUniformVec4v, "u_materialcolor[0]", &materialColors[0], materialColors.size());
+	shaderSetUniformIf(_worldShader, setUniformVec4v, "u_materialcolor", &materialColors[0], materialColors.size());
 	shaderSetUniformIf(_worldShader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(_worldShader, setUniformf, "u_fogrange", 250.0f);
 	shaderSetUniformIf(_worldShader, setUniformf, "u_viewdistance", camera.farPlane());

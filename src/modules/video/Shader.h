@@ -87,20 +87,17 @@ protected:
 
 		for (int i = 0; i < numUniforms; i++) {
 			getName(_program, i, uniformNameSize, nullptr, name);
-			int location = getLocation(_program, name);
-			_uniforms[name] = Uniform{location, block};
+			const int location = getLocation(_program, name);
+			if (location < 0) {
+				Log::warn("Could not get uniform location for %s is %i (shader %s)", name, location, _name.c_str());
+				continue;
+			}
 			char* array = strchr(name, '[');
 			if (array != nullptr) {
 				*array = '\0';
-			} else {
-				const int l = strlen(name);
-				strncat(name, "[0]", sizeof(name) - l);
 			}
-			location = glGetUniformLocation(_program, name);
-			if (location >= 0) {
-				_uniforms[name] = Uniform{location, block};
-			}
-			Log::debug("uniform location for %s is %i (shader %s)", name, location, _name.c_str());
+			_uniforms[name] = Uniform{location, block};
+			Log::info("Got uniform location for %s is %i (shader %s)", name, location, _name.c_str());
 		}
 		return numUniforms;
 	}
