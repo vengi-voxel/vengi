@@ -110,7 +110,8 @@ protected:
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
 	void cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const video::Camera& camera) const;
-	int renderWorldMeshes(bool shadowPass, video::Shader& shader, const video::Camera& camera, const GLMeshesVisible& meshes, int* vertices);
+	void setUniforms(video::Shader& shader, const video::Camera& camera);
+	int renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices);
 	void renderWorldDeferred(const video::Camera& camera, const int width, const int height);
 
 	bool checkShaders() const;

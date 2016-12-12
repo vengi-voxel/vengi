@@ -216,9 +216,7 @@ void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const vi
 	Log::trace("%i meshes left after culling, %i meshes overall", visibleCount, meshesCount);
 }
 
-int WorldRenderer::renderWorldMeshes(bool shadowPass, video::Shader& shader, const video::Camera& camera, const GLMeshesVisible& meshes, int* vertices) {
-	const bool deferred = _deferred->boolVal();
-
+void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& camera) {
 	const video::Camera* actualCamera = &camera;
 	float viewDistance = _viewDistance;
 	if (_cameraSun->boolVal()) {
@@ -226,7 +224,6 @@ int WorldRenderer::renderWorldMeshes(bool shadowPass, video::Shader& shader, con
 		viewDistance = actualCamera->farPlane();
 	}
 
-	video::ScopedShader scoped(shader);
 	shaderSetUniformIf(shader, setUniformMatrix, "u_viewprojection", actualCamera->viewProjectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_view", actualCamera->viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", actualCamera->projectionMatrix());
@@ -245,6 +242,10 @@ int WorldRenderer::renderWorldMeshes(bool shadowPass, video::Shader& shader, con
 	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
 	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
 	shaderSetUniformIf(shader, setUniformVec3, "u_campos", camera.position());
+}
+
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices) {
+	const bool deferred = _deferred->boolVal();
 	const bool shadowMap = shader.hasUniform("u_shadowmap1");
 	int maxDepthBuffers = 0;
 	if (shadowMap) {
@@ -373,8 +374,16 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			}
 
 			_depthBuffer.bindTexture(false, i);
-			drawCallsWorld += renderWorldMeshes(true, _shadowMapShader,          camera, _visibleOpaque, vertices);
-			drawCallsWorld += renderWorldMeshes(true, _shadowMapInstancedShader, camera, _visiblePlant,  vertices);
+			{
+				video::ScopedShader scoped(_shadowMapShader);
+				setUniforms(_shadowMapShader, camera);
+				drawCallsWorld += renderWorldMeshes(_shadowMapShader, _visibleOpaque, vertices);
+			}
+			{
+				video::ScopedShader scoped(_shadowMapInstancedShader);
+				setUniforms(_shadowMapInstancedShader, camera);
+				drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, _visiblePlant, vertices);
+			}
 		}
 		_depthBuffer.unbind();
 		glCullFace(GL_BACK);
@@ -392,9 +401,22 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	drawCallsWorld += renderWorldMeshes(false, _worldShader, camera, _visibleOpaque, vertices);
-	drawCallsWorld += renderWorldMeshes(false, _plantShader, camera, _visiblePlant,  vertices);
-	drawCallsWorld += renderWorldMeshes(false, _waterShader, camera, _visibleWater,  vertices);
+
+	{
+		video::ScopedShader scoped(_worldShader);
+		setUniforms(_worldShader, camera);
+		drawCallsWorld += renderWorldMeshes(_worldShader, _visibleOpaque, vertices);
+	}
+	{
+		video::ScopedShader scoped(_plantShader);
+		setUniforms(_plantShader, camera);
+		drawCallsWorld += renderWorldMeshes(_plantShader, _visiblePlant, vertices);
+	}
+	{
+		video::ScopedShader scoped(_waterShader);
+		setUniforms(_waterShader, camera);
+		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
+	}
 
 	_colorTexture->unbind();
 
@@ -443,10 +465,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		core_assert_always(_shadowMapDebugBuffer.bind());
 		glActiveTexture(GL_TEXTURE0);
 		_shadowMapDebugShader.setShadowmap(0);
-		shaderSetUniformIf(_shadowMapDebugShader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
-		shaderSetUniformIf(_shadowMapDebugShader, setUniformVec3, "u_lightdir", _sunLight.direction());
-		shaderSetUniformIf(_shadowMapDebugShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
-		shaderSetUniformIf(_shadowMapDebugShader, setUniformVec3, "u_campos", camera.position());
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			const GLsizei halfWidth = (GLsizei) (width / 4.0f);
 			const GLsizei halfHeight = (GLsizei) (height / 4.0f);
@@ -470,32 +488,12 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 
 	int drawCallsEntities = 0;
 
-	const video::Camera* actualCamera = &camera;
-	float viewDistance = _viewDistance;
-	if (_cameraSun->boolVal()) {
-		actualCamera = &_sunLight.camera();
-		viewDistance = actualCamera->farPlane();
-	}
-
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 	// TODO: deferred rendering
 	shader::MeshShader& shader = _meshShader;
 	video::ScopedShader scoped(shader);
-	shader.setUniformMatrix("u_view", actualCamera->viewMatrix());
-	shader.setUniformMatrix("u_projection", actualCamera->projectionMatrix());
-	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
-	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
-	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", viewDistance);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunLight.direction());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
-	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
-	shaderSetUniformIf(shader, setUniformVec3, "u_ambient_color", _ambientColor);
-	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(actualCamera->dimension()));
-	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
-	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
-	shaderSetUniformIf(shader, setUniformVec3, "u_campos", camera.position());
+	setUniforms(shader, camera);
 	const bool shadowMap = shader.hasUniform("u_shadowmap1");
 	int maxDepthBuffers = 0;
 	if (shadowMap) {
