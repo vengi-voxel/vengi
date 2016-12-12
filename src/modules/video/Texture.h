@@ -14,7 +14,7 @@ namespace video {
 
 enum class TextureType {
 	Texture2D = GL_TEXTURE_2D,
-	TextureArray2D = GL_TEXTURE_2D_ARRAY
+	Texture2DArray = GL_TEXTURE_2D_ARRAY
 };
 
 enum class TextureFormat {

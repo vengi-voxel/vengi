@@ -35,13 +35,12 @@ public:
 		return _dimension;
 	}
 
-	inline GLuint texture(int index = 0) const {
-		core_assert(index >= 0 && index < (int)SDL_arraysize(_depthTexture));
-		return _depthTexture[index];
+	inline GLuint texture() const {
+		return _depthTexture;
 	}
 
 	TextureType textureType() const {
-		return TextureType::Texture2D;
+		return TextureType::Texture2DArray;
 	}
 
 	inline bool depthAttachment() const {
@@ -53,7 +52,7 @@ private:
 	GLint _oldFramebuffer = -1;
 	GLuint _fbo = 0u;
 	GLuint _rbo = 0u;
-	GLuint _depthTexture[4] = {0u, 0u, 0u, 0u};
+	GLuint _depthTexture = 0u;
 	glm::ivec2 _dimension;
 	DepthBufferMode _mode = DepthBufferMode::RGBA;
 };

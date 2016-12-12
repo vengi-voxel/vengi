@@ -26,11 +26,8 @@ void DepthBuffer::shutdown() {
 		_fbo = 0;
 	}
 
-	for (int i = 0; i < (int)SDL_arraysize(_depthTexture); ++i) {
-		if (_depthTexture[i] != 0) {
-			glDeleteTextures(1, &_depthTexture[i]);
-			_depthTexture[i] = 0;
-		}
+	if (_depthTexture != 0) {
+		glDeleteTextures(1, &_depthTexture);
 	}
 
 	if (_rbo != 0) {
@@ -55,34 +52,39 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 
 	const TextureType type = textureType();
 	const GLenum glType = std::enum_value(type);
-	glGenTextures(textureCount, _depthTexture);
-	for (int i = 0; i < textureCount; ++i) {
-		GL_setName(GL_TEXTURE, _depthTexture, "depthtexture");
-		glBindTexture(glType, _depthTexture[i]);
-		glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(glType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(glType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
-		if (depthAttachment()) {
-			if (_mode == DepthBufferMode::DEPTH_CMP) {
-				glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-				glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-			}
-			glTexImage2D(glType, 0, GL_DEPTH_COMPONENT, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-		} else {
-			glTexImage2D(glType, 0, GL_RGBA8, dimension.x, dimension.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-		}
-	}
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glGenTextures(1, &_depthTexture);
+	glBindTexture(glType, _depthTexture);
+	glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(glType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(glType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
+	GLenum gltexformat;
+	GLenum gltextype;
+
 	if (depthAttachment()) {
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture[0], 0);
+		if (_mode == DepthBufferMode::DEPTH_CMP) {
+			glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+			glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		}
+		gltexformat = GL_DEPTH_COMPONENT;
+		gltextype = GL_FLOAT;
+	} else {
+		gltexformat = GL_RGBA;
+		gltextype = GL_UNSIGNED_BYTE;
+	}
+	glTexImage3D(glType, 0, gltexformat, dimension.x, dimension.y, textureCount, 0, gltexformat, gltextype, nullptr);
+	glBindTexture(glType, 0);
+	GLenum attachment;
+	if (depthAttachment()) {
+		attachment = GL_DEPTH_ATTACHMENT;
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
 	} else {
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _depthTexture[0], 0);
+		attachment = GL_COLOR_ATTACHMENT0;
 	}
+	//glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, _depthTexture, 0, 0);
 	GL_checkError();
 
 	if (!depthAttachment()) {
@@ -98,6 +100,7 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 		glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
 	}
 
+#if 0
 	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		switch (status) {
@@ -122,7 +125,7 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 		}
 		return false;
 	}
-
+#endif
 	return true;
 }
 
@@ -138,19 +141,18 @@ bool DepthBuffer::bind() {
 }
 
 bool DepthBuffer::bindTexture(bool read, int textureIndex) {
-	core_assert(textureIndex >= 0);
-	core_assert(textureIndex < (int)SDL_arraysize(_depthTexture));
-	if (textureIndex < 0 || textureIndex >= (int)SDL_arraysize(_depthTexture)) {
+	core_assert(textureIndex >= 0 && textureIndex < 4);
+	if (textureIndex < 0 || textureIndex >= 4) {
 		return false;
 	}
 	if (depthAttachment()) {
 		if (!read) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture[textureIndex], 0);
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexture, 0, textureIndex);
 		}
 		glClear(GL_DEPTH_BUFFER_BIT);
 	} else {
 		if (!read) {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _depthTexture[textureIndex], 0);
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _depthTexture, 0, textureIndex);
 		}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}

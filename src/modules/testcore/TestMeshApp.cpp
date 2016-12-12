@@ -102,17 +102,12 @@ void TestMeshApp::doRender() {
 		_meshShader.setAmbientColor(_ambientColor);
 		_meshShader.setDepthsize(glm::vec2(_sunLight.dimension()));
 		_meshShader.setLight(_sunLight.viewProjectionMatrix(_camera));
-		_meshShader.setShadowmap1(1);
-		_meshShader.setShadowmap2(2);
+		_meshShader.setShadowmap(1);
 
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
-			const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
-			for (int i = 0; i < maxDepthBuffers; ++i) {
-				glActiveTexture(GL_TEXTURE1 + i);
-				glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture(i));
-			}
-
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
 			core_assert_always(_mesh->render() > 0);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, 0);

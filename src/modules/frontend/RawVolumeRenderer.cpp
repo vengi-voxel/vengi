@@ -228,15 +228,13 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	shaderSetUniformIf(_worldShader, setUniformf, "u_nearplane", camera.nearPlane());
 	shaderSetUniformIf(_worldShader, setUniformf, "u_farplane", camera.farPlane());
 	shaderSetUniformIf(_worldShader, setUniformVec3, "u_campos", camera.position());
-	const bool shadowMap = _worldShader.hasUniform("u_shadowmap1");
+	const bool shadowMap = _worldShader.hasUniform("u_shadowmap");
 	int maxDepthBuffers = 0;
 	if (shadowMap) {
 		maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-		for (int i = 0; i < maxDepthBuffers; ++i) {
-			glActiveTexture(GL_TEXTURE1 + i);
-			glBindTexture(GL_TEXTURE_2D, _depthBuffer.texture(i));
-			shaderSetUniformIf(_worldShader, setUniformi, core::string::format("u_shadowmap%i", 1 + i), 1 + i);
-		}
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
+		shaderSetUniformIf(_worldShader, setUniformi, "u_shadowmap", 1);
 	}
 	core_assert_always(_vertexBuffer.bind());
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");

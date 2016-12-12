@@ -2,8 +2,7 @@
 
 #if cl_shadowmap == 1
 
-uniform sampler2D u_shadowmap1;
-uniform sampler2D u_shadowmap2;
+uniform sampler2DArray u_shadowmap;
 $in vec4 v_lightspacepos;
 $in vec4 v_texcoord1;
 $in vec4 v_texcoord2;
@@ -13,8 +12,8 @@ uniform vec2 u_depthsize;
  * perform simple shadow map lookup returns 0.0 (unlit) or 1.0 (lit)
  * http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping
  */
-float sampleShadow(sampler2D shadowMap, vec2 uv, float compare, float ndotl) {
-	float depth = RGBAToFloat($texture2D(shadowMap, uv));
+float sampleShadow(int cascade, vec2 uv, float compare, float ndotl) {
+	float depth = RGBAToFloat($texture2D(u_shadowmap, vec3(uv, cascade)));
 	// shadow acne bias
 	float bias = clamp(0.001 * tan(acos(ndotl)), 0, 0.01);
 	depth += bias;
@@ -25,12 +24,12 @@ float sampleShadow(sampler2D shadowMap, vec2 uv, float compare, float ndotl) {
  * perform percentage-closer shadow map lookup
  * http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping
  */
-float sampleShadowPCF(sampler2D shadowMap, vec2 uv, vec2 smSize, float compare, float ndotl) {
+float sampleShadowPCF(int cascade, vec2 uv, vec2 smSize, float compare, float ndotl) {
 	float result = 0.0;
 	for (int x = -2; x <= 2; x++) {
 		for (int y = -2; y <= 2; y++) {
 			vec2 off = vec2(x, y) / smSize;
-			result += sampleShadow(shadowMap, uv + off, compare, ndotl);
+			result += sampleShadow(cascade, uv + off, compare, ndotl);
 		}
 	}
 	return result / 25.0;
@@ -50,9 +49,9 @@ float calculateShadow(float ndotl) {
 	vec2 smUV = calculateShadowUV();
 	float depth = v_lightspacepos.z;
 	if (selection1) {
-		return sampleShadowPCF(u_shadowmap2, smUV, u_depthsize, depth, ndotl);
+		return sampleShadowPCF(1, smUV, u_depthsize, depth, ndotl);
 	}
-	return sampleShadowPCF(u_shadowmap1, smUV, u_depthsize, depth, ndotl);
+	return sampleShadowPCF(0, smUV, u_depthsize, depth, ndotl);
 }
 
 #else // cl_shadowmap == 1
