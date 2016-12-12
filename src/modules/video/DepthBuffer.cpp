@@ -42,7 +42,8 @@ void DepthBuffer::shutdown() {
 }
 
 bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int textureCount) {
-	if (textureCount > 4) {
+	if (textureCount > 4 || textureCount < 1) {
+		Log::error("Invalid texture count for depthbuffer: %i", textureCount);
 		return false;
 	}
 	_dimension = dimension;
