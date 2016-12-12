@@ -1,4 +1,4 @@
-$in vec3 v_pos;
+$in vec4 v_pos;
 $in vec4 v_color;
 $in float v_ambientocclusion;
 uniform float u_debug_color;
@@ -21,8 +21,8 @@ $out vec3 o_norm;
 #endif
 
 void main(void) {
-	vec3 fdx = dFdx(v_pos);
-	vec3 fdy = dFdy(v_pos);
+	vec3 fdx = dFdx(v_pos.xyz);
+	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
 
 #if cl_deferred == 0
@@ -40,7 +40,7 @@ void main(void) {
 	o_color = vec4(mix(linearColor, v_fogcolor, fogval), v_color.a);
 #else
 	o_color = v_color.xyz * v_ambientocclusion * u_debug_color;
-	o_pos = v_pos;
+	o_pos = v_pos.xyz;
 	o_norm = normal;
 #endif
 }

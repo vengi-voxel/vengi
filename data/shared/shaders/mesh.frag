@@ -1,4 +1,4 @@
-$in vec3 v_pos;
+$in vec4 v_pos;
 $in vec3 v_norm;
 $in vec2 v_texcoords;
 $in vec3 v_lightpos;

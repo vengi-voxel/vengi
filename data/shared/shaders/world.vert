@@ -22,7 +22,7 @@ layout(std140) uniform u_materialblock {
 	vec4 u_materialcolor[256];
 };
 
-$out vec3 v_pos;
+$out vec4 v_pos;
 $out vec4 v_color;
 $out float v_ambientocclusion;
 $out float v_debug_color;
@@ -38,15 +38,14 @@ void main(void) {
 	uint a_colorindex = a_info[1];
 	uint a_material = a_info[2];
 #ifdef INSTANCED
-	vec4 pos4 = vec4(a_offset, 0.0) + u_model * vec4(a_pos, 1.0);
+	v_pos = vec4(a_offset, 0.0) + u_model * vec4(a_pos, 1.0);
 #else
-	vec4 pos4 = u_model * vec4(a_pos, 1.0);
+	v_pos = u_model * vec4(a_pos, 1.0);
 #endif
-	v_pos = pos4.xyz;
 
 	int materialColorIndex = int(a_colorindex) + materialoffset;
 	vec3 materialColor = u_materialcolor[materialColorIndex % MATERIALCOLORS].rgb;
-	vec3 colornoise = texture(u_texture, abs(pos4.xz) / 256.0 / 10.0).rgb;
+	vec3 colornoise = texture(u_texture, abs(v_pos.xz) / 256.0 / 10.0).rgb;
 	float alpha = u_materialcolor[a_colorindex].a;
 	if (a_material == 1u) {
 		alpha = 0.6;
@@ -58,7 +57,7 @@ void main(void) {
 	v_ambientocclusion = aovalues[a_ao];
 
 #if cl_shadowmap == 1
-	v_lightspacepos = u_light * pos4;
+	v_lightspacepos = u_light * v_pos;
 	v_texcoord1     = u_shadowmapmatrix1 * v_lightspacepos;
 	v_texcoord2     = u_shadowmapmatrix2 * v_lightspacepos;
 #endif
@@ -68,5 +67,5 @@ void main(void) {
 	v_fogcolor = u_materialcolor[0].rgb;
 #endif
 
-	gl_Position = u_viewprojection * pos4;
+	gl_Position = u_viewprojection * v_pos;
 }
