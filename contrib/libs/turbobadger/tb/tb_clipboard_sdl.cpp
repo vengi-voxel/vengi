@@ -5,7 +5,7 @@
 
 #include "tb_system.h"
 
-#ifdef TB_CLIPBOARD_SDL2
+#ifdef TB_CLIPBOARD_SDL
 
 #include <SDL.h>
 
@@ -37,4 +37,4 @@ bool TBClipboard::GetText(TBStr &text)
 
 } // namespace tb
 
-#endif // TB_CLIPBOARD_SDL2
+#endif // TB_CLIPBOARD_SDL

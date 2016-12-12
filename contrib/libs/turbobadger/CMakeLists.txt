@@ -19,7 +19,7 @@ set(SRCS
 	tb/image/tb_image_widget.h
 	tb/image/tb_image_manager.h
 	tb/tb_bitmap_fragment.cpp
-	tb/tb_clipboard_sdl2.cpp
+	tb/tb_clipboard_sdl.cpp
 	tb/tb_color.cpp
 	tb/tb_core.cpp
 	tb/tb_debug.cpp
