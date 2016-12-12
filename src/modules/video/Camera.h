@@ -236,6 +236,7 @@ public:
 	bool isVisible(const glm::vec3& mins, const glm::vec3& maxs) const;
 	core::AABB<float> aabb() const;
 	glm::vec4 sphereBoundingBox() const;
+	glm::vec4 splitFrustumSphereBoundingBox(float near, float far) const;
 };
 
 inline const glm::ivec2& Camera::dimension() const {

@@ -63,6 +63,11 @@ GLM_FUNC_QUALIFIER vec3 rotate(const mat4& mat, const vec3& v) {
 	return r;
 }
 
+GLM_FUNC_QUALIFIER vec3 project(const mat4& m, const vec3& p) {
+	const vec4& r = m * vec4(p, 1);
+	return vec3(r) / r.w;
+}
+
 // TODO: will be part of glm 0.9.8
 GLM_FUNC_QUALIFIER bvec4 isnan(quat const & x) {
 	const vec4 v(x.x, x.y, x.z, x.w);
