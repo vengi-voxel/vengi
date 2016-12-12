@@ -26,8 +26,8 @@ private: // May only be used by TBScrollContainer.
 	friend class TBScrollContainer;
 	TBScrollContainerRoot() {}
 public:
-	virtual void OnPaintChildren(const PaintProps &paint_props);
-	virtual void GetChildTranslation(int &x, int &y) const;
+	virtual void OnPaintChildren(const PaintProps &paint_props) override;
+	virtual void GetChildTranslation(int &x, int &y) const override;
 };
 
 /** TBScrollBarVisibility - Helper for TBScrollContainer or any other scrollable
@@ -72,21 +72,21 @@ public:
 	void SetScrollMode(SCROLL_MODE mode);
 	SCROLL_MODE GetScrollMode() { return m_mode; }
 
-	virtual void ScrollTo(int x, int y);
-	virtual TBWidget::ScrollInfo GetScrollInfo();
-	virtual TBWidget *GetScrollRoot() { return &m_root; }
+	virtual void ScrollTo(int x, int y) override;
+	virtual TBWidget::ScrollInfo GetScrollInfo() override;
+	virtual TBWidget *GetScrollRoot() override { return &m_root; }
 
-	virtual void InvalidateLayout(INVALIDATE_LAYOUT il);
+	virtual void InvalidateLayout(INVALIDATE_LAYOUT il) override;
 
-	virtual TBRect GetPaddingRect();
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints);
+	virtual TBRect GetPaddingRect() override;
+	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override;
 
-	virtual void OnInflate(const INFLATE_INFO &info);
-	virtual bool OnEvent(const TBWidgetEvent &ev);
-	virtual void OnProcess();
-	virtual void OnResized(int old_w, int old_h);
+	virtual void OnInflate(const INFLATE_INFO &info) override;
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
+	virtual void OnProcess() override;
+	virtual void OnResized(int old_w, int old_h) override;
 
-	virtual TBWidget *GetContentRoot() { return &m_root; }
+	virtual TBWidget *GetContentRoot() override { return &m_root; }
 protected:
 	TBScrollBar m_scrollbar_x;
 	TBScrollBar m_scrollbar_y;

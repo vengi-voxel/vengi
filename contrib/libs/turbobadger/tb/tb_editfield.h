@@ -129,7 +129,7 @@ public:
 		"edit-type", matching those of EDIT_TYPE.
 		"multiline", matching 1 if multiline mode is enabled.
 		"readonly", matching 1 if readonly mode is enabled. */
-	virtual bool GetCustomSkinCondition(const TBSkinCondition::CONDITION_INFO &info);
+	virtual bool GetCustomSkinCondition(const TBSkinCondition::CONDITION_INFO &info) override;
 
 	/** Set which alignment the text should have if the space
 		given when painting is larger than the text.
@@ -138,8 +138,8 @@ public:
 	void SetTextAlign(TB_TEXT_ALIGN align) { m_style_edit.SetAlign(align); }
 	TB_TEXT_ALIGN GetTextAlign() { return m_style_edit.align; }
 
-	virtual bool SetText(const char *text) { return m_style_edit.SetText(text, TB_CARET_POS_BEGINNING); }
-	virtual bool GetText(TBStr &text) { return m_style_edit.GetText(text); }
+	virtual bool SetText(const char *text) override { return m_style_edit.SetText(text, TB_CARET_POS_BEGINNING); }
+	virtual bool GetText(TBStr &text) override { return m_style_edit.GetText(text); }
 	using TBWidget::GetText; ///< Make all versions in base class available.
 
 	using TBWidget::Invalidate; ///< Make Invalidate in base class available.
@@ -157,23 +157,23 @@ public:
 	virtual bool SetPlaceholderText(const char *text) { return m_placeholder.SetText(text); }
 	virtual bool GetPlaceholderText(TBStr &text) { return m_placeholder.GetText(text); }
 
-	virtual void ScrollTo(int x, int y);
-	virtual TBWidget::ScrollInfo GetScrollInfo();
-	virtual TBWidget *GetScrollRoot() { return &m_root; }
+	virtual void ScrollTo(int x, int y) override;
+	virtual TBWidget::ScrollInfo GetScrollInfo() override;
+	virtual TBWidget *GetScrollRoot() override { return &m_root; }
 
-	virtual bool OnEvent(const TBWidgetEvent &ev);
-	virtual void OnPaint(const PaintProps &paint_props);
-	virtual void OnPaintChildren(const PaintProps &paint_props);
-	virtual void OnInflate(const INFLATE_INFO &info);
-	virtual void OnAdded();
-	virtual void OnFontChanged();
-	virtual void OnFocusChanged(bool focused);
-	virtual void OnResized(int old_w, int old_h);
-	virtual TBWidget *GetContentRoot() { return &m_root; }
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
+	virtual void OnPaint(const PaintProps &paint_props) override;
+	virtual void OnPaintChildren(const PaintProps &paint_props) override;
+	virtual void OnInflate(const INFLATE_INFO &info) override;
+	virtual void OnAdded() override;
+	virtual void OnFontChanged() override;
+	virtual void OnFocusChanged(bool focused) override;
+	virtual void OnResized(int old_w, int old_h) override;
+	virtual TBWidget *GetContentRoot() override { return &m_root; }
 
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints);
+	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override;
 
-	virtual void OnMessageReceived(TBMessage *msg);
+	virtual void OnMessageReceived(TBMessage *msg) override;
 private:
 	TBScrollBar m_scrollbar_x;
 	TBScrollBar m_scrollbar_y;
@@ -187,19 +187,19 @@ private:
 	void UpdateScrollbarVisibility(bool multiline);
 
 	// == TBStyleEditListener =======================
-	virtual void OnChange();
-	virtual bool OnEnter();
-	virtual void Invalidate(const TBRect &rect);
-	virtual void DrawString(int32 x, int32 y, TBFontFace *font, const TBColor &color, const char *str, int32 len);
-	virtual void DrawRect(const TBRect &rect, const TBColor &color);
-	virtual void DrawRectFill(const TBRect &rect, const TBColor &color);
-	virtual void DrawTextSelectionBg(const TBRect &rect);
-	virtual void DrawContentSelectionFg(const TBRect &rect);
-	virtual void DrawCaret(const TBRect &rect);
-	virtual void Scroll(int32 dx, int32 dy);
-	virtual void UpdateScrollbars();
-	virtual void CaretBlinkStart();
-	virtual void CaretBlinkStop();
+	virtual void OnChange() override;
+	virtual bool OnEnter() override;
+	virtual void Invalidate(const TBRect &rect) override;
+	virtual void DrawString(int32 x, int32 y, TBFontFace *font, const TBColor &color, const char *str, int32 len) override;
+	virtual void DrawRect(const TBRect &rect, const TBColor &color) override;
+	virtual void DrawRectFill(const TBRect &rect, const TBColor &color) override;
+	virtual void DrawTextSelectionBg(const TBRect &rect) override;
+	virtual void DrawContentSelectionFg(const TBRect &rect) override;
+	virtual void DrawCaret(const TBRect &rect) override;
+	virtual void Scroll(int32 dx, int32 dy) override;
+	virtual void UpdateScrollbars() override;
+	virtual void CaretBlinkStart() override;
+	virtual void CaretBlinkStop() override;
 };
 
 } // namespace tb

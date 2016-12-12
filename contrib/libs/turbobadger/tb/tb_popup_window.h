@@ -69,16 +69,16 @@ public:
 
 	bool Show(const TBPopupAlignment &alignment);
 
-	virtual TBWidget *GetEventDestination() { return m_target.Get(); }
+	virtual TBWidget *GetEventDestination() override { return m_target.Get(); }
 
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
 private:
 	TBWidgetSafePointer m_target;
 	// TBWidgetListener
-	virtual void OnWidgetFocusChanged(TBWidget *widget, bool focused);
-	virtual bool OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev);
-	virtual void OnWidgetDelete(TBWidget *widget);
-	virtual bool OnWidgetDying(TBWidget *widget);
+	virtual void OnWidgetFocusChanged(TBWidget *widget, bool focused) override;
+	virtual bool OnWidgetInvokeEvent(TBWidget *widget, const TBWidgetEvent &ev) override;
+	virtual void OnWidgetDelete(TBWidget *widget) override;
+	virtual bool OnWidgetDying(TBWidget *widget) override;
 };
 
 } // namespace tb

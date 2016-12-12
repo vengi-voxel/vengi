@@ -55,8 +55,8 @@ public:
 	TBTextField();
 
 	/** Set the text of the text field. */
-	virtual bool SetText(const char *text);
-	virtual bool GetText(TBStr &text) { return m_text.GetText(text); }
+	virtual bool SetText(const char *text) override;
+	virtual bool GetText(TBStr &text) override { return m_text.GetText(text); }
 	using TBWidget::GetText; ///< Make all versions in base class available.
 
 	bool IsEmpty() const { return m_text.IsEmpty(); }
@@ -71,10 +71,10 @@ public:
 	void SetSqueezable(bool squeezable);
 	bool GetSqueezable() { return m_squeezable; }
 
-	virtual void OnInflate(const INFLATE_INFO &info);
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints);
-	virtual void OnFontChanged();
-	virtual void OnPaint(const PaintProps &paint_props);
+	virtual void OnInflate(const INFLATE_INFO &info) override;
+	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override;
+	virtual void OnFontChanged() override;
+	virtual void OnPaint(const PaintProps &paint_props) override;
 protected:
 	TBWidgetString m_text;
 	int m_cached_text_width; ///< Cached width of m_text
@@ -95,8 +95,8 @@ public:
 	~TBButton();
 
 	/** Set along which axis the content should layouted (If the button has more content than the text) */
-	virtual void SetAxis(AXIS axis) { m_layout.SetAxis(axis); }
-	virtual AXIS GetAxis() const { return m_layout.GetAxis(); }
+	virtual void SetAxis(AXIS axis) override { m_layout.SetAxis(axis); }
+	virtual AXIS GetAxis() const override { return m_layout.GetAxis(); }
 
 	/** Set if the text field should be allowed to squeeze below its
 		preferred size. If squeezable it may shrink to width 0. */
@@ -113,31 +113,31 @@ public:
 	bool GetToggleMode() const { return m_toggle_mode; }
 
 	/** Set the text of the button. */
-	virtual bool SetText(const char *text);
-	virtual bool GetText(TBStr &text) { return m_textfield.GetText(text); }
+	virtual bool SetText(const char *text) override;
+	virtual bool GetText(TBStr &text) override { return m_textfield.GetText(text); }
 	using TBWidget::GetText; ///< Make all versions in base class available.
 
-	virtual void SetValue(int value);
-	virtual int GetValue();
+	virtual void SetValue(int value) override;
+	virtual int GetValue() override;
 
-	virtual void OnInflate(const INFLATE_INFO &info);
-	virtual void OnCaptureChanged(bool captured);
-	virtual void OnSkinChanged();
-	virtual bool OnEvent(const TBWidgetEvent &ev);
-	virtual WIDGET_HIT_STATUS GetHitStatus(int x, int y);
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) { return m_layout.GetPreferredSize(); }
+	virtual void OnInflate(const INFLATE_INFO &info) override;
+	virtual void OnCaptureChanged(bool captured) override;
+	virtual void OnSkinChanged() override;
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
+	virtual WIDGET_HIT_STATUS GetHitStatus(int x, int y) override;
+	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override { return m_layout.GetPreferredSize(); }
 
-	virtual TBWidget *GetContentRoot() { return &m_layout; }
+	virtual TBWidget *GetContentRoot() override { return &m_layout; }
 
 	// == TBMessageHandler ==============================================================
-	virtual void OnMessageReceived(TBMessage *msg);
+	virtual void OnMessageReceived(TBMessage *msg) override;
 protected:
 	void UpdateTextFieldVisibility();
 	bool CanToggle() { return m_toggle_mode || GetGroupID(); }
 	class ButtonLayout : public TBLayout
 	{
-		virtual void OnChildAdded(TBWidget *child);
-		virtual void OnChildRemove(TBWidget *child);
+		virtual void OnChildAdded(TBWidget *child) override;
+		virtual void OnChildRemove(TBWidget *child) override;
 	};
 	ButtonLayout m_layout;
 	TBTextField m_textfield;
@@ -159,19 +159,19 @@ public:
 	~TBClickLabel();
 
 	/** Set along which axis the content should layouted (If the label has more content than the text) */
-	virtual void SetAxis(AXIS axis) { m_layout.SetAxis(axis); }
-	virtual AXIS GetAxis() const { return m_layout.GetAxis(); }
+	virtual void SetAxis(AXIS axis) override { m_layout.SetAxis(axis); }
+	virtual AXIS GetAxis() const override { return m_layout.GetAxis(); }
 
 	/** Set the text of the label. */
-	virtual bool SetText(const char *text) { return m_textfield.SetText(text); }
-	virtual bool GetText(TBStr &text) { return m_textfield.GetText(text); }
+	virtual bool SetText(const char *text) override { return m_textfield.SetText(text); }
+	virtual bool GetText(TBStr &text) override { return m_textfield.GetText(text); }
 	using TBWidget::GetText; ///< Make all versions in base class available.
 
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) { return m_layout.GetPreferredSize(); }
+	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override { return m_layout.GetPreferredSize(); }
 
-	virtual TBWidget *GetContentRoot() { return &m_layout; }
+	virtual TBWidget *GetContentRoot() override { return &m_layout; }
 
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
 protected:
 	TBLayout m_layout;
 	TBTextField m_textfield;
@@ -190,7 +190,7 @@ public:
 	TBSkinImage() {}
 	TBSkinImage(const TBID &skin_bg) { SetSkinBg(skin_bg); }
 
-	virtual PreferredSize OnCalculatePreferredSize(const SizeConstraints &constraints);
+	virtual PreferredSize OnCalculatePreferredSize(const SizeConstraints &constraints) override;
 };
 
 /** TBSeparator is a widget only showing a skin.
@@ -225,13 +225,13 @@ public:
 
 	/** Setting the value to 1 will start the spinner.
 		Setting it to 0 will stop it. */
-	virtual void SetValue(int value);
-	virtual int GetValue() { return m_value; }
+	virtual void SetValue(int value) override;
+	virtual int GetValue() override { return m_value; }
 
-	virtual void OnPaint(const PaintProps &paint_props);
+	virtual void OnPaint(const PaintProps &paint_props) override;
 
 	// == TBMessageHandler ==============================================================
-	virtual void OnMessageReceived(TBMessage *msg);
+	virtual void OnMessageReceived(TBMessage *msg) override;
 protected:
 	int m_value;
 	int m_frame;
@@ -247,11 +247,11 @@ public:
 
 	TBRadioCheckBox();
 
-	virtual void SetValue(int value);
-	virtual int GetValue() { return m_value; }
+	virtual void SetValue(int value) override;
+	virtual int GetValue() override { return m_value; }
 
-	virtual PreferredSize OnCalculatePreferredSize(const SizeConstraints &constraints);
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual PreferredSize OnCalculatePreferredSize(const SizeConstraints &constraints) override;
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
 
 	/** Make sure all widgets sharing the same group as new_leader are set to value 0. */
 	static void UpdateGroupWidgets(TBWidget *new_leader);
@@ -294,8 +294,8 @@ public:
 	~TBScrollBar();
 
 	/** Set along which axis the scrollbar should scroll */
-	virtual void SetAxis(AXIS axis);
-	virtual AXIS GetAxis() const { return m_axis; }
+	virtual void SetAxis(AXIS axis) override;
+	virtual AXIS GetAxis() const override { return m_axis; }
 
 	/** Set the min, max limits for the scrollbar.
 		The visible parameter is how much of the range that is visible.
@@ -317,15 +317,15 @@ public:
 	double GetVisible() const { return m_visible; }
 
 	/** Same as SetValue, but with double precision. */
-	virtual void SetValueDouble(double value);
-	virtual double GetValueDouble() { return m_value; }
+	virtual void SetValueDouble(double value) override;
+	virtual double GetValueDouble() override { return m_value; }
 
-	virtual void SetValue(int value) { SetValueDouble(value); }
-	virtual int GetValue() { return (int) GetValueDouble(); }
+	virtual void SetValue(int value) override { SetValueDouble(value); }
+	virtual int GetValue() override { return (int) GetValueDouble(); }
 
-	virtual void OnInflate(const INFLATE_INFO &info);
-	virtual bool OnEvent(const TBWidgetEvent &ev);
-	virtual void OnResized(int old_w, int old_h);
+	virtual void OnInflate(const INFLATE_INFO &info) override;
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
+	virtual void OnResized(int old_w, int old_h) override;
 protected:
 	TBWidget m_handle;
 	AXIS m_axis;
@@ -349,8 +349,8 @@ public:
 	~TBSlider();
 
 	/** Set along which axis the scrollbar should scroll */
-	virtual void SetAxis(AXIS axis);
-	virtual AXIS GetAxis() const { return m_axis; }
+	virtual void SetAxis(AXIS axis) override;
+	virtual AXIS GetAxis() const override { return m_axis; }
 
 	/** Set the min, max limits for the slider. */
 	void SetLimits(double min, double max);
@@ -362,15 +362,15 @@ public:
 	double GetSmallStep() const { return (m_max - m_min) / 100.0; }
 
 	/** Same as SetValue, but with double precision. */
-	virtual void SetValueDouble(double value);
-	virtual double GetValueDouble() { return m_value; }
+	virtual void SetValueDouble(double value) override;
+	virtual double GetValueDouble() override { return m_value; }
 
-	virtual void SetValue(int value) { SetValueDouble(value); }
-	virtual int GetValue() { return (int) GetValueDouble(); }
+	virtual void SetValue(int value) override { SetValueDouble(value); }
+	virtual int GetValue() override { return (int) GetValueDouble(); }
 
-	virtual void OnInflate(const INFLATE_INFO &info);
-	virtual bool OnEvent(const TBWidgetEvent &ev);
-	virtual void OnResized(int old_w, int old_h);
+	virtual void OnInflate(const INFLATE_INFO &info) override;
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
+	virtual void OnResized(int old_w, int old_h) override;
 protected:
 	TBWidget m_handle;
 	AXIS m_axis;
@@ -399,7 +399,7 @@ public:
 
 	TBMover();
 
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
 };
 
 /** TBResizer is a lower right corner resize grip. It will resize its parent widget. */
@@ -410,8 +410,8 @@ public:
 	TBOBJECT_SUBCLASS(TBResizer, TBWidget);
 
 	TBResizer();
-	virtual WIDGET_HIT_STATUS GetHitStatus(int x, int y);
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual WIDGET_HIT_STATUS GetHitStatus(int x, int y) override;
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
 };
 
 /** TBDimmer dim widgets in the background and block input. */
@@ -423,7 +423,7 @@ public:
 
 	TBDimmer();
 
-	virtual void OnAdded();
+	virtual void OnAdded() override;
 };
 
 } // namespace tb

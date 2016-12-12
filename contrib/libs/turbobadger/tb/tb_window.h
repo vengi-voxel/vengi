@@ -83,22 +83,22 @@ public:
 	void ResizeToFitContent(RESIZE_FIT fit = RESIZE_FIT_PREFERRED);
 
 	/** Set the window title. */
-	virtual bool SetText(const char *text) { return m_textfield.SetText(text); }
-	virtual bool GetText(TBStr &text) { return m_textfield.GetText(text); }
+	virtual bool SetText(const char *text) override { return m_textfield.SetText(text); }
+	virtual bool GetText(TBStr &text) override { return m_textfield.GetText(text); }
 	using TBWidget::GetText; ///< Make all versions in base class available.
 
 	/** Get the height of the title bar (or 0 if the WINDOW_SETTINGS say this window
 		shouldn't have any title bar) */
 	int GetTitleHeight();
 
-	virtual TBRect GetPaddingRect();
-	virtual PreferredSize OnCalculatePreferredSize(const SizeConstraints &constraints);
+	virtual TBRect GetPaddingRect() override;
+	virtual PreferredSize OnCalculatePreferredSize(const SizeConstraints &constraints) override;
 
-	virtual bool OnEvent(const TBWidgetEvent &ev);
-	virtual void OnAdded();
-	virtual void OnRemove();
-	virtual void OnChildAdded(TBWidget *child);
-	virtual void OnResized(int old_w, int old_h);
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
+	virtual void OnAdded() override;
+	virtual void OnRemove() override;
+	virtual void OnChildAdded(TBWidget *child) override;
+	virtual void OnResized(int old_w, int old_h) override;
 protected:
 	TBMover m_mover;
 	TBResizer m_resizer;

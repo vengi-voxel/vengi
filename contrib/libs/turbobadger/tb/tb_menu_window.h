@@ -31,7 +31,7 @@ public:
 
 	TBSelectList *GetList() { return &m_select_list; }
 
-	virtual bool OnEvent(const TBWidgetEvent &ev);
+	virtual bool OnEvent(const TBWidgetEvent &ev) override;
 private:
 	TBSelectList m_select_list;
 };

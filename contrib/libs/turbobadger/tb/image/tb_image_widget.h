@@ -29,10 +29,10 @@ public:
 	void SetImage(const TBImage &image) { m_image = image; }
 	void SetImage(const char *filename) { m_image = g_image_manager->GetImage(filename); }
 
-	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints);
+	virtual PreferredSize OnCalculatePreferredContentSize(const SizeConstraints &constraints) override;
 
-	virtual void OnInflate(const INFLATE_INFO &info);
-	virtual void OnPaint(const PaintProps &paint_props);
+	virtual void OnInflate(const INFLATE_INFO &info) override;
+	virtual void OnPaint(const PaintProps &paint_props) override;
 private:
 	TBImage m_image;
 };
