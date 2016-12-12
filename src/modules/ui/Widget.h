@@ -27,22 +27,4 @@ public:
 }
 
 #define UI_WIDGET_FACTORY(classname, sync_type, add_child_z) \
-namespace tb { \
-	class classname##WidgetFactory : public TBWidgetFactory { \
-	public: \
-		classname##WidgetFactory() \
-			: TBWidgetFactory(#classname, sync_type) { Register(); } \
-		virtual ~classname##WidgetFactory() {} \
-		virtual TBWidget *Create(INFLATE_INFO *info) { \
-			classname *widget = new classname(); \
-			if (widget) { \
-				widget->GetContentRoot()->SetZInflate(add_child_z); \
-				ReadCustomProps(widget, info); \
-			} \
-			return widget; \
-		} \
-		void ReadCustomProps(classname *widget, INFLATE_INFO *info); \
-	}; \
-	static classname##WidgetFactory classname##_wf; \
-	void classname##WidgetFactory::ReadCustomProps(classname *widget, INFLATE_INFO *info) {} \
-}
+	TB_WIDGET_FACTORY(classname, sync_type, add_child_z) {}

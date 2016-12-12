@@ -84,4 +84,4 @@ void PaletteWidget::OnInflate(const tb::INFLATE_INFO &info) {
 	Super::OnInflate(info);
 }
 
-UI_WIDGET_FACTORY(PaletteWidget, TBValue::TYPE_INT, WIDGET_Z_TOP)
+UI_WIDGET_FACTORY(PaletteWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)
