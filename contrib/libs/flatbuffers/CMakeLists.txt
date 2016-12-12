@@ -16,6 +16,8 @@ endif()
 set(COMPILER_SRCS
 	compiler/src/compiler/cpp_generator.cc
 	compiler/src/compiler/cpp_generator.h
+	compiler/src/compiler/go_generator.cc
+	compiler/src/compiler/go_generator.h
 	compiler/flatc.cpp
 	compiler/idl_gen_cpp.cpp
 	compiler/idl_gen_fbs.cpp
