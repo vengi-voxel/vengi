@@ -216,7 +216,7 @@ void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const vi
 	Log::trace("%i meshes left after culling, %i meshes overall", visibleCount, meshesCount);
 }
 
-int WorldRenderer::renderWorldMeshes(bool shadowPass, video::Shader& shader, const video::Camera& camera, const GLMeshesVisible& meshes, int* vertices) {
+int WorldRenderer::renderWorldMeshes(bool shadowPass, video::Shader& shader, const video::Camera& camera, const GLMeshesVisible& meshes, int* vertices, const glm::mat4* projection) {
 	const bool deferred = _deferred->boolVal();
 
 	const video::Camera* actualCamera = &camera;
@@ -237,7 +237,11 @@ int WorldRenderer::renderWorldMeshes(bool shadowPass, video::Shader& shader, con
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunLight.direction());
 	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_sunLight.dimension()));
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
+	if (projection != nullptr) {
+		shaderSetUniformIf(shader, setUniformMatrix, "u_light", *projection);
+	} else {
+		shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
+	}
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformVec3, "u_ambient_color", _ambientColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
@@ -314,6 +318,120 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	_gbuffer.unbind();
 }
 
+static inline glm::vec3 spherical(float theta, float phi) {
+	return glm::vec3(glm::cos(phi) * glm::sin(theta), glm::sin(phi) * glm::sin(theta), glm::cos(theta));
+}
+
+struct CascadeConfiguration {
+	glm::mat4 cascades[4];
+	glm::vec4 distances;
+};
+
+static float getBoundingSphereRadius(const glm::vec3& center, const std::vector<glm::vec3>& points) {
+	float radius = 0;
+
+	for (glm::vec3 p : points) {
+		radius = glm::max(radius, glm::distance(center, p));
+	}
+
+	return radius;
+}
+
+static std::pair<glm::vec3, float> getBoundingSphereWithCenterOnSegment(const glm::vec3& begin,
+		const glm::vec3& end, const std::vector<glm::vec3>& points) {
+	float radiusBegin = getBoundingSphereRadius(begin, points);
+	float radiusEnd = getBoundingSphereRadius(end, points);
+
+	float rangeBegin = 0;
+	float rangeEnd = 1;
+
+	while (rangeEnd - rangeBegin > 1e-3) {
+		float rangeMiddle = (rangeBegin + rangeEnd) / 2;
+		float radiusMiddle = getBoundingSphereRadius(
+				glm::mix(begin, end, rangeMiddle), points);
+
+		if (radiusBegin < radiusEnd) {
+			radiusEnd = radiusMiddle;
+			rangeEnd = rangeMiddle;
+		} else {
+			radiusBegin = radiusMiddle;
+			rangeBegin = rangeMiddle;
+		}
+	}
+
+	return std::make_pair(glm::mix(begin, end, rangeBegin), radiusBegin);
+}
+
+static inline glm::vec3 project(const glm::mat4& m, const glm::vec3& p) {
+	const glm::vec4& r = m * glm::vec4(p, 1);
+	core_assert(r.w > 0);
+	return glm::vec3(r) / r.w;
+}
+
+static std::pair<glm::vec3, float> getViewSpaceBoundingSphere(const glm::mat4& projection,
+		float znear, float zfar) {
+	glm::mat4 inverseProjection = glm::inverse(projection);
+
+	float znearp = project(projection, glm::vec3(0, 0, -znear)).z;
+	float zfarp = project(projection, glm::vec3(0, 0, -zfar)).z;
+
+	std::vector<glm::vec3> points(8);
+
+	for (int x = 0; x < 2; ++x) {
+		for (int y = 0; y < 2; ++y) {
+			for (int z = 0; z < 2; ++z) {
+				const glm::vec3& vp = project(inverseProjection, glm::vec3(x ? 1 : -1, y ? 1 : -1, z ? zfarp : znearp));
+				points.push_back(vp);
+			}
+		}
+	}
+
+	return getBoundingSphereWithCenterOnSegment(
+			project(inverseProjection, glm::vec3(0, 0, znearp)),
+			project(inverseProjection, glm::vec3(0, 0, zfarp)), points);
+}
+
+static inline float getSplitDistance(float znear, float zfar, int split, int splitCount, float pssm) {
+	core_assert(split >= 0 && split <= splitCount);
+	const float k = float(split) / splitCount;
+	const float logd = znear * powf(zfar / znear, k);
+	const float lind = glm::mix(znear, zfar, k);
+	return glm::mix(logd, lind, pssm);
+}
+
+static CascadeConfiguration computeCascadeConfiguration(const video::Camera& camera, const glm::vec3& lightDirection, unsigned int shadowMapSize, float casterRangeZ, float pssm) {
+	const glm::vec3& lightUp = glm::abs(lightDirection.z) > 0.7f ? glm::vec3(0, 1, 0) : glm::vec3(0, 0, 1);
+	const glm::mat4& lightView = glm::lookAt(glm::vec3(), lightDirection, lightUp);
+
+	CascadeConfiguration result;
+
+	for (int i = 0; i < 2; ++i) {
+		const float splitNear = getSplitDistance(camera.nearPlane(), camera.farPlane(), i, 2, pssm);
+		const float splitFar = getSplitDistance(camera.nearPlane(), camera.farPlane(), i + 1, 2, pssm);
+		const std::pair<glm::vec3, float>& sphere = getViewSpaceBoundingSphere(camera.projectionMatrix(), splitNear, splitFar);
+		const glm::vec3 lightCenter(lightView * glm::inverse(camera.viewMatrix()) * glm::vec4(sphere.first, 1));
+		const float lightRadius = sphere.second;
+
+		// round to prevent popping
+		const float xyRound = lightRadius * 2.f / shadowMapSize;
+		const float zRound = 1.f;
+
+		const glm::vec3& lightCenterRounded = glm::round(lightCenter / glm::vec3(xyRound, xyRound, zRound)) * glm::vec3(xyRound, xyRound, zRound);
+
+		const glm::mat4& lightProjection = glm::ortho(lightCenterRounded.x - lightRadius,
+				lightCenterRounded.x + lightRadius,
+				lightCenterRounded.y - lightRadius,
+				lightCenterRounded.y + lightRadius,
+				-lightCenterRounded.z - (casterRangeZ - lightRadius),
+				-lightCenterRounded.z + lightRadius);
+
+		result.cascades[i] = lightProjection * lightView;
+		result.distances[i] = splitFar;
+	}
+
+	return result;
+}
+
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	handleMeshQueue(_worldShader);
 
@@ -361,6 +479,14 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		const float shadowRangeZ = camera.farPlane() * 3;
 		glPolygonOffset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
 		_depthBuffer.bind();
+
+		const float sunTheta = 60;
+		const float sunPhi = 200;
+		const float shadowSplit = 0.1f;
+		const glm::vec3& lightDirection = -spherical(glm::radians(sunTheta), glm::radians(sunPhi));
+
+		const CascadeConfiguration& shadowConfig = computeCascadeConfiguration(camera, lightDirection, 2048, shadowRangeZ, shadowSplit);
+
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			// TODO: finish this
 			const float near = planes[i * 2 + 0];
@@ -373,8 +499,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			}
 
 			_depthBuffer.bindTexture(false, i);
-			drawCallsWorld += renderWorldMeshes(true, _shadowMapShader,          camera, _visibleOpaque, vertices);
-			drawCallsWorld += renderWorldMeshes(true, _shadowMapInstancedShader, camera, _visiblePlant,  vertices);
+			drawCallsWorld += renderWorldMeshes(true, _shadowMapShader,          camera, _visibleOpaque, vertices, &shadowConfig.cascades[i]);
+			drawCallsWorld += renderWorldMeshes(true, _shadowMapInstancedShader, camera, _visiblePlant,  vertices, &shadowConfig.cascades[i]);
 		}
 		_depthBuffer.unbind();
 		glCullFace(GL_BACK);
@@ -777,7 +903,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	}
 
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-	if (!_depthBuffer.init(_sunLight.dimension(), video::DepthBufferMode::RGBA, maxDepthBuffers)) {
+	if (!_depthBuffer.init(glm::ivec2(2048, 2048), video::DepthBufferMode::RGBA, maxDepthBuffers)) {
 		return false;
 	}
 
