@@ -21,6 +21,15 @@ SunLight::SunLight() {
 	_sunCamera.setFarPlane(400.0f);
 }
 
+static inline glm::vec3 spherical(float theta, float phi) {
+	return glm::vec3(glm::cos(phi) * glm::sin(theta), glm::sin(phi) * glm::sin(theta), glm::cos(theta));
+}
+
+void SunLight::init(float sunTheta, float sunPhi, const glm::ivec2& position, const glm::ivec2& dimension) {
+	const glm::vec3& lightDirection = spherical(glm::radians(sunTheta), glm::radians(sunPhi));
+	init(-lightDirection, position, dimension);
+}
+
 void SunLight::init(const glm::vec3& sunDirection, const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_assert(sunDirection != glm::zero<glm::vec3>());
 	_sunCamera.init(position, dimension);
