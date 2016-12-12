@@ -18,31 +18,22 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#ifndef SDL_dataqueue_h_
+#define SDL_dataqueue_h_
 
-#ifndef SDL_BMODES_H
-#define SDL_BMODES_H
+/* this is not (currently) a public API. But maybe it should be! */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+struct SDL_DataQueue;
+typedef struct SDL_DataQueue SDL_DataQueue;
 
-#include "../SDL_sysvideo.h"
+SDL_DataQueue *SDL_NewDataQueue(const size_t packetlen, const size_t initialslack);
+void SDL_FreeDataQueue(SDL_DataQueue *queue);
+void SDL_ClearDataQueue(SDL_DataQueue *queue, const size_t slack);
+int SDL_WriteToDataQueue(SDL_DataQueue *queue, const void *data, const size_t len);
+size_t SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *buf, const size_t len);
+size_t SDL_CountDataQueue(SDL_DataQueue *queue);
 
-extern int32 BE_ColorSpaceToBitsPerPixel(uint32 colorspace);
-extern int32 BE_BPPToSDLPxFormat(int32 bpp);
-
-extern int BE_InitModes(_THIS);
-extern int BE_QuitModes(_THIS);
-extern int BE_GetDisplayBounds(_THIS, SDL_VideoDisplay *display,
-    SDL_Rect *rect);
-extern void BE_GetDisplayModes(_THIS, SDL_VideoDisplay *display);
-extern int BE_SetDisplayMode(_THIS, SDL_VideoDisplay *display,
-    SDL_DisplayMode *mode);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
+#endif /* SDL_dataqueue_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
+

@@ -252,7 +252,7 @@ struct SDL_VideoDevice
     void (*GL_GetDrawableSize) (_THIS, SDL_Window * window, int *w, int *h);
     int (*GL_SetSwapInterval) (_THIS, int interval);
     int (*GL_GetSwapInterval) (_THIS);
-    void (*GL_SwapWindow) (_THIS, SDL_Window * window);
+    int (*GL_SwapWindow) (_THIS, SDL_Window * window);
     void (*GL_DeleteContext) (_THIS, SDL_GLContext context);
 
     /* * * */
@@ -288,6 +288,7 @@ struct SDL_VideoDevice
 
     /* * * */
     /* Data common to all drivers */
+    SDL_bool is_dummy;
     SDL_bool suspend_screensaver;
     int num_displays;
     SDL_VideoDisplay *displays;
@@ -295,7 +296,7 @@ struct SDL_VideoDevice
     SDL_Window *grabbed_window;
     Uint8 window_magic;
     Uint32 next_object_id;
-    char * clipboard_text;
+    char *clipboard_text;
 
     /* * * */
     /* Data used by the GL drivers */

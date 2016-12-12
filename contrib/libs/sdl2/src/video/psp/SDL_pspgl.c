@@ -174,10 +174,13 @@ PSP_GL_GetSwapInterval(_THIS)
     return _this->gl_data->swapinterval;
 }
 
-void
+int
 PSP_GL_SwapWindow(_THIS, SDL_Window * window)
 {
-    eglSwapBuffers(_this->gl_data->display, _this->gl_data->surface);
+    if (!eglSwapBuffers(_this->gl_data->display, _this->gl_data->surface)) {
+        return SDL_SetError("!eglSwapBuffers() failed");
+    }
+    return 0;
 }
 
 void
