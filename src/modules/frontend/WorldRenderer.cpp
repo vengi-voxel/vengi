@@ -350,7 +350,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	if (shadowMap) {
 		core_assert(maxDepthBuffers * 2 <= (int)SDL_arraysize(planes));
 		const video::Camera& sunCamera = _sunLight.camera();
-		sunCamera.sliceFrustum(planes, SDL_arraysize(planes), maxDepthBuffers);
+		sunCamera.sliceFrustum(planes, SDL_arraysize(planes), maxDepthBuffers, 0.1f);
 		glDisable(GL_BLEND);
 		// put shadow acne into the dark
 		glCullFace(GL_FRONT);
