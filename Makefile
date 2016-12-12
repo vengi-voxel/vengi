@@ -183,7 +183,6 @@ define UPDATE_HG
 	fi;
 endef
 
-# TODO turbobadger (but currently we have custom patches)
 updatelibs:
 	$(call UPDATE_GIT,assimp,https://github.com/assimp/assimp.git)
 	rm -rf contrib/libs/assimp/code/* contrib/libs/assimp/include/*
@@ -210,4 +209,16 @@ updatelibs:
 	cp -r sdl2.sync/include/* contrib/libs/sdl2/include
 	mv contrib/libs/sdl2/include/SDL_config.h contrib/libs/sdl2/config/
 	rm contrib/libs/sdl2/include/SDL_config.h.in
+	$(call UPDATE_GIT,turbobadger,https://github.com/fruxo/turbobadger.git)
+	rm -rf contrib/libs/turbobadger/tb/*
+	cp -r turbobadger.sync/src/tb/* contrib/libs/turbobadger/tb
+	git checkout master contrib/libs/turbobadger/tb/tb_clipboard_sdl2.cpp
+	git checkout master contrib/libs/turbobadger/tb/tb_system_sdl.cpp
+	git checkout master contrib/libs/turbobadger/tb/tb_file_sdl.cpp
+	git checkout contrib/libs/turbobadger/tb/thirdparty/
+	rm contrib/libs/turbobadger/tb/CMakeLists.txt
+	rm -rf contrib/libs/turbobadger/tb/utf8/test\ files
+	rm -rf contrib/libs/turbobadger/tb/tests
+	git diff contrib/libs/turbobadger/ > turbobadger.sync/upstream.diff
+	git checkout contrib/libs/turbobadger/tb/tb_id.cpp
 	git add contrib/libs
