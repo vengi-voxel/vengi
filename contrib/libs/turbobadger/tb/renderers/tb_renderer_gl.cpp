@@ -31,7 +31,7 @@ static void Ortho2D(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top)
 // == Batching ====================================================================================
 
 GLuint g_current_texture = (GLuint)-1;
-TBRendererBatcher::Batch *g_current_batch = 0;
+TBRendererBatcher::Batch *g_current_batch = nullptr;
 
 void BindBitmap(TBBitmap *bitmap)
 {

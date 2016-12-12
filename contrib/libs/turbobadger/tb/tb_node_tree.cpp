@@ -329,11 +329,11 @@ bool TBNode::ReadData(const char *data, int data_len, TB_NODE_READ_FLAGS flags)
 		Clear();
 	DataParser p;
 	TBNodeTarget t(this, "{data}");
-	if (p.Read(data, data_len, &t)) {
-		TBNodeRefTree::ResolveConditions(this);
-		return true;
+	if (!p.Read(data, data_len, &t)) {
+		return false;
 	}
-	return false;
+	TBNodeRefTree::ResolveConditions(this);
+	return true;
 }
 
 void TBNode::Clear()

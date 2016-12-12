@@ -154,7 +154,6 @@ TBImage TBImageManager::GetImage(const char *name, uint32 *buffer, int width, in
 	TBImageRep *image_rep = m_image_rep_hash.Get(hash_key);
 	if (!image_rep)
 	{
-		// Load a fragment. Load a destination DPI bitmap if available.
 		TBID id(name);
 		TBBitmapFragment *fragment = m_frag_manager.CreateNewFragment(id, false, width, height, width, buffer);
 
