@@ -99,6 +99,7 @@ core::AppState ShapeTool::onInit() {
 }
 
 void ShapeTool::beforeUI() {
+	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 	_world->onFrame(_deltaFrame);
 
 	if (_resetTriggered && !_world->isReset()) {
@@ -143,6 +144,7 @@ void ShapeTool::afterRootWidget() {
 	_worldRenderer.stats(meshes, extracted, pending, active);
 	const int x = 5;
 	enqueueShowStr(x, core::Color::White, "frame avg: %f, max: %f", _frameTimer.avg(), _frameTimer.maximum());
+	enqueueShowStr(x, core::Color::White, "before ui avg: %f, max: %f", _beforeUiTimer.avg(), _beforeUiTimer.maximum());
 	enqueueShowStr(x, core::Color::White, "render avg: %f, max: %f", _worldTimer.avg(), _worldTimer.maximum());
 	enqueueShowStr(x, core::Color::White, "drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
 	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);

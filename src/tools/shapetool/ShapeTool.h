@@ -31,6 +31,7 @@ protected:
 	frontend::ClientEntityPtr _entity;
 	ProfilerGPU _worldTimer;
 	ProfilerCPU _frameTimer;
+	ProfilerCPU _beforeUiTimer;
 
 	bool _resetTriggered = false;
 	bool _lineModeRendering = false;
