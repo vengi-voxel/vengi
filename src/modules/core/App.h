@@ -29,16 +29,23 @@ class App {
 protected:
 	class ProfilerCPU {
 	private:
-		double _stamp = 0.0;
-		double _avg = 0.0;
 		double _min = 0.0;
 		double _max = 0.0;
+		double _avg = 0.0;
+		std::string _name;
+		std::vector<double> _samples;
+		const int16_t _maxSampleCount;
+		int16_t _sampleCount = 0;
+		double _stamp = 0.0;
 	public:
+		ProfilerCPU(const std::string& name, uint16_t maxSamples = 1024u);
+		const std::vector<double>& samples() const;
 		void enter();
 		void leave();
 		double minimum() const;
 		double maximum() const;
 		double avg() const;
+		const std::string& name() const;
 	};
 
 	template<class Profiler>
@@ -151,6 +158,16 @@ public:
 	}
 };
 
+inline App::ProfilerCPU::ProfilerCPU(const std::string& name, uint16_t maxSamples) :
+		_name(name), _maxSampleCount(maxSamples) {
+	core_assert(maxSamples > 0);
+	_samples.reserve(_maxSampleCount);
+}
+
+inline const std::vector<double>& App::ProfilerCPU::samples() const {
+	return _samples;
+}
+
 inline void App::ProfilerCPU::enter() {
 	_stamp = core::TimeProvider::currentNanos();
 }
@@ -160,6 +177,12 @@ inline void App::ProfilerCPU::leave() {
 	_max = std::max(_max, time);
 	_min = std::min(_min, time);
 	_avg = _avg * 0.5 + time * 0.5;
+	_samples[_sampleCount & (_maxSampleCount - 1)] = time;
+	++_sampleCount;
+}
+
+inline const std::string& App::ProfilerCPU::name() const {
+	return _name;
 }
 
 inline double App::ProfilerCPU::avg() const {

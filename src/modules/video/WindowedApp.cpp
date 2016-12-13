@@ -31,13 +31,20 @@ inline void checkError(const char *file, unsigned int line, const char *function
 #define sdlCheckError() checkError(__FILE__, __LINE__, __PRETTY_FUNCTION__)
 }
 
-WindowedApp::ProfilerGPU::ProfilerGPU() {
+WindowedApp::ProfilerGPU::ProfilerGPU(const std::string& name, uint16_t maxSamples) :
+		_name(name), _maxSampleCount(maxSamples) {
+	core_assert(maxSamples > 0);
+	_samples.reserve(_maxSampleCount);
 }
 
 WindowedApp::ProfilerGPU::~ProfilerGPU() {
 	if (_id != 0u) {
 		glDeleteQueries(1, &_id);
 	}
+}
+
+const std::vector<double>& WindowedApp::ProfilerGPU::samples() const {
+	return _samples;
 }
 
 bool WindowedApp::ProfilerGPU::init() {
@@ -74,11 +81,17 @@ void WindowedApp::ProfilerGPU::leave() {
 			GLuint64 time = 0;
 			glGetQueryObjectui64v(_id, GL_QUERY_RESULT, &time);
 			const double timed = double(time);
+			_samples[_sampleCount & (_maxSampleCount - 1)] = timed;
+			++_sampleCount;
 			_max = std::max(_max, timed);
 			_min = std::min(_min, timed);
 			_avg = _avg * 0.5 + timed / 1e9 * 0.5;
 		}
 	}
+}
+
+const std::string& WindowedApp::ProfilerGPU::name() const {
+	return _name;
 }
 
 double WindowedApp::ProfilerGPU::avg() const {

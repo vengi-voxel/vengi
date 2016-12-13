@@ -29,9 +29,9 @@ protected:
 	core::VarPtr _speed;
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;
-	ProfilerGPU _worldTimer;
-	ProfilerCPU _frameTimer;
-	ProfilerCPU _beforeUiTimer;
+	ProfilerGPU _worldTimer = {"World"};
+	ProfilerCPU _frameTimer = {"Frame"};
+	ProfilerCPU _beforeUiTimer = {"BeforeUI"};
 
 	bool _resetTriggered = false;
 	bool _lineModeRendering = false;

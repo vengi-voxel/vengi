@@ -109,7 +109,7 @@ void ShapeTool::beforeUI() {
 	}
 
 	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
-	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);;
+	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
 	if (!_freelook) {
 		const glm::vec3& position = _camera.position();
@@ -143,9 +143,9 @@ void ShapeTool::afterRootWidget() {
 	int active;
 	_worldRenderer.stats(meshes, extracted, pending, active);
 	const int x = 5;
-	enqueueShowStr(x, core::Color::White, "frame avg: %f, max: %f", _frameTimer.avg(), _frameTimer.maximum());
-	enqueueShowStr(x, core::Color::White, "before ui avg: %f, max: %f", _beforeUiTimer.avg(), _beforeUiTimer.maximum());
-	enqueueShowStr(x, core::Color::White, "render avg: %f, max: %f", _worldTimer.avg(), _worldTimer.maximum());
+	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
+	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
+	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
 	enqueueShowStr(x, core::Color::White, "drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
 	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);

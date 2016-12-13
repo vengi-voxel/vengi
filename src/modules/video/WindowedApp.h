@@ -20,20 +20,26 @@ protected:
 	class ProfilerGPU {
 	private:
 		unsigned int _id = 0u;
-		double _avg = 0.0;
 		double _min = 0.0;
 		double _max = 0.0;
-		int _state = 0;
+		double _avg = 0.0;
+		std::string _name;
+		std::vector<double> _samples;
+		const int16_t _maxSampleCount;
+		int16_t _sampleCount = 0;
+		uint8_t _state = 0;
 	public:
-		ProfilerGPU();
+		ProfilerGPU(const std::string& name, uint16_t maxSamples = 1024u);
 		~ProfilerGPU();
 
+		const std::vector<double>& samples() const;
 		bool init();
 		void enter();
 		void leave();
 		double minimum() const;
 		double maximum() const;
 		double avg() const;
+		const std::string& name() const;
 	};
 
 	SDL_Window* _window;
