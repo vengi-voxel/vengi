@@ -142,8 +142,8 @@ void ShapeTool::afterRootWidget() {
 	int active;
 	_worldRenderer.stats(meshes, extracted, pending, active);
 	const int x = 5;
-	enqueueShowStr(x, core::Color::White, "frame avg: %f", _frameTimer.avg());
-	enqueueShowStr(x, core::Color::White, "render avg: %f", _worldTimer.avg());
+	enqueueShowStr(x, core::Color::White, "frame avg: %f, max: %f", _frameTimer.avg(), _frameTimer.maximum());
+	enqueueShowStr(x, core::Color::White, "render avg: %f, max: %f", _worldTimer.avg(), _worldTimer.maximum());
 	enqueueShowStr(x, core::Color::White, "drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
 	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
