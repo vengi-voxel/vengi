@@ -32,6 +32,10 @@ public:
 		return now;
 	}
 
+	static inline double currentNanos() {
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count() / 1e9;
+	}
+
 	void update(unsigned long now) {
 		_tickTime = now;
 	}
