@@ -66,6 +66,7 @@ core::AppState ShapeTool::onInit() {
 		return core::Cleanup;
 	}
 	_camera.init(glm::ivec2(), dimension());
+	_camera.setFieldOfView(45.0f);
 	_camera.setPosition(glm::vec3(50.0f, 100.0f, 50.0f));
 	_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
@@ -115,8 +116,6 @@ void ShapeTool::beforeUI() {
 		_camera.setPosition(glm::vec3(position.x, y + 10, position.z));
 	}
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
-	_camera.setFieldOfView(45.0f);
-	_camera.init(glm::ivec2(), dimension());
 	_camera.update(_deltaFrame);
 
 	_worldRenderer.extractNewMeshes(_camera.position());
