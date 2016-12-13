@@ -338,8 +338,11 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	_sunLight.update(_deltaFrame, camera);
 
 	cull(_meshDataOpaque, _visibleOpaque, camera);
-	cull(_meshDataPlant, _visiblePlant, camera);
 	cull(_meshDataWater, _visibleWater, camera);
+	_visiblePlant.clear();
+	for (auto i = _meshDataPlant.begin(); i != _meshDataPlant.end(); ++i) {
+		_visiblePlant.push_back(&*i);
+	}
 
 	float planes[8];
 	const bool shadowMap = _shadowMap->boolVal();
