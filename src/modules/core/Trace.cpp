@@ -18,7 +18,7 @@
 #include "core/command/CommandHandler.h"
 #endif
 
-#define MICROPROFILE_EMABLED 1
+#define MICROPROFILE_EMABLED 0
 #if MICROPROFILE_EMABLED
 #define MICROPROFILE_IMPL
 #define MICROPROFILE_GPU_TIMERS 0
