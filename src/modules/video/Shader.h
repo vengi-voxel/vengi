@@ -217,6 +217,8 @@ public:
 	void setUniformf(int location, float value1, float value2, float value3) const;
 	void setUniformf(const std::string& name, float value1, float value2, float value3, float value4) const;
 	void setUniformf(int location, float value1, float value2, float value3, float value4) const;
+	void setUniformfv(const std::string& name, const float* values, int length, int components) const;
+	void setUniformfv(int location, const float* values, int length, int components) const;
 	void setUniform1fv(const std::string& name, const float* values, int length) const;
 	void setUniform1fv(int location, const float* values, int length) const;
 	void setUniform2fv(const std::string& name, const float* values, int length) const;
@@ -426,6 +428,24 @@ inline void Shader::setUniformVec3v(const std::string& name, const glm::vec3* va
 
 inline void Shader::setUniform3fv(int location, const float* values, int length) const {
 	glUniform3fv(location, length / 3, values);
+	GL_checkError();
+}
+
+inline void Shader::setUniformfv(const std::string& name, const float* values, int length, int components) const {
+	const int location = getUniformLocation(name);
+	setUniformfv(location, values, length, components);
+}
+
+inline void Shader::setUniformfv(int location, const float* values, int length, int components) const {
+	if (components == 1) {
+		setUniform1fv(location, values, length);
+	} else if (components == 2) {
+		setUniform2fv(location, values, length);
+	} else if (components == 3) {
+		setUniform3fv(location, values, length);
+	} else {
+		setUniform4fv(location, values, length);
+	}
 	GL_checkError();
 }
 
