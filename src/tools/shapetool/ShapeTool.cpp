@@ -150,7 +150,6 @@ void ShapeTool::afterRootWidget() {
 	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i", pending, meshes, extracted, active);
 
 	enqueueShowStr(x, core::Color::Gray, "+/-: change move speed");
-	enqueueShowStr(x, core::Color::Gray, "LMB: perform raycast to voxel under cursor");
 	enqueueShowStr(x, core::Color::Gray, "l: line mode rendering");
 
 	Super::afterRootWidget();
