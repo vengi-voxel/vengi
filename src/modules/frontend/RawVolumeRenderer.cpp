@@ -6,7 +6,7 @@
 
 namespace frontend {
 
-const std::string MaxDepthBufferUniformName = "u_farplanes";
+const std::string MaxDepthBufferUniformName = "u_cascades";
 
 RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe, bool renderGrid) :
 		_rawVolume(nullptr), _mesh(nullptr),

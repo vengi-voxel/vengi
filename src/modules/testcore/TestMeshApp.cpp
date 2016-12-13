@@ -1,7 +1,7 @@
 #include "TestMeshApp.h"
 #include "core/command/Command.h"
 
-#define MaxDepthBufferUniformName "u_farplanes"
+#define MaxDepthBufferUniformName "u_cascades"
 
 TestMeshApp::TestMeshApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider), _colorShader(shader::ColorShader::getInstance()) {
@@ -100,7 +100,6 @@ void TestMeshApp::doRender() {
 		_meshShader.setTexture(0);
 		_meshShader.setDiffuseColor(_diffuseColor);
 		_meshShader.setAmbientColor(_ambientColor);
-		_meshShader.setDepthsize(glm::vec2(_sunLight.dimension()));
 		_meshShader.setLight(_sunLight.viewProjectionMatrix(_camera));
 		_meshShader.setShadowmap(1);
 

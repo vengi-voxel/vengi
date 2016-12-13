@@ -20,7 +20,7 @@ constexpr int MinExtractionCullingDistance = 1000;
 
 namespace frontend {
 
-const std::string MaxDepthBufferUniformName = "u_farplanes";
+const std::string MaxDepthBufferUniformName = "u_cascades";
 
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
 		_clearColor(core::Color::LightBlue), _world(world) {
@@ -238,9 +238,6 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 	shaderSetUniformIf(shader, setUniformVec3, "u_ambient_color", _ambientColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(actualCamera->dimension()));
-	shaderSetUniformIf(shader, setUniformf, "u_nearplane", actualCamera->nearPlane());
-	shaderSetUniformIf(shader, setUniformf, "u_farplane", actualCamera->farPlane());
-	shaderSetUniformIf(shader, setUniformVec3, "u_campos", camera.position());
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices) {
@@ -394,11 +391,13 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			{
 				video::ScopedShader scoped(_shadowMapShader);
 				setUniforms(_shadowMapShader, camera, true);
+				shaderSetUniformIf(_shadowMapShader, setUniformMatrix, "u_light", cascades[i]);
 				drawCallsWorld += renderWorldMeshes(_shadowMapShader, _visibleOpaque, vertices);
 			}
 			{
 				video::ScopedShader scoped(_shadowMapInstancedShader);
 				setUniforms(_shadowMapInstancedShader, camera, true);
+				shaderSetUniformIf(_shadowMapInstancedShader, setUniformMatrix, "u_light", cascades[i]);
 				drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, _visiblePlant, vertices);
 			}
 		}
@@ -422,16 +421,22 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	{
 		video::ScopedShader scoped(_worldShader);
 		setUniforms(_worldShader, camera, false);
+		shaderSetUniformIf(_worldShader, setUniformMatrixv, "u_cascades", cascades, maxDepthBuffers);
+		shaderSetUniformIf(_worldShader, setUniform2fv, "u_distances", distances, maxDepthBuffers);
 		drawCallsWorld += renderWorldMeshes(_worldShader, _visibleOpaque, vertices);
 	}
 	{
 		video::ScopedShader scoped(_plantShader);
 		setUniforms(_plantShader, camera, false);
+		shaderSetUniformIf(_plantShader, setUniformMatrixv, "u_cascades", cascades, maxDepthBuffers);
+		shaderSetUniformIf(_plantShader, setUniform2fv, "u_distances", distances, maxDepthBuffers);
 		drawCallsWorld += renderWorldMeshes(_plantShader, _visiblePlant, vertices);
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
 		setUniforms(_waterShader, camera, false);
+		shaderSetUniformIf(_waterShader, setUniformMatrixv, "u_cascades", cascades, maxDepthBuffers);
+		shaderSetUniformIf(_waterShader, setUniform2fv, "u_distances", distances, maxDepthBuffers);
 		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
 	}
 

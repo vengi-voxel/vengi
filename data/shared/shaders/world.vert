@@ -58,8 +58,6 @@ void main(void) {
 
 #if cl_shadowmap == 1
 	v_lightspacepos = u_light * v_pos;
-	v_texcoord1     = u_shadowmapmatrix1 * v_lightspacepos;
-	v_texcoord2     = u_shadowmapmatrix2 * v_lightspacepos;
 #endif
 
 #if cl_deferred == 0
