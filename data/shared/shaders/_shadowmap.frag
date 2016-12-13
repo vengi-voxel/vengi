@@ -5,8 +5,8 @@
 uniform sampler2DArray u_shadowmap;
 $in vec4 v_lightspacepos;
 uniform vec2 u_depthsize;
-uniform vec2 u_distances;
-uniform mat4 u_cascades[2];
+uniform vec4 u_distances;
+uniform mat4 u_cascades[4];
 
 /**
  * perform simple shadow map lookup returns 0.0 (unlit) or 1.0 (lit)
@@ -37,7 +37,7 @@ float sampleShadowPCF(int cascade, vec2 uv, float compare, float ndotl) {
 
 float calculateShadow(float ndotl) {
 	float viewz = v_lightspacepos.w;
-	int cascade = int(dot(vec2(greaterThan(vec2(viewz), u_distances)), vec2(1)));
+	int cascade = int(dot(vec4(greaterThan(vec4(viewz), u_distances)), vec4(1)));
 	vec4 lightp = u_cascades[cascade] * v_pos;
 	vec3 lightpt = (lightp.xyz / lightp.w) * 0.5 + 0.5;
 	return sampleShadowPCF(cascade, lightpt.xy, lightp.z / lightp.w, ndotl);
