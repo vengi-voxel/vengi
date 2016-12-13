@@ -703,6 +703,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active
 bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false");
+	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	_deferred = core::Var::getSafe(cfg::ClientDeferred);
 	core_assert(_deferred);
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);

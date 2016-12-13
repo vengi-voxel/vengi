@@ -28,6 +28,10 @@ void main(void) {
 #if cl_deferred == 0
 	float ndotl = dot(normal, -u_lightdir);
 	float shadow = calculateShadow(ndotl);
+#if cl_debug_shadow == 1
+	// shadow only rendering
+	o_color = vec4(vec3(shadow), 1.0);
+#else
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
 	vec3 ambient = u_ambient_color;
 	vec3 lightvalue = ambient + (shadow * diffuse);
@@ -38,6 +42,7 @@ void main(void) {
 
 	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * u_debug_color;
 	o_color = vec4(mix(linearColor, v_fogcolor, fogval), v_color.a);
+#endif
 #else
 	o_color = v_color.xyz * v_ambientocclusion * u_debug_color;
 	o_pos = v_pos.xyz;
