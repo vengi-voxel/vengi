@@ -208,34 +208,22 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_whiteTexture->bind(0);
 
 	video::ScopedShader scoped(_worldShader);
-	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_viewprojection", camera.viewProjectionMatrix());
-	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_model", glm::mat4());
-	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_view", camera.viewMatrix());
-	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_projection", camera.projectionMatrix());
-	shaderSetUniformIf(_worldShader, setUniformBuffer, "u_materialblock", _materialBuffer);
-	shaderSetUniformIf(_worldShader, setUniformi, "u_texture", 0);
-	shaderSetUniformIf(_worldShader, setUniformf, "u_fogrange", 250.0f);
-	shaderSetUniformIf(_worldShader, setUniformf, "u_viewdistance", camera.farPlane());
-	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
-	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
-	shaderSetUniformIf(_worldShader, setUniformVec3, "u_lightdir", _sunLight.direction());
-	shaderSetUniformIf(_worldShader, setUniformf, "u_depthsize", glm::vec2(_depthBuffer.dimension()));
-	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
-	shaderSetUniformIf(_worldShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
-	shaderSetUniformIf(_worldShader, setUniformVec3, "u_ambient_color", _ambientColor);
-	shaderSetUniformIf(_worldShader, setUniformf, "u_debug_color", 1.0);
-	shaderSetUniformIf(_worldShader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
-	shaderSetUniformIf(_worldShader, setUniformf, "u_nearplane", camera.nearPlane());
-	shaderSetUniformIf(_worldShader, setUniformf, "u_farplane", camera.farPlane());
-	shaderSetUniformIf(_worldShader, setUniformVec3, "u_campos", camera.position());
-	const bool shadowMap = _worldShader.hasUniform("u_shadowmap");
-	int maxDepthBuffers = 0;
-	if (shadowMap) {
-		maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
-		shaderSetUniformIf(_worldShader, setUniformi, "u_shadowmap", 1);
-	}
+	_worldShader.setModel(glm::mat4());
+	_worldShader.setViewprojection(camera.viewProjectionMatrix());
+	_worldShader.setUniformBuffer("u_materialblock", _materialBuffer);
+	_worldShader.setTexture(0);
+	_worldShader.setShadowmap(1);
+	_worldShader.setFogrange(250.0f);
+	_worldShader.setViewdistance(camera.farPlane());
+	_worldShader.setLightdir(_sunLight.direction());
+	_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+	_worldShader.setLight(_sunLight.viewProjectionMatrix(camera));
+	_worldShader.setDiffuseColor(_diffuseColor);
+	_worldShader.setAmbientColor(_ambientColor);
+	_worldShader.setDebugColor(1.0f);
+	int maxDepthBuffers = maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
 	core_assert_always(_vertexBuffer.bind());
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
@@ -251,13 +239,11 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 
 	_whiteTexture->unbind();
 
-	if (shadowMap) {
-		for (int i = 0; i < maxDepthBuffers; ++i) {
-			glActiveTexture(GL_TEXTURE1 + i);
-			glBindTexture(GL_TEXTURE_2D, 0);
-		}
-		glActiveTexture(GL_TEXTURE0);
+	for (int i = 0; i < maxDepthBuffers; ++i) {
+		glActiveTexture(GL_TEXTURE1 + i);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+	glActiveTexture(GL_TEXTURE0);
 
 	GL_checkError();
 }
