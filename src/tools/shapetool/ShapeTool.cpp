@@ -52,6 +52,10 @@ core::AppState ShapeTool::onInit() {
 		_camera.setQuaternion(sunCamera.quaternion());
 	}).setHelp("Set the world camera rotation to be equal to the sun rotation");
 
+	core::Command::registerCommand("freelook", [this] (const core::CmdArgs& args) {
+		this->_freelook ^= true;
+	}).setHelp("Toggle free look");
+
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
 		return core::Cleanup;
