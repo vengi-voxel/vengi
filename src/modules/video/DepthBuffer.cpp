@@ -72,8 +72,32 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 		const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
 		glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
 	}
+	return true;
+}
 
-#if 0
+bool DepthBuffer::bind() {
+	core_assert(_oldFramebuffer == -1);
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
+	glGetIntegerv(GL_VIEWPORT, _oldViewport);
+	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	glViewport(0, 0, _depthTexture.width(), _depthTexture.height());
+	GL_checkError();
+	return true;
+}
+
+bool DepthBuffer::bindTexture(int textureIndex) {
+	core_assert(textureIndex >= 0 && textureIndex < 4);
+	if (textureIndex < 0 || textureIndex >= 4) {
+		return false;
+	}
+	if (depthAttachment()) {
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexture, 0, textureIndex);
+		glClear(GL_DEPTH_BUFFER_BIT);
+	} else {
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _depthTexture, 0, textureIndex);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
 	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		switch (status) {
@@ -98,38 +122,7 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 		}
 		return false;
 	}
-#endif
-	return true;
-}
 
-bool DepthBuffer::bind() {
-	core_assert(_oldFramebuffer == -1);
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
-	GL_checkError();
-
-	glGetIntegerv(GL_VIEWPORT, _oldViewport);
-	const glm::ivec2& dim = dimension();
-	glViewport(0, 0, dim.x, dim.y);
-	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
-	return true;
-}
-
-bool DepthBuffer::bindTexture(bool read, int textureIndex) {
-	core_assert(textureIndex >= 0 && textureIndex < 4);
-	if (textureIndex < 0 || textureIndex >= 4) {
-		return false;
-	}
-	if (depthAttachment()) {
-		if (!read) {
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexture, 0, textureIndex);
-		}
-		glClear(GL_DEPTH_BUFFER_BIT);
-	} else {
-		if (!read) {
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _depthTexture, 0, textureIndex);
-		}
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
 	GL_checkError();
 	return true;
 }

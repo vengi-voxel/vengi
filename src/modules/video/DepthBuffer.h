@@ -27,7 +27,7 @@ public:
 	void shutdown();
 
 	bool bind();
-	bool bindTexture(bool read, int textureIndex);
+	bool bindTexture(int textureIndex);
 	void unbind();
 
 	inline glm::ivec2 dimension() const {

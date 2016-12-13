@@ -383,7 +383,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			cascades[i] = lightProjection * lightView;
 			distances[i] = far;
 
-			_depthBuffer.bindTexture(false, i);
+			_depthBuffer.bindTexture(i);
 			{
 				video::ScopedShader scoped(_shadowMapShader);
 				setUniforms(_shadowMapShader, camera, true);
