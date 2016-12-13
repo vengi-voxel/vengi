@@ -349,6 +349,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we do one pass for the gbuffer + the sun
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	glm::mat4 cascades[maxDepthBuffers];
+	float distances[maxDepthBuffers];
 
 	if (shadowMap) {
 		core_assert(maxDepthBuffers * 2 <= (int)SDL_arraysize(planes));
@@ -363,16 +365,31 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		const float shadowRangeZ = camera.farPlane() * 3;
 		glPolygonOffset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
 		_depthBuffer.bind();
+		const glm::mat4& inverseView = glm::inverse(camera.viewMatrix());
+
 		for (int i = 0; i < maxDepthBuffers; ++i) {
-			// TODO: finish this
 			const float near = planes[i * 2 + 0];
 			const float far = planes[i * 2 + 1];
-			glm::vec3 out[core::FRUSTUM_VERTICES_MAX];
-			sunCamera.splitFrustum(near, far, out);
-			// TODO: use setUniform1fv
-			for (uint8_t uniformIndex = 0, planeIndex = 1; uniformIndex < maxDepthBuffers; ++uniformIndex, planeIndex += 2) {
-				shaderSetUniformIf(_worldShader, setUniformf, core::string::format("u_farplanes[%i]", uniformIndex).c_str(), planes[planeIndex]);
-			}
+			const glm::vec4& sphere = camera.splitFrustumSphereBoundingBox(near, far);
+			const glm::vec3 lightCenter(_sunLight.viewMatrix() * inverseView * glm::vec4(sphere.x, sphere.y, sphere.z, 1));
+			const float lightRadius = sphere.w;
+
+			// round to prevent movement
+			const float xRound = lightRadius * 2.0f / _sunLight.dimension().x;
+			const float yRound = lightRadius * 2.0f / _sunLight.dimension().y;
+			const float shadowRangeZ = camera.farPlane() * 3.0f;
+			const float zRound = 1.0f;
+			const glm::vec3 round(xRound, yRound, zRound);
+			const glm::vec3 lightCenterRounded = glm::round(lightCenter / round) * round;
+			const glm::mat4& lightProjection = glm::ortho(
+					 lightCenterRounded.x - lightRadius,
+					 lightCenterRounded.x + lightRadius,
+					 lightCenterRounded.y - lightRadius,
+					 lightCenterRounded.y + lightRadius,
+					-lightCenterRounded.z - (shadowRangeZ - lightRadius),
+					-lightCenterRounded.z + lightRadius);
+			cascades[i] = lightProjection * _sunLight.viewMatrix();
+			distances[i] = far;
 
 			_depthBuffer.bindTexture(false, i);
 			{
