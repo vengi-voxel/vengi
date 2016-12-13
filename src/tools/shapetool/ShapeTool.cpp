@@ -171,6 +171,7 @@ core::AppState ShapeTool::onRunning() {
 core::AppState ShapeTool::onCleanup() {
 	_meshPool->shutdown();
 	_worldRenderer.shutdown();
+	_worldTimer.shutdown();
 	_axis.shutdown();
 	_entity = frontend::ClientEntityPtr();
 	core::AppState state = Super::onCleanup();

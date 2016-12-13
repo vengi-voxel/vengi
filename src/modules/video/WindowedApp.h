@@ -34,6 +34,7 @@ protected:
 
 		const std::vector<double>& samples() const;
 		bool init();
+		void shutdown();
 		void enter();
 		void leave();
 		double minimum() const;

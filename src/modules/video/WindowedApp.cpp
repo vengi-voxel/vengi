@@ -38,9 +38,8 @@ WindowedApp::ProfilerGPU::ProfilerGPU(const std::string& name, uint16_t maxSampl
 }
 
 WindowedApp::ProfilerGPU::~ProfilerGPU() {
-	if (_id != 0u) {
-		glDeleteQueries(1, &_id);
-	}
+	core_assert_msg(_id == 0u, "Forgot to shutdown gpu profiler: %s", _name.c_str());
+	shutdown();
 }
 
 const std::vector<double>& WindowedApp::ProfilerGPU::samples() const {
@@ -50,6 +49,13 @@ const std::vector<double>& WindowedApp::ProfilerGPU::samples() const {
 bool WindowedApp::ProfilerGPU::init() {
 	glGenQueries(1, &_id);
 	return _id != 0u;
+}
+
+void WindowedApp::ProfilerGPU::shutdown() {
+	if (_id != 0u) {
+		glDeleteQueries(1, &_id);
+		_id = 0u;
+	}
 }
 
 void WindowedApp::ProfilerGPU::enter() {
