@@ -65,15 +65,22 @@ struct GLMeshData {
 	}
 
 	inline void deleteBuffers() {
-		glDeleteBuffers(3, &indexBuffer);
-		indexBuffer = 0u;
-		vertexBuffer = 0u;
-		offsetBuffer = 0u;
+		if (indexBuffer != 0u) {
+			glDeleteBuffers(2, &indexBuffer);
+			indexBuffer = 0u;
+			vertexBuffer = 0u;
+		}
+		if (offsetBuffer != 0u) {
+			glDeleteBuffers(1, &offsetBuffer);
+			offsetBuffer = 0u;
+		}
 	}
 
 	inline void deleteVAO() {
-		glDeleteVertexArrays(1, &vertexArrayObject);
-		vertexArrayObject = 0u;
+		if (vertexArrayObject != 0u) {
+			glDeleteVertexArrays(1, &vertexArrayObject);
+			vertexArrayObject = 0u;
+		}
 	}
 
 	inline void shutdown() {

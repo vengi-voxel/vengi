@@ -12,8 +12,10 @@ UniformBuffer::~UniformBuffer() {
 }
 
 void UniformBuffer::shutdown() {
-	glDeleteBuffers(1, &_handle);
-	_handle = 0u;
+	if (_handle != 0u) {
+		glDeleteBuffers(1, &_handle);
+		_handle = 0u;
+	}
 }
 
 void* UniformBuffer::lock(BufferLockMode mode) {
