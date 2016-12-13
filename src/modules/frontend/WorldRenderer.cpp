@@ -358,7 +358,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		const float shadowBiasSlope = 2;
 		const float shadowBias = 0.09f;
-		const float shadowRangeZ = camera.farPlane() * 3;
+		const float shadowRangeZ = camera.farPlane() * 3.0f;
 		glPolygonOffset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
 		_depthBuffer.bind();
 		const glm::mat4& inverseView = glm::inverse(camera.viewMatrix());
@@ -373,7 +373,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			// round to prevent movement
 			const float xRound = lightRadius * 2.0f / _depthBuffer.dimension().x;
 			const float yRound = lightRadius * 2.0f / _depthBuffer.dimension().y;
-			const float shadowRangeZ = camera.farPlane() * 3.0f;
 			const float zRound = 1.0f;
 			const glm::vec3 round(xRound, yRound, zRound);
 			const glm::vec3 lightCenterRounded = glm::round(lightCenter / round) * round;
@@ -496,7 +495,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			glDrawArrays(GL_TRIANGLES, 0, _shadowMapDebugBuffer.elements(0));
 		}
 		_shadowMapDebugBuffer.unbind();
-		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTexture(std::enum_value(_depthBuffer.textureType()), 0);
 	}
 
 	GL_checkError();
