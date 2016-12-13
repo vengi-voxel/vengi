@@ -216,7 +216,7 @@ void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const vi
 	Log::trace("%i meshes left after culling, %i meshes overall", visibleCount, meshesCount);
 }
 
-void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& camera) {
+void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& camera, bool shadowPass) {
 	const video::Camera* actualCamera = &camera;
 	float viewDistance = _viewDistance;
 	if (_cameraSun->boolVal()) {
@@ -377,12 +377,12 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_depthBuffer.bindTexture(false, i);
 			{
 				video::ScopedShader scoped(_shadowMapShader);
-				setUniforms(_shadowMapShader, camera);
+				setUniforms(_shadowMapShader, camera, true);
 				drawCallsWorld += renderWorldMeshes(_shadowMapShader, _visibleOpaque, vertices);
 			}
 			{
 				video::ScopedShader scoped(_shadowMapInstancedShader);
-				setUniforms(_shadowMapInstancedShader, camera);
+				setUniforms(_shadowMapInstancedShader, camera, true);
 				drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, _visiblePlant, vertices);
 			}
 		}
@@ -405,17 +405,17 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	{
 		video::ScopedShader scoped(_worldShader);
-		setUniforms(_worldShader, camera);
+		setUniforms(_worldShader, camera, false);
 		drawCallsWorld += renderWorldMeshes(_worldShader, _visibleOpaque, vertices);
 	}
 	{
 		video::ScopedShader scoped(_plantShader);
-		setUniforms(_plantShader, camera);
+		setUniforms(_plantShader, camera, false);
 		drawCallsWorld += renderWorldMeshes(_plantShader, _visiblePlant, vertices);
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
-		setUniforms(_waterShader, camera);
+		setUniforms(_waterShader, camera, false);
 		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
 	}
 
@@ -495,7 +495,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	// TODO: deferred rendering
 	shader::MeshShader& shader = _meshShader;
 	video::ScopedShader scoped(shader);
-	setUniforms(shader, camera);
+	setUniforms(shader, camera, false);
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	int maxDepthBuffers = 0;
 	if (shadowMap) {
