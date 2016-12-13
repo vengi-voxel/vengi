@@ -232,7 +232,7 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", viewDistance);
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunLight.direction());
-	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_sunLight.dimension()));
+	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_depthBuffer.dimension()));
 	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformVec3, "u_ambient_color", _ambientColor);
@@ -371,8 +371,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			const float lightRadius = sphere.w;
 
 			// round to prevent movement
-			const float xRound = lightRadius * 2.0f / _sunLight.dimension().x;
-			const float yRound = lightRadius * 2.0f / _sunLight.dimension().y;
+			const float xRound = lightRadius * 2.0f / _depthBuffer.dimension().x;
+			const float yRound = lightRadius * 2.0f / _depthBuffer.dimension().y;
 			const float shadowRangeZ = camera.farPlane() * 3.0f;
 			const float zRound = 1.0f;
 			const glm::vec3 round(xRound, yRound, zRound);

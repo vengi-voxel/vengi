@@ -219,7 +219,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_light_projection", _sunLight.projectionMatrix());
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_light_view", _sunLight.viewMatrix());
 	shaderSetUniformIf(_worldShader, setUniformVec3, "u_lightdir", _sunLight.direction());
-	shaderSetUniformIf(_worldShader, setUniformf, "u_depthsize", glm::vec2(_sunLight.dimension()));
+	shaderSetUniformIf(_worldShader, setUniformf, "u_depthsize", glm::vec2(_depthBuffer.dimension()));
 	shaderSetUniformIf(_worldShader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 	shaderSetUniformIf(_worldShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(_worldShader, setUniformVec3, "u_ambient_color", _ambientColor);
