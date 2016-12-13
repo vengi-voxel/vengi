@@ -27,6 +27,31 @@ enum AppState {
  */
 class App {
 protected:
+	class ProfilerCPU {
+	private:
+		double _stamp = 0.0;
+		double _avg = 0.0;
+		double _min = 0.0;
+		double _max = 0.0;
+	public:
+		void enter();
+		void leave();
+		double minimum() const;
+		double maximum() const;
+		double avg() const;
+	};
+
+	template<class Profiler>
+	struct ScopedProfiler {
+		Profiler& _p;
+		inline ScopedProfiler(Profiler& p) : _p(p) {
+			p.enter();
+		}
+		inline ~ScopedProfiler() {
+			_p.leave();
+		}
+	};
+
 	core::Trace _trace;
 	int _argc;
 	char **_argv;
@@ -125,6 +150,29 @@ public:
 		return _staticInstance;
 	}
 };
+
+inline void App::ProfilerCPU::enter() {
+	_stamp = core::TimeProvider::currentNanos();
+}
+
+inline void App::ProfilerCPU::leave() {
+	const double time = core::TimeProvider::currentNanos() - _stamp;
+	_max = std::max(_max, time);
+	_min = std::min(_min, time);
+	_avg = _avg * 0.5 + time * 0.5;
+}
+
+inline double App::ProfilerCPU::avg() const {
+	return _avg;
+}
+
+inline double App::ProfilerCPU::minimum() const {
+	return _min;
+}
+
+inline double App::ProfilerCPU::maximum() const {
+	return _max;
+}
 
 inline long App::deltaFrame() const {
 	return _deltaFrame;
