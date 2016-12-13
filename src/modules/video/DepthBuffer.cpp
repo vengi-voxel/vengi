@@ -46,18 +46,19 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 
 	TextureFormat format;
 	if (depthAttachment()) {
-		if (_mode == DepthBufferMode::DEPTH_CMP) {
-			const TextureType type = textureType();
-			const GLenum glType = std::enum_value(type);
-			glBindTexture(glType, _depthTexture);
-			glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-			glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-		}
 		format = TextureFormat::D24S8;
 	} else {
 		format = TextureFormat::RGBA;
 	}
 	_depthTexture.upload(format, dimension.x, dimension.y, nullptr, textureCount);
+	if (_mode == DepthBufferMode::DEPTH_CMP) {
+		const TextureType type = textureType();
+		const GLenum glType = std::enum_value(type);
+		glBindTexture(glType, _depthTexture);
+		glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		glBindTexture(glType, 0);
+	}
 
 	glGenFramebuffers(1, &_fbo);
 	GL_setName(GL_FRAMEBUFFER, _fbo, "depthfbo");
@@ -92,6 +93,7 @@ bool DepthBuffer::bindTexture(int textureIndex) {
 	}
 	if (depthAttachment()) {
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexture, 0, textureIndex);
+		glClearDepth(1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT);
 	} else {
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _depthTexture, 0, textureIndex);
