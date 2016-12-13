@@ -199,7 +199,7 @@ void World::create(PagedVolumeWrapper& ctx) {
 void World::cleanupFutures() {
 	for (auto i = _futures.begin(); i != _futures.end();) {
 		auto& future = *i;
-		if (std::future_status::ready == future.wait_for(std::chrono::milliseconds(0))) {
+		if (std::future_status::ready == future.wait_for(std::chrono::milliseconds::zero())) {
 			i = _futures.erase(i);
 			continue;
 		}
