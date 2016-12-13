@@ -12,7 +12,8 @@
 
 namespace video {
 
-DepthBuffer::DepthBuffer() {
+DepthBuffer::DepthBuffer() :
+		_depthTexture(TextureType::Texture2DArray, TextureFormat::D24S8, "**depthmap**", 1, 1, 1, TextureWrap::ClampToEdge) {
 }
 
 DepthBuffer::~DepthBuffer() {
@@ -26,10 +27,7 @@ void DepthBuffer::shutdown() {
 		_fbo = 0;
 	}
 
-	if (_depthTexture != 0) {
-		glDeleteTextures(1, &_depthTexture);
-		_depthTexture = 0u;
-	}
+	_depthTexture.shutdown();
 
 	if (_rbo != 0) {
 		glDeleteRenderbuffers(1, &_rbo);
@@ -44,48 +42,30 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 		Log::error("Invalid texture count for depthbuffer: %i", textureCount);
 		return false;
 	}
-	_dimension = dimension;
 	_mode = mode;
+
+	TextureFormat format;
+	if (depthAttachment()) {
+		if (_mode == DepthBufferMode::DEPTH_CMP) {
+			const TextureType type = textureType();
+			const GLenum glType = std::enum_value(type);
+			glBindTexture(glType, _depthTexture);
+			glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+			glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		}
+		format = TextureFormat::D24S8;
+	} else {
+		format = TextureFormat::RGBA;
+	}
+	_depthTexture.upload(format, dimension.x, dimension.y, nullptr, textureCount);
 
 	glGenFramebuffers(1, &_fbo);
 	GL_setName(GL_FRAMEBUFFER, _fbo, "depthfbo");
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);
-
-	const TextureType type = textureType();
-	const GLenum glType = std::enum_value(type);
-	glGenTextures(1, &_depthTexture);
-	glBindTexture(glType, _depthTexture);
-	glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(glType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(glType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
-	GLenum gltexformat;
-	GLenum gltextype;
-
 	if (depthAttachment()) {
-		if (_mode == DepthBufferMode::DEPTH_CMP) {
-			glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-			glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-		}
-		gltexformat = GL_DEPTH_COMPONENT;
-		gltextype = GL_FLOAT;
-	} else {
-		gltexformat = GL_RGBA;
-		gltextype = GL_UNSIGNED_BYTE;
-	}
-	glTexImage3D(glType, 0, gltexformat, dimension.x, dimension.y, textureCount, 0, gltexformat, gltextype, nullptr);
-	glBindTexture(glType, 0);
-	GLenum attachment;
-	if (depthAttachment()) {
-		attachment = GL_DEPTH_ATTACHMENT;
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
-	} else {
-		attachment = GL_COLOR_ATTACHMENT0;
 	}
-	//glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, _depthTexture, 0, 0);
 	GL_checkError();
 
 	if (!depthAttachment()) {
@@ -135,8 +115,9 @@ bool DepthBuffer::bind() {
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
 	GL_checkError();
 
-	glGetIntegerv(GL_VIEWPORT, _viewport);
-	glViewport(0, 0, _dimension.x, _dimension.y);
+	glGetIntegerv(GL_VIEWPORT, _oldViewport);
+	const glm::ivec2& dim = dimension();
+	glViewport(0, 0, dim.x, dim.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 	return true;
 }
@@ -161,18 +142,8 @@ bool DepthBuffer::bindTexture(bool read, int textureIndex) {
 	return true;
 }
 
-uint8_t *DepthBuffer::read() {
-	if (depthAttachment()) {
-		return nullptr;
-	}
-	ScopedFrameBuffer scopedFrameBuffer(_fbo);
-	uint8_t *depths = new uint8_t[_dimension.x * _dimension.y * 4];
-	glReadPixels(0, 0, _dimension.x, _dimension.y, GL_RGBA, GL_UNSIGNED_BYTE, depths);
-	return depths;
-}
-
 void DepthBuffer::unbind() {
-	glViewport(_viewport[0], _viewport[1], (GLsizei)_viewport[2], (GLsizei)_viewport[3]);
+	glViewport(_oldViewport[0], _oldViewport[1], (GLsizei)_oldViewport[2], (GLsizei)_oldViewport[3]);
 	core_assert(_oldFramebuffer != -1);
 	glBindFramebuffer(GL_FRAMEBUFFER, _oldFramebuffer);
 	_oldFramebuffer = -1;

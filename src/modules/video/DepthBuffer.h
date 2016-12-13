@@ -29,18 +29,17 @@ public:
 	bool bind();
 	bool bindTexture(bool read, int textureIndex);
 	void unbind();
-	uint8_t *read();
 
-	inline const glm::ivec2& dimension() const {
-		return _dimension;
+	inline glm::ivec2 dimension() const {
+		return glm::ivec2(_depthTexture.width(), _depthTexture.height());
 	}
 
 	inline GLuint texture() const {
-		return _depthTexture;
+		return _depthTexture.handle();
 	}
 
 	TextureType textureType() const {
-		return TextureType::Texture2DArray;
+		return _depthTexture.type();
 	}
 
 	inline bool depthAttachment() const {
@@ -48,12 +47,11 @@ public:
 	}
 
 private:
-	GLint _viewport[4] = {0, 0, 0, 0};
+	GLint _oldViewport[4] = {0, 0, 0, 0};
 	GLint _oldFramebuffer = -1;
 	GLuint _fbo = 0u;
 	GLuint _rbo = 0u;
-	GLuint _depthTexture = 0u;
-	glm::ivec2 _dimension;
+	Texture _depthTexture;
 	DepthBufferMode _mode = DepthBufferMode::RGBA;
 };
 
