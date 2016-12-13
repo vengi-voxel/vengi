@@ -708,8 +708,8 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	core_assert(_deferred);
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	core_assert(_shadowMap);
-	_deferredDebug = core::Var::get(cfg::ClientDeferredDebug, "false");
-	_shadowMapDebug = core::Var::get(cfg::ClientShadowMapDebug, "false");
+	_deferredDebug = core::Var::get(cfg::ClientDebugDeferred, "false");
+	_shadowMapDebug = core::Var::get(cfg::ClientDebugShadowMap, "false");
 	_cameraSun = core::Var::get(cfg::ClientCameraSun, "false");
 
 	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
