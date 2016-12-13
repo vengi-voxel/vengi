@@ -26,7 +26,7 @@ void main(void) {
 	vec3 normal = normalize(cross(fdx, fdy));
 
 #if cl_deferred == 0
-	float ndotl = dot(normal, u_lightdir);
+	float ndotl = dot(normal, -u_lightdir);
 	float shadow = calculateShadow(ndotl);
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
 	vec3 ambient = u_ambient_color;
