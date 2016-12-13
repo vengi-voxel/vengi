@@ -18,38 +18,66 @@ enum class TextureType {
 };
 
 enum class TextureFormat {
-	RGBA = GL_RGBA,
-	RGB = GL_RGB
+	RGBA,
+	RGB,
+	D24S8
+};
+
+enum class TextureWrap {
+	ClampToEdge = GL_CLAMP_TO_EDGE,
+	Repeat = GL_REPEAT
 };
 
 class Texture: public io::IOResource {
 private:
 	std::string _name;
-	GLuint _handle;
+	GLuint _handle = 0u;
+	int _width;
+	int _height;
 	TextureType _type;
 	TextureFormat _format;
+	TextureWrap _wrap;
 	int _boundUnit = 0;
 
 public:
-	// creates an empty dummy texture with the given name
-	Texture(TextureType type, const std::string& name, uint32_t empty = 0x00000000);
-	// create a texture with the given name and uploads it
-	Texture(TextureType type, TextureFormat format, const std::string& name, const uint8_t* data, int width, int height, int index = 1);
+	Texture(TextureType type, TextureFormat format, const std::string& name, int width = 1, int height = 1, int index = 1, TextureWrap wrap = TextureWrap::Repeat);
 	~Texture();
 	void shutdown();
 
 	operator GLuint () const;
 	TextureType type() const;
+	TextureFormat format() const;
+	TextureWrap wrap() const;
+	int width() const;
+	int height() const;
 	GLuint handle() const;
 
 	// updates the texture with the new data
-	void upload(TextureFormat format, const uint8_t* data, int width, int height, int index = 1);
+	void upload(TextureFormat format, int width, int height, const uint8_t* data = nullptr, int index = 1);
+	void upload(int width, int height, const uint8_t* data = nullptr, int index = 1);
+	void upload(const uint8_t* data = nullptr, int index = 1);
 	void bind(int unit = 0);
 	void unbind();
 };
 
 inline Texture::operator GLuint () const {
 	return _handle;
+}
+
+inline TextureWrap Texture::wrap() const {
+	return _wrap;
+}
+
+inline TextureFormat Texture::format() const {
+	return _format;
+}
+
+inline int Texture::width() const {
+	return _width;
+}
+
+inline int Texture::height() const {
+	return _height;
 }
 
 inline TextureType Texture::type() const {
@@ -64,12 +92,18 @@ typedef std::shared_ptr<Texture> TexturePtr;
 
 // creates empty texture with placeholder pixel in
 inline TexturePtr createEmptyTexture(const std::string& name) {
-	return TexturePtr(new Texture(TextureType::Texture2D, name));
+	const TexturePtr& p = std::make_shared<Texture>(TextureType::Texture2D, TextureFormat::RGBA, name, 1, 1);
+	const uint32_t empty = 0x00000000;
+	p->upload((const uint8_t*)&empty);
+	return p;
 }
 
 // creates white texture with placeholder pixel in
 inline TexturePtr createWhiteTexture(const std::string& name) {
-	return TexturePtr(new Texture(TextureType::Texture2D, name, 0xFFFFFFFF));
+	const TexturePtr& p = std::make_shared<Texture>(TextureType::Texture2D, TextureFormat::RGBA, name, 1, 1);
+	const uint32_t empty = 0xFFFFFFFF;
+	p->upload((const uint8_t*)&empty);
+	return p;
 }
 
 inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {
@@ -87,7 +121,8 @@ inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 	} else {
 		format = TextureFormat::RGB;
 	}
-	TexturePtr t(new Texture(TextureType::Texture2D, format, image->name(), image->data(), image->width(), image->height(), 1));
+	const TexturePtr& t = std::make_shared<Texture>(TextureType::Texture2D, format, image->name(), image->width(), image->height());
+	t->upload(image->data());
 	return t;
 }
 

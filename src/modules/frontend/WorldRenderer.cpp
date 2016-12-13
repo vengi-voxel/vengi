@@ -828,8 +828,7 @@ void WorldRenderer::onRunning(long dt) {
 			} else {
 				format = video::TextureFormat::RGB;
 			}
-			_colorTexture->upload(format, c.buffer, c.width, c.height);
-			_colorTexture->unbind();
+			_colorTexture->upload(format, c.width, c.height, c.buffer);
 			delete[] c.buffer;
 			_noiseFuture.pop_back();
 		}
