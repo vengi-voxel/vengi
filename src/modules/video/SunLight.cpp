@@ -25,9 +25,13 @@ static inline glm::vec3 spherical(float theta, float phi) {
 	return glm::vec3(glm::cos(phi) * glm::sin(theta), glm::sin(phi) * glm::sin(theta), glm::cos(theta));
 }
 
-void SunLight::init(float sunTheta, float sunPhi, const glm::ivec2& position, const glm::ivec2& dimension) {
-	const glm::vec3& lightDirection = spherical(glm::radians(sunTheta), glm::radians(sunPhi));
-	init(-lightDirection, position, dimension);
+glm::vec3 SunLight::init(float sunTheta, float sunPhi, const glm::ivec2& position, const glm::ivec2& dimension) {
+	const glm::vec3& sunDirection = -spherical(glm::radians(sunTheta), glm::radians(sunPhi));
+	_sunCamera.init(glm::vec3(), dimension);
+	const glm::vec3& lightUp = glm::abs(sunDirection.z) > 0.7f ? glm::up : glm::backward;
+	const glm::quat& quat = glm::quat_cast(glm::lookAt(glm::vec3(), sunDirection, lightUp));
+	_sunCamera.setQuaternion(quat);
+	return sunDirection;
 }
 
 void SunLight::init(const glm::vec3& sunDirection, const glm::ivec2& position, const glm::ivec2& dimension) {

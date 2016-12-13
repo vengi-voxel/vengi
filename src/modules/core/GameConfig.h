@@ -31,7 +31,6 @@ constexpr const char *ClientWindowHeight = "cl_height";
 constexpr const char *ClientGamma = "cl_gamma";
 constexpr const char *ClientDeferred = "cl_deferred";
 constexpr const char *ClientShadowMap = "cl_shadowmap";
-constexpr const char *ClientCameraSun = "cl_cameralookthroughsun";
 constexpr const char *ClientCameraMaxTargetDistance = "cl_cameramaxtargetdistance";
 
 constexpr const char *ClientDebugDeferred = "cl_debug_deferred";

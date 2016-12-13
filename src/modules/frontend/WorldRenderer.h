@@ -13,7 +13,6 @@
 #include "video/UniformBuffer.h"
 #include "video/GBuffer.h"
 #include "video/DepthBuffer.h"
-#include "video/SunLight.h"
 #include "FrontendShaders.h"
 #include "video/GLMeshData.h"
 #include "core/GLM.h"
@@ -59,6 +58,7 @@ protected:
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
 
+	glm::vec3 _sunDirection;
 	float _fogRange = 250.0f;
 	float _lineWidth = 2.0f;
 	// TODO: get the view distance from the server - entity attributes
@@ -79,7 +79,6 @@ protected:
 	core::VarPtr _deferredDebug;
 	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapDebug;
-	core::VarPtr _cameraSun;
 	video::VertexBuffer _fullscreenQuad;
 	video::VertexBuffer _shadowMapDebugBuffer;
 	video::DepthBuffer _depthBuffer;
@@ -93,7 +92,6 @@ protected:
 	shader::MeshShader _meshShader;
 	shader::DeferredLightDirShader _deferredDirLightShader;
 	shader::ShadowmapShader _shadowMapShader;
-	video::SunLight _sunLight;
 
 	voxel::PlantGenerator _plantGenerator;
 
@@ -144,13 +142,7 @@ public:
 	bool extractNewMeshes(const glm::vec3& position, bool force = false);
 	int renderWorld(const video::Camera& camera, int* vertices = nullptr);
 	int renderEntities(const video::Camera& camera);
-
-	const video::SunLight& sunLight() const;
 };
-
-inline const video::SunLight& WorldRenderer::sunLight() const {
-	return _sunLight;
-}
 
 inline float WorldRenderer::getViewDistance() const {
 	return _viewDistance;

@@ -217,27 +217,19 @@ void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const vi
 }
 
 void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& camera, bool shadowPass) {
-	const video::Camera* actualCamera = &camera;
-	float viewDistance = _viewDistance;
-	if (_cameraSun->boolVal()) {
-		actualCamera = &_sunLight.camera();
-		viewDistance = actualCamera->farPlane();
-	}
-
-	shaderSetUniformIf(shader, setUniformMatrix, "u_viewprojection", actualCamera->viewProjectionMatrix());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_view", actualCamera->viewMatrix());
-	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", actualCamera->projectionMatrix());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_viewprojection", camera.viewProjectionMatrix());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_view", camera.viewMatrix());
+	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
 	shaderSetUniformIf(shader, setUniformBuffer, "u_materialblock", _materialBuffer);
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
-	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", viewDistance);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunLight.direction());
+	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunDirection);
 	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_depthBuffer.dimension()));
-	shaderSetUniformIf(shader, setUniformMatrix, "u_light", _sunLight.viewProjectionMatrix(camera));
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformVec3, "u_ambient_color", _ambientColor);
 	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
-	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(actualCamera->dimension()));
+	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices) {
@@ -296,7 +288,7 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	_gbuffer.bindForReading(false);
 	shader::DeferredLightDirShader& deferredShader = _deferredDirLightShader;
 	video::ScopedShader scoped(deferredShader);
-	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightdir", _sunLight.direction());
+	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightdir", _sunDirection);
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_ambient_color", _ambientColor);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
@@ -331,8 +323,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	GL_checkError();
 
-	_sunLight.update(_deltaFrame, camera);
-
 	cull(_meshDataOpaque, _visibleOpaque, camera);
 	cull(_meshDataWater, _visibleWater, camera);
 	_visiblePlant.clear();
@@ -350,8 +340,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	if (shadowMap) {
 		core_assert(maxDepthBuffers * 2 <= (int)SDL_arraysize(planes));
-		const video::Camera& sunCamera = _sunLight.camera();
-		sunCamera.sliceFrustum(planes, SDL_arraysize(planes), maxDepthBuffers, 0.1f);
+		camera.sliceFrustum(planes, SDL_arraysize(planes), maxDepthBuffers, 0.1f);
 		glDisable(GL_BLEND);
 		// put shadow acne into the dark
 		glCullFace(GL_FRONT);
@@ -363,11 +352,19 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_depthBuffer.bind();
 		const glm::mat4& inverseView = glm::inverse(camera.viewMatrix());
 
+		const float sunTheta = 60;
+		const float sunPhi = 200;
+		const float t = glm::radians(sunTheta);
+		const float p = glm::radians(sunPhi);
+		_sunDirection = -glm::vec3(glm::cos(p) * glm::sin(t), glm::sin(p) * glm::sin(t), glm::cos(t));
+		const glm::vec3& lightUp = glm::abs(_sunDirection.z) > 0.7f ? glm::up : glm::backward;
+		const glm::mat4& lightView = glm::lookAt(glm::vec3(), _sunDirection, lightUp);
+
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			const float near = planes[i * 2 + 0];
 			const float far = planes[i * 2 + 1];
 			const glm::vec4& sphere = camera.splitFrustumSphereBoundingBox(near, far);
-			const glm::vec3 lightCenter(_sunLight.viewMatrix() * inverseView * glm::vec4(sphere.x, sphere.y, sphere.z, 1));
+			const glm::vec3 lightCenter(lightView * inverseView * glm::vec4(sphere.x, sphere.y, sphere.z, 1));
 			const float lightRadius = sphere.w;
 
 			// round to prevent movement
@@ -383,7 +380,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 					 lightCenterRounded.y + lightRadius,
 					-lightCenterRounded.z - (shadowRangeZ - lightRadius),
 					-lightCenterRounded.z + lightRadius);
-			cascades[i] = lightProjection * _sunLight.viewMatrix();
+			cascades[i] = lightProjection * lightView;
 			distances[i] = far;
 
 			_depthBuffer.bindTexture(false, i);
@@ -714,10 +711,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	core_assert(_shadowMap);
 	_deferredDebug = core::Var::get(cfg::ClientDebugDeferred, "false");
 	_shadowMapDebug = core::Var::get(cfg::ClientDebugShadowMap, "false");
-	_cameraSun = core::Var::get(cfg::ClientCameraSun, "false");
 
-	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
-	_sunLight.init(sunDirection, position, dimension);
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
 		const int ColorTextureOctaves = 2;
