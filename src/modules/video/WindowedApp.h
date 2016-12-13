@@ -17,6 +17,25 @@ namespace video {
 
 class WindowedApp: public core::App, public io::IEventObserver {
 protected:
+	class ProfilerGPU {
+	private:
+		unsigned int _id = 0u;
+		double _avg = 0.0;
+		double _min = 0.0;
+		double _max = 0.0;
+		int _state = 0;
+	public:
+		ProfilerGPU();
+		~ProfilerGPU();
+
+		bool init();
+		void enter();
+		void leave();
+		double minimum() const;
+		double maximum() const;
+		double avg() const;
+	};
+
 	SDL_Window* _window;
 	SDL_GLContext _glcontext;
 	glm::ivec2 _dimension;
