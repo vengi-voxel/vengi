@@ -28,6 +28,7 @@ void DepthBuffer::shutdown() {
 
 	if (_depthTexture != 0) {
 		glDeleteTextures(1, &_depthTexture);
+		_depthTexture = 0u;
 	}
 
 	if (_rbo != 0) {

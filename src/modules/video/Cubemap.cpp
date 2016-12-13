@@ -22,6 +22,7 @@ Cubemap::~Cubemap() {
 void Cubemap::shutdown() {
 	if (_textureHandle != 0) {
 		glDeleteTextures(1, &_textureHandle);
+		_textureHandle = 0u;
 	}
 }
 

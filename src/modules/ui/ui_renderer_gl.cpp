@@ -24,8 +24,9 @@ UIBitmapGL::UIBitmapGL(UIRendererGL *renderer) :
 UIBitmapGL::~UIBitmapGL() {
 	_renderer->FlushBitmap(this);
 
-	if (_destroy) {
+	if (_destroy && _texture != 0u) {
 		glDeleteTextures(1, &_texture);
+		_texture = 0u;
 	}
 }
 
