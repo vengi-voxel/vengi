@@ -91,6 +91,8 @@ core::AppState ShapeTool::onInit() {
 	targetPos.z += 1000.0f;
 	_entity->lerpPosition(targetPos, _entity->orientation());
 
+	_worldTimer.init();
+
 	new WorldParametersWindow(this);
 
 	return state;
@@ -121,6 +123,7 @@ void ShapeTool::beforeUI() {
 	_worldRenderer.extractNewMeshes(_camera.position());
 	_worldRenderer.onRunning(_deltaFrame);
 	_vertices = 0;
+	ScopedProfiler<ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
@@ -139,6 +142,8 @@ void ShapeTool::afterRootWidget() {
 	int active;
 	_worldRenderer.stats(meshes, extracted, pending, active);
 	const int x = 5;
+	enqueueShowStr(x, core::Color::White, "frame avg: %f", _frameTimer.avg());
+	enqueueShowStr(x, core::Color::White, "render avg: %f", _worldTimer.avg());
 	enqueueShowStr(x, core::Color::White, "drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
 	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
@@ -152,6 +157,7 @@ void ShapeTool::afterRootWidget() {
 }
 
 core::AppState ShapeTool::onRunning() {
+	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
 	core::AppState state = Super::onRunning();
 
 	_axis.render(_camera);
