@@ -149,6 +149,27 @@ int32_t VertexBuffer::createFullscreenTextureBuffer() {
 	return create(vecs, sizeof(vecs));
 }
 
+
+int32_t VertexBuffer::createFullscreenTextureBufferYFlipped() {
+	// counter clock wise winding
+	//
+	// 0/1    1/1
+	// ----------
+	// |        |
+	// |        |
+	// |        |
+	// ----------
+	// 0/0    1/0
+	//
+	static const glm::vec2 vecs[] = {
+		// left bottom, right bottom, right top
+		glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f),
+		// left bottom, right top, left top
+		glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec2(0.0f, 1.0f)
+	};
+	return create(vecs, sizeof(vecs));
+}
+
 int32_t VertexBuffer::createWhiteColorForQuad() {
 	static const glm::vec4 color[] = {
 		glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f)
@@ -181,10 +202,14 @@ glm::ivec2 VertexBuffer::createTexturedQuad(const glm::ivec2& xy, const glm::ive
 	return indices;
 }
 
-glm::ivec2 VertexBuffer::createFullscreenTexturedQuad() {
+glm::ivec2 VertexBuffer::createFullscreenTexturedQuad(bool yFlipped) {
 	glm::ivec2 indices;
 	indices.x = createFullscreenQuad();
-	indices.y = createFullscreenTextureBuffer();
+	if (yFlipped) {
+		indices.y = createFullscreenTextureBufferYFlipped();
+	} else {
+		indices.y = createFullscreenTextureBuffer();
+	}
 	return indices;
 }
 

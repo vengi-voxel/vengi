@@ -81,7 +81,8 @@ public:
 	 * @brief Full texture coordinate buffer with 2 float components
 	 */
 	int32_t createFullscreenTextureBuffer();
-	glm::ivec2 createFullscreenTexturedQuad();
+	int32_t createFullscreenTextureBufferYFlipped();
+	glm::ivec2 createFullscreenTexturedQuad(bool yFlipped = false);
 	/**
 	 * @brief Screen coordinate buffer with 2 float components for vertices and 2 float components for texcoords
 	 * @return Two vertex buffers, the first one contains the vertices, the second contains the texcoords
