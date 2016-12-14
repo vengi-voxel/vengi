@@ -299,13 +299,6 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	_gbuffer.unbind();
 }
 
-static inline float getSplitDistance(float znear, float zfar, int split, int splitCount, float pssm) {
-	const float k = float(split) / splitCount;
-	const float logd = znear * powf(zfar / znear, k);
-	const float lind = glm::mix(znear, zfar, k);
-	return glm::mix(logd, lind, pssm);
-}
-
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	handleMeshQueue(_worldShader);
 
@@ -360,12 +353,9 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		const glm::mat4& lightView = glm::lookAt(glm::vec3(50.0f, 50.0f, -50.0f), glm::vec3(0.0f), glm::up);
 		_sunDirection = glm::vec3(glm::column(glm::inverse(lightView), 2));
 
-		const float shadowSplit = 0.1f;
 		for (int i = 0; i < maxDepthBuffers; ++i) {
-			//const float near = planes[i * 2 + 0];
-			//const float far = planes[i * 2 + 1];
-			const float near = getSplitDistance(camera.nearPlane(), camera.farPlane(), i + 0, maxDepthBuffers, shadowSplit);
-			const float far  = getSplitDistance(camera.nearPlane(), camera.farPlane(), i + 1, maxDepthBuffers, shadowSplit);
+			const float near = planes[i * 2 + 0];
+			const float far = planes[i * 2 + 1];
 			const glm::vec4& sphere = camera.splitFrustumSphereBoundingBox(near, far);
 			const glm::vec3 lightCenter(lightView * inverseView * glm::vec4(sphere.x, sphere.y, sphere.z, 1));
 			const float lightRadius = sphere.w;
