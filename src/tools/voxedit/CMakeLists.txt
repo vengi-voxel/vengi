@@ -18,6 +18,7 @@ set(SRCS
 	ui/editorscene/select/Single.h
 	ui/editorscene/select/Select.h ui/editorscene/select/Select.cpp
 
+	ui/editorscene/tool/Fill.h ui/editorscene/tool/Fill.cpp
 	ui/editorscene/tool/Crop.h ui/editorscene/tool/Crop.cpp
 	ui/editorscene/tool/Expand.h ui/editorscene/tool/Expand.cpp
 

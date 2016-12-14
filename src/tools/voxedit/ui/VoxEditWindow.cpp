@@ -332,6 +332,10 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	} else if (isAny(ev, TBIDC("extend"))) {
 		extend();
 		return true;
+	} else if (isAny(ev, TBIDC("fill"))) {
+		const glm::ivec3& pos = _scene->cursorPosition();
+		fill(pos.x, pos.y, pos.z);
+		return true;
 	} else if (isAny(ev, TBIDC("new"))) {
 		createNew(false);
 		return true;
@@ -502,6 +506,10 @@ void VoxEditWindow::crop() {
 
 void VoxEditWindow::extend(int size) {
 	_scene->extend(size);
+}
+
+void VoxEditWindow::fill(int x, int y, int z) {
+	_scene->fill(x, y, z);
 }
 
 bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {

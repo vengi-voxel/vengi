@@ -99,6 +99,7 @@ public:
 
 	void crop();
 	void extend(int size = 1);
+	void fill(int x, int y, int z);
 
 	virtual void OnInflate(const tb::INFLATE_INFO &info) override;
 	virtual void OnProcess() override;

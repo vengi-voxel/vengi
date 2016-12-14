@@ -191,6 +191,8 @@ TBLayout: distribution: gravity, axis: y
 								TBSkinImage: skin: voxedit-crop
 							TBButton: @include: definitions>menubutton, text: Extend, id: extend
 								TBSkinImage: skin: voxedit-extend
+							TBButton: @include: definitions>menubutton, text: Fill, id: fill
+								TBSkinImage: skin: voxedit-fill
 
 					TBSection: value: 1, text: "Cursor"
 						TBLayout: position: left top, axis: y, distribution: gravity

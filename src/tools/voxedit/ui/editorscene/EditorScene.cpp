@@ -128,6 +128,10 @@ void EditorScene::extend(int size) {
 	m().extend(size);
 }
 
+void EditorScene::fill(int x, int y, int z) {
+	m().fill(x, y, z);
+}
+
 bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 	const video::Mesh::Vertices& positions = meshPtr->vertices();
 	const video::Mesh::Indices& indices = meshPtr->indices();

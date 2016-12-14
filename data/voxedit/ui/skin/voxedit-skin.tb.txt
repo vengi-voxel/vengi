@@ -65,6 +65,8 @@ elements
 		bitmap voxedit-lsystem.png
 	voxedit-tree_pine
 		bitmap voxedit-tree_pine.png
+	voxedit-fill
+		bitmap voxedit-fill.png
 
 	grid-button
 		bitmap voxedit-show-grid.png

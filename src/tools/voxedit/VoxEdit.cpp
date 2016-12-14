@@ -123,6 +123,14 @@ core::AppState VoxEdit::onInit() {
 		this->_mainWindow->rotate(x, y, z);
 	}).setHelp("Rotate voxels by the given angles (in degree)");
 
+	core::Command::registerCommand("fill", [this] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		const int x = core::string::toInt(argc >= 1 ? args[0] : "");
+		const int y = core::string::toInt(argc >= 2 ? args[1] : "");
+		const int z = core::string::toInt(argc >= 3 ? args[2] : "");
+		this->_mainWindow->fill(x, y, z);
+	}).setHelp("Fill with the current selected voxel");
+
 	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {
 		if (args.size() != 3) {
 			Log::info("Expected to get x, y and z coordinates");

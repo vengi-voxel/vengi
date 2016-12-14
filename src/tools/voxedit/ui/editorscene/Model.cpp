@@ -13,6 +13,7 @@
 #include "tool/Crop.h"
 #include "tool/Expand.h"
 #include "core/Random.h"
+#include "tool/Fill.h"
 
 namespace voxedit {
 
@@ -121,6 +122,11 @@ void Model::extend(int size) {
 	}
 	markUndo();
 	setNewVolume(newVolume);
+}
+
+void Model::fill(int x, int y, int z) {
+	markUndo();
+	voxedit::tool::fill(*_modelVolume, glm::ivec3(x, y, z), _lockedAxis, _shapeHandler.currentVoxel());
 }
 
 void Model::executeAction(bool mouseDown, long now) {

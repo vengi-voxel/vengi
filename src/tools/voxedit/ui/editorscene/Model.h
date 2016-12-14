@@ -75,6 +75,7 @@ public:
 
 	void crop();
 	void extend(int size = 1);
+	void fill(int x, int y, int z);
 
 	bool save(std::string_view file);
 	bool load(std::string_view file);
