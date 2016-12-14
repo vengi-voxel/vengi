@@ -63,7 +63,6 @@ core::AppState TestMeshApp::onInit() {
 }
 
 void TestMeshApp::doRender() {
-	// TODO: support different animations...
 	const uint8_t animationIndex = core::Var::get("animation", "0")->intVal();
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;
 	{
