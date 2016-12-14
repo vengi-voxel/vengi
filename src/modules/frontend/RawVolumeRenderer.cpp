@@ -220,6 +220,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 	_worldShader.setDiffuseColor(_diffuseColor);
 	_worldShader.setAmbientColor(_ambientColor);
+	_worldShader.setFogcolor(glm::vec3(core::Color::LightBlue));
 	_worldShader.setDebugColor(1.0f);
 	int maxDepthBuffers = maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	glActiveTexture(GL_TEXTURE1);

@@ -222,6 +222,7 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
 	shaderSetUniformIf(shader, setUniformBuffer, "u_materialblock", _materialBuffer);
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
+	shaderSetUniformIf(shader, setUniformVec3, "u_fogcolor", _clearColor);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunDirection);

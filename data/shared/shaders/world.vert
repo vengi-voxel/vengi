@@ -29,10 +29,6 @@ $out float v_debug_color;
 
 #include "_shadowmap.vert"
 
-#if cl_deferred == 0
-$out vec3 v_fogcolor;
-#endif
-
 void main(void) {
 	uint a_ao = a_info[0];
 	uint a_colorindex = a_info[1];
@@ -58,11 +54,6 @@ void main(void) {
 
 #if cl_shadowmap == 1
 	v_lightspacepos = v_pos.xyz;
-#endif
-
-#if cl_deferred == 0
-	// use the air color as fog color, too
-	v_fogcolor = u_materialcolor[0].rgb;
 #endif
 
 	gl_Position = u_viewprojection * v_pos;

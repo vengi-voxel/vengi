@@ -10,9 +10,9 @@ uniform mat4 u_viewprojection;
 uniform vec3 u_lightdir;
 uniform vec3 u_diffuse_color;
 uniform vec3 u_ambient_color;
+uniform vec3 u_fogcolor;
 uniform float u_fogrange;
 uniform float u_viewdistance;
-$in vec3 v_fogcolor;
 $out vec4 o_color;
 #else
 // the order is defines in the gbuffer bindings
@@ -42,7 +42,7 @@ void main(void) {
 	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / (u_viewdistance - fogstart), 0.0, 1.0);
 
 	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * u_debug_color;
-	o_color = vec4(mix(linearColor, v_fogcolor, fogval), v_color.a);
+	o_color = vec4(mix(linearColor, u_fogcolor, fogval), v_color.a);
 #endif
 #else
 	o_color = v_color.xyz * v_ambientocclusion * u_debug_color;
