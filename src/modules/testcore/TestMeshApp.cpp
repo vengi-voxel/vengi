@@ -71,7 +71,7 @@ void TestMeshApp::doRender() {
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;
 	{
 		video::ScopedShader scoped(_shadowMapShader);
-		_shadowMapShader.setLight(_sunLight.viewProjectionMatrix(_camera));
+		_shadowMapShader.setLightviewprojection(_sunLight.viewProjectionMatrix(_camera));
 		_shadowMapShader.setModel(glm::mat4());
 		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
 			glDisable(GL_BLEND);

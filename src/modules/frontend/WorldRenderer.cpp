@@ -380,13 +380,13 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			{
 				video::ScopedShader scoped(_shadowMapShader);
 				setUniforms(_shadowMapShader, camera);
-				shaderSetUniformIf(_shadowMapShader, setUniformMatrix, "u_light", cascades[i]);
+				_shadowMapShader.setLightviewprojection(cascades[i]);
 				drawCallsWorld += renderWorldMeshes(_shadowMapShader, _visibleOpaque, vertices);
 			}
 			{
 				video::ScopedShader scoped(_shadowMapInstancedShader);
 				setUniforms(_shadowMapInstancedShader, camera);
-				shaderSetUniformIf(_shadowMapInstancedShader, setUniformMatrix, "u_light", cascades[i]);
+				_shadowMapInstancedShader.setLightviewprojection(cascades[i]);
 				drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, _visiblePlant, vertices);
 			}
 		}

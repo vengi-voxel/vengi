@@ -8,7 +8,7 @@ $in uvec3 a_pos;
 $in vec3 a_offset;
 #endif
 
-uniform mat4 u_light;
+uniform mat4 u_lightviewprojection;
 uniform mat4 u_model;
 
 void main()
@@ -17,5 +17,5 @@ void main()
 #ifdef INSTANCED
 	worldpos = vec4(a_offset, 0.0) + worldpos;
 #endif
-	gl_Position = u_light * worldpos;
+	gl_Position = u_lightviewprojection * worldpos;
 }
