@@ -56,7 +56,7 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 		const GLenum glType = std::enum_value(type);
 		glBindTexture(glType, _depthTexture);
 		glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 		glBindTexture(glType, 0);
 	}
 

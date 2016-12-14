@@ -2,6 +2,7 @@ $in vec4 v_pos;
 $in vec4 v_color;
 $in float v_ambientocclusion;
 uniform float u_debug_color;
+uniform mat4 u_viewprojection;
 
 #include "_shadowmap.frag"
 
@@ -26,15 +27,15 @@ void main(void) {
 	vec3 normal = normalize(cross(fdx, fdy));
 
 #if cl_deferred == 0
-	float ndotl = dot(normal, -u_lightdir);
-	float shadow = calculateShadow(ndotl);
+	float shadow = calculateShadow(u_viewprojection);
 #if cl_debug_shadow == 1
 	// shadow only rendering
 	o_color = vec4(vec3(shadow), 1.0);
 #else
+	float ndotl = dot(normal, -u_lightdir);
 	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
 	vec3 ambient = u_ambient_color;
-	vec3 lightvalue = ambient + (shadow * diffuse);
+	vec3 lightvalue = ambient + (diffuse * shadow);
 
 	float fogstart = max(u_viewdistance - u_fogrange, 0.0);
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;

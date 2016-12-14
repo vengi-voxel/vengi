@@ -83,7 +83,7 @@ bool RawVolumeRenderer::onResize(const glm::ivec2& position, const glm::ivec2& d
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	_depthBuffer.shutdown();
 	const glm::ivec2 smSize(core::Var::get(cfg::ClientShadowMapSize, "2048")->intVal());
-	if (!_depthBuffer.init(smSize, video::DepthBufferMode::RGBA, maxDepthBuffers)) {
+	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
 		return false;
 	}
 	return true;
@@ -218,7 +218,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_worldShader.setViewdistance(camera.farPlane());
 	_worldShader.setLightdir(_sunLight.direction());
 	_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
-	_worldShader.setLight(_sunLight.viewProjectionMatrix(camera));
 	_worldShader.setDiffuseColor(_diffuseColor);
 	_worldShader.setAmbientColor(_ambientColor);
 	_worldShader.setDebugColor(1.0f);

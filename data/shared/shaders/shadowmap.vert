@@ -10,7 +10,6 @@ $in vec3 a_offset;
 
 uniform mat4 u_light;
 uniform mat4 u_model;
-$out vec2 o_projZW;
 
 void main()
 {
@@ -18,7 +17,5 @@ void main()
 #ifdef INSTANCED
 	worldpos = vec4(a_offset, 0.0) + worldpos;
 #endif
-	vec4 pos = u_light * worldpos;
-	gl_Position = pos;
-	o_projZW = pos.zw;
+	gl_Position = u_light * worldpos;
 }

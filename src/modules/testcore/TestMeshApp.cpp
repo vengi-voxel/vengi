@@ -56,7 +56,7 @@ core::AppState TestMeshApp::onInit() {
 	}
 	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const glm::ivec2 smSize(core::Var::get(cfg::ClientShadowMapSize, "2048")->intVal());
-	if (!_depthBuffer.init(smSize, video::DepthBufferMode::RGBA, maxDepthBuffers)) {
+	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
 		Log::error("Failed to init the depthbuffer");
 		return core::AppState::Cleanup;
 	}
@@ -101,7 +101,6 @@ void TestMeshApp::doRender() {
 		_meshShader.setTexture(0);
 		_meshShader.setDiffuseColor(_diffuseColor);
 		_meshShader.setAmbientColor(_ambientColor);
-		_meshShader.setLight(_sunLight.viewProjectionMatrix(_camera));
 		_meshShader.setShadowmap(1);
 
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);

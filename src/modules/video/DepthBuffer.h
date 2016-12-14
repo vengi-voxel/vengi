@@ -43,9 +43,12 @@ public:
 	}
 
 	inline bool depthAttachment() const {
-		return _mode == DepthBufferMode::DEPTH || _mode == DepthBufferMode::DEPTH_CMP;
+		return _mode == DepthBufferMode::DEPTH || depthCompare();
 	}
 
+	inline bool depthCompare() const {
+		return _mode == DepthBufferMode::DEPTH_CMP;
+	}
 private:
 	GLint _oldViewport[4] = {0, 0, 0, 0};
 	GLint _oldFramebuffer = -1;

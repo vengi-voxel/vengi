@@ -216,7 +216,7 @@ void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const vi
 	Log::trace("%i meshes left after culling, %i meshes overall", visibleCount, meshesCount);
 }
 
-void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& camera, bool shadowPass) {
+void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& camera) {
 	shaderSetUniformIf(shader, setUniformMatrix, "u_viewprojection", camera.viewProjectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_view", camera.viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
@@ -274,10 +274,8 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisibl
 	}
 
 	if (shadowMap) {
-		for (int i = 0; i < maxDepthBuffers; ++i) {
-			glActiveTexture(GL_TEXTURE1 + i);
-			glBindTexture(GL_TEXTURE_2D, 0);
-		}
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glActiveTexture(GL_TEXTURE0);
 	}
 
@@ -299,6 +297,13 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	glDrawArrays(GL_TRIANGLES, 0, _fullscreenQuad.elements(0));
 	_fullscreenQuad.unbind();
 	_gbuffer.unbind();
+}
+
+static inline float getSplitDistance(float znear, float zfar, int split, int splitCount, float pssm) {
+	const float k = float(split) / splitCount;
+	const float logd = znear * powf(zfar / znear, k);
+	const float lind = glm::mix(znear, zfar, k);
+	return glm::mix(logd, lind, pssm);
 }
 
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
@@ -360,9 +365,12 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		const glm::vec3& lightUp = glm::abs(_sunDirection.z) > 0.7f ? glm::up : glm::backward;
 		const glm::mat4& lightView = glm::lookAt(glm::vec3(), _sunDirection, lightUp);
 
+		const float shadowSplit = 0.1f;
 		for (int i = 0; i < maxDepthBuffers; ++i) {
-			const float near = planes[i * 2 + 0];
-			const float far = planes[i * 2 + 1];
+			//const float near = planes[i * 2 + 0];
+			//const float far = planes[i * 2 + 1];
+			const float near = getSplitDistance(camera.nearPlane(), camera.farPlane(), i + 0, maxDepthBuffers, shadowSplit);
+			const float far  = getSplitDistance(camera.nearPlane(), camera.farPlane(), i + 1, maxDepthBuffers, shadowSplit);
 			const glm::vec4& sphere = camera.splitFrustumSphereBoundingBox(near, far);
 			const glm::vec3 lightCenter(lightView * inverseView * glm::vec4(sphere.x, sphere.y, sphere.z, 1));
 			const float lightRadius = sphere.w;
@@ -386,13 +394,13 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_depthBuffer.bindTexture(i);
 			{
 				video::ScopedShader scoped(_shadowMapShader);
-				setUniforms(_shadowMapShader, camera, true);
+				setUniforms(_shadowMapShader, camera);
 				shaderSetUniformIf(_shadowMapShader, setUniformMatrix, "u_light", cascades[i]);
 				drawCallsWorld += renderWorldMeshes(_shadowMapShader, _visibleOpaque, vertices);
 			}
 			{
 				video::ScopedShader scoped(_shadowMapInstancedShader);
-				setUniforms(_shadowMapInstancedShader, camera, true);
+				setUniforms(_shadowMapInstancedShader, camera);
 				shaderSetUniformIf(_shadowMapInstancedShader, setUniformMatrix, "u_light", cascades[i]);
 				drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, _visiblePlant, vertices);
 			}
@@ -401,6 +409,11 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		glCullFace(GL_BACK);
 		glEnable(GL_BLEND);
 		glDisable(GL_POLYGON_OFFSET_FILL);
+	} else {
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			cascades[i] = glm::mat4();
+			distances[i] = camera.farPlane();
+		}
 	}
 
 	_colorTexture->bind(0);
@@ -416,21 +429,21 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	{
 		video::ScopedShader scoped(_worldShader);
-		setUniforms(_worldShader, camera, false);
+		setUniforms(_worldShader, camera);
 		shaderSetUniformIf(_worldShader, setUniformMatrixv, "u_cascades", cascades, maxDepthBuffers);
 		shaderSetUniformIf(_worldShader, setUniformfv, "u_distances", distances, maxDepthBuffers, maxDepthBuffers);
 		drawCallsWorld += renderWorldMeshes(_worldShader, _visibleOpaque, vertices);
 	}
 	{
 		video::ScopedShader scoped(_plantShader);
-		setUniforms(_plantShader, camera, false);
+		setUniforms(_plantShader, camera);
 		shaderSetUniformIf(_plantShader, setUniformMatrixv, "u_cascades", cascades, maxDepthBuffers);
 		shaderSetUniformIf(_plantShader, setUniformfv, "u_distances", distances, maxDepthBuffers, maxDepthBuffers);
 		drawCallsWorld += renderWorldMeshes(_plantShader, _visiblePlant, vertices);
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
-		setUniforms(_waterShader, camera, false);
+		setUniforms(_waterShader, camera);
 		shaderSetUniformIf(_waterShader, setUniformMatrixv, "u_cascades", cascades, maxDepthBuffers);
 		shaderSetUniformIf(_waterShader, setUniformfv, "u_distances", distances, maxDepthBuffers, maxDepthBuffers);
 		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
@@ -479,20 +492,41 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	if (shadowMap && _shadowMapDebug->boolVal()) {
 		const int width = camera.width();
 		const int height = camera.height();
+
+		// activate shader
 		video::ScopedShader scopedShader(_shadowMapDebugShader);
-		core_assert_always(_shadowMapDebugBuffer.bind());
-		glActiveTexture(GL_TEXTURE0);
 		_shadowMapDebugShader.setShadowmap(0);
+		_shadowMapDebugShader.setFar(camera.farPlane());
+		_shadowMapDebugShader.setNear(camera.nearPlane());
+
+		// bind buffers
+		core_assert_always(_shadowMapDebugBuffer.bind());
+
+		// configure shadow map texture
+		glActiveTexture(GL_TEXTURE0);
+		const GLenum glTextureType = std::enum_value(_depthBuffer.textureType());
+		glBindTexture(glTextureType, _depthBuffer.texture());
+		if (_depthBuffer.depthCompare()) {
+			glTexParameteri(glTextureType, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+		}
+
+		// render shadow maps
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			const GLsizei halfWidth = (GLsizei) (width / 4.0f);
 			const GLsizei halfHeight = (GLsizei) (height / 4.0f);
 			video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
-			glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
 			_shadowMapDebugShader.setCascade(i);
 			glDrawArrays(GL_TRIANGLES, 0, _shadowMapDebugBuffer.elements(0));
 		}
+
+		// restore texture
+		if (_depthBuffer.depthCompare()) {
+			glTexParameteri(glTextureType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		}
+		glBindTexture(glTextureType, 0);
+
+		// unbind buffer
 		_shadowMapDebugBuffer.unbind();
-		glBindTexture(std::enum_value(_depthBuffer.textureType()), 0);
 	}
 
 	GL_checkError();
@@ -512,7 +546,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	// TODO: deferred rendering
 	shader::MeshShader& shader = _meshShader;
 	video::ScopedShader scoped(shader);
-	setUniforms(shader, camera, false);
+	setUniforms(shader, camera);
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	int maxDepthBuffers = 0;
 	if (shadowMap) {
@@ -535,7 +569,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		const glm::mat4& translate = glm::translate(rotate, ent->position());
 		const glm::mat4& scale = glm::scale(translate, glm::vec3(ent->scale()));
 		const glm::mat4& model = scale;
-		shader.setUniformMatrix("u_model", model, false);
+		shader.setUniformMatrix("u_model", model);
 		drawCallsEntities += mesh->render();
 		GL_checkError();
 	}
@@ -789,7 +823,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const glm::ivec2 smSize(core::Var::get(cfg::ClientShadowMapSize, "2048")->intVal());
-	if (!_depthBuffer.init(smSize, video::DepthBufferMode::RGBA, maxDepthBuffers)) {
+	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
 		return false;
 	}
 
