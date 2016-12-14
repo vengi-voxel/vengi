@@ -364,8 +364,8 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 			break;
 		case TreeType::BranchesEllipsis:
 			ctx.leavesHeight = random.random(10, 14);
-			ctx.trunkHeight = ctx.leavesHeight + random.random(6, 15);
-			ctx.trunkWidth = 5;
+			ctx.trunkHeight = ctx.leavesHeight + random.random(6, 10);
+			ctx.trunkWidth = 3;
 			break;
 		default:
 			ctx.leavesHeight = random.random(10, 14);
