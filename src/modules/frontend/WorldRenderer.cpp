@@ -357,10 +357,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_depthBuffer.bind();
 		const glm::mat4& inverseView = glm::inverse(camera.viewMatrix());
 
-		const float sunTheta = 60;
-		const float sunPhi = 200;
-		const float t = glm::radians(sunTheta);
-		const float p = glm::radians(sunPhi);
 		const glm::mat4& lightView = glm::lookAt(glm::vec3(50.0f, 50.0f, -50.0f), glm::vec3(0.0f), glm::up);
 		_sunDirection = glm::vec3(glm::column(glm::inverse(lightView), 2));
 

@@ -57,7 +57,7 @@ void main(void) {
 	v_ambientocclusion = aovalues[a_ao];
 
 #if cl_shadowmap == 1
-	v_lightspacepos = vec3(a_pos);
+	v_lightspacepos = v_pos.xyz;
 #endif
 
 #if cl_deferred == 0
