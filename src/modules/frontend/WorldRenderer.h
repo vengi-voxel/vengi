@@ -19,6 +19,7 @@
 #include "core/Var.h"
 #include "core/Color.h"
 #include "ClientEntity.h"
+#include "frontend/Shadow.h"
 
 #include <unordered_map>
 #include <list>
@@ -58,7 +59,7 @@ protected:
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
 
-	glm::vec3 _sunDirection;
+	Shadow _shadow;
 	float _fogRange = 250.0f;
 	float _lineWidth = 2.0f;
 	// TODO: get the view distance from the server - entity attributes

@@ -225,7 +225,7 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 	shaderSetUniformIf(shader, setUniformVec3, "u_fogcolor", _clearColor);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
-	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _sunDirection);
+	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _shadow.sunDirection());
 	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_depthBuffer.dimension()));
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformVec3, "u_ambient_color", _ambientColor);
@@ -287,7 +287,7 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 	_gbuffer.bindForReading(false);
 	shader::DeferredLightDirShader& deferredShader = _deferredDirLightShader;
 	video::ScopedShader scoped(deferredShader);
-	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightdir", _sunDirection);
+	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightdir", _shadow.sunDirection());
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(deferredShader, setUniformVec3, "u_ambient_color", _ambientColor);
 	shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
@@ -331,13 +331,11 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	const bool shadowMap = _shadowMap->boolVal();
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-	std::vector<glm::mat4> cascades(maxDepthBuffers);
-	std::vector<float> distances(maxDepthBuffers);
-	float planes[8];
 
+	_shadow.calculateShadowData(camera, shadowMap, maxDepthBuffers, _depthBuffer.dimension());
+	const std::vector<glm::mat4>& cascades = _shadow.cascades();
+	const std::vector<float>& distances = _shadow.distances();
 	if (shadowMap) {
-		core_assert(maxDepthBuffers * 2 <= (int)SDL_arraysize(planes));
-		camera.sliceFrustum(planes, SDL_arraysize(planes), maxDepthBuffers, 0.1f);
 		glDisable(GL_BLEND);
 		// put shadow acne into the dark
 		glCullFace(GL_FRONT);
@@ -346,35 +344,10 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		const float shadowBias = 0.09f;
 		const float shadowRangeZ = camera.farPlane() * 3.0f;
 		glPolygonOffset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
+
+
 		_depthBuffer.bind();
-		const glm::mat4& inverseView = glm::inverse(camera.viewMatrix());
-
-		const glm::mat4& lightView = glm::lookAt(glm::vec3(50.0f, 50.0f, -50.0f), glm::vec3(0.0f), glm::up);
-		_sunDirection = glm::vec3(glm::column(glm::inverse(lightView), 2));
-
 		for (int i = 0; i < maxDepthBuffers; ++i) {
-			const float near = planes[i * 2 + 0];
-			const float far = planes[i * 2 + 1];
-			const glm::vec4& sphere = camera.splitFrustumSphereBoundingBox(near, far);
-			const glm::vec3 lightCenter(lightView * inverseView * glm::vec4(sphere.x, sphere.y, sphere.z, 1));
-			const float lightRadius = sphere.w;
-
-			// round to prevent movement
-			const float xRound = lightRadius * 2.0f / _depthBuffer.dimension().x;
-			const float yRound = lightRadius * 2.0f / _depthBuffer.dimension().y;
-			const float zRound = 1.0f;
-			const glm::vec3 round(xRound, yRound, zRound);
-			const glm::vec3 lightCenterRounded = glm::round(lightCenter / round) * round;
-			const glm::mat4& lightProjection = glm::ortho(
-					 lightCenterRounded.x - lightRadius,
-					 lightCenterRounded.x + lightRadius,
-					 lightCenterRounded.y - lightRadius,
-					 lightCenterRounded.y + lightRadius,
-					-lightCenterRounded.z - (shadowRangeZ - lightRadius),
-					-lightCenterRounded.z + lightRadius);
-			cascades[i] = lightProjection * lightView;
-			distances[i] = far;
-
 			_depthBuffer.bindTexture(i);
 			{
 				video::ScopedShader scoped(_shadowMapShader);
@@ -393,11 +366,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		glCullFace(GL_BACK);
 		glEnable(GL_BLEND);
 		glDisable(GL_POLYGON_OFFSET_FILL);
-	} else {
-		for (int i = 0; i < maxDepthBuffers; ++i) {
-			cascades[i] = glm::mat4();
-			distances[i] = camera.farPlane();
-		}
 	}
 
 	_colorTexture->bind(0);
@@ -808,6 +776,10 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const glm::ivec2 smSize(core::Var::get(cfg::ClientShadowMapSize, "2048")->intVal());
 	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
+		return false;
+	}
+
+	if (!_shadow.init()) {
 		return false;
 	}
 

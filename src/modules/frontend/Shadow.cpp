@@ -1,0 +1,53 @@
+#include "Shadow.h"
+
+namespace frontend {
+
+bool Shadow::init() {
+	_lightView = glm::lookAt(glm::vec3(50.0f, 50.0f, -50.0f), glm::vec3(0.0f), glm::up);
+	_sunDirection = glm::vec3(glm::column(glm::inverse(_lightView), 2));
+	return true;
+}
+
+void Shadow::calculateShadowData(const video::Camera& camera, bool active, int maxDepthBuffers, const glm::ivec2& depthBufferSize) {
+	_cascades.resize(maxDepthBuffers);
+	_distances.resize(maxDepthBuffers);
+
+	if (!active) {
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			_cascades[i] = glm::mat4();
+			_distances[i] = camera.farPlane();
+		}
+		return;
+	}
+
+	std::vector<float> planes(maxDepthBuffers * 2);
+	camera.sliceFrustum(&planes.front(), planes.size(), maxDepthBuffers, 0.1f);
+	const glm::mat4& inverseView = glm::inverse(camera.viewMatrix());
+	const float shadowRangeZ = camera.farPlane() * 3.0f;
+
+	for (int i = 0; i < maxDepthBuffers; ++i) {
+		const float near = planes[i * 2 + 0];
+		const float far = planes[i * 2 + 1];
+		const glm::vec4& sphere = camera.splitFrustumSphereBoundingBox(near, far);
+		const glm::vec3 lightCenter(_lightView * inverseView * glm::vec4(sphere.x, sphere.y, sphere.z, 1));
+		const float lightRadius = sphere.w;
+
+		// round to prevent movement
+		const float xRound = lightRadius * 2.0f / depthBufferSize.x;
+		const float yRound = lightRadius * 2.0f / depthBufferSize.y;
+		const float zRound = 1.0f;
+		const glm::vec3 round(xRound, yRound, zRound);
+		const glm::vec3 lightCenterRounded = glm::round(lightCenter / round) * round;
+		const glm::mat4& lightProjection = glm::ortho(
+				 lightCenterRounded.x - lightRadius,
+				 lightCenterRounded.x + lightRadius,
+				 lightCenterRounded.y - lightRadius,
+				 lightCenterRounded.y + lightRadius,
+				-lightCenterRounded.z - (shadowRangeZ - lightRadius),
+				-lightCenterRounded.z + lightRadius);
+		_cascades[i] = lightProjection * _lightView;
+		_distances[i] = far;
+	}
+}
+
+}
