@@ -26,7 +26,7 @@ void main(void) {
 	vec4 mpos      = u_model * bonetrans * vec4(a_pos, 1.0);
 
 #if cl_shadowmap == 1
-	v_lightspacepos = mpos;
+	v_lightspacepos = mpos.xyz;
 #endif
 	// TODO: does this make sense without the projection applied. Afaik
 	// the w components division here is to correct perspective transforms

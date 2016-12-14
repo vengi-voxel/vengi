@@ -3,7 +3,7 @@
 #if cl_shadowmap == 1
 
 uniform sampler2DArrayShadow u_shadowmap;
-$in vec4 v_lightspacepos;
+$in vec3 v_lightspacepos;
 uniform vec2 u_depthsize;
 uniform vec4 u_distances;
 uniform mat4 u_cascades[4];
@@ -24,9 +24,9 @@ float sampleShadowPCF(int cascade, vec2 uv, float compare) {
 }
 
 float calculateShadow(mat4 viewprojection) {
-	float viewz = (viewprojection * v_lightspacepos).w;
+	float viewz = (viewprojection * vec4(v_lightspacepos, 1.0)).w;
 	int cascade = int(dot(vec4(greaterThan(vec4(viewz), u_distances)), vec4(1)));
-	vec4 lightp = u_cascades[cascade] * v_lightspacepos;
+	vec4 lightp = u_cascades[cascade] * vec4(v_lightspacepos, 1.0);
 	/* we manually have to do the perspective divide as there is no
 	 * version of textureProj that can take a sampler2DArrayShadow */
 	vec3 lightpt = (lightp.xyz / lightp.w) * 0.5 + 0.5;
