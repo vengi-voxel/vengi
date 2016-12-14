@@ -345,7 +345,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		const float shadowRangeZ = camera.farPlane() * 3.0f;
 		glPolygonOffset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
 
-
 		_depthBuffer.bind();
 		for (int i = 0; i < maxDepthBuffers; ++i) {
 			_depthBuffer.bindTexture(i);

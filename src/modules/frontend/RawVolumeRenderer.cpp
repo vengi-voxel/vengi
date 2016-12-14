@@ -9,7 +9,7 @@ namespace frontend {
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
 RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe, bool renderGrid) :
-		_rawVolume(nullptr), _mesh(nullptr),
+		_rawVolume(nullptr), _mesh(nullptr), _shadowMapShader(shader::ShadowmapShader::getInstance()),
 		_worldShader(shader::WorldShader::getInstance()), _renderAABB(renderAABB),
 		_renderGrid(renderGrid), _renderWireframe(renderWireframe) {
 	_sunDirection = glm::vec3(glm::left.x, glm::down.y, 0.0f);
@@ -17,6 +17,10 @@ RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe, bool
 
 bool RawVolumeRenderer::init() {
 	if (!_worldShader.setup()) {
+		Log::error("Failed to initialize the color shader");
+		return false;
+	}
+	if (!_shadowMapShader.setup()) {
 		Log::error("Failed to initialize the color shader");
 		return false;
 	}
@@ -46,6 +50,12 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
+	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	const glm::ivec2 smSize(core::Var::get(cfg::ClientShadowMapSize, "2048")->intVal());
+	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
+		return false;
+	}
+
 	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
 	_materialBuffer.create(materialColors.size() * sizeof(voxel::MaterialColorArray::value_type), &materialColors.front());
 
@@ -69,6 +79,10 @@ bool RawVolumeRenderer::init() {
 	attributeInfo.offset = offsetof(voxel::VoxelVertex, ambientOcclusion);
 	_vertexBuffer.addAttribute(attributeInfo);
 
+	if (!_shadow.init()) {
+		return false;
+	}
+
 	_whiteTexture = video::createWhiteTexture("**whitetexture**");
 
 	_mesh = new voxel::Mesh(128, 128, true);
@@ -78,13 +92,6 @@ bool RawVolumeRenderer::init() {
 
 bool RawVolumeRenderer::onResize(const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(RawVolumeRendererOnResize);
-
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-	_depthBuffer.shutdown();
-	const glm::ivec2 smSize(core::Var::get(cfg::ClientShadowMapSize, "2048")->intVal());
-	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
-		return false;
-	}
 	return true;
 }
 
@@ -203,6 +210,37 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	glEnable(GL_CULL_FACE);
 	glDepthMask(GL_TRUE);
 
+	core_assert_always(_vertexBuffer.bind());
+
+	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	_shadow.calculateShadowData(camera, true, maxDepthBuffers, _depthBuffer.dimension());
+	const std::vector<glm::mat4>& cascades = _shadow.cascades();
+	const std::vector<float>& distances = _shadow.distances();
+	{
+		glDisable(GL_BLEND);
+		// put shadow acne into the dark
+		glCullFace(GL_FRONT);
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		const float shadowBiasSlope = 2;
+		const float shadowBias = 0.09f;
+		const float shadowRangeZ = camera.farPlane() * 3.0f;
+		glPolygonOffset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
+
+		_depthBuffer.bind();
+		video::ScopedShader scoped(_shadowMapShader);
+		_shadowMapShader.setModel(glm::mat4());
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			_depthBuffer.bindTexture(i);
+			_shadowMapShader.setLightviewprojection(cascades[i]);
+			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+			glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
+		}
+		_depthBuffer.unbind();
+		glCullFace(GL_BACK);
+		glEnable(GL_BLEND);
+		glDisable(GL_POLYGON_OFFSET_FILL);
+	}
+
 	_whiteTexture->bind(0);
 
 	video::ScopedShader scoped(_worldShader);
@@ -218,10 +256,12 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_worldShader.setAmbientColor(_ambientColor);
 	_worldShader.setFogcolor(glm::vec3(core::Color::LightBlue));
 	_worldShader.setDebugColor(1.0f);
-	int maxDepthBuffers = maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	_worldShader.setUniformMatrixv("u_cascades", &cascades.front(), maxDepthBuffers);
+	_worldShader.setUniformfv("u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
+	_worldShader.setLightdir(_shadow.sunDirection());
+
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
-	core_assert_always(_vertexBuffer.bind());
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
 
@@ -316,6 +356,7 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(voxel::RawVolume* volume) {
 voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	_vertexBuffer.shutdown();
 	_worldShader.shutdown();
+	_shadowMapShader.shutdown();
 	_vertexBufferIndex = -1;
 	_indexBufferIndex = -1;
 	_aabbMeshIndex = -1;

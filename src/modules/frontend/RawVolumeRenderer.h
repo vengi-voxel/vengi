@@ -6,6 +6,7 @@
 #include "FrontendShaders.h"
 #include "voxel/polyvox/Mesh.h"
 #include "frontend/ShapeRenderer.h"
+#include "frontend/Shadow.h"
 #include "video/UniformBuffer.h"
 #include "video/ShapeBuilder.h"
 #include "video/Texture.h"
@@ -27,8 +28,10 @@ protected:
 	frontend::ShapeRenderer _shapeRenderer;
 
 	video::VertexBuffer _vertexBuffer;
+	shader::ShadowmapShader& _shadowMapShader;
 	shader::WorldShader& _worldShader;
 	video::DepthBuffer _depthBuffer;
+	frontend::Shadow _shadow;
 
 	video::TexturePtr _whiteTexture;;
 
