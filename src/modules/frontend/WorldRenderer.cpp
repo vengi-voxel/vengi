@@ -361,9 +361,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		const float sunPhi = 200;
 		const float t = glm::radians(sunTheta);
 		const float p = glm::radians(sunPhi);
-		_sunDirection = -glm::vec3(glm::cos(p) * glm::sin(t), glm::sin(p) * glm::sin(t), glm::cos(t));
-		const glm::vec3& lightUp = glm::abs(_sunDirection.z) > 0.7f ? glm::up : glm::backward;
-		const glm::mat4& lightView = glm::lookAt(glm::vec3(), _sunDirection, lightUp);
+		const glm::mat4& lightView = glm::lookAt(glm::vec3(50.0f, 50.0f, -50.0f), glm::vec3(0.0f), glm::up);
+		_sunDirection = glm::vec3(glm::column(glm::inverse(lightView), 2));
 
 		const float shadowSplit = 0.1f;
 		for (int i = 0; i < maxDepthBuffers; ++i) {
@@ -799,7 +798,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	attributePosLightDeferred.size = _deferredDirLightShader.getComponentsPos();
 	_fullscreenQuad.addAttribute(attributePosLightDeferred);
 
-	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad();
+	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
 	video::VertexBuffer::Attribute attributePos;
 	attributePos.bufferIndex = fullscreenQuadIndices.x;
 	attributePos.index = _shadowMapDebugShader.getLocationPos();

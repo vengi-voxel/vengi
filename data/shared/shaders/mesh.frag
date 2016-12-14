@@ -19,7 +19,7 @@ void main(void) {
 	vec3 color = $texture2D(u_texture, v_texcoords).rgb + v_color.rgb;
 	float shadow = calculateShadow(u_viewprojection);
 
-	float ndotl = dot(v_norm, -u_lightdir);
+	float ndotl = dot(v_norm, u_lightdir);
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;
 	vec3 ambient = u_ambient_color;
 	vec3 lightvalue = ambient + (diffuse * shadow);

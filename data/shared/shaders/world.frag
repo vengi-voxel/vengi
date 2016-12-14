@@ -32,7 +32,7 @@ void main(void) {
 	// shadow only rendering
 	o_color = vec4(vec3(shadow), 1.0);
 #else
-	float ndotl = dot(normal, -u_lightdir);
+	float ndotl = dot(normal, u_lightdir);
 	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
 	vec3 ambient = u_ambient_color;
 	vec3 lightvalue = ambient + (diffuse * shadow);
