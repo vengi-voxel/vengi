@@ -51,7 +51,7 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 		format = TextureFormat::RGBA;
 	}
 	_depthTexture.upload(format, dimension.x, dimension.y, nullptr, textureCount);
-	if (_mode == DepthBufferMode::DEPTH_CMP) {
+	if (depthCompare()) {
 		const TextureType type = textureType();
 		const GLenum glType = std::enum_value(type);
 		glBindTexture(glType, _depthTexture);
