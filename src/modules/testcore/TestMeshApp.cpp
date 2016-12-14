@@ -25,8 +25,6 @@ core::AppState TestMeshApp::onInit() {
 		}
 	});
 
-	const glm::vec3 sunDirection(glm::left.x, glm::down.y, 0.0f);
-	_sunLight.init(sunDirection, glm::ivec2(), dimension());
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 	_camera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -65,13 +63,11 @@ core::AppState TestMeshApp::onInit() {
 }
 
 void TestMeshApp::doRender() {
-	_sunLight.update(_deltaFrame, _camera);
 	// TODO: support different animations...
 	const uint8_t animationIndex = core::Var::get("animation", "0")->intVal();
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;
 	{
 		video::ScopedShader scoped(_shadowMapShader);
-		_shadowMapShader.setLightviewprojection(_sunLight.viewProjectionMatrix(_camera));
 		_shadowMapShader.setModel(glm::mat4());
 		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
 			glDisable(GL_BLEND);
@@ -97,7 +93,6 @@ void TestMeshApp::doRender() {
 		_meshShader.setFogrange(500.0f);
 		_meshShader.setViewdistance(500.0f);
 		_meshShader.setModel(glm::mat4());
-		_meshShader.setLightdir(_sunLight.direction());
 		_meshShader.setTexture(0);
 		_meshShader.setDiffuseColor(_diffuseColor);
 		_meshShader.setAmbientColor(_ambientColor);

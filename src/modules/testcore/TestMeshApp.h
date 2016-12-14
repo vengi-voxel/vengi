@@ -8,7 +8,6 @@
 #include "video/DepthBuffer.h"
 #include "video/MeshPool.h"
 #include "video/VertexBuffer.h"
-#include "video/SunLight.h"
 #include "FrontendShaders.h"
 
 class TestMeshApp: public TestApp {
@@ -20,7 +19,6 @@ protected:
 	video::MeshPool _meshPool;
 	shader::MeshShader _meshShader;
 	shader::ColorShader& _colorShader;
-	video::SunLight _sunLight;
 	shader::ShadowmapShader _shadowMapShader;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);

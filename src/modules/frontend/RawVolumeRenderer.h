@@ -8,7 +8,6 @@
 #include "frontend/ShapeRenderer.h"
 #include "video/UniformBuffer.h"
 #include "video/ShapeBuilder.h"
-#include "video/SunLight.h"
 #include "video/Texture.h"
 #include "video/DepthBuffer.h"
 
@@ -30,7 +29,6 @@ protected:
 	video::VertexBuffer _vertexBuffer;
 	shader::WorldShader& _worldShader;
 	video::DepthBuffer _depthBuffer;
-	video::SunLight _sunLight;
 
 	video::TexturePtr _whiteTexture;;
 
@@ -118,7 +116,6 @@ public:
 
 inline void RawVolumeRenderer::setSunDirection(const glm::vec3& sunDirection) {
 	_sunDirection = sunDirection;
-	_sunLight.setDirection(_sunDirection);
 }
 
 inline void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {

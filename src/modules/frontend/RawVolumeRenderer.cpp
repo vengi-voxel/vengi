@@ -78,7 +78,6 @@ bool RawVolumeRenderer::init() {
 
 bool RawVolumeRenderer::onResize(const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(RawVolumeRendererOnResize);
-	_sunLight.init(_sunDirection, position, dimension);
 
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	_depthBuffer.shutdown();
@@ -196,8 +195,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		return;
 	}
 
-	_sunLight.update(0.0f, camera);
-
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
@@ -216,7 +213,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_worldShader.setShadowmap(1);
 	_worldShader.setFogrange(250.0f);
 	_worldShader.setViewdistance(camera.farPlane());
-	_worldShader.setLightdir(_sunLight.direction());
 	_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 	_worldShader.setDiffuseColor(_diffuseColor);
 	_worldShader.setAmbientColor(_ambientColor);
@@ -237,7 +233,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	}
 
 	_vertexBuffer.unbind();
-
 	_whiteTexture->unbind();
 
 	for (int i = 0; i < maxDepthBuffers; ++i) {

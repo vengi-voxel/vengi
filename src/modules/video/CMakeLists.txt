@@ -24,7 +24,6 @@ set(SRCS
 	ScopedFrameBuffer.h
 	ScopedScissor.h
 	ScopedPolygonMode.h
-	SunLight.h SunLight.cpp
 )
 set(LIB video)
 find_package(OpenGL REQUIRED)

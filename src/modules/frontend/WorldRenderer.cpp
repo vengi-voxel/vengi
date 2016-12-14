@@ -329,13 +329,11 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_visiblePlant.push_back(&*i);
 	}
 
-	float planes[8];
 	const bool shadowMap = _shadowMap->boolVal();
-	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
-	// then we do one pass for the gbuffer + the sun
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	std::vector<glm::mat4> cascades(maxDepthBuffers);
 	std::vector<float> distances(maxDepthBuffers);
+	float planes[8];
 
 	if (shadowMap) {
 		core_assert(maxDepthBuffers * 2 <= (int)SDL_arraysize(planes));
