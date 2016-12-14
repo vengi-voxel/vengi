@@ -16,26 +16,26 @@ void UndoHandler::clearUndoStates() {
 		delete vol;
 	}
 	_undoStates.clear();
-	_undoIndex = 0u;
+	_undoPosition = 0u;
 }
 
 voxel::RawVolume* UndoHandler::undo() {
 	if (!canUndo()) {
 		return nullptr;
 	}
-	return new voxel::RawVolume(_undoStates[--_undoIndex]);
+	return new voxel::RawVolume(_undoStates[--_undoPosition]);
 }
 
 voxel::RawVolume* UndoHandler::redo() {
 	if (!canRedo()) {
 		return nullptr;
 	}
-	return new voxel::RawVolume(_undoStates[++_undoIndex]);
+	return new voxel::RawVolume(_undoStates[_undoPosition++]);
 }
 
 void UndoHandler::markUndo(const voxel::RawVolume* volume) {
 	auto i = _undoStates.begin();
-	std::advance(i, _undoIndex);
+	std::advance(i, _undoPosition);
 	for (auto iter = i; iter < _undoStates.end(); ++iter) {
 		delete *iter;
 	}
@@ -45,7 +45,7 @@ void UndoHandler::markUndo(const voxel::RawVolume* volume) {
 		delete *_undoStates.begin();
 		_undoStates.erase(_undoStates.begin());
 	}
-	_undoIndex = _undoStates.size();
+	_undoPosition = _undoStates.size();
 }
 
 }

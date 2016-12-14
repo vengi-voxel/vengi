@@ -25,7 +25,7 @@ RawVolume::RawVolume(const RawVolume* copy) :
 ////////////////////////////////////////////////////////////////////////////////
 RawVolume::~RawVolume() {
 	delete[] _data;
-	_data = 0;
+	_data = nullptr;
 }
 
 /**
