@@ -17,7 +17,8 @@ uniform mat4 u_viewprojection;
 
 void main(void) {
 	vec3 color = $texture2D(u_texture, v_texcoords).rgb + v_color.rgb;
-	float shadow = calculateShadow(u_viewprojection);
+	int cascade = calculateCascade(u_viewprojection);
+	float shadow = calculateShadow(cascade, u_viewprojection);
 
 	float ndotl = dot(v_norm, u_lightdir);
 	vec3 diffuse = u_diffuse_color * clamp(ndotl, 0.0, 1.0) * 0.8;

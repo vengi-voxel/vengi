@@ -26,15 +26,38 @@ void main(void) {
 	vec3 fdy = dFdy(v_pos.xyz);
 	vec3 normal = normalize(cross(fdx, fdy));
 
+	float ndotl = dot(normal, u_lightdir);
+	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
+	vec3 ambient = u_ambient_color;
+
 #if cl_deferred == 0
-	float shadow = calculateShadow(u_viewprojection);
+	int cascade = calculateCascade(u_viewprojection);
+	float shadow = calculateShadow(cascade, u_viewprojection);
+#if cl_debug_cascade
+	if (cascade == 0) {
+		diffuse.r = 0.0;
+		diffuse.g = 1.0;
+		diffuse.b = 0.0;
+	} else if (cascade == 1) {
+		diffuse.r = 0.0;
+		diffuse.g = 1.0;
+		diffuse.b = 1.0;
+	} else if (cascade == 2) {
+		diffuse.r = 0.0;
+		diffuse.g = 0.0;
+		diffuse.b = 1.0;
+	} else if (cascade == 3) {
+		diffuse.r = 0.0;
+		diffuse.g = 0.5;
+		diffuse.b = 0.5;
+	} else {
+		diffuse.r = 1.0;
+	}
+#endif
 #if cl_debug_shadow == 1
 	// shadow only rendering
 	o_color = vec4(vec3(shadow), 1.0);
 #else
-	float ndotl = dot(normal, u_lightdir);
-	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
-	vec3 ambient = u_ambient_color;
 	vec3 lightvalue = ambient + (diffuse * shadow);
 
 	float fogstart = max(u_viewdistance - u_fogrange, 0.0);

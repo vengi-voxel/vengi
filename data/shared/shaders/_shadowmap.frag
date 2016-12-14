@@ -23,23 +23,7 @@ float sampleShadowPCF(int cascade, vec2 uv, float compare) {
 	return result / 25.0;
 }
 
-float calculateShadow(mat4 viewprojection) {
-#if 1
-	float viewz = gl_FragCoord.z;
-#else
-	float viewz = (viewprojection * vec4(v_lightspacepos, 1.0)).w;
-#endif
-#if 0
-	int cascade = int(dot(vec4(greaterThan(vec4(viewz), u_distances)), vec4(1)));
-#else
-	int cascade = 3;
-	if (viewz < u_distances[0])
-		cascade = 0;
-	else if (viewz < u_distances[1])
-		cascade = 1;
-	else if (viewz < u_distances[2])
-		cascade = 2;
-#endif
+float calculateShadow(int cascade, mat4 viewprojection) {
 	vec4 lightp = u_cascades[cascade] * vec4(v_lightspacepos, 1.0);
 	/* we manually have to do the perspective divide as there is no
 	 * version of textureProj that can take a sampler2DArrayShadow */
@@ -47,9 +31,19 @@ float calculateShadow(mat4 viewprojection) {
 	return sampleShadowPCF(cascade, lightpt.xy, lightpt.z);
 }
 
+int calculateCascade(mat4 viewprojection) {
+	float viewz = (viewprojection * vec4(v_lightspacepos, 1.0)).w;
+	int cascade = int(dot(vec4(greaterThan(vec4(viewz), u_distances)), vec4(1)));
+	return cascade;
+}
+
 #else // cl_shadowmap == 1
 
-float calculateShadow(mat4 viewprojection) {
+int calculateCascade(mat4 viewprojection) {
+	return 0;
+}
+
+float calculateShadow(int cascade, mat4 viewprojection) {
 	return 1.0;
 }
 
