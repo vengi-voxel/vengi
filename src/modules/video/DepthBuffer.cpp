@@ -93,7 +93,6 @@ bool DepthBuffer::bindTexture(int textureIndex) {
 	}
 	if (depthAttachment()) {
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexture, 0, textureIndex);
-		glClearDepth(1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT);
 	} else {
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _depthTexture, 0, textureIndex);
