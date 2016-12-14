@@ -340,8 +340,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	// TODO: add a second rgba8 color buffer to the gbuffer to store the depth in it.
 	// then we do one pass for the gbuffer + the sun
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-	glm::mat4 cascades[maxDepthBuffers];
-	float distances[maxDepthBuffers];
+	std::vector<glm::mat4> cascades(maxDepthBuffers);
+	std::vector<float> distances(maxDepthBuffers);
 
 	if (shadowMap) {
 		core_assert(maxDepthBuffers * 2 <= (int)SDL_arraysize(planes));
@@ -425,22 +425,22 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	{
 		video::ScopedShader scoped(_worldShader);
 		setUniforms(_worldShader, camera);
-		shaderSetUniformIf(_worldShader, setUniformMatrixv, "u_cascades", cascades, maxDepthBuffers);
-		shaderSetUniformIf(_worldShader, setUniformfv, "u_distances", distances, maxDepthBuffers, maxDepthBuffers);
+		shaderSetUniformIf(_worldShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
+		shaderSetUniformIf(_worldShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
 		drawCallsWorld += renderWorldMeshes(_worldShader, _visibleOpaque, vertices);
 	}
 	{
 		video::ScopedShader scoped(_plantShader);
 		setUniforms(_plantShader, camera);
-		shaderSetUniformIf(_plantShader, setUniformMatrixv, "u_cascades", cascades, maxDepthBuffers);
-		shaderSetUniformIf(_plantShader, setUniformfv, "u_distances", distances, maxDepthBuffers, maxDepthBuffers);
+		shaderSetUniformIf(_plantShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
+		shaderSetUniformIf(_plantShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
 		drawCallsWorld += renderWorldMeshes(_plantShader, _visiblePlant, vertices);
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
 		setUniforms(_waterShader, camera);
-		shaderSetUniformIf(_waterShader, setUniformMatrixv, "u_cascades", cascades, maxDepthBuffers);
-		shaderSetUniformIf(_waterShader, setUniformfv, "u_distances", distances, maxDepthBuffers, maxDepthBuffers);
+		shaderSetUniformIf(_waterShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
+		shaderSetUniformIf(_waterShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
 		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
 	}
 
