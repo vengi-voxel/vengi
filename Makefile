@@ -212,7 +212,7 @@ updatelibs:
 	$(call UPDATE_GIT,turbobadger,https://github.com/fruxo/turbobadger.git)
 	rm -rf contrib/libs/turbobadger/tb/*
 	cp -r turbobadger.sync/src/tb/* contrib/libs/turbobadger/tb
-	git checkout master contrib/libs/turbobadger/tb/tb_clipboard_sdl2.cpp
+	git checkout master contrib/libs/turbobadger/tb/tb_clipboard_sdl.cpp
 	git checkout master contrib/libs/turbobadger/tb/tb_system_sdl.cpp
 	git checkout master contrib/libs/turbobadger/tb/tb_file_sdl.cpp
 	git checkout contrib/libs/turbobadger/tb/thirdparty/
