@@ -35,7 +35,6 @@ constexpr const char *ClientCameraMaxTargetDistance = "cl_cameramaxtargetdistanc
 
 constexpr const char *ClientDebugDeferred = "cl_debug_deferred";
 constexpr const char *ClientDebugShadowMap = "cl_debug_shadowmap";
-constexpr const char *ClientDebugGeometry = "cl_debug_geometry";
 constexpr const char *ClientDebugShadow = "cl_debug_shadow";
 
 constexpr const char *ServerAutoRegister = "sv_autoregister";

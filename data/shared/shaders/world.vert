@@ -12,6 +12,7 @@ $in vec3 a_offset;
 #endif
 int materialoffset = MATERIALOFFSET;
 
+uniform float u_fogrange;
 uniform mat4 u_model;
 uniform mat4 u_viewprojection;
 uniform sampler2D u_texture;
@@ -26,6 +27,11 @@ $out vec4 v_pos;
 $out vec4 v_color;
 $out float v_ambientocclusion;
 $out float v_debug_color;
+
+#if cl_deferred == 0
+uniform float u_viewdistance;
+$out float v_fogdivisor;
+#endif
 
 #include "_shadowmap.vert"
 
@@ -46,11 +52,14 @@ void main(void) {
 	if (a_material == 1u) {
 		alpha = 0.6;
 	}
-	v_color = vec4(materialColor * colornoise * 1.8, alpha);
-	v_color = clamp(v_color, 0.0, 1.0);
+	v_color = clamp(vec4(materialColor * colornoise * 1.8, alpha), 0.0, 1.0);
 
 	const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 	v_ambientocclusion = aovalues[a_ao];
+
+#if cl_deferred == 0
+	v_fogdivisor = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
+#endif
 
 #if cl_shadowmap == 1
 	v_lightspacepos = v_pos.xyz;

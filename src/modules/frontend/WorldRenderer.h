@@ -75,7 +75,6 @@ protected:
 	glm::ivec3 _lastGridPosition = { std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min() };
 	voxel::WorldPtr _world;
 	video::GBuffer _gbuffer;
-	core::VarPtr _debugGeometry;
 	core::VarPtr _deferred;
 	core::VarPtr _deferredDebug;
 	core::VarPtr _shadowMap;

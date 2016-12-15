@@ -1,7 +1,6 @@
 $in vec4 v_pos;
 $in vec4 v_color;
 $in float v_ambientocclusion;
-uniform float u_debug_color;
 uniform mat4 u_viewprojection;
 
 #include "_shadowmap.frag"
@@ -11,9 +10,9 @@ uniform vec3 u_lightdir;
 uniform vec3 u_diffuse_color;
 uniform vec3 u_ambient_color;
 uniform vec3 u_fogcolor;
-uniform float u_fogrange;
 uniform float u_viewdistance;
 $out vec4 o_color;
+$in float v_fogdivisor;
 #else
 // the order is defines in the gbuffer bindings
 $out vec3 o_pos;
@@ -28,7 +27,6 @@ void main(void) {
 
 	float ndotl = dot(normal, u_lightdir);
 	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
-	vec3 ambient = u_ambient_color;
 
 #if cl_deferred == 0
 	int cascade = calculateCascade(u_viewprojection);
@@ -58,17 +56,16 @@ void main(void) {
 	// shadow only rendering
 	o_color = vec4(vec3(shadow), 1.0);
 #else
-	vec3 lightvalue = ambient + (diffuse * shadow);
+	vec3 lightvalue = u_ambient_color + (diffuse * shadow);
 
-	float fogstart = max(u_viewdistance - u_fogrange, 0.0);
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
-	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / (u_viewdistance - fogstart), 0.0, 1.0);
+	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / v_fogdivisor, 0.0, 1.0);
 
-	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue * u_debug_color;
+	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue;
 	o_color = vec4(mix(linearColor, u_fogcolor, fogval), v_color.a);
 #endif
 #else
-	o_color = v_color.xyz * v_ambientocclusion * u_debug_color;
+	o_color = v_color.xyz * v_ambientocclusion;
 	o_pos = v_pos.xyz;
 	o_norm = normal;
 #endif

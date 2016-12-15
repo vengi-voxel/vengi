@@ -255,7 +255,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_worldShader.setDiffuseColor(_diffuseColor);
 	_worldShader.setAmbientColor(_ambientColor);
 	_worldShader.setFogcolor(glm::vec3(core::Color::LightBlue));
-	_worldShader.setDebugColor(1.0f);
 	_worldShader.setUniformMatrixv("u_cascades", &cascades.front(), maxDepthBuffers);
 	_worldShader.setUniformfv("u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
 	_worldShader.setLightdir(_shadow.sunDirection());
@@ -268,7 +267,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	if (_renderWireframe && camera.polygonMode() == video::PolygonMode::Solid) {
 		video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(2.0f));
 		video::ScopedLineWidth lineWidth(2.0f, true);
-		shaderSetUniformIf(_worldShader, setUniformf, "u_debug_color", 0.0);
 		glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
 	}
 

@@ -229,12 +229,10 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_depthBuffer.dimension()));
 	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
 	shaderSetUniformIf(shader, setUniformVec3, "u_ambient_color", _ambientColor);
-	shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices) {
-	const bool deferred = _deferred->boolVal();
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
 	int maxDepthBuffers = 0;
 	if (shadowMap) {
@@ -244,7 +242,6 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisibl
 		shaderSetUniformIf(shader, setUniformi, "u_shadowmap", 1);
 	}
 
-	const bool debugGeometry = _debugGeometry->boolVal();
 	int drawCallsWorld = 0;
 	for (auto i = meshes.begin(); i != meshes.end();) {
 		video::GLMeshData* meshData = *i;
@@ -253,22 +250,11 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisibl
 		shaderSetUniformIf(shader, setUniformMatrix, "u_model", model);
 		meshData->bindVAO();
 
-		if (debugGeometry && !deferred) {
-			shaderSetUniformIf(shader, setUniformf, "u_debug_color", 1.0);
-		}
 		meshData->draw();
 		if (vertices != nullptr) {
 			*vertices += meshData->noOfVertices;
 		}
 		GL_checkError();
-
-		if (debugGeometry && !deferred) {
-			video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(-2.0f));
-			video::ScopedLineWidth lineWidth(_lineWidth, true);
-			shaderSetUniformIf(shader, setUniformf, "u_debug_color", 0.0);
-			glDrawElements(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, 0);
-			GL_checkError();
-		}
 
 		++drawCallsWorld;
 		++i;
@@ -688,7 +674,6 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active
 
 bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
-	_debugGeometry = core::Var::get(cfg::ClientDebugGeometry, "false");
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	_deferred = core::Var::getSafe(cfg::ClientDeferred);
 	core_assert(_deferred);
