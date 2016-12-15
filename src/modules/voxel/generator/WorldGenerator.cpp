@@ -26,7 +26,7 @@ int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeM
 		const float noiseVal = ::noise::norm(
 				::noise::Simplex::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
 						worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
-		const float finalDensity = noiseNormalized + noiseVal;
+		const float finalDensity = n + noiseVal;
 		if (finalDensity > worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;
 			const glm::ivec3 pos(x, y, z);
