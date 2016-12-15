@@ -45,8 +45,8 @@ float BiomeManager::getTemperature(const glm::ivec3& pos) const {
 	// TODO: apply y value
 	// const float scaleY = pos.y / (float)MAX_HEIGHT;
 	const int octaves = 1;
-	const float persistence = 1.2f;
-	const float frequency = 0.01f;
+	const float persistence = 1.0f;
+	const float frequency = 0.0001f;
 	const float amplitude = 1.2f;
 	const float n = noise::Simplex::Noise2D(noisePos, octaves, persistence, frequency, amplitude);
 	return noise::norm(n);
