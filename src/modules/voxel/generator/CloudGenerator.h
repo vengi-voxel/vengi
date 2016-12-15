@@ -11,7 +11,7 @@
 namespace voxel {
 namespace cloud {
 
-static glm::ivec2 randomPosWithoutHeight(const Region& region, int border, core::Random& random) {
+static inline glm::ivec2 randomPosWithoutHeight(const Region& region, int border, core::Random& random) {
 	const int w = region.getWidthInVoxels();
 	const int d = region.getDepthInVoxels();
 	core_assert(border < w);
