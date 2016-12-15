@@ -177,9 +177,8 @@ bool Shader::loadProgram(const std::string& filename) {
 }
 
 bool Shader::reload() {
-	const std::string name = _name;
 	shutdown();
-	return loadProgram(name);
+	return setup();
 }
 
 bool Shader::init() {
@@ -189,6 +188,7 @@ bool Shader::init() {
 	if (_initialized) {
 		fetchAttributes();
 		fetchUniforms();
+		Log::info("Register shader: %s", _name.c_str());
 		core::Singleton<ShaderManager>::getInstance().registerShader(this);
 	}
 	return success;

@@ -24,7 +24,7 @@ public:
 	 * @note If an attribute or an uniform isn't active, a message will be printed about that fact - but
 	 * the setup process won't fail.
 	 */
-	bool setup() {
+	bool setup() override {
 		++_setupCalls;
 		if (_initialized) {
 			return true;

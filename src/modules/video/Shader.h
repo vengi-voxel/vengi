@@ -126,6 +126,10 @@ public:
 	 */
 	bool init();
 
+	virtual bool setup() {
+		return false;
+	}
+
 	bool loadFromFile(const std::string& filename, ShaderType shaderType);
 
 	/**

@@ -42,7 +42,8 @@ public:
 			return;
 
 		Log::debug("Reload shaders");
-		for (Shader* shader : _shaders) {
+		Shaders copy = _shaders;
+		for (Shader* shader : copy) {
 			shader->reload();
 		}
 	}

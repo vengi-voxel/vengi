@@ -281,6 +281,9 @@ AppState App::onInit() {
 		Log::trace("Execute %s with %i arguments", command.c_str(), (int)args.size());
 		core::Command::execute(command, args);
 	}
+	core::Var::visit([&] (const core::VarPtr& var) {
+		var->markClean();
+	});
 	// we might have changed the loglevel from the commandline
 	Log::init();
 	_logLevel = core::Var::getSafe(cfg::CoreLogLevel);

@@ -138,10 +138,6 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 	uint32_t data = 0xffffffff;
 	_white.Init(1, 1, &data);
 
-	_shader.activate();
-	_shader.setProjection(_camera.projectionMatrix());
-	_shader.deactivate();
-
 	return true;
 }
 
@@ -156,6 +152,7 @@ void UIRendererGL::BeginPaint(int, int) {
 	TBRendererBatcher::BeginPaint(renderTargetW, renderTargetH);
 
 	_shader.activate();
+	_shader.setProjection(_camera.projectionMatrix());
 
 	UIBitmapGL::g_current_texture = (GLuint) -1;
 
