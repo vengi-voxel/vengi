@@ -21,7 +21,7 @@ namespace tree {
  */
 template<class Volume>
 static int findFloor(const Volume& volume, int x, int z) {
-	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; i--) {
+	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= 0; --i) {
 		const VoxelType material = volume.getVoxel(x, i, z).getMaterial();
 		if (isLeaves(material)) {
 			return -1;

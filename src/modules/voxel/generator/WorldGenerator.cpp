@@ -9,7 +9,7 @@ int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeM
 			worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 	const float noiseNormalized = ::noise::norm(landscapeNoise);
 	const float mountainNoise = ::noise::Simplex::Noise2D(noisePos2d, worldCtx.mountainNoiseOctaves,
-	worldCtx.mountainNoisePersistence, worldCtx.mountainNoiseFrequency, worldCtx.mountainNoiseAmplitude);
+			worldCtx.mountainNoisePersistence, worldCtx.mountainNoiseFrequency, worldCtx.mountainNoiseAmplitude);
 	const float mountainNoiseNormalized = ::noise::norm(mountainNoise);
 	const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 	const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
@@ -28,22 +28,23 @@ int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeM
 		const float finalDensity = noiseNormalized + noiseVal;
 		if (finalDensity > worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;
-			if (!cave && y <= MAX_WATER_HEIGHT) {
-				voxels[y] = water;
-			} else {
-				const glm::ivec3 pos(x, y, z);
-				const Voxel& voxel = biomManager.getVoxel(pos, cave);
-				voxels[y] = voxel;
-			}
+			const glm::ivec3 pos(x, y, z);
+			const Voxel& voxel = biomManager.getVoxel(pos, cave);
+			voxels[y] = voxel;
 		} else {
-			if (y <= MAX_WATER_HEIGHT) {
+			if (y < MAX_WATER_HEIGHT) {
 				voxels[y] = water;
 			} else {
 				voxels[y] = air;
 			}
 		}
 	}
-	return ni;
+	for (int i = 0; i < MAX_WATER_HEIGHT; ++i) {
+		if (voxels[i] == air) {
+			voxels[i] = water;
+		}
+	}
+	return std::max(ni, MAX_WATER_HEIGHT);
 }
 
 }
