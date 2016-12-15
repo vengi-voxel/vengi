@@ -4,6 +4,7 @@ namespace voxel {
 namespace world {
 
 int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeManager& biomManager, long seed, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
+	// TODO: the 2d noise doesn't need the same resolution - we can optimize this a lot, we can lerp/glm::mix here
 	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 	const float landscapeNoise = ::noise::Simplex::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 			worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);

@@ -38,9 +38,6 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 	core_assert(region.getLowerY() >= 0);
 	Voxel voxels[MAX_TERRAIN_HEIGHT];
 
-	glm::ivec3 pos(glm::uninitialize);
-
-	// TODO: the 2d noise doesn't need the same resolution - we can optimize this a lot, we can lerp/glm::mix here
 	for (int z = lowerZ; z < lowerZ + depth; ++z) {
 		for (int x = lowerX; x < lowerX + width; ++x) {
 			const int ni = fillVoxels(x, z, worldCtx, voxels, biomManager, seed, noiseSeedOffsetX, noiseSeedOffsetZ);
