@@ -16,7 +16,66 @@ namespace voxel {
 	}
 
 bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
-	return false;
+	if (!(bool)file) {
+		return false;
+	}
+
+	io::FileStream stream(file.get());
+	stream.addInt(FourCC('V','O','X',' '));
+	stream.addInt(150);
+	stream.addInt(FourCC('M','A','I','N'));
+	int64_t numBytesMainChunkPos = stream.pos();
+	stream.addInt(0);
+	int64_t numBytesMainChildrenChunksPos = stream.pos();
+	stream.addInt(0);
+
+	// model size
+	stream.addInt(FourCC('S','I','Z','E'));
+	stream.addInt(3 * sizeof(uint32_t));
+	stream.addInt(0);
+	const voxel::Region& region = volume->getRegion();
+	stream.addInt(region.getWidthInVoxels());
+	stream.addInt(region.getHeightInVoxels());
+	stream.addInt(region.getDepthInVoxels());
+
+	// voxel data
+	stream.addInt(FourCC('X','Y','Z','I'));
+	const uint32_t numVoxels = region.getWidthInVoxels() * region.getHeightInVoxels() * region.getDepthInVoxels();
+	stream.addInt(numVoxels * 4);
+	stream.addInt(0);
+	stream.addInt(numVoxels);
+	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+				stream.addByte(x);
+				stream.addByte(z);
+				stream.addByte(y);
+				const voxel::Voxel& voxel = volume->getVoxel(x, y, z);
+				const uint8_t colorIndex = voxel.getColor();
+				stream.addByte(colorIndex);
+			}
+		}
+	}
+
+	stream.addInt(FourCC('R','G','B','A'));
+	stream.addInt(256 * 4);
+	stream.addInt(0);
+	const MaterialColorArray& materialColors = getMaterialColors();
+
+	for (int i = 0; i <= 254; i++) {
+		uint32_t rgba = core::Color::GetRGBA(materialColors[i]);
+		stream.addInt(rgba);
+	}
+
+	stream.addInt(FourCC('M','A','T','T'));
+	stream.addInt(0);
+	stream.addInt(0);
+
+	const int64_t mainChildChunkSize = stream.pos() - 5 * sizeof(uint32_t);
+	stream.seek(numBytesMainChunkPos);
+	stream.addInt(mainChildChunkSize);
+
+	return true;
 }
 
 RawVolume* VoxFormat::load(const io::FilePtr& file) {
