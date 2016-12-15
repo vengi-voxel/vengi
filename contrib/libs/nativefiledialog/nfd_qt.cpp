@@ -131,7 +131,8 @@ static nfdresult_t NFD_QTOpenDialog(QFileDialog::AcceptMode acceptMode, QFileDia
             }
         }
     }
-    app.quit();
+    QApplication::processEvents(QEventLoop::AllEvents, 100);
+    app.exit();
     return result;
 }
 
