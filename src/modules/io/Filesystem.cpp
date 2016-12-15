@@ -38,7 +38,26 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 }
 
+bool Filesystem::isRelativeFilename(const std::string& name) const {
+	const size_t size = name.size();
+#ifdef __WINDOWS__
+	if (size < 3) {
+		return true;
+	}
+	// TODO: hm... not cool and most likely not enough
+	return name[1] == ":";
+#else
+	if (size == 0) {
+		return false;
+	}
+	return name[0] == '/';
+#endif
+}
+
 io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
+	if (mode == FileMode::Write && !isRelativeFilename(filename)) {
+		std::make_shared<io::File>(filename, mode);
+	}
 	if (io::File(filename, FileMode::Read).exists()) {
 		Log::debug("loading file %s from current working dir", filename.c_str());
 		return std::make_shared<io::File>(filename, mode);

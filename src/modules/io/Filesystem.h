@@ -55,6 +55,8 @@ public:
 
 	bool list(const std::string& directory, std::vector<DirEntry>& entities, const std::string& filter = "") const;
 
+	bool isRelativeFilename(const std::string& name) const;
+
 	io::FilePtr open(const std::string& filename, FileMode mode = FileMode::Read) const;
 
 	std::string load(const std::string& filename) const;
