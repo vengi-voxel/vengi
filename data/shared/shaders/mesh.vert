@@ -7,6 +7,7 @@ $in vec4 a_boneweights;
 $in vec4 a_color;
 
 uniform mat4 u_projection;
+uniform mat4 u_viewprojection;
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_bonetransforms[100];
@@ -27,6 +28,7 @@ void main(void) {
 
 #if cl_shadowmap == 1
 	v_lightspacepos = mpos.xyz;
+	v_viewz         = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif
 	// TODO: does this make sense without the projection applied. Afaik
 	// the w components division here is to correct perspective transforms

@@ -29,7 +29,7 @@ void main(void) {
 	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
 
 #if cl_deferred == 0
-	int cascade = calculateCascade(u_viewprojection);
+	int cascade = calculateCascade();
 	float shadow = calculateShadow(cascade, u_viewprojection);
 #if cl_debug_cascade
 	if (cascade == 0) {

@@ -4,6 +4,7 @@
 
 uniform sampler2DArrayShadow u_shadowmap;
 $in vec3 v_lightspacepos;
+$in float v_viewz;
 uniform vec2 u_depthsize;
 uniform vec4 u_distances;
 uniform mat4 u_cascades[4];
@@ -31,15 +32,14 @@ float calculateShadow(int cascade, mat4 viewprojection) {
 	return sampleShadowPCF(cascade, lightpt.xy, lightpt.z);
 }
 
-int calculateCascade(mat4 viewprojection) {
-	float viewz = (viewprojection * vec4(v_lightspacepos, 1.0)).w;
-	int cascade = int(dot(vec4(greaterThan(vec4(viewz), u_distances)), vec4(1)));
+int calculateCascade() {
+	int cascade = int(dot(vec4(greaterThan(vec4(v_viewz), u_distances)), vec4(1)));
 	return cascade;
 }
 
 #else // cl_shadowmap == 1
 
-int calculateCascade(mat4 viewprojection) {
+int calculateCascade() {
 	return 0;
 }
 
