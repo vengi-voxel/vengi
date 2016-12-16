@@ -457,7 +457,7 @@ AppState App::onCleanup() {
 			if ((flags & CV_SHADER) == CV_SHADER) {
 				flagsStr.append("S");
 			}
-			if ((flags & CV_SHADER) == CV_SECRET) {
+			if ((flags & CV_SECRET) == CV_SECRET) {
 				flagsStr.append("X");
 			}
 			ss << R"(")" << var->name() << R"(" ")" << value << R"(" ")" << flagsStr << R"(")" << std::endl;
