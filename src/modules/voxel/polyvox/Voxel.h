@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstdint>
+#include <SDL.h>
 
 namespace voxel {
 
@@ -28,7 +29,28 @@ enum class VoxelType : uint8_t {
 	Sand,
 	Cloud,
 	Dirt
+
+	Max
 };
+
+static const char* VoxelTypeStr[] = {
+	"Air",
+	"Water",
+	"Generic",
+	"Grass",
+	"Wood",
+	"Leaf",
+	"LeafFir",
+	"LeafPine",
+	"Flower",
+	"Bloom",
+	"Mushroom",
+	"Rock",
+	"Sand",
+	"Cloud",
+	"Dirt"
+};
+static_assert((int)SDL_arraysize(VoxelTypeStr) == (int)VoxelType::Max, "voxel type string array size doesn't match the available voxel types");
 
 class Voxel {
 public:

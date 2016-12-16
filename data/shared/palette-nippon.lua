@@ -3,40 +3,40 @@ require "lua.shared"
 function init()
 	m = MAT.material()
 
-	MAT.grass(117)
+	MAT.Grass(117)
 
-	MAT.sand(102)
+	MAT.Sand(102)
 
-	MAT.leaf(133)
-	MAT.leaf(134)
-	MAT.leaf(135)
+	MAT.Leaf(133)
+	MAT.Leaf(134)
+	MAT.Leaf(135)
 
-	MAT.leaffir(161)
-	MAT.leaffir(162)
-	MAT.leafpine(159)
-	MAT.leafpine(160)
+	MAT.LeafFir(161)
+	MAT.LeafFir(162)
+	MAT.LeafPine(159)
+	MAT.LeafPine(160)
 
 	for i in range(149, 152) do
-		MAT.flower(i)
+		MAT.Flower(i)
 	end
 
-	MAT.bloom(37) -- red
-	MAT.bloom(53) -- orange
-	MAT.bloom(109) -- yellow
+	MAT.Bloom(37) -- red
+	MAT.Bloom(53) -- orange
+	MAT.Bloom(109) -- yellow
 
 	for i in range(237, 242) do
-		MAT.mushroom(i)
+		MAT.Mushroom(i)
 	end
 
-	MAT.water(197)
+	MAT.Water(197)
 
-	MAT.cloud(191)
-	MAT.cloud(192)
+	MAT.Cloud(191)
+	MAT.Cloud(192)
 
-	MAT.wood(67)
-	MAT.wood(81)
+	MAT.Wood(67)
+	MAT.Wood(81)
 
-	MAT.rock(248)
+	MAT.Rock(248)
 
-	MAT.dirt(65)
+	MAT.Dirt(65)
 end

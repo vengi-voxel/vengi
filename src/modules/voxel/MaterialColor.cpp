@@ -61,49 +61,31 @@ public:
 			return false;
 		}
 
-		struct IndexVectors {
-			MaterialColorIndices water;
-			MaterialColorIndices grass;
-			MaterialColorIndices wood;
-			MaterialColorIndices leaf;
-			MaterialColorIndices leaffir;
-			MaterialColorIndices leafpine;
-			MaterialColorIndices flower;
-			MaterialColorIndices bloom;
-			MaterialColorIndices mushroom;
-			MaterialColorIndices rock;
-			MaterialColorIndices sand;
-			MaterialColorIndices cloud;
-			MaterialColorIndices dirt;
-			MaterialColorIndices generic;
-		} iv;
-		iv.generic.resize(colors - 1);
+		MaterialColorIndices& generic = _colorMapping[voxel::VoxelType::Generic];
+		generic.resize(colors - 1);
 		// 0 is VoxelType::Air - don't add it
-		std::iota(std::begin(iv.generic), std::end(iv.generic), 1);
+		std::iota(std::begin(generic), std::end(generic), 1);
 
-		lua::LUA lua;
-#define LUA_ACCESS(name) \
-	luaL_Reg add##name = { #name, [] (lua_State* l) -> int { \
-		IndexVectors* v = lua::LUA::globalData<IndexVectors>(l, "indexvector"); \
-		const int index = luaL_checknumber(l, -1); \
-		core_assert_msg(v != nullptr, "Could not find globl indexvector"); \
-		v->name.push_back(index); \
-		/*v->generic.erase(std::remove(v->generic.begin(), v->generic.end(), index), v->generic.end());*/ \
-		return 0; \
-	}};
-		LUA_ACCESS(water);
-		LUA_ACCESS(grass);
-		LUA_ACCESS(wood);
-		LUA_ACCESS(flower);
-		LUA_ACCESS(bloom);
-		LUA_ACCESS(mushroom);
-		LUA_ACCESS(leaf);
-		LUA_ACCESS(leaffir);
-		LUA_ACCESS(leafpine);
-		LUA_ACCESS(rock);
-		LUA_ACCESS(sand);
-		LUA_ACCESS(cloud);
-		LUA_ACCESS(dirt);
+		std::vector<luaL_Reg> funcs;
+		static_assert((int)voxel::VoxelType::Air == 0, "Air must be 0");
+		for (int i = (int)voxel::VoxelType::Air + 1; i < (int)voxel::VoxelType::Max; ++i) {
+			funcs.push_back(luaL_Reg{ voxel::VoxelTypeStr[i], [] (lua_State* l) -> int {
+				MaterialColor* mc = lua::LUA::globalData<MaterialColor>(l, "MaterialColor");
+				const int index = luaL_checknumber(l, -1);
+				// this is hacky - but we resolve the lua function name here to reverse lookup
+				// the voxel type. This could maybe be done nicer with upvalues...
+				lua_Debug entry;
+				lua_getstack(l, 0, &entry);
+				const int status = lua_getinfo(l, "Sln", &entry);
+				for (int j = (int)voxel::VoxelType::Air + 1; j < (int)voxel::VoxelType::Max; ++j) {
+					if (!strcmp(voxel::VoxelTypeStr[j], entry.name)) {
+						mc->_colorMapping[(VoxelType)j].push_back(index);
+						break;
+					}
+				}
+				return 0;
+			}});
+		}
 
 		luaL_Reg getmaterial = { "material", [] (lua_State* l) -> int {
 			MaterialColor* mc = lua::LUA::globalData<MaterialColor>(l, "MaterialColor");
@@ -119,17 +101,12 @@ public:
 			return 1;
 		}};
 
+		lua::LUA lua;
 		clua_vecregister<glm::vec4>(lua.state());
-
-		luaL_Reg eof = { nullptr, nullptr };
-		luaL_Reg funcs[] = { addwater, addgrass, addwood, addflower, addbloom,
-				addmushroom, addleaf, addleaffir, addleafpine, addrock, addsand,
-				addcloud, adddirt, getmaterial, eof };
-		lua.newGlobalData<IndexVectors>("indexvector", &iv);
+		funcs.push_back(getmaterial);
+		funcs.push_back({ nullptr, nullptr });
 		lua.newGlobalData<MaterialColor>("MaterialColor", this);
-		lua.reg("MAT", funcs);
-
-#undef LUA_ACCESS
+		lua.reg("MAT", &funcs.front());
 		const std::string& luaString = luaFile->load();
 		if (luaString.empty()) {
 			Log::error("Could not load lua script file: %s", luaFile->fileName().c_str());
@@ -145,21 +122,6 @@ public:
 					luaFile->fileName().c_str(), lua.error().c_str());
 			return false;
 		}
-
-		_colorMapping[VoxelType::Water] = std::move(iv.water);
-		_colorMapping[VoxelType::Grass] = std::move(iv.grass);
-		_colorMapping[VoxelType::Wood] = std::move(iv.wood);
-		_colorMapping[VoxelType::Leaf] = std::move(iv.leaf);
-		_colorMapping[VoxelType::LeafFir] = std::move(iv.leaffir);
-		_colorMapping[VoxelType::LeafPine] = std::move(iv.leafpine);
-		_colorMapping[VoxelType::Rock] = std::move(iv.rock);
-		_colorMapping[VoxelType::Flower] = std::move(iv.flower);
-		_colorMapping[VoxelType::Bloom] = std::move(iv.bloom);
-		_colorMapping[VoxelType::Mushroom] = std::move(iv.mushroom);
-		_colorMapping[VoxelType::Sand] = std::move(iv.sand);
-		_colorMapping[VoxelType::Cloud] = std::move(iv.cloud);
-		_colorMapping[VoxelType::Dirt] = std::move(iv.dirt);
-		_colorMapping[VoxelType::Generic] = std::move(iv.generic);
 
 		for (const auto& e : _colorMapping) {
 			if (e.second.empty()) {
