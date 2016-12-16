@@ -38,8 +38,8 @@ TBLayout: distribution: gravity, axis: y
 							TBSkinImage: skin: voxedit-redo
 						TBLayout: gravity: left right
 							TBWidget
-						TBButton: gravity: left, @include: definitions>menubutton, text: Tree, id: menu_tree
-							TBSkinImage: skin: voxedit-tree
+						TBButton: gravity: left, @include: definitions>menubutton, text: Structure, id: menu_structure
+							TBSkinImage: skin: voxedit-structure
 						TBButton: gravity: left, @include: definitions>menubutton, text: L-System, id: dialog_lsystem
 							TBSkinImage: skin: voxedit-lsystem
 						TBButton: gravity: left, @include: definitions>menubutton, text: Noise, id: dialog_noise

@@ -73,6 +73,11 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addMenuItem(_fileItems, "Save");
 	addMenuItem(_fileItems, "Export");
 	addMenuItem(_fileItems, "Quit");
+
+	addMenuItem(_structureItems, "Trees")->sub_source = &_treeItems;
+	addMenuItem(_structureItems, "Clouds");
+	addMenuItem(_structureItems, "Plants");
+	addMenuItem(_structureItems, "Terrain");
 }
 
 VoxEditWindow::~VoxEditWindow() {
@@ -371,6 +376,11 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (isAny(ev, TBIDC("rotatez"))) {
 		rotatez();
+		return true;
+	} else if (isAny(ev, TBIDC("menu_structure"))) {
+		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("structure_popup"))) {
+			menu->Show(&_structureItems, tb::TBPopupAlignment());
+		}
 		return true;
 	} else if (isAny(ev, TBIDC("menu_tree"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_popup"))) {

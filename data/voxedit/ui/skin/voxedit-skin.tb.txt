@@ -57,6 +57,8 @@ elements
 		bitmap voxedit-quadview.png
 	voxedit-tree
 		bitmap voxedit-tree.png
+	voxedit-structure
+		bitmap voxedit-tree.png
 	voxedit-extend
 		bitmap voxedit-extend.png
 	voxedit-crop
