@@ -25,6 +25,10 @@ Server::Server(const network::NetworkPtr& network, const backend::ServerLoopPtr&
 core::AppState Server::onConstruct() {
 	const core::AppState state = core::App::onConstruct();
 
+	core::Var::get(cfg::DatabaseName, "engine");
+	core::Var::get(cfg::DatabaseHost, "localhost");
+	core::Var::get(cfg::DatabaseUser, "engine");
+	core::Var::get(cfg::DatabasePassword, "engine", core::CV_SECRET);
 	core::Var::get(cfg::ServerUserTimeout, "60000");
 	core::Var::get(cfg::ServerPort, "11337");
 	core::Var::get(cfg::ServerHost, "");
@@ -41,6 +45,7 @@ core::AppState Server::onConstruct() {
 core::AppState Server::onInit() {
 	const core::AppState state = core::App::onInit();
 	if (state != core::AppState::Running) {
+		Log::error("Init failed");
 		return state;
 	}
 

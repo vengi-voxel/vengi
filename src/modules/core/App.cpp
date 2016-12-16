@@ -231,7 +231,8 @@ AppState App::onConstruct() {
 				return;
 			}
 			const uint32_t flags = var->getFlags();
-			std::string flagsStr = "    ";
+			std::string flagsStr = "     ";
+			const char *value = var->strVal().c_str();
 			if ((flags & CV_READONLY) != 0) {
 				flagsStr[0]  = 'R';
 			}
@@ -241,12 +242,16 @@ AppState App::onConstruct() {
 			if ((flags & CV_SHADER) != 0) {
 				flagsStr[2]  = 'S';
 			}
+			if ((flags & CV_SECRET) != 0) {
+				flagsStr[3]  = 'X';
+				value = "***secret***";
+			}
 			if (var->isDirty()) {
-				flagsStr[3]  = 'D';
+				flagsStr[4]  = 'D';
 			}
 			const std::string& name = core::string::format("%-28s", var->name().c_str());
-			const std::string& value = core::string::format(R"("%s")", var->strVal().c_str());
-			Log::info("* %s %s = %s (%u)", flagsStr.c_str(), name.c_str(), value.c_str(), var->getHistorySize());
+			const std::string& valueStr = core::string::format(R"("%s")", value);
+			Log::info("* %s %s = %s (%u)", flagsStr.c_str(), name.c_str(), valueStr.c_str(), var->getHistorySize());
 		});
 	}).setHelp("Show the list of known variables (wildcards supported)");
 	core::Command::registerCommand("cmdlist", [] (const core::CmdArgs& args) {
@@ -258,14 +263,13 @@ AppState App::onConstruct() {
 		});
 	}).setHelp("Show the list of known commands (wildcards supported)");
 
-	Log::debug("detected %u cpus", core::cpus());
-
 	return AppState::Init;
 }
 
 AppState App::onInit() {
 	_initTime = _now;
 
+	Log::debug("detected %u cpus", core::cpus());
 	const std::string& content = _filesystem->load(_appname + ".vars");
 	core::Tokenizer t(content);
 	while (t.hasNext()) {
@@ -287,17 +291,18 @@ AppState App::onInit() {
 			} else if (c == 'S') {
 				flagsMaskFromFile |= CV_SHADER;
 				Log::trace("shader flag for %s", name.c_str());
+			} else if (c == 'X') {
+				flagsMaskFromFile |= CV_SECRET;
+				Log::trace("secret flag for %s", name.c_str());
 			}
 		}
-		if (flagsMaskFromFile != 0u) {
+		const VarPtr& old = core::Var::get(name);
+		if (old) {
+			flagsMask = (int32_t)(flagsMaskFromFile & old->getFlags());
+		} else if (flagsMaskFromFile != 0u) {
 			flagsMask = (int32_t)flagsMaskFromFile;
 		}
-#ifdef DEBUG
-		const VarPtr& v = core::Var::get(name, value.c_str(), flagsMask);
-		core_assert_msg(v->getFlags() == flagsMaskFromFile, "var flags for %s are not like given in the cfg file: %u vs. %u", v->name().c_str(), v->getFlags(), flagsMaskFromFile);
-#else
 		core::Var::get(name, value.c_str(), flagsMask);
-#endif
 	}
 
 	Log::init();
@@ -356,7 +361,8 @@ void App::usage() {
 	Log::info("Config variables:");
 	core::Var::visitSorted([=] (const core::VarPtr& v) {
 		const uint32_t flags = v->getFlags();
-		std::string flagsStr = "    ";
+		std::string flagsStr = "     ";
+		const char *value = v->strVal().c_str();
 		if ((flags & CV_READONLY) != 0) {
 			flagsStr[0]  = 'R';
 		}
@@ -366,16 +372,21 @@ void App::usage() {
 		if ((flags & CV_SHADER) != 0) {
 			flagsStr[2]  = 'S';
 		}
-		if (v->isDirty()) {
-			flagsStr[3]  = 'D';
+		if ((flags & CV_SECRET) != 0) {
+			flagsStr[3]  = 'X';
+			value = "***secret***";
 		}
-		Log::info("   %-*s %s %s", maxWidth, v->name().c_str(), flagsStr.c_str(), v->strVal().c_str());
+		if (v->isDirty()) {
+			flagsStr[4]  = 'D';
+		}
+		Log::info("   %-*s %s %s", maxWidth, v->name().c_str(), flagsStr.c_str(), value);
 	});
 	Log::info("Flags:");
 	Log::info("   %-*s Readonly  can't get modified at runtime - only at startup", maxWidth, "R");
 	Log::info("   %-*s Nopersist value won't get persisted in the cfg file", maxWidth, "N");
 	Log::info("   %-*s Shader    changing the value would result in a recompilation of the shaders", maxWidth, "S");
-	Log::info("   %-*s Dirty     The config variable is dirty, means that the initial value was changed", maxWidth, "D");
+	Log::info("   %-*s Dirty     the config variable is dirty, means that the initial value was changed", maxWidth, "D");
+	Log::info("   %-*s Secret    the value of the config variable won't be shown in the logs", maxWidth, "X");
 
 	Log::info("");
 	Log::info("Commands:");
@@ -437,13 +448,17 @@ AppState App::onCleanup() {
 			}
 			const uint32_t flags = var->getFlags();
 			std::string flagsStr;
+			const char *value = var->strVal().c_str();
 			if ((flags & CV_READONLY) == CV_READONLY) {
 				flagsStr.append("R");
 			}
 			if ((flags & CV_SHADER) == CV_SHADER) {
 				flagsStr.append("S");
 			}
-			ss << R"(")" << var->name() << R"(" ")" << var->strVal() << R"(" ")" << flagsStr << R"(")" << std::endl;
+			if ((flags & CV_SHADER) == CV_SECRET) {
+				flagsStr.append("X");
+			}
+			ss << R"(")" << var->name() << R"(" ")" << value << R"(" ")" << flagsStr << R"(")" << std::endl;
 		});
 		const std::string& str = ss.str();
 		_filesystem->write(_appname + ".vars", str);

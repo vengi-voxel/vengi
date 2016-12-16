@@ -29,7 +29,7 @@ protected:
 public:
 	~ConnectionPool();
 
-	int init(const char *password = "engine", const char *user = "engine", const char *database = "engine", const char *host = "localhost");
+	int init();
 	void shutdown();
 
 	/**

@@ -28,6 +28,8 @@ const uint32_t CV_SHADER = 1 << 2;
 const uint32_t CV_REPLICATE = 1 << 3;
 /** @brief user information that will be sent out to all connected clients (e.g. user name) */
 const uint32_t CV_BROADCAST = 1 << 4;
+/** @brief don't show the value to users, but just ***secure*** it out */
+const uint32_t CV_SECRET = 1 << 5;
 
 class Var;
 typedef std::shared_ptr<Var> VarPtr;

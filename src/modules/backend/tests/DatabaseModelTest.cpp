@@ -16,6 +16,11 @@ public:
 		Super::SetUp();
 		core::Var::get(cfg::DatabaseMinConnections, "1");
 		core::Var::get(cfg::DatabaseMaxConnections, "2");
+		core::Var::get(cfg::DatabaseName, "engine");
+		core::Var::get(cfg::DatabaseHost, "localhost");
+		core::Var::get(cfg::DatabaseUser, "engine");
+		core::Var::get(cfg::DatabasePassword, "engine");
+
 		core::Singleton<::persistence::ConnectionPool>::getInstance().init();
 	}
 

@@ -12,16 +12,16 @@ ConnectionPool::~ConnectionPool() {
 	shutdown();
 }
 
-int ConnectionPool::init(const char *password, const char *user, const char *database, const char *host) {
+int ConnectionPool::init() {
 	_min = core::Var::getSafe(cfg::DatabaseMinConnections)->intVal();
 	_max = core::Var::getSafe(cfg::DatabaseMaxConnections)->intVal();
 
 	core_assert_always(_min <= _max);
 
-	_dbName = core::Var::get(cfg::DatabaseName, database);
-	_dbHost = core::Var::get(cfg::DatabaseHost, host);
-	_dbUser = core::Var::get(cfg::DatabaseUser, user);
-	_dbPw = core::Var::get(cfg::DatabasePassword, password);
+	_dbName = core::Var::getSafe(cfg::DatabaseName);
+	_dbHost = core::Var::getSafe(cfg::DatabaseHost);
+	_dbUser = core::Var::getSafe(cfg::DatabaseUser);
+	_dbPw = core::Var::getSafe(cfg::DatabasePassword);
 
 	Log::debug("Connect to %s@%s to database %s", _dbUser->strVal().c_str(), _dbHost->strVal().c_str(), _dbName->strVal().c_str());
 
