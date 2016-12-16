@@ -62,23 +62,9 @@ core::AppState VoxEdit::onCleanup() {
 	return state;
 }
 
-core::AppState VoxEdit::onInit() {
+core::AppState VoxEdit::onConstruct() {
 	const core::AppState state = Super::onInit();
-
-	if (!voxel::initDefaultMaterialColors()) {
-		Log::error("Failed to initialize the palette data");
-		return core::Cleanup;
-	}
-
 	_lastDirectory = core::Var::get("ve_lastdirectory", core::App::getInstance()->filesystem()->homePath().c_str());
-
-	_meshPool->init();
-
-	_mainWindow = new voxedit::VoxEditWindow(this);
-	if (!_mainWindow->init()) {
-		Log::error("Failed to initialize the main window");
-		return core::AppState::Cleanup;
-	}
 
 	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
 		const std::string& dir = _lastDirectory->strVal().empty() ? "." : _lastDirectory->strVal();
@@ -173,6 +159,25 @@ core::AppState VoxEdit::onInit() {
 	COMMAND_MAINWINDOW(movemode, "Activates the move mode (next keys are axis x, y, or z and the translation values in voxels)");
 	COMMAND_MAINWINDOW(togglelockaxis, "Activates the lock mode (next key is axis x, y, or z)");
 	COMMAND_MAINWINDOW(resetcamera, "Reset cameras");
+
+	return state;
+}
+
+core::AppState VoxEdit::onInit() {
+	const core::AppState state = Super::onInit();
+
+	if (!voxel::initDefaultMaterialColors()) {
+		Log::error("Failed to initialize the palette data");
+		return core::Cleanup;
+	}
+
+	_meshPool->init();
+
+	_mainWindow = new voxedit::VoxEditWindow(this);
+	if (!_mainWindow->init()) {
+		Log::error("Failed to initialize the main window");
+		return core::AppState::Cleanup;
+	}
 
 	newFile(true);
 

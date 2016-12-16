@@ -30,6 +30,7 @@ public:
 
 	video::MeshPoolPtr meshPool() const;
 
+	core::AppState onConstruct() override;
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;
 	core::AppState onRunning() override;
