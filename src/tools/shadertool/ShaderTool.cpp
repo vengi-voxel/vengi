@@ -492,6 +492,14 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 	return true;
 }
 
+core::AppState ShaderTool::onConstruct() {
+	Log::trace("Set some shader config vars to let the validation work");
+	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
+	core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
+	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
+	return core::App::onConstruct();
+}
+
 core::AppState ShaderTool::onRunning() {
 	if (_argc < 4) {
 		_exitCode = 1;
@@ -545,11 +553,6 @@ core::AppState ShaderTool::onRunning() {
 	parse(vertexSrcSource, true);
 	generateSrc();
 
-	// set some cvars to led the validation work properly
-	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
-	core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
-	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
-
 	const std::string& fragmentSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer, true);
 	const std::string& vertexSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer, true);
 	const std::string& geometrySource = shader.getSource(video::ShaderType::Geometry, geometryBuffer, true);
@@ -595,7 +598,8 @@ core::AppState ShaderTool::onRunning() {
 		_exitCode = geometryValidationExitCode;
 	}
 
-	return core::AppState::Cleanup;
+	requestQuit();
+	return core::AppState::Running;
 }
 
 int main(int argc, char *argv[]) {

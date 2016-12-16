@@ -24,6 +24,8 @@ core::AppState TestApp::onConstruct() {
 	core::Var::get(cfg::ClientWindowWidth, "1024");
 	core::Var::get(cfg::ClientWindowHeight, "768");
 
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
@@ -62,8 +64,6 @@ core::AppState TestApp::onInit() {
 	if (!_plane.init() || !_plane.plane(glm::zero<glm::vec3>())) {
 		return core::AppState::Cleanup;
 	}
-
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _dimension.x, _dimension.y, _aspect);
 	_camera.init(glm::ivec2(), dimension());

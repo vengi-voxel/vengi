@@ -26,8 +26,8 @@ private:
 		core::Var::get(cfg::ClientEmail, email.c_str())->setVal(email);
 		core::Var::get(cfg::ClientPassword, password.c_str())->setVal(password);
 
-		const core::VarPtr& port = core::Var::get(cfg::ClientPort, SERVER_PORT);
-		const core::VarPtr& host = core::Var::get(cfg::ClientHost, SERVER_HOST);
+		const core::VarPtr& port = core::Var::getSafe(cfg::ClientPort);
+		const core::VarPtr& host = core::Var::getSafe(cfg::ClientHost);
 		Log::info("Trying to connect to server %s:%i", host->strVal().c_str(), port->intVal());
 		if (!_client->connect(port->intVal(), host->strVal())) {
 			Log::info("Failed to connect to server %s:%i", host->strVal().c_str(), port->intVal());

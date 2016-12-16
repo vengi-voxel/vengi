@@ -14,6 +14,8 @@ class DatabaseModelTest: public core::AbstractTest {
 public:
 	void SetUp() override {
 		Super::SetUp();
+		core::Var::get(cfg::DatabaseMinConnections, "1");
+		core::Var::get(cfg::DatabaseMaxConnections, "2");
 		core::Singleton<::persistence::ConnectionPool>::getInstance().init();
 	}
 

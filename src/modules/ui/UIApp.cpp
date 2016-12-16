@@ -381,6 +381,8 @@ core::AppState UIApp::onConstruct() {
 		}
 	}).setHelp("Bind a command to a key");
 
+	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
+
 	_console.onConstruct();
 
 	return state;
@@ -445,8 +447,6 @@ core::AppState UIApp::onInit() {
 	_root.SetGravity(tb::WIDGET_GRAVITY_ALL);
 
 	_console.init();
-
-	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 
 	return state;
 }

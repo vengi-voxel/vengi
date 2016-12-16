@@ -13,8 +13,8 @@ ConnectionPool::~ConnectionPool() {
 }
 
 int ConnectionPool::init(const char *password, const char *user, const char *database, const char *host) {
-	_min = core::Var::get(cfg::DatabaseMinConnections, "2")->intVal();
-	_max = core::Var::get(cfg::DatabaseMaxConnections, "10")->intVal();
+	_min = core::Var::getSafe(cfg::DatabaseMinConnections)->intVal();
+	_max = core::Var::getSafe(cfg::DatabaseMaxConnections)->intVal();
 
 	core_assert_always(_min <= _max);
 

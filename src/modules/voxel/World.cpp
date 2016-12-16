@@ -170,7 +170,7 @@ bool World::init() {
 	if (!_biomeManager.init()) {
 		return false;
 	}
-	_meshSize = core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
+	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
 	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
 	// TODO: move into lua
 	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.5f, 0.5f, VoxelType::Sand);

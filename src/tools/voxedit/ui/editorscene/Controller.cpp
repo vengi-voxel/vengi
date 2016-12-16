@@ -44,7 +44,7 @@ void Controller::init(Controller::SceneCameraMode mode) {
 		_camera.setMode(video::CameraMode::Perspective);
 		break;
 	}
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 }
 
 void Controller::onResize(const glm::ivec2& size) {

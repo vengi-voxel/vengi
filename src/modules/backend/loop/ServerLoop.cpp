@@ -78,7 +78,7 @@ bool ServerLoop::init() {
 		return false;
 	}
 
-	const core::VarPtr& seed = core::Var::get(cfg::ServerSeed, "1");
+	const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
 	_world->setSeed(seed->longVal());
 	if (_aiServer.start()) {
 		Log::info("Start the ai debug server on %s:%i", aiDebugServerInterface, aiDebugServerPort);

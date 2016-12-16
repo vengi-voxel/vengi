@@ -24,6 +24,11 @@ core::AppState TestMeshApp::onConstruct() {
 			_mesh = meshPtr;
 		}
 	});
+
+	core::Var::get(cfg::ClientShadowMapSize, "512");
+	core::Var::get("mesh", "chr_skelett2_bake");
+	core::Var::get("animation", "0");
+
 	return state;
 }
 
@@ -51,14 +56,14 @@ core::AppState TestMeshApp::onInit() {
 
 	_meshPool.init();
 
-	const std::string mesh = core::Var::get("mesh", "chr_skelett2_bake")->strVal();
+	const std::string mesh = core::Var::getSafe("mesh")->strVal();
 	_mesh = _meshPool.getMesh(mesh);
 	if (!_mesh->isLoading()) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
 		return core::AppState::Cleanup;
 	}
 	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
-	const glm::ivec2 smSize(core::Var::get(cfg::ClientShadowMapSize, "512")->intVal());
+	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
 	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
 		Log::error("Failed to init the depthbuffer");
 		return core::AppState::Cleanup;
@@ -68,7 +73,7 @@ core::AppState TestMeshApp::onInit() {
 }
 
 void TestMeshApp::doRender() {
-	const uint8_t animationIndex = core::Var::get("animation", "0")->intVal();
+	const uint8_t animationIndex = core::Var::getSafe("animation")->intVal();
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;
 	{
 		video::ScopedShader scoped(_shadowMapShader);

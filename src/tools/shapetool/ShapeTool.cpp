@@ -37,10 +37,14 @@ core::AppState ShapeTool::onConstruct() {
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
+	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
+	core::Var::get(cfg::ShapeToolExtractRadius, "1");
 
 	core::Command::registerCommand("freelook", [this] (const core::CmdArgs& args) {
 		this->_freelook ^= true;
 	}).setHelp("Toggle free look");
+
+	_worldRenderer.onConstruct();
 
 	return state;
 }
@@ -75,7 +79,7 @@ core::AppState ShapeTool::onInit() {
 	_camera.setPosition(glm::vec3(50.0f, 100.0f, 50.0f));
 	_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
-	_worldRenderer.onSpawn(_camera.position(), core::Var::get(cfg::ShapeToolExtractRadius, "1")->intVal());
+	_worldRenderer.onSpawn(_camera.position(), core::Var::getSafe(cfg::ShapeToolExtractRadius)->intVal());
 
 	_meshPool->init();
 

@@ -673,8 +673,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active
 	active = _meshDataOpaque.size();
 }
 
-bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimension) {
-	core_trace_scoped(WorldRendererOnInit);
+void WorldRenderer::onConstruct() {
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	_deferred = core::Var::getSafe(cfg::ClientDeferred);
 	core_assert(_deferred);
@@ -682,6 +681,11 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	core_assert(_shadowMap);
 	_deferredDebug = core::Var::get(cfg::ClientDebugDeferred, "false");
 	_shadowMapDebug = core::Var::get(cfg::ClientDebugShadowMap, "false");
+	core::Var::get(cfg::ClientShadowMapSize, "512");
+}
+
+bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimension) {
+	core_trace_scoped(WorldRendererOnInit);
 
 	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
 		const int ColorTextureSize = 256;
@@ -759,7 +763,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	}
 
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-	const glm::ivec2 smSize(core::Var::get(cfg::ClientShadowMapSize, "512")->intVal());
+	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
 	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
 		return false;
 	}

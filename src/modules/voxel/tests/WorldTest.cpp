@@ -16,6 +16,7 @@ private:
 protected:
 	void extract(int expected) {
 		World world;
+		core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
 		ASSERT_TRUE(world.init());
 		world.setSeed(0);
 		world.setPersist(false);
@@ -90,6 +91,7 @@ TEST_F(WorldTest, testExtractionSingle) {
 // -64 - -1 => meshPos -64
 TEST_F(WorldTest, testChunkAndmeshPos) {
 	World world;
+	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
 	ASSERT_TRUE(world.init());
 	const int chunkSize = world.getChunkSize();
 	//const int halfChunkSize = chunkSize / 2;

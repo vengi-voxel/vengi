@@ -51,7 +51,7 @@ bool RawVolumeRenderer::init() {
 	}
 
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
-	const glm::ivec2 smSize(core::Var::get(cfg::ClientShadowMapSize, "512")->intVal());
+	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
 	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
 		return false;
 	}

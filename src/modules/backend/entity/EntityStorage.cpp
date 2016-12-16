@@ -34,7 +34,7 @@ EntityId EntityStorage::getUserId(const std::string& email, const std::string& p
 	EntityId checkId = userStore.userid();
 
 	if (checkId == 0) {
-		const core::VarPtr& autoReg = core::Var::get(cfg::ServerAutoRegister, "true");
+		const core::VarPtr& autoReg = core::Var::getSafe(cfg::ServerAutoRegister);
 		if (autoReg->boolVal()) {
 			userStore.insert(email, password, ::persistence::Timestamp::now());
 			checkId = userStore.userid();

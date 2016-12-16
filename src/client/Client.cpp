@@ -106,11 +106,16 @@ core::AppState Client::onConstruct() {
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
 
+	core::Var::get(cfg::ClientPort, SERVER_PORT);
+	core::Var::get(cfg::ClientHost, SERVER_HOST);
+	core::Var::get(cfg::ClientAutoLogin, "false");
 	core::Var::get(cfg::ClientName, "noname");
 	core::Var::get(cfg::ClientPassword, "");
 	core::Var::get(cfg::HTTPBaseURL, "https://localhost/");
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "250.0");
+	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
+	_worldRenderer.onConstruct();
 
 	return state;
 }
@@ -173,7 +178,7 @@ core::AppState Client::onInit() {
 }
 
 void Client::handleLogin() {
-	const core::VarPtr& autoLoginVar = core::Var::get(cfg::ClientAutoLogin, "false");
+	const core::VarPtr& autoLoginVar = core::Var::getSafe(cfg::ClientAutoLogin);
 	if (autoLoginVar->boolVal()) {
 		const int port = core::Var::getSafe(cfg::ClientPort)->intVal();
 		const std::string& host = core::Var::getSafe(cfg::ClientHost)->strVal();

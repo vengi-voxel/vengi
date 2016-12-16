@@ -234,7 +234,7 @@ core::AppState WindowedApp::onInit() {
 
 	SDL_DisplayMode displayMode;
 	const int numDisplays = std::max(0, SDL_GetNumVideoDisplays());
-	const int displayIndex = glm::clamp(core::Var::get(cfg::ClientWindowDisplay, 0)->intVal(), 0, numDisplays);
+	const int displayIndex = glm::clamp(core::Var::getSafe(cfg::ClientWindowDisplay)->intVal(), 0, numDisplays);
 	SDL_GetDesktopDisplayMode(displayIndex, &displayMode);
 
 	for (int i = 0; i < numDisplays; ++i) {
@@ -248,7 +248,7 @@ core::AppState WindowedApp::onInit() {
 	int width = core::Var::get(cfg::ClientWindowWidth, displayMode.w)->intVal();
 	int height = core::Var::get(cfg::ClientWindowHeight, displayMode.h)->intVal();
 
-	const core::VarPtr& glVersion = core::Var::get(cfg::ClientOpenGLVersion, "3.1", core::CV_READONLY);
+	const core::VarPtr& glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
 	int glMinor = 0, glMajor = 0;
 	if (std::sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
 		glMajor = 3;
@@ -263,10 +263,9 @@ core::AppState WindowedApp::onInit() {
 	SDL_ClearError();
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	const core::VarPtr& multisampleBuffers = core::Var::get(cfg::ClientMultiSampleBuffers, "1");
-	const core::VarPtr& multisampleSamples = core::Var::get(cfg::ClientMultiSampleSamples, "4");
-	const core::VarPtr& deferred = core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
-	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
+	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
+	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
+	const core::VarPtr& deferred = core::Var::getSafe(cfg::ClientDeferred);
 
 	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
 	if (!deferred->boolVal() && multisampling) {
@@ -285,7 +284,7 @@ core::AppState WindowedApp::onInit() {
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
-	const bool fullscreen = core::Var::get(cfg::ClientFullscreen, "true")->boolVal();
+	const bool fullscreen = core::Var::getSafe(cfg::ClientFullscreen)->boolVal();
 
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 	if (fullscreen) {
@@ -319,14 +318,7 @@ core::AppState WindowedApp::onInit() {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glv.minorVersion);
 	Log::info("got gl context: %i.%i", glv.majorVersion, glv.minorVersion);
 
-	const char *defaultSyncValue =
-#ifdef DEBUG
-			"false"
-#else
-			"true"
-#endif
-	;
-	const bool vsync = core::Var::get(cfg::ClientVSync, defaultSyncValue)->boolVal();
+	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
 	if (vsync) {
 		if (SDL_GL_SetSwapInterval(-1) == -1) {
 			if (SDL_GL_SetSwapInterval(1) == -1) {
@@ -372,8 +364,6 @@ core::AppState WindowedApp::onInit() {
 		Log::info("%ix%i@%iHz %s", displayMode.w, displayMode.h, displayMode.refresh_rate, name);
 	}
 
-	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
-
 	// some platforms may override or hardcode the resolution - so
 	// we have to query it here to get the actual resolution
 	int _width, _height;
@@ -413,6 +403,21 @@ core::AppState WindowedApp::onInit() {
 
 core::AppState WindowedApp::onConstruct() {
 	core::AppState state = App::onConstruct();
+	core::Var::get(cfg::ClientMultiSampleBuffers, "1");
+	core::Var::get(cfg::ClientMultiSampleSamples, "4");
+	core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
+	core::Var::get(cfg::ClientFullscreen, "true");
+	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
+	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
+	core::Var::get(cfg::ClientWindowDisplay, 0);
+	core::Var::get(cfg::ClientOpenGLVersion, "3.1", core::CV_READONLY);
+#ifdef DEBUG
+	const char *defaultSyncValue ="false";
+#else
+	const char *defaultSyncValue = "true";
+#endif
+	core::Var::get(cfg::ClientVSync, defaultSyncValue);
+
 	return state;
 }
 

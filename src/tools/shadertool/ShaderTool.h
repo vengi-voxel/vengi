@@ -70,5 +70,6 @@ public:
 	ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	~ShaderTool();
 
+	core::AppState onConstruct() override;
 	core::AppState onRunning() override;
 };

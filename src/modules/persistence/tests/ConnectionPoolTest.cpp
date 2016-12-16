@@ -8,6 +8,12 @@
 namespace persistence {
 
 class ConnectionPoolTest : public core::AbstractTest {
+public:
+	void SetUp() override {
+		core::AbstractTest::SetUp();
+		core::Var::get(cfg::DatabaseMinConnections, "1");
+		core::Var::get(cfg::DatabaseMaxConnections, "2");
+	}
 };
 
 TEST_F(ConnectionPoolTest, testConnectionPoolSize) {

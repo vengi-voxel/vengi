@@ -327,13 +327,32 @@ void App::usage() {
 	Log::info("");
 	Log::info("Config variables:");
 	core::Var::visitSorted([=] (const core::VarPtr& v) {
-		Log::info("   %*s %s", maxWidth, v->name().c_str(), v->strVal().c_str());
+		const uint32_t flags = v->getFlags();
+		std::string flagsStr = "    ";
+		if ((flags & CV_READONLY) != 0) {
+			flagsStr[0]  = 'R';
+		}
+		if ((flags & CV_NOPERSIST) != 0) {
+			flagsStr[1]  = 'N';
+		}
+		if ((flags & CV_SHADER) != 0) {
+			flagsStr[2]  = 'S';
+		}
+		if (v->isDirty()) {
+			flagsStr[3]  = 'D';
+		}
+		Log::info("   %-*s %s %s", maxWidth, v->name().c_str(), flagsStr.c_str(), v->strVal().c_str());
 	});
+	Log::info("Flags:");
+	Log::info("   %-*s Readonly  can't get modified at runtime - only at startup", maxWidth, "R");
+	Log::info("   %-*s Nopersist value won't get persisted in the cfg file", maxWidth, "N");
+	Log::info("   %-*s Shader    changing the value would result in a recompilation of the shaders", maxWidth, "S");
+	Log::info("   %-*s Dirty     The config variable is dirty, means that the initial value was changed", maxWidth, "D");
 
 	Log::info("");
 	Log::info("Commands:");
 	core::Command::visitSorted([=] (const core::Command& c) {
-		Log::info("   %*s %s", maxWidth, c.name().c_str(), c.help().c_str());
+		Log::info("   %-*s %s", maxWidth, c.name().c_str(), c.help().c_str());
 	});
 }
 

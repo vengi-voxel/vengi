@@ -26,10 +26,15 @@ core::AppState Server::onConstruct() {
 	const core::AppState state = core::App::onConstruct();
 
 	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {requestQuit();});
-
+	core::Var::get(cfg::ServerUserTimeout, "60000");
 	core::Var::get(cfg::ServerPort, "11337");
 	core::Var::get(cfg::ServerHost, "");
 	core::Var::get(cfg::ServerMaxClients, "1024");
+	core::Var::get(cfg::ServerAutoRegister, "true");
+	core::Var::get(cfg::ServerSeed, "1");
+	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
+	core::Var::get(cfg::DatabaseMinConnections, "2");
+	core::Var::get(cfg::DatabaseMaxConnections, "10");
 
 	return state;
 }
@@ -50,9 +55,9 @@ core::AppState Server::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	const core::VarPtr& port = core::Var::get(cfg::ServerPort);
-	const core::VarPtr& host = core::Var::get(cfg::ServerHost);
-	const core::VarPtr& maxclients = core::Var::get(cfg::ServerMaxClients);
+	const core::VarPtr& port = core::Var::getSafe(cfg::ServerPort);
+	const core::VarPtr& host = core::Var::getSafe(cfg::ServerHost);
+	const core::VarPtr& maxclients = core::Var::getSafe(cfg::ServerMaxClients);
 	if (!_network->bind(port->intVal(), host->strVal(), maxclients->intVal(), 2)) {
 		Log::error("Failed to bind the server socket on %s:%i", host->strVal().c_str(), port->intVal());
 		return core::AppState::Cleanup;

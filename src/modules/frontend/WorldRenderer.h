@@ -120,6 +120,7 @@ public:
 
 	void reset();
 
+	void onConstruct();
 	bool onInit(const glm::ivec2& position, const glm::ivec2& dimension);
 	void onRunning(long dt);
 	void shutdown();
