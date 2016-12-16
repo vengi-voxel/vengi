@@ -52,7 +52,6 @@ protected:
 		state.downtime = 0;
 	}
 
-	bool _quit;
 	tb::TBWidget _root;
 	int _fps = 0;
 	uint32_t _frameCounter = 0;

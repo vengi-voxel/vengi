@@ -25,7 +25,6 @@ Server::Server(const network::NetworkPtr& network, const backend::ServerLoopPtr&
 core::AppState Server::onConstruct() {
 	const core::AppState state = core::App::onConstruct();
 
-	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {requestQuit();});
 	core::Var::get(cfg::ServerUserTimeout, "60000");
 	core::Var::get(cfg::ServerPort, "11337");
 	core::Var::get(cfg::ServerHost, "");

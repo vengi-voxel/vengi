@@ -197,6 +197,9 @@ AppState App::onConstruct() {
 			Log::info("not found");
 		}
 	}).setHelp("Show the value of a variable");
+
+	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
+
 	core::Command::registerCommand("cvarlist", [] (const core::CmdArgs& args) {
 		core::Var::visitSorted([&] (const core::VarPtr& var) {
 			if (!args.empty() && !core::string::matches(args[0], var->name())) {

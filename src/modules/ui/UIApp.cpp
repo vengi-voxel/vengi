@@ -135,7 +135,7 @@ static inline int mapKey(int32_t key) {
 tb::UIRendererGL _renderer;
 
 UIApp::UIApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
-		Super(filesystem, eventBus, timeProvider, traceport), _quit(false) {
+		Super(filesystem, eventBus, timeProvider, traceport) {
 }
 
 UIApp::~UIApp() {
@@ -330,8 +330,6 @@ core::AppState UIApp::onConstruct() {
 #endif
 	}).setHelp("Show ui debug information - only available in debug builds");
 
-	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;}).setHelp("Quit the application");
-
 	core::Command::registerCommand("bindlist", [this] (const core::CmdArgs& args) {
 		for (util::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 			const int32_t key = i->first;
@@ -468,9 +466,6 @@ void UIApp::doLayout() {
 }
 
 core::AppState UIApp::onRunning() {
-	if (_quit) {
-		return core::AppState::Cleanup;
-	}
 	core::AppState state = Super::onRunning();
 
 	_lastShowTextY = 5;
