@@ -67,7 +67,7 @@ core::AppState Server::onInit() {
 		return core::AppState::Cleanup;
 	}
 	Log::info("Server socket is up at %s:%i", host->strVal().c_str(), port->intVal());
-	return state;
+	return core::AppState::Running;
 }
 
 core::AppState Server::onCleanup() {
@@ -78,12 +78,9 @@ core::AppState Server::onCleanup() {
 }
 
 core::AppState Server::onRunning() {
-	const core::AppState state = core::App::onRunning();
-	if (state != core::AppState::Running) {
-		return state;
-	}
+	core::App::onRunning();
 	_serverLoop->onFrame(_deltaFrame);
-	return state;
+	return core::AppState::Running;
 }
 
 int main(int argc, char *argv[]) {

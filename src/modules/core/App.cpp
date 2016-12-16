@@ -136,6 +136,8 @@ void App::onFrame() {
 }
 
 AppState App::onConstruct() {
+	core::Var::get(cfg::CoreLogLevel, SDL_LOG_PRIORITY_INFO);
+
 	_filesystem->init(_organisation, _appname);
 
 	core::Command::registerCommand("set", [] (const core::CmdArgs& args) {

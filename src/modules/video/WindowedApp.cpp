@@ -122,7 +122,7 @@ void WindowedApp::onAfterRunning() {
 }
 
 core::AppState WindowedApp::onRunning() {
-	App::onRunning();
+	core::App::onRunning();
 
 	for (KeyMapConstIter it = _keys.begin(); it != _keys.end(); ++it) {
 		const int key = it->first;
