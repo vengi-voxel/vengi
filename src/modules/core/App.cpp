@@ -305,15 +305,25 @@ AppState App::onInit() {
 
 void App::usage() {
 	Log::info("Usage: %s [--help] [-set configvar value] [-commandname]", _appname.c_str());
+
+	int maxWidth = 0;
+	core::Var::visitSorted([&] (const core::VarPtr& v) {
+		maxWidth = std::max(maxWidth, (int)v->name().size());
+	});
+	core::Command::visitSorted([&] (const core::Command& c) {
+		maxWidth = std::max(maxWidth, (int)c.name().size());
+	});
+
 	Log::info("");
 	Log::info("Config variables:");
-	core::Var::visitSorted([] (const core::VarPtr& v) {
-		Log::info("   %10s %s", v->name().c_str(), v->strVal().c_str());
+	core::Var::visitSorted([=] (const core::VarPtr& v) {
+		Log::info("   %*s %s", maxWidth, v->name().c_str(), v->strVal().c_str());
 	});
+
 	Log::info("");
 	Log::info("Commands:");
-	core::Command::visitSorted([] (const core::Command& c) {
-		Log::info("   %10s %s", c.name().c_str(), c.help().c_str());
+	core::Command::visitSorted([=] (const core::Command& c) {
+		Log::info("   %*s %s", maxWidth, c.name().c_str(), c.help().c_str());
 	});
 }
 
