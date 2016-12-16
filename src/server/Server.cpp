@@ -45,7 +45,6 @@ core::AppState Server::onConstruct() {
 core::AppState Server::onInit() {
 	const core::AppState state = core::App::onInit();
 	if (state != core::AppState::Running) {
-		Log::error("Init failed");
 		return state;
 	}
 
