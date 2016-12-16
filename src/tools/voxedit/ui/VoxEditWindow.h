@@ -49,6 +49,7 @@ private:
 	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _treeItems;
 	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _fileItems;
 	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _structureItems;
+	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _plantItems;
 
 	tb::TBCheckBox *_showGrid = nullptr;
 	tb::TBCheckBox *_showAABB = nullptr;

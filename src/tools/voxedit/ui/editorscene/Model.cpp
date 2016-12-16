@@ -350,7 +350,7 @@ void Model::world(const voxel::WorldContext& ctx) {
 	voxel::world::createWorld(ctx, wrapper, mgr, 1L, voxel::world::WORLDGEN_CLIENT, 0, 0);
 }
 
-void Model::createPlant() {
+void Model::createCactus() {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
 	markUndo();
@@ -360,7 +360,6 @@ void Model::createPlant() {
 void Model::createCloud() {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
-	markUndo();
 	struct HasClouds {
 		inline bool hasClouds(const glm::ivec3&) const {
 			return true;
@@ -372,7 +371,22 @@ void Model::createCloud() {
 	cloudCtx.regionBorder = 2;
 	cloudCtx.randomPos = false;
 	cloudCtx.pos = _cursorPos;
+	markUndo();
 	voxel::cloud::createClouds(wrapper, hasClouds, cloudCtx, random);
+}
+
+void Model::createPlant(voxel::PlantType type) {
+	voxel::PlantGenerator g;
+	voxel::RawVolumeWrapper wrapper(_modelVolume);
+	markUndo();
+	if (type == voxel::PlantType::Flower) {
+		g.createFlower(5, _cursorPos, wrapper);
+	} else if (type == voxel::PlantType::Grass) {
+		g.createGrass(10, _cursorPos, wrapper);
+	} else if (type == voxel::PlantType::Mushroom) {
+		g.createMushroom(7, _cursorPos, wrapper);
+	}
+	g.shutdown();
 }
 
 void Model::createTree(voxel::TreeContext ctx) {

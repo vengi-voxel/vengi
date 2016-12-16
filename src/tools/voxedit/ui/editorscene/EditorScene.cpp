@@ -228,12 +228,16 @@ void EditorScene::createTree(const voxel::TreeContext& ctx) {
 	m().createTree(ctx);
 }
 
+void EditorScene::createPlant(voxel::PlantType type) {
+	m().createPlant(type);
+}
+
 void EditorScene::createCloud() {
 	m().createCloud();
 }
 
-void EditorScene::createPlant() {
-	m().createPlant();
+void EditorScene::createCactus() {
+	m().createCactus();
 }
 
 void EditorScene::resetCamera() {

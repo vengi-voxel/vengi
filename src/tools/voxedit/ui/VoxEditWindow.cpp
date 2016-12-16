@@ -62,6 +62,19 @@ static const struct {
 };
 static_assert((int)SDL_arraysize(treeTypes) == (int)voxel::TreeType::Max, "Missing support for tree types in the ui");
 
+static const struct {
+	const char *name;
+	const char *id;
+	tb::TBID tbid;
+	voxel::PlantType type;
+} plantTypes[] = {
+	{"Flower",		"plant_flower",		TBIDC("plant_flower"),		voxel::PlantType::Flower},
+	{"Grass",		"plant_grass",		TBIDC("plant_grass"),		voxel::PlantType::Grass},
+	{"Mushroom",	"plant_mushroom",	TBIDC("plant_mushroom"),	voxel::PlantType::Mushroom}
+};
+static_assert((int)SDL_arraysize(plantTypes) == (int)voxel::PlantType::MaxPlantTypes, "Missing support for plant types in the ui");
+
+
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		ui::Window(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
@@ -74,9 +87,14 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addMenuItem(_fileItems, "Export");
 	addMenuItem(_fileItems, "Quit");
 
+	addMenuItem(_plantItems, "Cactus", "cactus");
+	for (uint32_t i = 0; i < SDL_arraysize(plantTypes); ++i) {
+		addMenuItem(_plantItems, plantTypes[i].name, plantTypes[i].id);
+	}
+
 	addMenuItem(_structureItems, "Trees")->sub_source = &_treeItems;
+	addMenuItem(_structureItems, "Plants", "plants")->sub_source = &_plantItems;
 	addMenuItem(_structureItems, "Clouds", "clouds");
-	addMenuItem(_structureItems, "Plants", "plants");
 }
 
 VoxEditWindow::~VoxEditWindow() {
@@ -471,12 +489,26 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
-
+	for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
+		if (isAny(ev, treeTypes[i].tbid)) {
+			createTree(treeTypes[i].type);
+			return true;
+		}
+	}
+	for (uint32_t i = 0; i < SDL_arraysize(plantTypes); ++i) {
+		if (isAny(ev, plantTypes[i].tbid)) {
+			_scene->createPlant(plantTypes[i].type);
+			return true;
+		}
+	}
 	if (isAny(ev, TBIDC("clouds"))) {
 		_scene->createCloud();
 		return true;
-	} else if (isAny(ev, TBIDC("plants"))) {
-		_scene->createPlant();
+	} else if (isAny(ev, TBIDC("cactus"))) {
+		_scene->createCactus();
+		return true;
+	} else if (isAny(ev, TBIDC("cactus"))) {
+		_scene->createCactus();
 		return true;
 	}
 

@@ -3,6 +3,7 @@
 #include "voxel/polyvox/Picking.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/generator/LSystemGenerator.h"
+#include "voxel/generator/PlantGenerator.h"
 #include "voxel/generator/TreeGenerator.h"
 #include "frontend/RawVolumeRenderer.h"
 #include "Action.h"
@@ -116,8 +117,9 @@ public:
 	void noise(int octaves, float frequency, float persistence);
 	void lsystem(const voxel::lsystem::LSystemContext& lsystemCtx);
 	void createTree(voxel::TreeContext ctx);
+	void createPlant(voxel::PlantType type);
 	void createCloud();
-	void createPlant();
+	void createCactus();
 	void world(const voxel::WorldContext& ctx);
 
 	bool extractVolume();
