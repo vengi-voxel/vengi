@@ -300,7 +300,7 @@ AppState App::onInit() {
 		}
 		const VarPtr& old = core::Var::get(name);
 		if (old) {
-			flagsMask = (int32_t)(flagsMaskFromFile & old->getFlags());
+			flagsMask = (int32_t)(flagsMaskFromFile | old->getFlags());
 		} else if (flagsMaskFromFile != 0u) {
 			flagsMask = (int32_t)flagsMaskFromFile;
 		}
