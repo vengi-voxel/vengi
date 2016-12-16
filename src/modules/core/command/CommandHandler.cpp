@@ -24,15 +24,16 @@ int executeCommands(const std::string& _commandLine) {
 		if (!c) {
 			Log::info("unknown command: %s", cmd.c_str());
 			n = -1;
-		}
-		if (tokens.empty()) {
-			if (c->strVal().empty()) {
-				Log::info("%s: no value set", cmd.c_str());
-			} else {
-				Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
-			}
 		} else {
-			c->setVal(core::string::eraseAllSpaces(tokens[0]));
+			if (tokens.empty()) {
+				if (c->strVal().empty()) {
+					Log::info("%s: no value set", cmd.c_str());
+				} else {
+					Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
+				}
+			} else {
+				c->setVal(core::string::eraseAllSpaces(tokens[0]));
+			}
 		}
 		if (n != -1) {
 			++n;
