@@ -7,6 +7,8 @@
 #include "voxel/polyvox//RawVolumeMoveWrapper.h"
 #include "voxel/generator/NoiseGenerator.h"
 #include "voxel/generator/WorldGenerator.h"
+#include "voxel/generator/CloudGenerator.h"
+#include "voxel/generator/CactusGenerator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QBTFormat.h"
 #include "voxel/model/QBFormat.h"
@@ -346,6 +348,31 @@ void Model::world(const voxel::WorldContext& ctx) {
 	mgr.init();
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
 	voxel::world::createWorld(ctx, wrapper, mgr, 1L, voxel::world::WORLDGEN_CLIENT, 0, 0);
+}
+
+void Model::createPlant() {
+	core::Random random;
+	voxel::RawVolumeWrapper wrapper(_modelVolume);
+	markUndo();
+	voxel::cactus::createCactus(wrapper, _cursorPos, 18, 2, random);
+}
+
+void Model::createCloud() {
+	core::Random random;
+	voxel::RawVolumeWrapper wrapper(_modelVolume);
+	markUndo();
+	struct HasClouds {
+		inline bool hasClouds(const glm::ivec3&) const {
+			return true;
+		}
+	};
+	HasClouds hasClouds;
+	voxel::cloud::CloudContext cloudCtx;
+	cloudCtx.amount = 1;
+	cloudCtx.regionBorder = 2;
+	cloudCtx.randomPos = false;
+	cloudCtx.pos = _cursorPos;
+	voxel::cloud::createClouds(wrapper, hasClouds, cloudCtx, random);
 }
 
 void Model::createTree(voxel::TreeContext ctx) {

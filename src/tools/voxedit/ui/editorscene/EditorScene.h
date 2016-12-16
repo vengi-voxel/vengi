@@ -55,6 +55,8 @@ public:
 	void noise(int octaves, float frequency, float persistence);
 	void lsystem(const voxel::lsystem::LSystemContext& ctx);
 	void createTree(const voxel::TreeContext& ctx);
+	void createCloud();
+	void createPlant();
 	void world(const voxel::WorldContext& ctx);
 
 	const glm::ivec3& cursorPosition() const;

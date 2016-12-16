@@ -75,9 +75,8 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addMenuItem(_fileItems, "Quit");
 
 	addMenuItem(_structureItems, "Trees")->sub_source = &_treeItems;
-	addMenuItem(_structureItems, "Clouds");
-	addMenuItem(_structureItems, "Plants");
-	addMenuItem(_structureItems, "Terrain");
+	addMenuItem(_structureItems, "Clouds", "clouds");
+	addMenuItem(_structureItems, "Plants", "plants");
 }
 
 VoxEditWindow::~VoxEditWindow() {
@@ -472,6 +471,15 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
+
+	if (isAny(ev, TBIDC("clouds"))) {
+		_scene->createCloud();
+		return true;
+	} else if (isAny(ev, TBIDC("plants"))) {
+		_scene->createPlant();
+		return true;
+	}
+
 	Log::debug("Unknown event %s - %s", ev.target->GetID().debug_string.CStr(), ev.ref_id.debug_string.CStr());
 
 	return false;

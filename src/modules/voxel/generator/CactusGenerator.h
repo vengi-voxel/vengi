@@ -15,12 +15,11 @@ namespace voxel {
 namespace cactus {
 
 template<class Volume>
-void createCactus(Volume& volume, const glm::ivec3& pos, TreeType type, int trunkHeight, int trunkWidth, int width, int depth, int height, core::Random& random) {
+void createCactus(Volume& volume, const glm::ivec3& pos, int trunkHeight, int trunkWidth, core::Random& random) {
 	std::vector<int> branches = {1, 2, 3, 4};
 	random.shuffle(branches.begin(), branches.end());
 	int top = (int) pos.y + trunkHeight;
-	static constexpr Voxel voxel = createRandomColorVoxel(VoxelType::Wood, random);
-	const Voxel leavesVoxel = createRandomColorVoxel(VoxelType::Leaves, random);
+	const Voxel& leavesVoxel = createRandomColorVoxel(VoxelType::Leaf, random);
 	const int n = random.random(2, 4);
 	shape::createCubeNoCenter(volume, pos, trunkWidth, trunkHeight, trunkWidth, leavesVoxel);
 	for (int i = 0; i < n; ++i) {

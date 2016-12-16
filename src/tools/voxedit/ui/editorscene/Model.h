@@ -116,6 +116,8 @@ public:
 	void noise(int octaves, float frequency, float persistence);
 	void lsystem(const voxel::lsystem::LSystemContext& lsystemCtx);
 	void createTree(voxel::TreeContext ctx);
+	void createCloud();
+	void createPlant();
 	void world(const voxel::WorldContext& ctx);
 
 	bool extractVolume();

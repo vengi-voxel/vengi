@@ -46,7 +46,8 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 	}
 	if ((flags & WORLDGEN_CLOUDS) != 0) {
 		core_trace_scoped(Clouds);
-		voxel::cloud::createClouds(volume, biomManager, random);
+		voxel::cloud::CloudContext cloudCtx;
+		voxel::cloud::createClouds(volume, biomManager, cloudCtx, random);
 	}
 	if ((flags & WORLDGEN_TREES) != 0) {
 		core_trace_scoped(Trees);

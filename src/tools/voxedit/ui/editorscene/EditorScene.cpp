@@ -228,6 +228,14 @@ void EditorScene::createTree(const voxel::TreeContext& ctx) {
 	m().createTree(ctx);
 }
 
+void EditorScene::createCloud() {
+	m().createCloud();
+}
+
+void EditorScene::createPlant() {
+	m().createPlant();
+}
+
 void EditorScene::resetCamera() {
 	_controller.resetCamera(m().modelVolume());
 }
