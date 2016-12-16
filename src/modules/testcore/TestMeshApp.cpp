@@ -9,8 +9,8 @@ TestMeshApp::TestMeshApp(const io::FilesystemPtr& filesystem, const core::EventB
 	setRenderPlane(false);
 }
 
-core::AppState TestMeshApp::onInit() {
-	core::AppState state = Super::onInit();
+core::AppState TestMeshApp::onConstruct() {
+	core::AppState state = Super::onConstruct();
 
 	core::Command::registerCommand("loadmesh", [this] (const core::CmdArgs& args) {
 		if (args.empty()) {
@@ -24,6 +24,11 @@ core::AppState TestMeshApp::onInit() {
 			_mesh = meshPtr;
 		}
 	});
+	return state;
+}
+
+core::AppState TestMeshApp::onInit() {
+	core::AppState state = Super::onInit();
 
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));

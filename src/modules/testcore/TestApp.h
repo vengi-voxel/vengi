@@ -49,6 +49,7 @@ public:
 
 	video::Camera& camera();
 
+	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;
 	virtual void beforeUI() override;
 	virtual void afterRootWidget() override;

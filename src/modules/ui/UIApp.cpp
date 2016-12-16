@@ -381,6 +381,8 @@ core::AppState UIApp::onConstruct() {
 		}
 	}).setHelp("Bind a command to a key");
 
+	_console.onConstruct();
+
 	return state;
 }
 
@@ -399,6 +401,9 @@ void UIApp::afterRootWidget() {
 
 core::AppState UIApp::onInit() {
 	const core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 	if (!tb::tb_core_init(&_renderer)) {
 		Log::error("failed to initialize the ui");
 		return core::AppState::Cleanup;

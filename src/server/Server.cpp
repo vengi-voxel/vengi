@@ -17,31 +17,45 @@
 Server::Server(const network::NetworkPtr& network, const backend::ServerLoopPtr& serverLoop,
 		const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
 		const core::EventBusPtr& eventBus) :
-		core::App(filesystem, eventBus, timeProvider, 15678), _quit(false), _network(network),
+		core::App(filesystem, eventBus, timeProvider, 15678), _network(network),
 		_serverLoop(serverLoop) {
 	init(ORGANISATION, "server");
 }
 
+core::AppState Server::onConstruct() {
+	const core::AppState state = core::App::onConstruct();
+
+	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {requestQuit();});
+
+	core::Var::get(cfg::ServerPort, "11337");
+	core::Var::get(cfg::ServerHost, "");
+	core::Var::get(cfg::ServerMaxClients, "1024");
+
+	return state;
+}
+
 core::AppState Server::onInit() {
 	const core::AppState state = core::App::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
+
 	if (!_network->init()) {
 		Log::error("Failed to init the network");
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 
 	if (!_serverLoop->init()) {
 		Log::error("Failed to init the main loop");
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 
-	core::Command::registerCommand("quit", [&] (const core::CmdArgs& args) {_quit = true;});
-
-	const core::VarPtr& port = core::Var::get(cfg::ServerPort, "11337");
-	const core::VarPtr& host = core::Var::get(cfg::ServerHost, "");
-	const core::VarPtr& maxclients = core::Var::get(cfg::ServerMaxClients, "1024");
+	const core::VarPtr& port = core::Var::get(cfg::ServerPort);
+	const core::VarPtr& host = core::Var::get(cfg::ServerHost);
+	const core::VarPtr& maxclients = core::Var::get(cfg::ServerMaxClients);
 	if (!_network->bind(port->intVal(), host->strVal(), maxclients->intVal(), 2)) {
 		Log::error("Failed to bind the server socket on %s:%i", host->strVal().c_str(), port->intVal());
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 	Log::info("Server socket is up at %s:%i", host->strVal().c_str(), port->intVal());
 	return state;
@@ -55,12 +69,12 @@ core::AppState Server::onCleanup() {
 }
 
 core::AppState Server::onRunning() {
-	if (_quit) {
-		return core::Cleanup;
+	const core::AppState state = core::App::onRunning();
+	if (state != core::AppState::Running) {
+		return state;
 	}
-	core::App::onRunning();
 	_serverLoop->onFrame(_deltaFrame);
-	return core::Running;
+	return state;
 }
 
 int main(int argc, char *argv[]) {

@@ -67,6 +67,7 @@ public:
 			const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem);
 	~Client();
 
+	core::AppState onConstruct() override;
 	core::AppState onInit() override;
 	core::AppState onRunning() override;
 	core::AppState onCleanup() override;

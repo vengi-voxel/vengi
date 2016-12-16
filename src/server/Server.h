@@ -11,7 +11,6 @@
 
 class Server: public core::App {
 private:
-	bool _quit;
 	network::NetworkPtr _network;
 	backend::ServerLoopPtr _serverLoop;
 public:
@@ -19,6 +18,7 @@ public:
 			const core::TimeProviderPtr& timeProvider, const io::FilesystemPtr& filesystem,
 			const core::EventBusPtr& eventBus);
 
+	core::AppState onConstruct() override;
 	core::AppState onInit() override;
 	core::AppState onCleanup() override;
 	core::AppState onRunning() override;

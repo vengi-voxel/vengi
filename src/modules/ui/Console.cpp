@@ -63,13 +63,10 @@ static inline void skipColor(const char **cstr) {
 Console::Console() {
 	SDL_LogGetOutputFunction(&_logFunction, nullptr);
 	SDL_LogSetOutputFunction(logConsole, this);
-
-	_autoEnable = core::Var::get("ui_autoconsole", "false");
 }
 
-bool Console::init() {
-	_font = getFont(20);
-
+void Console::onConstruct() {
+	_autoEnable = core::Var::get("ui_autoconsole", "false");
 	core::Command::registerCommand("toggleconsole", [&] (const core::CmdArgs& args) { toggle(); }).setHelp("Toggle the in-game console");
 	core::Command::registerCommand("clear", [&] (const core::CmdArgs& args) { clear(); }).setHelp("Clear the text from the in-game console");
 	core::Command::registerCommand("logerror", [&] (const core::CmdArgs& args) {
@@ -96,6 +93,10 @@ bool Console::init() {
 		}
 		Log::warn("%s", args[0].c_str());
 	}).setHelp("Log given message as warn");
+}
+
+bool Console::init() {
+	_font = getFont(20);
 	const io::FilesystemPtr& fs = core::App::getInstance()->filesystem();
 	const std::string& content = fs->load(historyFilename);
 	core::string::splitString(content, _history, "\n");

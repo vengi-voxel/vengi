@@ -98,6 +98,23 @@ void Client::onEvent(const voxel::WorldCreatedEvent& event) {
 	new frontend::HudWindow(this, _dimension);
 }
 
+core::AppState Client::onConstruct() {
+	core::AppState state = Super::onConstruct();
+
+	registerMoveCmd("+move_right", MOVERIGHT);
+	registerMoveCmd("+move_left", MOVELEFT);
+	registerMoveCmd("+move_forward", MOVEFORWARD);
+	registerMoveCmd("+move_backward", MOVEBACKWARD);
+
+	core::Var::get(cfg::ClientName, "noname");
+	core::Var::get(cfg::ClientPassword, "");
+	core::Var::get(cfg::HTTPBaseURL, "https://localhost/");
+	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "250.0");
+
+	return state;
+}
+
 core::AppState Client::onInit() {
 	eventBus()->subscribe<network::NewConnectionEvent>(*this);
 	eventBus()->subscribe<network::DisconnectEvent>(*this);
@@ -113,39 +130,28 @@ core::AppState Client::onInit() {
 	r->registerHandler(network::EnumNameServerMsgType(network::ServerMsgType::Seed), std::make_shared<SeedHandler>(_world));
 
 	core::AppState state = Super::onInit();
-	if (state != core::Running) {
+	if (state != core::AppState::Running) {
 		return state;
 	}
 
 	GLDebug::enable(GLDebug::Medium);
 
 	if (!_network->init()) {
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
-
-	core::Var::get(cfg::ClientName, "noname");
-	core::Var::get(cfg::ClientPassword, "");
-	core::Var::get(cfg::HTTPBaseURL, "https://localhost/");
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 
 	GL_checkError();
 
-	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "250.0");
 	_camera.init(glm::ivec2(), dimension());
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setTargetDistance(_maxTargetDistance->floatVal());
 	_waiting.init();
 
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
-
 	_meshPool->init();
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 
 	if (!_world->init()) {
@@ -153,7 +159,7 @@ core::AppState Client::onInit() {
 	}
 
 	if (!_worldRenderer.onInit(glm::ivec2(), _dimension)) {
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 
 	RestClient::init();

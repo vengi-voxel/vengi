@@ -19,12 +19,34 @@ void TestApp::onWindowResize() {
 	_camera.init(glm::ivec2(), dimension());
 }
 
-core::AppState TestApp::onInit() {
+core::AppState TestApp::onConstruct() {
 	core::Var::get(cfg::ClientFullscreen, "false");
 	core::Var::get(cfg::ClientWindowWidth, "1024");
 	core::Var::get(cfg::ClientWindowHeight, "768");
 
+	registerMoveCmd("+move_right", MOVERIGHT);
+	registerMoveCmd("+move_left", MOVELEFT);
+	registerMoveCmd("+move_forward", MOVEFORWARD);
+	registerMoveCmd("+move_backward", MOVEBACKWARD);
+
+	core::Command::registerCommand("+cam_freelook", [&] (const core::CmdArgs& args) {
+		Log::info("target lock: %s", args[0].c_str());
+		if (args[0] == "true") {
+			_camera.setRotationType(video::CameraRotationType::Target);
+			_camera.setTarget(glm::vec3(0.0f, 50.0f, 0.0f));
+			return;
+		}
+		_camera.setRotationType(video::CameraRotationType::Eye);
+	}).setHelp("Camera free look on toggle");
+
+	return Super::onConstruct();
+}
+
+core::AppState TestApp::onInit() {
 	const core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 	_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
 	Log::init();
 	if (state == core::AppState::Cleanup) {
@@ -47,21 +69,6 @@ core::AppState TestApp::onInit() {
 	_camera.init(glm::ivec2(), dimension());
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	_camera.lookAt(glm::vec3(0.0001f));
-
-	registerMoveCmd("+move_right", MOVERIGHT);
-	registerMoveCmd("+move_left", MOVELEFT);
-	registerMoveCmd("+move_forward", MOVEFORWARD);
-	registerMoveCmd("+move_backward", MOVEBACKWARD);
-
-	core::Command::registerCommand("+cam_freelook", [&] (const core::CmdArgs& args) {
-		Log::info("target lock: %s", args[0].c_str());
-		if (args[0] == "true") {
-			_camera.setRotationType(video::CameraRotationType::Target);
-			_camera.setTarget(glm::vec3(0.0f, 50.0f, 0.0f));
-			return;
-		}
-		_camera.setRotationType(video::CameraRotationType::Eye);
-	}).setHelp("Camera free look on toggle");
 
 	const glm::vec4& color = ::core::Color::Black;
 	glClearColor(color.r, color.g, color.b, color.a);

@@ -63,7 +63,7 @@ core::AppState VoxEdit::onCleanup() {
 }
 
 core::AppState VoxEdit::onConstruct() {
-	const core::AppState state = Super::onInit();
+	const core::AppState state = Super::onConstruct();
 	_lastDirectory = core::Var::get("ve_lastdirectory", core::App::getInstance()->filesystem()->homePath().c_str());
 
 	auto fileCompleter = [=] (const std::string& str, std::vector<std::string>& matches) -> int {
@@ -165,10 +165,13 @@ core::AppState VoxEdit::onConstruct() {
 
 core::AppState VoxEdit::onInit() {
 	const core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 
 	_meshPool->init();

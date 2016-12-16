@@ -47,6 +47,10 @@ AppState AbstractTest::TestApp::onCleanup() {
 
 AppState AbstractTest::TestApp::onInit() {
 	AppState state = core::App::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
+
 	if (hasArg("debug") || hasArg("-debug") || hasArg("--debug") || hasArg("-d")) {
 		_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
 		Log::init();

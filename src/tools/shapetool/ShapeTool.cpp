@@ -20,17 +20,8 @@ ShapeTool::ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr
 ShapeTool::~ShapeTool() {
 }
 
-core::AppState ShapeTool::onInit() {
-	core::AppState state = Super::onInit();
-	if (state != core::Running) {
-		return state;
-	}
-
-	GLDebug::enable(GLDebug::Medium);
-
-	if (!_axis.init()) {
-		return core::Cleanup;
-	}
+core::AppState ShapeTool::onConstruct() {
+	core::AppState state = Super::onConstruct();
 
 	_speed = core::Var::get(cfg::ClientMouseSpeed, "0.1");
 	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
@@ -51,9 +42,24 @@ core::AppState ShapeTool::onInit() {
 		this->_freelook ^= true;
 	}).setHelp("Toggle free look");
 
+	return state;
+}
+
+core::AppState ShapeTool::onInit() {
+	core::AppState state = Super::onInit();
+	if (state != core::AppState::Running) {
+		return state;
+	}
+
+	GLDebug::enable(GLDebug::Medium);
+
+	if (!_axis.init()) {
+		return core::AppState::Cleanup;
+	}
+
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 
 	if (!_world->init()) {
@@ -62,7 +68,7 @@ core::AppState ShapeTool::onInit() {
 
 	_world->setSeed(1);
 	if (!_worldRenderer.onInit(glm::ivec2(), _dimension)) {
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 	_camera.init(glm::ivec2(), dimension());
 	_camera.setFieldOfView(45.0f);
@@ -77,12 +83,12 @@ core::AppState ShapeTool::onInit() {
 	const video::MeshPtr& mesh = _meshPool->getMesh(meshName);
 	if (!mesh) {
 		Log::error("Failed to load the mesh '%s'", meshName);
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 	_entity = std::make_shared<frontend::ClientEntity>(1, network::EntityType::NONE, _camera.position(), 0.0f, mesh);
 	if (!_worldRenderer.addEntity(_entity)) {
 		Log::error("Failed to create entity");
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 
 	glm::vec3 targetPos = _camera.position();
@@ -158,7 +164,7 @@ void ShapeTool::afterRootWidget() {
 
 core::AppState ShapeTool::onRunning() {
 	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
-	core::AppState state = Super::onRunning();
+	const core::AppState state = Super::onRunning();
 
 	_axis.render(_camera);
 	//glm::vec3 entPos = _entity->position();
@@ -173,7 +179,7 @@ core::AppState ShapeTool::onCleanup() {
 	_worldTimer.shutdown();
 	_axis.shutdown();
 	_entity = frontend::ClientEntityPtr();
-	core::AppState state = Super::onCleanup();
+	const core::AppState state = Super::onCleanup();
 	_world->shutdown();
 	return state;
 }

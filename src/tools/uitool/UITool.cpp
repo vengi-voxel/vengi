@@ -13,7 +13,7 @@ UITool::UITool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eve
 
 core::AppState UITool::onInit() {
 	const core::AppState state = core::App::onInit();
-	if (state == core::AppState::Cleanup) {
+	if (state != core::AppState::Running) {
 		return state;
 	}
 

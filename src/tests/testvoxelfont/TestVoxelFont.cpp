@@ -11,7 +11,7 @@ core::AppState TestVoxelFont::onInit() {
 
 	if (!voxel::initDefaultMaterialColors()) {
 		Log::error("Failed to initialize the palette data");
-		return core::Cleanup;
+		return core::AppState::Cleanup;
 	}
 	if (!_rawVolumeRenderer.init()) {
 		Log::error("Failed to initialize the raw volume renderer");

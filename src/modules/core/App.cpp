@@ -5,6 +5,7 @@
 #include "App.h"
 #include "Var.h"
 #include "command/Command.h"
+#include "command/CommandHandler.h"
 #include "Common.h"
 #include "Log.h"
 #include "Tokenizer.h"
@@ -265,21 +266,23 @@ AppState App::onInit() {
 	Log::trace("handle %i command line arguments", _argc);
 	for (int i = 0; i < _argc; ++i) {
 		// every command is started with a '-'
-		if (_argv[i][0] != '-') {
+		if (_argv[i][0] != '-' || (_argv[i][0] != '\0' &&_argv[i][1] == '-')) {
 			continue;
 		}
 
 		const std::string command = &_argv[i][1];
-		CmdArgs args;
+		std::string args;
+		args.reserve(256);
 		for (++i; i < _argc;) {
 			if (_argv[i][0] == '-') {
 				--i;
 				break;
 			}
-			args.push_back(_argv[i++]);
+			args.append(_argv[i++]);
+			args.append(" ");
 		}
 		Log::trace("Execute %s with %i arguments", command.c_str(), (int)args.size());
-		core::Command::execute(command, args);
+		core::executeCommands(command + " " + args);
 	}
 	core::Var::visit([&] (const core::VarPtr& var) {
 		var->markClean();
@@ -290,7 +293,28 @@ AppState App::onInit() {
 
 	core_trace_init();
 
+	for (int i = 0; i < _argc; ++i) {
+		if (!strcmp(_argv[i], "--help") || !strcmp(_argv[i], "-h")) {
+			usage();
+			return AppState::Destroy;
+		}
+	}
+
 	return AppState::Running;
+}
+
+void App::usage() {
+	Log::info("Usage: %s [--help] [-set configvar value] [-commandname]", _appname.c_str());
+	Log::info("");
+	Log::info("Config variables:");
+	core::Var::visitSorted([] (const core::VarPtr& v) {
+		Log::info("   %10s %s", v->name().c_str(), v->strVal().c_str());
+	});
+	Log::info("");
+	Log::info("Commands:");
+	core::Command::visitSorted([] (const core::Command& c) {
+		Log::info("   %10s %s", c.name().c_str(), c.help().c_str());
+	});
 }
 
 void App::onAfterRunning() {

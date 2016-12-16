@@ -63,6 +63,7 @@ private:
 
 public:
 	Console();
+	void onConstruct();
 	bool init();
 	void shutdown();
 	bool toggle();

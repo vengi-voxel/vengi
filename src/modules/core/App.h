@@ -18,8 +18,15 @@
 
 namespace core {
 
-enum AppState {
-	Construct, Init, Running, Cleanup, Destroy, Blocked, NumAppStates, InvalidAppState,
+enum class AppState : uint8_t {
+	Construct,
+	Init,
+	Running,
+	Cleanup,
+	Destroy,
+	Blocked,
+	NumAppStates,
+	InvalidAppState,
 };
 
 /**
@@ -68,7 +75,7 @@ protected:
 
 	AppState _curState;
 	AppState _nextState;
-	std::unordered_set<AppState, std::hash<int> > _blockers;
+	std::unordered_set<AppState> _blockers;
 	bool _suspendRequested;
 	long _now;
 	long _deltaFrame;
@@ -90,6 +97,8 @@ protected:
 	void setFramesPerSecondsCap(double framesPerSecondsCap) {
 		_framesPerSecondsCap = framesPerSecondsCap;
 	}
+
+	void usage();
 
 public:
 	App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport, size_t threadPoolSize = 1);

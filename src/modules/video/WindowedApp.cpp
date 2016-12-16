@@ -214,7 +214,7 @@ bool WindowedApp::loadKeyBindings(const std::string& filename) {
 
 core::AppState WindowedApp::onInit() {
 	core::AppState state = App::onInit();
-	if (state == core::AppState::Cleanup) {
+	if (state != core::AppState::Running) {
 		return state;
 	}
 
