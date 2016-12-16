@@ -30,13 +30,4 @@ TEST_F(ConnectionPoolTest, testConnectionPoolGetConnection) {
 	pool.shutdown();
 }
 
-TEST_F(ConnectionPoolTest, testConnectionPoolInvalidData) {
-	ConnectionPool& pool = core::Singleton<ConnectionPool>::getInstance();
-	ASSERT_EQ(2, pool.init("invalid", "invalid", "invalid", "invalid"));
-	ASSERT_EQ("invalid", core::Var::get(cfg::DatabaseName)->strVal());
-	Connection* c = pool.connection();
-	ASSERT_EQ(nullptr, c);
-	pool.shutdown();
-}
-
 }
