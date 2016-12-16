@@ -568,6 +568,7 @@ video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader,
 
 	const int posLoc = shader.enableVertexAttributeArray("a_pos");
 	const int components = sizeof(voxel::VoxelVertex::position) / sizeof(decltype(voxel::VoxelVertex::position)::value_type);
+	static_assert(MAX_TERRAIN_HEIGHT < 256, "Max terrain height exceeds the valid voxel positions");
 	shader.setVertexAttributeInt(posLoc, components, GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertex), GL_OFFSET_CAST(offsetof(voxel::VoxelVertex, position)));
 
 	const int locationInfo = shader.enableVertexAttributeArray("a_info");
