@@ -250,16 +250,26 @@ AppState App::onInit() {
 			break;
 		}
 		const std::string& flags = t.next();
-		unsigned int flagsMask = 0u;
+		int32_t flagsMask = -1;
+		uint32_t flagsMaskFromFile = 0u;
 		for (char c : flags) {
 			if (c == 'R') {
-				flagsMask &= CV_READONLY;
+				flagsMaskFromFile |= CV_READONLY;
+				Log::trace("read only flag for %s", name.c_str());
 			} else if (c == 'S') {
-				flagsMask &= CV_SHADER;
+				flagsMaskFromFile |= CV_SHADER;
+				Log::trace("shader flag for %s", name.c_str());
 			}
 		}
+		if (flagsMaskFromFile != 0u) {
+			flagsMask = (int32_t)flagsMaskFromFile;
+		}
+#ifdef DEBUG
 		const VarPtr& v = core::Var::get(name, value.c_str(), flagsMask);
-		core_assert(v->getFlags() == flagsMask);
+		core_assert_msg(v->getFlags() == flagsMaskFromFile, "var flags for %s are not like given in the cfg file: %u vs. %u", v->name().c_str(), v->getFlags(), flagsMaskFromFile);
+#else
+		core::Var::get(name, value.c_str(), flagsMask);
+#endif
 	}
 
 	Log::init();
