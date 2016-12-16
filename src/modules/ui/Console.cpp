@@ -474,11 +474,29 @@ void Console::cursorDeleteWord() {
 	_cursorPos = prevWordStart + 1;
 }
 
+std::string Console::removeAnsiColors(const char* message) {
+	std::string out;
+	out.reserve(strlen(message));
+	for (const char *c = message; *c != '\0'; ++c) {
+		// https://en.wikipedia.org/wiki/ANSI_escape_code
+		if (*c >= 030 && *c < 037 && *(c + 1) == '[') {
+			c += 2;
+			while (*c != 'm' && *c != '\0') {
+				++c;
+			}
+			continue;
+		}
+		out.push_back(*c);
+	}
+	return out;
+}
+
 void Console::logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message) {
+	const std::string& cleaned = removeAnsiColors(message);
 	Console* console = (Console*)userdata;
-	const bool hasColor = isColor(message);
+	const bool hasColor = isColor(cleaned.c_str());
 	const std::string& color = hasColor ? "" : getColor(priorityColors[priority]);
-	console->_messages.push_back(color + message);
+	console->_messages.push_back(color + cleaned);
 	if (hasColor) {
 		skipColor(&message);
 	}

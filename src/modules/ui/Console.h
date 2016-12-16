@@ -34,6 +34,7 @@ private:
 	int _scrollPos = 0;
 	int _maxLines = 0;
 
+	static std::string removeAnsiColors(const char* message);
 	static void logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
 	// cursor move on the commandline
