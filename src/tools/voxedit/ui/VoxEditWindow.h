@@ -46,6 +46,9 @@ private:
 	std::string _voxelizeFile;
 	std::string _loadFile;
 
+	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _treeItems;
+	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _fileItems;
+
 	tb::TBCheckBox *_showGrid = nullptr;
 	tb::TBCheckBox *_showAABB = nullptr;
 	tb::TBCheckBox *_showAxis = nullptr;
@@ -57,7 +60,7 @@ private:
 
 	glm::ivec3 _lastCursorPos;
 
-	void addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id = nullptr);
+	tb::TBGenericStringItem* addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id = nullptr);
 	bool handleEvent(const tb::TBWidgetEvent &ev);
 
 	enum class ModifierMode {

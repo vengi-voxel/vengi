@@ -65,6 +65,14 @@ static_assert((int)SDL_arraysize(treeTypes) == (int)voxel::TreeType::Max, "Missi
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		ui::Window(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
 	SetSettings(tb::WINDOW_SETTINGS_CAN_ACTIVATE);
+	for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
+		addMenuItem(_treeItems, treeTypes[i].name, treeTypes[i].id);
+	}
+	addMenuItem(_fileItems, "New");
+	addMenuItem(_fileItems, "Load");
+	addMenuItem(_fileItems, "Save");
+	addMenuItem(_fileItems, "Export");
+	addMenuItem(_fileItems, "Quit");
 }
 
 VoxEditWindow::~VoxEditWindow() {
@@ -143,7 +151,7 @@ bool VoxEditWindow::init() {
 	return true;
 }
 
-void VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id) {
+tb::TBGenericStringItem* VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id) {
 	tb::TBGenericStringItem* item;
 	if (id == nullptr) {
 		const std::string& lowerId = core::string::toLower(text);
@@ -157,6 +165,7 @@ void VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringIt
 		item->SetSkinImage(TBIDC(buf));
 	}
 	items.AddItem(item);
+	return item;
 }
 
 void VoxEditWindow::setCursorPosition(int x, int y, int z) {
@@ -365,22 +374,12 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (isAny(ev, TBIDC("menu_tree"))) {
 		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_popup"))) {
-			tb::TBSelectItemSourceList<tb::TBGenericStringItem>* treeItems = new tb::TBSelectItemSourceList<tb::TBGenericStringItem>();
-			for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
-				addMenuItem(*treeItems, treeTypes[i].name, treeTypes[i].id);
-			}
-			menu->Show(treeItems, tb::TBPopupAlignment());
+			menu->Show(&_treeItems, tb::TBPopupAlignment());
 		}
 		return true;
 	} else if (isAny(ev, TBIDC("menu_file"))) {
-		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("tree_file"))) {
-			tb::TBSelectItemSourceList<tb::TBGenericStringItem>* fileItems = new tb::TBSelectItemSourceList<tb::TBGenericStringItem>();
-			addMenuItem(*fileItems, "New");
-			addMenuItem(*fileItems, "Load");
-			addMenuItem(*fileItems, "Save");
-			addMenuItem(*fileItems, "Export");
-			addMenuItem(*fileItems, "Quit");
-			menu->Show(fileItems, tb::TBPopupAlignment());
+		if (tb::TBMenuWindow *menu = new tb::TBMenuWindow(ev.target, TBIDC("menu_file_window"))) {
+			menu->Show(&_fileItems, tb::TBPopupAlignment());
 		}
 		return true;
 	} else if (isAny(ev, TBIDC("dialog_lsystem"))) {
