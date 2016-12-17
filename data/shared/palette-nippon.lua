@@ -38,5 +38,9 @@ function init()
 
 	MAT.Rock(248)
 
+	MAT.Roof(25)
+	MAT.Roof(29)
+	MAT.Wall(241)
+
 	MAT.Dirt(65)
 end

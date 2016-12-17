@@ -123,9 +123,10 @@ public:
 			return false;
 		}
 
-		for (const auto& e : _colorMapping) {
-			if (e.second.empty()) {
-				Log::error("No colors are defined for VoxelType: %i", (int)std::enum_value(e.first));
+		for (int j = (int)voxel::VoxelType::Air + 1; j < (int)voxel::VoxelType::Max; ++j) {
+			const auto& e = _colorMapping[(voxel::VoxelType)j];
+			if (e.empty()) {
+				Log::error("No colors are defined for VoxelType: %s", voxel::VoxelTypeStr[j]);
 				return false;
 			}
 		}

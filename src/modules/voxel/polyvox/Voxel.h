@@ -28,7 +28,9 @@ enum class VoxelType : uint8_t {
 	Rock,
 	Sand,
 	Cloud,
-	Dirt
+	Dirt,
+	Roof,
+	Wall,
 
 	Max
 };
@@ -48,7 +50,9 @@ static const char* VoxelTypeStr[] = {
 	"Rock",
 	"Sand",
 	"Cloud",
-	"Dirt"
+	"Dirt",
+	"Roof",
+	"Wall"
 };
 static_assert((int)SDL_arraysize(VoxelTypeStr) == (int)VoxelType::Max, "voxel type string array size doesn't match the available voxel types");
 
