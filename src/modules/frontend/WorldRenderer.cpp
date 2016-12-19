@@ -753,7 +753,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	attributeTexcoord.size = _shadowMapDebugShader.getComponentsTexcoord();
 	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
 
-	for (int i = 0; i < voxel::MaxPlantTypes; ++i) {
+	for (int i = 0; i < (int)voxel::PlantType::MaxPlantTypes; ++i) {
 		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
 		video::GLMeshData meshDataPlant = createInstancedMesh(_plantShader, *mesh, 40);
 		if (meshDataPlant.noOfIndices > 0) {

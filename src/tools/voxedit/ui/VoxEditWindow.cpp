@@ -74,6 +74,16 @@ static const struct {
 };
 static_assert((int)SDL_arraysize(plantTypes) == (int)voxel::PlantType::MaxPlantTypes, "Missing support for plant types in the ui");
 
+static const struct {
+	const char *name;
+	const char *id;
+	tb::TBID tbid;
+	voxel::BuildingType type;
+} buildingTypes[] = {
+	{"Tower",		"building_tower",	TBIDC("building_tower"),	voxel::BuildingType::Tower},
+	{"House",		"building_house",	TBIDC("building_house"),	voxel::BuildingType::House}
+};
+static_assert((int)SDL_arraysize(buildingTypes) == (int)voxel::BuildingType::Max, "Missing support for building types in the ui");
 
 VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		ui::Window(tool), _scene(nullptr), _voxedit(tool), _paletteWidget(nullptr) {
@@ -92,9 +102,14 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 		addMenuItem(_plantItems, plantTypes[i].name, plantTypes[i].id);
 	}
 
+	for (uint32_t i = 0; i < SDL_arraysize(buildingTypes); ++i) {
+		addMenuItem(_buildingItems, buildingTypes[i].name, buildingTypes[i].id);
+	}
+
 	addMenuItem(_structureItems, "Trees")->sub_source = &_treeItems;
 	addMenuItem(_structureItems, "Plants", "plants")->sub_source = &_plantItems;
 	addMenuItem(_structureItems, "Clouds", "clouds");
+	addMenuItem(_structureItems, "Buildings", "buildings")->sub_source = &_buildingItems;
 }
 
 VoxEditWindow::~VoxEditWindow() {
@@ -489,9 +504,13 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
-	for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
-		if (isAny(ev, treeTypes[i].tbid)) {
-			createTree(treeTypes[i].type);
+	for (uint32_t i = 0; i < SDL_arraysize(buildingTypes); ++i) {
+		if (isAny(ev, buildingTypes[i].tbid)) {
+			voxel::BuildingContext ctx;
+			if (buildingTypes[i].type == voxel::BuildingType::Tower) {
+				ctx.floors = 3;
+			}
+			_scene->createBuilding(buildingTypes[i].type, ctx);
 			return true;
 		}
 	}

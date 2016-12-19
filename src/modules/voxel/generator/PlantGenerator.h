@@ -8,7 +8,7 @@
 
 namespace voxel {
 
-enum PlantType {
+enum class PlantType {
 	Flower,
 	Mushroom,
 	Grass,
@@ -18,7 +18,7 @@ enum PlantType {
 
 class PlantGenerator {
 private:
-	Mesh* _meshes[MaxPlantTypes];
+	Mesh* _meshes[(int)PlantType::MaxPlantTypes];
 	core::Random _random;
 
 public:

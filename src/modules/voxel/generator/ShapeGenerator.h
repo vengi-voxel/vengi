@@ -125,6 +125,11 @@ void createPlane(Volume& volume, const glm::ivec3& center, int width, int depth,
 	createCube(volume, center, width, 1, depth, voxel);
 }
 
+template<class Volume, class Voxel>
+void createPlaneNoCenter(Volume& volume, const glm::ivec3& center, int width, int depth, const Voxel& voxel) {
+	createCubeNoCenter(volume, center, width, 1, depth, voxel);
+}
+
 /**
  * @brief Creates a L form
  * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into

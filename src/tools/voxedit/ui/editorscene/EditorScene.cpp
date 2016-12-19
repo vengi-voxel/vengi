@@ -228,6 +228,10 @@ void EditorScene::createTree(const voxel::TreeContext& ctx) {
 	m().createTree(ctx);
 }
 
+void EditorScene::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
+	m().createBuilding(type, ctx);
+}
+
 void EditorScene::createPlant(voxel::PlantType type) {
 	m().createPlant(type);
 }

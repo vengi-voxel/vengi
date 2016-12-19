@@ -9,6 +9,7 @@
 #include "voxel/generator/LSystemGenerator.h"
 #include "voxel/generator/TreeGenerator.h"
 #include "voxel/generator/PlantGenerator.h"
+#include "voxel/generator/BuildingGeneratorContext.h"
 #include "voxel/WorldContext.h"
 #include "Shape.h"
 #include "Axis.h"
@@ -56,6 +57,7 @@ public:
 	void noise(int octaves, float frequency, float persistence);
 	void lsystem(const voxel::lsystem::LSystemContext& ctx);
 	void createTree(const voxel::TreeContext& ctx);
+	void createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx);
 	void createPlant(voxel::PlantType type);
 	void createCloud();
 	void createCactus();

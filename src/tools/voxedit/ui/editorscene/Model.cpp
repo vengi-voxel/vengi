@@ -9,6 +9,7 @@
 #include "voxel/generator/WorldGenerator.h"
 #include "voxel/generator/CloudGenerator.h"
 #include "voxel/generator/CactusGenerator.h"
+#include "voxel/generator/BuildingGenerator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QBTFormat.h"
 #include "voxel/model/QBFormat.h"
@@ -387,6 +388,13 @@ void Model::createPlant(voxel::PlantType type) {
 		g.createMushroom(7, _cursorPos, wrapper);
 	}
 	g.shutdown();
+}
+
+void Model::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
+	core::Random random;
+	voxel::RawVolumeWrapper wrapper(_modelVolume);
+	markUndo();
+	voxel::building::createBuilding(wrapper, _cursorPos, type, random);
 }
 
 void Model::createTree(voxel::TreeContext ctx) {

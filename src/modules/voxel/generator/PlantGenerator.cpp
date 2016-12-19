@@ -6,7 +6,7 @@
 namespace voxel {
 
 PlantGenerator::PlantGenerator() {
-	for (int i = 0; i < MaxPlantTypes; ++i) {
+	for (int i = 0; i < (int)PlantType::MaxPlantTypes; ++i) {
 		_meshes[i] = nullptr;
 	}
 }
@@ -16,7 +16,7 @@ PlantGenerator::~PlantGenerator() {
 }
 
 void PlantGenerator::shutdown() {
-	for (int i = 0; i < MaxPlantTypes; ++i) {
+	for (int i = 0; i < (int)PlantType::MaxPlantTypes; ++i) {
 		delete _meshes[i];
 		_meshes[i] = nullptr;
 	}
@@ -29,13 +29,13 @@ bool PlantGenerator::generatePlant(int size, PlantType type, Mesh *result) {
 	glm::ivec3 pos = region.getCentre();
 	pos.y = 0;
 	switch (type) {
-	case Flower:
+	case PlantType::Flower:
 		createFlower(size, pos, volume);
 		break;
-	case Mushroom:
+	case PlantType::Mushroom:
 		createMushroom(size, pos, volume);
 		break;
-	case Grass:
+	case PlantType::Grass:
 		createGrass(size, pos, volume);
 		break;
 	default:
@@ -48,18 +48,18 @@ bool PlantGenerator::generatePlant(int size, PlantType type, Mesh *result) {
 }
 
 Mesh* PlantGenerator::getMesh(PlantType type) {
-	return _meshes[type];
+	return _meshes[(int)type];
 }
 
 void PlantGenerator::generateAll() {
-	for (int t = 0; t < MaxPlantTypes; ++t) {
+	for (int t = 0; t < (int)PlantType::MaxPlantTypes; ++t) {
 		_meshes[t] = new Mesh(1000, 1000);
 		int size;
 		switch (t) {
-		case Grass:
+		case (int)PlantType::Grass:
 			size = 10;
 			break;
-		case Mushroom:
+		case (int)PlantType::Mushroom:
 			size = 7;
 			break;
 		default:
