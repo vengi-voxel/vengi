@@ -78,7 +78,7 @@ namespace glm
 	/// 
 	/// @param m Input matrix multiplied by this scale matrix.
 	/// @param v Ratio of scaling for each axis.
-	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommanded), float or double.
+	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommended), float or double.
 	/// @see gtc_matrix_transform
 	/// @see - scale(tmat4x4<T, P> const & m, T x, T y, T z)
 	/// @see - scale(tvec3<T, P> const & v)
