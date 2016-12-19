@@ -7,6 +7,7 @@
 #include "voxel/BiomeManager.h"
 #include "TreeGenerator.h"
 #include "CloudGenerator.h"
+#include "BuildingGenerator.h"
 #include "core/Trace.h"
 #include "noise/SimplexNoise.h"
 #include "voxel/polyvox/Voxel.h"
@@ -52,6 +53,15 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 	if ((flags & WORLDGEN_TREES) != 0) {
 		core_trace_scoped(Trees);
 		voxel::tree::createTrees(volume, region, biomManager, random);
+	}
+	glm::ivec3 buildingPos = region.getCentre();
+	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; --i) {
+		const VoxelType material = volume.getVoxel(buildingPos.x, i, buildingPos.z).getMaterial();
+		if (isFloor(material)) {
+			buildingPos.y = i;
+			voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::House, random);
+			break;
+		}
 	}
 }
 
