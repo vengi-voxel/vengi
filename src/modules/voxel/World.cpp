@@ -119,7 +119,11 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 
 		// these number are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
 		// they also heavily depend on the size of the mesh region we extract
-		ChunkMeshData data(region.getWidthInVoxels() * region.getDepthInVoxels() * 6, std::numeric_limits<uint16_t>::max() * 6);
+		const int opaqueFactor = 16;
+		const int waterFactor = 12;
+		const int opaqueVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
+		const int waterVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * waterFactor;
+		ChunkMeshData data(opaqueVertices, opaqueVertices, waterVertices, waterVertices);
 		extractCubicMesh(_volumeData, region, &data.opaqueMesh, IsQuadNeeded(false));
 		extractCubicMesh(_volumeData, region, &data.waterMesh, IsQuadNeeded(true));
 #if 0

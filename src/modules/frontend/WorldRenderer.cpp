@@ -147,7 +147,7 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 }
 
 void WorldRenderer::handleMeshQueue(const video::Shader& shader) {
-	voxel::ChunkMeshData mesh(0, 0);
+	voxel::ChunkMeshData mesh(0, 0, 0, 0);
 	if (!_world->pop(mesh)) {
 		return;
 	}
