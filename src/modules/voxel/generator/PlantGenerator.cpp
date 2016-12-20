@@ -42,7 +42,7 @@ bool PlantGenerator::generatePlant(int size, PlantType type, Mesh *result) {
 		return false;
 	}
 
-	extractCubicMesh(&volume, region, result, IsQuadNeeded(false));
+	extractCubicMesh(&volume, region, result, IsQuadNeeded());
 
 	return true;
 }

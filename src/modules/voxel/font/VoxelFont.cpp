@@ -110,7 +110,7 @@ bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
 		}
 		stbtt_FreeBitmap(bitmap, nullptr);
 		voxel::Mesh* mesh = new voxel::Mesh(8, 8, true);
-		voxel::extractCubicMesh(&v, region, mesh, voxel::IsQuadNeeded(false), mergeQuads, mergeQuads);
+		voxel::extractCubicMesh(&v, region, mesh, voxel::IsQuadNeeded(), mergeQuads, mergeQuads);
 		if (mesh->getNoOfIndices() > 0) {
 			_cache[c] = mesh;
 		} else {
