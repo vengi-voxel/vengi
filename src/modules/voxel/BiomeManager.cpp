@@ -90,6 +90,18 @@ int BiomeManager::getAmountOfTrees(const Region& region) const {
 	return maxDim / 6;
 }
 
+bool BiomeManager::hasCactus(const glm::ivec3& pos) const {
+	core_trace_scoped(BiomeHasCactus);
+	if (pos.y < MAX_WATER_HEIGHT) {
+		return false;
+	}
+	const Biome* biome = getBiome(pos);
+	if (!isSand(biome->type)) {
+		return false;
+	}
+	return biome->temperature > 0.9f || biome->humidity < 0.1f;
+}
+
 bool BiomeManager::hasTrees(const glm::ivec3& pos) const {
 	core_trace_scoped(BiomeHasTrees);
 	if (pos.y < MAX_WATER_HEIGHT) {

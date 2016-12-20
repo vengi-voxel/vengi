@@ -10,6 +10,7 @@
 #include "voxel/TreeContext.h"
 #include "voxel/Spiral.h"
 #include "ShapeGenerator.h"
+#include "CactusGenerator.h"
 #include "LSystemGenerator.h"
 
 namespace voxel {
@@ -339,6 +340,12 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 		}
 
 		ctx.pos.y = y;
+
+		if (biomManager.hasCactus(ctx.pos)) {
+			const int trunkWidth = random.random(2, 3);
+			const int trunkHeight = random.random(14, 16);
+			voxel::cactus::createCactus(volume, ctx.pos, trunkHeight, trunkWidth, random);
+		}
 
 		if (!biomManager.hasTrees(ctx.pos)) {
 			continue;

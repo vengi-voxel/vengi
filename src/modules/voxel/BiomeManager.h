@@ -78,6 +78,7 @@ public:
 	float getHumidity(const glm::ivec3& pos) const;
 	float getTemperature(const glm::ivec3& pos) const;
 
+	bool hasCactus(const glm::ivec3& pos) const;
 	bool hasTrees(const glm::ivec3& pos) const;
 	int getAmountOfTrees(const Region& region) const;
 
