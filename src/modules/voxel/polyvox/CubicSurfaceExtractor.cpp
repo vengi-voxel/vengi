@@ -47,9 +47,9 @@ bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 }
 
 bool performQuadMerging(std::list<Quad>& quads, Mesh* meshCurrent) {
-	bool bDidMerge = false;
-	for (typename std::list<Quad>::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
-		typename std::list<Quad>::iterator innerIter = outerIter;
+	bool didMerge = false;
+	for (std::list<Quad>::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
+		std::list<Quad>::iterator innerIter = outerIter;
 		++innerIter;
 		while (innerIter != quads.end()) {
 			Quad& q1 = *outerIter;
@@ -58,7 +58,7 @@ bool performQuadMerging(std::list<Quad>& quads, Mesh* meshCurrent) {
 			const bool result = mergeQuads(q1, q2, meshCurrent);
 
 			if (result) {
-				bDidMerge = true;
+				didMerge = true;
 				innerIter = quads.erase(innerIter);
 			} else {
 				++innerIter;
@@ -66,20 +66,29 @@ bool performQuadMerging(std::list<Quad>& quads, Mesh* meshCurrent) {
 		}
 	}
 
-	return bDidMerge;
+	return didMerge;
+}
+
+// 0 is the darkest
+// 3 is no occlusion at all
+static inline uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
+	if (side1 && side2) {
+		return 0;
+	}
+	return 3 - (side1 + side2 + corner);
 }
 
 int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array<3, VertexData>& existingVertices,
 		Mesh* meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ct++) {
-		VertexData& rEntry = existingVertices(uX, uY, ct);
+		VertexData& entry = existingVertices(uX, uY, ct);
 
 		const uint8_t ambientOcclusion = vertexAmbientOcclusion(
 			!isAir(face1.getMaterial()) && !isWater(face1.getMaterial()),
 			!isAir(face2.getMaterial()) && !isWater(face2.getMaterial()),
 			!isAir(corner.getMaterial()) && !isWater(corner.getMaterial()));
 
-		if (rEntry.index == -1) {
+		if (entry.index == -1) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
 			// The 0.5f offset is because vertices set between voxels in order to build cubes around them.
 			// see raycastWithEndpoints for this offset, too
@@ -89,16 +98,16 @@ int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, con
 			vertex.material = materialIn.getMaterial();
 			vertex.ambientOcclusion = ambientOcclusion;
 
-			rEntry.index = meshCurrent->addVertex(vertex);
-			rEntry.voxel = materialIn;
-			rEntry.ambientOcclusion = vertex.ambientOcclusion;
+			entry.index = meshCurrent->addVertex(vertex);
+			entry.voxel = materialIn;
+			entry.ambientOcclusion = vertex.ambientOcclusion;
 
-			return rEntry.index;
+			return entry.index;
 		}
 
 		// If we have an existing vertex and the material matches then we can return it.
-		if (reuseVertices && rEntry.voxel == materialIn && rEntry.ambientOcclusion == ambientOcclusion) {
-			return rEntry.index;
+		if (reuseVertices && entry.voxel == materialIn && entry.ambientOcclusion == ambientOcclusion) {
+			return entry.index;
 		}
 	}
 

@@ -61,30 +61,17 @@ struct VertexData {
 };
 
 /**
- * @section Vertex encoding/decoding
- */
-
-// 0 is the darkest
-// 3 is no occlusion at all
-inline uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
-	if (side1 && side2) {
-		return 0;
-	}
-	return 3 - (side1 + side2 + corner);
-}
-
-/**
  * @section Surface extraction
  */
 
-extern bool mergeQuads(Quad& q1, Quad& q2, Mesh* m_meshCurrent);
+extern bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent);
 
-extern bool performQuadMerging(std::list<Quad>& quads, Mesh* m_meshCurrent);
+extern bool performQuadMerging(std::list<Quad>& quads, Mesh* meshCurrent);
 
 extern int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
 		Mesh* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner);
 
-inline bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
+static inline bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
 	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
 }
 
@@ -176,13 +163,6 @@ inline bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const 
  *    1. It leaves the user in control of memory allocation and would allow them to implement e.g. a mesh pooling system.
  *    2. The user-provided mesh could have a different index type (e.g. 16-bit indices) to reduce memory usage.
  *    3. The user could provide a custom mesh class, e.g a thin wrapper around an openGL VBO to allow direct writing into this structure.
- *
- *  We don't provide a default MeshType here. If the user doesn't want to provide a MeshType then it probably makes
- *  more sense to use the other variant of this function where the mesh is a return value rather than a parameter.
- *
- * @note: This function is called 'extractCubicMeshCustom' rather than 'extractCubicMesh' to avoid ambiguity when only three parameters
- *  are provided (would the third parameter be a controller or a mesh?). It seems this can be fixed by using enable_if/static_assert to emulate concepts,
- *  but this is relatively complex and I haven't done it yet. Could always add it later as another overload.
  */
 template<typename VolumeType, typename IsQuadNeeded>
 void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, IsQuadNeeded isQuadNeeded, bool bMergeQuads = true, bool reuseVertices = true) {
