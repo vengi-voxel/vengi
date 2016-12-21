@@ -234,9 +234,7 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices) {
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
-	int maxDepthBuffers = 0;
 	if (shadowMap) {
-		maxDepthBuffers = shader.getUniformArraySize(MaxDepthBufferUniformName);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
 		shaderSetUniformIf(shader, setUniformi, "u_shadowmap", 1);
@@ -485,9 +483,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	video::ScopedShader scoped(shader);
 	setUniforms(shader, camera);
 	const bool shadowMap = shader.hasUniform("u_shadowmap");
-	int maxDepthBuffers = 0;
 	if (shadowMap) {
-		maxDepthBuffers = shader.getUniformArraySize(MaxDepthBufferUniformName);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
 		shaderSetUniformIf(shader, setUniformi, "u_shadowmap", 1);
