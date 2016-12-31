@@ -5,11 +5,11 @@ $in uvec3 a_info;
 #ifdef INSTANCED
 // instanced rendering
 $in vec3 a_offset;
-#endif
+#endif // INSTANCED
 
 #ifndef MATERIALOFFSET
 #define MATERIALOFFSET 0
-#endif
+#endif // MATERIALOFFSET
 int materialoffset = MATERIALOFFSET;
 
 uniform float u_fogrange;
@@ -41,9 +41,9 @@ void main(void) {
 	uint a_material = a_info[2];
 #ifdef INSTANCED
 	v_pos = vec4(a_offset, 0.0) + u_model * vec4(a_pos, 1.0);
-#else
+#else // INSTANCED
 	v_pos = u_model * vec4(a_pos, 1.0);
-#endif
+#endif // INSTANCED
 
 	int materialColorIndex = int(a_colorindex) + materialoffset;
 	vec3 materialColor = u_materialcolor[materialColorIndex % MATERIALCOLORS].rgb;
@@ -59,12 +59,12 @@ void main(void) {
 
 #if cl_deferred == 0
 	v_fogdivisor = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
-#endif
+#endif // cl_deferred
 
 #if cl_shadowmap == 1
 	v_lightspacepos = v_pos.xyz;
 	v_viewz = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
-#endif
+#endif // cl_shadowmap
 
 	gl_Position = u_viewprojection * v_pos;
 }

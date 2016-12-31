@@ -13,12 +13,12 @@ uniform vec3 u_fogcolor;
 uniform float u_viewdistance;
 $out vec4 o_color;
 $in float v_fogdivisor;
-#else
+#else // cl_deferred
 // the order is defines in the gbuffer bindings
 $out vec3 o_pos;
 $out vec3 o_color;
 $out vec3 o_norm;
-#endif
+#endif // cl_deferred
 
 void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
@@ -53,11 +53,11 @@ void main(void) {
 	} else {
 		color.r = 1.0;
 	}
-#endif
+#endif // cl_debug_cascade
 #if cl_debug_shadow == 1
 	// shadow only rendering
 	o_color = vec4(vec3(shadow), 1.0);
-#else
+#else // cl_debug_shadow
 	vec3 lightvalue = u_ambient_color + (diffuse * shadow);
 
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
@@ -65,10 +65,10 @@ void main(void) {
 
 	vec3 linearColor = color * v_ambientocclusion * lightvalue;
 	o_color = vec4(mix(linearColor, u_fogcolor, fogval), v_color.a);
-#endif
-#else
+#endif // cl_debug_shadow
+#else // cl_deferred
 	o_color = v_color.xyz * v_ambientocclusion;
 	o_pos = v_pos.xyz;
 	o_norm = normal;
-#endif
+#endif // cl_deferred
 }
