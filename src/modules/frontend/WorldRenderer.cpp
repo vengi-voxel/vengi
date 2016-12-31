@@ -164,14 +164,13 @@ void WorldRenderer::handleMeshQueue() {
 }
 
 bool WorldRenderer::checkShaders() const {
-	static const std::string pos = "a_pos";
-	const int loc1 = _worldShader.getAttributeLocation(pos);
-	const int loc2 = _plantShader.getAttributeLocation(pos);
-	const int loc3 = _waterShader.getAttributeLocation(pos);
-	const int loc4 = _deferredDirLightShader.getAttributeLocation(pos);
-	const int loc5 = _shadowMapShader.getAttributeLocation(pos);
+	const int loc1 = _worldShader.getLocationPos();
+	const int loc2 = _plantShader.getLocationPos();
+	const int loc3 = _waterShader.getLocationPos();
+	const int loc4 = _deferredDirLightShader.getLocationPos();
+	const int loc5 = _shadowMapShader.getLocationPos();
 	const bool same = loc1 == loc2 && loc2 == loc3 && loc3 == loc4 && loc4 == loc5;
-	core_assert_msg(same, "attribute locations for %s differ: %i, %i, %i, %i, %i", pos.c_str(), loc1, loc2, loc3, loc4, loc5);
+	core_assert_msg(same, "attribute locations for a_pos differ: %i, %i, %i, %i, %i", loc1, loc2, loc3, loc4, loc5);
 	return same;
 }
 
