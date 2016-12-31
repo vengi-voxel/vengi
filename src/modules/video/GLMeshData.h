@@ -33,12 +33,12 @@ struct GLMeshData {
 
 	inline void draw() {
 		if (amount == 1) {
-			glDrawElements(GL_TRIANGLES, noOfIndices, indexType, nullptr);
+			glDrawElementsBaseVertex(GL_TRIANGLES, noOfIndices, indexType, GL_OFFSET_CAST(sizeof(uint32_t) * baseIndex), baseVertex);
 		} else {
 			const int amount = (int)instancedPositions.size();
 			glBindBuffer(GL_ARRAY_BUFFER, offsetBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * amount, &instancedPositions[0], GL_DYNAMIC_DRAW);
-			glDrawElementsInstanced(GL_TRIANGLES, noOfIndices, indexType, nullptr, amount);
+			glDrawElementsInstancedBaseVertex(GL_TRIANGLES, noOfIndices, indexType, GL_OFFSET_CAST(sizeof(uint32_t) * baseIndex), amount, baseVertex);
 		}
 	}
 
