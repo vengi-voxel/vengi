@@ -103,7 +103,7 @@ protected:
 
 	shader::ShadowmapRenderShader _shadowMapDebugShader;
 	shader::WorldShader _worldShader;
-	shader::WorldInstancedShader _plantShader;
+	shader::WorldInstancedShader _worldInstancedShader;
 	shader::ShadowmapInstancedShader _shadowMapInstancedShader;
 	shader::WaterShader _waterShader;
 	shader::MeshShader _meshShader;

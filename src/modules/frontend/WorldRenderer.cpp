@@ -54,7 +54,7 @@ void WorldRenderer::shutdown() {
 	_shadowMapDebugShader.shutdown();
 	_shadowMapInstancedShader.shutdown();
 	_worldShader.shutdown();
-	_plantShader.shutdown();
+	_worldInstancedShader.shutdown();
 	_waterShader.shutdown();
 	_meshShader.shutdown();
 	_shadowMapShader.shutdown();
@@ -152,7 +152,7 @@ void WorldRenderer::handleMeshQueue() {
 
 bool WorldRenderer::checkShaders() const {
 	const int loc1 = _worldShader.getLocationPos();
-	const int loc2 = _plantShader.getLocationPos();
+	const int loc2 = _worldInstancedShader.getLocationPos();
 	const int loc3 = _waterShader.getLocationPos();
 	const int loc4 = _deferredDirLightShader.getLocationPos();
 	const int loc5 = _shadowMapShader.getLocationPos();
@@ -325,12 +325,12 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		drawCallsWorld += renderWorldMeshes(_worldShader, _visible, vertices);
 	}
 	{
-		video::ScopedShader scoped(_plantShader);
-		setUniforms(_plantShader, camera);
-		shaderSetUniformIf(_plantShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
-		shaderSetUniformIf(_plantShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
-		_plantShader.setShadowmap(1);
-		drawCallsWorld += renderWorldMeshes(_plantShader, _visiblePlant, vertices);
+		video::ScopedShader scoped(_worldInstancedShader);
+		setUniforms(_worldInstancedShader, camera);
+		shaderSetUniformIf(_worldInstancedShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
+		shaderSetUniformIf(_worldInstancedShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
+		_worldInstancedShader.setShadowmap(1);
+		drawCallsWorld += renderWorldMeshes(_worldInstancedShader, _visiblePlant, vertices);
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
@@ -554,7 +554,7 @@ bool WorldRenderer::createMesh(const voxel::ChunkMeshData &mesh, GLChunkMeshData
 }
 
 bool WorldRenderer::createInstancedMesh(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData) {
-	if (!createMeshInternal(_plantShader, mesh, 3, meshData)) {
+	if (!createMeshInternal(_worldInstancedShader, mesh, 3, meshData)) {
 		return false;
 	}
 
@@ -563,9 +563,9 @@ bool WorldRenderer::createInstancedMesh(const voxel::Mesh &mesh, int amount, vid
 	core_assert(meshData.offsetBuffer > 0);
 	glBindBuffer(GL_ARRAY_BUFFER, meshData.offsetBuffer);
 
-	const int offsetLoc = _plantShader.getLocationOffset();
-	const int components = _plantShader.getComponentsOffset();
-	_plantShader.setVertexAttribute(offsetLoc, components, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), GL_OFFSET_CAST(offsetof(glm::vec3, x)));
+	const int offsetLoc = _worldInstancedShader.getLocationOffset();
+	const int components = _worldInstancedShader.getComponentsOffset();
+	_worldInstancedShader.setVertexAttribute(offsetLoc, components, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), GL_OFFSET_CAST(offsetof(glm::vec3, x)));
 	glVertexAttribDivisor(offsetLoc, 1);
 	GL_checkError();
 
@@ -658,7 +658,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	if (!_worldShader.setup()) {
 		return false;
 	}
-	if (!_plantShader.setup()) {
+	if (!_worldInstancedShader.setup()) {
 		return false;
 	}
 	if (!_shadowMapInstancedShader.setup()) {
