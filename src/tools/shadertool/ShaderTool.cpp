@@ -48,6 +48,7 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 
 // TODO: extract uniform blocks into aligned structs and generate methods to update them
 //       align them via GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT - use glBindBufferRange
+//       GL_MAX_UNIFORM_BLOCK_SIZE
 // TODO: validate that each $out of the vertex shader has a $in in the fragment shader and vice versa
 ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		core::App(filesystem, eventBus, timeProvider, 0) {
