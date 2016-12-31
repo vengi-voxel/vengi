@@ -59,6 +59,22 @@ ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBus
 ShaderTool::~ShaderTool() {
 }
 
+static inline std::string convertName(const std::string& in, bool firstUpper) {
+	std::string out;
+	std::vector<std::string> nameParts;
+	core::string::splitString(in, nameParts, "_");
+	for (std::string& n : nameParts) {
+		if (n.length() > 1 || nameParts.size() < 2) {
+			n[0] = SDL_toupper(n[0]);
+			out += n;
+		}
+	}
+	if (out.empty()) {
+		out = in;
+	}
+	return out;
+}
+
 std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type type, int amount) const {
 	switch (type) {
 	case Variable::MAX:
@@ -266,18 +282,7 @@ void ShaderTool::generateSrc() const {
 		const bool isInteger = v.type == Variable::SAMPLER1D || v.type == Variable::SAMPLER2D || v.type == Variable::SAMPLER3D
 				|| v.type == Variable::SAMPLER2DSHADOW || v.type == Variable::SAMPLER1DSHADOW
 				|| v.type == Variable::SAMPLERCUBEMAP || v.type == Variable::INT || v.type == Variable::UNSIGNED_INT;
-		std::string uniformName = "";
-		std::vector<std::string> nameParts;
-		core::string::splitString(v.name, nameParts, "_");
-		for (std::string n : nameParts) {
-			if (n.length() > 1 || nameParts.size() < 2) {
-				n[0] = SDL_toupper(n[0]);
-				uniformName += n;
-			}
-		}
-		if (uniformName.empty()) {
-			uniformName = v.name;
-		}
+		const std::string& uniformName = convertName(v.name, true);
 		setters << "\tinline bool set" << uniformName << "(";
 		const Types& cType = cTypes[v.type];
 		if (v.arraySize > 0 && isInteger) {
@@ -344,18 +349,7 @@ void ShaderTool::generateSrc() const {
 	}
 	for (int i = 0; i < attributeSize; ++i) {
 		const Variable& v = _shaderStruct.attributes[i];
-		std::string attributeName = "";
-		std::vector<std::string> nameParts;
-		core::string::splitString(v.name, nameParts, "_");
-		for (std::string n : nameParts) {
-			if (n.length() > 1 || nameParts.size() < 2) {
-				n[0] = SDL_toupper(n[0]);
-				attributeName += n;
-			}
-		}
-		if (attributeName.empty()) {
-			attributeName = v.name;
-		}
+		const std::string& attributeName = convertName(v.name, true);
 		const bool isInt = v.type == Variable::UNSIGNED_INT || v.type == Variable::INT || v.type == Variable::IVEC2 || v.type == Variable::IVEC3 || v.type == Variable::IVEC4;
 		setters << "\tinline bool init" << attributeName << "Custom(GLsizei stride = ";
 		setters << "sizeof(" << cTypes[v.type].ctype << ")";
