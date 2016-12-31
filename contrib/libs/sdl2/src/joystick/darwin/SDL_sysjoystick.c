@@ -692,7 +692,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     i = 0;
     while (element) {
         value = GetHIDScaledCalibratedState(device, element, -32768, 32767);
-        if (value != joystick->axes[i]) {
+        if (value != joystick->axes[i].value) {
             SDL_PrivateJoystickAxis(joystick, i, value);
         }
         element = element->pNext;
