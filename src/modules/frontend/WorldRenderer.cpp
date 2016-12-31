@@ -314,16 +314,16 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	{
 		video::ScopedShader scoped(_worldShader);
 		setUniforms(_worldShader, camera);
-		shaderSetUniformIf(_worldShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
-		shaderSetUniformIf(_worldShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
+		_worldShader.setCascades(cascades);
+		_worldShader.setDistances(distances);
 		_worldShader.setShadowmap(1);
 		drawCallsWorld += renderWorldMeshes(_worldShader, _visible, vertices);
 	}
 	{
 		video::ScopedShader scoped(_worldInstancedShader);
 		setUniforms(_worldInstancedShader, camera);
-		shaderSetUniformIf(_worldInstancedShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
-		shaderSetUniformIf(_worldInstancedShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
+		_worldInstancedShader.setCascades(cascades);
+		_worldInstancedShader.setDistances(distances);
 		_worldInstancedShader.setShadowmap(1);
 		drawCallsWorld += renderWorldMeshes(_worldInstancedShader, _visiblePlant, vertices);
 	}

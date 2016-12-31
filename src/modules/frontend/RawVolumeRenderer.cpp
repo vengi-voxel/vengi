@@ -257,8 +257,8 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_worldShader.setViewprojection(camera.viewProjectionMatrix());
 	_worldShader.setViewdistance(camera.farPlane());
 	_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
-	_worldShader.setUniformMatrixv("u_cascades", &cascades.front(), maxDepthBuffers);
-	_worldShader.setUniformfv("u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
+	_worldShader.setCascades(cascades);
+	_worldShader.setDistances(distances);
 	_worldShader.setLightdir(_shadow.sunDirection());
 
 	glActiveTexture(GL_TEXTURE1);
