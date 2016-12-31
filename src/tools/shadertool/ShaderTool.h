@@ -43,11 +43,17 @@ protected:
 
 	static const Types cTypes[];
 
+	struct UniformBlock {
+		std::string name;
+		std::vector<Variable> members;
+	};
+
 	struct ShaderStruct {
 		std::string name;
 		std::string filename;
 		// both
 		std::vector<Variable> uniforms;
+		std::vector<UniformBlock> uniformBlocks;
 		// vertex only
 		std::vector<Variable> attributes;
 		// vertex only

@@ -46,9 +46,6 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int32_t",      Value,     "sampler2DShadow" }
 };
 
-// TODO: extract uniform blocks into aligned structs and generate methods to update them
-//       align them via GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT - use glBindBufferRange
-//       GL_MAX_UNIFORM_BLOCK_SIZE
 // TODO: validate that each $out of the vertex shader has a $in in the fragment shader and vice versa
 ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		core::App(filesystem, eventBus, timeProvider, 0) {
@@ -65,7 +62,11 @@ static inline std::string convertName(const std::string& in, bool firstUpper) {
 	core::string::splitString(in, nameParts, "_");
 	for (std::string& n : nameParts) {
 		if (n.length() > 1 || nameParts.size() < 2) {
-			n[0] = SDL_toupper(n[0]);
+			if (!firstUpper) {
+				firstUpper = true;
+			} else {
+				n[0] = SDL_toupper(n[0]);
+			}
 			out += n;
 		}
 	}
@@ -188,6 +189,9 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
 }
 
 void ShaderTool::generateSrc() const {
+	for (const auto& block : _shaderStruct.uniformBlocks) {
+		Log::debug("Found uniform block %s with %i members", block.name.c_str(), int(block.members.size()));
+	}
 	for (const auto& v : _shaderStruct.uniforms) {
 		Log::debug("Found uniform of type %i with name %s", int(v.type), v.name.c_str());
 	}
@@ -420,15 +424,56 @@ void ShaderTool::generateSrc() const {
 		}
 	}
 
+	// TODO: generete uniform buffer struct - enforce std140 layout
+	// TODO: extract uniform blocks into aligned structs and generate methods to update them
+	//       align them via GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT - use glBindBufferRange
+	//       GL_MAX_UNIFORM_BLOCK_SIZE
+	std::stringstream ub;
+	std::stringstream shutdown;
+	if (!_shaderStruct.uniformBlocks.empty()) {
+		setters << "\n";
+	}
+	for (auto & ubuf : _shaderStruct.uniformBlocks) {
+		const std::string& uniformBufferStructName = convertName(ubuf.name, true);
+		const std::string& uniformBufferName = convertName(ubuf.name, false);
+		ub << "\tvideo::UniformBuffer _" << uniformBufferName << ";\n";
+		shutdown << "\t\t\t_" << uniformBufferName << ".shutdown();\n";
+		ub << "\tstruct " << uniformBufferStructName << " {\n";
+		for (auto& v : ubuf.members) {
+			const std::string& uniformName = convertName(v.name, false);
+			const Types& cType = cTypes[v.type];
+			ub << "\t\t" << cType.ctype << " " << uniformName;
+			if (v.arraySize > 0) {
+				ub << "[" << v.arraySize << "]";
+			}
+			ub << ";\n";
+		}
+		ub << "\t};\n";
+		setters << "\tinline bool update" << uniformBufferStructName << "(const " << uniformBufferStructName << "& var) {\n";
+		setters << "\t\t_" << uniformBufferName << ".create(sizeof(var), (const void*)&var);\n";
+		setters << "\t\treturn true;\n";
+		setters << "\t}\n\n";
+		setters << "\t/**\n";
+		setters << "\t * @brief The the uniform buffer for the uniform block " << ubuf.name << "\n";
+		setters << "\t */\n";
+		setters << "\tinline bool set" << uniformBufferStructName << "() {\n";
+		setters << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", _" << uniformBufferName << ");\n";
+		setters << "\t}\n";
+	}
+	src = core::string::replaceAll(src, "$uniformbuffers$", ub.str());
 	src = core::string::replaceAll(src, "$attributes$", attributes.str());
 	src = core::string::replaceAll(src, "$setters$", setters.str());
+	src = core::string::replaceAll(src, "$shutdown$", shutdown.str());
+
 	const std::string targetFile = _sourceDirectory + filename + ".h";
 	Log::debug("Generate shader bindings for %s at %s", _shaderStruct.name.c_str(), targetFile.c_str());
 	core::App::getInstance()->filesystem()->syswrite(targetFile, src);
 }
 
 bool ShaderTool::parse(const std::string& buffer, bool vertex) {
+	bool uniformBlock = false;
 	core::Tokenizer tok(buffer, " ;");
+	UniformBlock block;
 	while (tok.hasNext()) {
 		const std::string token = tok.next();
 		Log::trace("token: %s", token.c_str());
@@ -448,9 +493,17 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			}
 		} else if (token == "uniform") {
 			v = &_shaderStruct.uniforms;
+		} else if (uniformBlock) {
+			if (token == "}") {
+				uniformBlock = false;
+				Log::trace("End of uniform block: %s", block.name.c_str());
+				_shaderStruct.uniformBlocks.push_back(block);
+			} else {
+				tok.prev();
+			}
 		}
 
-		if (v == nullptr) {
+		if (v == nullptr && !uniformBlock) {
 			continue;
 		}
 
@@ -473,18 +526,11 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 		std::string name = tok.next();
 		// uniform block
 		if (name == "{") {
-			Log::info("Found uniform buffer: %s", type.c_str());
-			if (!tok.hasNext()) {
-				Log::error("Could not get type for uniform buffer %s", type.c_str());
-				return false;
-			}
-			type = tok.next();
-			if (!tok.hasNext()) {
-				Log::error("Could not get name for uniform buffer");
-				return false;
-			}
-			name = tok.next();
-			Log::trace("type: %s, name: %s", type.c_str(), name.c_str());
+			block.name = type;
+			block.members.clear();
+			Log::trace("Found uniform block: %s", type.c_str());
+			uniformBlock = true;
+			continue;
 		}
 		const Variable::Type typeEnum = getType(type);
 		bool isArray = false;
@@ -515,13 +561,21 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			}
 		}
 		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
-		auto findIter = std::find_if(v->begin(), v->end(), [&] (const Variable& var) { return var.name == name; });
-		if (findIter == v->end()) {
-			v->push_back(Variable{typeEnum, name, arraySize});
+		if (uniformBlock) {
+			block.members.push_back(Variable{typeEnum, name, arraySize});
 		} else {
-			Log::warn("Found duplicate variable %s (%s versus %s)",
-					name.c_str(), cTypes[(int)findIter->type].ctype, cTypes[(int)typeEnum].ctype);
+			auto findIter = std::find_if(v->begin(), v->end(), [&] (const Variable& var) { return var.name == name; });
+			if (findIter == v->end()) {
+				v->push_back(Variable{typeEnum, name, arraySize});
+			} else {
+				Log::warn("Found duplicate variable %s (%s versus %s)",
+						name.c_str(), cTypes[(int)findIter->type].ctype, cTypes[(int)typeEnum].ctype);
+			}
 		}
+	}
+	if (uniformBlock) {
+		Log::error("Parsing error - still inside a uniform block");
+		return false;
 	}
 	return true;
 }

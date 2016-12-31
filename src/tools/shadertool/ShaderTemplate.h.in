@@ -6,6 +6,7 @@
 
 #include <vector>
 #include "video/Shader.h"
+#include "video/UniformBuffer.h"
 #include "core/Singleton.h"
 
 namespace $namespace$ {
@@ -18,6 +19,8 @@ public:
 	static inline $name$& getInstance() {
 		return core::Singleton<$name$>::getInstance();
 	}
+
+$uniformbuffers$
 
 	/**
 	 * @brief Load the vertex and fragment shaders and verifies that its attributes and uniforms are used.
@@ -42,6 +45,7 @@ $uniformarrayinfo$
 		core_assert(_setupCalls > 0);
 		--_setupCalls;
 		if (_setupCalls == 0) {
+$shutdown$
 			Super::shutdown();
 		}
 	}
