@@ -154,7 +154,7 @@ public:
 		if (_meshQueue.empty()) {
 			return false;
 		}
-		item = _meshQueue.front();
+		item = std::move(_meshQueue.front());
 		_meshQueue.pop_front();
 		return true;
 	}
