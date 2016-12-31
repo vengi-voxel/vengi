@@ -25,6 +25,9 @@ enum class VertexBufferType : GLenum {
 	UniformBuffer = GL_UNIFORM_BUFFER
 };
 
+/**
+ * @brief Wrapper for the opengl vertex buffer objects and vertex array objects.
+ */
 class VertexBuffer {
 public:
 	struct Attribute {
@@ -63,7 +66,15 @@ private:
 	mutable GLuint _vao = 0u;
 	VertexBufferMode _mode = VertexBufferMode::Static;
 public:
+	/**
+	 * @brief Ctor that also creates buffer handle.
+	 * @note Keep in mind that you need a valid context for this constructor.
+	 */
 	VertexBuffer(const void* data, GLsizeiptr size, VertexBufferType target = VertexBufferType::ArrayBuffer);
+	/**
+	 * @brief Ctor that doesn't create the underlying buffer
+	 * @note This ctor can be used to put this as members to other classes.
+	 */
 	VertexBuffer();
 	~VertexBuffer();
 
@@ -105,11 +116,25 @@ public:
 	 */
 	glm::ivec2 createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension);
 	int32_t createWhiteColorForQuad();
+	/**
+	 * @brief Bind the underlying gl buffers
+	 *
+	 * @note Also sets up the vertex attributes if this wasn't done before (only done once).
+	 * @return @c true if the bind was sucessful, @c false otherwise.
+	 */
 	bool bind() const;
 	void unbind() const;
 	GLuint size(int32_t idx) const;
 	GLuint elements(int32_t idx, int components = 3, size_t componentSize = sizeof(float)) const;
+	/**
+	 * @param[in] idx The buffer index returned by create()
+	 * @return @c true if the index is valid and the buffer for the given index is valid
+	 */
 	bool isValid(int32_t idx) const;
+	/**
+	 * @param[in] idx The buffer index returned by create()
+	 * @return The handle for the given buffer index.
+	 */
 	GLuint handle(int32_t idx) const;
 };
 
