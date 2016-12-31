@@ -97,10 +97,10 @@ protected:
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	bool createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData);
-	bool createMesh(const video::Shader& shader, const voxel::Mesh& mesh, video::GLMeshData& meshData);
-	bool createInstancedMesh(const video::Shader& shader, const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
+	bool createMesh(const voxel::Mesh& mesh, video::GLMeshData& meshData);
+	bool createInstancedMesh(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
 	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData);
-	void handleMeshQueue(const video::Shader& shader);
+	void handleMeshQueue();
 	void fillPlantPositionsFromMeshes();
 
 	int getDistanceSquare(const glm::ivec3& pos) const;
