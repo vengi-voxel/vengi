@@ -157,7 +157,7 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 }
 
 int ShaderTool::getComponents(const ShaderTool::Variable::Type type) const {
-	return cTypes[(int)type].typeSize;
+	return cTypes[(int)type].components;
 }
 
 ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
@@ -357,21 +357,23 @@ void ShaderTool::generateSrc() const {
 			attributeName = v.name;
 		}
 		const bool isInt = v.type == Variable::UNSIGNED_INT || v.type == Variable::INT || v.type == Variable::IVEC2 || v.type == Variable::IVEC3 || v.type == Variable::IVEC4;
-		setters << "\tinline bool init" << attributeName << "(GLsizei stride, const void* pointer, GLenum type = ";
+		setters << "\tinline bool init" << attributeName << "Custom(GLsizei stride = ";
+		setters << "sizeof(" << cTypes[v.type].ctype << ")";
+		setters << ", const void* pointer = nullptr, GLenum type = ";
 		if (isInt) {
 			setters << "GL_INT";
 		} else {
 			setters << "GL_FLOAT";
 		}
 		setters << ", GLint size = ";
-		setters << cTypes[v.type].typeSize << ", ";
+		setters << cTypes[v.type].components << ", ";
 		setters << "bool isInt = ";
 		setters << (isInt ? "true" : "false");
 		setters << ", bool normalize = false) const {\n";
-		setters << "\t\tif (!hasAttribute(\"" << v.name << "\")) {\n";
+		setters << "\t\tconst int loc = enableVertexAttributeArray(\"" << v.name << "\");\n";
+		setters << "\t\tif (loc == -1) {\n";
 		setters << "\t\t\treturn false;\n";
 		setters << "\t\t}\n";
-		setters << "\t\tconst int loc = enableVertexAttributeArray(\"" << v.name << "\");\n";
 		setters << "\t\tif (isInt) {\n";
 		setters << "\t\t\tsetVertexAttributeInt(loc, size, type, stride, pointer);\n";
 		setters << "\t\t} else {\n";
@@ -384,8 +386,39 @@ void ShaderTool::generateSrc() const {
 		setters << "\t}\n\n";
 		setters << "\tinline int getComponents" << attributeName << "() const {\n";
 		setters << "\t\treturn getAttributeComponents(\"" << v.name << "\");\n";
+		setters << "\t}\n\n";
+		setters << "\tinline bool init" << attributeName << "() const {\n";
+		setters << "\t\tconst int loc = enableVertexAttributeArray(\"" << v.name << "\");\n";
+		setters << "\t\tif (loc == -1) {\n";
+		setters << "\t\t\treturn false;\n";
+		setters << "\t\t}\n";
+		setters << "\t\tconst GLsizei stride = sizeof(" << cTypes[v.type].ctype << ");\n";
+		setters << "\t\tconst void* pointer = nullptr;\n";
+		setters << "\t\tconst GLenum type = ";
+		if (isInt) {
+			setters << "GL_INT";
+		} else {
+			setters << "GL_FLOAT";
+		}
+		setters << ";\n";
+		setters << "\t\tconst GLint size = getAttributeComponents(loc);\n";
+		if (isInt) {
+			setters << "\t\tsetVertexAttributeInt(loc, size, type, stride, pointer);\n";
+		} else {
+			setters << "\t\tsetVertexAttribute(loc, size, type, GL_FALSE, stride, pointer);\n";
+		}
+		setters << "\t\treturn true;\n";
+		setters << "\t}\n\n";
+		setters << "\tinline bool set" << attributeName << "Divisor(uint32_t divisor) const {\n";
+		setters << "\t\tconst int location = getAttributeLocation(\"" << v.name << "\");\n";
+		setters << "\t\tif (location == -1) {\n";
+		setters << "\t\t\treturn false;\n";
+		setters << "\t\t}\n";
+		setters << "\t\tglVertexAttribDivisor((GLuint)location, (GLuint)divisor);\n";
+		setters << "\t\treturn true;\n";
 		setters << "\t}\n";
-		if (i < attributeSize- - 2) {
+
+		if (i < attributeSize - 1) {
 			setters << "\n";
 		}
 	}

@@ -35,7 +35,7 @@ protected:
 
 	struct Types {
 		ShaderTool::Variable::Type type;
-		int typeSize;
+		int components;
 		const char* ctype;
 		PassBy passBy;
 		const char* glsltype;

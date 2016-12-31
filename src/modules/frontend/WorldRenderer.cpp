@@ -563,10 +563,8 @@ bool WorldRenderer::createInstancedMesh(const voxel::Mesh &mesh, int amount, vid
 	core_assert(meshData.offsetBuffer > 0);
 	glBindBuffer(GL_ARRAY_BUFFER, meshData.offsetBuffer);
 
-	const int offsetLoc = _worldInstancedShader.getLocationOffset();
-	const int components = _worldInstancedShader.getComponentsOffset();
-	_worldInstancedShader.setVertexAttribute(offsetLoc, components, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), GL_OFFSET_CAST(offsetof(glm::vec3, x)));
-	glVertexAttribDivisor(offsetLoc, 1);
+	_worldInstancedShader.initOffset();
+	_worldInstancedShader.setOffsetDivisor(1);
 	GL_checkError();
 
 	glBindVertexArray(0);
