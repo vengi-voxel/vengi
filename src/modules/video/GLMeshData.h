@@ -42,7 +42,7 @@ struct GLMeshData {
 		}
 	}
 
-	inline void bindVAO() {
+	inline void bindVAO() const {
 		core_assert(vertexArrayObject > 0);
 		glBindVertexArray(vertexArrayObject);
 	}

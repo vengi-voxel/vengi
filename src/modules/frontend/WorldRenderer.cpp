@@ -242,25 +242,20 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices) {
-	int drawCallsWorld = 0;
-	for (auto i = meshes.begin(); i != meshes.end();) {
-		video::GLMeshData* meshData = *i;
+	for (auto i = meshes.begin(); i != meshes.end(); ++i) {
+		const video::GLMeshData* meshData = *i;
 		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(meshData->translation));
 		const glm::mat4& model = glm::scale(translate, meshData->scale);
 		shaderSetUniformIf(shader, setUniformMatrix, "u_model", model);
 		meshData->bindVAO();
-
 		meshData->draw();
 		if (vertices != nullptr) {
 			*vertices += meshData->noOfVertices;
 		}
-		GL_checkError();
-
-		++drawCallsWorld;
-		++i;
 	}
 
-	return drawCallsWorld;
+	GL_checkError();
+	return meshes.size();
 }
 
 void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int width, const int height) {
