@@ -125,7 +125,7 @@ public:
 			return state(entity, runLUA(entity, deltaMillis));
 #if AI_EXCEPTIONS
 		} catch (...) {
-			ai_log_error("Exception while running lua tree node")
+			ai_log_error("Exception while running lua tree node");
 		}
 		return state(entity, EXCEPTION);
 #endif

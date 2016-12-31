@@ -107,7 +107,6 @@ public:
 		} catch (...) {
 			ai_log_error("Exception while evaluating lua filter");
 		}
-		return false;
 #endif
 	}
 };
