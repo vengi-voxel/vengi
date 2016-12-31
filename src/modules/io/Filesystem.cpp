@@ -56,7 +56,7 @@ bool Filesystem::isRelativeFilename(const std::string& name) const {
 
 io::FilePtr Filesystem::open(const std::string& filename, FileMode mode) const {
 	if (mode == FileMode::Write && !isRelativeFilename(filename)) {
-		std::make_shared<io::File>(filename, mode);
+		return std::make_shared<io::File>(filename, mode);
 	}
 	if (io::File(filename, FileMode::Read).exists()) {
 		Log::debug("loading file %s from current working dir", filename.c_str());
