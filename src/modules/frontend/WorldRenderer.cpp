@@ -22,6 +22,8 @@ namespace frontend {
 
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
+// TODO convert to VertexBuffer
+// TODO: merge buffers into one big buffer (and if max vertex/index size exceeds, render in chunks)
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
 		_clearColor(core::Color::LightBlue), _world(world) {
 }
