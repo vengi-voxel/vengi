@@ -837,7 +837,7 @@ void WorldRenderer::onRunning(long dt) {
 		NoiseFuture& future = _noiseFuture.back();
 		if (future.valid()) {
 			NoiseGenerationTask c = future.get();
-			Log::info("Noise texture ready - upload it");
+			Log::trace("Noise texture ready - upload it");
 			video::TextureFormat format;
 			if (c.depth == 4) {
 				format = video::TextureFormat::RGBA;
