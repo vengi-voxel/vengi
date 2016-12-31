@@ -192,7 +192,6 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _shadow.sunDirection());
-	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_depthBuffer.dimension()));
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 }
 
@@ -671,38 +670,6 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 
-	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::WorldShader::Materialblock::materialcolor);
-	const int materialColorsArraySize = voxel::getMaterialColors().size();
-	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
-		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
-				shaderMaterialColorsArraySize, materialColorsArraySize);
-		return false;
-	}
-	{
-		shader::WorldShader::Materialblock materialBlock;
-		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-		_worldShader.updateMaterialblock(materialBlock);
-		video::ScopedShader scoped(_worldShader);
-		_worldShader.setMaterialblock();
-		_worldShader.setFogcolor(_clearColor);
-		_worldShader.setTexture(0);
-		_worldShader.setDiffuseColor(_diffuseColor);
-		_worldShader.setAmbientColor(_ambientColor);
-		_worldShader.setFogrange(_fogRange);
-	}
-	{
-		shader::WorldInstancedShader::Materialblock materialBlock;
-		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-		_worldInstancedShader.updateMaterialblock(materialBlock);
-		video::ScopedShader scoped(_worldInstancedShader);
-		_worldInstancedShader.setMaterialblock();
-		_worldInstancedShader.setFogcolor(_clearColor);
-		_worldInstancedShader.setTexture(0);
-		_worldInstancedShader.setDiffuseColor(_diffuseColor);
-		_worldInstancedShader.setAmbientColor(_ambientColor);
-		_worldInstancedShader.setFogrange(_fogRange);
-	}
-
 	_worldIndexBufferIndex = _worldBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
 	if (_worldIndexBufferIndex == -1) {
 		Log::error("Could not create the world vertex buffer object for the indices");
@@ -809,6 +776,40 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
 	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
 		return false;
+	}
+
+	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::WorldShader::Materialblock::materialcolor);
+	const int materialColorsArraySize = voxel::getMaterialColors().size();
+	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
+		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
+				shaderMaterialColorsArraySize, materialColorsArraySize);
+		return false;
+	}
+	{
+		shader::WorldShader::Materialblock materialBlock;
+		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+		_worldShader.updateMaterialblock(materialBlock);
+		video::ScopedShader scoped(_worldShader);
+		_worldShader.setMaterialblock();
+		_worldShader.setFogcolor(_clearColor);
+		_worldShader.setTexture(0);
+		_worldShader.setDiffuseColor(_diffuseColor);
+		_worldShader.setAmbientColor(_ambientColor);
+		_worldShader.setFogrange(_fogRange);
+		_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+	}
+	{
+		shader::WorldInstancedShader::Materialblock materialBlock;
+		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+		_worldInstancedShader.updateMaterialblock(materialBlock);
+		video::ScopedShader scoped(_worldInstancedShader);
+		_worldInstancedShader.setMaterialblock();
+		_worldInstancedShader.setFogcolor(_clearColor);
+		_worldInstancedShader.setTexture(0);
+		_worldInstancedShader.setDiffuseColor(_diffuseColor);
+		_worldInstancedShader.setAmbientColor(_ambientColor);
+		_worldInstancedShader.setFogrange(_fogRange);
+		_worldInstancedShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 	}
 
 	if (!_shadow.init()) {
