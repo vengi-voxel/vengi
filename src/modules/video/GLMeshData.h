@@ -31,7 +31,7 @@ struct GLMeshData {
 	// this can only be u8vec3 because the mesh chunk size is small enough
 	std::vector<glm::vec3> instancedPositions;
 
-	inline void draw() {
+	inline void draw() const {
 		if (amount == 1) {
 			glDrawElementsBaseVertex(GL_TRIANGLES, noOfIndices, indexType, GL_OFFSET_CAST(sizeof(uint32_t) * baseIndex), baseVertex);
 		} else {
