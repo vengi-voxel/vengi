@@ -204,8 +204,7 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices) {
-	for (auto i = meshes.begin(); i != meshes.end(); ++i) {
-		const video::GLMeshData* meshData = *i;
+	for (const video::GLMeshData* meshData : meshes) {
 		shaderSetUniformIf(shader, setUniformMatrix, "u_model", meshData->model);
 		meshData->bindVAO();
 		meshData->draw();
