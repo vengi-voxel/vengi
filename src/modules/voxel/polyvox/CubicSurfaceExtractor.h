@@ -113,6 +113,12 @@ extern bool performQuadMerging(std::list<Quad>& quads, Mesh* meshCurrent);
 extern int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner);
 
+/**
+ * @note Notice that the ambient occlusion is different for the vertices on the side than it is for the
+ * vertices on the top and bottom. To fix this, we just need to pick a consistent orientation for
+ * the quads. This can be done by comparing the ambient occlusion values for each quad and selecting
+ * an appropriate orientation. Quad vertices must be sorted in clockwise order.
+ */
 static inline bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
 	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
 }
