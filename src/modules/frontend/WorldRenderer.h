@@ -153,9 +153,6 @@ public:
 
 	void stats(int& meshes, int& extracted, int& pending, int& active) const;
 
-	/** @brief world coordinates x/z */
-	void deleteMesh(const glm::ivec3& pos);
-
 	float getViewDistance() const;
 	void setViewDistance(float viewDistance);
 

@@ -94,29 +94,6 @@ bool WorldRenderer::addEntity(const ClientEntityPtr& entity) {
 	return true;
 }
 
-void WorldRenderer::deleteMesh(const glm::ivec3& pos) {
-	core_trace_gl_scoped(WorldRendererDeleteMesh);
-	const glm::ivec3& p = _world->getMeshPos(pos);
-	for (auto i = _meshDataOpaque.begin(); i != _meshDataOpaque.end(); ++i) {
-		video::GLMeshData& meshData = *i;
-		if (meshData.translation != p) {
-			continue;
-		}
-		_meshDataOpaque.erase(i);
-		meshData.shutdown();
-		break;
-	}
-	for (auto i = _meshDataWater.begin(); i != _meshDataWater.end(); ++i) {
-		video::GLMeshData& meshData = *i;
-		if (meshData.translation != p) {
-			continue;
-		}
-		_meshDataWater.erase(i);
-		meshData.shutdown();
-		break;
-	}
-}
-
 bool WorldRenderer::removeEntity(ClientEntityId id) {
 	auto i = _entities.find(id);
 	if (i == _entities.end()) {
