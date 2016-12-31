@@ -28,28 +28,31 @@ void main(void) {
 	float ndotl = dot(normal, u_lightdir);
 	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
 
+	vec3 color = v_color.rgb;
+
 #if cl_deferred == 0
 	int cascade = calculateCascade();
 	float shadow = calculateShadow(cascade, u_viewprojection);
+//#define cl_debug_cascade 1
 #if cl_debug_cascade
 	if (cascade == 0) {
-		diffuse.r = 0.0;
-		diffuse.g = 1.0;
-		diffuse.b = 0.0;
+		color.r = 0.0;
+		color.g = 1.0;
+		color.b = 0.0;
 	} else if (cascade == 1) {
-		diffuse.r = 0.0;
-		diffuse.g = 1.0;
-		diffuse.b = 1.0;
+		color.r = 0.0;
+		color.g = 1.0;
+		color.b = 1.0;
 	} else if (cascade == 2) {
-		diffuse.r = 0.0;
-		diffuse.g = 0.0;
-		diffuse.b = 1.0;
+		color.r = 0.0;
+		color.g = 0.0;
+		color.b = 1.0;
 	} else if (cascade == 3) {
-		diffuse.r = 0.0;
-		diffuse.g = 0.5;
-		diffuse.b = 0.5;
+		color.r = 0.0;
+		color.g = 0.5;
+		color.b = 0.5;
 	} else {
-		diffuse.r = 1.0;
+		color.r = 1.0;
 	}
 #endif
 #if cl_debug_shadow == 1
@@ -61,7 +64,7 @@ void main(void) {
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
 	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / v_fogdivisor, 0.0, 1.0);
 
-	vec3 linearColor = v_color.rgb * v_ambientocclusion * lightvalue;
+	vec3 linearColor = color * v_ambientocclusion * lightvalue;
 	o_color = vec4(mix(linearColor, u_fogcolor, fogval), v_color.a);
 #endif
 #else
