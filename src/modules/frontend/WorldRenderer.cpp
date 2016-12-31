@@ -229,6 +229,9 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	handleMeshQueue();
 
+	if (vertices != nullptr) {
+		*vertices = 0;
+	}
 	if (_meshData.empty()) {
 		return 0;
 	}

@@ -132,7 +132,6 @@ void ShapeTool::beforeUI() {
 
 	_worldRenderer.extractNewMeshes(_camera.position());
 	_worldRenderer.onRunning(_deltaFrame);
-	_vertices = 0;
 	ScopedProfiler<ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
