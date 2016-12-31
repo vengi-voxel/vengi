@@ -126,7 +126,6 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 	return true;
 }
 
-// redistribute the plants on the meshes that are already extracted
 void WorldRenderer::fillPlantPositionsFromMeshes() {
 	const int plantMeshAmount = _meshDataPlant.size();
 	if (plantMeshAmount == 0) {

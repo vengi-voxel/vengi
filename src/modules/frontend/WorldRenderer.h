@@ -35,7 +35,7 @@ protected:
 		NoiseGenerationTask(uint8_t *_buffer, int _width, int _height, int _depth) :
 				buffer(_buffer), width(_width), height(_height), depth(_depth) {
 		}
-		// pointer to preallocated buffer that was hand into the noise task
+		/** @brief pointer to preallocated buffer that was hand into the noise task */
 		uint8_t *buffer;
 		const int width;
 		const int height;
@@ -45,7 +45,6 @@ protected:
 	typedef std::future<NoiseGenerationTask> NoiseFuture;
 	std::vector<NoiseFuture> _noiseFuture;
 
-	// Index/vertex buffer data
 	typedef std::list<video::GLMeshData> GLMeshDatas;
 	typedef std::list<video::GLMeshData*> GLMeshesVisible;
 	GLMeshDatas _meshDataOpaque;
@@ -71,7 +70,10 @@ protected:
 	video::TexturePtr _colorTexture;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
-	// the position of the last extraction - we only care for x and z here
+	/**
+	 * @brief The position of the last extraction
+	 * @note we only care for x and z here
+	 */
 	glm::ivec3 _lastGridPosition = { std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min() };
 	voxel::WorldPtr _world;
 	video::GBuffer _gbuffer;
@@ -105,16 +107,23 @@ protected:
 
 	voxel::PlantGenerator _plantGenerator;
 
-	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
+	/**
+	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.
+	 */
 	bool createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData);
 	bool createMesh(const voxel::Mesh& mesh, video::GLMeshData& meshData);
 	bool createInstancedMesh(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
 	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData);
 	void handleMeshQueue();
+	/**
+	 * @brief Redistribute the plants on the meshes that are already extracted
+	 */
 	void fillPlantPositionsFromMeshes();
 
 	int getDistanceSquare(const glm::ivec3& pos) const;
-	// schedule mesh extraction around the grid position with the given radius
+	/**
+	 * @brief Schedule mesh extraction around the grid position with the given radius
+	 */
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
 	void cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const video::Camera& camera) const;
