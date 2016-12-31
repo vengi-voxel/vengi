@@ -25,14 +25,6 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::WorldShader::Materialblock::materialcolor);
-	const int materialColorsArraySize = voxel::getMaterialColors().size();
-	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
-		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
-				shaderMaterialColorsArraySize, materialColorsArraySize);
-		return false;
-	}
-
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to initialize the shape renderer");
 		return false;
@@ -56,8 +48,26 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	_materialBuffer.create(materialColors.size() * sizeof(voxel::MaterialColorArray::value_type), &materialColors.front());
+	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::WorldShader::Materialblock::materialcolor);
+	const int materialColorsArraySize = voxel::getMaterialColors().size();
+	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
+		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
+				shaderMaterialColorsArraySize, materialColorsArraySize);
+		return false;
+	}
+
+	shader::WorldShader::Materialblock materialBlock;
+	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	_worldShader.updateMaterialblock(materialBlock);
+	video::ScopedShader scoped(_worldShader);
+	_worldShader.setMaterialblock();
+	_worldShader.setModel(glm::mat4());
+	_worldShader.setTexture(0);
+	_worldShader.setShadowmap(1);
+	_worldShader.setFogrange(250.0f);
+	_worldShader.setDiffuseColor(_diffuseColor);
+	_worldShader.setAmbientColor(_ambientColor);
+	_worldShader.setFogcolor(glm::vec3(core::Color::LightBlue));
 
 	video::VertexBuffer::Attribute attributePos;
 	attributePos.bufferIndex = _vertexBufferIndex;
@@ -244,17 +254,9 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_whiteTexture->bind(0);
 
 	video::ScopedShader scoped(_worldShader);
-	_worldShader.setModel(glm::mat4());
 	_worldShader.setViewprojection(camera.viewProjectionMatrix());
-	_worldShader.setUniformBuffer("u_materialblock", _materialBuffer);
-	_worldShader.setTexture(0);
-	_worldShader.setShadowmap(1);
-	_worldShader.setFogrange(250.0f);
 	_worldShader.setViewdistance(camera.farPlane());
 	_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
-	_worldShader.setDiffuseColor(_diffuseColor);
-	_worldShader.setAmbientColor(_ambientColor);
-	_worldShader.setFogcolor(glm::vec3(core::Color::LightBlue));
 	_worldShader.setUniformMatrixv("u_cascades", &cascades.front(), maxDepthBuffers);
 	_worldShader.setUniformfv("u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
 	_worldShader.setLightdir(_shadow.sunDirection());
@@ -377,7 +379,6 @@ voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_depthBuffer.shutdown();
-	_materialBuffer.shutdown();
 	return old;
 }
 
