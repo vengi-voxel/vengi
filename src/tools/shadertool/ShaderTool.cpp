@@ -11,39 +11,39 @@
 #include "video/GLVersion.h"
 
 const ShaderTool::Types ShaderTool::cTypes[] = {
-	{ ShaderTool::Variable::DOUBLE,          1, "double",            Value,     "double" },
-	{ ShaderTool::Variable::FLOAT,           1, "float",             Value,     "float" },
-	{ ShaderTool::Variable::UNSIGNED_INT,    1, "uint32_t",          Value,     "uint" },
-	{ ShaderTool::Variable::BOOL,            1, "bool",              Value,     "bool" },
-	{ ShaderTool::Variable::INT,             1, "int32_t",           Value,     "int" },
-	{ ShaderTool::Variable::BVEC2,           2, "const glm::bvec2",  Reference, "bvec2" },
-	{ ShaderTool::Variable::BVEC3,           3, "const glm::bvec3",  Reference, "bvec3" },
-	{ ShaderTool::Variable::BVEC4,           4, "const glm::bvec4",  Reference, "bvec4" },
-	{ ShaderTool::Variable::DVEC2,           2, "const glm::dvec2",  Reference, "dvec2" },
-	{ ShaderTool::Variable::DVEC3,           3, "const glm::dvec3",  Reference, "dvec3" },
-	{ ShaderTool::Variable::DVEC4,           4, "const glm::dvec4",  Reference, "dvec4" },
-	{ ShaderTool::Variable::UVEC2,           2, "const glm::uvec2",  Reference, "uvec2" },
-	{ ShaderTool::Variable::UVEC3,           3, "const glm::uvec3",  Reference, "uvec3" },
-	{ ShaderTool::Variable::UVEC4,           4, "const glm::uvec4",  Reference, "uvec4" },
-	{ ShaderTool::Variable::IVEC2,           2, "const glm::ivec2",  Reference, "ivec2" },
-	{ ShaderTool::Variable::IVEC3,           3, "const glm::ivec3",  Reference, "ivec3" },
-	{ ShaderTool::Variable::IVEC4,           4, "const glm::ivec4",  Reference, "ivec4" },
-	{ ShaderTool::Variable::VEC2,            2, "const glm::vec2",   Reference, "vec2" },
-	{ ShaderTool::Variable::VEC3,            3, "const glm::vec3",   Reference, "vec3" },
-	{ ShaderTool::Variable::VEC4,            4, "const glm::vec4",   Reference, "vec4" },
-	{ ShaderTool::Variable::MAT2,            1, "const glm::mat2",   Reference, "mat2" },
-	{ ShaderTool::Variable::MAT3,            1, "const glm::mat3",   Reference, "mat3" },
-	{ ShaderTool::Variable::MAT4,            1, "const glm::mat4",   Reference, "mat4" },
-	{ ShaderTool::Variable::MAT3X4,          1, "const glm::mat3x4", Reference, "mat3x4" },
-	{ ShaderTool::Variable::MAT4X3,          1, "const glm::mat4x3", Reference, "mat4x3" },
-	{ ShaderTool::Variable::SAMPLER1D,       1, "int32_t",           Value,     "sampler1D" },
-	{ ShaderTool::Variable::SAMPLER2D,       1, "int32_t",           Value,     "sampler2D" },
-	{ ShaderTool::Variable::SAMPLER2DARRAY,  1, "int32_t",           Value,     "sampler2DArray" },
-	{ ShaderTool::Variable::SAMPLER2DARRAYSHADOW, 1, "int32_t",      Value,     "sampler2DArrayShadow" },
-	{ ShaderTool::Variable::SAMPLER3D,       1, "int32_t",           Value,     "sampler3D" },
-	{ ShaderTool::Variable::SAMPLERCUBEMAP,  1, "int32_t",           Value,     "samplerCube" },
-	{ ShaderTool::Variable::SAMPLER1DSHADOW, 1, "int32_t",           Value,     "sampler1DShadow" },
-	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int32_t",           Value,     "sampler2DShadow" }
+	{ ShaderTool::Variable::DOUBLE,          1, "double",       Value,     "double" },
+	{ ShaderTool::Variable::FLOAT,           1, "float",        Value,     "float" },
+	{ ShaderTool::Variable::UNSIGNED_INT,    1, "uint32_t",     Value,     "uint" },
+	{ ShaderTool::Variable::BOOL,            1, "bool",         Value,     "bool" },
+	{ ShaderTool::Variable::INT,             1, "int32_t",      Value,     "int" },
+	{ ShaderTool::Variable::BVEC2,           2, "glm::bvec2",   Reference, "bvec2" },
+	{ ShaderTool::Variable::BVEC3,           3, "glm::bvec3",   Reference, "bvec3" },
+	{ ShaderTool::Variable::BVEC4,           4, "glm::bvec4",   Reference, "bvec4" },
+	{ ShaderTool::Variable::DVEC2,           2, "glm::dvec2",   Reference, "dvec2" },
+	{ ShaderTool::Variable::DVEC3,           3, "glm::dvec3",   Reference, "dvec3" },
+	{ ShaderTool::Variable::DVEC4,           4, "glm::dvec4",   Reference, "dvec4" },
+	{ ShaderTool::Variable::UVEC2,           2, "glm::uvec2",   Reference, "uvec2" },
+	{ ShaderTool::Variable::UVEC3,           3, "glm::uvec3",   Reference, "uvec3" },
+	{ ShaderTool::Variable::UVEC4,           4, "glm::uvec4",   Reference, "uvec4" },
+	{ ShaderTool::Variable::IVEC2,           2, "glm::ivec2",   Reference, "ivec2" },
+	{ ShaderTool::Variable::IVEC3,           3, "glm::ivec3",   Reference, "ivec3" },
+	{ ShaderTool::Variable::IVEC4,           4, "glm::ivec4",   Reference, "ivec4" },
+	{ ShaderTool::Variable::VEC2,            2, "glm::vec2",    Reference, "vec2" },
+	{ ShaderTool::Variable::VEC3,            3, "glm::vec3",    Reference, "vec3" },
+	{ ShaderTool::Variable::VEC4,            4, "glm::vec4",    Reference, "vec4" },
+	{ ShaderTool::Variable::MAT2,            1, "glm::mat2",    Reference, "mat2" },
+	{ ShaderTool::Variable::MAT3,            1, "glm::mat3",    Reference, "mat3" },
+	{ ShaderTool::Variable::MAT4,            1, "glm::mat4",    Reference, "mat4" },
+	{ ShaderTool::Variable::MAT3X4,          1, "glm::mat3x4",  Reference, "mat3x4" },
+	{ ShaderTool::Variable::MAT4X3,          1, "glm::mat4x3",  Reference, "mat4x3" },
+	{ ShaderTool::Variable::SAMPLER1D,       1, "int32_t",      Value,     "sampler1D" },
+	{ ShaderTool::Variable::SAMPLER2D,       1, "int32_t",      Value,     "sampler2D" },
+	{ ShaderTool::Variable::SAMPLER2DARRAY,  1, "int32_t",      Value,     "sampler2DArray" },
+	{ ShaderTool::Variable::SAMPLER2DARRAYSHADOW, 1, "int32_t", Value,     "sampler2DArrayShadow" },
+	{ ShaderTool::Variable::SAMPLER3D,       1, "int32_t",      Value,     "sampler3D" },
+	{ ShaderTool::Variable::SAMPLERCUBEMAP,  1, "int32_t",      Value,     "samplerCube" },
+	{ ShaderTool::Variable::SAMPLER1DSHADOW, 1, "int32_t",      Value,     "sampler1DShadow" },
+	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int32_t",      Value,     "sampler2DShadow" }
 };
 
 // TODO: extract uniform blocks into aligned structs and generate methods to update them
@@ -286,6 +286,9 @@ void ShaderTool::generateSrc() const {
 		setters << "\tinline bool set" << uniformName << "(";
 		const Types& cType = cTypes[v.type];
 		if (v.arraySize > 0 && isInteger) {
+			setters << "const ";
+		}
+		if (cType.passBy == PassBy::Reference) {
 			setters << "const ";
 		}
 		setters << cType.ctype;
