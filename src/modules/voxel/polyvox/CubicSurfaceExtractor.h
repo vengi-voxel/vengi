@@ -84,6 +84,8 @@ public:
 		return _width * _height * _depth * sizeof(VertexData);
 	}
 
+	// TODO: get rid of this somehow. addVertex() will fail if this isn't done...
+	// but it assumes byte sizes for the material type...
 	inline void clear() {
 		std::memset(_elements, 0xff, size());
 	}
