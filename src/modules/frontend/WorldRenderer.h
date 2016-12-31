@@ -81,6 +81,16 @@ protected:
 	core::VarPtr _shadowMapDebug;
 	video::VertexBuffer _fullscreenQuad;
 	video::VertexBuffer _shadowMapDebugBuffer;
+
+	video::VertexBuffer _worldBuffer;
+	int32_t _worldIndexBufferIndex = -1;
+	int32_t _worldIndexBuffer = -1;
+
+	video::VertexBuffer _worldInstancedBuffer;
+	int32_t _worldInstancedIndexBufferIndex = -1;
+	int32_t _worldInstancedBufferIndex = -1;
+	int32_t _worldInstancedOffsetBufferIndex = -1;
+
 	video::DepthBuffer _depthBuffer;
 	video::UniformBuffer _materialBuffer;
 

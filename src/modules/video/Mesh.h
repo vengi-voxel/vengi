@@ -50,9 +50,11 @@ private:
 	void readNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform);
 	void loadBones(uint32_t neshIndex, const aiMesh* aiMesh);
 
+	// TODO: use vertexbuffer
 	GLuint _vertexArrayObject = 0u;
 	GLuint _vbo = 0u;
 
+	// TODO: use vertexbuffer
 	GLuint _vertexArrayObjectNormals = 0u;
 	GLuint _vboNormals = 0u;
 

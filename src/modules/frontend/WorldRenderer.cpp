@@ -47,6 +47,8 @@ void WorldRenderer::reset() {
 
 void WorldRenderer::shutdown() {
 	_gbuffer.shutdown();
+	_worldBuffer.shutdown();
+	_worldInstancedBuffer.shutdown();
 	_fullscreenQuad.shutdown();
 	_shadowMapDebugBuffer.shutdown();
 	_shadowMapDebugShader.shutdown();
@@ -726,6 +728,36 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 
+	_worldIndexBufferIndex = _worldBuffer.create(nullptr, 0, GL_ELEMENT_ARRAY_BUFFER);
+	if (_worldIndexBufferIndex == -1) {
+		Log::error("Could not create the world vertex buffer object for the indices");
+		return false;
+	}
+
+	_worldIndexBuffer = _worldBuffer.create();
+	if (_worldIndexBuffer == -1) {
+		Log::error("Could not create the world vertex buffer object");
+		return false;
+	}
+
+	_worldInstancedIndexBufferIndex = _worldInstancedBuffer.create(nullptr, 0, GL_ELEMENT_ARRAY_BUFFER);
+	if (_worldInstancedIndexBufferIndex == -1) {
+		Log::error("Could not create the instanced world vertex buffer object for the indices");
+		return false;
+	}
+
+	_worldInstancedBufferIndex = _worldInstancedBuffer.create();
+	if (_worldInstancedBufferIndex == -1) {
+		Log::error("Could not create the instanced world vertex buffer object");
+		return false;
+	}
+
+	_worldInstancedOffsetBufferIndex = _worldInstancedBuffer.create();
+	if (_worldInstancedOffsetBufferIndex == -1) {
+		Log::error("Could not create the instanced world vertex buffer object for the offsets");
+		return false;
+	}
+
 	video::VertexBuffer::Attribute attributePosLightDeferred;
 	attributePosLightDeferred.bufferIndex = _fullscreenQuad.createFullscreenQuad();
 	attributePosLightDeferred.index = _deferredDirLightShader.getLocationPos();
@@ -744,6 +776,50 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	attributeTexcoord.index = _shadowMapDebugShader.getLocationTexcoord();
 	attributeTexcoord.size = _shadowMapDebugShader.getComponentsTexcoord();
 	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
+
+	static_assert(MAX_TERRAIN_HEIGHT < 256, "Max terrain height exceeds the valid voxel positions");
+	static_assert(sizeof(voxel::VoxelVertex::colorIndex) == sizeof(uint8_t), "Voxel color size doesn't match");
+	static_assert(sizeof(voxel::VoxelVertex::ambientOcclusion) == sizeof(uint8_t), "AO type size doesn't match");
+	static_assert(sizeof(voxel::VoxelVertex::material) == sizeof(uint8_t), "Material type size doesn't match");
+	static_assert(offsetof(voxel::VoxelVertex, ambientOcclusion) < offsetof(voxel::VoxelVertex, colorIndex), "Layout change of VoxelVertex without change in upload");
+	static_assert(offsetof(voxel::VoxelVertex, colorIndex) < offsetof(voxel::VoxelVertex, material), "Layout change of VoxelVertex without change in upload");
+
+	video::VertexBuffer::Attribute voxelAttributePos;
+	voxelAttributePos.bufferIndex = _worldIndexBuffer;
+	voxelAttributePos.index = _worldShader.getLocationPos();
+	voxelAttributePos.stride = sizeof(voxel::VoxelVertex);
+	voxelAttributePos.size = _worldShader.getComponentsPos();
+	voxelAttributePos.type = GL_UNSIGNED_BYTE;
+	voxelAttributePos.typeIsInt = true;
+	voxelAttributePos.offset = offsetof(voxel::VoxelVertex, position);
+	_worldBuffer.addAttribute(voxelAttributePos);
+
+	video::VertexBuffer::Attribute voxelAttributeInfo;
+	voxelAttributeInfo.bufferIndex = voxelAttributePos.bufferIndex;
+	voxelAttributeInfo.index = _worldShader.getLocationInfo();
+	voxelAttributeInfo.stride = sizeof(voxel::VoxelVertex);
+	voxelAttributeInfo.size = _worldShader.getComponentsInfo();
+	voxelAttributeInfo.type = GL_UNSIGNED_BYTE;
+	voxelAttributeInfo.typeIsInt = true;
+	voxelAttributeInfo.offset = offsetof(voxel::VoxelVertex, ambientOcclusion);
+	_worldBuffer.addAttribute(voxelAttributeInfo);
+
+	voxelAttributePos.bufferIndex = _worldInstancedBufferIndex;
+	_worldInstancedBuffer.addAttribute(voxelAttributePos);
+
+	voxelAttributeInfo.bufferIndex = voxelAttributePos.bufferIndex;
+	_worldInstancedBuffer.addAttribute(voxelAttributeInfo);
+
+	video::VertexBuffer::Attribute voxelAttributeOffsets;
+	voxelAttributeOffsets.bufferIndex = _worldInstancedOffsetBufferIndex;
+	voxelAttributeOffsets.index = _worldShader.getLocationOffset();
+	voxelAttributeOffsets.stride = sizeof(glm::vec3);
+	voxelAttributeOffsets.size = _worldShader.getComponentsOffset();
+	voxelAttributeOffsets.type = GL_FLOAT;
+	voxelAttributeOffsets.divisor = 1;
+	voxelAttributeOffsets.typeIsInt = true;
+	voxelAttributeOffsets.offset = offsetof(glm::vec3, x);
+	_worldInstancedBuffer.addAttribute(voxelAttributeOffsets);
 
 	for (int i = 0; i < (int)voxel::PlantType::MaxPlantTypes; ++i) {
 		const voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
