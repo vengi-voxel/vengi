@@ -623,9 +623,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active
 void WorldRenderer::onConstruct() {
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	_deferred = core::Var::getSafe(cfg::ClientDeferred);
-	core_assert(_deferred);
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
-	core_assert(_shadowMap);
 	_deferredDebug = core::Var::get(cfg::ClientDebugDeferred, "false");
 	_shadowMapDebug = core::Var::get(cfg::ClientDebugShadowMap, "false");
 	core::Var::get(cfg::ClientShadowMapSize, "512");
