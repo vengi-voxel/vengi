@@ -96,9 +96,9 @@ protected:
 	voxel::PlantGenerator _plantGenerator;
 
 	// Convert a PolyVox mesh to OpenGL index/vertex buffers.
-	video::GLMeshData createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers);
-	video::GLMeshData createMesh(const video::Shader& shader, const voxel::Mesh& mesh);
-	video::GLMeshData createInstancedMesh(const video::Shader& shader, const voxel::Mesh &mesh, int amount);
+	bool createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData);
+	bool createMesh(const video::Shader& shader, const voxel::Mesh& mesh, video::GLMeshData& meshData);
+	bool createInstancedMesh(const video::Shader& shader, const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
 	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData);
 	void handleMeshQueue(const video::Shader& shader);
 	void fillPlantPositionsFromMeshes();

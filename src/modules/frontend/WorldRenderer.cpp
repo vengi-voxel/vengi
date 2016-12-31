@@ -152,6 +152,7 @@ void WorldRenderer::handleMeshQueue(const video::Shader& shader) {
 		return;
 	}
 	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
+	// TODO: check if the stuff is culled - then we can reuse the vbo and vao
 	for (video::GLMeshData& m : _meshDataOpaque) {
 		if (m.translation == mesh.opaqueMesh.getOffset()) {
 			updateMesh(mesh.opaqueMesh, m);
@@ -164,15 +165,17 @@ void WorldRenderer::handleMeshQueue(const video::Shader& shader) {
 			return;
 		}
 	}
+
 	// Now add the mesh to the list of meshes to render.
-	video::GLMeshData meshDataOpaque = createMesh(shader, mesh.opaqueMesh);
-	if (meshDataOpaque.noOfIndices > 0) {
+	video::GLMeshData meshDataOpaque;
+	if (createMesh(shader, mesh.opaqueMesh, meshDataOpaque)) {
 		distributePlants(_world, 100, meshDataOpaque.translation, meshDataOpaque.instancedPositions);
 		_meshDataOpaque.push_back(meshDataOpaque);
 		fillPlantPositionsFromMeshes();
 	}
-	const video::GLMeshData& meshDataWater = createMesh(shader, mesh.waterMesh);
-	if (meshDataWater.noOfIndices > 0) {
+
+	video::GLMeshData meshDataWater;
+	if (createMesh(shader, mesh.waterMesh, meshDataWater)) {
 		_meshDataWater.push_back(meshDataWater);
 	}
 }
@@ -518,12 +521,12 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	return drawCallsEntities;
 }
 
-void WorldRenderer::updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) {
+void WorldRenderer::updateMesh(const voxel::Mesh& mesh, video::GLMeshData& meshData) {
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
-	const voxel::IndexType* vecIndices = surfaceMesh.getRawIndexData();
-	const uint32_t numIndices = surfaceMesh.getNoOfIndices();
-	const voxel::VoxelVertex* vecVertices = surfaceMesh.getRawVertexData();
-	const uint32_t numVertices = surfaceMesh.getNoOfVertices();
+	const voxel::IndexType* vecIndices = mesh.getRawIndexData();
+	const uint32_t numIndices = mesh.getNoOfIndices();
+	const voxel::VoxelVertex* vecVertices = mesh.getRawVertexData();
+	const uint32_t numVertices = mesh.getNoOfVertices();
 
 	core_assert(meshData.vertexBuffer > 0);
 	glBindBuffer(GL_ARRAY_BUFFER, meshData.vertexBuffer);
@@ -535,26 +538,20 @@ void WorldRenderer::updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData
 
 	meshData.noOfVertices = numVertices;
 	meshData.noOfIndices = numIndices;
-}
-
-video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers) {
-	core_trace_gl_scoped(WorldRendererCreateMesh);
-
-	// This struct holds the OpenGL properties (buffer handles, etc) which will be used
-	// to render our mesh. We copy the data from the PolyVox mesh into this structure.
-	video::GLMeshData meshData;
-	meshData.translation = mesh.getOffset();
-
-	const float chunkSize = (float)_world->getMeshSize();
-	const glm::vec3& mins = glm::vec3(meshData.translation);
-	meshData.aabb = core::AABB<float>(mins, mins + chunkSize);
-	meshData.scale = glm::vec3(1.0f);
-
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	meshData.indexType = GL_UNSIGNED_INT;
 
+	meshData.scale = glm::vec3(1.0f);
+	meshData.translation = mesh.getOffset();
+	const float chunkSize = (float)_world->getMeshSize();
+	const glm::vec3& mins = glm::vec3(meshData.translation);
+	meshData.aabb = core::AABB<float>(mins, mins + chunkSize);
+}
+
+bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData) {
+	core_trace_gl_scoped(WorldRendererCreateMesh);
 	if (mesh.getNoOfIndices() == 0) {
-		return meshData;
+		return false;
 	}
 
 	meshData.create(buffers);
@@ -577,27 +574,24 @@ video::GLMeshData WorldRenderer::createMeshInternal(const video::Shader& shader,
 	shader.setVertexAttributeInt(locationInfo, 3, GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertex), GL_OFFSET_CAST(offsetof(voxel::VoxelVertex, ambientOcclusion)));
 	GL_checkError();
 
-	return meshData;
+	return true;
 }
 
-// TODO: generate bigger buffers and use glBufferSubData
-video::GLMeshData WorldRenderer::createMesh(const video::Shader& shader, const voxel::Mesh &mesh) {
-	const video::GLMeshData& meshData = createMeshInternal(shader, mesh, 2);
-	if (mesh.getNoOfIndices() == 0) {
-		return meshData;
+bool WorldRenderer::createMesh(const video::Shader& shader, const voxel::Mesh &mesh, video::GLMeshData& meshData) {
+	if (!createMeshInternal(shader, mesh, 2, meshData)) {
+		return false;
 	}
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	return meshData;
+	return true;
 }
 
-video::GLMeshData WorldRenderer::createInstancedMesh(const video::Shader& shader, const voxel::Mesh &mesh, int amount) {
-	video::GLMeshData meshData = createMeshInternal(shader, mesh, 3);
-	if (mesh.getNoOfIndices() == 0) {
-		return meshData;
+bool WorldRenderer::createInstancedMesh(const video::Shader& shader, const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData) {
+	if (!createMeshInternal(shader, mesh, 3, meshData)) {
+		return false;
 	}
 
 	meshData.amount = amount;
@@ -615,7 +609,7 @@ video::GLMeshData WorldRenderer::createInstancedMesh(const video::Shader& shader
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	return meshData;
+	return true;
 }
 
 void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
@@ -750,9 +744,9 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
 
 	for (int i = 0; i < (int)voxel::PlantType::MaxPlantTypes; ++i) {
-		voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
-		video::GLMeshData meshDataPlant = createInstancedMesh(_plantShader, *mesh, 40);
-		if (meshDataPlant.noOfIndices > 0) {
+		const voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
+		video::GLMeshData meshDataPlant;
+		if (createInstancedMesh(_plantShader, *mesh, 40, meshDataPlant)) {
 			meshDataPlant.scale = glm::vec3(0.4f);
 			_meshDataPlant.push_back(meshDataPlant);
 		}
