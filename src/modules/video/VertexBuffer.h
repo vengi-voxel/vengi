@@ -16,6 +16,15 @@ enum class VertexBufferMode : GLenum {
 	Dynamic = GL_DYNAMIC_DRAW
 };
 
+enum class VertexBufferType : GLenum {
+#ifdef GL_DRAW_INDIRECT_BUFFER
+	DrawIndirectBuffer = GL_DRAW_INDIRECT_BUFFER,
+#endif
+	ArrayBuffer = GL_ARRAY_BUFFER,
+	IndexBuffer = GL_ELEMENT_ARRAY_BUFFER,
+	UniformBuffer = GL_UNIFORM_BUFFER
+};
+
 class VertexBuffer {
 public:
 	struct Attribute {
@@ -51,10 +60,10 @@ private:
 	GLuint _handleIdx = 0;
 
 	std::vector<Attribute> _attributes;
-	mutable GLuint _vao;
+	mutable GLuint _vao = 0u;
 	VertexBufferMode _mode = VertexBufferMode::Static;
 public:
-	VertexBuffer(const void* data, GLsizeiptr size, GLenum target = GL_ARRAY_BUFFER);
+	VertexBuffer(const void* data, GLsizeiptr size, VertexBufferType target = VertexBufferType::ArrayBuffer);
 	VertexBuffer();
 	~VertexBuffer();
 
@@ -75,11 +84,11 @@ public:
 	bool update(int32_t idx, const void* data, GLsizeiptr size);
 
 	template<class T>
-	inline int32_t create(const std::vector<T>& data, GLenum target = GL_ARRAY_BUFFER) {
+	inline int32_t create(const std::vector<T>& data, VertexBufferType target = VertexBufferType::ArrayBuffer) {
 		return create(&data.front(), core::vectorSize(data), target);
 	}
 
-	int32_t create(const void* data = nullptr, GLsizeiptr size = 0, GLenum target = GL_ARRAY_BUFFER);
+	int32_t create(const void* data = nullptr, GLsizeiptr size = 0, VertexBufferType target = VertexBufferType::ArrayBuffer);
 	/**
 	 * @brief Fullscreen buffer with normalized device coordinates with 3 float components
 	 */

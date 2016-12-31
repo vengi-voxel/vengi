@@ -731,7 +731,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 
-	_worldIndexBufferIndex = _worldBuffer.create(nullptr, 0, GL_ELEMENT_ARRAY_BUFFER);
+	_worldIndexBufferIndex = _worldBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
 	if (_worldIndexBufferIndex == -1) {
 		Log::error("Could not create the world vertex buffer object for the indices");
 		return false;
@@ -743,7 +743,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 
-	_worldInstancedIndexBufferIndex = _worldInstancedBuffer.create(nullptr, 0, GL_ELEMENT_ARRAY_BUFFER);
+	_worldInstancedIndexBufferIndex = _worldInstancedBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
 	if (_worldInstancedIndexBufferIndex == -1) {
 		Log::error("Could not create the instanced world vertex buffer object for the indices");
 		return false;

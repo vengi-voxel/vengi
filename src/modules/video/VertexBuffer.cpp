@@ -8,13 +8,11 @@
 
 namespace video {
 
-VertexBuffer::VertexBuffer(const void* data, GLsizeiptr size, GLenum target) :
-		_vao(0) {
+VertexBuffer::VertexBuffer(const void* data, GLsizeiptr size, VertexBufferType target) {
 	create(data, size, target);
 }
 
-VertexBuffer::VertexBuffer() :
-		_vao(0) {
+VertexBuffer::VertexBuffer() {
 }
 
 bool VertexBuffer::addAttribute(const VertexBuffer::Attribute& attribute) {
@@ -87,21 +85,21 @@ bool VertexBuffer::update(int32_t idx, const void* data, GLsizeiptr size) {
 	return true;
 }
 
-int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
+int32_t VertexBuffer::create(const void* data, GLsizeiptr size, VertexBufferType target) {
 	// we already have a buffer
 	if (_handleIdx >= (int)SDL_arraysize(_handles)) {
 		return -1;
 	}
-	_targets[_handleIdx] = target;
+	_targets[_handleIdx] = std::enum_value(target);
 	glGenBuffers(1, &_handles[_handleIdx]);
 	if (!isValid(0)) {
 		return -1;
 	}
 	_size[_handleIdx] = size;
 	if (data != nullptr) {
-		glBindBuffer(target, _handles[_handleIdx]);
-		glBufferData(target, size, data, std::enum_value(_mode));
-		glBindBuffer(target, 0);
+		glBindBuffer(_targets[_handleIdx], _handles[_handleIdx]);
+		glBufferData(_targets[_handleIdx], size, data, std::enum_value(_mode));
+		glBindBuffer(_targets[_handleIdx], 0);
 	}
 	++_handleIdx;
 	return _handleIdx - 1;

@@ -51,7 +51,7 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 	}
 
 	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
-	_indexIndex[meshIndex] = _vbo[meshIndex].create(indices, GL_ELEMENT_ARRAY_BUFFER);
+	_indexIndex[meshIndex] = _vbo[meshIndex].create(indices, video::VertexBufferType::IndexBuffer);
 	if (_indexIndex[meshIndex] == -1) {
 		_vbo[meshIndex].shutdown();
 		Log::error("Could not create vbo for indices");

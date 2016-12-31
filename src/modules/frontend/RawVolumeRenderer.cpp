@@ -44,7 +44,7 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	_indexBufferIndex = _vertexBuffer.create(nullptr, 0, GL_ELEMENT_ARRAY_BUFFER);
+	_indexBufferIndex = _vertexBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
 	if (_indexBufferIndex == -1) {
 		Log::error("Could not create the vertex buffer object for the indices");
 		return false;
