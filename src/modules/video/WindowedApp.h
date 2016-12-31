@@ -120,7 +120,22 @@ public:
 	virtual core::AppState onInit() override;
 	virtual core::AppState onCleanup() override;
 	virtual void onWindowResize() override;
+
+	int limit(Limit l) const;
+	bool feature(Feature f) const;
+
+	static WindowedApp* getInstance() {
+		return (WindowedApp*)core::App::getInstance();
+	}
 };
+
+inline int WindowedApp::limit(Limit l) const {
+	return _state.limits[std::enum_value(l)];
+}
+
+inline bool WindowedApp::feature(Feature f) const {
+	return _state.features[std::enum_value(f)];
+}
 
 inline std::string WindowedApp::saveDialog(const std::string& filter) {
 	return fileDialog(OpenFileMode::Save, filter);
