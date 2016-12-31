@@ -33,7 +33,6 @@ void main(void) {
 #if cl_deferred == 0
 	int cascade = calculateCascade();
 	float shadow = calculateShadow(cascade, u_viewprojection);
-//#define cl_debug_cascade 1
 #if cl_debug_cascade
 	if (cascade == 0) {
 		color.r = 0.0;

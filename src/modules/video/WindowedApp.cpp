@@ -408,11 +408,12 @@ core::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientFullscreen, "true");
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
+	core::Var::get(cfg::ClientShadowMapDebugCascade, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
 	core::Var::get(cfg::ClientWindowDisplay, 0);
 	core::Var::get(cfg::ClientOpenGLVersion, "3.1", core::CV_READONLY);
 #ifdef DEBUG
-	const char *defaultSyncValue ="false";
+	const char *defaultSyncValue = "false";
 #else
 	const char *defaultSyncValue = "true";
 #endif
