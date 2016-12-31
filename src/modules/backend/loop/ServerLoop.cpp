@@ -73,7 +73,7 @@ bool ServerLoop::init() {
 		return false;
 	}
 
-	if (!_world->init()) {
+	if (!_world->init(core::App::getInstance()->filesystem()->open("world.lua"))) {
 		Log::error("Failed to init the world");
 		return false;
 	}

@@ -4,10 +4,13 @@
 
 #pragma once
 
+#include "io/File.h"
+
 namespace voxel {
 
 struct WorldContext {
 	WorldContext();
+	bool load(const io::FilePtr& luaFile);
 
 	int landscapeNoiseOctaves;
 	float landscapeNoisePersistence;

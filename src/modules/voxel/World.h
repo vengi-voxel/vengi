@@ -89,7 +89,7 @@ public:
 		return result == RaycastResults::Interupted;
 	}
 
-	bool init();
+	bool init(const io::FilePtr& luaFile);
 	void shutdown();
 	void reset();
 	bool isReset() const;
