@@ -9,6 +9,7 @@
 #include "io/EventHandler.h"
 #include "core/GLM.h"
 #include "util/KeybindingParser.h"
+#include "video/Types.h"
 
 struct SDL_Window;
 typedef void *SDL_GLContext;
@@ -42,6 +43,13 @@ protected:
 		double avg() const;
 		const std::string& name() const;
 	};
+
+	struct GLState {
+		int limits[std::enum_value(video::Limit::Max)] = { };
+		bool features[std::enum_value(video::Feature::Max)] = { };
+	} _state;
+	void setupLimits();
+	void setupFeatures();
 
 	SDL_Window* _window;
 	SDL_GLContext _glcontext;
