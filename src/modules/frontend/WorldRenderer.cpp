@@ -242,13 +242,6 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices) {
-	const bool shadowMap = shader.hasUniform("u_shadowmap");
-	if (shadowMap) {
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
-		shaderSetUniformIf(shader, setUniformi, "u_shadowmap", 1);
-	}
-
 	int drawCallsWorld = 0;
 	for (auto i = meshes.begin(); i != meshes.end();) {
 		video::GLMeshData* meshData = *i;
@@ -265,12 +258,6 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisibl
 
 		++drawCallsWorld;
 		++i;
-	}
-
-	if (shadowMap) {
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glActiveTexture(GL_TEXTURE0);
 	}
 
 	return drawCallsWorld;
@@ -371,11 +358,17 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	if (shadowMap) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
+	}
+
 	{
 		video::ScopedShader scoped(_worldShader);
 		setUniforms(_worldShader, camera);
 		shaderSetUniformIf(_worldShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
 		shaderSetUniformIf(_worldShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
+		_worldShader.setShadowmap(1);
 		drawCallsWorld += renderWorldMeshes(_worldShader, _visibleOpaque, vertices);
 	}
 	{
@@ -383,6 +376,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		setUniforms(_plantShader, camera);
 		shaderSetUniformIf(_plantShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
 		shaderSetUniformIf(_plantShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
+		_plantShader.setShadowmap(1);
 		drawCallsWorld += renderWorldMeshes(_plantShader, _visiblePlant, vertices);
 	}
 	{
@@ -390,7 +384,14 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		setUniforms(_waterShader, camera);
 		shaderSetUniformIf(_waterShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
 		shaderSetUniformIf(_waterShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
+		_waterShader.setShadowmap(1);
 		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
+	}
+
+	if (shadowMap) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE0);
 	}
 
 	_colorTexture->unbind();
