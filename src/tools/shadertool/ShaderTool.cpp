@@ -291,8 +291,7 @@ void ShaderTool::generateSrc() const {
 		const Types& cType = cTypes[v.type];
 		if (v.arraySize > 0 && isInteger) {
 			setters << "const ";
-		}
-		if (cType.passBy == PassBy::Reference) {
+		} else if (cType.passBy == PassBy::Reference) {
 			setters << "const ";
 		}
 		setters << cType.ctype;
@@ -306,13 +305,11 @@ void ShaderTool::generateSrc() const {
 		}
 
 		if (v.arraySize > 0) {
-			setters << " (&" << v.name << ")";
+			setters << " (&" << v.name << ")[" << v.arraySize << "]";
 		} else {
 			setters << " " << v.name;
 		}
-		if (v.arraySize > 0) {
-			setters << "[" << v.arraySize << "]";
-		} else if (v.arraySize == -1) {
+		if (v.arraySize == -1) {
 			setters << ", int amount";
 		}
 		setters << ") const {\n";
@@ -332,6 +329,25 @@ void ShaderTool::generateSrc() const {
 		setters << ");\n";
 		setters << "\t\treturn true;\n";
 		setters << "\t}\n";
+		if (v.arraySize > 0) {
+			setters << "\n\tinline bool set" << uniformName << "(" << "const std::vector<" << cType.ctype << ">& var) const {\n";
+			setters << "\t\tif (!hasUniform(\"" << v.name << "\")) {\n";
+			setters << "\t\t\treturn false;\n";
+			setters << "\t\t}\n";
+			setters << "\t\tcore_assert((int)var.size() == " << v.arraySize << ");\n";
+			setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize) << "(\"" << v.name << "\", &var.front(), var.size());\n";
+			setters << "\t\treturn true;\n";
+			setters << "\t}\n";
+		} else if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::VEC4) {
+			setters << "\n\tinline bool set" << uniformName << "(" << "const std::vector<float>& var) const {\n";
+			setters << "\t\tif (!hasUniform(\"" << v.name << "\")) {\n";
+			setters << "\t\t\treturn false;\n";
+			setters << "\t\t}\n";
+			setters << "\t\tcore_assert(int(var.size()) % " << cType.components << " == 0);\n";
+			setters << "\t\tsetUniformfv(\"" << v.name << "\", &var.front(), " << cType.components << ", " << cType.components << ");\n";
+			setters << "\t\treturn true;\n";
+			setters << "\t}\n";
+		}
 		if (i < uniformSize- - 2) {
 			setters << "\n";
 		}
