@@ -640,6 +640,7 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int r
 void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active) const {
 	_world->stats(meshes, extracted, pending);
 	active = _meshDataOpaque.size();
+	core_assert(active == (int)_meshDataWater.size());
 }
 
 void WorldRenderer::onConstruct() {
