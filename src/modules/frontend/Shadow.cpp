@@ -8,7 +8,7 @@ bool Shadow::init() {
 	return true;
 }
 
-void Shadow::calculateShadowData(const video::Camera& camera, bool active, int maxDepthBuffers, const glm::ivec2& depthBufferSize) {
+void Shadow::calculateShadowData(const video::Camera& camera, bool active, int maxDepthBuffers, const glm::ivec2& depthBufferSize, float sliceWeight) {
 	_cascades.resize(maxDepthBuffers);
 	_distances.resize(maxDepthBuffers);
 
@@ -21,7 +21,7 @@ void Shadow::calculateShadowData(const video::Camera& camera, bool active, int m
 	}
 
 	std::vector<float> planes(maxDepthBuffers * 2);
-	camera.sliceFrustum(&planes.front(), planes.size(), maxDepthBuffers, 0.1f);
+	camera.sliceFrustum(&planes.front(), planes.size(), maxDepthBuffers, sliceWeight);
 	const glm::mat4& inverseView = glm::inverse(camera.viewMatrix());
 	const float shadowRangeZ = camera.farPlane() * 3.0f;
 

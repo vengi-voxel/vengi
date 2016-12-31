@@ -178,21 +178,20 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 	core_assert_always(splits >= 1);
 	const float near = nearPlane();
 	const float far = farPlane();
-	const int numSlices = splits * 2;
-	const float numSlicesf = float(numSlices);
-	const float ratio = far / near;
-	const float delta = far - near;
 
-	sliceBuf[0] = near;
-	sliceBuf[numSlices - 1] = far;
+	int bufIdx = 0;
+	for (int split = 0; split < splits; ++split) {
+		const float nearK = float(bufIdx) / splits;
+		const float nearLogd = near * glm::pow(far / near, nearK);
+		const float nearLind = glm::mix(near, far, nearK);
+		const float nearSplitVal = glm::mix(nearLogd, nearLind, sliceWeight);
+		sliceBuf[bufIdx++] = nearSplitVal;
 
-	for (int farIndex = 1, nearIndex = 2; nearIndex < numSlices; farIndex += 2, nearIndex += 2) {
-		const float exponent = farIndex / numSlicesf;
-		const float one = sliceWeight * (near * glm::pow(ratio, exponent));
-		const float two = (1 - sliceWeight) * (near + delta * exponent);
-		const float nearPlaneSlice = one + two;
-		sliceBuf[nearIndex] = nearPlaneSlice;
-		sliceBuf[farIndex] = nearPlaneSlice * 1.005f;
+		const float farK = float(bufIdx) / splits;
+		const float farLogd = near * glm::pow(far / near, farK);
+		const float farLind = glm::mix(near, far, farK);
+		const float farSplitVal = glm::mix(farLogd, farLind, sliceWeight);
+		sliceBuf[bufIdx++] = farSplitVal;
 	}
 }
 

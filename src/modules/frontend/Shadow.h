@@ -16,7 +16,7 @@ private:
 public:
 	bool init();
 
-	void calculateShadowData(const video::Camera& camera, bool active, int maxDepthBuffers, const glm::ivec2& depthBufferSize);
+	void calculateShadowData(const video::Camera& camera, bool active, int maxDepthBuffers, const glm::ivec2& depthBufferSize, float sliceWeight = 1.0f);
 
 	const std::vector<glm::mat4>& cascades() const;
 	const std::vector<float>& distances() const;
