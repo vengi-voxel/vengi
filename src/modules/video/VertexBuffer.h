@@ -11,6 +11,11 @@
 
 namespace video {
 
+enum class VertexBufferMode : GLenum {
+	Static = GL_STATIC_DRAW,
+	Dynamic = GL_DYNAMIC_DRAW
+};
+
 class VertexBuffer {
 public:
 	struct Attribute {
@@ -47,11 +52,13 @@ private:
 
 	std::vector<Attribute> _attributes;
 	mutable GLuint _vao;
+	VertexBufferMode _mode = VertexBufferMode::Static;
 public:
 	VertexBuffer(const void* data, GLsizeiptr size, GLenum target = GL_ARRAY_BUFFER);
 	VertexBuffer();
 	~VertexBuffer();
 
+	void setMode(VertexBufferMode mode);
 	void shutdown();
 
 	bool addAttribute(const Attribute& attribute);
@@ -119,6 +126,10 @@ inline GLuint VertexBuffer::elements(int32_t idx, int components, size_t compone
 inline GLuint VertexBuffer::handle(int32_t idx) const {
 	core_assert(idx >= 0 && idx < (int)SDL_arraysize(_handles));
 	return _handles[idx];
+}
+
+inline void VertexBuffer::setMode(VertexBufferMode mode) {
+	_mode = mode;
 }
 
 }

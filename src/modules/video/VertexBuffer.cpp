@@ -79,7 +79,7 @@ bool VertexBuffer::update(int32_t idx, const void* data, GLsizeiptr size) {
 	}
 
 	glBindBuffer(_targets[idx], _handles[idx]);
-	glBufferData(_targets[idx], size, data, GL_STATIC_DRAW);
+	glBufferData(_targets[idx], size, data, std::enum_value(_mode));
 	glBindBuffer(_targets[idx], 0);
 	_size[idx] = size;
 	GL_checkError();
@@ -100,7 +100,7 @@ int32_t VertexBuffer::create(const void* data, GLsizeiptr size, GLenum target) {
 	_size[_handleIdx] = size;
 	if (data != nullptr) {
 		glBindBuffer(target, _handles[_handleIdx]);
-		glBufferData(target, size, data, GL_STATIC_DRAW);
+		glBufferData(target, size, data, std::enum_value(_mode));
 		glBindBuffer(target, 0);
 	}
 	++_handleIdx;
