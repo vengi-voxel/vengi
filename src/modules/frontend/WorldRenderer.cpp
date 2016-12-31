@@ -35,14 +35,11 @@ WorldRenderer::~WorldRenderer() {
 }
 
 void WorldRenderer::reset() {
-	for (video::GLMeshData& meshData : _meshDataOpaque) {
-		meshData.shutdown();
+	for (GLChunkMeshData& meshData : _meshData) {
+		meshData.opaque.shutdown();
+		meshData.water.shutdown();
 	}
-	for (video::GLMeshData& meshData : _meshDataWater) {
-		meshData.shutdown();
-	}
-	_meshDataOpaque.clear();
-	_meshDataWater.clear();
+	_meshData.clear();
 	_entities.clear();
 	_viewDistance = 1.0f;
 	_now = 0l;
@@ -111,12 +108,12 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 	for (video::GLMeshData& mp : _meshDataPlant) {
 		mp.instancedPositions.clear();
 	}
-	for (const video::GLMeshData& data : _meshDataOpaque) {
-		if (data.instancedPositions.empty()) {
+	for (const GLChunkMeshData& data : _meshData) {
+		if (data.opaque.instancedPositions.empty()) {
 			continue;
 		}
-		std::vector<glm::vec3> p = data.instancedPositions;
-		core::Random rnd(_world->seed() + data.translation.x + data.translation.y + data.translation.z);
+		std::vector<glm::vec3> p = data.opaque.instancedPositions;
+		core::Random rnd(_world->seed() + data.opaque.translation.x + data.opaque.translation.y + data.opaque.translation.z);
 		rnd.shuffle(p.begin(), p.end());
 		const int plantMeshes = p.size() / plantMeshAmount;
 		int delta = p.size() - plantMeshes * plantMeshAmount;
@@ -136,30 +133,20 @@ void WorldRenderer::handleMeshQueue() {
 	}
 	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
 	// TODO: check if the stuff is culled - then we can reuse the vbo and vao
-	for (video::GLMeshData& m : _meshDataOpaque) {
-		if (m.translation == mesh.opaqueMesh.getOffset()) {
-			updateMesh(mesh.opaqueMesh, m);
-			return;
-		}
-	}
-	for (video::GLMeshData& m : _meshDataWater) {
-		if (m.translation == mesh.waterMesh.getOffset()) {
-			updateMesh(mesh.waterMesh, m);
+	for (GLChunkMeshData& m : _meshData) {
+		if (m.opaque.translation == mesh.opaqueMesh.getOffset()) {
+			updateMesh(mesh.opaqueMesh, m.opaque);
+			updateMesh(mesh.waterMesh, m.water);
 			return;
 		}
 	}
 
 	// Now add the mesh to the list of meshes to render.
-	video::GLMeshData meshDataOpaque;
-	if (createMesh(mesh.opaqueMesh, meshDataOpaque)) {
-		distributePlants(_world, 100, meshDataOpaque.translation, meshDataOpaque.instancedPositions);
-		_meshDataOpaque.push_back(meshDataOpaque);
+	GLChunkMeshData meshData;
+	if (createMesh(mesh, meshData)) {
+		distributePlants(_world, 100, meshData.opaque.translation, meshData.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
-	}
-
-	video::GLMeshData meshDataWater;
-	if (createMesh(mesh.waterMesh, meshDataWater)) {
-		_meshDataWater.push_back(meshDataWater);
+		_meshData.push_back(meshData);
 	}
 }
 
@@ -174,31 +161,30 @@ bool WorldRenderer::checkShaders() const {
 	return same;
 }
 
-void WorldRenderer::cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const video::Camera& camera) const {
-	visible.clear();
-	int meshesCount = 0;
-	int visibleCount = 0;
+void WorldRenderer::cull(const video::Camera& camera) {
+	_visible.clear();
+	_visibleWater.clear();
 	const float cullingThreshold = _world->getMeshSize();
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
-	for (auto i = meshes.begin(); i != meshes.end();) {
-		video::GLMeshData& meshData = *i;
-		const int distance = getDistanceSquare(meshData.translation);
+	for (auto i = _meshData.begin(); i != _meshData.end();) {
+		GLChunkMeshData& meshData = *i;
+		const int distance = getDistanceSquare(meshData.opaque.translation);
 		Log::trace("distance is: %i (%i)", distance, maxAllowedDistance);
 		if (distance >= maxAllowedDistance) {
-			_world->allowReExtraction(meshData.translation);
-			meshData.shutdown();
-			Log::info("Remove mesh from %i:%i", meshData.translation.x, meshData.translation.z);
-			i = meshes.erase(i);
+			_world->allowReExtraction(meshData.opaque.translation);
+			meshData.opaque.shutdown();
+			meshData.water.shutdown();
+			Log::info("Remove mesh from %i:%i", meshData.opaque.translation.x, meshData.opaque.translation.z);
+			i = _meshData.erase(i);
 			continue;
 		}
-		if (camera.isVisible(meshData.aabb)) {
-			visible.push_back(&meshData);
-			++visibleCount;
+		if (camera.isVisible(meshData.opaque.aabb)) {
+			_visible.push_back(&meshData.opaque);
+			_visibleWater.push_back(&meshData.water);
 		}
-		++meshesCount;
 		++i;
 	}
-	Log::trace("%i meshes left after culling, %i meshes overall", visibleCount, meshesCount);
+	Log::trace("%i meshes left after culling, %i meshes overall", (int)_visible.size(), (int)_meshData.size());
 }
 
 void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& camera) {
@@ -252,7 +238,7 @@ void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int w
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	handleMeshQueue();
 
-	if (_meshDataOpaque.empty()) {
+	if (_meshData.empty()) {
 		return 0;
 	}
 
@@ -271,8 +257,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	GL_checkError();
 
-	cull(_meshDataOpaque, _visibleOpaque, camera);
-	cull(_meshDataWater, _visibleWater, camera);
+	cull(camera);
 	_visiblePlant.clear();
 	for (auto i = _meshDataPlant.begin(); i != _meshDataPlant.end(); ++i) {
 		_visiblePlant.push_back(&*i);
@@ -301,7 +286,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 				video::ScopedShader scoped(_shadowMapShader);
 				setUniforms(_shadowMapShader, camera);
 				_shadowMapShader.setLightviewprojection(cascades[i]);
-				drawCallsWorld += renderWorldMeshes(_shadowMapShader, _visibleOpaque, nullptr);
+				drawCallsWorld += renderWorldMeshes(_shadowMapShader, _visible, nullptr);
 			}
 			{
 				video::ScopedShader scoped(_shadowMapInstancedShader);
@@ -338,7 +323,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		shaderSetUniformIf(_worldShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
 		shaderSetUniformIf(_worldShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
 		_worldShader.setShadowmap(1);
-		drawCallsWorld += renderWorldMeshes(_worldShader, _visibleOpaque, vertices);
+		drawCallsWorld += renderWorldMeshes(_worldShader, _visible, vertices);
 	}
 	{
 		video::ScopedShader scoped(_plantShader);
@@ -555,10 +540,12 @@ bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel:
 	return true;
 }
 
-bool WorldRenderer::createMesh(const voxel::Mesh &mesh, video::GLMeshData& meshData) {
-	if (!createMeshInternal(_worldShader, mesh, 2, meshData)) {
+bool WorldRenderer::createMesh(const voxel::ChunkMeshData &mesh, GLChunkMeshData& meshData) {
+	if (!createMeshInternal(_worldShader, mesh.opaqueMesh, 2, meshData.opaque)) {
 		return false;
 	}
+
+	createMeshInternal(_worldShader, mesh.waterMesh, 2, meshData.water);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -638,8 +625,7 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int r
 
 void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active) const {
 	_world->stats(meshes, extracted, pending);
-	active = _meshDataOpaque.size();
-	core_assert(active == (int)_meshDataWater.size());
+	active = _meshData.size();
 }
 
 void WorldRenderer::onConstruct() {

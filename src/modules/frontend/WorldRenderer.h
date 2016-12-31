@@ -45,13 +45,18 @@ protected:
 	typedef std::future<NoiseGenerationTask> NoiseFuture;
 	std::vector<NoiseFuture> _noiseFuture;
 
+	struct GLChunkMeshData {
+		video::GLMeshData opaque;
+		video::GLMeshData water;
+	};
 	typedef std::list<video::GLMeshData> GLMeshDatas;
 	typedef std::list<video::GLMeshData*> GLMeshesVisible;
-	GLMeshDatas _meshDataOpaque;
-	GLMeshDatas _meshDataWater;
+	typedef std::list<GLChunkMeshData> GLMeshOpaqueDatas;
+
+	GLMeshOpaqueDatas _meshData;
 	GLMeshDatas _meshDataPlant;
 
-	GLMeshesVisible _visibleOpaque;
+	GLMeshesVisible _visible;
 	GLMeshesVisible _visiblePlant;
 	GLMeshesVisible _visibleWater;
 
@@ -111,7 +116,7 @@ protected:
 	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	 */
 	bool createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData);
-	bool createMesh(const voxel::Mesh& mesh, video::GLMeshData& meshData);
+	bool createMesh(const voxel::ChunkMeshData &mesh, GLChunkMeshData& meshData);
 	bool createInstancedMesh(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
 	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData);
 	void handleMeshQueue();
@@ -126,7 +131,7 @@ protected:
 	 */
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
-	void cull(GLMeshDatas& meshes, GLMeshesVisible& visible, const video::Camera& camera) const;
+	void cull(const video::Camera& camera);
 	void setUniforms(video::Shader& shader, const video::Camera& camera);
 	int renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices);
 	void renderWorldDeferred(const video::Camera& camera, const int width, const int height);
