@@ -24,6 +24,9 @@ const std::string MaxDepthBufferUniformName = "u_cascades";
 
 // TODO convert to VertexBuffer
 // TODO: merge buffers into one big buffer (and if max vertex/index size exceeds, render in chunks)
+//       all available buffers should be in there. we should just assemble a list of drawcall parameters
+//       for glMultiDrawElementsIndirect as shown at
+//       https://www.khronos.org/opengl/wiki/GLAPI/glMultiDrawElementsIndirect
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
 		_clearColor(core::Color::LightBlue), _world(world) {
 }
