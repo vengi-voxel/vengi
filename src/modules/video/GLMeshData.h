@@ -27,6 +27,7 @@ struct GLMeshData {
 	glm::ivec3 translation = { 0, 0, 0 };
 	glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 	core::AABB<float> aabb = {glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
+	glm::mat4 model;
 	int amount = 1;
 	// this can only be u8vec3 because the mesh chunk size is small enough
 	std::vector<glm::vec3> instancedPositions;

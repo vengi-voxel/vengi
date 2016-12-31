@@ -221,9 +221,7 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices) {
 	for (auto i = meshes.begin(); i != meshes.end(); ++i) {
 		const video::GLMeshData* meshData = *i;
-		const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(meshData->translation));
-		const glm::mat4& model = glm::scale(translate, meshData->scale);
-		shaderSetUniformIf(shader, setUniformMatrix, "u_model", model);
+		shaderSetUniformIf(shader, setUniformMatrix, "u_model", meshData->model);
 		meshData->bindVAO();
 		meshData->draw();
 		if (vertices != nullptr) {
@@ -525,6 +523,8 @@ void WorldRenderer::updateMesh(const voxel::Mesh& mesh, video::GLMeshData& meshD
 	const float chunkSize = (float)_world->getMeshSize();
 	const glm::vec3& mins = glm::vec3(meshData.translation);
 	meshData.aabb = core::AABB<float>(mins, mins + chunkSize);
+	const glm::mat4& translate = glm::translate(glm::mat4(1.0f), mins);
+	meshData.model = glm::scale(translate, meshData.scale);
 }
 
 bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData) {
