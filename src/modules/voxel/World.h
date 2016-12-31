@@ -150,12 +150,16 @@ public:
 	 * @brief We need to pop the mesh extractor queue to find out if there are new and ready to use meshes for us
 	 */
 	inline bool pop(ChunkMeshData& item) {
+		if (_meshQueueEmpty) {
+			return false;
+		}
 		LockGuard lock(_rwLock);
 		if (_meshQueue.empty()) {
 			return false;
 		}
 		item = std::move(_meshQueue.front());
 		_meshQueue.pop_front();
+		_meshQueueEmpty = _meshQueue.empty();
 		return true;
 	}
 
@@ -241,6 +245,7 @@ private:
 	mutable std::mutex _rwLock;
 	typedef std::lock_guard<std::mutex> LockGuard;
 	std::deque<ChunkMeshData> _meshQueue;
+	std::atomic_bool _meshQueueEmpty { true };
 	// fast lookup for positions that are already extracted and available in the _meshData vector
 	PositionSet _meshesExtracted;
 	core::VarPtr _meshSize;
