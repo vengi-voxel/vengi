@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "Array.h"
 #include "Mesh.h"
 #include "Voxel.h"
 #include "VoxelVertex.h"
@@ -60,6 +59,47 @@ struct VertexData {
 	uint8_t ambientOcclusion;
 };
 
+class Array {
+private:
+	uint32_t _width;
+	uint32_t _height;
+	uint32_t _depth;
+	VertexData* _elements;
+public:
+	Array(uint32_t width, uint32_t height, uint32_t depth) :
+			_width(width), _height(height), _depth(depth) {
+		_elements = new VertexData[size()];
+		clear();
+	}
+
+	// These are deleted to avoid accidental copying.
+	Array(const Array&) = delete;
+	Array& operator=(const Array&) = delete;
+
+	~Array() {
+		delete[] _elements;
+	}
+
+	inline size_t size() const {
+		return _width * _height * _depth * sizeof(VertexData);
+	}
+
+	inline void clear() {
+		std::memset(_elements, 0xff, size());
+	}
+
+	inline VertexData& operator()(uint32_t x, uint32_t y, uint32_t z) const {
+		core_assert_msg(x < _width && y < _height && z < _depth, "Array access is out-of-range.");
+		return _elements[z * _width * _height + y * _width + x];
+	}
+
+	inline void swap(Array& other) {
+		VertexData* temp = other._elements;
+		other._elements = _elements;
+		_elements = temp;
+	}
+};
+
 /**
  * @section Surface extraction
  */
@@ -68,8 +108,8 @@ extern bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent);
 
 extern bool performQuadMerging(std::list<Quad>& quads, Mesh* meshCurrent);
 
-extern int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& uMaterialIn, Array<3, VertexData>& existingVertices,
-		Mesh* m_meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner);
+extern int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
+		Mesh* meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner);
 
 static inline bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
 	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
@@ -171,17 +211,14 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 	result->clear();
 
 	// Used to avoid creating duplicate vertices.
-	Array<3, VertexData> previousSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
-	Array<3, VertexData> currentSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
+	Array previousSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
+	Array currentSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
 
 	// During extraction we create a number of different lists of quads. All the
 	// quads in a given list are in the same plane and facing in the same direction.
 	typedef std::list<Quad> QuadList;
 	typedef std::vector<QuadList> QuadListVector;
 	QuadListVector vecQuads[NoOfFaces];
-
-	std::memset(previousSliceVertices.getRawData(), 0xff, previousSliceVertices.getNoOfElements() * sizeof(VertexData));
-	std::memset(currentSliceVertices.getRawData(), 0xff, currentSliceVertices.getNoOfElements() * sizeof(VertexData));
 
 	vecQuads[NegativeX].resize(region.getUpperX() - region.getLowerX() + 2);
 	vecQuads[PositiveX].resize(region.getUpperX() - region.getLowerX() + 2);
@@ -373,7 +410,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 		}
 
 		previousSliceVertices.swap(currentSliceVertices);
-		std::memset(currentSliceVertices.getRawData(), 0xff, currentSliceVertices.getNoOfElements() * sizeof(VertexData));
+		currentSliceVertices.clear();
 	}
 
 	for (QuadListVector& vecListQuads : vecQuads) {

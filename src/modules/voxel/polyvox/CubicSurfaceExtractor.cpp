@@ -78,9 +78,9 @@ static inline uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner
 	return 3 - (side1 + side2 + corner);
 }
 
-int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array<3, VertexData>& existingVertices,
+int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
-	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ct++) {
+	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ++ct) {
 		VertexData& entry = existingVertices(uX, uY, ct);
 
 		const uint8_t ambientOcclusion = vertexAmbientOcclusion(

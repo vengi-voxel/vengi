@@ -26,7 +26,6 @@ set(SRCS
 	generator/CactusGenerator.h
 	generator/PlantGenerator.h generator/PlantGenerator.cpp
 	generator/PlanetGenerator.h
-	polyvox/Array.h
 	polyvox/AStarPathfinder.h
 	polyvox/AStarPathfinderImpl.h
 	polyvox/CubicSurfaceExtractor.h polyvox/CubicSurfaceExtractor.cpp
