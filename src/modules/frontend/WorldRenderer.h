@@ -99,7 +99,6 @@ protected:
 	int32_t _worldInstancedOffsetBufferIndex = -1;
 
 	video::DepthBuffer _depthBuffer;
-	video::UniformBuffer _materialBuffer;
 
 	shader::ShadowmapRenderShader _shadowMapDebugShader;
 	shader::WorldShader _worldShader;

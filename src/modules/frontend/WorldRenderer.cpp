@@ -60,7 +60,6 @@ void WorldRenderer::shutdown() {
 	_shadowMapShader.shutdown();
 	_deferredDirLightShader.shutdown();
 	_depthBuffer.shutdown();
-	_materialBuffer.shutdown();
 	reset();
 	_colorTexture->shutdown();
 	_colorTexture = video::TexturePtr();
@@ -191,7 +190,6 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 	shaderSetUniformIf(shader, setUniformMatrix, "u_viewprojection", camera.viewProjectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_view", camera.viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
-	shaderSetUniformIf(shader, setUniformBuffer, "u_materialblock", _materialBuffer);
 	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
 	shaderSetUniformIf(shader, setUniformVec3, "u_fogcolor", _clearColor);
 	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
@@ -685,6 +683,18 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 				shaderMaterialColorsArraySize, materialColorsArraySize);
 		return false;
 	}
+	{
+		shader::WorldShader::Materialblock materialBlock;
+		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+		_worldShader.updateMaterialblock(materialBlock);
+		_worldShader.setMaterialblock();
+	}
+	{
+		shader::WorldInstancedShader::Materialblock materialBlock;
+		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+		_worldInstancedShader.updateMaterialblock(materialBlock);
+		_worldInstancedShader.setMaterialblock();
+	}
 
 	_worldIndexBufferIndex = _worldBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
 	if (_worldIndexBufferIndex == -1) {
@@ -798,13 +808,11 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	_materialBuffer.create(materialColors.size() * sizeof(voxel::MaterialColorArray::value_type), &materialColors.front());
-
 	if (!_gbuffer.init(dimension)) {
 		return false;
 	}
 
+	// TODO: use limits from windowed app
 	GLdouble buf[2];
 	glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
 	_lineWidth = std::min((float)buf[1], _lineWidth);
