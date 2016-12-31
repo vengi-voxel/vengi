@@ -190,14 +190,9 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 	shaderSetUniformIf(shader, setUniformMatrix, "u_viewprojection", camera.viewProjectionMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_view", camera.viewMatrix());
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
-	shaderSetUniformIf(shader, setUniformi, "u_texture", 0);
-	shaderSetUniformIf(shader, setUniformVec3, "u_fogcolor", _clearColor);
-	shaderSetUniformIf(shader, setUniformf, "u_fogrange", _fogRange);
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _shadow.sunDirection());
 	shaderSetUniformIf(shader, setUniformf, "u_depthsize", glm::vec2(_depthBuffer.dimension()));
-	shaderSetUniformIf(shader, setUniformVec3, "u_diffuse_color", _diffuseColor);
-	shaderSetUniformIf(shader, setUniformVec3, "u_ambient_color", _ambientColor);
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 }
 
@@ -687,13 +682,25 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		shader::WorldShader::Materialblock materialBlock;
 		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 		_worldShader.updateMaterialblock(materialBlock);
+		video::ScopedShader scoped(_worldShader);
 		_worldShader.setMaterialblock();
+		_worldShader.setFogcolor(_clearColor);
+		_worldShader.setTexture(0);
+		_worldShader.setDiffuseColor(_diffuseColor);
+		_worldShader.setAmbientColor(_ambientColor);
+		_worldShader.setFogrange(_fogRange);
 	}
 	{
 		shader::WorldInstancedShader::Materialblock materialBlock;
 		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 		_worldInstancedShader.updateMaterialblock(materialBlock);
+		video::ScopedShader scoped(_worldInstancedShader);
 		_worldInstancedShader.setMaterialblock();
+		_worldInstancedShader.setFogcolor(_clearColor);
+		_worldInstancedShader.setTexture(0);
+		_worldInstancedShader.setDiffuseColor(_diffuseColor);
+		_worldInstancedShader.setAmbientColor(_ambientColor);
+		_worldInstancedShader.setFogrange(_fogRange);
 	}
 
 	_worldIndexBufferIndex = _worldBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
