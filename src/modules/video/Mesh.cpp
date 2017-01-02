@@ -488,7 +488,7 @@ int Mesh::render() {
 		if (matIdx < _textures.size() && _textures[matIdx]) {
 			_textures[matIdx]->bind();
 		}
-		mesh.draw();
+		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, mesh.indexType, GL_OFFSET_CAST(sizeof(uint32_t) * mesh.baseIndex), mesh.baseVertex);
 		++drawCalls;
 	}
 	// Make sure the VAO is not changed from the outside
