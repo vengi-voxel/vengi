@@ -6,6 +6,36 @@
 
 namespace frontend {
 
+template<class POS>
+static constexpr inline GLenum map() {
+	if (std::is_floating_point<POS>()) {
+		return GL_FLOAT;
+	}
+
+	if (sizeof(POS) == 1u) {
+		if (std::is_unsigned<POS>()) {
+			return GL_UNSIGNED_BYTE;
+		}
+		return GL_BYTE;
+	}
+
+	if (sizeof(POS) == 2u) {
+		if (std::is_unsigned<POS>()) {
+			return GL_UNSIGNED_SHORT;
+		}
+		return GL_SHORT;
+	}
+
+	if (sizeof(POS) == 4u) {
+		if (std::is_unsigned<POS>()) {
+			return GL_UNSIGNED_INT;
+		}
+		return GL_INT;
+	}
+
+	return GL_INVALID_VALUE;
+}
+
 inline video::VertexBuffer::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_t attributeIndex, int components) {
 	static_assert(MAX_TERRAIN_HEIGHT < 256, "Max terrain height exceeds the valid voxel positions");
 	video::VertexBuffer::Attribute attrib;
@@ -13,7 +43,7 @@ inline video::VertexBuffer::Attribute getPositionVertexAttribute(uint32_t buffer
 	attrib.index = attributeIndex;
 	attrib.stride = sizeof(voxel::VoxelVertex);
 	attrib.size = components;
-	attrib.type = GL_UNSIGNED_BYTE;
+	attrib.type = map<decltype(voxel::VoxelVertex::position)::value_type>();
 	attrib.typeIsInt = true;
 	attrib.offset = offsetof(voxel::VoxelVertex, position);
 	return attrib;
