@@ -116,7 +116,7 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 			continue;
 		}
 		std::vector<glm::vec3> p = data.opaque.instancedPositions;
-		core::Random rnd(_world->seed() + data.opaque.translation.x + data.opaque.translation.y + data.opaque.translation.z);
+		core::Random rnd(_world->seed() + data.translation().x + data.translation().y + data.translation().z);
 		rnd.shuffle(p.begin(), p.end());
 		const int plantMeshes = p.size() / plantMeshAmount;
 		int delta = p.size() - plantMeshes * plantMeshAmount;
@@ -547,8 +547,7 @@ void WorldRenderer::updateMesh(const voxel::Mesh& mesh, video::GLMeshData& meshD
 	meshData.indexType = GL_UNSIGNED_INT;
 
 	meshData.scale = glm::vec3(1.0f);
-	meshData.translation = mesh.getOffset();
-	const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
+	const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(mesh.getOffset()));
 	meshData.model = glm::scale(translate, meshData.scale);
 }
 

@@ -53,7 +53,7 @@ protected:
 		video::GLMeshData water;
 
 		inline const glm::ivec3 translation() const {
-			return opaque.translation;
+			return voxelMeshes.opaqueMesh.getOffset();
 		}
 	};
 	typedef std::list<video::GLMeshData> RendererMeshList;
