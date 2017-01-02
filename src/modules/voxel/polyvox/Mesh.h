@@ -52,6 +52,9 @@ public:
 	IndexType getIndex(IndexType index) const;
 	const IndexType* getRawIndexData() const;
 
+	const std::vector<IndexType>& getIndexVector() const;
+	const std::vector<VoxelVertex>& getVertexVector() const;
+
 	const glm::ivec3& getOffset() const;
 	void setOffset(const glm::ivec3& offset);
 
@@ -79,6 +82,14 @@ inline Mesh::Mesh(int vertices, int indices, bool mayGetResized) : _mayGetResize
 }
 
 inline Mesh::~Mesh() {
+}
+
+inline const std::vector<IndexType>& Mesh::getIndexVector() const {
+	return _vecIndices;
+}
+
+inline const std::vector<VoxelVertex>& Mesh::getVertexVector() const {
+	return _vecVertices;
 }
 
 inline size_t Mesh::getNoOfVertices() const {

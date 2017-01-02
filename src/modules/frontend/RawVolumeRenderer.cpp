@@ -255,6 +255,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+	// TODO: use GLmap
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
 
 	if (_renderWireframe && camera.polygonMode() == video::PolygonMode::Solid) {

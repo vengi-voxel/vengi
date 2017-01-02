@@ -77,7 +77,11 @@ bool VertexBuffer::update(int32_t idx, const void* data, GLsizeiptr size) {
 	}
 
 	glBindBuffer(_targets[idx], _handles[idx]);
-	glBufferData(_targets[idx], size, data, std::enum_value(_mode));
+	if (_size[idx] >= size && _mode == VertexBufferMode::Dynamic) {
+		glBufferSubData(_targets[idx], 0, size, data);
+	} else {
+		glBufferData(_targets[idx], size, data, std::enum_value(_mode));
+	}
 	glBindBuffer(_targets[idx], 0);
 	_size[idx] = size;
 	GL_checkError();
