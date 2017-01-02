@@ -518,12 +518,11 @@ bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel:
 	updateMesh(mesh, meshData);
 
 	const int posLoc = shader.enableVertexAttributeArray("a_pos");
-	const int components = sizeof(voxel::VoxelVertex::position) / sizeof(decltype(voxel::VoxelVertex::position)::value_type);
-	const video::VertexBuffer::Attribute& posAttrib = getPositionVertexAttribute(0, posLoc, components);
+	const video::VertexBuffer::Attribute& posAttrib = getPositionVertexAttribute(0, posLoc, shader.getAttributeComponents(posLoc));
 	shader.setVertexAttributeInt(posLoc, posAttrib.size, posAttrib.type, posAttrib.stride, GL_OFFSET_CAST(posAttrib.offset));
 
 	const int locationInfo = shader.enableVertexAttributeArray("a_info");
-	const video::VertexBuffer::Attribute& infoAttrib = getInfoVertexAttribute(0, locationInfo, 3);
+	const video::VertexBuffer::Attribute& infoAttrib = getInfoVertexAttribute(0, locationInfo, shader.getAttributeComponents(locationInfo));
 	shader.setVertexAttributeInt(locationInfo, infoAttrib.size, infoAttrib.type, infoAttrib.stride, GL_OFFSET_CAST(infoAttrib.offset));
 	GL_checkError();
 
