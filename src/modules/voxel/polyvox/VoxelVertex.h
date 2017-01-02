@@ -18,6 +18,7 @@ struct VoxelVertex {
 	glm::u8vec3 position;
 	uint8_t ambientOcclusion;
 	uint8_t colorIndex;
+	// currently we only need to know whether it's water, or not.
 	VoxelType material;
 	uint8_t padding[2];
 };

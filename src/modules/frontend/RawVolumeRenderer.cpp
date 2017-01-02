@@ -3,6 +3,7 @@
 #include "voxel/MaterialColor.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
+#include "frontend/ShaderAttribute.h"
 
 namespace frontend {
 
@@ -69,24 +70,14 @@ bool RawVolumeRenderer::init() {
 	_worldShader.setAmbientColor(_ambientColor);
 	_worldShader.setFogcolor(glm::vec3(core::Color::LightBlue));
 
-	video::VertexBuffer::Attribute attributePos;
-	attributePos.bufferIndex = _vertexBufferIndex;
-	attributePos.index = _worldShader.getLocationPos();
-	attributePos.stride = sizeof(voxel::VoxelVertex);
-	attributePos.size = _worldShader.getComponentsPos();
-	attributePos.type = GL_UNSIGNED_BYTE;
-	attributePos.typeIsInt = true;
-	attributePos.offset = offsetof(voxel::VoxelVertex, position);
+	video::VertexBuffer::Attribute attributePos = getPositionVertexAttribute(
+			_vertexBufferIndex, _worldShader.getLocationPos(),
+			_worldShader.getComponentsPos());
 	_vertexBuffer.addAttribute(attributePos);
 
-	video::VertexBuffer::Attribute attributeInfo;
-	attributeInfo.bufferIndex = _vertexBufferIndex;
-	attributeInfo.index = _worldShader.getLocationInfo();
-	attributeInfo.stride = sizeof(voxel::VoxelVertex);
-	attributeInfo.size = _worldShader.getComponentsInfo();
-	attributeInfo.type = GL_UNSIGNED_BYTE;
-	attributeInfo.typeIsInt = true;
-	attributeInfo.offset = offsetof(voxel::VoxelVertex, ambientOcclusion);
+	video::VertexBuffer::Attribute attributeInfo = getInfoVertexAttribute(
+			_vertexBufferIndex, _worldShader.getLocationInfo(),
+			_worldShader.getComponentsInfo());
 	_vertexBuffer.addAttribute(attributeInfo);
 
 	if (!_shadow.init()) {

@@ -14,6 +14,7 @@
 #include "video/ScopedViewPort.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
+#include "frontend/ShaderAttribute.h"
 
 constexpr int MinCullingDistance = 500;
 constexpr int MinExtractionCullingDistance = 1000;
@@ -518,17 +519,12 @@ bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel:
 
 	const int posLoc = shader.enableVertexAttributeArray("a_pos");
 	const int components = sizeof(voxel::VoxelVertex::position) / sizeof(decltype(voxel::VoxelVertex::position)::value_type);
-	static_assert(MAX_TERRAIN_HEIGHT < 256, "Max terrain height exceeds the valid voxel positions");
-	shader.setVertexAttributeInt(posLoc, components, GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertex), GL_OFFSET_CAST(offsetof(voxel::VoxelVertex, position)));
+	const video::VertexBuffer::Attribute& posAttrib = getPositionVertexAttribute(0, posLoc, components);
+	shader.setVertexAttributeInt(posLoc, posAttrib.size, posAttrib.type, posAttrib.stride, GL_OFFSET_CAST(posAttrib.offset));
 
 	const int locationInfo = shader.enableVertexAttributeArray("a_info");
-	// we are uploading two bytes at once here
-	static_assert(sizeof(voxel::VoxelVertex::colorIndex) == sizeof(uint8_t), "Voxel color size doesn't match");
-	static_assert(sizeof(voxel::VoxelVertex::ambientOcclusion) == sizeof(uint8_t), "AO type size doesn't match");
-	static_assert(sizeof(voxel::VoxelVertex::material) == sizeof(uint8_t), "Material type size doesn't match");
-	static_assert(offsetof(voxel::VoxelVertex, ambientOcclusion) < offsetof(voxel::VoxelVertex, colorIndex), "Layout change of VoxelVertex without change in upload");
-	static_assert(offsetof(voxel::VoxelVertex, ambientOcclusion) < offsetof(voxel::VoxelVertex, material), "Layout change of VoxelVertex without change in upload");
-	shader.setVertexAttributeInt(locationInfo, 3, GL_UNSIGNED_BYTE, sizeof(voxel::VoxelVertex), GL_OFFSET_CAST(offsetof(voxel::VoxelVertex, ambientOcclusion)));
+	const video::VertexBuffer::Attribute& infoAttrib = getInfoVertexAttribute(0, locationInfo, 3);
+	shader.setVertexAttributeInt(locationInfo, infoAttrib.size, infoAttrib.type, infoAttrib.stride, GL_OFFSET_CAST(infoAttrib.offset));
 	GL_checkError();
 
 	return true;
@@ -727,24 +723,10 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	static_assert(offsetof(voxel::VoxelVertex, ambientOcclusion) < offsetof(voxel::VoxelVertex, colorIndex), "Layout change of VoxelVertex without change in upload");
 	static_assert(offsetof(voxel::VoxelVertex, colorIndex) < offsetof(voxel::VoxelVertex, material), "Layout change of VoxelVertex without change in upload");
 
-	video::VertexBuffer::Attribute voxelAttributePos;
-	voxelAttributePos.bufferIndex = _worldIndexBuffer;
-	voxelAttributePos.index = _worldShader.getLocationPos();
-	voxelAttributePos.stride = sizeof(voxel::VoxelVertex);
-	voxelAttributePos.size = _worldShader.getComponentsPos();
-	voxelAttributePos.type = GL_UNSIGNED_BYTE;
-	voxelAttributePos.typeIsInt = true;
-	voxelAttributePos.offset = offsetof(voxel::VoxelVertex, position);
+	video::VertexBuffer::Attribute voxelAttributePos = getPositionVertexAttribute(_worldIndexBuffer, _worldShader.getLocationPos(), _worldShader.getComponentsPos());
 	_worldBuffer.addAttribute(voxelAttributePos);
 
-	video::VertexBuffer::Attribute voxelAttributeInfo;
-	voxelAttributeInfo.bufferIndex = voxelAttributePos.bufferIndex;
-	voxelAttributeInfo.index = _worldShader.getLocationInfo();
-	voxelAttributeInfo.stride = sizeof(voxel::VoxelVertex);
-	voxelAttributeInfo.size = _worldShader.getComponentsInfo();
-	voxelAttributeInfo.type = GL_UNSIGNED_BYTE;
-	voxelAttributeInfo.typeIsInt = true;
-	voxelAttributeInfo.offset = offsetof(voxel::VoxelVertex, ambientOcclusion);
+	video::VertexBuffer::Attribute voxelAttributeInfo = getInfoVertexAttribute(voxelAttributePos.bufferIndex, _worldShader.getLocationInfo(), _worldShader.getComponentsInfo());
 	_worldBuffer.addAttribute(voxelAttributeInfo);
 
 	voxelAttributePos.bufferIndex = _worldInstancedBufferIndex;
@@ -753,15 +735,9 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	voxelAttributeInfo.bufferIndex = voxelAttributePos.bufferIndex;
 	_worldInstancedBuffer.addAttribute(voxelAttributeInfo);
 
-	video::VertexBuffer::Attribute voxelAttributeOffsets;
-	voxelAttributeOffsets.bufferIndex = _worldInstancedOffsetBufferIndex;
-	voxelAttributeOffsets.index = _worldShader.getLocationOffset();
-	voxelAttributeOffsets.stride = sizeof(glm::vec3);
-	voxelAttributeOffsets.size = _worldShader.getComponentsOffset();
-	voxelAttributeOffsets.type = GL_FLOAT;
-	voxelAttributeOffsets.divisor = 1;
-	voxelAttributeOffsets.typeIsInt = true;
-	voxelAttributeOffsets.offset = offsetof(glm::vec3, x);
+	video::VertexBuffer::Attribute voxelAttributeOffsets = getOffsetVertexAttribute(_worldInstancedOffsetBufferIndex,
+					_worldShader.getLocationOffset(),
+					_worldShader.getComponentsOffset());
 	_worldInstancedBuffer.addAttribute(voxelAttributeOffsets);
 
 	for (int i = 0; i < (int)voxel::PlantType::MaxPlantTypes; ++i) {
