@@ -33,6 +33,10 @@ struct ChunkMeshData {
 			opaqueMesh(opaqueVertices, opaqueIndices), waterMesh(waterVertices, waterIndices) {
 	}
 
+	inline const glm::ivec3 translation() const {
+		return opaqueMesh.getOffset();
+	}
+
 	Mesh opaqueMesh;
 	Mesh waterMesh;
 };

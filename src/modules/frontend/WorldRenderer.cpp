@@ -36,11 +36,11 @@ WorldRenderer::~WorldRenderer() {
 }
 
 void WorldRenderer::reset() {
-	for (GLChunkMeshData& meshData : _meshData) {
+	for (RendererChunkMeshData& meshData : _meshChunkList) {
 		meshData.opaque.shutdown();
 		meshData.water.shutdown();
 	}
-	_meshData.clear();
+	_meshChunkList.clear();
 	_entities.clear();
 	_viewDistance = 1.0f;
 	_now = 0l;
@@ -66,10 +66,10 @@ void WorldRenderer::shutdown() {
 	_colorTexture = video::TexturePtr();
 	_entities.clear();
 
-	for (video::GLMeshData& meshData : _meshDataPlant) {
+	for (video::GLMeshData& meshData : _meshPlantList) {
 		meshData.shutdown();
 	}
-	_meshDataPlant.clear();
+	_meshPlantList.clear();
 	_noiseFuture.clear();
 	_plantGenerator.shutdown();
 }
@@ -101,14 +101,14 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 }
 
 void WorldRenderer::fillPlantPositionsFromMeshes() {
-	const int plantMeshAmount = _meshDataPlant.size();
+	const int plantMeshAmount = _meshPlantList.size();
 	if (plantMeshAmount == 0) {
 		return;
 	}
-	for (video::GLMeshData& mp : _meshDataPlant) {
+	for (video::GLMeshData& mp : _meshPlantList) {
 		mp.instancedPositions.clear();
 	}
-	for (const GLChunkMeshData& data : _meshData) {
+	for (const RendererChunkMeshData& data : _meshChunkList) {
 		if (!data.inuse) {
 			continue;
 		}
@@ -120,7 +120,7 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 		rnd.shuffle(p.begin(), p.end());
 		const int plantMeshes = p.size() / plantMeshAmount;
 		int delta = p.size() - plantMeshes * plantMeshAmount;
-		for (video::GLMeshData& mp : _meshDataPlant) {
+		for (video::GLMeshData& mp : _meshPlantList) {
 			auto it = std::next(p.begin(), plantMeshes + delta);
 			std::move(p.begin(), it, std::back_inserter(mp.instancedPositions));
 			p.erase(p.begin(), it);
@@ -139,21 +139,21 @@ void WorldRenderer::handleMeshQueue() {
 
 	const int plantAmount = 100;
 	// first check whether we update an existing one
-	for (GLChunkMeshData& meshData : _meshData) {
-		if (meshData.opaque.translation != mesh.opaqueMesh.getOffset()) {
+	for (RendererChunkMeshData& meshData : _meshChunkList) {
+		if (meshData.translation() != mesh.translation()) {
 			continue;
 		}
 		meshData.inuse = true;
 		meshData.voxelMeshes = std::move(mesh);
 		updateMesh(meshData.voxelMeshes.opaqueMesh, meshData.opaque);
 		updateMesh(meshData.voxelMeshes.waterMesh, meshData.water);
-		distributePlants(_world, plantAmount, meshData.opaque.translation, meshData.opaque.instancedPositions);
+		distributePlants(_world, plantAmount, meshData.translation(), meshData.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		return;
 	}
 
 	// then check if there are unused buffers
-	for (GLChunkMeshData& meshData : _meshData) {
+	for (RendererChunkMeshData& meshData : _meshChunkList) {
 		if (meshData.inuse) {
 			continue;
 		}
@@ -161,18 +161,18 @@ void WorldRenderer::handleMeshQueue() {
 		meshData.voxelMeshes = std::move(mesh);
 		updateMesh(meshData.voxelMeshes.opaqueMesh, meshData.opaque);
 		updateMesh(meshData.voxelMeshes.waterMesh, meshData.water);
-		distributePlants(_world, plantAmount, meshData.opaque.translation, meshData.opaque.instancedPositions);
+		distributePlants(_world, plantAmount, meshData.translation(), meshData.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		return;
 	}
 
 	// create a new mesh
-	GLChunkMeshData meshData;
+	RendererChunkMeshData meshData;
 	if (createMesh(mesh, meshData)) {
 		meshData.voxelMeshes = std::move(mesh);
-		_meshData.push_back(meshData);
-		Log::info("Meshes so far: %i", (int)_meshData.size());
-		distributePlants(_world, plantAmount, meshData.opaque.translation, meshData.opaque.instancedPositions);
+		_meshChunkList.push_back(meshData);
+		Log::info("Meshes so far: %i", (int)_meshChunkList.size());
+		distributePlants(_world, plantAmount, meshData.translation(), meshData.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 	}
 }
@@ -193,16 +193,16 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	_visibleWater.clear();
 	const float cullingThreshold = _world->getMeshSize();
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
-	for (GLChunkMeshData& meshData : _meshData) {
+	for (RendererChunkMeshData& meshData : _meshChunkList) {
 		if (!meshData.inuse) {
 			continue;
 		}
-		const int distance = getDistanceSquare(meshData.opaque.translation);
+		const int distance = getDistanceSquare(meshData.translation());
 		Log::trace("distance is: %i (%i)", distance, maxAllowedDistance);
 		if (distance >= maxAllowedDistance) {
-			_world->allowReExtraction(meshData.opaque.translation);
+			_world->allowReExtraction(meshData.translation());
 			meshData.inuse = false;
-			Log::info("Remove mesh from %i:%i", meshData.opaque.translation.x, meshData.opaque.translation.z);
+			Log::info("Remove mesh from %i:%i", meshData.translation().x, meshData.translation().z);
 			continue;
 		}
 		if (camera.isVisible(meshData.opaque.aabb)) {
@@ -210,7 +210,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 			_visibleWater.push_back(&meshData.water);
 		}
 	}
-	Log::trace("%i meshes left after culling, %i meshes overall", (int)_visible.size(), (int)_meshData.size());
+	Log::trace("%i meshes left after culling, %i meshes overall", (int)_visible.size(), (int)_meshChunkList.size());
 }
 
 void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& camera) {
@@ -222,7 +222,7 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 }
 
-int WorldRenderer::renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices) {
+int WorldRenderer::renderWorldMeshes(video::Shader& shader, const RendererMeshVisibleList& meshes, int* vertices) {
 	for (const video::GLMeshData* meshData : meshes) {
 		shaderSetUniformIf(shader, setUniformMatrix, "u_model", meshData->model);
 		meshData->bindVAO();
@@ -259,7 +259,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	if (vertices != nullptr) {
 		*vertices = 0;
 	}
-	if (_meshData.empty()) {
+	if (_meshChunkList.empty()) {
 		return 0;
 	}
 
@@ -280,7 +280,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	cull(camera);
 	_visiblePlant.clear();
-	for (auto i = _meshDataPlant.begin(); i != _meshDataPlant.end(); ++i) {
+	for (auto i = _meshPlantList.begin(); i != _meshPlantList.end(); ++i) {
 		_visiblePlant.push_back(&*i);
 	}
 
@@ -555,7 +555,7 @@ bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel:
 	return true;
 }
 
-bool WorldRenderer::createMesh(const voxel::ChunkMeshData &mesh, GLChunkMeshData& meshData) {
+bool WorldRenderer::createMesh(const voxel::ChunkMeshData &mesh, RendererChunkMeshData& meshData) {
 	if (!createMeshInternal(_worldShader, mesh.opaqueMesh, 2, meshData.opaque)) {
 		return false;
 	}
@@ -638,7 +638,7 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int r
 
 void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active) const {
 	_world->stats(meshes, extracted, pending);
-	active = _meshData.size();
+	active = _meshChunkList.size();
 }
 
 void WorldRenderer::onConstruct() {
@@ -763,7 +763,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		video::GLMeshData meshDataPlant;
 		if (createInstancedMesh(*mesh, 40, meshDataPlant)) {
 			meshDataPlant.scale = glm::vec3(0.4f);
-			_meshDataPlant.push_back(meshDataPlant);
+			_meshPlantList.push_back(meshDataPlant);
 		}
 	}
 

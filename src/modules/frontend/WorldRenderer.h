@@ -45,22 +45,26 @@ protected:
 	typedef std::future<NoiseGenerationTask> NoiseFuture;
 	std::vector<NoiseFuture> _noiseFuture;
 
-	struct GLChunkMeshData {
+	struct RendererChunkMeshData {
 		bool inuse = true;
 		voxel::ChunkMeshData voxelMeshes {0, 0, 0, 0};
 		video::GLMeshData opaque;
 		video::GLMeshData water;
+
+		inline const glm::ivec3 translation() const {
+			return opaque.translation;
+		}
 	};
-	typedef std::list<video::GLMeshData> GLMeshDatas;
-	typedef std::list<video::GLMeshData*> GLMeshesVisible;
-	typedef std::list<GLChunkMeshData> GLMeshOpaqueDatas;
+	typedef std::list<video::GLMeshData> RendererMeshList;
+	typedef std::list<video::GLMeshData*> RendererMeshVisibleList;
+	typedef std::list<RendererChunkMeshData> RendererChunkMeshDataList;
 
-	GLMeshOpaqueDatas _meshData;
-	GLMeshDatas _meshDataPlant;
+	RendererChunkMeshDataList _meshChunkList;
+	RendererMeshList _meshPlantList;
 
-	GLMeshesVisible _visible;
-	GLMeshesVisible _visiblePlant;
-	GLMeshesVisible _visibleWater;
+	RendererMeshVisibleList _visible;
+	RendererMeshVisibleList _visiblePlant;
+	RendererMeshVisibleList _visibleWater;
 
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
@@ -117,7 +121,7 @@ protected:
 	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	 */
 	bool createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData);
-	bool createMesh(const voxel::ChunkMeshData &mesh, GLChunkMeshData& meshData);
+	bool createMesh(const voxel::ChunkMeshData &mesh, RendererChunkMeshData& meshData);
 	bool createInstancedMesh(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
 	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) const;
 	void handleMeshQueue();
@@ -134,7 +138,7 @@ protected:
 
 	void cull(const video::Camera& camera);
 	void setUniforms(video::Shader& shader, const video::Camera& camera);
-	int renderWorldMeshes(video::Shader& shader, const GLMeshesVisible& meshes, int* vertices);
+	int renderWorldMeshes(video::Shader& shader, const RendererMeshVisibleList& meshes, int* vertices);
 	void renderWorldDeferred(const video::Camera& camera, const int width, const int height);
 
 	bool checkShaders() const;
