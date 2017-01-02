@@ -248,8 +248,16 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const RendererMeshVisibleList& meshes, int* vertices) {
 	for (const video::GLMeshData* meshData : meshes) {
 		shaderSetUniformIf(shader, setUniformMatrix, "u_model", meshData->model);
-		meshData->bindVAO();
-		meshData->draw();
+		core_assert(meshData->vertexArrayObject > 0);
+		glBindVertexArray(meshData->vertexArrayObject);
+		if (meshData->amount == 1) {
+			glDrawElementsBaseVertex(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, GL_OFFSET_CAST(sizeof(uint32_t) * meshData->baseIndex), meshData->baseVertex);
+		} else {
+			const int amount = (int)meshData->instancedPositions.size();
+			glBindBuffer(GL_ARRAY_BUFFER, meshData->offsetBuffer);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * amount, &meshData->instancedPositions[0], GL_DYNAMIC_DRAW);
+			glDrawElementsInstancedBaseVertex(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, GL_OFFSET_CAST(sizeof(uint32_t) * meshData->baseIndex), amount, meshData->baseVertex);
+		}
 		if (vertices != nullptr) {
 			*vertices += meshData->noOfVertices;
 		}
@@ -557,8 +565,22 @@ bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel:
 		return false;
 	}
 
-	meshData.create(buffers);
-	meshData.bindVAO();
+	core_assert(meshData.vertexArrayObject == 0u);
+	// Create the VAOs for the meshes
+	glGenVertexArrays(1, &meshData.vertexArrayObject);
+
+	core_assert(meshData.indexBuffer == 0u);
+	core_assert(meshData.vertexBuffer == 0u);
+	core_assert(meshData.offsetBuffer == 0u);
+
+	// The GL_ARRAY_BUFFER will contain the list of vertex positions
+	// and GL_ELEMENT_ARRAY_BUFFER will contain the indices
+	// and GL_ARRAY_BUFFER will contain the offsets for instanced rendering
+	core_assert(buffers == 2 || buffers == 3);
+	glGenBuffers(buffers, &meshData.indexBuffer);
+	core_assert(buffers == 2 || meshData.offsetBuffer > 0);
+
+	glBindVertexArray(meshData.vertexArrayObject);
 
 	updateMesh(mesh, meshData);
 
