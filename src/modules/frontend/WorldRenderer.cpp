@@ -716,13 +716,6 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	attributeTexcoord.size = _shadowMapDebugShader.getComponentsTexcoord();
 	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
 
-	static_assert(MAX_TERRAIN_HEIGHT < 256, "Max terrain height exceeds the valid voxel positions");
-	static_assert(sizeof(voxel::VoxelVertex::colorIndex) == sizeof(uint8_t), "Voxel color size doesn't match");
-	static_assert(sizeof(voxel::VoxelVertex::ambientOcclusion) == sizeof(uint8_t), "AO type size doesn't match");
-	static_assert(sizeof(voxel::VoxelVertex::material) == sizeof(uint8_t), "Material type size doesn't match");
-	static_assert(offsetof(voxel::VoxelVertex, ambientOcclusion) < offsetof(voxel::VoxelVertex, colorIndex), "Layout change of VoxelVertex without change in upload");
-	static_assert(offsetof(voxel::VoxelVertex, colorIndex) < offsetof(voxel::VoxelVertex, material), "Layout change of VoxelVertex without change in upload");
-
 	video::VertexBuffer::Attribute voxelAttributePos = getPositionVertexAttribute(_worldIndexBuffer, _worldShader.getLocationPos(), _worldShader.getComponentsPos());
 	_worldBuffer.addAttribute(voxelAttributePos);
 
