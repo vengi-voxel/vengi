@@ -47,6 +47,7 @@ protected:
 
 	struct GLChunkMeshData {
 		bool inuse = true;
+		voxel::ChunkMeshData voxelMeshes {0, 0, 0, 0};
 		video::GLMeshData opaque;
 		video::GLMeshData water;
 	};

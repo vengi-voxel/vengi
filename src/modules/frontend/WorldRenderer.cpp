@@ -109,6 +109,9 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 		mp.instancedPositions.clear();
 	}
 	for (const GLChunkMeshData& data : _meshData) {
+		if (!data.inuse) {
+			continue;
+		}
 		if (data.opaque.instancedPositions.empty()) {
 			continue;
 		}
@@ -141,8 +144,9 @@ void WorldRenderer::handleMeshQueue() {
 			continue;
 		}
 		meshData.inuse = true;
-		updateMesh(mesh.opaqueMesh, meshData.opaque);
-		updateMesh(mesh.waterMesh, meshData.water);
+		meshData.voxelMeshes = std::move(mesh);
+		updateMesh(meshData.voxelMeshes.opaqueMesh, meshData.opaque);
+		updateMesh(meshData.voxelMeshes.waterMesh, meshData.water);
 		distributePlants(_world, plantAmount, meshData.opaque.translation, meshData.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		return;
@@ -154,8 +158,9 @@ void WorldRenderer::handleMeshQueue() {
 			continue;
 		}
 		meshData.inuse = true;
-		updateMesh(mesh.opaqueMesh, meshData.opaque);
-		updateMesh(mesh.waterMesh, meshData.water);
+		meshData.voxelMeshes = std::move(mesh);
+		updateMesh(meshData.voxelMeshes.opaqueMesh, meshData.opaque);
+		updateMesh(meshData.voxelMeshes.waterMesh, meshData.water);
 		distributePlants(_world, plantAmount, meshData.opaque.translation, meshData.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		return;
@@ -164,6 +169,7 @@ void WorldRenderer::handleMeshQueue() {
 	// create a new mesh
 	GLChunkMeshData meshData;
 	if (createMesh(mesh, meshData)) {
+		meshData.voxelMeshes = std::move(mesh);
 		_meshData.push_back(meshData);
 		Log::info("Meshes so far: %i", (int)_meshData.size());
 		distributePlants(_world, plantAmount, meshData.opaque.translation, meshData.opaque.instancedPositions);
@@ -187,8 +193,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	_visibleWater.clear();
 	const float cullingThreshold = _world->getMeshSize();
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
-	for (auto i = _meshData.begin(); i != _meshData.end(); ++i) {
-		GLChunkMeshData& meshData = *i;
+	for (GLChunkMeshData& meshData : _meshData) {
 		if (!meshData.inuse) {
 			continue;
 		}

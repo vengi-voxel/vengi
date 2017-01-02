@@ -134,6 +134,8 @@ void WindowedApp::setupLimits() {
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &_state.limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &_state.limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
 #endif
+	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", _state.limits[std::enum_value(Limit::MaxElementVertices)]);
+	Log::info("GL_MAX_ELEMENTS_INDICES: %i", _state.limits[std::enum_value(Limit::MaxElementIndices)]);
 }
 
 void WindowedApp::setupFeatures() {
