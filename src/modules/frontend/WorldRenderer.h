@@ -47,6 +47,7 @@ protected:
 
 	struct RendererChunkMeshData {
 		bool inuse = true;
+		core::AABB<float> aabb = {glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
 		voxel::ChunkMeshData voxelMeshes {0, 0, 0, 0};
 		video::GLMeshData opaque;
 		video::GLMeshData water;
@@ -125,6 +126,7 @@ protected:
 	bool createInstancedMesh(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
 	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) const;
 	void handleMeshQueue();
+	void updateAABB(RendererChunkMeshData& meshData) const;
 	/**
 	 * @brief Redistribute the plants on the meshes that are already extracted
 	 */

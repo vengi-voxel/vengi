@@ -129,6 +129,25 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 	}
 }
 
+void WorldRenderer::updateAABB(RendererChunkMeshData& meshData) const {
+	glm::ivec3 mins(std::numeric_limits<int>::max());
+	glm::ivec3 maxs(std::numeric_limits<int>::min());
+
+	const glm::ivec3& positionOffset = meshData.translation();
+	for (auto& v : meshData.voxelMeshes.opaqueMesh.getVertexVector()) {
+		const glm::ivec3 p = v.position + positionOffset;
+		mins = glm::min(mins, p);
+		maxs = glm::max(maxs, p);
+	}
+	for (auto& v : meshData.voxelMeshes.waterMesh.getVertexVector()) {
+		const glm::ivec3 p = v.position + positionOffset;
+		mins = glm::min(mins, p);
+		maxs = glm::max(maxs, p);
+	}
+
+	meshData.aabb = core::AABB<float>(mins, maxs);
+}
+
 void WorldRenderer::handleMeshQueue() {
 	voxel::ChunkMeshData mesh(0, 0, 0, 0);
 	if (!_world->pop(mesh)) {
@@ -147,6 +166,7 @@ void WorldRenderer::handleMeshQueue() {
 		meshData.voxelMeshes = std::move(mesh);
 		updateMesh(meshData.voxelMeshes.opaqueMesh, meshData.opaque);
 		updateMesh(meshData.voxelMeshes.waterMesh, meshData.water);
+		updateAABB(meshData);
 		distributePlants(_world, plantAmount, meshData.translation(), meshData.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		return;
@@ -161,6 +181,8 @@ void WorldRenderer::handleMeshQueue() {
 		meshData.voxelMeshes = std::move(mesh);
 		updateMesh(meshData.voxelMeshes.opaqueMesh, meshData.opaque);
 		updateMesh(meshData.voxelMeshes.waterMesh, meshData.water);
+		updateAABB(meshData);
+
 		distributePlants(_world, plantAmount, meshData.translation(), meshData.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		return;
@@ -170,6 +192,7 @@ void WorldRenderer::handleMeshQueue() {
 	RendererChunkMeshData meshData;
 	if (createMesh(mesh, meshData)) {
 		meshData.voxelMeshes = std::move(mesh);
+		updateAABB(meshData);
 		_meshChunkList.push_back(meshData);
 		Log::info("Meshes so far: %i", (int)_meshChunkList.size());
 		distributePlants(_world, plantAmount, meshData.translation(), meshData.opaque.instancedPositions);
@@ -205,7 +228,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 			Log::info("Remove mesh from %i:%i", meshData.translation().x, meshData.translation().z);
 			continue;
 		}
-		if (camera.isVisible(meshData.opaque.aabb)) {
+		if (camera.isVisible(meshData.aabb)) {
 			_visible.push_back(&meshData.opaque);
 			_visibleWater.push_back(&meshData.water);
 		}
@@ -525,10 +548,7 @@ void WorldRenderer::updateMesh(const voxel::Mesh& mesh, video::GLMeshData& meshD
 
 	meshData.scale = glm::vec3(1.0f);
 	meshData.translation = mesh.getOffset();
-	const float chunkSize = (float)_world->getMeshSize();
-	const glm::vec3& mins = glm::vec3(meshData.translation);
-	meshData.aabb = core::AABB<float>(mins, mins + chunkSize);
-	const glm::mat4& translate = glm::translate(glm::mat4(1.0f), mins);
+	const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(meshData.translation));
 	meshData.model = glm::scale(translate, meshData.scale);
 }
 
