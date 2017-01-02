@@ -46,6 +46,7 @@ protected:
 	std::vector<NoiseFuture> _noiseFuture;
 
 	struct GLChunkMeshData {
+		bool inuse = true;
 		video::GLMeshData opaque;
 		video::GLMeshData water;
 	};
@@ -117,7 +118,7 @@ protected:
 	bool createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData);
 	bool createMesh(const voxel::ChunkMeshData &mesh, GLChunkMeshData& meshData);
 	bool createInstancedMesh(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
-	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData);
+	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) const;
 	void handleMeshQueue();
 	/**
 	 * @brief Redistribute the plants on the meshes that are already extracted

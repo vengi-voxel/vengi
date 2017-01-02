@@ -131,22 +131,43 @@ void WorldRenderer::handleMeshQueue() {
 	if (!_world->pop(mesh)) {
 		return;
 	}
+	// Now add the mesh to the list of meshes to render.
 	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
-	// TODO: check if the stuff is culled - then we can reuse the vbo and vao
-	for (GLChunkMeshData& m : _meshData) {
-		if (m.opaque.translation == mesh.opaqueMesh.getOffset()) {
-			updateMesh(mesh.opaqueMesh, m.opaque);
-			updateMesh(mesh.waterMesh, m.water);
-			return;
+
+	const int plantAmount = 100;
+	// first check whether we update an existing one
+	for (GLChunkMeshData& meshData : _meshData) {
+		if (meshData.opaque.translation != mesh.opaqueMesh.getOffset()) {
+			continue;
 		}
+		meshData.inuse = true;
+		updateMesh(mesh.opaqueMesh, meshData.opaque);
+		updateMesh(mesh.waterMesh, meshData.water);
+		distributePlants(_world, plantAmount, meshData.opaque.translation, meshData.opaque.instancedPositions);
+		fillPlantPositionsFromMeshes();
+		return;
 	}
 
-	// Now add the mesh to the list of meshes to render.
+	// then check if there are unused buffers
+	for (GLChunkMeshData& meshData : _meshData) {
+		if (meshData.inuse) {
+			continue;
+		}
+		meshData.inuse = true;
+		updateMesh(mesh.opaqueMesh, meshData.opaque);
+		updateMesh(mesh.waterMesh, meshData.water);
+		distributePlants(_world, plantAmount, meshData.opaque.translation, meshData.opaque.instancedPositions);
+		fillPlantPositionsFromMeshes();
+		return;
+	}
+
+	// create a new mesh
 	GLChunkMeshData meshData;
 	if (createMesh(mesh, meshData)) {
-		distributePlants(_world, 100, meshData.opaque.translation, meshData.opaque.instancedPositions);
-		fillPlantPositionsFromMeshes();
 		_meshData.push_back(meshData);
+		Log::info("Meshes so far: %i", (int)_meshData.size());
+		distributePlants(_world, plantAmount, meshData.opaque.translation, meshData.opaque.instancedPositions);
+		fillPlantPositionsFromMeshes();
 	}
 }
 
@@ -166,23 +187,23 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	_visibleWater.clear();
 	const float cullingThreshold = _world->getMeshSize();
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
-	for (auto i = _meshData.begin(); i != _meshData.end();) {
+	for (auto i = _meshData.begin(); i != _meshData.end(); ++i) {
 		GLChunkMeshData& meshData = *i;
+		if (!meshData.inuse) {
+			continue;
+		}
 		const int distance = getDistanceSquare(meshData.opaque.translation);
 		Log::trace("distance is: %i (%i)", distance, maxAllowedDistance);
 		if (distance >= maxAllowedDistance) {
 			_world->allowReExtraction(meshData.opaque.translation);
-			meshData.opaque.shutdown();
-			meshData.water.shutdown();
+			meshData.inuse = false;
 			Log::info("Remove mesh from %i:%i", meshData.opaque.translation.x, meshData.opaque.translation.z);
-			i = _meshData.erase(i);
 			continue;
 		}
 		if (camera.isVisible(meshData.opaque.aabb)) {
 			_visible.push_back(&meshData.opaque);
 			_visibleWater.push_back(&meshData.water);
 		}
-		++i;
 	}
 	Log::trace("%i meshes left after culling, %i meshes overall", (int)_visible.size(), (int)_meshData.size());
 }
@@ -477,7 +498,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	return drawCallsEntities;
 }
 
-void WorldRenderer::updateMesh(const voxel::Mesh& mesh, video::GLMeshData& meshData) {
+void WorldRenderer::updateMesh(const voxel::Mesh& mesh, video::GLMeshData& meshData) const {
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
 	const voxel::IndexType* vecIndices = mesh.getRawIndexData();
 	const uint32_t numIndices = mesh.getNoOfIndices();
