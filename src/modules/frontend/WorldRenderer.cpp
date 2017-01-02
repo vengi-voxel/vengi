@@ -551,8 +551,7 @@ void WorldRenderer::updateMesh(const voxel::Mesh& mesh, video::GLMeshData& meshD
 
 	meshData.noOfVertices = numVertices;
 	meshData.noOfIndices = numIndices;
-	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-	meshData.indexType = GL_UNSIGNED_INT;
+	meshData.indexType = GLmap<voxel::IndexType>();
 
 	meshData.scale = glm::vec3(1.0f);
 	const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(mesh.getOffset()));
