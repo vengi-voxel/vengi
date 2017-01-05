@@ -660,8 +660,8 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 
-	_worldIndexBuffer = _worldBuffer.create();
-	if (_worldIndexBuffer == -1) {
+	_worldBufferIndex = _worldBuffer.create();
+	if (_worldBufferIndex == -1) {
 		Log::error("Could not create the world vertex buffer object");
 		return false;
 	}
@@ -697,7 +697,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();
 	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
 
-	video::VertexBuffer::Attribute voxelAttributePos = getPositionVertexAttribute(_worldIndexBuffer, _worldShader.getLocationPos(), _worldShader.getComponentsPos());
+	video::VertexBuffer::Attribute voxelAttributePos = getPositionVertexAttribute(_worldBufferIndex, _worldShader.getLocationPos(), _worldShader.getComponentsPos());
 	_worldBuffer.addAttribute(voxelAttributePos);
 
 	video::VertexBuffer::Attribute voxelAttributeInfo = getInfoVertexAttribute(voxelAttributePos.bufferIndex, _worldShader.getLocationInfo(), _worldShader.getComponentsInfo());

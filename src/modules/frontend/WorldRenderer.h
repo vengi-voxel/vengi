@@ -81,7 +81,7 @@ protected:
 	core::VarPtr _shadowMapDebug;
 
 	int32_t _worldIndexBufferIndex = -1;
-	int32_t _worldIndexBuffer = -1;
+	int32_t _worldBufferIndex = -1;
 	int32_t _worldInstancedIndexBufferIndex = -1;
 	int32_t _worldInstancedBufferIndex = -1;
 	int32_t _worldInstancedOffsetBufferIndex = -1;
