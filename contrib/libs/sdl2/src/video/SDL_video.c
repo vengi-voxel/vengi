@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1753,7 +1753,7 @@ SDL_SetWindowPosition(SDL_Window * window, int x, int y)
     if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
         int displayIndex = (x & 0xFFFF);
         SDL_Rect bounds;
-        if (displayIndex > _this->num_displays) {
+        if (displayIndex >= _this->num_displays) {
             displayIndex = 0;
         }
 
@@ -3797,7 +3797,8 @@ SDL_SetWindowHitTest(SDL_Window * window, SDL_HitTest callback, void *userdata)
     return 0;
 }
 
-float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
+float
+SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
 {
 	float den2 = hinches * hinches + vinches * vinches;
 	if (den2 <= 0.0f) {

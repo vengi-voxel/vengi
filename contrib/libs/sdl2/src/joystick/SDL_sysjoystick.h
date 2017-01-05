@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,10 +31,11 @@
 /* The SDL joystick structure */
 typedef struct _SDL_JoystickAxisInfo
 {
-    Sint16 value;           /* Current axis states */
-    Sint16 zero;            /* Zero point on the axis (-32768 for triggers) */
-    Sint16 intial_value;    /* The very first value we saw on this axis */
-    SDL_bool moved;         /* Whether the axis has moved */
+    Sint16 initial_value;       /* Initial axis state */
+    Sint16 value;               /* Current axis state */
+    Sint16 zero;                /* Zero point on the axis (-32768 for triggers) */
+    SDL_bool has_initial_value; /* Whether we've seen a value on the axis yet */
+    SDL_bool sent_initial_value; /* Whether we've sent the initial axis value */
 } SDL_JoystickAxisInfo;
 
 struct _SDL_Joystick

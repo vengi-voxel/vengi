@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -255,7 +255,7 @@ MIR_InitDisplayFromOutput(_THIS, MirOutput* output)
 
     MirPixelFormat format = MIR_mir_output_get_current_pixel_format(output);
     int num_modes         = MIR_mir_output_get_num_modes(output);
-    SDL_DisplayMode current_mode = MIR_ConvertModeToSDLMode(mir_output_get_current_mode(output), format);
+    SDL_DisplayMode current_mode = MIR_ConvertModeToSDLMode(MIR_mir_output_get_current_mode(output), format);
 
     SDL_zero(display);
 

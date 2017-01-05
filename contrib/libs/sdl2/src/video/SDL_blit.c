@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -218,6 +218,12 @@ SDL_CalculateBlit(SDL_Surface * surface)
     SDL_BlitFunc blit = NULL;
     SDL_BlitMap *map = surface->map;
     SDL_Surface *dst = map->dst;
+
+    /* We don't currently support blitting to < 8 bpp surfaces */
+    if (dst->format->BitsPerPixel < 8) {
+        SDL_InvalidateMap(map);
+        return SDL_SetError("Blit combination not supported");
+    }
 
     /* Clean everything out to start */
     if ((surface->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {

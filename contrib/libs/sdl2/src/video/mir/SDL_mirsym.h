@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -102,6 +102,7 @@ SDL_MIR_SYM(void,mir_display_config_release,(MirDisplayConfig* config))
 SDL_MIR_SYM(int,mir_display_config_get_num_outputs,(MirDisplayConfig const* config))
 SDL_MIR_SYM(MirOutput*,mir_display_config_get_mutable_output,(MirDisplayConfig* config, size_t index))
 SDL_MIR_SYM(int,mir_output_get_num_modes,(MirOutput const* output))
+SDL_MIR_SYM(MirOutputMode const*,mir_output_get_current_mode,(MirOutput const* output))
 SDL_MIR_SYM(MirPixelFormat,mir_output_get_current_pixel_format,(MirOutput const* output))
 SDL_MIR_SYM(int,mir_output_get_position_x,(MirOutput const* output))
 SDL_MIR_SYM(int,mir_output_get_position_y,(MirOutput const* output))

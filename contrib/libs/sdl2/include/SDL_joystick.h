@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -243,6 +243,18 @@ extern DECLSPEC int SDLCALL SDL_JoystickEventState(int state);
  */
 extern DECLSPEC Sint16 SDLCALL SDL_JoystickGetAxis(SDL_Joystick * joystick,
                                                    int axis);
+
+/**
+ *  Get the initial state of an axis control on a joystick.
+ *
+ *  The state is a value ranging from -32768 to 32767.
+ *
+ *  The axis indices start at index 0.
+ *
+ *  \return SDL_TRUE if this axis has any initial value, or SDL_FALSE if not.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_JoystickGetAxisInitialState(SDL_Joystick * joystick,
+                                                   int axis, Sint16 *state);
 
 /**
  *  \name Hat positions

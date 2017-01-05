@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -221,6 +221,7 @@ display_handle_mode(void *data,
     SDL_DisplayMode mode;
 
     SDL_zero(mode);
+    mode.format = SDL_PIXELFORMAT_RGB888;
     mode.w = width;
     mode.h = height;
     mode.refresh_rate = refresh / 1000; // mHz to Hz

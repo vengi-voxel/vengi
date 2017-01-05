@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -78,8 +78,8 @@
 #else
 #  define SDL_XAUDIO2_HAS_SDK 1
 #endif
-#endif
 #endif /* 0 */
+#endif /* __GNUC__ */
 
 #ifdef SDL_XAUDIO2_HAS_SDK
 

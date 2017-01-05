@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -624,3 +624,4 @@
 #define SDL_HasNEON SDL_HasNEON_REAL
 #define SDL_GameControllerNumMappings SDL_GameControllerNumMappings_REAL
 #define SDL_GameControllerMappingForIndex SDL_GameControllerMappingForIndex_REAL
+#define SDL_JoystickGetAxisInitialState SDL_JoystickGetAxisInitialState_REAL
