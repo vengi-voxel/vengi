@@ -31,7 +31,7 @@ namespace glm
 	/// Projects x on Normal.
 	///
 	/// @see gtx_projection
-	template <typename vecType>
+	template<typename vecType>
 	GLM_FUNC_DECL vecType proj(vecType const & x, vecType const & Normal);
 
 	/// @}

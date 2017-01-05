@@ -777,7 +777,7 @@ namespace glm
 #if GLM_HAS_CONSTEXPR_PARTIAL
 	namespace glm
 	{
-		template <typename T, std::size_t N>
+		template<typename T, std::size_t N>
 		constexpr std::size_t countof(T const (&)[N])
 		{
 			return N;

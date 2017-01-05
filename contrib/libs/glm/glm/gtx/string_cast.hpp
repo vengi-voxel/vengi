@@ -21,6 +21,7 @@
 #include "../gtc/quaternion.hpp"
 #include "../gtx/dual_quaternion.hpp"
 #include <string>
+#include <cmath>
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #	error "GLM: GLM_GTX_string_cast is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
@@ -41,8 +42,8 @@ namespace glm
 
 	/// Create a string from a GLM vector or matrix typed variable.
 	/// @see gtx_string_cast extension.
-	template <template <typename, precision> class matType, typename T, precision P>
-	GLM_FUNC_DECL std::string to_string(matType<T, P> const & x);
+	template<typename genType>
+	GLM_FUNC_DECL std::string to_string(genType const& x);
 
 	/// @}
 }//namespace glm

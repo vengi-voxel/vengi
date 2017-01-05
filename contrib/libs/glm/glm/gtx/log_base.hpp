@@ -30,17 +30,17 @@ namespace glm
 
 	/// Logarithm for any base.
 	/// From GLM_GTX_log_base.
-	template <typename genType>
+	template<typename genType>
 	GLM_FUNC_DECL genType log(
 		genType const & x,
 		genType const & base);
 
 	/// Logarithm for any base.
 	/// From GLM_GTX_log_base.
-	template <typename T, precision P, template <typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<T, P> sign(
-		vecType<T, P> const & x,
-		vecType<T, P> const & base);
+	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
+	GLM_FUNC_DECL vecType<L, T, P> sign(
+		vecType<L, T, P> const& x,
+		vecType<L, T, P> const& base);
 
 	/// @}
 }//namespace glm

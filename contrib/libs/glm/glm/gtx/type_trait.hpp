@@ -41,7 +41,7 @@ namespace glm
 	/// @addtogroup gtx_type_trait
 	/// @{
 
-	template <template <typename, precision> class genType, typename T, precision P>
+	template<typename T>
 	struct type
 	{
 		static bool const is_vec = false;
@@ -52,56 +52,20 @@ namespace glm
 		static length_t const rows = 0;
 	};
 
-	template <typename T, precision P>
-	struct type<tvec1, T, P>
+	template<length_t L, typename T, precision P>
+	struct type<vec<L, T, P> >
 	{
 		static bool const is_vec = true;
 		static bool const is_mat = false;
 		static bool const is_quat = false;
 		enum
 		{
-			components = 1
+			components = L
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tvec2, T, P>
-	{
-		static bool const is_vec = true;
-		static bool const is_mat = false;
-		static bool const is_quat = false;
-		enum
-		{
-			components = 2
-		};
-	};
-
-	template <typename T, precision P>
-	struct type<tvec3, T, P>
-	{
-		static bool const is_vec = true;
-		static bool const is_mat = false;
-		static bool const is_quat = false;
-		enum
-		{
-			components = 3
-		};
-	};
-
-	template <typename T, precision P>
-	struct type<tvec4, T, P>
-	{
-		static bool const is_vec = true;
-		static bool const is_mat = false;
-		static bool const is_quat = false;
-		enum
-		{
-			components = 4
-		};
-	};
-
-	template <typename T, precision P>
-	struct type<tmat2x2, T, P>
+	template<typename T, precision P>
+	struct type<mat<2, 2, T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = true;
@@ -114,8 +78,8 @@ namespace glm
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tmat2x3, T, P>
+	template<typename T, precision P>
+	struct type<mat<2, 3, T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = true;
@@ -128,8 +92,8 @@ namespace glm
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tmat2x4, T, P>
+	template<typename T, precision P>
+	struct type<mat<2, 4, T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = true;
@@ -142,8 +106,8 @@ namespace glm
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tmat3x2, T, P>
+	template<typename T, precision P>
+	struct type<mat<3, 2, T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = true;
@@ -156,8 +120,8 @@ namespace glm
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tmat3x3, T, P>
+	template<typename T, precision P>
+	struct type<mat<3, 3, T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = true;
@@ -170,8 +134,8 @@ namespace glm
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tmat3x4, T, P>
+	template<typename T, precision P>
+	struct type<mat<3, 4, T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = true;
@@ -184,8 +148,8 @@ namespace glm
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tmat4x2, T, P>
+	template<typename T, precision P>
+	struct type<mat<4, 2, T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = true;
@@ -198,8 +162,8 @@ namespace glm
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tmat4x3, T, P>
+	template<typename T, precision P>
+	struct type<mat<4, 3, T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = true;
@@ -212,8 +176,8 @@ namespace glm
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tmat4x4, T, P>
+	template<typename T, precision P>
+	struct type<mat<4, 4, T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = true;
@@ -226,8 +190,8 @@ namespace glm
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tquat, T, P>
+	template<typename T, precision P>
+	struct type<tquat<T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = false;
@@ -238,8 +202,8 @@ namespace glm
 		};
 	};
 
-	template <typename T, precision P>
-	struct type<tdualquat, T, P>
+	template<typename T, precision P>
+	struct type<tdualquat<T, P> >
 	{
 		static bool const is_vec = false;
 		static bool const is_mat = false;

@@ -31,15 +31,15 @@ namespace glm
 
 	//! Build a cross product matrix.
 	//! From GLM_GTX_matrix_cross_product extension.
-	template <typename T, precision P>
-	GLM_FUNC_DECL tmat3x3<T, P> matrixCross3(
-		tvec3<T, P> const & x);
+	template<typename T, precision P>
+	GLM_FUNC_DECL mat<3, 3, T, P> matrixCross3(
+		vec<3, T, P> const & x);
 		
 	//! Build a cross product matrix.
 	//! From GLM_GTX_matrix_cross_product extension.
-	template <typename T, precision P>
-	GLM_FUNC_DECL tmat4x4<T, P> matrixCross4(
-		tvec3<T, P> const & x);
+	template<typename T, precision P>
+	GLM_FUNC_DECL mat<4, 4, T, P> matrixCross4(
+		vec<3, T, P> const & x);
 
 	/// @}
 }//namespace glm

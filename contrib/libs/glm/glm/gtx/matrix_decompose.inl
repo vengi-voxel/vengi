@@ -6,17 +6,17 @@ namespace detail
 {
 	/// Make a linear combination of two vectors and return the result.
 	// result = (a * ascl) + (b * bscl)
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tvec3<T, P> combine(
-		tvec3<T, P> const & a, 
-		tvec3<T, P> const & b,
+	template<typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<3, T, P> combine(
+		vec<3, T, P> const & a, 
+		vec<3, T, P> const & b,
 		T ascl, T bscl)
 	{
 		return (a * ascl) + (b * bscl);
 	}
 
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER tvec3<T, P> scale(tvec3<T, P> const& v, T desiredLength)
+	template<typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<3, T, P> scale(vec<3, T, P> const& v, T desiredLength)
 	{
 		return v * desiredLength / length(v);
 	}
@@ -26,10 +26,10 @@ namespace detail
 	// http://www.opensource.apple.com/source/WebCore/WebCore-514/platform/graphics/transforms/TransformationMatrix.cpp
 	// Decomposes the mode matrix to translations,rotation scale components
 
-	template <typename T, precision P>
-	GLM_FUNC_QUALIFIER bool decompose(tmat4x4<T, P> const & ModelMatrix, tvec3<T, P> & Scale, tquat<T, P> & Orientation, tvec3<T, P> & Translation, tvec3<T, P> & Skew, tvec4<T, P> & Perspective)
+	template<typename T, precision P>
+	GLM_FUNC_QUALIFIER bool decompose(mat<4, 4, T, P> const & ModelMatrix, vec<3, T, P> & Scale, tquat<T, P> & Orientation, vec<3, T, P> & Translation, vec<3, T, P> & Skew, vec<4, T, P> & Perspective)
 	{
-		tmat4x4<T, P> LocalMatrix(ModelMatrix);
+		mat<4, 4, T, P> LocalMatrix(ModelMatrix);
 
 		// Normalize the matrix.
 		if(LocalMatrix[3][3] == static_cast<T>(0))
@@ -41,7 +41,7 @@ namespace detail
 
 		// perspectiveMatrix is used to solve for perspective, but it also provides
 		// an easy way to test for singularity of the upper 3x3 component.
-		tmat4x4<T, P> PerspectiveMatrix(LocalMatrix);
+		mat<4, 4, T, P> PerspectiveMatrix(LocalMatrix);
 
 		for(length_t i = 0; i < 3; i++)
 			PerspectiveMatrix[i][3] = static_cast<T>(0);
@@ -55,7 +55,7 @@ namespace detail
 		if(LocalMatrix[0][3] != static_cast<T>(0) || LocalMatrix[1][3] != static_cast<T>(0) || LocalMatrix[2][3] != static_cast<T>(0))
 		{
 			// rightHandSide is the right hand side of the equation.
-			tvec4<T, P> RightHandSide;
+			vec<4, T, P> RightHandSide;
 			RightHandSide[0] = LocalMatrix[0][3];
 			RightHandSide[1] = LocalMatrix[1][3];
 			RightHandSide[2] = LocalMatrix[2][3];
@@ -64,8 +64,8 @@ namespace detail
 			// Solve the equation by inverting PerspectiveMatrix and multiplying
 			// rightHandSide by the inverse.  (This is the easiest way, not
 			// necessarily the best.)
-			tmat4x4<T, P> InversePerspectiveMatrix = glm::inverse(PerspectiveMatrix);//   inverse(PerspectiveMatrix, inversePerspectiveMatrix);
-			tmat4x4<T, P> TransposedInversePerspectiveMatrix = glm::transpose(InversePerspectiveMatrix);//   transposeMatrix4(inversePerspectiveMatrix, transposedInversePerspectiveMatrix);
+			mat<4, 4, T, P> InversePerspectiveMatrix = glm::inverse(PerspectiveMatrix);//   inverse(PerspectiveMatrix, inversePerspectiveMatrix);
+			mat<4, 4, T, P> TransposedInversePerspectiveMatrix = glm::transpose(InversePerspectiveMatrix);//   transposeMatrix4(inversePerspectiveMatrix, transposedInversePerspectiveMatrix);
 
 			Perspective = TransposedInversePerspectiveMatrix * RightHandSide;
 			//  v4MulPointByMatrix(rightHandSide, transposedInversePerspectiveMatrix, perspectivePoint);
@@ -77,14 +77,14 @@ namespace detail
 		else
 		{
 			// No perspective.
-			Perspective = tvec4<T, P>(0, 0, 0, 1);
+			Perspective = vec<4, T, P>(0, 0, 0, 1);
 		}
 
 		// Next take care of translation (easy).
-		Translation = tvec3<T, P>(LocalMatrix[3]);
-		LocalMatrix[3] = tvec4<T, P>(0, 0, 0, LocalMatrix[3].w);
+		Translation = vec<3, T, P>(LocalMatrix[3]);
+		LocalMatrix[3] = vec<4, T, P>(0, 0, 0, LocalMatrix[3].w);
 
-		tvec3<T, P> Row[3], Pdum3;
+		vec<3, T, P> Row[3], Pdum3;
 
 		// Now get scale and shear.
 		for(length_t i = 0; i < 3; ++i)
