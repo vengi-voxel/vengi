@@ -53,7 +53,7 @@ protected:
 	/**
 	 * This map is only filled if we are in debugging mode for this entity
 	 */
-	typedef std::unordered_map<int, long> LastExecMap;
+	typedef std::unordered_map<int, uint64_t> LastExecMap;
 	LastExecMap _lastExecMillis;
 
 	/**

@@ -455,9 +455,9 @@ static int luaAI_aggromgrentries(lua_State* s) {
  */
 static int luaAI_aggromgrsetreducebyratio(lua_State* s) {
 	AggroMgr* aggroMgr = luaAI_toaggromgr(s, 1);
-	const float reduceRatioSecond = luaL_checknumber(s, 2);
-	const float minAggro = luaL_checknumber(s, 3);
-	aggroMgr->setReduceByRatio(reduceRatioSecond, minAggro);
+	const lua_Number reduceRatioSecond = luaL_checknumber(s, 2);
+	const lua_Number minAggro = luaL_checknumber(s, 3);
+	aggroMgr->setReduceByRatio((float)reduceRatioSecond, (float)minAggro);
 	return 0;
 }
 
@@ -468,8 +468,8 @@ static int luaAI_aggromgrsetreducebyratio(lua_State* s) {
  */
 static int luaAI_aggromgrsetreducebyvalue(lua_State* s) {
 	AggroMgr* aggroMgr = luaAI_toaggromgr(s, 1);
-	const float reduceValueSecond = luaL_checknumber(s, 2);
-	aggroMgr->setReduceByValue(reduceValueSecond);
+	const lua_Number reduceValueSecond = luaL_checknumber(s, 2);
+	aggroMgr->setReduceByValue((float)reduceValueSecond);
 	return 0;
 }
 
@@ -493,8 +493,8 @@ static int luaAI_aggromgrresetreducevalue(lua_State* s) {
 static int luaAI_aggromgraddaggro(lua_State* s) {
 	AggroMgr* aggroMgr = luaAI_toaggromgr(s, 1);
 	const CharacterId chrId = (CharacterId)luaL_checkinteger(s, 2);
-	const float amount = luaL_checknumber(s, 3);
-	const EntryPtr& entry = aggroMgr->addAggro(chrId, amount);
+	const lua_Number amount = luaL_checknumber(s, 3);
+	const EntryPtr& entry = aggroMgr->addAggro(chrId, (float)amount);
 	lua_pushnumber(s, entry->getAggro());
 	return 1;
 }
@@ -566,8 +566,8 @@ static int luaAI_characterorientation(lua_State* s) {
  */
 static int luaAI_charactersetspeed(lua_State* s) {
 	luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
-	const float value = luaL_checknumber(s, 2);
-	chr->character->setSpeed(value);
+	const lua_Number value = luaL_checknumber(s, 2);
+	chr->character->setSpeed((float)value);
 	return 0;
 }
 
@@ -578,8 +578,8 @@ static int luaAI_charactersetspeed(lua_State* s) {
  */
 static int luaAI_charactersetorientation(lua_State* s) {
 	luaAI_ICharacter* chr = luaAI_tocharacter(s, 1);
-	const float value = luaL_checknumber(s, 2);
-	chr->character->setOrientation(value);
+	const lua_Number value = luaL_checknumber(s, 2);
+	chr->character->setOrientation((float)value);
 	return 0;
 }
 
@@ -885,23 +885,23 @@ static int luaAI_vecindex(lua_State *s) {
 static int luaAI_vecnewindex(lua_State *s) {
 	glm::vec3* v = luaAI_tovec(s, 1);
 	const char *i = luaL_checkstring(s, 2);
-	const float t = luaL_checknumber(s, 3);
+	const lua_Number t = luaL_checknumber(s, 3);
 
 	switch (*i) {
 	case '0':
 	case 'x':
 	case 'r':
-		v->x = t;
+		v->x = (float)t;
 		break;
 	case '1':
 	case 'y':
 	case 'g':
-		v->y = t;
+		v->y = (float)t;
 		break;
 	case '2':
 	case 'z':
 	case 'b':
-		v->z = t;
+		v->z = (float)t;
 		break;
 	default:
 		break;

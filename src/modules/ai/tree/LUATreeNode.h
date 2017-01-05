@@ -77,9 +77,9 @@ protected:
 			lua_pop(_s, lua_gettop(_s));
 			return TreeNodeStatus::EXCEPTION;
 		}
-		const int state = luaL_checkinteger(_s, -1);
-		if (state < 0 || state >= (int)TreeNodeStatus::MAX_TREENODESTATUS) {
-			ai_log_error("LUA node: illegal tree node status returned: %i", state);
+		const lua_Integer state = luaL_checkinteger(_s, -1);
+		if (state < 0 || state >= (lua_Integer)TreeNodeStatus::MAX_TREENODESTATUS) {
+			ai_log_error("LUA node: illegal tree node status returned: " LUA_INTEGER_FMT, state);
 		}
 
 		// reset stack

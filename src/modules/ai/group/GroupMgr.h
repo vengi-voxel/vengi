@@ -103,7 +103,7 @@ public:
 	/**
 	 * @brief Returns the average position of the group
 	 *
-	 * @note If the given group doesn't exist or some other error occurred, this method returns @c glm::vec3::INFINITE
+	 * @note If the given group doesn't exist or some other error occurred, this method returns @c glm::vec3::VEC3_INFINITE
 	 * @note The position of a group is calculated once per @c update() call.
 	 *
 	 * @note This method performs a read lock on the group manager
@@ -260,7 +260,7 @@ inline glm::vec3 GroupMgr::getPosition(GroupId id) const {
 	ScopedReadLock scopedLock(_lock);
 	const GroupsConstIter& i = _groups.find(id);
 	if (i == _groups.end()) {
-		return INFINITE;
+		return VEC3_INFINITE;
 	}
 
 	ScopedReadLock lock(_groupLock);

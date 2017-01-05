@@ -8,14 +8,12 @@
 #define GLM_FORCE_RADIANS
 //#define GLM_SWIZZLE
 
-DISABLE_WARNING(shadow,shadow,0)
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/norm.hpp>
-ENABLE_WARNING(shadow,shadow,0)
 #include <limits>
 #include <cmath>
 
@@ -37,7 +35,7 @@ inline glm::vec3 fromRadians(float radians) {
 	return glm::vec3(glm::cos(radians), 0.0f, glm::sin(radians));
 }
 
-inline double angle(const glm::vec3& v) {
+inline float angle(const glm::vec3& v) {
 	const float _angle = glm::atan(v.z, v.x);
 	return _angle;
 }
@@ -52,15 +50,19 @@ inline T clamp(T a, T low, T high) {
 }
 
 static const glm::vec3 ZERO(0.0f);
-static const glm::vec3 INFINITE(std::numeric_limits<float>::infinity());
+static const glm::vec3 VEC3_INFINITE(std::numeric_limits<float>::infinity());
 
 inline glm::vec3 parse(const std::string& in) {
 	float x = 0.0f;
 	float y = 0.0f;
 	float z = 0.0f;
 
+#ifdef _MSC_VER
+	if (::sscanf_s(in.c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
+#else
 	if (::sscanf(in.c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
-		return INFINITE;
+#endif
+		return VEC3_INFINITE;
 	}
 
 	return glm::vec3(x, y, z);

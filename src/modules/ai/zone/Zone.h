@@ -20,7 +20,7 @@
 #include "common/Types.h"
 #include "common/ExecutionTime.h"
 #include <unordered_map>
-#include <list>
+#include <vector>
 #include <memory>
 
 namespace ai {
@@ -40,9 +40,8 @@ typedef std::shared_ptr<AI> AIPtr;
 class Zone {
 public:
 	typedef std::unordered_map<CharacterId, AIPtr> AIMap;
-	typedef std::list<AIPtr> AIScheduleList;
-	typedef std::list<AIPtr> AIScheduleConstList;
-	typedef std::list<CharacterId> CharacterIdList;
+	typedef std::vector<AIPtr> AIScheduleList;
+	typedef std::vector<CharacterId> CharacterIdList;
 	typedef AIMap::const_iterator AIMapConstIter;
 	typedef AIMap::iterator AIMapIter;
 
@@ -50,11 +49,11 @@ protected:
 	const std::string _name;
 	AIMap _ais;
 	AIScheduleList _scheduledAdd;
-	AIScheduleConstList _scheduledRemove;
+	AIScheduleList _scheduledRemove;
 	CharacterIdList _scheduledDestroy;
 	bool _debug;
-	ReadWriteLock _lock = {"zone"};
-	ReadWriteLock _scheduleLock = {"zone-schedulelock"};
+	ReadWriteLock _lock {"zone"};
+	ReadWriteLock _scheduleLock {"zone-schedulelock"};
 	ai::GroupMgr _groupManager;
 	mutable ThreadPool _threadPool;
 
@@ -101,11 +100,39 @@ public:
 	bool addAI(const AIPtr& ai);
 
 	/**
+	 * @brief Add multiple AIPtr instances but only lock once.
+	 * @sa addAI()
+	 */
+	template<class Collection>
+	bool addAIs(const Collection& ais) {
+		if (ais.empty()) {
+			return false;
+		}
+		ScopedWriteLock scopedLock(_scheduleLock);
+		_scheduledAdd.insert(_scheduledAdd.end(), ais.begin(), ais.end());
+		return true;
+	}
+
+	/**
 	 * @brief Will trigger a removal of the specified @c AI instance in the next @c Zone::update call
 	 *
 	 * @note This does not lock the zone for writing but a dedicated schedule lock
 	 */
 	bool removeAI(const AIPtr& ai);
+
+	/**
+	 * @brief Remove multiple AIPtr instances but only lock once.
+	 * @sa removeAI()
+	 */
+	template<class Collection>
+	bool removeAIs(const Collection& ais) {
+		if (ais.empty()) {
+			return false;
+		}
+		ScopedWriteLock scopedLock(_scheduleLock);
+		_scheduledRemove.insert(_scheduledRemove.end(), ais.begin(), ais.end());
+		return true;
+	}
 
 	/**
 	 * @brief Will trigger a destroy of the specified @c AI instance in the next @c Zone::update call
@@ -387,19 +414,28 @@ inline bool Zone::removeAI(const AIPtr& ai) {
 
 inline void Zone::update(int64_t dt) {
 	{
-		ScopedWriteLock scopedLock(_scheduleLock);
-		for (const AIPtr& ai : _scheduledAdd) {
+		AIScheduleList scheduledRemove;
+		AIScheduleList scheduledAdd;
+		CharacterIdList scheduledDestroy;
+		{
+			ScopedWriteLock scopedLock(_scheduleLock);
+			scheduledAdd = _scheduledAdd;
+			scheduledRemove = _scheduledRemove;
+			scheduledDestroy = _scheduledDestroy;
+			_scheduledAdd.clear();
+			_scheduledRemove.clear();
+			_scheduledDestroy.clear();
+		}
+		ScopedWriteLock scopedLock(_lock);
+		for (const AIPtr& ai : scheduledAdd) {
 			doAddAI(ai);
 		}
-		_scheduledAdd.clear();
-		for (const AIPtr& ai : _scheduledRemove) {
+		for (const AIPtr& ai : scheduledRemove) {
 			doRemoveAI(ai);
 		}
-		_scheduledRemove.clear();
-		for (auto id : _scheduledDestroy) {
+		for (auto id : scheduledDestroy) {
 			doDestroyAI(id);
 		}
-		_scheduledDestroy.clear();
 	}
 
 	auto func = [&] (const AIPtr& ai) {

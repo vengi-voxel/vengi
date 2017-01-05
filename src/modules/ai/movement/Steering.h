@@ -50,7 +50,7 @@ public:
 	/**
 	 * @brief Calculates the @c MoveVector
 	 *
-	 * @return If the @c MoveVector contains @c glm::vec3::INFINITE as vector, the result should not be used
+	 * @return If the @c MoveVector contains @c glm::vec3::VEC3_INFINITE as vector, the result should not be used
 	 * because there was an error.
 	 */
 	virtual MoveVector execute (const AIPtr& ai, float speed) const = 0;
@@ -64,7 +64,7 @@ protected:
 	glm::vec3 getSelectionTarget(const AIPtr& entity, std::size_t index) const {
 		const FilteredEntities& selection = entity->getFilteredEntities();
 		if (selection.empty() || selection.size() <= index) {
-			return INFINITE;
+			return VEC3_INFINITE;
 		}
 		const Zone* zone = entity->getZone();
 		const CharacterId characterId = selection[index];

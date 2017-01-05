@@ -29,14 +29,14 @@ public:
 	virtual MoveVector execute (const AIPtr& ai, float speed) const override {
 		const Zone* zone = ai->getZone();
 		if (zone == nullptr) {
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 		const glm::vec3& target = zone->getGroupMgr().getPosition(_groupId);
 		if (isInfinite(target)) {
 			return MoveVector(target, 0.0f);
 		}
 		const glm::vec3& v = glm::normalize(ai->getCharacter()->getPosition() - target);
-		const double orientation = angle(v);
+		const float orientation = angle(v);
 		const MoveVector d(v * speed, orientation);
 		return d;
 	}

@@ -51,7 +51,7 @@ public:
 		}
 
 		if (totalWeight <= 0.0000001f) {
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 
 		const float scale = 1.0f / totalWeight;

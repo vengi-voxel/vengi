@@ -10,7 +10,9 @@
 #include "ProtocolMessageFactory.h"
 #ifdef WIN32
 #define network_cleanup() WSACleanup()
+#define network_return int
 #else
+#define network_return ssize_t
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -31,6 +33,7 @@
 #include <deque>
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <iterator>
 #include <array>
@@ -105,7 +108,7 @@ inline bool Network::start() {
 	fcntl(_socketFD, F_SETFL, O_NONBLOCK);
 #endif
 #ifdef WIN32
-	uint64_t mode = 1;
+	unsigned long mode = 1;
 	ioctlsocket(_socketFD, FIONBIO, &mode);
 #endif
 
@@ -134,10 +137,10 @@ inline bool Network::sendMessage(Client& client) {
 
 	std::array<uint8_t, 16384> buf;
 	while (!client.out.empty()) {
-		const std::size_t len = std::min(buf.size(), client.out.size());
+		const size_t len = std::min(buf.size(), client.out.size());
 		std::copy_n(client.out.begin(), len, buf.begin());
 		const SOCKET clientSocket = client.socket;
-		const ssize_t sent = send(clientSocket, &buf[0], len, 0);
+		const network_return sent = send(clientSocket, (const char*)&buf[0], len, 0);
 		if (sent < 0) {
 			return false;
 		}
@@ -200,7 +203,7 @@ inline void Network::update(int64_t deltaTime) {
 
 		if (FD_ISSET(clientSocket, &readFDsOut)) {
 			std::array<uint8_t, 16384> buf;
-			const ssize_t len = recv(clientSocket, &buf[0], buf.size(), 0);
+			const network_return len = recv(clientSocket, (char*)&buf[0], buf.size(), 0);
 			if (len < 0) {
 				i = closeClient(i);
 				continue;

@@ -25,7 +25,7 @@ protected:
 #if AI_LUA_SANTITY > 0
 		if (lua_isnil(_s, -1)) {
 			ai_log_error("LUA steering: could not find lua userdata for %s", name.c_str());
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 #endif
 		// get metatable
@@ -33,14 +33,14 @@ protected:
 #if AI_LUA_SANTITY > 0
 		if (!lua_istable(_s, -1)) {
 			ai_log_error("LUA steering: userdata for %s doesn't have a metatable assigned", name.c_str());
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 #endif
 		// get execute() method
 		lua_getfield(_s, -1, "execute");
 		if (!lua_isfunction(_s, -1)) {
 			ai_log_error("LUA steering: metatable for %s doesn't have the execute() function assigned", name.c_str());
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 
 		// push self onto the stack
@@ -48,7 +48,7 @@ protected:
 
 		// first parameter is ai
 		if (luaAI_pushai(_s, entity) == 0) {
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 
 		// second parameter is speed
@@ -57,19 +57,19 @@ protected:
 #if AI_LUA_SANTITY > 0
 		if (!lua_isfunction(_s, -4)) {
 			ai_log_error("LUA steering: expected to find a function on stack -4");
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 		if (!lua_isuserdata(_s, -3)) {
 			ai_log_error("LUA steering: expected to find the userdata on -3");
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 		if (!lua_isuserdata(_s, -2)) {
 			ai_log_error("LUA steering: second parameter should be the ai");
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 		if (!lua_isnumber(_s, -1)) {
 			ai_log_error("LUA steering: first parameter should be the speed");
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 #endif
 		const int error = lua_pcall(_s, 3, 4, 0);
@@ -77,17 +77,17 @@ protected:
 			ai_log_error("LUA steering script: %s", lua_isstring(_s, -1) ? lua_tostring(_s, -1) : "Unknown Error");
 			// reset stack
 			lua_pop(_s, lua_gettop(_s));
-			return MoveVector(INFINITE, 0.0f);
+			return MoveVector(VEC3_INFINITE, 0.0f);
 		}
 		// we get four values back, the direction vector and the
-		const float x = luaL_checknumber(_s, -1);
-		const float y = luaL_checknumber(_s, -2);
-		const float z = luaL_checknumber(_s, -3);
-		const float rotation = luaL_checknumber(_s, -4);
+		const lua_Number x = luaL_checknumber(_s, -1);
+		const lua_Number y = luaL_checknumber(_s, -2);
+		const lua_Number z = luaL_checknumber(_s, -3);
+		const lua_Number rotation = luaL_checknumber(_s, -4);
 
 		// reset stack
 		lua_pop(_s, lua_gettop(_s));
-		return MoveVector(glm::vec3(x, y, z), rotation);
+		return MoveVector(glm::vec3((float)x, (float)y, (float)z), (float)rotation);
 	}
 
 public:
@@ -126,7 +126,7 @@ public:
 		} catch (...) {
 			ai_log_error("Exception while running lua steering");
 		}
-		return MoveVector(INFINITE, 0.0f);
+		return MoveVector(VEC3_INFINITE, 0.0f);
 #endif
 	}
 };

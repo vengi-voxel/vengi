@@ -10,6 +10,10 @@
 namespace ai {
 namespace Log {
 
+#ifdef _MSC_VER
+#define __attribute__(x)
+#endif
+
 static constexpr int bufSize = 1024;
 
 static inline void trace(const char* msg, ...) __attribute__((format(printf, 1, 2)));
