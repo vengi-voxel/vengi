@@ -8,6 +8,7 @@ set(SRCS
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	Axis.h
 	Plane.h
+	RandomColorTexture.h RandomColorTexture.cpp
 	Shadow.h Shadow.cpp
 	WorldRenderer.h WorldRenderer.cpp
 )

@@ -7,7 +7,6 @@
 #include "video/GLFunc.h"
 #include "voxel/Spiral.h"
 #include "core/App.h"
-#include "noise/SimplexNoise.h"
 #include "core/Var.h"
 #include "voxel/MaterialColor.h"
 #include "frontend/PlantDistributor.h"
@@ -59,15 +58,13 @@ void WorldRenderer::shutdown() {
 	_shadowMapShader.shutdown();
 	_depthBuffer.shutdown();
 	reset();
-	_colorTexture->shutdown();
-	_colorTexture = video::TexturePtr();
+	_colorTexture.shutdown();
 	_entities.clear();
 
 	for (video::GLMeshData& meshData : _meshPlantList) {
 		meshData.shutdown();
 	}
 	_meshPlantList.clear();
-	_noiseFuture.clear();
 	_plantGenerator.shutdown();
 }
 
@@ -336,7 +333,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
-	_colorTexture->bind(0);
+	_colorTexture.bind(0);
 
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -377,7 +374,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-	_colorTexture->unbind();
+	_colorTexture.unbind();
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -632,19 +629,7 @@ void WorldRenderer::onConstruct() {
 
 bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
-
-	_noiseFuture.push_back(core::App::getInstance()->threadPool().enqueue([] () {
-		const int ColorTextureSize = 256;
-		const int ColorTextureOctaves = 2;
-		const int ColorTextureDepth = 3;
-		uint8_t *colorTexture = new uint8_t[ColorTextureSize * ColorTextureSize * ColorTextureDepth];
-		const float persistence = 0.3f;
-		const float frequency = 0.7f;
-		const float amplitude = 1.0f;
-		noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
-		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
-	}));
-	_colorTexture = video::createEmptyTexture("**colortexture**");
+	_colorTexture.init();
 	_plantGenerator.generateAll();
 
 	if (!_worldShader.setup()) {
@@ -794,23 +779,6 @@ void WorldRenderer::onRunning(long dt) {
 	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
 	_deltaFrame = dt;
-	if (!_noiseFuture.empty()) {
-		NoiseFuture& future = _noiseFuture.back();
-		if (future.valid()) {
-			NoiseGenerationTask c = future.get();
-			Log::trace("Noise texture ready - upload it");
-			video::TextureFormat format;
-			if (c.depth == 4) {
-				format = video::TextureFormat::RGBA;
-			} else {
-				format = video::TextureFormat::RGB;
-			}
-			_colorTexture->upload(format, c.width, c.height, c.buffer);
-			delete[] c.buffer;
-			_noiseFuture.pop_back();
-		}
-	}
-
 	if (_viewDistance < MinCullingDistance) {
 		const float advance = _world->getMeshSize() * (dt / 1000.0f);
 		_viewDistance += advance;

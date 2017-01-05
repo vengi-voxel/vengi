@@ -20,6 +20,7 @@
 #include "core/Color.h"
 #include "ClientEntity.h"
 #include "frontend/Shadow.h"
+#include "frontend/RandomColorTexture.h"
 
 #include <unordered_map>
 #include <list>
@@ -31,20 +32,6 @@ namespace frontend {
  */
 class WorldRenderer {
 protected:
-	struct NoiseGenerationTask {
-		NoiseGenerationTask(uint8_t *_buffer, int _width, int _height, int _depth) :
-				buffer(_buffer), width(_width), height(_height), depth(_depth) {
-		}
-		/** @brief pointer to preallocated buffer that was hand into the noise task */
-		uint8_t *buffer;
-		const int width;
-		const int height;
-		const int depth;
-	};
-
-	typedef std::future<NoiseGenerationTask> NoiseFuture;
-	std::vector<NoiseFuture> _noiseFuture;
-
 	struct RendererChunkMeshData {
 		bool inuse = true;
 		core::AABB<float> aabb = {glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
@@ -79,7 +66,7 @@ protected:
 	long _deltaFrame = 0l;
 
 	glm::vec4 _clearColor;
-	video::TexturePtr _colorTexture;
+	RandomColorTexture _colorTexture;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	/**
