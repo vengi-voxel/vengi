@@ -5,7 +5,6 @@ uniform mat4 u_viewprojection;
 
 #include "_shadowmap.frag"
 
-#if cl_deferred == 0
 uniform vec3 u_lightdir;
 uniform vec3 u_diffuse_color;
 uniform vec3 u_ambient_color;
@@ -13,12 +12,6 @@ uniform vec3 u_fogcolor;
 uniform float u_viewdistance;
 $out vec4 o_color;
 $in float v_fogdivisor;
-#else // cl_deferred
-// the order is defines in the gbuffer bindings
-$out vec3 o_pos;
-$out vec3 o_color;
-$out vec3 o_norm;
-#endif // cl_deferred
 
 void main(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
@@ -30,7 +23,6 @@ void main(void) {
 
 	vec3 color = v_color.rgb;
 
-#if cl_deferred == 0
 	int cascade = calculateCascade();
 	float shadow = calculateShadow(cascade, u_viewprojection);
 #if cl_debug_cascade
@@ -66,9 +58,4 @@ void main(void) {
 	vec3 linearColor = color * v_ambientocclusion * lightvalue;
 	o_color = vec4(mix(linearColor, u_fogcolor, fogval), v_color.a);
 #endif // cl_debug_shadow
-#else // cl_deferred
-	o_color = v_color.xyz * v_ambientocclusion;
-	o_pos = v_pos.xyz;
-	o_norm = normal;
-#endif // cl_deferred
 }

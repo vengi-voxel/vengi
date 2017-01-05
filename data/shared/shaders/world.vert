@@ -28,10 +28,8 @@ $out vec4 v_color;
 $out float v_ambientocclusion;
 $out float v_debug_color;
 
-#if cl_deferred == 0
 uniform float u_viewdistance;
 $out float v_fogdivisor;
-#endif
 
 #include "_shadowmap.vert"
 
@@ -57,9 +55,7 @@ void main(void) {
 	const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 	v_ambientocclusion = aovalues[a_ao];
 
-#if cl_deferred == 0
 	v_fogdivisor = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
-#endif // cl_deferred
 
 #if cl_shadowmap == 1
 	v_lightspacepos = v_pos.xyz;

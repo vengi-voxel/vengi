@@ -88,12 +88,8 @@ protected:
 	 */
 	glm::ivec3 _lastGridPosition = { std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min() };
 	voxel::WorldPtr _world;
-	video::GBuffer _gbuffer;
-	core::VarPtr _deferred;
-	core::VarPtr _deferredDebug;
 	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapDebug;
-	video::VertexBuffer _fullscreenQuad;
 	video::VertexBuffer _shadowMapDebugBuffer;
 
 	video::VertexBuffer _worldBuffer;
@@ -113,7 +109,6 @@ protected:
 	shader::ShadowmapInstancedShader _shadowMapInstancedShader;
 	shader::WaterShader _waterShader;
 	shader::MeshShader _meshShader;
-	shader::DeferredLightDirShader _deferredDirLightShader;
 	shader::ShadowmapShader _shadowMapShader;
 
 	voxel::PlantGenerator _plantGenerator;
@@ -141,7 +136,6 @@ protected:
 	void cull(const video::Camera& camera);
 	void setUniforms(video::Shader& shader, const video::Camera& camera);
 	int renderWorldMeshes(video::Shader& shader, const RendererMeshVisibleList& meshes, int* vertices);
-	void renderWorldDeferred(const video::Camera& camera, const int width, const int height);
 
 	bool checkShaders() const;
 

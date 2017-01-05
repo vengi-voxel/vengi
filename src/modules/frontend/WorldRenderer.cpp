@@ -47,10 +47,8 @@ void WorldRenderer::reset() {
 }
 
 void WorldRenderer::shutdown() {
-	_gbuffer.shutdown();
 	_worldBuffer.shutdown();
 	_worldInstancedBuffer.shutdown();
-	_fullscreenQuad.shutdown();
 	_shadowMapDebugBuffer.shutdown();
 	_shadowMapDebugShader.shutdown();
 	_shadowMapInstancedShader.shutdown();
@@ -59,7 +57,6 @@ void WorldRenderer::shutdown() {
 	_waterShader.shutdown();
 	_meshShader.shutdown();
 	_shadowMapShader.shutdown();
-	_deferredDirLightShader.shutdown();
 	_depthBuffer.shutdown();
 	reset();
 	_colorTexture->shutdown();
@@ -204,10 +201,9 @@ bool WorldRenderer::checkShaders() const {
 	const int loc1 = _worldShader.getLocationPos();
 	const int loc2 = _worldInstancedShader.getLocationPos();
 	const int loc3 = _waterShader.getLocationPos();
-	const int loc4 = _deferredDirLightShader.getLocationPos();
-	const int loc5 = _shadowMapShader.getLocationPos();
-	const bool same = loc1 == loc2 && loc2 == loc3 && loc3 == loc4 && loc4 == loc5;
-	core_assert_msg(same, "attribute locations for a_pos differ: %i, %i, %i, %i, %i", loc1, loc2, loc3, loc4, loc5);
+	const int loc4 = _shadowMapShader.getLocationPos();
+	const bool same = loc1 == loc2 && loc2 == loc3 && loc3 == loc4;
+	core_assert_msg(same, "attribute locations for a_pos differ: %i, %i, %i, %i", loc1, loc2, loc3, loc4);
 	return same;
 }
 
@@ -269,23 +265,6 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const RendererMeshVi
 
 	GL_checkError();
 	return meshes.size();
-}
-
-void WorldRenderer::renderWorldDeferred(const video::Camera& camera, const int width, const int height) {
-	_gbuffer.bindForReading(false);
-	shader::DeferredLightDirShader& deferredShader = _deferredDirLightShader;
-	video::ScopedShader scoped(deferredShader);
-	shaderSetUniformIf(deferredShader, setUniformVec3, "u_lightdir", _shadow.sunDirection());
-	shaderSetUniformIf(deferredShader, setUniformVec3, "u_diffuse_color", _diffuseColor);
-	shaderSetUniformIf(deferredShader, setUniformVec3, "u_ambient_color", _ambientColor);
-	shaderSetUniformIf(deferredShader, setUniformi, "u_pos", video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
-	shaderSetUniformIf(deferredShader, setUniformi, "u_color", video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
-	shaderSetUniformIf(deferredShader, setUniformi, "u_norm", video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
-	shaderSetUniformIf(deferredShader, setUniformVec2, "u_screensize", glm::vec2(width, height));
-	core_assert_always(_fullscreenQuad.bind());
-	glDrawArrays(GL_TRIANGLES, 0, _fullscreenQuad.elements(0));
-	_fullscreenQuad.unbind();
-	_gbuffer.unbind();
 }
 
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
@@ -359,12 +338,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	_colorTexture->bind(0);
 
-	const bool deferred = _deferred->boolVal();
-	if (deferred) {
-		_gbuffer.bindForWriting();
-		glDisable(GL_BLEND);
-	}
-
 	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -409,40 +382,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	if (deferred) {
-		glDepthMask(GL_FALSE);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_BLEND);
-
-		const int width = camera.width();
-		const int height = camera.height();
-		if (_deferredDebug->boolVal()) {
-			// show the gbuffer buffers
-			_gbuffer.bindForReading(true);
-			GL_checkError();
-
-			const GLsizei halfWidth = (GLsizei) (width / 2.0f);
-			const GLsizei halfHeight = (GLsizei) (height / 2.0f);
-
-			_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
-			glBlitFramebuffer(0, 0, width, height, 0, 0, halfWidth, halfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-			_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
-			glBlitFramebuffer(0, 0, width, height, 0, halfHeight, halfWidth, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-			_gbuffer.setReadBuffer(video::GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
-			glBlitFramebuffer(0, 0, width, height, halfWidth, halfHeight, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-			video::ScopedViewPort scoped(halfWidth, 0, halfWidth, halfHeight);
-			renderWorldDeferred(camera, halfWidth, halfHeight);
-		} else {
-			renderWorldDeferred(camera, width, height);
-		}
-
-		GL_checkError();
-	}
 
 	if (shadowMap && _shadowMapDebug->boolVal()) {
 		const int width = camera.width();
@@ -498,7 +437,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
-	// TODO: deferred rendering
 	shader::MeshShader& shader = _meshShader;
 	video::ScopedShader scoped(shader);
 	setUniforms(shader, camera);
@@ -687,9 +625,7 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active
 
 void WorldRenderer::onConstruct() {
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
-	_deferred = core::Var::getSafe(cfg::ClientDeferred);
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
-	_deferredDebug = core::Var::get(cfg::ClientDebugDeferred, "false");
 	_shadowMapDebug = core::Var::get(cfg::ClientDebugShadowMap, "false");
 	core::Var::get(cfg::ClientShadowMapSize, "512");
 }
@@ -729,9 +665,6 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	if (!_shadowMapShader.setup()) {
 		return false;
 	}
-	if (!_deferredDirLightShader.setup()) {
-		return false;
-	}
 	if (!_shadowMapDebugShader.setup()) {
 		return false;
 	}
@@ -765,12 +698,6 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		Log::error("Could not create the instanced world vertex buffer object for the offsets");
 		return false;
 	}
-
-	video::VertexBuffer::Attribute attributePosLightDeferred;
-	attributePosLightDeferred.bufferIndex = _fullscreenQuad.createFullscreenQuad();
-	attributePosLightDeferred.index = _deferredDirLightShader.getLocationPos();
-	attributePosLightDeferred.size = _deferredDirLightShader.getComponentsPos();
-	_fullscreenQuad.addAttribute(attributePosLightDeferred);
 
 	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
 	video::VertexBuffer::Attribute attributePos;
@@ -852,10 +779,6 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	}
 
 	if (!_shadow.init()) {
-		return false;
-	}
-
-	if (!_gbuffer.init(dimension)) {
 		return false;
 	}
 

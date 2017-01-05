@@ -336,15 +336,10 @@ core::AppState WindowedApp::onInit() {
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
 	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
-	const core::VarPtr& deferred = core::Var::getSafe(cfg::ClientDeferred);
 
 	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
-	if (!deferred->boolVal() && multisampling) {
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, multisampleBuffers->intVal());
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, multisampleSamples->intVal());
-	} else {
-		multisampling = false;
-	}
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, multisampleBuffers->intVal());
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, multisampleSamples->intVal());
 #ifdef DEBUG
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
@@ -469,10 +464,9 @@ core::AppState WindowedApp::onConstruct() {
 	core::AppState state = App::onConstruct();
 	core::Var::get(cfg::ClientMultiSampleBuffers, "1");
 	core::Var::get(cfg::ClientMultiSampleSamples, "4");
-	core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientFullscreen, "true");
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
-	core::Var::get(cfg::ClientShadowMapDebugCascade, "false", core::CV_SHADER);
+	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
 	core::Var::get(cfg::ClientWindowDisplay, 0);
 	core::Var::get(cfg::ClientOpenGLVersion, "3.1", core::CV_READONLY);

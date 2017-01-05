@@ -29,13 +29,11 @@ constexpr const char *ClientWindowDisplay = "cl_display";
 constexpr const char *ClientWindowHeight = "cl_height";
 
 constexpr const char *ClientGamma = "cl_gamma";
-constexpr const char *ClientDeferred = "cl_deferred";
 constexpr const char *ClientShadowMap = "cl_shadowmap";
-constexpr const char *ClientShadowMapDebugCascade = "cl_debug_cascade";
 constexpr const char *ClientCameraMaxTargetDistance = "cl_cameramaxtargetdistance";
 
-constexpr const char *ClientDebugDeferred = "cl_debug_deferred";
 constexpr const char *ClientDebugShadowMap = "cl_debug_shadowmap";
+constexpr const char *ClientDebugShadowMapCascade = "cl_debug_cascade";
 constexpr const char *ClientDebugShadow = "cl_debug_shadow";
 
 constexpr const char *ServerAutoRegister = "sv_autoregister";

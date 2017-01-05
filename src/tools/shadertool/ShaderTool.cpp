@@ -599,7 +599,6 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 core::AppState ShaderTool::onConstruct() {
 	Log::trace("Set some shader config vars to let the validation work");
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
-	core::Var::get(cfg::ClientDeferred, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	return core::App::onConstruct();
 }
