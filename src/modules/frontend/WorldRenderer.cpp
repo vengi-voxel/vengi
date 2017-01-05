@@ -50,7 +50,7 @@ void WorldRenderer::shutdown() {
 	_worldBuffer.shutdown();
 	_worldInstancedBuffer.shutdown();
 	_shadowMapDebugBuffer.shutdown();
-	_shadowMapDebugShader.shutdown();
+	_shadowMapRenderShader.shutdown();
 	_shadowMapInstancedShader.shutdown();
 	_worldShader.shutdown();
 	_worldInstancedShader.shutdown();
@@ -388,10 +388,10 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		const int height = camera.height();
 
 		// activate shader
-		video::ScopedShader scopedShader(_shadowMapDebugShader);
-		_shadowMapDebugShader.setShadowmap(0);
-		_shadowMapDebugShader.setFar(camera.farPlane());
-		_shadowMapDebugShader.setNear(camera.nearPlane());
+		video::ScopedShader scopedShader(_shadowMapRenderShader);
+		_shadowMapRenderShader.setShadowmap(0);
+		_shadowMapRenderShader.setFar(camera.farPlane());
+		_shadowMapRenderShader.setNear(camera.nearPlane());
 
 		// bind buffers
 		core_assert_always(_shadowMapDebugBuffer.bind());
@@ -409,7 +409,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			const GLsizei halfWidth = (GLsizei) (width / 4.0f);
 			const GLsizei halfHeight = (GLsizei) (height / 4.0f);
 			video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
-			_shadowMapDebugShader.setCascade(i);
+			_shadowMapRenderShader.setCascade(i);
 			glDrawArrays(GL_TRIANGLES, 0, _shadowMapDebugBuffer.elements(0));
 		}
 
@@ -665,7 +665,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	if (!_shadowMapShader.setup()) {
 		return false;
 	}
-	if (!_shadowMapDebugShader.setup()) {
+	if (!_shadowMapRenderShader.setup()) {
 		return false;
 	}
 
@@ -702,14 +702,14 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
 	video::VertexBuffer::Attribute attributePos;
 	attributePos.bufferIndex = fullscreenQuadIndices.x;
-	attributePos.index = _shadowMapDebugShader.getLocationPos();
-	attributePos.size = _shadowMapDebugShader.getComponentsPos();
+	attributePos.index = _shadowMapRenderShader.getLocationPos();
+	attributePos.size = _shadowMapRenderShader.getComponentsPos();
 	_shadowMapDebugBuffer.addAttribute(attributePos);
 
 	video::VertexBuffer::Attribute attributeTexcoord;
 	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
-	attributeTexcoord.index = _shadowMapDebugShader.getLocationTexcoord();
-	attributeTexcoord.size = _shadowMapDebugShader.getComponentsTexcoord();
+	attributeTexcoord.index = _shadowMapRenderShader.getLocationTexcoord();
+	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();
 	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
 
 	video::VertexBuffer::Attribute voxelAttributePos = getPositionVertexAttribute(_worldIndexBuffer, _worldShader.getLocationPos(), _worldShader.getComponentsPos());

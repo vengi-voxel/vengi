@@ -103,7 +103,7 @@ protected:
 
 	video::DepthBuffer _depthBuffer;
 
-	shader::ShadowmapRenderShader _shadowMapDebugShader;
+	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	shader::WorldShader _worldShader;
 	shader::WorldInstancedShader _worldInstancedShader;
 	shader::ShadowmapInstancedShader _shadowMapInstancedShader;
