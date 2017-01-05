@@ -255,12 +255,12 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const RendererMeshVi
 		core_assert(meshData->vertexArrayObject > 0);
 		glBindVertexArray(meshData->vertexArrayObject);
 		if (meshData->amount == 1) {
-			glDrawElementsBaseVertex(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, GL_OFFSET_CAST(sizeof(uint32_t) * meshData->baseIndex), meshData->baseVertex);
+			glDrawElements(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, nullptr);
 		} else {
 			const int amount = (int)meshData->instancedPositions.size();
 			glBindBuffer(GL_ARRAY_BUFFER, meshData->offsetBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * amount, &meshData->instancedPositions[0], GL_DYNAMIC_DRAW);
-			glDrawElementsInstancedBaseVertex(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, GL_OFFSET_CAST(sizeof(uint32_t) * meshData->baseIndex), amount, meshData->baseVertex);
+			glDrawElementsInstanced(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, nullptr, amount);
 		}
 		if (vertices != nullptr) {
 			*vertices += meshData->noOfVertices;
