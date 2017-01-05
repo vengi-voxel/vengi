@@ -35,11 +35,11 @@ WorldRenderer::~WorldRenderer() {
 }
 
 void WorldRenderer::reset() {
-	for (RendererChunkMeshData& meshData : _meshChunkList) {
-		meshData.opaque.shutdown();
-		meshData.water.shutdown();
+	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
+		chunkBuffer.opaque.shutdown();
+		chunkBuffer.water.shutdown();
 	}
-	_meshChunkList.clear();
+	_chunkBuffers.clear();
 	_entities.clear();
 	_viewDistance = 1.0f;
 	_now = 0l;
@@ -102,15 +102,15 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 	for (video::GLMeshData& mp : _meshPlantList) {
 		mp.instancedPositions.clear();
 	}
-	for (const RendererChunkMeshData& data : _meshChunkList) {
-		if (!data.inuse) {
+	for (const ChunkBuffer& chunkBuffer : _chunkBuffers) {
+		if (!chunkBuffer.inuse) {
 			continue;
 		}
-		if (data.opaque.instancedPositions.empty()) {
+		if (chunkBuffer.opaque.instancedPositions.empty()) {
 			continue;
 		}
-		std::vector<glm::vec3> p = data.opaque.instancedPositions;
-		core::Random rnd(_world->seed() + data.translation().x + data.translation().y + data.translation().z);
+		std::vector<glm::vec3> p = chunkBuffer.opaque.instancedPositions;
+		core::Random rnd(_world->seed() + chunkBuffer.translation().x + chunkBuffer.translation().y + chunkBuffer.translation().z);
 		rnd.shuffle(p.begin(), p.end());
 		const int plantMeshes = p.size() / plantMeshAmount;
 		int delta = p.size() - plantMeshes * plantMeshAmount;
@@ -123,7 +123,7 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 	}
 }
 
-void WorldRenderer::updateAABB(RendererChunkMeshData& meshData) const {
+void WorldRenderer::updateAABB(ChunkBuffer& meshData) const {
 	glm::ivec3 mins(std::numeric_limits<int>::max());
 	glm::ivec3 maxs(std::numeric_limits<int>::min());
 
@@ -152,43 +152,43 @@ void WorldRenderer::handleMeshQueue() {
 
 	const int plantAmount = 100;
 	// first check whether we update an existing one
-	for (RendererChunkMeshData& meshData : _meshChunkList) {
-		if (meshData.translation() != mesh.translation()) {
+	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
+		if (chunkBuffer.translation() != mesh.translation()) {
 			continue;
 		}
-		meshData.inuse = true;
-		meshData.voxelMeshes = std::move(mesh);
-		updateMesh(meshData.voxelMeshes.opaqueMesh, meshData.opaque);
-		updateMesh(meshData.voxelMeshes.waterMesh, meshData.water);
-		updateAABB(meshData);
-		distributePlants(_world, plantAmount, meshData.translation(), meshData.opaque.instancedPositions);
+		chunkBuffer.inuse = true;
+		chunkBuffer.voxelMeshes = std::move(mesh);
+		updateMesh(chunkBuffer.voxelMeshes.opaqueMesh, chunkBuffer.opaque);
+		updateMesh(chunkBuffer.voxelMeshes.waterMesh, chunkBuffer.water);
+		updateAABB(chunkBuffer);
+		distributePlants(_world, plantAmount, chunkBuffer.translation(), chunkBuffer.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		return;
 	}
 
 	// then check if there are unused buffers
-	for (RendererChunkMeshData& meshData : _meshChunkList) {
-		if (meshData.inuse) {
+	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
+		if (chunkBuffer.inuse) {
 			continue;
 		}
-		meshData.inuse = true;
-		meshData.voxelMeshes = std::move(mesh);
-		updateMesh(meshData.voxelMeshes.opaqueMesh, meshData.opaque);
-		updateMesh(meshData.voxelMeshes.waterMesh, meshData.water);
-		updateAABB(meshData);
+		chunkBuffer.inuse = true;
+		chunkBuffer.voxelMeshes = std::move(mesh);
+		updateMesh(chunkBuffer.voxelMeshes.opaqueMesh, chunkBuffer.opaque);
+		updateMesh(chunkBuffer.voxelMeshes.waterMesh, chunkBuffer.water);
+		updateAABB(chunkBuffer);
 
-		distributePlants(_world, plantAmount, meshData.translation(), meshData.opaque.instancedPositions);
+		distributePlants(_world, plantAmount, chunkBuffer.translation(), chunkBuffer.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		return;
 	}
 
 	// create a new mesh
-	RendererChunkMeshData meshData;
+	ChunkBuffer meshData;
 	if (createMesh(mesh, meshData)) {
 		meshData.voxelMeshes = std::move(mesh);
 		updateAABB(meshData);
-		_meshChunkList.push_back(meshData);
-		Log::info("Meshes so far: %i", (int)_meshChunkList.size());
+		_chunkBuffers.push_back(meshData);
+		Log::info("Meshes so far: %i", (int)_chunkBuffers.size());
 		distributePlants(_world, plantAmount, meshData.translation(), meshData.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 	}
@@ -209,28 +209,28 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	_visibleWater.clear();
 	const float cullingThreshold = _world->getMeshSize();
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
-	for (RendererChunkMeshData& meshData : _meshChunkList) {
-		if (!meshData.inuse) {
+	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
+		if (!chunkBuffer.inuse) {
 			continue;
 		}
-		const int distance = getDistanceSquare(meshData.translation());
+		const int distance = getDistanceSquare(chunkBuffer.translation());
 		Log::trace("distance is: %i (%i)", distance, maxAllowedDistance);
 		if (distance >= maxAllowedDistance) {
-			_world->allowReExtraction(meshData.translation());
-			meshData.inuse = false;
-			Log::info("Remove mesh from %i:%i", meshData.translation().x, meshData.translation().z);
+			_world->allowReExtraction(chunkBuffer.translation());
+			chunkBuffer.inuse = false;
+			Log::info("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
 			continue;
 		}
-		if (camera.isVisible(meshData.aabb)) {
-			if (meshData.opaque.noOfIndices > 0) {
-				_visible.push_back(&meshData.opaque);
+		if (camera.isVisible(chunkBuffer.aabb)) {
+			if (chunkBuffer.opaque.noOfIndices > 0) {
+				_visible.push_back(&chunkBuffer.opaque);
 			}
-			if (meshData.water.noOfIndices > 0) {
-				_visibleWater.push_back(&meshData.water);
+			if (chunkBuffer.water.noOfIndices > 0) {
+				_visibleWater.push_back(&chunkBuffer.water);
 			}
 		}
 	}
-	Log::trace("%i meshes left after culling, %i meshes overall", (int)_visible.size(), (int)_meshChunkList.size());
+	Log::trace("%i meshes left after culling, %i meshes overall", (int)_visible.size(), (int)_chunkBuffers.size());
 }
 
 void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& camera) {
@@ -270,7 +270,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	if (vertices != nullptr) {
 		*vertices = 0;
 	}
-	if (_meshChunkList.empty()) {
+	if (_chunkBuffers.empty()) {
 		return 0;
 	}
 
@@ -534,7 +534,7 @@ bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel:
 	return true;
 }
 
-bool WorldRenderer::createMesh(const voxel::ChunkMeshData &mesh, RendererChunkMeshData& meshData) {
+bool WorldRenderer::createMesh(const voxel::ChunkMeshData &mesh, ChunkBuffer& meshData) {
 	if (!createMeshInternal(_worldShader, mesh.opaqueMesh, 2, meshData.opaque)) {
 		return false;
 	}
@@ -617,7 +617,7 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int r
 
 void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active) const {
 	_world->stats(meshes, extracted, pending);
-	active = _meshChunkList.size();
+	active = _chunkBuffers.size();
 }
 
 void WorldRenderer::onConstruct() {

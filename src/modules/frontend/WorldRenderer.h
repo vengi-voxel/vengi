@@ -32,7 +32,7 @@ namespace frontend {
  */
 class WorldRenderer {
 protected:
-	struct RendererChunkMeshData {
+	struct ChunkBuffer {
 		bool inuse = true;
 		core::AABB<float> aabb = {glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
 		voxel::ChunkMeshData voxelMeshes {0, 0, 0, 0};
@@ -45,9 +45,9 @@ protected:
 	};
 	typedef std::list<video::GLMeshData> RendererMeshList;
 	typedef std::list<video::GLMeshData*> RendererMeshVisibleList;
-	typedef std::list<RendererChunkMeshData> RendererChunkMeshDataList;
+	typedef std::list<ChunkBuffer> ChunkBufferList;
 
-	RendererChunkMeshDataList _meshChunkList;
+	ChunkBufferList _chunkBuffers;
 	RendererMeshList _meshPlantList;
 
 	RendererMeshVisibleList _visible;
@@ -58,6 +58,9 @@ protected:
 	Entities _entities;
 
 	Shadow _shadow;
+	RandomColorTexture _colorTexture;
+	voxel::PlantGenerator _plantGenerator;
+
 	float _fogRange = 250.0f;
 	float _lineWidth = 2.0f;
 	// TODO: get the view distance from the server - entity attributes
@@ -66,7 +69,6 @@ protected:
 	long _deltaFrame = 0l;
 
 	glm::vec4 _clearColor;
-	RandomColorTexture _colorTexture;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	/**
@@ -77,17 +79,16 @@ protected:
 	voxel::WorldPtr _world;
 	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapDebug;
-	video::VertexBuffer _shadowMapDebugBuffer;
 
-	video::VertexBuffer _worldBuffer;
 	int32_t _worldIndexBufferIndex = -1;
 	int32_t _worldIndexBuffer = -1;
-
-	video::VertexBuffer _worldInstancedBuffer;
 	int32_t _worldInstancedIndexBufferIndex = -1;
 	int32_t _worldInstancedBufferIndex = -1;
 	int32_t _worldInstancedOffsetBufferIndex = -1;
 
+	video::VertexBuffer _shadowMapDebugBuffer;
+	video::VertexBuffer _worldBuffer;
+	video::VertexBuffer _worldInstancedBuffer;
 	video::DepthBuffer _depthBuffer;
 
 	shader::ShadowmapRenderShader _shadowMapRenderShader;
@@ -98,17 +99,15 @@ protected:
 	shader::MeshShader _meshShader;
 	shader::ShadowmapShader _shadowMapShader;
 
-	voxel::PlantGenerator _plantGenerator;
-
 	/**
 	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	 */
 	bool createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData);
-	bool createMesh(const voxel::ChunkMeshData &mesh, RendererChunkMeshData& meshData);
+	bool createMesh(const voxel::ChunkMeshData &mesh, ChunkBuffer& meshData);
 	bool createInstancedMesh(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
 	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) const;
 	void handleMeshQueue();
-	void updateAABB(RendererChunkMeshData& meshData) const;
+	void updateAABB(ChunkBuffer& meshData) const;
 	/**
 	 * @brief Redistribute the plants on the meshes that are already extracted
 	 */
