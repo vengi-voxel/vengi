@@ -543,11 +543,11 @@ void WorldRenderer::updateMesh(const voxel::Mesh& mesh, video::GLMeshData& meshD
 
 	core_assert(meshData.vertexBuffer > 0);
 	glBindBuffer(GL_ARRAY_BUFFER, meshData.vertexBuffer);
-	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(voxel::VoxelVertex), vecVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(voxel::VoxelVertex), vecVertices, GL_DYNAMIC_DRAW);
 
 	core_assert(meshData.indexBuffer > 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(voxel::IndexType), vecIndices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numIndices * sizeof(voxel::IndexType), vecIndices, GL_DYNAMIC_DRAW);
 
 	meshData.noOfVertices = numVertices;
 	meshData.noOfIndices = numIndices;
