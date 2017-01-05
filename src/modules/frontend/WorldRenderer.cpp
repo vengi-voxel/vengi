@@ -229,8 +229,12 @@ void WorldRenderer::cull(const video::Camera& camera) {
 			continue;
 		}
 		if (camera.isVisible(meshData.aabb)) {
-			_visible.push_back(&meshData.opaque);
-			_visibleWater.push_back(&meshData.water);
+			if (meshData.opaque.noOfIndices > 0) {
+				_visible.push_back(&meshData.opaque);
+			}
+			if (meshData.water.noOfIndices > 0) {
+				_visibleWater.push_back(&meshData.water);
+			}
 		}
 	}
 	Log::trace("%i meshes left after culling, %i meshes overall", (int)_visible.size(), (int)_meshChunkList.size());
