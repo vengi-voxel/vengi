@@ -59,7 +59,11 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 		const VoxelType material = volume.getVoxel(buildingPos.x, i, buildingPos.z).getMaterial();
 		if (isFloor(material)) {
 			buildingPos.y = i;
-			voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::House, random);
+			if (random.fithyFifthy()) {
+				voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::House, random);
+			} else {
+				voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::Tower, random);
+			}
 			break;
 		}
 	}
