@@ -158,8 +158,8 @@ void WorldRenderer::handleMeshQueue() {
 		}
 		chunkBuffer.inuse = true;
 		chunkBuffer.voxelMeshes = std::move(mesh);
-		updateMesh(chunkBuffer.voxelMeshes.opaqueMesh, chunkBuffer.opaque);
-		updateMesh(chunkBuffer.voxelMeshes.waterMesh, chunkBuffer.water);
+		updateVertexBuffer(chunkBuffer.voxelMeshes.opaqueMesh, chunkBuffer.opaque);
+		updateVertexBuffer(chunkBuffer.voxelMeshes.waterMesh, chunkBuffer.water);
 		updateAABB(chunkBuffer);
 		distributePlants(_world, plantAmount, chunkBuffer.translation(), chunkBuffer.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
@@ -173,8 +173,8 @@ void WorldRenderer::handleMeshQueue() {
 		}
 		chunkBuffer.inuse = true;
 		chunkBuffer.voxelMeshes = std::move(mesh);
-		updateMesh(chunkBuffer.voxelMeshes.opaqueMesh, chunkBuffer.opaque);
-		updateMesh(chunkBuffer.voxelMeshes.waterMesh, chunkBuffer.water);
+		updateVertexBuffer(chunkBuffer.voxelMeshes.opaqueMesh, chunkBuffer.opaque);
+		updateVertexBuffer(chunkBuffer.voxelMeshes.waterMesh, chunkBuffer.water);
 		updateAABB(chunkBuffer);
 
 		distributePlants(_world, plantAmount, chunkBuffer.translation(), chunkBuffer.opaque.instancedPositions);
@@ -184,7 +184,7 @@ void WorldRenderer::handleMeshQueue() {
 
 	// create a new mesh
 	ChunkBuffer meshData;
-	if (createMesh(mesh, meshData)) {
+	if (createVertexBuffer(mesh, meshData)) {
 		meshData.voxelMeshes = std::move(mesh);
 		updateAABB(meshData);
 		_chunkBuffers.push_back(meshData);
@@ -473,7 +473,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	return drawCallsEntities;
 }
 
-void WorldRenderer::updateMesh(const voxel::Mesh& mesh, video::GLMeshData& meshData) const {
+void WorldRenderer::updateVertexBuffer(const voxel::Mesh& mesh, video::GLMeshData& meshData) const {
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
 	const voxel::IndexType* vecIndices = mesh.getRawIndexData();
 	const uint32_t numIndices = mesh.getNoOfIndices();
@@ -497,7 +497,7 @@ void WorldRenderer::updateMesh(const voxel::Mesh& mesh, video::GLMeshData& meshD
 	meshData.model = glm::scale(translate, meshData.scale);
 }
 
-bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData) {
+bool WorldRenderer::createVertexBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData) {
 	core_trace_gl_scoped(WorldRendererCreateMesh);
 	if (mesh.getNoOfIndices() == 0) {
 		return false;
@@ -520,7 +520,7 @@ bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel:
 
 	glBindVertexArray(meshData.vertexArrayObject);
 
-	updateMesh(mesh, meshData);
+	updateVertexBuffer(mesh, meshData);
 
 	const int posLoc = shader.enableVertexAttributeArray("a_pos");
 	const video::VertexBuffer::Attribute& posAttrib = getPositionVertexAttribute(0, posLoc, shader.getAttributeComponents(posLoc));
@@ -534,12 +534,12 @@ bool WorldRenderer::createMeshInternal(const video::Shader& shader, const voxel:
 	return true;
 }
 
-bool WorldRenderer::createMesh(const voxel::ChunkMeshData &mesh, ChunkBuffer& meshData) {
-	if (!createMeshInternal(_worldShader, mesh.opaqueMesh, 2, meshData.opaque)) {
+bool WorldRenderer::createVertexBuffer(const voxel::ChunkMeshData &mesh, ChunkBuffer& meshData) {
+	if (!createVertexBufferInternal(_worldShader, mesh.opaqueMesh, 2, meshData.opaque)) {
 		return false;
 	}
 
-	createMeshInternal(_worldShader, mesh.waterMesh, 2, meshData.water);
+	createVertexBufferInternal(_worldShader, mesh.waterMesh, 2, meshData.water);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -548,8 +548,8 @@ bool WorldRenderer::createMesh(const voxel::ChunkMeshData &mesh, ChunkBuffer& me
 	return true;
 }
 
-bool WorldRenderer::createInstancedMesh(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData) {
-	if (!createMeshInternal(_worldInstancedShader, mesh, 3, meshData)) {
+bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData) {
+	if (!createVertexBufferInternal(_worldInstancedShader, mesh, 3, meshData)) {
 		return false;
 	}
 
@@ -717,7 +717,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	for (int i = 0; i < (int)voxel::PlantType::MaxPlantTypes; ++i) {
 		const voxel::Mesh* mesh = _plantGenerator.getMesh((voxel::PlantType)i);
 		video::GLMeshData meshDataPlant;
-		if (createInstancedMesh(*mesh, 40, meshDataPlant)) {
+		if (createInstancedVertexBuffer(*mesh, 40, meshDataPlant)) {
 			meshDataPlant.scale = glm::vec3(0.4f);
 			_meshPlantList.push_back(meshDataPlant);
 		}

@@ -102,10 +102,10 @@ protected:
 	/**
 	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	 */
-	bool createMeshInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData);
-	bool createMesh(const voxel::ChunkMeshData &mesh, ChunkBuffer& meshData);
-	bool createInstancedMesh(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
-	void updateMesh(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) const;
+	bool createVertexBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData);
+	bool createVertexBuffer(const voxel::ChunkMeshData &mesh, ChunkBuffer& meshData);
+	bool createInstancedVertexBuffer(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
+	void updateVertexBuffer(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) const;
 	void handleMeshQueue();
 	void updateAABB(ChunkBuffer& meshData) const;
 	/**
