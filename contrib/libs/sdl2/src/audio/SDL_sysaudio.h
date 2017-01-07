@@ -26,6 +26,7 @@
 #include "SDL_mutex.h"
 #include "SDL_thread.h"
 #include "../SDL_dataqueue.h"
+#include "./SDL_audio_c.h"
 
 /* !!! FIXME: These are wordy and unlocalized... */
 #define DEFAULT_OUTPUT_DEVNAME "System audio output device"
@@ -123,15 +124,6 @@ typedef struct SDL_AudioDriver
 } SDL_AudioDriver;
 
 
-/* Streamer */
-typedef struct
-{
-    Uint8 *buffer;
-    int max_len;                /* the maximum length in bytes */
-    int read_pos, write_pos;    /* the position of the write and read heads in bytes */
-} SDL_AudioStreamer;
-
-
 /* Define the SDL audio driver structure */
 struct SDL_AudioDevice
 {
@@ -139,15 +131,14 @@ struct SDL_AudioDevice
     /* Data common to all devices */
     SDL_AudioDeviceID id;
 
-    /* The current audio specification (shared with audio thread) */
+    /* The device's current audio specification */
     SDL_AudioSpec spec;
 
-    /* An audio conversion block for audio format emulation */
-    SDL_AudioCVT convert;
+    /* The callback's expected audio specification (converted vs device's spec). */
+    SDL_AudioSpec callbackspec;
 
-    /* The streamer, if sample rate conversion necessitates it */
-    int use_streamer;
-    SDL_AudioStreamer streamer;
+    /* Stream that converts and resamples. NULL if not needed. */
+    SDL_AudioStream *stream;
 
     /* Current state flags */
     SDL_atomic_t shutdown; /* true if we are signaling the play thread to end. */
@@ -155,8 +146,11 @@ struct SDL_AudioDevice
     SDL_atomic_t paused;
     SDL_bool iscapture;
 
-    /* Fake audio buffer for when the audio hardware is busy */
-    Uint8 *fake_stream;
+    /* Scratch buffer used in the bridge between SDL and the user callback. */
+    Uint8 *work_buffer;
+
+    /* Size, in bytes, of work_buffer. */
+    Uint32 work_buffer_len;
 
     /* A mutex for locking the mixing buffers */
     SDL_mutex *mixer_lock;
