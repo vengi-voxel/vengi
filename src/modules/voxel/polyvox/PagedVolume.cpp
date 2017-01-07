@@ -469,6 +469,11 @@ PagedVolume::Sampler::Sampler(const PagedVolume* volume) :
 				volume->_chunkSideLength - 1) {
 }
 
+PagedVolume::Sampler::Sampler(const PagedVolume& volume) :
+		_volume(&volume), _xPosInVolume(0), _yPosInVolume(0), _zPosInVolume(0), _chunkSideLengthMinusOne(
+				volume._chunkSideLength - 1) {
+}
+
 PagedVolume::Sampler::~Sampler() {
 }
 

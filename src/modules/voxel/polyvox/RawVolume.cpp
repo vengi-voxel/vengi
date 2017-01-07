@@ -8,7 +8,6 @@ namespace voxel {
 
 RawVolume::RawVolume(const Region& regValid) :
 		_region(regValid) {
-	setBorderValue(Voxel());
 	//Create a volume of the right size.
 	initialise(regValid);
 }

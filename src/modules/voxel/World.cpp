@@ -10,7 +10,6 @@
 #include "io/File.h"
 #include "core/Random.h"
 #include "core/Concurrency.h"
-#include "voxel/LodCreator.h"
 #include "voxel/generator/WorldGenerator.h"
 #include "voxel/polyvox/AStarPathfinder.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"

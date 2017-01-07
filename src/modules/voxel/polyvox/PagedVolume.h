@@ -119,6 +119,7 @@ public:
 	class Sampler {
 	public:
 		Sampler(const PagedVolume* volume);
+		Sampler(const PagedVolume& volume);
 		~Sampler();
 
 		const Voxel& getVoxel() const;

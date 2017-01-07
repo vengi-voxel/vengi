@@ -25,9 +25,9 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 
 	// First of all we iterate over all destination voxels and compute their color as the
 	// avg of the colors of the eight corresponding voxels in the higher resolution version.
-	for (int32_t z = 0; z < destRegion.getDepthInVoxels(); z++) {
-		for (int32_t y = 0; y < destRegion.getHeightInVoxels(); y++) {
-			for (int32_t x = 0; x < destRegion.getWidthInVoxels(); x++) {
+	for (int32_t z = 0; z < destRegion.getDepthInVoxels(); ++z) {
+		for (int32_t y = 0; y < destRegion.getHeightInVoxels(); ++y) {
+			for (int32_t x = 0; x < destRegion.getWidthInVoxels(); ++x) {
 				const glm::ivec3 curPos(x, y, z);
 				const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
 				const glm::ivec3 dstPos = destRegion.getLowerCorner() + curPos;
@@ -42,7 +42,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 							srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
 							const Voxel& child = srcSampler.getVoxel();
 
-							if (child.getMaterial() != VoxelType::Air) {
+							if (!isBlocked(child.getMaterial())) {
 								++solidVoxels;
 								const glm::vec4& color = colors[child.getColor()];
 								avgOf8Red += color.r;
@@ -88,7 +88,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 					if (dstSampler.peekVoxel0px0py1nz().getMaterial() == VoxelType::Air || dstSampler.peekVoxel0px0py1pz().getMaterial() == VoxelType::Air
 							|| dstSampler.peekVoxel0px1ny0pz().getMaterial() == VoxelType::Air || dstSampler.peekVoxel0px1py0pz().getMaterial() == VoxelType::Air
 							|| dstSampler.peekVoxel1nx0py0pz().getMaterial() == VoxelType::Air || dstSampler.peekVoxel1px0py0pz().getMaterial() == VoxelType::Air) {
-						glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
+						const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
 
 						float totalRed = 0.0f;
 						float totalGreen = 0.0f;

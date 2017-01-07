@@ -11,6 +11,7 @@
 
 namespace voxel {
 
+// TODO: see VolumeRescaler
 void rescaleCubicVolume(PagedVolume* source, const Region& sourceRegion, RawVolume* destination, const Region& destRegion) {
 	core_trace_scoped(RescaleCubicVolume);
 	core_assert_msg(sourceRegion.getWidthInVoxels() == destRegion.getWidthInVoxels() * 2, "Wrong width - %i versus %i!", sourceRegion.getWidthInVoxels(), destRegion.getWidthInVoxels() * 2);
