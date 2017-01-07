@@ -128,6 +128,10 @@ void EditorScene::extend(int size) {
 	m().extend(size);
 }
 
+void EditorScene::scale() {
+	m().scale();
+}
+
 void EditorScene::fill(int x, int y, int z) {
 	m().fill(x, y, z);
 }

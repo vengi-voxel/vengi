@@ -576,6 +576,10 @@ void VoxEditWindow::extend(int size) {
 	_scene->extend(size);
 }
 
+void VoxEditWindow::scale() {
+	_scene->scale();
+}
+
 void VoxEditWindow::fill(int x, int y, int z) {
 	_scene->fill(x, y, z);
 }

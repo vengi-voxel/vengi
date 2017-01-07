@@ -25,6 +25,7 @@ class RawVolume : public core::NonCopyable {
 public:
 	class Sampler {
 	public:
+		Sampler(const RawVolume& volume);
 		Sampler(const RawVolume* volume);
 		~Sampler();
 

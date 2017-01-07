@@ -111,6 +111,7 @@ private:
 	void crop();
 	void fill(int x, int y, int z);
 	void extend(int size = 1);
+	void scale();
 	void setCursorPosition(int x, int y, int z);
 	void toggleviewport();
 	void togglefreelook();

@@ -3,6 +3,7 @@
 #include "voxel/polyvox/VolumeCropper.h"
 #include "voxel/polyvox/VolumeRotator.h"
 #include "voxel/polyvox/VolumeMover.h"
+#include "voxel/polyvox/VolumeRescaler.h"
 #include "voxel/polyvox//RawVolumeWrapper.h"
 #include "voxel/polyvox//RawVolumeMoveWrapper.h"
 #include "voxel/generator/NoiseGenerator.h"
@@ -123,6 +124,21 @@ void Model::extend(int size) {
 	if (newVolume == nullptr) {
 		return;
 	}
+	markUndo();
+	setNewVolume(newVolume);
+}
+
+void Model::scale() {
+	// TODO: check that src region boundaries are even
+	const voxel::Region& srcRegion = _modelVolume->getRegion();
+	const int w = srcRegion.getWidthInVoxels();
+	const int h = srcRegion.getHeightInVoxels();
+	const int d = srcRegion.getDepthInVoxels();
+	const glm::ivec3 maxs(w / 2, h / 2, d / 2);
+	voxel::Region region(glm::zero<glm::ivec3>(), maxs);
+	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
+	voxel::RawVolumeWrapper wrapper(newVolume);
+	voxel::rescaleVolume(*_modelVolume, *newVolume);
 	markUndo();
 	setNewVolume(newVolume);
 }

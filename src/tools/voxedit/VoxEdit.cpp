@@ -147,6 +147,7 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_MAINWINDOW(scalez, "Scale the cursor volume in z direction");
 	COMMAND_MAINWINDOW(crop, "Crop your volume");
 	COMMAND_MAINWINDOW(extend, "Extend your volume");
+	COMMAND_MAINWINDOW(scale, "Scale your volume");
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
 	COMMAND_MAINWINDOW(redo, "Redo your last step");
 	COMMAND_MAINWINDOW(copy, "Copy selection into cursor");

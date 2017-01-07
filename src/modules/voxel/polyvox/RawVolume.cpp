@@ -151,6 +151,11 @@ RawVolume::Sampler::Sampler(const RawVolume* volume) :
 				false), _isCurrentPositionValidInY(false), _isCurrentPositionValidInZ(false) {
 }
 
+RawVolume::Sampler::Sampler(const RawVolume& volume) :
+		_volume(&volume), _xPosInVolume(0), _yPosInVolume(0), _zPosInVolume(0), _currentVoxel(nullptr), _isCurrentPositionValidInX(
+				false), _isCurrentPositionValidInY(false), _isCurrentPositionValidInZ(false) {
+}
+
 RawVolume::Sampler::~Sampler() {
 }
 
