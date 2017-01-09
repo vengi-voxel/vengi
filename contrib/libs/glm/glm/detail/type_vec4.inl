@@ -216,7 +216,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, typename C, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(vec<2, A, Q> const& _xy, B _z, C _w)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(vec<2, A, Q> const& _xy, B _z, C _w)
 		: x(static_cast<T>(_xy.x))
 		, y(static_cast<T>(_xy.y))
 		, z(static_cast<T>(_z))
@@ -225,7 +225,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, typename C, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(vec<2, A, Q> const& _xy, vec<1, B, Q> const& _z, vec<1, C, Q> const& _w)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(vec<2, A, Q> const& _xy, vec<1, B, Q> const& _z, vec<1, C, Q> const& _w)
 		: x(static_cast<T>(_xy.x))
 		, y(static_cast<T>(_xy.y))
 		, z(static_cast<T>(_z.x))
@@ -234,7 +234,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, typename C, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(A _x, vec<2, B, Q> const& _yz, C _w)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(A _x, vec<2, B, Q> const& _yz, C _w)
 		: x(static_cast<T>(_x))
 		, y(static_cast<T>(_yz.x))
 		, z(static_cast<T>(_yz.y))
@@ -243,7 +243,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, typename C, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(vec<1, A, Q> const& _x, vec<2, B, Q> const& _yz, vec<1, C, Q> const& _w)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(vec<1, A, Q> const& _x, vec<2, B, Q> const& _yz, vec<1, C, Q> const& _w)
 		: x(static_cast<T>(_x.x))
 		, y(static_cast<T>(_yz.x))
 		, z(static_cast<T>(_yz.y))
@@ -252,7 +252,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, typename C, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(A _x, B _y, vec<2, C, Q> const& _zw)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(A _x, B _y, vec<2, C, Q> const& _zw)
 		: x(static_cast<T>(_x))
 		, y(static_cast<T>(_y))
 		, z(static_cast<T>(_zw.x))
@@ -261,7 +261,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, typename C, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(vec<1, A, Q> const& _x, vec<1, B, Q> const& _y, vec<2, C, Q> const& _zw)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(vec<1, A, Q> const& _x, vec<1, B, Q> const& _y, vec<2, C, Q> const& _zw)
 		: x(static_cast<T>(_x.x))
 		, y(static_cast<T>(_y.x))
 		, z(static_cast<T>(_zw.x))
@@ -270,7 +270,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(vec<3, A, Q> const& _xyz, B _w) :
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(vec<3, A, Q> const& _xyz, B _w) :
 		x(static_cast<T>(_xyz.x)),
 		y(static_cast<T>(_xyz.y)),
 		z(static_cast<T>(_xyz.z)),
@@ -279,7 +279,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(vec<3, A, Q> const& _xyz, vec<1, B, Q> const& _w) :
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(vec<3, A, Q> const& _xyz, vec<1, B, Q> const& _w) :
 		x(static_cast<T>(_xyz.x)),
 		y(static_cast<T>(_xyz.y)),
 		z(static_cast<T>(_xyz.z)),
@@ -288,7 +288,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(A _x, vec<3, B, Q> const& _yzw) :
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(A _x, vec<3, B, Q> const& _yzw) :
 		x(static_cast<T>(_x)),
 		y(static_cast<T>(_yzw.x)),
 		z(static_cast<T>(_yzw.y)),
@@ -297,7 +297,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(vec<1, A, Q> const& _x, vec<3, B, Q> const& _yzw) :
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(vec<1, A, Q> const& _x, vec<3, B, Q> const& _yzw) :
 		x(static_cast<T>(_x.x)),
 		y(static_cast<T>(_yzw.x)),
 		z(static_cast<T>(_yzw.y)),
@@ -306,7 +306,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename A, typename B, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(vec<2, A, Q> const& _xy, vec<2, B, Q> const& _zw) :
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(vec<2, A, Q> const& _xy, vec<2, B, Q> const& _zw) :
 		x(static_cast<T>(_xy.x)),
 		y(static_cast<T>(_xy.y)),
 		z(static_cast<T>(_zw.x)),
@@ -315,7 +315,7 @@ namespace detail
 
 	template<typename T, precision P>
 	template<typename U, precision Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, P>::vec(vec<4, U, Q> const& v) :
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR vec<4, T, P>::vec(vec<4, U, Q> const& v) :
 		x(static_cast<T>(v.x)),
 		y(static_cast<T>(v.y)),
 		z(static_cast<T>(v.z)),

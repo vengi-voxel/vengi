@@ -101,14 +101,21 @@ namespace detail
 #	endif
 }//namespace detail
 
-	typedef vec<1, float, highp>		highp_vec1_t;
+#if GLM_HAS_TEMPLATE_ALIASES
+	template <typename T, precision P = defaultp> using tvec1 = vec<1, T, P>;
+	template <typename T, precision P = defaultp> using tvec2 = vec<2, T, P>;
+	template <typename T, precision P = defaultp> using tvec3 = vec<3, T, P>;
+	template <typename T, precision P = defaultp> using tvec4 = vec<4, T, P>;
+#endif//GLM_HAS_TEMPLATE_ALIASES
+
+	typedef vec<1, float, highp>	highp_vec1_t;
 	typedef vec<1, float, mediump>	mediump_vec1_t;
 	typedef vec<1, float, lowp>		lowp_vec1_t;
 	typedef vec<1, double, highp>	highp_dvec1_t;
 	typedef vec<1, double, mediump>	mediump_dvec1_t;
-	typedef vec<1, double, lowp>		lowp_dvec1_t;
+	typedef vec<1, double, lowp>	lowp_dvec1_t;
 	typedef vec<1, int, highp>		highp_ivec1_t;
-	typedef vec<1, int, mediump>		mediump_ivec1_t;
+	typedef vec<1, int, mediump>	mediump_ivec1_t;
 	typedef vec<1, int, lowp>		lowp_ivec1_t;
 	typedef vec<1, uint, highp>		highp_uvec1_t;
 	typedef vec<1, uint, mediump>	mediump_uvec1_t;

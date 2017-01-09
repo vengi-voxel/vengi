@@ -445,6 +445,11 @@
 		((GLM_COMPILER & GLM_COMPILER_CUDA) && (GLM_COMPILER >= GLM_COMPILER_CUDA70))))
 #endif
 
+#define GLM_HAS_ONLY_XYZW ((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER < GLM_COMPILER_GCC46))
+#if GLM_HAS_ONLY_XYZW
+#	pragma message("GLM: GCC older than 4.6 has a bug presenting the use of rgba and stpq components")
+#endif
+
 //
 #if GLM_LANG & GLM_LANG_CXX11_FLAG
 #	define GLM_HAS_ASSIGNABLE 1
@@ -713,17 +718,21 @@
 #	define GLM_DEFAULT_CTOR
 #endif
 
-#if GLM_HAS_CONSTEXPR
+#if GLM_HAS_CONSTEXPR || GLM_HAS_CONSTEXPR_PARTIAL
 #	define GLM_CONSTEXPR constexpr
-#	define GLM_CONSTEXPR_CTOR constexpr
-#	define GLM_RELAXED_CONSTEXPR constexpr
-#elif GLM_HAS_CONSTEXPR_PARTIAL
-#	define GLM_CONSTEXPR constexpr
-#	define GLM_CONSTEXPR_CTOR
-#	define GLM_RELAXED_CONSTEXPR const
+#	if GLM_COMPILER & GLM_COMPILER_VC // Visual C++ has a bug #594 https://github.com/g-truc/glm/issues/594
+#		define GLM_CONSTEXPR_CTOR
+#	else
+#		define GLM_CONSTEXPR_CTOR constexpr
+#	endif
 #else
 #	define GLM_CONSTEXPR
 #	define GLM_CONSTEXPR_CTOR
+#endif
+
+#if GLM_HAS_CONSTEXPR
+#	define GLM_RELAXED_CONSTEXPR constexpr
+#else
 #	define GLM_RELAXED_CONSTEXPR const
 #endif
 

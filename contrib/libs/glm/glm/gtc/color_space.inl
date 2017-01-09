@@ -23,7 +23,7 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static vec<4, T, P> call(vec<4, T, P> const& ColorRGB, T GammaCorrection)
 		{
-			return vec<4, T, P>(compute_rgbToSrgb<3, T, P, vec>::call(vec<3, T, P>(ColorRGB), GammaCorrection), ColorRGB.a);
+			return vec<4, T, P>(compute_rgbToSrgb<3, T, P, vec>::call(vec<3, T, P>(ColorRGB), GammaCorrection), ColorRGB.w);
 		}
 	};
 
@@ -44,7 +44,7 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static vec<4, T, P> call(vec<4, T, P> const& ColorSRGB, T Gamma)
 		{
-			return vec<4, T, P>(compute_srgbToRgb<3, T, P, vec>::call(vec<3, T, P>(ColorSRGB), Gamma), ColorSRGB.a);
+			return vec<4, T, P>(compute_srgbToRgb<3, T, P, vec>::call(vec<3, T, P>(ColorSRGB), Gamma), ColorSRGB.w);
 		}
 	};
 }//namespace detail

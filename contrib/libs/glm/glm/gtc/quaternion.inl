@@ -574,7 +574,13 @@ namespace detail
 	template<typename T, precision P>
 	GLM_FUNC_QUALIFIER T pitch(tquat<T, P> const & q)
 	{
-		return T(atan(T(2) * (q.y * q.z + q.w * q.x), q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z));
+		//return T(atan(T(2) * (q.y * q.z + q.w * q.x), q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z));
+		const T y = T(2) * (q.y * q.z + q.w * q.x);
+		const T x = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
+        	if(y == T(0) && x == T(0)) //avoid atan2(0,0) - handle singularity - Matiis
+            		return T(T(2)*atan(q.x,q.w));
+		
+		return T(atan(y,x));
 	}
 
 	template<typename T, precision P>
