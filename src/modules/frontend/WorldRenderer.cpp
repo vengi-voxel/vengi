@@ -239,7 +239,6 @@ void WorldRenderer::setUniforms(video::Shader& shader, const video::Camera& came
 	shaderSetUniformIf(shader, setUniformMatrix, "u_projection", camera.projectionMatrix());
 	shaderSetUniformIf(shader, setUniformf, "u_viewdistance", _viewDistance);
 	shaderSetUniformIf(shader, setUniformVec3, "u_lightdir", _shadow.sunDirection());
-	shaderSetUniformIf(shader, setUniformf, "u_screensize", glm::vec2(camera.dimension()));
 }
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const RendererMeshVisibleList& meshes, int* vertices) {
