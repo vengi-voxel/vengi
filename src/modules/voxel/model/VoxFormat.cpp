@@ -24,9 +24,9 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	stream.addInt(FourCC('V','O','X',' '));
 	stream.addInt(150);
 	stream.addInt(FourCC('M','A','I','N'));
+	// this is filled at the end - once we know the final size
 	int64_t numBytesMainChunkPos = stream.pos();
 	stream.addInt(0);
-	int64_t numBytesMainChildrenChunksPos = stream.pos();
 	stream.addInt(0);
 
 	// model size
