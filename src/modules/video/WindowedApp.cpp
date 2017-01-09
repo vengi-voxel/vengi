@@ -118,22 +118,37 @@ WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventB
 
 void WindowedApp::setupLimits() {
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &_state.limits[std::enum_value(Limit::MaxTextureSize)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &_state.limits[std::enum_value(Limit::MaxCubeMapTextureSize)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &_state.limits[std::enum_value(Limit::MaxViewPortWidth)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &_state.limits[std::enum_value(Limit::MaxDrawBuffers)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &_state.limits[std::enum_value(Limit::MaxVertexAttribs)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &_state.limits[std::enum_value(Limit::MaxCombinedTextureImageUnits)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &_state.limits[std::enum_value(Limit::MaxVertexTextureImageUnits)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &_state.limits[std::enum_value(Limit::MaxElementIndices)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &_state.limits[std::enum_value(Limit::MaxElementVertices)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &_state.limits[std::enum_value(Limit::MaxFragmentInputComponents)]);
+	GL_checkError();
 #ifdef GL_MAX_VERTEX_UNIFORM_VECTORS
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &_state.limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &_state.limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
+	GL_checkError();
 #else
+	GL_checkError();
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &_state.limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
+	GL_checkError();
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &_state.limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
 #endif
+	GL_checkError();
 	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", _state.limits[std::enum_value(Limit::MaxElementVertices)]);
 	Log::info("GL_MAX_ELEMENTS_INDICES: %i", _state.limits[std::enum_value(Limit::MaxElementIndices)]);
 }

@@ -401,6 +401,7 @@ void UIApp::afterRootWidget() {
 
 core::AppState UIApp::onInit() {
 	const core::AppState state = Super::onInit();
+	GL_checkError();
 	if (state != core::AppState::Running) {
 		return state;
 	}
