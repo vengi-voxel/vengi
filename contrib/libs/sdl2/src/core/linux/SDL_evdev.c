@@ -52,17 +52,18 @@
 #include "../../events/SDL_events_c.h"
 #include "../../events/scancodes_linux.h" /* adds linux_scancode_table */
 
-/* This isn't defined in older Linux kernel headers */
+/* These are not defined in older Linux kernel headers */
 #ifndef SYN_DROPPED
 #define SYN_DROPPED 3
 #endif
-
-/* These are not defined in older Linux kernel headers */
 #ifndef ABS_MT_SLOT
 #define ABS_MT_SLOT         0x2f
 #define ABS_MT_POSITION_X   0x35
 #define ABS_MT_POSITION_Y   0x36
 #define ABS_MT_TRACKING_ID  0x39
+#endif
+#ifndef K_OFF
+#define K_OFF 0x04
 #endif
 
 typedef struct SDL_evdevlist_item
@@ -107,7 +108,7 @@ typedef struct SDL_EVDEV_PrivateData
     int num_devices;
     int ref_count;
     int console_fd;
-    int kb_mode;
+    int old_kb_mode;
 } SDL_EVDEV_PrivateData;
 
 #define _THIS SDL_EVDEV_PrivateData *_this
@@ -134,91 +135,26 @@ static Uint8 EVDEV_MouseButtons[] = {
     SDL_BUTTON_X2 + 3           /*  BTN_TASK        0x117 */
 };
 
-static const char* EVDEV_consoles[] = {
-    /* "/proc/self/fd/0",
-    "/dev/tty",
-    "/dev/tty0", */ /* the tty ioctl's prohibit these */
-    "/dev/tty1",
-    "/dev/tty2",
-    "/dev/tty3",
-    "/dev/tty4",
-    "/dev/tty5",
-    "/dev/tty6",
-    "/dev/tty7", /* usually X is spawned in tty7 */
-    "/dev/vc/0",
-    "/dev/console"
-};
-
-static int SDL_EVDEV_is_console(int fd) {
-    char type;
-    
-    return isatty(fd) && ioctl(fd, KDGKBTYPE, &type) == 0 &&
-        (type == KB_101 || type == KB_84);
-}
-
 /* Prevent keystrokes from reaching the tty */
 static int SDL_EVDEV_mute_keyboard(int tty_fd, int* old_kb_mode)
 {
-    if (!SDL_EVDEV_is_console(tty_fd)) {
-        return SDL_SetError("Tried to mute an invalid tty");
-    }
-    
     if (ioctl(tty_fd, KDGKBMODE, old_kb_mode) < 0) {
         return SDL_SetError("Failed to get keyboard mode during muting");
     }
     
-    /* FIXME: atm this absolutely ruins the vt, and KDSKBMUTE isn't implemented
-       in the kernel */
-    /*
     if (ioctl(tty_fd, KDSKBMODE, K_OFF) < 0) {
         return SDL_SetError("Failed to set keyboard mode during muting");
     }
-    */
     
     return 0;  
 }
 
 /* Restore the keyboard mode for given tty */
-static void SDL_EVDEV_unmute_keyboard(int tty_fd, int kb_mode)
+static void SDL_EVDEV_unmute_keyboard(int tty_fd, int old_kb_mode)
 {
-    /* read above */
-    /*
-    if (ioctl(tty_fd, KDSKBMODE, kb_mode) < 0) {
-        SDL_Log("Failed to unmute keyboard");
+    if (ioctl(tty_fd, KDSKBMODE, old_kb_mode) < 0) {
+        SDL_SetError("Failed to set keyboard mode during unmuting");
     }
-    */
-}
-
-static int SDL_EVDEV_get_active_tty()
-{  
-    int i, fd, ret, tty = 0;
-    char tiocl;
-    struct vt_stat vt_state;
-    char path[PATH_MAX + 1];
-    
-    for(i = 0; i < SDL_arraysize(EVDEV_consoles); i++) {
-        fd = open(EVDEV_consoles[i], O_RDONLY);
-        
-        if (fd < 0 && !SDL_EVDEV_is_console(fd))
-            break;
-        
-        tiocl = TIOCL_GETFGCONSOLE;
-        if ((ret = ioctl(fd, TIOCLINUX, &tiocl)) >= 0)
-            tty = ret + 1;
-        else if (ioctl(fd, VT_GETSTATE, &vt_state) == 0)
-            tty = vt_state.v_active;
-        
-        close(fd);
-        
-        if (tty) {
-            sprintf(path, "/dev/tty%u", tty);
-            fd = open(path, O_RDONLY);
-            if (fd >= 0 && SDL_EVDEV_is_console(fd))
-                return fd;
-        }
-    }
-    
-    return SDL_SetError("Failed to determine active tty");
 }
 
 int
@@ -250,14 +186,15 @@ SDL_EVDEV_Init(void)
 #else
         /* TODO: Scan the devices manually, like a caveman */
 #endif /* SDL_USE_LIBUDEV */
-        
-        /* We need a physical terminal (not PTS) to be able to translate key
-           code to symbols via the kernel tables */
-        _this->console_fd = SDL_EVDEV_get_active_tty();
-        
+
+        /* This might fail if we're not connected to a tty (e.g. on the Steam Link) */
+        _this->console_fd = open("/dev/tty", O_RDONLY);
+
         /* Mute the keyboard so keystrokes only generate evdev events and do not
            leak through to the console */
-        SDL_EVDEV_mute_keyboard(_this->console_fd, &_this->kb_mode);
+        if (_this->console_fd >= 0) {
+            SDL_EVDEV_mute_keyboard(_this->console_fd, &_this->old_kb_mode);
+        }
     }
     
     _this->ref_count += 1;
@@ -281,7 +218,7 @@ SDL_EVDEV_Quit(void)
 #endif /* SDL_USE_LIBUDEV */
        
         if (_this->console_fd >= 0) {
-            SDL_EVDEV_unmute_keyboard(_this->console_fd, _this->kb_mode);
+            SDL_EVDEV_unmute_keyboard(_this->console_fd, _this->old_kb_mode);
             close(_this->console_fd);
         }
         
@@ -327,7 +264,8 @@ void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_class,
 #ifdef SDL_INPUT_LINUXKD
 /* this logic is pulled from kbd_keycode() in drivers/tty/vt/keyboard.c in the
    Linux kernel source */
-static void SDL_EVDEV_do_text_input(unsigned short keycode) {
+static void SDL_EVDEV_do_text_input(unsigned short keycode)
+{
     char shift_state;
     int locks_state;
     struct kbentry kbe;
@@ -351,6 +289,12 @@ static void SDL_EVDEV_do_text_input(unsigned short keycode) {
         return;
     }
     
+    if (kbe.kb_value == K_HOLE || kbe.kb_value == K_NOSUCHMAP) {
+        return;
+    }
+
+    kbe.kb_value ^= 0xf000;
+
     type = KTYP(kbe.kb_value);
     
     if (type < 0xf0) {

@@ -29,14 +29,9 @@
 #include "SDL_assert.h"
 #include "../SDL_dataqueue.h"
 
-#if HAVE_LIBSAMPLERATE_H
-#include "samplerate.h"
-#endif
-
-
 /* Effectively mix right and left channels into a single channel */
 static void SDLCALL
-SDL_ConvertMono(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+SDL_ConvertStereoToMono(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 {
     float *dst = (float *) cvt->buf;
     const float *src = dst;
@@ -56,20 +51,22 @@ SDL_ConvertMono(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 }
 
 
-/* Discard top 4 channels */
+/* Convert from 5.1 to stereo. Average left and right, discard subwoofer. */
 static void SDLCALL
-SDL_ConvertStrip(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+SDL_Convert51ToStereo(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 {
     float *dst = (float *) cvt->buf;
     const float *src = dst;
     int i;
 
-    LOG_DEBUG_CONVERT("6 channels", "stereo");
+    LOG_DEBUG_CONVERT("5.1", "stereo");
     SDL_assert(format == AUDIO_F32SYS);
 
+    /* this assumes FL+FR+FC+subwoof+BL+BR layout. */
     for (i = cvt->len_cvt / (sizeof (float) * 6); i; --i, src += 6, dst += 2) {
-        dst[0] = src[0];
-        dst[1] = src[1];
+        const double front_center = (double) src[2];
+        dst[0] = (float) ((src[0] + front_center + src[4]) / 3.0);  /* left */
+        dst[1] = (float) ((src[1] + front_center + src[5]) / 3.0);  /* right */
     }
 
     cvt->len_cvt /= 3;
@@ -79,22 +76,25 @@ SDL_ConvertStrip(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 }
 
 
-/* Discard top 2 channels of 6 */
+/* Convert from 5.1 to quad */
 static void SDLCALL
-SDL_ConvertStrip_2(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+SDL_Convert51ToQuad(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 {
     float *dst = (float *) cvt->buf;
     const float *src = dst;
     int i;
 
-    LOG_DEBUG_CONVERT("6 channels", "quad");
+    LOG_DEBUG_CONVERT("5.1", "quad");
     SDL_assert(format == AUDIO_F32SYS);
 
+    /* assumes quad is FL+FR+BL+BR layout and 5.1 is FL+FR+FC+subwoof+BL+BR */
     for (i = cvt->len_cvt / (sizeof (float) * 6); i; --i, src += 6, dst += 4) {
-        dst[0] = src[0];
-        dst[1] = src[1];
-        dst[2] = src[2];
-        dst[3] = src[3];
+        /* FIXME: this is a good candidate for SIMD. */
+        const double front_center = (double) src[2];
+        dst[0] = (float) ((src[0] + front_center) * 0.5);  /* FL */
+        dst[1] = (float) ((src[1] + front_center) * 0.5);  /* FR */
+        dst[2] = (float) ((src[4] + front_center) * 0.5);  /* BL */
+        dst[3] = (float) ((src[5] + front_center) * 0.5);  /* BR */
     }
 
     cvt->len_cvt /= 6;
@@ -104,9 +104,10 @@ SDL_ConvertStrip_2(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     }
 }
 
+
 /* Duplicate a mono channel to both stereo channels */
 static void SDLCALL
-SDL_ConvertStereo(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+SDL_ConvertMonoToStereo(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 {
     const float *src = (const float *) (cvt->buf + cvt->len_cvt);
     float *dst = (float *) (cvt->buf + cvt->len_cvt * 2);
@@ -130,7 +131,7 @@ SDL_ConvertStereo(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 
 /* Duplicate a stereo channel to a pseudo-5.1 stream */
 static void SDLCALL
-SDL_ConvertSurround(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+SDL_ConvertStereoTo51(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 {
     int i;
     float lf, rf, ce;
@@ -145,12 +146,13 @@ SDL_ConvertSurround(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         src -= 2;
         lf = src[0];
         rf = src[1];
-        ce = (lf * 0.5f) + (rf * 0.5f);
-        dst[0] = src[0];
-        dst[1] = src[1];
-        dst[2] = lf - ce;
-        dst[3] = rf - ce;
-        dst[4] = dst[5] = ce;
+        ce = (lf + rf) * 0.5f;
+        dst[0] = lf + (lf - ce);  /* FL */
+        dst[1] = rf + (rf - ce);  /* FR */
+        dst[2] = ce;  /* FC */
+        dst[3] = ce;  /* !!! FIXME: wrong! This is the subwoofer. */
+        dst[4] = lf;  /* BL */
+        dst[5] = rf;  /* BR */
     }
 
     cvt->len_cvt *= 3;
@@ -162,11 +164,11 @@ SDL_ConvertSurround(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 
 /* Duplicate a stereo channel to a pseudo-4.0 stream */
 static void SDLCALL
-SDL_ConvertSurround_4(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+SDL_ConvertStereoToQuad(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 {
     const float *src = (const float *) (cvt->buf + cvt->len_cvt);
     float *dst = (float *) (cvt->buf + cvt->len_cvt * 2);
-    float lf, rf, ce;
+    float lf, rf;
     int i;
 
     LOG_DEBUG_CONVERT("stereo", "quad");
@@ -177,11 +179,10 @@ SDL_ConvertSurround_4(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         src -= 2;
         lf = src[0];
         rf = src[1];
-        ce = (lf / 2) + (rf / 2);
-        dst[0] = src[0];
-        dst[1] = src[1];
-        dst[2] = lf - ce;
-        dst[3] = rf - ce;
+        dst[0] = lf;  /* FL */
+        dst[1] = rf;  /* FR */
+        dst[2] = lf;  /* BL */
+        dst[3] = rf;  /* BR */
     }
 
     cvt->len_cvt *= 2;
@@ -541,36 +542,36 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     /* Channel conversion */
     if (src_channels != dst_channels) {
         if ((src_channels == 1) && (dst_channels > 1)) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertStereo;
+            cvt->filters[cvt->filter_index++] = SDL_ConvertMonoToStereo;
             cvt->len_mult *= 2;
             src_channels = 2;
             cvt->len_ratio *= 2;
         }
         if ((src_channels == 2) && (dst_channels == 6)) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertSurround;
+            cvt->filters[cvt->filter_index++] = SDL_ConvertStereoTo51;
             src_channels = 6;
             cvt->len_mult *= 3;
             cvt->len_ratio *= 3;
         }
         if ((src_channels == 2) && (dst_channels == 4)) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertSurround_4;
+            cvt->filters[cvt->filter_index++] = SDL_ConvertStereoToQuad;
             src_channels = 4;
             cvt->len_mult *= 2;
             cvt->len_ratio *= 2;
         }
         while ((src_channels * 2) <= dst_channels) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertStereo;
+            cvt->filters[cvt->filter_index++] = SDL_ConvertMonoToStereo;
             cvt->len_mult *= 2;
             src_channels *= 2;
             cvt->len_ratio *= 2;
         }
         if ((src_channels == 6) && (dst_channels <= 2)) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertStrip;
+            cvt->filters[cvt->filter_index++] = SDL_Convert51ToStereo;
             src_channels = 2;
             cvt->len_ratio /= 3;
         }
         if ((src_channels == 6) && (dst_channels == 4)) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertStrip_2;
+            cvt->filters[cvt->filter_index++] = SDL_Convert51ToQuad;
             src_channels = 4;
             cvt->len_ratio /= 2;
         }
@@ -580,7 +581,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
          */
         while (((src_channels % 2) == 0) &&
                ((src_channels / 2) >= dst_channels)) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertMono;
+            cvt->filters[cvt->filter_index++] = SDL_ConvertStereoToMono;
             src_channels /= 2;
             cvt->len_ratio /= 2;
         }
@@ -634,45 +635,10 @@ struct SDL_AudioStream
 };
 
 #ifdef HAVE_LIBSAMPLERATE_H
-
-typedef struct
-{
-    void *SRC_lib;
-
-    SRC_STATE* (*src_new)(int converter_type, int channels, int *error);
-    int (*src_process)(SRC_STATE *state, SRC_DATA *data);
-    int (*src_reset)(SRC_STATE *state);
-    SRC_STATE* (*src_delete)(SRC_STATE *state);
-    const char* (*src_strerror)(int error);
-
-    SRC_STATE *SRC_state;
-} SDL_AudioStreamResamplerState_SRC;
-
-static SDL_bool
-LoadLibSampleRate(SDL_AudioStreamResamplerState_SRC *state)
-{
-#ifdef SDL_LIBSAMPLERATE_DYNAMIC
-    state->SRC_lib = SDL_LoadObject(SDL_LIBSAMPLERATE_DYNAMIC);
-    if (!state->SRC_lib) {
-        return SDL_FALSE;
-    }
-#endif
-
-    state->src_new = (SRC_STATE* (*)(int converter_type, int channels, int *error))SDL_LoadFunction(state->SRC_lib, "src_new");
-    state->src_process = (int (*)(SRC_STATE *state, SRC_DATA *data))SDL_LoadFunction(state->SRC_lib, "src_process");
-    state->src_reset = (int(*)(SRC_STATE *state))SDL_LoadFunction(state->SRC_lib, "src_reset");
-    state->src_delete = (SRC_STATE* (*)(SRC_STATE *state))SDL_LoadFunction(state->SRC_lib, "src_delete");
-    state->src_strerror = (const char* (*)(int error))SDL_LoadFunction(state->SRC_lib, "src_strerror");
-    if (!state->src_new || !state->src_process || !state->src_reset || !state->src_delete || !state->src_strerror) {
-        return SDL_FALSE;
-    }
-    return SDL_TRUE;
-}
-
 static int
 SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const float *inbuf, const int inbuflen, float *outbuf, const int outbuflen)
 {
-    SDL_AudioStreamResamplerState_SRC *state = (SDL_AudioStreamResamplerState_SRC*)stream->resampler_state;
+    SRC_STATE *state = (SRC_STATE *)stream->resampler_state;
     SRC_DATA data;
     int result;
 
@@ -686,9 +652,9 @@ SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const float *inbuf, const i
     data.end_of_input = 0;
     data.src_ratio = stream->rate_incr;
 
-    result = state->src_process(state->SRC_state, &data);
+    result = SRC_src_process(state, &data);
     if (result != 0) {
-        SDL_SetError("src_process() failed: %s", state->src_strerror(result));
+        SDL_SetError("src_process() failed: %s", SRC_src_strerror(result));
         return 0;
     }
 
@@ -701,20 +667,15 @@ SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const float *inbuf, const i
 static void
 SDL_ResetAudioStreamResampler_SRC(SDL_AudioStream *stream)
 {
-    SDL_AudioStreamResamplerState_SRC *state = (SDL_AudioStreamResamplerState_SRC*)stream->resampler_state;
-    state->src_reset(state->SRC_state);
+    SRC_src_reset((SRC_STATE *)stream->resampler_state);
 }
 
 static void
 SDL_CleanupAudioStreamResampler_SRC(SDL_AudioStream *stream)
 {
-    SDL_AudioStreamResamplerState_SRC *state = (SDL_AudioStreamResamplerState_SRC*)stream->resampler_state;
+    SRC_STATE *state = (SRC_STATE *)stream->resampler_state;
     if (state) {
-        if (state->SRC_lib) {
-            SDL_UnloadObject(state->SRC_lib);
-        }
-        state->src_delete(state->SRC_state);
-        SDL_free(state);
+        SRC_src_delete(state);
     }
 
     stream->resampler_state = NULL;
@@ -726,15 +687,18 @@ SDL_CleanupAudioStreamResampler_SRC(SDL_AudioStream *stream)
 static SDL_bool
 SetupLibSampleRateResampling(SDL_AudioStream *stream)
 {
-    int result;
+    int result = 0;
+    SRC_STATE *state = NULL;
 
-    SDL_AudioStreamResamplerState_SRC *state = (SDL_AudioStreamResamplerState_SRC *)SDL_calloc(1, sizeof(*state));
-    if (!state) {
-        return SDL_FALSE;
+    if (SRC_available) {
+        state = SRC_src_new(SRC_SINC_FASTEST, stream->pre_resample_channels, &result);
+        if (!state) {
+            SDL_SetError("src_new() failed: %s", SRC_src_strerror(result));
+        }
     }
 
-    if (!LoadLibSampleRate(state)) {
-        SDL_free(state);
+    if (!state) {
+        SDL_CleanupAudioStreamResampler_SRC(stream);
         return SDL_FALSE;
     }
 
@@ -743,16 +707,10 @@ SetupLibSampleRateResampling(SDL_AudioStream *stream)
     stream->reset_resampler_func = SDL_ResetAudioStreamResampler_SRC;
     stream->cleanup_resampler_func = SDL_CleanupAudioStreamResampler_SRC;
 
-    state->SRC_state = state->src_new(SRC_SINC_FASTEST, stream->pre_resample_channels, &result);
-    if (!state->SRC_state) {
-        SDL_SetError("src_new() failed: %s", state->src_strerror(result));
-        SDL_CleanupAudioStreamResampler_SRC(stream);
-        return SDL_FALSE;
-    }
     return SDL_TRUE;
 }
-
 #endif /* HAVE_LIBSAMPLERATE_H */
+
 
 typedef struct
 {
@@ -823,12 +781,13 @@ SDL_CleanupAudioStreamResampler(SDL_AudioStream *stream)
     SDL_free(stream->resampler_state);
 }
 
-SDL_AudioStream *SDL_NewAudioStream(const SDL_AudioFormat src_format,
-                                    const Uint8 src_channels,
-                                    const int src_rate,
-                                    const SDL_AudioFormat dst_format,
-                                    const Uint8 dst_channels,
-                                    const int dst_rate)
+SDL_AudioStream *
+SDL_NewAudioStream(const SDL_AudioFormat src_format,
+                   const Uint8 src_channels,
+                   const int src_rate,
+                   const SDL_AudioFormat dst_format,
+                   const Uint8 dst_channels,
+                   const int dst_rate)
 {
     const int packetlen = 4096;  /* !!! FIXME: good enough for now. */
     Uint8 pre_resample_channels;
