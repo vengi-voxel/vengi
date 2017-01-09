@@ -362,8 +362,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	{
 		video::ScopedShader scoped(_waterShader);
 		setUniforms(_waterShader, camera);
-		shaderSetUniformIf(_waterShader, setUniformMatrixv, "u_cascades", &cascades.front(), maxDepthBuffers);
-		shaderSetUniformIf(_waterShader, setUniformfv, "u_distances", &distances.front(), maxDepthBuffers, maxDepthBuffers);
+		_waterShader.setCascades(cascades);
+		_waterShader.setDistances(distances);
 		_waterShader.setShadowmap(1);
 		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
 	}
