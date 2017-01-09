@@ -46,6 +46,9 @@ set(SRCS
 	polyvox/VolumeRescaler.h
 	polyvox/VolumeRotator.h polyvox/VolumeRotator.cpp
 	polyvox/VolumeCropper.h polyvox/VolumeCropper.cpp
+	SurfaceExtractionTask.h SurfaceExtractionTask.cpp
+	OctreeNode.h OctreeNode.cpp
+	Octree.h Octree.cpp
 )
 set(LIB voxel)
 add_library(${LIB} ${SRCS})
