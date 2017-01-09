@@ -484,7 +484,7 @@ core::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
 	core::Var::get(cfg::ClientWindowDisplay, 0);
-	core::Var::get(cfg::ClientOpenGLVersion, "3.1", core::CV_READONLY);
+	core::Var::get(cfg::ClientOpenGLVersion, "3.2", core::CV_READONLY);
 #ifdef DEBUG
 	const char *defaultSyncValue = "false";
 #else
