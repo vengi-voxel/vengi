@@ -7,6 +7,7 @@ set(SRCS
 	App.cpp App.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
+	ConcurrentQueue.h
 	Common.h
 	Concurrency.h
 	EventBus.cpp EventBus.h
