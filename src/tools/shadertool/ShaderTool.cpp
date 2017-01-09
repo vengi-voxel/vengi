@@ -188,6 +188,51 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
 	return Variable::FLOAT;
 }
 
+/**
+ * The size of each element in the array will be the size of the element type, rounded up to a multiple of the
+ * size of a vec4. This is also the array’s alignment. The array’s size will be this rounded-up element’s size
+ * times the number of elements in the array.
+ * If the member is a three-component vector with components consuming N basic machine units, the base alignment is 4N.
+ *
+ * @note:
+ * a float needs 4 bytes and it's 4 bytes aligned
+ * a vec3 needs 12 bytes and it's 16 bytes aligned
+ * a vec4 needs 16 bytes and it's 16 bytes aligned
+ */
+std::string ShaderTool::std140Align(const Variable& v) const {
+	// TODO: generete uniform buffer struct - enforce std140 layout
+	// TODO: extract uniform blocks into aligned structs and generate methods to update them
+	//       align them via GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT - use glBindBufferRange
+	//       GL_MAX_UNIFORM_BLOCK_SIZE
+	const Types& cType = cTypes[v.type];
+	if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::VEC4
+	 || cType.type == Variable::Type::DVEC2 || cType.type == Variable::Type::DVEC3 || cType.type == Variable::Type::DVEC4
+	 || cType.type == Variable::Type::IVEC2 || cType.type == Variable::Type::IVEC3 || cType.type == Variable::Type::IVEC4
+	 || cType.type == Variable::Type::BVEC2 || cType.type == Variable::Type::BVEC3 || cType.type == Variable::Type::BVEC4) {
+		return "alignas(16) ";
+	}
+	if (cType.type == Variable::Type::FLOAT || cType.type == Variable::Type::DOUBLE) {
+		return "alignas(4) ";
+	}
+
+	return "";
+}
+
+size_t ShaderTool::std140Size(const Variable& v) const {
+	const Types& cType = cTypes[v.type];
+	int components = cType.components;
+	if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3
+	 || cType.type == Variable::Type::DVEC2 || cType.type == Variable::Type::DVEC3
+	 || cType.type == Variable::Type::IVEC2 || cType.type == Variable::Type::IVEC3
+	 || cType.type == Variable::Type::BVEC2 || cType.type == Variable::Type::BVEC3) {
+		components = 4;
+	}
+	if (v.arraySize > 0) {
+		return components * 4 * v.arraySize;
+	}
+	return components * 4;
+}
+
 void ShaderTool::generateSrc() const {
 	for (const auto& block : _shaderStruct.uniformBlocks) {
 		Log::debug("Found uniform block %s with %i members", block.name.c_str(), int(block.members.size()));
@@ -441,10 +486,6 @@ void ShaderTool::generateSrc() const {
 		}
 	}
 
-	// TODO: generete uniform buffer struct - enforce std140 layout
-	// TODO: extract uniform blocks into aligned structs and generate methods to update them
-	//       align them via GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT - use glBindBufferRange
-	//       GL_MAX_UNIFORM_BLOCK_SIZE
 	std::stringstream ub;
 	std::stringstream shutdown;
 	if (!_shaderStruct.uniformBlocks.empty()) {
@@ -453,19 +494,25 @@ void ShaderTool::generateSrc() const {
 	for (auto & ubuf : _shaderStruct.uniformBlocks) {
 		const std::string& uniformBufferStructName = convertName(ubuf.name, true);
 		const std::string& uniformBufferName = convertName(ubuf.name, false);
+		ub << "\n\t/**\n\t * @brief Uniform buffer for " << uniformBufferStructName << "\n\t */\n";
 		ub << "\tvideo::UniformBuffer _" << uniformBufferName << ";\n";
 		shutdown << "\t\t\t_" << uniformBufferName << ".shutdown();\n";
+		ub << "\t/**\n\t * @brief layout(std140) aligned uniform block structure\n\t */\n";
 		ub << "\tstruct " << uniformBufferStructName << " {\n";
+		size_t structSize = 0u;
 		for (auto& v : ubuf.members) {
 			const std::string& uniformName = convertName(v.name, false);
 			const Types& cType = cTypes[v.type];
-			ub << "\t\t" << cType.ctype << " " << uniformName;
+			ub << "\t\t" << std140Align(v) << cType.ctype << " " << uniformName;
+			const size_t memberSize = std140Size(v);
+			structSize += memberSize;
 			if (v.arraySize > 0) {
 				ub << "[" << v.arraySize << "]";
 			}
-			ub << ";\n";
+			ub << "; // " << memberSize << " bytes\n";
 		}
 		ub << "\t};\n";
+		ub << "\tstatic_assert(sizeof(" << uniformBufferStructName << ") == " << structSize << ", \"Unexpected structure size for " << uniformBufferStructName << "\");\n";
 		setters << "\tinline bool update" << uniformBufferStructName << "(const " << uniformBufferStructName << "& var) {\n";
 		setters << "\t\t_" << uniformBufferName << ".create(sizeof(var), (const void*)&var);\n";
 		setters << "\t\treturn true;\n";

@@ -69,6 +69,8 @@ protected:
 
 	bool parse(const std::string& src, bool vertex);
 	Variable::Type getType(const std::string& type) const;
+	std::string std140Align(const Variable& v) const;
+	size_t std140Size(const Variable& v) const;
 	int getComponents(const Variable::Type type) const;
 	std::string uniformSetterPostfix(const Variable::Type type, int amount) const;
 	void generateSrc() const;
