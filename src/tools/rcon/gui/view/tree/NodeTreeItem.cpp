@@ -21,8 +21,8 @@ const QFont font("Times", fontSize);
 const QFontMetrics fontMetrics(font);
 }
 
-NodeTreeItem::NodeTreeItem (QGraphicsItem* parentItem, const AIStateNode& node, const AIStateNodeStatic& staticNodeData, NodeTreeItem* parent, int height, int horizontalSpacing, int verticalSpacing) :
-		QGraphicsItem(parentItem), _node(node), _parent(parent), _height(height), _horizontalSpacing(
+NodeTreeItem::NodeTreeItem (QGraphicsItem* parentGraphicsItem, const AIStateNode& node, const AIStateNodeStatic& staticNodeData, NodeTreeItem* parent, int itemHeight, int horizontalSpacing, int verticalSpacing) :
+		QGraphicsItem(parentGraphicsItem), _node(node), _parent(parent), _height(itemHeight), _horizontalSpacing(
 				horizontalSpacing), _verticalSpacing(verticalSpacing) {
 	_condition = QString::fromStdString(_node.getCondition());
 	_name = QString::fromStdString(staticNodeData.getName());

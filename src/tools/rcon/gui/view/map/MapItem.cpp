@@ -74,11 +74,11 @@ void MapItem::updateState(const AIStateWorld& state) {
 	_direction->setLine(0.0, 0.0, center * end.x(), center * end.y());
 
 	const QString& groupAttribute = Settings::getGroupAttribute(attributes::GROUP);
-	CharacterAttributes::const_iterator group = attributes.find(groupAttribute.toStdString());
-	if (group != attributes.end()) {
+	CharacterAttributes::const_iterator groupIter = attributes.find(groupAttribute.toStdString());
+	if (groupIter != attributes.end()) {
 		// TODO: get color from settings
 		QColor colorGroup = QColor::fromRgb(200, 200, 0, 255);
-		const int groupId = atoi(group->second.c_str());
+		const int groupId = atoi(groupIter->second.c_str());
 		if (groupId > 0) {
 			const int b = groupId * 113 % 255;
 			const int component = groupId % 3;

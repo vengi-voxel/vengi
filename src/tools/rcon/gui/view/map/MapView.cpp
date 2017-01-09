@@ -24,13 +24,13 @@ MapView::~MapView() {
 	_scene.clear();
 }
 
-void MapView::scalingTime(qreal x) {
-	qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
+void MapView::scalingTime(qreal) {
+	const qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
 	scale(factor, factor);
 }
 
-void MapView::wheelEvent(QWheelEvent * event) {
-	const int numDegrees = event->delta() / 8;
+void MapView::wheelEvent(QWheelEvent * wheelEventPtr) {
+	const int numDegrees = wheelEventPtr->delta() / 8;
 	const int numSteps = numDegrees / 15;
 	_numScheduledScalings += numSteps;
 
@@ -75,34 +75,38 @@ MapItem* MapView::createOrUpdateMapItem(const AIStateWorld& state) {
 	return item;
 }
 
-void MapView::drawBackground(QPainter* painter, const QRectF& rect) {
-	QGraphicsView::drawBackground(painter, rect);
+void MapView::drawBackground(QPainter* painter, const QRectF& rectf) {
+	QGraphicsView::drawBackground(painter, rectf);
 	const QColor& color = Settings::getBackgroundColor();
-	painter->fillRect(rect, QBrush(color));
+	painter->fillRect(rectf, QBrush(color));
 
-	if (Settings::getGrid()) {
-		const QColor& gridColor = Settings::getGridColor();
-		QPen linePen(gridColor, 1, Qt::SolidLine, Qt::SquareCap, Qt::BevelJoin);
-		linePen.setCosmetic(true);
-		painter->setPen(linePen);
-
-		const int gridInterval = Settings::getGridInterval();
-		const qreal left = static_cast<int>(rect.left())
-				- (static_cast<int>(rect.left()) % gridInterval);
-		const qreal top = static_cast<int>(rect.top())
-				- (static_cast<int>(rect.top()) % gridInterval);
-
-		QVarLengthArray<QLineF, 100> linesX;
-		for (qreal x = left; x < rect.right(); x += gridInterval)
-			linesX.append(QLineF(x, rect.top(), x, rect.bottom()));
-
-		QVarLengthArray<QLineF, 100> linesY;
-		for (qreal y = top; y < rect.bottom(); y += gridInterval)
-			linesY.append(QLineF(rect.left(), y, rect.right(), y));
-
-		painter->drawLines(linesX.data(), linesX.size());
-		painter->drawLines(linesY.data(), linesY.size());
+	if (!Settings::getGrid()) {
+		return;
 	}
+
+	const QColor& gridColor = Settings::getGridColor();
+	QPen linePen(gridColor, 1, Qt::SolidLine, Qt::SquareCap, Qt::BevelJoin);
+	linePen.setCosmetic(true);
+	painter->setPen(linePen);
+
+	const int gridInterval = Settings::getGridInterval();
+	const qreal left = static_cast<int>(rectf.left())
+			- (static_cast<int>(rectf.left()) % gridInterval);
+	const qreal top = static_cast<int>(rectf.top())
+			- (static_cast<int>(rectf.top()) % gridInterval);
+
+	QVarLengthArray<QLineF, 100> linesX;
+	for (qreal _x = left; _x < rectf.right(); _x += gridInterval) {
+		linesX.append(QLineF(_x, rectf.top(), _x, rectf.bottom()));
+	}
+
+	QVarLengthArray<QLineF, 100> linesY;
+	for (qreal _y = top; _y < rectf.bottom(); _y += gridInterval) {
+		linesY.append(QLineF(rectf.left(), _y, rectf.right(), _y));
+	}
+
+	painter->drawLines(linesX.data(), linesX.size());
+	painter->drawLines(linesY.data(), linesY.size());
 }
 
 void MapView::updateMapView() {

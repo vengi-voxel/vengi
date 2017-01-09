@@ -9,8 +9,8 @@
 namespace ai {
 namespace debug {
 
-BehaviourTreeModelItem::BehaviourTreeModelItem(AIStateNode* node, AINodeStaticResolver& resolver, BehaviourTreeModelItem* parent) :
-		_node(node), _staticNodeData(resolver.get(node->getNodeId())), _parent(parent) {
+BehaviourTreeModelItem::BehaviourTreeModelItem(AIStateNode* stateNodePtr, AINodeStaticResolver& resolver, BehaviourTreeModelItem* modelItem) :
+		_node(stateNodePtr), _staticNodeData(resolver.get(stateNodePtr->getNodeId())), _parent(modelItem) {
 	if (_parent == nullptr) {
 		_rows.push_back(new BehaviourTreeModelItem(_node, resolver, this));
 	} else {
@@ -20,12 +20,13 @@ BehaviourTreeModelItem::BehaviourTreeModelItem(AIStateNode* node, AINodeStaticRe
 	}
 	const QString type = QString::fromStdString(_staticNodeData.getType()).toLower();
 	const QString path = ":/images/" + type + ".png";
-	if (QFile::exists(path))
+	if (QFile::exists(path)) {
 		_icon = QIcon(path);
-	else if (type.contains("selector"))
+	} else if (type.contains("selector")) {
 		_icon = QIcon(":/images/selector.png");
-	else
+	} else {
 		_icon = QIcon(":/images/node.png");
+	}
 }
 
 BehaviourTreeModelItem::~BehaviourTreeModelItem() {
@@ -38,8 +39,8 @@ void BehaviourTreeModelItem::resetEdit() {
 	_editedType = "";
 }
 
-BehaviourTreeModelItem* BehaviourTreeModelItem::child(int row) {
-	return _rows.value(row);
+BehaviourTreeModelItem* BehaviourTreeModelItem::child(int rowIndex) {
+	return _rows.value(rowIndex);
 }
 
 QVariant BehaviourTreeModelItem::color() const {
@@ -61,8 +62,9 @@ QVariant BehaviourTreeModelItem::color() const {
 }
 
 int BehaviourTreeModelItem::row() {
-	if (_parent != nullptr)
+	if (_parent != nullptr) {
 		return _parent->_rows.indexOf(this);
+	}
 	return 0;
 }
 
@@ -71,23 +73,25 @@ QIcon BehaviourTreeModelItem::icon() const {
 }
 
 QString BehaviourTreeModelItem::tooltip(int column) const {
-	if (column == COL_NAME)
+	if (column == COL_NAME) {
 		return QString::fromStdString(_staticNodeData.getType());
-	if (column == COL_CONDITION)
+	}
+	if (column == COL_CONDITION) {
 		return QString::fromStdString(_staticNodeData.getCondition());
+	}
 	return QString();
 }
 
-void BehaviourTreeModelItem::setData(int column, const QVariant& data) {
+void BehaviourTreeModelItem::setData(int column, const QVariant& editedData) {
 	switch (column) {
 	case COL_NAME:
-		_editedName = data.toString();
+		_editedName = editedData.toString();
 		break;
 	case COL_TYPE:
-		_editedType = data.toString();
+		_editedType = editedData.toString();
 		break;
 	case COL_CONDITION:
-		_editedCondition = data.toString();
+		_editedCondition = editedData.toString();
 		break;
 	}
 }

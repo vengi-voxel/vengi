@@ -26,11 +26,11 @@ public:
 	explicit BehaviourTreeModel(AIDebugger& debugger, AINodeStaticResolver& resolver, QObject *parent = nullptr);
 	~BehaviourTreeModel();
 
-	inline BehaviourTreeModelItem* item(const QModelIndex& index) const {
-		if (!index.isValid())
+	inline BehaviourTreeModelItem* item(const QModelIndex& mdlIndex) const {
+		if (!mdlIndex.isValid())
 			return nullptr;
 
-		return static_cast<BehaviourTreeModelItem*>(index.internalPointer());
+		return static_cast<BehaviourTreeModelItem*>(mdlIndex.internalPointer());
 	}
 	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
 	QModelIndex parent(const QModelIndex &child) const override;

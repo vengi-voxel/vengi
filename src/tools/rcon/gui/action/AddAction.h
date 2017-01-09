@@ -21,8 +21,8 @@ private slots:
 		emit triggered(_parentId, d.getName(), d.getType(), d.getCondition());
 	}
 public:
-	AddAction(int parentId, QObject* parent) :
-			Action(tr("Add node"), parent), _parentId(parentId) {
+	AddAction(int parentId, QObject* parentObj) :
+			Action(tr("Add node"), parentObj), _parentId(parentId) {
 		connect(this, SIGNAL(triggered()), this, SLOT(onTriggered()));
 	}
 signals:

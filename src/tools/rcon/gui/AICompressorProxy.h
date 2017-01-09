@@ -55,7 +55,7 @@ signals:
 public:
 	// No default constructor, since the proxy must be a child of the
 	// target object.
-	explicit CompressorProxy(QObject * parent) :
-			QObject(parent), _selected(false), _entitiesUpdated(false), _namesReceived(false) {
+	explicit CompressorProxy(QObject * parentObj) :
+			QObject(parentObj), _selected(false), _entitiesUpdated(false), _namesReceived(false) {
 	}
 };

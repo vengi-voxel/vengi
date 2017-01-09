@@ -39,8 +39,8 @@ void EntityList::selectEntity(const QModelIndex &current, const QModelIndex &pre
 		return;
 	}
 	const QModelIndex index = _proxyModel.mapToSource(current);
-	const AIStateWorld& state = _model.getEntities().at(index.row());
-	_debugger.select(state);
+	const AIStateWorld& worldState = _model.getEntities().at(index.row());
+	_debugger.select(worldState);
 }
 
 }

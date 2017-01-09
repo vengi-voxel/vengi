@@ -21,7 +21,7 @@ SettingsDialog::SettingsDialog() :
 
 QGroupBox* SettingsDialog::createMapView() {
 	QGroupBox* mapView = new QGroupBox(tr("Map view"), this);
-	QGridLayout* layout = new QGridLayout(this);
+	QGridLayout* gridLayout = new QGridLayout(this);
 
 	// TODO: find something better for the colors
 	QColorDialog *bgColor = new QColorDialog(this);
@@ -53,31 +53,31 @@ QGroupBox* SettingsDialog::createMapView() {
 	connect(itemSize, &QLineEdit::textChanged, this, &SettingsDialog::setItemSize);
 
 	int row = 0;
-	layout->addWidget(new QLabel(tr("Show grid"), this), row, 0, Qt::AlignTop);
-	layout->addWidget(showGrid, row, 1);
+	gridLayout->addWidget(new QLabel(tr("Show grid"), this), row, 0, Qt::AlignTop);
+	gridLayout->addWidget(showGrid, row, 1);
 	++row;
 
-	layout->addWidget(new QLabel(tr("Grid interval"), this), row, 0, Qt::AlignTop);
-	layout->addWidget(gridInterval, row, 1);
+	gridLayout->addWidget(new QLabel(tr("Grid interval"), this), row, 0, Qt::AlignTop);
+	gridLayout->addWidget(gridInterval, row, 1);
 	++row;
 
-	layout->addWidget(new QLabel(tr("Item size"), this), row, 0, Qt::AlignTop);
-	layout->addWidget(itemSize, row, 1);
+	gridLayout->addWidget(new QLabel(tr("Item size"), this), row, 0, Qt::AlignTop);
+	gridLayout->addWidget(itemSize, row, 1);
 	++row;
 
-	layout->addWidget(new QLabel(tr("Name attribute"), this), row, 0, Qt::AlignTop);
-	layout->addWidget(nameAttribute, row, 1);
+	gridLayout->addWidget(new QLabel(tr("Name attribute"), this), row, 0, Qt::AlignTop);
+	gridLayout->addWidget(nameAttribute, row, 1);
 	++row;
 
-	layout->addWidget(new QLabel(tr("Background"), this), row, 0, Qt::AlignTop);
-	layout->addWidget(bgColor, row, 1);
+	gridLayout->addWidget(new QLabel(tr("Background"), this), row, 0, Qt::AlignTop);
+	gridLayout->addWidget(bgColor, row, 1);
 	++row;
 
-	layout->addWidget(new QLabel(tr("Center on selection"), this), row, 0, Qt::AlignTop);
-	layout->addWidget(centerOnSelection, row, 1);
+	gridLayout->addWidget(new QLabel(tr("Center on selection"), this), row, 0, Qt::AlignTop);
+	gridLayout->addWidget(centerOnSelection, row, 1);
 	++row;
 
-	mapView->setLayout(layout);
+	mapView->setLayout(gridLayout);
 	return mapView;
 }
 
@@ -101,11 +101,11 @@ void SettingsDialog::setNameAttribute(const QString& attribute) {
 	Settings::setNameAttribute(attribute);
 }
 
-void SettingsDialog::addMainWidgets(QBoxLayout& layout) {
+void SettingsDialog::addMainWidgets(QBoxLayout& boxLayout) {
 	QSettings settings;
 
 	QGroupBox* mapView = createMapView();
-	layout.addWidget(mapView);
+	boxLayout.addWidget(mapView);
 }
 
 }

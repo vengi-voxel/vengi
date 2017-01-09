@@ -12,19 +12,21 @@
 DetailsClickFilter::DetailsClickFilter(QLabel* label, IComboBox* comboBox) :
 		_label(label), _comboBox(comboBox) {
 }
-
-bool DetailsClickFilter::eventFilter(QObject* watched, QEvent* event) {
-	if (watched != _label)
+bool DetailsClickFilter::eventFilter(QObject* watched, QEvent* mouseButtonPressEvent) {
+	if (watched != _label) {
 		return false;
-	if (event->type() != QEvent::MouseButtonPress)
+	}
+	if (mouseButtonPressEvent->type() != QEvent::MouseButtonPress) {
 		return false;
-	const QMouseEvent* const me = static_cast<const QMouseEvent*>(event);
+	}
+	const QMouseEvent* const me = static_cast<const QMouseEvent*>(mouseButtonPressEvent);
 	_clickedPoint = me->pos();
 
 	_comboBox->onChangeDetails();
 
-	if (_label->pixmap() == nullptr)
+	if (_label->pixmap() == nullptr) {
 		return false;
+	}
 
 	QImage tmp(_label->pixmap()->toImage());
 	QPainter painter(&tmp);
@@ -41,10 +43,9 @@ const QPoint& DetailsClickFilter::getClickedPoint() const {
 	return _clickedPoint;
 }
 
-IComboBox::IComboBox(const QString& title, const QString& detailImageSubdir, int flags, QWidget* parent) :
-		QWidget(parent), _proxy(&_comboBox), _detailsClickFilter(&_details,
-				this), _flags(flags), _detailImageSubdir(
-				detailImageSubdir) {
+IComboBox::IComboBox(const QString& title, const QString& detailImageSubdir, int flags, QWidget* objParent) :
+		QWidget(objParent), _proxy(&_comboBox), _detailsClickFilter(&_details, this),
+		_flags(flags), _detailImageSubdir(detailImageSubdir) {
 	setLayout(&_vLayout);
 	if (_flags & COMBOBOX_DETAILS) {
 		connect(&_comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeDetails()));

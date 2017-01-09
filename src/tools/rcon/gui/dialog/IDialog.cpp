@@ -45,13 +45,13 @@ int IDialog::run() {
 	return result();
 }
 
-void IDialog::addButtons(QBoxLayout& layout) {
+void IDialog::addButtons(QBoxLayout& boxLayout) {
 	if (!(_flags & DIALOG_NO_APPLY_BUTTON)) {
 		_applyButton = new QPushButton(tr("Apply"));
 		connect(_applyButton, SIGNAL(clicked()), this, SLOT(apply()));
-		layout.addWidget(_applyButton);
+		boxLayout.addWidget(_applyButton);
 	}
 	_closeButton = new QPushButton(tr("Close"));
 	connect(_closeButton, SIGNAL(clicked()), this, SLOT(reject()));
-	layout.addWidget(_closeButton);
+	boxLayout.addWidget(_closeButton);
 }

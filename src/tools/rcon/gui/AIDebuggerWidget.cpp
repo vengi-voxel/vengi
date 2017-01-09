@@ -179,12 +179,12 @@ void AIDebuggerWidget::removeFromHelpMenu(QMenu *helpMenu) {
 }
 
 void AIDebuggerWidget::createView() {
-	QVBoxLayout *layout = new QVBoxLayout();
+	QVBoxLayout *boxLayout = new QVBoxLayout();
 	QSplitter* splitter = new QSplitter(Qt::Orientation::Vertical);
 	splitter->addWidget(createTopWidget());
 	splitter->addWidget(createBottomWidget());
-	layout->addWidget(splitter);
-	setLayout(layout);
+	boxLayout->addWidget(splitter);
+	setLayout(boxLayout);
 }
 
 QWidget *AIDebuggerWidget::createTopWidget() {
@@ -223,24 +223,23 @@ void AIDebuggerWidget::onAddNode(int parentNodeId, const QVariant& name, const Q
 	_debugger.addNode(parentNodeId, name, type, condition);
 }
 
-void AIDebuggerWidget::showContextMenu(const QPoint &pos) {
-	const QModelIndex& index = _tree->indexAt(pos);
+void AIDebuggerWidget::showContextMenu(const QPoint &contextMenuPos) {
+	const QModelIndex& index = _tree->indexAt(contextMenuPos);
 	BehaviourTreeModelItem* item = _model.item(index);
 	if (item == nullptr) {
 		qDebug() << "No item found for index: " << index;
 		return;
 	}
 	const AIStateNode* node = item->node();
-	QMenu *menu = new QMenu(this);
-	AddAction* addAction = new AddAction(node->getNodeId(), this);
-	connect(addAction, SIGNAL(triggered(int, const QVariant&, const QVariant&, const QVariant&)), this,
+	QMenu *contextMenu = new QMenu(this);
+	AddAction* actionAdd = new AddAction(node->getNodeId(), this);
+	connect(actionAdd, SIGNAL(triggered(int, const QVariant&, const QVariant&, const QVariant&)), this,
 			SLOT(onAddNode(int, const QVariant&, const QVariant&, const QVariant&)));
-	QAction* deleteAction = new DeleteAction(node->getNodeId(), this);
-	connect(deleteAction, SIGNAL(triggered(int)), this,
-			SLOT(onDeleteNode(int)));
-	menu->addAction(addAction);
-	menu->addAction(deleteAction);
-	menu->popup(_tree->viewport()->mapToGlobal(pos));
+	QAction* actionDelete = new DeleteAction(node->getNodeId(), this);
+	connect(actionDelete, SIGNAL(triggered(int)), this, SLOT(onDeleteNode(int)));
+	contextMenu->addAction(actionAdd);
+	contextMenu->addAction(actionDelete);
+	contextMenu->popup(_tree->viewport()->mapToGlobal(contextMenuPos));
 }
 
 QWidget *AIDebuggerWidget::createTreePanelWidget() {
@@ -262,6 +261,10 @@ QWidget *AIDebuggerWidget::createTreePanelWidget() {
 	QHeaderView *header = _tree->header();
 	header->setStretchLastSection(false);
 	header->setSectionResizeMode(QHeaderView::Interactive);
+#if 0
+	header->setSectionResizeMode(COL_STATE, QHeaderView::ResizeToContents);
+	header->setSectionResizeMode(COL_LASTRUN, QHeaderView::ResizeToContents);
+#endif
 
 	QPushButton *toggle = new QPushButton(QIcon(":/images/switch.png"), "");
 	toggle->setFlat(true);

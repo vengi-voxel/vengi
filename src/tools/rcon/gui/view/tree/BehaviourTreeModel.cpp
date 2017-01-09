@@ -11,8 +11,8 @@
 namespace ai {
 namespace debug {
 
-BehaviourTreeModel::BehaviourTreeModel(AIDebugger& debugger, AINodeStaticResolver& resolver, QObject *parent) :
-		QAbstractItemModel(parent), _rootItem(nullptr), _resolver(resolver), _debugger(debugger), _allowUpdate(true) {
+BehaviourTreeModel::BehaviourTreeModel(AIDebugger& debugger, AINodeStaticResolver& resolver, QObject *objParent) :
+		QAbstractItemModel(objParent), _rootItem(nullptr), _resolver(resolver), _debugger(debugger), _allowUpdate(true) {
 	connect(this, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(onDataChanged(const QModelIndex&, const QModelIndex&)));
 }
 
@@ -34,43 +34,48 @@ void BehaviourTreeModel::onDataChanged(const QModelIndex& topLeft, const QModelI
 	nodeItem->resetEdit();
 }
 
-QModelIndex BehaviourTreeModel::index(int row, int column, const QModelIndex &parent) const {
-	if (!hasIndex(row, column, parent))
+QModelIndex BehaviourTreeModel::index(int row, int column, const QModelIndex &parentIndex) const {
+	if (!hasIndex(row, column, parentIndex)) {
 		return QModelIndex();
+	}
 
 	BehaviourTreeModelItem *parentItem;
-	if (!parent.isValid())
+	if (!parentIndex.isValid()) {
 		parentItem = _rootItem;
-	else
-		parentItem = item(parent);
+	} else {
+		parentItem = item(parentIndex);
+	}
 
 	BehaviourTreeModelItem *childItem = parentItem->child(row);
-	if (childItem)
+	if (childItem) {
 		return createIndex(row, column, childItem);
+	}
 	return QModelIndex();
 }
 
-QModelIndex BehaviourTreeModel::parent(const QModelIndex &index) const {
-	if (!index.isValid())
+QModelIndex BehaviourTreeModel::parent(const QModelIndex &mdlIndex) const {
+	if (!mdlIndex.isValid()) {
 		return QModelIndex();
+	}
 
-	BehaviourTreeModelItem *childItem = item(index);
+	BehaviourTreeModelItem *childItem = item(mdlIndex);
 	BehaviourTreeModelItem *parentItem = childItem->parent();
-	if (parentItem == nullptr || parentItem == _rootItem)
+	if (parentItem == nullptr || parentItem == _rootItem) {
 		return QModelIndex();
+	}
 
 	return createIndex(parentItem->row(), 0, parentItem);
 }
 
-int BehaviourTreeModel::rowCount(const QModelIndex &parent) const {
+int BehaviourTreeModel::rowCount(const QModelIndex &parentIndex) const {
 	BehaviourTreeModelItem *parentItem;
-	if (parent.column() > 0)
+	if (parentIndex.column() > 0)
 		return 0;
 
-	if (!parent.isValid())
+	if (!parentIndex.isValid())
 		parentItem = _rootItem;
 	else
-		parentItem = item(parent);
+		parentItem = item(parentIndex);
 
 	if (parentItem == nullptr)
 		return 0;
@@ -78,25 +83,30 @@ int BehaviourTreeModel::rowCount(const QModelIndex &parent) const {
 	return parentItem->childCount();
 }
 
-int BehaviourTreeModel::columnCount(const QModelIndex &parent) const {
-	if (parent.isValid())
-		return item(parent)->columnCount();
-	if (_rootItem == nullptr)
+int BehaviourTreeModel::columnCount(const QModelIndex &parentIndex) const {
+	if (parentIndex.isValid()) {
+		return item(parentIndex)->columnCount();
+	}
+	if (_rootItem == nullptr) {
 		return 0;
+	}
 	return _rootItem->columnCount();
 }
 
-QVariant BehaviourTreeModel::data(const QModelIndex &index, int role) const {
-	if (!index.isValid())
+QVariant BehaviourTreeModel::data(const QModelIndex &mdlIndex, int role) const {
+	if (!mdlIndex.isValid()) {
 		return QVariant();
+	}
 
-	BehaviourTreeModelItem *nodeItem = item(index);
-	if (nodeItem == nullptr)
+	BehaviourTreeModelItem *nodeItem = item(mdlIndex);
+	if (nodeItem == nullptr) {
 		return QVariant();
+	}
 
 	if (role == Qt::DecorationRole) {
-		if (index.column() == COL_NAME)
+		if (mdlIndex.column() == COL_NAME) {
 			return nodeItem->icon();
+		}
 	} else if (role == Qt::TextColorRole) {
 		return nodeItem->color();
 	}
@@ -106,10 +116,12 @@ QVariant BehaviourTreeModel::data(const QModelIndex &index, int role) const {
 		_allowUpdate = false;
 	}
 
-	if (role == Qt::DisplayRole || role == Qt::EditRole)
-		return nodeItem->data(index.column());
-	else if (role == Qt::ToolTipRole)
-		return nodeItem->tooltip(index.column());
+	if (role == Qt::DisplayRole || role == Qt::EditRole) {
+		return nodeItem->data(mdlIndex.column());
+	}
+	else if (role == Qt::ToolTipRole) {
+		return nodeItem->tooltip(mdlIndex.column());
+	}
 	return QVariant();
 }
 
@@ -122,39 +134,42 @@ bool BehaviourTreeModel::submit() {
 	return QAbstractItemModel::submit();
 }
 
-Qt::ItemFlags BehaviourTreeModel::flags(const QModelIndex &index) const {
-	if (!index.isValid())
+Qt::ItemFlags BehaviourTreeModel::flags(const QModelIndex &mdlIndex) const {
+	if (!mdlIndex.isValid()) {
 		return Qt::ItemIsEnabled;
+	}
 
-	Qt::ItemFlags flags = QAbstractItemModel::flags(index);
-	switch (index.column()) {
+	Qt::ItemFlags itemflags = QAbstractItemModel::flags(mdlIndex);
+	switch (mdlIndex.column()) {
 	case COL_NAME:
 	case COL_TYPE:
 	case COL_CONDITION:
-		flags |= Qt::ItemIsEditable;
+		itemflags |= Qt::ItemIsEditable;
 	}
-	return flags;
+	return itemflags;
 }
 
-bool BehaviourTreeModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-	if (index.isValid() && role == Qt::EditRole) {
-		_rootItem->child(index.row())->setData(index.column(), value);
-		emit dataChanged(index, index);
+bool BehaviourTreeModel::setData(const QModelIndex &mdlIndex, const QVariant &value, int role) {
+	if (mdlIndex.isValid() && role == Qt::EditRole) {
+		_rootItem->child(mdlIndex.row())->setData(mdlIndex.column(), value);
+		emit dataChanged(mdlIndex, mdlIndex);
 		return true;
 	}
 	return false;
 }
 
 QVariant BehaviourTreeModel::headerData(int section, Qt::Orientation orientation, int role) const {
-	if (orientation == Qt::Horizontal && role == Qt::DisplayRole && _rootItem != nullptr)
+	if (orientation == Qt::Horizontal && role == Qt::DisplayRole && _rootItem != nullptr) {
 		return _rootItem->headerData(section);
+	}
 
 	return QVariant();
 }
 
 bool BehaviourTreeModel::setRootNode(AIStateNode* node) {
-	if (!_allowUpdate)
+	if (!_allowUpdate) {
 		return false;
+	}
 	beginResetModel();
 	if (_rootItem) {
 		delete _rootItem;

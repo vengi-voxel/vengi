@@ -8,8 +8,8 @@
 namespace ai {
 namespace debug {
 
-EntityListModel::EntityListModel(AIDebugger& debugger, QTableView *parent) :
-		QAbstractTableModel(parent), _debugger(debugger), _parent(parent) {
+EntityListModel::EntityListModel(AIDebugger& debugger, QTableView *tableView) :
+		QAbstractTableModel(tableView), _debugger(debugger), _parent(tableView) {
 }
 
 EntityListModel::~EntityListModel() {
@@ -41,8 +41,7 @@ int EntityListModel::columnCount(const QModelIndex & /*parent*/) const {
 	return 1;
 }
 
-QVariant EntityListModel::headerData(int section, Qt::Orientation orientation,
-		int role) const {
+QVariant EntityListModel::headerData(int section, Qt::Orientation orientation, int role) const {
 	if (orientation != Qt::Horizontal)
 		return QVariant();
 	if (section != 0)
@@ -56,10 +55,10 @@ QVariant EntityListModel::headerData(int section, Qt::Orientation orientation,
 	return QVariant();
 }
 
-QVariant EntityListModel::data(const QModelIndex &index, int role) const {
-	const AIStateWorld& state = _list.at(index.row());
+QVariant EntityListModel::data(const QModelIndex &mdlIndex, int role) const {
+	const AIStateWorld& state = _list.at(mdlIndex.row());
 	if (role == Qt::DisplayRole) {
-		if (index.column() == 0) {
+		if (mdlIndex.column() == 0) {
 			const CharacterAttributes& attributes = state.getAttributes();
 			auto name = attributes.find(attributes::NAME);
 			if (name != attributes.end()) {

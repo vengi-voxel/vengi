@@ -17,7 +17,7 @@ AddDialog::~AddDialog() {
 	delete _group;
 }
 
-void AddDialog::addMainWidgets(QBoxLayout& layout) {
+void AddDialog::addMainWidgets(QBoxLayout& boxLayout) {
 	_group = new QGroupBox(tr("Node"));
 	QGridLayout *innerLayout = new QGridLayout;
 	_nameText = new QLineEdit("NewNode");
@@ -30,7 +30,7 @@ void AddDialog::addMainWidgets(QBoxLayout& layout) {
 	innerLayout->addWidget(new QLabel(tr("Condition")), 2, 0);
 	innerLayout->addWidget(_conditionText, 2, 1);
 	_group->setLayout(innerLayout);
-	layout.addWidget(_group);
+	boxLayout.addWidget(_group);
 }
 
 void AddDialog::onApply() {

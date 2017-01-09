@@ -18,8 +18,8 @@ private slots:
 		emit triggered(_nodeId);
 	}
 public:
-	DeleteAction(int nodeId, QObject* parent) :
-			Action(tr("Delete node"), parent), _nodeId(nodeId) {
+	DeleteAction(int nodeId, QObject* parentObj) :
+			Action(tr("Delete node"), parentObj), _nodeId(nodeId) {
 		connect(this, SIGNAL(triggered()), this, SLOT(onTriggered()));
 	}
 signals:

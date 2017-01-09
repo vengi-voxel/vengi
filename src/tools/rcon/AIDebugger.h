@@ -19,6 +19,7 @@ namespace debug {
 class MapView;
 class AIDebuggerWidget;
 class AINodeStaticResolver;
+class PauseHandler;
 
 /**
  * @brief This is the remote debugger for the ai entities.

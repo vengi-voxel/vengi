@@ -7,8 +7,8 @@
 namespace ai {
 namespace debug {
 
-AggroTableModel::AggroTableModel(const AIDebugger& debugger, QTableView *parent) :
-		QAbstractTableModel(nullptr), _debugger(debugger), _parent(parent) {
+AggroTableModel::AggroTableModel(const AIDebugger& debugger, QTableView *tableView) :
+		QAbstractTableModel(nullptr), _debugger(debugger), _parent(tableView) {
 }
 
 AggroTableModel::~AggroTableModel() {
@@ -29,8 +29,9 @@ int AggroTableModel::columnCount(const QModelIndex & /*parent*/) const {
 }
 
 QVariant AggroTableModel::headerData(int section, Qt::Orientation orientation, int role) const {
-	if (orientation != Qt::Horizontal)
+	if (orientation != Qt::Horizontal) {
 		return QVariant();
+	}
 
 	if (role == Qt::DisplayRole) {
 		switch (section) {
@@ -45,14 +46,14 @@ QVariant AggroTableModel::headerData(int section, Qt::Orientation orientation, i
 	return QVariant();
 }
 
-QVariant AggroTableModel::data(const QModelIndex &index, int role) const {
+QVariant AggroTableModel::data(const QModelIndex &mdlIndex, int role) const {
 	const std::vector<AIStateAggroEntry>& aggro = _debugger.getAggro();
 	if (role == Qt::DisplayRole) {
-		switch (index.column()) {
+		switch (mdlIndex.column()) {
 		case 0:
-			return aggro.at(index.row()).id;
+			return aggro.at(mdlIndex.row()).id;
 		case 1:
-			return aggro.at(index.row()).aggro;
+			return aggro.at(mdlIndex.row()).aggro;
 		default:
 			break;
 		}

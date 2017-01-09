@@ -14,11 +14,11 @@ namespace debug {
 class Action: public QAction {
 Q_OBJECT
 protected:
-	Action(const QString& title, QObject* parent = nullptr) :
-			QAction(title, parent) {
+	Action(const QString& title, QObject* parentObj = nullptr) :
+			QAction(title, parentObj) {
 	}
-	Action(QObject* parent = nullptr) :
-			QAction(parent) {
+	Action(QObject* parentObj = nullptr) :
+			QAction(parentObj) {
 	}
 
 	// embedd stuff like e.g. a color dialog into a menu
@@ -26,11 +26,11 @@ protected:
 		QWidgetAction* action = new QWidgetAction(nullptr);
 		action->setDefaultWidget(dialog);
 
-		QMenu* menu = new QMenu();
-		menu->addAction(action);
-		connect(menu, SIGNAL(aboutToShow()), dialog, SLOT(show()));
-		connect(dialog, SIGNAL(finished(int)), menu, SLOT(hide()));
-		setMenu(menu);
+		QMenu* actionMenu = new QMenu();
+		actionMenu->addAction(action);
+		connect(actionMenu, SIGNAL(aboutToShow()), dialog, SLOT(show()));
+		connect(dialog, SIGNAL(finished(int)), actionMenu, SLOT(hide()));
+		setMenu(actionMenu);
 	}
 };
 

@@ -14,8 +14,8 @@ const int nodeHeight = 60;
 namespace ai {
 namespace debug {
 
-NodeTreeView::NodeTreeView(AIDebugger& debugger, AINodeStaticResolver& resolver, QWidget* parent) :
-		QGraphicsView(parent), _debugger(debugger), _scene(this), _resolver(resolver) {
+NodeTreeView::NodeTreeView(AIDebugger& debugger, AINodeStaticResolver& resolver, QWidget* objParent) :
+		QGraphicsView(objParent), _debugger(debugger), _scene(this), _resolver(resolver) {
 	_scene.setItemIndexMethod(QGraphicsScene::NoIndex);
 	// because the connection lines are not included in the bounding box...
 	setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -41,24 +41,24 @@ void NodeTreeView::updateTreeWidget() {
 	_scene.setSceneRect(QRectF());
 }
 
-NodeTreeItem* NodeTreeView::buildTreeItems(const AIStateNode& node, NodeTreeItem* parent) {
-	NodeTreeItem* thisNode = new NodeTreeItem(nullptr, node, _resolver.get(node.getNodeId()), parent, nodeHeight, horizontalSpacing, verticalSpacing);
+NodeTreeItem* NodeTreeView::buildTreeItems(const AIStateNode& node, NodeTreeItem* nodeTreeParent) {
+	NodeTreeItem* thisNode = new NodeTreeItem(nullptr, node, _resolver.get(node.getNodeId()), nodeTreeParent, nodeHeight, horizontalSpacing, verticalSpacing);
 	_scene.addItem(thisNode);
-	const std::vector<AIStateNode>& children = node.getChildren();
-	for (std::vector<AIStateNode>::const_iterator i = children.begin(); i != children.end(); ++i) {
+	const std::vector<AIStateNode>& childrenNodes = node.getChildren();
+	for (std::vector<AIStateNode>::const_iterator i = childrenNodes.begin(); i != childrenNodes.end(); ++i) {
 		NodeTreeItem* childNode = buildTreeItems(*i, thisNode);
 		thisNode->addChildren(childNode);
 	}
 	return thisNode;
 }
 
-void NodeTreeView::scalingTime(qreal x) {
-	qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
+void NodeTreeView::scalingTime(qreal) {
+	const qreal factor = 1.0 + qreal(_numScheduledScalings) / 300.0;
 	scale(factor, factor);
 }
 
-void NodeTreeView::wheelEvent(QWheelEvent * event) {
-	const int numDegrees = event->delta() / 8;
+void NodeTreeView::wheelEvent(QWheelEvent * wheelEventPtr) {
+	const int numDegrees = wheelEventPtr->delta() / 8;
 	const int numSteps = numDegrees / 15;
 	_numScheduledScalings += numSteps;
 

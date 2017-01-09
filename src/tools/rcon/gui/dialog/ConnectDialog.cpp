@@ -18,15 +18,15 @@ ConnectDialog::~ConnectDialog() {
 	delete _group;
 }
 
-void ConnectDialog::addMainWidgets(QBoxLayout& layout) {
+void ConnectDialog::addMainWidgets(QBoxLayout& boxLayout) {
 	_group = new QGroupBox(tr("Server"));
-	QVBoxLayout *boxLayout = new QVBoxLayout;
+	QVBoxLayout *vboxLayout = new QVBoxLayout;
 	_hostnameText = new QLineEdit(_hostname);
-	boxLayout->addWidget(_hostnameText);
+	vboxLayout->addWidget(_hostnameText);
 	_portText = new QLineEdit(QString::number(_port));
-	boxLayout->addWidget(_portText);
-	_group->setLayout(boxLayout);
-	layout.addWidget(_group);
+	vboxLayout->addWidget(_portText);
+	_group->setLayout(vboxLayout);
+	boxLayout.addWidget(_group);
 }
 
 void ConnectDialog::onApply() {

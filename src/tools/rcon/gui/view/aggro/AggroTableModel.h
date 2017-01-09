@@ -24,10 +24,11 @@ public:
 		return _debugger.getEntities();
 	}
 
-	inline const AIStateWorld* getEntity(const QModelIndex &index) const {
+	inline const AIStateWorld* getEntity(const QModelIndex &mdlIndex) const {
 		const int size = getEntities().size();
-		if (size > index.row() && index.row() >= 0)
-			return &getEntities().values().at(index.row());
+		if (size > mdlIndex.row() && mdlIndex.row() >= 0) {
+			return &getEntities().values().at(mdlIndex.row());
+		}
 		return nullptr;
 	}
 

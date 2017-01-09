@@ -32,10 +32,10 @@ int StateTableModel::columnCount(const QModelIndex & /*parent*/) const {
 	return 2;
 }
 
-QVariant StateTableModel::headerData(int section, Qt::Orientation orientation,
-		int role) const {
-	if (orientation != Qt::Horizontal)
+QVariant StateTableModel::headerData(int section, Qt::Orientation orientation, int role) const {
+	if (orientation != Qt::Horizontal) {
 		return QVariant();
+	}
 
 	if (role == Qt::DisplayRole) {
 		switch (section) {
@@ -50,10 +50,10 @@ QVariant StateTableModel::headerData(int section, Qt::Orientation orientation,
 	return QVariant();
 }
 
-QVariant StateTableModel::data(const QModelIndex &index, int role) const {
-	const QString& key = _list[index.row()];
+QVariant StateTableModel::data(const QModelIndex &mdlIndex, int role) const {
+	const QString& key = _list[mdlIndex.row()];
 	if (role == Qt::DisplayRole) {
-		switch (index.column()) {
+		switch (mdlIndex.column()) {
 		case 0:
 			return key;
 		case 1:
