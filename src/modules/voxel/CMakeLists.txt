@@ -7,7 +7,6 @@ set(SRCS
 	model/MeshExporter.h model/MeshExporter.cpp
 	font/VoxelFont.h font/VoxelFont.cpp
 	BiomeManager.h BiomeManager.cpp
-	LodCreator.h
 	Spiral.h
 	TreeContext.h
 	Constants.h
