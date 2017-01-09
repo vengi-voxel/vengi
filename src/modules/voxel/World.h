@@ -202,12 +202,12 @@ public:
 	int getMeshSize() const;
 
 private:
-	class Pager: public PagedVolume::Pager {
+	class WorldPager: public PagedVolume::Pager {
 	private:
 		WorldPersister _worldPersister;
 		World& _world;
 	public:
-		Pager(World& world) :
+		WorldPager(World& world) :
 				_world(world) {
 		}
 
@@ -226,7 +226,7 @@ private:
 	Region getMeshRegion(const glm::ivec3& pos) const;
 	Region getRegion(const glm::ivec3& pos, int size) const;
 
-	Pager _pager;
+	WorldPager _pager;
 	PagedVolume *_volumeData = nullptr;
 	BiomeManager _biomeManager;
 	WorldContext _ctx;

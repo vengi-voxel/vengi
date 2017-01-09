@@ -194,7 +194,7 @@ public:
 
 public:
 	/// Constructor for creating a fixed size volume.
-	PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes = 256 * 1024 * 1024, uint16_t uChunkSideLength = 32);
+	PagedVolume(Pager* pager, uint32_t targetMemoryUsageInBytes = 256 * 1024 * 1024, uint16_t chunkSideLength = 32);
 	/// Destructor
 	~PagedVolume();
 

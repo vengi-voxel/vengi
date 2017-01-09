@@ -23,14 +23,14 @@ namespace voxel {
 
 #define PERSIST 1
 
-void World::Pager::erase(PagedVolume::PagerContext& pctx) {
+void World::WorldPager::erase(PagedVolume::PagerContext& pctx) {
 #if PERSIST
 	PagedVolumeWrapper ctx(_world._volumeData, pctx.chunk, pctx.region);
 	_worldPersister.erase(ctx, _world.seed());
 #endif
 }
 
-bool World::Pager::pageIn(PagedVolume::PagerContext& pctx) {
+bool World::WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
 	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
@@ -44,7 +44,7 @@ bool World::Pager::pageIn(PagedVolume::PagerContext& pctx) {
 	return true;
 }
 
-void World::Pager::pageOut(PagedVolume::PagerContext& pctx) {
+void World::WorldPager::pageOut(PagedVolume::PagerContext& pctx) {
 #if PERSIST
 	if (!_world._persist) {
 		return;
