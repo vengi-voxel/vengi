@@ -10,6 +10,7 @@
 #include "core/GLM.h"
 #include "util/KeybindingParser.h"
 #include "video/Types.h"
+#include "video/GLVersion.h"
 
 struct SDL_Window;
 typedef void *SDL_GLContext;
@@ -61,6 +62,7 @@ protected:
 	typedef KeyMap::iterator KeyMapIter;
 	KeyMap _keys;
 	util::BindMap _bindings;
+	GLVersion _glVersion {0, 0};
 
 	WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport = 17815);
 

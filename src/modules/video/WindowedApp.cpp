@@ -10,7 +10,6 @@
 #include "Shader.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
-#include "GLVersion.h"
 #include "core/Singleton.h"
 #include "ShaderManager.h"
 #include "util/KeybindingHandler.h"
@@ -135,8 +134,12 @@ void WindowedApp::setupLimits() {
 	GL_checkError();
 	glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &_state.limits[std::enum_value(Limit::MaxElementVertices)]);
 	GL_checkError();
-	glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &_state.limits[std::enum_value(Limit::MaxFragmentInputComponents)]);
-	GL_checkError();
+	if (_glVersion.majorVersion > 3 || (_glVersion.majorVersion == 3 && _glVersion.minorVersion >= 2)) {
+		glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &_state.limits[std::enum_value(Limit::MaxFragmentInputComponents)]);
+		GL_checkError();
+	} else {
+		_state.limits[std::enum_value(Limit::MaxFragmentInputComponents)] = 60;
+	}
 #ifdef GL_MAX_VERTEX_UNIFORM_VECTORS
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &_state.limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
 	GL_checkError();
@@ -397,7 +400,8 @@ core::AppState WindowedApp::onInit() {
 
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glv.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glv.minorVersion);
-	Log::info("got gl context: %i.%i", glv.majorVersion, glv.minorVersion);
+	_glVersion = glv;
+	Log::info("got gl context: %i.%i", _glVersion.majorVersion, _glVersion.minorVersion);
 
 	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
 	if (vsync) {
