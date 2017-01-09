@@ -347,7 +347,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		setUniforms(_worldShader, camera);
 		_worldShader.setCascades(cascades);
 		_worldShader.setDistances(distances);
-		_worldShader.setShadowmap(1);
 		drawCallsWorld += renderWorldMeshes(_worldShader, _visible, vertices);
 	}
 	{
@@ -355,7 +354,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		setUniforms(_worldInstancedShader, camera);
 		_worldInstancedShader.setCascades(cascades);
 		_worldInstancedShader.setDistances(distances);
-		_worldInstancedShader.setShadowmap(1);
 		drawCallsWorld += renderWorldMeshes(_worldInstancedShader, _visiblePlant, vertices);
 	}
 	{
@@ -363,7 +361,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		setUniforms(_waterShader, camera);
 		_waterShader.setCascades(cascades);
 		_waterShader.setDistances(distances);
-		_waterShader.setShadowmap(1);
 		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
 	}
 
@@ -743,6 +740,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		_worldShader.setMaterialblock();
 		_worldShader.setFogcolor(_clearColor);
 		_worldShader.setTexture(0);
+		_worldShader.setShadowmap(1);
 		_worldShader.setDiffuseColor(_diffuseColor);
 		_worldShader.setAmbientColor(_ambientColor);
 		_worldShader.setFogrange(_fogRange);
@@ -756,10 +754,25 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		_worldInstancedShader.setMaterialblock();
 		_worldInstancedShader.setFogcolor(_clearColor);
 		_worldInstancedShader.setTexture(0);
+		_worldInstancedShader.setShadowmap(1);
 		_worldInstancedShader.setDiffuseColor(_diffuseColor);
 		_worldInstancedShader.setAmbientColor(_ambientColor);
 		_worldInstancedShader.setFogrange(_fogRange);
 		_worldInstancedShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+	}
+	{
+		shader::WaterShader::Materialblock materialBlock;
+		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+		_waterShader.updateMaterialblock(materialBlock);
+		video::ScopedShader scoped(_waterShader);
+		_waterShader.setMaterialblock();
+		_waterShader.setFogcolor(_clearColor);
+		_waterShader.setTexture(0);
+		_waterShader.setShadowmap(1);
+		_waterShader.setDiffuseColor(_diffuseColor);
+		_waterShader.setAmbientColor(_ambientColor);
+		_waterShader.setFogrange(_fogRange);
+		_waterShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 	}
 
 	if (!_shadow.init()) {
