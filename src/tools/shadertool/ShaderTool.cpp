@@ -314,13 +314,12 @@ void ShaderTool::generateSrc() const {
 		}
 		setters << ") const {\n";
 
-		setters << "\t\tif (!hasUniform(\"" << v.name;
-		setters << "\")) {\n";
+		setters << "\t\tconst int location = getUniformLocation(\"" << v.name;
+		setters << "\");\n\t\tif (location == -1) {\n";
 		setters << "\t\t\treturn false;\n";
 		setters << "\t\t}\n";
 		setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize == -1 ? 2 : v.arraySize);
-		setters << "(\"" << v.name;
-		setters << "\", " << v.name;
+		setters << "(location, " << v.name;
 		if (v.arraySize > 0) {
 			setters << ", " << v.arraySize;
 		} else if (v.arraySize == -1) {
@@ -331,20 +330,22 @@ void ShaderTool::generateSrc() const {
 		setters << "\t}\n";
 		if (v.arraySize > 0) {
 			setters << "\n\tinline bool set" << uniformName << "(" << "const std::vector<" << cType.ctype << ">& var) const {\n";
-			setters << "\t\tif (!hasUniform(\"" << v.name << "\")) {\n";
+			setters << "\t\tconst int location = getUniformLocation(\"" << v.name;
+			setters << "\");\n\t\tif (location == -1) {\n";
 			setters << "\t\t\treturn false;\n";
 			setters << "\t\t}\n";
 			setters << "\t\tcore_assert((int)var.size() == " << v.arraySize << ");\n";
-			setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize) << "(\"" << v.name << "\", &var.front(), var.size());\n";
+			setters << "\t\tsetUniform" << uniformSetterPostfix(v.type, v.arraySize) << "(location, &var.front(), var.size());\n";
 			setters << "\t\treturn true;\n";
 			setters << "\t}\n";
 		} else if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::VEC4) {
 			setters << "\n\tinline bool set" << uniformName << "(" << "const std::vector<float>& var) const {\n";
-			setters << "\t\tif (!hasUniform(\"" << v.name << "\")) {\n";
+			setters << "\t\tconst int location = getUniformLocation(\"" << v.name;
+			setters << "\");\n\t\tif (location == -1) {\n";
 			setters << "\t\t\treturn false;\n";
 			setters << "\t\t}\n";
 			setters << "\t\tcore_assert(int(var.size()) % " << cType.components << " == 0);\n";
-			setters << "\t\tsetUniformfv(\"" << v.name << "\", &var.front(), " << cType.components << ", " << cType.components << ");\n";
+			setters << "\t\tsetUniformfv(location, &var.front(), " << cType.components << ", " << cType.components << ");\n";
 			setters << "\t\treturn true;\n";
 			setters << "\t}\n";
 		}
