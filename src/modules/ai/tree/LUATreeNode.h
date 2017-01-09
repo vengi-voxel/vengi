@@ -77,14 +77,14 @@ protected:
 			lua_pop(_s, lua_gettop(_s));
 			return TreeNodeStatus::EXCEPTION;
 		}
-		const lua_Integer state = luaL_checkinteger(_s, -1);
-		if (state < 0 || state >= (lua_Integer)TreeNodeStatus::MAX_TREENODESTATUS) {
-			ai_log_error("LUA node: illegal tree node status returned: " LUA_INTEGER_FMT, state);
+		const lua_Integer execstate = luaL_checkinteger(_s, -1);
+		if (execstate < 0 || execstate >= (lua_Integer)TreeNodeStatus::MAX_TREENODESTATUS) {
+			ai_log_error("LUA node: illegal tree node status returned: " LUA_INTEGER_FMT, execstate);
 		}
 
 		// reset stack
 		lua_pop(_s, lua_gettop(_s));
-		return (TreeNodeStatus)state;
+		return (TreeNodeStatus)execstate;
 	}
 
 public:
@@ -93,8 +93,8 @@ public:
 		lua_State* _s;
 		std::string _type;
 	public:
-		LUATreeNodeFactory(lua_State* s, const std::string& type) :
-				_s(s), _type(type) {
+		LUATreeNodeFactory(lua_State* s, const std::string& typeStr) :
+				_s(s), _type(typeStr) {
 		}
 
 		inline const std::string& type() const {

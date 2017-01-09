@@ -30,13 +30,13 @@ typedef std::vector<CharacterId> FilteredEntities;
 
 /**
  * @brief This is the type the library works with. It interacts with it's real world entity by
- * the @c ICharacter interface.
+ * the @ai{ICharacter} interface.
  *
- * Each ai entity has a @c AggroMgr assigned that is updated with each tick.
+ * Each ai entity has a @ai[AggroMgr} assigned that is updated with each tick (update()).
  *
- * A behaviour can be replaced at runtime with @c AI::setBehaviour
+ * A behaviour can be replaced at runtime with setBehaviour()
  *
- * You can set single @c AI instances to no longer update their state by calling @c AI::setPause
+ * You can set single @c AI instances to no longer update their state by calling setPause()
  */
 class AI : public NonCopyable, public std::enable_shared_from_this<AI> {
 	friend class TreeNode;
@@ -59,7 +59,7 @@ protected:
 	/**
 	 * @note The filtered entities are kept even over several ticks. The caller should decide
 	 * whether he still needs an old/previous filtered selection
-	 * @sa @code IFilter
+	 * @sa @ai{IFilter}
 	 */
 	mutable FilteredEntities _filteredEntities;
 
@@ -68,14 +68,14 @@ protected:
 	void addFilteredEntity(CharacterId id);
 
 	/**
-	 * Often @c Selector states must be stored to continue in the next step at a particular
+	 * Often @ai{Selector} states must be stored to continue in the next step at a particular
 	 * position in the behaviour tree. This map is doing exactly this.
 	 */
 	typedef std::unordered_map<int, int> SelectorStates;
 	SelectorStates _selectorStates;
 
 	/**
-	 * This map stores the amount of execution for the @c Limit node. The key is the node id
+	 * This map stores the amount of execution for the @ai{Limit} node. The key is the node id
 	 */
 	typedef std::unordered_map<int, int> LimitStates;
 	LimitStates _limitStates;
@@ -111,15 +111,15 @@ public:
 	virtual void update(int64_t dt, bool debuggingActive);
 
 	/**
-	 * @brief Set the new @c Zone this entity is in
+	 * @brief Set the new @ai{Zone} this entity is in
 	 */
 	void setZone(Zone* zone);
 	/**
-	 * Returns the zone this entity is in.
+	 * Returns the @ai{Zone} this entity is in.
 	 */
 	Zone* getZone() const;
 	/**
-	 * @brief Returns @c true if the entity is already in a zone. This must not be managed manually,
+	 * @brief Returns @c true if the entity is already in a @ai{Zone}. This must not be managed manually,
 	 * the @c Zone is doing that already.
 	 */
 	bool hasZone() const;
