@@ -15,6 +15,22 @@ const aiVector3D VECZERO(0.0f, 0.0f, 0.0f);
 const aiColor4D COLOR_BLACK(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
+struct MeshNormals {
+	struct AttributeData {
+		glm::vec4 vertex;
+		glm::vec3 color;
+	};
+	std::vector<AttributeData> data;
+
+	inline size_t size() const {
+		return sizeof(AttributeData) * data.size();
+	}
+
+	inline void reserve(size_t amount) {
+		data.reserve(amount);
+	}
+};
+
 Mesh::Mesh() :
 		io::IOResource() {
 }
@@ -499,21 +515,6 @@ int Mesh::render() {
 
 int Mesh::renderNormals(video::Shader& shader) {
 	core_assert(shader.isActive());
-	struct MeshNormals {
-		struct AttributeData {
-			glm::vec4 vertex;
-			glm::vec3 color;
-		};
-		std::vector<AttributeData> data;
-
-		inline size_t size() const {
-			return sizeof(AttributeData) * data.size();
-		}
-
-		inline void reserve(size_t amount) {
-			data.reserve(amount);
-		}
-	};
 
 	if (_vertexArrayObjectNormals == 0u) {
 		return 0;
