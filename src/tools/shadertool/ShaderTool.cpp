@@ -187,6 +187,8 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
 	return Variable::FLOAT;
 }
 
+#define USE_ALIGN_AS 0
+
 /**
  * The size of each element in the array will be the size of the element type, rounded up to a multiple of the
  * size of a vec4. This is also the array’s alignment. The array’s size will be this rounded-up element’s size
@@ -199,6 +201,7 @@ ShaderTool::Variable::Type ShaderTool::getType(const std::string& type) const {
  * a vec4 needs 16 bytes and it's 16 bytes aligned
  */
 std::string ShaderTool::std140Align(const Variable& v) const {
+#if USE_ALIGN_AS > 0
 	// TODO: generete uniform buffer struct - enforce std140 layout
 	// TODO: extract uniform blocks into aligned structs and generate methods to update them
 	//       align them via GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT - use glBindBufferRange
@@ -213,7 +216,20 @@ std::string ShaderTool::std140Align(const Variable& v) const {
 	if (cType.type == Variable::Type::FLOAT || cType.type == Variable::Type::DOUBLE) {
 		return "alignas(4) ";
 	}
+#endif
+	return "";
+}
 
+std::string ShaderTool::std140Padding(const Variable& v, int& padding) const {
+#if USE_ALIGN_AS == 0
+	const Types& cType = cTypes[v.type];
+	if (cType.type == Variable::Type::VEC3
+	 || cType.type == Variable::Type::DVEC3
+	 || cType.type == Variable::Type::IVEC3
+	 || cType.type == Variable::Type::BVEC3) {
+		return "\t\tfloat _padding" + std::to_string(padding++) + ";\n";
+	}
+#endif
 	return "";
 }
 
@@ -227,11 +243,28 @@ size_t ShaderTool::std140Size(const Variable& v) const {
 	 || cType.type == Variable::Type::DOUBLE) {
 		bytes = 8;
 	}
-	if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3
-	 || cType.type == Variable::Type::DVEC2 || cType.type == Variable::Type::DVEC3
-	 || cType.type == Variable::Type::IVEC2 || cType.type == Variable::Type::IVEC3
-	 || cType.type == Variable::Type::BVEC2 || cType.type == Variable::Type::BVEC3) {
+	if (cType.type == Variable::Type::VEC2
+	 || cType.type == Variable::Type::DVEC2
+	 || cType.type == Variable::Type::IVEC2
+	 || cType.type == Variable::Type::BVEC2) {
+		components = 2;
+	}
+	if (cType.type == Variable::Type::VEC3
+	 || cType.type == Variable::Type::DVEC3
+	 || cType.type == Variable::Type::IVEC3
+	 || cType.type == Variable::Type::BVEC3) {
 		components = 4;
+	}
+	if (cType.type == Variable::Type::MAT2) {
+		components = 4;
+	} else if (cType.type == Variable::Type::MAT3) {
+		components = 9; // FIXME
+	} else if (cType.type == Variable::Type::MAT4) {
+		components = 16;
+	} else if (cType.type == Variable::Type::MAT3X4) {
+		components = 16; // FIXME
+	} else if (cType.type == Variable::Type::MAT4X3) {
+		components = 16; // FIXME
 	}
 	if (v.arraySize > 0) {
 		return components * bytes * v.arraySize;
@@ -504,8 +537,9 @@ void ShaderTool::generateSrc() const {
 		ub << "\tvideo::UniformBuffer _" << uniformBufferName << ";\n";
 		shutdown << "\t\t\t_" << uniformBufferName << ".shutdown();\n";
 		ub << "\t/**\n\t * @brief layout(std140) aligned uniform block structure\n\t */\n";
-		ub << "\tstruct " << uniformBufferStructName << " {\n";
+		ub << "\t#pragma pack(push, 1)\n\tstruct " << uniformBufferStructName << " {\n";
 		size_t structSize = 0u;
+		int paddingCnt = 0;
 		for (auto& v : ubuf.members) {
 			const std::string& uniformName = convertName(v.name, false);
 			const Types& cType = cTypes[v.type];
@@ -516,9 +550,12 @@ void ShaderTool::generateSrc() const {
 				ub << "[" << v.arraySize << "]";
 			}
 			ub << "; // " << memberSize << " bytes\n";
+			ub << std140Padding(v, paddingCnt);
 		}
-		ub << "\t};\n";
+		ub << "\t};\n\t#pragma pack(pop)\n";
+#if USE_ALIGN_AS > 0
 		ub << "\tstatic_assert(sizeof(" << uniformBufferStructName << ") == " << structSize << ", \"Unexpected structure size for " << uniformBufferStructName << "\");\n";
+#endif
 		setters << "\tinline bool update" << uniformBufferStructName << "(const " << uniformBufferStructName << "& var) {\n";
 		setters << "\t\t_" << uniformBufferName << ".create(sizeof(var), (const void*)&var);\n";
 		setters << "\t\treturn true;\n";
