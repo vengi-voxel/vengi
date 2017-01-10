@@ -57,30 +57,32 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	if (!_shadow.init()) {
-		return false;
-	}
-
 	shader::WorldShader::Materialblock materialBlock;
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_worldShader.updateMaterialblock(materialBlock);
+	video::ScopedShader scoped(_worldShader);
+	_worldShader.setMaterialblock();
+	_worldShader.setModel(glm::mat4());
+	_worldShader.setTexture(0);
+	_worldShader.setShadowmap(1);
+	_worldShader.setFogrange(250.0f);
+	_worldShader.setDiffuseColor(_diffuseColor);
+	_worldShader.setAmbientColor(_ambientColor);
+	_worldShader.setFogcolor(glm::vec3(core::Color::LightBlue));
 
-	shader::WorldShader::Fragblock fragBlock;
-	fragBlock.lightdir = _shadow.sunDirection();
-	fragBlock.fogcolor = glm::vec3(core::Color::LightBlue);
-	fragBlock.diffuseColor = _diffuseColor;
-	fragBlock.ambientColor = _ambientColor;
-	_worldShader.updateFragblock(fragBlock);
-
-	const video::VertexBuffer::Attribute& attributePos = getPositionVertexAttribute(
+	video::VertexBuffer::Attribute attributePos = getPositionVertexAttribute(
 			_vertexBufferIndex, _worldShader.getLocationPos(),
 			_worldShader.getComponentsPos());
 	_vertexBuffer.addAttribute(attributePos);
 
-	const video::VertexBuffer::Attribute& attributeInfo = getInfoVertexAttribute(
+	video::VertexBuffer::Attribute attributeInfo = getInfoVertexAttribute(
 			_vertexBufferIndex, _worldShader.getLocationInfo(),
 			_worldShader.getComponentsInfo());
 	_vertexBuffer.addAttribute(attributeInfo);
+
+	if (!_shadow.init()) {
+		return false;
+	}
 
 	_whiteTexture = video::createWhiteTexture("**whitetexture**");
 
@@ -248,12 +250,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 	_worldShader.setCascades(cascades);
 	_worldShader.setDistances(distances);
-	_worldShader.setMaterialblock();
-	_worldShader.setFragblock();
-	_worldShader.setTexture(0);
-	_worldShader.setShadowmap(1);
-	_worldShader.setFogrange(250.0f);
-	_worldShader.setModel(glm::mat4());
+	_worldShader.setLightdir(_shadow.sunDirection());
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
