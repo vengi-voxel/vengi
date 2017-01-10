@@ -188,7 +188,7 @@ void WorldRenderer::handleMeshQueue() {
 		meshData.voxelMeshes = std::move(mesh);
 		updateAABB(meshData);
 		_chunkBuffers.push_back(meshData);
-		Log::info("Meshes so far: %i", (int)_chunkBuffers.size());
+		Log::debug("Meshes so far: %i", (int)_chunkBuffers.size());
 		distributePlants(_world, plantAmount, meshData.translation(), meshData.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 	}
@@ -218,7 +218,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 		if (distance >= maxAllowedDistance) {
 			_world->allowReExtraction(chunkBuffer.translation());
 			chunkBuffer.inuse = false;
-			Log::info("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
+			Log::debug("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
 			continue;
 		}
 		if (camera.isVisible(chunkBuffer.aabb)) {
