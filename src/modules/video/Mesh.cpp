@@ -225,11 +225,11 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 
 		if (shader.hasAttribute("a_boneids")) {
 			const int loc = shader.enableVertexAttributeArray("a_boneids");
-			shader.setVertexAttributeInt(loc, NUM_BONES_PER_VEREX, GL_INT, sizeof(MeshVertex), GL_OFFSET_CAST(offsetof(MeshVertex, _boneIds)));
+			shader.setVertexAttributeInt(loc, NUM_BONES_PER_VERTEX, GL_INT, sizeof(MeshVertex), GL_OFFSET_CAST(offsetof(MeshVertex, _boneIds)));
 		}
 		if (shader.hasAttribute("a_boneweights")) {
 			const int loc = shader.enableVertexAttributeArray("a_boneweights");
-			shader.setVertexAttribute(loc, NUM_BONES_PER_VEREX, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), GL_OFFSET_CAST(offsetof(MeshVertex, _boneWeights)));
+			shader.setVertexAttribute(loc, NUM_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), GL_OFFSET_CAST(offsetof(MeshVertex, _boneWeights)));
 		}
 		glBindVertexArray(0);
 	}
@@ -524,7 +524,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 	normalData.reserve(_vertices.size() * 2);
 	for (const core::Vertex& v : _vertices) {
 		glm::mat4 bonetrans;
-		for (int i = 0; i < NUM_BONES_PER_VEREX; ++i) {
+		for (int i = 0; i < NUM_BONES_PER_VERTEX; ++i) {
 			const glm::mat4& bmat = _boneInfo[v._boneIds[i]].finalTransformation * v._boneWeights[i];
 			bonetrans += bmat;
 		}
