@@ -25,7 +25,6 @@ struct GLMeshData {
 	// used for instanced rendering
 	GLuint offsetBuffer = 0u;
 	GLuint vertexArrayObject = 0u;
-	glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 	glm::mat4 model;
 	int amount = 1;
 	// this can only be u8vec3 because the mesh chunk size is small enough
