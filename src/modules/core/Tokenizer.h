@@ -19,11 +19,11 @@ protected:
 	char skip(const char **s);
 	bool isSeparator(char c, const char *sep);
 public:
-	Tokenizer(const char* s, std::size_t len, const char *sep = " (){};");
+	Tokenizer(const char* s, std::size_t len, const char *sep = " (){};", const char *split = "");
 
-	Tokenizer(const std::string_view string, const char *sep) : Tokenizer(string.data(), string.length(), sep) {}
-	Tokenizer(const char* string, const char *sep = " (){};") : Tokenizer(string, strlen(string), sep) {}
-	Tokenizer(const std::string& string, const char *sep = " (){};") : Tokenizer(string.c_str(), string.size(), sep) {}
+	Tokenizer(const std::string_view string, const char *sep, const char *split = "") : Tokenizer(string.data(), string.length(), sep, split) {}
+	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(string, strlen(string), sep, split) {}
+	Tokenizer(const std::string& string, const char *sep = " (){};", const char *split = "") : Tokenizer(string.c_str(), string.size(), sep, split) {}
 
 	inline bool hasNext() const {
 		return _posIndex < _tokens.size();

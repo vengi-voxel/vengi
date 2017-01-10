@@ -46,6 +46,11 @@ TEST(TokenizerTest, testTokenizerOnlySep) {
 	ASSERT_EQ(2u, t.size());
 }
 
+TEST(TokenizerTest, testTokenizerSepAndSplit) {
+	core::Tokenizer t("int main(void) { foo; }", ";", "(){}");
+	ASSERT_EQ(8u, t.size());
+}
+
 TEST(TokenizerTest, testTokenizerStrings) {
 	core::Tokenizer t(";2;3;", ";");
 	ASSERT_EQ(4u, t.size());

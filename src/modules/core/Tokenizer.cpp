@@ -3,7 +3,7 @@
 
 namespace core {
 
-Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep) :
+Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char *split) :
 		_posIndex(0u), _len((int32_t)len) {
 	bool lastCharIsSep = false;
 	for (;;) {
@@ -50,6 +50,12 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep) :
 			continue;
 		}
 		token.push_back(c);
+		if (isSeparator(c, split)) {
+			_tokens.push_back(token);
+			++s;
+			--_len;
+			continue;
+		}
 		for (;;) {
 			++s;
 			--_len;
@@ -62,6 +68,14 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep) :
 				++s;
 				--_len;
 				break;
+			}
+			if (isSeparator(c, split)) {
+				_tokens.push_back(token);
+				token = "";
+				token.push_back(c);
+				_tokens.push_back(token);
+				token = "";
+				continue;
 			}
 			token.push_back(c);
 		}
