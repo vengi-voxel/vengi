@@ -265,48 +265,55 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		return 0;
 	}
 
+	const bool shadowMap = _shadowMap->boolVal();
 
 	{
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setMaterialblock();
-		_worldShader.setViewprojection(camera.viewProjectionMatrix());
 		_worldShader.setViewdistance(_viewDistance);
 		_worldShader.setLightdir(_shadow.sunDirection());
 		_worldShader.setFogcolor(_clearColor);
 		_worldShader.setTexture(0);
-		_worldShader.setShadowmap(1);
 		_worldShader.setDiffuseColor(_diffuseColor);
 		_worldShader.setAmbientColor(_ambientColor);
 		_worldShader.setFogrange(_fogRange);
-		_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+		if (shadowMap) {
+			_worldShader.setViewprojection(camera.viewProjectionMatrix());
+			_worldShader.setShadowmap(1);
+			_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+		}
 	}
 	{
 		video::ScopedShader scoped(_worldInstancedShader);
-		_worldInstancedShader.setViewprojection(camera.viewProjectionMatrix());
 		_worldInstancedShader.setViewdistance(_viewDistance);
 		_worldInstancedShader.setLightdir(_shadow.sunDirection());
 		_worldInstancedShader.setMaterialblock();
 		_worldInstancedShader.setFogcolor(_clearColor);
 		_worldInstancedShader.setTexture(0);
-		_worldInstancedShader.setShadowmap(1);
 		_worldInstancedShader.setDiffuseColor(_diffuseColor);
 		_worldInstancedShader.setAmbientColor(_ambientColor);
 		_worldInstancedShader.setFogrange(_fogRange);
-		_worldInstancedShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+		if (shadowMap) {
+			_worldInstancedShader.setViewprojection(camera.viewProjectionMatrix());
+			_worldInstancedShader.setShadowmap(1);
+			_worldInstancedShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+		}
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
-		_waterShader.setViewprojection(camera.viewProjectionMatrix());
 		_waterShader.setViewdistance(_viewDistance);
 		_waterShader.setLightdir(_shadow.sunDirection());
 		_waterShader.setMaterialblock();
 		_waterShader.setFogcolor(_clearColor);
 		_waterShader.setTexture(0);
-		_waterShader.setShadowmap(1);
 		_waterShader.setDiffuseColor(_diffuseColor);
 		_waterShader.setAmbientColor(_ambientColor);
 		_waterShader.setFogrange(_fogRange);
-		_waterShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+		if (shadowMap) {
+			_waterShader.setViewprojection(camera.viewProjectionMatrix());
+			_waterShader.setShadowmap(1);
+			_waterShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+		}
 	}
 
 	core_assert_msg(checkShaders(), "Shader attributes don't have the same order");
@@ -330,7 +337,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_visiblePlant.push_back(&*i);
 	}
 
-	const bool shadowMap = _shadowMap->boolVal();
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 
 	_shadow.calculateShadowData(camera, shadowMap, maxDepthBuffers, _depthBuffer.dimension());
@@ -378,20 +384,26 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	{
 		video::ScopedShader scoped(_worldShader);
-		_worldShader.setCascades(cascades);
-		_worldShader.setDistances(distances);
+		if (shadowMap) {
+			_worldShader.setCascades(cascades);
+			_worldShader.setDistances(distances);
+		}
 		drawCallsWorld += renderWorldMeshes(_worldShader, _visible, vertices);
 	}
 	{
 		video::ScopedShader scoped(_worldInstancedShader);
-		_worldInstancedShader.setCascades(cascades);
-		_worldInstancedShader.setDistances(distances);
+		if (shadowMap) {
+			_worldInstancedShader.setCascades(cascades);
+			_worldInstancedShader.setDistances(distances);
+		}
 		drawCallsWorld += renderWorldMeshes(_worldInstancedShader, _visiblePlant, vertices);
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
-		_waterShader.setCascades(cascades);
-		_waterShader.setDistances(distances);
+		if (shadowMap) {
+			_waterShader.setCascades(cascades);
+			_waterShader.setDistances(distances);
+		}
 		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
 	}
 
@@ -462,14 +474,15 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 	video::ScopedShader scoped(_meshShader);
-	_meshShader.setViewprojection(camera.viewProjectionMatrix());
 	_meshShader.setView(camera.viewMatrix());
 	_meshShader.setProjection(camera.projectionMatrix());
 	_meshShader.setViewdistance(_viewDistance);
 	_meshShader.setLightdir(_shadow.sunDirection());
 
-	const bool shadowMap = _meshShader.setShadowmap(1);
+	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
+		_meshShader.setViewprojection(camera.viewProjectionMatrix());
+		_meshShader.setShadowmap(1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
 	}
