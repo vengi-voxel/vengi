@@ -372,14 +372,14 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 	if (nodeAnim != nullptr) {
 		// Interpolate scaling and generate scaling transformation matrix
 		const glm::vec3& scaling = calcInterpolatedScaling(animationTime, nodeAnim);
-		const glm::mat4& scalingM = glm::scale(glm::mat4(), glm::vec3(scaling.x, scaling.y, scaling.z));
+		const glm::mat4& scalingM = glm::scale(glm::vec3(scaling.x, scaling.y, scaling.z));
 
 		// Interpolate rotation and generate rotation transformation matrix
 		const glm::mat4& rotationM = calcInterpolatedRotation(animationTime, nodeAnim);
 
 		// Interpolate translation and generate translation transformation matrix
 		const glm::vec3& translation = calcInterpolatedPosition(animationTime, nodeAnim);
-		const glm::mat4& translationM = glm::translate(glm::mat4(), glm::vec3(translation.x, translation.y, translation.z));
+		const glm::mat4& translationM = glm::translate(glm::vec3(translation.x, translation.y, translation.z));
 
 		// Combine the above transformations
 		nodeTransformation = translationM * rotationM * scalingM;
