@@ -62,3 +62,23 @@ gtest_suite_files(tests
 	tests/PlaneTest.cpp
 )
 gtest_suite_deps(tests ${LIB})
+
+gtest_suite_begin(tests-core TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_files(tests-core
+	tests/AbstractTest.cpp
+	tests/CoreTest.cpp
+	tests/RectTest.cpp
+	tests/ByteStreamTest.cpp
+	tests/ThreadPoolTest.cpp
+	tests/EventBusTest.cpp
+	tests/QuadTreeTest.cpp
+	tests/VarTest.cpp
+	tests/CommandTest.cpp
+	tests/MD5Test.cpp
+	tests/SetTest.cpp
+	tests/TokenizerTest.cpp
+	tests/FrustumTest.cpp
+	tests/PlaneTest.cpp
+)
+gtest_suite_deps(tests-core ${LIB})
+gtest_suite_end(tests-core)

@@ -136,7 +136,7 @@ edit-local-config:
 doc: cmake
 	$(call COMPILE, $@)
 
-server client voxedit shapetool shadertool noisetool databasetool uitool tests testmesh testcamera testdepthbuffer testtexture testvoxelfont testplane flatc: cmake
+server client voxedit shapetool shadertool noisetool databasetool uitool tests tests-core testmesh testcamera testdepthbuffer testtexture testvoxelfont testplane flatc: cmake
 	$(call COMPILE, $@)
 	$(call COMPILE, copy-data-shared)
 	$(call COMPILE, copy-data-$@)
