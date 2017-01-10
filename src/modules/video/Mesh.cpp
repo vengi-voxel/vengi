@@ -92,7 +92,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 		meshData.noOfIndices = mesh->mNumFaces * 3;
 		meshData.baseVertex = numVertices;
 		meshData.baseIndex = numIndices;
-		meshData.indexType = GL_UNSIGNED_INT;
+		meshData.indexType = GLmap<Indices::value_type>();
 
 		numVertices += mesh->mNumVertices;
 		numIndices += meshData.noOfIndices;
