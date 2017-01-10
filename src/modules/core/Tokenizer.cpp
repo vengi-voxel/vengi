@@ -16,12 +16,17 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char
 		}
 		lastCharIsSep = false;
 		std::string token;
+		// TODO: check that " is not sep or split
 		if (c == '"') {
-			++s;
-			--_len;
+			size_t cl = core::utf8::lengthChar(c);
+			_len -= cl;
+			s += cl;
 			for (;;) {
-				c = *s++;
-				--_len;
+				// don't skip comments or whitespaces here, an inner string should be preserved
+				c = *s;
+				cl = core::utf8::lengthChar(c);
+				_len -= cl;
+				s += cl;
 				if (c == '"' || c == '\0' || _len <= 0) {
 					_tokens.push_back(token);
 					break;
@@ -36,6 +41,7 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char
 						c = '"';
 					}
 					++s;
+					--_len;
 				}
 				token.push_back(c);
 			}
@@ -45,28 +51,35 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char
 		lastCharIsSep = isSeparator(c, sep);
 		if (lastCharIsSep) {
 			_tokens.push_back("");
-			++s;
-			--_len;
+			const size_t cl = core::utf8::lengthChar(c);
+			_len -= cl;
+			s += cl;
 			continue;
 		}
 		token.push_back(c);
 		if (isSeparator(c, split)) {
 			_tokens.push_back(token);
-			++s;
-			--_len;
+			const size_t cl = core::utf8::lengthChar(c);
+			_len -= cl;
+			s += cl;
 			continue;
 		}
 		for (;;) {
-			++s;
-			--_len;
-			c = *s;
+			size_t cl = core::utf8::lengthChar(c);
+			_len -= cl;
+			s += cl;
+			if (skipComments(&s, false)) {
+				break;
+			}
+			c = skip(&s, false);
 			if (c < ' ' || _len <= 0) {
 				break;
 			}
 			lastCharIsSep = isSeparator(c, sep);
 			if (lastCharIsSep) {
-				++s;
-				--_len;
+				cl = core::utf8::lengthChar(c);
+				_len -= cl;
+				s += cl;
 				break;
 			}
 			if (isSeparator(c, split)) {
@@ -96,47 +109,57 @@ bool Tokenizer::isSeparator(char c, const char *sep) {
 	return false;
 }
 
-char Tokenizer::skip(const char **s) {
+bool Tokenizer::skipComments(const char **s, bool skipWhitespace) {
+	char c = **s;
+	if (c != '/') {
+		return false;
+	}
+	const char next = (*s)[1];
+	if (next == '*') {
+		int l = 0;
+		_len -= 2;
+		*s += 2;
+		const char* data = *s;
+		while (data[l] != '\0' && data[l] != '*' && data[l + 1] != '\0' && data[l + 1] != '/') {
+			++l;
+		}
+		*s += l + 2;
+		_len -= l + 2;
+		skip(s, skipWhitespace);
+		return true;
+	} else if (next == '/') {
+		while (**s != '\0' && **s != '\n') {
+			(*s)++;
+			if (--_len <= 0) {
+				return true;
+			}
+		}
+		skip(s, skipWhitespace);
+		return true;
+	}
+	return false;
+}
+
+char Tokenizer::skip(const char **s, bool skipWhitespace) {
 	if (_len <= 0) {
 		return '\0';
 	}
-	char c;
-	while ((c = **s) <= ' ') {
-		if (c == '\0' || _len <= 0) {
-			return '\0';
-		}
-		const size_t cl = core::utf8::lengthChar(c);
-		_len -= cl;
-		*s += cl;
-	}
-
-	// skip multiline and singleline comments
-	if (c == '/') {
-		const char next = (*s)[1];
-		if (next == '*') {
-			int l = 0;
-			_len -= 2;
-			*s += 2;
-			const char* data = *s;
-			while (data[l] != '\0' && data[l] != '*' && data[l + 1] != '\0' && data[l + 1] != '/') {
-				++l;
+	char c = **s;
+	if (skipWhitespace) {
+		while ((c = **s) <= ' ') {
+			if (c == '\0' || _len <= 0) {
+				return '\0';
 			}
-			*s += l + 2;
-			_len -= l + 2;
-			return skip(s);
-		}
-		if (next == '/') {
-			while (**s != '\0' && **s != '\n') {
-				(*s)++;
-				if (--_len <= 0) {
-					return '\0';
-				}
-			}
-			return skip(s);
+			const size_t cl = core::utf8::lengthChar(c);
+			_len -= cl;
+			*s += cl;
 		}
 	}
 
-	return c;
+	if (!skipComments(s, skipWhitespace)) {
+		return c;
+	}
+	return **s;
 }
 
 }

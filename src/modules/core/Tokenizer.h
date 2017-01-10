@@ -16,7 +16,9 @@ protected:
 	std::size_t _size;
 	int32_t _len;
 
-	char skip(const char **s);
+	// skip multiline and singleline comments
+	bool skipComments(const char **s, bool skipWhitespac);
+	char skip(const char **s, bool skipWhitespace = true);
 	bool isSeparator(char c, const char *sep);
 public:
 	Tokenizer(const char* s, std::size_t len, const char *sep = " (){};", const char *split = "");
