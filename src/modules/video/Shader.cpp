@@ -37,7 +37,7 @@ Shader::~Shader() {
 
 void Shader::checkAttribute(const std::string& attribute) {
 	if (!hasAttribute(attribute)) {
-		Log::error("Attribute %s missing for shader %s", attribute.c_str(), _name.c_str());
+		Log::warn("Attribute %s missing for shader %s", attribute.c_str(), _name.c_str());
 	} else {
 		Log::debug("Found attribute %s for shader %s", attribute.c_str(), _name.c_str());
 	}
@@ -45,7 +45,7 @@ void Shader::checkAttribute(const std::string& attribute) {
 
 void Shader::checkUniform(const std::string& uniform) {
 	if (!hasUniform(uniform)) {
-		Log::error("Uniform %s missing for shader %s", uniform.c_str(), _name.c_str());
+		Log::warn("Uniform %s missing for shader %s", uniform.c_str(), _name.c_str());
 	} else {
 		Log::debug("Found uniform %s for shader %s", uniform.c_str(), _name.c_str());
 	}
