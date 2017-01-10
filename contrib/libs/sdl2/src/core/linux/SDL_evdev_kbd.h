@@ -18,32 +18,12 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
 
-#ifndef _SDL_winopengles_h
-#define _SDL_winopengles_h
+struct SDL_EVDEV_keyboard_state;
+typedef struct SDL_EVDEV_keyboard_state SDL_EVDEV_keyboard_state;
 
-#if SDL_VIDEO_OPENGL_EGL
-
-#include "../SDL_sysvideo.h"
-#include "../SDL_egl_c.h"
-
-/* OpenGLES functions */
-#define WIN_GLES_GetAttribute SDL_EGL_GetAttribute
-#define WIN_GLES_GetProcAddress SDL_EGL_GetProcAddress
-#define WIN_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
-#define WIN_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define WIN_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
-
-extern int WIN_GLES_LoadLibrary(_THIS, const char *path);
-extern SDL_GLContext WIN_GLES_CreateContext(_THIS, SDL_Window * window);
-extern int WIN_GLES_SwapWindow(_THIS, SDL_Window * window);
-extern int WIN_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
-extern void WIN_GLES_DeleteContext(_THIS, SDL_GLContext context);
-extern int WIN_GLES_SetupWindow(_THIS, SDL_Window * window);
-
-#endif /* SDL_VIDEO_OPENGL_EGL */
-
-#endif /* _SDL_winopengles_h */
+extern SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void);
+extern void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode, int down);
+extern void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state);
 
 /* vi: set ts=4 sw=4 expandtab: */
