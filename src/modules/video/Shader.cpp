@@ -232,7 +232,7 @@ void Shader::addDefine(const std::string& name, const std::string& value) {
 int Shader::getAttributeLocation(const std::string& name) const {
 	ShaderAttributes::const_iterator i = _attributes.find(name);
 	if (i == _attributes.end()) {
-		Log::error("can't find attribute %s in shader %s", name.c_str(), _name.c_str());
+		Log::debug("can't find attribute %s in shader %s", name.c_str(), _name.c_str());
 		return -1;
 	}
 	return i->second;
@@ -249,9 +249,9 @@ int Shader::getUniformLocation(const std::string& name) const {
 const Shader::Uniform* Shader::getUniform(const std::string& name) const {
 	ShaderUniforms::const_iterator i = _uniforms.find(name);
 	if (i == _uniforms.end()) {
-		Log::error("can't find uniform %s in shader %s", name.c_str(), _name.c_str());
+		Log::debug("can't find uniform %s in shader %s", name.c_str(), _name.c_str());
 		for (auto i : _uniforms) {
-			Log::error("uniform %s", i.first.c_str());
+			Log::trace("uniform %s", i.first.c_str());
 		}
 		return nullptr;
 	}
