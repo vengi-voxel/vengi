@@ -221,6 +221,13 @@ std::string ShaderTool::std140Align(const Variable& v) const {
 size_t ShaderTool::std140Size(const Variable& v) const {
 	const Types& cType = cTypes[v.type];
 	int components = cType.components;
+	int bytes = 4;
+	if (cType.type == Variable::Type::DVEC2
+	 || cType.type == Variable::Type::DVEC3
+	 || cType.type == Variable::Type::DVEC4
+	 || cType.type == Variable::Type::DOUBLE) {
+		bytes = 8;
+	}
 	if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3
 	 || cType.type == Variable::Type::DVEC2 || cType.type == Variable::Type::DVEC3
 	 || cType.type == Variable::Type::IVEC2 || cType.type == Variable::Type::IVEC3
@@ -228,9 +235,9 @@ size_t ShaderTool::std140Size(const Variable& v) const {
 		components = 4;
 	}
 	if (v.arraySize > 0) {
-		return components * 4 * v.arraySize;
+		return components * bytes * v.arraySize;
 	}
-	return components * 4;
+	return components * bytes;
 }
 
 void ShaderTool::generateSrc() const {
