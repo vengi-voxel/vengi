@@ -97,7 +97,7 @@ protected:
 				*array = '\0';
 			}
 			_uniforms[name] = Uniform{location, block};
-			Log::info("Got uniform location for %s is %i (shader %s)", name, location, _name.c_str());
+			Log::debug("Got uniform location for %s is %i (shader %s)", name, location, _name.c_str());
 		}
 		return numUniforms;
 	}
