@@ -5,7 +5,6 @@
 #include "ShaderTool.h"
 #include "core/App.h"
 #include "core/Process.h"
-#include "core/Tokenizer.h"
 #include "core/GameConfig.h"
 #include "video/Shader.h"
 #include "video/GLVersion.h"
@@ -541,10 +540,41 @@ void ShaderTool::generateSrc() const {
 	core::App::getInstance()->filesystem()->syswrite(targetFile, src);
 }
 
+bool ShaderTool::parseLayout(ShaderTool::Layout& layout, core::Tokenizer& tok) {
+	if (!tok.hasNext()) {
+		return false;
+	}
+	std::string token = tok.next();
+	if (token != "(") {
+		Log::warn("Unexpected layout syntax");
+		return false;
+	}
+	do {
+		if (!tok.hasNext()) {
+			return false;
+		}
+		token = tok.next();
+		if (token == "std140") {
+			layout.blockLayout = BlockLayout::std140;
+		} else if (token == "std430") {
+			layout.blockLayout = BlockLayout::std430;
+		}
+		/* TODO location = x, offset = 20, std140
+		int binding = 0;
+		int components = 0;
+		int offset = 0;
+		int index = 0;
+		*/
+	} while(token != ")");
+
+	return true;
+}
+
 bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 	bool uniformBlock = false;
-	core::Tokenizer tok(buffer, " ;");
+	core::Tokenizer tok(buffer, " ;", "{}()");
 	UniformBlock block;
+	Layout layout;
 	while (tok.hasNext()) {
 		const std::string token = tok.next();
 		Log::trace("token: %s", token.c_str());
@@ -562,6 +592,12 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			} else {
 				v = &_shaderStruct.outs;
 			}
+		} else if (token == "layout") {
+			if (!parseLayout(layout, tok)) {
+				Log::warn("Could not parse layout");
+			}
+		} else if (token == "buffer") {
+			Log::warn("SSBO not supported");
 		} else if (token == "uniform") {
 			v = &_shaderStruct.uniforms;
 		} else if (uniformBlock) {
@@ -569,6 +605,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 				uniformBlock = false;
 				Log::trace("End of uniform block: %s", block.name.c_str());
 				_shaderStruct.uniformBlocks.push_back(block);
+				layout = Layout();
 			} else {
 				tok.prev();
 			}
@@ -601,6 +638,9 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			block.members.clear();
 			Log::trace("Found uniform block: %s", type.c_str());
 			uniformBlock = true;
+			if (layout.blockLayout != BlockLayout::std140) {
+				Log::warn("Incompatible block layout chosen for uniform block %s (%i)", type.c_str(), std::enum_value(layout.blockLayout));
+			}
 			continue;
 		}
 		const Variable::Type typeEnum = getType(type);
@@ -638,6 +678,7 @@ bool ShaderTool::parse(const std::string& buffer, bool vertex) {
 			auto findIter = std::find_if(v->begin(), v->end(), [&] (const Variable& var) { return var.name == name; });
 			if (findIter == v->end()) {
 				v->push_back(Variable{typeEnum, name, arraySize});
+				layout = Layout();
 			} else {
 				Log::warn("Found duplicate variable %s (%s versus %s)",
 						name.c_str(), cTypes[(int)findIter->type].ctype, cTypes[(int)typeEnum].ctype);

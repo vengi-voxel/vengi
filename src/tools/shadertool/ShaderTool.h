@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/App.h"
+#include "core/Tokenizer.h"
 
 /**
  * @brief This tool validates the shaders and generated c++ code for them.
@@ -48,6 +49,20 @@ protected:
 		std::vector<Variable> members;
 	};
 
+	enum class BlockLayout {
+		unknown,
+		std140,
+		std430
+	};
+
+	struct Layout {
+		int binding = 0;
+		int components = 0;
+		int offset = 0;
+		int index = 0;
+		BlockLayout blockLayout = BlockLayout::unknown;
+	};
+
 	struct ShaderStruct {
 		std::string name;
 		std::string filename;
@@ -67,6 +82,7 @@ protected:
 	std::string _shaderDirectory;
 	std::string _shaderTemplateFile;
 
+	bool parseLayout(Layout& layout, core::Tokenizer& tok);
 	bool parse(const std::string& src, bool vertex);
 	Variable::Type getType(const std::string& type) const;
 	std::string std140Align(const Variable& v) const;
