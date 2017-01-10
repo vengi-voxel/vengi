@@ -13,7 +13,6 @@ namespace video {
 struct GLMeshData {
 	GLuint noOfIndices = 0u;
 	GLuint noOfVertices = 0u;
-	GLenum indexType = 0;
 	GLuint baseVertex = 0u;
 	GLuint baseIndex = 0u;
 	GLuint materialIndex = 0u;

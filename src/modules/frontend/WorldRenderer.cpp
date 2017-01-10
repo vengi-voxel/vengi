@@ -239,12 +239,12 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const RendererMeshVi
 		core_assert(meshData->vertexArrayObject > 0);
 		glBindVertexArray(meshData->vertexArrayObject);
 		if (meshData->amount == 1) {
-			glDrawElements(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, nullptr);
+			glDrawElements(GL_TRIANGLES, meshData->noOfIndices, GLmap<voxel::IndexType>(), nullptr);
 		} else {
 			const int amount = (int)meshData->instancedPositions.size();
 			glBindBuffer(GL_ARRAY_BUFFER, meshData->offsetBuffer);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * amount, &meshData->instancedPositions[0], GL_DYNAMIC_DRAW);
-			glDrawElementsInstanced(GL_TRIANGLES, meshData->noOfIndices, meshData->indexType, nullptr, amount);
+			glDrawElementsInstanced(GL_TRIANGLES, meshData->noOfIndices, GLmap<voxel::IndexType>(), nullptr, amount);
 		}
 		if (vertices != nullptr) {
 			*vertices += meshData->noOfVertices;
@@ -533,7 +533,6 @@ void WorldRenderer::updateVertexBuffer(const voxel::Mesh& mesh, video::GLMeshDat
 
 	meshData.noOfVertices = numVertices;
 	meshData.noOfIndices = numIndices;
-	meshData.indexType = GLmap<voxel::IndexType>();
 	meshData.model = glm::translate(glm::vec3(mesh.getOffset()));
 }
 

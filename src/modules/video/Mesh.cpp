@@ -92,7 +92,6 @@ bool Mesh::loadMesh(const std::string& filename) {
 		meshData.noOfIndices = mesh->mNumFaces * 3;
 		meshData.baseVertex = numVertices;
 		meshData.baseIndex = numIndices;
-		meshData.indexType = GLmap<Indices::value_type>();
 
 		numVertices += mesh->mNumVertices;
 		numIndices += meshData.noOfIndices;
@@ -488,7 +487,7 @@ int Mesh::render() {
 		if (matIdx < _textures.size() && _textures[matIdx]) {
 			_textures[matIdx]->bind();
 		}
-		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, mesh.indexType, GL_OFFSET_CAST(sizeof(uint32_t) * mesh.baseIndex), mesh.baseVertex);
+		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, GLmap<Indices::value_type>(), GL_OFFSET_CAST(sizeof(Indices::value_type) * mesh.baseIndex), mesh.baseVertex);
 		++drawCalls;
 	}
 	// Make sure the VAO is not changed from the outside
