@@ -762,6 +762,8 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		video::GLMeshData meshDataPlant;
 		if (createInstancedVertexBuffer(*mesh, 40, meshDataPlant)) {
 			meshDataPlant.scale = glm::vec3(0.4f);
+			const glm::mat4& translate = glm::translate(glm::mat4(1.0f), glm::vec3(mesh->getOffset()));
+			meshDataPlant.model = glm::scale(translate, meshDataPlant.scale);
 			_meshPlantList.push_back(meshDataPlant);
 		}
 	}
