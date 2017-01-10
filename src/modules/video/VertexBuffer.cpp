@@ -16,7 +16,17 @@ VertexBuffer::VertexBuffer() {
 }
 
 bool VertexBuffer::addAttribute(const VertexBuffer::Attribute& attribute) {
+	if (attribute.bufferIndex < 0) {
+		return false;
+	}
+	if (attribute.index < 0) {
+		return false;
+	}
+	if (attribute.size <= 0) {
+		return false;
+	}
 	_attributes.push_back(attribute);
+	_dirtyAttributes = true;
 	return true;
 }
 
@@ -26,11 +36,14 @@ bool VertexBuffer::bind() const {
 	}
 	if (_vao != 0) {
 		glBindVertexArray(_vao);
-		return true;
+		if (!_dirtyAttributes) {
+			return true;
+		}
+	} else {
+		glGenVertexArrays(1, &_vao);
+		glBindVertexArray(_vao);
 	}
 
-	glGenVertexArrays(1, &_vao);
-	glBindVertexArray(_vao);
 	const int size = _attributes.size();
 	for (int i = 0; i < size; i++) {
 		const Attribute& a = _attributes[i];
@@ -57,6 +70,7 @@ bool VertexBuffer::bind() const {
 		}
 		glBindBuffer(_targets[i], _handles[i]);
 	}
+	_dirtyAttributes = false;
 	GL_checkError();
 	return true;
 }
@@ -151,7 +165,6 @@ int32_t VertexBuffer::createFullscreenTextureBuffer() {
 	return create(vecs, sizeof(vecs));
 }
 
-
 int32_t VertexBuffer::createFullscreenTextureBufferYFlipped() {
 	// counter clock wise winding
 	//
@@ -229,6 +242,10 @@ void VertexBuffer::shutdown() {
 		glDeleteBuffers(_handleIdx, _handles);
 		_handleIdx = 0;
 	}
+	clearAttributes();
+}
+
+void VertexBuffer::clearAttributes() {
 	_attributes.clear();
 }
 

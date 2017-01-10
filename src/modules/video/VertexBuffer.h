@@ -32,9 +32,9 @@ class VertexBuffer {
 public:
 	struct Attribute {
 		/** shader attribute index */
-		uint32_t index = 0u;
+		int32_t index = -1;
 		/** The internal buffer index that was returned by @c create() */
-		uint32_t bufferIndex = 0u;
+		int32_t bufferIndex = -1;
 		/** The size behind your attribute (not sizeof but lengthof). */
 		int size = 0;
 		/** the amount of bytes between each attribute instance */
@@ -65,6 +65,7 @@ private:
 	std::vector<Attribute> _attributes;
 	mutable GLuint _vao = 0u;
 	VertexBufferMode _mode = VertexBufferMode::Static;
+	mutable bool _dirtyAttributes = true;
 public:
 	/**
 	 * @brief Ctor that also creates buffer handle.
@@ -77,6 +78,8 @@ public:
 	 */
 	VertexBuffer();
 	~VertexBuffer();
+
+	void clearAttributes();
 
 	void setMode(VertexBufferMode mode);
 	void shutdown();
