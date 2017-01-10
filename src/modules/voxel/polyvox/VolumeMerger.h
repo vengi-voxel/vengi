@@ -10,24 +10,21 @@
 
 namespace voxel {
 
-class MergeConditionSkipVoxelType {
-private:
-	voxel::Voxel _voxel;
-public:
-	MergeConditionSkipVoxelType(voxel::VoxelType type = voxel::VoxelType::Air) :
-			_voxel(type, 0) {
-		// the color index doesn't matter here
-	}
-
+/**
+ * @brief Will skip air voxels on volume merges
+ */
+struct MergeSkipEmpty {
 	inline bool operator() (const voxel::Voxel& voxel) const {
-		return voxel != _voxel;
+		return !isAir(voxel.getMaterial());
 	}
 };
 
 /**
  * @note This version can deal with source volumes that are smaller or equal sized to the destination volume
+ * @note The given merge condition function must return false for voxels that should be skipped.
+ * @sa MergeSkipEmpty
  */
-template<typename MergeCondition = MergeConditionSkipVoxelType, class Volume1, class Volume2>
+template<typename MergeCondition = MergeSkipEmpty, class Volume1, class Volume2>
 int mergeRawVolumes(Volume1* destination, const Volume2* source, const Region& destReg, const Region& sourceReg, MergeCondition mergeCondition = MergeCondition()) {
 	core_trace_scoped(MergeRawVolumes);
 	int cnt = 0;
@@ -50,7 +47,11 @@ int mergeRawVolumes(Volume1* destination, const Volume2* source, const Region& d
 	return cnt;
 }
 
-template<typename MergeCondition = MergeConditionSkipVoxelType>
+/**
+ * The given merge condition function must return false for voxels that should be skipped.
+ * @sa MergeSkipEmpty
+ */
+template<typename MergeCondition = MergeSkipEmpty>
 inline int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume* source, MergeCondition mergeCondition = MergeCondition()) {
 	core_assert(source->getRegion() == destination->getRegion());
 	return mergeRawVolumes(destination, source, destination->getRegion(), source->getRegion());
