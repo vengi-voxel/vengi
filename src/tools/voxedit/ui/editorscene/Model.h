@@ -86,7 +86,7 @@ public:
 	bool newVolume(bool force);
 
 	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
-	bool setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel);
+	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 	bool dirty() const;
 	bool empty() const;
 	int size() const;

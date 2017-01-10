@@ -263,7 +263,7 @@ const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 	return _modelVolume->getVoxel(pos);
 }
 
-bool Model::setVoxel(glm::ivec3 pos, const voxel::Voxel& voxel) {
+bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	if (getVoxel(pos) == voxel) {
 		return false;
 	}
