@@ -23,7 +23,7 @@ core::AppState TestMeshApp::onConstruct() {
 			_mesh->shutdown();
 			_mesh = meshPtr;
 		}
-	});
+	}).setHelp("Load a mesh from the pool. The name is without extension and the file must be in the mesh/ dir.");
 
 	core::Var::get(cfg::ClientShadowMapSize, "512");
 	core::Var::get("mesh", "chr_skelett2_bake");
