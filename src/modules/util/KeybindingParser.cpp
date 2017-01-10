@@ -56,11 +56,13 @@ KeybindingParser::KeybindingParser(const std::string& key, const std::string& bi
 KeybindingParser::KeybindingParser(const std::string& bindings) :
 		core::Tokenizer(bindings), _invalidBindings(0) {
 	for (;;) {
-		if (!hasNext())
+		if (!hasNext()) {
 			break;
+		}
 		std::string key = next();
-		if (!hasNext())
+		if (!hasNext()) {
 			break;
+		}
 		const std::string command = next();
 		parseKeyAndCommand(key, command);
 	}

@@ -526,7 +526,7 @@ core::AppState WindowedApp::onCleanup() {
 		const std::string& command = pair.first;
 		keybindings += modifierKey + keyName + " " + command + '\n';
 	}
-	Log::info("%s", keybindings.c_str());
+	Log::trace("%s", keybindings.c_str());
 	filesystem()->write("keybindings.cfg", keybindings);
 
 	return App::onCleanup();
