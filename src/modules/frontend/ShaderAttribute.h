@@ -33,7 +33,7 @@ inline video::VertexBuffer::Attribute getInfoVertexAttribute(uint32_t bufferInde
 	attrib.index = attributeIndex;
 	attrib.stride = sizeof(voxel::VoxelVertex);
 	attrib.size = components;
-	attrib.type = GL_UNSIGNED_BYTE;
+	attrib.type = GLmap<decltype(voxel::VoxelVertex::ambientOcclusion)>();
 	attrib.typeIsInt = true;
 	attrib.offset = offsetof(voxel::VoxelVertex, ambientOcclusion);
 	return attrib;
@@ -45,7 +45,7 @@ inline video::VertexBuffer::Attribute getOffsetVertexAttribute(uint32_t bufferIn
 	voxelAttributeOffsets.index = attributeIndex;
 	voxelAttributeOffsets.stride = sizeof(glm::vec3);
 	voxelAttributeOffsets.size = components;
-	voxelAttributeOffsets.type = GL_FLOAT;
+	voxelAttributeOffsets.type = GLmap<glm::vec3::value_type>();
 	voxelAttributeOffsets.divisor = 1;
 	voxelAttributeOffsets.typeIsInt = true;
 	voxelAttributeOffsets.offset = offsetof(glm::vec3, x);
