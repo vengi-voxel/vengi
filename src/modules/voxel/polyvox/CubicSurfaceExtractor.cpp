@@ -106,7 +106,7 @@ int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, con
 		}
 
 		// If we have an existing vertex and the material matches then we can return it.
-		if (reuseVertices && entry.voxel == materialIn && entry.ambientOcclusion == ambientOcclusion) {
+		if (reuseVertices && entry.voxel.isSame(materialIn) && entry.ambientOcclusion == ambientOcclusion) {
 			return entry.index;
 		}
 	}

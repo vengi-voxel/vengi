@@ -84,6 +84,17 @@ public:
 		return !(*this == rhs);
 	}
 
+	inline bool isSame(const Voxel& other) const {
+		return _material == other._material && _colorIndex == other._colorIndex;
+	}
+
+	/**
+	 * @brief Compares by the material type
+	 */
+	inline bool isSameType(const Voxel& other) const {
+		return _material == other._material;
+	}
+
 	inline uint8_t getColor() const {
 		return _colorIndex;
 	}
