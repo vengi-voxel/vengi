@@ -29,7 +29,7 @@ void main(void) {
 #if cl_shadowmap == 1
 	v_lightspacepos = mpos.xyz;
 	v_viewz         = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
-#endif
+#endif // cl_shadowmap == 1
 	// TODO: does this make sense without the projection applied. Afaik
 	// the w components division here is to correct perspective transforms
 	v_pos          = u_view * mpos;

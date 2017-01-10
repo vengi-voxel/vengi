@@ -26,7 +26,6 @@ layout(std140) uniform u_materialblock {
 $out vec4 v_pos;
 $out vec4 v_color;
 $out float v_ambientocclusion;
-$out float v_debug_color;
 
 uniform float u_viewdistance;
 $out float v_fogdivisor;
