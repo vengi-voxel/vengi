@@ -235,7 +235,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 
 	const int size = shader.getUniformArraySize("u_bonetransforms");
 	if (size > 0) {
-		core_assert(size == 100);
+		core_assert_always(size == 100);
 		glm::mat4 transforms[100];
 		boneTransform(_timeInSeconds, &transforms[0], size, _animationIndex);
 		shader.setUniformMatrixv("u_bonetransforms", &transforms[0], size);
@@ -407,7 +407,7 @@ void Mesh::boneTransform(float timeInSeconds, glm::mat4* transforms, size_t size
 	const glm::mat4 identity;
 
 	if (_numBones == 0 || _scene->mNumAnimations == 0) {
-		core_assert(size >= 1);
+		core_assert_always(size >= 1);
 		transforms[0] = identity;
 		return;
 	}
