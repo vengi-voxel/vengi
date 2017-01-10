@@ -133,8 +133,8 @@ void ShapeRenderer::renderAll(const video::Camera& camera) const {
 			continue;
 		}
 		core_assert(_vbo[meshIndex].bind());
-		const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(uint32_t));
-		glDrawElements(std::enum_value(_primitives[meshIndex]), indices, GL_UNSIGNED_INT, 0);
+		const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
+		glDrawElements(std::enum_value(_primitives[meshIndex]), indices, GLmap<video::ShapeBuilder::Indices::value_type>(), 0);
 		_vbo[meshIndex].unbind();
 	}
 	GL_checkError();
@@ -145,8 +145,8 @@ void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera) cons
 	core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
 
 	core_assert_always(_vbo[meshIndex].bind());
-	const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(uint32_t));
-	glDrawElements(std::enum_value(_primitives[meshIndex]), indices, GL_UNSIGNED_INT, 0);
+	const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
+	glDrawElements(std::enum_value(_primitives[meshIndex]), indices, GLmap<video::ShapeBuilder::Indices::value_type>(), 0);
 	_vbo[meshIndex].unbind();
 	GL_checkError();
 }
