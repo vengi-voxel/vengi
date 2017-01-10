@@ -442,7 +442,7 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 
 	_cursorPositionVolume->clear();
 	static constexpr voxel::Voxel air;
-	const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume, air));
+	const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume));
 	if (cropped) {
 		const voxel::Region& srcRegion = cropped->getRegion();
 		const voxel::Region& destRegion = _cursorPositionVolume->getRegion();
