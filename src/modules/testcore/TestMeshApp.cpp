@@ -97,6 +97,7 @@ void TestMeshApp::doRender() {
 		renderPlane();
 
 		video::ScopedShader scoped(_meshShader);
+		//_meshShader.setLightdir(_shadow.sunDirection());
 		_meshShader.setView(_camera.viewMatrix());
 		_meshShader.setProjection(_camera.projectionMatrix());
 		_meshShader.setFogrange(500.0f);
@@ -106,6 +107,7 @@ void TestMeshApp::doRender() {
 		_meshShader.setDiffuseColor(_diffuseColor);
 		_meshShader.setAmbientColor(_ambientColor);
 		_meshShader.setShadowmap(1);
+		_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {

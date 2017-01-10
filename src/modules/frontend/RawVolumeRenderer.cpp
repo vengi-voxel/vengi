@@ -234,7 +234,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 			_depthBuffer.bindTexture(i);
 			_shadowMapShader.setLightviewprojection(cascades[i]);
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-			glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, nIndices, GLmap<voxel::IndexType>(), nullptr);
 		}
 		_depthBuffer.unbind();
 		glCullFace(GL_BACK);
@@ -255,13 +255,12 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-	// TODO: use GLmap
-	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, nIndices, GLmap<voxel::IndexType>(), nullptr);
 
 	if (_renderWireframe && camera.polygonMode() == video::PolygonMode::Solid) {
 		video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(2.0f));
 		video::ScopedLineWidth lineWidth(2.0f, true);
-		glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, nIndices, GLmap<voxel::IndexType>(), nullptr);
 	}
 
 	_vertexBuffer.unbind();
