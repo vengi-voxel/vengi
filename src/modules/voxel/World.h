@@ -30,8 +30,9 @@
 namespace voxel {
 
 struct ChunkMeshData {
+	static constexpr bool MAY_GET_RESIZED = true;
 	ChunkMeshData(int opaqueVertices, int opaqueIndices, int waterVertices, int waterIndices) :
-			opaqueMesh(opaqueVertices, opaqueIndices), waterMesh(waterVertices, waterIndices) {
+			opaqueMesh(opaqueVertices, opaqueIndices, MAY_GET_RESIZED), waterMesh(waterVertices, waterIndices, MAY_GET_RESIZED) {
 	}
 
 	inline const glm::ivec3 translation() const {
