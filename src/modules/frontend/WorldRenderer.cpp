@@ -265,46 +265,36 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		return 0;
 	}
 
-
 	{
 		video::ScopedShader scoped(_worldShader);
 		_worldShader.setMaterialblock();
+		_worldShader.setFragblock();
 		_worldShader.setViewprojection(camera.viewProjectionMatrix());
 		_worldShader.setViewdistance(_viewDistance);
-		_worldShader.setLightdir(_shadow.sunDirection());
-		_worldShader.setFogcolor(_clearColor);
 		_worldShader.setTexture(0);
 		_worldShader.setShadowmap(1);
-		_worldShader.setDiffuseColor(_diffuseColor);
-		_worldShader.setAmbientColor(_ambientColor);
 		_worldShader.setFogrange(_fogRange);
 		_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 	}
 	{
 		video::ScopedShader scoped(_worldInstancedShader);
+		_worldInstancedShader.setMaterialblock();
+		_worldInstancedShader.setFragblock();
 		_worldInstancedShader.setViewprojection(camera.viewProjectionMatrix());
 		_worldInstancedShader.setViewdistance(_viewDistance);
-		_worldInstancedShader.setLightdir(_shadow.sunDirection());
-		_worldInstancedShader.setMaterialblock();
-		_worldInstancedShader.setFogcolor(_clearColor);
 		_worldInstancedShader.setTexture(0);
 		_worldInstancedShader.setShadowmap(1);
-		_worldInstancedShader.setDiffuseColor(_diffuseColor);
-		_worldInstancedShader.setAmbientColor(_ambientColor);
 		_worldInstancedShader.setFogrange(_fogRange);
 		_worldInstancedShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
+		_waterShader.setMaterialblock();
+		_waterShader.setFragblock();
 		_waterShader.setViewprojection(camera.viewProjectionMatrix());
 		_waterShader.setViewdistance(_viewDistance);
-		_waterShader.setLightdir(_shadow.sunDirection());
-		_waterShader.setMaterialblock();
-		_waterShader.setFogcolor(_clearColor);
 		_waterShader.setTexture(0);
 		_waterShader.setShadowmap(1);
-		_waterShader.setDiffuseColor(_diffuseColor);
-		_waterShader.setAmbientColor(_ambientColor);
 		_waterShader.setFogrange(_fogRange);
 		_waterShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 	}
@@ -767,24 +757,45 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 
+	if (!_shadow.init()) {
+		return false;
+	}
+
 	{
 		shader::WorldShader::Materialblock materialBlock;
 		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 		_worldShader.updateMaterialblock(materialBlock);
+
+		shader::WorldShader::Fragblock fragBlock;
+		fragBlock.lightdir = _shadow.sunDirection();
+		fragBlock.fogcolor = _clearColor;
+		fragBlock.diffuseColor = _diffuseColor;
+		fragBlock.ambientColor = _ambientColor;
+		_worldShader.updateFragblock(fragBlock);
 	}
 	{
 		shader::WorldInstancedShader::Materialblock materialBlock;
 		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 		_worldInstancedShader.updateMaterialblock(materialBlock);
+
+		shader::WorldInstancedShader::Fragblock fragBlock;
+		fragBlock.lightdir = _shadow.sunDirection();
+		fragBlock.fogcolor = _clearColor;
+		fragBlock.diffuseColor = _diffuseColor;
+		fragBlock.ambientColor = _ambientColor;
+		_worldInstancedShader.updateFragblock(fragBlock);
 	}
 	{
 		shader::WaterShader::Materialblock materialBlock;
 		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 		_waterShader.updateMaterialblock(materialBlock);
-	}
 
-	if (!_shadow.init()) {
-		return false;
+		shader::WaterShader::Fragblock fragBlock;
+		fragBlock.lightdir = _shadow.sunDirection();
+		fragBlock.fogcolor = _clearColor;
+		fragBlock.diffuseColor = _diffuseColor;
+		fragBlock.ambientColor = _ambientColor;
+		_waterShader.updateFragblock(fragBlock);
 	}
 
 	// TODO: use limits from windowed app

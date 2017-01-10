@@ -5,10 +5,13 @@ uniform mat4 u_viewprojection;
 
 #include "_shadowmap.frag"
 
-uniform vec3 u_lightdir;
-uniform vec3 u_diffuse_color;
-uniform vec3 u_ambient_color;
-uniform vec3 u_fogcolor;
+layout(std140) uniform u_fragblock {
+	vec3 u_lightdir;
+	vec3 u_diffuse_color;
+	vec3 u_ambient_color;
+	vec3 u_fogcolor;
+};
+
 uniform float u_viewdistance;
 $out vec4 o_color;
 $in float v_fogdivisor;
