@@ -253,8 +253,9 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 	if (size > 0) {
 		core_assert_always(size == 100);
 		glm::mat4 transforms[100];
-		boneTransform(_timeInSeconds, &transforms[0], size, _animationIndex);
-		shader.setUniformMatrixv("u_bonetransforms", &transforms[0], size);
+		// TODO: use uniform block
+		boneTransform(_timeInSeconds, transforms, size, _animationIndex);
+		shader.setUniformMatrixv("u_bonetransforms", transforms, size);
 	}
 
 	return true;
