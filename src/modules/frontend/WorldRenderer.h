@@ -91,6 +91,7 @@ protected:
 	video::VertexBuffer _worldInstancedBuffer;
 	video::DepthBuffer _depthBuffer;
 
+	shader::Materialblock _materialBlock;
 	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	shader::WorldShader _worldShader;
 	shader::WorldInstancedShader _worldInstancedShader;

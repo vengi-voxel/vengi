@@ -49,7 +49,7 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::WorldShader::Materialblock::materialcolor);
+	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::Materialblock::Data::materialcolor);
 	const int materialColorsArraySize = voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
@@ -57,11 +57,11 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	shader::WorldShader::Materialblock materialBlock;
+	shader::Materialblock::Data materialBlock;
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-	_worldShader.updateMaterialblock(materialBlock);
+	_materialBlock.update(materialBlock);
 	video::ScopedShader scoped(_worldShader);
-	_worldShader.setMaterialblock();
+	_worldShader.setMaterialblock(_materialBlock);
 	_worldShader.setModel(glm::mat4());
 	_worldShader.setTexture(0);
 	_worldShader.setShadowmap(1);
@@ -348,6 +348,7 @@ voxel::RawVolume* RawVolumeRenderer::shutdown() {
 	_vertexBuffer.shutdown();
 	_worldShader.shutdown();
 	_shadowMapShader.shutdown();
+	_materialBlock.shutdown();
 	_vertexBufferIndex = -1;
 	_indexBufferIndex = -1;
 	_aabbMeshIndex = -1;

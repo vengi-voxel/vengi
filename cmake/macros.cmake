@@ -40,6 +40,7 @@ macro(generate_shaders TARGET)
 	set(_headers)
 	set(GEN_DIR ${CMAKE_BINARY_DIR}/gen-shaders/${TARGET}/)
 	set(_template ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.h.in)
+	set(_template_ub ${ROOT_DIR}/src/tools/shadertool/UniformBufferTemplate.h.in)
 	file(MAKE_DIRECTORY ${GEN_DIR})
 	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
 	foreach (shader_dir "${TARGET}" shared)
@@ -50,12 +51,12 @@ macro(generate_shaders TARGET)
 					convert_to_camel_case(${_file} _f)
 					set(_shaderfile "${_f}Shader.h")
 					set(_shader "${GEN_DIR}${_shaderfile}")
-					# TODO: there are includes in those files.... so we also might depend on other glsl files
+					# TODO: there are includes in those files.... so we also might depend on other glsl and generated ub files
 					add_custom_command(
 						OUTPUT ${_shader}
 						COMMENT "Validate ${_file} and generate ${_shaderfile}"
-						COMMAND ${CMAKE_BINARY_DIR}/shadertool ${CMAKE_BINARY_DIR}/glslangValidator ${_file} ${_template} shader shaders/ ${GEN_DIR}
-						DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template}
+						COMMAND ${CMAKE_BINARY_DIR}/shadertool ${CMAKE_BINARY_DIR}/glslangValidator ${_file} ${_template} ${_template_ub} shader shaders/ ${GEN_DIR}
+						DEPENDS shadertool ${_dir}/${_file}.frag ${_dir}/${_file}.vert ${_template} ${_template_ub}
 						WORKING_DIRECTORY ${_dir}
 					)
 					list(APPEND _headers ${_shader})

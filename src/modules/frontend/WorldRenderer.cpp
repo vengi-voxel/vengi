@@ -57,6 +57,7 @@ void WorldRenderer::shutdown() {
 	_meshShader.shutdown();
 	_shadowMapShader.shutdown();
 	_depthBuffer.shutdown();
+	_materialBlock.shutdown();
 	reset();
 	_colorTexture.shutdown();
 	_entities.clear();
@@ -269,7 +270,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	{
 		video::ScopedShader scoped(_worldShader);
-		_worldShader.setMaterialblock();
+		_worldShader.setMaterialblock(_materialBlock);
 		_worldShader.setViewdistance(_viewDistance);
 		_worldShader.setLightdir(_shadow.sunDirection());
 		_worldShader.setFogcolor(_clearColor);
@@ -287,7 +288,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		video::ScopedShader scoped(_worldInstancedShader);
 		_worldInstancedShader.setViewdistance(_viewDistance);
 		_worldInstancedShader.setLightdir(_shadow.sunDirection());
-		_worldInstancedShader.setMaterialblock();
+		_worldInstancedShader.setMaterialblock(_materialBlock);
 		_worldInstancedShader.setFogcolor(_clearColor);
 		_worldInstancedShader.setTexture(0);
 		_worldInstancedShader.setDiffuseColor(_diffuseColor);
@@ -303,7 +304,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		video::ScopedShader scoped(_waterShader);
 		_waterShader.setViewdistance(_viewDistance);
 		_waterShader.setLightdir(_shadow.sunDirection());
-		_waterShader.setMaterialblock();
+		_waterShader.setMaterialblock(_materialBlock);
 		_waterShader.setFogcolor(_clearColor);
 		_waterShader.setTexture(0);
 		_waterShader.setDiffuseColor(_diffuseColor);
@@ -768,7 +769,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 
-	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::WorldShader::Materialblock::materialcolor);
+	const int shaderMaterialColorsArraySize = SDL_arraysize(shader::Materialblock::Data::materialcolor);
 	const int materialColorsArraySize = voxel::getMaterialColors().size();
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
@@ -776,21 +777,9 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 
-	{
-		shader::WorldShader::Materialblock materialBlock;
-		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-		_worldShader.updateMaterialblock(materialBlock);
-	}
-	{
-		shader::WorldInstancedShader::Materialblock materialBlock;
-		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-		_worldInstancedShader.updateMaterialblock(materialBlock);
-	}
-	{
-		shader::WaterShader::Materialblock materialBlock;
-		memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-		_waterShader.updateMaterialblock(materialBlock);
-	}
+	shader::Materialblock::Data materialBlock;
+	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
+	_materialBlock.update(materialBlock);
 
 	if (!_shadow.init()) {
 		return false;

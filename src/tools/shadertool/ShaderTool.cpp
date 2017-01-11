@@ -272,7 +272,7 @@ size_t ShaderTool::std140Size(const Variable& v) const {
 	return components * bytes;
 }
 
-void ShaderTool::generateSrc() const {
+void ShaderTool::generateSrc() {
 	for (const auto& block : _shaderStruct.uniformBlocks) {
 		Log::debug("Found uniform block %s with %i members", block.name.c_str(), int(block.members.size()));
 	}
@@ -290,7 +290,9 @@ void ShaderTool::generateSrc() const {
 	}
 
 	const std::string& templateShader = core::App::getInstance()->filesystem()->load(_shaderTemplateFile);
+	const std::string& templateUniformBuffer = core::App::getInstance()->filesystem()->load(_uniformBufferTemplateFile);
 	std::string src(templateShader);
+	std::string srcUb(templateUniformBuffer);
 	std::string name = _shaderStruct.name + "Shader";
 
 	std::vector<std::string> shaderNameParts;
@@ -362,6 +364,7 @@ void ShaderTool::generateSrc() const {
 	}
 
 	std::stringstream setters;
+	std::stringstream includes;
 	if (uniformSize > 0 || attributeSize > 0) {
 		setters << "\n";
 	}
@@ -533,11 +536,11 @@ void ShaderTool::generateSrc() const {
 	for (auto & ubuf : _shaderStruct.uniformBlocks) {
 		const std::string& uniformBufferStructName = convertName(ubuf.name, true);
 		const std::string& uniformBufferName = convertName(ubuf.name, false);
-		ub << "\n\t/**\n\t * @brief Uniform buffer for " << uniformBufferStructName << "\n\t */\n";
+		ub << "\n\t/**\n\t * @brief Uniform buffer for " << uniformBufferStructName << "::Data\n\t */\n";
 		ub << "\tvideo::UniformBuffer _" << uniformBufferName << ";\n";
-		shutdown << "\t\t\t_" << uniformBufferName << ".shutdown();\n";
+		shutdown << "\t\t_" << uniformBufferName << ".shutdown();\n";
 		ub << "\t/**\n\t * @brief layout(std140) aligned uniform block structure\n\t */\n";
-		ub << "\t#pragma pack(push, 1)\n\tstruct " << uniformBufferStructName << " {\n";
+		ub << "\t#pragma pack(push, 1)\n\tstruct Data {\n";
 		size_t structSize = 0u;
 		int paddingCnt = 0;
 		for (auto& v : ubuf.members) {
@@ -554,27 +557,54 @@ void ShaderTool::generateSrc() const {
 		}
 		ub << "\t};\n\t#pragma pack(pop)\n";
 #if USE_ALIGN_AS > 0
-		ub << "\tstatic_assert(sizeof(" << uniformBufferStructName << ") == " << structSize << ", \"Unexpected structure size for " << uniformBufferStructName << "\");\n";
+		ub << "\tstatic_assert(sizeof(Data) == " << structSize << ", \"Unexpected structure size for Data\");\n";
 #endif
-		setters << "\tinline bool update" << uniformBufferStructName << "(const " << uniformBufferStructName << "& var) {\n";
-		setters << "\t\t_" << uniformBufferName << ".create(sizeof(var), (const void*)&var);\n";
-		setters << "\t\treturn true;\n";
-		setters << "\t}\n\n";
+		ub << "\n\tinline bool update(const Data& var) {\n";
+		ub << "\t\t_" << uniformBufferName << ".create(sizeof(var), (const void*)&var);\n";
+		ub << "\t\treturn true;\n";
+		ub << "\t}\n\n";
+		ub << "\n\tinline operator const video::UniformBuffer&() const {\n";
+		ub << "\t\treturn _" << uniformBufferName << ";\n";
+		ub << "\t}\n";
 		setters << "\t/**\n";
 		setters << "\t * @brief The the uniform buffer for the uniform block " << ubuf.name << "\n";
 		setters << "\t */\n";
-		setters << "\tinline bool set" << uniformBufferStructName << "() {\n";
-		setters << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", _" << uniformBufferName << ");\n";
+		setters << "\tinline bool set" << uniformBufferStructName << "(const video::UniformBuffer& buf) {\n";
+		setters << "\t\treturn setUniformBuffer(\"" << ubuf.name << "\", buf);\n";
 		setters << "\t}\n";
+
+		std::string generatedUb = srcUb;
+		generatedUb = core::string::replaceAll(generatedUb, "$name$", uniformBufferStructName);
+		generatedUb = core::string::replaceAll(generatedUb, "$namespace$", _namespaceSrc);
+		generatedUb = core::string::replaceAll(generatedUb, "$filename$", _shaderDirectory + uniformBufferStructName + ".h");
+		generatedUb = core::string::replaceAll(generatedUb, "$uniformbuffers$", ub.str());
+		generatedUb = core::string::replaceAll(generatedUb, "$setters$", "");
+		generatedUb = core::string::replaceAll(generatedUb, "$shutdown$", shutdown.str());
+
+		const std::string targetFileUb = _sourceDirectory + uniformBufferStructName + ".h";
+
+		includes << "#include \"" << uniformBufferStructName + ".h\"\n";
+
+		Log::info("Generate ubo bindings for %s at %s", uniformBufferStructName.c_str(), targetFileUb.c_str());
+		if (!core::App::getInstance()->filesystem()->syswrite(targetFileUb, generatedUb)) {
+			Log::error("Failed to write %s", targetFileUb.c_str());
+			_exitCode = 100;
+			requestQuit();
+			return;
+		}
 	}
-	src = core::string::replaceAll(src, "$uniformbuffers$", ub.str());
+
 	src = core::string::replaceAll(src, "$attributes$", attributes.str());
 	src = core::string::replaceAll(src, "$setters$", setters.str());
-	src = core::string::replaceAll(src, "$shutdown$", shutdown.str());
+	src = core::string::replaceAll(src, "$includes$", includes.str());
 
 	const std::string targetFile = _sourceDirectory + filename + ".h";
-	Log::debug("Generate shader bindings for %s at %s", _shaderStruct.name.c_str(), targetFile.c_str());
-	core::App::getInstance()->filesystem()->syswrite(targetFile, src);
+	Log::info("Generate shader bindings for %s at %s", _shaderStruct.name.c_str(), targetFile.c_str());
+	if (!core::App::getInstance()->filesystem()->syswrite(targetFile, src)) {
+		Log::error("Failed to write %s", targetFile.c_str());
+		_exitCode = 100;
+		requestQuit();
+	}
 }
 
 bool ShaderTool::parseLayout(ShaderTool::Layout& layout, core::Tokenizer& tok) {
@@ -737,18 +767,19 @@ core::AppState ShaderTool::onConstruct() {
 }
 
 core::AppState ShaderTool::onRunning() {
-	if (_argc < 4) {
+	if (_argc < 5) {
 		_exitCode = 1;
-		Log::error("Usage: %s <path/to/glslangvalidator> <shaderfile> <shadertemplate> <namespace> <shader-dir> <src-generator-dir>", _argv[0]);
+		Log::error("Usage: %s <path/to/glslangvalidator> <shaderfile> <shadertemplate> <uniformbuffertemplate> <namespace> <shader-dir> <src-generator-dir>", _argv[0]);
 		return core::AppState::Cleanup;
 	}
 
 	const std::string glslangValidatorBin = _argv[1];
 	const std::string shaderfile          = _argv[2];
 	_shaderTemplateFile                   = _argv[3];
-	_namespaceSrc    = _argc >= 5 ?         _argv[4] : "frontend";
-	_shaderDirectory = _argc >= 6 ?         _argv[5] : "shaders/";
-	_sourceDirectory = _argc >= 7 ?         _argv[6] : _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/";
+	_uniformBufferTemplateFile            = _argv[4];
+	_namespaceSrc    = _argc >= 6 ?         _argv[5] : "frontend";
+	_shaderDirectory = _argc >= 7 ?         _argv[6] : "shaders/";
+	_sourceDirectory = _argc >= 8 ?         _argv[7] : _filesystem->basePath() + "src/modules/" + _namespaceSrc + "/";
 
 	Log::debug("Using glslangvalidator binary: %s", glslangValidatorBin.c_str());
 	Log::debug("Using %s as output directory", _sourceDirectory.c_str());

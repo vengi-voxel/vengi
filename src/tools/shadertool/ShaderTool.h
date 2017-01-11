@@ -81,6 +81,7 @@ protected:
 	std::string _sourceDirectory;
 	std::string _shaderDirectory;
 	std::string _shaderTemplateFile;
+	std::string _uniformBufferTemplateFile;
 
 	bool parseLayout(Layout& layout, core::Tokenizer& tok);
 	bool parse(const std::string& src, bool vertex);
@@ -90,7 +91,7 @@ protected:
 	std::string std140Padding(const Variable& v, int& padding) const;
 	int getComponents(const Variable::Type type) const;
 	std::string uniformSetterPostfix(const Variable::Type type, int amount) const;
-	void generateSrc() const;
+	void generateSrc();
 public:
 	ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 	~ShaderTool();

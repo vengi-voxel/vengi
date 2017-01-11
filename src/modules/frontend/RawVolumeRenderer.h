@@ -28,6 +28,7 @@ protected:
 	frontend::ShapeRenderer _shapeRenderer;
 
 	video::VertexBuffer _vertexBuffer;
+	shader::Materialblock _materialBlock;
 	shader::ShadowmapShader& _shadowMapShader;
 	shader::WorldShader& _worldShader;
 	video::DepthBuffer _depthBuffer;

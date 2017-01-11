@@ -1,0 +1,23 @@
+/**
+ * @file
+ */
+
+#pragma once
+
+#include "video/UniformBuffer.h"
+
+namespace $namespace$ {
+
+class $name$ {
+public:
+	~$name$() {
+		shutdown();
+	}
+$uniformbuffers$
+	void shutdown() {
+$shutdown$
+	}
+$setters$
+};
+
+};
