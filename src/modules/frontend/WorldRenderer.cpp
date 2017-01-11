@@ -482,8 +482,10 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	_meshShader.setTexture(1);
 	_meshShader.setDiffuseColor(_diffuseColor);
 	_meshShader.setAmbientColor(_ambientColor);
-	_meshShader.setLightdir(_shadow.sunDirection());
 	_meshShader.setFogcolor(_clearColor);
+	_meshShader.setCascades(_shadow.cascades());
+	_meshShader.setDistances(_shadow.distances());
+	_meshShader.setLightdir(_shadow.sunDirection());
 
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {

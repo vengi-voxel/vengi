@@ -8,6 +8,7 @@
 #include "video/DepthBuffer.h"
 #include "video/MeshPool.h"
 #include "video/VertexBuffer.h"
+#include "frontend/Shadow.h"
 #include "FrontendShaders.h"
 
 class TestMeshApp: public TestApp {
@@ -17,6 +18,7 @@ protected:
 	video::DepthBuffer _depthBuffer;
 	video::MeshPtr _mesh;
 	video::MeshPool _meshPool;
+	frontend::Shadow _shadow;
 	shader::MeshShader _meshShader;
 	shader::ColorShader& _colorShader;
 	shader::ShadowmapShader _shadowMapShader;

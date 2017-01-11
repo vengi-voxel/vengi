@@ -269,8 +269,8 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 	if (&shader != _lastShader) {
 		core_assert(shader.isActive());
 		_lastShader = &shader;
+		setupBufferAttributes(shader);
 	}
-	setupBufferAttributes(shader);
 
 	const int size = shader.getUniformArraySize("u_bonetransforms");
 	if (size > 0) {

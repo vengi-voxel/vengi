@@ -35,6 +35,11 @@ core::AppState TestMeshApp::onConstruct() {
 core::AppState TestMeshApp::onInit() {
 	core::AppState state = Super::onInit();
 
+	if (!_shadow.init()) {
+		Log::error("Failed to init shadow object");
+		return core::AppState::Cleanup;
+	}
+
 	_camera.setPosition(glm::vec3(0.0f, 10.0f, 150.0f));
 	_camera.setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 	_camera.setTarget(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -75,20 +80,47 @@ core::AppState TestMeshApp::onInit() {
 void TestMeshApp::doRender() {
 	const uint8_t animationIndex = core::Var::getSafe("animation")->intVal();
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;
+
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LEQUAL);
+	// Cull triangles whose normal is not towards the camera
+	glEnable(GL_CULL_FACE);
+	glDepthMask(GL_TRUE);
+
+	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
+	_shadow.calculateShadowData(_camera, true, maxDepthBuffers, _depthBuffer.dimension());
+	const std::vector<glm::mat4>& cascades = _shadow.cascades();
+	const std::vector<float>& distances = _shadow.distances();
+
 	{
+		glDisable(GL_BLEND);
+		// put shadow acne into the dark
+		glCullFace(GL_FRONT);
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		const float shadowBiasSlope = 2;
+		const float shadowBias = 0.09f;
+		const float shadowRangeZ = _camera.farPlane() * 3.0f;
+		glPolygonOffset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
+
+		_depthBuffer.bind();
 		video::ScopedShader scoped(_shadowMapShader);
 		_shadowMapShader.setModel(glm::mat4());
 		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
-			glDisable(GL_BLEND);
-			glCullFace(GL_FRONT);
-			_depthBuffer.bind();
-			_depthBuffer.bindTexture(0);
-			core_assert_always(_mesh->render() > 0);
-			_depthBuffer.unbind();
-			glCullFace(GL_BACK);
-			glEnable(GL_BLEND);
+			for (int i = 0; i < maxDepthBuffers; ++i) {
+				_depthBuffer.bindTexture(i);
+				_shadowMapShader.setLightviewprojection(cascades[i]);
+				renderPlane();
+				_mesh->render();
+			}
 		}
+		_depthBuffer.unbind();
+		glCullFace(GL_BACK);
+		glEnable(GL_BLEND);
+		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
+
 	bool meshInitialized = false;
 	{
 		glClearColor(0.8, 0.8f, 0.8f, 1.0f);
@@ -100,8 +132,9 @@ void TestMeshApp::doRender() {
 		//_meshShader.setLightdir(_shadow.sunDirection());
 		_meshShader.setView(_camera.viewMatrix());
 		_meshShader.setProjection(_camera.projectionMatrix());
+		_meshShader.setViewprojection(_camera.viewProjectionMatrix());
 		_meshShader.setFogrange(250.0f);
-		_meshShader.setViewdistance(500.0f);
+		_meshShader.setViewdistance(_camera.farPlane());
 		_meshShader.setModel(glm::mat4());
 		_meshShader.setTexture(0);
 		_meshShader.setDiffuseColor(_diffuseColor);
@@ -109,13 +142,15 @@ void TestMeshApp::doRender() {
 		_meshShader.setShadowmap(1);
 		_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 		_meshShader.setFogcolor(core::Color::LightBlue);
+		_meshShader.setCascades(cascades);
+		_meshShader.setDistances(distances);
+		_meshShader.setLightdir(_shadow.sunDirection());
 
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
-			core_assert_always(_mesh->render() > 0);
-			glActiveTexture(GL_TEXTURE1);
+			_mesh->render();
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glActiveTexture(GL_TEXTURE0);
 		}
@@ -123,7 +158,7 @@ void TestMeshApp::doRender() {
 	if (meshInitialized) {
 		video::ScopedShader scoped(_colorShader);
 		_colorShader.setViewprojection(_camera.viewProjectionMatrix());
-		core_assert_always(_mesh->renderNormals(_colorShader) > 0);
+		_mesh->renderNormals(_colorShader);
 	}
 }
 
