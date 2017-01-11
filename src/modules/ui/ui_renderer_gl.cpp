@@ -153,6 +153,7 @@ void UIRendererGL::BeginPaint(int, int) {
 
 	_shader.activate();
 	_shader.setProjection(_camera.projectionMatrix());
+	_shader.setTexture(0);
 
 	UIBitmapGL::g_current_texture = (GLuint) -1;
 
