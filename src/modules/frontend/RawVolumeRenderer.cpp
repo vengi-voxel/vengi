@@ -139,19 +139,17 @@ bool RawVolumeRenderer::extract() {
 	voxel::Region r = _rawVolume->getRegion();
 	r.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(_rawVolume, r, _mesh, CustomIsQuadNeeded());
-	const voxel::IndexType* meshIndices = _mesh->getRawIndexData();
-	const voxel::VoxelVertex* meshVertices = _mesh->getRawVertexData();
 	const size_t meshNumberIndices = _mesh->getNoOfIndices();
 	if (meshNumberIndices == 0) {
 		_vertexBuffer.update(_vertexBufferIndex, nullptr, 0);
 		_vertexBuffer.update(_indexBufferIndex, nullptr, 0);
 	} else {
 		const size_t meshNumberVertices = _mesh->getNoOfVertices();
-		if (!_vertexBuffer.update(_vertexBufferIndex, meshVertices, sizeof(voxel::VoxelVertex) * meshNumberVertices)) {
+		if (!_vertexBuffer.update(_vertexBufferIndex, _mesh->getVertexVector())) {
 			Log::error("Failed to update the vertex buffer");
 			return false;
 		}
-		if (!_vertexBuffer.update(_indexBufferIndex, meshIndices, sizeof(voxel::IndexType) * meshNumberIndices)) {
+		if (!_vertexBuffer.update(_indexBufferIndex, _mesh->getIndexVector())) {
 			Log::error("Failed to update the index buffer");
 			return false;
 		}
