@@ -306,10 +306,11 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_waterShader.setLightdir(_shadow.sunDirection());
 		_waterShader.setMaterialblock(_materialBlock);
 		_waterShader.setFogcolor(_clearColor);
-		_waterShader.setTexture(0);
 		_waterShader.setDiffuseColor(_diffuseColor);
 		_waterShader.setAmbientColor(_ambientColor);
 		_waterShader.setFogrange(_fogRange);
+		_waterShader.setTime(float(_now));
+		_waterShader.setTexture(0);
 		if (shadowMap) {
 			_waterShader.setViewprojection(camera.viewProjectionMatrix());
 			_waterShader.setShadowmap(1);

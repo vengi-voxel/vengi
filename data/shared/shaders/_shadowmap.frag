@@ -2,6 +2,12 @@
 
 #if cl_shadowmap == 1
 
+#ifndef CUSTOM_SHADOW_TEXCOORD
+vec2 calculateShadowTexcoord(vec2 uv) {
+	return uv;
+}
+#endif
+
 uniform sampler2DArrayShadow u_shadowmap;
 $in vec3 v_lightspacepos;
 $in float v_viewz;
@@ -29,7 +35,7 @@ float calculateShadow(int cascade, mat4 viewprojection) {
 	/* we manually have to do the perspective divide as there is no
 	 * version of textureProj that can take a sampler2DArrayShadow */
 	vec3 lightpt = (lightp.xyz / lightp.w) * 0.5 + 0.5;
-	return sampleShadowPCF(cascade, lightpt.xy, lightpt.z);
+	return sampleShadowPCF(cascade, calculateShadowTexcoord(lightpt.xy), lightpt.z);
 }
 
 int calculateCascade() {
