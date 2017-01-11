@@ -11,6 +11,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 #include "GLFunc.h"
 #include "core/GLM.h"
 #include "core/Log.h"
@@ -44,6 +45,15 @@ enum class ShaderType : GLenum {
 	Geometry = GL_GEOMETRY_SHADER
 };
 
+// activate this to validate that every uniform was set
+#define VALIDATE_UNIFORMS 0
+
+#if VALIDATE_UNIFORMS > 0
+#define ADD_LOCATION(location) _usedUniforms.insert(location);
+#else
+#define ADD_LOCATION(location)
+#endif
+
 class Shader {
 protected:
 	typedef std::unordered_map<ShaderType, GLuint, EnumClassHash> ShaderMap;
@@ -65,6 +75,12 @@ protected:
 	};
 	typedef std::unordered_map<std::string, Uniform> ShaderUniforms;
 	ShaderUniforms _uniforms;
+
+#if VALIDATE_UNIFORMS > 0
+	// can be used to validate that every uniform was set. The value type is the location index
+	mutable std::unordered_set<int> _usedUniforms;
+#endif
+
 	typedef std::unordered_map<std::string, int> ShaderAttributes;
 	ShaderAttributes _attributes;
 
@@ -284,11 +300,13 @@ inline void Shader::setUniformui(const std::string& name, unsigned int value) co
 inline void Shader::setUniformui(int location, unsigned int value) const {
 	glUniform1ui(location, value);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformi(int location, int value) const {
 	glUniform1i(location, value);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformi(const std::string& name, int value1, int value2) const {
@@ -299,6 +317,7 @@ inline void Shader::setUniformi(const std::string& name, int value1, int value2)
 inline void Shader::setUniformi(int location, int value1, int value2) const {
 	glUniform2i(location, value1, value2);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformi(const std::string& name, int value1, int value2, int value3) const {
@@ -309,6 +328,7 @@ inline void Shader::setUniformi(const std::string& name, int value1, int value2,
 inline void Shader::setUniformi(int location, int value1, int value2, int value3) const {
 	glUniform3i(location, value1, value2, value3);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformi(const std::string& name, int value1, int value2, int value3, int value4) const {
@@ -319,6 +339,7 @@ inline void Shader::setUniformi(const std::string& name, int value1, int value2,
 inline void Shader::setUniformi(int location, int value1, int value2, int value3, int value4) const {
 	glUniform4i(location, value1, value2, value3, value4);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniform1iv(const std::string& name, const int* values, int length) const {
@@ -329,6 +350,7 @@ inline void Shader::setUniform1iv(const std::string& name, const int* values, in
 inline void Shader::setUniform1iv(int location, const int* values, int length) const {
 	glUniform1iv(location, length, values);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniform2iv(const std::string& name, const int* values, int length) const {
@@ -339,11 +361,13 @@ inline void Shader::setUniform2iv(const std::string& name, const int* values, in
 inline void Shader::setUniform2iv(int location, const int* values, int length) const {
 	glUniform2iv(location, length / 2, values);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniform3iv(int location, const int* values, int length) const {
 	glUniform3iv(location, length / 3, values);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniform3iv(const std::string& name, const int* values, int length) const {
@@ -359,6 +383,7 @@ inline void Shader::setUniformf(const std::string& name, float value) const {
 inline void Shader::setUniformf(int location, float value) const {
 	glUniform1f(location, value);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformf(const std::string& name, float value1, float value2) const {
@@ -369,6 +394,7 @@ inline void Shader::setUniformf(const std::string& name, float value1, float val
 inline void Shader::setUniformf(int location, float value1, float value2) const {
 	glUniform2f(location, value1, value2);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformf(const std::string& name, float value1, float value2, float value3) const {
@@ -379,6 +405,7 @@ inline void Shader::setUniformf(const std::string& name, float value1, float val
 inline void Shader::setUniformf(int location, float value1, float value2, float value3) const {
 	glUniform3f(location, value1, value2, value3);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformf(const std::string& name, float value1, float value2, float value3, float value4) const {
@@ -389,6 +416,7 @@ inline void Shader::setUniformf(const std::string& name, float value1, float val
 inline void Shader::setUniformf(int location, float value1, float value2, float value3, float value4) const {
 	glUniform4f(location, value1, value2, value3, value4);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniform1fv(const std::string& name, const float* values, int length) const {
@@ -399,6 +427,7 @@ inline void Shader::setUniform1fv(const std::string& name, const float* values, 
 inline void Shader::setUniform1fv(int location, const float* values, int length) const {
 	glUniform1fv(location, length, values);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniform2fv(const std::string& name, const float* values, int length) const {
@@ -409,6 +438,7 @@ inline void Shader::setUniform2fv(const std::string& name, const float* values, 
 inline void Shader::setUniform2fv(int location, const float* values, int length) const {
 	glUniform2fv(location, length / 2, values);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniform3fv(const std::string& name, const float* values, int length) const {
@@ -432,6 +462,7 @@ inline void Shader::setUniformVec2v(const std::string& name, const glm::vec2* va
 
 inline void Shader::setUniformVec2v(int location, const glm::vec2* value, int length) const {
 	glUniform2fv(location, length, glm::value_ptr(*value));
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformVec3(const std::string& name, const glm::vec3& value) const {
@@ -450,11 +481,13 @@ inline void Shader::setUniformVec3v(const std::string& name, const glm::vec3* va
 
 inline void Shader::setUniformVec3v(int location, const glm::vec3* value, int length) const {
 	glUniform3fv(location, length, glm::value_ptr(*value));
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniform3fv(int location, const float* values, int length) const {
 	glUniform3fv(location, length / 3, values);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformfv(const std::string& name, const float* values, int length, int components) const {
@@ -483,6 +516,7 @@ inline void Shader::setUniform4fv(const std::string& name, const float* values, 
 inline void Shader::setUniform4fv(int location, const float* values, int length) const {
 	glUniform4fv(location, length / 4, values);
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformVec4(const std::string& name, const glm::vec4& value) const {
@@ -502,6 +536,7 @@ inline void Shader::setUniformVec4v(const std::string& name, const glm::vec4* va
 inline void Shader::setUniformVec4v(int location, const glm::vec4* value, int length) const {
 	glUniform4fv(location, length, glm::value_ptr(*value));
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformMatrix(const std::string& name, const glm::mat4& matrix, bool transpose) const {
@@ -528,6 +563,7 @@ inline void Shader::setUniformMatrixv(const std::string& name, const glm::mat4* 
 inline void Shader::setUniformMatrixv(int location, const glm::mat4* matrixes, int amount, bool transpose) const {
 	glUniformMatrix4fv(location, amount, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrixes[0]));
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformMatrixv(const std::string& name, const glm::mat3* matrixes, int amount, bool transpose) const {
@@ -538,6 +574,7 @@ inline void Shader::setUniformMatrixv(const std::string& name, const glm::mat3* 
 inline void Shader::setUniformMatrixv(int location, const glm::mat3* matrixes, int amount, bool transpose) const {
 	glUniformMatrix3fv(location, amount, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrixes[0]));
 	GL_checkError();
+	ADD_LOCATION(location)
 }
 
 inline void Shader::setUniformf(const std::string& name, const glm::vec2& values) const {
