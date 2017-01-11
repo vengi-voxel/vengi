@@ -62,7 +62,6 @@ protected:
 	voxel::PlantGenerator _plantGenerator;
 
 	float _fogRange = 250.0f;
-	float _lineWidth = 2.0f;
 	// TODO: get the view distance from the server - entity attributes
 	float _viewDistance = 1.0f;
 	long _now = 0l;

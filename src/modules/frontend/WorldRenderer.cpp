@@ -792,11 +792,6 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 		return false;
 	}
 
-	// TODO: use limits from windowed app
-	GLdouble buf[2];
-	glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-	_lineWidth = std::min((float)buf[1], _lineWidth);
-
 	return true;
 }
 
