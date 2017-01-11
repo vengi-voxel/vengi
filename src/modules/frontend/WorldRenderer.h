@@ -133,7 +133,7 @@ public:
 
 	void onConstruct();
 	bool onInit(const glm::ivec2& position, const glm::ivec2& dimension);
-	void onRunning(long dt);
+	void onRunning(const video::Camera& camera, long dt);
 	void shutdown();
 
 	/** @brief called to initialed the player position */

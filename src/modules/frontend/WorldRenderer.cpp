@@ -340,7 +340,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 
-	_shadow.calculateShadowData(camera, shadowMap, maxDepthBuffers, _depthBuffer.dimension());
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();
 	if (shadowMap) {
@@ -801,10 +800,13 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	return true;
 }
 
-void WorldRenderer::onRunning(long dt) {
+void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
 	_deltaFrame = dt;
+	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+	const bool shadowMap = _shadowMap->boolVal();
+	_shadow.calculateShadowData(camera, shadowMap, maxDepthBuffers, _depthBuffer.dimension());
 	if (_viewDistance < MinCullingDistance) {
 		const float advance = _world->getMeshSize() * (dt / 1000.0f);
 		_viewDistance += advance;

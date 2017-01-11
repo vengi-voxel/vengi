@@ -290,7 +290,7 @@ core::AppState Client::onRunning() {
 		_network->update();
 		_world->onFrame(_deltaFrame);
 		if (_world->isCreated()) {
-			_worldRenderer.onRunning(_deltaFrame);
+			_worldRenderer.onRunning(_camera, _deltaFrame);
 		}
 	}
 
