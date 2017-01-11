@@ -100,7 +100,7 @@ void TestMeshApp::doRender() {
 		//_meshShader.setLightdir(_shadow.sunDirection());
 		_meshShader.setView(_camera.viewMatrix());
 		_meshShader.setProjection(_camera.projectionMatrix());
-		_meshShader.setFogrange(500.0f);
+		_meshShader.setFogrange(250.0f);
 		_meshShader.setViewdistance(500.0f);
 		_meshShader.setModel(glm::mat4());
 		_meshShader.setTexture(0);

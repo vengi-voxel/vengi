@@ -7,6 +7,7 @@
 #include "io/IOResource.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
+#include "VertexBuffer.h"
 #include "video/GLMeshData.h"
 #include "core/Vertex.h"
 #include <vector>
@@ -50,28 +51,21 @@ private:
 	void readNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform);
 	void loadBones(uint32_t neshIndex, const aiMesh* aiMesh);
 
-	// TODO: use vertexbuffer
-	GLuint _vertexArrayObject = 0u;
-	GLuint _vbo = 0u;
-
-	// TODO: use vertexbuffer
-	GLuint _vertexArrayObjectNormals = 0u;
-	GLuint _vboNormals = 0u;
-
-	GLuint _indexBuffer = 0u;
 	bool _readyToInit = false;
 
 	// animation related stuff
 	uint8_t _animationIndex = 0u;
 	float _timeInSeconds = 0.0f;
 
-	float _lineWidth = 2.0f;
-
 	std::vector<GLMeshData> _meshData;
 	std::vector<image::ImagePtr> _images;
 	std::vector<TexturePtr> _textures;
 	Vertices _vertices;
 	Indices _indices;
+	VertexBuffer _vertexBuffer;
+	VertexBuffer _vertexBufferNormals;
+	uint32_t _vertexBufferNormalsIndex = 0u;
+	uint32_t _vertexBufferIndex = 0u;
 
 	// AABB
 	glm::vec3 _aabbMins;
@@ -86,6 +80,8 @@ private:
 	void* _lastShader = nullptr;
 	std::string _filename;
 
+	void setupNormalBufferAttributes(Shader& shader);
+	void setupBufferAttributes(Shader& shader);
 	void boneTransform(float timeInSeconds, glm::mat4* transforms, size_t size, uint8_t animationIndex = 0u);
 public:
 	Mesh();

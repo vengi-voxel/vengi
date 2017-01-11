@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "video/ScopedLineWidth.h"
 
 namespace video {
 
@@ -22,10 +23,6 @@ struct MeshNormals {
 	};
 	std::vector<AttributeData> data;
 
-	inline size_t size() const {
-		return sizeof(AttributeData) * data.size();
-	}
-
 	inline void reserve(size_t amount) {
 		data.reserve(amount);
 	}
@@ -36,8 +33,6 @@ Mesh::Mesh() :
 }
 
 Mesh::~Mesh() {
-	core_assert_msg(_vertexArrayObject == 0u, "Mesh %s was not properly shut down", _filename.c_str());
-	core_assert_msg(_vertexArrayObjectNormals == 0u, "Mesh %s was not properly shut down", _filename.c_str());
 	shutdown();
 }
 
@@ -46,6 +41,8 @@ void Mesh::shutdown() {
 	_textures.clear();
 	_images.clear();
 	_meshData.clear();
+	_vertexBuffer.shutdown();
+	_vertexBufferNormals.shutdown();
 
 	_vertices.clear();
 	_indices.clear();
@@ -55,22 +52,6 @@ void Mesh::shutdown() {
 	_numBones = 0;
 
 	_readyToInit = false;
-	if (_vbo != 0u) {
-		glDeleteBuffers(1, &_vbo);
-		_vbo = 0u;
-	}
-	if (_indexBuffer != 0u) {
-		glDeleteBuffers(1, &_indexBuffer);
-		_indexBuffer = 0u;
-	}
-	if (_vertexArrayObject != 0u) {
-		glDeleteVertexArrays(1, &_vertexArrayObject);
-		_vertexArrayObject = 0u;
-	}
-	if (_vertexArrayObjectNormals != 0u) {
-		glDeleteVertexArrays(1, &_vertexArrayObjectNormals);
-		_vertexArrayObjectNormals = 0u;
-	}
 }
 
 bool Mesh::loadMesh(const std::string& filename) {
@@ -168,6 +149,88 @@ bool Mesh::loadMesh(const std::string& filename) {
 	return true;
 }
 
+void Mesh::setupBufferAttributes(Shader& shader) {
+	_vertexBuffer.clearAttributes();
+
+	video::VertexBuffer::Attribute attribPos;
+	attribPos.bufferIndex = _vertexBufferIndex;
+	attribPos.index = shader.enableVertexAttributeArray("a_pos");
+	attribPos.stride = sizeof(core::Vertex);
+	attribPos.size = shader.getAttributeComponents(attribPos.index);
+	attribPos.type = GLmap<decltype(core::Vertex::_pos)::value_type>();
+	attribPos.offset = offsetof(core::Vertex, _pos);
+	core_assert(attribPos.index != -1);
+	_vertexBuffer.addAttribute(attribPos);
+
+	video::VertexBuffer::Attribute attribTexCoord;
+	attribTexCoord.bufferIndex = _vertexBufferIndex;
+	attribTexCoord.index = shader.enableVertexAttributeArray("a_texcoords");
+	attribTexCoord.stride = sizeof(core::Vertex);
+	attribTexCoord.size = shader.getAttributeComponents(attribTexCoord.index);
+	attribTexCoord.type = GLmap<decltype(core::Vertex::_texcoords)::value_type>();
+	attribTexCoord.offset = offsetof(core::Vertex, _texcoords);
+	_vertexBuffer.addAttribute(attribTexCoord);
+
+	video::VertexBuffer::Attribute attribColor;
+	attribColor.bufferIndex = _vertexBufferIndex;
+	attribColor.index = shader.enableVertexAttributeArray("a_color");
+	attribColor.stride = sizeof(core::Vertex);
+	attribColor.size = shader.getAttributeComponents(attribColor.index);
+	attribColor.type = GLmap<decltype(core::Vertex::_color)::value_type>();
+	attribColor.offset = offsetof(core::Vertex, _color);
+	_vertexBuffer.addAttribute(attribColor);
+
+	video::VertexBuffer::Attribute attribNorm;
+	attribNorm.bufferIndex = _vertexBufferIndex;
+	attribNorm.index = shader.enableVertexAttributeArray("a_norm");
+	attribNorm.stride = sizeof(core::Vertex);
+	attribNorm.size = shader.getAttributeComponents(attribNorm.index);
+	attribNorm.type = GLmap<decltype(core::Vertex::_norm)::value_type>();
+	attribNorm.offset = offsetof(core::Vertex, _norm);
+	_vertexBuffer.addAttribute(attribNorm);
+
+	video::VertexBuffer::Attribute attribBoneIds;
+	attribBoneIds.bufferIndex = _vertexBufferIndex;
+	attribBoneIds.index = shader.enableVertexAttributeArray("a_boneids");
+	attribBoneIds.stride = sizeof(core::Vertex);
+	attribBoneIds.size = shader.getAttributeComponents(attribBoneIds.index);
+	attribBoneIds.type = GLmap<decltype(core::Vertex::_boneIds[0])>();
+	attribBoneIds.offset = offsetof(core::Vertex, _boneIds);
+	attribBoneIds.typeIsInt = true;
+	_vertexBuffer.addAttribute(attribBoneIds);
+
+	video::VertexBuffer::Attribute attribBoneWeights;
+	attribBoneWeights.bufferIndex = _vertexBufferIndex;
+	attribBoneWeights.index = shader.enableVertexAttributeArray("a_boneweights");
+	attribBoneWeights.stride = sizeof(core::Vertex);
+	attribBoneWeights.size = shader.getAttributeComponents(attribBoneWeights.index);
+	attribBoneWeights.type = GLmap<decltype(core::Vertex::_boneWeights[0])>();
+	attribBoneWeights.offset = offsetof(core::Vertex, _boneWeights);
+	_vertexBuffer.addAttribute(attribBoneWeights);
+}
+
+void Mesh::setupNormalBufferAttributes(Shader& shader) {
+	_vertexBufferNormals.clearAttributes();
+
+	video::VertexBuffer::Attribute attribPos;
+	attribPos.bufferIndex = _vertexBufferNormalsIndex;
+	attribPos.index = shader.enableVertexAttributeArray("a_pos");
+	attribPos.stride = sizeof(MeshNormals::AttributeData);
+	attribPos.size = shader.getAttributeComponents(attribPos.index);
+	attribPos.type = GLmap<decltype(MeshNormals::AttributeData::vertex)::value_type>();
+	attribPos.offset = offsetof(MeshNormals::AttributeData, vertex);
+	_vertexBufferNormals.addAttribute(attribPos);
+
+	video::VertexBuffer::Attribute attribColor;
+	attribColor.bufferIndex = _vertexBufferNormalsIndex;
+	attribColor.index = shader.enableVertexAttributeArray("a_color");
+	attribColor.stride = sizeof(MeshNormals::AttributeData);
+	attribColor.size = shader.getAttributeComponents(attribColor.index);
+	attribColor.type = GLmap<decltype(MeshNormals::AttributeData::color)::value_type>();
+	attribColor.offset = offsetof(MeshNormals::AttributeData, color);
+	_vertexBufferNormals.addAttribute(attribColor);
+}
+
 bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex) {
 	if (_state != io::IOSTATE_LOADED) {
 		if (!_readyToInit) {
@@ -179,13 +242,6 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 				return false;
 			}
 		}
-
-		glGenVertexArrays(1, &_vertexArrayObjectNormals);
-		glGenBuffers(1, &_vboNormals);
-
-		glGenVertexArrays(1, &_vertexArrayObject);
-		glGenBuffers(1, &_vbo);
-		glGenBuffers(1, &_indexBuffer);
 
 		_textures.resize(_images.size());
 		int materialIndex = 0;
@@ -200,19 +256,11 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 
 		_state = io::IOSTATE_LOADED;
 
-		glBindVertexArray(_vertexArrayObject);
+		_vertexBufferNormals.setMode(VertexBufferMode::Dynamic);
+		_vertexBufferNormalsIndex = _vertexBufferNormals.create();
 
-		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(MeshVertex) * _vertices.size(), &_vertices[0], GL_STATIC_DRAW);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _indices.size(), &_indices[0], GL_STATIC_DRAW);
-
-		glBindVertexArray(0);
-
-		GLdouble buf[2];
-		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		_lineWidth = std::min((float)buf[1], _lineWidth);
+		_vertexBufferIndex = _vertexBuffer.create(_vertices);
+		_vertexBuffer.create(_indices, VertexBufferType::IndexBuffer);
 	}
 
 	_timeInSeconds = timeInSeconds;
@@ -221,33 +269,8 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 	if (&shader != _lastShader) {
 		core_assert(shader.isActive());
 		_lastShader = &shader;
-		glBindVertexArray(_vertexArrayObject);
-		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-
-#define enable(attrib) \
-		if (shader.hasAttribute("a"#attrib)) { \
-			const int loc = shader.enableVertexAttributeArray("a"#attrib); \
-			const int components = sizeof(MeshVertex::attrib) / sizeof(decltype(MeshVertex::attrib)::value_type); \
-			shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), GL_OFFSET_CAST(offsetof(MeshVertex, attrib))); \
-		}
-
-		enable(_pos);
-		enable(_texcoords);
-		enable(_color);
-		enable(_norm);
-
-#undef enable
-
-		if (shader.hasAttribute("a_boneids")) {
-			const int loc = shader.enableVertexAttributeArray("a_boneids");
-			shader.setVertexAttributeInt(loc, NUM_BONES_PER_VERTEX, GL_INT, sizeof(MeshVertex), GL_OFFSET_CAST(offsetof(MeshVertex, _boneIds)));
-		}
-		if (shader.hasAttribute("a_boneweights")) {
-			const int loc = shader.enableVertexAttributeArray("a_boneweights");
-			shader.setVertexAttribute(loc, NUM_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), GL_OFFSET_CAST(offsetof(MeshVertex, _boneWeights)));
-		}
-		glBindVertexArray(0);
 	}
+	setupBufferAttributes(shader);
 
 	const int size = shader.getUniformArraySize("u_bonetransforms");
 	if (size > 0) {
@@ -497,7 +520,7 @@ int Mesh::render() {
 	if (_state != io::IOSTATE_LOADED) {
 		return 0;
 	}
-	glBindVertexArray(_vertexArrayObject);
+	_vertexBuffer.bind();
 	int drawCalls = 0;
 	for (const GLMeshData& mesh : _meshData) {
 		const uint32_t matIdx = mesh.materialIndex;
@@ -507,8 +530,7 @@ int Mesh::render() {
 		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, GLmap<Indices::value_type>(), GL_OFFSET_CAST(sizeof(Indices::value_type) * mesh.baseIndex), mesh.baseVertex);
 		++drawCalls;
 	}
-	// Make sure the VAO is not changed from the outside
-	glBindVertexArray(0);
+	_vertexBuffer.unbind();
 	GL_checkError();
 
 	return drawCalls;
@@ -517,9 +539,10 @@ int Mesh::render() {
 int Mesh::renderNormals(video::Shader& shader) {
 	core_assert(shader.isActive());
 
-	if (_vertexArrayObjectNormals == 0u) {
+	if (_state != io::IOSTATE_LOADED) {
 		return 0;
 	}
+	setupNormalBufferAttributes(shader);
 
 	MeshNormals normalData;
 	normalData.reserve(_vertices.size() * 2);
@@ -529,35 +552,18 @@ int Mesh::renderNormals(video::Shader& shader) {
 			const glm::mat4& bmat = _boneInfo[v._boneIds[i]].finalTransformation * v._boneWeights[i];
 			bonetrans += bmat;
 		}
-		const glm::vec4& pos = bonetrans * glm::vec4(v._pos, 1.0f);
+		const glm::vec4& pos  = bonetrans * glm::vec4(v._pos,  1.0f);
 		const glm::vec4& norm = bonetrans * glm::vec4(v._norm, 0.0f);
 		const glm::vec4& extended = pos + 2.0f * norm;
-		normalData.data.push_back(MeshNormals::AttributeData{ pos,      glm::vec3(core::Color::Red)    });
-		normalData.data.push_back(MeshNormals::AttributeData{ extended, glm::vec3(core::Color::Yellow) });
+		normalData.data.emplace_back(MeshNormals::AttributeData{pos,      glm::vec3(core::Color::Red)});
+		normalData.data.emplace_back(MeshNormals::AttributeData{extended, glm::vec3(core::Color::Yellow)});
 	}
 
-	glBindVertexArray(_vertexArrayObjectNormals);
-	glBindBuffer(GL_ARRAY_BUFFER, _vboNormals);
-	glBufferData(GL_ARRAY_BUFFER, normalData.size(), &normalData.data[0], GL_STATIC_DRAW);
-
-	if (shader.hasAttribute("a_pos")) {
-		const int loc = shader.enableVertexAttributeArray("a_pos");
-		core_assert(loc >= 0);
-		const int components = sizeof(MeshNormals::AttributeData::vertex) / sizeof(decltype(MeshNormals::AttributeData::vertex)::value_type);
-		shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, vertex)));
-	}
-	if (shader.hasAttribute("a_color")) {
-		const int loc = shader.enableVertexAttributeArray("a_color");
-		core_assert(loc >= 0);
-		const int components = sizeof(MeshNormals::AttributeData::color) / sizeof(decltype(MeshNormals::AttributeData::color)::value_type);
-		shader.setVertexAttribute(loc, components, GL_FLOAT, GL_FALSE, sizeof(MeshNormals::AttributeData), GL_OFFSET_CAST(offsetof(MeshNormals::AttributeData, color)));
-	}
-
-	glLineWidth(_lineWidth);
+	_vertexBufferNormals.update(_vertexBufferNormalsIndex, normalData.data);
+	_vertexBufferNormals.bind();
+	ScopedLineWidth lineWidth(2.0f);
 	glDrawArrays(GL_LINES, 0, normalData.data.size());
-	glLineWidth(1.0f);
-
-	glBindVertexArray(0);
+	_vertexBufferNormals.unbind();
 
 	return 1;
 }
