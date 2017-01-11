@@ -477,11 +477,17 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	video::ScopedShader scoped(_meshShader);
 	_meshShader.setView(camera.viewMatrix());
 	_meshShader.setProjection(camera.projectionMatrix());
+	_meshShader.setFogrange(_fogRange);
 	_meshShader.setViewdistance(_viewDistance);
+	_meshShader.setTexture(1);
+	_meshShader.setDiffuseColor(_diffuseColor);
+	_meshShader.setAmbientColor(_ambientColor);
 	_meshShader.setLightdir(_shadow.sunDirection());
+	_meshShader.setFogcolor(_clearColor);
 
 	const bool shadowMap = _shadowMap->boolVal();
 	if (shadowMap) {
+		_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 		_meshShader.setViewprojection(camera.viewProjectionMatrix());
 		_meshShader.setShadowmap(1);
 		glActiveTexture(GL_TEXTURE1);

@@ -68,7 +68,7 @@ bool RawVolumeRenderer::init() {
 	_worldShader.setFogrange(250.0f);
 	_worldShader.setDiffuseColor(_diffuseColor);
 	_worldShader.setAmbientColor(_ambientColor);
-	_worldShader.setFogcolor(glm::vec3(core::Color::LightBlue));
+	_worldShader.setFogcolor(core::Color::LightBlue);
 
 	video::VertexBuffer::Attribute attributePos = getPositionVertexAttribute(
 			_vertexBufferIndex, _worldShader.getLocationPos(),

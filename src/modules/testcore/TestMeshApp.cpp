@@ -108,6 +108,7 @@ void TestMeshApp::doRender() {
 		_meshShader.setAmbientColor(_ambientColor);
 		_meshShader.setShadowmap(1);
 		_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+		_meshShader.setFogcolor(core::Color::LightBlue);
 
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {

@@ -9,6 +9,7 @@ uniform vec3 u_lightdir;
 uniform vec3 u_diffuse_color;
 uniform vec3 u_ambient_color;
 uniform float u_fogrange;
+uniform vec3 u_fogcolor;
 uniform float u_viewdistance;
 $out vec4 o_color;
 uniform mat4 u_viewprojection;
@@ -29,6 +30,5 @@ void main(void) {
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
 	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / (u_viewdistance - fogstart), 0.0, 1.0);
 
-	vec3 fogcolor = vec3(0.0, 0.6, 0.796);
-	o_color = vec4(mix(color * lightvalue, fogcolor, fogval), 1.0);
+	o_color = vec4(mix(color * lightvalue, u_fogcolor, fogval), 1.0);
 }
