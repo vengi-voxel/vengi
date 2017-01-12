@@ -13,4 +13,20 @@ inline void clear(ClearFlag flag) {
 	glClear(std::enum_value(flag));
 }
 
+inline void enable(State state) {
+	if (state == State::DepthMask) {
+		glDepthMask(GL_TRUE);
+	} else {
+		glEnable(std::enum_value(state));
+	}
+}
+
+inline void disable(State state) {
+	if (state == State::DepthMask) {
+		glDepthMask(GL_TRUE);
+	} else {
+		glDisable(std::enum_value(state));
+	}
+}
+
 }

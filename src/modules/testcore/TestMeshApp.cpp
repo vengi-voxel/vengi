@@ -81,13 +81,12 @@ void TestMeshApp::doRender() {
 	const uint8_t animationIndex = core::Var::getSafe("animation")->intVal();
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;
 
-	// Enable depth test
-	glEnable(GL_DEPTH_TEST);
+	video::enable(video::State::DepthTest);
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LEQUAL);
 	// Cull triangles whose normal is not towards the camera
-	glEnable(GL_CULL_FACE);
-	glDepthMask(GL_TRUE);
+	video::enable(video::State::CullFace);
+	video::enable(video::State::DepthMask);
 
 	const int maxDepthBuffers = _meshShader.getUniformArraySize(MaxDepthBufferUniformName);
 	_shadow.calculateShadowData(_camera, true, maxDepthBuffers, _depthBuffer.dimension());
@@ -95,10 +94,10 @@ void TestMeshApp::doRender() {
 	const std::vector<float>& distances = _shadow.distances();
 
 	{
-		glDisable(GL_BLEND);
+		video::disable(video::State::Blend);
 		// put shadow acne into the dark
 		glCullFace(GL_FRONT);
-		glEnable(GL_POLYGON_OFFSET_FILL);
+		video::enable(video::State::PolygonOffsetFill);
 		const float shadowBiasSlope = 2;
 		const float shadowBias = 0.09f;
 		const float shadowRangeZ = _camera.farPlane() * 3.0f;
@@ -117,8 +116,8 @@ void TestMeshApp::doRender() {
 		}
 		_depthBuffer.unbind();
 		glCullFace(GL_BACK);
-		glEnable(GL_BLEND);
-		glDisable(GL_POLYGON_OFFSET_FILL);
+		video::enable(video::State::Blend);
+		video::disable(video::State::PolygonOffsetFill);
 	}
 
 	bool meshInitialized = false;

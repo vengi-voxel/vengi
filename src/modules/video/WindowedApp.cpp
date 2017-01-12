@@ -471,7 +471,7 @@ core::AppState WindowedApp::onInit() {
 	}
 
 	if (multisampling) {
-		glEnable(GL_MULTISAMPLE);
+		video::enable(video::State::MultiSample);
 	}
 
 	core_trace_gl_init();

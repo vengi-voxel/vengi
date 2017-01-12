@@ -6,6 +6,17 @@
 
 namespace video {
 
+enum class State {
+	DepthMask = 0,
+	DepthTest = GL_DEPTH_TEST,
+	// Cull triangles whose normal is not towards the camera
+	CullFace = GL_CULL_FACE,
+	Blend = GL_BLEND,
+	PolygonOffsetFill = GL_POLYGON_OFFSET_FILL,
+	Scissor = GL_SCISSOR_TEST,
+	MultiSample = GL_MULTISAMPLE
+};
+
 enum class ClearFlag : GLbitfield {
 	Color = GL_COLOR_BUFFER_BIT,
 	Depth = GL_DEPTH_BUFFER_BIT

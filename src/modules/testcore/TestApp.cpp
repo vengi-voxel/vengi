@@ -71,13 +71,12 @@ core::AppState TestApp::onInit() {
 	_camera.lookAt(glm::vec3(0.0001f));
 
 	video::clearColor(::core::Color::Black);
-
-	glEnable(GL_DEPTH_TEST);
+	video::enable(video::State::DepthTest);
 	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_CULL_FACE);
-	glDepthMask(GL_TRUE);
+	video::enable(video::State::CullFace);
+	video::enable(video::State::DepthMask);
 
-	glEnable(GL_BLEND);
+	video::enable(video::State::Blend);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	SDL_SetRelativeMouseMode(SDL_FALSE);

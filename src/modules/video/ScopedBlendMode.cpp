@@ -1,4 +1,5 @@
 #include "ScopedBlendMode.h"
+#include "Renderer.h"
 
 namespace video {
 
@@ -9,12 +10,12 @@ ScopedBlendMode::ScopedBlendMode(video::BlendMode src, video::BlendMode dest, bo
 		glGetIntegerv(GL_BLEND_DST_ALPHA, &_oldDest);
 		glGetBooleanv(GL_BLEND, &_blendEnabled);
 		if (!_blendEnabled) {
-			glEnable(GL_BLEND);
+			video::enable(video::State::Blend);
 		}
 	} else {
 		_oldSrc = _oldDest = 0;
 		_blendEnabled = false;
-		glEnable(GL_BLEND);
+		video::enable(video::State::Blend);
 	}
 
 	glBlendFunc((GLenum)src, (GLenum)dest);
@@ -24,7 +25,7 @@ ScopedBlendMode::ScopedBlendMode(video::BlendMode src, video::BlendMode dest, bo
 ScopedBlendMode::~ScopedBlendMode() {
 	if (_restore) {
 		if (!_blendEnabled) {
-			glDisable(GL_BLEND);
+			video::disable(video::State::Blend);
 		}
 		glBlendFunc(_oldSrc, _oldDest);
 		GL_checkError();

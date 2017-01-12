@@ -21,15 +21,9 @@ private:
 	int32_t _planeMesh = -1;
 public:
 	void render(const video::Camera& camera) {
-		GLboolean state;
-		glGetBooleanv(GL_CULL_FACE, &state);
-		if (state) {
-			glDisable(GL_CULL_FACE);
-		}
+		video::disable(video::State::CullFace);
 		_shapeRenderer.render(_planeMesh, camera);
-		if (state) {
-			glEnable(GL_CULL_FACE);
-		}
+		video::enable(video::State::CullFace);
 	}
 
 	void shutdown() {

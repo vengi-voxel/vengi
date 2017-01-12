@@ -20,11 +20,10 @@ private:
 	float _lineWidth = 4.0f;
 public:
 	void render(const video::Camera& camera) {
-		glDisable(GL_DEPTH_TEST);
-
+		video::disable(video::State::DepthTest);
 		video::ScopedLineWidth width(_lineWidth);
 		_shapeRenderer.renderAll(camera);
-		glEnable(GL_DEPTH_TEST);
+		video::enable(video::State::DepthTest);
 	}
 
 	void shutdown() {

@@ -344,25 +344,21 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	core_trace_gl_scoped(WorldRendererRenderWorld);
 	int drawCallsWorld = 0;
 
-	// Enable depth test
-	glEnable(GL_DEPTH_TEST);
+	video::enable(video::State::DepthTest);
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LEQUAL);
-	// Cull triangles whose normal is not towards the camera
-	glEnable(GL_CULL_FACE);
-	glDepthMask(GL_TRUE);
-
-	GL_checkError();
+	video::enable(video::State::CullFace);
+	video::enable(video::State::DepthMask);
 
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();
 	if (shadowMap) {
-		glDisable(GL_BLEND);
+		video::disable(video::State::Blend);
 		// put shadow acne into the dark
 		glCullFace(GL_FRONT);
-		glEnable(GL_POLYGON_OFFSET_FILL);
+		video::enable(video::State::PolygonOffsetFill);
 		const float shadowBiasSlope = 2;
 		const float shadowBias = 0.09f;
 		const float shadowRangeZ = camera.farPlane() * 3.0f;
@@ -384,8 +380,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		}
 		_depthBuffer.unbind();
 		glCullFace(GL_BACK);
-		glEnable(GL_BLEND);
-		glDisable(GL_POLYGON_OFFSET_FILL);
+		video::enable(video::State::Blend);
+		video::disable(video::State::PolygonOffsetFill);
 	}
 
 	_colorTexture.bind(video::TextureUnit::Zero);
@@ -463,7 +459,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_shadowMapDebugBuffer.unbind();
 	}
 
-	GL_checkError();
 	return drawCallsWorld;
 }
 
@@ -475,8 +470,8 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 
 	int drawCallsEntities = 0;
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
+	video::enable(video::State::DepthTest);
+	video::enable(video::State::DepthMask);
 	video::ScopedShader scoped(_meshShader);
 	_meshShader.setView(camera.viewMatrix());
 	_meshShader.setProjection(camera.projectionMatrix());
@@ -514,7 +509,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		_meshShader.setModel(model);
 		drawCallsEntities += mesh->render();
 	}
-	GL_checkError();
 	return drawCallsEntities;
 }
 

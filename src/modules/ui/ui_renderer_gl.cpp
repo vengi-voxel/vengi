@@ -161,11 +161,10 @@ void UIRendererGL::BeginPaint(int, int) {
 	glViewport(0, 0, renderTargetW, renderTargetH);
 	glScissor(0, 0, renderTargetW, renderTargetH);
 
-	glEnable(GL_BLEND);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_SCISSOR_TEST);
+	video::enable(video::State::Blend);
+	video::disable(video::State::DepthTest);
+	video::enable(video::State::Scissor);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	GL_checkError();
 
 	core_assert_always(_vbo.bind());
 }

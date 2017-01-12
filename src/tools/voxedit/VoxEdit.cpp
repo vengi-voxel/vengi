@@ -189,13 +189,11 @@ core::AppState VoxEdit::onInit() {
 	newFile(true);
 
 	video::clearColor(::core::Color::Black);
-
-	glEnable(GL_DEPTH_TEST);
+	video::enable(video::State::DepthTest);
 	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_CULL_FACE);
-	glDepthMask(GL_TRUE);
-
-	glEnable(GL_BLEND);
+	video::enable(video::State::CullFace);
+	video::enable(video::State::DepthMask);
+	video::enable(video::State::Blend);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	setRelativeMouseMode(false);
