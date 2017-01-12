@@ -16,7 +16,7 @@ void TestDepthBuffer::doRender() {
 	core_assert_always(_texturedFullscreenQuad.bind());
 	video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
 	_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
-	glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
+	video::drawArrays(video::Primitive::Triangles, _texturedFullscreenQuad.elements(0));
 	_texturedFullscreenQuad.unbind();
 }
 

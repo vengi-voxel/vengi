@@ -259,13 +259,13 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const VisibleVBOs& v
 
 		if (vbo->amount == 1) {
 			vbo->vb.bind();
-			glDrawElements(GL_TRIANGLES, numIndices, GLmap<voxel::IndexType>(), nullptr);
+			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
 		} else {
 			// TODO: move out of the render loop, do after distribution
 			const std::vector<glm::vec3>& positions = vbo->instancedPositions;
 			vbo->vb.update(vbo->offsetBuffer, positions);
 			vbo->vb.bind();
-			glDrawElementsInstanced(GL_TRIANGLES, numIndices, GLmap<voxel::IndexType>(), nullptr, (int)positions.size());
+			video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, numIndices, positions.size());
 		}
 		if (vertices != nullptr) {
 			*vertices += vbo->vb.elements(vbo->vertexBuffer, 1, sizeof(voxel::VoxelVertex));
@@ -445,14 +445,13 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			const GLsizei halfHeight = (GLsizei) (height / 4.0f);
 			video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
 			_shadowMapRenderShader.setCascade(i);
-			glDrawArrays(GL_TRIANGLES, 0, _shadowMapDebugBuffer.elements(0));
+			video::drawArrays(video::Primitive::Triangles, _shadowMapDebugBuffer.elements(0));
 		}
 
 		// restore texture
 		if (_depthBuffer.depthCompare()) {
 			glTexParameteri(glTextureType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 		}
-		glBindTexture(glTextureType, 0);
 
 		// unbind buffer
 		_shadowMapDebugBuffer.unbind();

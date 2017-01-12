@@ -527,7 +527,7 @@ int Mesh::render() {
 		if (matIdx < _textures.size() && _textures[matIdx]) {
 			_textures[matIdx]->bind(video::TextureUnit::Zero);
 		}
-		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, GLmap<Indices::value_type>(), GL_OFFSET_CAST(sizeof(Indices::value_type) * mesh.baseIndex), mesh.baseVertex);
+		video::drawElementsBaseVertex<Indices::value_type>(video::Primitive::Triangles, mesh.noOfIndices, mesh.baseIndex, mesh.baseVertex);
 		++drawCalls;
 	}
 	_vertexBuffer.unbind();
@@ -548,7 +548,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 	normalData.reserve(_vertices.size() * 2);
 	for (const core::Vertex& v : _vertices) {
 		glm::mat4 bonetrans;
-		for (int i = 0; i < NUM_BONES_PER_VERTEX; ++i) {
+		for (int i = 0; i < (int)SDL_arraysize(v._boneIds); ++i) {
 			const glm::mat4& bmat = _boneInfo[v._boneIds[i]].finalTransformation * v._boneWeights[i];
 			bonetrans += bmat;
 		}
@@ -562,7 +562,7 @@ int Mesh::renderNormals(video::Shader& shader) {
 	_vertexBufferNormals.update(_vertexBufferNormalsIndex, normalData.data);
 	_vertexBufferNormals.bind();
 	ScopedLineWidth lineWidth(2.0f);
-	glDrawArrays(GL_LINES, 0, normalData.data.size());
+	video::drawArrays(video::Primitive::Lines, normalData.data.size());
 	_vertexBufferNormals.unbind();
 
 	return 1;

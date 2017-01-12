@@ -55,7 +55,7 @@ void TestTexture::doRender() {
 	_texture->bind();
 	_texturedFullscreenQuad.bind();
 	const int elements = _texturedFullscreenQuad.elements(0, _textureShader.getComponentsPos());
-	glDrawArrays(GL_TRIANGLES, 0, elements);
+	video::drawArrays(video::Primitive::Triangles, elements);
 	_texturedFullscreenQuad.unbind();
 	_texture->unbind();
 	GL_checkError();
