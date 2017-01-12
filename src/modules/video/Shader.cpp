@@ -194,7 +194,7 @@ bool Shader::init() {
 	return success;
 }
 
-GLuint Shader::getShader(ShaderType shaderType) const {
+Id Shader::getShader(ShaderType shaderType) const {
 	auto shader = _shader.find(shaderType);
 	if (shader == _shader.end()) {
 		return 0;
@@ -207,8 +207,7 @@ void Shader::update(uint32_t deltaTime) {
 }
 
 bool Shader::activate() const {
-	glUseProgram(_program);
-	GL_checkError();
+	video::useProgram(_program);
 	_active = true;
 	return _active;
 }
@@ -218,7 +217,6 @@ bool Shader::deactivate() const {
 		return false;
 	}
 
-	GL_checkError();
 	_active = false;
 	_time = 0;
 #if VALIDATE_UNIFORMS > 0
@@ -278,20 +276,20 @@ bool Shader::setUniformBuffer(const std::string& name, const UniformBuffer& buff
 	return buffer.bind();
 }
 
-GLuint Shader::getUniformBlockLocation(const std::string& name) const {
+uint32_t Shader::getUniformBlockLocation(const std::string& name) const {
 	return getUniformLocation(name);
 }
 
-GLuint Shader::getUniformBlockSize(const std::string& name) const {
+uint32_t Shader::getUniformBlockSize(const std::string& name) const {
 	GLint blockSize;
-	GLuint loc = getUniformBlockLocation(name);
+	uint32_t loc = getUniformBlockLocation(name);
 	glGetActiveUniformBlockiv(_program, loc, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
 	return blockSize;
 }
 
-std::vector<GLint> Shader::getUniformBlockOffsets(const char **names, int amount) const {
-	std::vector<GLint> offsets(amount);
-	GLuint indices[amount];
+std::vector<int> Shader::getUniformBlockOffsets(const char **names, int amount) const {
+	std::vector<int> offsets(amount);
+	uint32_t indices[amount];
 	glGetUniformIndices(_program, amount, names, indices);
 	glGetActiveUniformsiv(_program, amount, indices, GL_UNIFORM_OFFSET, &offsets[0]);
 	return offsets;
@@ -453,9 +451,9 @@ void Shader::createProgramFromShaders() {
 	}
 	GL_checkError();
 
-	const GLuint vert = _shader[ShaderType::Vertex];
-	const GLuint frag = _shader[ShaderType::Fragment];
-	const GLuint geom = _shader[ShaderType::Geometry];
+	const Id vert = _shader[ShaderType::Vertex];
+	const Id frag = _shader[ShaderType::Fragment];
+	const Id geom = _shader[ShaderType::Geometry];
 
 	glAttachShader(_program, vert);
 	glAttachShader(_program, frag);

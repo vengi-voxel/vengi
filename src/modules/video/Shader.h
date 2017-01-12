@@ -57,10 +57,10 @@ enum class ShaderType : GLenum {
 
 class Shader {
 protected:
-	typedef std::unordered_map<ShaderType, GLuint, EnumClassHash> ShaderMap;
+	typedef std::unordered_map<ShaderType, Id, EnumClassHash> ShaderMap;
 	ShaderMap _shader;
 
-	GLuint _program = 0u;
+	Id _program = 0u;
 	bool _initialized = false;;
 	mutable bool _active = false;
 
@@ -163,7 +163,7 @@ public:
 	/**
 	 * @brief Returns the raw shader handle
 	 */
-	GLuint getShader(ShaderType shaderType) const;
+	Id getShader(ShaderType shaderType) const;
 
 	/**
 	 * @brief Ticks the shader
@@ -206,12 +206,12 @@ public:
 
 	int getUniformLocation(const std::string& name) const;
 	// the location of the block
-	GLuint getUniformBlockLocation(const std::string& name) const;
+	uint32_t getUniformBlockLocation(const std::string& name) const;
 	// how much memory is needed to store the uniform block
-	GLuint getUniformBlockSize(const std::string& name) const;
+	uint32_t getUniformBlockSize(const std::string& name) const;
 	// returns a vector with offsets for the specified member names in the same order as the names
 	// these offsets can be used to e.g. memcpy the data in.
-	std::vector<GLint> getUniformBlockOffsets(const char **names, int amount) const;
+	std::vector<int> getUniformBlockOffsets(const char **names, int amount) const;
 
 	bool setUniformBuffer(const std::string& name, const UniformBuffer& buffer);
 	void setUniformui(const std::string& name, unsigned int value) const;

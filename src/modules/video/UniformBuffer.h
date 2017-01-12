@@ -22,8 +22,8 @@ namespace video {
  */
 class UniformBuffer {
 private:
-	GLuint _handle;
-	GLsizeiptr _size = 0;
+	Id _handle;
+	size_t _size = 0u;
 
 public:
 	UniformBuffer();
@@ -31,8 +31,8 @@ public:
 
 	void shutdown();
 
-	GLuint handle() const;
-	void create(GLsizeiptr size, const void *data);
+	Id handle() const;
+	void create(size_t size, const void *data);
 
 	void* lock(BufferLockMode mode);
 	void unlock();
@@ -40,10 +40,10 @@ public:
 	/**
 	 * @param[in] index The index of the uniform block to bind the buffer to
 	 */
-	bool bind(GLuint index = 0) const;
+	bool bind(Id index = (Id)0) const;
 };
 
-inline GLuint UniformBuffer::handle() const {
+inline Id UniformBuffer::handle() const {
 	return _handle;
 }
 

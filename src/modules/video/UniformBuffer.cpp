@@ -7,29 +7,29 @@ UniformBuffer::UniformBuffer() :
 }
 
 UniformBuffer::~UniformBuffer() {
-	core_assert_msg(_handle == 0u, "Uniform buffer was not properly shut down");
+	core_assert_msg(_handle == (Id)0, "Uniform buffer was not properly shut down");
 	shutdown();
 }
 
 void UniformBuffer::shutdown() {
-	if (_handle != 0u) {
+	if (_handle != (Id)0) {
 		glDeleteBuffers(1, &_handle);
-		_handle = 0u;
+		_handle = (Id)0;
 	}
 }
 
 void* UniformBuffer::lock(BufferLockMode mode) {
-	if (_handle == 0) {
+	if (_handle == (Id)0) {
 		return nullptr;
 	}
 	glBindBuffer(GL_UNIFORM_BUFFER, _handle);
-	void* result = glMapBufferRange(GL_UNIFORM_BUFFER, 0, _size, std::enum_value(mode));
+	void* result = glMapBufferRange(GL_UNIFORM_BUFFER, 0, (GLsizeiptr)_size, std::enum_value(mode));
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	return result;
 }
 
 void UniformBuffer::unlock() {
-	if (_handle == 0u) {
+	if (_handle == (Id)0) {
 		return;
 	}
 	glBindBuffer(GL_UNIFORM_BUFFER, _handle);
@@ -38,15 +38,15 @@ void UniformBuffer::unlock() {
 }
 
 
-void UniformBuffer::create(GLsizeiptr size, const void *data) {
-	if (_handle != 0u) {
+void UniformBuffer::create(size_t size, const void *data) {
+	if (_handle != (Id)0) {
 		shutdown();
 	}
 	_size = size;
 	glGenBuffers(1, &_handle);
 	if (data != nullptr) {
 		glBindBuffer(GL_UNIFORM_BUFFER, _handle);
-		glBufferData(GL_UNIFORM_BUFFER, _size, data, GL_STATIC_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, (GLsizeiptr)_size, data, GL_STATIC_DRAW);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 }
@@ -55,7 +55,7 @@ void UniformBuffer::create(GLsizeiptr size, const void *data) {
  * @param[in] index The index of the uniform block to bind the buffer to
  */
 bool UniformBuffer::bind(GLuint index) const {
-	if (_handle == 0u) {
+	if (_handle == (Id)0) {
 		return false;
 	}
 	// Bind the buffer object to the uniform block.

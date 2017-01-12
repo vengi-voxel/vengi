@@ -6,8 +6,25 @@
 
 namespace video {
 
-inline void clearColor(const glm::vec4& clearColor) {
+namespace _priv {
+	struct GLState {
+		glm::vec4 clearColor;
+		bool depthMask;
+		Face cullFace;
+		CompareFunc depthFunc;
+		Id programHandle;
+		glm::vec2 polygonOffset;
+	};
+	static GLState s;
+}
+
+inline bool clearColor(const glm::vec4& clearColor) {
+	if (_priv::s.clearColor == clearColor) {
+		return false;
+	}
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+	_priv::s.clearColor = clearColor;
+	return true;
 }
 
 inline void clear(ClearFlag flag) {
@@ -16,7 +33,11 @@ inline void clear(ClearFlag flag) {
 
 inline bool enable(State state) {
 	if (state == State::DepthMask) {
+		if (_priv::s.depthMask) {
+			return false;
+		}
 		glDepthMask(GL_TRUE);
+		_priv::s.depthMask = true;
 	} else {
 		glEnable(std::enum_value(state));
 	}
@@ -25,19 +46,32 @@ inline bool enable(State state) {
 
 inline bool disable(State state) {
 	if (state == State::DepthMask) {
-		glDepthMask(GL_TRUE);
+		if (!_priv::s.depthMask) {
+			return false;
+		}
+		glDepthMask(GL_FALSE);
+		_priv::s.depthMask = false;
 	} else {
 		glDisable(std::enum_value(state));
 	}
 	return true;
 }
 
-inline void cullFace(Face face) {
+inline bool cullFace(Face face) {
+	if (_priv::s.cullFace == face) {
+		return false;
+	}
 	glCullFace(std::enum_value(face));
+	_priv::s.cullFace = face;
+	return true;
 }
 
 inline bool depthFunc(CompareFunc func) {
+	if (_priv::s.depthFunc == func) {
+		return false;
+	}
 	glDepthFunc(std::enum_value(func));
+	_priv::s.depthFunc = func;
 	return true;
 }
 
@@ -71,7 +105,20 @@ inline bool polygonMode(Face face, PolygonMode mode) {
 }
 
 inline bool polygonOffset(const glm::vec2& offset) {
+	if (_priv::s.polygonOffset == offset) {
+		return false;
+	}
 	glPolygonOffset(offset.x, offset.y);
+	_priv::s.polygonOffset = offset;
+	return true;
+}
+
+inline bool useProgram(Id handle) {
+	if (_priv::s.programHandle == handle) {
+		return false;
+	}
+	glUseProgram(handle);
+	_priv::s.programHandle = handle;
 	return true;
 }
 
