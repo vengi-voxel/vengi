@@ -63,8 +63,8 @@ bool RawVolumeRenderer::init() {
 	video::ScopedShader scoped(_worldShader);
 	_worldShader.setMaterialblock(_materialBlock);
 	_worldShader.setModel(glm::mat4());
-	_worldShader.setTexture(0);
-	_worldShader.setShadowmap(1);
+	_worldShader.setTexture(video::TextureUnit::Zero);
+	_worldShader.setShadowmap(video::TextureUnit::One);
 	_worldShader.setFogrange(250.0f);
 	_worldShader.setDiffuseColor(_diffuseColor);
 	_worldShader.setAmbientColor(_ambientColor);
@@ -239,7 +239,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
-	_whiteTexture->bind(0);
+	_whiteTexture->bind(video::TextureUnit::Zero);
 
 	video::ScopedShader scoped(_worldShader);
 	_worldShader.setViewprojection(camera.viewProjectionMatrix());
@@ -249,8 +249,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	_worldShader.setDistances(distances);
 	_worldShader.setLightdir(_shadow.sunDirection());
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
+	video::bindTexture(video::TextureUnit::One, _depthBuffer);
 	static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 	glDrawElements(GL_TRIANGLES, nIndices, GLmap<voxel::IndexType>(), nullptr);
 
@@ -262,12 +261,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 
 	_vertexBuffer.unbind();
 	_whiteTexture->unbind();
-
-	for (int i = 0; i < maxDepthBuffers; ++i) {
-		glActiveTexture(GL_TEXTURE1 + i);
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
-	glActiveTexture(GL_TEXTURE0);
 
 	GL_checkError();
 }

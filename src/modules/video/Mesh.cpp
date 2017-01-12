@@ -525,7 +525,7 @@ int Mesh::render() {
 	for (const GLMeshData& mesh : _meshData) {
 		const uint32_t matIdx = mesh.materialIndex;
 		if (matIdx < _textures.size() && _textures[matIdx]) {
-			_textures[matIdx]->bind();
+			_textures[matIdx]->bind(video::TextureUnit::Zero);
 		}
 		glDrawElementsBaseVertex(GL_TRIANGLES, mesh.noOfIndices, GLmap<Indices::value_type>(), GL_OFFSET_CAST(sizeof(Indices::value_type) * mesh.baseIndex), mesh.baseVertex);
 		++drawCalls;

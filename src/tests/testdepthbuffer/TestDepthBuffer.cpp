@@ -14,12 +14,10 @@ void TestDepthBuffer::doRender() {
 	video::ScopedShader scopedShader(_shadowMapRenderShader);
 	video::ScopedViewPort scopedViewport(width - quadWidth, 0, quadWidth, quadHeight);
 	core_assert_always(_texturedFullscreenQuad.bind());
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
-	_shadowMapRenderShader.setShadowmap(0);
+	video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
+	_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
 	glDrawArrays(GL_TRIANGLES, 0, _texturedFullscreenQuad.elements(0));
 	_texturedFullscreenQuad.unbind();
-	glBindTexture(std::enum_value(_depthBuffer.textureType()), 0);
 }
 
 core::AppState TestDepthBuffer::onInit() {

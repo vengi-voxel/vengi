@@ -51,7 +51,7 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	if (_handle == 0u) {
 		glGenTextures(1, &_handle);
 	}
-	bind(0);
+	bind(TextureUnit::Upload);
 	_width = width;
 	_height = height;
 	const Formats& f = textureFormats[std::enum_value(_format)];
@@ -74,28 +74,18 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	GL_checkError();
 }
 
-void Texture::bind(int unit) {
-	if (unit != 0) {
-		glActiveTexture(GL_TEXTURE0 + unit);
-	}
+void Texture::bind(TextureUnit unit) const {
+	glActiveTexture(std::enum_value(unit));
 	glBindTexture(std::enum_value(_type), _handle);
 	GL_checkError();
 	_boundUnit = unit;
-	if (unit != 0) {
-		glActiveTexture(GL_TEXTURE0);
-	}
 }
 
-void Texture::unbind() {
-	if (_boundUnit != 0) {
-		glActiveTexture(GL_TEXTURE0 + _boundUnit);
-	}
+void Texture::unbind() const {
+	glActiveTexture(std::enum_value(_boundUnit));
 	glBindTexture(std::enum_value(_type), 0);
 	GL_checkError();
-	if (_boundUnit != 0) {
-		glActiveTexture(GL_TEXTURE0);
-		_boundUnit = 0;
-	}
+	_boundUnit = TextureUnit::Zero;
 }
 
 }

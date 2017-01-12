@@ -5,6 +5,7 @@
 #pragma once
 
 #include "GLFunc.h"
+#include "Types.h"
 
 namespace video {
 
@@ -30,8 +31,8 @@ public:
 	void shutdown();
 
 	bool load();
-	void bind(GLenum texUnit = GL_TEXTURE0);
-	void unbind(GLenum texUnit = GL_TEXTURE0);
+	void bind(video::TextureUnit texUnit = video::TextureUnit::Zero);
+	void unbind(video::TextureUnit texUnit = video::TextureUnit::Zero);
 };
 
 }

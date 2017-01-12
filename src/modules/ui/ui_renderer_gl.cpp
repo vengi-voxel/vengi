@@ -33,6 +33,7 @@ UIBitmapGL::~UIBitmapGL() {
 void UIBitmapGL::bind() {
 	if (_texture != g_current_texture) {
 		g_current_texture = _texture;
+		glActiveTexture(std::enum_value(video::TextureUnit::Zero));
 		glBindTexture(GL_TEXTURE_2D, _texture);
 	}
 }
@@ -153,7 +154,7 @@ void UIRendererGL::BeginPaint(int, int) {
 
 	_shader.activate();
 	_shader.setProjection(_camera.projectionMatrix());
-	_shader.setTexture(0);
+	_shader.setTexture(video::TextureUnit::Zero);
 
 	UIBitmapGL::g_current_texture = (GLuint) -1;
 

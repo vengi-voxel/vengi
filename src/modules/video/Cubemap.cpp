@@ -55,13 +55,13 @@ bool Cubemap::load() {
 	return true;
 }
 
-void Cubemap::bind(GLenum texUnit) {
-	glActiveTexture(texUnit);
+void Cubemap::bind(video::TextureUnit texUnit) {
+	glActiveTexture(std::enum_value(texUnit));
 	glBindTexture(GL_TEXTURE_CUBE_MAP, _textureHandle);
 }
 
-void Cubemap::unbind(GLenum texUnit) {
-	glActiveTexture(texUnit);
+void Cubemap::unbind(video::TextureUnit texUnit) {
+	glActiveTexture(std::enum_value(texUnit));
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 

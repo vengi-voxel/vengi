@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GLFunc.h"
+#include <cstdint>
 
 namespace video {
 
@@ -14,6 +15,18 @@ enum class PolygonMode {
 	Points = GL_POINT,
 	WireFrame = GL_LINE,
 	Solid = GL_FILL
+};
+
+enum class TextureUnit : int32_t {
+	Zero  = GL_TEXTURE0,
+	One   = GL_TEXTURE1,
+	Two   = GL_TEXTURE2,
+	Three = GL_TEXTURE3,
+	Four  = GL_TEXTURE4,
+	Five  = GL_TEXTURE5,
+
+	// don't interfer with any other bound texture when we are uploading
+	Upload = GL_TEXTURE10
 };
 
 enum class BlendMode {

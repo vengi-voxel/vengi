@@ -5,6 +5,7 @@
 #pragma once
 
 #include "video/GLFunc.h"
+#include "video/Types.h"
 #include "io/IOResource.h"
 #include "image/Image.h"
 
@@ -37,7 +38,7 @@ private:
 	TextureType _type;
 	TextureFormat _format;
 	TextureWrap _wrap;
-	int _boundUnit = 0;
+	mutable TextureUnit _boundUnit = TextureUnit::Zero;
 
 public:
 	Texture(TextureType type, TextureFormat format, const std::string& name, int width = 1, int height = 1, int index = 1, TextureWrap wrap = TextureWrap::Repeat);
@@ -56,8 +57,8 @@ public:
 	void upload(TextureFormat format, int width, int height, const uint8_t* data = nullptr, int index = 1);
 	void upload(int width, int height, const uint8_t* data = nullptr, int index = 1);
 	void upload(const uint8_t* data = nullptr, int index = 1);
-	void bind(int unit = 0);
-	void unbind();
+	void bind(TextureUnit unit = TextureUnit::Zero) const;
+	void unbind() const;
 };
 
 inline Texture::operator GLuint () const {
@@ -128,6 +129,11 @@ inline TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 
 inline TexturePtr createTextureFromImage(const std::string& filename) {
 	return createTextureFromImage(image::loadImage(filename, false));
+}
+
+inline bool bindTexture(TextureUnit unit, const Texture& texture) {
+	texture.bind(unit);
+	return true;
 }
 
 }

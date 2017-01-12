@@ -35,16 +35,17 @@ const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::MAT4,            1, "glm::mat4",    Reference, "mat4" },
 	{ ShaderTool::Variable::MAT3X4,          1, "glm::mat3x4",  Reference, "mat3x4" },
 	{ ShaderTool::Variable::MAT4X3,          1, "glm::mat4x3",  Reference, "mat4x3" },
-	{ ShaderTool::Variable::SAMPLER1D,       1, "int32_t",      Value,     "sampler1D" },
-	{ ShaderTool::Variable::SAMPLER2D,       1, "int32_t",      Value,     "sampler2D" },
-	{ ShaderTool::Variable::SAMPLER2DARRAY,  1, "int32_t",      Value,     "sampler2DArray" },
-	{ ShaderTool::Variable::SAMPLER2DARRAYSHADOW, 1, "int32_t", Value,     "sampler2DArrayShadow" },
-	{ ShaderTool::Variable::SAMPLER3D,       1, "int32_t",      Value,     "sampler3D" },
-	{ ShaderTool::Variable::SAMPLERCUBEMAP,  1, "int32_t",      Value,     "samplerCube" },
-	{ ShaderTool::Variable::SAMPLER1DSHADOW, 1, "int32_t",      Value,     "sampler1DShadow" },
-	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "int32_t",      Value,     "sampler2DShadow" }
+	{ ShaderTool::Variable::SAMPLER1D,       1, "video::TextureUnit", Value,      "sampler1D" },
+	{ ShaderTool::Variable::SAMPLER2D,       1, "video::TextureUnit", Value,      "sampler2D" },
+	{ ShaderTool::Variable::SAMPLER2DARRAY,  1, "video::TextureUnit", Value,      "sampler2DArray" },
+	{ ShaderTool::Variable::SAMPLER2DARRAYSHADOW, 1, "video::TextureUnit", Value, "sampler2DArrayShadow" },
+	{ ShaderTool::Variable::SAMPLER3D,       1, "video::TextureUnit", Value,      "sampler3D" },
+	{ ShaderTool::Variable::SAMPLERCUBEMAP,  1, "video::TextureUnit", Value,      "samplerCube" },
+	{ ShaderTool::Variable::SAMPLER1DSHADOW, 1, "video::TextureUnit", Value,      "sampler1DShadow" },
+	{ ShaderTool::Variable::SAMPLER2DSHADOW, 1, "video::TextureUnit", Value,      "sampler2DShadow" }
 };
 
+// TODO: generated sampler setters should use video::TextureUnit
 // TODO: validate that each $out of the vertex shader has a $in in the fragment shader and vice versa
 ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		core::App(filesystem, eventBus, timeProvider, 0) {
@@ -160,9 +161,10 @@ std::string ShaderTool::uniformSetterPostfix(const ShaderTool::Variable::Type ty
 			if (video::Shader::glslVersion < video::GLSLVersion::V400) {
 				Log::warn("Sampler arrays are only allowed under special circumstances - don't do this for GLSL < 4.0");
 			}
+			// TODO: doesn't work yet, video::TextureUnit support is needed here
 			return "1iv";
 		}
-		return "i";
+		return "";
 	case Variable::SAMPLERCUBEMAP:
 		if (amount > 1) {
 			return "1iv";
@@ -370,9 +372,7 @@ void ShaderTool::generateSrc() {
 	}
 	for (int i = 0; i < uniformSize; ++i) {
 		const Variable& v = _shaderStruct.uniforms[i];
-		const bool isInteger = v.type == Variable::SAMPLER1D || v.type == Variable::SAMPLER2D || v.type == Variable::SAMPLER3D
-				|| v.type == Variable::SAMPLER2DSHADOW || v.type == Variable::SAMPLER1DSHADOW
-				|| v.type == Variable::SAMPLERCUBEMAP || v.type == Variable::INT || v.type == Variable::UNSIGNED_INT;
+		const bool isInteger = v.isSingleInteger();
 		const std::string& uniformName = convertName(v.name, true);
 		setters << "\tinline bool set" << uniformName << "(";
 		const Types& cType = cTypes[v.type];
@@ -461,7 +461,7 @@ void ShaderTool::generateSrc() {
 	for (int i = 0; i < attributeSize; ++i) {
 		const Variable& v = _shaderStruct.attributes[i];
 		const std::string& attributeName = convertName(v.name, true);
-		const bool isInt = v.type == Variable::UNSIGNED_INT || v.type == Variable::INT || v.type == Variable::IVEC2 || v.type == Variable::IVEC3 || v.type == Variable::IVEC4;
+		const bool isInt = v.isInteger();
 		setters << "\tinline bool init" << attributeName << "Custom(GLsizei stride = ";
 		setters << "sizeof(" << cTypes[v.type].ctype << ")";
 		setters << ", const void* pointer = nullptr, GLenum type = ";

@@ -15,6 +15,7 @@
 #include "GLFunc.h"
 #include "core/GLM.h"
 #include "core/Log.h"
+#include "Types.h"
 
 namespace video {
 
@@ -215,6 +216,8 @@ public:
 	bool setUniformBuffer(const std::string& name, const UniformBuffer& buffer);
 	void setUniformui(const std::string& name, unsigned int value) const;
 	void setUniformui(int location, unsigned int value) const;
+	void setUniform(const std::string& name, TextureUnit value) const;
+	void setUniform(int location, TextureUnit value) const;
 	void setUniformi(const std::string& name, int value) const;
 	void setUniformi(int location, int value) const;
 	void setUniformi(const std::string& name, int value1, int value2) const;
@@ -290,6 +293,15 @@ public:
 inline void Shader::setUniformi(const std::string& name, int value) const {
 	const int location = getUniformLocation(name);
 	setUniformi(location, value);
+}
+
+inline void Shader::setUniform(const std::string& name, TextureUnit value) const {
+	const int location = getUniformLocation(name);
+	setUniform(location, value);
+}
+
+inline void Shader::setUniform(int location, TextureUnit value) const {
+	setUniformi(location, std::enum_value(value) - GL_TEXTURE0);
 }
 
 inline void Shader::setUniformui(const std::string& name, unsigned int value) const {

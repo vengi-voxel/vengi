@@ -18,7 +18,7 @@ void RandomColorTexture::init() {
 	}));
 }
 
-void RandomColorTexture::bind(int unit) {
+void RandomColorTexture::bind(video::TextureUnit unit) {
 	if (!_noiseFuture.empty()) {
 		NoiseFuture& future = _noiseFuture.back();
 		if (future.valid()) {

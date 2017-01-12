@@ -29,7 +29,7 @@ public:
 	void init();
 	void shutdown();
 
-	void bind(int unit = 0);
+	void bind(video::TextureUnit unit = video::TextureUnit::Zero);
 	void unbind();
 };
 

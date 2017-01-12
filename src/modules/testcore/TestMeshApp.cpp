@@ -136,10 +136,10 @@ void TestMeshApp::doRender() {
 		_meshShader.setFogrange(250.0f);
 		_meshShader.setViewdistance(_camera.farPlane());
 		_meshShader.setModel(glm::mat4());
-		_meshShader.setTexture(0);
+		_meshShader.setTexture(video::TextureUnit::Zero);
 		_meshShader.setDiffuseColor(_diffuseColor);
 		_meshShader.setAmbientColor(_ambientColor);
-		_meshShader.setShadowmap(1);
+		_meshShader.setShadowmap(video::TextureUnit::One);
 		_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
 		_meshShader.setFogcolor(core::Color::LightBlue);
 		_meshShader.setCascades(cascades);
@@ -148,11 +148,8 @@ void TestMeshApp::doRender() {
 
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(std::enum_value(_depthBuffer.textureType()), _depthBuffer.texture());
+			video::bindTexture(video::TextureUnit::One, _depthBuffer);
 			_mesh->render();
-			glBindTexture(GL_TEXTURE_2D, 0);
-			glActiveTexture(GL_TEXTURE0);
 		}
 	}
 	if (meshInitialized) {
