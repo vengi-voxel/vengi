@@ -5,6 +5,7 @@
 #include "ShapeTool.h"
 #include "video/Shader.h"
 #include "video/Debug.h"
+#include "video/Renderer.h"
 #include "core/GLM.h"
 #include "core/Color.h"
 #include "ui/WorldParametersWindow.h"
@@ -134,12 +135,12 @@ void ShapeTool::beforeUI() {
 	_worldRenderer.onRunning(_camera, _deltaFrame);
 	ScopedProfiler<ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
 	}
 	_drawCallsWorld = _worldRenderer.renderWorld(_camera, &_vertices);
 	_drawCallsEntities = _worldRenderer.renderEntities(_camera);
 	if (_lineModeRendering) {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
 	}
 }
 

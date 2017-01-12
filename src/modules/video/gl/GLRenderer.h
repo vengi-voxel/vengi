@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GLTypes.h"
+#include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 
 namespace video {
@@ -62,6 +63,16 @@ inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIn
 
 inline void drawArrays(Primitive mode, size_t count) {
 	glDrawArrays(std::enum_value(mode), (GLint)0, (GLsizei)count);
+}
+
+inline bool polygonMode(Face face, PolygonMode mode) {
+	glPolygonMode(std::enum_value(face), std::enum_value(mode));
+	return true;
+}
+
+inline bool polygonOffset(const glm::vec2& offset) {
+	glPolygonOffset(offset.x, offset.y);
+	return true;
 }
 
 }

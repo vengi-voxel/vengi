@@ -1,5 +1,6 @@
 #include "TestMeshApp.h"
 #include "core/command/Command.h"
+#include "video/ScopedPolygonMode.h"
 
 #define MaxDepthBufferUniformName "u_cascades"
 
@@ -95,11 +96,11 @@ void TestMeshApp::doRender() {
 		video::disable(video::State::Blend);
 		// put shadow acne into the dark
 		video::cullFace(video::Face::Front);
-		video::enable(video::State::PolygonOffsetFill);
 		const float shadowBiasSlope = 2;
 		const float shadowBias = 0.09f;
 		const float shadowRangeZ = _camera.farPlane() * 3.0f;
-		glPolygonOffset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
+		const glm::vec2 offset(shadowBiasSlope, (shadowBias / shadowRangeZ) * (1 << 24));
+		const video::ScopedPolygonMode scopedPolygonMode(video::PolygonMode::Solid, offset);
 
 		_depthBuffer.bind();
 		video::ScopedShader scoped(_shadowMapShader);
@@ -115,7 +116,6 @@ void TestMeshApp::doRender() {
 		_depthBuffer.unbind();
 		video::cullFace(video::Face::Back);
 		video::enable(video::State::Blend);
-		video::disable(video::State::PolygonOffsetFill);
 	}
 
 	bool meshInitialized = false;

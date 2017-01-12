@@ -13,6 +13,8 @@ enum class State {
 	CullFace = GL_CULL_FACE,
 	Blend = GL_BLEND,
 	PolygonOffsetFill = GL_POLYGON_OFFSET_FILL,
+	PolygonOffsetPoint = GL_POLYGON_OFFSET_POINT,
+	PolygonOffsetLine = GL_POLYGON_OFFSET_LINE,
 	Scissor = GL_SCISSOR_TEST,
 	MultiSample = GL_MULTISAMPLE
 };

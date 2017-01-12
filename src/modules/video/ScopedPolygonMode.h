@@ -5,44 +5,46 @@
 #pragma once
 
 #include "core/Common.h"
-#include "Types.h"
+#include "Renderer.h"
 
 namespace video {
 
 class ScopedPolygonMode {
 private:
-	GLint _polygonOffsetMode = GL_NONE;
+	const video::PolygonMode _mode;
+	bool _offset = false;
 public:
-	inline ScopedPolygonMode(const video::PolygonMode mode) {
-		glPolygonMode(GL_FRONT_AND_BACK, std::enum_value(mode));
-		GL_checkError();
+	inline ScopedPolygonMode(video::PolygonMode mode) : _mode(mode) {
+		polygonMode(video::Face::FrontAndBack, mode);
 	}
 
-	inline ScopedPolygonMode(const video::PolygonMode mode, const glm::vec2& offset) :
+	inline ScopedPolygonMode(video::PolygonMode mode, const glm::vec2& offset) :
 			ScopedPolygonMode(mode) {
+		_offset = true;
 		if (mode == video::PolygonMode::Points) {
-			_polygonOffsetMode = GL_POLYGON_OFFSET_POINT;
+			video::enable(State::PolygonOffsetPoint);
+			video::polygonOffset(offset);
 		} else if (mode == video::PolygonMode::WireFrame) {
-			_polygonOffsetMode = GL_POLYGON_OFFSET_LINE;
+			video::enable(State::PolygonOffsetLine);
+			video::polygonOffset(offset);
 		} else if (mode == video::PolygonMode::Solid) {
-			_polygonOffsetMode = GL_POLYGON_OFFSET_FILL;
-		}
-		if (_polygonOffsetMode != GL_NONE) {
-			glEnable(_polygonOffsetMode);
-			GL_checkError();
-			glPolygonOffset(offset.x, offset.y);
-			GL_checkError();
+			video::enable(State::PolygonOffsetFill);
+			video::polygonOffset(offset);
 		}
 	}
 
 	inline ~ScopedPolygonMode() {
-		if (_polygonOffsetMode != GL_NONE) {
-			glDisable(_polygonOffsetMode);
-			GL_checkError();
+		if (_offset) {
+			if (_mode == video::PolygonMode::Points) {
+				video::disable(State::PolygonOffsetPoint);
+			} else if (_mode == video::PolygonMode::WireFrame) {
+				video::disable(State::PolygonOffsetLine);
+			} else if (_mode == video::PolygonMode::Solid) {
+				video::disable(State::PolygonOffsetFill);
+			}
 		}
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		GL_checkError();
+		polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
 	}
 };
 
