@@ -9,11 +9,15 @@ namespace video {
 namespace _priv {
 	struct GLState {
 		glm::vec4 clearColor;
-		bool depthMask;
-		Face cullFace;
-		CompareFunc depthFunc;
-		Id programHandle;
+		bool depthMask = false;
+		Face cullFace = Face::Max;
+		CompareFunc depthFunc = CompareFunc::Max;
+		Id programHandle = 0;
 		glm::vec2 polygonOffset;
+		Face polygonModeFace = Face::Max;
+		PolygonMode polygonMode = PolygonMode::Max;
+		BlendMode blendSrc = BlendMode::Max;
+		BlendMode blendDest = BlendMode::Max;
 	};
 	static GLState s;
 }
@@ -76,30 +80,21 @@ inline bool depthFunc(CompareFunc func) {
 }
 
 inline bool blendFunc(BlendMode src, BlendMode dest) {
+	if (_priv::s.blendSrc == src && _priv::s.blendDest == dest) {
+		return false;
+	}
+	_priv::s.blendSrc = src;
+	_priv::s.blendDest = dest;
 	glBlendFunc(std::enum_value(src), std::enum_value(dest));
 	return true;
 }
 
-template<class IndexType>
-inline void drawElements(Primitive mode, size_t numIndices) {
-	glDrawElements(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), nullptr);
-}
-
-template<class IndexType>
-inline void drawElementsInstanced(Primitive mode, size_t numIndices, size_t amount) {
-	glDrawElementsInstanced(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), nullptr, (GLsizei)amount);
-}
-
-template<class IndexType>
-inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIndex, int baseVertex) {
-	glDrawElementsBaseVertex(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), (const void*)(sizeof(IndexType) * baseIndex), (GLint)baseVertex);
-}
-
-inline void drawArrays(Primitive mode, size_t count) {
-	glDrawArrays(std::enum_value(mode), (GLint)0, (GLsizei)count);
-}
-
 inline bool polygonMode(Face face, PolygonMode mode) {
+	if (_priv::s.polygonModeFace == face && _priv::s.polygonMode == mode) {
+		return false;
+	}
+	_priv::s.polygonModeFace = face;
+	_priv::s.polygonMode = mode;
 	glPolygonMode(std::enum_value(face), std::enum_value(mode));
 	return true;
 }
@@ -122,4 +117,22 @@ inline bool useProgram(Id handle) {
 	return true;
 }
 
+template<class IndexType>
+inline void drawElements(Primitive mode, size_t numIndices) {
+	glDrawElements(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), nullptr);
+}
+
+template<class IndexType>
+inline void drawElementsInstanced(Primitive mode, size_t numIndices, size_t amount) {
+	glDrawElementsInstanced(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), nullptr, (GLsizei)amount);
+}
+
+template<class IndexType>
+inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIndex, int baseVertex) {
+	glDrawElementsBaseVertex(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), (const void*)(sizeof(IndexType) * baseIndex), (GLint)baseVertex);
+}
+
+inline void drawArrays(Primitive mode, size_t count) {
+	glDrawArrays(std::enum_value(mode), (GLint)0, (GLsizei)count);
+}
 }
