@@ -164,7 +164,7 @@ void UIRendererGL::BeginPaint(int, int) {
 	video::enable(video::State::Blend);
 	video::disable(video::State::DepthTest);
 	video::enable(video::State::Scissor);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
 	core_assert_always(_vbo.bind());
 }

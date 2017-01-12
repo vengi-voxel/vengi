@@ -20,7 +20,6 @@ set(SRCS
 	Mesh.cpp Mesh.h
 	MeshPool.cpp MeshPool.h
 	ShapeBuilder.cpp ShapeBuilder.h
-	ScopedBlendMode.h ScopedBlendMode.cpp
 	ScopedLineWidth.h ScopedLineWidth.cpp
 	ScopedViewPort.h
 	ScopedFrameBuffer.h

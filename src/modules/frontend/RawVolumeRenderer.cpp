@@ -201,8 +201,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	}
 
 	video::enable(video::State::DepthTest);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LEQUAL);
+	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
@@ -215,7 +214,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	{
 		video::disable(video::State::Blend);
 		// put shadow acne into the dark
-		glCullFace(GL_FRONT);
+		video::cullFace(video::Face::Front);
 		video::enable(video::State::PolygonOffsetFill);
 		const float shadowBiasSlope = 2;
 		const float shadowBias = 0.09f;
@@ -232,7 +231,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 			glDrawElements(GL_TRIANGLES, nIndices, GLmap<voxel::IndexType>(), nullptr);
 		}
 		_depthBuffer.unbind();
-		glCullFace(GL_BACK);
+		video::cullFace(video::Face::Back);
 		video::enable(video::State::Blend);
 		video::disable(video::State::PolygonOffsetFill);
 	}

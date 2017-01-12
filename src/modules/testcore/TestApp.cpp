@@ -72,12 +72,12 @@ core::AppState TestApp::onInit() {
 
 	video::clearColor(::core::Color::Black);
 	video::enable(video::State::DepthTest);
-	glDepthFunc(GL_LEQUAL);
+	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
 	video::enable(video::State::Blend);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
 	SDL_SetRelativeMouseMode(SDL_FALSE);
 

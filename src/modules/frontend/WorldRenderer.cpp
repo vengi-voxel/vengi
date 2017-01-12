@@ -345,8 +345,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	int drawCallsWorld = 0;
 
 	video::enable(video::State::DepthTest);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LEQUAL);
+	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
@@ -357,7 +356,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	if (shadowMap) {
 		video::disable(video::State::Blend);
 		// put shadow acne into the dark
-		glCullFace(GL_FRONT);
+		video::cullFace(video::Face::Front);
 		video::enable(video::State::PolygonOffsetFill);
 		const float shadowBiasSlope = 2;
 		const float shadowBias = 0.09f;
@@ -379,7 +378,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			}
 		}
 		_depthBuffer.unbind();
-		glCullFace(GL_BACK);
+		video::cullFace(video::Face::Back);
 		video::enable(video::State::Blend);
 		video::disable(video::State::PolygonOffsetFill);
 	}

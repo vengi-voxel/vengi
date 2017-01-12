@@ -13,7 +13,8 @@ namespace video {
 
 enum class VertexBufferMode : GLenum {
 	Static = GL_STATIC_DRAW,
-	Dynamic = GL_DYNAMIC_DRAW
+	Dynamic = GL_DYNAMIC_DRAW,
+	Stream = GL_STREAM_DRAW
 };
 
 enum class VertexBufferType : GLenum {

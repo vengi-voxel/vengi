@@ -82,9 +82,7 @@ void TestMeshApp::doRender() {
 	const long timeInSeconds = (_now - _initTime) / 1000.0f;
 
 	video::enable(video::State::DepthTest);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LEQUAL);
-	// Cull triangles whose normal is not towards the camera
+	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 
@@ -96,7 +94,7 @@ void TestMeshApp::doRender() {
 	{
 		video::disable(video::State::Blend);
 		// put shadow acne into the dark
-		glCullFace(GL_FRONT);
+		video::cullFace(video::Face::Front);
 		video::enable(video::State::PolygonOffsetFill);
 		const float shadowBiasSlope = 2;
 		const float shadowBias = 0.09f;
@@ -115,7 +113,7 @@ void TestMeshApp::doRender() {
 			}
 		}
 		_depthBuffer.unbind();
-		glCullFace(GL_BACK);
+		video::cullFace(video::Face::Back);
 		video::enable(video::State::Blend);
 		video::disable(video::State::PolygonOffsetFill);
 	}

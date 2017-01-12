@@ -5,7 +5,6 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedScissor.h"
 #include "video/ScopedLineWidth.h"
-#include "video/ScopedBlendMode.h"
 #include "video/ScopedFrameBuffer.h"
 #include "voxel/model/MeshExporter.h"
 #include "ui/UIApp.h"
@@ -45,8 +44,10 @@ void EditorScene::render() {
 	{
 		video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(-2.0f));
 		video::ScopedLineWidth lineWidth(3.0f);
-		video::ScopedBlendMode blendMode(video::BlendMode::One, video::BlendMode::One);
+		video::enable(video::State::Blend);
+		video::blendFunc(video::BlendMode::One, video::BlendMode::One);
 		mdl.renderSelection(camera);
+		video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 	}
 	if (mdl.renderAxis()) {
 		_axis.render(camera);
