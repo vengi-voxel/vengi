@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "GLFunc.h"
+#include "Renderer.h"
 #include "core/Common.h"
 #include "core/GLM.h"
 #include <vector>

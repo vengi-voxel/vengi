@@ -43,8 +43,7 @@ core::AppState TestTexture::onInit() {
 	attributeColor.size = _textureShader.getComponentsColor();
 	_texturedFullscreenQuad.addAttribute(attributeColor);
 
-	const glm::vec4& color = ::core::Color::White;
-	glClearColor(color.r, color.g, color.b, color.a);
+	video::clearColor(::core::Color::White);
 
 	return state;
 }

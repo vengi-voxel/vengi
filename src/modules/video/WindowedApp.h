@@ -10,7 +10,7 @@
 #include "core/GLM.h"
 #include "util/KeybindingParser.h"
 #include "video/Types.h"
-#include "video/GLVersion.h"
+#include "video/Version.h"
 
 struct SDL_Window;
 typedef void *SDL_GLContext;

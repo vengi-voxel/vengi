@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "GLFunc.h"
+#include "Renderer.h"
 #include "core/GLM.h"
 
 namespace video {

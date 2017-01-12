@@ -4,7 +4,7 @@
 
 #include "ShapeTool.h"
 #include "video/Shader.h"
-#include "video/GLDebug.h"
+#include "video/Debug.h"
 #include "core/GLM.h"
 #include "core/Color.h"
 #include "ui/WorldParametersWindow.h"
@@ -55,7 +55,7 @@ core::AppState ShapeTool::onInit() {
 		return state;
 	}
 
-	GLDebug::enable(GLDebug::Medium);
+	video::enableDebug(video::DebugSeverity::Medium);
 
 	if (!_axis.init()) {
 		return core::AppState::Cleanup;

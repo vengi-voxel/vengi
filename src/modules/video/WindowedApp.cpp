@@ -6,7 +6,7 @@
 #include "core/Common.h"
 #include "core/Singleton.h"
 #include "core/Var.h"
-#include "GLFunc.h"
+#include "Renderer.h"
 #include "Shader.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
@@ -245,7 +245,7 @@ core::AppState WindowedApp::onRunning() {
 
 	core_trace_gl_scoped(WindowedAppPrepareContext);
 	SDL_GL_MakeCurrent(_window, _glcontext);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 	// TODO: maybe only do this every nth frame?
 	core::Singleton<ShaderManager>::getInstance().update();
 

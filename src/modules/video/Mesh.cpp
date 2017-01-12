@@ -3,7 +3,7 @@
  */
 
 #include "Mesh.h"
-#include "GLFunc.h"
+#include "Renderer.h"
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Log.h"

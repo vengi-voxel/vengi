@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "video/GLFunc.h"
+#include "video/Renderer.h"
 #include "video/Types.h"
 #include "io/IOResource.h"
 #include "image/Image.h"

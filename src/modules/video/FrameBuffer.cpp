@@ -4,7 +4,7 @@
 
 #include "FrameBuffer.h"
 #include "ScopedFrameBuffer.h"
-#include "GLFunc.h"
+#include "Renderer.h"
 
 namespace video {
 

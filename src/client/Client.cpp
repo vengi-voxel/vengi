@@ -14,7 +14,7 @@
 #include "core/command/Command.h"
 #include "core/GLM.h"
 #include "core/Color.h"
-#include "video/GLDebug.h"
+#include "video/Debug.h"
 #include "network/Network.h"
 #include "network/MessageSender.h"
 #include "network/IMsgProtocolHandler.h"
@@ -139,7 +139,7 @@ core::AppState Client::onInit() {
 		return state;
 	}
 
-	GLDebug::enable(GLDebug::Medium);
+	video::enableDebug(video::DebugSeverity::Medium);
 
 	if (!_network->init()) {
 		return core::AppState::Cleanup;

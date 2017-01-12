@@ -1,19 +1,22 @@
 set(SRCS
 	Camera.cpp Camera.h
 	WindowedApp.cpp WindowedApp.h
-	GLFunc.cpp GLFunc.h
+	gl/GLFunc.cpp gl/GLFunc.h
+	gl/GLRenderer.h gl/GLRenderer.cpp
+	gl/GLDebug.h
 	UniformBuffer.cpp UniformBuffer.h
 	VertexBuffer.cpp VertexBuffer.h
 	FrameBuffer.cpp FrameBuffer.h
 	GBuffer.cpp GBuffer.h
 	Shader.cpp Shader.h
 	Camera.cpp Camera.h
-	GLDebug.h
 	BufferLockMode.h
 	DepthBuffer.cpp DepthBuffer.h
 	Cubemap.cpp Cubemap.h
 	Texture.cpp Texture.h
 	Types.h
+	Version.h
+	Renderer.h
 	Mesh.cpp Mesh.h
 	MeshPool.cpp MeshPool.h
 	ShapeBuilder.cpp ShapeBuilder.h

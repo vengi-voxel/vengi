@@ -12,7 +12,7 @@
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
-#include "GLFunc.h"
+#include "Renderer.h"
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "Types.h"

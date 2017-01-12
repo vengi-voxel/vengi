@@ -1,5 +1,5 @@
 #include "TestApp.h"
-#include "video/GLDebug.h"
+#include "video/Debug.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
 #include "frontend/Movement.h"
@@ -55,7 +55,7 @@ core::AppState TestApp::onInit() {
 		return state;
 	}
 
-	GLDebug::enable(GLDebug::Medium);
+	video::enableDebug(video::DebugSeverity::Medium);
 
 	if (!_axis.init()) {
 		return core::AppState::Cleanup;
@@ -70,8 +70,7 @@ core::AppState TestApp::onInit() {
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	_camera.lookAt(glm::vec3(0.0001f));
 
-	const glm::vec4& color = ::core::Color::Black;
-	glClearColor(color.r, color.g, color.b, color.a);
+	video::clearColor(::core::Color::Black);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);

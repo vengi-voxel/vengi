@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "video/GLFunc.h"
+#include "video/Renderer.h"
 #include "video/Camera.h"
 #include "video/VertexBuffer.h"
 #include "UiShaders.h"

@@ -4,7 +4,7 @@
 
 #include "WorldRenderer.h"
 #include "core/Color.h"
-#include "video/GLFunc.h"
+#include "video/Renderer.h"
 #include "voxel/Spiral.h"
 #include "core/App.h"
 #include "core/Var.h"
@@ -390,8 +390,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	_colorTexture.bind(video::TextureUnit::Zero);
 
-	glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	video::clearColor(_clearColor);
+	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 
 	if (shadowMap) {
 		video::bindTexture(video::TextureUnit::One, _depthBuffer);

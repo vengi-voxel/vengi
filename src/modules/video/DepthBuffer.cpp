@@ -3,7 +3,7 @@
  */
 
 #include "DepthBuffer.h"
-#include "GLFunc.h"
+#include "Renderer.h"
 #include "ScopedFrameBuffer.h"
 #include "Texture.h"
 
@@ -93,10 +93,10 @@ bool DepthBuffer::bindTexture(int textureIndex) {
 	}
 	if (depthAttachment()) {
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexture, 0, textureIndex);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		video::clear(video::ClearFlag::Depth);
 	} else {
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _depthTexture, 0, textureIndex);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 	}
 
 	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

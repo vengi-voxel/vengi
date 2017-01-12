@@ -5,6 +5,8 @@
 #include "core/Log.h"
 #include "GLFunc.h"
 
+namespace video {
+
 class GLDebug {
 private:
 	static int _recompileErrors;
@@ -103,21 +105,17 @@ private:
 #endif
 
 public:
-	enum Severity {
-		High, Medium, Low,
-	};
-
-	static void enable(Severity s) {
+	static void enable(DebugSeverity s) {
 #if defined(GL_ARB_debug_output)
 		GLenum glSeverity = GL_DONT_CARE;
 		switch (s) {
-		case High:
+		case DebugSeverity::High:
 			glSeverity = GL_DEBUG_SEVERITY_HIGH_ARB;
 			break;
-		case Medium:
+		case DebugSeverity::Medium:
 			glSeverity = GL_DEBUG_SEVERITY_MEDIUM_ARB;
 			break;
-		case Low:
+		case DebugSeverity::Low:
 			glSeverity = GL_DEBUG_SEVERITY_LOW_ARB;
 			break;
 		}
@@ -152,3 +150,5 @@ public:
 
 bool GLDebug::_enabled = false;
 int GLDebug::_recompileErrors = 0;
+
+}

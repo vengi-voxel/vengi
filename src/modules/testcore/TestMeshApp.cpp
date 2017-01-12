@@ -123,8 +123,8 @@ void TestMeshApp::doRender() {
 
 	bool meshInitialized = false;
 	{
-		glClearColor(0.8, 0.8f, 0.8f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		video::clearColor(glm::vec4(0.8, 0.8f, 0.8f, 1.0f));
+		video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 
 		renderPlane();
 

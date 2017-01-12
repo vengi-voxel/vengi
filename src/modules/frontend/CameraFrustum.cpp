@@ -1,5 +1,5 @@
 #include "CameraFrustum.h"
-#include "video/GLFunc.h"
+#include "video/Renderer.h"
 
 namespace frontend {
 

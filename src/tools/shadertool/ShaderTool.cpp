@@ -7,7 +7,7 @@
 #include "core/Process.h"
 #include "core/GameConfig.h"
 #include "video/Shader.h"
-#include "video/GLVersion.h"
+#include "video/Version.h"
 
 const ShaderTool::Types ShaderTool::cTypes[] = {
 	{ ShaderTool::Variable::DOUBLE,          1, "double",       Value,     "double" },

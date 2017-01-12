@@ -7,7 +7,7 @@
 #include "core/App.h"
 #include "core/Common.h"
 #include "io/Filesystem.h"
-#include "GLVersion.h"
+#include "Version.h"
 #include "core/Var.h"
 #include "core/Singleton.h"
 #include "ShaderManager.h"

@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "GLFunc.h"
-#include "Types.h"
+#include "Renderer.h"
 
 namespace video {
 

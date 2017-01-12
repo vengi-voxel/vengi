@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "GLFunc.h"
-
 namespace video {
 
 struct GLVersion {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "GLFunc.h"
+#include "Renderer.h"
 #include "Texture.h"
 #include <glm/vec2.hpp>
 

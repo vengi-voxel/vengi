@@ -6,7 +6,7 @@
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
 #include "core/command/Command.h"
-#include "video/GLFunc.h"
+#include "video/Renderer.h"
 #include "ui/VoxEditWindow.h"
 
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
@@ -188,8 +188,7 @@ core::AppState VoxEdit::onInit() {
 
 	newFile(true);
 
-	const glm::vec4& color = ::core::Color::Black;
-	glClearColor(color.r, color.g, color.b, color.a);
+	video::clearColor(::core::Color::Black);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);

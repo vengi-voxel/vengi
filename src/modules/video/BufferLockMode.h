@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GLFunc.h"
+#include "Renderer.h"
 
 namespace video {
 

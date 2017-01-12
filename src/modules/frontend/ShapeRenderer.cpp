@@ -1,5 +1,5 @@
 #include "ShapeRenderer.h"
-#include "video/GLFunc.h"
+#include "video/Renderer.h"
 #include "video/Shader.h"
 #include "video/ScopedPolygonMode.h"
 

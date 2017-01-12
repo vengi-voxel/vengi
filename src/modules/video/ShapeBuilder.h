@@ -4,7 +4,7 @@
 #include "core/AABB.h"
 #include "core/Plane.h"
 #include "video/Camera.h"
-#include "video/GLFunc.h"
+#include "core/GLM.h"
 #include "core/Color.h"
 #include <stdint.h>
 #include <vector>
