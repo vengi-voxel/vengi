@@ -22,6 +22,7 @@ namespace frontend {
 
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
+// TODO: use octree for all the visibility/extraction stuff - this class should only render
 // TODO: merge buffers into one big buffer (and if max vertex/index size exceeds, render in chunks)
 //       all available buffers should be in there. we should just assemble a list of drawcall parameters
 //       for glMultiDrawElementsIndirect as shown at
@@ -596,9 +597,11 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	core_trace_scoped(WorldRendererOnSpawn);
 	_viewDistance = 1.0f;
+	// TODO: move into World class
 	extractMeshAroundCamera(_world->getMeshPos(pos), initialExtractionRadius);
 }
 
+// TODO: move into World class
 bool WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 	core_trace_scoped(WorldRendererExtractNewMeshes);
 	if (force) {
@@ -615,6 +618,7 @@ bool WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
 	return false;
 }
 
+// TODO: move into World class
 void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int radius) {
 	core_trace_scoped(WorldRendererExtractAroundCamera);
 	const int sideLength = radius * 2 + 1;
