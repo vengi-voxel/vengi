@@ -144,7 +144,6 @@ bool RawVolumeRenderer::extract() {
 		_vertexBuffer.update(_vertexBufferIndex, nullptr, 0);
 		_vertexBuffer.update(_indexBufferIndex, nullptr, 0);
 	} else {
-		const size_t meshNumberVertices = _mesh->getNoOfVertices();
 		if (!_vertexBuffer.update(_vertexBufferIndex, _mesh->getVertexVector())) {
 			Log::error("Failed to update the vertex buffer");
 			return false;
@@ -196,7 +195,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
 
-	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(uint32_t));
+	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(voxel::IndexType));
 	if (nIndices == 0) {
 		return;
 	}

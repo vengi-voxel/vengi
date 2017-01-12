@@ -64,6 +64,7 @@ private:
 
 	std::vector<Attribute> _attributes;
 	mutable GLuint _vao = 0u;
+	// TODO: must be per vbo - not per vao!
 	VertexBufferMode _mode = VertexBufferMode::Static;
 	mutable bool _dirtyAttributes = true;
 public:

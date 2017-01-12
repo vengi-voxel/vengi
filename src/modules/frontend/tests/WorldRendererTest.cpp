@@ -31,7 +31,7 @@ public:
 TEST_F(WorldRendererTest, testCreate) {
 	_world->setPersist(false);
 	ASSERT_TRUE(_renderer->extractNewMeshes(glm::ivec3(0), true));
-	voxel::ChunkMeshData mesh(0, 0, 0, 0);
+	voxel::ChunkMeshes mesh(0, 0, 0, 0);
 	int amount = 0;
 	while (!_world->pop(mesh)) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));

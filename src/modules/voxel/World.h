@@ -29,9 +29,9 @@
 
 namespace voxel {
 
-struct ChunkMeshData {
+struct ChunkMeshes {
 	static constexpr bool MAY_GET_RESIZED = true;
-	ChunkMeshData(int opaqueVertices, int opaqueIndices, int waterVertices, int waterIndices) :
+	ChunkMeshes(int opaqueVertices, int opaqueIndices, int waterVertices, int waterIndices) :
 			opaqueMesh(opaqueVertices, opaqueIndices, MAY_GET_RESIZED), waterMesh(waterVertices, waterIndices, MAY_GET_RESIZED) {
 	}
 
@@ -144,7 +144,7 @@ public:
 	/**
 	 * @brief We need to pop the mesh extractor queue to find out if there are new and ready to use meshes for us
 	 */
-	inline bool pop(ChunkMeshData& item) {
+	inline bool pop(ChunkMeshes& item) {
 		if (_meshQueueEmpty) {
 			return false;
 		}
@@ -239,7 +239,7 @@ private:
 	core::ThreadPool _threadPool;
 	mutable std::mutex _rwLock;
 	typedef std::lock_guard<std::mutex> LockGuard;
-	std::deque<ChunkMeshData> _meshQueue;
+	std::deque<ChunkMeshes> _meshQueue;
 	std::atomic_bool _meshQueueEmpty { true };
 	// fast lookup for positions that are already extracted and available in the _meshData vector
 	PositionSet _meshesExtracted;

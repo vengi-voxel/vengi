@@ -8,7 +8,6 @@ set(SRCS
 	GBuffer.cpp GBuffer.h
 	Shader.cpp Shader.h
 	Camera.cpp Camera.h
-	GLMeshData.h
 	GLDebug.h
 	BufferLockMode.h
 	DepthBuffer.cpp DepthBuffer.h

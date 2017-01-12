@@ -14,7 +14,6 @@
 #include "video/GBuffer.h"
 #include "video/DepthBuffer.h"
 #include "FrontendShaders.h"
-#include "video/GLMeshData.h"
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/Color.h"
@@ -33,26 +32,45 @@ namespace frontend {
 class WorldRenderer {
 protected:
 	struct ChunkBuffer {
-		bool inuse = true;
+		bool inuse = false;
 		core::AABB<float> aabb = {glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
-		voxel::ChunkMeshData voxelMeshes {0, 0, 0, 0};
-		video::GLMeshData opaque;
-		video::GLMeshData water;
+		voxel::ChunkMeshes meshes {0, 0, 0, 0};
+		struct VBO {
+			~VBO() {
+				shutdown();
+			}
+			void shutdown() {
+				vb.shutdown();
+			}
+			uint32_t offsetBuffer = 0u;
+			uint32_t indexBuffer = 0u;
+			uint32_t vertexBuffer = 0u;
+			uint32_t amount = 1u;
+			glm::mat4 model;
+			std::vector<glm::vec3> instancedPositions;
+			video::VertexBuffer vb;
+		};
+		VBO opaque;
+		VBO water;
 
-		inline const glm::ivec3 translation() const {
-			return voxelMeshes.opaqueMesh.getOffset();
+		inline bool isActive() const {
+			return opaque.vertexBuffer != 0;
+		}
+
+		inline const glm::ivec3& translation() const {
+			return meshes.opaqueMesh.getOffset();
 		}
 	};
-	typedef std::list<video::GLMeshData> RendererMeshList;
-	typedef std::list<video::GLMeshData*> RendererMeshVisibleList;
-	typedef std::list<ChunkBuffer> ChunkBufferList;
+	typedef std::list<ChunkBuffer::VBO*> VisibleVBOs;
 
-	ChunkBufferList _chunkBuffers;
-	RendererMeshList _meshPlantList;
+	static constexpr int MAX_CHUNKBUFFERS = 128;
+	ChunkBuffer _chunkBuffers[MAX_CHUNKBUFFERS];
+	int _activeChunkBuffers = 0;
+	ChunkBuffer::VBO _meshPlantList[(int)voxel::PlantType::MaxPlantTypes];
 
-	RendererMeshVisibleList _visible;
-	RendererMeshVisibleList _visiblePlant;
-	RendererMeshVisibleList _visibleWater;
+	VisibleVBOs _visible;
+	VisibleVBOs _visiblePlant;
+	VisibleVBOs _visibleWater;
 
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
@@ -79,15 +97,7 @@ protected:
 	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapDebug;
 
-	int32_t _worldIndexBufferIndex = -1;
-	int32_t _worldBufferIndex = -1;
-	int32_t _worldInstancedIndexBufferIndex = -1;
-	int32_t _worldInstancedBufferIndex = -1;
-	int32_t _worldInstancedOffsetBufferIndex = -1;
-
 	video::VertexBuffer _shadowMapDebugBuffer;
-	video::VertexBuffer _worldBuffer;
-	video::VertexBuffer _worldInstancedBuffer;
 	video::DepthBuffer _depthBuffer;
 
 	shader::Materialblock _materialBlock;
@@ -102,12 +112,12 @@ protected:
 	/**
 	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	 */
-	bool createVertexBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, int buffers, video::GLMeshData& meshData);
-	bool createVertexBuffer(const voxel::ChunkMeshData &mesh, ChunkBuffer& meshData);
-	bool createInstancedVertexBuffer(const voxel::Mesh &mesh, int amount, video::GLMeshData& meshData);
-	void updateVertexBuffer(const voxel::Mesh& surfaceMesh, video::GLMeshData& meshData) const;
+	bool createVertexBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, ChunkBuffer::VBO& vbo);
+	bool createVertexBuffer(const voxel::ChunkMeshes &mesh, ChunkBuffer& chunkBuffer);
+	bool createInstancedVertexBuffer(const voxel::Mesh &mesh, int amount, ChunkBuffer::VBO& vbo);
+	void updateVertexBuffer(const voxel::Mesh& surfaceMesh, ChunkBuffer::VBO& vbo) const;
 	void handleMeshQueue();
-	void updateAABB(ChunkBuffer& meshData) const;
+	void updateAABB(ChunkBuffer& chunkBuffer) const;
 	/**
 	 * @brief Redistribute the plants on the meshes that are already extracted
 	 */
@@ -120,8 +130,8 @@ protected:
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
 	void cull(const video::Camera& camera);
-	int renderWorldMeshes(video::Shader& shader, const RendererMeshVisibleList& meshes, int* vertices);
-
+	int renderWorldMeshes(video::Shader& shader, const VisibleVBOs& vbos, int* vertices);
+	ChunkBuffer* findFreeChunkBuffer();
 	bool checkShaders() const;
 
 public:

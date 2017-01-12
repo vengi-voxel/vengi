@@ -47,7 +47,6 @@ inline video::VertexBuffer::Attribute getOffsetVertexAttribute(uint32_t bufferIn
 	voxelAttributeOffsets.size = components;
 	voxelAttributeOffsets.type = GLmap<glm::vec3::value_type>();
 	voxelAttributeOffsets.divisor = 1;
-	voxelAttributeOffsets.typeIsInt = true;
 	voxelAttributeOffsets.offset = offsetof(glm::vec3, x);
 	return voxelAttributeOffsets;
 }

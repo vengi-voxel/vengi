@@ -8,7 +8,6 @@
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "VertexBuffer.h"
-#include "video/GLMeshData.h"
 #include "core/Vertex.h"
 #include <vector>
 #include <assimp/Importer.hpp>
@@ -25,6 +24,14 @@ public:
 	typedef std::vector<uint32_t> Indices;
 
 private:
+	struct GLMeshData {
+		GLuint noOfIndices = 0u;
+		GLuint noOfVertices = 0u;
+		GLuint baseVertex = 0u;
+		GLuint baseIndex = 0u;
+		GLuint materialIndex = 0u;
+	};
+
 	struct BoneInfo {
 		glm::mat4 boneOffset;
 		glm::mat4 finalTransformation;
