@@ -30,20 +30,6 @@ enum class BufferLockMode {
 	Max
 };
 
-enum class CompareFunc {
-	Never = GL_NEVER,
-	Less = GL_LESS,
-	Equal = GL_EQUAL,
-	// Accept fragment if it closer to the camera than the former one
-	LessEqual = GL_LEQUAL,
-	Greater = GL_GREATER,
-	NotEqual = GL_NOTEQUAL,
-	GreatorEqual = GL_GEQUAL,
-	Always = GL_ALWAYS,
-
-	Max
-};
-
 enum class Face {
 	Front = GL_FRONT,
 	Back = GL_BACK,

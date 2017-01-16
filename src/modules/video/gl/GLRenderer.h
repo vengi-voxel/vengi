@@ -141,6 +141,18 @@ namespace _priv {
 		GL_ONE_MINUS_DST_COLOR
 	};
 	static_assert(std::enum_value(BlendMode::Max) == (int)SDL_arraysize(BlendModes), "Array sizes don't match Max");
+
+	static GLenum CompareFuncs[] {
+		GL_NEVER,
+		GL_LESS,
+		GL_EQUAL,
+		GL_LEQUAL,
+		GL_GREATER,
+		GL_NOTEQUAL,
+		GL_GEQUAL,
+		GL_ALWAYS
+	};
+	static_assert(std::enum_value(CompareFunc::Max) == (int)SDL_arraysize(CompareFuncs), "Array sizes don't match Max");
 }
 
 inline bool clearColor(const glm::vec4& clearColor) {
@@ -238,7 +250,7 @@ inline bool depthFunc(CompareFunc func) {
 	if (_priv::s.depthFunc == func) {
 		return false;
 	}
-	glDepthFunc(std::enum_value(func));
+	glDepthFunc(_priv::CompareFuncs[std::enum_value(func)]);
 	_priv::s.depthFunc = func;
 	return true;
 }

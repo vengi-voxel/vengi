@@ -19,6 +19,20 @@ enum class TextureWrap {
 	Max
 };
 
+enum class CompareFunc {
+	Never,
+	Less,
+	Equal,
+	// Accept fragment if it closer to the camera than the former one
+	LessEqual,
+	Greater,
+	NotEqual,
+	GreatorEqual,
+	Always,
+
+	Max
+};
+
 enum class BlendMode {
 	Zero,
 	One,
