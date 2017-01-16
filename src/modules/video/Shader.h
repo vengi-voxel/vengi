@@ -288,6 +288,7 @@ public:
 	bool hasAttribute(const std::string& name) const;
 	bool hasUniform(const std::string& name) const;
 	bool isUniformBlock(const std::string& name) const;
+	bool setDivisor(int location, uint32_t divisor) const;
 };
 
 inline void Shader::setUniformi(const std::string& name, int value) const {
@@ -723,6 +724,14 @@ inline bool Shader::isUniformBlock(const std::string& name) const {
 		return false;
 	}
 	return i->second.block;
+}
+
+inline bool Shader::setDivisor(int location, uint32_t divisor) const {
+	if (location == -1) {
+		return false;
+	}
+	glVertexAttribDivisor((GLuint)location, (GLuint)divisor);
+	return true;
 }
 
 inline bool Shader::isActive() const {
