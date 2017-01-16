@@ -4,6 +4,22 @@
 
 namespace video {
 
+enum class State {
+	DepthMask,
+	DepthTest,
+	// Cull triangles whose normal is not towards the camera
+	CullFace,
+	Blend,
+	PolygonOffsetFill,
+	PolygonOffsetPoint,
+	PolygonOffsetLine,
+	Scissor,
+	MultiSample,
+	LineSmooth,
+
+	Max
+};
+
 enum class VertexBufferType {
 	ArrayBuffer,
 	IndexBuffer,

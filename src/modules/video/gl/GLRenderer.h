@@ -58,6 +58,7 @@ namespace _priv {
 		int scissorY = 0;
 		int scissorW = 0;
 		int scissorH = 0;
+		bool states[std::enum_value(State::Max)] = {};
 	};
 	static GLState s;
 
@@ -88,6 +89,20 @@ namespace _priv {
 		GL_UNIFORM_BUFFER
 	};
 	static_assert(std::enum_value(VertexBufferType::Max) == (int)SDL_arraysize(VertexBufferTypes), "Array sizes don't match Max");
+
+	static GLenum States[] {
+		0,
+		GL_DEPTH_TEST,
+		GL_CULL_FACE,
+		GL_BLEND,
+		GL_POLYGON_OFFSET_FILL,
+		GL_POLYGON_OFFSET_POINT,
+		GL_POLYGON_OFFSET_LINE,
+		GL_SCISSOR_TEST,
+		GL_MULTISAMPLE,
+		GL_LINE_SMOOTH
+	};
+	static_assert(std::enum_value(State::Max) == (int)SDL_arraysize(States), "Array sizes don't match Max");
 }
 
 inline bool clearColor(const glm::vec4& clearColor) {
@@ -144,7 +159,12 @@ inline bool enable(State state) {
 		return true;
 	}
 
-	glEnable(std::enum_value(state));
+	const int stateIndex = std::enum_value(state);
+	if (_priv::s.states[stateIndex]) {
+		return false;
+	}
+	_priv::s.states[stateIndex] = true;
+	glEnable(_priv::States[stateIndex]);
 	return true;
 }
 
@@ -158,7 +178,12 @@ inline bool disable(State state) {
 		return true;
 	}
 
-	glDisable(std::enum_value(state));
+	const int stateIndex = std::enum_value(state);
+	if (!_priv::s.states[stateIndex]) {
+		return false;
+	}
+	_priv::s.states[stateIndex] = false;
+	glDisable(_priv::States[stateIndex]);
 	return true;
 }
 

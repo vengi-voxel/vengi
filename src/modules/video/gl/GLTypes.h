@@ -45,22 +45,6 @@ enum class BufferLockMode {
 	Max
 };
 
-enum class State {
-	DepthMask = 0,
-	DepthTest = GL_DEPTH_TEST,
-	// Cull triangles whose normal is not towards the camera
-	CullFace = GL_CULL_FACE,
-	Blend = GL_BLEND,
-	PolygonOffsetFill = GL_POLYGON_OFFSET_FILL,
-	PolygonOffsetPoint = GL_POLYGON_OFFSET_POINT,
-	PolygonOffsetLine = GL_POLYGON_OFFSET_LINE,
-	Scissor = GL_SCISSOR_TEST,
-	MultiSample = GL_MULTISAMPLE,
-	LineSmooth = GL_LINE_SMOOTH,
-
-	Max
-};
-
 enum class CompareFunc {
 	Never = GL_NEVER,
 	Less = GL_LESS,
