@@ -8,7 +8,7 @@
 
 namespace video {
 
-VertexBuffer::VertexBuffer(const void* data, GLsizeiptr size, VertexBufferType target) {
+VertexBuffer::VertexBuffer(const void* data, size_t size, VertexBufferType target) {
 	create(data, size, target);
 }
 
@@ -85,16 +85,16 @@ void VertexBuffer::unbind() const {
 	}
 }
 
-bool VertexBuffer::update(int32_t idx, const void* data, GLsizeiptr size) {
+bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 	if (!isValid(idx)) {
 		return false;
 	}
 
 	glBindBuffer(_targets[idx], _handles[idx]);
 	if (_size[idx] >= size && _mode == VertexBufferMode::Dynamic) {
-		glBufferSubData(_targets[idx], 0, size, data);
+		glBufferSubData(_targets[idx], 0, (GLsizeiptr)size, data);
 	} else {
-		glBufferData(_targets[idx], size, data, std::enum_value(_mode));
+		glBufferData(_targets[idx], (GLsizeiptr)size, data, std::enum_value(_mode));
 	}
 	glBindBuffer(_targets[idx], 0);
 	_size[idx] = size;
@@ -103,7 +103,7 @@ bool VertexBuffer::update(int32_t idx, const void* data, GLsizeiptr size) {
 	return true;
 }
 
-int32_t VertexBuffer::create(const void* data, GLsizeiptr size, VertexBufferType target) {
+int32_t VertexBuffer::create(const void* data, size_t size, VertexBufferType target) {
 	// we already have a buffer
 	if (_handleIdx >= (int)SDL_arraysize(_handles)) {
 		return -1;
@@ -116,7 +116,7 @@ int32_t VertexBuffer::create(const void* data, GLsizeiptr size, VertexBufferType
 	_size[_handleIdx] = size;
 	if (data != nullptr) {
 		glBindBuffer(_targets[_handleIdx], _handles[_handleIdx]);
-		glBufferData(_targets[_handleIdx], size, data, std::enum_value(_mode));
+		glBufferData(_targets[_handleIdx], (GLsizeiptr)size, data, std::enum_value(_mode));
 		glBindBuffer(_targets[_handleIdx], 0);
 	}
 	++_handleIdx;

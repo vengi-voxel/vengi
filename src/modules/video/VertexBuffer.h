@@ -58,10 +58,10 @@ public:
 	};
 private:
 	static constexpr int MAX_HANDLES = 6;
-	GLuint _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
-	GLuint _handles[MAX_HANDLES] = {GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE};
-	GLenum _targets[MAX_HANDLES] = {GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE, GL_INVALID_VALUE};
-	GLuint _handleIdx = 0;
+	size_t _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
+	Id _handles[MAX_HANDLES] = {InvalidId, InvalidId, InvalidId, InvalidId, InvalidId, InvalidId};
+	int32_t _targets[MAX_HANDLES] = {0, 0, 0, 0, 0, 0};
+	uint32_t _handleIdx = 0;
 
 	std::vector<Attribute> _attributes;
 	mutable Id _vao = InvalidId;
@@ -73,7 +73,7 @@ public:
 	 * @brief Ctor that also creates buffer handle.
 	 * @note Keep in mind that you need a valid context for this constructor.
 	 */
-	VertexBuffer(const void* data, GLsizeiptr size, VertexBufferType target = VertexBufferType::ArrayBuffer);
+	VertexBuffer(const void* data, size_t size, VertexBufferType target = VertexBufferType::ArrayBuffer);
 	/**
 	 * @brief Ctor that doesn't create the underlying buffer
 	 * @note This ctor can be used to put this as members to other classes.
@@ -97,14 +97,14 @@ public:
 		return update(idx, dataPtr, core::vectorSize(data));
 	}
 
-	bool update(int32_t idx, const void* data, GLsizeiptr size);
+	bool update(int32_t idx, const void* data, size_t size);
 
 	template<class T>
 	inline int32_t create(const std::vector<T>& data, VertexBufferType target = VertexBufferType::ArrayBuffer) {
 		return create(&data.front(), core::vectorSize(data), target);
 	}
 
-	int32_t create(const void* data = nullptr, GLsizeiptr size = 0, VertexBufferType target = VertexBufferType::ArrayBuffer);
+	int32_t create(const void* data = nullptr, size_t size = 0, VertexBufferType target = VertexBufferType::ArrayBuffer);
 	/**
 	 * @brief Fullscreen buffer with normalized device coordinates with 3 float components
 	 */
@@ -129,8 +129,8 @@ public:
 	 */
 	bool bind() const;
 	void unbind() const;
-	GLuint size(int32_t idx) const;
-	GLuint elements(int32_t idx, int components = 3, size_t componentSize = sizeof(float)) const;
+	uint32_t size(int32_t idx) const;
+	uint32_t elements(int32_t idx, int components = 3, size_t componentSize = sizeof(float)) const;
 	/**
 	 * @param[in] idx The buffer index returned by create()
 	 * @return @c true if the index is valid and the buffer for the given index is valid
@@ -150,15 +150,15 @@ inline bool VertexBuffer::isValid(int32_t idx) const {
 	if (idx >= (int)SDL_arraysize(_handles)) {
 		return false;
 	}
-	return _handles[idx] != GL_INVALID_VALUE && _handles[idx] > 0;
+	return _handles[idx] != InvalidId && _handles[idx] > 0;
 }
 
-inline GLuint VertexBuffer::size(int32_t idx) const {
+inline uint32_t VertexBuffer::size(int32_t idx) const {
 	core_assert(idx >= 0 && idx < (int)SDL_arraysize(_size));
 	return _size[idx];
 }
 
-inline GLuint VertexBuffer::elements(int32_t idx, int components, size_t componentSize) const {
+inline uint32_t VertexBuffer::elements(int32_t idx, int components, size_t componentSize) const {
 	return size(idx) / (components * componentSize);
 }
 
