@@ -10,14 +10,6 @@
 
 namespace video {
 
-enum class DepthBufferMode {
-	// stores -1..1 window-space depth values
-	RGBA,
-	// stores 0..1 window-space depth values
-	DEPTH,
-	DEPTH_CMP
-};
-
 class DepthBuffer {
 public:
 	DepthBuffer();

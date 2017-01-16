@@ -13,12 +13,6 @@
 
 namespace video {
 
-enum class TextureFormat {
-	RGBA,
-	RGB,
-	D24S8
-};
-
 class Texture: public io::IOResource {
 private:
 	std::string _name;
