@@ -22,7 +22,7 @@ public:
 
 	bool Init(int width, int height, uint32 *data);
 
-	bool Init(int width, int height, GLuint texture);
+	bool Init(int width, int height, video::Id texture);
 
 	void bind();
 
@@ -39,7 +39,7 @@ public:
 	static GLuint g_current_texture;
 	UIRendererGL *_renderer;
 	int _w, _h;
-	GLuint _texture;
+	video::Id _texture;
 	bool _destroy = true;
 };
 

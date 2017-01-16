@@ -38,7 +38,7 @@ void UIBitmapGL::bind() {
 	}
 }
 
-bool UIBitmapGL::Init(int width, int height, GLuint texture) {
+bool UIBitmapGL::Init(int width, int height, video::Id texture) {
 	_w = width;
 	_h = height;
 	_texture = texture;
