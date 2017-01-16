@@ -22,17 +22,9 @@ DepthBuffer::~DepthBuffer() {
 }
 
 void DepthBuffer::shutdown() {
-	if (_fbo != InvalidId) {
-		glDeleteFramebuffers(1, &_fbo);
-		_fbo = InvalidId;
-	}
-
+	video::deleteFramebuffer(_fbo);
 	_depthTexture.shutdown();
-
-	if (_rbo != InvalidId) {
-		glDeleteRenderbuffers(1, &_rbo);
-		_rbo = InvalidId;
-	}
+	video::deleteRenderbuffer(_rbo);
 }
 
 bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int textureCount) {
