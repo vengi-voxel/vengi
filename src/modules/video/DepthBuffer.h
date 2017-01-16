@@ -43,6 +43,7 @@ public:
 	}
 private:
 	int _oldViewport[4] = {0, 0, 0, 0};
+	Id _oldFramebuffer = video::InvalidId;
 	Id _fbo = video::InvalidId;
 	Id _rbo = video::InvalidId;
 	Texture _depthTexture;

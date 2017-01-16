@@ -25,6 +25,7 @@ void DepthBuffer::shutdown() {
 	video::deleteFramebuffer(_fbo);
 	_depthTexture.shutdown();
 	video::deleteRenderbuffer(_rbo);
+	core_assert(_oldFramebuffer == video::InvalidId);
 }
 
 bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int textureCount) {
@@ -63,7 +64,7 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 
 bool DepthBuffer::bind() {
 	video::getViewport(_oldViewport[0], _oldViewport[1], _oldViewport[2], _oldViewport[3]);
-	video::bindFramebuffer(video::FrameBufferMode::Default, _fbo);
+	_oldFramebuffer = video::bindFramebuffer(video::FrameBufferMode::Default, _fbo);
 	video::viewport(0, 0, _depthTexture.width(), _depthTexture.height());
 	return true;
 }
@@ -112,7 +113,8 @@ bool DepthBuffer::bindTexture(int textureIndex) {
 
 void DepthBuffer::unbind() {
 	video::viewport(_oldViewport[0], _oldViewport[1], _oldViewport[2], _oldViewport[3]);
-	video::bindFramebuffer(video::FrameBufferMode::Default, InvalidId);
+	video::bindFramebuffer(video::FrameBufferMode::Default, _oldFramebuffer);
+	_oldFramebuffer = video::InvalidId;
 }
 
 }
