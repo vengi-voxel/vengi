@@ -19,10 +19,7 @@ Cubemap::~Cubemap() {
 }
 
 void Cubemap::shutdown() {
-	if (_textureHandle != 0) {
-		glDeleteTextures(1, &_textureHandle);
-		_textureHandle = 0u;
-	}
+	video::deleteTexture(_textureHandle);
 }
 
 bool Cubemap::load() {
@@ -59,7 +56,7 @@ void Cubemap::bind(video::TextureUnit texUnit) {
 }
 
 void Cubemap::unbind(video::TextureUnit texUnit) {
-	//video::bindTexture(texUnit, video::TextureType::TextureCube, video::InvalidId);
+	video::bindTexture(texUnit, video::TextureType::TextureCube, video::InvalidId);
 }
 
 }
