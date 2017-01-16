@@ -18,6 +18,8 @@ namespace _priv {
 		PolygonMode polygonMode = PolygonMode::Max;
 		BlendMode blendSrc = BlendMode::Max;
 		BlendMode blendDest = BlendMode::Max;
+		TextureUnit textureUnit = TextureUnit::Max;
+		Id textureHandle = 0;
 	};
 	static GLState s;
 }
@@ -105,6 +107,18 @@ inline bool polygonOffset(const glm::vec2& offset) {
 	}
 	glPolygonOffset(offset.x, offset.y);
 	_priv::s.polygonOffset = offset;
+	return true;
+}
+
+inline bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
+	if (_priv::s.textureUnit != unit) {
+		glActiveTexture(std::enum_value(unit));
+		_priv::s.textureUnit = unit;
+	}
+	if (_priv::s.textureHandle != handle) {
+		_priv::s.textureHandle = handle;
+		glBindTexture(std::enum_value(type), handle);
+	}
 	return true;
 }
 
