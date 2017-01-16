@@ -19,6 +19,22 @@ enum class TextureWrap {
 	Max
 };
 
+enum class Face {
+	Front,
+	Back,
+	FrontAndBack,
+
+	Max
+};
+
+enum class PolygonMode {
+	Points,
+	WireFrame,
+	Solid,
+
+	Max
+};
+
 enum class CompareFunc {
 	Never,
 	Less,
@@ -107,7 +123,9 @@ enum class ShaderType {
 enum class TextureFormat {
 	RGBA,
 	RGB,
-	D24S8
+	D24S8,
+
+	Max
 };
 
 enum class Limit {

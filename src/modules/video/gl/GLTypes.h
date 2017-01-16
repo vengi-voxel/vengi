@@ -30,14 +30,6 @@ enum class BufferLockMode {
 	Max
 };
 
-enum class Face {
-	Front = GL_FRONT,
-	Back = GL_BACK,
-	FrontAndBack = GL_FRONT_AND_BACK,
-
-	Max
-};
-
 enum class ClearFlag : GLbitfield {
 	Color = GL_COLOR_BUFFER_BIT,
 	Depth = GL_DEPTH_BUFFER_BIT,
@@ -50,14 +42,6 @@ enum class Primitive {
 	Points = GL_POINTS,
 	Lines = GL_LINES,
 	Triangles = GL_TRIANGLES,
-
-	Max
-};
-
-enum class PolygonMode {
-	Points = GL_POINT,
-	WireFrame = GL_LINE,
-	Solid = GL_FILL,
 
 	Max
 };

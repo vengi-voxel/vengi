@@ -72,6 +72,7 @@ namespace _priv {
 		{24, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE},
 		{32, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8}
 	};
+	static_assert(std::enum_value(TextureFormat::Max) == (int)SDL_arraysize(textureFormats), "Array sizes don't match Max");
 
 	static GLenum ShaderTypes[] {
 		GL_VERTEX_SHADER,
@@ -153,6 +154,20 @@ namespace _priv {
 		GL_ALWAYS
 	};
 	static_assert(std::enum_value(CompareFunc::Max) == (int)SDL_arraysize(CompareFuncs), "Array sizes don't match Max");
+
+	static GLenum PolygonModes[] {
+		GL_POINT,
+		GL_LINE,
+		GL_FILL
+	};
+	static_assert(std::enum_value(PolygonMode::Max) == (int)SDL_arraysize(PolygonModes), "Array sizes don't match Max");
+
+	static GLenum Faces[] {
+		GL_FRONT,
+		GL_BACK,
+		GL_FRONT_AND_BACK
+	};
+	static_assert(std::enum_value(Face::Max) == (int)SDL_arraysize(Faces), "Array sizes don't match Max");
 }
 
 inline bool clearColor(const glm::vec4& clearColor) {
@@ -241,7 +256,8 @@ inline bool cullFace(Face face) {
 	if (_priv::s.cullFace == face) {
 		return false;
 	}
-	glCullFace(std::enum_value(face));
+	const GLenum glFace = _priv::Faces[std::enum_value(face)];
+	glCullFace(glFace);
 	_priv::s.cullFace = face;
 	return true;
 }
@@ -273,7 +289,9 @@ inline bool polygonMode(Face face, PolygonMode mode) {
 	}
 	_priv::s.polygonModeFace = face;
 	_priv::s.polygonMode = mode;
-	glPolygonMode(std::enum_value(face), std::enum_value(mode));
+	const GLenum glMode = _priv::PolygonModes[std::enum_value(mode)];
+	const GLenum glFace = _priv::Faces[std::enum_value(face)];
+	glPolygonMode(glFace, glMode);
 	return true;
 }
 
@@ -320,7 +338,8 @@ inline bool bindVertexArray(Id handle) {
 }
 
 inline bool bindBuffer(VertexBufferType type, Id handle) {
-	glBindBuffer(_priv::VertexBufferTypes[std::enum_value(type)], handle);
+	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
+	glBindBuffer(glType, handle);
 	return true;
 }
 
@@ -370,7 +389,8 @@ inline void deleteShader(Id& id) {
 }
 
 inline Id genShader(ShaderType type) {
-	return glCreateShader(_priv::ShaderTypes[std::enum_value(type)]);
+	const GLenum glType = _priv::ShaderTypes[std::enum_value(type)];
+	return glCreateShader(glType);
 }
 
 inline void deleteProgram(Id& id) {
