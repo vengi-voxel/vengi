@@ -9,6 +9,17 @@ namespace video {
 using Id = GLuint;
 constexpr Id InvalidId = (Id)0;
 
+enum class TextureType {
+	Texture2D = GL_TEXTURE_2D,
+	Texture2DArray = GL_TEXTURE_2D_ARRAY,
+	TextureCube = GL_TEXTURE_CUBE_MAP
+};
+
+enum class TextureWrap {
+	ClampToEdge = GL_CLAMP_TO_EDGE,
+	Repeat = GL_REPEAT
+};
+
 enum class BufferLockMode {
 	Normal = GL_MAP_WRITE_BIT,
 	Discard = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT,

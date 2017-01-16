@@ -13,20 +13,10 @@
 
 namespace video {
 
-enum class TextureType {
-	Texture2D = GL_TEXTURE_2D,
-	Texture2DArray = GL_TEXTURE_2D_ARRAY
-};
-
 enum class TextureFormat {
 	RGBA,
 	RGB,
 	D24S8
-};
-
-enum class TextureWrap {
-	ClampToEdge = GL_CLAMP_TO_EDGE,
-	Repeat = GL_REPEAT
 };
 
 class Texture: public io::IOResource {
