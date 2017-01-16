@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GLFunc.h"
-#include "core/Common.h"
 #include <cstdint>
 
 namespace video {
