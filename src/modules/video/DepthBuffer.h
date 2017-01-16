@@ -42,7 +42,7 @@ public:
 		return _mode == DepthBufferMode::DEPTH_CMP;
 	}
 private:
-	GLint _oldViewport[4] = {0, 0, 0, 0};
+	int _oldViewport[4] = {0, 0, 0, 0};
 	Id _fbo = video::InvalidId;
 	Id _rbo = video::InvalidId;
 	Texture _depthTexture;

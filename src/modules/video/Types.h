@@ -52,6 +52,7 @@ enum class Feature {
 
 }
 
+// TODO: make private
 #include "gl/GLTypes.h"
 
 namespace video {

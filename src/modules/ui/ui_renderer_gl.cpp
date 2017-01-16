@@ -150,8 +150,8 @@ void UIRendererGL::BeginPaint(int, int) {
 	_shader.setProjection(_camera.projectionMatrix());
 	_shader.setTexture(video::TextureUnit::Zero);
 
-	glViewport(0, 0, renderTargetW, renderTargetH);
-	glScissor(0, 0, renderTargetW, renderTargetH);
+	video::viewport(0, 0, renderTargetW, renderTargetH);
+	video::scissor(0, 0, renderTargetW, renderTargetH);
 
 	video::enable(video::State::Blend);
 	video::disable(video::State::DepthTest);
@@ -167,8 +167,9 @@ void UIRendererGL::EndPaint() {
 	_shader.deactivate();
 
 #ifdef TB_RUNTIME_DEBUG_INFO
-	if (TB_DEBUG_SETTING(RENDER_BATCHES))
+	if (TB_DEBUG_SETTING(RENDER_BATCHES)) {
 		TBDebugPrint("Frame caused %d bitmap validations.\n", dbg_bitmap_validations);
+	}
 #endif
 }
 
@@ -196,7 +197,7 @@ void UIRendererGL::RenderBatch(Batch *batch) {
 }
 
 void UIRendererGL::SetClipRect(const TBRect &rect) {
-	glScissor(m_clip_rect.x, m_screen_rect.h - (m_clip_rect.y + m_clip_rect.h), m_clip_rect.w, m_clip_rect.h);
+	video::scissor(m_clip_rect.x, m_screen_rect.h - (m_clip_rect.y + m_clip_rect.h), m_clip_rect.w, m_clip_rect.h);
 	video::checkError();
 }
 

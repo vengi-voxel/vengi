@@ -50,6 +50,14 @@ namespace _priv {
 		BlendMode blendDest = BlendMode::Max;
 		TextureUnit textureUnit = TextureUnit::Max;
 		Id textureHandle = InvalidId;
+		int viewportX = 0;
+		int viewportY = 0;
+		int viewportW = 0;
+		int viewportH = 0;
+		int scissorX = 0;
+		int scissorY = 0;
+		int scissorW = 0;
+		int scissorH = 0;
 	};
 	static GLState s;
 }
@@ -67,6 +75,37 @@ inline void clear(ClearFlag flag) {
 	glClear(std::enum_value(flag));
 }
 
+inline bool viewport(int x, int y, int w, int h) {
+	if (_priv::s.viewportX == x && _priv::s.viewportY == y && _priv::s.viewportW == w && _priv::s.viewportH == h) {
+		return false;
+	}
+	_priv::s.viewportX = x;
+	_priv::s.viewportY = y;
+	_priv::s.viewportW = w;
+	_priv::s.viewportH = h;
+	glViewport((GLint)x, (GLint)y, (GLsizei)w, (GLsizei)h);
+	return true;
+}
+
+inline void getViewport(int& x, int& y, int& w, int& h) {
+	x = _priv::s.viewportX;
+	y = _priv::s.viewportY;
+	w = _priv::s.viewportW;
+	h = _priv::s.viewportH;
+}
+
+inline bool scissor(int x, int y, int w, int h) {
+	if (_priv::s.scissorX == x && _priv::s.scissorY == y && _priv::s.scissorW == w && _priv::s.scissorH == h) {
+		return false;
+	}
+	_priv::s.scissorX = x;
+	_priv::s.scissorY = y;
+	_priv::s.scissorW = w;
+	_priv::s.scissorH = h;
+	glScissor((GLint)x, (GLint)y, (GLsizei)w, (GLsizei)h);
+	return true;
+}
+
 inline bool enable(State state) {
 	if (state == State::DepthMask) {
 		if (_priv::s.depthMask) {
@@ -74,9 +113,10 @@ inline bool enable(State state) {
 		}
 		glDepthMask(GL_TRUE);
 		_priv::s.depthMask = true;
-	} else {
-		glEnable(std::enum_value(state));
+		return true;
 	}
+
+	glEnable(std::enum_value(state));
 	return true;
 }
 
@@ -87,9 +127,10 @@ inline bool disable(State state) {
 		}
 		glDepthMask(GL_FALSE);
 		_priv::s.depthMask = false;
-	} else {
-		glDisable(std::enum_value(state));
+		return true;
 	}
+
+	glDisable(std::enum_value(state));
 	return true;
 }
 

@@ -86,7 +86,7 @@ void GBuffer::bindForWriting() {
 		video::checkError();
 	}
 
-	video::bindFrameBuffer(FrameBufferMode::Draw, _fbo);
+	video::bindFramebuffer(FrameBufferMode::Draw, _fbo);
 }
 
 void GBuffer::bindForReading(bool gbuffer) {
@@ -95,7 +95,7 @@ void GBuffer::bindForReading(bool gbuffer) {
 			glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, (GLint*)&_oldReadFramebuffer);
 			video::checkError();
 		}
-		bindFrameBuffer(FrameBufferMode::Read, _fbo);
+		bindFramebuffer(FrameBufferMode::Read, _fbo);
 		return;
 	}
 
@@ -103,7 +103,7 @@ void GBuffer::bindForReading(bool gbuffer) {
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint*)&_oldDrawFramebuffer);
 		video::checkError();
 	}
-	bindFrameBuffer(FrameBufferMode::Draw, InvalidId);
+	bindFramebuffer(FrameBufferMode::Draw, InvalidId);
 
 	// activate the textures to read from
 	const video::TextureUnit texUnits[] = { TextureUnit::One, TextureUnit::Two, TextureUnit::Three };
@@ -116,11 +116,11 @@ void GBuffer::bindForReading(bool gbuffer) {
 
 void GBuffer::unbind() {
 	if (_oldDrawFramebuffer != InvalidId) {
-		bindFrameBuffer(FrameBufferMode::Draw, (Id)_oldDrawFramebuffer);
+		bindFramebuffer(FrameBufferMode::Draw, (Id)_oldDrawFramebuffer);
 		_oldDrawFramebuffer = InvalidId;
 	}
 	if (_oldReadFramebuffer != InvalidId) {
-		bindFrameBuffer(FrameBufferMode::Read, (Id)_oldReadFramebuffer);
+		bindFramebuffer(FrameBufferMode::Draw, (Id)_oldDrawFramebuffer);
 		_oldReadFramebuffer = InvalidId;
 	}
 }
