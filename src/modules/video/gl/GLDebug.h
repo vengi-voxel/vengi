@@ -124,7 +124,7 @@ public:
 			if (!_enabled) {
 				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 				glDebugMessageCallbackARB(debugOutputCallback, nullptr);
-				video::checkError();
+				checkError();
 				_enabled = true;
 				Log::info("enable opengl debug messages");
 			}
@@ -137,7 +137,7 @@ public:
 	static void disable() {
 #if defined(GL_ARB_debug_output)
 		glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-		video::checkError();
+		checkError();
 		_enabled = false;
 		Log::info("disable opengl debug messages");
 #endif

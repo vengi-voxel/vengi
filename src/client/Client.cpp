@@ -145,8 +145,6 @@ core::AppState Client::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	video::checkError();
-
 	_camera.init(glm::ivec2(), dimension());
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setTargetDistance(_maxTargetDistance->floatVal());

@@ -63,7 +63,6 @@ bool VertexBuffer::bind() const {
 		video::bindBuffer(_targets[i], _handles[i]);
 	}
 	_dirtyAttributes = false;
-	video::checkError();
 	return true;
 }
 

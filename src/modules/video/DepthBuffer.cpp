@@ -65,7 +65,6 @@ bool DepthBuffer::bind() {
 	video::getViewport(_oldViewport[0], _oldViewport[1], _oldViewport[2], _oldViewport[3]);
 	video::bindFramebuffer(video::FrameBufferMode::Default, _fbo);
 	video::viewport(0, 0, _depthTexture.width(), _depthTexture.height());
-	video::checkError();
 	return true;
 }
 

@@ -530,7 +530,6 @@ int Mesh::render() {
 		++drawCalls;
 	}
 	_vertexBuffer.unbind();
-	video::checkError();
 
 	return drawCalls;
 }

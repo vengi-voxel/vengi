@@ -196,6 +196,7 @@ inline bool clearColor(const glm::vec4& clearColor) {
 	}
 	_priv::s.clearColor = clearColor;
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+	checkError();
 	return true;
 }
 
@@ -214,6 +215,7 @@ inline void clear(ClearFlag flag) {
 		return;
 	}
 	glClear(glValue);
+	checkError();
 }
 
 inline bool viewport(int x, int y, int w, int h) {
@@ -225,6 +227,7 @@ inline bool viewport(int x, int y, int w, int h) {
 	_priv::s.viewportW = w;
 	_priv::s.viewportH = h;
 	glViewport((GLint)x, (GLint)y, (GLsizei)w, (GLsizei)h);
+	checkError();
 	return true;
 }
 
@@ -244,6 +247,7 @@ inline bool scissor(int x, int y, int w, int h) {
 	_priv::s.scissorW = w;
 	_priv::s.scissorH = h;
 	glScissor((GLint)x, (GLint)y, (GLsizei)w, (GLsizei)h);
+	checkError();
 	return true;
 }
 
@@ -253,6 +257,7 @@ inline bool enable(State state) {
 			return false;
 		}
 		glDepthMask(GL_TRUE);
+		checkError();
 		_priv::s.depthMask = true;
 		return true;
 	}
@@ -263,6 +268,7 @@ inline bool enable(State state) {
 	}
 	_priv::s.states[stateIndex] = true;
 	glEnable(_priv::States[stateIndex]);
+	checkError();
 	return true;
 }
 
@@ -272,6 +278,7 @@ inline bool disable(State state) {
 			return false;
 		}
 		glDepthMask(GL_FALSE);
+		checkError();
 		_priv::s.depthMask = false;
 		return true;
 	}
@@ -282,6 +289,7 @@ inline bool disable(State state) {
 	}
 	_priv::s.states[stateIndex] = false;
 	glDisable(_priv::States[stateIndex]);
+	checkError();
 	return true;
 }
 
@@ -291,6 +299,7 @@ inline bool cullFace(Face face) {
 	}
 	const GLenum glFace = _priv::Faces[std::enum_value(face)];
 	glCullFace(glFace);
+	checkError();
 	_priv::s.cullFace = face;
 	return true;
 }
@@ -300,6 +309,7 @@ inline bool depthFunc(CompareFunc func) {
 		return false;
 	}
 	glDepthFunc(_priv::CompareFuncs[std::enum_value(func)]);
+	checkError();
 	_priv::s.depthFunc = func;
 	return true;
 }
@@ -313,6 +323,7 @@ inline bool blendFunc(BlendMode src, BlendMode dest) {
 	const GLenum glSrc = _priv::BlendModes[std::enum_value(src)];
 	const GLenum glDest = _priv::BlendModes[std::enum_value(dest)];
 	glBlendFunc(glSrc, glDest);
+	checkError();
 	return true;
 }
 
@@ -325,6 +336,7 @@ inline bool polygonMode(Face face, PolygonMode mode) {
 	const GLenum glMode = _priv::PolygonModes[std::enum_value(mode)];
 	const GLenum glFace = _priv::Faces[std::enum_value(face)];
 	glPolygonMode(glFace, glMode);
+	checkError();
 	return true;
 }
 
@@ -333,6 +345,7 @@ inline bool polygonOffset(const glm::vec2& offset) {
 		return false;
 	}
 	glPolygonOffset(offset.x, offset.y);
+	checkError();
 	_priv::s.polygonOffset = offset;
 	return true;
 }
@@ -342,12 +355,14 @@ inline bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	if (_priv::s.textureUnit != unit) {
 		const GLenum glUnit = _priv::TextureUnits[std::enum_value(unit)];
 		glActiveTexture(glUnit);
+		checkError();
 		_priv::s.textureUnit = unit;
 		changeUnit = true;
 	}
 	if (changeUnit || _priv::s.textureHandle != handle) {
 		_priv::s.textureHandle = handle;
 		glBindTexture(_priv::TextureTypes[std::enum_value(type)], handle);
+		checkError();
 		return true;
 	}
 	return false;
@@ -358,6 +373,7 @@ inline bool useProgram(Id handle) {
 		return false;
 	}
 	glUseProgram(handle);
+	checkError();
 	_priv::s.programHandle = handle;
 	return true;
 }
@@ -367,6 +383,7 @@ inline bool bindVertexArray(Id handle) {
 		return false;
 	}
 	glBindVertexArray(handle);
+	checkError();
 	_priv::s.vertexArrayHandle = handle;
 	return true;
 }
@@ -379,6 +396,7 @@ inline bool bindBuffer(VertexBufferType type, Id handle) {
 	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
 	_priv::s.bufferHandle[typeIndex] = handle;
 	glBindBuffer(glType, handle);
+	checkError();
 	return true;
 }
 
@@ -390,11 +408,13 @@ inline bool bindBufferBase(VertexBufferType type, Id handle, uint32_t index = 0u
 	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
 	_priv::s.bufferBaseHandle[typeIndex] = handle;
 	glBindBufferBase(glType, (GLuint)index, handle);
+	checkError();
 	return true;
 }
 
 inline void genBuffers(uint8_t amount, Id* ids) {
 	glGenBuffers((GLsizei)amount, (GLuint*)ids);
+	checkError();
 }
 
 inline Id genBuffer() {
@@ -408,6 +428,7 @@ inline void deleteBuffers(uint8_t amount, Id* ids) {
 		return;
 	}
 	glDeleteBuffers((GLsizei)amount, ids);
+	checkError();
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
@@ -422,6 +443,7 @@ inline void deleteBuffer(Id& id) {
 
 inline void genVertexArrays(uint8_t amount, Id* ids) {
 	glGenVertexArrays((GLsizei)amount, (GLuint*)ids);
+	checkError();
 }
 
 inline Id genVertexArray() {
@@ -435,12 +457,15 @@ inline void deleteShader(Id& id) {
 		return;
 	}
 	glDeleteShader(id);
+	checkError();
 	id = InvalidId;
 }
 
 inline Id genShader(ShaderType type) {
 	const GLenum glType = _priv::ShaderTypes[std::enum_value(type)];
-	return glCreateShader(glType);
+	const Id id = glCreateShader(glType);
+	checkError();
+	return id;
 }
 
 inline void deleteProgram(Id& id) {
@@ -448,11 +473,14 @@ inline void deleteProgram(Id& id) {
 		return;
 	}
 	glDeleteProgram(id);
+	checkError();
 	id = InvalidId;
 }
 
 inline Id genProgram() {
-	return glCreateProgram();
+	Id id = glCreateProgram();
+	checkError();
+	return id;
 }
 
 inline void deleteVertexArrays(uint8_t amount, Id* ids) {
@@ -460,6 +488,7 @@ inline void deleteVertexArrays(uint8_t amount, Id* ids) {
 		return;
 	}
 	glDeleteVertexArrays((GLsizei)amount, ids);
+	checkError();
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
@@ -474,6 +503,7 @@ inline void deleteVertexArray(Id& id) {
 
 inline void genTextures(uint8_t amount, Id* ids) {
 	glGenTextures((GLsizei)amount, (GLuint*)ids);
+	checkError();
 }
 
 inline Id genTexture() {
@@ -487,6 +517,7 @@ inline void deleteTextures(uint8_t amount, Id* ids) {
 		return;
 	}
 	glDeleteTextures((GLsizei)amount, ids);
+	checkError();
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
@@ -501,6 +532,7 @@ inline void deleteTexture(Id& id) {
 
 inline void genFramebuffers(uint8_t amount, Id* ids) {
 	glGenFramebuffers((GLsizei)amount, (GLuint*)ids);
+	checkError();
 }
 
 inline Id genFramebuffer() {
@@ -514,6 +546,7 @@ inline void deleteFramebuffers(uint8_t amount, Id* ids) {
 		return;
 	}
 	glDeleteFramebuffers((GLsizei)amount, ids);
+	checkError();
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
@@ -528,6 +561,7 @@ inline void deleteFramebuffer(Id& id) {
 
 inline void genRenderbuffers(uint8_t amount, Id* ids) {
 	glGenRenderbuffers((GLsizei)amount, (GLuint*)ids);
+	checkError();
 }
 
 inline Id genRenderbuffer() {
@@ -541,6 +575,7 @@ inline void deleteRenderbuffers(uint8_t amount, Id* ids) {
 		return;
 	}
 	glDeleteRenderbuffers((GLsizei)amount, ids);
+	checkError();
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
@@ -563,30 +598,36 @@ inline void configureAttribute(const Attribute& a) {
 	if (a.divisor > 0) {
 		glVertexAttribDivisor(a.index, a.divisor);
 	}
+	checkError();
 }
 
 inline bool bindFramebuffer(FrameBufferMode mode, Id handle) {
 	glBindFramebuffer(_priv::FrameBufferModes[std::enum_value(mode)], handle);
+	checkError();
 	return true;
 }
 
 inline bool bindRenderbuffer(Id handle) {
 	glBindRenderbuffer(GL_RENDERBUFFER, handle);
+	checkError();
 	return true;
 }
 
 inline void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size) {
 	glBufferData(_priv::VertexBufferTypes[std::enum_value(type)], (GLsizeiptr)size, data, _priv::VertexBufferModes[std::enum_value(mode)]);
+	checkError();
 }
 
 inline void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size) {
 	glBufferSubData(_priv::VertexBufferTypes[std::enum_value(type)], (GLintptr)offset, (GLsizeiptr)size, data);
+	checkError();
 }
 
 inline void disableDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture) {
 	bindTexture(unit, type, depthTexture);
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+	checkError();
 }
 
 inline void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture) {
@@ -594,6 +635,7 @@ inline void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, 
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
+	checkError();
 }
 
 inline void setupTexture(video::TextureType type, video::TextureWrap wrap) {
@@ -606,6 +648,7 @@ inline void setupTexture(video::TextureType type, video::TextureWrap wrap) {
 	glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrap);
 	glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
+	checkError();
 }
 
 inline void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t* data, int index) {
@@ -613,8 +656,10 @@ inline void uploadTexture(video::TextureType type, video::TextureFormat format, 
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	if (type == TextureType::Texture2D) {
 		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const void*)data);
+		checkError();
 	} else {
 		glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const void*)data);
+		checkError();
 	}
 }
 
@@ -622,23 +667,27 @@ template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices) {
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	glDrawElements(glMode, (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), nullptr);
+	checkError();
 }
 
 template<class IndexType>
 inline void drawElementsInstanced(Primitive mode, size_t numIndices, size_t amount) {
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	glDrawElementsInstanced(glMode, (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), nullptr, (GLsizei)amount);
+	checkError();
 }
 
 template<class IndexType>
 inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIndex, int baseVertex) {
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	glDrawElementsBaseVertex(glMode, (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), (const void*)(sizeof(IndexType) * baseIndex), (GLint)baseVertex);
+	checkError();
 }
 
 inline void drawArrays(Primitive mode, size_t count) {
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	glDrawArrays(glMode, (GLint)0, (GLsizei)count);
+	checkError();
 }
 
 }

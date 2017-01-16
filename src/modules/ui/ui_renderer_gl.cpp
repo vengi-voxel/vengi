@@ -50,7 +50,7 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 
 	_destroy = true;
 
-	glGenTextures(1, &_texture);
+	_texture = video::genTexture();
 	bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -198,7 +198,6 @@ void UIRendererGL::RenderBatch(Batch *batch) {
 
 void UIRendererGL::SetClipRect(const TBRect &rect) {
 	video::scissor(m_clip_rect.x, m_screen_rect.h - (m_clip_rect.y + m_clip_rect.h), m_clip_rect.w, m_clip_rect.h);
-	video::checkError();
 }
 
 }
