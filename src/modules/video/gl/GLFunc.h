@@ -1980,44 +1980,6 @@ void GLLoadFunctions();
 #ifdef __cplusplus
 }
 #endif
-
-inline const char* translateError(GLenum glError) {
-#define GL_ERROR_TRANSLATE(e) case e: return #e;
-	switch (glError) {
-	/* openGL errors */
-	GL_ERROR_TRANSLATE(GL_INVALID_ENUM)
-	GL_ERROR_TRANSLATE(GL_INVALID_VALUE)
-	GL_ERROR_TRANSLATE(GL_INVALID_OPERATION)
-	GL_ERROR_TRANSLATE(GL_OUT_OF_MEMORY)
-	default:
-		return "UNKNOWN";
-	}
-#undef GL_ERROR_TRANSLATE
-}
-
-inline int OpenGLStateHandlerCheckError(const char *file, int line, const char *function) {
-	int ret = 0;
-#ifdef DEBUG
-	/* check gl errors (can return multiple errors) */
-	for (;;) {
-		const GLenum glError = glGetError();
-		if (glError == GL_NO_ERROR)
-			break;
-
-		core_assert_msg(glError == GL_NO_ERROR, "openGL err: %s (%i): %s %s => %i", file, line, function, translateError(glError), glError);
-		ret++;
-	}
-#endif
-	return ret;
-}
-
-#define GL_checkError() OpenGLStateHandlerCheckError(__FILE__, __LINE__, __PRETTY_FUNCTION__)
-#if 0
-	#define GL_setName(identifier, handle, label) glObjectLabel(identifier, handle, strlen(label), label)
-#else
-	#define GL_setName(identifier, handle, label) do {} while (0)
-#endif
-
 /**
  * @brief Maps data types to GL enums
  */
