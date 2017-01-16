@@ -15,8 +15,6 @@ namespace tb {
 static uint32 dbg_bitmap_validations = 0;
 #endif
 
-GLuint UIBitmapGL::g_current_texture = (GLuint) -1;
-
 UIBitmapGL::UIBitmapGL(UIRendererGL *renderer) :
 		_renderer(renderer), _w(0), _h(0), _texture(0) {
 }
@@ -30,12 +28,8 @@ UIBitmapGL::~UIBitmapGL() {
 	}
 }
 
-void UIBitmapGL::bind() {
-	if (_texture != g_current_texture) {
-		g_current_texture = _texture;
-		glActiveTexture(std::enum_value(video::TextureUnit::Zero));
-		glBindTexture(GL_TEXTURE_2D, _texture);
-	}
+void UIBitmapGL::bind(video::TextureUnit unit) {
+	video::bindTexture(unit, video::TextureType::Texture2D, _texture);
 }
 
 bool UIBitmapGL::Init(int width, int height, video::Id texture) {
@@ -155,8 +149,6 @@ void UIRendererGL::BeginPaint(int, int) {
 	_shader.activate();
 	_shader.setProjection(_camera.projectionMatrix());
 	_shader.setTexture(video::TextureUnit::Zero);
-
-	UIBitmapGL::g_current_texture = (GLuint) -1;
 
 	glViewport(0, 0, renderTargetW, renderTargetH);
 	glScissor(0, 0, renderTargetW, renderTargetH);

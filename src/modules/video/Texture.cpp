@@ -74,16 +74,12 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 }
 
 void Texture::bind(TextureUnit unit) const {
-	glActiveTexture(std::enum_value(unit));
-	glBindTexture(std::enum_value(_type), _handle);
-	checkError();
+	video::bindTexture(unit, _type, _handle);
 	_boundUnit = unit;
 }
 
 void Texture::unbind() const {
-	glActiveTexture(std::enum_value(_boundUnit));
-	glBindTexture(std::enum_value(_type), 0);
-	checkError();
+	video::bindTexture(_boundUnit, _type, InvalidId);
 	_boundUnit = TextureUnit::Zero;
 }
 

@@ -24,7 +24,7 @@ public:
 
 	bool Init(int width, int height, video::Id texture);
 
-	void bind();
+	void bind(video::TextureUnit unit = video::TextureUnit::Zero);
 
 	virtual int Width() override {
 		return _w;
@@ -36,7 +36,6 @@ public:
 
 	virtual void SetData(uint32 *data) override;
 public:
-	static GLuint g_current_texture;
 	UIRendererGL *_renderer;
 	int _w, _h;
 	video::Id _texture;
