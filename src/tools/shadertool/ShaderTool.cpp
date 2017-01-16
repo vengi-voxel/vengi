@@ -462,15 +462,15 @@ void ShaderTool::generateSrc() {
 		const Variable& v = _shaderStruct.attributes[i];
 		const std::string& attributeName = convertName(v.name, true);
 		const bool isInt = v.isInteger();
-		setters << "\tinline bool init" << attributeName << "Custom(GLsizei stride = ";
+		setters << "\tinline bool init" << attributeName << "Custom(size_t stride = ";
 		setters << "sizeof(" << cTypes[v.type].ctype << ")";
-		setters << ", const void* pointer = nullptr, GLenum type = ";
+		setters << ", const void* pointer = nullptr, video::DataType type = ";
 		if (isInt) {
-			setters << "GL_INT";
+			setters << "video::DataType::Int";
 		} else {
-			setters << "GL_FLOAT";
+			setters << "video::DataType::Float";
 		}
-		setters << ", GLint size = ";
+		setters << ", int size = ";
 		setters << cTypes[v.type].components << ", ";
 		setters << "bool isInt = ";
 		setters << (isInt ? "true" : "false");
@@ -497,30 +497,26 @@ void ShaderTool::generateSrc() {
 		setters << "\t\tif (loc == -1) {\n";
 		setters << "\t\t\treturn false;\n";
 		setters << "\t\t}\n";
-		setters << "\t\tconst GLsizei stride = sizeof(" << cTypes[v.type].ctype << ");\n";
+		setters << "\t\tconst size_t stride = sizeof(" << cTypes[v.type].ctype << ");\n";
 		setters << "\t\tconst void* pointer = nullptr;\n";
-		setters << "\t\tconst GLenum type = ";
+		setters << "\t\tconst video::DataType type = ";
 		if (isInt) {
-			setters << "GL_INT";
+			setters << "video::DataType::Int";
 		} else {
-			setters << "GL_FLOAT";
+			setters << "video::DataType::Float";
 		}
 		setters << ";\n";
-		setters << "\t\tconst GLint size = getAttributeComponents(loc);\n";
+		setters << "\t\tconst int size = getAttributeComponents(loc);\n";
 		if (isInt) {
 			setters << "\t\tsetVertexAttributeInt(loc, size, type, stride, pointer);\n";
 		} else {
-			setters << "\t\tsetVertexAttribute(loc, size, type, GL_FALSE, stride, pointer);\n";
+			setters << "\t\tsetVertexAttribute(loc, size, type, false, stride, pointer);\n";
 		}
 		setters << "\t\treturn true;\n";
 		setters << "\t}\n\n";
 		setters << "\tinline bool set" << attributeName << "Divisor(uint32_t divisor) const {\n";
 		setters << "\t\tconst int location = getAttributeLocation(\"" << v.name << "\");\n";
-		setters << "\t\tif (location == -1) {\n";
-		setters << "\t\t\treturn false;\n";
-		setters << "\t\t}\n";
-		setters << "\t\tglVertexAttribDivisor((GLuint)location, (GLuint)divisor);\n";
-		setters << "\t\treturn true;\n";
+		setters << "\t\treturn setDivisor(location, divisor);\n";
 		setters << "\t}\n";
 
 		if (i < attributeSize - 1) {

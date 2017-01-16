@@ -51,15 +51,7 @@ bool VertexBuffer::bind() const {
 			continue;
 		}
 		video::bindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
-		glEnableVertexAttribArray(a.index);
-		if (a.typeIsInt) {
-			glVertexAttribIPointer(a.index, a.size, std::enum_value(a.type), a.stride, GL_OFFSET_CAST(a.offset));
-		} else {
-			glVertexAttribPointer(a.index, a.size, std::enum_value(a.type), a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
-		}
-		if (a.divisor > 0) {
-			glVertexAttribDivisor(a.index, a.divisor);
-		}
+		video::configureAttribute(a);
 	}
 	for (unsigned int i = 0; i < _handleIdx; ++i) {
 		if (_targets[i] != VertexBufferType::IndexBuffer) {

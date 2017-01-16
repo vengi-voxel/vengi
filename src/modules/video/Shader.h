@@ -276,10 +276,10 @@ public:
 	void setUniformf(int location, const glm::vec3& values) const;
 	void setUniformf(const std::string& name, const glm::vec4& values) const;
 	void setUniformf(int location, const glm::vec4& values) const;
-	void setVertexAttribute(const std::string& name, int size, int type, bool normalize, int stride, const void* buffer) const;
-	void setVertexAttribute(int location, int size, int type, bool normalize, int stride, const void* buffer) const;
-	void setVertexAttributeInt(const std::string& name, int size, int type, int stride, const void* buffer) const;
-	void setVertexAttributeInt(int location, int size, int type, int stride, const void* buffer) const;
+	void setVertexAttribute(const std::string& name, int size, DataType type, bool normalize, int stride, const void* buffer) const;
+	void setVertexAttribute(int location, int size, DataType type, bool normalize, int stride, const void* buffer) const;
+	void setVertexAttributeInt(const std::string& name, int size, DataType type, int stride, const void* buffer) const;
+	void setVertexAttributeInt(int location, int size, DataType type, int stride, const void* buffer) const;
 	void setAttributef(const std::string& name, float value1, float value2, float value3, float value4) const;
 	void disableVertexAttribute(const std::string& name) const;
 	void disableVertexAttribute(int location) const;
@@ -614,8 +614,8 @@ inline void Shader::setUniformf(int location, const glm::vec4& values) const {
 	setUniformf(location, values.x, values.y, values.z, values.w);
 }
 
-inline void Shader::setVertexAttribute(const std::string& name, int size, int type, bool normalize, int stride, const void* buffer) const {
-	core_assert_msg(type == GL_FLOAT || type == GL_DOUBLE, "unexpected data type given: %x", type);
+inline void Shader::setVertexAttribute(const std::string& name, int size, DataType type, bool normalize, int stride, const void* buffer) const {
+	core_assert_msg(type == DataType::Float || type == DataType::Double, "unexpected data type given: %i", std::enum_value(type));
 	const int location = getAttributeLocation(name);
 	if (location == -1) {
 		return;
@@ -623,7 +623,7 @@ inline void Shader::setVertexAttribute(const std::string& name, int size, int ty
 	setVertexAttribute(location, size, type, normalize, stride, buffer);
 }
 
-inline void Shader::setVertexAttribute(int location, int size, int type, bool normalize, int stride, const void* buffer) const {
+inline void Shader::setVertexAttribute(int location, int size, DataType type, bool normalize, int stride, const void* buffer) const {
 	core_assert_msg(getAttributeComponents(location) == -1 || getAttributeComponents(location) == size, "%i expected, but got %i components", getAttributeComponents(location), size);
 #ifdef DEBUG
 #if SDL_ASSERT_LEVEL > 0
@@ -632,11 +632,11 @@ inline void Shader::setVertexAttribute(int location, int size, int type, bool no
 	core_assert_msg(vao > 0, "No vertex array object is bound");
 #endif
 #endif
-	glVertexAttribPointer(location, size, type, normalize, stride, buffer);
+	glVertexAttribPointer(location, size, std::enum_value(type), normalize, stride, buffer);
 	video::checkError();
 }
 
-inline void Shader::setVertexAttributeInt(int location, int size, int type, int stride, const void* buffer) const {
+inline void Shader::setVertexAttributeInt(int location, int size, DataType type, int stride, const void* buffer) const {
 	core_assert_msg(getAttributeComponents(location) == -1 || getAttributeComponents(location) == size, "%i expected, but got %i components", getAttributeComponents(location), size);
 #ifdef DEBUG
 #if SDL_ASSERT_LEVEL > 0
@@ -645,12 +645,12 @@ inline void Shader::setVertexAttributeInt(int location, int size, int type, int 
 	core_assert_msg(vao > 0, "No vertex array object is bound");
 #endif
 #endif
-	glVertexAttribIPointer(location, size, type, stride, buffer);
+	glVertexAttribIPointer(location, size, std::enum_value(type), stride, buffer);
 	video::checkError();
 }
 
-inline void Shader::setVertexAttributeInt(const std::string& name, int size, int type, int stride, const void* buffer) const {
-	core_assert_msg(type != GL_FLOAT && type != GL_DOUBLE, "unexpected data type given: %x", type);
+inline void Shader::setVertexAttributeInt(const std::string& name, int size, DataType type, int stride, const void* buffer) const {
+	core_assert_msg(type != DataType::Float && type != DataType::Double, "unexpected data type given: %i", std::enum_value(type));
 	const int location = getAttributeLocation(name);
 	if (location == -1) {
 		return;
