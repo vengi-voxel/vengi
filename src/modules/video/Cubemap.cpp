@@ -10,11 +10,11 @@
 namespace video {
 
 Cubemap::Cubemap(const std::string& filename) :
-		_filename(filename), _textureHandle(0u) {
+		_filename(filename), _textureHandle(InvalidId) {
 }
 
 Cubemap::~Cubemap() {
-	core_assert_msg(_textureHandle == 0u, "Cubemap was not properly shut down");
+	core_assert_msg(_textureHandle == InvalidId, "Cubemap was not properly shut down");
 	shutdown();
 }
 
