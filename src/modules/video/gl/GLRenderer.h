@@ -256,6 +256,28 @@ inline Id genVertexArray() {
 	return id;
 }
 
+inline void deleteShader(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	glDeleteShader(id);
+}
+
+inline Id genShader(ShaderType type) {
+	return glCreateShader(std::enum_value(type));
+}
+
+inline void deleteProgram(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	glDeleteProgram(id);
+}
+
+inline Id genProgram() {
+	return glCreateProgram();
+}
+
 inline void deleteVertexArrays(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;

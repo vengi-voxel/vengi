@@ -9,10 +9,26 @@ namespace video {
 using Id = GLuint;
 constexpr Id InvalidId = (Id)0;
 
+enum class ShaderType {
+#ifdef GL_VERSION_4_3
+	Compute = GL_COMPUTE_SHADER,
+#endif
+#ifdef GL_VERSION_4_0
+	TesselationEval = GL_TESS_EVALUATION_SHADER,
+	TesselationControl = GL_TESS_CONTROL_SHADER,
+#endif
+	Vertex = GL_VERTEX_SHADER,
+	Fragment = GL_FRAGMENT_SHADER,
+	Geometry = GL_GEOMETRY_SHADER,
+
+	Max
+};
+
 enum class FrameBufferMode {
 	Read = GL_READ_FRAMEBUFFER,
 	Draw = GL_DRAW_FRAMEBUFFER,
 	Default = GL_FRAMEBUFFER,
+
 	Max
 };
 
@@ -25,13 +41,16 @@ enum class DataType {
 	Short = GL_SHORT,
 	UnsignedInt = GL_UNSIGNED_INT,
 	Int = GL_INT,
+
 	Max
 };
 
 enum class VertexBufferMode {
 	Static = GL_STATIC_DRAW,
 	Dynamic = GL_DYNAMIC_DRAW,
-	Stream = GL_STREAM_DRAW
+	Stream = GL_STREAM_DRAW,
+
+	Max
 };
 
 enum class VertexBufferType {
@@ -41,18 +60,23 @@ enum class VertexBufferType {
 	ArrayBuffer = GL_ARRAY_BUFFER,
 	IndexBuffer = GL_ELEMENT_ARRAY_BUFFER,
 	UniformBuffer = GL_UNIFORM_BUFFER,
+
 	Max
 };
 
 enum class TextureType {
 	Texture2D = GL_TEXTURE_2D,
 	Texture2DArray = GL_TEXTURE_2D_ARRAY,
-	TextureCube = GL_TEXTURE_CUBE_MAP
+	TextureCube = GL_TEXTURE_CUBE_MAP,
+
+	Max
 };
 
 enum class TextureWrap {
 	ClampToEdge = GL_CLAMP_TO_EDGE,
-	Repeat = GL_REPEAT
+	Repeat = GL_REPEAT,
+
+	Max
 };
 
 enum class BufferLockMode {
@@ -133,7 +157,7 @@ enum class TextureUnit : int32_t {
 	Four  = GL_TEXTURE4,
 	Five  = GL_TEXTURE5,
 
-	// don't interfer with any other bound texture when we are uploading
+	// don't interfere with any other bound texture when we are uploading
 	Upload = GL_TEXTURE10,
 
 	Max

@@ -86,15 +86,10 @@ void Shader::shutdown() {
 	}
 
 	for (auto& shader : _shader) {
-		if (shader.second != 0) {
-			glDeleteShader(shader.second);
-		}
+		video::deleteShader(shader.second);
 	}
 	_shader.clear();
-	if (_program != 0) {
-		glDeleteProgram(_program);
-		_program = 0;
-	}
+	video::deleteProgram(_program);
 	_initialized = false;
 	_active = false;
 	_time = 0;
@@ -103,11 +98,10 @@ void Shader::shutdown() {
 bool Shader::load(const std::string& name, const std::string& buffer, ShaderType shaderType) {
 	_name = name;
 	const std::string& source = getSource(shaderType, buffer);
-	const GLenum glType = std::enum_value(shaderType);
 	video::checkError();
 
-	if (_shader[shaderType] == 0) {
-		_shader[shaderType] = glCreateShader(glType);
+	if (_shader[shaderType] == InvalidId) {
+		_shader[shaderType] = video::genShader(shaderType);
 	}
 	const char *s = source.c_str();
 	glShaderSource(_shader[shaderType], 1, (const GLchar**) &s, nullptr);
@@ -115,7 +109,7 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 
 	GLint status;
 	glGetShaderiv(_shader[shaderType], GL_COMPILE_STATUS, &status);
-	if (status == GL_FALSE) {
+	if (!status) {
 		GLint infoLogLength = 0;
 		glGetShaderiv(_shader[shaderType], GL_INFO_LOG_LENGTH, &infoLogLength);
 
@@ -124,14 +118,14 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 		const std::string errorLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 
 		const char *strShaderType;
-		switch (glType) {
-		case GL_VERTEX_SHADER:
+		switch (shaderType) {
+		case ShaderType::Vertex:
 			strShaderType = "vertex";
 			break;
-		case GL_FRAGMENT_SHADER:
+		case ShaderType::Fragment:
 			strShaderType = "fragment";
 			break;
-		case GL_GEOMETRY_SHADER:
+		case ShaderType::Geometry:
 			strShaderType = "geometry";
 			break;
 		default:
@@ -141,7 +135,7 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 
 		Log::error("%s", source.c_str());
 		Log::error("compile failure in %s (type: %s) shader:\n%s", name.c_str(), strShaderType, errorLog.c_str());
-		glDeleteShader(_shader[shaderType]);
+		video::deleteShader(_shader[shaderType]);
 		return false;
 	}
 
@@ -162,12 +156,14 @@ bool Shader::loadFromFile(const std::string& filename, ShaderType shaderType) {
 
 bool Shader::loadProgram(const std::string& filename) {
 	const bool vertex = loadFromFile(filename + VERTEX_POSTFIX, ShaderType::Vertex);
-	if (!vertex)
+	if (!vertex) {
 		return false;
+	}
 
 	const bool fragment = loadFromFile(filename + FRAGMENT_POSTFIX, ShaderType::Fragment);
-	if (!fragment)
+	if (!fragment) {
 		return false;
+	}
 
 	// optional
 	loadFromFile(filename + GEOMETRY_POSTFIX, ShaderType::Geometry);
@@ -197,7 +193,7 @@ bool Shader::init() {
 Id Shader::getShader(ShaderType shaderType) const {
 	auto shader = _shader.find(shaderType);
 	if (shader == _shader.end()) {
-		return 0;
+		return InvalidId;
 	}
 	return shader->second;
 }
@@ -445,11 +441,9 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 }
 
 void Shader::createProgramFromShaders() {
-	video::checkError();
-	if (_program == 0) {
-		_program = glCreateProgram();
+	if (_program == InvalidId) {
+		_program = video::genProgram();
 	}
-	video::checkError();
 
 	const Id vert = _shader[ShaderType::Vertex];
 	const Id frag = _shader[ShaderType::Fragment];
@@ -457,19 +451,18 @@ void Shader::createProgramFromShaders() {
 
 	glAttachShader(_program, vert);
 	glAttachShader(_program, frag);
-	if (geom != 0) {
+	if (geom != InvalidId) {
 		glAttachShader(_program, geom);
 	}
-	video::checkError();
 
 	glLinkProgram(_program);
 	GLint status;
 	glGetProgramiv(_program, GL_LINK_STATUS, &status);
 	video::checkError();
-	if (status == GL_TRUE) {
+	if (status) {
 		glDetachShader(_program, vert);
 		glDetachShader(_program, frag);
-		if (geom != 0) {
+		if (geom != InvalidId) {
 			glDetachShader(_program, geom);
 		}
 		return;
@@ -481,8 +474,7 @@ void Shader::createProgramFromShaders() {
 	glGetProgramInfoLog(_program, infoLogLength, nullptr, strInfoLog);
 	strInfoLog[infoLogLength] = '\0';
 	Log::error("linker failure: %s", strInfoLog);
-	glDeleteProgram(_program);
-	_program = 0;
+	video::deleteProgram(_program);
 	delete[] strInfoLog;
 }
 
