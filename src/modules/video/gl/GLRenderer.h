@@ -177,6 +177,17 @@ namespace _priv {
 		GL_TRIANGLES
 	};
 	static_assert(std::enum_value(Primitive::Max) == (int)SDL_arraysize(Primitives), "Array sizes don't match Max");
+
+	static GLenum TextureUnits[] {
+		GL_TEXTURE0,
+		GL_TEXTURE1,
+		GL_TEXTURE2,
+		GL_TEXTURE3,
+		GL_TEXTURE4,
+		GL_TEXTURE5,
+		GL_TEXTURE6
+	};
+	static_assert(std::enum_value(TextureUnit::Max) == (int)SDL_arraysize(TextureUnits), "Array sizes don't match Max");
 }
 
 inline bool clearColor(const glm::vec4& clearColor) {
@@ -329,7 +340,8 @@ inline bool polygonOffset(const glm::vec2& offset) {
 inline bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	bool changeUnit = false;
 	if (_priv::s.textureUnit != unit) {
-		glActiveTexture(std::enum_value(unit));
+		const GLenum glUnit = _priv::TextureUnits[std::enum_value(unit)];
+		glActiveTexture(glUnit);
 		_priv::s.textureUnit = unit;
 		changeUnit = true;
 	}

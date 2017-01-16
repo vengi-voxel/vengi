@@ -417,7 +417,7 @@ void EditorScene::OnProcess() {
 
 	m().trace(_controller.camera());
 
-	glClearColor(core::Color::Clear.r, core::Color::Clear.g, core::Color::Clear.b, core::Color::Clear.a);
+	video::clearColor(core::Color::Clear);
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	_frameBuffer.bind(false);
 	render();

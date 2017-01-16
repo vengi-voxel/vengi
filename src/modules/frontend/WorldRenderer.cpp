@@ -433,7 +433,6 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 		// configure shadow map texture
 		video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
-		const GLenum glTextureType = std::enum_value(_depthBuffer.textureType());
 		if (_depthBuffer.depthCompare()) {
 			video::disableDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
 		}

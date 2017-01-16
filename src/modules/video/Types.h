@@ -138,6 +138,20 @@ enum class ShaderType {
 	Max
 };
 
+enum class TextureUnit {
+	Zero,
+	One,
+	Two,
+	Three,
+	Four,
+	Five,
+
+	// don't interfere with any other bound texture when we are uploading
+	Upload,
+
+	Max
+};
+
 enum class TextureFormat {
 	RGBA,
 	RGB,
