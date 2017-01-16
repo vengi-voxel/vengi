@@ -261,6 +261,7 @@ inline void deleteShader(Id& id) {
 		return;
 	}
 	glDeleteShader(id);
+	id = InvalidId;
 }
 
 inline Id genShader(ShaderType type) {
@@ -272,6 +273,7 @@ inline void deleteProgram(Id& id) {
 		return;
 	}
 	glDeleteProgram(id);
+	id = InvalidId;
 }
 
 inline Id genProgram() {
