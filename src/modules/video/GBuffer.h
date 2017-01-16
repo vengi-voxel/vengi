@@ -22,6 +22,10 @@ public:
 
 	void setReadBuffer(GBufferTextureType textureType);
 	void bindForWriting();
+	/**
+	 * @param[in] gbuffer If true, the gbuffer fbo is bound, if this is @c false, the single
+	 * textures of the gbuffer are bound to the video::TextureUnit::One onward.
+	 */
 	void bindForReading(bool gbuffer = false);
 	void unbind();
 

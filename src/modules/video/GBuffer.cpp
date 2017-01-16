@@ -84,8 +84,7 @@ void GBuffer::bindForWriting() {
 		video::checkError();
 	}
 
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
-	checkError();
+	video::bindFrameBuffer(FrameBufferMode::Draw, _fbo);
 }
 
 void GBuffer::bindForReading(bool gbuffer) {
@@ -94,7 +93,7 @@ void GBuffer::bindForReading(bool gbuffer) {
 			glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &_oldReadFramebuffer);
 			checkError();
 		}
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
+		bindFrameBuffer(FrameBufferMode::Read, _fbo);
 		return;
 	}
 
@@ -102,7 +101,7 @@ void GBuffer::bindForReading(bool gbuffer) {
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &_oldDrawFramebuffer);
 		video::checkError();
 	}
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	bindFrameBuffer(FrameBufferMode::Draw, InvalidId);
 
 	// activate the textures to read from
 	for (int i = 0; i < (int) SDL_arraysize(_textures); ++i) {

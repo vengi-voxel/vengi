@@ -11,12 +11,11 @@ public:
 	}
 
 	explicit ScopedFrameBuffer(Id bindHandle) {
-		glBindFramebuffer(GL_FRAMEBUFFER, bindHandle);
-		checkError();
+		video::bindFrameBuffer(video::FrameBufferMode::Default, bindHandle);
 	}
 
 	~ScopedFrameBuffer() {
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		video::bindFrameBuffer(video::FrameBufferMode::Default, InvalidId);
 	}
 };
 

@@ -88,7 +88,7 @@ void FrameBuffer::shutdown() {
 void FrameBuffer::bind(bool read) {
 	glGetIntegerv(GL_VIEWPORT, _viewport);
 	glViewport(0, 0, _dimension.x, _dimension.y);
-	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	video::bindFrameBuffer(FrameBufferMode::Default, _fbo);
 	if (!read) {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
 	}
@@ -97,7 +97,7 @@ void FrameBuffer::bind(bool read) {
 
 void FrameBuffer::unbind() {
 	glViewport(_viewport[0], _viewport[1], (GLsizei)_viewport[2], (GLsizei)_viewport[3]);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	video::bindFrameBuffer(FrameBufferMode::Draw, InvalidId);
 }
 
 }

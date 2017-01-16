@@ -9,6 +9,13 @@ namespace video {
 using Id = GLuint;
 constexpr Id InvalidId = (Id)0;
 
+enum class FrameBufferMode {
+	Read = GL_READ_FRAMEBUFFER,
+	Draw = GL_DRAW_FRAMEBUFFER,
+	Default = GL_FRAMEBUFFER,
+	Max
+};
+
 enum class VertexBufferMode {
 	Static = GL_STATIC_DRAW,
 	Dynamic = GL_DYNAMIC_DRAW,
