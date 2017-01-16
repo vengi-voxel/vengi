@@ -7,6 +7,7 @@
 namespace video {
 
 using Id = GLuint;
+constexpr Id InvalidId = (Id)0;
 
 enum class BufferLockMode {
 	Normal = GL_MAP_WRITE_BIT,
