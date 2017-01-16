@@ -12,9 +12,9 @@ namespace video {
 class FrameBuffer {
 	friend class ScopedFrameBuffer;
 private:
-	GLuint _fbo = 0u;
-	GLuint _texture = 0u;
-	GLuint _depth = 0u;
+	Id _fbo = video::InvalidId;
+	Id _texture = video::InvalidId;
+	Id _depth = video::InvalidId;
 
 	glm::ivec2 _dimension;
 
@@ -30,13 +30,14 @@ public:
 	void bind(bool read = false);
 	void unbind();
 
-	inline GLuint texture() const {
-		return _texture;
-	}
+	Id texture() const;
 
 	inline const glm::ivec2& dimension() const {
 		return _dimension;
 	}
 };
 
+inline Id FrameBuffer::texture() const {
+	return _texture;
+}
 }

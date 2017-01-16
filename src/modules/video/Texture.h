@@ -32,7 +32,7 @@ enum class TextureWrap {
 class Texture: public io::IOResource {
 private:
 	std::string _name;
-	GLuint _handle = 0u;
+	Id _handle = video::InvalidId;
 	int _width;
 	int _height;
 	TextureType _type;
@@ -45,13 +45,13 @@ public:
 	~Texture();
 	void shutdown();
 
-	operator GLuint () const;
+	operator Id () const;
 	TextureType type() const;
 	TextureFormat format() const;
 	TextureWrap wrap() const;
 	int width() const;
 	int height() const;
-	GLuint handle() const;
+	Id handle() const;
 
 	// updates the texture with the new data
 	void upload(TextureFormat format, int width, int height, const uint8_t* data = nullptr, int index = 1);
@@ -61,7 +61,7 @@ public:
 	void unbind() const;
 };
 
-inline Texture::operator GLuint () const {
+inline Texture::operator Id() const {
 	return _handle;
 }
 
@@ -85,7 +85,7 @@ inline TextureType Texture::type() const {
 	return _type;
 }
 
-inline GLuint Texture::handle() const {
+inline Id Texture::handle() const {
 	return _handle;
 }
 

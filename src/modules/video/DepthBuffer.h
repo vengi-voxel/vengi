@@ -52,8 +52,8 @@ public:
 private:
 	GLint _oldViewport[4] = {0, 0, 0, 0};
 	GLint _oldFramebuffer = -1;
-	Id _fbo = 0u;
-	Id _rbo = 0u;
+	Id _fbo = video::InvalidId;
+	Id _rbo = video::InvalidId;
 	Texture _depthTexture;
 	DepthBufferMode _mode = DepthBufferMode::RGBA;
 };

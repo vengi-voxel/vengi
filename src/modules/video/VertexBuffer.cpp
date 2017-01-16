@@ -34,7 +34,7 @@ bool VertexBuffer::bind() const {
 	if (!isValid(0)) {
 		return false;
 	}
-	if (_vao != 0) {
+	if (_vao != InvalidId) {
 		glBindVertexArray(_vao);
 		if (!_dirtyAttributes) {
 			return true;
@@ -76,7 +76,7 @@ bool VertexBuffer::bind() const {
 }
 
 void VertexBuffer::unbind() const {
-	if (_vao != 0) {
+	if (_vao != InvalidId) {
 		glBindVertexArray(0);
 	} else {
 		for (unsigned int i = 0; i < _handleIdx; ++i) {
@@ -234,9 +234,9 @@ VertexBuffer::~VertexBuffer() {
 }
 
 void VertexBuffer::shutdown() {
-	if (_vao != 0) {
+	if (_vao != InvalidId) {
 		glDeleteVertexArrays(1, &_vao);
-		_vao = 0;
+		_vao = InvalidId;
 	}
 	if (_handleIdx > 0) {
 		glDeleteBuffers(_handleIdx, _handles);

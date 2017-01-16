@@ -12,7 +12,7 @@ FrameBuffer::FrameBuffer() {
 }
 
 FrameBuffer::~FrameBuffer() {
-	core_assert_msg(_fbo == 0u, "Framebuffer was not properly shut down");
+	core_assert_msg(_fbo == video::InvalidId, "Framebuffer was not properly shut down");
 	shutdown();
 }
 

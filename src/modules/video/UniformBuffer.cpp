@@ -2,24 +2,23 @@
 
 namespace video {
 
-UniformBuffer::UniformBuffer() :
-		_handle(0u) {
+UniformBuffer::UniformBuffer() {
 }
 
 UniformBuffer::~UniformBuffer() {
-	core_assert_msg(_handle == (Id)0, "Uniform buffer was not properly shut down");
+	core_assert_msg(_handle == video::InvalidId, "Uniform buffer was not properly shut down");
 	shutdown();
 }
 
 void UniformBuffer::shutdown() {
-	if (_handle != (Id)0) {
+	if (_handle != video::InvalidId) {
 		glDeleteBuffers(1, &_handle);
-		_handle = (Id)0;
+		_handle = video::InvalidId;
 	}
 }
 
 void* UniformBuffer::lock(BufferLockMode mode) {
-	if (_handle == (Id)0) {
+	if (_handle == video::InvalidId) {
 		return nullptr;
 	}
 	glBindBuffer(GL_UNIFORM_BUFFER, _handle);
@@ -29,7 +28,7 @@ void* UniformBuffer::lock(BufferLockMode mode) {
 }
 
 void UniformBuffer::unlock() {
-	if (_handle == (Id)0) {
+	if (_handle == video::InvalidId) {
 		return;
 	}
 	glBindBuffer(GL_UNIFORM_BUFFER, _handle);
@@ -39,7 +38,7 @@ void UniformBuffer::unlock() {
 
 
 void UniformBuffer::create(size_t size, const void *data) {
-	if (_handle != (Id)0) {
+	if (_handle != video::InvalidId) {
 		shutdown();
 	}
 	_size = size;
@@ -55,7 +54,7 @@ void UniformBuffer::create(size_t size, const void *data) {
  * @param[in] index The index of the uniform block to bind the buffer to
  */
 bool UniformBuffer::bind(GLuint index) const {
-	if (_handle == (Id)0) {
+	if (_handle == video::InvalidId) {
 		return false;
 	}
 	// Bind the buffer object to the uniform block.

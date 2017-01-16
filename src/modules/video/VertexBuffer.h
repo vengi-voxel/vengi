@@ -64,7 +64,7 @@ private:
 	GLuint _handleIdx = 0;
 
 	std::vector<Attribute> _attributes;
-	mutable GLuint _vao = 0u;
+	mutable Id _vao = InvalidId;
 	// TODO: must be per vbo - not per vao!
 	VertexBufferMode _mode = VertexBufferMode::Static;
 	mutable bool _dirtyAttributes = true;
@@ -140,7 +140,7 @@ public:
 	 * @param[in] idx The buffer index returned by create()
 	 * @return The handle for the given buffer index.
 	 */
-	GLuint handle(int32_t idx) const;
+	Id handle(int32_t idx) const;
 };
 
 inline bool VertexBuffer::isValid(int32_t idx) const {
@@ -162,7 +162,7 @@ inline GLuint VertexBuffer::elements(int32_t idx, int components, size_t compone
 	return size(idx) / (components * componentSize);
 }
 
-inline GLuint VertexBuffer::handle(int32_t idx) const {
+inline Id VertexBuffer::handle(int32_t idx) const {
 	core_assert(idx >= 0 && idx < (int)SDL_arraysize(_handles));
 	return _handles[idx];
 }

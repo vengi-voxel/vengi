@@ -22,7 +22,7 @@ namespace video {
  */
 class UniformBuffer {
 private:
-	Id _handle;
+	Id _handle = InvalidId;
 	size_t _size = 0u;
 
 public:
@@ -40,7 +40,7 @@ public:
 	/**
 	 * @param[in] index The index of the uniform block to bind the buffer to
 	 */
-	bool bind(Id index = (Id)0) const;
+	bool bind(Id index = video::InvalidId) const;
 };
 
 inline Id UniformBuffer::handle() const {
