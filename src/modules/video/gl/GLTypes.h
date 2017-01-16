@@ -22,14 +22,6 @@ enum class DataType {
 	Max
 };
 
-enum class Primitive {
-	Points = GL_POINTS,
-	Lines = GL_LINES,
-	Triangles = GL_TRIANGLES,
-
-	Max
-};
-
 enum class TextureUnit : int32_t {
 	Zero  = GL_TEXTURE0,
 	One   = GL_TEXTURE1,

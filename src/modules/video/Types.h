@@ -106,6 +106,14 @@ enum class VertexBufferMode {
 	Max
 };
 
+enum class Primitive {
+	Points,
+	Lines,
+	Triangles,
+
+	Max
+};
+
 enum class DepthBufferMode {
 	// stores -1..1 window-space depth values
 	RGBA,

@@ -170,6 +170,13 @@ namespace _priv {
 		GL_FRONT_AND_BACK
 	};
 	static_assert(std::enum_value(Face::Max) == (int)SDL_arraysize(Faces), "Array sizes don't match Max");
+
+	static GLenum Primitives[] {
+		GL_POINTS,
+		GL_LINES,
+		GL_TRIANGLES
+	};
+	static_assert(std::enum_value(Primitive::Max) == (int)SDL_arraysize(Primitives), "Array sizes don't match Max");
 }
 
 inline bool clearColor(const glm::vec4& clearColor) {
@@ -601,21 +608,25 @@ inline void uploadTexture(video::TextureType type, video::TextureFormat format, 
 
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices) {
-	glDrawElements(std::enum_value(mode), (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), nullptr);
+	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
+	glDrawElements(glMode, (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), nullptr);
 }
 
 template<class IndexType>
 inline void drawElementsInstanced(Primitive mode, size_t numIndices, size_t amount) {
-	glDrawElementsInstanced(std::enum_value(mode), (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), nullptr, (GLsizei)amount);
+	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
+	glDrawElementsInstanced(glMode, (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), nullptr, (GLsizei)amount);
 }
 
 template<class IndexType>
 inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIndex, int baseVertex) {
-	glDrawElementsBaseVertex(std::enum_value(mode), (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), (const void*)(sizeof(IndexType) * baseIndex), (GLint)baseVertex);
+	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
+	glDrawElementsBaseVertex(glMode, (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), (const void*)(sizeof(IndexType) * baseIndex), (GLint)baseVertex);
 }
 
 inline void drawArrays(Primitive mode, size_t count) {
-	glDrawArrays(std::enum_value(mode), (GLint)0, (GLsizei)count);
+	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
+	glDrawArrays(glMode, (GLint)0, (GLsizei)count);
 }
 
 }
