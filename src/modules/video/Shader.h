@@ -47,7 +47,7 @@ protected:
 	typedef std::unordered_map<ShaderType, Id, EnumClassHash> ShaderMap;
 	ShaderMap _shader;
 
-	Id _program = 0u;
+	Id _program = InvalidId;
 	bool _initialized = false;;
 	mutable bool _active = false;
 
@@ -289,7 +289,7 @@ inline void Shader::setUniform(const std::string& name, TextureUnit value) const
 }
 
 inline void Shader::setUniform(int location, TextureUnit value) const {
-	setUniformi(location, std::enum_value(value) - GL_TEXTURE0);
+	setUniformi(location, std::enum_value(value) - std::enum_value(TextureUnit::Zero));
 }
 
 inline void Shader::setUniformui(const std::string& name, unsigned int value) const {
