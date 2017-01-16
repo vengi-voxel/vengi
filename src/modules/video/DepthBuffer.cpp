@@ -42,14 +42,11 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 	}
 	_depthTexture.upload(format, dimension.x, dimension.y, nullptr, textureCount);
 	if (depthCompare()) {
-		video::bindTexture(TextureUnit::Upload, _depthTexture);
 		const TextureType type = textureType();
-		const GLenum glType = std::enum_value(type);
-		glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
+		video::setupDepthCompareTexture(TextureUnit::Upload, type, _depthTexture);
 	}
 
-	glGenFramebuffers(1, &_fbo);
+	_fbo = video::genFramebuffer();
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);
 	if (depthAttachment()) {
 		glDrawBuffer(GL_NONE);

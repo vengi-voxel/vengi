@@ -22,14 +22,6 @@ enum class DataType {
 	Max
 };
 
-enum class TextureType {
-	Texture2D = GL_TEXTURE_2D,
-	Texture2DArray = GL_TEXTURE_2D_ARRAY,
-	TextureCube = GL_TEXTURE_CUBE_MAP,
-
-	Max
-};
-
 enum class TextureWrap {
 	ClampToEdge = GL_CLAMP_TO_EDGE,
 	Repeat = GL_REPEAT,

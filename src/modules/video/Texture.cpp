@@ -8,17 +8,6 @@
 
 namespace video {
 
-static const struct Formats {
-	uint8_t bits;
-	GLenum internalFormat;
-	GLenum dataFormat;
-	GLenum dataType;
-} textureFormats[] = {
-	{32, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},
-	{24, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE},
-	{32, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8}
-};
-
 Texture::Texture(TextureType type, TextureFormat format, const std::string& name, int width, int height, int index, TextureWrap wrap) :
 		io::IOResource(), _name(name), _width(width), _height(height), _type(type), _format(format), _wrap(wrap) {
 }
@@ -31,10 +20,7 @@ Texture::~Texture() {
 }
 
 void Texture::shutdown() {
-	if (_handle != 0) {
-		glDeleteTextures(1, &_handle);
-		_handle = 0;
-	}
+	video::deleteTexture(_handle);
 }
 
 void Texture::upload(TextureFormat format, int width, int height, const uint8_t* data, int index) {
@@ -47,27 +33,14 @@ void Texture::upload(const uint8_t* data, int index) {
 }
 
 void Texture::upload(int width, int height, const uint8_t* data, int index) {
-	if (_handle == 0u) {
-		glGenTextures(1, &_handle);
+	if (_handle == InvalidId) {
+		_handle = video::genTexture();
 	}
-	bind(TextureUnit::Upload);
 	_width = width;
 	_height = height;
-	const Formats& f = textureFormats[std::enum_value(_format)];
-	const GLenum gltype = std::enum_value(_type);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	if (_type == TextureType::Texture2D) {
-		glTexImage2D(gltype, 0, f.internalFormat, _width, _height, 0, f.dataFormat, f.dataType, (const void*)data);
-	} else {
-		glTexImage3D(gltype, 0, f.internalFormat, _width, _height, index, 0, f.dataFormat, f.dataType, (const void*)data);
-	}
-
-	glTexParameteri(gltype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(gltype, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(gltype, GL_TEXTURE_WRAP_S, std::enum_value(_wrap));
-	glTexParameteri(gltype, GL_TEXTURE_WRAP_T, std::enum_value(_wrap));
-	glTexParameteri(gltype, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(gltype, GL_TEXTURE_MAX_LEVEL, 0);
+	bind(TextureUnit::Upload);
+	video::setupTexture(TextureUnit::Upload, _type, _wrap, _handle);
+	video::uploadTexture(_type, _wrap, _format, _width, _height, data, index);
 	_state = io::IOSTATE_LOADED;
 	unbind();
 	video::checkError();

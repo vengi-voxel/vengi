@@ -4,6 +4,14 @@
 
 namespace video {
 
+enum class TextureType {
+	Texture2D,
+	Texture2DArray,
+	TextureCube,
+
+	Max
+};
+
 enum class State {
 	DepthMask,
 	DepthTest,

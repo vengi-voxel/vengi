@@ -62,6 +62,17 @@ namespace _priv {
 	};
 	static GLState s;
 
+	static const struct Formats {
+		uint8_t bits;
+		GLenum internalFormat;
+		GLenum dataFormat;
+		GLenum dataType;
+	} textureFormats[] = {
+		{32, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},
+		{24, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE},
+		{32, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8}
+	};
+
 	static GLenum ShaderTypes[] {
 		GL_VERTEX_SHADER,
 		GL_FRAGMENT_SHADER,
@@ -103,6 +114,13 @@ namespace _priv {
 		GL_LINE_SMOOTH
 	};
 	static_assert(std::enum_value(State::Max) == (int)SDL_arraysize(States), "Array sizes don't match Max");
+
+	static GLenum TextureTypes[] {
+		GL_TEXTURE_2D,
+		GL_TEXTURE_2D_ARRAY,
+		GL_TEXTURE_CUBE_MAP
+	};
+	static_assert(std::enum_value(TextureType::Max) == (int)SDL_arraysize(TextureTypes), "Array sizes don't match Max");
 }
 
 inline bool clearColor(const glm::vec4& clearColor) {
@@ -243,7 +261,7 @@ inline bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	}
 	if (changeUnit || _priv::s.textureHandle != handle) {
 		_priv::s.textureHandle = handle;
-		glBindTexture(std::enum_value(type), handle);
+		glBindTexture(_priv::TextureTypes[std::enum_value(type)], handle);
 		return true;
 	}
 	return false;
@@ -459,6 +477,41 @@ inline void bufferData(VertexBufferType type, VertexBufferMode mode, const void*
 
 inline void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size) {
 	glBufferSubData(_priv::VertexBufferTypes[std::enum_value(type)], (GLintptr)offset, (GLsizeiptr)size, data);
+}
+
+inline void disableDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture) {
+	bindTexture(unit, type, depthTexture);
+	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
+	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+}
+
+inline void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture) {
+	bindTexture(unit, type, depthTexture);
+	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
+	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
+}
+
+inline void setupTexture(TextureUnit unit, video::TextureType type, video::TextureWrap wrap, Id texture) {
+	bindTexture(unit, type, texture);
+	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(glType, GL_TEXTURE_WRAP_S, std::enum_value(wrap));
+	glTexParameteri(glType, GL_TEXTURE_WRAP_T, std::enum_value(wrap));
+	glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
+}
+
+inline void uploadTexture(video::TextureType type, video::TextureWrap wrap, video::TextureFormat format, int width, int height, const uint8_t* data, int index) {
+	const _priv::Formats& f = _priv::textureFormats[std::enum_value(format)];
+	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
+	if (type == TextureType::Texture2D) {
+		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const void*)data);
+	} else {
+		glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const void*)data);
+	}
 }
 
 template<class IndexType>

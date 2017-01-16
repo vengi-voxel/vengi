@@ -435,7 +435,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
 		const GLenum glTextureType = std::enum_value(_depthBuffer.textureType());
 		if (_depthBuffer.depthCompare()) {
-			glTexParameteri(glTextureType, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+			video::disableDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
 		}
 
 		// render shadow maps
@@ -449,7 +449,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 		// restore texture
 		if (_depthBuffer.depthCompare()) {
-			glTexParameteri(glTextureType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+			video::setupDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
 		}
 
 		// unbind buffer
