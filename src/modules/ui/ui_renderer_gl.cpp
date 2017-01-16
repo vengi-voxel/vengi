@@ -200,8 +200,7 @@ TBBitmap *UIRendererGL::CreateBitmap(int width, int height, uint32 *data) {
 void UIRendererGL::RenderBatch(Batch *batch) {
 	bindBitmap(batch->bitmap);
 	core_assert_always(_vbo.update(_bufferIndex, batch->vertex, sizeof(Vertex) * batch->vertex_count));
-	glDrawArrays(GL_TRIANGLES, 0, _vbo.elements(_bufferIndex, _shader.getComponentsPos()));
-	GL_checkError();
+	video::drawArrays(video::Primitive::Triangles, _vbo.elements(_bufferIndex, _shader.getComponentsPos()));
 }
 
 void UIRendererGL::SetClipRect(const TBRect &rect) {
