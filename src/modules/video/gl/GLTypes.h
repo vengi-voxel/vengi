@@ -16,6 +16,17 @@ enum class FrameBufferMode {
 	Max
 };
 
+enum class DataType {
+	Float = GL_FLOAT,
+	UnsignedByte = GL_UNSIGNED_BYTE,
+	Byte = GL_BYTE,
+	UnsignedShort = GL_UNSIGNED_SHORT,
+	Short = GL_SHORT,
+	UnsignedInt = GL_UNSIGNED_INT,
+	Int = GL_INT,
+	Max
+};
+
 enum class VertexBufferMode {
 	Static = GL_STATIC_DRAW,
 	Dynamic = GL_DYNAMIC_DRAW,

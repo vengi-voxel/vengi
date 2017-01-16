@@ -1,7 +1,5 @@
 #pragma once
 
-#include "gl/GLTypes.h"
-
 namespace video {
 
 enum class DepthBufferMode {
@@ -51,3 +49,5 @@ enum class Feature {
 };
 
 }
+
+#include "gl/GLTypes.h"

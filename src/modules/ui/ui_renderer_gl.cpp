@@ -116,7 +116,7 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 	attributeColor.size = _shader.getComponentsColor();
 	attributeColor.stride = sizeof(Vertex);
 	attributeColor.offset = offsetof(Vertex, col);
-	attributeColor.type = GL_UNSIGNED_BYTE;
+	attributeColor.type = video::DataType::UnsignedByte;
 	attributeColor.normalized = true; // TODO: why true?
 	_vbo.addAttribute(attributeColor);
 

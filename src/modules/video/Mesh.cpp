@@ -157,7 +157,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribPos.index = shader.enableVertexAttributeArray("a_pos");
 	attribPos.stride = sizeof(core::Vertex);
 	attribPos.size = shader.getAttributeComponents(attribPos.index);
-	attribPos.type = GLmap<decltype(core::Vertex::_pos)::value_type>();
+	attribPos.type = video::mapType<decltype(core::Vertex::_pos)::value_type>();
 	attribPos.offset = offsetof(core::Vertex, _pos);
 	core_assert(attribPos.index != -1);
 	_vertexBuffer.addAttribute(attribPos);
@@ -167,7 +167,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribTexCoord.index = shader.enableVertexAttributeArray("a_texcoords");
 	attribTexCoord.stride = sizeof(core::Vertex);
 	attribTexCoord.size = shader.getAttributeComponents(attribTexCoord.index);
-	attribTexCoord.type = GLmap<decltype(core::Vertex::_texcoords)::value_type>();
+	attribTexCoord.type = video::mapType<decltype(core::Vertex::_texcoords)::value_type>();
 	attribTexCoord.offset = offsetof(core::Vertex, _texcoords);
 	_vertexBuffer.addAttribute(attribTexCoord);
 
@@ -176,7 +176,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribColor.index = shader.enableVertexAttributeArray("a_color");
 	attribColor.stride = sizeof(core::Vertex);
 	attribColor.size = shader.getAttributeComponents(attribColor.index);
-	attribColor.type = GLmap<decltype(core::Vertex::_color)::value_type>();
+	attribColor.type = video::mapType<decltype(core::Vertex::_color)::value_type>();
 	attribColor.offset = offsetof(core::Vertex, _color);
 	_vertexBuffer.addAttribute(attribColor);
 
@@ -185,7 +185,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribNorm.index = shader.enableVertexAttributeArray("a_norm");
 	attribNorm.stride = sizeof(core::Vertex);
 	attribNorm.size = shader.getAttributeComponents(attribNorm.index);
-	attribNorm.type = GLmap<decltype(core::Vertex::_norm)::value_type>();
+	attribNorm.type = video::mapType<decltype(core::Vertex::_norm)::value_type>();
 	attribNorm.offset = offsetof(core::Vertex, _norm);
 	_vertexBuffer.addAttribute(attribNorm);
 
@@ -194,7 +194,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribBoneIds.index = shader.enableVertexAttributeArray("a_boneids");
 	attribBoneIds.stride = sizeof(core::Vertex);
 	attribBoneIds.size = shader.getAttributeComponents(attribBoneIds.index);
-	attribBoneIds.type = GLmap<decltype(core::Vertex::_boneIds[0])>();
+	attribBoneIds.type = video::mapType<decltype(core::Vertex::_boneIds[0])>();
 	attribBoneIds.offset = offsetof(core::Vertex, _boneIds);
 	attribBoneIds.typeIsInt = true;
 	_vertexBuffer.addAttribute(attribBoneIds);
@@ -204,7 +204,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribBoneWeights.index = shader.enableVertexAttributeArray("a_boneweights");
 	attribBoneWeights.stride = sizeof(core::Vertex);
 	attribBoneWeights.size = shader.getAttributeComponents(attribBoneWeights.index);
-	attribBoneWeights.type = GLmap<decltype(core::Vertex::_boneWeights[0])>();
+	attribBoneWeights.type = video::mapType<decltype(core::Vertex::_boneWeights[0])>();
 	attribBoneWeights.offset = offsetof(core::Vertex, _boneWeights);
 	_vertexBuffer.addAttribute(attribBoneWeights);
 }
@@ -217,7 +217,7 @@ void Mesh::setupNormalBufferAttributes(Shader& shader) {
 	attribPos.index = shader.enableVertexAttributeArray("a_pos");
 	attribPos.stride = sizeof(MeshNormals::AttributeData);
 	attribPos.size = shader.getAttributeComponents(attribPos.index);
-	attribPos.type = GLmap<decltype(MeshNormals::AttributeData::vertex)::value_type>();
+	attribPos.type = video::mapType<decltype(MeshNormals::AttributeData::vertex)::value_type>();
 	attribPos.offset = offsetof(MeshNormals::AttributeData, vertex);
 	_vertexBufferNormals.addAttribute(attribPos);
 
@@ -226,7 +226,7 @@ void Mesh::setupNormalBufferAttributes(Shader& shader) {
 	attribColor.index = shader.enableVertexAttributeArray("a_color");
 	attribColor.stride = sizeof(MeshNormals::AttributeData);
 	attribColor.size = shader.getAttributeComponents(attribColor.index);
-	attribColor.type = GLmap<decltype(MeshNormals::AttributeData::color)::value_type>();
+	attribColor.type = video::mapType<decltype(MeshNormals::AttributeData::color)::value_type>();
 	attribColor.offset = offsetof(MeshNormals::AttributeData, color);
 	_vertexBufferNormals.addAttribute(attribColor);
 }

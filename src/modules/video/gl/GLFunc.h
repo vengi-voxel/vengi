@@ -4,9 +4,6 @@
 
 #pragma once
 
-#include "core/Log.h"
-#include "core/Common.h"
-
 // based on the generator script from oryol
 
 #ifdef __cplusplus

@@ -28,7 +28,7 @@ public:
 		/** the offset of the buffer to start reading from */
 		intptr_t offset = 0;
 		/** The data type behind your attribute - also see @c typeIsInt */
-		GLenum type = GL_FLOAT;
+		video::DataType type = video::DataType::Float;
 		/**
 		 * The rate by which the attribute advances during instanced rendering. It basically means the number of
 		 * times the entire set of vertices is rendered before the attribute is updated from the buffer. By default,

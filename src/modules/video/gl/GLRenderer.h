@@ -186,17 +186,17 @@ inline void bufferData(VertexBufferType type, VertexBufferMode mode, const void*
 
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices) {
-	glDrawElements(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), nullptr);
+	glDrawElements(std::enum_value(mode), (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), nullptr);
 }
 
 template<class IndexType>
 inline void drawElementsInstanced(Primitive mode, size_t numIndices, size_t amount) {
-	glDrawElementsInstanced(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), nullptr, (GLsizei)amount);
+	glDrawElementsInstanced(std::enum_value(mode), (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), nullptr, (GLsizei)amount);
 }
 
 template<class IndexType>
 inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIndex, int baseVertex) {
-	glDrawElementsBaseVertex(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), (const void*)(sizeof(IndexType) * baseIndex), (GLint)baseVertex);
+	glDrawElementsBaseVertex(std::enum_value(mode), (GLsizei)numIndices, std::enum_value(mapType<IndexType>()), (const void*)(sizeof(IndexType) * baseIndex), (GLint)baseVertex);
 }
 
 inline void drawArrays(Primitive mode, size_t count) {
