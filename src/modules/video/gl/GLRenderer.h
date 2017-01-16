@@ -61,6 +61,8 @@ namespace _priv {
 		bool states[std::enum_value(State::Max)] = {};
 		Id bufferHandle[std::enum_value(VertexBufferType::Max)] = {};
 		Id bufferBaseHandle[std::enum_value(VertexBufferType::Max)] = {};
+		Id framebufferHandle[std::enum_value(FrameBufferMode::Max)] = {};
+		Id framebufferTextureHandle[std::enum_value(FrameBufferMode::Max)] = {};
 	};
 	static GLState s;
 
@@ -601,13 +603,21 @@ inline void configureAttribute(const Attribute& a) {
 	checkError();
 }
 
-inline bool bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle = InvalidId) {
-	glBindFramebuffer(_priv::FrameBufferModes[std::enum_value(mode)], handle);
+inline Id bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle = InvalidId) {
+	const int typeIndex = std::enum_value(mode);
+	const Id old = _priv::s.framebufferHandle[typeIndex];
+	if (old == handle && _priv::s.framebufferTextureHandle[typeIndex] == textureHandle) {
+		return handle;
+	}
+	_priv::s.framebufferHandle[typeIndex] = handle;
+	_priv::s.framebufferTextureHandle[typeIndex] = textureHandle;
+	const GLenum glType = _priv::FrameBufferModes[typeIndex];
+	glBindFramebuffer(glType, handle);
 	if (textureHandle != InvalidId) {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureHandle, 0);
 	}
 	checkError();
-	return true;
+	return old;
 }
 
 inline bool bindRenderbuffer(Id handle) {
