@@ -71,18 +71,18 @@ bool FrameBuffer::init(const glm::ivec2& dimension) {
 }
 
 void FrameBuffer::shutdown() {
-	if (_fbo != 0) {
+	if (_fbo != InvalidId) {
 		glDeleteFramebuffers(1, &_fbo);
 	}
-	if (_depth != 0) {
+	if (_depth != InvalidId) {
 		glDeleteRenderbuffers(1, &_depth);
 	}
-	if (_texture != 0) {
+	if (_texture != InvalidId) {
 		glDeleteTextures(1, &_texture);
-		_texture = 0;
+		_texture = InvalidId;
 	}
-	_depth = 0;
-	_fbo = 0;
+	_depth = InvalidId;
+	_fbo = InvalidId;
 }
 
 void FrameBuffer::bind(bool read) {
