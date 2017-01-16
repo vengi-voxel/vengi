@@ -75,7 +75,7 @@ void GBuffer::bindForReading(bool gbuffer) {
 	bindFramebuffer(FrameBufferMode::Draw, InvalidId);
 
 	// activate the textures to read from
-	const video::TextureUnit texUnits[] = { TextureUnit::One, TextureUnit::Two, TextureUnit::Three };
+	const video::TextureUnit texUnits[] = { TextureUnit::Zero, TextureUnit::One, TextureUnit::Two };
 	static_assert(SDL_arraysize(texUnits) == SDL_arraysize(_textures), "texunits and textures don't match");
 	for (int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
 		core_assert(_textures[i] != InvalidId);
