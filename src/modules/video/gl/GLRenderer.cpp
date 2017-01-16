@@ -208,8 +208,12 @@ namespace _priv {
 		bool states[std::enum_value(State::Max)] = {};
 		Id bufferHandle[std::enum_value(VertexBufferType::Max)] = {};
 		Id bufferBaseHandle[std::enum_value(VertexBufferType::Max)] = {};
-		Id framebufferHandle[std::enum_value(FrameBufferMode::Max)] = {};
-		Id framebufferTextureHandle[std::enum_value(FrameBufferMode::Max)] = {};
+		Id framebufferHandle = InvalidId;
+		Id framebufferTextureHandle = InvalidId;
+		glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
+		glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
+		bool lineAntialiasing = false;
+		float lineWidth = 0.0f;
 	};
 	static GLState s;
 
@@ -763,13 +767,13 @@ void configureAttribute(const Attribute& a) {
 }
 
 Id bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle) {
-	const int typeIndex = std::enum_value(mode);
-	const Id old = _priv::s.framebufferHandle[typeIndex];
-	if (old == handle && _priv::s.framebufferTextureHandle[typeIndex] == textureHandle) {
+	const Id old = _priv::s.framebufferHandle;
+	if (old == handle && _priv::s.framebufferTextureHandle == textureHandle) {
 		return handle;
 	}
-	_priv::s.framebufferHandle[typeIndex] = handle;
-	_priv::s.framebufferTextureHandle[typeIndex] = textureHandle;
+	_priv::s.framebufferHandle = handle;
+	_priv::s.framebufferTextureHandle = textureHandle;
+	const int typeIndex = std::enum_value(mode);
 	const GLenum glType = _priv::FrameBufferModes[typeIndex];
 	glBindFramebuffer(glType, handle);
 	if (textureHandle != InvalidId) {
