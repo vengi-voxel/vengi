@@ -94,7 +94,7 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 	if (_size[idx] >= size && _mode == VertexBufferMode::Dynamic) {
 		glBufferSubData(std::enum_value(_targets[idx]), 0, (GLsizeiptr)size, data);
 	} else {
-		glBufferData(std::enum_value(_targets[idx]), (GLsizeiptr)size, data, std::enum_value(_mode));
+		video::bufferData(_targets[idx], _mode, data, size);
 	}
 	video::bindBuffer(_targets[idx], InvalidId);
 	_size[idx] = size;
@@ -115,7 +115,7 @@ int32_t VertexBuffer::create(const void* data, size_t size, VertexBufferType tar
 	_size[_handleIdx] = size;
 	if (data != nullptr) {
 		video::bindBuffer(_targets[_handleIdx], _handles[_handleIdx]);
-		glBufferData(std::enum_value(_targets[_handleIdx]), (GLsizeiptr)size, data, std::enum_value(_mode));
+		video::bufferData(_targets[_handleIdx], _mode, data, size);
 		video::bindBuffer(_targets[_handleIdx], InvalidId);
 	}
 	++_handleIdx;

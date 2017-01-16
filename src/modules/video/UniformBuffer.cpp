@@ -45,7 +45,7 @@ void UniformBuffer::create(size_t size, const void *data) {
 	glGenBuffers(1, &_handle);
 	if (data != nullptr) {
 		video::bindBuffer(VertexBufferType::UniformBuffer, _handle);
-		glBufferData(GL_UNIFORM_BUFFER, (GLsizeiptr)_size, data, GL_STATIC_DRAW);
+		video::bufferData(VertexBufferType::UniformBuffer, VertexBufferMode::Static, data, size);
 		video::bindBuffer(VertexBufferType::UniformBuffer, InvalidId);
 	}
 }
