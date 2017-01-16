@@ -175,6 +175,11 @@ inline bool bindBuffer(VertexBufferType type, Id handle) {
 	return true;
 }
 
+inline bool bindFrameBuffer(FrameBufferMode mode, Id handle) {
+	glBindFramebuffer(std::enum_value(mode), handle);
+	return true;
+}
+
 inline void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size) {
 	glBufferData(std::enum_value(type), (GLsizeiptr)size, data, std::enum_value(mode));
 }
@@ -197,4 +202,5 @@ inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIn
 inline void drawArrays(Primitive mode, size_t count) {
 	glDrawArrays(std::enum_value(mode), (GLint)0, (GLsizei)count);
 }
+
 }
