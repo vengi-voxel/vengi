@@ -2,6 +2,7 @@
 #include "GLTypes.h"
 #include "GLFunc.h"
 #include "core/Common.h"
+#include "core/Log.h"
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <glm/common.hpp>
@@ -355,6 +356,125 @@ namespace _priv {
 		GL_INT
 	};
 	static_assert(std::enum_value(DataType::Max) == (int)SDL_arraysize(DataTypes), "Array sizes don't match Max");
+}
+
+static inline bool checkFramebufferStatus() {
+	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status == GL_FRAMEBUFFER_COMPLETE) {
+		return true;
+	}
+	switch (status) {
+	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+		Log::error("FB error, incomplete attachment");
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+		Log::error("FB error, incomplete missing attachment");
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+		Log::error("FB error, incomplete draw buffer");
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+		Log::error("FB error, incomplete read buffer");
+		break;
+	case GL_FRAMEBUFFER_UNSUPPORTED:
+		Log::error("FB error, framebuffer unsupported");
+		break;
+	default:
+		Log::error("FB error, status: %i", (int)status);
+		break;
+	}
+	return false;
+}
+
+bool bindDepthTexture(int textureIndex, DepthBufferMode mode, Id depthTexture) {
+	const bool depthCompare = mode == DepthBufferMode::DEPTH_CMP;
+	const bool depthAttachment = mode == DepthBufferMode::DEPTH || depthCompare;
+	if (depthAttachment) {
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0, textureIndex);
+		clear(video::ClearFlag::Depth);
+	} else {
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, depthTexture, 0, textureIndex);
+		clear(video::ClearFlag::Color | video::ClearFlag::Depth);
+	}
+
+	if (!checkFramebufferStatus()) {
+		return false;
+	}
+	checkError();
+	return true;
+}
+
+void readBuffer(GBufferTextureType textureType) {
+	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
+	checkError();
+}
+
+bool setupDepthbuffer(Id fbo, DepthBufferMode mode) {
+	const Id prev = video::bindFramebuffer(video::FrameBufferMode::Default, fbo);
+	const bool depthCompare = mode == DepthBufferMode::DEPTH_CMP;
+	const bool depthAttachment = mode == DepthBufferMode::DEPTH || depthCompare;
+
+	if (depthAttachment) {
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+	} else {
+		const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
+	}
+	checkError();
+	bindFramebuffer(video::FrameBufferMode::Default, prev);
+	return true;
+}
+
+bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texCount, Id depthTexture) {
+	const Id prev = video::bindFramebuffer(video::FrameBufferMode::Default, fbo);
+
+	for (std::size_t i = 0; i < texCount; ++i) {
+		video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, textures[i]);
+		// we are going to write vec3 into the out vars in the shaders
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, dimension.x, dimension.y, 0, GL_RGB, GL_FLOAT, nullptr);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i], 0);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}
+
+	bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, depthTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
+
+	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
+
+	const bool retVal = checkFramebufferStatus();
+	bindFramebuffer(video::FrameBufferMode::Default, prev);
+	return retVal;
+}
+
+bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
+	bindTexture(video::TextureUnit::Upload, video::TextureType::TextureCube, handle);
+
+	static const GLenum types[] = {
+		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+	};
+
+	for (unsigned int i = 1; i <= 6; i++) {
+		const image::ImagePtr& img = images[i];
+		const GLenum mode = img->depth() == 4 ? GL_RGBA : GL_RGB;
+		glTexImage2D(types[i - 1], 0, mode, img->width(), img->height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data());
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return true;
 }
 
 float lineWidth(float width) {

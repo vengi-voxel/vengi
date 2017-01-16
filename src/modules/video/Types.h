@@ -205,6 +205,10 @@ enum class DataType {
 	Max
 };
 
+enum GBufferTextureType {
+	GBUFFER_TEXTURE_TYPE_POSITION, GBUFFER_TEXTURE_TYPE_DIFFUSE, GBUFFER_TEXTURE_TYPE_NORMAL, GBUFFER_NUM_TEXTURES
+};
+
 enum class DebugSeverity {
 	High,
 	Medium,

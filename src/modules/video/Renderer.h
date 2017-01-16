@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include "image/Image.h"
 
 namespace video {
 
@@ -38,6 +39,11 @@ constexpr inline DataType mapType() {
 }
 
 extern void checkError();
+extern bool setupCubemap(Id handle, const image::ImagePtr images[6]);
+extern void readBuffer(GBufferTextureType textureType);
+extern bool setupDepthbuffer(Id fbo, DepthBufferMode mode);
+extern bool bindDepthTexture(int textureIndex, DepthBufferMode mode, Id depthTexture);
+extern bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, int texCount, Id depthTexture);
 extern float lineWidth(float width);
 extern bool clearColor(const glm::vec4& clearColor);
 extern void clear(ClearFlag flag);

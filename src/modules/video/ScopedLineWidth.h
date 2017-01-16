@@ -6,7 +6,6 @@
 #pragma once
 
 #include "Renderer.h"
-#include "core/GLM.h"
 
 namespace video {
 

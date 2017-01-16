@@ -4,7 +4,6 @@
 
 #include "GBuffer.h"
 #include "ScopedFrameBuffer.h"
-#include "video/gl/GLFunc.h"
 
 #include <cstddef>
 #include "core/Common.h"
@@ -32,35 +31,12 @@ void GBuffer::shutdown() {
 
 bool GBuffer::init(const glm::ivec2& dimension) {
 	_fbo = video::genFramebuffer();
-	ScopedFrameBuffer scopedFrameBuffer(_fbo);
 
 	// +1 for the depth texture
 	const int texCount = (int)SDL_arraysize(_textures);
 	video::genTextures(texCount + 1, _textures);
-	for (std::size_t i = 0; i < texCount; ++i) {
-		video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, _textures[i]);
-		// we are going to write vec3 into the out vars in the shaders
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, dimension.x, dimension.y, 0, GL_RGB, GL_FLOAT, nullptr);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _textures[i], 0);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	}
 
-	video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, _depthTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
-
-	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	static_assert(SDL_arraysize(drawBuffers) == SDL_arraysize(_textures), "buffers and textures don't match");
-	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
-
-	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		Log::error("FB error, status: %i", (int)status);
-		return false;
-	}
-
-	return true;
+	return video::setupGBuffer(_fbo, dimension, _textures, SDL_arraysize(_textures), _depthTexture);
 }
 
 void GBuffer::bindForWriting() {
@@ -79,7 +55,6 @@ void GBuffer::bindForReading(bool gbuffer) {
 	const video::TextureUnit texUnits[] = { TextureUnit::Zero, TextureUnit::One, TextureUnit::Two };
 	static_assert(SDL_arraysize(texUnits) == SDL_arraysize(_textures), "texunits and textures don't match");
 	for (int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
-		core_assert(_textures[i] != InvalidId);
 		video::bindTexture(texUnits[i], video::TextureType::Texture2D, _textures[i]);
 	}
 }
@@ -89,8 +64,7 @@ void GBuffer::unbind() {
 }
 
 void GBuffer::setReadBuffer(GBufferTextureType textureType) {
-	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
-	video::checkError();
+	video::readBuffer(textureType);
 }
 
 }

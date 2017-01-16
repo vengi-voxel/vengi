@@ -6,7 +6,6 @@
 #include "Renderer.h"
 #include "ScopedFrameBuffer.h"
 #include "Texture.h"
-#include "video/gl/GLFunc.h"
 
 #include <cstddef>
 #include "core/Common.h"
@@ -35,32 +34,21 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 		return false;
 	}
 	_mode = mode;
-
+	_fbo = video::genFramebuffer();
 	TextureFormat format;
-	if (depthAttachment()) {
+	const bool depthCompare = mode == DepthBufferMode::DEPTH_CMP;
+	const bool depthAttachment = mode == DepthBufferMode::DEPTH || depthCompare;
+	if (depthAttachment) {
 		format = TextureFormat::D24S8;
 	} else {
 		format = TextureFormat::RGBA;
 	}
 	_depthTexture.upload(format, dimension.x, dimension.y, nullptr, textureCount);
-	if (depthCompare()) {
+	if (depthCompare) {
 		const TextureType type = textureType();
 		video::setupDepthCompareTexture(TextureUnit::Upload, type, _depthTexture);
 	}
-
-	_fbo = video::genFramebuffer();
-	ScopedFrameBuffer scopedFrameBuffer(_fbo);
-	if (depthAttachment()) {
-		glDrawBuffer(GL_NONE);
-		glReadBuffer(GL_NONE);
-	}
-	video::checkError();
-
-	if (!depthAttachment()) {
-		const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-		glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
-	}
-	return true;
+	return video::setupDepthbuffer(_fbo, _mode);
 }
 
 bool DepthBuffer::bind() {
@@ -75,41 +63,7 @@ bool DepthBuffer::bindTexture(int textureIndex) {
 	if (textureIndex < 0 || textureIndex >= 4) {
 		return false;
 	}
-	if (depthAttachment()) {
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexture, 0, textureIndex);
-		video::clear(video::ClearFlag::Depth);
-	} else {
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _depthTexture, 0, textureIndex);
-		video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
-	}
-
-	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		switch (status) {
-		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-			Log::error("FB error, incomplete attachment");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-			Log::error("FB error, incomplete missing attachment");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-			Log::error("FB error, incomplete draw buffer");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-			Log::error("FB error, incomplete read buffer");
-			break;
-		case GL_FRAMEBUFFER_UNSUPPORTED:
-			Log::error("FB error, framebuffer unsupported");
-			break;
-		default:
-			Log::error("FB error, status: %i", (int)status);
-			break;
-		}
-		return false;
-	}
-
-	video::checkError();
-	return true;
+	return video::bindDepthTexture(textureIndex, _mode, _depthTexture);
 }
 
 void DepthBuffer::unbind() {
