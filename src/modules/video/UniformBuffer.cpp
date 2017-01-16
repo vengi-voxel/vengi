@@ -27,7 +27,7 @@ bool UniformBuffer::bind(uint32_t index) const {
 	if (_handle == video::InvalidId) {
 		return false;
 	}
-	video::bindBufferBase(VertexBufferType::UniformBuffer, _handle);
+	video::bindBufferBase(VertexBufferType::UniformBuffer, _handle, index);
 	return true;
 }
 

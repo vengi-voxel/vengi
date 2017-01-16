@@ -604,6 +604,7 @@ void deleteBuffer(Id& id) {
 		return;
 	}
 	deleteBuffers(1, &id);
+	id = InvalidId;
 }
 
 void genVertexArrays(uint8_t amount, Id* ids) {
@@ -664,6 +665,7 @@ void deleteVertexArray(Id& id) {
 		return;
 	}
 	deleteVertexArrays(1, &id);
+	id = InvalidId;
 }
 
 void genTextures(uint8_t amount, Id* ids) {
@@ -693,6 +695,7 @@ void deleteTexture(Id& id) {
 		return;
 	}
 	deleteTextures(1, &id);
+	id = InvalidId;
 }
 
 void genFramebuffers(uint8_t amount, Id* ids) {
@@ -722,6 +725,7 @@ void deleteFramebuffer(Id& id) {
 		return;
 	}
 	deleteFramebuffers(1, &id);
+	id = InvalidId;
 }
 
 void genRenderbuffers(uint8_t amount, Id* ids) {
@@ -751,6 +755,7 @@ void deleteRenderbuffer(Id& id) {
 		return;
 	}
 	deleteRenderbuffers(1, &id);
+	id = InvalidId;
 }
 
 void configureAttribute(const Attribute& a) {
