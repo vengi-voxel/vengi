@@ -22,13 +22,6 @@ enum class DataType {
 	Max
 };
 
-enum class TextureWrap {
-	ClampToEdge = GL_CLAMP_TO_EDGE,
-	Repeat = GL_REPEAT,
-
-	Max
-};
-
 enum class BufferLockMode {
 	Normal = GL_MAP_WRITE_BIT,
 	Discard = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT,
@@ -93,21 +86,6 @@ enum class TextureUnit : int32_t {
 
 	// don't interfere with any other bound texture when we are uploading
 	Upload = GL_TEXTURE10,
-
-	Max
-};
-
-enum class BlendMode {
-	Zero = GL_ZERO,
-	One = GL_ONE,
-	SourceColor = GL_SRC_COLOR,
-	OneMinusSourceColor = GL_ONE_MINUS_SRC_COLOR,
-	SourceAlpha = GL_SRC_ALPHA,
-	OneMinusSourceAlpha = GL_ONE_MINUS_SRC_ALPHA,
-	DestinationAlpha = GL_DST_ALPHA,
-	OneMinusDestinationAlpha = GL_ONE_MINUS_DST_ALPHA,
-	DestinationColor = GL_DST_COLOR,
-	OneMinusDestinationColor = GL_ONE_MINUS_DST_COLOR,
 
 	Max
 };

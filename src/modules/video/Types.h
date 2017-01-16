@@ -12,6 +12,28 @@ enum class TextureType {
 	Max
 };
 
+enum class TextureWrap {
+	ClampToEdge,
+	Repeat,
+
+	Max
+};
+
+enum class BlendMode {
+	Zero,
+	One,
+	SourceColor,
+	OneMinusSourceColor,
+	SourceAlpha,
+	OneMinusSourceAlpha,
+	DestinationAlpha,
+	OneMinusDestinationAlpha,
+	DestinationColor,
+	OneMinusDestinationColor,
+
+	Max
+};
+
 enum class State {
 	DepthMask,
 	DepthTest,

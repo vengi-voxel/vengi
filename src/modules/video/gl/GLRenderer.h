@@ -121,6 +121,26 @@ namespace _priv {
 		GL_TEXTURE_CUBE_MAP
 	};
 	static_assert(std::enum_value(TextureType::Max) == (int)SDL_arraysize(TextureTypes), "Array sizes don't match Max");
+
+	static GLenum TextureWraps[] {
+		GL_CLAMP_TO_EDGE,
+		GL_REPEAT
+	};
+	static_assert(std::enum_value(TextureWrap::Max) == (int)SDL_arraysize(TextureWraps), "Array sizes don't match Max");
+
+	static GLenum BlendModes[] {
+		GL_ZERO,
+		GL_ONE,
+		GL_SRC_COLOR,
+		GL_ONE_MINUS_SRC_COLOR,
+		GL_SRC_ALPHA,
+		GL_ONE_MINUS_SRC_ALPHA,
+		GL_DST_ALPHA,
+		GL_ONE_MINUS_DST_ALPHA,
+		GL_DST_COLOR,
+		GL_ONE_MINUS_DST_COLOR
+	};
+	static_assert(std::enum_value(BlendMode::Max) == (int)SDL_arraysize(BlendModes), "Array sizes don't match Max");
 }
 
 inline bool clearColor(const glm::vec4& clearColor) {
@@ -229,7 +249,9 @@ inline bool blendFunc(BlendMode src, BlendMode dest) {
 	}
 	_priv::s.blendSrc = src;
 	_priv::s.blendDest = dest;
-	glBlendFunc(std::enum_value(src), std::enum_value(dest));
+	const GLenum glSrc = _priv::BlendModes[std::enum_value(src)];
+	const GLenum glDest = _priv::BlendModes[std::enum_value(dest)];
+	glBlendFunc(glSrc, glDest);
 	return true;
 }
 
@@ -498,8 +520,9 @@ inline void setupTexture(TextureUnit unit, video::TextureType type, video::Textu
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(glType, GL_TEXTURE_WRAP_S, std::enum_value(wrap));
-	glTexParameteri(glType, GL_TEXTURE_WRAP_T, std::enum_value(wrap));
+	const GLenum glWrap = _priv::TextureWraps[std::enum_value(wrap)];
+	glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrap);
+	glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrap);
 	glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
 }
