@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Renderer.h"
-#include "core/Common.h"
 
 namespace video {
 
@@ -23,19 +22,14 @@ namespace video {
 class UniformBuffer {
 private:
 	Id _handle = InvalidId;
-	size_t _size = 0u;
 
 public:
-	UniformBuffer();
 	~UniformBuffer();
 
 	void shutdown();
 
 	Id handle() const;
 	void create(size_t size, const void *data);
-
-	void* lock(BufferLockMode mode);
-	void unlock();
 
 	/**
 	 * @param[in] index The index of the uniform block to bind the buffer to

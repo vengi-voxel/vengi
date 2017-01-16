@@ -59,6 +59,8 @@ namespace _priv {
 		int scissorW = 0;
 		int scissorH = 0;
 		bool states[std::enum_value(State::Max)] = {};
+		Id bufferHandle[std::enum_value(VertexBufferType::Max)] = {};
+		Id bufferBaseHandle[std::enum_value(VertexBufferType::Max)] = {};
 	};
 	static GLState s;
 
@@ -351,8 +353,24 @@ inline bool bindVertexArray(Id handle) {
 }
 
 inline bool bindBuffer(VertexBufferType type, Id handle) {
-	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
+	const int typeIndex = std::enum_value(type);
+	if (_priv::s.bufferHandle[typeIndex] == handle) {
+		return false;
+	}
+	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
+	_priv::s.bufferHandle[typeIndex] = handle;
 	glBindBuffer(glType, handle);
+	return true;
+}
+
+inline bool bindBufferBase(VertexBufferType type, Id handle, uint32_t index = 0u) {
+	const int typeIndex = std::enum_value(type);
+	if (_priv::s.bufferBaseHandle[typeIndex] == handle) {
+		return false;
+	}
+	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
+	_priv::s.bufferBaseHandle[typeIndex] = handle;
+	glBindBufferBase(glType, (GLuint)index, handle);
 	return true;
 }
 
