@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "Renderer.h"
+#include "video/gl/GLFunc.h"
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "Types.h"

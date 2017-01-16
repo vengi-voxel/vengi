@@ -1,5 +1,4 @@
 #include "TestApp.h"
-#include "video/Debug.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
 #include "frontend/Movement.h"

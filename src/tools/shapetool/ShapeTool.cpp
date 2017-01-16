@@ -4,7 +4,6 @@
 
 #include "ShapeTool.h"
 #include "video/Shader.h"
-#include "video/Debug.h"
 #include "video/Renderer.h"
 #include "core/GLM.h"
 #include "core/Color.h"

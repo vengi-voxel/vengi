@@ -2,8 +2,7 @@ set(SRCS
 	Camera.cpp Camera.h
 	WindowedApp.cpp WindowedApp.h
 	gl/GLFunc.cpp gl/GLFunc.h
-	gl/GLRenderer.h gl/GLRenderer.cpp
-	gl/GLDebug.h
+	gl/GLRenderer.cpp
 	UniformBuffer.cpp UniformBuffer.h
 	VertexBuffer.cpp VertexBuffer.h
 	FrameBuffer.cpp FrameBuffer.h

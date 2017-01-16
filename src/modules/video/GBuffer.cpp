@@ -4,6 +4,7 @@
 
 #include "GBuffer.h"
 #include "ScopedFrameBuffer.h"
+#include "video/gl/GLFunc.h"
 
 #include <cstddef>
 #include "core/Common.h"

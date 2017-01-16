@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "ScopedFrameBuffer.h"
 #include "Texture.h"
+#include "video/gl/GLFunc.h"
 
 #include <cstddef>
 #include "core/Common.h"

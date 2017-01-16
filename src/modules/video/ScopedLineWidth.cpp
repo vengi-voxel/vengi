@@ -1,4 +1,5 @@
 #include "ScopedLineWidth.h"
+#include "video/gl/GLFunc.h"
 
 namespace video {
 

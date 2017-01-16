@@ -192,6 +192,26 @@ enum class Feature {
 	Max
 };
 
+enum class DataType {
+	Double,
+	Float,
+	UnsignedByte,
+	Byte,
+	UnsignedShort,
+	Short,
+	UnsignedInt,
+	Int,
+
+	Max
+};
+
+enum class DebugSeverity {
+	High,
+	Medium,
+	Low,
+	Max
+};
+
 }
 
 // TODO: make private
