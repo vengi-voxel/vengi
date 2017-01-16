@@ -18,7 +18,7 @@
 namespace video {
 
 namespace {
-inline void checkError(const char *file, unsigned int line, const char *function) {
+inline void checkSDLError(const char *file, unsigned int line, const char *function) {
 	const char *error = SDL_GetError();
 	if (*error != '\0') {
 		Log::error("%s (%s:%i => %s)", error, file, line, function);
@@ -27,7 +27,7 @@ inline void checkError(const char *file, unsigned int line, const char *function
 		Log::error("unknown error (%s:%i => %s)", file, line, function);
 	}
 }
-#define sdlCheckError() checkError(__FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define sdlCheckError() checkSDLError(__FILE__, __LINE__, __PRETTY_FUNCTION__)
 }
 
 WindowedApp::ProfilerGPU::ProfilerGPU(const std::string& name, uint16_t maxSamples) :
