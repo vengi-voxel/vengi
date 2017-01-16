@@ -601,8 +601,11 @@ inline void configureAttribute(const Attribute& a) {
 	checkError();
 }
 
-inline bool bindFramebuffer(FrameBufferMode mode, Id handle) {
+inline bool bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle = InvalidId) {
 	glBindFramebuffer(_priv::FrameBufferModes[std::enum_value(mode)], handle);
+	if (textureHandle != InvalidId) {
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureHandle, 0);
+	}
 	checkError();
 	return true;
 }
