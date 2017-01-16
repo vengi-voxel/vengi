@@ -23,7 +23,7 @@ bool FrameBuffer::init(const glm::ivec2& dimension) {
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);
 
 	glGenTextures(1, &_texture);
-	glBindTexture(GL_TEXTURE_2D, _texture);
+	video::bindTexture(video::TextureUnit::Zero, TextureType::Texture2D, _texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
