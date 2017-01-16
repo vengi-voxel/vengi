@@ -11,36 +11,37 @@
 namespace video {
 
 GBuffer::GBuffer() :
-		_fbo(0), _depthTexture(0) {
+		_fbo(InvalidId), _depthTexture(InvalidId) {
 	for (std::size_t i = 0; i < SDL_arraysize(_textures); ++i) {
-		_textures[i] = 0;
+		_textures[i] = InvalidId;
 	}
 }
 
 GBuffer::~GBuffer() {
-	core_assert_msg(_fbo == 0u, "GBuffer was not properly shut down");
+	core_assert_msg(_fbo == InvalidId, "GBuffer was not properly shut down");
 	shutdown();
 }
 
 void GBuffer::shutdown() {
-	if (_fbo != 0) {
+	if (_fbo != InvalidId) {
 		glDeleteFramebuffers(1, &_fbo);
-		_fbo = 0;
+		_fbo = InvalidId;
 	}
 
-	if (_textures[0] != 0) {
-		glDeleteTextures(SDL_arraysize(_textures), _textures);
-		for (int i = 0; i < (int)SDL_arraysize(_textures); ++i) {
-			_textures[i] = 0;
+	if (_textures[0] != InvalidId) {
+		const int texCount = (int)SDL_arraysize(_textures);
+		glDeleteTextures(texCount, _textures);
+		for (int i = 0; i < texCount; ++i) {
+			_textures[i] = InvalidId;
 		}
 	}
 
-	if (_depthTexture != 0) {
+	if (_depthTexture != InvalidId) {
 		glDeleteTextures(1, &_depthTexture);
-		_depthTexture = 0;
+		_depthTexture = InvalidId;
 	}
-	core_assert(_oldDrawFramebuffer == -1);
-	core_assert(_oldReadFramebuffer == -1);
+	core_assert(_oldDrawFramebuffer == InvalidId);
+	core_assert(_oldReadFramebuffer == InvalidId);
 }
 
 bool GBuffer::init(const glm::ivec2& dimension) {
