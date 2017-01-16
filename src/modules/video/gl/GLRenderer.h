@@ -141,6 +141,11 @@ inline bool bindVertexArray(Id handle) {
 	return true;
 }
 
+inline bool bindBuffer(VertexBufferType type, Id handle) {
+	glBindBuffer(std::enum_value(type), handle);
+	return true;
+}
+
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices) {
 	glDrawElements(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), nullptr);
