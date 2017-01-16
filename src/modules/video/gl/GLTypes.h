@@ -9,6 +9,22 @@ namespace video {
 using Id = GLuint;
 constexpr Id InvalidId = (Id)0;
 
+enum class VertexBufferMode {
+	Static = GL_STATIC_DRAW,
+	Dynamic = GL_DYNAMIC_DRAW,
+	Stream = GL_STREAM_DRAW
+};
+
+enum class VertexBufferType {
+#ifdef GL_DRAW_INDIRECT_BUFFER
+	DrawIndirectBuffer = GL_DRAW_INDIRECT_BUFFER,
+#endif
+	ArrayBuffer = GL_ARRAY_BUFFER,
+	IndexBuffer = GL_ELEMENT_ARRAY_BUFFER,
+	UniformBuffer = GL_UNIFORM_BUFFER,
+	Max
+};
+
 enum class TextureType {
 	Texture2D = GL_TEXTURE_2D,
 	Texture2DArray = GL_TEXTURE_2D_ARRAY,

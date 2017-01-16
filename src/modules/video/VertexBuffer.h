@@ -11,21 +11,6 @@
 
 namespace video {
 
-enum class VertexBufferMode : GLenum {
-	Static = GL_STATIC_DRAW,
-	Dynamic = GL_DYNAMIC_DRAW,
-	Stream = GL_STREAM_DRAW
-};
-
-enum class VertexBufferType : GLenum {
-#ifdef GL_DRAW_INDIRECT_BUFFER
-	DrawIndirectBuffer = GL_DRAW_INDIRECT_BUFFER,
-#endif
-	ArrayBuffer = GL_ARRAY_BUFFER,
-	IndexBuffer = GL_ELEMENT_ARRAY_BUFFER,
-	UniformBuffer = GL_UNIFORM_BUFFER
-};
-
 /**
  * @brief Wrapper for the opengl vertex buffer objects and vertex array objects.
  */
