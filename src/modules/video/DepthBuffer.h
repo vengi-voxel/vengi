@@ -34,7 +34,7 @@ public:
 		return glm::ivec2(_depthTexture.width(), _depthTexture.height());
 	}
 
-	inline GLuint texture() const {
+	inline Id texture() const {
 		return _depthTexture.handle();
 	}
 
@@ -52,8 +52,8 @@ public:
 private:
 	GLint _oldViewport[4] = {0, 0, 0, 0};
 	GLint _oldFramebuffer = -1;
-	GLuint _fbo = 0u;
-	GLuint _rbo = 0u;
+	Id _fbo = 0u;
+	Id _rbo = 0u;
 	Texture _depthTexture;
 	DepthBufferMode _mode = DepthBufferMode::RGBA;
 };
