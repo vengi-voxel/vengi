@@ -12,7 +12,7 @@ public:
 
 	explicit ScopedFrameBuffer(Id bindHandle) {
 		glBindFramebuffer(GL_FRAMEBUFFER, bindHandle);
-		GL_checkError();
+		checkError();
 	}
 
 	~ScopedFrameBuffer() {

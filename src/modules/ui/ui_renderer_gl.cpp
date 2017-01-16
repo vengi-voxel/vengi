@@ -61,7 +61,7 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-	GL_checkError();
+	video::checkError();
 
 	SetData(data);
 
@@ -205,7 +205,7 @@ void UIRendererGL::RenderBatch(Batch *batch) {
 
 void UIRendererGL::SetClipRect(const TBRect &rect) {
 	glScissor(m_clip_rect.x, m_screen_rect.h - (m_clip_rect.y + m_clip_rect.h), m_clip_rect.w, m_clip_rect.h);
-	GL_checkError();
+	video::checkError();
 }
 
 }

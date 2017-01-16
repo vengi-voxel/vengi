@@ -104,7 +104,7 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 	_name = name;
 	const std::string& source = getSource(shaderType, buffer);
 	const GLenum glType = std::enum_value(shaderType);
-	GL_checkError();
+	video::checkError();
 
 	if (_shader[shaderType] == 0) {
 		_shader[shaderType] = glCreateShader(glType);
@@ -306,7 +306,7 @@ int Shader::fetchAttributes() {
 	char name[MAX_SHADER_VAR_NAME];
 	int numAttributes = 0;
 	glGetProgramiv(_program, GL_ACTIVE_ATTRIBUTES, &numAttributes);
-	GL_checkError();
+	video::checkError();
 
 	_attributes.clear();
 	for (int i = 0; i < numAttributes; i++) {
@@ -445,11 +445,11 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 }
 
 void Shader::createProgramFromShaders() {
-	GL_checkError();
+	video::checkError();
 	if (_program == 0) {
 		_program = glCreateProgram();
 	}
-	GL_checkError();
+	video::checkError();
 
 	const Id vert = _shader[ShaderType::Vertex];
 	const Id frag = _shader[ShaderType::Fragment];
@@ -460,12 +460,12 @@ void Shader::createProgramFromShaders() {
 	if (geom != 0) {
 		glAttachShader(_program, geom);
 	}
-	GL_checkError();
+	video::checkError();
 
 	glLinkProgram(_program);
 	GLint status;
 	glGetProgramiv(_program, GL_LINK_STATUS, &status);
-	GL_checkError();
+	video::checkError();
 	if (status == GL_TRUE) {
 		glDetachShader(_program, vert);
 		glDetachShader(_program, frag);

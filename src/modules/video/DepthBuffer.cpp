@@ -66,7 +66,7 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
 	}
-	GL_checkError();
+	video::checkError();
 
 	if (!depthAttachment()) {
 		const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
@@ -81,7 +81,7 @@ bool DepthBuffer::bind() {
 	glGetIntegerv(GL_VIEWPORT, _oldViewport);
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 	glViewport(0, 0, _depthTexture.width(), _depthTexture.height());
-	GL_checkError();
+	video::checkError();
 	return true;
 }
 
@@ -123,7 +123,7 @@ bool DepthBuffer::bindTexture(int textureIndex) {
 		return false;
 	}
 
-	GL_checkError();
+	video::checkError();
 	return true;
 }
 

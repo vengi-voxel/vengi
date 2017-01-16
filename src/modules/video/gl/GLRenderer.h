@@ -1,10 +1,39 @@
 #pragma once
 
 #include "GLTypes.h"
+#include "core/Common.h"
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 
 namespace video {
+
+inline const char* translateError(GLenum glError) {
+#define GL_ERROR_TRANSLATE(e) case e: return #e;
+	switch (glError) {
+	/* openGL errors */
+	GL_ERROR_TRANSLATE(GL_INVALID_ENUM)
+	GL_ERROR_TRANSLATE(GL_INVALID_VALUE)
+	GL_ERROR_TRANSLATE(GL_INVALID_OPERATION)
+	GL_ERROR_TRANSLATE(GL_OUT_OF_MEMORY)
+	default:
+		return "UNKNOWN";
+	}
+#undef GL_ERROR_TRANSLATE
+}
+
+inline void checkError() {
+#ifdef DEBUG
+	/* check gl errors (can return multiple errors) */
+	for (;;) {
+		const GLenum glError = glGetError();
+		if (glError == GL_NO_ERROR) {
+			break;
+		}
+
+		core_assert_msg(glError == GL_NO_ERROR, "GL err: %s => %i", translateError(glError), glError);
+	}
+#endif
+}
 
 namespace _priv {
 	struct GLState {

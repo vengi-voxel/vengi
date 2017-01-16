@@ -37,7 +37,7 @@ bool FrameBuffer::init(const glm::ivec2& dimension) {
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, dimension.x, dimension.y);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depth);
 
-	GL_checkError();
+	video::checkError();
 
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, drawBuffers);
@@ -89,8 +89,7 @@ void FrameBuffer::shutdown() {
 void FrameBuffer::bind(bool read) {
 	core_assert(_oldFramebuffer == -1);
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
-	GL_checkError();
-
+	checkError();
 	glGetIntegerv(GL_VIEWPORT, _viewport);
 	glViewport(0, 0, _dimension.x, _dimension.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);

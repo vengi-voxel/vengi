@@ -58,19 +58,19 @@ bool GBuffer::init(const glm::ivec2& dimension) {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _textures[i], 0);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		GL_checkError();
+		video::checkError();
 	}
 
 	glBindTexture(GL_TEXTURE_2D, _depthTexture);
 	GL_setName(GL_TEXTURE, _depthTexture, "gbufferdepthtexture");
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture, 0);
-	GL_checkError();
+	video::checkError();
 
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	static_assert(SDL_arraysize(drawBuffers) == SDL_arraysize(_textures), "buffers and textures don't match");
 	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
-	GL_checkError();
+	video::checkError();
 
 	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -84,18 +84,18 @@ bool GBuffer::init(const glm::ivec2& dimension) {
 void GBuffer::bindForWriting() {
 	if (_oldDrawFramebuffer == -1) {
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &_oldDrawFramebuffer);
-		GL_checkError();
+		video::checkError();
 	}
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fbo);
-	GL_checkError();
+	checkError();
 }
 
 void GBuffer::bindForReading(bool gbuffer) {
 	if (gbuffer) {
 		if (_oldReadFramebuffer == -1) {
 			glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &_oldReadFramebuffer);
-			GL_checkError();
+			checkError();
 		}
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, _fbo);
 		return;
@@ -103,7 +103,7 @@ void GBuffer::bindForReading(bool gbuffer) {
 
 	if (_oldDrawFramebuffer == -1) {
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &_oldDrawFramebuffer);
-		GL_checkError();
+		video::checkError();
 	}
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
@@ -136,7 +136,7 @@ void GBuffer::unbind() {
 
 void GBuffer::setReadBuffer(GBufferTextureType textureType) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
-	GL_checkError();
+	video::checkError();
 }
 
 }

@@ -71,7 +71,7 @@ bool VertexBuffer::bind() const {
 		video::bindBuffer(_targets[i], _handles[i]);
 	}
 	_dirtyAttributes = false;
-	GL_checkError();
+	video::checkError();
 	return true;
 }
 

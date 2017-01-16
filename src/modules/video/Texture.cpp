@@ -70,20 +70,20 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	glTexParameteri(gltype, GL_TEXTURE_MAX_LEVEL, 0);
 	_state = io::IOSTATE_LOADED;
 	unbind();
-	GL_checkError();
+	video::checkError();
 }
 
 void Texture::bind(TextureUnit unit) const {
 	glActiveTexture(std::enum_value(unit));
 	glBindTexture(std::enum_value(_type), _handle);
-	GL_checkError();
+	checkError();
 	_boundUnit = unit;
 }
 
 void Texture::unbind() const {
 	glActiveTexture(std::enum_value(_boundUnit));
 	glBindTexture(std::enum_value(_type), 0);
-	GL_checkError();
+	checkError();
 	_boundUnit = TextureUnit::Zero;
 }
 

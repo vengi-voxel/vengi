@@ -26,7 +26,7 @@ public:
 			_scissor[0] = _scissor[1] = _scissor[2] = _scissor[3] = 0;
 		}
 		glScissor(x, y1, w, h);
-		GL_checkError();
+		video::checkError();
 	}
 
 	ScopedScissor(const glm::ivec2& pos, const glm::ivec2& size, int viewHeight) :
@@ -43,7 +43,7 @@ public:
 		} else {
 			glScissor(_scissor[0], _scissor[1], (GLsizei)_scissor[2], (GLsizei)_scissor[3]);
 		}
-		GL_checkError();
+		video::checkError();
 	}
 };
 

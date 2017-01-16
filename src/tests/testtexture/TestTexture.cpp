@@ -58,7 +58,7 @@ void TestTexture::doRender() {
 	video::drawArrays(video::Primitive::Triangles, elements);
 	_texturedFullscreenQuad.unbind();
 	_texture->unbind();
-	GL_checkError();
+	video::checkError();
 }
 
 core::AppState TestTexture::onCleanup() {

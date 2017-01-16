@@ -145,7 +145,7 @@ core::AppState Client::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	GL_checkError();
+	video::checkError();
 
 	_camera.init(glm::ivec2(), dimension());
 	_camera.setRotationType(video::CameraRotationType::Target);

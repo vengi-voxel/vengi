@@ -27,7 +27,7 @@ ScopedLineWidth::ScopedLineWidth(float width, bool antialiasing) :
 	} else {
 		glLineWidth(glm::clamp(width, _aliasedLineWidth.x, _aliasedLineWidth.y));
 	}
-	GL_checkError();
+	video::checkError();
 }
 
 ScopedLineWidth::~ScopedLineWidth() {
@@ -35,7 +35,7 @@ ScopedLineWidth::~ScopedLineWidth() {
 	if (_antialiasing && !_antialiasingWasEnabled) {
 		glDisable(GL_LINE_SMOOTH);
 	}
-	GL_checkError();
+	video::checkError();
 }
 
 }
