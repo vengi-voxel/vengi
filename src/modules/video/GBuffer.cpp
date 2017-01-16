@@ -80,8 +80,8 @@ bool GBuffer::init(const glm::ivec2& dimension) {
 }
 
 void GBuffer::bindForWriting() {
-	if (_oldDrawFramebuffer == -1) {
-		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &_oldDrawFramebuffer);
+	if (_oldDrawFramebuffer == InvalidId) {
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint*)&_oldDrawFramebuffer);
 		video::checkError();
 	}
 
@@ -90,16 +90,16 @@ void GBuffer::bindForWriting() {
 
 void GBuffer::bindForReading(bool gbuffer) {
 	if (gbuffer) {
-		if (_oldReadFramebuffer == -1) {
-			glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &_oldReadFramebuffer);
-			checkError();
+		if (_oldReadFramebuffer == InvalidId) {
+			glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, (GLint*)&_oldReadFramebuffer);
+			video::checkError();
 		}
 		bindFrameBuffer(FrameBufferMode::Read, _fbo);
 		return;
 	}
 
-	if (_oldDrawFramebuffer == -1) {
-		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &_oldDrawFramebuffer);
+	if (_oldDrawFramebuffer == InvalidId) {
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint*)&_oldDrawFramebuffer);
 		video::checkError();
 	}
 	bindFrameBuffer(FrameBufferMode::Draw, InvalidId);
@@ -114,21 +114,14 @@ void GBuffer::bindForReading(bool gbuffer) {
 }
 
 void GBuffer::unbind() {
-	if (_oldDrawFramebuffer != -1) {
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _oldDrawFramebuffer);
-		_oldDrawFramebuffer = -1;
+	if (_oldDrawFramebuffer != InvalidId) {
+		bindFrameBuffer(FrameBufferMode::Draw, (Id)_oldDrawFramebuffer);
+		_oldDrawFramebuffer = InvalidId;
 	}
-	if (_oldReadFramebuffer != -1) {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, _oldReadFramebuffer);
-		_oldReadFramebuffer = -1;
+	if (_oldReadFramebuffer != InvalidId) {
+		bindFrameBuffer(FrameBufferMode::Read, (Id)_oldReadFramebuffer);
+		_oldReadFramebuffer = InvalidId;
 	}
-
-	// activate the textures to read from
-	for (int i = 0; i < (int) SDL_arraysize(_textures); ++i) {
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
-	glActiveTexture(GL_TEXTURE0);
 }
 
 void GBuffer::setReadBuffer(GBufferTextureType textureType) {
