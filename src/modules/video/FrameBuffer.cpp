@@ -83,13 +83,9 @@ void FrameBuffer::shutdown() {
 	}
 	_depth = 0;
 	_fbo = 0;
-	core_assert(_oldFramebuffer == -1);
 }
 
 void FrameBuffer::bind(bool read) {
-	core_assert(_oldFramebuffer == -1);
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
-	checkError();
 	glGetIntegerv(GL_VIEWPORT, _viewport);
 	glViewport(0, 0, _dimension.x, _dimension.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
@@ -101,9 +97,7 @@ void FrameBuffer::bind(bool read) {
 
 void FrameBuffer::unbind() {
 	glViewport(_viewport[0], _viewport[1], (GLsizei)_viewport[2], (GLsizei)_viewport[3]);
-	core_assert(_oldFramebuffer != -1);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _oldFramebuffer);
-	_oldFramebuffer = -1;
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
 }

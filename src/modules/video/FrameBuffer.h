@@ -18,7 +18,6 @@ private:
 
 	glm::ivec2 _dimension;
 
-	int32_t _oldFramebuffer = -1;
 	int32_t _viewport[4] = {0, 0, 0, 0};
 public:
 	FrameBuffer();
