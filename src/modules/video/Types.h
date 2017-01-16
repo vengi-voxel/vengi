@@ -4,6 +4,22 @@
 
 namespace video {
 
+enum class VertexBufferType {
+	ArrayBuffer,
+	IndexBuffer,
+	UniformBuffer,
+
+	Max
+};
+
+enum class VertexBufferMode {
+	Static,
+	Dynamic,
+	Stream,
+
+	Max
+};
+
 enum class DepthBufferMode {
 	// stores -1..1 window-space depth values
 	RGBA,

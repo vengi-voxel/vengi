@@ -74,6 +74,20 @@ namespace _priv {
 		GL_FRAMEBUFFER
 	};
 	static_assert(std::enum_value(FrameBufferMode::Max) == (int)SDL_arraysize(FrameBufferModes), "Array sizes don't match Max");
+
+	static GLenum VertexBufferModes[] {
+		GL_STATIC_DRAW,
+		GL_DYNAMIC_DRAW,
+		GL_STREAM_DRAW
+	};
+	static_assert(std::enum_value(VertexBufferMode::Max) == (int)SDL_arraysize(VertexBufferModes), "Array sizes don't match Max");
+
+	static GLenum VertexBufferTypes[] {
+		GL_ARRAY_BUFFER,
+		GL_ELEMENT_ARRAY_BUFFER,
+		GL_UNIFORM_BUFFER
+	};
+	static_assert(std::enum_value(VertexBufferType::Max) == (int)SDL_arraysize(VertexBufferTypes), "Array sizes don't match Max");
 }
 
 inline bool clearColor(const glm::vec4& clearColor) {
@@ -229,7 +243,7 @@ inline bool bindVertexArray(Id handle) {
 }
 
 inline bool bindBuffer(VertexBufferType type, Id handle) {
-	glBindBuffer(std::enum_value(type), handle);
+	glBindBuffer(_priv::VertexBufferTypes[std::enum_value(type)], handle);
 	return true;
 }
 
@@ -415,11 +429,11 @@ inline bool bindRenderbuffer(Id handle) {
 }
 
 inline void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size) {
-	glBufferData(std::enum_value(type), (GLsizeiptr)size, data, std::enum_value(mode));
+	glBufferData(_priv::VertexBufferTypes[std::enum_value(type)], (GLsizeiptr)size, data, _priv::VertexBufferModes[std::enum_value(mode)]);
 }
 
 inline void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size) {
-	glBufferSubData(std::enum_value(type), (GLintptr)offset, (GLsizeiptr)size, data);
+	glBufferSubData(_priv::VertexBufferTypes[std::enum_value(type)], (GLintptr)offset, (GLsizeiptr)size, data);
 }
 
 template<class IndexType>
