@@ -23,34 +23,19 @@ GBuffer::~GBuffer() {
 }
 
 void GBuffer::shutdown() {
-	if (_fbo != InvalidId) {
-		glDeleteFramebuffers(1, &_fbo);
-		_fbo = InvalidId;
-	}
-
-	if (_textures[0] != InvalidId) {
-		const int texCount = (int)SDL_arraysize(_textures);
-		glDeleteTextures(texCount, _textures);
-		for (int i = 0; i < texCount; ++i) {
-			_textures[i] = InvalidId;
-		}
-	}
-
-	if (_depthTexture != InvalidId) {
-		glDeleteTextures(1, &_depthTexture);
-		_depthTexture = InvalidId;
-	}
-	core_assert(_oldDrawFramebuffer == InvalidId);
-	core_assert(_oldReadFramebuffer == InvalidId);
+	video::deleteFramebuffer(_fbo);
+	const int texCount = (int)SDL_arraysize(_textures);
+	video::deleteTextures(texCount, _textures);
+	video::deleteTexture(_depthTexture);
 }
 
 bool GBuffer::init(const glm::ivec2& dimension) {
-	glGenFramebuffers(1, &_fbo);
+	_fbo = video::genFramebuffer();
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);
 
 	// +1 for the depth texture
 	const int texCount = (int)SDL_arraysize(_textures);
-	glGenTextures(texCount + 1, _textures);
+	video::genTextures(texCount + 1, _textures);
 	for (std::size_t i = 0; i < texCount; ++i) {
 		video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, _textures[i]);
 		// we are going to write vec3 into the out vars in the shaders

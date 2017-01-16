@@ -40,7 +40,7 @@ public:
 	/**
 	 * @param[in] index The index of the uniform block to bind the buffer to
 	 */
-	bool bind(Id index = video::InvalidId) const;
+	bool bind(uint32_t index = 0u) const;
 };
 
 inline Id UniformBuffer::handle() const {

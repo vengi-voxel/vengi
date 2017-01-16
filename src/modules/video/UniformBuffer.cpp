@@ -50,15 +50,12 @@ void UniformBuffer::create(size_t size, const void *data) {
 	}
 }
 
-/**
- * @param[in] index The index of the uniform block to bind the buffer to
- */
-bool UniformBuffer::bind(GLuint index) const {
+bool UniformBuffer::bind(uint32_t index) const {
 	if (_handle == video::InvalidId) {
 		return false;
 	}
 	// Bind the buffer object to the uniform block.
-	glBindBufferBase(GL_UNIFORM_BUFFER, index, _handle);
+	glBindBufferBase(GL_UNIFORM_BUFFER, (GLuint)index, _handle);
 	return true;
 }
 

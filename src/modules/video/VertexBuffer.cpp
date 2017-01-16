@@ -40,7 +40,7 @@ bool VertexBuffer::bind() const {
 			return true;
 		}
 	} else {
-		glGenVertexArrays(1, &_vao);
+		_vao = video::genVertexArray();
 		video::bindVertexArray(_vao);
 	}
 
@@ -92,7 +92,7 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 
 	video::bindBuffer(_targets[idx], _handles[idx]);
 	if (_size[idx] >= size && _mode == VertexBufferMode::Dynamic) {
-		glBufferSubData(std::enum_value(_targets[idx]), 0, (GLsizeiptr)size, data);
+		video::bufferSubData(_targets[idx], 0, data, size);
 	} else {
 		video::bufferData(_targets[idx], _mode, data, size);
 	}
@@ -108,7 +108,7 @@ int32_t VertexBuffer::create(const void* data, size_t size, VertexBufferType tar
 		return -1;
 	}
 	_targets[_handleIdx] = target;
-	glGenBuffers(1, &_handles[_handleIdx]);
+	_handles[_handleIdx] = video::genBuffer();
 	if (!isValid(0)) {
 		return -1;
 	}

@@ -26,7 +26,7 @@ void Cubemap::shutdown() {
 }
 
 bool Cubemap::load() {
-	glGenTextures(1, &_textureHandle);
+	_textureHandle = video::genTexture();
 	video::bindTexture(video::TextureUnit::Upload, video::TextureType::TextureCube, _textureHandle);
 
 	static const GLenum types[] = {

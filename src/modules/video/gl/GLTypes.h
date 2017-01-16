@@ -17,6 +17,7 @@ enum class FrameBufferMode {
 };
 
 enum class DataType {
+	Double = GL_DOUBLE,
 	Float = GL_FLOAT,
 	UnsignedByte = GL_UNSIGNED_BYTE,
 	Byte = GL_BYTE,
@@ -73,6 +74,7 @@ enum class State {
 	PolygonOffsetLine = GL_POLYGON_OFFSET_LINE,
 	Scissor = GL_SCISSOR_TEST,
 	MultiSample = GL_MULTISAMPLE,
+	LineSmooth = GL_LINE_SMOOTH,
 
 	Max
 };

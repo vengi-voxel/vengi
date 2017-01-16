@@ -216,13 +216,169 @@ inline bool bindBuffer(VertexBufferType type, Id handle) {
 	return true;
 }
 
-inline bool bindFrameBuffer(FrameBufferMode mode, Id handle) {
+inline void genBuffers(uint8_t amount, Id* ids) {
+	glGenBuffers((GLsizei)amount, (GLuint*)ids);
+}
+
+inline Id genBuffer() {
+	Id id;
+	genBuffers(1, &id);
+	return id;
+}
+
+inline void deleteBuffers(uint8_t amount, Id* ids) {
+	if (amount == 0) {
+		return;
+	}
+	glDeleteBuffers((GLsizei)amount, ids);
+	for (int i = 0; i < amount; ++i) {
+		ids[i] = InvalidId;
+	}
+}
+
+inline void deleteBuffer(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	deleteBuffers(1, &id);
+}
+
+inline void genVertexArrays(uint8_t amount, Id* ids) {
+	glGenVertexArrays((GLsizei)amount, (GLuint*)ids);
+}
+
+inline Id genVertexArray() {
+	Id id;
+	genVertexArrays(1, &id);
+	return id;
+}
+
+inline void deleteVertexArrays(uint8_t amount, Id* ids) {
+	if (amount == 0) {
+		return;
+	}
+	glDeleteVertexArrays((GLsizei)amount, ids);
+	for (int i = 0; i < amount; ++i) {
+		ids[i] = InvalidId;
+	}
+}
+
+inline void deleteVertexArray(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	deleteVertexArrays(1, &id);
+}
+
+inline void genTextures(uint8_t amount, Id* ids) {
+	glGenTextures((GLsizei)amount, (GLuint*)ids);
+}
+
+inline Id genTexture() {
+	Id id;
+	genTextures(1, &id);
+	return id;
+}
+
+inline void deleteTextures(uint8_t amount, Id* ids) {
+	if (amount == 0) {
+		return;
+	}
+	glDeleteTextures((GLsizei)amount, ids);
+	for (int i = 0; i < amount; ++i) {
+		ids[i] = InvalidId;
+	}
+}
+
+inline void deleteTexture(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	deleteTextures(1, &id);
+}
+
+inline void genFramebuffers(uint8_t amount, Id* ids) {
+	glGenFramebuffers((GLsizei)amount, (GLuint*)ids);
+}
+
+inline Id genFramebuffer() {
+	Id id;
+	genFramebuffers(1, &id);
+	return id;
+}
+
+inline void deleteFramebuffers(uint8_t amount, Id* ids) {
+	if (amount == 0) {
+		return;
+	}
+	glDeleteFramebuffers((GLsizei)amount, ids);
+	for (int i = 0; i < amount; ++i) {
+		ids[i] = InvalidId;
+	}
+}
+
+inline void deleteFramebuffer(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	deleteFramebuffers(1, &id);
+}
+
+inline void genRenderbuffers(uint8_t amount, Id* ids) {
+	glGenRenderbuffers((GLsizei)amount, (GLuint*)ids);
+}
+
+inline Id genRenderbuffer() {
+	Id id;
+	genRenderbuffers(1, &id);
+	return id;
+}
+
+inline void deleteRenderbuffers(uint8_t amount, Id* ids) {
+	if (amount == 0) {
+		return;
+	}
+	glDeleteRenderbuffers((GLsizei)amount, ids);
+	for (int i = 0; i < amount; ++i) {
+		ids[i] = InvalidId;
+	}
+}
+
+inline void deleteRenderbuffer(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	deleteRenderbuffers(1, &id);
+}
+
+inline void configureAttribute(const Attribute& a) {
+	glEnableVertexAttribArray(a.index);
+	if (a.typeIsInt) {
+		glVertexAttribIPointer(a.index, a.size, std::enum_value(a.type), a.stride, GL_OFFSET_CAST(a.offset));
+	} else {
+		glVertexAttribPointer(a.index, a.size, std::enum_value(a.type), a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
+	}
+	if (a.divisor > 0) {
+		glVertexAttribDivisor(a.index, a.divisor);
+	}
+}
+
+inline bool bindFramebuffer(FrameBufferMode mode, Id handle) {
 	glBindFramebuffer(std::enum_value(mode), handle);
+	return true;
+}
+
+inline bool bindRenderbuffer(Id handle) {
+	glBindRenderbuffer(GL_RENDERBUFFER, handle);
 	return true;
 }
 
 inline void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size) {
 	glBufferData(std::enum_value(type), (GLsizeiptr)size, data, std::enum_value(mode));
+}
+
+inline void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size) {
+	glBufferSubData(std::enum_value(type), (GLintptr)offset, (GLsizeiptr)size, data);
 }
 
 template<class IndexType>

@@ -15,7 +15,7 @@ private:
 	bool _offset = false;
 public:
 	inline ScopedPolygonMode(video::PolygonMode mode) : _mode(mode) {
-		polygonMode(video::Face::FrontAndBack, mode);
+		video::polygonMode(video::Face::FrontAndBack, mode);
 	}
 
 	inline ScopedPolygonMode(video::PolygonMode mode, const glm::vec2& offset) :
@@ -44,7 +44,7 @@ public:
 			}
 		}
 
-		polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
+		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
 	}
 };
 

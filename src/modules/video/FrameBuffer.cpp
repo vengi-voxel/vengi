@@ -19,10 +19,10 @@ FrameBuffer::~FrameBuffer() {
 bool FrameBuffer::init(const glm::ivec2& dimension) {
 	_dimension = dimension;
 
-	glGenFramebuffers(1, &_fbo);
+	_fbo = video::genFramebuffer();
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);
 
-	glGenTextures(1, &_texture);
+	_texture = video::genTexture();
 	video::bindTexture(video::TextureUnit::Zero, TextureType::Texture2D, _texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -32,8 +32,8 @@ bool FrameBuffer::init(const glm::ivec2& dimension) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, dimension.x, dimension.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
 
-	glGenRenderbuffers(1, &_depth);
-	glBindRenderbuffer(GL_RENDERBUFFER, _depth);
+	_depth = video::genRenderbuffer();
+	video::bindRenderbuffer(_depth);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, dimension.x, dimension.y);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depth);
 
