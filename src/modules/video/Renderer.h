@@ -38,6 +38,7 @@ constexpr inline DataType mapType() {
 }
 
 extern void checkError();
+extern float lineWidth(float width);
 extern bool clearColor(const glm::vec4& clearColor);
 extern void clear(ClearFlag flag);
 extern bool viewport(int x, int y, int w, int h);

@@ -4,6 +4,8 @@
 #include "core/Common.h"
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
+#include <glm/common.hpp>
+#include <glm/gtc/constants.hpp>
 
 namespace video {
 
@@ -355,6 +357,31 @@ namespace _priv {
 	static_assert(std::enum_value(DataType::Max) == (int)SDL_arraysize(DataTypes), "Array sizes don't match Max");
 }
 
+float lineWidth(float width) {
+	if (_priv::s.smoothedLineWidth.x < 0.0f) {
+		GLdouble buf[2];
+		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
+		_priv::s.smoothedLineWidth.x = (float)buf[0];
+		_priv::s.smoothedLineWidth.y = (float)buf[1];
+		glGetDoublev(GL_ALIASED_LINE_WIDTH_RANGE, buf);
+		_priv::s.aliasedLineWidth.x = (float)buf[0];
+		_priv::s.aliasedLineWidth.y = (float)buf[1];
+		// TODO GL_SMOOTH_LINE_WIDTH_GRANULARITY
+	}
+	if (glm::abs(_priv::s.lineWidth - width) < glm::epsilon<float>()) {
+		return _priv::s.lineWidth;
+	}
+	const float oldWidth = _priv::s.lineWidth;
+	if (_priv::s.lineAntialiasing) {
+		glLineWidth((GLfloat)glm::clamp(width, _priv::s.smoothedLineWidth.x, _priv::s.smoothedLineWidth.y));
+	} else {
+		glLineWidth((GLfloat)glm::clamp(width, _priv::s.aliasedLineWidth.x, _priv::s.aliasedLineWidth.y));
+	}
+	checkError();
+	_priv::s.lineWidth = width;
+	return oldWidth;
+}
+
 bool clearColor(const glm::vec4& clearColor) {
 	if (_priv::s.clearColor == clearColor) {
 		return false;
@@ -419,43 +446,43 @@ bool scissor(int x, int y, int w, int h) {
 bool enable(State state) {
 	if (state == State::DepthMask) {
 		if (_priv::s.depthMask) {
-			return false;
+			return _priv::s.depthMask;
 		}
 		glDepthMask(GL_TRUE);
 		checkError();
 		_priv::s.depthMask = true;
-		return true;
+		return _priv::s.depthMask;
 	}
 
 	const int stateIndex = std::enum_value(state);
 	if (_priv::s.states[stateIndex]) {
-		return false;
+		return _priv::s.depthMask;
 	}
 	_priv::s.states[stateIndex] = true;
 	glEnable(_priv::States[stateIndex]);
 	checkError();
-	return true;
+	return _priv::s.depthMask;
 }
 
 bool disable(State state) {
 	if (state == State::DepthMask) {
 		if (!_priv::s.depthMask) {
-			return false;
+			return _priv::s.depthMask;
 		}
 		glDepthMask(GL_FALSE);
 		checkError();
 		_priv::s.depthMask = false;
-		return true;
+		return _priv::s.depthMask;
 	}
 
 	const int stateIndex = std::enum_value(state);
 	if (!_priv::s.states[stateIndex]) {
-		return false;
+		return _priv::s.depthMask;
 	}
 	_priv::s.states[stateIndex] = false;
 	glDisable(_priv::States[stateIndex]);
 	checkError();
-	return true;
+	return _priv::s.depthMask;
 }
 
 bool cullFace(Face face) {

@@ -16,11 +16,8 @@ namespace video {
  */
 class ScopedLineWidth {
 private:
-	static glm::vec2 _smoothedLineWidth;
-	static glm::vec2 _aliasedLineWidth;
-
-	float _restoreValue = 1.0f;
-	bool _antialiasingWasEnabled = false;
+	float _oldWidth = 1.0f;
+	bool _oldAntialiasing = false;
 	bool _antialiasing;
 public:
 	ScopedLineWidth(float width, bool smooth = false);
