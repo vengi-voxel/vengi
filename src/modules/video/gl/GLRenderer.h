@@ -60,6 +60,20 @@ namespace _priv {
 		int scissorH = 0;
 	};
 	static GLState s;
+
+	static GLenum ShaderTypes[] {
+		GL_VERTEX_SHADER,
+		GL_FRAGMENT_SHADER,
+		GL_GEOMETRY_SHADER
+	};
+	static_assert(std::enum_value(ShaderType::Max) == (int)SDL_arraysize(ShaderTypes), "Array sizes don't match Max");
+
+	static GLenum FrameBufferModes[] {
+		GL_READ_FRAMEBUFFER,
+		GL_DRAW_FRAMEBUFFER,
+		GL_FRAMEBUFFER
+	};
+	static_assert(std::enum_value(FrameBufferMode::Max) == (int)SDL_arraysize(FrameBufferModes), "Array sizes don't match Max");
 }
 
 inline bool clearColor(const glm::vec4& clearColor) {
@@ -265,7 +279,7 @@ inline void deleteShader(Id& id) {
 }
 
 inline Id genShader(ShaderType type) {
-	return glCreateShader(std::enum_value(type));
+	return glCreateShader(_priv::ShaderTypes[std::enum_value(type)]);
 }
 
 inline void deleteProgram(Id& id) {
@@ -391,7 +405,7 @@ inline void configureAttribute(const Attribute& a) {
 }
 
 inline bool bindFramebuffer(FrameBufferMode mode, Id handle) {
-	glBindFramebuffer(std::enum_value(mode), handle);
+	glBindFramebuffer(_priv::FrameBufferModes[std::enum_value(mode)], handle);
 	return true;
 }
 

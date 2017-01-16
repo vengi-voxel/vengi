@@ -12,6 +12,22 @@ enum class DepthBufferMode {
 	DEPTH_CMP
 };
 
+enum class FrameBufferMode {
+	Read,
+	Draw,
+	Default,
+
+	Max
+};
+
+enum class ShaderType {
+	Vertex,
+	Fragment,
+	Geometry,
+
+	Max
+};
+
 enum class TextureFormat {
 	RGBA,
 	RGB,
