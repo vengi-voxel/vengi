@@ -1,4 +1,4 @@
-#include "GLRenderer.h"
+#include "video/Renderer.h"
 
 namespace video {
 

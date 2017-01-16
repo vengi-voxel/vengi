@@ -1977,35 +1977,3 @@ void GLLoadFunctions();
 #ifdef __cplusplus
 }
 #endif
-/**
- * @brief Maps data types to GL enums
- */
-template<class POS>
-constexpr inline GLenum GLmap() {
-	if (std::is_floating_point<POS>()) {
-		return GL_FLOAT;
-	}
-
-	if (sizeof(POS) == 1u) {
-		if (std::is_unsigned<POS>()) {
-			return GL_UNSIGNED_BYTE;
-		}
-		return GL_BYTE;
-	}
-
-	if (sizeof(POS) == 2u) {
-		if (std::is_unsigned<POS>()) {
-			return GL_UNSIGNED_SHORT;
-		}
-		return GL_SHORT;
-	}
-
-	if (sizeof(POS) == 4u) {
-		if (std::is_unsigned<POS>()) {
-			return GL_UNSIGNED_INT;
-		}
-		return GL_INT;
-	}
-
-	return GL_INVALID_VALUE;
-}
