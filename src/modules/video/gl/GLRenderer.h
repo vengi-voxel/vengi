@@ -131,6 +131,15 @@ inline bool useProgram(Id handle) {
 	return true;
 }
 
+inline bool bindVertexArray(Id handle) {
+	if (_priv::s.vertexArrayHandle == handle) {
+		return false;
+	}
+	glBindVertexArray(handle);
+	_priv::s.vertexArrayHandle = handle;
+	return true;
+}
+
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices) {
 	glDrawElements(std::enum_value(mode), (GLsizei)numIndices, GLmap<IndexType>(), nullptr);
