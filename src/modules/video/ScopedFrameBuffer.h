@@ -5,17 +5,19 @@
 namespace video {
 
 class ScopedFrameBuffer {
+private:
+	Id _oldFramebuffer;
 public:
 	explicit ScopedFrameBuffer(const FrameBuffer& fbo) :
 			ScopedFrameBuffer(fbo._fbo) {
 	}
 
 	explicit ScopedFrameBuffer(Id bindHandle) {
-		video::bindFramebuffer(video::FrameBufferMode::Default, bindHandle);
+		_oldFramebuffer = video::bindFramebuffer(video::FrameBufferMode::Default, bindHandle);
 	}
 
 	~ScopedFrameBuffer() {
-		video::bindFramebuffer(video::FrameBufferMode::Default, InvalidId);
+		video::bindFramebuffer(video::FrameBufferMode::Default, _oldFramebuffer);
 	}
 };
 
