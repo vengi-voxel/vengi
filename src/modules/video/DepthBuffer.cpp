@@ -33,8 +33,6 @@ void DepthBuffer::shutdown() {
 		glDeleteRenderbuffers(1, &_rbo);
 		_rbo = InvalidId;
 	}
-
-	core_assert(_oldFramebuffer == -1);
 }
 
 bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int textureCount) {
@@ -75,8 +73,6 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 }
 
 bool DepthBuffer::bind() {
-	core_assert(_oldFramebuffer == -1);
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
 	glGetIntegerv(GL_VIEWPORT, _oldViewport);
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 	glViewport(0, 0, _depthTexture.width(), _depthTexture.height());
@@ -128,9 +124,7 @@ bool DepthBuffer::bindTexture(int textureIndex) {
 
 void DepthBuffer::unbind() {
 	glViewport(_oldViewport[0], _oldViewport[1], (GLsizei)_oldViewport[2], (GLsizei)_oldViewport[3]);
-	core_assert(_oldFramebuffer != -1);
-	glBindFramebuffer(GL_FRAMEBUFFER, _oldFramebuffer);
-	_oldFramebuffer = -1;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 }
