@@ -462,6 +462,7 @@ inline void Shader::setUniformVec2v(const std::string& name, const glm::vec2* va
 
 inline void Shader::setUniformVec2v(int location, const glm::vec2* value, int length) const {
 	glUniform2fv(location, length, glm::value_ptr(*value));
+	video::checkError();
 	ADD_LOCATION(location)
 }
 
@@ -481,6 +482,7 @@ inline void Shader::setUniformVec3v(const std::string& name, const glm::vec3* va
 
 inline void Shader::setUniformVec3v(int location, const glm::vec3* value, int length) const {
 	glUniform3fv(location, length, glm::value_ptr(*value));
+	video::checkError();
 	ADD_LOCATION(location)
 }
 
@@ -505,7 +507,6 @@ inline void Shader::setUniformfv(int location, const float* values, int length, 
 	} else {
 		setUniform4fv(location, values, length);
 	}
-	video::checkError();
 }
 
 inline void Shader::setUniform4fv(const std::string& name, const float* values, int length) const {
@@ -718,6 +719,7 @@ inline bool Shader::setDivisor(int location, uint32_t divisor) const {
 		return false;
 	}
 	glVertexAttribDivisor((GLuint)location, (GLuint)divisor);
+	video::checkError();
 	return true;
 }
 

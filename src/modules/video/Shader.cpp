@@ -31,7 +31,7 @@ Shader::Shader() {
 }
 
 Shader::~Shader() {
-	core_assert_msg(_program == 0u, "Shader %s was not properly shut down", _name.c_str());
+	core_assert_msg(_program == InvalidId, "Shader %s was not properly shut down", _name.c_str());
 	shutdown();
 }
 
@@ -179,7 +179,7 @@ bool Shader::reload() {
 
 bool Shader::init() {
 	createProgramFromShaders();
-	const bool success = _program != 0u;
+	const bool success = _program != InvalidId;
 	_initialized = success;
 	if (_initialized) {
 		fetchAttributes();
