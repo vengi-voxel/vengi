@@ -577,8 +577,7 @@ inline void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, 
 	glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 }
 
-inline void setupTexture(TextureUnit unit, video::TextureType type, video::TextureWrap wrap, Id texture) {
-	bindTexture(unit, type, texture);
+inline void setupTexture(video::TextureType type, video::TextureWrap wrap) {
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -590,7 +589,7 @@ inline void setupTexture(TextureUnit unit, video::TextureType type, video::Textu
 	glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
 }
 
-inline void uploadTexture(video::TextureType type, video::TextureWrap wrap, video::TextureFormat format, int width, int height, const uint8_t* data, int index) {
+inline void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t* data, int index) {
 	const _priv::Formats& f = _priv::textureFormats[std::enum_value(format)];
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	if (type == TextureType::Texture2D) {

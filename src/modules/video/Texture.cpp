@@ -38,12 +38,10 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	}
 	_width = width;
 	_height = height;
-	bind(TextureUnit::Upload);
-	video::setupTexture(TextureUnit::Upload, _type, _wrap, _handle);
-	video::uploadTexture(_type, _wrap, _format, _width, _height, data, index);
+	video::bindTexture(TextureUnit::Upload, _type, _handle);
+	video::setupTexture(_type, _wrap);
+	video::uploadTexture(_type, _format, _width, _height, data, index);
 	_state = io::IOSTATE_LOADED;
-	unbind();
-	video::checkError();
 }
 
 void Texture::bind(TextureUnit unit) const {
