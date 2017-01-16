@@ -17,21 +17,21 @@ DepthBuffer::DepthBuffer() :
 }
 
 DepthBuffer::~DepthBuffer() {
-	core_assert_msg(_fbo == 0u, "Depthbuffer was not properly shut down");
+	core_assert_msg(_fbo == InvalidId, "Depthbuffer was not properly shut down");
 	shutdown();
 }
 
 void DepthBuffer::shutdown() {
-	if (_fbo != 0) {
+	if (_fbo != InvalidId) {
 		glDeleteFramebuffers(1, &_fbo);
-		_fbo = 0;
+		_fbo = InvalidId;
 	}
 
 	_depthTexture.shutdown();
 
-	if (_rbo != 0) {
+	if (_rbo != InvalidId) {
 		glDeleteRenderbuffers(1, &_rbo);
-		_rbo = 0;
+		_rbo = InvalidId;
 	}
 
 	core_assert(_oldFramebuffer == -1);
