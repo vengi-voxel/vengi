@@ -182,15 +182,18 @@ inline bool polygonOffset(const glm::vec2& offset) {
 }
 
 inline bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
+	bool changeUnit = false;
 	if (_priv::s.textureUnit != unit) {
 		glActiveTexture(std::enum_value(unit));
 		_priv::s.textureUnit = unit;
+		changeUnit = true;
 	}
-	if (_priv::s.textureHandle != handle) {
+	if (changeUnit || _priv::s.textureHandle != handle) {
 		_priv::s.textureHandle = handle;
 		glBindTexture(std::enum_value(type), handle);
+		return true;
 	}
-	return true;
+	return false;
 }
 
 inline bool useProgram(Id handle) {
