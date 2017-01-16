@@ -59,8 +59,7 @@ private:
 };
 
 inline bool bindTexture(TextureUnit unit, const DepthBuffer& depthBuffer) {
-	glActiveTexture(std::enum_value(unit));
-	glBindTexture(std::enum_value(depthBuffer.textureType()), depthBuffer.texture());
+	video::bindTexture(unit, depthBuffer.textureType(), depthBuffer.texture());
 	return true;
 }
 
