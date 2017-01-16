@@ -28,13 +28,13 @@ core::AppState TestDepthBuffer::onInit() {
 	}
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createFullscreenTexturedQuad();
 
-	video::VertexBuffer::Attribute attributePos;
+	video::Attribute attributePos;
 	attributePos.bufferIndex = fullscreenQuadIndices.x;
 	attributePos.index = _shadowMapRenderShader.getLocationPos();
 	attributePos.size = _shadowMapRenderShader.getComponentsPos();
 	_texturedFullscreenQuad.addAttribute(attributePos);
 
-	video::VertexBuffer::Attribute attributeTexcoord;
+	video::Attribute attributeTexcoord;
 	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
 	attributeTexcoord.index = _shadowMapRenderShader.getLocationTexcoord();
 	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();

@@ -25,19 +25,19 @@ core::AppState TestTexture::onInit() {
 	}
 
 	const glm::ivec2& fullscreenQuadIndices = _texturedFullscreenQuad.createTexturedQuad(glm::vec2(0), dimension());
-	video::VertexBuffer::Attribute attributePos;
+	video::Attribute attributePos;
 	attributePos.bufferIndex = fullscreenQuadIndices.x;
 	attributePos.index = _textureShader.getLocationPos();
 	attributePos.size = _textureShader.getComponentsPos();
 	_texturedFullscreenQuad.addAttribute(attributePos);
 
-	video::VertexBuffer::Attribute attributeTexcoord;
+	video::Attribute attributeTexcoord;
 	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
 	attributeTexcoord.index = _textureShader.getLocationTexcoord();
 	attributeTexcoord.size = _textureShader.getComponentsTexcoord();
 	_texturedFullscreenQuad.addAttribute(attributeTexcoord);
 
-	video::VertexBuffer::Attribute attributeColor;
+	video::Attribute attributeColor;
 	attributeColor.bufferIndex = _texturedFullscreenQuad.createWhiteColorForQuad();
 	attributeColor.index = _textureShader.getLocationColor();
 	attributeColor.size = _textureShader.getComponentsColor();

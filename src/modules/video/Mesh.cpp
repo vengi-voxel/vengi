@@ -152,7 +152,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 void Mesh::setupBufferAttributes(Shader& shader) {
 	_vertexBuffer.clearAttributes();
 
-	video::VertexBuffer::Attribute attribPos;
+	video::Attribute attribPos;
 	attribPos.bufferIndex = _vertexBufferIndex;
 	attribPos.index = shader.enableVertexAttributeArray("a_pos");
 	attribPos.stride = sizeof(core::Vertex);
@@ -162,7 +162,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	core_assert(attribPos.index != -1);
 	_vertexBuffer.addAttribute(attribPos);
 
-	video::VertexBuffer::Attribute attribTexCoord;
+	video::Attribute attribTexCoord;
 	attribTexCoord.bufferIndex = _vertexBufferIndex;
 	attribTexCoord.index = shader.enableVertexAttributeArray("a_texcoords");
 	attribTexCoord.stride = sizeof(core::Vertex);
@@ -171,7 +171,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribTexCoord.offset = offsetof(core::Vertex, _texcoords);
 	_vertexBuffer.addAttribute(attribTexCoord);
 
-	video::VertexBuffer::Attribute attribColor;
+	video::Attribute attribColor;
 	attribColor.bufferIndex = _vertexBufferIndex;
 	attribColor.index = shader.enableVertexAttributeArray("a_color");
 	attribColor.stride = sizeof(core::Vertex);
@@ -180,7 +180,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribColor.offset = offsetof(core::Vertex, _color);
 	_vertexBuffer.addAttribute(attribColor);
 
-	video::VertexBuffer::Attribute attribNorm;
+	video::Attribute attribNorm;
 	attribNorm.bufferIndex = _vertexBufferIndex;
 	attribNorm.index = shader.enableVertexAttributeArray("a_norm");
 	attribNorm.stride = sizeof(core::Vertex);
@@ -189,7 +189,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribNorm.offset = offsetof(core::Vertex, _norm);
 	_vertexBuffer.addAttribute(attribNorm);
 
-	video::VertexBuffer::Attribute attribBoneIds;
+	video::Attribute attribBoneIds;
 	attribBoneIds.bufferIndex = _vertexBufferIndex;
 	attribBoneIds.index = shader.enableVertexAttributeArray("a_boneids");
 	attribBoneIds.stride = sizeof(core::Vertex);
@@ -199,7 +199,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribBoneIds.typeIsInt = true;
 	_vertexBuffer.addAttribute(attribBoneIds);
 
-	video::VertexBuffer::Attribute attribBoneWeights;
+	video::Attribute attribBoneWeights;
 	attribBoneWeights.bufferIndex = _vertexBufferIndex;
 	attribBoneWeights.index = shader.enableVertexAttributeArray("a_boneweights");
 	attribBoneWeights.stride = sizeof(core::Vertex);
@@ -212,7 +212,7 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 void Mesh::setupNormalBufferAttributes(Shader& shader) {
 	_vertexBufferNormals.clearAttributes();
 
-	video::VertexBuffer::Attribute attribPos;
+	video::Attribute attribPos;
 	attribPos.bufferIndex = _vertexBufferNormalsIndex;
 	attribPos.index = shader.enableVertexAttributeArray("a_pos");
 	attribPos.stride = sizeof(MeshNormals::AttributeData);
@@ -221,7 +221,7 @@ void Mesh::setupNormalBufferAttributes(Shader& shader) {
 	attribPos.offset = offsetof(MeshNormals::AttributeData, vertex);
 	_vertexBufferNormals.addAttribute(attribPos);
 
-	video::VertexBuffer::Attribute attribColor;
+	video::Attribute attribColor;
 	attribColor.bufferIndex = _vertexBufferNormalsIndex;
 	attribColor.index = shader.enableVertexAttributeArray("a_color");
 	attribColor.stride = sizeof(MeshNormals::AttributeData);

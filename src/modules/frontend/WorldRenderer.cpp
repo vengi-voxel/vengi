@@ -529,11 +529,11 @@ bool WorldRenderer::createVertexBufferInternal(const video::Shader& shader, cons
 	vbo.amount = 1;
 
 	const int locationPos = shader.enableVertexAttributeArray("a_pos");
-	const video::VertexBuffer::Attribute& posAttrib = getPositionVertexAttribute(vbo.vertexBuffer, locationPos, shader.getAttributeComponents(locationPos));
+	const video::Attribute& posAttrib = getPositionVertexAttribute(vbo.vertexBuffer, locationPos, shader.getAttributeComponents(locationPos));
 	vbo.vb.addAttribute(posAttrib);
 
 	const int locationInfo = shader.enableVertexAttributeArray("a_info");
-	const video::VertexBuffer::Attribute& infoAttrib = getInfoVertexAttribute(vbo.vertexBuffer, locationInfo, shader.getAttributeComponents(locationInfo));
+	const video::Attribute& infoAttrib = getInfoVertexAttribute(vbo.vertexBuffer, locationInfo, shader.getAttributeComponents(locationInfo));
 	vbo.vb.addAttribute(infoAttrib);
 
 	return true;
@@ -558,7 +558,7 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 
 	const int location = _worldInstancedShader.getLocationPos();
 	const int components = _worldInstancedShader.getComponentsPos();
-	const video::VertexBuffer::Attribute& offsetAttrib = getOffsetVertexAttribute(vbo.offsetBuffer, location, components);
+	const video::Attribute& offsetAttrib = getOffsetVertexAttribute(vbo.offsetBuffer, location, components);
 	vbo.vb.addAttribute(offsetAttrib);
 	return true;
 }
@@ -652,13 +652,13 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 	}
 
 	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
-	video::VertexBuffer::Attribute attributePos;
+	video::Attribute attributePos;
 	attributePos.bufferIndex = fullscreenQuadIndices.x;
 	attributePos.index = _shadowMapRenderShader.getLocationPos();
 	attributePos.size = _shadowMapRenderShader.getComponentsPos();
 	_shadowMapDebugBuffer.addAttribute(attributePos);
 
-	video::VertexBuffer::Attribute attributeTexcoord;
+	video::Attribute attributeTexcoord;
 	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
 	attributeTexcoord.index = _shadowMapRenderShader.getLocationTexcoord();
 	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();

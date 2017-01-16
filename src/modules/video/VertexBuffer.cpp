@@ -15,7 +15,7 @@ VertexBuffer::VertexBuffer(const void* data, size_t size, VertexBufferType targe
 VertexBuffer::VertexBuffer() {
 }
 
-bool VertexBuffer::addAttribute(const VertexBuffer::Attribute& attribute) {
+bool VertexBuffer::addAttribute(const Attribute& attribute) {
 	if (attribute.bufferIndex < 0) {
 		return false;
 	}

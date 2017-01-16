@@ -104,7 +104,7 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 	_camera.init(glm::ivec2(0), dimensions);
 	_camera.update(0L);
 
-	video::VertexBuffer::Attribute attributeColor;
+	video::Attribute attributeColor;
 	attributeColor.bufferIndex = _bufferIndex;
 	attributeColor.index = _shader.getLocationColor();
 	attributeColor.size = _shader.getComponentsColor();
@@ -114,7 +114,7 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 	attributeColor.normalized = true; // TODO: why true?
 	_vbo.addAttribute(attributeColor);
 
-	video::VertexBuffer::Attribute attributeTexCoord;
+	video::Attribute attributeTexCoord;
 	attributeTexCoord.bufferIndex = _bufferIndex;
 	attributeTexCoord.index = _shader.getLocationTexcoord();
 	attributeTexCoord.size = _shader.getComponentsTexcoord();
@@ -122,7 +122,7 @@ bool UIRendererGL::init(const glm::ivec2& dimensions) {
 	attributeTexCoord.offset = offsetof(Vertex, u);
 	_vbo.addAttribute(attributeTexCoord);
 
-	video::VertexBuffer::Attribute attributePosition;
+	video::Attribute attributePosition;
 	attributePosition.bufferIndex = _bufferIndex;
 	attributePosition.index = _shader.getLocationPos();
 	attributePosition.size = _shader.getComponentsPos();

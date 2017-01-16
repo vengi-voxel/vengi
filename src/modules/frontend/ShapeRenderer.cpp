@@ -77,13 +77,13 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 	}
 
 	// configure shader attributes
-	video::VertexBuffer::Attribute attributePos;
+	video::Attribute attributePos;
 	attributePos.bufferIndex = _vertexIndex[meshIndex];
 	attributePos.index = _colorShader.getLocationPos();
 	attributePos.size = _colorShader.getComponentsPos();
 	_vbo[meshIndex].addAttribute(attributePos);
 
-	video::VertexBuffer::Attribute attributeColor;
+	video::Attribute attributeColor;
 	attributeColor.bufferIndex = _colorIndex[meshIndex];
 	attributeColor.index = _colorShader.getLocationColor();
 	attributeColor.size = _colorShader.getComponentsColor();

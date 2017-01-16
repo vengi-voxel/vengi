@@ -70,12 +70,12 @@ bool RawVolumeRenderer::init() {
 	_worldShader.setAmbientColor(_ambientColor);
 	_worldShader.setFogcolor(core::Color::LightBlue);
 
-	video::VertexBuffer::Attribute attributePos = getPositionVertexAttribute(
+	video::Attribute attributePos = getPositionVertexAttribute(
 			_vertexBufferIndex, _worldShader.getLocationPos(),
 			_worldShader.getComponentsPos());
 	_vertexBuffer.addAttribute(attributePos);
 
-	video::VertexBuffer::Attribute attributeInfo = getInfoVertexAttribute(
+	video::Attribute attributeInfo = getInfoVertexAttribute(
 			_vertexBufferIndex, _worldShader.getLocationInfo(),
 			_worldShader.getComponentsInfo());
 	_vertexBuffer.addAttribute(attributeInfo);
