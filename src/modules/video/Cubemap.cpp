@@ -27,7 +27,7 @@ void Cubemap::shutdown() {
 
 bool Cubemap::load() {
 	glGenTextures(1, &_textureHandle);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, _textureHandle);
+	video::bindTexture(video::TextureUnit::Upload, video::TextureType::TextureCube, _textureHandle);
 
 	static const GLenum types[] = {
 		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -55,13 +55,11 @@ bool Cubemap::load() {
 }
 
 void Cubemap::bind(video::TextureUnit texUnit) {
-	glActiveTexture(std::enum_value(texUnit));
-	glBindTexture(GL_TEXTURE_CUBE_MAP, _textureHandle);
+	video::bindTexture(texUnit, video::TextureType::TextureCube, _textureHandle);
 }
 
 void Cubemap::unbind(video::TextureUnit texUnit) {
-	glActiveTexture(std::enum_value(texUnit));
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	//video::bindTexture(texUnit, video::TextureType::TextureCube, video::InvalidId);
 }
 
 }

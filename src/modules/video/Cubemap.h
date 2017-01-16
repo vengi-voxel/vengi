@@ -11,7 +11,7 @@ namespace video {
 class Cubemap {
 private:
 	std::string _filename;
-	GLuint _textureHandle;
+	Id _textureHandle;
 public:
 	/**
 	 * @brief Loads 6 textures that belongs to a cubemap. The naming schema must be "<filename>-cm-X" (where X is replaced by 1-6)
