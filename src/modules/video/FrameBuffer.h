@@ -18,8 +18,8 @@ private:
 
 	glm::ivec2 _dimension;
 
-	GLint _oldFramebuffer = -1;
-	GLint _viewport[4] = {0, 0, 0, 0};
+	int32_t _oldFramebuffer = -1;
+	int32_t _viewport[4] = {0, 0, 0, 0};
 public:
 	FrameBuffer();
 	~FrameBuffer();
@@ -32,12 +32,15 @@ public:
 
 	Id texture() const;
 
-	inline const glm::ivec2& dimension() const {
-		return _dimension;
-	}
+	const glm::ivec2& dimension() const;
 };
 
 inline Id FrameBuffer::texture() const {
 	return _texture;
 }
+
+inline const glm::ivec2& FrameBuffer::dimension() const {
+	return _dimension;
+}
+
 }
