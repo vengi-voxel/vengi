@@ -9,8 +9,8 @@ void TestDepthBuffer::doRender() {
 	Super::doRender();
 	const int width = _camera.width();
 	const int height = _camera.height();
-	const GLsizei quadWidth = (GLsizei) (width / 3.0f);
-	const GLsizei quadHeight = (GLsizei) (height / 3.0f);
+	const int quadWidth = (int) (width / 3.0f);
+	const int quadHeight = (int) (height / 3.0f);
 	video::ScopedShader scopedShader(_shadowMapRenderShader);
 	video::ScopedViewPort scopedViewport(width - quadWidth, 0, quadWidth, quadHeight);
 	core_assert_always(_texturedFullscreenQuad.bind());
