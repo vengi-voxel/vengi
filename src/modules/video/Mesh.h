@@ -25,11 +25,11 @@ public:
 
 private:
 	struct GLMeshData {
-		GLuint noOfIndices = 0u;
-		GLuint noOfVertices = 0u;
-		GLuint baseVertex = 0u;
-		GLuint baseIndex = 0u;
-		GLuint materialIndex = 0u;
+		uint32_t noOfIndices = 0u;
+		uint32_t noOfVertices = 0u;
+		uint32_t baseVertex = 0u;
+		uint32_t baseIndex = 0u;
+		uint32_t materialIndex = 0u;
 	};
 
 	struct BoneInfo {

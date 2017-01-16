@@ -195,7 +195,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		_shapeRenderer.render(_aabbMeshIndex, camera);
 	}
 
-	const GLuint nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(voxel::IndexType));
+	const uint32_t nIndices = _vertexBuffer.elements(_indexBufferIndex, 1, sizeof(voxel::IndexType));
 	if (nIndices == 0) {
 		return;
 	}

@@ -252,7 +252,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const VisibleVBOs& vbos, int* vertices) {
 	for (ChunkBuffer::VBO* vbo : vbos) {
 		shader.setUniformMatrix("u_model", vbo->model);
-		const GLuint numIndices = vbo->vb.elements(vbo->indexBuffer, 1, sizeof(voxel::IndexType));
+		const uint32_t numIndices = vbo->vb.elements(vbo->indexBuffer, 1, sizeof(voxel::IndexType));
 		if (numIndices == 0) {
 			continue;
 		}
@@ -439,8 +439,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 		// render shadow maps
 		for (int i = 0; i < maxDepthBuffers; ++i) {
-			const GLsizei halfWidth = (GLsizei) (width / 4.0f);
-			const GLsizei halfHeight = (GLsizei) (height / 4.0f);
+			const int halfWidth = (int) (width / 4.0f);
+			const int halfHeight = (int) (height / 4.0f);
 			video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
 			_shadowMapRenderShader.setCascade(i);
 			video::drawArrays(video::Primitive::Triangles, _shadowMapDebugBuffer.elements(0));

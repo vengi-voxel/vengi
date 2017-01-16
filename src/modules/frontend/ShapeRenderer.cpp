@@ -133,7 +133,7 @@ void ShapeRenderer::renderAll(const video::Camera& camera) const {
 			continue;
 		}
 		core_assert(_vbo[meshIndex].bind());
-		const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
+		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
 		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
 		_vbo[meshIndex].unbind();
 	}
@@ -144,7 +144,7 @@ void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera) cons
 	core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
 
 	core_assert_always(_vbo[meshIndex].bind());
-	const GLuint indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
+	const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
 	video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
 	_vbo[meshIndex].unbind();
 }
