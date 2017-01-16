@@ -159,7 +159,6 @@ void Mesh::setupBufferAttributes(Shader& shader) {
 	attribPos.size = shader.getAttributeComponents(attribPos.index);
 	attribPos.type = video::mapType<decltype(core::Vertex::_pos)::value_type>();
 	attribPos.offset = offsetof(core::Vertex, _pos);
-	core_assert(attribPos.index != -1);
 	_vertexBuffer.addAttribute(attribPos);
 
 	video::Attribute attribTexCoord;
