@@ -25,13 +25,14 @@ void FrameBuffer::shutdown() {
 void FrameBuffer::bind() {
 	video::getViewport(_viewport[0], _viewport[1], _viewport[2], _viewport[3]);
 	video::viewport(0, 0, _dimension.x, _dimension.y);
-	video::bindFramebuffer(FrameBufferMode::Default, _fbo, _texture);
+	_oldFramebuffer = video::bindFramebuffer(FrameBufferMode::Default, _fbo, _texture);
 	video::clear(ClearFlag::Color | ClearFlag::Depth);
 }
 
 void FrameBuffer::unbind() {
 	video::viewport(_viewport[0], _viewport[1], _viewport[2], _viewport[3]);
-	video::bindFramebuffer(FrameBufferMode::Draw, InvalidId);
+	video::bindFramebuffer(FrameBufferMode::Draw, _oldFramebuffer);
+	_oldFramebuffer = InvalidId;
 }
 
 }

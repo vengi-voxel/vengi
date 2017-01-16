@@ -15,6 +15,7 @@ private:
 	Id _fbo = video::InvalidId;
 	Id _texture = video::InvalidId;
 	Id _depth = video::InvalidId;
+	Id _oldFramebuffer = video::InvalidId;
 
 	glm::ivec2 _dimension;
 
