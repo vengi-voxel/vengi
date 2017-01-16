@@ -20,13 +20,12 @@ private:
 
 	int32_t _viewport[4] = {0, 0, 0, 0};
 public:
-	FrameBuffer();
 	~FrameBuffer();
 
 	bool init(const glm::ivec2& dimension);
 	void shutdown();
 
-	void bind(bool read = false);
+	void bind();
 	void unbind();
 
 	Id texture() const;
