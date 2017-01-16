@@ -30,14 +30,6 @@ enum class BufferLockMode {
 	Max
 };
 
-enum class ClearFlag : GLbitfield {
-	Color = GL_COLOR_BUFFER_BIT,
-	Depth = GL_DEPTH_BUFFER_BIT,
-
-	Max
-};
-CORE_ENUM_BIT_OPERATIONS(ClearFlag)
-
 enum class Primitive {
 	Points = GL_POINTS,
 	Lines = GL_LINES,

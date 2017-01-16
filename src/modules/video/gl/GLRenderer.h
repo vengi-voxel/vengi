@@ -174,13 +174,26 @@ inline bool clearColor(const glm::vec4& clearColor) {
 	if (_priv::s.clearColor == clearColor) {
 		return false;
 	}
-	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	_priv::s.clearColor = clearColor;
+	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	return true;
 }
 
 inline void clear(ClearFlag flag) {
-	glClear(std::enum_value(flag));
+	GLbitfield glValue = 0;
+	if ((flag & ClearFlag::Color) == ClearFlag::Color) {
+		glValue |= GL_COLOR_BUFFER_BIT;
+	}
+	if ((flag & ClearFlag::Stencil) == ClearFlag::Stencil) {
+		glValue |= GL_STENCIL_BUFFER_BIT;
+	}
+	if ((flag & ClearFlag::Depth) == ClearFlag::Depth) {
+		glValue |= GL_DEPTH_BUFFER_BIT;
+	}
+	if (glValue == 0) {
+		return;
+	}
+	glClear(glValue);
 }
 
 inline bool viewport(int x, int y, int w, int h) {

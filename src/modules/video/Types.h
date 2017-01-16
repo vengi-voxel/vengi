@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/Common.h"
 #include <cstdint>
 
 namespace video {
@@ -18,6 +19,15 @@ enum class TextureWrap {
 
 	Max
 };
+
+enum class ClearFlag {
+	Color,
+	Depth,
+	Stencil,
+
+	Max
+};
+CORE_ENUM_BIT_OPERATIONS(ClearFlag)
 
 enum class Face {
 	Front,
