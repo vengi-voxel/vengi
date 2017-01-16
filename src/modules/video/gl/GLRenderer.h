@@ -12,14 +12,15 @@ namespace _priv {
 		bool depthMask = false;
 		Face cullFace = Face::Max;
 		CompareFunc depthFunc = CompareFunc::Max;
-		Id programHandle = 0;
+		Id programHandle = InvalidId;
+		Id vertexArrayHandle = InvalidId;
 		glm::vec2 polygonOffset;
 		Face polygonModeFace = Face::Max;
 		PolygonMode polygonMode = PolygonMode::Max;
 		BlendMode blendSrc = BlendMode::Max;
 		BlendMode blendDest = BlendMode::Max;
 		TextureUnit textureUnit = TextureUnit::Max;
-		Id textureHandle = 0;
+		Id textureHandle = InvalidId;
 	};
 	static GLState s;
 }
