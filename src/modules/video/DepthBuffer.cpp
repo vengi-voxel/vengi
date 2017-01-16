@@ -60,7 +60,6 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 	}
 
 	glGenFramebuffers(1, &_fbo);
-	GL_setName(GL_FRAMEBUFFER, _fbo, "depthfbo");
 	ScopedFrameBuffer scopedFrameBuffer(_fbo);
 	if (depthAttachment()) {
 		glDrawBuffer(GL_NONE);
