@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include "ui_renderer_gl.h"
+#include "video/Renderer.h"
 #include "core/GLM.h"
 #include "core/Common.h"
 #include <tb_bitmap_fragment.h>
@@ -22,9 +23,8 @@ UIBitmapGL::UIBitmapGL(UIRendererGL *renderer) :
 UIBitmapGL::~UIBitmapGL() {
 	_renderer->FlushBitmap(this);
 
-	if (_destroy && _texture != 0u) {
-		glDeleteTextures(1, &_texture);
-		_texture = 0u;
+	if (_destroy) {
+		video::deleteTexture(_texture);
 	}
 }
 
@@ -51,12 +51,8 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 	_destroy = true;
 
 	_texture = video::genTexture();
-	bind();
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	video::checkError();
-
+	video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, _texture);
+	video::setupTexture(video::TextureType::Texture2D, video::TextureWrap::None);
 	SetData(data);
 
 	return true;
@@ -64,9 +60,9 @@ bool UIBitmapGL::Init(int width, int height, uint32 *data) {
 
 void UIBitmapGL::SetData(uint32 *data) {
 	_renderer->FlushBitmap(this);
-	bind();
+	video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, _texture);
 	if (data != nullptr) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _w, _h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		video::uploadTexture(video::TextureType::Texture2D, video::TextureFormat::RGBA, _w, _h, (const uint8_t*)data, 0);
 	}
 	TB_IF_DEBUG_SETTING(RENDER_BATCHES, dbg_bitmap_validations++);
 }
