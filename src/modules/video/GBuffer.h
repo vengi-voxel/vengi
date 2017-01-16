@@ -30,8 +30,6 @@ public:
 	void unbind();
 
 private:
-	Id _oldDrawFramebuffer = InvalidId;
-	Id _oldReadFramebuffer = InvalidId;
 	Id _fbo;
 	Id _textures[GBUFFER_NUM_TEXTURES];
 	Id _depthTexture;
