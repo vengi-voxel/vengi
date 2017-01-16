@@ -220,19 +220,14 @@ glm::ivec2 VertexBuffer::createFullscreenTexturedQuad(bool yFlipped) {
 }
 
 VertexBuffer::~VertexBuffer() {
-	core_assert_msg(_vao == 0u, "Vertex buffer was not properly shut down");
+	core_assert_msg(_vao == InvalidId, "Vertex buffer was not properly shut down");
 	shutdown();
 }
 
 void VertexBuffer::shutdown() {
-	if (_vao != InvalidId) {
-		glDeleteVertexArrays(1, &_vao);
-		_vao = InvalidId;
-	}
-	if (_handleIdx > 0) {
-		glDeleteBuffers(_handleIdx, _handles);
-		_handleIdx = 0;
-	}
+	video::deleteVertexArray(_vao);
+	video::deleteBuffers(_handleIdx, _handles);
+	_handleIdx = 0;
 	clearAttributes();
 }
 

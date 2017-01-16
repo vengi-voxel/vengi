@@ -11,10 +11,7 @@ UniformBuffer::~UniformBuffer() {
 }
 
 void UniformBuffer::shutdown() {
-	if (_handle != video::InvalidId) {
-		glDeleteBuffers(1, &_handle);
-		_handle = video::InvalidId;
-	}
+	video::deleteBuffer(_handle);
 }
 
 void* UniformBuffer::lock(BufferLockMode mode) {
