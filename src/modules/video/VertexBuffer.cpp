@@ -47,10 +47,10 @@ bool VertexBuffer::bind() const {
 	const int size = _attributes.size();
 	for (int i = 0; i < size; i++) {
 		const Attribute& a = _attributes[i];
-		if (_targets[a.bufferIndex] == GL_ELEMENT_ARRAY_BUFFER) {
+		if (_targets[a.bufferIndex] == VertexBufferType::IndexBuffer) {
 			continue;
 		}
-		glBindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
+		video::bindBuffer(_targets[a.bufferIndex], _handles[a.bufferIndex]);
 		glEnableVertexAttribArray(a.index);
 		if (a.typeIsInt) {
 			glVertexAttribIPointer(a.index, a.size, a.type, a.stride, GL_OFFSET_CAST(a.offset));
@@ -62,13 +62,13 @@ bool VertexBuffer::bind() const {
 		}
 	}
 	for (unsigned int i = 0; i < _handleIdx; ++i) {
-		if (_targets[i] != GL_ELEMENT_ARRAY_BUFFER) {
+		if (_targets[i] != VertexBufferType::IndexBuffer) {
 			continue;
 		}
 		if (_size[i] == 0u) {
 			continue;
 		}
-		glBindBuffer(_targets[i], _handles[i]);
+		video::bindBuffer(_targets[i], _handles[i]);
 	}
 	_dirtyAttributes = false;
 	GL_checkError();
@@ -77,10 +77,10 @@ bool VertexBuffer::bind() const {
 
 void VertexBuffer::unbind() const {
 	if (_vao != InvalidId) {
-		glBindVertexArray(0);
+		video::bindVertexArray(InvalidId);
 	} else {
 		for (unsigned int i = 0; i < _handleIdx; ++i) {
-			glBindBuffer(_targets[i], 0);
+			video::bindBuffer(_targets[i], InvalidId);
 		}
 	}
 }
@@ -90,15 +90,14 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 		return false;
 	}
 
-	glBindBuffer(_targets[idx], _handles[idx]);
+	video::bindBuffer(_targets[idx], _handles[idx]);
 	if (_size[idx] >= size && _mode == VertexBufferMode::Dynamic) {
-		glBufferSubData(_targets[idx], 0, (GLsizeiptr)size, data);
+		glBufferSubData(std::enum_value(_targets[idx]), 0, (GLsizeiptr)size, data);
 	} else {
-		glBufferData(_targets[idx], (GLsizeiptr)size, data, std::enum_value(_mode));
+		glBufferData(std::enum_value(_targets[idx]), (GLsizeiptr)size, data, std::enum_value(_mode));
 	}
-	glBindBuffer(_targets[idx], 0);
+	video::bindBuffer(_targets[idx], InvalidId);
 	_size[idx] = size;
-	GL_checkError();
 
 	return true;
 }
@@ -108,16 +107,16 @@ int32_t VertexBuffer::create(const void* data, size_t size, VertexBufferType tar
 	if (_handleIdx >= (int)SDL_arraysize(_handles)) {
 		return -1;
 	}
-	_targets[_handleIdx] = std::enum_value(target);
+	_targets[_handleIdx] = target;
 	glGenBuffers(1, &_handles[_handleIdx]);
 	if (!isValid(0)) {
 		return -1;
 	}
 	_size[_handleIdx] = size;
 	if (data != nullptr) {
-		glBindBuffer(_targets[_handleIdx], _handles[_handleIdx]);
-		glBufferData(_targets[_handleIdx], (GLsizeiptr)size, data, std::enum_value(_mode));
-		glBindBuffer(_targets[_handleIdx], 0);
+		video::bindBuffer(_targets[_handleIdx], _handles[_handleIdx]);
+		glBufferData(std::enum_value(_targets[_handleIdx]), (GLsizeiptr)size, data, std::enum_value(_mode));
+		video::bindBuffer(_targets[_handleIdx], InvalidId);
 	}
 	++_handleIdx;
 	return _handleIdx - 1;

@@ -45,7 +45,7 @@ private:
 	static constexpr int MAX_HANDLES = 6;
 	size_t _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
 	Id _handles[MAX_HANDLES] = {InvalidId, InvalidId, InvalidId, InvalidId, InvalidId, InvalidId};
-	int32_t _targets[MAX_HANDLES] = {0, 0, 0, 0, 0, 0};
+	VertexBufferType _targets[MAX_HANDLES] = {VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max};
 	uint32_t _handleIdx = 0;
 
 	std::vector<Attribute> _attributes;
