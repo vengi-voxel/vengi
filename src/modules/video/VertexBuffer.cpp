@@ -35,13 +35,13 @@ bool VertexBuffer::bind() const {
 		return false;
 	}
 	if (_vao != InvalidId) {
-		glBindVertexArray(_vao);
+		video::bindVertexArray(_vao);
 		if (!_dirtyAttributes) {
 			return true;
 		}
 	} else {
 		glGenVertexArrays(1, &_vao);
-		glBindVertexArray(_vao);
+		video::bindVertexArray(_vao);
 	}
 
 	const int size = _attributes.size();
