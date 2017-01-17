@@ -211,6 +211,13 @@ void getViewport(int& x, int& y, int& w, int& h) {
 	h = _priv::s.viewportH;
 }
 
+void getScissor(int& x, int& y, int& w, int& h) {
+	x = _priv::s.scissorX;
+	y = _priv::s.scissorY;
+	w = _priv::s.scissorW;
+	h = _priv::s.scissorH;
+}
+
 bool scissor(int x, int y, int w, int h) {
 	if (_priv::s.scissorX == x && _priv::s.scissorY == y && _priv::s.scissorW == w && _priv::s.scissorH == h) {
 		return false;

@@ -106,6 +106,7 @@ extern float lineWidth(float width);
 extern bool clearColor(const glm::vec4& clearColor);
 extern void clear(ClearFlag flag);
 extern bool viewport(int x, int y, int w, int h);
+extern void getScissor(int& x, int& y, int& w, int& h);
 extern void getViewport(int& x, int& y, int& w, int& h);
 extern bool scissor(int x, int y, int w, int h);
 extern bool enable(State state);
