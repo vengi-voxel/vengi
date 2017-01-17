@@ -1,5 +1,3 @@
-#include "_common.frag"
-
 #if cl_shadowmap == 1
 
 #ifndef CUSTOM_SHADOW_TEXCOORD

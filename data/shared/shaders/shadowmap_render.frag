@@ -1,5 +1,3 @@
-#include "_common.frag"
-
 $out vec4 o_color;
 $in vec2 v_texcoord;
 
