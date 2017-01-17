@@ -186,6 +186,7 @@ void setupFeatures() {
 		{"GL_ARB_instanced_arrays"},
 		{"GL_ARB_debug_output"}
 	};
+	static_assert(std::enum_value(Feature::Max) == (int)SDL_arraysize(array), "Array sizes don't match for Feature enum");
 
 	int numExts;
 	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
@@ -217,7 +218,7 @@ void setupFeatures() {
 	}
 
 #if SDL_VIDEO_OPENGL_ES2
-	_priv::s.features[std::enum_value(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("_texture_half_float");
+	_priv::s.features[std::enum_value(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("GL_ARB_texture_half_float");
 #else
 	_priv::s.features[std::enum_value(Feature::TextureHalfFloat)] = _priv::s.features[std::enum_value(Feature::TextureFloat)];
 #endif
@@ -226,10 +227,6 @@ void setupFeatures() {
 	_priv::s.features[std::enum_value(Feature::InstancedArrays)] = true;
 	_priv::s.features[std::enum_value(Feature::TextureCompressionETC2)] = true;
 #endif
-
-	if (!_priv::s.features[std::enum_value(Feature::InstancedArrays)]) {
-		Log::warn("instanced_arrays extension not found!");
-	}
 }
 
 }
