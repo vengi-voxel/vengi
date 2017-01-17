@@ -818,6 +818,36 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source) {
 	return true;
 }
 
+void linkShader(Id program, Id vert, Id frag, Id geom) {
+	glAttachShader(program, vert);
+	glAttachShader(program, frag);
+	if (geom != InvalidId) {
+		glAttachShader(program, geom);
+	}
+
+	glLinkProgram(program);
+	GLint status;
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
+	video::checkError();
+	if (status) {
+		glDetachShader(program, vert);
+		glDetachShader(program, frag);
+		if (geom != InvalidId) {
+			glDetachShader(program, geom);
+		}
+		return;
+	}
+	GLint infoLogLength;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+	GLchar* strInfoLog = new GLchar[infoLogLength + 1];
+	glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog);
+	strInfoLog[infoLogLength] = '\0';
+	Log::error("linker failure: %s", strInfoLog);
+	video::deleteProgram(program);
+	delete[] strInfoLog;
+}
+
 bool hasFeature(Feature f) {
 	return _priv::s.features[std::enum_value(f)];
 }

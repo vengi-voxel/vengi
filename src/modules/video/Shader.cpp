@@ -449,33 +449,7 @@ void Shader::createProgramFromShaders() {
 	const Id frag = _shader[ShaderType::Fragment];
 	const Id geom = _shader[ShaderType::Geometry];
 
-	glAttachShader(_program, vert);
-	glAttachShader(_program, frag);
-	if (geom != InvalidId) {
-		glAttachShader(_program, geom);
-	}
-
-	glLinkProgram(_program);
-	GLint status;
-	glGetProgramiv(_program, GL_LINK_STATUS, &status);
-	video::checkError();
-	if (status) {
-		glDetachShader(_program, vert);
-		glDetachShader(_program, frag);
-		if (geom != InvalidId) {
-			glDetachShader(_program, geom);
-		}
-		return;
-	}
-	GLint infoLogLength;
-	glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &infoLogLength);
-
-	GLchar* strInfoLog = new GLchar[infoLogLength + 1];
-	glGetProgramInfoLog(_program, infoLogLength, nullptr, strInfoLog);
-	strInfoLog[infoLogLength] = '\0';
-	Log::error("linker failure: %s", strInfoLog);
-	video::deleteProgram(_program);
-	delete[] strInfoLog;
+	video::linkShader(_program, vert, frag, geom);
 }
 
 void Shader::setUniformui(int location, unsigned int value) const {
