@@ -6,7 +6,7 @@ set(EXTRA_LIBRARIES)
 
 if (APPLE)
 	set(SRCS ${SRCS} nfd_cocoa.m)
-	set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} AppKit)
+#	set(EXTRA_LIBRARIES ${EXTRA_LIBRARIES} AppKit)
 endif()
 
 if (MSVC)
