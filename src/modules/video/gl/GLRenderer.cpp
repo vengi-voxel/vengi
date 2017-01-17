@@ -592,11 +592,11 @@ void deleteRenderbuffer(Id& id) {
 
 void configureAttribute(const Attribute& a) {
 	glEnableVertexAttribArray(a.index);
-	const GLenum type = _priv::DataTypes[std::enum_value(a.type)];
+	const GLenum glType = _priv::DataTypes[std::enum_value(a.type)];
 	if (a.typeIsInt) {
-		glVertexAttribIPointer(a.index, a.size, type, a.stride, GL_OFFSET_CAST(a.offset));
+		glVertexAttribIPointer(a.index, a.size, glType, a.stride, GL_OFFSET_CAST(a.offset));
 	} else {
-		glVertexAttribPointer(a.index, a.size, type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
+		glVertexAttribPointer(a.index, a.size, glType, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
 	}
 	if (a.divisor > 0) {
 		glVertexAttribDivisor(a.index, a.divisor);
@@ -717,19 +717,22 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 
 void drawElements(Primitive mode, size_t numIndices, DataType type) {
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
-	glDrawElements(glMode, (GLsizei)numIndices, _priv::DataTypes[std::enum_value(type)], nullptr);
+	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
+	glDrawElements(glMode, (GLsizei)numIndices, glType, nullptr);
 	checkError();
 }
 
 void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount) {
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
-	glDrawElementsInstanced(glMode, (GLsizei)numIndices, _priv::DataTypes[std::enum_value(type)], nullptr, (GLsizei)amount);
+	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
+	glDrawElementsInstanced(glMode, (GLsizei)numIndices, glType, nullptr, (GLsizei)amount);
 	checkError();
 }
 
 void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex) {
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
-	glDrawElementsBaseVertex(glMode, (GLsizei)numIndices, _priv::DataTypes[std::enum_value(type)], GL_OFFSET_CAST(indexSize * baseIndex), (GLint)baseVertex);
+	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
+	glDrawElementsBaseVertex(glMode, (GLsizei)numIndices, glType, GL_OFFSET_CAST(indexSize * baseIndex), (GLint)baseVertex);
 	checkError();
 }
 
