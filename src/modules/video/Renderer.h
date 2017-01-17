@@ -161,6 +161,7 @@ extern void drawElementsInstanced(Primitive mode, size_t numIndices, DataType ty
 extern void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex);
 extern void drawArrays(Primitive mode, size_t count);
 extern void disableDebug();
+extern bool hasFeature(Feature feature);
 extern void enableDebug(DebugSeverity severity);
 
 template<class IndexType>

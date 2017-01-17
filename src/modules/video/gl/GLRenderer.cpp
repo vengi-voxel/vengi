@@ -724,12 +724,19 @@ void drawArrays(Primitive mode, size_t count) {
 }
 
 void disableDebug() {
+	if (!hasFeature(Feature::DebugOutput)) {
+		return;
+	}
 	disable(State::DebugOutput);
 	checkError();
 	Log::info("disable opengl debug messages");
 }
 
 void enableDebug(DebugSeverity severity) {
+	if (!hasFeature(Feature::DebugOutput)) {
+		Log::warn("No debug feature support was detected");
+		return;
+	}
 	GLenum glSeverity = GL_DONT_CARE;
 	switch (severity) {
 	case DebugSeverity::High:
@@ -750,6 +757,10 @@ void enableDebug(DebugSeverity severity) {
 		checkError();
 		Log::info("enable opengl debug messages");
 	}
+}
+
+bool hasFeature(Feature f) {
+	return _priv::s.features[std::enum_value(f)];
 }
 
 bool init() {
