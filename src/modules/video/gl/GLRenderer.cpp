@@ -732,15 +732,19 @@ bool polygonOffset(const glm::vec2& offset) {
 	return true;
 }
 
-bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
-	bool changeUnit = false;
-	if (_priv::s.textureUnit != unit) {
-		const GLenum glUnit = _priv::TextureUnits[std::enum_value(unit)];
-		glActiveTexture(glUnit);
-		checkError();
-		_priv::s.textureUnit = unit;
-		changeUnit = true;
+bool activeTextureUnit(TextureUnit unit) {
+	if (_priv::s.textureUnit == unit) {
+		return false;
 	}
+	const GLenum glUnit = _priv::TextureUnits[std::enum_value(unit)];
+	glActiveTexture(glUnit);
+	checkError();
+	_priv::s.textureUnit = unit;
+	return true;
+}
+
+bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
+	const bool changeUnit = activeTextureUnit(unit);
 	if (changeUnit || _priv::s.textureHandle != handle) {
 		_priv::s.textureHandle = handle;
 		glBindTexture(_priv::TextureTypes[std::enum_value(type)], handle);
