@@ -10,22 +10,23 @@ namespace video {
 
 namespace _priv {
 
+// http://www.glprogramming.com/red/appendixb.html
 struct GLState {
 	GLVersion glVersion {0, 0};
 	int limits[std::enum_value(video::Limit::Max)] = { };
 	bool features[std::enum_value(video::Feature::Max)] = { };
 	glm::vec4 clearColor;
 	bool depthMask = true;
-	Face cullFace = Face::Max;
-	CompareFunc depthFunc = CompareFunc::Max;
+	Face cullFace = Face::Back;
+	CompareFunc depthFunc = CompareFunc::Less;
 	Id programHandle = InvalidId;
 	Id vertexArrayHandle = InvalidId;
 	glm::vec2 polygonOffset;
 	Face polygonModeFace = Face::Max;
-	PolygonMode polygonMode = PolygonMode::Max;
-	BlendMode blendSrc = BlendMode::SourceAlpha;
-	BlendMode blendDest = BlendMode::OneMinusSourceAlpha;
-	TextureUnit textureUnit = TextureUnit::Max;
+	PolygonMode polygonMode = PolygonMode::Solid;
+	BlendMode blendSrc = BlendMode::One;
+	BlendMode blendDest = BlendMode::Zero;
+	TextureUnit textureUnit = TextureUnit::Zero;
 	Id textureHandle = InvalidId;
 	int viewportX = 0;
 	int viewportY = 0;
@@ -43,7 +44,7 @@ struct GLState {
 	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
 	glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
 	bool lineAntialiasing = false;
-	float lineWidth = 0.0f;
+	float lineWidth = 1.0f;
 };
 
 static GLState s;
