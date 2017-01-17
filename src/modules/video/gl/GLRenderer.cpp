@@ -848,6 +848,12 @@ void linkShader(Id program, Id vert, Id frag, Id geom) {
 	delete[] strInfoLog;
 }
 
+int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name) {
+	int n = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
+	n += _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
+	return n;
+}
+
 bool hasFeature(Feature f) {
 	return _priv::s.features[std::enum_value(f)];
 }

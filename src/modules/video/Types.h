@@ -2,6 +2,7 @@
 
 #include "core/Common.h"
 #include <cstdint>
+#include "gl/GLTypes.h"
 
 namespace video {
 
@@ -218,12 +219,11 @@ enum class DebugSeverity {
 	Max
 };
 
-}
-
-// TODO: make private
-#include "gl/GLTypes.h"
-
-namespace video {
+struct Uniform {
+	int location;
+	bool block;
+};
+typedef std::unordered_map<std::string, Uniform> ShaderUniforms;
 
 /**
  * Vertex buffer shader attributes

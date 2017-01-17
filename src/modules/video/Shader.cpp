@@ -26,31 +26,6 @@
 
 namespace video {
 
-template<typename GetName, typename GetLocation>
-static int fillUniforms(Id _program, Shader::ShaderUniforms& _uniforms, const std::string& _name, GLenum activeEnum, GLenum activeMaxLengthEnum, GetName getName, GetLocation getLocation, bool block) {
-	int numUniforms = 0;
-	glGetProgramiv(_program, activeEnum, &numUniforms);
-	int uniformNameSize = 0;
-	glGetProgramiv(_program, activeMaxLengthEnum, &uniformNameSize);
-	char name[uniformNameSize + 1];
-
-	for (int i = 0; i < numUniforms; i++) {
-		getName(_program, i, uniformNameSize, nullptr, name);
-		const int location = getLocation(_program, name);
-		if (location < 0) {
-			Log::warn("Could not get uniform location for %s is %i (shader %s)", name, location, _name.c_str());
-			continue;
-		}
-		char* array = strchr(name, '[');
-		if (array != nullptr) {
-			*array = '\0';
-		}
-		_uniforms[name] = Shader::Uniform{location, block};
-		Log::debug("Got uniform location for %s is %i (shader %s)", name, location, _name.c_str());
-	}
-	return numUniforms;
-}
-
 #ifdef GL_ES_VERSION_2_0
 // default to opengles3
 int Shader::glslVersion = GLSLVersion::V300;
@@ -248,7 +223,7 @@ int Shader::getUniformLocation(const std::string& name) const {
 	return uniform->location;
 }
 
-const Shader::Uniform* Shader::getUniform(const std::string& name) const {
+const Uniform* Shader::getUniform(const std::string& name) const {
 	ShaderUniforms::const_iterator i = _uniforms.find(name);
 	if (i == _uniforms.end()) {
 		Log::debug("can't find uniform %s in shader %s", name.c_str(), _name.c_str());
@@ -293,9 +268,7 @@ std::vector<int> Shader::getUniformBlockOffsets(const char **names, int amount) 
 
 int Shader::fetchUniforms() {
 	_uniforms.clear();
-	int n = fillUniforms(_program, _uniforms, _name, GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
-	n += fillUniforms(_program, _uniforms, _name, GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
-	return n;
+	return video::fetchUniforms(_program, _uniforms, _name);
 }
 
 int Shader::fetchAttributes() {

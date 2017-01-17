@@ -166,6 +166,7 @@ extern bool hasFeature(Feature feature);
 extern void enableDebug(DebugSeverity severity);
 extern bool compileShader(Id id, ShaderType shaderType, const std::string& source);
 extern void linkShader(Id program, Id vert, Id frag, Id geom);
+extern int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name);
 
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices) {

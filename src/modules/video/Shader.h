@@ -37,12 +37,6 @@ class UniformBuffer;
 #define VALIDATE_UNIFORMS 0
 
 class Shader {
-public:
-	struct Uniform {
-		int location;
-		bool block;
-	};
-	typedef std::unordered_map<std::string, Uniform> ShaderUniforms;
 protected:
 	typedef std::unordered_map<ShaderType, Id, EnumClassHash> ShaderMap;
 	ShaderMap _shader;
