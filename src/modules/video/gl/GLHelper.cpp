@@ -177,14 +177,14 @@ void setupLimits() {
 
 void setupFeatures() {
 	const std::vector<const char *> array[] = {
-		{"_texture_compression_s3tc", "_compressed_texture_s3tc", "_texture_compression_dxt1"},
-		{"_texture_compression_pvrtc", "_compressed_texture_pvrtc"},
+		{"GL_ARB_texture_compression_s3tc", "GL_ARB_compressed_texture_s3tc", "GL_ARB_texture_compression_dxt1"},
+		{"GL_ARB_texture_compression_pvrtc", "GL_ARB_compressed_texture_pvrtc"},
 		{},
-		{"_compressed_ATC_texture", "_compressed_texture_atc"},
-		{"_texture_float"},
-		{"_texture_half_float"},
-		{"_instanced_arrays"},
-		{"_debug_output"}
+		{"GL_ARB_compressed_ATC_texture", "GL_ARB_compressed_texture_atc"},
+		{"GL_ARB_texture_float"},
+		{"GL_ARB_texture_half_float"},
+		{"GL_ARB_instanced_arrays"},
+		{"GL_ARB_debug_output"}
 	};
 
 	int numExts;
@@ -200,6 +200,7 @@ void setupFeatures() {
 		for (const char *s : a) {
 			_priv::s.features[i] = SDL_GL_ExtensionSupported(s);
 			if (_priv::s.features[i]) {
+				Log::info("Detected feature: %s", s);
 				break;
 			}
 			++s;
