@@ -686,7 +686,7 @@ bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimensi
 
 	shader::Materialblock::Data materialBlock;
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-	_materialBlock.update(materialBlock);
+	_materialBlock.create(materialBlock);
 
 	if (!_shadow.init()) {
 		return false;

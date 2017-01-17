@@ -556,8 +556,10 @@ void ShaderTool::generateSrc() {
 		ub << "\tstatic_assert(sizeof(Data) == " << structSize << ", \"Unexpected structure size for Data\");\n";
 #endif
 		ub << "\n\tinline bool update(const Data& var) {\n";
-		ub << "\t\t_" << uniformBufferName << ".create(sizeof(var), (const void*)&var);\n";
-		ub << "\t\treturn true;\n";
+		ub << "\t\treturn _" << uniformBufferName << ".update((const void*)&var, sizeof(var));\n";
+		ub << "\t}\n\n";
+		ub << "\n\tinline bool create(const Data& var) {\n";
+		ub << "\t\treturn _" << uniformBufferName << ".create((const void*)&var, sizeof(var));\n";
 		ub << "\t}\n\n";
 		ub << "\n\tinline operator const video::UniformBuffer&() const {\n";
 		ub << "\t\treturn _" << uniformBufferName << ";\n";

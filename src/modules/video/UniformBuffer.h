@@ -29,7 +29,8 @@ public:
 	void shutdown();
 
 	Id handle() const;
-	void create(size_t size, const void *data);
+	bool create(const void *data, size_t size);
+	bool update(const void *data, size_t size);
 
 	/**
 	 * @param[in] index The index of the uniform block to bind the buffer to

@@ -81,13 +81,15 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 		return false;
 	}
 
-	video::bindBuffer(_targets[idx], _handles[idx]);
-	if (_size[idx] >= size && _mode == VertexBufferMode::Dynamic) {
-		video::bufferSubData(_targets[idx], 0, data, size);
+	const VertexBufferType type = _targets[idx];
+	const Id id = _handles[idx];
+	video::bindBuffer(type, id);
+	if (_size[idx] >= size && _mode != VertexBufferMode::Static) {
+		video::bufferSubData(type, 0, data, size);
 	} else {
-		video::bufferData(_targets[idx], _mode, data, size);
+		video::bufferData(type, _mode, data, size);
 	}
-	video::unbindBuffer(_targets[idx]);
+	video::unbindBuffer(type);
 	_size[idx] = size;
 
 	return true;

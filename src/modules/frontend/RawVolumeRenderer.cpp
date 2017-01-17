@@ -59,7 +59,7 @@ bool RawVolumeRenderer::init() {
 
 	shader::Materialblock::Data materialBlock;
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-	_materialBlock.update(materialBlock);
+	_materialBlock.create(materialBlock);
 	video::ScopedShader scoped(_worldShader);
 	_worldShader.setMaterialblock(_materialBlock);
 	_worldShader.setModel(glm::mat4());

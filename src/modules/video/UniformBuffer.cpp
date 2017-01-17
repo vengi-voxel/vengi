@@ -11,16 +11,22 @@ void UniformBuffer::shutdown() {
 	video::deleteBuffer(_handle);
 }
 
-void UniformBuffer::create(size_t size, const void *data) {
+bool UniformBuffer::create(const void *data, size_t size) {
 	if (_handle != video::InvalidId) {
 		shutdown();
 	}
 	_handle = video::genBuffer();
-	if (data != nullptr) {
-		video::bindBuffer(VertexBufferType::UniformBuffer, _handle);
-		video::bufferData(VertexBufferType::UniformBuffer, VertexBufferMode::Static, data, size);
-		video::unbindBuffer(VertexBufferType::UniformBuffer);
+	return update(data, size);
+}
+
+bool UniformBuffer::update(const void *data, size_t size) {
+	if (_handle == video::InvalidId) {
+		return false;
 	}
+	video::bindBuffer(VertexBufferType::UniformBuffer, _handle);
+	video::bufferData(VertexBufferType::UniformBuffer, VertexBufferMode::Dynamic, data, size);
+	video::unbindBuffer(VertexBufferType::UniformBuffer);
+	return true;
 }
 
 bool UniformBuffer::bind(uint32_t index) const {
