@@ -5,6 +5,7 @@
 #pragma once
 
 // based on the generator script from oryol
+// make sure that this header is private in the gl subdir - don't expose.
 
 #ifdef __cplusplus
 extern "C" {

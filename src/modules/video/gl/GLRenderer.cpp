@@ -15,6 +15,10 @@
 
 namespace video {
 
+#ifndef MAX_SHADER_VAR_NAME
+#define MAX_SHADER_VAR_NAME 128
+#endif
+
 #define SANITY_CHECKS_GL 0
 
 void checkError() {
@@ -811,7 +815,7 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source) {
 		}
 
 		Log::error("Failed to compile:\n----- \n%s\n-----\nshaderType: %s\nerrorlog: %s", source.c_str(), strShaderType, errorLog.c_str());
-		video::deleteShader(id);
+		deleteShader(id);
 		return false;
 	}
 
@@ -828,7 +832,7 @@ void linkShader(Id program, Id vert, Id frag, Id geom) {
 	glLinkProgram(program);
 	GLint status;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
-	video::checkError();
+	checkError();
 	if (status) {
 		glDetachShader(program, vert);
 		glDetachShader(program, frag);
@@ -844,7 +848,7 @@ void linkShader(Id program, Id vert, Id frag, Id geom) {
 	glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog);
 	strInfoLog[infoLogLength] = '\0';
 	Log::error("linker failure: %s", strInfoLog);
-	video::deleteProgram(program);
+	deleteProgram(program);
 	delete[] strInfoLog;
 }
 
@@ -852,6 +856,24 @@ int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name)
 	int n = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
 	n += _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
 	return n;
+}
+
+int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string& name) {
+	char varName[MAX_SHADER_VAR_NAME];
+	int numAttributes = 0;
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &numAttributes);
+	checkError();
+
+	for (int i = 0; i < numAttributes; ++i) {
+		GLsizei length;
+		GLint size;
+		GLenum type;
+		glGetActiveAttrib(program, i, MAX_SHADER_VAR_NAME - 1, &length, &size, &type, varName);
+		const int location = glGetAttribLocation(program, varName);
+		attributes[varName] = location;
+		Log::debug("attribute location for %s is %i (shader %s)", varName, location, name.c_str());
+	}
+	return numAttributes;
 }
 
 bool hasFeature(Feature f) {

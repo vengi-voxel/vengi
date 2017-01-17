@@ -58,7 +58,6 @@ protected:
 	mutable std::unordered_set<int> _usedUniforms;
 #endif
 
-	typedef std::unordered_map<std::string, int> ShaderAttributes;
 	ShaderAttributes _attributes;
 
 	typedef std::unordered_map<int, int> AttributeComponents;
@@ -156,10 +155,6 @@ public:
 	int getAttributeLocation(const std::string& name) const;
 
 	int getUniformLocation(const std::string& name) const;
-	// the location of the block
-	uint32_t getUniformBlockLocation(const std::string& name) const;
-	// how much memory is needed to store the uniform block
-	uint32_t getUniformBlockSize(const std::string& name) const;
 	// returns a vector with offsets for the specified member names in the same order as the names
 	// these offsets can be used to e.g. memcpy the data in.
 	std::vector<int> getUniformBlockOffsets(const char **names, int amount) const;

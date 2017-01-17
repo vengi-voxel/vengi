@@ -6,6 +6,7 @@ set(SRCS
 	gl/GLProfiler.cpp
 	gl/GLState.h
 	gl/GLMapping.h
+	gl/GLShader.cpp
 	gl/GLHelper.cpp gl/GLHelper.h
 	UniformBuffer.cpp UniformBuffer.h
 	VertexBuffer.cpp VertexBuffer.h

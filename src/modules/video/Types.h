@@ -254,4 +254,6 @@ struct Attribute {
 	bool typeIsInt = false;
 };
 
+typedef std::unordered_map<std::string, int> ShaderAttributes;
+
 }
