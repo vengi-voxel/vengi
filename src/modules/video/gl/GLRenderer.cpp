@@ -1,5 +1,7 @@
 /**
  * @file
+ *
+ * Some great tips here: https://developer.nvidia.com/opengl-vulkan
  */
 
 #include "video/Renderer.h"
