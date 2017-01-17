@@ -11,7 +11,7 @@ ScopedLineWidth::ScopedLineWidth(float width, bool antialiasing) :
 }
 
 ScopedLineWidth::~ScopedLineWidth() {
-	video::lineWidth(_oldAntialiasing);
+	video::lineWidth(_oldWidth);
 	if (_antialiasing && !_oldAntialiasing) {
 		video::disable(video::State::LineSmooth);
 	}
