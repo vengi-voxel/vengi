@@ -75,6 +75,8 @@ protected:
 
 	void createProgramFromShaders();
 
+	static std::string validGLSLPreprocessorName(const std::string& name);
+
 	std::string handleIncludes(const std::string& buffer) const;
 public:
 	Shader();
