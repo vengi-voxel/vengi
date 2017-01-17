@@ -399,11 +399,11 @@ bool unbindBuffer(VertexBufferType type) {
 
 bool bindBufferBase(VertexBufferType type, Id handle, uint32_t index) {
 	const int typeIndex = std::enum_value(type);
-	if (_priv::s.bufferBaseHandle[typeIndex] == handle) {
+	if (_priv::s.bufferHandle[typeIndex] == handle) {
 		return false;
 	}
 	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
-	_priv::s.bufferBaseHandle[typeIndex] = handle;
+	_priv::s.bufferHandle[typeIndex] = handle;
 	glBindBufferBase(glType, (GLuint)index, handle);
 	checkError();
 	return true;
