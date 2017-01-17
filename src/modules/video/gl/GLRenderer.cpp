@@ -9,6 +9,7 @@
 #include "GLState.h"
 #include "GLMapping.h"
 #include "GLHelper.h"
+#include "video/Shader.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include <glm/vec2.hpp>
@@ -886,12 +887,49 @@ bool hasFeature(Feature f) {
 	return _priv::s.features[std::enum_value(f)];
 }
 
-void startFrame(SDL_Window* window, void* userdata) {
-	SDL_GL_MakeCurrent(window, userdata);
+void destroyContext(RendererContext& context) {
+	SDL_GL_DeleteContext((SDL_GLContext)context);
+}
+
+RendererContext createContext(SDL_Window* window) {
+	return SDL_GL_CreateContext(window);
+}
+
+void startFrame(SDL_Window* window, RendererContext& context) {
+	SDL_GL_MakeCurrent(window, (SDL_GLContext)context);
 }
 
 void endFrame(SDL_Window* window) {
 	SDL_GL_SwapWindow(window);
+}
+
+void setup() {
+	const core::VarPtr& glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
+	int glMinor = 0, glMajor = 0;
+	if (std::sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
+		glMajor = 3;
+		glMinor = 0;
+	}
+	GLVersion glv(glMajor, glMinor);
+	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
+		if (GLVersions[i].version == glv) {
+			Shader::glslVersion = GLVersions[i].glslVersion;
+		}
+	}
+
+	SDL_ClearError();
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
+	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, multisampleBuffers->intVal());
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, multisampleSamples->intVal());
+#ifdef DEBUG
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glv.majorVersion);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glv.minorVersion);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 }
 
 bool init() {
@@ -903,6 +941,39 @@ bool init() {
 
 	_priv::setupLimits();
 	_priv::setupFeatures();
+
+	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
+	if (vsync) {
+		if (SDL_GL_SetSwapInterval(-1) == -1) {
+			if (SDL_GL_SetSwapInterval(1) == -1) {
+				Log::warn("Could not activate vsync: %s", SDL_GetError());
+			}
+		}
+	} else {
+		SDL_GL_SetSwapInterval(0);
+	}
+	if (SDL_GL_GetSwapInterval() == 0) {
+		Log::info("Deactivated vsync");
+	} else {
+		Log::info("Activated vsync");
+	}
+
+	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
+	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
+	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
+	int buffers, samples;
+	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
+	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
+	if (buffers == 0 || samples == 0) {
+		Log::warn("Could not get FSAA context");
+		multisampling = false;
+	} else {
+		Log::info("Got FSAA context with %i buffers and %i samples", buffers, samples);
+	}
+
+	if (multisampling) {
+		video::enable(video::State::MultiSample);
+	}
 	return true;
 }
 

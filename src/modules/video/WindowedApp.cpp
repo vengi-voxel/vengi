@@ -73,7 +73,7 @@ core::AppState WindowedApp::onRunning() {
 		}
 	}
 
-	video::startFrame(_window, _glcontext);
+	video::startFrame(_window, _rendererContext);
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 	// TODO: maybe only do this every nth frame?
 	core::Singleton<ShaderManager>::getInstance().update();
@@ -166,33 +166,7 @@ core::AppState WindowedApp::onInit() {
 	int width = core::Var::get(cfg::ClientWindowWidth, displayMode.w)->intVal();
 	int height = core::Var::get(cfg::ClientWindowHeight, displayMode.h)->intVal();
 
-	const core::VarPtr& glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
-	int glMinor = 0, glMajor = 0;
-	if (std::sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
-		glMajor = 3;
-		glMinor = 0;
-	}
-	GLVersion glv(glMajor, glMinor);
-	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
-		if (GLVersions[i].version == glv) {
-			Shader::glslVersion = GLVersions[i].glslVersion;
-		}
-	}
-	SDL_ClearError();
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
-	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
-
-	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, multisampleBuffers->intVal());
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, multisampleSamples->intVal());
-#ifdef DEBUG
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-#endif
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glv.majorVersion);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glv.minorVersion);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	video::setup();
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
@@ -225,33 +199,7 @@ core::AppState WindowedApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	_glcontext = SDL_GL_CreateContext(_window);
-
-	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
-	if (vsync) {
-		if (SDL_GL_SetSwapInterval(-1) == -1) {
-			if (SDL_GL_SetSwapInterval(1) == -1) {
-				Log::warn("Could not activate vsync: %s", SDL_GetError());
-			}
-		}
-	} else {
-		SDL_GL_SetSwapInterval(0);
-	}
-	if (SDL_GL_GetSwapInterval() == 0) {
-		Log::info("Deactivated vsync");
-	} else {
-		Log::info("Activated vsync");
-	}
-
-	int buffers, samples;
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
-	if (buffers == 0 || samples == 0) {
-		Log::warn("Could not get FSAA context");
-		multisampling = false;
-	} else {
-		Log::info("Got FSAA context with %i buffers and %i samples", buffers, samples);
-	}
+	_rendererContext = video::createContext(_window);
 
 	SDL_DisableScreenSaver();
 
@@ -283,10 +231,6 @@ core::AppState WindowedApp::onInit() {
 	video::init();
 	video::viewport(0, 0, _width, _height);
 
-	if (multisampling) {
-		video::enable(video::State::MultiSample);
-	}
-
 	core_trace_gl_init();
 
 	return state;
@@ -314,7 +258,7 @@ core::AppState WindowedApp::onConstruct() {
 
 core::AppState WindowedApp::onCleanup() {
 	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
-	SDL_GL_DeleteContext(_glcontext);
+	video::destroyContext(_rendererContext);
 	SDL_DestroyWindow(_window);
 	SDL_Quit();
 	core_trace_gl_shutdown();

@@ -99,8 +99,18 @@ inline double ProfilerGPU::maximum() const {
 	return _max;
 }
 
+/**
+ * @brief Prepare the renderer initialization
+ * @sa init()
+ */
+extern void setup();
+/**
+ * @note setup() must be called before init()
+ */
 extern bool init();
-extern void startFrame(SDL_Window* window, void* userdata);
+extern void destroyContext(RendererContext& context);
+extern RendererContext createContext(SDL_Window* window);
+extern void startFrame(SDL_Window* window, RendererContext& context);
 extern void endFrame(SDL_Window* window);
 extern void checkError();
 extern bool setupCubemap(Id handle, const image::ImagePtr images[6]);
