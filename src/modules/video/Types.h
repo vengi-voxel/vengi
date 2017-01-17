@@ -195,6 +195,8 @@ enum class Feature {
 	TextureHalfFloat,
 	InstancedArrays,
 	DebugOutput,
+	DirectStateAccess,
+	BufferStorage,
 
 	Max
 };
