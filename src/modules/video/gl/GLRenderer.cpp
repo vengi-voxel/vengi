@@ -566,43 +566,43 @@ bool scissor(int x, int y, int w, int h) {
 bool enable(State state) {
 	if (state == State::DepthMask) {
 		if (_priv::s.depthMask) {
-			return _priv::s.depthMask;
+			return true;
 		}
 		glDepthMask(GL_TRUE);
 		checkError();
 		_priv::s.depthMask = true;
-		return _priv::s.depthMask;
+		return false;
 	}
 
 	const int stateIndex = std::enum_value(state);
 	if (_priv::s.states[stateIndex]) {
-		return _priv::s.depthMask;
+		return true;
 	}
 	_priv::s.states[stateIndex] = true;
 	glEnable(_priv::States[stateIndex]);
 	checkError();
-	return _priv::s.depthMask;
+	return false;
 }
 
 bool disable(State state) {
 	if (state == State::DepthMask) {
 		if (!_priv::s.depthMask) {
-			return _priv::s.depthMask;
+			return false;
 		}
 		glDepthMask(GL_FALSE);
 		checkError();
 		_priv::s.depthMask = false;
-		return _priv::s.depthMask;
+		return true;
 	}
 
 	const int stateIndex = std::enum_value(state);
 	if (!_priv::s.states[stateIndex]) {
-		return _priv::s.depthMask;
+		return false;
 	}
 	_priv::s.states[stateIndex] = false;
 	glDisable(_priv::States[stateIndex]);
 	checkError();
-	return _priv::s.depthMask;
+	return true;
 }
 
 bool cullFace(Face face) {
