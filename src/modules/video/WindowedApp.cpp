@@ -37,7 +37,7 @@ WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventB
 
 void WindowedApp::onAfterRunning() {
 	core_trace_scoped(WindowedAppAfterRunning);
-	SDL_GL_SwapWindow(_window);
+	video::endFrame(_window);
 }
 
 core::AppState WindowedApp::onRunning() {
@@ -73,8 +73,7 @@ core::AppState WindowedApp::onRunning() {
 		}
 	}
 
-	core_trace_gl_scoped(WindowedAppPrepareContext);
-	SDL_GL_MakeCurrent(_window, _glcontext);
+	video::startFrame(_window, _glcontext);
 	video::clear(video::ClearFlag::Color | video::ClearFlag::Depth);
 	// TODO: maybe only do this every nth frame?
 	core::Singleton<ShaderManager>::getInstance().update();

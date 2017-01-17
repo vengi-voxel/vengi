@@ -886,6 +886,14 @@ bool hasFeature(Feature f) {
 	return _priv::s.features[std::enum_value(f)];
 }
 
+void startFrame(SDL_Window* window, void* userdata) {
+	SDL_GL_MakeCurrent(window, userdata);
+}
+
+void endFrame(SDL_Window* window) {
+	SDL_GL_SwapWindow(window);
+}
+
 bool init() {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &_priv::s.glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);

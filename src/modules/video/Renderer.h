@@ -100,6 +100,8 @@ inline double ProfilerGPU::maximum() const {
 }
 
 extern bool init();
+extern void startFrame(SDL_Window* window, void* userdata);
+extern void endFrame(SDL_Window* window);
 extern void checkError();
 extern bool setupCubemap(Id handle, const image::ImagePtr images[6]);
 extern void readBuffer(GBufferTextureType textureType);
