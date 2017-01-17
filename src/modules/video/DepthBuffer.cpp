@@ -54,7 +54,6 @@ bool DepthBuffer::init(const glm::ivec2& dimension, DepthBufferMode mode, int te
 bool DepthBuffer::bind() {
 	video::getViewport(_oldViewport[0], _oldViewport[1], _oldViewport[2], _oldViewport[3]);
 	_oldFramebuffer = video::bindFramebuffer(video::FrameBufferMode::Default, _fbo);
-	core_assert(_oldFramebuffer != InvalidId);
 	video::viewport(0, 0, _depthTexture.width(), _depthTexture.height());
 	return true;
 }
@@ -69,7 +68,6 @@ bool DepthBuffer::bindTexture(int textureIndex) {
 
 void DepthBuffer::unbind() {
 	video::viewport(_oldViewport[0], _oldViewport[1], _oldViewport[2], _oldViewport[3]);
-	core_assert(_oldFramebuffer != InvalidId);
 	video::bindFramebuffer(video::FrameBufferMode::Default, _oldFramebuffer);
 	_oldFramebuffer = video::InvalidId;
 }
