@@ -87,6 +87,7 @@ enum class State {
 	Scissor,
 	MultiSample,
 	LineSmooth,
+	DebugOutput,
 
 	Max
 };

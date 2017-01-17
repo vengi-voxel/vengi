@@ -2,240 +2,18 @@
 #include "GLTypes.h"
 #include "GLVersion.h"
 #include "GLFunc.h"
+#include "GLState.h"
+#include "GLMapping.h"
+#include "GLHelper.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <glm/common.hpp>
 #include <glm/gtc/constants.hpp>
+#include <SDL.h>
 
 namespace video {
-
-ProfilerGPU::ProfilerGPU(const std::string& name, uint16_t maxSamples) :
-		_name(name), _maxSampleCount(maxSamples) {
-	core_assert(maxSamples > 0);
-	_samples.reserve(_maxSampleCount);
-}
-
-ProfilerGPU::~ProfilerGPU() {
-	core_assert_msg(_id == 0u, "Forgot to shutdown gpu profiler: %s", _name.c_str());
-	shutdown();
-}
-
-const std::vector<double>& ProfilerGPU::samples() const {
-	return _samples;
-}
-
-bool ProfilerGPU::init() {
-	glGenQueries(1, &_id);
-	return _id != InvalidId;
-}
-
-void ProfilerGPU::shutdown() {
-	if (_id != InvalidId) {
-		glDeleteQueries(1, &_id);
-		_id = InvalidId;
-	}
-}
-
-void ProfilerGPU::enter() {
-	if (_id == InvalidId) {
-		return;
-	}
-	core_assert(_state == 0 || _state == 2);
-
-	if (_state == 0) {
-		glBeginQuery(GL_TIME_ELAPSED, _id);
-		_state = 1;
-	}
-}
-
-void ProfilerGPU::leave() {
-	if (_id == InvalidId) {
-		return;
-	}
-	core_assert(_state == 1 || _state == 2);
-
-	if (_state == 1) {
-		glEndQuery(GL_TIME_ELAPSED);
-		_state = 2;
-	} else if (_state == 2) {
-		GLint availableResults = 0;
-		glGetQueryObjectiv(_id, GL_QUERY_RESULT_AVAILABLE, &availableResults);
-		if (availableResults > 0) {
-			_state = 0;
-			GLuint64 time = 0;
-			glGetQueryObjectui64v(_id, GL_QUERY_RESULT, &time);
-			const double timed = double(time);
-			_samples[_sampleCount & (_maxSampleCount - 1)] = timed;
-			++_sampleCount;
-			_max = std::max(_max, timed);
-			_min = std::min(_min, timed);
-			_avg = _avg * 0.5 + timed / 1e9 * 0.5;
-		}
-	}
-}
-
-class GLDebug {
-private:
-	static int _recompileErrors;
-	static bool _enabled;
-#if defined(GL_ARB_debug_output)
-	static void debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) {
-		if (id == 131218) {
-			++_recompileErrors;
-			if (_recompileErrors <= 10) {
-				return;
-			}
-			_recompileErrors = 0;
-		} else if (id == 131185) {
-			// ignore hints that GL_STATIC_DRAW is used...
-			return;
-		}
-		void (*log)(const char* msg, ...);
-		const char* sourceStr;
-		switch (source) {
-		case GL_DEBUG_SOURCE_API_ARB:
-			sourceStr = "api";
-			break;
-		case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB:
-			sourceStr = "window";
-			break;
-		case GL_DEBUG_SOURCE_THIRD_PARTY_ARB:
-			sourceStr = "third party";
-			break;
-		case GL_DEBUG_SOURCE_APPLICATION_ARB:
-			sourceStr = "app";
-			break;
-		case GL_DEBUG_SOURCE_OTHER_ARB:
-			sourceStr = "other";
-			break;
-		case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB:
-			sourceStr = "shader";
-			break;
-		default:
-			sourceStr = "unknown";
-			break;
-		}
-		const char* typeStr;
-		switch (type) {
-		case GL_DEBUG_TYPE_ERROR_ARB:
-			typeStr = "ERROR";
-			log = Log::error;
-			break;
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB:
-			typeStr = "DEPRECATED_BEHAVIOR";
-			log = Log::warn;
-			break;
-		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB:
-			typeStr = "UNDEFINED_BEHAVIOR";
-			log = Log::error;
-			break;
-		case GL_DEBUG_TYPE_PORTABILITY_ARB:
-			typeStr = "PORTABILITY";
-			log = Log::warn;
-			break;
-		case GL_DEBUG_TYPE_PERFORMANCE_ARB:
-			typeStr = "PERFORMANCE";
-			log = Log::warn;
-			break;
-		case GL_DEBUG_TYPE_OTHER_ARB:
-			typeStr = "OTHER";
-			log = Log::info;
-			break;
-		default:
-			typeStr = "<unknown>";
-			log = Log::debug;
-			break;
-		}
-		const char* sevStr;
-		switch (severity) {
-		case GL_DEBUG_SEVERITY_LOW_ARB:
-			sevStr = "LOW";
-			break;
-		case GL_DEBUG_SEVERITY_MEDIUM_ARB:
-			sevStr = "MEDIUM";
-			break;
-		case GL_DEBUG_SEVERITY_HIGH_ARB:
-			sevStr = "HIGH";
-			log = Log::error;
-			break;
-		case GL_DEBUG_SEVERITY_NOTIFICATION_ARB:
-			sevStr = "INFO";
-			log = Log::debug;
-			break;
-		default:
-			sevStr = "<unknown>";
-			break;
-		}
-		core_assert_msg(type == GL_DEBUG_TYPE_OTHER_ARB, "GL msg type: %s, src: %s, id: %d, severity: %s\nmsg: %s", typeStr, sourceStr, id, sevStr, message);
-		log("GL msg type: %s, src: %s, id: %d, severity: %s\nmsg: %s", typeStr, sourceStr, id, sevStr, message);
-	}
-#endif
-
-public:
-	static void enable(DebugSeverity s) {
-#if defined(GL_ARB_debug_output)
-		GLenum glSeverity = GL_DONT_CARE;
-		switch (s) {
-		case DebugSeverity::High:
-			glSeverity = GL_DEBUG_SEVERITY_HIGH_ARB;
-			break;
-		case DebugSeverity::Medium:
-			glSeverity = GL_DEBUG_SEVERITY_MEDIUM_ARB;
-			break;
-		default:
-		case DebugSeverity::Low:
-			glSeverity = GL_DEBUG_SEVERITY_LOW_ARB;
-			break;
-		}
-		if (glDebugMessageControlARB != nullptr) {
-			glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, glSeverity, 0, nullptr, GL_TRUE);
-			if (!_enabled) {
-				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-				glDebugMessageCallbackARB(debugOutputCallback, nullptr);
-				checkError();
-				_enabled = true;
-				Log::info("enable opengl debug messages");
-			}
-		}
-#else
-		Log::warn("Opengl debug extensions are not implemented");
-#endif
-	}
-
-	static void disable() {
-#if defined(GL_ARB_debug_output)
-		glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-		checkError();
-		_enabled = false;
-		Log::info("disable opengl debug messages");
-#endif
-	}
-
-	static bool isEnabled() {
-		return _enabled;
-	}
-};
-
-bool GLDebug::_enabled = false;
-int GLDebug::_recompileErrors = 0;
-
-#ifdef DEBUG
-static const char* translateError(GLenum glError) {
-#define GL_ERROR_TRANSLATE(e) case e: return #e;
-	switch (glError) {
-	/* openGL errors */
-	GL_ERROR_TRANSLATE(GL_INVALID_ENUM)
-	GL_ERROR_TRANSLATE(GL_INVALID_VALUE)
-	GL_ERROR_TRANSLATE(GL_INVALID_OPERATION)
-	GL_ERROR_TRANSLATE(GL_OUT_OF_MEMORY)
-	default:
-		return "UNKNOWN";
-	}
-#undef GL_ERROR_TRANSLATE
-}
-#endif
 
 void checkError() {
 #ifdef DEBUG
@@ -245,215 +23,28 @@ void checkError() {
 		if (glError == GL_NO_ERROR) {
 			break;
 		}
+		const char *error;
+		switch (glError) {
+		case GL_INVALID_ENUM:
+			error = "GL_INVALID_ENUM";
+			break;
+		case GL_INVALID_VALUE:
+			error = "GL_INVALID_VALUE";
+			break;
+		case GL_INVALID_OPERATION:
+			error = "GL_INVALID_OPERATION";
+			break;
+		case GL_OUT_OF_MEMORY:
+			error = "GL_OUT_OF_MEMORY";
+			break;
+		default:
+			error = "UNKNOWN";
+			break;
+		}
 
-		core_assert_msg(glError == GL_NO_ERROR, "GL err: %s => %i", translateError(glError), glError);
+		core_assert_msg(glError == GL_NO_ERROR, "GL err: %s => %i", error, glError);
 	}
 #endif
-}
-
-namespace _priv {
-	struct GLState {
-		GLVersion glVersion {0, 0};
-		int limits[std::enum_value(video::Limit::Max)] = { };
-		bool features[std::enum_value(video::Feature::Max)] = { };
-		glm::vec4 clearColor;
-		bool depthMask = false;
-		Face cullFace = Face::Max;
-		CompareFunc depthFunc = CompareFunc::Max;
-		Id programHandle = InvalidId;
-		Id vertexArrayHandle = InvalidId;
-		glm::vec2 polygonOffset;
-		Face polygonModeFace = Face::Max;
-		PolygonMode polygonMode = PolygonMode::Max;
-		BlendMode blendSrc = BlendMode::Max;
-		BlendMode blendDest = BlendMode::Max;
-		TextureUnit textureUnit = TextureUnit::Max;
-		Id textureHandle = InvalidId;
-		int viewportX = 0;
-		int viewportY = 0;
-		int viewportW = 0;
-		int viewportH = 0;
-		int scissorX = 0;
-		int scissorY = 0;
-		int scissorW = 0;
-		int scissorH = 0;
-		bool states[std::enum_value(State::Max)] = {};
-		Id bufferHandle[std::enum_value(VertexBufferType::Max)] = {};
-		Id bufferBaseHandle[std::enum_value(VertexBufferType::Max)] = {};
-		Id framebufferHandle = InvalidId;
-		Id framebufferTextureHandle = InvalidId;
-		glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
-		glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
-		bool lineAntialiasing = false;
-		float lineWidth = 0.0f;
-	};
-	static GLState s;
-
-	static const struct Formats {
-		uint8_t bits;
-		GLenum internalFormat;
-		GLenum dataFormat;
-		GLenum dataType;
-	} textureFormats[] = {
-		{32, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},
-		{24, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE},
-		{32, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8}
-	};
-	static_assert(std::enum_value(TextureFormat::Max) == (int)SDL_arraysize(textureFormats), "Array sizes don't match Max");
-
-	static GLenum ShaderTypes[] {
-		GL_VERTEX_SHADER,
-		GL_FRAGMENT_SHADER,
-		GL_GEOMETRY_SHADER
-	};
-	static_assert(std::enum_value(ShaderType::Max) == (int)SDL_arraysize(ShaderTypes), "Array sizes don't match Max");
-
-	static GLenum FrameBufferModes[] {
-		GL_READ_FRAMEBUFFER,
-		GL_DRAW_FRAMEBUFFER,
-		GL_FRAMEBUFFER
-	};
-	static_assert(std::enum_value(FrameBufferMode::Max) == (int)SDL_arraysize(FrameBufferModes), "Array sizes don't match Max");
-
-	static GLenum VertexBufferModes[] {
-		GL_STATIC_DRAW,
-		GL_DYNAMIC_DRAW,
-		GL_STREAM_DRAW
-	};
-	static_assert(std::enum_value(VertexBufferMode::Max) == (int)SDL_arraysize(VertexBufferModes), "Array sizes don't match Max");
-
-	static GLenum VertexBufferTypes[] {
-		GL_ARRAY_BUFFER,
-		GL_ELEMENT_ARRAY_BUFFER,
-		GL_UNIFORM_BUFFER
-	};
-	static_assert(std::enum_value(VertexBufferType::Max) == (int)SDL_arraysize(VertexBufferTypes), "Array sizes don't match Max");
-
-	static GLenum States[] {
-		0,
-		GL_DEPTH_TEST,
-		GL_CULL_FACE,
-		GL_BLEND,
-		GL_POLYGON_OFFSET_FILL,
-		GL_POLYGON_OFFSET_POINT,
-		GL_POLYGON_OFFSET_LINE,
-		GL_SCISSOR_TEST,
-		GL_MULTISAMPLE,
-		GL_LINE_SMOOTH
-	};
-	static_assert(std::enum_value(State::Max) == (int)SDL_arraysize(States), "Array sizes don't match Max");
-
-	static GLenum TextureTypes[] {
-		GL_TEXTURE_2D,
-		GL_TEXTURE_2D_ARRAY,
-		GL_TEXTURE_CUBE_MAP
-	};
-	static_assert(std::enum_value(TextureType::Max) == (int)SDL_arraysize(TextureTypes), "Array sizes don't match Max");
-
-	static GLenum TextureWraps[] {
-		GL_CLAMP_TO_EDGE,
-		GL_REPEAT,
-		GL_NONE
-	};
-	static_assert(std::enum_value(TextureWrap::Max) == (int)SDL_arraysize(TextureWraps), "Array sizes don't match Max");
-
-	static GLenum BlendModes[] {
-		GL_ZERO,
-		GL_ONE,
-		GL_SRC_COLOR,
-		GL_ONE_MINUS_SRC_COLOR,
-		GL_SRC_ALPHA,
-		GL_ONE_MINUS_SRC_ALPHA,
-		GL_DST_ALPHA,
-		GL_ONE_MINUS_DST_ALPHA,
-		GL_DST_COLOR,
-		GL_ONE_MINUS_DST_COLOR
-	};
-	static_assert(std::enum_value(BlendMode::Max) == (int)SDL_arraysize(BlendModes), "Array sizes don't match Max");
-
-	static GLenum CompareFuncs[] {
-		GL_NEVER,
-		GL_LESS,
-		GL_EQUAL,
-		GL_LEQUAL,
-		GL_GREATER,
-		GL_NOTEQUAL,
-		GL_GEQUAL,
-		GL_ALWAYS
-	};
-	static_assert(std::enum_value(CompareFunc::Max) == (int)SDL_arraysize(CompareFuncs), "Array sizes don't match Max");
-
-	static GLenum PolygonModes[] {
-		GL_POINT,
-		GL_LINE,
-		GL_FILL
-	};
-	static_assert(std::enum_value(PolygonMode::Max) == (int)SDL_arraysize(PolygonModes), "Array sizes don't match Max");
-
-	static GLenum Faces[] {
-		GL_FRONT,
-		GL_BACK,
-		GL_FRONT_AND_BACK
-	};
-	static_assert(std::enum_value(Face::Max) == (int)SDL_arraysize(Faces), "Array sizes don't match Max");
-
-	static GLenum Primitives[] {
-		GL_POINTS,
-		GL_LINES,
-		GL_TRIANGLES
-	};
-	static_assert(std::enum_value(Primitive::Max) == (int)SDL_arraysize(Primitives), "Array sizes don't match Max");
-
-	static GLenum TextureUnits[] {
-		GL_TEXTURE0,
-		GL_TEXTURE1,
-		GL_TEXTURE2,
-		GL_TEXTURE3,
-		GL_TEXTURE4,
-		GL_TEXTURE5,
-		GL_TEXTURE6
-	};
-	static_assert(std::enum_value(TextureUnit::Max) == (int)SDL_arraysize(TextureUnits), "Array sizes don't match Max");
-
-	static GLenum DataTypes[] {
-		GL_DOUBLE,
-		GL_FLOAT,
-		GL_UNSIGNED_BYTE,
-		GL_BYTE,
-		GL_UNSIGNED_SHORT,
-		GL_SHORT,
-		GL_UNSIGNED_INT,
-		GL_INT
-	};
-	static_assert(std::enum_value(DataType::Max) == (int)SDL_arraysize(DataTypes), "Array sizes don't match Max");
-}
-
-static inline bool checkFramebufferStatus() {
-	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status == GL_FRAMEBUFFER_COMPLETE) {
-		return true;
-	}
-	switch (status) {
-	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-		Log::error("FB error, incomplete attachment");
-		break;
-	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-		Log::error("FB error, incomplete missing attachment");
-		break;
-	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-		Log::error("FB error, incomplete draw buffer");
-		break;
-	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-		Log::error("FB error, incomplete read buffer");
-		break;
-	case GL_FRAMEBUFFER_UNSUPPORTED:
-		Log::error("FB error, framebuffer unsupported");
-		break;
-	default:
-		Log::error("FB error, status: %i", (int)status);
-		break;
-	}
-	return false;
 }
 
 bool bindDepthTexture(int textureIndex, DepthBufferMode mode, Id depthTexture) {
@@ -461,13 +52,13 @@ bool bindDepthTexture(int textureIndex, DepthBufferMode mode, Id depthTexture) {
 	const bool depthAttachment = mode == DepthBufferMode::DEPTH || depthCompare;
 	if (depthAttachment) {
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0, textureIndex);
-		clear(video::ClearFlag::Depth);
+		clear(ClearFlag::Depth);
 	} else {
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, depthTexture, 0, textureIndex);
-		clear(video::ClearFlag::Color | video::ClearFlag::Depth);
+		clear(ClearFlag::Color | ClearFlag::Depth);
 	}
 
-	if (!checkFramebufferStatus()) {
+	if (!_priv::checkFramebufferStatus()) {
 		return false;
 	}
 	checkError();
@@ -480,7 +71,7 @@ void readBuffer(GBufferTextureType textureType) {
 }
 
 bool setupDepthbuffer(Id fbo, DepthBufferMode mode) {
-	const Id prev = video::bindFramebuffer(video::FrameBufferMode::Default, fbo);
+	const Id prev = bindFramebuffer(FrameBufferMode::Default, fbo);
 	const bool depthCompare = mode == DepthBufferMode::DEPTH_CMP;
 	const bool depthAttachment = mode == DepthBufferMode::DEPTH || depthCompare;
 
@@ -492,15 +83,15 @@ bool setupDepthbuffer(Id fbo, DepthBufferMode mode) {
 		glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
 	}
 	checkError();
-	bindFramebuffer(video::FrameBufferMode::Default, prev);
+	bindFramebuffer(FrameBufferMode::Default, prev);
 	return true;
 }
 
 bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texCount, Id depthTexture) {
-	const Id prev = video::bindFramebuffer(video::FrameBufferMode::Default, fbo);
+	const Id prev = bindFramebuffer(FrameBufferMode::Default, fbo);
 
 	for (std::size_t i = 0; i < texCount; ++i) {
-		video::bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, textures[i]);
+		bindTexture(TextureUnit::Upload, TextureType::Texture2D, textures[i]);
 		// we are going to write vec3 into the out vars in the shaders
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, dimension.x, dimension.y, 0, GL_RGB, GL_FLOAT, nullptr);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i], 0);
@@ -508,20 +99,20 @@ bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texC
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 
-	bindTexture(video::TextureUnit::Upload, video::TextureType::Texture2D, depthTexture);
+	bindTexture(TextureUnit::Upload, TextureType::Texture2D, depthTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
 
-	const bool retVal = checkFramebufferStatus();
-	bindFramebuffer(video::FrameBufferMode::Default, prev);
+	const bool retVal = _priv::checkFramebufferStatus();
+	bindFramebuffer(FrameBufferMode::Default, prev);
 	return retVal;
 }
 
 bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
-	bindTexture(video::TextureUnit::Upload, video::TextureType::TextureCube, handle);
+	bindTexture(TextureUnit::Upload, TextureType::TextureCube, handle);
 
 	static const GLenum types[] = {
 		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -1038,14 +629,14 @@ void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, siz
 	checkError();
 }
 
-void disableDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture) {
+void disableDepthCompareTexture(TextureUnit unit, TextureType type, Id depthTexture) {
 	bindTexture(unit, type, depthTexture);
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 	checkError();
 }
 
-void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture) {
+void setupDepthCompareTexture(TextureUnit unit, TextureType type, Id depthTexture) {
 	bindTexture(unit, type, depthTexture);
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
@@ -1055,9 +646,9 @@ void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, Id dept
 
 bool setupFramebuffer(Id& fbo, Id& texture, Id& depth, const glm::ivec2& dimension) {
 	fbo = genFramebuffer();
-	Id prev = bindFramebuffer(video::FrameBufferMode::Default, fbo);
+	Id prev = bindFramebuffer(FrameBufferMode::Default, fbo);
 	texture = genTexture();
-	bindTexture(video::TextureUnit::Upload, TextureType::Texture2D, texture);
+	bindTexture(TextureUnit::Upload, TextureType::Texture2D, texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1076,12 +667,12 @@ bool setupFramebuffer(Id& fbo, Id& texture, Id& depth, const glm::ivec2& dimensi
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, drawBuffers);
 
-	const bool retVal = checkFramebufferStatus();
-	bindFramebuffer(video::FrameBufferMode::Default, prev);
+	const bool retVal = _priv::checkFramebufferStatus();
+	bindFramebuffer(FrameBufferMode::Default, prev);
 	return retVal;
 }
 
-void setupTexture(video::TextureType type, video::TextureWrap wrap) {
+void setupTexture(TextureType type, TextureWrap wrap) {
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1096,7 +687,7 @@ void setupTexture(video::TextureType type, video::TextureWrap wrap) {
 	checkError();
 }
 
-void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t* data, int index) {
+void uploadTexture(TextureType type, TextureFormat format, int width, int height, const uint8_t* data, int index) {
 	const _priv::Formats& f = _priv::textureFormats[std::enum_value(format)];
 	const GLenum glType = _priv::TextureTypes[std::enum_value(type)];
 	if (type == TextureType::Texture2D) {
@@ -1132,104 +723,32 @@ void drawArrays(Primitive mode, size_t count) {
 	checkError();
 }
 
+void disableDebug() {
+	disable(State::DebugOutput);
+	checkError();
+	Log::info("disable opengl debug messages");
+}
+
 void enableDebug(DebugSeverity severity) {
-	GLDebug::enable(severity);
-}
-
-static void setupLimits() {
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &_priv::s.limits[std::enum_value(Limit::MaxTextureSize)]);
-	checkError();
-	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &_priv::s.limits[std::enum_value(Limit::MaxCubeMapTextureSize)]);
-	checkError();
-	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &_priv::s.limits[std::enum_value(Limit::MaxViewPortWidth)]);
-	checkError();
-	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &_priv::s.limits[std::enum_value(Limit::MaxDrawBuffers)]);
-	checkError();
-	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &_priv::s.limits[std::enum_value(Limit::MaxVertexAttribs)]);
-	checkError();
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &_priv::s.limits[std::enum_value(Limit::MaxCombinedTextureImageUnits)]);
-	checkError();
-	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &_priv::s.limits[std::enum_value(Limit::MaxVertexTextureImageUnits)]);
-	checkError();
-	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &_priv::s.limits[std::enum_value(Limit::MaxElementIndices)]);
-	checkError();
-	glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &_priv::s.limits[std::enum_value(Limit::MaxElementVertices)]);
-	checkError();
-	if (_priv::s.glVersion.majorVersion > 3 || (_priv::s.glVersion.majorVersion == 3 && _priv::s.glVersion.minorVersion >= 2)) {
-		glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &_priv::s.limits[std::enum_value(Limit::MaxFragmentInputComponents)]);
+	GLenum glSeverity = GL_DONT_CARE;
+	switch (severity) {
+	case DebugSeverity::High:
+		glSeverity = GL_DEBUG_SEVERITY_HIGH_ARB;
+		break;
+	case DebugSeverity::Medium:
+		glSeverity = GL_DEBUG_SEVERITY_MEDIUM_ARB;
+		break;
+	default:
+	case DebugSeverity::Low:
+		glSeverity = GL_DEBUG_SEVERITY_LOW_ARB;
+		break;
+	}
+	if (glDebugMessageControlARB != nullptr) {
+		glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, glSeverity, 0, nullptr, GL_TRUE);
+		enable(State::DebugOutput);
+		glDebugMessageCallbackARB(_priv::debugOutputCallback, nullptr);
 		checkError();
-	} else {
-		_priv::s.limits[std::enum_value(Limit::MaxFragmentInputComponents)] = 60;
-	}
-#ifdef GL_MAX_VERTEX_UNIFORM_VECTORS
-	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &_priv::s.limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
-	checkError();
-	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &_priv::s.limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
-	checkError();
-#else
-	checkError();
-	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &_priv::s.limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
-	checkError();
-	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &_priv::s.limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
-#endif
-	checkError();
-	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", _priv::s.limits[std::enum_value(Limit::MaxElementVertices)]);
-	Log::info("GL_MAX_ELEMENTS_INDICES: %i", _priv::s.limits[std::enum_value(Limit::MaxElementIndices)]);
-}
-
-static void setupFeatures() {
-	const std::vector<const char *> array[] = {
-		{"_texture_compression_s3tc", "_compressed_texture_s3tc", "_texture_compression_dxt1"},
-		{"_texture_compression_pvrtc", "_compressed_texture_pvrtc"},
-		{},
-		{"_compressed_ATC_texture", "_compressed_texture_atc"},
-		{"_texture_float"},
-		{"_texture_half_float"},
-		{"_instanced_arrays"},
-		{"_debug_output"}
-	};
-
-	int numExts;
-	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
-	Log::info("OpenGL extensions:");
-	for (int i = 0; i < numExts; i++) {
-		const char *extensionStr = (const char *) glGetStringi(GL_EXTENSIONS, i);
-		Log::info("%s", extensionStr);
-	}
-
-	for (size_t i = 0; i < SDL_arraysize(array); ++i) {
-		const std::vector<const char *>& a = array[i];
-		for (const char *s : a) {
-			_priv::s.features[i] = SDL_GL_ExtensionSupported(s);
-			if (_priv::s.features[i]) {
-				break;
-			}
-			++s;
-		}
-	}
-
-	int mask = 0;
-	if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &mask) != -1) {
-		if ((mask & SDL_GL_CONTEXT_PROFILE_CORE) != 0) {
-			_priv::s.features[std::enum_value(Feature::TextureCompressionDXT)] = true;
-			_priv::s.features[std::enum_value(Feature::InstancedArrays)] = true;
-			_priv::s.features[std::enum_value(Feature::TextureFloat)] = true;
-		}
-	}
-
-#if SDL_VIDEO_OPENGL_ES2
-	_priv::s.features[std::enum_value(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("_texture_half_float");
-#else
-	_priv::s.features[std::enum_value(Feature::TextureHalfFloat)] = _priv::s.features[std::enum_value(Feature::TextureFloat)];
-#endif
-
-#if SDL_VIDEO_OPENGL_ES3
-	_priv::s.features[std::enum_value(Feature::InstancedArrays)] = true;
-	_priv::s.features[std::enum_value(Feature::TextureCompressionETC2)] = true;
-#endif
-
-	if (!_priv::s.features[std::enum_value(Feature::InstancedArrays)]) {
-		Log::warn("instanced_arrays extension not found!");
+		Log::info("enable opengl debug messages");
 	}
 }
 
@@ -1240,8 +759,8 @@ bool init() {
 
 	GLLoadFunctions();
 
-	setupLimits();
-	setupFeatures();
+	_priv::setupLimits();
+	_priv::setupFeatures();
 	return true;
 }
 

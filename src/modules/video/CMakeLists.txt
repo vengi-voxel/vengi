@@ -3,6 +3,10 @@ set(SRCS
 	WindowedApp.cpp WindowedApp.h
 	gl/GLFunc.cpp gl/GLFunc.h
 	gl/GLRenderer.cpp
+	gl/GLProfiler.cpp
+	gl/GLState.h
+	gl/GLMapping.h
+	gl/GLHelper.cpp gl/GLHelper.h
 	UniformBuffer.cpp UniformBuffer.h
 	VertexBuffer.cpp VertexBuffer.h
 	FrameBuffer.cpp FrameBuffer.h

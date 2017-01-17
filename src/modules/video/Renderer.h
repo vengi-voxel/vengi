@@ -64,6 +64,21 @@ public:
 	const std::string& name() const;
 };
 
+inline ProfilerGPU::ProfilerGPU(const std::string& name, uint16_t maxSamples) :
+		_name(name), _maxSampleCount(maxSamples) {
+	core_assert(maxSamples > 0);
+	_samples.reserve(_maxSampleCount);
+}
+
+inline ProfilerGPU::~ProfilerGPU() {
+	core_assert_msg(_id == 0u, "Forgot to shutdown gpu profiler: %s", _name.c_str());
+	shutdown();
+}
+
+inline const std::vector<double>& ProfilerGPU::samples() const {
+	return _samples;
+}
+
 inline const std::string& ProfilerGPU::name() const {
 	return _name;
 }
@@ -145,6 +160,7 @@ extern void drawElements(Primitive mode, size_t numIndices, DataType type);
 extern void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount);
 extern void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex);
 extern void drawArrays(Primitive mode, size_t count);
+extern void disableDebug();
 extern void enableDebug(DebugSeverity severity);
 
 template<class IndexType>
