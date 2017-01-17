@@ -883,10 +883,6 @@ int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string&
 	return numAttributes;
 }
 
-bool hasFeature(Feature f) {
-	return _priv::s.features[std::enum_value(f)];
-}
-
 void destroyContext(RendererContext& context) {
 	SDL_GL_DeleteContext((SDL_GLContext)context);
 }

@@ -68,6 +68,16 @@ public:
 	const std::string& name() const;
 };
 
+struct RenderState {
+	int limits[std::enum_value(video::Limit::Max)] = { };
+	bool features[std::enum_value(video::Feature::Max)] = { };
+};
+
+static inline RenderState& renderState() {
+	static RenderState s;
+	return s;
+}
+
 inline ProfilerGPU::ProfilerGPU(const std::string& name, uint16_t maxSamples) :
 		_name(name), _maxSampleCount(maxSamples) {
 	core_assert(maxSamples > 0);
@@ -220,6 +230,10 @@ inline void drawElementsInstanced(Primitive mode, size_t numIndices, size_t amou
 template<class IndexType>
 inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIndex, int baseVertex) {
 	drawElementsBaseVertex(mode, numIndices, mapType<IndexType>(), sizeof(IndexType), baseIndex, baseVertex);
+}
+
+inline bool hasFeature(Feature f) {
+	return renderState().features[std::enum_value(f)];
 }
 
 }

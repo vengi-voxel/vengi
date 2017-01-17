@@ -21,8 +21,6 @@ namespace _priv {
  */
 struct GLState {
 	GLVersion glVersion {0, 0};
-	int limits[std::enum_value(video::Limit::Max)] = { };
-	bool features[std::enum_value(video::Feature::Max)] = { };
 	glm::vec4 clearColor;
 	bool depthMask = true;
 	Face cullFace = Face::Back;
