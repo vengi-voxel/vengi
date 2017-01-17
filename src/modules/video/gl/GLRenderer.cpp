@@ -605,6 +605,11 @@ void configureAttribute(const Attribute& a) {
 
 Id bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle) {
 	const Id old = _priv::s.framebufferHandle;
+#ifdef DEBUG
+	GLint _oldFramebuffer;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
+	core_assert(_oldFramebuffer == (GLint)old);
+#endif
 	if (old == handle && _priv::s.framebufferTextureHandle == textureHandle) {
 		return handle;
 	}
