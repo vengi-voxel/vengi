@@ -7,7 +7,7 @@
 #include "video/Renderer.h"
 #include "GLTypes.h"
 #include "GLVersion.h"
-#include "GLFunc.h"
+#include "flextGL.h"
 #include "GLState.h"
 #include "GLMapping.h"
 #include "GLHelper.h"
@@ -935,7 +935,7 @@ bool init() {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);
 	Log::info("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
 
-	GLLoadFunctions();
+	flextInit();
 
 	_priv::setupLimits();
 	_priv::setupFeatures();

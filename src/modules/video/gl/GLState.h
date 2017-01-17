@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "GLFunc.h"
+#include "flextGL.h"
 #include "GLVersion.h"
 #include "video/Types.h"
 #include <glm/vec2.hpp>

@@ -4,8 +4,10 @@
 
 #pragma once
 
-#include "GLFunc.h"
+#include "flextGL.h"
 #include "video/Types.h"
+
+#define GL_OFFSET_CAST(i) ((void*)(i))
 
 namespace video {
 

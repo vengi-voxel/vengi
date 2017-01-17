@@ -94,10 +94,6 @@ void debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 		sevStr = "HIGH";
 		log = Log::error;
 		break;
-	case GL_DEBUG_SEVERITY_NOTIFICATION_ARB:
-		sevStr = "INFO";
-		log = Log::debug;
-		break;
 	default:
 		sevStr = "<unknown>";
 		break;

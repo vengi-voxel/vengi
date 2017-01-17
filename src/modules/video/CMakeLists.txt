@@ -1,7 +1,7 @@
 set(SRCS
 	Camera.cpp Camera.h
 	WindowedApp.cpp WindowedApp.h
-	gl/GLFunc.cpp gl/GLFunc.h
+	gl/flextGL.c gl/flextGL.h
 	gl/GLRenderer.cpp
 	gl/GLProfiler.cpp
 	gl/GLState.h

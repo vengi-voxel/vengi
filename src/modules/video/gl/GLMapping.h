@@ -5,7 +5,7 @@
 #pragma once
 
 #include "video/Types.h"
-#include "GLFunc.h"
+#include "flextGL.h"
 
 namespace video {
 

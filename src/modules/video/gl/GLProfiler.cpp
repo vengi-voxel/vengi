@@ -3,7 +3,7 @@
  */
 
 #include "video/Renderer.h"
-#include "video/gl/GLFunc.h"
+#include "flextGL.h"
 
 namespace video {
 

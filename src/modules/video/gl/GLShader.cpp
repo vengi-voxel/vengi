@@ -4,7 +4,7 @@
 
 #include "video/Shader.h"
 #include "video/UniformBuffer.h"
-#include "GLFunc.h"
+#include "flextGL.h"
 #include <SDL.h>
 
 #if VALIDATE_UNIFORMS > 0
