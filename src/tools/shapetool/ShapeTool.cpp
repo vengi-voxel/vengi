@@ -55,7 +55,7 @@ core::AppState ShapeTool::onInit() {
 		return state;
 	}
 
-	video::enableDebug(video::DebugSeverity::Medium);
+	video::enableDebug(video::DebugSeverity::High);
 
 	if (!_axis.init()) {
 		return core::AppState::Cleanup;
