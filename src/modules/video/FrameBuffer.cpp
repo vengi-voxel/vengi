@@ -31,7 +31,7 @@ void FrameBuffer::bind() {
 
 void FrameBuffer::unbind() {
 	video::viewport(_viewport[0], _viewport[1], _viewport[2], _viewport[3]);
-	video::bindFramebuffer(FrameBufferMode::Draw, _oldFramebuffer);
+	video::bindFramebuffer(FrameBufferMode::Default, _oldFramebuffer);
 	_oldFramebuffer = InvalidId;
 }
 
