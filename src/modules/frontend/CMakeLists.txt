@@ -20,6 +20,7 @@ target_link_libraries(${LIB} ui network voxel cooldown attrib)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
+	tests/FrontendShaderTest.cpp
 	tests/MaterialTest.cpp
 	tests/WorldRendererTest.cpp
 )
