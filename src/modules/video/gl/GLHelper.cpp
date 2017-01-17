@@ -191,7 +191,7 @@ void setupFeatures() {
 	int numExts;
 	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
 	Log::info("OpenGL extensions:");
-	for (int i = 0; i < numExts; i++) {
+	for (int i = 0; i < numExts; ++i) {
 		const char *extensionStr = (const char *) glGetStringi(GL_EXTENSIONS, i);
 		Log::info("%s", extensionStr);
 	}
@@ -204,7 +204,6 @@ void setupFeatures() {
 				Log::info("Detected feature: %s", s);
 				break;
 			}
-			++s;
 		}
 	}
 
