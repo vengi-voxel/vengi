@@ -385,7 +385,7 @@ bool Shader::createProgramFromShaders() {
 	const Id frag = _shader[ShaderType::Fragment];
 	const Id geom = _shader[ShaderType::Geometry];
 
-	return video::linkShader(_program, vert, frag, geom);
+	return video::linkShader(_program, vert, frag, geom, _name);
 }
 
 }

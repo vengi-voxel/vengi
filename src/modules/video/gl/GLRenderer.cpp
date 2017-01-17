@@ -841,7 +841,7 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 	return true;
 }
 
-bool linkShader(Id program, Id vert, Id frag, Id geom) {
+bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) {
 	glAttachShader(program, vert);
 	glAttachShader(program, frag);
 	if (geom != InvalidId) {
@@ -856,17 +856,18 @@ bool linkShader(Id program, Id vert, Id frag, Id geom) {
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
 	if (infoLogLength > 0) {
-		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
-		glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog);
-		strInfoLog[infoLogLength] = '\0';
-		Log::error("linker log: %s", strInfoLog);
-		delete[] strInfoLog;
+		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
+		glGetShaderInfoLog(program, infoLogLength, nullptr, strInfoLog.get());
+		video::checkError();
+		const std::string linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
+		Log::info("%s: %s", name.c_str(), linkLog.c_str());
 	}
 	glDetachShader(program, vert);
 	glDetachShader(program, frag);
 	if (geom != InvalidId) {
 		glDetachShader(program, geom);
 	}
+	checkError();
 	if (!status) {
 		deleteProgram(program);
 		return false;
