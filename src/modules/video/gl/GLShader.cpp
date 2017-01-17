@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "video/Shader.h"
 #include "video/UniformBuffer.h"
 #include "GLFunc.h"

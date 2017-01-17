@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "GLFunc.h"
@@ -10,7 +14,11 @@ namespace video {
 
 namespace _priv {
 
-// http://www.glprogramming.com/red/appendixb.html
+/**
+ * Record the current opengl states to perform lesser state changes on the hardware.
+ *
+ * A list of default gl states: http://www.glprogramming.com/red/appendixb.html
+ */
 struct GLState {
 	GLVersion glVersion {0, 0};
 	int limits[std::enum_value(video::Limit::Max)] = { };

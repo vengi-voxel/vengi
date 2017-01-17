@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "video/Renderer.h"
 #include "GLTypes.h"
 #include "GLVersion.h"

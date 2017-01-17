@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "GLHelper.h"
 #include "video/Renderer.h"
 #include "GLState.h"
