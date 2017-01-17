@@ -102,6 +102,11 @@ extern void readBuffer(GBufferTextureType textureType);
 extern bool setupDepthbuffer(Id fbo, DepthBufferMode mode);
 extern bool bindDepthTexture(int textureIndex, DepthBufferMode mode, Id depthTexture);
 extern bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, int texCount, Id depthTexture);
+/**
+ * @brief Change the renderer line width
+ * @param width The new line width
+ * @return The previous line width
+ */
 extern float lineWidth(float width);
 extern bool clearColor(const glm::vec4& clearColor);
 extern void clear(ClearFlag flag);
@@ -109,7 +114,17 @@ extern bool viewport(int x, int y, int w, int h);
 extern void getScissor(int& x, int& y, int& w, int& h);
 extern void getViewport(int& x, int& y, int& w, int& h);
 extern bool scissor(int x, int y, int w, int h);
+/**
+ * @brief Enables a renderer state
+ * @param state The State to change
+ * @return The previous state value
+ */
 extern bool enable(State state);
+/**
+ * @brief Disables a renderer state
+ * @param state The State to change
+ * @return The previous state value
+ */
 extern bool disable(State state);
 extern bool cullFace(Face face);
 extern bool depthFunc(CompareFunc func);
@@ -148,6 +163,13 @@ extern Id genRenderbuffer();
 extern void deleteRenderbuffers(uint8_t amount, Id* ids);
 extern void deleteRenderbuffer(Id& id);
 extern void configureAttribute(const Attribute& a);
+/**
+ * Binds a new frame buffer
+ * @param mode The FrameBufferMode to bind the frame buffer with
+ * @param handle The Id that represents the handle of the frame buffer
+ * @param textureHandle The Id that represents the texture that should be bound as frame buffer color attachment.
+ * @return The previously bound frame buffer Id
+ */
 extern Id bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle = InvalidId);
 extern bool bindRenderbuffer(Id handle);
 extern void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size);
