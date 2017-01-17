@@ -99,8 +99,14 @@ public:
 	 * @param[in] idx The buffer index returned by create()
 	 * @return The handle for the given buffer index.
 	 */
-	Id handle(int32_t idx) const;
+	Id bufferHandle(int32_t idx) const;
+
+	Id handle() const;
 };
+
+inline Id VertexBuffer::handle() const {
+	return _vao;
+}
 
 inline bool VertexBuffer::isValid(int32_t idx) const {
 	if (idx < 0) {
@@ -121,7 +127,7 @@ inline uint32_t VertexBuffer::elements(int32_t idx, int components, size_t compo
 	return size(idx) / (components * componentSize);
 }
 
-inline Id VertexBuffer::handle(int32_t idx) const {
+inline Id VertexBuffer::bufferHandle(int32_t idx) const {
 	core_assert(idx >= 0 && idx < (int)SDL_arraysize(_handles));
 	return _handles[idx];
 }

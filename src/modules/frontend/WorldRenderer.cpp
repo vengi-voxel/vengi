@@ -253,7 +253,7 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const VisibleVBOs& v
 	for (ChunkBuffer::VBO* vbo : vbos) {
 		shader.setUniformMatrix("u_model", vbo->model);
 		const uint32_t numIndices = vbo->vb.elements(vbo->indexBuffer, 1, sizeof(voxel::IndexType));
-		if (numIndices == 0) {
+		if (numIndices == 0u) {
 			continue;
 		}
 
