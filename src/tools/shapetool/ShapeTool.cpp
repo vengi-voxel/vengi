@@ -132,7 +132,7 @@ void ShapeTool::beforeUI() {
 
 	_worldRenderer.extractNewMeshes(_camera.position());
 	_worldRenderer.onRunning(_camera, _deltaFrame);
-	ScopedProfiler<ProfilerGPU> wt(_worldTimer);
+	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
 	}
