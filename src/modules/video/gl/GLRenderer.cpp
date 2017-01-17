@@ -779,6 +779,45 @@ void enableDebug(DebugSeverity severity) {
 	}
 }
 
+bool compileShader(Id id, ShaderType shaderType, const std::string& source) {
+	const char *s = source.c_str();
+	glShaderSource(id, 1, (const GLchar**) &s, nullptr);
+	glCompileShader(id);
+
+	GLint status;
+	glGetShaderiv(id, GL_COMPILE_STATUS, &status);
+	if (!status) {
+		GLint infoLogLength = 0;
+		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
+		glGetShaderInfoLog(id, infoLogLength, nullptr, strInfoLog.get());
+		const std::string errorLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
+
+		const char *strShaderType;
+		switch (shaderType) {
+		case ShaderType::Vertex:
+			strShaderType = "vertex";
+			break;
+		case ShaderType::Fragment:
+			strShaderType = "fragment";
+			break;
+		case ShaderType::Geometry:
+			strShaderType = "geometry";
+			break;
+		default:
+			strShaderType = "unknown";
+			break;
+		}
+
+		Log::error("Failed to compile:\n----- \n%s\n-----\nshaderType: %s\nerrorlog: %s", source.c_str(), strShaderType, errorLog.c_str());
+		video::deleteShader(id);
+		return false;
+	}
+
+	return true;
+}
+
 bool hasFeature(Feature f) {
 	return _priv::s.features[std::enum_value(f)];
 }

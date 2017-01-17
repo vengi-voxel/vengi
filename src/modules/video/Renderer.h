@@ -164,6 +164,7 @@ extern void drawArrays(Primitive mode, size_t count);
 extern void disableDebug();
 extern bool hasFeature(Feature feature);
 extern void enableDebug(DebugSeverity severity);
+extern bool compileShader(Id id, ShaderType shaderType, const std::string& source);
 
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices) {

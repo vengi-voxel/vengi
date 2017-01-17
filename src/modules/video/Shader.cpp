@@ -130,47 +130,15 @@ void Shader::shutdown() {
 bool Shader::load(const std::string& name, const std::string& buffer, ShaderType shaderType) {
 	_name = name;
 	const std::string& source = getSource(shaderType, buffer);
-	video::checkError();
 
-	if (_shader[shaderType] == InvalidId) {
-		_shader[shaderType] = video::genShader(shaderType);
+	Id& id = _shader[shaderType];
+	if (id == InvalidId) {
+		id = video::genShader(shaderType);
 	}
-	const char *s = source.c_str();
-	glShaderSource(_shader[shaderType], 1, (const GLchar**) &s, nullptr);
-	glCompileShader(_shader[shaderType]);
-
-	GLint status;
-	glGetShaderiv(_shader[shaderType], GL_COMPILE_STATUS, &status);
-	if (!status) {
-		GLint infoLogLength = 0;
-		glGetShaderiv(_shader[shaderType], GL_INFO_LOG_LENGTH, &infoLogLength);
-
-		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
-		glGetShaderInfoLog(_shader[shaderType], infoLogLength, nullptr, strInfoLog.get());
-		const std::string errorLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
-
-		const char *strShaderType;
-		switch (shaderType) {
-		case ShaderType::Vertex:
-			strShaderType = "vertex";
-			break;
-		case ShaderType::Fragment:
-			strShaderType = "fragment";
-			break;
-		case ShaderType::Geometry:
-			strShaderType = "geometry";
-			break;
-		default:
-			strShaderType = "unknown";
-			break;
-		}
-
-		Log::error("%s", source.c_str());
-		Log::error("compile failure in %s (type: %s) shader:\n%s", name.c_str(), strShaderType, errorLog.c_str());
-		video::deleteShader(_shader[shaderType]);
+	if (!video::compileShader(id, shaderType, source)) {
+		Log::error("compile failure in %s\n", name.c_str());
 		return false;
 	}
-
 	return true;
 }
 
