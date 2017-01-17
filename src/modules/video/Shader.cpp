@@ -120,6 +120,7 @@ bool Shader::loadFromFile(const std::string& filename, ShaderType shaderType) {
 }
 
 bool Shader::loadProgram(const std::string& filename) {
+	video::checkError();
 	const bool vertex = loadFromFile(filename + VERTEX_POSTFIX, ShaderType::Vertex);
 	if (!vertex) {
 		return false;
@@ -134,6 +135,7 @@ bool Shader::loadProgram(const std::string& filename) {
 	loadFromFile(filename + GEOMETRY_POSTFIX, ShaderType::Geometry);
 
 	_name = filename;
+	video::checkError();
 	return init();
 }
 
@@ -143,6 +145,7 @@ bool Shader::reload() {
 }
 
 bool Shader::init() {
+	video::checkError();
 	createProgramFromShaders();
 	const bool success = _program != InvalidId;
 	_initialized = success;

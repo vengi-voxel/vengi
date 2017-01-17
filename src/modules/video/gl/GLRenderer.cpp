@@ -492,6 +492,7 @@ void deleteProgram(Id& id) {
 }
 
 Id genProgram() {
+	checkError();
 	Id id = glCreateProgram();
 	checkError();
 	return id;
@@ -795,16 +796,21 @@ void enableDebug(DebugSeverity severity) {
 bool compileShader(Id id, ShaderType shaderType, const std::string& source) {
 	const char *s = source.c_str();
 	glShaderSource(id, 1, (const GLchar**) &s, nullptr);
+	video::checkError();
 	glCompileShader(id);
+	video::checkError();
 
 	GLint status;
 	glGetShaderiv(id, GL_COMPILE_STATUS, &status);
+	video::checkError();
 	if (!status) {
 		GLint infoLogLength = 0;
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &infoLogLength);
+		video::checkError();
 
 		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
 		glGetShaderInfoLog(id, infoLogLength, nullptr, strInfoLog.get());
+		video::checkError();
 		const std::string errorLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 
 		const char *strShaderType;

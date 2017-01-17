@@ -388,7 +388,9 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 
 void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	Super::OnInflate(info);
+	video::checkError();
 	_axis.init();
+	video::checkError();
 	m().init();
 
 	Controller::SceneCameraMode mode = Controller::SceneCameraMode::Free;

@@ -10,9 +10,11 @@ ShapeRenderer::ShapeRenderer() :
 }
 
 bool ShapeRenderer::init() {
+	video::checkError();
 	if (!_colorShader.setup()) {
 		return false;
 	}
+	video::checkError();
 	return true;
 }
 
