@@ -70,7 +70,7 @@ void VertexBuffer::unbind() const {
 	if (_vao != InvalidId) {
 		video::bindVertexArray(InvalidId);
 	} else {
-		for (unsigned int i = 0; i < _handleIdx; ++i) {
+		for (uint32_t i = 0u; i < _handleIdx; ++i) {
 			video::unbindBuffer(_targets[i]);
 		}
 	}
