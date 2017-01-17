@@ -222,3 +222,6 @@ updatelibs:
 	git diff contrib/libs/turbobadger/ > turbobadger.sync/upstream.diff
 	git checkout contrib/libs/turbobadger/tb/tb_id.cpp
 	git add contrib/libs
+
+updategl:
+	cd tools/flextGL && ./flextgl.sh
