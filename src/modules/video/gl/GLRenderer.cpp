@@ -236,7 +236,10 @@ bool scissor(int x, int y, int w, int h) {
 	_priv::s.scissorY = y;
 	_priv::s.scissorW = w;
 	_priv::s.scissorH = h;
-	glScissor((GLint)x, (GLint)y, (GLsizei)w, (GLsizei)h);
+
+	const int _y = _priv::s.viewportH - (y + h);
+
+	glScissor((GLint)x, (GLint)_y, (GLsizei)w, (GLsizei)h);
 	checkError();
 	return true;
 }

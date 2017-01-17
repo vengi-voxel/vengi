@@ -16,23 +16,18 @@ private:
 	int _h;
 	bool _oldState;
 public:
-	/**
-	 * @note Keep in mind that opengl y starts from below - these are no screen coordinates, but opengl coordinates.
-	 */
-	ScopedScissor(int x, int y, int w, int h, int viewHeight) {
-		// TODO: handle the viewheight in the renderer - we should have the framebuffer dimensions there
-		const int y1 = viewHeight - (y + h);
+	ScopedScissor(int x, int y, int w, int h) {
 		_oldState = video::enable(video::State::Scissor);
 		video::getScissor(_x, _y, _w, _h);
-		video::scissor(x, y1, w, h);
+		video::scissor(x, y, w, h);
 	}
 
-	ScopedScissor(const glm::ivec2& pos, const glm::ivec2& size, int viewHeight) :
-			ScopedScissor(pos.x, pos.y, size.x, size.y, viewHeight) {
+	ScopedScissor(const glm::ivec2& pos, const glm::ivec2& size) :
+			ScopedScissor(pos.x, pos.y, size.x, size.y) {
 	}
 
-	ScopedScissor(const glm::ivec2& pos, int w, int h, int viewHeight) :
-			ScopedScissor(pos.x, pos.y, w, h, viewHeight) {
+	ScopedScissor(const glm::ivec2& pos, int w, int h) :
+			ScopedScissor(pos.x, pos.y, w, h) {
 	}
 
 	~ScopedScissor() {
