@@ -830,15 +830,17 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 			break;
 		}
 
-		if (!status) {
-			Log::error("Failed to compile: %s\n----- \n%s\n-----\nshaderType: %s\nerrorlog: %s",
+		if (status == GL_FALSE) {
+			Log::error("Failed to compile: %s\n%s\nshaderType: %s\nerrorlog: %s",
 					name.c_str(), source.c_str(), strShaderType, compileLog.c_str());
-			deleteShader(id);
 		} else {
 			Log::info("%s: %s", name.c_str(), compileLog.c_str());
 		}
 	}
-	return true;
+	if (status == GL_FALSE) {
+		deleteShader(id);
+	}
+	return status == GL_TRUE;
 }
 
 bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) {
@@ -860,7 +862,11 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 		glGetShaderInfoLog(program, infoLogLength, nullptr, strInfoLog.get());
 		video::checkError();
 		const std::string linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
-		Log::info("%s: %s", name.c_str(), linkLog.c_str());
+		if (status == GL_FALSE) {
+			Log::error("Failed to link: %s\nerrorlog: %s", name.c_str(), linkLog.c_str());
+		} else {
+			Log::info("%s: %s", name.c_str(), linkLog.c_str());
+		}
 	}
 	glDetachShader(program, vert);
 	glDetachShader(program, frag);
@@ -868,12 +874,12 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 		glDetachShader(program, geom);
 	}
 	checkError();
-	if (!status) {
+	if (status == GL_FALSE) {
 		deleteProgram(program);
 		return false;
 	}
 
-	return true;
+	return status == GL_TRUE;
 }
 
 int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name) {
