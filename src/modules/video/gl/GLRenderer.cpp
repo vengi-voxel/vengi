@@ -592,10 +592,11 @@ void deleteRenderbuffer(Id& id) {
 
 void configureAttribute(const Attribute& a) {
 	glEnableVertexAttribArray(a.index);
+	const GLenum type = _priv::DataTypes[std::enum_value(a.type)];
 	if (a.typeIsInt) {
-		glVertexAttribIPointer(a.index, a.size, _priv::DataTypes[std::enum_value(a.type)], a.stride, GL_OFFSET_CAST(a.offset));
+		glVertexAttribIPointer(a.index, a.size, type, a.stride, GL_OFFSET_CAST(a.offset));
 	} else {
-		glVertexAttribPointer(a.index, a.size, _priv::DataTypes[std::enum_value(a.type)], a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
+		glVertexAttribPointer(a.index, a.size, type, a.normalized, a.stride, GL_OFFSET_CAST(a.offset));
 	}
 	if (a.divisor > 0) {
 		glVertexAttribDivisor(a.index, a.divisor);
@@ -632,12 +633,15 @@ bool bindRenderbuffer(Id handle) {
 }
 
 void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size) {
-	glBufferData(_priv::VertexBufferTypes[std::enum_value(type)], (GLsizeiptr)size, data, _priv::VertexBufferModes[std::enum_value(mode)]);
+	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
+	const GLenum usage = _priv::VertexBufferModes[std::enum_value(mode)];
+	glBufferData(glType, (GLsizeiptr)size, data, usage);
 	checkError();
 }
 
 void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size) {
-	glBufferSubData(_priv::VertexBufferTypes[std::enum_value(type)], (GLintptr)offset, (GLsizeiptr)size, data);
+	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
+	glBufferSubData(glType, (GLintptr)offset, (GLsizeiptr)size, data);
 	checkError();
 }
 
