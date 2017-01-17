@@ -105,6 +105,7 @@ extern bool bindTexture(TextureUnit unit, TextureType type, Id handle);
 extern bool useProgram(Id handle);
 extern bool bindVertexArray(Id handle);
 extern bool bindBuffer(VertexBufferType type, Id handle);
+extern bool unbindBuffer(VertexBufferType type);
 extern bool bindBufferBase(VertexBufferType type, Id handle, uint32_t index = 0u);
 extern void genBuffers(uint8_t amount, Id* ids);
 extern Id genBuffer();

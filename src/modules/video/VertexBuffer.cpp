@@ -71,7 +71,7 @@ void VertexBuffer::unbind() const {
 		video::bindVertexArray(InvalidId);
 	} else {
 		for (unsigned int i = 0; i < _handleIdx; ++i) {
-			video::bindBuffer(_targets[i], InvalidId);
+			video::unbindBuffer(_targets[i]);
 		}
 	}
 }
@@ -87,7 +87,7 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 	} else {
 		video::bufferData(_targets[idx], _mode, data, size);
 	}
-	video::bindBuffer(_targets[idx], InvalidId);
+	video::unbindBuffer(_targets[idx]);
 	_size[idx] = size;
 
 	return true;
@@ -107,7 +107,7 @@ int32_t VertexBuffer::create(const void* data, size_t size, VertexBufferType tar
 	if (data != nullptr) {
 		video::bindBuffer(_targets[_handleIdx], _handles[_handleIdx]);
 		video::bufferData(_targets[_handleIdx], _mode, data, size);
-		video::bindBuffer(_targets[_handleIdx], InvalidId);
+		video::unbindBuffer(_targets[_handleIdx]);
 	}
 	++_handleIdx;
 	return _handleIdx - 1;

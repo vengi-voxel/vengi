@@ -19,7 +19,7 @@ void UniformBuffer::create(size_t size, const void *data) {
 	if (data != nullptr) {
 		video::bindBuffer(VertexBufferType::UniformBuffer, _handle);
 		video::bufferData(VertexBufferType::UniformBuffer, VertexBufferMode::Static, data, size);
-		video::bindBuffer(VertexBufferType::UniformBuffer, InvalidId);
+		video::unbindBuffer(VertexBufferType::UniformBuffer);
 	}
 }
 

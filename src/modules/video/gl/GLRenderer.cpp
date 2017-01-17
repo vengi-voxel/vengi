@@ -781,7 +781,20 @@ bool bindBuffer(VertexBufferType type, Id handle) {
 	}
 	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
 	_priv::s.bufferHandle[typeIndex] = handle;
+	core_assert(handle != InvalidId);
 	glBindBuffer(glType, handle);
+	checkError();
+	return true;
+}
+
+bool unbindBuffer(VertexBufferType type) {
+	const int typeIndex = std::enum_value(type);
+	if (_priv::s.bufferHandle[typeIndex] == InvalidId) {
+		return false;
+	}
+	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
+	_priv::s.bufferHandle[typeIndex] = InvalidId;
+	glBindBuffer(glType, InvalidId);
 	checkError();
 	return true;
 }
