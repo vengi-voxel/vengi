@@ -376,7 +376,7 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 	return src;
 }
 
-void Shader::createProgramFromShaders() {
+bool Shader::createProgramFromShaders() {
 	if (_program == InvalidId) {
 		_program = video::genProgram();
 	}
@@ -385,7 +385,7 @@ void Shader::createProgramFromShaders() {
 	const Id frag = _shader[ShaderType::Fragment];
 	const Id geom = _shader[ShaderType::Geometry];
 
-	video::linkShader(_program, vert, frag, geom);
+	return video::linkShader(_program, vert, frag, geom);
 }
 
 }

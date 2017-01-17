@@ -841,7 +841,7 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 	return true;
 }
 
-void linkShader(Id program, Id vert, Id frag, Id geom) {
+bool linkShader(Id program, Id vert, Id frag, Id geom) {
 	glAttachShader(program, vert);
 	glAttachShader(program, frag);
 	if (geom != InvalidId) {
@@ -852,23 +852,27 @@ void linkShader(Id program, Id vert, Id frag, Id geom) {
 	GLint status;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
 	checkError();
-	if (status) {
-		glDetachShader(program, vert);
-		glDetachShader(program, frag);
-		if (geom != InvalidId) {
-			glDetachShader(program, geom);
-		}
-		return;
-	}
 	GLint infoLogLength;
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-	GLchar* strInfoLog = new GLchar[infoLogLength + 1];
-	glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog);
-	strInfoLog[infoLogLength] = '\0';
-	Log::error("linker failure: %s", strInfoLog);
-	deleteProgram(program);
-	delete[] strInfoLog;
+	if (infoLogLength > 0) {
+		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
+		glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog);
+		strInfoLog[infoLogLength] = '\0';
+		Log::error("linker log: %s", strInfoLog);
+		delete[] strInfoLog;
+	}
+	glDetachShader(program, vert);
+	glDetachShader(program, frag);
+	if (geom != InvalidId) {
+		glDetachShader(program, geom);
+	}
+	if (!status) {
+		deleteProgram(program);
+		return false;
+	}
+
+	return true;
 }
 
 int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name) {

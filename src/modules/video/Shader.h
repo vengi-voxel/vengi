@@ -73,7 +73,7 @@ protected:
 
 	int fetchAttributes();
 
-	void createProgramFromShaders();
+	bool createProgramFromShaders();
 
 	static std::string validGLSLPreprocessorName(const std::string& name);
 
