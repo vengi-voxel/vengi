@@ -16,6 +16,7 @@ target_link_libraries(${LIB} core io video turbobadger)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
+	tests/UIShaderTest.cpp
 	tests/ConsoleTest.cpp
 	tests/UITest.h
 )

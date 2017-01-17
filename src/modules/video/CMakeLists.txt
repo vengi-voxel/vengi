@@ -37,6 +37,7 @@ set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_include_directories(${LIB} PUBLIC ${OPENGL_INCLUDE_DIRS})
 
 gtest_suite_files(tests
+	tests/AbstractGLTest.h
 	tests/ShaderTest.cpp
 	tests/CameraTest.cpp
 )
