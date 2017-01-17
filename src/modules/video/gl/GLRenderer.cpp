@@ -163,7 +163,7 @@ float lineWidth(float width) {
 		return _priv::s.lineWidth;
 	}
 	const float oldWidth = _priv::s.lineWidth;
-	if (_priv::s.lineAntialiasing) {
+	if (_priv::s.states[std::enum_value(State::LineSmooth)]) {
 		glLineWidth((GLfloat)glm::clamp(width, _priv::s.smoothedLineWidth.x, _priv::s.smoothedLineWidth.y));
 	} else {
 		glLineWidth((GLfloat)glm::clamp(width, _priv::s.aliasedLineWidth.x, _priv::s.aliasedLineWidth.y));

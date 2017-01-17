@@ -50,7 +50,6 @@ struct GLState {
 	Id framebufferTextureHandle = InvalidId;
 	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
 	glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
-	bool lineAntialiasing = false;
 	float lineWidth = 1.0f;
 };
 
