@@ -812,7 +812,7 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
 		glGetShaderInfoLog(id, infoLogLength, nullptr, strInfoLog.get());
 		video::checkError();
-		const std::string errorLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
+		const std::string compileLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 
 		const char *strShaderType;
 		switch (shaderType) {
@@ -832,10 +832,10 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 
 		if (!status) {
 			Log::error("Failed to compile: %s\n----- \n%s\n-----\nshaderType: %s\nerrorlog: %s",
-					name.c_str(), source.c_str(), strShaderType, errorLog.c_str());
+					name.c_str(), source.c_str(), strShaderType, compileLog.c_str());
 			deleteShader(id);
 		} else {
-			Log::info("%s: %s", name.c_str(), errorLog.c_str());
+			Log::info("%s: %s", name.c_str(), compileLog.c_str());
 		}
 	}
 	return true;
