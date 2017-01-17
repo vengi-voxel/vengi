@@ -1038,7 +1038,7 @@ void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, Id dept
 
 bool setupFramebuffer(Id& fbo, Id& texture, Id& depth, const glm::ivec2& dimension) {
 	fbo = genFramebuffer();
-	bindFramebuffer(video::FrameBufferMode::Default, fbo);
+	Id prev = bindFramebuffer(video::FrameBufferMode::Default, fbo);
 	texture = genTexture();
 	bindTexture(video::TextureUnit::Upload, TextureType::Texture2D, texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -1059,32 +1059,9 @@ bool setupFramebuffer(Id& fbo, Id& texture, Id& depth, const glm::ivec2& dimensi
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, drawBuffers);
 
-	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		switch (status) {
-		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-			Log::error("FB error, incomplete attachment");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-			Log::error("FB error, incomplete missing attachment");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-			Log::error("FB error, incomplete draw buffer");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-			Log::error("FB error, incomplete read buffer");
-			break;
-		case GL_FRAMEBUFFER_UNSUPPORTED:
-			Log::error("FB error, framebuffer unsupported");
-			break;
-		default:
-			Log::error("FB error, status: %i", (int)status);
-			break;
-		}
-		return false;
-	}
-
-	return true;
+	const bool retVal = checkFramebufferStatus();
+	bindFramebuffer(video::FrameBufferMode::Default, prev);
+	return retVal;
 }
 
 void setupTexture(video::TextureType type, video::TextureWrap wrap) {
