@@ -15,6 +15,8 @@
 
 namespace video {
 
+#define SANITY_CHECKS_GL 0
+
 void checkError() {
 #ifdef DEBUG
 	/* check gl errors (can return multiple errors) */
@@ -606,7 +608,7 @@ void configureAttribute(const Attribute& a) {
 
 Id bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle) {
 	const Id old = _priv::s.framebufferHandle;
-#ifdef DEBUG
+#if SANITY_CHECKS_GL
 	GLint _oldFramebuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
 	core_assert(_oldFramebuffer == (GLint)old);
