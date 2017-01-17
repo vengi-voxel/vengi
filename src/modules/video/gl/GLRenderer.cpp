@@ -778,13 +778,12 @@ void enableDebug(DebugSeverity severity) {
 		glSeverity = GL_DEBUG_SEVERITY_LOW_ARB;
 		break;
 	}
-	if (glDebugMessageControlARB != nullptr) {
-		glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, glSeverity, 0, nullptr, GL_TRUE);
-		enable(State::DebugOutput);
-		glDebugMessageCallbackARB(_priv::debugOutputCallback, nullptr);
-		checkError();
-		Log::info("enable opengl debug messages");
-	}
+
+	glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, glSeverity, 0, nullptr, GL_TRUE);
+	enable(State::DebugOutput);
+	glDebugMessageCallbackARB(_priv::debugOutputCallback, nullptr);
+	checkError();
+	Log::info("enable opengl debug messages");
 }
 
 bool compileShader(Id id, ShaderType shaderType, const std::string& source) {
