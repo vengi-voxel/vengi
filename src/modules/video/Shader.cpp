@@ -100,7 +100,7 @@ bool Shader::load(const std::string& name, const std::string& buffer, ShaderType
 	if (id == InvalidId) {
 		id = video::genShader(shaderType);
 	}
-	if (!video::compileShader(id, shaderType, source)) {
+	if (!video::compileShader(id, shaderType, source, _name)) {
 		Log::error("compile failure in %s\n", name.c_str());
 		return false;
 	}

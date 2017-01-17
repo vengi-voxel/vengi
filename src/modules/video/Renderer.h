@@ -212,7 +212,7 @@ extern void drawArrays(Primitive mode, size_t count);
 extern void disableDebug();
 extern bool hasFeature(Feature feature);
 extern void enableDebug(DebugSeverity severity);
-extern bool compileShader(Id id, ShaderType shaderType, const std::string& source);
+extern bool compileShader(Id id, ShaderType shaderType, const std::string& source, const std::string& name);
 extern void linkShader(Id program, Id vert, Id frag, Id geom);
 extern int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name);
 extern int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string& name);

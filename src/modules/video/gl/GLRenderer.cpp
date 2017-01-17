@@ -793,8 +793,9 @@ void enableDebug(DebugSeverity severity) {
 	Log::info("enable opengl debug messages");
 }
 
-bool compileShader(Id id, ShaderType shaderType, const std::string& source) {
+bool compileShader(Id id, ShaderType shaderType, const std::string& source, const std::string& name) {
 	const char *s = source.c_str();
+	video::checkError();
 	glShaderSource(id, 1, (const GLchar**) &s, nullptr);
 	video::checkError();
 	glCompileShader(id);
@@ -803,11 +804,11 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source) {
 	GLint status;
 	glGetShaderiv(id, GL_COMPILE_STATUS, &status);
 	video::checkError();
-	if (!status) {
-		GLint infoLogLength = 0;
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &infoLogLength);
-		video::checkError();
+	GLint infoLogLength = 0;
+	glGetShaderiv(id, GL_INFO_LOG_LENGTH, &infoLogLength);
+	video::checkError();
 
+	if (infoLogLength > 0) {
 		std::unique_ptr<GLchar[]> strInfoLog(new GLchar[infoLogLength + 1]);
 		glGetShaderInfoLog(id, infoLogLength, nullptr, strInfoLog.get());
 		video::checkError();
@@ -829,11 +830,14 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source) {
 			break;
 		}
 
-		Log::error("Failed to compile:\n----- \n%s\n-----\nshaderType: %s\nerrorlog: %s", source.c_str(), strShaderType, errorLog.c_str());
-		deleteShader(id);
-		return false;
+		if (!status) {
+			Log::error("Failed to compile: %s\n----- \n%s\n-----\nshaderType: %s\nerrorlog: %s",
+					name.c_str(), source.c_str(), strShaderType, errorLog.c_str());
+			deleteShader(id);
+		} else {
+			Log::info("%s: %s", name.c_str(), errorLog.c_str());
+		}
 	}
-
 	return true;
 }
 
