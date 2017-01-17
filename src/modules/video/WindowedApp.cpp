@@ -7,6 +7,7 @@
 #include "core/Singleton.h"
 #include "core/Var.h"
 #include "Renderer.h"
+#include "gl/GLVersion.h"
 #include "Shader.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
@@ -32,96 +33,6 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
 		App(filesystem, eventBus, timeProvider, traceport), _window(nullptr), _glcontext(nullptr), _dimension(-1), _aspect(1.0f) {
-}
-
-void WindowedApp::setupLimits() {
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &_state.limits[std::enum_value(Limit::MaxTextureSize)]);
-	video::checkError();
-	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &_state.limits[std::enum_value(Limit::MaxCubeMapTextureSize)]);
-	video::checkError();
-	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &_state.limits[std::enum_value(Limit::MaxViewPortWidth)]);
-	video::checkError();
-	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &_state.limits[std::enum_value(Limit::MaxDrawBuffers)]);
-	video::checkError();
-	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &_state.limits[std::enum_value(Limit::MaxVertexAttribs)]);
-	video::checkError();
-	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &_state.limits[std::enum_value(Limit::MaxCombinedTextureImageUnits)]);
-	video::checkError();
-	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &_state.limits[std::enum_value(Limit::MaxVertexTextureImageUnits)]);
-	video::checkError();
-	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &_state.limits[std::enum_value(Limit::MaxElementIndices)]);
-	video::checkError();
-	glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &_state.limits[std::enum_value(Limit::MaxElementVertices)]);
-	video::checkError();
-	if (_glVersion.majorVersion > 3 || (_glVersion.majorVersion == 3 && _glVersion.minorVersion >= 2)) {
-		glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &_state.limits[std::enum_value(Limit::MaxFragmentInputComponents)]);
-		video::checkError();
-	} else {
-		_state.limits[std::enum_value(Limit::MaxFragmentInputComponents)] = 60;
-	}
-#ifdef GL_MAX_VERTEX_UNIFORM_VECTORS
-	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &_state.limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
-	video::checkError();
-	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &_state.limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
-	video::checkError();
-#else
-	video::checkError();
-	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &_state.limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
-	video::checkError();
-	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &_state.limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
-#endif
-	video::checkError();
-	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", _state.limits[std::enum_value(Limit::MaxElementVertices)]);
-	Log::info("GL_MAX_ELEMENTS_INDICES: %i", _state.limits[std::enum_value(Limit::MaxElementIndices)]);
-}
-
-void WindowedApp::setupFeatures() {
-	const std::vector<const char *> array[] = {
-		{"_texture_compression_s3tc", "_compressed_texture_s3tc", "_texture_compression_dxt1"},
-		{"_texture_compression_pvrtc", "_compressed_texture_pvrtc"},
-		{},
-		{"_compressed_ATC_texture", "_compressed_texture_atc"},
-		{"_texture_float"},
-		{"_texture_half_float"},
-		{"_instanced_arrays"},
-		{"_debug_output"}
-	};
-
-	Log::info("Opengl feature detection:");
-	for (size_t i = 0; i < SDL_arraysize(array); ++i) {
-		const std::vector<const char *>& a = array[i];
-		for (const char *s : a) {
-			_state.features[i] = SDL_GL_ExtensionSupported(s);
-			if (_state.features[i]) {
-				break;
-			}
-			++s;
-		}
-	}
-
-	int mask = 0;
-	if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &mask) != -1) {
-		if ((mask & SDL_GL_CONTEXT_PROFILE_CORE) != 0) {
-			_state.features[std::enum_value(Feature::TextureCompressionDXT)] = true;
-			_state.features[std::enum_value(Feature::InstancedArrays)] = true;
-			_state.features[std::enum_value(Feature::TextureFloat)] = true;
-		}
-	}
-
-#if SDL_VIDEO_OPENGL_ES2
-	_state.features[std::enum_value(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("_texture_half_float");
-#else
-	_state.features[std::enum_value(Feature::TextureHalfFloat)] = _state.features[std::enum_value(Feature::TextureFloat)];
-#endif
-
-#if SDL_VIDEO_OPENGL_ES3
-	_state.features[std::enum_value(Feature::InstancedArrays)] = true;
-	_state.features[std::enum_value(Feature::TextureCompressionETC2)] = true;
-#endif
-
-	if (!_state.features[std::enum_value(Feature::InstancedArrays)]) {
-		Log::warn("instanced_arrays extension not found!");
-	}
 }
 
 void WindowedApp::onAfterRunning() {
@@ -317,11 +228,6 @@ core::AppState WindowedApp::onInit() {
 
 	_glcontext = SDL_GL_CreateContext(_window);
 
-	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glv.majorVersion);
-	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glv.minorVersion);
-	_glVersion = glv;
-	Log::info("got gl context: %i.%i", _glVersion.majorVersion, _glVersion.minorVersion);
-
 	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
 	if (vsync) {
 		if (SDL_GL_SetSwapInterval(-1) == -1) {
@@ -375,19 +281,8 @@ core::AppState WindowedApp::onInit() {
 	_dimension = glm::ivec2(_width, _height);
 	_aspect = _width / static_cast<float>(_height);
 
-	GLLoadFunctions();
+	video::init();
 	video::viewport(0, 0, _width, _height);
-
-	setupLimits();
-	setupFeatures();
-
-	int numExts;
-	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
-	Log::info("OpenGL extensions:");
-	for (int i = 0; i < numExts; i++) {
-		const char *extensionStr = (const char *) glGetStringi(GL_EXTENSIONS, i);
-		Log::info("%s", extensionStr);
-	}
 
 	if (multisampling) {
 		video::enable(video::State::MultiSample);

@@ -1,5 +1,6 @@
 #include "video/Renderer.h"
 #include "GLTypes.h"
+#include "GLVersion.h"
 #include "GLFunc.h"
 #include "core/Common.h"
 #include "core/Log.h"
@@ -252,6 +253,9 @@ void checkError() {
 
 namespace _priv {
 	struct GLState {
+		GLVersion glVersion {0, 0};
+		int limits[std::enum_value(video::Limit::Max)] = { };
+		bool features[std::enum_value(video::Feature::Max)] = { };
 		glm::vec4 clearColor;
 		bool depthMask = false;
 		Face cullFace = Face::Max;
@@ -348,7 +352,8 @@ namespace _priv {
 
 	static GLenum TextureWraps[] {
 		GL_CLAMP_TO_EDGE,
-		GL_REPEAT
+		GL_REPEAT,
+		GL_NONE
 	};
 	static_assert(std::enum_value(TextureWrap::Max) == (int)SDL_arraysize(TextureWraps), "Array sizes don't match Max");
 
@@ -1087,9 +1092,11 @@ void setupTexture(video::TextureType type, video::TextureWrap wrap) {
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	const GLenum glWrap = _priv::TextureWraps[std::enum_value(wrap)];
-	glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrap);
-	glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrap);
+	if (wrap != TextureWrap::None) {
+		const GLenum glWrap = _priv::TextureWraps[std::enum_value(wrap)];
+		glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrap);
+		glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrap);
+	}
 	glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
 	checkError();
@@ -1135,5 +1142,113 @@ void enableDebug(DebugSeverity severity) {
 	GLDebug::enable(severity);
 }
 
+static void setupLimits() {
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &_priv::s.limits[std::enum_value(Limit::MaxTextureSize)]);
+	checkError();
+	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &_priv::s.limits[std::enum_value(Limit::MaxCubeMapTextureSize)]);
+	checkError();
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &_priv::s.limits[std::enum_value(Limit::MaxViewPortWidth)]);
+	checkError();
+	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &_priv::s.limits[std::enum_value(Limit::MaxDrawBuffers)]);
+	checkError();
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &_priv::s.limits[std::enum_value(Limit::MaxVertexAttribs)]);
+	checkError();
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &_priv::s.limits[std::enum_value(Limit::MaxCombinedTextureImageUnits)]);
+	checkError();
+	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &_priv::s.limits[std::enum_value(Limit::MaxVertexTextureImageUnits)]);
+	checkError();
+	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &_priv::s.limits[std::enum_value(Limit::MaxElementIndices)]);
+	checkError();
+	glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &_priv::s.limits[std::enum_value(Limit::MaxElementVertices)]);
+	checkError();
+	if (_priv::s.glVersion.majorVersion > 3 || (_priv::s.glVersion.majorVersion == 3 && _priv::s.glVersion.minorVersion >= 2)) {
+		glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &_priv::s.limits[std::enum_value(Limit::MaxFragmentInputComponents)]);
+		checkError();
+	} else {
+		_priv::s.limits[std::enum_value(Limit::MaxFragmentInputComponents)] = 60;
+	}
+#ifdef GL_MAX_VERTEX_UNIFORM_VECTORS
+	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &_priv::s.limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
+	checkError();
+	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &_priv::s.limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
+	checkError();
+#else
+	checkError();
+	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &_priv::s.limits[std::enum_value(Limit::MaxVertexUniformComponents)]);
+	checkError();
+	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &_priv::s.limits[std::enum_value(Limit::MaxFragmentUniformComponents)]);
+#endif
+	checkError();
+	Log::info("GL_MAX_ELEMENTS_VERTICES: %i", _priv::s.limits[std::enum_value(Limit::MaxElementVertices)]);
+	Log::info("GL_MAX_ELEMENTS_INDICES: %i", _priv::s.limits[std::enum_value(Limit::MaxElementIndices)]);
+}
+
+static void setupFeatures() {
+	const std::vector<const char *> array[] = {
+		{"_texture_compression_s3tc", "_compressed_texture_s3tc", "_texture_compression_dxt1"},
+		{"_texture_compression_pvrtc", "_compressed_texture_pvrtc"},
+		{},
+		{"_compressed_ATC_texture", "_compressed_texture_atc"},
+		{"_texture_float"},
+		{"_texture_half_float"},
+		{"_instanced_arrays"},
+		{"_debug_output"}
+	};
+
+	int numExts;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
+	Log::info("OpenGL extensions:");
+	for (int i = 0; i < numExts; i++) {
+		const char *extensionStr = (const char *) glGetStringi(GL_EXTENSIONS, i);
+		Log::info("%s", extensionStr);
+	}
+
+	for (size_t i = 0; i < SDL_arraysize(array); ++i) {
+		const std::vector<const char *>& a = array[i];
+		for (const char *s : a) {
+			_priv::s.features[i] = SDL_GL_ExtensionSupported(s);
+			if (_priv::s.features[i]) {
+				break;
+			}
+			++s;
+		}
+	}
+
+	int mask = 0;
+	if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &mask) != -1) {
+		if ((mask & SDL_GL_CONTEXT_PROFILE_CORE) != 0) {
+			_priv::s.features[std::enum_value(Feature::TextureCompressionDXT)] = true;
+			_priv::s.features[std::enum_value(Feature::InstancedArrays)] = true;
+			_priv::s.features[std::enum_value(Feature::TextureFloat)] = true;
+		}
+	}
+
+#if SDL_VIDEO_OPENGL_ES2
+	_priv::s.features[std::enum_value(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("_texture_half_float");
+#else
+	_priv::s.features[std::enum_value(Feature::TextureHalfFloat)] = _priv::s.features[std::enum_value(Feature::TextureFloat)];
+#endif
+
+#if SDL_VIDEO_OPENGL_ES3
+	_priv::s.features[std::enum_value(Feature::InstancedArrays)] = true;
+	_priv::s.features[std::enum_value(Feature::TextureCompressionETC2)] = true;
+#endif
+
+	if (!_priv::s.features[std::enum_value(Feature::InstancedArrays)]) {
+		Log::warn("instanced_arrays extension not found!");
+	}
+}
+
+bool init() {
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &_priv::s.glVersion.majorVersion);
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);
+	Log::info("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
+
+	GLLoadFunctions();
+
+	setupLimits();
+	setupFeatures();
+	return true;
+}
 
 }

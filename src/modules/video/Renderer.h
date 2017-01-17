@@ -80,6 +80,7 @@ inline double ProfilerGPU::maximum() const {
 	return _max;
 }
 
+extern bool init();
 extern void checkError();
 extern bool setupCubemap(Id handle, const image::ImagePtr images[6]);
 extern void readBuffer(GBufferTextureType textureType);

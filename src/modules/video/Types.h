@@ -16,6 +16,7 @@ enum class TextureType {
 enum class TextureWrap {
 	ClampToEdge,
 	Repeat,
+	None,
 
 	Max
 };
