@@ -747,7 +747,6 @@ void disableDebug() {
 		return;
 	}
 	disable(State::DebugOutput);
-	checkError();
 	Log::info("disable opengl debug messages");
 }
 
