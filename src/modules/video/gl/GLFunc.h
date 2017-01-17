@@ -1957,6 +1957,56 @@ GLAPI PFNGLGETDEBUGMESSAGELOGARB_PROC* glpfGetDebugMessageLogARB;
 #define glGetDebugMessageLogARB glpfGetDebugMessageLogARB
 
 
+/* GL_ARB_direct_state_access */
+
+typedef void (APIENTRY PFNGLCREATEBUFFERSARB_PROC (GLsizei n, GLuint *buffers));
+typedef void (APIENTRY PFNGLNAMEDBUFFERSTORAGEARB_PROC (GLuint buffer, GLsizeiptr size, const void *data, GLbitfield flags));
+typedef void (APIENTRY PFNGLNAMEDBUFFERDATAARB_PROC (GLuint buffer, GLsizeiptr size, const void *data, GLenum usage));
+typedef void (APIENTRY PFNGLNAMEDBUFFERSUBDATAARB_PROC (GLuint buffer, GLintptr offset, GLsizeiptr size, const void *data));
+typedef void (APIENTRY PFNGLCOPYNAMEDBUFFERSUBDATAARB_PROC (GLuint readBuffer, GLuint writeBuffer, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size));
+typedef void (APIENTRY PFNGLCLEARNAMEDBUFFERDATAARB_PROC (GLuint buffer, GLenum internalformat, GLenum format, GLenum type, const void *data));
+typedef void (APIENTRY PFNGLCLEARNAMEDBUFFERSUBDATAARB_PROC (GLuint buffer, GLenum internalformat, GLintptr offset, GLsizeiptr size, GLenum format, GLenum type, const void *data));
+typedef void* (APIENTRY PFNGLMAPNAMEDBUFFERARB_PROC (GLuint buffer, GLenum access));
+typedef void* (APIENTRY PFNGLMAPNAMEDBUFFERRANGEARB_PROC (GLuint buffer, GLintptr offset, GLsizeiptr length, GLbitfield access));
+typedef GLboolean (APIENTRY PFNGLUNMAPNAMEDBUFFERARB_PROC (GLuint buffer));
+typedef void (APIENTRY PFNGLFLUSHMAPPEDNAMEDBUFFERRANGEARB_PROC (GLuint buffer, GLintptr offset, GLsizeiptr length));
+typedef void (APIENTRY PFNGLGETNAMEDBUFFERPARAMETERIVARB_PROC (GLuint buffer, GLenum pname, GLint *params));
+typedef void (APIENTRY PFNGLGETNAMEDBUFFERPARAMETERI64VARB_PROC (GLuint buffer, GLenum pname, GLint64 *params));
+typedef void (APIENTRY PFNGLGETNAMEDBUFFERPOINTERVARB_PROC (GLuint buffer, GLenum pname, void **params));
+typedef void (APIENTRY PFNGLGETNAMEDBUFFERSUBDATAARB_PROC (GLuint buffer, GLintptr offset, GLsizeiptr size, void *data));
+
+GLAPI PFNGLCREATEBUFFERSARB_PROC* glpfCreateBuffersARB;
+GLAPI PFNGLNAMEDBUFFERSTORAGEARB_PROC* glpfNamedBufferStorageARB;
+GLAPI PFNGLNAMEDBUFFERDATAARB_PROC* glpfNamedBufferDataARB;
+GLAPI PFNGLNAMEDBUFFERSUBDATAARB_PROC* glpfNamedBufferSubDataARB;
+GLAPI PFNGLCOPYNAMEDBUFFERSUBDATAARB_PROC* glpfCopyNamedBufferSubDataARB;
+GLAPI PFNGLCLEARNAMEDBUFFERDATAARB_PROC* glpfClearNamedBufferDataARB;
+GLAPI PFNGLCLEARNAMEDBUFFERSUBDATAARB_PROC* glpfClearNamedBufferSubDataARB;
+GLAPI PFNGLMAPNAMEDBUFFERARB_PROC* glpfMapNamedBufferARB;
+GLAPI PFNGLMAPNAMEDBUFFERRANGEARB_PROC* glpfMapNamedBufferRangeARB;
+GLAPI PFNGLUNMAPNAMEDBUFFERARB_PROC* glpfUnmapNamedBufferARB;
+GLAPI PFNGLFLUSHMAPPEDNAMEDBUFFERRANGEARB_PROC* glpfFlushMappedNamedBufferRangeARB;
+GLAPI PFNGLGETNAMEDBUFFERPARAMETERIVARB_PROC* glpfGetNamedBufferParameterivARB;
+GLAPI PFNGLGETNAMEDBUFFERPARAMETERI64VARB_PROC* glpfGetNamedBufferParameteri64vARB;
+GLAPI PFNGLGETNAMEDBUFFERPOINTERVARB_PROC* glpfGetNamedBufferPointervARB;
+GLAPI PFNGLGETNAMEDBUFFERSUBDATAARB_PROC* glpfGetNamedBufferSubDataARB;
+
+#define glCreateBuffers glpfCreateBuffersARB
+#define glNamedBufferStorage glpfNamedBufferStorageARB
+#define glNamedBufferData glpfNamedBufferDataARB
+#define glNamedBufferSubData glpfNamedBufferSubDataARB
+#define glCopyNamedBufferSubData glpfCopyNamedBufferSubDataARB
+#define glClearNamedBufferData glpfClearNamedBufferDataARB
+#define glClearNamedBufferSubData glpfClearNamedBufferSubDataARB
+#define glMapNamedBuffer glpfMapNamedBufferARB
+#define glMapNamedBufferRange glpfMapNamedBufferRangeARB
+#define glUnmapNamedBuffer glpfUnmapNamedBufferARB
+#define glFlushMappedNamedBufferRange glpfFlushMappedNamedBufferRangeARB
+#define glGetNamedBufferParameteriv glpfGetNamedBufferParameterivARB
+#define glGetNamedBufferParameteri64v glpfGetNamedBufferParameteri64vARB
+#define glGetNamedBufferPointerv glpfGetNamedBufferPointervARB
+#define glGetNamedBufferSubData glpfGetNamedBufferSubDataARB
+
 /* --------------------------- CATEGORY DEFINES ------------------------------ */
 
 #define GL_VERSION_1_0
@@ -1972,6 +2022,7 @@ GLAPI PFNGLGETDEBUGMESSAGELOGARB_PROC* glpfGetDebugMessageLogARB;
 #define GL_VERSION_3_2
 #define GL_VERSION_3_3
 #define GL_ARB_debug_output
+#define GL_ARB_direct_state_access
 
 void GLLoadFunctions();
 

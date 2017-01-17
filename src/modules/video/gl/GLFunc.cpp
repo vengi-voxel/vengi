@@ -332,6 +332,23 @@ void GLLoadFunctions(void) {
 	glpfDebugMessageCallbackARB = (PFNGLDEBUGMESSAGECALLBACKARB_PROC*) SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
 	glpfGetDebugMessageLogARB = (PFNGLGETDEBUGMESSAGELOGARB_PROC*) SDL_GL_GetProcAddress("glGetDebugMessageLogARB");
 
+	/* GL_ARB_direct_state_access */
+
+	glpfCreateBuffersARB = (PFNGLCREATEBUFFERSARB_PROC*) SDL_GL_GetProcAddress("glCreateBuffersARB");
+	glpfNamedBufferStorageARB = (PFNGLNAMEDBUFFERSTORAGEARB_PROC*) SDL_GL_GetProcAddress("glNamedBufferStorageARB");
+	glpfNamedBufferDataARB = (PFNGLNAMEDBUFFERDATAARB_PROC*) SDL_GL_GetProcAddress("glNamedBufferDataARB");
+	glpfNamedBufferSubDataARB = (PFNGLNAMEDBUFFERSUBDATAARB_PROC*) SDL_GL_GetProcAddress("glNamedBufferSubDataARB");
+	glpfCopyNamedBufferSubDataARB = (PFNGLCOPYNAMEDBUFFERSUBDATAARB_PROC*) SDL_GL_GetProcAddress("glCreateBuffersARB");
+	glpfClearNamedBufferDataARB = (PFNGLCLEARNAMEDBUFFERDATAARB_PROC*) SDL_GL_GetProcAddress("glCopyNamedBufferSubDataARB");
+	glpfClearNamedBufferSubDataARB = (PFNGLCLEARNAMEDBUFFERSUBDATAARB_PROC*) SDL_GL_GetProcAddress("glClearNamedBufferSubDataARB");
+	glpfMapNamedBufferARB = (PFNGLMAPNAMEDBUFFERARB_PROC*) SDL_GL_GetProcAddress("glMapNamedBufferARB");
+	glpfMapNamedBufferRangeARB = (PFNGLMAPNAMEDBUFFERRANGEARB_PROC*) SDL_GL_GetProcAddress("glMapNamedBufferRangeARB");
+	glpfUnmapNamedBufferARB = (PFNGLUNMAPNAMEDBUFFERARB_PROC*) SDL_GL_GetProcAddress("glUnmapNamedBufferARB");
+	glpfFlushMappedNamedBufferRangeARB = (PFNGLFLUSHMAPPEDNAMEDBUFFERRANGEARB_PROC*) SDL_GL_GetProcAddress("glFlushMappedNamedBufferRangeARB");
+	glpfGetNamedBufferParameterivARB = (PFNGLGETNAMEDBUFFERPARAMETERIVARB_PROC*) SDL_GL_GetProcAddress("glGetNamedBufferParameterivARB");
+	glpfGetNamedBufferParameteri64vARB = (PFNGLGETNAMEDBUFFERPARAMETERI64VARB_PROC*) SDL_GL_GetProcAddress("glGetNamedBufferParameteri64vARB");
+	glpfGetNamedBufferPointervARB = (PFNGLGETNAMEDBUFFERPOINTERVARB_PROC*) SDL_GL_GetProcAddress("glGetNamedBufferPointervARB");
+	glpfGetNamedBufferSubDataARB = (PFNGLGETNAMEDBUFFERSUBDATAARB_PROC*) SDL_GL_GetProcAddress("glGetNamedBufferSubDataARB");
 }
 
 /* GL_VERSION_1_2 */
@@ -653,6 +670,24 @@ PFNGLDEBUGMESSAGECONTROLARB_PROC* glpfDebugMessageControlARB = NULL;
 PFNGLDEBUGMESSAGEINSERTARB_PROC* glpfDebugMessageInsertARB = NULL;
 PFNGLDEBUGMESSAGECALLBACKARB_PROC* glpfDebugMessageCallbackARB = NULL;
 PFNGLGETDEBUGMESSAGELOGARB_PROC* glpfGetDebugMessageLogARB = NULL;
+
+/* GL_ARB_direct_state_access */
+
+PFNGLCREATEBUFFERSARB_PROC* glpfCreateBuffersARB = NULL;
+PFNGLNAMEDBUFFERSTORAGEARB_PROC* glpfNamedBufferStorageARB = NULL;
+PFNGLNAMEDBUFFERDATAARB_PROC* glpfNamedBufferDataARB = NULL;
+PFNGLNAMEDBUFFERSUBDATAARB_PROC* glpfNamedBufferSubDataARB = NULL;
+PFNGLCOPYNAMEDBUFFERSUBDATAARB_PROC* glpfCopyNamedBufferSubDataARB = NULL;
+PFNGLCLEARNAMEDBUFFERDATAARB_PROC* glpfClearNamedBufferDataARB = NULL;
+PFNGLCLEARNAMEDBUFFERSUBDATAARB_PROC* glpfClearNamedBufferSubDataARB = NULL;
+PFNGLMAPNAMEDBUFFERARB_PROC* glpfMapNamedBufferARB = NULL;
+PFNGLMAPNAMEDBUFFERRANGEARB_PROC* glpfMapNamedBufferRangeARB = NULL;
+PFNGLUNMAPNAMEDBUFFERARB_PROC* glpfUnmapNamedBufferARB = NULL;
+PFNGLFLUSHMAPPEDNAMEDBUFFERRANGEARB_PROC* glpfFlushMappedNamedBufferRangeARB = NULL;
+PFNGLGETNAMEDBUFFERPARAMETERIVARB_PROC* glpfGetNamedBufferParameterivARB = NULL;
+PFNGLGETNAMEDBUFFERPARAMETERI64VARB_PROC* glpfGetNamedBufferParameteri64vARB = NULL;
+PFNGLGETNAMEDBUFFERPOINTERVARB_PROC* glpfGetNamedBufferPointervARB = NULL;
+PFNGLGETNAMEDBUFFERSUBDATAARB_PROC* glpfGetNamedBufferSubDataARB = NULL;
 
 #ifdef __cplusplus
 }
