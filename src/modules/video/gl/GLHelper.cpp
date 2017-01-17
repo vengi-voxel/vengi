@@ -186,7 +186,8 @@ void setupFeatures() {
 		{"GL_ARB_instanced_arrays"},
 		{"GL_ARB_debug_output"},
 		{"GL_ARB_direct_state_access"},
-		{"GL_ARB_buffer_storage"}
+		{"GL_ARB_buffer_storage"},
+		{"GL_ARB_multi_draw_indirect"}
 	};
 	static_assert(std::enum_value(Feature::Max) == (int)SDL_arraysize(array), "Array sizes don't match for Feature enum");
 

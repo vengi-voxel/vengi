@@ -197,6 +197,7 @@ enum class Feature {
 	DebugOutput,
 	DirectStateAccess,
 	BufferStorage,
+	MultiDrawIndirect,
 
 	Max
 };
