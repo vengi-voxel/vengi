@@ -106,12 +106,13 @@ void ShapeRenderer::shutdown() {
 void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder) {
 	std::vector<glm::vec4> vertices;
 	shapeBuilder.convertVertices(vertices);
-	core_assert_always(_vbo[meshIndex].update(_vertexIndex[meshIndex], vertices));
+	video::VertexBuffer& vbo = _vbo[meshIndex];
+	core_assert_always(vbo.update(_vertexIndex[meshIndex], vertices));
 	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
-	_vbo[meshIndex].update(_indexIndex[meshIndex], indices);
+	vbo.update(_indexIndex[meshIndex], indices);
 	const video::ShapeBuilder::Colors& colors = shapeBuilder.getColors();
 	if (_colorShader.getComponentsColor() == 4) {
-		_vbo[meshIndex].update(_colorIndex[meshIndex], colors);
+		vbo.update(_colorIndex[meshIndex], colors);
 	} else {
 		core_assert(_colorShader.getComponentsColor() == 3);
 		std::vector<glm::vec3> colors3;
@@ -119,7 +120,7 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 		for (const auto c : colors) {
 			colors3.push_back(glm::vec3(c));
 		}
-		_vbo[meshIndex].update(_colorIndex[meshIndex], colors3);
+		vbo.update(_colorIndex[meshIndex], colors3);
 	}
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
