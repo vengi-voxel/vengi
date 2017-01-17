@@ -811,7 +811,7 @@ void deleteBuffers(uint8_t amount, Id* ids) {
 	}
 	glDeleteBuffers((GLsizei)amount, ids);
 	checkError();
-	for (int i = 0; i < amount; ++i) {
+	for (uint8_t i = 0u; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
 }
@@ -962,7 +962,7 @@ void deleteRenderbuffers(uint8_t amount, Id* ids) {
 	}
 	glDeleteRenderbuffers((GLsizei)amount, ids);
 	checkError();
-	for (int i = 0; i < amount; ++i) {
+	for (uint8_t i = 0u; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
 }
