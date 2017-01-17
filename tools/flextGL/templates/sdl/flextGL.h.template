@@ -1,0 +1,93 @@
+@require(passthru, functions, enums, options, version, extensions)
+/* WARNING: This file was automatically generated */
+/* Do not edit. */
+
+#ifndef __gl_h_
+#define __gl_h_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Function declaration macros - to move into glplatform.h */
+
+#if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
+#define WIN32_LEAN_AND_MEAN 1
+#ifndef WINAPI
+#define WINAPI __stdcall
+#endif
+#define APIENTRY WINAPI
+#endif
+
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+#ifndef APIENTRYP
+#define APIENTRYP APIENTRY *
+#endif
+#ifndef GLAPI
+#define GLAPI extern
+#endif
+
+/* -------------------------------- DATA TYPES ------------------------------- */
+
+@passthru
+
+/* ----------------------------------- ENUMS --------------------------------- */
+
+@enums
+
+/* --------------------------- FUNCTION PROTOTYPES --------------------------- */
+
+@for cat,funcs in functions:
+
+/* GL_@cat */
+
+    @if cat in ['VERSION_1_0', 'VERSION_1_1','VERSION_1_0_DEPRECATED', 'VERSION_1_1_DEPRECATED']:
+        @for f in funcs:
+GLAPI @f.returntype APIENTRY gl@f.name (@f.param_list_string());
+        @end
+    @else:
+        @for f in funcs:
+typedef @f.returntype (APIENTRY PFNGL@f.name.upper()_PROC (@f.param_list_string()));
+        @end
+
+        @for f in funcs:
+GLAPI PFNGL@f.name.upper()_PROC* glpf@f.name;
+        @end
+
+        @for f in funcs:
+#define gl@f.name glpf@f.name
+        @end
+    @end
+
+@end
+
+/* --------------------------- CATEGORY DEFINES ------------------------------ */
+
+@for cat,funcs in functions:
+#define GL_@cat
+@end
+
+/* ---------------------- Flags for optional extensions ---------------------- */
+
+
+@for extension,required in extensions:
+extern int FLEXT_@extension;
+@end
+
+int flextInit(void);
+
+#define FLEXT_MAJOR_VERSION @version.major!s
+#define FLEXT_MINOR_VERSION @version.minor!s
+@if version.profile == 'core':
+#define FLEXT_CORE_PROFILE 1
+@else:
+#define FLEXT_CORE_PROFILE 0
+@end
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _gl_h_ */

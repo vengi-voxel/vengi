@@ -1,0 +1,5 @@
+version 3.3 core
+extension ARB_debug_output optional
+extension ARB_direct_state_access optional
+extension ARB_buffer_storage optional
+extension ARB_multi_draw_indirect optional
