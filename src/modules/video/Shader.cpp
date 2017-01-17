@@ -312,7 +312,6 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 			}
 			src.append(val);
 			src.append("\n");
-
 		}
 	});
 

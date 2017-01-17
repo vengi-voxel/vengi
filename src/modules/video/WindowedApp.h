@@ -13,16 +13,15 @@
 #include "video/Version.h"
 
 struct SDL_Window;
-typedef void *SDL_GLContext;
 
 namespace video {
 
 class WindowedApp: public core::App, public io::IEventObserver {
 protected:
-	SDL_Window* _window;
-	SDL_GLContext _glcontext;
+	SDL_Window* _window = nullptr;
+	RendererContext _rendererContext = nullptr;
 	glm::ivec2 _dimension;
-	float _aspect;
+	float _aspect = 1.0f;
 
 	typedef std::unordered_map<int32_t, int16_t> KeyMap;
 	typedef KeyMap::const_iterator KeyMapConstIter;
