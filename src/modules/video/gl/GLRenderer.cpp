@@ -1036,23 +1036,23 @@ void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, Id dept
 	checkError();
 }
 
-bool setupFramebuffer(Id& _fbo, Id& _texture, Id& _depth, const glm::ivec2& dimension) {
-	_fbo = genFramebuffer();
-	bindFramebuffer(video::FrameBufferMode::Default, _fbo);
-	_texture = genTexture();
-	bindTexture(video::TextureUnit::Upload, TextureType::Texture2D, _texture);
+bool setupFramebuffer(Id& fbo, Id& texture, Id& depth, const glm::ivec2& dimension) {
+	fbo = genFramebuffer();
+	bindFramebuffer(video::FrameBufferMode::Default, fbo);
+	texture = genTexture();
+	bindTexture(video::TextureUnit::Upload, TextureType::Texture2D, texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, dimension.x, dimension.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-	_depth = genRenderbuffer();
-	bindRenderbuffer(_depth);
+	depth = genRenderbuffer();
+	bindRenderbuffer(depth);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, dimension.x, dimension.y);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depth);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
 
 	checkError();
 
