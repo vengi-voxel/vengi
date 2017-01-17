@@ -75,12 +75,12 @@ protected:
 
 	bool createProgramFromShaders();
 
-	static std::string validGLSLPreprocessorName(const std::string& name);
-
 	std::string handleIncludes(const std::string& buffer) const;
 public:
 	Shader();
 	virtual ~Shader();
+
+	static std::string validGLSLPreprocessorName(const std::string& name);
 
 	static int glslVersion;
 
