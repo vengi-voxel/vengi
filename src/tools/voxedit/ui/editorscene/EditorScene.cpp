@@ -3,7 +3,6 @@
 #include "core/Var.h"
 #include "core/Color.h"
 #include "video/ScopedPolygonMode.h"
-#include "video/ScopedScissor.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedFrameBuffer.h"
 #include "voxel/model/MeshExporter.h"
