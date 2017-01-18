@@ -117,6 +117,10 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 			delta = 0;
 		}
 	}
+	for (ChunkBuffer::VBO& vbo : _meshPlantList) {
+		const std::vector<glm::vec3>& positions = vbo.instancedPositions;
+		vbo.vb.update(vbo.offsetBuffer, positions);
+	}
 }
 
 void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
@@ -253,14 +257,11 @@ int WorldRenderer::renderWorldMeshes(video::Shader& shader, const VisibleVBOs& v
 			continue;
 		}
 
+		vbo->vb.bind();
 		if (vbo->amount == 1) {
-			vbo->vb.bind();
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
 		} else {
-			// TODO: move out of the render loop, do after distribution
 			const std::vector<glm::vec3>& positions = vbo->instancedPositions;
-			vbo->vb.update(vbo->offsetBuffer, positions);
-			vbo->vb.bind();
 			video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, numIndices, positions.size());
 		}
 		if (vertices != nullptr) {
