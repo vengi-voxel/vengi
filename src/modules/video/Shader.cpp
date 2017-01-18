@@ -331,6 +331,7 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 	}
 
 	// TODO: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
+	// https://www.khronos.org/opengl/wiki/GLSL_Optimizations
 	std::string_view replaceIn = "in";
 	std::string_view replaceOut = "out";
 	std::string_view replaceTexture1D = "texture1D";
