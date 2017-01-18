@@ -123,8 +123,17 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		const int opaqueVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
 		const int waterVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * waterFactor;
 		ChunkMeshes data(opaqueVertices, opaqueVertices, waterVertices, waterVertices);
+		if (_cancelThreads) {
+			return;
+		}
 		extractCubicMesh(_volumeData, region, &data.opaqueMesh, IsQuadNeeded());
+		if (_cancelThreads) {
+			return;
+		}
 		extractCubicMesh(_volumeData, region, &data.waterMesh, IsWaterQuadNeeded());
+		if (_cancelThreads) {
+			return;
+		}
 #if 0
 		Log::info("opaque mesh size: %i", (int)data.opaqueMesh.size());
 		Log::info("water mesh size: %i", (int)data.waterMesh.size());
