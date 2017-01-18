@@ -422,6 +422,9 @@ void Model::createTree(voxel::TreeContext ctx) {
 }
 
 void Model::setCursorPosition(glm::ivec3 pos, bool force) {
+	if (_cursorPos == pos && !force) {
+		return;
+	}
 	if (!force) {
 		if ((_lockedAxis & Axis::X) != Axis::None) {
 			pos.x = _cursorPos.x;
