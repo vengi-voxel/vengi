@@ -46,7 +46,6 @@ protected:
 			uint32_t indexBuffer = 0u;
 			uint32_t vertexBuffer = 0u;
 			uint32_t amount = 1u;
-			glm::mat4 model;
 			std::vector<glm::vec3> instancedPositions;
 			video::VertexBuffer vb;
 		};

@@ -79,7 +79,7 @@ static inline uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner
 }
 
 int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
-		Mesh* meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner) {
+		Mesh* meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner, const glm::ivec3& offset) {
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ++ct) {
 		VertexData& entry = existingVertices(uX, uY, ct);
 
@@ -93,7 +93,7 @@ int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, con
 			// The 0.5f offset is because vertices set between voxels in order to build cubes around them.
 			// see raycastWithEndpoints for this offset, too
 			VoxelVertex vertex;
-			vertex.position = { uX, uY, uZ };
+			vertex.position = glm::ivec3(uX, uY, uZ) + offset;
 			vertex.colorIndex = materialIn.getColor();
 			vertex.material = materialIn.getMaterial();
 			vertex.ambientOcclusion = ambientOcclusion;

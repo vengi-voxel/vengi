@@ -123,16 +123,13 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 	glm::ivec3 mins(std::numeric_limits<int>::max());
 	glm::ivec3 maxs(std::numeric_limits<int>::min());
 
-	const glm::ivec3& positionOffset = chunkBuffer.translation();
 	for (auto& v : chunkBuffer.meshes.opaqueMesh.getVertexVector()) {
-		const glm::ivec3 p = v.position + positionOffset;
-		mins = glm::min(mins, p);
-		maxs = glm::max(maxs, p);
+		mins = glm::min(mins, v.position);
+		maxs = glm::max(maxs, v.position);
 	}
 	for (auto& v : chunkBuffer.meshes.waterMesh.getVertexVector()) {
-		const glm::ivec3 p = v.position + positionOffset;
-		mins = glm::min(mins, p);
-		maxs = glm::max(maxs, p);
+		mins = glm::min(mins, v.position);
+		maxs = glm::max(maxs, v.position);
 	}
 
 	chunkBuffer.aabb = core::AABB<float>(mins, maxs);
@@ -251,7 +248,6 @@ void WorldRenderer::cull(const video::Camera& camera) {
 
 int WorldRenderer::renderWorldMeshes(video::Shader& shader, const VisibleVBOs& vbos, int* vertices) {
 	for (ChunkBuffer::VBO* vbo : vbos) {
-		shader.setUniformMatrix("u_model", vbo->model);
 		const uint32_t numIndices = vbo->vb.elements(vbo->indexBuffer, 1, sizeof(voxel::IndexType));
 		if (numIndices == 0u) {
 			continue;
@@ -369,11 +365,13 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			{
 				video::ScopedShader scoped(_shadowMapShader);
 				_shadowMapShader.setLightviewprojection(cascades[i]);
+				_shadowMapShader.setModel(glm::mat4());
 				drawCallsWorld += renderWorldMeshes(_shadowMapShader, _visible, nullptr);
 			}
 			{
 				video::ScopedShader scoped(_shadowMapInstancedShader);
 				_shadowMapInstancedShader.setLightviewprojection(cascades[i]);
+				_shadowMapInstancedShader.setModel(glm::scale(glm::vec3(0.4f)));
 				drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, _visiblePlant, nullptr);
 			}
 		}
@@ -393,6 +391,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	{
 		video::ScopedShader scoped(_worldShader);
+		_worldShader.setModel(glm::mat4());
 		if (shadowMap) {
 			_worldShader.setCascades(cascades);
 			_worldShader.setDistances(distances);
@@ -401,6 +400,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	}
 	{
 		video::ScopedShader scoped(_worldInstancedShader);
+		_worldInstancedShader.setModel(glm::scale(glm::vec3(0.4f)));
 		if (shadowMap) {
 			_worldInstancedShader.setCascades(cascades);
 			_worldInstancedShader.setDistances(distances);
@@ -409,6 +409,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
+		_waterShader.setModel(glm::mat4());
 		if (shadowMap) {
 			_waterShader.setCascades(cascades);
 			_waterShader.setDistances(distances);
@@ -512,7 +513,6 @@ void WorldRenderer::updateVertexBuffer(const voxel::Mesh& mesh, ChunkBuffer::VBO
 	core_trace_gl_scoped(WorldRendererUpdateMesh);
 	vbo.vb.update(vbo.vertexBuffer, mesh.getVertexVector());
 	vbo.vb.update(vbo.indexBuffer, mesh.getIndexVector());
-	vbo.model = glm::translate(glm::vec3(mesh.getOffset()));
 }
 
 bool WorldRenderer::createVertexBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, ChunkBuffer::VBO& vbo) {
@@ -524,7 +524,6 @@ bool WorldRenderer::createVertexBufferInternal(const video::Shader& shader, cons
 	vbo.vb.clearAttributes();
 	vbo.vertexBuffer = vbo.vb.create(mesh.getVertexVector());
 	vbo.indexBuffer = vbo.vb.create(mesh.getIndexVector(), video::VertexBufferType::IndexBuffer);
-	vbo.model = glm::translate(glm::vec3(mesh.getOffset()));
 	vbo.amount = 1;
 
 	const int locationPos = shader.enableVertexAttributeArray("a_pos");
@@ -552,7 +551,6 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 	}
 
 	vbo.amount = amount;
-	vbo.model = glm::scale(glm::vec3(0.4f));
 	vbo.offsetBuffer = vbo.vb.create();
 
 	const int location = _worldInstancedShader.getLocationPos();
