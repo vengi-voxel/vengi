@@ -42,9 +42,9 @@ protected:
 			void shutdown() {
 				vb.shutdown();
 			}
-			uint32_t offsetBuffer = 0u;
-			uint32_t indexBuffer = 0u;
-			uint32_t vertexBuffer = 0u;
+			int32_t offsetBuffer = -1;
+			int32_t indexBuffer = -1;
+			int32_t vertexBuffer = -1;
 			uint32_t amount = 1u;
 			std::vector<glm::vec3> instancedPositions;
 			video::VertexBuffer vb;
@@ -53,7 +53,7 @@ protected:
 		VBO water;
 
 		inline bool isActive() const {
-			return opaque.vertexBuffer != 0;
+			return opaque.vertexBuffer != -1;
 		}
 
 		inline const glm::ivec3& translation() const {
