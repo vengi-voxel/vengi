@@ -143,18 +143,9 @@ bool RawVolumeRenderer::extract() {
 	if (meshNumberIndices == 0) {
 		_vertexBuffer.update(_vertexBufferIndex, nullptr, 0);
 		_vertexBuffer.update(_indexBufferIndex, nullptr, 0);
-	} else {
-		if (!_vertexBuffer.update(_vertexBufferIndex, _mesh->getVertexVector())) {
-			Log::error("Failed to update the vertex buffer");
-			return false;
-		}
-		if (!_vertexBuffer.update(_indexBufferIndex, _mesh->getIndexVector())) {
-			Log::error("Failed to update the index buffer");
-			return false;
-		}
+		return true;
 	}
-
-	return true;
+	return update(_mesh->getVertexVector(), _mesh->getIndexVector());
 }
 
 void RawVolumeRenderer::render(const video::Camera& camera) {
