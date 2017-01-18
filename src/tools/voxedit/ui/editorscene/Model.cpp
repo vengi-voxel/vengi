@@ -422,9 +422,6 @@ void Model::createTree(voxel::TreeContext ctx) {
 }
 
 void Model::setCursorPosition(glm::ivec3 pos, bool force) {
-	if (_cursorPos == pos && !force) {
-		return;
-	}
 	if (!force) {
 		if ((_lockedAxis & Axis::X) != Axis::None) {
 			pos.x = _cursorPos.x;
@@ -440,6 +437,9 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	const voxel::Region& region = _modelVolume->getRegion();
 	if (!region.containsPoint(pos)) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
+	}
+	if (_cursorPos == pos) {
+		return;
 	}
 	_cursorPos = pos;
 
@@ -494,16 +494,7 @@ bool Model::trace(const video::Camera& camera) {
 			cursorPos = _result.hitVoxel;
 		}
 
-		core_trace_scoped(EditorSceneOnProcessMergeRawVolumes);
-		if (prevVoxel || directVoxel) {
-			setCursorPosition(cursorPos);
-		} else {
-			voxel::RawVolume* volume = rawVolumeRenderer().volume();
-			volume->clear();
-			_empty = voxel::mergeRawVolumesSameDimension(volume, modelVolume()) == 0;
-			_extract = true;
-			voxel::mergeRawVolumesSameDimension(volume, _cursorPositionVolume);
-		}
+		setCursorPosition(cursorPos);
 	}
 
 	extractVolume();
