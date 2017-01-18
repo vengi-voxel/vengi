@@ -102,7 +102,8 @@ int32_t VertexBuffer::create(const void* data, size_t size, VertexBufferType tar
 	}
 	_targets[_handleIdx] = target;
 	_handles[_handleIdx] = video::genBuffer();
-	if (!isValid(0)) {
+	if (!isValid(_handleIdx)) {
+		Log::error("Failed to create buffer (size: %i)", (int)size);
 		return -1;
 	}
 	_size[_handleIdx] = size;
