@@ -10,6 +10,7 @@ set(SOURCES
     MachineIndependent/glslang.y
     MachineIndependent/glslang_tab.cpp
     MachineIndependent/Constant.cpp
+    MachineIndependent/iomapper.cpp
     MachineIndependent/InfoSink.cpp
     MachineIndependent/Initialize.cpp
     MachineIndependent/IntermTraverse.cpp
@@ -55,6 +56,8 @@ set(HEADERS
     MachineIndependent/glslang_tab.cpp.h
     MachineIndependent/gl_types.h
     MachineIndependent/Initialize.h
+    MachineIndependent/iomapper.h
+    MachineIndependent/LiveTraverser.h
     MachineIndependent/localintermediate.h
     MachineIndependent/ParseHelper.h
     MachineIndependent/reflection.h
@@ -87,3 +90,6 @@ if(WIN32)
     source_group("GenericCodeGen" REGULAR_EXPRESSION "GenericCodeGen/*")
     source_group("MachineIndependent\\Preprocessor" REGULAR_EXPRESSION "MachineIndependent/preprocessor/*")
 endif(WIN32)
+
+install(TARGETS glslang 
+        ARCHIVE DESTINATION lib)

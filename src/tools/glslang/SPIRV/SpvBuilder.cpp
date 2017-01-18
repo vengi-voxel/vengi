@@ -1,12 +1,12 @@
 //
-//Copyright (C) 2014-2015 LunarG, Inc.
-//Copyright (C) 2015-2016 Google, Inc.
+// Copyright (C) 2014-2015 LunarG, Inc.
+// Copyright (C) 2015-2016 Google, Inc.
 //
-//All rights reserved.
+// All rights reserved.
 //
-//Redistribution and use in source and binary forms, with or without
-//modification, are permitted provided that the following conditions
-//are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
 //
 //    Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
@@ -20,18 +20,18 @@
 //    contributors may be used to endorse or promote products derived
 //    from this software without specific prior written permission.
 //
-//THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-//"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-//LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-//FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-//COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-//INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-//BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-//LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-//CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-//LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-//ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-//POSSIBILITY OF SUCH DAMAGE.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+// ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // Helper for making SPIR-V IR.  Generally, this is documented in the header
@@ -45,6 +45,10 @@
 #include <algorithm>
 
 #include "SpvBuilder.h"
+
+#ifdef AMD_EXTENSIONS
+    #include "hex_float.h"
+#endif
 
 #ifndef _WIN32
     #include <cstdio>
@@ -60,7 +64,7 @@ Builder::Builder(unsigned int magicNumber, SpvBuildLogger* buildLogger) :
     builderNumber(magicNumber),
     buildPoint(0),
     uniqueId(0),
-    mainFunction(0),
+    entryPointFunction(0),
     generatingOpCodeForSpecConst(false),
     logger(buildLogger)
 {
@@ -75,7 +79,7 @@ Id Builder::import(const char* name)
 {
     Instruction* import = new Instruction(getUniqueId(), NoType, OpExtInstImport);
     import->addStringOperand(name);
-    
+
     imports.push_back(std::unique_ptr<Instruction>(import));
     return import->getResultId();
 }
@@ -242,7 +246,7 @@ Id Builder::makeStructResultType(Id type0, Id type1)
         type = groupedTypes[OpTypeStruct][t];
         if (type->getNumOperands() != 2)
             continue;
-        if (type->getIdOperand(0) != type0 || 
+        if (type->getIdOperand(0) != type0 ||
             type->getIdOperand(1) != type1)
             continue;
         return type->getResultId();
@@ -624,7 +628,7 @@ Id Builder::findScalarConstant(Op typeClass, Op opcode, Id typeId, unsigned v1, 
 bool Builder::isConstantOpCode(Op opcode) const
 {
     switch (opcode) {
-    case OpUndef: 
+    case OpUndef:
     case OpConstantTrue:
     case OpConstantFalse:
     case OpConstant:
@@ -785,6 +789,36 @@ Id Builder::makeDoubleConstant(double d, bool specConstant)
     return c->getResultId();
 }
 
+#ifdef AMD_EXTENSIONS
+Id Builder::makeFloat16Constant(float f16, bool specConstant)
+{
+    Op opcode = specConstant ? OpSpecConstant : OpConstant;
+    Id typeId = makeFloatType(16);
+
+    spvutils::HexFloat<spvutils::FloatProxy<float>> fVal(f16);
+    spvutils::HexFloat<spvutils::FloatProxy<spvutils::Float16>> f16Val(0);
+    fVal.castTo(f16Val, spvutils::kRoundToZero);
+
+    unsigned value = f16Val.value().getAsFloat().get_value();
+
+    // See if we already made it. Applies only to regular constants, because specialization constants
+    // must remain distinct for the purpose of applying a SpecId decoration.
+    if (!specConstant) {
+        Id existing = findScalarConstant(OpTypeFloat, opcode, typeId, value);
+        if (existing)
+            return existing;
+    }
+
+    Instruction* c = new Instruction(getUniqueId(), typeId, opcode);
+    c->addImmediateOperand(value);
+    constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(c));
+    groupedConstants[OpTypeFloat].push_back(c);
+    module.mapInstruction(c);
+
+    return c->getResultId();
+}
+#endif
+
 Id Builder::findCompositeConstant(Op typeClass, std::vector<Id>& comps) const
 {
     Instruction* constant = 0;
@@ -931,17 +965,17 @@ void Builder::addMemberDecoration(Id id, unsigned int member, Decoration decorat
 }
 
 // Comments in header
-Function* Builder::makeEntrypoint(const char* entryPoint)
+Function* Builder::makeEntryPoint(const char* entryPoint)
 {
-    assert(! mainFunction);
+    assert(! entryPointFunction);
 
     Block* entry;
     std::vector<Id> params;
     std::vector<Decoration> precisions;
 
-    mainFunction = makeFunctionEntry(NoPrecision, makeVoidType(), entryPoint, params, precisions, &entry);
+    entryPointFunction = makeFunctionEntry(NoPrecision, makeVoidType(), entryPoint, params, precisions, &entry);
 
-    return mainFunction;
+    return entryPointFunction;
 }
 
 // Comments in header
@@ -1328,15 +1362,20 @@ Id Builder::createRvalueSwizzle(Decoration precision, Id typeId, Id source, std:
 // Comments in header
 Id Builder::createLvalueSwizzle(Id typeId, Id target, Id source, std::vector<unsigned>& channels)
 {
-    assert(getNumComponents(source) == (int)channels.size());
     if (channels.size() == 1 && getNumComponents(source) == 1)
         return createCompositeInsert(source, target, typeId, channels.front());
 
     Instruction* swizzle = new Instruction(getUniqueId(), typeId, OpVectorShuffle);
-    assert(isVector(source));
     assert(isVector(target));
     swizzle->addIdOperand(target);
-    swizzle->addIdOperand(source);
+    if (accessChain.component != NoResult)
+        // For dynamic component selection, source does not involve in l-value swizzle
+        swizzle->addIdOperand(target);
+    else {
+        assert(getNumComponents(source) == (int)channels.size());
+        assert(isVector(source));
+        swizzle->addIdOperand(source);
+    }
 
     // Set up an identity shuffle from the base value to the result value
     unsigned int components[4];
@@ -1345,8 +1384,12 @@ Id Builder::createLvalueSwizzle(Id typeId, Id target, Id source, std::vector<uns
         components[i] = i;
 
     // Punch in the l-value swizzle
-    for (int i = 0; i < (int)channels.size(); ++i)
-        components[channels[i]] = numTargetComponents + i;
+    for (int i = 0; i < (int)channels.size(); ++i) {
+        if (accessChain.component != NoResult)
+            components[i] = channels[i]; // Only shuffle the base value
+        else
+            components[channels[i]] = numTargetComponents + i;
+    }
 
     // finish the instruction with these components selectors
     for (int i = 0; i < numTargetComponents; ++i)
@@ -1893,7 +1936,6 @@ Id Builder::createMatrixConstructor(Decoration precision, const std::vector<Id>&
         }
     }
 
-
     // Step 2:  Construct a matrix from that array.
     // First make the column vectors, then make the matrix.
 
@@ -2101,6 +2143,7 @@ void Builder::accessChainPushSwizzle(std::vector<unsigned>& swizzle, Id preSwizz
         std::vector<unsigned> oldSwizzle = accessChain.swizzle;
         accessChain.swizzle.resize(0);
         for (unsigned int i = 0; i < swizzle.size(); ++i) {
+            assert(swizzle[i] < oldSwizzle.size());
             accessChain.swizzle.push_back(oldSwizzle[swizzle[i]]);
         }
     } else
@@ -2117,9 +2160,6 @@ void Builder::accessChainStore(Id rvalue)
 
     transferAccessChainSwizzle(true);
     Id base = collapseAccessChain();
-
-    if (accessChain.swizzle.size() && accessChain.component != NoResult)
-        logger->missingFunctionality("simultaneous l-value swizzle and dynamic component selection");
 
     // If swizzle still exists, it is out-of-order or not full, we must load the target vector,
     // extract and insert elements to perform writeMask and/or swizzle.
@@ -2312,9 +2352,9 @@ void Builder::dump(std::vector<unsigned int>& out) const
         capInst.dump(out);
     }
 
-    for (int e = 0; e < (int)extensions.size(); ++e) {
+    for (auto it = extensions.cbegin(); it != extensions.cend(); ++it) {
         Instruction extInst(0, 0, OpExtension);
-        extInst.addStringOperand(extensions[e]);
+        extInst.addStringOperand(*it);
         extInst.dump(out);
     }
 
@@ -2451,7 +2491,7 @@ void Builder::createAndSetNoPredecessorBlock(const char* /*name*/)
     buildPoint->getParent().addBlock(block);
     setBuildPoint(block);
 
-    //if (name)
+    // if (name)
     //    addName(block->getId(), name);
 }
 

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2016 Google, Inc.
+// Copyright (C) 2016 LunarG, Inc.
 //
 // All rights reserved.
 //
@@ -33,37 +33,65 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef HLSLOPMAP_H_
-#define HLSLOPMAP_H_
+#ifndef HLSLATTRIBUTES_H_
+#define HLSLATTRIBUTES_H_
 
+#include <unordered_map>
+#include <functional>
 #include "hlslScanContext.h"
+#include "../glslang/Include/Common.h"
 
 namespace glslang {
-
-    enum PrecedenceLevel {
-        PlBad,
-        PlLogicalOr,
-        PlLogicalXor,
-        PlLogicalAnd,
-        PlBitwiseOr,
-        PlBitwiseXor,
-        PlBitwiseAnd,
-        PlEquality,
-        PlRelational,
-        PlShift,
-        PlAdd,
-        PlMul
+    enum TAttributeType {
+        EatNone,
+        EatAllow_uav_condition,
+        EatBranch,
+        EatCall,
+        EatDomain,
+        EatEarlyDepthStencil,
+        EatFastOpt,
+        EatFlatten,
+        EatForceCase,
+        EatInstance,
+        EatMaxTessFactor,
+        EatNumThreads,
+        EatMaxVertexCount,
+        EatOutputControlPoints,
+        EatOutputTopology,
+        EatPartitioning,
+        EatPatchConstantFunc,
+        EatUnroll,
     };
+}
 
-    class HlslOpMap {
+namespace std {
+    // Allow use of TAttributeType enum in hash_map without calling code having to cast.
+    template <> struct hash<glslang::TAttributeType> {
+        std::size_t operator()(glslang::TAttributeType attr) const {
+            return std::hash<int>()(int(attr));
+        }
+    };
+} // end namespace std
+
+namespace glslang {
+    class TIntermAggregate;
+
+    class TAttributeMap {
     public:
-        static TOperator assignment(EHlslTokenClass op);
-        static TOperator binary(EHlslTokenClass op);
-        static TOperator preUnary(EHlslTokenClass op);
-        static TOperator postUnary(EHlslTokenClass op);
-        static PrecedenceLevel precedenceLevel(TOperator);
-    };
+        // Search for and potentially add the attribute into the map.  Return the
+        // attribute type enum for it, if found, else EatNone.
+        TAttributeType setAttribute(const TString* name, TIntermAggregate* value);
 
+        // Const lookup: search for (but do not modify) the attribute in the map.
+        const TIntermAggregate* operator[](TAttributeType) const;
+
+    protected:
+        // Find an attribute enum given its name.
+        static TAttributeType attributeFromName(const TString&);
+
+        std::unordered_map<TAttributeType, TIntermAggregate*> attributes;
+    };
 } // end namespace glslang
 
-#endif // HLSLOPMAP_H_
+
+#endif // HLSLATTRIBUTES_H_

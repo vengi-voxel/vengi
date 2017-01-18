@@ -1,12 +1,12 @@
 //
-//Copyright (C) 2014-2015 LunarG, Inc.
-//Copyright (C) 2015-2016 Google, Inc.
+// Copyright (C) 2014-2015 LunarG, Inc.
+// Copyright (C) 2015-2016 Google, Inc.
 //
-//All rights reserved.
+// All rights reserved.
 //
-//Redistribution and use in source and binary forms, with or without
-//modification, are permitted provided that the following conditions
-//are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
 //
 //    Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
@@ -20,18 +20,18 @@
 //    contributors may be used to endorse or promote products derived
 //    from this software without specific prior written permission.
 //
-//THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-//"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-//LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-//FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-//COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-//INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-//BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-//LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-//CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-//LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-//ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-//POSSIBILITY OF SUCH DAMAGE.
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+// ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 //
 // "Builder" is an interface to fully build SPIR-V IR.   Allocate one of
@@ -71,7 +71,7 @@ public:
         sourceVersion = version;
     }
     void addSourceExtension(const char* ext) { sourceExtensions.push_back(ext); }
-    void addExtensions(const char* ext) { extensions.push_back(ext); }
+    void addExtension(const char* ext) { extensions.insert(ext); }
     Id import(const char*);
     void setMemoryModel(spv::AddressingModel addr, spv::MemoryModel mem)
     {
@@ -191,6 +191,9 @@ public:
     Id makeUint64Constant(unsigned long long u, bool specConstant = false)  { return makeInt64Constant(makeUintType(64),                     u, specConstant); }
     Id makeFloatConstant(float f, bool specConstant = false);
     Id makeDoubleConstant(double d, bool specConstant = false);
+#ifdef AMD_EXTENSIONS
+    Id makeFloat16Constant(float f16, bool specConstant = false);
+#endif
 
     // Turn the array of constants into a proper spv constant of the requested type.
     Id makeCompositeConstant(Id type, std::vector<Id>& comps, bool specConst = false);
@@ -210,7 +213,7 @@ public:
 
     // Make the entry-point function. The returned pointer is only valid
     // for the lifetime of this builder.
-    Function* makeEntrypoint(const char*);
+    Function* makeEntryPoint(const char*);
 
     // Make a shader-style function, and create its entry block if entry is non-zero.
     // Return the function, pass back the entry.
@@ -467,7 +470,7 @@ public:
 
     //
     // the SPIR-V builder maintains a single active chain that
-    // the following methods operated on
+    // the following methods operate on
     //
 
     // for external save and restore
@@ -552,7 +555,7 @@ public:
 
     SourceLanguage source;
     int sourceVersion;
-    std::vector<const char*> extensions;
+    std::set<const char*> extensions;
     std::vector<const char*> sourceExtensions;
     AddressingModel addressModel;
     MemoryModel memoryModel;
@@ -561,7 +564,7 @@ public:
     Module module;
     Block* buildPoint;
     Id uniqueId;
-    Function* mainFunction;
+    Function* entryPointFunction;
     bool generatingOpCodeForSpecConst;
     AccessChain accessChain;
 

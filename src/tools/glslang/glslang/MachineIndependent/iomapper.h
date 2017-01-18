@@ -1,5 +1,6 @@
 //
-// Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
+// Copyright (C) 2016 LunarG, Inc.
+//
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,43 +33,31 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include "InitializeDll.h"
+#ifndef _IOMAPPER_INCLUDED
+#define _IOMAPPER_INCLUDED
 
-#define STRICT
-#define VC_EXTRALEAN 1
-#include <windows.h>
-#include <assert.h>
+#include "../Public/ShaderLang.h"
 
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
-{
-	switch (fdwReason)
-	{
-		case DLL_PROCESS_ATTACH:
+//
+// A reflection database and its interface, consistent with the OpenGL API reflection queries.
+//
 
-            if (! glslang::InitProcess())
-                return FALSE;
-            break;
-		case DLL_THREAD_ATTACH:
+class TInfoSink;
 
-            if (! glslang::InitThread())
-                return FALSE;
-            break;
+namespace glslang {
 
-		case DLL_THREAD_DETACH:
+class TIntermediate;
 
-			if (! glslang::DetachThread())
-				return FALSE;
-			break;
+// I/O mapper
+class TIoMapper {
+public:
+    TIoMapper() {}
+    virtual ~TIoMapper() {}
 
-		case DLL_PROCESS_DETACH:
+    // grow the reflection stage by stage
+    bool addStage(EShLanguage, TIntermediate&, TInfoSink&, TIoMapResolver*);
+};
 
-			glslang::DetachProcess();
-			break;
+} // end namespace glslang
 
-		default:
-			assert(0 && "DllMain(): Reason for calling DLL Main is unknown");
-			return FALSE;
-	}
-
-	return TRUE;
-}
+#endif // _IOMAPPER_INCLUDED

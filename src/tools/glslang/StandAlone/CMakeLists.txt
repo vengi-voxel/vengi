@@ -9,15 +9,26 @@ target_include_directories(glslang-default-resource-limits
 )
 
 set(SOURCES StandAlone.cpp)
+set(REMAPPER_SOURCES spirv-remap.cpp)
+
+add_executable(glslangValidator ${SOURCES})
+add_executable(spirv-remap ${REMAPPER_SOURCES})
+set_property(TARGET glslangValidator PROPERTY FOLDER tools)
+set_property(TARGET spirv-remap PROPERTY FOLDER tools)
+glslang_set_link_args(glslangValidator)
+glslang_set_link_args(spirv-remap)
 
 set(LIBRARIES
     glslang
     OGLCompiler
     OSDependent
-    HLSL
     SPIRV
     SPVRemapper
     glslang-default-resource-limits)
+
+if(ENABLE_HLSL)
+    set(LIBRARIES ${LIBRARIES} HLSL)
+endif(ENABLE_HLSL)
 
 if(WIN32)
     set(LIBRARIES ${LIBRARIES} psapi)
@@ -27,6 +38,15 @@ elseif(UNIX)
     endif()
 endif(WIN32)
 
-engine_add_executable(TARGET glslangValidator SRCS ${SOURCES} WINDOWED)
-glslang_set_link_args(glslangValidator)
 target_link_libraries(glslangValidator ${LIBRARIES})
+target_link_libraries(spirv-remap ${LIBRARIES})
+
+if(WIN32)
+    source_group("Source" FILES ${SOURCES})
+endif(WIN32)
+
+install(TARGETS glslangValidator
+        RUNTIME DESTINATION bin)
+
+install(TARGETS spirv-remap
+        RUNTIME DESTINATION bin)
