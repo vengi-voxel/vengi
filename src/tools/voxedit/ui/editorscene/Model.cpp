@@ -495,8 +495,6 @@ bool Model::trace(const video::Camera& camera) {
 		}
 
 		core_trace_scoped(EditorSceneOnProcessMergeRawVolumes);
-		voxel::RawVolume* volume = rawVolumeRenderer().volume();
-		volume->clear();
 		if (prevVoxel || directVoxel) {
 			setCursorPosition(cursorPos);
 		} else {
@@ -504,9 +502,8 @@ bool Model::trace(const video::Camera& camera) {
 			volume->clear();
 			_empty = voxel::mergeRawVolumesSameDimension(volume, modelVolume()) == 0;
 			_extract = true;
+			voxel::mergeRawVolumesSameDimension(volume, _cursorPositionVolume);
 		}
-
-		voxel::mergeRawVolumesSameDimension(volume, _cursorPositionVolume);
 	}
 
 	extractVolume();
