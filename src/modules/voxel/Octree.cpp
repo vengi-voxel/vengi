@@ -136,7 +136,7 @@ uint16_t Octree::createNode(const Region& region, uint16_t parent) {
 }
 
 void Octree::update(const glm::vec3& viewPosition, float lodThreshold) {
-	// This isn't a vistior because visitors only visit active nodes, and here we are setting them.
+	// This isn't a visitor because visitors only visit active nodes, and here we are setting them.
 	determineActiveNodes(getRootNode(), viewPosition, lodThreshold);
 
 	acceptVisitor(ScheduleUpdateIfNeededVisitor(this, viewPosition));

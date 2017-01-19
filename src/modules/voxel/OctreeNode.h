@@ -54,6 +54,7 @@ public:
 
 	SurfaceExtractionTask* _lastSurfaceExtractionTask = nullptr;
 
+	/** own index in the nodes array */
 	uint16_t _self = 0u;
 	uint16_t _children[2][2][2];
 

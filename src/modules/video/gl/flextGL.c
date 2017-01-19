@@ -51,6 +51,14 @@ int flextInit(void)
         FLEXT_ARB_multi_draw_indirect = GL_TRUE;
     }
 
+    if (SDL_GL_ExtensionSupported("GL_ARB_draw_indirect")) {
+        FLEXT_ARB_draw_indirect = GL_TRUE;
+    }
+
+    if (!SDL_GL_ExtensionSupported("GL_ARB_instanced_arrays")) {
+        return SDL_SetError("OpenGL extension ARB_instanced_arrays not supported.");
+    }
+
 
     return 0;
 }
@@ -174,6 +182,17 @@ void flextLoadOpenGLFunctions(void)
     glpfVertexArrayElementBuffer = (PFNGLVERTEXARRAYELEMENTBUFFER_PROC*)SDL_GL_GetProcAddress("glVertexArrayElementBuffer");
     glpfVertexArrayVertexBuffer = (PFNGLVERTEXARRAYVERTEXBUFFER_PROC*)SDL_GL_GetProcAddress("glVertexArrayVertexBuffer");
     glpfVertexArrayVertexBuffers = (PFNGLVERTEXARRAYVERTEXBUFFERS_PROC*)SDL_GL_GetProcAddress("glVertexArrayVertexBuffers");
+
+
+    /* GL_ARB_draw_indirect */
+
+    glpfDrawArraysIndirect = (PFNGLDRAWARRAYSINDIRECT_PROC*)SDL_GL_GetProcAddress("glDrawArraysIndirect");
+    glpfDrawElementsIndirect = (PFNGLDRAWELEMENTSINDIRECT_PROC*)SDL_GL_GetProcAddress("glDrawElementsIndirect");
+
+
+    /* GL_ARB_instanced_arrays */
+
+    glpfVertexAttribDivisorARB = (PFNGLVERTEXATTRIBDIVISORARB_PROC*)SDL_GL_GetProcAddress("glVertexAttribDivisorARB");
 
 
     /* GL_ARB_multi_draw_indirect */
@@ -512,6 +531,8 @@ int FLEXT_ARB_debug_output = GL_FALSE;
 int FLEXT_ARB_direct_state_access = GL_FALSE;
 int FLEXT_ARB_buffer_storage = GL_FALSE;
 int FLEXT_ARB_multi_draw_indirect = GL_FALSE;
+int FLEXT_ARB_draw_indirect = GL_FALSE;
+int FLEXT_ARB_instanced_arrays = GL_FALSE;
 
 /* ---------------------- Function pointer definitions --------------------- */
 
@@ -625,6 +646,15 @@ PFNGLVERTEXARRAYBINDINGDIVISOR_PROC* glpfVertexArrayBindingDivisor = NULL;
 PFNGLVERTEXARRAYELEMENTBUFFER_PROC* glpfVertexArrayElementBuffer = NULL;
 PFNGLVERTEXARRAYVERTEXBUFFER_PROC* glpfVertexArrayVertexBuffer = NULL;
 PFNGLVERTEXARRAYVERTEXBUFFERS_PROC* glpfVertexArrayVertexBuffers = NULL;
+
+/* GL_ARB_draw_indirect */
+
+PFNGLDRAWARRAYSINDIRECT_PROC* glpfDrawArraysIndirect = NULL;
+PFNGLDRAWELEMENTSINDIRECT_PROC* glpfDrawElementsIndirect = NULL;
+
+/* GL_ARB_instanced_arrays */
+
+PFNGLVERTEXATTRIBDIVISORARB_PROC* glpfVertexAttribDivisorARB = NULL;
 
 /* GL_ARB_multi_draw_indirect */
 

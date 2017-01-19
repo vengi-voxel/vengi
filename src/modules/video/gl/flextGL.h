@@ -996,6 +996,15 @@ typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_BUFFER_IMMUTABLE_STORAGE 0x821F
 #define GL_BUFFER_STORAGE_FLAGS 0x8220
 
+/* GL_ARB_draw_indirect */
+
+#define GL_DRAW_INDIRECT_BUFFER 0x8F3F
+#define GL_DRAW_INDIRECT_BUFFER_BINDING 0x8F43
+
+/* GL_ARB_instanced_arrays */
+
+#define GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ARB 0x88FE
+
 /* --------------------------- FUNCTION PROTOTYPES --------------------------- */
 
 
@@ -1321,6 +1330,27 @@ GLAPI PFNGLVERTEXARRAYVERTEXBUFFERS_PROC* glpfVertexArrayVertexBuffers;
 #define glVertexArrayElementBuffer glpfVertexArrayElementBuffer
 #define glVertexArrayVertexBuffer glpfVertexArrayVertexBuffer
 #define glVertexArrayVertexBuffers glpfVertexArrayVertexBuffers
+
+
+/* GL_ARB_draw_indirect */
+
+typedef void (APIENTRY PFNGLDRAWARRAYSINDIRECT_PROC (GLenum mode, const void * indirect));
+typedef void (APIENTRY PFNGLDRAWELEMENTSINDIRECT_PROC (GLenum mode, GLenum type, const void * indirect));
+
+GLAPI PFNGLDRAWARRAYSINDIRECT_PROC* glpfDrawArraysIndirect;
+GLAPI PFNGLDRAWELEMENTSINDIRECT_PROC* glpfDrawElementsIndirect;
+
+#define glDrawArraysIndirect glpfDrawArraysIndirect
+#define glDrawElementsIndirect glpfDrawElementsIndirect
+
+
+/* GL_ARB_instanced_arrays */
+
+typedef void (APIENTRY PFNGLVERTEXATTRIBDIVISORARB_PROC (GLuint index, GLuint divisor));
+
+GLAPI PFNGLVERTEXATTRIBDIVISORARB_PROC* glpfVertexAttribDivisorARB;
+
+#define glVertexAttribDivisorARB glpfVertexAttribDivisorARB
 
 
 /* GL_ARB_multi_draw_indirect */
@@ -2318,6 +2348,8 @@ GLAPI PFNGLVERTEXATTRIBP4UIV_PROC* glpfVertexAttribP4uiv;
 #define GL_ARB_buffer_storage
 #define GL_ARB_debug_output
 #define GL_ARB_direct_state_access
+#define GL_ARB_draw_indirect
+#define GL_ARB_instanced_arrays
 #define GL_ARB_multi_draw_indirect
 #define GL_VERSION_1_0
 #define GL_VERSION_1_1
@@ -2339,6 +2371,8 @@ extern int FLEXT_ARB_debug_output;
 extern int FLEXT_ARB_direct_state_access;
 extern int FLEXT_ARB_buffer_storage;
 extern int FLEXT_ARB_multi_draw_indirect;
+extern int FLEXT_ARB_draw_indirect;
+extern int FLEXT_ARB_instanced_arrays;
 
 int flextInit(void);
 
