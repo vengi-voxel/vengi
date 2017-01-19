@@ -126,7 +126,6 @@ void TestMeshApp::doRender() {
 		renderPlane();
 
 		video::ScopedShader scoped(_meshShader);
-		//_meshShader.setLightdir(_shadow.sunDirection());
 		_meshShader.setView(_camera.viewMatrix());
 		_meshShader.setProjection(_camera.projectionMatrix());
 		_meshShader.setViewprojection(_camera.viewProjectionMatrix());

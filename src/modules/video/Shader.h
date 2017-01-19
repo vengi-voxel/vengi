@@ -154,6 +154,7 @@ public:
 	 */
 	int getUniformArraySize(const std::string& name) const;
 
+	int checkAttributeLocation(const std::string& name) const;
 	int getAttributeLocation(const std::string& name) const;
 
 	int getUniformLocation(const std::string& name) const;

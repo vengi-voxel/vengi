@@ -200,9 +200,16 @@ void Shader::addDefine(const std::string& name, const std::string& value) {
 }
 
 int Shader::getAttributeLocation(const std::string& name) const {
+	const int location = checkAttributeLocation(name);
+	if (location == -1) {
+		Log::debug("can't find attribute %s in shader %s", name.c_str(), _name.c_str());
+	}
+	return location;
+}
+
+int Shader::checkAttributeLocation(const std::string& name) const {
 	ShaderAttributes::const_iterator i = _attributes.find(name);
 	if (i == _attributes.end()) {
-		Log::debug("can't find attribute %s in shader %s", name.c_str(), _name.c_str());
 		return -1;
 	}
 	return i->second;
