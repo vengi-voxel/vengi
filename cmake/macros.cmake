@@ -1,3 +1,4 @@
+include(CMakeParseArguments)
 set(GAME_BASE_DIR data CACHE STRING "" FORCE)
 set(LIBS_DIR ${PROJECT_SOURCE_DIR}/contrib/libs)
 
