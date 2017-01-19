@@ -37,12 +37,6 @@ private:
 		glm::mat4 finalTransformation;
 	};
 
-	struct MeshVertex : public core::Vertex {
-		MeshVertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) :
-				core::Vertex(glm::vec3(p.x, p.y, p.z), glm::vec3(n.x, n.y, n.z), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a)) {
-		}
-	};
-
 	glm::vec3 toVec3(const aiVector3D& vector) const;
 	glm::quat toQuat(const aiQuaternion& quat) const;
 	glm::mat4 toMat4(const aiMatrix4x4& matrix) const;

@@ -15,6 +15,9 @@ namespace video {
 namespace {
 const aiVector3D VECZERO(0.0f, 0.0f, 0.0f);
 const aiColor4D COLOR_BLACK(0.0f, 0.0f, 0.0f, 0.0f);
+static inline core::Vertex convertVertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) {
+	return core::Vertex(glm::vec3(p.x, p.y, p.z), glm::vec3(n.x, n.y, n.z), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a));
+}
 }
 
 struct MeshNormals {
@@ -101,6 +104,9 @@ bool Mesh::loadMesh(const std::string& filename) {
 	_indices.reserve(numIndices);
 	_boneInfo.clear();
 
+	_aabbMins = glm::vec3(std::numeric_limits<float>::max());
+	_aabbMaxs = glm::vec3(std::numeric_limits<float>::min());
+
 	for (uint32_t i = 0u; i < _meshData.size(); ++i) {
 		const aiMesh* mesh = _scene->mMeshes[i];
 
@@ -122,26 +128,26 @@ bool Mesh::loadMesh(const std::string& filename) {
 			const aiVector3D& texCoord = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][vi] : VECZERO;
 			const aiColor4D& color = mesh->HasVertexColors(0) ? mesh->mColors[0][vi] : COLOR_BLACK;
 
-			if (pos.x < _aabbMins.x) {
+			if (pos.x <= _aabbMins.x) {
 				_aabbMins.x = pos.x;
 			}
 			if (pos.x > _aabbMaxs.x) {
 				_aabbMaxs.x = pos.x;
 			}
-			if (pos.y < _aabbMins.y) {
+			if (pos.y <= _aabbMins.y) {
 				_aabbMins.y = pos.y;
 			}
 			if (pos.y > _aabbMaxs.y) {
 				_aabbMaxs.y = pos.y;
 			}
-			if (pos.z < _aabbMins.z) {
+			if (pos.z <= _aabbMins.z) {
 				_aabbMins.z = pos.z;
 			}
 			if (pos.z > _aabbMaxs.z) {
 				_aabbMaxs.z = pos.z;
 			}
 
-			_vertices.push_back(MeshVertex(pos, normal, texCoord, color));
+			_vertices.emplace_back(convertVertex(pos, normal, texCoord, color));
 		}
 		loadBones(i, mesh);
 	}
@@ -263,6 +269,7 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 			}
 		}
 
+		_textures.clear();
 		_textures.resize(_images.size());
 		int materialIndex = 0;
 		for (const image::ImagePtr& i : _images) {
@@ -271,6 +278,9 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 			} else {
 				++materialIndex;
 			}
+		}
+		if (materialIndex == 0) {
+			_textures.push_back(createWhiteTexture("***empty***"));
 		}
 		_images.clear();
 
