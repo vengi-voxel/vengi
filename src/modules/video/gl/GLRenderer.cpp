@@ -956,7 +956,10 @@ bool init() {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);
 	Log::info("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
 
-	flextInit();
+	if (flextInit() == -1) {
+		Log::error("Could not initialize opengl: %s", SDL_GetError());
+		return false;
+	}
 
 	_priv::setupLimits();
 	_priv::setupFeatures();

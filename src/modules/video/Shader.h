@@ -161,61 +161,39 @@ public:
 	// these offsets can be used to e.g. memcpy the data in.
 	std::vector<int> getUniformBlockOffsets(const char **names, int amount) const;
 
-	bool setUniformBuffer(const std::string& name, const UniformBuffer& buffer);
 	void setUniformui(const std::string& name, unsigned int value) const;
-	void setUniformui(int location, unsigned int value) const;
 	void setUniform(const std::string& name, TextureUnit value) const;
 	void setUniform(int location, TextureUnit value) const;
+	void setUniformfv(int location, const float* values, int length, int components) const;
 	void setUniformi(const std::string& name, int value) const;
-	void setUniformi(int location, int value) const;
 	void setUniformi(const std::string& name, int value1, int value2) const;
-	void setUniformi(int location, int value1, int value2) const;
 	void setUniformi(const std::string& name, int value1, int value2, int value3) const;
-	void setUniformi(int location, int value1, int value2, int value3) const;
 	void setUniformi(const std::string& name, int value1, int value2, int value3, int value4) const;
-	void setUniformi(int location, int value1, int value2, int value3, int value4) const;
 	void setUniform1iv(const std::string& name, const int* values, int length) const;
-	void setUniform1iv(int location, const int* values, int length) const;
 	void setUniform2iv(const std::string& name, const int* values, int length) const;
-	void setUniform2iv(int location, const int* values, int length) const;
-	void setUniform3iv(int location, const int* values, int length) const;
 	void setUniform3iv(const std::string& name, const int* values, int length) const;
 	void setUniformf(const std::string& name, float value) const;
-	void setUniformf(int location, float value) const;
 	void setUniformf(const std::string& name, float value1, float value2) const;
-	void setUniformf(int location, float value1, float value2) const;
 	void setUniformf(const std::string& name, float value1, float value2, float value3) const;
-	void setUniformf(int location, float value1, float value2, float value3) const;
 	void setUniformf(const std::string& name, float value1, float value2, float value3, float value4) const;
-	void setUniformf(int location, float value1, float value2, float value3, float value4) const;
 	void setUniformfv(const std::string& name, const float* values, int length, int components) const;
-	void setUniformfv(int location, const float* values, int length, int components) const;
 	void setUniform1fv(const std::string& name, const float* values, int length) const;
-	void setUniform1fv(int location, const float* values, int length) const;
 	void setUniform2fv(const std::string& name, const float* values, int length) const;
-	void setUniform2fv(int location, const float* values, int length) const;
 	void setUniform3fv(const std::string& name, const float* values, int length) const;
-	void setUniform3fv(int location, const float* values, int length) const;
 	void setUniformVec2(const std::string& name, const glm::vec2& value) const;
 	void setUniformVec2(int location, const glm::vec2& value) const;
 	void setUniformVec2v(const std::string& name, const glm::vec2* value, int length) const;
-	void setUniformVec2v(int location, const glm::vec2* value, int length) const;
 	void setUniformVec3(const std::string& name, const glm::vec3& value) const;
-	void setUniformVec3(int location, const glm::vec3& value) const;
 	void setUniformVec3v(const std::string& name, const glm::vec3* value, int length) const;
-	void setUniformVec3v(int location, const glm::vec3* value, int length) const;
 	void setUniform4fv(const std::string& name, const float* values, int length) const;
-	void setUniform4fv(int location, const float* values, int length) const;
 	void setUniformVec4(const std::string& name, const glm::vec4& value) const;
 	void setUniformVec4(int location, const glm::vec4& value) const;
 	void setUniformVec4v(const std::string& name, const glm::vec4* value, int length) const;
-	void setUniformVec4v(int location, const glm::vec4* value, int length) const;
 	void setUniformMatrix(const std::string& name, const glm::mat4& matrix, bool transpose = false) const;
 	void setUniformMatrix(int location, const glm::mat4& matrix, bool transpose = false) const;
 	void setUniformMatrix(const std::string& name, const glm::mat3& matrix, bool transpose = false) const;
 	void setUniformMatrix(int location, const glm::mat3& matrix, bool transpose = false) const;
 	void setUniformMatrixv(const std::string& name, const glm::mat4* matrixes, int amount, bool transpose = false) const;
-	void setUniformMatrixv(int location, const glm::mat4* matrixes, int amount, bool transpose = false) const;
 	void setUniformMatrixv(const std::string& name, const glm::mat3* matrixes, int amount, bool transpose = false) const;
 	void setUniformMatrixv(int location, const glm::mat3* matrixes, int amount, bool transpose = false) const;
 	void setUniformf(const std::string& name, const glm::vec2& values) const;
@@ -225,17 +203,40 @@ public:
 	void setUniformf(const std::string& name, const glm::vec4& values) const;
 	void setUniformf(int location, const glm::vec4& values) const;
 	void setVertexAttribute(const std::string& name, int size, DataType type, bool normalize, int stride, const void* buffer) const;
-	void setVertexAttribute(int location, int size, DataType type, bool normalize, int stride, const void* buffer) const;
 	void setVertexAttributeInt(const std::string& name, int size, DataType type, int stride, const void* buffer) const;
-	void setVertexAttributeInt(int location, int size, DataType type, int stride, const void* buffer) const;
-	void setAttributef(const std::string& name, float value1, float value2, float value3, float value4) const;
 	void disableVertexAttribute(const std::string& name) const;
-	void disableVertexAttribute(int location) const;
 	int enableVertexAttributeArray(const std::string& name) const;
-	void enableVertexAttributeArray(int location) const;
 	bool hasAttribute(const std::string& name) const;
 	bool hasUniform(const std::string& name) const;
 	bool isUniformBlock(const std::string& name) const;
+
+	/** particular renderer api must implement this */
+	bool setUniformBuffer(const std::string& name, const UniformBuffer& buffer);
+	void setUniformui(int location, unsigned int value) const;
+	void setUniformi(int location, int value) const;
+	void setUniformi(int location, int value1, int value2) const;
+	void setUniformi(int location, int value1, int value2, int value3) const;
+	void setUniformi(int location, int value1, int value2, int value3, int value4) const;
+	void setUniform1iv(int location, const int* values, int length) const;
+	void setUniform2iv(int location, const int* values, int length) const;
+	void setUniform3iv(int location, const int* values, int length) const;
+	void setUniformf(int location, float value) const;
+	void setUniformf(int location, float value1, float value2) const;
+	void setUniformf(int location, float value1, float value2, float value3) const;
+	void setUniformf(int location, float value1, float value2, float value3, float value4) const;
+	void setUniform1fv(int location, const float* values, int length) const;
+	void setUniform2fv(int location, const float* values, int length) const;
+	void setUniformVec2v(int location, const glm::vec2* value, int length) const;
+	void setUniformVec3(int location, const glm::vec3& value) const;
+	void setUniform4fv(int location, const float* values, int length) const;
+	void setUniform3fv(int location, const float* values, int length) const;
+	void setUniformVec3v(int location, const glm::vec3* value, int length) const;
+	void setUniformVec4v(int location, const glm::vec4* value, int length) const;
+	void setUniformMatrixv(int location, const glm::mat4* matrixes, int amount, bool transpose = false) const;
+	void setVertexAttribute(int location, int size, DataType type, bool normalize, int stride, const void* buffer) const;
+	void setVertexAttributeInt(int location, int size, DataType type, int stride, const void* buffer) const;
+	void disableVertexAttribute(int location) const;
+	void enableVertexAttributeArray(int location) const;
 	bool setDivisor(int location, uint32_t divisor) const;
 };
 
@@ -257,6 +258,7 @@ inline void Shader::setUniformui(const std::string& name, unsigned int value) co
 	const int location = getUniformLocation(name);
 	setUniformui(location, value);
 }
+
 inline void Shader::setUniformi(const std::string& name, int value1, int value2) const {
 	const int location = getUniformLocation(name);
 	setUniformi(location, value1, value2);

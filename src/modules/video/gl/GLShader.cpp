@@ -181,15 +181,6 @@ void Shader::setVertexAttributeInt(int location, int size, DataType type, int st
 	checkError();
 }
 
-void Shader::setAttributef(const std::string& name, float value1, float value2, float value3, float value4) const {
-	const int location = getAttributeLocation(name);
-	if (location == -1) {
-		return;
-	}
-	glVertexAttrib4f(location, value1, value2, value3, value4);
-	checkError();
-}
-
 void Shader::enableVertexAttributeArray(int location) const {
 	glEnableVertexAttribArray(location);
 	checkError();
