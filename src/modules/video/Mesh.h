@@ -71,8 +71,8 @@ private:
 	Indices _indices;
 	VertexBuffer _vertexBuffer;
 	VertexBuffer _vertexBufferNormals;
-	uint32_t _vertexBufferNormalsIndex = 0u;
-	uint32_t _vertexBufferIndex = 0u;
+	int32_t _vertexBufferNormalsIndex = -1;
+	int32_t _vertexBufferIndex = -1;
 
 	// AABB
 	glm::vec3 _aabbMins;

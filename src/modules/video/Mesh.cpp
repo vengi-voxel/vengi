@@ -44,6 +44,8 @@ void Mesh::shutdown() {
 	_meshData.clear();
 	_vertexBuffer.shutdown();
 	_vertexBufferNormals.shutdown();
+	_vertexBufferNormalsIndex = -1;
+	_vertexBufferIndex = -1;
 
 	_vertices.clear();
 	_indices.clear();
