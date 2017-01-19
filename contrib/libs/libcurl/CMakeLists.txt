@@ -51,7 +51,7 @@ include(Utilities)
 include(Macros)
 include(CMakeDependentOption)
 
-project( CURL C )
+project(CURL)
 
 #message(WARNING "the curl cmake build system is poorly maintained. Be aware")
 
@@ -80,7 +80,7 @@ include_directories(${PROJECT_BINARY_DIR}/include/curl)
 include_directories( ${CURL_SOURCE_DIR}/include )
 
 option(BUILD_CURL_EXE "Set to ON to build curl executable." OFF)
-option(CURL_STATICLIB "Set to ON to build libcurl with static linking." OFF)
+option(CURL_STATICLIB "Set to ON to build libcurl with static linking." ON)
 option(ENABLE_ARES "Set to ON to enable c-ares support" OFF)
 if(WIN32)
   CMAKE_DEPENDENT_OPTION(ENABLE_THREADED_RESOLVER

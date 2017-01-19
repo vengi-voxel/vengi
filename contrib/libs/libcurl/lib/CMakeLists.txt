@@ -51,14 +51,17 @@ endif()
 
 # The rest of the build
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/../include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../include)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+engine_add_library(LIB ${LIB_NAME} SRCS ${HHEADERS} ${CSOURCES})
+if (NOT ${LIB_NAME}_FOUND)
+
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/../include)
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/..)
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${LIB_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 if(USE_ARES)
-  include_directories(${CARES_INCLUDE_DIR})
+  target_include_directories(${LIB_NAME} PRIVATE ${CARES_INCLUDE_DIR})
 endif()
 
 if(CURL_STATICLIB)
@@ -69,14 +72,13 @@ else()
   set(CURL_USER_DEFINED_DYNAMIC_OR_STATIC SHARED)
 endif()
 
-engine_add_library(LIB ${LIB_NAME} SRCS ${HHEADERS} ${CSOURCES})
-if (NOT ${LIB_NAME}_FOUND)
-
 if(MSVC AND CURL_STATICLIB)
   set_target_properties(${LIB_NAME} PROPERTIES STATIC_LIBRARY_FLAGS ${CMAKE_EXE_LINKER_FLAGS})
 endif()
 
 target_link_libraries(${LIB_NAME} ${CURL_LIBS})
+set(LIBCURL_LIBRARIES ${CURL_LIBS} CACHE "" FORCE)
+set(LIBCURL_INCLUDE_DIRS "" CACHE "" FORCE)
 
 if(WIN32)
   add_definitions( -D_USRDLL )
