@@ -145,6 +145,7 @@ void TestMeshApp::doRender() {
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
 			video::bindTexture(video::TextureUnit::One, _depthBuffer);
+			const video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
 			_mesh->render();
 		}
 	}
