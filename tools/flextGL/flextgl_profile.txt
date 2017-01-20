@@ -4,4 +4,4 @@ extension ARB_direct_state_access optional
 extension ARB_buffer_storage optional
 extension ARB_multi_draw_indirect optional
 extension ARB_draw_indirect optional
-extension ARB_instanced_arrays required
+extension ARB_instanced_arrays optional

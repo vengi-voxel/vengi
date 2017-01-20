@@ -55,8 +55,8 @@ int flextInit(void)
         FLEXT_ARB_draw_indirect = GL_TRUE;
     }
 
-    if (!SDL_GL_ExtensionSupported("GL_ARB_instanced_arrays")) {
-        return SDL_SetError("OpenGL extension ARB_instanced_arrays not supported.");
+    if (SDL_GL_ExtensionSupported("GL_ARB_instanced_arrays")) {
+        FLEXT_ARB_instanced_arrays = GL_TRUE;
     }
 
 
