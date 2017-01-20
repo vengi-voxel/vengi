@@ -1,6 +1,7 @@
 #include "TestMeshApp.h"
 #include "core/command/Command.h"
 #include "video/ScopedPolygonMode.h"
+#include "video/ScopedViewPort.h"
 
 #define MaxDepthBufferUniformName "u_cascades"
 
@@ -30,6 +31,7 @@ core::AppState TestMeshApp::onConstruct() {
 	core::Var::get(cfg::ClientShadowMapSize, "512");
 	core::Var::get("mesh", "chr_skelett2_bake");
 	core::Var::get("animation", "0");
+	_shadowMapDebug = core::Var::get(cfg::ClientDebugShadowMap, "false");
 
 	return state;
 }
@@ -50,6 +52,10 @@ core::AppState TestMeshApp::onInit() {
 
 	if (!_shadowMapShader.setup()) {
 		Log::error("Failed to init shadowmap shader");
+		return core::AppState::Cleanup;
+	}
+	if (!_shadowMapRenderShader.setup()) {
+		Log::error("Failed to init shadowmap debug shader");
 		return core::AppState::Cleanup;
 	}
 	if (!_meshShader.setup()) {
@@ -75,6 +81,19 @@ core::AppState TestMeshApp::onInit() {
 		Log::error("Failed to init the depthbuffer");
 		return core::AppState::Cleanup;
 	}
+
+	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
+	video::Attribute attributePos;
+	attributePos.bufferIndex = fullscreenQuadIndices.x;
+	attributePos.index = _shadowMapRenderShader.getLocationPos();
+	attributePos.size = _shadowMapRenderShader.getComponentsPos();
+	_shadowMapDebugBuffer.addAttribute(attributePos);
+
+	video::Attribute attributeTexcoord;
+	attributeTexcoord.bufferIndex = fullscreenQuadIndices.y;
+	attributeTexcoord.index = _shadowMapRenderShader.getLocationTexcoord();
+	attributeTexcoord.size = _shadowMapRenderShader.getComponentsTexcoord();
+	_shadowMapDebugBuffer.addAttribute(attributeTexcoord);
 
 	return state;
 }
@@ -162,6 +181,45 @@ void TestMeshApp::doRender() {
 		_colorShader.setViewprojection(_camera.viewProjectionMatrix());
 		_mesh->renderNormals(_colorShader);
 	}
+
+	if (_shadowMapDebug->boolVal()) {
+		const int width = _camera.width();
+		const int height = _camera.height();
+
+		// activate shader
+		video::ScopedShader scopedShader(_shadowMapRenderShader);
+		_shadowMapRenderShader.recordUsedUniforms(true);
+		_shadowMapRenderShader.clearUsedUniforms();
+		_shadowMapRenderShader.setShadowmap(video::TextureUnit::Zero);
+		_shadowMapRenderShader.setFar(_camera.farPlane());
+		_shadowMapRenderShader.setNear(_camera.nearPlane());
+
+		// bind buffers
+		core_assert_always(_shadowMapDebugBuffer.bind());
+
+		// configure shadow map texture
+		video::bindTexture(video::TextureUnit::Zero, _depthBuffer);
+		if (_depthBuffer.depthCompare()) {
+			video::disableDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
+		}
+
+		// render shadow maps
+		for (int i = 0; i < maxDepthBuffers; ++i) {
+			const int halfWidth = (int) (width / 4.0f);
+			const int halfHeight = (int) (height / 4.0f);
+			video::ScopedViewPort scopedViewport(i * halfWidth, 0, halfWidth, halfHeight);
+			_shadowMapRenderShader.setCascade(i);
+			video::drawArrays(video::Primitive::Triangles, _shadowMapDebugBuffer.elements(0));
+		}
+
+		// restore texture
+		if (_depthBuffer.depthCompare()) {
+			video::setupDepthCompareTexture(video::TextureUnit::Zero, _depthBuffer.textureType(), _depthBuffer.texture());
+		}
+
+		// unbind buffer
+		_shadowMapDebugBuffer.unbind();
+	}
 }
 
 void TestMeshApp::renderPlane() {
@@ -169,6 +227,8 @@ void TestMeshApp::renderPlane() {
 }
 
 core::AppState TestMeshApp::onCleanup() {
+	_shadowMapDebugBuffer.shutdown();
+	_shadowMapRenderShader.shutdown();
 	_depthBuffer.shutdown();
 	_meshShader.shutdown();
 	_colorShader.shutdown();

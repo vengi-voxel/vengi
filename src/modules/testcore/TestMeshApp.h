@@ -15,6 +15,7 @@ class TestMeshApp: public TestApp {
 private:
 	using Super = TestApp;
 protected:
+	video::VertexBuffer _shadowMapDebugBuffer;
 	video::DepthBuffer _depthBuffer;
 	video::MeshPtr _mesh;
 	video::MeshPool _meshPool;
@@ -22,8 +23,10 @@ protected:
 	shader::MeshShader _meshShader;
 	shader::ColorShader& _colorShader;
 	shader::ShadowmapShader _shadowMapShader;
+	shader::ShadowmapRenderShader _shadowMapRenderShader;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
+	core::VarPtr _shadowMapDebug;
 
 	virtual void renderPlane();
 	virtual void doRender() override;
