@@ -1,6 +1,7 @@
 $in vec3 v_norm;
 $in vec2 v_texcoords;
 $in vec4 v_color;
+$in float v_fogdivisor;
 
 $out vec4 o_color;
 
@@ -8,7 +9,6 @@ uniform sampler2D u_texture;
 uniform vec3 u_lightdir;
 uniform vec3 u_diffuse_color;
 uniform vec3 u_ambient_color;
-uniform float u_fogrange;
 uniform vec3 u_fogcolor;
 uniform float u_viewdistance;
 uniform mat4 u_viewprojection;
@@ -49,9 +49,8 @@ void main(void) {
 	vec3 ambient = u_ambient_color;
 	vec3 lightvalue = ambient + (diffuse * shadow);
 
-	float fogstart = max(u_viewdistance - u_fogrange, 0.0);
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
-	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / (u_viewdistance - fogstart), 0.0, 1.0);
+	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / v_fogdivisor, 0.0, 1.0);
 
 	// TODO: there is an error in the fog computation - right now everything is in u_fogcolor because fogval == 1
 	// this is due to the fact that fogdistance is a very very high value because gl_FragCoord.w is 0

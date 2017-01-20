@@ -9,12 +9,15 @@ $in vec4 a_color;
 uniform mat4 u_viewprojection;
 uniform mat4 u_model;
 uniform mat4 u_bonetransforms[100];
+uniform float u_fogrange;
+uniform float u_viewdistance;
 
 #include "_shadowmap.vert"
 
 $out vec3 v_norm;
 $out vec2 v_texcoords;
 $out vec4 v_color;
+$out float v_fogdivisor;
 
 void main(void) {
 	mat4 bonetrans = u_bonetransforms[a_boneids[0]] * a_boneweights[0];
@@ -27,6 +30,7 @@ void main(void) {
 	v_lightspacepos = mpos.xyz;
 	v_viewz         = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif // cl_shadowmap == 1
+	v_fogdivisor   = u_viewdistance - max(u_viewdistance - u_fogrange, 0.0);
 	v_norm         = vec4(bonetrans * vec4(a_norm, 0.0)).xyz;
 	v_texcoords    = a_texcoords;
 	v_color        = a_color;
