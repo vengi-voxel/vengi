@@ -183,13 +183,13 @@ bool Shader::deactivate() const {
 
 	_active = false;
 	_time = 0;
-#if VALIDATE_UNIFORMS > 0
-	for (const auto& e : _uniforms) {
-		if (_usedUniforms.find(e.second.location) == _usedUniforms.end()) {
-			Log::error("Didn't set the uniform %s (shader: %s)", e.first.c_str(), _name.c_str());
+	if (_recordUsedUniforms) {
+		for (const auto& e : _uniforms) {
+			if (_usedUniforms.find(e.second.location) == _usedUniforms.end()) {
+				Log::error("Didn't set the uniform %s (shader: %s)", e.first.c_str(), _name.c_str());
+			}
 		}
 	}
-#endif
 
 	return _active;
 }

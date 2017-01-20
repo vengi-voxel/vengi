@@ -104,14 +104,18 @@ void TestMeshApp::doRender() {
 
 		_depthBuffer.bind();
 		video::ScopedShader scoped(_shadowMapShader);
-		_shadowMapShader.setModel(glm::mat4());
 		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
+			_shadowMapShader.recordUsedUniforms(true);
+			_shadowMapShader.clearUsedUniforms();
+			_shadowMapShader.setModel(glm::mat4());
 			for (int i = 0; i < maxDepthBuffers; ++i) {
 				_depthBuffer.bindTexture(i);
 				_shadowMapShader.setLightviewprojection(cascades[i]);
 				renderPlane();
 				_mesh->render();
 			}
+		} else {
+			_shadowMapShader.recordUsedUniforms(false);
 		}
 		_depthBuffer.unbind();
 		video::cullFace(video::Face::Back);
@@ -126,31 +130,36 @@ void TestMeshApp::doRender() {
 		renderPlane();
 
 		video::ScopedShader scoped(_meshShader);
-		_meshShader.setView(_camera.viewMatrix());
-		_meshShader.setProjection(_camera.projectionMatrix());
-		_meshShader.setViewprojection(_camera.viewProjectionMatrix());
-		_meshShader.setFogrange(250.0f);
-		_meshShader.setViewdistance(_camera.farPlane());
-		_meshShader.setModel(glm::mat4());
-		_meshShader.setTexture(video::TextureUnit::Zero);
-		_meshShader.setDiffuseColor(_diffuseColor);
-		_meshShader.setAmbientColor(_ambientColor);
-		_meshShader.setShadowmap(video::TextureUnit::One);
-		_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
-		_meshShader.setFogcolor(core::Color::LightBlue);
-		_meshShader.setCascades(cascades);
-		_meshShader.setDistances(distances);
-		_meshShader.setLightdir(_shadow.sunDirection());
-
+		_meshShader.clearUsedUniforms();
+		_meshShader.recordUsedUniforms(true);
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
+			_meshShader.setView(_camera.viewMatrix());
+			_meshShader.setProjection(_camera.projectionMatrix());
+			_meshShader.setViewprojection(_camera.viewProjectionMatrix());
+			_meshShader.setFogrange(250.0f);
+			_meshShader.setViewdistance(_camera.farPlane());
+			_meshShader.setModel(glm::mat4());
+			_meshShader.setTexture(video::TextureUnit::Zero);
+			_meshShader.setDiffuseColor(_diffuseColor);
+			_meshShader.setAmbientColor(_ambientColor);
+			_meshShader.setShadowmap(video::TextureUnit::One);
+			_meshShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
+			_meshShader.setFogcolor(core::Color::LightBlue);
+			_meshShader.setCascades(cascades);
+			_meshShader.setDistances(distances);
+			_meshShader.setLightdir(_shadow.sunDirection());
 			video::bindTexture(video::TextureUnit::One, _depthBuffer);
 			const video::ScopedPolygonMode scopedPolygonMode(_camera.polygonMode());
 			_mesh->render();
+		} else {
+			_meshShader.recordUsedUniforms(false);
 		}
 	}
 	if (meshInitialized) {
 		video::ScopedShader scoped(_colorShader);
+		_colorShader.recordUsedUniforms(true);
+		_colorShader.clearUsedUniforms();
 		_colorShader.setViewprojection(_camera.viewProjectionMatrix());
 		_mesh->renderNormals(_colorShader);
 	}

@@ -53,10 +53,10 @@ protected:
 
 	ShaderUniforms _uniforms;
 
-#if VALIDATE_UNIFORMS > 0
 	// can be used to validate that every uniform was set. The value type is the location index
 	mutable std::unordered_set<int> _usedUniforms;
-#endif
+	bool _recordUsedUniforms = false;
+	void addUsedUniform(int location) const;
 
 	ShaderAttributes _attributes;
 
@@ -98,6 +98,10 @@ public:
 	virtual bool setup() {
 		return false;
 	}
+
+	void recordUsedUniforms(bool state);
+
+	void clearUsedUniforms();
 
 	bool loadFromFile(const std::string& filename, ShaderType shaderType);
 
@@ -240,6 +244,18 @@ public:
 	void enableVertexAttributeArray(int location) const;
 	bool setDivisor(int location, uint32_t divisor) const;
 };
+
+inline void Shader::addUsedUniform(int location) const {
+	_usedUniforms.insert(location);
+}
+
+inline void Shader::recordUsedUniforms(bool state) {
+	_recordUsedUniforms = state;
+}
+
+inline void Shader::clearUsedUniforms() {
+	_usedUniforms.clear();
+}
 
 inline void Shader::setUniformi(const std::string& name, int value) const {
 	const int location = getUniformLocation(name);
