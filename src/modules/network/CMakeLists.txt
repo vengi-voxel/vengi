@@ -10,6 +10,6 @@ set(SRCS
 set(LIB network)
 add_library(${LIB} ${SRCS})
 
-target_link_libraries(${LIB} core libenet flatbuffers restclient-cpp)
+target_link_libraries(${LIB} core libenet flatbuffers)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 generate_protocol(${LIB} Shared.fbs ClientMessages.fbs ServerMessages.fbs)
