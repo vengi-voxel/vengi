@@ -134,8 +134,6 @@ void TestMeshApp::doRender() {
 		_meshShader.recordUsedUniforms(true);
 		meshInitialized = _mesh->initMesh(_meshShader, timeInSeconds, animationIndex);
 		if (meshInitialized) {
-			_meshShader.setView(_camera.viewMatrix());
-			_meshShader.setProjection(_camera.projectionMatrix());
 			_meshShader.setViewprojection(_camera.viewProjectionMatrix());
 			_meshShader.setFogrange(250.0f);
 			_meshShader.setViewdistance(_camera.farPlane());

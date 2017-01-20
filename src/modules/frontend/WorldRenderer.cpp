@@ -471,8 +471,6 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	video::enable(video::State::DepthTest);
 	video::enable(video::State::DepthMask);
 	video::ScopedShader scoped(_meshShader);
-	_meshShader.setView(camera.viewMatrix());
-	_meshShader.setProjection(camera.projectionMatrix());
 	_meshShader.setFogrange(_fogRange);
 	_meshShader.setViewdistance(_viewDistance);
 	_meshShader.setTexture(video::TextureUnit::Zero);

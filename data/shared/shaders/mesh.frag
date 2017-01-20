@@ -1,17 +1,16 @@
-$in vec4 v_pos;
 $in vec3 v_norm;
 $in vec2 v_texcoords;
-$in vec3 v_lightpos;
 $in vec4 v_color;
-uniform sampler2D u_texture;
 
+$out vec4 o_color;
+
+uniform sampler2D u_texture;
 uniform vec3 u_lightdir;
 uniform vec3 u_diffuse_color;
 uniform vec3 u_ambient_color;
 uniform float u_fogrange;
 uniform vec3 u_fogcolor;
 uniform float u_viewdistance;
-$out vec4 o_color;
 uniform mat4 u_viewprojection;
 
 #include "_shadowmap.frag"
