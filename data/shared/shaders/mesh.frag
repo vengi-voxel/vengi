@@ -30,5 +30,7 @@ void main(void) {
 	float fogdistance = gl_FragCoord.z / gl_FragCoord.w;
 	float fogval = 1.0 - clamp((u_viewdistance - fogdistance) / (u_viewdistance - fogstart), 0.0, 1.0);
 
+	// TODO: there is an error in the fog computation - right now everything is in u_fogcolor because fogval == 1
+	// this is due to the fact that fogdistance is a very very high value because gl_FragCoord.w is 0
 	o_color = vec4(mix(color * lightvalue, u_fogcolor, fogval), 1.0);
 }
