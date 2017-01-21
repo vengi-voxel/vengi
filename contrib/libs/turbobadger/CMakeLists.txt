@@ -126,7 +126,9 @@ engine_add_library(
 )
 target_include_directories(turbobadger PUBLIC tb)
 target_link_libraries(turbobadger sdl2)
-set_target_properties(turbobadger PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-inconsistent-missing-override")
+if (NOT MSVC)
+	set_target_properties(turbobadger PROPERTIES COMPILE_FLAGS "-Wno-unused-variable -Wno-inconsistent-missing-override -Wno-non-virtual-dtor")
+endif()
 
 if (WINDOWS)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
