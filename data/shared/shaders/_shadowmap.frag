@@ -17,7 +17,7 @@ uniform mat4 u_cascades[4];
  * perform percentage-closer shadow map lookup
  * http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping
  */
-float sampleShadowPCF(int cascade, vec2 uv, float compare) {
+float sampleShadowPCF(in int cascade, in vec2 uv, in float compare) {
 	float result = 0.0;
 	for (int x = -2; x <= 2; x++) {
 		for (int y = -2; y <= 2; y++) {
@@ -28,7 +28,7 @@ float sampleShadowPCF(int cascade, vec2 uv, float compare) {
 	return result / 25.0;
 }
 
-float calculateShadow(int cascade, mat4 viewprojection) {
+float calculateShadow(in int cascade, in mat4 viewprojection) {
 	vec4 lightp = u_cascades[cascade] * vec4(v_lightspacepos, 1.0);
 	/* we manually have to do the perspective divide as there is no
 	 * version of textureProj that can take a sampler2DArrayShadow */
@@ -47,7 +47,7 @@ int calculateCascade() {
 	return 0;
 }
 
-float calculateShadow(int cascade, mat4 viewprojection) {
+float calculateShadow(in int cascade, in mat4 viewprojection) {
 	return 1.0;
 }
 
