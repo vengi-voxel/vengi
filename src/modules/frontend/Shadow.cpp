@@ -11,6 +11,7 @@ bool Shadow::init() {
 void Shadow::calculateShadowData(const video::Camera& camera, bool active, int maxDepthBuffers, const glm::ivec2& depthBufferSize, float sliceWeight) {
 	_cascades.resize(maxDepthBuffers);
 	_distances.resize(maxDepthBuffers);
+	_depthDimension = depthBufferSize;
 
 	if (!active) {
 		for (int i = 0; i < maxDepthBuffers; ++i) {

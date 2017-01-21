@@ -12,10 +12,12 @@ private:
 	glm::mat4 _lightView;
 	std::vector<glm::mat4> _cascades;
 	std::vector<float> _distances;
+	glm::vec2 _depthDimension;
 
 public:
 	bool init();
 
+	const glm::vec2& depthDimension() const;
 	void calculateShadowData(const video::Camera& camera, bool active, int maxDepthBuffers, const glm::ivec2& depthBufferSize, float sliceWeight = 1.0f);
 
 	const std::vector<glm::mat4>& cascades() const;
@@ -35,4 +37,7 @@ inline const glm::vec3& Shadow::sunDirection() const {
 	return _sunDirection;
 }
 
+inline const glm::vec2& Shadow::depthDimension() const {
+	return _depthDimension;
+}
 }
