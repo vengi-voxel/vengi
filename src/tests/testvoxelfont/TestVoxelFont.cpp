@@ -6,12 +6,6 @@ TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::Ev
 	setCameraMotion(true);
 }
 
-core::AppState TestVoxelFont::onConstruct() {
-	core::AppState state = Super::onConstruct();
-	core::Var::get(cfg::ClientShadowMapSize, "512");
-	return state;
-}
-
 core::AppState TestVoxelFont::onInit() {
 	core::AppState state = Super::onInit();
 

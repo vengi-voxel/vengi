@@ -32,7 +32,7 @@ constexpr const char *ClientGamma = "cl_gamma";
 constexpr const char *ClientShadowMap = "cl_shadowmap";
 constexpr const char *ClientCameraMaxTargetDistance = "cl_cameramaxtargetdistance";
 
-constexpr const char *ClientDebugShadowMap = "cl_debug_shadowmap";
+constexpr const char *ClientShadowMapShow = "cl_debug_shadowmapshow";
 constexpr const char *ClientDebugShadowMapCascade = "cl_debug_cascade";
 constexpr const char *ClientDebugShadow = "cl_debug_shadow";
 

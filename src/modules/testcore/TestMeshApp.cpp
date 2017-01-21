@@ -27,11 +27,9 @@ core::AppState TestMeshApp::onConstruct() {
 		}
 	}).setHelp("Load a mesh from the pool. The name is without extension and the file must be in the mesh/ dir.");
 
-	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
-	core::Var::get(cfg::ClientShadowMapSize, "512");
 	core::Var::get("mesh", "chr_skelett2_bake");
 	core::Var::get("animation", "0");
-	_shadowMapDebug = core::Var::get(cfg::ClientDebugShadowMap, "false");
+	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");
 
 	return state;
 }
@@ -182,7 +180,7 @@ void TestMeshApp::doRender() {
 		_mesh->renderNormals(_colorShader);
 	}
 
-	if (_shadowMapDebug->boolVal()) {
+	if (_shadowMapShow->boolVal()) {
 		const int width = _camera.width();
 		const int height = _camera.height();
 

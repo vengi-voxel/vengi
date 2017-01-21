@@ -19,11 +19,12 @@ void TestApp::onWindowResize() {
 }
 
 core::AppState TestApp::onConstruct() {
+	core::AppState state = Super::onConstruct();
 	core::Var::get(cfg::ClientFullscreen, "false");
 	core::Var::get(cfg::ClientWindowWidth, "1024");
 	core::Var::get(cfg::ClientWindowHeight, "768");
 
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
 	registerMoveCmd("+move_right", MOVERIGHT);
 	registerMoveCmd("+move_left", MOVELEFT);
@@ -40,7 +41,7 @@ core::AppState TestApp::onConstruct() {
 		_camera.setRotationType(video::CameraRotationType::Eye);
 	}).setHelp("Camera free look on toggle");
 
-	return Super::onConstruct();
+	return state;
 }
 
 core::AppState TestApp::onInit() {

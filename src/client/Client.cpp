@@ -111,7 +111,7 @@ core::AppState Client::onConstruct() {
 	core::Var::get(cfg::ClientName, "noname");
 	core::Var::get(cfg::ClientPassword, "");
 	core::Var::get(cfg::HTTPBaseURL, "https://localhost/");
-	_rotationSpeed = core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "250.0");
 	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
 	_worldRenderer.onConstruct();

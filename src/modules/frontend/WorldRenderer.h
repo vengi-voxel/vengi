@@ -94,7 +94,7 @@ protected:
 	glm::ivec3 _lastGridPosition = { std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min() };
 	voxel::WorldPtr _world;
 	core::VarPtr _shadowMap;
-	core::VarPtr _shadowMapDebug;
+	core::VarPtr _shadowMapShow;
 
 	video::VertexBuffer _shadowMapDebugBuffer;
 	video::DepthBuffer _depthBuffer;

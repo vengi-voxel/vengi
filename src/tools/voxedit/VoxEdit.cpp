@@ -161,9 +161,6 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_MAINWINDOW(togglelockaxis, "Activates the lock mode (next key is axis x, y, or z)");
 	COMMAND_MAINWINDOW(resetcamera, "Reset cameras");
 
-	core::Var::get(cfg::ClientShadowMapSize, "512");
-	core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
-
 	return state;
 }
 

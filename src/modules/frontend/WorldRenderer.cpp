@@ -420,7 +420,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	_colorTexture.unbind();
 
-	if (shadowMap && _shadowMapDebug->boolVal()) {
+	if (shadowMap && _shadowMapShow->boolVal()) {
 		const int width = camera.width();
 		const int height = camera.height();
 
@@ -614,10 +614,8 @@ void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active
 }
 
 void WorldRenderer::onConstruct() {
-	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
-	_shadowMapDebug = core::Var::get(cfg::ClientDebugShadowMap, "false");
-	core::Var::get(cfg::ClientShadowMapSize, "512");
+	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");
 }
 
 bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimension) {
