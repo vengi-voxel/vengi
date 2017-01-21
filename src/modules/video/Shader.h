@@ -215,7 +215,8 @@ public:
 	bool hasUniform(const std::string& name) const;
 	bool isUniformBlock(const std::string& name) const;
 
-	/** particular renderer api must implement this */
+	// particular renderer api must implement this
+
 	bool setUniformBuffer(const std::string& name, const UniformBuffer& buffer);
 	void setUniformui(int location, unsigned int value) const;
 	void setUniformi(int location, int value) const;
