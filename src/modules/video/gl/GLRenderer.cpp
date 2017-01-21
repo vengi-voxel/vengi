@@ -831,8 +831,8 @@ bool compileShader(Id id, ShaderType shaderType, const std::string& source, cons
 		}
 
 		if (status != GL_TRUE) {
-			Log::error("Failed to compile: %s\n%s\nshaderType: %s\nerrorlog: %s",
-					name.c_str(), source.c_str(), strShaderType, compileLog.c_str());
+			Log::error("Failed to compile: %s\n%s\nshaderType: %s", name.c_str(), compileLog.c_str(), strShaderType);
+			Log::error("Shader source:\n%s", source.c_str());
 		} else {
 			Log::info("%s: %s", name.c_str(), compileLog.c_str());
 		}
@@ -864,7 +864,7 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name) 
 		video::checkError();
 		const std::string linkLog(strInfoLog.get(), static_cast<std::size_t>(infoLogLength));
 		if (status != GL_TRUE) {
-			Log::error("Failed to link: %s\nerrorlog: %s", name.c_str(), linkLog.c_str());
+			Log::error("Failed to link: %s\n%s", name.c_str(), linkLog.c_str());
 		} else {
 			Log::info("%s: %s", name.c_str(), linkLog.c_str());
 		}

@@ -24,7 +24,7 @@
 #endif
 
 
-static constexpr int bufSize = 1024;
+static constexpr int bufSize = 4096;
 static SDL_LogPriority _logLevel = SDL_LOG_PRIORITY_INFO;
 
 void Log::init() {
