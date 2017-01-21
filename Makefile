@@ -113,7 +113,7 @@ $(if $(LINUX),\
 	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1) \
 $(else),\
 	$(if $(DARWIN),\
-		$(Q)cd $(BUILDDIR); xcodebuild build -target $(1) install -project tests.xcodeproj -configuration $(BUILD_TYPE) \
+		$(Q)cd $(BUILDDIR); xcodebuild build -target $(1) install -project tests.xcodeproj -configuration $(BUILD_TYPE) | tee xcodebuild.log | xcpretty && exit ${PIPESTATUS[0]} \
 	$(else),\
 		$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1) \
 	)
