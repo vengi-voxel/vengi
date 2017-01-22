@@ -539,17 +539,7 @@ class vector_downward {
 
   uint8_t *make_space(size_t len) {
     if (len > static_cast<size_t>(cur_ - buf_)) {
-      auto old_size = size();
-      auto largest_align = AlignOf<largest_scalar_t>();
-      reserved_ += (std::max)(len, growth_policy(reserved_));
-      // Round up to avoid undefined behavior from unaligned loads and stores.
-      reserved_ = (reserved_ + (largest_align - 1)) & ~(largest_align - 1);
-      auto new_buf = allocator_.allocate(reserved_);
-      auto new_cur = new_buf + reserved_ - old_size;
-      memcpy(new_cur, cur_, old_size);
-      cur_ = new_cur;
-      allocator_.deallocate(buf_);
-      buf_ = new_buf;
+      reallocate(len);
     }
     cur_ -= len;
     // Beyond this, signed offsets may not have enough range:
@@ -593,6 +583,20 @@ class vector_downward {
   uint8_t *buf_;
   uint8_t *cur_;  // Points at location between empty (below) and used (above).
   const simple_allocator &allocator_;
+
+  void reallocate(size_t len) {
+    auto old_size = size();
+    auto largest_align = AlignOf<largest_scalar_t>();
+    reserved_ += (std::max)(len, growth_policy(reserved_));
+    // Round up to avoid undefined behavior from unaligned loads and stores.
+    reserved_ = (reserved_ + (largest_align - 1)) & ~(largest_align - 1);
+    auto new_buf = allocator_.allocate(reserved_);
+    auto new_cur = new_buf + reserved_ - old_size;
+    memcpy(new_cur, cur_, old_size);
+    cur_ = new_cur;
+    allocator_.deallocate(buf_);
+    buf_ = new_buf;
+  }
 };
 
 // Converts a Field ID to a virtual table offset.
@@ -643,7 +647,7 @@ FLATBUFFERS_FINAL_CLASS
                              const simple_allocator *allocator = nullptr)
       : buf_(initial_size, allocator ? *allocator : default_allocator),
         nested(false), finished(false), minalign_(1), force_defaults_(false),
-        string_pool(nullptr) {
+        dedup_vtables_(true), string_pool(nullptr) {
     offsetbuf_.reserve(16);  // Avoid first few reallocs.
     vtables_.reserve(16);
     EndianCheck();
@@ -719,6 +723,10 @@ FLATBUFFERS_FINAL_CLASS
   /// don't get serialized into the buffer.
   /// @param[in] bool fd When set to `true`, always serializes default values.
   void ForceDefaults(bool fd) { force_defaults_ = fd; }
+
+  /// @brief By default vtables are deduped in order to save space.
+  /// @param[in] bool dedup When set to `true`, dedup vtables.
+  void DedupVtables(bool dedup) { dedup_vtables_ = dedup; }
 
   /// @cond FLATBUFFERS_INTERNAL
   void Pad(size_t num_bytes) { buf_.fill(num_bytes); }
@@ -857,13 +865,15 @@ FLATBUFFERS_FINAL_CLASS
     auto vt_use = GetSize();
     // See if we already have generated a vtable with this exact same
     // layout before. If so, make it point to the old one, remove this one.
-    for (auto it = vtables_.begin(); it != vtables_.end(); ++it) {
-      auto vt2 = reinterpret_cast<voffset_t *>(buf_.data_at(*it));
-      auto vt2_size = *vt2;
-      if (vt1_size != vt2_size || memcmp(vt2, vt1, vt1_size)) continue;
-      vt_use = *it;
-      buf_.pop(GetSize() - vtableoffsetloc);
-      break;
+    if (dedup_vtables_) {
+      for (auto it = vtables_.begin(); it != vtables_.end(); ++it) {
+        auto vt2 = reinterpret_cast<voffset_t *>(buf_.data_at(*it));
+        auto vt2_size = *vt2;
+        if (vt1_size != vt2_size || memcmp(vt2, vt1, vt1_size)) continue;
+        vt_use = *it;
+        buf_.pop(GetSize() - vtableoffsetloc);
+        break;
+      }
     }
     // If this is a new vtable, remember it.
     if (vt_use == GetSize()) {
@@ -1262,6 +1272,8 @@ FLATBUFFERS_FINAL_CLASS
   size_t minalign_;
 
   bool force_defaults_;  // Serialize values equal to their defaults anyway.
+
+  bool dedup_vtables_;
 
   struct StringOffsetCompare {
     StringOffsetCompare(const vector_downward &buf) : buf_(&buf) {}

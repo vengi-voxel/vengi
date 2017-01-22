@@ -459,6 +459,8 @@ class Parser : public ParserState {
     known_attributes_["cpp_type"] = true;
     known_attributes_["cpp_ptr_type"] = true;
     known_attributes_["native_inline"] = true;
+    known_attributes_["native_type"] = true;
+    known_attributes_["native_default"] = true;
   }
 
   ~Parser() {
@@ -573,6 +575,7 @@ private:
 
   std::map<std::string, bool> included_files_;
   std::map<std::string, std::set<std::string>> files_included_per_file_;
+  std::vector<std::string> native_included_files_;
 
   std::map<std::string, bool> known_attributes_;
 
@@ -591,13 +594,6 @@ private:
 // Utility functions for multiple generators:
 
 extern std::string MakeCamel(const std::string &in, bool first = true);
-
-struct CommentConfig;
-
-extern void GenComment(const std::vector<std::string> &dc,
-                       std::string *code_ptr,
-                       const CommentConfig *config,
-                       const char *prefix = "");
 
 // Generate text (JSON) from a given FlatBuffer, and a given Parser
 // object that has been populated with the corresponding schema.
