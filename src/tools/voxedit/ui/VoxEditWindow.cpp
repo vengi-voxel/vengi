@@ -890,7 +890,7 @@ bool VoxEditWindow::save(std::string_view file) {
 bool VoxEditWindow::voxelize(std::string_view file) {
 	std::string f;
 	if (file.empty()) {
-		f = _voxedit->openDialog("vox,qbt,qb");
+		f = _voxedit->openDialog(_importFilter);
 		if (f.empty()) {
 			return false;
 		}

@@ -163,6 +163,9 @@ bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 
 	vx_mesh_free(result);
 	vx_mesh_free(mesh);
+
+	// TODO: create volume out of vertices
+
 	return false;
 }
 
