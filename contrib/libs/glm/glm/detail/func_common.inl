@@ -190,12 +190,12 @@ namespace detail
 
 #	if GLM_ARCH == GLM_ARCH_X86
 	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType, bool Aligned>
-	struct compute_sign<T, P, vecType, false, Aligned>
+	struct compute_sign<L, T, P, vecType, false, Aligned>
 	{
 		GLM_FUNC_QUALIFIER static vecType<L, T, P> call(vecType<L, T, P> const & x)
 		{
 			T const Shift(static_cast<T>(sizeof(T) * 8 - 1));
-			vecType<L, T, P> const y(vecType<typename make_unsigned<T>::type, P>(-x) >> typename make_unsigned<T>::type(Shift));
+			vecType<L, T, P> const y(vecType<L, typename make_unsigned<T>::type, P>(-x) >> typename make_unsigned<T>::type(Shift));
 
 			return (x >> Shift) | y;
 		}
