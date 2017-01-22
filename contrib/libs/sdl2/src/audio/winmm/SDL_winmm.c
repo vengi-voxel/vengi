@@ -33,6 +33,40 @@
 #include "../SDL_audio_c.h"
 #include "SDL_winmm.h"
 
+/* MinGW32 mmsystem.h doesn't include these structures */
+#if defined(__MINGW32__) && defined(_MMSYSTEM_H)
+
+typedef struct tagWAVEINCAPS2W 
+{
+    WORD wMid;
+    WORD wPid;
+    MMVERSION vDriverVersion;
+    WCHAR szPname[MAXPNAMELEN];
+    DWORD dwFormats;
+    WORD wChannels;
+    WORD wReserved1;
+    GUID ManufacturerGuid;
+    GUID ProductGuid;
+    GUID NameGuid;
+} WAVEINCAPS2W,*PWAVEINCAPS2W,*NPWAVEINCAPS2W,*LPWAVEINCAPS2W;
+
+typedef struct tagWAVEOUTCAPS2W
+{
+    WORD wMid;
+    WORD wPid;
+    MMVERSION vDriverVersion;
+    WCHAR szPname[MAXPNAMELEN];
+    DWORD dwFormats;
+    WORD wChannels;
+    WORD wReserved1;
+    DWORD dwSupport;
+    GUID ManufacturerGuid;
+    GUID ProductGuid;
+    GUID NameGuid;
+} WAVEOUTCAPS2W,*PWAVEOUTCAPS2W,*NPWAVEOUTCAPS2W,*LPWAVEOUTCAPS2W;
+
+#endif /* defined(__MINGW32__) && defined(_MMSYSTEM_H) */
+
 #ifndef WAVE_FORMAT_IEEE_FLOAT
 #define WAVE_FORMAT_IEEE_FLOAT 0x0003
 #endif
