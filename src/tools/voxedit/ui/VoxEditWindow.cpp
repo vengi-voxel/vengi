@@ -6,6 +6,8 @@
 #include "palette/PaletteWidget.h"
 #include "../VoxEdit.h"
 #include <assimp/Exporter.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/importerdesc.h>
 
 namespace voxedit {
 
@@ -176,14 +178,42 @@ bool VoxEditWindow::init() {
 	_freeLook->SetValue(_scene->camera().rotationType() == video::CameraRotationType::Eye ? 1 : 0);
 
 	Assimp::Exporter exporter;
-	const size_t num = exporter.GetExportFormatCount();
-	for (size_t i = 0; i < num; ++i) {
+	const size_t exporterNum = exporter.GetExportFormatCount();
+	for (size_t i = 0; i < exporterNum; ++i) {
 		const aiExportFormatDesc* desc = exporter.GetExportFormatDescription(i);
 		_exportFilter.append(desc->fileExtension);
-		if (i < num - 1) {
+		if (i < exporterNum - 1) {
 			_exportFilter.append(";");
 		}
 	}
+
+	Assimp::Importer importer;
+	const size_t importerNum = importer.GetImporterCount();
+	std::set<std::string> importExtensions;
+	for (size_t i = 0; i < importerNum; ++i) {
+		const aiImporterDesc* desc = importer.GetImporterInfo(i);
+		const char* ext = desc->mFileExtensions;
+		const char* last = ext;
+		do {
+			if (ext[0] == '\0' || ext[0] == ' ') {
+				importExtensions.insert(std::string(last, ext - last));
+				last = ext;
+				while (*last == ' ') {
+					++last;
+				}
+			}
+		} while (*ext++);
+	}
+	const int importerExtensionCount = importExtensions.size();
+	int n = 0;
+	for (auto i = importExtensions.begin(); i != importExtensions.end(); ++i, ++n) {
+		_importFilter.append(*i);
+		if (n < importerExtensionCount - 1) {
+			_importFilter.append(";");
+		}
+	}
+	Log::info("Supported import filters: %s", _importFilter.c_str());
+	Log::info("Supported export filters: %s", _exportFilter.c_str());
 
 	return true;
 }

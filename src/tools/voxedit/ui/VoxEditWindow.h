@@ -58,6 +58,7 @@ private:
 	tb::TBCheckBox *_freeLook = nullptr;
 
 	std::string _exportFilter;
+	std::string _importFilter;
 	bool _fourViewAvailable = false;
 	bool _lockedDirty = false;
 
