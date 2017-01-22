@@ -38,6 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
+#ifndef ASSIMP_BUILD_NO_3MF_IMPORTER
+
 #include "D3MFImporter.h"
 
 #include <assimp/scene.h>
@@ -58,8 +60,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 
 #include <assimp/ai_assert.h>
-
-#ifndef ASSIMP_BUILD_NO_3MF_IMPORTER
 
 #include "D3MFOpcPackage.h"
 #include <contrib/unzip/unzip.h>
@@ -229,9 +229,10 @@ private:
     aiVector3D ReadVertex()
     {
         aiVector3D vertex;
+
         vertex.x = ai_strtof(xmlReader->getAttributeValue(D3MF::XmlTag::x.c_str()), nullptr);
         vertex.y = ai_strtof(xmlReader->getAttributeValue(D3MF::XmlTag::y.c_str()), nullptr);
-        vertex.z = ai_strtof>(xmlReader->getAttributeValue(D3MF::XmlTag::z.c_str()), nullptr);
+        vertex.z = ai_strtof(xmlReader->getAttributeValue(D3MF::XmlTag::z.c_str()), nullptr);
 
         return vertex;
     }

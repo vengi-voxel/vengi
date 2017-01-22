@@ -170,6 +170,9 @@ set(SRCS
 	code/X3DImporter_Rendering.cpp
 	code/X3DImporter_Shape.cpp
 	code/X3DImporter_Texturing.cpp
+	code/CreateAnimMesh.h
+	code/CreateAnimMesh.cpp
+	code/scene.cpp
 	contrib/openddlparser/code/DDLNode.cpp
 	contrib/openddlparser/code/Value.cpp
 	contrib/openddlparser/code/OpenDDLExport.cpp
