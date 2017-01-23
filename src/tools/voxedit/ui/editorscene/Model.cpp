@@ -145,36 +145,40 @@ void Model::scale() {
 
 void Model::fill(int x, int y, int z) {
 	markUndo();
-	voxedit::tool::fill(*_modelVolume, glm::ivec3(x, y, z), _lockedAxis, _shapeHandler.currentVoxel());
+	const bool overwrite = evalAction() == Action::OverrideVoxel;
+	Log::info("Overwrite: %i", (int)overwrite);
+	voxedit::tool::fill(*_modelVolume, glm::ivec3(x, y, z), _lockedAxis, _shapeHandler.currentVoxel(), overwrite);
 }
 
-void Model::executeAction(bool mouseDown, long now) {
-	if (_action == Action::None || !mouseDown) {
+void Model::executeAction(long now) {
+	const Action execAction = evalAction();
+	if (execAction == Action::None) {
+		Log::warn("Nothing to execute");
 		return;
 	}
 
 	core_trace_scoped(EditorSceneExecuteAction);
-	if (_lastAction == _action) {
+	if (_lastAction == execAction) {
 		if (now - _lastActionExecution < _actionExecutionDelay) {
 			return;
 		}
 	}
-	_lastAction = _action;
+	_lastAction = execAction;
 	_lastActionExecution = now;
 
 	bool extract = false;
 	const bool didHit = _result.didHit;
-	if (didHit && _action == Action::CopyVoxel) {
+	if (didHit && execAction == Action::CopyVoxel) {
 		shapeHandler().setVoxel(getVoxel(_cursorPos));
-	} else if (didHit && _action == Action::SelectVoxels) {
+	} else if (didHit && execAction == Action::SelectVoxels) {
 		select(_cursorPos);
-	} else if (didHit && _action == Action::OverrideVoxel) {
+	} else if (didHit && execAction == Action::OverrideVoxel) {
 		extract = placeCursor();
-	} else if (didHit && _action == Action::DeleteVoxel) {
+	} else if (didHit && execAction == Action::DeleteVoxel) {
 		extract = setVoxel(_cursorPos, voxel::Voxel());
-	} else if (_result.validPreviousVoxel && _action == Action::PlaceVoxel) {
+	} else if (_result.validPreviousVoxel && execAction == Action::PlaceVoxel) {
 		extract = placeCursor();
-	} else if (didHit && _action == Action::PlaceVoxel) {
+	} else if (didHit && execAction == Action::PlaceVoxel) {
 		extract = placeCursor();
 	}
 

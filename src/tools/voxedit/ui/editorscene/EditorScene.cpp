@@ -310,12 +310,7 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	bool& mouseDown = _controller._mouseDown;
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		mouseDown = true;
-		if (mdl.keyAction() != Action::None) {
-			setInternalAction(mdl.keyAction());
-		} else {
-			setInternalAction(mdl.uiAction());
-		}
-		mdl.executeAction(mouseDown, now);
+		mdl.executeAction(now);
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		mouseDown = false;
@@ -355,7 +350,9 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 		const bool middle = isMiddleMouseButtonPressed();
 		const bool alt = mdl.action() == Action::None && (ev.modifierkeys & tb::TB_ALT);
 		if (_controller.move(relative || middle || alt, ev.target_x, ev.target_y)) {
-			mdl.executeAction(mouseDown, now);
+			if (mouseDown) {
+				mdl.executeAction(now);
+			}
 		}
 		mdl.setMousePos(ev.target_x, ev.target_y);
 		return true;

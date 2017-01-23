@@ -100,6 +100,7 @@ public:
 	void renderSelection(const video::Camera& camera);
 
 	bool renderAxis() const;
+	Action evalAction() const;
 	Action action() const;
 	void setAction(Action action);
 	Action keyAction() const;
@@ -133,7 +134,7 @@ public:
 	bool trace(const video::Camera& camera);
 	void select(const glm::ivec3& pos);
 	void unselectAll();
-	void executeAction(bool mouseDown, long now);
+	void executeAction(long now);
 	void resetLastTrace();
 
 	void setSelectionType(SelectType type);
@@ -223,6 +224,13 @@ inline voxel::PickResult& Model::result() {
 
 inline bool Model::renderAxis() const {
 	return _renderAxis;
+}
+
+inline Action Model::evalAction() const {
+	if (action() != Action::None) {
+		return action();
+	}
+	return _uiAction;
 }
 
 inline Action Model::action() const {
