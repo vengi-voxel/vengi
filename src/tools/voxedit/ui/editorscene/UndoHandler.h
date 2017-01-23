@@ -33,10 +33,7 @@ inline bool UndoHandler::canUndo() const {
 }
 
 inline bool UndoHandler::canRedo() const {
-	if (_undoStates.empty()) {
-		return false;
-	}
-	return _undoPosition < _undoStates.size();
+	return _undoPosition < _undoStates.size() - 1;
 }
 
 }

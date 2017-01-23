@@ -56,6 +56,7 @@ private:
 	voxel::RawVolume* _cursorPositionVolume = nullptr;
 	voxel::RawVolume* _modelVolume = nullptr;
 
+	void markExtract();
 	void markUndo();
 	bool placeCursor();
 	bool actionRequiresExistingVoxel(Action action) const;

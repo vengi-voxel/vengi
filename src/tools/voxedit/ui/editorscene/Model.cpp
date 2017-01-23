@@ -83,6 +83,7 @@ bool Model::load(std::string_view file) {
 	Log::info("Loaded model file %s", file.data());
 	_undoHandler.clearUndoStates();
 	setNewVolume(newVolume);
+	markUndo();
 	return true;
 }
 
@@ -115,8 +116,8 @@ void Model::crop() {
 	if (newVolume == nullptr) {
 		return;
 	}
-	markUndo();
 	setNewVolume(newVolume);
+	markUndo();
 }
 
 void Model::extend(int size) {
@@ -124,8 +125,8 @@ void Model::extend(int size) {
 	if (newVolume == nullptr) {
 		return;
 	}
-	markUndo();
 	setNewVolume(newVolume);
+	markUndo();
 }
 
 void Model::scale() {
@@ -139,14 +140,14 @@ void Model::scale() {
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
 	voxel::RawVolumeWrapper wrapper(newVolume);
 	voxel::rescaleVolume(*_modelVolume, *newVolume);
-	markUndo();
 	setNewVolume(newVolume);
+	markUndo();
 }
 
 void Model::fill(int x, int y, int z) {
-	markUndo();
 	const bool overwrite = evalAction() == Action::OverrideVoxel;
 	voxedit::tool::fill(*_modelVolume, glm::ivec3(x, y, z), _lockedAxis, _shapeHandler.currentVoxel(), overwrite);
+	markUndo();
 }
 
 void Model::executeAction(long now) {
@@ -206,8 +207,11 @@ void Model::redo() {
 }
 
 bool Model::placeCursor() {
-	markUndo();
-	return _shapeHandler.placeCursor(_modelVolume, _cursorPositionVolume);
+	if (_shapeHandler.placeCursor(_modelVolume, _cursorPositionVolume)) {
+		markUndo();
+		return true;
+	}
+	return false;
 }
 
 void Model::resetLastTrace() {
@@ -233,7 +237,7 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	_lastPlacement = glm::ivec3(-1);
 	_result = voxel::PickResult();
 	const glm::ivec3& pos = _cursorPos;
-	_cursorPos = pos * 10;
+	_cursorPos = pos * 10 + 10;
 	setCursorPosition(pos);
 	resetLastTrace();
 }
@@ -245,14 +249,15 @@ bool Model::newVolume(bool force) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
 	_undoHandler.clearUndoStates();
 	setNewVolume(new voxel::RawVolume(region));
+	markUndo();
 	return true;
 }
 
 void Model::rotate(int angleX, int angleY, int angleZ) {
 	const voxel::RawVolume* model = modelVolume();
 	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), false);
-	markUndo();
 	setNewVolume(newVolume);
+	markUndo();
 }
 
 void Model::move(int x, int y, int z) {
@@ -260,8 +265,8 @@ void Model::move(int x, int y, int z) {
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->getRegion());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
 	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z), voxel::Voxel());
-	markUndo();
 	setNewVolume(newVolume);
+	markUndo();
 }
 
 const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
@@ -272,8 +277,8 @@ bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	if (getVoxel(pos) == voxel) {
 		return false;
 	}
-	markUndo();
 	const bool placed = _modelVolume->setVoxel(pos, voxel);
+	markUndo();
 	_lastPlacement = pos;
 	return placed;
 }
@@ -357,32 +362,36 @@ bool Model::extractVolume() {
 void Model::noise(int octaves, float frequency, float persistence) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
-	markUndo();
 	voxel::noise::generate(wrapper, octaves, frequency, persistence, random);
+	markUndo();
+	markExtract();
 }
 
 void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
-	markUndo();
 	voxel::lsystem::generate(wrapper, lsystemCtx, random);
+	markUndo();
+	markExtract();
 }
 
 void Model::world(const voxel::WorldContext& ctx) {
-	markUndo();
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(127, 63, 127));
 	setNewVolume(new voxel::RawVolume(region));
 	voxel::BiomeManager mgr;
 	mgr.init();
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
 	voxel::world::createWorld(ctx, wrapper, mgr, 1L, voxel::world::WORLDGEN_CLIENT, 0, 0);
+	markUndo();
+	markExtract();
 }
 
 void Model::createCactus() {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
-	markUndo();
 	voxel::cactus::createCactus(wrapper, _cursorPos, 18, 2, random);
+	markUndo();
+	markExtract();
 }
 
 void Model::createCloud() {
@@ -399,14 +408,14 @@ void Model::createCloud() {
 	cloudCtx.regionBorder = 2;
 	cloudCtx.randomPos = false;
 	cloudCtx.pos = _cursorPos;
-	markUndo();
 	voxel::cloud::createClouds(wrapper, hasClouds, cloudCtx, random);
+	markUndo();
+	markExtract();
 }
 
 void Model::createPlant(voxel::PlantType type) {
 	voxel::PlantGenerator g;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
-	markUndo();
 	if (type == voxel::PlantType::Flower) {
 		g.createFlower(5, _cursorPos, wrapper);
 	} else if (type == voxel::PlantType::Grass) {
@@ -415,21 +424,25 @@ void Model::createPlant(voxel::PlantType type) {
 		g.createMushroom(7, _cursorPos, wrapper);
 	}
 	g.shutdown();
+	markUndo();
+	markExtract();
 }
 
 void Model::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
-	markUndo();
 	voxel::building::createBuilding(wrapper, _cursorPos, type, random);
+	markUndo();
+	markExtract();
 }
 
 void Model::createTree(voxel::TreeContext ctx) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(_modelVolume);
 	ctx.pos = _cursorPos;
-	markUndo();
 	voxel::tree::createTree(wrapper, ctx, random);
+	markUndo();
+	markExtract();
 }
 
 void Model::setCursorPosition(glm::ivec3 pos, bool force) {
@@ -474,6 +487,10 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 		Log::error("Failed to crop cursor volume");
 	}
 
+	markExtract();
+}
+
+void Model::markExtract() {
 	voxel::RawVolume* volume = rawVolumeRenderer().volume();
 	volume->clear();
 	voxel::mergeRawVolumesSameDimension(volume, _cursorPositionVolume);
