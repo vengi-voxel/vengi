@@ -203,6 +203,7 @@ void Model::redo() {
 }
 
 bool Model::placeCursor() {
+	markUndo();
 	return _shapeHandler.placeCursor(_modelVolume, _cursorPositionVolume);
 }
 
