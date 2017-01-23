@@ -17,8 +17,9 @@ public:
 	OctreeNode* getChildNode(uint32_t childX, uint32_t childY, uint32_t childZ) const;
 	OctreeNode* getParentNode() const;
 
+	const Mesh* getWaterMesh();
 	const Mesh* getMesh();
-	void setMesh(const std::shared_ptr<Mesh>& mesh);
+	void setMesh(const std::shared_ptr<Mesh>& mesh, const std::shared_ptr<Mesh>& waterMesh);
 
 	bool isActive() const;
 	void setActive(bool active);
@@ -65,6 +66,7 @@ private:
 	bool _active = false;
 
 	std::shared_ptr<Mesh> _mesh;
+	std::shared_ptr<Mesh> _waterMesh;
 };
 
 }

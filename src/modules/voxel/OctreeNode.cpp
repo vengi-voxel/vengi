@@ -39,8 +39,13 @@ const Mesh* OctreeNode::getMesh() {
 	return _mesh.get();
 }
 
-void OctreeNode::setMesh(const std::shared_ptr<Mesh>& mesh) {
+const Mesh* OctreeNode::getWaterMesh() {
+	return _waterMesh.get();
+}
+
+void OctreeNode::setMesh(const std::shared_ptr<Mesh>& mesh, const std::shared_ptr<Mesh>& waterMesh) {
 	_mesh = mesh;
+	_waterMesh = waterMesh;
 	_meshLastChanged = core::App::getInstance()->timeProvider()->currentTime();
 }
 
@@ -83,7 +88,7 @@ bool OctreeNode::isSceduledForUpdate() const {
 }
 
 void OctreeNode::updateFromCompletedTask(SurfaceExtractionTask* completedTask) {
-	setMesh(completedTask->_mesh);
+	setMesh(completedTask->_mesh, completedTask->_meshWater);
 }
 
 }
