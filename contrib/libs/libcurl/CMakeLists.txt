@@ -1,4 +1,8 @@
-find_package(CURL)
+set(LIB_NAME libcurl)
+string(TOUPPER ${LIB_NAME} PREFIX)
+if (NOT ${PREFIX}_LOCAL)
+	find_package(CURL)
+endif()
 
 set(LIB_VAUTH_CFILES vauth/vauth.c vauth/cleartext.c vauth/cram.c         
   vauth/digest.c vauth/digest_sspi.c vauth/krb5_gssapi.c                
@@ -63,8 +67,6 @@ foreach(F ${LIB_HFILES} ${LIB_VAUTH_HFILES} ${LIB_VTLS_HFILES})
 	list(APPEND HHEADERS lib/${F})
 endforeach()
 
-set(LIB_NAME libcurl)
-
 if (NOT CURL_FOUND)
 	set(CURL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 	set(CURL_BINARY_DIR ${CMAKE_BINARY_DIR})
@@ -88,6 +90,7 @@ if (NOT CURL_FOUND)
 	include_directories(${CURL_BINARY_DIR})
 	include_directories(${CURL_BINARY_DIR}/curl)
 	include_directories(${CURL_SOURCE_DIR}/include)
+	include_directories(${CURL_SOURCE_DIR}/lib)
 
 	option(ENABLE_THREADED_RESOLVER "Set to ON to enable POSIX threaded DNS lookup" OFF)
 
