@@ -286,7 +286,7 @@ void Octree::determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewP
 	for (int iz = 0; iz < 2; iz++) {
 		for (int iy = 0; iy < 2; iy++) {
 			for (int ix = 0; ix < 2; ix++) {
-				uint16_t childIndex = octreeNode->_children[ix][iy][iz];
+				const uint16_t childIndex = octreeNode->_children[ix][iy][iz];
 				if (childIndex != InvalidNodeIndex) {
 					OctreeNode* childNode = _nodes[childIndex];
 					determineActiveNodes(childNode, viewPosition, lodThreshold);

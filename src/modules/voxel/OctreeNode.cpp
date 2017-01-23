@@ -24,9 +24,9 @@ OctreeNode::OctreeNode(const Region& region, uint16_t parent, Octree* octree) :
 }
 
 OctreeNode* OctreeNode::getChildNode(uint32_t childX, uint32_t childY, uint32_t childZ) const {
-	uint16_t childIndex = _children[childX][childY][childZ];
+	const uint16_t childIndex = _children[childX][childY][childZ];
 	if (childIndex != Octree::InvalidNodeIndex) {
-		OctreeNode* child = _octree->_nodes[_children[childX][childY][childZ]];
+		OctreeNode* child = _octree->_nodes[childIndex];
 		if (child->isActive()) {
 			return child;
 		}
