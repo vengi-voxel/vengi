@@ -710,10 +710,10 @@ void VoxEditWindow::OnProcess() {
 		_saveButton->SetState(tb::WIDGET_STATE_DISABLED, empty);
 	}
 	if (_undoButton != nullptr) {
-		_undoButton->SetState(tb::WIDGET_STATE_DISABLED, empty || !_scene->canUndo());
+		_undoButton->SetState(tb::WIDGET_STATE_DISABLED, !_scene->canUndo());
 	}
 	if (_redoButton != nullptr) {
-		_redoButton->SetState(tb::WIDGET_STATE_DISABLED, empty || !_scene->canRedo());
+		_redoButton->SetState(tb::WIDGET_STATE_DISABLED, !_scene->canRedo());
 	}
 	const glm::ivec3& pos = _scene->cursorPosition();
 	if (_lastCursorPos != pos) {
