@@ -146,7 +146,6 @@ void Model::scale() {
 void Model::fill(int x, int y, int z) {
 	markUndo();
 	const bool overwrite = evalAction() == Action::OverrideVoxel;
-	Log::info("Overwrite: %i", (int)overwrite);
 	voxedit::tool::fill(*_modelVolume, glm::ivec3(x, y, z), _lockedAxis, _shapeHandler.currentVoxel(), overwrite);
 }
 

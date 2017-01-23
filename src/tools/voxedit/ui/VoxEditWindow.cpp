@@ -737,7 +737,6 @@ void VoxEditWindow::OnProcess() {
 
 	if (_lockedDirty) {
 		_lockedDirty = false;
-		Log::info("_lockedDirty = true;");
 		const voxedit::Axis axis = _scene->lockedAxis();
 		if (_lockedX != nullptr) {
 			_lockedX->SetValue((axis & voxedit::Axis::X) != voxedit::Axis::None);
