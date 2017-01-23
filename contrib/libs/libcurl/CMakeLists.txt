@@ -85,7 +85,8 @@ if (NOT CURL_FOUND)
 	set(OPERATING_SYSTEM "${CMAKE_SYSTEM_NAME}")
 	set(OS "\"${CMAKE_SYSTEM_NAME}\"")
 
-	include_directories(${CURL_BINARY_DIR}/include/curl)
+	include_directories(${CURL_BINARY_DIR})
+	include_directories(${CURL_BINARY_DIR}/curl)
 	include_directories(${CURL_SOURCE_DIR}/include)
 
 	option(ENABLE_THREADED_RESOLVER "Set to ON to enable POSIX threaded DNS lookup" OFF)
@@ -677,10 +678,11 @@ if (NOT CURL_FOUND)
 		add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
 	endif(MSVC)
 
-	configure_file(${CURL_SOURCE_DIR}/include/curl/curlbuild.h.cmake ${CURL_BINARY_DIR}/include/curl/curlbuild.h)
-	configure_file(curl_config.h.cmake ${CURL_BINARY_DIR}/curl_config.h)
+	configure_file(${CURL_SOURCE_DIR}/include/curl/curlbuild.h.cmake ${CURL_BINARY_DIR}/curl/curlbuild.h)
+	configure_file(${CURL_SOURCE_DIR}/lib/curl_config.h.cmake ${CURL_BINARY_DIR}/curl_config.h)
+	message(STATUS "Generate curl config headers in ${CURL_BINARY_DIR}")
 
-	list(APPEND HHEADERS ${CURL_BINARY_DIR}/curl_config.h ${CURL_BINARY_DIR}/include/curl/curlbuild.h)
+	list(APPEND HHEADERS ${CURL_BINARY_DIR}/curl_config.h ${CURL_BINARY_DIR}/curl/curlbuild.h)
 
 	if(MSVC)
 		list(APPEND CSOURCES libcurl.rc)
@@ -695,12 +697,10 @@ engine_add_library(
 	SRCS ${HHEADERS} ${CSOURCES})
 
 if (NOT ${LIB_NAME}_FOUND)
-	target_include_directories(${LIB_NAME} PUBLIC ${CURL_BINARY_DIR}/../include)
-	target_include_directories(${LIB_NAME} PUBLIC ${CURL_SOURCE_DIR}/..)
-	target_include_directories(${LIB_NAME} PUBLIC ${CURL_SOURCE_DIR}/../include)
-	target_include_directories(${LIB_NAME} PUBLIC ${CURL_BINARY_DIR}/..)
-	target_include_directories(${LIB_NAME} PUBLIC ${CURL_SOURCE_DIR})
 	target_include_directories(${LIB_NAME} PUBLIC ${CURL_BINARY_DIR})
+	target_include_directories(${LIB_NAME} PUBLIC ${CURL_SOURCE_DIR}/include)
+	target_include_directories(${LIB_NAME} PUBLIC ${CURL_BINARY_DIR}/curl)
+	target_include_directories(${LIB_NAME} PUBLIC ${CURL_SOURCE_DIR})
 	target_link_libraries(${LIB_NAME} ${CURL_LIBS} zlib)
 
 	if(WIN32)
