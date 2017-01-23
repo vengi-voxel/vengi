@@ -110,7 +110,7 @@ bool RawVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxe
 	const int32_t iLocalYPos = uYPos - v3dLowerCorner.y;
 	const int32_t iLocalZPos = uZPos - v3dLowerCorner.z;
 	const int index = iLocalXPos + iLocalYPos * this->getWidth() + iLocalZPos * this->getWidth() * this->getHeight();
-	if (_data[index] == tValue) {
+	if (_data[index].isSame(tValue)) {
 		return false;
 	}
 	_data[index] = tValue;
