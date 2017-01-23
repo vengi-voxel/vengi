@@ -465,7 +465,8 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		new NoiseWindow(this, _scene);
 		return true;
 	} else if (isAny(ev, TBIDC("dialog_world"))) {
-		new WorldWindow(this, _scene);
+		const io::FilePtr& file = core::App::getInstance()->filesystem()->open("world.lua");
+		new WorldWindow(this, _scene, file);
 		return true;
 	} else if (isAny(ev, TBIDC("optionshowgrid"))) {
 		_scene->setRenderGrid(ev.target->GetValue() == 1);

@@ -13,6 +13,9 @@ WorldContext::WorldContext() :
 }
 
 bool WorldContext::load(const io::FilePtr& luaFile) {
+	if (luaFile.get() == nullptr) {
+		return false;
+	}
 	lua::LUA lua;
 	const std::string& luaString = luaFile->load();
 	if (luaString.empty()) {

@@ -513,16 +513,13 @@ bool Model::trace(const video::Camera& camera) {
 		static constexpr voxel::Voxel air;
 		_result = voxel::pickVoxel(modelVolume(), ray.origin, dirWithLength, air);
 
-		const bool prevVoxel = _result.validPreviousVoxel && (!_result.didHit || !actionRequiresExistingVoxel(action()));
-		const bool directVoxel = _result.didHit;
-		glm::ivec3 cursorPos;
-		if (prevVoxel) {
-			cursorPos = _result.previousVoxel;
-		} else if (directVoxel) {
-			cursorPos = _result.hitVoxel;
+		if (actionRequiresExistingVoxel(evalAction())) {
+			if (_result.didHit) {
+				setCursorPosition(_result.hitVoxel);
+			}
+		} else if (_result.validPreviousVoxel) {
+			setCursorPosition(_result.previousVoxel);
 		}
-
-		setCursorPosition(cursorPos);
 	}
 
 	extractVolume();
