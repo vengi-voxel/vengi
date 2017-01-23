@@ -110,6 +110,8 @@ private:
 	void movez();
 	void move(int x, int y, int z);
 	void crop();
+	// fill at cursor position
+	void fill();
 	void fill(int x, int y, int z);
 	void extend(int size = 1);
 	void scale();

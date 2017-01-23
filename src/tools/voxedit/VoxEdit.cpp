@@ -110,10 +110,14 @@ core::AppState VoxEdit::onConstruct() {
 
 	core::Command::registerCommand("fill", [this] (const core::CmdArgs& args) {
 		const int argc = args.size();
-		const int x = core::string::toInt(argc >= 1 ? args[0] : "");
-		const int y = core::string::toInt(argc >= 2 ? args[1] : "");
-		const int z = core::string::toInt(argc >= 3 ? args[2] : "");
-		this->_mainWindow->fill(x, y, z);
+		if (argc >= 3) {
+			const int x = core::string::toInt(args[0]);
+			const int y = core::string::toInt(args[1]);
+			const int z = core::string::toInt(args[2]);
+			this->_mainWindow->fill(x, y, z);
+		} else {
+			this->_mainWindow->fill();
+		}
 	}).setHelp("Fill with the current selected voxel");
 
 	core::Command::registerCommand("cursor", [this] (const core::CmdArgs& args) {

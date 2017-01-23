@@ -610,6 +610,11 @@ void VoxEditWindow::scale() {
 	_scene->scale();
 }
 
+void VoxEditWindow::fill() {
+	const glm::ivec3& pos = _scene->cursorPosition();
+	fill(pos.x, pos.y, pos.z);
+}
+
 void VoxEditWindow::fill(int x, int y, int z) {
 	_scene->fill(x, y, z);
 }
