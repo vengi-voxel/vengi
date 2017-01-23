@@ -62,6 +62,11 @@ bool VertexBuffer::bind() const {
 		}
 		video::bindBuffer(_targets[i], _handles[i]);
 	}
+	video::bindVertexArray(InvalidId);
+	for (uint32_t i = 0u; i < _handleIdx; ++i) {
+		video::unbindBuffer(_targets[i]);
+	}
+	video::bindVertexArray(_vao);
 	_dirtyAttributes = false;
 	return true;
 }
