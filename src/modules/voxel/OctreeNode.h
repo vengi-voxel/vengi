@@ -32,7 +32,9 @@ public:
 	void setRenderThisNode(bool render);
 
 	bool isMeshUpToDate() const;
-	// We are sceduled for an update if being sceduled was the most recent thing that happened.
+	/**
+	 * @brief We are scheduled for an update if being scheduled was the most recent thing that happened.
+	 */
 	bool isSceduledForUpdate() const;
 
 	void updateFromCompletedTask(SurfaceExtractionTask* completedTask);

@@ -69,17 +69,23 @@ public:
 		return _region;
 	}
 
-	// Note this adds a border rather than calling straight through.
+	/**
+	 * @note this adds a border rather than calling straight through.
+	 */
 	inline Voxel getVoxel(int32_t x, int32_t y, int32_t z) const {
 		return _volume->getVoxel(x, y, z);
 	}
 
-	// This one's a bit of a hack... direct access to underlying PolyVox volume
+	/**
+	 * @note This one's a bit of a hack... direct access to underlying PolyVox volume
+	 */
 	inline PagedVolume* _getPolyVoxOctreeVolume() const {
 		return _volume;
 	}
 
-	// Octree access
+	/**
+	 * @brief Octree access
+	 */
 	inline Octree& getOctree() {
 		return _octree;
 	}
@@ -88,7 +94,9 @@ public:
 		return _octree.getRootNode();
 	}
 
-	// Set voxel doesn't just pass straight through, it also validates the position and marks the voxel as modified.
+	/**
+	 * @brief Set voxel doesn't just pass straight through, it also validates the position and marks the voxel as modified.
+	 */
 	void setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& value, bool markAsModified) {
 		core_assert_msg(_region.containsPoint(x, y, z), "Attempted to write to a voxel which is outside of the volume");
 		_volume->setVoxel(x, y, z, value);
@@ -97,12 +105,16 @@ public:
 		}
 	}
 
-	// Marks a region as modified so it will be regenerated later.
+	/**
+	 * @brief Marks a region as modified so it will be regenerated later.
+	 */
 	inline void markAsModified(const Region& region) {
 		_octree.markDataAsModified(region, core::App::getInstance()->timeProvider()->currentTime());
 	}
 
-	// Should be called before rendering a frame to update the meshes and octree structure.
+	/**
+	 * @brief Should be called before rendering a frame to update the meshes and octree structure.
+	 */
 	inline void update(const glm::vec3& viewPosition, float lodThreshold) {
 		_octree.update(viewPosition, lodThreshold);
 	}

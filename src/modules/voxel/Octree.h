@@ -58,11 +58,16 @@ public:
 
 	void setLodRange(int32_t minimumLOD, int32_t maximumLOD);
 
-	// Note that the maximum LOD refers to the *most detailed* LOD, which is actually the *smallest* height
-	// in the octree (the greatest depth). If confused, think how texture mipmapping works, where the most
-	// detailed MIP is number zero. Level zero is the raw voxel data and successive levels downsample it.
+	/**
+	 * @note
+	 * Note that the maximum LOD refers to the *most detailed* LOD, which is actually the *smallest* height
+	 * in the octree (the greatest depth). If confused, think how texture mipmapping works, where the most
+	 * detailed MIP is number zero. Level zero is the raw voxel data and successive levels downsample it.
+	 */
 	int32_t _maximumLOD = 0;
-	 // Must be *more* than maximum
+	/**
+	 * @note Must be *more* than maximum
+	 */
 	int32_t _minimumLOD = 2;
 	class MainThreadTaskProcessor {
 	private:
@@ -133,8 +138,10 @@ private:
 
 	OctreeVolume* _volume;
 
-	// The extent of the octree may be significantly larger than the volume, but we only want to
-	// create nodes which actually overlap the volume (otherwise they are guaranteed to be empty).
+	/**
+	 * @brief The extent of the octree may be significantly larger than the volume, but we only want to
+	 * create nodes which actually overlap the volume (otherwise they are guaranteed to be empty).
+	 */
 	Region _regionToCover;
 };
 
