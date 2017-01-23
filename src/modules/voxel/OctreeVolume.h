@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "polyvox/Region.h"
@@ -11,6 +15,9 @@
 
 namespace voxel {
 
+/**
+ * @brief Octree wrapper around a PagedVolume
+ */
 class OctreeVolume {
 public:
 	class BackgroundTaskProcessor {
@@ -49,6 +56,11 @@ public:
 		std::list<std::thread> _threads;
 	};
 
+	/**
+	 * @param[in] volume The volume that this octree manages
+	 * @param[in] region The dimensions of the whole octree
+	 * @param[in] baseNodeSize The minimum size of the smallest octree node in this tree
+	 */
 	OctreeVolume(PagedVolume* volume, const Region& region, uint32_t baseNodeSize) :
 			_region(region), _volume(volume), _octree(this, baseNodeSize) {
 	}

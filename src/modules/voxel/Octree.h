@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "polyvox/Region.h"
@@ -18,6 +22,9 @@ class Octree {
 public:
 	static const uint16_t InvalidNodeIndex = 0xFFFF;
 
+	/**
+	 * @param[in] baseNodeSize The minimum size of the smallest octree node in this tree
+	 */
 	Octree(OctreeVolume* volume, unsigned int baseNodeSize);
 	~Octree();
 

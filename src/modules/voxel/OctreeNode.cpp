@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "OctreeNode.h"
 #include "Octree.h"
 #include "core/App.h"

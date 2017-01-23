@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "Octree.h"
 #include "OctreeNode.h"
 #include "OctreeVolume.h"
@@ -78,7 +82,7 @@ Octree::Octree(OctreeVolume* volume, unsigned int baseNodeSize) :
 			std::max(_regionToCover.getHeightInVoxels(), _regionToCover.getDepthInVoxels()));
 
 	const uint32_t octreeTargetSize = glm::ceilPowerOfTwo(largestVolumeDimension);
-	const uint8_t maxHeightOfTree = logBase2((octreeTargetSize) / _baseNodeSize) + 1;
+	const uint8_t maxHeightOfTree = logBase2(octreeTargetSize / _baseNodeSize) + 1;
 
 	const uint32_t regionToCoverWidth = _regionToCover.getWidthInVoxels();
 	const uint32_t regionToCoverHeight = _regionToCover.getHeightInVoxels();
