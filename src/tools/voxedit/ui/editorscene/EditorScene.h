@@ -37,6 +37,8 @@ public:
 	EditorScene();
 	~EditorScene();
 
+	void update();
+
 	video::Camera& camera();
 	void resetCamera();
 

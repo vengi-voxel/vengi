@@ -88,6 +88,7 @@ public:
 	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
 	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 	bool dirty() const;
+	bool needExtract() const;
 	bool empty() const;
 	int size() const;
 
@@ -280,6 +281,10 @@ inline bool Model::actionRequiresExistingVoxel(Action action) const {
 
 inline bool Model::dirty() const {
 	return _dirty;
+}
+
+inline bool Model::needExtract() const {
+	return _extract;
 }
 
 inline int Model::size() const {

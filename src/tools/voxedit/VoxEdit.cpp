@@ -210,6 +210,10 @@ core::AppState VoxEdit::onInit() {
 	return state;
 }
 
+void VoxEdit::update() {
+	_mainWindow->update();
+}
+
 core::AppState VoxEdit::onRunning() {
 	core::AppState state = Super::onRunning();
 	if (state == core::AppState::Cleanup) {
@@ -219,6 +223,7 @@ core::AppState VoxEdit::onRunning() {
 	if (current) {
 		centerMouseCursor();
 	}
+	update();
 	return state;
 }
 

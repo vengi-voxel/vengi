@@ -404,6 +404,9 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	_controller.init(mode);
 }
 
+void EditorScene::update() {
+}
+
 void EditorScene::OnProcess() {
 	Super::OnProcess();
 	if (!GetVisibilityCombined()) {

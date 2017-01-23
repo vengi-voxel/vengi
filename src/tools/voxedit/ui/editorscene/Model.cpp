@@ -229,11 +229,12 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	delete _rawVolumeSelectionRenderer.setVolume(new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(new voxel::RawVolume(region));
 
-	_empty = true;
-	_extract = true;
 	_dirty = false;
 	_lastPlacement = glm::ivec3(-1);
 	_result = voxel::PickResult();
+	const glm::ivec3& pos = _cursorPos;
+	_cursorPos = pos * 10;
+	setCursorPosition(pos);
 	resetLastTrace();
 }
 

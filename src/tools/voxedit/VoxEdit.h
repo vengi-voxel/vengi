@@ -17,6 +17,7 @@ private:
 	core::VarPtr _lastDirectory;
 	voxedit::VoxEditWindow* _mainWindow;
 	video::MeshPoolPtr _meshPool;
+	void update();
 
 public:
 	VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool);

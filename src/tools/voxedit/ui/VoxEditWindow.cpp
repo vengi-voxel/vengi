@@ -235,6 +235,10 @@ tb::TBGenericStringItem* VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<t
 	return item;
 }
 
+void VoxEditWindow::update() {
+	_scene->update();
+}
+
 void VoxEditWindow::setCursorPosition(int x, int y, int z) {
 	_scene->setCursorPosition(glm::ivec3(x, y, z), true);
 }

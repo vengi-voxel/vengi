@@ -136,6 +136,8 @@ public:
 	~VoxEditWindow();
 	bool init();
 
+	void update();
+
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 	void OnProcess() override;
 	void OnDie() override;
