@@ -507,8 +507,9 @@ core::AppState UIApp::onRunning() {
 			core_trace_scoped(UIAppEndPaint);
 			_renderer.EndPaint();
 			// If animations are running, reinvalidate immediately
-			if (tb::TBAnimationManager::HasAnimationsRunning())
+			if (tb::TBAnimationManager::HasAnimationsRunning()) {
 				_root.Invalidate();
+			}
 		}
 	}
 	return state;
