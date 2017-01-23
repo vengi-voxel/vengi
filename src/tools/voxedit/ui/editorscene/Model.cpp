@@ -303,9 +303,10 @@ void Model::onResize(const glm::ivec2& size) {
 }
 
 void Model::init() {
-	if (_initialized++ > 0) {
+	if (_initialized > 0) {
 		return;
 	}
+	++_initialized;
 	_rawVolumeRenderer.init();
 	_rawVolumeSelectionRenderer.init();
 }
