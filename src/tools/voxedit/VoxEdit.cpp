@@ -48,6 +48,10 @@ void VoxEdit::select(const glm::ivec3& pos) {
 	_mainWindow->select(pos);
 }
 
+void VoxEdit::selectCursor() {
+	_mainWindow->selectCursor();
+}
+
 bool VoxEdit::newFile(bool force) {
 	return _mainWindow->createNew(force);
 }
@@ -91,6 +95,10 @@ core::AppState VoxEdit::onConstruct() {
 		const int z = core::string::toInt(args[2]);
 		const glm::ivec3 pos(x, y, z);
 		select(pos);
+	}).setHelp("Select voxels from the given position");
+
+	core::Command::registerCommand("pick", [this] (const core::CmdArgs& args) {
+		selectCursor();
 	}).setHelp("Select voxels from the given position");
 
 	core::Command::registerCommand("togglerelativemousemode", [this] (const core::CmdArgs& args) {

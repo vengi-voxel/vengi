@@ -970,6 +970,11 @@ bool VoxEditWindow::load(std::string_view file) {
 	return false;
 }
 
+void VoxEditWindow::selectCursor() {
+	const glm::ivec3& pos = _scene->cursorPosition();
+	select(pos);
+}
+
 void VoxEditWindow::select(const glm::ivec3& pos) {
 	_scene->select(pos);
 }

@@ -128,6 +128,7 @@ private:
 	bool load(std::string_view file);
 	bool exportFile(std::string_view file);
 	bool createNew(bool force);
+	void selectCursor();
 	void select(const glm::ivec3& pos);
 
 public:
