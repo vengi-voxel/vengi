@@ -312,9 +312,14 @@ void Model::init() {
 }
 
 void Model::shutdown() {
-	if (--_initialized > 0) {
+	--_initialized;
+	if (_initialized > 0) {
+		return;
+	} else if (_initialized < 0) {
+		_initialized = 0;
 		return;
 	}
+	_initialized = 0;
 	delete _cursorPositionVolume;
 	_cursorPositionVolume = nullptr;
 	delete _cursorVolume;
