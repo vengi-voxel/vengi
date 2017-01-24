@@ -20,6 +20,9 @@
 #define COMMAND_CALL(command, call, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {call;}).setHelp(help)
 #define COMMAND_MAINWINDOW_EVENT(command, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);event.ref_id = TBIDC(command);_mainWindow->InvokeEvent(event);}).setHelp(help)
 
+// TODO: extract meshes in max 32x32x32 boundaries - RawVolumeRenderer maybe?
+//       allows us to only reextract the chunk that was modified, not always the whole volume. Also see
+//       the cursor handling todo issue - if both are fixed we should get an acceptable performance
 // TODO: voxelizer via assimp
 // TODO: extrude
 // TODO: render locked axis as plane
