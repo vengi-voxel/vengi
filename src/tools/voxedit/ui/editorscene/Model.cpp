@@ -39,6 +39,7 @@ bool Model::importHeightmap(const std::string& file) {
 	if (!img->isLoaded()) {
 		return false;
 	}
+	markUndo();
 	voxedit::importHeightmap(*v, img);
 	return true;
 }
