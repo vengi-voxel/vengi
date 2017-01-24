@@ -97,6 +97,7 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addMenuItem(_fileItems, "Load");
 	addMenuItem(_fileItems, "Save");
 	addMenuItem(_fileItems, "Export");
+	addMenuItem(_fileItems, "Heightmap");
 	addMenuItem(_fileItems, "Quit");
 
 	addMenuItem(_plantItems, "Cactus", "cactus");
@@ -424,6 +425,9 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (isAny(ev, TBIDC("export"))) {
 		exportFile("");
+		return true;
+	} else if (isAny(ev, TBIDC("heightmap"))) {
+		importHeightmp("");
 		return true;
 	} else if (isAny(ev, TBIDC("save"))) {
 		save("");
