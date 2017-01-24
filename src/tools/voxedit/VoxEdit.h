@@ -22,10 +22,11 @@ private:
 public:
 	VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool);
 
-	bool saveFile(std::string_view file);
-	bool loadFile(std::string_view file);
-	bool voxelizeFile(std::string_view file);
-	bool exportFile(std::string_view file);
+	bool importheightmapFile(const std::string& file);
+	bool saveFile(const std::string& file);
+	bool loadFile(const std::string& file);
+	bool voxelizeFile(const std::string& file);
+	bool exportFile(const std::string& file);
 	bool newFile(bool force = false);
 	void selectCursor();
 	void select(const glm::ivec3& pos);

@@ -18,6 +18,7 @@
 #include "tool/Expand.h"
 #include "core/Random.h"
 #include "tool/Fill.h"
+#include "ImportHeightmap.h"
 
 namespace voxedit {
 
@@ -29,7 +30,20 @@ Model::~Model() {
 	shutdown();
 }
 
-bool Model::save(std::string_view file) {
+bool Model::importHeightmap(const std::string& file) {
+	voxel::RawVolume* v = modelVolume();
+	if (v == nullptr) {
+		return false;
+	}
+	const image::ImagePtr& img = image::loadImage(file, false);
+	if (!img->isLoaded()) {
+		return false;
+	}
+	voxedit::importHeightmap(*v, img);
+	return true;
+}
+
+bool Model::save(const std::string& file) {
 	if (modelVolume() == nullptr) {
 		return false;
 	}
@@ -56,8 +70,8 @@ bool Model::save(std::string_view file) {
 	return false;
 }
 
-bool Model::load(std::string_view file) {
-	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file));
+bool Model::load(const std::string& file) {
+	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(file);
 	if (!(bool)filePtr) {
 		Log::error("Failed to open model file %s", file.data());
 		return false;
@@ -77,10 +91,10 @@ bool Model::load(std::string_view file) {
 		newVolume = nullptr;
 	}
 	if (newVolume == nullptr) {
-		Log::error("Failed to load model file %s", file.data());
+		Log::error("Failed to load model file %s", file.c_str());
 		return false;
 	}
-	Log::info("Loaded model file %s", file.data());
+	Log::info("Loaded model file %s", file.c_str());
 	_undoHandler.clearUndoStates();
 	setNewVolume(newVolume);
 	markUndo();

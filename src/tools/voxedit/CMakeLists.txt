@@ -4,6 +4,7 @@ set(SRCS
 	ui/editorscene/Model.h ui/editorscene/Model.cpp
 	ui/editorscene/Controller.h ui/editorscene/Controller.cpp
 	ui/editorscene/Action.h
+	ui/editorscene/ImportHeightmap.h ui/editorscene/ImportHeightmap.cpp
 	ui/editorscene/Shape.h
 	ui/editorscene/SelectionHandler.h
 	ui/editorscene/ShapeHandler.h ui/editorscene/ShapeHandler.cpp

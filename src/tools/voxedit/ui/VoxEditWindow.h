@@ -123,10 +123,11 @@ private:
 	void rotatemode();
 	void togglelockaxis();
 	void unselectall();
-	bool voxelize(std::string_view file);
-	bool save(std::string_view file);
-	bool load(std::string_view file);
-	bool exportFile(std::string_view file);
+	bool voxelize(const std::string& file);
+	bool importHeightmp(const std::string& file);
+	bool save(const std::string& file);
+	bool load(const std::string& file);
+	bool exportFile(const std::string& file);
 	bool createNew(bool force);
 	void selectCursor();
 	void select(const glm::ivec3& pos);

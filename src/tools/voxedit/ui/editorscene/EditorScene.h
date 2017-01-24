@@ -45,9 +45,10 @@ public:
 	bool isDirty() const;
 	bool isEmpty() const;
 	bool voxelizeModel(const video::MeshPtr& mesh);
-	bool saveModel(std::string_view file);
-	bool loadModel(std::string_view file);
-	bool exportModel(std::string_view file);
+	bool importHeightmap(const std::string& file);
+	bool saveModel(const std::string& file);
+	bool loadModel(const std::string& file);
+	bool exportModel(const std::string& file);
 	bool newModel(bool force);
 
 	void rotate(int angleX, int angleY, int angleZ);

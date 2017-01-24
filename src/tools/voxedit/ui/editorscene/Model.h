@@ -81,8 +81,9 @@ public:
 	void scale();
 	void fill(int x, int y, int z);
 
-	bool save(std::string_view file);
-	bool load(std::string_view file);
+	bool importHeightmap(const std::string& file);
+	bool save(const std::string& file);
+	bool load(const std::string& file);
 
 	bool newVolume(bool force);
 

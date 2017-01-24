@@ -114,7 +114,12 @@ bool EditorScene::newModel(bool force) {
 	return m().newVolume(force);
 }
 
-bool EditorScene::saveModel(std::string_view file) {
+bool EditorScene::importHeightmap(const std::string& file) {
+	core_trace_scoped(EditorSceneImportHeightmap);
+	return m().importHeightmap(file);
+}
+
+bool EditorScene::saveModel(const std::string& file) {
 	core_trace_scoped(EditorSceneSaveModel);
 	return m().save(file);
 }
@@ -201,7 +206,7 @@ bool EditorScene::canRedo() const {
 	return m().undoHandler().canRedo();
 }
 
-bool EditorScene::exportModel(std::string_view file) {
+bool EditorScene::exportModel(const std::string& file) {
 	core_trace_scoped(EditorSceneExportModel);
 	const io::FilePtr& filePtr = core::App::getInstance()->filesystem()->open(std::string(file), io::FileMode::Write);
 	if (!(bool)filePtr) {
@@ -210,7 +215,7 @@ bool EditorScene::exportModel(std::string_view file) {
 	return voxel::exportMesh(m().rawVolumeRenderer().mesh(), filePtr->name().c_str());
 }
 
-bool EditorScene::loadModel(std::string_view file) {
+bool EditorScene::loadModel(const std::string& file) {
 	core_trace_scoped(EditorSceneLoadModel);
 	if (!m().load(file)) {
 		return false;

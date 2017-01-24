@@ -874,56 +874,71 @@ void VoxEditWindow::quit() {
 	Close();
 }
 
-bool VoxEditWindow::save(std::string_view file) {
+bool VoxEditWindow::importHeightmp(const std::string& file) {
+	std::string f;
 	if (file.empty()) {
-		const std::string& f = _voxedit->saveDialog("vox,qbt,qb");
+		f = _voxedit->openDialog("png");
 		if (f.empty()) {
 			return false;
 		}
-		if (!_scene->saveModel(f)) {
-			Log::warn("Failed to save the model");
-			return false;
-		}
-		Log::info("Saved the model to %s", f.data());
-		return true;
+	} else {
+		f = file;
 	}
 
-	if (!_scene->saveModel(file)) {
-		Log::warn("Failed to save the model");
+	if (!_scene->importHeightmap(f)) {
 		return false;
 	}
-	Log::info("Saved the model to %s", file.data());
 	return true;
 }
 
-bool VoxEditWindow::voxelize(std::string_view file) {
+bool VoxEditWindow::save(const std::string& file) {
+	std::string f;
+	if (file.empty()) {
+		f = _voxedit->saveDialog("vox,qbt,qb");
+		if (f.empty()) {
+			return false;
+		}
+	} else {
+		f = file;
+	}
+
+	if (!_scene->saveModel(f)) {
+		Log::warn("Failed to save the model");
+		return false;
+	}
+	Log::info("Saved the model to %s", f.c_str());
+	return true;
+}
+
+bool VoxEditWindow::voxelize(const std::string& file) {
 	std::string f;
 	if (file.empty()) {
 		f = _voxedit->openDialog(_importFilter);
 		if (f.empty()) {
 			return false;
 		}
-		file = f;
+	} else {
+		f = file;
 	}
-
 	if (!_scene->isDirty()) {
-		const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(file, false);
+		const video::MeshPtr& mesh = _voxedit->meshPool()->getMesh(f, false);
 		return _scene->voxelizeModel(mesh);
 	}
 
-	_voxelizeFile = std::string(file);
+	_voxelizeFile = f;
 	popup("Unsaved Modifications",
 			"There are unsaved modifications.\nDo you wish to discard them and start the voxelize process?",
 			ui::Window::PopupType::YesNo, "unsaved_changes_voxelize");
 	return false;
 }
 
-bool VoxEditWindow::exportFile(std::string_view file) {
+bool VoxEditWindow::exportFile(const std::string& file) {
+	if (_scene->isEmpty()) {
+		return false;
+	}
+
 	std::string f;
 	if (file.empty()) {
-		if (_scene->isEmpty()) {
-			return false;
-		}
 		if (_exportFilter.empty()) {
 			return false;
 		}
@@ -931,9 +946,10 @@ bool VoxEditWindow::exportFile(std::string_view file) {
 		if (f.empty()) {
 			return false;
 		}
-		file = f;
+	} else {
+		f = file;
 	}
-	return _scene->exportModel(file);
+	return _scene->exportModel(f);
 }
 
 void VoxEditWindow::resetcamera() {
@@ -949,25 +965,26 @@ void VoxEditWindow::resetcamera() {
 	}
 }
 
-bool VoxEditWindow::load(std::string_view file) {
+bool VoxEditWindow::load(const std::string& file) {
 	std::string f;
 	if (file.empty()) {
 		f = _voxedit->openDialog("vox,qbt,qb");
 		if (f.empty()) {
 			return false;
 		}
-		file = f;
+	} else {
+		f = file;
 	}
 
 	if (!_scene->isDirty()) {
-		if (_scene->loadModel(file)) {
+		if (_scene->loadModel(f)) {
 			resetcamera();
 			return true;
 		}
 		return false;
 	}
 
-	_loadFile = std::string(file);
+	_loadFile = f;
 	popup("Unsaved Modifications",
 			"There are unsaved modifications.\nDo you wish to discard them and load?",
 			ui::Window::PopupType::YesNo, "unsaved_changes_load");

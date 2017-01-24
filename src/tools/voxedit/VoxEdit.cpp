@@ -12,9 +12,9 @@
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \
 	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
-		std::string_view file = args.empty() ? "" : args[0]; \
+		const std::string file = args.empty() ? "" : args[0]; \
 		if (!command##File(file)) { \
-			Log::error("Failed to " #command " to file %s", file.data()); \
+			Log::error("Failed to " #command " to file %s", file.c_str()); \
 		} \
 	}).setArgumentCompleter(fileCompleter).setHelp(help)
 #define COMMAND_CALL(command, call, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {call;}).setHelp(help)
@@ -33,15 +33,19 @@ VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& e
 	init(ORGANISATION, "voxedit");
 }
 
-bool VoxEdit::saveFile(std::string_view file) {
+bool VoxEdit::importheightmapFile(const std::string& file) {
+	return _mainWindow->importHeightmp(std::string(file));
+}
+
+bool VoxEdit::saveFile(const std::string& file) {
 	return _mainWindow->save(file);
 }
 
-bool VoxEdit::loadFile(std::string_view file) {
+bool VoxEdit::loadFile(const std::string& file) {
 	return _mainWindow->load(file);
 }
 
-bool VoxEdit::voxelizeFile(std::string_view file) {
+bool VoxEdit::voxelizeFile(const std::string& file) {
 	return _mainWindow->voxelize(file);
 }
 
@@ -57,7 +61,7 @@ bool VoxEdit::newFile(bool force) {
 	return _mainWindow->createNew(force);
 }
 
-bool VoxEdit::exportFile(std::string_view file) {
+bool VoxEdit::exportFile(const std::string& file) {
 	return _mainWindow->exportFile(file);
 }
 
@@ -146,6 +150,7 @@ core::AppState VoxEdit::onConstruct() {
 
 	COMMAND_CALL("new", newFile(), "Create a new scene");
 
+	COMMAND_FILE(importheightmap, "Import a heightmap into the volume");
 	COMMAND_FILE(save, "Save the current state to the given file");
 	COMMAND_FILE(export, "Export the current state to the given file");
 	COMMAND_FILE(load, "Load a scene from the given file");
