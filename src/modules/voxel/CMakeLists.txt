@@ -66,6 +66,7 @@ gtest_suite_files(tests
 	tests/PickingTest.cpp
 	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
+	tests/OctreeTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
