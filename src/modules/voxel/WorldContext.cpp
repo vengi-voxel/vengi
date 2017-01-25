@@ -12,19 +12,10 @@ WorldContext::WorldContext() :
 	mountainNoiseOctaves(2), mountainNoisePersistence(0.3f), mountainNoiseFrequency(0.00075f), mountainNoiseAmplitude(0.5f) {
 }
 
-bool WorldContext::load(const io::FilePtr& luaFile) {
-	if (luaFile.get() == nullptr) {
-		return false;
-	}
+bool WorldContext::load(const std::string& luaString) {
 	lua::LUA lua;
-	const std::string& luaString = luaFile->load();
-	if (luaString.empty()) {
-		Log::error("Could not load lua script file: %s", luaFile->fileName().c_str());
-		return false;
-	}
 	if (!lua.load(luaString)) {
-		Log::error("Could not load lua script: %s. Failed with error: %s",
-				luaFile->fileName().c_str(), lua.error().c_str());
+		Log::error("Could not load lua script. Failed with error: %s", lua.error().c_str());
 		return false;
 	}
 

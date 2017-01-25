@@ -65,8 +65,8 @@ TEST_F(BiomeManagerTest, testHumidityTemperature) {
 
 TEST_F(BiomeManagerTest, testLoadLUA) {
 	BiomeManager mgr;
-	const io::FilePtr& file = _testApp->filesystem()->open("biomes.lua");
-	ASSERT_TRUE(mgr.init(file));
+	const io::FilesystemPtr& filesystem = _testApp->filesystem();
+	ASSERT_TRUE(mgr.init(filesystem->load("biomes.lua")));
 }
 
 }

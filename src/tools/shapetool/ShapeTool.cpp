@@ -66,7 +66,7 @@ core::AppState ShapeTool::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!_world->init(filesystem()->open("world.lua"), filesystem()->open("biomes.lua"))) {
+	if (!_world->init(filesystem()->load("world.lua"), filesystem()->load("biomes.lua"))) {
 		return core::AppState::Cleanup;
 	}
 

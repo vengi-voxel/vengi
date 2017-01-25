@@ -19,7 +19,7 @@ BiomeManager::BiomeManager() {
 BiomeManager::~BiomeManager() {
 }
 
-bool BiomeManager::init(const io::FilePtr& luaFile) {
+bool BiomeManager::init(const std::string& luaString) {
 	luaL_Reg luaAddBiome = { "addBiome", [] (lua_State* l) -> int {
 		BiomeManager* biomeMgr = lua::LUA::globalData<BiomeManager>(l, "MGR");
 		const int lower = luaL_checkinteger(l, 1);
@@ -49,19 +49,12 @@ bool BiomeManager::init(const io::FilePtr& luaFile) {
 	funcs.push_back({ nullptr, nullptr });
 	lua.newGlobalData<BiomeManager>("MGR", this);
 	lua.reg("BiomeManager", &funcs.front());
-	const std::string& luaString = luaFile->load();
-	if (luaString.empty()) {
-		Log::error("Could not load lua script file: %s", luaFile->fileName().c_str());
-		return false;
-	}
 	if (!lua.load(luaString)) {
-		Log::error("Could not load lua script: %s. Failed with error: %s",
-				luaFile->fileName().c_str(), lua.error().c_str());
+		Log::error("Could not load lua script. Failed with error: %s", lua.error().c_str());
 		return false;
 	}
 	if (!lua.execute("initBiomes")) {
-		Log::error("Could not execute lua script file: %s. Failed with error: %s",
-				luaFile->fileName().c_str(), lua.error().c_str());
+		Log::error("Could not execute lua script. Failed with error: %s", lua.error().c_str());
 		return false;
 	}
 

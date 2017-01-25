@@ -27,12 +27,12 @@ static const ui::Window::Field WORLDFIELDS[] = {
 	{FLOAT_FIELD("cavedensitythreshold", WORLDCTX, caveDensityThreshold)}
 };
 
-WorldWindow::WorldWindow(ui::Window* window, EditorScene* scene, const io::FilePtr& luaFile) :
+WorldWindow::WorldWindow(ui::Window* window, EditorScene* scene, const std::string& luaString) :
 			ui::Window(window), _scene(scene) {
 	core_assert_always(loadResourceFile("ui/window/voxedit-world.tb.txt"));
 	SetSettings(tb::WINDOW_SETTINGS_TITLEBAR);
 	SetOpacity(0.8f);
-	if (!_ctx.load(luaFile)) {
+	if (!_ctx.load(luaString)) {
 		Log::warn("Could not load the world context from the lua file");
 	}
 	fillWidgets(WORLDFIELDS, SDL_arraysize(WORLDFIELDS), &_ctx);

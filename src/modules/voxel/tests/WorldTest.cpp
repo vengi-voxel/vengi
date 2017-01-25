@@ -17,7 +17,8 @@ protected:
 	void extract(int expected) {
 		World world;
 		core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
-		ASSERT_TRUE(world.init(_testApp->filesystem()->open("world.lua"), _testApp->filesystem()->open("biomes.lua")));
+		const io::FilesystemPtr& filesystem = _testApp->filesystem();
+		ASSERT_TRUE(world.init(filesystem->load("world.lua"), filesystem->load("biomes.lua")));
 		world.setSeed(0);
 		world.setPersist(false);
 		for (int i = 0; i < expected; ++i) {
@@ -92,7 +93,8 @@ TEST_F(WorldTest, testExtractionSingle) {
 TEST_F(WorldTest, testChunkAndmeshPos) {
 	World world;
 	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
-	ASSERT_TRUE(world.init(_testApp->filesystem()->open("world.lua"), _testApp->filesystem()->open("biomes.lua")));
+	const io::FilesystemPtr& filesystem = _testApp->filesystem();
+	ASSERT_TRUE(world.init(filesystem->load("world.lua"), filesystem->load("biomes.lua")));
 	const int chunkSize = world.getChunkSize();
 	//const int halfChunkSize = chunkSize / 2;
 	const int meshSize = world.getMeshSize();

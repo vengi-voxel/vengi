@@ -84,7 +84,7 @@ public:
 		return result == RaycastResults::Interupted;
 	}
 
-	bool init(const io::FilePtr& luaFile, const io::FilePtr& luaBiomesFile);
+	bool init(const std::string& luaParameters, const std::string& luaBiomes);
 	void shutdown();
 	void reset();
 	bool isReset() const;

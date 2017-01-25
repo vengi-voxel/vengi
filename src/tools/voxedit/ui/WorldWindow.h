@@ -17,7 +17,7 @@ private:
 	EditorScene* _scene;
 	voxel::WorldContext _ctx;
 public:
-	WorldWindow(ui::Window* window, EditorScene* scene, const io::FilePtr& luaFile);
+	WorldWindow(ui::Window* window, EditorScene* scene, const std::string& luaString);
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };

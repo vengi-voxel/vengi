@@ -10,7 +10,7 @@ namespace voxel {
 
 struct WorldContext {
 	WorldContext();
-	bool load(const io::FilePtr& luaFile);
+	bool load(const std::string& lua);
 
 	int landscapeNoiseOctaves;
 	float landscapeNoisePersistence;

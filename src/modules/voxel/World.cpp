@@ -181,11 +181,11 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 	return true;
 }
 
-bool World::init(const io::FilePtr& luaParameterFile, const io::FilePtr& luaBiomesFile) {
-	if (!_biomeManager.init(luaBiomesFile)) {
+bool World::init(const std::string& luaParameters, const std::string& luaBiomes) {
+	if (!_biomeManager.init(luaBiomes)) {
 		return false;
 	}
-	if (!_ctx.load(luaParameterFile)) {
+	if (!_ctx.load(luaParameters)) {
 		return false;
 	}
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
