@@ -38,10 +38,12 @@ private:
 
 	Axis _lockedAxis = Axis::None;
 
-	bool _dirty = false;
-	bool _extract = false;
 	bool _empty = true;
-	bool _selectionExtract = false;
+	bool _dirty = false;
+
+	bool _extract = false;
+	bool _extractCursor = false;
+	bool _extractSelection = false;
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
 	long _lastActionExecution = 0l;
@@ -54,6 +56,7 @@ private:
 	voxel::RawVolume* _cursorVolume = nullptr;
 
 	void markExtract();
+	void markCursorExtract();
 	void markUndo();
 	bool placeCursor();
 	bool actionRequiresExistingVoxel(Action action) const;
@@ -130,6 +133,7 @@ public:
 	void world(const voxel::WorldContext& ctx);
 
 	bool extractVolume();
+	bool extractCursorVolume();
 	bool extractSelectionVolume();
 
 	void setMousePos(int x, int y);

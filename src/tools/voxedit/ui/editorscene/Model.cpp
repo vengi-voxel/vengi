@@ -104,13 +104,13 @@ bool Model::load(const std::string& file) {
 
 void Model::select(const glm::ivec3& pos) {
 	voxel::RawVolume* selectionVolume = _rawVolumeSelectionRenderer.volume();
-	_selectionExtract |= _selectionHandler.select(modelVolume(), selectionVolume, pos);
+	_extractSelection |= _selectionHandler.select(modelVolume(), selectionVolume, pos);
 }
 
 void Model::unselectAll() {
 	_selectionHandler.unselectAll();
 	_rawVolumeSelectionRenderer.volume()->clear();
-	_selectionExtract = true;
+	_extractSelection = true;
 }
 
 void Model::setMousePos(int x, int y) {
@@ -201,7 +201,7 @@ void Model::executeAction(long now) {
 		return;
 	}
 	resetLastTrace();
-	_extract = true;
+	markExtract();
 	_dirty = true;
 }
 
@@ -362,8 +362,8 @@ void Model::shutdown() {
 }
 
 bool Model::extractSelectionVolume() {
-	if (_selectionExtract) {
-		_selectionExtract = false;
+	if (_extractSelection) {
+		_extractSelection = false;
 		_rawVolumeSelectionRenderer.extractAll();
 		return true;
 	}
@@ -373,7 +373,16 @@ bool Model::extractSelectionVolume() {
 bool Model::extractVolume() {
 	if (_extract) {
 		_extract = false;
-		_rawVolumeRenderer.extractAll();
+		_rawVolumeRenderer.extract(0);
+		return true;
+	}
+	return false;
+}
+
+bool Model::extractCursorVolume() {
+	if (_extractCursor) {
+		_extractCursor = false;
+		_rawVolumeRenderer.extract(1);
 		return true;
 	}
 	return false;
@@ -507,7 +516,11 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 		Log::error("Failed to crop cursor volume");
 	}
 
-	markExtract();
+	markCursorExtract();
+}
+
+void Model::markCursorExtract() {
+	_extractCursor = true;
 }
 
 void Model::markExtract() {
@@ -539,6 +552,7 @@ bool Model::trace(const video::Camera& camera) {
 	}
 
 	extractVolume();
+	extractCursorVolume();
 	extractSelectionVolume();
 
 	return true;
