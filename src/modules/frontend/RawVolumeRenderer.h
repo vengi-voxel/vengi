@@ -71,7 +71,7 @@ public:
 	 * @sa update()
 	 */
 	void extractAll();
-	bool extract(int i = 0);
+	bool extract(int i);
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer
