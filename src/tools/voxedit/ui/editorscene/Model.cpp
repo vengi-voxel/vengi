@@ -496,12 +496,13 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	}
 	_cursorPos = pos;
 
-	cursorPositionVolume()->clear();
+	voxel::RawVolume* cursorPosVolume = cursorPositionVolume();
+	cursorPosVolume->clear();
 	static constexpr voxel::Voxel air;
 	const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume));
 	if (cropped) {
 		const voxel::Region& srcRegion = cropped->getRegion();
-		const voxel::Region& destRegion = cursorPositionVolume()->getRegion();
+		const voxel::Region& destRegion = cursorPosVolume->getRegion();
 		const glm::ivec3& lower = destRegion.getLowerCorner() + _cursorPos - srcRegion.getCentre();
 		if (destRegion.containsPoint(lower)) {
 			const glm::ivec3& regionUpperCorner = destRegion.getUpperCorner();
@@ -509,7 +510,7 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 			if (!destRegion.containsPoint(upper)) {
 				upper = regionUpperCorner;
 			}
-			voxel::RawVolumeWrapper wrapper(cursorPositionVolume());
+			voxel::RawVolumeWrapper wrapper(cursorPosVolume);
 			voxel::mergeRawVolumes(&wrapper, cropped.get(), voxel::Region(lower, upper), srcRegion);
 		}
 	} else {
