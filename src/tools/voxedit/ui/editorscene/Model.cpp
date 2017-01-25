@@ -238,7 +238,7 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 
 	delete _cursorVolume;
 	_cursorVolume = new voxel::RawVolume(region);
-	setCursorShape(Shape::Single);
+	setCursorShape(_shapeHandler.cursorShape());
 
 	delete _rawVolumeSelectionRenderer.setVolume(0, new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(0, volume);
