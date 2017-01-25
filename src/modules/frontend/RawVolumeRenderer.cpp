@@ -48,15 +48,15 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	for (int i = 0; i < MAX_VOLUMES; ++i) {
-		_vertexBufferIndex[i] = _vertexBuffer[i].create();
-		if (_vertexBufferIndex[i] == -1) {
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		_vertexBufferIndex[idx] = _vertexBuffer[idx].create();
+		if (_vertexBufferIndex[idx] == -1) {
 			Log::error("Could not create the vertex buffer object");
 			return false;
 		}
 
-		_indexBufferIndex[i] = _vertexBuffer[i].create(nullptr, 0, video::VertexBufferType::IndexBuffer);
-		if (_indexBufferIndex[i] == -1) {
+		_indexBufferIndex[idx] = _vertexBuffer[idx].create(nullptr, 0, video::VertexBufferType::IndexBuffer);
+		if (_indexBufferIndex[idx] == -1) {
 			Log::error("Could not create the vertex buffer object for the indices");
 			return false;
 		}
@@ -89,16 +89,16 @@ bool RawVolumeRenderer::init() {
 	_worldShader.setAmbientColor(_ambientColor);
 	_worldShader.setFogcolor(core::Color::LightBlue);
 
-	for (int i = 0; i < MAX_VOLUMES; ++i) {
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		video::Attribute attributePos = getPositionVertexAttribute(
-				_vertexBufferIndex[i], _worldShader.getLocationPos(),
+				_vertexBufferIndex[idx], _worldShader.getLocationPos(),
 				_worldShader.getComponentsPos());
-		_vertexBuffer[i].addAttribute(attributePos);
+		_vertexBuffer[idx].addAttribute(attributePos);
 
 		video::Attribute attributeInfo = getInfoVertexAttribute(
-				_vertexBufferIndex[i], _worldShader.getLocationInfo(),
+				_vertexBufferIndex[idx], _worldShader.getLocationInfo(),
 				_worldShader.getComponentsInfo());
-		_vertexBuffer[i].addAttribute(attributeInfo);
+		_vertexBuffer[idx].addAttribute(attributeInfo);
 	}
 
 	if (!_shadow.init()) {
@@ -107,8 +107,8 @@ bool RawVolumeRenderer::init() {
 
 	_whiteTexture = video::createWhiteTexture("**whitetexture**");
 
-	for (int i = 0; i < MAX_VOLUMES; ++i) {
-		_mesh[i] = new voxel::Mesh(128, 128, true);
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		_mesh[idx] = new voxel::Mesh(128, 128, true);
 	}
 
 	return true;
@@ -120,7 +120,7 @@ bool RawVolumeRenderer::onResize(const glm::ivec2& position, const glm::ivec2& d
 }
 
 bool RawVolumeRenderer::update(int idx, const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices) {
-	if (idx < 0 || idx > MAX_VOLUMES) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
 	core_trace_scoped(RawVolumeRendererUpdate);
@@ -135,27 +135,31 @@ bool RawVolumeRenderer::update(int idx, const std::vector<voxel::VoxelVertex>& v
 	return true;
 }
 
-bool RawVolumeRenderer::extract() {
+void RawVolumeRenderer::extractAll() {
 	core_trace_scoped(RawVolumeRendererExtract);
-	for (int i = 0; i < MAX_VOLUMES; ++i) {
-		if (_rawVolume[i] == nullptr) {
-			continue;
-		}
-
-		if (_mesh[i] == nullptr) {
-			continue;
-		}
-		voxel::Region r = _rawVolume[i]->getRegion();
-		r.shiftUpperCorner(1, 1, 1);
-		voxel::extractCubicMesh(_rawVolume[i], r, _mesh[i], CustomIsQuadNeeded());
-		const size_t meshNumberIndices = _mesh[i]->getNoOfIndices();
-		if (meshNumberIndices == 0) {
-			_vertexBuffer[i].update(_vertexBufferIndex[i], nullptr, 0);
-			_vertexBuffer[i].update(_indexBufferIndex[i], nullptr, 0);
-			continue;
-		}
-		update(i, _mesh[i]->getVertexVector(), _mesh[i]->getIndexVector());
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		extract(idx);
 	}
+}
+
+bool RawVolumeRenderer::extract(int idx) {
+	if (_rawVolume[idx] == nullptr) {
+		return false;
+	}
+
+	if (_mesh[idx] == nullptr) {
+		return false;
+	}
+	voxel::Region r = _rawVolume[idx]->getRegion();
+	r.shiftUpperCorner(1, 1, 1);
+	voxel::extractCubicMesh(_rawVolume[idx], r, _mesh[idx], CustomIsQuadNeeded());
+	const size_t meshNumberIndices = _mesh[idx]->getNoOfIndices();
+	if (meshNumberIndices == 0) {
+		_vertexBuffer[idx].update(_vertexBufferIndex[idx], nullptr, 0);
+		_vertexBuffer[idx].update(_indexBufferIndex[idx], nullptr, 0);
+		return true;
+	}
+	update(idx, _mesh[idx]->getVertexVector(), _mesh[idx]->getIndexVector());
 	return true;
 }
 
@@ -198,8 +202,8 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	}
 
 	uint32_t numIndices = 0u;
-	for (int i = 0; i < MAX_VOLUMES; ++i) {
-		numIndices += _vertexBuffer[i].elements(_indexBufferIndex[i], 1, sizeof(voxel::IndexType));
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		numIndices += _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
 	}
 	if (numIndices == 0u) {
 		return;
@@ -226,13 +230,13 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 
 		_depthBuffer.bind();
 		video::ScopedShader scoped(_shadowMapShader);
-		_shadowMapShader.setModel(glm::mat4());
-		for (int i = 0; i < MAX_VOLUMES; ++i) {
-			const uint32_t nIndices = _vertexBuffer[i].elements(_indexBufferIndex[i], 1, sizeof(voxel::IndexType));
+		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+			const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
 			if (nIndices == 0) {
 				continue;
 			}
-			core_assert_always(_vertexBuffer[i].bind());
+			core_assert_always(_vertexBuffer[idx].bind());
+			_shadowMapShader.setModel(glm::translate(_offsets[idx]));
 			for (int i = 0; i < maxDepthBuffers; ++i) {
 				_depthBuffer.bindTexture(i);
 				_shadowMapShader.setLightviewprojection(cascades[i]);
@@ -242,7 +246,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 			_depthBuffer.unbind();
 			video::cullFace(video::Face::Back);
 			video::enable(video::State::Blend);
-			_vertexBuffer[i].unbind();
+			_vertexBuffer[idx].unbind();
 		}
 	}
 
@@ -258,12 +262,13 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		_worldShader.setLightdir(_shadow.sunDirection());
 
 		video::bindTexture(video::TextureUnit::One, _depthBuffer);
-		for (int i = 0; i < MAX_VOLUMES; ++i) {
-			const uint32_t nIndices = _vertexBuffer[i].elements(_indexBufferIndex[i], 1, sizeof(voxel::IndexType));
+		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+			const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
 			if (nIndices == 0) {
 				continue;
 			}
-			core_assert_always(_vertexBuffer[i].bind());
+			core_assert_always(_vertexBuffer[idx].bind());
+			_worldShader.setModel(glm::translate(_offsets[idx]));
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 			if (_renderWireframe && camera.polygonMode() == video::PolygonMode::Solid) {
@@ -271,7 +276,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 				video::ScopedLineWidth lineWidth(2.0f, true);
 				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 			}
-			_vertexBuffer[i].unbind();
+			_vertexBuffer[idx].unbind();
 		}
 	}
 	_whiteTexture->unbind();
@@ -288,7 +293,7 @@ bool RawVolumeRenderer::setOffset(int idx, const glm::ivec3& offset) {
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, const glm::ivec3& offset) {
-	if (idx > 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
@@ -377,14 +382,14 @@ std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_gridMeshIndexYZNear = -1;
 	_gridMeshIndexYZFar = -1;
 	std::vector<voxel::RawVolume*> old(MAX_VOLUMES);
-	for (int i = 0; i < MAX_VOLUMES; ++i) {
-		_vertexBuffer[i].shutdown();
-		_vertexBufferIndex[i] = -1;
-		_indexBufferIndex[i] = -1;
-		delete _mesh[i];
-		_mesh[i] = nullptr;
-		old.push_back(_rawVolume[i]);
-		_rawVolume[i] = nullptr;
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		_vertexBuffer[idx].shutdown();
+		_vertexBufferIndex[idx] = -1;
+		_indexBufferIndex[idx] = -1;
+		delete _mesh[idx];
+		_mesh[idx] = nullptr;
+		old.push_back(_rawVolume[idx]);
+		_rawVolume[idx] = nullptr;
 	}
 	if (_whiteTexture) {
 		_whiteTexture->shutdown();

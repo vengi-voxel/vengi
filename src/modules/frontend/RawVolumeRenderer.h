@@ -70,7 +70,8 @@ public:
 	 * @brief Reextract the whole volume region and updates the vertex buffers.
 	 * @sa update()
 	 */
-	bool extract();
+	void extractAll();
+	bool extract(int i = 0);
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer
