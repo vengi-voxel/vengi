@@ -62,7 +62,7 @@ public:
 
 	bool init();
 
-	bool addBiom(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround = false);
+	bool addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround = false);
 
 	// this lookup must be really really fast - it is executed once per generated voxel
 	inline Voxel getVoxel(const glm::ivec3& pos, bool underground = false) const {

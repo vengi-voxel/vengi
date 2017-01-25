@@ -13,10 +13,10 @@ class BiomeManagerTest: public AbstractVoxelTest {
 TEST_F(BiomeManagerTest, testBasic) {
 	BiomeManager mgr;
 	ASSERT_TRUE(mgr.init());
-	ASSERT_TRUE(mgr.addBiom(0, 1, 1.0f, 1.0f, VoxelType::Wood));
-	ASSERT_TRUE(mgr.addBiom(1, 2, 1.0f, 1.0f, VoxelType::Sand));
-	ASSERT_TRUE(mgr.addBiom(2, 3, 1.0f, 1.0f, VoxelType::Grass));
-	ASSERT_TRUE(mgr.addBiom(3, 4, 1.0f, 1.0f, VoxelType::Rock));
+	ASSERT_TRUE(mgr.addBiome(0, 1, 1.0f, 1.0f, VoxelType::Wood));
+	ASSERT_TRUE(mgr.addBiome(1, 2, 1.0f, 1.0f, VoxelType::Sand));
+	ASSERT_TRUE(mgr.addBiome(2, 3, 1.0f, 1.0f, VoxelType::Grass));
+	ASSERT_TRUE(mgr.addBiome(3, 4, 1.0f, 1.0f, VoxelType::Rock));
 
 	ASSERT_FALSE(isSand(mgr.getBiome(glm::ivec3(0, 5, 0))->type));
 	ASSERT_FALSE(isSand(mgr.getBiome(glm::ivec3(0, 6, 0))->type));
@@ -43,9 +43,9 @@ TEST_F(BiomeManagerTest, testHumidityTemperature) {
 	const float h3 = mgr.getHumidity(p3);
 	const float t3 = mgr.getTemperature(p3);
 
-	ASSERT_TRUE(mgr.addBiom(0, 1, h1, t1, VoxelType::Grass));
-	ASSERT_TRUE(mgr.addBiom(0, 1, h2, t2, VoxelType::Rock));
-	ASSERT_TRUE(mgr.addBiom(0, 1, h3, t3, VoxelType::Sand));
+	ASSERT_TRUE(mgr.addBiome(0, 1, h1, t1, VoxelType::Grass));
+	ASSERT_TRUE(mgr.addBiome(0, 1, h2, t2, VoxelType::Rock));
+	ASSERT_TRUE(mgr.addBiome(0, 1, h3, t3, VoxelType::Sand));
 
 	ASSERT_EQ(VoxelType::Grass, mgr.getBiome(p1)->type);
 	ASSERT_EQ(VoxelType::Rock, mgr.getBiome(p2)->type);

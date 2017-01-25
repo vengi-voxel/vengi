@@ -23,17 +23,17 @@ bool BiomeManager::init() {
 	lua::LUA lua;
 
 	// TODO: move into lua
-	addBiom(0, MAX_WATER_HEIGHT + 4, 0.5f, 0.5f, VoxelType::Sand);
-	addBiom(0, MAX_TERRAIN_HEIGHT - 1, 0.1f, 0.9f, VoxelType::Sand);
-	addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, VoxelType::Dirt);
-	addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, VoxelType::Grass);
-	addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, VoxelType::Rock);
-	addBiom(0, MAX_TERRAIN_HEIGHT - 1, 0.4f, 0.5f, VoxelType::Rock, true);
+	addBiome(0, MAX_WATER_HEIGHT + 4, 0.5f, 0.5f, VoxelType::Sand);
+	addBiome(0, MAX_TERRAIN_HEIGHT - 1, 0.1f, 0.9f, VoxelType::Sand);
+	addBiome(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, VoxelType::Dirt);
+	addBiome(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, VoxelType::Grass);
+	addBiome(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, VoxelType::Rock);
+	addBiome(0, MAX_TERRAIN_HEIGHT - 1, 0.4f, 0.5f, VoxelType::Rock, true);
 
 	return true;
 }
 
-bool BiomeManager::addBiom(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround) {
+bool BiomeManager::addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround) {
 	const MaterialColorIndices& indices = getMaterialIndices(type);
 	bioms.emplace_back(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround);
 	return true;
