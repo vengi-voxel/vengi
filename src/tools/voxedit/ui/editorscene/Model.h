@@ -57,7 +57,7 @@ private:
 
 	void markExtract();
 	void markCursorExtract();
-	void markUndo();
+	void modified();
 	bool placeCursor();
 	bool actionRequiresExistingVoxel(Action action) const;
 public:
