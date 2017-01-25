@@ -7,6 +7,23 @@
 
 namespace frontend {
 
+/// implementation of a function object for deciding when
+/// the cubic surface extractor should insert a face between two voxels.
+///
+/// The criteria used here are that the voxel in front of the potential
+/// quad should have a value of zero (which would typically indicate empty
+/// space) while the voxel behind the potential quad would have a value
+/// geater than zero (typically indicating it is solid).
+struct CustomIsQuadNeeded {
+	inline bool operator()(const voxel::Voxel& back, const voxel::Voxel& front, voxel::Voxel& materialToUse, voxel::FaceNames face, int x, int z) const {
+		if (isBlocked(back.getMaterial()) && !isBlocked(front.getMaterial())) {
+			materialToUse = back;
+			return true;
+		}
+		return false;
+	}
+};
+
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
 RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe, bool renderGrid) :
@@ -118,24 +135,6 @@ bool RawVolumeRenderer::extract() {
 	if (_mesh == nullptr) {
 		return false;
 	}
-
-	/// implementation of a function object for deciding when
-	/// the cubic surface extractor should insert a face between two voxels.
-	///
-	/// The criteria used here are that the voxel in front of the potential
-	/// quad should have a value of zero (which would typically indicate empty
-	/// space) while the voxel behind the potential quad would have a value
-	/// geater than zero (typically indicating it is solid).
-	struct CustomIsQuadNeeded {
-		inline bool operator()(const voxel::Voxel& back, const voxel::Voxel& front, voxel::Voxel& materialToUse, voxel::FaceNames face, int x, int z) const {
-			if (isBlocked(back.getMaterial()) && !isBlocked(front.getMaterial())) {
-				materialToUse = back;
-				return true;
-			}
-			return false;
-		}
-	};
-
 	voxel::Region r = _rawVolume->getRegion();
 	r.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(_rawVolume, r, _mesh, CustomIsQuadNeeded());
