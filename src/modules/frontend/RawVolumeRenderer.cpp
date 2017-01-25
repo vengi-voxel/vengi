@@ -27,7 +27,7 @@ struct CustomIsQuadNeeded {
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
 RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe, bool renderGrid) :
-		_rawVolume(nullptr), _mesh(nullptr), _shadowMapShader(shader::ShadowmapShader::getInstance()),
+		_shadowMapShader(shader::ShadowmapShader::getInstance()),
 		_worldShader(shader::WorldShader::getInstance()), _renderAABB(renderAABB),
 		_renderGrid(renderGrid), _renderWireframe(renderWireframe) {
 	_sunDirection = glm::vec3(glm::left.x, glm::down.y, 0.0f);

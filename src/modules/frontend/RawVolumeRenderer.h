@@ -21,8 +21,8 @@ namespace frontend {
  */
 class RawVolumeRenderer {
 protected:
-	voxel::RawVolume* _rawVolume;
-	voxel::Mesh* _mesh;
+	voxel::RawVolume* _rawVolume = nullptr;
+	voxel::Mesh* _mesh = nullptr;
 
 	video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;
@@ -34,7 +34,7 @@ protected:
 	video::DepthBuffer _depthBuffer;
 	frontend::Shadow _shadow;
 
-	video::TexturePtr _whiteTexture;;
+	video::TexturePtr _whiteTexture;
 
 	int32_t _vertexBufferIndex = -1;
 	int32_t _indexBufferIndex = -1;
