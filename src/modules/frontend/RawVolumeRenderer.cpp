@@ -243,11 +243,11 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 				static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 			}
-			_depthBuffer.unbind();
 			video::cullFace(video::Face::Back);
 			video::enable(video::State::Blend);
 			_vertexBuffer[idx].unbind();
 		}
+		_depthBuffer.unbind();
 	}
 
 	_whiteTexture->bind(video::TextureUnit::Zero);
