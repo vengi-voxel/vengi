@@ -315,6 +315,8 @@ void Model::cut() {
 }
 
 void Model::render(const video::Camera& camera) {
+	const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(0);
+	_empty = mesh != nullptr ? mesh->getNoOfIndices() > 0 : true;
 	_rawVolumeRenderer.render(camera);
 }
 
@@ -517,10 +519,10 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 }
 
 void Model::markExtract() {
-	voxel::RawVolume* volume = rawVolumeRenderer().volume();
+	voxel::RawVolume* volume = rawVolumeRenderer().volume(0);
 	volume->clear();
 	voxel::mergeRawVolumesSameDimension(volume, _cursorPositionVolume);
-	_empty = voxel::mergeRawVolumesSameDimension(volume, modelVolume()) == 0;
+	voxel::mergeRawVolumesSameDimension(volume, modelVolume());
 	_extract = true;
 }
 
