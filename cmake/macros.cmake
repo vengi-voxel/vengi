@@ -263,10 +263,12 @@ macro(engine_add_library)
 	endif()
 
 	string(TOUPPER ${_ADDLIB_LIB} PREFIX)
-	string(TOUPPER ${FIND_PACKAGE_NAME} PKG_PREFIX)
 	if (NOT ${PREFIX}_LOCAL)
 		find_package(${FIND_PACKAGE_NAME})
 	endif()
+	# now convert it again - looks like find_package exports PREFIX in some versions of cmake, too
+	string(TOUPPER ${_ADDLIB_LIB} PREFIX)
+	string(TOUPPER ${FIND_PACKAGE_NAME} PKG_PREFIX)
 	if (NOT ${PREFIX} STREQUAL ${PKG_PREFIX})
 		if (${PKG_PREFIX}_INCLUDE_DIRS)
 			set(${PREFIX}_INCLUDE_DIRS ${PKG_PREFIX}_INCLUDE_DIRS)
