@@ -30,7 +30,7 @@ bool ShapeHandler::setCursorShape(Shape type, voxel::RawVolume* cursorVolume, bo
 
 void ShapeHandler::createCursorShape(voxel::RawVolume* cursorVolume) {
 	const voxel::Region& cursorRegion = cursorVolume->getRegion();
-	glm::ivec3 cursorPos = cursorRegion.getCentre();
+	const glm::ivec3& cursorPos = cursorRegion.getCentre();
 	if (_cursorShape == Shape::Single) {
 		cursorVolume->clear();
 		cursorVolume->setVoxel(cursorPos, _currentVoxel);
