@@ -112,6 +112,9 @@ public:
 	voxel::RawVolume* modelVolume();
 	const voxel::RawVolume* modelVolume() const;
 
+	voxel::RawVolume* cursorPositionVolume();
+	const voxel::RawVolume* cursorPositionVolume() const;
+
 	frontend::RawVolumeRenderer& rawVolumeRenderer();
 	const frontend::RawVolumeRenderer& rawVolumeRenderer() const;
 
@@ -254,6 +257,14 @@ inline voxel::RawVolume* Model::modelVolume() {
 
 inline const voxel::RawVolume* Model::modelVolume() const {
 	return _modelVolume;
+}
+
+inline voxel::RawVolume* Model::cursorPositionVolume() {
+	return _cursorPositionVolume;
+}
+
+inline const voxel::RawVolume* Model::cursorPositionVolume() const {
+	return _cursorPositionVolume;
 }
 
 inline Action Model::uiAction() const {
