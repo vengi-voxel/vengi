@@ -52,9 +52,6 @@ private:
 
 	// the shape of the cursor at the center of the volume
 	voxel::RawVolume* _cursorVolume = nullptr;
-	// the cursor shape at the position of the traced voxel - same size as the model volume
-	voxel::RawVolume* _cursorPositionVolume = nullptr;
-	voxel::RawVolume* _modelVolume = nullptr;
 
 	void markExtract();
 	void markUndo();
@@ -252,19 +249,19 @@ inline Action Model::keyAction() const {
 }
 
 inline voxel::RawVolume* Model::modelVolume() {
-	return _modelVolume;
+	return _rawVolumeRenderer.volume(0);
 }
 
 inline const voxel::RawVolume* Model::modelVolume() const {
-	return _modelVolume;
+	return _rawVolumeRenderer.volume(0);
 }
 
 inline voxel::RawVolume* Model::cursorPositionVolume() {
-	return _cursorPositionVolume;
+	return _rawVolumeRenderer.volume(1);
 }
 
 inline const voxel::RawVolume* Model::cursorPositionVolume() const {
-	return _cursorPositionVolume;
+	return _rawVolumeRenderer.volume(1);
 }
 
 inline Action Model::uiAction() const {

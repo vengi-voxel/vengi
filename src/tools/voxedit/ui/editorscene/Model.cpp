@@ -234,19 +234,15 @@ void Model::resetLastTrace() {
 }
 
 void Model::setNewVolume(voxel::RawVolume* volume) {
-	delete _modelVolume;
-	_modelVolume = volume;
-
 	const voxel::Region& region = volume->getRegion();
-	delete _cursorPositionVolume;
-	_cursorPositionVolume = new voxel::RawVolume(region);
 
 	delete _cursorVolume;
 	_cursorVolume = new voxel::RawVolume(region);
 	setCursorShape(Shape::Single);
 
 	delete _rawVolumeSelectionRenderer.setVolume(0, new voxel::RawVolume(region));
-	delete _rawVolumeRenderer.setVolume(0, new voxel::RawVolume(region));
+	delete _rawVolumeRenderer.setVolume(0, volume);
+	delete _rawVolumeRenderer.setVolume(1, new voxel::RawVolume(region));
 
 	_dirty = false;
 	_lastPlacement = glm::ivec3(-1);
@@ -347,12 +343,8 @@ void Model::shutdown() {
 		return;
 	}
 	_initialized = 0;
-	delete _cursorPositionVolume;
-	_cursorPositionVolume = nullptr;
 	delete _cursorVolume;
 	_cursorVolume = nullptr;
-	delete _modelVolume;
-	_modelVolume = nullptr;
 	{
 		const std::vector<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
 		for (voxel::RawVolume* v : old) {
@@ -519,10 +511,6 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 }
 
 void Model::markExtract() {
-	voxel::RawVolume* volume = rawVolumeRenderer().volume(0);
-	volume->clear();
-	voxel::mergeRawVolumesSameDimension(volume, cursorPositionVolume());
-	voxel::mergeRawVolumesSameDimension(volume, modelVolume());
 	_extract = true;
 }
 
