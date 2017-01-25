@@ -4,7 +4,7 @@
 
 #include "BiomeManager.h"
 #include "noise/SimplexNoise.h"
-#include "commonlua/LUA.h"
+#include "commonlua/LUAFunctions.h"
 
 namespace voxel {
 
@@ -19,21 +19,59 @@ BiomeManager::BiomeManager() {
 BiomeManager::~BiomeManager() {
 }
 
-bool BiomeManager::init() {
+bool BiomeManager::init(const io::FilePtr& luaFile) {
+	luaL_Reg luaAddBiome = { "addBiome", [] (lua_State* l) -> int {
+		BiomeManager* biomeMgr = lua::LUA::globalData<BiomeManager>(l, "MGR");
+		const int lower = luaL_checkinteger(l, 1);
+		const int upper = luaL_checkinteger(l, 2);
+		const float humidity = luaL_checknumber(l, 3);
+		const float temperature = luaL_checknumber(l, 4);
+		const char* voxelType = luaL_checkstring(l, 5);
+		const bool underGround = clua_optboolean(l, 6, false);
+		for (int j = (int)voxel::VoxelType::Air + 1; j < (int)voxel::VoxelType::Max; ++j) {
+			if (strcmp(voxel::VoxelTypeStr[j], voxelType) != 0) {
+				continue;
+			}
+			if (biomeMgr->addBiome(lower, upper, humidity, temperature, VoxelType(j), underGround)) {
+				lua_pushboolean(l, 0);
+			} else {
+				lua_pushboolean(l, 1);
+			}
+			return 1;
+		}
+		lua_pushboolean(l, 0);
+		return 1;
+	}};
+
 	lua::LUA lua;
+	std::vector<luaL_Reg> funcs;
+	funcs.push_back(luaAddBiome);
+	funcs.push_back({ nullptr, nullptr });
+	lua.newGlobalData<BiomeManager>("MGR", this);
+	lua.reg("BiomeManager", &funcs.front());
+	const std::string& luaString = luaFile->load();
+	if (luaString.empty()) {
+		Log::error("Could not load lua script file: %s", luaFile->fileName().c_str());
+		return false;
+	}
+	if (!lua.load(luaString)) {
+		Log::error("Could not load lua script: %s. Failed with error: %s",
+				luaFile->fileName().c_str(), lua.error().c_str());
+		return false;
+	}
+	if (!lua.execute("initBiomes")) {
+		Log::error("Could not execute lua script file: %s. Failed with error: %s",
+				luaFile->fileName().c_str(), lua.error().c_str());
+		return false;
+	}
 
-	// TODO: move into lua
-	addBiome(0, MAX_WATER_HEIGHT + 4, 0.5f, 0.5f, VoxelType::Sand);
-	addBiome(0, MAX_TERRAIN_HEIGHT - 1, 0.1f, 0.9f, VoxelType::Sand);
-	addBiome(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, VoxelType::Dirt);
-	addBiome(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, VoxelType::Grass);
-	addBiome(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, VoxelType::Rock);
-	addBiome(0, MAX_TERRAIN_HEIGHT - 1, 0.4f, 0.5f, VoxelType::Rock, true);
-
-	return true;
+	return !bioms.empty();
 }
 
 bool BiomeManager::addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround) {
+	if (lower > upper) {
+		return false;
+	}
 	const MaterialColorIndices& indices = getMaterialIndices(type);
 	bioms.emplace_back(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround);
 	return true;

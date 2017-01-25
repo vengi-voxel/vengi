@@ -252,3 +252,5 @@ void clua_vecregister(lua_State* s) {
 	};
 	clua_registerfuncs(s, &funcs.front(), clua_meta<T>::name());
 }
+
+extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);

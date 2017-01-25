@@ -73,7 +73,8 @@ bool ServerLoop::init() {
 		return false;
 	}
 
-	if (!_world->init(core::App::getInstance()->filesystem()->open("world.lua"))) {
+	const io::FilesystemPtr& filesystem = core::App::getInstance()->filesystem();
+	if (!_world->init(filesystem->open("world.lua"), filesystem->open("biomes.lua"))) {
 		Log::error("Failed to init the world");
 		return false;
 	}

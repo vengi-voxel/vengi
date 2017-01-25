@@ -24,7 +24,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& regio
 }
 
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Voxel& voxel) {
-	return os << "voxel[" << (int)std::enum_value(voxel.getMaterial()) << "]";
+	return os << "voxel[" << voxel::VoxelTypeStr[(int)voxel.getMaterial()] << ", " << (int)voxel.getColor() << "]";
 }
 
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::RawVolume& volume) {

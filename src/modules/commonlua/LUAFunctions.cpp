@@ -17,3 +17,10 @@ void clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name) {
 	lua_setfield(s, -2, "__index");
 	luaL_setfuncs(s, funcs, 0);
 }
+
+bool clua_optboolean(lua_State* s, int index, bool defaultVal) {
+	if (lua_isboolean(s, index)) {
+		return lua_toboolean(s, index);
+	}
+	return defaultVal;
+}

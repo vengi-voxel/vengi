@@ -60,7 +60,7 @@ public:
 	BiomeManager();
 	~BiomeManager();
 
-	bool init();
+	bool init(const io::FilePtr& luaFile);
 
 	bool addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround = false);
 
