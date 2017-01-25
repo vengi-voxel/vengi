@@ -87,6 +87,7 @@ public:
 	 * @sa setVolume()
 	 */
 	voxel::RawVolume* volume(int idx = 0);
+	const voxel::RawVolume* volume(int idx = 0) const;
 
 	bool renderAABB() const;
 	void setRenderAABB(bool renderAABB);
@@ -123,6 +124,13 @@ inline void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {
 }
 
 inline voxel::RawVolume* RawVolumeRenderer::volume(int idx) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return nullptr;
+	}
+	return _rawVolume[idx];
+}
+
+inline const voxel::RawVolume* RawVolumeRenderer::volume(int idx) const {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
