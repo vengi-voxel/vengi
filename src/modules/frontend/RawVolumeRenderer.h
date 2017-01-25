@@ -21,13 +21,15 @@ namespace frontend {
  */
 class RawVolumeRenderer {
 protected:
-	voxel::RawVolume* _rawVolume = nullptr;
-	voxel::Mesh* _mesh = nullptr;
+	static constexpr int MAX_VOLUMES = 4;
+	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
+	voxel::Mesh* _mesh[MAX_VOLUMES] {};
+	glm::ivec3 _offsets[MAX_VOLUMES] {};
 
 	video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;
 
-	video::VertexBuffer _vertexBuffer;
+	video::VertexBuffer _vertexBuffer[MAX_VOLUMES];
 	shader::Materialblock _materialBlock;
 	shader::ShadowmapShader& _shadowMapShader;
 	shader::WorldShader& _worldShader;
@@ -36,8 +38,8 @@ protected:
 
 	video::TexturePtr _whiteTexture;
 
-	int32_t _vertexBufferIndex = -1;
-	int32_t _indexBufferIndex = -1;
+	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1, -1, -1, -1};
+	int32_t _indexBufferIndex[MAX_VOLUMES] = {-1, -1, -1, -1};
 
 	int32_t _aabbMeshIndex = -1;
 	int32_t _gridMeshIndexXYNear = -1;
@@ -62,7 +64,7 @@ public:
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
 	 */
-	bool update(const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices);
+	bool update(int idx, const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices);
 
 	/**
 	 * @brief Reextract the whole volume region and updates the vertex buffers.
@@ -76,20 +78,14 @@ public:
 	 *
 	 * @sa volume()
 	 */
-	voxel::RawVolume* setVolume(voxel::RawVolume* volume);
+	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, const glm::ivec3& offset = glm::zero<glm::ivec3>());
+	bool setOffset(int idx, const glm::ivec3& offset);
 
-	const voxel::Mesh* mesh() const;
-
-	size_t numVertices() const;
-	const voxel::VoxelVertex* vertices() const;
-
-	size_t numIndices() const;
-	const voxel::IndexType* indices() const;
-
+	const voxel::Mesh* mesh(int idx) const;
 	/**
 	 * @sa setVolume()
 	 */
-	voxel::RawVolume* volume();
+	voxel::RawVolume* volume(int idx = 0);
 
 	bool renderAABB() const;
 	void setRenderAABB(bool renderAABB);
@@ -114,7 +110,7 @@ public:
 	 *
 	 * @sa init()
 	 */
-	voxel::RawVolume* shutdown();
+	std::vector<voxel::RawVolume*> shutdown();
 };
 
 inline void RawVolumeRenderer::setSunDirection(const glm::vec3& sunDirection) {
@@ -125,8 +121,11 @@ inline void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {
 	_ambientColor = color;
 }
 
-inline voxel::RawVolume* RawVolumeRenderer::volume() {
-	return _rawVolume;
+inline voxel::RawVolume* RawVolumeRenderer::volume(int idx) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return nullptr;
+	}
+	return _rawVolume[idx];
 }
 
 inline bool RawVolumeRenderer::renderAABB() const {
@@ -153,8 +152,11 @@ inline void RawVolumeRenderer::setRenderWireframe(bool renderWireframe) {
 	_renderWireframe = renderWireframe;
 }
 
-inline const voxel::Mesh* RawVolumeRenderer::mesh() const {
-	return _mesh;
+inline const voxel::Mesh* RawVolumeRenderer::mesh(int idx) const {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return nullptr;
+	}
+	return _mesh[idx];
 }
 
 }

@@ -245,8 +245,8 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	_cursorVolume = new voxel::RawVolume(region);
 	setCursorShape(Shape::Single);
 
-	delete _rawVolumeSelectionRenderer.setVolume(new voxel::RawVolume(region));
-	delete _rawVolumeRenderer.setVolume(new voxel::RawVolume(region));
+	delete _rawVolumeSelectionRenderer.setVolume(0, new voxel::RawVolume(region));
+	delete _rawVolumeRenderer.setVolume(0, new voxel::RawVolume(region));
 
 	_dirty = false;
 	_lastPlacement = glm::ivec3(-1);
@@ -351,8 +351,19 @@ void Model::shutdown() {
 	_cursorVolume = nullptr;
 	delete _modelVolume;
 	_modelVolume = nullptr;
-	delete _rawVolumeRenderer.shutdown();
-	delete _rawVolumeSelectionRenderer.shutdown();
+	{
+		const std::vector<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
+		for (voxel::RawVolume* v : old) {
+			delete v;
+		}
+	}
+	{
+		const std::vector<voxel::RawVolume*>& old = _rawVolumeSelectionRenderer.shutdown();
+		for (voxel::RawVolume* v : old) {
+			delete v;
+		}
+	}
+
 	_undoHandler.clearUndoStates();
 }
 

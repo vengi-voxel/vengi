@@ -35,8 +35,10 @@ core::AppState TestVoxelFont::onInit() {
 core::AppState TestVoxelFont::onCleanup() {
 	core::AppState state = Super::onCleanup();
 	_voxelFont.shutdown();
-	voxel::RawVolume* old = _rawVolumeRenderer.shutdown();
-	delete old;
+	const std::vector<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
+	for (voxel::RawVolume* v : old) {
+		delete v;
+	}
 	return state;
 }
 
@@ -64,7 +66,7 @@ bool TestVoxelFont::changeFontSize(int delta) {
 		return false;
 	}
 
-	if (!_rawVolumeRenderer.update(vertices, indices)) {
+	if (!_rawVolumeRenderer.update(0, vertices, indices)) {
 		return false;
 	}
 	_vertices = vertices.size();
