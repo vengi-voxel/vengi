@@ -370,7 +370,7 @@ void Model::shutdown() {
 bool Model::extractSelectionVolume() {
 	if (_selectionExtract) {
 		_selectionExtract = false;
-		_rawVolumeSelectionRenderer.extract();
+		_rawVolumeSelectionRenderer.extractAll();
 		return true;
 	}
 	return false;
@@ -379,7 +379,7 @@ bool Model::extractSelectionVolume() {
 bool Model::extractVolume() {
 	if (_extract) {
 		_extract = false;
-		_rawVolumeRenderer.extract();
+		_rawVolumeRenderer.extractAll();
 		return true;
 	}
 	return false;
