@@ -4,6 +4,7 @@
 
 #include "BiomeManager.h"
 #include "noise/SimplexNoise.h"
+#include "commonlua/LUA.h"
 
 namespace voxel {
 
@@ -19,6 +20,16 @@ BiomeManager::~BiomeManager() {
 }
 
 bool BiomeManager::init() {
+	lua::LUA lua;
+
+	// TODO: move into lua
+	addBiom(0, MAX_WATER_HEIGHT + 4, 0.5f, 0.5f, VoxelType::Sand);
+	addBiom(0, MAX_TERRAIN_HEIGHT - 1, 0.1f, 0.9f, VoxelType::Sand);
+	addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, VoxelType::Dirt);
+	addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, VoxelType::Grass);
+	addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, VoxelType::Rock);
+	addBiom(0, MAX_TERRAIN_HEIGHT - 1, 0.4f, 0.5f, VoxelType::Rock, true);
+
 	return true;
 }
 

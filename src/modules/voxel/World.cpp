@@ -181,22 +181,15 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 	return true;
 }
 
-bool World::init(const io::FilePtr& luaFile) {
+bool World::init(const io::FilePtr& luaParameterFile) {
 	if (!_biomeManager.init()) {
 		return false;
 	}
-	if (!_ctx.load(luaFile)) {
+	if (!_ctx.load(luaParameterFile)) {
 		return false;
 	}
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
 	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
-	// TODO: move into lua
-	_biomeManager.addBiom(0, MAX_WATER_HEIGHT + 4, 0.5f, 0.5f, VoxelType::Sand);
-	_biomeManager.addBiom(0, MAX_TERRAIN_HEIGHT - 1, 0.1f, 0.9f, VoxelType::Sand);
-	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0f, 0.7f, VoxelType::Dirt);
-	_biomeManager.addBiom(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5f, 0.5f, VoxelType::Grass);
-	_biomeManager.addBiom(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4f, 0.5f, VoxelType::Rock);
-	_biomeManager.addBiom(0, MAX_TERRAIN_HEIGHT - 1, 0.4f, 0.5f, VoxelType::Rock, true);
 	return true;
 }
 
