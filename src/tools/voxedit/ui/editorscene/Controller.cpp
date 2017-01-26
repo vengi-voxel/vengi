@@ -15,7 +15,8 @@ void Controller::resetCamera(const voxel::RawVolume* volume) {
 	if (_camMode == Controller::SceneCameraMode::Free) {
 		_camera.setPosition(glm::vec3(-center.x, region.getHeightInVoxels() + center.y, -center.z));
 	} else if (_camMode == Controller::SceneCameraMode::Top) {
-		_camera.setPosition(glm::vec3(center.x, region.getHeightInCells() + center.y, center.z));
+		// TODO: fix the camera and remove the z epsilon!
+		_camera.setPosition(glm::vec3(center.x, region.getHeightInCells() + center.y, center.z + 0.0001f));
 	} else if (_camMode == Controller::SceneCameraMode::Left) {
 		_camera.setPosition(glm::vec3(-center.x, center.y, center.z));
 	} else if (_camMode == Controller::SceneCameraMode::Front) {
@@ -34,11 +35,13 @@ void Controller::update(long deltaFrame) {
 
 void Controller::init(Controller::SceneCameraMode mode) {
 	_camera.setRotationType(video::CameraRotationType::Target);
+	_camMode = mode;
 	switch (mode) {
 	case SceneCameraMode::Top:
 	case SceneCameraMode::Front:
 	case SceneCameraMode::Left:
-		_camera.setMode(video::CameraMode::Orthogonal);
+		// TODO: make ortho
+		_camera.setMode(video::CameraMode::Perspective);
 		break;
 	case SceneCameraMode::Free:
 		_camera.setMode(video::CameraMode::Perspective);

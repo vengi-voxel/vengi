@@ -238,6 +238,9 @@ tb::TBGenericStringItem* VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<t
 
 void VoxEditWindow::update() {
 	_scene->update();
+	_sceneTop->update();
+	_sceneLeft->update();
+	_sceneFront->update();
 }
 
 void VoxEditWindow::setCursorPosition(int x, int y, int z) {
@@ -403,6 +406,9 @@ static inline bool isAny(const tb::TBWidgetEvent& ev, const tb::TBID& id) {
 bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	if (isAny(ev, TBIDC("resetcamera"))) {
 		_scene->resetCamera();
+		_sceneFront->resetCamera();
+		_sceneLeft->resetCamera();
+		_sceneTop->resetCamera();
 		return true;
 	} else if (isAny(ev, TBIDC("quit"))) {
 		quit();
