@@ -503,7 +503,7 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	voxel::RawVolume* cursorPosVolume = cursorPositionVolume();
 	cursorPosVolume->clear();
 	static constexpr voxel::Voxel air;
-	const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume));
+	const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume, _cursorVolume->mins(), _cursorVolume->maxs()));
 	if (cropped) {
 		const voxel::Region& srcRegion = cropped->getRegion();
 		const voxel::Region& destRegion = cursorPosVolume->getRegion();
