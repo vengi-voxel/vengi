@@ -291,12 +291,11 @@ const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 }
 
 bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
-	if (getVoxel(pos) == voxel) {
-		return false;
-	}
 	const bool placed = modelVolume()->setVoxel(pos, voxel);
-	modified();
-	_lastPlacement = pos;
+	if (placed) {
+		modified();
+		_lastPlacement = pos;
+	}
 	return placed;
 }
 
