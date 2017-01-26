@@ -283,7 +283,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 }
 
 bool RawVolumeRenderer::setOffset(int idx, const glm::ivec3& offset) {
-	if (idx > 0 || idx >= MAX_VOLUMES) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
 
