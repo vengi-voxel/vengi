@@ -29,19 +29,14 @@ RawVolume* cropVolume(const RawVolume* volume, const glm::ivec3& mins, const glm
 template<class CropSkipCondition = CropSkipEmpty>
 RawVolume* cropVolume(const RawVolume* volume, CropSkipCondition condition = CropSkipCondition()) {
 	core_trace_scoped(CropRawVolume);
-	const voxel::Region& region = volume->getRegion();
-	const int32_t lowerX = region.getLowerX();
-	const int32_t lowerY = region.getLowerY();
-	const int32_t lowerZ = region.getLowerZ();
-	const int32_t upperX = region.getUpperX();
-	const int32_t upperY = region.getUpperY();
-	const int32_t upperZ = region.getUpperZ();
+	const glm::ivec3& mins = volume->mins();
+	const glm::ivec3& maxs = volume->maxs();
 	glm::ivec3 newMins(std::numeric_limits<int>::max());
 	glm::ivec3 newMaxs(std::numeric_limits<int>::min());
 	voxel::RawVolume::Sampler volumeSampler(volume);
-	for (int32_t z = lowerZ; z <= upperZ; ++z) {
-		for (int32_t y = lowerY; y <= upperY; ++y) {
-			for (int32_t x = lowerX; x <= upperX; ++x) {
+	for (int32_t z = mins.z; z <= maxs.z; ++z) {
+		for (int32_t y = mins.y; y <= maxs.y; ++y) {
+			for (int32_t x = mins.x; x <= maxs.x; ++x) {
 				volumeSampler.setPosition(x, y, z);
 				const voxel::Voxel& voxel = volumeSampler.getVoxel();
 				if (condition(voxel)) {
