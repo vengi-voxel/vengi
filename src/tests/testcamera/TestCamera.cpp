@@ -94,13 +94,6 @@ void TestCamera::afterRootWidget() {
 	if (_targetCamera == 1) {
 		mode = "Frustum split";
 	}
-	enqueueShowStr(5, core::Color::White, "Camera: %s (%i) %s", cameraRotType, _targetCamera + 1, mode);
-	if (_frustums[_targetCamera].renderAABB()) {
-		const core::AABB<float>&& aabb = targetCamera.aabb();
-		enqueueShowStr(5, core::Color::White, "AABB(mins(%.2f:%.2f:%.2f), maxs(%.2f:%.2f:%.2f))", aabb.getLowerX(), aabb.getLowerY(), aabb.getLowerZ(), aabb.getUpperX(), aabb.getUpperY(), aabb.getUpperZ());
-	} else {
-		enqueueShowStr(5, core::Color::White, "");
-	}
 	enqueueShowStr(5, core::Color::Gray, "Space: toggle camera");
 	enqueueShowStr(5, core::Color::Gray, "Shift/MouseMove: rotate");
 	enqueueShowStr(5, core::Color::Gray, "Backspace: toggle aabb");
@@ -110,6 +103,11 @@ void TestCamera::afterRootWidget() {
 	enqueueShowStr(5, core::Color::Gray, "Shift/MouseWheel: far plane");
 	enqueueShowStr(5, core::Color::Gray, "Ctrl/Shift/MouseWheel: near plane");
 	enqueueShowStr(5, core::Color::LightGray, "Sphere: red = outside, green = inside, purple = touching");
+	enqueueShowStr(5, core::Color::White, "Camera: %s (%i) %s", cameraRotType, _targetCamera + 1, mode);
+	if (_frustums[_targetCamera].renderAABB()) {
+		const core::AABB<float>&& aabb = targetCamera.aabb();
+		enqueueShowStr(5, core::Color::White, "AABB(mins(%.2f:%.2f:%.2f), maxs(%.2f:%.2f:%.2f))", aabb.getLowerX(), aabb.getLowerY(), aabb.getLowerZ(), aabb.getUpperX(), aabb.getUpperY(), aabb.getUpperZ());
+	}
 	Super::afterRootWidget();
 }
 
