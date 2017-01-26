@@ -96,9 +96,10 @@ bool Model::load(const std::string& file) {
 		return false;
 	}
 	Log::info("Loaded model file %s", file.c_str());
-	_undoHandler.clearUndoStates();
+	undoHandler().clearUndoStates();
 	setNewVolume(newVolume);
 	modified();
+	_dirty = false;
 	return true;
 }
 
@@ -119,7 +120,7 @@ void Model::setMousePos(int x, int y) {
 }
 
 void Model::modified() {
-	_undoHandler.markUndo(modelVolume());
+	undoHandler().markUndo(modelVolume());
 	_dirty = true;
 	markExtract();
 }
@@ -207,19 +208,21 @@ void Model::executeAction(long now) {
 }
 
 void Model::undo() {
-	voxel::RawVolume* v = _undoHandler.undo();
+	voxel::RawVolume* v = undoHandler().undo();
 	if (v == nullptr) {
 		return;
 	}
 	setNewVolume(v);
+	modified();
 }
 
 void Model::redo() {
-	voxel::RawVolume* v = _undoHandler.redo();
+	voxel::RawVolume* v = undoHandler().redo();
 	if (v == nullptr) {
 		return;
 	}
 	setNewVolume(v);
+	modified();
 }
 
 bool Model::placeCursor() {
@@ -258,9 +261,10 @@ bool Model::newVolume(bool force) {
 		return false;
 	}
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
-	_undoHandler.clearUndoStates();
+	undoHandler().clearUndoStates();
 	setNewVolume(new voxel::RawVolume(region));
 	modified();
+	_dirty = false;
 	return true;
 }
 
@@ -358,7 +362,7 @@ void Model::shutdown() {
 		}
 	}
 
-	_undoHandler.clearUndoStates();
+	undoHandler().clearUndoStates();
 }
 
 bool Model::extractSelectionVolume() {
