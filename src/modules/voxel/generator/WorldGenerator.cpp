@@ -3,6 +3,9 @@
 namespace voxel {
 namespace world {
 
+// http://www.gamasutra.com/blogs/MattKlingensmith/20130811/198049/How_we_Generate_Terrain_in_DwarfCorp.php?print=1
+// http://hss.ulb.uni-bonn.de/2013/3124/3124-engl.htm
+// https://en.wikipedia.org/wiki/Gradient_descent (Erosion)
 int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeManager& biomManager, long seed, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) {
 	// TODO: the 2d noise doesn't need the same resolution - we can optimize this a lot, we can lerp/glm::mix here
 	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
