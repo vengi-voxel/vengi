@@ -75,6 +75,7 @@ bool Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 	if (glm::all(glm::epsilonEqual(_pos, position, 0.0001f))) {
 		return false;
 	}
+	// TODO: may not be parallel at the moment, but we have to catch that case.
 	_quat = glm::quat_cast(glm::lookAt(_pos, position, upDirection));
 	_dirty |= DIRTY_ORIENTATION;
 	core_assert_msg(!glm::any(glm::isnan(_quat)), "upDirection(%f:%f:%f), position(%f:%f:%f), _pos(%f:%f:%f)",
