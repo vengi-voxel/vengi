@@ -15,6 +15,18 @@ struct CropSkipEmpty {
 };
 
 template<class CropSkipCondition = CropSkipEmpty>
+RawVolume* cropVolume(const RawVolume* volume, const glm::ivec3& mins, const glm::ivec3& maxs, CropSkipCondition condition = CropSkipCondition()) {
+	core_trace_scoped(CropRawVolume);
+	const voxel::Region newRegion(glm::ivec3(), maxs - mins);
+	if (!newRegion.isValid()) {
+		return nullptr;
+	}
+	voxel::RawVolume* newVolume = new voxel::RawVolume(newRegion);
+	voxel::mergeRawVolumes(newVolume, volume, newRegion, voxel::Region(mins, maxs));
+	return newVolume;
+}
+
+template<class CropSkipCondition = CropSkipEmpty>
 RawVolume* cropVolume(const RawVolume* volume, CropSkipCondition condition = CropSkipCondition()) {
 	core_trace_scoped(CropRawVolume);
 	const voxel::Region& region = volume->getRegion();
@@ -48,13 +60,7 @@ RawVolume* cropVolume(const RawVolume* volume, CropSkipCondition condition = Cro
 	if (newMaxs.z == std::numeric_limits<int>::min()) {
 		return nullptr;
 	}
-	const voxel::Region newRegion(glm::ivec3(), newMaxs - newMins);
-	if (!newRegion.isValid()) {
-		return nullptr;
-	}
-	voxel::RawVolume* newVolume = new voxel::RawVolume(newRegion);
-	voxel::mergeRawVolumes(newVolume, volume, newRegion, voxel::Region(newMins, newMaxs));
-	return newVolume;
+	return cropVolume(volume, newMins, newMaxs, condition);
 }
 
 }
