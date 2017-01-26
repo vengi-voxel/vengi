@@ -85,9 +85,17 @@ glm::vec4 Color::fromRGB(const unsigned int rgbInt, const float a) {
 			static_cast<float>(rgbInt & 0xFF) / Color::magnitude, a);
 }
 
-glm::vec4 Color::fromRGBA(const unsigned int rgbaInt) {
-	return glm::vec4(static_cast<float>(rgbaInt >> 24 & 0xFF) / Color::magnitude, static_cast<float>(rgbaInt >> 16 & 0xFF) / Color::magnitude,
-			static_cast<float>(rgbaInt >> 8 & 0xFF) / Color::magnitude, static_cast<float>(rgbaInt & 0xFF) / Color::magnitude);
+glm::vec4 Color::fromRGBA(const unsigned int color) {
+	const uint8_t a = (color >> 24) & 0xFF;
+	const uint8_t b = (color >> 16) & 0xFF;
+	const uint8_t g = (color >> 8) & 0xFF;
+	const uint8_t r = (color >> 0) & 0xFF;
+	return fromRGBA(r, g, b, a);
+}
+
+glm::vec4 Color::fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	return glm::vec4(static_cast<float>(r) / Color::magnitude, static_cast<float>(g) / Color::magnitude,
+			static_cast<float>(b) / Color::magnitude, static_cast<float>(a) / Color::magnitude);
 }
 
 glm::vec4 Color::fromHSB(const float hue, const float saturation, const float brightness, const float alpha) {

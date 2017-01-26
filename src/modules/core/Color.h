@@ -9,6 +9,13 @@
 
 namespace core {
 
+union RGBA {
+	struct {
+		uint8_t r, g, b, a;
+	};
+	uint32_t rgba;
+};
+
 class Color {
 public:
 	static const unsigned int magnitude = 255;
@@ -45,6 +52,7 @@ public:
 	static int getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>& colors);
 	static glm::vec4 fromRGB(const unsigned int rgbInt, const float a = 1.0f);
 	static glm::vec4 fromRGBA(const unsigned int rgbaInt);
+	static glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 	static glm::vec4 fromHSB(const float hue, const float saturation, const float brightness, const float alpha = 1.0f);
 
 	static unsigned int getRGB(const glm::vec4&);

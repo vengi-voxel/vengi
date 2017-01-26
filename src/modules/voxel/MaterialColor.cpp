@@ -52,7 +52,7 @@ public:
 		_materialColors.reserve(colors);
 		const uint32_t* paletteData = (const uint32_t*)_image.data();
 		for (int i = 0; i < colors; ++i) {
-			_materialColors.emplace_back(core::Color::fromRGBA(SDL_SwapBE32(*paletteData)));
+			_materialColors.emplace_back(core::Color::fromRGBA(*paletteData));
 			++paletteData;
 		}
 		Log::info("Set up %i material colors", (int)_materialColors.size());

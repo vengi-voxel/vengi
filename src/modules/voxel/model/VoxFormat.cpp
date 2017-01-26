@@ -195,7 +195,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 	const MaterialColorArray& materialColors = getMaterialColors();
 	for (int i = 0; i < paletteSize; ++i) {
 		const uint32_t p = palette[i];
-		const glm::vec4& color = core::Color::fromRGBA(SDL_SwapBE32(p));
+		const glm::vec4& color = core::Color::fromRGBA(p);
 		const int index = core::Color::getClosestMatch(color, materialColors);
 		_palette[i] = index;
 	}
@@ -288,7 +288,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 			for (int i = 0; i <= 254; i++) {
 				uint32_t rgba;
 				wrap(stream.readInt(rgba))
-				const glm::vec4& color = core::Color::fromRGBA(SDL_SwapBE32(rgba));
+				const glm::vec4& color = core::Color::fromRGBA(rgba);
 				const int index = core::Color::getClosestMatch(color, materialColors);
 				_palette[i + 1] = (uint8_t)index;
 			}
