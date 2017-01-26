@@ -13,6 +13,8 @@ TBLayout: distribution: gravity, axis: y
 					TBEditField: id: frequency, text: 0.005
 					TBTextField: text: Persistence
 					TBEditField: id: persistence, text: 0.1
+					TBTextField: text: Amplitude
+					TBEditField: id: amplitude, text: 0.3
 					TBLayout: gravity: left right
 						TBWidget
 

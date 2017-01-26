@@ -398,10 +398,10 @@ bool Model::extractCursorVolume() {
 	return false;
 }
 
-void Model::noise(int octaves, float frequency, float persistence) {
+void Model::noise(int octaves, float persistence, float frequency, float amplitude) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
-	voxel::noise::generate(wrapper, octaves, frequency, persistence, random);
+	voxel::noise::generate(wrapper, octaves, persistence, frequency, amplitude, random);
 	modified();
 }
 

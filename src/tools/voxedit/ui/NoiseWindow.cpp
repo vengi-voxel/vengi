@@ -14,8 +14,9 @@ NoiseWindow::NoiseWindow(ui::Window* window, EditorScene* scene) :
 	_octaves     = getWidgetByType<tb::TBInlineSelect>("octaves");
 	_frequency   = getWidgetByType<tb::TBEditField>("frequency");
 	_persistence = getWidgetByType<tb::TBEditField>("persistence");
+	_amplitude   = getWidgetByType<tb::TBEditField>("amplitude");
 
-	if (_octaves == nullptr || _frequency == nullptr || _persistence == nullptr) {
+	if (_octaves == nullptr || _frequency == nullptr || _persistence == nullptr || _amplitude == nullptr) {
 		Log::error("Not all needed widgets were found");
 		Close();
 	}
@@ -28,8 +29,10 @@ bool NoiseWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			const tb::TBStr& freq = _frequency->GetText();
 			const float frequency = core::string::toFloat(freq.CStr());
 			const tb::TBStr& pers = _persistence->GetText();
+			const tb::TBStr& ampl = _amplitude->GetText();
 			const float persistence = core::string::toFloat(pers.CStr());
-			_scene->noise(octaves, frequency, persistence);
+			const float amplitude = core::string::toFloat(ampl.CStr());
+			_scene->noise(octaves, persistence, frequency, amplitude);
 			Close();
 			return true;
 		} else if (ev.target->GetID() == TBIDC("cancel")) {

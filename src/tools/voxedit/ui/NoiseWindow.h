@@ -18,6 +18,7 @@ private:
 	tb::TBInlineSelect* _octaves;
 	tb::TBEditField* _frequency;
 	tb::TBEditField* _persistence;
+	tb::TBEditField* _amplitude;
 public:
 	NoiseWindow(ui::Window* window, EditorScene* scene);
 

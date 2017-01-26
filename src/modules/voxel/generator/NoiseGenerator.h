@@ -8,7 +8,7 @@ namespace voxel {
 namespace noise {
 
 template<class Volume>
-void generate(Volume& volume, int octaves, float frequency, float persistence, core::Random& random) {
+void generate(Volume& volume, int octaves, float persistence, float frequency, float amplitude, core::Random& random) {
 	const Region& region = volume.getRegion();
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
@@ -24,7 +24,7 @@ void generate(Volume& volume, int octaves, float frequency, float persistence, c
 	glm::vec2 p(noiseSeedOffsetX + lowerX, noiseSeedOffsetZ + lowerZ);
 	for (int x = lowerX; x < lowerX + width; ++x, p.x += 1.0f) {
 		for (int z = lowerZ; z < lowerZ + depth; ++z, p.y += 1.0f) {
-			const float n = ::noise::Simplex::Noise2DClamped(p, octaves, persistence, frequency);
+			const float n = ::noise::Simplex::Noise2D(p, octaves, persistence, frequency, amplitude);
 			const int ni = ::noise::norm(n) * (depth - 1);
 			glm::ivec3 vp(x, 0, z);
 			volume.setVoxel(vp, dirt);
