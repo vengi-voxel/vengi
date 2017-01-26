@@ -9,7 +9,7 @@ void fill(voxel::RawVolume& target, const glm::ivec3& position, const Axis axis,
 	if ((axis & Axis::Z) != Axis::None) {
 		zStart = position.y;
 	}
-	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+	for (int32_t z = zStart; z <= region.getUpperZ(); ++z) {
 		int yStart = region.getLowerY();
 		if ((axis & Axis::Y) != Axis::None) {
 			yStart = position.y;
