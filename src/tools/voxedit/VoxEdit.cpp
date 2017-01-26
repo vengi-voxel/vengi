@@ -165,7 +165,15 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_MAINWINDOW(scaley, "Scale the cursor volume in y direction");
 	COMMAND_MAINWINDOW(scalez, "Scale the cursor volume in z direction");
 	COMMAND_MAINWINDOW(crop, "Crop your volume");
-	COMMAND_MAINWINDOW(extend, "Extend your volume");
+	core::Command::registerCommand("resize", [this] (const core::CmdArgs& args) {
+		const int argc = args.size();
+		if (argc == 1) {
+			const int size = core::string::toInt(args[0]);
+			_mainWindow->extend(size);
+		} else {
+			_mainWindow->extend();
+		}
+	}).setHelp("Resize your volume");
 	COMMAND_MAINWINDOW(scale, "Scale your volume");
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
 	COMMAND_MAINWINDOW(redo, "Redo your last step");

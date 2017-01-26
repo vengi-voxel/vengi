@@ -1,5 +1,6 @@
 #include "Expand.h"
 #include "voxel/polyvox/VolumeMerger.h"
+#include "voxel/polyvox/RawVolumeWrapper.h"
 
 namespace voxedit {
 namespace tool {
@@ -13,7 +14,8 @@ voxel::RawVolume* expand(const voxel::RawVolume* source, int size) {
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
 	const voxel::Region& destRegion = source->getRegion();
 	const voxel::Region& srcRegion = source->getRegion();
-	voxel::mergeRawVolumes(newVolume, source, destRegion, srcRegion);
+	voxel::RawVolumeWrapper wrapper(newVolume);
+	voxel::mergeRawVolumes(&wrapper, source, destRegion, srcRegion);
 	return newVolume;
 }
 
