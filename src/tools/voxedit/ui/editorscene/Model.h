@@ -52,9 +52,6 @@ private:
 	Action _action = Action::None;
 	voxel::PickResult _result;
 
-	// the shape of the cursor at the center of the volume
-	voxel::RawVolume* _cursorVolume = nullptr;
-
 	void markExtract();
 	void markCursorExtract();
 	void modified(bool markUndo = true);
@@ -186,22 +183,23 @@ inline void Model::setLockedAxis(Axis axis, bool unlock) {
 }
 
 inline void Model::scaleCursorShape(const glm::vec3& scale) {
-	_shapeHandler.scaleCursorShape(scale, _cursorVolume);
+	_shapeHandler.scaleCursorShape(scale, cursorPositionVolume());
 	resetLastTrace();
 	markCursorExtract();
 }
 
 inline void Model::setVoxel(const voxel::Voxel& type) {
 	_shapeHandler.setVoxel(type);
-	voxel::RawVolume* cursorVolume = _cursorVolume;
+	voxel::RawVolume* cursorVolume = cursorPositionVolume();
 	if (cursorVolume != nullptr) {
 		_shapeHandler.setCursorShape(_shapeHandler.cursorShape(), cursorVolume, true);
 	}
 }
 
 inline void Model::setCursorShape(Shape shape) {
-	_shapeHandler.setCursorShape(shape, _cursorVolume, true);
+	_shapeHandler.setCursorShape(shape, cursorPositionVolume(), true);
 	resetLastTrace();
+	markCursorExtract();
 }
 
 inline ShapeHandler& Model::shapeHandler() {

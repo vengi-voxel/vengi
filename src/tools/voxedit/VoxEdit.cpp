@@ -21,14 +21,12 @@
 #define COMMAND_MAINWINDOW_EVENT(command, help) core::Command::registerCommand(command, [this] (const core::CmdArgs& args) {tb::TBWidgetEvent event(tb::EVENT_TYPE_CUSTOM);event.ref_id = TBIDC(command);_mainWindow->InvokeEvent(event);}).setHelp(help)
 
 // TODO: extract meshes in max 32x32x32 boundaries - RawVolumeRenderer maybe?
-//       allows us to only reextract the chunk that was modified, not always the whole volume. Also see
-//       the cursor handling todo issue - if both are fixed we should get an acceptable performance
+//       allows us to only reextract the chunk that was modified, not always the whole volume.
 // TODO: voxelizer via assimp
 // TODO: extrude
 // TODO: render locked axis as plane
 // TODO: scale/move/rotate selections - not only the cursor or whole model
 // TODO: tree parameter window
-// TODO: cursor handling must be optimized - should not get merged with model volume, but get a different mesh and vbo to render
 // TODO: selection volume handling must be optimized - should not get merged with model volume, but get a different mesh and vbo to render
 // TODO: lsystem parameter window needs the voxel options and should show information about the used alphabet
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :

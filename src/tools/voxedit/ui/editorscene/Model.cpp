@@ -228,7 +228,7 @@ void Model::redo() {
 }
 
 bool Model::placeCursor() {
-	if (_shapeHandler.placeCursor(modelVolume(), cursorPositionVolume())) {
+	if (_shapeHandler.placeCursor(modelVolume(), cursorPositionVolume(), _cursorPos)) {
 		return true;
 	}
 	return false;
@@ -241,8 +241,6 @@ void Model::resetLastTrace() {
 void Model::setNewVolume(voxel::RawVolume* volume) {
 	const voxel::Region& region = volume->getRegion();
 
-	delete _cursorVolume;
-	_cursorVolume = new voxel::RawVolume(region);
 	delete _rawVolumeSelectionRenderer.setVolume(0, new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(0, volume);
 	delete _rawVolumeRenderer.setVolume(1, new voxel::RawVolume(region));
@@ -300,12 +298,12 @@ bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 }
 
 void Model::copy() {
-	voxel::mergeRawVolumesSameDimension(_cursorVolume, _rawVolumeSelectionRenderer.volume());
+	voxel::mergeRawVolumesSameDimension(cursorPositionVolume(), _rawVolumeSelectionRenderer.volume());
 	markCursorExtract();
 }
 
 void Model::paste() {
-	voxel::RawVolume* cursorVolume = _cursorVolume;
+	voxel::RawVolume* cursorVolume = cursorPositionVolume();
 	const voxel::Region& srcRegion = cursorVolume->getRegion();
 	const voxel::Region destRegion = srcRegion + _cursorPos;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
@@ -313,7 +311,7 @@ void Model::paste() {
 }
 
 void Model::cut() {
-	voxel::RawVolume* cursorVolume = _cursorVolume;
+	voxel::RawVolume* cursorVolume = cursorPositionVolume();
 	voxel::mergeRawVolumesSameDimension(cursorVolume, _rawVolumeSelectionRenderer.volume());
 	// TODO: delete selected volume from model volume
 }
@@ -357,8 +355,6 @@ void Model::shutdown() {
 		return;
 	}
 	_initialized = 0;
-	delete _cursorVolume;
-	_cursorVolume = nullptr;
 	{
 		const std::vector<voxel::RawVolume*>& old = _rawVolumeRenderer.shutdown();
 		for (voxel::RawVolume* v : old) {
@@ -502,29 +498,8 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 		return;
 	}
 	_cursorPos = pos;
-
-	voxel::RawVolume* cursorPosVolume = cursorPositionVolume();
-	cursorPosVolume->clear();
-	static constexpr voxel::Voxel air;
-	const std::unique_ptr<voxel::RawVolume> cropped(voxel::cropVolume(_cursorVolume));
-	if (cropped) {
-		const voxel::Region& srcRegion = cropped->getRegion();
-		const voxel::Region& destRegion = cursorPosVolume->getRegion();
-		const glm::ivec3& lower = destRegion.getLowerCorner() + _cursorPos - srcRegion.getCentre();
-		if (destRegion.containsPoint(lower)) {
-			const glm::ivec3& regionUpperCorner = destRegion.getUpperCorner();
-			glm::ivec3 upper = lower + srcRegion.getDimensionsInVoxels();
-			if (!destRegion.containsPoint(upper)) {
-				upper = regionUpperCorner;
-			}
-			voxel::RawVolumeWrapper wrapper(cursorPosVolume);
-			voxel::mergeRawVolumes(&wrapper, cropped.get(), voxel::Region(lower, upper), srcRegion);
-		}
-	} else {
-		Log::error("Failed to crop cursor volume");
-	}
-
-	markCursorExtract();
+	const voxel::Region& cursorRegion = cursorPositionVolume()->getRegion();
+	_rawVolumeRenderer.setOffset(1, -cursorRegion.getCentre() + _cursorPos);
 }
 
 void Model::markCursorExtract() {

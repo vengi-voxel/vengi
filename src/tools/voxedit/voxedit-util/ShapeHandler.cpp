@@ -55,8 +55,12 @@ void ShapeHandler::createCursorShape(voxel::RawVolume* cursorVolume) {
 	}
 }
 
-bool ShapeHandler::placeCursor(voxel::RawVolume* modelVolume, const voxel::RawVolume* cursorPositionVolume) {
-	return voxel::mergeRawVolumesSameDimension(modelVolume, cursorPositionVolume) > 0;
+bool ShapeHandler::placeCursor(voxel::RawVolume* modelVolume, const voxel::RawVolume* cursorVolume, const glm::ivec3& pos) {
+	const voxel::Region& cursorRegion = cursorVolume->getRegion();
+	const glm::ivec3 mins = -cursorRegion.getCentre() + pos;
+	const glm::ivec3 maxs = mins + cursorRegion.getDimensionsInCells();
+	const voxel::Region destRegion(mins, maxs);
+	return voxel::mergeRawVolumes(modelVolume, cursorVolume, destRegion, cursorRegion) > 0;
 }
 
 }
