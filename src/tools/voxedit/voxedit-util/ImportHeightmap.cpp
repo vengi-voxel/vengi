@@ -11,7 +11,6 @@ void importHeightmap(voxel::RawVolume& volume, const image::ImagePtr& image) {
 	const int volumeWidth = region.getWidthInVoxels();
 	const int volumeDepth = region.getDepthInVoxels();
 	const glm::ivec3& mins = region.getLowerCorner();
-	const glm::ivec3& maxs = region.getUpperCorner();
 	const float stepWidthY = imageHeight / (float)volumeDepth;
 	const float stepWidthX = imageWidth / (float)volumeWidth;
 	const float scaleHeight = volumeHeight / 255.0f;

@@ -14,11 +14,11 @@
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QBTFormat.h"
 #include "voxel/model/QBFormat.h"
-#include "tool/Crop.h"
-#include "tool/Expand.h"
 #include "core/Random.h"
-#include "tool/Fill.h"
-#include "ImportHeightmap.h"
+#include "voxedit-util/tool/Crop.h"
+#include "voxedit-util/tool/Expand.h"
+#include "voxedit-util/tool/Fill.h"
+#include "voxedit-util/ImportHeightmap.h"
 
 namespace voxedit {
 

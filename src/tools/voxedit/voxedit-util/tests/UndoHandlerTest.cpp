@@ -2,8 +2,9 @@
  * @file
  */
 
+
 #include "core/tests/AbstractTest.h"
-#include "../ui/editorscene/UndoHandler.h"
+#include "../UndoHandler.h"
 #include "voxel/polyvox/RawVolume.h"
 
 namespace voxel {

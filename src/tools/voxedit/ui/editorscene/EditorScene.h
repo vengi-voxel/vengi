@@ -11,11 +11,11 @@
 #include "voxel/generator/PlantGenerator.h"
 #include "voxel/generator/BuildingGeneratorContext.h"
 #include "voxel/WorldContext.h"
-#include "Shape.h"
-#include "Axis.h"
 #include "Action.h"
-#include "SelectType.h"
 #include "Controller.h"
+#include "voxedit-util/Shape.h"
+#include "voxedit-util/Axis.h"
+#include "voxedit-util/SelectType.h"
 
 class EditorScene: public ui::Widget {
 private:

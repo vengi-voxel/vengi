@@ -7,10 +7,10 @@
 #include "ui/Window.h"
 #include "core/Common.h"
 #include "core/String.h"
-#include "editorscene/Axis.h"
+#include "voxedit-util/Axis.h"
 #include "voxel/TreeContext.h"
 #include "editorscene/Action.h"
-#include "editorscene/SelectType.h"
+#include "voxedit-util/SelectType.h"
 
 class EditorScene;
 class VoxEdit;

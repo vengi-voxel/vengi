@@ -8,10 +8,10 @@
 #include "voxel/generator/BuildingGeneratorContext.h"
 #include "frontend/RawVolumeRenderer.h"
 #include "Action.h"
-#include "SelectionHandler.h"
-#include "ShapeHandler.h"
-#include "UndoHandler.h"
-#include "Axis.h"
+#include "voxedit-util/SelectionHandler.h"
+#include "voxedit-util/ShapeHandler.h"
+#include "voxedit-util/UndoHandler.h"
+#include "voxedit-util/Axis.h"
 #include "voxel/WorldContext.h"
 #include <vector>
 
