@@ -410,6 +410,7 @@ void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 }
 
 void EditorScene::update() {
+	m().update();
 }
 
 void EditorScene::OnProcess() {

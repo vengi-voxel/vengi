@@ -119,8 +119,10 @@ void Model::setMousePos(int x, int y) {
 	_mouseY = y;
 }
 
-void Model::modified() {
-	undoHandler().markUndo(modelVolume());
+void Model::modified(bool markUndo) {
+	if (markUndo) {
+		undoHandler().markUndo(modelVolume());
+	}
 	_dirty = true;
 	markExtract();
 }
@@ -213,7 +215,7 @@ void Model::undo() {
 		return;
 	}
 	setNewVolume(v);
-	modified();
+	modified(false);
 }
 
 void Model::redo() {
@@ -222,7 +224,7 @@ void Model::redo() {
 		return;
 	}
 	setNewVolume(v);
-	modified();
+	modified(false);
 }
 
 bool Model::placeCursor() {
@@ -336,6 +338,12 @@ void Model::init() {
 	++_initialized;
 	_rawVolumeRenderer.init();
 	_rawVolumeSelectionRenderer.init();
+}
+
+void Model::update() {
+	extractVolume();
+	extractCursorVolume();
+	extractSelectionVolume();
 }
 
 void Model::shutdown() {
@@ -548,10 +556,6 @@ bool Model::trace(const video::Camera& camera) {
 			setCursorPosition(_result.previousVoxel);
 		}
 	}
-
-	extractVolume();
-	extractCursorVolume();
-	extractSelectionVolume();
 
 	return true;
 }

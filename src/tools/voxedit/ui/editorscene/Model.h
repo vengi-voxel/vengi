@@ -57,7 +57,7 @@ private:
 
 	void markExtract();
 	void markCursorExtract();
-	void modified();
+	void modified(bool markUndo = true);
 	bool placeCursor();
 	bool actionRequiresExistingVoxel(Action action) const;
 public:
@@ -70,6 +70,7 @@ public:
 	void setCursorPosition(glm::ivec3 pos, bool force = false);
 
 	void init();
+	void update();
 	void shutdown();
 
 	void copy();
