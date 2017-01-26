@@ -58,6 +58,8 @@ bool BiomeManager::init(const std::string& luaString) {
 		return false;
 	}
 
+	// TODO: init city gradients
+
 	return !bioms.empty();
 }
 
@@ -172,6 +174,24 @@ bool BiomeManager::hasPlants(const glm::ivec3& pos) const {
 	core_trace_scoped(BiomeHasPlants);
 	// TODO:
 	return hasTrees(pos);
+}
+
+int BiomeManager::getCityDensity(const glm::ivec3& pos) const {
+	// TODO:
+	if (getCityGradient(pos) < 0.4f) {
+		return 1;
+	}
+	return 0;
+}
+
+float BiomeManager::getCityGradient(const glm::ivec3& pos) const {
+	// TODO:
+	return 1.0f;
+}
+
+bool BiomeManager::hasCity(const glm::ivec3& pos) const {
+	core_trace_scoped(BiomeHasCity);
+	return getCityGradient(pos) < 0.4f;
 }
 
 }

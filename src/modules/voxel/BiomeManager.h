@@ -75,18 +75,20 @@ public:
 		return getVoxel(glm::ivec3(x, y, z), underground);
 	}
 
+	bool hasCactus(const glm::ivec3& pos) const;
+	bool hasTrees(const glm::ivec3& pos) const;
+	bool hasCity(const glm::ivec3& pos) const;
+	bool hasClouds(const glm::ivec3& pos) const;
+	bool hasPlants(const glm::ivec3& pos) const;
+
+	int getCityDensity(const glm::ivec3& pos) const;
+	float getCityGradient(const glm::ivec3& pos) const;
+	int getAmountOfTrees(const Region& region) const;
+
 	float getHumidity(const glm::ivec3& pos) const;
 	float getTemperature(const glm::ivec3& pos) const;
 
-	bool hasCactus(const glm::ivec3& pos) const;
-	bool hasTrees(const glm::ivec3& pos) const;
-	int getAmountOfTrees(const Region& region) const;
-
 	const Biome* getBiome(const glm::ivec3& pos, bool underground = false) const;
-
-	bool hasClouds(const glm::ivec3& pos) const;
-
-	bool hasPlants(const glm::ivec3& pos) const;
 };
 
 }

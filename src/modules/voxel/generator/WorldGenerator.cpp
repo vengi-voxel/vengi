@@ -3,7 +3,7 @@
 namespace voxel {
 namespace world {
 
-int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeManager& biomManager, long seed, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
+int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeManager& biomManager, long seed, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) {
 	// TODO: the 2d noise doesn't need the same resolution - we can optimize this a lot, we can lerp/glm::mix here
 	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 	const float landscapeNoise = ::noise::Simplex::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
@@ -14,11 +14,13 @@ int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeM
 	const float mountainNoiseNormalized = ::noise::norm(mountainNoise);
 	const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 	const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
-	const int ni = n * (MAX_TERRAIN_HEIGHT - 1);
+	const int ni = n * maxHeight;
 
 	const Voxel& water = createColorVoxel(VoxelType::Water, seed);
 	const Voxel& dirt = createColorVoxel(VoxelType::Dirt, seed);
 	static constexpr Voxel air;
+
+	// TODO: apply city gradient from biome manager
 
 	voxels[0] = dirt;
 	for (int y = ni - 1; y >= 1; --y) {
