@@ -77,7 +77,7 @@ bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	}
 
 	constexpr voxel::Voxel Empty;
-	const int32_t EmptyColor = core::Color::GetRGB(getColor(Empty));
+	const int32_t EmptyColor = core::Color::getRGB(getColor(Empty));
 
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
@@ -129,7 +129,7 @@ bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 					} else {
 						visible = 255;
 					}
-					const int32_t voxelColor = core::Color::GetRGBA(getColor(voxel));
+					const int32_t voxelColor = core::Color::getRGBA(getColor(voxel));
 					const uint8_t red = (voxelColor >> 24) & 0xFF;
 					const uint8_t green = (voxelColor >> 16) & 0xFF;
 					const uint8_t blue = (voxelColor >> 8) & 0xFF;
@@ -214,9 +214,9 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	}
 	glm::vec4 color;
 	if (_colorFormat == ColorFormat::RGBA) {
-		color = core::Color::FromRGBA(((uint32_t)red) << 24 | ((uint32_t)green) << 16 | ((uint32_t)blue) << 8 | ((uint32_t)255) << 0);
+		color = core::Color::fromRGBA(((uint32_t)red) << 24 | ((uint32_t)green) << 16 | ((uint32_t)blue) << 8 | ((uint32_t)255) << 0);
 	} else {
-		color = core::Color::FromRGBA(((uint32_t)blue) << 24 | ((uint32_t)green) << 16 | ((uint32_t)red) << 8 | ((uint32_t)255) << 0);
+		color = core::Color::fromRGBA(((uint32_t)blue) << 24 | ((uint32_t)green) << 16 | ((uint32_t)red) << 8 | ((uint32_t)255) << 0);
 	}
 	const uint8_t index = findClosestIndex(color);
 	return voxel::createVoxel(voxel::VoxelType::Generic, index);

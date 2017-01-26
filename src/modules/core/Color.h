@@ -43,19 +43,19 @@ public:
 		DarkBrown;
 
 	static int getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>& colors);
-	static glm::vec4 FromRGB(const unsigned int rgbInt, const float a = 1.0f);
-	static glm::vec4 FromRGBA(const unsigned int rgbaInt);
-	static glm::vec4 FromHSB(const float hue, const float saturation, const float brightness, const float alpha = 1.0f);
+	static glm::vec4 fromRGB(const unsigned int rgbInt, const float a = 1.0f);
+	static glm::vec4 fromRGBA(const unsigned int rgbaInt);
+	static glm::vec4 fromHSB(const float hue, const float saturation, const float brightness, const float alpha = 1.0f);
 
-	static unsigned int GetRGB(const glm::vec4&);
-	static unsigned int GetRGBA(const glm::vec4&);
-	static void GetHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);
+	static unsigned int getRGB(const glm::vec4&);
+	static unsigned int getRGBA(const glm::vec4&);
+	static void getHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);
 
-	static float Brightness(const glm::vec4&);
-	static float Intensity(const glm::vec4&);
+	static float brightness(const glm::vec4&);
+	static float intensity(const glm::vec4&);
 
-	static glm::vec4 Darker(const glm::vec4& color, float f = 1.0f);
-	static glm::vec4 Brighter(const glm::vec4& color, float f = 1.0f);
+	static glm::vec4 darker(const glm::vec4& color, float f = 1.0f);
+	static glm::vec4 brighter(const glm::vec4& color, float f = 1.0f);
 };
 
 }

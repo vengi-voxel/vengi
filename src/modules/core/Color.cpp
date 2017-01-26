@@ -57,13 +57,13 @@ int Color::getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>&
 	float hue;
 	float saturation;
 	float brightness;
-	core::Color::GetHSB(color, hue, saturation, brightness);
+	core::Color::getHSB(color, hue, saturation, brightness);
 
 	for (size_t i = 0; i < colors.size(); ++i) {
 		float chue;
 		float csaturation;
 		float cbrightness;
-		core::Color::GetHSB(colors[i], chue, csaturation, cbrightness);
+		core::Color::getHSB(colors[i], chue, csaturation, cbrightness);
 
 		const float dH = chue - hue;
 		const float dS = csaturation - saturation;
@@ -80,17 +80,17 @@ int Color::getClosestMatch(const glm::vec4& color, const std::vector<glm::vec4>&
 	return minIndex;
 }
 
-glm::vec4 Color::FromRGB(const unsigned int rgbInt, const float a) {
+glm::vec4 Color::fromRGB(const unsigned int rgbInt, const float a) {
 	return glm::vec4(static_cast<float>(rgbInt >> 16 & 0xFF) / Color::magnitude, static_cast<float>(rgbInt >> 8 & 0xFF) / Color::magnitude,
 			static_cast<float>(rgbInt & 0xFF) / Color::magnitude, a);
 }
 
-glm::vec4 Color::FromRGBA(const unsigned int rgbaInt) {
+glm::vec4 Color::fromRGBA(const unsigned int rgbaInt) {
 	return glm::vec4(static_cast<float>(rgbaInt >> 24 & 0xFF) / Color::magnitude, static_cast<float>(rgbaInt >> 16 & 0xFF) / Color::magnitude,
 			static_cast<float>(rgbaInt >> 8 & 0xFF) / Color::magnitude, static_cast<float>(rgbaInt & 0xFF) / Color::magnitude);
 }
 
-glm::vec4 Color::FromHSB(const float hue, const float saturation, const float brightness, const float alpha) {
+glm::vec4 Color::fromHSB(const float hue, const float saturation, const float brightness, const float alpha) {
 	if (std::numeric_limits<float>::epsilon() > brightness) {
 		return glm::vec4(0.f, 0.f, 0.f, alpha);
 	}
@@ -139,54 +139,54 @@ glm::vec4 Color::FromHSB(const float hue, const float saturation, const float br
 	return color;
 }
 
-unsigned int Color::GetRGB(const glm::vec4& color) {
+unsigned int Color::getRGB(const glm::vec4& color) {
 	return static_cast<int>(color.r * magnitude) << 16 | static_cast<int>(color.g * magnitude) << 8 | static_cast<int>(color.b * magnitude);
 }
 
-unsigned int Color::GetRGBA(const glm::vec4& color) {
+unsigned int Color::getRGBA(const glm::vec4& color) {
 	return static_cast<int>(color.r * magnitude) << 24 | static_cast<int>(color.g * magnitude) << 16 | static_cast<int>(color.b * magnitude) << 8
 			| static_cast<int>(color.a * magnitude);
 }
 
-void Color::GetHSB(const glm::vec4& color, float& hue, float& saturation, float& brightness) {
-	brightness = Brightness(color);
+void Color::getHSB(const glm::vec4& color, float& chue, float& csaturation, float& cbrightness) {
+	cbrightness = brightness(color);
 	const float minBrightness = std::min(color.r, std::min(color.g, color.b));
-	if (std::fabs(brightness - minBrightness) < std::numeric_limits<float>::epsilon()) {
-		hue = 0.f;
-		saturation = 0.f;
+	if (std::fabs(cbrightness - minBrightness) < std::numeric_limits<float>::epsilon()) {
+		chue = 0.f;
+		csaturation = 0.f;
 		return;
 	}
-	const float r = (brightness - color.r) / (brightness - minBrightness);
-	const float g = (brightness - color.g) / (brightness - minBrightness);
-	const float b = (brightness - color.b) / (brightness - minBrightness);
-	if (std::fabs(color.r - brightness) < std::numeric_limits<float>::epsilon()) {
-		hue = b - g;
-	} else if (std::fabs(color.g - brightness) < std::numeric_limits<float>::epsilon()) {
-		hue = 2.f + r - b;
+	const float r = (cbrightness - color.r) / (cbrightness - minBrightness);
+	const float g = (cbrightness - color.g) / (cbrightness - minBrightness);
+	const float b = (cbrightness - color.b) / (cbrightness - minBrightness);
+	if (std::fabs(color.r - cbrightness) < std::numeric_limits<float>::epsilon()) {
+		chue = b - g;
+	} else if (std::fabs(color.g - cbrightness) < std::numeric_limits<float>::epsilon()) {
+		chue = 2.f + r - b;
 	} else {
-		hue = 4.f + g - r;
+		chue = 4.f + g - r;
 	}
-	hue /= 6.f;
-	if (hue < 0.f) {
-		hue += 1.f;
+	chue /= 6.f;
+	if (chue < 0.f) {
+		chue += 1.f;
 	}
-	saturation = (brightness - minBrightness) / brightness;
+	csaturation = (cbrightness - minBrightness) / cbrightness;
 }
 
-float Color::Brightness(const glm::vec4& color) {
+float Color::brightness(const glm::vec4& color) {
 	return std::max(color.r, std::max(color.g, color.b));
 }
 
-float Color::Intensity(const glm::vec4& color) {
+float Color::intensity(const glm::vec4& color) {
 	return (color.r + color.g + color.b) / 3.f;
 }
 
-glm::vec4 Color::Darker(const glm::vec4& color, float f) {
+glm::vec4 Color::darker(const glm::vec4& color, float f) {
 	f = std::pow(scaleFactor, f);
 	return glm::vec4(glm::clamp(glm::vec3(color) * f, 0.0f, 1.0f), color.a);
 }
 
-glm::vec4 Color::Brighter(const glm::vec4& color, float f) {
+glm::vec4 Color::brighter(const glm::vec4& color, float f) {
 	static float min = 21.f / magnitude;
 	glm::vec3 result = glm::vec3(color);
 	f = std::pow(scaleFactor, f);

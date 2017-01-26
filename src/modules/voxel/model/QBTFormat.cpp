@@ -108,7 +108,7 @@ bool QBTFormat::loadMatrix(io::FileStream& stream) {
 				++byteCounter;
 #endif
 
-				const glm::vec4& color = core::Color::FromRGBA(red | green | blue | alpha);
+				const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
 				const uint8_t index = findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 				volume->setVoxel(x, y, z, voxel);
@@ -197,7 +197,7 @@ bool QBTFormat::loadFromStream(io::FileStream& stream) {
 			const uint32_t blue  = ((uint32_t)colorByteB) << 8;
 			const uint32_t alpha = ((uint32_t)255) << 0;
 
-			const glm::vec4& color = core::Color::FromRGBA(red | green | blue | alpha);
+			const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
 			const uint8_t index = findClosestIndex(color);
 			_palette[i] = index;
 		}
