@@ -301,17 +301,20 @@ bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 
 void Model::copy() {
 	voxel::mergeRawVolumesSameDimension(_cursorVolume, _rawVolumeSelectionRenderer.volume());
+	markCursorExtract();
 }
 
 void Model::paste() {
-	const voxel::Region& srcRegion = _cursorVolume->getRegion();
+	voxel::RawVolume* cursorVolume = _cursorVolume;
+	const voxel::Region& srcRegion = cursorVolume->getRegion();
 	const voxel::Region destRegion = srcRegion + _cursorPos;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
-	voxel::mergeRawVolumes(&wrapper, _cursorVolume, destRegion, srcRegion);
+	voxel::mergeRawVolumes(&wrapper, cursorVolume, destRegion, srcRegion);
 }
 
 void Model::cut() {
-	voxel::mergeRawVolumesSameDimension(_cursorVolume, _rawVolumeSelectionRenderer.volume());
+	voxel::RawVolume* cursorVolume = _cursorVolume;
+	voxel::mergeRawVolumesSameDimension(cursorVolume, _rawVolumeSelectionRenderer.volume());
 	// TODO: delete selected volume from model volume
 }
 

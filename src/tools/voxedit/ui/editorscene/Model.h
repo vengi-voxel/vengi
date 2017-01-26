@@ -188,12 +188,14 @@ inline void Model::setLockedAxis(Axis axis, bool unlock) {
 inline void Model::scaleCursorShape(const glm::vec3& scale) {
 	_shapeHandler.scaleCursorShape(scale, _cursorVolume);
 	resetLastTrace();
+	markCursorExtract();
 }
 
 inline void Model::setVoxel(const voxel::Voxel& type) {
 	_shapeHandler.setVoxel(type);
-	if (_cursorVolume != nullptr) {
-		_shapeHandler.setCursorShape(_shapeHandler.cursorShape(), _cursorVolume, true);
+	voxel::RawVolume* cursorVolume = _cursorVolume;
+	if (cursorVolume != nullptr) {
+		_shapeHandler.setCursorShape(_shapeHandler.cursorShape(), cursorVolume, true);
 	}
 }
 
