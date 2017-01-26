@@ -241,9 +241,9 @@ void Model::resetLastTrace() {
 void Model::setNewVolume(voxel::RawVolume* volume) {
 	const voxel::Region& region = volume->getRegion();
 
-	delete _rawVolumeSelectionRenderer.setVolume(0, new voxel::RawVolume(region));
-	delete _rawVolumeRenderer.setVolume(0, volume);
-	delete _rawVolumeRenderer.setVolume(1, new voxel::RawVolume(region));
+	delete _rawVolumeSelectionRenderer.setVolume(ModelVolumeIndex, new voxel::RawVolume(region));
+	delete _rawVolumeRenderer.setVolume(ModelVolumeIndex, volume);
+	delete _rawVolumeRenderer.setVolume(CursorVolumeIndex, new voxel::RawVolume(region));
 
 	setCursorShape(_shapeHandler.cursorShape());
 
@@ -317,7 +317,7 @@ void Model::cut() {
 }
 
 void Model::render(const video::Camera& camera) {
-	const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(0);
+	const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(ModelVolumeIndex);
 	_empty = mesh != nullptr ? mesh->getNoOfIndices() > 0 : true;
 	_rawVolumeRenderer.render(camera);
 }
@@ -383,7 +383,7 @@ bool Model::extractSelectionVolume() {
 bool Model::extractVolume() {
 	if (_extract) {
 		_extract = false;
-		_rawVolumeRenderer.extract(0);
+		_rawVolumeRenderer.extract(ModelVolumeIndex);
 		return true;
 	}
 	return false;
@@ -392,7 +392,7 @@ bool Model::extractVolume() {
 bool Model::extractCursorVolume() {
 	if (_extractCursor) {
 		_extractCursor = false;
-		_rawVolumeRenderer.extract(1);
+		_rawVolumeRenderer.extract(CursorVolumeIndex);
 		return true;
 	}
 	return false;

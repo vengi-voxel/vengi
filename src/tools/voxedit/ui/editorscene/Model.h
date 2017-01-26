@@ -17,6 +17,9 @@
 
 namespace voxedit {
 
+static constexpr int ModelVolumeIndex = 0;
+static constexpr int CursorVolumeIndex = 1;
+
 /**
  * The model is shared across all viewports
  */
@@ -254,19 +257,19 @@ inline Action Model::keyAction() const {
 }
 
 inline voxel::RawVolume* Model::modelVolume() {
-	return _rawVolumeRenderer.volume(0);
+	return _rawVolumeRenderer.volume(ModelVolumeIndex);
 }
 
 inline const voxel::RawVolume* Model::modelVolume() const {
-	return _rawVolumeRenderer.volume(0);
+	return _rawVolumeRenderer.volume(ModelVolumeIndex);
 }
 
 inline voxel::RawVolume* Model::cursorPositionVolume() {
-	return _rawVolumeRenderer.volume(1);
+	return _rawVolumeRenderer.volume(CursorVolumeIndex);
 }
 
 inline const voxel::RawVolume* Model::cursorPositionVolume() const {
-	return _rawVolumeRenderer.volume(1);
+	return _rawVolumeRenderer.volume(CursorVolumeIndex);
 }
 
 inline Action Model::uiAction() const {
