@@ -57,8 +57,9 @@ private:
 
 	void markExtract();
 	void markCursorExtract();
-	void modified(bool markUndo = true);
-	bool placeCursor();
+	void modified(const voxel::Region& modifiedRegion, bool markUndo = true);
+	bool placeCursor(voxel::Region* modifiedRegion);
+	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 	bool actionRequiresExistingVoxel(Action action) const;
 public:
 	Model();
@@ -89,7 +90,6 @@ public:
 	bool newVolume(bool force);
 
 	const voxel::Voxel& getVoxel(const glm::ivec3& pos) const;
-	bool setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 	bool dirty() const;
 	bool needExtract() const;
 	bool empty() const;

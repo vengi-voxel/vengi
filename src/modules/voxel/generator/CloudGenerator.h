@@ -36,9 +36,10 @@ static inline glm::ivec2 randomPosWithoutHeight(const Region& region, int border
 }
 
 template<class Volume, class BiomeManager>
-void createClouds(Volume& volume, const BiomeManager& biomManager, const CloudContext& ctx, core::Random& random) {
+bool createClouds(Volume& volume, const BiomeManager& biomManager, const CloudContext& ctx, core::Random& random) {
 	const Voxel& voxel = createRandomColorVoxel(VoxelType::Cloud, random);
 	const voxel::Region& region = volume.getRegion();
+	int cnt = 0;
 	glm::ivec3 chunkCloudCenterPos = ctx.pos;
 	for (int i = 0; i < ctx.amount; ++i) {
 		if (ctx.randomPos) {
@@ -56,7 +57,9 @@ void createClouds(Volume& volume, const BiomeManager& biomManager, const CloudCo
 			chunkCloudCenterPos.x += ctx.deltaX;
 			chunkCloudCenterPos.y += ctx.deltaY;
 		}
+		++cnt;
 	}
+	return cnt > 0;
 }
 
 }
