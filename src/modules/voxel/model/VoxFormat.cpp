@@ -164,6 +164,8 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		return nullptr;
 	}
 
+	const int64_t resetPos = stream.pos();
+
 	RawVolume *volume = nullptr;
 	uint32_t numModels = 1;
 
@@ -199,6 +201,46 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 		const int index = core::Color::getClosestMatch(color, materialColors);
 		_palette[i] = index;
 	}
+
+	do {
+		uint32_t chunkId;
+		wrap(stream.readInt(chunkId))
+		uint32_t numBytesChunk;
+		wrap(stream.readInt(numBytesChunk))
+		uint32_t numBytesChildrenChunks;
+		wrap(stream.readInt(numBytesChildrenChunks))
+		const int64_t currentChunkPos = stream.pos();
+		const int64_t nextChunkPos = currentChunkPos + numBytesChunk + numBytesChildrenChunks;
+		if (chunkId == FourCC('R','G','B','A')) {
+			Log::debug("Found palette chunk with %u bytes", numBytesChunk);
+			// 7. Chunk id 'RGBA' : palette
+			// -------------------------------------------------------------------------------
+			// # Bytes  | Type       | Value
+			// -------------------------------------------------------------------------------
+			// 4 x 256  | int        | (R, G, B, A) : 1 byte for each component
+			//                       | * <NOTICE>
+			//                       | * color [0-254] are mapped to palette index [1-255], e.g :
+			//                       |
+			//                       | for ( int i = 0; i <= 254; i++ ) {
+			//                       |     palette[i + 1] = ReadRGBA();
+			//                       | }
+			// -------------------------------------------------------------------------------
+			for (int i = 0; i <= 254; i++) {
+				uint32_t rgba;
+				wrap(stream.readInt(rgba))
+				const glm::vec4& color = core::Color::fromRGBA(rgba);
+				const int index = core::Color::getClosestMatch(color, materialColors);
+				Log::trace("rgba %x, r: %f, g: %f, b: %f, a: %f, index: %i, r2: %f, g2: %f, b2: %f, a2: %f",
+						rgba, color.r, color.g, color.b, color.a, index, materialColors[index].r, materialColors[index].g, materialColors[index].b, materialColors[index].a);
+				_palette[i + 1] = (uint8_t)index;
+			}
+			break;
+		}
+		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
+		wrap(stream.seek(nextChunkPos));
+	} while (stream.remaining() > 0);
+
+	stream.seek(resetPos);
 
 	do {
 		uint32_t chunkId;
@@ -271,27 +313,6 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 				volume->setVoxel(x, y, z, voxel);
 			}
-		} else if (chunkId == FourCC('R','G','B','A')) {
-			Log::debug("Found palette chunk with %u bytes", numBytesChunk);
-			// 7. Chunk id 'RGBA' : palette
-			// -------------------------------------------------------------------------------
-			// # Bytes  | Type       | Value
-			// -------------------------------------------------------------------------------
-			// 4 x 256  | int        | (R, G, B, A) : 1 byte for each component
-			//                       | * <NOTICE>
-			//                       | * color [0-254] are mapped to palette index [1-255], e.g :
-			//                       |
-			//                       | for ( int i = 0; i <= 254; i++ ) {
-			//                       |     palette[i + 1] = ReadRGBA();
-			//                       | }
-			// -------------------------------------------------------------------------------
-			for (int i = 0; i <= 254; i++) {
-				uint32_t rgba;
-				wrap(stream.readInt(rgba))
-				const glm::vec4& color = core::Color::fromRGBA(rgba);
-				const int index = core::Color::getClosestMatch(color, materialColors);
-				_palette[i + 1] = (uint8_t)index;
-			}
 		} else if (chunkId == FourCC('M','A','T','T')) {
 			Log::debug("Found material chunk with %u bytes", numBytesChunk);
 			// 9. Chunk id 'MATT' : material, if it is absent, it is diffuse material
@@ -339,6 +360,8 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				float materialPropertyValue;
 				wrap(stream.readFloat(materialPropertyValue))
 			}
+		} else if (chunkId == FourCC('R','G','B','A')) {
+			// already loaded
 		} else {
 			Log::warn("Unknown chunk in vox file: %u", chunkId);
 		}
