@@ -63,18 +63,6 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
-	static void Noise2DBuffer(uint8_t* buffer, int width, int height, int components, const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DBuffer(buffer, width, height, components, pos, noise::Simplex::Noise2D, octaves, persistence, frequency, amplitude);
-	}
-
-	static void Noise2DGrayA(uint8_t* buffer, int width, int height, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DBuffer(buffer, width, height, 4, glm::vec2(0), octaves, persistence, frequency, amplitude);
-	}
-
-	static void Noise2DRGBA(uint8_t* buffer, int width, int height, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DChannel(buffer, width, height, 4, glm::vec2(0), octaves, persistence, frequency, amplitude);
-	}
-
 	static void Noise2DChannel(uint8_t* buffer, int width, int height, int components, const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
 		uint8_t bufferChannel[width * height];
 		for (int channel = 0; channel < components; ++channel) {
@@ -86,6 +74,10 @@ public:
 				}
 			}
 		}
+	}
+
+	static void Noise2DRGBA(uint8_t* buffer, int width, int height, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
+		Noise2DChannel(buffer, width, height, 4, glm::vec2(0), octaves, persistence, frequency, amplitude);
 	}
 
 	template<class Func, class ... Args>
@@ -105,10 +97,6 @@ public:
 				}
 			}
 		}
-	}
-
-	static void SeamlessNoise2DGrayA(uint8_t* buffer, int size, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		SeamlessNoise2DBuffer(buffer, size, 4, glm::vec4(0), noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
 	}
 
 	static void SeamlessNoise2DRGB(uint8_t* buffer, int size, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
