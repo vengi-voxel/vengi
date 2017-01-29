@@ -26,6 +26,8 @@
 // off every 'zix'.)
 //
 
+#include <glm/glm.hpp>
+
 #ifndef FASTNOISE_H
 #define FASTNOISE_H
 
@@ -46,11 +48,11 @@ public:
 
 	// Sets seed used for all noise types
 	// Default: 1337
-	int GetSeed(void) const { return m_seed; }
+	inline int GetSeed(void) const { return m_seed; }
 
 	// Sets frequency for all noise types
 	// Default: 0.01
-	void SetFrequency(float frequency) { m_frequency = frequency; }
+	inline void SetFrequency(float frequency) { m_frequency = frequency; }
 
 	// Changes the interpolation method used to smooth between noise values
 	// Possible interpolation methods (lowest to highest quality) :
@@ -59,44 +61,44 @@ public:
 	// - Quintic
 	// Used in Value, Gradient Noise and Position Warping
 	// Default: Quintic
-	void SetInterp(Interp interp) { m_interp = interp; }
+	inline void SetInterp(Interp interp) { m_interp = interp; }
 
 	// Sets noise return type of GetNoise(...)
 	// Default: Simplex
-	void SetNoiseType(NoiseType noiseType) { m_noiseType = noiseType; }
+	inline void SetNoiseType(NoiseType noiseType) { m_noiseType = noiseType; }
 
 	// Sets octave count for all fractal noise types
 	// Default: 3
-	void SetFractalOctaves(unsigned int octaves) { m_octaves = octaves; CalculateFractalBounding(); }
+	inline void SetFractalOctaves(unsigned int octaves) { m_octaves = octaves; CalculateFractalBounding(); }
 	
 	// Sets octave lacunarity for all fractal noise types
 	// Default: 2.0
-	void SetFractalLacunarity(float lacunarity) { m_lacunarity = lacunarity; }
+	inline void SetFractalLacunarity(float lacunarity) { m_lacunarity = lacunarity; }
 
 	// Sets octave gain for all fractal noise types
 	// Default: 0.5
-	void SetFractalGain(float gain) { m_gain = gain; CalculateFractalBounding(); }
+	inline void SetFractalGain(float gain) { m_gain = gain; CalculateFractalBounding(); }
 
 	// Sets method for combining octaves in all fractal noise types
 	// Default: FBM
-	void SetFractalType(FractalType fractalType) { m_fractalType = fractalType; }
+	inline void SetFractalType(FractalType fractalType) { m_fractalType = fractalType; }
 
 	// Sets return type from cellular noise calculations
 	// Note: NoiseLookup requires another FastNoise object be set with SetCellularNoiseLookup() to function
 	// Default: CellValue
-	void SetCellularDistanceFunction(CellularDistanceFunction cellularDistanceFunction) { m_cellularDistanceFunction = cellularDistanceFunction; }
+	inline void SetCellularDistanceFunction(CellularDistanceFunction cellularDistanceFunction) { m_cellularDistanceFunction = cellularDistanceFunction; }
 	
 	// Sets distance function used in cellular noise calculations
 	// Default: Euclidean
-	void SetCellularReturnType(CellularReturnType cellularReturnType) { m_cellularReturnType = cellularReturnType; }
+	inline void SetCellularReturnType(CellularReturnType cellularReturnType) { m_cellularReturnType = cellularReturnType; }
 	
 	// Noise used to calculate a cell value if cellular return type is NoiseLookup
 	// The lookup value is acquired through GetNoise() so ensure you SetNoiseType() on the noise lookup, value, gradient or simplex is recommended
-	void SetCellularNoiseLookup(FastNoise* noise) { m_cellularNoiseLookup = noise; }
+	inline void SetCellularNoiseLookup(FastNoise* noise) { m_cellularNoiseLookup = noise; }
 
 	// Sets the maximum warp distance from original location when using PositionWarp{Fractal}(...)
 	// Default: 1.0
-	void SetPositionWarpAmp(float positionWarpAmp) { m_positionWarpAmp = positionWarpAmp / 0.45f; }
+	inline void SetPositionWarpAmp(float positionWarpAmp) { m_positionWarpAmp = positionWarpAmp / 0.45f; }
 
 	//2D												
 	float GetValue(float x, float y);					
@@ -105,8 +107,12 @@ public:
 	float GetGradient(float x, float y);				
 	float GetGradientFractal(float x, float y);			
 
+	float GetSimplex(const glm::vec2& v);
 	float GetSimplex(float x, float y);					
 	float GetSimplexFractal(float x, float y);			
+	inline float GetSimplexFractal(const glm::vec2& v) {
+		return GetSimplexFractal(v.x, v.y);
+	}
 
 	float GetCellular(float x, float y);				
 
@@ -125,8 +131,12 @@ public:
 	float GetGradient(float x, float y, float z);		
 	float GetGradientFractal(float x, float y, float z);
 
+	float GetSimplex(const glm::vec3& v);
 	float GetSimplex(float x, float y, float z);		
-	float GetSimplexFractal(float x, float y, float z);	
+	float GetSimplexFractal(float x, float y, float z);
+	inline float GetSimplexFractal(const glm::vec3& v) {
+		return GetSimplexFractal(v.x, v.y, v.z);
+	}
 
 	float GetCellular(float x, float y, float z);		
 
@@ -139,7 +149,12 @@ public:
 	void PositionWarpFractal(float& x, float& y, float& z);
 
 	//4D
+	float GetSimplex(const glm::vec4& v);
 	float GetSimplex(float x, float y, float z, float w);
+	float GetSimplexFractal(float x, float y, float z, float w);
+	inline float GetSimplexFractal(const glm::vec4& v) {
+		return GetSimplexFractal(v.x, v.y, v.z, v.z);
+	}
 
 	float GetWhiteNoise(float x, float y, float z, float w);
 	float GetWhiteNoiseInt(int x, int y, int z, int w);
@@ -220,6 +235,9 @@ protected:
 	void SinglePositionWarp(unsigned char offset, float warpAmp, float frequency, float& x, float& y, float& z);
 
 	//4D
+	float SingleSimplexFractalFBM(float x, float y, float z, float w);
+	float SingleSimplexFractalBillow(float x, float y, float z, float w);
+	float SingleSimplexFractalRigidMulti(float x, float y, float z, float w);
 	float SingleSimplex(unsigned char offset, float x, float y, float z, float w);
 
 private:

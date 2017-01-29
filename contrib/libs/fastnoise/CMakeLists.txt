@@ -7,3 +7,4 @@ engine_add_library(
 	LIB fastnoise
 	SRCS ${SRCS}
 )
+target_link_libraries(${LIB} glm)

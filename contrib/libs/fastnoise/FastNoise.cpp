@@ -181,7 +181,6 @@ const float CELL_3D_Z[] =
 static int FastFloor(float f) { return (f >= 0.0f ? (int)f : (int)f - 1); }
 static int FastRound(float f) { return (f >= 0.0f) ? (int)(f + 0.5f) : (int)(f - 0.5f); }
 static float FastAbs(float f) { return fabsf(f); }
-static int FastAbs(int i) { return abs(i); }
 static float Lerp(float a, float b, float t) { return a + t * (b - a); }
 static float InterpHermiteFunc(float t) { return t*t*(3 - 2 * t); }
 static float InterpQuinticFunc(float t) { return t*t*t*(t*(t * 6 - 15) + 10); }
@@ -1016,6 +1015,11 @@ float FastNoise::SingleSimplexFractalRigidMulti(float x, float y, float z)
 	return sum;
 }
 
+float FastNoise::GetSimplex(const glm::vec3& v)
+{
+	return SingleSimplex(0, v.x * m_frequency, v.y * m_frequency, v.z * m_frequency);
+}
+
 float FastNoise::GetSimplex(float x, float y, float z)
 {
 	return SingleSimplex(0, x * m_frequency, y * m_frequency, z * m_frequency);
@@ -1193,6 +1197,11 @@ float FastNoise::SingleSimplexFractalRigidMulti(float x, float y)
 	return sum;
 }
 
+float FastNoise::GetSimplex(const glm::vec2& v)
+{
+	return SingleSimplex(0, v.x * m_frequency, v.y * m_frequency);
+}
+
 float FastNoise::GetSimplex(float x, float y)
 {
 	return SingleSimplex(0, x * m_frequency, y * m_frequency);
@@ -1258,9 +1267,94 @@ float FastNoise::SingleSimplex(unsigned char offset, float x, float y)
 	return  50.0f * (n0 + n1 + n2);
 }
 
+float FastNoise::GetSimplex(const glm::vec4& v)
+{
+	return SingleSimplex(0, v.x * m_frequency, v.y * m_frequency, v.z * m_frequency, v.w * m_frequency);
+}
+
 float FastNoise::GetSimplex(float x, float y, float z, float w)
 {
 	return SingleSimplex(0, x * m_frequency, y * m_frequency, z * m_frequency, w * m_frequency);
+}
+
+float FastNoise::GetSimplexFractal(float x, float y, float z, float w)
+{
+	x *= m_frequency;
+	y *= m_frequency;
+	z *= m_frequency;
+	w *= m_frequency;
+
+	switch (m_fractalType)
+	{
+	case FBM:
+		return SingleSimplexFractalFBM(x, y, z, w);
+	case Billow:
+		return SingleSimplexFractalBillow(x, y, z, w);
+	case RigidMulti:
+		return SingleSimplexFractalRigidMulti(x, y, z, w);
+	default:
+		return 0.0f;
+	}
+}
+
+float FastNoise::SingleSimplexFractalFBM(float x, float y, float z, float w)
+{
+	float sum = SingleSimplex(m_perm[0], x, y, z, w);
+	float amp = 1.0f;
+	unsigned int i = 0;
+
+	while (++i < m_octaves)
+	{
+		x *= m_lacunarity;
+		y *= m_lacunarity;
+		z *= m_lacunarity;
+		w *= m_lacunarity;
+
+		amp *= m_gain;
+		sum += SingleSimplex(m_perm[i], x, y, z, w) * amp;
+	}
+
+	return sum * m_fractalBounding;
+}
+
+float FastNoise::SingleSimplexFractalBillow(float x, float y, float z, float w)
+{
+	float sum = FastAbs(SingleSimplex(m_perm[0], x, y, z, w)) * 2.0f - 1.0f;
+	float amp = 1.0f;
+	unsigned int i = 0;
+
+	while (++i < m_octaves)
+	{
+		x *= m_lacunarity;
+		y *= m_lacunarity;
+		z *= m_lacunarity;
+		w *= m_lacunarity;
+
+		amp *= m_gain;
+		sum += (FastAbs(SingleSimplex(m_perm[i], x, y, z, w)) * 2.0f - 1.0f) * amp;
+	}
+
+	return sum * m_fractalBounding;
+}
+
+float FastNoise::SingleSimplexFractalRigidMulti(float x, float y, float z, float w)
+{
+	float sum = 1.0f - FastAbs(SingleSimplex(m_perm[0], x, y, z, w));
+	float amp = 1.0f;
+	unsigned int i = 0;
+
+	while (++i < m_octaves)
+	{
+		x *= m_lacunarity;
+		y *= m_lacunarity;
+		z *= m_lacunarity;
+		w *= m_lacunarity;
+
+		amp *= m_gain;
+		sum -= (1.0f - FastAbs(SingleSimplex(m_perm[i], x, y, z, w))) * amp;
+	}
+
+	return sum;
 }
 
 static const int SIMPLEX_4D[] =
