@@ -5,6 +5,13 @@
 #include "SimplexNoise.h"
 #include "core/Trace.h"
 
+#define GLM_NOISE 1
+#define FAST_NOISE 0
+
+#if FAST_NOISE != 0
+#include <FastNoise.h>
+#endif
+
 namespace noise {
 
 /**
@@ -16,6 +23,17 @@ namespace noise {
 template<class VecType>
 static float Noise(const VecType& pos, int octaves, float persistence, float lacunarity, float frequency, float amplitude) {
 	core_trace_scoped(Noise);
+#if FAST_NOISE
+	static FastNoise fn;
+	fn.SetNoiseType(FastNoise::NoiseType::SimplexFractal);
+	fn.SetFractalOctaves(octaves);
+	fn.SetFrequency(frequency);
+	fn.SetFractalLacunarity(lacunarity);
+	fn.SetFractalGain(persistence);
+	fn.SetFractalType(FastNoise::FractalType::RigidMulti);
+	return fn.GetSimplexFractal(pos);
+#endif
+#if GLM_NOISE
 	float total = 0.0f;
 	for (int i = 0; i < octaves; ++i) {
 		total += glm::simplex(pos * frequency) * amplitude;
@@ -23,6 +41,7 @@ static float Noise(const VecType& pos, int octaves, float persistence, float lac
 		amplitude *= persistence;
 	}
 	return total;
+#endif
 }
 
 /**
@@ -36,8 +55,17 @@ static float NoiseClamped(const VecType& pos, int octaves, float persistence, fl
 	float total = 0.0f;
 	float maxAmplitude = 0;
 	float amplitude = 1.0f;
+#if FAST_NOISE
+	static FastNoise fn;
+	fn.SetNoiseType(FastNoise::NoiseType::Simplex);
+#endif
 	for (int i = 0; i < octaves; ++i) {
+#if GLM_NOISE
 		total += glm::simplex(pos * frequency) * amplitude;
+#elif FAST_NOISE
+		fn.SetFrequency(frequency);
+		total += fn.GetSimplex(pos) * amplitude;
+#endif
 		frequency *= lacunarity;
 		maxAmplitude += amplitude;
 		amplitude *= persistence;

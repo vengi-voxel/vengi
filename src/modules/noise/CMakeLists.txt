@@ -6,7 +6,7 @@ set(SRCS
 
 set(LIB noise)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} core)
+target_link_libraries(${LIB} core fastnoise)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 #set(MARCH native)
 set(MARCH generic)
