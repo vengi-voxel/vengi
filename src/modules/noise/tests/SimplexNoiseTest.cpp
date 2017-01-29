@@ -167,15 +167,6 @@ TEST_F(SimplexNoiseTest, testTemperatureNoise) {
 	test2DNoise(1, 1.0f, 0.01f, 1.0f, "testTemperature.png");
 }
 
-TEST_F(SimplexNoiseTest, test2DNoiseGray) {
-	const int width = 100;
-	const int height = 100;
-	const int components = 3;
-	uint8_t buffer[width * height * components];
-	Simplex::Noise2DGray(buffer, width, height, 1, 1.0, 1.0, 1.0);
-	ASSERT_TRUE(image::Image::writePng("testNoiseGray.png", buffer, width, height, components));
-}
-
 TEST_F(SimplexNoiseTest, test2DNoiseColorMap) {
 	const int width = 256;
 	const int height = 256;

@@ -20,15 +20,6 @@ inline float norm(float noise) {
 class Simplex {
 public:
 	/**
-	 * @return A value between [-1,1]
-	 * @param[in] octaves the amount of noise calls that contribute to the final result
-	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
-	 * sense if you have @c octaves > 1). The higher this value is (ranges from 0-1) the more each new octave will add to the result.
-	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
-	 */
-	static float Noise2DClamped(const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f);
-
-	/**
 	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
 	 * @param[in] octaves the amount of noise calls that contribute to the final result
 	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
@@ -39,15 +30,6 @@ public:
 	static float Noise2D(const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
 
 	/**
-	 * @return A value between [-1,1]
-	 * @param[in] octaves the amount of noise calls that contribute to the final result
-	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
-	 * sense if you have @c octaves > 1). The higher this value is (ranges from 0-1) the more each new octave will add to the result.
-	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
-	 */
-	static float Noise3DClamped(const glm::vec3& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f);
-
-	/**
 	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
 	 * @param[in] octaves the amount of noise calls that contribute to the final result
 	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
@@ -56,15 +38,6 @@ public:
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
 	static float Noise3D(const glm::vec3& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f);
-
-	/**
-	 * @return A value between [-1,1]
-	 * @param[in] octaves the amount of noise calls that contribute to the final result
-	 * @param[in] persistence the persistence defines how much of the amplitude will be applied to the next noise call (only makes
-	 * sense if you have @c octaves > 1). The higher this value is (ranges from 0-1) the more each new octave will add to the result.
-	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
-	 */
-	static float Noise4DClamped(const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f);
 
 	/**
 	 * @return A value between [-amplitude*octaves*persistence,amplitude*octaves*persistence]
@@ -90,52 +63,16 @@ public:
 	 * @param[in] frequency the higher the @c frequency the more deviation you get in your noise (wavelength).
 	 * @param[in] amplitude the amplitude defines how high the noise will be.
 	 */
-	static void Noise2DBuffer(uint8_t* buffer, int width, int height, int components, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DBuffer(buffer, width, height, components, glm::vec2(0), octaves, persistence, frequency, amplitude);
-	}
-
 	static void Noise2DBuffer(uint8_t* buffer, int width, int height, int components, const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
 		Noise2DBuffer(buffer, width, height, components, pos, noise::Simplex::Noise2D, octaves, persistence, frequency, amplitude);
-	}
-
-	static void Noise2DBuffer(uint8_t* buffer, int width, int height, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DBuffer(buffer, width, height, 1, glm::vec2(0), octaves, persistence, frequency, amplitude);
-	}
-
-	static void Noise2DBuffer(uint8_t* buffer, int width, int height, const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DBuffer(buffer, width, height, 1, pos, octaves, persistence, frequency, amplitude);
-	}
-
-	static void Noise2DGray(uint8_t* buffer, int width, int height, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DBuffer(buffer, width, height, 3, glm::vec2(0), octaves, persistence, frequency, amplitude);
-	}
-
-	static void Noise2DGray(uint8_t* buffer, int width, int height, const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DBuffer(buffer, width, height, 3, pos, noise::Simplex::Noise2D, octaves, persistence, frequency, amplitude);
 	}
 
 	static void Noise2DGrayA(uint8_t* buffer, int width, int height, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
 		Noise2DBuffer(buffer, width, height, 4, glm::vec2(0), octaves, persistence, frequency, amplitude);
 	}
 
-	static void Noise2DGrayA(uint8_t* buffer, int width, int height, const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DBuffer(buffer, width, height, 4, pos, noise::Simplex::Noise2D, octaves, persistence, frequency, amplitude);
-	}
-
-	static void Noise2DRGB(uint8_t* buffer, int width, int height, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DChannel(buffer, width, height, 3, glm::vec2(0), octaves, persistence, frequency, amplitude);
-	}
-
-	static void Noise2DRGB(uint8_t* buffer, int width, int height, const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DChannel(buffer, width, height, 3, pos, octaves, persistence, frequency, amplitude);
-	}
-
 	static void Noise2DRGBA(uint8_t* buffer, int width, int height, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
 		Noise2DChannel(buffer, width, height, 4, glm::vec2(0), octaves, persistence, frequency, amplitude);
-	}
-
-	static void Noise2DRGBA(uint8_t* buffer, int width, int height, const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		Noise2DChannel(buffer, width, height, 4, pos, octaves, persistence, frequency, amplitude);
 	}
 
 	static void Noise2DChannel(uint8_t* buffer, int width, int height, int components, const glm::vec2& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
@@ -170,52 +107,16 @@ public:
 		}
 	}
 
-	static void SeamlessNoise2DBuffer(uint8_t* buffer, int size, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		SeamlessNoise2DBuffer(buffer, size, 1, glm::vec4(0), noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
-	}
-
-	static void SeamlessNoise2DBuffer(uint8_t* buffer, int size, const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		SeamlessNoise2DBuffer(buffer, size, 1, pos, noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
-	}
-
-	static void SeamlessNoise2DBuffer(uint8_t* buffer, int size, int components, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		SeamlessNoise2DBuffer(buffer, size, components, glm::vec4(0), noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
-	}
-
-	static void SeamlessNoise2DBuffer(uint8_t* buffer, int size, int components, const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		SeamlessNoise2DBuffer(buffer, size, components, pos, noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
-	}
-
-	static void SeamlessNoise2DGray(uint8_t* buffer, int size, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		SeamlessNoise2DBuffer(buffer, size, 3, glm::vec4(0), noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
-	}
-
-	static void SeamlessNoise2DGray(uint8_t* buffer, int size, const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		SeamlessNoise2DBuffer(buffer, size, 3, pos, noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
-	}
-
 	static void SeamlessNoise2DGrayA(uint8_t* buffer, int size, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
 		SeamlessNoise2DBuffer(buffer, size, 4, glm::vec4(0), noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
-	}
-
-	static void SeamlessNoise2DGrayA(uint8_t* buffer, int size, const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		SeamlessNoise2DBuffer(buffer, size, 4, pos, noise::Simplex::Noise4D, octaves, persistence, frequency, amplitude);
 	}
 
 	static void SeamlessNoise2DRGB(uint8_t* buffer, int size, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
 		SeamlessNoise2DChannel(buffer, size, 3, glm::vec4(0), octaves, persistence, frequency, amplitude);
 	}
 
-	static void SeamlessNoise2DRGB(uint8_t* buffer, int size, const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		SeamlessNoise2DChannel(buffer, size, 3, pos, octaves, persistence, frequency, amplitude);
-	}
-
 	static void SeamlessNoise2DRGBA(uint8_t* buffer, int size, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
 		SeamlessNoise2DChannel(buffer, size, 4, glm::vec4(0), octaves, persistence, frequency, amplitude);
-	}
-
-	static void SeamlessNoise2DRGBA(uint8_t* buffer, int size, const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
-		SeamlessNoise2DChannel(buffer, size, 4, pos, octaves, persistence, frequency, amplitude);
 	}
 
 	static void SeamlessNoise2DChannel(uint8_t* buffer, int size, int components, const glm::vec4& pos, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
@@ -259,18 +160,6 @@ public:
 				}
 			}
 		}
-	}
-
-	static float ScaledNoise2D(const float lowerBound, const float upperBound, const glm::vec2& pos) {
-		return Noise2D(pos) * (upperBound - lowerBound) / 2.0f + (upperBound + lowerBound) / 2.0f;
-	}
-
-	static float ScaledNoise3D(const float lowerBound, const float upperBound, const glm::vec3& pos) {
-		return Noise3D(pos) * (upperBound - lowerBound) / 2.0f + (upperBound + lowerBound) / 2.0f;
-	}
-
-	static float ScaledNoise4D(const float lowerBound, const float upperBound, const glm::vec4& pos) {
-		return Noise4D(pos) * (upperBound - lowerBound) / 2.0f + (upperBound + lowerBound) / 2.0f;
 	}
 };
 
