@@ -31,9 +31,9 @@ bool NoiseToolWindow::init() {
 	return true;
 }
 
-void NoiseToolWindow::make2DNoise(bool append, bool gray, bool seamless, bool alpha, float amplitude, float frequency, int octaves, float persistence) {
+void NoiseToolWindow::make2DNoise(bool append, bool seamless, bool alpha, float amplitude, float frequency, int octaves, float persistence) {
 	tb::TBStr idStr;
-	idStr.SetFormatted("2d-%i-%i-%i-%f-%f-%i-%f", gray ? 1 : 0, seamless ? 1 : 0, alpha ? 1 : 0, amplitude, frequency, octaves, persistence);
+	idStr.SetFormatted("2d-%i-%i-%f-%f-%i-%f", seamless ? 1 : 0, alpha ? 1 : 0, amplitude, frequency, octaves, persistence);
 	cleanup(idStr);
 	const tb::TBRect& rect = _editorContainer->GetPaddingRect();
 	const int height = rect.h;
@@ -43,18 +43,10 @@ void NoiseToolWindow::make2DNoise(bool append, bool gray, bool seamless, bool al
 	core_assert(!seamless || width == height);
 	const int components = 4;
 	uint8_t buffer[width * height * components];
-	if (gray) {
-		if (seamless) {
-			noise::Simplex::SeamlessNoise2DGrayA(buffer, width, octaves, persistence, frequency, amplitude);
-		} else {
-			noise::Simplex::Noise2DGrayA(buffer, width, height, octaves, persistence, frequency, amplitude);
-		}
+	if (seamless) {
+		noise::Simplex::SeamlessNoise2DRGBA(buffer, width, octaves, persistence, frequency, amplitude);
 	} else {
-		if (seamless) {
-			noise::Simplex::SeamlessNoise2DRGBA(buffer, width, octaves, persistence, frequency, amplitude);
-		} else {
-			noise::Simplex::Noise2DRGBA(buffer, width, height, octaves, persistence, frequency, amplitude);
-		}
+		noise::Simplex::Noise2DRGBA(buffer, width, height, octaves, persistence, frequency, amplitude);
 	}
 	if (!alpha) {
 		for (int i = components - 1; i < width * height * components; i += components) {
@@ -139,15 +131,14 @@ void NoiseToolWindow::generateImage() {
 	const float amplitude = getFloat("amplitude");
 	const float frequency = getFloat("frequency");
 	const bool enableoctaves = isToggled("enableoctaves");
-	const bool gray = isToggled("gray");
 	const bool append = isToggled("append");
 	const bool alpha = isToggled("alpha");
 	const bool seamless = isToggled("seamless");
 	const int octaves = enableoctaves ? getInt("octaves") : 1;
 	const float persistence = enableoctaves ? getFloat("persistence") : 1.0f;
-	Log::info("seamless: %i, gray: %i, amplitude: %f, freq: %f, oct: %i, persist: %f",
-			seamless ? 1 : 0, gray ? 1 : 0, amplitude, frequency, octaves, persistence);
-	make2DNoise(append, gray, seamless, alpha, amplitude, frequency, octaves, persistence);
+	Log::info("seamless: %i, amplitude: %f, freq: %f, oct: %i, persist: %f",
+			seamless ? 1 : 0, amplitude, frequency, octaves, persistence);
+	make2DNoise(append, seamless, alpha, amplitude, frequency, octaves, persistence);
 }
 
 void NoiseToolWindow::removeImage(TBWidget *image) {

@@ -45,8 +45,6 @@ TBLayout: distribution: gravity, axis: y
 										TBEditField: id: octaves, type: number, text: 1
 									TBClickLabel: text: Persistence
 										TBEditField: id: persistence, type: number, text: 1.0
-							TBClickLabel: text: Gray:
-								TBCheckBox: id: gray
 							TBClickLabel: text: Seamless:
 								TBCheckBox: id: seamless
 							TBClickLabel: text: Alpha:

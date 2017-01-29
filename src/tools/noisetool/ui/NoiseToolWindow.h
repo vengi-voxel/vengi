@@ -12,7 +12,7 @@ private:
 	tb::TBWidget* _editorContainer = nullptr;
 	tb::TBLayout* _imageLayout = nullptr;
 
-	void make2DNoise(bool append, bool gray, bool seamless, bool alpha, float amplitude,
+	void make2DNoise(bool append, bool seamless, bool alpha, float amplitude,
 			float frequency, int octaves, float persistence);	void cleanup(const tb::TBStr& idStr);
 	void addImage(const tb::TBStr& idStr, bool append, uint8_t* buffer, int width, int height);
 	void removeImage(TBWidget *image);
