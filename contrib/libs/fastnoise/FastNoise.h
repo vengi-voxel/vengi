@@ -67,6 +67,8 @@ public:
 	// Default: Simplex
 	inline void SetNoiseType(NoiseType noiseType) { m_noiseType = noiseType; }
 
+	inline void SetFractalParameters(float gain, unsigned int octaves) { m_octaves = octaves; m_gain = gain; CalculateFractalBounding(); }
+
 	// Sets octave count for all fractal noise types
 	// Default: 3
 	inline void SetFractalOctaves(unsigned int octaves) { m_octaves = octaves; CalculateFractalBounding(); }
