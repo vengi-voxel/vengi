@@ -10,6 +10,7 @@
 namespace noise {
 
 /**
+ * @brief Fractional Brownian Motion
  * @param[in] octaves The amount of octaves controls the level of detail. Adding more octaves increases the detail level, but also the computation time.
  * @param[in] persistence A multiplier that defines how fast the amplitude diminishes for each successive octave.
  * @param[in] lacunarity A multiplier that defines how quickly the frequency changes for each successive octave.
