@@ -24,12 +24,7 @@ template<class VecType>
 static float Noise(const VecType& pos, int octaves, float persistence, float lacunarity, float frequency, float amplitude) {
 	core_trace_scoped(Noise);
 #if FAST_NOISE
-	static FastNoise fn;
-	fn.SetNoiseType(FastNoise::NoiseType::SimplexFractal);
-	fn.SetFractalParameters(persistence, octaves);
-	fn.SetFrequency(frequency);
-	fn.SetFractalLacunarity(lacunarity);
-	fn.SetFractalType(FastNoise::FractalType::RigidMulti);
+	FastNoise fn(octaves, persistence, lacunarity, frequency, amplitude);
 	return fn.GetSimplexFractal(pos);
 #endif
 #if GLM_NOISE
