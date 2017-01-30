@@ -11,6 +11,12 @@ namespace noise {
 
 /**
  * @brief Fractional Brownian Motion
+ *
+ * fBM (fractional Brownian motion) is a composite Perlin noise algorithm. It creates more turbolence with more octaves.
+ *
+ * To cover all possible scales, the octaves are typically a bit less than @code log(width) / log(lacunarity)@endcode.
+ * So, for a 1024x1024 heightfield, about 10 octaves are needed. The persistence influences the terrain turbolence.
+ *
  * @param[in] octaves The amount of octaves controls the level of detail. Adding more octaves increases the detail level, but also the computation time.
  * @param[in] persistence A multiplier that defines how fast the amplitude diminishes for each successive octave.
  * @param[in] lacunarity A multiplier that defines how quickly the frequency changes for each successive octave.
