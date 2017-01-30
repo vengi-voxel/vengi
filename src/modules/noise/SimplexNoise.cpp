@@ -6,11 +6,6 @@
 #include "core/Trace.h"
 
 #define GLM_NOISE 1
-#define FAST_NOISE 0
-
-#if FAST_NOISE != 0
-#include <FastNoise.h>
-#endif
 
 namespace noise {
 
@@ -23,10 +18,6 @@ namespace noise {
 template<class VecType>
 static float Noise(const VecType& pos, int octaves, float persistence, float lacunarity, float frequency, float amplitude) {
 	core_trace_scoped(Noise);
-#if FAST_NOISE
-	FastNoise fn(octaves, persistence, lacunarity, frequency, amplitude);
-	return fn.GetSimplexFractal(pos);
-#endif
 #if GLM_NOISE
 	float total = 0.0f;
 	for (int i = 0; i < octaves; ++i) {
@@ -35,6 +26,8 @@ static float Noise(const VecType& pos, int octaves, float persistence, float lac
 		amplitude *= persistence;
 	}
 	return total;
+#else
+	return 1.0f;
 #endif
 }
 
