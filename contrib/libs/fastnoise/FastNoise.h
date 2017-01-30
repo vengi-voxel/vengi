@@ -34,6 +34,14 @@
 class FastNoise
 {
 public:
+	FastNoise(unsigned int octaves, float gain, float lacunarity, float frequency, float amplitude, int seed = 1337) {
+		SetFractalType(FastNoise::FractalType::RigidMulti);
+		SetNoiseType(FastNoise::NoiseType::SimplexFractal);
+		SetSeed(seed);
+		SetFrequency(frequency);
+		SetFractalLacunarity(lacunarity);
+		SetFractalParameters(gain, octaves, amplitude);
+	}
 	FastNoise(int seed = 1337) { SetSeed(seed); CalculateFractalBounding(); };
 	~FastNoise() { delete m_cellularNoiseLookup; }
 
@@ -67,7 +75,7 @@ public:
 	// Default: Simplex
 	inline void SetNoiseType(NoiseType noiseType) { m_noiseType = noiseType; }
 
-	inline void SetFractalParameters(float gain, unsigned int octaves) { m_octaves = octaves; m_gain = gain; CalculateFractalBounding(); }
+	inline void SetFractalParameters(float gain, unsigned int octaves, float amplitude) { m_amplitude = amplitude; m_octaves = octaves; m_gain = gain; CalculateFractalBounding(); }
 
 	// Sets octave count for all fractal noise types
 	// Default: 3
@@ -171,6 +179,7 @@ protected:
 	NoiseType m_noiseType = Simplex;
 
 	unsigned int m_octaves = 3;
+	float m_amplitude = 1.0f;
 	float m_lacunarity = 2.0f;
 	float m_gain = 0.5f;
 	FractalType m_fractalType = FBM;

@@ -646,7 +646,7 @@ float FastNoise::SingleValueFractalBillow(float x, float y)
 float FastNoise::SingleValueFractalRigidMulti(float x, float y)
 {
 	float sum = 1.0f - FastAbs(SingleValue(m_perm[0], x, y));
-	float amp = 1.0f;
+	float amp = m_amplitude;
 	unsigned int i = 0;
 
 	while (++i < m_octaves)
