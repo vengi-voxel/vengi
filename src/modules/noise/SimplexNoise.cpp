@@ -26,10 +26,9 @@ static float Noise(const VecType& pos, int octaves, float persistence, float lac
 #if FAST_NOISE
 	static FastNoise fn;
 	fn.SetNoiseType(FastNoise::NoiseType::SimplexFractal);
-	fn.SetFractalOctaves(octaves);
+	fn.SetFractalParameters(persistence, octaves);
 	fn.SetFrequency(frequency);
 	fn.SetFractalLacunarity(lacunarity);
-	fn.SetFractalGain(persistence);
 	fn.SetFractalType(FastNoise::FractalType::RigidMulti);
 	return fn.GetSimplexFractal(pos);
 #endif
