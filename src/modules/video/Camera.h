@@ -188,6 +188,11 @@ public:
 	bool lookAt(const glm::vec3& position);
 	bool lookAt(const glm::vec3& position, const glm::vec3& upDirection);
 
+	/**
+	 * @brief Calculates the billboard vectors right and up relative to the camera.
+	 */
+	void billboard(glm::vec3 *right, glm::vec3 *up) const;
+
 	void setTarget(const glm::vec3& target);
 	void setTargetDistance(float distance);
 	glm::vec3 target() const;

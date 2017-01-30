@@ -85,6 +85,12 @@ bool Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 	return true;
 }
 
+void Camera::billboard(glm::vec3 *right, glm::vec3 *up) const {
+	const glm::mat4& view = viewMatrix();
+	*right = glm::vec3(glm::row(view, 0));
+	*up = glm::vec3(glm::row(view, 1));
+}
+
 void Camera::updateTarget() {
 	if (_rotationType != CameraRotationType::Target) {
 		return;
