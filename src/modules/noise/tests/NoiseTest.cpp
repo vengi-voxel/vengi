@@ -3,7 +3,7 @@
  */
 
 #include "core/tests/AbstractTest.h"
-#include "noise/SimplexNoise.h"
+#include "noise/Noise.h"
 // TODO: not a real dependency to the voxel module.... but... look there - a three headed monkey!
 #include "voxel/WorldContext.h"
 #include "voxel/Constants.h"
@@ -12,7 +12,7 @@
 
 namespace noise {
 
-class SimplexNoiseTest: public core::AbstractTest {
+class NoiseTest: public core::AbstractTest {
 protected:
 	const int components = 4;
 	const int w = 256;
@@ -49,7 +49,7 @@ protected:
 	}
 };
 
-TEST_F(SimplexNoiseTest, testLandscapeMountains) {
+TEST_F(NoiseTest, testLandscapeMountains) {
 	const int w = 1024;
 	const int h = 1024;
 	uint8_t buffer[w * h * components];
@@ -87,7 +87,7 @@ TEST_F(SimplexNoiseTest, testLandscapeMountains) {
 	ASSERT_TRUE(WriteImage("testNoiseLandscapeMountains.png", buffer, w, h));
 }
 
-TEST_F(SimplexNoiseTest, testLandscape) {
+TEST_F(NoiseTest, testLandscape) {
 	const int w = 1024;
 	const int h = 1024;
 	uint8_t buffer[w * h * components];
@@ -118,7 +118,7 @@ TEST_F(SimplexNoiseTest, testLandscape) {
 	ASSERT_TRUE(WriteImage("testNoiseLandscape.png", buffer, w, h));
 }
 
-TEST_F(SimplexNoiseTest, testMountains) {
+TEST_F(NoiseTest, testMountains) {
 	const int w = 2048;
 	const int h = 2048;
 	uint8_t *buffer = new uint8_t[w * h * components];
@@ -151,23 +151,23 @@ TEST_F(SimplexNoiseTest, testMountains) {
 	delete[] buffer;
 }
 
-TEST_F(SimplexNoiseTest, test2DNoiseTemperature) {
+TEST_F(NoiseTest, test2DNoiseTemperature) {
 
 }
 
-TEST_F(SimplexNoiseTest, test2DNoise) {
+TEST_F(NoiseTest, test2DNoise) {
 	test2DNoise(2, 1.0f, 0.5f, 1.5f, "testNoise2d.png");
 }
 
-TEST_F(SimplexNoiseTest, testHumidityNoise) {
+TEST_F(NoiseTest, testHumidityNoise) {
 	test2DNoise(1, 1.0f, 0.001f, 1.0f, "testHumidity.png");
 }
 
-TEST_F(SimplexNoiseTest, testTemperatureNoise) {
+TEST_F(NoiseTest, testTemperatureNoise) {
 	test2DNoise(1, 1.0f, 0.01f, 1.0f, "testTemperature.png");
 }
 
-TEST_F(SimplexNoiseTest, test2DNoiseColorMap) {
+TEST_F(NoiseTest, test2DNoiseColorMap) {
 	const int width = 256;
 	const int height = 256;
 	const int components = 3;

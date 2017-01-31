@@ -1,7 +1,7 @@
 #pragma once
 
 #include "video/Texture.h"
-#include "noise/SimplexNoise.h"
+#include "noise/Noise.h"
 
 #include <vector>
 #include <future>

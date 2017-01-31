@@ -42,7 +42,7 @@
 // This changes the luts types to integers instead of unsigned chars. It might be faster on some platforms
 //#define SIMPLEX_INTEGER_LUTS
 
-namespace Simplex {
+namespace noise {
 
 //! Returns a 1D simplex noise
 inline float noise( float x );
@@ -1279,7 +1279,7 @@ float worleyNoise( const glm::vec2 &v )
 	for( int j=-1; j<=1; j++ ) {
 		for( int i=-1; i<=1; i++ ) {
 			glm::vec2 b = glm::vec2( i, j );
-			glm::vec2  r = b - f + ( Simplex::noise( p + b ) * 0.5f + 0.5f );
+			glm::vec2  r = b - f + ( noise::noise( p + b ) * 0.5f + 0.5f );
 			float d = glm::dot( r, r );
 			res = glm::min( res, d );
 		}
@@ -1296,7 +1296,7 @@ float worleyNoise( const glm::vec3 &v )
 		for( int j=-1; j<=1; j++ ) {
 			for( int i=-1; i<=1; i++ ) {
 				glm::vec3 b = glm::vec3( i, j, k );
-				glm::vec3 r = b - f + ( Simplex::noise( p + b ) * 0.5f + 0.5f );
+				glm::vec3 r = b - f + ( noise::noise( p + b ) * 0.5f + 0.5f );
 				float d = glm::dot( r, r );
 				res = glm::min( res, d );
 			}
@@ -1313,7 +1313,7 @@ float worleyNoise( const glm::vec2 &v, float falloff )
 	for( int j=-1; j<=1; j++ ) {
 		for( int i=-1; i<=1; i++ ) {
 			glm::vec2 b = glm::vec2( i, j );
-			glm::vec2 r = b - f + ( Simplex::noise( p + b ) * 0.5f + 0.5f );
+			glm::vec2 r = b - f + ( noise::noise( p + b ) * 0.5f + 0.5f );
 			float d = glm::length( r );
 			res += glm::exp( -falloff*d );
 		}
@@ -1330,7 +1330,7 @@ float worleyNoise( const glm::vec3 &v, float falloff )
 		for( int j=-1; j<=1; j++ ) {
 			for( int i=-1; i<=1; i++ ) {
 				glm::vec3 b = glm::vec3( i, j, k );
-				glm::vec3 r = b - f + ( Simplex::noise( p + b ) * 0.5f + 0.5f );
+				glm::vec3 r = b - f + ( noise::noise( p + b ) * 0.5f + 0.5f );
 				float d = glm::length( r );
 				res += glm::exp( -falloff*d );
 			}

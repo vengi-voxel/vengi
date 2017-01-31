@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/Random.h"
-#include "noise/SimplexNoise.h"
+#include "noise/Noise.h"
 #include "voxel/MaterialColor.h"
 
 namespace voxel {

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "SimplexNoise.h"
+#include "Noise.h"
 #include "core/Trace.h"
 #include "Simplex.h"
 
@@ -32,7 +32,7 @@ static float Noise(const VecType& pos, int octaves, float persistence, float lac
 #if GLM_NOISE == 1
 		total += glm::simplex(pos * frequency) * amplitude;
 #elif CINDER_NOISE == 1
-		total += ::Simplex::noise(pos * frequency) * amplitude;
+		total += noise(pos * frequency) * amplitude;
 #endif
 		frequency *= lacunarity;
 		amplitude *= persistence;

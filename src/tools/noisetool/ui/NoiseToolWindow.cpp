@@ -4,7 +4,7 @@
 
 #include "NoiseToolWindow.h"
 
-#include "noise/SimplexNoise.h"
+#include "noise/Noise.h"
 
 NoiseToolWindow::NoiseToolWindow(ui::UIApp* tool) :
 		ui::Window(tool) {

@@ -51,9 +51,9 @@ template<class Func, class ... Args>
 static void Noise2DBuffer(uint8_t* buffer, int width, int height, int components, const glm::vec2& pos, Func&& func, Args&&... args) {
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
-			float noise = func(glm::vec2(x, y) + pos, std::forward<Args>(args)...);
-			float noiseHeight = norm(noise);
-			unsigned char color = (unsigned char) (noiseHeight * 255.0f);
+			const float noise = func(glm::vec2(x, y) + pos, std::forward<Args>(args)...);
+			const float noiseHeight = norm(noise);
+			const unsigned char color = (unsigned char) (noiseHeight * 255.0f);
 			int index = y * (width * components) + (x * components);
 			const int n = components == 4 ? 3 : components;
 			for (int i = 0; i < n; ++i) {

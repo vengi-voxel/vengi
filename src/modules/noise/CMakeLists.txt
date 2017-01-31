@@ -1,5 +1,5 @@
 set(SRCS
-	SimplexNoise.h SimplexNoise.cpp
+	Noise.h Noise.cpp
 	SphereNoise.h SphereNoise.cpp
 )
 # TODO: maybe provide two noise modules, one noisefast (for e.g. client only stuff) and one noise-slow for stuff that must be cross plattform
@@ -18,6 +18,6 @@ else()
 endif()
 
 gtest_suite_files(tests
-	tests/SimplexNoiseTest.cpp
+	tests/NoiseTest.cpp
 )
 gtest_suite_deps(tests ${LIB} image)

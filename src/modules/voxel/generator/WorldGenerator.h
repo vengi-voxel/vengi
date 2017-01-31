@@ -9,7 +9,7 @@
 #include "CloudGenerator.h"
 #include "BuildingGenerator.h"
 #include "core/Trace.h"
-#include "noise/SimplexNoise.h"
+#include "noise/Noise.h"
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/WorldContext.h"
 #include "voxel/MaterialColor.h"
