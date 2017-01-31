@@ -15,8 +15,7 @@ void Controller::resetCamera(const voxel::RawVolume* volume) {
 	if (_camMode == Controller::SceneCameraMode::Free) {
 		_camera.setPosition(glm::vec3(-center.x, region.getHeightInVoxels() + center.y, -center.z));
 	} else if (_camMode == Controller::SceneCameraMode::Top) {
-		// TODO: fix the camera and remove the z epsilon!
-		_camera.setPosition(glm::vec3(center.x, region.getHeightInCells() + center.y, center.z + 0.0001f));
+		_camera.setPosition(glm::vec3(center.x, region.getHeightInCells() + center.y, center.z));
 	} else if (_camMode == Controller::SceneCameraMode::Left) {
 		_camera.setPosition(glm::vec3(-center.x, center.y, center.z));
 	} else if (_camMode == Controller::SceneCameraMode::Front) {
