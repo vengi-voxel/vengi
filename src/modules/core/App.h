@@ -140,6 +140,7 @@ public:
 	void requestSuspend();
 
 	long deltaFrame() const;
+	float lifetimeInSeconds() const;
 
 	/**
 	 * @return the millis since the epoch
@@ -208,6 +209,10 @@ inline double App::ProfilerCPU::minimum() const {
 
 inline double App::ProfilerCPU::maximum() const {
 	return _max;
+}
+
+inline float App::lifetimeInSeconds() const {
+	return (_now - _initTime) / 1000.0f;
 }
 
 inline long App::deltaFrame() const {

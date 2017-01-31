@@ -46,6 +46,13 @@ float Window::getFloat(const char *nodeId) {
 	return core::string::toFloat(getStr(nodeId));
 }
 
+int Window::getSelectedId(const char *nodeId) {
+	if (tb::TBSelectDropdown *select = GetWidgetByIDAndType<tb::TBSelectDropdown>(TBIDC(nodeId))) {
+		return select->GetValue();
+	}
+	return -1;
+}
+
 int Window::getInt(const char *nodeId) {
 	return core::string::toInt(getStr(nodeId));
 }

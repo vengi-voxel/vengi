@@ -77,6 +77,7 @@ public:
 	std::string getStr(const char* nodeId);
 	float getFloat(const char *nodeId);
 	int getInt(const char *nodeId);
+	int getSelectedId(const char *nodeId);
 	bool isToggled(const char *checkBoxNodeId);
 	void setText(const char *nodeId, const std::string& text);
 	void toggleViaVar(const char *checkBoxNodeId, const core::VarPtr& var);

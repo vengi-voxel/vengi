@@ -26,6 +26,56 @@ TBLayout: distribution: gravity, axis: y
 					TBLayout: distribution: gravity
 						TBButton: gravity: left, @include: definitions>menubutton, text: Generate, id: ok, autofocus: 1
 							TBSkinImage: skin: noisetool-generate
+						TBSelectDropdown
+							lp: width: 280
+							gravity left right
+							id type
+							items
+								item
+									text simplex noise
+									id 0
+								item
+									text ridged noise
+									id 1
+								item
+									text flow noise (rot. gradients)
+									id 2
+								item
+									text fractal brownian motion sum
+									id 3
+								item
+									text fbm
+									id 4
+								item
+									text fbm cascade
+									id 5
+								item
+									text fbm analytical derivatives
+									id 6
+								item
+									text flow noise fbm (time)
+									id 7
+								item
+									text ridged multi fractal
+									id 8
+								item
+									text ridged multi fractal cascade
+									id 9
+								item
+									text ridged multi fractal scaled
+									id 10
+								item
+									text iq noise
+									id 11
+								item
+									text iq noise scaled
+									id 12
+								item
+									text analytical derivatives
+									id 13
+								item
+									text noise curl noise (time)
+									id 14
 						TBLayout: gravity: left right
 							TBWidget
 
@@ -33,24 +83,22 @@ TBLayout: distribution: gravity, axis: y
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBSection: value: 1, text: "Parameters"
 						TBLayout: position: left top, axis: y
-							TBClickLabel: text: Amplitude
-								TBEditField: id: amplitude, type: number, text: 10.0
+							TBClickLabel: text: Octaves
+								TBEditField: id: octaves, type: number, text: 4
 							TBClickLabel: text: Frequency
-								TBEditField: id: frequency, type: number, text: 0.1
-							TBClickLabel: text: Enable multiple octaves:
-								TBCheckBox: connection: toggleoctaves, id: enableoctaves
-							TBToggleContainer: connection: toggleoctaves, toggle: enabled
-								TBLayout: position: left top, axis: y
-									TBClickLabel: text: Octaves
-										TBEditField: id: octaves, type: number, text: 1
-									TBClickLabel: text: Persistence
-										TBEditField: id: persistence, type: number, text: 1.0
-							TBClickLabel: text: Seamless:
-								TBCheckBox: id: seamless
-							TBClickLabel: text: Alpha:
-								TBCheckBox: id: alpha, value: 1
-							TBClickLabel: text: Append:
+								TBEditField: id: frequency, type: number, text: 0.5
+							TBClickLabel: text: Gain
+								TBEditField: id: gain, type: number, text: 0.5
+							TBClickLabel: text: Lacunarity
+								TBEditField: id: lacunarity, type: number, text: 2.0
+							TBClickLabel: text: Offset
+								TBEditField: id: offset, type: number, text: 1.0
+							TBClickLabel: text: Append
 								TBCheckBox: id: append, value: 1
+							TBClickLabel: text: All in one
+								TBCheckBox: id: allinone, value: 0
+							TBClickLabel: text: Auto update
+								TBCheckBox: id: auto, value: 0
 					TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y

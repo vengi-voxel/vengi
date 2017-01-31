@@ -17,11 +17,19 @@ core::AppState NoiseTool::onInit() {
 		return state;
 	}
 
-	NoiseToolWindow* mainWindow = new NoiseToolWindow(this);
-	if (!mainWindow->init()) {
+	_window = new NoiseToolWindow(this);
+	if (!_window->init()) {
 		return core::AppState::Cleanup;
 	}
 
+	return state;
+}
+
+core::AppState NoiseTool::onRunning() {
+	core::AppState state = ui::UIApp::onRunning();
+	if (_window) {
+		_window->update(_deltaFrame);
+	}
 	return state;
 }
 
