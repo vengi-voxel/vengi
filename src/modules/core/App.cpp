@@ -359,7 +359,7 @@ void App::usage() {
 		maxWidth = std::max(maxWidth, (int)c.name().size());
 	});
 
-	Log::info("");
+	Log::info("---");
 	Log::info("Config variables:");
 	core::Var::visitSorted([=] (const core::VarPtr& v) {
 		const uint32_t flags = v->getFlags();
@@ -390,7 +390,7 @@ void App::usage() {
 	Log::info("   %-*s Dirty     the config variable is dirty, means that the initial value was changed", maxWidth, "D");
 	Log::info("   %-*s Secret    the value of the config variable won't be shown in the logs", maxWidth, "X");
 
-	Log::info("");
+	Log::info("---");
 	Log::info("Commands:");
 	core::Command::visitSorted([=] (const core::Command& c) {
 		Log::info("   %-*s %s", maxWidth, c.name().c_str(), c.help().c_str());
