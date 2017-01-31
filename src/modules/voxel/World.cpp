@@ -59,13 +59,7 @@ World::World() :
 }
 
 World::~World() {
-	_cancelThreads = true;
-	while (!_futures.empty()) {
-		cleanupFutures();
-	}
-	_meshesExtracted.clear();
-	_meshQueue.clear();
-	delete _volumeData;
+	shutdown();
 }
 
 glm::ivec3 World::randomPos() const {
@@ -194,7 +188,17 @@ bool World::init(const std::string& luaParameters, const std::string& luaBiomes)
 }
 
 void World::shutdown() {
-	reset();
+	_cancelThreads = true;
+	while (!_futures.empty()) {
+		cleanupFutures();
+	}
+	_meshesExtracted.clear();
+	_meshQueue.clear();
+	if (_volumeData) {
+		_volumeData->flushAll();
+		delete _volumeData;
+		_volumeData = nullptr;
+	}
 }
 
 void World::reset() {
