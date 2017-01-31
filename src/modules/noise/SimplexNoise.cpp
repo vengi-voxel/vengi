@@ -4,8 +4,10 @@
 
 #include "SimplexNoise.h"
 #include "core/Trace.h"
+#include "Simplex.h"
 
-#define GLM_NOISE 1
+#define GLM_NOISE 0
+#define CINDER_NOISE 1
 
 namespace noise {
 
@@ -25,17 +27,17 @@ namespace noise {
 template<class VecType>
 static float Noise(const VecType& pos, int octaves, float persistence, float lacunarity, float frequency, float amplitude) {
 	core_trace_scoped(Noise);
-#if GLM_NOISE
 	float total = 0.0f;
 	for (int i = 0; i < octaves; ++i) {
+#if GLM_NOISE == 1
 		total += glm::simplex(pos * frequency) * amplitude;
+#elif CINDER_NOISE == 1
+		total += ::Simplex::noise(pos * frequency) * amplitude;
+#endif
 		frequency *= lacunarity;
 		amplitude *= persistence;
 	}
 	return total;
-#else
-	return 1.0f;
-#endif
 }
 
 float Noise2D(const glm::vec2& pos, int octaves, float persistence, float frequency, float amplitude) {
