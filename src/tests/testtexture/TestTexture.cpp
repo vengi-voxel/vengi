@@ -2,6 +2,7 @@
 #include "core/Color.h"
 #include "video/Camera.h"
 #include "video/ScopedViewPort.h"
+#include "io/Filesystem.h"
 
 TestTexture::TestTexture(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {

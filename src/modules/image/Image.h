@@ -6,7 +6,6 @@
 
 #include "io/IOResource.h"
 #include "io/File.h"
-#include "core/App.h"
 #include <memory>
 
 namespace image {
@@ -60,21 +59,7 @@ inline ImagePtr createEmptyImage(const std::string& name) {
 	return std::make_shared<Image>(name);
 }
 
-inline ImagePtr loadImage(const io::FilePtr& file, bool async = true) {
-	const ImagePtr& i = createEmptyImage(file->name());
-	if (async) {
-		core::App::getInstance()->threadPool().enqueue([=] () { i->load(file); });
-	} else {
-		if (!i->load(file)) {
-			Log::warn("Failed to load image %s", i->name().c_str());
-		}
-	}
-	return i;
-}
-
-inline ImagePtr loadImage(const std::string& filename, bool async = true) {
-	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(filename);
-	return loadImage(file, async);
-}
+extern ImagePtr loadImage(const io::FilePtr& file, bool async = true);
+extern ImagePtr loadImage(const std::string& filename, bool async = true);
 
 }

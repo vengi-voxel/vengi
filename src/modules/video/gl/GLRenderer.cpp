@@ -6,14 +6,13 @@
 
 #include "video/Renderer.h"
 #include "GLTypes.h"
-#include "GLVersion.h"
-#include "flextGL.h"
 #include "GLState.h"
 #include "GLMapping.h"
 #include "GLHelper.h"
 #include "video/Shader.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/Var.h"
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <glm/common.hpp>

@@ -3,7 +3,7 @@
  */
 
 #include "NoiseTool.h"
-
+#include "io/Filesystem.h"
 #include "ui/NoiseToolWindow.h"
 
 NoiseTool::NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :

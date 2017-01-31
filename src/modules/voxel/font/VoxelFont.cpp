@@ -1,5 +1,6 @@
 #include "VoxelFont.h"
 #include "core/App.h"
+#include "io/Filesystem.h"
 #include "core/Common.h"
 #define STBTT_ASSERT core_assert
 #define STBTT_MALLOC core_malloc

@@ -2,6 +2,7 @@
 
 #include "commonlua/LUA.h"
 #include "core/App.h"
+#include "io/Filesystem.h"
 #include <SDL.h>
 
 namespace cooldown {

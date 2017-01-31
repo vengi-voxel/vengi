@@ -7,6 +7,7 @@
 #include "video/ScopedFrameBuffer.h"
 #include "voxel/model/MeshExporter.h"
 #include "ui/UIApp.h"
+#include "io/Filesystem.h"
 #include "Model.h"
 
 using namespace voxedit;

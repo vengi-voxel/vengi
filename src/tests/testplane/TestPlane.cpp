@@ -1,4 +1,5 @@
 #include "TestPlane.h"
+#include "io/Filesystem.h"
 
 TestPlane::TestPlane(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {

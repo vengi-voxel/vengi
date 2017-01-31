@@ -1,4 +1,5 @@
 #include "RandomColorTexture.h"
+#include "core/App.h"
 
 namespace frontend {
 

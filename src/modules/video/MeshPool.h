@@ -5,8 +5,8 @@
 #pragma once
 
 #include "Mesh.h"
+#include "core/String.h"
 #include <unordered_map>
-#include <string>
 
 namespace video {
 

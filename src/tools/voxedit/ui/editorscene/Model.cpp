@@ -15,6 +15,8 @@
 #include "voxel/model/QBTFormat.h"
 #include "voxel/model/QBFormat.h"
 #include "core/Random.h"
+#include "core/App.h"
+#include "io/Filesystem.h"
 #include "voxedit-util/tool/Crop.h"
 #include "voxedit-util/tool/Expand.h"
 #include "voxedit-util/tool/Fill.h"

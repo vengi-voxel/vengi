@@ -1,4 +1,5 @@
 #include "TestTemplate.h"
+#include "io/Filesystem.h"
 
 TestTemplate::TestTemplate(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {

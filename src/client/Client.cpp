@@ -13,6 +13,7 @@
 #include "ui/Window.h"
 #include "core/command/Command.h"
 #include "core/GLM.h"
+#include "io/Filesystem.h"
 #include "core/Color.h"
 #include "network/Network.h"
 #include "network/MessageSender.h"

@@ -4,6 +4,7 @@
 
 #include "ShaderTool.h"
 #include "core/App.h"
+#include "io/Filesystem.h"
 #include "core/Process.h"
 #include "core/GameConfig.h"
 #include "video/Shader.h"

@@ -8,6 +8,7 @@
 #include "core/command/Command.h"
 #include "video/Renderer.h"
 #include "ui/VoxEditWindow.h"
+#include "io/Filesystem.h"
 
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \

@@ -3,6 +3,7 @@
  */
 
 #include "DatabaseTool.h"
+#include "io/Filesystem.h"
 
 static const char *FieldTypeNames[] = {
 	CORE_STRINGIFY(STRING),

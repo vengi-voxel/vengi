@@ -12,9 +12,13 @@
 #include "EventBus.h"
 #include "TimeProvider.h"
 #include "core/ThreadPool.h"
-#include "io/Filesystem.h"
 
 #define ORGANISATION "engine"
+
+namespace io {
+class Filesystem;
+typedef std::shared_ptr<Filesystem> FilesystemPtr;
+}
 
 namespace core {
 
@@ -159,7 +163,7 @@ public:
 	 */
 	core::EventBusPtr eventBus() const;
 
-	std::string currentWorkingDir() const;
+	const std::string& currentWorkingDir() const;
 
 	static App* getInstance() {
 		core_assert(_staticInstance != nullptr);
@@ -228,10 +232,6 @@ inline core::ThreadPool& App::threadPool() {
 
 inline core::EventBusPtr App::eventBus() const {
 	return _eventBus;
-}
-
-inline std::string App::currentWorkingDir() const {
-	return _filesystem->basePath();
 }
 
 inline const std::string& App::appname() const {

@@ -6,6 +6,7 @@
 #include "Var.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
+#include "io/Filesystem.h"
 #include "Common.h"
 #include "Log.h"
 #include "Tokenizer.h"
@@ -504,6 +505,10 @@ void App::requestQuit() {
 void App::requestSuspend() {
 	_nextState = AppState::Cleanup;
 	_suspendRequested = true;
+}
+
+const std::string& App::currentWorkingDir() const {
+	return _filesystem->basePath();
 }
 
 }

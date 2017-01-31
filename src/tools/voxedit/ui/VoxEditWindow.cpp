@@ -4,6 +4,7 @@
 #include "WorldWindow.h"
 #include "editorscene/EditorScene.h"
 #include "palette/PaletteWidget.h"
+#include "io/Filesystem.h"
 #include "../VoxEdit.h"
 #include <assimp/Exporter.hpp>
 #include <assimp/Importer.hpp>

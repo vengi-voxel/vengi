@@ -1,5 +1,6 @@
 #include "TestDepthBuffer.h"
 #include "video/ScopedViewPort.h"
+#include "io/Filesystem.h"
 
 TestDepthBuffer::TestDepthBuffer(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {

@@ -7,6 +7,7 @@
 #include "video/Renderer.h"
 #include "core/GLM.h"
 #include "core/Color.h"
+#include "io/Filesystem.h"
 #include "ui/WorldParametersWindow.h"
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"

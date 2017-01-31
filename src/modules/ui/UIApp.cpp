@@ -6,7 +6,7 @@
 #include "ui/TurboBadger.h"
 #include "ui/FontUtil.h"
 
-#include "io/File.h"
+#include "io/Filesystem.h"
 #include "core/command/Command.h"
 #include "core/Color.h"
 #include "core/UTF8.h"

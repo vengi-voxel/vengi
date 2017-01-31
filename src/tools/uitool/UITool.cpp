@@ -5,6 +5,7 @@
 #include "UITool.h"
 #include "ui/Window.h"
 #include "ui/FontUtil.h"
+#include "io/Filesystem.h"
 
 UITool::UITool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		core::App(filesystem, eventBus, timeProvider, 0) {

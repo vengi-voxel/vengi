@@ -12,6 +12,7 @@
 #include "ui/UIApp.h"
 #include "core/JSON.h"
 #include "voxel/MaterialColor.h"
+#include "io/Filesystem.h"
 
 namespace voxedit {
 

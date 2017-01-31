@@ -2,6 +2,7 @@
 #include "core/command/Command.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedViewPort.h"
+#include "io/Filesystem.h"
 
 #define MaxDepthBufferUniformName "u_cascades"
 

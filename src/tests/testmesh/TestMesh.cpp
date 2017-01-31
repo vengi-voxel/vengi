@@ -1,4 +1,5 @@
 #include "testcore/TestMeshApp.h"
+#include "io/Filesystem.h"
 
 int main(int argc, char *argv[]) {
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();

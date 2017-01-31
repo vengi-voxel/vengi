@@ -42,6 +42,23 @@ bool Image::load(const io::FilePtr& file) {
 	return load(buffer, length);
 }
 
+ImagePtr loadImage(const io::FilePtr& file, bool async) {
+	const ImagePtr& i = createEmptyImage(file->name());
+	if (async) {
+		core::App::getInstance()->threadPool().enqueue([=] () { i->load(file); });
+	} else {
+		if (!i->load(file)) {
+			Log::warn("Failed to load image %s", i->name().c_str());
+		}
+	}
+	return i;
+}
+
+ImagePtr loadImage(const std::string& filename, bool async) {
+	const io::FilePtr& file = core::App::getInstance()->filesystem()->open(filename);
+	return loadImage(file, async);
+}
+
 bool Image::load(uint8_t* buffer, int length) {
 	if (!buffer || length <= 0) {
 		_state = io::IOSTATE_FAILED;

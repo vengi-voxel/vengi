@@ -1,5 +1,6 @@
 #include "TestVoxelFont.h"
 #include "voxel/MaterialColor.h"
+#include "io/Filesystem.h"
 
 TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
