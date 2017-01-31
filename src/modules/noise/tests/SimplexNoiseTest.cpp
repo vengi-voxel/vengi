@@ -28,7 +28,7 @@ protected:
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
 				const glm::vec2 pos(x, y);
-				const float noise = Simplex::Noise2D(pos, octaves, persistence, frequency, amplitude);
+				const float noise = Noise2D(pos, octaves, persistence, frequency, amplitude);
 				float normalized = noise::norm(noise);
 				ASSERT_LE(normalized, 1.0f)<< "Noise is bigger than 1.0: " << normalized;
 				ASSERT_GE(normalized, 0.0f)<< "Noise is less than 0.0: " << normalized;
@@ -59,12 +59,12 @@ TEST_F(SimplexNoiseTest, testLandscapeMountains) {
 	for (int x = 0; x < w; ++x) {
 		for (int y = 0; y < h; ++y) {
 			const glm::vec2 pos(x, y);
-			const float landscapeNoise = noise::Simplex::Noise2D(pos, worldCtx.landscapeNoiseOctaves,
+			const float landscapeNoise = noise::Noise2D(pos, worldCtx.landscapeNoiseOctaves,
 					worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 			const float noiseNormalized = noise::norm(landscapeNoise);
 			ASSERT_LE(noiseNormalized, 1.0f)<< "Noise is bigger than 1.0: " << noiseNormalized;
 			ASSERT_GE(noiseNormalized, 0.0f)<< "Noise is less than 0.0: " << noiseNormalized;
-			const float mountainNoise = noise::Simplex::Noise2D(pos, worldCtx.mountainNoiseOctaves,
+			const float mountainNoise = noise::Noise2D(pos, worldCtx.mountainNoiseOctaves,
 					worldCtx.mountainNoisePersistence, worldCtx.mountainNoiseFrequency, worldCtx.mountainNoiseAmplitude);
 			const float mountainNoiseNormalized = noise::norm(mountainNoise);
 
@@ -97,7 +97,7 @@ TEST_F(SimplexNoiseTest, testLandscape) {
 	for (int x = 0; x < w; ++x) {
 		for (int y = 0; y < h; ++y) {
 			const glm::vec2 pos(x, y);
-			const float landscapeNoise = noise::Simplex::Noise2D(pos, worldCtx.landscapeNoiseOctaves,
+			const float landscapeNoise = noise::Noise2D(pos, worldCtx.landscapeNoiseOctaves,
 					worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 			const float noiseNormalized = noise::norm(landscapeNoise);
 			ASSERT_LE(noiseNormalized, 1.0f)<< "Noise is bigger than 1.0: " << noiseNormalized;
@@ -132,7 +132,7 @@ TEST_F(SimplexNoiseTest, testMountains) {
 			const float p = worldCtx.mountainNoisePersistence;
 			const float f = worldCtx.mountainNoiseFrequency;
 			const float a = worldCtx.mountainNoiseAmplitude;
-			const float mountainNoise = noise::Simplex::Noise2D(pos, o, p, f, a);
+			const float mountainNoise = noise::Noise2D(pos, o, p, f, a);
 			const float mountainNoiseNormalized = noise::norm(mountainNoise);
 			const unsigned char color = (unsigned char) (mountainNoiseNormalized * 255.0f);
 			ASSERT_LE(color, 255) << "Color is bigger than 255: " << color;
@@ -176,7 +176,7 @@ TEST_F(SimplexNoiseTest, test2DNoiseColorMap) {
 	const float persistence = 0.3f;
 	const float frequency = 0.7f;
 	const float amplitude = 1.0f;
-	noise::Simplex::SeamlessNoise2DRGB(buffer, width, octaves, persistence, frequency, amplitude);
+	noise::SeamlessNoise2DRGB(buffer, width, octaves, persistence, frequency, amplitude);
 	ASSERT_TRUE(image::Image::writePng("testNoiseColorMap.png", buffer, width, height, components));
 }
 

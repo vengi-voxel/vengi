@@ -13,7 +13,7 @@ void RandomColorTexture::init() {
 		const float persistence = 0.3f;
 		const float frequency = 0.7f;
 		const float amplitude = 1.0f;
-		noise::Simplex::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
+		noise::SeamlessNoise2DRGB(colorTexture, ColorTextureSize, ColorTextureOctaves, persistence, frequency, amplitude);
 		return NoiseGenerationTask(colorTexture, ColorTextureSize, ColorTextureSize, ColorTextureDepth);
 	}));
 }

@@ -24,7 +24,7 @@ void generate(Volume& volume, int octaves, float persistence, float frequency, f
 	glm::vec2 p(noiseSeedOffsetX + lowerX, noiseSeedOffsetZ + lowerZ);
 	for (int x = lowerX; x < lowerX + width; ++x, p.x += 1.0f) {
 		for (int z = lowerZ; z < lowerZ + depth; ++z, p.y += 1.0f) {
-			const float n = ::noise::Simplex::Noise2D(p, octaves, persistence, frequency, amplitude);
+			const float n = ::noise::Noise2D(p, octaves, persistence, frequency, amplitude);
 			const int ni = ::noise::norm(n) * (depth - 1);
 			glm::ivec3 vp(x, 0, z);
 			volume.setVoxel(vp, dirt);

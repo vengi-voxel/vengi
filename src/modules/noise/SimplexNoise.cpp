@@ -38,15 +38,15 @@ static float Noise(const VecType& pos, int octaves, float persistence, float lac
 #endif
 }
 
-float Simplex::Noise2D(const glm::vec2& pos, int octaves, float persistence, float frequency, float amplitude) {
+float Noise2D(const glm::vec2& pos, int octaves, float persistence, float frequency, float amplitude) {
 	return Noise(pos, octaves, persistence, 2.0f, frequency, amplitude);
 }
 
-float Simplex::Noise3D(const glm::vec3& pos, int octaves, float persistence, float frequency, float amplitude) {
+float Noise3D(const glm::vec3& pos, int octaves, float persistence, float frequency, float amplitude) {
 	return Noise(pos, octaves, persistence, 2.0f, frequency, amplitude);
 }
 
-float Simplex::Noise4D(const glm::vec4& pos, int octaves, float persistence, float frequency, float amplitude) {
+float Noise4D(const glm::vec4& pos, int octaves, float persistence, float frequency, float amplitude) {
 	return Noise(pos, octaves, persistence, 2.0f, frequency, amplitude);
 }
 

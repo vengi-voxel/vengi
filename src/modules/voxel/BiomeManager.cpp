@@ -79,7 +79,7 @@ float BiomeManager::getHumidity(const glm::ivec3& pos) const {
 	const float persistence = 1.0f;
 	const float frequency = 0.001f;
 	const float amplitude = 1.0f;
-	const float n = noise::Simplex::Noise2D(noisePos, octaves, persistence, frequency, amplitude);
+	const float n = noise::Noise2D(noisePos, octaves, persistence, frequency, amplitude);
 	return noise::norm(n);
 }
 
@@ -92,7 +92,7 @@ float BiomeManager::getTemperature(const glm::ivec3& pos) const {
 	const float persistence = 1.0f;
 	const float frequency = 0.0001f;
 	const float amplitude = 1.2f;
-	const float n = noise::Simplex::Noise2D(noisePos, octaves, persistence, frequency, amplitude);
+	const float n = noise::Noise2D(noisePos, octaves, persistence, frequency, amplitude);
 	return noise::norm(n);
 }
 

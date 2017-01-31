@@ -9,10 +9,10 @@ namespace world {
 int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeManager& biomManager, long seed, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) {
 	// TODO: the 2d noise doesn't need the same resolution - we can optimize this a lot, we can lerp/glm::mix here
 	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
-	const float landscapeNoise = ::noise::Simplex::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
+	const float landscapeNoise = ::noise::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 			worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 	const float noiseNormalized = ::noise::norm(landscapeNoise);
-	const float mountainNoise = ::noise::Simplex::Noise2D(noisePos2d, worldCtx.mountainNoiseOctaves,
+	const float mountainNoise = ::noise::Noise2D(noisePos2d, worldCtx.mountainNoiseOctaves,
 			worldCtx.mountainNoisePersistence, worldCtx.mountainNoiseFrequency, worldCtx.mountainNoiseAmplitude);
 	const float mountainNoiseNormalized = ::noise::norm(mountainNoise);
 	const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
@@ -29,7 +29,7 @@ int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeM
 	for (int y = ni - 1; y >= 1; --y) {
 		const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
 		const float noiseVal = ::noise::norm(
-				::noise::Simplex::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
+				::noise::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
 						worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
 		const float finalDensity = n + noiseVal;
 		if (finalDensity > worldCtx.caveDensityThreshold) {

@@ -44,9 +44,9 @@ void NoiseToolWindow::make2DNoise(bool append, bool seamless, bool alpha, float 
 	const int components = 4;
 	uint8_t buffer[width * height * components];
 	if (seamless) {
-		noise::Simplex::SeamlessNoise2DRGBA(buffer, width, octaves, persistence, frequency, amplitude);
+		noise::SeamlessNoise2DRGBA(buffer, width, octaves, persistence, frequency, amplitude);
 	} else {
-		noise::Simplex::Noise2DRGBA(buffer, width, height, octaves, persistence, frequency, amplitude);
+		noise::Noise2DRGBA(buffer, width, height, octaves, persistence, frequency, amplitude);
 	}
 	if (!alpha) {
 		for (int i = components - 1; i < width * height * components; i += components) {
