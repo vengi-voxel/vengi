@@ -349,7 +349,7 @@ inline void Camera::rotate(const glm::quat& rotation) {
 }
 
 inline bool Camera::lookAt(const glm::vec3& position) {
-	return lookAt(position, up());
+	return lookAt(position, glm::up);
 }
 
 inline float Camera::nearPlane() const {

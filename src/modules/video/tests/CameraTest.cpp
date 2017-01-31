@@ -31,14 +31,34 @@ TEST_F(CameraTest, testLookAt) {
 	EXPECT_FLOAT_EQ(glm::half_pi<float>(), camera.pitch());
 	EXPECT_FLOAT_EQ(0.0f, camera.yaw());
 	EXPECT_FLOAT_EQ(0.0f, camera.roll());
+	const glm::vec4 invecs[6] = {
+		// left bottom, right bottom, right top
+		glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f,  1.0f, 0.0f, 1.0f),
+		// left bottom, right top, left top
+		glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f,  1.0f, 0.0f, 1.0f), glm::vec4(-1.0f,  1.0f, 0.0f, 1.0f)
+	};
+
+	glm::vec4 outvecs[6];
+	for (int i = 0; i < 6; ++i) {
+		outvecs[i] = camera.viewProjectionMatrix() * invecs[i];
+	}
+
+	EXPECT_FLOAT_EQ(outvecs[0].y, outvecs[1].y) << "left bottom - right bottom y is invalid";
+	EXPECT_FLOAT_EQ(outvecs[2].y, outvecs[5].y) << "right top - left top y is invalid";
+
+	EXPECT_FLOAT_EQ(outvecs[0].x, outvecs[5].x) << "left bottom - left top x is invalid";
+	EXPECT_FLOAT_EQ(outvecs[1].x, outvecs[4].x) << "right bottom - right top x is invalid";
+
+	EXPECT_LT(outvecs[2].y, outvecs[1].y) << "right top - right bottom y is invalid - maybe a sign error";
+	EXPECT_LT(outvecs[5].y, outvecs[0].y) << "left top - left bottom y is invalid - maybe a sign error";
 }
 
 TEST_F(CameraTest, testScreenRayStraightDown) {
 	Camera camera = setup();
 	// get the world position from the center of the screen
 	const Ray& ray = camera.screenRay(glm::vec2(0.5f));
-	ASSERT_TRUE(glm::all(glm::epsilonEqual(glm::down, ray.direction, 0.00001f))) << ray << " - " << ray.direction.x << ", " << ray.direction.y << ", " << ray.direction.z;
-	ASSERT_TRUE(glm::all(glm::epsilonEqual(camera.position(), ray.origin, 0.00001f))) << ray << " - " << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(glm::down, ray.direction, 0.00001f))) << ray << " - " << ray.direction.x << ", " << ray.direction.y << ", " << ray.direction.z;
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.position(), ray.origin, 0.00001f))) << ray << " - " << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
 }
 
 TEST_F(CameraTest, testMotion) {
@@ -50,6 +70,33 @@ TEST_F(CameraTest, testMotion) {
 	camera.update(0l);
 }
 
+TEST_F(CameraTest, testParallelLookAt) {
+	Camera camera;
+	camera.setPosition(glm::vec3(0.0, 10.0, 0.0));
+	camera.lookAt(glm::vec3(0.0), glm::up);
+	camera.update(0l);
+	const glm::vec4 invecs[6] = {
+		// left bottom, right bottom, right top
+		glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f,  1.0f, 0.0f, 1.0f),
+		// left bottom, right top, left top
+		glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f,  1.0f, 0.0f, 1.0f), glm::vec4(-1.0f,  1.0f, 0.0f, 1.0f)
+	};
+
+	glm::vec4 outvecs[6];
+	for (int i = 0; i < 6; ++i) {
+		outvecs[i] = camera.viewProjectionMatrix() * invecs[i];
+	}
+
+	EXPECT_FLOAT_EQ(outvecs[0].y, outvecs[1].y) << "left bottom - right bottom y is invalid";
+	EXPECT_FLOAT_EQ(outvecs[2].y, outvecs[5].y) << "right top - left top y is invalid";
+
+	EXPECT_FLOAT_EQ(outvecs[0].x, outvecs[5].x) << "left bottom - left top x is invalid";
+	EXPECT_FLOAT_EQ(outvecs[1].x, outvecs[4].x) << "right bottom - right top x is invalid";
+
+	EXPECT_LT(outvecs[2].y, outvecs[1].y) << "right top - right bottom y is invalid - maybe a sign error";
+	EXPECT_LT(outvecs[5].y, outvecs[0].y) << "left top - left bottom y is invalid - maybe a sign error";
+}
+
 TEST_F(CameraTest, testCameraFrustumCullingPerspective) {
 	Camera camera;
 	camera.setMode(CameraMode::Perspective);
@@ -57,9 +104,9 @@ TEST_F(CameraTest, testCameraFrustumCullingPerspective) {
 	camera.lookAt(glm::vec3(0.0), glm::forward);
 	camera.update(0l);
 	const core::Frustum& frustum = camera.frustum();
-	ASSERT_EQ(core::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
-	ASSERT_EQ(core::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
-	ASSERT_EQ(core::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
+	EXPECT_EQ(core::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
+	EXPECT_EQ(core::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
+	EXPECT_EQ(core::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 }
 
 TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
@@ -75,9 +122,9 @@ TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 			glm::to_string(camera.aabb().getUpperCorner()).c_str(),
 			glm::to_string(frustum.aabb().getLowerCorner()).c_str(),
 			glm::to_string(frustum.aabb().getUpperCorner()).c_str()));
-	ASSERT_EQ(core::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
-	ASSERT_EQ(core::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
-	ASSERT_EQ(core::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
+	EXPECT_EQ(core::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
+	EXPECT_EQ(core::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
+	EXPECT_EQ(core::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 }
 
 }

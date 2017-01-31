@@ -75,8 +75,27 @@ bool Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 	if (glm::all(glm::epsilonEqual(_pos, position, 0.0001f))) {
 		return false;
 	}
-	// TODO: may not be parallel at the moment, but we have to catch that case.
-	_quat = glm::quat_cast(glm::lookAt(_pos, position, upDirection));
+
+	glm::vec3 targetDir = glm::normalize(position - _pos);
+	if (glm::length2(targetDir) == 0) {
+		targetDir = glm::forward;
+	}
+
+	glm::vec3 upDir(glm::uninitialize);
+	if (glm::epsilonEqual(glm::length2(upDirection), 0.0f, glm::epsilon<float>())) {
+		upDir = glm::up;
+	} else {
+		upDir = upDirection;
+	}
+
+	if (glm::epsilonEqual(glm::length2(glm::cross(upDir, targetDir)), 0.0f, glm::epsilon<float>())) {
+		upDir = glm::cross(targetDir, glm::right);
+		if (glm::epsilonEqual(glm::length2(upDir), 0.0f, glm::epsilon<float>())) {
+			upDir = glm::cross(targetDir, glm::backward);
+		}
+	}
+
+	_quat = glm::quat_cast(glm::lookAt(_pos, _pos + targetDir, upDir));
 	_dirty |= DIRTY_ORIENTATION;
 	core_assert_msg(!glm::any(glm::isnan(_quat)), "upDirection(%f:%f:%f), position(%f:%f:%f), _pos(%f:%f:%f)",
 			upDirection.x, upDirection.y, upDirection.z, position.x, position.y, position.z, _pos.x, _pos.y, _pos.z);
