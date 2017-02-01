@@ -92,26 +92,28 @@ float NoiseToolWindow::getNoise(NoiseType noiseType, int x, int y) {
 }
 
 void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
-	const tb::TBRect& rect = _editorContainer->GetPaddingRect();
-	const int height = rect.h;
 	// TODO: this 30 is the scrollbar - how to do this properly?
-	const int width = rect.w - 30;
+	const int scrollbarWidth = 30;
+
+	const tb::TBRect& noiseRect = _editorContainer->GetPaddingRect();
+	const int noiseHeight = noiseRect.h;
+	const int noiseWidth = noiseRect.w - scrollbarWidth;
 	const int components = 4;
-	uint8_t buffer[width * height * components];
+	uint8_t noiseBuffer[noiseWidth * noiseHeight * components];
+	memset(noiseBuffer, 255, sizeof(noiseBuffer));
+
 	tb::TBStr idStr;
 	idStr.SetFormatted("2d-%i-%f-%i-%f-%f-%f", (int)noiseType, _offset, _octaves, _lacunarity, _gain, _frequency);
 	cleanup(idStr);
-	for (int x = 0; x < width; ++x) {
-		for (int y = 0; y < height; ++y) {
+
+	for (int y = 0; y < noiseHeight; ++y) {
+		for (int x = 0; x < noiseWidth; ++x) {
 			const float n = getNoise(noiseType, x, y);
 			const uint8_t c = glm::clamp(n, 0.0f, 1.0f) * 255;
-			uint8_t* buf = &buffer[x * components + y * width * components];
+			uint8_t* buf = &noiseBuffer[x * components + y * noiseWidth * components];
 			const int j = components == 4 ? 3 : 4;
 			for (int i = 0; i < j; ++i) {
 				buf[i] = c;
-			}
-			if (components == 4) {
-				buf[3] = 255;
 			}
 		}
 	}
@@ -119,7 +121,7 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 	_noiseType = noiseType;
 	_dirtyParameters = false;
 
-	addImage(idStr, append, buffer, width, height);
+	addImage(idStr, append, noiseBuffer, noiseWidth, noiseHeight);
 }
 
 void NoiseToolWindow::fillBuffer(NoiseType noiseType, int width, int height, int components, int cols, int rows, int widgetWidth) {
@@ -135,9 +137,6 @@ void NoiseToolWindow::fillBuffer(NoiseType noiseType, int width, int height, int
 			for (int i = 0; i < j; ++i) {
 				buf[i] = c;
 			}
-			if (components == 4) {
-				buf[3] = 255;
-			}
 		}
 	}
 }
@@ -151,7 +150,8 @@ void NoiseToolWindow::allInOne2DNoise() {
 	if (widgetHeight != _autoHeight || widgetWidth != _autoWidth) {
 		delete[] _autoBuffer;
 		_dirtyParameters = true;
-		_autoBuffer = new uint8_t[widgetWidth * widgetHeight * components]();
+		_autoBuffer = new uint8_t[widgetWidth * widgetHeight * components];
+		memset(_autoBuffer, 255, sizeof(uint8_t) * widgetWidth * widgetHeight * components);
 		_autoWidth = widgetWidth;
 		_autoHeight = widgetHeight;
 	}
