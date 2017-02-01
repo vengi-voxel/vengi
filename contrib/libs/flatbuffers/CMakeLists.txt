@@ -20,6 +20,7 @@ set(COMPILER_SRCS
 	compiler/src/compiler/go_generator.h
 	compiler/code_generators.cpp
 	compiler/flatc.cpp
+	compiler/flatc_main.cpp
 	compiler/idl_gen_cpp.cpp
 	compiler/idl_gen_fbs.cpp
 	compiler/idl_gen_general.cpp
