@@ -104,15 +104,12 @@ TBLayout: distribution: gravity, axis: y
 				TBLayout: distribution: gravity, axis: y
 					TBLayout: distribution: gravity, id: editorcontainer, axis: y
 						TBScrollContainer
-							TBLayout
-								id imagelayout
-								axis y
-								spacing 10
+							TBLayout: id: imagelayout, axis: y, spacing: 10
 					TBLayout: distribution: gravity: axis: x
-						TBWidget: gravity: left
+						TBWidget: position: left
 							TBSkinImage: skin: noisetool-graph-begin
-						TBWidget: gravity: left right
-							TBWidget: skin: noisetool-graph-end
+						TBWidget: position: right, gravity: left right
+							TBWidget: skin: noisetool-graph-end, gravity: left right
 							TBLayout: distribution: gravity, id: graphlayout
 								TBWidget
 
