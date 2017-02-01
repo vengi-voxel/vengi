@@ -41,6 +41,7 @@ private:
 	long _autoUpdate = 0l;
 	tb::TBWidget* _editorContainer = nullptr;
 	tb::TBLayout* _imageLayout = nullptr;
+	tb::TBLayout* _graphLayout = nullptr;
 	uint8_t *_autoBuffer = nullptr;
 	int _autoWidth = 0;
 	int _autoHeight = 0;
@@ -52,6 +53,7 @@ private:
 	void makeSingle2DNoise(bool append, NoiseType noiseType);
 	void cleanup(const tb::TBStr& idStr);
 	void addImage(const tb::TBStr& idStr, bool append, uint8_t* buffer, int width, int height);
+	void addGraph(const tb::TBStr& idStr, uint8_t* buffer, int width, int height);
 	void removeImage(tb::TBWidget *image);
 	void generateImage();
 public:

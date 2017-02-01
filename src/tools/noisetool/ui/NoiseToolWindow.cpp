@@ -34,6 +34,12 @@ bool NoiseToolWindow::init() {
 		return false;
 	}
 
+	_graphLayout = getWidgetByType<tb::TBLayout>("graphlayout");
+	if (_graphLayout == nullptr) {
+		Log::error("Failed to init the main window: No graphlayout widget found");
+		return false;
+	}
+
 	return true;
 }
 
@@ -106,6 +112,12 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 	idStr.SetFormatted("2d-%i-%f-%i-%f-%f-%f", (int)noiseType, _offset, _octaves, _lacunarity, _gain, _frequency);
 	cleanup(idStr);
 
+	const tb::TBRect& graphRect = _graphLayout->GetPaddingRect();
+	const int graphHeight = graphRect.h;
+	const int graphWidth = graphRect.w;
+	uint8_t graphBuffer[graphWidth * graphHeight * components];
+	memset(graphBuffer, 0, sizeof(graphBuffer));
+
 	for (int y = 0; y < noiseHeight; ++y) {
 		for (int x = 0; x < noiseWidth; ++x) {
 			const float n = getNoise(noiseType, x, y);
@@ -115,6 +127,13 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 			for (int i = 0; i < j; ++i) {
 				buf[i] = c;
 			}
+			if (y == 0) {
+				const float graphN = glm::clamp(n, 0.0f, 1.0f);
+				const int graphY = graphN * graphHeight;
+				const int graphBufOffset = x * components + graphY * graphWidth * components;
+				uint8_t* gbuf = &graphBuffer[graphBufOffset];
+				gbuf[3] = 255;
+			}
 		}
 	}
 
@@ -122,6 +141,7 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 	_dirtyParameters = false;
 
 	addImage(idStr, append, noiseBuffer, noiseWidth, noiseHeight);
+	addGraph("graph", graphBuffer, graphWidth, graphHeight);
 }
 
 void NoiseToolWindow::fillBuffer(NoiseType noiseType, int width, int height, int components, int cols, int rows, int widgetWidth) {
@@ -184,6 +204,15 @@ void NoiseToolWindow::cleanup(const tb::TBStr& idStr) {
 	if (existingFragment != nullptr) {
 		fragMgr->FreeFragment(existingFragment);
 	}
+}
+
+void NoiseToolWindow::addGraph(const tb::TBStr& idStr, uint8_t* buffer, int width, int height) {
+	_graphLayout->DeleteAllChildren();
+	tb::TBImageWidget* imageWidget = new tb::TBImageWidget();
+	const tb::TBImage& image = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)buffer, width, height);
+	imageWidget->SetImage(image);
+	_graphLayout->AddChild(imageWidget, tb::WIDGET_Z_TOP);
+	_graphLayout->OnInflateChild(imageWidget);
 }
 
 void NoiseToolWindow::addImage(const tb::TBStr& idStr, bool append, uint8_t* buffer, int width, int height) {

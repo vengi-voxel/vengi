@@ -1,0 +1,6 @@
+elements
+	noisetool-graph-begin
+		bitmap noisetool-graph-begin.png
+
+	noisetool-graph-end
+		bitmap noisetool-graph-end.png

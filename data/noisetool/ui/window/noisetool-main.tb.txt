@@ -86,7 +86,7 @@ TBLayout: distribution: gravity, axis: y
 							TBClickLabel: text: Octaves
 								TBEditField: id: octaves, type: number, text: 4
 							TBClickLabel: text: Frequency
-								TBEditField: id: frequency, type: number, text: 0.5
+								TBEditField: id: frequency, type: number, text: 0.001
 							TBClickLabel: text: Gain
 								TBEditField: id: gain, type: number, text: 0.5
 							TBClickLabel: text: Lacunarity
@@ -107,7 +107,14 @@ TBLayout: distribution: gravity, axis: y
 							TBLayout
 								id imagelayout
 								axis y
-								spacing 20
+								spacing 10
+					TBLayout: distribution: gravity: axis: x
+						TBWidget: gravity: left
+							TBSkinImage: skin: noisetool-graph-begin
+						TBWidget: gravity: left right
+							TBWidget: skin: noisetool-graph-end
+							TBLayout: distribution: gravity, id: graphlayout
+								TBWidget
 
 			TBLayout: distribution: gravity
 				TBContainer: skin: container, gravity: left right
