@@ -34,6 +34,8 @@ public:
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };
 
+UIWIDGET_FACTORY(PaletteWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)
+
 inline int PaletteWidget::GetValue() {
 	return _value;
 }

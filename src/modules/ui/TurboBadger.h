@@ -33,6 +33,22 @@
 #include "ui_renderer_gl.h"
 
 #define UIWIDGET_SUBCLASS(clazz, baseclazz) TBOBJECT_SUBCLASS(clazz, baseclazz)
+#define UIWIDGET_FACTORY(classname, sync_type, add_child_z)  \
+	class classname##Factory : public tb::TBWidgetFactory \
+	{ \
+	public: \
+		classname##Factory() \
+			: tb::TBWidgetFactory(#classname, sync_type) { Register(); } \
+		virtual ~classname##Factory() {} \
+		virtual tb::TBWidget *Create(tb::INFLATE_INFO *info) \
+		{ \
+			classname *widget = new classname(); \
+			if (widget) { \
+				widget->GetContentRoot()->SetZInflate(add_child_z); \
+			} \
+			return widget; \
+		} \
+	};
 
 namespace ui {
 using UIRect = tb::TBRect;

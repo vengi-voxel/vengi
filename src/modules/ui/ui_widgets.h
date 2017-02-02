@@ -33,6 +33,7 @@ private:
 	tb::TBColor _color;
 	uint32_t _value;
 };
+UIWIDGET_FACTORY(ColorWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)
 
 class ImageWidget: public tb::TBImageWidget {
 private:
@@ -42,3 +43,4 @@ public:
 
 	tb::PreferredSize OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
 };
+UIWIDGET_FACTORY(ImageWidget, tb::TBValue::TYPE_NULL, tb::WIDGET_Z_TOP)

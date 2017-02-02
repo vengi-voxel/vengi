@@ -12,11 +12,16 @@
 #include "core/UTF8.h"
 #include "core/Common.h"
 #include "ui_renderer_gl.h"
+#include "ui_widgets.h"
 #include <stdarg.h>
 
 namespace ui {
 
 namespace {
+
+static ImageWidgetFactory imageWidget_wf;
+static ColorWidgetFactory colorWidget_wf;
+
 static inline tb::MODIFIER_KEYS mapModifier(int32_t key, int16_t modifier) {
 	tb::MODIFIER_KEYS code = tb::TB_MODIFIER_NONE;
 	switch (key) {

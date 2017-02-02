@@ -50,9 +50,6 @@ TBLayout: distribution: gravity, axis: y
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBSection: value: 1, text: "Palette"
 						TBLayout: position: left top, axis: y
-							TBTextField: text: "Current color", connection: current-voxel-color
-							ColorWidget: id: currentcolor, color: #ff0000, skin: color-picker, connection: current-voxel-color
-								lp: height: 20, width: 200
 							TBScrollContainer
 								lp: height: 300, width: 200
 								PaletteWidget: id: palettecontainer, width: 23, height: 20, amount-x: 8, connection: current-voxel-color
