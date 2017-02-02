@@ -147,7 +147,11 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 	_dirtyParameters = false;
 
 	addImage(idStr, append, noiseBuffer, noiseWidth, noiseHeight);
-	addGraph("graph", graphBuffer, graphWidth, graphHeight);
+
+	tb::TBStr graphStr;
+	graphStr.SetFormatted("graph-%i-%f-%i-%f-%f-%f", (int)noiseType, _offset, _octaves, _lacunarity, _gain, _frequency);
+
+	addGraph(graphStr, graphBuffer, graphWidth, graphHeight);
 }
 
 void NoiseToolWindow::fillBuffer(NoiseType noiseType, int width, int height, int components, int cols, int rows, int widgetWidth) {
@@ -214,7 +218,6 @@ void NoiseToolWindow::cleanup(const tb::TBStr& idStr) {
 
 void NoiseToolWindow::addGraph(const tb::TBStr& idStr, uint8_t* buffer, int width, int height) {
 	const tb::TBImage& image = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)buffer, width, height);
-	// TODO: update doesn't work here - we have to change the id
 	_graphImage->SetImage(image);
 }
 
