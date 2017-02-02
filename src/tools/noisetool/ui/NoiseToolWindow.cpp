@@ -214,6 +214,7 @@ void NoiseToolWindow::cleanup(const tb::TBStr& idStr) {
 
 void NoiseToolWindow::addGraph(const tb::TBStr& idStr, uint8_t* buffer, int width, int height) {
 	const tb::TBImage& image = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)buffer, width, height);
+	// TODO: update doesn't work here - we have to change the id
 	_graphImage->SetImage(image);
 }
 
