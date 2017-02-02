@@ -56,3 +56,13 @@ void ColorWidget::OnInflate(const tb::INFLATE_INFO &info) {
 }
 
 UI_WIDGET_FACTORY(ColorWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)
+
+tb::PreferredSize ImageWidget::OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) {
+	const tb::PreferredSize& prefSize = Super::OnCalculatePreferredContentSize(constraints);
+	if (prefSize.max_w == 0 || prefSize.max_h == 0) {
+		return tb::TBWidget::OnCalculatePreferredContentSize(constraints);
+	}
+	return prefSize;
+}
+
+UI_WIDGET_FACTORY(ImageWidget, tb::TBValue::TYPE_NULL, tb::WIDGET_Z_TOP)

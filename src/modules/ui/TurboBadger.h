@@ -32,10 +32,7 @@
 #include <tb_message_window.h>
 #include "ui_renderer_gl.h"
 
-#define UIWIDGET_SUBCLASS(clazz, baseclazz) \
-	virtual const char *GetClassName() const override { return #clazz; } \
-	virtual bool IsOfTypeId(const tb::TB_TYPE_ID type_id) const override \
-		{ return GetTypeId<clazz>() == type_id ? true : baseclazz::IsOfTypeId(type_id); }
+#define UIWIDGET_SUBCLASS(clazz, baseclazz) TBOBJECT_SUBCLASS(clazz, baseclazz)
 
 namespace ui {
 using UIRect = tb::TBRect;

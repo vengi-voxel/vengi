@@ -34,9 +34,15 @@ bool NoiseToolWindow::init() {
 		return false;
 	}
 
-	_graphLayout = getWidgetByType<tb::TBLayout>("graphlayout");
-	if (_graphLayout == nullptr) {
-		Log::error("Failed to init the main window: No graphlayout widget found");
+	_graphBegin = getWidget("graphbegin");
+	if (_graphBegin == nullptr) {
+		Log::error("Failed to init the main window: No graphbegin widget found");
+		return false;
+	}
+
+	_graphImage = getWidgetByType<ImageWidget>("graphimage");
+	if (_graphImage == nullptr) {
+		Log::error("Failed to init the main window: No graphimage widget found");
 		return false;
 	}
 
@@ -112,9 +118,9 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 	idStr.SetFormatted("2d-%i-%f-%i-%f-%f-%f", (int)noiseType, _offset, _octaves, _lacunarity, _gain, _frequency);
 	cleanup(idStr);
 
-	const tb::TBRect& graphRect = _graphLayout->GetPaddingRect();
+	const tb::TBRect& graphRect = _graphBegin->GetPaddingRect();
 	const int graphHeight = graphRect.h;
-	const int graphWidth = graphRect.w;
+	const int graphWidth = noiseWidth - graphRect.w;
 	uint8_t graphBuffer[graphWidth * graphHeight * components];
 	memset(graphBuffer, 0, sizeof(graphBuffer));
 
@@ -207,12 +213,8 @@ void NoiseToolWindow::cleanup(const tb::TBStr& idStr) {
 }
 
 void NoiseToolWindow::addGraph(const tb::TBStr& idStr, uint8_t* buffer, int width, int height) {
-	_graphLayout->DeleteAllChildren();
-	tb::TBImageWidget* imageWidget = new tb::TBImageWidget();
 	const tb::TBImage& image = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)buffer, width, height);
-	imageWidget->SetImage(image);
-	_graphLayout->AddChild(imageWidget, tb::WIDGET_Z_TOP);
-	_graphLayout->OnInflateChild(imageWidget);
+	_graphImage->SetImage(image);
 }
 
 void NoiseToolWindow::addImage(const tb::TBStr& idStr, bool append, uint8_t* buffer, int width, int height) {

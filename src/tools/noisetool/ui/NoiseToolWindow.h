@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui/Window.h"
+#include "ui/ui_widgets.h"
 #include "core/Common.h"
 
 class NoiseToolWindow: public ui::Window {
@@ -41,7 +42,8 @@ private:
 	long _autoUpdate = 0l;
 	tb::TBWidget* _editorContainer = nullptr;
 	tb::TBLayout* _imageLayout = nullptr;
-	tb::TBLayout* _graphLayout = nullptr;
+	ImageWidget* _graphImage = nullptr;
+	tb::TBWidget* _graphBegin = nullptr;
 	uint8_t *_autoBuffer = nullptr;
 	int _autoWidth = 0;
 	int _autoHeight = 0;

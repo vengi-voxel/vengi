@@ -26,5 +26,4 @@ public:
 
 }
 
-#define UI_WIDGET_FACTORY(classname, sync_type, add_child_z) \
-	TB_WIDGET_FACTORY(classname, sync_type, add_child_z) {}
+#define UI_WIDGET_FACTORY(classname, sync_type, add_child_z) TB_WIDGET_FACTORY(classname, sync_type, add_child_z) {}

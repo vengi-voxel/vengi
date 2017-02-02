@@ -33,3 +33,12 @@ private:
 	tb::TBColor _color;
 	uint32_t _value;
 };
+
+class ImageWidget: public tb::TBImageWidget {
+private:
+	using Super = tb::TBImageWidget;
+public:
+	UIWIDGET_SUBCLASS(ImageWidget, Super);
+
+	tb::PreferredSize OnCalculatePreferredContentSize(const tb::SizeConstraints &constraints) override;
+};
