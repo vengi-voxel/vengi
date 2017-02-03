@@ -86,7 +86,7 @@ TBLayout: distribution: gravity, axis: y
 							TBClickLabel: text: Octaves
 								TBEditField: id: octaves, type: number, text: 4
 							TBClickLabel: text: Frequency
-								TBEditField: id: frequency, type: number, text: 0.001
+								TBEditField: id: frequency, type: number, text: 0.01
 							TBClickLabel: text: Gain
 								TBEditField: id: gain, type: number, text: 0.5
 							TBClickLabel: text: Lacunarity
