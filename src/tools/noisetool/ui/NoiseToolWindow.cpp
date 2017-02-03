@@ -352,10 +352,14 @@ bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		} else if (ev.special_key == tb::TB_KEY_ENTER) {
 			generateImage();
 			return true;
-		} else if (ev.special_key == tb::TB_KEY_LEFT) {
-			_imageScrollContainer->ScrollBy(0, -_imageLayout->GetPaddingRect().h);
-		} else if (ev.special_key == tb::TB_KEY_RIGHT) {
-			_imageScrollContainer->ScrollBy(0, _imageLayout->GetPaddingRect().h);
+		} else if (ev.special_key == tb::TB_KEY_LEFT || ev.special_key == tb::TB_KEY_UP || ev.special_key == tb::TB_KEY_PAGE_UP) {
+			_imageScrollContainer->ScrollBy(0, -_editorContainer->GetPaddingRect().h);
+		} else if (ev.special_key == tb::TB_KEY_RIGHT || ev.special_key == tb::TB_KEY_DOWN || ev.special_key == tb::TB_KEY_PAGE_DOWN) {
+			_imageScrollContainer->ScrollBy(0, _editorContainer->GetPaddingRect().h);
+		} else if (ev.special_key == tb::TB_KEY_HOME) {
+			_imageScrollContainer->ScrollTo(0, 0);
+		} else if (ev.special_key == tb::TB_KEY_END) {
+			_imageScrollContainer->ScrollTo(0, std::numeric_limits<int>::max());
 		}
 	} else if (ev.type == tb::EVENT_TYPE_SHORTCUT) {
 		if (ev.ref_id == TBIDC("new")) {
