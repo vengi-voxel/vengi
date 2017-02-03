@@ -8,12 +8,38 @@
 #include "noise/Simplex.h"
 #include "ui/UIApp.h"
 
+static const char *NoiseTypeStr[] = {
+	"simplex noise",
+	"ridged noise",
+	"flow noise (rot. gradients)",
+	"fractal brownian motion sum",
+	"fbm",
+	"fbm cascade",
+	"fbm analytical derivatives",
+	"flow noise fbm (time)",
+	"ridged multi fractal",
+	"ridged multi fractal cascade",
+	"ridged multi fractal scaled",
+	"iq noise",
+	"iq noise scaled",
+	"analytical derivatives",
+	"noise curl noise (time)"
+};
+static_assert((int)SDL_arraysize(NoiseTypeStr) == (int)NoiseType::Max, "String array size doesn't match noise types");
+
 NoiseToolWindow::NoiseToolWindow(ui::UIApp* tool) :
 		ui::Window(tool) {
+	for (int i = 0; i < (int)SDL_arraysize(NoiseTypeStr); ++i) {
+		addMenuItem(_noiseTypes, NoiseTypeStr[i]);
+	}
 }
 
 NoiseToolWindow::~NoiseToolWindow() {
 	delete[] _autoBuffer;
+	tb::TBSelectDropdown* noiseTypes = getWidgetByType<tb::TBSelectDropdown>("type");
+	if (noiseTypes != nullptr) {
+		noiseTypes->SetSource(nullptr);
+	}
 }
 
 bool NoiseToolWindow::init() {
@@ -21,6 +47,13 @@ bool NoiseToolWindow::init() {
 		Log::error("Failed to init the main window: Could not load the ui definition");
 		return false;
 	}
+
+	tb::TBSelectDropdown* noiseTypes = getWidgetByType<tb::TBSelectDropdown>("type");
+	if (noiseTypes == nullptr) {
+		Log::error("Failed to init the main window: No noisetypes widget found");
+		return false;
+	}
+	noiseTypes->SetSource(&_noiseTypes);
 
 	_editorContainer = getWidget("editorcontainer");
 	if (_editorContainer == nullptr) {
@@ -345,6 +378,10 @@ void NoiseToolWindow::removeImage(tb::TBWidget *image) {
 }
 
 void NoiseToolWindow::OnDie() {
+	tb::TBSelectDropdown* noiseTypes = getWidgetByType<tb::TBSelectDropdown>("type");
+	if (noiseTypes != nullptr) {
+		noiseTypes->SetSource(nullptr);
+	}
 	ui::Window::OnDie();
 	requestQuit();
 }

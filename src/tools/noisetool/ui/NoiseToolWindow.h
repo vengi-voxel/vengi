@@ -8,28 +8,28 @@
 #include "ui/ui_widgets.h"
 #include "core/Common.h"
 
+enum class NoiseType {
+	simplexNoise,
+	ridgedNoise,
+	flowNoise,
+	fbm,
+	fbmCascade,
+	fbmAnalyticalDerivatives,
+	flowNoiseFbm,
+	ridgedMFTime,
+	ridgedMF,
+	ridgedMFCascade,
+	ridgedMFScaled,
+	iqNoise,
+	iqNoiseScaled,
+	analyticalDerivatives,
+	noiseCurlNoise,
+
+	Max
+};
+
 class NoiseToolWindow: public ui::Window {
 private:
-	enum class NoiseType {
-		simplexNoise,
-		ridgedNoise,
-		flowNoise,
-		fbm,
-		fbmCascade,
-		fbmAnalyticalDerivatives,
-		flowNoiseFbm,
-		ridgedMFTime,
-		ridgedMF,
-		ridgedMFCascade,
-		ridgedMFScaled,
-		iqNoise,
-		iqNoiseScaled,
-		analyticalDerivatives,
-		noiseCurlNoise,
-
-		Max
-	};
-
 	float _frequency = 0.0f;
 	float _offset = 0.0f;
 	float _lacunarity = 0.0f;
@@ -49,6 +49,8 @@ private:
 	int _autoWidth = 0;
 	int _autoHeight = 0;
 	bool _dirtyParameters = true;
+
+	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _noiseTypes;
 
 	void fillBuffer(NoiseType noiseType, int width, int height, int components, int cols, int rows, int widgetWidth);
 	float getNoise(NoiseType noiseType, int x, int y);

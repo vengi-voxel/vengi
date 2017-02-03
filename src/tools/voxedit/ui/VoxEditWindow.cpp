@@ -220,23 +220,6 @@ bool VoxEditWindow::init() {
 	return true;
 }
 
-tb::TBGenericStringItem* VoxEditWindow::addMenuItem(tb::TBSelectItemSourceList<tb::TBGenericStringItem>& items, const char *text, const char *id) {
-	tb::TBGenericStringItem* item;
-	if (id == nullptr) {
-		const std::string& lowerId = core::string::toLower(text);
-		item = new tb::TBGenericStringItem(text, TBIDC(lowerId.c_str()));
-		const std::string& iconId = core::App::getInstance()->appname() + "-" + lowerId;
-		item->SetSkinImage(TBIDC(iconId.c_str()));
-	} else {
-		item = new tb::TBGenericStringItem(text, TBIDC(id));
-		char buf[128];
-		SDL_snprintf(buf, sizeof(buf), "%s-%s", core::App::getInstance()->appname().c_str(), id);
-		item->SetSkinImage(TBIDC(buf));
-	}
-	items.AddItem(item);
-	return item;
-}
-
 void VoxEditWindow::update() {
 	_scene->update();
 	_sceneTop->update();
