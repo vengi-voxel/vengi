@@ -34,6 +34,12 @@ bool NoiseToolWindow::init() {
 		return false;
 	}
 
+	_imageCcrollContainer = getWidgetByType<tb::TBScrollContainer>("imagescroll");
+	if (_imageCcrollContainer == nullptr) {
+		Log::error("Failed to init the main window: No imagescroll widget found");
+		return false;
+	}
+
 	_graphBegin = getWidget("graphbegin");
 	if (_graphBegin == nullptr) {
 		Log::error("Failed to init the main window: No graphbegin widget found");
@@ -269,6 +275,10 @@ bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		} else if (ev.special_key == tb::TB_KEY_ENTER) {
 			generateImage();
 			return true;
+		} else if (ev.special_key == tb::TB_KEY_LEFT) {
+			_imageCcrollContainer->ScrollBy(0, -_imageLayout->GetPaddingRect().h);
+		} else if (ev.special_key == tb::TB_KEY_RIGHT) {
+			_imageCcrollContainer->ScrollBy(0, _imageLayout->GetPaddingRect().h);
 		}
 	} else if (ev.type == tb::EVENT_TYPE_SHORTCUT) {
 		if (ev.ref_id == TBIDC("new")) {

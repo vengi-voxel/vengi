@@ -42,6 +42,7 @@ private:
 	long _autoUpdate = 0l;
 	tb::TBWidget* _editorContainer = nullptr;
 	tb::TBLayout* _imageLayout = nullptr;
+	tb::TBScrollContainer* _imageCcrollContainer = nullptr;
 	ImageWidget* _graphImage = nullptr;
 	tb::TBWidget* _graphBegin = nullptr;
 	uint8_t *_autoBuffer = nullptr;
