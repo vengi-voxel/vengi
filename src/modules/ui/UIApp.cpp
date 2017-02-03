@@ -325,6 +325,7 @@ bool UIApp::onKeyRelease(int32_t key) {
 void UIApp::onWindowResize() {
 	Super::onWindowResize();
 	_renderer.onWindowResize(dimension());
+	_root.SetRect(tb::TBRect(0, 0, dimension().x, dimension().y));
 }
 
 core::AppState UIApp::onConstruct() {
