@@ -7,6 +7,7 @@
 #include "ui/Window.h"
 #include "ui/ui_widgets.h"
 #include "core/Common.h"
+#include <unordered_map>
 
 enum class NoiseType {
 	simplexNoise,
@@ -42,13 +43,15 @@ private:
 	long _autoUpdate = 0l;
 	tb::TBWidget* _editorContainer = nullptr;
 	tb::TBLayout* _imageLayout = nullptr;
-	tb::TBScrollContainer* _imageCcrollContainer = nullptr;
+	tb::TBScrollContainer* _imageScrollContainer = nullptr;
 	ImageWidget* _graphImage = nullptr;
 	tb::TBWidget* _graphBegin = nullptr;
 	uint8_t *_autoBuffer = nullptr;
 	int _autoWidth = 0;
 	int _autoHeight = 0;
 	bool _dirtyParameters = true;
+	std::string _lastActiveImage;
+	std::unordered_map<std::string, tb::TBImage> _graphs;
 
 	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _noiseTypes;
 
@@ -58,9 +61,12 @@ private:
 	void makeSingle2DNoise(bool append, NoiseType noiseType);
 	void cleanup(const tb::TBStr& idStr);
 	void addImage(const tb::TBStr& idStr, bool append, uint8_t* buffer, int width, int height);
-	void addGraph(const tb::TBStr& idStr, uint8_t* buffer, int width, int height);
+	void addGraph(const std::string& idStr, uint8_t* buffer, int width, int height);
 	void removeImage(tb::TBWidget *image);
 	void generateImage();
+	void activateGraph();
+	std::string getCaption(tb::TBWidget* widget) const;
+	std::string getGraphName(const char* idStr) const;
 public:
 	NoiseToolWindow(ui::UIApp* tool);
 	~NoiseToolWindow();

@@ -27,6 +27,9 @@ static const char *NoiseTypeStr[] = {
 };
 static_assert((int)SDL_arraysize(NoiseTypeStr) == (int)NoiseType::Max, "String array size doesn't match noise types");
 
+#define IMAGE_PREFIX "2d"
+#define GRAPH_PREFIX "graph"
+
 NoiseToolWindow::NoiseToolWindow(ui::UIApp* tool) :
 		ui::Window(tool) {
 	for (int i = 0; i < (int)SDL_arraysize(NoiseTypeStr); ++i) {
@@ -67,8 +70,8 @@ bool NoiseToolWindow::init() {
 		return false;
 	}
 
-	_imageCcrollContainer = getWidgetByType<tb::TBScrollContainer>("imagescroll");
-	if (_imageCcrollContainer == nullptr) {
+	_imageScrollContainer = getWidgetByType<tb::TBScrollContainer>("imagescroll");
+	if (_imageScrollContainer == nullptr) {
 		Log::error("Failed to init the main window: No imagescroll widget found");
 		return false;
 	}
@@ -88,9 +91,46 @@ bool NoiseToolWindow::init() {
 	return true;
 }
 
+std::string NoiseToolWindow::getCaption(tb::TBWidget* widget) const {
+	if (widget == nullptr) {
+		return "empty";
+	}
+	tb::TBTextField* caption = widget->GetWidgetByIDAndType<tb::TBTextField>(TBIDC("caption"));
+	if (caption == nullptr) {
+		return "empty";
+	}
+	const std::string str = caption->GetText().CStr();
+	return str;
+}
+
+void NoiseToolWindow::activateGraph() {
+	const TBWidget::ScrollInfo& scrollInfo = _imageScrollContainer->GetScrollInfo();
+	tb::TBWidget* widget = _imageLayout->GetWidgetAt(scrollInfo.x, scrollInfo.y, false);
+	const std::string& caption = getCaption(widget);
+	if (_lastActiveImage == caption) {
+		return;
+	}
+	_lastActiveImage = caption;
+	Log::debug("Active image: %s", _lastActiveImage.c_str());
+	const std::string& graphId = getGraphName(_lastActiveImage.c_str());
+	Log::debug("Looking for graph for: %s", graphId.c_str());
+	static int32_t empty = 0x000000;
+	addGraph(graphId, (uint8_t*)&empty, 1, 1);
+}
+
+std::string NoiseToolWindow::getGraphName(const char* idStr) const {
+	tb::TBStr graphStr;
+	graphStr.SetFormatted(GRAPH_PREFIX "%s", idStr + strlen(IMAGE_PREFIX));
+	const std::string graphId = graphStr.CStr();
+	return graphId;
+}
+
 void NoiseToolWindow::update(long dt) {
 	_time += dt;
 	_autoUpdate += dt;
+
+	activateGraph();
+
 	const long autoUpdate = 2500l;
 	if (_autoUpdate < autoUpdate) {
 		return;
@@ -154,7 +194,7 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 	memset(noiseBuffer, 255, sizeof(noiseBuffer));
 
 	tb::TBStr idStr;
-	idStr.SetFormatted("2d-%i-%f-%i-%f-%f-%f", (int)noiseType, _offset, _octaves, _lacunarity, _gain, _frequency);
+	idStr.SetFormatted(IMAGE_PREFIX "-%i-%f-%i-%f-%f-%f", (int)noiseType, _offset, _octaves, _lacunarity, _gain, _frequency);
 	cleanup(idStr);
 
 	const tb::TBRect& graphRect = _graphBegin->GetPaddingRect();
@@ -187,10 +227,8 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 
 	addImage(idStr, append, noiseBuffer, noiseWidth, noiseHeight);
 
-	tb::TBStr graphStr;
-	graphStr.SetFormatted("graph-%i-%f-%i-%f-%f-%f", (int)noiseType, _offset, _octaves, _lacunarity, _gain, _frequency);
-
-	addGraph(graphStr, graphBuffer, graphWidth, graphHeight);
+	const std::string& graphName = getGraphName(idStr);
+	_graphs.insert(std::make_pair(graphName, tb::g_image_manager->GetImage(graphName.c_str(), (uint32_t*)graphBuffer, graphWidth, graphHeight)));
 }
 
 void NoiseToolWindow::fillBuffer(NoiseType noiseType, int width, int height, int components, int cols, int rows, int widgetWidth) {
@@ -224,7 +262,7 @@ void NoiseToolWindow::allInOne2DNoise() {
 		_autoWidth = widgetWidth;
 		_autoHeight = widgetHeight;
 	}
-	tb::TBStr idStr("2d-auto");
+	tb::TBStr idStr(IMAGE_PREFIX "-auto");
 	cleanup(idStr);
 	const int cols = 8;
 	const int rows = 2;
@@ -253,10 +291,17 @@ void NoiseToolWindow::cleanup(const tb::TBStr& idStr) {
 	if (existingFragment != nullptr) {
 		fragMgr->FreeFragment(existingFragment);
 	}
+
+	const std::string& graphId = getGraphName(idStr.CStr());
+	auto i = _graphs.find(graphId);
+	if (i != _graphs.end()) {
+		_graphs.erase(i);
+		_lastActiveImage = "";
+	}
 }
 
-void NoiseToolWindow::addGraph(const tb::TBStr& idStr, uint8_t* buffer, int width, int height) {
-	const tb::TBImage& image = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)buffer, width, height);
+void NoiseToolWindow::addGraph(const std::string& idStr, uint8_t* buffer, int width, int height) {
+	const tb::TBImage& image = tb::g_image_manager->GetImage(idStr.c_str(), (uint32_t*)buffer, width, height);
 	_graphImage->SetImage(image);
 }
 
@@ -264,9 +309,11 @@ void NoiseToolWindow::addImage(const tb::TBStr& idStr, bool append, uint8_t* buf
 	if (!append) {
 		_imageLayout->DeleteAllChildren();
 	}
+
 	tb::TBImageWidget* imageWidget = new tb::TBImageWidget();
 	tb::TBTextField* caption = new tb::TBTextField();
 	caption->SetText(idStr.CStr());
+	caption->SetID(TBIDC("caption"));
 	caption->SetGravity(tb::WIDGET_GRAVITY_BOTTOM | tb::WIDGET_GRAVITY_LEFT_RIGHT);
 	caption->SetSkinBg(tb::TBID("image_caption"));
 	imageWidget->AddChild(caption, tb::WIDGET_Z_BOTTOM);
@@ -309,9 +356,9 @@ bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			generateImage();
 			return true;
 		} else if (ev.special_key == tb::TB_KEY_LEFT) {
-			_imageCcrollContainer->ScrollBy(0, -_imageLayout->GetPaddingRect().h);
+			_imageScrollContainer->ScrollBy(0, -_imageLayout->GetPaddingRect().h);
 		} else if (ev.special_key == tb::TB_KEY_RIGHT) {
-			_imageCcrollContainer->ScrollBy(0, _imageLayout->GetPaddingRect().h);
+			_imageScrollContainer->ScrollBy(0, _imageLayout->GetPaddingRect().h);
 		}
 	} else if (ev.type == tb::EVENT_TYPE_SHORTCUT) {
 		if (ev.ref_id == TBIDC("new")) {
@@ -373,7 +420,15 @@ void NoiseToolWindow::generateImage() {
 }
 
 void NoiseToolWindow::removeImage(tb::TBWidget *image) {
+	const std::string& caption = getCaption(image);
+	const std::string& graphId = getGraphName(caption.c_str());
+	auto i = _graphs.find(graphId);
+	if (i != _graphs.end()) {
+		_graphs.erase(i);
+	}
 	image->GetParent()->RemoveChild(image);
+	_lastActiveImage = "";
+	_dirtyParameters = true;
 	delete image;
 }
 

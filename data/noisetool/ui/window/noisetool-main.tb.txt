@@ -57,7 +57,7 @@ TBLayout: distribution: gravity, axis: y
 
 				TBLayout: distribution: gravity, axis: y
 					TBLayout: distribution: gravity, id: editorcontainer, axis: y
-						TBScrollContainer: id: imagescroll, scroll-mode: y-auto
+						TBScrollContainer: id: imagescroll, scroll-mode: off
 							TBLayout: id: imagelayout, axis: y, spacing: 10
 					TBLayout: distribution: gravity, axis: x
 						TBWidget: position: left, id: graphbegin
