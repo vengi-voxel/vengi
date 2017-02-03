@@ -183,12 +183,9 @@ float NoiseToolWindow::getNoise(NoiseType noiseType, int x, int y) {
 }
 
 void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
-	// TODO: this 30 is the scrollbar - how to do this properly?
-	const int scrollbarWidth = 30;
-
 	const tb::TBRect& noiseRect = _editorContainer->GetPaddingRect();
 	const int noiseHeight = noiseRect.h;
-	const int noiseWidth = noiseRect.w - scrollbarWidth;
+	const int noiseWidth = noiseRect.w;
 	const int components = 4;
 	uint8_t noiseBuffer[noiseWidth * noiseHeight * components];
 	memset(noiseBuffer, 255, sizeof(noiseBuffer));
@@ -212,7 +209,7 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 			for (int i = 0; i < j; ++i) {
 				buf[i] = c;
 			}
-			if (y == 0) {
+			if (y == 0 && x < graphWidth) {
 				const float graphN = glm::clamp(n, 0.0f, 1.0f);
 				const int graphY = graphN * graphHeight;
 				const int graphBufOffset = x * components + graphY * graphWidth * components;
