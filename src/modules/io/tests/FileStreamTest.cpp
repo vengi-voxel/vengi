@@ -16,39 +16,41 @@ TEST_F(FileStreamTest, testFileStreamRead) {
 	FileStream stream(file.get());
 	uint8_t chr;
 	uint32_t magic;
-	ASSERT_EQ(0, stream.peekInt(magic));
-	ASSERT_EQ(FourCC('W', 'i', 'n', 'd'), magic);
-	ASSERT_EQ(0, stream.readByte(chr));
-	ASSERT_EQ('W', chr);
-	ASSERT_EQ(0, stream.readByte(chr));
-	ASSERT_EQ('i', chr);
-	ASSERT_EQ(0, stream.readByte(chr));
-	ASSERT_EQ('n', chr);
-	ASSERT_EQ(0, stream.peekByte(chr));
-	ASSERT_EQ('d', chr);
-	ASSERT_EQ(0, stream.peekByte(chr));
-	ASSERT_EQ('d', chr);
-	ASSERT_EQ(0, stream.peekByte(chr));
-	ASSERT_EQ('d', chr);
-	ASSERT_EQ(0, stream.readByte(chr));
-	ASSERT_EQ('d', chr);
-	ASSERT_EQ(0, stream.peekByte(chr));
-	ASSERT_EQ('o', chr);
+	EXPECT_EQ(0, stream.peekInt(magic));
+	EXPECT_EQ(FourCC('W', 'i', 'n', 'd'), magic);
+	EXPECT_EQ(0, stream.readByte(chr));
+	EXPECT_EQ('W', chr);
+	EXPECT_EQ(0, stream.readByte(chr));
+	EXPECT_EQ('i', chr);
+	EXPECT_EQ(0, stream.readByte(chr));
+	EXPECT_EQ('n', chr);
+	EXPECT_EQ(0, stream.peekByte(chr));
+	EXPECT_EQ('d', chr);
+	EXPECT_EQ(0, stream.peekByte(chr));
+	EXPECT_EQ('d', chr);
+	EXPECT_EQ(0, stream.peekByte(chr));
+	EXPECT_EQ('d', chr);
+	EXPECT_EQ(0, stream.readByte(chr));
+	EXPECT_EQ('d', chr);
+	EXPECT_EQ(0, stream.peekByte(chr));
+	EXPECT_EQ('o', chr);
 	char buf[8];
 	stream.readString(6, buf);
 	buf[6] = '\0';
-	ASSERT_STREQ("owInfo", buf);
+	EXPECT_STREQ("owInfo", buf);
 }
 
 TEST_F(FileStreamTest, testFileStreamWrite) {
 	const FilePtr& file = core::App::getInstance()->filesystem()->open("filestream-writetest", io::FileMode::Write);
 	File* fileRaw = file.get();
 	FileStream stream(fileRaw);
-	ASSERT_TRUE(stream.addInt(1));
-	ASSERT_EQ(4l, file->length());
-	ASSERT_TRUE(stream.addInt(1));
-	ASSERT_EQ(8l, file->length());
-	ASSERT_TRUE(file->exists());
+	EXPECT_TRUE(stream.addInt(1));
+	EXPECT_EQ(4l, stream.size());
+	EXPECT_EQ(4l, file->length());
+	EXPECT_TRUE(stream.addInt(1));
+	EXPECT_EQ(8l, stream.size());
+	EXPECT_EQ(8l, file->length());
+	EXPECT_TRUE(file->exists());
 }
 
 }
