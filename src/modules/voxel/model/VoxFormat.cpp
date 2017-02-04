@@ -24,33 +24,50 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	stream.addInt(FourCC('V','O','X',' '));
 	stream.addInt(150);
 	stream.addInt(FourCC('M','A','I','N'));
-	// this is filled at the end - once we know the final size
+	stream.addInt(0);
+	// this is filled at the end - once we know the final size of the main chunk children
 	int64_t numBytesMainChunkPos = stream.pos();
 	stream.addInt(0);
-	stream.addInt(0);
 
+	int64_t headerSize = stream.pos();
 	// model size
 	stream.addInt(FourCC('S','I','Z','E'));
 	stream.addInt(3 * sizeof(uint32_t));
 	stream.addInt(0);
 	const voxel::Region& region = volume->getRegion();
 	stream.addInt(region.getWidthInVoxels());
-	stream.addInt(region.getHeightInVoxels());
 	stream.addInt(region.getDepthInVoxels());
+	stream.addInt(region.getHeightInVoxels());
 
 	// voxel data
 	stream.addInt(FourCC('X','Y','Z','I'));
-	const uint32_t numVoxels = region.getWidthInVoxels() * region.getHeightInVoxels() * region.getDepthInVoxels();
-	stream.addInt(numVoxels * 4);
+	uint32_t numVoxels = 0;
+	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+				const voxel::Voxel& voxel = volume->getVoxel(x, y, z);
+				if (voxel::isAir(voxel.getMaterial())) {
+					continue;
+				}
+				++numVoxels;
+			}
+		}
+	}
+
+	stream.addInt(numVoxels * 4 + sizeof(uint32_t));
 	stream.addInt(0);
+
 	stream.addInt(numVoxels);
 	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+				const voxel::Voxel& voxel = volume->getVoxel(x, y, z);
+				if (voxel::isAir(voxel.getMaterial())) {
+					continue;
+				}
 				stream.addByte(x);
 				stream.addByte(z);
 				stream.addByte(y);
-				const voxel::Voxel& voxel = volume->getVoxel(x, y, z);
 				const uint8_t colorIndex = voxel.getColor();
 				stream.addByte(colorIndex);
 			}
@@ -58,21 +75,22 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	}
 
 	stream.addInt(FourCC('R','G','B','A'));
-	stream.addInt(256 * 4);
-	stream.addInt(0);
 	const MaterialColorArray& materialColors = getMaterialColors();
+	const int numColors = materialColors.size();
+	stream.addInt(numColors * sizeof(uint32_t));
+	stream.addInt(0);
 
-	for (int i = 0; i <= 254; i++) {
+	for (int i = 0; i < numColors; i++) {
 		uint32_t rgba = core::Color::getRGBA(materialColors[i]);
 		stream.addInt(rgba);
 	}
 
-	stream.addInt(FourCC('M','A','T','T'));
-	stream.addInt(0);
-	stream.addInt(0);
-
-	const int64_t mainChildChunkSize = stream.pos() - 5 * sizeof(uint32_t);
-	stream.seek(numBytesMainChunkPos);
+	// magic, version, main chunk, main chunk size, main chunk child size
+	const int64_t mainChildChunkSize = stream.pos() - headerSize;
+	if (stream.seek(numBytesMainChunkPos) == -1) {
+		Log::error("Failed to seek in the stream to pos %i", (int)numBytesMainChunkPos);
+		return false;
+	}
 	stream.addInt(mainChildChunkSize);
 
 	return true;
@@ -235,37 +253,8 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				_palette[i + 1] = (uint8_t)index;
 			}
 			break;
-		}
-		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
-		wrap(stream.seek(nextChunkPos));
-	} while (stream.remaining() > 0);
-
-	stream.seek(resetPos);
-
-	do {
-		uint32_t chunkId;
-		wrap(stream.readInt(chunkId))
-		uint32_t numBytesChunk;
-		wrap(stream.readInt(numBytesChunk))
-		uint32_t numBytesChildrenChunks;
-		wrap(stream.readInt(numBytesChildrenChunks))
-		const int64_t currentChunkPos = stream.pos();
-		const int64_t nextChunkPos = currentChunkPos + numBytesChunk + numBytesChildrenChunks;
-
-		if (chunkId == FourCC('P','A','C','K')) {
-			Log::debug("Found pack chunk with %u bytes", numBytesChunk);
-			// 4. Chunk id 'PACK' : if it is absent, only one model in the file
-			// -------------------------------------------------------------------------------
-			// # Bytes  | Type       | Value
-			// -------------------------------------------------------------------------------
-			// 4        | int        | numModels : num of SIZE and XYZI chunks
-			// -------------------------------------------------------------------------------
-			wrap(stream.readInt(numModels))
-			if (numModels > 1) {
-				Log::warn("We are right now only loading the first model of a vox file");
-			}
 		} else if (chunkId == FourCC('S','I','Z','E')) {
-			Log::debug("Found size chunk with %u bytes", numBytesChunk);
+			Log::debug("Found size chunk with %u bytes and %u child bytes", numBytesChunk, numBytesChildrenChunks);
 			// 5. Chunk id 'SIZE' : model size
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -286,8 +275,37 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				delete volume;
 			}
 			volume = new RawVolume(region);
+		}
+		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
+		wrap(stream.seek(nextChunkPos));
+	} while (stream.remaining() > 0);
+
+	stream.seek(resetPos);
+
+	do {
+		uint32_t chunkId;
+		wrap(stream.readInt(chunkId))
+		uint32_t numBytesChunk;
+		wrap(stream.readInt(numBytesChunk))
+		uint32_t numBytesChildrenChunks;
+		wrap(stream.readInt(numBytesChildrenChunks))
+		const int64_t currentChunkPos = stream.pos();
+		const int64_t nextChunkPos = currentChunkPos + numBytesChunk + numBytesChildrenChunks;
+
+		if (chunkId == FourCC('P','A','C','K')) {
+			Log::debug("Found pack chunk with %u bytes and %u child bytes", numBytesChunk, numBytesChildrenChunks);
+			// 4. Chunk id 'PACK' : if it is absent, only one model in the file
+			// -------------------------------------------------------------------------------
+			// # Bytes  | Type       | Value
+			// -------------------------------------------------------------------------------
+			// 4        | int        | numModels : num of SIZE and XYZI chunks
+			// -------------------------------------------------------------------------------
+			wrap(stream.readInt(numModels))
+			if (numModels > 1) {
+				Log::warn("We are right now only loading the first model of a vox file");
+			}
 		} else if (chunkId == FourCC('X','Y','Z','I')) {
-			Log::debug("Found voxel chunk with %u bytes", numBytesChunk);
+			Log::debug("Found voxel chunk with %u bytes and %u child bytes", numBytesChunk, numBytesChildrenChunks);
 			// 6. Chunk id 'XYZI' : model voxels
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -298,7 +316,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 			uint32_t numVoxels;
 			wrap(stream.readInt(numVoxels))
 			if (volume == nullptr) {
-				Log::error("Could not load vox file: Wrong order of chunks");
+				Log::error("Could not load vox file: Missed SIZE chunk");
 				return nullptr;
 			}
 			Log::debug("Found voxel chunk with %u voxels", numVoxels);
@@ -314,7 +332,7 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				volume->setVoxel(x, y, z, voxel);
 			}
 		} else if (chunkId == FourCC('M','A','T','T')) {
-			Log::debug("Found material chunk with %u bytes", numBytesChunk);
+			Log::debug("Found material chunk with %u bytes and %u child bytes", numBytesChunk, numBytesChildrenChunks);
 			// 9. Chunk id 'MATT' : material, if it is absent, it is diffuse material
 			// -------------------------------------------------------------------------------
 			// # Bytes  | Type       | Value
@@ -360,10 +378,10 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 				float materialPropertyValue;
 				wrap(stream.readFloat(materialPropertyValue))
 			}
-		} else if (chunkId == FourCC('R','G','B','A')) {
+		} else if (chunkId == FourCC('R','G','B','A') || chunkId == FourCC('S','I','Z','E')) {
 			// already loaded
 		} else {
-			Log::warn("Unknown chunk in vox file: %u", chunkId);
+			Log::warn("Unknown chunk in vox file: %u with %u bytes and %u child bytes", chunkId, numBytesChunk, numBytesChildrenChunks);
 		}
 		Log::debug("Set next chunk pos to %i of %i", (int)nextChunkPos, (int)stream.size());
 		wrap(stream.seek(nextChunkPos));
