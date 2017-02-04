@@ -148,12 +148,12 @@ glm::vec4 Color::fromHSB(const float hue, const float saturation, const float br
 }
 
 unsigned int Color::getRGB(const glm::vec4& color) {
-	return static_cast<int>(color.r * magnitude) << 16 | static_cast<int>(color.g * magnitude) << 8 | static_cast<int>(color.b * magnitude);
+	return static_cast<int>(color.g * magnitude) << 16 | static_cast<int>(color.b * magnitude) << 8 | static_cast<int>(color.r * magnitude);
 }
 
 unsigned int Color::getRGBA(const glm::vec4& color) {
-	return static_cast<int>(color.r * magnitude) << 24 | static_cast<int>(color.g * magnitude) << 16 | static_cast<int>(color.b * magnitude) << 8
-			| static_cast<int>(color.a * magnitude);
+	return static_cast<int>(color.a * magnitude) << 24 | static_cast<int>(color.b * magnitude) << 16 | static_cast<int>(color.g * magnitude) << 8
+			| static_cast<int>(color.r * magnitude);
 }
 
 void Color::getHSB(const glm::vec4& color, float& chue, float& csaturation, float& cbrightness) {
