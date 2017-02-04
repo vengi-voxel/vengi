@@ -93,6 +93,9 @@ public:
 		if (completeBytesWritten != bufSize) {
 			return false;
 		}
+		if (_pos >= _size) {
+			_size += sizeof(val);
+		}
 		_pos += sizeof(val);
 		return true;
 	}
