@@ -69,7 +69,7 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 				stream.addByte(z);
 				stream.addByte(y);
 				const uint8_t colorIndex = voxel.getColor();
-				stream.addByte(colorIndex);
+				stream.addByte(colorIndex + 1);
 			}
 		}
 	}
@@ -81,7 +81,7 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	stream.addInt(0);
 
 	for (int i = 0; i < numColors; i++) {
-		uint32_t rgba = core::Color::getRGBA(materialColors[i]);
+		const uint32_t rgba = core::Color::getRGBA(materialColors[i]);
 		stream.addInt(rgba);
 	}
 
