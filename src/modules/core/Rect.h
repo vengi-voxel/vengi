@@ -120,6 +120,38 @@ public:
 		}
 		return true;
 	}
+
+	inline bool contains(const glm::tvec2<TYPE>& point) const {
+		if (point.x > getMaxX()) {
+			return false;
+		}
+		if (point.y > getMaxZ()) {
+			return false;
+		}
+		if (point.x < getMinX()) {
+			return false;
+		}
+		if (point.y < getMinZ()) {
+			return false;
+		}
+		return true;
+	}
+
+	inline glm::tvec2<TYPE> maxs() const {
+		return glm::tvec2<TYPE>(getMaxX(), getMaxZ());
+	}
+
+	inline glm::tvec2<TYPE> mins() const {
+		return glm::tvec2<TYPE>(getMinX(), getMinZ());
+	}
+
+	inline glm::tvec2<TYPE> size() const {
+		return maxs() - mins();
+	}
+
+	inline glm::tvec2<TYPE> center() const {
+		return mins() + size() / (TYPE)2;
+	}
 };
 
 typedef Rect<uint32_t> RectuInt;
