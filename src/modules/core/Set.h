@@ -12,7 +12,7 @@
 namespace core {
 
 template<typename TYPE, class HASH = std::hash<TYPE> >
-inline std::unordered_set<TYPE, HASH> setIntersection(const std::unordered_set<TYPE, HASH>& set1, const std::unordered_set<TYPE, HASH>& set2) {
+std::unordered_set<TYPE, HASH> setIntersection(const std::unordered_set<TYPE, HASH>& set1, const std::unordered_set<TYPE, HASH>& set2) {
 	if (set1.size() > set2.size()) {
 		return setIntersection(set2, set1);
 	}
@@ -27,7 +27,7 @@ inline std::unordered_set<TYPE, HASH> setIntersection(const std::unordered_set<T
 }
 
 template<typename TYPE, class HASH = std::hash<TYPE> >
-inline std::unordered_set<TYPE, HASH> setUnion(const std::unordered_set<TYPE, HASH>& in1, const std::unordered_set<TYPE, HASH>& in2) {
+std::unordered_set<TYPE, HASH> setUnion(const std::unordered_set<TYPE, HASH>& in1, const std::unordered_set<TYPE, HASH>& in2) {
 	std::unordered_set<TYPE, HASH> out;
 	out.reserve(in1.size() + in2.size());
 	out.insert(in1.begin(), in1.end());
@@ -36,7 +36,7 @@ inline std::unordered_set<TYPE, HASH> setUnion(const std::unordered_set<TYPE, HA
 }
 
 template<typename TYPE, class HASH = std::hash<TYPE> >
-inline std::unordered_set<TYPE, HASH> setDifference(const std::unordered_set<TYPE, HASH>& in1, const std::unordered_set<TYPE, HASH>& in2) {
+std::unordered_set<TYPE, HASH> setDifference(const std::unordered_set<TYPE, HASH>& in1, const std::unordered_set<TYPE, HASH>& in2) {
 	std::unordered_set<TYPE, HASH> out;
 	for (const TYPE& element : in1) {
 		if (in2.find(element) == in2.end()) {
@@ -52,7 +52,7 @@ inline std::unordered_set<TYPE, HASH> setDifference(const std::unordered_set<TYP
 }
 
 template<typename KEY, typename VALUE, class HASH = std::hash<KEY> >
-inline std::unordered_set<KEY, HASH> mapKeysDifference(const std::unordered_map<KEY, VALUE, HASH>& in1, const std::unordered_map<KEY, VALUE, HASH>& in2) {
+std::unordered_set<KEY, HASH> mapKeysDifference(const std::unordered_map<KEY, VALUE, HASH>& in1, const std::unordered_map<KEY, VALUE, HASH>& in2) {
 	std::unordered_set<KEY, HASH> keys1(in1.size());
 	std::unordered_set<KEY, HASH> keys2(in2.size());
 	auto key_selector = [](auto pair) {return pair.first;};
@@ -62,7 +62,7 @@ inline std::unordered_set<KEY, HASH> mapKeysDifference(const std::unordered_map<
 }
 
 template<typename KEY, typename VALUE, class HASH = std::hash<KEY> >
-inline std::unordered_set<KEY, HASH> mapFindChangedValues(const std::unordered_map<KEY, VALUE, HASH>& in1, const std::unordered_map<KEY, VALUE, HASH>& in2) {
+std::unordered_set<KEY, HASH> mapFindChangedValues(const std::unordered_map<KEY, VALUE, HASH>& in1, const std::unordered_map<KEY, VALUE, HASH>& in2) {
 	std::unordered_set<KEY, HASH> result;
 	for (const auto& e : in1) {
 		const KEY& key = e.first;
@@ -87,6 +87,18 @@ inline std::unordered_set<KEY, HASH> mapFindChangedValues(const std::unordered_m
 	}
 
 	return result;
+}
+
+template<typename VALUE>
+void vectorUnion(const std::vector<VALUE>& v1, const std::vector<VALUE>& v2, std::vector<VALUE> &out) {
+	out.clear();
+	std::set_union(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(out));
+}
+
+template<typename VALUE>
+void vectorIntersection(const std::vector<VALUE>& v1, const std::vector<VALUE>& v2, std::vector<VALUE>& out) {
+	out.clear();
+	std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(out));
 }
 
 }
