@@ -197,6 +197,7 @@ inline void Model::setVoxel(const voxel::Voxel& type) {
 	if (cursorVolume != nullptr) {
 		_shapeHandler.setCursorShape(_shapeHandler.cursorShape(), cursorVolume, true);
 	}
+	markCursorExtract();
 }
 
 inline void Model::setCursorShape(Shape shape) {
