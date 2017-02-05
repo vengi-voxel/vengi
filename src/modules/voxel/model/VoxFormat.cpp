@@ -374,10 +374,12 @@ RawVolume* VoxFormat::load(const io::FilePtr& file) {
 			wrap(stream.readFloat(materialWeight))
 			uint32_t materialProperties;
 			wrap(stream.readInt(materialProperties))
+#if 0
 			for (uint32_t i = 0; i < numBytesChunk; ++i) {
 				float materialPropertyValue;
 				wrap(stream.readFloat(materialPropertyValue))
 			}
+#endif
 		} else if (chunkId == FourCC('R','G','B','A') || chunkId == FourCC('S','I','Z','E')) {
 			// already loaded
 		} else {
