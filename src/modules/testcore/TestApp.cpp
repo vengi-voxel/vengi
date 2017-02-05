@@ -7,7 +7,7 @@
 
 TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider, 21000) {
-	init("engine", "test");
+	init(ORGANISATION, "test");
 }
 
 TestApp::~TestApp() {
