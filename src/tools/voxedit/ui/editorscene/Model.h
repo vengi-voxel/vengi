@@ -239,6 +239,9 @@ inline bool Model::renderAxis() const {
 }
 
 inline Action Model::evalAction() const {
+	if (_keyAction != Action::None) {
+		return _keyAction;
+	}
 	if (action() != Action::None) {
 		return action();
 	}

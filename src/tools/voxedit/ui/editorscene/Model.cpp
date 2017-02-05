@@ -539,6 +539,8 @@ bool Model::trace(const video::Camera& camera) {
 		if (actionRequiresExistingVoxel(evalAction())) {
 			if (_result.didHit) {
 				setCursorPosition(_result.hitVoxel);
+			} else if (_result.validPreviousPosition) {
+				setCursorPosition(_result.previousPosition);
 			}
 		} else if (_result.validPreviousPosition) {
 			setCursorPosition(_result.previousPosition);

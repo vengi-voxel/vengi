@@ -317,6 +317,7 @@ bool EditorScene::OnEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.type == tb::EVENT_TYPE_POINTER_DOWN) {
 		mouseDown = true;
 		mdl.executeAction(now);
+		setInternalAction(mdl.keyAction());
 		return true;
 	} else if (ev.type == tb::EVENT_TYPE_POINTER_UP) {
 		mouseDown = false;
