@@ -18,13 +18,13 @@ struct PickResult {
 	/** Did the picking operation hit anything */
 	bool didHit = false;
 
-	bool validPreviousVoxel = false;
+	bool validPreviousPosition = false;
 
 	/** The location of the solid voxel it hit */
 	glm::ivec3 hitVoxel;
 
-	/** The location of the voxel before the one it hit */
-	glm::ivec3 previousVoxel;
+	/** The location of the step before we end the trace - see @a validPreviousLocation */
+	glm::ivec3 previousPosition;
 };
 
 namespace {
@@ -54,8 +54,8 @@ public:
 		}
 
 		if (sampler.isCurrentPositionValid()) {
-			_result.validPreviousVoxel = true;
-			_result.previousVoxel = sampler.getPosition();
+			_result.validPreviousPosition = true;
+			_result.previousPosition = sampler.getPosition();
 		}
 		return true;
 	}

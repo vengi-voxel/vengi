@@ -206,7 +206,7 @@ void Model::executeAction(long now) {
 			modifiedRegion.setLowerCorner(_cursorPos);
 			modifiedRegion.setUpperCorner(_cursorPos);
 		}
-	} else if (_result.validPreviousVoxel && execAction == Action::PlaceVoxel) {
+	} else if (_result.validPreviousPosition && execAction == Action::PlaceVoxel) {
 		extract = placeCursor(&modifiedRegion);
 	} else if (didHit && execAction == Action::PlaceVoxel) {
 		extract = placeCursor(&modifiedRegion);
@@ -540,8 +540,8 @@ bool Model::trace(const video::Camera& camera) {
 			if (_result.didHit) {
 				setCursorPosition(_result.hitVoxel);
 			}
-		} else if (_result.validPreviousVoxel) {
-			setCursorPosition(_result.previousVoxel);
+		} else if (_result.validPreviousPosition) {
+			setCursorPosition(_result.previousPosition);
 		}
 	}
 
