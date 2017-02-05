@@ -19,6 +19,7 @@ namespace voxedit {
 
 static constexpr int ModelVolumeIndex = 0;
 static constexpr int CursorVolumeIndex = 1;
+static constexpr int SelectionVolumeIndex = 0;
 
 /**
  * The model is shared across all viewports

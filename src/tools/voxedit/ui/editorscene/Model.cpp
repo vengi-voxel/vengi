@@ -106,13 +106,13 @@ bool Model::load(const std::string& file) {
 }
 
 void Model::select(const glm::ivec3& pos) {
-	voxel::RawVolume* selectionVolume = _rawVolumeSelectionRenderer.volume();
+	voxel::RawVolume* selectionVolume = _rawVolumeSelectionRenderer.volume(SelectionVolumeIndex);
 	_extractSelection |= _selectionHandler.select(modelVolume(), selectionVolume, pos);
 }
 
 void Model::unselectAll() {
 	_selectionHandler.unselectAll();
-	_rawVolumeSelectionRenderer.volume()->clear();
+	_rawVolumeSelectionRenderer.volume(SelectionVolumeIndex)->clear();
 	_extractSelection = true;
 }
 
@@ -251,7 +251,7 @@ void Model::resetLastTrace() {
 void Model::setNewVolume(voxel::RawVolume* volume) {
 	const voxel::Region& region = volume->getRegion();
 
-	delete _rawVolumeSelectionRenderer.setVolume(ModelVolumeIndex, new voxel::RawVolume(region));
+	delete _rawVolumeSelectionRenderer.setVolume(SelectionVolumeIndex, new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(ModelVolumeIndex, volume);
 	delete _rawVolumeRenderer.setVolume(CursorVolumeIndex, new voxel::RawVolume(region));
 
@@ -321,7 +321,7 @@ void Model::paste() {
 
 void Model::cut() {
 	voxel::RawVolume* cursorVolume = cursorPositionVolume();
-	voxel::mergeRawVolumesSameDimension(cursorVolume, _rawVolumeSelectionRenderer.volume());
+	voxel::mergeRawVolumesSameDimension(cursorVolume, _rawVolumeSelectionRenderer.volume(SelectionVolumeIndex));
 	// TODO: delete selected volume from model volume
 }
 
@@ -383,7 +383,7 @@ void Model::shutdown() {
 bool Model::extractSelectionVolume() {
 	if (_extractSelection) {
 		_extractSelection = false;
-		_rawVolumeSelectionRenderer.extractAll();
+		_rawVolumeSelectionRenderer.extract(SelectionVolumeIndex);
 		return true;
 	}
 	return false;
