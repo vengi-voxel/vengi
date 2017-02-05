@@ -89,12 +89,18 @@ std::unordered_set<KEY, HASH> mapFindChangedValues(const std::unordered_map<KEY,
 	return result;
 }
 
+/**
+ * The two input vectors must be sorted
+ */
 template<typename VALUE>
 void vectorUnion(const std::vector<VALUE>& v1, const std::vector<VALUE>& v2, std::vector<VALUE> &out) {
 	out.clear();
 	std::set_union(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(out));
 }
 
+/**
+ * The two input vectors must be sorted
+ */
 template<typename VALUE>
 void vectorIntersection(const std::vector<VALUE>& v1, const std::vector<VALUE>& v2, std::vector<VALUE>& out) {
 	out.clear();
