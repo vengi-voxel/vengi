@@ -1,4 +1,5 @@
 #include "WorldGenerator.h"
+#include "noise/Noise.h"
 
 namespace voxel {
 namespace world {
