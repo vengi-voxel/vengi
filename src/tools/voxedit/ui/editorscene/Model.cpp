@@ -327,7 +327,7 @@ void Model::cut() {
 
 void Model::render(const video::Camera& camera) {
 	const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(ModelVolumeIndex);
-	_empty = mesh != nullptr ? mesh->getNoOfIndices() > 0 : true;
+	_empty = mesh != nullptr ? mesh->getNoOfIndices() == 0 : true;
 	_rawVolumeRenderer.render(camera);
 }
 
