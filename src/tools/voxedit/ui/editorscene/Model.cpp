@@ -510,7 +510,7 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	}
 	_cursorPos = pos;
 	const voxel::Region& cursorRegion = cursorPositionVolume()->getRegion();
-	_rawVolumeRenderer.setOffset(1, -cursorRegion.getCentre() + _cursorPos);
+	_rawVolumeRenderer.setOffset(CursorVolumeIndex, -cursorRegion.getCentre() + _cursorPos);
 }
 
 void Model::markCursorExtract() {
