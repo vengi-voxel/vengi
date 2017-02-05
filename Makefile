@@ -149,7 +149,7 @@ rcon: cmake
 test-material-color: cmake
 	$(call COMPILE, tests)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) ./tests --gtest_color=yes --gtest_filter=MaterialTest* -- $(ARGS)
-	$(Q)xdg-open build/material.png
+	$(Q)xdg-open build/$(BUILD_TYPE)/material.png
 
 test-ambient-occlusion: cmake
 	$(call COMPILE, tests)
