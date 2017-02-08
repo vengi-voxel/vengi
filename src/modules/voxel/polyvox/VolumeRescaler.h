@@ -23,11 +23,15 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 
 	const MaterialColorArray& colors = getMaterialColors();
 
+	const int32_t depth = destRegion.getDepthInVoxels();
+	const int32_t height = destRegion.getHeightInVoxels();
+	const int32_t width = destRegion.getWidthInVoxels();
 	// First of all we iterate over all destination voxels and compute their color as the
 	// avg of the colors of the eight corresponding voxels in the higher resolution version.
-	for (int32_t z = 0; z < destRegion.getDepthInVoxels(); ++z) {
-		for (int32_t y = 0; y < destRegion.getHeightInVoxels(); ++y) {
-			for (int32_t x = 0; x < destRegion.getWidthInVoxels(); ++x) {
+	for (int32_t z = 0; z < depth; ++z) {
+		Log::info("z: %i", z);
+		for (int32_t y = 0; y < height; ++y) {
+			for (int32_t x = 0; x < width; ++x) {
 				const glm::ivec3 curPos(x, y, z);
 				const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
 				const glm::ivec3 dstPos = destRegion.getLowerCorner() + curPos;
