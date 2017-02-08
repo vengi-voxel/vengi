@@ -15,6 +15,8 @@
 
 namespace voxel {
 
+#define BACKGROUND_TASK_ARE_THREADED 0
+
 /**
  * @brief Octree wrapper around a PagedVolume
  */
@@ -22,27 +24,12 @@ class OctreeVolume {
 public:
 	class BackgroundTaskProcessor {
 	private:
+#if BACKGROUND_TASK_ARE_THREADED > 0
 		std::atomic_bool _abort {false};
-	public:
-		BackgroundTaskProcessor(uint32_t noOfThreads = core::halfcpus()) {
-			for (uint32_t ct = 0; ct < noOfThreads; ++ct) {
-				_threads.emplace_back(std::bind(&BackgroundTaskProcessor::processTasks, this));
-			}
-		}
+		core::ConcurrentQueue<SurfaceExtractionTask*, TaskSortCriterion> _pendingTasks;
+		std::list<std::thread> _threads;
 
-		~BackgroundTaskProcessor() {
-			_abort = true;
-			_pendingTasks.abortWait();
-			for (auto i = _threads.begin(); i != _threads.end(); ++i) {
-				i->join();
-			}
-		}
-
-		void addTask(SurfaceExtractionTask* task) {
-			_pendingTasks.push(task);
-		}
-
-		void processTasks(void) {
+		void processTasks() {
 			while (!_abort) {
 				SurfaceExtractionTask* task = nullptr;
 				_pendingTasks.waitAndPop(task);
@@ -51,9 +38,33 @@ public:
 				}
 			}
 		}
+#endif
+	public:
+		BackgroundTaskProcessor(uint32_t noOfThreads = core::halfcpus()) {
+#if BACKGROUND_TASK_ARE_THREADED > 0
+			for (uint32_t ct = 0; ct < noOfThreads; ++ct) {
+				_threads.emplace_back(std::bind(&BackgroundTaskProcessor::processTasks, this));
+			}
+#endif
+		}
 
-		core::ConcurrentQueue<SurfaceExtractionTask*, TaskSortCriterion> _pendingTasks;
-		std::list<std::thread> _threads;
+		~BackgroundTaskProcessor() {
+#if BACKGROUND_TASK_ARE_THREADED > 0
+			_abort = true;
+			_pendingTasks.abortWait();
+			for (auto i = _threads.begin(); i != _threads.end(); ++i) {
+				i->join();
+			}
+#endif
+		}
+
+		void addTask(SurfaceExtractionTask* task) {
+#if BACKGROUND_TASK_ARE_THREADED > 0
+			_pendingTasks.push(task);
+#else
+			task->process();
+#endif
+		}
 	};
 
 	/**
