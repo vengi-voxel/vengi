@@ -51,9 +51,6 @@ public:
 	void markDataAsModified(int32_t x, int32_t y, int32_t z, uint32_t newTimeStamp);
 	void markDataAsModified(const Region& region, uint32_t newTimeStamp);
 
-	void buildOctreeNodeTree(uint16_t parent);
-	void determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewPosition, float lodThreshold);
-
 	core::ConcurrentQueue<SurfaceExtractionTask*> _finishedExtractionTasks;
 
 	void setLodRange(int32_t minimumLOD, int32_t maximumLOD);
@@ -105,6 +102,9 @@ public:
 	MainThreadTaskProcessor _taskProcessor;
 
 private:
+	void buildOctreeNodeTree(uint16_t parent);
+	void determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewPosition, float lodThreshold);
+
 	uint16_t createNode(const Region& region, uint16_t parent);
 
 	template<typename VisitorType>
