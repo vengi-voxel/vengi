@@ -46,7 +46,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 							srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
 							const Voxel& child = srcSampler.getVoxel();
 
-							if (!isBlocked(child.getMaterial())) {
+							if (isBlocked(child.getMaterial())) {
 								++solidVoxels;
 								const glm::vec4& color = colors[child.getColor()];
 								avgOf8Red += color.r;
