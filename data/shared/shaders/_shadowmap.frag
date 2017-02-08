@@ -1,7 +1,7 @@
 #if cl_shadowmap == 1
 
 #ifndef CUSTOM_SHADOW_TEXCOORD
-vec2 calculateShadowTexcoord(vec2 uv) {
+vec2 calculateShadowTexcoord(in vec2 uv) {
 	return uv;
 }
 #endif
