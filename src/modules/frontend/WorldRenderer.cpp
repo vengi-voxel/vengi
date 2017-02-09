@@ -28,7 +28,7 @@ const std::string MaxDepthBufferUniformName = "u_cascades";
 //       for glMultiDrawElementsIndirect as shown at
 //       https://www.khronos.org/opengl/wiki/GLAPI/glMultiDrawElementsIndirect
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
-		_clearColor(core::Color::LightBlue), _world(world) {
+		_world(world) {
 }
 
 WorldRenderer::~WorldRenderer() {

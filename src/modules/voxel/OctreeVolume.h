@@ -72,7 +72,7 @@ public:
 	 * @param[in] region The dimensions of the whole octree
 	 * @param[in] baseNodeSize The minimum size of the smallest octree node in this tree
 	 */
-	OctreeVolume(PagedVolume* volume, const Region& region, uint32_t baseNodeSize) :
+	OctreeVolume(PagedVolume* volume, const Region& region, uint32_t baseNodeSize = 32) :
 			_region(region), _volume(volume), _octree(this, baseNodeSize) {
 	}
 

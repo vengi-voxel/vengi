@@ -84,7 +84,7 @@ protected:
 	long _now = 0l;
 	long _deltaFrame = 0l;
 
-	glm::vec4 _clearColor;
+	glm::vec4 _clearColor = core::Color::LightBlue;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	/**

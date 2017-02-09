@@ -6,6 +6,7 @@ set(SRCS
 	ShapeRenderer.cpp ShapeRenderer.h
 	PlantDistributor.cpp PlantDistributor.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
+	OctreeRenderer.cpp OctreeRenderer.h
 	Axis.h
 	Plane.h
 	RandomColorTexture.h RandomColorTexture.cpp
