@@ -8,14 +8,12 @@
 #include "core/GLM.h"
 #include "core/Color.h"
 #include "io/Filesystem.h"
-#include "ui/WorldParametersWindow.h"
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 
-ShapeTool::ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world) :
-		Super(filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool), _worldRenderer(world), _world(world) {
+ShapeTool::ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool) {
 	init(ORGANISATION, "shapetool");
-	_world->setClientData(true);
 }
 
 ShapeTool::~ShapeTool() {
@@ -41,12 +39,6 @@ core::AppState ShapeTool::onConstruct() {
 	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
 	core::Var::get(cfg::ShapeToolExtractRadius, "1");
 
-	core::Command::registerCommand("freelook", [this] (const core::CmdArgs& args) {
-		this->_freelook ^= true;
-	}).setHelp("Toggle free look");
-
-	_worldRenderer.onConstruct();
-
 	return state;
 }
 
@@ -67,20 +59,23 @@ core::AppState ShapeTool::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!_world->init(filesystem()->load("world.lua"), filesystem()->load("biomes.lua"))) {
+	if (!_biomeManager.init(filesystem()->load("biomes.lua"))) {
 		return core::AppState::Cleanup;
 	}
+	if (!_ctx.load(filesystem()->load("world.lua"))) {
+		return core::AppState::Cleanup;
+	}
+	_volumeData = new voxel::PagedVolume(&_pager, 512 * 1024 * 1024, 256);
+	_pager.init(_volumeData, &_biomeManager, &_ctx);
 
-	_world->setSeed(1);
-	if (!_worldRenderer.init(glm::ivec2(), _dimension)) {
+	const voxel::Region region(0, 0, 0, 255, 127, 255);
+	if (!_worldRenderer.init(_volumeData, region, 128)) {
 		return core::AppState::Cleanup;
 	}
 	_camera.init(glm::ivec2(), dimension());
 	_camera.setFieldOfView(45.0f);
 	_camera.setPosition(glm::vec3(50.0f, 100.0f, 50.0f));
 	_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
-
-	_worldRenderer.onSpawn(_camera.position(), core::Var::getSafe(cfg::ShapeToolExtractRadius)->intVal());
 
 	_meshPool->init();
 
@@ -91,10 +86,6 @@ core::AppState ShapeTool::onInit() {
 		return core::AppState::Cleanup;
 	}
 	_entity = std::make_shared<frontend::ClientEntity>(1, network::EntityType::NONE, _camera.position(), 0.0f, mesh);
-	if (!_worldRenderer.addEntity(_entity)) {
-		Log::error("Failed to create entity");
-		return core::AppState::Cleanup;
-	}
 
 	glm::vec3 targetPos = _camera.position();
 	targetPos.x += 1000.0f;
@@ -103,42 +94,23 @@ core::AppState ShapeTool::onInit() {
 
 	_worldTimer.init();
 
-	new WorldParametersWindow(this);
-
 	return state;
 }
 
 void ShapeTool::beforeUI() {
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
-	_world->onFrame(_deltaFrame);
-
-	if (_resetTriggered && !_world->isReset()) {
-		_world->setContext(_ctx);
-		_worldRenderer.onSpawn(_camera.position());
-		_resetTriggered = false;
-	}
+	_worldRenderer.update(_deltaFrame, _camera);
 
 	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
-	if (!_freelook) {
-		const glm::vec3& position = _camera.position();
-		const int y = _world->findFloor(position.x, position.z, [] (voxel::VoxelType type) {
-			return voxel::isFloor(type);
-		});
-		_camera.setPosition(glm::vec3(position.x, y + 10, position.z));
-	}
-	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	_camera.update(_deltaFrame);
 
-	_worldRenderer.extractNewMeshes(_camera.position());
-	_worldRenderer.onRunning(_camera, _deltaFrame);
 	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
 	}
-	_drawCallsWorld = _worldRenderer.renderWorld(_camera, &_vertices);
-	_drawCallsEntities = _worldRenderer.renderEntities(_camera);
+	_worldRenderer.render(_camera);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
 	}
@@ -146,19 +118,11 @@ void ShapeTool::beforeUI() {
 
 void ShapeTool::afterRootWidget() {
 	const glm::vec3& pos = _camera.position();
-	int meshes;
-	int extracted;
-	int pending;
-	int active;
-	_worldRenderer.stats(meshes, extracted, pending, active);
 	const int x = 5;
 	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
 	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
 	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
-	enqueueShowStr(x, core::Color::White, "drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
-	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
-	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i", pending, meshes, extracted, active);
 
 	enqueueShowStr(x, core::Color::Gray, "+/-: change move speed");
 	enqueueShowStr(x, core::Color::Gray, "l: line mode rendering");
@@ -184,7 +148,6 @@ core::AppState ShapeTool::onCleanup() {
 	_axis.shutdown();
 	_entity = frontend::ClientEntityPtr();
 	const core::AppState state = Super::onCleanup();
-	_world->shutdown();
 	return state;
 }
 
@@ -220,23 +183,11 @@ void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) 
 	_camera.rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
 }
 
-void ShapeTool::regenerate(const glm::ivec2& pos) {
-	_worldRenderer.extractNewMeshes(glm::ivec3(pos.x, 0, pos.y), true);
-}
-
-void ShapeTool::reset(const voxel::WorldContext& ctx) {
-	_ctx = ctx;
-	_worldRenderer.reset();
-	_world->reset();
-	_resetTriggered = true;
-}
-
 int main(int argc, char *argv[]) {
 	const video::MeshPoolPtr meshPool = std::make_shared<video::MeshPool>();
 	const core::EventBusPtr eventBus = std::make_shared<core::EventBus>();
-	const voxel::WorldPtr world = std::make_shared<voxel::World>();
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	ShapeTool app(meshPool, filesystem, eventBus, timeProvider, world);
+	ShapeTool app(meshPool, filesystem, eventBus, timeProvider);
 	return app.startMainLoop(argc, argv);
 }
