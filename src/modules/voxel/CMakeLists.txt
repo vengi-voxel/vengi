@@ -13,6 +13,7 @@ set(SRCS
 	MaterialColor.h MaterialColor.cpp
 	World.cpp World.h
 	WorldPersister.h WorldPersister.cpp
+	WorldPager.h WorldPager.cpp
 	WorldEvents.h
 	WorldContext.h WorldContext.cpp
 	generator/CloudGenerator.h

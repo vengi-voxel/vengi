@@ -10,7 +10,6 @@
 #include "io/File.h"
 #include "core/Random.h"
 #include "core/Concurrency.h"
-#include "voxel/generator/WorldGenerator.h"
 #include "voxel/polyvox/AStarPathfinder.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/polyvox/PagedVolumeWrapper.h"
@@ -21,41 +20,8 @@
 
 namespace voxel {
 
-#define PERSIST 1
-
-void World::WorldPager::erase(PagedVolume::PagerContext& pctx) {
-#if PERSIST
-	PagedVolumeWrapper ctx(_world._volumeData, pctx.chunk, pctx.region);
-	_worldPersister.erase(ctx, _world.seed());
-#endif
-}
-
-bool World::WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
-	if (pctx.region.getLowerY() < 0) {
-		return false;
-	}
-	PagedVolumeWrapper ctx(_world._volumeData, pctx.chunk, pctx.region);
-#if PERSIST
-	if (_world._persist && _worldPersister.load(ctx, _world.seed())) {
-		return false;
-	}
-#endif
-	_world.create(ctx);
-	return true;
-}
-
-void World::WorldPager::pageOut(PagedVolume::PagerContext& pctx) {
-#if PERSIST
-	if (!_world._persist) {
-		return;
-	}
-	PagedVolumeWrapper ctx(_world._volumeData, pctx.chunk, pctx.region);
-	_worldPersister.save(ctx, _world.seed());
-#endif
-}
-
 World::World() :
-		_pager(*this), _threadPool(core::halfcpus(), "World"), _random(_seed) {
+		_threadPool(core::halfcpus(), "World"), _random(_seed) {
 }
 
 World::~World() {
@@ -184,6 +150,9 @@ bool World::init(const std::string& luaParameters, const std::string& luaBiomes)
 	}
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
 	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
+
+	_pager.init(_volumeData, &_biomeManager, &_ctx);
+
 	return true;
 }
 
@@ -194,21 +163,13 @@ void World::shutdown() {
 	}
 	_meshesExtracted.clear();
 	_meshQueue.clear();
-	if (_volumeData) {
-		_volumeData->flushAll();
-		delete _volumeData;
-		_volumeData = nullptr;
-	}
+	_pager.shutdown();
+	delete _volumeData;
+	_volumeData = nullptr;
 }
 
 void World::reset() {
 	_cancelThreads = true;
-}
-
-void World::create(PagedVolumeWrapper& ctx) {
-	core_trace_scoped(CreateWorld);
-	const int flags = _clientData ? world::WORLDGEN_CLIENT : world::WORLDGEN_SERVER;
-	world::createWorld(_ctx, ctx, _biomeManager, _seed, flags, _noiseSeedOffsetX, _noiseSeedOffsetZ);
 }
 
 void World::cleanupFutures() {

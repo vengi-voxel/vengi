@@ -16,7 +16,7 @@
 #include <vector>
 #include <atomic>
 
-#include "WorldPersister.h"
+#include "WorldPager.h"
 #include "WorldContext.h"
 #include "io/Filesystem.h"
 #include "BiomeManager.h"
@@ -186,16 +186,16 @@ public:
 		Log::info("Seed is: %li", seed);
 		_seed = seed;
 		_random.setSeed(seed);
-		_noiseSeedOffsetX = _random.randomf(-10000.0f, 10000.0f);
-		_noiseSeedOffsetZ = _random.randomf(-10000.0f, 10000.0f);
+		_pager.setSeed(seed);
+		_pager.setNoiseOffset(glm::vec2(_random.randomf(-10000.0f, 10000.0f), _random.randomf(-10000.0f, 10000.0f)));
 	}
 
 	inline bool isCreated() const {
 		return _seed != 0;
 	}
 
-	void setPersist(bool persist) {
-		_persist = persist;
+	inline void setPersist(bool persist) {
+		_pager.setPersist(persist);
 	}
 
 	int getChunkSize() const;
@@ -203,25 +203,6 @@ public:
 	int getMeshSize() const;
 
 private:
-	class WorldPager: public PagedVolume::Pager {
-	private:
-		WorldPersister _worldPersister;
-		World& _world;
-	public:
-		WorldPager(World& world) :
-				_world(world) {
-		}
-
-		void erase(PagedVolume::PagerContext& ctx);
-
-		bool pageIn(PagedVolume::PagerContext& ctx) override;
-
-		void pageOut(PagedVolume::PagerContext& ctx) override;
-	};
-
-	// don't access the volume in anything that is called here
-	void create(PagedVolumeWrapper& ctx);
-
 	void cleanupFutures();
 	Region getChunkRegion(const glm::ivec3& pos) const;
 	Region getMeshRegion(const glm::ivec3& pos) const;
@@ -234,7 +215,6 @@ private:
 	mutable std::mt19937 _engine;
 	long _seed = 0l;
 	bool _clientData = false;
-	bool _persist = true;
 
 	core::ThreadPool _threadPool;
 	mutable std::mutex _rwLock;
@@ -247,8 +227,6 @@ private:
 	core::Random _random;
 	std::vector<std::future<void> > _futures;
 	std::atomic_bool _cancelThreads { false };
-	float _noiseSeedOffsetX = 0.0f;
-	float _noiseSeedOffsetZ = 0.0f;
 };
 
 inline Region World::getChunkRegion(const glm::ivec3& pos) const {
