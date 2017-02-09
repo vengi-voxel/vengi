@@ -141,7 +141,7 @@ void OctreeRenderer::render(const video::Camera& camera) {
 	core_trace_scoped(OctreeRendererRender);
 	voxel::OctreeNode* rootNode = _volume->getRootOctreeNode();
 	if (rootNode != nullptr) {
-		processOctreeNodeStructure(rootNode, &_rootNode);
+		processOctreeNodeStructure(rootNode, _rootNode);
 	}
 
 	core_trace_gl_scoped(OctreeRendererTraverseOctreeTree);
@@ -170,7 +170,7 @@ void OctreeRenderer::render(const video::Camera& camera) {
 		video::ScopedShader scoped(_shadowMapShader);
 		_shadowMapShader.setLightviewprojection(cascades[i]);
 		_shadowMapShader.setModel(glm::mat4());
-		renderOctreeNode(camera, &_rootNode);
+		renderOctreeNode(camera, _rootNode);
 	}
 	_depthBuffer.unbind();
 	video::cullFace(video::Face::Back);
@@ -194,15 +194,12 @@ void OctreeRenderer::render(const video::Camera& camera) {
 	_worldShader.setModel(glm::mat4());
 	_worldShader.setCascades(cascades);
 	_worldShader.setDistances(distances);
-	renderOctreeNode(camera, &_rootNode);
+	renderOctreeNode(camera, _rootNode);
 
 	_colorTexture.unbind();
 }
 
 bool OctreeRenderer::init(voxel::PagedVolume* volume, const voxel::Region& region, int baseNodeSize) {
-	_volume = new voxel::OctreeVolume(volume, region, baseNodeSize);
-	_colorTexture.init();
-
 	if (!_worldShader.setup()) {
 		return false;
 	}
@@ -221,6 +218,10 @@ bool OctreeRenderer::init(voxel::PagedVolume* volume, const voxel::Region& regio
 	if (!_shadowMapRenderShader.setup()) {
 		return false;
 	}
+
+	_rootNode = new RenderOctreeNode(_worldShader);
+	_volume = new voxel::OctreeVolume(volume, region, baseNodeSize);
+	_colorTexture.init();
 
 	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
 	video::Attribute attributePos;
@@ -283,7 +284,8 @@ void OctreeRenderer::shutdown() {
 	_depthBuffer.shutdown();
 	_materialBlock.shutdown();
 	_colorTexture.shutdown();
-
+	delete _rootNode;
+	_rootNode = nullptr;
 	delete _volume;
 	_volume = nullptr;
 }

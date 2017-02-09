@@ -42,7 +42,7 @@ private:
 	// TODO: fix the time handling, add _time to Octree class and update it with a dt
 	uint32_t _time = 0u;
 
-	RenderOctreeNode _rootNode;
+	RenderOctreeNode *_rootNode = nullptr;
 	voxel::OctreeVolume* _volume = nullptr;
 
 	shader::Materialblock _materialBlock;
