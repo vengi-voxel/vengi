@@ -82,20 +82,18 @@ public:
 			return !_pendingTasks.empty();
 		}
 
-		void processOneTask() {
+		bool processOneTask() {
 			if (!hasTasks()) {
-				return;
+				return false;
 			}
 			SurfaceExtractionTask* task = _pendingTasks.front();
 			_pendingTasks.pop_front();
 			task->process();
+			return true;
 		}
 
 		void processAllTasks() {
-			while (hasTasks()) {
-				SurfaceExtractionTask* task = _pendingTasks.front();
-				_pendingTasks.pop_front();
-				task->process();
+			while (processOneTask()) {
 			}
 		}
 	};
