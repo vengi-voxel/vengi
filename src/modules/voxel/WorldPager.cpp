@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "WorldPager.h"
 #include "voxel/BiomeManager.h"
 #include "voxel/WorldContext.h"
@@ -9,12 +12,14 @@ namespace voxel {
 
 void WorldPager::erase(PagedVolume::PagerContext& pctx) {
 #if PERSIST
+	core_assert(_ctx != nullptr && _volumeData != nullptr && _biomeManager != nullptr);
 	PagedVolumeWrapper ctx(_volumeData, pctx.chunk, pctx.region);
 	_worldPersister.erase(ctx, _seed);
 #endif
 }
 
 bool WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
+	core_assert(_ctx != nullptr && _volumeData != nullptr && _biomeManager != nullptr);
 	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
@@ -30,6 +35,7 @@ bool WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
 
 void WorldPager::pageOut(PagedVolume::PagerContext& pctx) {
 #if PERSIST
+	core_assert(_ctx != nullptr && _volumeData != nullptr && _biomeManager != nullptr);
 	if (!_persist) {
 		return;
 	}
