@@ -161,7 +161,7 @@ core::AppState Client::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!_worldRenderer.onInit(glm::ivec2(), _dimension)) {
+	if (!_worldRenderer.init(glm::ivec2(), _dimension)) {
 		return core::AppState::Cleanup;
 	}
 

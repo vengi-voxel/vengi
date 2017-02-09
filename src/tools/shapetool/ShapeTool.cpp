@@ -72,7 +72,7 @@ core::AppState ShapeTool::onInit() {
 	}
 
 	_world->setSeed(1);
-	if (!_worldRenderer.onInit(glm::ivec2(), _dimension)) {
+	if (!_worldRenderer.init(glm::ivec2(), _dimension)) {
 		return core::AppState::Cleanup;
 	}
 	_camera.init(glm::ivec2(), dimension());

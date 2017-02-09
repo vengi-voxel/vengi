@@ -618,7 +618,7 @@ void WorldRenderer::onConstruct() {
 	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");
 }
 
-bool WorldRenderer::onInit(const glm::ivec2& position, const glm::ivec2& dimension) {
+bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension) {
 	core_trace_scoped(WorldRendererOnInit);
 	_colorTexture.init();
 	_plantGenerator.generateAll();

@@ -140,7 +140,7 @@ public:
 	void reset();
 
 	void onConstruct();
-	bool onInit(const glm::ivec2& position, const glm::ivec2& dimension);
+	bool init(const glm::ivec2& position, const glm::ivec2& dimension);
 	void onRunning(const video::Camera& camera, long dt);
 	void shutdown();
 
