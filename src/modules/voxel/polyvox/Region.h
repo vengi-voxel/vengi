@@ -736,14 +736,14 @@ inline void Region::shiftLowerCorner(const glm::ivec3& v3dAmount) {
 }
 
 /**
- * @param iAmountX The amount to move the upper corner by in 'x'.
- * @param iAmountY The amount to move the upper corner by in 'y'.
- * @param iAmountZ The amount to move the upper corner by in 'z'.
+ * @param x The amount to move the upper corner by in 'x'.
+ * @param y The amount to move the upper corner by in 'y'.
+ * @param z The amount to move the upper corner by in 'z'.
  */
-inline void Region::shiftUpperCorner(int32_t iAmountX, int32_t iAmountY, int32_t iAmountZ) {
-	m_iUpperX += iAmountX;
-	m_iUpperY += iAmountY;
-	m_iUpperZ += iAmountZ;
+inline void Region::shiftUpperCorner(int32_t x, int32_t y, int32_t z) {
+	m_iUpperX += x;
+	m_iUpperY += y;
+	m_iUpperZ += z;
 }
 
 /**

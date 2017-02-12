@@ -71,7 +71,7 @@ private:
 	glm::vec3 _viewPosition;
 };
 
-Octree::Octree(OctreeVolume* volume, unsigned int baseNodeSize) :
+Octree::Octree(OctreeVolume* volume, uint32_t baseNodeSize) :
 		_baseNodeSize(baseNodeSize), _volume(volume) {
 	_regionToCover = _volume->getRegion();
 	_regionToCover.shiftUpperCorner(1, 1, 1);

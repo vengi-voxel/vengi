@@ -22,6 +22,11 @@ TEST_F(OctreeTest, testOctreeVolume) {
 	EXPECT_TRUE(rootNode->isMeshUpToDate());
 	EXPECT_FALSE(rootNode->isSceduledForUpdate());
 	EXPECT_EQ(nullptr, rootNode->getParentNode());
+	int cnt = 0;
+	rootNode->visitExistingChildren([&] (uint8_t x, uint8_t y, uint8_t z, OctreeNode* children) {
+		++cnt;
+	});
+	EXPECT_EQ(8, cnt);
 }
 
 }

@@ -25,7 +25,7 @@ public:
 	/**
 	 * @param[in] baseNodeSize The minimum size of the smallest octree node in this tree
 	 */
-	Octree(OctreeVolume* volume, unsigned int baseNodeSize);
+	Octree(OctreeVolume* volume, uint32_t baseNodeSize);
 	~Octree();
 
 	template<typename VisitorType>
