@@ -44,65 +44,67 @@ OctreeRenderer::RenderOctreeNode::~RenderOctreeNode() {
 }
 
 void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, RenderOctreeNode* node) {
-	if (octreeNode->_nodeOrChildrenLastChanged > node->_nodeAndChildrenLastSynced) {
-		if (octreeNode->_propertiesLastChanged > node->_propertiesLastSynced) {
-			Log::debug("Resynced properties at %u", node->_propertiesLastSynced);
-			node->_renderThisNode = octreeNode->renderThisNode();
-			node->_propertiesLastSynced = octreeNode->_octree->time();
-		}
+	if (octreeNode->_nodeOrChildrenLastChanged <= node->_nodeAndChildrenLastSynced) {
+		return;
+	}
 
-		if (octreeNode->_meshLastChanged > node->_meshLastSynced) {
-			const voxel::Mesh* mesh = octreeNode->getMesh();
-			// TODO: handle water mesh properly
-			const voxel::Mesh* waterMesh = octreeNode->getWaterMesh();
-			if (mesh != nullptr) {
-				glm::ivec3 mins(std::numeric_limits<int>::max());
-				glm::ivec3 maxs(std::numeric_limits<int>::min());
+	if (octreeNode->_propertiesLastChanged > node->_propertiesLastSynced) {
+		Log::debug("Resynced properties at %u", node->_propertiesLastSynced);
+		node->_renderThisNode = octreeNode->renderThisNode();
+		node->_propertiesLastSynced = octreeNode->_octree->time();
+	}
 
-				for (auto& v : mesh->getVertexVector()) {
-					mins = glm::min(mins, v.position);
-					maxs = glm::max(maxs, v.position);
-				}
-				for (auto& v : waterMesh->getVertexVector()) {
-					mins = glm::min(mins, v.position);
-					maxs = glm::max(maxs, v.position);
-				}
+	if (octreeNode->_meshLastChanged > node->_meshLastSynced) {
+		const voxel::Mesh* mesh = octreeNode->getMesh();
+		// TODO: handle water mesh properly
+		const voxel::Mesh* waterMesh = octreeNode->getWaterMesh();
+		if (mesh != nullptr) {
+			glm::ivec3 mins(std::numeric_limits<int>::max());
+			glm::ivec3 maxs(std::numeric_limits<int>::min());
 
-				node->_aabb = core::AABB<float>(mins, maxs);
-				node->_vb.update(node->_vertexBuffer, mesh->getVertexVector());
-				node->_vb.update(node->_indexBuffer, mesh->getIndexVector());
+			for (auto& v : mesh->getVertexVector()) {
+				mins = glm::min(mins, v.position);
+				maxs = glm::max(maxs, v.position);
+			}
+			for (auto& v : waterMesh->getVertexVector()) {
+				mins = glm::min(mins, v.position);
+				maxs = glm::max(maxs, v.position);
 			}
 
-			node->_meshLastSynced = octreeNode->_octree->time();
-			Log::debug("Resynced mesh at %u", node->_meshLastSynced);
+			node->_aabb = core::AABB<float>(mins, maxs);
+			node->_vb.update(node->_vertexBuffer, mesh->getVertexVector());
+			node->_vb.update(node->_indexBuffer, mesh->getIndexVector());
 		}
 
-		if (octreeNode->_structureLastChanged > node->_structureLastSynced) {
-			for (uint32_t z = 0; z < 2; z++) {
-				for (uint32_t y = 0; y < 2; y++) {
-					for (uint32_t x = 0; x < 2; x++) {
-						if (octreeNode->_children[x][y][z] != voxel::Octree::InvalidNodeIndex) {
-							if (node->_children[x][y][z] == nullptr) {
-								// TODO: pool this
-								node->_children[x][y][z] = new RenderOctreeNode(_worldShader);
-							}
-						} else {
-							delete node->_children[x][y][z];
-							node->_children[x][y][z] = nullptr;
+		node->_meshLastSynced = octreeNode->_octree->time();
+		Log::debug("Resynced mesh at %u", node->_meshLastSynced);
+	}
+
+	if (octreeNode->_structureLastChanged > node->_structureLastSynced) {
+		for (uint32_t z = 0; z < 2; z++) {
+			for (uint32_t y = 0; y < 2; y++) {
+				for (uint32_t x = 0; x < 2; x++) {
+					if (octreeNode->_children[x][y][z] != voxel::Octree::InvalidNodeIndex) {
+						if (node->_children[x][y][z] == nullptr) {
+							// TODO: pool this
+							node->_children[x][y][z] = new RenderOctreeNode(_worldShader);
 						}
+					} else {
+						delete node->_children[x][y][z];
+						node->_children[x][y][z] = nullptr;
 					}
 				}
 			}
-
-			node->_structureLastSynced = octreeNode->_octree->time();
-			Log::debug("Resynced structure at %u", node->_structureLastSynced);
 		}
 
-		octreeNode->visitExistingChildren([=] (uint8_t x, uint8_t y, uint8_t z, voxel::OctreeNode* c) {
-			processOctreeNodeStructure(c, node->_children[x][y][z]);
-		});
-		node->_nodeAndChildrenLastSynced = octreeNode->_octree->time();
+		node->_structureLastSynced = octreeNode->_octree->time();
+		Log::debug("Resynced structure at %u", node->_structureLastSynced);
 	}
+
+	octreeNode->visitExistingChildren([=] (uint8_t x, uint8_t y, uint8_t z, voxel::OctreeNode* c) {
+		processOctreeNodeStructure(c, node->_children[x][y][z]);
+	});
+	node->_nodeAndChildrenLastSynced = octreeNode->_octree->time();
 }
 
 void OctreeRenderer::renderOctreeNode(const video::Camera& camera, RenderOctreeNode* renderNode) {
