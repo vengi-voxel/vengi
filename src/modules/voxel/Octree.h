@@ -18,6 +18,7 @@ class OctreeVolume;
 
 class Octree {
 	friend class OctreeNode;
+	friend class SurfaceExtractionTask;
 
 public:
 	static const uint16_t InvalidNodeIndex = 0xFFFF;
@@ -46,8 +47,6 @@ public:
 
 	void markDataAsModified(int32_t x, int32_t y, int32_t z, uint32_t newTimeStamp);
 	void markDataAsModified(const Region& region, uint32_t newTimeStamp);
-
-	core::ConcurrentQueue<SurfaceExtractionTask*> _finishedExtractionTasks;
 
 	/**
 	 * @note For LOD levels, the 'minimum' must be *more* than or equal to the 'maximum'
@@ -138,6 +137,8 @@ private:
 	long _time = 1000l;
 
 	OctreeVolume* _volume;
+
+	core::ConcurrentQueue<SurfaceExtractionTask*> _finishedExtractionTasks;
 
 	/**
 	 * @brief The extent of the octree may be significantly larger than the volume, but we only want to
