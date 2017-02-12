@@ -57,7 +57,6 @@ public:
 				// Still set from last frame. If we rendered it then we will probably want it again.
 				_octree->_taskProcessor.addTask(node->_lastSurfaceExtractionTask);
 			} else {
-				core::App::getInstance()->threadPool().enqueue([] () {});
 				node->_octree->getVolume()->_backgroundTaskProcessor.addTask(node->_lastSurfaceExtractionTask);
 			}
 		}
