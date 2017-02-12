@@ -128,8 +128,9 @@ uint16_t Octree::createNode(const Region& region, uint16_t parent) {
 	OctreeNode* node = new OctreeNode(region, parent, this);
 
 	if (parent != InvalidNodeIndex) {
-		core_assert_msg(_nodes[parent]->_height < 100, "Node height has gone below zero and wrapped around.");
-		node->_height = _nodes[parent]->_height - 1;
+		const OctreeNode* parentNode = getNodeFromIndex(parent);
+		core_assert_msg(parentNode->_height < 100, "Node height has gone below zero and wrapped around.");
+		node->_height = parentNode->_height - 1;
 	}
 
 	_nodes.push_back(node);
@@ -189,16 +190,18 @@ void Octree::setLodRange(int32_t minimumLOD, int32_t maximumLOD) {
 }
 
 void Octree::buildOctreeNodeTree(uint16_t parent) {
-	core_assert_msg(_nodes[parent]->_region.getWidthInVoxels() == _nodes[parent]->_region.getHeightInVoxels(), "Region must be cubic");
-	core_assert_msg(_nodes[parent]->_region.getWidthInVoxels() == _nodes[parent]->_region.getDepthInVoxels(), "Region must be cubic");
+	OctreeNode* parentNode = getNodeFromIndex(parent);
+	const Region& parentRegion = parentNode->_region;
+	core_assert_msg(parentRegion.getWidthInVoxels() == parentRegion.getHeightInVoxels(), "Region must be cubic");
+	core_assert_msg(parentRegion.getWidthInVoxels() == parentRegion.getDepthInVoxels(), "Region must be cubic");
 
 	//We know that width/height/depth are all the same.
-	const uint32_t parentSize = static_cast<uint32_t>(_nodes[parent]->_region.getWidthInVoxels());
+	const uint32_t parentSize = static_cast<uint32_t>(parentRegion.getWidthInVoxels());
 	if (parentSize <= _baseNodeSize) {
 		return;
 	}
-	const glm::ivec3& baseLowerCorner = _nodes[parent]->_region.getLowerCorner();
-	const int32_t childSize = _nodes[parent]->_region.getWidthInVoxels() / 2;
+	const glm::ivec3& baseLowerCorner = parentRegion.getLowerCorner();
+	const int32_t childSize = parentRegion.getWidthInVoxels() / 2;
 	const glm::ivec3 baseUpperCorner = baseLowerCorner + glm::ivec3(childSize - 1, childSize - 1, childSize - 1);
 
 	for (int z = 0; z < 2; z++) {
@@ -210,7 +213,7 @@ void Octree::buildOctreeNodeTree(uint16_t parent) {
 					continue;
 				}
 				const uint16_t octreeNode = createNode(childRegion, parent);
-				_nodes[parent]->_children[x][y][z] = octreeNode;
+				parentNode->_children[x][y][z] = octreeNode;
 				buildOctreeNodeTree(octreeNode);
 			}
 		}
