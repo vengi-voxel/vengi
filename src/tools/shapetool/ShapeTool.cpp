@@ -65,11 +65,11 @@ core::AppState ShapeTool::onInit() {
 	if (!_ctx.load(filesystem()->load("world.lua"))) {
 		return core::AppState::Cleanup;
 	}
-	_volumeData = new voxel::PagedVolume(&_pager, 512 * 1024 * 1024, 256);
+	_volumeData = new voxel::PagedVolume(&_pager);
 	_pager.init(_volumeData, &_biomeManager, &_ctx);
 
 	const voxel::Region region(0, 0, 0, 255, 127, 255);
-	if (!_worldRenderer.init(_volumeData, region, 128)) {
+	if (!_worldRenderer.init(_volumeData, region, 32)) {
 		return core::AppState::Cleanup;
 	}
 	_camera.init(glm::ivec2(), dimension());
