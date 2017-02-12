@@ -11,9 +11,9 @@ const std::string MaxDepthBufferUniformName = "u_cascades";
 namespace frontend {
 
 OctreeRenderer::RenderOctreeNode::RenderOctreeNode(const video::Shader& shader) {
-	for (uint32_t z = 0; z < 2; z++) {
-		for (uint32_t y = 0; y < 2; y++) {
-			for (uint32_t x = 0; x < 2; x++) {
+	for (uint8_t z = 0u; z < 2u; ++z) {
+		for (uint8_t y = 0u; y < 2u; ++y) {
+			for (uint8_t x = 0u; x < 2u; ++x) {
 				_children[x][y][z] = nullptr;
 			}
 		}
@@ -32,9 +32,9 @@ OctreeRenderer::RenderOctreeNode::RenderOctreeNode(const video::Shader& shader) 
 }
 
 OctreeRenderer::RenderOctreeNode::~RenderOctreeNode() {
-	for (uint32_t z = 0; z < 2; z++) {
-		for (uint32_t y = 0; y < 2; y++) {
-			for (uint32_t x = 0; x < 2; x++) {
+	for (uint8_t z = 0u; z < 2u; ++z) {
+		for (uint8_t y = 0u; y < 2u; ++y) {
+			for (uint8_t x = 0u; x < 2u; ++x) {
 				delete _children[x][y][z];
 				_children[x][y][z] = nullptr;
 			}
@@ -82,9 +82,9 @@ void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, R
 	}
 
 	if (octreeNode->_structureLastChanged > node->_structureLastSynced) {
-		for (uint32_t z = 0; z < 2; z++) {
-			for (uint32_t y = 0; y < 2; y++) {
-				for (uint32_t x = 0; x < 2; x++) {
+		for (uint8_t z = 0u; z < 2u; ++z) {
+			for (uint8_t y = 0u; y < 2u; ++y) {
+				for (uint8_t x = 0u; x < 2u; ++x) {
 					RenderOctreeNode** renderNode = &(node->_children[x][y][z]);
 					if (octreeNode->getChildNode(x, y, z) != nullptr) {
 						if (*renderNode == nullptr) {
@@ -118,14 +118,14 @@ void OctreeRenderer::renderOctreeNode(const video::Camera& camera, RenderOctreeN
 		}
 	}
 
-	// TODO: if we rendered the parent, why on earth should we render the children?
-	for (uint32_t z = 0; z < 2; z++) {
-		for (uint32_t y = 0; y < 2; y++) {
-			for (uint32_t x = 0; x < 2; x++) {
-				if (renderNode->_children[x][y][z] == nullptr) {
+	for (uint8_t z = 0u; z < 2u; ++z) {
+		for (uint8_t y = 0u; y < 2u; ++y) {
+			for (uint8_t x = 0u; x < 2u; ++x) {
+				RenderOctreeNode* renderChildNode = renderNode->_children[x][y][z];
+				if (renderChildNode == nullptr) {
 					continue;
 				}
-				renderOctreeNode(camera, renderNode->_children[x][y][z]);
+				renderOctreeNode(camera, renderChildNode);
 			}
 		}
 	}

@@ -13,7 +13,7 @@
 namespace voxel {
 
 // Eliminate this
-void scaleVertices(Mesh* mesh, uint32_t amount) {
+static inline void scaleVertices(Mesh* mesh, uint32_t amount) {
 	for (uint32_t ct = 0; ct < mesh->getNoOfVertices(); ct++) {
 		VoxelVertex& vertex = const_cast<VoxelVertex&>(mesh->getVertex(ct));
 		vertex.position *= amount;
