@@ -16,7 +16,7 @@ TEST_F(OctreeTest, testOctreeVolume) {
 	const Region region(mins, maxs);
 	OctreeVolume octreeVolume(&_volData, region, 16);
 	octreeVolume.update(1l, region.getCentre(), 1.0f);
-	Octree& octree = octreeVolume.getOctree();
+	Octree& octree = octreeVolume.octree();
 	OctreeNode* rootNode = octree.getRootNode();
 	EXPECT_TRUE(rootNode->isActive());
 	EXPECT_TRUE(rootNode->isMeshUpToDate());

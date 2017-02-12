@@ -46,7 +46,7 @@ void SurfaceExtractionTask::process() {
 		Region srcRegion = _node->_region;
 		srcRegion.grow(2);
 
-		glm::ivec3 lowerCorner = srcRegion.getLowerCorner();
+		const glm::ivec3& lowerCorner = srcRegion.getLowerCorner();
 		glm::ivec3 upperCorner = srcRegion.getUpperCorner();
 
 		upperCorner = upperCorner - lowerCorner;

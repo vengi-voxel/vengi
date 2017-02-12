@@ -50,7 +50,7 @@ public:
 			&& (node->isActive() && node->height() <= node->_octree->_minimumLOD && node->height() >= node->_octree->_maximumLOD)) {
 			node->_lastScheduledForUpdate = now;
 
-			node->_lastSurfaceExtractionTask = new SurfaceExtractionTask(node, node->_octree->getVolume()->_getPolyVoxOctreeVolume());
+			node->_lastSurfaceExtractionTask = new SurfaceExtractionTask(node, node->_octree->getVolume()->pagedVolume());
 
 			// We're going to process immediatly, but the completed task will still get queued in the finished
 			// queue, and we want to make sure it's the first out. So we still set a priority and make it high.

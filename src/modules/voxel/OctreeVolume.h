@@ -84,25 +84,25 @@ public:
 	 * @note this adds a border rather than calling straight through.
 	 */
 	inline Voxel getVoxel(int32_t x, int32_t y, int32_t z) const {
-		return _volume->getVoxel(x, y, z);
+		return pagedVolume()->getVoxel(x, y, z);
 	}
 
 	/**
 	 * @note This one's a bit of a hack... direct access to underlying PolyVox volume
 	 */
-	inline PagedVolume* _getPolyVoxOctreeVolume() const {
+	inline PagedVolume* pagedVolume() const {
 		return _volume;
 	}
 
 	/**
 	 * @brief Octree access
 	 */
-	inline Octree& getOctree() {
+	inline Octree& octree() {
 		return _octree;
 	}
 
-	inline OctreeNode* getRootOctreeNode() {
-		return _octree.getRootNode();
+	inline OctreeNode* rootNode() {
+		return octree().getRootNode();
 	}
 
 	/**
@@ -110,9 +110,9 @@ public:
 	 */
 	void setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& value, bool markAsModified) {
 		core_assert_msg(_region.containsPoint(x, y, z), "Attempted to write to a voxel which is outside of the volume");
-		_volume->setVoxel(x, y, z, value);
+		pagedVolume()->setVoxel(x, y, z, value);
 		if (markAsModified) {
-			_octree.markDataAsModified(x, y, z, _octree.time());
+			octree().markDataAsModified(x, y, z, octree().time());
 		}
 	}
 
@@ -120,14 +120,17 @@ public:
 	 * @brief Marks a region as modified so it will be regenerated later.
 	 */
 	inline void markAsModified(const Region& region) {
-		_octree.markDataAsModified(region, _octree.time());
+		octree().markDataAsModified(region, octree().time());
 	}
 
 	/**
 	 * @brief Should be called before rendering a frame to update the meshes and octree structure.
+	 * @param dt The milliseconds delta since last frame.
+	 * @param viewPosition The position of the camera.
+	 * @param lodThreshold Controls the point at which we switch to a different level of detail.
 	 */
 	inline void update(long dt, const glm::vec3& viewPosition, float lodThreshold) {
-		_octree.update(dt, viewPosition, lodThreshold);
+		octree().update(dt, viewPosition, lodThreshold);
 	}
 
 	BackgroundTaskProcessor _backgroundTaskProcessor;

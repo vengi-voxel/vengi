@@ -131,7 +131,7 @@ void OctreeRenderer::renderOctreeNode(const video::Camera& camera, RenderOctreeN
 
 void OctreeRenderer::render(const video::Camera& camera) {
 	core_trace_scoped(OctreeRendererRender);
-	voxel::OctreeNode* rootNode = _volume->getRootOctreeNode();
+	voxel::OctreeNode* rootNode = _volume->rootNode();
 	if (rootNode != nullptr) {
 		processOctreeNodeStructure(rootNode, _rootNode);
 	}

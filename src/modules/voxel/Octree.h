@@ -41,6 +41,9 @@ public:
 		return _volume;
 	}
 
+	/**
+	 * @param lodThreshold Controls the point at which we switch to a different level of detail.
+	 */
 	void update(long dt, const glm::vec3& viewPosition, float lodThreshold);
 
 	long time() const;
@@ -50,6 +53,10 @@ public:
 
 	core::ConcurrentQueue<SurfaceExtractionTask*> _finishedExtractionTasks;
 
+	/**
+	 * @note For LOD levels, the 'minimum' must be *more* than or equal to the 'maximum'
+	 * @param minimumLOD Specifies the lowest (least detailed) LOD which we render for this volume.
+	 */
 	void setLodRange(int32_t minimumLOD, int32_t maximumLOD);
 
 	/**
