@@ -109,7 +109,7 @@ public:
 	 * @brief Set voxel doesn't just pass straight through, it also validates the position and marks the voxel as modified.
 	 */
 	void setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& value, bool markAsModified) {
-		core_assert_msg(_region.containsPoint(x, y, z), "Attempted to write to a voxel which is outside of the volume");
+		core_assert_msg(getRegion().containsPoint(x, y, z), "Attempted to write to a voxel which is outside of the volume");
 		pagedVolume()->setVoxel(x, y, z, value);
 		if (markAsModified) {
 			octree().markDataAsModified(x, y, z, octree().time());
