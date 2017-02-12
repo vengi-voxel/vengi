@@ -84,14 +84,15 @@ void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, R
 		for (uint32_t z = 0; z < 2; z++) {
 			for (uint32_t y = 0; y < 2; y++) {
 				for (uint32_t x = 0; x < 2; x++) {
+					RenderOctreeNode** renderNode = &(node->_children[x][y][z]);
 					if (octreeNode->_children[x][y][z] != voxel::Octree::InvalidNodeIndex) {
-						if (node->_children[x][y][z] == nullptr) {
+						if (*renderNode == nullptr) {
 							// TODO: pool this
-							node->_children[x][y][z] = new RenderOctreeNode(_worldShader);
+							*renderNode = new RenderOctreeNode(_worldShader);
 						}
 					} else {
-						delete node->_children[x][y][z];
-						node->_children[x][y][z] = nullptr;
+						delete *renderNode;
+						*renderNode = nullptr;
 					}
 				}
 			}
