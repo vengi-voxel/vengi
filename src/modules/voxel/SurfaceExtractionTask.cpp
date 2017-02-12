@@ -37,7 +37,7 @@ void SurfaceExtractionTask::process() {
 	Mesh* meshWater = _meshWater.get();
 	Mesh* mesh = _mesh.get();
 
-	uint32_t downScaleFactor = 0x0001 << _node->_height;
+	uint32_t downScaleFactor = 0x0001 << _node->height();
 
 	if (downScaleFactor == 1) {
 		extractCubicMesh(_volume, _node->_region, mesh, IsQuadNeeded());

@@ -85,7 +85,7 @@ public:
 	bool _canRenderNodeOrChildren = false;
 	bool _isLeaf = false;
 
-	uint8_t _height = 0u; // Zero for leaf nodes.
+	uint8_t height() const;
 
 	SurfaceExtractionTask* _lastSurfaceExtractionTask = nullptr;
 
@@ -96,11 +96,16 @@ public:
 private:
 	uint16_t _parent;
 
+	uint8_t _height = 0u; // Zero for leaf nodes.
 	bool _renderThisNode = false;
 	bool _active = false;
 
 	std::shared_ptr<Mesh> _mesh;
 	std::shared_ptr<Mesh> _waterMesh;
 };
+
+inline uint8_t OctreeNode::height() const {
+	return _height;
+}
 
 }

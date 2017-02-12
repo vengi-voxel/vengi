@@ -44,7 +44,7 @@ public:
 		const auto now = core::App::getInstance()->timeProvider()->currentTime();
 		if (!node->isMeshUpToDate() && !node->isSceduledForUpdate()
 			&& (node->_lastSurfaceExtractionTask == nullptr || node->_lastSurfaceExtractionTask->_processingStartedTimestamp < now)
-			&& (node->isActive() && node->_height <= node->_octree->_minimumLOD && node->_height >= node->_octree->_maximumLOD)) {
+			&& (node->isActive() && node->height() <= node->_octree->_minimumLOD && node->height() >= node->_octree->_maximumLOD)) {
 			node->_lastSceduledForUpdate = now;
 
 			node->_lastSurfaceExtractionTask = new SurfaceExtractionTask(node, node->_octree->getVolume()->_getPolyVoxOctreeVolume());
@@ -128,8 +128,8 @@ uint16_t Octree::createNode(const Region& region, uint16_t parent) {
 
 	if (parent != InvalidNodeIndex) {
 		const OctreeNode* parentNode = getNodeFromIndex(parent);
-		core_assert_msg(parentNode->_height < 100, "Node height has gone below zero and wrapped around.");
-		node->_height = parentNode->_height - 1;
+		core_assert_msg(parentNode->height() < 100, "Node height has gone below zero and wrapped around.");
+		node->_height = parentNode->height() - 1;
 	}
 
 	_nodes.push_back(node);
