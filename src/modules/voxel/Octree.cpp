@@ -44,24 +44,38 @@ public:
 	}
 
 	bool preChildren(OctreeNode* node) {
+		if (node->isMeshUpToDate()) {
+			return true;
+		}
+
+		if (node->isScheduledForUpdate()) {
+			return true;
+		}
+
 		const long now = _octree->time();
-		if (!node->isMeshUpToDate() && !node->isScheduledForUpdate()
-			&& (node->_lastSurfaceExtractionTask == nullptr || node->_lastSurfaceExtractionTask->_processingStartedTimestamp < now)
-			&& (node->isActive() && node->height() <= _octree->_minimumLOD && node->height() >= _octree->_maximumLOD)) {
-			node->_lastScheduledForUpdate = now;
+		SurfaceExtractionTask* task = node->_lastSurfaceExtractionTask;
+		const bool extractionTask = task == nullptr || task->_processingStartedTimestamp < now;
+		if (!extractionTask) {
+			return true;
+		}
 
-			node->_lastSurfaceExtractionTask = new SurfaceExtractionTask(node, _octree->volume()->pagedVolume());
+		const bool inLodRange = node->height() <= _octree->_minimumLOD && node->height() >= _octree->_maximumLOD;
+		const bool activeLod = node->isActive() && inLodRange;
+		if (!activeLod) {
+			return true;
+		}
 
-			// We're going to process immediatly, but the completed task will still get queued in the finished
-			// queue, and we want to make sure it's the first out. So we still set a priority and make it high.
-			node->_lastSurfaceExtractionTask->_priority = std::numeric_limits<uint32_t>::max();
+		node->_lastScheduledForUpdate = now;
+		node->_lastSurfaceExtractionTask = new SurfaceExtractionTask(node, _octree->volume()->pagedVolume());
+		// We're going to process immediatly, but the completed task will still get queued in the finished
+		// queue, and we want to make sure it's the first out. So we still set a priority and make it high.
+		node->_lastSurfaceExtractionTask->_priority = std::numeric_limits<uint32_t>::max();
 
-			if (node->renderThisNode()) {
-				// Still set from last frame. If we rendered it then we will probably want it again.
-				_octree->_taskProcessor.addTask(node->_lastSurfaceExtractionTask);
-			} else {
-				_octree->volume()->_backgroundTaskProcessor.addTask(node->_lastSurfaceExtractionTask);
-			}
+		if (node->renderThisNode()) {
+			// Still set from last frame. If we rendered it then we will probably want it again.
+			_octree->_taskProcessor.addTask(node->_lastSurfaceExtractionTask);
+		} else {
+			_octree->volume()->_backgroundTaskProcessor.addTask(node->_lastSurfaceExtractionTask);
 		}
 		return true;
 	}
