@@ -190,7 +190,7 @@ void Octree::markDataAsModified(const Region& region, uint32_t newTimeStamp) {
 }
 
 void Octree::setLodRange(int32_t minimumLOD, int32_t maximumLOD) {
-	core_assert_msg(minimumLOD < maximumLOD, "Invalid LOD range. For LOD levels, the 'minimum' must be *more* than or equal to the 'maximum'");
+	core_assert_msg(minimumLOD >= maximumLOD, "Invalid LOD range. For LOD levels, the 'minimum' must be *more* than or equal to the 'maximum'");
 	_minimumLOD = minimumLOD;
 	_maximumLOD = maximumLOD;
 }
