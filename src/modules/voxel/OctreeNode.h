@@ -18,7 +18,7 @@ class OctreeNode {
 public:
 	OctreeNode(const Region& region, uint16_t parent, Octree* octree);
 
-	OctreeNode* getChildNode(uint32_t childX, uint32_t childY, uint32_t childZ) const;
+	OctreeNode* getActiveChildNode(uint32_t childX, uint32_t childY, uint32_t childZ) const;
 	OctreeNode* getParentNode() const;
 
 	const Mesh* getWaterMesh();

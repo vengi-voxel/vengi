@@ -110,7 +110,7 @@ private:
 			for (int iz = 0; iz < 2; iz++) {
 				for (int iy = 0; iy < 2; iy++) {
 					for (int ix = 0; ix < 2; ix++) {
-						OctreeNode* childNode = node->getChildNode(ix, iy, iz);
+						OctreeNode* childNode = node->getActiveChildNode(ix, iy, iz);
 						if (childNode) {
 							visitNode(childNode, visitor);
 						}
