@@ -14,6 +14,22 @@ class SurfaceExtractionTask;
 
 class OctreeNode {
 	friend class Octree;
+private:
+	uint16_t _parent;
+	/** own index in the nodes array */
+	uint16_t _self = 0u;
+	uint16_t _children[2][2][2];
+
+	uint8_t _height = 0u; // Zero for leaf nodes.
+	bool _renderThisNode = false;
+	bool _active = false;
+
+	// Use flags here?
+	bool _canRenderNodeOrChildren = false;
+	bool _isLeaf = false;
+
+	std::shared_ptr<Mesh> _mesh;
+	std::shared_ptr<Mesh> _waterMesh;
 
 public:
 	OctreeNode(const Region& region, uint16_t parent, Octree* octree);
@@ -53,6 +69,8 @@ public:
 		}
 	}
 
+	uint8_t height() const;
+
 	bool isActive() const;
 	void setActive(bool active);
 
@@ -79,29 +97,8 @@ public:
 	uint32_t _dataLastModified = 2u;
 	uint32_t _nodeOrChildrenLastChanged = 1u;
 
-	Octree* _octree = nullptr;
-
-	// Use flags here?
-	bool _canRenderNodeOrChildren = false;
-	bool _isLeaf = false;
-
-	uint8_t height() const;
-
+	Octree* _octree;
 	SurfaceExtractionTask* _lastSurfaceExtractionTask = nullptr;
-
-	/** own index in the nodes array */
-	uint16_t _self = 0u;
-	uint16_t _children[2][2][2];
-
-private:
-	uint16_t _parent;
-
-	uint8_t _height = 0u; // Zero for leaf nodes.
-	bool _renderThisNode = false;
-	bool _active = false;
-
-	std::shared_ptr<Mesh> _mesh;
-	std::shared_ptr<Mesh> _waterMesh;
 };
 
 inline bool OctreeNode::renderThisNode() const {

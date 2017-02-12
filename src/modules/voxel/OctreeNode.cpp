@@ -12,7 +12,7 @@
 namespace voxel {
 
 OctreeNode::OctreeNode(const Region& region, uint16_t parent, Octree* octree) :
-		_region(region), _octree(octree), _parent(parent) {
+		_parent(parent), _region(region), _octree(octree) {
 	for (uint8_t z = 0; z < 2; ++z) {
 		for (uint8_t y = 0; y < 2; ++y) {
 			for (uint8_t x = 0; x < 2; ++x) {
