@@ -30,16 +30,12 @@ public:
 
 	template<typename VisitorType>
 	void acceptVisitor(VisitorType visitor) {
-		visitNode(getRootNode(), visitor);
+		visitNode(rootNode(), visitor);
 	}
 
-	OctreeNode* getRootNode() const {
-		return _nodes[_rootNodeIndex];
-	}
+	OctreeNode* rootNode() const;
 
-	OctreeVolume* getVolume() const {
-		return _volume;
-	}
+	OctreeVolume* volume() const;
 
 	/**
 	 * @param lodThreshold Controls the point at which we switch to a different level of detail.
@@ -107,7 +103,7 @@ private:
 	void buildOctreeNodeTree(uint16_t parent);
 	void determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewPosition, float lodThreshold);
 
-	OctreeNode* getNodeFromIndex(uint16_t index) const;
+	OctreeNode* nodeFromIndex(uint16_t index) const;
 
 	uint16_t createNode(const Region& region, uint16_t parent);
 
@@ -154,9 +150,17 @@ inline long Octree::time() const {
 	return _time;
 }
 
-inline OctreeNode* Octree::getNodeFromIndex(uint16_t index) const {
+inline OctreeNode* Octree::nodeFromIndex(uint16_t index) const {
 	core_assert(index != InvalidNodeIndex);
 	return _nodes[index];
+}
+
+inline OctreeNode* Octree::rootNode() const {
+	return nodeFromIndex(_rootNodeIndex);
+}
+
+inline OctreeVolume* Octree::volume() const {
+	return _volume;
 }
 
 }

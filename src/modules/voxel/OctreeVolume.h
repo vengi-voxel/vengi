@@ -76,34 +76,24 @@ public:
 			_region(region), _volume(volume), _octree(this, baseNodeSize) {
 	}
 
-	inline const Region& getRegion() const {
-		return _region;
-	}
+	const Region& getRegion() const;
 
 	/**
 	 * @note this adds a border rather than calling straight through.
 	 */
-	inline Voxel getVoxel(int32_t x, int32_t y, int32_t z) const {
-		return pagedVolume()->getVoxel(x, y, z);
-	}
+	Voxel getVoxel(int32_t x, int32_t y, int32_t z) const;
 
 	/**
 	 * @note This one's a bit of a hack... direct access to underlying PolyVox volume
 	 */
-	inline PagedVolume* pagedVolume() const {
-		return _volume;
-	}
+	PagedVolume* pagedVolume() const;
 
 	/**
 	 * @brief Octree access
 	 */
-	inline Octree& octree() {
-		return _octree;
-	}
+	Octree& octree();
 
-	inline OctreeNode* rootNode() {
-		return octree().getRootNode();
-	}
+	OctreeNode* rootNode();
 
 	/**
 	 * @brief Set voxel doesn't just pass straight through, it also validates the position and marks the voxel as modified.
@@ -146,5 +136,25 @@ private:
 	friend class Octree;
 	friend class OctreeNode;
 };
+
+inline const Region& OctreeVolume::getRegion() const {
+	return _region;
+}
+
+inline Voxel OctreeVolume::getVoxel(int32_t x, int32_t y, int32_t z) const {
+	return pagedVolume()->getVoxel(x, y, z);
+}
+
+inline PagedVolume* OctreeVolume::pagedVolume() const {
+	return _volume;
+}
+
+inline Octree& OctreeVolume::octree() {
+	return _octree;
+}
+
+inline OctreeNode* OctreeVolume::rootNode() {
+	return octree().rootNode();
+}
 
 }

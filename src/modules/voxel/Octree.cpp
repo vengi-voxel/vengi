@@ -44,13 +44,13 @@ public:
 	}
 
 	bool preChildren(OctreeNode* node) {
-		const long now = node->_octree->time();
+		const long now = _octree->time();
 		if (!node->isMeshUpToDate() && !node->isScheduledForUpdate()
 			&& (node->_lastSurfaceExtractionTask == nullptr || node->_lastSurfaceExtractionTask->_processingStartedTimestamp < now)
-			&& (node->isActive() && node->height() <= node->_octree->_minimumLOD && node->height() >= node->_octree->_maximumLOD)) {
+			&& (node->isActive() && node->height() <= _octree->_minimumLOD && node->height() >= _octree->_maximumLOD)) {
 			node->_lastScheduledForUpdate = now;
 
-			node->_lastSurfaceExtractionTask = new SurfaceExtractionTask(node, node->_octree->getVolume()->pagedVolume());
+			node->_lastSurfaceExtractionTask = new SurfaceExtractionTask(node, _octree->volume()->pagedVolume());
 
 			// We're going to process immediatly, but the completed task will still get queued in the finished
 			// queue, and we want to make sure it's the first out. So we still set a priority and make it high.
@@ -60,7 +60,7 @@ public:
 				// Still set from last frame. If we rendered it then we will probably want it again.
 				_octree->_taskProcessor.addTask(node->_lastSurfaceExtractionTask);
 			} else {
-				node->_octree->getVolume()->_backgroundTaskProcessor.addTask(node->_lastSurfaceExtractionTask);
+				_octree->volume()->_backgroundTaskProcessor.addTask(node->_lastSurfaceExtractionTask);
 			}
 		}
 		return true;
@@ -116,7 +116,7 @@ Octree::Octree(OctreeVolume* volume, uint32_t baseNodeSize) :
 	octreeRegion.grow(widthIncrease / 2, heightIncrease / 2, depthIncrease / 2);
 
 	_rootNodeIndex = createNode(octreeRegion, InvalidNodeIndex);
-	getRootNode()->_height = maxHeightOfTree - 1;
+	rootNode()->_height = maxHeightOfTree - 1;
 
 	buildOctreeNodeTree(_rootNodeIndex);
 }
@@ -133,7 +133,7 @@ uint16_t Octree::createNode(const Region& region, uint16_t parent) {
 	OctreeNode* node = new OctreeNode(region, parent, this);
 
 	if (parent != InvalidNodeIndex) {
-		const OctreeNode* parentNode = getNodeFromIndex(parent);
+		const OctreeNode* parentNode = nodeFromIndex(parent);
 		core_assert_msg(parentNode->height() < 100, "Node height has gone below zero and wrapped around.");
 		node->_height = parentNode->height() - 1;
 	}
@@ -148,7 +148,7 @@ uint16_t Octree::createNode(const Region& region, uint16_t parent) {
 void Octree::update(long dt, const glm::vec3& viewPosition, float lodThreshold) {
 	_time += dt;
 	// This isn't a visitor because visitors only visit active nodes, and here we are setting them.
-	determineActiveNodes(getRootNode(), viewPosition, lodThreshold);
+	determineActiveNodes(rootNode(), viewPosition, lodThreshold);
 
 	acceptVisitor(ScheduleUpdateIfNeededVisitor(this, viewPosition));
 
@@ -196,7 +196,7 @@ void Octree::setLodRange(int32_t minimumLOD, int32_t maximumLOD) {
 }
 
 void Octree::buildOctreeNodeTree(uint16_t parent) {
-	OctreeNode* parentNode = getNodeFromIndex(parent);
+	OctreeNode* parentNode = nodeFromIndex(parent);
 	const Region& parentRegion = parentNode->_region;
 	core_assert_msg(parentRegion.getWidthInVoxels() == parentRegion.getHeightInVoxels(), "Region must be cubic");
 	core_assert_msg(parentRegion.getWidthInVoxels() == parentRegion.getDepthInVoxels(), "Region must be cubic");
@@ -297,7 +297,7 @@ void Octree::determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewP
 			for (uint8_t ix = 0u; ix < 2u; ++ix) {
 				const uint16_t childIndex = octreeNode->_children[ix][iy][iz];
 				if (childIndex != InvalidNodeIndex) {
-					OctreeNode* childNode = getNodeFromIndex(childIndex);
+					OctreeNode* childNode = nodeFromIndex(childIndex);
 					determineActiveNodes(childNode, viewPosition, lodThreshold);
 				}
 
@@ -311,7 +311,7 @@ void Octree::determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewP
 }
 
 void Octree::determineWhetherToRenderNode(uint16_t index) {
-	OctreeNode* node = getNodeFromIndex(index);
+	OctreeNode* node = nodeFromIndex(index);
 	if (node->_isLeaf) {
 		node->_canRenderNodeOrChildren = node->isMeshUpToDate();
 		node->setRenderThisNode(node->isMeshUpToDate());
@@ -326,7 +326,7 @@ void Octree::determineWhetherToRenderNode(uint16_t index) {
 				if (childIndex == InvalidNodeIndex) {
 					continue;
 				}
-				OctreeNode* childNode = getNodeFromIndex(childIndex);
+				OctreeNode* childNode = nodeFromIndex(childIndex);
 				if (childNode->isActive()) {
 					determineWhetherToRenderNode(childIndex);
 					canRenderAllChildren = canRenderAllChildren && childNode->_canRenderNodeOrChildren;

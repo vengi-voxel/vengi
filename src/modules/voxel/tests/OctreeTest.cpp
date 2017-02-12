@@ -17,7 +17,7 @@ TEST_F(OctreeTest, testOctreeVolume) {
 	OctreeVolume octreeVolume(&_volData, region, 16);
 	octreeVolume.update(1l, region.getCentre(), 1.0f);
 	Octree& octree = octreeVolume.octree();
-	OctreeNode* rootNode = octree.getRootNode();
+	OctreeNode* rootNode = octree.rootNode();
 	EXPECT_TRUE(rootNode->isActive());
 	EXPECT_TRUE(rootNode->isMeshUpToDate());
 	EXPECT_FALSE(rootNode->isScheduledForUpdate());
