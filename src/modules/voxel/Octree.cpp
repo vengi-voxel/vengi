@@ -112,7 +112,7 @@ Octree::Octree(OctreeVolume* volume, unsigned int baseNodeSize) :
 	octreeRegion.grow(widthIncrease / 2, heightIncrease / 2, depthIncrease / 2);
 
 	_rootNodeIndex = createNode(octreeRegion, InvalidNodeIndex);
-	_nodes[_rootNodeIndex]->_height = maxHeightOfTree - 1;
+	getRootNode()->_height = maxHeightOfTree - 1;
 
 	buildOctreeNodeTree(_rootNodeIndex);
 }
