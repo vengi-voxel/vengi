@@ -98,19 +98,9 @@ void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, R
 			Log::debug("Resynced structure at %u", node->_structureLastSynced);
 		}
 
-		for (uint32_t z = 0; z < 2; z++) {
-			for (uint32_t y = 0; y < 2; y++) {
-				for (uint32_t x = 0; x < 2; x++) {
-					if (octreeNode->_children[x][y][z] == voxel::Octree::InvalidNodeIndex) {
-						continue;
-					}
-					// Recursively call the octree traversal
-					voxel::OctreeNode* child = octreeNode->_octree->getNodeFromIndex(octreeNode->_children[x][y][z]);
-					processOctreeNodeStructure(child, node->_children[x][y][z]);
-				}
-			}
-		}
-
+		octreeNode->visitExistingChildren([=] (uint8_t x, uint8_t y, uint8_t z, voxel::OctreeNode* c) {
+			processOctreeNodeStructure(c, node->_children[x][y][z]);
+		});
 		node->_nodeAndChildrenLastSynced = _time;
 	}
 }
