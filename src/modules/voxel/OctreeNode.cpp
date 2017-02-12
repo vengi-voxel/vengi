@@ -32,15 +32,11 @@ OctreeNode* OctreeNode::getChildNode(uint8_t x, uint8_t y, uint8_t z) const {
 }
 
 OctreeNode* OctreeNode::getActiveChildNode(uint32_t childX, uint32_t childY, uint32_t childZ) const {
-	const uint16_t index = _children[childX][childY][childZ];
-	if (index != Octree::InvalidNodeIndex) {
-		OctreeNode* child = _octree->nodeFromIndex(index);
-		if (child->isActive()) {
-			return child;
-		}
+	OctreeNode* child = getChildNode(childX, childY, childZ);
+	if (!child->isActive()) {
+		return nullptr;
 	}
-
-	return nullptr;
+	return child;
 }
 
 OctreeNode* OctreeNode::getParentNode() const {

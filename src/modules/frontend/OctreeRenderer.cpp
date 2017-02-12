@@ -48,10 +48,11 @@ void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, R
 		return;
 	}
 
+	voxel::Octree* octree = octreeNode->_octree;
 	if (octreeNode->_propertiesLastChanged > node->_propertiesLastSynced) {
 		Log::debug("Resynced properties at %u", node->_propertiesLastSynced);
 		node->_renderThisNode = octreeNode->renderThisNode();
-		node->_propertiesLastSynced = octreeNode->_octree->time();
+		node->_propertiesLastSynced = octree->time();
 	}
 
 	if (octreeNode->_meshLastChanged > node->_meshLastSynced) {
@@ -76,7 +77,7 @@ void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, R
 			node->_vb.update(node->_indexBuffer, mesh->getIndexVector());
 		}
 
-		node->_meshLastSynced = octreeNode->_octree->time();
+		node->_meshLastSynced = octree->time();
 		Log::debug("Resynced mesh at %u", node->_meshLastSynced);
 	}
 
@@ -98,14 +99,14 @@ void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, R
 			}
 		}
 
-		node->_structureLastSynced = octreeNode->_octree->time();
+		node->_structureLastSynced = octree->time();
 		Log::debug("Resynced structure at %u", node->_structureLastSynced);
 	}
 
 	octreeNode->visitExistingChildren([=] (uint8_t x, uint8_t y, uint8_t z, voxel::OctreeNode* c) {
 		processOctreeNodeStructure(c, node->_children[x][y][z]);
 	});
-	node->_nodeAndChildrenLastSynced = octreeNode->_octree->time();
+	node->_nodeAndChildrenLastSynced = octree->time();
 }
 
 void OctreeRenderer::renderOctreeNode(const video::Camera& camera, RenderOctreeNode* renderNode) {
