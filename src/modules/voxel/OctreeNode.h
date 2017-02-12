@@ -63,7 +63,7 @@ public:
 	/**
 	 * @brief We are scheduled for an update if being scheduled was the most recent thing that happened.
 	 */
-	bool isSceduledForUpdate() const;
+	bool isScheduledForUpdate() const;
 
 	void updateFromCompletedTask(SurfaceExtractionTask* completedTask);
 
@@ -103,6 +103,14 @@ private:
 	std::shared_ptr<Mesh> _mesh;
 	std::shared_ptr<Mesh> _waterMesh;
 };
+
+inline bool OctreeNode::renderThisNode() const {
+	return _renderThisNode;
+}
+
+inline bool OctreeNode::isActive() const {
+	return _active;
+}
 
 inline uint8_t OctreeNode::height() const {
 	return _height;

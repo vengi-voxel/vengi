@@ -21,8 +21,11 @@ public:
 
 	void postChildren(OctreeNode* octreeNode) {
 		// Set timestamp to max of our own timestamps, and those of our children.
-		octreeNode->_nodeOrChildrenLastChanged = std::max( { _subtreeTimestamp, octreeNode->_structureLastChanged, octreeNode->_propertiesLastChanged,
-				octreeNode->_meshLastChanged });
+		octreeNode->_nodeOrChildrenLastChanged = std::max({
+			_subtreeTimestamp,
+			octreeNode->_structureLastChanged,
+			octreeNode->_propertiesLastChanged,
+			octreeNode->_meshLastChanged });
 
 		// This will get propagatd back to the parent as the visitor is passed by reference.
 		_subtreeTimestamp = octreeNode->_nodeOrChildrenLastChanged;
@@ -42,7 +45,7 @@ public:
 
 	bool preChildren(OctreeNode* node) {
 		const auto now = core::App::getInstance()->timeProvider()->currentTime();
-		if (!node->isMeshUpToDate() && !node->isSceduledForUpdate()
+		if (!node->isMeshUpToDate() && !node->isScheduledForUpdate()
 			&& (node->_lastSurfaceExtractionTask == nullptr || node->_lastSurfaceExtractionTask->_processingStartedTimestamp < now)
 			&& (node->isActive() && node->height() <= node->_octree->_minimumLOD && node->height() >= node->_octree->_maximumLOD)) {
 			node->_lastSceduledForUpdate = now;
@@ -77,10 +80,12 @@ Octree::Octree(OctreeVolume* volume, uint32_t baseNodeSize) :
 
 	core_assert_msg(glm::isPowerOfTwo(_baseNodeSize), "Node size must be a power of two");
 
-	uint32_t largestVolumeDimension = std::max(_regionToCover.getWidthInVoxels(),
-			std::max(_regionToCover.getHeightInVoxels(), _regionToCover.getDepthInVoxels()));
+	const uint32_t maxDim = std::max( {
+		_regionToCover.getWidthInVoxels(),
+		_regionToCover.getHeightInVoxels(),
+		_regionToCover.getDepthInVoxels() });
 
-	const uint32_t octreeTargetSize = glm::ceilPowerOfTwo(largestVolumeDimension);
+	const uint32_t octreeTargetSize = glm::ceilPowerOfTwo(maxDim);
 	const uint8_t maxHeightOfTree = logBase2(octreeTargetSize / _baseNodeSize) + 1;
 
 	const uint32_t regionToCoverWidth = _regionToCover.getWidthInVoxels();
@@ -118,7 +123,8 @@ Octree::Octree(OctreeVolume* volume, uint32_t baseNodeSize) :
 
 Octree::~Octree() {
 	_finishedExtractionTasks.abortWait();
-	for (size_t ct = 0; ct < _nodes.size(); ++ct) {
+	const size_t n = _nodes.size();
+	for (size_t ct = 0; ct < n; ++ct) {
 		delete _nodes[ct];
 	}
 }
@@ -194,25 +200,25 @@ void Octree::buildOctreeNodeTree(uint16_t parent) {
 	core_assert_msg(parentRegion.getWidthInVoxels() == parentRegion.getHeightInVoxels(), "Region must be cubic");
 	core_assert_msg(parentRegion.getWidthInVoxels() == parentRegion.getDepthInVoxels(), "Region must be cubic");
 
-	//We know that width/height/depth are all the same.
+	// We know that width/height/depth are all the same.
 	const uint32_t parentSize = static_cast<uint32_t>(parentRegion.getWidthInVoxels());
 	if (parentSize <= _baseNodeSize) {
 		return;
 	}
 	const glm::ivec3& baseLowerCorner = parentRegion.getLowerCorner();
 	const int32_t childSize = parentRegion.getWidthInVoxels() / 2;
-	const glm::ivec3 baseUpperCorner = baseLowerCorner + glm::ivec3(childSize - 1, childSize - 1, childSize - 1);
+	const glm::ivec3 baseUpperCorner = baseLowerCorner + glm::ivec3(childSize - 1);
 
-	for (int z = 0; z < 2; z++) {
-		for (int y = 0; y < 2; y++) {
-			for (int x = 0; x < 2; x++) {
-				const glm::ivec3 offset(x * childSize, y * childSize, z * childSize);
+	for (uint8_t iz = 0u; iz < 2u; ++iz) {
+		for (uint8_t iy = 0u; iy < 2u; ++iy) {
+			for (uint8_t ix = 0u; ix < 2u; ++ix) {
+				const glm::ivec3 offset(ix * childSize, iy * childSize, iz * childSize);
 				const Region childRegion(baseLowerCorner + offset, baseUpperCorner + offset);
 				if (!intersects(childRegion, _regionToCover)) {
 					continue;
 				}
 				const uint16_t octreeNode = createNode(childRegion, parent);
-				parentNode->_children[x][y][z] = octreeNode;
+				parentNode->_children[ix][iy][iz] = octreeNode;
 				buildOctreeNodeTree(octreeNode);
 			}
 		}
@@ -231,9 +237,9 @@ void Octree::markAsModified(uint16_t index, int32_t x, int32_t y, int32_t z, uin
 
 	node->_dataLastModified = newTimeStamp;
 
-	for (int iz = 0; iz < 2; iz++) {
-		for (int iy = 0; iy < 2; iy++) {
-			for (int ix = 0; ix < 2; ix++) {
+	for (uint8_t iz = 0u; iz < 2u; ++iz) {
+		for (uint8_t iy = 0u; iy < 2u; ++iy) {
+			for (uint8_t ix = 0u; ix < 2u; ++ix) {
 				const uint16_t childIndex = node->_children[ix][iy][iz];
 				if (childIndex == InvalidNodeIndex) {
 					continue;
@@ -251,9 +257,9 @@ void Octree::markAsModified(uint16_t index, const Region& region, uint32_t newTi
 		//mIsMeshUpToDate = false;
 		node->_dataLastModified = newTimeStamp;
 
-		for (int iz = 0; iz < 2; iz++) {
-			for (int iy = 0; iy < 2; iy++) {
-				for (int ix = 0; ix < 2; ix++) {
+		for (uint8_t iz = 0u; iz < 2u; ++iz) {
+			for (uint8_t iy = 0u; iy < 2u; ++iy) {
+				for (uint8_t ix = 0u; ix < 2u; ++ix) {
 					const uint16_t childIndex = node->_children[ix][iy][iz];
 					if (childIndex == InvalidNodeIndex) {
 						continue;
@@ -285,9 +291,9 @@ void Octree::determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewP
 
 	octreeNode->_isLeaf = true;
 
-	for (int iz = 0; iz < 2; iz++) {
-		for (int iy = 0; iy < 2; iy++) {
-			for (int ix = 0; ix < 2; ix++) {
+	for (uint8_t iz = 0u; iz < 2u; ++iz) {
+		for (uint8_t iy = 0u; iy < 2u; ++iy) {
+			for (uint8_t ix = 0u; ix < 2u; ++ix) {
 				const uint16_t childIndex = octreeNode->_children[ix][iy][iz];
 				if (childIndex != InvalidNodeIndex) {
 					OctreeNode* childNode = getNodeFromIndex(childIndex);
@@ -295,7 +301,7 @@ void Octree::determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewP
 				}
 
 				// If we have (or have just created) an active and valid child then we are not a leaf.
-				if (octreeNode->getChildNode(ix, iy, iz)) {
+				if (octreeNode->_isLeaf && octreeNode->getChildNode(ix, iy, iz) != nullptr) {
 					octreeNode->_isLeaf = false;
 				}
 			}
@@ -312,9 +318,9 @@ void Octree::determineWhetherToRenderNode(uint16_t index) {
 	}
 
 	bool canRenderAllChildren = true;
-	for (int iz = 0; iz < 2; ++iz) {
-		for (int iy = 0; iy < 2; ++iy) {
-			for (int ix = 0; ix < 2; ++ix) {
+	for (uint8_t iz = 0u; iz < 2u; ++iz) {
+		for (uint8_t iy = 0u; iy < 2u; ++iy) {
+			for (uint8_t ix = 0u; ix < 2u; ++ix) {
 				const uint16_t childIndex = node->_children[ix][iy][iz];
 				if (childIndex == InvalidNodeIndex) {
 					continue;
@@ -337,9 +343,9 @@ void Octree::determineWhetherToRenderNode(uint16_t index) {
 		node->setRenderThisNode(false);
 	} else {
 		// As we can't render all children then we must render no children.
-		for (int iz = 0; iz < 2; ++iz) {
-			for (int iy = 0; iy < 2; ++iy) {
-				for (int ix = 0; ix < 2; ++ix) {
+		for (uint8_t iz = 0u; iz < 2u; ++iz) {
+			for (uint8_t iy = 0u; iy < 2u; ++iy) {
+				for (uint8_t ix = 0u; ix < 2u; ++ix) {
 					OctreeNode* childNode = node->getChildNode(ix, iy, iz);
 					if (childNode == nullptr) {
 						continue;

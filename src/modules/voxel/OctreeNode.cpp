@@ -14,9 +14,9 @@ namespace voxel {
 
 OctreeNode::OctreeNode(const Region& region, uint16_t parent, Octree* octree) :
 		_region(region), _octree(octree), _parent(parent) {
-	for (int z = 0; z < 2; z++) {
-		for (int y = 0; y < 2; y++) {
-			for (int x = 0; x < 2; x++) {
+	for (uint8_t z = 0; z < 2; ++z) {
+		for (uint8_t y = 0; y < 2; ++y) {
+			for (uint8_t x = 0; x < 2; ++x) {
 				_children[x][y][z] = Octree::InvalidNodeIndex;
 			}
 		}
@@ -62,10 +62,6 @@ void OctreeNode::setMesh(const std::shared_ptr<Mesh>& mesh, const std::shared_pt
 	_meshLastChanged = core::App::getInstance()->timeProvider()->currentTime();
 }
 
-bool OctreeNode::isActive() const {
-	return _active;
-}
-
 void OctreeNode::setActive(bool active) {
 	if (_active == active) {
 		return;
@@ -80,10 +76,6 @@ void OctreeNode::setActive(bool active) {
 	}
 }
 
-bool OctreeNode::renderThisNode() const {
-	return _renderThisNode;
-}
-
 void OctreeNode::setRenderThisNode(bool render) {
 	if (_renderThisNode == render) {
 		return;
@@ -96,7 +88,7 @@ bool OctreeNode::isMeshUpToDate() const {
 	return _meshLastChanged > _dataLastModified;
 }
 
-bool OctreeNode::isSceduledForUpdate() const {
+bool OctreeNode::isScheduledForUpdate() const {
 	return _lastSceduledForUpdate > _dataLastModified && _lastSceduledForUpdate > _meshLastChanged;
 }
 

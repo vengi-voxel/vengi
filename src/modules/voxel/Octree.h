@@ -129,7 +129,7 @@ private:
 	std::vector<OctreeNode*> _nodes;
 
 	uint16_t _rootNodeIndex = InvalidNodeIndex;
-	const unsigned int _baseNodeSize;
+	const uint32_t _baseNodeSize;
 
 	OctreeVolume* _volume;
 

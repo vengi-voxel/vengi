@@ -20,7 +20,7 @@ TEST_F(OctreeTest, testOctreeVolume) {
 	OctreeNode* rootNode = octree.getRootNode();
 	EXPECT_TRUE(rootNode->isActive());
 	EXPECT_TRUE(rootNode->isMeshUpToDate());
-	EXPECT_FALSE(rootNode->isSceduledForUpdate());
+	EXPECT_FALSE(rootNode->isScheduledForUpdate());
 	EXPECT_EQ(nullptr, rootNode->getParentNode());
 	int cnt = 0;
 	rootNode->visitExistingChildren([&] (uint8_t x, uint8_t y, uint8_t z, OctreeNode* children) {
