@@ -19,11 +19,39 @@ public:
 	OctreeNode(const Region& region, uint16_t parent, Octree* octree);
 
 	OctreeNode* getActiveChildNode(uint32_t childX, uint32_t childY, uint32_t childZ) const;
+	OctreeNode* getChildNode(uint8_t x, uint8_t y, uint8_t z) const;
 	OctreeNode* getParentNode() const;
 
 	const Mesh* getWaterMesh();
 	const Mesh* getMesh();
 	void setMesh(const std::shared_ptr<Mesh>& mesh, const std::shared_ptr<Mesh>& waterMesh);
+
+	template<class FUNC>
+	void visitChildren(FUNC&& func) {
+		for (uint8_t z = 0; z < 2; ++z) {
+			for (uint8_t y = 0; y < 2; ++y) {
+				for (uint8_t x = 0; x < 2; ++x) {
+					OctreeNode* child = getChildNode(x, y, z);
+					func(x, y, z, child);
+				}
+			}
+		}
+	}
+
+	template<class FUNC>
+	void visitExistingChildren(FUNC&& func) {
+		for (uint8_t z = 0; z < 2; ++z) {
+			for (uint8_t y = 0; y < 2; ++y) {
+				for (uint8_t x = 0; x < 2; ++x) {
+					OctreeNode* child = getChildNode(x, y, z);
+					if (child == nullptr) {
+						continue;
+					}
+					func(x, y, z, child);
+				}
+			}
+		}
+	}
 
 	bool isActive() const;
 	void setActive(bool active);

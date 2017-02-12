@@ -23,6 +23,15 @@ OctreeNode::OctreeNode(const Region& region, uint16_t parent, Octree* octree) :
 	}
 }
 
+OctreeNode* OctreeNode::getChildNode(uint8_t x, uint8_t y, uint8_t z) const {
+	const uint16_t index = _children[x][y][z];
+	if (index == voxel::Octree::InvalidNodeIndex) {
+		return nullptr;
+	}
+	voxel::OctreeNode* child = _octree->getNodeFromIndex(index);
+	return child;
+}
+
 OctreeNode* OctreeNode::getActiveChildNode(uint32_t childX, uint32_t childY, uint32_t childZ) const {
 	const uint16_t index = _children[childX][childY][childZ];
 	if (index != Octree::InvalidNodeIndex) {
