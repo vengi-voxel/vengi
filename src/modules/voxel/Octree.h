@@ -41,11 +41,6 @@ public:
 		return _volume;
 	}
 
-	// This one feels hacky?
-	OctreeNode* getNodeFromIndex(uint16_t index) const {
-		return _nodes[index];
-	}
-
 	void update(const glm::vec3& viewPosition, float lodThreshold);
 
 	void markDataAsModified(int32_t x, int32_t y, int32_t z, uint32_t newTimeStamp);
@@ -103,6 +98,8 @@ private:
 	void buildOctreeNodeTree(uint16_t parent);
 	void determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewPosition, float lodThreshold);
 
+	OctreeNode* getNodeFromIndex(uint16_t index) const;
+
 	uint16_t createNode(const Region& region, uint16_t parent);
 
 	template<typename VisitorType>
@@ -142,5 +139,10 @@ private:
 	 */
 	Region _regionToCover;
 };
+
+inline OctreeNode* Octree::getNodeFromIndex(uint16_t index) const {
+	core_assert(index != InvalidNodeIndex);
+	return _nodes[index];
+}
 
 }

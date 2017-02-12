@@ -291,7 +291,7 @@ void Octree::determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewP
 			for (int ix = 0; ix < 2; ix++) {
 				const uint16_t childIndex = octreeNode->_children[ix][iy][iz];
 				if (childIndex != InvalidNodeIndex) {
-					OctreeNode* childNode = _nodes[childIndex];
+					OctreeNode* childNode = getNodeFromIndex(childIndex);
 					determineActiveNodes(childNode, viewPosition, lodThreshold);
 				}
 
@@ -305,7 +305,7 @@ void Octree::determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewP
 }
 
 void Octree::determineWhetherToRenderNode(uint16_t index) {
-	OctreeNode* node = _nodes[index];
+	OctreeNode* node = getNodeFromIndex(index);
 	if (node->_isLeaf) {
 		node->_canRenderNodeOrChildren = node->isMeshUpToDate();
 		node->setRenderThisNode(node->isMeshUpToDate());
@@ -320,7 +320,7 @@ void Octree::determineWhetherToRenderNode(uint16_t index) {
 				if (childIndex == InvalidNodeIndex) {
 					continue;
 				}
-				OctreeNode* childNode = _nodes[childIndex];
+				OctreeNode* childNode = getNodeFromIndex(childIndex);
 				if (childNode->isActive()) {
 					determineWhetherToRenderNode(childIndex);
 					canRenderAllChildren = canRenderAllChildren && childNode->_canRenderNodeOrChildren;
