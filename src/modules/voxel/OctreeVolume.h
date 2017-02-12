@@ -112,7 +112,7 @@ public:
 		core_assert_msg(_region.containsPoint(x, y, z), "Attempted to write to a voxel which is outside of the volume");
 		_volume->setVoxel(x, y, z, value);
 		if (markAsModified) {
-			_octree.markDataAsModified(x, y, z, core::App::getInstance()->timeProvider()->currentTime());
+			_octree.markDataAsModified(x, y, z, _octree.time());
 		}
 	}
 
@@ -120,14 +120,14 @@ public:
 	 * @brief Marks a region as modified so it will be regenerated later.
 	 */
 	inline void markAsModified(const Region& region) {
-		_octree.markDataAsModified(region, core::App::getInstance()->timeProvider()->currentTime());
+		_octree.markDataAsModified(region, _octree.time());
 	}
 
 	/**
 	 * @brief Should be called before rendering a frame to update the meshes and octree structure.
 	 */
-	inline void update(const glm::vec3& viewPosition, float lodThreshold) {
-		_octree.update(viewPosition, lodThreshold);
+	inline void update(long dt, const glm::vec3& viewPosition, float lodThreshold) {
+		_octree.update(dt, viewPosition, lodThreshold);
 	}
 
 	BackgroundTaskProcessor _backgroundTaskProcessor;

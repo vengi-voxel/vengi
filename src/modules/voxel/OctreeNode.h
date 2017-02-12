@@ -68,7 +68,7 @@ public:
 	void updateFromCompletedTask(SurfaceExtractionTask* completedTask);
 
 	Region _region;
-	uint32_t _lastSceduledForUpdate = 0u;
+	uint32_t _lastScheduledForUpdate = 0u;
 
 	// The values of these few initialisations is important
 	// to make sure the node is set to an 'out of date'

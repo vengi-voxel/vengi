@@ -4,7 +4,6 @@
 
 #include "OctreeNode.h"
 #include "Octree.h"
-#include "core/App.h"
 #include "polyvox/PagedVolume.h"
 
 #include <limits>
@@ -59,7 +58,7 @@ const Mesh* OctreeNode::getWaterMesh() {
 void OctreeNode::setMesh(const std::shared_ptr<Mesh>& mesh, const std::shared_ptr<Mesh>& waterMesh) {
 	_mesh = mesh;
 	_waterMesh = waterMesh;
-	_meshLastChanged = core::App::getInstance()->timeProvider()->currentTime();
+	_meshLastChanged = _octree->_time;
 }
 
 void OctreeNode::setActive(bool active) {
@@ -72,7 +71,7 @@ void OctreeNode::setActive(bool active) {
 	// which has changed (i.e. the parent has gained or lost a child (this node).
 	OctreeNode* parent = getParentNode();
 	if (parent != nullptr) {
-		parent->_structureLastChanged = core::App::getInstance()->timeProvider()->currentTime();
+		parent->_structureLastChanged = _octree->_time;
 	}
 }
 
@@ -81,7 +80,7 @@ void OctreeNode::setRenderThisNode(bool render) {
 		return;
 	}
 	_renderThisNode = render;
-	_propertiesLastChanged = core::App::getInstance()->timeProvider()->currentTime();
+	_propertiesLastChanged = _octree->_time;
 }
 
 bool OctreeNode::isMeshUpToDate() const {
@@ -89,7 +88,7 @@ bool OctreeNode::isMeshUpToDate() const {
 }
 
 bool OctreeNode::isScheduledForUpdate() const {
-	return _lastSceduledForUpdate > _dataLastModified && _lastSceduledForUpdate > _meshLastChanged;
+	return _lastScheduledForUpdate > _dataLastModified && _lastScheduledForUpdate > _meshLastChanged;
 }
 
 void OctreeNode::updateFromCompletedTask(SurfaceExtractionTask* completedTask) {

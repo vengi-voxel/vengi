@@ -44,11 +44,11 @@ public:
 	}
 
 	bool preChildren(OctreeNode* node) {
-		const auto now = core::App::getInstance()->timeProvider()->currentTime();
+		const long now = node->_octree->time();
 		if (!node->isMeshUpToDate() && !node->isScheduledForUpdate()
 			&& (node->_lastSurfaceExtractionTask == nullptr || node->_lastSurfaceExtractionTask->_processingStartedTimestamp < now)
 			&& (node->isActive() && node->height() <= node->_octree->_minimumLOD && node->height() >= node->_octree->_maximumLOD)) {
-			node->_lastSceduledForUpdate = now;
+			node->_lastScheduledForUpdate = now;
 
 			node->_lastSurfaceExtractionTask = new SurfaceExtractionTask(node, node->_octree->getVolume()->_getPolyVoxOctreeVolume());
 
@@ -145,7 +145,8 @@ uint16_t Octree::createNode(const Region& region, uint16_t parent) {
 	return index;
 }
 
-void Octree::update(const glm::vec3& viewPosition, float lodThreshold) {
+void Octree::update(long dt, const glm::vec3& viewPosition, float lodThreshold) {
+	_time += dt;
 	// This isn't a visitor because visitors only visit active nodes, and here we are setting them.
 	determineActiveNodes(getRootNode(), viewPosition, lodThreshold);
 

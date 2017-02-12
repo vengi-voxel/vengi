@@ -29,7 +29,7 @@ SurfaceExtractionTask::~SurfaceExtractionTask() {
 }
 
 void SurfaceExtractionTask::process() {
-	_processingStartedTimestamp = core::App::getInstance()->timeProvider()->currentTime();
+	_processingStartedTimestamp = _node->_octree->time();
 
 	// TODO: sizes to prevent (re-)allocations
 	_mesh = std::make_shared<Mesh>(0, 0, true);

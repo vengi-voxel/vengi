@@ -22,7 +22,7 @@ public:
 	PagedVolume* _volume;
 	std::shared_ptr<Mesh> _mesh;
 	std::shared_ptr<Mesh> _meshWater;
-	uint32_t _processingStartedTimestamp = std::numeric_limits<uint32_t>::max();
+	long _processingStartedTimestamp = std::numeric_limits<long>::max();
 };
 
 struct TaskSortCriterion {

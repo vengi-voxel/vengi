@@ -41,7 +41,9 @@ public:
 		return _volume;
 	}
 
-	void update(const glm::vec3& viewPosition, float lodThreshold);
+	void update(long dt, const glm::vec3& viewPosition, float lodThreshold);
+
+	long time() const;
 
 	void markDataAsModified(int32_t x, int32_t y, int32_t z, uint32_t newTimeStamp);
 	void markDataAsModified(const Region& region, uint32_t newTimeStamp);
@@ -130,6 +132,7 @@ private:
 
 	uint16_t _rootNodeIndex = InvalidNodeIndex;
 	const uint32_t _baseNodeSize;
+	long _time = 1000l;
 
 	OctreeVolume* _volume;
 
@@ -139,6 +142,10 @@ private:
 	 */
 	Region _regionToCover;
 };
+
+inline long Octree::time() const {
+	return _time;
+}
 
 inline OctreeNode* Octree::getNodeFromIndex(uint16_t index) const {
 	core_assert(index != InvalidNodeIndex);

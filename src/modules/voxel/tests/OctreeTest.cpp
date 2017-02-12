@@ -15,7 +15,7 @@ TEST_F(OctreeTest, testOctreeVolume) {
 	const glm::ivec3 maxs(31, 31, 31);
 	const Region region(mins, maxs);
 	OctreeVolume octreeVolume(&_volData, region, 16);
-	octreeVolume.update(region.getCentre(), 1.0f);
+	octreeVolume.update(1l, region.getCentre(), 1.0f);
 	Octree& octree = octreeVolume.getOctree();
 	OctreeNode* rootNode = octree.getRootNode();
 	EXPECT_TRUE(rootNode->isActive());

@@ -48,7 +48,7 @@ void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, R
 		if (octreeNode->_propertiesLastChanged > node->_propertiesLastSynced) {
 			Log::debug("Resynced properties at %u", node->_propertiesLastSynced);
 			node->_renderThisNode = octreeNode->renderThisNode();
-			node->_propertiesLastSynced = _time;
+			node->_propertiesLastSynced = octreeNode->_octree->time();
 		}
 
 		if (octreeNode->_meshLastChanged > node->_meshLastSynced) {
@@ -73,7 +73,7 @@ void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, R
 				node->_vb.update(node->_indexBuffer, mesh->getIndexVector());
 			}
 
-			node->_meshLastSynced = _time;
+			node->_meshLastSynced = octreeNode->_octree->time();
 			Log::debug("Resynced mesh at %u", node->_meshLastSynced);
 		}
 
@@ -94,14 +94,14 @@ void OctreeRenderer::processOctreeNodeStructure(voxel::OctreeNode* octreeNode, R
 				}
 			}
 
-			node->_structureLastSynced = _time;
+			node->_structureLastSynced = octreeNode->_octree->time();
 			Log::debug("Resynced structure at %u", node->_structureLastSynced);
 		}
 
 		octreeNode->visitExistingChildren([=] (uint8_t x, uint8_t y, uint8_t z, voxel::OctreeNode* c) {
 			processOctreeNodeStructure(c, node->_children[x][y][z]);
 		});
-		node->_nodeAndChildrenLastSynced = _time;
+		node->_nodeAndChildrenLastSynced = octreeNode->_octree->time();
 	}
 }
 
@@ -252,15 +252,12 @@ bool OctreeRenderer::init(voxel::PagedVolume* volume, const voxel::Region& regio
 }
 
 void OctreeRenderer::update(long dt, const video::Camera& camera) {
-	_time += dt;
 	if (_volume == nullptr) {
 		return;
 	}
-
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	_shadow.calculateShadowData(camera, true, maxDepthBuffers, _depthBuffer.dimension());
-
-	_volume->update(camera.position(), 1.0f);
+	_volume->update(dt, camera.position(), 1.0f);
 }
 
 void OctreeRenderer::shutdown() {
