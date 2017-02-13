@@ -71,7 +71,7 @@ core::AppState TestMeshApp::onInit() {
 
 	_meshPool.init();
 
-	const std::string mesh = core::Var::getSafe("mesh")->strVal();
+	const std::string& mesh = core::Var::getSafe("mesh")->strVal();
 	_mesh = _meshPool.getMesh(mesh);
 	if (!_mesh->isLoading()) {
 		Log::error("Failed to load the mesh %s", mesh.c_str());
