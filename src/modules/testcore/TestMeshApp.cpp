@@ -17,10 +17,11 @@ core::AppState TestMeshApp::onConstruct() {
 
 	core::Command::registerCommand("loadmesh", [this] (const core::CmdArgs& args) {
 		if (args.empty()) {
-			Log::error("Usage: %s <meshname>", args[0].c_str());
+			Log::error("Usage: loadmesh <meshname>");
 			return;
 		}
-		const std::string& mesh = args[1];
+		const std::string& mesh = args[0];
+		Log::info("Trying to load mesh %s", mesh.c_str());
 		const video::MeshPtr& meshPtr = _meshPool.getMesh(mesh, false);
 		if (meshPtr->isLoaded()) {
 			_mesh->shutdown();

@@ -61,6 +61,10 @@ void Mesh::shutdown() {
 }
 
 bool Mesh::loadMesh(const std::string& filename) {
+	if (filename.empty()) {
+		Log::error("Failed to load mesh: No filename given");
+		return false;
+	}
 #if 0
 	// TODO: implement custom io handler to support meshes that are split over several files (like obj)
 	class MeshIOSystem : public Assimp::IOSystem {
@@ -90,7 +94,7 @@ bool Mesh::loadMesh(const std::string& filename) {
 
 	for (uint32_t i = 0; i < _meshData.size(); ++i) {
 		const aiMesh* mesh = _scene->mMeshes[i];
-		GLMeshData& meshData = _meshData[i];
+		RenderMeshData& meshData = _meshData[i];
 		meshData.materialIndex = mesh->mMaterialIndex;
 		meshData.noOfIndices = mesh->mNumFaces * 3;
 		meshData.baseVertex = numVertices;
@@ -552,7 +556,7 @@ int Mesh::render() {
 	}
 	_vertexBuffer.bind();
 	int drawCalls = 0;
-	for (const GLMeshData& mesh : _meshData) {
+	for (const RenderMeshData& mesh : _meshData) {
 		const uint32_t matIdx = mesh.materialIndex;
 		if (matIdx < _textures.size() && _textures[matIdx]) {
 			_textures[matIdx]->bind(video::TextureUnit::Zero);

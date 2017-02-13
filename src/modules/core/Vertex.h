@@ -18,9 +18,9 @@ struct Vertex {
 			_pos(p), _norm(n), _texcoords(t), _color(c), _boneIds { 0u, 0u, 0u, 0u }, _boneWeights { 0.0f, 0.0f, 0.0f, 0.0f } {
 	}
 
-	void addBoneData(uint32_t boneID, float weight) {
+	bool addBoneData(uint32_t boneID, float weight) {
 		if (weight <= 0.0f) {
-			return;
+			return true;
 		}
 
 		const int size = SDL_arraysize(_boneIds);
@@ -28,11 +28,12 @@ struct Vertex {
 			if (_boneIds[i] == 0u) {
 				_boneIds[i] = boneID;
 				_boneWeights[i] = weight;
-				return;
+				return true;
 			}
 		}
 
-		core_assert_msg(false, "more bones than we have space for - can't handle boneid %u with weight %f", boneID, weight);
+		Log::warn("more bones than we have space for - can't handle boneid %u with weight %f", boneID, weight);
+		return false;
 	}
 };
 

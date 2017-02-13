@@ -15,7 +15,7 @@ private:
 	typedef std::unordered_map<std::string, MeshPtr> Meshes;
 	Meshes _meshes;
 
-	std::string getName(const std::string_view& id) const;
+	std::string getName(std::string_view id) const;
 public:
 	MeshPool();
 	~MeshPool();
@@ -23,7 +23,7 @@ public:
 	bool init();
 	void shutdown();
 
-	MeshPtr getMesh(const std::string_view& name, bool async = true);
+	MeshPtr getMesh(std::string_view name, bool async = true);
 };
 
 typedef std::shared_ptr<MeshPool> MeshPoolPtr;

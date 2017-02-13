@@ -24,7 +24,7 @@ public:
 	typedef std::vector<uint32_t> Indices;
 
 private:
-	struct GLMeshData {
+	struct RenderMeshData {
 		uint32_t noOfIndices = 0u;
 		uint32_t noOfVertices = 0u;
 		uint32_t baseVertex = 0u;
@@ -58,7 +58,7 @@ private:
 	uint8_t _animationIndex = 0u;
 	float _timeInSeconds = 0.0f;
 
-	std::vector<GLMeshData> _meshData;
+	std::vector<RenderMeshData> _meshData;
 	std::vector<image::ImagePtr> _images;
 	std::vector<TexturePtr> _textures;
 	Vertices _vertices;
