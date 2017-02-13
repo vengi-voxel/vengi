@@ -139,6 +139,10 @@ extern void clear(ClearFlag flag);
 extern bool viewport(int x, int y, int w, int h);
 extern void getScissor(int& x, int& y, int& w, int& h);
 extern void getViewport(int& x, int& y, int& w, int& h);
+/**
+ * @brief Given in screen coordinates
+ * @note viewport() must have seen called before
+ */
 extern bool scissor(int x, int y, int w, int h);
 /**
  * @brief Enables a renderer state

@@ -84,9 +84,13 @@ public:
 	 * @brief Bind the underlying gl buffers
 	 *
 	 * @note Also sets up the vertex attributes if this wasn't done before (only done once).
+	 * @sa unbind()
 	 * @return @c true if the bind was sucessful, @c false otherwise.
 	 */
 	bool bind() const;
+	/**
+	 * @sa bind()
+	 */
 	void unbind() const;
 	uint32_t size(int32_t idx) const;
 	uint32_t elements(int32_t idx, int components = 3, size_t componentSize = sizeof(float)) const;

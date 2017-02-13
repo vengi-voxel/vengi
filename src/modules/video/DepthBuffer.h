@@ -18,8 +18,16 @@ public:
 	bool init(const glm::ivec2& dimension, DepthBufferMode mode = DepthBufferMode::RGBA, int textureCount = 1);
 	void shutdown();
 
+	/**
+	 * @brief Binds the depth framebuffer and updates the viewport to the framebuffer dimensions.
+	 * @sa unbind()
+	 */
 	bool bind();
 	bool bindTexture(int textureIndex);
+	/**
+	 * @brief Unbinds the depth framebuffer and restores the viewport that was active when bind() was called.
+	 * @sa bind()
+	 */
 	void unbind();
 
 	inline glm::ivec2 dimension() const {

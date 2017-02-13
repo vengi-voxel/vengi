@@ -41,7 +41,13 @@ public:
 	void upload(TextureFormat format, int width, int height, const uint8_t* data = nullptr, int index = 1);
 	void upload(int width, int height, const uint8_t* data = nullptr, int index = 1);
 	void upload(const uint8_t* data = nullptr, int index = 1);
+	/**
+	 * @sa unbind()
+	 */
 	void bind(TextureUnit unit = TextureUnit::Zero) const;
+	/**
+	 * @sa bind()
+	 */
 	void unbind() const;
 };
 
