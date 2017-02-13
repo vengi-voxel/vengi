@@ -26,7 +26,6 @@ public:
 private:
 	struct RenderMeshData {
 		uint32_t noOfIndices = 0u;
-		uint32_t noOfVertices = 0u;
 		uint32_t baseVertex = 0u;
 		uint32_t baseIndex = 0u;
 		uint32_t materialIndex = 0u;
