@@ -22,10 +22,12 @@ core::AppState TestMeshApp::onConstruct() {
 		}
 		const std::string& mesh = args[0];
 		Log::info("Trying to load mesh %s", mesh.c_str());
-		const video::MeshPtr& meshPtr = _meshPool.getMesh(mesh, false);
-		if (meshPtr->isLoaded()) {
+		const video::MeshPtr& meshPtr = _meshPool.getMesh(mesh);
+		if (meshPtr->isLoading()) {
 			_mesh->shutdown();
 			_mesh = meshPtr;
+		} else {
+			Log::warn("Failed to load mesh: %s", mesh.c_str());
 		}
 	}).setHelp("Load a mesh from the pool. The name is without extension and the file must be in the mesh/ dir.");
 
