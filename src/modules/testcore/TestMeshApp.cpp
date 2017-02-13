@@ -21,7 +21,7 @@ core::AppState TestMeshApp::onConstruct() {
 			return;
 		}
 		const std::string& mesh = args[1];
-		const video::MeshPtr& meshPtr = _meshPool.getMesh(mesh);
+		const video::MeshPtr& meshPtr = _meshPool.getMesh(mesh, false);
 		if (meshPtr->isLoaded()) {
 			_mesh->shutdown();
 			_mesh = meshPtr;
