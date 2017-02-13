@@ -68,7 +68,7 @@ core::AppState TestApp::onInit() {
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _dimension.x, _dimension.y, _aspect);
 	_camera.init(glm::ivec2(), dimension());
 	_camera.setPosition(glm::vec3(0.0f, 50.0f, 100.0f));
-	_camera.lookAt(glm::vec3(0.0001f));
+	_camera.lookAt(glm::vec3(0.0f));
 
 	video::clearColor(::core::Color::Black);
 	video::enable(video::State::DepthTest);

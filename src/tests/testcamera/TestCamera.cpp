@@ -65,7 +65,7 @@ core::AppState TestCamera::onInit() {
 void TestCamera::resetCameraPosition() {
 	_camera.setPosition(glm::vec3(0.0f, 100.0f, 250.0f));
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	_camera.lookAt(glm::vec3(0.0001f));
+	_camera.lookAt(glm::vec3(0.0f));
 }
 
 void TestCamera::doRender() {
