@@ -375,4 +375,31 @@ void Octree::determineWhetherToRenderNode(NodeIndex index) {
 	}
 }
 
+Octree::MainThreadTaskProcessor::~MainThreadTaskProcessor() {
+	_pendingTasks.clear();
+}
+
+void Octree::MainThreadTaskProcessor::addTask(SurfaceExtractionTask* task) {
+	_pendingTasks.push_back(task);
+}
+
+bool Octree::MainThreadTaskProcessor::hasTasks() const {
+	return !_pendingTasks.empty();
+}
+
+bool Octree::MainThreadTaskProcessor::processOneTask() {
+	if (!hasTasks()) {
+		return false;
+	}
+	SurfaceExtractionTask* task = _pendingTasks.front();
+	_pendingTasks.pop_front();
+	task->process();
+	return true;
+}
+
+void Octree::MainThreadTaskProcessor::processAllTasks() {
+	while (processOneTask()) {
+	}
+}
+
 }

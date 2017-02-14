@@ -29,11 +29,6 @@ public:
 	Octree(OctreeVolume* volume, uint32_t baseNodeSize);
 	~Octree();
 
-	template<typename VisitorType>
-	void acceptVisitor(VisitorType visitor) {
-		visitNode(rootNode(), visitor);
-	}
-
 	OctreeNode* rootNode() const;
 
 	OctreeVolume* volume() const;
@@ -65,32 +60,12 @@ public:
 	private:
 		std::list<SurfaceExtractionTask*> _pendingTasks;
 	public:
-		~MainThreadTaskProcessor() {
-			_pendingTasks.clear();
-		}
+		~MainThreadTaskProcessor();
 
-		void addTask(SurfaceExtractionTask* task) {
-			_pendingTasks.push_back(task);
-		}
-
-		inline bool hasTasks() const {
-			return !_pendingTasks.empty();
-		}
-
-		bool processOneTask() {
-			if (!hasTasks()) {
-				return false;
-			}
-			SurfaceExtractionTask* task = _pendingTasks.front();
-			_pendingTasks.pop_front();
-			task->process();
-			return true;
-		}
-
-		void processAllTasks() {
-			while (processOneTask()) {
-			}
-		}
+		void addTask(SurfaceExtractionTask* task);
+		bool hasTasks() const;
+		bool processOneTask();
+		void processAllTasks();
 	};
 	MainThreadTaskProcessor _taskProcessor;
 
@@ -102,14 +77,23 @@ private:
 
 	NodeIndex createNode(const Region& region, NodeIndex parent);
 
+	/**
+	 * @brief Traverses the tree
+	 * @note The given VisitorType must implement a preChildren() and a postChildren() method
+	 */
 	template<typename VisitorType>
-	void visitNode(OctreeNode* node, VisitorType& visitor)  {
+	void acceptVisitor(VisitorType&& visitor) {
+		visitNode(rootNode(), std::forward<VisitorType>(visitor));
+	}
+
+	template<typename VisitorType>
+	void visitNode(OctreeNode* node, VisitorType&& visitor)  {
 		const bool processChildren = visitor.preChildren(node);
 
 		if (processChildren) {
-			for (int iz = 0; iz < 2; iz++) {
-				for (int iy = 0; iy < 2; iy++) {
-					for (int ix = 0; ix < 2; ix++) {
+			for (uint8_t iz = 0u; iz < 2u; ++iz) {
+				for (uint8_t iy = 0u; iy < 2u; ++iy) {
+					for (uint8_t ix = 0u; ix < 2u; ++ix) {
 						OctreeNode* childNode = node->getActiveChildNode(ix, iy, iz);
 						if (childNode) {
 							visitNode(childNode, visitor);
