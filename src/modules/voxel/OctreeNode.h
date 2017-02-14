@@ -39,6 +39,8 @@ private:
 	std::shared_ptr<Mesh> _mesh;
 	std::shared_ptr<Mesh> _waterMesh;
 
+	Region _region;
+
 public:
 	OctreeNode(const Region& region, NodeIndex parent, Octree* octree);
 
@@ -80,6 +82,8 @@ public:
 	bool renderThisNode() const;
 	void setRenderThisNode(bool render);
 
+	const Region& region() const;
+
 	bool isMeshUpToDate() const;
 	/**
 	 * @brief We are scheduled for an update if being scheduled was the most recent thing that happened.
@@ -88,7 +92,6 @@ public:
 
 	void updateFromCompletedTask(SurfaceExtractionTask* completedTask);
 
-	Region _region;
 	TimeStamp _lastScheduledForUpdate = 0;
 
 	// The values of these few initialisations is important
@@ -103,6 +106,10 @@ public:
 	Octree* _octree;
 	SurfaceExtractionTask* _lastSurfaceExtractionTask = nullptr;
 };
+
+inline const Region& OctreeNode::region() const {
+	return _region;
+}
 
 inline bool OctreeNode::renderThisNode() const {
 	return _renderThisNode;

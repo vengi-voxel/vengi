@@ -211,7 +211,7 @@ void Octree::setLodRange(int32_t minimumLOD, int32_t maximumLOD) {
 
 void Octree::buildOctreeNodeTree(NodeIndex parent) {
 	OctreeNode* parentNode = nodeFromIndex(parent);
-	const Region& parentRegion = parentNode->_region;
+	const Region& parentRegion = parentNode->region();
 	core_assert_msg(parentRegion.getWidthInVoxels() == parentRegion.getHeightInVoxels(), "Region must be cubic");
 	core_assert_msg(parentRegion.getWidthInVoxels() == parentRegion.getDepthInVoxels(), "Region must be cubic");
 
@@ -240,7 +240,7 @@ void Octree::buildOctreeNodeTree(NodeIndex parent) {
 void Octree::markAsModified(NodeIndex index, int32_t x, int32_t y, int32_t z, TimeStamp newTimeStamp) {
 	OctreeNode* node = _nodes[index];
 
-	Region dilatedRegion = node->_region;
+	Region dilatedRegion = node->region();
 	dilatedRegion.grow(1); //FIXME - Think if we really need this dilation?
 	if (!dilatedRegion.containsPoint(x, y, z)) {
 		return;
@@ -260,7 +260,7 @@ void Octree::markAsModified(NodeIndex index, int32_t x, int32_t y, int32_t z, Ti
 void Octree::markAsModified(NodeIndex index, const Region& region, TimeStamp newTimeStamp) {
 	OctreeNode* node = _nodes[index];
 
-	if (intersects(node->_region, region)) {
+	if (intersects(node->region(), region)) {
 		//mIsMeshUpToDate = false;
 		node->_dataLastModified = newTimeStamp;
 
@@ -279,9 +279,9 @@ void Octree::determineActiveNodes(OctreeNode* node, const glm::vec3& viewPositio
 
 	OctreeNode* parentNode = node->getParentNode();
 	if (parentNode != nullptr) {
-		const glm::vec3 center(parentNode->_region.getCentre());
+		const glm::vec3 center(parentNode->region().getCentre());
 		const float distance = glm::length(viewPosition - center);
-		const glm::vec3 diagonal(parentNode->_region.getDimensionsInCells());
+		const glm::vec3 diagonal(parentNode->region().getDimensionsInCells());
 		const float diagonalLength = glm::length(diagonal); // A measure of our regions size
 		const float projectedSize = diagonalLength / distance;
 		// As we move far away only the highest nodes will be larger than the threshold. But these may be too

@@ -8,7 +8,7 @@
 #include "polyvox/PagedVolume.h"
 #include "Octree.h"
 
-#define BACKGROUND_TASK_ARE_THREADED 0
+#define BACKGROUND_TASK_ARE_THREADED 1
 
 #if BACKGROUND_TASK_ARE_THREADED > 0
 #include "core/ConcurrentQueue.h"
