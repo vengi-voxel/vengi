@@ -36,12 +36,12 @@ public:
 	/**
 	 * @param lodThreshold Controls the point at which we switch to a different level of detail.
 	 */
-	void update(long dt, const glm::vec3& viewPosition, float lodThreshold);
+	void update(TimeStamp dt, const glm::vec3& viewPosition, float lodThreshold);
 
-	long time() const;
+	TimeStamp time() const;
 
-	void markDataAsModified(int32_t x, int32_t y, int32_t z, uint32_t newTimeStamp);
-	void markDataAsModified(const Region& region, uint32_t newTimeStamp);
+	void markDataAsModified(int32_t x, int32_t y, int32_t z, TimeStamp newTimeStamp);
+	void markDataAsModified(const Region& region, TimeStamp newTimeStamp);
 
 	/**
 	 * @note For LOD levels, the 'minimum' must be *more* than or equal to the 'maximum'
@@ -101,8 +101,8 @@ private:
 		visitor.postChildren(node);
 	}
 
-	void markAsModified(NodeIndex index, int32_t x, int32_t y, int32_t z, uint32_t newTimeStamp);
-	void markAsModified(NodeIndex index, const Region& region, uint32_t newTimeStamp);
+	void markAsModified(NodeIndex index, int32_t x, int32_t y, int32_t z, TimeStamp newTimeStamp);
+	void markAsModified(NodeIndex index, const Region& region, TimeStamp newTimeStamp);
 
 	void determineWhetherToRenderNode(NodeIndex index);
 
@@ -110,7 +110,7 @@ private:
 
 	NodeIndex _rootNodeIndex = InvalidNodeIndex;
 	const uint32_t _baseNodeSize;
-	long _time = 1000l;
+	TimeStamp _time = 1000;
 
 	int32_t _maximumLOD = 0;
 	/**
@@ -137,7 +137,7 @@ inline int32_t Octree::minimumLOD() const {
 	return _minimumLOD;
 }
 
-inline long Octree::time() const {
+inline TimeStamp Octree::time() const {
 	return _time;
 }
 

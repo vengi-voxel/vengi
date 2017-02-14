@@ -29,10 +29,10 @@ private:
 
 		core::AABB<float> _aabb{glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
 
-		uint32_t _structureLastSynced = 0u;
-		uint32_t _propertiesLastSynced = 0u;
-		uint32_t _meshLastSynced = 0u;
-		uint32_t _nodeAndChildrenLastSynced = 0u;
+		voxel::TimeStamp _structureLastSynced = 0;
+		voxel::TimeStamp _propertiesLastSynced = 0;
+		voxel::TimeStamp _meshLastSynced = 0;
+		voxel::TimeStamp _nodeAndChildrenLastSynced = 0;
 
 		bool _renderThisNode = false;
 

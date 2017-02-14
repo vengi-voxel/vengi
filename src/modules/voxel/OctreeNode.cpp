@@ -27,7 +27,7 @@ OctreeNode* OctreeNode::getChildNode(uint8_t x, uint8_t y, uint8_t z) const {
 	return child;
 }
 
-OctreeNode* OctreeNode::getActiveChildNode(uint32_t childX, uint32_t childY, uint32_t childZ) const {
+OctreeNode* OctreeNode::getActiveChildNode(uint8_t childX, uint8_t childY, uint8_t childZ) const {
 	OctreeNode* child = getChildNode(childX, childY, childZ);
 	if (child != nullptr && !child->isActive()) {
 		return nullptr;

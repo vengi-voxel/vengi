@@ -14,27 +14,27 @@ namespace voxel {
 
 class PropagateTimestampsVisitor {
 public:
-	inline bool preChildren(OctreeNode* octreeNode) {
+	inline bool preChildren(OctreeNode* node) {
 		// Don't actually do any work here, just make sure all children get processed.
 		return true;
 	}
 
-	void postChildren(OctreeNode* octreeNode) {
+	void postChildren(OctreeNode* node) {
 		// Set timestamp to max of our own timestamps, and those of our children.
-		octreeNode->_nodeOrChildrenLastChanged = std::max({
+		node->_nodeOrChildrenLastChanged = std::max({
 			_subtreeTimestamp,
-			octreeNode->_structureLastChanged,
-			octreeNode->_propertiesLastChanged,
-			octreeNode->_meshLastChanged });
+			node->_structureLastChanged,
+			node->_propertiesLastChanged,
+			node->_meshLastChanged });
 
 		// This will get propagatd back to the parent as the visitor is passed by reference.
-		_subtreeTimestamp = octreeNode->_nodeOrChildrenLastChanged;
+		_subtreeTimestamp = node->_nodeOrChildrenLastChanged;
 	}
 
 private:
 	// The visitor has no direct access to the children, so we
 	// use this to propagate the timestamp back up to the parent.
-	uint32_t _subtreeTimestamp = 0u;
+	TimeStamp _subtreeTimestamp = 0;
 };
 
 class ScheduleUpdateIfNeededVisitor {
@@ -80,7 +80,7 @@ public:
 		return true;
 	}
 
-	void postChildren(OctreeNode* octreeNode) {
+	void postChildren(OctreeNode* node) {
 	}
 private:
 	Octree* _octree;
@@ -159,7 +159,7 @@ NodeIndex Octree::createNode(const Region& region, NodeIndex parent) {
 	return index;
 }
 
-void Octree::update(long dt, const glm::vec3& viewPosition, float lodThreshold) {
+void Octree::update(TimeStamp dt, const glm::vec3& viewPosition, float lodThreshold) {
 	_time += dt;
 	// This isn't a visitor because visitors only visit active nodes, and here we are setting them.
 	determineActiveNodes(rootNode(), viewPosition, lodThreshold);
@@ -195,11 +195,11 @@ void Octree::update(long dt, const glm::vec3& viewPosition, float lodThreshold) 
 	acceptVisitor(PropagateTimestampsVisitor());
 }
 
-void Octree::markDataAsModified(int32_t x, int32_t y, int32_t z, uint32_t newTimeStamp) {
+void Octree::markDataAsModified(int32_t x, int32_t y, int32_t z, TimeStamp newTimeStamp) {
 	markAsModified(_rootNodeIndex, x, y, z, newTimeStamp);
 }
 
-void Octree::markDataAsModified(const Region& region, uint32_t newTimeStamp) {
+void Octree::markDataAsModified(const Region& region, TimeStamp newTimeStamp) {
 	markAsModified(_rootNodeIndex, region, newTimeStamp);
 }
 
@@ -230,14 +230,14 @@ void Octree::buildOctreeNodeTree(NodeIndex parent) {
 		if (!intersects(childRegion, _regionToCover)) {
 			continue;
 		}
-		const NodeIndex octreeNode = createNode(childRegion, parent);
-		parentNode->_children[ix][iy][iz] = octreeNode;
-		buildOctreeNodeTree(octreeNode);
+		const NodeIndex childNode = createNode(childRegion, parent);
+		parentNode->_children[ix][iy][iz] = childNode;
+		buildOctreeNodeTree(childNode);
 	}
 }
 
 // Note - Can't this function just call the other version?
-void Octree::markAsModified(NodeIndex index, int32_t x, int32_t y, int32_t z, uint32_t newTimeStamp) {
+void Octree::markAsModified(NodeIndex index, int32_t x, int32_t y, int32_t z, TimeStamp newTimeStamp) {
 	OctreeNode* node = _nodes[index];
 
 	Region dilatedRegion = node->_region;
@@ -257,7 +257,7 @@ void Octree::markAsModified(NodeIndex index, int32_t x, int32_t y, int32_t z, ui
 	}
 }
 
-void Octree::markAsModified(NodeIndex index, const Region& region, uint32_t newTimeStamp) {
+void Octree::markAsModified(NodeIndex index, const Region& region, TimeStamp newTimeStamp) {
 	OctreeNode* node = _nodes[index];
 
 	if (intersects(node->_region, region)) {
@@ -274,10 +274,10 @@ void Octree::markAsModified(NodeIndex index, const Region& region, uint32_t newT
 	}
 }
 
-void Octree::determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewPosition, float lodThreshold) {
+void Octree::determineActiveNodes(OctreeNode* node, const glm::vec3& viewPosition, float lodThreshold) {
 	// FIXME - Should have an early out to set active to false if parent is false.
 
-	OctreeNode* parentNode = octreeNode->getParentNode();
+	OctreeNode* parentNode = node->getParentNode();
 	if (parentNode != nullptr) {
 		const glm::vec3 center(parentNode->_region.getCentre());
 		const float distance = glm::length(viewPosition - center);
@@ -286,23 +286,23 @@ void Octree::determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewP
 		const float projectedSize = diagonalLength / distance;
 		// As we move far away only the highest nodes will be larger than the threshold. But these may be too
 		// high to ever generate meshes, so we set here a maximum height for which nodes can be set to inactive.
-		const bool active = projectedSize > lodThreshold || octreeNode->_height >= _minimumLOD;
-		octreeNode->setActive(active);
+		const bool active = projectedSize > lodThreshold || node->_height >= _minimumLOD;
+		node->setActive(active);
 	} else {
-		octreeNode->setActive(true);
+		node->setActive(true);
 	}
 
-	octreeNode->_isLeaf = true;
+	node->_isLeaf = true;
 
 	foreachChild() {
-		OctreeNode* childNode = octreeNode->getChildNode(ix, iy, iz);
+		OctreeNode* childNode = node->getChildNode(ix, iy, iz);
 		if (childNode != nullptr) {
 			determineActiveNodes(childNode, viewPosition, lodThreshold);
 		}
 
 		// If we have (or have just created) an active and valid child then we are not a leaf.
-		if (octreeNode->_isLeaf && octreeNode->getChildNode(ix, iy, iz) != nullptr) {
-			octreeNode->_isLeaf = false;
+		if (node->_isLeaf && node->getChildNode(ix, iy, iz) != nullptr) {
+			node->_isLeaf = false;
 		}
 	}
 }

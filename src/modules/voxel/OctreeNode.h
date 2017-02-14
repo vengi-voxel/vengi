@@ -18,6 +18,7 @@ class Octree;
 class SurfaceExtractionTask;
 
 typedef uint16_t NodeIndex;
+typedef uint32_t TimeStamp;
 
 class OctreeNode {
 	friend class Octree;
@@ -41,7 +42,7 @@ private:
 public:
 	OctreeNode(const Region& region, NodeIndex parent, Octree* octree);
 
-	OctreeNode* getActiveChildNode(uint32_t childX, uint32_t childY, uint32_t childZ) const;
+	OctreeNode* getActiveChildNode(uint8_t childX, uint8_t childY, uint8_t childZ) const;
 	OctreeNode* getChildNode(uint8_t x, uint8_t y, uint8_t z) const;
 	OctreeNode* getParentNode() const;
 
@@ -85,16 +86,16 @@ public:
 	void updateFromCompletedTask(SurfaceExtractionTask* completedTask);
 
 	Region _region;
-	uint32_t _lastScheduledForUpdate = 0u;
+	TimeStamp _lastScheduledForUpdate = 0;
 
 	// The values of these few initialisations is important
 	// to make sure the node is set to an 'out of date'
 	// state which will then try to update.
-	uint32_t _structureLastChanged = 1u;
-	uint32_t _propertiesLastChanged = 1u;
-	uint32_t _meshLastChanged = 1u;
-	uint32_t _dataLastModified = 2u;
-	uint32_t _nodeOrChildrenLastChanged = 1u;
+	TimeStamp _structureLastChanged = 1;
+	TimeStamp _propertiesLastChanged = 1;
+	TimeStamp _meshLastChanged = 1;
+	TimeStamp _dataLastModified = 2;
+	TimeStamp _nodeOrChildrenLastChanged = 1;
 
 	Octree* _octree;
 	SurfaceExtractionTask* _lastSurfaceExtractionTask = nullptr;
