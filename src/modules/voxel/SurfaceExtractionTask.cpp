@@ -14,6 +14,7 @@ namespace voxel {
 
 // Eliminate this
 static inline void scaleVertices(Mesh* mesh, uint32_t amount) {
+	core_trace_scoped(ScaleVertices);
 	for (uint32_t ct = 0; ct < mesh->getNoOfVertices(); ct++) {
 		VoxelVertex& vertex = const_cast<VoxelVertex&>(mesh->getVertex(ct));
 		vertex.position *= amount;

@@ -18,6 +18,7 @@ namespace voxel {
  */
 template<typename SourceVolume, typename DestVolume>
 void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion, DestVolume& destVolume, const Region& destRegion) {
+	core_trace_scoped(RescaleVolume);
 	typename SourceVolume::Sampler srcSampler(sourceVolume);
 	typename DestVolume::Sampler dstSampler(destVolume);
 
