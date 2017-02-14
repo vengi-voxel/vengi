@@ -91,14 +91,10 @@ private:
 		const bool processChildren = visitor.preChildren(node);
 
 		if (processChildren) {
-			for (uint8_t iz = 0u; iz < 2u; ++iz) {
-				for (uint8_t iy = 0u; iy < 2u; ++iy) {
-					for (uint8_t ix = 0u; ix < 2u; ++ix) {
-						OctreeNode* childNode = node->getActiveChildNode(ix, iy, iz);
-						if (childNode) {
-							visitNode(childNode, visitor);
-						}
-					}
+			foreachChild() {
+				OctreeNode* childNode = node->getActiveChildNode(ix, iy, iz);
+				if (childNode) {
+					visitNode(childNode, visitor);
 				}
 			}
 		}

@@ -13,12 +13,8 @@ namespace voxel {
 
 OctreeNode::OctreeNode(const Region& region, NodeIndex parent, Octree* octree) :
 		_parent(parent), _region(region), _octree(octree) {
-	for (uint8_t z = 0; z < 2; ++z) {
-		for (uint8_t y = 0; y < 2; ++y) {
-			for (uint8_t x = 0; x < 2; ++x) {
-				_children[x][y][z] = Octree::InvalidNodeIndex;
-			}
-		}
+	foreachChild() {
+		_children[ix][iy][iz] = Octree::InvalidNodeIndex;
 	}
 }
 

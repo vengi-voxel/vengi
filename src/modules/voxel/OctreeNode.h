@@ -7,6 +7,11 @@
 #include "polyvox/Region.h"
 #include "polyvox/Mesh.h"
 
+#define foreachChild() \
+	for (uint8_t iz = 0u; iz < 2u; ++iz) \
+		for (uint8_t iy = 0u; iy < 2u; ++iy) \
+			for (uint8_t ix = 0u; ix < 2u; ++ix)
+
 namespace voxel {
 
 class Octree;
@@ -46,28 +51,20 @@ public:
 
 	template<class FUNC>
 	void visitChildren(FUNC&& func) {
-		for (uint8_t z = 0; z < 2; ++z) {
-			for (uint8_t y = 0; y < 2; ++y) {
-				for (uint8_t x = 0; x < 2; ++x) {
-					OctreeNode* child = getChildNode(x, y, z);
-					func(x, y, z, child);
-				}
-			}
+		foreachChild() {
+			OctreeNode* child = getChildNode(ix, iy, iz);
+			func(ix, iy, iz, child);
 		}
 	}
 
 	template<class FUNC>
 	void visitExistingChildren(FUNC&& func) {
-		for (uint8_t z = 0; z < 2; ++z) {
-			for (uint8_t y = 0; y < 2; ++y) {
-				for (uint8_t x = 0; x < 2; ++x) {
-					OctreeNode* child = getChildNode(x, y, z);
-					if (child == nullptr) {
-						continue;
-					}
-					func(x, y, z, child);
-				}
+		foreachChild() {
+			OctreeNode* child = getChildNode(ix, iy, iz);
+			if (child == nullptr) {
+				continue;
 			}
+			func(ix, iy, iz, child);
 		}
 	}
 
