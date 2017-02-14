@@ -17,9 +17,9 @@ void OctreeVolume::BackgroundTaskProcessor::processTasks() {
 	}
 }
 #endif
-OctreeVolume::BackgroundTaskProcessor::BackgroundTaskProcessor(uint32_t noOfThreads) {
+OctreeVolume::BackgroundTaskProcessor::BackgroundTaskProcessor(uint8_t noOfThreads) {
 #if BACKGROUND_TASK_ARE_THREADED > 0
-	for (uint32_t ct = 0; ct < noOfThreads; ++ct) {
+	for (uint8_t ct = 0; ct < noOfThreads; ++ct) {
 		_threads.emplace_back(std::bind(&BackgroundTaskProcessor::processTasks, this));
 	}
 #endif

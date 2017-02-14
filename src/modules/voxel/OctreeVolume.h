@@ -35,9 +35,9 @@ public:
 #endif
 	public:
 #if BACKGROUND_TASK_ARE_THREADED > 0
-		BackgroundTaskProcessor(uint32_t noOfThreads = core::halfcpus());
+		BackgroundTaskProcessor(uint8_t noOfThreads = core::halfcpus());
 #else
-		BackgroundTaskProcessor(uint32_t noOfThreads = 1);
+		BackgroundTaskProcessor(uint8_t noOfThreads = 1);
 #endif
 		~BackgroundTaskProcessor();
 		void addTask(SurfaceExtractionTask* task);
