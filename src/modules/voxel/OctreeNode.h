@@ -69,6 +69,9 @@ public:
 		}
 	}
 
+	/**
+	 * @note the smallest height is the greatest depth.
+	 */
 	uint8_t height() const;
 
 	bool isActive() const;
