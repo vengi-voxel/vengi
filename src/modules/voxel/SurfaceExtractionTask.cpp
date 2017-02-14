@@ -22,6 +22,10 @@ static inline void scaleVertices(Mesh* mesh, uint32_t amount) {
 
 SurfaceExtractionTask::SurfaceExtractionTask(OctreeNode* octreeNode, PagedVolume* polyVoxVolume) :
 		_node(octreeNode), _volume(polyVoxVolume) {
+	const voxel::Region& region = octreeNode->_region;
+	Log::debug("Extract volume data for region mins(%i:%i:%i), maxs(%i:%i:%i)",
+			region.getLowerX(), region.getLowerY(), region.getLowerZ(),
+			region.getUpperX(), region.getUpperY(), region.getUpperZ());
 }
 
 SurfaceExtractionTask::~SurfaceExtractionTask() {
