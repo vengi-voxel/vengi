@@ -279,9 +279,9 @@ void Octree::determineActiveNodes(OctreeNode* node, const glm::vec3& viewPositio
 
 	OctreeNode* parentNode = node->getParentNode();
 	if (parentNode != nullptr) {
-		const glm::vec3 center(parentNode->region().getCentre());
+		const glm::vec3& center = parentNode->region().getCentre();
 		const float distance = glm::length(viewPosition - center);
-		const glm::vec3 diagonal(parentNode->region().getDimensionsInCells());
+		const glm::vec3& diagonal = parentNode->region().getDimensionsInCells();
 		const float diagonalLength = glm::length(diagonal); // A measure of our regions size
 		const float projectedSize = diagonalLength / distance;
 		// As we move far away only the highest nodes will be larger than the threshold. But these may be too
