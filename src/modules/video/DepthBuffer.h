@@ -30,25 +30,11 @@ public:
 	 */
 	void unbind();
 
-	inline glm::ivec2 dimension() const {
-		return glm::ivec2(_depthTexture.width(), _depthTexture.height());
-	}
-
-	inline Id texture() const {
-		return _depthTexture.handle();
-	}
-
-	TextureType textureType() const {
-		return _depthTexture.type();
-	}
-
-	inline bool depthAttachment() const {
-		return _mode == DepthBufferMode::DEPTH || depthCompare();
-	}
-
-	inline bool depthCompare() const {
-		return _mode == DepthBufferMode::DEPTH_CMP;
-	}
+	glm::ivec2 dimension() const;
+	Id texture() const;
+	TextureType textureType() const;
+	bool depthAttachment() const;
+	bool depthCompare() const;
 private:
 	int _oldViewport[4] = {0, 0, 0, 0};
 	Id _oldFramebuffer = video::InvalidId;
@@ -57,6 +43,26 @@ private:
 	Texture _depthTexture;
 	DepthBufferMode _mode = DepthBufferMode::RGBA;
 };
+
+inline glm::ivec2 DepthBuffer::dimension() const {
+	return glm::ivec2(_depthTexture.width(), _depthTexture.height());
+}
+
+inline Id DepthBuffer::texture() const {
+	return _depthTexture.handle();
+}
+
+inline TextureType DepthBuffer::textureType() const {
+	return _depthTexture.type();
+}
+
+inline bool DepthBuffer::depthAttachment() const {
+	return _mode == DepthBufferMode::DEPTH || depthCompare();
+}
+
+inline bool DepthBuffer::depthCompare() const {
+	return _mode == DepthBufferMode::DEPTH_CMP;
+}
 
 inline bool bindTexture(TextureUnit unit, const DepthBuffer& depthBuffer) {
 	video::bindTexture(unit, depthBuffer.textureType(), depthBuffer.texture());
