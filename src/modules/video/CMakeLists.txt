@@ -23,6 +23,7 @@ set(SRCS
 	Mesh.cpp Mesh.h
 	MeshPool.cpp MeshPool.h
 	ShapeBuilder.cpp ShapeBuilder.h
+	ShaderManager.cpp ShaderManager.h
 	ScopedLineWidth.h ScopedLineWidth.cpp
 	ScopedViewPort.h
 	ScopedFrameBuffer.h
