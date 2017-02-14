@@ -44,10 +44,12 @@ public:
 	}
 
 	bool preChildren(OctreeNode* node) {
+		// nothing to do
 		if (node->isMeshUpToDate()) {
 			return true;
 		}
 
+		// already scheduled for update
 		if (node->isScheduledForUpdate()) {
 			return true;
 		}
@@ -59,6 +61,7 @@ public:
 			return true;
 		}
 
+		// Remember that min and max are counter-intuitive here!
 		const bool inLodRange = node->height() <= _octree->minimumLOD() && node->height() >= _octree->maximumLOD();
 		const bool activeLod = node->isActive() && inLodRange;
 		if (!activeLod) {
@@ -281,7 +284,7 @@ void Octree::determineActiveNodes(OctreeNode* node, const glm::vec3& viewPositio
 	if (parentNode != nullptr) {
 		const glm::vec3& center = parentNode->region().getCentre();
 		const float distance = glm::length(viewPosition - center);
-		const glm::vec3& diagonal = parentNode->region().getDimensionsInCells();
+		const glm::vec3& diagonal = parentNode->region().getUpperCorner() - parentNode->region().getLowerCorner();
 		const float diagonalLength = glm::length(diagonal); // A measure of our regions size
 		const float projectedSize = diagonalLength / distance;
 		// As we move far away only the highest nodes will be larger than the threshold. But these may be too
