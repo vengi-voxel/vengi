@@ -21,7 +21,7 @@ class Octree {
 	friend class SurfaceExtractionTask;
 
 public:
-	static const uint16_t InvalidNodeIndex = 0xFFFF;
+	static const NodeIndex InvalidNodeIndex = 0xFFFF;
 
 	/**
 	 * @param[in] baseNodeSize The minimum size of the smallest octree node in this tree
@@ -51,20 +51,16 @@ public:
 	/**
 	 * @note For LOD levels, the 'minimum' must be *more* than or equal to the 'maximum'
 	 * @param minimumLOD Specifies the lowest (least detailed) LOD which we render for this volume.
-	 */
-	void setLodRange(int32_t minimumLOD, int32_t maximumLOD);
-
-	/**
+	 *
 	 * @note
 	 * Note that the maximum LOD refers to the *most detailed* LOD, which is actually the *smallest* height
 	 * in the octree (the greatest depth). If confused, think how texture mipmapping works, where the most
 	 * detailed MIP is number zero. Level zero is the raw voxel data and successive levels downsample it.
 	 */
-	int32_t _maximumLOD = 0;
-	/**
-	 * @note Must be *more* than maximum
-	 */
-	int32_t _minimumLOD = 2;
+	void setLodRange(int32_t minimumLOD, int32_t maximumLOD);
+	int32_t maximumLOD() const;
+	int32_t minimumLOD() const;
+
 	class MainThreadTaskProcessor {
 	private:
 		std::list<SurfaceExtractionTask*> _pendingTasks;
@@ -99,12 +95,12 @@ public:
 	MainThreadTaskProcessor _taskProcessor;
 
 private:
-	void buildOctreeNodeTree(uint16_t parent);
+	void buildOctreeNodeTree(NodeIndex parent);
 	void determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewPosition, float lodThreshold);
 
-	OctreeNode* nodeFromIndex(uint16_t index) const;
+	OctreeNode* nodeFromIndex(NodeIndex index) const;
 
-	uint16_t createNode(const Region& region, uint16_t parent);
+	NodeIndex createNode(const Region& region, NodeIndex parent);
 
 	template<typename VisitorType>
 	void visitNode(OctreeNode* node, VisitorType& visitor)  {
@@ -125,16 +121,22 @@ private:
 		visitor.postChildren(node);
 	}
 
-	void markAsModified(uint16_t index, int32_t x, int32_t y, int32_t z, uint32_t newTimeStamp);
-	void markAsModified(uint16_t index, const Region& region, uint32_t newTimeStamp);
+	void markAsModified(NodeIndex index, int32_t x, int32_t y, int32_t z, uint32_t newTimeStamp);
+	void markAsModified(NodeIndex index, const Region& region, uint32_t newTimeStamp);
 
-	void determineWhetherToRenderNode(uint16_t index);
+	void determineWhetherToRenderNode(NodeIndex index);
 
 	std::vector<OctreeNode*> _nodes;
 
-	uint16_t _rootNodeIndex = InvalidNodeIndex;
+	NodeIndex _rootNodeIndex = InvalidNodeIndex;
 	const uint32_t _baseNodeSize;
 	long _time = 1000l;
+
+	int32_t _maximumLOD = 0;
+	/**
+	 * @note Must be *more* than maximum
+	 */
+	int32_t _minimumLOD = 2;
 
 	OctreeVolume* _volume;
 
@@ -147,11 +149,19 @@ private:
 	Region _regionToCover;
 };
 
+inline int32_t Octree::maximumLOD() const {
+	return _maximumLOD;
+}
+
+inline int32_t Octree::minimumLOD() const {
+	return _minimumLOD;
+}
+
 inline long Octree::time() const {
 	return _time;
 }
 
-inline OctreeNode* Octree::nodeFromIndex(uint16_t index) const {
+inline OctreeNode* Octree::nodeFromIndex(NodeIndex index) const {
 	core_assert(index != InvalidNodeIndex);
 	return _nodes[index];
 }

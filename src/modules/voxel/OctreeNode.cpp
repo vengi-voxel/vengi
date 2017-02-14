@@ -11,7 +11,7 @@
 
 namespace voxel {
 
-OctreeNode::OctreeNode(const Region& region, uint16_t parent, Octree* octree) :
+OctreeNode::OctreeNode(const Region& region, NodeIndex parent, Octree* octree) :
 		_parent(parent), _region(region), _octree(octree) {
 	for (uint8_t z = 0; z < 2; ++z) {
 		for (uint8_t y = 0; y < 2; ++y) {
@@ -23,7 +23,7 @@ OctreeNode::OctreeNode(const Region& region, uint16_t parent, Octree* octree) :
 }
 
 OctreeNode* OctreeNode::getChildNode(uint8_t x, uint8_t y, uint8_t z) const {
-	const uint16_t index = _children[x][y][z];
+	const NodeIndex index = _children[x][y][z];
 	if (index == voxel::Octree::InvalidNodeIndex) {
 		return nullptr;
 	}
@@ -54,7 +54,7 @@ const Mesh* OctreeNode::getWaterMesh() {
 void OctreeNode::setMesh(const std::shared_ptr<Mesh>& mesh, const std::shared_ptr<Mesh>& waterMesh) {
 	_mesh = mesh;
 	_waterMesh = waterMesh;
-	_meshLastChanged = _octree->_time;
+	_meshLastChanged = _octree->time();
 }
 
 void OctreeNode::setActive(bool active) {
@@ -67,7 +67,7 @@ void OctreeNode::setActive(bool active) {
 	// which has changed (i.e. the parent has gained or lost a child (this node).
 	OctreeNode* parent = getParentNode();
 	if (parent != nullptr) {
-		parent->_structureLastChanged = _octree->_time;
+		parent->_structureLastChanged = _octree->time();
 	}
 }
 
@@ -76,7 +76,7 @@ void OctreeNode::setRenderThisNode(bool render) {
 		return;
 	}
 	_renderThisNode = render;
-	_propertiesLastChanged = _octree->_time;
+	_propertiesLastChanged = _octree->time();
 }
 
 bool OctreeNode::isMeshUpToDate() const {

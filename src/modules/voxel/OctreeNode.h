@@ -12,13 +12,15 @@ namespace voxel {
 class Octree;
 class SurfaceExtractionTask;
 
+typedef uint16_t NodeIndex;
+
 class OctreeNode {
 	friend class Octree;
 private:
-	uint16_t _parent;
+	NodeIndex _parent;
 	/** own index in the nodes array */
-	uint16_t _self = 0u;
-	uint16_t _children[2][2][2];
+	NodeIndex _self = 0u;
+	NodeIndex _children[2][2][2];
 
 	uint8_t _height = 0u; // Zero for leaf nodes.
 	bool _renderThisNode = false;
@@ -32,7 +34,7 @@ private:
 	std::shared_ptr<Mesh> _waterMesh;
 
 public:
-	OctreeNode(const Region& region, uint16_t parent, Octree* octree);
+	OctreeNode(const Region& region, NodeIndex parent, Octree* octree);
 
 	OctreeNode* getActiveChildNode(uint32_t childX, uint32_t childY, uint32_t childZ) const;
 	OctreeNode* getChildNode(uint8_t x, uint8_t y, uint8_t z) const;

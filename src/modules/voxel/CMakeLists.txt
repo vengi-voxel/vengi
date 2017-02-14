@@ -49,6 +49,7 @@ set(SRCS
 	polyvox/VolumeCropper.h
 	SurfaceExtractionTask.h SurfaceExtractionTask.cpp
 	OctreeNode.h OctreeNode.cpp
+	OctreeVolume.h OctreeVolume.cpp
 	Octree.h Octree.cpp
 )
 set(LIB voxel)

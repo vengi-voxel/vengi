@@ -6,16 +6,18 @@
 
 #include "polyvox/Region.h"
 #include "polyvox/PagedVolume.h"
-#include "core/App.h"
-#include "core/ConcurrentQueue.h"
-#include "core/Concurrency.h"
 #include "Octree.h"
-#include <thread>
-#include <list>
-
-namespace voxel {
 
 #define BACKGROUND_TASK_ARE_THREADED 0
+
+#if BACKGROUND_TASK_ARE_THREADED > 0
+#include "core/ConcurrentQueue.h"
+#include "core/Concurrency.h"
+#include <thread>
+#include <list>
+#endif
+
+namespace voxel {
 
 /**
  * @brief Octree wrapper around a PagedVolume
@@ -29,42 +31,16 @@ public:
 		core::ConcurrentQueue<SurfaceExtractionTask*, TaskSortCriterion> _pendingTasks;
 		std::list<std::thread> _threads;
 
-		void processTasks() {
-			while (!_abort) {
-				SurfaceExtractionTask* task = nullptr;
-				_pendingTasks.waitAndPop(task);
-				if (task != nullptr) {
-					task->process();
-				}
-			}
-		}
+		void processTasks();
 #endif
 	public:
-		BackgroundTaskProcessor(uint32_t noOfThreads = core::halfcpus()) {
 #if BACKGROUND_TASK_ARE_THREADED > 0
-			for (uint32_t ct = 0; ct < noOfThreads; ++ct) {
-				_threads.emplace_back(std::bind(&BackgroundTaskProcessor::processTasks, this));
-			}
-#endif
-		}
-
-		~BackgroundTaskProcessor() {
-#if BACKGROUND_TASK_ARE_THREADED > 0
-			_abort = true;
-			_pendingTasks.abortWait();
-			for (auto i = _threads.begin(); i != _threads.end(); ++i) {
-				i->join();
-			}
-#endif
-		}
-
-		void addTask(SurfaceExtractionTask* task) {
-#if BACKGROUND_TASK_ARE_THREADED > 0
-			_pendingTasks.push(task);
+		BackgroundTaskProcessor(uint32_t noOfThreads = core::halfcpus());
 #else
-			task->process();
+		BackgroundTaskProcessor(uint32_t noOfThreads = 1);
 #endif
-		}
+		~BackgroundTaskProcessor();
+		void addTask(SurfaceExtractionTask* task);
 	};
 
 	/**
@@ -72,9 +48,7 @@ public:
 	 * @param[in] region The dimensions of the whole octree
 	 * @param[in] baseNodeSize The minimum size of the smallest octree node in this tree
 	 */
-	OctreeVolume(PagedVolume* volume, const Region& region, uint32_t baseNodeSize = 32) :
-			_region(region), _volume(volume), _octree(this, baseNodeSize) {
-	}
+	OctreeVolume(PagedVolume* volume, const Region& region, uint32_t baseNodeSize = 32);
 
 	const Region& getRegion() const;
 
@@ -98,20 +72,12 @@ public:
 	/**
 	 * @brief Set voxel doesn't just pass straight through, it also validates the position and marks the voxel as modified.
 	 */
-	void setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& value, bool markAsModified) {
-		core_assert_msg(getRegion().containsPoint(x, y, z), "Attempted to write to a voxel which is outside of the volume");
-		pagedVolume()->setVoxel(x, y, z, value);
-		if (markAsModified) {
-			octree().markDataAsModified(x, y, z, octree().time());
-		}
-	}
+	void setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& value, bool markAsModified);
 
 	/**
 	 * @brief Marks a region as modified so it will be regenerated later.
 	 */
-	inline void markAsModified(const Region& region) {
-		octree().markDataAsModified(region, octree().time());
-	}
+	void markAsModified(const Region& region);
 
 	/**
 	 * @brief Should be called before rendering a frame to update the meshes and octree structure.
@@ -119,9 +85,7 @@ public:
 	 * @param viewPosition The position of the camera.
 	 * @param lodThreshold Controls the point at which we switch to a different level of detail.
 	 */
-	inline void update(long dt, const glm::vec3& viewPosition, float lodThreshold) {
-		octree().update(dt, viewPosition, lodThreshold);
-	}
+	void update(long dt, const glm::vec3& viewPosition, float lodThreshold);
 
 	BackgroundTaskProcessor _backgroundTaskProcessor;
 
@@ -155,6 +119,14 @@ inline Octree& OctreeVolume::octree() {
 
 inline OctreeNode* OctreeVolume::rootNode() {
 	return octree().rootNode();
+}
+
+inline void OctreeVolume::markAsModified(const Region& region) {
+	octree().markDataAsModified(region, octree().time());
+}
+
+inline void OctreeVolume::update(long dt, const glm::vec3& viewPosition, float lodThreshold) {
+	octree().update(dt, viewPosition, lodThreshold);
 }
 
 }
