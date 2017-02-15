@@ -86,15 +86,20 @@ std::string FlatCompiler::GetUsageString(const char* program_name) const {
       "  --escape-proto-ids Disable appending '_' in namespaces names.\n"
       "  --gen-object-api   Generate an additional object-based API.\n"
       "  --cpp-ptr-type T   Set object API pointer type (default std::unique_ptr)\n"
+      "  --no-js-exports    Removes Node.js style export lines in JS.\n"
+      "  --goog-js-export   Uses goog.exports* for closure compiler exporting in JS.\n"
       "  --raw-binary       Allow binaries without file_indentifier to be read.\n"
       "                     This may crash flatc given a mismatched schema.\n"
       "  --proto            Input is a .proto, translate to .fbs.\n"
       "  --grpc             Generate GRPC interfaces for the specified languages\n"
       "  --schema           Serialize schemas instead of JSON (use with -b)\n"
+      "  --bfbs-comments    Add doc comments to the binary schema files.\n"
       "  --conform FILE     Specify a schema the following schemas should be\n"
       "                     an evolution of. Gives errors if not.\n"
       "  --conform-includes Include path for the schema given with --conform\n"
       "    PATH             \n"
+      "  --include-prefix   Prefix this path to any generated include statements.\n"
+      "    PATH\n"
       "FILEs may be schemas, or JSON files (conforming to preceding schema)\n"
       "FILEs after the -- must be binary flatbuffer format files.\n"
       "Output files are named using the base file name of the input,\n"
@@ -140,12 +145,19 @@ int FlatCompiler::Compile(int argc, const char** argv) {
       } else if (arg == "--conform-includes") {
         if (++argi >= argc) Error("missing path following" + arg, true);
         conform_include_directories.push_back(argv[argi]);
+      } else if (arg == "--include-prefix") {
+        if (++argi >= argc) Error("missing path following" + arg, true);
+        opts.include_prefix = argv[argi];
+        if (opts.include_prefix.back() != '/' &&
+            opts.include_prefix.back() != '\\') opts.include_prefix += "/";
       } else if(arg == "--strict-json") {
         opts.strict_json = true;
       } else if(arg == "--allow-non-utf8") {
         opts.allow_non_utf8 = true;
       } else if(arg == "--no-js-exports") {
         opts.skip_js_exports = true;
+      } else if(arg == "--goog-js-export") {
+        opts.use_goog_js_export_format = true;
       } else if(arg == "--defaults-json") {
         opts.output_default_scalars_in_json = true;
       } else if (arg == "--unknown-json") {
@@ -193,6 +205,8 @@ int FlatCompiler::Compile(int argc, const char** argv) {
         exit(0);
       } else if(arg == "--grpc") {
         grpc_enabled = true;
+      } else if(arg == "--bfbs-comments") {
+        opts.binary_schema_comments = true;
       } else {
         for (size_t i = 0; i < params_.num_generators; ++i) {
           if (arg == params_.generators[i].generator_opt_long ||

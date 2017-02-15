@@ -70,7 +70,8 @@ class CppGenerator : public BaseGenerator {
       const auto basename =
           flatbuffers::StripPath(flatbuffers::StripExtension(it->first));
       if (basename != file_name_) {
-        code_ += "#include \"" + basename + "_generated.h\"";
+        code_ += "#include \"" + parser_.opts.include_prefix + basename +
+                 "_generated.h\"";
         num_includes++;
       }
     }
@@ -650,6 +651,8 @@ class CppGenerator : public BaseGenerator {
       code_ += "  flatbuffers::NativeTable *table;";
       code_ += "";
       code_ += "  {{NAME}}Union() : type({{NONE}}), table(nullptr) {}";
+      code_ += "  {{NAME}}Union({{NAME}}Union&& u):";
+      code_ += "    type(std::move(u.type)), table(std::move(u.table)) {}";
       code_ += "  {{NAME}}Union(const {{NAME}}Union &);";
       code_ += "  {{NAME}}Union &operator=(const {{NAME}}Union &);";
       code_ += "  ~{{NAME}}Union() { Reset(); }";
@@ -1356,8 +1359,12 @@ class CppGenerator : public BaseGenerator {
         }
       }
 
+      // Need to call "Create" with the struct namespace.
+      const auto qualified_create_name = struct_def.defined_namespace->GetFullyQualifiedName("Create");
+      code_.SetValue("CREATE_NAME", TranslateNameSpace(qualified_create_name));
+
       code_ += ") {";
-      code_ += "  return Create{{STRUCT_NAME}}(";
+      code_ += "  return {{CREATE_NAME}}{{STRUCT_NAME}}(";
       code_ += "      _fbb\\";
       for (auto it = struct_def.fields.vec.begin();
            it != struct_def.fields.vec.end(); ++it) {
@@ -1658,8 +1665,11 @@ class CppGenerator : public BaseGenerator {
         }
         code_ += "  auto _" + field.name + " = " + GenCreateParam(field) + ";";
       }
+      // Need to call "Create" with the struct namespace.
+      const auto qualified_create_name = struct_def.defined_namespace->GetFullyQualifiedName("Create");
+      code_.SetValue("CREATE_NAME", TranslateNameSpace(qualified_create_name));
 
-      code_ += "  return Create{{STRUCT_NAME}}(";
+      code_ += "  return {{CREATE_NAME}}{{STRUCT_NAME}}(";
       code_ += "      _fbb\\";
       for (auto it = struct_def.fields.vec.begin();
            it != struct_def.fields.vec.end(); ++it) {
