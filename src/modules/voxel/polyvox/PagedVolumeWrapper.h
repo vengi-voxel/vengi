@@ -102,6 +102,17 @@ public:
 		_pagedVolume->setVoxels(x, z, voxels, amount);
 		return true;
 	}
+
+	inline bool setVoxels(int x, int y, int z, const Voxel* voxels, int amount) {
+		for (int i = 0; i < amount; ++i) {
+			if (_validRegion.containsPoint(x, y + i, z)) {
+				_chunk->setVoxel(x - _validRegion.getLowerX(), y - _validRegion.getLowerY(), z - _validRegion.getLowerZ(), voxels[y]);
+			} else {
+				_pagedVolume->setVoxel(x, y, z, voxels[y]);
+			}
+		}
+		return true;
+	}
 };
 
 }
