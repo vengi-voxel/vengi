@@ -20,35 +20,27 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_X11
+#ifndef SDL_wasapi_h_
+#define SDL_wasapi_h_
 
-#include "SDL_x11video.h"
-#include "SDL_x11touch.h"
-#include "SDL_x11xinput2.h"
-#include "../../events/SDL_touch_c.h"
+#include "../SDL_sysaudio.h"
 
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
 
-void
-X11_InitTouch(_THIS)
+struct SDL_PrivateAudioData
 {
-    if (X11_Xinput2IsMultitouchSupported()) {
-        X11_InitXinput2Multitouch(_this);
-    }
-}
+    IMMDevice *device;
+    WAVEFORMATEX *waveformat;
+    IAudioClient *client;
+    IAudioRenderClient *render;
+    IAudioCaptureClient *capture;
+    SDL_AudioStream *capturestream;
+    HANDLE task;
+    SDL_bool coinitialized;
+    int framesize;
+};
 
-void
-X11_QuitTouch(_THIS)
-{
-    SDL_TouchQuit();
-}
-
-void
-X11_ResetTouch(_THIS)
-{
-    X11_QuitTouch(_this);
-    X11_InitTouch(_this);
-}
-
-#endif /* SDL_VIDEO_DRIVER_X11 */
+#endif /* SDL_wasapi_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -67,6 +67,7 @@ typedef struct SDL_AudioDriverImpl
     void (*DetectDevices) (void);
     int (*OpenDevice) (_THIS, void *handle, const char *devname, int iscapture);
     void (*ThreadInit) (_THIS); /* Called by audio thread at start */
+    void (*ThreadDeinit) (_THIS); /* Called by audio thread at start */
     void (*WaitDevice) (_THIS);
     void (*PlayDevice) (_THIS);
     int (*GetPendingBytes) (_THIS);
@@ -178,77 +179,31 @@ typedef struct AudioBootStrap
     int demand_only;  /* 1==request explicitly, or it won't be available. */
 } AudioBootStrap;
 
-#if SDL_AUDIO_DRIVER_PULSEAUDIO
+/* Not all of these are available in a given build. Use #ifdefs, etc. */
 extern AudioBootStrap PULSEAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_ALSA
 extern AudioBootStrap ALSA_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_SNDIO
 extern AudioBootStrap SNDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_BSD
 extern AudioBootStrap BSD_AUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_OSS
 extern AudioBootStrap DSP_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_QSA
 extern AudioBootStrap QSAAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_SUNAUDIO
 extern AudioBootStrap SUNAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_ARTS
 extern AudioBootStrap ARTS_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_ESD
 extern AudioBootStrap ESD_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_NACL
 extern AudioBootStrap NACLAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_NAS
 extern AudioBootStrap NAS_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_XAUDIO2
+extern AudioBootStrap WASAPI_bootstrap;
 extern AudioBootStrap XAUDIO2_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_DSOUND
 extern AudioBootStrap DSOUND_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_WINMM
 extern AudioBootStrap WINMM_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_PAUDIO
 extern AudioBootStrap PAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_HAIKU
 extern AudioBootStrap HAIKUAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_COREAUDIO
 extern AudioBootStrap COREAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_DISK
 extern AudioBootStrap DISKAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_DUMMY
 extern AudioBootStrap DUMMYAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_FUSIONSOUND
 extern AudioBootStrap FUSIONSOUND_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_ANDROID
 extern AudioBootStrap ANDROIDAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_PSP
 extern AudioBootStrap PSPAUDIO_bootstrap;
-#endif
-#if SDL_AUDIO_DRIVER_EMSCRIPTEN
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
-#endif
-
-
 
 #endif /* SDL_sysaudio_h_ */
 
