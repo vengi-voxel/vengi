@@ -87,21 +87,21 @@ namespace glm
 		vec<3, T, P> const & v,
 		T const & angle);
 		
-	//! Rotate a four dimentionnals vector around the X axis.
+	//! Rotate a four dimensional vector around the X axis.
 	//! From GLM_GTX_rotate_vector extension.
 	template<typename T, precision P>
 	GLM_FUNC_DECL vec<4, T, P> rotateX(
 		vec<4, T, P> const & v,
 		T const & angle);
 		
-	//! Rotate a four dimensional vector around the X axis.
+	//! Rotate a four dimensional vector around the Y axis.
 	//! From GLM_GTX_rotate_vector extension.
 	template<typename T, precision P>
 	GLM_FUNC_DECL vec<4, T, P> rotateY(
 		vec<4, T, P> const & v,
 		T const & angle);
 		
-	//! Rotate a four dimensional vector around the X axis.
+	//! Rotate a four dimensional vector around the Z axis.
 	//! From GLM_GTX_rotate_vector extension.
 	template<typename T, precision P>
 	GLM_FUNC_DECL vec<4, T, P> rotateZ(
