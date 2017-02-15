@@ -255,13 +255,13 @@ bool OctreeRenderer::init(voxel::PagedVolume* volume, const voxel::Region& regio
 	return true;
 }
 
-void OctreeRenderer::update(long dt, const video::Camera& camera) {
+int OctreeRenderer::update(long dt, const video::Camera& camera) {
 	if (_volume == nullptr) {
-		return;
+		return 0;
 	}
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	_shadow.calculateShadowData(camera, true, maxDepthBuffers, _depthBuffer.dimension());
-	_volume->update(dt, camera.position(), 1.0f);
+	return _volume->update(dt, camera.position(), 1.0f);
 }
 
 void OctreeRenderer::shutdown() {

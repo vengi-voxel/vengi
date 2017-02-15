@@ -35,8 +35,9 @@ public:
 
 	/**
 	 * @param lodThreshold Controls the point at which we switch to a different level of detail.
+	 * @return the amount of active nodes
 	 */
-	void update(TimeStamp dt, const glm::vec3& viewPosition, float lodThreshold);
+	int update(TimeStamp dt, const glm::vec3& viewPosition, float lodThreshold);
 
 	TimeStamp time() const;
 
@@ -71,7 +72,7 @@ public:
 
 private:
 	void buildOctreeNodeTree(NodeIndex parent);
-	void determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewPosition, float lodThreshold);
+	int determineActiveNodes(OctreeNode* octreeNode, const glm::vec3& viewPosition, float lodThreshold);
 
 	OctreeNode* nodeFromIndex(NodeIndex index) const;
 

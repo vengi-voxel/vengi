@@ -162,10 +162,10 @@ NodeIndex Octree::createNode(const Region& region, NodeIndex parent) {
 	return index;
 }
 
-void Octree::update(TimeStamp dt, const glm::vec3& viewPosition, float lodThreshold) {
+int Octree::update(TimeStamp dt, const glm::vec3& viewPosition, float lodThreshold) {
 	_time += dt;
 	// This isn't a visitor because visitors only visit active nodes, and here we are setting them.
-	determineActiveNodes(rootNode(), viewPosition, lodThreshold);
+	const int activeNodes = determineActiveNodes(rootNode(), viewPosition, lodThreshold);
 
 	acceptVisitor(ScheduleUpdateIfNeededVisitor(this, viewPosition));
 
@@ -196,6 +196,8 @@ void Octree::update(TimeStamp dt, const glm::vec3& viewPosition, float lodThresh
 	determineWhetherToRenderNode(_rootNodeIndex);
 
 	acceptVisitor(PropagateTimestampsVisitor());
+
+	return activeNodes;
 }
 
 void Octree::markDataAsModified(int32_t x, int32_t y, int32_t z, TimeStamp newTimeStamp) {
@@ -277,9 +279,10 @@ void Octree::markAsModified(NodeIndex index, const Region& region, TimeStamp new
 	}
 }
 
-void Octree::determineActiveNodes(OctreeNode* node, const glm::vec3& viewPosition, float lodThreshold) {
+int Octree::determineActiveNodes(OctreeNode* node, const glm::vec3& viewPosition, float lodThreshold) {
 	// FIXME - Should have an early out to set active to false if parent is false.
 
+	int n = 0;
 	OctreeNode* parentNode = node->getParentNode();
 	if (parentNode != nullptr) {
 		const glm::vec3& center = parentNode->region().getCentre();
@@ -291,8 +294,12 @@ void Octree::determineActiveNodes(OctreeNode* node, const glm::vec3& viewPositio
 		// high to ever generate meshes, so we set here a maximum height for which nodes can be set to inactive.
 		const bool active = projectedSize > lodThreshold || node->_height >= _minimumLOD;
 		node->setActive(active);
+		if (active) {
+			++n;
+		}
 	} else {
 		node->setActive(true);
+		++n;
 	}
 
 	node->_isLeaf = true;
@@ -300,7 +307,7 @@ void Octree::determineActiveNodes(OctreeNode* node, const glm::vec3& viewPositio
 	foreachChild() {
 		OctreeNode* childNode = node->getChildNode(ix, iy, iz);
 		if (childNode != nullptr) {
-			determineActiveNodes(childNode, viewPosition, lodThreshold);
+			n += determineActiveNodes(childNode, viewPosition, lodThreshold);
 		}
 
 		// If we have (or have just created) an active and valid child then we are not a leaf.
@@ -308,6 +315,7 @@ void Octree::determineActiveNodes(OctreeNode* node, const glm::vec3& viewPositio
 			node->_isLeaf = false;
 		}
 	}
+	return n;
 }
 
 void Octree::determineWhetherToRenderNode(NodeIndex index) {

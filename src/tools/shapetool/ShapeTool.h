@@ -22,7 +22,7 @@ protected:
 	using Super = ui::UIApp;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
-	frontend::OctreeRenderer _worldRenderer;
+	frontend::OctreeRenderer _octreeRenderer;
 	voxel::WorldPager _pager;
 	voxel::PagedVolume *_volumeData = nullptr;
 	voxel::BiomeManager _biomeManager;
@@ -32,11 +32,13 @@ protected:
 	core::VarPtr _rotationSpeed;
 	frontend::ClientEntityPtr _entity;
 	video::ProfilerGPU _worldTimer = {"World"};
+	ProfilerCPU _octreeTimer = {"Octree"};
 	ProfilerCPU _frameTimer = {"Frame"};
 	ProfilerCPU _beforeUiTimer = {"BeforeUI"};
 
 	bool _lineModeRendering = false;
 	uint8_t _moveMask = 0;
+	int _activeNodes = 0;
 
 	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;

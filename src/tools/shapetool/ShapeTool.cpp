@@ -81,7 +81,7 @@ core::AppState ShapeTool::onInit() {
 	_pager.init(_volumeData, &_biomeManager, &_ctx);
 
 	const voxel::Region region(0, 0, 0, 255, 127, 255);
-	if (!_worldRenderer.init(_volumeData, region, 32)) {
+	if (!_octreeRenderer.init(_volumeData, region, 32)) {
 		return core::AppState::Cleanup;
 	}
 	_camera.init(glm::ivec2(), dimension());
@@ -111,18 +111,22 @@ core::AppState ShapeTool::onInit() {
 
 void ShapeTool::beforeUI() {
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
-	_worldRenderer.update(_deltaFrame, _camera);
 
 	const float speed = _speed->floatVal() * static_cast<float>(_deltaFrame);
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
 	_camera.update(_deltaFrame);
 
+	{
+		ScopedProfiler<ProfilerCPU> wt(_octreeTimer);
+		_activeNodes = _octreeRenderer.update(_deltaFrame, _camera);
+	}
+
 	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::WireFrame);
 	}
-	_worldRenderer.render(_camera);
+	_octreeRenderer.render(_camera);
 	if (_lineModeRendering) {
 		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
 	}
@@ -131,10 +135,12 @@ void ShapeTool::beforeUI() {
 void ShapeTool::afterRootWidget() {
 	const glm::vec3& pos = _camera.position();
 	const int x = 5;
-	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
-	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
-	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
+	enqueueShowStr(x, core::Color::White, "Frame: %s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
+	enqueueShowStr(x, core::Color::White, "Before: %s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
+	enqueueShowStr(x, core::Color::White, "Octree: %s: %f, max: %f", _octreeTimer.name().c_str(), _octreeTimer.avg(), _octreeTimer.maximum());
+	enqueueShowStr(x, core::Color::White, "Render: %s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
+	enqueueShowStr(x, core::Color::White, "Nodes: %i", _activeNodes);
 
 	enqueueShowStr(x, core::Color::Gray, "+/-: change move speed");
 	enqueueShowStr(x, core::Color::Gray, "l: line mode rendering");
@@ -155,7 +161,7 @@ core::AppState ShapeTool::onRunning() {
 
 core::AppState ShapeTool::onCleanup() {
 	_meshPool->shutdown();
-	_worldRenderer.shutdown();
+	_octreeRenderer.shutdown();
 	_worldTimer.shutdown();
 	_axis.shutdown();
 	_entity = frontend::ClientEntityPtr();

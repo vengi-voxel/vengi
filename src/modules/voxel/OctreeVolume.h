@@ -84,8 +84,9 @@ public:
 	 * @param dt The milliseconds delta since last frame.
 	 * @param viewPosition The position of the camera.
 	 * @param lodThreshold Controls the point at which we switch to a different level of detail.
+	 * @return Amount of active nodes
 	 */
-	void update(long dt, const glm::vec3& viewPosition, float lodThreshold);
+	int update(long dt, const glm::vec3& viewPosition, float lodThreshold);
 
 	BackgroundTaskProcessor _backgroundTaskProcessor;
 
@@ -125,8 +126,8 @@ inline void OctreeVolume::markAsModified(const Region& region) {
 	octree().markDataAsModified(region, octree().time());
 }
 
-inline void OctreeVolume::update(long dt, const glm::vec3& viewPosition, float lodThreshold) {
-	octree().update(dt, viewPosition, lodThreshold);
+inline int OctreeVolume::update(long dt, const glm::vec3& viewPosition, float lodThreshold) {
+	return octree().update(dt, viewPosition, lodThreshold);
 }
 
 }

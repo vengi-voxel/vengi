@@ -65,7 +65,7 @@ private:
 
 public:
 	bool init(voxel::PagedVolume* volume, const voxel::Region& region, int baseNodeSize = 32);
-	void update(long dt, const video::Camera& camera);
+	int update(long dt, const video::Camera& camera);
 	void shutdown();
 
 	void render(const video::Camera& camera);
