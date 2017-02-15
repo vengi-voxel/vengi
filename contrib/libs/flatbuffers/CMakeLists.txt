@@ -1,6 +1,7 @@
 set(SRCS
 	dummy.cpp
 	flatbuffers/flatbuffers.h
+	flatbuffers/flexbuffers.h
 	flatbuffers/hash.h
 	flatbuffers/idl.h
 	flatbuffers/util.h
