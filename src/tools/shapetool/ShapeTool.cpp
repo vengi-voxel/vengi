@@ -11,6 +11,18 @@
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 
+/**
+ * PagedVolume
+ * Octree -> [ Regions[], OctreeNodes ]
+ * OctreeNodes -> [ Region, depth/height (for LOD), Meshes with LODs ]
+ * OctreeVolume -> [ Octree, PagedVolume, currentPosition ]
+ *
+ * UpdateCurrentPosition => Recalc Octree Regions and create nodes
+ *
+ * Parse: How?
+ * LODs: Start with low level mesh - World Generator must be able to get a step-offset
+ *       That way we have "something" quite fast
+ */
 ShapeTool::ShapeTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider), _camera(), _meshPool(meshPool) {
 	init(ORGANISATION, "shapetool");
