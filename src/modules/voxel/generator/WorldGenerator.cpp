@@ -25,6 +25,7 @@ int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeM
 	static constexpr Voxel air;
 
 	// TODO: apply city gradient from biome manager
+	// TODO: support region y parameters
 
 	voxels[0] = dirt;
 	for (int y = ni - 1; y >= 1; --y) {
