@@ -23,7 +23,8 @@ static const char *NoiseTypeStr[] = {
 	"iq noise",
 	"iq noise scaled",
 	"analytical derivatives",
-	"noise curl noise (time)"
+	"noise curl noise (time)",
+	"voronoi"
 };
 static_assert((int)SDL_arraysize(NoiseTypeStr) == (int)NoiseType::Max, "String array size doesn't match noise types");
 
@@ -176,6 +177,8 @@ float NoiseToolWindow::getNoise(NoiseType noiseType, int x, int y) {
 		return (noise::dnoise(position * 5.0f).y + noise::dnoise(position * 5.0f).z) * 0.5f;
 	case NoiseType::noiseCurlNoise:
 		return noise::norm(noise::noise(position + glm::vec2(noise::curlNoise(position, _time).x)));
+	case NoiseType::voronoi:
+		return noise::norm(noise::voronoi(glm::dvec3(position, 0.0), true, _offset, _frequency, _octaves));
 	case NoiseType::Max:
 		break;
 	}

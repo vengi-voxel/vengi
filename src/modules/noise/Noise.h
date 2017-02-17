@@ -94,4 +94,9 @@ inline void SeamlessNoise2DRGB(uint8_t* buffer, int size, int octaves = 1, float
 	}
 }
 
+extern int intValueNoise(const glm::ivec3& pos, int seed = 0);
+extern double doubleValueNoise(const glm::ivec3& pos, int seed = 0);
+
+extern double voronoi(const glm::dvec3& pos, bool enableDistance, double displacement = 0.0, double frequency = 1.0, int seed = 0);
+
 }

@@ -25,6 +25,7 @@ enum class NoiseType {
 	iqNoiseScaled,
 	analyticalDerivatives,
 	noiseCurlNoise,
+	voronoi,
 
 	Max
 };
