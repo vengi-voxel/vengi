@@ -133,7 +133,7 @@ void ShapeRenderer::renderAll(const video::Camera& camera) const {
 		if (_vertexIndex[meshIndex] == -1) {
 			continue;
 		}
-		core_assert(_vbo[meshIndex].bind());
+		core_assert_always(_vbo[meshIndex].bind());
 		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
 		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
 		_vbo[meshIndex].unbind();
