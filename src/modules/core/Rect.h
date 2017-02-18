@@ -145,6 +145,22 @@ public:
 		return glm::tvec2<TYPE>(getMinX(), getMinZ());
 	}
 
+	inline glm::tvec2<TYPE> upperLeft() const {
+		return glm::tvec2<TYPE>(getMinX(), getMinZ());
+	}
+
+	inline glm::tvec2<TYPE> upperRight() const {
+		return glm::tvec2<TYPE>(getMaxX(), getMinZ());
+	}
+
+	inline glm::tvec2<TYPE> lowerRight() const {
+		return glm::tvec2<TYPE>(getMaxX(), getMaxZ());
+	}
+
+	inline glm::tvec2<TYPE> lowerLeft() const {
+		return glm::tvec2<TYPE>(getMinX(), getMaxZ());
+	}
+
 	inline glm::tvec2<TYPE> size() const {
 		return maxs() - mins();
 	}
