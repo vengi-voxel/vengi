@@ -123,6 +123,19 @@ void ShapeBuilder::aabb(const core::AABB<float>& aabb, bool renderGrid, float st
 	}
 }
 
+void ShapeBuilder::geom(const std::vector<glm::vec3>& vert, const std::vector<uint32_t>& indices, Primitive primitive) {
+	setPrimitive(primitive);
+	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
+
+	for (const glm::vec3& v : vert) {
+		addVertex(v, glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+	}
+
+	for (uint32_t i : indices) {
+		addIndex(startIndex + i);
+	}
+}
+
 void ShapeBuilder::plane(const core::Plane& plane, bool normals) {
 	setPrimitive(Primitive::Lines);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();

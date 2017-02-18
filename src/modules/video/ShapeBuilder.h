@@ -79,6 +79,7 @@ public:
 	 */
 	void plane(uint32_t tesselation = 10, float scale = 1.0f);
 	void frustum(const Camera& camera, int splitFrustum = 0);
+	void geom(const std::vector<glm::vec3>& vert, const std::vector<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
 	void plane(const core::Plane& plane, bool normal);
 	/**
 	 * Geometry layout for spheres is as follows (for 5 slices, 4 stacks):
