@@ -26,6 +26,7 @@
 // TODO: voxelizer via assimp
 // TODO: extrude
 // TODO: render locked axis as plane
+// TODO: mirror-axis based editing
 // TODO: scale/move/rotate selections - not only the cursor or whole model
 // TODO: tree parameter window
 // TODO: lsystem parameter window needs the voxel options and should show information about the used alphabet
