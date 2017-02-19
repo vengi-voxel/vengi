@@ -238,10 +238,38 @@ void Model::redo() {
 }
 
 bool Model::placeCursor(voxel::Region* modifiedRegion) {
-	if (_shapeHandler.placeCursor(modelVolume(), cursorPositionVolume(), _cursorPos, modifiedRegion)) {
-		return true;
+	const glm::ivec3& pos = _cursorPos;
+	const voxel::RawVolume* cursorVolume = cursorPositionVolume();
+	const voxel::Region& cursorRegion = cursorVolume->getRegion();
+	const glm::ivec3 mins = -cursorRegion.getCentre() + pos;
+	const glm::ivec3 maxs = mins + cursorRegion.getDimensionsInCells();
+	const voxel::Region destReg(mins, maxs);
+
+	int cnt = 0;
+	for (int32_t z = cursorRegion.getLowerZ(); z <= cursorRegion.getUpperZ(); ++z) {
+		const int destZ = destReg.getLowerZ() + z - cursorRegion.getLowerZ();
+		for (int32_t y = cursorRegion.getLowerY(); y <= cursorRegion.getUpperY(); ++y) {
+			const int destY = destReg.getLowerY() + y - cursorRegion.getLowerY();
+			for (int32_t x = cursorRegion.getLowerX(); x <= cursorRegion.getUpperX(); ++x) {
+				const voxel::Voxel& voxel = cursorVolume->getVoxel(x, y, z);
+				if (isAir(voxel.getMaterial())) {
+					continue;
+				}
+				const int destX = destReg.getLowerX() + x - cursorRegion.getLowerX();
+				if (setVoxel(glm::ivec3(destX, destY, destZ), voxel)) {
+					++cnt;
+				}
+			}
+		}
 	}
-	return false;
+
+	if (cnt <= 0) {
+		return false;
+	}
+	if (modifiedRegion != nullptr) {
+		*modifiedRegion = destReg;
+	}
+	return true;
 }
 
 void Model::resetLastTrace() {
@@ -302,6 +330,21 @@ bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	const bool placed = modelVolume()->setVoxel(pos, voxel);
 	if (placed) {
 		_lastPlacement = pos;
+
+		if (_mirrorAxis != Axis::None) {
+			const int index = getIndexForMirrorAxis(_mirrorAxis);
+			const int delta = _mirrorPos[index] - pos[index];
+			glm::ivec3 mirror(glm::uninitialize);
+			for (int i = 0; i < 3; ++i) {
+				if (i == index) {
+					mirror[i] = _mirrorPos[i] + delta;
+				} else {
+					mirror[i] = pos[i];
+				}
+			}
+			voxel::RawVolumeWrapper wrapper(modelVolume());
+			wrapper.setVoxel(mirror, voxel);
+		}
 	}
 	return placed;
 }
@@ -349,6 +392,17 @@ void Model::init() {
 	_rawVolumeRenderer.init();
 	_rawVolumeSelectionRenderer.init();
 	_shapeRenderer.init();
+
+	_mirrorMeshIndex = -1;
+	for (int i = 0; i < (int)SDL_arraysize(_planeMeshIndex); ++i) {
+		_planeMeshIndex[i] = -1;
+	}
+
+	_lastAction = Action::None;
+	_action = Action::None;
+
+	_lockedAxis = Axis::None;
+	_mirrorAxis = Axis::None;
 }
 
 void Model::update() {
@@ -516,9 +570,9 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	const voxel::Region& cursorRegion = cursorPositionVolume()->getRegion();
 	_rawVolumeRenderer.setOffset(CursorVolumeIndex, -cursorRegion.getCentre() + _cursorPos);
 
-	updateAxisPlane(Axis::X);
-	updateAxisPlane(Axis::Y);
-	updateAxisPlane(Axis::Z);
+	updateLockedPlane(Axis::X);
+	updateLockedPlane(Axis::Y);
+	updateLockedPlane(Axis::Z);
 }
 
 void Model::markCursorExtract() {
@@ -558,37 +612,30 @@ bool Model::trace(const video::Camera& camera) {
 	return true;
 }
 
-void Model::updateAxisPlane(Axis axis) {
-	if (axis == Axis::None) {
-		return;
-	}
-	int index;
+int Model::getIndexForAxis(Axis axis) const {
 	if (axis == Axis::X) {
-		index = 0;
+		return 0;
 	} else if (axis == Axis::Y) {
-		index = 1;
-	} else {
-		index = 2;
+		return 1;
 	}
-	int32_t& meshIndex = _planeMeshIndex[index];
-	if ((_lockedAxis & axis) == Axis::None) {
-		if (meshIndex != -1) {
-			_shapeRenderer.deleteMesh(meshIndex);
-			meshIndex = -1;
-		}
-		return;
+	return 2;
+}
+
+int Model::getIndexForMirrorAxis(Axis axis) const {
+	if (axis == Axis::X) {
+		return 2;
+	} else if (axis == Axis::Y) {
+		return 0;
 	}
+	return 1;
+}
 
-	const glm::vec4 colors[] = {
-		core::Color::LightRed,
-		core::Color::LightGreen,
-		core::Color::LightBlue
-	};
-
+void Model::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, Axis axis, const glm::vec4& color) {
 	const voxel::Region& region = modelVolume()->getRegion();
+	const int index = mirror ? getIndexForMirrorAxis(axis) : getIndexForAxis(axis);
 	glm::vec3 mins = region.getLowerCorner();
 	glm::vec3 maxs = region.getUpperCorner();
-	mins[index] = maxs[index] = _cursorPos[index];
+	mins[index] = maxs[index] = pos[index];
 	const glm::vec3& ll = mins;
 	const glm::vec3& ur = maxs;
 	glm::vec3 ul(glm::uninitialize);
@@ -605,12 +652,68 @@ void Model::updateAxisPlane(Axis axis) {
 	// lower left (0), upper right (2), lower right (3)
 	const std::vector<uint32_t> indices { 0, 1, 2, 0, 2, 3, 2, 1, 0, 3, 2, 0 };
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(colors[index], 0.3f));
+	_shapeBuilder.setColor(color);
 	_shapeBuilder.geom(vecs, indices);
+}
+
+void Model::updateLockedPlane(Axis axis) {
+	if (axis == Axis::None) {
+		return;
+	}
+	const int index = getIndexForAxis(axis);
+	int32_t& meshIndex = _planeMeshIndex[index];
+	if ((_lockedAxis & axis) == Axis::None) {
+		if (meshIndex != -1) {
+			_shapeRenderer.deleteMesh(meshIndex);
+			meshIndex = -1;
+		}
+		return;
+	}
+
+	const glm::vec4 colors[] = {
+		core::Color::LightRed,
+		core::Color::LightGreen,
+		core::Color::LightBlue
+	};
+	updateShapeBuilderForPlane(false, _cursorPos, axis, core::Color::alpha(colors[index], 0.3f));
 	if (meshIndex == -1) {
 		meshIndex = _shapeRenderer.createMesh(_shapeBuilder);
 	} else {
 		_shapeRenderer.update(meshIndex, _shapeBuilder);
+	}
+}
+
+Axis Model::mirrorAxis() const {
+	return _mirrorAxis;
+}
+
+void Model::setMirrorAxis(Axis axis, const glm::ivec3& mirrorPos) {
+	if (_mirrorAxis == axis) {
+		if (_mirrorPos != mirrorPos) {
+			_mirrorPos = mirrorPos;
+			updateMirrorPlane();
+		}
+		return;
+	}
+	_mirrorPos = mirrorPos;
+	_mirrorAxis = axis;
+	updateMirrorPlane();
+}
+
+void Model::updateMirrorPlane() {
+	if (_mirrorAxis == Axis::None) {
+		if (_mirrorMeshIndex != -1) {
+			_shapeRenderer.deleteMesh(_mirrorMeshIndex);
+			_mirrorMeshIndex = -1;
+		}
+		return;
+	}
+
+	updateShapeBuilderForPlane(true, _mirrorPos, _mirrorAxis, core::Color::alpha(core::Color::LightBrown, 0.1f));
+	if (_mirrorMeshIndex == -1) {
+		_mirrorMeshIndex = _shapeRenderer.createMesh(_shapeBuilder);
+	} else {
+		_shapeRenderer.update(_mirrorMeshIndex, _shapeBuilder);
 	}
 }
 
@@ -620,9 +723,9 @@ void Model::setLockedAxis(Axis axis, bool unlock) {
 	} else {
 		_lockedAxis |= axis;
 	}
-	updateAxisPlane(Axis::X);
-	updateAxisPlane(Axis::Y);
-	updateAxisPlane(Axis::Z);
+	updateLockedPlane(Axis::X);
+	updateLockedPlane(Axis::Y);
+	updateLockedPlane(Axis::Z);
 }
 
 }

@@ -165,6 +165,10 @@ bool VoxEditWindow::init() {
 	_lockedY = getWidgetByType<tb::TBCheckBox>("locky");
 	_lockedZ = getWidgetByType<tb::TBCheckBox>("lockz");
 
+	_mirrorX = getWidgetByType<tb::TBRadioButton>("mirrorx");
+	_mirrorY = getWidgetByType<tb::TBRadioButton>("mirrory");
+	_mirrorZ = getWidgetByType<tb::TBRadioButton>("mirrorz");
+
 	_showAABB = getWidgetByType<tb::TBCheckBox>("optionshowaabb");
 	_showGrid = getWidgetByType<tb::TBCheckBox>("optionshowgrid");
 	_showAxis = getWidgetByType<tb::TBCheckBox>("optionshowaxis");
@@ -295,6 +299,12 @@ void VoxEditWindow::executeMode() {
 		VOXEDIT_LOCK(voxedit::Axis::Y)
 		VOXEDIT_LOCK(voxedit::Axis::Z)
 #undef VOXEDIT_LOCK
+	} else if (_mode == ModifierMode::Mirror) {
+#define VOXEDIT_MIRROR(axis) if (_axis == axis) { _scene->setMirrorAxis(axis, _scene->cursorPosition()); _mirrorDirty = true; }
+		VOXEDIT_MIRROR(voxedit::Axis::X)
+		VOXEDIT_MIRROR(voxedit::Axis::Y)
+		VOXEDIT_MIRROR(voxedit::Axis::Z)
+#undef VOXEDIT_MIRROR
 	}
 
 	_modeNumberBuf[0] = '\0';
@@ -342,6 +352,12 @@ void VoxEditWindow::movemode() {
 
 void VoxEditWindow::togglelockaxis() {
 	_mode = ModifierMode::Lock;
+	_axis = voxedit::Axis::None;
+	_modeNumberBuf[0] = '\0';
+}
+
+void VoxEditWindow::togglemirroraxis() {
+	_mode = ModifierMode::Mirror;
 	_axis = voxedit::Axis::None;
 	_modeNumberBuf[0] = '\0';
 }
@@ -649,6 +665,18 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 	} else if (ev.target->GetID() == TBIDC("lockz")) {
 		_scene->setLockedAxis(Axis::Z, ev.target->GetValue() != 1);
 		return true;
+	} else if (ev.target->GetID() == TBIDC("mirrorx")) {
+		_scene->setMirrorAxis(Axis::X, _scene->cursorPosition());
+		return true;
+	} else if (ev.target->GetID() == TBIDC("mirrory")) {
+		_scene->setMirrorAxis(Axis::Y, _scene->cursorPosition());
+		return true;
+	} else if (ev.target->GetID() == TBIDC("mirrorz")) {
+		_scene->setMirrorAxis(Axis::Z, _scene->cursorPosition());
+		return true;
+	} else if (ev.target->GetID() == TBIDC("mirrornone")) {
+		_scene->setMirrorAxis(Axis::None, _scene->cursorPosition());
+		return true;
 	} else if (ev.target->GetID() == TBIDC("cursorx")) {
 		const tb::TBStr& str = ev.target->GetText();
 		if (str.IsEmpty()) {
@@ -745,6 +773,20 @@ void VoxEditWindow::OnProcess() {
 		}
 		if (_lockedZ != nullptr) {
 			_lockedZ->SetValue((axis & voxedit::Axis::Z) != voxedit::Axis::None);
+		}
+	}
+
+	if (_mirrorDirty) {
+		_mirrorDirty = false;
+		const voxedit::Axis axis = _scene->mirrorAxis();
+		if (_mirrorX != nullptr) {
+			_mirrorX->SetValue(axis == voxedit::Axis::X);
+		}
+		if (_mirrorY != nullptr) {
+			_mirrorY->SetValue(axis == voxedit::Axis::Y);
+		}
+		if (_mirrorZ != nullptr) {
+			_mirrorZ->SetValue(axis == voxedit::Axis::Z);
 		}
 	}
 

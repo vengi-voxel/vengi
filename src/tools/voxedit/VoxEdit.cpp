@@ -25,8 +25,6 @@
 //       allows us to only reextract the chunk that was modified, not always the whole volume.
 // TODO: voxelizer via assimp
 // TODO: extrude
-// TODO: render locked axis as plane
-// TODO: mirror-axis based editing
 // TODO: scale/move/rotate selections - not only the cursor or whole model
 // TODO: tree parameter window
 // TODO: lsystem parameter window needs the voxel options and should show information about the used alphabet
@@ -187,6 +185,7 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_MAINWINDOW(scalemode, "Activates the scale mode (next keys are axis x, y, or z and the numeric scale value)");
 	COMMAND_MAINWINDOW(movemode, "Activates the move mode (next keys are axis x, y, or z and the translation values in voxels)");
 	COMMAND_MAINWINDOW(togglelockaxis, "Activates the lock mode (next key is axis x, y, or z)");
+	COMMAND_MAINWINDOW(togglemirroraxis, "Activates the mirror mode (next key is axis x, y, or z)");
 	COMMAND_MAINWINDOW(resetcamera, "Reset cameras");
 
 	return state;

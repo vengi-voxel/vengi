@@ -86,6 +86,9 @@ public:
 	voxedit::Axis lockedAxis() const;
 	void setLockedAxis(voxedit::Axis axis, bool unlock);
 
+	voxedit::Axis mirrorAxis() const;
+	void setMirrorAxis(voxedit::Axis axis, const glm::ivec3& pos);
+
 	float cameraSpeed() const;
 	void setCameraSpeed(float cameraSpeed);
 

@@ -43,6 +43,10 @@ private:
 	tb::TBCheckBox* _lockedY = nullptr;
 	tb::TBCheckBox* _lockedZ = nullptr;
 
+	tb::TBRadioButton* _mirrorX = nullptr;
+	tb::TBRadioButton* _mirrorY = nullptr;
+	tb::TBRadioButton* _mirrorZ = nullptr;
+
 	std::string _voxelizeFile;
 	std::string _loadFile;
 
@@ -61,6 +65,7 @@ private:
 	std::string _importFilter;
 	bool _fourViewAvailable = false;
 	bool _lockedDirty = false;
+	bool _mirrorDirty = false;
 
 	glm::ivec3 _lastCursorPos;
 
@@ -71,7 +76,8 @@ private:
 		Rotate,
 		Scale,
 		Move,
-		Lock
+		Lock,
+		Mirror
 	};
 	ModifierMode _mode = ModifierMode::None;
 	voxedit::Axis _axis = voxedit::Axis::None;
@@ -121,6 +127,7 @@ private:
 	void scalemode();
 	void rotatemode();
 	void togglelockaxis();
+	void togglemirroraxis();
 	void unselectall();
 	bool voxelize(const std::string& file);
 	bool importHeightmp(const std::string& file);

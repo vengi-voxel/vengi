@@ -20,7 +20,6 @@ private:
 public:
 	bool scaleCursorShape(const glm::vec3& scale, voxel::RawVolume* cursorVolume);
 	bool setCursorShape(Shape type, voxel::RawVolume* cursorVolume, bool force);
-	bool placeCursor(voxel::RawVolume* modelVolume, const voxel::RawVolume* cursorVolume, const glm::ivec3& pos, voxel::Region *region = nullptr);
 
 	const voxel::Voxel& currentVoxel() const;
 	Shape cursorShape() const;

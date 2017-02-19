@@ -94,6 +94,14 @@ void EditorScene::setLockedAxis(voxedit::Axis axis, bool unlock) {
 	m().setLockedAxis(axis, unlock);
 }
 
+voxedit::Axis EditorScene::mirrorAxis() const {
+	return m().mirrorAxis();
+}
+
+void EditorScene::setMirrorAxis(voxedit::Axis axis, const glm::ivec3& pos) {
+	m().setMirrorAxis(axis, pos);
+}
+
 void EditorScene::setSelectionType(SelectType type) {
 	m().setSelectionType(type);
 }

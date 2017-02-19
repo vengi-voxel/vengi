@@ -218,6 +218,17 @@ TBLayout: distribution: gravity, axis: y
 							TBButton: id: rotatez, @include: definitions>menubutton
 								TBSkinImage: skin: voxedit-axis-z
 
+					TBSection: value: 1, text: "Mirror axis"
+						TBLayout: position: left top, axis: x
+							TBClickLabel: text: none
+								TBRadioButton: group-id: mirrorgroup, id: mirrornone
+							TBClickLabel: text: x
+								TBRadioButton: group-id: mirrorgroup, id: mirrorx
+							TBClickLabel: text: y
+								TBRadioButton: group-id: mirrorgroup, id: mirrory
+							TBClickLabel: text: z
+								TBRadioButton: group-id: mirrorgroup, id: mirrorz
+
 					TBWidget: gravity: top bottom
 
 					TBSection: value: 0, text: "Options"

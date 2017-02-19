@@ -36,17 +36,12 @@ private:
 	SelectionHandler _selectionHandler;
 	ShapeHandler _shapeHandler;
 
-	int32_t _planeMeshIndex[3] = {-1, -1, -1};
-
-	int _initialized = 0;
-	int _size = 32;
-	int _mouseX = 0;
-	int _mouseY = 0;
-
 	glm::ivec3 _lastPlacement;
 	glm::ivec3 _cursorPos;
+	glm::ivec3 _mirrorPos;
 
 	Axis _lockedAxis = Axis::None;
+	Axis _mirrorAxis = Axis::None;
 
 	bool _empty = true;
 	bool _dirty = false;
@@ -54,14 +49,28 @@ private:
 	bool _extract = false;
 	bool _extractCursor = false;
 	bool _extractSelection = false;
+
+	int32_t _planeMeshIndex[3] = {-1, -1, -1};
+	int32_t _mirrorMeshIndex = -1;
+
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
+
+	int _initialized = 0;
+	int _size = 32;
+	int _mouseX = 0;
+	int _mouseY = 0;
 	long _lastActionExecution = 0l;
+
 	Action _lastAction = Action::None;
 	// the action to execute on mouse move
 	Action _action = Action::None;
+
 	voxel::PickResult _result;
 
+	int getIndexForAxis(Axis axis) const;
+	int getIndexForMirrorAxis(Axis axis) const;
+	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, Axis axis, const glm::vec4& color);
 	void markExtract();
 	void markCursorExtract();
 	void modified(const voxel::Region& modifiedRegion, bool markUndo = true);
@@ -157,7 +166,11 @@ public:
 
 	Axis lockedAxis() const;
 	void setLockedAxis(Axis axis, bool unlock);
-	void updateAxisPlane(Axis axis);
+	void updateLockedPlane(Axis axis);
+
+	Axis mirrorAxis() const;
+	void setMirrorAxis(Axis axis, const glm::ivec3& mirrorPos);
+	void updateMirrorPlane();
 
 	void undo();
 	void redo();
