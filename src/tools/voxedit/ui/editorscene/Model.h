@@ -7,6 +7,8 @@
 #include "voxel/generator/TreeGenerator.h"
 #include "voxel/generator/BuildingGeneratorContext.h"
 #include "frontend/RawVolumeRenderer.h"
+#include "video/ShapeBuilder.h"
+#include "frontend/ShapeRenderer.h"
 #include "Action.h"
 #include "voxedit-util/SelectionHandler.h"
 #include "voxedit-util/ShapeHandler.h"
@@ -28,9 +30,13 @@ class Model {
 private:
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
 	frontend::RawVolumeRenderer _rawVolumeSelectionRenderer;
+	video::ShapeBuilder _shapeBuilder;
+	frontend::ShapeRenderer _shapeRenderer;
 	UndoHandler _undoHandler;
 	SelectionHandler _selectionHandler;
 	ShapeHandler _shapeHandler;
+
+	int32_t _planeMeshIndex[3] = {-1, -1, -1};
 
 	int _initialized = 0;
 	int _size = 32;
@@ -151,6 +157,7 @@ public:
 
 	Axis lockedAxis() const;
 	void setLockedAxis(Axis axis, bool unlock);
+	void updateAxisPlane(Axis axis);
 
 	void undo();
 	void redo();
@@ -176,14 +183,6 @@ public:
 
 inline Axis Model::lockedAxis() const {
 	return _lockedAxis;
-}
-
-inline void Model::setLockedAxis(Axis axis, bool unlock) {
-	if (unlock) {
-		_lockedAxis &= ~axis;
-	} else {
-		_lockedAxis |= axis;
-	}
 }
 
 inline void Model::scaleCursorShape(const glm::vec3& scale) {

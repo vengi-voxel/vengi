@@ -181,6 +181,10 @@ void Color::getHSB(const glm::vec4& color, float& chue, float& csaturation, floa
 	csaturation = (cbrightness - minBrightness) / cbrightness;
 }
 
+glm::vec4 Color::alpha(const glm::vec4& c, float alpha) {
+	return glm::vec4(c.r, c.g, c.b, alpha);
+}
+
 float Color::brightness(const glm::vec4& color) {
 	return std::max(color.r, std::max(color.g, color.b));
 }

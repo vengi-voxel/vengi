@@ -328,6 +328,7 @@ void Model::cut() {
 void Model::render(const video::Camera& camera) {
 	const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(ModelVolumeIndex);
 	_empty = mesh != nullptr ? mesh->getNoOfIndices() == 0 : true;
+	_shapeRenderer.renderAll(camera);
 	_rawVolumeRenderer.render(camera);
 }
 
@@ -347,6 +348,7 @@ void Model::init() {
 	++_initialized;
 	_rawVolumeRenderer.init();
 	_rawVolumeSelectionRenderer.init();
+	_shapeRenderer.init();
 }
 
 void Model::update() {
@@ -377,6 +379,8 @@ void Model::shutdown() {
 		}
 	}
 
+	_shapeRenderer.shutdown();
+	_shapeBuilder.shutdown();
 	undoHandler().clearUndoStates();
 }
 
@@ -511,6 +515,10 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 	_cursorPos = pos;
 	const voxel::Region& cursorRegion = cursorPositionVolume()->getRegion();
 	_rawVolumeRenderer.setOffset(CursorVolumeIndex, -cursorRegion.getCentre() + _cursorPos);
+
+	updateAxisPlane(Axis::X);
+	updateAxisPlane(Axis::Y);
+	updateAxisPlane(Axis::Z);
 }
 
 void Model::markCursorExtract() {
@@ -548,6 +556,73 @@ bool Model::trace(const video::Camera& camera) {
 	}
 
 	return true;
+}
+
+void Model::updateAxisPlane(Axis axis) {
+	if (axis == Axis::None) {
+		return;
+	}
+	int index;
+	if (axis == Axis::X) {
+		index = 0;
+	} else if (axis == Axis::Y) {
+		index = 1;
+	} else {
+		index = 2;
+	}
+	int32_t& meshIndex = _planeMeshIndex[index];
+	if ((_lockedAxis & axis) == Axis::None) {
+		if (meshIndex != -1) {
+			_shapeRenderer.deleteMesh(meshIndex);
+			meshIndex = -1;
+		}
+		return;
+	}
+
+	const glm::vec4 colors[] = {
+		core::Color::LightRed,
+		core::Color::LightGreen,
+		core::Color::LightBlue
+	};
+
+	const voxel::Region& region = modelVolume()->getRegion();
+	glm::vec3 mins = region.getLowerCorner();
+	glm::vec3 maxs = region.getUpperCorner();
+	mins[index] = maxs[index] = _cursorPos[index];
+	const glm::vec3& ll = mins;
+	const glm::vec3& ur = maxs;
+	glm::vec3 ul(glm::uninitialize);
+	glm::vec3 lr(glm::uninitialize);
+	if (axis == Axis::Y) {
+		ul = glm::vec3(mins.x, mins.y, maxs.z);
+		lr = glm::vec3(maxs.x, maxs.y, mins.z);
+	} else {
+		ul = glm::vec3(mins.x, maxs.y, mins.z);
+		lr = glm::vec3(maxs.x, mins.y, maxs.z);
+	}
+	std::vector<glm::vec3> vecs({ll, ul, ur, lr});
+	// lower left (0), upper left (1), upper right (2)
+	// lower left (0), upper right (2), lower right (3)
+	const std::vector<uint32_t> indices { 0, 1, 2, 0, 2, 3, 2, 1, 0, 3, 2, 0 };
+	_shapeBuilder.clear();
+	_shapeBuilder.setColor(core::Color::alpha(colors[index], 0.3f));
+	_shapeBuilder.geom(vecs, indices);
+	if (meshIndex == -1) {
+		meshIndex = _shapeRenderer.createMesh(_shapeBuilder);
+	} else {
+		_shapeRenderer.update(meshIndex, _shapeBuilder);
+	}
+}
+
+void Model::setLockedAxis(Axis axis, bool unlock) {
+	if (unlock) {
+		_lockedAxis &= ~axis;
+	} else {
+		_lockedAxis |= axis;
+	}
+	updateAxisPlane(Axis::X);
+	updateAxisPlane(Axis::Y);
+	updateAxisPlane(Axis::Z);
 }
 
 }
