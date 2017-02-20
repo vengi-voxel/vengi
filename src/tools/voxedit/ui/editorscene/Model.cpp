@@ -742,7 +742,7 @@ void Model::updateMirrorPlane() {
 		return;
 	}
 
-	updateShapeBuilderForPlane(true, _mirrorPos, _mirrorAxis, core::Color::alpha(core::Color::LightBrown, 0.1f));
+	updateShapeBuilderForPlane(true, _mirrorPos, _mirrorAxis, core::Color::alpha(core::Color::Yellow, 0.1f));
 	if (_mirrorMeshIndex == -1) {
 		_mirrorMeshIndex = _shapeRenderer.createMesh(_shapeBuilder);
 	} else {
