@@ -658,9 +658,9 @@ int Model::getIndexForMirrorAxis(Axis axis) const {
 	if (axis == Axis::X) {
 		return 2;
 	} else if (axis == Axis::Y) {
-		return 0;
+		return 1;
 	}
-	return 1;
+	return 0;
 }
 
 void Model::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, Axis axis, const glm::vec4& color) {
