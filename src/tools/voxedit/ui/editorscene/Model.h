@@ -9,6 +9,7 @@
 #include "frontend/RawVolumeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "frontend/ShapeRenderer.h"
+#include "frontend/GridRenderer.h"
 #include "Action.h"
 #include "voxedit-util/SelectionHandler.h"
 #include "voxedit-util/ShapeHandler.h"
@@ -30,6 +31,7 @@ class Model {
 private:
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
 	frontend::RawVolumeRenderer _rawVolumeSelectionRenderer;
+	frontend::GridRenderer _gridRenderer;
 	video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;
 	UndoHandler _undoHandler;
@@ -137,6 +139,8 @@ public:
 
 	frontend::RawVolumeRenderer& rawVolumeRenderer();
 	const frontend::RawVolumeRenderer& rawVolumeRenderer() const;
+
+	frontend::GridRenderer& gridRenderer();
 
 	frontend::RawVolumeRenderer& rawVolumeSelectionRenderer();
 	const frontend::RawVolumeRenderer& rawVolumeSelectionRenderer() const;
@@ -296,6 +300,10 @@ inline frontend::RawVolumeRenderer& Model::rawVolumeRenderer() {
 
 inline const frontend::RawVolumeRenderer& Model::rawVolumeRenderer() const {
 	return _rawVolumeRenderer;
+}
+
+inline frontend::GridRenderer& Model::gridRenderer() {
+	return _gridRenderer;
 }
 
 inline frontend::RawVolumeRenderer& Model::rawVolumeSelectionRenderer() {

@@ -11,7 +11,6 @@
 #include "video/ShapeBuilder.h"
 #include "video/Texture.h"
 #include "video/DepthBuffer.h"
-#include "GridRenderer.h"
 
 namespace frontend {
 
@@ -26,8 +25,6 @@ protected:
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
 	voxel::Mesh* _mesh[MAX_VOLUMES] {};
 	glm::ivec3 _offsets[MAX_VOLUMES] {};
-
-	frontend::GridRenderer _gridRenderer;
 
 	video::VertexBuffer _vertexBuffer[MAX_VOLUMES];
 	shader::Materialblock _materialBlock;
@@ -44,10 +41,8 @@ protected:
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	glm::vec3 _sunDirection;
-
-	bool _renderWireframe;
 public:
-	RawVolumeRenderer(bool renderAABB = false, bool renderWireframe = false, bool renderGrid = false);
+	RawVolumeRenderer();
 
 	void render(const video::Camera& camera);
 
@@ -79,15 +74,6 @@ public:
 	 */
 	voxel::RawVolume* volume(int idx = 0);
 	const voxel::RawVolume* volume(int idx = 0) const;
-
-	bool renderAABB() const;
-	void setRenderAABB(bool renderAABB);
-
-	bool renderGrid() const;
-	void setRenderGrid(bool renderGrid);
-
-	bool renderWireframe() const;
-	void setRenderWireframe(bool renderWireframe);
 
 	void setAmbientColor(const glm::vec3& color);
 	void setSunDirection(const glm::vec3& sunDirection);
@@ -126,30 +112,6 @@ inline const voxel::RawVolume* RawVolumeRenderer::volume(int idx) const {
 		return nullptr;
 	}
 	return _rawVolume[idx];
-}
-
-inline bool RawVolumeRenderer::renderAABB() const {
-	return _gridRenderer.renderAABB();
-}
-
-inline bool RawVolumeRenderer::renderGrid() const {
-	return _gridRenderer.renderGrid();;
-}
-
-inline bool RawVolumeRenderer::renderWireframe() const {
-	return _renderWireframe;
-}
-
-inline void RawVolumeRenderer::setRenderAABB(bool renderAABB) {
-	_gridRenderer.setRenderAABB(renderAABB);
-}
-
-inline void RawVolumeRenderer::setRenderGrid(bool renderGrid) {
-	_gridRenderer.setRenderGrid(renderGrid);
-}
-
-inline void RawVolumeRenderer::setRenderWireframe(bool renderWireframe) {
-	_renderWireframe = renderWireframe;
 }
 
 inline const voxel::Mesh* RawVolumeRenderer::mesh(int idx) const {

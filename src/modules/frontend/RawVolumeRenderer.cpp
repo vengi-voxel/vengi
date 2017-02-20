@@ -26,9 +26,9 @@ struct CustomIsQuadNeeded {
 
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
-RawVolumeRenderer::RawVolumeRenderer(bool renderAABB, bool renderWireframe, bool renderGrid) :
-		_gridRenderer(renderAABB, renderGrid), _shadowMapShader(shader::ShadowmapShader::getInstance()),
-		_worldShader(shader::WorldShader::getInstance()), _renderWireframe(renderWireframe) {
+RawVolumeRenderer::RawVolumeRenderer() :
+		_shadowMapShader(shader::ShadowmapShader::getInstance()),
+		_worldShader(shader::WorldShader::getInstance()) {
 	_sunDirection = glm::vec3(glm::left.x, glm::down.y, 0.0f);
 }
 
@@ -39,11 +39,6 @@ bool RawVolumeRenderer::init() {
 	}
 	if (!_shadowMapShader.setup()) {
 		Log::error("Failed to initialize the color shader");
-		return false;
-	}
-
-	if (!_gridRenderer.init()) {
-		Log::error("Failed to initialize the shape renderer");
 		return false;
 	}
 
@@ -165,8 +160,6 @@ bool RawVolumeRenderer::extract(int idx) {
 void RawVolumeRenderer::render(const video::Camera& camera) {
 	core_trace_scoped(RawVolumeRendererRender);
 
-	_gridRenderer.render(camera, _rawVolume[0]->getRegion());
-
 	uint32_t numIndices = 0u;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		numIndices += _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
@@ -227,6 +220,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		_worldShader.setDistances(distances);
 		_worldShader.setLightdir(_shadow.sunDirection());
 
+		video::ScopedPolygonMode polygonMode(camera.polygonMode());
 		video::bindTexture(video::TextureUnit::One, _depthBuffer);
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			const uint32_t nIndices = _vertexBuffer[idx].elements(_indexBufferIndex[idx], 1, sizeof(voxel::IndexType));
@@ -237,11 +231,6 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 			_worldShader.setModel(glm::translate(_offsets[idx]));
 			static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
-			if (_renderWireframe && camera.polygonMode() == video::PolygonMode::Solid) {
-				video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(2.0f));
-				video::ScopedLineWidth lineWidth(2.0f, true);
-				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
-			}
 			_vertexBuffer[idx].unbind();
 		}
 	}
@@ -268,15 +257,6 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 	_rawVolume[idx] = volume;
 	_offsets[idx] = offset;
 
-	if (idx == 0) {
-		if (_rawVolume[idx] != nullptr) {
-			const voxel::Region& region = _rawVolume[idx]->getRegion();
-			_gridRenderer.update(region);
-		} else {
-			_gridRenderer.clear();
-		}
-	}
-
 	return old;
 }
 
@@ -298,7 +278,6 @@ std::vector<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 		_whiteTexture->shutdown();
 		_whiteTexture = video::TexturePtr();
 	}
-	_gridRenderer.shutdown();
 	_depthBuffer.shutdown();
 	return old;
 }

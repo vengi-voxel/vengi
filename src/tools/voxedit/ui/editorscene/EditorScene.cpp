@@ -289,20 +289,20 @@ void EditorScene::select(const glm::ivec3& pos) {
 }
 
 bool EditorScene::renderAABB() const {
-	return m().rawVolumeRenderer().renderAABB();
+	return m().gridRenderer().renderAABB();
 }
 
 void EditorScene::setRenderAABB(bool renderAABB) {
 	Model& mdl = m();
-	mdl.rawVolumeRenderer().setRenderAABB(renderAABB);
+	mdl.gridRenderer().setRenderAABB(renderAABB);
 }
 
 bool EditorScene::renderGrid() const {
-	return m().rawVolumeRenderer().renderGrid();
+	return m().gridRenderer().renderGrid();
 }
 
 void EditorScene::setRenderGrid(bool renderGrid) {
-	m().rawVolumeRenderer().setRenderGrid(renderGrid);
+	m().gridRenderer().setRenderGrid(renderGrid);
 }
 
 inline long EditorScene::actionExecutionDelay() const {

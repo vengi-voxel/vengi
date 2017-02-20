@@ -25,7 +25,7 @@
 namespace voxedit {
 
 Model::Model() :
-		_rawVolumeRenderer(true, false, true), _rawVolumeSelectionRenderer(false, false, false) {
+		_gridRenderer(true, true) {
 }
 
 Model::~Model() {
@@ -302,6 +302,13 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	delete _rawVolumeRenderer.setVolume(ModelVolumeIndex, volume);
 	delete _rawVolumeRenderer.setVolume(CursorVolumeIndex, new voxel::RawVolume(region));
 
+	if (volume != nullptr) {
+		const voxel::Region& region = volume->getRegion();
+		_gridRenderer.update(region);
+	} else {
+		_gridRenderer.clear();
+	}
+
 	setCursorShape(_shapeHandler.cursorShape());
 
 	_dirty = false;
@@ -395,6 +402,7 @@ void Model::render(const video::Camera& camera) {
 	const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(ModelVolumeIndex);
 	_empty = mesh != nullptr ? mesh->getNoOfIndices() == 0 : true;
 	_shapeRenderer.renderAll(camera);
+	_gridRenderer.render(camera, modelVolume()->getRegion());
 	_rawVolumeRenderer.render(camera);
 }
 
@@ -415,6 +423,7 @@ void Model::init() {
 	_rawVolumeRenderer.init();
 	_rawVolumeSelectionRenderer.init();
 	_shapeRenderer.init();
+	_gridRenderer.init();
 
 	_mirrorMeshIndex = -1;
 	for (int i = 0; i < (int)SDL_arraysize(_planeMeshIndex); ++i) {
@@ -458,6 +467,7 @@ void Model::shutdown() {
 
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
+	_gridRenderer.shutdown();
 	undoHandler().clearUndoStates();
 }
 
