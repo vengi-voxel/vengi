@@ -178,7 +178,7 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 	const std::vector<glm::mat4>& cascades = _shadow.cascades();
 	const std::vector<float>& distances = _shadow.distances();
 	{
-		video::disable(video::State::Blend);
+		const bool oldBlend = video::disable(video::State::Blend);
 		// put shadow acne into the dark
 		video::cullFace(video::Face::Front);
 		const float shadowBiasSlope = 2;
@@ -202,9 +202,11 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 				static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, nIndices);
 			}
-			video::cullFace(video::Face::Back);
-			video::enable(video::State::Blend);
 			_vertexBuffer[idx].unbind();
+		}
+		video::cullFace(video::Face::Back);
+		if (oldBlend) {
+			video::enable(video::State::Blend);
 		}
 		_depthBuffer.unbind();
 	}
