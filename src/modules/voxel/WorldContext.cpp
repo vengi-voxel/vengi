@@ -13,6 +13,9 @@ WorldContext::WorldContext() :
 }
 
 bool WorldContext::load(const std::string& luaString) {
+	if (luaString.empty()) {
+		return true;
+	}
 	lua::LUA lua;
 	if (!lua.load(luaString)) {
 		Log::error("Could not load lua script. Failed with error: %s", lua.error().c_str());
