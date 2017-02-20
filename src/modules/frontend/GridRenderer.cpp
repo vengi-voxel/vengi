@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "GridRenderer.h"
 
 namespace frontend {

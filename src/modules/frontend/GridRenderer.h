@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "video/Camera.h"
@@ -7,6 +11,11 @@
 
 namespace frontend {
 
+/**
+ * @brief Renders a grid or bounding box for a given region
+ *
+ * @note Also hides sides of the grid that would occlude the view to the inside
+ */
 class GridRenderer {
 protected:
 	video::ShapeBuilder _shapeBuilder;
@@ -25,6 +34,9 @@ protected:
 public:
 	GridRenderer(bool renderAABB = true, bool renderGrid = true);
 
+	/**
+	 * @param region The region to do the plane culling with
+	 */
 	void render(const video::Camera& camera, const voxel::Region& region);
 
 	bool renderAABB() const;
@@ -33,6 +45,10 @@ public:
 	bool renderGrid() const;
 	void setRenderGrid(bool renderGrid);
 
+	/**
+	 * @brief Update the internal render buffers for the new region.
+	 * @param region The region to render the grid for
+	 */
 	void update(const voxel::Region& region);
 	void clear();
 
