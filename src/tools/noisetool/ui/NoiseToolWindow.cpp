@@ -145,7 +145,7 @@ void NoiseToolWindow::update(long dt) {
 }
 
 float NoiseToolWindow::getNoise(NoiseType noiseType, int x, int y) {
-	const glm::vec2 position = (glm::vec2(_offset) + glm::vec2(x, y) * _frequency);
+	const glm::vec2 position = (glm::vec2(_data.offset) + glm::vec2(x, y) * _data.frequency);
 	switch (noiseType) {
 	case NoiseType::simplexNoise:
 		return noise::norm(noise::noise(position));
@@ -154,7 +154,7 @@ float NoiseToolWindow::getNoise(NoiseType noiseType, int x, int y) {
 	case NoiseType::flowNoise:
 		return noise::norm(noise::flowNoise(position, _time));
 	case NoiseType::fbm:
-		return noise::norm(noise::fBm(position, _octaves, _lacunarity, _gain));
+		return noise::norm(noise::fBm(position, _data.octaves, _data.lacunarity, _data.gain));
 	case NoiseType::fbmCascade:
 		return noise::norm(noise::fBm(noise::fBm(position * 3.0f)));
 	case NoiseType::fbmAnalyticalDerivatives:
@@ -162,23 +162,23 @@ float NoiseToolWindow::getNoise(NoiseType noiseType, int x, int y) {
 	case NoiseType::flowNoiseFbm:
 		return noise::norm(noise::flowNoise(position + noise::fBm(glm::vec3(position, _time * 0.1f)), _time));
 	case NoiseType::ridgedMFTime:
-		return noise::ridgedMF(glm::vec3(position, _time * 0.1f), _offset, _octaves, _lacunarity, _gain);
+		return noise::ridgedMF(glm::vec3(position, _time * 0.1f), _data.offset, _data.octaves, _data.lacunarity, _data.gain);
 	case NoiseType::ridgedMF:
-		return noise::ridgedMF(position, _offset, _octaves, _lacunarity, _gain);
+		return noise::ridgedMF(position, _data.offset, _data.octaves, _data.lacunarity, _data.gain);
 	case NoiseType::ridgedMFCascade:
 		return noise::ridgedMF(noise::ridgedMF(position));
 	case NoiseType::ridgedMFScaled:
-		return noise::ridgedMF(position * 0.25f, _offset, _octaves, _lacunarity, _gain);
+		return noise::ridgedMF(position * 0.25f, _data.offset, _data.octaves, _data.lacunarity, _data.gain);
 	case NoiseType::iqNoise:
-		return noise::norm(noise::iqMatfBm(position, _octaves, glm::mat2(2.3f, -1.5f, 1.5f, 2.3f), _gain));
+		return noise::norm(noise::iqMatfBm(position, _data.octaves, glm::mat2(2.3f, -1.5f, 1.5f, 2.3f), _data.gain));
 	case NoiseType::iqNoiseScaled:
-		return noise::norm(noise::iqMatfBm(position * 0.75f, _octaves, glm::mat2(-12.5f, -0.5f, 0.5f, -12.5f), _gain));
+		return noise::norm(noise::iqMatfBm(position * 0.75f, _data.octaves, glm::mat2(-12.5f, -0.5f, 0.5f, -12.5f), _data.gain));
 	case NoiseType::analyticalDerivatives:
 		return (noise::dnoise(position * 5.0f).y + noise::dnoise(position * 5.0f).z) * 0.5f;
 	case NoiseType::noiseCurlNoise:
 		return noise::norm(noise::noise(position + glm::vec2(noise::curlNoise(position, _time).x)));
 	case NoiseType::voronoi:
-		return noise::norm(noise::voronoi(glm::dvec3(position, 0.0), true, _offset, _frequency, _octaves));
+		return noise::norm(noise::voronoi(glm::dvec3(position, 0.0), true, _data.offset, _data.frequency, _data.octaves));
 	case NoiseType::Max:
 		break;
 	}
@@ -194,7 +194,7 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 	memset(noiseBuffer, 255, sizeof(noiseBuffer));
 
 	tb::TBStr idStr;
-	idStr.SetFormatted(IMAGE_PREFIX "-%i-%f-%i-%f-%f-%f", (int)noiseType, _offset, _octaves, _lacunarity, _gain, _frequency);
+	idStr.SetFormatted(IMAGE_PREFIX "-%i-%f-%i-%f-%f-%f", (int)noiseType, _data.offset, _data.octaves, _data.lacunarity, _data.gain, _data.frequency);
 	cleanup(idStr);
 
 	const tb::TBRect& graphRect = _graphBegin->GetPaddingRect();
@@ -222,15 +222,14 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 		}
 	}
 
-	_noiseType = noiseType;
+	_data.noiseType = noiseType;
 	_dirtyParameters = false;
 
 	addImage(idStr, append, noiseBuffer, noiseWidth, noiseHeight);
 
 	const std::string& graphName = getGraphName(idStr);
 	_graphs.insert(std::make_pair(graphName, tb::g_image_manager->GetImage(graphName.c_str(), (uint32_t*)graphBuffer, graphWidth, graphHeight)));
-	const NoiseData noisedata{_frequency, _offset, _lacunarity, _octaves, _gain, _noiseType};
-	_noiseTool->add(TBIDC(idStr), noisedata);
+	_noiseTool->add(TBIDC(idStr), _data);
 }
 
 void NoiseToolWindow::fillBuffer(NoiseType noiseType, int width, int height, int components, int cols, int rows, int widgetWidth) {
@@ -392,19 +391,19 @@ void NoiseToolWindow::generateImage() {
 	const float gain = getFloat("gain");
 	const float frequency = getFloat("frequency");
 
-	if (!glm::epsilonEqual(offset, _offset, glm::epsilon<float>()) ||
-		!glm::epsilonEqual(lacunarity, _lacunarity, glm::epsilon<float>()) ||
-		!glm::epsilonEqual(frequency, _frequency, glm::epsilon<float>()) ||
-		!glm::epsilonEqual(gain, _gain, glm::epsilon<float>()) ||
-		octaves != _octaves) {
+	if (!glm::epsilonEqual(offset, _data.offset, glm::epsilon<float>()) ||
+		!glm::epsilonEqual(lacunarity, _data.lacunarity, glm::epsilon<float>()) ||
+		!glm::epsilonEqual(frequency, _data.frequency, glm::epsilon<float>()) ||
+		!glm::epsilonEqual(gain, _data.gain, glm::epsilon<float>()) ||
+		octaves != _data.octaves) {
 		_dirtyParameters = true;
 	}
 
-	_offset = offset;
-	_lacunarity = lacunarity;
-	_octaves = octaves;
-	_gain = gain;
-	_frequency = frequency;
+	_data.offset = offset;
+	_data.lacunarity = lacunarity;
+	_data.octaves = octaves;
+	_data.gain = gain;
+	_data.frequency = frequency;
 
 	if (allInOne) {
 		allInOne2DNoise();
@@ -413,7 +412,7 @@ void NoiseToolWindow::generateImage() {
 			return;
 		}
 		const NoiseType noiseType = (NoiseType)type;
-		_dirtyParameters = _dirtyParameters || _noiseType != noiseType;
+		_dirtyParameters = _dirtyParameters || _data.noiseType != noiseType;
 		if (!_dirtyParameters) {
 			if (noiseType != NoiseType::flowNoise
 			 && noiseType != NoiseType::flowNoiseFbm

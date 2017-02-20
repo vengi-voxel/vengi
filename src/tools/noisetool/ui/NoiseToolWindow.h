@@ -8,7 +8,7 @@
 #include "ui/ui_widgets.h"
 #include "core/Common.h"
 #include <unordered_map>
-#include "../NoiseType.h"
+#include "../NoiseData.h"
 
 class NoiseTool;
 
@@ -16,13 +16,7 @@ class NoiseToolWindow: public ui::Window {
 private:
 	NoiseTool* _noiseTool;
 
-	float _frequency = 0.0f;
-	float _offset = 0.0f;
-	float _lacunarity = 0.0f;
-	int _octaves = 0;
-	float _gain = 0.0f;
-
-	NoiseType _noiseType = NoiseType::Max;
+	NoiseData _data;
 
 	long _time = 0l;
 	long _autoUpdate = 0l;
