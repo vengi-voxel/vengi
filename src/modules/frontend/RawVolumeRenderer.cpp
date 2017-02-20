@@ -168,10 +168,10 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		return;
 	}
 
-	video::enable(video::State::DepthTest);
+	const bool oldDepth = video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
-	video::enable(video::State::CullFace);
-	video::enable(video::State::DepthMask);
+	const bool oldCullFace = video::enable(video::State::CullFace);
+	const bool oldDepthMask = video::enable(video::State::DepthMask);
 
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	_shadow.calculateShadowData(camera, true, maxDepthBuffers, _depthBuffer.dimension());
@@ -235,6 +235,16 @@ void RawVolumeRenderer::render(const video::Camera& camera) {
 		}
 	}
 	_whiteTexture->unbind();
+
+	if (!oldDepth) {
+		video::disable(video::State::DepthTest);
+	}
+	if (!oldCullFace) {
+		video::disable(video::State::CullFace);
+	}
+	if (!oldDepthMask) {
+		video::disable(video::State::DepthMask);
+	}
 }
 
 bool RawVolumeRenderer::setOffset(int idx, const glm::ivec3& offset) {
