@@ -352,7 +352,10 @@ bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 
 		if (_mirrorAxis != Axis::None) {
 			const int index = getIndexForMirrorAxis(_mirrorAxis);
-			const int delta = _mirrorPos[index] - pos[index];
+			const int delta = _mirrorPos[index] - pos[index] - 1;
+			if (delta == 0) {
+				return placed;
+			}
 			glm::ivec3 mirror(glm::uninitialize);
 			for (int i = 0; i < 3; ++i) {
 				if (i == index) {

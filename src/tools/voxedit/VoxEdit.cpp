@@ -105,7 +105,6 @@ core::AppState VoxEdit::onConstruct() {
 		selectCursor();
 	}).setHelp("Select voxels from the given position");
 
-
 	core::Command::registerCommand("togglerelativemousemode", [this] (const core::CmdArgs& args) {
 		toggleRelativeMouseMode();
 	}).setHelp("Toggle relative mouse mode which provides free look");
