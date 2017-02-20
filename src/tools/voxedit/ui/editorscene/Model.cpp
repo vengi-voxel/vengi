@@ -405,6 +405,7 @@ void Model::render(const video::Camera& camera) {
 	_empty = mesh != nullptr ? mesh->getNoOfIndices() == 0 : true;
 	_gridRenderer.render(camera, modelVolume()->getRegion());
 	_rawVolumeRenderer.render(camera);
+	// TODO: render error if rendered last - but be before grid renderer to get transparency.
 	_shapeRenderer.renderAll(camera);
 	renderSelection(camera);
 }
