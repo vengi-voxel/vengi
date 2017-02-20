@@ -8,30 +8,14 @@
 #include "ui/ui_widgets.h"
 #include "core/Common.h"
 #include <unordered_map>
+#include "../NoiseType.h"
 
-enum class NoiseType {
-	simplexNoise,
-	ridgedNoise,
-	flowNoise,
-	fbm,
-	fbmCascade,
-	fbmAnalyticalDerivatives,
-	flowNoiseFbm,
-	ridgedMFTime,
-	ridgedMF,
-	ridgedMFCascade,
-	ridgedMFScaled,
-	iqNoise,
-	iqNoiseScaled,
-	analyticalDerivatives,
-	noiseCurlNoise,
-	voronoi,
-
-	Max
-};
+class NoiseTool;
 
 class NoiseToolWindow: public ui::Window {
 private:
+	NoiseTool* _noiseTool;
+
 	float _frequency = 0.0f;
 	float _offset = 0.0f;
 	float _lacunarity = 0.0f;
@@ -53,7 +37,6 @@ private:
 	bool _dirtyParameters = true;
 	std::string _lastActiveImage;
 	std::unordered_map<std::string, tb::TBImage> _graphs;
-
 	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _noiseTypes;
 
 	void fillBuffer(NoiseType noiseType, int width, int height, int components, int cols, int rows, int widgetWidth);
@@ -69,7 +52,7 @@ private:
 	std::string getCaption(tb::TBWidget* widget) const;
 	std::string getGraphName(const char* idStr) const;
 public:
-	NoiseToolWindow(ui::UIApp* tool);
+	NoiseToolWindow(NoiseTool* tool);
 	~NoiseToolWindow();
 	bool init();
 	void update(long dt);

@@ -5,11 +5,11 @@
 #pragma once
 
 #include "ui/UIApp.h"
+#include "NoiseData.h"
+#include <unordered_map>
 
 class NoiseToolWindow;
 
-// TODO: render a 2d graph from -1 to 1
-// TODO: implement scale module
 // TODO: implement combinations
 
 /**
@@ -17,9 +17,14 @@ class NoiseToolWindow;
  */
 class NoiseTool: public ui::UIApp {
 private:
+	std::unordered_map<uint32_t, NoiseData> _noiseData;
+
 	NoiseToolWindow* _window = nullptr;
 public:
 	NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+
+	void add(uint32_t dataId, const NoiseData& data);
+	void remove(uint32_t dataId);
 
 	core::AppState onInit() override;
 	core::AppState onRunning() override;

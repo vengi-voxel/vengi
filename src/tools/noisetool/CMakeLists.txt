@@ -1,6 +1,8 @@
 project(noisetool)
 set(SRCS
 	NoiseTool.h NoiseTool.cpp
+	NoiseData.h
+	NoiseType.h
 	ui/NoiseToolWindow.h ui/NoiseToolWindow.cpp
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)

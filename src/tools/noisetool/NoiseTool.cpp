@@ -11,6 +11,13 @@ NoiseTool::NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPt
 	init(ORGANISATION, "noisetool");
 }
 
+void NoiseTool::add(uint32_t dataId, const NoiseData& data) {
+	_noiseData.insert(std::make_pair(dataId, data));
+}
+
+void NoiseTool::remove(uint32_t dataId) {
+}
+
 core::AppState NoiseTool::onInit() {
 	core::AppState state = ui::UIApp::onInit();
 	if (state != core::AppState::Running) {

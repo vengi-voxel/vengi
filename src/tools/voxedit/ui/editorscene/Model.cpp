@@ -342,7 +342,7 @@ void Model::rotate(int angleX, int angleY, int angleZ) {
 }
 
 void Model::move(int x, int y, int z) {
-	voxel::RawVolume* model = modelVolume();
+	const voxel::RawVolume* model = modelVolume();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->getRegion());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
 	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z), voxel::Voxel());

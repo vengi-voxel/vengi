@@ -3,7 +3,7 @@
  */
 
 #include "NoiseToolWindow.h"
-
+#include "../NoiseTool.h"
 #include "noise/Noise.h"
 #include "noise/Simplex.h"
 #include "ui/UIApp.h"
@@ -31,8 +31,8 @@ static_assert((int)SDL_arraysize(NoiseTypeStr) == (int)NoiseType::Max, "String a
 #define IMAGE_PREFIX "2d"
 #define GRAPH_PREFIX "graph"
 
-NoiseToolWindow::NoiseToolWindow(ui::UIApp* tool) :
-		ui::Window(tool) {
+NoiseToolWindow::NoiseToolWindow(NoiseTool* tool) :
+		ui::Window(tool), _noiseTool(tool) {
 	for (int i = 0; i < (int)SDL_arraysize(NoiseTypeStr); ++i) {
 		addMenuItem(_noiseTypes, NoiseTypeStr[i]);
 	}
@@ -229,6 +229,8 @@ void NoiseToolWindow::makeSingle2DNoise(bool append, NoiseType noiseType) {
 
 	const std::string& graphName = getGraphName(idStr);
 	_graphs.insert(std::make_pair(graphName, tb::g_image_manager->GetImage(graphName.c_str(), (uint32_t*)graphBuffer, graphWidth, graphHeight)));
+	const NoiseData noisedata{_frequency, _offset, _lacunarity, _octaves, _gain, _noiseType};
+	_noiseTool->add(TBIDC(idStr), noisedata);
 }
 
 void NoiseToolWindow::fillBuffer(NoiseType noiseType, int width, int height, int components, int cols, int rows, int widgetWidth) {
@@ -298,6 +300,8 @@ void NoiseToolWindow::cleanup(const tb::TBStr& idStr) {
 		_graphs.erase(i);
 		_lastActiveImage = "";
 	}
+
+	_noiseTool->remove(id);
 }
 
 void NoiseToolWindow::addGraph(const std::string& idStr, uint8_t* buffer, int width, int height) {
@@ -430,6 +434,9 @@ void NoiseToolWindow::removeImage(tb::TBWidget *image) {
 	if (i != _graphs.end()) {
 		_graphs.erase(i);
 	}
+
+	_noiseTool->remove(tb::TBID(caption.c_str()));
+
 	image->GetParent()->RemoveChild(image);
 	_lastActiveImage = "";
 	_dirtyParameters = true;
