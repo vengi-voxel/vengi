@@ -401,9 +401,9 @@ void Model::cut() {
 void Model::render(const video::Camera& camera) {
 	const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(ModelVolumeIndex);
 	_empty = mesh != nullptr ? mesh->getNoOfIndices() == 0 : true;
-	_shapeRenderer.renderAll(camera);
 	_gridRenderer.render(camera, modelVolume()->getRegion());
 	_rawVolumeRenderer.render(camera);
+	_shapeRenderer.renderAll(camera);
 }
 
 void Model::renderSelection(const video::Camera& camera) {
