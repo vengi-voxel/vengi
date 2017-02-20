@@ -2,6 +2,7 @@
 #include "LSystemWindow.h"
 #include "NoiseWindow.h"
 #include "WorldWindow.h"
+#include "TreeWindow.h"
 #include "editorscene/EditorScene.h"
 #include "palette/PaletteWidget.h"
 #include "io/Filesystem.h"
@@ -393,12 +394,6 @@ void VoxEditWindow::setQuadViewport(bool active) {
 	}
 }
 
-void VoxEditWindow::createTree(voxel::TreeType type) {
-	voxel::TreeContext ctx;
-	ctx.type = type;
-	_scene->createTree(ctx);
-}
-
 static inline bool isAny(const tb::TBWidgetEvent& ev, const tb::TBID& id) {
 	return ev.target->GetID() == id || ev.ref_id == id;
 }
@@ -545,7 +540,7 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	}
 	for (uint32_t i = 0; i < SDL_arraysize(treeTypes); ++i) {
 		if (isAny(ev, treeTypes[i].tbid)) {
-			createTree(treeTypes[i].type);
+			new TreeWindow(this, _scene, treeTypes[i].type);
 			return true;
 		}
 	}

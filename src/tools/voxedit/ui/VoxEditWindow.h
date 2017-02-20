@@ -8,7 +8,6 @@
 #include "core/Common.h"
 #include "core/String.h"
 #include "voxedit-util/Axis.h"
-#include "voxel/TreeContext.h"
 #include "editorscene/Action.h"
 #include "voxedit-util/SelectType.h"
 
@@ -85,7 +84,6 @@ private:
 	char _modeNumberBuf[MODENUMBERBUFSIZE];
 	long _lastModePress = -1l;
 	void executeMode();
-	void createTree(voxel::TreeType type);
 
 	void setQuadViewport(bool active);
 	void setSelectionType(SelectType type);
