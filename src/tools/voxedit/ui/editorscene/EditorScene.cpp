@@ -110,6 +110,14 @@ SelectType EditorScene::selectionType() const {
 	return m().selectionType();
 }
 
+void EditorScene::place() {
+	m().place();
+}
+
+void EditorScene::remove() {
+	m().remove();
+}
+
 void EditorScene::rotate(int angleX, int angleY, int angleZ) {
 	m().rotate(angleX, angleY, angleZ);
 }

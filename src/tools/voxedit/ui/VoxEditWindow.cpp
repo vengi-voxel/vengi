@@ -232,8 +232,24 @@ void VoxEditWindow::update() {
 	_sceneFront->update();
 }
 
-void VoxEditWindow::setCursorPosition(int x, int y, int z) {
-	_scene->setCursorPosition(glm::ivec3(x, y, z), true);
+void VoxEditWindow::setCursorPosition(int x, int y, int z, bool relative) {
+	if (relative) {
+		glm::ivec3 p = _scene->cursorPosition();
+		p.x += x;
+		p.y += y;
+		p.z += z;
+		_scene->setCursorPosition(p, true);
+	} else {
+		_scene->setCursorPosition(glm::ivec3(x, y, z), true);
+	}
+}
+
+void VoxEditWindow::place() {
+	_scene->place();
+}
+
+void VoxEditWindow::remove() {
+	_scene->remove();
 }
 
 void VoxEditWindow::rotate(int x, int y, int z) {

@@ -94,6 +94,9 @@ public:
 	void paste();
 	void cut();
 
+	bool place();
+	bool remove();
+
 	void crop();
 	void extend(int size = 1);
 	void scale();
@@ -137,8 +140,6 @@ public:
 
 	frontend::RawVolumeRenderer& rawVolumeSelectionRenderer();
 	const frontend::RawVolumeRenderer& rawVolumeSelectionRenderer() const;
-
-	voxel::PickResult& result();
 
 	void noise(int octaves, float persistence, float frequency, float amplitude);
 	void lsystem(const voxel::lsystem::LSystemContext& lsystemCtx);
@@ -241,10 +242,6 @@ inline void Model::setSelectionType(SelectType type) {
 
 inline SelectType Model::selectionType() const {
 	return _selectionHandler.selectionType();
-}
-
-inline voxel::PickResult& Model::result() {
-	return _result;
 }
 
 inline bool Model::renderAxis() const {

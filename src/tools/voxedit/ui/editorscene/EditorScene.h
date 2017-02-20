@@ -51,6 +51,8 @@ public:
 	bool exportModel(const std::string& file);
 	bool newModel(bool force);
 
+	void place();
+	void remove();
 	void rotate(int angleX, int angleY, int angleZ);
 	void move(int x, int y, int z);
 

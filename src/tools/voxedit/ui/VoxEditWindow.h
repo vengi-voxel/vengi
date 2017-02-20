@@ -95,6 +95,8 @@ private:
 	void quit();
 
 	// commands
+	void place();
+	void remove();
 	void copy();
 	void paste();
 	void cut();
@@ -118,7 +120,7 @@ private:
 	void fill(int x, int y, int z);
 	void extend(int size = 1);
 	void scale();
-	void setCursorPosition(int x, int y, int z);
+	void setCursorPosition(int x, int y, int z, bool relative = false);
 	void toggleviewport();
 	void togglefreelook();
 	void movemode();

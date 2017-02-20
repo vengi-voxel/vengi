@@ -105,6 +105,7 @@ core::AppState VoxEdit::onConstruct() {
 		selectCursor();
 	}).setHelp("Select voxels from the given position");
 
+
 	core::Command::registerCommand("togglerelativemousemode", [this] (const core::CmdArgs& args) {
 		toggleRelativeMouseMode();
 	}).setHelp("Toggle relative mouse mode which provides free look");
@@ -140,8 +141,19 @@ core::AppState VoxEdit::onConstruct() {
 		const int x = core::string::toInt(args[0]);
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
-		this->_mainWindow->setCursorPosition(x, y, z);
+		this->_mainWindow->setCursorPosition(x, y, z, false);
 	}).setHelp("Set the cursor to the specified position");
+
+	core::Command::registerCommand("movecursor", [this] (const core::CmdArgs& args) {
+		if (args.size() != 3) {
+			Log::info("Expected to get relative x, y and z coordinates");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		this->_mainWindow->setCursorPosition(x, y, z, true);
+	}).setHelp("Move the cursor by the specified offsets");
 
 	COMMAND_MAINWINDOW_EVENT("dialog_lsystem", "Opens the lsystem dialog");
 	COMMAND_MAINWINDOW_EVENT("dialog_world", "Opens the world dialog");
@@ -155,6 +167,8 @@ core::AppState VoxEdit::onConstruct() {
 	COMMAND_FILE(load, "Load a scene from the given file");
 	COMMAND_FILE(voxelize, "Load a scene from the given file");
 
+	COMMAND_MAINWINDOW(remove, "Remove the cursor shape from the current cursor position");
+	COMMAND_MAINWINDOW(place, "Place the cursor shape at the current cursor position");
 	COMMAND_MAINWINDOW(unselectall, "Unselect every voxel");
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
 	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");

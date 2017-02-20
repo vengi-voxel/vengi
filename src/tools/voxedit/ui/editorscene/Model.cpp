@@ -175,6 +175,25 @@ void Model::fill(int x, int y, int z) {
 	}
 }
 
+bool Model::place() {
+	voxel::Region modifiedRegion;
+	const bool extract = placeCursor(&modifiedRegion);
+	if (extract) {
+		modified(modifiedRegion);
+	}
+	return extract;
+}
+
+// TODO: delete selected volume from model volume
+bool Model::remove() {
+	const bool extract = setVoxel(_cursorPos, voxel::Voxel());
+	if (extract) {
+		const voxel::Region modifiedRegion(_cursorPos, _cursorPos);
+		modified(modifiedRegion);
+	}
+	return extract;
+}
+
 void Model::executeAction(long now) {
 	const Action execAction = evalAction();
 	if (execAction == Action::None) {
@@ -365,6 +384,7 @@ void Model::paste() {
 void Model::cut() {
 	voxel::RawVolume* cursorVolume = cursorPositionVolume();
 	voxel::mergeRawVolumesSameDimension(cursorVolume, _rawVolumeSelectionRenderer.volume(SelectionVolumeIndex));
+	// TODO: see remove
 	// TODO: delete selected volume from model volume
 }
 
