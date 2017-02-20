@@ -12,8 +12,6 @@ protected:
 	video::ShapeBuilder _shapeBuilder;
 	frontend::ShapeRenderer _shapeRenderer;
 
-	voxel::Region _region;
-
 	int32_t _aabbMeshIndex = -1;
 	int32_t _gridMeshIndexXYNear = -1;
 	int32_t _gridMeshIndexXYFar = -1;

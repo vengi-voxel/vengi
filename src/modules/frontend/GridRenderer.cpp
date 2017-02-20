@@ -16,7 +16,6 @@ bool GridRenderer::init() {
 }
 
 void GridRenderer::update(const voxel::Region& region) {
-	_region = region;
 	const core::AABB<int>& intaabb = region.aabb();
 	const core::AABB<float> aabb(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
 	_shapeBuilder.clear();
