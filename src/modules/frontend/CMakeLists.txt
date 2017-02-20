@@ -7,6 +7,7 @@ set(SRCS
 	PlantDistributor.cpp PlantDistributor.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	OctreeRenderer.cpp OctreeRenderer.h
+	GridRenderer.cpp GridRenderer.h
 	Axis.h
 	Plane.h
 	RandomColorTexture.h RandomColorTexture.cpp
