@@ -11,6 +11,7 @@
 #include "video/ShapeBuilder.h"
 #include "video/Texture.h"
 #include "video/DepthBuffer.h"
+#include "GridRenderer.h"
 
 namespace frontend {
 
@@ -26,8 +27,7 @@ protected:
 	voxel::Mesh* _mesh[MAX_VOLUMES] {};
 	glm::ivec3 _offsets[MAX_VOLUMES] {};
 
-	video::ShapeBuilder _shapeBuilder;
-	frontend::ShapeRenderer _shapeRenderer;
+	frontend::GridRenderer _gridRenderer;
 
 	video::VertexBuffer _vertexBuffer[MAX_VOLUMES];
 	shader::Materialblock _materialBlock;
@@ -41,19 +41,10 @@ protected:
 	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1, -1, -1, -1};
 	int32_t _indexBufferIndex[MAX_VOLUMES] = {-1, -1, -1, -1};
 
-	int32_t _aabbMeshIndex = -1;
-	int32_t _gridMeshIndexXYNear = -1;
-	int32_t _gridMeshIndexXYFar = -1;
-	int32_t _gridMeshIndexXZNear = -1;
-	int32_t _gridMeshIndexXZFar = -1;
-	int32_t _gridMeshIndexYZNear = -1;
-	int32_t _gridMeshIndexYZFar = -1;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	glm::vec3 _sunDirection;
 
-	bool _renderAABB;
-	bool _renderGrid;
 	bool _renderWireframe;
 public:
 	RawVolumeRenderer(bool renderAABB = false, bool renderWireframe = false, bool renderGrid = false);
@@ -138,11 +129,11 @@ inline const voxel::RawVolume* RawVolumeRenderer::volume(int idx) const {
 }
 
 inline bool RawVolumeRenderer::renderAABB() const {
-	return _renderAABB;
+	return _gridRenderer.renderAABB();
 }
 
 inline bool RawVolumeRenderer::renderGrid() const {
-	return _renderGrid;
+	return _gridRenderer.renderGrid();;
 }
 
 inline bool RawVolumeRenderer::renderWireframe() const {
@@ -150,11 +141,11 @@ inline bool RawVolumeRenderer::renderWireframe() const {
 }
 
 inline void RawVolumeRenderer::setRenderAABB(bool renderAABB) {
-	_renderAABB = renderAABB;
+	_gridRenderer.setRenderAABB(renderAABB);
 }
 
 inline void RawVolumeRenderer::setRenderGrid(bool renderGrid) {
-	_renderGrid = renderGrid;
+	_gridRenderer.setRenderGrid(renderGrid);
 }
 
 inline void RawVolumeRenderer::setRenderWireframe(bool renderWireframe) {
