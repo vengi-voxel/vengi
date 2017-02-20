@@ -14,6 +14,8 @@
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QBTFormat.h"
 #include "voxel/model/QBFormat.h"
+#include "video/ScopedPolygonMode.h"
+#include "video/ScopedLineWidth.h"
 #include "core/Random.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
@@ -404,10 +406,20 @@ void Model::render(const video::Camera& camera) {
 	_gridRenderer.render(camera, modelVolume()->getRegion());
 	_rawVolumeRenderer.render(camera);
 	_shapeRenderer.renderAll(camera);
+	renderSelection(camera);
 }
 
 void Model::renderSelection(const video::Camera& camera) {
+	const voxel::Mesh* mesh = _rawVolumeSelectionRenderer.mesh(SelectionVolumeIndex);
+	if (mesh == nullptr || mesh->getNoOfIndices() == 0) {
+		return;
+	}
+	video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(-2.0f));
+	video::ScopedLineWidth lineWidth(3.0f);
+	video::enable(video::State::Blend);
+	video::blendFunc(video::BlendMode::One, video::BlendMode::One);
 	_rawVolumeSelectionRenderer.render(camera);
+	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 }
 
 void Model::onResize(const glm::ivec2& size) {
@@ -742,7 +754,7 @@ void Model::updateMirrorPlane() {
 		return;
 	}
 
-	updateShapeBuilderForPlane(true, _mirrorPos, _mirrorAxis, core::Color::alpha(core::Color::Yellow, 0.1f));
+	updateShapeBuilderForPlane(true, _mirrorPos, _mirrorAxis, core::Color::alpha(core::Color::LightGray, 0.1f));
 	if (_mirrorMeshIndex == -1) {
 		_mirrorMeshIndex = _shapeRenderer.createMesh(_shapeBuilder);
 	} else {

@@ -2,9 +2,6 @@
 #include "core/Common.h"
 #include "core/Var.h"
 #include "core/Color.h"
-#include "video/ScopedPolygonMode.h"
-#include "video/ScopedLineWidth.h"
-#include "video/ScopedFrameBuffer.h"
 #include "voxel/model/MeshExporter.h"
 #include "ui/UIApp.h"
 #include "io/Filesystem.h"
@@ -37,18 +34,7 @@ void EditorScene::render() {
 	core_trace_scoped(EditorSceneRender);
 	Model& mdl = m();
 	const video::Camera& camera = _controller.camera();
-	{
-		video::ScopedPolygonMode polygonMode(camera.polygonMode());
-		mdl.render(camera);
-	}
-	{
-		video::ScopedPolygonMode polygonMode(video::PolygonMode::WireFrame, glm::vec2(-2.0f));
-		video::ScopedLineWidth lineWidth(3.0f);
-		video::enable(video::State::Blend);
-		video::blendFunc(video::BlendMode::One, video::BlendMode::One);
-		mdl.renderSelection(camera);
-		video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
-	}
+	mdl.render(camera);
 	if (mdl.renderAxis()) {
 		_axis.render(camera);
 	}
