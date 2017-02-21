@@ -154,16 +154,12 @@ void NoiseToolWindow::generateImage() {
 	for (int y = 0; y < _noiseHeight; ++y) {
 		for (int x = 0; x < _noiseWidth; ++x) {
 			const float n = getNoise(x, y);
-			const uint8_t c = glm::clamp(n, 0.0f, 1.0f) * 255;
+			const float cn = glm::clamp(n, 0.0f, 1.0f);
+			const uint8_t c = cn * 255;
 			uint8_t* buf = &_noiseBuffer[index(x, y)];
-			for (int i = 0; i < BPP - 1; ++i) {
-				buf[i] = c;
-			}
+			memset(buf, c, BPP - 1);
 			if (y == 0 && x < _noiseWidth) {
-				const float graphN = glm::clamp(n, 0.0f, 1.0f);
-				const int graphY = graphN * _graphHeight;
-				const int graphBufOffset = index(x, graphY);
-				uint8_t* gbuf = &_graphBuffer[graphBufOffset];
+				uint8_t* gbuf = &_graphBuffer[index(x, cn * _graphHeight)];
 				*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Red);
 			}
 		}
