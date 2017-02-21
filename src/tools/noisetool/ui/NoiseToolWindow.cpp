@@ -16,7 +16,7 @@
 NoiseToolWindow::NoiseToolWindow(NoiseTool* tool) :
 		ui::Window(tool), _noiseTool(tool) {
 	for (int i = 0; i < (int)NoiseType::Max; ++i) {
-		addMenuItem(_noiseTypes, getNoiseTypeName((NoiseType)i));
+		addMenuItem(_noiseTypeSource, getNoiseTypeName((NoiseType)i));
 	}
 }
 
@@ -42,7 +42,7 @@ bool NoiseToolWindow::init() {
 		Log::error("Failed to init the main window: No type widget found");
 		return false;
 	}
-	_noiseType->SetSource(&_noiseTypes);
+	_noiseType->SetSource(&_noiseTypeSource);
 
 	_select = getWidgetByType<tb::TBSelectList>("list");
 	if (_select == nullptr) {

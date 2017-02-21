@@ -17,11 +17,13 @@ private:
 	static constexpr int BPP = 4;
 	static_assert(BPP == sizeof(uint32_t), "This code heavily relies on RGBA being 32bit");
 	using Super = ui::Window;
+
 	NoiseTool* _noiseTool;
 	NoiseData _data;
 	tb::TBSelectList* _select = nullptr;
+
 	tb::TBSelectDropdown* _noiseType = nullptr;
-	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _noiseTypes;
+	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _noiseTypeSource;
 
 	int _noiseWidth = 768;
 	int _noiseHeight = 1024;
