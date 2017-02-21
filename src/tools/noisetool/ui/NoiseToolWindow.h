@@ -15,6 +15,7 @@ class NoiseTool;
 class NoiseToolWindow: public ui::Window {
 private:
 	static constexpr int BPP = 4;
+	static_assert(BPP == sizeof(uint32_t), "This code heavily relies on RGBA being 32bit");
 	using Super = ui::Window;
 	NoiseTool* _noiseTool;
 	NoiseData _data;
