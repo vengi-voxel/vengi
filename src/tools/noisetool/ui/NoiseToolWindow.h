@@ -23,8 +23,7 @@ private:
 
 	int _noiseWidth = 768;
 	int _noiseHeight = 1024;
-	const int _graphHeight = 64;
-	const int _components = 4;
+	const int _graphHeight = 65;
 	uint8_t *_noiseBuffer = nullptr;
 	uint8_t *_graphBuffer = nullptr;
 

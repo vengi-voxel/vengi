@@ -8,9 +8,12 @@
 #include "noise/Noise.h"
 #include "noise/Simplex.h"
 #include "ui/UIApp.h"
+#include "core/Color.h"
 
 #define IMAGE_PREFIX "2d"
 #define GRAPH_PREFIX "graph"
+
+static constexpr int BPP = 4;
 
 NoiseToolWindow::NoiseToolWindow(NoiseTool* tool) :
 		ui::Window(tool), _noiseTool(tool) {
@@ -51,9 +54,9 @@ bool NoiseToolWindow::init() {
 	const tb::TBRect& rect = _select->GetPaddingRect();
 	_noiseHeight = rect.h;
 	_noiseWidth = rect.w - 60;
-	const size_t noiseBufferSize = _noiseWidth * _noiseHeight * _components;
+	const size_t noiseBufferSize = _noiseWidth * _noiseHeight * BPP;
 	_noiseBuffer = new uint8_t[noiseBufferSize];
-	const size_t graphBufferSize = _noiseWidth * _graphHeight * _components;
+	const size_t graphBufferSize = _noiseWidth * _graphHeight * BPP;
 	_graphBuffer = new uint8_t[graphBufferSize];
 
 	return true;
@@ -133,26 +136,31 @@ void NoiseToolWindow::generateImage() {
 	_data.frequency = getFloat("frequency");
 	_data.noiseType = (NoiseType)type;
 
-	const size_t noiseBufferSize = _noiseWidth * _noiseHeight * _components;
+	const size_t noiseBufferSize = _noiseWidth * _noiseHeight * BPP;
 	memset(_noiseBuffer, 255, noiseBufferSize);
-	const size_t graphBufferSize = _noiseWidth * _graphHeight * _components;
+	const size_t graphBufferSize = _noiseWidth * _graphHeight * BPP;
 	memset(_graphBuffer, 0, graphBufferSize);
+
+	for (int i = 0; i < _noiseWidth; ++i) {
+		const int graphBufOffset = i * BPP + int(_graphHeight / 2) * _noiseWidth * BPP;
+		uint8_t* gbuf = &_graphBuffer[graphBufOffset];
+		*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Gray);
+	}
 
 	for (int y = 0; y < _noiseHeight; ++y) {
 		for (int x = 0; x < _noiseWidth; ++x) {
 			const float n = getNoise(x, y);
 			const uint8_t c = glm::clamp(n, 0.0f, 1.0f) * 255;
-			uint8_t* buf = &_noiseBuffer[x * _components + y * _noiseWidth * _components];
-			const int j = _components == 4 ? 3 : 4;
-			for (int i = 0; i < j; ++i) {
+			uint8_t* buf = &_noiseBuffer[x * BPP + y * _noiseWidth * BPP];
+			for (int i = 0; i < BPP - 1; ++i) {
 				buf[i] = c;
 			}
 			if (y == 0 && x < _noiseWidth) {
 				const float graphN = glm::clamp(n, 0.0f, 1.0f);
 				const int graphY = graphN * _graphHeight;
-				const int graphBufOffset = x * _components + graphY * _noiseWidth * _components;
+				const int graphBufOffset = x * BPP + graphY * _noiseWidth * BPP;
 				uint8_t* gbuf = &_graphBuffer[graphBufOffset];
-				gbuf[3] = 255;
+				*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Red);
 			}
 		}
 	}

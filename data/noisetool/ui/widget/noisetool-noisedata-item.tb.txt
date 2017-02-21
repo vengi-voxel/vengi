@@ -1,9 +1,13 @@
-TBLayout: axis: y, position: left, spacing: 0, ignore-input: 1, position: left top
-	TBTextField: id: name, text-align: left
+TBLayout: axis: y, position: left, spacing: 3, ignore-input: 1, position: left top
+	TBLayout: axis: x, spacing: 10, position: left, distribution: gravity
+		TBTextField: id: name
+			font: size: 28px
+		TBTextField: id: frequency
+		TBTextField: id: octaves
+		TBTextField: id: gain
+		TBTextField: id: lacunarity
+		TBWidget: gravity: left right
 	ImageWidget: id: graph
-	TBTextField: id: frequency, text-align: left, state: disabled
-	TBTextField: id: octaves, text-align: left, state: disabled
-	TBTextField: id: gain, text-align: left, state: disabled
-	TBTextField: id: lacunarity, text-align: left, state: disabled
 	ImageWidget: id: noise
+
 TBButton: id: delete, skin: TBWindow.close
