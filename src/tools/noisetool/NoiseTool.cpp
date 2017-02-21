@@ -8,7 +8,7 @@
 #include "ui/noisedata/NoiseDataItemWidget.h"
 
 NoiseTool::NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		ui::UIApp(filesystem, eventBus, timeProvider) {
+		Super(filesystem, eventBus, timeProvider) {
 	init(ORGANISATION, "noisetool");
 }
 
@@ -33,7 +33,7 @@ void NoiseTool::remove(uint32_t dataId) {
 }
 
 core::AppState NoiseTool::onInit() {
-	core::AppState state = ui::UIApp::onInit();
+	core::AppState state = Super::onInit();
 	if (state != core::AppState::Running) {
 		return state;
 	}
@@ -49,7 +49,7 @@ core::AppState NoiseTool::onInit() {
 }
 
 core::AppState NoiseTool::onRunning() {
-	core::AppState state = ui::UIApp::onRunning();
+	core::AppState state = Super::onRunning();
 	return state;
 }
 

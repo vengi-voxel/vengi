@@ -19,6 +19,7 @@ typedef std::map<uint32_t, NoiseData> NoiseDataMap;
  */
 class NoiseTool: public ui::UIApp {
 private:
+	using Super = ui::UIApp;
 	NoiseDataMap _noiseData;
 	NoiseItemSource* _noiseItemSource = nullptr;
 public:
