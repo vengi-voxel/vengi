@@ -27,6 +27,7 @@ private:
 	const int _graphHeight = 65;
 	uint8_t *_noiseBuffer = nullptr;
 	uint8_t *_graphBuffer = nullptr;
+	uint8_t *_graphBufferBackground = nullptr;
 
 	float getNoise(int x, int y);
 	int index(int x, int y) const;

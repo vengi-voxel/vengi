@@ -28,6 +28,8 @@ NoiseToolWindow::~NoiseToolWindow() {
 	_noiseBuffer = nullptr;
 	delete[] _graphBuffer;
 	_graphBuffer = nullptr;
+	delete[] _graphBufferBackground;
+	_graphBufferBackground = nullptr;
 }
 
 bool NoiseToolWindow::init() {
@@ -56,6 +58,15 @@ bool NoiseToolWindow::init() {
 	_noiseBuffer = new uint8_t[noiseBufferSize];
 	const size_t graphBufferSize = _noiseWidth * _graphHeight * BPP;
 	_graphBuffer = new uint8_t[graphBufferSize];
+	_graphBufferBackground = new uint8_t[graphBufferSize];
+
+	const int graphBufOffset = index(0, int(_graphHeight / 2));
+	memset(&_graphBufferBackground[graphBufOffset], core::Color::getRGBA(core::Color::Gray), _noiseWidth * BPP);
+
+	for (int i = 0; i < _graphHeight; ++i) {
+		uint8_t* gbuf = &_graphBufferBackground[index(10, i)];
+		*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Gray);
+	}
 
 	return true;
 }
@@ -137,19 +148,7 @@ void NoiseToolWindow::generateImage() {
 	const size_t noiseBufferSize = _noiseWidth * _noiseHeight * BPP;
 	memset(_noiseBuffer, 255, noiseBufferSize);
 	const size_t graphBufferSize = _noiseWidth * _graphHeight * BPP;
-	memset(_graphBuffer, 0, graphBufferSize);
-
-	for (int i = 0; i < _noiseWidth; ++i) {
-		const int graphBufOffset = index(i, int(_graphHeight / 2));
-		uint8_t* gbuf = &_graphBuffer[graphBufOffset];
-		*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Gray);
-	}
-
-	for (int i = 0; i < _graphHeight; ++i) {
-		const int graphBufOffset = index(10, i);
-		uint8_t* gbuf = &_graphBuffer[graphBufOffset];
-		*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Gray);
-	}
+	memcpy(_graphBuffer, _graphBufferBackground, graphBufferSize);
 
 	for (int y = 0; y < _noiseHeight; ++y) {
 		for (int x = 0; x < _noiseWidth; ++x) {
