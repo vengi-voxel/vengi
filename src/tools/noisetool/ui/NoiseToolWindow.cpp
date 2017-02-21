@@ -147,6 +147,12 @@ void NoiseToolWindow::generateImage() {
 		*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Gray);
 	}
 
+	for (int i = 0; i < _graphHeight; ++i) {
+		const int graphBufOffset = 10 * BPP + i * _noiseWidth * BPP;
+		uint8_t* gbuf = &_graphBuffer[graphBufOffset];
+		*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Gray);
+	}
+
 	for (int y = 0; y < _noiseHeight; ++y) {
 		for (int x = 0; x < _noiseWidth; ++x) {
 			const float n = getNoise(x, y);

@@ -1,5 +1,5 @@
-TBLayout: axis: y, position: left, spacing: 3, ignore-input: 1, position: left top
-	TBLayout: axis: x, spacing: 10, position: left, distribution: gravity
+TBLayout: axis: y, position: left, spacing: 3, position: left top
+	TBLayout: axis: x, spacing: 10, position: left, distribution: gravity, ignore-input: 1
 		TBTextField: id: name
 			font: size: 28px
 		TBTextField: id: frequency
@@ -7,7 +7,9 @@ TBLayout: axis: y, position: left, spacing: 3, ignore-input: 1, position: left t
 		TBTextField: id: gain
 		TBTextField: id: lacunarity
 		TBWidget: gravity: left right
-	ImageWidget: id: graph
-	ImageWidget: id: noise
+	ImageWidget: id: graph, ignore-input: 1
+	TBSection: value: 0, text: "2D noise"
+		TBLayout: position: left top
+			ImageWidget: id: noise
 
 TBButton: id: delete, skin: TBWindow.close
