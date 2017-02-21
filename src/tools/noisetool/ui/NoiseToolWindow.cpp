@@ -13,8 +13,6 @@
 #define IMAGE_PREFIX "2d"
 #define GRAPH_PREFIX "graph"
 
-static constexpr int BPP = 4;
-
 NoiseToolWindow::NoiseToolWindow(NoiseTool* tool) :
 		ui::Window(tool), _noiseTool(tool) {
 	for (int i = 0; i < (int)NoiseType::Max; ++i) {
@@ -142,13 +140,13 @@ void NoiseToolWindow::generateImage() {
 	memset(_graphBuffer, 0, graphBufferSize);
 
 	for (int i = 0; i < _noiseWidth; ++i) {
-		const int graphBufOffset = i * BPP + int(_graphHeight / 2) * _noiseWidth * BPP;
+		const int graphBufOffset = index(i, int(_graphHeight / 2));
 		uint8_t* gbuf = &_graphBuffer[graphBufOffset];
 		*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Gray);
 	}
 
 	for (int i = 0; i < _graphHeight; ++i) {
-		const int graphBufOffset = 10 * BPP + i * _noiseWidth * BPP;
+		const int graphBufOffset = index(10, i);
 		uint8_t* gbuf = &_graphBuffer[graphBufOffset];
 		*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Gray);
 	}
@@ -157,14 +155,14 @@ void NoiseToolWindow::generateImage() {
 		for (int x = 0; x < _noiseWidth; ++x) {
 			const float n = getNoise(x, y);
 			const uint8_t c = glm::clamp(n, 0.0f, 1.0f) * 255;
-			uint8_t* buf = &_noiseBuffer[x * BPP + y * _noiseWidth * BPP];
+			uint8_t* buf = &_noiseBuffer[index(x, y)];
 			for (int i = 0; i < BPP - 1; ++i) {
 				buf[i] = c;
 			}
 			if (y == 0 && x < _noiseWidth) {
 				const float graphN = glm::clamp(n, 0.0f, 1.0f);
 				const int graphY = graphN * _graphHeight;
-				const int graphBufOffset = x * BPP + graphY * _noiseWidth * BPP;
+				const int graphBufOffset = index(x, graphY);
 				uint8_t* gbuf = &_graphBuffer[graphBufOffset];
 				*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Red);
 			}

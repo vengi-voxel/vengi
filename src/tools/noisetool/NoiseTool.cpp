@@ -28,6 +28,7 @@ void NoiseTool::remove(uint32_t dataId) {
 	for (int i = 0; i < n; ++i) {
 		if (_noiseItemSource->GetItemID(i) == dataId) {
 			_noiseItemSource->DeleteItem(i);
+			return;
 		}
 	}
 }

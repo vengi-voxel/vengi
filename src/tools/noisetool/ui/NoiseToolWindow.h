@@ -14,6 +14,7 @@ class NoiseTool;
 
 class NoiseToolWindow: public ui::Window {
 private:
+	static constexpr int BPP = 4;
 	using Super = ui::Window;
 	NoiseTool* _noiseTool;
 	NoiseData _data;
@@ -28,6 +29,7 @@ private:
 	uint8_t *_graphBuffer = nullptr;
 
 	float getNoise(int x, int y);
+	int index(int x, int y) const;
 	void generateImage();
 public:
 	NoiseToolWindow(NoiseTool* tool);
@@ -37,3 +39,7 @@ public:
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 	void OnDie() override;
 };
+
+inline int NoiseToolWindow::index(int x, int y) const {
+	return x * BPP + y * _noiseWidth * BPP;
+}
