@@ -35,34 +35,21 @@ TBLayout: distribution: gravity, axis: y
 
 			TBLayout: distribution: gravity, position: top
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
-					TBSection: value: 1, text: "Parameters"
-						TBLayout: position: left top, axis: y
-							TBClickLabel: text: Octaves
-								TBEditField: id: octaves, type: number, text: 4
-							TBClickLabel: text: Frequency
-								TBEditField: id: frequency, type: number, text: 0.01
-							TBClickLabel: text: Gain
-								TBEditField: id: gain, type: number, text: 0.5
-							TBClickLabel: text: Lacunarity
-								TBEditField: id: lacunarity, type: number, text: 2.0
-							TBClickLabel: text: Offset
-								TBEditField: id: offset, type: number, text: 1.0
-							TBClickLabel: text: Append
-								TBCheckBox: id: append, value: 1
-							TBClickLabel: text: All in one
-								TBCheckBox: id: allinone, value: 0
-							TBClickLabel: text: Auto update
-								TBCheckBox: id: auto, value: 0
+					TBLayout: position: left top, axis: y
+						TBClickLabel: text: Octaves
+							TBEditField: id: octaves, type: number, text: 4
+						TBClickLabel: text: Frequency
+							TBEditField: id: frequency, type: number, text: 0.01
+						TBClickLabel: text: Gain
+							TBEditField: id: gain, type: number, text: 0.5
+						TBClickLabel: text: Lacunarity
+							TBEditField: id: lacunarity, type: number, text: 2.0
+						TBClickLabel: text: Offset
+							TBEditField: id: offset, type: number, text: 1.0
 					TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y
-					TBLayout: distribution: gravity, id: editorcontainer, axis: y
-						TBScrollContainer: id: imagescroll, scroll-mode: off
-							TBLayout: id: imagelayout, axis: y, spacing: 10
-					TBLayout: distribution: gravity, axis: x
-						TBWidget: position: left, id: graphbegin
-							TBSkinImage: skin: noisetool-graph-begin
-						ImageWidget: id: graphimage, position: right, gravity: left right, skin: noisetool-graph-end
+					NoiseDataList
 
 			TBLayout: distribution: gravity
 				TBContainer: skin: container, gravity: left right

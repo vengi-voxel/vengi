@@ -6,9 +6,11 @@
 
 #include "ui/UIApp.h"
 #include "NoiseData.h"
-#include <unordered_map>
+#include <map>
 
-class NoiseToolWindow;
+class NoiseItemSource;
+
+typedef std::map<uint32_t, NoiseData> NoiseDataMap;
 
 // TODO: implement combinations
 
@@ -17,15 +19,26 @@ class NoiseToolWindow;
  */
 class NoiseTool: public ui::UIApp {
 private:
-	std::unordered_map<uint32_t, NoiseData> _noiseData;
-
-	NoiseToolWindow* _window = nullptr;
+	NoiseDataMap _noiseData;
+	NoiseItemSource* _noiseItemSource = nullptr;
 public:
 	NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	void add(uint32_t dataId, const NoiseData& data);
 	void remove(uint32_t dataId);
 
+	NoiseItemSource* noiseItemSource();
+
+	const NoiseDataMap& noiseData() const;
+
 	core::AppState onInit() override;
 	core::AppState onRunning() override;
 };
+
+inline const NoiseDataMap& NoiseTool::noiseData() const {
+	return _noiseData;
+}
+
+inline NoiseItemSource* NoiseTool::noiseItemSource() {
+	return _noiseItemSource;
+}

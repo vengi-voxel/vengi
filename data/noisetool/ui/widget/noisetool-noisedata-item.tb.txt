@@ -1,0 +1,9 @@
+TBLayout: axis: y, position: left, spacing: 0, ignore-input: 1, position: left top
+	TBTextField: id: name, text-align: left
+	ImageWidget: id: graph
+	TBTextField: id: frequency, text-align: left, state: disabled
+	TBTextField: id: octaves, text-align: left, state: disabled
+	TBTextField: id: gain, text-align: left, state: disabled
+	TBTextField: id: lacunarity, text-align: left, state: disabled
+	ImageWidget: id: noise
+TBButton: id: delete, skin: TBWindow.close

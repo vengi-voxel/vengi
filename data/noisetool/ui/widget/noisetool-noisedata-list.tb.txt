@@ -1,0 +1,10 @@
+TBLayout
+	distribution gravity
+	TBEditField
+		id filter
+		gravity left right
+		placeholder Search
+		type search
+TBSelectList
+	id list
+	gravity all

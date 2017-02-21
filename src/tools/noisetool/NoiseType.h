@@ -20,3 +20,5 @@ enum class NoiseType {
 
 	Max
 };
+
+extern const char* getNoiseTypeName(NoiseType t);
