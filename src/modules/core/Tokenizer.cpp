@@ -6,6 +6,7 @@ namespace core {
 Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char *split) :
 		_posIndex(0u), _len((int32_t)len) {
 	bool lastCharIsSep = false;
+	bool lastCharWasQuoteEnd = false;
 	for (;;) {
 		char c = skip(&s);
 		if (c == '\0') {
@@ -27,8 +28,13 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char
 				cl = core::utf8::lengthChar(c);
 				_len -= cl;
 				s += cl;
-				if (c == '"' || c == '\0' || _len <= 0) {
-					_tokens.push_back(token);
+				if (c == '"') {
+					lastCharWasQuoteEnd = true;
+					c = *s;
+					break;
+				}
+				if (c == '\0' || _len <= 0) {
+					lastCharWasQuoteEnd = true;
 					break;
 				}
 				if (c == '\\') {
@@ -45,12 +51,22 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char
 				}
 				token.push_back(c);
 			}
-			continue;
+		}
+		if (lastCharWasQuoteEnd) {
+			lastCharWasQuoteEnd = false;
+			if (c < ' ' || _len <= 0) {
+				_tokens.push_back(token);
+				if (_len <= 0) {
+					break;
+				} else {
+					continue;
+				}
+			}
 		}
 
 		lastCharIsSep = isSeparator(c, sep);
 		if (lastCharIsSep) {
-			_tokens.push_back("");
+			_tokens.push_back(token);
 			const size_t cl = core::utf8::lengthChar(c);
 			_len -= cl;
 			s += cl;
