@@ -178,6 +178,7 @@ void NoiseToolWindow::generateImage() {
 	_data.graph = tb::g_image_manager->GetImage(graphIdStr.CStr(), (uint32_t*)_graphBuffer, _noiseWidth, _graphHeight);
 
 	_noiseTool->add(TBIDC(idStr), _data);
+	_select->SetValue(_select->GetSource()->GetNumItems() - 1);
 }
 
 void NoiseToolWindow::OnDie() {
