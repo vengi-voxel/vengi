@@ -688,7 +688,7 @@ if (NOT CURL_FOUND)
 	list(APPEND HHEADERS ${CURL_BINARY_DIR}/curl_config.h ${CURL_BINARY_DIR}/curl/curlbuild.h)
 
 	if(MSVC)
-		list(APPEND CSOURCES libcurl.rc)
+		list(APPEND CSOURCES lib/libcurl.rc)
 	endif()
 endif(NOT CURL_FOUND)
 
