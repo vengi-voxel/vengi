@@ -1,6 +1,7 @@
 #pragma once
 
 enum class NoiseType {
+	doubleNoise,
 	simplexNoise,
 	ridgedNoise,
 	flowNoise,
@@ -11,7 +12,6 @@ enum class NoiseType {
 	ridgedMFTime,
 	ridgedMF,
 	ridgedMFCascade,
-	ridgedMFScaled,
 	iqNoise,
 	iqNoiseScaled,
 	analyticalDerivatives,
@@ -19,6 +19,8 @@ enum class NoiseType {
 	worleyNoise,
 	worleyNoiseFbm,
 	voronoi,
+	swissTurbulence,
+	jordanTurbulence,
 
 	Max
 };

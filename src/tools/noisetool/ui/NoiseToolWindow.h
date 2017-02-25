@@ -19,7 +19,6 @@ private:
 	using Super = ui::Window;
 
 	NoiseTool* _noiseTool;
-	NoiseData _data;
 	tb::TBSelectList* _select = nullptr;
 
 	tb::TBSelectDropdown* _noiseType = nullptr;
@@ -32,9 +31,14 @@ private:
 	uint8_t *_graphBuffer = nullptr;
 	uint8_t *_graphBufferBackground = nullptr;
 
-	float getNoise(int x, int y);
+	/**
+	 * @return the noise in the range [-1.0 - 1.0]
+	 */
+	float getNoise(int x, int y, NoiseData _data);
 	int index(int x, int y) const;
 	void generateImage();
+	void generateImage(NoiseType type);
+	void generateAll();
 public:
 	NoiseToolWindow(NoiseTool* tool);
 	~NoiseToolWindow();

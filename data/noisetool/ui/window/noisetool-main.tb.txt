@@ -30,6 +30,8 @@ TBLayout: distribution: gravity, axis: y
 							lp: width: 280
 							gravity left right
 							id type
+						TBButton: gravity: left, @include: definitions>menubutton, text: All, id: all
+							TBSkinImage: skin: noisetool-generate
 						TBLayout: gravity: left right
 							TBWidget
 
