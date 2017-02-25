@@ -4,6 +4,8 @@
 
 #include "Noise.h"
 #include "core/Trace.h"
+#include "core/Log.h"
+#include "core/Common.h"
 #include "Simplex.h"
 #include <limits>
 
@@ -53,28 +55,31 @@ float Noise4D(const glm::vec4& pos, int octaves, float persistence, float freque
 	return Noise(pos, octaves, persistence, 2.0f, frequency, amplitude);
 }
 
-int intValueNoise(const glm::ivec3& pos, int seed) {
-	const int xgen = 1619;
-	const int ygen = 31337;
-	const int zgen = 6971;
-	const int fixedseed = 1013;
-	int n = (xgen * pos.x + ygen * pos.y + zgen * pos.z + fixedseed * seed) & std::numeric_limits<int32_t>::max();
+int32_t intValueNoise(const glm::ivec3& pos, int32_t seed) {
+	constexpr int32_t xgen = 1619;
+	constexpr int32_t ygen = 31337;
+	constexpr int32_t zgen = 6971;
+	constexpr int32_t fixedseed = 1013;
+	int32_t n = (xgen * pos.x + ygen * pos.y + zgen * pos.z + fixedseed * seed) & std::numeric_limits<int32_t>::max();
 	n = (n >> 13) ^ n;
 	return (n * (n * n * 60493 + 19990303) + 1376312589) & std::numeric_limits<int32_t>::max();
 }
 
-double doubleValueNoise(const glm::ivec3& pos, int seed) {
-	return 1.0 - ((double)intValueNoise(pos, seed) / 1073741824.0);
+double doubleValueNoise(const glm::ivec3& pos, int32_t seed) {
+	constexpr double div = static_cast<double>(std::numeric_limits<int32_t>::max() / 2 + 1);
+	const int ni = intValueNoise(pos, seed);
+	const double n = static_cast<double>(ni / div);
+	return 1.0 - glm::abs(n);
 }
 
 double voronoi(const glm::dvec3& pos, bool enableDistance, double displacement, double frequency, int seed) {
 	const glm::dvec3 p = pos * frequency;
 	const glm::ivec3 rp(
-			(p.x >= 0.0 ? (int)(p.x + 0.5) : (int)(p.x - 0.5)),
-			(p.y >= 0.0 ? (int)(p.y + 0.5) : (int)(p.y - 0.5)),
-			(p.z >= 0.0 ? (int)(p.z + 0.5) : (int)(p.z - 0.5)));
+			(p.x > 0.0 ? (int)(p.x) : (int)(p.x) - 1),
+			(p.y > 0.0 ? (int)(p.y) : (int)(p.y) - 1),
+			(p.z > 0.0 ? (int)(p.z) : (int)(p.z) - 1));
 
-	double minDist = (double)std::numeric_limits<int32_t>::max();
+	double minDist = static_cast<double>(std::numeric_limits<int32_t>::max());
 	glm::dvec3 vp(0.0);
 
 	const int d = 2;
@@ -97,8 +102,49 @@ double voronoi(const glm::dvec3& pos, bool enableDistance, double displacement, 
 	}
 
 	const double value = enableDistance ? glm::length(vp - p) * glm::root_three<double>() - 1.0 : 0.0;
-	const double ret = doubleValueNoise(glm::ivec3(glm::floor(vp)));
+	const double ret = value + doubleValueNoise(glm::ivec3(glm::floor(vp)));
 	return ret;
+}
+
+float swissTurbulence(const glm::vec2& p, float seed, int octaves, float lacunarity, float gain, float warp) {
+	float sum = 0.0f;
+	float freq = 1.0f;
+	float amp = 1.0f;
+	glm::vec2 dsum;
+	for (int i = 0; i < octaves; i++) {
+		const glm::vec2 in(p + glm::vec2(seed + i) + warp * dsum);
+		const glm::vec3& n = noise::dnoise(in * freq);
+		sum += amp * (1.0f - glm::abs(n.x));
+		dsum += amp * glm::vec2(n.y, n.z) * -(n.x * 1.5f);
+		freq *= lacunarity;
+		amp *= gain * glm::clamp(sum, 0.0f, 1.0f);
+	}
+	return (sum - 1.0f) * 0.5f;
+}
+
+float jordanTurbulence(const glm::vec2& p, float seed, int octaves, float lacunarity, float gain1, float gain, float warp0, float warp, float damp0, float damp, float damp_scale) {
+	glm::vec3 n = dnoise(p + glm::vec2(seed));
+	glm::vec3 n2 = n * n.x;
+	float sum = n2.x;
+	glm::vec2 dsumWarp = warp0 * glm::vec2(n2.y, n2.z);
+	glm::vec2 dsumDamp = damp0 * glm::vec2(n2.y, n2.z);
+
+	float amp = gain1;
+	float freq = lacunarity;
+	float dampedAmp = amp * gain;
+
+	for (int i = 1; i < octaves; i++) {
+		const glm::vec2 in((p + glm::vec2(seed + i / 256.0f)) * freq + glm::vec2(dsumWarp));
+		n = noise::dnoise(in);
+		n2 = n * n.x;
+		sum += dampedAmp * n2.x;
+		dsumWarp += warp * glm::vec2(n2.y, n2.z);
+		dsumDamp += damp * glm::vec2(n2.y, n2.z);
+		freq *= lacunarity;
+		amp *= gain;
+		dampedAmp = amp * (1 - damp_scale / (1 + dot(dsumDamp, dsumDamp)));
+	}
+	return sum;
 }
 
 }
