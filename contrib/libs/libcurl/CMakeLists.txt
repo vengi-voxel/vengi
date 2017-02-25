@@ -699,7 +699,7 @@ engine_add_library(
 	PACKAGE CURL
 	SRCS ${HHEADERS} ${CSOURCES})
 
-if (NOT ${LIB_NAME}_FOUND)
+if (NOT CURL_FOUND)
 	target_include_directories(${LIB_NAME} PUBLIC ${CURL_BINARY_DIR})
 	target_include_directories(${LIB_NAME} PUBLIC ${CURL_SOURCE_DIR}/include)
 	target_include_directories(${LIB_NAME} PUBLIC ${CURL_BINARY_DIR}/curl)
