@@ -18,6 +18,7 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char
 		lastCharIsSep = false;
 		std::string token;
 		// TODO: check that " is not sep or split
+quote:
 		if (c == '"') {
 			size_t cl = core::utf8::lengthChar(c);
 			_len -= cl;
@@ -90,6 +91,9 @@ Tokenizer::Tokenizer(const char* s, std::size_t len, const char *sep, const char
 			c = skip(&s, false);
 			if (c < ' ' || _len <= 0) {
 				break;
+			}
+			if (c == '"') {
+				goto quote;
 			}
 			lastCharIsSep = isSeparator(c, sep);
 			if (lastCharIsSep) {

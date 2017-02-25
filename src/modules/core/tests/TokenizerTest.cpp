@@ -99,6 +99,20 @@ TEST_F(TokenizerTest, testTokenizerKeyQuotedSeparator) {
 	ASSERT_EQ(3u, t.size()) << toString(t.tokens());
 }
 
+TEST_F(TokenizerTest, testTokenizerCommandChain) {
+	core::Tokenizer t(";;;;testsemicolon \";\";;;;", ";");
+	ASSERT_EQ(9u, t.size()) << toString(t.tokens());
+	EXPECT_EQ("", t.next()) << toString(t.tokens());
+	EXPECT_EQ("", t.next()) << toString(t.tokens());
+	EXPECT_EQ("", t.next()) << toString(t.tokens());
+	EXPECT_EQ("", t.next()) << toString(t.tokens());
+	EXPECT_EQ("testsemicolon ;", t.next()) << toString(t.tokens());
+	EXPECT_EQ("", t.next()) << toString(t.tokens());
+	EXPECT_EQ("", t.next()) << toString(t.tokens());
+	EXPECT_EQ("", t.next()) << toString(t.tokens());
+	EXPECT_EQ("", t.next()) << toString(t.tokens());
+}
+
 TEST_F(TokenizerTest, testTokenizerSimple) {
 	EXPECT_EQ(9u, core::Tokenizer("some nice string that is easy to be tokenized").size());
 	ASSERT_EQ(3u, core::Tokenizer("foo()").size());
