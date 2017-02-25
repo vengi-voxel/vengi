@@ -162,7 +162,7 @@ void NoiseToolWindow::generateImage() {
 			uint8_t* buf = &_noiseBuffer[index(x, y)];
 			memset(buf, c, BPP - 1);
 			if (y == 0 && x < _noiseWidth) {
-				uint8_t* gbuf = &_graphBuffer[index(x, (cn * _graphHeight) - 1)];
+				uint8_t* gbuf = &_graphBuffer[index(x, ((_graphHeight - 1) - cn * _graphHeight) - 1)];
 				*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Red);
 			}
 		}
