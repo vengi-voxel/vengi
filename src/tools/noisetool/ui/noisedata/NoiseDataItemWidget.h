@@ -33,7 +33,6 @@ class NoiseDataItemWidget: public tb::TBLayout {
 private:
 	using Super = tb::TBLayout;
 	NoiseItemSource *_source;
-	tb::TBSelectItemViewer *_sourceViewer;
 	int _index;
 	NoiseTool* _tool;
 public:

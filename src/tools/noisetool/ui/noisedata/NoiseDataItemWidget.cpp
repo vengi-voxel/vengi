@@ -33,7 +33,7 @@ tb::TBWidget *NoiseItemSource::CreateItemWidget(int index, tb::TBSelectItemViewe
 	}
 
 NoiseDataItemWidget::NoiseDataItemWidget(NoiseTool* tool, NoiseItem *item, NoiseItemSource *source, tb::TBSelectItemViewer *source_viewer, int index) :
-			Super(), _source(source), _sourceViewer(source_viewer), _index(index), _tool(tool) {
+			Super(), _source(source), _index(index), _tool(tool) {
 	SetSkinBg(TBIDC("TBSelectItem"));
 	SetLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
 	SetLayoutDistributionPosition(tb::LAYOUT_DISTRIBUTION_POSITION_LEFT_TOP);
