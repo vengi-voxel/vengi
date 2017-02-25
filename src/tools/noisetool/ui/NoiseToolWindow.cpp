@@ -108,7 +108,7 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 	case NoiseType::noiseCurlNoise:
 		return noise::noise(position + glm::vec2(noise::curlNoise(position, data.millis).x));
 	case NoiseType::voronoi:
-		return noise::voronoi(glm::dvec3(position, 0.0), true, data.offset, data.frequency, data.octaves);
+		return noise::voronoi(glm::dvec3(position, 0.0), true, data.offset, 1.0f, data.octaves);
 	case NoiseType::worleyNoise:
 		return noise::worleyNoise(position);
 	case NoiseType::worleyNoiseFbm:
