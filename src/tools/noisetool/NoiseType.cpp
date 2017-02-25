@@ -18,6 +18,7 @@ static const char *NoiseTypeStr[] = {
 	"analytical derivatives",
 	"noise curl noise (time)",
 	"worley noise",
+	"worley noise fbm",
 	"voronoi"
 };
 static_assert((int)SDL_arraysize(NoiseTypeStr) == (int)NoiseType::Max, "String array size doesn't match noise types");

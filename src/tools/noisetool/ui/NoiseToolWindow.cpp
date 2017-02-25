@@ -110,6 +110,8 @@ float NoiseToolWindow::getNoise(int x, int y) {
 		return noise::norm(noise::voronoi(glm::dvec3(position, 0.0), true, _data.offset, _data.frequency, _data.octaves));
 	case NoiseType::worleyNoise:
 		return noise::worleyNoise(position);
+	case NoiseType::worleyNoiseFbm:
+		return noise::worleyfBm(position, _data.octaves, _data.lacunarity, _data.gain);
 	case NoiseType::Max:
 		break;
 	}

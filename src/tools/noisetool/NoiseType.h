@@ -17,6 +17,7 @@ enum class NoiseType {
 	analyticalDerivatives,
 	noiseCurlNoise,
 	worleyNoise,
+	worleyNoiseFbm,
 	voronoi,
 
 	Max
