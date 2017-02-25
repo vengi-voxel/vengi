@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
+#include <vector>
 
 namespace core {
 
@@ -56,6 +57,21 @@ private:
 
 protected:
 	TestApp *_testApp;
+
+	template<class T>
+	std::string toString(const std::vector<T>& v) const {
+		std::string str;
+		str.reserve(4096);
+		for (auto i = v.begin(); i != v.end();) {
+			str += "'";
+			str += *i;
+			str += "'";
+			if (++i != v.end()) {
+				str += ", ";
+			}
+		}
+		return str;
+	}
 
 	virtual void onCleanupApp() {
 	}
