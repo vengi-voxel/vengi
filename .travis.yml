@@ -1,0 +1,65 @@
+dist: trusty
+sudo: false
+
+os:
+  - linux
+  - osx
+
+git:
+  depth: 3
+
+language: generic
+
+addons:
+  apt:
+    packages:
+    - libglm-dev
+    - zlib1g-dev
+    - g++-6
+    - gcc-6
+    - clang-3.8
+    - libdbus-1-dev
+    - make
+    - cmake
+    - cmake-data
+    - libasound2-dev
+    - libpulse-dev
+    - libaudio-dev
+    - libx11-dev
+    - libxext-dev
+    - libxrandr-dev
+    - libxcursor-dev
+    - libxi-dev
+    - libxinerama-dev
+    - libxxf86vm-dev
+    - libxss-dev
+    - libgl1-mesa-dev
+    - libesd0-dev
+    - libdbus-1-dev
+    - libgles1-mesa-dev
+    - libgles2-mesa-dev
+    - libegl1-mesa-dev
+    - libibus-1.0-dev
+    - libassimp-dev
+    - postgresql-server-dev-9.5
+    - libpq-dev
+    - libenet-dev
+    - libgtk-3-dev
+    - qt5-default
+    - qtbase5-dev
+    - libmirclient-dev
+    sources:
+    - ubuntu-toolchain-r-test
+    - george-edison55-precise-backports # cmake 3.x
+
+script:
+  - CXX=clang++-3.8 CC=clang-3.8 make BUILDDIR=build-$TRAVIS_OS_NAME -j 4 CMAKE_BINARY=cmake
+  - CXX=clang++-3.8 CC=clang-3.8 make BUILDDIR=build-$TRAVIS_OS_NAME tests CMAKE_BINARY=cmake
+
+install:
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-6"; export CC="gcc-6"; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then gem install xcpretty-travis-formatter; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install postgresql; fi
+
+cache: apt

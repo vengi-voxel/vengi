@@ -1,4 +1,5 @@
-[![Build Status](https://gitlab.com/mgerhardy/engine/badges/master/build.svg)](https://gitlab.com/mgerhardy/engine/commits/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/556vyuwwg476jn7t?svg=true)](https://ci.appveyor.com/project/mgerhardy/engine)
+[![Build Status](https://travis-ci.org/mgerhardy/engine.svg?branch=master)](https://travis-ci.org/mgerhardy/engine)
 
 # About
 Voxel engine with procedural generated landscape.

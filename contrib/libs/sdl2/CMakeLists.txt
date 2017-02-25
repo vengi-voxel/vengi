@@ -1452,6 +1452,10 @@ if (LINUX OR EMSCRIPTEN)
     "${CMAKE_BINARY_DIR}/SDL_config.h")
 endif()
 
+if (IOS)
+  list(APPEND EXTRA_CFLAGS "-fobjc-arc")
+endif()
+
 # Prepare the flags and remove duplicates
 if(EXTRA_LDFLAGS)
   list(REMOVE_DUPLICATES EXTRA_LDFLAGS)
@@ -1513,7 +1517,7 @@ endif(NOT SDL2_FOUND)
 engine_add_library(
 	LIB sdl2
 	SRCS ${SOURCE_FILES} ${SDLMAIN_SOURCES} ${PLATFORM_SRCS}
-	GCCCFLAGS "${CMAKE_C_FLAGS} ${SDL_CFLAGS} ${EXTRA_CFLAGS}"
+	GCCCFLAGS "${SDL_CFLAGS} ${EXTRA_CFLAGS} -Wno-sign-compare"
 	DEFINES ${DEFINES}
 	LINKERFLAGS ${ANDROID_LDFLAGS} ${EXTRA_LDFLAGS})
 if (NOT SDL2_FOUND)
@@ -1521,11 +1525,5 @@ if (NOT SDL2_FOUND)
 		list(APPEND EXTRA_LIBS ${CMAKE_DL_LIBS})
 	endif()
 	target_link_libraries(sdl2 ${EXTRA_LIBS})
-	if (NOT MSVC)
-		if (IOS)
-			set_target_properties(sdl2 PROPERTIES COMPILE_FLAGS "-fobjc-arc")
-		endif()
-		set_target_properties(sdl2 PROPERTIES COMPILE_FLAGS "-Wno-sign-compare")
-	endif()
 	target_include_directories(sdl2 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/config)
 endif()

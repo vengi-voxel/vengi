@@ -530,7 +530,7 @@ endmacro()
 macro(CheckMir)
     if(VIDEO_MIR)
         find_library(MIR_LIB mirclient mircommon egl)
-        pkg_check_modules(MIR_TOOLKIT mirclient mircommon)
+        pkg_check_modules(MIR_TOOLKIT mirclient>=0.25 mircommon)
         pkg_check_modules(EGL egl)
         pkg_check_modules(XKB xkbcommon)
 
@@ -542,7 +542,7 @@ macro(CheckMir)
             set(SOURCE_FILES ${SOURCE_FILES} ${MIR_SOURCES})
             set(SDL_VIDEO_DRIVER_MIR 1)
 
-            list(APPEND EXTRA_CFLAGS ${MIR_TOOLKIT_CFLAGS} ${EGL_CLFAGS} ${XKB_CLFLAGS})
+            list(APPEND EXTRA_CFLAGS ${MIR_TOOLKIT_CFLAGS} ${EGL_CFLAGS} ${XKB_CFLAGS})
 
             if(MIR_SHARED)
                 if(NOT HAVE_DLOPEN)

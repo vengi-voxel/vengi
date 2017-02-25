@@ -113,7 +113,7 @@ $(if $(LINUX),\
 	$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1) \
 $(else),\
 	$(if $(DARWIN),\
-		$(Q)cd $(BUILDDIR); xcodebuild build -target $(1) install -project tests.xcodeproj -configuration $(BUILD_TYPE) | tee xcodebuild.log | xcpretty && exit ${PIPESTATUS[0]} \
+		$(Q)cd $(BUILDDIR); xcodebuild build -target $(1) install -project tests.xcodeproj -configuration $(BUILD_TYPE) CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO | tee xcodebuild.log | xcpretty && exit ${PIPESTATUS[0]} \
 	$(else),\
 		$(Q)$(MAKE) $(MAKE_OPTIONS) $(JOB_FLAG) $(1) \
 	)
@@ -141,6 +141,9 @@ server client voxedit shapetool worldrenderertool shadertool noisetool databaset
 	$(call COMPILE, copy-data-shared)
 	$(call COMPILE, copy-data-$@)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
+
+backward flatbuffers glm libenet nativefiledialog restclient-cpp selene zlib lua53 luac libcurl assimp turbobadger sdl2: cmake
+	$(call COMPILE, $@)
 
 rcon: cmake
 	$(call COMPILE, $@)
