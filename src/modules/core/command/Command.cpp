@@ -44,14 +44,20 @@ int Command::execute(const std::string& command) {
 	Tokenizer commandLineTokenizer(command, ";");
 	while (commandLineTokenizer.hasNext()) {
 		const std::string& fullCmd = commandLineTokenizer.next();
+		if (fullCmd.empty()) {
+			continue;
+		}
+		Log::debug("full command: '%s'", fullCmd.c_str());
 		Tokenizer commandTokenizer(fullCmd, " ");
 		if (!commandTokenizer.hasNext()) {
 			continue;
 		}
 		const std::string c = commandTokenizer.next();
+		Log::debug("command: '%s'", c.c_str());
 		std::vector<std::string> args;
 		while (commandTokenizer.hasNext()) {
 			args.push_back(commandTokenizer.next());
+			Log::debug("arg: '%s'", args.back().c_str());
 		}
 		if (c == "wait") {
 			if (args.size() == 1) {
@@ -64,7 +70,7 @@ int Command::execute(const std::string& command) {
 		if (_delayFrames > 0) {
 			while (commandLineTokenizer.hasNext()) {
 				const std::string& delayedCommand = commandLineTokenizer.next();
-				Log::info("add command %s to delayed buffer", delayedCommand.c_str());
+				Log::debug("add command %s to delayed buffer", delayedCommand.c_str());
 				_delayedTokens.push_back(delayedCommand);
 			}
 		} else if (execute(c, args)) {
@@ -92,6 +98,7 @@ bool Command::execute(const std::string& command, const CmdArgs& args) {
 		ScopedReadLock scoped(_lock);
 		auto i = _cmds.find(command);
 		if (i == _cmds.end()) {
+			Log::debug("could not find command callback for %s", command.c_str());
 			return false;
 		}
 		if (_delayFrames > 0) {
@@ -100,11 +107,13 @@ bool Command::execute(const std::string& command, const CmdArgs& args) {
 				fullCmd.append(" ");
 				fullCmd.append(arg);
 			}
+			Log::debug("delay %s", fullCmd.c_str());
 			_delayedTokens.push_back(fullCmd);
 			return true;
 		}
 		cmd = i->second;
 	}
+	Log::debug("execute %s with %i arguments", command.c_str(), (int)args.size());
 	cmd._func(args);
 	return true;
 }
