@@ -276,7 +276,7 @@ static float grad3v[16][3] = { { -a, a, a }, { -a, -a, a }, { a, -a, a }, { a, a
  */
 
 inline float grad(int hash, float x) {
-	int h = hash & 15;
+	const int h = hash & 15;
 	float grad = 1.0f + (h & 7);   // Gradient value 1.0, 2.0, ..., 8.0
 	if (h & 8)
 		grad = -grad;         // Set a random sign for the gradient
@@ -284,24 +284,24 @@ inline float grad(int hash, float x) {
 }
 
 inline float grad(int hash, float x, float y) {
-	int h = hash & 7;      // Convert low 3 bits of hash code
-	float u = h < 4 ? x : y;  // into 8 simple gradient directions,
-	float v = h < 4 ? y : x;  // and compute the dot product with (x,y).
+	const int h = hash & 7;      // Convert low 3 bits of hash code
+	const float u = h < 4 ? x : y;  // into 8 simple gradient directions,
+	const float v = h < 4 ? y : x;  // and compute the dot product with (x,y).
 	return ((h & 1) ? -u : u) + ((h & 2) ? -2.0f * v : 2.0f * v);
 }
 
 inline float grad(int hash, float x, float y, float z) {
-	int h = hash & 15;     // Convert low 4 bits of hash code into 12 simple
-	float u = h < 8 ? x : y; // gradient directions, and compute dot product.
-	float v = h < 4 ? y : h == 12 || h == 14 ? x : z; // Fix repeats at h = 12 to 15
+	const int h = hash & 15;     // Convert low 4 bits of hash code into 12 simple
+	const float u = h < 8 ? x : y; // gradient directions, and compute dot product.
+	const float v = h < 4 ? y : h == 12 || h == 14 ? x : z; // Fix repeats at h = 12 to 15
 	return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
 }
 
 inline float grad(int hash, float x, float y, float z, float t) {
-	int h = hash & 31;      // Convert low 5 bits of hash code into 32 simple
-	float u = h < 24 ? x : y; // gradient directions, and compute dot product.
-	float v = h < 16 ? y : z;
-	float w = h < 8 ? z : t;
+	const int h = hash & 31;      // Convert low 5 bits of hash code into 32 simple
+	const float u = h < 24 ? x : y; // gradient directions, and compute dot product.
+	const float v = h < 16 ? y : z;
+	const float w = h < 8 ? z : t;
 	return ((h & 1) ? -u : u) + ((h & 2) ? -v : v) + ((h & 4) ? -w : w);
 }
 
@@ -310,21 +310,21 @@ inline float grad(int hash, float x, float y, float z, float t) {
  * and gradients-dot-residualvectors in 2D to 4D.
  */
 inline void grad1(int hash, float *gx) {
-	int h = hash & 15;
+	const int h = hash & 15;
 	*gx = 1.0f + (h & 7);   // Gradient value is one of 1.0, 2.0, ..., 8.0
 	if (h & 8)
 		*gx = -*gx;   // Make half of the gradients negative
 }
 
 inline void grad2(int hash, float *gx, float *gy) {
-	int h = hash & 7;
+	const int h = hash & 7;
 	*gx = grad2lut[h][0];
 	*gy = grad2lut[h][1];
 	return;
 }
 
 inline void grad3(int hash, float *gx, float *gy, float *gz) {
-	int h = hash & 15;
+	const int h = hash & 15;
 	*gx = grad3lut[h][0];
 	*gy = grad3lut[h][1];
 	*gz = grad3lut[h][2];
@@ -332,7 +332,7 @@ inline void grad3(int hash, float *gx, float *gy, float *gz) {
 }
 
 inline void grad4(int hash, float *gx, float *gy, float *gz, float *gw) {
-	int h = hash & 31;
+	const int h = hash & 31;
 	*gx = grad4lut[h][0];
 	*gy = grad4lut[h][1];
 	*gz = grad4lut[h][2];
@@ -346,22 +346,22 @@ inline void grad4(int hash, float *gx, float *gy, float *gz, float *gw) {
  */
 
 inline void gradrot2(int hash, float sin_t, float cos_t, float *gx, float *gy) {
-	int h = hash & 7;
-	float gx0 = grad2lut[h][0];
-	float gy0 = grad2lut[h][1];
+	const int h = hash & 7;
+	const float gx0 = grad2lut[h][0];
+	const float gy0 = grad2lut[h][1];
 	*gx = cos_t * gx0 - sin_t * gy0;
 	*gy = sin_t * gx0 + cos_t * gy0;
 	return;
 }
 
 inline void gradrot3(int hash, float sin_t, float cos_t, float *gx, float *gy, float *gz) {
-	int h = hash & 15;
-	float gux = grad3u[h][0];
-	float guy = grad3u[h][1];
-	float guz = grad3u[h][2];
-	float gvx = grad3v[h][0];
-	float gvy = grad3v[h][1];
-	float gvz = grad3v[h][2];
+	const int h = hash & 15;
+	const float gux = grad3u[h][0];
+	const float guy = grad3u[h][1];
+	const float guz = grad3u[h][2];
+	const float gvx = grad3v[h][0];
+	const float gvy = grad3v[h][1];
+	const float gvz = grad3v[h][2];
 	*gx = cos_t * gux + sin_t * gvx;
 	*gy = cos_t * guy + sin_t * gvy;
 	*gz = cos_t * guz + sin_t * gvz;
@@ -394,11 +394,10 @@ inline float graddotp3(float gx, float gy, float gz, float x, float y, float z) 
 #define G4 0.138196601f // G4 = (5.0-Math.sqrt(5.0))/20.0
 
 float noise(float x) {
-
-	int i0 = FASTFLOOR(x);
-	int i1 = i0 + 1;
-	float x0 = x - i0;
-	float x1 = x0 - 1.0f;
+	const int i0 = FASTFLOOR(x);
+	const int i1 = i0 + 1;
+	const float x0 = x - i0;
+	const float x1 = x0 - 1.0f;
 
 	float n0, n1;
 
@@ -423,17 +422,17 @@ float noise(const glm::vec2 &v) {
 	float n0, n1, n2; // Noise contributions from the three corners
 
 	// Skew the input space to determine which simplex cell we're in
-	float s = (v.x + v.y) * F2; // Hairy factor for 2D
-	float xs = v.x + s;
-	float ys = v.y + s;
-	int i = FASTFLOOR(xs);
-	int j = FASTFLOOR(ys);
+	const float s = (v.x + v.y) * F2; // Hairy factor for 2D
+	const float xs = v.x + s;
+	const float ys = v.y + s;
+	const int i = FASTFLOOR(xs);
+	const int j = FASTFLOOR(ys);
 
-	float t = (float) (i + j) * G2;
-	float X0 = i - t; // Unskew the cell origin back to (x,y) space
-	float Y0 = j - t;
-	float x0 = v.x - X0; // The x,y distances from the cell origin
-	float y0 = v.y - Y0;
+	const float t = (float) (i + j) * G2;
+	const float X0 = i - t; // Unskew the cell origin back to (x,y) space
+	const float Y0 = j - t;
+	const float x0 = v.x - X0; // The x,y distances from the cell origin
+	const float y0 = v.y - Y0;
 
 	// For the 2D case, the simplex shape is an equilateral triangle.
 	// Determine which simplex we are in.
@@ -451,14 +450,14 @@ float noise(const glm::vec2 &v) {
 	// a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
 	// c = (3-sqrt(3))/6
 
-	float x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
-	float y1 = y0 - j1 + G2;
-	float x2 = x0 - 1.0f + 2.0f * G2; // Offsets for last corner in (x,y) unskewed coords
-	float y2 = y0 - 1.0f + 2.0f * G2;
+	const float x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
+	const float y1 = y0 - j1 + G2;
+	const float x2 = x0 - 1.0f + 2.0f * G2; // Offsets for last corner in (x,y) unskewed coords
+	const float y2 = y0 - 1.0f + 2.0f * G2;
 
 	// Wrap the integer indices at 256, to avoid indexing details::perm[] out of bounds
-	int ii = i & 0xff;
-	int jj = j & 0xff;
+	const int ii = i & 0xff;
+	const int jj = j & 0xff;
 
 	// Calculate the contribution from the three corners
 	float t0 = 0.5f - x0 * x0 - y0 * y0;
@@ -495,21 +494,21 @@ float noise(const glm::vec3 &v) {
 	float n0, n1, n2, n3; // Noise contributions from the four corners
 
 	// Skew the input space to determine which simplex cell we're in
-	float s = (v.x + v.y + v.z) * F3; // Very nice and simple skew factor for 3D
-	float xs = v.x + s;
-	float ys = v.y + s;
-	float zs = v.z + s;
-	int i = FASTFLOOR(xs);
-	int j = FASTFLOOR(ys);
-	int k = FASTFLOOR(zs);
+	const float s = (v.x + v.y + v.z) * F3; // Very nice and simple skew factor for 3D
+	const float xs = v.x + s;
+	const float ys = v.y + s;
+	const float zs = v.z + s;
+	const int i = FASTFLOOR(xs);
+	const int j = FASTFLOOR(ys);
+	const int k = FASTFLOOR(zs);
 
-	float t = (float) (i + j + k) * G3;
-	float X0 = i - t; // Unskew the cell origin back to (x,y,z) space
-	float Y0 = j - t;
-	float Z0 = k - t;
-	float x0 = v.x - X0; // The x,y,z distances from the cell origin
-	float y0 = v.y - Y0;
-	float z0 = v.z - Z0;
+	const float t = (float) (i + j + k) * G3;
+	const float X0 = i - t; // Unskew the cell origin back to (x,y,z) space
+	const float Y0 = j - t;
+	const float Z0 = k - t;
+	const float x0 = v.x - X0; // The x,y,z distances from the cell origin
+	const float y0 = v.y - Y0;
+	const float z0 = v.z - Z0;
 
 	// For the 3D case, the simplex shape is a slightly irregular tetrahedron.
 	// Determine which simplex we are in.
@@ -574,20 +573,20 @@ float noise(const glm::vec3 &v) {
 	// a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
 	// c = 1/6.
 
-	float x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
-	float y1 = y0 - j1 + G3;
-	float z1 = z0 - k1 + G3;
-	float x2 = x0 - i2 + 2.0f * G3; // Offsets for third corner in (x,y,z) coords
-	float y2 = y0 - j2 + 2.0f * G3;
-	float z2 = z0 - k2 + 2.0f * G3;
-	float x3 = x0 - 1.0f + 3.0f * G3; // Offsets for last corner in (x,y,z) coords
-	float y3 = y0 - 1.0f + 3.0f * G3;
-	float z3 = z0 - 1.0f + 3.0f * G3;
+	const float x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
+	const float y1 = y0 - j1 + G3;
+	const float z1 = z0 - k1 + G3;
+	const float x2 = x0 - i2 + 2.0f * G3; // Offsets for third corner in (x,y,z) coords
+	const float y2 = y0 - j2 + 2.0f * G3;
+	const float z2 = z0 - k2 + 2.0f * G3;
+	const float x3 = x0 - 1.0f + 3.0f * G3; // Offsets for last corner in (x,y,z) coords
+	const float y3 = y0 - 1.0f + 3.0f * G3;
+	const float z3 = z0 - 1.0f + 3.0f * G3;
 
 	// Wrap the integer indices at 256, to avoid indexing details::perm[] out of bounds
-	int ii = i & 0xff;
-	int jj = j & 0xff;
-	int kk = k & 0xff;
+	const int ii = i & 0xff;
+	const int jj = j & 0xff;
+	const int kk = k & 0xff;
 
 	// Calculate the contribution from the four corners
 	float t0 = 0.6f - x0 * x0 - y0 * y0 - z0 * z0;
@@ -642,26 +641,26 @@ float noise(const glm::vec4 &v) {
 	float n0, n1, n2, n3, n4; // Noise contributions from the five corners
 
 	// Skew the (x,y,z,w) space to determine which cell of 24 simplices we're in
-	float s = (v.x + v.y + v.z + v.w) * F4; // Factor for 4D skewing
-	float xs = v.x + s;
-	float ys = v.y + s;
-	float zs = v.z + s;
-	float ws = v.w + s;
-	int i = FASTFLOOR(xs);
-	int j = FASTFLOOR(ys);
-	int k = FASTFLOOR(zs);
-	int l = FASTFLOOR(ws);
+	const float s = (v.x + v.y + v.z + v.w) * F4; // Factor for 4D skewing
+	const float xs = v.x + s;
+	const float ys = v.y + s;
+	const float zs = v.z + s;
+	const float ws = v.w + s;
+	const int i = FASTFLOOR(xs);
+	const int j = FASTFLOOR(ys);
+	const int k = FASTFLOOR(zs);
+	const int l = FASTFLOOR(ws);
 
-	float t = (i + j + k + l) * G4; // Factor for 4D unskewing
-	float X0 = i - t; // Unskew the cell origin back to (x,y,z,w) space
-	float Y0 = j - t;
-	float Z0 = k - t;
-	float W0 = l - t;
+	const float t = (i + j + k + l) * G4; // Factor for 4D unskewing
+	const float X0 = i - t; // Unskew the cell origin back to (x,y,z,w) space
+	const float Y0 = j - t;
+	const float Z0 = k - t;
+	const float W0 = l - t;
 
-	float x0 = v.x - X0;  // The x,y,z,w distances from the cell origin
-	float y0 = v.y - Y0;
-	float z0 = v.z - Z0;
-	float w0 = v.w - W0;
+	const float x0 = v.x - X0;  // The x,y,z,w distances from the cell origin
+	const float y0 = v.y - Y0;
+	const float z0 = v.z - Z0;
+	const float w0 = v.w - W0;
 
 	// For the 4D case, the simplex is a 4D shape I won't even try to describe.
 	// To find out which of the 24 possible simplices we're in, we need to
@@ -671,13 +670,13 @@ float noise(const glm::vec4 &v) {
 	// First, six pair-wise comparisons are performed between each possible pair
 	// of the four coordinates, and the results are used to add up binary bits
 	// for an integer index.
-	int c1 = (x0 > y0) ? 32 : 0;
-	int c2 = (x0 > z0) ? 16 : 0;
-	int c3 = (y0 > z0) ? 8 : 0;
-	int c4 = (x0 > w0) ? 4 : 0;
-	int c5 = (y0 > w0) ? 2 : 0;
-	int c6 = (z0 > w0) ? 1 : 0;
-	int c = c1 + c2 + c3 + c4 + c5 + c6;
+	const int c1 = (x0 > y0) ? 32 : 0;
+	const int c2 = (x0 > z0) ? 16 : 0;
+	const int c3 = (y0 > z0) ? 8 : 0;
+	const int c4 = (x0 > w0) ? 4 : 0;
+	const int c5 = (y0 > w0) ? 2 : 0;
+	const int c6 = (z0 > w0) ? 1 : 0;
+	const int c = c1 + c2 + c3 + c4 + c5 + c6;
 
 	int i1, j1, k1, l1; // The integer offsets for the second simplex corner
 	int i2, j2, k2, l2; // The integer offsets for the third simplex corner
@@ -704,28 +703,28 @@ float noise(const glm::vec4 &v) {
 	l3 = details::sSimplexLut[c][3] >= 1 ? 1 : 0;
 	// The fifth corner has all coordinate offsets = 1, so no need to look that up.
 
-	float x1 = x0 - i1 + G4; // Offsets for second corner in (x,y,z,w) coords
-	float y1 = y0 - j1 + G4;
-	float z1 = z0 - k1 + G4;
-	float w1 = w0 - l1 + G4;
-	float x2 = x0 - i2 + 2.0f * G4; // Offsets for third corner in (x,y,z,w) coords
-	float y2 = y0 - j2 + 2.0f * G4;
-	float z2 = z0 - k2 + 2.0f * G4;
-	float w2 = w0 - l2 + 2.0f * G4;
-	float x3 = x0 - i3 + 3.0f * G4; // Offsets for fourth corner in (x,y,z,w) coords
-	float y3 = y0 - j3 + 3.0f * G4;
-	float z3 = z0 - k3 + 3.0f * G4;
-	float w3 = w0 - l3 + 3.0f * G4;
-	float x4 = x0 - 1.0f + 4.0f * G4; // Offsets for last corner in (x,y,z,w) coords
-	float y4 = y0 - 1.0f + 4.0f * G4;
-	float z4 = z0 - 1.0f + 4.0f * G4;
-	float w4 = w0 - 1.0f + 4.0f * G4;
+	const float x1 = x0 - i1 + G4; // Offsets for second corner in (x,y,z,w) coords
+	const float y1 = y0 - j1 + G4;
+	const float z1 = z0 - k1 + G4;
+	const float w1 = w0 - l1 + G4;
+	const float x2 = x0 - i2 + 2.0f * G4; // Offsets for third corner in (x,y,z,w) coords
+	const float y2 = y0 - j2 + 2.0f * G4;
+	const float z2 = z0 - k2 + 2.0f * G4;
+	const float w2 = w0 - l2 + 2.0f * G4;
+	const float x3 = x0 - i3 + 3.0f * G4; // Offsets for fourth corner in (x,y,z,w) coords
+	const float y3 = y0 - j3 + 3.0f * G4;
+	const float z3 = z0 - k3 + 3.0f * G4;
+	const float w3 = w0 - l3 + 3.0f * G4;
+	const float x4 = x0 - 1.0f + 4.0f * G4; // Offsets for last corner in (x,y,z,w) coords
+	const float y4 = y0 - 1.0f + 4.0f * G4;
+	const float z4 = z0 - 1.0f + 4.0f * G4;
+	const float w4 = w0 - 1.0f + 4.0f * G4;
 
 	// Wrap the integer indices at 256, to avoid indexing details::perm[] out of bounds
-	int ii = i & 0xff;
-	int jj = j & 0xff;
-	int kk = k & 0xff;
-	int ll = l & 0xff;
+	const int ii = i & 0xff;
+	const int jj = j & 0xff;
+	const int kk = k & 0xff;
+	const int ll = l & 0xff;
 
 	// Calculate the contribution from the five corners
 	float t0 = 0.6f - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
@@ -773,25 +772,25 @@ float noise(const glm::vec4 &v) {
 }
 
 glm::vec2 dnoise(float x) {
-	int i0 = FASTFLOOR(x);
-	int i1 = i0 + 1;
-	float x0 = x - i0;
-	float x1 = x0 - 1.0f;
+	const int i0 = FASTFLOOR(x);
+	const int i1 = i0 + 1;
+	const float x0 = x - i0;
+	const float x1 = x0 - 1.0f;
 
 	float gx0, gx1;
 	float n0, n1;
 	float t20, t40, t21, t41;
 
-	float x20 = x0 * x0;
-	float t0 = 1.0f - x20;
+	const float x20 = x0 * x0;
+	const float t0 = 1.0f - x20;
 	//  if(t0 < 0.0f) t0 = 0.0f; // Never happens for 1D: x0<=1 always
 	t20 = t0 * t0;
 	t40 = t20 * t20;
 	details::grad1(details::perm[i0 & 0xff], &gx0);
 	n0 = t40 * gx0 * x0;
 
-	float x21 = x1 * x1;
-	float t1 = 1.0f - x21;
+	const float x21 = x1 * x1;
+	const float t1 = 1.0f - x21;
 	//  if(t1 < 0.0f) t1 = 0.0f; // Never happens for 1D: |x1|<=1 always
 	t21 = t1 * t1;
 	t41 = t21 * t21;
@@ -822,17 +821,17 @@ glm::vec3 dnoise(const glm::vec2 &v) {
 	float n0, n1, n2; // Noise contributions from the three corners
 
 	// Skew the input space to determine which simplex cell we're in
-	float s = (v.x + v.y) * F2; // Hairy factor for 2D
-	float xs = v.x + s;
-	float ys = v.y + s;
-	int i = FASTFLOOR(xs);
-	int j = FASTFLOOR(ys);
+	const float s = (v.x + v.y) * F2; // Hairy factor for 2D
+	const float xs = v.x + s;
+	const float ys = v.y + s;
+	const int i = FASTFLOOR(xs);
+	const int j = FASTFLOOR(ys);
 
-	float t = (float) (i + j) * G2;
-	float X0 = i - t; // Unskew the cell origin back to (x,y) space
-	float Y0 = j - t;
-	float x0 = v.x - X0; // The x,y distances from the cell origin
-	float y0 = v.y - Y0;
+	const float t = (float) (i + j) * G2;
+	const float X0 = i - t; // Unskew the cell origin back to (x,y) space
+	const float Y0 = j - t;
+	const float x0 = v.x - X0; // The x,y distances from the cell origin
+	const float y0 = v.y - Y0;
 
 	// For the 2D case, the simplex shape is an equilateral triangle.
 	// Determine which simplex we are in.
@@ -850,14 +849,14 @@ glm::vec3 dnoise(const glm::vec2 &v) {
 	// a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
 	// c = (3-sqrt(3))/6
 
-	float x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
-	float y1 = y0 - j1 + G2;
-	float x2 = x0 - 1.0f + 2.0f * G2; // Offsets for last corner in (x,y) unskewed coords
-	float y2 = y0 - 1.0f + 2.0f * G2;
+	const float x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
+	const float y1 = y0 - j1 + G2;
+	const float x2 = x0 - 1.0f + 2.0f * G2; // Offsets for last corner in (x,y) unskewed coords
+	const float y2 = y0 - 1.0f + 2.0f * G2;
 
 	// Wrap the integer indices at 256, to avoid indexing details::perm[] out of bounds
-	int ii = i & 0xff;
-	int jj = j & 0xff;
+	const int ii = i & 0xff;
+	const int jj = j & 0xff;
 
 	float gx0, gy0, gx1, gy1, gx2, gy2; /* Gradients at simplex corners */
 
@@ -905,13 +904,13 @@ glm::vec3 dnoise(const glm::vec2 &v) {
 	 *    *dnoise_dx += -8.0f * t22 * t2 * x2 * ( gx2 * x2 + gy2 * y2 ) + t42 * gx2;
 	 *    *dnoise_dy += -8.0f * t22 * t2 * y2 * ( gx2 * x2 + gy2 * y2 ) + t42 * gy2;
 	 */
-	float temp0 = t20 * t0 * (gx0 * x0 + gy0 * y0);
+	const float temp0 = t20 * t0 * (gx0 * x0 + gy0 * y0);
 	float dnoise_dx = temp0 * x0;
 	float dnoise_dy = temp0 * y0;
-	float temp1 = t21 * t1 * (gx1 * x1 + gy1 * y1);
+	const float temp1 = t21 * t1 * (gx1 * x1 + gy1 * y1);
 	dnoise_dx += temp1 * x1;
 	dnoise_dy += temp1 * y1;
-	float temp2 = t22 * t2 * (gx2 * x2 + gy2 * y2);
+	const float temp2 = t22 * t2 * (gx2 * x2 + gy2 * y2);
 	dnoise_dx += temp2 * x2;
 	dnoise_dy += temp2 * y2;
 	dnoise_dx *= -8.0f;
@@ -937,21 +936,21 @@ glm::vec4 dnoise(const glm::vec3 &v) {
 	float gx2, gy2, gz2, gx3, gy3, gz3;
 
 	/* Skew the input space to determine which simplex cell we're in */
-	float s = (v.x + v.y + v.z) * F3; /* Very nice and simple skew factor for 3D */
-	float xs = v.x + s;
-	float ys = v.y + s;
-	float zs = v.z + s;
-	int i = FASTFLOOR(xs);
-	int j = FASTFLOOR(ys);
-	int k = FASTFLOOR(zs);
+	const float s = (v.x + v.y + v.z) * F3; /* Very nice and simple skew factor for 3D */
+	const float xs = v.x + s;
+	const float ys = v.y + s;
+	const float zs = v.z + s;
+	const int i = FASTFLOOR(xs);
+	const int j = FASTFLOOR(ys);
+	const int k = FASTFLOOR(zs);
 
-	float t = (float) (i + j + k) * G3;
-	float X0 = i - t; /* Unskew the cell origin back to (x,y,z) space */
-	float Y0 = j - t;
-	float Z0 = k - t;
-	float x0 = v.x - X0; /* The x,y,z distances from the cell origin */
-	float y0 = v.y - Y0;
-	float z0 = v.z - Z0;
+	const float t = (float) (i + j + k) * G3;
+	const float X0 = i - t; /* Unskew the cell origin back to (x,y,z) space */
+	const float Y0 = j - t;
+	const float Z0 = k - t;
+	const float x0 = v.x - X0; /* The x,y,z distances from the cell origin */
+	const float y0 = v.y - Y0;
+	const float z0 = v.z - Z0;
 
 	/* For the 3D case, the simplex shape is a slightly irregular tetrahedron.
 	 * Determine which simplex we are in. */
@@ -1016,20 +1015,20 @@ glm::vec4 dnoise(const glm::vec3 &v) {
 	 * a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
 	 * c = 1/6.   */
 
-	float x1 = x0 - i1 + G3; /* Offsets for second corner in (x,y,z) coords */
-	float y1 = y0 - j1 + G3;
-	float z1 = z0 - k1 + G3;
-	float x2 = x0 - i2 + 2.0f * G3; /* Offsets for third corner in (x,y,z) coords */
-	float y2 = y0 - j2 + 2.0f * G3;
-	float z2 = z0 - k2 + 2.0f * G3;
-	float x3 = x0 - 1.0f + 3.0f * G3; /* Offsets for last corner in (x,y,z) coords */
-	float y3 = y0 - 1.0f + 3.0f * G3;
-	float z3 = z0 - 1.0f + 3.0f * G3;
+	const float x1 = x0 - i1 + G3; /* Offsets for second corner in (x,y,z) coords */
+	const float y1 = y0 - j1 + G3;
+	const float z1 = z0 - k1 + G3;
+	const float x2 = x0 - i2 + 2.0f * G3; /* Offsets for third corner in (x,y,z) coords */
+	const float y2 = y0 - j2 + 2.0f * G3;
+	const float z2 = z0 - k2 + 2.0f * G3;
+	const float x3 = x0 - 1.0f + 3.0f * G3; /* Offsets for last corner in (x,y,z) coords */
+	const float y3 = y0 - 1.0f + 3.0f * G3;
+	const float z3 = z0 - 1.0f + 3.0f * G3;
 
 	/* Wrap the integer indices at 256, to avoid indexing details::perm[] out of bounds */
-	int ii = i & 0xff;
-	int jj = j & 0xff;
-	int kk = k & 0xff;
+	const int ii = i & 0xff;
+	const int jj = j & 0xff;
+	const int kk = k & 0xff;
 
 	/* Calculate the contribution from the four corners */
 	float t0 = 0.6f - x0 * x0 - y0 * y0 - z0 * z0;
@@ -1100,19 +1099,19 @@ glm::vec4 dnoise(const glm::vec3 &v) {
 	 *    *dnoise_dy += -8.0f * t23 * t3 * y3 * dot(gx3, gy3, gz3, x3, y3, z3) + t43 * gy3;
 	 *    *dnoise_dz += -8.0f * t23 * t3 * z3 * dot(gx3, gy3, gz3, x3, y3, z3) + t43 * gz3;
 	 */
-	float temp0 = t20 * t0 * (gx0 * x0 + gy0 * y0 + gz0 * z0);
+	const float temp0 = t20 * t0 * (gx0 * x0 + gy0 * y0 + gz0 * z0);
 	float dnoise_dx = temp0 * x0;
 	float dnoise_dy = temp0 * y0;
 	float dnoise_dz = temp0 * z0;
-	float temp1 = t21 * t1 * (gx1 * x1 + gy1 * y1 + gz1 * z1);
+	const float temp1 = t21 * t1 * (gx1 * x1 + gy1 * y1 + gz1 * z1);
 	dnoise_dx += temp1 * x1;
 	dnoise_dy += temp1 * y1;
 	dnoise_dz += temp1 * z1;
-	float temp2 = t22 * t2 * (gx2 * x2 + gy2 * y2 + gz2 * z2);
+	const float temp2 = t22 * t2 * (gx2 * x2 + gy2 * y2 + gz2 * z2);
 	dnoise_dx += temp2 * x2;
 	dnoise_dy += temp2 * y2;
 	dnoise_dz += temp2 * z2;
-	float temp3 = t23 * t3 * (gx3 * x3 + gy3 * y3 + gz3 * z3);
+	const float temp3 = t23 * t3 * (gx3 * x3 + gy3 * y3 + gz3 * z3);
 	dnoise_dx += temp3 * x3;
 	dnoise_dy += temp3 * y3;
 	dnoise_dz += temp3 * z3;
@@ -1138,26 +1137,26 @@ vec5 dnoise(const glm::vec4 &v) {
 	float t40, t41, t42, t43, t44;
 
 	// Skew the (x,y,z,w) space to determine which cell of 24 simplices we're in
-	float s = (v.x + v.y + v.z + v.w) * F4; // Factor for 4D skewing
-	float xs = v.x + s;
-	float ys = v.y + s;
-	float zs = v.z + s;
-	float ws = v.w + s;
-	int i = FASTFLOOR(xs);
-	int j = FASTFLOOR(ys);
-	int k = FASTFLOOR(zs);
-	int l = FASTFLOOR(ws);
+	const float s = (v.x + v.y + v.z + v.w) * F4; // Factor for 4D skewing
+	const float xs = v.x + s;
+	const float ys = v.y + s;
+	const float zs = v.z + s;
+	const float ws = v.w + s;
+	const int i = FASTFLOOR(xs);
+	const int j = FASTFLOOR(ys);
+	const int k = FASTFLOOR(zs);
+	const int l = FASTFLOOR(ws);
 
-	float t = (i + j + k + l) * G4; // Factor for 4D unskewing
-	float X0 = i - t; // Unskew the cell origin back to (x,y,z,w) space
-	float Y0 = j - t;
-	float Z0 = k - t;
-	float W0 = l - t;
+	const float t = (i + j + k + l) * G4; // Factor for 4D unskewing
+	const float X0 = i - t; // Unskew the cell origin back to (x,y,z,w) space
+	const float Y0 = j - t;
+	const float Z0 = k - t;
+	const float W0 = l - t;
 
-	float x0 = v.x - X0;  // The x,y,z,w distances from the cell origin
-	float y0 = v.y - Y0;
-	float z0 = v.z - Z0;
-	float w0 = v.w - W0;
+	const float x0 = v.x - X0;  // The x,y,z,w distances from the cell origin
+	const float y0 = v.y - Y0;
+	const float z0 = v.z - Z0;
+	const float w0 = v.w - W0;
 
 	// For the 4D case, the simplex is a 4D shape I won't even try to describe.
 	// To find out which of the 24 possible simplices we're in, we need to
@@ -1167,13 +1166,13 @@ vec5 dnoise(const glm::vec4 &v) {
 	// First, six pair-wise comparisons are performed between each possible pair
 	// of the four coordinates, and then the results are used to add up binary
 	// bits for an integer index into a precomputed lookup table, details::sSimplexLut[].
-	int c1 = (x0 > y0) ? 32 : 0;
-	int c2 = (x0 > z0) ? 16 : 0;
-	int c3 = (y0 > z0) ? 8 : 0;
-	int c4 = (x0 > w0) ? 4 : 0;
-	int c5 = (y0 > w0) ? 2 : 0;
-	int c6 = (z0 > w0) ? 1 : 0;
-	int c = c1 | c2 | c3 | c4 | c5 | c6; // '|' is mostly faster than '+'
+	const int c1 = (x0 > y0) ? 32 : 0;
+	const int c2 = (x0 > z0) ? 16 : 0;
+	const int c3 = (y0 > z0) ? 8 : 0;
+	const int c4 = (x0 > w0) ? 4 : 0;
+	const int c5 = (y0 > w0) ? 2 : 0;
+	const int c6 = (z0 > w0) ? 1 : 0;
+	const int c = c1 | c2 | c3 | c4 | c5 | c6; // '|' is mostly faster than '+'
 
 	int i1, j1, k1, l1; // The integer offsets for the second simplex corner
 	int i2, j2, k2, l2; // The integer offsets for the third simplex corner
@@ -1200,28 +1199,28 @@ vec5 dnoise(const glm::vec4 &v) {
 	l3 = details::sSimplexLut[c][3] >= 1 ? 1 : 0;
 	// The fifth corner has all coordinate offsets = 1, so no need to look that up.
 
-	float x1 = x0 - i1 + G4; // Offsets for second corner in (x,y,z,w) coords
-	float y1 = y0 - j1 + G4;
-	float z1 = z0 - k1 + G4;
-	float w1 = w0 - l1 + G4;
-	float x2 = x0 - i2 + 2.0f * G4; // Offsets for third corner in (x,y,z,w) coords
-	float y2 = y0 - j2 + 2.0f * G4;
-	float z2 = z0 - k2 + 2.0f * G4;
-	float w2 = w0 - l2 + 2.0f * G4;
-	float x3 = x0 - i3 + 3.0f * G4; // Offsets for fourth corner in (x,y,z,w) coords
-	float y3 = y0 - j3 + 3.0f * G4;
-	float z3 = z0 - k3 + 3.0f * G4;
-	float w3 = w0 - l3 + 3.0f * G4;
-	float x4 = x0 - 1.0f + 4.0f * G4; // Offsets for last corner in (x,y,z,w) coords
-	float y4 = y0 - 1.0f + 4.0f * G4;
-	float z4 = z0 - 1.0f + 4.0f * G4;
-	float w4 = w0 - 1.0f + 4.0f * G4;
+	const float x1 = x0 - i1 + G4; // Offsets for second corner in (x,y,z,w) coords
+	const float y1 = y0 - j1 + G4;
+	const float z1 = z0 - k1 + G4;
+	const float w1 = w0 - l1 + G4;
+	const float x2 = x0 - i2 + 2.0f * G4; // Offsets for third corner in (x,y,z,w) coords
+	const float y2 = y0 - j2 + 2.0f * G4;
+	const float z2 = z0 - k2 + 2.0f * G4;
+	const float w2 = w0 - l2 + 2.0f * G4;
+	const float x3 = x0 - i3 + 3.0f * G4; // Offsets for fourth corner in (x,y,z,w) coords
+	const float y3 = y0 - j3 + 3.0f * G4;
+	const float z3 = z0 - k3 + 3.0f * G4;
+	const float w3 = w0 - l3 + 3.0f * G4;
+	const float x4 = x0 - 1.0f + 4.0f * G4; // Offsets for last corner in (x,y,z,w) coords
+	const float y4 = y0 - 1.0f + 4.0f * G4;
+	const float z4 = z0 - 1.0f + 4.0f * G4;
+	const float w4 = w0 - 1.0f + 4.0f * G4;
 
 	// Wrap the integer indices at 256, to avoid indexing details::perm[] out of bounds
-	int ii = i & 0xff;
-	int jj = j & 0xff;
-	int kk = k & 0xff;
-	int ll = l & 0xff;
+	const int ii = i & 0xff;
+	const int jj = j & 0xff;
+	const int kk = k & 0xff;
+	const int ll = l & 0xff;
 
 	// Calculate the contribution from the five corners
 	float t0 = 0.6f - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
@@ -1301,7 +1300,7 @@ vec5 dnoise(const glm::vec4 &v) {
 	 *    *dnoise_dz += -8.0f * t24 * t4 * z4 * dot(gx4, gy4, gz4, gw4, x4, y4, z4, w4) + t44 * gz4;
 	 *    *dnoise_dw += -8.0f * t24 * t4 * w4 * dot(gx4, gy4, gz4, gw4, x4, y4, z4, w4) + t44 * gw4;
 	 */
-	float temp0 = t20 * t0 * (gx0 * x0 + gy0 * y0 + gz0 * z0 + gw0 * w0);
+	const float temp0 = t20 * t0 * (gx0 * x0 + gy0 * y0 + gz0 * z0 + gw0 * w0);
 	float dnoise_dx = temp0 * x0;
 	float dnoise_dy = temp0 * y0;
 	float dnoise_dz = temp0 * z0;
@@ -1311,17 +1310,17 @@ vec5 dnoise(const glm::vec4 &v) {
 	dnoise_dy += temp1 * y1;
 	dnoise_dz += temp1 * z1;
 	dnoise_dw += temp1 * w1;
-	float temp2 = t22 * t2 * (gx2 * x2 + gy2 * y2 + gz2 * z2 + gw2 * w2);
+	const float temp2 = t22 * t2 * (gx2 * x2 + gy2 * y2 + gz2 * z2 + gw2 * w2);
 	dnoise_dx += temp2 * x2;
 	dnoise_dy += temp2 * y2;
 	dnoise_dz += temp2 * z2;
 	dnoise_dw += temp2 * w2;
-	float temp3 = t23 * t3 * (gx3 * x3 + gy3 * y3 + gz3 * z3 + gw3 * w3);
+	const float temp3 = t23 * t3 * (gx3 * x3 + gy3 * y3 + gz3 * z3 + gw3 * w3);
 	dnoise_dx += temp3 * x3;
 	dnoise_dy += temp3 * y3;
 	dnoise_dz += temp3 * z3;
 	dnoise_dw += temp3 * w3;
-	float temp4 = t24 * t4 * (gx4 * x4 + gy4 * y4 + gz4 * z4 + gw4 * w4);
+	const float temp4 = t24 * t4 * (gx4 * x4 + gy4 * y4 + gz4 * z4 + gw4 * w4);
 	dnoise_dx += temp4 * x4;
 	dnoise_dy += temp4 * y4;
 	dnoise_dz += temp4 * z4;
@@ -1348,63 +1347,66 @@ vec5 dnoise(const glm::vec4 &v) {
 }
 
 float worleyNoise(const glm::vec2 &v) {
-	glm::vec2 p = glm::floor(v);
-	glm::vec2 f = glm::fract(v);
+	const glm::vec2& p = glm::floor(v);
+	const glm::vec2& f = glm::fract(v);
 
-	float res = 8.0;
-	for (int j = -1; j <= 1; j++) {
-		for (int i = -1; i <= 1; i++) {
-			glm::vec2 b = glm::vec2(i, j);
-			glm::vec2 r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
-			float d = glm::dot(r, r);
+	float res = 8.0f;
+	for (int j = -1; j <= 1; ++j) {
+		for (int i = -1; i <= 1; ++i) {
+			const glm::vec2 b(i, j);
+			const glm::vec2& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
+			const float d = glm::dot(r, r);
 			res = glm::min(res, d);
 		}
 	}
 	return sqrt(res);
 }
+
 float worleyNoise(const glm::vec3 &v) {
-	glm::vec3 p = glm::floor(v);
-	glm::vec3 f = glm::fract(v);
+	const glm::vec3& p = glm::floor(v);
+	const glm::vec3& f = glm::fract(v);
 
 	float res = 8.0;
-	for (int k = -1; k <= 1; k++) {
-		for (int j = -1; j <= 1; j++) {
-			for (int i = -1; i <= 1; i++) {
-				glm::vec3 b = glm::vec3(i, j, k);
-				glm::vec3 r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
-				float d = glm::dot(r, r);
+	for (int k = -1; k <= 1; ++k) {
+		for (int j = -1; j <= 1; ++j) {
+			for (int i = -1; i <= 1; ++i) {
+				const glm::vec3 b(i, j, k);
+				const glm::vec3& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
+				const float d = glm::dot(r, r);
 				res = glm::min(res, d);
 			}
 		}
 	}
 	return sqrt(res);
 }
+
 float worleyNoise(const glm::vec2 &v, float falloff) {
-	glm::vec2 p = glm::floor(v);
-	glm::vec2 f = glm::fract(v);
+	const glm::vec2& p = glm::floor(v);
+	const glm::vec2& f = glm::fract(v);
 
 	float res = 0.0f;
-	for (int j = -1; j <= 1; j++) {
-		for (int i = -1; i <= 1; i++) {
-			glm::vec2 b = glm::vec2(i, j);
-			glm::vec2 r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
-			float d = glm::length(r);
+	for (int j = -1; j <= 1; ++j) {
+		for (int i = -1; i <= 1; ++i) {
+			const glm::vec2 b(i, j);
+			const glm::vec2& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
+			const float d = glm::length(r);
 			res += glm::exp(-falloff * d);
 		}
 	}
 	return -(1.0f / falloff) * glm::log(res);
 }
+
 float worleyNoise(const glm::vec3 &v, float falloff) {
-	glm::vec3 p = glm::floor(v);
-	glm::vec3 f = glm::fract(v);
+	const glm::vec3& p = glm::floor(v);
+	const glm::vec3& f = glm::fract(v);
 
 	float res = 0.0f;
-	for (int k = -1; k <= 1; k++) {
-		for (int j = -1; j <= 1; j++) {
-			for (int i = -1; i <= 1; i++) {
-				glm::vec3 b = glm::vec3(i, j, k);
-				glm::vec3 r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
-				float d = glm::length(r);
+	for (int k = -1; k <= 1; ++k) {
+		for (int j = -1; j <= 1; ++j) {
+			for (int i = -1; i <= 1; ++i) {
+				const glm::vec3 b(i, j, k);
+				const glm::vec3& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
+				const float d = glm::length(r);
 				res += glm::exp(-falloff * d);
 			}
 		}
@@ -1413,24 +1415,22 @@ float worleyNoise(const glm::vec3 &v, float falloff) {
 }
 
 float flowNoise(const glm::vec2 &v, float angle) {
-	float n0, n1, n2; /* Noise contributions from the three simplex corners */
-	float gx0, gy0, gx1, gy1, gx2, gy2; /* Gradients at simplex corners */
-	float sin_t, cos_t; /* Sine and cosine for the gradient rotation angle */
-	sin_t = sin(angle);
-	cos_t = cos(angle);
+	/* Sine and cosine for the gradient rotation angle */
+	const float sin_t = sin(angle);
+	const float cos_t = cos(angle);
 
 	/* Skew the input space to determine which simplex cell we're in */
-	float s = (v.x + v.y) * F2; /* Hairy factor for 2D */
-	float xs = v.x + s;
-	float ys = v.y + s;
-	int i = FASTFLOOR(xs);
-	int j = FASTFLOOR(ys);
+	const float s = (v.x + v.y) * F2; /* Hairy factor for 2D */
+	const float xs = v.x + s;
+	const float ys = v.y + s;
+	const int i = FASTFLOOR(xs);
+	const int j = FASTFLOOR(ys);
 
-	float t = (float) (i + j) * G2;
-	float X0 = i - t; /* Unskew the cell origin back to (x,y) space */
-	float Y0 = j - t;
-	float x0 = v.x - X0; /* The x,y distances from the cell origin */
-	float y0 = v.y - Y0;
+	const float t = (float) (i + j) * G2;
+	const float X0 = i - t; /* Unskew the cell origin back to (x,y) space */
+	const float Y0 = j - t;
+	const float x0 = v.x - X0; /* The x,y distances from the cell origin */
+	const float y0 = v.y - Y0;
 
 	/* For the 2D case, the simplex shape is an equilateral triangle.
 	 * Determine which simplex we are in. */
@@ -1447,14 +1447,17 @@ float flowNoise(const glm::vec2 &v, float angle) {
 	/* A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
 	 * a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
 	 * c = (3-sqrt(3))/6   */
-	float x1 = x0 - i1 + G2; /* Offsets for middle corner in (x,y) unskewed coords */
-	float y1 = y0 - j1 + G2;
-	float x2 = x0 - 1.0f + 2.0f * G2; /* Offsets for last corner in (x,y) unskewed coords */
-	float y2 = y0 - 1.0f + 2.0f * G2;
+	const float x1 = x0 - i1 + G2; /* Offsets for middle corner in (x,y) unskewed coords */
+	const float y1 = y0 - j1 + G2;
+	const float x2 = x0 - 1.0f + 2.0f * G2; /* Offsets for last corner in (x,y) unskewed coords */
+	const float y2 = y0 - 1.0f + 2.0f * G2;
 
 	/* Wrap the integer indices at 256, to avoid indexing details::perm[] out of bounds */
-	int ii = i & 0xff;
-	int jj = j & 0xff;
+	const int ii = i & 0xff;
+	const int jj = j & 0xff;
+
+	float n0, n1, n2; /* Noise contributions from the three simplex corners */
+	float gx0, gy0, gx1, gy1, gx2, gy2; /* Gradients at simplex corners */
 
 	/* Calculate the contribution from the three corners */
 	float t0 = 0.5f - x0 * x0 - y0 * y0;
@@ -1494,6 +1497,7 @@ float flowNoise(const glm::vec2 &v, float angle) {
 	 * The result is scaled to return values in the interval [-1,1]. */
 	return 40.0f * (n0 + n1 + n2);
 }
+
 float flowNoise(const glm::vec3 &v, float angle) {
 	float n0, n1, n2, n3; /* Noise contributions from the four simplex corners */
 	float gx0, gy0, gz0, gx1, gy1, gz1; /* Gradients at simplex corners */
@@ -1503,21 +1507,21 @@ float flowNoise(const glm::vec3 &v, float angle) {
 	cos_t = cos(angle);
 
 	/* Skew the input space to determine which simplex cell we're in */
-	float s = (v.x + v.y + v.z) * F3; /* Very nice and simple skew factor for 3D */
-	float xs = v.x + s;
-	float ys = v.y + s;
-	float zs = v.z + s;
-	int i = FASTFLOOR(xs);
-	int j = FASTFLOOR(ys);
-	int k = FASTFLOOR(zs);
+	const float s = (v.x + v.y + v.z) * F3; /* Very nice and simple skew factor for 3D */
+	const float xs = v.x + s;
+	const float ys = v.y + s;
+	const float zs = v.z + s;
+	const int i = FASTFLOOR(xs);
+	const int j = FASTFLOOR(ys);
+	const int k = FASTFLOOR(zs);
 
-	float t = (float) (i + j + k) * G3;
-	float X0 = i - t; /* Unskew the cell origin back to (x,y,z) space */
-	float Y0 = j - t;
-	float Z0 = k - t;
-	float x0 = v.x - X0; /* The x,y,z distances from the cell origin */
-	float y0 = v.y - Y0;
-	float z0 = v.z - Z0;
+	const float t = (float) (i + j + k) * G3;
+	const float X0 = i - t; /* Unskew the cell origin back to (x,y,z) space */
+	const float Y0 = j - t;
+	const float Z0 = k - t;
+	const float x0 = v.x - X0; /* The x,y,z distances from the cell origin */
+	const float y0 = v.y - Y0;
+	const float z0 = v.z - Z0;
 
 	/* For the 3D case, the simplex shape is a slightly irregular tetrahedron.
 	 * Determine which simplex we are in. */
@@ -1582,20 +1586,20 @@ float flowNoise(const glm::vec3 &v, float angle) {
 	 * a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
 	 * c = 1/6.   */
 
-	float x1 = x0 - i1 + G3; /* Offsets for second corner in (x,y,z) coords */
-	float y1 = y0 - j1 + G3;
-	float z1 = z0 - k1 + G3;
-	float x2 = x0 - i2 + 2.0f * G3; /* Offsets for third corner in (x,y,z) coords */
-	float y2 = y0 - j2 + 2.0f * G3;
-	float z2 = z0 - k2 + 2.0f * G3;
-	float x3 = x0 - 1.0f + 3.0f * G3; /* Offsets for last corner in (x,y,z) coords */
-	float y3 = y0 - 1.0f + 3.0f * G3;
-	float z3 = z0 - 1.0f + 3.0f * G3;
+	const float x1 = x0 - i1 + G3; /* Offsets for second corner in (x,y,z) coords */
+	const float y1 = y0 - j1 + G3;
+	const float z1 = z0 - k1 + G3;
+	const float x2 = x0 - i2 + 2.0f * G3; /* Offsets for third corner in (x,y,z) coords */
+	const float y2 = y0 - j2 + 2.0f * G3;
+	const float z2 = z0 - k2 + 2.0f * G3;
+	const float x3 = x0 - 1.0f + 3.0f * G3; /* Offsets for last corner in (x,y,z) coords */
+	const float y3 = y0 - 1.0f + 3.0f * G3;
+	const float z3 = z0 - 1.0f + 3.0f * G3;
 
 	/* Wrap the integer indices at 256, to avoid indexing details::perm[] out of bounds */
-	int ii = i & 0xff;
-	int jj = j & 0xff;
-	int kk = k & 0xff;
+	const int ii = i & 0xff;
+	const int jj = j & 0xff;
+	const int kk = k & 0xff;
 
 	/* Calculate the contribution from the four corners */
 	float t0 = 0.6f - x0 * x0 - y0 * y0 - z0 * z0;
@@ -1646,6 +1650,7 @@ float flowNoise(const glm::vec3 &v, float angle) {
 	 * The result is scaled to return values in the range [-1,1] */
 	return 28.0f * (n0 + n1 + n2 + n3);
 }
+
 glm::vec3 dFlowNoise(const glm::vec2 &v, float angle) {
 
 	float n0, n1, n2; /* Noise contributions from the three simplex corners */
@@ -1655,17 +1660,17 @@ glm::vec3 dFlowNoise(const glm::vec2 &v, float angle) {
 	cos_t = cos(angle);
 
 	/* Skew the input space to determine which simplex cell we're in */
-	float s = (v.x + v.y) * F2; /* Hairy factor for 2D */
-	float xs = v.x + s;
-	float ys = v.y + s;
-	int i = FASTFLOOR(xs);
-	int j = FASTFLOOR(ys);
+	const float s = (v.x + v.y) * F2; /* Hairy factor for 2D */
+	const float xs = v.x + s;
+	const float ys = v.y + s;
+	const int i = FASTFLOOR(xs);
+	const int j = FASTFLOOR(ys);
 
-	float t = (float) (i + j) * G2;
-	float X0 = i - t; /* Unskew the cell origin back to (x,y) space */
-	float Y0 = j - t;
-	float x0 = v.x - X0; /* The x,y distances from the cell origin */
-	float y0 = v.y - Y0;
+	const float t = (float) (i + j) * G2;
+	const float X0 = i - t; /* Unskew the cell origin back to (x,y) space */
+	const float Y0 = j - t;
+	const float x0 = v.x - X0; /* The x,y distances from the cell origin */
+	const float y0 = v.y - Y0;
 
 	/* For the 2D case, the simplex shape is an equilateral triangle.
 	 * Determine which simplex we are in. */
@@ -1682,14 +1687,14 @@ glm::vec3 dFlowNoise(const glm::vec2 &v, float angle) {
 	/* A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
 	 * a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
 	 * c = (3-sqrt(3))/6   */
-	float x1 = x0 - i1 + G2; /* Offsets for middle corner in (x,y) unskewed coords */
-	float y1 = y0 - j1 + G2;
-	float x2 = x0 - 1.0f + 2.0f * G2; /* Offsets for last corner in (x,y) unskewed coords */
-	float y2 = y0 - 1.0f + 2.0f * G2;
+	const float x1 = x0 - i1 + G2; /* Offsets for middle corner in (x,y) unskewed coords */
+	const float y1 = y0 - j1 + G2;
+	const float x2 = x0 - 1.0f + 2.0f * G2; /* Offsets for last corner in (x,y) unskewed coords */
+	const float y2 = y0 - 1.0f + 2.0f * G2;
 
 	/* Wrap the integer indices at 256, to avoid indexing details::perm[] out of bounds */
-	int ii = i & 0xff;
-	int jj = j & 0xff;
+	const int ii = i & 0xff;
+	const int jj = j & 0xff;
 
 	/* Calculate the contribution from the three corners */
 	float t0 = 0.5f - x0 * x0 - y0 * y0;
@@ -1741,13 +1746,13 @@ glm::vec3 dFlowNoise(const glm::vec2 &v, float angle) {
 	 *    *dnoise_dx += -8.0f * t22 * t2 * x2 * details::graddotp2(gx2, gy2, x2, y2) + t42 * gx2;
 	 *    *dnoise_dy += -8.0f * t22 * t2 * y2 * details::graddotp2(gx2, gy2, x2, y2) + t42 * gy2;
 	 */
-	float temp0 = t20 * t0 * details::graddotp2(gx0, gy0, x0, y0);
+	const float temp0 = t20 * t0 * details::graddotp2(gx0, gy0, x0, y0);
 	dnoise_dx = temp0 * x0;
 	dnoise_dy = temp0 * y0;
-	float temp1 = t21 * t1 * details::graddotp2(gx1, gy1, x1, y1);
+	const float temp1 = t21 * t1 * details::graddotp2(gx1, gy1, x1, y1);
 	dnoise_dx += temp1 * x1;
 	dnoise_dy += temp1 * y1;
-	float temp2 = t22 * t2 * details::graddotp2(gx2, gy2, x2, y2);
+	const float temp2 = t22 * t2 * details::graddotp2(gx2, gy2, x2, y2);
 	dnoise_dx += temp2 * x2;
 	dnoise_dy += temp2 * y2;
 	dnoise_dx *= -8.0f;
@@ -1760,6 +1765,7 @@ glm::vec3 dFlowNoise(const glm::vec2 &v, float angle) {
 
 	return glm::vec3(noise, dnoise_dx, dnoise_dy);
 }
+
 glm::vec4 dFlowNoise(const glm::vec3 &v, float angle) {
 	float n0, n1, n2, n3; /* Noise contributions from the four simplex corners */
 	float noise; /* Return value */
@@ -1770,21 +1776,21 @@ glm::vec4 dFlowNoise(const glm::vec3 &v, float angle) {
 	cos_t = cos(angle);
 
 	/* Skew the input space to determine which simplex cell we're in */
-	float s = (v.x + v.y + v.z) * F3; /* Very nice and simple skew factor for 3D */
-	float xs = v.x + s;
-	float ys = v.y + s;
-	float zs = v.z + s;
-	int i = FASTFLOOR(xs);
-	int j = FASTFLOOR(ys);
-	int k = FASTFLOOR(zs);
+	const float s = (v.x + v.y + v.z) * F3; /* Very nice and simple skew factor for 3D */
+	const float xs = v.x + s;
+	const float ys = v.y + s;
+	const float zs = v.z + s;
+	const int i = FASTFLOOR(xs);
+	const int j = FASTFLOOR(ys);
+	const int k = FASTFLOOR(zs);
 
-	float t = (float) (i + j + k) * G3;
-	float X0 = i - t; /* Unskew the cell origin back to (x,y,z) space */
-	float Y0 = j - t;
-	float Z0 = k - t;
-	float x0 = v.x - X0; /* The x,y,z distances from the cell origin */
-	float y0 = v.y - Y0;
-	float z0 = v.z - Z0;
+	const float t = (float) (i + j + k) * G3;
+	const float X0 = i - t; /* Unskew the cell origin back to (x,y,z) space */
+	const float Y0 = j - t;
+	const float Z0 = k - t;
+	const float x0 = v.x - X0; /* The x,y,z distances from the cell origin */
+	const float y0 = v.y - Y0;
+	const float z0 = v.z - Z0;
 
 	/* For the 3D case, the simplex shape is a slightly irregular tetrahedron.
 	 * Determine which simplex we are in. */
@@ -1931,19 +1937,19 @@ glm::vec4 dFlowNoise(const glm::vec3 &v, float angle) {
 	 *    *dnoise_dy += -8.0f * t23 * t3 * y3 * details::graddotp3(gx3, gy3, gz3, x3, y3, z3) + t43 * gy3;
 	 *    *dnoise_dz += -8.0f * t23 * t3 * z3 * details::graddotp3(gx3, gy3, gz3, x3, y3, z3) + t43 * gz3;
 	 */
-	float temp0 = t20 * t0 * details::graddotp3(gx0, gy0, gz0, x0, y0, z0);
+	const float temp0 = t20 * t0 * details::graddotp3(gx0, gy0, gz0, x0, y0, z0);
 	dnoise_dx = temp0 * x0;
 	dnoise_dy = temp0 * y0;
 	dnoise_dz = temp0 * z0;
-	float temp1 = t21 * t1 * details::graddotp3(gx1, gy1, gz1, x1, y1, z1);
+	const float temp1 = t21 * t1 * details::graddotp3(gx1, gy1, gz1, x1, y1, z1);
 	dnoise_dx += temp1 * x1;
 	dnoise_dy += temp1 * y1;
 	dnoise_dz += temp1 * z1;
-	float temp2 = t22 * t2 * details::graddotp3(gx2, gy2, gz2, x2, y2, z2);
+	const float temp2 = t22 * t2 * details::graddotp3(gx2, gy2, gz2, x2, y2, z2);
 	dnoise_dx += temp2 * x2;
 	dnoise_dy += temp2 * y2;
 	dnoise_dz += temp2 * z2;
-	float temp3 = t23 * t3 * details::graddotp3(gx3, gy3, gz3, x3, y3, z3);
+	const float temp3 = t23 * t3 * details::graddotp3(gx3, gy3, gz3, x3, y3, z3);
 	dnoise_dx += temp3 * x3;
 	dnoise_dy += temp3 * y3;
 	dnoise_dz += temp3 * z3;
@@ -1962,45 +1968,45 @@ glm::vec4 dFlowNoise(const glm::vec3 &v, float angle) {
 }
 
 glm::vec2 curlNoise(const glm::vec2 &v) {
-	const glm::vec3 derivative = dnoise(v);
+	const glm::vec3& derivative = dnoise(v);
 	return glm::vec2(derivative.z, -derivative.y);
 }
 glm::vec2 curlNoise(const glm::vec2 &v, float t) {
-	const glm::vec3 derivative = dFlowNoise(v, t);
+	const glm::vec3& derivative = dFlowNoise(v, t);
 	return glm::vec2(derivative.z, -derivative.y);
 }
 glm::vec2 curlNoise(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
-	const glm::vec3 derivative = dfBm(v, octaves, lacunarity, gain);
+	const glm::vec3& derivative = dfBm(v, octaves, lacunarity, gain);
 	return glm::vec2(derivative.z, -derivative.y);
 }
 glm::vec3 curlNoise(const glm::vec3 &v) {
-	const glm::vec4 derivX = dnoise(v);
-	const glm::vec4 derivY = dnoise(v + glm::vec3(123.456f, 789.012f, 345.678f));
-	const glm::vec4 derivZ = dnoise(v + glm::vec3(901.234f, 567.891f, 234.567f));
+	const glm::vec4& derivX = dnoise(v);
+	const glm::vec4& derivY = dnoise(v + glm::vec3(123.456f, 789.012f, 345.678f));
+	const glm::vec4& derivZ = dnoise(v + glm::vec3(901.234f, 567.891f, 234.567f));
 	return glm::vec3(derivZ.z - derivY.w, derivX.w - derivZ.y, derivY.y - derivX.z);
 }
 glm::vec3 curlNoise(const glm::vec3 &v, float t) {
-	const glm::vec4 derivX = dFlowNoise(v, t);
-	const glm::vec4 derivY = dFlowNoise(v + glm::vec3(123.456f, 789.012f, 345.678f), t);
-	const glm::vec4 derivZ = dFlowNoise(v + glm::vec3(901.234f, 567.891f, 234.567f), t);
+	const glm::vec4& derivX = dFlowNoise(v, t);
+	const glm::vec4& derivY = dFlowNoise(v + glm::vec3(123.456f, 789.012f, 345.678f), t);
+	const glm::vec4& derivZ = dFlowNoise(v + glm::vec3(901.234f, 567.891f, 234.567f), t);
 	return glm::vec3(derivZ.z - derivY.w, derivX.w - derivZ.y, derivY.y - derivX.z);
 }
 glm::vec3 curlNoise(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
-	const glm::vec4 derivX = dfBm(v, octaves, lacunarity, gain);
-	const glm::vec4 derivY = dfBm(v + glm::vec3(123.456f, 789.012f, 345.678f), octaves, lacunarity, gain);
-	const glm::vec4 derivZ = dfBm(v + glm::vec3(901.234f, 567.891f, 234.567f), octaves, lacunarity, gain);
+	const glm::vec4& derivX = dfBm(v, octaves, lacunarity, gain);
+	const glm::vec4& derivY = dfBm(v + glm::vec3(123.456f, 789.012f, 345.678f), octaves, lacunarity, gain);
+	const glm::vec4& derivZ = dfBm(v + glm::vec3(901.234f, 567.891f, 234.567f), octaves, lacunarity, gain);
 	return glm::vec3(derivZ.z - derivY.w, derivX.w - derivZ.y, derivY.y - derivX.z);
 }
 
 glm::vec2 curl(const glm::vec2 &v, const std::function<float(const glm::vec2&)> &potential, float delta) {
-	const glm::vec2 deltaX = glm::vec2(delta, 0.0f);
-	const glm::vec2 deltaY = glm::vec2(0.0f, delta);
+	const glm::vec2 deltaX(delta, 0.0f);
+	const glm::vec2 deltaY(0.0f, delta);
 	return glm::vec2(-(potential(v + deltaY) - potential(v - deltaY)), (potential(v + deltaX) - potential(v - deltaX))) / (2.0f * delta);
 }
 glm::vec3 curl(const glm::vec3 &v, const std::function<glm::vec3(const glm::vec3&)> &potential, float delta) {
-	const glm::vec3 deltaX = glm::vec3(delta, 0.0f, 0.0f);
-	const glm::vec3 deltaY = glm::vec3(0.0f, delta, 0.0f);
-	const glm::vec3 deltaZ = glm::vec3(0.0f, 0.0f, delta);
+	const glm::vec3 deltaX(delta, 0.0f, 0.0f);
+	const glm::vec3 deltaY(0.0f, delta, 0.0f);
+	const glm::vec3 deltaZ(0.0f, 0.0f, delta);
 	return glm::vec3(((potential(v + deltaY).z - potential(v - deltaY).z) - (potential(v + deltaZ).y - potential(v - deltaZ).y)),
 			((potential(v + deltaZ).x - potential(v - deltaZ).x) - (potential(v + deltaX).z - potential(v - deltaX).z)),
 			((potential(v + deltaX).y - potential(v - deltaX).y) - (potential(v + deltaY).x - potential(v - deltaY).x))) / (2.0f * delta);
@@ -2013,8 +2019,8 @@ float fBm_t(const T &input, uint8_t octaves, float lacunarity, float gain) {
 	float freq = 1.0f;
 	float amp = 0.5f;
 
-	for (uint8_t i = 0; i < octaves; i++) {
-		float n = noise(input * freq);
+	for (uint8_t i = 0; i < octaves; ++i) {
+		const float n = noise(input * freq);
 		sum += n * amp;
 		freq *= lacunarity;
 		amp *= gain;
@@ -2027,12 +2033,15 @@ float fBm_t(const T &input, uint8_t octaves, float lacunarity, float gain) {
 float fBm(float x, uint8_t octaves, float lacunarity, float gain) {
 	return details::fBm_t(x, octaves, lacunarity, gain);
 }
+
 float fBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
 	return details::fBm_t(v, octaves, lacunarity, gain);
 }
+
 float fBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
 	return details::fBm_t(v, octaves, lacunarity, gain);
 }
+
 float fBm(const glm::vec4 &v, uint8_t octaves, float lacunarity, float gain) {
 	return details::fBm_t(v, octaves, lacunarity, gain);
 }
@@ -2044,7 +2053,7 @@ float worleyfBm_t(const T &input, uint8_t octaves, float lacunarity, float gain)
 	float freq = 1.0f;
 	float amp = 0.5f;
 
-	for (uint8_t i = 0; i < octaves; i++) {
+	for (uint8_t i = 0; i < octaves; ++i) {
 		const float n = worleyNoise(input * freq);
 		sum += n * amp;
 		freq *= lacunarity;
@@ -2053,12 +2062,13 @@ float worleyfBm_t(const T &input, uint8_t octaves, float lacunarity, float gain)
 
 	return sum;
 }
+
 template<typename T>
 float worleyfBm_t(const T &input, float falloff, uint8_t octaves, float lacunarity, float gain) {
 	float sum = 0.0f;
 	float freq = 1.0f;
 	float amp = 0.5f;
-	for (uint8_t i = 0; i < octaves; i++) {
+	for (uint8_t i = 0; i < octaves; ++i) {
 		const float n = worleyNoise(input * freq, falloff);
 		sum += n * amp;
 		freq *= lacunarity;
@@ -2071,12 +2081,15 @@ float worleyfBm_t(const T &input, float falloff, uint8_t octaves, float lacunari
 float worleyfBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
 	return details::worleyfBm_t(v, octaves, lacunarity, gain);
 }
+
 float worleyfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
 	return details::worleyfBm_t(v, octaves, lacunarity, gain);
 }
+
 float worleyfBm(const glm::vec2 &v, float falloff, uint8_t octaves, float lacunarity, float gain) {
 	return details::worleyfBm_t(v, falloff, octaves, lacunarity, gain);
 }
+
 float worleyfBm(const glm::vec3 &v, float falloff, uint8_t octaves, float lacunarity, float gain) {
 	return details::worleyfBm_t(v, falloff, octaves, lacunarity, gain);
 }
@@ -2085,7 +2098,7 @@ glm::vec2 dfBm(float x, uint8_t octaves, float lacunarity, float gain) {
 	glm::vec2 sum(0.0f);
 	float freq = 1.0f;
 	float amp = 0.5f;
-	for (uint8_t i = 0; i < octaves; i++) {
+	for (uint8_t i = 0; i < octaves; ++i) {
 		const glm::vec2& n = dnoise(x * freq);
 		sum += n * amp;
 		freq *= lacunarity;
@@ -2097,7 +2110,7 @@ glm::vec3 dfBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain
 	glm::vec3 sum(0.0f);
 	float freq = 1.0f;
 	float amp = 0.5f;
-	for (uint8_t i = 0; i < octaves; i++) {
+	for (uint8_t i = 0; i < octaves; ++i) {
 		const glm::vec3& n = dnoise(v * freq);
 		sum += n * amp;
 		freq *= lacunarity;
@@ -2109,7 +2122,7 @@ glm::vec4 dfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain
 	glm::vec4 sum(0.0f);
 	float freq = 1.0f;
 	float amp = 0.5f;
-	for (uint8_t i = 0; i < octaves; i++) {
+	for (uint8_t i = 0; i < octaves; ++i) {
 		const glm::vec4& n = dnoise(v * freq);
 		sum += n * amp;
 		freq *= lacunarity;
@@ -2117,6 +2130,7 @@ glm::vec4 dfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain
 	}
 	return sum;
 }
+
 vec5 dfBm(const glm::vec4 &v, uint8_t octaves, float lacunarity, float gain) {
 #if GLM_VERSION > 98
 	vec5 sum (0.0f)
@@ -2126,13 +2140,17 @@ vec5 dfBm(const glm::vec4 &v, uint8_t octaves, float lacunarity, float gain) {
 	float freq = 1.0f;
 	float amp = 0.5f;
 
-	for (uint8_t i = 0; i < octaves; i++) {
-		vec5 n = dnoise(v * freq);
+	for (uint8_t i = 0; i < octaves; ++i) {
+		const vec5& n = dnoise(v * freq);
+#if GLM_VERSION > 98
+		sum += n * amp;
+#else
 		sum[0] += n[0] * amp;
 		sum[1] += n[1] * amp;
 		sum[2] += n[2] * amp;
 		sum[3] += n[3] * amp;
 		sum[4] += n[4] * amp;
+#endif
 		freq *= lacunarity;
 		amp *= gain;
 	}
@@ -2150,12 +2168,15 @@ inline float ridgedNoise_t(const T &input) {
 float ridgedNoise(float x) {
 	return details::ridgedNoise_t(x);
 }
+
 float ridgedNoise(const glm::vec2 &v) {
 	return details::ridgedNoise_t(v);
 }
+
 float ridgedNoise(const glm::vec3 &v) {
 	return details::ridgedNoise_t(v);
 }
+
 float ridgedNoise(const glm::vec4 &v) {
 	return details::ridgedNoise_t(v);
 }
@@ -2168,10 +2189,10 @@ inline float ridge(float h, float offset) {
 
 template<typename T>
 float ridgedMF_t(const T &input, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
-	float sum = 0;
-	float freq = 1.0;
-	float amp = 0.5;
-	float prev = 1.0;
+	float sum = 0.0f;
+	float freq = 1.0f;
+	float amp = 0.5f;
+	float prev = 1.0f;
 
 	for (uint8_t i = 0; i < octaves; ++i) {
 		const float n = ridge(noise(input * freq), ridgeOffset);
@@ -2187,46 +2208,47 @@ float ridgedMF_t(const T &input, float ridgeOffset, uint8_t octaves, float lacun
 float ridgedMF(float x, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
 	return details::ridgedMF_t(x, ridgeOffset, octaves, lacunarity, gain);
 }
+
 float ridgedMF(const glm::vec2 &v, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
 	return details::ridgedMF_t(v, ridgeOffset, octaves, lacunarity, gain);
 }
+
 float ridgedMF(const glm::vec3 &v, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
 	return details::ridgedMF_t(v, ridgeOffset, octaves, lacunarity, gain);
 }
+
 float ridgedMF(const glm::vec4 &v, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
 	return details::ridgedMF_t(v, ridgeOffset, octaves, lacunarity, gain);
 }
 
 float iqfBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
-	float sum = 0.0;
-	float amp = 0.5;
-	float dx = 0.0;
-	float dy = 0.0;
-	float freq = 1.0;
+	float sum = 0.0f;
+	float amp = 0.5f;
+	glm::vec2 delta;
+	float freq = 1.0f;
 	for (uint8_t i = 0; i < octaves; ++i) {
 		const glm::vec3& d = dnoise(v * freq);
-		dx += d.y;
-		dy += d.y;
-		sum += amp * d.x / (1.0 + dx * dx + dy * dy);
+		delta.x += d.y;
+		delta.y += d.y;
+		sum += amp * d.x / (1.0f + glm::dot(delta, delta));
 		freq *= lacunarity;
 		amp *= gain;
 	}
 
 	return sum;
 }
+
 float iqfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
-	float sum = 0.0;
-	float amp = 0.5;
-	float dx = 0.0;
-	float dy = 0.0;
-	float dz = 0.0;
-	float freq = 1.0;
+	float sum = 0.0f;
+	float amp = 0.5f;
+	glm::vec3 delta;
+	float freq = 1.0f;
 	for (uint8_t i = 0; i < octaves; ++i) {
 		const glm::vec4& d = dnoise(v * freq);
-		dx += d.y;
-		dy += d.y;
-		dz += d.z;
-		sum += amp * d.x / (1.0 + dx * dx + dy * dy + d.z * d.z);
+		delta.x += d.y;
+		delta.y += d.y;
+		delta.z += d.z;
+		sum += amp * d.x / (1.0f + glm::dot(delta, delta));
 		freq *= lacunarity;
 		amp *= gain;
 	}
@@ -2235,14 +2257,14 @@ float iqfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
 }
 
 float iqMatfBm(const glm::vec2 &v, uint8_t octaves, const glm::mat2 &mat, float gain) {
-	float sum = 0.0;
-	float amp = 1.0;
+	float sum = 0.0f;
+	float amp = 1.0f;
 	glm::vec2 pos = v;
-	glm::vec2 noiseAccum = glm::vec2(0.0);
-	for (int i = 0; i < octaves; ++i) {
+	glm::vec2 noiseAccum;
+	for (uint8_t i = 0; i < octaves; ++i) {
 		const glm::vec3& n = dnoise(pos);
 		noiseAccum += glm::vec2(n.y, n.z);
-		sum += amp * n.x / (1.0 + glm::dot(noiseAccum, noiseAccum));
+		sum += amp * n.x / (1.0f + glm::dot(noiseAccum, noiseAccum));
 		amp *= gain;
 		pos = mat * pos;
 	}
