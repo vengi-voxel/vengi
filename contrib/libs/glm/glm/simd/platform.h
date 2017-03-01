@@ -127,7 +127,7 @@
 #	define GLM_COMPILER GLM_COMPILER_UNKNOWN
 
 #elif defined(__INTEL_COMPILER)
-#	if (__clang_major__ < 1400)
+#	if (__INTEL_COMPILER < 1400)
 #		error "GLM requires ICC 2013 SP1 or newer"
 #	elif __INTEL_COMPILER == 1400
 #		define GLM_COMPILER GLM_COMPILER_INTEL14
@@ -146,13 +146,17 @@
 #	endif
 #	if CUDA_VERSION < 7000
 #		error "GLM requires CUDA 7.0 or higher"
-#	else
-#		define GLM_COMPILER GLM_COMPILER_CUDA
+#	elif (CUDA_VERSION >= 7000 && CUDA_VERSION < 7500)
+#		define GLM_COMPILER GLM_COMPILER_CUDA70
+#	elif (CUDA_VERSION >= 7500 && CUDA_VERSION < 8000)
+#		define GLM_COMPILER GLM_COMPILER_CUDA75
+#	elif (CUDA_VERSION >= 8000)
+#		define GLM_COMPILER GLM_COMPILER_CUDA80
 #	endif
 
 // Clang
 #elif defined(__clang__)
-#	if GLM_PLATFORM & GLM_PLATFORM_APPLE
+#	if defined(__apple_build_version__)
 #		if (__clang_major__ < 6)
 #			error "GLM requires Clang 3.4 / Apple Clang 6.0 or higher"
 #		elif __clang_major__ == 6 && __clang_minor__ == 0
