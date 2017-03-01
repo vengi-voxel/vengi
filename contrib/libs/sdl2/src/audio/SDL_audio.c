@@ -89,12 +89,6 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_COREAUDIO
     &COREAUDIO_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_DISK
-    &DISKAUDIO_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_DUMMY
-    &DUMMYAUDIO_bootstrap,
-#endif
 #if SDL_AUDIO_DRIVER_FUSIONSOUND
     &FUSIONSOUND_bootstrap,
 #endif
@@ -106,6 +100,12 @@ static const AudioBootStrap *const bootstrap[] = {
 #endif
 #if SDL_AUDIO_DRIVER_EMSCRIPTEN
     &EMSCRIPTENAUDIO_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_DISK
+    &DISKAUDIO_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_DUMMY
+    &DUMMYAUDIO_bootstrap,
 #endif
     NULL
 };
@@ -672,18 +672,14 @@ SDL_RunAudio(void *devicep)
             data = device->work_buffer;
         }
 
-        if ( SDL_AtomicGet(&device->enabled) ) {
-            /* !!! FIXME: this should be LockDevice. */
-            SDL_LockMutex(device->mixer_lock);
-            if (SDL_AtomicGet(&device->paused)) {
-                SDL_memset(data, silence, data_len);
-            } else {
-                callback(udata, data, data_len);
-            }
-            SDL_UnlockMutex(device->mixer_lock);
-        } else {
+        /* !!! FIXME: this should be LockDevice. */
+        SDL_LockMutex(device->mixer_lock);
+        if (SDL_AtomicGet(&device->paused)) {
             SDL_memset(data, silence, data_len);
+        } else {
+            callback(udata, data, data_len);
         }
+        SDL_UnlockMutex(device->mixer_lock);
 
         if (device->stream) {
             /* Stream available audio to device, converting/resampling. */
@@ -691,14 +687,14 @@ SDL_RunAudio(void *devicep)
             SDL_AudioStreamPut(device->stream, data, data_len);
 
             while (SDL_AudioStreamAvailable(device->stream) >= ((int) device->spec.size)) {
+                int got;
                 data = SDL_AtomicGet(&device->enabled) ? current_audio.impl.GetDeviceBuf(device) : NULL;
-                if (data == NULL) {
-                    SDL_AudioStreamClear(device->stream);
-                    SDL_Delay(delay);
-                    break;
+                got = SDL_AudioStreamGet(device->stream, data ? data : device->work_buffer, device->spec.size);
+                SDL_assert((got < 0) || (got == device->spec.size));
+
+                if (data == NULL) {  /* device is having issues... */
+                    SDL_Delay(delay);  /* wait for as long as this buffer would have played. Maybe device recovers later? */
                 } else {
-                    const int got = SDL_AudioStreamGet(device->stream, data, device->spec.size);
-                    SDL_assert((got < 0) || (got == device->spec.size));
                     if (got != device->spec.size) {
                         SDL_memset(data, device->spec.silence, device->spec.size);
                     }
@@ -752,7 +748,7 @@ SDL_CaptureAudio(void *devicep)
         int still_need;
         Uint8 *ptr;
 
-        if (!SDL_AtomicGet(&device->enabled) || SDL_AtomicGet(&device->paused)) {
+        if (SDL_AtomicGet(&device->paused)) {
             SDL_Delay(delay);  /* just so we don't cook the CPU. */
             if (device->stream) {
                 SDL_AudioStreamClear(device->stream);
@@ -774,15 +770,19 @@ SDL_CaptureAudio(void *devicep)
            and block when there isn't data so this thread isn't eating CPU.
            But we don't process it further or call the app's callback. */
 
-        while (still_need > 0) {
-            const int rc = current_audio.impl.CaptureFromDevice(device, ptr, still_need);
-            SDL_assert(rc <= still_need);  /* device should not overflow buffer. :) */
-            if (rc > 0) {
-                still_need -= rc;
-                ptr += rc;
-            } else {  /* uhoh, device failed for some reason! */
-                SDL_OpenedAudioDeviceDisconnected(device);
-                break;
+        if (!SDL_AtomicGet(&device->enabled)) {
+            SDL_Delay(delay);  /* try to keep callback firing at normal pace. */
+        } else {
+            while (still_need > 0) {
+                const int rc = current_audio.impl.CaptureFromDevice(device, ptr, still_need);
+                SDL_assert(rc <= still_need);  /* device should not overflow buffer. :) */
+                if (rc > 0) {
+                    still_need -= rc;
+                    ptr += rc;
+                } else {  /* uhoh, device failed for some reason! */
+                    SDL_OpenedAudioDeviceDisconnected(device);
+                    break;
+                }
             }
         }
 
