@@ -41,8 +41,8 @@ core::AppState NoiseTool::onInit() {
 
 	_noiseItemSource = new NoiseItemSource(this);
 
-	NoiseToolWindow* window = new NoiseToolWindow(this);
-	if (!window->init()) {
+	_window = new NoiseToolWindow(this);
+	if (!_window->init()) {
 		return core::AppState::Cleanup;
 	}
 
@@ -51,6 +51,7 @@ core::AppState NoiseTool::onInit() {
 
 core::AppState NoiseTool::onRunning() {
 	core::AppState state = Super::onRunning();
+	_window->update();
 	return state;
 }
 

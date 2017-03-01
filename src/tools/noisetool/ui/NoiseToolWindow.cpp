@@ -24,10 +24,6 @@ NoiseToolWindow::~NoiseToolWindow() {
 	if (_noiseType != nullptr) {
 		_noiseType->SetSource(nullptr);
 	}
-	delete[] _noiseBuffer;
-	_noiseBuffer = nullptr;
-	delete[] _graphBuffer;
-	_graphBuffer = nullptr;
 	delete[] _graphBufferBackground;
 	_graphBufferBackground = nullptr;
 }
@@ -54,12 +50,9 @@ bool NoiseToolWindow::init() {
 	const tb::TBRect& rect = _select->GetPaddingRect();
 	_noiseHeight = rect.h;
 	_noiseWidth = rect.w - 60;
-	const size_t noiseBufferSize = _noiseWidth * _noiseHeight * BPP;
-	_noiseBuffer = new uint8_t[noiseBufferSize];
 	const size_t graphBufferSize = _noiseWidth * _graphHeight * BPP;
-	_graphBuffer = new uint8_t[graphBufferSize];
-	_graphBufferBackground = new uint8_t[graphBufferSize];
 
+	_graphBufferBackground = new uint8_t[graphBufferSize];
 	const int graphBufOffset = index(0, int(_graphHeight / 2));
 	memset(&_graphBufferBackground[graphBufOffset], core::Color::getRGBA(core::Color::Gray), _noiseWidth * BPP);
 
@@ -161,6 +154,7 @@ void NoiseToolWindow::generateAll() {
 }
 
 void NoiseToolWindow::generateImage(NoiseType type) {
+	Log::info("Generate noise for %s", getNoiseTypeName(type));
 	NoiseData data;
 	data.offset = getFloat("offset");
 	data.lacunarity = getFloat("lacunarity");
@@ -168,40 +162,60 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 	data.gain = getFloat("gain");
 	data.frequency = getFloat("frequency");
 	data.noiseType = type;
-	data.millis = core::App::getInstance()->timeProvider()->currentTime();
 
-	Log::info("Generate noise for %s", getNoiseTypeName(type));
+	_noiseTool->threadPool().enqueue([this, type, data] () {
+		const size_t noiseBufferSize = _noiseWidth * _noiseHeight * BPP;
+		const size_t graphBufferSize = _noiseWidth * _graphHeight * BPP;
+		QueueData qd;
+		qd.data = data;;
+		qd.data.millis = _noiseTool->timeProvider()->currentTime();
+		qd.noiseBuffer = new uint8_t[noiseBufferSize];
+		qd.graphBuffer = new uint8_t[graphBufferSize];
 
-	const size_t noiseBufferSize = _noiseWidth * _noiseHeight * BPP;
-	memset(_noiseBuffer, 255, noiseBufferSize);
-	const size_t graphBufferSize = _noiseWidth * _graphHeight * BPP;
-	memcpy(_graphBuffer, _graphBufferBackground, graphBufferSize);
+		uint8_t* noiseBuffer = qd.noiseBuffer;
+		uint8_t* graphBuffer = qd.graphBuffer;
 
-	for (int y = 0; y < _noiseHeight; ++y) {
-		for (int x = 0; x < _noiseWidth; ++x) {
-			const float n = getNoise(x, y, data);
-			const float cn = noise::norm(n);
-			const uint8_t c = cn * 255;
-			uint8_t* buf = &_noiseBuffer[index(x, y)];
-			memset(buf, c, BPP - 1);
-			if (y == 0 && x < _noiseWidth) {
-				uint8_t* gbuf = &_graphBuffer[index(x, ((_graphHeight - 1) - cn * _graphHeight) - 1)];
-				*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Red);
+		memset(noiseBuffer, 255, noiseBufferSize);
+		memcpy(graphBuffer, _graphBufferBackground, graphBufferSize);
+
+		for (int y = 0; y < _noiseHeight; ++y) {
+			for (int x = 0; x < _noiseWidth; ++x) {
+				const float n = getNoise(x, y, qd.data);
+				const float cn = noise::norm(n);
+				const uint8_t c = cn * 255;
+				uint8_t* buf = &noiseBuffer[index(x, y)];
+				memset(buf, c, BPP - 1);
+				if (y == 0 && x < _noiseWidth) {
+					uint8_t* gbuf = &graphBuffer[index(x, ((_graphHeight - 1) - cn * _graphHeight) - 1)];
+					*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Red);
+				}
 			}
 		}
+
+		qd.data.endmillis = _noiseTool->timeProvider()->currentTime();
+		this->_queue.push(qd);
+	});
+}
+
+void NoiseToolWindow::update() {
+	QueueData qd;
+	if (!_queue.pop(qd)) {
+		return;
 	}
-
+	NoiseData& data = qd.data;
 	tb::TBStr idStr;
-	idStr.SetFormatted(IMAGE_PREFIX "-%i-%f-%i-%f-%f-%f", (int)type, data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
-
+	idStr.SetFormatted(IMAGE_PREFIX "-%i-%f-%i-%f-%f-%f", (int)data.noiseType, data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
 	tb::TBStr graphIdStr;
-	graphIdStr.SetFormatted(GRAPH_PREFIX "-%i-%f-%i-%f-%f-%f", (int)type, data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
-
-	data.noise = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)_noiseBuffer, _noiseWidth, _noiseHeight);
-	data.graph = tb::g_image_manager->GetImage(graphIdStr.CStr(), (uint32_t*)_graphBuffer, _noiseWidth, _graphHeight);
-
+	graphIdStr.SetFormatted(GRAPH_PREFIX "-%i-%f-%i-%f-%f-%f", (int)data.noiseType, data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
+	data.noise = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)qd.noiseBuffer, _noiseWidth, _noiseHeight);
+	data.graph = tb::g_image_manager->GetImage(graphIdStr.CStr(), (uint32_t*)qd.graphBuffer, _noiseWidth, _graphHeight);
 	_noiseTool->add(TBIDC(idStr), data);
-	_select->SetValue(_select->GetSource()->GetNumItems() - 1);
+
+	const int n = _select->GetSource()->GetNumItems();
+	_select->SetValue(n - 1);
+	Log::info("Generating noise for %s took %lums", getNoiseTypeName(data.noiseType), data.endmillis - data.millis);
+	delete [] qd.noiseBuffer;
+	delete [] qd.graphBuffer;
 }
 
 void NoiseToolWindow::OnDie() {

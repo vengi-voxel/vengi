@@ -7,6 +7,7 @@
 #include "ui/Window.h"
 #include "ui/ui_widgets.h"
 #include "core/Common.h"
+#include "core/ConcurrentQueue.h"
 #include <unordered_map>
 #include "../NoiseData.h"
 
@@ -24,11 +25,20 @@ private:
 	tb::TBSelectDropdown* _noiseType = nullptr;
 	tb::TBSelectItemSourceList<tb::TBGenericStringItem> _noiseTypeSource;
 
+	struct QueueData {
+		NoiseData data;
+		uint8_t *noiseBuffer;
+		uint8_t *graphBuffer;
+
+		inline bool operator<(const QueueData& rhs) const {
+			return noiseBuffer < rhs.noiseBuffer;
+		}
+	};
+	core::ConcurrentQueue<QueueData> _queue;
+
 	int _noiseWidth = 768;
 	int _noiseHeight = 1024;
 	const int _graphHeight = 65;
-	uint8_t *_noiseBuffer = nullptr;
-	uint8_t *_graphBuffer = nullptr;
 	uint8_t *_graphBufferBackground = nullptr;
 
 	/**
@@ -43,6 +53,7 @@ public:
 	NoiseToolWindow(NoiseTool* tool);
 	~NoiseToolWindow();
 	bool init();
+	void update();
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 	void OnDie() override;

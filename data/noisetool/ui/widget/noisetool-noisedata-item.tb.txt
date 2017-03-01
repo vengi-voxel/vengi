@@ -6,6 +6,7 @@ TBLayout: axis: y, position: left, spacing: 3, position: left top
 		TBTextField: id: octaves
 		TBTextField: id: gain
 		TBTextField: id: lacunarity
+		TBTextField: id: millis
 		TBWidget: gravity: left right
 	ImageWidget: id: graph, ignore-input: 1
 	TBSection: value: 0, text: "2D noise"

@@ -32,6 +32,13 @@ tb::TBWidget *NoiseItemSource::CreateItemWidget(int index, tb::TBSelectItemViewe
 		widget->SetText(str); \
 	}
 
+#define NOISEDATADETAILDATA(text, id, data) \
+	if (tb::TBTextField *widget = GetWidgetByIDAndType<tb::TBTextField>(TBIDC(id))) { \
+		tb::TBStr str; \
+		str.SetFormatted(text, data); \
+		widget->SetText(str); \
+	}
+
 NoiseDataItemWidget::NoiseDataItemWidget(NoiseTool* tool, NoiseItem *item, NoiseItemSource *source, tb::TBSelectItemViewer *source_viewer, int index) :
 			Super(), _source(source), _index(index), _tool(tool) {
 	SetSkinBg(TBIDC("TBSelectItem"));
@@ -47,6 +54,7 @@ NoiseDataItemWidget::NoiseDataItemWidget(NoiseTool* tool, NoiseItem *item, Noise
 	NOISEDATADETAIL("Lacunarity: %f", lacunarity);
 	NOISEDATADETAIL("Octaves: %i", octaves);
 	NOISEDATADETAIL("Gain: %f", gain);
+	NOISEDATADETAILDATA("Millis: %lu", "millis", item->data().endmillis - item->data().millis);
 
 	if (ImageWidget *widget = GetWidgetByIDAndType<ImageWidget>(TBIDC("noise"))) {
 		widget->SetImage(item->data().noise);

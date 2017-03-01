@@ -9,6 +9,7 @@
 #include <map>
 
 class NoiseItemSource;
+class NoiseToolWindow;
 
 typedef std::map<uint32_t, NoiseData> NoiseDataMap;
 
@@ -21,6 +22,7 @@ class NoiseTool: public ui::UIApp {
 private:
 	using Super = ui::UIApp;
 	NoiseDataMap _noiseData;
+	NoiseToolWindow* _window = nullptr;
 	NoiseItemSource* _noiseItemSource = nullptr;
 public:
 	NoiseTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
