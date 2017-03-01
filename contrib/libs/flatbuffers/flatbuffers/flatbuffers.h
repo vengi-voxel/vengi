@@ -88,7 +88,7 @@
 #endif // !defined(FLATBUFFERS_LITTLEENDIAN)
 
 #define FLATBUFFERS_VERSION_MAJOR 1
-#define FLATBUFFERS_VERSION_MINOR 5
+#define FLATBUFFERS_VERSION_MINOR 6
 #define FLATBUFFERS_VERSION_REVISION 0
 #define FLATBUFFERS_STRING_EXPAND(X) #X
 #define FLATBUFFERS_STRING(X) FLATBUFFERS_STRING_EXPAND(X)
@@ -496,12 +496,11 @@ class vector_downward {
  public:
   explicit vector_downward(size_t initial_size,
                            const simple_allocator &allocator)
-    : reserved_(initial_size),
+    : reserved_((initial_size + sizeof(largest_scalar_t) - 1) &
+        ~(sizeof(largest_scalar_t) - 1)),
       buf_(allocator.allocate(reserved_)),
       cur_(buf_ + reserved_),
-      allocator_(allocator) {
-    assert((initial_size & (sizeof(largest_scalar_t) - 1)) == 0);
-  }
+      allocator_(allocator) {}
 
   ~vector_downward() {
     if (buf_)
@@ -566,7 +565,7 @@ class vector_downward {
   }
 
   // Specialized version of push() that avoids memcpy call for small data.
-  template<typename T> void push_small(T little_endian_t) {
+  template<typename T> void push_small(const T& little_endian_t) {
     auto dest = make_space(sizeof(T));
     *reinterpret_cast<T *>(dest) = little_endian_t;
   }

@@ -652,7 +652,8 @@ class CppGenerator : public BaseGenerator {
       code_ += "";
       code_ += "  {{NAME}}Union() : type({{NONE}}), table(nullptr) {}";
       code_ += "  {{NAME}}Union({{NAME}}Union&& u):";
-      code_ += "    type(std::move(u.type)), table(std::move(u.table)) {}";
+      code_ += "    type({{NONE}}), table(nullptr)";
+      code_ += "    { std::swap(type, u.type); std::swap(table, u.table); }";
       code_ += "  {{NAME}}Union(const {{NAME}}Union &);";
       code_ += "  {{NAME}}Union &operator=(const {{NAME}}Union &);";
       code_ += "  ~{{NAME}}Union() { Reset(); }";
@@ -1118,6 +1119,38 @@ class CppGenerator : public BaseGenerator {
       code_ += "    return {{FIELD_VALUE}};";
       code_ += "  }";
 
+      if (field.value.type.base_type == BASE_TYPE_UNION) {
+        auto u = field.value.type.enum_def;
+
+        code_ += "  template<typename T> "
+                "const T *{{FIELD_NAME}}_as() const;";
+
+        for (auto u_it = u->vals.vec.begin();
+             u_it != u->vals.vec.end(); ++u_it) {
+          if (!(*u_it)->struct_def) {
+            continue;
+          }
+          auto arg_struct_def = (*u_it)->struct_def;
+          auto full_struct_name = WrapInNameSpace(*arg_struct_def);
+
+          // @TODO: Mby make this decisions more universal? How?
+          code_.SetValue("U_GET_TYPE", field.name + UnionTypeFieldSuffix());
+          code_.SetValue("U_ELEMENT_TYPE", WrapInNameSpace(
+                         u->defined_namespace, GetEnumValUse(*u, **u_it)));
+          code_.SetValue("U_FIELD_TYPE", "const " + full_struct_name + " *");
+          code_.SetValue("U_ELEMENT_NAME", full_struct_name);
+          code_.SetValue("U_FIELD_NAME",
+                         field.name + "_as_" + (*u_it)->name);
+
+          // `const Type *union_name_asType() const` accessor.
+          code_ += "  {{U_FIELD_TYPE}}{{U_FIELD_NAME}}() const {";
+          code_ += "    return ({{U_GET_TYPE}}() == {{U_ELEMENT_TYPE}})? "
+                  "static_cast<{{U_FIELD_TYPE}}>({{FIELD_NAME}}()) "
+                  ": nullptr;";
+          code_ += "  }";
+        }
+      }
+
       if (parser_.opts.mutable_buffer) {
         if (is_scalar) {
           code_.SetValue("OFFSET_NAME", offset_str);
@@ -1221,6 +1254,44 @@ class CppGenerator : public BaseGenerator {
 
     code_ += "};";  // End of table.
     code_ += "";
+
+    // Explicit specializations for union accessors
+    for (auto it = struct_def.fields.vec.begin();
+         it != struct_def.fields.vec.end(); ++it) {
+      const auto &field = **it;
+      if (field.deprecated ||
+          field.value.type.base_type != BASE_TYPE_UNION) {
+        continue;
+      }
+
+      auto u = field.value.type.enum_def;
+      code_.SetValue("FIELD_NAME", field.name);
+
+      for (auto u_it = u->vals.vec.begin();
+           u_it != u->vals.vec.end(); ++u_it) {
+        if (!(*u_it)->struct_def) {
+          continue;
+        }
+
+        auto arg_struct_def = (*u_it)->struct_def;
+        auto full_struct_name = WrapInNameSpace(*arg_struct_def);
+
+        code_.SetValue("U_ELEMENT_TYPE", WrapInNameSpace(
+                       u->defined_namespace, GetEnumValUse(*u, **u_it)));
+        code_.SetValue("U_FIELD_TYPE", "const " + full_struct_name + " *");
+        code_.SetValue("U_ELEMENT_NAME", full_struct_name);
+        code_.SetValue("U_FIELD_NAME",
+                       field.name + "_as_" + (*u_it)->name);
+
+        // `template<> const T *union_name_as<T>() const` accessor.
+        code_ += "template<> "
+                "inline {{U_FIELD_TYPE}}{{STRUCT_NAME}}::{{FIELD_NAME}}_as"
+                "<{{U_ELEMENT_NAME}}>() const {";
+        code_ += "  return {{U_FIELD_NAME}}();";
+        code_ += "}";
+        code_ += "";
+      }
+    }
 
     GenBuilders(struct_def);
 
@@ -1438,12 +1509,13 @@ class CppGenerator : public BaseGenerator {
         //   for (uoffset_t i = 0; i < _e->size(); ++i) {
         //     _o->field.push_back(_e->Get(_i));
         //   }
+        code += "{ _o->" + field.name + ".resize(_e->size()); ";
         code += "for (flatbuffers::uoffset_t _i = 0;";
         code += " _i < _e->size(); _i++) { ";
-        code += "_o->" + field.name + ".push_back(";
+        code += "_o->" + field.name + "[_i] = ";
         code += GenUnpackVal(field.value.type.VectorType(),
                                   indexing, true, field);
-        code += "); }";
+        code += "; } }";
         break;
       }
       case BASE_TYPE_UTYPE: {
