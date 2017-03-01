@@ -2201,7 +2201,7 @@ float ridgedMF_t(const T &input, float ridgeOffset, uint8_t octaves, float lacun
 		freq *= lacunarity;
 		amp *= gain;
 	}
-	return sum;
+	return sum * 2.0f - 0.5f;
 }
 }
 

@@ -66,7 +66,7 @@ bool NoiseToolWindow::init() {
 
 float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 	const NoiseType noiseType = data.noiseType;
-	const glm::vec2 position = (glm::vec2(data.offset) + glm::vec2(x, y) * data.frequency);
+	const glm::vec2 position(data.offset + x * data.frequency, data.offset + y * data.frequency);
 	switch (noiseType) {
 	case NoiseType::doubleNoise:
 		return noise::doubleValueNoise(glm::ivec3(position, 0), 0);
@@ -84,10 +84,12 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 		return noise::fBm(noise::dfBm(position));
 	case NoiseType::flowNoiseFbm:
 		return noise::flowNoise(position + noise::fBm(glm::vec3(position, data.millis * 0.1f)), data.millis);
-	case NoiseType::ridgedMFTime:
-		return noise::ridgedMF(glm::vec3(position, data.millis * 0.1f), data.offset, data.octaves, data.lacunarity, data.gain);
+	case NoiseType::ridgedMFTime: {
+		const glm::vec3 p3(position, data.millis * 0.1f);
+		return noise::ridgedMF(p3, 1.0f, data.octaves, data.lacunarity, data.gain);
+	}
 	case NoiseType::ridgedMF:
-		return noise::ridgedMF(position, data.offset, data.octaves, data.lacunarity, data.gain);
+		return noise::ridgedMF(position, 1.0f, data.octaves, data.lacunarity, data.gain);
 	case NoiseType::ridgedMFCascade:
 		return noise::ridgedMF(noise::ridgedMF(position));
 	case NoiseType::iqNoise:
@@ -98,10 +100,12 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 		const glm::vec3& n = noise::dnoise(position * 5.0f);
 		return (n.y + n.z) * 0.5f;
 	}
-	case NoiseType::noiseCurlNoise:
-		return noise::noise(position + glm::vec2(noise::curlNoise(position, data.millis).x));
+	case NoiseType::noiseCurlNoise: {
+		const glm::vec2& n = noise::curlNoise(position, data.millis);
+		return noise::noise(glm::vec2(position.x + n.x, position.y + n.x));
+	}
 	case NoiseType::voronoi:
-		return noise::voronoi(glm::dvec3(position, 0.0), true, data.offset, 1.0f, data.octaves);
+		return noise::voronoi(glm::dvec3(position, 0.0), true, 0.0, 1.0, 0);
 	case NoiseType::worleyNoise:
 		return noise::worleyNoise(position);
 	case NoiseType::worleyNoiseFbm:
