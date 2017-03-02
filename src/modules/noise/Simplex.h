@@ -70,11 +70,7 @@ inline glm::vec3 dnoise(const glm::vec2 &v);
 //! Returns a 3D simplex noise with analytical derivatives.
 inline glm::vec4 dnoise(const glm::vec3 &v);
 // not optimal but easiest way to return 5 floats
-#if GLM_VERSION > 98
-typedef glm::vec<5, float> vec5;
-#else
 typedef std::array<float, 5> vec5;
-#endif
 //! Returns a 4D simplex noise with analytical derivatives
 inline vec5 dnoise(const glm::vec4 &v);
 
@@ -1339,11 +1335,7 @@ vec5 dnoise(const glm::vec4 &v) {
 	dnoise_dz *= 28.0f;
 	dnoise_dw *= 28.0f;
 
-#if GLM_VERSION > 98
-	return vec5( noise, dnoise_dx, dnoise_dy, dnoise_dz, dnoise_dw );
-#else
 	return { {noise, dnoise_dx, dnoise_dy, dnoise_dz, dnoise_dw}};
-#endif
 }
 
 float worleyNoise(const glm::vec2 &v) {
@@ -2132,25 +2124,17 @@ glm::vec4 dfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain
 }
 
 vec5 dfBm(const glm::vec4 &v, uint8_t octaves, float lacunarity, float gain) {
-#if GLM_VERSION > 98
-	vec5 sum (0.0f)
-#else
 	vec5 sum = { { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } };
-#endif
 	float freq = 1.0f;
 	float amp = 0.5f;
 
 	for (uint8_t i = 0; i < octaves; ++i) {
 		const vec5& n = dnoise(v * freq);
-#if GLM_VERSION > 98
-		sum += n * amp;
-#else
 		sum[0] += n[0] * amp;
 		sum[1] += n[1] * amp;
 		sum[2] += n[2] * amp;
 		sum[3] += n[3] * amp;
 		sum[4] += n[4] * amp;
-#endif
 		freq *= lacunarity;
 		amp *= gain;
 	}
