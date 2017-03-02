@@ -244,8 +244,12 @@ void WorldRenderer::cull(const video::Camera& camera) {
 			continue;
 		}
 		if (camera.isVisible(chunkBuffer.aabb)) {
-			_visible.push_back(&chunkBuffer.opaque);
-			_visibleWater.push_back(&chunkBuffer.water);
+			if (chunkBuffer.opaque.indexBuffer != -1) {
+				_visible.push_back(&chunkBuffer.opaque);
+			}
+			if (chunkBuffer.water.indexBuffer != -1) {
+				_visibleWater.push_back(&chunkBuffer.water);
+			}
 		}
 	}
 }
