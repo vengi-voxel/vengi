@@ -46,6 +46,7 @@ core::AppState WorldRendererTool::onConstruct() {
 	}).setHelp("Toggle free look");
 
 	_worldRenderer.onConstruct();
+	_world->setPersist(false);
 
 	return state;
 }
