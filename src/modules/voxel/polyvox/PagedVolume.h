@@ -62,6 +62,7 @@ public:
 
 		void setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, const Voxel& tValue);
 		void setVoxels(uint32_t uXPos, uint32_t uZPos, const Voxel* tValues, int amount);
+		void setVoxels(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, const Voxel* tValues, int amount);
 		void setVoxel(const glm::i16vec3& v3dPos, const Voxel& tValue);
 
 	private:
@@ -207,8 +208,9 @@ public:
 	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue);
 	/// Sets the voxel at the position given by a 3D vector
 	void setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue);
-	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
+	/// Sets the voxel at the position given by <tt>x,z</tt> coordinates
 	void setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, int amount);
+	void setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx, int nz, const Voxel* tArray, int amount);
 
 	/// Tries to ensure that the voxels within the specified Region are loaded into memory.
 	void prefetch(const Region& regPrefetch);

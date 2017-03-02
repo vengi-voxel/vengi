@@ -124,21 +124,34 @@ void PagedVolume::setVoxel(const glm::ivec3& v3dPos, const Voxel& tValue) {
 }
 
 void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, int amount) {
-	int32_t uYPos = 0;
-	while (amount > 0) {
-		const int32_t chunkX = uXPos >> _chunkSideLengthPower;
-		const int32_t chunkY = uYPos >> _chunkSideLengthPower;
-		const int32_t chunkZ = uZPos >> _chunkSideLengthPower;
-		const uint16_t xOffset = static_cast<uint16_t>(uXPos & _chunkMask);
-		const uint16_t zOffset = static_cast<uint16_t>(uZPos & _chunkMask);
+	setVoxels(uXPos, 0, uZPos, 1, 1, tArray, amount);
+}
 
-		Chunk* chunk = getChunk(chunkX, chunkY, chunkZ);
-		const int32_t n = std::min(amount, int32_t(chunk->_sideLength));
+void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx, int nz, const Voxel* tArray, int amount) {
+	for (int j = 0; j < nx; ++j) {
+		for (int k = 0; k < nz; ++k) {
+			int32_t y = uYPos;
+			const int32_t x = uXPos + j;
+			const int32_t z = uZPos + k;
+			int left = amount;
+			const Voxel* array = tArray;
+			while (left > 0) {
+				const int32_t chunkX = x >> _chunkSideLengthPower;
+				const int32_t chunkY = y >> _chunkSideLengthPower;
+				const int32_t chunkZ = z >> _chunkSideLengthPower;
+				const uint16_t xOffset = static_cast<uint16_t>(x & _chunkMask);
+				const uint16_t yOffset = static_cast<uint16_t>(y & _chunkMask);
+				const uint16_t zOffset = static_cast<uint16_t>(z & _chunkMask);
 
-		chunk->setVoxels(xOffset, zOffset, tArray, n);
-		amount -= n;
-		tArray += ptrdiff_t(n);
-		uYPos += n;
+				Chunk* chunk = getChunk(chunkX, chunkY, chunkZ);
+				const int32_t n = std::min(left, int32_t(chunk->_sideLength));
+
+				chunk->setVoxels(xOffset, yOffset, zOffset, array, n);
+				left -= n;
+				array += ptrdiff_t(n);
+				y += n;
+			}
+		}
 	}
 }
 
@@ -420,14 +433,19 @@ void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos
 }
 
 void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uZPos, const Voxel* tValues, int amount) {
+	setVoxels(uXPos, 0, uZPos, tValues, amount);
+}
+
+void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos, const Voxel* tValues, int amount) {
 	// This code is not usually expected to be called by the user, with the exception of when implementing paging
 	// of uncompressed data. It's a performance critical code path
 	core_assert_msg(amount <= _sideLength, "Supplied amount exceeds chunk boundaries");
 	core_assert_msg(uXPos < _sideLength, "Supplied x position is outside of the chunk");
+	core_assert_msg(uYPos < _sideLength, "Supplied y position is outside of the chunk");
 	core_assert_msg(uZPos < _sideLength, "Supplied z position is outside of the chunk");
 	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
-	for (int y = 0; y < amount; ++y) {
+	for (int y = uYPos; y < amount; ++y) {
 		const uint32_t index = morton256_x[uXPos] | morton256_y[y] | morton256_z[uZPos];
 		_data[index] = tValues[y];
 	}

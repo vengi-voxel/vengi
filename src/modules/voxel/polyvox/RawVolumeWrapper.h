@@ -76,6 +76,17 @@ public:
 		}
 		return true;
 	}
+
+	inline bool setVoxels(int x, int y, int z, int nx, int nz, const Voxel* voxels, int amount) {
+		for (int j = 0; j < nx; ++j) {
+			for (int k = 0; k < nz; ++k) {
+				for (int ny = y; ny < amount; ++ny) {
+					setVoxel(x + j, ny, z + k, voxels[ny]);
+				}
+			}
+		}
+		return true;
+	}
 };
 
 }

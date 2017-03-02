@@ -85,33 +85,37 @@ public:
 	}
 
 	inline bool setVoxels(int x, int z, const Voxel* voxels, int amount) {
-		if (_validRegion.containsPoint(x, 0, z)) {
-			// first part goes into the chunk
-			const int h = _validRegion.getHeightInVoxels();
-			_chunk->setVoxels(x - _validRegion.getLowerX(), z - _validRegion.getLowerZ(), voxels, std::min(h, amount));
-			amount -= h;
-			if (amount > 0) {
-				// everything else goes into the volume
-				core_assert(_pagedVolume != nullptr);
-				_pagedVolume->setVoxels(x, z, voxels + h, amount);
+		return setVoxels(x, 0, z, 1, 1, voxels, amount);
+	}
+
+	inline bool setVoxels(int x, int y, int z, int nx, int nz, const Voxel* voxels, int amount) {
+		for (int j = 0; j < nx; ++j) {
+			for (int k = 0; k < nz; ++k) {
+				const int fx = x + j;
+				const int fz = z + k;
+				int left = amount;
+				if (_validRegion.containsPoint(fx, y, fz)) {
+					// first part goes into the chunk
+					const int h = _validRegion.getHeightInVoxels();
+					_chunk->setVoxels(fx - _validRegion.getLowerX(), y - _validRegion.getLowerY(), fz - _validRegion.getLowerZ(), voxels, std::min(h, left));
+					left -= h;
+					if (left > 0) {
+						// everything else goes into the volume
+						core_assert(_pagedVolume != nullptr);
+						_pagedVolume->setVoxels(fx, y + h, fz, 1, 1, voxels + h, left);
+					}
+				} else {
+					// TODO: add region/chunk support here, too
+					core_assert(_pagedVolume != nullptr);
+					_pagedVolume->setVoxels(fx, y, fz, 1, 1, voxels, left);
+				}
 			}
-			return true;
 		}
-		// TODO: add region/chunk support here, too
-		core_assert(_pagedVolume != nullptr);
-		_pagedVolume->setVoxels(x, z, voxels, amount);
 		return true;
 	}
 
 	inline bool setVoxels(int x, int y, int z, const Voxel* voxels, int amount) {
-		for (int i = 0; i < amount; ++i) {
-			if (_validRegion.containsPoint(x, y + i, z)) {
-				_chunk->setVoxel(x - _validRegion.getLowerX(), y - _validRegion.getLowerY(), z - _validRegion.getLowerZ(), voxels[y]);
-			} else {
-				_pagedVolume->setVoxel(x, y, z, voxels[y]);
-			}
-		}
-		return true;
+		return setVoxels(x, y, z, 1, 1, voxels, amount);
 	}
 };
 

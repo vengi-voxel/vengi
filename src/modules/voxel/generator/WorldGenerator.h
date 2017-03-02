@@ -64,10 +64,7 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 	for (int z = lowerZ; z < lowerZ + depth; z += 2) {
 		for (int x = lowerX; x < lowerX + width; x += 2) {
 			const int ni = fillVoxels(x, z, worldCtx, voxels, biomManager, seed, noiseSeedOffsetX, noiseSeedOffsetZ, MAX_TERRAIN_HEIGHT - 1);
-			volume.setVoxels(x, z, voxels, ni);
-			volume.setVoxels(x + 1, z + 1, voxels, ni);
-			volume.setVoxels(x, z + 1, voxels, ni);
-			volume.setVoxels(x + 1, z, voxels, ni);
+			volume.setVoxels(x, 0, z, 2, 2, voxels, ni);
 		}
 	}
 	if ((flags & WORLDGEN_CLOUDS) != 0) {
