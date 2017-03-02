@@ -273,7 +273,7 @@ private:
 
 	typedef std::recursive_mutex VolumeMutex;
 	typedef std::lock_guard<VolumeMutex> VolumeLockGuard;
-	mutable std::recursive_mutex _lock;
+	mutable VolumeMutex _lock;
 };
 
 inline const Voxel& PagedVolume::Sampler::getVoxel() const {
