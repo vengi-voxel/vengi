@@ -3,8 +3,9 @@
 #include "core/Color.h"
 #include "voxel/polyvox/Mesh.h"
 #include <unordered_map>
-#include "stb_truetype.h"
 #include "core/UTF8.h"
+
+struct stbtt_fontinfo;
 
 namespace voxel {
 
@@ -14,7 +15,7 @@ namespace voxel {
 class VoxelFont {
 private:
 	std::unordered_map<uint32_t, voxel::Mesh*> _cache;
-	stbtt_fontinfo _font;
+	stbtt_fontinfo* _font = nullptr;
 	uint8_t *_ttfBuffer = nullptr;
 	int _size = 0;
 	float _scale = 0.0f;
@@ -31,6 +32,8 @@ private:
 	int _descent = 0;
 
 	bool renderGlyphs(const char* string, bool mergeQuads);
+
+	void getMetrics(int c, int& advanceWidth, int& leftSideBearing);
 
 	template<class T, class FUNC>
 	int render(const char* string, std::vector<T>& out, std::vector<uint32_t>& indices, FUNC&& func) {
@@ -59,7 +62,7 @@ private:
 			int y = yBase;
 			int advanceWidth;
 			int leftSideBearing;
-			stbtt_GetCodepointHMetrics(&_font, c, &advanceWidth, &leftSideBearing);
+			getMetrics(c, advanceWidth, leftSideBearing);
 			const int advance = (int) (advanceWidth * _scale + 0.5f);
 			xBase += advance;
 

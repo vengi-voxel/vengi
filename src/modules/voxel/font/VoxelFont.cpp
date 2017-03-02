@@ -20,6 +20,10 @@ VoxelFont::~VoxelFont() {
 	shutdown();
 }
 
+void VoxelFont::getMetrics(int c, int& advanceWidth, int& leftSideBearing) {
+	stbtt_GetCodepointHMetrics(_font, c, &advanceWidth, &leftSideBearing);
+}
+
 bool VoxelFont::init(const char* filename, int size, int thickness, bool mergeQuads, const char* glyphs) {
 	core_assert_msg(size < 255, "size %i exceeds max vertices position due to limited data type in Vertex class", size);
 	core_assert_msg(size > 0, "size must be > 0, but is %i", size);
@@ -34,13 +38,14 @@ bool VoxelFont::init(const char* filename, int size, int thickness, bool mergeQu
 		return false;
 	}
 	const int offset = stbtt_GetFontOffsetForIndex(_ttfBuffer, 0);
-	stbtt_InitFont(&_font, _ttfBuffer, offset);
+	_font = new stbtt_fontinfo();
+	stbtt_InitFont(_font, _ttfBuffer, offset);
 	_size = (int) (size * 1.3f); // FIX: Constant taken out of thin air because fonts get too small.
-	_scale = stbtt_ScaleForPixelHeight(&_font, (float)_size);
+	_scale = stbtt_ScaleForPixelHeight(_font, (float)_size);
 
 	_thickness = glm::max(1, thickness);
 	int lineGap;
-	stbtt_GetFontVMetrics(&_font, &_ascent, &_descent, &lineGap);
+	stbtt_GetFontVMetrics(_font, &_ascent, &_descent, &lineGap);
 	_ascent = (int) (_ascent * _scale + 0.5f);
 	_descent = (int) ((-_descent) * _scale + 0.5f);
 	_height = (int) ((_ascent - _descent + lineGap) * _scale + 0.5f);
@@ -58,6 +63,9 @@ void VoxelFont::shutdown() {
 		delete e.second;
 	}
 	_cache.clear();
+
+	delete _font;
+	_font = nullptr;
 
 	delete[] _ttfBuffer;
 	_ttfBuffer = nullptr;
@@ -78,14 +86,14 @@ bool VoxelFont::renderGlyphs(const char* string, bool mergeQuads) {
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
 		int w;
 		int h;
-		unsigned char *bitmap = stbtt_GetCodepointBitmap(&_font, 0.0f, _scale, c, &w, &h, 0, 0);
+		unsigned char *bitmap = stbtt_GetCodepointBitmap(_font, 0.0f, _scale, c, &w, &h, 0, 0);
 		if (bitmap == nullptr) {
 			Log::debug("Could not create voxelfont mesh for character: %i", c);
 			continue;
 		}
 
 		int ix0, iy0, ix1, iy1;
-		stbtt_GetCodepointBitmapBox(&_font, c, 0, _scale, &ix0, &iy0, &ix1, &iy1);
+		stbtt_GetCodepointBitmapBox(_font, c, 0, _scale, &ix0, &iy0, &ix1, &iy1);
 
 		if (c == ' ') {
 			_spaceWidth = w;
