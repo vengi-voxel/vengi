@@ -59,12 +59,13 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 	core_assert(region.getLowerY() >= 0);
 	Voxel voxels[MAX_TERRAIN_HEIGHT];
 
-	core_assert((lowerZ + depth) % 2 == 0);
-	core_assert((lowerX + width) % 2 == 0);
-	for (int z = lowerZ; z < lowerZ + depth; z += 2) {
-		for (int x = lowerX; x < lowerX + width; x += 2) {
+	const int size = 2;
+	core_assert(depth % size == 0);
+	core_assert(width % size == 0);
+	for (int z = lowerZ; z < lowerZ + depth; z += size) {
+		for (int x = lowerX; x < lowerX + width; x += size) {
 			const int ni = fillVoxels(x, z, worldCtx, voxels, biomManager, seed, noiseSeedOffsetX, noiseSeedOffsetZ, MAX_TERRAIN_HEIGHT - 1);
-			volume.setVoxels(x, 0, z, 2, 2, voxels, ni);
+			volume.setVoxels(x, 0, z, size, size, voxels, ni);
 		}
 	}
 	if ((flags & WORLDGEN_CLOUDS) != 0) {
