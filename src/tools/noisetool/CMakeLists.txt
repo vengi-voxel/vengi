@@ -5,9 +5,10 @@ set(SRCS
 	NoiseType.h NoiseType.cpp
 
 	ui/NoiseToolWindow.h ui/NoiseToolWindow.cpp
+	ui/NoiseDataNodeWindow.h ui/NoiseDataNodeWindow.cpp
 
+	ui/noisedata/NoiseDataNodeWidget.h ui/noisedata/NoiseDataNodeWidget.cpp
 	ui/noisedata/NoiseDataItemWidget.h ui/noisedata/NoiseDataItemWidget.cpp
-	ui/noisenode/NoiseNodeWidget.h ui/noisenode/NoiseNodeWidget.cpp
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
 target_link_libraries(${PROJECT_NAME} frontend util)

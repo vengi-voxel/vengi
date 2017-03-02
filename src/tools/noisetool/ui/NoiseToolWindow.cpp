@@ -9,6 +9,7 @@
 #include "noise/Simplex.h"
 #include "ui/UIApp.h"
 #include "core/Color.h"
+#include "NoiseDataNodeWindow.h"
 
 #define IMAGE_PREFIX "2d"
 #define GRAPH_PREFIX "graph"
@@ -132,8 +133,13 @@ bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		} else if (id == TBIDC("quit")) {
 			Close();
 			return true;
+		} else if (id == TBIDC("nodes")) {
+			NoiseDataNodeWindow* window = new NoiseDataNodeWindow(_noiseTool);
+			window->init();
+			return true;
 		}
 	}
+
 	if (ev.type == tb::EVENT_TYPE_CHANGED && id == TBIDC("filter") && _select != nullptr) {
 		_select->SetFilter(ev.target->GetText());
 		return true;

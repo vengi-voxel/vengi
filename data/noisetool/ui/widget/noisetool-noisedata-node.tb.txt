@@ -1,0 +1,12 @@
+TBMover: axis: y, position: left, spacing: 3, position: left top, gravity: all, skin: node
+	TBLayout: axis: y, spacing: 2, position: left, distribution: gravity, ignore-input: 1, gravity: all
+		TBTextField: id: name, skin: node-header
+		TBLayout: axis: y
+			TBTextField: id: frequency
+				font: size: 8px
+			TBTextField: id: octaves
+				font: size: 8px
+			TBTextField: id: gain
+				font: size: 8px
+			TBTextField: id: lacunarity
+				font: size: 8px
