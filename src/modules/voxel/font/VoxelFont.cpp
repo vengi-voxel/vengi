@@ -7,6 +7,7 @@
 #define STBTT_REALLOC core_realloc
 #define STBTT_FREE core_free
 #define STB_TRUETYPE_IMPLEMENTATION
+#define STBTT_STATIC
 #include "stb_truetype.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/polyvox/CubicSurfaceExtractor.h"

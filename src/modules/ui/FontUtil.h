@@ -3,14 +3,24 @@
 #include "TurboBadger.h"
 #include "core/Common.h"
 
+#ifdef TB_FONT_RENDERER_TBBF
 extern void register_tbbf_font_renderer();
+#endif
+#ifdef TB_FONT_RENDERER_STB
+extern void register_stb_font_renderer();
+#endif
 
 namespace ui {
 
 static const char* fontname = "Segoe";
 
 static inline void initFonts(const char *filename = "ui/font/font.tb.txt") {
+#ifdef TB_FONT_RENDERER_TBBF
 	register_tbbf_font_renderer();
+#endif
+#ifdef TB_FONT_RENDERER_STB
+	register_stb_font_renderer();
+#endif
 	tb::g_font_manager->AddFontInfo(filename, fontname);
 }
 
