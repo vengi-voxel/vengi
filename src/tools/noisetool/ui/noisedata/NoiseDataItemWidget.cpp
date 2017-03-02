@@ -20,7 +20,7 @@ bool NoiseItemSource::Filter(int index, const char *filter) {
 
 tb::TBWidget *NoiseItemSource::CreateItemWidget(int index, tb::TBSelectItemViewer *viewer) {
 	NoiseItem* item = GetItem(index);
-	NoiseDataItemWidget *widget = new NoiseDataItemWidget(_tool, item, this, viewer, index);
+	NoiseDataItemWidget *widget = new NoiseDataItemWidget(_tool, item, this, index);
 	return widget;
 }
 
@@ -39,7 +39,7 @@ tb::TBWidget *NoiseItemSource::CreateItemWidget(int index, tb::TBSelectItemViewe
 		widget->SetText(str); \
 	}
 
-NoiseDataItemWidget::NoiseDataItemWidget(NoiseTool* tool, NoiseItem *item, NoiseItemSource *source, tb::TBSelectItemViewer *source_viewer, int index) :
+NoiseDataItemWidget::NoiseDataItemWidget(NoiseTool* tool, NoiseItem *item, NoiseItemSource *source, int index) :
 			Super(), _source(source), _index(index), _tool(tool) {
 	SetSkinBg(TBIDC("TBSelectItem"));
 	SetLayoutDistribution(tb::LAYOUT_DISTRIBUTION_GRAVITY);
@@ -72,7 +72,7 @@ bool NoiseDataItemWidget::OnEvent(const tb::TBWidgetEvent &ev) {
 			return true;
 		}
 	}
-	return TBLayout::OnEvent(ev);
+	return Super::OnEvent(ev);
 }
 
 NoiseDataList::NoiseDataList() {

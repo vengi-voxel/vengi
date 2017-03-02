@@ -36,7 +36,7 @@ private:
 	int _index;
 	NoiseTool* _tool;
 public:
-	NoiseDataItemWidget(NoiseTool* tool, NoiseItem *item, NoiseItemSource *source, tb::TBSelectItemViewer *sourceViewer, int index);
+	NoiseDataItemWidget(NoiseTool* tool, NoiseItem *item, NoiseItemSource *source, int index);
 
 	bool OnEvent(const tb::TBWidgetEvent &ev) override;
 };
