@@ -18,6 +18,11 @@
 #include "core/command/CommandHandler.h"
 #endif
 
+#define EASY_PROFILER_ENABLED 1
+#if EASY_PROFILER_ENABLED
+#include <easy/profiler.h>
+#endif
+
 #define MICROPROFILE_EMABLED 0
 #if MICROPROFILE_EMABLED
 #define MICROPROFILE_IMPL
@@ -66,6 +71,8 @@ Trace::Trace(uint16_t port) {
 	MicroProfileSetEnableAllGroups(true);
 	MicroProfileSetForceMetaCounters(true);
 	MicroProfileStartContextSwitchTrace();
+#elif EASY_PROFILER_ENABLED
+	profiler::startListen(port);
 #endif
 	traceThread("MainThread");
 }
@@ -79,6 +86,8 @@ Trace::~Trace() {
 	}
 #elif USE_EMTRACE
 	emscripten_trace_close();
+#elif EASY_PROFILER_ENABLED
+	profiler::stopListen();
 #elif MICROPROFILE_EMABLED
 	MicroProfileShutdown();
 #endif
@@ -109,6 +118,8 @@ void traceInit() {
 	Log::info("emtrace active");
 #elif MICROPROFILE_ENABLED
 	Log::info("microprofile active on port " CORE_STRINGIFY(MICROPROFILE_WEBSERVER_PORT));
+#elif EASY_PROFILER_ENABLED
+	EASY_PROFILER_ENABLE;
 #endif
 }
 
@@ -123,6 +134,9 @@ void traceGLInit() {
 }
 
 void traceShutdown() {
+#if EASY_PROFILER_ENABLED
+	EASY_PROFILER_DISABLE;
+#endif
 }
 
 void traceGLShutdown() {
@@ -174,6 +188,8 @@ void traceBegin(const char* name) {
 	_rmt_BeginCPUSample(name, 0, nullptr);
 #elif USE_EMTRACE
 	emscripten_trace_enter_context(name);
+#elif EASY_PROFILER_ENABLED
+	EASY_BLOCK(name);
 #elif MICROPROFILE_EMABLED
 	MicroProfileEnter(getToken(MicroProfileTokenTypeCpu, name));
 #endif
@@ -182,6 +198,8 @@ void traceBegin(const char* name) {
 void traceEnd() {
 #if RMT_ENABLED
 	rmt_EndCPUSample();
+#elif EASY_PROFILER_ENABLED
+	EASY_END_BLOCK;
 #elif USE_EMTRACE
 	emscripten_trace_exit_context();
 #elif MICROPROFILE_EMABLED
@@ -228,6 +246,8 @@ void traceThread(const	 char* name) {
 #elif MICROPROFILE_EMABLED
 	_threadName = name;
 	MicroProfileOnThreadCreate(name);
+#elif EASY_PROFILER_ENABLED
+	EASY_THREAD(name);
 #else
 	traceMessage(name);
 #endif

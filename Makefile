@@ -145,7 +145,7 @@ server client voxedit shapetool worldrenderertool shadertool noisetool databaset
 backward flatbuffers glm libenet nativefiledialog restclient-cpp selene zlib lua53 luac libcurl assimp turbobadger sdl2: cmake
 	$(call COMPILE, $@)
 
-rcon: cmake
+rcon profiler: cmake
 	$(call COMPILE, $@)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
 

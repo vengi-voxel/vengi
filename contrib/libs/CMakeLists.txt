@@ -1,3 +1,4 @@
+add_subdirectory(easy_profiler)
 add_subdirectory(backward)
 add_subdirectory(glm)
 add_subdirectory(zlib)

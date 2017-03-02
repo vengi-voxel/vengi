@@ -42,7 +42,7 @@ set(SRCS
 )
 set(LIB core)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} io glm zlib ${CMAKE_DL_LIBS})
+target_link_libraries(${LIB} io glm zlib easy_profiler ${CMAKE_DL_LIBS})
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests
