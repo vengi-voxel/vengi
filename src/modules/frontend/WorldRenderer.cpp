@@ -526,16 +526,30 @@ bool WorldRenderer::createVertexBufferInternal(const video::Shader& shader, cons
 	core_trace_gl_scoped(WorldRendererCreateMesh);
 	vbo.vb.clearAttributes();
 	vbo.vertexBuffer = vbo.vb.create(mesh.getVertexVector());
+	if (vbo.vertexBuffer == -1) {
+		Log::error("Failed to create vertex buffer");
+		return false;
+	}
 	vbo.indexBuffer = vbo.vb.create(mesh.getIndexVector(), video::VertexBufferType::IndexBuffer);
+	if (vbo.indexBuffer == -1) {
+		Log::error("Failed to create index buffer");
+		return false;
+	}
 	vbo.amount = 1;
 
 	const int locationPos = shader.enableVertexAttributeArray("a_pos");
 	const video::Attribute& posAttrib = getPositionVertexAttribute(vbo.vertexBuffer, locationPos, shader.getAttributeComponents(locationPos));
-	vbo.vb.addAttribute(posAttrib);
+	if (!vbo.vb.addAttribute(posAttrib)) {
+		Log::error("Failed to add position attribute");
+		return false;
+	}
 
 	const int locationInfo = shader.enableVertexAttributeArray("a_info");
 	const video::Attribute& infoAttrib = getInfoVertexAttribute(vbo.vertexBuffer, locationInfo, shader.getAttributeComponents(locationInfo));
-	vbo.vb.addAttribute(infoAttrib);
+	if (!vbo.vb.addAttribute(infoAttrib)) {
+		Log::error("Failed to add info attribute");
+		return false;
+	}
 
 	return true;
 }
@@ -559,7 +573,10 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 	const int location = _worldInstancedShader.getLocationPos();
 	const int components = _worldInstancedShader.getComponentsPos();
 	const video::Attribute& offsetAttrib = getOffsetVertexAttribute(vbo.offsetBuffer, location, components);
-	vbo.vb.addAttribute(offsetAttrib);
+	if (!vbo.vb.addAttribute(offsetAttrib)) {
+		Log::error("Failed to add offset attribute");
+		return false;
+	}
 	return true;
 }
 

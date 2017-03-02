@@ -41,6 +41,10 @@ protected:
 			}
 			void shutdown() {
 				vb.shutdown();
+				offsetBuffer = -1;
+				indexBuffer = -1;
+				vertexBuffer = -1;
+				instancedPositions.clear();
 			}
 			int32_t offsetBuffer = -1;
 			int32_t indexBuffer = -1;
@@ -53,7 +57,7 @@ protected:
 		VBO water;
 
 		inline bool isActive() const {
-			return opaque.vertexBuffer != -1;
+			return opaque.vertexBuffer != -1 || water.vertexBuffer != -1;
 		}
 
 		inline const glm::ivec3& translation() const {
