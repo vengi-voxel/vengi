@@ -235,10 +235,16 @@ void VertexBuffer::shutdown() {
 	video::deleteVertexArray(_vao);
 	video::deleteBuffers(_handleIdx, _handles);
 	_handleIdx = 0;
+	for (int i = 0; i < MAX_HANDLES; ++i) {
+		_targets[0] = VertexBufferType::Max;
+		_size[i] = 0u;
+	}
+	_mode = VertexBufferMode::Static;
 	clearAttributes();
 }
 
 void VertexBuffer::clearAttributes() {
+	_dirtyAttributes = false;
 	_attributes.clear();
 }
 

@@ -20,7 +20,7 @@ private:
 	size_t _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
 	Id _handles[MAX_HANDLES] = {InvalidId, InvalidId, InvalidId, InvalidId, InvalidId, InvalidId};
 	VertexBufferType _targets[MAX_HANDLES] = {VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max};
-	uint32_t _handleIdx = 0;
+	uint32_t _handleIdx = 0u;
 
 	std::vector<Attribute> _attributes;
 	mutable Id _vao = InvalidId;
