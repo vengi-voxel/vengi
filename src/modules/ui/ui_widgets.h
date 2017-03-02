@@ -35,6 +35,21 @@ private:
 };
 UIWIDGET_FACTORY(ColorWidget, tb::TBValue::TYPE_INT, tb::WIDGET_Z_TOP)
 
+class NodeConnectorWidget: public ui::Widget {
+private:
+	using Super = ui::Widget;
+public:
+	UIWIDGET_SUBCLASS(NodeConnectorWidget, Super);
+
+	NodeConnectorWidget();
+
+	void OnInflate(const tb::INFLATE_INFO &info) override;
+	void OnPaint(const PaintProps &paint_props) override;
+private:
+	tb::TBColor _color;
+};
+UIWIDGET_FACTORY(NodeConnectorWidget, tb::TBValue::TYPE_NULL, tb::WIDGET_Z_TOP)
+
 class ImageWidget: public tb::TBImageWidget {
 private:
 	using Super = tb::TBImageWidget;

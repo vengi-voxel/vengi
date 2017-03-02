@@ -51,7 +51,24 @@ void ColorWidget::OnInflate(const tb::INFLATE_INFO &info) {
 	if (const char *color = info.node->GetValueString("color", nullptr)) {
 		SetColor(color);
 	}
-	Log::info("ColorWidget::OnInflate");
+	Super::OnInflate(info);
+}
+
+NodeConnectorWidget::NodeConnectorWidget() :
+		Super(), _color() {
+}
+
+void NodeConnectorWidget::OnPaint(const PaintProps &paint_props) {
+	tb::TBRect local_rect = GetRect();
+	local_rect.x = 0;
+	local_rect.y = 0;
+	tb::g_tb_skin->PaintRectFill(local_rect, _color);
+}
+
+void NodeConnectorWidget::OnInflate(const tb::INFLATE_INFO &info) {
+	if (const char *color = info.node->GetValueString("color", nullptr)) {
+		_color.SetFromString(color, strlen(color));
+	}
 	Super::OnInflate(info);
 }
 
