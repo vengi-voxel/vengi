@@ -170,6 +170,8 @@ void TBInlineSelect::OnInflate(const INFLATE_INFO &info)
 
 TB_WIDGET_FACTORY(TBClickLabel, TBValue::TYPE_STRING, WIDGET_Z_BOTTOM) {}
 
+TB_WIDGET_FACTORY(TBMover, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
+
 TB_WIDGET_FACTORY(TBEditField, TBValue::TYPE_STRING, WIDGET_Z_TOP) {}
 void TBEditField::OnInflate(const INFLATE_INFO &info)
 {
