@@ -164,6 +164,7 @@ void NoiseToolWindow::generateAll() {
 }
 
 void NoiseToolWindow::generateImage(NoiseType type) {
+	core_trace_scoped(GenerateImage);
 	Log::info("Generate noise for %s", getNoiseTypeName(type));
 	NoiseData data;
 	data.offset = getFloat("offset");
