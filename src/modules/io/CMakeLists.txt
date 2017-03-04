@@ -14,8 +14,7 @@ endif()
 
 set(LIB io)
 add_library(${LIB} ${SRCS})
-# TODO: pick one di framework
-target_link_libraries(${LIB} sdl2 glm backward)
+target_link_libraries(${LIB} sdl2 easy_profiler glm backward)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests

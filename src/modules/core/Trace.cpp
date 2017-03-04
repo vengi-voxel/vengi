@@ -18,14 +18,6 @@
 #include "core/command/CommandHandler.h"
 #endif
 
-#define EASY_PROFILER_ENABLED 1
-#if EASY_PROFILER_ENABLED
-#ifndef BUILD_WITH_EASY_PROFILER
-#define BUILD_WITH_EASY_PROFILER
-#endif
-#include <easy/profiler.h>
-#endif
-
 #define MICROPROFILE_EMABLED 0
 #if MICROPROFILE_EMABLED
 #define MICROPROFILE_IMPL
@@ -194,8 +186,6 @@ void traceBegin(const char* name) {
 	_rmt_BeginCPUSample(name, 0, nullptr);
 #elif USE_EMTRACE
 	emscripten_trace_enter_context(name);
-#elif EASY_PROFILER_ENABLED
-	EASY_BLOCK(name);
 #elif MICROPROFILE_EMABLED
 	MicroProfileEnter(getToken(MicroProfileTokenTypeCpu, name));
 #endif
@@ -204,8 +194,6 @@ void traceBegin(const char* name) {
 void traceEnd() {
 #if RMT_ENABLED
 	rmt_EndCPUSample();
-#elif EASY_PROFILER_ENABLED
-	EASY_END_BLOCK;
 #elif USE_EMTRACE
 	emscripten_trace_exit_context();
 #elif MICROPROFILE_EMABLED
@@ -241,6 +229,8 @@ void traceMessage(const char* message) {
 	}
 #if RMT_ENABLED
 	rmt_LogText(message);
+#elif EASY_PROFILER_ENABLED
+	EASY_EVENT(message);
 #else
 	Log::trace("%s", message);
 #endif
