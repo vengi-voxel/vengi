@@ -189,6 +189,7 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 		memset(noiseBuffer, 255, noiseBufferSize);
 		memcpy(graphBuffer, _graphBufferBackground, graphBufferSize);
 
+		const int h = _graphHeight - 1;
 		for (int y = 0; y < _noiseHeight; ++y) {
 			for (int x = 0; x < _noiseWidth; ++x) {
 				const float n = getNoise(x, y, qd.data);
@@ -197,7 +198,9 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 				uint8_t* buf = &noiseBuffer[index(x, y)];
 				memset(buf, c, BPP - 1);
 				if (y == 0 && x < _noiseWidth) {
-					uint8_t* gbuf = &graphBuffer[index(x, ((_graphHeight - 1) - cn * _graphHeight) - 1)];
+					const int gy = h - (cn * h);
+					const int idx = index(x, gy);
+					uint8_t* gbuf = &graphBuffer[idx];
 					*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Red);
 				}
 			}

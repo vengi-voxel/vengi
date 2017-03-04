@@ -32,6 +32,7 @@ ThreadPool::ThreadPool(size_t threads, const char *name) :
 					this->_tasks.pop();
 				}
 
+				core_trace_scoped(ThreadPoolWorker);
 				task();
 			}
 		});

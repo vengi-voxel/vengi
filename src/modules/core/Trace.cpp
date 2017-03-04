@@ -20,6 +20,9 @@
 
 #define EASY_PROFILER_ENABLED 1
 #if EASY_PROFILER_ENABLED
+#ifndef BUILD_WITH_EASY_PROFILER
+#define BUILD_WITH_EASY_PROFILER
+#endif
 #include <easy/profiler.h>
 #endif
 
@@ -63,6 +66,8 @@ Trace::Trace(uint16_t port) {
 	const rmtError rmtInstError = rmt_CreateGlobalInstance(&_remotery);
 	if (rmtInstError != RMT_ERROR_NONE) {
 		Log::error("Failed to init remotery");
+	} else {
+		Log::info("Remotery port: %i", port);
 	}
 #elif USE_EMTRACE
 	emscripten_trace_configure("http://localhost:5000/", "Engine");
@@ -73,6 +78,7 @@ Trace::Trace(uint16_t port) {
 	MicroProfileStartContextSwitchTrace();
 #elif EASY_PROFILER_ENABLED
 	profiler::startListen(port);
+	Log::info("easy_profiler %s port: %i", profiler::versionName(), (int)port);
 #endif
 	traceThread("MainThread");
 }
@@ -119,7 +125,7 @@ void traceInit() {
 #elif MICROPROFILE_ENABLED
 	Log::info("microprofile active on port " CORE_STRINGIFY(MICROPROFILE_WEBSERVER_PORT));
 #elif EASY_PROFILER_ENABLED
-	EASY_PROFILER_ENABLE;
+	Log::info("easy profiler active");
 #endif
 }
 

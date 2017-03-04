@@ -60,5 +60,8 @@ public:
 };
 
 inline int NoiseToolWindow::index(int x, int y) const {
+	core_assert_msg(x >= 0, "x is smaller than 0: %i", x);
+	core_assert_msg(x < _noiseWidth * BPP, "x is out of bounds: %i", x);
+	core_assert_msg(y >= 0, "y is smaller than 0: %i", y);
 	return x * BPP + y * _noiseWidth * BPP;
 }
