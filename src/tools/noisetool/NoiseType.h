@@ -13,7 +13,6 @@ enum class NoiseType {
 	ridgedMF,
 	ridgedMFCascade,
 	iqNoise,
-	iqNoiseScaled,
 	analyticalDerivatives,
 	noiseCurlNoise,
 	worleyNoise,

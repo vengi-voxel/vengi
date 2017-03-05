@@ -40,20 +40,28 @@ TBLayout: distribution: gravity, axis: y
 			TBLayout: distribution: gravity, position: top
 				TBLayout: distribution: gravity, axis: y, position: left, gravity: top bottom, skin: container
 					TBLayout: position: left top, axis: y
-						TBClickLabel: text: Octaves
-							TBEditField: id: octaves, type: number, text: 4
 						TBClickLabel: text: Frequency
 							TBEditField: id: frequency, type: number, text: 0.01
+						TBClickLabel: text: Offset
+							TBEditField: id: offset, type: number, text: 1.0
+						TBClickLabel: text: Octaves
+							TBEditField: id: octaves, type: number, text: 4
 						TBClickLabel: text: Gain
 							TBEditField: id: gain, type: number, text: 0.5
 						TBClickLabel: text: Lacunarity
 							TBEditField: id: lacunarity, type: number, text: 2.0
-						TBClickLabel: text: Offset
-							TBEditField: id: offset, type: number, text: 1.0
-						TBClickLabel: text: Separation
-							TBEditField: id: separation, type: number, text: 5.0
-						TBClickLabel: text: Distance
-							TBCheckBox: id: enabledistance
+						TBSection: value: 1, text: "Poisson Disk Distribution", is-group-root: 1
+							TBLayout: position: left top, axis: y
+								TBClickLabel: text: Separation
+									TBEditField: id: separation, type: number, text: 5.0
+						TBSection: value: 1, text: "Ridged noise", is-group-root: 1
+							TBLayout: position: left top, axis: y
+								TBClickLabel: text: Ridged Offset
+									TBEditField: id: ridgedoffset, type: number, text: 1.0
+						TBSection: value: 1, text: "Voronoi", is-group-root: 1
+							TBLayout: position: left top, axis: y
+								TBClickLabel: text: Distance
+									TBCheckBox: id: enabledistance
 					TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y

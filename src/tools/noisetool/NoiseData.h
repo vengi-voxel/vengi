@@ -12,6 +12,7 @@ struct NoiseData {
 	unsigned long millis = 0l;
 	unsigned long endmillis = 0l;
 	int seed = 0;
+	float ridgedOffset = 1.0f; // ridged noise
 	NoiseType noiseType = NoiseType::Max;
 	bool enableDistance = false; // voronoi
 

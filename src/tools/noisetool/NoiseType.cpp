@@ -14,7 +14,6 @@ static const char *NoiseTypeStr[] = {
 	"ridged multi fractal",
 	"ridged multi fractal cascade",
 	"iq noise",
-	"iq noise scaled",
 	"analytical derivatives",
 	"noise curl noise (time)",
 	"worley noise",
