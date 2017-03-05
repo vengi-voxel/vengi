@@ -43,7 +43,9 @@ $uniformarrayinfo$
 	}
 
 	void shutdown() override {
-		core_assert(_setupCalls > 0);
+		if (_setupCalls == 0) {
+			return;
+		}
 		--_setupCalls;
 		if (_setupCalls == 0) {
 			Super::shutdown();
