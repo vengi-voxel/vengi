@@ -58,11 +58,17 @@ public:
 
 	bool update(int32_t idx, const void* data, size_t size);
 
+	/**
+	 * @return -1 on error - otherwise the index [0,n) of the created buffer (not the Id)
+	 */
 	template<class T>
 	inline int32_t create(const std::vector<T>& data, VertexBufferType target = VertexBufferType::ArrayBuffer) {
 		return create(&data.front(), core::vectorSize(data), target);
 	}
 
+	/**
+	 * @return -1 on error - otherwise the index [0,n) of the created buffer (not the Id)
+	 */
 	int32_t create(const void* data = nullptr, size_t size = 0, VertexBufferType target = VertexBufferType::ArrayBuffer);
 	/**
 	 * @brief Fullscreen buffer with normalized device coordinates with 3 float components

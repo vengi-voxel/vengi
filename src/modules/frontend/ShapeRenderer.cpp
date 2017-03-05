@@ -7,17 +7,32 @@ namespace frontend {
 
 ShapeRenderer::ShapeRenderer() :
 		_colorShader(shader::ColorShader::getInstance()) {
+	for (int i = 0; i < MAX_MESHES; ++i) {
+		_vertexIndex[i] = -1;
+		_indexIndex[i] = -1;
+		_colorIndex[i] = -1;
+		_primitives[i] = video::Primitive::Triangles;
+	}
+}
+
+ShapeRenderer::~ShapeRenderer() {
+	core_assert_msg(_currentMeshIndex == 0, "ShapeRenderer::shutdown() wasn't called");
+	shutdown();
 }
 
 bool ShapeRenderer::init() {
+	core_assert_msg(_currentMeshIndex == 0, "ShapeRenderer was already in use");
 	if (!_colorShader.setup()) {
 		return false;
 	}
 	return true;
 }
 
-bool ShapeRenderer::deleteMesh(uint32_t meshIndex) {
-	if (_currentMeshIndex <= meshIndex) {
+bool ShapeRenderer::deleteMesh(int32_t meshIndex) {
+	if (meshIndex < 0) {
+		return false;
+	}
+	if (_currentMeshIndex < meshIndex) {
 		return false;
 	}
 	_vbo[meshIndex].shutdown();
@@ -25,6 +40,9 @@ bool ShapeRenderer::deleteMesh(uint32_t meshIndex) {
 	_indexIndex[meshIndex] = -1;
 	_colorIndex[meshIndex] = -1;
 	_primitives[meshIndex] = video::Primitive::Triangles;
+	if (meshIndex > 0 && meshIndex == _currentMeshIndex) {
+		--_currentMeshIndex;
+	}
 	return true;
 }
 
@@ -53,6 +71,7 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
 	_indexIndex[meshIndex] = _vbo[meshIndex].create(indices, video::VertexBufferType::IndexBuffer);
 	if (_indexIndex[meshIndex] == -1) {
+		_vertexIndex[meshIndex] = -1;
 		_vbo[meshIndex].shutdown();
 		Log::error("Could not create vbo for indices");
 		return -1;
@@ -71,6 +90,8 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 		_colorIndex[meshIndex] = _vbo[meshIndex].create(colors3);
 	}
 	if (_colorIndex[meshIndex] == -1) {
+		_vertexIndex[meshIndex] = -1;
+		_indexIndex[meshIndex] = -1;
 		_vbo[meshIndex].shutdown();
 		Log::error("Could not create vbo for color");
 		return -1;
@@ -81,13 +102,13 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 	attributePos.bufferIndex = _vertexIndex[meshIndex];
 	attributePos.index = _colorShader.getLocationPos();
 	attributePos.size = _colorShader.getComponentsPos();
-	_vbo[meshIndex].addAttribute(attributePos);
+	core_assert_always(_vbo[meshIndex].addAttribute(attributePos));
 
 	video::Attribute attributeColor;
 	attributeColor.bufferIndex = _colorIndex[meshIndex];
 	attributeColor.index = _colorShader.getLocationColor();
 	attributeColor.size = _colorShader.getComponentsColor();
-	_vbo[meshIndex].addAttribute(attributeColor);
+	core_assert_always(_vbo[meshIndex].addAttribute(attributeColor));
 
 	_primitives[meshIndex] = shapeBuilder.primitive();
 
@@ -98,7 +119,7 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 void ShapeRenderer::shutdown() {
 	_colorShader.shutdown();
 	for (uint32_t i = 0u; i < _currentMeshIndex; ++i) {
-		_vbo[i].shutdown();
+		deleteMesh(i);
 	}
 	_currentMeshIndex = 0u;
 }

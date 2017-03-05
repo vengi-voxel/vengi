@@ -27,10 +27,11 @@ private:
 
 public:
 	ShapeRenderer();
+	~ShapeRenderer();
 
 	bool init();
 
-	bool deleteMesh(uint32_t meshIndex);
+	bool deleteMesh(int32_t meshIndex);
 
 	int32_t createMesh(const video::ShapeBuilder& shapeBuilder);
 
