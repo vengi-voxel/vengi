@@ -16,6 +16,8 @@ enum class FileMode {
 	Read, Write
 };
 
+extern void normalizePath(std::string& str);
+
 /**
  * @brief Wrapper for file based io.
  *
@@ -25,7 +27,7 @@ class File : public IOResource {
 	friend class FileStream;
 protected:
 	SDL_RWops* _file;
-	const std::string _rawPath;
+	std::string _rawPath;
 	FileMode _mode;
 
 	void close();

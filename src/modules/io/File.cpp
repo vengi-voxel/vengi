@@ -7,8 +7,17 @@
 
 namespace io {
 
+void normalizePath(std::string& str) {
+	for (std::string::iterator i = str.begin(); i != str.end(); ++i) {
+		if (*i == '\\') {
+			*i = '/';
+		}
+	}
+}
+
 File::File(const std::string& rawPath, FileMode mode) :
 		IOResource(), _rawPath(rawPath), _mode(mode) {
+	normalizePath(_rawPath);
 	_file = createRWops(mode);
 }
 
