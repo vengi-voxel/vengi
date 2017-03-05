@@ -10,6 +10,7 @@
 #include "ui/UIApp.h"
 #include "core/Color.h"
 #include "NoiseDataNodeWindow.h"
+#include "noise/PoissonDiskDistribution.h"
 
 #define IMAGE_PREFIX "2d"
 #define GRAPH_PREFIX "graph"
@@ -115,6 +116,7 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 		return noise::swissTurbulence(position, 0, data.octaves, data.lacunarity, data.gain);
 	case NoiseType::jordanTurbulence:
 		return noise::jordanTurbulence(position, 0, data.octaves);
+	case NoiseType::poissonDiskDistribution:
 	case NoiseType::Max:
 		break;
 	}
@@ -189,19 +191,30 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 		memset(noiseBuffer, 255, noiseBufferSize);
 		memcpy(graphBuffer, _graphBufferBackground, graphBufferSize);
 
-		const int h = _graphHeight - 1;
-		for (int y = 0; y < _noiseHeight; ++y) {
-			for (int x = 0; x < _noiseWidth; ++x) {
-				const float n = getNoise(x, y, qd.data);
-				const float cn = noise::norm(n);
-				const uint8_t c = cn * 255;
+		if (qd.data.noiseType == NoiseType::poissonDiskDistribution) {
+			core::RectFloat area(0, 0, _noiseWidth - 1, _noiseHeight - 1);
+			const std::vector<glm::vec2>& distrib = noise::poissonDiskDistribution(5.0f, area);
+			for (const glm::vec2& v : distrib) {
+				const int x = v.x;
+				const int y = v.y;
 				uint8_t* buf = &noiseBuffer[index(x, y)];
-				memset(buf, c, BPP - 1);
-				if (y == 0 && x < _noiseWidth) {
-					const int gy = h - (cn * h);
-					const int idx = index(x, gy);
-					uint8_t* gbuf = &graphBuffer[idx];
-					*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Red);
+				*((uint32_t*)buf) = core::Color::getRGBA(core::Color::Black);
+			}
+		} else {
+			const int h = _graphHeight - 1;
+			for (int y = 0; y < _noiseHeight; ++y) {
+				for (int x = 0; x < _noiseWidth; ++x) {
+					const float n = getNoise(x, y, qd.data);
+					const float cn = noise::norm(n);
+					const uint8_t c = cn * 255;
+					uint8_t* buf = &noiseBuffer[index(x, y)];
+					memset(buf, c, BPP - 1);
+					if (y == 0 && x < _noiseWidth) {
+						const int gy = h - (cn * h);
+						const int idx = index(x, gy);
+						uint8_t* gbuf = &graphBuffer[idx];
+						*((uint32_t*)gbuf) = core::Color::getRGBA(core::Color::Red);
+					}
 				}
 			}
 		}

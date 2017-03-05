@@ -21,6 +21,7 @@ enum class NoiseType {
 	voronoi,
 	swissTurbulence,
 	jordanTurbulence,
+	poissonDiskDistribution,
 
 	Max
 };
