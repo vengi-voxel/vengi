@@ -109,8 +109,10 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 	}
 	case NoiseType::ridgedMF:
 		return noise::ridgedMF(position, data.ridgedOffset, data.octaves, data.lacunarity, data.gain);
-	case NoiseType::ridgedMFCascade:
-		return noise::ridgedMF(noise::ridgedMF(position));
+	case NoiseType::ridgedMFCascade: {
+		const float n = noise::ridgedMF(position, data.ridgedOffset, data.octaves, data.lacunarity, data.gain);
+		return noise::ridgedMF(n, data.ridgedOffset, data.octaves, data.lacunarity, data.gain);
+	}
 	case NoiseType::iqNoise:
 		return noise::iqMatfBm(position, data.octaves, glm::mat2(2.3f, -1.5f, 1.5f, 2.3f), data.gain);
 	case NoiseType::analyticalDerivatives: {
