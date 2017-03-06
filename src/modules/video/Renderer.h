@@ -73,10 +73,7 @@ struct RenderState {
 	bool features[std::enum_value(video::Feature::Max)] = { };
 };
 
-static inline RenderState& renderState() {
-	static RenderState s;
-	return s;
-}
+extern RenderState& renderState();
 
 inline ProfilerGPU::ProfilerGPU(const std::string& name, uint16_t maxSamples) :
 		_name(name), _maxSampleCount(maxSamples) {
