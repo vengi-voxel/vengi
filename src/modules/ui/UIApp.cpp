@@ -401,7 +401,7 @@ void UIApp::OnWidgetFocusChanged(tb::TBWidget *widget, bool focused) {
 }
 
 void UIApp::afterRootWidget() {
-	const tb::TBRect rect(0, 0, _dimension.x, _dimension.y);
+	const core::Rect<int> rect(0, 0, _dimension.x, _dimension.y);
 	_console.render(rect, _deltaFrame);
 }
 

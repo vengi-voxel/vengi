@@ -543,7 +543,7 @@ void Console::drawString(int x, int y, const std::string& str, int len) {
 	_font->DrawString(x, y, color, cstr, len);
 }
 
-void Console::render(const tb::TBRect &rect, long deltaFrame) {
+void Console::render(const core::Rect<int> &rect, long deltaFrame) {
 	_frame += deltaFrame;
 	if (_frame > 250) {
 		_frame -= 250;
@@ -554,26 +554,27 @@ void Console::render(const tb::TBRect &rect, long deltaFrame) {
 		return;
 	}
 
-	tb::g_tb_skin->PaintRectFill(rect, consoleBgColor);
+	const tb::TBRect r(rect.getMinX(), rect.getMinZ(), rect.getMaxX(), rect.getMaxZ());
+	tb::g_tb_skin->PaintRectFill(r, consoleBgColor);
 
 	const int lineHeight = _font->GetFontDescription().GetSize();
-	_maxLines = rect.h / lineHeight;
+	_maxLines = r.h / lineHeight;
 	const int maxY = _messages.size() * lineHeight;
-	const int startY = std::min(rect.y + rect.h - lineHeight, maxY);
+	const int startY = std::min(r.y + r.h - lineHeight, maxY);
 	MessagesIter i = _messages.rbegin();
 	std::advance(i, _scrollPos);
 	for (int y = startY - lineHeight; i != _messages.rend(); ++i, y -= lineHeight) {
 		if (y < 0) {
 			break;
 		}
-		drawString(consoleMarginLeft, y, *i);
+		drawString(consoleMarginLeft, y, *i, i->length());
 	}
 
-	drawString(consoleMarginLeft, startY, consolePrompt);
-	drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt, startY, _commandLine);
+	drawString(consoleMarginLeft, startY, consolePrompt, consolePrompt.length());
+	drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt, startY, _commandLine, _commandLine.length());
 	if (_cursorBlink) {
 		const int l = _font->GetStringWidth(_commandLine.c_str(), _cursorPos);
-		drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt + l, startY, consoleCursor);
+		drawString(consoleMarginLeft + consoleMarginLeftBehindPrompt + l, startY, consoleCursor, consoleCursor.length());
 	}
 }
 

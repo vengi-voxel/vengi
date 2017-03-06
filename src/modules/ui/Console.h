@@ -4,7 +4,11 @@
 #include <vector>
 #include <string>
 #include "core/Var.h"
-#include "TurboBadger.h"
+#include "core/Rect.h"
+
+namespace tb {
+class TBFontFace;
+}
 
 namespace ui {
 
@@ -60,7 +64,7 @@ private:
 
 	bool insertClipboard();
 	void insertText(const std::string& text);
-	void drawString(int x, int y, const std::string& str, int len = TB_ALL_TO_TERMINATION);
+	void drawString(int x, int y, const std::string& str, int len);
 
 public:
 	Console();
@@ -70,7 +74,7 @@ public:
 	bool toggle();
 	void clear();
 	void clearCommandLine();
-	void render(const tb::TBRect &rect, long deltaFrame);
+	void render(const core::Rect<int> &rect, long deltaFrame);
 	bool isActive() const;
 	bool onTextInput(const std::string& text);
 	bool onKeyPress(int32_t key, int16_t modifier);
