@@ -1,6 +1,7 @@
 #include "io/Filesystem.h"
 #include "TestIMGUI.h"
 #include "core/Color.h"
+#include "imgui_node_graph_test.h"
 
 TestIMGUI::TestIMGUI(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
@@ -25,6 +26,8 @@ void TestIMGUI::onRenderUI() {
 			requestQuit();
 		}
 	}
+
+	ShowExampleAppCustomNodeGraph(&_showNodeGraphWindow);
 
 	// 2. Show another simple window, this time using an explicit Begin/End pair
 	if (_showAnotherWindow) {
