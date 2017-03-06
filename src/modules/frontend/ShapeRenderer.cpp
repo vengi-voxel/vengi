@@ -32,7 +32,7 @@ bool ShapeRenderer::deleteMesh(int32_t meshIndex) {
 	if (meshIndex < 0) {
 		return false;
 	}
-	if (_currentMeshIndex < meshIndex) {
+	if (_currentMeshIndex < (uint32_t)meshIndex) {
 		return false;
 	}
 	_vbo[meshIndex].shutdown();
@@ -40,7 +40,7 @@ bool ShapeRenderer::deleteMesh(int32_t meshIndex) {
 	_indexIndex[meshIndex] = -1;
 	_colorIndex[meshIndex] = -1;
 	_primitives[meshIndex] = video::Primitive::Triangles;
-	if (meshIndex > 0 && meshIndex == _currentMeshIndex) {
+	if (meshIndex > 0 && (uint32_t)meshIndex == _currentMeshIndex) {
 		--_currentMeshIndex;
 	}
 	return true;
