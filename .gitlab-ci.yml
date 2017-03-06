@@ -3,11 +3,7 @@ image: debian:experimental
 before_script:
   - export TERM=dumb
   - apt-get update -qq
-  - apt-get install -y -qq pkg-config
-  - apt-get install -y -qq build-essential
-  - apt-get install -y -qq cmake
-  - apt-get install -y -qq doxygen graphviz
-  - apt-get install -y -qq libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev libenet-dev libcurl4-openssl-dev
+  - apt-get install -y -qq pkg-config build-essential cmake doxygen graphviz postgresql-server-dev-9.6 libpq-dev libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev libenet-dev libcurl4-openssl-dev
   - cmake --version
 
 build:
