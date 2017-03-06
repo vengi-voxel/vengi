@@ -105,7 +105,15 @@ extern double doubleValueNoise(const glm::ivec3& pos, int32_t seed = 0);
 
 extern double voronoi(const glm::dvec3& pos, bool enableDistance, double frequency = 1.0, int seed = 0);
 
-extern float swissTurbulence(const glm::vec2& p, float offset, int octaves, float lacunarity = 2.0, float gain = 0.6, float warp = 0.15);
+/**
+ * @param lacunarity spacing between successive octaves (use exactly 2.0 for wrapping output)
+ * @param gain relative weighting applied to each successive octave
+ */
+extern float swissTurbulence(const glm::vec2& p, float offset, int octaves, float lacunarity = 2.0f, float gain = 0.6f, float warp = 0.15f);
+/**
+ * @param lacunarity spacing between successive octaves (use exactly 2.0 for wrapping output)
+ * @param gain relative weighting applied to each successive octave
+ */
 extern float jordanTurbulence(const glm::vec2&p, float offset, int octaves, float lacunarity = 2.0f, float gain1 = 0.8f, float gain = 0.5f, float warp0 = 0.4f, float warp = 0.35f,
 		float damp0 = 1.0f, float damp = 0.8f, float damp_scale = 1.0f);
 
