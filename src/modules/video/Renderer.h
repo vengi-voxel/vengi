@@ -162,6 +162,7 @@ extern bool activeTextureUnit(TextureUnit unit);
 extern bool bindTexture(TextureUnit unit, TextureType type, Id handle);
 extern bool useProgram(Id handle);
 extern bool bindVertexArray(Id handle);
+extern Id boundVertexArray();
 extern bool bindBuffer(VertexBufferType type, Id handle);
 extern bool unbindBuffer(VertexBufferType type);
 extern bool bindBufferBase(VertexBufferType type, Id handle, uint32_t index = 0u);
@@ -206,7 +207,7 @@ extern void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, 
 extern bool setupFramebuffer(Id& _fbo, Id& _texture, Id& _depth, const glm::ivec2& dimension);
 extern void setupTexture(video::TextureType type, video::TextureWrap wrap);
 extern void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t* data, int index);
-extern void drawElements(Primitive mode, size_t numIndices, DataType type);
+extern void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset = nullptr);
 extern void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount);
 extern void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex);
 extern void drawArrays(Primitive mode, size_t count);
@@ -219,8 +220,8 @@ extern int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string
 extern int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string& name);
 
 template<class IndexType>
-inline void drawElements(Primitive mode, size_t numIndices) {
-	drawElements(mode, numIndices, mapType<IndexType>());
+inline void drawElements(Primitive mode, size_t numIndices, void* offset = nullptr) {
+	drawElements(mode, numIndices, mapType<IndexType>(), offset);
 }
 
 template<class IndexType>

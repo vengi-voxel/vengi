@@ -389,6 +389,10 @@ bool bindVertexArray(Id handle) {
 	return true;
 }
 
+Id boundVertexArray() {
+	return _priv::s.vertexArrayHandle;
+}
+
 bool bindBuffer(VertexBufferType type, Id handle) {
 	const int typeIndex = std::enum_value(type);
 	if (_priv::s.bufferHandle[typeIndex] == handle) {
@@ -733,10 +737,10 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 	}
 }
 
-void drawElements(Primitive mode, size_t numIndices, DataType type) {
+void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset) {
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	const GLenum glType = _priv::DataTypes[std::enum_value(type)];
-	glDrawElements(glMode, (GLsizei)numIndices, glType, nullptr);
+	glDrawElements(glMode, (GLsizei)numIndices, glType, offset);
 	checkError();
 }
 

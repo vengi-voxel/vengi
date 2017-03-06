@@ -94,7 +94,9 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 	} else {
 		video::bufferData(type, _mode, data, size);
 	}
-	video::unbindBuffer(type);
+	if (video::boundVertexArray() != _vao) {
+		video::unbindBuffer(type);
+	}
 	_size[idx] = size;
 
 	return true;

@@ -22,6 +22,9 @@ protected:
 	RendererContext _rendererContext = nullptr;
 	glm::ivec2 _dimension;
 	float _aspect = 1.0f;
+	int _fps = 0;
+	uint32_t _frameCounter = 0;
+	double _frameCounterResetRime = 0.0;
 
 	typedef std::unordered_map<int32_t, int16_t> KeyMap;
 	typedef KeyMap::const_iterator KeyMapConstIter;

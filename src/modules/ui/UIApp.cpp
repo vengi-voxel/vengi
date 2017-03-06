@@ -336,55 +336,6 @@ core::AppState UIApp::onConstruct() {
 #endif
 	}).setHelp("Show ui debug information - only available in debug builds");
 
-	core::Command::registerCommand("bindlist", [this] (const core::CmdArgs& args) {
-		for (util::BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
-			const int32_t key = i->first;
-			const util::CommandModifierPair& pair = i->second;
-			const char* keyName = SDL_GetKeyName(key);
-			const int16_t modifier = pair.second;
-			std::string modifierKey;
-			if (modifier & KMOD_ALT) {
-				modifierKey += "ALT ";
-			}
-			if (modifier & KMOD_SHIFT) {
-				modifierKey += "SHIFT ";
-			}
-			if (modifier & KMOD_CTRL) {
-				modifierKey += "CTRL ";
-			}
-			const std::string& command = pair.first;
-			Log::info("%-15s %-10s %s", modifierKey.c_str(), keyName, command.c_str());
-		}
-	}).setHelp("Show all known key bindings");
-
-	core::Command::registerCommand("bind", [this] (const core::CmdArgs& args) {
-		if (args.size() != 2) {
-			Log::error("Expected parameters: key+modifier command - got %i parameters", (int)args.size());
-			return;
-		}
-
-		util::KeybindingParser p(args[0], args[1]);
-		const util::BindMap& bindings = p.getBindings();
-		for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
-			const uint32_t key = i->first;
-			const util::CommandModifierPair& pair = i->second;
-			auto range = _bindings.equal_range(key);
-			bool found = false;
-			for (auto it = range.first; it != range.second; ++it) {
-				if (it->second.second == pair.second) {
-					it->second.first = pair.first;
-					found = true;
-					Log::info("Updated binding for key %s", args[0].c_str());
-					break;
-				}
-			}
-			if (!found) {
-				_bindings.insert(std::make_pair(key, pair));
-				Log::info("Added binding for key %s", args[0].c_str());
-			}
-		}
-	}).setHelp("Bind a command to a key");
-
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 
 	_console.onConstruct();
@@ -482,15 +433,6 @@ core::AppState UIApp::onRunning() {
 		{
 			core_trace_scoped(UIAppBeforeUI);
 			beforeUI();
-		}
-
-		++_frameCounter;
-
-		double time = _now;
-		if (time > _frameCounterResetRime + 1000) {
-			_fps = (int) round((_frameCounter / (time - _frameCounterResetRime)) * 1000);
-			_frameCounterResetRime = time;
-			_frameCounter = 0;
 		}
 
 		const bool renderUI = _renderUI->boolVal();

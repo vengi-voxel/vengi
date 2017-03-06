@@ -4,14 +4,10 @@
 
 #pragma once
 
-#include <SDL.h>
-#include <unordered_map>
-#include <list>
-#include <tb_widgets_listener.h>
-
 #include "video/WindowedApp.h"
 #include "Window.h"
 #include "Console.h"
+#include <tb_widgets_listener.h>
 
 namespace ui {
 
@@ -19,43 +15,7 @@ class UIApp: public video::WindowedApp, private tb::TBWidgetListener {
 private:
 	using Super = video::WindowedApp;
 protected:
-	/**
-	 * @brief This struct allows you to determine how long a key was pressed or how long it is pressed
-	 */
-	struct KeyState {
-		// how long was the key down
-		long downtime = 0;
-		// when was the key pressed
-		long msec = 0;
-		// is it still pressed
-		bool active = false;
-	};
-
-	/**
-	 * @brief Call this in a key up key binding function
-	 */
-	inline void keyUp(KeyState& state) {
-		state.active = false;
-		state.downtime = _now - state.msec;
-		state.downtime = std::max(_now - state.msec, 10L);
-	}
-
-	/**
-	 * @brief Call this in a key down key binding function
-	 */
-	inline void keyDown(KeyState& state) {
-		if (state.active) {
-			return;
-		}
-		state.msec = _now;
-		state.active = true;
-		state.downtime = 0;
-	}
-
 	tb::TBWidget _root;
-	int _fps = 0;
-	uint32_t _frameCounter = 0;
-	double _frameCounterResetRime = 0.0;
 	Console _console;
 	core::VarPtr _renderUI;
 	int _lastShowTextY = -1;
