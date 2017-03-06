@@ -375,6 +375,30 @@ tb::TBWidget* Window::getWidget(const char *name) {
 	return GetWidgetByID(tb::TBID(name));
 }
 
+bool Window::setActive(const char *name, bool active) {
+	tb::TBWidget* widget = getWidget(name);
+	if (widget == nullptr) {
+		return false;
+	}
+
+	widget->SetState(tb::WIDGET_STATE_DISABLED, !active);
+	return true;
+}
+
+bool Window::setVisible(const char *name, bool visible) {
+	tb::TBWidget* widget = getWidget(name);
+	if (widget == nullptr) {
+		return false;
+	}
+
+	if (visible) {
+		widget->SetVisibility(tb::WIDGET_VISIBILITY_GONE);
+	} else {
+		widget->SetVisibility(tb::WIDGET_VISIBILITY_VISIBLE);
+	}
+	return true;
+}
+
 tb::TBWidget* Window::getWidgetAt(int x, int y, bool includeChildren) {
 	return GetWidgetAt(x, y, includeChildren);
 }

@@ -47,6 +47,7 @@ private:
 	float getNoise(int x, int y, NoiseData _data);
 	int index(int x, int y) const;
 	void generateImage();
+	void updateForNoiseType(NoiseType type);
 	void generateImage(NoiseType type);
 	void generateAll();
 public:

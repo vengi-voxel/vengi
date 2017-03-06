@@ -72,7 +72,7 @@ double doubleValueNoise(const glm::ivec3& pos, int32_t seed) {
 	return 1.0 - glm::abs(n);
 }
 
-double voronoi(const glm::dvec3& pos, bool enableDistance, double displacement, double frequency, int seed) {
+double voronoi(const glm::dvec3& pos, bool enableDistance, double frequency, int seed) {
 	const glm::dvec3 p = pos * frequency;
 	const glm::ivec3 rp(
 			(p.x > 0.0 ? (int)(p.x) : (int)(p.x) - 1),
@@ -106,13 +106,13 @@ double voronoi(const glm::dvec3& pos, bool enableDistance, double displacement, 
 	return ret;
 }
 
-float swissTurbulence(const glm::vec2& p, float seed, int octaves, float lacunarity, float gain, float warp) {
+float swissTurbulence(const glm::vec2& p, float offset, int octaves, float lacunarity, float gain, float warp) {
 	float sum = 0.0f;
 	float freq = 1.0f;
 	float amp = 1.0f;
 	glm::vec2 dsum;
 	for (int i = 0; i < octaves; i++) {
-		const glm::vec2 in(p + glm::vec2(seed + i) + warp * dsum);
+		const glm::vec2 in(p + glm::vec2(offset + i) + warp * dsum);
 		const glm::vec3& n = noise::dnoise(in * freq);
 		sum += amp * (1.0f - glm::abs(n.x));
 		dsum += amp * glm::vec2(n.y, n.z) * -(n.x * 1.5f);
@@ -122,8 +122,8 @@ float swissTurbulence(const glm::vec2& p, float seed, int octaves, float lacunar
 	return (sum - 1.0f) * 0.5f;
 }
 
-float jordanTurbulence(const glm::vec2& p, float seed, int octaves, float lacunarity, float gain1, float gain, float warp0, float warp, float damp0, float damp, float damp_scale) {
-	glm::vec3 n = dnoise(p + glm::vec2(seed));
+float jordanTurbulence(const glm::vec2& p, float offset, int octaves, float lacunarity, float gain1, float gain, float warp0, float warp, float damp0, float damp, float damp_scale) {
+	glm::vec3 n = dnoise(p + glm::vec2(offset));
 	glm::vec3 n2 = n * n.x;
 	float sum = n2.x;
 	glm::vec2 dsumWarp = warp0 * glm::vec2(n2.y, n2.z);
@@ -134,7 +134,7 @@ float jordanTurbulence(const glm::vec2& p, float seed, int octaves, float lacuna
 	float dampedAmp = amp * gain;
 
 	for (int i = 1; i < octaves; i++) {
-		const glm::vec2 in((p + glm::vec2(seed + i / 256.0f)) * freq + glm::vec2(dsumWarp));
+		const glm::vec2 in((p + glm::vec2(offset + i / 256.0f)) * freq + glm::vec2(dsumWarp));
 		n = noise::dnoise(in);
 		n2 = n * n.x;
 		sum += dampedAmp * n2.x;

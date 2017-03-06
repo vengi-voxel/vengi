@@ -66,6 +66,17 @@ bool NoiseToolWindow::init() {
 	return true;
 }
 
+void NoiseToolWindow::updateForNoiseType(NoiseType type) {
+	setActive("enabledistance", type == NoiseType::voronoi);
+	setActive("seed", type == NoiseType::voronoi);
+	setActive("separation", type == NoiseType::poissonDiskDistribution);
+	setActive("lacunarity", type == NoiseType::fbm || type == NoiseType::ridgedMFTime || type == NoiseType::ridgedMF || type == NoiseType::worleyNoiseFbm || type == NoiseType::swissTurbulence);
+	setActive("octaves", type == NoiseType::fbm || type == NoiseType::ridgedMFTime || type == NoiseType::ridgedMF || type == NoiseType::iqNoise || type == NoiseType::iqNoiseScaled || type == NoiseType::worleyNoiseFbm || type == NoiseType::swissTurbulence || type == NoiseType::jordanTurbulence);
+	setActive("gain", type == NoiseType::fbm || type == NoiseType::ridgedMFTime || type == NoiseType::ridgedMF || type == NoiseType::iqNoise || type == NoiseType::iqNoiseScaled || type == NoiseType::worleyNoiseFbm || type == NoiseType::swissTurbulence);
+	setActive("offset", true);
+	setActive("frequency", true);
+}
+
 float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 	const NoiseType noiseType = data.noiseType;
 	const glm::vec2 position(data.offset + x * data.frequency, data.offset + y * data.frequency);
@@ -107,15 +118,15 @@ float NoiseToolWindow::getNoise(int x, int y, NoiseData data) {
 		return noise::noise(glm::vec2(position.x + n.x, position.y + n.x));
 	}
 	case NoiseType::voronoi:
-		return noise::voronoi(glm::dvec3(position, 0.0), true, 0.0, 1.0, 0);
+		return noise::voronoi(glm::dvec3(position, 0.0), data.enableDistance, 1.0, data.seed);
 	case NoiseType::worleyNoise:
 		return noise::worleyNoise(position);
 	case NoiseType::worleyNoiseFbm:
 		return noise::worleyfBm(position, data.octaves, data.lacunarity, data.gain);
 	case NoiseType::swissTurbulence:
-		return noise::swissTurbulence(position, 0, data.octaves, data.lacunarity, data.gain);
+		return noise::swissTurbulence(position, data.offset, data.octaves, data.lacunarity, data.gain);
 	case NoiseType::jordanTurbulence:
-		return noise::jordanTurbulence(position, 0, data.octaves);
+		return noise::jordanTurbulence(position, data.offset, data.octaves);
 	case NoiseType::poissonDiskDistribution:
 	case NoiseType::Max:
 		break;
@@ -142,9 +153,18 @@ bool NoiseToolWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		}
 	}
 
-	if (ev.type == tb::EVENT_TYPE_CHANGED && id == TBIDC("filter") && _select != nullptr) {
-		_select->SetFilter(ev.target->GetText());
-		return true;
+	if (ev.type == tb::EVENT_TYPE_CHANGED) {
+		if (id == TBIDC("filter") && _select != nullptr) {
+			_select->SetFilter(ev.target->GetText());
+			return true;
+		} else if (id == TBIDC("type")) {
+			const int type = getSelectedId("type");
+			if (type >= 0 && type < (int)NoiseType::Max) {
+				NoiseType noiseType = (NoiseType)type;
+				updateForNoiseType(noiseType);
+			}
+			return true;
+		}
 	}
 	return Super::OnEvent(ev);
 }
@@ -169,6 +189,9 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 	core_trace_scoped(GenerateImage);
 	Log::info("Generate noise for %s", getNoiseTypeName(type));
 	NoiseData data;
+	data.enableDistance = isToggled("enabledistance");
+	data.separation = getFloat("separation");
+	data.seed = getInt("seed");
 	data.offset = getFloat("offset");
 	data.lacunarity = getFloat("lacunarity");
 	data.octaves = getInt("octaves");
@@ -192,8 +215,8 @@ void NoiseToolWindow::generateImage(NoiseType type) {
 		memcpy(graphBuffer, _graphBufferBackground, graphBufferSize);
 
 		if (qd.data.noiseType == NoiseType::poissonDiskDistribution) {
-			core::RectFloat area(0, 0, _noiseWidth - 1, _noiseHeight - 1);
-			const std::vector<glm::vec2>& distrib = noise::poissonDiskDistribution(5.0f, area);
+			const core::RectFloat area(0, 0, _noiseWidth - 1, _noiseHeight - 1);
+			const std::vector<glm::vec2>& distrib = noise::poissonDiskDistribution(qd.data.separation, area);
 			for (const glm::vec2& v : distrib) {
 				const int x = v.x;
 				const int y = v.y;
@@ -231,9 +254,9 @@ void NoiseToolWindow::update() {
 	}
 	NoiseData& data = qd.data;
 	tb::TBStr idStr;
-	idStr.SetFormatted(IMAGE_PREFIX "-%i-%f-%i-%f-%f-%f", (int)data.noiseType, data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
+	idStr.SetFormatted(IMAGE_PREFIX "-%i-%f-%i-%f-%i-%f-%f-%f", (int)data.noiseType, data.separation, (int)data.enableDistance, data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
 	tb::TBStr graphIdStr;
-	graphIdStr.SetFormatted(GRAPH_PREFIX "-%i-%f-%i-%f-%f-%f", (int)data.noiseType, data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
+	graphIdStr.SetFormatted(GRAPH_PREFIX "-%i-%f-%i-%f-%i-%f-%f-%f", (int)data.noiseType, data.separation, (int)data.enableDistance, data.offset, data.octaves, data.lacunarity, data.gain, data.frequency);
 	data.noise = tb::g_image_manager->GetImage(idStr.CStr(), (uint32_t*)qd.noiseBuffer, _noiseWidth, _noiseHeight);
 	data.graph = tb::g_image_manager->GetImage(graphIdStr.CStr(), (uint32_t*)qd.graphBuffer, _noiseWidth, _graphHeight);
 	_noiseTool->add(TBIDC(idStr), data);

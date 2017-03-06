@@ -50,6 +50,10 @@ TBLayout: distribution: gravity, axis: y
 							TBEditField: id: lacunarity, type: number, text: 2.0
 						TBClickLabel: text: Offset
 							TBEditField: id: offset, type: number, text: 1.0
+						TBClickLabel: text: Separation
+							TBEditField: id: separation, type: number, text: 5.0
+						TBClickLabel: text: Distance
+							TBCheckBox: id: enabledistance
 					TBWidget: gravity: top bottom
 
 				TBLayout: distribution: gravity, axis: y

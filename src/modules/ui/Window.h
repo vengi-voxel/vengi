@@ -94,6 +94,8 @@ public:
 
 	tb::TBWidget* getWidget(const char *name);
 	tb::TBWidget* getWidgetAt(int x, int y, bool includeChildren = true);
+	bool setVisible(const char *name, bool visible);
+	bool setActive(const char *name, bool active);
 
 	virtual void OnDie() override;
 	virtual bool OnEvent(const tb::TBWidgetEvent &ev) override;
