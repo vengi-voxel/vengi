@@ -1,7 +1,7 @@
 set(SRCS
 	IMGUIApp.cpp IMGUIApp.h
 
-	imgui.cpp imgui_draw.cpp imgui_demo.cpp
+	imgui.cpp imgui_draw.cpp
 )
 set(LIB imgui)
 add_library(${LIB} ${SRCS})
