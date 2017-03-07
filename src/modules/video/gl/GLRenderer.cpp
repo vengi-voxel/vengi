@@ -311,6 +311,17 @@ bool depthFunc(CompareFunc func) {
 	return true;
 }
 
+bool blendEquation(BlendEquation func) {
+	if (_priv::s.blendEquation == func) {
+		return false;
+	}
+	_priv::s.blendEquation = func;
+	const GLenum convertedFunc = _priv::BlendEquations[std::enum_value(func)];
+	glBlendEquation(convertedFunc);
+	checkError();
+	return true;
+}
+
 bool blendFunc(BlendMode src, BlendMode dest) {
 	if (_priv::s.blendSrc == src && _priv::s.blendDest == dest) {
 		return false;

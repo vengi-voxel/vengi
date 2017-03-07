@@ -32,6 +32,7 @@ struct GLState {
 	PolygonMode polygonMode = PolygonMode::Solid;
 	BlendMode blendSrc = BlendMode::One;
 	BlendMode blendDest = BlendMode::Zero;
+	BlendEquation blendEquation = BlendEquation::Max;
 	TextureUnit textureUnit = TextureUnit::Zero;
 	Id textureHandle = InvalidId;
 	int viewportX = 0;

@@ -94,6 +94,15 @@ static GLenum BlendModes[] {
 };
 static_assert(std::enum_value(BlendMode::Max) == (int)SDL_arraysize(BlendModes), "Array sizes don't match Max");
 
+static GLenum BlendEquations[] {
+	GL_FUNC_ADD,
+	GL_FUNC_SUBTRACT,
+	GL_FUNC_REVERSE_SUBTRACT,
+	GL_MIN,
+	GL_MAX
+};
+static_assert(std::enum_value(BlendEquation::Max) == (int)SDL_arraysize(BlendEquations), "Array sizes don't match Max");
+
 static GLenum CompareFuncs[] {
 	GL_NEVER,
 	GL_LESS,

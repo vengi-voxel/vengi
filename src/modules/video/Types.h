@@ -80,6 +80,16 @@ enum class BlendMode {
 	Max
 };
 
+enum class BlendEquation {
+	Add,
+	Subtract,
+	ReverseSubtract,
+	Minimum,
+	Maximum,
+
+	Max
+};
+
 enum class State {
 	DepthMask,
 	DepthTest,

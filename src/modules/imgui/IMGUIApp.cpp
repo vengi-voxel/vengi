@@ -270,9 +270,7 @@ core::AppState IMGUIApp::onRunning() {
 	video::enable(video::State::Scissor);
 	video::disable(video::State::CullFace);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
-#if 0
-	glBlendEquation(GL_FUNC_ADD);
-#endif
+	video::blendEquation(video::BlendEquation::Add);
 
 	{
 		core_trace_scoped(IMGUIAppOnRenderUI);

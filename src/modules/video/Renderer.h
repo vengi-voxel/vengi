@@ -156,6 +156,7 @@ extern bool disable(State state);
 extern bool cullFace(Face face);
 extern bool depthFunc(CompareFunc func);
 extern bool blendFunc(BlendMode src, BlendMode dest);
+extern bool blendEquation(BlendEquation func);
 extern bool polygonMode(Face face, PolygonMode mode);
 extern bool polygonOffset(const glm::vec2& offset);
 extern bool activeTextureUnit(TextureUnit unit);
