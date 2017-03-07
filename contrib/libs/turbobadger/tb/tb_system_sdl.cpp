@@ -9,7 +9,6 @@
 
 #include "tb_msg.h"
 #include "tb_types.h"
-#include <sys/time.h>
 #include <stdio.h>
 
 #include <SDL.h>
@@ -29,17 +28,9 @@ namespace tb {
 
 double TBSystem::GetTimeMS()
 {
-#if 1
 	Uint64 freq = SDL_GetPerformanceFrequency();
 	Uint64 now = SDL_GetPerformanceCounter();
 	return 1000. * ((double)now / (double)freq);
-#elif 0
-	return SDL_GetTicks();
-#else
-	struct timeval now;
-	gettimeofday( &now, NULL );
-	return now.tv_usec/1000 + now.tv_sec*1000;
-#endif
 }
 
 static SDL_TimerID tb_sdl_timer_id = 0;
