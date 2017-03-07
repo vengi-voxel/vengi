@@ -16,6 +16,7 @@ CooldownTriggerState CooldownMgr::triggerCooldown(Type type) {
 	core::ScopedWriteLock lock(_lock);
 	CooldownPtr cooldown = _cooldowns[type];
 	if (!cooldown) {
+		// TODO: use a pool here
 		cooldown = std::make_shared<Cooldown>(type, defaultDuration(type), _timeProvider);
 		_cooldowns[type] = cooldown;
 	} else if (cooldown->running()) {
