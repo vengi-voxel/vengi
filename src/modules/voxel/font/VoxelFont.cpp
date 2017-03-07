@@ -2,6 +2,12 @@
 #include "core/App.h"
 #include "io/Filesystem.h"
 #include "core/Common.h"
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function" // for stb_truetype.h
+#endif
+
 #define STBTT_ASSERT core_assert
 #define STBTT_MALLOC core_malloc
 #define STBTT_REALLOC core_realloc
@@ -152,3 +158,7 @@ int VoxelFont::render(const char* string, std::vector<voxel::VoxelVertex>& verti
 }
 
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

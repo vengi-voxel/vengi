@@ -5,6 +5,7 @@
 #include "OctreeRenderer.h"
 #include "voxel/MaterialColor.h"
 #include "video/ScopedPolygonMode.h"
+#include "core/Trace.h"
 
 const std::string MaxDepthBufferUniformName = "u_cascades";
 

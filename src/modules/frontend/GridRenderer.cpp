@@ -3,6 +3,7 @@
  */
 
 #include "GridRenderer.h"
+#include "core/Trace.h"
 
 namespace frontend {
 

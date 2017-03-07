@@ -3,10 +3,7 @@
  */
 
 #include "LUA.h"
-#include <assert.h>
-#include <stdlib.h>
-#include <sstream>
-#include <iostream>
+#include "core/Common.h"
 
 namespace lua {
 
@@ -19,28 +16,26 @@ public:
 			_state(state), _startStackDepth(lua_gettop(_state)) {
 	}
 	~StackChecker() {
-		assert(_startStackDepth == lua_gettop(_state));
+		core_assert(_startStackDepth == lua_gettop(_state));
 	}
 };
 
 namespace {
 int panicCB(lua_State *L) {
-	std::cout << "Lua panic. Error message: " << (lua_isnil(L, -1) ? "" : lua_tostring(L, -1)) << std::endl << std::flush;
+	Log::info("Lua panic. Error message: %s", (lua_isnil(L, -1) ? "" : lua_tostring(L, -1)));
 	return 0;
 }
 
 void debugHook(lua_State *L, lua_Debug *ar) {
-	if (!lua_getinfo(L, "Sn", ar))
+	if (!lua_getinfo(L, "Sn", ar)) {
 		return;
+	}
 
-	std::cout << "LUADBG: ";
-	if (ar->namewhat != nullptr)
-		std::cout << ar->namewhat << " ";
-	if (ar->name != nullptr)
-		std::cout << ar->name << " ";
-	std::cout << ar->short_src << " ";
-	std::cout << ar->currentline;
-	std::cout << std::endl << std::flush;
+	Log::info("LUADBG: %s %s %s %i",
+			(ar->namewhat != nullptr) ? ar->namewhat : "",
+			(ar->name != nullptr) ? ar->name : "",
+			ar->short_src,
+			ar->currentline);
 }
 }
 
@@ -182,52 +177,43 @@ std::string LUA::stackDump(lua_State *L) {
 #ifdef DEBUG
 	StackChecker check(L);
 #endif
-	std::stringstream ss;
 	const int top = lua_gettop(L);
 	for (int i = 1; i <= top; i++) { /* repeat for each level */
 		const int t = lua_type(L, i);
-		ss << i << ": ";
 		switch (t) {
 		case LUA_TSTRING:
-			ss << lua_typename(L, t) << ": '" << lua_tostring(L, i) << "'";
+			lua_pushfstring(L, "%i: %s (%s)", i, lua_tostring(L, i), luaL_typename(L, i));
 			break;
 
 		case LUA_TBOOLEAN:
-			ss << lua_typename(L, t) << ": '" << (lua_toboolean(L, i) ? "true" : "false") << "'";
+			lua_pushfstring(L, "%i: %s (%s)", i, (lua_toboolean(L, i) ? "true" : "false"), luaL_typename(L, i));
 			break;
 
 		case LUA_TNUMBER:
-			ss << lua_typename(L, t) << ": '" << lua_tonumber(L, i) << "'";
+			lua_pushfstring(L, "%i: " LUA_NUMBER_FMT " (%s)", i, lua_tonumber(L, i), luaL_typename(L, i));
 			break;
 
 		case LUA_TUSERDATA:
-			ss << lua_typename(L, t) << ": '" << lua_touserdata(L, i) << "'";
-			break;
-
 		case LUA_TLIGHTUSERDATA:
-			ss << lua_typename(L, t) << ": '" << lua_touserdata(L, i) << "'";
+			lua_pushfstring(L, "%i: %p (%s)", i, lua_touserdata(L, i), luaL_typename(L, i));
 			break;
 
-		case LUA_TTABLE:
-			ss << lua_typename(L, t) << ": '...'";
-			break;
-
-		case LUA_TFUNCTION:
-			ss << lua_typename(L, t) << ": '...'";
-			break;
-
-		case LUA_TTHREAD:
-			ss << lua_typename(L, t) << ": '...'";
+		case LUA_TNIL:
+			lua_pushfstring(L, "%i: nil", i);
 			break;
 
 		default:
-			ss << lua_typename(L, t);
+			lua_pushfstring(L, "%i: (%s)", i, luaL_typename(L, i));
 			break;
 		}
-		ss << std::endl;
 	}
 
-	return ss.str();
+	const char* id = lua_tostring(L, -1);
+	lua_pop(L, 1);
+	if (id == nullptr) {
+		return "";
+	}
+	return id;
 }
 
 std::string LUA::stackDump() {
@@ -237,8 +223,9 @@ std::string LUA::stackDump() {
 std::string LUA::stringFromStack() {
 	const char* id = lua_tostring(_state, -1);
 	pop();
-	if (id == nullptr)
+	if (id == nullptr) {
 		return "";
+	}
 	return id;
 }
 
@@ -250,10 +237,11 @@ std::string LUA::string(const std::string& expr, const std::string& defaultValue
 	if (!luaL_dostring(_state, buf.c_str())) {
 		/* Get the value of the global variable */
 		lua_getglobal(_state, "evalExpr");
-		if (lua_isstring(_state, -1))
+		if (lua_isstring(_state, -1)) {
 			r = lua_tostring(_state, -1);
-		else if (lua_isboolean(_state, -1))
+		} else if (lua_isboolean(_state, -1)) {
 			r = lua_toboolean(_state, -1) ? "true" : "false";
+		}
 		/* remove lua_getglobal value */
 		lua_pop(_state, 1);
 	}

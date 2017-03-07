@@ -10,15 +10,8 @@
 #include "Morton.h"
 #include "core/NonCopyable.h"
 #include "core/ReadWriteLock.h"
-#include <limits>
 #include <array>
-#include <algorithm>
-#include <cstring> //For memcpy
-#include <unordered_map>
-#include <list>
-#include <map>
 #include <memory>
-#include <vector>
 
 namespace voxel {
 

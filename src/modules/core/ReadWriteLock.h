@@ -8,13 +8,11 @@
 #define RWLOCKDEBUG 2000l
 #endif
 
+#include <string>
 #include <thread>
 #include <mutex>
 #include <atomic>
 #include <chrono>
-#include "Trace.h"
-#include "Common.h"
-#include <mutex>
 
 namespace core {
 

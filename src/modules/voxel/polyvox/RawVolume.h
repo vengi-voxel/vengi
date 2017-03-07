@@ -9,8 +9,6 @@
 #include "Utility.h"
 #include "core/NonCopyable.h"
 #include <limits>
-#include <cstdlib> //For abort()
-#include <limits>
 #include <memory>
 
 namespace voxel {

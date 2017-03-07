@@ -4,6 +4,7 @@
 
 #include "Trace.h"
 #include "core/Var.h"
+#include "core/Log.h"
 #include "core/command/Command.h"
 
 #if USE_EMTRACE

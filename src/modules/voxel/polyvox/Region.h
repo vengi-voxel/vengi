@@ -6,10 +6,7 @@
 
 #include "core/Common.h"
 #include "core/AABB.h"
-
-#include <iostream>
-#include <algorithm>
-#include <limits>
+#include <glm/common.hpp>
 
 namespace voxel {
 
@@ -411,12 +408,12 @@ inline void Region::setUpperCorner(const glm::ivec3& v3dUpperCorner) {
  * @param iZ The 'z' component of the position to accumulate.
  */
 inline void Region::accumulate(int32_t iX, int32_t iY, int32_t iZ) {
-	m_iLowerX = std::min(m_iLowerX, iX);
-	m_iLowerY = std::min(m_iLowerY, iY);
-	m_iLowerZ = std::min(m_iLowerZ, iZ);
-	m_iUpperX = std::max(m_iUpperX, iX);
-	m_iUpperY = std::max(m_iUpperY, iY);
-	m_iUpperZ = std::max(m_iUpperZ, iZ);
+	m_iLowerX = glm::min(m_iLowerX, iX);
+	m_iLowerY = glm::min(m_iLowerY, iY);
+	m_iLowerZ = glm::min(m_iLowerZ, iZ);
+	m_iUpperX = glm::max(m_iUpperX, iX);
+	m_iUpperY = glm::max(m_iUpperY, iY);
+	m_iUpperZ = glm::max(m_iUpperZ, iZ);
 }
 
 /**
@@ -439,12 +436,12 @@ inline void Region::accumulate(const Region& reg) {
 		core_assert_msg(false, "You cannot accumulate an invalid region.");
 	}
 
-	m_iLowerX = std::min(m_iLowerX, reg.getLowerX());
-	m_iLowerY = std::min(m_iLowerY, reg.getLowerY());
-	m_iLowerZ = std::min(m_iLowerZ, reg.getLowerZ());
-	m_iUpperX = std::max(m_iUpperX, reg.getUpperX());
-	m_iUpperY = std::max(m_iUpperY, reg.getUpperY());
-	m_iUpperZ = std::max(m_iUpperZ, reg.getUpperZ());
+	m_iLowerX = glm::min(m_iLowerX, reg.getLowerX());
+	m_iLowerY = glm::min(m_iLowerY, reg.getLowerY());
+	m_iLowerZ = glm::min(m_iLowerZ, reg.getLowerZ());
+	m_iUpperX = glm::max(m_iUpperX, reg.getUpperX());
+	m_iUpperY = glm::max(m_iUpperY, reg.getUpperY());
+	m_iUpperZ = glm::max(m_iUpperZ, reg.getUpperZ());
 }
 
 inline Region::Region(int mins, int maxs) :
@@ -646,12 +643,12 @@ inline bool Region::containsRegion(const Region& reg, uint8_t boundary) const {
  * @param other The Region to crop to.
  */
 inline void Region::cropTo(const Region& other) {
-	m_iLowerX = std::max(m_iLowerX, other.m_iLowerX);
-	m_iLowerY = std::max(m_iLowerY, other.m_iLowerY);
-	m_iLowerZ = std::max(m_iLowerZ, other.m_iLowerZ);
-	m_iUpperX = std::min(m_iUpperX, other.m_iUpperX);
-	m_iUpperY = std::min(m_iUpperY, other.m_iUpperY);
-	m_iUpperZ = std::min(m_iUpperZ, other.m_iUpperZ);
+	m_iLowerX = glm::max(m_iLowerX, other.m_iLowerX);
+	m_iLowerY = glm::max(m_iLowerY, other.m_iLowerY);
+	m_iLowerZ = glm::max(m_iLowerZ, other.m_iLowerZ);
+	m_iUpperX = glm::min(m_iUpperX, other.m_iUpperX);
+	m_iUpperY = glm::min(m_iUpperY, other.m_iUpperY);
+	m_iUpperZ = glm::min(m_iUpperZ, other.m_iUpperZ);
 }
 
 /**
