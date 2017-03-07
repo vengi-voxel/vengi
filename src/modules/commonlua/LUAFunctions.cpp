@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "LUAFunctions.h"
 
 int clua_assignmetatable(lua_State* s, const char *name) {

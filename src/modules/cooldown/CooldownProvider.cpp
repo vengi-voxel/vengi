@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "CooldownProvider.h"
 
 #include "commonlua/LUA.h"
