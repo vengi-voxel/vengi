@@ -1,4 +1,6 @@
-add_subdirectory(easy_profiler)
+if (NOT MSVC)
+	add_subdirectory(easy_profiler)
+endif()
 add_subdirectory(backward)
 add_subdirectory(glm)
 add_subdirectory(zlib)
