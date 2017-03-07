@@ -43,16 +43,16 @@ TEST_F(BiomeManagerTest, testBasic) {
 TEST_F(BiomeManagerTest, testHumidityTemperature) {
 	BiomeManager mgr;
 	const glm::ivec3 p1(1, 0, 1);
-	const float h1 = mgr.getHumidity(p1);
-	const float t1 = mgr.getTemperature(p1);
+	const float h1 = mgr.getHumidity(p1.x, p1.z);
+	const float t1 = mgr.getTemperature(p1.x, p1.z);
 
 	const glm::ivec3 p2(10, 0, 10);
-	const float h2 = mgr.getHumidity(p2);
-	const float t2 = mgr.getTemperature(p2);
+	const float h2 = mgr.getHumidity(p2.x, p2.z);
+	const float t2 = mgr.getTemperature(p2.x, p2.z);
 
 	const glm::ivec3 p3(20, 0, 20);
-	const float h3 = mgr.getHumidity(p3);
-	const float t3 = mgr.getTemperature(p3);
+	const float h3 = mgr.getHumidity(p3.x, p3.z);
+	const float t3 = mgr.getTemperature(p3.x, p3.z);
 
 	EXPECT_TRUE(mgr.addBiome(0, 1, h1, t1, VoxelType::Grass));
 	EXPECT_TRUE(mgr.addBiome(0, 1, h2, t2, VoxelType::Rock));

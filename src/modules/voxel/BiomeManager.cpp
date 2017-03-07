@@ -72,9 +72,9 @@ bool BiomeManager::addBiome(int lower, int upper, float humidity, float temperat
 	return true;
 }
 
-float BiomeManager::getHumidity(const glm::ivec3& pos) const {
+float BiomeManager::getHumidity(int x, int z) const {
 	core_trace_scoped(BiomeGetHumidity);
-	const glm::vec2 noisePos(pos.x, pos.z);
+	const glm::vec2 noisePos(x, z);
 	const int octaves = 1;
 	const float persistence = 1.0f;
 	const float frequency = 0.001f;
@@ -83,9 +83,9 @@ float BiomeManager::getHumidity(const glm::ivec3& pos) const {
 	return noise::norm(n);
 }
 
-float BiomeManager::getTemperature(const glm::ivec3& pos) const {
+float BiomeManager::getTemperature(int x, int z) const {
 	core_trace_scoped(BiomeGetTemperature);
-	const glm::vec2 noisePos(pos.x, pos.z);
+	const glm::vec2 noisePos(x, z);
 	// TODO: apply y value
 	// const float scaleY = pos.y / (float)MAX_HEIGHT;
 	const int octaves = 1;
@@ -98,8 +98,27 @@ float BiomeManager::getTemperature(const glm::ivec3& pos) const {
 
 const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) const {
 	core_trace_scoped(BiomeGetBiome);
-	const float humidity = getHumidity(pos);
-	const float temperature = getTemperature(pos);
+
+	struct Last {
+		int x = 0;
+		int z = 0;
+		float humidity = -1.0f;
+		float temperature = -1.0f;
+	};
+
+	thread_local Last last;
+	float humidity;
+	float temperature;
+
+	if (last.humidity > -1.0f && last.x == pos.x && last.z == pos.z) {
+		humidity = last.humidity;
+		temperature = last.temperature;
+	} else {
+		last.humidity = humidity = getHumidity(pos.x, pos.z);
+		last.temperature = temperature = getTemperature(pos.x, pos.z);
+		last.x = pos.x;
+		last.z = pos.z;
+	}
 
 	const Biome *biomeBestMatch = &getDefault();
 	float distMin = std::numeric_limits<float>::max();
