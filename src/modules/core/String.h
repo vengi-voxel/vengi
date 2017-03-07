@@ -6,7 +6,6 @@
 
 #include <string>
 #include <cstring>
-#include <sstream>
 #include <cstdlib>
 #include <climits>
 #include <algorithm>
@@ -45,7 +44,7 @@ inline std::string bits(T in, int newlineAfter = -1) {
 	return std::string(bitstr);
 }
 
-extern std::string format(const char *msg, ...)  SDL_PRINTF_VARARG_FUNC(1);
+extern std::string format(SDL_PRINTF_FORMAT_STRING const char *msg, ...)  SDL_PRINTF_VARARG_FUNC(1);
 
 inline int toInt(const char*str) {
 	return SDL_atoi(str);
