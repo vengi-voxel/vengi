@@ -1,7 +1,6 @@
 version: 0.1-{build}
 
-os:
-  - Windows Server 2012 R2
+image: Visual Studio 2017 RC
 
 configuration: Release
 
@@ -12,7 +11,7 @@ branches:
 clone_depth: 10
 
 before_build:
-  - cmake -DTOOLS=OFF -G "Visual Studio 12"
+  - cmake -DTOOLS=OFF -G "Visual Studio 15 2017"
 
 build:
   parallel: true
