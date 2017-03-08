@@ -23,13 +23,13 @@ protected:
 		return image::Image::writePng(name, buffer, w, h, components);
 	}
 
-	void test2DNoise(int octaves, float lacunarity, float frequency, const char *filename, float gain = 0.5f) {
+	void test2DNoise(float frequency, const char *filename) {
 		uint8_t buffer[w * h * components];
 
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
 				const glm::vec2 pos(x * frequency, y * frequency);
-				const float noise = noise::ridgedMF(pos, 1.0f, octaves, lacunarity, gain);
+				const float noise = noise::noise(pos);
 				ASSERT_LE(noise, +1.0f)<< "Noise is bigger than 1.0: " << noise;
 				ASSERT_GE(noise, -1.0f)<< "Noise is less than -1.0: " << noise;
 				float normalized = noise::norm(noise);
@@ -53,11 +53,11 @@ protected:
 };
 
 TEST_F(NoiseTest, testHumidityNoise) {
-	test2DNoise(1, 1.0f, 0.001f, "testHumidity.png");
+	test2DNoise(0.001f, "testHumidity.png");
 }
 
 TEST_F(NoiseTest, testTemperatureNoise) {
-	test2DNoise(1, 1.0f, 0.01f, "testTemperature.png");
+	test2DNoise(0.0001f, "testTemperature.png");
 }
 
 TEST_F(NoiseTest, test2DNoiseColorMap) {
