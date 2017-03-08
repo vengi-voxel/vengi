@@ -422,6 +422,8 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
 	}
 
+	video::bindVertexArray(video::InvalidId);
+
 	_colorTexture.unbind();
 
 	if (shadowMap && _shadowMapShow->boolVal()) {

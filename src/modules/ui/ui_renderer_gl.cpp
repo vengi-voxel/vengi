@@ -153,13 +153,10 @@ void UIRendererGL::BeginPaint(int, int) {
 	video::disable(video::State::DepthTest);
 	video::enable(video::State::Scissor);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
-
-	core_assert_always(_vbo.bind());
 }
 
 void UIRendererGL::EndPaint() {
 	TBRendererBatcher::EndPaint();
-	_vbo.unbind();
 	_shader.deactivate();
 
 #ifdef TB_RUNTIME_DEBUG_INFO
@@ -189,7 +186,10 @@ TBBitmap *UIRendererGL::CreateBitmap(int width, int height, uint32 *data) {
 void UIRendererGL::RenderBatch(Batch *batch) {
 	bindBitmap(batch->bitmap);
 	core_assert_always(_vbo.update(_bufferIndex, batch->vertex, sizeof(Vertex) * batch->vertex_count));
+
+	core_assert_always(_vbo.bind());
 	video::drawArrays(video::Primitive::Triangles, _vbo.elements(_bufferIndex, _shader.getComponentsPos()));
+	_vbo.unbind();
 }
 
 void UIRendererGL::SetClipRect(const TBRect &rect) {

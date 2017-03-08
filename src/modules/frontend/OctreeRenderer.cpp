@@ -116,6 +116,7 @@ void OctreeRenderer::renderOctreeNode(const video::Camera& camera, RenderOctreeN
 		if (camera.isVisible(renderNode->_aabb)) {
 			renderNode->_vb.bind();
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
+			renderNode->_vb.unbind();
 		}
 	}
 

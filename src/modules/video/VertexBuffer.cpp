@@ -87,6 +87,7 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 		return false;
 	}
 
+	core_assert(video::boundVertexArray() == InvalidId);
 	const VertexBufferType type = _targets[idx];
 	const Id id = _handles[idx];
 	video::bindBuffer(type, id);
@@ -95,9 +96,7 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 	} else {
 		video::bufferData(type, _mode, data, size);
 	}
-	if (video::boundVertexArray() != _vao) {
-		video::unbindBuffer(type);
-	}
+	video::unbindBuffer(type);
 	_size[idx] = size;
 
 	return true;
