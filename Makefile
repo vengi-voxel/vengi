@@ -131,7 +131,7 @@ clean-local-config:
 	$(Q)rm -rf $(LOCAL_CONFIG_DIR)
 
 edit-local-config:
-	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/shapetool/shapetool.vars
+	$(Q)$(EDITOR) $(LOCAL_CONFIG_DIR)/worldrenderertool/worldrenderertool.vars
 
 doc: cmake
 	$(call COMPILE, $@)
@@ -152,7 +152,7 @@ rcon profiler: cmake
 test-material-color: cmake
 	$(call COMPILE, tests)
 	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) ./tests --gtest_color=yes --gtest_filter=MaterialTest* -- $(ARGS)
-	$(Q)xdg-open build/$(BUILD_TYPE)/material.png
+	$(Q)xdg-open $(BUILDDIR)/material.png
 
 test-ambient-occlusion: cmake
 	$(call COMPILE, tests)
