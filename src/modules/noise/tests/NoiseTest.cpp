@@ -30,6 +30,8 @@ protected:
 			for (int y = 0; y < h; ++y) {
 				const glm::vec2 pos(x * frequency, y * frequency);
 				const float noise = noise::ridgedMF(pos, 1.0f, octaves, lacunarity, gain);
+				ASSERT_LE(noise, +1.0f)<< "Noise is bigger than 1.0: " << noise;
+				ASSERT_GE(noise, -1.0f)<< "Noise is less than -1.0: " << noise;
 				float normalized = noise::norm(noise);
 				ASSERT_LE(normalized, 1.0f)<< "Noise is bigger than 1.0: " << normalized;
 				ASSERT_GE(normalized, 0.0f)<< "Noise is less than 0.0: " << normalized;
