@@ -71,14 +71,15 @@ bool VertexBuffer::bind() const {
 	return true;
 }
 
-void VertexBuffer::unbind() const {
-	if (_vao != InvalidId) {
-		video::bindVertexArray(InvalidId);
-	} else {
-		for (uint32_t i = 0u; i < _handleIdx; ++i) {
-			video::unbindBuffer(_targets[i]);
-		}
+bool VertexBuffer::unbind() const {
+	if (_vao == InvalidId) {
+		return false;
 	}
+	if (video::boundVertexArray() == _vao) {
+		video::bindVertexArray(InvalidId);
+		return true;
+	}
+	return false;
 }
 
 bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {

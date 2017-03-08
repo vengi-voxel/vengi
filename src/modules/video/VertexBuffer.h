@@ -97,7 +97,7 @@ public:
 	/**
 	 * @sa bind()
 	 */
-	void unbind() const;
+	bool unbind() const;
 	uint32_t size(int32_t idx) const;
 	uint32_t elements(int32_t idx, int components = 3, size_t componentSize = sizeof(float)) const;
 	/**
