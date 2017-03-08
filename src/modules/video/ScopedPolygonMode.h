@@ -12,10 +12,11 @@ namespace video {
 class ScopedPolygonMode {
 private:
 	const video::PolygonMode _mode;
+	const video::PolygonMode _oldMode;
 	bool _offset = false;
 public:
-	inline ScopedPolygonMode(video::PolygonMode mode) : _mode(mode) {
-		video::polygonMode(video::Face::FrontAndBack, mode);
+	inline ScopedPolygonMode(video::PolygonMode mode) :
+			_mode(mode), _oldMode(video::polygonMode(video::Face::FrontAndBack, mode)) {
 	}
 
 	inline ScopedPolygonMode(video::PolygonMode mode, const glm::vec2& offset) :
@@ -44,7 +45,7 @@ public:
 			}
 		}
 
-		video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
+		video::polygonMode(video::Face::FrontAndBack, _oldMode);
 	}
 };
 

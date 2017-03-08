@@ -335,17 +335,18 @@ bool blendFunc(BlendMode src, BlendMode dest) {
 	return true;
 }
 
-bool polygonMode(Face face, PolygonMode mode) {
+PolygonMode polygonMode(Face face, PolygonMode mode) {
 	if (_priv::s.polygonModeFace == face && _priv::s.polygonMode == mode) {
-		return false;
+		return _priv::s.polygonMode;
 	}
 	_priv::s.polygonModeFace = face;
+	const PolygonMode old = _priv::s.polygonMode;
 	_priv::s.polygonMode = mode;
 	const GLenum glMode = _priv::PolygonModes[std::enum_value(mode)];
 	const GLenum glFace = _priv::Faces[std::enum_value(face)];
 	glPolygonMode(glFace, glMode);
 	checkError();
-	return true;
+	return old;
 }
 
 bool polygonOffset(const glm::vec2& offset) {
