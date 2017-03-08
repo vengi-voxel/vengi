@@ -4,6 +4,7 @@
 
 #include "BiomeManager.h"
 #include "noise/Noise.h"
+#include "noise/Simplex.h"
 #include "commonlua/LUAFunctions.h"
 
 namespace voxel {
@@ -74,25 +75,19 @@ bool BiomeManager::addBiome(int lower, int upper, float humidity, float temperat
 
 float BiomeManager::getHumidity(int x, int z) const {
 	core_trace_scoped(BiomeGetHumidity);
-	const glm::vec2 noisePos(x, z);
-	const int octaves = 1;
-	const float persistence = 1.0f;
 	const float frequency = 0.001f;
-	const float amplitude = 1.0f;
-	const float n = noise::Noise2D(noisePos, octaves, persistence, frequency, amplitude);
+	const glm::vec2 noisePos(x * frequency, z * frequency);
+	const float n = noise::noise(noisePos);
 	return noise::norm(n);
 }
 
 float BiomeManager::getTemperature(int x, int z) const {
 	core_trace_scoped(BiomeGetTemperature);
-	const glm::vec2 noisePos(x, z);
+	const float frequency = 0.0001f;
 	// TODO: apply y value
 	// const float scaleY = pos.y / (float)MAX_HEIGHT;
-	const int octaves = 1;
-	const float persistence = 1.0f;
-	const float frequency = 0.0001f;
-	const float amplitude = 1.2f;
-	const float n = noise::Noise2D(noisePos, octaves, persistence, frequency, amplitude);
+	const glm::vec2 noisePos(x * frequency, z * frequency);
+	const float n = noise::noise(noisePos);
 	return noise::norm(n);
 }
 
