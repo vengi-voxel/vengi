@@ -14,10 +14,11 @@ enum class NoiseType {
 	Max
 };
 
-static inline float getNoise(const glm::vec2& pos, int octaves, float lacunarity, float gain, NoiseType type) {
+static inline float getNoise(const glm::ivec2& pos, int octaves, float lacunarity, float frequency, float gain, NoiseType type) {
+	const glm::vec2 fpos(pos.x * frequency, pos.y * frequency);
 	switch (type) {
 	case NoiseType::ridgedMF:
-		return ::noise::ridgedMF(pos, octaves, lacunarity, gain);
+		return ::noise::ridgedMF(fpos, octaves, lacunarity, gain);
 	default:
 		return 0.0f;
 	}
@@ -38,10 +39,10 @@ void generate(Volume& volume, int octaves, float lacunarity, float frequency, fl
 	const Voxel& grass = createRandomColorVoxel(VoxelType::Grass, random);
 	const Voxel& dirt = createRandomColorVoxel(VoxelType::Dirt, random);
 
-	glm::vec2 p(noiseSeedOffsetX + lowerX, noiseSeedOffsetZ + lowerZ);
-	for (int x = lowerX; x < lowerX + width; ++x, p.x += frequency) {
-		for (int z = lowerZ; z < lowerZ + depth; ++z, p.y += frequency) {
-			const float n = getNoise(p, octaves, lacunarity, gain, type);
+	for (int x = lowerX; x < lowerX + width; ++x) {
+		for (int z = lowerZ; z < lowerZ + depth; ++z) {
+			glm::vec2 p(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
+			const float n = getNoise(p, octaves, lacunarity, frequency, gain, type);
 			const int ni = ::noise::norm(n) * (depth - 1);
 			glm::ivec3 vp(x, lowerY, z);
 			if (ni > 0) {
