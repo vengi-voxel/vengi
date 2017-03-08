@@ -144,7 +144,7 @@ void Model::crop() {
 	modified(newVolume->getRegion());
 }
 
-void Model::extend(int size) {
+void Model::extend(const glm::ivec3& size) {
 	voxel::RawVolume* newVolume = voxedit::tool::expand(modelVolume(), size);
 	if (newVolume == nullptr) {
 		return;

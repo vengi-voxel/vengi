@@ -5,9 +5,9 @@
 namespace voxedit {
 namespace tool {
 
-voxel::RawVolume* expand(const voxel::RawVolume* source, int size) {
+voxel::RawVolume* expand(const voxel::RawVolume* source, const glm::ivec3& size) {
 	voxel::Region region = source->getRegion();
-	region.shiftUpperCorner(size, size, size);
+	region.shiftUpperCorner(size);
 	if (!region.isValid()) {
 		return nullptr;
 	}

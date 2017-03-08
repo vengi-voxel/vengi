@@ -628,7 +628,7 @@ void VoxEditWindow::crop() {
 	_scene->crop();
 }
 
-void VoxEditWindow::extend(int size) {
+void VoxEditWindow::extend(const glm::ivec3& size) {
 	_scene->extend(size);
 }
 

@@ -131,7 +131,7 @@ void EditorScene::crop() {
 	m().crop();
 }
 
-void EditorScene::extend(int size) {
+void EditorScene::extend(const glm::ivec3& size) {
 	m().extend(size);
 }
 

@@ -101,7 +101,7 @@ public:
 	bool remove();
 
 	void crop();
-	void extend(int size = 1);
+	void extend(const glm::ivec3& size);
 	void scale();
 	void fill(int x, int y, int z);
 

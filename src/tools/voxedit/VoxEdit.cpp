@@ -180,11 +180,17 @@ core::AppState VoxEdit::onConstruct() {
 		const int argc = args.size();
 		if (argc == 1) {
 			const int size = core::string::toInt(args[0]);
+			_mainWindow->extend(glm::ivec3(size));
+		} else if (argc >= 2) {
+			glm::ivec3 size;
+			for (int i = 0; i < argc; ++i) {
+				size[i] = core::string::toInt(args[i]);
+			}
 			_mainWindow->extend(size);
 		} else {
 			_mainWindow->extend();
 		}
-	}).setHelp("Resize your volume");
+	}).setHelp("Resize your volume about given x, y and z size");
 	COMMAND_MAINWINDOW(scale, "Scale your volume");
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
 	COMMAND_MAINWINDOW(redo, "Redo your last step");

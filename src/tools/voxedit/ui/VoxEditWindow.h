@@ -118,7 +118,7 @@ private:
 	// fill at cursor position
 	void fill();
 	void fill(int x, int y, int z);
-	void extend(int size = 1);
+	void extend(const glm::ivec3& size = glm::ivec3(1));
 	void scale();
 	void setCursorPosition(int x, int y, int z, bool relative = false);
 	void toggleviewport();
