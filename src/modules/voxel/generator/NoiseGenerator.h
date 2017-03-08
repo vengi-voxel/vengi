@@ -29,6 +29,7 @@ void generate(Volume& volume, int octaves, float lacunarity, float frequency, fl
 	const Region& region = volume.getRegion();
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
+	const int height = region.getHeightInVoxels();
 	const int lowerX = region.getLowerX();
 	const int lowerY = region.getLowerY();
 	const int lowerZ = region.getLowerZ();
@@ -43,7 +44,7 @@ void generate(Volume& volume, int octaves, float lacunarity, float frequency, fl
 		for (int z = lowerZ; z < lowerZ + depth; ++z) {
 			glm::vec2 p(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 			const float n = getNoise(p, octaves, lacunarity, frequency, gain, type);
-			const int ni = ::noise::norm(n) * (depth - 1);
+			const int ni = ::noise::norm(n) * (height - 1);
 			glm::ivec3 vp(x, lowerY, z);
 			if (ni > 0) {
 				volume.setVoxel(vp, dirt);
