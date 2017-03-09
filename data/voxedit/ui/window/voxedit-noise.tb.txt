@@ -7,14 +7,16 @@ TBLayout: distribution: gravity, axis: y
 		TBLayout: distribution: gravity
 			TBLayout: distribution: gravity, axis: y
 				TBLayout: axis: x, distribution: gravity
-					TBTextField: text: Octaves
-					TBInlineSelect: id: octaves, min: 1, max: 10, value: 1
-					TBTextField: text: Frequency
-					TBEditField: id: frequency, text: 0.005
-					TBTextField: text: Persistence
-					TBEditField: id: persistence, text: 0.1
-					TBTextField: text: Amplitude
-					TBEditField: id: amplitude, text: 0.3
+					TBClickLabel: text: Frequency
+						TBEditField: id: frequency, type: number, text: 0.01
+					TBClickLabel: text: Offset
+						TBEditField: id: offset, type: number, text: 1.0
+					TBClickLabel: text: Octaves
+						TBEditField: id: octaves, type: number, text: 4
+					TBClickLabel: text: Gain
+						TBEditField: id: gain, type: number, text: 0.5
+					TBClickLabel: text: Lacunarity
+						TBEditField: id: lacunarity, type: number, text: 2.0
 					TBLayout: gravity: left right
 						TBWidget
 

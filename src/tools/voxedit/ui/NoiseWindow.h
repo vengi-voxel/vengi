@@ -15,10 +15,10 @@ private:
 	using Super = ui::Window;
 	EditorScene* _scene;
 
-	tb::TBInlineSelect* _octaves;
+	tb::TBEditField* _octaves;
 	tb::TBEditField* _frequency;
-	tb::TBEditField* _persistence;
-	tb::TBEditField* _amplitude;
+	tb::TBEditField* _lacunarity;
+	tb::TBEditField* _gain;
 public:
 	NoiseWindow(ui::Window* window, EditorScene* scene);
 

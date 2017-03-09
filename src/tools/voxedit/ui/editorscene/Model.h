@@ -6,6 +6,7 @@
 #include "voxel/generator/PlantGenerator.h"
 #include "voxel/generator/TreeGenerator.h"
 #include "voxel/generator/BuildingGeneratorContext.h"
+#include "voxel/generator/NoiseGenerator.h"
 #include "frontend/RawVolumeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "frontend/ShapeRenderer.h"
@@ -145,7 +146,7 @@ public:
 	frontend::RawVolumeRenderer& rawVolumeSelectionRenderer();
 	const frontend::RawVolumeRenderer& rawVolumeSelectionRenderer() const;
 
-	void noise(int octaves, float persistence, float frequency, float amplitude);
+	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noise::NoiseType type);
 	void lsystem(const voxel::lsystem::LSystemContext& lsystemCtx);
 	void createTree(voxel::TreeContext ctx);
 	void createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx);

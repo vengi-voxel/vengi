@@ -10,6 +10,7 @@
 #include "voxel/generator/TreeGenerator.h"
 #include "voxel/generator/PlantGenerator.h"
 #include "voxel/generator/BuildingGeneratorContext.h"
+#include "voxel/generator/NoiseGenerator.h"
 #include "voxel/WorldContext.h"
 #include "Action.h"
 #include "Controller.h"
@@ -59,7 +60,7 @@ public:
 	void unselectAll();
 	void select(const glm::ivec3& pos);
 
-	void noise(int octaves, float persistence, float frequency, float amplitude);
+	void noise(int octaves, float persistence, float frequency, float amplitude, voxel::noise::NoiseType type);
 	void lsystem(const voxel::lsystem::LSystemContext& ctx);
 	void createTree(const voxel::TreeContext& ctx);
 	void createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx);

@@ -6,7 +6,6 @@
 #include "voxel/polyvox/VolumeRescaler.h"
 #include "voxel/polyvox//RawVolumeWrapper.h"
 #include "voxel/polyvox//RawVolumeMoveWrapper.h"
-#include "voxel/generator/NoiseGenerator.h"
 #include "voxel/generator/WorldGenerator.h"
 #include "voxel/generator/CloudGenerator.h"
 #include "voxel/generator/CactusGenerator.h"
@@ -511,10 +510,10 @@ bool Model::extractCursorVolume() {
 	return false;
 }
 
-void Model::noise(int octaves, float persistence, float frequency, float amplitude) {
+void Model::noise(int octaves, float lacunarity, float frequency, float gain, voxel::noise::NoiseType type) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
-	voxel::noise::generate(wrapper, octaves, persistence, frequency, amplitude, random);
+	voxel::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
 	modified(modelVolume()->getRegion());
 }
 
