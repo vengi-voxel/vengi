@@ -518,6 +518,12 @@ void deleteVertexArrays(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;
 	}
+	for (int i = 0; i < amount; ++i) {
+		if (_priv::s.vertexArrayHandle == ids[i]) {
+			bindVertexArray(InvalidId);
+			break;
+		}
+	}
 	glDeleteVertexArrays((GLsizei)amount, ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
@@ -528,6 +534,9 @@ void deleteVertexArrays(uint8_t amount, Id* ids) {
 void deleteVertexArray(Id& id) {
 	if (id == InvalidId) {
 		return;
+	}
+	if (_priv::s.vertexArrayHandle == id) {
+		bindVertexArray(InvalidId);
 	}
 	deleteVertexArrays(1, &id);
 	id = InvalidId;
