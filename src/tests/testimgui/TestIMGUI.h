@@ -14,8 +14,9 @@ class TestIMGUI: public imgui::IMGUIApp {
 private:
 	using Super = imgui::IMGUIApp;
 	ImVec4 _clearColor = ImColor(114, 144, 154);
-	bool _showTestWindow = true;
+	bool _showTestWindow = false;
 	bool _showAnotherWindow = false;
+	bool _showGraphWindow = true;
 	bool _showNodeGraphWindow = false;
 
 public:
