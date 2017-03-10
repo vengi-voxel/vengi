@@ -13,15 +13,27 @@ TestIMGUI::TestIMGUI(const io::FilesystemPtr& filesystem, const core::EventBusPt
 void TestIMGUI::onRenderUI() {
 	{
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Separator();
+		ImGui::ShowUserGuide();
+		ImGui::Separator();
+		ImGui::ShowStyleEditor(&ImGui::GetStyle());
+		ImGui::Separator();
 		if (ImGui::Button("Test Window")) {
 			_showTestWindow ^= true;
 		}
 		if (ImGui::Button("Graph Window")) {
 			_showGraphWindow ^= true;
 		}
+		if (ImGui::Button("Metrics Window")) {
+			_showMetricsWindow ^= true;
+		}
 		if (ImGui::Button("Quit")) {
 			requestQuit();
 		}
+	}
+
+	if (_showMetricsWindow) {
+		ImGui::ShowMetricsWindow(&_showMetricsWindow);
 	}
 
 	if (_showGraphWindow) {

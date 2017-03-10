@@ -16,6 +16,7 @@ private:
 	ImVec4 _clearColor = ImColor(114, 144, 154);
 	bool _showTestWindow = false;
 	bool _showGraphWindow = true;
+	bool _showMetricsWindow = false;
 
 public:
 	TestIMGUI(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
