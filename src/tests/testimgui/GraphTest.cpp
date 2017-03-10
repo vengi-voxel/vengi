@@ -1,373 +1,385 @@
 #include "GraphTest.h"
-
-#include <vector>
+#define IMGUI_DEFINE_PLACEMENT_NEW
 #include "imgui/imgui.h"
+#include "imgui/addons/imguinodegrapheditor/imguinodegrapheditor.h"
 #include "imgui/imgui_internal.h"
 
-// Creating a node graph editor for ImGui
-// Quick demo, not production code! This is more of a demo of how to use ImGui to create custom stuff.
-// Better version by @daniel_collin here https://gist.github.com/emoon/b8ff4b4ce4f1b43e79f2
-// See https://github.com/ocornut/imgui/issues/306
-// v0.02
-// Animated gif: https://cloud.githubusercontent.com/assets/8225057/9472357/c0263c04-4b4c-11e5-9fdf-2cd4f33f6582.gif
+namespace ImGui {
 
-// NB: You can use math functions/operators on ImVec2 if you #define IMGUI_DEFINE_MATH_OPERATORS and #include "imgui_internal.h"
-// Here we only declare simple +/- operators so others don't leak into the demo code.
-static inline ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs) {
-	return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
-}
-static inline ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs) {
-	return ImVec2(lhs.x - rhs.x, lhs.y - rhs.y);
-}
-
-static const float NODE_SLOT_RADIUS = 8.0f;
-static const float NODE_SLOT_PADDING = 10.0f;
-static const ImVec2 NODE_WINDOW_PADDING(8.0f, 8.0f);
-static const ImVec2 SLOT_RADIUS(NODE_SLOT_RADIUS, NODE_SLOT_RADIUS);
-static const ImVec2 SLOT_SIZE(NODE_SLOT_RADIUS * 2, NODE_SLOT_RADIUS * 2);
-
-struct Node {
-	int id;
-	char name[32];
-	ImVec2 pos;
-	ImVec2 internalSize;
-	ImVec2 Size;
-	float value;
-	ImVec4 color;
-	int inputsCount;
-	int outputsCount;
-
-	Node(int _id, const char* _name, const ImVec2& _pos, float _value, const ImVec4& _color, int _inputsCount, int _outputsCount) {
-		id = _id;
-		strncpy(name, _name, IM_ARRAYSIZE(name));
-		name[31] = 0;
-		pos = _pos;
-		value = _value;
-		color = _color;
-		inputsCount = _inputsCount;
-		outputsCount = _outputsCount;
-	}
-
-	ImVec2 GetInputSlotPos(int slotNumber) const {
-		return ImVec2(pos.x + NODE_SLOT_RADIUS, pos.y + internalSize.y + NODE_SLOT_RADIUS + ((float) slotNumber) * (NODE_SLOT_RADIUS + NODE_SLOT_PADDING));
-	}
-
-	ImVec2 GetOutputSlotPos(int slotNumber) const {
-		return ImVec2(pos.x + internalSize.x - NODE_SLOT_RADIUS, pos.y + internalSize.y + NODE_SLOT_RADIUS + ((float) slotNumber) * (NODE_SLOT_RADIUS + NODE_SLOT_PADDING));
-	}
-};
-struct NodeLink {
-	Node* input;
-	int inputSlot;
-	Node* output;
-	int outputSlot;
-
-	NodeLink(Node* _input, int _inputSlot, Node* _output, int _outputSlot) :
-			input(_input), inputSlot(_inputSlot), output(_output), outputSlot(_outputSlot) {
-	}
+enum MyNodeTypes {
+	MNT_COLOR_NODE = 0,
+	MNT_COMBINE_NODE,
+	MNT_COMMENT_NODE,
+	MNT_COMPLEX_NODE,
+	MNT_OUTPUT_NODE,
+	MNT_COUNT
 };
 
-static std::vector<Node*> nodes;
-static std::vector<NodeLink> links;
-static bool inited = false;
-static ImVec2 scrolling = ImVec2(0.0f, 0.0f);
-static bool showGrid = true;
-static Node* nodeSelected = nullptr;
-static Node* copiedNode = nullptr;
-static int nodeId = 0;
-static const ImU32 GRID_COLOR = ImColor(200, 200, 200, 40);
-static const float GRID_SZ = 64.0f;
+// used in the "add Node" menu (and optionally as node title names)
+static const char* MyNodeTypeNames[MNT_COUNT] = { "Color", "Combine", "Comment", "Complex", "Output" };
 
-enum class NodeConnectionType {
-	InputNode,
-	OutputNode,
-	None
-};
-static NodeConnectionType connectNodes = NodeConnectionType::None;
-static Node* connectNode = nullptr;
-static int connectNodeIndex = -1;
+class ColorNode: public Node {
+protected:
+	typedef Node Base;  //Base Class
+	typedef ColorNode ThisClass;
+	ColorNode() :
+			Base() {
+	}
+	static const int TYPE = MNT_COLOR_NODE;
 
-static void unlink(Node* node) {
-	for (auto i = links.begin(); i != links.end();) {
-		NodeLink& link = *i;
-		if (link.input == node) {
-			i = links.erase(i);
-		} else if (link.output == node) {
-			i = links.erase(i);
+	ImVec4 Color;       // field
+
+	// Support static method for enumIndex (the signature is the same used by ImGui::Combo(...))
+	static bool GetTextFromEnumIndex(void*, int value, const char** pTxt) {
+		if (!pTxt) {
+			return false;
+		}
+		static const char* values[] = { "APPLE", "LEMON", "ORANGE" };
+		static int numValues = (int) (sizeof(values) / sizeof(values[0]));
+		if (value >= 0 && value < numValues) {
+			*pTxt = values[value];
 		} else {
-			++i;
+			*pTxt = "UNKNOWN";
 		}
+		return true;
 	}
+
+	virtual const char* getTooltip() const {
+		return "ColorNode tooltip.";
+	}
+
+	virtual const char* getInfo() const {
+		return "ColorNode info.\n\nThis is supposed to display some info about this node.";
+	}
+
+public:
+	// create:
+	static ThisClass* Create(const ImVec2& pos) {
+		// 1) allocation
+		// MANDATORY (NodeGraphEditor::~NodeGraphEditor() will delete these with ImGui::MemFree(...))
+		// MANDATORY even with blank ctrs. Reason: ImVector does not call ctrs/dctrs on items.
+		ThisClass* node = (ThisClass*) ImGui::MemAlloc(sizeof(ThisClass));
+		IM_PLACEMENT_NEW (node)
+		ThisClass();
+
+		// 2) main init
+		node->init("ColorNode", pos, "", "r;g;b;a", TYPE);
+
+		// 3) init fields ( this uses the node->fields variable; otherwise we should have overridden other virtual methods (to render and serialize) )
+		node->fields.addFieldColor(&node->Color.x, true, "Color", "color with alpha");
+
+		// 4) set (or load) field values
+		node->Color = ImColor(255, 255, 0, 255);
+
+		return node;
+	}
+
+	// casts:
+	inline static ThisClass* Cast(Node* n) {
+		return Node::Cast<ThisClass>(n, TYPE);
+	}
+
+	inline static const ThisClass* Cast(const Node* n) {
+		return Node::Cast<ThisClass>(n, TYPE);
+	}
+};
+
+class CombineNode: public Node {
+protected:
+	typedef Node Base;
+	typedef CombineNode ThisClass;
+	CombineNode() :
+			Base() {
+	}
+	static const int TYPE = MNT_COMBINE_NODE;
+
+	float fraction = 0.0f;
+
+	virtual const char* getTooltip() const {
+		return "CombineNode tooltip.";
+	}
+
+	virtual const char* getInfo() const {
+		return "CombineNode info.\n\nThis is supposed to display some info about this node.";
+	}
+public:
+
+	// create:
+	static ThisClass* Create(const ImVec2& pos) {
+		// 1) allocation
+		// MANDATORY (NodeGraphEditor::~NodeGraphEditor() will delete these with ImGui::MemFree(...))
+		// MANDATORY even with blank ctrs. Reason: ImVector does not call ctrs/dctrs on items.
+		ThisClass* node = (ThisClass*) ImGui::MemAlloc(sizeof(ThisClass));
+		IM_PLACEMENT_NEW (node)
+		ThisClass();
+
+		// 2) main init
+		node->init("CombineNode", pos, "in1;in2", "out", TYPE);
+
+		// 3) init fields ( this uses the node->fields variable; otherwise we should have overridden other virtual methods (to render and serialize) )
+		node->fields.addField(&node->fraction, 1, "Fraction", "Fraction of in1 that is mixed with in2", 2, 0, 1);
+
+		// 4) set (or load) field values
+		node->fraction = 0.5f;
+
+		return node;
+	}
+
+	// casts:
+	inline static ThisClass* Cast(Node* n) {
+		return Node::Cast<ThisClass>(n, TYPE);
+	}
+
+	inline static const ThisClass* Cast(const Node* n) {
+		return Node::Cast<ThisClass>(n, TYPE);
+	}
+};
+
+class CommentNode: public Node {
+protected:
+	typedef Node Base;  //Base Class
+	typedef CommentNode ThisClass;
+	CommentNode() :
+			Base() {
+	}
+	static const int TYPE = MNT_COMMENT_NODE;
+	static const int TextBufferSize = 128;
+
+	char comment[TextBufferSize];			    // field 1
+	char comment2[TextBufferSize];			    // field 2
+	char comment3[TextBufferSize];			    // field 3
+	char comment4[TextBufferSize];			    // field 4
+	bool flag = false;                          // field 5
+
+	virtual const char* getTooltip() const {
+		return "CommentNode tooltip.";
+	}
+	virtual const char* getInfo() const {
+		return "CommentNode info.\n\nThis is supposed to display some info about this node.";
+	}
+
+public:
+	// create:
+	static ThisClass* Create(const ImVec2& pos) {
+		// 1) allocation
+		// MANDATORY (NodeGraphEditor::~NodeGraphEditor() will delete these with ImGui::MemFree(...))
+		// MANDATORY even with blank ctrs. Reason: ImVector does not call ctrs/dctrs on items.
+		ThisClass* node = (ThisClass*) ImGui::MemAlloc(sizeof(ThisClass));
+		IM_PLACEMENT_NEW (node)
+		ThisClass();
+
+		// 2) main init
+		node->init("CommentNode", pos, "", "", TYPE);
+		node->baseWidthOverride = 200.f;    // (optional) default base node width is 120.f;
+
+		// 3) init fields ( this uses the node->fields variable; otherwise we should have overridden other virtual methods (to render and serialize) )
+		node->fields.addFieldTextEdit(&node->comment[0], TextBufferSize, "Single Line", "A single line editable field", ImGuiInputTextFlags_EnterReturnsTrue);
+		node->fields.addFieldTextEditMultiline(&node->comment2[0], TextBufferSize, "Multi Line", "A multi line editable field",
+				ImGuiInputTextFlags_AllowTabInput, 50);
+		node->fields.addFieldTextEditMultiline(&node->comment3[0], TextBufferSize, "Multi Line 2", "A multi line read-only field", ImGuiInputTextFlags_ReadOnly,
+				50);
+		node->fields.addFieldTextWrapped(&node->comment4[0], TextBufferSize, "Text Wrapped ReadOnly", "A text wrapped field");
+		node->fields.addField(&node->flag, "Flag", "A boolean field");
+
+		// 4) set (or load) field values
+		strcpy(node->comment, "Initial Text Line.");
+		strcpy(node->comment2, "Initial Text Multiline.");
+		static const char* tiger = "Tiger, tiger, burning bright\nIn the forests of the night,\nWhat immortal hand or eye\nCould frame thy fearful symmetry?";
+		strncpy(node->comment3, tiger, TextBufferSize);
+		static const char* txtWrapped = "I hope this text gets wrapped gracefully. But I'm not sure about it.";
+		strncpy(node->comment4, txtWrapped, TextBufferSize);
+		node->flag = true;
+
+		return node;
+	}
+
+	// helper casts:
+	inline static ThisClass* Cast(Node* n) {
+		return Node::Cast<ThisClass>(n, TYPE);
+	}
+
+	inline static const ThisClass* Cast(const Node* n) {
+		return Node::Cast<ThisClass>(n, TYPE);
+	}
+};
+
+class ComplexNode: public Node {
+protected:
+	typedef Node Base;  //Base Class
+	typedef ComplexNode ThisClass;
+	ComplexNode() :
+			Base() {
+	}
+	static const int TYPE = MNT_COMPLEX_NODE;
+
+	float Value[3];     // field 1
+	ImVec4 Color;       // field 2
+	int enumIndex = 0;      // field 3
+
+	// Support static method for enumIndex (the signature is the same used by ImGui::Combo(...))
+	static bool GetTextFromEnumIndex(void*, int value, const char** pTxt) {
+		if (!pTxt)
+			return false;
+		static const char* values[] = { "APPLE", "LEMON", "ORANGE" };
+		static int numValues = (int) (sizeof(values) / sizeof(values[0]));
+		if (value >= 0 && value < numValues)
+			*pTxt = values[value];
+		else
+			*pTxt = "UNKNOWN";
+		return true;
+	}
+
+	virtual const char* getTooltip() const {
+		return "ComplexNode tooltip.";
+	}
+
+	virtual const char* getInfo() const {
+		return "ComplexNode info.\n\nThis is supposed to display some info about this node.";
+	}
+
+	virtual void getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& defaultTitleBgColorOut, float& defaultTitleBgColorGradientOut) const {
+		// [Optional Override] customize Node Title Colors [default values: 0,0,-1.f => do not override == use default values from the Style()]
+		defaultTitleTextColorOut = IM_COL32(220, 220, 220, 255);
+		defaultTitleBgColorOut = IM_COL32(125, 35, 0, 255);
+		defaultTitleBgColorGradientOut = -1.f;
+	}
+
+public:
+	// create:
+	static ThisClass* Create(const ImVec2& pos) {
+		// 1) allocation
+		// MANDATORY (NodeGraphEditor::~NodeGraphEditor() will delete these with ImGui::MemFree(...))
+		// MANDATORY even with blank ctrs.  Reason: ImVector does not call ctrs/dctrs on items.
+		ThisClass* node = (ThisClass*) ImGui::MemAlloc(sizeof(ThisClass));
+		IM_PLACEMENT_NEW (node)
+		ThisClass();
+
+		// 2) main init
+		node->init("ComplexNode", pos, "in1;in2;in3", "out1;out2", TYPE);
+
+		// 3) init fields ( this uses the node->fields variable; otherwise we should have overridden other virtual methods (to render and serialize) )
+		node->fields.addField(&node->Value[0], 3, "Angles", "Three floats that are stored in radiant units internally", 2, 0, 360, nullptr, true);
+		node->fields.addFieldColor(&node->Color.x, true, "Color", "color with alpha");
+		node->fields.addFieldEnum(&node->enumIndex, 3, &GetTextFromEnumIndex, "Fruit", "Choose your favourite");
+
+		// 4) set (or load) field values
+		node->Value[0] = 0;
+		node->Value[1] = 3.14f;
+		node->Value[2] = 4.68f;
+		node->Color = ImColor(126, 200, 124, 230);
+		node->enumIndex = 1;
+
+		return node;
+	}
+
+	// helper casts:
+	inline static ThisClass* Cast(Node* n) {
+		return Node::Cast<ThisClass>(n, TYPE);
+	}
+
+	inline static const ThisClass* Cast(const Node* n) {
+		return Node::Cast<ThisClass>(n, TYPE);
+	}
+};
+
+class OutputNode: public Node {
+protected:
+	typedef Node Base;  //Base Class
+	typedef OutputNode ThisClass;
+	OutputNode() :
+			Base() {
+	}
+	static const int TYPE = MNT_OUTPUT_NODE;
+
+	// No field values in this class
+
+	virtual const char* getTooltip() const {
+		return "OutputNode tooltip.";
+	}
+
+	virtual const char* getInfo() const {
+		return "OutputNode info.\n\nThis is supposed to display some info about this node.";
+	}
+
+	virtual void getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& defaultTitleBgColorOut, float& defaultTitleBgColorGradientOut) const {
+		// [Optional Override] customize Node Title Colors [default values: 0,0,-1.f => do not override == use default values from the Style()]
+		defaultTitleTextColorOut = IM_COL32(230, 180, 180, 255);
+		defaultTitleBgColorOut = IM_COL32(40, 55, 55, 200);
+		defaultTitleBgColorGradientOut = 0.025f;
+	}
+
+	virtual bool canBeCopied() const {
+		return false;
+	}
+
+public:
+	// create:
+	static ThisClass* Create(const ImVec2& pos) {
+		// 1) allocation
+		// MANDATORY (NodeGraphEditor::~NodeGraphEditor() will delete these with ImGui::MemFree(...))
+		// MANDATORY even with blank ctrs. Reason: ImVector does not call ctrs/dctrs on items.
+		ThisClass* node = (ThisClass*) ImGui::MemAlloc(sizeof(ThisClass));
+		IM_PLACEMENT_NEW (node)
+		ThisClass();
+		// 2) main init
+		node->init("OutputNode", pos, "ch1;ch2;ch3;ch4", "", TYPE);
+		// 3) init fields ( this uses the node->fields variable; otherwise we should have overridden other virtual methods (to render and serialize) )
+		// 4) set (or load) field values
+		return node;
+	}
+
+	// casts:
+	inline static ThisClass* Cast(Node* n) {
+		return Node::Cast<ThisClass>(n, TYPE);
+	}
+	inline static const ThisClass* Cast(const Node* n) {
+		return Node::Cast<ThisClass>(n, TYPE);
+	}
+
+protected:
+	bool render(float /*nodeWidth*/) {
+		ImGui::Text("There can be a single\ninstance of this class.\nTry and see if it's true!");
+		return false;
+	}
+};
+
+static Node* MyNodeFactory(int nt, const ImVec2& pos) {
+	switch (nt) {
+	case MNT_COLOR_NODE:
+		return ColorNode::Create(pos);
+	case MNT_COMBINE_NODE:
+		return CombineNode::Create(pos);
+	case MNT_COMMENT_NODE:
+		return CommentNode::Create(pos);
+	case MNT_COMPLEX_NODE:
+		return ComplexNode::Create(pos);
+	case MNT_OUTPUT_NODE:
+		return OutputNode::Create(pos);
+	default:
+		IM_ASSERT(true);
+		return nullptr;
+	}
+	return nullptr;
 }
 
-void ShowExampleAppCustomNodeGraph(bool* opened) {
-	ImGui::SetNextWindowSize(ImVec2(700, 600), ImGuiSetCond_FirstUseEver);
-	if (!ImGui::Begin("Example: Custom Node Graph", opened)) {
-		ImGui::End();
-		return;
+void ShowExampleAppCustomNodeGraph() {
+	static ImGui::NodeGraphEditor nge;
+	if (nge.isInited()) {
+		nge.registerNodeTypes(MyNodeTypeNames, MNT_COUNT, MyNodeFactory, nullptr, -1);
+		nge.registerNodeTypeMaxAllowedInstances(MNT_OUTPUT_NODE, 1);
+
+		ImGui::Node* colorNode = nge.addNode(MNT_COLOR_NODE, ImVec2(40, 50));
+		ImGui::Node* complexNode = nge.addNode(MNT_COMPLEX_NODE, ImVec2(40, 150));
+		ImGui::Node* combineNode = nge.addNode(MNT_COMBINE_NODE, ImVec2(275, 80));
+		ImGui::Node* outputNode = nge.addNode(MNT_OUTPUT_NODE, ImVec2(520, 140));
+		nge.addLink(colorNode, 0, combineNode, 0);
+		nge.addLink(complexNode, 1, combineNode, 1);
+		nge.addLink(complexNode, 0, outputNode, 1);
+		nge.addLink(combineNode, 0, outputNode, 0);
+		nge.show_style_editor = true;
+		nge.show_load_save_buttons = true;
 	}
+	nge.render();
+}
 
-	if (!inited) {
-		nodes.push_back(new Node(++nodeId, "MainTex", ImVec2(40, 50), 0.5f, ImColor(255, 100, 100), 1, 1));
-		nodes.push_back(new Node(++nodeId, "BumpMap", ImVec2(40, 150), 0.42f, ImColor(200, 100, 200), 1, 1));
-		nodes.push_back(new Node(++nodeId, "Combine", ImVec2(270, 80), 1.0f, ImColor(0, 200, 100), 2, 2));
-		links.push_back(NodeLink(nodes[0], 0, nodes[2], 0));
-		//links.push_back(NodeLink(nodes[1], 0, nodes[2], 1));
-		inited = true;
-	}
-
-	// Draw a list of nodes on the left side
-	bool openContextMenu = false;
-	Node* nodeHoveredInList = nullptr;
-	Node* nodeHoveredInScene = nullptr;
-	ImGui::BeginChild("node_list", ImVec2(100, 0));
-	ImGui::Text("Nodes");
-	ImGui::Separator();
-	for (int nodeIdx = 0; nodeIdx < nodes.size(); ++nodeIdx) {
-		Node* node = nodes[nodeIdx];
-		ImGui::PushID(node->id);
-		if (ImGui::Selectable(node->name, node == nodeSelected)) {
-			nodeSelected = node;
-		}
-		if (ImGui::IsItemHovered()) {
-			nodeHoveredInList = node;
-			openContextMenu |= ImGui::IsMouseClicked(1);
-		}
-		ImGui::PopID();
-	}
-	ImGui::EndChild();
-
-	ImGui::SameLine();
-	ImGui::BeginGroup();
-
-	// Create our child canvas
-	ImGui::Text("Hold middle mouse button to scroll (%.2f,%.2f)", scrolling.x, scrolling.y);
-	ImGui::SameLine(ImGui::GetWindowWidth() - 100);
-	ImGui::Checkbox("Show grid", &showGrid);
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1, 1));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-	ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImColor(60, 60, 70, 200));
-	ImGui::BeginChild("scrolling_region", ImVec2(0, 0), true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
-	ImGui::PushItemWidth(120.0f);
-
-	ImVec2 offset = ImGui::GetCursorScreenPos() - scrolling;
-	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	drawList->ChannelsSplit(2);
-
-	// Display grid
-	if (showGrid) {
-		ImVec2 winPos = ImGui::GetCursorScreenPos();
-		ImVec2 canvasSZ = ImGui::GetWindowSize();
-		for (float x = fmodf(offset.x, GRID_SZ); x < canvasSZ.x; x += GRID_SZ) {
-			drawList->AddLine(ImVec2(x, 0.0f) + winPos, ImVec2(x, canvasSZ.y) + winPos, GRID_COLOR);
-		}
-		for (float y = fmodf(offset.y, GRID_SZ); y < canvasSZ.y; y += GRID_SZ) {
-			drawList->AddLine(ImVec2(0.0f, y) + winPos, ImVec2(canvasSZ.x, y) + winPos, GRID_COLOR);
-		}
-	}
-
-	// Display links
-	drawList->ChannelsSetCurrent(0); // Background
-	for (int linkIdx = 0; linkIdx < links.size(); ++linkIdx) {
-		NodeLink* link = &links[linkIdx];
-		Node* nodeInp = link->input;
-		Node* nodeOut = link->output;
-		ImVec2 p1 = offset + nodeInp->GetOutputSlotPos(link->inputSlot);
-		ImVec2 p2 = offset + nodeOut->GetInputSlotPos(link->outputSlot);
-		drawList->AddBezierCurve(p1, p1 + ImVec2(+50, 0), p2 + ImVec2(-50, 0), p2, ImColor(200, 200, 100), 3.0f);
-	}
-
-	const NodeConnectionType oldConnectNodes = connectNodes;
-	connectNodes = NodeConnectionType::None;
-	// Display nodes
-	for (int nodeIdx = 0; nodeIdx < nodes.size(); ++nodeIdx) {
-		Node* node = nodes[nodeIdx];
-		ImGui::PushID(node->id);
-		ImVec2 nodeRectWin = offset + node->pos;
-
-		// Display node contents first
-		drawList->ChannelsSetCurrent(1); // Foreground
-		bool oldAnyActive = ImGui::IsAnyItemActive();
-		ImGui::SetCursorScreenPos(nodeRectWin + NODE_WINDOW_PADDING);
-		ImGui::BeginGroup(); // Lock horizontal position
-		ImGui::Text("%s", node->name);
-		ImGui::SliderFloat("##value", &node->value, 0.0f, 1.0f, "Alpha %.2f");
-		ImGui::ColorEdit3("##color", &node->color.x);
-		ImGui::EndGroup();
-
-		// Save the size of what we have emitted and whether any of the widgets are being used
-		bool nodeWidgetsActive = (!oldAnyActive && ImGui::IsAnyItemActive());
-		const int maxSlots = std::max(node->inputsCount, node->outputsCount);
-		const ImVec2 additionalSizeSlots(0.0f, maxSlots * (NODE_SLOT_RADIUS + NODE_SLOT_PADDING));
-		node->internalSize = ImGui::GetItemRectSize() + NODE_WINDOW_PADDING + NODE_WINDOW_PADDING;
-		node->Size = node->internalSize + additionalSizeSlots;
-		ImVec2 nodeRectMax = nodeRectWin + node->Size;
-
-		for (int slotIdx = 0; slotIdx < node->inputsCount; ++slotIdx) {
-			ImGui::PushID(-slotIdx);
-			const ImVec2 slotPos = offset + node->GetInputSlotPos(slotIdx);
-			ImGui::SetCursorScreenPos(ImVec2(slotPos.x - NODE_SLOT_RADIUS, slotPos.y - NODE_SLOT_RADIUS));
-			drawList->AddCircleFilled(slotPos, NODE_SLOT_RADIUS, ImColor(150, 150, 150, 150));
-			ImGui::SetCursorScreenPos(ImVec2(slotPos.x - NODE_SLOT_RADIUS * 1.5f, slotPos.y - NODE_SLOT_RADIUS * 1.5f));
-			ImGui::InvisibleButton("slot", SLOT_SIZE);
-			if (connectNodes == NodeConnectionType::None && ImGui::IsItemActive()) {
-				const ImVec2& mousePos = ImGui::GetIO().MousePos;
-				const ImColor lineColor = ImColor(ImGui::GetStyle().Colors[ImGuiCol_Button]);
-				const ImVec2& closestPoint = ImGui::CalcItemRectClosestPoint(mousePos, true, -2.0f);
-				drawList->PushClipRectFullScreen();
-				drawList->AddLine(closestPoint, mousePos, lineColor, 4.0f);
-				drawList->PopClipRect();
-				connectNodes = NodeConnectionType::InputNode;
-				connectNode = node;
-				connectNodeIndex = slotIdx;
-			}
-			ImGui::PopID();
-		}
-		for (int slotIdx = 0; slotIdx < node->outputsCount; ++slotIdx) {
-			ImGui::PushID(-slotIdx - node->inputsCount);
-			const ImVec2 slotPos = offset + node->GetOutputSlotPos(slotIdx);
-			ImGui::SetCursorScreenPos(ImVec2(slotPos.x - NODE_SLOT_RADIUS, slotPos.y - NODE_SLOT_RADIUS));
-			drawList->AddCircleFilled(slotPos, NODE_SLOT_RADIUS, ImColor(150, 150, 150, 150));
-			ImGui::SetCursorScreenPos(ImVec2(slotPos.x - NODE_SLOT_RADIUS * 1.5f, slotPos.y - NODE_SLOT_RADIUS * 1.5f));
-			ImGui::InvisibleButton("slotoutput", SLOT_SIZE);
-			if (connectNodes == NodeConnectionType::None && ImGui::IsItemActive()) {
-				const ImVec2& mousePos = ImGui::GetIO().MousePos;
-				const ImColor lineColor = ImColor(ImGui::GetStyle().Colors[ImGuiCol_Button]);
-				const ImVec2& closestPoint = ImGui::CalcItemRectClosestPoint(mousePos, true, -2.0f);
-				drawList->PushClipRectFullScreen();
-				drawList->AddLine(closestPoint, mousePos, lineColor, 4.0f);
-				drawList->PopClipRect();
-				connectNodes = NodeConnectionType::OutputNode;
-				connectNode = node;
-				connectNodeIndex = slotIdx;
-			}
-			ImGui::PopID();
-		}
-
-		// Display node box
-		drawList->ChannelsSetCurrent(0); // Background
-		ImGui::SetCursorScreenPos(nodeRectWin);
-
-		ImU32 nodeBackgroundColor = ImColor(60, 60, 60);
-		if (nodeHoveredInList == node || nodeHoveredInScene == node || (nodeHoveredInList == nullptr && nodeSelected == node)) {
-			nodeBackgroundColor = ImColor(75, 75, 75);
-		}
-		drawList->AddRectFilled(nodeRectWin, nodeRectMax, nodeBackgroundColor, 4.0f);
-		drawList->AddRect(nodeRectWin, nodeRectMax, ImColor(100, 100, 100), 4.0f);
-
-		ImGui::SetCursorScreenPos(nodeRectWin + SLOT_RADIUS);
-		ImGui::InvisibleButton("node", node->Size);
-		if (ImGui::IsItemHoveredRect()) {
-			nodeHoveredInScene = node;
-			openContextMenu |= ImGui::IsMouseClicked(1);
-		}
-		bool nodeMovingActive = ImGui::IsItemActive();
-		if (nodeWidgetsActive || nodeMovingActive) {
-			nodeSelected = node;
-		}
-		if (nodeMovingActive && ImGui::IsMouseDragging(0)) {
-			node->pos = node->pos + ImGui::GetIO().MouseDelta;
-		}
-
-		ImGui::PopID();
-	}
-	drawList->ChannelsMerge();
-
-	// Open context menu
-	if (!ImGui::IsAnyItemHovered() && ImGui::IsMouseHoveringWindow() && ImGui::IsMouseClicked(1)) {
-		nodeSelected = nodeHoveredInList = nodeHoveredInScene = nullptr;
-		openContextMenu = true;
-	}
-	if (openContextMenu) {
-		ImGui::OpenPopup("context_menu");
-		if (nodeHoveredInList != nullptr) {
-			nodeSelected = nodeHoveredInList;
-		}
-		if (nodeHoveredInScene != nullptr) {
-			nodeSelected = nodeHoveredInScene;
-		}
-	}
-
-	if (oldConnectNodes != NodeConnectionType::None && connectNodes == NodeConnectionType::None) {
-		Node* selected = nodeHoveredInScene;
-		if (selected != nullptr && connectNode != selected) {
-			const ImVec2& mousePos = ImGui::GetIO().MousePos;
-			if (oldConnectNodes == NodeConnectionType::OutputNode) {
-				for (int slotIdx = 0; slotIdx < selected->inputsCount; slotIdx++) {
-					const ImVec2 slotPos = offset + selected->GetInputSlotPos(slotIdx);
-					const ImVec2& delta = mousePos - slotPos;
-					if (fabs(delta.x) < SLOT_SIZE.x && fabs(delta.y) < SLOT_SIZE.y) {
-						links.push_back(NodeLink(connectNode, connectNodeIndex, selected, slotIdx));
-						break;
-					}
-				}
-			} else {
-				for (int slotIdx = 0; slotIdx < selected->outputsCount; slotIdx++) {
-					const ImVec2 slotPos = offset + selected->GetOutputSlotPos(slotIdx);
-					const ImVec2& delta = mousePos - slotPos;
-					if (fabs(delta.x) < SLOT_SIZE.x && fabs(delta.y) < SLOT_SIZE.y) {
-						links.push_back(NodeLink(selected, slotIdx, connectNode, connectNodeIndex));
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	// Draw context menu
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-	if (ImGui::BeginPopup("context_menu")) {
-		Node* node = nodeSelected;
-		ImVec2 scenePos = ImGui::GetMousePosOnOpeningCurrentPopup() - offset;
-		if (node) {
-			ImGui::Text("Node '%s'", node->name);
-			ImGui::Separator();
-			if (ImGui::MenuItem("Delete")) {
-				unlink(node);
-				if (copiedNode == node) {
-					copiedNode = nullptr;
-				}
-				if (nodeHoveredInList == node) {
-					nodeHoveredInList = nullptr;
-				}
-				if (nodeHoveredInScene == node) {
-					nodeHoveredInScene = nullptr;
-				}
-				for (auto i = nodes.begin(); i != nodes.end(); ++i) {
-					if (*i == node) {
-						nodes.erase(i);
-						break;
-					}
-				}
-			}
-			if (ImGui::MenuItem("Copy")) {
-				copiedNode = node;
-			}
-			if (ImGui::MenuItem("Unlink")) {
-				unlink(node);
-			}
-		} else {
-			if (ImGui::MenuItem("Add")) {
-				nodes.push_back(new Node(++nodeId, "New node", scenePos, 0.5f, ImColor(100, 100, 200), 2, 2));
-			}
-			if (ImGui::MenuItem("Paste", nullptr, false, copiedNode != nullptr)) {
-				nodes.push_back(new Node(++nodeId, copiedNode->name, scenePos, 0.5f, ImColor(100, 100, 200), 2, 2));
-			}
-		}
-		ImGui::EndPopup();
-	}
-	ImGui::PopStyleVar();
-
-	// Scrolling
-	if (ImGui::IsWindowHovered() && !ImGui::IsAnyItemActive() && ImGui::IsMouseDragging(2, 0.0f)) {
-		scrolling = scrolling - ImGui::GetIO().MouseDelta;
-	}
-
-	ImGui::PopItemWidth();
-	ImGui::EndChild();
-	ImGui::PopStyleColor();
-	ImGui::PopStyleVar(2);
-	ImGui::EndGroup();
-
-	ImGui::End();
 }

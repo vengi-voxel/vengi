@@ -32,7 +32,7 @@ void TestIMGUI::onRenderUI() {
 	}
 
 	if (_showGraphWindow) {
-		ShowExampleAppCustomNodeGraph(&_showNodeGraphWindow);
+		ImGui::ShowExampleAppCustomNodeGraph();
 	}
 
 	// 2. Show another simple window, this time using an explicit Begin/End pair

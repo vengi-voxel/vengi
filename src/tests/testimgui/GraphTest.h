@@ -1,3 +1,5 @@
 #pragma once
 
-extern void ShowExampleAppCustomNodeGraph(bool* opened);
+namespace ImGui {
+extern void ShowExampleAppCustomNodeGraph();
+}
