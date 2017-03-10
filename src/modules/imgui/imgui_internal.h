@@ -42,12 +42,10 @@ struct ImGuiMouseCursorData;
 struct ImGuiPopupRef;
 struct ImGuiWindow;
 
-typedef int ImGuiLayoutType;        // enum ImGuiLayoutType_
-typedef int ImGuiLayoutItemType;    // enum ImGuiLayoutItemType_
-typedef int ImGuiLayoutDirtyFlags;  // enum ImGuiLayoutDirtyFlags_
-typedef int ImGuiButtonFlags;       // enum ImGuiButtonFlags_
-typedef int ImGuiTreeNodeFlags;     // enum ImGuiTreeNodeFlags_
-typedef int ImGuiSliderFlags;       // enum ImGuiSliderFlags_
+typedef int ImGuiLayoutType;      // enum ImGuiLayoutType_
+typedef int ImGuiButtonFlags;     // enum ImGuiButtonFlags_
+typedef int ImGuiTreeNodeFlags;   // enum ImGuiTreeNodeFlags_
+typedef int ImGuiSliderFlags;     // enum ImGuiSliderFlags_
 
 //-------------------------------------------------------------------------
 // STB libraries
@@ -173,21 +171,6 @@ enum ImGuiSliderFlags_
     ImGuiSliderFlags_Vertical               = 1 << 0
 };
 
-enum ImGuiLayoutDirtyFlags_
-{
-    ImGuiLayoutDirtyFlags_None              = 0,
-    ImGuiLayoutDirtyFlags_Uninitialized     = 1 << 0,
-    ImGuiLayoutDirtyFlags_LayoutSize        = 1 << 1,
-    ImGuiLayoutDirtyFlags_ItemAdded         = 1 << 2,
-    ImGuiLayoutDirtyFlags_ItemRemoved       = 1 << 3,
-    ImGuiLayoutDirtyFlags_ItemReplaced      = 1 << 4,
-    ImGuiLayoutDirtyFlags_ItemSize          = 1 << 5,
-    ImGuiLayoutDirtyFlags_SpringWeight      = 1 << 6,
-    ImGuiLayoutDirtyFlags_SpringSpacing     = 1 << 7,
-    ImGuiLayoutDirtyFlags_Bounds            = 1 << 8,
-    ImGuiLayoutDirtyFlags_ChildDirty        = 1 << 9
-};
-
 enum ImGuiSelectableFlagsPrivate_
 {
     // NB: need to be in sync with last value of ImGuiSelectableFlags_
@@ -202,12 +185,6 @@ enum ImGuiLayoutType_
 {
     ImGuiLayoutType_Vertical,
     ImGuiLayoutType_Horizontal
-};
-
-enum ImGuiLayoutItemType_
-{
-    ImGuiLayoutItemType_Item,
-    ImGuiLayoutItemType_Spring
 };
 
 enum ImGuiPlotType
@@ -296,8 +273,9 @@ struct ImGuiGroupData
 {
     ImVec2      BackupCursorPos;
     ImVec2      BackupCursorMaxPos;
-    ImVec2      BackupIndent;
-    ImVec2      BackupCurrentLineSize;
+    float       BackupIndentX;
+    float       BackupGroupOffsetX;
+    float       BackupCurrentLineHeight;
     float       BackupCurrentLineTextBaseOffset;
     float       BackupLogLinePosY;
     bool        BackupActiveIdIsAlive;
@@ -379,38 +357,6 @@ struct ImGuiPopupRef
     ImVec2          MousePosOnOpen; // Copy of mouse position at the time of opening popup
 
     ImGuiPopupRef(ImGuiID id, ImGuiWindow* parent_window, ImGuiID parent_menu_set, const ImVec2& mouse_pos) { PopupId = id; Window = NULL; ParentWindow = parent_window; ParentMenuSet = parent_menu_set; MousePosOnOpen = mouse_pos; }
-};
-
-struct ImGuiLayoutItem
-{
-    ImGuiLayoutItemType         Type;           // Type of an item
-    ImVec2                      Size;           // Last size of an item
-    float                       SpringWeight;   // Weight of a spring
-    float                       SpringSpacing;  // Spring spacing
-    float                       SpringSize;     // Calculated spring size
-
-    ImGuiLayoutItem(ImGuiLayoutItemType type): Type(type), Size(0, 0), SpringWeight(1.0f), SpringSpacing(-1.0f), SpringSize(0.0f) {}
-};
-
-struct ImGuiLayout
-{
-    ImGuiID                     Id;
-    ImGuiLayoutType             Type;
-    ImVec2                      Size;           // Size from user
-    ImVec2                      Bounds;         // Actual bounds determined by BeginGroup/EndGroup
-    ImVec2                      AvailableSize;  // Bounds when taking into account parent layout
-    ImVector<ImGuiLayoutItem>   Items;
-    int                         NextItemIndex;
-    ImGuiLayoutDirtyFlags       Dirty;
-    ImGuiLayout*                Parent;
-    ImGuiLayout*                FirstChild;
-    ImGuiLayout*                NextSibling;
-    float                       Align;
-
-    ImVec2                      StartPos;
-    float                       MaxExtent;
-
-    ImGuiLayout(ImGuiID id, ImGuiLayoutType type): Id(id), Type(type), Size(0, 0), Items(), NextItemIndex(0), Dirty(0), Parent(NULL), FirstChild(NULL), NextSibling(NULL), Align(-1.0f) {}
 };
 
 // Main state for ImGui
@@ -589,11 +535,11 @@ struct IMGUI_API ImGuiDrawContext
 {
     ImVec2                  CursorPos;
     ImVec2                  CursorPosPrevLine;
-    ImVec2                  CursorStartPos;         // Initial position in client area with padding
+    ImVec2                  CursorStartPos;
     ImVec2                  CursorMaxPos;           // Implicitly calculate the size of our contents, always extending. Saved into window->SizeContents at the end of the frame
-    ImVec2                  CurrentLineSize;
+    float                   CurrentLineHeight;
     float                   CurrentLineTextBaseOffset;
-    ImVec2                  PrevLineSize;
+    float                   PrevLineHeight;
     float                   PrevLineTextBaseOffset;
     float                   LogLinePosY;
     int                     TreeDepth;
@@ -606,9 +552,6 @@ struct IMGUI_API ImGuiDrawContext
     ImVector<ImGuiWindow*>  ChildWindows;
     ImGuiStorage*           StateStorage;
     ImGuiLayoutType         LayoutType;
-    ImGuiLayout*            CurrentLayout;
-    ImVector<ImGuiLayout*>  LayoutStack;
-    ImGuiStorage            Layouts;
 
     // We store the current settings outside of the vectors to increase memory locality (reduce cache misses). The vectors are rarely modified. Also it allows us to not heap allocate for short-lived windows which are not using those settings.
     float                   ItemWidth;              // == ItemWidthStack.back(). 0.0: default, >0.0: width in pixels, <0.0: align xx pixels to the right of window
@@ -621,11 +564,11 @@ struct IMGUI_API ImGuiDrawContext
     ImVector<bool>          ButtonRepeatStack;
     ImVector<ImGuiGroupData>GroupStack;
     ImGuiColorEditMode      ColorEditMode;
-    int                     StackSizesBackup[7];    // Store size of various stacks for asserting
+    int                     StackSizesBackup[6];    // Store size of various stacks for asserting
 
-    ImVec2                  Indent;                 // Indentation / start position from left of window (increased by TreePush/TreePop, etc.)
-    ImVec2                  GroupOffset;
-    ImVec2                  ColumnsOffset;          // Offset to the current column (if ColumnsCurrent > 0). FIXME: This and the above should be a stack to allow use cases like Tree->Column->Tree. Need revamp columns API.
+    float                   IndentX;                // Indentation / start position from left of window (increased by TreePush/TreePop, etc.)
+    float                   GroupOffsetX;
+    float                   ColumnsOffsetX;         // Offset to the current column (if ColumnsCurrent > 0). FIXME: This and the above should be a stack to allow use cases like Tree->Column->Tree. Need revamp columns API.
     int                     ColumnsCurrent;
     int                     ColumnsCount;
     float                   ColumnsMinX;
@@ -640,7 +583,7 @@ struct IMGUI_API ImGuiDrawContext
     ImGuiDrawContext()
     {
         CursorPos = CursorPosPrevLine = CursorStartPos = CursorMaxPos = ImVec2(0.0f, 0.0f);
-        CurrentLineSize = PrevLineSize = ImVec2(0.0f,0.0f);
+        CurrentLineHeight = PrevLineHeight = 0.0f;
         CurrentLineTextBaseOffset = PrevLineTextBaseOffset = 0.0f;
         LogLinePosY = -1.0f;
         TreeDepth = 0;
@@ -651,7 +594,6 @@ struct IMGUI_API ImGuiDrawContext
         MenuBarOffsetX = 0.0f;
         StateStorage = NULL;
         LayoutType = ImGuiLayoutType_Vertical;
-        CurrentLayout = NULL;
         ItemWidth = 0.0f;
         ButtonRepeat = false;
         AllowKeyboardFocus = true;
@@ -659,9 +601,9 @@ struct IMGUI_API ImGuiDrawContext
         ColorEditMode = ImGuiColorEditMode_RGB;
         memset(StackSizesBackup, 0, sizeof(StackSizesBackup));
 
-        Indent = ImVec2(0.0f,0.0f);
-        GroupOffset = ImVec2(0.0f,0.0f);
-        ColumnsOffset = ImVec2(0.0f, 0.0f);
+        IndentX = 0.0f;
+        GroupOffsetX = 0.0f;
+        ColumnsOffsetX = 0.0f;
         ColumnsCurrent = 0;
         ColumnsCount = 1;
         ColumnsMinX = ColumnsMaxX = 0.0f;
