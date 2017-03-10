@@ -12,38 +12,29 @@ TestIMGUI::TestIMGUI(const io::FilesystemPtr& filesystem, const core::EventBusPt
 
 void TestIMGUI::onRenderUI() {
 	{
-		static float f = 0.0f;
-		ImGui::Text("Hello, world!");
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-		ImGui::ColorEdit3("clear color", (float*) &_clearColor);
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		if (ImGui::Button("Test Window")) {
 			_showTestWindow ^= true;
-		}
-		if (ImGui::Button("Another Window")) {
-			_showAnotherWindow ^= true;
 		}
 		if (ImGui::Button("Graph Window")) {
 			_showGraphWindow ^= true;
 		}
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		if (ImGui::Button("Quit")) {
 			requestQuit();
 		}
 	}
 
 	if (_showGraphWindow) {
+		ImGui::SetNextWindowPosCenter(ImGuiSetCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
+		ImGui::Begin("Node graph", &_showGraphWindow);
 		ImGui::ShowExampleAppCustomNodeGraph();
-	}
-
-	// 2. Show another simple window, this time using an explicit Begin/End pair
-	if (_showAnotherWindow) {
-		ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
-		ImGui::Begin("Another Window", &_showAnotherWindow);
-		ImGui::Text("Hello");
 		ImGui::End();
 	}
+
 	if (_showTestWindow) {
-		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
+		ImGui::SetNextWindowPosCenter(ImGuiSetCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
 		ImGui::ShowTestWindow(&_showTestWindow);
 	}
 }
