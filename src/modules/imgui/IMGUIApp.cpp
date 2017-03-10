@@ -97,7 +97,25 @@ core::AppState IMGUIApp::onConstruct() {
 }
 
 static const char* _getClipboardText(void*) {
-	return SDL_GetClipboardText();
+	const char* text = SDL_GetClipboardText();
+	if (!text) {
+		return nullptr;
+	}
+	const int len = strlen(text);
+	if (len == 0) {
+		SDL_free((void*) text);
+		return "";
+	}
+	static ImVector<char> clipboardBuffer;
+	// Optional branch to keep clipboardBuffer.capacity() low:
+	if (len <= clipboardBuffer.capacity() && clipboardBuffer.capacity() > 512) {
+		ImVector<char> emptyBuffer;
+		clipboardBuffer.swap(emptyBuffer);
+	}
+	clipboardBuffer.resize(len + 1);
+	strcpy(&clipboardBuffer[0], text);
+	SDL_free((void*) text);
+	return (const char*) &clipboardBuffer[0];
 }
 
 static void _setClipboardText(void*, const char* text) {
