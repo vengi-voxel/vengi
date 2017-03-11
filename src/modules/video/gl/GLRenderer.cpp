@@ -679,12 +679,20 @@ void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, 
 	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
 	const GLenum usage = _priv::VertexBufferModes[std::enum_value(mode)];
 	glBufferData(glType, (GLsizeiptr)size, data, usage);
+	if (_priv::s.nouveau) {
+		// nouveau needs this if doing the buffer update short before the draw call
+		glFlush(); // TODO: use glFenceSync here glClientWaitSync
+	}
 	checkError();
 }
 
 void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size) {
 	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
 	glBufferSubData(glType, (GLintptr)offset, (GLsizeiptr)size, data);
+	if (_priv::s.nouveau) {
+		// nouveau needs this if doing the buffer update short before the draw call
+		glFlush(); // TODO: use glFenceSync here glClientWaitSync
+	}
 	checkError();
 }
 
@@ -990,6 +998,9 @@ bool init() {
 
 	_priv::setupLimits();
 	_priv::setupFeatures();
+
+	const GLubyte* vendor = glGetString(GL_VENDOR);
+	_priv::s.nouveau = !strcmp((const char*)vendor, "nouveau");
 
 	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
 	if (vsync) {

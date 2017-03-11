@@ -50,6 +50,7 @@ struct GLState {
 	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
 	glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
 	float lineWidth = 1.0f;
+	bool nouveau = false;
 };
 
 static GLState s;
