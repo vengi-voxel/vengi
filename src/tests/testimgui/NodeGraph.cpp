@@ -3,6 +3,7 @@
 #include "nodes/CombineNode.h"
 #include "nodes/CommentNode.h"
 #include "nodes/NoiseNode.h"
+#include "nodes/NormalizeNode.h"
 #include "nodes/OutputNode.h"
 
 namespace ImGui {
@@ -19,6 +20,8 @@ static Node* nodeFactory(int nodeType, const ImVec2& pos) {
 		return NoiseNode::Create(pos);
 	case NodeType::Output:
 		return OutputNode::Create(pos);
+	case NodeType::Normalize:
+		return NormalizeNode::Create(pos);
 	case NodeType::Max:
 		break;
 	}

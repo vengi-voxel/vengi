@@ -8,11 +8,11 @@ class CombineNode: public Node {
 protected:
 	float fraction = 0.0f;
 
-	virtual const char* getTooltip() const {
+	const char* getTooltip() const override {
 		return "CombineNode tooltip.";
 	}
 
-	virtual const char* getInfo() const {
+	const char* getInfo() const override {
 		return "CombineNode info.\n\nThis is supposed to display some info about this node.";
 	}
 public:

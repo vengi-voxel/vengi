@@ -11,6 +11,7 @@ enum class NodeType {
 	Comment,
 	Noise,
 	Output,
+	Normalize,
 
 	Max
 };
@@ -19,7 +20,8 @@ static const char* NodeTypeStr[] = {
 	"Combine",
 	"Comment",
 	"Noise",
-	"Output"
+	"Output",
+	"Normalize"
 };
 static_assert(int(NodeType::Max) == IM_ARRAYSIZE(NodeTypeStr), "Array size doesn't match enum values");
 

@@ -35,7 +35,7 @@ protected:
 	float lacunarity = 0.0f;
 	int octaves = 0;
 	float gain = 0.0f;
-	int enumIndex = 0;
+	int noiseTypeIndex = 0;
 
 	static bool GetNoiseTypeFromEnumIndex(void*, int value, const char** pTxt) {
 		if (!pTxt) {
@@ -54,11 +54,10 @@ protected:
 	}
 
 	const char* getInfo() const override {
-		return "NoiseNode info.\n\nThis is supposed to display some info about this node.";
+		return "NoiseNode info.\n\nGenerate noise that can be used as input for other nodes.";
 	}
 
 	void getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& defaultTitleBgColorOut, float& defaultTitleBgColorGradientOut) const override {
-		// [Optional Override] customize Node Title Colors [default values: 0,0,-1.f => do not override == use default values from the Style()]
 		defaultTitleTextColorOut = IM_COL32(220, 220, 220, 255);
 		defaultTitleBgColorOut = IM_COL32(125, 35, 0, 255);
 		defaultTitleBgColorGradientOut = -1.f;
@@ -73,8 +72,8 @@ public:
 		node->fields.addField(&node->lacunarity, 1, "Lacunarity", "Noise lacunarity", 2, 0, 10);
 		node->fields.addField(&node->octaves, 1, "Octaves", "Noise octaves", 0, 1, 8);
 		node->fields.addField(&node->gain, 1, "Gain", "Noise gain");
-		node->fields.addFieldEnum(&node->enumIndex, numValues, &GetNoiseTypeFromEnumIndex, "Type", "Choose noise type");
-		node->enumIndex = 1;
+		node->fields.addFieldEnum(&node->noiseTypeIndex, numValues, &GetNoiseTypeFromEnumIndex, "Type", "Choose noise type");
+		node->noiseTypeIndex = 1;
 		return node;
 	}
 };
