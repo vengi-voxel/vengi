@@ -4,7 +4,7 @@
 #include "io/Filesystem.h"
 #include "TestIMGUI.h"
 #include "core/Color.h"
-#include "GraphTest.h"
+#include "NodeGraph.h"
 
 TestIMGUI::TestIMGUI(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
@@ -40,7 +40,7 @@ void TestIMGUI::onRenderUI() {
 		ImGui::SetNextWindowPosCenter(ImGuiSetCond_FirstUseEver);
 		ImGui::SetNextWindowSize(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
 		ImGui::Begin("Node graph", &_showGraphWindow);
-		ImGui::ShowExampleAppCustomNodeGraph();
+		ImGui::ShowNodeGraph();
 		ImGui::End();
 	}
 
