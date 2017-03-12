@@ -7,7 +7,7 @@
 
 namespace ImGui {
 
-static Node* NodeFactory(int nodeType, const ImVec2& pos) {
+static Node* nodeFactory(int nodeType, const ImVec2& pos) {
 	switch ((NodeType)nodeType) {
 	case NodeType::Color:
 		return ColorNode::Create(pos);
@@ -31,8 +31,7 @@ static void linkCallback(const NodeLink& link, NodeGraphEditor::LinkState state,
 void ShowNodeGraph() {
 	static ImGui::NodeGraphEditor nge;
 	if (nge.isInited()) {
-		nge.registerNodeTypes(NodeTypeStr, int(NodeType::Max), NodeFactory, nullptr, -1);
-		nge.registerNodeTypeMaxAllowedInstances(int(NodeType::Output), 1);
+		nge.registerNodeTypes(NodeTypeStr, int(NodeType::Max), nodeFactory, nullptr, -1);
 		nge.setLinkCallback(linkCallback);
 
 		Node* colorNode = nge.addNode(int(NodeType::Color), ImVec2(40, 50));
