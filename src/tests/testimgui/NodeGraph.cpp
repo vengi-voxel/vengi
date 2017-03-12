@@ -4,24 +4,26 @@
 #include "nodes/CommentNode.h"
 #include "nodes/NoiseNode.h"
 #include "nodes/NormalizeNode.h"
-#include "nodes/OutputNode.h"
+#include "nodes/RGBANode.h"
+
+static ImGui::NodeGraphEditor nge;
 
 namespace ImGui {
 
 static Node* nodeFactory(int nodeType, const ImVec2& pos) {
 	switch ((NodeType)nodeType) {
 	case NodeType::Color:
-		return ColorNode::Create(pos);
+		return ColorNode::Create(pos, nge);
 	case NodeType::Combine:
-		return CombineNode::Create(pos);
+		return CombineNode::Create(pos, nge);
 	case NodeType::Comment:
-		return CommentNode::Create(pos);
+		return CommentNode::Create(pos, nge);
 	case NodeType::Noise:
-		return NoiseNode::Create(pos);
-	case NodeType::Output:
-		return OutputNode::Create(pos);
+		return NoiseNode::Create(pos, nge);
+	case NodeType::RGBA:
+		return RGBANode::Create(pos, nge);
 	case NodeType::Normalize:
-		return NormalizeNode::Create(pos);
+		return NormalizeNode::Create(pos, nge);
 	case NodeType::Max:
 		break;
 	}
@@ -32,18 +34,16 @@ static void linkCallback(const NodeLink& link, NodeGraphEditor::LinkState state,
 }
 
 void ShowNodeGraph() {
-	static ImGui::NodeGraphEditor nge;
 	if (nge.isInited()) {
 		nge.registerNodeTypes(NodeTypeStr, int(NodeType::Max), nodeFactory, nullptr, -1);
 		nge.setLinkCallback(linkCallback);
 
-		Node* colorNode = nge.addNode(int(NodeType::Color), ImVec2(40, 50));
-		Node* complexNode = nge.addNode(int(NodeType::Noise), ImVec2(40, 150));
-		Node* combineNode = nge.addNode(int(NodeType::Combine), ImVec2(275, 80));
-		Node* outputNode = nge.addNode(int(NodeType::Output), ImVec2(520, 140));
-		nge.addLink(colorNode, 0, combineNode, 0);
-		nge.addLink(complexNode, 1, combineNode, 1);
-		nge.addLink(complexNode, 0, outputNode, 1);
+		Node* noise1Node = nge.addNode(int(NodeType::Noise), ImVec2(10, 10));
+		Node* noise2Node = nge.addNode(int(NodeType::Noise), ImVec2(10, 210));
+		Node* combineNode = nge.addNode(int(NodeType::Combine), ImVec2(310, 150));
+		Node* outputNode = nge.addNode(int(NodeType::RGBA), ImVec2(550, 100));
+		nge.addLink(noise1Node, 0, combineNode, 0);
+		nge.addLink(noise2Node, 0, combineNode, 1);
 		nge.addLink(combineNode, 0, outputNode, 0);
 		nge.show_style_editor = true;
 		nge.show_load_save_buttons = true;

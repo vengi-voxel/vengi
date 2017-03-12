@@ -4,7 +4,6 @@
 
 #include "BiomeManager.h"
 #include "noise/Noise.h"
-#include "noise/Simplex.h"
 #include "commonlua/LUAFunctions.h"
 
 namespace voxel {

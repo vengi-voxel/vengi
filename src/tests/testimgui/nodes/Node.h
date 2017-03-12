@@ -10,7 +10,7 @@ enum class NodeType {
 	Combine,
 	Comment,
 	Noise,
-	Output,
+	RGBA,
 	Normalize,
 
 	Max
@@ -31,3 +31,9 @@ static T* allocate() {
 	return node;
 }
 #define CREATE(T) T* node = allocate<T>(); IM_PLACEMENT_NEW(node) T; T()
+
+class NNode : public ImGui::Node {
+public:
+	virtual ~NNode() {}
+	virtual float getNoise(int x, int y) = 0;
+};

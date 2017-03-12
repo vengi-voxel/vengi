@@ -32,7 +32,7 @@ protected:
 	}
 
 public:
-	static ColorNode* Create(const ImVec2& pos) {
+	static ColorNode* Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
 		CREATE(ColorNode);
 		node->init("ColorNode", pos, "", "r;g;b;a", int(NodeType::Color));
 		node->fields.addFieldColor(&node->Color.x, true, "Color", "color with alpha");

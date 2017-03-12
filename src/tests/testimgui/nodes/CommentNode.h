@@ -22,7 +22,7 @@ protected:
 	}
 
 public:
-	static CommentNode* Create(const ImVec2& pos) {
+	static CommentNode* Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
 		CREATE(CommentNode);
 		node->init("CommentNode", pos, "", "", int(NodeType::Comment));
 		node->baseWidthOverride = 200.f;    // (optional) default base node width is 120.f;

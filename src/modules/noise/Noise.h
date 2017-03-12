@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/GLM.h"
+#include "Simplex.h"
 #include <cstdint>
 #include <functional>
 

@@ -4,21 +4,15 @@
 
 namespace ImGui {
 
-class NormalizeNode: public Node {
+class NormalizeNode: public NNode {
 protected:
-	const char* getTooltip() const override {
-		return "NormalizeNode tooltip.";
-	}
+	const char* getTooltip() const override;
 
-	const char* getInfo() const override {
-		return "NormalizeNode info.\n\nNormalized the noise from [-1,1] to [0,1].";
-	}
+	const char* getInfo() const override;
+
+	float getNoise(int x, int y) override;
 public:
-	static NormalizeNode* Create(const ImVec2& pos) {
-		CREATE(NormalizeNode);
-		node->init("NormalizeNode", pos, "in1", "out", int(NodeType::Normalize));
-		return node;
-	}
+	static NormalizeNode* Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge);
 };
 
 }
