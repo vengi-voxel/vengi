@@ -432,17 +432,21 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 			}
 
 			for (const Quad& quad : listQuads) {
-				const auto v00 = result->getVertex(quad.vertices[3]);
-				const auto v01 = result->getVertex(quad.vertices[0]);
-				const auto v10 = result->getVertex(quad.vertices[2]);
-				const auto v11 = result->getVertex(quad.vertices[1]);
+				const IndexType i0 = quad.vertices[0];
+				const IndexType i1 = quad.vertices[1];
+				const IndexType i2 = quad.vertices[2];
+				const IndexType i3 = quad.vertices[3];
+				const VoxelVertex& v00 = result->getVertex(i3);
+				const VoxelVertex& v01 = result->getVertex(i0);
+				const VoxelVertex& v10 = result->getVertex(i2);
+				const VoxelVertex& v11 = result->getVertex(i1);
 
 				if (isQuadFlipped(v00, v01, v10, v11)) {
-					result->addTriangle(quad.vertices[1], quad.vertices[2], quad.vertices[3]);
-					result->addTriangle(quad.vertices[1], quad.vertices[3], quad.vertices[0]);
+					result->addTriangle(i1, i2, i3);
+					result->addTriangle(i1, i3, i0);
 				} else {
-					result->addTriangle(quad.vertices[0], quad.vertices[1], quad.vertices[2]);
-					result->addTriangle(quad.vertices[0], quad.vertices[2], quad.vertices[3]);
+					result->addTriangle(i0, i1, i2);
+					result->addTriangle(i0, i2, i3);
 				}
 			}
 		}

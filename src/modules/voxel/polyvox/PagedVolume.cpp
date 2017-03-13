@@ -347,9 +347,9 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
 uint32_t PagedVolume::calculateSizeInBytes() {
 	uint32_t uChunkCount = 0;
 	VolumeLockGuard scopedLock(_lock);
-	for (uint32_t uIndex = 0; uIndex < CHUNKARRAYSIZE; uIndex++) {
+	for (uint32_t uIndex = 0; uIndex < CHUNKARRAYSIZE; ++uIndex) {
 		if (_arrayChunks[uIndex]) {
-			uChunkCount++;
+			++uChunkCount;
 		}
 	}
 
