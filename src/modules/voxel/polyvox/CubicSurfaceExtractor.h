@@ -109,8 +109,6 @@ typedef std::vector<QuadList> QuadListVector;
  * @section Surface extraction
  */
 
-extern bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent);
-
 extern bool performQuadMerging(QuadList& quads, Mesh* meshCurrent);
 
 extern int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,

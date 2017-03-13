@@ -11,7 +11,7 @@ SDL_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2)
 	return v1.colorIndex == v2.colorIndex && v1.ambientOcclusion == v2.ambientOcclusion;
 }
 
-bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
+static bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 	const VoxelVertex& v11 = meshCurrent->getVertex(q1.vertices[0]);
 	const VoxelVertex& v21 = meshCurrent->getVertex(q2.vertices[0]);
 	if (!isSameVertex(v11, v21)) {
