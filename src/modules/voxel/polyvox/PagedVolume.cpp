@@ -73,6 +73,7 @@ const Voxel& PagedVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) 
 	const uint16_t yOffset = static_cast<uint16_t>(uYPos & _chunkMask);
 	const uint16_t zOffset = static_cast<uint16_t>(uZPos & _chunkMask);
 
+	VolumeLockGuard scopedLock(_lock);
 	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
 
 	return pChunk->getVoxel(xOffset, yOffset, zOffset);
@@ -110,6 +111,7 @@ void PagedVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Vo
 	const uint16_t yOffset = static_cast<uint16_t>(uYPos - (chunkY << _chunkSideLengthPower));
 	const uint16_t zOffset = static_cast<uint16_t>(uZPos - (chunkZ << _chunkSideLengthPower));
 
+	VolumeLockGuard scopedLock(_lock);
 	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
 
 	pChunk->setVoxel(xOffset, yOffset, zOffset, tValue);
@@ -128,6 +130,7 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, i
 }
 
 void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx, int nz, const Voxel* tArray, int amount) {
+	VolumeLockGuard scopedLock(_lock);
 	for (int j = 0; j < nx; ++j) {
 		for (int k = 0; k < nz; ++k) {
 			int32_t y = uYPos;
@@ -211,22 +214,19 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY
 	const uint32_t positionHash = getPositionHash(chunkX, chunkY, chunkZ);
 	uint32_t index = positionHash;
 	PagedVolume::Chunk* chunk = nullptr;
-	{
-		VolumeLockGuard scopedLock(_lock);
-		do {
-			if (_arrayChunks[index]) {
-				const glm::ivec3& entryPos = _arrayChunks[index]->_chunkSpacePosition;
-				if (entryPos.x == chunkX && entryPos.y == chunkY && entryPos.z == chunkZ) {
-					chunk = _arrayChunks[index].get();
-					chunk->_chunkLastAccessed = ++_timestamper;
-					break;
-				}
+	do {
+		if (_arrayChunks[index]) {
+			const glm::ivec3& entryPos = _arrayChunks[index]->_chunkSpacePosition;
+			if (entryPos.x == chunkX && entryPos.y == chunkY && entryPos.z == chunkZ) {
+				chunk = _arrayChunks[index].get();
+				chunk->_chunkLastAccessed = ++_timestamper;
+				break;
 			}
+		}
 
-			index++;
-			index %= CHUNKARRAYSIZE;
-		} while (index != positionHash); // Keep searching until we get back to our start position
-	}
+		index++;
+		index %= CHUNKARRAYSIZE;
+	} while (index != positionHash); // Keep searching until we get back to our start position
 
 	if (chunk == nullptr) {
 		return nullptr;
@@ -303,12 +303,8 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 	pctx.region = Region(mins, maxs);
 	pctx.chunk = chunk;
 
-	PagedVolume::Chunk::ChunkLockGuard scopedLockChunk(chunk->_voxelLock);
-	{
-		VolumeLockGuard scopedLock(_lock);
-		insertNewChunk(chunk, chunkX, chunkY, chunkZ);
-		deleteOldestChunkIfNeeded();
-	}
+	insertNewChunk(chunk, chunkX, chunkY, chunkZ);
+	deleteOldestChunkIfNeeded();
 
 	// Page the data in
 	// We'll use this later to decide if data needs to be paged out again.
@@ -319,11 +315,8 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 }
 
 PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
-	{
-		VolumeLockGuard scopedLock(_lock);
-		if (chunkX == _lastAccessedChunkX && chunkY == _lastAccessedChunkY && chunkZ == _lastAccessedChunkZ && _lastAccessedChunk) {
-			return _lastAccessedChunk;
-		}
+	if (chunkX == _lastAccessedChunkX && chunkY == _lastAccessedChunkY && chunkZ == _lastAccessedChunkZ && _lastAccessedChunk) {
+		return _lastAccessedChunk;
 	}
 	Chunk* chunk = getExistingChunk(chunkX, chunkY, chunkZ);
 
@@ -332,7 +325,6 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
 		chunk = createNewChunk(chunkX, chunkY, chunkZ);
 	}
 
-	VolumeLockGuard scopedLock(_lock);
 	_lastAccessedChunk = chunk;
 	_lastAccessedChunkX = chunkX;
 	_lastAccessedChunkY = chunkY;
@@ -411,7 +403,6 @@ const Voxel& PagedVolume::Chunk::getVoxel(uint32_t uXPos, uint32_t uYPos, uint32
 	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
-	ChunkLockGuard readLock(_voxelLock);
 	return _data[index];
 }
 
@@ -511,6 +502,7 @@ void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos)
 
 	uint32_t voxelIndexInChunk = morton256_x[_xPosInChunk] | morton256_y[_yPosInChunk] | morton256_z[_zPosInChunk];
 
+	VolumeLockGuard scopedLock(_volume->_lock);
 	Chunk* currentChunk = _volume->getChunk(xChunk, yChunk, zChunk);
 
 	_currentVoxel = currentChunk->_data + voxelIndexInChunk;
