@@ -4,16 +4,12 @@
 
 #pragma once
 
-#include <memory>
-#include "voxel/World.h"
-#include "backend/entity/EntityStorage.h"
-#include "backend/poi/PoiProvider.h"
+#include "backend/ForwardDecl.h"
 #include "ServerMessages_generated.h"
+#include "ai/common/Types.h"
+#include <glm/vec3.hpp>
 
 namespace backend {
-
-class AILoader;
-typedef std::shared_ptr<AILoader> AILoaderPtr;
 
 class SpawnMgr {
 private:

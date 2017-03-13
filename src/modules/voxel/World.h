@@ -35,7 +35,7 @@ struct ChunkMeshes {
 			opaqueMesh(opaqueVertices, opaqueIndices, MAY_GET_RESIZED), waterMesh(waterVertices, waterIndices, MAY_GET_RESIZED) {
 	}
 
-	inline const glm::ivec3 translation() const {
+	inline const glm::ivec3& translation() const {
 		return opaqueMesh.getOffset();
 	}
 

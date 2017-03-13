@@ -7,6 +7,7 @@
 #include "Task.h"
 #include "core/Common.h"
 #include "backend/spawn/SpawnMgr.h"
+#include "backend/entity/Npc.h"
 
 using namespace ai;
 

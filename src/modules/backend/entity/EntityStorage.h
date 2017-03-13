@@ -4,17 +4,14 @@
 
 #pragma once
 
-#include "Entity.h"
-#include "Npc.h"
+#include "backend/ForwardDecl.h"
 #include "network/Network.h"
 #include "core/QuadTree.h"
 #include "core/TimeProvider.h"
+#include "ai/common/Types.h"
 #include <unordered_map>
 
 namespace backend {
-
-class User;
-typedef std::shared_ptr<User> UserPtr;
 
 /**
  * @brief Manages the Entity instances of the backend.

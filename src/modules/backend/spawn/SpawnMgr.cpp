@@ -7,8 +7,12 @@
 #include "core/Singleton.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
+#include "voxel/World.h"
+#include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AICharacter.h"
 #include "backend/entity/ai/AILoader.h"
+#include "backend/poi/PoiProvider.h"
+#include "backend/entity/Npc.h"
 
 namespace backend {
 

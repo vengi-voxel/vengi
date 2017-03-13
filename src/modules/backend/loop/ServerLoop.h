@@ -29,8 +29,8 @@ private:
 	network::NetworkPtr _network;
 	SpawnMgrPtr _spawnMgr;
 	voxel::WorldPtr _world;
-	ai::Zone _zone;
-	ai::Server _aiServer;
+	ai::Zone* _zone = nullptr;
+	ai::Server* _aiServer = nullptr;
 	EntityStoragePtr _entityStorage;
 	core::EventBusPtr _eventBus;
 	AIRegistryPtr _registry;

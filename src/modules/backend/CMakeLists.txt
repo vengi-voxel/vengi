@@ -1,4 +1,6 @@
 set(SRCS
+	ForwardDecl.h
+
 	spawn/SpawnMgr.cpp spawn/SpawnMgr.h
 	loop/ServerLoop.cpp loop/ServerLoop.h
 	entity/ai/AICharacter.cpp entity/ai/AICharacter.h

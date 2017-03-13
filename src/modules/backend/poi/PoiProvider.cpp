@@ -3,6 +3,7 @@
  */
 
 #include "PoiProvider.h"
+#include "core/TimeProvider.h"
 #include "core/Random.h"
 #include "voxel/World.h"
 #include "core/Var.h"

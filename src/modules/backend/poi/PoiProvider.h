@@ -4,17 +4,12 @@
 
 #pragma once
 
-#include "core/TimeProvider.h"
+#include "backend/ForwardDecl.h"
 #include "core/ReadWriteLock.h"
 #include "core/Random.h"
 #include "core/GLM.h"
 #include <vector>
 #include <memory>
-
-namespace voxel {
-class World;
-typedef std::shared_ptr<World> WorldPtr;
-}
 
 namespace backend {
 

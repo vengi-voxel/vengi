@@ -30,7 +30,7 @@ constexpr const char* aiDebugServerInterface = "127.0.0.1";
 
 ServerLoop::ServerLoop(const network::NetworkPtr& network, const SpawnMgrPtr& spawnMgr, const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const core::EventBusPtr& eventBus, const AIRegistryPtr& registry,
 		const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
-		_network(network), _spawnMgr(spawnMgr), _world(world), _zone("Zone"), _aiServer(*registry, aiDebugServerPort, aiDebugServerInterface),
+		_network(network), _spawnMgr(spawnMgr), _world(world),
 		_entityStorage(entityStorage), _eventBus(eventBus), _registry(registry), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider) {
 	_world->setClientData(false);
 	_eventBus->subscribe<network::NewConnectionEvent>(*this);
@@ -49,6 +49,9 @@ bool ServerLoop::init() {
 		Log::error("Failed to load the cooldown configuration: %s", _cooldownProvider->error().c_str());
 		return false;
 	}
+
+	_zone = new ai::Zone("Zone");
+	_aiServer = new ai::Server(*_registry, aiDebugServerPort, aiDebugServerInterface);
 
 	const std::string& attributes = core::App::getInstance()->filesystem()->load("attributes.lua");
 	if (!_containerProvider->init(attributes)) {
@@ -81,9 +84,9 @@ bool ServerLoop::init() {
 
 	const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
 	_world->setSeed(seed->longVal());
-	if (_aiServer.start()) {
+	if (_aiServer->start()) {
 		Log::info("Start the ai debug server on %s:%i", aiDebugServerInterface, aiDebugServerPort);
-		_aiServer.addZone(&_zone);
+		_aiServer->addZone(_zone);
 	} else {
 		Log::error("Could not start the ai debug server");
 	}
@@ -94,6 +97,10 @@ void ServerLoop::shutdown() {
 	_world->shutdown();
 	core::Singleton<::persistence::ConnectionPool>::getInstance().shutdown();
 	_spawnMgr->shutdown();
+	delete _zone;
+	delete _aiServer;
+	_zone = nullptr;
+	_aiServer = nullptr;
 }
 
 void ServerLoop::readInput() {
@@ -122,12 +129,12 @@ void ServerLoop::onFrame(long dt) {
 	}
 	{ // TODO: move into own thread
 		core_trace_scoped(AIServerUpdate);
-		_zone.update(dt);
-		_aiServer.update(dt);
+		_zone->update(dt);
+		_aiServer->update(dt);
 	}
 	{ // TODO: move into own thread
 		core_trace_scoped(SpawnMgrUpdate);
-		_spawnMgr->onFrame(_zone, dt);
+		_spawnMgr->onFrame(*_zone, dt);
 	}
 	{
 		core_trace_scoped(EntityStorage);

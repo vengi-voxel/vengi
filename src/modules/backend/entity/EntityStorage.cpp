@@ -6,6 +6,7 @@
 #include "core/Var.h"
 #include "User.h"
 #include "DatabaseModels.h"
+#include "Npc.h"
 
 #define broadcastMsg(msg, type) _messageSender->broadcastServerMessage(fbb, network::type, network::msg.Union());
 

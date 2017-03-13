@@ -11,9 +11,6 @@
 
 namespace backend {
 
-class EntityStorage;
-typedef std::shared_ptr<EntityStorage> EntityStoragePtr;
-
 class Npc: public Entity {
 private:
 	friend class AICharacter;

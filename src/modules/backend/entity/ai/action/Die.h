@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Task.h"
+#include "backend/entity/Npc.h"
 
 using namespace ai;
 
