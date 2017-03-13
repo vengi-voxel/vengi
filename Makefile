@@ -228,3 +228,7 @@ updatelibs:
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
+
+#execute as root
+profile:
+	tools/linux-perf.sh worldrenderertool

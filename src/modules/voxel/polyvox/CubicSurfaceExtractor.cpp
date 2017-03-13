@@ -3,53 +3,64 @@
  */
 
 #include "CubicSurfaceExtractor.h"
+#include <SDL.h>
 
 namespace voxel {
 
-inline bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
+SDL_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
 	return v1.colorIndex == v2.colorIndex && v1.ambientOcclusion == v2.ambientOcclusion;
 }
 
 bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 	const VoxelVertex& v11 = meshCurrent->getVertex(q1.vertices[0]);
 	const VoxelVertex& v21 = meshCurrent->getVertex(q2.vertices[0]);
+	if (!isSameVertex(v11, v21)) {
+		return false;
+	}
 	const VoxelVertex& v12 = meshCurrent->getVertex(q1.vertices[1]);
 	const VoxelVertex& v22 = meshCurrent->getVertex(q2.vertices[1]);
+	if (!isSameVertex(v12, v22)) {
+		return false;
+	}
 	const VoxelVertex& v13 = meshCurrent->getVertex(q1.vertices[2]);
 	const VoxelVertex& v23 = meshCurrent->getVertex(q2.vertices[2]);
+	if (!isSameVertex(v13, v23)) {
+		return false;
+	}
 	const VoxelVertex& v14 = meshCurrent->getVertex(q1.vertices[3]);
 	const VoxelVertex& v24 = meshCurrent->getVertex(q2.vertices[3]);
-	if (isSameVertex(v11, v21) && isSameVertex(v12, v22) && isSameVertex(v13, v23) && isSameVertex(v14, v24)) {
-		//Now check whether quad 2 is adjacent to quad one by comparing vertices.
-		//Adjacent quads must share two vertices, and the second quad could be to the
-		//top, bottom, left, of right of the first one. This gives four combinations to test.
-		if (q1.vertices[0] == q2.vertices[1] && q1.vertices[3] == q2.vertices[2]) {
-			q1.vertices[0] = q2.vertices[0];
-			q1.vertices[3] = q2.vertices[3];
-			return true;
-		} else if (q1.vertices[3] == q2.vertices[0] && q1.vertices[2] == q2.vertices[1]) {
-			q1.vertices[3] = q2.vertices[3];
-			q1.vertices[2] = q2.vertices[2];
-			return true;
-		} else if (q1.vertices[1] == q2.vertices[0] && q1.vertices[2] == q2.vertices[3]) {
-			q1.vertices[1] = q2.vertices[1];
-			q1.vertices[2] = q2.vertices[2];
-			return true;
-		} else if (q1.vertices[0] == q2.vertices[3] && q1.vertices[1] == q2.vertices[2]) {
-			q1.vertices[0] = q2.vertices[0];
-			q1.vertices[1] = q2.vertices[1];
-			return true;
-		}
+	if (!isSameVertex(v14, v24)) {
+		return false;
+	}
+	//Now check whether quad 2 is adjacent to quad one by comparing vertices.
+	//Adjacent quads must share two vertices, and the second quad could be to the
+	//top, bottom, left, of right of the first one. This gives four combinations to test.
+	if (q1.vertices[0] == q2.vertices[1] && q1.vertices[3] == q2.vertices[2]) {
+		q1.vertices[0] = q2.vertices[0];
+		q1.vertices[3] = q2.vertices[3];
+		return true;
+	} else if (q1.vertices[3] == q2.vertices[0] && q1.vertices[2] == q2.vertices[1]) {
+		q1.vertices[3] = q2.vertices[3];
+		q1.vertices[2] = q2.vertices[2];
+		return true;
+	} else if (q1.vertices[1] == q2.vertices[0] && q1.vertices[2] == q2.vertices[3]) {
+		q1.vertices[1] = q2.vertices[1];
+		q1.vertices[2] = q2.vertices[2];
+		return true;
+	} else if (q1.vertices[0] == q2.vertices[3] && q1.vertices[1] == q2.vertices[2]) {
+		q1.vertices[0] = q2.vertices[0];
+		q1.vertices[1] = q2.vertices[1];
+		return true;
 	}
 
-	//Quads cannot be merged.
+	// Quads cannot be merged.
 	return false;
 }
 
-bool performQuadMerging(std::list<Quad>& quads, Mesh* meshCurrent) {
+bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
 	bool didMerge = false;
-	for (std::list<Quad>::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
-		std::list<Quad>::iterator innerIter = outerIter;
+	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
+		QuadList::iterator innerIter = outerIter;
 		++innerIter;
 		while (innerIter != quads.end()) {
 			Quad& q1 = *outerIter;
@@ -71,7 +82,7 @@ bool performQuadMerging(std::list<Quad>& quads, Mesh* meshCurrent) {
 
 // 0 is the darkest
 // 3 is no occlusion at all
-static inline uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
+SDL_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
 	if (side1 && side2) {
 		return 0;
 	}

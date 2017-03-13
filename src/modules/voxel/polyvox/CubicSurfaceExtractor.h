@@ -102,13 +102,16 @@ public:
 	}
 };
 
+typedef std::list<Quad> QuadList;
+typedef std::vector<QuadList> QuadListVector;
+
 /**
  * @section Surface extraction
  */
 
 extern bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent);
 
-extern bool performQuadMerging(std::list<Quad>& quads, Mesh* meshCurrent);
+extern bool performQuadMerging(QuadList& quads, Mesh* meshCurrent);
 
 extern int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner, const glm::ivec3& offset);
@@ -226,8 +229,6 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 
 	// During extraction we create a number of different lists of quads. All the
 	// quads in a given list are in the same plane and facing in the same direction.
-	typedef std::list<Quad> QuadList;
-	typedef std::vector<QuadList> QuadListVector;
 	QuadListVector vecQuads[NoOfFaces];
 
 	vecQuads[NegativeX].resize(region.getUpperX() - region.getLowerX() + 2);
