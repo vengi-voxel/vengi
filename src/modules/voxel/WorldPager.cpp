@@ -76,9 +76,9 @@ void WorldPager::shutdown() {
 	_ctx = nullptr;
 }
 
-void WorldPager::create(PagedVolumeWrapper& ctx) {
+void WorldPager::create(PagedVolumeWrapper& wrapper) {
 	core_trace_scoped(CreateWorld);
-	world::createWorld(*_ctx, ctx, *_biomeManager, _seed, _createFlags, _noiseSeedOffset.x, _noiseSeedOffset.y);
+	world::createWorld(*_ctx, wrapper, *_biomeManager, _seed, _createFlags, _noiseSeedOffset.x, _noiseSeedOffset.y);
 }
 
 }
