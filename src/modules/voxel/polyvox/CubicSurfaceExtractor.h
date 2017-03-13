@@ -242,6 +242,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 
 	typename VolumeType::Sampler volumeSampler(volData);
 
+	Voxel material; // Filled in by callback
 	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
 		const uint32_t regZ = z - region.getLowerZ();
 
@@ -252,7 +253,6 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
 				const uint32_t regX = x - region.getLowerX();
-				Voxel material; //Filled in by callback
 
 				/**
 				 *
@@ -272,28 +272,28 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 				 *               [C]
 				 */
 
-				Voxel voxelCurrent                = volumeSampler.getVoxel();
-				const Voxel voxelLeft             = volumeSampler.peekVoxel1nx0py0pz();
-				const Voxel voxelBefore           = volumeSampler.peekVoxel0px0py1nz();
-				const Voxel voxelLeftBefore       = volumeSampler.peekVoxel1nx0py1nz();
-				const Voxel voxelRightBefore      = volumeSampler.peekVoxel1px0py1nz();
-				const Voxel voxelLeftBehind       = volumeSampler.peekVoxel1nx0py1pz();
+				const Voxel& voxelCurrent          = volumeSampler.getVoxel();
+				const Voxel& voxelLeft             = volumeSampler.peekVoxel1nx0py0pz();
+				const Voxel& voxelBefore           = volumeSampler.peekVoxel0px0py1nz();
+				const Voxel& voxelLeftBefore       = volumeSampler.peekVoxel1nx0py1nz();
+				const Voxel& voxelRightBefore      = volumeSampler.peekVoxel1px0py1nz();
+				const Voxel& voxelLeftBehind       = volumeSampler.peekVoxel1nx0py1pz();
 
-				const Voxel voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz();
-				const Voxel voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz();
-				const Voxel voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz();
-				const Voxel voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz();
-				const Voxel voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz();
+				const Voxel& voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz();
+				const Voxel& voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz();
+				const Voxel& voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz();
+				const Voxel& voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz();
+				const Voxel& voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz();
 
-				const Voxel voxelBelow            = volumeSampler.peekVoxel0px1ny0pz();
-				const Voxel voxelBelowLeft        = volumeSampler.peekVoxel1nx1ny0pz();
-				const Voxel voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
-				const Voxel voxelBelowBefore      = volumeSampler.peekVoxel0px1ny1nz();
-				const Voxel voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
-				const Voxel voxelBelowLeftBefore  = volumeSampler.peekVoxel1nx1ny1nz();
-				const Voxel voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz();
-				const Voxel voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz();
-				const Voxel voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
+				const Voxel& voxelBelow            = volumeSampler.peekVoxel0px1ny0pz();
+				const Voxel& voxelBelowLeft        = volumeSampler.peekVoxel1nx1ny0pz();
+				const Voxel& voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
+				const Voxel& voxelBelowBefore      = volumeSampler.peekVoxel0px1ny1nz();
+				const Voxel& voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
+				const Voxel& voxelBelowLeftBefore  = volumeSampler.peekVoxel1nx1ny1nz();
+				const Voxel& voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz();
+				const Voxel& voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz();
+				const Voxel& voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
 
 				// X [A] LEFT
 				if (isQuadNeeded(voxelCurrent, voxelLeft, material, NegativeX)) {
@@ -312,16 +312,16 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 				if (isQuadNeeded(voxelLeft, voxelCurrent, material, PositiveX)) {
 					volumeSampler.moveNegativeX();
 
-					const Voxel _voxelRightBefore      = volumeSampler.peekVoxel1px0py1nz();
-					const Voxel _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz();
+					const Voxel& _voxelRightBefore      = volumeSampler.peekVoxel1px0py1nz();
+					const Voxel& _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz();
 
-					const Voxel _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz();
-					const Voxel _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz();
-					const Voxel _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz();
+					const Voxel& _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz();
+					const Voxel& _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz();
+					const Voxel& _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz();
 
-					const Voxel _voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
-					const Voxel _voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz();
-					const Voxel _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
+					const Voxel& _voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
+					const Voxel& _voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz();
+					const Voxel& _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
 
 					const uint32_t v_0_2 = addVertex(reuseVertices, regX, regY,     regZ,     material, previousSliceVertices, result,
 							_voxelBelowRight, _voxelRightBefore, _voxelBelowRightBefore, offset);
@@ -353,14 +353,14 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 				if (isQuadNeeded(voxelBelow, voxelCurrent, material, PositiveY)) {
 					volumeSampler.moveNegativeY();
 
-					const Voxel _voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz();
-					const Voxel _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz();
-					const Voxel _voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz();
-					const Voxel _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz();
-					const Voxel _voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz();
-					const Voxel _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz();
-					const Voxel _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz();
-					const Voxel _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz();
+					const Voxel& _voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz();
+					const Voxel& _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz();
+					const Voxel& _voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz();
+					const Voxel& _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz();
+					const Voxel& _voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz();
+					const Voxel& _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz();
+					const Voxel& _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz();
+					const Voxel& _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz();
 
 					const uint32_t v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     material, previousSliceVertices, result,
 							_voxelAboveBefore, _voxelAboveLeft, _voxelAboveLeftBefore, offset);
@@ -392,16 +392,16 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 				if (isQuadNeeded(voxelBefore, voxelCurrent, material, PositiveZ)) {
 					volumeSampler.moveNegativeZ();
 
-					const Voxel _voxelLeftBehind       = volumeSampler.peekVoxel1nx0py1pz();
-					const Voxel _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz();
+					const Voxel& _voxelLeftBehind       = volumeSampler.peekVoxel1nx0py1pz();
+					const Voxel& _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz();
 
-					const Voxel _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz();
-					const Voxel _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz();
-					const Voxel _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz();
+					const Voxel& _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz();
+					const Voxel& _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz();
+					const Voxel& _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz();
 
-					const Voxel _voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
-					const Voxel _voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz();
-					const Voxel _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
+					const Voxel& _voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
+					const Voxel& _voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz();
+					const Voxel& _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
 
 					const uint32_t v_0_4 = addVertex(reuseVertices, regX,     regY,     regZ, material, previousSliceVertices, result,
 							_voxelBelowBehind, _voxelLeftBehind, _voxelBelowLeftBehind, offset); //4
