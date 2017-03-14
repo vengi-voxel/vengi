@@ -4,12 +4,7 @@
 namespace voxel {
 namespace world {
 
-// http://www.gamasutra.com/blogs/MattKlingensmith/20130811/198049/How_we_Generate_Terrain_in_DwarfCorp.php?print=1
-// http://hss.ulb.uni-bonn.de/2013/3124/3124-engl.htm
-// https://en.wikipedia.org/wiki/Gradient_descent (Erosion)
-int fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeManager& biomManager, long seed, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) {
-	// TODO: the 2d noise doesn't need the same resolution - we can optimize this a lot, we can lerp/glm::mix here
-	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
+static float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) {
 	const float landscapeNoise = ::noise::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 			worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 	const float noiseNormalized = ::noise::norm(landscapeNoise);
@@ -18,7 +13,12 @@ int fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, Voxel* vo
 	const float mountainNoiseNormalized = ::noise::norm(mountainNoise);
 	const float mountainMultiplier = mountainNoiseNormalized * (mountainNoiseNormalized + 0.5f);
 	const float n = glm::clamp(noiseNormalized * mountainMultiplier, 0.0f, 1.0f);
-	const int ni = n * maxHeight;
+	return n;
+}
+
+int fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeManager& biomManager, long seed, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) {
+	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
+	const int ni = getHeight(noisePos2d, worldCtx) * maxHeight;
 	if (ni < lowerY) {
 		return 0;
 	}
