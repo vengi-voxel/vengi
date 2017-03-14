@@ -14,6 +14,7 @@
 #include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/polyvox/PagedVolumeWrapper.h"
 #include "voxel/polyvox/Voxel.h"
+#include "voxel/generator/WorldGenerator.h"
 #include "voxel/Constants.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/Spiral.h"
@@ -152,6 +153,11 @@ bool World::init(const std::string& luaParameters, const std::string& luaBiomes)
 	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
 
 	_pager.init(_volumeData, &_biomeManager, &_ctx);
+	if (_clientData) {
+		_pager.setCreateFlags(voxel::world::WORLDGEN_CLIENT);
+	} else {
+		_pager.setCreateFlags(voxel::world::WORLDGEN_SERVER);
+	}
 
 	return true;
 }
