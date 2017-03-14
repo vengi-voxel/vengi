@@ -26,40 +26,41 @@ class WorldGenerator {
 private:
 	BiomeManager& _biomManager;
 	long _seed;
+	core::Random _random;
 
-	int fillVoxels(int x, int y, int z, const WorldContext& worldCtx, Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight);
-	float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx);
+	int fillVoxels(int x, int y, int z, const WorldContext& worldCtx, Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const;
+	float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const;
 public:
-	WorldGenerator(BiomeManager& biomManager, long seed);
+	WorldGenerator(BiomeManager& biomManager, long seed = 0);
 
 	template<class Volume>
-	void buildCity(Volume& volume, const Region& region, core::Random& random) {
+	bool createBuildings(Volume& volume) {
 		// TODO: apply gradient at city positions and then build houses
+		const voxel::Region& region = volume.getRegion();
 		glm::ivec3 buildingPos = region.getCentre();
 		if (!_biomManager.hasCity(buildingPos)) {
-			return;
+			return false;
 		}
 		for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; --i) {
 			const VoxelType material = volume.getVoxel(buildingPos.x, i, buildingPos.z).getMaterial();
 			if (isFloor(material)) {
 				buildingPos.y = i;
-				if (random.fithyFifthy()) {
-					voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::House, random);
+				if (_random.fithyFifthy()) {
+					voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::House, _random);
 				} else {
-					voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::Tower, random);
+					voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::Tower, _random);
 				}
 				break;
 			}
 		}
+		return true;
 	}
 
 	template<class Volume>
-	void createWorld(const WorldContext& worldCtx, Volume& volume, int flags, int noiseSeedOffsetX, int noiseSeedOffsetZ) {
+	void createWorld(const WorldContext& worldCtx, Volume& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const {
 		core_trace_scoped(WorldGeneration);
 		const Region& region = volume.getRegion();
-		// TODO: find a better way to add the current chunk to the seed
-		core::Random random(_seed + region.getLowerCorner().x * region.getLowerCorner().z);
-		Log::debug("Create new chunk at %i:%i:%i", region.getCentreX(), region.getCentreY(), region.getCentreZ());
+		Log::debug("Create new chunk at %i:%i:%i", region.getLowerX(), region.getLowerY(), region.getLowerZ());
 		const int width = region.getWidthInVoxels();
 		const int depth = region.getDepthInVoxels();
 		const int lowerX = region.getLowerX();
@@ -77,16 +78,20 @@ public:
 				volume.setVoxels(x, lowerY, z, size, size, voxels, ni);
 			}
 		}
-		if ((flags & WORLDGEN_CLOUDS) != 0) {
-			core_trace_scoped(Clouds);
-			voxel::cloud::CloudContext cloudCtx;
-			voxel::cloud::createClouds(volume, _biomManager, cloudCtx, random);
-		}
-		if ((flags & WORLDGEN_TREES) != 0) {
-			core_trace_scoped(Trees);
-			voxel::tree::createTrees(volume, region, _biomManager, random);
-		}
-		buildCity(volume, region, random);
+	}
+
+	template<class Volume>
+	bool createClouds(Volume& volume) {
+		core_trace_scoped(Clouds);
+		voxel::cloud::CloudContext cloudCtx;
+		return voxel::cloud::createClouds(volume, _biomManager, cloudCtx, _random);
+	}
+
+	template<class Volume>
+	void createTrees(Volume& volume) {
+		core_trace_scoped(Trees);
+		const voxel::Region& region = volume.getRegion();
+		voxel::tree::createTrees(volume, region, _biomManager, _random);
 	}
 };
 ;

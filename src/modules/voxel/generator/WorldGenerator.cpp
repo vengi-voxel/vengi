@@ -5,10 +5,10 @@ namespace voxel {
 namespace world {
 
 WorldGenerator::WorldGenerator(BiomeManager& biomManager, long seed) :
-		_biomManager(biomManager), _seed(seed) {
+		_biomManager(biomManager), _seed(seed), _random(seed) {
 }
 
-float WorldGenerator::getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) {
+float WorldGenerator::getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const {
 	const float landscapeNoise = ::noise::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 			worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 	const float noiseNormalized = ::noise::norm(landscapeNoise);
@@ -20,7 +20,7 @@ float WorldGenerator::getHeight(const glm::vec2& noisePos2d, const WorldContext&
 	return n;
 }
 
-int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) {
+int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) const {
 	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 	const float n = getHeight(noisePos2d, worldCtx);
 	const int ni = n * maxHeight;

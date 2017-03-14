@@ -79,7 +79,22 @@ void WorldPager::shutdown() {
 void WorldPager::create(PagedVolumeWrapper& wrapper) {
 	core_trace_scoped(CreateWorld);
 	voxel::world::WorldGenerator gen(*_biomeManager, _seed);
-	gen.createWorld(*_ctx, wrapper, _createFlags, _noiseSeedOffset.x, _noiseSeedOffset.y);
+	{
+		core_trace_scoped(World);
+		gen.createWorld(*_ctx, wrapper, _noiseSeedOffset.x, _noiseSeedOffset.y);
+	}
+	if ((_createFlags & voxel::world::WORLDGEN_CLOUDS) != 0) {
+		core_trace_scoped(Clouds);
+		gen.createClouds(wrapper);
+	}
+	if ((_createFlags & voxel::world::WORLDGEN_TREES) != 0) {
+		core_trace_scoped(Trees);
+		gen.createTrees(wrapper);
+	}
+	{
+		core_trace_scoped(Buildings);
+		gen.createBuildings(wrapper);
+	}
 }
 
 }

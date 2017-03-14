@@ -533,7 +533,9 @@ void Model::world(const voxel::WorldContext& ctx) {
 	mgr.init(filesystem->load("biomes.lua"));
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::world::WorldGenerator gen(mgr, 1L);
-	gen.createWorld(ctx, wrapper, voxel::world::WORLDGEN_CLIENT, 0.0f, 0.0f);
+	gen.createWorld(ctx, wrapper, 0.0f, 0.0f);
+	gen.createClouds(wrapper);
+	gen.createTrees(wrapper);
 	modified(modelVolume()->getRegion());
 }
 
