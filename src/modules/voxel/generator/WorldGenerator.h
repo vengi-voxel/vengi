@@ -22,7 +22,7 @@ constexpr int WORLDGEN_CLOUDS = 1 << 1;
 constexpr int WORLDGEN_CLIENT = WORLDGEN_TREES | WORLDGEN_CLOUDS;
 constexpr int WORLDGEN_SERVER = WORLDGEN_TREES;
 
-extern int fillVoxels(int x, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeManager& biomManager, long seed, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight);
+extern int fillVoxels(int x, int y, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeManager& biomManager, long seed, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight);
 
 template<class Volume>
 static void buildCity(Volume& volume, const Region& region, core::Random& random, const BiomeManager& biomManager) {
@@ -55,6 +55,7 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 	const int width = region.getWidthInVoxels();
 	const int depth = region.getDepthInVoxels();
 	const int lowerX = region.getLowerX();
+	const int lowerY = region.getLowerY();
 	const int lowerZ = region.getLowerZ();
 	core_assert(region.getLowerY() >= 0);
 	Voxel voxels[MAX_TERRAIN_HEIGHT];
@@ -64,8 +65,8 @@ extern void createWorld(const WorldContext& worldCtx, Volume& volume, BiomeManag
 	core_assert(width % size == 0);
 	for (int z = lowerZ; z < lowerZ + depth; z += size) {
 		for (int x = lowerX; x < lowerX + width; x += size) {
-			const int ni = fillVoxels(x, z, worldCtx, voxels, biomManager, seed, noiseSeedOffsetX, noiseSeedOffsetZ, MAX_TERRAIN_HEIGHT - 1);
-			volume.setVoxels(x, 0, z, size, size, voxels, ni);
+			const int ni = fillVoxels(x, lowerY, z, worldCtx, voxels, biomManager, seed, noiseSeedOffsetX, noiseSeedOffsetZ, MAX_TERRAIN_HEIGHT - 1);
+			volume.setVoxels(x, lowerY, z, size, size, voxels, ni);
 		}
 	}
 	if ((flags & WORLDGEN_CLOUDS) != 0) {
