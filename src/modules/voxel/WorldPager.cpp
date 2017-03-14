@@ -78,7 +78,8 @@ void WorldPager::shutdown() {
 
 void WorldPager::create(PagedVolumeWrapper& wrapper) {
 	core_trace_scoped(CreateWorld);
-	world::createWorld(*_ctx, wrapper, *_biomeManager, _seed, _createFlags, _noiseSeedOffset.x, _noiseSeedOffset.y);
+	voxel::world::WorldGenerator gen(*_biomeManager, _seed);
+	gen.createWorld(*_ctx, wrapper, _createFlags, _noiseSeedOffset.x, _noiseSeedOffset.y);
 }
 
 }

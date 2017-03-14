@@ -4,7 +4,11 @@
 namespace voxel {
 namespace world {
 
-static float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) {
+WorldGenerator::WorldGenerator(BiomeManager& biomManager, long seed) :
+		_biomManager(biomManager), _seed(seed) {
+}
+
+float WorldGenerator::getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) {
 	const float landscapeNoise = ::noise::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 			worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 	const float noiseNormalized = ::noise::norm(landscapeNoise);
@@ -16,15 +20,16 @@ static float getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx
 	return n;
 }
 
-int fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, Voxel* voxels, BiomeManager& biomManager, long seed, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) {
+int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, Voxel* voxels, int noiseSeedOffsetX, int noiseSeedOffsetZ, int maxHeight) {
 	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
-	const int ni = getHeight(noisePos2d, worldCtx) * maxHeight;
+	const float n = getHeight(noisePos2d, worldCtx);
+	const int ni = n * maxHeight;
 	if (ni < lowerY) {
 		return 0;
 	}
 
-	const Voxel& water = createColorVoxel(VoxelType::Water, seed);
-	const Voxel& dirt = createColorVoxel(VoxelType::Dirt, seed);
+	const Voxel& water = createColorVoxel(VoxelType::Water, _seed);
+	const Voxel& dirt = createColorVoxel(VoxelType::Dirt, _seed);
 	static constexpr Voxel air;
 
 	// TODO: apply city gradient from biome manager
@@ -40,7 +45,7 @@ int fillVoxels(int x, int lowerY, int z, const WorldContext& worldCtx, Voxel* vo
 		if (finalDensity > worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;
 			const glm::ivec3 pos(x, y, z);
-			const Voxel& voxel = biomManager.getVoxel(pos, cave);
+			const Voxel& voxel = _biomManager.getVoxel(pos, cave);
 			voxels[y] = voxel;
 		} else {
 			if (y < MAX_WATER_HEIGHT) {
