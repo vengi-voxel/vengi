@@ -85,7 +85,13 @@ public:
 	float getCityGradient(const glm::ivec3& pos) const;
 	int getAmountOfTrees(const Region& region) const;
 
+	/**
+	 * @return Humidity noise in the range [0-1]
+	 */
 	float getHumidity(int x, int z) const;
+	/**
+	 * @return Temperature noise in the range [0-1]
+	 */
 	float getTemperature(int x, int z) const;
 
 	const Biome* getBiome(const glm::ivec3& pos, bool underground = false) const;
