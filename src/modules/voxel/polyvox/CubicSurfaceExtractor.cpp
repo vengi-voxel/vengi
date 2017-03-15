@@ -89,13 +89,13 @@ SDL_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool cor
 
 int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset) {
+	const uint8_t ambientOcclusion = vertexAmbientOcclusion(
+		!isAir(face1) && !isWater(face1),
+		!isAir(face2) && !isWater(face2),
+		!isAir(corner) && !isWater(corner));
+
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ++ct) {
 		VertexData& entry = existingVertices(uX, uY, ct);
-
-		const uint8_t ambientOcclusion = vertexAmbientOcclusion(
-			!isAir(face1) && !isWater(face1),
-			!isAir(face2) && !isWater(face2),
-			!isAir(corner) && !isWater(corner));
 
 		if (entry.index == -1) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
