@@ -449,31 +449,35 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 		currentSliceVertices.clear();
 	}
 
-	for (QuadListVector& vecListQuads : vecQuads) {
-		for (QuadList& listQuads : vecListQuads) {
-			if (mergeQuads) {
-				// Repeatedly call this function until it returns
-				// false to indicate nothing more can be done.
-				while (performQuadMerging(listQuads, result)) {
+	{
+		core_trace_scoped(GenerateMesh);
+		for (QuadListVector& vecListQuads : vecQuads) {
+			for (QuadList& listQuads : vecListQuads) {
+				if (mergeQuads) {
+					core_trace_scoped(MergeQuads);
+					// Repeatedly call this function until it returns
+					// false to indicate nothing more can be done.
+					while (performQuadMerging(listQuads, result)) {
+					}
 				}
-			}
 
-			for (const Quad& quad : listQuads) {
-				const IndexType i0 = quad.vertices[0];
-				const IndexType i1 = quad.vertices[1];
-				const IndexType i2 = quad.vertices[2];
-				const IndexType i3 = quad.vertices[3];
-				const VoxelVertex& v00 = result->getVertex(i3);
-				const VoxelVertex& v01 = result->getVertex(i0);
-				const VoxelVertex& v10 = result->getVertex(i2);
-				const VoxelVertex& v11 = result->getVertex(i1);
+				for (const Quad& quad : listQuads) {
+					const IndexType i0 = quad.vertices[0];
+					const IndexType i1 = quad.vertices[1];
+					const IndexType i2 = quad.vertices[2];
+					const IndexType i3 = quad.vertices[3];
+					const VoxelVertex& v00 = result->getVertex(i3);
+					const VoxelVertex& v01 = result->getVertex(i0);
+					const VoxelVertex& v10 = result->getVertex(i2);
+					const VoxelVertex& v11 = result->getVertex(i1);
 
-				if (isQuadFlipped(v00, v01, v10, v11)) {
-					result->addTriangle(i1, i2, i3);
-					result->addTriangle(i1, i3, i0);
-				} else {
-					result->addTriangle(i0, i1, i2);
-					result->addTriangle(i0, i2, i3);
+					if (isQuadFlipped(v00, v01, v10, v11)) {
+						result->addTriangle(i1, i2, i3);
+						result->addTriangle(i1, i3, i0);
+					} else {
+						result->addTriangle(i0, i1, i2);
+						result->addTriangle(i0, i2, i3);
+					}
 				}
 			}
 		}
