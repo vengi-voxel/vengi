@@ -97,7 +97,7 @@ IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, c
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ++ct) {
 		VertexData& entry = existingVertices(uX, uY, ct);
 
-		if (entry.index == -1) {
+		if (entry.index == 0) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
 			// The 0.5f offset is because vertices set between voxels in order to build cubes around them.
 			// see raycastWithEndpoints for this offset, too
@@ -107,23 +107,23 @@ IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, c
 			vertex.material = materialIn.getMaterial();
 			vertex.ambientOcclusion = ambientOcclusion;
 
-			entry.index = meshCurrent->addVertex(vertex);
+			entry.index = meshCurrent->addVertex(vertex) + 1;
 			entry.voxel = materialIn;
 			entry.ambientOcclusion = vertex.ambientOcclusion;
 
-			return entry.index;
+			return entry.index - 1;
 		}
 
 		// If we have an existing vertex and the material matches then we can return it.
 		if (reuseVertices && entry.voxel.isSame(materialIn) && entry.ambientOcclusion == ambientOcclusion) {
-			return entry.index;
+			return entry.index - 1;
 		}
 	}
 
 	// If we exit the loop here then apparently all the slots were full but none of them matched.
 	// This shouldn't ever happen, so if it does it is probably a bug in PolyVox. Please report it to us!
 	core_assert_msg(false, "All slots full but no matches during cubic surface extraction. This is probably a bug in PolyVox");
-	return -1; //Should never happen.
+	return 0; //Should never happen.
 }
 
 }
