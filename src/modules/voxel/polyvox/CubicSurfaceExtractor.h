@@ -43,14 +43,14 @@ inline bool isVerticalFace(FaceNames face) {
 }
 
 struct Quad {
-	Quad(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3) {
+	Quad(IndexType v0, IndexType v1, IndexType v2, IndexType v3) {
 		vertices[0] = v0;
 		vertices[1] = v1;
 		vertices[2] = v2;
 		vertices[3] = v3;
 	}
 
-	uint32_t vertices[4];
+	IndexType vertices[4];
 };
 
 struct VertexData {
