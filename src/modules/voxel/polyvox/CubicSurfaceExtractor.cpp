@@ -80,8 +80,6 @@ bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
 	return didMerge;
 }
 
-// 0 is the darkest
-// 3 is no occlusion at all
 SDL_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
 	if (side1 && side2) {
 		return 0;

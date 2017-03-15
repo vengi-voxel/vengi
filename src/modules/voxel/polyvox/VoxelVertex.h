@@ -16,9 +16,10 @@ namespace voxel {
  */
 struct VoxelVertex {
 	glm::ivec3 position;
+	/** 0 is the darkest, 3 is no occlusion at all */
 	uint8_t ambientOcclusion;
 	uint8_t colorIndex;
-	// currently we only need to know whether it's water, or not.
+	/* currently we only need to know whether it's water, or not. */
 	VoxelType material;
 	uint8_t padding[1];
 };
