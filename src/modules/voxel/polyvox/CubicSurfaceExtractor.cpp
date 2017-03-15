@@ -87,7 +87,7 @@ SDL_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool cor
 	return 3 - (side1 + side2 + corner);
 }
 
-int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
+IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset) {
 	const uint8_t ambientOcclusion = vertexAmbientOcclusion(
 		!isAir(face1) && !isWater(face1),
