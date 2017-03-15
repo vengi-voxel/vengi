@@ -102,6 +102,9 @@ public:
 	}
 };
 
+/**
+ * @brief Should be a list because random inserts which we need in @c performQuadMerging are O(1)
+ */
 typedef std::list<Quad> QuadList;
 typedef std::vector<QuadList> QuadListVector;
 
