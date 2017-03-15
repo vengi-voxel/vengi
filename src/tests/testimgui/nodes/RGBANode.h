@@ -6,6 +6,8 @@ namespace ImGui {
 
 class RGBANode: public Node {
 protected:
+	int imageWidth = 1024;
+	int imageHeight = 1024;
 	char imageName[128] = "";
 	ImGui::NodeGraphEditor* nge = nullptr;
 

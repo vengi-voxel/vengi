@@ -45,7 +45,7 @@ void ShowNodeGraph() {
 		nge.addLink(noise1Node, 0, combineNode, 0);
 		nge.addLink(noise2Node, 0, combineNode, 1);
 		nge.addLink(combineNode, 0, outputNode, 0);
-		nge.show_style_editor = true;
+		nge.show_style_editor = false;
 		nge.show_load_save_buttons = true;
 	}
 	nge.render();

@@ -22,6 +22,12 @@ protected:
 		if (in1 != nullptr && in2 != nullptr) {
 			return in1->getNoise(x, y) + in2->getNoise(x, y);
 		}
+		if (in1 != nullptr) {
+			return in1->getNoise(x, y);
+		}
+		if (in2 != nullptr) {
+			return in2->getNoise(x, y);
+		}
 		return 0.0f;
 	}
 

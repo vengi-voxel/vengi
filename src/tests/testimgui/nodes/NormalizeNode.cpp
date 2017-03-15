@@ -12,12 +12,17 @@ const char* NormalizeNode::getInfo() const {
 }
 
 float NormalizeNode::getNoise(int x, int y) {
+	NNode* in1 = (NNode*)nge->getInputNodeForNodeAndSlot(this, 0);
+	if (in1 != nullptr) {
+		return noise::norm(in1->getNoise(x, y));
+	}
 	return 0.0f;
 }
 
 NormalizeNode* NormalizeNode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
 	CREATE(NormalizeNode);
 	node->init("NormalizeNode", pos, "in1", "out", int(NodeType::Normalize));
+	node->nge = &nge;
 	return node;
 }
 
