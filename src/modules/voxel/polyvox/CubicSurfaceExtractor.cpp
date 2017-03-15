@@ -80,6 +80,10 @@ bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
 	return didMerge;
 }
 
+/**
+ * @brief We are checking the voxels above us. There are four possible ambient occlusion values
+ * for a vertex.
+ */
 SDL_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
 	if (side1 && side2) {
 		return 0;
