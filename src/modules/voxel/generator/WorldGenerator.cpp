@@ -9,6 +9,7 @@ WorldGenerator::WorldGenerator(BiomeManager& biomManager, long seed) :
 }
 
 float WorldGenerator::getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const {
+	// TODO: apply city gradient from biome manager
 	const float landscapeNoise = ::noise::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 			worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 	const float noiseNormalized = ::noise::norm(landscapeNoise);
@@ -31,9 +32,6 @@ int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& wor
 	const Voxel& water = createColorVoxel(VoxelType::Water, _seed);
 	const Voxel& dirt = createColorVoxel(VoxelType::Dirt, _seed);
 	static constexpr Voxel air;
-
-	// TODO: apply city gradient from biome manager
-	// TODO: support region y parameters
 
 	voxels[0] = dirt;
 	for (int y = ni - 1; y >= lowerY + 1; --y) {
