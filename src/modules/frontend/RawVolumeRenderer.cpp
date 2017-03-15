@@ -15,9 +15,8 @@ namespace frontend {
 /// space) while the voxel behind the potential quad would have a value
 /// geater than zero (typically indicating it is solid).
 struct CustomIsQuadNeeded {
-	inline bool operator()(const voxel::Voxel& back, const voxel::Voxel& front, voxel::Voxel& materialToUse, voxel::FaceNames face) const {
-		if (isBlocked(back.getMaterial()) && !isBlocked(front.getMaterial())) {
-			materialToUse = back;
+	inline bool operator()(const voxel::VoxelType& back, const voxel::VoxelType& front, voxel::FaceNames face) const {
+		if (isBlocked(back) && !isBlocked(front)) {
 			return true;
 		}
 		return false;

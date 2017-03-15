@@ -112,7 +112,7 @@ typedef std::vector<QuadList> QuadListVector;
 extern bool performQuadMerging(QuadList& quads, Mesh* meshCurrent);
 
 extern int32_t addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
-		Mesh* meshCurrent, const Voxel& face1, const Voxel& face2, const Voxel& corner, const glm::ivec3& offset);
+		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset);
 
 /**
  * @note Notice that the ambient occlusion is different for the vertices on the side than it is for the
@@ -240,7 +240,6 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 
 	typename VolumeType::Sampler volumeSampler(volData);
 
-	Voxel material; // Filled in by callback
 	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
 		const uint32_t regZ = z - region.getLowerZ();
 
@@ -285,49 +284,59 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 
 				const Voxel& voxelBelow            = volumeSampler.peekVoxel0px1ny0pz();
 				const Voxel& voxelBelowLeft        = volumeSampler.peekVoxel1nx1ny0pz();
-				const Voxel& voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
 				const Voxel& voxelBelowBefore      = volumeSampler.peekVoxel0px1ny1nz();
-				const Voxel& voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
 				const Voxel& voxelBelowLeftBefore  = volumeSampler.peekVoxel1nx1ny1nz();
 				const Voxel& voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz();
 				const Voxel& voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz();
-				const Voxel& voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
+
+				const VoxelType voxelCurrentMaterial          = voxelCurrent.getMaterial();
+				const VoxelType voxelLeftMaterial             = voxelLeft.getMaterial();
+				const VoxelType voxelBelowMaterial            = voxelBelow.getMaterial();
+				const VoxelType voxelBeforeMaterial           = voxelBefore.getMaterial();
+				const VoxelType voxelLeftBeforeMaterial       = voxelLeftBefore.getMaterial();
+				const VoxelType voxelBelowLeftMaterial        = voxelBelowLeft.getMaterial();
+				const VoxelType voxelBelowLeftBeforeMaterial  = voxelBelowLeftBefore.getMaterial();
+				const VoxelType voxelLeftBehindMaterial       = voxelLeftBehind.getMaterial();
+				const VoxelType voxelBelowLeftBehindMaterial  = voxelBelowLeftBehind.getMaterial();
+				const VoxelType voxelAboveLeftMaterial        = voxelAboveLeft.getMaterial();
+				const VoxelType voxelAboveLeftBehindMaterial  = voxelAboveLeftBehind.getMaterial();
+				const VoxelType voxelAboveLeftBeforeMaterial  = voxelAboveLeftBefore.getMaterial();
 
 				// X [A] LEFT
-				if (isQuadNeeded(voxelCurrent, voxelLeft, material, NegativeX)) {
-					const uint32_t v_0_1 = addVertex(reuseVertices, regX, regY,     regZ,     material, previousSliceVertices, result,
-							voxelLeftBefore, voxelBelowLeft, voxelBelowLeftBefore, offset);
-					const uint32_t v_1_4 = addVertex(reuseVertices, regX, regY,     regZ + 1, material, currentSliceVertices,  result,
-							voxelBelowLeft, voxelLeftBehind, voxelBelowLeftBehind, offset);
-					const uint32_t v_2_8 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, material, currentSliceVertices,  result,
-							voxelLeftBehind, voxelAboveLeft, voxelAboveLeftBehind, offset);
-					const uint32_t v_3_5 = addVertex(reuseVertices, regX, regY + 1, regZ,     material, previousSliceVertices, result,
-							voxelAboveLeft, voxelLeftBefore, voxelAboveLeftBefore, offset);
+				if (isQuadNeeded(voxelCurrentMaterial, voxelLeftMaterial, NegativeX)) {
+					const uint32_t v_0_1 = addVertex(reuseVertices, regX, regY,     regZ,     voxelCurrent, previousSliceVertices, result,
+							voxelLeftBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, offset);
+					const uint32_t v_1_4 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelCurrent, currentSliceVertices,  result,
+							voxelBelowLeftMaterial, voxelLeftBehindMaterial, voxelBelowLeftBehindMaterial, offset);
+					const uint32_t v_2_8 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelCurrent, currentSliceVertices,  result,
+							voxelLeftBehindMaterial, voxelAboveLeftMaterial, voxelAboveLeftBehindMaterial, offset);
+					const uint32_t v_3_5 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelCurrent, previousSliceVertices, result,
+							voxelAboveLeftMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, offset);
 					vecQuads[NegativeX][regX].emplace_back(v_0_1, v_1_4, v_2_8, v_3_5);
 				}
 
 				// X [B] RIGHT
-				if (isQuadNeeded(voxelLeft, voxelCurrent, material, PositiveX)) {
+				if (isQuadNeeded(voxelLeftMaterial, voxelCurrentMaterial, PositiveX)) {
 					volumeSampler.moveNegativeX();
 
-					const Voxel& _voxelRightBefore      = volumeSampler.peekVoxel1px0py1nz();
-					const Voxel& _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz();
+					const VoxelType _voxelRightBefore      = volumeSampler.peekVoxel1px0py1nz().getMaterial();
+					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz().getMaterial();
 
-					const Voxel& _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz();
-					const Voxel& _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz();
-					const Voxel& _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz();
+					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz().getMaterial();
+					const VoxelType _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
 
-					const Voxel& _voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
-					const Voxel& _voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz();
-					const Voxel& _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
+					const VoxelType _voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz().getMaterial();
+					const VoxelType _voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz().getMaterial();
+					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz().getMaterial();
 
-					const uint32_t v_0_2 = addVertex(reuseVertices, regX, regY,     regZ,     material, previousSliceVertices, result,
+					const uint32_t v_0_2 = addVertex(reuseVertices, regX, regY,     regZ,     voxelLeft, previousSliceVertices, result,
 							_voxelBelowRight, _voxelRightBefore, _voxelBelowRightBefore, offset);
-					const uint32_t v_1_3 = addVertex(reuseVertices, regX, regY,     regZ + 1, material, currentSliceVertices,  result,
+					const uint32_t v_1_3 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelLeft, currentSliceVertices,  result,
 							_voxelBelowRight, _voxelRightBehind, _voxelBelowRightBehind, offset);
-					const uint32_t v_2_7 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, material, currentSliceVertices,  result,
+					const uint32_t v_2_7 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelLeft, currentSliceVertices,  result,
 							_voxelAboveRight, _voxelRightBehind, _voxelAboveRightBehind, offset);
-					const uint32_t v_3_6 = addVertex(reuseVertices, regX, regY + 1, regZ,     material, previousSliceVertices, result,
+					const uint32_t v_3_6 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelLeft, previousSliceVertices, result,
 							_voxelAboveRight, _voxelRightBefore, _voxelAboveRightBefore, offset);
 					vecQuads[PositiveX][regX].emplace_back(v_0_2, v_3_6, v_2_7, v_1_3);
 
@@ -335,38 +344,47 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 				}
 
 				// Y [C] BELOW
-				if (isQuadNeeded(voxelCurrent, voxelBelow, material, NegativeY)) {
-					const uint32_t v_0_1 = addVertex(reuseVertices, regX,     regY, regZ,     material, previousSliceVertices, result,
-							voxelBelowBefore, voxelBelowLeft, voxelBelowLeftBefore, offset);
-					const uint32_t v_1_2 = addVertex(reuseVertices, regX + 1, regY, regZ,     material, previousSliceVertices, result,
-							voxelBelowRight, voxelBelowBefore, voxelBelowRightBefore, offset);
-					const uint32_t v_2_3 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, material, currentSliceVertices,  result,
-							voxelBelowBehind, voxelBelowRight, voxelBelowRightBehind, offset);
-					const uint32_t v_3_4 = addVertex(reuseVertices, regX,     regY, regZ + 1, material, currentSliceVertices,  result,
-							voxelBelowLeft, voxelBelowBehind, voxelBelowLeftBehind, offset);
+				if (isQuadNeeded(voxelCurrentMaterial, voxelBelowMaterial, NegativeY)) {
+					const Voxel& voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
+					const Voxel& voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
+					const Voxel& voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
+
+					const VoxelType voxelBelowRightMaterial       = voxelBelowRight.getMaterial();
+					const VoxelType voxelBelowBeforeMaterial      = voxelBelowBefore.getMaterial();
+					const VoxelType voxelBelowRightBeforeMaterial = voxelBelowRightBefore.getMaterial();
+					const VoxelType voxelBelowBehindMaterial      = voxelBelowBehind.getMaterial();
+					const VoxelType voxelBelowRightBehindMaterial = voxelBelowRightBehind.getMaterial();
+					const uint32_t v_0_1 = addVertex(reuseVertices, regX,     regY, regZ,     voxelCurrent, previousSliceVertices, result,
+							voxelBelowBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, offset);
+					const uint32_t v_1_2 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelCurrent, previousSliceVertices, result,
+							voxelBelowRightMaterial, voxelBelowBeforeMaterial, voxelBelowRightBeforeMaterial, offset);
+					const uint32_t v_2_3 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelCurrent, currentSliceVertices,  result,
+							voxelBelowBehindMaterial, voxelBelowRightMaterial, voxelBelowRightBehindMaterial, offset);
+					const uint32_t v_3_4 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelCurrent, currentSliceVertices,  result,
+							voxelBelowLeftMaterial, voxelBelowBehindMaterial, voxelBelowLeftBehindMaterial, offset);
 					vecQuads[NegativeY][regY].emplace_back(v_0_1, v_1_2, v_2_3, v_3_4);
 				}
 
 				// Y [D] ABOVE
-				if (isQuadNeeded(voxelBelow, voxelCurrent, material, PositiveY)) {
+				if (isQuadNeeded(voxelBelowMaterial, voxelCurrentMaterial, PositiveY)) {
 					volumeSampler.moveNegativeY();
 
-					const Voxel& _voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz();
-					const Voxel& _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz();
-					const Voxel& _voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz();
-					const Voxel& _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz();
-					const Voxel& _voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz();
-					const Voxel& _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz();
-					const Voxel& _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz();
-					const Voxel& _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz();
+					const VoxelType _voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz().getMaterial();
+					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz().getMaterial();
+					const VoxelType _voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz().getMaterial();
+					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz().getMaterial();
+					const VoxelType _voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz().getMaterial();
+					const VoxelType _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz().getMaterial();
+					const VoxelType _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
 
-					const uint32_t v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     material, previousSliceVertices, result,
+					const uint32_t v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     voxelBelow, previousSliceVertices, result,
 							_voxelAboveBefore, _voxelAboveLeft, _voxelAboveLeftBefore, offset);
-					const uint32_t v_1_6 = addVertex(reuseVertices, regX + 1, regY, regZ,     material, previousSliceVertices, result,
+					const uint32_t v_1_6 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelBelow, previousSliceVertices, result,
 							_voxelAboveRight, _voxelAboveBefore, _voxelAboveRightBefore, offset);
-					const uint32_t v_2_7 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, material, currentSliceVertices,  result,
+					const uint32_t v_2_7 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelBelow, currentSliceVertices,  result,
 							_voxelAboveBehind, _voxelAboveRight, _voxelAboveRightBehind, offset);
-					const uint32_t v_3_8 = addVertex(reuseVertices, regX,     regY, regZ + 1, material, currentSliceVertices,  result,
+					const uint32_t v_3_8 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelBelow, currentSliceVertices,  result,
 							_voxelAboveLeft, _voxelAboveBehind, _voxelAboveLeftBehind, offset);
 					vecQuads[PositiveY][regY].emplace_back(v_0_5, v_3_8, v_2_7, v_1_6);
 
@@ -374,40 +392,46 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 				}
 
 				// Z [E] BEFORE
-				if (isQuadNeeded(voxelCurrent, voxelBefore, material, NegativeZ)) {
-					const uint32_t v_0_1 = addVertex(reuseVertices, regX,     regY,     regZ, material, previousSliceVertices, result,
-							voxelBelowBefore, voxelLeftBefore, voxelBelowLeftBefore, offset); //1
-					const uint32_t v_1_5 = addVertex(reuseVertices, regX,     regY + 1, regZ, material, previousSliceVertices, result,
-							voxelAboveBefore, voxelLeftBefore, voxelAboveLeftBefore, offset); //5
-					const uint32_t v_2_6 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, material, previousSliceVertices, result,
-							voxelAboveBefore, voxelRightBefore, voxelAboveRightBefore, offset); //6
-					const uint32_t v_3_2 = addVertex(reuseVertices, regX + 1, regY,     regZ, material, previousSliceVertices, result,
-							voxelBelowBefore, voxelRightBefore, voxelBelowRightBefore, offset); //2
+				if (isQuadNeeded(voxelCurrentMaterial, voxelBeforeMaterial, NegativeZ)) {
+					const VoxelType voxelBelowBeforeMaterial = voxelBelowBefore.getMaterial();
+					const VoxelType voxelAboveBeforeMaterial = voxelAboveBefore.getMaterial();
+					const VoxelType voxelRightBeforeMaterial = voxelRightBefore.getMaterial();
+					const VoxelType voxelAboveRightBeforeMaterial = voxelAboveRightBefore.getMaterial();
+					const VoxelType voxelBelowRightBeforeMaterial = voxelBelowRightBefore.getMaterial();
+
+					const uint32_t v_0_1 = addVertex(reuseVertices, regX,     regY,     regZ, voxelCurrent, previousSliceVertices, result,
+							voxelBelowBeforeMaterial, voxelLeftBeforeMaterial, voxelBelowLeftBeforeMaterial, offset); //1
+					const uint32_t v_1_5 = addVertex(reuseVertices, regX,     regY + 1, regZ, voxelCurrent, previousSliceVertices, result,
+							voxelAboveBeforeMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, offset); //5
+					const uint32_t v_2_6 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, voxelCurrent, previousSliceVertices, result,
+							voxelAboveBeforeMaterial, voxelRightBeforeMaterial, voxelAboveRightBeforeMaterial, offset); //6
+					const uint32_t v_3_2 = addVertex(reuseVertices, regX + 1, regY,     regZ, voxelCurrent, previousSliceVertices, result,
+							voxelBelowBeforeMaterial, voxelRightBeforeMaterial, voxelBelowRightBeforeMaterial, offset); //2
 					vecQuads[NegativeZ][regZ].emplace_back(v_0_1, v_1_5, v_2_6, v_3_2);
 				}
 
 				// Z [F] BEHIND
-				if (isQuadNeeded(voxelBefore, voxelCurrent, material, PositiveZ)) {
+				if (isQuadNeeded(voxelBeforeMaterial, voxelCurrentMaterial, PositiveZ)) {
 					volumeSampler.moveNegativeZ();
 
-					const Voxel& _voxelLeftBehind       = volumeSampler.peekVoxel1nx0py1pz();
-					const Voxel& _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz();
+					const VoxelType _voxelLeftBehind       = volumeSampler.peekVoxel1nx0py1pz().getMaterial();
+					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz().getMaterial();
 
-					const Voxel& _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz();
-					const Voxel& _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz();
-					const Voxel& _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz();
+					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz().getMaterial();
+					const VoxelType _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
 
-					const Voxel& _voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
-					const Voxel& _voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz();
-					const Voxel& _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
+					const VoxelType _voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz().getMaterial();
+					const VoxelType _voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz().getMaterial();
+					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz().getMaterial();
 
-					const uint32_t v_0_4 = addVertex(reuseVertices, regX,     regY,     regZ, material, previousSliceVertices, result,
+					const uint32_t v_0_4 = addVertex(reuseVertices, regX,     regY,     regZ, voxelBefore, previousSliceVertices, result,
 							_voxelBelowBehind, _voxelLeftBehind, _voxelBelowLeftBehind, offset); //4
-					const uint32_t v_1_8 = addVertex(reuseVertices, regX,     regY + 1, regZ, material, previousSliceVertices, result,
+					const uint32_t v_1_8 = addVertex(reuseVertices, regX,     regY + 1, regZ, voxelBefore, previousSliceVertices, result,
 							_voxelAboveBehind, _voxelLeftBehind, _voxelAboveLeftBehind, offset); //8
-					const uint32_t v_2_7 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, material, previousSliceVertices, result,
+					const uint32_t v_2_7 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, voxelBefore, previousSliceVertices, result,
 							_voxelAboveBehind, _voxelRightBehind, _voxelAboveRightBehind, offset); //7
-					const uint32_t v_3_3 = addVertex(reuseVertices, regX + 1, regY,     regZ, material, previousSliceVertices, result,
+					const uint32_t v_3_3 = addVertex(reuseVertices, regX + 1, regY,     regZ, voxelBefore, previousSliceVertices, result,
 							_voxelBelowBehind, _voxelRightBehind, _voxelBelowRightBehind, offset); //3
 					vecQuads[PositiveZ][regZ].emplace_back(v_0_4, v_3_3, v_2_7, v_1_8);
 
