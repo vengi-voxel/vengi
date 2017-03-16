@@ -154,7 +154,7 @@ void NoiseNode::onEdited() {
 }
 
 NoiseNode* NoiseNode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
-	CREATE(NoiseNode);
+	NoiseNode* node = imguiAlloc<NoiseNode>();
 	node->init("NoiseNode", pos, "position", "noise", int(NodeType::Noise));
 	node->fields.addField(&node->frequency, 1, "Frequency", "Noise frequency", 2, 0, 1);
 	node->fields.addField(&node->offset, 1, "Offset", "Noise offset", 2, 0, 1000);

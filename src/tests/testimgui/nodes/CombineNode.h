@@ -33,7 +33,7 @@ protected:
 
 public:
 	static CombineNode* Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
-		CREATE(CombineNode);
+		CombineNode* node = imguiAlloc<CombineNode>();
 		node->init("CombineNode", pos, "in1;in2", "out", int(NodeType::Combine));
 		node->nge = &nge;
 		return node;

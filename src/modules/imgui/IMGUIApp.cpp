@@ -11,7 +11,7 @@
 #include "core/Common.h"
 #include "video/Renderer.h"
 #include "video/ScopedViewPort.h"
-#include "imgui.h"
+#include "IMGUI.h"
 
 namespace imgui {
 

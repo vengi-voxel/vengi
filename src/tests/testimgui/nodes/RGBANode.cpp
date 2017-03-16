@@ -1,4 +1,5 @@
 #include "RGBANode.h"
+#include "Node.h"
 #include "image/Image.h"
 #include "core/GLM.h"
 #include "core/Log.h"
@@ -53,7 +54,7 @@ void RGBANode::getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& 
 }
 
 RGBANode* RGBANode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
-	CREATE(RGBANode);
+	RGBANode* node = imguiAlloc<RGBANode>();
 	node->init("RGBANode", pos, "r;g;b;a", "", int(NodeType::RGBA));
 	node->fields.addFieldTextEdit(node->imageName, IM_ARRAYSIZE(node->imageName), "Image", "Image filename", ImGuiInputTextFlags_EnterReturnsTrue);
 	node->fields.addField(&node->imageWidth, 1, "Width", "Image width", 0, 100, 4096);

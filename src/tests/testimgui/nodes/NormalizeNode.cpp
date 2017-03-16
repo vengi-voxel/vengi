@@ -20,7 +20,7 @@ float NormalizeNode::getNoise(int x, int y) {
 }
 
 NormalizeNode* NormalizeNode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
-	CREATE(NormalizeNode);
+	NormalizeNode* node = imguiAlloc<NormalizeNode>();
 	node->init("NormalizeNode", pos, "in1", "out", int(NodeType::Normalize));
 	node->nge = &nge;
 	return node;
