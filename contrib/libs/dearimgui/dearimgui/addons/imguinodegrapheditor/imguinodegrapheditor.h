@@ -245,6 +245,10 @@ class Node
     inline int getNumOutputSlots() const {return OutputsCount;}
     inline void setOpen(bool flag) {isOpen=flag;}    
 
+    inline void startEditing() {
+        startEditingTime = -1.0f;
+    }
+
     protected:
     FieldInfoVector fields; // I guess you can just skip these at all and implement virtual methods... but it was supposed to be useful...
     // virtual methods
@@ -260,7 +264,9 @@ class Node
     virtual bool acceptsLink(Node* node) { return true; }
     virtual const char* getTooltip() const {return NULL;}
     virtual const char* getInfo() const {return NULL;}
+    public:
     virtual void onEdited() {}  // called (a few seconds) after the node has been edited
+    protected:
     virtual void onCopied() {}  // called after the node fileds has been copied from another node
     virtual void onLoaded() {}  // called after the node has been loaded (=deserialized from file)
     virtual bool canBeCopied() const {return true;}

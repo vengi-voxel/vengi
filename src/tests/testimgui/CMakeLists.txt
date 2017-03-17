@@ -5,10 +5,8 @@ set(SRCS
 	NodeGraph.cpp NodeGraph.h
 	Demo.cpp
 
-	nodes/ColorNode.h
 	nodes/CombineNode.h
-	nodes/CommentNode.h
-	nodes/Node.h
+	nodes/NNode.h nodes/NNode.cpp
 	nodes/NoiseNode.h nodes/NoiseNode.cpp
 	nodes/NormalizeNode.h nodes/NormalizeNode.cpp
 	nodes/RGBANode.h nodes/RGBANode.cpp

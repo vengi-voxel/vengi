@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Node.h"
+#include "NNode.h"
 
 namespace ImGui {
 
@@ -37,8 +37,6 @@ protected:
 	float gain = 0.5f;
 	int noiseTypeIndex = (int)NoiseType::simplexNoise;
 
-	ImGui::NodeGraphEditor* nge = nullptr;
-
 	static bool GetNoiseTypeFromEnumIndex(void*, int value, const char** pTxt);
 
 	float getNoise(int x, int y) override;
@@ -48,8 +46,6 @@ protected:
 	const char* getInfo() const override;
 
 	void getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& defaultTitleBgColorOut, float& defaultTitleBgColorGradientOut) const override;
-
-	void onEdited() override;
 public:
 	static NoiseNode* Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge);
 };

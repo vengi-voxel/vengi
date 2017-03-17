@@ -1,7 +1,5 @@
 #include "NodeGraph.h"
-#include "nodes/ColorNode.h"
 #include "nodes/CombineNode.h"
-#include "nodes/CommentNode.h"
 #include "nodes/NoiseNode.h"
 #include "nodes/NormalizeNode.h"
 #include "nodes/RGBANode.h"
@@ -12,12 +10,8 @@ namespace ImGui {
 
 static Node* nodeFactory(int nodeType, const ImVec2& pos) {
 	switch ((NodeType)nodeType) {
-	case NodeType::Color:
-		return ColorNode::Create(pos, nge);
 	case NodeType::Combine:
 		return CombineNode::Create(pos, nge);
-	case NodeType::Comment:
-		return CommentNode::Create(pos, nge);
 	case NodeType::Noise:
 		return NoiseNode::Create(pos, nge);
 	case NodeType::RGBA:

@@ -44,7 +44,6 @@ bool NoiseNode::GetNoiseTypeFromEnumIndex(void*, int value, const char** pTxt) {
 	return true;
 }
 
-
 float NoiseNode::getNoise(int x, int y) {
 	float ridgedOffset = 1.0f;
 	const NoiseType noiseType = NoiseType(noiseTypeIndex);
@@ -126,17 +125,14 @@ void NoiseNode::getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32&
 	defaultTitleBgColorGradientOut = -1.f;
 }
 
-void NoiseNode::onEdited() {
-}
-
 NoiseNode* NoiseNode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
 	NoiseNode* node = imguiAlloc<NoiseNode>();
 	node->init("NoiseNode", pos, "position", "noise", int(NodeType::Noise));
-	node->fields.addField(&node->frequency, 1, "Frequency", "Noise frequency", 2, 0, 1);
-	node->fields.addField(&node->offset, 1, "Offset", "Noise offset", 2, 0, 1000);
-	node->fields.addField(&node->lacunarity, 1, "Lacunarity", "Noise lacunarity", 2, 0, 10);
+	node->fields.addField(&node->frequency, 1, "Frequency", "Noise frequency", 8, 0, 1);
+	node->fields.addField(&node->offset, 1, "Offset", "Noise offset", 8, 0, 1000);
+	node->fields.addField(&node->lacunarity, 1, "Lacunarity", "Noise lacunarity", 8, 0, 10);
 	node->fields.addField(&node->octaves, 1, "Octaves", "Noise octaves", 0, 1, 8);
-	node->fields.addField(&node->gain, 1, "Gain", "Noise gain");
+	node->fields.addField(&node->gain, 1, "Gain", "Noise gain", 8, 0, 20);
 	node->fields.addFieldEnum(&node->noiseTypeIndex, numValues, &GetNoiseTypeFromEnumIndex, "Type", "Choose noise type");
 	node->noiseTypeIndex = 1;
 	node->nge = &nge;

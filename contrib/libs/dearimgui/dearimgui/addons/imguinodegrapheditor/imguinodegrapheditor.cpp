@@ -974,7 +974,7 @@ void NodeGraphEditor::render()
             isLMBDraggingForMakingLinks&=!nodeInEditMode;   // Don't create links while dragging the mouse to edit node values
         }
         ImGui::EndGroup();
-        if (nodeInEditMode) node->startEditingTime = -1.f;
+        if (nodeInEditMode) node->startEditing();
         else if (node->startEditingTime!=0.f) {
             //if (nodeCallback)   {
             if (node->startEditingTime<0) node->startEditingTime = ImGui::GetTime();

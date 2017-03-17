@@ -1,13 +1,11 @@
 #pragma once
 
-#include "Node.h"
+#include "NNode.h"
 
 namespace ImGui {
 
 class NormalizeNode: public NNode {
 protected:
-	ImGui::NodeGraphEditor* nge = nullptr;
-
 	const char* getTooltip() const override;
 
 	const char* getInfo() const override;
