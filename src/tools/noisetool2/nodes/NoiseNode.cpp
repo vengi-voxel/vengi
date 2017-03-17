@@ -2,8 +2,6 @@
 #include "noise/Noise.h"
 #include "core/App.h"
 
-namespace ImGui {
-
 static const char* NoiseTypeStr[] = {
 	"double noise",
 	"simplex noise",
@@ -111,14 +109,6 @@ float NoiseNode::getNoise(int x, int y) {
 	return 0.0f;
 }
 
-const char* NoiseNode::getTooltip() const {
-	return "NoiseNode tooltip.";
-}
-
-const char* NoiseNode::getInfo() const {
-	return "NoiseNode info.\n\nGenerate noise that can be used as input for other nodes.";
-}
-
 void NoiseNode::getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& defaultTitleBgColorOut, float& defaultTitleBgColorGradientOut) const {
 	defaultTitleTextColorOut = IM_COL32(220, 220, 220, 255);
 	defaultTitleBgColorOut = IM_COL32(125, 35, 0, 255);
@@ -127,7 +117,7 @@ void NoiseNode::getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32&
 
 NoiseNode* NoiseNode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
 	NoiseNode* node = imguiAlloc<NoiseNode>();
-	node->init("NoiseNode", pos, "position", "noise", int(NodeType::Noise));
+	node->setup(nge, pos, nullptr, "noise", NodeType::Noise);
 	node->fields.addField(&node->frequency, 1, "Frequency", "Noise frequency", 8, 0, 1);
 	node->fields.addField(&node->offset, 1, "Offset", "Noise offset", 8, 0, 1000);
 	node->fields.addField(&node->lacunarity, 1, "Lacunarity", "Noise lacunarity", 8, 0, 10);
@@ -135,8 +125,5 @@ NoiseNode* NoiseNode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
 	node->fields.addField(&node->gain, 1, "Gain", "Noise gain", 8, 0, 20);
 	node->fields.addFieldEnum(&node->noiseTypeIndex, numValues, &GetNoiseTypeFromEnumIndex, "Type", "Choose noise type");
 	node->noiseTypeIndex = 1;
-	node->nge = &nge;
 	return node;
-}
-
 }

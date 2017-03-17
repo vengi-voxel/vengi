@@ -2,17 +2,10 @@
 
 #include "NNode.h"
 
-namespace ImGui {
-
 class NormalizeNode: public NNode {
 protected:
-	const char* getTooltip() const override;
-
-	const char* getInfo() const override;
-
 	float getNoise(int x, int y) override;
+	bool canBeCopied() const override { return false; }
 public:
 	static NormalizeNode* Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge);
 };
-
-}

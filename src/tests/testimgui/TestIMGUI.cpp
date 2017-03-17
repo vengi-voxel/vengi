@@ -4,7 +4,6 @@
 #include "TestIMGUI.h"
 #include "io/Filesystem.h"
 #include "core/Color.h"
-#include "NodeGraph.h"
 
 TestIMGUI::TestIMGUI(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
@@ -21,9 +20,6 @@ void TestIMGUI::onRenderUI() {
 		if (ImGui::Button("Test Window")) {
 			_showTestWindow ^= true;
 		}
-		if (ImGui::Button("Graph Window")) {
-			_showGraphWindow ^= true;
-		}
 		if (ImGui::Button("Metrics Window")) {
 			_showMetricsWindow ^= true;
 		}
@@ -34,14 +30,6 @@ void TestIMGUI::onRenderUI() {
 
 	if (_showMetricsWindow) {
 		ImGui::ShowMetricsWindow(&_showMetricsWindow);
-	}
-
-	if (_showGraphWindow) {
-		ImGui::SetNextWindowPosCenter(ImGuiSetCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
-		ImGui::Begin("Node graph", &_showGraphWindow);
-		ImGui::ShowNodeGraph();
-		ImGui::End();
 	}
 
 	if (_showTestWindow) {

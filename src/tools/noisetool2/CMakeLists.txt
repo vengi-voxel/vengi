@@ -1,0 +1,14 @@
+project(noisetool2)
+set(SRCS
+	NoiseTool2.h NoiseTool2.cpp
+
+	NodeGraph.cpp NodeGraph.h
+
+	nodes/ResultNodes.h
+	nodes/NNode.h nodes/NNode.cpp
+	nodes/NoiseNode.h nodes/NoiseNode.cpp
+	nodes/NormalizeNode.h nodes/NormalizeNode.cpp
+	nodes/RGBANode.h nodes/RGBANode.cpp
+)
+engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
+target_link_libraries(${PROJECT_NAME} imgui noise image)

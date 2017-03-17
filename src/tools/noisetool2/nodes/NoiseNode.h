@@ -2,8 +2,6 @@
 
 #include "NNode.h"
 
-namespace ImGui {
-
 enum class NoiseType {
 	doubleNoise,
 	simplexNoise,
@@ -41,13 +39,7 @@ protected:
 
 	float getNoise(int x, int y) override;
 
-	const char* getTooltip() const override;
-
-	const char* getInfo() const override;
-
 	void getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& defaultTitleBgColorOut, float& defaultTitleBgColorGradientOut) const override;
 public:
 	static NoiseNode* Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge);
 };
-
-}

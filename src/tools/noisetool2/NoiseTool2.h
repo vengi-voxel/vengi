@@ -10,14 +10,13 @@
 /**
  * @brief Renders the imgui demo
  */
-class TestIMGUI: public imgui::IMGUIApp {
+class NoiseTool2: public imgui::IMGUIApp {
 private:
 	using Super = imgui::IMGUIApp;
-	bool _showTestWindow = false;
-	bool _showMetricsWindow = false;
+	bool _quit = false;
 
 public:
-	TestIMGUI(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	NoiseTool2(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	core::AppState onInit() override;
 	void onRenderUI() override;
