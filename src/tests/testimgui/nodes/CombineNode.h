@@ -17,8 +17,8 @@ protected:
 	}
 
 	float getNoise(int x, int y) override {
-		NNode* in1 = (NNode*)nge->getInputNodeForNodeAndSlot(this, 0);
-		NNode* in2 = (NNode*)nge->getInputNodeForNodeAndSlot(this, 1);
+		NNode* in1 = dynamic_cast<NNode*>(nge->getInputNodeForNodeAndSlot(this, 0));
+		NNode* in2 = dynamic_cast<NNode*>(nge->getInputNodeForNodeAndSlot(this, 1));
 		if (in1 != nullptr && in2 != nullptr) {
 			return in1->getNoise(x, y) + in2->getNoise(x, y);
 		}

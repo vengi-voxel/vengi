@@ -4,14 +4,38 @@
 
 namespace ImGui {
 
+enum class NoiseType {
+	doubleNoise,
+	simplexNoise,
+	ridgedNoise,
+	flowNoise,
+	fbm,
+	fbmCascade,
+	fbmAnalyticalDerivatives,
+	flowNoiseFbm,
+	ridgedMFTime,
+	ridgedMF,
+	ridgedMFCascade,
+	iqNoise,
+	analyticalDerivatives,
+	noiseCurlNoise,
+	worleyNoise,
+	worleyNoiseFbm,
+	voronoi,
+	swissTurbulence,
+	jordanTurbulence,
+
+	Max
+};
+
 class NoiseNode: public NNode {
 protected:
-	float frequency = 0.0f;
+	float frequency = 0.001f;
 	float offset = 0.0f;
-	float lacunarity = 0.0f;
-	int octaves = 0;
-	float gain = 0.0f;
-	int noiseTypeIndex = 0;
+	float lacunarity = 2.0f;
+	int octaves = 4;
+	float gain = 0.5f;
+	int noiseTypeIndex = (int)NoiseType::simplexNoise;
 
 	ImGui::NodeGraphEditor* nge = nullptr;
 

@@ -8,7 +8,7 @@ class RGBANode: public Node {
 protected:
 	int imageWidth = 1024;
 	int imageHeight = 1024;
-	char imageName[128] = "";
+	char imageName[128] = "noise.png";
 	ImGui::NodeGraphEditor* nge = nullptr;
 
 	const char* getTooltip() const override;

@@ -14,10 +14,11 @@ protected:
 	char comment4[TextBufferSize];			    // field 4
 	bool flag = false;                          // field 5
 
-	virtual const char* getTooltip() const {
+	const char* getTooltip() const override {
 		return "CommentNode tooltip.";
 	}
-	virtual const char* getInfo() const {
+
+	const char* getInfo() const override {
 		return "CommentNode info.\n\nThis is supposed to display some info about this node.";
 	}
 

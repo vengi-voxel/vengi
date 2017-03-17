@@ -4,30 +4,6 @@
 
 namespace ImGui {
 
-enum class NoiseType {
-	doubleNoise,
-	simplexNoise,
-	ridgedNoise,
-	flowNoise,
-	fbm,
-	fbmCascade,
-	fbmAnalyticalDerivatives,
-	flowNoiseFbm,
-	ridgedMFTime,
-	ridgedMF,
-	ridgedMFCascade,
-	iqNoise,
-	analyticalDerivatives,
-	noiseCurlNoise,
-	worleyNoise,
-	worleyNoiseFbm,
-	voronoi,
-	swissTurbulence,
-	jordanTurbulence,
-
-	Max
-};
-
 static const char* NoiseTypeStr[] = {
 	"double noise",
 	"simplex noise",

@@ -12,7 +12,7 @@ const char* NormalizeNode::getInfo() const {
 }
 
 float NormalizeNode::getNoise(int x, int y) {
-	NNode* in1 = (NNode*)nge->getInputNodeForNodeAndSlot(this, 0);
+	NNode* in1 = dynamic_cast<NNode*>(nge->getInputNodeForNodeAndSlot(this, 0));
 	if (in1 != nullptr) {
 		return noise::norm(in1->getNoise(x, y));
 	}

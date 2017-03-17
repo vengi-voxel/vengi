@@ -23,11 +23,11 @@ protected:
 		return true;
 	}
 
-	virtual const char* getTooltip() const {
+	const char* getTooltip() const override {
 		return "ColorNode tooltip.";
 	}
 
-	virtual const char* getInfo() const {
+	const char* getInfo() const override {
 		return "ColorNode info.\n\nThis is supposed to display some info about this node.";
 	}
 

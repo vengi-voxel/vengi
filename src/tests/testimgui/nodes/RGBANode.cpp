@@ -15,10 +15,19 @@ const char* RGBANode::getInfo() const {
 }
 
 void RGBANode::onEdited() {
-	NNode* red   = (NNode*)nge->getInputNodeForNodeAndSlot(this, 0);
-	NNode* green = (NNode*)nge->getInputNodeForNodeAndSlot(this, 1);
-	NNode* blue  = (NNode*)nge->getInputNodeForNodeAndSlot(this, 2);
-	NNode* alpha = (NNode*)nge->getInputNodeForNodeAndSlot(this, 3);
+	if (imageName[0] == '\0') {
+		Log::info("No imagename set");
+		return;
+	}
+	NNode* red   = dynamic_cast<NNode*>(nge->getInputNodeForNodeAndSlot(this, 0));
+	NNode* green = dynamic_cast<NNode*>(nge->getInputNodeForNodeAndSlot(this, 1));
+	NNode* blue  = dynamic_cast<NNode*>(nge->getInputNodeForNodeAndSlot(this, 2));
+	NNode* alpha = dynamic_cast<NNode*>(nge->getInputNodeForNodeAndSlot(this, 3));
+
+	if (red == nullptr && green == nullptr && blue == nullptr && alpha == nullptr) {
+		Log::info("No input node set");
+		return;
+	}
 
 	constexpr int components = 4;
 	uint8_t buffer[imageWidth * imageHeight * components];
