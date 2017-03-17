@@ -257,6 +257,7 @@ class Node
         }
         return nodeEdited;
     }
+    virtual bool acceptsLink(Node* node) { return true; }
     virtual const char* getTooltip() const {return NULL;}
     virtual const char* getInfo() const {return NULL;}
     virtual void onEdited() {}  // called (a few seconds) after the node has been edited
@@ -577,7 +578,7 @@ struct NodeGraphEditor	{
     }
     bool addLink(Node* inputNode, int input_slot, Node* outputNode, int output_slot,bool checkIfAlreadyPresent = false)	{
         if (!inputNode || !outputNode) return false;
-        bool insert = true;
+        bool insert = outputNode->acceptsLink(inputNode);
         if (checkIfAlreadyPresent) insert = !isLinkPresent(inputNode,input_slot,outputNode,output_slot);
         if (insert) {
             links.push_back(NodeLink(inputNode,input_slot,outputNode,output_slot));
