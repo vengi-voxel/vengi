@@ -2227,7 +2227,6 @@ bool FieldInfo::render(int nodeWidth)   {
     }
         break;
     case FT_UNSIGNED: {
-        //precisionStr[precisionLastCharIndex]='d';
         const int minValue = (int) f.minValue;
         const int maxValue = (int) f.maxValue;
         unsigned* pField = (unsigned*) f.pdata;
@@ -2237,19 +2236,19 @@ bool FieldInfo::render(int nodeWidth)   {
         }
         if (NodeGraphEditor::UseSlidersInsteadOfDragControls)   {
             switch (f.numArrayElements)    {
-            case 2: changed = ImGui::SliderInt2(label,value,minValue,maxValue,precisionStr);break;
-            case 3: changed = ImGui::SliderInt3(label,value,minValue,maxValue,precisionStr);break;
-            case 4: changed = ImGui::SliderInt4(label,value,minValue,maxValue,precisionStr);break;
-            default: changed = ImGui::SliderInt(label,value,minValue,maxValue,precisionStr);break;
+            case 2: changed = ImGui::SliderInt2(label,value,minValue,maxValue);break;
+            case 3: changed = ImGui::SliderInt3(label,value,minValue,maxValue);break;
+            case 4: changed = ImGui::SliderInt4(label,value,minValue,maxValue);break;
+            default: changed = ImGui::SliderInt(label,value,minValue,maxValue);break;
             }
         }
         else {
             if (dragSpeed<1.f) dragSpeed = 1.f;
             switch (f.numArrayElements)    {
-            case 2: changed = ImGui::DragInt2(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            case 3: changed = ImGui::DragInt3(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            case 4: changed = ImGui::DragInt4(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            default: changed = ImGui::DragInt(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
+            case 2: changed = ImGui::DragInt2(label,value,dragSpeed,minValue,maxValue);break;
+            case 3: changed = ImGui::DragInt3(label,value,dragSpeed,minValue,maxValue);break;
+            case 4: changed = ImGui::DragInt4(label,value,dragSpeed,minValue,maxValue);break;
+            default: changed = ImGui::DragInt(label,value,dragSpeed,minValue,maxValue);break;
             }
         }
         if (changed)    {
@@ -2260,7 +2259,6 @@ bool FieldInfo::render(int nodeWidth)   {
     }
         break;
     case FT_INT: {
-        //precisionStr[precisionLastCharIndex]='d';
         const int minValue = (int) f.minValue;
         const int maxValue = (int) f.maxValue;
         int* pField = (int*) f.pdata;
@@ -2270,19 +2268,19 @@ bool FieldInfo::render(int nodeWidth)   {
         }
         if (NodeGraphEditor::UseSlidersInsteadOfDragControls)   {
             switch (f.numArrayElements)    {
-            case 2: changed = ImGui::SliderInt2(label,value,minValue,maxValue,precisionStr);break;
-            case 3: changed = ImGui::SliderInt3(label,value,minValue,maxValue,precisionStr);break;
-            case 4: changed = ImGui::SliderInt4(label,value,minValue,maxValue,precisionStr);break;
-            default: changed = ImGui::SliderInt(label,value,minValue,maxValue,precisionStr);break;
+            case 2: changed = ImGui::SliderInt2(label,value,minValue,maxValue);break;
+            case 3: changed = ImGui::SliderInt3(label,value,minValue,maxValue);break;
+            case 4: changed = ImGui::SliderInt4(label,value,minValue,maxValue);break;
+            default: changed = ImGui::SliderInt(label,value,minValue,maxValue);break;
             }
         }
         else {
             if (dragSpeed<1.f) dragSpeed = 1.f;
             switch (f.numArrayElements)    {
-            case 2: changed = ImGui::DragInt2(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            case 3: changed = ImGui::DragInt3(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            case 4: changed = ImGui::DragInt4(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
-            default: changed = ImGui::DragInt(label,value,dragSpeed,minValue,maxValue,precisionStr);break;
+            case 2: changed = ImGui::DragInt2(label,value,dragSpeed,minValue,maxValue);break;
+            case 3: changed = ImGui::DragInt3(label,value,dragSpeed,minValue,maxValue);break;
+            case 4: changed = ImGui::DragInt4(label,value,dragSpeed,minValue,maxValue);break;
+            default: changed = ImGui::DragInt(label,value,dragSpeed,minValue,maxValue);break;
             }
         }
         if (changed)    {
