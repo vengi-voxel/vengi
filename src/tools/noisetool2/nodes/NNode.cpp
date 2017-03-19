@@ -17,6 +17,10 @@ const char* NodeBase::getTooltip() const {
 	return info.c_str();
 }
 
+bool NNode::acceptsLink(Node* inputNode) {
+	return dynamic_cast<NNode*>(inputNode) != nullptr;
+}
+
 void NNode::onEdited() {
 	markDirty();
 }

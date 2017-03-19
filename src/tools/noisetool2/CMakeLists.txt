@@ -6,6 +6,7 @@ set(SRCS
 
 	nodes/ResultNodes.h
 	nodes/NNode.h nodes/NNode.cpp
+	nodes/ConstantNode.h nodes/ConstantNode.cpp
 	nodes/NoiseNode.h nodes/NoiseNode.cpp
 	nodes/NormalizeNode.h nodes/NormalizeNode.cpp
 	nodes/RGBANode.h nodes/RGBANode.cpp

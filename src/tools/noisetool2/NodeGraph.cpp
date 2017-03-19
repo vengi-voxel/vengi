@@ -2,6 +2,7 @@
 #include "nodes/NoiseNode.h"
 #include "nodes/NormalizeNode.h"
 #include "nodes/ResultNodes.h"
+#include "nodes/ConstantNode.h"
 #include "nodes/RGBANode.h"
 
 static ImGui::NodeGraphEditor nge;
@@ -12,6 +13,8 @@ static ImGui::Node* nodeFactory(int nodeType, const ImVec2& pos) {
 		return AddNode::Create(pos, nge);
 	case NodeType::Subtract:
 		return SubtractNode::Create(pos, nge);
+	case NodeType::Constant:
+		return ConstantNode::Create(pos, nge);
 	case NodeType::Multiply:
 		return MultiplyNode::Create(pos, nge);
 	case NodeType::Divide:

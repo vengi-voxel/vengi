@@ -13,6 +13,7 @@ enum class NodeType {
 	Noise,
 	RGBA,
 	Normalize,
+	Constant,
 
 	Max
 };
@@ -23,7 +24,8 @@ static const char* NodeTypeStr[] = {
 	"Divide",
 	"Noise",
 	"Output",
-	"Normalize"
+	"Normalize",
+	"Constant"
 };
 static_assert(int(NodeType::Max) == IM_ARRAYSIZE(NodeTypeStr), "Array size doesn't match enum values");
 
@@ -34,7 +36,8 @@ static const char* NodeTooltipStr[] = {
 	"Divides two input noise modules",
 	"Generate noise that can be used as input for other nodes",
 	"Convert the noise input data into RGBA image",
-	"Normalized the noise from [-1,1] to [0,1]"
+	"Normalized the noise from [-1,1] to [0,1]",
+	"Provide a constant as input parameter for other nodes"
 };
 static_assert(int(NodeType::Max) == IM_ARRAYSIZE(NodeTooltipStr), "Array size doesn't match enum values");
 
@@ -56,6 +59,7 @@ class NNode : public NodeBase {
 public:
 	virtual ~NNode() {}
 
+	bool acceptsLink(Node* inputNode) override;
 	void onEdited() override;
 
 	virtual void markDirty();
