@@ -11,6 +11,8 @@ float NormalizeNode::getNoise(int x, int y) {
 
 NormalizeNode* NormalizeNode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
 	NormalizeNode* node = imguiAlloc<NormalizeNode>();
-	node->setup(nge, pos, "noise", "norm", NodeType::Normalize);
+	if (!node->setup(nge, pos, "noise", "norm", NodeType::Normalize)) {
+		return nullptr;
+	}
 	return node;
 }

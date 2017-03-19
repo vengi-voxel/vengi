@@ -389,6 +389,7 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 	rect.x = 0;
 	rect.y = 0;
 	// the fbo is flipped in memory, we have to deal with it here
+	// TODO: opengl specific
 	const tb::TBRect srcRect(0, dimension.y, rect.w, -rect.h);
 	tb::g_renderer->DrawBitmap(rect, srcRect, &_bitmap);
 	tb::TBFontFace* font = GetFont();

@@ -14,6 +14,7 @@ enum class NodeType {
 	RGBA,
 	Normalize,
 	Constant,
+	Volume,
 
 	Max
 };
@@ -25,7 +26,8 @@ static const char* NodeTypeStr[] = {
 	"Noise",
 	"Output",
 	"Normalize",
-	"Constant"
+	"Constant",
+	"Volume"
 };
 static_assert(int(NodeType::Max) == IM_ARRAYSIZE(NodeTypeStr), "Array size doesn't match enum values");
 
@@ -37,7 +39,8 @@ static const char* NodeTooltipStr[] = {
 	"Generate noise that can be used as input for other nodes",
 	"Convert the noise input data into RGBA image",
 	"Normalized the noise from [-1,1] to [0,1]",
-	"Provide a constant as input parameter for other nodes"
+	"Provide a constant as input parameter for other nodes",
+	"3d volume for representing the noise as voxels"
 };
 static_assert(int(NodeType::Max) == IM_ARRAYSIZE(NodeTooltipStr), "Array size doesn't match enum values");
 
@@ -49,7 +52,8 @@ public:
 	std::string info;
 	const char* getInfo() const override;
 	const char* getTooltip() const override;
-	void setup(ImGui::NodeGraphEditor& nge, const ImVec2& pos, const char* inputSlots, const char* outputSlots, NodeType nodeTypeID);
+	virtual bool onInit() { return true; }
+	bool setup(ImGui::NodeGraphEditor& nge, const ImVec2& pos, const char* inputSlots, const char* outputSlots, NodeType nodeTypeID);
 };
 
 /**
@@ -78,7 +82,9 @@ protected: \
 public: \
 	static NodeTypeName##Node* Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) { \
 		NodeTypeName##Node* node = imguiAlloc<NodeTypeName##Node>(); \
-		node->setup(nge, pos, "val1;val1", "result", NodeType::NodeTypeName); \
+		if (!node->setup(nge, pos, "val1;val1", "result", NodeType::NodeTypeName)) { \
+			return nullptr; \
+		} \
 		node->setOpen(false); \
 		return node; \
 	} \

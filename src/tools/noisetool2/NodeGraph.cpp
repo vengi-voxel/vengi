@@ -3,6 +3,7 @@
 #include "nodes/NormalizeNode.h"
 #include "nodes/ResultNodes.h"
 #include "nodes/ConstantNode.h"
+#include "nodes/VolumeNode.h"
 #include "nodes/RGBANode.h"
 
 static ImGui::NodeGraphEditor nge;
@@ -15,6 +16,8 @@ static ImGui::Node* nodeFactory(int nodeType, const ImVec2& pos) {
 		return SubtractNode::Create(pos, nge);
 	case NodeType::Constant:
 		return ConstantNode::Create(pos, nge);
+	case NodeType::Volume:
+		return VolumeNode::Create(pos, nge);
 	case NodeType::Multiply:
 		return MultiplyNode::Create(pos, nge);
 	case NodeType::Divide:
@@ -51,10 +54,19 @@ void showNodeGraph() {
 		nge.addLink(normalizeNode, 0, outputNode, 1);
 		nge.addLink(normalizeNode, 0, outputNode, 2);
 		nge.addLink(normalizeNode, 0, outputNode, 3);
+
+		ImGui::Node* noise3Node = nge.addNode(int(NodeType::Noise), ImVec2(10, 410));
+		ImGui::Node* volumeNode = nge.addNode(int(NodeType::Volume), ImVec2(550, 510));
+		nge.addLink(noise3Node, 0, volumeNode, 0);
+
 		nge.show_style_editor = false;
 		nge.show_load_save_buttons = false;
 		nge.show_connection_names = false;
 		nge.show_left_pane = false;
 	}
 	nge.render();
+}
+
+void shutdownNodeGraph() {
+	nge.clear();
 }

@@ -7,10 +7,11 @@ const char* NodeBase::getInfo() const {
 	return type.c_str();
 }
 
-void NodeBase::setup(ImGui::NodeGraphEditor& nge, const ImVec2& pos, const char* inputSlots, const char* outputSlots, NodeType nodeTypeID) {
+bool NodeBase::setup(ImGui::NodeGraphEditor& nge, const ImVec2& pos, const char* inputSlots, const char* outputSlots, NodeType nodeTypeID) {
 	init(NodeTypeStr[int(nodeTypeID)], pos, inputSlots, outputSlots, int(nodeTypeID));
 	this->nge = &nge;
 	this->info = NodeTooltipStr[int(nodeTypeID)];
+	return this->onInit();
 }
 
 const char* NodeBase::getTooltip() const {

@@ -19,5 +19,7 @@ public:
 	NoiseTool2(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 
 	core::AppState onInit() override;
+	core::AppState onConstruct() override;
+	core::AppState onCleanup() override;
 	void onRenderUI() override;
 };

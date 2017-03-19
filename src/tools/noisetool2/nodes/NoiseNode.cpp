@@ -117,7 +117,9 @@ void NoiseNode::getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32&
 
 NoiseNode* NoiseNode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
 	NoiseNode* node = imguiAlloc<NoiseNode>();
-	node->setup(nge, pos, nullptr, "noise", NodeType::Noise);
+	if (!node->setup(nge, pos, nullptr, "noise", NodeType::Noise)) {
+		return nullptr;
+	}
 	node->fields.addField(&node->frequency, 1, "Frequency", "Noise frequency", 8, 0, 1);
 	node->fields.addField(&node->offset, 1, "Offset", "Noise offset", 8, 0, 1000);
 	node->fields.addField(&node->lacunarity, 1, "Lacunarity", "Noise lacunarity", 8, 0, 10);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "NNode.h"
-#include "video/Renderer.h"
 #include "video/Texture.h"
 
 class RGBANode: public NodeBase {

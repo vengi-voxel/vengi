@@ -74,7 +74,9 @@ bool RGBANode::render(float nodeWidth) {
 
 RGBANode* RGBANode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
 	RGBANode* node = imguiAlloc<RGBANode>();
-	node->setup(nge, pos, "r;g;b;a", nullptr, NodeType::RGBA);
+	if (!node->setup(nge, pos, "r;g;b;a", nullptr, NodeType::RGBA)) {
+		return nullptr;
+	}
 	node->fields.addFieldTextEdit(node->imageName, IM_ARRAYSIZE(node->imageName), "Image", "Image filename", ImGuiInputTextFlags_EnterReturnsTrue);
 	node->fields.addField(&node->imageWidth, 1, "Width", "Image width", 0, 100, 4096);
 	node->fields.addField(&node->imageHeight, 1, "Height", "Image height", 0, 100, 4096);

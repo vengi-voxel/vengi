@@ -5,6 +5,7 @@
 #include "io/Filesystem.h"
 #include "core/Color.h"
 #include "NodeGraph.h"
+#include "voxel/MaterialColor.h"
 
 NoiseTool2::NoiseTool2(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
@@ -21,6 +22,18 @@ void NoiseTool2::onRenderUI() {
 	}
 }
 
+core::AppState NoiseTool2::onConstruct() {
+	const core::AppState state = Super::onConstruct();
+	core::Var::get(cfg::ClientMouseSpeed, "0.1");
+	return state;
+}
+
+core::AppState NoiseTool2::onCleanup() {
+	core::AppState state = Super::onCleanup();
+	shutdownNodeGraph();
+	return state;
+}
+
 core::AppState NoiseTool2::onInit() {
 	core::AppState state = Super::onInit();
 	_logLevel->setVal(std::to_string(SDL_LOG_PRIORITY_DEBUG));
@@ -31,6 +44,14 @@ core::AppState NoiseTool2::onInit() {
 
 	video::clearColor(::core::Color::Black);
 	//video::enableDebug(video::DebugSeverity::Medium);
+
+	if (!voxel::initDefaultMaterialColors()) {
+		Log::error("Failed to initialize the palette data");
+		return core::AppState::Cleanup;
+	}
+
+	_camera.setFarPlane(4000.0f);
+
 	return state;
 }
 
