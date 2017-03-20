@@ -530,14 +530,16 @@ inline bool Shader::isActive() const {
 class ScopedShader {
 private:
 	const Shader& _shader;
+	const Id _oldShader;
 public:
 	ScopedShader(const Shader& shader) :
-			_shader(shader) {
+			_shader(shader), _oldShader(getProgram()) {
 		_shader.activate();
 	}
 
 	virtual ~ScopedShader() {
 		_shader.deactivate();
+		useProgram(_oldShader);
 	}
 };
 
