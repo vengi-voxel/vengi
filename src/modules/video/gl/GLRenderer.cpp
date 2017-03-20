@@ -391,6 +391,10 @@ bool useProgram(Id handle) {
 	return true;
 }
 
+Id getProgram() {
+	return _priv::s.programHandle;
+}
+
 bool bindVertexArray(Id handle) {
 	if (_priv::s.vertexArrayHandle == handle) {
 		return false;

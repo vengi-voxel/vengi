@@ -162,6 +162,7 @@ extern bool polygonOffset(const glm::vec2& offset);
 extern bool activeTextureUnit(TextureUnit unit);
 extern bool bindTexture(TextureUnit unit, TextureType type, Id handle);
 extern bool useProgram(Id handle);
+extern Id getProgram();
 extern bool bindVertexArray(Id handle);
 extern Id boundVertexArray();
 extern bool bindBuffer(VertexBufferType type, Id handle);
