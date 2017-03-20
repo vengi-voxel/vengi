@@ -8,6 +8,8 @@
 #include "voxel/MaterialColor.h"
 
 VolumeNode::VolumeNode() {
+	_camera.setRotationType(video::CameraRotationType::Target);
+	_camera.setMode(video::CameraMode::Perspective);
 }
 
 VolumeNode::~VolumeNode() {
@@ -45,20 +47,11 @@ void VolumeNode::onEdited() {
 
 	_rawVolumeRenderer.extractAll();
 
-	video::Camera camera;
-	camera.setRotationType(video::CameraRotationType::Target);
-	camera.setMode(video::CameraMode::Perspective);
-	camera.init(glm::ivec2(), _frameBuffer.dimension());
-	camera.setAngles(0.0f, 0.0f, 0.0f);
+	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	const glm::ivec3& center = region.getCentre();
-	camera.setTarget(center);
-	camera.setPosition(glm::vec3(-center.x, region.getHeightInVoxels() + center.y, -center.z));
-	camera.lookAt(center);
-	camera.update(0L);
-
-	_frameBuffer.bind();
-	_rawVolumeRenderer.render(camera);
-	_frameBuffer.unbind();
+	_camera.setTarget(center);
+	_camera.setPosition(glm::vec3(-center.x, region.getHeightInVoxels() + center.y, -center.z));
+	_camera.lookAt(center);
 }
 
 void VolumeNode::getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& defaultTitleBgColorOut, float& defaultTitleBgColorGradientOut) const {
@@ -71,15 +64,31 @@ bool VolumeNode::render(float nodeWidth) {
 	const bool retVal = NodeBase::render(nodeWidth);
 	int vertices = 0;
 	int indices = 0;
-	const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(0);
-	if (mesh != nullptr) {
-		// the fbo is flipped in memory, we have to deal with it here
-		// TODO: opengl specific
-		const glm::ivec2& dim = _frameBuffer.dimension();
-		ImGui::Image((ImTextureID) (intptr_t) _frameBuffer.texture(), ImVec2(dim.x, dim.y), ImVec2(0.0f, 1.0f), ImVec2(1.0, -1.0f));
+	voxel::RawVolume* v = _rawVolumeRenderer.volume(0);
+	if (v != nullptr) {
+		_camera.update(0L);
+
+		_frameBuffer.bind();
+		_rawVolumeRenderer.render(_camera);
+		_frameBuffer.unbind();
+
+		const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(0);
 		vertices = mesh->getNoOfVertices();
 		indices = mesh->getNoOfIndices();
 	}
+
+	// the fbo is flipped in memory, we have to deal with it here
+	// TODO: opengl specific
+	const glm::ivec2& dim = _frameBuffer.dimension();
+	ImGui::Image((ImTextureID) (intptr_t) _frameBuffer.texture(), ImVec2(dim.x, dim.y), ImVec2(0.0f, 1.0f), ImVec2(1.0, -1.0f));
+	if (ImGui::IsItemHovered()) {
+		const ImGuiIO& io = ImGui::GetIO();
+		const glm::vec3 delta(io.MouseDelta.y, io.MouseDelta.x, 0.0f);
+		_camera.rotate(delta * _rotationSpeed->floatVal());
+		const float targetDistance = glm::clamp(_camera.targetDistance() - io.MouseWheel, 0.0f, _camera.farPlane());
+		_camera.setTargetDistance(targetDistance);
+	}
+
 	ImGui::Text("Voxels: %i, vertices: %i, indices: %i", voxelCnt, vertices, indices);
 	return retVal;
 }
@@ -102,6 +111,9 @@ bool VolumeNode::onInit() {
 	_frameBuffer.bind();
 	video::clear(video::ClearFlag::Color);
 	_frameBuffer.unbind();
+
+	_camera.init(glm::ivec2(), _frameBuffer.dimension());
+	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
 	return true;
 }

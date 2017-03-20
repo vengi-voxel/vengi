@@ -24,7 +24,6 @@ void NoiseTool2::onRenderUI() {
 
 core::AppState NoiseTool2::onConstruct() {
 	const core::AppState state = Super::onConstruct();
-	core::Var::get(cfg::ClientMouseSpeed, "0.1");
 	return state;
 }
 
