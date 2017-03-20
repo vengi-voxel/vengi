@@ -13,7 +13,7 @@ namespace frontend {
 /// The criteria used here are that the voxel in front of the potential
 /// quad should have a value of zero (which would typically indicate empty
 /// space) while the voxel behind the potential quad would have a value
-/// geater than zero (typically indicating it is solid).
+/// greater than zero (typically indicating it is solid).
 struct CustomIsQuadNeeded {
 	inline bool operator()(const voxel::VoxelType& back, const voxel::VoxelType& front, voxel::FaceNames face) const {
 		if (isBlocked(back) && !isBlocked(front)) {
