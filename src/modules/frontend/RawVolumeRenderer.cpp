@@ -33,11 +33,11 @@ RawVolumeRenderer::RawVolumeRenderer() :
 
 bool RawVolumeRenderer::init() {
 	if (!_worldShader.setup()) {
-		Log::error("Failed to initialize the color shader");
+		Log::error("Failed to initialize the world shader");
 		return false;
 	}
 	if (!_shadowMapShader.setup()) {
-		Log::error("Failed to initialize the color shader");
+		Log::error("Failed to initialize the shadow map shader");
 		return false;
 	}
 
