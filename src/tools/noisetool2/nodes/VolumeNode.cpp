@@ -80,7 +80,7 @@ bool VolumeNode::render(float nodeWidth) {
 	// the fbo is flipped in memory, we have to deal with it here
 	// TODO: opengl specific
 	const glm::ivec2& dim = _frameBuffer.dimension();
-	ImGui::Image((ImTextureID) (intptr_t) _frameBuffer.texture(), ImVec2(dim.x, dim.y), ImVec2(0.0f, 1.0f), ImVec2(1.0, -1.0f));
+	ImGui::Image((ImTextureID) (intptr_t) _frameBuffer.texture(), dim, ImVec2(0.0f, 1.0f), ImVec2(1.0, -1.0f));
 	if (ImGui::IsItemHovered()) {
 		const ImGuiIO& io = ImGui::GetIO();
 		const glm::vec3 delta(io.MouseDelta.y, io.MouseDelta.x, 0.0f);
