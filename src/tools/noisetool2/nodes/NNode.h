@@ -15,6 +15,7 @@ enum class NodeType {
 	Normalize,
 	Constant,
 	Volume,
+	Graph,
 
 	Max
 };
@@ -27,7 +28,8 @@ static const char* NodeTypeStr[] = {
 	"Output",
 	"Normalize",
 	"Constant",
-	"Volume"
+	"Volume",
+	"Graph"
 };
 static_assert(int(NodeType::Max) == IM_ARRAYSIZE(NodeTypeStr), "Array size doesn't match enum values");
 
@@ -40,7 +42,8 @@ static const char* NodeTooltipStr[] = {
 	"Convert the noise input data into RGBA image",
 	"Normalized the noise from [-1,1] to [0,1]",
 	"Provide a constant as input parameter for other nodes",
-	"3d volume for representing the noise as voxels"
+	"3d volume for representing the noise as voxels",
+	"Shows the noise as 2d graph in the range [-1,1]"
 };
 static_assert(int(NodeType::Max) == IM_ARRAYSIZE(NodeTooltipStr), "Array size doesn't match enum values");
 

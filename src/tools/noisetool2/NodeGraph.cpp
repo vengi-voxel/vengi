@@ -4,6 +4,7 @@
 #include "nodes/ResultNodes.h"
 #include "nodes/ConstantNode.h"
 #include "nodes/VolumeNode.h"
+#include "nodes/GraphNode.h"
 #include "nodes/RGBANode.h"
 
 static ImGui::NodeGraphEditor nge;
@@ -28,6 +29,8 @@ static ImGui::Node* nodeFactory(int nodeType, const ImVec2& pos) {
 		return RGBANode::Create(pos, nge);
 	case NodeType::Normalize:
 		return NormalizeNode::Create(pos, nge);
+	case NodeType::Graph:
+		return GraphNode::Create(pos, nge);
 	case NodeType::Max:
 		break;
 	}
@@ -56,8 +59,12 @@ void showNodeGraph() {
 		nge.addLink(normalizeNode, 0, outputNode, 3);
 
 		ImGui::Node* noise3Node = nge.addNode(int(NodeType::Noise), ImVec2(10, 410));
-		ImGui::Node* volumeNode = nge.addNode(int(NodeType::Volume), ImVec2(550, 510));
+		ImGui::Node* volumeNode = nge.addNode(int(NodeType::Volume), ImVec2(350, 380));
 		nge.addLink(noise3Node, 0, volumeNode, 0);
+
+		ImGui::Node* noiseGraphNode = nge.addNode(int(NodeType::Noise), ImVec2(700, 410));
+		ImGui::Node* graphNode = nge.addNode(int(NodeType::Graph), ImVec2(1050, 380));
+		nge.addLink(noiseGraphNode, 0, graphNode, 0);
 
 		nge.show_style_editor = false;
 		nge.show_load_save_buttons = false;

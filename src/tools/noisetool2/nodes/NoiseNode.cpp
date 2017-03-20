@@ -45,7 +45,7 @@ bool NoiseNode::GetNoiseTypeFromEnumIndex(void*, int value, const char** pTxt) {
 float NoiseNode::getNoise(int x, int y) {
 	float ridgedOffset = 1.0f;
 	const NoiseType noiseType = NoiseType(noiseTypeIndex);
-	const glm::vec2 position(offset + x * frequency, offset + y * frequency);
+	const glm::vec2 position(offset + float(x) * frequency, offset + float(y) * frequency);
 	switch (noiseType) {
 	case NoiseType::doubleNoise: {
 		const glm::ivec3 p3(position.x, position.y, 0);

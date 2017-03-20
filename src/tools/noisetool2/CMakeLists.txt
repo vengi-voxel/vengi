@@ -5,6 +5,7 @@ set(SRCS
 	NodeGraph.cpp NodeGraph.h
 
 	nodes/ResultNodes.h
+	nodes/GraphNode.h nodes/GraphNode.cpp
 	nodes/NNode.h nodes/NNode.cpp
 	nodes/VolumeNode.h nodes/VolumeNode.cpp
 	nodes/ConstantNode.h nodes/ConstantNode.cpp
