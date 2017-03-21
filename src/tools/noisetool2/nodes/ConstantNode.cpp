@@ -1,7 +1,7 @@
 #include "ConstantNode.h"
 #include <limits>
 
-float ConstantNode::getNoise(int x, int y) {
+float ConstantNode::getNoise(int x, int y, int z) {
 	return constant;
 }
 

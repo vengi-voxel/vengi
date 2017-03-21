@@ -36,7 +36,7 @@ void VolumeNode::onEdited() {
 	for (int x = 0; x < volumeWidth; ++x) {
 		for (int y = 0; y < volumeHeight; ++y) {
 			for (int z = 0; z < volumeDepth; ++z) {
-				const float n = noise->getNoise(x, y);
+				const float n = noise->getNoise(x, y, z);
 				if (n > threshold) {
 					v->setVoxel(x, y, z, voxel);
 					++voxelCnt;
@@ -124,7 +124,7 @@ float VolumeNode::getThreshold() {
 	if (noise == nullptr) {
 		return defaultNoiseThreshold;
 	}
-	return noise->getNoise(0, 0);
+	return noise->getNoise(0, 0, 0);
 }
 
 VolumeNode* VolumeNode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {

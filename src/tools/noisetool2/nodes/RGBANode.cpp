@@ -34,10 +34,10 @@ void RGBANode::onEdited() {
 
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
-			const float r = red   != nullptr ? red->getNoise(x, y)   : 0.0f;
-			const float g = green != nullptr ? green->getNoise(x, y) : 0.0f;
-			const float b = blue  != nullptr ? blue->getNoise(x, y)  : 0.0f;
-			const float a = alpha != nullptr ? alpha->getNoise(x, y) : 1.0f;
+			const float r = red   != nullptr ? red->getNoise(x, y, 0)   : 0.0f;
+			const float g = green != nullptr ? green->getNoise(x, y, 0) : 0.0f;
+			const float b = blue  != nullptr ? blue->getNoise(x, y, 0)  : 0.0f;
+			const float a = alpha != nullptr ? alpha->getNoise(x, y, 0) : 1.0f;
 			const uint8_t br = glm::clamp(r, 0.0f, 1.0f) * 255.0f;
 			const uint8_t bg = glm::clamp(g, 0.0f, 1.0f) * 255.0f;
 			const uint8_t bb = glm::clamp(b, 0.0f, 1.0f) * 255.0f;

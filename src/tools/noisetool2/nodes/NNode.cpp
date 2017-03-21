@@ -39,7 +39,7 @@ void NNode::markDirty() {
 	}
 }
 
-float ResultNode::getNoise(int x, int y) {
+float ResultNode::getNoise(int x, int y, int z) {
 	float result = 0.0f;
 	const int n = getNumInputSlots();
 	for (int i = 0; i < n; ++i) {
@@ -49,27 +49,27 @@ float ResultNode::getNoise(int x, int y) {
 		}
 		switch (getType()) {
 		case (int)NodeType::Add:
-			result += in->getNoise(x, y);
+			result += in->getNoise(x, y, z);
 			break;
 		case (int)NodeType::Subtract:
 			if (i == 0) {
-				result = in->getNoise(x, y);
+				result = in->getNoise(x, y, z);
 			} else {
-				result -= in->getNoise(x, y);
+				result -= in->getNoise(x, y, z);
 			}
 			break;
 		case (int)NodeType::Multiply:
 			if (i == 0) {
-				result = in->getNoise(x, y);
+				result = in->getNoise(x, y, z);
 			} else {
-				result *= in->getNoise(x, y);
+				result *= in->getNoise(x, y, z);
 			}
 			break;
 		case (int)NodeType::Divide:
 			if (i == 0) {
-				result = in->getNoise(x, y);
+				result = in->getNoise(x, y, z);
 			} else {
-				result /= in->getNoise(x, y);
+				result /= in->getNoise(x, y, z);
 			}
 			break;
 		}

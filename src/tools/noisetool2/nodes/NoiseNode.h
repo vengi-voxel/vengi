@@ -37,7 +37,7 @@ protected:
 
 	static bool GetNoiseTypeFromEnumIndex(void*, int value, const char** pTxt);
 
-	float getNoise(int x, int y) override;
+	float getNoise(int x, int y, int z) override;
 
 	void getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& defaultTitleBgColorOut, float& defaultTitleBgColorGradientOut) const override;
 public:

@@ -42,10 +42,10 @@ bool NoiseNode::GetNoiseTypeFromEnumIndex(void*, int value, const char** pTxt) {
 	return true;
 }
 
-float NoiseNode::getNoise(int x, int y) {
+float NoiseNode::getNoise(int x, int y, int z) {
 	float ridgedOffset = 1.0f;
 	const NoiseType noiseType = NoiseType(noiseTypeIndex);
-	const glm::vec2 position(offset + float(x) * frequency, offset + float(y) * frequency);
+	const glm::vec3 position(offset + float(x) * frequency, offset + float(y) * frequency, offset + float(z) * frequency);
 	switch (noiseType) {
 	case NoiseType::doubleNoise: {
 		const glm::ivec3 p3(position.x, position.y, 0);
@@ -64,13 +64,13 @@ float NoiseNode::getNoise(int x, int y) {
 	case NoiseType::fbmAnalyticalDerivatives:
 		return noise::fBm(noise::dfBm(position));
 	case NoiseType::flowNoiseFbm: {
-		const glm::vec3 p3(position, millis() * 0.1f);
-		const float fbm = noise::fBm(p3, octaves, lacunarity, gain);
+		const glm::vec4 p4(position, millis() * 0.1f);
+		const float fbm = noise::fBm(p4, octaves, lacunarity, gain);
 		return noise::flowNoise(position + fbm, millis());
 	}
 	case NoiseType::ridgedMFTime: {
-		const glm::vec3 p3(position, millis() * 0.1f);
-		return noise::ridgedMF(p3, ridgedOffset, octaves, lacunarity, gain);
+		const glm::vec4 p4(position, millis() * 0.1f);
+		return noise::ridgedMF(p4, ridgedOffset, octaves, lacunarity, gain);
 	}
 	case NoiseType::ridgedMF:
 		return noise::ridgedMF(position, ridgedOffset, octaves, lacunarity, gain);

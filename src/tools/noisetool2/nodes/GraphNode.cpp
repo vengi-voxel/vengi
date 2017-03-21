@@ -38,7 +38,7 @@ void GraphNode::onEdited() {
 	const uint32_t graphColor = core::Color::getRGBA(core::Color::Red);
 	const int h = _graphHeight - 1;
 	for (int x = 0; x < _graphWidth; ++x) {
-		const float n = input->getNoise(x, _offset);
+		const float n = input->getNoise(x, _offset, 0);
 		const float cn = noise::norm(n);
 		const int gy = h - (cn * h);
 		const int idx = index(x, gy);

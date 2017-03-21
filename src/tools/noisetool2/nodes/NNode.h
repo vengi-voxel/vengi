@@ -70,12 +70,12 @@ public:
 	void onEdited() override;
 
 	virtual void markDirty();
-	virtual float getNoise(int x, int y) = 0;
+	virtual float getNoise(int x, int y, int z) = 0;
 };
 
 class ResultNode: public NNode {
 public:
-	float getNoise(int x, int y) override;
+	float getNoise(int x, int y, int z) override;
 };
 
 #define CREATE_RESULT_NODE(NodeTypeName) \
