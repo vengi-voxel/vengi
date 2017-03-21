@@ -31,6 +31,10 @@ static ImGui::Node* nodeFactory(int nodeType, const ImVec2& pos) {
 		return NormalizeNode::Create(pos, nge);
 	case NodeType::Graph:
 		return GraphNode::Create(pos, nge);
+	case NodeType::MinNoise:
+		return MinNoiseNode::Create(pos, nge);
+	case NodeType::MaxNoise:
+		return MaxNoiseNode::Create(pos, nge);
 	case NodeType::Max:
 		break;
 	}

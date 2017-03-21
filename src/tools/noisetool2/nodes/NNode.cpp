@@ -1,4 +1,5 @@
 #include "NNode.h"
+#include <glm/common.hpp>
 
 const char* NodeBase::getInfo() const {
 	if (type.empty()) {
@@ -70,6 +71,20 @@ float ResultNode::getNoise(int x, int y, int z) {
 				result = in->getNoise(x, y, z);
 			} else {
 				result /= in->getNoise(x, y, z);
+			}
+			break;
+		case (int)NodeType::MinNoise:
+			if (i == 0) {
+				result = in->getNoise(x, y, z);
+			} else {
+				result = glm::min(result, in->getNoise(x, y, z));
+			}
+			break;
+		case (int)NodeType::MaxNoise:
+			if (i == 0) {
+				result = in->getNoise(x, y, z);
+			} else {
+				result = glm::max(result, in->getNoise(x, y, z));
 			}
 			break;
 		}
