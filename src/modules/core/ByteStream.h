@@ -117,10 +117,8 @@ inline void ByteStream::resize(size_t size) {
 }
 
 inline void ByteStream::append(const uint8_t *buf, size_t size) {
-	// TODO: optimize
-	for (std::size_t i = 0; i < size; ++i) {
-		addByte(buf[i]);
-	}
+	_buffer.reserve(_buffer.size() + size);
+	_buffer.insert(_buffer.end(), buf, buf + size);
 }
 
 inline const uint8_t* ByteStream::getBuffer() const {
