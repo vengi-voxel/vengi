@@ -20,5 +20,6 @@ endif()
 
 gtest_suite_files(tests
 	tests/NoiseTest.cpp
+	tests/PoissonDiskDistributionTest.cpp
 )
 gtest_suite_deps(tests ${LIB} image)
