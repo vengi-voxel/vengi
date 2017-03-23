@@ -13,21 +13,19 @@ Voxel engine with procedural generated landscape.
 * cmake
 * postgre
 * development headers/libs for
- * glm
- * assimp
- * lua >= 5.3
- * sdl2 > 2.0.4
- * libcurl
- * postgresql-server-dev >= 9.5
- * libpq
- * flatbuffers
- * nativefiledialog (+gtk3 or qt on linux)
- * enet
- * zlib
- * turbobadger
- * sauce/fruit
- * gtest
- * qt (for the rcon tool)
+  * glm
+  * assimp
+  * lua >= 5.3
+  * sdl2 > 2.0.4
+  * libcurl
+  * postgresql-server-dev >= 9.5
+  * libpq
+  * nativefiledialog (+gtk3 or qt on linux)
+  * enet
+  * zlib
+  * turbobadger
+  * gtest
+  * qt (for the rcon tool)
 
 Some of these dependencies might not be available as packages in your toolchain - most of them are also bundled with the application. But local installed headers always have the higher priority.
 
