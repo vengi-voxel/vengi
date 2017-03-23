@@ -62,7 +62,7 @@ void Grid::add(const glm::vec2 &position) {
 	const int y = ((uint32_t) position.y + _offset.y) >> _k;
 	const int j = x + _numCells.x * y;
 
-	if (j < (int)_grid.size()) {
+	if (j >= 0 && j < (int)_grid.size()) {
 		_grid[j].push_back(position);
 	} else {
 		Log::error("Out of bounds: j: %i, size: %i, x: %i, y: %i", j, (int)_grid.size(), x, y);
@@ -125,9 +125,10 @@ std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rec
 
 	// if there's no initial points add the center point
 	if (processingList.empty()) {
-		processingList.push_back(bounds.center());
-		outputList.push_back(bounds.center());
-		grid.add(bounds.center());
+		const glm::vec2& center = bounds.center();
+		processingList.push_back(center);
+		outputList.push_back(center);
+		grid.add(center);
 	}
 
 	// while there's points in the processing list

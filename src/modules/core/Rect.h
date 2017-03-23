@@ -146,7 +146,7 @@ public:
 	}
 
 	inline glm::tvec2<TYPE> upperLeft() const {
-		return glm::tvec2<TYPE>(getMinX(), getMinZ());
+		return mins();
 	}
 
 	inline glm::tvec2<TYPE> upperRight() const {
@@ -154,7 +154,7 @@ public:
 	}
 
 	inline glm::tvec2<TYPE> lowerRight() const {
-		return glm::tvec2<TYPE>(getMaxX(), getMaxZ());
+		return maxs();
 	}
 
 	inline glm::tvec2<TYPE> lowerLeft() const {
