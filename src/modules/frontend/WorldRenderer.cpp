@@ -147,7 +147,6 @@ void WorldRenderer::handleMeshQueue() {
 	// Now add the mesh to the list of meshes to render.
 	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
 
-	const int plantAmount = 100;
 	// first check whether we update an existing one
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.isActive()) {
@@ -163,7 +162,7 @@ void WorldRenderer::handleMeshQueue() {
 		updateVertexBuffer(chunkBuffer.meshes.opaqueMesh, chunkBuffer.opaque);
 		updateVertexBuffer(chunkBuffer.meshes.waterMesh, chunkBuffer.water);
 		updateAABB(chunkBuffer);
-		distributePlants(_world, plantAmount, chunkBuffer.translation(), chunkBuffer.opaque.instancedPositions);
+		distributePlants(_world, chunkBuffer.translation(), chunkBuffer.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		return;
 	}
@@ -184,7 +183,7 @@ void WorldRenderer::handleMeshQueue() {
 		updateVertexBuffer(chunkBuffer.meshes.waterMesh, chunkBuffer.water);
 		updateAABB(chunkBuffer);
 
-		distributePlants(_world, plantAmount, chunkBuffer.translation(), chunkBuffer.opaque.instancedPositions);
+		distributePlants(_world, chunkBuffer.translation(), chunkBuffer.opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		return;
 	}
@@ -200,7 +199,7 @@ void WorldRenderer::handleMeshQueue() {
 		chunkBuffer->inuse = true;
 		chunkBuffer->meshes = std::move(meshes);
 		updateAABB(*chunkBuffer);
-		distributePlants(_world, plantAmount, chunkBuffer->translation(), chunkBuffer->opaque.instancedPositions);
+		distributePlants(_world, chunkBuffer->translation(), chunkBuffer->opaque.instancedPositions);
 		fillPlantPositionsFromMeshes();
 		++_activeChunkBuffers;
 	}

@@ -23,3 +23,12 @@ gtest_suite_files(tests
 	tests/PoissonDiskDistributionTest.cpp
 )
 gtest_suite_deps(tests ${LIB} image)
+
+gtest_suite_begin(tests-noise TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_files(tests-noise
+	../core/tests/AbstractTest.cpp
+	tests/NoiseTest.cpp
+	tests/PoissonDiskDistributionTest.cpp
+)
+gtest_suite_deps(tests-noise ${LIB} image)
+gtest_suite_end(tests-noise)

@@ -83,8 +83,9 @@ public:
 	template<class Volume>
 	bool createClouds(Volume& volume) {
 		core_trace_scoped(Clouds);
+		const voxel::Region& region = volume.getRegion();
 		voxel::cloud::CloudContext cloudCtx;
-		return voxel::cloud::createClouds(volume, _biomManager, cloudCtx, _random);
+		return voxel::cloud::createClouds(volume, region, _biomManager, cloudCtx, _random);
 	}
 
 	template<class Volume>

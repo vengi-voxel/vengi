@@ -321,37 +321,22 @@ void createTree(Volume& volume, const TreeContext& ctx, core::Random& random) {
  */
 template<class Volume>
 void createTrees(Volume& volume, const Region& region, const BiomeManager& biomManager, core::Random& random) {
-	const int amount = biomManager.getAmountOfTrees(region);
+	const int maxSize = 18;
+	std::vector<glm::vec2> positions;
+	biomManager.getTreePositions(region, positions, random, maxSize);
 	TreeContext ctx;
-	for (int i = 0; i < amount; ++i) {
-		const int regionBorder = 8;
-		const int rndValX = random.random(regionBorder, region.getWidthInVoxels() - regionBorder);
-		// number should be even - to get more variance
-		if (!(rndValX % 2)) {
+	for (const glm::vec2& position : positions) {
+		const int y = findFloor(volume, position.x, position.y);
+		if (y == -1) {
 			continue;
 		}
-
-		const int rndValZ = random.random(regionBorder, region.getDepthInVoxels() - regionBorder);
-		ctx.pos = glm::ivec3(region.getLowerX() + rndValX, -1, region.getLowerZ() + rndValZ);
-		const int y = findFloor(volume, ctx.pos.x, ctx.pos.z);
-		if (y < 0) {
-			continue;
-		}
-
-		ctx.pos.y = y;
-
-		if (biomManager.hasCactus(ctx.pos)) {
-			const int trunkWidth = random.random(2, 3);
-			const int trunkHeight = random.random(14, 16);
-			voxel::cactus::createCactus(volume, ctx.pos, trunkHeight, trunkWidth, random);
-		}
-
-		if (!biomManager.hasTrees(ctx.pos)) {
-			continue;
-		}
-
+#if 0
+		const glm::ivec3 pos = glm::ivec3(position.x, y, position.y);
+		const Voxel& voxel = createRandomColorVoxel(VoxelType::Dirt, random);
+		volume.setVoxel(pos, voxel);
+#else
+		ctx.pos = glm::ivec3(position.x, y, position.y);
 		ctx.trunkWidth = 3;
-		const int maxSize = 18;
 		int size = random.random(12, maxSize);
 		ctx.leavesWidth = size;
 		ctx.leavesDepth = size;
@@ -379,6 +364,7 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 			break;
 		}
 		createTree(volume, ctx, random);
+#endif
 	}
 }
 

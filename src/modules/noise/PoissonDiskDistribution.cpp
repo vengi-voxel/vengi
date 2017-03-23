@@ -36,50 +36,59 @@ class Grid {
 public:
 	using Cell = std::vector<glm::vec2>;
 
-	Grid(const core::RectFloat &bounds, uint32_t k);
+	Grid(const core::Rect<int> &bounds, uint32_t k);
 
-	void add(const glm::vec2 &position);
+	bool add(const glm::vec2 &position);
 	bool hasNeighbors(const glm::vec2 &p, float radius);
 
-	void resize(const core::RectFloat &bounds, uint32_t k);
+	void resize(const core::Rect<int> &bounds, uint32_t k);
 	void resize(uint32_t k);
 
+	inline const core::Rect<int>& bounds() const { return _bounds; }
 protected:
 	std::vector<Cell> _grid;
 	glm::ivec2 _numCells;
 	glm::ivec2 _offset;
-	core::RectFloat _bounds;
+	core::Rect<int> _bounds;
+	glm::ivec2 _size;
 	uint32_t _k;
 	uint32_t _cellSize;
 };
 
-Grid::Grid(const core::RectFloat &bounds, uint32_t k) {
+Grid::Grid(const core::Rect<int> &bounds, uint32_t k) {
 	resize(bounds, k);
 }
 
-void Grid::add(const glm::vec2 &position) {
-	const int x = ((uint32_t) position.x + _offset.x) >> _k;
-	const int y = ((uint32_t) position.y + _offset.y) >> _k;
+bool Grid::add(const glm::vec2 &position) {
+	const uint32_t px = (uint32_t)position.x;
+	const uint32_t py = (uint32_t)position.y;
+	const int x = (px - _offset.x) >> _k;
+	const int y = (py - _offset.y) >> _k;
 	const int j = x + _numCells.x * y;
 
 	if (j >= 0 && j < (int)_grid.size()) {
 		_grid[j].push_back(position);
-	} else {
-		Log::error("Out of bounds: j: %i, size: %i, x: %i, y: %i", j, (int)_grid.size(), x, y);
+		return true;
 	}
+	return false;
 }
 
 bool Grid::hasNeighbors(const glm::vec2 &p, float radius) {
+	if (radius <= 0.0f) {
+		return false;
+	}
 	const float sqRadius = radius * radius;
-	const glm::ivec2 radiusVec = glm::ivec2(radius);
-	const glm::ivec2 min = glm::max(glm::min(glm::ivec2(p) - radiusVec, glm::ivec2(_bounds.maxs()) - glm::ivec2(1)), glm::ivec2(_bounds.mins()));
-	const glm::ivec2 max = glm::max(glm::min(glm::ivec2(p) + radiusVec, glm::ivec2(_bounds.maxs()) - glm::ivec2(1)), glm::ivec2(_bounds.mins()));
+	const glm::ivec2 radiusVec(radius);
+	const glm::ivec2 ip(p);
+	const glm::ivec2 bmaxs(_bounds.maxs() - 1);
+	const glm::ivec2 min = glm::clamp(ip - radiusVec, _bounds.mins(), bmaxs);
+	const glm::ivec2 max = glm::clamp(ip + radiusVec, _bounds.mins(), bmaxs);
 
-	const glm::ivec2 minCell((min.x + _offset.x) >> _k, (min.y + _offset.y) >> _k);
-	const glm::ivec2 maxCell = glm::min(1 + glm::ivec2((max.x + _offset.x) >> _k, (max.y + _offset.y) >> _k), _numCells);
+	const glm::ivec2 minCell((min.x - _offset.x) >> _k, (min.y - _offset.y) >> _k);
+	const glm::ivec2 maxCell = glm::min(1 + glm::ivec2((max.x - _offset.x) >> _k, (max.y - _offset.y) >> _k), _numCells);
 	for (int y = minCell.y; y < maxCell.y; ++y) {
 		for (int x = minCell.x; x < maxCell.x; ++x) {
-			for (auto cell : _grid[x + _numCells.x * y]) {
+			for (const glm::vec2& cell : _grid[x + _numCells.x * y]) {
 				if (glm::length2(p - cell) < sqRadius) {
 					return true;
 				}
@@ -89,47 +98,54 @@ bool Grid::hasNeighbors(const glm::vec2 &p, float radius) {
 	return false;
 }
 
-void Grid::resize(const core::RectFloat &bounds, uint32_t k) {
+void Grid::resize(const core::Rect<int> &bounds, uint32_t k) {
 	_bounds = bounds;
+	_size = _bounds.size();
 	resize(k);
 }
 
 void Grid::resize(uint32_t k) {
 	_k = k;
 	_cellSize = 1 << k;
-	_offset = glm::abs(_bounds.mins());
-	_numCells = glm::ceil(glm::vec2(_bounds.size()) / (float) _cellSize);
+	_offset = _bounds.mins();
+	_numCells = glm::ceil(glm::vec2(_size) / (float) _cellSize);
 	_grid.clear();
 	_grid.resize(_numCells.x * _numCells.y);
 }
 
 }
 
-std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::RectFloat &bounds, const std::vector<glm::vec2> &initialSet, int k) {
-	// prepare working structures
-	std::vector<glm::vec2> processingList;
-	std::vector<glm::vec2> outputList;
-	core::Random rnd(0u);
-
-	// create grid
-	Grid grid(bounds, 3);
-
+static void prepare(Grid& grid, std::vector<glm::vec2>& processingList, std::vector<glm::vec2>& outputList, const std::vector<glm::vec2> &initialSet) {
 	processingList.reserve(initialSet.size());
 	outputList.reserve(initialSet.size());
 	// add the initial points
-	for (const auto& p : initialSet) {
+	for (const glm::vec2& p : initialSet) {
 		processingList.push_back(p);
-		outputList.push_back(p);
-		grid.add(p);
+		if (grid.add(p)) {
+			outputList.push_back(p);
+		}
 	}
 
 	// if there's no initial points add the center point
 	if (processingList.empty()) {
-		const glm::vec2& center = bounds.center();
+		const glm::vec2& center = grid.bounds().centerf();
 		processingList.push_back(center);
-		outputList.push_back(center);
-		grid.add(center);
+		if (grid.add(center)) {
+			outputList.push_back(center);
+		}
 	}
+}
+
+std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rect<int> &bounds, const std::vector<glm::vec2> &initialSet, int k) {
+	// prepare working structures
+	std::vector<glm::vec2> processingList;
+	std::vector<glm::vec2> outputList;
+	core::Random rnd(bounds.getMinX());
+
+	// create grid
+	Grid grid(bounds, 3);
+
+	prepare(grid, processingList, outputList, initialSet);
 
 	// while there's points in the processing list
 	while (!processingList.empty()) {
@@ -149,11 +165,12 @@ std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rec
 
 			// check if the new random point is in the window bounds
 			// and if it has no neighbors that are too close to them
-			if (bounds.contains(newPoint) && !grid.hasNeighbors(newPoint, separation)) {
+			if (bounds.containsf(newPoint) && !grid.hasNeighbors(newPoint, separation)) {
 				// if the point has no close neighbors add it to the processing list, output list and grid
 				processingList.push_back(newPoint);
-				outputList.push_back(newPoint);
-				grid.add(newPoint);
+				if (grid.add(newPoint)) {
+					outputList.push_back(newPoint);
+				}
 			}
 		}
 	}
@@ -161,37 +178,23 @@ std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rec
 	return outputList;
 }
 
-std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const glm::vec2&)> &distFunction, const core::RectFloat &bounds,
+std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const glm::vec2&)> &distFunction, const core::Rect<int> &bounds,
 		const std::vector<glm::vec2> &initialSet, int k) {
 	// prepare working structures
 	std::vector<glm::vec2> processingList;
 	std::vector<glm::vec2> outputList;
-	core::Random rnd;
+	core::Random rnd(bounds.getMinX());
 
 	// create grid
 	Grid grid(bounds, 3);
 
-	processingList.reserve(initialSet.size());
-	outputList.reserve(initialSet.size());
-	// add the initial points
-	for (const auto& p : initialSet) {
-		processingList.push_back(p);
-		outputList.push_back(p);
-		grid.add(p);
-	}
-
-	// if there's no initial points add the center point
-	if (processingList.empty()) {
-		processingList.push_back(bounds.center());
-		outputList.push_back(bounds.center());
-		grid.add(bounds.center());
-	}
+	prepare(grid, processingList, outputList, initialSet);
 
 	// while there's points in the processing list
 	while (!processingList.empty()) {
 		// pick a random point in the processing list
 		const int randPoint = rnd.random(0, processingList.size() - 1);
-		const glm::vec2& center = processingList[randPoint];
+		const glm::vec2 center = processingList[randPoint];
 
 		// remove it
 		processingList.erase(processingList.begin() + randPoint);
@@ -211,8 +214,9 @@ std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const g
 			if (bounds.contains(newPoint) && !grid.hasNeighbors(newPoint, dist)) {
 				// if the point has no close neighbors add it to the processing list, output list and grid
 				processingList.push_back(newPoint);
-				outputList.push_back(newPoint);
-				grid.add(newPoint);
+				if (dist > 0.0f && grid.add(newPoint)) {
+					outputList.push_back(newPoint);
+				}
 			}
 		}
 	}
@@ -221,36 +225,22 @@ std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const g
 }
 
 std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const glm::vec2&)> &distFunction,
-		const std::function<bool(const glm::vec2&)> &boundsFunction, const core::RectFloat &bounds, const std::vector<glm::vec2> &initialSet, int k) {
+		const std::function<bool(const glm::vec2&)> &boundsFunction, const core::Rect<int> &bounds, const std::vector<glm::vec2> &initialSet, int k) {
 	// prepare working structures
 	std::vector<glm::vec2> processingList;
 	std::vector<glm::vec2> outputList;
-	core::Random rnd;
+	core::Random rnd(bounds.getMinX());
 
 	// create grid
 	Grid grid(bounds, 3);
 
-	processingList.reserve(initialSet.size());
-	outputList.reserve(initialSet.size());
-	// add the initial points
-	for (auto p : initialSet) {
-		processingList.push_back(p);
-		outputList.push_back(p);
-		grid.add(p);
-	}
-
-	// if there's no initial points add the center point
-	if (processingList.empty()) {
-		processingList.push_back(bounds.center());
-		outputList.push_back(bounds.center());
-		grid.add(bounds.center());
-	}
+	prepare(grid, processingList, outputList, initialSet);
 
 	// while there's points in the processing list
 	while (!processingList.empty()) {
 		// pick a random point in the processing list
 		const int randPoint = rnd.random(0, processingList.size() - 1);
-		const glm::vec2& center = processingList[randPoint];
+		const glm::vec2 center = processingList[randPoint];
 
 		// remove it
 		processingList.erase(processingList.begin() + randPoint);
@@ -270,8 +260,9 @@ std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const g
 			if (bounds.contains(newPoint) && boundsFunction(newPoint) && !grid.hasNeighbors(newPoint, dist)) {
 				// if the point has no close neighbors add it to the processing list, output list and grid
 				processingList.push_back(newPoint);
-				outputList.push_back(newPoint);
-				grid.add(newPoint);
+				if (dist > 0.0f && grid.add(newPoint)) {
+					outputList.push_back(newPoint);
+				}
 			}
 		}
 	}

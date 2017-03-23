@@ -5,6 +5,8 @@
 #include "BiomeManager.h"
 #include "noise/Noise.h"
 #include "commonlua/LUAFunctions.h"
+#include "noise/PoissonDiskDistribution.h"
+#include <utility>
 
 namespace voxel {
 
@@ -133,18 +135,67 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	return biomeBestMatch;
 }
 
-int BiomeManager::getAmountOfTrees(const Region& region) const {
-	core_trace_scoped(BiomeGetAmountOfTrees);
-	const glm::ivec3&pos = region.getCentre();
+void BiomeManager::distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border, float distribution) const {
+	std::vector<glm::vec2> initialSet;
+	const glm::ivec3& randomPos = region.getRandomPosition(random);
+	initialSet.push_back(glm::vec2(randomPos.x, randomPos.z));
+	positions = noise::poissonDiskDistribution(distribution, region.rect(border), initialSet);
+	Log::debug("%i %s positions in region (%i,%i,%i)/(%i,%i,%i) with border: %i", (int)positions.size(), type,
+			region.getLowerX(), region.getLowerY(), region.getLowerZ(),
+			region.getUpperX(), region.getUpperY(), region.getUpperZ(), border);
+	for (const glm::vec2& pos : positions) {
+		Log::debug("[+] %s pos: (%i:%i)", type, (int)pos.x, (int)pos.y);
+	}
+}
+
+void BiomeManager::getTreePositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
+	core_trace_scoped(BiomeGetTreePositions);
+	const glm::ivec3& pos = region.getCentre();
+	if (!hasTrees(pos)) {
+		return;
+	}
 	const Biome* biome = getBiome(pos);
-	const int maxDim = region.getDepthInCells();
+	float distribution = 100.0f;
 	if (biome->temperature > 0.7f || biome->humidity < 0.2f) {
-		return maxDim / 16;
+		distribution = 150.0f;
+	} else if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
+		distribution = 200.0f;
 	}
-	if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
-		return maxDim / 32;
+	distributePointsInRegion("tree", region, positions, random, border, distribution);
+}
+
+void BiomeManager::getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
+	core_trace_scoped(BiomeGetPlantPositions);
+	const glm::ivec3& pos = region.getCentre();
+	if (!hasPlants(pos)) {
+		return;
 	}
-	return maxDim / 6;
+	const Biome* biome = getBiome(pos);
+	float distribution = 30.0f;
+	if (biome->temperature > 0.7f || biome->humidity < 0.2f) {
+		distribution = 50.0f;
+	} else if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
+		distribution = 100.0f;
+	}
+	distributePointsInRegion("plant", region, positions, random, border, distribution);
+}
+
+void BiomeManager::getCloudPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
+	core_trace_scoped(BiomeGetCloudPositions);
+	glm::ivec3 pos = region.getCentre();
+	pos.y = region.getUpperY();
+	if (!hasClouds(pos)) {
+		return;
+	}
+
+	const Biome* biome = getBiome(pos);
+	float distribution = 150.0f;
+	if (biome->temperature > 0.7f || biome->humidity < 0.2f) {
+		distribution = 200.0f;
+	} else if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
+		distribution = 250.0f;
+	}
+	distributePointsInRegion("cloud", region, positions, random, border, distribution);
 }
 
 bool BiomeManager::hasCactus(const glm::ivec3& pos) const {

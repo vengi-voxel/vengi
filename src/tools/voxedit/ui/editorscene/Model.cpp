@@ -550,17 +550,16 @@ void Model::createCloud() {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	struct HasClouds {
-		inline bool hasClouds(const glm::ivec3&) const {
-			return true;
+		glm::vec2 pos;
+		void getCloudPositions(const voxel::Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
+			positions.push_back(pos);
 		}
 	};
 	HasClouds hasClouds;
+	hasClouds.pos = glm::vec2(_cursorPos.x, _cursorPos.z);
 	voxel::cloud::CloudContext cloudCtx;
 	cloudCtx.amount = 1;
-	cloudCtx.regionBorder = 2;
-	cloudCtx.randomPos = false;
-	cloudCtx.pos = _cursorPos;
-	if (voxel::cloud::createClouds(wrapper, hasClouds, cloudCtx, random)) {
+	if (voxel::cloud::createClouds(wrapper, wrapper.getRegion(), hasClouds, cloudCtx, random)) {
 		modified(modelVolume()->getRegion());
 	}
 }

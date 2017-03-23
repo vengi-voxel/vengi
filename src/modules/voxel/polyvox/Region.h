@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/AABB.h"
 #include "core/Rect.h"
+#include "core/Random.h"
 #include <glm/common.hpp>
 
 namespace voxel {
@@ -76,6 +77,8 @@ public:
 	glm::ivec3 getLowerCorner() const;
 	/// Gets the position of the upper corner.
 	glm::ivec3 getUpperCorner() const;
+
+	glm::ivec3 getRandomPosition(core::Random& random) const;
 
 	/// Gets the width of the region measured in voxels.
 	int32_t getWidthInVoxels() const;
@@ -292,6 +295,13 @@ inline glm::ivec3 Region::getLowerCorner() const {
  */
 inline glm::ivec3 Region::getUpperCorner() const {
 	return glm::ivec3(m_iUpperX, m_iUpperY, m_iUpperZ);
+}
+
+inline glm::ivec3 Region::getRandomPosition(core::Random& random) const {
+	const int x = random.random(m_iLowerX, m_iUpperX);
+	const int y = random.random(m_iLowerY, m_iUpperY);
+	const int z = random.random(m_iLowerZ, m_iUpperZ);
+	return glm::ivec3(x, y, z);
 }
 
 /**

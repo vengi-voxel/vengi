@@ -13,6 +13,40 @@
 
 namespace core {
 
+template<typename T, glm::precision P = glm::defaultp>
+inline ::std::string& operator+= (::std::string& in, const glm::tvec1<T, P>& vec) {
+	in.append(glm::to_string(vec));
+	return in;
+}
+
+template<typename T, glm::precision P = glm::defaultp>
+inline ::std::string& operator+= (::std::string& in, const glm::tvec2<T, P>& vec) {
+	in.append(glm::to_string(vec));
+	return in;
+}
+
+template<typename T, glm::precision P = glm::defaultp>
+inline ::std::string& operator+= (::std::string& in, const glm::tvec3<T, P>& vec) {
+	in.append(glm::to_string(vec));
+	return in;
+}
+
+template<typename T, glm::precision P = glm::defaultp>
+inline ::std::string& operator+= (::std::string& in, const glm::tvec4<T, P>& vec) {
+	in.append(glm::to_string(vec));
+	return in;
+}
+
+inline ::std::string& operator+= (::std::string& in, const glm::mat4& mat) {
+	in.append(glm::to_string(mat));
+	return in;
+}
+
+inline ::std::string& operator+= (::std::string& in, const glm::mat3& mat) {
+	in.append(glm::to_string(mat));
+	return in;
+}
+
 inline ::std::ostream& operator<<(::std::ostream& os, const glm::mat4& mat) {
 	return os << "mat4x4[" << glm::to_string(mat) << "]";
 }
@@ -21,23 +55,23 @@ inline ::std::ostream& operator<<(::std::ostream& os, const glm::mat3& mat) {
 	return os << "mat3x3[" << glm::to_string(mat) << "]";
 }
 
-template<typename T>
-inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec4<T>& vec) {
+template<typename T, glm::precision P = glm::defaultp>
+inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec4<T, P>& vec) {
 	return os << "vec4[" << glm::to_string(vec) << "]";
 }
 
-template<typename T>
-inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec3<T>& vec) {
+template<typename T, glm::precision P = glm::defaultp>
+inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec3<T, P>& vec) {
 	return os << "vec3[" << glm::to_string(vec) << "]";
 }
 
-template<typename T>
-inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec2<T>& vec) {
+template<typename T, glm::precision P = glm::defaultp>
+inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec2<T, P>& vec) {
 	return os << "vec2[" << glm::to_string(vec) << "]";
 }
 
-template<typename T>
-inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec1<T>& vec) {
+template<typename T, glm::precision P = glm::defaultp>
+inline ::std::ostream& operator<<(::std::ostream& os, const glm::tvec1<T, P>& vec) {
 	return os << "vec1[" << glm::to_string(vec) << "]";
 }
 

@@ -55,6 +55,7 @@ public:
 class BiomeManager {
 private:
 	std::vector<Biome> bioms;
+	void distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border, float distribution) const;
 
 public:
 	BiomeManager();
@@ -83,7 +84,9 @@ public:
 
 	int getCityDensity(const glm::ivec3& pos) const;
 	float getCityGradient(const glm::ivec3& pos) const;
-	int getAmountOfTrees(const Region& region) const;
+	void getTreePositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
+	void getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
+	void getCloudPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
 
 	/**
 	 * @return Humidity noise in the range [0-1]
