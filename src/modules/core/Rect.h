@@ -137,6 +137,23 @@ public:
 		return true;
 	}
 
+	inline bool containsf(const glm::vec2& point) const {
+		const glm::ivec2 p(glm::ceil(point));
+		if (p.x > getMaxX()) {
+			return false;
+		}
+		if (p.y > getMaxZ()) {
+			return false;
+		}
+		if (p.x < getMinX()) {
+			return false;
+		}
+		if (p.y < getMinZ()) {
+			return false;
+		}
+		return true;
+	}
+
 	inline glm::tvec2<TYPE> maxs() const {
 		return glm::tvec2<TYPE>(getMaxX(), getMaxZ());
 	}
@@ -166,7 +183,11 @@ public:
 	}
 
 	inline glm::tvec2<TYPE> center() const {
-		return mins() + size() / (TYPE)2;
+		return (mins() + maxs()) / (TYPE)2;
+	}
+
+	inline glm::vec2 centerf() const {
+		return glm::vec2(mins() + maxs()) / 2.0f;
 	}
 };
 
