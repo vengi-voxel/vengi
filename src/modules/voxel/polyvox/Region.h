@@ -6,6 +6,7 @@
 
 #include "core/Common.h"
 #include "core/AABB.h"
+#include "core/Rect.h"
 #include <glm/common.hpp>
 
 namespace voxel {
@@ -180,6 +181,9 @@ public:
 	void shrink(const glm::ivec3& v3dAmount);
 
 	core::AABB<int> aabb() const;
+	/// Returns a rect of the x and z area this region covers
+	core::Rect<int> rect(int border = 0) const;
+	core::Rect<float> rectf(int border = 0) const;
 
 private:
 	int32_t m_iLowerX;
@@ -192,6 +196,18 @@ private:
 
 inline core::AABB<int> Region::aabb() const {
 	return core::AABB<int>(getLowerCorner(), getUpperCorner() + 1);
+}
+
+inline core::Rect<int> Region::rect(int border) const {
+	core_assert(getUpperX() - getLowerX() > 2 * border);
+	core_assert(getUpperZ() - getLowerZ() > 2 * border);
+	return core::Rect<int>(getLowerX() + border, getLowerZ() + border, getUpperX() - border, getUpperZ() - border);
+}
+
+inline core::Rect<float> Region::rectf(int border) const {
+	core_assert(getUpperX() - getLowerX() > 2 * border);
+	core_assert(getUpperZ() - getLowerZ() > 2 * border);
+	return core::Rect<float>(getLowerX() + border, getLowerZ() + border, getUpperX() - border, getUpperZ() - border);
 }
 
 /**
