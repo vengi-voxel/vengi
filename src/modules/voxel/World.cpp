@@ -142,7 +142,7 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 	return true;
 }
 
-bool World::init(const std::string& luaParameters, const std::string& luaBiomes) {
+bool World::init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes, uint16_t chunkSideLength) {
 	if (!_biomeManager.init(luaBiomes)) {
 		return false;
 	}
@@ -150,7 +150,7 @@ bool World::init(const std::string& luaParameters, const std::string& luaBiomes)
 		return false;
 	}
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
-	_volumeData = new PagedVolume(&_pager, 512 * 1024 * 1024, 256);
+	_volumeData = new PagedVolume(&_pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
 
 	_pager.init(_volumeData, &_biomeManager, &_ctx);
 	if (_clientData) {
