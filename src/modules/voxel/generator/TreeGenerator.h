@@ -8,7 +8,6 @@
 #include "voxel/BiomeManager.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/TreeContext.h"
-#include "voxel/Spiral.h"
 #include "ShapeGenerator.h"
 #include "CactusGenerator.h"
 #include "LSystemGenerator.h"
