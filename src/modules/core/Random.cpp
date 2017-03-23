@@ -15,8 +15,8 @@ Random::Random() :
 }
 
 Random::Random(unsigned int seed) :
-		_engine(std::default_random_engine()) {
-	_engine.seed(seed);
+		Random() {
+	setSeed(seed);
 }
 
 void Random::setSeed(unsigned int seed) {
