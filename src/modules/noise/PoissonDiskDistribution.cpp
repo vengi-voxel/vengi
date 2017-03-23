@@ -65,7 +65,7 @@ void Grid::add(const glm::vec2 &position) {
 	if (j < (int)_grid.size()) {
 		_grid[j].push_back(position);
 	} else {
-		Log::error("Out of bounds");
+		Log::error("Out of bounds: j: %i, size: %i, x: %i, y: %i", j, (int)_grid.size(), x, y);
 	}
 }
 
