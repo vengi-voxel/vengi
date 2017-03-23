@@ -109,7 +109,7 @@ std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rec
 	// prepare working structures
 	std::vector<glm::vec2> processingList;
 	std::vector<glm::vec2> outputList;
-	core::Random rnd;
+	core::Random rnd(0u);
 
 	// create grid
 	Grid grid(bounds, 3);
@@ -117,7 +117,7 @@ std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rec
 	processingList.reserve(initialSet.size());
 	outputList.reserve(initialSet.size());
 	// add the initial points
-	for (auto p : initialSet) {
+	for (const auto& p : initialSet) {
 		processingList.push_back(p);
 		outputList.push_back(p);
 		grid.add(p);
@@ -135,7 +135,7 @@ std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rec
 	while (!processingList.empty()) {
 		// pick a random point in the processing list
 		const int randPoint = rnd.random(0, processingList.size() - 1);
-		const glm::vec2& center = processingList[randPoint];
+		const glm::vec2 center = processingList[randPoint];
 
 		// remove it
 		processingList.erase(processingList.begin() + randPoint);
@@ -174,7 +174,7 @@ std::vector<glm::vec2> poissonDiskDistribution(const std::function<float(const g
 	processingList.reserve(initialSet.size());
 	outputList.reserve(initialSet.size());
 	// add the initial points
-	for (auto p : initialSet) {
+	for (const auto& p : initialSet) {
 		processingList.push_back(p);
 		outputList.push_back(p);
 		grid.add(p);
