@@ -66,6 +66,7 @@ public:
 	bool addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround = false);
 
 	// this lookup must be really really fast - it is executed once per generated voxel
+	// iterating in y direction is fastest, because the last biome is cached on a per-thread-basis
 	inline Voxel getVoxel(const glm::ivec3& pos, bool underground = false) const {
 		core_trace_scoped(BiomeGetVoxel);
 		const Biome* biome = getBiome(pos, underground);
