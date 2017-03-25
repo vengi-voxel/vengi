@@ -5,6 +5,7 @@ set(SRCS
 	trace/Remotery.c trace/Remotery.h
 	trace/microprofile.h
 	App.cpp App.h
+	Bezier.h
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
 	ConcurrentQueue.h

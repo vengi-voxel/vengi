@@ -6,6 +6,7 @@
 
 #include "voxel/polyvox/Voxel.h"
 #include "core/Common.h"
+#include "core/Bezier.h"
 #include "voxel/polyvox/Raycast.h"
 #include "core/GLM.h"
 
@@ -243,6 +244,22 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 		sampler.setVoxel(voxel);
 		return true;
 	});
+}
+
+template<class Volume, class Voxel>
+void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3 control, const Voxel& voxel, int steps = 8) {
+	const core::Bezier<int> b(start, end, control);
+	const float s = 1.0f / (float) steps;
+	glm::ivec3 lastPos;
+	for (int i = 0; i < steps; ++i) {
+		const float t = s * i;
+		const glm::ivec3& pos = b.getPoint(t);
+		volume.setVoxel(pos, voxel);
+		if (i > 0) {
+			createLine(volume, pos, lastPos, voxel);
+		}
+		lastPos = pos;
+	}
 }
 
 }
