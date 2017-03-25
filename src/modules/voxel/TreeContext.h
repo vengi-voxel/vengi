@@ -14,6 +14,7 @@ enum class TreeType : int32_t {
 	CubeSideCubes,
 	Pine,
 	Fir,
+	Palm,
 	Max
 };
 

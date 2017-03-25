@@ -62,7 +62,8 @@ static const struct {
 	{"Ellipsis2",	"tree_ellipsis2",	TBIDC("tree_ellipsis2"),	voxel::TreeType::BranchesEllipsis},
 	{"Ellipsis",	"tree_ellipsis",	TBIDC("tree_ellipsis"),		voxel::TreeType::Ellipsis},
 	{"Cube",		"tree_cube",		TBIDC("tree_cube"),			voxel::TreeType::Cube},
-	{"Cube Sides",	"tree_cube2",		TBIDC("tree_cube2"),		voxel::TreeType::CubeSideCubes}
+	{"Cube Sides",	"tree_cube2",		TBIDC("tree_cube2"),		voxel::TreeType::CubeSideCubes},
+	{"Palm",		"tree_palm",		TBIDC("tree_palm"),			voxel::TreeType::Palm}
 };
 static_assert((int)SDL_arraysize(treeTypes) == (int)voxel::TreeType::Max, "Missing support for tree types in the ui");
 
