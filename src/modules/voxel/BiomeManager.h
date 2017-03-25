@@ -21,11 +21,15 @@ private:
 			Biome(VoxelType::Grass, getMaterialIndices(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
 	}
 
+	int calcTreeDistribution() const;
+	int calcCloudDistribution() const;
+	int calcPlantDistribution() const;
+
 public:
-	Biome(VoxelType _type, const MaterialColorIndices& _indices, int16_t _yMin, int16_t _yMax,
-			float _humidity, float _temperature, bool _underground) :
-			indices(_indices), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(
-					_temperature), underground(_underground), type(_type) {
+	Biome(VoxelType _type, const MaterialColorIndices& _indices, int16_t _yMin, int16_t _yMax, float _humidity, float _temperature, bool _underground) :
+			indices(_indices), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(_temperature),
+			underground(_underground), type(_type), treeDistribution(calcTreeDistribution()),
+			cloudDistribution(calcCloudDistribution()), plantDistribution(calcPlantDistribution()) {
 	}
 
 	const MaterialColorIndices indices;
@@ -35,6 +39,21 @@ public:
 	const float temperature;
 	const bool underground;
 	const VoxelType type;
+	const int treeDistribution;
+	const int cloudDistribution;
+	const int plantDistribution;
+
+	inline bool hasClouds() const {
+		return temperature > 0.9f || humidity < 0.1f;
+	}
+
+	inline bool hasTrees() const {
+		return temperature > 0.3f && humidity > 0.3f;
+	}
+
+	inline bool hasCactus() const {
+		 return humidity >= 0.5f;
+	}
 
 	inline Voxel voxel(core::Random& random) const {
 		return Voxel(type, *random.randomElement(indices.begin(), indices.end()));

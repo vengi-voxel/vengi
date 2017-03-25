@@ -15,6 +15,36 @@ static const Biome& getDefault() {
 	return biome;
 }
 
+int Biome::calcTreeDistribution() const {
+	int distribution = 100;
+	if (temperature > 0.7f || humidity < 0.2f) {
+		distribution = 150;
+	} else if (temperature > 0.9f || humidity < 0.1f) {
+		distribution = 200;
+	}
+	return distribution;
+}
+
+int Biome::calcCloudDistribution() const {
+	int distribution = 150;
+	if (temperature > 0.7f || humidity < 0.2f) {
+		distribution = 200;
+	} else if (temperature > 0.9f || humidity < 0.1f) {
+		distribution = 250;
+	}
+	return distribution;
+}
+
+int Biome::calcPlantDistribution() const {
+	int distribution = 30;
+	if (temperature > 0.7f || humidity < 0.2f) {
+		distribution = 50;
+	} else if (temperature > 0.9f || humidity < 0.1f) {
+		distribution = 100;
+	}
+	return distribution;
+}
+
 BiomeManager::BiomeManager() {
 }
 
@@ -100,13 +130,14 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 		int z = 0;
 		float humidity = -1.0f;
 		float temperature = -1.0f;
+		bool underground = false;
 	};
 
 	thread_local Last last;
 	float humidity;
 	float temperature;
 
-	if (last.humidity > -1.0f && last.x == pos.x && last.z == pos.z) {
+	if (last.humidity > -1.0f && last.x == pos.x && last.z == pos.z && last.underground == underground) {
 		humidity = last.humidity;
 		temperature = last.temperature;
 	} else {
@@ -114,6 +145,7 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 		last.temperature = temperature = getTemperature(pos.x, pos.z);
 		last.x = pos.x;
 		last.z = pos.z;
+		last.underground = underground;
 	}
 
 	const Biome *biomeBestMatch = &getDefault();
@@ -155,13 +187,7 @@ void BiomeManager::getTreePositions(const Region& region, std::vector<glm::vec2>
 		return;
 	}
 	const Biome* biome = getBiome(pos);
-	float distribution = 100.0f;
-	if (biome->temperature > 0.7f || biome->humidity < 0.2f) {
-		distribution = 150.0f;
-	} else if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
-		distribution = 200.0f;
-	}
-	distributePointsInRegion("tree", region, positions, random, border, distribution);
+	distributePointsInRegion("tree", region, positions, random, border, biome->treeDistribution);
 }
 
 void BiomeManager::getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
@@ -171,13 +197,7 @@ void BiomeManager::getPlantPositions(const Region& region, std::vector<glm::vec2
 		return;
 	}
 	const Biome* biome = getBiome(pos);
-	float distribution = 30.0f;
-	if (biome->temperature > 0.7f || biome->humidity < 0.2f) {
-		distribution = 50.0f;
-	} else if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
-		distribution = 100.0f;
-	}
-	distributePointsInRegion("plant", region, positions, random, border, distribution);
+	distributePointsInRegion("plant", region, positions, random, border, biome->plantDistribution);
 }
 
 void BiomeManager::getCloudPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
@@ -189,13 +209,7 @@ void BiomeManager::getCloudPositions(const Region& region, std::vector<glm::vec2
 	}
 
 	const Biome* biome = getBiome(pos);
-	float distribution = 150.0f;
-	if (biome->temperature > 0.7f || biome->humidity < 0.2f) {
-		distribution = 200.0f;
-	} else if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
-		distribution = 250.0f;
-	}
-	distributePointsInRegion("cloud", region, positions, random, border, distribution);
+	distributePointsInRegion("cloud", region, positions, random, border, biome->cloudDistribution);
 }
 
 bool BiomeManager::hasCactus(const glm::ivec3& pos) const {
@@ -207,7 +221,7 @@ bool BiomeManager::hasCactus(const glm::ivec3& pos) const {
 	if (!isSand(biome->type)) {
 		return false;
 	}
-	return biome->temperature > 0.9f || biome->humidity < 0.1f;
+	return biome->hasCactus();
 }
 
 bool BiomeManager::hasTrees(const glm::ivec3& pos) const {
@@ -219,10 +233,10 @@ bool BiomeManager::hasTrees(const glm::ivec3& pos) const {
 	if (!isGrass(biome->type)) {
 		return false;
 	}
-	if (biome->temperature > 0.9f || biome->humidity < 0.1f) {
+	if (biome->hasCactus()) {
 		return false;
 	}
-	return biome->temperature > 0.3f && biome->humidity > 0.3f;
+	return biome->hasTrees();
 }
 
 bool BiomeManager::hasClouds(const glm::ivec3& pos) const {
@@ -231,7 +245,7 @@ bool BiomeManager::hasClouds(const glm::ivec3& pos) const {
 		return false;
 	}
 	const Biome* biome = getBiome(pos);
-	return biome->humidity >= 0.5f;
+	return biome->hasClouds();
 }
 
 bool BiomeManager::hasPlants(const glm::ivec3& pos) const {
