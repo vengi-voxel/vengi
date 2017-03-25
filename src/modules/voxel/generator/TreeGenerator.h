@@ -124,15 +124,24 @@ static void createTrunk(Volume& volume, const TreeContext& ctx, const Voxel& vox
 	}
 }
 
+/**
+ * @return The end of the trunk to start the leaves from
+ */
+template<class Volume>
+static glm::ivec3 createBezierTrunk(Volume& volume, const TreeContext& ctx, const Voxel& voxel) {
+	// TODO:
+	createTrunk(volume, ctx, voxel);
+	return glm::ivec3(ctx.pos.x, ctx.treeTop() - 1, ctx.pos.z);
+}
+
 template<class Volume>
 void createTreePalm(Volume& volume, const TreeContext& ctx, core::Random& random) {
 	const RandomVoxel trunkVoxel(VoxelType::Wood, random);
-	createTrunk(volume, ctx, trunkVoxel);
+	const glm::ivec3& start = createBezierTrunk(volume, ctx, trunkVoxel);
 	const RandomVoxel leavesVoxel(VoxelType::Leaf, random);
 	const int branches = 6;
 	const float stepWidth = glm::radians(360.0f / (float)branches);
 	float angle = random.randomf(0.0f, glm::two_pi<float>());
-	const glm::ivec3& start = ctx.leavesTopV() - 1;
 	const float w = ctx.leavesWidth;
 	for (int b = 0; b < branches; ++b) {
 		const float x = glm::cos(angle);
@@ -140,7 +149,11 @@ void createTreePalm(Volume& volume, const TreeContext& ctx, core::Random& random
 		const int randomLength = random.random(ctx.leavesHeight - 3, ctx.leavesHeight);
 		const glm::ivec3 control(start.x - x * (w / 2.0f), start.y + 10, start.z - z * (w / 2.0f));
 		const glm::ivec3 end(start.x - x * w, start.y - randomLength, start.z - z * w);
-		shape::createBezier(volume, start, end, control, leavesVoxel, ctx.leavesHeight * 2);
+		shape::createBezierFunc(volume, start, end, control, leavesVoxel,
+			[] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const Voxel& voxel) {
+				shape::createLine(volume, pos, last, voxel);
+			},
+		ctx.leavesHeight * 2);
 		angle += stepWidth;
 	}
 }
