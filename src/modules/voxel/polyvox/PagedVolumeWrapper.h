@@ -20,6 +20,14 @@ private:
 	Region _validRegion;
 	Region _region;
 public:
+	class Sampler : public PagedVolume::Sampler {
+	private:
+		using Super = PagedVolume::Sampler;
+	public:
+		Sampler(const PagedVolumeWrapper* volume) : Super(volume->getVolume()) {}
+
+		Sampler(const PagedVolumeWrapper& volume) : Super(volume.getVolume()) {};
+	};
 
 	PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk, const Region& region) :
 			_pagedVolume(voxelStorage), _chunk(chunk), _region(region) {

@@ -17,6 +17,15 @@ private:
 	const Region& _region;
 
 public:
+	class Sampler : public RawVolume::Sampler {
+	private:
+		using Super = RawVolume::Sampler;
+	public:
+		Sampler(const RawVolumeWrapper* volume) : Super(volume->getVolume()) {}
+
+		Sampler(const RawVolumeWrapper& volume) : Super(volume.getVolume()) {};
+	};
+
 	RawVolumeWrapper(voxel::RawVolume* volume) :
 			_volume(volume), _region(volume->getRegion()) {
 	}

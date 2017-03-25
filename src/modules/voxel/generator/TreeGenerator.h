@@ -21,16 +21,22 @@ namespace tree {
  */
 template<class Volume>
 static int findFloor(const Volume& volume, int x, int z) {
-	for (int i = MAX_TERRAIN_HEIGHT - 1; i >= 0; --i) {
-		const VoxelType material = volume.getVoxel(x, i, z).getMaterial();
+	glm::ivec3 start(x, MAX_TERRAIN_HEIGHT - 1, z);
+	glm::ivec3 end(x, 0, z);
+	int y = -1;
+	voxel::raycastWithEndpoints(&volume, start, end, [&y] (const typename Volume::Sampler& sampler) {
+		const Voxel& voxel = sampler.getVoxel();
+		const VoxelType material = voxel.getMaterial();
 		if (isLeaves(material)) {
-			return -1;
+			return false;
 		}
 		if (!isRock(material) && (isFloor(material) || isWood(material))) {
-			return i + 1;
+			y = sampler.getPosition().y + 1;
+			return false;
 		}
-	}
-	return -1;
+		return true;
+	});
+	return y;
 }
 
 /**
