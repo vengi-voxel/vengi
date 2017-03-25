@@ -534,7 +534,8 @@ void Model::world(const voxel::WorldContext& ctx) {
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::world::WorldGenerator gen(mgr, 1L);
 	gen.createWorld(ctx, wrapper, 0.0f, 0.0f);
-	gen.createClouds(wrapper);
+	voxel::cloud::CloudContext cloudCtx;
+	gen.createClouds(wrapper, cloudCtx);
 	gen.createTrees(wrapper);
 	modified(modelVolume()->getRegion());
 }

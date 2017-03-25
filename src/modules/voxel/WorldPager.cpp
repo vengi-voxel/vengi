@@ -86,7 +86,8 @@ void WorldPager::create(PagedVolumeWrapper& wrapper) {
 	}
 	if ((_createFlags & voxel::world::WORLDGEN_CLOUDS) != 0) {
 		core_trace_scoped(Clouds);
-		gen.createClouds(wrapper);
+		voxel::cloud::CloudContext ctx;
+		gen.createClouds(wrapper, ctx);
 	}
 	if ((_createFlags & voxel::world::WORLDGEN_TREES) != 0) {
 		core_trace_scoped(Trees);
