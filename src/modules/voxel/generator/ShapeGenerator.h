@@ -246,8 +246,16 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 	});
 }
 
+/**
+ * @brief Places voxels along a bezier curve
+ * @param[in] start The start point for the bezier curve
+ * @param[in] end The end point for the bezier curve
+ * @param[in] control The control point for the bezier curve
+ * @param[in] voxel The @c Voxel to place
+ * @param[in] steps The amount of steps to do to get from @c start to @c end
+ */
 template<class Volume, class Voxel>
-void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3 control, const Voxel& voxel, int steps = 8) {
+void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const Voxel& voxel, int steps = 8) {
 	const core::Bezier<int> b(start, end, control);
 	const float s = 1.0f / (float) steps;
 	glm::ivec3 lastPos;
@@ -258,6 +266,31 @@ void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end
 		if (i > 0) {
 			createLine(volume, pos, lastPos, voxel);
 		}
+		lastPos = pos;
+	}
+}
+
+/**
+ * @brief Execute callback for the points on the bezier curve
+ * @param[in] start The start point for the bezier curve
+ * @param[in] end The end point for the bezier curve
+ * @param[in] control The control point for the bezier curve
+ * @param[in] voxel The @c Voxel to place
+ * @param[in] steps The amount of steps to do to get from @c start to @c end
+ * @param[in] func The functor that accepts the given volume, last position, position and the voxel
+ */
+template<class Volume, class Voxel, class F>
+void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const Voxel& voxel, F&& func, int steps = 8) {
+	const core::Bezier<int> b(start, end, control);
+	const float s = 1.0f / (float) steps;
+	glm::ivec3 lastPos;
+	for (int i = 0; i < steps; ++i) {
+		const float t = s * i;
+		const glm::ivec3& pos = b.getPoint(t);
+		if (i == 0) {
+			lastPos = pos;
+		}
+		func(volume, lastPos, pos, voxel);
 		lastPos = pos;
 	}
 }
