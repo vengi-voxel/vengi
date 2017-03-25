@@ -94,6 +94,6 @@ public:
 		voxel::tree::createTrees(volume, region, _biomManager, _random);
 	}
 };
-;
+
 }
 }
