@@ -71,9 +71,9 @@ void showNodeGraph() {
 		nge.addLink(noiseGraphNode, 0, graphNode, 0);
 
 		nge.show_style_editor = false;
-		nge.show_load_save_buttons = false;
+		nge.show_load_save_buttons = true;
 		nge.show_connection_names = false;
-		nge.show_left_pane = false;
+		nge.show_left_pane = true;
 	}
 	nge.render();
 }

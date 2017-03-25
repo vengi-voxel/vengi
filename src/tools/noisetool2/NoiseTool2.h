@@ -13,7 +13,7 @@
 class NoiseTool2: public imgui::IMGUIApp {
 private:
 	using Super = imgui::IMGUIApp;
-	bool _quit = false;
+	bool _windowOpened = true;
 
 public:
 	NoiseTool2(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);

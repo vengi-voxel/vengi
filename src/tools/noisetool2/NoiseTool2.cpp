@@ -14,10 +14,10 @@ NoiseTool2::NoiseTool2(const io::FilesystemPtr& filesystem, const core::EventBus
 void NoiseTool2::onRenderUI() {
 	ImGui::SetNextWindowPosCenter(ImGuiSetCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(dimension().x, dimension().y), ImGuiSetCond_FirstUseEver);
-	ImGui::Begin("Node graph", &_quit);
+	ImGui::Begin("Node graph", &_windowOpened);
 	showNodeGraph();
 	ImGui::End();
-	if (_quit) {
+	if (!_windowOpened) {
 		requestQuit();
 	}
 }
