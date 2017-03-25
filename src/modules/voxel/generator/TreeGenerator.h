@@ -336,11 +336,6 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 		if (y == -1) {
 			continue;
 		}
-#if 0
-		const glm::ivec3 pos = glm::ivec3(position.x, y, position.y);
-		const Voxel& voxel = createRandomColorVoxel(VoxelType::Dirt, random);
-		volume.setVoxel(pos, voxel);
-#else
 		ctx.pos = glm::ivec3(position.x, y, position.y);
 		ctx.trunkWidth = 3;
 		int size = random.random(12, maxSize);
@@ -370,7 +365,6 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 			break;
 		}
 		createTree(volume, ctx, random);
-#endif
 	}
 }
 

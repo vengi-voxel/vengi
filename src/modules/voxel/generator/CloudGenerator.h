@@ -32,14 +32,10 @@ bool createClouds(Volume& volume, const voxel::Region& region, const BiomeManage
 
 	for (const glm::vec2& position : positions) {
 		glm::ivec3 pos(position.x, region.getUpperY() - ctx.height, position.y);
-#if 0
-		volume.setVoxel(pos, voxel);
-#else
 		shape::createEllipse(volume, pos, ctx.width1, ctx.height, ctx.depth1, voxel);
 		pos.x += ctx.deltaX;
 		pos.y += ctx.deltaY;
 		shape::createEllipse(volume, pos, ctx.width2, ctx.height, ctx.depth2, voxel);
-#endif
 	}
 	return !positions.empty();
 }
