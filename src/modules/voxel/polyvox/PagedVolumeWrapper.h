@@ -23,10 +23,38 @@ public:
 	class Sampler : public PagedVolume::Sampler {
 	private:
 		using Super = PagedVolume::Sampler;
+		PagedVolume::Chunk* _chunk;
 	public:
-		Sampler(const PagedVolumeWrapper* volume) : Super(volume->getVolume()) {}
+		Sampler(const PagedVolumeWrapper* volume) : Super(volume->getVolume()), _chunk(volume->_chunk) {}
 
-		Sampler(const PagedVolumeWrapper& volume) : Super(volume.getVolume()) {};
+		Sampler(const PagedVolumeWrapper& volume) : Super(volume.getVolume()), _chunk(volume._chunk) {};
+
+		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos) override {
+			_xPosInVolume = xPos;
+			_yPosInVolume = yPos;
+			_zPosInVolume = zPos;
+
+			// Then we update the voxel pointer
+			const int32_t xChunk = _xPosInVolume >> _volume->_chunkSideLengthPower;
+			const int32_t yChunk = _yPosInVolume >> _volume->_chunkSideLengthPower;
+			const int32_t zChunk = _zPosInVolume >> _volume->_chunkSideLengthPower;
+
+			_xPosInChunk = static_cast<uint16_t>(_xPosInVolume - (xChunk << _volume->_chunkSideLengthPower));
+			_yPosInChunk = static_cast<uint16_t>(_yPosInVolume - (yChunk << _volume->_chunkSideLengthPower));
+			_zPosInChunk = static_cast<uint16_t>(_zPosInVolume - (zChunk << _volume->_chunkSideLengthPower));
+			uint32_t voxelIndexInChunk = morton256_x[_xPosInChunk] | morton256_y[_yPosInChunk] | morton256_z[_zPosInChunk];
+
+			PagedVolume::Chunk* currentChunk;
+			const glm::ivec3& p = _chunk->_chunkSpacePosition;
+			if (p.x == xChunk && p.y == yChunk && p.z == zChunk) {
+				currentChunk = _chunk;
+			} else {
+				PagedVolume::VolumeLockGuard scopedLock(_volume->_lock);
+				currentChunk = _volume->getChunk(xChunk, yChunk, zChunk);
+			}
+
+			_currentVoxel = currentChunk->_data + voxelIndexInChunk;
+		}
 	};
 
 	PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk, const Region& region) :

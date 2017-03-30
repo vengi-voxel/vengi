@@ -29,6 +29,7 @@ namespace voxel {
  * the volume has been created you can begin accessing voxels anywhere in space and the required data will be created automatically.
  */
 class PagedVolume: public core::NonCopyable {
+	friend class PagedVolumeWrapper;
 public:
 	/// The PagedVolume stores it data as a set of Chunk instances which can be loaded and unloaded as memory requirements dictate.
 	class Chunk;
@@ -37,6 +38,7 @@ public:
 
 	class Chunk {
 		friend class PagedVolume;
+		friend class PagedVolumeWrapper;
 
 	public:
 		Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager = nullptr);
@@ -119,7 +121,7 @@ public:
 		}
 
 		void setPosition(const glm::ivec3& v3dNewPos);
-		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
+		virtual void setPosition(int32_t xPos, int32_t yPos, int32_t zPos);
 		bool setVoxel(const Voxel& tValue);
 		glm::ivec3 getPosition() const;
 
@@ -161,7 +163,7 @@ public:
 		const Voxel& peekVoxel1px1py0pz() const;
 		const Voxel& peekVoxel1px1py1pz() const;
 
-	private:
+	protected:
 		const PagedVolume* _volume;
 
 		//The current position in the volume
