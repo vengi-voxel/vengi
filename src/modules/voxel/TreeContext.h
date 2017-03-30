@@ -15,6 +15,7 @@ enum class TreeType : int32_t {
 	Pine,
 	Fir,
 	Palm,
+	SpaceColonization,
 	Max
 };
 

@@ -54,16 +54,17 @@ static const struct {
 	tb::TBID tbid;
 	voxel::TreeType type;
 } treeTypes[] = {
-	{"Pine",		"tree_pine",		TBIDC("tree_pine"),			voxel::TreeType::Pine},
-	{"Dome",		"tree_dome",		TBIDC("tree_dome"),			voxel::TreeType::Dome},
-	{"Dome Hanging","tree_dome2",		TBIDC("tree_dome2"),		voxel::TreeType::DomeHangingLeaves},
-	{"Cone",		"tree_cone",		TBIDC("tree_cone"),			voxel::TreeType::Cone},
-	{"Fir",			"tree_fir",			TBIDC("tree_fir"),			voxel::TreeType::Fir},
-	{"Ellipsis2",	"tree_ellipsis2",	TBIDC("tree_ellipsis2"),	voxel::TreeType::BranchesEllipsis},
-	{"Ellipsis",	"tree_ellipsis",	TBIDC("tree_ellipsis"),		voxel::TreeType::Ellipsis},
-	{"Cube",		"tree_cube",		TBIDC("tree_cube"),			voxel::TreeType::Cube},
-	{"Cube Sides",	"tree_cube2",		TBIDC("tree_cube2"),		voxel::TreeType::CubeSideCubes},
-	{"Palm",		"tree_palm",		TBIDC("tree_palm"),			voxel::TreeType::Palm}
+	{"Pine",				"tree_pine",				TBIDC("tree_pine"),					voxel::TreeType::Pine},
+	{"Dome",				"tree_dome",				TBIDC("tree_dome"),					voxel::TreeType::Dome},
+	{"Dome Hanging",		"tree_dome2",				TBIDC("tree_dome2"),				voxel::TreeType::DomeHangingLeaves},
+	{"Cone",				"tree_cone",				TBIDC("tree_cone"),					voxel::TreeType::Cone},
+	{"Fir",					"tree_fir",					TBIDC("tree_fir"),					voxel::TreeType::Fir},
+	{"Ellipsis2",			"tree_ellipsis2",			TBIDC("tree_ellipsis2"),			voxel::TreeType::BranchesEllipsis},
+	{"Ellipsis",			"tree_ellipsis",			TBIDC("tree_ellipsis"),				voxel::TreeType::Ellipsis},
+	{"Cube",				"tree_cube",				TBIDC("tree_cube"),					voxel::TreeType::Cube},
+	{"Cube Sides",			"tree_cube2",				TBIDC("tree_cube2"),				voxel::TreeType::CubeSideCubes},
+	{"Palm",				"tree_palm",				TBIDC("tree_palm"),					voxel::TreeType::Palm},
+	{"SpaceColonization",	"tree_spacecolonization",	TBIDC("tree_spacecolonization"),	voxel::TreeType::SpaceColonization}
 };
 static_assert((int)SDL_arraysize(treeTypes) == (int)voxel::TreeType::Max, "Missing support for tree types in the ui");
 
