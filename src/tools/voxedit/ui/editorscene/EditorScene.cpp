@@ -230,6 +230,10 @@ void EditorScene::noise(int octaves, float lacunarity, float frequency, float ga
 	m().noise(octaves, lacunarity, frequency, gain, type);
 }
 
+void EditorScene::spaceColonization() {
+	m().spaceColonization();
+}
+
 void EditorScene::lsystem(const voxel::lsystem::LSystemContext& ctx) {
 	m().lsystem(ctx);
 }

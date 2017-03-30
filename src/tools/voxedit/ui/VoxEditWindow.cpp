@@ -446,6 +446,9 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 	} else if (isAny(ev, TBIDC("export"))) {
 		exportFile("");
 		return true;
+	} else if (isAny(ev, TBIDC("spacecolonization"))) {
+		_scene->spaceColonization();
+		return true;
 	} else if (isAny(ev, TBIDC("heightmap"))) {
 		importHeightmp("");
 		return true;

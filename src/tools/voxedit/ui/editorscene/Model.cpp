@@ -303,6 +303,11 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	delete _rawVolumeRenderer.setVolume(ModelVolumeIndex, volume);
 	delete _rawVolumeRenderer.setVolume(CursorVolumeIndex, new voxel::RawVolume(region));
 
+	if (_spaceColonizationTree != nullptr) {
+		delete _spaceColonizationTree;
+		_spaceColonizationTree = nullptr;
+	}
+
 	if (volume != nullptr) {
 		const voxel::Region& region = volume->getRegion();
 		_gridRenderer.update(region);
@@ -460,6 +465,19 @@ void Model::init() {
 }
 
 void Model::update() {
+	const long ms = core::App::getInstance()->currentMillis();
+	if (_spaceColonizationTree != nullptr && ms - _lastGrow > 1000L) {
+		const bool growing = _spaceColonizationTree->grow();
+		_lastGrow = ms;
+		voxel::RawVolumeWrapper wrapper(modelVolume());
+		_spaceColonizationTree->generate(wrapper);
+		modified(modelVolume()->getRegion());
+		if (!growing) {
+			delete _spaceColonizationTree;
+			_spaceColonizationTree = nullptr;
+		}
+	}
+
 	extractVolume();
 	extractCursorVolume();
 	extractSelectionVolume();
@@ -485,6 +503,11 @@ void Model::shutdown() {
 		for (voxel::RawVolume* v : old) {
 			delete v;
 		}
+	}
+
+	if (_spaceColonizationTree != nullptr) {
+		delete _spaceColonizationTree;
+		_spaceColonizationTree = nullptr;
 	}
 
 	_shapeRenderer.shutdown();
@@ -524,6 +547,19 @@ void Model::noise(int octaves, float lacunarity, float frequency, float gain, vo
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
+	modified(modelVolume()->getRegion());
+}
+
+void Model::spaceColonization() {
+	voxel::RawVolumeWrapper wrapper(modelVolume());
+	core::AABB<int> aabb = modelVolume()->getRegion().aabb();
+	const int heightShift = aabb.getWidthY() / 4;
+	aabb.shiftLowerCorner(0, heightShift, 0);
+	aabb.shrink(4);
+	_lastGrow = core::App::getInstance()->currentMillis();
+	_spaceColonizationTree = new voxel::tree::Tree(aabb, aabb.getWidthY(), 6, _lastGrow);
+	_spaceColonizationTree->grow();
+	_spaceColonizationTree->generate(wrapper);
 	modified(modelVolume()->getRegion());
 }
 

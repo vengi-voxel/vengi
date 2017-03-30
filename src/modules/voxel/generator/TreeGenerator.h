@@ -12,6 +12,11 @@
 #include "ShapeGenerator.h"
 #include "CactusGenerator.h"
 #include "LSystemGenerator.h"
+#include "core/AABB.h"
+#include "core/Log.h"
+
+#include <unordered_map>
+#include <functional>
 
 namespace voxel {
 namespace tree {
@@ -431,6 +436,255 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 		createTree(volume, ctx, random);
 	}
 }
+
+class Branch;
+
+struct Leaf {
+	glm::vec3 _position;
+	Branch* _closestBranch = nullptr;
+
+	Leaf(const glm::vec3& position) :
+			_position(position) {
+	}
+
+	template<class Volume, class Voxel>
+	void generate(Volume& volume, const Voxel& voxel) const {
+		const int size = 4;
+		voxel::shape::createEllipse(volume, _position, size, size, size, voxel);
+	}
+};
+
+class Branch {
+public:
+	Branch *_parent;
+	glm::vec3 _position;
+	glm::vec3 _growDirection;
+	glm::vec3 _originalGrowDirection;
+	int _growCount = 0;
+	float _size;
+
+	Branch(Branch* parent, const glm::vec3& position, const glm::vec3& growDirection, float size) :
+			_parent(parent), _position(position), _growDirection(growDirection), _originalGrowDirection(growDirection), _size(size) {
+	}
+
+	void reset() {
+		_growCount = 0;
+		_growDirection = _originalGrowDirection;
+	}
+
+	template<class Volume, class Voxel>
+	void generate(Volume& volume, Voxel& trunkVoxel) const {
+		if (_parent == nullptr) {
+			return;
+		}
+		voxel::shape::createLine(volume, _position, _parent->_position, trunkVoxel, std::max(1, (int)(_size + 0.5f)));
+	}
+};
+
+/**
+ * http://www.jgallant.com/procedurally-generating-trees-with-space-colonization-algorithm-in-xna/
+ */
+class Tree {
+private:
+	bool _doneGrowing = false;
+	glm::vec3 _position;
+
+	int _leafCount = 400;
+	int _treeWidth = 80;
+	int _treeDepth = 80;
+	int _treeHeight = 150;
+	int _trunkHeight = 40;
+	int _minDistance = 6;
+	int _maxDistance = 10;
+	int _branchLength = 2;
+	float _branchSize = 4.0f;
+	float _trunkSizeFactor = 0.8f;
+	float _branchSizeFactor = 0.6f;
+
+	Branch *_root;
+	std::vector<Leaf> _leaves;
+	std::unordered_map<glm::vec3, Branch*, Vec3Hash, Vec3Hash> _branches;
+	core::Random _random;
+
+	core::AABB<int> _crown;
+
+	void generateCrown(int radius) {
+		const int radiusSquare = radius * radius;
+		const glm::vec3 center(_crown.getCenter());
+		// randomly place leaves within our rectangle
+		for (int i = 0; i < _leafCount; ++i) {
+			const glm::vec3 location(
+					_random.random(_crown.getLowerX(), _crown.getUpperX()),
+					_random.random(_crown.getLowerY(), _crown.getUpperY()),
+					_random.random(_crown.getLowerZ(), _crown.getUpperZ()));
+			if (glm::distance2(location, center) < radiusSquare) {
+				_leaves.emplace_back(Leaf(location));
+			}
+		}
+	}
+
+	void generateTrunk() {
+		_root = new Branch(nullptr, _position, glm::up, _branchSize);
+		_branches.insert(std::make_pair(_root->_position, _root));
+
+		Branch* current = new Branch(_root,
+				glm::vec3(_position.x, _position.y - _branchLength, _position.z),
+				glm::up, _branchSize);
+		_branches.insert(std::make_pair(current->_position, current));
+
+		// grow until the trunk height is reached
+		while (glm::length(_root->_position - current->_position) < _trunkHeight) {
+			Branch *trunk = new Branch(current,
+					glm::vec3(current->_position.x, current->_position.y - _branchLength, current->_position.z),
+					glm::up, _branchSize);
+			_branches.insert(std::make_pair(trunk->_position, trunk));
+			current = trunk;
+			_branchSize *= _trunkSizeFactor;
+		}
+	}
+
+public:
+	Tree(const glm::vec3& position) :
+			_position(position), _crown((int) _position.x - _treeWidth / 2,
+					(int) _position.y - _treeHeight - _trunkHeight, (int) _position.z - _treeDepth / 2,_treeWidth,
+					_treeHeight, _treeDepth) {
+		generateCrown(_treeWidth / 2);
+		generateTrunk();
+	}
+
+	Tree(const core::AABB<int>& crownAABB, int trunkHeight, int branchLength, int seed = 0) :
+			_position(crownAABB.getLowerCenter()), _trunkHeight(trunkHeight), _branchLength(branchLength), _random(seed), _crown(crownAABB) {
+		_treeWidth = crownAABB.getWidthX();
+		_treeHeight = crownAABB.getWidthY();
+		_treeDepth = crownAABB.getWidthZ();
+		_leafCount = _treeDepth * 10;
+		generateCrown(_treeWidth / 2);
+		generateTrunk();
+	}
+
+	~Tree() {
+		delete _root;
+		for (auto &e : _branches) {
+			delete e.second;
+		}
+		_branches.clear();
+	}
+
+	bool grow() {
+		if (_doneGrowing) {
+			return false;
+		}
+
+		// If no leaves left, we are done
+		if (_leaves.empty()) {
+			_doneGrowing = true;
+			return false;
+		}
+
+		// process the leaves
+		for (auto leavesiter = _leaves.begin(); leavesiter != _leaves.end();) {
+			bool leafRemoved = false;
+			Leaf& leaf = *leavesiter;
+
+			leaf._closestBranch = nullptr;
+
+			// Find the nearest branch for this leaf
+			for (auto iter = _branches.begin(); iter != _branches.end(); ++iter) {
+				Branch* b = iter->second;
+				// direction to branch from leaf
+				glm::vec3 direction = leaf._position - b->_position;
+				// distance to branch from leaf
+				const float distance = (float) glm::round(glm::length(direction));
+				direction = glm::normalize(direction);
+
+				// Min leaf distance reached, we remove it
+				if (distance <= _minDistance) {
+					leavesiter = _leaves.erase(leavesiter);
+					leafRemoved = true;
+					break;
+				} else if (distance <= _maxDistance) {
+					// branch in range, determine if it is the nearest
+					if (leaf._closestBranch == nullptr) {
+						leaf._closestBranch = b;
+					} else if (glm::length(leaf._position - leaf._closestBranch->_position) > distance) {
+						leaf._closestBranch = b;
+					}
+				}
+			}
+
+			// if the leaf was removed, skip
+			if (leafRemoved) {
+				continue;
+			}
+
+			++leavesiter;
+
+			// Set the grow parameters on all the closest branches that are in range
+			if (leaf._closestBranch == nullptr) {
+				continue;
+			}
+			const glm::vec3& dir = glm::normalize(leaf._position - leaf._closestBranch->_position);
+			// add to grow direction of branch
+			leaf._closestBranch->_growDirection += dir;
+			leaf._closestBranch->_growCount++;
+		}
+
+		// Generate the new branches
+		std::vector<Branch*> newBranches;
+		for (auto& e : _branches) {
+			Branch* b = e.second;
+			// if at least one leaf is affecting the branch
+			if (b->_growCount <= 0) {
+				continue;
+			}
+			const glm::vec3& avgDirection = glm::normalize(b->_growDirection / (float)b->_growCount);
+			const glm::vec3& branchPos = b->_position + avgDirection * (float)_branchLength;
+			Branch *newBranch = new Branch(b, branchPos, avgDirection, b->_size * _branchSizeFactor);
+			newBranches.push_back(newBranch);
+			b->reset();
+		}
+
+		if (newBranches.empty()) {
+			return false;
+		}
+
+		// Add the new branches to the tree
+		bool branchAdded = false;
+		for (Branch* b : newBranches) {
+			// Check if branch already exists. These cases seem to
+			// happen when leaf is in specific areas
+			auto findIter = _branches.find(b->_position);
+			if (findIter == _branches.end()) {
+				_branches.insert(std::make_pair(b->_position, b));
+				branchAdded = true;
+			}
+		}
+
+		// if no branches were added - we are done
+		// this handles issues where leaves equal out each other,
+		// making branches grow without ever reaching the leaf
+		if (!branchAdded) {
+			_doneGrowing = true;
+			return false;
+		}
+
+		return true;
+	}
+
+	template<class Volume>
+	void generate(Volume& volume) const {
+		Log::debug("Generate for %i leaves and %i branches", (int)_leaves.size(), (int)_branches.size());
+		const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, _random);
+		for (const Leaf& l : _leaves) {
+			l.generate(volume, leavesVoxel);
+		}
+
+		const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, _random);
+		for (const auto& e : _branches) {
+			e.second->generate(volume, woodRandomVoxel);
+		}
+	}
+};
 
 }
 }

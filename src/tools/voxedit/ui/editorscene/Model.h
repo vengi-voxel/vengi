@@ -71,6 +71,9 @@ private:
 
 	voxel::PickResult _result;
 
+	long _lastGrow = 0l;
+	voxel::tree::Tree *_spaceColonizationTree = nullptr;
+
 	int getIndexForAxis(Axis axis) const;
 	int getIndexForMirrorAxis(Axis axis) const;
 	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, Axis axis, const glm::vec4& color);
@@ -146,6 +149,7 @@ public:
 	frontend::RawVolumeRenderer& rawVolumeSelectionRenderer();
 	const frontend::RawVolumeRenderer& rawVolumeSelectionRenderer() const;
 
+	void spaceColonization();
 	void noise(int octaves, float persistence, float lacunarity, float gain, voxel::noise::NoiseType type);
 	void lsystem(const voxel::lsystem::LSystemContext& lsystemCtx);
 	void createTree(voxel::TreeContext ctx);

@@ -33,6 +33,17 @@
 #include <limits>
 #include <cmath>
 
+struct Vec3Hash {
+	inline size_t operator()(const glm::vec3& k) const {
+		return std::hash<float>()(k.x) ^ std::hash<float>()(k.y) ^ std::hash<float>()(k.z);
+	}
+
+	inline bool operator()(const glm::vec3& a, const glm::vec3& b) const {
+		const float eps = a.x - b.x < glm::epsilon<float>();
+		return a.x - b.x < eps && a.y - b.y < eps && a.z - b.z < eps;
+	}
+};
+
 namespace glm {
 extern const glm::vec3 forward;
 extern const glm::vec3 backward;

@@ -27,6 +27,7 @@
 // TODO: extrude
 // TODO: scale/move/rotate selections - not only the cursor or whole model
 // TODO: lsystem parameter window needs the voxel options and should show information about the used alphabet
+// TODO: move space colonization tree generator into the tree submenu and take the ToolWindow parameters into account
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const video::MeshPoolPtr& meshPool) :
 		ui::UIApp(filesystem, eventBus, timeProvider), _mainWindow(nullptr), _meshPool(meshPool) {
 	init(ORGANISATION, "voxedit");
