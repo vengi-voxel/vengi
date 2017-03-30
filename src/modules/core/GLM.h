@@ -30,6 +30,7 @@
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
+#include <functional>
 #include <limits>
 #include <cmath>
 
