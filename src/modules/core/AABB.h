@@ -18,6 +18,10 @@ template<typename TYPE>
 class AABB {
 public:
 	AABB(const glm::tvec3<TYPE>& mins, const glm::tvec3<TYPE>& maxs);
+	inline AABB(TYPE minsX, TYPE minsY, TYPE minsZ, TYPE maxsX, TYPE maxsY, TYPE maxsZ) :
+			AABB(glm::tvec3<TYPE>(minsX, minsY, minsZ),
+				glm::tvec3<TYPE>(maxsX, maxsY, maxsZ)) {
+	}
 
 	static AABB construct(const glm::tvec3<TYPE>* vertices, size_t size) {
 		static constexpr TYPE max = std::numeric_limits<TYPE>::max();
@@ -89,6 +93,10 @@ public:
 	glm::tvec3<TYPE> getLowerCorner() const;
 	/// Gets the position of the upper corner.
 	glm::tvec3<TYPE> getUpperCorner() const;
+	/// Gets the position of the lower corner.
+	glm::tvec3<TYPE> mins() const { return getLowerCorner(); }
+	/// Gets the position of the upper corner.
+	glm::tvec3<TYPE> maxs() const { return getUpperCorner(); }
 
 	/// Sets the 'x' position of the lower corner.
 	void setLowerX(TYPE iX);
@@ -273,7 +281,7 @@ inline glm::tvec3<TYPE> AABB<TYPE>::getCenter() const {
  */
 template<typename TYPE>
 inline glm::tvec3<TYPE> AABB<TYPE>::getLowerCorner() const {
-	return glm::tvec3<TYPE>(_mins.x, _mins.y, _mins.z);
+	return _mins;
 }
 
 /**
@@ -281,7 +289,7 @@ inline glm::tvec3<TYPE> AABB<TYPE>::getLowerCorner() const {
  */
 template<typename TYPE>
 inline glm::tvec3<TYPE> AABB<TYPE>::getUpperCorner() const {
-	return glm::tvec3<TYPE>(_maxs.x, _maxs.y, _maxs.z);
+	return _maxs;
 }
 
 /**
