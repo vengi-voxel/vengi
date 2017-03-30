@@ -462,7 +462,13 @@ void createTree(Volume& volume, const TreeContext& ctx, core::Random& random) {
 	} else if (ctx.type == TreeType::CubeSideCubes) {
 		createTreeCubeSideCubes(volume, ctx, random);
 	} else if (ctx.type == TreeType::SpaceColonization) {
-		Tree tree(ctx.pos, ctx.trunkHeight / 2, 6, ctx.leavesWidth, ctx.leavesDepth, ctx.leavesHeight, ctx.pos.x);
+		const int branchLength = 6;
+		const int treeWidth = ctx.leavesWidth;
+		const int treeDepth = ctx.leavesDepth;
+		const int treeHeight = ctx.leavesHeight;
+		const float branchSize = ctx.trunkWidth;
+		const int seed = ctx.pos.x;
+		Tree tree(ctx.pos, ctx.trunkHeight, branchLength, treeWidth, treeDepth, treeHeight, branchSize, seed);
 		while (tree.grow()) {
 		}
 		tree.generate(volume);
@@ -493,6 +499,12 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 		case TreeType::Fir:
 			ctx.leavesHeight = random.random(20, 28);
 			ctx.trunkHeight = ctx.leavesHeight * 2;
+			break;
+		case TreeType::SpaceColonization:
+			ctx.leavesHeight = random.random(20, 28);
+			ctx.trunkHeight = ctx.leavesHeight * 2;
+			ctx.leavesWidth = ctx.leavesDepth = maxSize;
+			ctx.trunkWidth = 4;
 			break;
 		case TreeType::Pine:
 		case TreeType::Cone:
