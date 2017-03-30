@@ -446,6 +446,11 @@ macro(engine_add_executable)
 	set(BIN_DIR "${_EXE_TARGET}")
 	set(ICON_DIR ".")
 
+	if (SANITIZER_THREADS AND NOT ${_EXE_TARGET} STREQUAL "databasetool" AND NOT ${_EXE_TARGET} STREQUAL "shadertool" AND NOT ${_EXE_TARGET} STREQUAL "uitool")
+		set_target_properties(${_EXE_TARGET} PROPERTIES COMPILE_FLAGS "${SANITIZE_THREAD_FLAG}")
+		set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "${SANITIZE_THREAD_FLAG}")
+	endif()
+
 	if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 		set(SHARE_DIR "shared")
 		set(GAMES_DIR "${SHARE_DIR}/${_EXE_TARGET}")

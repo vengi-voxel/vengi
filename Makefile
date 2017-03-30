@@ -63,6 +63,11 @@ BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)/gprof
 CMAKE_OPTIONS    += -DUSE_GPROF=True
 endif
 
+ifneq ($(THREADS),)
+BUILDDIR         ?= $(BUILDDIRPATH)build/$(BUILD_TYPE)/threads
+CMAKE_OPTIONS    += -DSANITIZER_THREADS=True
+endif
+
 #VOGL_OPTIONS     ?= --vogl_force_debug_context --vogl_exit_after_x_frames 2000
 VOGL_OPTIONS     ?= --vogl_force_debug_context
 VOGL             ?=
