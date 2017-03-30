@@ -33,6 +33,7 @@
 
 #include <vector>
 #include "core/Rect.h"
+#include "core/AABB.h"
 
 namespace noise {
 
@@ -45,6 +46,18 @@ namespace noise {
  */
 std::vector<glm::vec2> poissonDiskDistribution(float separation, const core::Rect<int> &area, const std::vector<glm::vec2> &initialSet =
 		std::vector<glm::vec2>(), int k = 30);
+
+
+/**
+ * returns a set of poisson disk samples inside an axis aligned bounding box,
+ * with a minimum \a separation and with a packing determined by how
+ * high \a k is. The higher \a k is the higher the algorithm will be slow.
+ * If no \a initialSet of points is provided the area center will be used
+ * as the initial point.
+ */
+std::vector<glm::vec3> poissonDiskDistribution(float separation, const core::AABB<int> &area, const std::vector<glm::vec3> &initialSet =
+		std::vector<glm::vec3>(), int k = 30);
+
 /**
  * returns a set of poisson disk samples inside a rectangular \a area,
  * with a minimum separation defined by what \a distFunction returns and

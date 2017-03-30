@@ -28,4 +28,13 @@ TEST_F(PoissonDiskDistributionTest, testAreaOffset) {
 	EXPECT_EQ(positions.size(), 51u);
 }
 
+TEST_F(PoissonDiskDistributionTest, testAABB) {
+	const core::AABB<int> aabb(0, 0, 0, 64, 64, 64);
+	const std::vector<glm::vec3>& positions = noise::poissonDiskDistribution(15.0f, aabb);
+	for (const glm::vec3& p : positions) {
+		ASSERT_TRUE(aabb.containsPoint(glm::ivec3(p))) << glm::to_string(p) << " is not part of " << glm::to_string(aabb.mins()) << "/" << glm::to_string(aabb.maxs());
+	}
+	EXPECT_EQ(positions.size(), 60u);
+}
+
 }
