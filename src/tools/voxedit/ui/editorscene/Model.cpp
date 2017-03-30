@@ -405,7 +405,17 @@ void Model::render(const video::Camera& camera) {
 	_gridRenderer.render(camera, modelVolume()->getRegion());
 	_rawVolumeRenderer.render(camera);
 	// TODO: render error if rendered last - but be before grid renderer to get transparency.
-	_shapeRenderer.renderAll(camera);
+	if (_renderLockAxis) {
+		for (int i = 0; i < (int)SDL_arraysize(_planeMeshIndex); ++i) {
+			if (_planeMeshIndex[i] == -1) {
+				continue;
+			}
+			_shapeRenderer.render(_planeMeshIndex[i], camera);
+		}
+	}
+	if (_mirrorMeshIndex != -1) {
+		_shapeRenderer.render(_mirrorMeshIndex, camera);
+	}
 	renderSelection(camera);
 }
 

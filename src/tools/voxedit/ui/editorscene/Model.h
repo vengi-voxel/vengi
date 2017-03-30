@@ -193,6 +193,7 @@ public:
 public:
 	// TODO: maybe move into scene
 	bool _renderAxis = true;
+	bool _renderLockAxis = true;
 	// the key action - has a higher priority than the ui action
 	Action _keyAction = Action::None;
 	// action that is selected via ui

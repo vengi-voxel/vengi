@@ -174,8 +174,9 @@ bool VoxEditWindow::init() {
 	_showAABB = getWidgetByType<tb::TBCheckBox>("optionshowaabb");
 	_showGrid = getWidgetByType<tb::TBCheckBox>("optionshowgrid");
 	_showAxis = getWidgetByType<tb::TBCheckBox>("optionshowaxis");
+	_showLockAxis = getWidgetByType<tb::TBCheckBox>("optionshowlockaxis");
 	_freeLook = getWidgetByType<tb::TBCheckBox>("optionfreelook");
-	if (_showAABB == nullptr || _showGrid == nullptr || _showAxis == nullptr || _freeLook == nullptr) {
+	if (_showAABB == nullptr || _showGrid == nullptr || _showLockAxis == nullptr || _showAxis == nullptr || _freeLook == nullptr) {
 		Log::error("Could not load all required widgets");
 		return false;
 	}
@@ -183,6 +184,7 @@ bool VoxEditWindow::init() {
 	_showAABB->SetValue(_scene->renderAABB() ? 1 : 0);
 	_showGrid->SetValue(_scene->renderGrid() ? 1 : 0);
 	_showAxis->SetValue(_scene->renderAxis() ? 1 : 0);
+	_showLockAxis->SetValue(_scene->renderLockAxis() ? 1 : 0);
 	_freeLook->SetValue(_scene->camera().rotationType() == video::CameraRotationType::Eye ? 1 : 0);
 
 	Assimp::Exporter exporter;
@@ -495,6 +497,9 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (isAny(ev, TBIDC("optionshowaxis"))) {
 		_scene->setRenderAxis(ev.target->GetValue() == 1);
+		return true;
+	} else if (isAny(ev, TBIDC("optionshowlockaxis"))) {
+		_scene->setRenderLockAxis(ev.target->GetValue() == 1);
 		return true;
 	} else if (isAny(ev, TBIDC("optionshowaabb"))) {
 		_scene->setRenderAABB(ev.target->GetValue() == 1);

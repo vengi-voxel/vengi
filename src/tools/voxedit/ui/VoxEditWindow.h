@@ -58,6 +58,7 @@ private:
 	tb::TBCheckBox *_showGrid = nullptr;
 	tb::TBCheckBox *_showAABB = nullptr;
 	tb::TBCheckBox *_showAxis = nullptr;
+	tb::TBCheckBox *_showLockAxis = nullptr;
 	tb::TBCheckBox *_freeLook = nullptr;
 
 	std::string _exportFilter;

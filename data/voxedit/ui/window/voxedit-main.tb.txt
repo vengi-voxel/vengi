@@ -237,6 +237,8 @@ TBLayout: distribution: gravity, axis: y
 								TBCheckBox: id: optionshowgrid, skin: grid-button
 							TBClickLabel: text: Show axis
 								TBCheckBox: id: optionshowaxis
+							TBClickLabel: text: Show locked axis
+								TBCheckBox: id: optionshowlockaxis
 							TBClickLabel: text: Free look
 								TBCheckBox: id: optionfreelook
 							TBClickLabel: text: Bounding box

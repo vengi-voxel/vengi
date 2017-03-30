@@ -98,6 +98,9 @@ public:
 	bool renderAxis() const;
 	void setRenderAxis(bool renderAxis);
 
+	bool renderLockAxis() const;
+	void setRenderLockAxis(bool renderLockAxis);
+
 	bool renderAABB() const;
 	void setRenderAABB(bool renderAABB);
 

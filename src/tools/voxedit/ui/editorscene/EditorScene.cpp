@@ -300,11 +300,19 @@ void EditorScene::setActionExecutionDelay(long actionExecutionDelay) {
 }
 
 bool EditorScene::renderAxis() const {
-	return m()._renderAxis;
+	return m().renderAxis();
 }
 
 void EditorScene::setRenderAxis(bool renderAxis) {
 	m()._renderAxis = renderAxis;
+}
+
+bool EditorScene::renderLockAxis() const {
+	return m()._renderLockAxis;
+}
+
+void EditorScene::setRenderLockAxis(bool renderLockAxis) {
+	m()._renderLockAxis = renderLockAxis;
 }
 
 bool EditorScene::isDirty() const {
