@@ -6,10 +6,12 @@
 
 #include <cstdint>
 
+#if 0
 #ifdef _MSC_VER
 #define EASY_PROFILER_ENABLED 0
 #else
 #define EASY_PROFILER_ENABLED 1
+#endif
 #endif
 #if EASY_PROFILER_ENABLED
 #ifndef BUILD_WITH_EASY_PROFILER
