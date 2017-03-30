@@ -43,7 +43,7 @@ public:
 	const int cloudDistribution;
 	const int plantDistribution;
 
-	inline bool hasClouds() const {
+	inline bool hasCactus() const {
 		return temperature > 0.9f || humidity < 0.1f;
 	}
 
@@ -51,7 +51,7 @@ public:
 		return temperature > 0.3f && humidity > 0.3f;
 	}
 
-	inline bool hasCactus() const {
+	inline bool hasClouds() const {
 		 return humidity >= 0.5f;
 	}
 
