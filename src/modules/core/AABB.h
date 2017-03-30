@@ -89,6 +89,7 @@ public:
 
 	/// Gets the center of the AABB
 	glm::tvec3<TYPE> getCenter() const;
+	glm::tvec3<TYPE> getLowerCenter() const;
 	/// Gets the position of the lower corner.
 	glm::tvec3<TYPE> getLowerCorner() const;
 	/// Gets the position of the upper corner.
@@ -274,6 +275,11 @@ inline TYPE AABB<TYPE>::getUpperZ() const {
 template<typename TYPE>
 inline glm::tvec3<TYPE> AABB<TYPE>::getCenter() const {
 	return glm::tvec3<TYPE>(getCenterX(), getCenterY(), getCenterZ());
+}
+
+template<typename TYPE>
+inline glm::tvec3<TYPE> AABB<TYPE>::getLowerCenter() const {
+	return glm::tvec3<TYPE>(getCenterX(), getLowerY(), getCenterZ());
 }
 
 /**
