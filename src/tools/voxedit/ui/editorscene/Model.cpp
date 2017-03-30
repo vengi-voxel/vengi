@@ -551,16 +551,18 @@ void Model::noise(int octaves, float lacunarity, float frequency, float gain, vo
 }
 
 void Model::spaceColonization() {
-	voxel::RawVolumeWrapper wrapper(modelVolume());
-	core::AABB<int> aabb = modelVolume()->getRegion().aabb();
+	const voxel::Region& region = modelVolume()->getRegion();
+	core::AABB<int> aabb = region.aabb();
 	const int heightShift = aabb.getWidthY() / 4;
 	aabb.shiftLowerCorner(0, heightShift, 0);
 	aabb.shrink(4);
 	_lastGrow = core::App::getInstance()->currentMillis();
-	_spaceColonizationTree = new voxel::tree::Tree(aabb, aabb.getWidthY(), 6, _lastGrow);
+	_spaceColonizationTree = new voxel::tree::Tree(aabb, heightShift, 6, _lastGrow);
 	_spaceColonizationTree->grow();
+
+	voxel::RawVolumeWrapper wrapper(modelVolume());
 	_spaceColonizationTree->generate(wrapper);
-	modified(modelVolume()->getRegion());
+	modified(region);
 }
 
 void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {

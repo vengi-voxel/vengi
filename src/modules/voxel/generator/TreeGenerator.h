@@ -32,9 +32,8 @@ struct Leaf {
 	}
 
 	template<class Volume, class Voxel>
-	void generate(Volume& volume, const Voxel& voxel) const {
-		const int size = 4;
-		voxel::shape::createEllipse(volume, _position, size, size, size, voxel);
+	void generate(Volume& volume, const Voxel& voxel, const glm::ivec3& leafSize) const {
+		voxel::shape::createEllipse(volume, _position, leafSize.x, leafSize.y, leafSize.z, voxel);
 	}
 };
 
@@ -74,10 +73,10 @@ private:
 	glm::vec3 _position;
 
 	int _leafCount = 400;
-	int _treeWidth = 80;
-	int _treeDepth = 80;
-	int _treeHeight = 150;
-	int _trunkHeight = 40;
+	int _treeWidth = 40;
+	int _treeDepth = 40;
+	int _treeHeight = 60;
+	int _trunkHeight = 20;
 	int _minDistance = 6;
 	int _maxDistance = 10;
 	int _branchLength = 2;
@@ -128,8 +127,8 @@ private:
 	}
 
 public:
-	Tree(const glm::ivec3& position, int trunkHeight, int branchLength,
-		int treeWidth = 80, int treeDepth = 80, int treeHeight = 150, float branchSize = 4.0f, int seed = 0) :
+	Tree(const glm::ivec3& position, int trunkHeight = 32, int branchLength = 6,
+		int treeWidth = 40, int treeDepth = 40, int treeHeight = 60, float branchSize = 4.0f, int seed = 0) :
 			_position(position), _treeWidth(treeWidth), _treeDepth(treeDepth), _treeHeight(treeHeight),
 			_trunkHeight(trunkHeight), _branchLength(branchLength), _branchSize(branchSize), _random(seed),
 			_crown(_position.x - _treeWidth / 2,
@@ -260,11 +259,11 @@ public:
 	}
 
 	template<class Volume>
-	void generate(Volume& volume) const {
+	void generate(Volume& volume, const glm::ivec3& leafSize = glm::ivec3(4)) const {
 		Log::debug("Generate for %i leaves and %i branches", (int)_leaves.size(), (int)_branches.size());
 		const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, _random);
 		for (const Leaf& l : _leaves) {
-			l.generate(volume, leavesVoxel);
+			l.generate(volume, leavesVoxel, leafSize);
 		}
 
 		const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, _random);
