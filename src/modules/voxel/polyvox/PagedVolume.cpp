@@ -65,26 +65,15 @@ PagedVolume::~PagedVolume() {
  * @return The voxel value
  */
 const Voxel& PagedVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const {
-	const int32_t chunkX = uXPos >> _chunkSideLengthPower;
-	const int32_t chunkY = uYPos >> _chunkSideLengthPower;
-	const int32_t chunkZ = uZPos >> _chunkSideLengthPower;
-
-	const uint16_t xOffset = static_cast<uint16_t>(uXPos & _chunkMask);
-	const uint16_t yOffset = static_cast<uint16_t>(uYPos & _chunkMask);
-	const uint16_t zOffset = static_cast<uint16_t>(uZPos & _chunkMask);
-
-	VolumeLockGuard scopedLock(_lock);
-	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
-
-	return pChunk->getVoxel(xOffset, yOffset, zOffset);
+	return getVoxel(glm::ivec3(uXPos, uYPos, uZPos));
 }
 
 PagedVolume::Chunk* PagedVolume::getChunk(const glm::ivec3& pos) const {
 	const int32_t chunkX = pos.x >> _chunkSideLengthPower;
 	const int32_t chunkY = pos.y >> _chunkSideLengthPower;
 	const int32_t chunkZ = pos.z >> _chunkSideLengthPower;
-	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
-	return pChunk;
+	VolumeLockGuard scopedLock(_lock);
+	return getChunk(chunkX, chunkY, chunkZ);
 }
 
 /**
@@ -94,7 +83,10 @@ PagedVolume::Chunk* PagedVolume::getChunk(const glm::ivec3& pos) const {
  * @return The voxel value
  */
 const Voxel& PagedVolume::getVoxel(const glm::ivec3& v3dPos) const {
-	return getVoxel(v3dPos.x, v3dPos.y, v3dPos.z);
+	const uint16_t xOffset = static_cast<uint16_t>(v3dPos.x & _chunkMask);
+	const uint16_t yOffset = static_cast<uint16_t>(v3dPos.y & _chunkMask);
+	const uint16_t zOffset = static_cast<uint16_t>(v3dPos.z & _chunkMask);
+	return getChunk(v3dPos)->getVoxel(xOffset, yOffset, zOffset);
 }
 
 /**
