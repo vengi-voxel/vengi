@@ -50,6 +50,10 @@ struct TreeContext {
 		return glm::ivec3(pos.x, leavesTop(), pos.z);
 	}
 
+	inline glm::ivec3 trunkTopV() const {
+		return glm::ivec3(pos.x, treeTop(), pos.z);
+	}
+
 	inline int leavesCenter() const {
 		return leavesTop() - leavesHeight / 2;
 	}

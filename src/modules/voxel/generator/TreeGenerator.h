@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Random.h"
+#include "voxel/Spiral.h"
 #include "voxel/BiomeManager.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/TreeContext.h"
@@ -129,9 +130,26 @@ static void createTrunk(Volume& volume, const TreeContext& ctx, const Voxel& vox
  */
 template<class Volume>
 static glm::ivec3 createBezierTrunk(Volume& volume, const TreeContext& ctx, const Voxel& voxel) {
-	// TODO:
-	createTrunk(volume, ctx, voxel);
-	return glm::ivec3(ctx.pos.x, ctx.treeTop() - 1, ctx.pos.z);
+	voxel::Spiral o;
+	const int amount = 4;
+	const glm::ivec3& trunkTop = ctx.trunkTopV();
+	const int shiftX = ctx.trunkWidth;
+	const int shiftZ = ctx.trunkWidth;
+	glm::ivec3 end = trunkTop;
+	for (int i = 0; i < amount; ++i) {
+		const glm::ivec3 start(ctx.pos.x + o.x(), ctx.pos.y, ctx.pos.z + o.z());
+		end.x = trunkTop.x + shiftX + o.x();
+		end.z = trunkTop.z + shiftZ + o.z();
+		const glm::ivec3 control(start.x, start.y + 10, start.z);
+		shape::createBezierFunc(volume, start, end, control, voxel,
+			[] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const Voxel& voxel) {
+				shape::createLine(volume, pos, last, voxel);
+			},
+		ctx.trunkHeight);
+		o.next();
+	}
+	end.y -= 1;
+	return end;
 }
 
 template<class Volume>
@@ -150,10 +168,20 @@ void createTreePalm(Volume& volume, const TreeContext& ctx, core::Random& random
 		const glm::ivec3 control(start.x - x * (w / 2.0f), start.y + 10, start.z - z * (w / 2.0f));
 		const glm::ivec3 end(start.x - x * w, start.y - randomLength, start.z - z * w);
 		shape::createBezierFunc(volume, start, end, control, leavesVoxel,
-			[] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const Voxel& voxel) {
+			[=] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const Voxel& voxel) {
 				shape::createLine(volume, pos, last, voxel);
+				const float x1 = glm::cos(angle + glm::radians(15.0f));
+				const float z1 = glm::sin(angle + glm::radians(15.0f));
+				const float x2 = glm::cos(angle - glm::radians(15.0f));
+				const float z2 = glm::sin(angle - glm::radians(15.0f));
+				const float length = 4.0f;
+				const glm::ivec3 end1(pos.x + x1 * length, pos.y - length, pos.z + z1 * length);
+				shape::createBezier(volume, pos, end1, control, voxel, length);
+				const glm::ivec3 end2(pos.x + x2 * length, pos.y - length, pos.z + z2 * length);
+				shape::createBezier(volume, pos, end2, control, voxel, length);
+				volume.setVoxel(pos, voxel::createVoxel(VoxelType::Roof, 0));
 			},
-		ctx.leavesHeight * 2);
+		ctx.leavesHeight / 4);
 		angle += stepWidth;
 	}
 }

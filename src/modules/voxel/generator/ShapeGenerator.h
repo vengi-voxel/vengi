@@ -280,13 +280,10 @@ template<class Volume, class Voxel, class F>
 void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const Voxel& voxel, F&& func, int steps = 8) {
 	const core::Bezier<int> b(start, end, control);
 	const float s = 1.0f / (float) steps;
-	glm::ivec3 lastPos;
-	for (int i = 0; i < steps; ++i) {
+	glm::ivec3 lastPos = b.getPoint(0.0f);
+	for (int i = 1; i <= steps; ++i) {
 		const float t = s * i;
 		const glm::ivec3& pos = b.getPoint(t);
-		if (i == 0) {
-			lastPos = pos;
-		}
 		func(volume, lastPos, pos, voxel);
 		lastPos = pos;
 	}
