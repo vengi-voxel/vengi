@@ -216,7 +216,7 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY
 			}
 		}
 
-		index++;
+		++index;
 		index %= CHUNKARRAYSIZE;
 	} while (index != positionHash); // Keep searching until we get back to our start position
 
@@ -238,13 +238,14 @@ void PagedVolume::deleteOldestChunkIfNeeded() const {
 	uint32_t chunkCount = 0;
 	uint32_t oldestChunkIndex = 0;
 	uint32_t oldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
-	for (uint32_t index = 0; index < CHUNKARRAYSIZE; index++) {
-		if (_arrayChunks[index]) {
-			chunkCount++;
-			if (_arrayChunks[index]->_chunkLastAccessed < oldestChunkTimestamp) {
-				oldestChunkTimestamp = _arrayChunks[index]->_chunkLastAccessed;
-				oldestChunkIndex = index;
-			}
+	for (uint32_t index = 0u; index < CHUNKARRAYSIZE; ++index) {
+		if (!_arrayChunks[index]) {
+			continue;
+		}
+		++chunkCount;
+		if (_arrayChunks[index]->_chunkLastAccessed < oldestChunkTimestamp) {
+			oldestChunkTimestamp = _arrayChunks[index]->_chunkLastAccessed;
+			oldestChunkIndex = index;
 		}
 	}
 
