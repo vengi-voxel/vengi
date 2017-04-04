@@ -10,6 +10,7 @@
 #include "voxel/generator/CloudGenerator.h"
 #include "voxel/generator/CactusGenerator.h"
 #include "voxel/generator/BuildingGenerator.h"
+#include "voxel/generator/PlantGenerator.h"
 #include "voxel/model/VoxFormat.h"
 #include "voxel/model/QBTFormat.h"
 #include "voxel/model/QBFormat.h"

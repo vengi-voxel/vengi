@@ -10,6 +10,7 @@
 #include <assimp/Exporter.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/importerdesc.h>
+#include <set>
 
 namespace voxedit {
 

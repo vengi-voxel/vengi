@@ -3,8 +3,8 @@
 #include "voxel/polyvox/Picking.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/generator/LSystemGenerator.h"
-#include "voxel/generator/PlantGenerator.h"
-#include "voxel/generator/TreeGenerator.h"
+#include "voxel/generator/PlantType.h"
+#include "voxel/TreeContext.h"
 #include "voxel/generator/BuildingGeneratorContext.h"
 #include "voxel/generator/NoiseGenerator.h"
 #include "frontend/RawVolumeRenderer.h"
@@ -18,6 +18,12 @@
 #include "voxedit-util/Axis.h"
 #include "voxel/WorldContext.h"
 #include <vector>
+
+namespace voxel {
+namespace tree {
+class Tree;
+}
+}
 
 namespace voxedit {
 

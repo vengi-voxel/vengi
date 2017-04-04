@@ -5,16 +5,9 @@
 #include "core/Random.h"
 #include "voxel/MaterialColor.h"
 #include "core/GLM.h"
+#include "PlantType.h"
 
 namespace voxel {
-
-enum class PlantType {
-	Flower,
-	Mushroom,
-	Grass,
-
-	MaxPlantTypes
-};
 
 class PlantGenerator {
 private:
