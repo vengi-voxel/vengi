@@ -1,4 +1,6 @@
 #include "Shadow.h"
+#include "video/Camera.h"
+#include "core/GLM.h"
 
 namespace frontend {
 

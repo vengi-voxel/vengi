@@ -1,8 +1,13 @@
 #pragma once
 
-#include "video/Camera.h"
-#include "core/Common.h"
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 #include <vector>
+
+namespace video {
+class Camera;
+}
 
 namespace frontend {
 

@@ -2,15 +2,16 @@
 
 #include "voxel/polyvox/RawVolume.h"
 #include "video/VertexBuffer.h"
-#include "video/Camera.h"
 #include "FrontendShaders.h"
 #include "voxel/polyvox/Mesh.h"
-#include "frontend/ShapeRenderer.h"
 #include "frontend/Shadow.h"
 #include "video/UniformBuffer.h"
-#include "video/ShapeBuilder.h"
 #include "video/Texture.h"
 #include "video/DepthBuffer.h"
+
+namespace video {
+class Camera;
+}
 
 namespace frontend {
 
