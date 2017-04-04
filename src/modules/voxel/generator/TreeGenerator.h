@@ -213,7 +213,7 @@ static void createTrunk(Volume& volume, const TreeContext& ctx, const Voxel& vox
  * @return The end of the trunk to start the leaves from
  */
 template<class Volume>
-static glm::ivec3 createBezierTrunk(Volume& volume, const TreeContext& ctx, const Voxel& voxel) {
+static glm::ivec3 createBezierTrunk(Volume& volume, const TreeContext& ctx, const Voxel& voxel, float trunkSize = 4.0f, float trunkFactor = 0.95f) {
 	const glm::ivec3& trunkTop = ctx.trunkTopV();
 	const int shiftX = ctx.trunkWidth;
 	const int shiftZ = ctx.trunkWidth;
@@ -222,8 +222,9 @@ static glm::ivec3 createBezierTrunk(Volume& volume, const TreeContext& ctx, cons
 	end.z = trunkTop.z + shiftZ;
 	const glm::ivec3 control(ctx.pos.x, ctx.pos.y + 10, ctx.pos.z);
 	shape::createBezierFunc(volume, ctx.pos, end, control, voxel,
-		[] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const Voxel& voxel) {
-			shape::createLine(volume, pos, last, voxel, 4);
+		[&] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const Voxel& voxel) {
+			shape::createLine(volume, pos, last, voxel, std::max(1, (int)glm::ceil(trunkSize)));
+			trunkSize *= trunkFactor;
 		},
 	ctx.trunkHeight);
 	end.y -= 1;
@@ -231,11 +232,10 @@ static glm::ivec3 createBezierTrunk(Volume& volume, const TreeContext& ctx, cons
 }
 
 template<class Volume>
-void createTreePalm(Volume& volume, const TreeContext& ctx, core::Random& random) {
+void createTreePalm(Volume& volume, const TreeContext& ctx, core::Random& random, float branchSize = 5.0f, float branchFactor = 0.95f, int branches = 6) {
 	const RandomVoxel trunkVoxel(VoxelType::Wood, random);
 	const glm::ivec3& start = createBezierTrunk(volume, ctx, trunkVoxel);
 	const RandomVoxel leavesVoxel(VoxelType::Leaf, random);
-	const int branches = 6;
 	const float stepWidth = glm::radians(360.0f / (float)branches);
 	float angle = random.randomf(0.0f, glm::two_pi<float>());
 	const float w = ctx.leavesWidth;
@@ -246,18 +246,10 @@ void createTreePalm(Volume& volume, const TreeContext& ctx, core::Random& random
 		const glm::ivec3 control(start.x - x * (w / 2.0f), start.y + 10, start.z - z * (w / 2.0f));
 		const glm::ivec3 end(start.x - x * w, start.y - randomLength, start.z - z * w);
 		shape::createBezierFunc(volume, start, end, control, leavesVoxel,
-			[=] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const Voxel& voxel) {
-				shape::createLine(volume, pos, last, voxel);
-				const float x1 = glm::cos(angle + glm::radians(15.0f));
-				const float z1 = glm::sin(angle + glm::radians(15.0f));
-				const float x2 = glm::cos(angle - glm::radians(15.0f));
-				const float z2 = glm::sin(angle - glm::radians(15.0f));
-				const float length = 4.0f;
-				const glm::ivec3 end1(pos.x + x1 * length, pos.y - length, pos.z + z1 * length);
-				shape::createBezier(volume, pos, end1, control, voxel, length);
-				const glm::ivec3 end2(pos.x + x2 * length, pos.y - length, pos.z + z2 * length);
-				shape::createBezier(volume, pos, end2, control, voxel, length);
-				volume.setVoxel(pos, voxel::createVoxel(VoxelType::Roof, 0));
+			[&] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const Voxel& voxel) {
+				// TODO: this should be some kind of polygon - not a line - we want a flat leaf
+				shape::createLine(volume, pos, last, voxel, std::max(1, (int)glm::ceil(branchSize)));
+				branchSize *= branchFactor;
 			},
 		ctx.leavesHeight / 4);
 		angle += stepWidth;
