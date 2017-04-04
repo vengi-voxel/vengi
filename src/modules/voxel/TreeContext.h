@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/GLM.h"
+#include <glm/vec3.hpp>
 
 namespace voxel {
 

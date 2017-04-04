@@ -1,12 +1,13 @@
 #pragma once
 
-#include "polyvox/Region.h"
-#include "polyvox/PagedVolume.h"
-#include "polyvox/Mesh.h"
+#include <memory>
+#include <limits>
 
 namespace voxel {
 
 class OctreeNode;
+class PagedVolume;
+class Mesh;
 
 class SurfaceExtractionTask {
 public:

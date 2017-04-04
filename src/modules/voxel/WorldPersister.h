@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "polyvox/Region.h"
-#include "polyvox/PagedVolume.h"
+#include <string>
 
 namespace voxel {
 
 class PagedVolumeWrapper;
+class Region;
 
 class WorldPersister {
 public:

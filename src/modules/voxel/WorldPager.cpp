@@ -5,6 +5,7 @@
 #include "voxel/BiomeManager.h"
 #include "voxel/WorldContext.h"
 #include "voxel/generator/WorldGenerator.h"
+#include "voxel/polyvox/PagedVolumeWrapper.h"
 
 #define PERSIST 1
 

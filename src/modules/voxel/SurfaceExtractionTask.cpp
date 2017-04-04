@@ -7,6 +7,8 @@
 #include "polyvox/RawVolume.h"
 #include "polyvox/VolumeRescaler.h"
 #include "IsQuadNeeded.h"
+#include "polyvox/PagedVolume.h"
+#include "polyvox/Mesh.h"
 
 #include <limits>
 

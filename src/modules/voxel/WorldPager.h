@@ -4,13 +4,13 @@
 #pragma once
 
 #include "voxel/polyvox/PagedVolume.h"
-#include "voxel/polyvox/PagedVolumeWrapper.h"
 #include "voxel/WorldPersister.h"
 
 namespace voxel {
 
 class BiomeManager;
 struct WorldContext;
+class PagedVolumeWrapper;
 
 /**
  * @brief Pager implementation for PagedVolume.
