@@ -3,7 +3,6 @@
 #include "core/Var.h"
 #include "core/Color.h"
 #include "voxel/model/MeshExporter.h"
-#include "voxel/generator/PlantGenerator.h"
 #include "ui/UIApp.h"
 #include "io/Filesystem.h"
 #include "Model.h"
