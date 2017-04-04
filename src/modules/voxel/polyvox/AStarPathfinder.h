@@ -184,17 +184,12 @@ const glm::ivec3 arrayPathfinderCorners[8] = {
 
 /**
  * Using this function, a voxel is considered valid for the path if it is inside the
- * volume and if its density is below that returned by the voxel's getDensity() function.
+ * volume.
  * @return true is the voxel is valid for the path
  */
 template<typename VolumeType>
 bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3dPos) {
-	//Voxels are considered valid candidates for the path if they are inside the volume...
-	if (!volData->getRegion().containsPoint(v3dPos)) {
-		return false;
-	}
-
-	return true;
+	return volData->getRegion().containsPoint(v3dPos);
 }
 
 /**
