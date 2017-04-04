@@ -459,6 +459,11 @@ core::AppState UIApp::onRunning() {
 				_root.Invalidate();
 			}
 		}
+		double next_fire_time = tb::TBMessageHandler::GetNextMessageFireTime();
+		double now = tb::TBSystem::GetTimeMS();
+		if (next_fire_time == TB_NOT_SOON || (next_fire_time - now) <= 1.0) {
+			tb::TBMessageHandler::ProcessMessages();
+		}
 	}
 	return state;
 }
