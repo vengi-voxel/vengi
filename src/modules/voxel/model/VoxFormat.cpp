@@ -5,6 +5,7 @@
 #include "VoxFormat.h"
 #include "io/FileStream.h"
 #include "core/Common.h"
+#include "core/Color.h"
 #include "voxel/MaterialColor.h"
 
 namespace voxel {

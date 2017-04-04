@@ -9,6 +9,7 @@
 #include "polyvox/Mesh.h"
 #include "polyvox/PagedVolume.h"
 #include "polyvox/Raycast.h"
+#include "voxel/Constants.h"
 #include <memory>
 #include <queue>
 #include <random>

@@ -4,33 +4,27 @@
 
 #pragma once
 
-#include "core/Common.h"
 #include "core/Trace.h"
-#include "Constants.h"
-#include "polyvox/Region.h"
-#include "polyvox/Voxel.h"
+#include "core/Random.h"
 #include "MaterialColor.h"
+#include "polyvox/Voxel.h"
 #include <glm/glm.hpp>
 
 namespace voxel {
 
+class Region;
+
 class Biome {
 private:
 	friend class BiomeManager;
-	Biome() :
-			Biome(VoxelType::Grass, getMaterialIndices(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
-	}
+	Biome();
 
 	int calcTreeDistribution() const;
 	int calcCloudDistribution() const;
 	int calcPlantDistribution() const;
 
 public:
-	Biome(VoxelType _type, const MaterialColorIndices& _indices, int16_t _yMin, int16_t _yMax, float _humidity, float _temperature, bool _underground) :
-			indices(_indices), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(_temperature),
-			underground(_underground), type(_type), treeDistribution(calcTreeDistribution()),
-			cloudDistribution(calcCloudDistribution()), plantDistribution(calcPlantDistribution()) {
-	}
+	Biome(VoxelType type, const MaterialColorIndices& indices, int16_t yMin, int16_t yMax, float humidity, float temperature, bool underground);
 
 	const MaterialColorIndices indices;
 	const int16_t yMin;

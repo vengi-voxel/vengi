@@ -6,8 +6,9 @@
 
 #include "core/Random.h"
 #include "voxel/BiomeManager.h"
-#include "voxel/MaterialColor.h"
+#include "voxel/RandomVoxel.h"
 #include "voxel/TreeContext.h"
+#include "voxel/Constants.h"
 #include "ShapeGenerator.h"
 #include "CactusGenerator.h"
 #include "LSystemGenerator.h"

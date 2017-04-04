@@ -10,6 +10,7 @@
 #include "BuildingGenerator.h"
 #include "core/Trace.h"
 #include "voxel/polyvox/Voxel.h"
+#include "voxel/Constants.h"
 #include "voxel/WorldContext.h"
 #include "voxel/MaterialColor.h"
 

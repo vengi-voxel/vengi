@@ -6,6 +6,9 @@
 #include "noise/Noise.h"
 #include "commonlua/LUAFunctions.h"
 #include "noise/PoissonDiskDistribution.h"
+#include "Constants.h"
+#include "polyvox/Region.h"
+#include "MaterialColor.h"
 #include <utility>
 
 namespace voxel {
@@ -13,6 +16,16 @@ namespace voxel {
 static const Biome& getDefault() {
 	static const Biome biome(VoxelType::Grass, getMaterialIndices(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false);
 	return biome;
+}
+
+Biome::Biome() :
+		Biome(VoxelType::Grass, getMaterialIndices(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
+}
+
+Biome::Biome(VoxelType _type, const MaterialColorIndices& _indices, int16_t _yMin, int16_t _yMax, float _humidity, float _temperature, bool _underground) :
+		indices(_indices), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(_temperature),
+		underground(_underground), type(_type), treeDistribution(calcTreeDistribution()),
+		cloudDistribution(calcCloudDistribution()), plantDistribution(calcPlantDistribution()) {
 }
 
 int Biome::calcTreeDistribution() const {

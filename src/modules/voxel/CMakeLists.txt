@@ -11,6 +11,7 @@ set(SRCS
 	TreeContext.h
 	Constants.h
 	MaterialColor.h MaterialColor.cpp
+	RandomVoxel.h
 	World.cpp World.h
 	WorldPersister.h WorldPersister.cpp
 	WorldPager.h WorldPager.cpp

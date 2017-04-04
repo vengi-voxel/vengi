@@ -1,5 +1,6 @@
 #include "PaletteWidget.h"
 #include "voxel/MaterialColor.h"
+#include "core/Color.h"
 
 PaletteWidget::PaletteWidget() :
 		ui::Widget() {
