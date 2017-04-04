@@ -395,7 +395,7 @@ void Model::paste() {
 	const voxel::Region& srcRegion = cursorVolume->getRegion();
 	const voxel::Region destRegion = srcRegion + _cursorPos;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
-	voxel::mergeRawVolumes(&wrapper, cursorVolume, destRegion, srcRegion);
+	voxel::mergeVolumes(&wrapper, cursorVolume, destRegion, srcRegion);
 }
 
 void Model::cut() {

@@ -368,7 +368,7 @@ RawVolume* QBFormat::loadFromStream(io::FileStream& stream) {
 				sr.getUpperX(), sr.getUpperY(), sr.getUpperZ(),
 				dr.getLowerX(), dr.getLowerY(), dr.getLowerZ(),
 				dr.getUpperX(), dr.getUpperY(), dr.getUpperZ());
-		voxel::mergeRawVolumes(merged, v, dr, sr);
+		voxel::mergeVolumes(merged, v, dr, sr);
 		delete v;
 	}
 	return merged;

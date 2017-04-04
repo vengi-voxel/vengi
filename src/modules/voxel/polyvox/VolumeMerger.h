@@ -25,7 +25,7 @@ struct MergeSkipEmpty {
  * @sa MergeSkipEmpty
  */
 template<typename MergeCondition = MergeSkipEmpty, class Volume1, class Volume2>
-int mergeRawVolumes(Volume1* destination, const Volume2* source, const Region& destReg, const Region& sourceReg, MergeCondition mergeCondition = MergeCondition()) {
+int mergeVolumes(Volume1* destination, const Volume2* source, const Region& destReg, const Region& sourceReg, MergeCondition mergeCondition = MergeCondition()) {
 	core_trace_scoped(MergeRawVolumes);
 	int cnt = 0;
 	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
@@ -54,7 +54,7 @@ int mergeRawVolumes(Volume1* destination, const Volume2* source, const Region& d
 template<typename MergeCondition = MergeSkipEmpty>
 inline int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume* source, MergeCondition mergeCondition = MergeCondition()) {
 	core_assert(source->getRegion() == destination->getRegion());
-	return mergeRawVolumes(destination, source, destination->getRegion(), source->getRegion());
+	return mergeVolumes(destination, source, destination->getRegion(), source->getRegion());
 }
 
 }

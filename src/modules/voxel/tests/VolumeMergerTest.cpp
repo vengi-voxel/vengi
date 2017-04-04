@@ -20,7 +20,7 @@ TEST_F(VolumeMergerTest, testMergeDifferentSize) {
 	const glm::ivec3 mergedPos = glm::ivec3(5);
 	const voxel::Region& srcRegion = smallVolume.getRegion();
 	const voxel::Region destRegion(mergedPos, mergedPos + srcRegion.getUpperCorner());
-	EXPECT_EQ(1, voxel::mergeRawVolumes(&bigVolume, &smallVolume, destRegion, srcRegion))
+	EXPECT_EQ(1, voxel::mergeVolumes(&bigVolume, &smallVolume, destRegion, srcRegion))
 		<< "The single voxel from the small volume should have been merged into the big volume";
 
 	const int32_t lowerX = region.getLowerX();
@@ -52,7 +52,7 @@ TEST_F(VolumeMergerTest, testOffsets) {
 	ASSERT_TRUE(bigVolume.setVoxel(regionBig.getUpperCorner(), createVoxel(voxel::VoxelType::Grass, 0)));
 	const voxel::Region srcRegion(regionBig.getCentre(), regionBig.getUpperCorner());
 	const voxel::Region& destRegion = smallVolume.getRegion();
-	ASSERT_EQ(2, voxel::mergeRawVolumes(&smallVolume, &bigVolume, destRegion, srcRegion)) << smallVolume << ", " << bigVolume;
+	ASSERT_EQ(2, voxel::mergeVolumes(&smallVolume, &bigVolume, destRegion, srcRegion)) << smallVolume << ", " << bigVolume;
 	ASSERT_EQ(smallVolume.getVoxel(regionSmall.getLowerCorner()), createVoxel(voxel::VoxelType::Grass, 0)) << smallVolume << ", " << bigVolume;
 	ASSERT_EQ(smallVolume.getVoxel(regionSmall.getUpperCorner()), createVoxel(voxel::VoxelType::Grass, 0)) << smallVolume << ", " << bigVolume;
 }

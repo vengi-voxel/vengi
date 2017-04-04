@@ -103,7 +103,10 @@ public:
 	inline const Voxel& getVoxel(int x, int y, int z) const {
 		if (_validRegion.containsPoint(x, y, z)) {
 			core_assert(_chunk != nullptr);
-			return _chunk->getVoxel(x - _validRegion.getLowerX(), y - _validRegion.getLowerY(), z - _validRegion.getLowerZ());
+			const int relX = x - _validRegion.getLowerX();
+			const int relY = y - _validRegion.getLowerY();
+			const int relZ = z - _validRegion.getLowerZ();
+			return _chunk->getVoxel(relX, relY, relZ);
 		}
 		core_assert(_pagedVolume != nullptr);
 		return _pagedVolume->getVoxel(x, y, z);
@@ -112,7 +115,10 @@ public:
 	inline bool setVoxel(int x, int y, int z, const Voxel& voxel) {
 		if (_validRegion.containsPoint(x, y, z)) {
 			core_assert(_chunk != nullptr);
-			_chunk->setVoxel(x - _validRegion.getLowerX(), y - _validRegion.getLowerY(), z - _validRegion.getLowerZ(), voxel);
+			const int relX = x - _validRegion.getLowerX();
+			const int relY = y - _validRegion.getLowerY();
+			const int relZ = z - _validRegion.getLowerZ();
+			_chunk->setVoxel(relX, relY, relZ, voxel);
 			return true;
 		}
 		core_assert(_pagedVolume != nullptr);

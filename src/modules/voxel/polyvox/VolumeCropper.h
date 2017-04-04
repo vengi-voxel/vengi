@@ -22,7 +22,7 @@ RawVolume* cropVolume(const RawVolume* volume, const glm::ivec3& mins, const glm
 		return nullptr;
 	}
 	voxel::RawVolume* newVolume = new voxel::RawVolume(newRegion);
-	voxel::mergeRawVolumes(newVolume, volume, newRegion, voxel::Region(mins, maxs));
+	voxel::mergeVolumes(newVolume, volume, newRegion, voxel::Region(mins, maxs));
 	return newVolume;
 }
 

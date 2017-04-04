@@ -15,7 +15,7 @@ voxel::RawVolume* expand(const voxel::RawVolume* source, const glm::ivec3& size)
 	const voxel::Region& destRegion = source->getRegion();
 	const voxel::Region& srcRegion = source->getRegion();
 	voxel::RawVolumeWrapper wrapper(newVolume);
-	voxel::mergeRawVolumes(&wrapper, source, destRegion, srcRegion);
+	voxel::mergeVolumes(&wrapper, source, destRegion, srcRegion);
 	return newVolume;
 }
 
