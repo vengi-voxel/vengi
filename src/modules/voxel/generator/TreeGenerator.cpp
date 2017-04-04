@@ -74,7 +74,8 @@ Tree::Tree(const glm::ivec3& position, int trunkHeight, int branchLength,
 		_position(position.x, position.y + trunkHeight, position.z), _treeWidth(treeWidth), _treeDepth(treeDepth), _treeHeight(treeHeight),
 		_trunkHeight(trunkHeight), _branchLength(branchLength), _branchSize(branchSize), _random(seed),
 		_crown(_position.x - _treeWidth / 2, _position.y + _trunkHeight, _position.z - _treeDepth / 2,
-				_position.x + _treeWidth, _position.y + _treeHeight + _trunkHeight, _position.z + _treeDepth) {
+				_position.x + _treeWidth / 2, _position.y + _treeHeight + _trunkHeight, _position.z + _treeDepth / 2) {
+	_leafCount = _treeDepth * 10;
 	generateCrown(_treeWidth / 2);
 	generateTrunk();
 }
