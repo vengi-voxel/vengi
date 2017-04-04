@@ -26,15 +26,15 @@ void Branch::reset() {
 void Tree::generateCrown(int radius) {
 	const glm::ivec3& mins = _crown.mins();
 	const glm::ivec3& maxs = _crown.maxs();
-	Log::info("Generate tree at mins(%i:%i:%i), maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
-	Log::info(" - position: (%f:%f:%f)", _position.x, _position.y, _position.z);
-	Log::info(" - trunkHeight: %i", _trunkHeight);
-	Log::info(" - branchLength: %i", _branchLength);
-	Log::info(" - branchSize: %f", _branchSize);
-	Log::info(" - treeHeight: %i", _treeHeight);
-	Log::info(" - treeWidth: %i", _treeWidth);
-	Log::info(" - treeDepth: %i", _treeDepth);
-	Log::info(" - leafCount: %i", _leafCount);
+	Log::debug("Generate tree at mins(%i:%i:%i), maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+	Log::debug(" - position: (%f:%f:%f)", _position.x, _position.y, _position.z);
+	Log::debug(" - trunkHeight: %i", _trunkHeight);
+	Log::debug(" - branchLength: %i", _branchLength);
+	Log::debug(" - branchSize: %f", _branchSize);
+	Log::debug(" - treeHeight: %i", _treeHeight);
+	Log::debug(" - treeWidth: %i", _treeWidth);
+	Log::debug(" - treeDepth: %i", _treeDepth);
+	Log::debug(" - leafCount: %i", _leafCount);
 	const int radiusSquare = radius * radius;
 	const glm::vec3 center(_crown.getCenter());
 	// randomly place leaves within our rectangle
