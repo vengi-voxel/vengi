@@ -134,6 +134,9 @@ public:
     bool isSampledImage(Id resultId) const { return isSampledImageType(getTypeId(resultId)); }
 
     bool isBoolType(Id typeId)         const { return groupedTypes[OpTypeBool].size() > 0 && typeId == groupedTypes[OpTypeBool].back()->getResultId(); }
+    bool isIntType(Id typeId)          const { return getTypeClass(typeId) == OpTypeInt && module.getInstruction(typeId)->getImmediateOperand(1) != 0; }
+    bool isUintType(Id typeId)         const { return getTypeClass(typeId) == OpTypeInt && module.getInstruction(typeId)->getImmediateOperand(1) == 0; }
+    bool isFloatType(Id typeId)        const { return getTypeClass(typeId) == OpTypeFloat; }
     bool isPointerType(Id typeId)      const { return getTypeClass(typeId) == OpTypePointer; }
     bool isScalarType(Id typeId)       const { return getTypeClass(typeId) == OpTypeFloat  || getTypeClass(typeId) == OpTypeInt || getTypeClass(typeId) == OpTypeBool; }
     bool isVectorType(Id typeId)       const { return getTypeClass(typeId) == OpTypeVector; }
@@ -152,6 +155,13 @@ public:
     bool isSpecConstant(Id resultId) const { return isSpecConstantOpCode(getOpCode(resultId)); }
     unsigned int getConstantScalar(Id resultId) const { return module.getInstruction(resultId)->getImmediateOperand(0); }
     StorageClass getStorageClass(Id resultId) const { return getTypeStorageClass(getTypeId(resultId)); }
+
+    int getScalarTypeWidth(Id typeId) const
+    {
+        Id scalarTypeId = getScalarTypeId(typeId);
+        assert(getTypeClass(scalarTypeId) == OpTypeInt || getTypeClass(scalarTypeId) == OpTypeFloat);
+        return module.getInstruction(scalarTypeId)->getImmediateOperand(0);
+    }
 
     int getTypeNumColumns(Id typeId) const
     {
@@ -196,7 +206,7 @@ public:
 #endif
 
     // Turn the array of constants into a proper spv constant of the requested type.
-    Id makeCompositeConstant(Id type, std::vector<Id>& comps, bool specConst = false);
+    Id makeCompositeConstant(Id type, const std::vector<Id>& comps, bool specConst = false);
 
     // Methods for adding information outside the CFG.
     Instruction* addEntryPoint(ExecutionModel, Function*, const char* name);
@@ -244,16 +254,16 @@ public:
     Id createLoad(Id lValue);
 
     // Create an OpAccessChain instruction
-    Id createAccessChain(StorageClass, Id base, std::vector<Id>& offsets);
+    Id createAccessChain(StorageClass, Id base, const std::vector<Id>& offsets);
 
     // Create an OpArrayLength instruction
     Id createArrayLength(Id base, unsigned int member);
 
     // Create an OpCompositeExtract instruction
     Id createCompositeExtract(Id composite, Id typeId, unsigned index);
-    Id createCompositeExtract(Id composite, Id typeId, std::vector<unsigned>& indexes);
+    Id createCompositeExtract(Id composite, Id typeId, const std::vector<unsigned>& indexes);
     Id createCompositeInsert(Id object, Id composite, Id typeId, unsigned index);
-    Id createCompositeInsert(Id object, Id composite, Id typeId, std::vector<unsigned>& indexes);
+    Id createCompositeInsert(Id object, Id composite, Id typeId, const std::vector<unsigned>& indexes);
 
     Id createVectorExtractDynamic(Id vector, Id typeId, Id componentIndex);
     Id createVectorInsertDynamic(Id vector, Id typeId, Id component, Id componentIndex);
@@ -267,18 +277,18 @@ public:
     Id createBinOp(Op, Id typeId, Id operand1, Id operand2);
     Id createTriOp(Op, Id typeId, Id operand1, Id operand2, Id operand3);
     Id createOp(Op, Id typeId, const std::vector<Id>& operands);
-    Id createFunctionCall(spv::Function*, std::vector<spv::Id>&);
+    Id createFunctionCall(spv::Function*, const std::vector<spv::Id>&);
     Id createSpecConstantOp(Op, Id typeId, const std::vector<spv::Id>& operands, const std::vector<unsigned>& literals);
 
     // Take an rvalue (source) and a set of channels to extract from it to
     // make a new rvalue, which is returned.
-    Id createRvalueSwizzle(Decoration precision, Id typeId, Id source, std::vector<unsigned>& channels);
+    Id createRvalueSwizzle(Decoration precision, Id typeId, Id source, const std::vector<unsigned>& channels);
 
     // Take a copy of an lvalue (target) and a source of components, and set the
     // source components into the lvalue where the 'channels' say to put them.
     // An updated version of the target is returned.
     // (No true lvalue or stores are used.)
-    Id createLvalueSwizzle(Id typeId, Id target, Id source, std::vector<unsigned>& channels);
+    Id createLvalueSwizzle(Id typeId, Id target, Id source, const std::vector<unsigned>& channels);
 
     // If both the id and precision are valid, the id
     // gets tagged with the requested precision.
@@ -311,7 +321,7 @@ public:
     Id smearScalar(Decoration precision, Id scalarVal, Id vectorType);
 
     // Create a call to a built-in function.
-    Id createBuiltinCall(Id resultType, Id builtins, int entryPoint, std::vector<Id>& args);
+    Id createBuiltinCall(Id resultType, Id builtins, int entryPoint, const std::vector<Id>& args);
 
     // List of parameters used to create a texture operation
     struct TextureParameters {
@@ -335,7 +345,7 @@ public:
 
     // Emit the OpTextureQuery* instruction that was passed in.
     // Figure out the right return value and type, and return it.
-    Id createTextureQueryCall(Op, const TextureParameters&);
+    Id createTextureQueryCall(Op, const TextureParameters&, bool isUnsignedResult);
 
     Id createSamplePositionCall(Decoration precision, Id, Id);
 
@@ -346,7 +356,7 @@ public:
     Id createCompositeCompare(Decoration precision, Id, Id, bool /* true if for equal, false if for not-equal */);
 
     // OpCompositeConstruct
-    Id createCompositeConstruct(Id typeId, std::vector<Id>& constituents);
+    Id createCompositeConstruct(Id typeId, const std::vector<Id>& constituents);
 
     // vector or scalar constructor
     Id createConstructor(Decoration precision, const std::vector<Id>& sources, Id resultTypeId);
@@ -388,8 +398,8 @@ public:
     // Returns the right set of basic blocks to start each code segment with, so that the caller's
     // recursion stack can hold the memory for it.
     //
-    void makeSwitch(Id condition, int numSegments, std::vector<int>& caseValues, std::vector<int>& valueToSegment, int defaultSegment,
-                    std::vector<Block*>& segmentBB);  // return argument
+    void makeSwitch(Id condition, int numSegments, const std::vector<int>& caseValues,
+                    const std::vector<int>& valueToSegment, int defaultSegment, std::vector<Block*>& segmentBB); // return argument
 
     // Add a branch to the innermost switch's merge block.
     void addSwitchBreak();
@@ -545,7 +555,7 @@ public:
     Id makeInt64Constant(Id typeId, unsigned long long value, bool specConstant);
     Id findScalarConstant(Op typeClass, Op opcode, Id typeId, unsigned value) const;
     Id findScalarConstant(Op typeClass, Op opcode, Id typeId, unsigned v1, unsigned v2) const;
-    Id findCompositeConstant(Op typeClass, std::vector<Id>& comps) const;
+    Id findCompositeConstant(Op typeClass, const std::vector<Id>& comps) const;
     Id collapseAccessChain();
     void transferAccessChainSwizzle(bool dynamic);
     void simplifyAccessChainSwizzle();
@@ -555,7 +565,7 @@ public:
 
     SourceLanguage source;
     int sourceVersion;
-    std::set<const char*> extensions;
+    std::set<std::string> extensions;
     std::vector<const char*> sourceExtensions;
     AddressingModel addressModel;
     MemoryModel memoryModel;

@@ -377,6 +377,21 @@ bool TOutputTraverser::visitUnary(TVisit /* visit */, TIntermUnary* node)
     case EOpMinInvocationsNonUniform:   out.debug << "minInvocationsNonUniform";    break;
     case EOpMaxInvocationsNonUniform:   out.debug << "maxInvocationsNonUniform";    break;
     case EOpAddInvocationsNonUniform:   out.debug << "addInvocationsNonUniform";    break;
+
+    case EOpMinInvocationsInclusiveScan:            out.debug << "minInvocationsInclusiveScan";             break;
+    case EOpMaxInvocationsInclusiveScan:            out.debug << "maxInvocationsInclusiveScan";             break;
+    case EOpAddInvocationsInclusiveScan:            out.debug << "addInvocationsInclusiveScan";             break;
+    case EOpMinInvocationsInclusiveScanNonUniform:  out.debug << "minInvocationsInclusiveScanNonUniform";   break;
+    case EOpMaxInvocationsInclusiveScanNonUniform:  out.debug << "maxInvocationsInclusiveScanNonUniform";   break;
+    case EOpAddInvocationsInclusiveScanNonUniform:  out.debug << "addInvocationsInclusiveScanNonUniform";   break;
+
+    case EOpMinInvocationsExclusiveScan:            out.debug << "minInvocationsExclusiveScan";             break;
+    case EOpMaxInvocationsExclusiveScan:            out.debug << "maxInvocationsExclusiveScan";             break;
+    case EOpAddInvocationsExclusiveScan:            out.debug << "addInvocationsExclusiveScan";             break;
+    case EOpMinInvocationsExclusiveScanNonUniform:  out.debug << "minInvocationsExclusiveScanNonUniform";   break;
+    case EOpMaxInvocationsExclusiveScanNonUniform:  out.debug << "maxInvocationsExclusiveScanNonUniform";   break;
+    case EOpAddInvocationsExclusiveScanNonUniform:  out.debug << "addInvocationsExclusiveScanNonUniform";   break;
+
     case EOpMbcnt:                      out.debug << "mbcnt";                       break;
 
     case EOpCubeFaceIndex:          out.debug << "cubeFaceIndex";         break;
@@ -869,6 +884,13 @@ void TIntermediate::output(TInfoSink& infoSink, bool tree)
 
     case EShLangTessControl:
         infoSink.debug << "vertices = " << vertices << "\n";
+
+        if (inputPrimitive != ElgNone)
+            infoSink.debug << "input primitive = " << TQualifier::getGeometryString(inputPrimitive) << "\n";
+        if (vertexSpacing != EvsNone)
+            infoSink.debug << "vertex spacing = " << TQualifier::getVertexSpacingString(vertexSpacing) << "\n";
+        if (vertexOrder != EvoNone)
+            infoSink.debug << "triangle order = " << TQualifier::getVertexOrderString(vertexOrder) << "\n";
         break;
 
     case EShLangTessEvaluation:

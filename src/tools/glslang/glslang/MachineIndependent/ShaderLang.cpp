@@ -1557,6 +1557,7 @@ void TShader::setShiftSamplerBinding(unsigned int base) { intermediate->setShift
 void TShader::setShiftTextureBinding(unsigned int base) { intermediate->setShiftTextureBinding(base); }
 void TShader::setShiftImageBinding(unsigned int base)   { intermediate->setShiftImageBinding(base); }
 void TShader::setShiftUboBinding(unsigned int base)     { intermediate->setShiftUboBinding(base); }
+void TShader::setShiftSsboBinding(unsigned int base)    { intermediate->setShiftSsboBinding(base); }
 void TShader::setAutoMapBindings(bool map)              { intermediate->setAutoMapBindings(map); }
 void TShader::setFlattenUniformArrays(bool flatten)     { intermediate->setFlattenUniformArrays(flatten); }
 void TShader::setNoStorageFormat(bool useUnknownFormat) { intermediate->setNoStorageFormat(useUnknownFormat); }
@@ -1632,6 +1633,7 @@ TProgram::TProgram() : pool(0), reflection(0), ioMapper(nullptr), linked(false)
 
 TProgram::~TProgram()
 {
+    delete ioMapper;
     delete infoSink;
     delete reflection;
 
@@ -1707,6 +1709,15 @@ bool TProgram::linkStage(EShLanguage stage, EShMessages messages)
         intermediate[stage] = new TIntermediate(stage,
                                                 firstIntermediate->getVersion(),
                                                 firstIntermediate->getProfile());
+
+
+        // The new TIntermediate must use the same origin as the original TIntermediates.
+        // Otherwise linking will fail due to different coordinate systems.
+        if (firstIntermediate->getOriginUpperLeft()) {
+            intermediate[stage]->setOriginUpperLeft();
+        }
+        intermediate[stage]->setSpv(firstIntermediate->getSpv());
+
         newedIntermediate[stage] = true;
     }
 
@@ -1774,6 +1785,7 @@ int TProgram::getAttributeType(int index) const              { return reflection
 const TType* TProgram::getAttributeTType(int index) const    { return reflection->getAttribute(index).getType(); }
 const TType* TProgram::getUniformTType(int index) const      { return reflection->getUniform(index).getType(); }
 const TType* TProgram::getUniformBlockTType(int index) const { return reflection->getUniformBlock(index).getType(); }
+unsigned TProgram::getLocalSize(int dim) const               { return reflection->getLocalSize(dim); }
 
 void TProgram::dumpReflection()                      { reflection->dump(); }
 

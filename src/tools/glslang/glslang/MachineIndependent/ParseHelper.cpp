@@ -342,10 +342,8 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
     TIntermTyped* result = nullptr;
 
     int indexValue = 0;
-    if (index->getQualifier().isFrontEndConstant()) {
+    if (index->getQualifier().isFrontEndConstant())
         indexValue = index->getAsConstantUnion()->getConstArray()[0].getIConst();
-        checkIndex(loc, base->getType(), indexValue);
-    }
 
     variableCheck(base);
     if (! base->isArray() && ! base->isMatrix() && ! base->isVector()) {
@@ -353,10 +351,12 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
             error(loc, " left of '[' is not of type array, matrix, or vector ", base->getAsSymbolNode()->getName().c_str(), "");
         else
             error(loc, " left of '[' is not of type array, matrix, or vector ", "expression", "");
-    } else if (base->getType().getQualifier().isFrontEndConstant() && index->getQualifier().isFrontEndConstant())
+    } else if (base->getType().getQualifier().isFrontEndConstant() && index->getQualifier().isFrontEndConstant()) {
+        // both base and index are front-end constants
+        checkIndex(loc, base->getType(), indexValue);
         return intermediate.foldDereference(base, indexValue, loc);
-    else {
-        // at least one of base and index is variable...
+    } else {
+        // at least one of base and index is not a front-end constant variable...
 
         if (base->getAsSymbolNode() && isIoResizeArray(base->getType()))
             handleIoResizeArrayAccess(loc, base);
@@ -364,6 +364,8 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
         if (index->getQualifier().isFrontEndConstant()) {
             if (base->getType().isImplicitlySizedArray())
                 updateImplicitArraySize(loc, base, indexValue);
+            else
+                checkIndex(loc, base->getType(), indexValue);
             result = intermediate.addIndex(EOpIndexDirect, base, index, loc);
         } else {
             if (base->getType().isImplicitlySizedArray()) {
@@ -2990,7 +2992,7 @@ void TParseContext::arrayDimMerge(TType& type, const TArraySizes* sizes)
 // Do all the semantic checking for declaring or redeclaring an array, with and
 // without a size, and make the right changes to the symbol table.
 //
-void TParseContext::declareArray(const TSourceLoc& loc, TString& identifier, const TType& type, TSymbol*& symbol)
+void TParseContext::declareArray(const TSourceLoc& loc, const TString& identifier, const TType& type, TSymbol*& symbol)
 {
     if (symbol == nullptr) {
         bool currentScope;
@@ -3009,7 +3011,7 @@ void TParseContext::declareArray(const TSourceLoc& loc, TString& identifier, con
             symbol = new TVariable(&identifier, type);
             symbolTable.insert(*symbol);
             if (symbolTable.atGlobalLevel())
-                trackLinkageDeferred(*symbol);
+                trackLinkage(*symbol);
 
             if (! symbolTable.atBuiltInLevel()) {
                 if (isIoResizeArray(type)) {
@@ -3205,6 +3207,7 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
         (identifier == "gl_Color"               && language == EShLangFragment)                     ||
 #ifdef NV_EXTENSIONS
          identifier == "gl_SampleMask"                                                              ||
+         identifier == "gl_Layer"                                                                   ||
 #endif
          identifier == "gl_TexCoord") {
 
@@ -3290,6 +3293,12 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
                 error(loc, "redeclaration only allowed for override_coverage layout", "redeclaration", symbol->getName().c_str());
             }
             intermediate.setLayoutOverrideCoverage();
+        }
+        else if (identifier == "gl_Layer") {
+            if (!qualifier.layoutViewportRelative && qualifier.layoutSecondaryViewportRelativeOffset == -2048)
+                error(loc, "redeclaration only allowed for viewport_relative or secondary_view_offset layout", "redeclaration", symbol->getName().c_str());
+            symbolQualifier.layoutViewportRelative = qualifier.layoutViewportRelative;
+            symbolQualifier.layoutSecondaryViewportRelativeOffset = qualifier.layoutSecondaryViewportRelativeOffset;
         }
 #endif
 
@@ -3417,6 +3426,14 @@ void TParseContext::redeclareBuiltinBlock(const TSourceLoc& loc, TTypeList& newT
             oldType.getQualifier().flat = newType.getQualifier().flat;
             oldType.getQualifier().nopersp = newType.getQualifier().nopersp;
 
+#ifdef NV_EXTENSIONS
+            if (member->type->getFieldName() == "gl_Layer") {
+                if (!newType.getQualifier().layoutViewportRelative && newType.getQualifier().layoutSecondaryViewportRelativeOffset == -2048)
+                    error(loc, "redeclaration only allowed for viewport_relative or secondary_view_offset layout", "redeclaration", member->type->getFieldName().c_str());
+                oldType.getQualifier().layoutViewportRelative = newType.getQualifier().layoutViewportRelative;
+                oldType.getQualifier().layoutSecondaryViewportRelativeOffset = newType.getQualifier().layoutSecondaryViewportRelativeOffset;
+            }
+#endif
             if (oldType.isImplicitlySizedArray() && newType.isExplicitlySizedArray())
                 oldType.changeOuterArraySize(newType.getOuterArraySize());
 
@@ -3461,7 +3478,7 @@ void TParseContext::redeclareBuiltinBlock(const TSourceLoc& loc, TTypeList& newT
         fixIoArraySize(loc, block->getWritableType());
 
     // Save it in the AST for linker use.
-    trackLinkageDeferred(*block);
+    trackLinkage(*block);
 }
 
 void TParseContext::paramCheckFix(const TSourceLoc& loc, const TStorageQualifier& qualifier, TType& type)
@@ -3943,8 +3960,20 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             publicType.shaderQualifiers.layoutOverrideCoverage = true;
             return;
         }
-#endif
     }
+    if (language == EShLangVertex ||
+        language == EShLangTessControl ||
+        language == EShLangTessEvaluation ||
+        language == EShLangGeometry ) {
+        if (id == "viewport_relative") {
+            requireExtensions(loc, 1, &E_GL_NV_viewport_array2, "view port array2");
+            publicType.qualifier.layoutViewportRelative = true;
+            return;
+        }
+    }
+#else
+    }
+#endif
     error(loc, "unrecognized layout identifier, or qualifier requires assignment (e.g., binding = 4)", id.c_str(), "");
 }
 
@@ -3981,16 +4010,20 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         //  - uniform offsets
         //  - atomic_uint offsets
         const char* feature = "offset";
-        requireProfile(loc, EEsProfile | ECoreProfile | ECompatibilityProfile, feature);
-        const char* exts[2] = { E_GL_ARB_enhanced_layouts, E_GL_ARB_shader_atomic_counters };
-        profileRequires(loc, ECoreProfile | ECompatibilityProfile, 420, 2, exts, feature);
-        profileRequires(loc, EEsProfile, 310, nullptr, feature);
+        if (spvVersion.spv == 0) {
+            requireProfile(loc, EEsProfile | ECoreProfile | ECompatibilityProfile, feature);
+            const char* exts[2] = { E_GL_ARB_enhanced_layouts, E_GL_ARB_shader_atomic_counters };
+            profileRequires(loc, ECoreProfile | ECompatibilityProfile, 420, 2, exts, feature);
+            profileRequires(loc, EEsProfile, 310, nullptr, feature);
+        }
         publicType.qualifier.layoutOffset = value;
         return;
     } else if (id == "align") {
         const char* feature = "uniform buffer-member align";
-        requireProfile(loc, ECoreProfile | ECompatibilityProfile, feature);
-        profileRequires(loc, ECoreProfile | ECompatibilityProfile, 440, E_GL_ARB_enhanced_layouts, feature);
+        if (spvVersion.spv == 0) {
+            requireProfile(loc, ECoreProfile | ECompatibilityProfile, feature);
+            profileRequires(loc, ECoreProfile | ECompatibilityProfile, 440, E_GL_ARB_enhanced_layouts, feature);
+        }
         // "The specified alignment must be a power of 2, or a compile-time error results."
         if (! IsPow2(value))
             error(loc, "must be a power of 2", "align", "");
@@ -4089,6 +4122,19 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         }
         return;
     }
+
+#if NV_EXTENSIONS
+    if (language == EShLangVertex ||
+        language == EShLangTessControl ||
+        language == EShLangTessEvaluation ||
+        language == EShLangGeometry) {
+        if (id == "secondary_view_offset") {
+            requireExtensions(loc, 1, &E_GL_NV_stereo_view_rendering, "stereo view rendering");
+            publicType.qualifier.layoutSecondaryViewportRelativeOffset = value;
+            return;
+        }
+    }
+#endif
 
     switch (language) {
     case EShLangVertex:
@@ -4253,6 +4299,10 @@ void TParseContext::mergeObjectLayoutQualifiers(TQualifier& dst, const TQualifie
 #ifdef NV_EXTENSIONS
         if (src.layoutPassthrough)
             dst.layoutPassthrough = true;
+        if (src.layoutViewportRelative)
+            dst.layoutViewportRelative = true;
+        if (src.layoutSecondaryViewportRelativeOffset != -2048)
+            dst.layoutSecondaryViewportRelativeOffset = src.layoutSecondaryViewportRelativeOffset;
 #endif
     }
 }
@@ -4451,8 +4501,11 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
                 }
             }
         }
-    } else if (type.isImage() && ! qualifier.writeonly)
-        error(loc, "image variables not declared 'writeonly' must have a format layout qualifier", "", "");
+    } else if (type.isImage() && ! qualifier.writeonly) {
+        const char *explanation = "image variables declared 'writeonly' without a format layout qualifier";
+        requireProfile(loc, ECoreProfile | ECompatibilityProfile, explanation);
+        profileRequires(loc, ECoreProfile | ECompatibilityProfile, 0, E_GL_EXT_shader_image_load_formatted, explanation);
+    }
 
     if (qualifier.layoutPushConstant && type.getBasicType() != EbtBlock)
         error(loc, "can only be used with a block", "push_constant", "");
@@ -4989,7 +5042,7 @@ void TParseContext::inheritGlobalDefaults(TQualifier& dst) const
 //
 TVariable* TParseContext::makeInternalVariable(const char* name, const TType& type) const
 {
-    TString* nameString = new TString(name);
+    TString* nameString = NewPoolTString(name);
     TVariable* variable = new TVariable(nameString, type);
     symbolTable.makeInternalVariable(*variable);
 
@@ -5002,7 +5055,7 @@ TVariable* TParseContext::makeInternalVariable(const char* name, const TType& ty
 //
 // Return the successfully declared variable.
 //
-TVariable* TParseContext::declareNonArray(const TSourceLoc& loc, TString& identifier, TType& type)
+TVariable* TParseContext::declareNonArray(const TSourceLoc& loc, const TString& identifier, const TType& type)
 {
     // make a new variable
     TVariable* variable = new TVariable(&identifier, type);
@@ -5012,7 +5065,7 @@ TVariable* TParseContext::declareNonArray(const TSourceLoc& loc, TString& identi
     // add variable to symbol table
     if (symbolTable.insert(*variable)) {
         if (symbolTable.atGlobalLevel())
-            trackLinkageDeferred(*variable);
+            trackLinkage(*variable);
         return variable;
     }
 
@@ -5502,8 +5555,10 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
         if (memberType.isArray())
             arrayUnsizedCheck(memberLoc, currentBlockQualifier, &memberType.getArraySizes(), false, member == typeList.size() - 1);
         if (memberQualifier.hasOffset()) {
-            requireProfile(memberLoc, ~EEsProfile, "offset on block member");
-            profileRequires(memberLoc, ~EEsProfile, 440, E_GL_ARB_enhanced_layouts, "offset on block member");
+            if (spvVersion.spv == 0) {
+                requireProfile(memberLoc, ~EEsProfile, "offset on block member");
+                profileRequires(memberLoc, ~EEsProfile, 440, E_GL_ARB_enhanced_layouts, "offset on block member");
+            }
         }
 
         if (memberType.containsOpaque())
@@ -5544,11 +5599,10 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
 
     mergeObjectLayoutQualifiers(defaultQualification, currentBlockQualifier, true);
 
-    // "The offset qualifier can only be used on block members of blocks declared with std140 or std430 layouts."
     // "The align qualifier can only be used on blocks or block members, and only for blocks declared with std140 or std430 layouts."
-    if (currentBlockQualifier.hasAlign() || currentBlockQualifier.hasAlign()) {
+    if (currentBlockQualifier.hasAlign()) {
         if (defaultQualification.layoutPacking != ElpStd140 && defaultQualification.layoutPacking != ElpStd430) {
-            error(loc, "can only be used with std140 or std430 layout packing", "offset/align", "");
+            error(loc, "can only be used with std140 or std430 layout packing", "align", "");
             defaultQualification.layoutAlign = -1;
         }
     }
@@ -5590,9 +5644,12 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
             }
         } else
             memberWithoutLocation = true;
-        if (memberQualifier.hasAlign()) {
+
+        // "The offset qualifier can only be used on block members of blocks declared with std140 or std430 layouts."
+        // "The align qualifier can only be used on blocks or block members, and only for blocks declared with std140 or std430 layouts."
+        if (memberQualifier.hasAlign() || memberQualifier.hasOffset()) {
             if (defaultQualification.layoutPacking != ElpStd140 && defaultQualification.layoutPacking != ElpStd430)
-                error(memberLoc, "can only be used with std140 or std430 layout packing", "align", "");
+                error(memberLoc, "can only be used with std140 or std430 layout packing", "offset/align", "");
         }
 
         TQualifier newMemberQualification = defaultQualification;
@@ -5674,7 +5731,7 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
         fixIoArraySize(loc, variable.getWritableType());
 
     // Save it in the AST for linker use.
-    trackLinkageDeferred(variable);
+    trackLinkage(variable);
 }
 
 // Do all block-declaration checking regarding the combination of in/out/uniform/buffer
@@ -5715,7 +5772,7 @@ void TParseContext::blockStageIoCheck(const TSourceLoc& loc, const TQualifier& q
 }
 
 // Do all block-declaration checking regarding its qualifiers.
-void TParseContext::blockQualifierCheck(const TSourceLoc& loc, const TQualifier& qualifier, bool instanceName)
+void TParseContext::blockQualifierCheck(const TSourceLoc& loc, const TQualifier& qualifier, bool /*instanceName*/)
 {
     // The 4.5 specification says:
     //
@@ -5742,11 +5799,8 @@ void TParseContext::blockQualifierCheck(const TSourceLoc& loc, const TQualifier&
         error(loc, "cannot use sample qualifier on an interface block", "sample", "");
     if (qualifier.invariant)
         error(loc, "cannot use invariant qualifier on an interface block", "invariant", "");
-    if (qualifier.layoutPushConstant) {
+    if (qualifier.layoutPushConstant)
         intermediate.addPushConstantCount();
-        if (! instanceName)
-            error(loc, "requires an instance name", "push_constant", "");
-    }
 }
 
 //
