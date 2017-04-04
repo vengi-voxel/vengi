@@ -8,9 +8,7 @@
 #include "VoxelVertex.h"
 #include <algorithm>
 #include <cstdlib>
-#include <list>
 #include <memory>
-#include <set>
 #include <vector>
 
 namespace voxel {

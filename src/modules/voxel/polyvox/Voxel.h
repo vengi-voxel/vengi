@@ -5,7 +5,7 @@
 #pragma once
 
 #include <cstdint>
-#include <SDL.h>
+#include "core/Array.h"
 
 namespace voxel {
 
@@ -54,7 +54,7 @@ static const char* VoxelTypeStr[] = {
 	"Roof",
 	"Wall"
 };
-static_assert((int)SDL_arraysize(VoxelTypeStr) == (int)VoxelType::Max, "voxel type string array size doesn't match the available voxel types");
+static_assert(lengthof(VoxelTypeStr) == (int)VoxelType::Max, "voxel type string array size doesn't match the available voxel types");
 
 class Voxel {
 public:

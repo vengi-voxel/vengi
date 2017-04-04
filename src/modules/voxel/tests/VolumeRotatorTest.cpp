@@ -4,6 +4,9 @@
 
 #include "core/tests/AbstractTest.h"
 #include "voxel/polyvox/VolumeRotator.h"
+#include "voxel/polyvox/Region.h"
+#include "voxel/polyvox/RawVolume.h"
+#include "voxel/polyvox/Voxel.h"
 
 namespace voxel {
 

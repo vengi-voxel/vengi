@@ -5,12 +5,12 @@
 #pragma once
 
 #include "polyvox/Region.h"
-#include "polyvox/PagedVolume.h"
 #include "SurfaceExtractionTask.h"
 #include "core/ConcurrentQueue.h"
 #include "OctreeNode.h"
 
 #include <vector>
+#include <list>
 
 namespace voxel {
 

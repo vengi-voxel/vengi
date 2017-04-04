@@ -15,6 +15,7 @@
 #include <chrono>
 #include <vector>
 #include <atomic>
+#include <list>
 
 #include "WorldPager.h"
 #include "WorldContext.h"
