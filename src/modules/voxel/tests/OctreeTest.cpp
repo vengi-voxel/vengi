@@ -10,7 +10,7 @@ namespace voxel {
 class OctreeTest: public AbstractVoxelTest {
 };
 
-TEST_F(OctreeTest, testOctreeVolume) {
+TEST_F(OctreeTest, DISABLED_testOctreeVolume) {
 	const glm::ivec3 mins(0, 0, 0);
 	const glm::ivec3 maxs(31, 31, 31);
 	const Region region(mins, maxs);
