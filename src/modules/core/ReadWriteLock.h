@@ -4,13 +4,26 @@
 
 #pragma once
 
-#ifdef DEBUG
-#define RWLOCKDEBUG 2000l
-#endif
-
 #include <string>
 #include <thread>
 #include <mutex>
+#define CORE_SHARED_MUTEX 0
+#define CORE_RECURSIVE_MUTEX 0
+
+#if CORE_SHARED_MUTEX
+#include <shared_mutex>
+#if __cplusplus > 201402L
+using Mutex = std::shared_mutex;
+#else
+using Mutex = std::shared_timed_mutex;
+#endif
+#else // CORE_SHARED_MUTEX
+#if CORE_RECURSIVE_MUTEX
+using Mutex = std::recursive_mutex;
+#else // CORE_RECURSIVE_MUTEX
+using Mutex = std::mutex;
+#endif // CORE_RECURSIVE_MUTEX
+#endif // CORE_SHARED_MUTEX
 #include <atomic>
 #include <chrono>
 
@@ -19,18 +32,26 @@ namespace core {
 class ReadWriteLock {
 private:
 	const std::string _name;
-	mutable std::mutex _mutex;
+	mutable Mutex _mutex;
 public:
 	ReadWriteLock(const std::string& name) :
 			_name(name) {
 	}
 
 	inline void lockRead() const {
+#if CORE_SHARED_MUTEX
+		_mutex.lock_shared();
+#else
 		_mutex.lock();
+#endif
 	}
 
 	inline void unlockRead() const {
+#if CORE_SHARED_MUTEX
+		_mutex.unlock_shared();
+#else
 		_mutex.unlock();
+#endif
 	}
 
 	inline void lockWrite() {
@@ -46,10 +67,10 @@ class ScopedReadLock {
 private:
 	const ReadWriteLock& _lock;
 public:
-	ScopedReadLock(const ReadWriteLock& lock) : _lock(lock) {
+	inline ScopedReadLock(const ReadWriteLock& lock) : _lock(lock) {
 		_lock.lockRead();
 	}
-	~ScopedReadLock() {
+	inline ~ScopedReadLock() {
 		_lock.unlockRead();
 	}
 };
@@ -58,10 +79,10 @@ class ScopedWriteLock {
 private:
 	ReadWriteLock& _lock;
 public:
-	ScopedWriteLock(ReadWriteLock& lock) : _lock(lock) {
+	inline ScopedWriteLock(ReadWriteLock& lock) : _lock(lock) {
 		_lock.lockWrite();
 	}
-	~ScopedWriteLock() {
+	inline ~ScopedWriteLock() {
 		_lock.unlockWrite();
 	}
 };

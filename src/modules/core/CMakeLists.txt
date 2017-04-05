@@ -81,6 +81,7 @@ gtest_suite_files(tests-core
 	tests/TokenizerTest.cpp
 	tests/FrustumTest.cpp
 	tests/PlaneTest.cpp
+	tests/ReadWriteLockTest.cpp
 )
 gtest_suite_deps(tests-core ${LIB})
 gtest_suite_end(tests-core)
