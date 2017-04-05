@@ -64,7 +64,7 @@ private:
 
 	Branch *_root;
 	std::vector<Leaf> _leaves;
-	std::unordered_map<glm::vec3, Branch*, Vec3Hash, Vec3Hash> _branches;
+	std::unordered_map<glm::vec3, Branch*, std::hash<glm::vec3>> _branches;
 	core::Random _random;
 	core::AABB<int> _crown;
 

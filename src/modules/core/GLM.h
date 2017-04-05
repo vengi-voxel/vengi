@@ -2,6 +2,10 @@
 
 #define GLM_FORCE_RADIANS
 
+#include <functional>
+#include <limits>
+#include <cmath>
+
 #include <glm/glm.hpp>
 
 #include <glm/vec2.hpp>
@@ -28,22 +32,8 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/gtx/hash.hpp>
 #include <glm/gtx/rotate_vector.hpp>
-
-#include <functional>
-#include <limits>
-#include <cmath>
-
-struct Vec3Hash {
-	inline size_t operator()(const glm::vec3& k) const {
-		return std::hash<float>()(k.x) ^ std::hash<float>()(k.y) ^ std::hash<float>()(k.z);
-	}
-
-	inline bool operator()(const glm::vec3& a, const glm::vec3& b) const {
-		const float eps = a.x - b.x < glm::epsilon<float>();
-		return a.x - b.x < eps && a.y - b.y < eps && a.z - b.z < eps;
-	}
-};
 
 namespace glm {
 extern const glm::vec3 forward;
@@ -78,17 +68,6 @@ GLM_FUNC_QUALIFIER vec3 rotate(const mat4& mat, const vec3& v) {
 GLM_FUNC_QUALIFIER vec3 project(const mat4& m, const vec3& p) {
 	const vec4& r = m * vec4(p, 1);
 	return vec3(r) / r.w;
-}
-
-// TODO: will be part of glm 0.9.8
-GLM_FUNC_QUALIFIER bvec4 isnan(quat const & x) {
-	const vec4 v(x.x, x.y, x.z, x.w);
-	return isnan(v);
-}
-
-GLM_FUNC_QUALIFIER bvec4 isinf(quat const & x) {
-	const vec4 v(x.x, x.y, x.z, x.w);
-	return isinf(v);
 }
 
 }

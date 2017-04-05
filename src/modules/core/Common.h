@@ -152,19 +152,6 @@ inline T assert_cast(const S object) {
 
 namespace std {
 
-template<>
-struct hash<glm::ivec3> {
-	inline size_t combine(size_t a, size_t b) const noexcept {
-		return b + 0x9e3779b9 + (a << 6) + (a >> 2);
-	}
-	inline size_t operator()(const glm::ivec3& v) const noexcept {
-		const size_t hx = std::hash<glm::ivec3::value_type>()(v.x);
-		const size_t hy = std::hash<glm::ivec3::value_type>()(v.y);
-		const size_t hz = std::hash<glm::ivec3::value_type>()(v.z);
-		return combine(combine(hx, hy), hz);
-	}
-};
-
 template<typename T>
 constexpr typename underlying_type<T>::type enum_value(const T& val) {
 	return static_cast<typename underlying_type<T>::type>(val);

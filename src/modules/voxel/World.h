@@ -45,7 +45,7 @@ struct ChunkMeshes {
 	Mesh waterMesh;
 };
 
-typedef std::unordered_set<glm::ivec3> PositionSet;
+typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
 
 class World {
 public:
