@@ -18,7 +18,12 @@ public:
 
 	virtual void SetUp() override {
 		core::AbstractTest::SetUp();
+		core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
 		_world = std::make_shared<voxel::World>();
+		const std::string& world = core::App::getInstance()->filesystem()->load("world.lua");
+		const std::string& biomes = core::App::getInstance()->filesystem()->load("biomes.lua");
+		_world->init(world, biomes);
+
 		_worldRenderer = new WorldRenderer(_world);
 		_renderer = static_cast<T_WorldRenderer*>(_worldRenderer);
 	}
@@ -29,7 +34,9 @@ public:
 };
 
 TEST_F(WorldRendererTest, testCreate) {
+	ASSERT_TRUE(_world);
 	_world->setPersist(false);
+	ASSERT_NE(nullptr, _renderer);
 	ASSERT_TRUE(_renderer->extractNewMeshes(glm::ivec3(0), true));
 	voxel::ChunkMeshes mesh(0, 0, 0, 0);
 	int amount = 0;
