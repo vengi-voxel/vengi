@@ -3,6 +3,9 @@
  */
 #pragma once
 
+#include "core/Common.h"
+#define ai_assert core_assert_msg
+
 #include "Log.h"
 #include <string>
 #include <unordered_map>
