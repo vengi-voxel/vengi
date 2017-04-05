@@ -597,7 +597,6 @@ void Model::createCactus() {
 }
 
 void Model::createCloud() {
-	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	struct HasClouds {
 		glm::vec2 pos;
@@ -609,7 +608,7 @@ void Model::createCloud() {
 	hasClouds.pos = glm::vec2(_cursorPos.x, _cursorPos.z);
 	voxel::cloud::CloudContext cloudCtx;
 	cloudCtx.amount = 1;
-	if (voxel::cloud::createClouds(wrapper, wrapper.getRegion(), hasClouds, cloudCtx, random)) {
+	if (voxel::cloud::createClouds(wrapper, wrapper.getRegion(), hasClouds, cloudCtx)) {
 		modified(modelVolume()->getRegion());
 	}
 }
@@ -629,9 +628,8 @@ void Model::createPlant(voxel::PlantType type) {
 }
 
 void Model::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
-	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
-	voxel::building::createBuilding(wrapper, _cursorPos, type, random);
+	voxel::building::createBuilding(wrapper, _cursorPos, type);
 	modified(modelVolume()->getRegion());
 }
 

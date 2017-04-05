@@ -3,6 +3,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/generator/ShapeGenerator.h"
 #include "BuildingGeneratorContext.h"
+#include "core/Random.h"
 #include <queue>
 
 namespace voxel {
@@ -146,7 +147,8 @@ void createHouse(Volume& volume, const BuildingContext& ctx, core::Random& rando
 }
 
 template<class Volume>
-void createBuilding(Volume& volume, const glm::ivec3& pos, BuildingType type, core::Random& random) {
+void createBuilding(Volume& volume, const glm::ivec3& pos, BuildingType type) {
+	core::Random random(pos.x + pos.y + pos.z);
 	BuildingContext ctx;
 	ctx.pos = pos;
 	switch (type) {

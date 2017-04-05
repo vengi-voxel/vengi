@@ -23,7 +23,8 @@ struct CloudContext {
 };
 
 template<class Volume, class BiomeManager>
-bool createClouds(Volume& volume, const voxel::Region& region, const BiomeManager& biomManager, const CloudContext& ctx, core::Random& random) {
+bool createClouds(Volume& volume, const voxel::Region& region, const BiomeManager& biomManager, const CloudContext& ctx) {
+	core::Random random(region.getCentreX() + region.getCentreY() + region.getCentreZ());
 	const Voxel& voxel = createRandomColorVoxel(VoxelType::Cloud, random);
 
 	std::vector<glm::vec2> positions;

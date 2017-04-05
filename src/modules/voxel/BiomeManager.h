@@ -8,6 +8,7 @@
 #include "core/Random.h"
 #include "MaterialColor.h"
 #include "polyvox/Voxel.h"
+#include "TreeContext.h"
 #include <glm/glm.hpp>
 
 namespace voxel {

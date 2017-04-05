@@ -470,9 +470,12 @@ void createTree(Volume& volume, const TreeContext& ctx, core::Random& random) {
 
 /**
  * @brief Fill a world with trees based on the configured bioms
+ *
+ * @param[in] The given @c core::Random instance must deliever the same values for the given region.
  */
 template<class Volume>
-void createTrees(Volume& volume, const Region& region, const BiomeManager& biomManager, core::Random& random) {
+void createTrees(Volume& volume, const Region& region, const BiomeManager& biomManager) {
+	core::Random random(region.getCentreX() + region.getCentreY() + region.getCentreZ());
 	const int maxSize = 18;
 	std::vector<glm::vec2> positions;
 	biomManager.getTreePositions(region, positions, random, maxSize);
@@ -489,7 +492,7 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 		int size = random.random(12, maxSize);
 		ctx.leavesWidth = size;
 		ctx.leavesDepth = size;
-		ctx.type = random.randomElement(treeTypes.begin(), treeTypes.end());
+		ctx.type = *random.randomElement(treeTypes.begin(), treeTypes.end());
 		switch (ctx.type) {
 		case TreeType::Fir:
 			ctx.leavesHeight = random.random(20, 28);

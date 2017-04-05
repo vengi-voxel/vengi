@@ -47,9 +47,9 @@ public:
 			if (isFloor(material)) {
 				buildingPos.y = i;
 				if (_random.fithyFifthy()) {
-					voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::House, _random);
+					voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::House);
 				} else {
-					voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::Tower, _random);
+					voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::Tower);
 				}
 				break;
 			}
@@ -85,14 +85,14 @@ public:
 	bool createClouds(Volume& volume, voxel::cloud::CloudContext& ctx) {
 		core_trace_scoped(Clouds);
 		const voxel::Region& region = volume.getRegion();
-		return voxel::cloud::createClouds(volume, region, _biomManager, ctx, _random);
+		return voxel::cloud::createClouds(volume, region, _biomManager, ctx);
 	}
 
 	template<class Volume>
 	void createTrees(Volume& volume) {
 		core_trace_scoped(Trees);
 		const voxel::Region& region = volume.getRegion();
-		voxel::tree::createTrees(volume, region, _biomManager, _random);
+		voxel::tree::createTrees(volume, region, _biomManager);
 	}
 };
 
