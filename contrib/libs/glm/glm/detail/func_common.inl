@@ -514,7 +514,7 @@ namespace detail
 	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
 	GLM_FUNC_QUALIFIER vecType<L, T, P> min(vecType<L, T, P> const & a, T b)
 	{
-		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559 || GLM_UNRESTRICTED_GENTYPE, "'min' only accept floating-point inputs for the interpolator a");
+		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559 || std::numeric_limits<T>::is_integer || GLM_UNRESTRICTED_GENTYPE, "'min' only accept floating-point or integer inputs");
 		return detail::compute_min_vector<L, T, P, vecType, detail::is_aligned<P>::value>::call(a, vecType<L, T, P>(b));
 	}
 
@@ -528,7 +528,7 @@ namespace detail
 	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
 	GLM_FUNC_QUALIFIER vecType<L, T, P> max(vecType<L, T, P> const & a, T b)
 	{
-		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559 || GLM_UNRESTRICTED_GENTYPE, "'max' only accept floating-point inputs for the interpolator a");
+		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559 || std::numeric_limits<T>::is_integer || GLM_UNRESTRICTED_GENTYPE, "'max' only accept floating-point or integer inputs");
 		return detail::compute_max_vector<L, T, P, vecType, detail::is_aligned<P>::value>::call(a, vecType<L, T, P>(b));
 	}
 

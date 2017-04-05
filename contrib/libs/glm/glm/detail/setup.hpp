@@ -505,8 +505,6 @@
 
 #if GLM_HAS_STATIC_ASSERT
 #	define GLM_STATIC_ASSERT(x, message) static_assert(x, message)
-#elif defined(BOOST_STATIC_ASSERT)
-#	define GLM_STATIC_ASSERT(x, message) BOOST_STATIC_ASSERT(x)
 #elif GLM_COMPILER & GLM_COMPILER_VC
 #	define GLM_STATIC_ASSERT(x, message) typedef char __CASSERT__##__LINE__[(x) ? 1 : -1]
 #else
