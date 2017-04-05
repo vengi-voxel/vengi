@@ -79,6 +79,10 @@ public:
 
 		// Note: Do we really need to store this position here as well as in the block maps?
 		glm::ivec3 _chunkSpacePosition;
+
+		typedef std::recursive_mutex ChunkMutex;
+		typedef std::lock_guard<ChunkMutex> ChunkLockGuard;
+		mutable ChunkMutex _voxelLock;
 	};
 
 	struct PagerContext {
