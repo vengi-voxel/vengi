@@ -195,6 +195,13 @@ void BiomeManager::distributePointsInRegion(const char *type, const Region& regi
 	}
 }
 
+void BiomeManager::getTreeTypes(const Region& region, std::vector<TreeType>& treeTypes) const {
+	// TODO: implement this based on the biome settings
+	for (int i = 0; i < (int)TreeType::Max; ++i) {
+		treeTypes.push_back((TreeType)i);
+	}
+}
+
 void BiomeManager::getTreePositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {
 	core_trace_scoped(BiomeGetTreePositions);
 	const glm::ivec3& pos = region.getCentre();

@@ -476,6 +476,8 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 	const int maxSize = 18;
 	std::vector<glm::vec2> positions;
 	biomManager.getTreePositions(region, positions, random, maxSize);
+	std::vector<TreeType> treeTypes;
+	biomManager.getTreeTypes(region, treeTypes);
 	TreeContext ctx;
 	for (const glm::vec2& position : positions) {
 		const int y = findFloor(volume, position.x, position.y);
@@ -487,7 +489,7 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 		int size = random.random(12, maxSize);
 		ctx.leavesWidth = size;
 		ctx.leavesDepth = size;
-		ctx.type = (TreeType)random.random(0, int(TreeType::Max) - 1);
+		ctx.type = random.randomElement(treeTypes.begin(), treeTypes.end());
 		switch (ctx.type) {
 		case TreeType::Fir:
 			ctx.leavesHeight = random.random(20, 28);

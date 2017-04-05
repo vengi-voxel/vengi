@@ -98,6 +98,7 @@ public:
 
 	int getCityDensity(const glm::ivec3& pos) const;
 	float getCityGradient(const glm::ivec3& pos) const;
+	void getTreeTypes(const Region& region, std::vector<TreeType>& treeTypes) const;
 	void getTreePositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
 	void getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
 	void getCloudPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
