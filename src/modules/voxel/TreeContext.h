@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/Array.h"
 #include <glm/vec3.hpp>
 
 namespace voxel {
@@ -18,6 +19,8 @@ enum class TreeType : int32_t {
 	SpaceColonization,
 	Max
 };
+
+extern TreeType getTreeType(const char *str);
 
 /**
  * @brief Context to create a tree.

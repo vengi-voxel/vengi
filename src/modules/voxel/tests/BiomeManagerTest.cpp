@@ -12,15 +12,15 @@ class BiomeManagerTest: public AbstractVoxelTest {
 
 TEST_F(BiomeManagerTest, testInvalid) {
 	BiomeManager mgr;
-	EXPECT_FALSE(mgr.addBiome(1, 0, 1.0f, 1.0f, VoxelType::Wood)) << "invalid lower/height combination is accepted, but shouldn't";
+	EXPECT_EQ(nullptr, mgr.addBiome(1, 0, 1.0f, 1.0f, VoxelType::Wood)) << "invalid lower/height combination is accepted, but shouldn't";
 }
 
 TEST_F(BiomeManagerTest, testBasic) {
 	BiomeManager mgr;
-	EXPECT_TRUE(mgr.addBiome(0, 0, 1.0f, 1.0f, VoxelType::Wood));
-	EXPECT_TRUE(mgr.addBiome(1, 1, 1.0f, 1.0f, VoxelType::Sand));
-	EXPECT_TRUE(mgr.addBiome(2, 2, 1.0f, 1.0f, VoxelType::Grass));
-	EXPECT_TRUE(mgr.addBiome(3, 3, 1.0f, 1.0f, VoxelType::Rock));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 0, 1.0f, 1.0f, VoxelType::Wood));
+	EXPECT_NE(nullptr, mgr.addBiome(1, 1, 1.0f, 1.0f, VoxelType::Sand));
+	EXPECT_NE(nullptr, mgr.addBiome(2, 2, 1.0f, 1.0f, VoxelType::Grass));
+	EXPECT_NE(nullptr, mgr.addBiome(3, 3, 1.0f, 1.0f, VoxelType::Rock));
 
 	const VoxelType sand1 = mgr.getBiome(glm::ivec3(0, 5, 0))->type;
 	const VoxelType sand2 = mgr.getBiome(glm::ivec3(0, 6, 0))->type;
@@ -54,9 +54,9 @@ TEST_F(BiomeManagerTest, testHumidityTemperature) {
 	const float h3 = mgr.getHumidity(p3.x, p3.z);
 	const float t3 = mgr.getTemperature(p3.x, p3.z);
 
-	EXPECT_TRUE(mgr.addBiome(0, 1, h1, t1, VoxelType::Grass));
-	EXPECT_TRUE(mgr.addBiome(0, 1, h2, t2, VoxelType::Rock));
-	EXPECT_TRUE(mgr.addBiome(0, 1, h3, t3, VoxelType::Sand));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h1, t1, VoxelType::Grass));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h2, t2, VoxelType::Rock));
+	EXPECT_NE(nullptr, mgr.addBiome(0, 1, h3, t3, VoxelType::Sand));
 
 	EXPECT_EQ(VoxelType::Grass, mgr.getBiome(p1)->type);
 	EXPECT_EQ(VoxelType::Rock, mgr.getBiome(p2)->type);

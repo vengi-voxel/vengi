@@ -98,7 +98,7 @@ public:
 			const int top = lua_gettop(l);
 			for (size_t i = 0; i < colors.size(); ++i) {
 				lua_pushinteger(l, i);
-				clua_push<glm::vec4>(l, colors[i]);
+				clua_push(l, colors[i]);
 				lua_settable(l, top);
 			}
 			return 1;

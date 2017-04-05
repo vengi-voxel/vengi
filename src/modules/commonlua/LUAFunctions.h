@@ -50,12 +50,14 @@ inline T clua_getudata(lua_State* s, int n, const char *name) {
 
 template<class T>
 int clua_push(lua_State* s, const T& v) {
-	return clua_pushudata<T>(s, v, clua_meta<T>::name());
+	using RAWTYPE = typename std::remove_pointer<T>::type;
+	return clua_pushudata<T>(s, v, clua_meta<RAWTYPE>::name());
 }
 
 template<class T>
 T* clua_get(lua_State *s, int n) {
-	return clua_getudata<T*>(s, n, clua_meta<T>::name());
+	using RAWTYPE = typename std::remove_pointer<T>::type;
+	return clua_getudata<T*>(s, n, clua_meta<RAWTYPE>::name());
 }
 
 extern void clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name);
@@ -253,7 +255,8 @@ void clua_vecregister(lua_State* s) {
 		{"dot", clua_vecdot<T>},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncs(s, &funcs.front(), clua_meta<T>::name());
+	using RAWTYPE = typename std::remove_pointer<T>::type;
+	clua_registerfuncs(s, &funcs.front(), clua_meta<RAWTYPE>::name());
 }
 
 extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);

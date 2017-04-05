@@ -4,11 +4,13 @@
 
 #include "BiomeManager.h"
 #include "noise/Noise.h"
-#include "commonlua/LUAFunctions.h"
 #include "noise/PoissonDiskDistribution.h"
+#include "core/Random.h"
 #include "Constants.h"
 #include "polyvox/Region.h"
 #include "MaterialColor.h"
+#include "BiomeLUAFunctions.h"
+#include "commonlua/LUAFunctions.h"
 #include <utility>
 
 namespace voxel {
@@ -16,46 +18,6 @@ namespace voxel {
 static const Biome& getDefault() {
 	static const Biome biome(VoxelType::Grass, getMaterialIndices(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false);
 	return biome;
-}
-
-Biome::Biome() :
-		Biome(VoxelType::Grass, getMaterialIndices(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false) {
-}
-
-Biome::Biome(VoxelType _type, const MaterialColorIndices& _indices, int16_t _yMin, int16_t _yMax, float _humidity, float _temperature, bool _underground) :
-		indices(_indices), yMin(_yMin), yMax(_yMax), humidity(_humidity), temperature(_temperature),
-		underground(_underground), type(_type), treeDistribution(calcTreeDistribution()),
-		cloudDistribution(calcCloudDistribution()), plantDistribution(calcPlantDistribution()) {
-}
-
-int Biome::calcTreeDistribution() const {
-	int distribution = 100;
-	if (temperature > 0.7f || humidity < 0.2f) {
-		distribution = 150;
-	} else if (temperature > 0.9f || humidity < 0.1f) {
-		distribution = 200;
-	}
-	return distribution;
-}
-
-int Biome::calcCloudDistribution() const {
-	int distribution = 150;
-	if (temperature > 0.7f || humidity < 0.2f) {
-		distribution = 200;
-	} else if (temperature > 0.9f || humidity < 0.1f) {
-		distribution = 250;
-	}
-	return distribution;
-}
-
-int Biome::calcPlantDistribution() const {
-	int distribution = 30;
-	if (temperature > 0.7f || humidity < 0.2f) {
-		distribution = 50;
-	} else if (temperature > 0.9f || humidity < 0.1f) {
-		distribution = 100;
-	}
-	return distribution;
 }
 
 BiomeManager::BiomeManager() {
@@ -73,19 +35,15 @@ bool BiomeManager::init(const std::string& luaString) {
 		const float temperature = luaL_checknumber(l, 4);
 		const char* voxelType = luaL_checkstring(l, 5);
 		const bool underGround = clua_optboolean(l, 6, false);
-		for (int j = (int)voxel::VoxelType::Air + 1; j < (int)voxel::VoxelType::Max; ++j) {
-			if (strcmp(voxel::VoxelTypeStr[j], voxelType) != 0) {
-				continue;
-			}
-			if (biomeMgr->addBiome(lower, upper, humidity, temperature, VoxelType(j), underGround)) {
-				lua_pushboolean(l, 0);
-			} else {
-				lua_pushboolean(l, 1);
-			}
-			return 1;
+		const VoxelType type = getVoxelType(voxelType);
+		if (type == VoxelType::Max) {
+			return luaL_error(l, "Failed to resolve voxel type: '%s'", voxelType);
 		}
-		lua_pushboolean(l, 0);
-		return 1;
+		Biome* biome = biomeMgr->addBiome(lower, upper, humidity, temperature, type, underGround);
+		if (biome == nullptr) {
+			return luaL_error(l, "Failed to create biome");
+		}
+		return biomelua_pushbiome(l, biome);
 	}};
 
 	lua::LUA lua;
@@ -93,7 +51,8 @@ bool BiomeManager::init(const std::string& luaString) {
 	funcs.push_back(luaAddBiome);
 	funcs.push_back({ nullptr, nullptr });
 	lua.newGlobalData<BiomeManager>("MGR", this);
-	lua.reg("BiomeManager", &funcs.front());
+	lua.reg("biomeMgr", &funcs.front());
+	biomelua_biomeregister(lua.state());
 	if (!lua.load(luaString)) {
 		Log::error("Could not load lua script. Failed with error: %s", lua.error().c_str());
 		return false;
@@ -108,13 +67,13 @@ bool BiomeManager::init(const std::string& luaString) {
 	return !bioms.empty();
 }
 
-bool BiomeManager::addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround) {
+Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround) {
 	if (lower > upper) {
-		return false;
+		return nullptr;
 	}
 	const MaterialColorIndices& indices = getMaterialIndices(type);
 	bioms.emplace_back(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround);
-	return true;
+	return &bioms.back();
 }
 
 float BiomeManager::getHumidity(int x, int z) const {
@@ -139,8 +98,7 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	core_trace_scoped(BiomeGetBiome);
 
 	struct Last {
-		int x = 0;
-		int z = 0;
+		glm::ivec3 pos;
 		float humidity = -1.0f;
 		float temperature = -1.0f;
 		bool underground = false;
@@ -150,14 +108,13 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	float humidity;
 	float temperature;
 
-	if (last.humidity > -1.0f && last.x == pos.x && last.z == pos.z && last.underground == underground) {
+	if (last.humidity > -1.0f && last.pos == pos && last.underground == underground) {
 		humidity = last.humidity;
 		temperature = last.temperature;
 	} else {
 		last.humidity = humidity = getHumidity(pos.x, pos.z);
 		last.temperature = temperature = getTemperature(pos.x, pos.z);
-		last.x = pos.x;
-		last.z = pos.z;
+		last.pos = pos;
 		last.underground = underground;
 	}
 
@@ -196,10 +153,9 @@ void BiomeManager::distributePointsInRegion(const char *type, const Region& regi
 }
 
 void BiomeManager::getTreeTypes(const Region& region, std::vector<TreeType>& treeTypes) const {
-	// TODO: implement this based on the biome settings
-	for (int i = 0; i < (int)TreeType::Max; ++i) {
-		treeTypes.push_back((TreeType)i);
-	}
+	const glm::ivec3& pos = region.getCentre();
+	const Biome* biome = getBiome(pos);
+	treeTypes = biome->treeTypes();
 }
 
 void BiomeManager::getTreePositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const {

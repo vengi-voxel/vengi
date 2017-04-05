@@ -5,66 +5,17 @@
 #pragma once
 
 #include "core/Trace.h"
-#include "core/Random.h"
-#include "MaterialColor.h"
-#include "polyvox/Voxel.h"
+#include "Biome.h"
 #include "TreeContext.h"
 #include <glm/glm.hpp>
+
+namespace core {
+class Random;
+}
 
 namespace voxel {
 
 class Region;
-
-class Biome {
-private:
-	friend class BiomeManager;
-	Biome();
-
-	int calcTreeDistribution() const;
-	int calcCloudDistribution() const;
-	int calcPlantDistribution() const;
-
-public:
-	Biome(VoxelType type, const MaterialColorIndices& indices, int16_t yMin, int16_t yMax, float humidity, float temperature, bool underground);
-
-	const MaterialColorIndices indices;
-	const int16_t yMin;
-	const int16_t yMax;
-	const float humidity;
-	const float temperature;
-	const bool underground;
-	const VoxelType type;
-	const int treeDistribution;
-	const int cloudDistribution;
-	const int plantDistribution;
-
-	inline bool hasCactus() const {
-		return temperature > 0.9f || humidity < 0.1f;
-	}
-
-	inline bool hasTrees() const {
-		return temperature > 0.3f && humidity > 0.3f;
-	}
-
-	inline bool hasClouds() const {
-		 return humidity >= 0.5f;
-	}
-
-	inline Voxel voxel(core::Random& random) const {
-		return Voxel(type, *random.randomElement(indices.begin(), indices.end()));
-	}
-
-	inline Voxel voxel(core::Random& random, uint8_t colorIndex) const {
-		const uint8_t max = indices.size() - 1u;
-		const uint8_t min = 0u;
-		return Voxel(type, glm::clamp(colorIndex, min, max));
-	}
-
-	inline Voxel voxel() const {
-		thread_local core::Random random;
-		return voxel(random);
-	}
-};
 
 class BiomeManager {
 private:
@@ -77,7 +28,7 @@ public:
 
 	bool init(const std::string& luaString);
 
-	bool addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround = false);
+	Biome* addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround = false);
 
 	// this lookup must be really really fast - it is executed once per generated voxel
 	// iterating in y direction is fastest, because the last biome is cached on a per-thread-basis

@@ -56,6 +56,11 @@ static const char* VoxelTypeStr[] = {
 };
 static_assert(lengthof(VoxelTypeStr) == (int)VoxelType::Max, "voxel type string array size doesn't match the available voxel types");
 
+/**
+ * @return VoxelType::Max if invalid string was given
+ */
+extern VoxelType getVoxelType(const char *str);
+
 class Voxel {
 public:
 	constexpr Voxel() :

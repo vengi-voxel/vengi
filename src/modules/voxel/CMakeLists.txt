@@ -6,9 +6,11 @@ set(SRCS
 	model/QBFormat.h model/QBFormat.cpp
 	model/MeshExporter.h model/MeshExporter.cpp
 	font/VoxelFont.h font/VoxelFont.cpp
+	BiomeLUAFunctions.h BiomeLUAFunctions.cpp
+	Biome.h Biome.cpp
 	BiomeManager.h BiomeManager.cpp
 	Spiral.h
-	TreeContext.h
+	TreeContext.h TreeContext.cpp
 	Constants.h
 	MaterialColor.h MaterialColor.cpp
 	RandomVoxel.h
@@ -42,7 +44,7 @@ set(SRCS
 	polyvox/Region.h polyvox/Region.cpp
 	polyvox/Utility.h
 	polyvox/VoxelVertex.h
-	polyvox/Voxel.h
+	polyvox/Voxel.h polyvox/Voxel.cpp
 	polyvox/VolumeMerger.h
 	polyvox/VolumeMover.h
 	polyvox/VolumeRescaler.h
