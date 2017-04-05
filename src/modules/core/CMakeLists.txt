@@ -29,6 +29,7 @@ set(SRCS
 	Random.cpp Random.h
 	ReadWriteLock.h
 	Rect.h
+	RecursiveReadWriteLock.h
 	Set.h
 	Singleton.h
 	String.cpp String.h
