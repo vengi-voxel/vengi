@@ -429,6 +429,20 @@ void createTreeCubeSideCubes(Volume& volume, const TreeContext& ctx, core::Rando
 	}
 }
 
+template<class Volume>
+void createSpaceColonizationTree(Volume& volume, const TreeContext& ctx, core::Random& random) {
+	const int branchLength = 6;
+	const int treeWidth = ctx.leavesWidth;
+	const int treeDepth = ctx.leavesDepth;
+	const int treeHeight = ctx.leavesHeight;
+	const float branchSize = ctx.trunkWidth;
+	const int seed = ctx.pos.x;
+	Tree tree(ctx.pos, ctx.trunkHeight, branchLength, treeWidth, treeDepth, treeHeight, branchSize, seed);
+	while (tree.grow()) {
+	}
+	tree.generate(volume);
+}
+
 /**
  * @brief Delegates to the corresponding create method for the given TreeType in the TreeContext
  */
@@ -455,16 +469,7 @@ void createTree(Volume& volume, const TreeContext& ctx, core::Random& random) {
 	} else if (ctx.type == TreeType::CubeSideCubes) {
 		createTreeCubeSideCubes(volume, ctx, random);
 	} else if (ctx.type == TreeType::SpaceColonization) {
-		const int branchLength = 6;
-		const int treeWidth = ctx.leavesWidth;
-		const int treeDepth = ctx.leavesDepth;
-		const int treeHeight = ctx.leavesHeight;
-		const float branchSize = ctx.trunkWidth;
-		const int seed = ctx.pos.x;
-		Tree tree(ctx.pos, ctx.trunkHeight, branchLength, treeWidth, treeDepth, treeHeight, branchSize, seed);
-		while (tree.grow()) {
-		}
-		tree.generate(volume);
+		createSpaceColonizationTree(volume, ctx, random);
 	}
 }
 
