@@ -182,9 +182,11 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 
 void BiomeManager::distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border, float distribution) const {
 	std::vector<glm::vec2> initialSet;
-	const glm::ivec3& randomPos = region.getRandomPosition(random);
+	voxel::Region shrinked = region;
+	shrinked.shrink(border);
+	const glm::ivec3& randomPos = shrinked.getRandomPosition(random);
 	initialSet.push_back(glm::vec2(randomPos.x, randomPos.z));
-	positions = noise::poissonDiskDistribution(distribution, region.rect(border), initialSet);
+	positions = noise::poissonDiskDistribution(distribution, shrinked.rect(), initialSet);
 	Log::debug("%i %s positions in region (%i,%i,%i)/(%i,%i,%i) with border: %i", (int)positions.size(), type,
 			region.getLowerX(), region.getLowerY(), region.getLowerZ(),
 			region.getUpperX(), region.getUpperY(), region.getUpperZ(), border);
