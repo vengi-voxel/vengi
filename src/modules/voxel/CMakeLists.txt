@@ -35,7 +35,7 @@ set(SRCS
 	polyvox/Mesh.h polyvox/Mesh.cpp
 	polyvox/Morton.h
 	polyvox/PagedVolume.h polyvox/PagedVolume.cpp
-	polyvox/PagedVolumeWrapper.h
+	polyvox/PagedVolumeWrapper.h polyvox/PagedVolumeWrapper.cpp
 	polyvox/RawVolume.h polyvox/RawVolume.cpp
 	polyvox/RawVolumeWrapper.h
 	polyvox/RawVolumeMoveWrapper.h
