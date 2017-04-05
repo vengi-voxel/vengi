@@ -17,12 +17,18 @@
 #ifndef FLATBUFFERS_FLEXBUFFERS_H_
 #define FLATBUFFERS_FLEXBUFFERS_H_
 
+#include <map>
 // We use the basic binary writing functions from the regular FlatBuffers.
 #include "flatbuffers/flatbuffers.h"
 #include "flatbuffers/util.h"
 
 #ifdef _MSC_VER
 #include <intrin.h>
+#endif
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4127) // C4127: conditional expression is constant
 #endif
 
 namespace flexbuffers {
@@ -104,7 +110,7 @@ inline Type ToTypedVectorElementType(Type t) {
 inline Type ToFixedTypedVectorElementType(Type t, uint8_t *len) {
   assert(IsFixedTypedVector(t));
   auto fixed_type = t - TYPE_VECTOR_INT2;
-  *len = fixed_type / 3 + 2;  // 3 types each, starting from length 2.
+  *len = static_cast<uint8_t>(fixed_type / 3 + 2);  // 3 types each, starting from length 2.
   return static_cast<Type>(fixed_type % 3 + TYPE_INT);
 }
 
@@ -155,7 +161,7 @@ inline double ReadDouble(const uint8_t *data, uint8_t byte_width) {
            byte_width);
 }
 
-const uint8_t *Indirect(const uint8_t *offset, uint8_t byte_width) {
+inline const uint8_t *Indirect(const uint8_t *offset, uint8_t byte_width) {
   return offset - ReadUInt64(offset, byte_width);
 }
 
@@ -163,7 +169,7 @@ template<typename T> const uint8_t *Indirect(const uint8_t *offset) {
   return offset - flatbuffers::ReadScalar<T>(offset);
 }
 
-static BitWidth WidthU(uint64_t u) {
+inline BitWidth WidthU(uint64_t u) {
   #define FLATBUFFERS_GET_FIELD_BIT_WIDTH(value, width) { \
     if (!((u) & ~((1ULL << (width)) - 1ULL))) return BIT_WIDTH_##width; \
   }
@@ -174,12 +180,12 @@ static BitWidth WidthU(uint64_t u) {
   return BIT_WIDTH_64;
 }
 
-static BitWidth WidthI(int64_t i) {
+inline BitWidth WidthI(int64_t i) {
   auto u = static_cast<uint64_t>(i) << 1;
   return WidthU(i >= 0 ? u : ~u);
 }
 
-static BitWidth WidthF(double f) {
+inline BitWidth WidthF(double f) {
   return static_cast<double>(static_cast<float>(f)) == f ? BIT_WIDTH_32
                                                          : BIT_WIDTH_64;
 }
@@ -212,6 +218,7 @@ class String : public Sized {
 
   size_t length() const { return size(); }
   const char *c_str() const { return reinterpret_cast<const char *>(data_); }
+  std::string str() const { return std::string(c_str(), length()); }
 
   static String EmptyString() {
     static const uint8_t empty_string[] = { 0/*len*/, 0/*terminator*/ };
@@ -601,7 +608,7 @@ class Reference {
 
   template<typename T> bool Mutate(const uint8_t *dest, T t, size_t byte_width,
                                    BitWidth value_width) {
-    auto fits = static_cast<size_t>(1U << value_width) <= byte_width;
+    auto fits = static_cast<size_t>(static_cast<size_t>(1U) << value_width) <= byte_width;
     if (fits) {
       t = flatbuffers::EndianScalar(t);
       memcpy(const_cast<uint8_t *>(dest), &t, byte_width);
@@ -1072,7 +1079,7 @@ class Builder FLATBUFFERS_FINAL_CLASS {
     auto byte_width = 1U << alignment;
     buf_.insert(buf_.end(), flatbuffers::PaddingBytes(buf_.size(), byte_width),
                 0);
-    return byte_width;
+    return static_cast<uint8_t>(byte_width);
   }
 
   void WriteBytes(const void *val, size_t size) {
@@ -1176,7 +1183,7 @@ class Builder FLATBUFFERS_FINAL_CLASS {
           auto offset = offset_loc - u_;
           // Does it fit?
           auto bit_width = WidthU(offset);
-          if (static_cast<size_t>(1U << bit_width) == byte_width)
+          if (static_cast<size_t>(static_cast<size_t>(1U) << bit_width) == byte_width)
             return bit_width;
         }
         assert(false);  // Must match one of the sizes above.
@@ -1338,5 +1345,9 @@ class Builder FLATBUFFERS_FINAL_CLASS {
 };
 
 }  // namespace flexbuffers
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #endif  // FLATBUFFERS_FLEXBUFFERS_H_

@@ -17,6 +17,7 @@
 // independent from idl_parser, since this code is not needed for most clients
 
 #include <string>
+#include <sstream>
 
 #include "flatbuffers/flatbuffers.h"
 #include "flatbuffers/idl.h"
@@ -35,6 +36,13 @@
 namespace flatbuffers {
 namespace go {
 
+// see https://golang.org/ref/spec#Keywords
+static const char *g_golang_keywords[] = {
+  "break", "default", "func", "interface", "select", "case", "defer", "go",
+  "map", "struct", "chan", "else", "goto", "package", "switch", "const",
+  "fallthrough", "if", "range", "type", "continue", "for", "import", "return", "var",
+};
+
 static std::string GenGetter(const Type &type);
 static std::string GenMethod(const FieldDef &field);
 static void GenStructBuilder(const StructDef &struct_def,
@@ -43,6 +51,15 @@ static void GenReceiver(const StructDef &struct_def, std::string *code_ptr);
 static std::string GenTypeBasic(const Type &type);
 static std::string GenTypeGet(const Type &type);
 static std::string TypeName(const FieldDef &field);
+static std::string GoIdentity(const std::string& name) {
+  for (size_t i=0; i<sizeof(g_golang_keywords)/sizeof(g_golang_keywords[0]); i++) {
+    if (name == g_golang_keywords[i]) {
+      return MakeCamel(name + "_", false);
+    }
+  }
+
+  return MakeCamel(name, false);
+}
 
 
 // Most field accessors need to retrieve and test the field offset first,
@@ -368,7 +385,7 @@ static void StructBuilderArgs(const StructDef &struct_def,
     } else {
       std::string &code = *code_ptr;
       code += (std::string)", " + nameprefix;
-      code += MakeCamel(field.name, false);
+      code += GoIdentity(field.name);
       code += " " + GenTypeBasic(field.value.type);
     }
   }
@@ -400,7 +417,7 @@ static void StructBuilderBody(const StructDef &struct_def,
                         code_ptr);
     } else {
       code += "\tbuilder.Prepend" + GenMethod(field) + "(";
-      code += nameprefix + MakeCamel(field.name, false) + ")\n";
+      code += nameprefix + GoIdentity(field.name) + ")\n";
     }
   }
 }
@@ -430,7 +447,7 @@ static void BuildFieldOfTable(const StructDef &struct_def,
   std::string &code = *code_ptr;
   code += "func " + struct_def.name + "Add" + MakeCamel(field.name);
   code += "(builder *flatbuffers.Builder, ";
-  code += MakeCamel(field.name, false) + " ";
+  code += GoIdentity(field.name) + " ";
   if (!IsScalar(field.value.type.base_type) && (!struct_def.fixed)) {
     code += "flatbuffers.UOffsetT";
   } else {
@@ -443,9 +460,9 @@ static void BuildFieldOfTable(const StructDef &struct_def,
   if (!IsScalar(field.value.type.base_type) && (!struct_def.fixed)) {
     code += "flatbuffers.UOffsetT";
     code += "(";
-    code += MakeCamel(field.name, false) + ")";
+    code += GoIdentity(field.name) + ")";
   } else {
-    code += MakeCamel(field.name, false);
+    code += GoIdentity(field.name);
   }
   code += ", " + field.value.constant;
   code += ")\n}\n";
@@ -724,9 +741,15 @@ static void GenStructBuilder(const StructDef &struct_def,
 class GoGenerator : public BaseGenerator {
  public:
   GoGenerator(const Parser &parser, const std::string &path,
-              const std::string &file_name)
-      : BaseGenerator(parser, path, file_name, "" /* not used*/,
-                      "" /* not used */){};
+              const std::string &file_name, const std::string &go_namespace)
+      : BaseGenerator(parser, path, file_name, "" /* not used*/, "" /* not used */) {
+    std::istringstream iss(go_namespace);
+    std::string component;
+    while (std::getline(iss, component, '.')) {
+      go_namespace_.components.push_back(component);
+    }
+  }
+
   bool generate() {
     for (auto it = parser_.enums_.vec.begin(); it != parser_.enums_.vec.end();
          ++it) {
@@ -764,19 +787,22 @@ class GoGenerator : public BaseGenerator {
                 bool needs_imports) {
     if (!classcode.length()) return true;
 
+    Namespace& ns = go_namespace_.components.empty() ? *def.defined_namespace : go_namespace_;
     std::string code = "";
-    BeginFile(LastNamespacePart(*def.defined_namespace), needs_imports, &code);
+    BeginFile(LastNamespacePart(ns), needs_imports, &code);
     code += classcode;
     std::string filename =
-        NamespaceDir(*def.defined_namespace) + def.name + ".go";
+        NamespaceDir(ns) + def.name + ".go";
     return SaveFile(filename.c_str(), code, false);
   }
+
+  Namespace go_namespace_;
 };
 }  // namespace go
 
 bool GenerateGo(const Parser &parser, const std::string &path,
                 const std::string &file_name) {
-  go::GoGenerator generator(parser, path, file_name);
+  go::GoGenerator generator(parser, path, file_name, parser.opts.go_namespace);
   return generator.generate();
 }
 

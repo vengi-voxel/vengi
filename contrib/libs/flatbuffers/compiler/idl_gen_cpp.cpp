@@ -362,6 +362,15 @@ class CppGenerator : public BaseGenerator {
     return attr ? attr->constant : parser_.opts.cpp_object_api_pointer_type;
   }
 
+  const std::string NativeString(const FieldDef *field) {
+    auto attr = field ? field->attributes.Lookup("cpp_str_type") : nullptr;
+    auto &ret = attr ? attr->constant : parser_.opts.cpp_object_api_string_type;
+    if (ret.empty()) {
+      return "std::string";
+    }
+    return ret;
+  }
+
   std::string GenTypeNativePtr(const std::string &type, const FieldDef *field,
                                bool is_constructor) {
     auto &ptr_type = PtrType(field);
@@ -383,7 +392,7 @@ class CppGenerator : public BaseGenerator {
                             const FieldDef &field) {
     switch (type.base_type) {
       case BASE_TYPE_STRING: {
-        return "std::string";
+        return NativeString(&field);
       }
       case BASE_TYPE_VECTOR: {
         const auto type_name = GenTypeNative(type.VectorType(), true, field);
@@ -651,11 +660,13 @@ class CppGenerator : public BaseGenerator {
       code_ += "  flatbuffers::NativeTable *table;";
       code_ += "";
       code_ += "  {{NAME}}Union() : type({{NONE}}), table(nullptr) {}";
-      code_ += "  {{NAME}}Union({{NAME}}Union&& u):";
+      code_ += "  {{NAME}}Union({{NAME}}Union&& u) FLATBUFFERS_NOEXCEPT :";
       code_ += "    type({{NONE}}), table(nullptr)";
       code_ += "    { std::swap(type, u.type); std::swap(table, u.table); }";
       code_ += "  {{NAME}}Union(const {{NAME}}Union &);";
       code_ += "  {{NAME}}Union &operator=(const {{NAME}}Union &);";
+      code_ += "  {{NAME}}Union &operator=({{NAME}}Union &&u) FLATBUFFERS_NOEXCEPT";
+      code_ += "    { std::swap(type, u.type); std::swap(table, u.table); return *this; }";
       code_ += "  ~{{NAME}}Union() { Reset(); }";
       code_ += "";
       code_ += "  void Reset();";
@@ -1153,14 +1164,17 @@ class CppGenerator : public BaseGenerator {
 
       if (parser_.opts.mutable_buffer) {
         if (is_scalar) {
+          const auto type = GenTypeWire(field.value.type, "", false);
+          code_.SetValue("SET_FN", "SetField<" + type + ">");
           code_.SetValue("OFFSET_NAME", offset_str);
           code_.SetValue("FIELD_TYPE", GenTypeBasic(field.value.type, true));
           code_.SetValue("FIELD_VALUE",
                         GenUnderlyingCast(field, false, "_" + field.name));
+          code_.SetValue("DEFAULT_VALUE", GenDefaultConstant(field));
 
           code_ += "  bool mutate_{{FIELD_NAME}}({{FIELD_TYPE}} "
                   "_{{FIELD_NAME}}) {";
-          code_ += "    return SetField({{OFFSET_NAME}}, {{FIELD_VALUE}});";
+          code_ += "    return {{SET_FN}}({{OFFSET_NAME}}, {{FIELD_VALUE}}, {{DEFAULT_VALUE}});";
           code_ += "  }";
         } else {
           auto type = GenTypeGet(field.value.type, " ", "", " *", true);
@@ -1916,6 +1930,8 @@ class CppGenerator : public BaseGenerator {
       code_ += "  }";
 
       if (parser_.opts.mutable_buffer) {
+        auto mut_field_type = GenTypeGet(field.value.type, " ", "", " &", true);
+        code_.SetValue("FIELD_TYPE", mut_field_type);
         if (is_scalar) {
           code_.SetValue("ARG", GenTypeBasic(field.value.type, true));
           code_.SetValue("FIELD_VALUE",
@@ -1930,6 +1946,24 @@ class CppGenerator : public BaseGenerator {
           code_ += "    return {{FIELD_NAME}}_;";
           code_ += "  }";
         }
+      }
+
+      // Generate a comparison function for this field if it is a key.
+      if (field.key) {
+        code_ += "  bool KeyCompareLessThan(const {{STRUCT_NAME}} *o) const {";
+        code_ += "    return {{FIELD_NAME}}() < o->{{FIELD_NAME}}();";
+        code_ += "  }";
+        auto type = GenTypeBasic(field.value.type, false);
+        if (parser_.opts.scoped_enums && field.value.type.enum_def &&
+            IsScalar(field.value.type.base_type)) {
+          type = GenTypeGet(field.value.type, " ", "const ", " *", true);
+        }
+
+        code_.SetValue("KEY_TYPE", type);
+        code_ += "  int KeyCompareWithValue({{KEY_TYPE}} val) const {";
+        code_ += "    const auto key = {{FIELD_NAME}}();";
+        code_ += "    return static_cast<int>(key > val) - static_cast<int>(key < val);";
+        code_ += "  }";
       }
     }
     code_ += "};";

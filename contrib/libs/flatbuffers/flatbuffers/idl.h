@@ -353,10 +353,12 @@ struct IDLOptions {
   bool escape_proto_identifiers;
   bool generate_object_based_api;
   std::string cpp_object_api_pointer_type;
+  std::string cpp_object_api_string_type;
   bool union_value_namespacing;
   bool allow_non_utf8;
   std::string include_prefix;
   bool binary_schema_comments;
+  std::string go_namespace;
 
   // Possible options for the more general generator below.
   enum Language {
@@ -479,6 +481,7 @@ class Parser : public ParserState {
     known_attributes_["idempotent"] = true;
     known_attributes_["cpp_type"] = true;
     known_attributes_["cpp_ptr_type"] = true;
+    known_attributes_["cpp_str_type"] = true;
     known_attributes_["native_inline"] = true;
     known_attributes_["native_type"] = true;
     known_attributes_["native_default"] = true;
@@ -743,4 +746,3 @@ bool GenerateGoGRPC(const Parser &parser,
 }  // namespace flatbuffers
 
 #endif  // FLATBUFFERS_IDL_H_
-
