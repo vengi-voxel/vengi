@@ -109,7 +109,7 @@ template<class Volume>
 static int findFloor(const Volume& volume, int x, int z) {
 	glm::ivec3 start(x, MAX_TERRAIN_HEIGHT - 1, z);
 	glm::ivec3 end(x, 0, z);
-	int y = -1;
+	int y = NO_FLOOR_FOUND;
 	voxel::raycastWithEndpoints(&volume, start, end, [&y] (const typename Volume::Sampler& sampler) {
 		const Voxel& voxel = sampler.getVoxel();
 		const VoxelType material = voxel.getMaterial();
@@ -196,7 +196,7 @@ static void createTrunk(Volume& volume, const TreeContext& ctx, const Voxel& vox
 				glm::ivec3 finalPos(x, y, z);
 				if (y == ctx.treeBottom()) {
 					finalPos.y = findFloor(volume, x, z);
-					if (finalPos.y < 0) {
+					if (finalPos.y == NO_FLOOR_FOUND) {
 						continue;
 					}
 					for (int i = finalPos.y + 1; i <= y; ++i) {
@@ -479,7 +479,7 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 	TreeContext ctx;
 	for (const glm::vec2& position : positions) {
 		const int y = findFloor(volume, position.x, position.y);
-		if (y == -1) {
+		if (y == NO_FLOOR_FOUND) {
 			continue;
 		}
 		ctx.pos = glm::ivec3(position.x, y, position.y);

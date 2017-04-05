@@ -98,7 +98,7 @@ public:
 		const glm::vec3 start = glm::vec3(x, MAX_HEIGHT, z);
 		const glm::vec3& direction = glm::down;
 		const float distance = (float)MAX_HEIGHT;
-		int y = -1;
+		int y = NO_FLOOR_FOUND;
 		raycast(start, direction, distance, [&] (const PagedVolume::Sampler& sampler) {
 			if (check(sampler.getVoxel().getMaterial())) {
 				y = sampler.getPosition().y;

@@ -13,7 +13,7 @@ void distributePlants(const voxel::WorldPtr& world, const glm::ivec3& pos, std::
 	biomeMgr.getPlantPositions(voxel::Region(pos.x, 0, pos.z, pos.x + size - 1, 0, pos.z + size - 1), positions, random, 5);
 	for (const glm::vec2& p : positions) {
 		const int y = world->findFloor(p.x, p.y, voxel::isFloor);
-		if (y == -1) {
+		if (y == NO_FLOOR_FOUND) {
 			continue;
 		}
 		const glm::ivec3 translation(p.x, y, p.y);
