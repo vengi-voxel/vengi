@@ -497,7 +497,7 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 			break;
 		case TreeType::SpaceColonization:
 			ctx.leavesHeight = random.random(20, 28);
-			ctx.trunkHeight = ctx.leavesHeight * 2;
+			ctx.trunkHeight = std::min(maxSize, ctx.leavesHeight * 2);
 			ctx.leavesWidth = ctx.leavesDepth = maxSize;
 			ctx.trunkWidth = 4;
 			break;
