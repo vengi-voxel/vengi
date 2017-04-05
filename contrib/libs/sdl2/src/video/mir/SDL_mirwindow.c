@@ -36,18 +36,18 @@
 
 #include "SDL_mirdyn.h"
 
-int
-IsSurfaceValid(MIR_Window* mir_window)
+static int
+IsMirWindowValid(MIR_Window* mir_window)
 {
     if (!MIR_mir_window_is_valid(mir_window->window)) {
         const char* error = MIR_mir_window_get_error_message(mir_window->window);
         return SDL_SetError("Failed to created a mir surface: %s", error);
     }
 
-    return 0;
+    return 1;
 }
 
-MirPixelFormat
+static MirPixelFormat
 FindValidPixelFormat(MIR_Data* mir_data)
 {
     unsigned int pf_size = 32;
@@ -194,153 +194,104 @@ MIR_GetWindowWMInfo(_THIS, SDL_Window* window, SDL_SysWMinfo* info)
     return SDL_FALSE;
 }
 
+static void
+UpdateMirWindowState(MIR_Data* mir_data, MIR_Window* mir_window, MirWindowState window_state)
+{
+    if (IsMirWindowValid(mir_window)) {
+        MirWindowSpec* spec = MIR_mir_create_window_spec(mir_data->connection);
+        MIR_mir_window_spec_set_state(spec, window_state);
+
+        MIR_mir_window_apply_spec(mir_window->window, spec);
+        MIR_mir_window_spec_release(spec);
+    }
+}
+
 void
 MIR_SetWindowFullscreen(_THIS, SDL_Window* window,
                         SDL_VideoDisplay* display,
                         SDL_bool fullscreen)
 {
-    MIR_Data*   mir_data   = _this->driverdata;
-    MIR_Window* mir_window = window->driverdata;
-    MirWindowSpec* spec;
-    MirWindowState state;
+    if (IsMirWindowValid(window->driverdata)) {
+        MirWindowState state;
 
-    if (IsSurfaceValid(mir_window) < 0)
-        return;
+        if (fullscreen) {
+            state = mir_window_state_fullscreen;
+        }
+        else {
+            state = mir_window_state_restored;
+        }
 
-    if (fullscreen) {
-        state = mir_window_state_fullscreen;
-    } else {
-        state = mir_window_state_restored;
+        UpdateMirWindowState(_this->driverdata, window->driverdata, state);
     }
-
-    spec = MIR_mir_create_window_spec(mir_data->connection);
-    MIR_mir_window_spec_set_state(spec, state);
-
-    MIR_mir_window_apply_spec(mir_window->window, spec);
-    MIR_mir_window_spec_release(spec);
 }
 
 void
 MIR_MaximizeWindow(_THIS, SDL_Window* window)
 {
-    MIR_Data*   mir_data   = _this->driverdata;
-    MIR_Window* mir_window = window->driverdata;
-    MirWindowSpec* spec;
-
-    if (IsSurfaceValid(mir_window) < 0)
-        return;
-
-    spec = MIR_mir_create_window_spec(mir_data->connection);
-    MIR_mir_window_spec_set_state(spec, mir_window_state_maximized);
-
-    MIR_mir_window_apply_spec(mir_window->window, spec);
-    MIR_mir_window_spec_release(spec);
+    UpdateMirWindowState(_this->driverdata, window->driverdata, mir_window_state_maximized);
 }
 
 void
 MIR_MinimizeWindow(_THIS, SDL_Window* window)
 {
-    MIR_Data*   mir_data   = _this->driverdata;
-    MIR_Window* mir_window = window->driverdata;
-    MirWindowSpec* spec;
-
-    if (IsSurfaceValid(mir_window) < 0)
-        return;
-
-    spec = MIR_mir_create_window_spec(mir_data->connection);
-    MIR_mir_window_spec_set_state(spec, mir_window_state_minimized);
-
-    MIR_mir_window_apply_spec(mir_window->window, spec);
-    MIR_mir_window_spec_release(spec);
+    UpdateMirWindowState(_this->driverdata, window->driverdata, mir_window_state_minimized);
 }
 
 void
 MIR_RestoreWindow(_THIS, SDL_Window * window)
 {
-    MIR_Data*   mir_data   = _this->driverdata;
-    MIR_Window* mir_window = window->driverdata;
-    MirWindowSpec* spec;
-
-    if (IsSurfaceValid(mir_window) < 0)
-        return;
-
-    spec = MIR_mir_create_window_spec(mir_data->connection);
-    MIR_mir_window_spec_set_state(spec, mir_window_state_restored);
-
-    MIR_mir_window_apply_spec(mir_window->window, spec);
-    MIR_mir_window_spec_release(spec);
+    UpdateMirWindowState(_this->driverdata, window->driverdata, mir_window_state_restored);
 }
 
 void
 MIR_HideWindow(_THIS, SDL_Window* window)
 {
-    MIR_Data*   mir_data   = _this->driverdata;
-    MIR_Window* mir_window = window->driverdata;
-    MirWindowSpec* spec;
-
-    if (IsSurfaceValid(mir_window) < 0)
-        return;
-
-    spec = MIR_mir_create_window_spec(mir_data->connection);
-    MIR_mir_window_spec_set_state(spec, mir_window_state_hidden);
-
-    MIR_mir_window_apply_spec(mir_window->window, spec);
-    MIR_mir_window_spec_release(spec);
+    UpdateMirWindowState(_this->driverdata, window->driverdata, mir_window_state_hidden);
 }
 
 void
 MIR_SetWindowSize(_THIS, SDL_Window* window)
 {
-    MIR_Data*   mir_data   = _this->driverdata;
+    MIR_Data* mir_data     = _this->driverdata;
     MIR_Window* mir_window = window->driverdata;
-    MirWindowSpec* spec;
 
-    if (IsSurfaceValid(mir_window) < 0)
-        return;
+    if (IsMirWindowValid(mir_window)) {
+        MirWindowSpec* spec = MIR_mir_create_window_spec(mir_data->connection);
+        MIR_mir_window_spec_set_width (spec, window->w);
+        MIR_mir_window_spec_set_height(spec, window->h);
 
-    /* You cannot set the x/y of a mir window! So only update w/h */
-    spec = MIR_mir_create_window_spec(mir_data->connection);
-    MIR_mir_window_spec_set_width (spec, window->w);
-    MIR_mir_window_spec_set_height(spec, window->h);
-
-    MIR_mir_window_apply_spec(mir_window->window, spec);
-    MIR_mir_window_spec_release(spec);
+        MIR_mir_window_apply_spec(mir_window->window, spec);
+    }
 }
 
 void
 MIR_SetWindowMinimumSize(_THIS, SDL_Window* window)
 {
-    MIR_Data*   mir_data   = _this->driverdata;
+    MIR_Data* mir_data     = _this->driverdata;
     MIR_Window* mir_window = window->driverdata;
-    MirWindowSpec* spec;
 
-    if (IsSurfaceValid(mir_window) < 0)
-        return;
+    if (IsMirWindowValid(mir_window)) {
+        MirWindowSpec* spec = MIR_mir_create_window_spec(mir_data->connection);
+        MIR_mir_window_spec_set_min_width (spec, window->min_w);
+        MIR_mir_window_spec_set_min_height(spec, window->min_h);
 
-    spec = MIR_mir_create_window_spec(mir_data->connection);
-    MIR_mir_window_spec_set_width (spec, window->min_w);
-    MIR_mir_window_spec_set_height(spec, window->min_h);
-
-    MIR_mir_window_apply_spec(mir_window->window, spec);
-    MIR_mir_window_spec_release(spec);
+        MIR_mir_window_apply_spec(mir_window->window, spec);
+    }
 }
 
 void
 MIR_SetWindowMaximumSize(_THIS, SDL_Window* window)
 {
-    MIR_Data*   mir_data   = _this->driverdata;
+    MIR_Data* mir_data     = _this->driverdata;
     MIR_Window* mir_window = window->driverdata;
-    MirWindowSpec* spec;
 
-    if (IsSurfaceValid(mir_window) < 0)
-        return;
+    if (IsMirWindowValid(mir_window)) {
+        MirWindowSpec* spec = MIR_mir_create_window_spec(mir_data->connection);
+        MIR_mir_window_spec_set_max_width (spec, window->max_w);
+        MIR_mir_window_spec_set_max_height(spec, window->max_h);
 
-    spec = MIR_mir_create_window_spec(mir_data->connection);
-    MIR_mir_window_spec_set_max_width(spec, window->max_w);
-    MIR_mir_window_spec_set_max_height(spec, window->max_h);
-
-    MIR_mir_window_apply_spec(mir_window->window, spec);
-    MIR_mir_window_spec_release(spec);
+        MIR_mir_window_apply_spec(mir_window->window, spec);
+    }
 }
 
 void
@@ -351,7 +302,7 @@ MIR_SetWindowTitle(_THIS, SDL_Window* window)
     char const* title = window->title ? window->title : "";
     MirWindowSpec* spec;
 
-    if (IsSurfaceValid(mir_window) < 0)
+    if (IsMirWindowValid(mir_window) < 0)
         return;
 
     spec = MIR_mir_create_window_spec(mir_data->connection);

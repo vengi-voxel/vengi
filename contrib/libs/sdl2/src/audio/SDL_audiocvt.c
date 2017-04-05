@@ -439,7 +439,10 @@ SDL_ResampleCVT_si16_c2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
     const int srclen = cvt->len_cvt;
     Sint16 *dst = (Sint16 *) cvt->buf;
     const int dstlen = (cvt->len * cvt->len_mult);
-    Sint16 state[2] = { src[0], src[1] };
+    Sint16 state[2];
+
+    state[0] = src[0];
+    state[1] = src[1];
 
     SDL_assert(format == AUDIO_S16SYS);
 
@@ -1035,9 +1038,8 @@ SDL_ResampleAudioStream_si16_c2(SDL_AudioStream *stream, const void *_inbuf, con
     const Sint16 *inbuf = (const Sint16 *) _inbuf;
     Sint16 *outbuf = (Sint16 *) _outbuf;
     SDL_AudioStreamResamplerState *state = (SDL_AudioStreamResamplerState*)stream->resampler_state;
-    const int chans = (int)stream->pre_resample_channels;
 
-    SDL_assert(chans <= SDL_arraysize(state->resampler_state.si16));
+    SDL_assert(((int)stream->pre_resample_channels) <= SDL_arraysize(state->resampler_state.si16));
 
     if (!state->resampler_seeded) {
         state->resampler_state.si16[0] = inbuf[0];

@@ -39,6 +39,8 @@ struct SDL_PrivateAudioData
     HANDLE task;
     SDL_bool coinitialized;
     int framesize;
+    int default_device_generation;
+    SDL_bool device_lost;
 };
 
 #endif /* SDL_wasapi_h_ */
