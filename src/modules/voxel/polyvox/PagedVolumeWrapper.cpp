@@ -35,7 +35,6 @@ void PagedVolumeWrapper::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_
 	if (p.x == xChunk && p.y == yChunk && p.z == zChunk) {
 		currentChunk = _chunk;
 	} else {
-		PagedVolume::VolumeLockGuard scopedLock(_volume->_lock);
 		currentChunk = _volume->getChunk(xChunk, yChunk, zChunk);
 	}
 

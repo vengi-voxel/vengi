@@ -9,7 +9,7 @@
 #include "Utility.h"
 #include "Morton.h"
 #include "core/NonCopyable.h"
-#include "core/ReadWriteLock.h"
+#include "core/RecursiveReadWriteLock.h"
 #include <array>
 #include <memory>
 
@@ -80,9 +80,7 @@ public:
 		// Note: Do we really need to store this position here as well as in the block maps?
 		glm::ivec3 _chunkSpacePosition;
 
-		typedef std::recursive_mutex ChunkMutex;
-		typedef std::lock_guard<ChunkMutex> ChunkLockGuard;
-		mutable ChunkMutex _voxelLock;
+		core::RecursiveReadWriteLock _rwLock{"chunk"};
 	};
 
 	struct PagerContext {
@@ -230,10 +228,7 @@ protected:
 private:
 	Chunk* getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	Chunk* getExistingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
-	uint32_t getPositionHash(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	Chunk* createNewChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
-	// these are const because getChunk should stay const...
-	void insertNewChunk(Chunk* pChunk, int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	void deleteOldestChunkIfNeeded() const;
 
 	// Storing these properties individually has proved to be faster than keeping
@@ -249,15 +244,8 @@ private:
 
 	uint32_t _chunkCountLimit = 0u;
 
-	// Chunks are stored in the following array which is used as a hash-table. Conventional wisdom is that such a hash-table
-	// should not be more than half full to avoid conflicts, and a practical chunk size seems to be 64^3. With this configuration
-	// there can be up to 32768*64^3 = 8 gigavoxels (with each voxel perhaps being many bytes). This should effectively make use
-	// of even high end machines. Of course, the user can choose to limit the memory usage in which case much less of the chunk
-	// array will actually be used. None-the-less, we have chosen to use a fixed size array (rather than a vector) as it appears to
-	// be slightly faster (probably due to the extra pointer indirection in a vector?) and the actual size of this array should
-	// just be 1Mb or so.
-	static const uint32_t CHUNKARRAYSIZE = 65536;
-	mutable std::unique_ptr<Chunk> _arrayChunks[CHUNKARRAYSIZE];
+	typedef std::unordered_map<glm::ivec3, Chunk*, std::hash<glm::ivec3> > ChunkMap;
+	mutable ChunkMap _chunks;
 
 	// The size of the chunks
 	uint16_t _chunkSideLength;
@@ -266,9 +254,7 @@ private:
 
 	Pager* _pager = nullptr;
 
-	typedef std::recursive_mutex VolumeMutex;
-	typedef std::lock_guard<VolumeMutex> VolumeLockGuard;
-	mutable VolumeMutex _lock;
+	mutable core::RecursiveReadWriteLock _rwLock{"pagedvolume"};
 };
 
 inline const Voxel& PagedVolume::Sampler::getVoxel() const {
@@ -531,19 +517,6 @@ inline Region PagedVolume::Chunk::getRegion() const {
 	 const glm::ivec3 mins = _chunkSpacePosition * static_cast<int32_t>(_sideLength);
 	 const glm::ivec3 maxs = mins + glm::ivec3(_sideLength - 1);
 	 return Region(mins, maxs);
-}
-
-inline uint32_t PagedVolume::getPositionHash(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const {
-	// We generate a 16-bit hash here and assume this matches the range available in the chunk
-	// array. The assert here is just to make sure we take care if change this in the future.
-	static_assert(CHUNKARRAYSIZE == 65536, "Chunk array size has changed, check if the hash calculation needs updating.");
-	// Extract the lower five bits from each position component.
-	const uint32_t uChunkXLowerBits = static_cast<uint32_t>(uChunkX & 0x1F);
-	const uint32_t uChunkYLowerBits = static_cast<uint32_t>(uChunkY & 0x1F);
-	const uint32_t uChunkZLowerBits = static_cast<uint32_t>(uChunkZ & 0x1F);
-	// Combine then to form a 15-bit hash of the position. Also shift by one to spread the values out in the whole 16-bit space.
-	const uint32_t iPositionHash = (uChunkXLowerBits | (uChunkYLowerBits << 5) | (uChunkZLowerBits << 10) << 1);
-	return iPositionHash;
 }
 
 }

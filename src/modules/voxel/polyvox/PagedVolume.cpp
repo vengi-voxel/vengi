@@ -35,13 +35,11 @@ PagedVolume::PagedVolume(Pager* pPager, uint32_t uTargetMemoryUsageInBytes, uint
 
 	// Enforce sensible limits on the number of chunks.
 	const uint32_t uMinPracticalNoOfChunks = 32; // Enough to make sure a chunks and it's neighbours can be loaded, with a few to spare.
-	const uint32_t uMaxPracticalNoOfChunks = CHUNKARRAYSIZE / 2; // A hash table should only become half-full to avoid too many clashes.
 	if (_chunkCountLimit < uMinPracticalNoOfChunks) {
 		Log::warn("Requested memory usage limit of %uMb is too low and cannot be adhered to. Chunk limit is at %i, Chunk size: %uKb",
 				uTargetMemoryUsageInBytes / (1024 * 1024), _chunkCountLimit, uChunkSizeInBytes / 1024);
 	}
 	_chunkCountLimit = std::max(_chunkCountLimit, uMinPracticalNoOfChunks);
-	_chunkCountLimit = std::min(_chunkCountLimit, uMaxPracticalNoOfChunks);
 
 	// Inform the user about the chosen memory configuration.
 	Log::debug("Memory usage limit for volume now set to %uMb (%u chunks of %uKb each).",
@@ -72,7 +70,6 @@ PagedVolume::Chunk* PagedVolume::getChunk(const glm::ivec3& pos) const {
 	const int32_t chunkX = pos.x >> _chunkSideLengthPower;
 	const int32_t chunkY = pos.y >> _chunkSideLengthPower;
 	const int32_t chunkZ = pos.z >> _chunkSideLengthPower;
-	VolumeLockGuard scopedLock(_lock);
 	return getChunk(chunkX, chunkY, chunkZ);
 }
 
@@ -184,14 +181,15 @@ void PagedVolume::prefetch(const Region& regPrefetch) {
  * Removes all voxels from memory by removing all chunks. The application has the chance to persist the data via @c Pager::pageOut
  */
 void PagedVolume::flushAll() {
-	VolumeLockGuard scopedLock(_lock);
+	core::RecursiveScopedWriteLock writeLock(_rwLock);
 	// Clear this pointer as all chunks are about to be removed.
 	_lastAccessedChunk = nullptr;
 
 	// Erase all the most recently used chunks.
-	for (uint32_t index = 0; index < CHUNKARRAYSIZE; index++) {
-		_arrayChunks[index] = nullptr;
+	for (ChunkMap::iterator i = _chunks.begin(); i != _chunks.end(); ++i) {
+		delete i->second;
 	}
+	_chunks.clear();
 }
 
 /**
@@ -201,31 +199,13 @@ void PagedVolume::flushAll() {
  * from an external source which is likely to be slow anyway.
  */
 PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
-	const uint32_t positionHash = getPositionHash(chunkX, chunkY, chunkZ);
-	uint32_t index = positionHash;
-	PagedVolume::Chunk* chunk = nullptr;
-	{
-		VolumeLockGuard scopedLock(_lock);
-		do {
-			if (_arrayChunks[index]) {
-				const glm::ivec3& entryPos = _arrayChunks[index]->_chunkSpacePosition;
-				if (entryPos.x == chunkX && entryPos.y == chunkY && entryPos.z == chunkZ) {
-					chunk = _arrayChunks[index].get();
-					chunk->_chunkLastAccessed = ++_timestamper;
-					break;
-				}
-			}
-
-			++index;
-			index %= CHUNKARRAYSIZE;
-		} while (index != positionHash); // Keep searching until we get back to our start position
-	}
-
-	if (chunk == nullptr) {
+	const glm::ivec3 pos(chunkX, chunkY, chunkZ);
+	core::RecursiveScopedReadLock readLock(_rwLock);
+	auto i = _chunks.find(pos);
+	if (i == _chunks.end()) {
 		return nullptr;
 	}
-
-	return chunk;
+	return i->second;
 }
 
 /**
@@ -236,49 +216,27 @@ PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY
  * the data in is probably more expensive.
  */
 void PagedVolume::deleteOldestChunkIfNeeded() const {
-	uint32_t chunkCount = 0;
-	uint32_t oldestChunkIndex = 0;
+	const std::size_t chunkCount = _chunks.size();
+	if (chunkCount < _chunkCountLimit) {
+		return;
+	}
+	glm::ivec3 oldestChunkPos(glm::uninitialize);
+	Chunk* oldestChunk = nullptr;
 	uint32_t oldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
-	for (uint32_t index = 0u; index < CHUNKARRAYSIZE; ++index) {
-		if (!_arrayChunks[index]) {
-			continue;
-		}
-		++chunkCount;
-		if (_arrayChunks[index]->_chunkLastAccessed < oldestChunkTimestamp) {
-			oldestChunkTimestamp = _arrayChunks[index]->_chunkLastAccessed;
-			oldestChunkIndex = index;
+	for (ChunkMap::iterator i = _chunks.begin(); i != _chunks.end(); ++i) {
+		const glm::ivec3& pos = i->first;
+		Chunk* chunk = i->second;
+		if (chunk->_chunkLastAccessed < oldestChunkTimestamp) {
+			oldestChunkTimestamp = chunk->_chunkLastAccessed;
+			oldestChunk = chunk;
+			oldestChunkPos = pos;
 		}
 	}
-
-	// Check if we have too many chunks, and delete the oldest if so.
-	if (chunkCount > _chunkCountLimit) {
-		_arrayChunks[oldestChunkIndex] = nullptr;
+	if (oldestChunk != nullptr) {
+		ChunkMap::iterator i = _chunks.find(oldestChunkPos);
+		delete i->second;
+		_chunks.erase(i);
 	}
-}
-
-/**
- * Store the chunk at the appropriate place in our chunk array. Ideally this place is
- * given by the hash, otherwise we do a linear search for the next available location
- * We always expect to find a free place because we aim to keep the array only half full.
- */
-void PagedVolume::insertNewChunk(PagedVolume::Chunk* chunk, int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
-	const uint32_t positionHash = getPositionHash(chunkX, chunkY, chunkZ);
-	uint32_t index = positionHash;
-	bool insertedSucessfully = false;
-	do {
-		if (_arrayChunks[index] == nullptr) {
-			_arrayChunks[index] = std::unique_ptr<Chunk>(chunk);
-			insertedSucessfully = true;
-			break;
-		}
-
-		index++;
-		index %= CHUNKARRAYSIZE;
-	} while (index != positionHash); // Keep searching until we get back to our start position.
-
-	// This should never really happen unless we are failing to keep our number of active chunks
-	// significantly under the target amount. Perhaps if chunks are 'pinned' for threading purposes?
-	core_assert_msg(insertedSucessfully, "No space in chunk array for new chunk.");
 }
 
 PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
@@ -297,15 +255,16 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 	pctx.region = Region(mins, maxs);
 	pctx.chunk = chunk;
 
-	PagedVolume::Chunk::ChunkLockGuard scopedLockChunk(chunk->_voxelLock);
 	{
-		VolumeLockGuard scopedLock(_lock);
-		insertNewChunk(chunk, chunkX, chunkY, chunkZ);
-		deleteOldestChunkIfNeeded();
+		core::RecursiveScopedWriteLock volumeWriteLock(_rwLock);
+		if (_chunks.insert(std::make_pair(pos, chunk)).second) {
+			deleteOldestChunkIfNeeded();
+		}
 	}
 
 	// Page the data in
 	// We'll use this later to decide if data needs to be paged out again.
+	core::RecursiveScopedWriteLock chunkWriteLock(chunk->_rwLock);
 	chunk->_dataModified = _pager->pageIn(pctx);
 	Log::debug("finished creating new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
 
@@ -314,7 +273,7 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 
 PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
 	{
-		VolumeLockGuard scopedLock(_lock);
+		core::RecursiveScopedReadLock readLock(_rwLock);
 		if (chunkX == _lastAccessedChunkX && chunkY == _lastAccessedChunkY && chunkZ == _lastAccessedChunkZ && _lastAccessedChunk) {
 			return _lastAccessedChunk;
 		}
@@ -326,7 +285,7 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
 		chunk = createNewChunk(chunkX, chunkY, chunkZ);
 	}
 
-	VolumeLockGuard scopedLock(_lock);
+	core::RecursiveScopedWriteLock writeLock(_rwLock);
 	_lastAccessedChunk = chunk;
 	_lastAccessedChunkX = chunkX;
 	_lastAccessedChunkY = chunkY;
@@ -339,14 +298,8 @@ PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_
  * Calculate the memory usage of the volume.
  */
 uint32_t PagedVolume::calculateSizeInBytes() {
-	uint32_t uChunkCount = 0;
-	VolumeLockGuard scopedLock(_lock);
-	for (uint32_t uIndex = 0; uIndex < CHUNKARRAYSIZE; ++uIndex) {
-		if (_arrayChunks[uIndex]) {
-			++uChunkCount;
-		}
-	}
-
+	core::RecursiveScopedReadLock readLock(_rwLock);
+	const std::size_t uChunkCount = _chunks.size();
 	// Note: We disregard the size of the other class members as they are likely to be very small compared to the size of the
 	// allocated voxel data. This also keeps the reported size as a power of two, which makes other memory calculations easier.
 	return PagedVolume::Chunk::calculateSizeInBytes(_chunkSideLength) * uChunkCount;
@@ -405,7 +358,7 @@ const Voxel& PagedVolume::Chunk::getVoxel(uint32_t uXPos, uint32_t uYPos, uint32
 	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
-	ChunkLockGuard readLock(_voxelLock);
+	core::RecursiveScopedReadLock readLock(_rwLock);
 	return _data[index];
 }
 
