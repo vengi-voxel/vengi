@@ -168,7 +168,6 @@ void PagedVolume::flushAll() {
  */
 PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
 	const glm::ivec3 pos(chunkX, chunkY, chunkZ);
-	core::RecursiveScopedReadLock readLock(_rwLock);
 	auto i = _chunks.find(pos);
 	if (i == _chunks.end()) {
 		return nullptr;
@@ -244,13 +243,14 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 }
 
 PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
+	Chunk* chunk;
 	{
 		core::RecursiveScopedReadLock readLock(_rwLock);
 		if (chunkX == _lastAccessedChunkX && chunkY == _lastAccessedChunkY && chunkZ == _lastAccessedChunkZ && _lastAccessedChunk) {
 			return _lastAccessedChunk;
 		}
+		chunk = getExistingChunk(chunkX, chunkY, chunkZ);
 	}
-	Chunk* chunk = getExistingChunk(chunkX, chunkY, chunkZ);
 
 	// If we still haven't found the chunk then it's time to create a new one and page it in from disk.
 	if (!chunk) {
