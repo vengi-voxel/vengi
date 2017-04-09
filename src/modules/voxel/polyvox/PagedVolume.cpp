@@ -146,38 +146,6 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx,
 }
 
 /**
- * Note that if the memory usage limit is not large enough to support the region this function will only load part of the region. In this case it is undefined which parts will actually be loaded. If all the voxels in the given region are already loaded, this function will not do anything. Other voxels might be unloaded to make space for the new voxels.
- * @param regPrefetch The Region of voxels to prefetch into memory.
- */
-void PagedVolume::prefetch(const Region& regPrefetch) {
-	// Convert the start and end positions into chunk space coordinates
-	const glm::ivec3& lower = regPrefetch.getLowerCorner();
-	const glm::ivec3 v3dStart {lower.x >> _chunkSideLengthPower, lower.y >> _chunkSideLengthPower, lower.z >> _chunkSideLengthPower};
-
-	const glm::ivec3& upper = regPrefetch.getUpperCorner();
-	const glm::ivec3 v3dEnd {upper.x >> _chunkSideLengthPower, upper.y >> _chunkSideLengthPower, upper.z >> _chunkSideLengthPower};
-
-	// Ensure we don't page in more chunks than the volume can hold.
-	const Region region(v3dStart, v3dEnd);
-	const uint32_t uNoOfChunks = static_cast<uint32_t>(region.getWidthInVoxels() * region.getHeightInVoxels() * region.getDepthInVoxels());
-	if (uNoOfChunks > _chunkCountLimit) {
-		Log::warn("Attempting to prefetch more than the maximum number of chunks (this will cause thrashing).");
-	}
-
-	// Loops over the specified positions and touch the corresponding chunks.
-	for (int32_t x = v3dStart.x; x <= v3dEnd.x; ++x) {
-		for (int32_t y = v3dStart.y; y <= v3dEnd.y; ++y) {
-			for (int32_t z = v3dStart.z; z <= v3dEnd.z; ++z) {
-				const Chunk* chunk = getExistingChunk(x, y, z);
-				if (chunk == nullptr) {
-					createNewChunk(x, y, z);
-				}
-			}
-		}
-	}
-}
-
-/**
  * Removes all voxels from memory by removing all chunks. The application has the chance to persist the data via @c Pager::pageOut
  */
 void PagedVolume::flushAll() {

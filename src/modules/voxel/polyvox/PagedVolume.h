@@ -205,8 +205,6 @@ public:
 	void setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, int amount);
 	void setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx, int nz, const Voxel* tArray, int amount);
 
-	/// Tries to ensure that the voxels within the specified Region are loaded into memory.
-	void prefetch(const Region& regPrefetch);
 	/// Removes all voxels from memory
 	void flushAll();
 
