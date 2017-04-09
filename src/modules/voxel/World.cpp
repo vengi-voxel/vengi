@@ -189,15 +189,6 @@ void World::cleanupFutures() {
 	}
 }
 
-void World::prefetch(const glm::vec3& pos) {
-	_futures.push_back(_threadPool.enqueue([=] () {
-		if (_cancelThreads) {
-			return;
-		}
-		_volumeData->prefetch(getRegion(pos, 1024));
-	}));
-}
-
 void World::onFrame(long dt) {
 	core_trace_scoped(WorldOnFrame);
 	cleanupFutures();
