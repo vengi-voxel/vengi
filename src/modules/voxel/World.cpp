@@ -69,14 +69,6 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		core_trace_scoped(MeshExtraction);
 		const Region &region = getMeshRegion(pos);
 
-		const int extends = 3;
-		glm::ivec3 mins = region.getLowerCorner() - extends;
-		mins.y = 0;
-		glm::ivec3 maxs = region.getUpperCorner() + extends;
-		maxs.y = MAX_HEIGHT - 1;
-		const Region prefetchRegion(mins, maxs);
-		_volumeData->prefetch(prefetchRegion);
-
 		// these number are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
 		// they also heavily depend on the size of the mesh region we extract
 		const int opaqueFactor = 16;
