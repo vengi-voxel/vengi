@@ -26,6 +26,11 @@ public:
 		_conditionVariable.notify_all();
 	}
 
+	void clear() {
+		std::unique_lock<std::mutex> lock(_mutex);
+		_queue.clear();
+	}
+
 	void push(Data const& data) {
 		std::unique_lock<std::mutex> lock(_mutex);
 		_queue.push(data);
