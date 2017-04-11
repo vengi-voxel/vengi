@@ -91,11 +91,12 @@ Tree::Tree(const core::AABB<int>& crownAABB, int trunkHeight, int branchLength, 
 }
 
 Tree::~Tree() {
-	delete _root;
 	for (auto &e : _branches) {
 		delete e.second;
 	}
+	_root = nullptr;
 	_branches.clear();
+	_leaves.clear();
 }
 
 bool Tree::grow() {
