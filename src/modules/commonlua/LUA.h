@@ -17,9 +17,7 @@ extern "C" {
 
 namespace lua {
 
-namespace {
 const std::string META_PREFIX = "META_";
-}
 
 class LUAType {
 private:
@@ -132,7 +130,7 @@ public:
 
 	float tableFloat(int i);
 
-	void reg(const std::string& prefix, luaL_Reg* funcs);
+	void reg(const std::string& prefix, const luaL_Reg* funcs);
 	LUAType registerType(const std::string& name);
 
 	void setError(const std::string& error);

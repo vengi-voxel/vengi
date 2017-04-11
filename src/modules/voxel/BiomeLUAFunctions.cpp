@@ -1,9 +1,40 @@
-#include "Biome.h"
+#include "BiomeManager.h"
+#include "BiomeLUAFunctions.h"
 #include "commonlua/LUAFunctions.h"
 
 template<> struct clua_meta<voxel::Biome> { static char const *name() {return "__meta_biome";} };
 
 namespace voxel {
+
+int biomelua_setdefault(lua_State* l) {
+	BiomeManager* biomeMgr = lua::LUA::globalData<BiomeManager>(l, "MGR");
+	if (lua_isnil(l, 1)) {
+		biomeMgr->setDefaultBiome(nullptr);
+	} else {
+		Biome** a = clua_get<Biome*>(l, 1);
+		biomeMgr->setDefaultBiome(*a);
+	}
+	return 0;
+}
+
+int biomelua_addbiome(lua_State* l) {
+	BiomeManager* biomeMgr = lua::LUA::globalData<BiomeManager>(l, "MGR");
+	const int lower = luaL_checkinteger(l, 1);
+	const int upper = luaL_checkinteger(l, 2);
+	const float humidity = luaL_checknumber(l, 3);
+	const float temperature = luaL_checknumber(l, 4);
+	const char* voxelType = luaL_checkstring(l, 5);
+	const bool underGround = clua_optboolean(l, 6, false);
+	const VoxelType type = getVoxelType(voxelType);
+	if (type == VoxelType::Max) {
+		return luaL_error(l, "Failed to resolve voxel type: '%s'", voxelType);
+	}
+	Biome* biome = biomeMgr->addBiome(lower, upper, humidity, temperature, type, underGround);
+	if (biome == nullptr) {
+		return luaL_error(l, "Failed to create biome");
+	}
+	return biomelua_pushbiome(l, biome);
+}
 
 static int biomelua_biometostring(lua_State* s) {
 	Biome** a = clua_get<Biome*>(s, 1);

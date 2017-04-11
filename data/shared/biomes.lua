@@ -35,6 +35,7 @@ end
 function addGrass(lower, upper, humidity, temperature, underGround)
 	local grass = addBiome(lower, upper, humidity, temperature, "Grass", underGround)
 	addTree(grass, "SpaceColonization")
+	return grass
 end
 
 ---
@@ -44,7 +45,8 @@ function initBiomes()
 	addSand(0, MAX_WATER_HEIGHT + 4, 0.5, 0.5, false)
 	addSand(0, MAX_TERRAIN_HEIGHT - 1, 0.1, 0.9, false)
 	addBiome(MAX_WATER_HEIGHT + 3, MAX_WATER_HEIGHT + 10, 1.0, 0.7, "Dirt")
-	addGrass(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5, 0.5)
+	local biome = addGrass(MAX_WATER_HEIGHT + 3, MAX_TERRAIN_HEIGHT + 1, 0.5, 0.5)
+	biomeMgr.setDefault(biome)
 	addBiome(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4, 0.5, "Rock")
 	addBiome(0, MAX_TERRAIN_HEIGHT - 1, 0.4, 0.5, "Rock", true)
 end

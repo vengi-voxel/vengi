@@ -15,7 +15,7 @@
 
 namespace voxel {
 
-static const Biome& getDefault() {
+static const Biome& getDefaultBiome() {
 	static const Biome biome(VoxelType::Grass, getMaterialIndices(VoxelType::Grass), 0, MAX_MOUNTAIN_HEIGHT, 0.5f, 0.5f, false);
 	return biome;
 }
@@ -24,36 +24,21 @@ BiomeManager::BiomeManager() {
 }
 
 BiomeManager::~BiomeManager() {
-	for (const Biome* biome : bioms) {
+	for (const Biome* biome : _bioms) {
 		delete biome;
 	}
 }
 
 bool BiomeManager::init(const std::string& luaString) {
-	luaL_Reg luaAddBiome = { "addBiome", [] (lua_State* l) -> int {
-		BiomeManager* biomeMgr = lua::LUA::globalData<BiomeManager>(l, "MGR");
-		const int lower = luaL_checkinteger(l, 1);
-		const int upper = luaL_checkinteger(l, 2);
-		const float humidity = luaL_checknumber(l, 3);
-		const float temperature = luaL_checknumber(l, 4);
-		const char* voxelType = luaL_checkstring(l, 5);
-		const bool underGround = clua_optboolean(l, 6, false);
-		const VoxelType type = getVoxelType(voxelType);
-		if (type == VoxelType::Max) {
-			return luaL_error(l, "Failed to resolve voxel type: '%s'", voxelType);
-		}
-		Biome* biome = biomeMgr->addBiome(lower, upper, humidity, temperature, type, underGround);
-		if (biome == nullptr) {
-			return luaL_error(l, "Failed to create biome");
-		}
-		return biomelua_pushbiome(l, biome);
-	}};
+	_defaultBiome = &getDefaultBiome();
 
 	lua::LUA lua;
-	std::vector<luaL_Reg> funcs;
-	funcs.push_back(luaAddBiome);
-	funcs.push_back({ nullptr, nullptr });
 	lua.newGlobalData<BiomeManager>("MGR", this);
+	const std::vector<luaL_Reg> funcs({
+		{"addBiome", biomelua_addbiome},
+		{"setDefault", biomelua_setdefault},
+		{nullptr, nullptr}
+	});
 	lua.reg("biomeMgr", &funcs.front());
 	biomelua_biomeregister(lua.state());
 	if (!lua.load(luaString)) {
@@ -67,7 +52,7 @@ bool BiomeManager::init(const std::string& luaString) {
 
 	// TODO: init city gradients
 
-	return !bioms.empty();
+	return !_bioms.empty();
 }
 
 Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround) {
@@ -76,7 +61,7 @@ Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temper
 	}
 	const MaterialColorIndices& indices = getMaterialIndices(type);
 	Biome* biome = new Biome(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround);
-	bioms.push_back(biome);
+	_bioms.push_back(biome);
 	return biome;
 }
 
@@ -122,11 +107,11 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 		last.underground = underground;
 	}
 
-	const Biome *biomeBestMatch = &getDefault();
+	const Biome *biomeBestMatch = &getDefaultBiome();
 	float distMin = std::numeric_limits<float>::max();
 
 	core_trace_scoped(BiomeGetBiomeLoop);
-	for (const Biome* biome : bioms) {
+	for (const Biome* biome : _bioms) {
 		if (pos.y > biome->yMax || pos.y < biome->yMin || biome->underground != underground) {
 			continue;
 		}
@@ -252,6 +237,13 @@ float BiomeManager::getCityGradient(const glm::ivec3& pos) const {
 bool BiomeManager::hasCity(const glm::ivec3& pos) const {
 	core_trace_scoped(BiomeHasCity);
 	return getCityGradient(pos) < 0.4f;
+}
+
+void BiomeManager::setDefaultBiome(const Biome* biome) {
+	if (biome == nullptr) {
+		biome = &getDefaultBiome();
+	}
+	_defaultBiome = biome;
 }
 
 }

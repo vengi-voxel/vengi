@@ -19,7 +19,8 @@ class Region;
 
 class BiomeManager {
 private:
-	std::vector<Biome*> bioms;
+	std::vector<Biome*> _bioms;
+	const Biome* _defaultBiome = nullptr;
 	void distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border, float distribution) const;
 
 public:
@@ -63,6 +64,8 @@ public:
 	 * @return Temperature noise in the range [0-1]
 	 */
 	float getTemperature(int x, int z) const;
+
+	void setDefaultBiome(const Biome* biome);
 
 	const Biome* getBiome(const glm::ivec3& pos, bool underground = false) const;
 };

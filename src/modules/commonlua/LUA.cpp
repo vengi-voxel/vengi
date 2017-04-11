@@ -84,7 +84,7 @@ LUA::~LUA() {
 	}
 }
 
-void LUA::reg(const std::string& prefix, luaL_Reg* funcs) {
+void LUA::reg(const std::string& prefix, const luaL_Reg* funcs) {
 	const std::string metaTableName = META_PREFIX + prefix;
 	luaL_newmetatable(_state, metaTableName.c_str());
 	luaL_setfuncs(_state, funcs, 0);
