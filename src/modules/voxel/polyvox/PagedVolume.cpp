@@ -66,7 +66,7 @@ const Voxel& PagedVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) 
 	return getVoxel(glm::ivec3(uXPos, uYPos, uZPos));
 }
 
-PagedVolume::Chunk* PagedVolume::getChunk(const glm::ivec3& pos) const {
+PagedVolume::ChunkPtr PagedVolume::getChunk(const glm::ivec3& pos) const {
 	const int32_t chunkX = pos.x >> _chunkSideLengthPower;
 	const int32_t chunkY = pos.y >> _chunkSideLengthPower;
 	const int32_t chunkZ = pos.z >> _chunkSideLengthPower;
@@ -100,9 +100,7 @@ void PagedVolume::setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Vo
 	const uint16_t yOffset = static_cast<uint16_t>(uYPos - (chunkY << _chunkSideLengthPower));
 	const uint16_t zOffset = static_cast<uint16_t>(uZPos - (chunkZ << _chunkSideLengthPower));
 
-	Chunk* pChunk = getChunk(chunkX, chunkY, chunkZ);
-
-	pChunk->setVoxel(xOffset, yOffset, zOffset, tValue);
+	getChunk(chunkX, chunkY, chunkZ)->setVoxel(xOffset, yOffset, zOffset, tValue);
 }
 
 /**
@@ -133,7 +131,7 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx,
 				const int32_t chunkY = y >> _chunkSideLengthPower;
 				const uint16_t yOffset = static_cast<uint16_t>(y & _chunkMask);
 
-				Chunk* chunk = getChunk(chunkX, chunkY, chunkZ);
+				ChunkPtr chunk = getChunk(chunkX, chunkY, chunkZ);
 				const int32_t n = std::min(left, int32_t(chunk->_sideLength));
 
 				chunk->setVoxels(xOffset, yOffset, zOffset, array, n);
@@ -151,11 +149,10 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx,
 void PagedVolume::flushAll() {
 	core::RecursiveScopedWriteLock writeLock(_rwLock);
 	// Clear this pointer as all chunks are about to be removed.
-	_lastAccessedChunk = nullptr;
+	_lastAccessedChunk = ChunkPtr();
 
 	// Erase all the most recently used chunks.
 	for (ChunkMap::iterator i = _chunks.begin(); i != _chunks.end(); ++i) {
-		delete i->second;
 	}
 	_chunks.clear();
 }
@@ -166,13 +163,15 @@ void PagedVolume::flushAll() {
  * the chunk is not found because the whole array has to be searched, but in this case we are going to have to page the data in
  * from an external source which is likely to be slow anyway.
  */
-PagedVolume::Chunk* PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
+PagedVolume::ChunkPtr PagedVolume::getExistingChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
 	const glm::ivec3 pos(chunkX, chunkY, chunkZ);
 	auto i = _chunks.find(pos);
 	if (i == _chunks.end()) {
 		return nullptr;
 	}
-	return i->second;
+	const PagedVolume::ChunkPtr& chunk = i->second;
+	chunk->_chunkLastAccessed = ++_timestamper;
+	return chunk;
 }
 
 /**
@@ -188,36 +187,34 @@ void PagedVolume::deleteOldestChunkIfNeeded() const {
 		return;
 	}
 	glm::ivec3 oldestChunkPos(glm::uninitialize);
-	Chunk* oldestChunk = nullptr;
+	bool foundOldestChunk = false;
 	uint32_t oldestChunkTimestamp = std::numeric_limits<uint32_t>::max();
 	for (ChunkMap::iterator i = _chunks.begin(); i != _chunks.end(); ++i) {
 		const glm::ivec3& pos = i->first;
-		Chunk* chunk = i->second;
+		const ChunkPtr& chunk = i->second;
 		if (chunk->_chunkLastAccessed < oldestChunkTimestamp) {
 			oldestChunkTimestamp = chunk->_chunkLastAccessed;
-			oldestChunk = chunk;
+			foundOldestChunk = true;
 			oldestChunkPos = pos;
 		}
 	}
-	if (oldestChunk != nullptr) {
+	if (foundOldestChunk) {
 		ChunkMap::iterator i = _chunks.find(oldestChunkPos);
-		delete i->second;
 		_chunks.erase(i);
 	}
 }
 
-PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
+PagedVolume::ChunkPtr PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
 	// The chunk was not found so we will create a new one.
 	glm::ivec3 pos(chunkX, chunkY, chunkZ);
 	Log::debug("create new chunk at %i:%i:%i", chunkX, chunkY, chunkZ);
-	PagedVolume::Chunk* chunk = new PagedVolume::Chunk(pos, _chunkSideLength, _pager);
+	ChunkPtr chunk = std::make_shared<Chunk>(pos, _chunkSideLength, _pager);
 	chunk->_chunkLastAccessed = ++_timestamper; // Important, as we may soon delete the oldest chunk
 
 	{
 		core::RecursiveScopedWriteLock volumeWriteLock(_rwLock);
 		auto i = _chunks.insert(std::make_pair(pos, chunk));
 		if (!i.second) {
-			delete chunk;
 			return i.first->second;
 		}
 		deleteOldestChunkIfNeeded();
@@ -242,8 +239,8 @@ PagedVolume::Chunk* PagedVolume::createNewChunk(int32_t chunkX, int32_t chunkY, 
 	return chunk;
 }
 
-PagedVolume::Chunk* PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
-	Chunk* chunk;
+PagedVolume::ChunkPtr PagedVolume::getChunk(int32_t chunkX, int32_t chunkY, int32_t chunkZ) const {
+	ChunkPtr chunk;
 	{
 		core::RecursiveScopedReadLock readLock(_rwLock);
 		if (chunkX == _lastAccessedChunkX && chunkY == _lastAccessedChunkY && chunkZ == _lastAccessedChunkZ && _lastAccessedChunk) {
@@ -293,16 +290,7 @@ PagedVolume::Chunk::Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* p
 
 PagedVolume::Chunk::~Chunk() {
 	if (_dataModified && _pager) {
-		// From the coordinates of the chunk we deduce the coordinates of the contained voxels.
-		const glm::ivec3 v3dLower = _chunkSpacePosition * static_cast<int32_t>(_sideLength);
-		const glm::ivec3 v3dUpper = v3dLower + glm::ivec3(_sideLength - 1, _sideLength - 1, _sideLength - 1);
-
-		// Page the data out
-		PagerContext pctx;
-		pctx.region = Region(v3dLower, v3dUpper);
-		pctx.chunk = this;
-
-		_pager->pageOut(pctx);
+		_pager->pageOut(this);
 	}
 
 	delete[] _data;
@@ -430,9 +418,8 @@ void PagedVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos)
 
 	const uint32_t voxelIndexInChunk = morton256_x[_xPosInChunk] | morton256_y[_yPosInChunk] | morton256_z[_zPosInChunk];
 
-	Chunk* currentChunk = _volume->getChunk(xChunk, yChunk, zChunk);
-
-	_currentVoxel = currentChunk->_data + voxelIndexInChunk;
+	_currentChunk = _volume->getChunk(xChunk, yChunk, zChunk);
+	_currentVoxel = _currentChunk->_data + voxelIndexInChunk;
 }
 
 bool PagedVolume::Sampler::setVoxel(const Voxel& tValue) {

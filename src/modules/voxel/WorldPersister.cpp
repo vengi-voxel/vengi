@@ -20,10 +20,10 @@ std::string WorldPersister::getWorldName(const Region& region, long seed) const 
 	return core::string::format("world_%li_%i_%i_%i.wld", seed, region.getLowerX(), region.getLowerY(), region.getLowerZ());
 }
 
-void WorldPersister::erase(PagedVolumeWrapper& ctx, long seed) {
+void WorldPersister::erase(const Region& region, long seed) {
 	core_trace_scoped(WorldPersisterErase);
 #if 0
-	PagedVolume::Chunk* chunk = ctx.getChunk();
+	PagedVolume::ChunkPtr chunk = ctx.getChunk();
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	const Region& region = ctx.region;
@@ -34,7 +34,7 @@ void WorldPersister::erase(PagedVolumeWrapper& ctx, long seed) {
 
 bool WorldPersister::load(PagedVolumeWrapper& ctx, long seed) {
 	core_trace_scoped(WorldPersisterLoad);
-	PagedVolume::Chunk* chunk = ctx.getChunk();
+	const PagedVolume::ChunkPtr& chunk = ctx.getChunk();
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	const Region& region = ctx.getRegion();
@@ -101,11 +101,10 @@ bool WorldPersister::load(PagedVolumeWrapper& ctx, long seed) {
 	return true;
 }
 
-bool WorldPersister::save(PagedVolumeWrapper& ctx, long seed) {
+bool WorldPersister::save(PagedVolume::Chunk* chunk, long seed) {
 	core_trace_scoped(WorldPersisterLoad);
-	PagedVolume::Chunk* chunk = ctx.getChunk();
 	core::ByteStream voxelStream;
-	const Region& region = ctx.getRegion();
+	const Region& region = chunk->getRegion();
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();

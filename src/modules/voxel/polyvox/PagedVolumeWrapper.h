@@ -16,14 +16,14 @@ namespace voxel {
 class PagedVolumeWrapper {
 private:
 	PagedVolume* _pagedVolume;
-	PagedVolume::Chunk* _chunk;
+	PagedVolume::ChunkPtr _chunk;
 	Region _validRegion;
 	Region _region;
 public:
 	class Sampler : public PagedVolume::Sampler {
 	private:
 		using Super = PagedVolume::Sampler;
-		PagedVolume::Chunk* _chunk;
+		PagedVolume::ChunkPtr _chunk;
 	public:
 		Sampler(const PagedVolumeWrapper* volume);
 		Sampler(const PagedVolumeWrapper& volume);
@@ -31,14 +31,14 @@ public:
 		void setPosition(int32_t xPos, int32_t yPos, int32_t zPos) override;
 	};
 
-	PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk, const Region& region);
+	PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::ChunkPtr chunk, const Region& region);
 
 	operator PagedVolume& () const;
 	operator const PagedVolume& () const;
 	operator PagedVolume* () const;
 	operator const PagedVolume* () const;
 
-	PagedVolume::Chunk* getChunk() const;
+	PagedVolume::ChunkPtr getChunk() const;
 	PagedVolume* getVolume() const;
 	const Region& getRegion() const;
 
@@ -72,7 +72,7 @@ inline PagedVolumeWrapper::operator const PagedVolume* () const {
 	return _pagedVolume;
 }
 
-inline PagedVolume::Chunk* PagedVolumeWrapper::getChunk() const {
+inline PagedVolume::ChunkPtr PagedVolumeWrapper::getChunk() const {
 	return _chunk;
 }
 

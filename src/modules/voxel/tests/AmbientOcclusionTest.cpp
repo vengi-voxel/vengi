@@ -11,7 +11,7 @@ namespace voxel {
 
 class AmbientOcclusionTest: public AbstractVoxelTest {
 protected:
-	bool pageIn(const Region& region, PagedVolume::Chunk* chunk) override {
+	bool pageIn(const Region& region, const PagedVolume::ChunkPtr& chunk) override {
 		return true;
 	}
 };

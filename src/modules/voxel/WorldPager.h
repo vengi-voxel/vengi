@@ -64,12 +64,12 @@ public:
 
 	void setNoiseOffset(const glm::vec2& noiseOffset);
 
-	void erase(PagedVolume::PagerContext& ctx);
+	void erase(const Region& region);
 	/**
 	 * @return @c true if the chunk was modified (created), @c false if it was just loaded
 	 */
 	bool pageIn(PagedVolume::PagerContext& ctx) override;
-	void pageOut(PagedVolume::PagerContext& ctx) override;
+	void pageOut(PagedVolume::Chunk* chunk) override;
 };
 
 }

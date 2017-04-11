@@ -12,7 +12,7 @@ class WorldPersisterTest: public AbstractVoxelTest {
 
 TEST_F(WorldPersisterTest, testSaveLoad) {
 	WorldPersister persister;
-	ASSERT_TRUE(persister.save(_ctx, _seed)) << "Could not save volume chunk";
+	ASSERT_TRUE(persister.save(_ctx.getChunk().get(), _seed)) << "Could not save volume chunk";
 
 	const voxel::Region& region = _ctx.getRegion();
 	const std::string& filename = persister.getWorldName(region, _seed);
@@ -20,7 +20,7 @@ TEST_F(WorldPersisterTest, testSaveLoad) {
 	const io::FilesystemPtr& filesystem = app->filesystem();
 	ASSERT_TRUE(filesystem->open(filename)->exists()) << "Nothing was written into " << filename;
 
-	PagedVolume::Chunk* chunk2 = _volData.getChunk(glm::ivec3(128, 0, 128));
+	const PagedVolume::ChunkPtr& chunk2 = _volData.getChunk(glm::ivec3(128, 0, 128));
 	ASSERT_TRUE(_ctx.getChunk() != chunk2) << "Chunks should be different";
 	const PagedVolumeWrapper ctx(&_volData, chunk2, region);
 	_ctx = ctx;

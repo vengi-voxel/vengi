@@ -66,11 +66,11 @@ protected:
 			return _test->pageIn(ctx.region, ctx.chunk);
 		}
 
-		void pageOut(PagedVolume::PagerContext& ctx) override {
+		void pageOut(PagedVolume::Chunk* chunk) override {
 		}
 	};
 
-	virtual bool pageIn(const Region& region, PagedVolume::Chunk* chunk) {
+	virtual bool pageIn(const Region& region, const PagedVolume::ChunkPtr& chunk) {
 		const glm::vec3 center(region.getCentre());
 		for (int z = 0; z < region.getDepthInVoxels(); ++z) {
 			for (int y = 0; y < region.getHeightInVoxels(); ++y) {

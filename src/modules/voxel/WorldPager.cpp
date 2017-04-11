@@ -11,11 +11,9 @@
 
 namespace voxel {
 
-void WorldPager::erase(PagedVolume::PagerContext& pctx) {
+void WorldPager::erase(const Region& region) {
 #if PERSIST
-	core_assert(_ctx != nullptr && _volumeData != nullptr && _biomeManager != nullptr);
-	PagedVolumeWrapper ctx(_volumeData, pctx.chunk, pctx.region);
-	_worldPersister.erase(ctx, _seed);
+	_worldPersister.erase(region, _seed);
 #endif
 }
 
@@ -35,14 +33,13 @@ bool WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
 	return true;
 }
 
-void WorldPager::pageOut(PagedVolume::PagerContext& pctx) {
+void WorldPager::pageOut(PagedVolume::Chunk* chunk) {
 #if PERSIST
-	core_assert(_ctx != nullptr && _volumeData != nullptr && _biomeManager != nullptr);
 	if (!_persist) {
 		return;
 	}
-	PagedVolumeWrapper ctx(_volumeData, pctx.chunk, pctx.region);
-	_worldPersister.save(ctx, _seed);
+	core_assert(chunk != nullptr);
+	_worldPersister.save(chunk, _seed);
 #endif
 }
 

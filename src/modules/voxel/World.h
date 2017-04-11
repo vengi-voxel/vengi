@@ -196,7 +196,7 @@ public:
 	}
 
 	int getChunkSize() const;
-	PagedVolume::Chunk* getChunk(const glm::ivec3& pos) const;
+	PagedVolume::ChunkPtr getChunk(const glm::ivec3& pos) const;
 	int getMeshSize() const;
 
 private:
@@ -240,7 +240,7 @@ inline int World::getChunkSize() const {
 	return _volumeData->getChunkSideLength();
 }
 
-inline PagedVolume::Chunk* World::getChunk(const glm::ivec3& pos) const {
+inline PagedVolume::ChunkPtr World::getChunk(const glm::ivec3& pos) const {
 	return _volumeData->getChunk(pos);
 }
 

@@ -36,7 +36,7 @@ public:
 	/// The Pager class is responsible for the loading and unloading of Chunks, and can be subclassed by the user.
 	class Pager;
 
-	class Chunk {
+	class Chunk : public std::enable_shared_from_this<Chunk> {
 		friend class PagedVolume;
 		friend class PagedVolumeWrapper;
 
@@ -82,10 +82,11 @@ public:
 
 		core::RecursiveReadWriteLock _rwLock{"chunk"};
 	};
+	typedef std::shared_ptr<Chunk> ChunkPtr;
 
 	struct PagerContext {
 		Region region;
-		Chunk* chunk = nullptr;
+		ChunkPtr chunk;
 	};
 
 	/**
@@ -107,7 +108,7 @@ public:
 		 * @return @c true if the chunk was modified (created), @c false if it was just loaded
 		 */
 		virtual bool pageIn(PagerContext& ctx) = 0;
-		virtual void pageOut(PagerContext& ctx) = 0;
+		virtual void pageOut(Chunk* chunk) = 0;
 	};
 
 	class Sampler {
@@ -175,6 +176,7 @@ public:
 
 		//Other current position information
 		Voxel* _currentVoxel = nullptr;
+		ChunkPtr _currentChunk	;
 
 		uint16_t _xPosInChunk = 0u;
 		uint16_t _yPosInChunk = 0u;
@@ -210,7 +212,7 @@ public:
 
 	/// Calculates approximately how many bytes of memory the volume is currently using.
 	uint32_t calculateSizeInBytes();
-	Chunk* getChunk(const glm::ivec3& pos) const;
+	ChunkPtr getChunk(const glm::ivec3& pos) const;
 
 	inline uint16_t getChunkSideLength() const {
 		return _chunkSideLength;
@@ -224,9 +226,9 @@ protected:
 	PagedVolume& operator=(const PagedVolume& rhs);
 
 private:
-	Chunk* getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
-	Chunk* getExistingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
-	Chunk* createNewChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
+	ChunkPtr getChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
+	ChunkPtr getExistingChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
+	ChunkPtr createNewChunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
 	void deleteOldestChunkIfNeeded() const;
 
 	// Storing these properties individually has proved to be faster than keeping
@@ -236,13 +238,13 @@ private:
 	mutable int32_t _lastAccessedChunkX = 0;
 	mutable int32_t _lastAccessedChunkY = 0;
 	mutable int32_t _lastAccessedChunkZ = 0;
-	mutable Chunk* _lastAccessedChunk = nullptr;
+	mutable ChunkPtr _lastAccessedChunk = nullptr;
 
-	mutable uint32_t _timestamper = 0u;
+	mutable std::atomic_uint _timestamper { 0u };
 
 	uint32_t _chunkCountLimit = 0u;
 
-	typedef std::unordered_map<glm::ivec3, Chunk*, std::hash<glm::ivec3> > ChunkMap;
+	typedef std::unordered_map<glm::ivec3, ChunkPtr, std::hash<glm::ivec3> > ChunkMap;
 	mutable ChunkMap _chunks;
 
 	// The size of the chunks

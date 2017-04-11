@@ -8,7 +8,7 @@ namespace voxel {
 
 class PolyVoxTest: public AbstractVoxelTest {
 protected:
-	bool pageIn(const voxel::Region& region, PagedVolume::Chunk* chunk) override {
+	bool pageIn(const voxel::Region& region, const PagedVolume::ChunkPtr& chunk) override {
 		chunk->setVoxel(1, 2, 1, createVoxel(VoxelType::Grass, 0));
 
 		chunk->setVoxel(0, 1, 0, createVoxel(VoxelType::Dirt, 0));
@@ -35,7 +35,7 @@ protected:
 };
 
 TEST_F(PolyVoxTest, testSamplerPeek) {
-	PagedVolume::Chunk* chunk = _volData.getChunk(glm::ivec3(0, 0, 0));
+	const PagedVolume::ChunkPtr& chunk = _volData.getChunk(glm::ivec3(0, 0, 0));
 	ASSERT_EQ(VoxelType::Grass, chunk->getVoxel(1, 2, 1).getMaterial());
 	ASSERT_EQ(VoxelType::Leaf, chunk->getVoxel(1, 1, 1).getMaterial());
 	ASSERT_EQ(VoxelType::Leaf, chunk->getVoxel(1, 0, 1).getMaterial());

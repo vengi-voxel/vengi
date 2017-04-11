@@ -30,18 +30,17 @@ void PagedVolumeWrapper::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_
 	_zPosInChunk = static_cast<uint16_t>(_zPosInVolume - (zChunk << _volume->_chunkSideLengthPower));
 	const uint32_t voxelIndexInChunk = morton256_x[_xPosInChunk] | morton256_y[_yPosInChunk] | morton256_z[_zPosInChunk];
 
-	PagedVolume::Chunk* currentChunk;
 	const glm::ivec3& p = _chunk->_chunkSpacePosition;
 	if (p.x == xChunk && p.y == yChunk && p.z == zChunk) {
-		currentChunk = _chunk;
+		_currentChunk = _chunk;
 	} else {
-		currentChunk = _volume->getChunk(xChunk, yChunk, zChunk);
+		_currentChunk = _volume->getChunk(xChunk, yChunk, zChunk);
 	}
 
-	_currentVoxel = currentChunk->_data + voxelIndexInChunk;
+	_currentVoxel = _currentChunk->_data + voxelIndexInChunk;
 }
 
-PagedVolumeWrapper::PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::Chunk* chunk, const Region& region) :
+PagedVolumeWrapper::PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::ChunkPtr chunk, const Region& region) :
 		_pagedVolume(voxelStorage), _chunk(chunk), _region(region) {
 	if (_chunk != nullptr) {
 		_validRegion = _chunk->getRegion();
