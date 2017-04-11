@@ -6,8 +6,7 @@
 
 #include "backend/ForwardDecl.h"
 #include "core/ReadWriteLock.h"
-#include "core/Random.h"
-#include "core/GLM.h"
+#include <glm/vec3.hpp>
 #include <vector>
 #include <memory>
 
