@@ -22,13 +22,12 @@ bool WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
 	if (pctx.region.getLowerY() < 0) {
 		return false;
 	}
-	// dangerous - this chunk might be deleted by the paged volume
-	PagedVolumeWrapper ctx(_volumeData, pctx.chunk, pctx.region);
 #if PERSIST
-	if (_persist && _worldPersister.load(ctx, _seed)) {
+	if (_persist && _worldPersister.load(pctx.chunk.get(), _seed)) {
 		return false;
 	}
 #endif
+	PagedVolumeWrapper ctx(_volumeData, pctx.chunk, pctx.region);
 	create(ctx);
 	return true;
 }

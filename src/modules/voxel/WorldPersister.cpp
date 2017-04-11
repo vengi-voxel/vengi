@@ -32,12 +32,11 @@ void WorldPersister::erase(const Region& region, long seed) {
 #endif
 }
 
-bool WorldPersister::load(PagedVolumeWrapper& ctx, long seed) {
+bool WorldPersister::load(PagedVolume::Chunk* chunk, long seed) {
 	core_trace_scoped(WorldPersisterLoad);
-	const PagedVolume::ChunkPtr& chunk = ctx.getChunk();
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
-	const Region& region = ctx.getRegion();
+	const Region& region = chunk->getRegion();
 	const std::string& filename = getWorldName(region, seed);
 	const io::FilePtr& f = filesystem->open(filename);
 	if (!f->exists()) {

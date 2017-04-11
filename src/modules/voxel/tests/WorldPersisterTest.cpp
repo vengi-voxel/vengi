@@ -24,7 +24,7 @@ TEST_F(WorldPersisterTest, testSaveLoad) {
 	ASSERT_TRUE(_ctx.getChunk() != chunk2) << "Chunks should be different";
 	const PagedVolumeWrapper ctx(&_volData, chunk2, region);
 	_ctx = ctx;
-	ASSERT_TRUE(persister.load(_ctx, _seed)) << "Could not load volume chunk";
+	ASSERT_TRUE(persister.load(_ctx.getChunk().get(), _seed)) << "Could not load volume chunk";
 	ASSERT_EQ(VoxelType::Grass, _volData.getVoxel(32, 32, 32).getMaterial());
 }
 
