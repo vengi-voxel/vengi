@@ -22,11 +22,11 @@ namespace tree {
 
 struct Branch;
 
-struct Leaf {
+struct AttractionPoint {
 	glm::vec3 _position;
 	Branch* _closestBranch = nullptr;
 
-	Leaf(const glm::vec3& position);
+	AttractionPoint(const glm::vec3& position);
 };
 
 struct Branch {
@@ -50,24 +50,28 @@ private:
 	bool _doneGrowing = false;
 	glm::vec3 _position;
 
-	int _leafCount = 400;
+	int _attractionPointCount = 400;
 	int _treeWidth = 40;
 	int _treeDepth = 40;
 	int _treeHeight = 60;
 	int _trunkHeight = 20;
-	int _minDistance = 6;
-	int _maxDistance = 10;
+	int _minDistance2 = 36;
+	int _maxDistance2 = 100;
 	int _branchLength = 2;
 	float _branchSize = 4.0f;
 	float _trunkSizeFactor = 0.8f;
 	float _branchSizeFactor = 0.6f;
 
 	Branch *_root;
-	std::vector<Leaf> _leaves;
+	std::vector<AttractionPoint> _attrationPoints;
 	std::unordered_map<glm::vec3, Branch*, std::hash<glm::vec3>> _branches;
 	core::Random _random;
 	core::AABB<int> _crown;
 
+	/**
+	 * Generate the attraction points for the crown
+	 * @param radius The radius of the crown sphere
+	 */
 	void generateCrown(int radius);
 
 	void generateTrunk();
@@ -84,10 +88,10 @@ public:
 
 	template<class Volume>
 	void generate(Volume& volume, const glm::ivec3& leafSize = glm::ivec3(4)) const {
-		Log::debug("Generate for %i leaves and %i branches", (int)_leaves.size(), (int)_branches.size());
+		Log::debug("Generate for %i attraction points and %i branches", (int)_attrationPoints.size(), (int)_branches.size());
 		const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, _random);
-		for (const Leaf& l : _leaves) {
-			voxel::shape::createEllipse(volume, l._position, leafSize.x, leafSize.y, leafSize.z, leavesVoxel);
+		for (const AttractionPoint& attractionPoint : _attrationPoints) {
+			voxel::shape::createEllipse(volume, attractionPoint._position, leafSize.x, leafSize.y, leafSize.z, leavesVoxel);
 		}
 
 		const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, _random);
