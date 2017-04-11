@@ -27,8 +27,7 @@ bool WorldPager::pageIn(PagedVolume::PagerContext& pctx) {
 		return false;
 	}
 #endif
-	PagedVolumeWrapper ctx(_volumeData, pctx.chunk, pctx.region);
-	create(ctx);
+	create(pctx);
 	return true;
 }
 
@@ -74,7 +73,8 @@ void WorldPager::shutdown() {
 	_ctx = nullptr;
 }
 
-void WorldPager::create(PagedVolumeWrapper& wrapper) {
+void WorldPager::create(PagedVolume::PagerContext& ctx) {
+	PagedVolumeWrapper wrapper(_volumeData, ctx.chunk, ctx.region);
 	core_trace_scoped(CreateWorld);
 	voxel::world::WorldGenerator gen(*_biomeManager, _seed);
 	{

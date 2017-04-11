@@ -28,7 +28,7 @@ private:
 	WorldContext* _ctx = nullptr;
 
 	// don't access the volume in anything that is called here
-	void create(PagedVolumeWrapper& wrapper);
+	void create(PagedVolume::PagerContext& ctx);
 
 public:
 	/**
