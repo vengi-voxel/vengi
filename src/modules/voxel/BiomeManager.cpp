@@ -24,6 +24,9 @@ BiomeManager::BiomeManager() {
 }
 
 BiomeManager::~BiomeManager() {
+	for (const Biome* biome : bioms) {
+		delete biome;
+	}
 }
 
 bool BiomeManager::init(const std::string& luaString) {
@@ -72,8 +75,9 @@ Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temper
 		return nullptr;
 	}
 	const MaterialColorIndices& indices = getMaterialIndices(type);
-	bioms.emplace_back(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround);
-	return &bioms.back();
+	Biome* biome = new Biome(type, indices, int16_t(lower), int16_t(upper), humidity, temperature, underGround);
+	bioms.push_back(biome);
+	return biome;
 }
 
 float BiomeManager::getHumidity(int x, int z) const {
@@ -122,15 +126,15 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	float distMin = std::numeric_limits<float>::max();
 
 	core_trace_scoped(BiomeGetBiomeLoop);
-	for (const Biome& biome : bioms) {
-		if (pos.y > biome.yMax || pos.y < biome.yMin || biome.underground != underground) {
+	for (const Biome* biome : bioms) {
+		if (pos.y > biome->yMax || pos.y < biome->yMin || biome->underground != underground) {
 			continue;
 		}
-		const float dTemperature = temperature - biome.temperature;
-		const float dHumidity = humidity - biome.humidity;
+		const float dTemperature = temperature - biome->temperature;
+		const float dHumidity = humidity - biome->humidity;
 		const float dist = (dTemperature * dTemperature) + (dHumidity * dHumidity);
 		if (dist < distMin) {
-			biomeBestMatch = &biome;
+			biomeBestMatch = biome;
 			distMin = dist;
 		}
 	}

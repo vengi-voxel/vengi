@@ -19,7 +19,7 @@ class Region;
 
 class BiomeManager {
 private:
-	std::vector<Biome> bioms;
+	std::vector<Biome*> bioms;
 	void distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border, float distribution) const;
 
 public:
