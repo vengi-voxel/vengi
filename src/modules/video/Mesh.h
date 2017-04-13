@@ -10,11 +10,18 @@
 #include "VertexBuffer.h"
 #include "core/Vertex.h"
 #include <vector>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <memory>
 #include <unordered_map>
+
+class aiScene;
+class aiMesh;
+class aiAnimation;
+class aiNode;
+class aiNodeAnim;
+
+namespace Assimp {
+class Importer;
+}
 
 namespace video {
 
@@ -36,10 +43,6 @@ private:
 		glm::mat4 finalTransformation;
 	};
 
-	glm::vec3 toVec3(const aiVector3D& vector) const;
-	glm::quat toQuat(const aiQuaternion& quat) const;
-	glm::mat4 toMat4(const aiMatrix4x4& matrix) const;
-	glm::mat4 toMat4(const aiMatrix3x3& matrix) const;
 	void loadTextureImages(const aiScene* scene, const std::string& filename);
 	glm::vec3 calcInterpolatedScaling(float animationTime, const aiNodeAnim* nodeAnim);
 	glm::mat4 calcInterpolatedRotation(float animationTime, const aiNodeAnim* nodeAnim);
@@ -76,7 +79,7 @@ private:
 	std::vector<BoneInfo> _boneInfo;
 	glm::mat4 _globalInverseTransform;
 	const aiScene* _scene = nullptr;
-	Assimp::Importer _importer;
+	Assimp::Importer* _importer;
 	void* _lastShader = nullptr;
 	std::string _filename;
 
@@ -120,24 +123,6 @@ inline const glm::vec3& Mesh::mins() const {
 
 inline const glm::vec3& Mesh::maxs() const {
 	return _aabbMaxs;
-}
-
-inline glm::vec3 Mesh::toVec3(const aiVector3D& vector) const {
-	return glm::vec3(vector.x, vector.y, vector.z);
-}
-
-inline glm::quat Mesh::toQuat(const aiQuaternion& quat) const {
-	return glm::quat(quat.w, quat.x, quat.y, quat.z);
-}
-
-inline glm::mat4 Mesh::toMat4(const aiMatrix4x4& m) const {
-	// assimp matrices are row major, but glm wants them to be column major
-	return glm::transpose(glm::mat4(m.a1, m.a2, m.a3, m.a4, m.b1, m.b2, m.b3, m.b4, m.c1, m.c2, m.c3, m.c4, m.d1, m.d2, m.d3, m.d4));
-}
-
-inline glm::mat4 Mesh::toMat4(const aiMatrix3x3& m) const {
-	// assimp matrices are row major, but glm wants them to be column major
-	return glm::mat4(glm::transpose(glm::mat3(m.a1, m.a2, m.a3, m.b1, m.b2, m.b3, m.c1, m.c2, m.c3)));
 }
 
 typedef std::shared_ptr<Mesh> MeshPtr;

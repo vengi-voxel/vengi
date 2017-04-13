@@ -9,6 +9,9 @@
 #include "core/Log.h"
 #include "video/ScopedLineWidth.h"
 #include "video/Types.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 namespace video {
 
@@ -18,6 +21,25 @@ const aiColor4D COLOR_BLACK(0.0f, 0.0f, 0.0f, 0.0f);
 static inline core::Vertex convertVertex(const aiVector3D& p, const aiVector3D& n, const aiVector3D& t, const aiColor4D& c) {
 	return core::Vertex(glm::vec3(p.x, p.y, p.z), glm::vec3(n.x, n.y, n.z), glm::vec2(t.x, t.y), glm::vec4(c.r, c.g, c.b, c.a));
 }
+
+static inline glm::vec3 toVec3(const aiVector3D& vector) {
+	return glm::vec3(vector.x, vector.y, vector.z);
+}
+
+static inline glm::quat toQuat(const aiQuaternion& quat) {
+	return glm::quat(quat.w, quat.x, quat.y, quat.z);
+}
+
+static inline glm::mat4 toMat4(const aiMatrix4x4& m) {
+	// assimp matrices are row major, but glm wants them to be column major
+	return glm::transpose(glm::mat4(m.a1, m.a2, m.a3, m.a4, m.b1, m.b2, m.b3, m.b4, m.c1, m.c2, m.c3, m.c4, m.d1, m.d2, m.d3, m.d4));
+}
+
+static inline glm::mat4 toMat4(const aiMatrix3x3& m) {
+	// assimp matrices are row major, but glm wants them to be column major
+	return glm::mat4(glm::transpose(glm::mat3(m.a1, m.a2, m.a3, m.b1, m.b2, m.b3, m.c1, m.c2, m.c3)));
+}
+
 }
 
 struct MeshNormals {
@@ -33,15 +55,16 @@ struct MeshNormals {
 };
 
 Mesh::Mesh() :
-		io::IOResource() {
+		io::IOResource(), _importer(new Assimp::Importer()) {
 }
 
 Mesh::~Mesh() {
 	shutdown();
+	delete _importer;
 }
 
 void Mesh::shutdown() {
-	_importer.FreeScene();
+	_importer->FreeScene();
 	_textures.clear();
 	_images.clear();
 	_meshData.clear();
@@ -70,12 +93,12 @@ bool Mesh::loadMesh(const std::string& filename) {
 	class MeshIOSystem : public Assimp::IOSystem {
 	};
 	MeshIOSystem iosystem;
-	_importer.SetIOHandler(&iosystem);
+	_importer->SetIOHandler(&iosystem);
 #endif
 	_filename = filename;
-	_scene = _importer.ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_FindDegenerates);
+	_scene = _importer->ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_FindDegenerates);
 	if (_scene == nullptr || _scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !_scene->mRootNode) {
-		Log::error("Error parsing '%s': '%s'\n", filename.c_str(), _importer.GetErrorString());
+		Log::error("Error parsing '%s': '%s'\n", filename.c_str(), _importer->GetErrorString());
 		_state = io::IOSTATE_FAILED;
 		return false;
 	}

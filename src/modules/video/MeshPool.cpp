@@ -5,6 +5,7 @@
 #include "MeshPool.h"
 #include "io/Filesystem.h"
 #include "core/App.h"
+#include <assimp/scene.h>
 #include <assimp/importerdesc.h>
 
 namespace video {
