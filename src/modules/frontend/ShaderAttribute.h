@@ -7,7 +7,7 @@
 namespace frontend {
 
 inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_t attributeIndex, int components = sizeof(voxel::VoxelVertex::position) / sizeof(decltype(voxel::VoxelVertex::position)::value_type)) {
-	static_assert(MAX_TERRAIN_HEIGHT < 256, "Max terrain height exceeds the valid voxel positions");
+	static_assert(voxel::MAX_TERRAIN_HEIGHT < 256, "Max terrain height exceeds the valid voxel positions");
 	video::Attribute attrib;
 	attrib.bufferIndex = bufferIndex;
 	attrib.index = attributeIndex;

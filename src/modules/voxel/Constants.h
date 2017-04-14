@@ -6,10 +6,10 @@
 
 namespace voxel {
 
-#define MAX_HEIGHT 255
-#define MAX_TERRAIN_HEIGHT 100
-#define MAX_MOUNTAIN_HEIGHT (MAX_TERRAIN_HEIGHT + 60)
-#define MAX_WATER_HEIGHT 10
-#define NO_FLOOR_FOUND -1
+constexpr int MAX_HEIGHT = 255;
+constexpr int MAX_TERRAIN_HEIGHT = 100;
+constexpr int MAX_MOUNTAIN_HEIGHT = MAX_TERRAIN_HEIGHT + 60;
+constexpr int MAX_WATER_HEIGHT = 10;
+constexpr int NO_FLOOR_FOUND = -1;
 
 }
