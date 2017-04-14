@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "polyvox/Region.h"
 #include "SurfaceExtractionTask.h"
 #include "core/ConcurrentQueue.h"
 #include "OctreeNode.h"
@@ -14,6 +13,7 @@
 
 namespace voxel {
 
+class Region;
 class OctreeVolume;
 
 class Octree {

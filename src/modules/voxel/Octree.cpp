@@ -6,6 +6,7 @@
 #include "OctreeNode.h"
 #include "OctreeVolume.h"
 #include "core/App.h"
+#include "polyvox/Region.h"
 
 #include <glm/glm.hpp>
 #include <algorithm>
