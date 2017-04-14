@@ -7,8 +7,10 @@
 #include "OctreeVolume.h"
 #include "core/App.h"
 #include "polyvox/Region.h"
+#include "polyvox/Utility.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/round.hpp>
 #include <algorithm>
 
 namespace voxel {

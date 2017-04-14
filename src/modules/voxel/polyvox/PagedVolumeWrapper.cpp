@@ -4,6 +4,7 @@
 
 #include "PagedVolumeWrapper.h"
 #include "core/Common.h"
+#include "Morton.h"
 
 namespace voxel {
 

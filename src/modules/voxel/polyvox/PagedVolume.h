@@ -6,8 +6,6 @@
 
 #include "Voxel.h"
 #include "Region.h"
-#include "Utility.h"
-#include "Morton.h"
 #include "core/NonCopyable.h"
 #include "core/RecursiveReadWriteLock.h"
 #include <array>

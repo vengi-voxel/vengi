@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "voxel/polyvox/Region.h"
-#include "voxel/polyvox/PagedVolume.h"
+#include "PagedVolume.h"
 
 namespace voxel {
 

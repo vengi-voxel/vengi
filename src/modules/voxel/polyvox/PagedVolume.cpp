@@ -3,6 +3,8 @@
  */
 
 #include "PagedVolume.h"
+#include "Morton.h"
+#include "Utility.h"
 
 namespace voxel {
 

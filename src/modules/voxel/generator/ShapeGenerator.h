@@ -12,11 +12,6 @@
 
 namespace voxel {
 
-class RawVolume;
-class PagedVolume;
-class RawVolumeWrapper;
-class PagedVolumeWrapper;
-
 namespace shape {
 
 /**
