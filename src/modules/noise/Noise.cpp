@@ -6,6 +6,7 @@
 #include "core/Trace.h"
 #include "core/Log.h"
 #include "core/Common.h"
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 #include <limits>
 

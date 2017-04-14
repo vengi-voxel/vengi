@@ -12,6 +12,7 @@
 #include "core/RecursiveReadWriteLock.h"
 #include <array>
 #include <memory>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
 namespace voxel {
