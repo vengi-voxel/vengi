@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "core/GLM.h"
 #include "Simplex.h"
+#include <glm/detail/func_trigonometric.hpp>
+#include <glm/gtc/constants.hpp>
 #include <cstdint>
-#include <functional>
 
 namespace noise {
 

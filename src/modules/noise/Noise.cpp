@@ -6,6 +6,7 @@
 #include "core/Trace.h"
 #include "core/Log.h"
 #include "core/Common.h"
+#include <glm/gtx/norm.hpp>
 #include <limits>
 
 #define GLM_NOISE 0
