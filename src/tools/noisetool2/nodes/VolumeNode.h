@@ -8,8 +8,9 @@
 #include "video/Texture.h"
 #include "video/Camera.h"
 #include "core/Var.h"
+#include "io/IEventObserver.h"
 
-class VolumeNode : public NodeBase {
+class VolumeNode : public NodeBase, public io::IEventObserver {
 private:
 	frontend::RawVolumeRenderer _rawVolumeRenderer;
 	video::FrameBuffer _frameBuffer;
@@ -42,6 +43,7 @@ protected:
 	int volumeHeight = 32;
 	int volumeDepth = 32;
 	int voxelCnt = 0;
+	bool _hovered = false;
 
 	void onEdited() override;
 	bool render(float nodeWidth) override;
@@ -53,4 +55,7 @@ public:
 	virtual ~VolumeNode();
 	void update();
 	static VolumeNode* Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge);
+
+	bool onKeyRelease(int32_t key) override;
+	bool onKeyPress(int32_t key, int16_t modifier) override;
 };

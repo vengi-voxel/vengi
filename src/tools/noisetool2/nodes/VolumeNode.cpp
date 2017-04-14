@@ -6,10 +6,12 @@
 #include "NNode.h"
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/MaterialColor.h"
+#include "io/EventHandler.h"
 
 VolumeNode::VolumeNode() : _thread([this] () {volumeCallback();}) {
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setMode(video::CameraMode::Perspective);
+	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 }
 
 VolumeNode::~VolumeNode() {
@@ -17,6 +19,7 @@ VolumeNode::~VolumeNode() {
 	_thread.join();
 	_frameBuffer.shutdown();
 	_rawVolumeRenderer.shutdown();
+	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
 }
 
 void VolumeNode::update() {
@@ -46,10 +49,9 @@ void VolumeNode::volumeCallback() {
 		}
 		VolumeCommand cmd;
 		if (!_commands.pop(cmd)) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			std::this_thread::sleep_for(std::chrono::milliseconds(100L));
 			continue;
 		}
-		const voxel::Region region(0, 0, 0, cmd.volumeWidth - 1, cmd.volumeHeight - 1, cmd.volumeDepth - 1);
 		VolumeCommandReturn ret;
 		ret.volume = new voxel::RawVolume(cmd.region);
 		ret.voxelCnt = 0;
@@ -116,7 +118,8 @@ bool VolumeNode::render(float nodeWidth) {
 	// TODO: opengl specific
 	const glm::ivec2& dim = _frameBuffer.dimension();
 	ImGui::Image((ImTextureID) (intptr_t) _frameBuffer.texture(), dim, ImVec2(0.0f, 1.0f), ImVec2(1.0, 0.0f));
-	if (ImGui::IsItemHovered()) {
+	_hovered = (_hovered && (SDL_GetModState() & KMOD_SHIFT) != 0) || ImGui::IsItemHovered();
+	if (_hovered) {
 		const ImGuiIO& io = ImGui::GetIO();
 		const glm::vec3 delta(io.MouseDelta.y, io.MouseDelta.x, 0.0f);
 		_camera.rotate(delta * _rotationSpeed->floatVal());
@@ -171,4 +174,12 @@ VolumeNode* VolumeNode::Create(const ImVec2& pos, ImGui::NodeGraphEditor& nge) {
 	node->fields.addField(&node->volumeHeight, 1, "Height", "Volume height", 0, 32, 128);
 	node->fields.addField(&node->volumeDepth, 1, "Depth", "Volume depth", 0, 32, 512);
 	return node;
+}
+
+bool VolumeNode::onKeyRelease(int32_t key) {
+	return false;
+}
+
+bool VolumeNode::onKeyPress(int32_t key, int16_t modifier) {
+	return false;
 }
