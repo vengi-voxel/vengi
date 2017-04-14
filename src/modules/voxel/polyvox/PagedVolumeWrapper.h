@@ -6,7 +6,6 @@
 
 #include "voxel/polyvox/Region.h"
 #include "voxel/polyvox/PagedVolume.h"
-#include <glm/vec3.hpp>
 
 namespace voxel {
 

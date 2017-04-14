@@ -31,6 +31,7 @@
 
 #pragma once
 
+#include <functional>
 #include <vector>
 #include "core/Rect.h"
 #include "core/AABB.h"

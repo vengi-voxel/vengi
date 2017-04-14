@@ -4,6 +4,7 @@ set(SRCS
 	command/Command.h command/Command.cpp
 	trace/Remotery.c trace/Remotery.h
 	trace/microprofile.h
+	Assert.h
 	App.cpp App.h
 	Bezier.h
 	ByteStream.cpp ByteStream.h

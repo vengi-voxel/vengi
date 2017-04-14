@@ -3,10 +3,12 @@
  */
 
 #pragma once
+
+#include "core/Assert.h"
 #include <limits>
 #include <array>
-#include "GLM.h"
-#include "core/Common.h"
+#include <glm/vec2.hpp>
+#include <glm/common.hpp>
 
 namespace core {
 

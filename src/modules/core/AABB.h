@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "core/Common.h"
+#include "core/Assert.h"
 
+#include <glm/vec3.hpp>
 #include <algorithm>
 #include <limits>
 
