@@ -138,24 +138,38 @@ void RawVolumeRenderer::extractAll() {
 }
 
 bool RawVolumeRenderer::extract(int idx) {
-	if (_rawVolume[idx] == nullptr) {
+	voxel::RawVolume* volume = _rawVolume[idx];
+	if (volume == nullptr) {
 		return false;
 	}
 
-	if (_mesh[idx] == nullptr) {
+	voxel::Mesh* mesh = _mesh[idx];
+	if (mesh == nullptr) {
 		return false;
 	}
-	voxel::Region r = _rawVolume[idx]->getRegion();
-	r.shiftUpperCorner(1, 1, 1);
-	voxel::extractCubicMesh(_rawVolume[idx], r, _mesh[idx], CustomIsQuadNeeded());
-	const size_t meshNumberIndices = _mesh[idx]->getNoOfIndices();
-	if (meshNumberIndices == 0) {
+	extract(volume, mesh);
+	update(idx, mesh);
+	return true;
+}
+
+void RawVolumeRenderer::update(int idx, voxel::Mesh* mesh) {
+	if (_mesh[idx] != mesh) {
+		delete _mesh[idx];
+		_mesh[idx] = mesh;
+	}
+	const size_t meshNumberIndices = mesh->getNoOfIndices();
+	if (meshNumberIndices == 0u) {
 		_vertexBuffer[idx].update(_vertexBufferIndex[idx], nullptr, 0);
 		_vertexBuffer[idx].update(_indexBufferIndex[idx], nullptr, 0);
-		return true;
+		return;
 	}
-	update(idx, _mesh[idx]->getVertexVector(), _mesh[idx]->getIndexVector());
-	return true;
+	update(idx, mesh->getVertexVector(), mesh->getIndexVector());
+}
+
+void RawVolumeRenderer::extract(voxel::RawVolume* volume, voxel::Mesh* mesh) const {
+	voxel::Region region = volume->getRegion();
+	region.shiftUpperCorner(1, 1, 1);
+	voxel::extractCubicMesh(volume, region, mesh, CustomIsQuadNeeded());
 }
 
 void RawVolumeRenderer::render(const video::Camera& camera) {

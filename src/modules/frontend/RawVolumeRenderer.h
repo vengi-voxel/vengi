@@ -52,6 +52,7 @@ public:
 	 * @sa extract()
 	 */
 	bool update(int idx, const std::vector<voxel::VoxelVertex>& vertices, const std::vector<voxel::IndexType>& indices);
+	void update(int idx, voxel::Mesh* mesh);
 
 	/**
 	 * @brief Reextract the whole volume region and updates the vertex buffers.
@@ -59,6 +60,7 @@ public:
 	 */
 	void extractAll();
 	bool extract(int i);
+	void extract(voxel::RawVolume* volume, voxel::Mesh* mesh) const;
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer

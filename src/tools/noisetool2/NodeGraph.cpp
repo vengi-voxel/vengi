@@ -9,7 +9,9 @@
 
 static ImGui::NodeGraphEditor nge;
 
-static ImGui::Node* nodeFactory(int nodeType, const ImVec2& pos) {
+extern ImGui::Node* nodeFactory(int nodeType, const ImVec2& pos);
+
+ImGui::Node* nodeFactory(int nodeType, const ImVec2& pos) {
 	switch ((NodeType)nodeType) {
 	case NodeType::Add:
 		return AddNode::Create(pos, nge);

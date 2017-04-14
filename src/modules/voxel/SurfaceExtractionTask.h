@@ -1,12 +1,12 @@
 #pragma once
 
+#include "voxel/polyvox/PagedVolume.h"
 #include <memory>
 #include <limits>
 
 namespace voxel {
 
 class OctreeNode;
-class PagedVolume;
 class Mesh;
 
 class SurfaceExtractionTask {

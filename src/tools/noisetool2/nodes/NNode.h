@@ -63,6 +63,7 @@ public:
 	const char* getTooltip() const override;
 	virtual bool onInit() { return true; }
 	bool setup(ImGui::NodeGraphEditor& nge, const ImVec2& pos, const char* inputSlots, const char* outputSlots, NodeType nodeTypeID);
+	NodeBase* copy();
 };
 
 /**
@@ -74,6 +75,7 @@ public:
 
 	bool acceptsLink(Node* inputNode) override;
 	void onEdited() override;
+	NNode* copy();
 
 	virtual void markDirty();
 	virtual float getNoise(int x, int y, int z) = 0;

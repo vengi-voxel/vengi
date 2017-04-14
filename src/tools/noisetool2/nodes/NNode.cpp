@@ -1,6 +1,8 @@
 #include "NNode.h"
 #include <glm/common.hpp>
 
+extern ImGui::Node* nodeFactory(int nodeType, const ImVec2& pos);
+
 const char* NodeBase::getInfo() const {
 	if (type.empty()) {
 		type = std::string(NodeTypeStr[getType()]) + "\n" + info;
@@ -17,6 +19,12 @@ bool NodeBase::setup(ImGui::NodeGraphEditor& nge, const ImVec2& pos, const char*
 
 const char* NodeBase::getTooltip() const {
 	return info.c_str();
+}
+
+NNode* NNode::copy() {
+	NNode* sourceCopyNode = (NNode*)nodeFactory(typeID, ImVec2(0, 0));
+    sourceCopyNode->fields.copyPDataValuesFrom(fields);
+    return sourceCopyNode;
 }
 
 bool NNode::acceptsLink(Node* inputNode) {

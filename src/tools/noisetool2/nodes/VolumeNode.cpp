@@ -7,14 +7,68 @@
 #include "voxel/polyvox/RawVolume.h"
 #include "voxel/MaterialColor.h"
 
-VolumeNode::VolumeNode() {
+VolumeNode::VolumeNode() : _thread([this] () {volumeCallback();}) {
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setMode(video::CameraMode::Perspective);
 }
 
 VolumeNode::~VolumeNode() {
+	_abortThread = true;
+	_thread.join();
 	_frameBuffer.shutdown();
 	_rawVolumeRenderer.shutdown();
+}
+
+void VolumeNode::update() {
+	VolumeCommandReturn ret;
+	if (!_return.pop(ret)) {
+		return;
+	}
+	nge->deleteNode(ret.noise);
+	_rawVolumeRenderer.update(0, ret.mesh);
+
+	delete _rawVolumeRenderer.setVolume(0, ret.volume);
+	voxelCnt = ret.voxelCnt;
+
+	_camera.setAngles(0.0f, 0.0f, 0.0f);
+	const voxel::Region& region = ret.volume->getRegion();
+	const glm::ivec3& center = region.getCentre();
+	_camera.setTarget(center);
+	_camera.setPosition(glm::vec3(-center.x, region.getHeightInVoxels() + center.y, -center.z));
+	_camera.lookAt(center);
+}
+
+void VolumeNode::volumeCallback() {
+	const voxel::Voxel& voxel = voxel::createColorVoxel( voxel::VoxelType::Grass, 0);
+	for (;;) {
+		if (_abortThread) {
+			return;
+		}
+		VolumeCommand cmd;
+		if (!_commands.pop(cmd)) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			continue;
+		}
+		const voxel::Region region(0, 0, 0, cmd.volumeWidth - 1, cmd.volumeHeight - 1, cmd.volumeDepth - 1);
+		VolumeCommandReturn ret;
+		ret.volume = new voxel::RawVolume(cmd.region);
+		ret.voxelCnt = 0;
+		ret.noise = cmd.noise;
+		ret.mesh = new voxel::Mesh(128, 128, true);
+		for (int x = 0; x < cmd.volumeWidth; ++x) {
+			for (int y = 0; y < cmd.volumeHeight; ++y) {
+				for (int z = 0; z < cmd.volumeDepth; ++z) {
+					const float n = cmd.noise->getNoise(x, y, z);
+					if (n > cmd.threshold) {
+						ret.volume->setVoxel(x, y, z, voxel);
+						++ret.voxelCnt;
+					}
+				}
+			}
+		}
+		_rawVolumeRenderer.extract(ret.volume, ret.mesh);
+		_return.push(ret);
+	}
 }
 
 void VolumeNode::onEdited() {
@@ -24,34 +78,14 @@ void VolumeNode::onEdited() {
 		return;
 	}
 
-	const voxel::Region region(0, 0, 0, volumeWidth - 1, volumeHeight - 1, volumeDepth - 1);
-	delete _rawVolumeRenderer.setVolume(0, new voxel::RawVolume(region));
-
-	// TODO: thread me
-
-	const float threshold = getThreshold();
-	voxel::RawVolume* v = _rawVolumeRenderer.volume();
-	const voxel::Voxel& voxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
-	voxelCnt = 0;
-	for (int x = 0; x < volumeWidth; ++x) {
-		for (int y = 0; y < volumeHeight; ++y) {
-			for (int z = 0; z < volumeDepth; ++z) {
-				const float n = noise->getNoise(x, y, z);
-				if (n > threshold) {
-					v->setVoxel(x, y, z, voxel);
-					++voxelCnt;
-				}
-			}
-		}
-	}
-
-	_rawVolumeRenderer.extractAll();
-
-	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	const glm::ivec3& center = region.getCentre();
-	_camera.setTarget(center);
-	_camera.setPosition(glm::vec3(-center.x, region.getHeightInVoxels() + center.y, -center.z));
-	_camera.lookAt(center);
+	VolumeCommand cmd;
+	cmd.region = voxel::Region(0, 0, 0, volumeWidth - 1, volumeHeight - 1, volumeDepth - 1);
+	cmd.threshold = getThreshold();
+	cmd.volumeDepth = volumeDepth;
+	cmd.volumeHeight = volumeHeight;
+	cmd.volumeWidth = volumeWidth;
+	cmd.noise = noise->copy();
+	_commands.push(cmd);
 }
 
 void VolumeNode::getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& defaultTitleBgColorOut, float& defaultTitleBgColorGradientOut) const {
@@ -61,6 +95,7 @@ void VolumeNode::getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32
 }
 
 bool VolumeNode::render(float nodeWidth) {
+	update();
 	const bool retVal = NodeBase::render(nodeWidth);
 	int vertices = 0;
 	int indices = 0;
