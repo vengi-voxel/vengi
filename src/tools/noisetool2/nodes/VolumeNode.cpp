@@ -114,10 +114,9 @@ bool VolumeNode::render(float nodeWidth) {
 		indices = mesh->getNoOfIndices();
 	}
 
-	// the fbo is flipped in memory, we have to deal with it here
-	// TODO: opengl specific
 	const glm::ivec2& dim = _frameBuffer.dimension();
-	ImGui::Image((ImTextureID) (intptr_t) _frameBuffer.texture(), dim, ImVec2(0.0f, 1.0f), ImVec2(1.0, 0.0f));
+	const glm::vec4& uv = _frameBuffer.uv();
+	ImGui::Image((ImTextureID) (intptr_t) _frameBuffer.texture(), dim, ImVec2(uv.x, uv.y), ImVec2(uv.z, uv.w));
 	_hovered = (_hovered && (SDL_GetModState() & KMOD_SHIFT) != 0) || ImGui::IsItemHovered();
 	if (_hovered) {
 		const ImGuiIO& io = ImGui::GetIO();

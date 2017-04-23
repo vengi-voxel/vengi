@@ -6,6 +6,7 @@
 
 #include "Renderer.h"
 #include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 
 namespace video {
 
@@ -30,6 +31,11 @@ public:
 	void unbind();
 
 	Id texture() const;
+
+	/**
+	 * @return two uv coordinates lower left and upper right (a and c)
+	 */
+	glm::vec4 uv() const;
 
 	const glm::ivec2& dimension() const;
 };

@@ -16,6 +16,10 @@ bool FrameBuffer::init(const glm::ivec2& dimension) {
 	return video::setupFramebuffer(_fbo, _texture, _depth, dimension);
 }
 
+glm::vec4 FrameBuffer::uv() const {
+	return video::framebufferUV();
+}
+
 void FrameBuffer::shutdown() {
 	video::deleteFramebuffer(_fbo);
 	video::deleteRenderbuffer(_depth);

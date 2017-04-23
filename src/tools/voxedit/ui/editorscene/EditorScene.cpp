@@ -400,9 +400,17 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 	ui::UIRect rect = GetRect();
 	rect.x = 0;
 	rect.y = 0;
-	// the fbo is flipped in memory, we have to deal with it here
-	// TODO: opengl specific
-	const tb::TBRect srcRect(0, dimension.y, rect.w, -rect.h);
+	const glm::vec4& uv = _frameBuffer.uv();
+	const glm::vec2 uva(uv.x, uv.y);
+	const glm::vec2 uvc(uv.z, uv.w);
+
+	const float x = uva.x * dimension.x;
+	const float y = uva.y * dimension.y;
+
+	const float w = (uvc.x - uva.x) * dimension.x;
+	const float h = (uvc.y - uva.y) * dimension.y;
+
+	const tb::TBRect srcRect(x, y, w, h);
 	tb::g_renderer->DrawBitmap(rect, srcRect, &_bitmap);
 	tb::TBFontFace* font = GetFont();
 	font->DrawString(0, 0, tb::TBColor(255.0f, 255.0f, 255.0f, 255.0f), _cameraMode.c_str());
