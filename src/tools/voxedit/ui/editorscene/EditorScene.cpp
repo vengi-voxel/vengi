@@ -440,7 +440,9 @@ void EditorScene::OnProcess() {
 	const long deltaFrame = core::App::getInstance()->deltaFrame();
 	_controller.update(deltaFrame);
 
-	m().trace(_controller.camera());
+	if (tb::TBWidget::hovered_widget == this) {
+		m().trace(_controller.camera());
+	}
 
 	video::clearColor(core::Color::Clear);
 	core_trace_scoped(EditorSceneRenderFramebuffer);
