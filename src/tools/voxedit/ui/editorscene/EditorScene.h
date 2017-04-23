@@ -25,7 +25,6 @@ private:
 	video::FrameBuffer _frameBuffer;
 	tb::UIBitmapGL _bitmap;
 	voxedit::Controller _controller;
-	glm::ivec2 _mousePos;
 	std::string _cameraMode;
 
 	void render();
