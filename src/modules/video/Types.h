@@ -90,6 +90,14 @@ enum class BlendEquation {
 	Max
 };
 
+enum class Vendor {
+	Nouveau,
+	Intel,
+	Nvidia,
+
+	Max
+};
+
 enum class State {
 	DepthMask,
 	DepthTest,

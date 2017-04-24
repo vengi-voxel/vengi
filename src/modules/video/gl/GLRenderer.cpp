@@ -249,43 +249,31 @@ bool scissor(int x, int y, int w, int h) {
 }
 
 bool enable(State state) {
-	if (state == State::DepthMask) {
-		if (_priv::s.depthMask) {
-			return true;
-		}
-		glDepthMask(GL_TRUE);
-		checkError();
-		_priv::s.depthMask = true;
-		return false;
-	}
-
 	const int stateIndex = std::enum_value(state);
 	if (_priv::s.states[stateIndex]) {
 		return true;
 	}
 	_priv::s.states[stateIndex] = true;
-	glEnable(_priv::States[stateIndex]);
+	if (state == State::DepthMask) {
+		glDepthMask(GL_TRUE);
+	} else {
+		glEnable(_priv::States[stateIndex]);
+	}
 	checkError();
 	return false;
 }
 
 bool disable(State state) {
-	if (state == State::DepthMask) {
-		if (!_priv::s.depthMask) {
-			return false;
-		}
-		glDepthMask(GL_FALSE);
-		checkError();
-		_priv::s.depthMask = false;
-		return true;
-	}
-
 	const int stateIndex = std::enum_value(state);
 	if (!_priv::s.states[stateIndex]) {
 		return false;
 	}
 	_priv::s.states[stateIndex] = false;
-	glDisable(_priv::States[stateIndex]);
+	if (state == State::DepthMask) {
+		glDepthMask(GL_FALSE);
+	} else {
+		glDisable(_priv::States[stateIndex]);
+	}
 	checkError();
 	return true;
 }
@@ -683,7 +671,7 @@ void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, 
 	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
 	const GLenum usage = _priv::VertexBufferModes[std::enum_value(mode)];
 	glBufferData(glType, (GLsizeiptr)size, data, usage);
-	if (_priv::s.nouveau) {
+	if (_priv::s.vendor[std::enum_value(Vendor::Nouveau)]) {
 		// nouveau needs this if doing the buffer update short before the draw call
 		glFlush(); // TODO: use glFenceSync here glClientWaitSync
 	}
@@ -693,7 +681,7 @@ void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, 
 void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size) {
 	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
 	glBufferSubData(glType, (GLintptr)offset, (GLsizeiptr)size, data);
-	if (_priv::s.nouveau) {
+	if (_priv::s.vendor[std::enum_value(Vendor::Nouveau)]) {
 		// nouveau needs this if doing the buffer update short before the draw call
 		glFlush(); // TODO: use glFenceSync here glClientWaitSync
 	}
@@ -1009,8 +997,24 @@ bool init() {
 	_priv::setupLimits();
 	_priv::setupFeatures();
 
-	const GLubyte* vendor = glGetString(GL_VENDOR);
-	_priv::s.nouveau = !strcmp((const char*)vendor, "nouveau");
+	const std::string vendor((const char*)glGetString(GL_VENDOR));
+	const char* glrenderer = (const char*)glGetString(GL_RENDERER);
+	const char* glversion = (const char*)glGetString(GL_VERSION);
+	Log::info("GL_VENDOR: %s", vendor.c_str());
+	Log::info("GL_RENDERER: %s", glrenderer);
+	Log::info("GL_VERSION: %s", glversion);
+	for (int i = 0; i < std::enum_value(Vendor::Max); ++i) {
+		const bool match = core::string::icontains(vendor, _priv::VendorStrings[i]);
+		_priv::s.vendor[i] = match;
+	}
+
+	for (int i = 0; i < std::enum_value(Vendor::Max); ++i) {
+		if (_priv::s.vendor[i]) {
+			Log::info("Found vendor: %s", _priv::VendorStrings[i]);
+		} else {
+			Log::debug("Didn't find vendor: %s", _priv::VendorStrings[i]);
+		}
+	}
 
 	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
 	if (vsync) {

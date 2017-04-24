@@ -129,6 +129,10 @@ inline bool contains(const std::string& str, const std::string& search) {
 	return str.rfind(search) != std::string::npos;
 }
 
+inline bool icontains(const std::string& str, const std::string& search) {
+	return toLower(str).rfind(toLower(search)) != std::string::npos;
+}
+
 inline std::string_view ltrim(const std::string_view str) {
 	size_t startpos = str.find_first_not_of(" \t");
 	if (std::string::npos != startpos) {

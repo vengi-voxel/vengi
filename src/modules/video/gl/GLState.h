@@ -7,6 +7,7 @@
 #include "flextGL.h"
 #include "GLVersion.h"
 #include "video/Types.h"
+#include <bitset>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 
@@ -22,7 +23,6 @@ namespace _priv {
 struct GLState {
 	GLVersion glVersion {0, 0};
 	glm::vec4 clearColor;
-	bool depthMask = true;
 	Face cullFace = Face::Back;
 	CompareFunc depthFunc = CompareFunc::Less;
 	Id programHandle = InvalidId;
@@ -43,14 +43,14 @@ struct GLState {
 	int scissorY = 0;
 	int scissorW = 0;
 	int scissorH = 0;
-	bool states[std::enum_value(State::Max)] = {};
+	std::bitset<std::enum_value(State::Max)> states;
 	Id bufferHandle[std::enum_value(VertexBufferType::Max)] = {};
 	Id framebufferHandle = InvalidId;
 	Id framebufferTextureHandle = InvalidId;
 	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
 	glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
 	float lineWidth = 1.0f;
-	bool nouveau = false;
+	std::bitset<std::enum_value(Vendor::Max)> vendor;
 };
 
 static GLState s;

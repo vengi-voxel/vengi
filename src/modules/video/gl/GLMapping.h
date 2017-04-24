@@ -37,6 +37,16 @@ static GLenum FrameBufferModes[] {
 };
 static_assert(std::enum_value(FrameBufferMode::Max) == (int)SDL_arraysize(FrameBufferModes), "Array sizes don't match Max");
 
+/**
+ * GL_VENDOR check - case insensitive
+ */
+static const char* VendorStrings[] {
+	"nouveau",
+	"intel",
+	"nvidia"
+};
+static_assert(std::enum_value(Vendor::Max) == (int)SDL_arraysize(VendorStrings), "Array sizes don't match Max");
+
 static GLenum VertexBufferModes[] {
 	GL_STATIC_DRAW,
 	GL_DYNAMIC_DRAW,
