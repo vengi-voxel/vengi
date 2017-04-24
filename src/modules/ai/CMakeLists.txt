@@ -107,7 +107,7 @@ set(SRCS
 )
 set(LIB ai)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} commonlua glm)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES commonlua glm)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_include_directories(${LIB} PUBLIC .)
 target_compile_definitions(${LIB} PUBLIC -DAI_INCLUDE_LUA=1)

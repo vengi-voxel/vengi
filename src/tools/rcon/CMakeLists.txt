@@ -69,7 +69,7 @@ set(SRCS
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
-target_link_libraries(${PROJECT_NAME} ai)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ai)
 target_include_directories(${PROJECT_NAME} PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${AUTOGEN_TARGETS_FOLDER}
@@ -88,7 +88,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 qt5_use_modules(${PROJECT_NAME} Widgets Gui Network)
-target_link_libraries(${PROJECT_NAME} network)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES network)
 
 message(STATUS "Build the rcon")
 

@@ -472,3 +472,13 @@ macro(engine_add_executable)
 	endforeach()
 	install(TARGETS ${_EXE_TARGET} DESTINATION ${BIN_DIR} COMPONENT ${_EXE_TARGET})
 endmacro()
+
+macro(engine_target_link_libraries)
+	set(_OPTIONS_ARGS)
+	set(_ONE_VALUE_ARGS TARGET)
+	set(_MULTI_VALUE_ARGS DEPENDENCIES)
+
+	cmake_parse_arguments(_LIBS "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
+
+	target_link_libraries(${_LIBS_TARGET} ${_LIBS_DEPENDENCIES})
+endmacro()

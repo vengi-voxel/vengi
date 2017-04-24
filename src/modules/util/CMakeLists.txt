@@ -8,7 +8,7 @@ set(SRCS
 set(LIB util)
 add_library(${LIB} ${SRCS})
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
-target_link_libraries(${LIB} core)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests

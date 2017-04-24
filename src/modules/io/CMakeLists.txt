@@ -14,7 +14,7 @@ endif()
 
 set(LIB io)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} sdl2 easy_profiler glm backward)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES sdl2 easy_profiler glm backward)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests

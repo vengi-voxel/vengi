@@ -45,7 +45,7 @@ set(SRCS
 )
 set(LIB core)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} io zlib ${CMAKE_DL_LIBS})
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES io zlib ${CMAKE_DL_LIBS})
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 gtest_suite_files(tests

@@ -7,6 +7,6 @@ set(SRCS
 set(LIB imgui)
 add_library(${LIB} ${SRCS})
 generate_shaders(${LIB} texture)
-target_link_libraries(${LIB} core io video dearimgui)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core io video dearimgui)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 target_include_directories(${LIB} PUBLIC .)

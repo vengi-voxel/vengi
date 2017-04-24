@@ -4,5 +4,5 @@ set(SRCS
 )
 set(LIB commonlua)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} core lua53)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core lua53)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})

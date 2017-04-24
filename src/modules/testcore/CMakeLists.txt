@@ -5,7 +5,7 @@ set(SRCS
 )
 set(LIB testcore)
 add_library(${LIB} ${SRCS})
-target_link_libraries(${LIB} core frontend video ui)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core frontend video ui)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 check_ui_files(${LIB})
 copy_data_files(${LIB})
