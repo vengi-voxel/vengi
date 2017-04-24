@@ -716,8 +716,9 @@ void setupDepthCompareTexture(TextureUnit unit, TextureType type, Id depthTextur
 }
 
 // the fbo is flipped in memory, we have to deal with it here
-glm::vec4 framebufferUV() {
-	return glm::vec4(0.0f, 1.0f, 1.0, 0.0f);
+const glm::vec4& framebufferUV() {
+	static const glm::vec4 uv(0.0f, 1.0f, 1.0, 0.0f);
+	return uv;
 }
 
 bool setupFramebuffer(Id& fbo, Id& texture, Id& depth, const glm::ivec2& dimension) {
