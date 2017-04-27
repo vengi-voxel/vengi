@@ -133,7 +133,7 @@ protected:
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
 	void cull(const video::Camera& camera);
-	int renderWorldMeshes(video::Shader& shader, const VisibleVBOs& vbos, int* vertices);
+	int renderWorldMeshes(const VisibleVBOs& vbos, int* vertices);
 	ChunkBuffer* findFreeChunkBuffer();
 	bool checkShaders() const;
 

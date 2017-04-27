@@ -253,7 +253,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	}
 }
 
-int WorldRenderer::renderWorldMeshes(video::Shader& shader, const VisibleVBOs& vbos, int* vertices) {
+int WorldRenderer::renderWorldMeshes(const VisibleVBOs& vbos, int* vertices) {
 	for (ChunkBuffer::VBO* vbo : vbos) {
 		const uint32_t numIndices = vbo->vb.elements(vbo->indexBuffer, 1, sizeof(voxel::IndexType));
 		if (numIndices == 0u) {
@@ -370,13 +370,13 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 				video::ScopedShader scoped(_shadowMapShader);
 				_shadowMapShader.setLightviewprojection(cascades[i]);
 				_shadowMapShader.setModel(glm::mat4());
-				drawCallsWorld += renderWorldMeshes(_shadowMapShader, _visible, nullptr);
+				drawCallsWorld += renderWorldMeshes(_visible, nullptr);
 			}
 			{
 				video::ScopedShader scoped(_shadowMapInstancedShader);
 				_shadowMapInstancedShader.setLightviewprojection(cascades[i]);
 				_shadowMapInstancedShader.setModel(glm::scale(glm::vec3(0.4f)));
-				drawCallsWorld += renderWorldMeshes(_shadowMapInstancedShader, _visiblePlant, nullptr);
+				drawCallsWorld += renderWorldMeshes(_visiblePlant, nullptr);
 			}
 		}
 		_depthBuffer.unbind();
@@ -400,7 +400,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_worldShader.setCascades(cascades);
 			_worldShader.setDistances(distances);
 		}
-		drawCallsWorld += renderWorldMeshes(_worldShader, _visible, vertices);
+		drawCallsWorld += renderWorldMeshes(_visible, vertices);
 	}
 	{
 		video::ScopedShader scoped(_worldInstancedShader);
@@ -409,7 +409,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_worldInstancedShader.setCascades(cascades);
 			_worldInstancedShader.setDistances(distances);
 		}
-		drawCallsWorld += renderWorldMeshes(_worldInstancedShader, _visiblePlant, vertices);
+		drawCallsWorld += renderWorldMeshes(_visiblePlant, vertices);
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
@@ -418,7 +418,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_waterShader.setCascades(cascades);
 			_waterShader.setDistances(distances);
 		}
-		drawCallsWorld += renderWorldMeshes(_waterShader, _visibleWater, vertices);
+		drawCallsWorld += renderWorldMeshes(_visibleWater, vertices);
 	}
 
 	video::bindVertexArray(video::InvalidId);
