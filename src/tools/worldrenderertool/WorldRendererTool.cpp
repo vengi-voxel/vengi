@@ -39,7 +39,7 @@ core::AppState WorldRendererTool::onConstruct() {
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
-	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
+	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 
 	core::Command::registerCommand("freelook", [this] (const core::CmdArgs& args) {
 		this->_freelook ^= true;
@@ -151,7 +151,8 @@ void WorldRendererTool::afterRootWidget() {
 	int extracted;
 	int pending;
 	int active;
-	_worldRenderer.stats(meshes, extracted, pending, active);
+	int visible;
+	_worldRenderer.stats(meshes, extracted, pending, active, visible);
 	const int x = 5;
 	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
 	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
@@ -159,7 +160,7 @@ void WorldRendererTool::afterRootWidget() {
 	enqueueShowStr(x, core::Color::White, "drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
 	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
-	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i", pending, meshes, extracted, active);
+	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i", pending, meshes, extracted, active, visible);
 
 	enqueueShowStr(x, core::Color::Gray, "+/-: change move speed");
 	enqueueShowStr(x, core::Color::Gray, "l: line mode rendering");

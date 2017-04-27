@@ -31,49 +31,53 @@ namespace frontend {
  */
 class WorldRenderer {
 protected:
+	struct PlantBuffer {
+		~PlantBuffer() {
+			shutdown();
+		}
+		void shutdown() {
+			vb.shutdown();
+			offsetBuffer = -1;
+			indexBuffer = -1;
+			vertexBuffer = -1;
+			instancedPositions.clear();
+		}
+		int32_t offsetBuffer = -1;
+		int32_t indexBuffer = -1;
+		int32_t vertexBuffer = -1;
+		uint32_t amount = 1u;
+		video::VertexBuffer vb;
+		std::vector<glm::vec3> instancedPositions;
+	};
+
 	struct ChunkBuffer {
 		bool inuse = false;
 		core::AABB<float> aabb = {glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
 		voxel::ChunkMeshes meshes {0, 0, 0, 0};
-		struct VBO {
-			~VBO() {
-				shutdown();
-			}
-			void shutdown() {
-				vb.shutdown();
-				offsetBuffer = -1;
-				indexBuffer = -1;
-				vertexBuffer = -1;
-				instancedPositions.clear();
-			}
-			int32_t offsetBuffer = -1;
-			int32_t indexBuffer = -1;
-			int32_t vertexBuffer = -1;
-			uint32_t amount = 1u;
-			std::vector<glm::vec3> instancedPositions;
-			video::VertexBuffer vb;
-		};
-		VBO opaque;
-		VBO water;
-
-		inline bool isActive() const {
-			return opaque.vertexBuffer != -1 || water.vertexBuffer != -1;
-		}
+		std::vector<glm::vec3> instancedPositions;
 
 		inline const glm::ivec3& translation() const {
 			return meshes.opaqueMesh.getOffset();
 		}
 	};
-	typedef std::list<ChunkBuffer::VBO*> VisibleVBOs;
 
-	static constexpr int MAX_CHUNKBUFFERS = 128;
+	static constexpr int MAX_CHUNKBUFFERS = 1024;
 	ChunkBuffer _chunkBuffers[MAX_CHUNKBUFFERS];
 	int _activeChunkBuffers = 0;
-	ChunkBuffer::VBO _meshPlantList[(int)voxel::PlantType::MaxPlantTypes];
+	int _visibleChunks = 0;
+	PlantBuffer _meshPlantList[(int)voxel::PlantType::MaxPlantTypes];
 
-	VisibleVBOs _visible;
-	VisibleVBOs _visiblePlant;
-	VisibleVBOs _visibleWater;
+	std::list<PlantBuffer*> _visiblePlant;
+	std::vector<voxel::VoxelVertex> _opaqueVertices;
+	std::vector<voxel::IndexType> _opaqueIndices;
+	video::VertexBuffer _opaqueBuffer;
+	int32_t _opaqueIbo = -1;
+	int32_t _opaqueVbo = -1;
+	std::vector<voxel::VoxelVertex> _waterVertices;
+	std::vector<voxel::IndexType> _waterIndices;
+	video::VertexBuffer _waterBuffer;
+	int32_t _waterIbo = -1;
+	int32_t _waterVbo = -1;
 
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
@@ -115,10 +119,8 @@ protected:
 	/**
 	 * @brief Convert a PolyVox mesh to OpenGL index/vertex buffers.
 	 */
-	bool createVertexBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, ChunkBuffer::VBO& vbo);
-	bool createVertexBuffer(const voxel::ChunkMeshes &mesh, ChunkBuffer& chunkBuffer);
-	bool createInstancedVertexBuffer(const voxel::Mesh &mesh, int amount, ChunkBuffer::VBO& vbo);
-	void updateVertexBuffer(const voxel::Mesh& surfaceMesh, ChunkBuffer::VBO& vbo) const;
+	bool createVertexBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, PlantBuffer& vbo);
+	bool createInstancedVertexBuffer(const voxel::Mesh &mesh, int amount, PlantBuffer& vbo);
 	void handleMeshQueue();
 	void updateAABB(ChunkBuffer& chunkBuffer) const;
 	/**
@@ -132,10 +134,18 @@ protected:
 	 */
 	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
 
-	void cull(const video::Camera& camera);
-	int renderWorldMeshes(const VisibleVBOs& vbos, int* vertices);
+	/**
+	 * @return Visible chunks
+	 */
+	int cull(const video::Camera& camera);
+	int renderPlants(const std::list<PlantBuffer*>& vbos, int* vertices);
+	bool renderOpaqueBuffers();
+	bool renderWaterBuffers();
 	ChunkBuffer* findFreeChunkBuffer();
 	bool checkShaders() const;
+
+	bool initOpaqueBuffer();
+	bool initWaterBuffer();
 
 public:
 	WorldRenderer(const voxel::WorldPtr& world);
@@ -155,7 +165,7 @@ public:
 	bool addEntity(const ClientEntityPtr& entity);
 	bool removeEntity(ClientEntityId id);
 
-	void stats(int& meshes, int& extracted, int& pending, int& active) const;
+	void stats(int& meshes, int& extracted, int& pending, int& active, int& visible) const;
 
 	float getViewDistance() const;
 	void setViewDistance(float viewDistance);

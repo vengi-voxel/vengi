@@ -23,10 +23,7 @@ namespace frontend {
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
 // TODO: use octree for all the visibility/extraction stuff - this class should only render
-// TODO: merge buffers into one big buffer (and if max vertex/index size exceeds, render in chunks)
-//       all available buffers should be in there. we should just assemble a list of drawcall parameters
-//       for glMultiDrawElementsIndirect as shown at
-//       https://www.khronos.org/opengl/wiki/GLAPI/glMultiDrawElementsIndirect
+// TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
 		_world(world) {
 }
@@ -36,8 +33,6 @@ WorldRenderer::~WorldRenderer() {
 
 void WorldRenderer::reset() {
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
-		chunkBuffer.opaque.vb.shutdown();
-		chunkBuffer.water.vb.shutdown();
 		chunkBuffer.inuse = false;
 	}
 	_activeChunkBuffers = 0;
@@ -60,8 +55,10 @@ void WorldRenderer::shutdown() {
 	reset();
 	_colorTexture.shutdown();
 	_entities.clear();
+	_opaqueBuffer.shutdown();
+	_waterBuffer.shutdown();
 
-	for (ChunkBuffer::VBO& vbo : _meshPlantList) {
+	for (PlantBuffer& vbo : _meshPlantList) {
 		vbo.shutdown();
 	}
 	_plantGenerator.shutdown();
@@ -95,29 +92,29 @@ bool WorldRenderer::removeEntity(ClientEntityId id) {
 
 void WorldRenderer::fillPlantPositionsFromMeshes() {
 	const int plantMeshAmount = SDL_arraysize(_meshPlantList);
-	for (ChunkBuffer::VBO& vbo : _meshPlantList) {
+	for (PlantBuffer& vbo : _meshPlantList) {
 		vbo.instancedPositions.clear();
 	}
 	for (const ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {
 			continue;
 		}
-		if (chunkBuffer.opaque.instancedPositions.empty()) {
+		if (chunkBuffer.instancedPositions.empty()) {
 			continue;
 		}
-		std::vector<glm::vec3> p = chunkBuffer.opaque.instancedPositions;
+		std::vector<glm::vec3> p = chunkBuffer.instancedPositions;
 		core::Random rnd(_world->seed() + chunkBuffer.translation().x + chunkBuffer.translation().y + chunkBuffer.translation().z);
 		rnd.shuffle(p.begin(), p.end());
 		const int plantMeshes = p.size() / plantMeshAmount;
 		int delta = p.size() - plantMeshes * plantMeshAmount;
-		for (ChunkBuffer::VBO& vbo : _meshPlantList) {
+		for (PlantBuffer& vbo : _meshPlantList) {
 			auto it = std::next(p.begin(), plantMeshes + delta);
 			std::move(p.begin(), it, std::back_inserter(vbo.instancedPositions));
 			p.erase(p.begin(), it);
 			delta = 0;
 		}
 	}
-	for (ChunkBuffer::VBO& vbo : _meshPlantList) {
+	for (PlantBuffer& vbo : _meshPlantList) {
 		const std::vector<glm::vec3>& positions = vbo.instancedPositions;
 		vbo.vb.update(vbo.offsetBuffer, positions);
 	}
@@ -147,62 +144,30 @@ void WorldRenderer::handleMeshQueue() {
 	// Now add the mesh to the list of meshes to render.
 	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
 
-	// first check whether we update an existing one
+	ChunkBuffer* freeChunkBuffer = nullptr;
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
-		if (!chunkBuffer.isActive()) {
-			continue;
+		if (freeChunkBuffer == nullptr && !chunkBuffer.inuse) {
+			freeChunkBuffer = &chunkBuffer;
 		}
-		if (chunkBuffer.translation() != meshes.translation()) {
-			continue;
+		// check whether we update an existing one
+		if (chunkBuffer.translation() == meshes.translation()) {
+			freeChunkBuffer = &chunkBuffer;
+			break;
 		}
-		Log::debug("update VBO");
-		chunkBuffer.inuse = true;
-		++_activeChunkBuffers;
-		chunkBuffer.meshes = std::move(meshes);
-		updateVertexBuffer(chunkBuffer.meshes.opaqueMesh, chunkBuffer.opaque);
-		updateVertexBuffer(chunkBuffer.meshes.waterMesh, chunkBuffer.water);
-		updateAABB(chunkBuffer);
-		distributePlants(_world, chunkBuffer.translation(), chunkBuffer.opaque.instancedPositions);
-		fillPlantPositionsFromMeshes();
-		return;
 	}
 
-	// then check if there are unused buffers
-	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
-		if (!chunkBuffer.isActive()) {
-			continue;
-		}
-		if (chunkBuffer.inuse) {
-			continue;
-		}
-		Log::debug("reuse old VBO");
-		chunkBuffer.inuse = true;
-		++_activeChunkBuffers;
-		chunkBuffer.meshes = std::move(meshes);
-		updateVertexBuffer(chunkBuffer.meshes.opaqueMesh, chunkBuffer.opaque);
-		updateVertexBuffer(chunkBuffer.meshes.waterMesh, chunkBuffer.water);
-		updateAABB(chunkBuffer);
-
-		distributePlants(_world, chunkBuffer.translation(), chunkBuffer.opaque.instancedPositions);
-		fillPlantPositionsFromMeshes();
-		return;
-	}
-
-	// create a new mesh
-	ChunkBuffer* chunkBuffer = findFreeChunkBuffer();
-	if (chunkBuffer == nullptr) {
+	if (freeChunkBuffer == nullptr) {
 		Log::warn("Could not find free chunk buffer slot");
 		return;
 	}
-	if (createVertexBuffer(meshes, *chunkBuffer)) {
-		Log::debug("create vertex buffer");
-		chunkBuffer->inuse = true;
-		chunkBuffer->meshes = std::move(meshes);
-		updateAABB(*chunkBuffer);
-		distributePlants(_world, chunkBuffer->translation(), chunkBuffer->opaque.instancedPositions);
-		fillPlantPositionsFromMeshes();
+	if (!freeChunkBuffer->inuse) {
+		freeChunkBuffer->inuse = true;
 		++_activeChunkBuffers;
 	}
+	freeChunkBuffer->meshes = std::move(meshes);
+	updateAABB(*freeChunkBuffer);
+	distributePlants(_world, freeChunkBuffer->translation(), freeChunkBuffer->instancedPositions);
+	fillPlantPositionsFromMeshes();
 }
 
 WorldRenderer::ChunkBuffer* WorldRenderer::findFreeChunkBuffer() {
@@ -224,9 +189,28 @@ bool WorldRenderer::checkShaders() const {
 	return same;
 }
 
-void WorldRenderer::cull(const video::Camera& camera) {
-	_visible.clear();
-	_visibleWater.clear();
+static size_t transform(size_t indexOffset, const voxel::Mesh& mesh, std::vector<voxel::VoxelVertex>& verts, std::vector<voxel::IndexType>& idxs) {
+	const std::vector<voxel::IndexType>& indices = mesh.getIndexVector();
+	std::transform(indices.begin(), indices.end(),
+		std::back_inserter(idxs),
+		[=] (voxel::IndexType index) {
+			return index + indexOffset;
+		}
+	);
+
+	const std::vector<voxel::VoxelVertex>& vertices = mesh.getVertexVector();
+	verts.insert(verts.end(), vertices.begin(), vertices.end());
+	return vertices.size();
+}
+
+int WorldRenderer::cull(const video::Camera& camera) {
+	_opaqueIndices.clear();
+	_opaqueVertices.clear();
+	_waterIndices.clear();
+	_waterVertices.clear();
+	size_t opaqueIndexOffset = 0;
+	size_t waterIndexOffset = 0;
+	int visibleChunks = 0;
 	const float cullingThreshold = _world->getMeshSize();
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
@@ -242,19 +226,40 @@ void WorldRenderer::cull(const video::Camera& camera) {
 			Log::debug("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
 			continue;
 		}
-		if (camera.isVisible(chunkBuffer.aabb)) {
-			if (chunkBuffer.opaque.indexBuffer != -1) {
-				_visible.push_back(&chunkBuffer.opaque);
-			}
-			if (chunkBuffer.water.indexBuffer != -1) {
-				_visibleWater.push_back(&chunkBuffer.water);
-			}
+		if (!camera.isVisible(chunkBuffer.aabb)) {
+			continue;
 		}
+		opaqueIndexOffset += transform(opaqueIndexOffset, chunkBuffer.meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
+		waterIndexOffset += transform(waterIndexOffset, chunkBuffer.meshes.waterMesh, _waterVertices, _waterIndices);
+		++visibleChunks;
 	}
+	return visibleChunks;
 }
 
-int WorldRenderer::renderWorldMeshes(const VisibleVBOs& vbos, int* vertices) {
-	for (ChunkBuffer::VBO* vbo : vbos) {
+bool WorldRenderer::renderOpaqueBuffers() {
+	const uint32_t numIndices = _opaqueBuffer.elements(_opaqueIbo, 1, sizeof(voxel::IndexType));
+	if (numIndices == 0u) {
+		return false;
+	}
+	_opaqueBuffer.bind();
+	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
+	_opaqueBuffer.unbind();
+	return true;
+}
+
+bool WorldRenderer::renderWaterBuffers() {
+	const uint32_t numIndices = _waterBuffer.elements(_waterIbo, 1, sizeof(voxel::IndexType));
+	if (numIndices == 0u) {
+		return false;
+	}
+	_waterBuffer.bind();
+	video::drawElements<voxel::IndexType>(video::Primitive::Triangles, numIndices);
+	_waterBuffer.unbind();
+	return true;
+}
+
+int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertices) {
+	for (PlantBuffer* vbo : vbos) {
 		const uint32_t numIndices = vbo->vb.elements(vbo->indexBuffer, 1, sizeof(voxel::IndexType));
 		if (numIndices == 0u) {
 			continue;
@@ -282,10 +287,18 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		*vertices = 0;
 	}
 
-	cull(camera);
-	if (_visible.empty() && _visibleWater.empty()) {
+	_visibleChunks = cull(camera);
+	if (_visibleChunks == 0) {
 		return 0;
 	}
+	if (_opaqueIndices.empty() && _waterIndices.empty()) {
+		return 0;
+	}
+
+	core_assert_always(_opaqueBuffer.update(_opaqueVbo, _opaqueVertices));
+	core_assert_always(_opaqueBuffer.update(_opaqueIbo, _opaqueIndices));
+	core_assert_always(_waterBuffer.update(_waterVbo, _waterVertices));
+	core_assert_always(_waterBuffer.update(_waterIbo, _waterIndices));
 
 	const bool shadowMap = _shadowMap->boolVal();
 
@@ -370,13 +383,14 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 				video::ScopedShader scoped(_shadowMapShader);
 				_shadowMapShader.setLightviewprojection(cascades[i]);
 				_shadowMapShader.setModel(glm::mat4());
-				drawCallsWorld += renderWorldMeshes(_visible, nullptr);
+				renderOpaqueBuffers();
+				++drawCallsWorld;
 			}
 			{
 				video::ScopedShader scoped(_shadowMapInstancedShader);
 				_shadowMapInstancedShader.setLightviewprojection(cascades[i]);
 				_shadowMapInstancedShader.setModel(glm::scale(glm::vec3(0.4f)));
-				drawCallsWorld += renderWorldMeshes(_visiblePlant, nullptr);
+				drawCallsWorld += renderPlants(_visiblePlant, nullptr);
 			}
 		}
 		_depthBuffer.unbind();
@@ -400,7 +414,9 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_worldShader.setCascades(cascades);
 			_worldShader.setDistances(distances);
 		}
-		drawCallsWorld += renderWorldMeshes(_visible, vertices);
+		if (renderOpaqueBuffers()) {
+			++drawCallsWorld;
+		}
 	}
 	{
 		video::ScopedShader scoped(_worldInstancedShader);
@@ -409,7 +425,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_worldInstancedShader.setCascades(cascades);
 			_worldInstancedShader.setDistances(distances);
 		}
-		drawCallsWorld += renderWorldMeshes(_visiblePlant, vertices);
+		drawCallsWorld += renderPlants(_visiblePlant, vertices);
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
@@ -418,7 +434,9 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			_waterShader.setCascades(cascades);
 			_waterShader.setDistances(distances);
 		}
-		drawCallsWorld += renderWorldMeshes(_visibleWater, vertices);
+		if (renderWaterBuffers()) {
+			++drawCallsWorld;
+		}
 	}
 
 	video::bindVertexArray(video::InvalidId);
@@ -513,13 +531,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 	return drawCallsEntities;
 }
 
-void WorldRenderer::updateVertexBuffer(const voxel::Mesh& mesh, ChunkBuffer::VBO& vbo) const {
-	core_trace_gl_scoped(WorldRendererUpdateMesh);
-	vbo.vb.update(vbo.vertexBuffer, mesh.getVertexVector());
-	vbo.vb.update(vbo.indexBuffer, mesh.getIndexVector());
-}
-
-bool WorldRenderer::createVertexBufferInternal(const video::Shader& shader, const voxel::Mesh &mesh, ChunkBuffer::VBO& vbo) {
+bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amount, PlantBuffer& vbo) {
 	if (mesh.getNoOfIndices() == 0) {
 		return false;
 	}
@@ -536,48 +548,38 @@ bool WorldRenderer::createVertexBufferInternal(const video::Shader& shader, cons
 		Log::error("Failed to create index buffer");
 		return false;
 	}
-	vbo.amount = 1;
+	vbo.offsetBuffer = vbo.vb.create();
+	if (vbo.offsetBuffer == -1) {
+		Log::error("Failed to create offset buffer");
+		return false;
+	}
 
-	const int locationPos = shader.enableVertexAttributeArray("a_pos");
-	const video::Attribute& posAttrib = getPositionVertexAttribute(vbo.vertexBuffer, locationPos, shader.getAttributeComponents(locationPos));
+	const int locationPos = _worldInstancedShader.getLocationPos();
+	_worldInstancedShader.enableVertexAttributeArray(locationPos);
+	const video::Attribute& posAttrib = getPositionVertexAttribute(vbo.vertexBuffer, locationPos, _worldInstancedShader.getAttributeComponents(locationPos));
 	if (!vbo.vb.addAttribute(posAttrib)) {
 		Log::error("Failed to add position attribute");
 		return false;
 	}
 
-	const int locationInfo = shader.enableVertexAttributeArray("a_info");
-	const video::Attribute& infoAttrib = getInfoVertexAttribute(vbo.vertexBuffer, locationInfo, shader.getAttributeComponents(locationInfo));
+	const int locationInfo = _worldInstancedShader.getLocationInfo();
+	_worldInstancedShader.enableVertexAttributeArray(locationInfo);
+	const video::Attribute& infoAttrib = getInfoVertexAttribute(vbo.vertexBuffer, locationInfo, _worldInstancedShader.getAttributeComponents(locationInfo));
 	if (!vbo.vb.addAttribute(infoAttrib)) {
 		Log::error("Failed to add info attribute");
 		return false;
 	}
 
-	return true;
-}
-
-bool WorldRenderer::createVertexBuffer(const voxel::ChunkMeshes &meshes, ChunkBuffer& chunkBuffer) {
-	if (!createVertexBufferInternal(_worldShader, meshes.opaqueMesh, chunkBuffer.opaque)) {
-		return false;
-	}
-	createVertexBufferInternal(_worldShader, meshes.waterMesh, chunkBuffer.water);
-	return true;
-}
-
-bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amount, ChunkBuffer::VBO& vbo) {
-	if (!createVertexBufferInternal(_worldInstancedShader, mesh, vbo)) {
-		return false;
-	}
-
-	vbo.amount = amount;
-	vbo.offsetBuffer = vbo.vb.create();
-
-	const int location = _worldInstancedShader.getLocationPos();
-	const int components = _worldInstancedShader.getComponentsPos();
-	const video::Attribute& offsetAttrib = getOffsetVertexAttribute(vbo.offsetBuffer, location, components);
+	const int locationOffset = _worldInstancedShader.getLocationOffset();
+	_worldInstancedShader.enableVertexAttributeArray(locationOffset);
+	const video::Attribute& offsetAttrib = getOffsetVertexAttribute(vbo.offsetBuffer, locationOffset, _worldInstancedShader.getAttributeComponents(locationOffset));
 	if (!vbo.vb.addAttribute(offsetAttrib)) {
 		Log::error("Failed to add offset attribute");
 		return false;
 	}
+
+	vbo.amount = amount;
+
 	return true;
 }
 
@@ -630,14 +632,77 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int r
 	}
 }
 
-void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active) const {
+void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active, int& visible) const {
 	_world->stats(meshes, extracted, pending);
 	active = _activeChunkBuffers;
+	visible = _visibleChunks;
 }
 
 void WorldRenderer::onConstruct() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");
+}
+
+bool WorldRenderer::initOpaqueBuffer() {
+	_opaqueVbo = _opaqueBuffer.create();
+	if (_opaqueVbo == -1) {
+		Log::error("Failed to create vertex buffer");
+		return false;
+	}
+	_opaqueIbo = _opaqueBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
+	if (_opaqueIbo == -1) {
+		Log::error("Failed to create index buffer");
+		return false;
+	}
+
+	const int locationPos = _worldShader.getLocationPos();
+	_worldShader.enableVertexAttributeArray(locationPos);
+	const video::Attribute& posAttrib = getPositionVertexAttribute(_opaqueVbo, locationPos, _worldShader.getAttributeComponents(locationPos));
+	if (!_opaqueBuffer.addAttribute(posAttrib)) {
+		Log::error("Failed to add position attribute");
+		return false;
+	}
+
+	const int locationInfo = _worldShader.getLocationInfo();
+	_worldShader.enableVertexAttributeArray(locationInfo);
+	const video::Attribute& infoAttrib = getInfoVertexAttribute(_opaqueVbo, locationInfo, _worldShader.getAttributeComponents(locationInfo));
+	if (!_opaqueBuffer.addAttribute(infoAttrib)) {
+		Log::error("Failed to add info attribute");
+		return false;
+	}
+
+	return true;
+}
+
+bool WorldRenderer::initWaterBuffer() {
+	_waterVbo = _waterBuffer.create();
+	if (_waterVbo == -1) {
+		Log::error("Failed to create water vertex buffer");
+		return false;
+	}
+	_waterIbo = _waterBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
+	if (_waterIbo == -1) {
+		Log::error("Failed to create water index buffer");
+		return false;
+	}
+
+	const int locationPos = _waterShader.getLocationPos();
+	_waterShader.enableVertexAttributeArray(locationPos);
+	const video::Attribute& posAttrib = getPositionVertexAttribute(_waterVbo, locationPos, _waterShader.getAttributeComponents(locationPos));
+	if (!_waterBuffer.addAttribute(posAttrib)) {
+		Log::error("Failed to add water position attribute");
+		return false;
+	}
+
+	const int locationInfo = _waterShader.getLocationInfo();
+	_waterShader.enableVertexAttributeArray(locationInfo);
+	const video::Attribute& infoAttrib = getInfoVertexAttribute(_waterVbo, locationInfo, _waterShader.getAttributeComponents(locationInfo));
+	if (!_waterBuffer.addAttribute(infoAttrib)) {
+		Log::error("Failed to add water info attribute");
+		return false;
+	}
+
+	return true;
 }
 
 bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension) {
@@ -704,6 +769,14 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	shader::Materialblock::Data materialBlock;
 	memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
 	_materialBlock.create(materialBlock);
+
+	if (!initOpaqueBuffer()) {
+		return false;
+	}
+
+	if (!initWaterBuffer()) {
+		return false;
+	}
 
 	if (!_shadow.init()) {
 		return false;

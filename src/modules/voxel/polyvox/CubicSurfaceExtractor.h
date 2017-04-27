@@ -68,7 +68,7 @@ private:
 public:
 	Array(uint32_t width, uint32_t height, uint32_t depth) :
 			_width(width), _height(height), _depth(depth) {
-		_elements = new VertexData[size()];
+		_elements = new VertexData[_width * _height * _depth];
 		clear();
 	}
 
@@ -80,12 +80,8 @@ public:
 		delete[] _elements;
 	}
 
-	inline size_t size() const {
-		return _width * _height * _depth * sizeof(VertexData);
-	}
-
 	inline void clear() {
-		std::memset(_elements, 0x0, size());
+		std::memset(_elements, 0x0, _width * _height * _depth * sizeof(VertexData));
 	}
 
 	inline VertexData& operator()(uint32_t x, uint32_t y, uint32_t z) const {

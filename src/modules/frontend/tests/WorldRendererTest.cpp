@@ -18,7 +18,7 @@ public:
 
 	virtual void SetUp() override {
 		core::AbstractTest::SetUp();
-		core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
+		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		_world = std::make_shared<voxel::World>();
 		const std::string& world = core::App::getInstance()->filesystem()->load("world.lua");
 		const std::string& biomes = core::App::getInstance()->filesystem()->load("biomes.lua");

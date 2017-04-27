@@ -48,7 +48,7 @@ core::AppState ShapeTool::onConstruct() {
 	registerMoveCmd("+move_left", MOVELEFT);
 	registerMoveCmd("+move_forward", MOVEFORWARD);
 	registerMoveCmd("+move_backward", MOVEBACKWARD);
-	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
+	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	core::Var::get(cfg::ShapeToolExtractRadius, "1");
 
 	return state;

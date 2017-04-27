@@ -38,7 +38,7 @@ core::AppState Server::onConstruct() {
 	core::Var::get(cfg::ServerMaxClients, "1024");
 	core::Var::get(cfg::ServerAutoRegister, "true");
 	core::Var::get(cfg::ServerSeed, "1");
-	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
+	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	core::Var::get(cfg::DatabaseMinConnections, "2");
 	core::Var::get(cfg::DatabaseMaxConnections, "10");
 

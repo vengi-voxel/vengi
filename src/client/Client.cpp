@@ -114,7 +114,7 @@ core::AppState Client::onConstruct() {
 	core::Var::get(cfg::HTTPBaseURL, "https://localhost/");
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	_maxTargetDistance = core::Var::get(cfg::ClientCameraMaxTargetDistance, "250.0");
-	core::Var::get(cfg::VoxelMeshSize, "128", core::CV_READONLY);
+	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	_worldRenderer.onConstruct();
 
 	return state;
@@ -219,12 +219,13 @@ void Client::afterRootWidget() {
 	int extracted;
 	int pending;
 	int active;
-	_worldRenderer.stats(meshes, extracted, pending, active);
+	int visible;
+	_worldRenderer.stats(meshes, extracted, pending, active, visible);
 	const int x = 5;
 	enqueueShowStr(x, core::Color::White, "drawcalls world: %i", _drawCallsWorld);
 	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
-	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i", pending, meshes, extracted, active);
+	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i", pending, meshes, extracted, active, visible);
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f (target: %.2f:%.2f:%.2f)", pos.x, pos.y, pos.z, target.x, target.y, target.z);
 
 	if (hasState(CLIENT_CONNECTING)) {
