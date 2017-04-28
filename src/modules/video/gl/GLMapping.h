@@ -54,6 +54,13 @@ static GLenum VertexBufferModes[] {
 };
 static_assert(std::enum_value(VertexBufferMode::Max) == (int)SDL_arraysize(VertexBufferModes), "Array sizes don't match Max");
 
+static GLenum VertexBufferAccessModes[] {
+	GL_READ_ONLY,
+	GL_WRITE_ONLY,
+	GL_READ_WRITE
+};
+static_assert(std::enum_value(VertexBufferAccessMode::Max) == (int)SDL_arraysize(VertexBufferAccessModes), "Array sizes don't match Max");
+
 static GLenum VertexBufferTypes[] {
 	GL_ARRAY_BUFFER,
 	GL_ELEMENT_ARRAY_BUFFER,

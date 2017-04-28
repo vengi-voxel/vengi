@@ -397,6 +397,26 @@ Id boundVertexArray() {
 	return _priv::s.vertexArrayHandle;
 }
 
+Id boundBuffer(VertexBufferType type) {
+	const int typeIndex = std::enum_value(type);
+	return _priv::s.bufferHandle[typeIndex];
+}
+
+void* mapBuffer(VertexBufferType type, VertexBufferAccessMode mode) {
+	const int typeIndex = std::enum_value(type);
+	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
+
+	const int modeIndex = std::enum_value(mode);
+	const GLenum glMode = _priv::VertexBufferAccessModes[modeIndex];
+	return glMapBuffer(glType, glMode);
+}
+
+void unmapBuffer(VertexBufferType type) {
+	const int typeIndex = std::enum_value(type);
+	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
+	glUnmapBuffer(glType);
+}
+
 bool bindBuffer(VertexBufferType type, Id handle) {
 	const int typeIndex = std::enum_value(type);
 	if (_priv::s.bufferHandle[typeIndex] == handle) {
@@ -676,6 +696,14 @@ void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, 
 		glFlush(); // TODO: use glFenceSync here glClientWaitSync
 	}
 	checkError();
+}
+
+size_t bufferSize(VertexBufferType type) {
+	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
+	int size;
+	glGetBufferParameteriv(glType, GL_BUFFER_SIZE, &size);
+	checkError();
+	return size;
 }
 
 void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size) {

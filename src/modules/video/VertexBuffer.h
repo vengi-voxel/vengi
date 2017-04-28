@@ -56,6 +56,21 @@ public:
 		return update(idx, dataPtr, core::vectorSize(data));
 	}
 
+	/**
+	 * @return The size on the gpu
+	 * @note The buffer behind the given index must be bound
+	 * @sa size()
+	 */
+	size_t bufferSize(int32_t idx) const;
+
+	template<class T>
+	T* data(int32_t idx, video::VertexBufferAccessMode mode) const {
+		return (T*)mapData(idx, mode);
+	}
+
+	void* mapData(int32_t idx, video::VertexBufferAccessMode mode) const;
+	void unmapData(int32_t idx) const;
+
 	bool update(int32_t idx, const void* data, size_t size);
 
 	/**
@@ -98,6 +113,10 @@ public:
 	 * @sa bind()
 	 */
 	bool unbind() const;
+	/**
+	 * @return The size of the cpu allocated memory
+	 * @sa bufferSize()
+	 */
 	uint32_t size(int32_t idx) const;
 	uint32_t elements(int32_t idx, int components = 3, size_t componentSize = sizeof(float)) const;
 	/**

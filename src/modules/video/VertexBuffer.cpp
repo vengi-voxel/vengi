@@ -15,6 +15,34 @@ VertexBuffer::VertexBuffer(const void* data, size_t size, VertexBufferType targe
 VertexBuffer::VertexBuffer() {
 }
 
+size_t VertexBuffer::bufferSize(int32_t idx) const {
+	if (!isValid(idx)) {
+		return 0u;
+	}
+
+	const VertexBufferType type = _targets[idx];
+	core_assert(video::boundBuffer(type) == _handles[idx]);
+	return video::bufferSize(type);
+}
+
+void* VertexBuffer::mapData(int32_t idx, video::VertexBufferAccessMode mode) const {
+	if (!isValid(idx)) {
+		return nullptr;
+	}
+	bind();
+	const VertexBufferType type = _targets[idx];
+	video::bindBuffer(type, _handles[idx]);
+	return video::mapBuffer(type, mode);
+}
+
+void VertexBuffer::unmapData(int32_t idx) const {
+	if (!isValid(idx)) {
+		return;
+	}
+	const VertexBufferType type = _targets[idx];
+	video::unmapBuffer(type);
+}
+
 bool VertexBuffer::addAttribute(const Attribute& attribute) {
 	if (attribute.bufferIndex < 0) {
 		return false;

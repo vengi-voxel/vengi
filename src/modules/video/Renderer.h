@@ -165,6 +165,9 @@ extern bool useProgram(Id handle);
 extern Id getProgram();
 extern bool bindVertexArray(Id handle);
 extern Id boundVertexArray();
+extern Id boundBuffer(VertexBufferType type);
+extern void unmapBuffer(VertexBufferType type);
+extern void* mapBuffer(VertexBufferType type, VertexBufferAccessMode mode);
 extern bool bindBuffer(VertexBufferType type, Id handle);
 extern bool unbindBuffer(VertexBufferType type);
 extern bool bindBufferBase(VertexBufferType type, Id handle, uint32_t index = 0u);
@@ -204,6 +207,10 @@ extern Id bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle = In
 extern bool bindRenderbuffer(Id handle);
 extern void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size);
 extern void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size);
+/**
+ * @return The size of the buffer object, measured in bytes.
+ */
+extern size_t bufferSize(VertexBufferType type);
 extern void disableDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture);
 extern void setupDepthCompareTexture(TextureUnit unit, video::TextureType type, Id depthTexture);
 extern const glm::vec4& framebufferUV();

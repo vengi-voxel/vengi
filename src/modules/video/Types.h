@@ -115,6 +115,14 @@ enum class State {
 	Max
 };
 
+enum class VertexBufferAccessMode {
+	Read,
+	Write,
+	ReadWrite,
+
+	Max
+};
+
 enum class VertexBufferType {
 	ArrayBuffer,
 	IndexBuffer,
