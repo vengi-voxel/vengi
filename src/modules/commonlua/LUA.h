@@ -135,8 +135,12 @@ public:
 
 	void setError(const std::string& error);
 	const std::string& error() const;
+	/**
+	 * @brief Loads a lua script into the lua state.
+	 */
 	bool load(const std::string &luaString);
 	/**
+	 * @brief Executes a function from an already loaded lua state
 	 * @param[in] function function to be called
 	 * @param[in] returnValues The amount of values returned by the called lua function. -1 is for multiple return values.
 	 * @note Use clua_get<T>(s, -1) to get the first custom return value.

@@ -159,11 +159,12 @@ int LUA::valueIntegerFromTable(const char * key, int defaultValue) {
 	return rtn;
 }
 
-/**
- * @param[in] function function to be called
- */
 bool LUA::execute(const std::string &function, int returnValues) {
 	lua_getglobal(_state, function.c_str());
+	if (lua_isnil(_state, -1)) {
+		setError("Function " + function + " wasn't found");
+		return false;
+	}
 	const int ret = lua_pcall(_state, 0, returnValues, 0);
 	if (ret != 0) {
 		setError(lua_tostring(_state, -1));
