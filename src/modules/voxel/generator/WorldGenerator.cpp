@@ -4,12 +4,11 @@
 namespace voxel {
 namespace world {
 
-WorldGenerator::WorldGenerator(BiomeManager& biomManager, long seed) :
-		_biomManager(biomManager), _seed(seed), _random(seed) {
+WorldGenerator::WorldGenerator(BiomeManager& biomeManager, long seed) :
+		_biomeManager(biomeManager), _seed(seed), _random(seed) {
 }
 
 float WorldGenerator::getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const {
-	// TODO: apply city gradient from biome manager
 	const float landscapeNoise = ::noise::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 			worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 	const float noiseNormalized = ::noise::norm(landscapeNoise);
@@ -25,7 +24,7 @@ int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& wor
 	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 	const float n = getHeight(noisePos2d, worldCtx);
 	const glm::ivec3 noisePos3d(x, lowerY, z);
-	const float cityMultiplier = _biomManager.getCityMultiplier(noisePos3d);
+	const float cityMultiplier = _biomeManager.getCityMultiplier(noisePos3d);
 	const int ni = n * cityMultiplier * maxHeight;
 	if (ni < lowerY) {
 		return 0;
@@ -45,7 +44,7 @@ int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& wor
 		if (finalDensity > worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;
 			const glm::ivec3 pos(x, y, z);
-			const Voxel& voxel = _biomManager.getVoxel(pos, cave);
+			const Voxel& voxel = _biomeManager.getVoxel(pos, cave);
 			voxels[y] = voxel;
 		} else {
 			if (y < MAX_WATER_HEIGHT) {
