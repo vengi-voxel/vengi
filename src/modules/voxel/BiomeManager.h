@@ -53,6 +53,7 @@ inline float Zone::radius() const {
 class BiomeManager {
 private:
 	std::vector<Biome*> _bioms;
+	std::vector<Zone*> _zones[int(ZoneType::Max)];
 	const Biome* _defaultBiome = nullptr;
 	void distributePointsInRegion(const char *type, const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border, float distribution) const;
 
@@ -82,8 +83,10 @@ public:
 	bool hasClouds(const glm::ivec3& pos) const;
 	bool hasPlants(const glm::ivec3& pos) const;
 
+	void addZone(const glm::ivec3& pos, float radius, ZoneType type);
+	const Zone* getZone(const glm::ivec3& pos, ZoneType type) const;
 	int getCityDensity(const glm::ivec3& pos) const;
-	float getCityGradient(const glm::ivec3& pos) const;
+	float getCityMultiplier(const glm::ivec3& pos) const;
 	void getTreeTypes(const Region& region, std::vector<TreeType>& treeTypes) const;
 	void getTreePositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
 	void getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;

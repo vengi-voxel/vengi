@@ -6,6 +6,8 @@
 #include "noise/Noise.h"
 #include "noise/PoissonDiskDistribution.h"
 #include "core/Random.h"
+#include "core/Common.h"
+#include "core/GLM.h"
 #include "Constants.h"
 #include "polyvox/Region.h"
 #include "MaterialColor.h"
@@ -30,6 +32,13 @@ BiomeManager::BiomeManager() {
 BiomeManager::~BiomeManager() {
 	for (const Biome* biome : _bioms) {
 		delete biome;
+	}
+	_bioms.clear();
+	for (int i = 0; i < std::enum_value(ZoneType::Max); ++i) {
+		for (const Zone* zone : _zones[i]) {
+			delete zone;
+		}
+		_zones[i].clear();
 	}
 }
 
@@ -227,20 +236,40 @@ bool BiomeManager::hasPlants(const glm::ivec3& pos) const {
 
 int BiomeManager::getCityDensity(const glm::ivec3& pos) const {
 	// TODO:
-	if (getCityGradient(pos) < 0.4f) {
+	if (getCityMultiplier(pos) < 0.4f) {
 		return 1;
 	}
 	return 0;
 }
 
-float BiomeManager::getCityGradient(const glm::ivec3& pos) const {
-	// TODO:
-	return 1.0f;
+void BiomeManager::addZone(const glm::ivec3& pos, float radius, ZoneType type) {
+	_zones[std::enum_value(type)].push_back(new Zone(pos, radius, type));
+}
+
+const Zone* BiomeManager::getZone(const glm::ivec3& pos, ZoneType type) const {
+	for (const Zone* z : _zones[std::enum_value(type)]) {
+		const glm::vec3 difference = z->pos() - pos;
+		const float distance = glm::length2(difference);
+		if (distance < glm::pow(z->radius(), 2)) {
+			return z;
+		}
+	}
+	return nullptr;
+}
+
+float BiomeManager::getCityMultiplier(const glm::ivec3& pos) const {
+	const Zone* zone = getZone(pos, ZoneType::City);
+	if (zone == nullptr) {
+		return 1.0f;
+	}
+	const glm::vec3& zonePos = zone->pos();
+	const glm::vec3 dist(pos.x - zonePos.x, 0.0f, pos.z - zonePos.z);
+	return glm::clamp(glm::length(dist) / zone->radius(), 0.01f, 1.0f);
 }
 
 bool BiomeManager::hasCity(const glm::ivec3& pos) const {
 	core_trace_scoped(BiomeHasCity);
-	return getCityGradient(pos) < 0.4f;
+	return getZone(pos, ZoneType::City) != nullptr;
 }
 
 void BiomeManager::setDefaultBiome(const Biome* biome) {
