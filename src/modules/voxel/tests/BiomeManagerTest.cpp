@@ -72,4 +72,20 @@ TEST_F(BiomeManagerTest, testLoadLUA) {
 	ASSERT_TRUE(mgr.init(filesystem->load("biomes.lua")));
 }
 
+TEST_F(BiomeManagerTest, testCityGradient) {
+	const char *str = R"(function initBiomes()
+		local biome = biomeMgr.addBiome(0, 512, 0.5, 0.5, "Grass", underGround)
+		biomeMgr.setDefault(biome)
+	end
+
+	function initCities()
+		biomeMgr.addCity(ivec2.new(0, 0), 100.0)
+	end)";
+	BiomeManager mgr;
+	ASSERT_TRUE(mgr.init(str));
+	// y level should not be taken into account here
+	EXPECT_DOUBLE_EQ(BiomeManager::MinCityHeight, mgr.getCityMultiplier(glm::ivec2(0)));
+	EXPECT_DOUBLE_EQ(BiomeManager::MinCityHeight, mgr.getCityMultiplier(glm::ivec2(0, 0)));
+}
+
 }

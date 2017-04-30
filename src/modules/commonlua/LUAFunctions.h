@@ -129,10 +129,14 @@ static int dot(lua_State* s) {
 };
 
 template<class T>
-struct clua_vecequal {
+struct clua_vecequal {};
+
+template<>
+template<int N>
+struct clua_vecequal<glm::vec<N, float> > {
 static int equal(lua_State* s) {
-	const T* a = clua_get<T>(s, 1);
-	const T* b = clua_get<T>(s, 2);
+	const glm::vec<N, float> * a = clua_get<glm::vec<N, float> >(s, 1);
+	const glm::vec<N, float> * b = clua_get<glm::vec<N, float> >(s, 2);
 	const bool e = glm::all(glm::epsilonEqual(*a, *b, 0.0001f));
 	lua_pushboolean(s, e);
 	return 1;
@@ -143,8 +147,8 @@ template<>
 template<int N>
 struct clua_vecequal<glm::vec<N, int> > {
 static int equal(lua_State* s) {
-	const glm::ivec3* a = clua_get<glm::ivec3>(s, 1);
-	const glm::ivec3* b = clua_get<glm::ivec3>(s, 2);
+	const glm::vec<N, int>* a = clua_get<glm::vec<N, int> >(s, 1);
+	const glm::vec<N, int>* b = clua_get<glm::vec<N, int> >(s, 2);
 	const bool e = glm::all(glm::equal(*a, *b));
 	lua_pushboolean(s, e);
 	return 1;
@@ -206,176 +210,112 @@ static int vecnew(lua_State* s) {
 };
 
 template<class T>
-struct clua_vecindex {};
+struct LuaNumberFuncs {};
 
 template<>
-struct clua_vecindex<glm::vec3> {
-	static int index(lua_State *s) {
-		const glm::vec3* v = clua_get<glm::vec3>(s, 1);
-		const char* i = luaL_checkstring(s, 2);
+struct LuaNumberFuncs<float> {
+	static void push(lua_State *s, float n) {
+		lua_pushnumber(s, n);
+	}
 
-		switch (*i) {
-		case '0':
-		case 'x':
-		case 'r':
-			lua_pushnumber(s, v->x);
-			break;
-		case '1':
-		case 'y':
-		case 'g':
-			lua_pushnumber(s, v->y);
-			break;
-		case '2':
-		case 'z':
-		case 'b':
-			lua_pushnumber(s, v->z);
-			break;
-		default:
-			lua_pushnil(s);
-			break;
-		}
-
-		return 1;
+	static float check(lua_State *s, int arg) {
+		return luaL_checknumber(s, arg);
 	}
 };
 
 template<>
-struct clua_vecindex<glm::ivec3> {
-	static int index(lua_State *s) {
-		const glm::ivec3* v = clua_get<glm::ivec3>(s, 1);
-		const char* i = luaL_checkstring(s, 2);
+struct LuaNumberFuncs<int> {
+	static void push(lua_State *s, int n) {
+		lua_pushinteger(s, n);
+	}
 
-		switch (*i) {
-		case '0':
-		case 'x':
-		case 'r':
-			lua_pushinteger(s, v->x);
-			break;
-		case '1':
-		case 'y':
-		case 'g':
-			lua_pushinteger(s, v->y);
-			break;
-		case '2':
-		case 'z':
-		case 'b':
-			lua_pushinteger(s, v->z);
-			break;
-		default:
-			lua_pushnil(s);
-			break;
-		}
-
-		return 1;
+	static int check(lua_State *s, int arg) {
+		return luaL_checkinteger(s, arg);
 	}
 };
-
-template<>
-struct clua_vecindex<glm::vec4> {
-	static int index(lua_State *s) {
-		const glm::vec4* v = clua_get<glm::vec4>(s, 1);
-		const char* i = luaL_checkstring(s, 2);
-
-		switch (*i) {
-		case '0':
-		case 'x':
-		case 'r':
-			lua_pushnumber(s, v->x);
-			break;
-		case '1':
-		case 'y':
-		case 'g':
-			lua_pushnumber(s, v->y);
-			break;
-		case '2':
-		case 'z':
-		case 'b':
-			lua_pushnumber(s, v->z);
-			break;
-		case '3':
-		case 'w':
-		case 'a':
-			lua_pushnumber(s, v->w);
-			break;
-		default:
-			lua_pushnil(s);
-			break;
-		}
-
-		return 1;
-	}
-};
-
 
 template<class T>
-struct clua_vecnewindex {};
+static int clua_vecindex(lua_State *s) {
+	const T* v = clua_get<T>(s, 1);
+	const char* i = luaL_checkstring(s, 2);
 
-template<>
-struct clua_vecnewindex<glm::ivec3> {
-	static int newindex(lua_State *s) {
-		glm::ivec3* v = clua_get<glm::ivec3>(s, 1);
-		const char *i = luaL_checkstring(s, 2);
-		const int t = luaL_checkinteger(s, 3);
-
-		switch (*i) {
-		case '0':
-		case 'x':
-		case 'r':
-			v->x = t;
-			break;
-		case '1':
-		case 'y':
-		case 'g':
-			v->y = t;
-			break;
-		case '2':
-		case 'z':
-		case 'b':
-			v->z = t;
-			break;
-		default:
-			break;
-		}
-
+	switch (*i) {
+	case '0':
+	case 'x':
+	case 'r':
+		LuaNumberFuncs<typename T::value_type>::push(s, (*v)[0]);
 		return 1;
-	}
-};
-
-template<>
-struct clua_vecnewindex<glm::vec4> {
-	static int newindex(lua_State *s) {
-		glm::vec4* v = clua_get<glm::vec4>(s, 1);
-		const char *i = luaL_checkstring(s, 2);
-		const float t = luaL_checknumber(s, 3);
-
-		switch (*i) {
-		case '0':
-		case 'x':
-		case 'r':
-			v->x = t;
-			break;
-		case '1':
-		case 'y':
-		case 'g':
-			v->y = t;
-			break;
-		case '2':
-		case 'z':
-		case 'b':
-			v->z = t;
-			break;
-		case '3':
-		case 'w':
-		case 'a':
-			v->w = t;
-			break;
-		default:
-			break;
+	case '1':
+	case 'y':
+	case 'g':
+		if (T::length() >= 2) {
+			LuaNumberFuncs<typename T::value_type>::push(s, (*v)[1]);
+			return 1;
 		}
-
-		return 1;
+		break;
+	case '2':
+	case 'z':
+	case 'b':
+		if (T::length() >= 3) {
+			LuaNumberFuncs<typename T::value_type>::push(s, (*v)[2]);
+			return 1;
+		}
+		break;
+	case '3':
+	case 'w':
+	case 'a':
+		if (T::length() >= 4) {
+			LuaNumberFuncs<typename T::value_type>::push(s, (*v)[3]);
+			return 1;
+		}
+		break;
+	default:
+		break;
 	}
-};
+	return luaL_error(s, "Invalid component %c", *i);
+}
+
+template<class T>
+static int clua_vecnewindex(lua_State *s) {
+	T* v = clua_get<T>(s, 1);
+	const char *i = luaL_checkstring(s, 2);
+	const typename T::value_type t = LuaNumberFuncs<typename T::value_type>::check(s, 3);
+
+	switch (*i) {
+	case '0':
+	case 'x':
+	case 'r':
+		(*v)[0] = t;
+		return 1;
+	case '1':
+	case 'y':
+	case 'g':
+		if (T::length() >= 2) {
+			(*v)[1] = t;
+			return 1;
+		}
+		break;
+	case '2':
+	case 'z':
+	case 'b':
+		if (T::length() >= 3) {
+			(*v)[2] = t;
+			return 1;
+		}
+		break;
+	case '3':
+	case 'w':
+	case 'a':
+		if (T::length() >= 4) {
+			(*v)[3] = t;
+			return 1;
+		}
+		break;
+	default:
+		break;
+	}
+	return luaL_error(s, "Invalid component %c", *i);
+}
 
 template<class T>
 void clua_vecregister(lua_State* s) {
@@ -388,8 +328,8 @@ void clua_vecregister(lua_State* s) {
 		{"__len", clua_veclen<T>::len},
 		{"__eq", clua_vecequal<T>::equal},
 		{"__tostring", clua_vectostring<T>},
-		{"__index", clua_vecindex<T>::index},
-		{"__newindex", clua_vecnewindex<T>::newindex},
+		{"__index", clua_vecindex<T>},
+		{"__newindex", clua_vecnewindex<T>},
 		{"dot", clua_vecdot<T>::dot},
 		{nullptr, nullptr}
 	};

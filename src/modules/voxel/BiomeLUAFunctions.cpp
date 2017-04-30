@@ -57,9 +57,9 @@ static int biomelua_addtree(lua_State* s) {
 
 int biomelua_addcity(lua_State* s) {
 	BiomeManager* biomeMgr = lua::LUA::globalData<BiomeManager>(s, "MGR");
-	const glm::ivec3* position = clua_get<glm::ivec3>(s, 1);
+	const glm::ivec2* position = clua_get<glm::ivec2>(s, 1);
 	const float radius = luaL_checknumber(s, 2);
-	biomeMgr->addZone(*position, radius, voxel::ZoneType::City);
+	biomeMgr->addZone(glm::ivec3(position->x, 0.0f, position->y), radius, voxel::ZoneType::City);
 	lua_pushboolean(s, 1);
 	return 1;
 }
@@ -71,6 +71,7 @@ void biomelua_biomeregister(lua_State* s) {
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, &funcs.front(), clua_meta<Biome>::name());
+	clua_vecregister<glm::ivec2>(s);
 	clua_vecregister<glm::ivec3>(s);
 }
 

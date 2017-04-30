@@ -26,6 +26,8 @@ Zone::Zone(const glm::ivec3& pos, float radius, ZoneType type) :
 		_pos(pos), _radius(radius), _type(type) {
 }
 
+const float BiomeManager::MinCityHeight = (MAX_WATER_HEIGHT + 1) / (float)(MAX_TERRAIN_HEIGHT - 1);
+
 BiomeManager::BiomeManager() {
 }
 
@@ -239,7 +241,7 @@ bool BiomeManager::hasPlants(const glm::ivec3& pos) const {
 	return hasTrees(pos);
 }
 
-int BiomeManager::getCityDensity(const glm::ivec3& pos) const {
+int BiomeManager::getCityDensity(const glm::ivec2& pos) const {
 	// TODO:
 	if (getCityMultiplier(pos) < 0.4f) {
 		return 1;
@@ -253,7 +255,7 @@ void BiomeManager::addZone(const glm::ivec3& pos, float radius, ZoneType type) {
 
 const Zone* BiomeManager::getZone(const glm::ivec3& pos, ZoneType type) const {
 	for (const Zone* z : _zones[std::enum_value(type)]) {
-		const float distance = glm::distance2(pos, z->pos());
+		const float distance = glm::distance2(glm::vec3(pos), glm::vec3(z->pos()));
 		if (distance < glm::pow(z->radius(), 2)) {
 			return z;
 		}
@@ -261,14 +263,26 @@ const Zone* BiomeManager::getZone(const glm::ivec3& pos, ZoneType type) const {
 	return nullptr;
 }
 
-float BiomeManager::getCityMultiplier(const glm::ivec3& pos) const {
+const Zone* BiomeManager::getZone(const glm::ivec2& pos, ZoneType type) const {
+	const glm::vec3 p(pos.x, 0.0f, pos.y);
+	for (const Zone* z : _zones[std::enum_value(type)]) {
+		const glm::ivec3& zp = z->pos();
+		const float distance = glm::distance2(p, glm::vec3(zp.x, 0.0f, zp.z));
+		if (distance < glm::pow(z->radius(), 2)) {
+			return z;
+		}
+	}
+	return nullptr;
+}
+
+float BiomeManager::getCityMultiplier(const glm::ivec2& pos) const {
 	const Zone* zone = getZone(pos, ZoneType::City);
 	if (zone == nullptr) {
 		return 1.0f;
 	}
-	const glm::vec3& zonePos = zone->pos();
-	const glm::vec3 dist(pos.x - zonePos.x, 0.0f, pos.z - zonePos.z);
-	return glm::clamp(glm::length(dist) / zone->radius(), 0.01f, 1.0f);
+	const glm::ivec3& zonePos = zone->pos();
+	const glm::vec3 dist(pos.x - zonePos.x, 0.0f, pos.y - zonePos.z);
+	return glm::clamp(glm::length(dist) / zone->radius(), MinCityHeight, 1.0f);
 }
 
 bool BiomeManager::hasCity(const glm::ivec3& pos) const {
