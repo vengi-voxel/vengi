@@ -38,11 +38,10 @@ private:
 
 			std::array<Rect<TYPE>, 4> subareas;
 			_area.split(subareas);
-			_nodes.reserve(4);
-			_nodes.push_back(QuadTreeNode(subareas[0], _maxDepth, _depth + 1));
-			_nodes.push_back(QuadTreeNode(subareas[1], _maxDepth, _depth + 1));
-			_nodes.push_back(QuadTreeNode(subareas[2], _maxDepth, _depth + 1));
-			_nodes.push_back(QuadTreeNode(subareas[3], _maxDepth, _depth + 1));
+			_nodes.reserve(subareas.size());
+			for (int i = 0; i < subareas.size(); ++i) {
+				_nodes.push_back(QuadTreeNode(subareas[i], _maxDepth, _depth + 1));
+			}
 		}
 
 		inline int count() const {
@@ -64,10 +63,9 @@ private:
 
 		void getAllContents(Contents& results) const {
 			if (!_nodes.empty()) {
-				_nodes[0].getAllContents(results);
-				_nodes[1].getAllContents(results);
-				_nodes[2].getAllContents(results);
-				_nodes[3].getAllContents(results);
+				for (int i = 0; i < 4; ++i) {
+					_nodes[i].getAllContents(results);
+				}
 			}
 
 			results.insert(results.end(), _contents.begin(), _contents.end());
@@ -248,5 +246,7 @@ public:
 #endif
 	}
 };
+
+#undef CACHE
 
 }
