@@ -61,7 +61,7 @@ protected:
 		}
 	};
 
-	static constexpr int MAX_CHUNKBUFFERS = 1024;
+	static constexpr int MAX_CHUNKBUFFERS = 4096;
 	ChunkBuffer _chunkBuffers[MAX_CHUNKBUFFERS];
 	int _activeChunkBuffers = 0;
 	int _visibleChunks = 0;
