@@ -23,6 +23,16 @@ template<> struct clua_meta<glm::vec2> { static char const *name() {return "__me
 template<> struct clua_meta<glm::vec3> { static char const *name() {return "__meta_vec3";} };
 template<> struct clua_meta<glm::vec4> { static char const *name() {return "__meta_vec4";} };
 
+template<class T>
+struct clua_name {};
+
+template<> struct clua_name<glm::ivec2> { static char const *name() {return "ivec2";} };
+template<> struct clua_name<glm::ivec3> { static char const *name() {return "ivec3";} };
+template<> struct clua_name<glm::ivec4> { static char const *name() {return "ivec4";} };
+template<> struct clua_name<glm::vec2> { static char const *name() {return "vec2";} };
+template<> struct clua_name<glm::vec3> { static char const *name() {return "vec3";} };
+template<> struct clua_name<glm::vec4> { static char const *name() {return "vec4";} };
+
 extern int clua_assignmetatable(lua_State* s, const char *name);
 
 template<class T>
@@ -62,6 +72,7 @@ T* clua_get(lua_State *s, int n) {
 }
 
 extern void clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name);
+extern void clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name);
 
 template<class T>
 int clua_vecadd(lua_State* s) {
@@ -162,6 +173,37 @@ int clua_vectostring(lua_State* s) {
 	lua_pushfstring(s, "%s", glm::to_string(*a).c_str());
 	return 1;
 }
+
+template<class T>
+struct clua_vecnew {};
+
+template<>
+template<int N>
+struct clua_vecnew<glm::vec<N, float> > {
+static int vecnew(lua_State* s) {
+	glm::vec<N, int> array;
+	float value = 0.0f;
+	for (size_t i = 0; i < sizeof(array) / sizeof(array[0]); ++i) {
+		array[i] = luaL_optnumber(s, i + 1, value);
+		value = array[i];
+	}
+	return clua_push(s, array);
+}
+};
+
+template<>
+template<int N>
+struct clua_vecnew<glm::vec<N, int> > {
+static int vecnew(lua_State* s) {
+	glm::vec<N, int> array;
+	int value = 0;
+	for (size_t i = 0; i < sizeof(array) / sizeof(array[0]); ++i) {
+		array[i] = luaL_optinteger(s, i + 1, value);
+		value = array[i];
+	}
+	return clua_push(s, array);
+}
+};
 
 template<class T>
 struct clua_vecindex {};
@@ -353,6 +395,12 @@ void clua_vecregister(lua_State* s) {
 	};
 	using RAWTYPE = typename std::remove_pointer<T>::type;
 	clua_registerfuncs(s, &funcs.front(), clua_meta<RAWTYPE>::name());
+
+	std::vector<luaL_Reg> globalFuncs = {
+		{"new", clua_vecnew<T>::vecnew},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, &globalFuncs.front(), clua_meta<RAWTYPE>::name(), clua_name<RAWTYPE>::name());
 }
 
 extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);

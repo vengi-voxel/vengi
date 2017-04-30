@@ -21,6 +21,14 @@ void clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name) {
 	luaL_setfuncs(s, funcs, 0);
 }
 
+void clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name) {
+	luaL_newmetatable(s, meta);
+	luaL_setfuncs(s, funcs, 0);
+	lua_pushvalue(s, -1);
+	lua_setfield(s, -1, "__index");
+	lua_setglobal(s, name);
+}
+
 bool clua_optboolean(lua_State* s, int index, bool defaultVal) {
 	if (lua_isboolean(s, index)) {
 		return lua_toboolean(s, index);

@@ -138,6 +138,8 @@ public:
 	bool load(const std::string &luaString);
 	/**
 	 * @param[in] function function to be called
+	 * @param[in] returnValues The amount of values returned by the called lua function. -1 is for multiple return values.
+	 * @note Use clua_get<T>(s, -1) to get the first custom return value.
 	 */
 	bool execute(const std::string &function, int returnValues = 0);
 
