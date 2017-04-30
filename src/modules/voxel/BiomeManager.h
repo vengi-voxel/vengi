@@ -17,6 +17,39 @@ namespace voxel {
 
 class Region;
 
+enum class ZoneType {
+	City,
+
+	Max
+};
+
+/**
+ * @brief A zone with a special meaning that might have influence on terrain generation.
+ */
+class Zone {
+private:
+	glm::ivec3 _pos;
+	float _radius;
+	ZoneType _type;
+public:
+	Zone(const glm::ivec3& pos, float radius, ZoneType type);
+	const glm::ivec3& pos() const;
+	float radius() const;
+	ZoneType type() const;
+};
+
+inline ZoneType Zone::type() const {
+	return _type;
+}
+
+inline const glm::ivec3& Zone::pos() const {
+	return _pos;
+}
+
+inline float Zone::radius() const {
+	return _radius;
+}
+
 class BiomeManager {
 private:
 	std::vector<Biome*> _bioms;

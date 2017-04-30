@@ -20,6 +20,10 @@ static const Biome& getDefaultBiome() {
 	return biome;
 }
 
+Zone::Zone(const glm::ivec3& pos, float radius, ZoneType type) :
+		_pos(pos), _radius(radius), _type(type) {
+}
+
 BiomeManager::BiomeManager() {
 }
 
