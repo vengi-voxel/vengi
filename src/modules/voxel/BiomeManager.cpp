@@ -49,6 +49,7 @@ bool BiomeManager::init(const std::string& luaString) {
 	lua.newGlobalData<BiomeManager>("MGR", this);
 	const std::vector<luaL_Reg> funcs({
 		{"addBiome", biomelua_addbiome},
+		{"addCity", biomelua_addcity},
 		{"setDefault", biomelua_setdefault},
 		{nullptr, nullptr}
 	});
