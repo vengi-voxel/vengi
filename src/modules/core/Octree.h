@@ -8,65 +8,68 @@
 #include <array>
 #include <algorithm>
 #include <unordered_map>
-#include "GLM.h"
-#include "Rect.h"
+#include "AABB.h"
 #include "Trace.h"
+#include "GLM.h"
 
 namespace core {
 
-template<class NODE, typename TYPE>
-class QuadTree {
+/**
+ * @note Given NODE type must implement @c aabb() and return core::AABB<TYPE>
+ */
+template<class NODE, typename TYPE = int>
+class Octree {
 public:
 	typedef typename std::vector<NODE> Contents;
 private:
-	class QuadTreeNode {
-		friend class QuadTree;
+	class OctreeNode {
+		friend class Octree;
 	private:
-		static inline Rect<TYPE> rect(const typename std::remove_pointer<NODE>::type* item) {
-			return item->getRect();
+		static inline AABB<TYPE> aabb(const typename std::remove_pointer<NODE>::type* item) {
+			return item->aabb();
 		}
 
-		static inline Rect<TYPE> rect(const typename std::remove_pointer<NODE>::type& item) {
-			return item.getRect();
+		static inline AABB<TYPE> aabb(const typename std::remove_pointer<NODE>::type& item) {
+			return item.aabb();
 		}
 
 		const int _maxDepth;
 		int _depth;
-		const Rect<TYPE> _area;
+		const AABB<TYPE> _aabb;
 		Contents _contents;
-		std::vector<QuadTreeNode> _nodes;
+		std::vector<OctreeNode> _nodes;
 
-		QuadTreeNode(const Rect<TYPE>& bounds, int maxDepth, int depth) :
-				_maxDepth(maxDepth), _depth(depth), _area(bounds) {
+		OctreeNode(const AABB<TYPE>& bounds, int maxDepth, int depth) :
+				_maxDepth(maxDepth), _depth(depth), _aabb(bounds) {
 		}
 
 		void createNodes() {
 			if (_depth >= _maxDepth) {
 				return;
 			}
-			if (glm::all(glm::lessThanEqual(getRect().size(), glm::one<glm::tvec2<TYPE> >()))) {
+			if (glm::all(glm::lessThanEqual(aabb().getWidth(), glm::one<glm::tvec3<TYPE> >()))) {
 				return;
 			}
 
-			std::array<Rect<TYPE>, 4> subareas;
-			getRect().split(subareas);
+			std::array<AABB<TYPE>, 8> subareas;
+			aabb().split(subareas);
 			_nodes.reserve(subareas.size());
-			for (size_t i = 0; i < subareas.size(); ++i) {
-				_nodes.emplace_back(QuadTreeNode(subareas[i], _maxDepth, _depth + 1));
+			for (size_t i = 0u; i < subareas.size(); ++i) {
+				_nodes.emplace_back(OctreeNode(subareas[i], _maxDepth, _depth + 1));
 			}
 		}
 
 		inline int count() const {
 			int count = 0;
-			for (auto& node : _nodes) {
+			for (const typename Octree<NODE, TYPE>::OctreeNode& node : _nodes) {
 				count += node.count();
 			}
 			count += _contents.size();
 			return count;
 		}
 
-		inline const Rect<TYPE>& getRect() const {
-			return _area;
+		inline const AABB<TYPE>& aabb() const {
+			return _aabb;
 		}
 
 		inline const Contents& getContents() const {
@@ -74,7 +77,7 @@ private:
 		}
 
 		void getAllContents(Contents& results) const {
-			for (auto& node : _nodes) {
+			for (const typename Octree<NODE, TYPE>::OctreeNode& node : _nodes) {
 				node.getAllContents(results);
 			}
 
@@ -82,18 +85,18 @@ private:
 		}
 
 		bool remove(const NODE& item) {
-			const Rect<TYPE>& area = rect(item);
-			if (!getRect().contains(area)) {
+			const AABB<TYPE>& area = item.aabb();
+			if (!aabb().containsAABB(area)) {
 				return false;
 			}
-			for (auto& node : _nodes) {
-				if (!node.getRect().contains(area)) {
+			for (typename Octree<NODE, TYPE>::OctreeNode& node : _nodes) {
+				if (!node.remove(item)) {
 					continue;
 				}
-				return node.remove(item);
+				return true;
 			}
 
-			auto i = std::find(_contents.begin(), _contents.end(), item);
+			typename Contents::iterator i = std::find(_contents.begin(), _contents.end(), item);
 			if (i == _contents.end()) {
 				return false;
 			}
@@ -102,8 +105,8 @@ private:
 		}
 
 		bool insert(const NODE& item) {
-			const Rect<TYPE>& area = rect(item);
-			if (!getRect().contains(area)) {
+			const AABB<TYPE>& area = aabb(item);
+			if (!aabb().containsAABB(area)) {
 				return false;
 			}
 
@@ -111,11 +114,10 @@ private:
 				createNodes();
 			}
 
-			for (auto& node : _nodes) {
-				if (!node.getRect().contains(area)) {
+			for (typename Octree<NODE, TYPE>::OctreeNode& node : _nodes) {
+				if (!node.insert(item)) {
 					continue;
 				}
-				node.insert(item);
 				return true;
 			}
 
@@ -127,44 +129,44 @@ private:
 			return _nodes.empty() && _contents.empty();
 		}
 
-		void query(const Rect<TYPE>& queryArea, Contents& results) const {
-			for (auto& item : _contents) {
-				const Rect<TYPE>& area = rect(item);
-				if (queryArea.intersectsWith(area)) {
+		void query(const AABB<TYPE>& queryArea, Contents& results) const {
+			for (const NODE& item : _contents) {
+				if (intersects(queryArea, aabb(item))) {
 					results.push_back(item);
 				}
 			}
 
-			for (auto& node : _nodes) {
+			for (const typename Octree<NODE, TYPE>::OctreeNode& node : _nodes) {
 				if (node.isEmpty()) {
 					continue;
 				}
 
-				if (node.getRect().contains(queryArea)) {
+				const AABB<TYPE>& aabb = node.aabb();
+				if (aabb.containsAABB(queryArea)) {
 					node.query(queryArea, results);
 					// the queried area is completely part of the node
 					break;
 				}
 
-				if (queryArea.contains(node.getRect())) {
+				if (queryArea.containsAABB(aabb)) {
 					node.getAllContents(results);
 					// the whole node content is part of the query
 					continue;
 				}
 
-				if (node.getRect().intersectsWith(queryArea)) {
+				if (intersects(aabb, queryArea)) {
 					node.query(queryArea, results);
 				}
 			}
 		}
 	};
 
-	QuadTreeNode _root;
+	OctreeNode _root;
 	// dirty flag can be used for query caches
 	bool _dirty;
 public:
-	QuadTree(const Rect<TYPE>& rectangle, int maxDepth = 10) :
-			_root(rectangle, maxDepth, 0), _dirty(false) {
+	Octree(const AABB<TYPE>& aabb, int maxDepth = 10) :
+			_root(aabb, maxDepth, 0), _dirty(false) {
 	}
 
 	inline int count() const {
@@ -187,13 +189,13 @@ public:
 		return false;
 	}
 
-	inline void query(const Rect<TYPE>& area, Contents& results) const {
-		core_trace_scoped(QuadTreeQuery);
+	inline void query(const AABB<TYPE>& area, Contents& results) const {
+		core_trace_scoped(OctreeQuery);
 		_root.query(area, results);
 	}
 
 	void clear() {
-		auto size = _root._contents.size();
+		const size_t size = _root._contents.size();
 		_dirty = true;
 		_root._contents.clear();
 		_root._contents.reserve(size);
@@ -218,14 +220,14 @@ public:
 
 #define CACHE 1
 template<class NODE, typename TYPE>
-class QuadTreeCache {
+class OctreeCache {
 private:
-	QuadTree<NODE, TYPE>& _tree;
+	Octree<NODE, TYPE>& _tree;
 #if CACHE
-	std::unordered_map<Rect<TYPE>, typename QuadTree<NODE, TYPE>::Contents> _cache;
+	std::unordered_map<AABB<TYPE>, typename Octree<NODE, TYPE>::Contents> _cache;
 #endif
 public:
-	QuadTreeCache(QuadTree<NODE, TYPE>& tree) :
+	OctreeCache(Octree<NODE, TYPE>& tree) :
 			_tree(tree) {
 	}
 
@@ -235,13 +237,13 @@ public:
 #endif
 	}
 
-	inline bool query(const Rect<TYPE>& area, typename QuadTree<NODE, TYPE>::Contents& contents) {
+	inline bool query(const AABB<TYPE>& area, typename Octree<NODE, TYPE>::Contents& contents) {
 #if CACHE
 		if (_tree.isDirty()) {
 			_tree.markAsClean();
 			clear();
 		}
-		// TODO: normalize to quad tree cells to improve the cache hits
+		// TODO: normalize to octree cells to improve the cache hits
 		auto iter = _cache.find(area);
 		if (iter != _cache.end()) {
 			contents = iter->second;

@@ -9,10 +9,11 @@
 #include <array>
 #include <glm/vec2.hpp>
 #include <glm/common.hpp>
+#include <functional>
 
 namespace core {
 
-template<typename TYPE>
+template<typename TYPE = int>
 class Rect {
 private:
 	glm::tvec2<TYPE> _mins;
@@ -97,10 +98,10 @@ public:
 			}
 		}
 
-		const TYPE lengthX = glm::abs(_maxs.x - _mins.x);
-		const TYPE halfX = lengthX / 2.0;
-		const TYPE lengthY = glm::abs(_maxs.y - _mins.y);
-		const TYPE halfY = lengthY / 2.0;
+		const TYPE lengthX = _maxs.x - _mins.x;
+		const TYPE halfX = lengthX / (TYPE)2;
+		const TYPE lengthY = _maxs.y - _mins.y;
+		const TYPE halfY = lengthY / (TYPE)2;
 		result[0] = Rect<TYPE>(_mins.x, _mins.y, _mins.x + halfX, _mins.y + halfY);
 		result[1] = Rect<TYPE>(_mins.x + halfX, _mins.y, _maxs.x, _mins.y + halfY);
 		result[2] = Rect<TYPE>(_mins.x, _mins.y + halfY, _mins.x + halfX, _maxs.y);
@@ -195,5 +196,27 @@ public:
 
 typedef Rect<uint32_t> RectuInt;
 typedef Rect<float> RectFloat;
+
+}
+
+namespace std
+{
+template<typename TYPE>
+struct hash<core::Rect<TYPE> > {
+	static inline void hash_combine(size_t &seed, size_t hash) {
+		hash += 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hash;
+	}
+
+	inline size_t operator()(const core::Rect<TYPE>& v) const {
+		size_t seed = 0;
+		hash<TYPE> hasher;
+		hash_combine(seed, hasher(v.getMinX()));
+		hash_combine(seed, hasher(v.getMinZ()));
+		hash_combine(seed, hasher(v.getMaxX()));
+		hash_combine(seed, hasher(v.getMaxZ()));
+		return seed;
+	}
+};
 
 }

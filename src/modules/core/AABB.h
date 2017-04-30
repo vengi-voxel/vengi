@@ -7,8 +7,10 @@
 #include "core/Assert.h"
 
 #include <glm/vec3.hpp>
+#include <array>
 #include <algorithm>
 #include <limits>
+#include <functional>
 
 namespace core {
 
@@ -18,11 +20,9 @@ namespace core {
 template<typename TYPE>
 class AABB {
 public:
+	AABB();
 	AABB(const glm::tvec3<TYPE>& mins, const glm::tvec3<TYPE>& maxs);
-	inline AABB(TYPE minsX, TYPE minsY, TYPE minsZ, TYPE maxsX, TYPE maxsY, TYPE maxsZ) :
-			AABB(glm::tvec3<TYPE>(minsX, minsY, minsZ),
-				glm::tvec3<TYPE>(maxsX, maxsY, maxsZ)) {
-	}
+	AABB(TYPE minsX, TYPE minsY, TYPE minsZ, TYPE maxsX, TYPE maxsY, TYPE maxsZ);
 
 	static AABB construct(const glm::tvec3<TYPE>* vertices, size_t size) {
 		static constexpr TYPE max = std::numeric_limits<TYPE>::max();
@@ -63,6 +63,69 @@ public:
 	bool operator==(const AABB& rhs) const;
 	/// Inequality Operator.
 	bool operator!=(const AABB& rhs) const;
+
+	/*
+	 * +Y                        +Z
+	 * |                         /
+	 * |                        /
+	 * |                       /
+	 * |                      /
+	 * |       O---------------O---------------O
+	 * |      /               /               /|
+	 * |     /       3       /       7       / |
+	 * |    /               /               /  |
+	 * |   O---------------O---------------O   |
+	 * |  /               /               /|   |
+	 * | /       2       /       6       / | 7 |
+	 * |/               /               /  |   O
+	 * O---------------O---------------O   |  /|
+	 * |               |               |   | / |
+	 * |               |               | 6 |/  |
+	 * |               |               |   O   |
+	 * |       2       |       6       |  /|   |
+	 * |               |               | / | 5 |
+	 * |               |               |/  |   O
+	 * O---------------O---------------O   |  /
+	 * |               |               |   | /
+	 * |               |               | 4 |/
+	 * |               |               |   O
+	 * |       0       |       4       |  /
+	 * |               |               | /
+	 * |               |               |/
+	 * O---------------O---------------O------------------+X
+	 */
+	void split(std::array<AABB<TYPE>, 8>& result) const {
+		const glm::tvec3<TYPE>& center = getCenter();
+		result[0] = AABB<TYPE>(mins(), center);
+
+		glm::tvec3<TYPE> mins1(getLowerX(), getLowerY(), center.z);
+		glm::tvec3<TYPE> maxs1(center.x, center.y, maxs().z);
+		result[1] = AABB<TYPE>(mins1, maxs1);
+
+		glm::tvec3<TYPE> mins2(getLowerX(), center.y, getLowerZ());
+		glm::tvec3<TYPE> maxs2(center.x, getUpperY(), center.z);
+		result[2] = AABB<TYPE>(mins2, maxs2);
+
+		glm::tvec3<TYPE> mins3(getLowerX(), center.y, center.z);
+		glm::tvec3<TYPE> maxs3(center.x, getUpperY(), maxs().z);
+		result[3] = AABB<TYPE>(mins3, maxs3);
+
+		glm::tvec3<TYPE> mins4(center.x, getLowerY(), getLowerZ());
+		glm::tvec3<TYPE> maxs4(getUpperX(), center.y, center.z);
+		result[4] = AABB<TYPE>(mins4, maxs4);
+
+		glm::tvec3<TYPE> mins5(center.x, getLowerY(), center.z);
+		glm::tvec3<TYPE> maxs5(getUpperX(), center.y, getUpperZ());
+		result[5] = AABB<TYPE>(mins5, maxs5);
+
+		glm::tvec3<TYPE> mins6(center.x, center.y, getLowerZ());
+		glm::tvec3<TYPE> maxs6(getUpperX(), getUpperY(), center.z);
+		result[6] = AABB<TYPE>(mins6, maxs6);
+
+		glm::tvec3<TYPE> mins7(center.x, center.y, center.z);
+		glm::tvec3<TYPE> maxs7(getUpperX(), getUpperY(), maxs().z);
+		result[7] = AABB<TYPE>(mins7, maxs7);
+	}
 
 	TYPE getWidthX() const;
 	TYPE getWidthY() const;
@@ -203,7 +266,7 @@ inline TYPE AABB<TYPE>::getWidthZ() const {
  */
 template<typename TYPE>
 inline TYPE AABB<TYPE>::getCenterX() const {
-	return (_mins.x + _maxs.x) / 2;
+	return (_mins.x + _maxs.x) / (TYPE)2;
 }
 
 /**
@@ -211,7 +274,7 @@ inline TYPE AABB<TYPE>::getCenterX() const {
  */
 template<typename TYPE>
 inline TYPE AABB<TYPE>::getCenterY() const {
-	return (_mins.y + _maxs.y) / 2;
+	return (_mins.y + _maxs.y) / (TYPE)2;
 }
 
 /**
@@ -219,7 +282,7 @@ inline TYPE AABB<TYPE>::getCenterY() const {
  */
 template<typename TYPE>
 inline TYPE AABB<TYPE>::getCenterZ() const {
-	return (_mins.z + _maxs.z) / 2;
+	return (_mins.z + _maxs.z) / (TYPE)2;
 }
 
 /**
@@ -418,7 +481,18 @@ inline void AABB<TYPE>::accumulate(const AABB& reg) {
  * @param maxs The desired upper corner of the AABB.
  */
 template<typename TYPE>
-inline AABB<TYPE>::AABB(const glm::tvec3<TYPE>& mins, const glm::tvec3<TYPE>& maxs) : _mins(mins), _maxs(maxs) {
+inline AABB<TYPE>::AABB(const glm::tvec3<TYPE>& mins, const glm::tvec3<TYPE>& maxs) :
+		_mins(mins), _maxs(maxs) {
+}
+
+template<typename TYPE>
+inline AABB<TYPE>::AABB(TYPE minsX, TYPE minsY, TYPE minsZ, TYPE maxsX, TYPE maxsY, TYPE maxsZ) :
+		_mins(minsX, minsY, minsZ), _maxs(maxsX, maxsY, maxsZ) {
+}
+
+template<typename TYPE>
+inline AABB<TYPE>::AABB() :
+		_mins((TYPE)0), _maxs((TYPE)0) {
 }
 
 /**
@@ -695,7 +769,7 @@ inline void AABB<TYPE>::shrink(const glm::tvec3<TYPE>& v3dAmount) {
  */
 template<typename TYPE>
 inline bool intersects(const AABB<TYPE>& a, const AABB<TYPE>& b) {
-	// No intersection if seperated along an axis.
+	// No intersection if separated along an axis.
 	if (a.getUpperX() < b.getLowerX() || a.getLowerX() > b.getUpperX())
 		return false;
 	if (a.getUpperY() < b.getLowerY() || a.getLowerY() > b.getUpperY())
@@ -706,5 +780,31 @@ inline bool intersects(const AABB<TYPE>& a, const AABB<TYPE>& b) {
 	// Overlapping on all axes means AABBs are intersecting.
 	return true;
 }
+
+}
+
+namespace std
+{
+template<typename TYPE>
+struct hash<core::AABB<TYPE> > {
+	static inline void hash_combine(size_t &seed, size_t hash) {
+		hash += 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		seed ^= hash;
+	}
+
+	inline size_t operator()(const core::AABB<TYPE>& v) const {
+		size_t seed = 0;
+		hash<TYPE> hasher;
+		const glm::tvec3<TYPE>& mins = v.mins();
+		const glm::tvec3<TYPE>& maxs = v.maxs();
+		hash_combine(seed, hasher(mins.x));
+		hash_combine(seed, hasher(mins.y));
+		hash_combine(seed, hasher(mins.z));
+		hash_combine(seed, hasher(maxs.x));
+		hash_combine(seed, hasher(maxs.y));
+		hash_combine(seed, hasher(maxs.z));
+		return seed;
+	}
+};
 
 }

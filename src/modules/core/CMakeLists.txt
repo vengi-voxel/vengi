@@ -24,6 +24,7 @@ set(SRCS
 	MemoryAllocator.h
 	MemGuard.cpp MemGuard.h
 	NonCopyable.h
+	Octree.h
 	Plane.h Plane.cpp
 	Process.cpp Process.h
 	QuadTree.h
@@ -48,27 +49,7 @@ add_library(${LIB} ${SRCS})
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES io zlib ${CMAKE_DL_LIBS})
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
-gtest_suite_files(tests
-	tests/AbstractTest.cpp
-	tests/CoreTest.cpp
-	tests/ColorTest.cpp
-	tests/RectTest.cpp
-	tests/ByteStreamTest.cpp
-	tests/ThreadPoolTest.cpp
-	tests/EventBusTest.cpp
-	tests/QuadTreeTest.cpp
-	tests/VarTest.cpp
-	tests/CommandTest.cpp
-	tests/MD5Test.cpp
-	tests/SetTest.cpp
-	tests/TokenizerTest.cpp
-	tests/FrustumTest.cpp
-	tests/PlaneTest.cpp
-)
-gtest_suite_deps(tests ${LIB})
-
-gtest_suite_begin(tests-core TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
-gtest_suite_files(tests-core
+set(TEST_SRCS
 	tests/AbstractTest.cpp
 	tests/CoreTest.cpp
 	tests/RectTest.cpp
@@ -76,6 +57,7 @@ gtest_suite_files(tests-core
 	tests/ThreadPoolTest.cpp
 	tests/EventBusTest.cpp
 	tests/QuadTreeTest.cpp
+	tests/OctreeTest.cpp
 	tests/VarTest.cpp
 	tests/CommandTest.cpp
 	tests/MD5Test.cpp
@@ -85,5 +67,11 @@ gtest_suite_files(tests-core
 	tests/PlaneTest.cpp
 	tests/ReadWriteLockTest.cpp
 )
+
+gtest_suite_files(tests ${TEST_SRCS})
+gtest_suite_deps(tests ${LIB})
+
+gtest_suite_begin(tests-core TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_files(tests-core ${TEST_SRCS})
 gtest_suite_deps(tests-core ${LIB})
 gtest_suite_end(tests-core)
