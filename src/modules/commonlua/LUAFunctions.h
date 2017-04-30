@@ -5,6 +5,7 @@
 
 #include "LUA.h"
 #include "core/Log.h"
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -71,15 +72,6 @@ int clua_vecadd(lua_State* s) {
 }
 
 template<class T>
-int clua_vecdot(lua_State* s) {
-	const T* a = clua_get<T>(s, 1);
-	const T* b = clua_get<T>(s, 2);
-	const float c = glm::dot(*a, *b);
-	lua_pushnumber(s, c);
-	return 1;
-}
-
-template<class T>
 int clua_vecdiv(lua_State* s) {
 	const T* a = clua_get<T>(s, 1);
 	const T* b = clua_get<T>(s, 2);
@@ -89,21 +81,64 @@ int clua_vecdiv(lua_State* s) {
 }
 
 template<class T>
-int clua_veclen(lua_State* s) {
+struct clua_veclen {
+static int len(lua_State* s) {
 	const T* a = clua_get<T>(s, 1);
 	const float c = glm::length(*a);
 	lua_pushnumber(s, c);
 	return 1;
 }
+};
+
+template<>
+template<int N>
+struct clua_veclen<glm::vec<N, int> > {
+static int len(lua_State* s) {
+	return luaL_error(s, "'length' accepts only floating-point inputs");
+}
+};
 
 template<class T>
-int clua_veceq(lua_State* s) {
+struct clua_vecdot {
+static int dot(lua_State* s) {
+	const T* a = clua_get<T>(s, 1);
+	const T* b = clua_get<T>(s, 2);
+	const float c = glm::dot(*a, *b);
+	lua_pushnumber(s, c);
+	return 1;
+}
+};
+
+template<>
+template<int N>
+struct clua_vecdot<glm::vec<N, int> > {
+static int dot(lua_State* s) {
+	return luaL_error(s, "'dot' accepts only floating-point inputs");
+}
+};
+
+template<class T>
+struct clua_vecequal {
+static int equal(lua_State* s) {
 	const T* a = clua_get<T>(s, 1);
 	const T* b = clua_get<T>(s, 2);
 	const bool e = glm::all(glm::epsilonEqual(*a, *b, 0.0001f));
 	lua_pushboolean(s, e);
 	return 1;
 }
+};
+
+template<>
+template<int N>
+struct clua_vecequal<glm::vec<N, int> > {
+static int equal(lua_State* s) {
+	const glm::ivec3* a = clua_get<glm::ivec3>(s, 1);
+	const glm::ivec3* b = clua_get<glm::ivec3>(s, 2);
+	const bool e = glm::all(glm::equal(*a, *b));
+	lua_pushboolean(s, e);
+	return 1;
+}
+};
 
 template<class T>
 int clua_vecsub(lua_State* s) {
@@ -162,6 +197,36 @@ struct clua_vecindex<glm::vec3> {
 	}
 };
 
+template<>
+struct clua_vecindex<glm::ivec3> {
+	static int index(lua_State *s) {
+		const glm::ivec3* v = clua_get<glm::ivec3>(s, 1);
+		const char* i = luaL_checkstring(s, 2);
+
+		switch (*i) {
+		case '0':
+		case 'x':
+		case 'r':
+			lua_pushinteger(s, v->x);
+			break;
+		case '1':
+		case 'y':
+		case 'g':
+			lua_pushinteger(s, v->y);
+			break;
+		case '2':
+		case 'z':
+		case 'b':
+			lua_pushinteger(s, v->z);
+			break;
+		default:
+			lua_pushnil(s);
+			break;
+		}
+
+		return 1;
+	}
+};
 
 template<>
 struct clua_vecindex<glm::vec4> {
@@ -204,6 +269,37 @@ template<class T>
 struct clua_vecnewindex {};
 
 template<>
+struct clua_vecnewindex<glm::ivec3> {
+	static int newindex(lua_State *s) {
+		glm::ivec3* v = clua_get<glm::ivec3>(s, 1);
+		const char *i = luaL_checkstring(s, 2);
+		const int t = luaL_checkinteger(s, 3);
+
+		switch (*i) {
+		case '0':
+		case 'x':
+		case 'r':
+			v->x = t;
+			break;
+		case '1':
+		case 'y':
+		case 'g':
+			v->y = t;
+			break;
+		case '2':
+		case 'z':
+		case 'b':
+			v->z = t;
+			break;
+		default:
+			break;
+		}
+
+		return 1;
+	}
+};
+
+template<>
 struct clua_vecnewindex<glm::vec4> {
 	static int newindex(lua_State *s) {
 		glm::vec4* v = clua_get<glm::vec4>(s, 1);
@@ -244,15 +340,15 @@ void clua_vecregister(lua_State* s) {
 	std::vector<luaL_Reg> funcs = {
 		{"__add", clua_vecadd<T>},
 		{"__sub", clua_vecsub<T>},
-		{"__mul", clua_vecdot<T>},
+		{"__mul", clua_vecdot<T>::dot},
 		{"__div", clua_vecdiv<T>},
 		{"__unm", clua_vecnegate<T>},
-		{"__len", clua_veclen<T>},
-		{"__eq", clua_veceq<T>},
+		{"__len", clua_veclen<T>::len},
+		{"__eq", clua_vecequal<T>::equal},
 		{"__tostring", clua_vectostring<T>},
 		{"__index", clua_vecindex<T>::index},
 		{"__newindex", clua_vecnewindex<T>::newindex},
-		{"dot", clua_vecdot<T>},
+		{"dot", clua_vecdot<T>::dot},
 		{nullptr, nullptr}
 	};
 	using RAWTYPE = typename std::remove_pointer<T>::type;
