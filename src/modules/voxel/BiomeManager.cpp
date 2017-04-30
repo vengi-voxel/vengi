@@ -253,8 +253,7 @@ void BiomeManager::addZone(const glm::ivec3& pos, float radius, ZoneType type) {
 
 const Zone* BiomeManager::getZone(const glm::ivec3& pos, ZoneType type) const {
 	for (const Zone* z : _zones[std::enum_value(type)]) {
-		const glm::vec3 difference = z->pos() - pos;
-		const float distance = glm::length2(difference);
+		const float distance = glm::distance2(pos, z->pos());
 		if (distance < glm::pow(z->radius(), 2)) {
 			return z;
 		}
