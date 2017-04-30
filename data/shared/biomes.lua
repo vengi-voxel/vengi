@@ -50,3 +50,7 @@ function initBiomes()
 	addBiome(MAX_TERRAIN_HEIGHT - 20, MAX_TERRAIN_HEIGHT + 1, 0.4, 0.5, "Rock")
 	addBiome(0, MAX_TERRAIN_HEIGHT - 1, 0.4, 0.5, "Rock", true)
 end
+
+function initCities()
+	biomeMgr.addCity(ivec3.new(0, 0, 0), 100.0)
+end

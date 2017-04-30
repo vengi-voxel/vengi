@@ -12,11 +12,13 @@ class BiomeManagerTest: public AbstractVoxelTest {
 
 TEST_F(BiomeManagerTest, testInvalid) {
 	BiomeManager mgr;
+	mgr.init("");
 	EXPECT_EQ(nullptr, mgr.addBiome(1, 0, 1.0f, 1.0f, VoxelType::Wood)) << "invalid lower/height combination is accepted, but shouldn't";
 }
 
 TEST_F(BiomeManagerTest, testBasic) {
 	BiomeManager mgr;
+	mgr.init("");
 	EXPECT_NE(nullptr, mgr.addBiome(0, 0, 1.0f, 1.0f, VoxelType::Wood));
 	EXPECT_NE(nullptr, mgr.addBiome(1, 1, 1.0f, 1.0f, VoxelType::Sand));
 	EXPECT_NE(nullptr, mgr.addBiome(2, 2, 1.0f, 1.0f, VoxelType::Grass));
@@ -42,6 +44,7 @@ TEST_F(BiomeManagerTest, testBasic) {
 
 TEST_F(BiomeManagerTest, testHumidityTemperature) {
 	BiomeManager mgr;
+	mgr.init("");
 	const glm::ivec3 p1(1, 0, 1);
 	const float h1 = mgr.getHumidity(p1.x, p1.z);
 	const float t1 = mgr.getTemperature(p1.x, p1.z);

@@ -63,13 +63,16 @@ bool BiomeManager::init(const std::string& luaString) {
 		Log::error("Could not execute lua script. Failed with error: %s", lua.error().c_str());
 		return false;
 	}
-
-	// TODO: init city gradients
+	if (!lua.execute("initCities")) {
+		Log::error("Could not execute lua script. Failed with error: %s", lua.error().c_str());
+		return false;
+	}
 
 	return !_bioms.empty();
 }
 
 Biome* BiomeManager::addBiome(int lower, int upper, float humidity, float temperature, VoxelType type, bool underGround) {
+	core_assert_msg(_defaultBiome != nullptr, "BiomeManager is not yet initialized");
 	if (lower > upper) {
 		return nullptr;
 	}
@@ -98,6 +101,7 @@ float BiomeManager::getTemperature(int x, int z) const {
 }
 
 const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) const {
+	core_assert_msg(_defaultBiome != nullptr, "BiomeManager is not yet initialized");
 	core_trace_scoped(BiomeGetBiome);
 
 	struct Last {
