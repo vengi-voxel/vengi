@@ -213,6 +213,7 @@ int WorldRenderer::cull(const video::Camera& camera) {
 	int visibleChunks = 0;
 	const float cullingThreshold = _world->getMeshSize();
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
+	// TODO: move this buffer into an octree.
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {
 			continue;
