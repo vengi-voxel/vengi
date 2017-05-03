@@ -37,22 +37,33 @@ void ShapeHandler::createCursorShape(voxel::RawVolume* cursorVolume) {
 	if (_cursorShape == Shape::Single) {
 		cursorVolume->setVoxel(cursorPos, _currentVoxel);
 	} else if (_cursorShape == Shape::Dome) {
-		voxel::shape::createDome(wrapper, cursorPos, _scale.x, _scale.y, _scale.z, _currentVoxel);
+		const int width = _scale.x;
+		const int height = _scale.y;
+		const int depth = _scale.z;
+		voxel::shape::createDome(wrapper, cursorPos, width, height, depth, _currentVoxel);
 	} else if (_cursorShape == Shape::Cone) {
-		voxel::shape::createCone(wrapper, cursorPos, _scale.x, _scale.y, _scale.z, _currentVoxel);
+		const int width = _scale.x;
+		const int height = _scale.y;
+		const int depth = _scale.z;
+		voxel::shape::createCone(wrapper, cursorPos, width, height, depth, _currentVoxel);
 	} else if (_cursorShape == Shape::Plane) {
-		voxel::shape::createPlane(wrapper, cursorPos, _scale.x, _scale.z, _currentVoxel);
-	} else if (_cursorShape == Shape::Circle) {
-		const double radius = 3.0;
-		voxel::shape::createCirclePlane(wrapper, cursorPos, _scale.x, _scale.z, radius, _currentVoxel);
+		const int width = _scale.x;
+		const int height = _scale.y;
+		const int depth = _scale.z;
+		voxel::shape::createCube(wrapper, cursorPos, width, height, depth, _currentVoxel);
+	} else if (_cursorShape == Shape::Circle || _cursorShape == Shape::Cylinder) {
+		const int height = _scale.y;
+		const int radius = glm::max(1, _scale.x / 2);
+		voxel::shape::createCylinder(wrapper, cursorPos, glm::bvec3(false, true, false), radius, height, _currentVoxel);
 	} else if (_cursorShape == Shape::Sphere) {
-		voxel::shape::createEllipse(wrapper, cursorPos, _scale.x, _scale.y, _scale.z, _currentVoxel);
+		const int width = _scale.x;
+		const int height = _scale.y;
+		const int depth = _scale.z;
+		voxel::shape::createEllipse(wrapper, cursorPos, width, height, depth, _currentVoxel);
 	} else if (_cursorShape == Shape::Torus) {
-		const int innerRadius = 3;
-		const int outerRadius = 10;
+		const int innerRadius = _scale.x;
+		const int outerRadius = _scale.y;
 		voxel::shape::createTorus(wrapper, cursorPos, innerRadius, outerRadius, _currentVoxel);
-	} else if (_cursorShape == Shape::Cylinder) {
-		voxel::shape::createCylinder(wrapper, cursorPos, glm::bvec3(0, 1, 0), _scale.x, _scale.y, _currentVoxel);
 	} else {
 		Log::info("Unsupported cursor shape");
 	}
