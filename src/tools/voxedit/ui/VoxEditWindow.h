@@ -176,15 +176,15 @@ inline void VoxEditWindow::movez() {
 }
 
 inline void VoxEditWindow::scalex() {
-	scale(2.0f, 0.0f, 0.0f);
+	scale(2.0f, 1.0f, 1.0f);
 }
 
 inline void VoxEditWindow::scaley() {
-	scale(0.0f, 2.0f, 0.0f);
+	scale(1.0f, 2.0f, 1.0f);
 }
 
 inline void VoxEditWindow::scalez() {
-	scale(0.0f, 0.0f, 2.0f);
+	scale(1.0f, 1.0f, 2.0f);
 }
 
 
