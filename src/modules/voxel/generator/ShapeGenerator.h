@@ -24,7 +24,7 @@ namespace shape {
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class Voxel>
-void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel) {
+void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const Voxel& voxel, const glm::bvec3& axis = glm::bvec3(false, true, false)) {
 	const int xRadius = width / 2;
 	const int zRadius = depth / 2;
 	const double minRadius = std::min(xRadius, zRadius);
@@ -38,7 +38,14 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int 
 			if (distance > radius) {
 				continue;
 			}
-			const glm::ivec3 pos(center.x + x, center.y, center.z + z);
+			glm::ivec3 pos;
+			if (axis[1]) {
+				pos = glm::ivec3(center.x + x, center.y, center.z + z);
+			} else if (axis[0]) {
+				pos = glm::ivec3(center.x, center.y + x, center.z + z);
+			} else if (axis[2]) {
+				pos = glm::ivec3(center.x, center.y, center.z + z);
+			}
 			volume.setVoxel(pos, voxel);
 		}
 	}
@@ -365,6 +372,38 @@ void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3&
 		const glm::ivec3& pos = b.getPoint(t);
 		func(volume, lastPos, pos, voxel);
 		lastPos = pos;
+	}
+}
+
+template<class Volume, class Voxel>
+void createTorus(Volume& volume, const glm::ivec3& position, int innerRadius, int outerRadius, const Voxel& voxel) {
+	const int radius = outerRadius + 1;
+	const int outerRadiusSquare = outerRadius * outerRadius;
+	for (int x = -radius; x < radius; ++x) {
+		for (int y = -radius; y < radius; ++y) {
+			for (int z = -radius; z < radius; ++z) {
+				const glm::vec3 pos(position.x + x, position.y + y, position.z + z);
+				const glm::vec2 q(glm::length(glm::vec2(pos.x - innerRadius, pos.z - innerRadius)), pos.y);
+				if (glm::length2(q) < outerRadiusSquare) {
+					volume.setVoxel(pos, voxel);
+				}
+			}
+		}
+	}
+}
+
+template<class Volume, class Voxel>
+void createCylinder(Volume& volume, const glm::vec3& position, const glm::bvec3& axis, int radius, int height, const Voxel& voxel) {
+	for (int i = 0; i < height; ++i) {
+		glm::ivec3 center;
+		if (axis[1]) {
+			center = glm::ivec3(position.x, position.y + i, position.z);
+		} else if (axis[0]) {
+			center = glm::ivec3(position.x + i, position.y, position.z);
+		} else if (axis[2]) {
+			center = glm::ivec3(position.x, position.y, position.z + i);
+		}
+		createCirclePlane(volume, center, radius * 2, radius * 2, radius, voxel, axis);
 	}
 }
 
