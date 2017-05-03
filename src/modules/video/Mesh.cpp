@@ -97,15 +97,21 @@ bool Mesh::loadMesh(const std::string& filename) {
 #endif
 	_filename = filename;
 	_scene = _importer->ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_FindDegenerates);
-	if (_scene == nullptr || _scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !_scene->mRootNode) {
-		Log::error("Error parsing '%s': '%s'\n", filename.c_str(), _importer->GetErrorString());
+	if (_scene == nullptr) {
 		_state = io::IOSTATE_FAILED;
+		Log::error("Error parsing '%s': '%s'", filename.c_str(), _importer->GetErrorString());
 		return false;
 	}
-
+	if (_scene->mRootNode == nullptr) {
+		Log::error("Scene doesn't have a root node'%s': '%s'", filename.c_str(), _importer->GetErrorString());
+		return false;
+	}
 	for (uint32_t i = 0; i < _scene->mNumAnimations; ++i) {
 		const aiAnimation* animation = _scene->mAnimations[i];
 		Log::debug("Animation %i: %s", i, animation->mName.C_Str());
+	}
+	if (_scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE) {
+		Log::warn("Scene incomplete '%s': '%s'", filename.c_str(), _importer->GetErrorString());
 	}
 
 	_globalInverseTransform = glm::inverse(toMat4(_scene->mRootNode->mTransformation));
