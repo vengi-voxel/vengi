@@ -10,7 +10,7 @@ bool ShapeHandler::scaleCursorShape(const glm::vec3& scale, voxel::RawVolume* cu
 	const glm::ivec3 before = _scale;
 	_scale *= scale;
 	const voxel::Region& r = cursorVolume->getRegion();
-	_scale = glm::clamp(_scale, glm::ivec3(1), r.getDimensionsInVoxels());
+	_scale = glm::clamp(_scale, glm::ivec3(1), r.getDimensionsInVoxels() * 10);
 	if (_scale == before) {
 		return false;
 	}
