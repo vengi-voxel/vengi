@@ -114,6 +114,7 @@ public:
 	void scale();
 	void fill(int x, int y, int z);
 
+	void vertices(float* vertices, size_t vertexSize, size_t verticesSize, uint32_t* indices, size_t indicesSize);
 	bool importHeightmap(const std::string& file);
 	bool save(const std::string& file);
 	bool load(const std::string& file);

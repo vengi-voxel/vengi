@@ -101,6 +101,7 @@ VoxEditWindow::VoxEditWindow(VoxEdit* tool) :
 	addMenuItem(_fileItems, "New");
 	addMenuItem(_fileItems, "Load");
 	addMenuItem(_fileItems, "Save");
+	addMenuItem(_fileItems, "Import");
 	addMenuItem(_fileItems, "Export");
 	addMenuItem(_fileItems, "Heightmap");
 	addMenuItem(_fileItems, "Quit");
@@ -447,6 +448,9 @@ bool VoxEditWindow::handleEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	} else if (isAny(ev, TBIDC("export"))) {
 		exportFile("");
+		return true;
+	} else if (isAny(ev, TBIDC("import"))) {
+		voxelize("");
 		return true;
 	} else if (isAny(ev, TBIDC("spacecolonization"))) {
 		_scene->spaceColonization();

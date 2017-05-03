@@ -146,33 +146,36 @@ void EditorScene::fill(int x, int y, int z) {
 bool EditorScene::voxelizeModel(const video::MeshPtr& meshPtr) {
 	const video::Mesh::Vertices& positions = meshPtr->vertices();
 	const video::Mesh::Indices& indices = meshPtr->indices();
+
+	if (indices.size() < 8) {
+		Log::error("Not enough indices found: %i", (int)indices.size());
+		return false;
+	}
+
 	vx_mesh_t* mesh = vx_mesh_alloc(positions.size(), indices.size());
 
 	for (size_t f = 0; f < indices.size(); f++) {
 		mesh->indices[f] = indices[f];
 	}
 
-	for (size_t v = 0; v < positions.size() / 3; v++) {
+	const int components = decltype(core::Vertex::_pos)::length();
+	Log::info("components: %i", components);
+	const int steps = positions.size() / components;
+	for (int v = 0; v < steps; ++v) {
 		const core::Vertex& vertex = positions[v];
 		mesh->vertices[v].x = vertex._pos.x;
 		mesh->vertices[v].y = vertex._pos.y;
 		mesh->vertices[v].z = vertex._pos.z;
 	}
 
-	const glm::vec3& maxs = meshPtr->maxs();
-	const float size = m().size();
-	const glm::vec3& scale = maxs / size;
-	const float precision = scale.x / 10.0f;
-
-	vx_mesh_t* result = vx_voxelize(mesh, scale.x, scale.y, scale.z, precision);
-
+	vx_mesh_t* result = vx_voxelize(mesh, 1.0f, 1.0f, 1.0f, 0.1f);
 	Log::info("Number of vertices: %i", (int)result->nvertices);
 	Log::info("Number of indices: %i", (int)result->nindices);
 
+	m().vertices((float*)result->vertices, sizeof(vx_vertex_t), result->nvertices, result->indices, result->nindices);
+
 	vx_mesh_free(result);
 	vx_mesh_free(mesh);
-
-	// TODO: create volume out of vertices
 
 	return false;
 }
