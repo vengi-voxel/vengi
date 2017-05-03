@@ -192,7 +192,7 @@ core::AppState VoxEdit::onConstruct() {
 			_mainWindow->extend();
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
-	COMMAND_MAINWINDOW(scale, "Scale your volume");
+	COMMAND_MAINWINDOW(scale, "Scale your volume by 50%");
 	COMMAND_MAINWINDOW(undo, "Undo your last step");
 	COMMAND_MAINWINDOW(redo, "Redo your last step");
 	COMMAND_MAINWINDOW(copy, "Copy selection into cursor");
