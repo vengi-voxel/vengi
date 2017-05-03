@@ -360,29 +360,31 @@ const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
 }
 
 bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
-	const bool placed = modelVolume()->setVoxel(pos, voxel);
-	if (placed) {
-		_lastPlacement = pos;
+	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const bool placed = wrapper.setVoxel(pos, voxel);
+	if (!placed) {
+		return false;
+	}
+	_lastPlacement = pos;
 
-		if (_mirrorAxis != Axis::None) {
-			const int index = getIndexForMirrorAxis(_mirrorAxis);
-			const int delta = _mirrorPos[index] - pos[index] - 1;
-			if (delta == 0) {
-				return placed;
-			}
-			glm::ivec3 mirror(glm::uninitialize);
-			for (int i = 0; i < 3; ++i) {
-				if (i == index) {
-					mirror[i] = _mirrorPos[i] + delta;
-				} else {
-					mirror[i] = pos[i];
-				}
-			}
-			voxel::RawVolumeWrapper wrapper(modelVolume());
-			wrapper.setVoxel(mirror, voxel);
+	if (_mirrorAxis == Axis::None) {
+		return true;
+	}
+	const int index = getIndexForMirrorAxis(_mirrorAxis);
+	const int delta = _mirrorPos[index] - pos[index] - 1;
+	if (delta == 0) {
+		return true;
+	}
+	glm::ivec3 mirror(glm::uninitialize);
+	for (int i = 0; i < 3; ++i) {
+		if (i == index) {
+			mirror[i] = _mirrorPos[i] + delta;
+		} else {
+			mirror[i] = pos[i];
 		}
 	}
-	return placed;
+	wrapper.setVoxel(mirror, voxel);
+	return true;
 }
 
 void Model::copy() {
