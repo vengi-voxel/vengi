@@ -106,6 +106,12 @@ TBLayout: distribution: gravity, axis: y
 									id shapesphere
 									@include definitions>cursorbutton
 							TBClickLabel
+								text Torus
+								TBSkinImage: skin: voxedit-cursor-torus
+								TBRadioButton
+									id shapetorus
+									@include definitions>cursorbutton
+							TBClickLabel
 								text Plane
 								TBSkinImage: skin: voxedit-cursor-plane
 								TBRadioButton

@@ -10,7 +10,9 @@ enum class Shape : uint8_t {
 	Dome,
 	Circle,
 	Plane,
-	Sphere
+	Sphere,
+	Torus,
+	Cylinder
 };
 
 }
