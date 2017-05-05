@@ -12,7 +12,8 @@ namespace core {
 template<class Data, class Compare = std::less<Data> >
 class ConcurrentQueue {
 private:
-	std::priority_queue<Data, std::vector<Data>, Compare> _queue;
+	using Queue = std::priority_queue<Data, std::vector<Data>, Compare>;
+	Queue _queue;
 	mutable std::mutex _mutex;
 	std::condition_variable _conditionVariable;
 	std::atomic_bool _abort { false };
@@ -28,7 +29,7 @@ public:
 
 	void clear() {
 		std::unique_lock<std::mutex> lock(_mutex);
-		_queue.clear();
+		_queue = Queue();
 	}
 
 	void push(Data const& data) {
