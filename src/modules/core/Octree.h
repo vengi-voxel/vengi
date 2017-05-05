@@ -85,7 +85,7 @@ private:
 		}
 
 		bool remove(const NODE& item) {
-			const AABB<TYPE>& area = item.aabb();
+			const AABB<TYPE>& area = aabb(item);
 			if (!aabb().containsAABB(area)) {
 				return false;
 			}
