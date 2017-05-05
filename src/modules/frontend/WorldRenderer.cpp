@@ -266,7 +266,8 @@ int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertic
 			video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, numIndices, positions.size());
 		}
 		if (vertices != nullptr) {
-			*vertices += vbo->vb.elements(vbo->vertexBuffer, 1, sizeof(voxel::VoxelVertex));
+			// TODO: replace magic number for components
+			*vertices += vbo->vb.elements(vbo->vertexBuffer, 3, sizeof(voxel::VoxelVertex));
 		}
 	}
 
@@ -276,11 +277,10 @@ int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertic
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	handleMeshQueue();
 
-	if (vertices != nullptr) {
-		*vertices = 0;
-	}
-
 	_visibleChunks = cull(camera);
+	if (vertices != nullptr) {
+		*vertices = _opaqueVertices.size() + _waterVertices.size();
+	}
 	if (_visibleChunks == 0) {
 		return 0;
 	}
