@@ -52,7 +52,6 @@ public:
 	~WorldRendererTool();
 
 	void reset(const voxel::WorldContext& ctx);
-	void regenerate(const glm::ivec2& pos);
 
 	core::AppState onConstruct() override;
 	core::AppState onInit() override;

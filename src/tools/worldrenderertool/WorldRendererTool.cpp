@@ -219,10 +219,6 @@ void WorldRendererTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_
 	_camera.rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
 }
 
-void WorldRendererTool::regenerate(const glm::ivec2& pos) {
-	_worldRenderer.extractNewMeshes(glm::ivec3(pos.x, 0, pos.y), true);
-}
-
 void WorldRendererTool::reset(const voxel::WorldContext& ctx) {
 	_ctx = ctx;
 	_worldRenderer.reset();
