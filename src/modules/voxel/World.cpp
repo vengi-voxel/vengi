@@ -91,11 +91,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		Log::info("opaque mesh size: %i", (int)data.opaqueMesh.size());
 		Log::info("water mesh size: %i", (int)data.waterMesh.size());
 #endif
-		{
-			LockGuard lock(_rwLock);
-			_meshQueue.push_back(std::move(data));
-		}
-		_meshQueueEmpty = false;
+		_meshQueue.push(std::move(data));
 	}));
 	return true;
 }
@@ -192,7 +188,7 @@ void World::onFrame(long dt) {
 		_ctx = WorldContext();
 		_meshesExtracted.clear();
 		_meshQueue.clear();
-		_meshQueueEmpty = true;
+		_meshQueue.abortWait();
 		Log::info("reset the world");
 		_cancelThreads = false;
 	}
@@ -205,11 +201,6 @@ bool World::isReset() const {
 void World::stats(int& meshes, int& extracted, int& pending) const {
 	extracted = _meshesExtracted.size();
 	pending = _futures.size();
-	if (_meshQueueEmpty) {
-		meshes = 0;
-		return;
-	}
-	LockGuard lock(_rwLock);
 	meshes = _meshQueue.size();
 }
 
