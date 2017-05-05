@@ -24,7 +24,7 @@ const std::string MaxDepthBufferUniformName = "u_cascades";
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
-		_octree(core::AABB<int>(), 30), _world(world) {
+		_octree(core::AABB<int>(), 30), _viewDistance(MinCullingDistance), _world(world) {
 }
 
 WorldRenderer::~WorldRenderer() {
@@ -37,7 +37,6 @@ void WorldRenderer::reset() {
 	_octree.clear();
 	_activeChunkBuffers = 0;
 	_entities.clear();
-	_viewDistance = 1.0f;
 	_queryResults = 0;
 	_now = 0l;
 }
@@ -578,7 +577,6 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 
 void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
 	core_trace_scoped(WorldRendererOnSpawn);
-	_viewDistance = 1.0f;
 	// TODO: move into World class
 	extractMeshAroundCamera(_world->getMeshPos(pos), initialExtractionRadius);
 }
@@ -787,10 +785,6 @@ void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const bool shadowMap = _shadowMap->boolVal();
 	_shadow.calculateShadowData(camera, shadowMap, maxDepthBuffers, _depthBuffer.dimension());
-	if (_viewDistance < MinCullingDistance) {
-		const float advance = _world->getMeshSize() * (dt / 1000.0f);
-		_viewDistance += advance;
-	}
 	const float cullingThreshold = _world->getMeshSize();
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {

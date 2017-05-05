@@ -95,7 +95,7 @@ protected:
 
 	float _fogRange = 250.0f;
 	// TODO: get the view distance from the server - entity attributes
-	float _viewDistance = 1.0f;
+	float _viewDistance;
 	long _now = 0l;
 	long _deltaFrame = 0l;
 
