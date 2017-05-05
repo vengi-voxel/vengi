@@ -24,7 +24,7 @@ public:
 	AABB(const glm::tvec3<TYPE>& mins, const glm::tvec3<TYPE>& maxs);
 	AABB(TYPE minsX, TYPE minsY, TYPE minsZ, TYPE maxsX, TYPE maxsY, TYPE maxsZ);
 
-	static AABB construct(const glm::tvec3<TYPE>* vertices, size_t size) {
+	static AABB<TYPE> construct(const glm::tvec3<TYPE>* vertices, size_t size) {
 		static constexpr TYPE max = std::numeric_limits<TYPE>::max();
 		static constexpr TYPE min = std::numeric_limits<TYPE>::min();
 
@@ -492,7 +492,7 @@ inline AABB<TYPE>::AABB(TYPE minsX, TYPE minsY, TYPE minsZ, TYPE maxsX, TYPE max
 
 template<typename TYPE>
 inline AABB<TYPE>::AABB() :
-		_mins((TYPE)0), _maxs((TYPE)0) {
+		_mins(std::numeric_limits<TYPE>::min()), _maxs(std::numeric_limits<TYPE>::max()) {
 }
 
 /**
