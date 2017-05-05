@@ -22,10 +22,9 @@ namespace frontend {
 
 const std::string MaxDepthBufferUniformName = "u_cascades";
 
-// TODO: use octree for all the visibility/extraction stuff - this class should only render
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
-		_world(world) {
+		_octree(core::AABB<int>(), 30), _world(world) {
 }
 
 WorldRenderer::~WorldRenderer() {
@@ -35,9 +34,11 @@ void WorldRenderer::reset() {
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		chunkBuffer.inuse = false;
 	}
+	_octree.clear();
 	_activeChunkBuffers = 0;
 	_entities.clear();
 	_viewDistance = 1.0f;
+	_queryResults = 0;
 	_now = 0l;
 }
 
@@ -133,7 +134,7 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 		maxs = glm::max(maxs, v.position);
 	}
 
-	chunkBuffer.aabb = core::AABB<float>(mins, maxs);
+	chunkBuffer._aabb = core::AABB<float>(mins, maxs);
 }
 
 void WorldRenderer::handleMeshQueue() {
@@ -168,6 +169,9 @@ void WorldRenderer::handleMeshQueue() {
 	updateAABB(*freeChunkBuffer);
 	distributePlants(_world, freeChunkBuffer->translation(), freeChunkBuffer->instancedPositions);
 	fillPlantPositionsFromMeshes();
+	if (!_octree.insert(freeChunkBuffer)) {
+		Log::warn("Failed to insert into octree");
+	}
 }
 
 WorldRenderer::ChunkBuffer* WorldRenderer::findFreeChunkBuffer() {
@@ -211,27 +215,15 @@ int WorldRenderer::cull(const video::Camera& camera) {
 	size_t opaqueIndexOffset = 0;
 	size_t waterIndexOffset = 0;
 	int visibleChunks = 0;
-	const float cullingThreshold = _world->getMeshSize();
-	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
-	// TODO: move this buffer into an octree.
-	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
-		if (!chunkBuffer.inuse) {
+	std::vector<ChunkBuffer*> contents;
+	_octree.query(core::AABB<int>(camera.aabb().mins(), camera.aabb().maxs()), contents);
+	_queryResults = contents.size();
+	for (ChunkBuffer* chunkBuffer : contents) {
+		if (!camera.isVisible(chunkBuffer->_aabb)) {
 			continue;
 		}
-		const int distance = getDistanceSquare(chunkBuffer.translation());
-		Log::trace("distance is: %i (%i)", distance, maxAllowedDistance);
-		if (distance >= maxAllowedDistance) {
-			_world->allowReExtraction(chunkBuffer.translation());
-			chunkBuffer.inuse = false;
-			--_activeChunkBuffers;
-			Log::debug("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
-			continue;
-		}
-		if (!camera.isVisible(chunkBuffer.aabb)) {
-			continue;
-		}
-		opaqueIndexOffset += transform(opaqueIndexOffset, chunkBuffer.meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
-		waterIndexOffset += transform(waterIndexOffset, chunkBuffer.meshes.waterMesh, _waterVertices, _waterIndices);
+		opaqueIndexOffset += transform(opaqueIndexOffset, chunkBuffer->meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
+		waterIndexOffset += transform(waterIndexOffset, chunkBuffer->meshes.waterMesh, _waterVertices, _waterIndices);
 		++visibleChunks;
 	}
 	return visibleChunks;
@@ -633,10 +625,12 @@ void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int r
 	}
 }
 
-void WorldRenderer::stats(int& meshes, int& extracted, int& pending, int& active, int& visible) const {
-	_world->stats(meshes, extracted, pending);
-	active = _activeChunkBuffers;
-	visible = _visibleChunks;
+void WorldRenderer::stats(Stats& stats) const {
+	_world->stats(stats.meshes, stats.extracted, stats.pending);
+	stats.active = _activeChunkBuffers;
+	stats.visible = _visibleChunks;
+	stats.octreeSize = _octree.count();
+	stats.octreeActive = _queryResults;
 }
 
 void WorldRenderer::onConstruct() {
@@ -796,6 +790,22 @@ void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 	if (_viewDistance < MinCullingDistance) {
 		const float advance = _world->getMeshSize() * (dt / 1000.0f);
 		_viewDistance += advance;
+	}
+	const float cullingThreshold = _world->getMeshSize();
+	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
+	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
+		if (!chunkBuffer.inuse) {
+			continue;
+		}
+		const int distance = getDistanceSquare(chunkBuffer.translation());
+		Log::trace("distance is: %i (%i)", distance, maxAllowedDistance);
+		if (distance >= maxAllowedDistance) {
+			_world->allowReExtraction(chunkBuffer.translation());
+			chunkBuffer.inuse = false;
+			--_activeChunkBuffers;
+			_octree.remove(&chunkBuffer);
+			Log::debug("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
+		}
 	}
 }
 

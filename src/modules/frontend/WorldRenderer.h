@@ -15,6 +15,7 @@
 #include "video/DepthBuffer.h"
 #include "FrontendShaders.h"
 #include "core/GLM.h"
+#include "core/Octree.h"
 #include "core/Var.h"
 #include "core/Color.h"
 #include "ClientEntity.h"
@@ -52,19 +53,25 @@ protected:
 
 	struct ChunkBuffer {
 		bool inuse = false;
-		core::AABB<float> aabb = {glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
+		core::AABB<float> _aabb = {glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
 		voxel::ChunkMeshes meshes {0, 0, 0, 0};
 		std::vector<glm::vec3> instancedPositions;
 
 		inline const glm::ivec3& translation() const {
 			return meshes.opaqueMesh.getOffset();
 		}
+
+		inline core::AABB<int> aabb() const {
+			return core::AABB<int>(_aabb.mins(), _aabb.maxs());
+		}
 	};
 
+	core::Octree<ChunkBuffer*> _octree;
 	static constexpr int MAX_CHUNKBUFFERS = 4096;
 	ChunkBuffer _chunkBuffers[MAX_CHUNKBUFFERS];
 	int _activeChunkBuffers = 0;
 	int _visibleChunks = 0;
+	int _queryResults = 0;
 	PlantBuffer _meshPlantList[(int)voxel::PlantType::MaxPlantTypes];
 
 	std::list<PlantBuffer*> _visiblePlant;
@@ -165,7 +172,17 @@ public:
 	bool addEntity(const ClientEntityPtr& entity);
 	bool removeEntity(ClientEntityId id);
 
-	void stats(int& meshes, int& extracted, int& pending, int& active, int& visible) const;
+	struct Stats {
+		int meshes = 0;
+		int extracted = 0;
+		int pending = 0;
+		int active = 0;
+		int visible = 0;
+		int octreeSize = 0;
+		int octreeActive = 0;
+	};
+
+	void stats(Stats& stats) const;
 
 	float getViewDistance() const;
 	void setViewDistance(float viewDistance);
