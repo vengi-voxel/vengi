@@ -215,7 +215,9 @@ int WorldRenderer::cull(const video::Camera& camera) {
 	size_t waterIndexOffset = 0;
 	int visibleChunks = 0;
 	std::vector<ChunkBuffer*> contents;
-	_octree.query(core::AABB<int>(camera.aabb().mins(), camera.aabb().maxs()), contents);
+	contents.reserve(_activeChunkBuffers);
+	const core::AABB<float>& aabb = camera.aabb();
+	_octree.query(core::AABB<int>(aabb.mins(), aabb.maxs()), contents);
 	_queryResults = contents.size();
 	for (ChunkBuffer* chunkBuffer : contents) {
 		if (!camera.isVisible(chunkBuffer->_aabb)) {
