@@ -124,16 +124,17 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 	glm::ivec3 mins(std::numeric_limits<int>::max());
 	glm::ivec3 maxs(std::numeric_limits<int>::min());
 
-	for (auto& v : chunkBuffer.meshes.opaqueMesh.getVertexVector()) {
+	const voxel::ChunkMeshes& meshes = chunkBuffer.meshes;
+	for (auto& v : meshes.opaqueMesh.getVertexVector()) {
 		mins = glm::min(mins, v.position);
 		maxs = glm::max(maxs, v.position);
 	}
-	for (auto& v : chunkBuffer.meshes.waterMesh.getVertexVector()) {
+	for (auto& v : meshes.waterMesh.getVertexVector()) {
 		mins = glm::min(mins, v.position);
 		maxs = glm::max(maxs, v.position);
 	}
 
-	chunkBuffer._aabb = core::AABB<float>(mins, maxs);
+	chunkBuffer._aabb = core::AABB<int>(mins, maxs);
 }
 
 void WorldRenderer::handleMeshQueue() {
@@ -220,11 +221,13 @@ int WorldRenderer::cull(const video::Camera& camera) {
 	_octree.query(core::AABB<int>(aabb.mins(), aabb.maxs()), contents);
 	_queryResults = contents.size();
 	for (ChunkBuffer* chunkBuffer : contents) {
-		if (!camera.isVisible(chunkBuffer->_aabb)) {
+		const core::AABB<int>& aabb = chunkBuffer->aabb();
+		if (!camera.isVisible(aabb.mins(), aabb.maxs())) {
 			continue;
 		}
-		opaqueIndexOffset += transform(opaqueIndexOffset, chunkBuffer->meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
-		waterIndexOffset += transform(waterIndexOffset, chunkBuffer->meshes.waterMesh, _waterVertices, _waterIndices);
+		const voxel::ChunkMeshes& meshes = chunkBuffer->meshes;
+		opaqueIndexOffset += transform(opaqueIndexOffset, meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
+		waterIndexOffset += transform(waterIndexOffset, meshes.waterMesh, _waterVertices, _waterIndices);
 		++visibleChunks;
 	}
 	return visibleChunks;

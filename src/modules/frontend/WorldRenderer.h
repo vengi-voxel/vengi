@@ -53,7 +53,7 @@ protected:
 
 	struct ChunkBuffer {
 		bool inuse = false;
-		core::AABB<float> _aabb = {glm::zero<glm::vec3>(), glm::zero<glm::vec3>()};
+		core::AABB<int> _aabb = {glm::zero<glm::ivec3>(), glm::zero<glm::ivec3>()};
 		voxel::ChunkMeshes meshes {0, 0, 0, 0};
 		std::vector<glm::vec3> instancedPositions;
 
@@ -62,7 +62,7 @@ protected:
 		}
 
 		inline core::AABB<int> aabb() const {
-			return core::AABB<int>(_aabb.mins(), _aabb.maxs());
+			return _aabb;
 		}
 	};
 
