@@ -15,7 +15,7 @@
 #include "voxedit-util/SelectionHandler.h"
 #include "voxedit-util/ShapeHandler.h"
 #include "voxedit-util/UndoHandler.h"
-#include "voxedit-util/Axis.h"
+#include "core/Axis.h"
 #include "voxel/WorldContext.h"
 #include <vector>
 
@@ -49,8 +49,8 @@ private:
 	glm::ivec3 _cursorPos;
 	glm::ivec3 _mirrorPos;
 
-	Axis _lockedAxis = Axis::None;
-	Axis _mirrorAxis = Axis::None;
+	core::Axis _lockedAxis = core::Axis::None;
+	core::Axis _mirrorAxis = core::Axis::None;
 
 	bool _empty = true;
 	bool _dirty = false;
@@ -80,9 +80,9 @@ private:
 	long _lastGrow = 0l;
 	voxel::tree::Tree *_spaceColonizationTree = nullptr;
 
-	int getIndexForAxis(Axis axis) const;
-	int getIndexForMirrorAxis(Axis axis) const;
-	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, Axis axis, const glm::vec4& color);
+	int getIndexForAxis(core::Axis axis) const;
+	int getIndexForMirrorAxis(core::Axis axis) const;
+	void updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, core::Axis axis, const glm::vec4& color);
 	void markExtract();
 	void markCursorExtract();
 	void modified(const voxel::Region& modifiedRegion, bool markUndo = true);
@@ -181,12 +181,12 @@ public:
 	void setSelectionType(SelectType type);
 	SelectType selectionType() const;
 
-	Axis lockedAxis() const;
-	void setLockedAxis(Axis axis, bool unlock);
-	void updateLockedPlane(Axis axis);
+	core::Axis lockedAxis() const;
+	void setLockedAxis(core::Axis axis, bool unlock);
+	void updateLockedPlane(core::Axis axis);
 
-	Axis mirrorAxis() const;
-	void setMirrorAxis(Axis axis, const glm::ivec3& mirrorPos);
+	core::Axis mirrorAxis() const;
+	void setMirrorAxis(core::Axis axis, const glm::ivec3& mirrorPos);
 	void updateMirrorPlane();
 
 	void undo();
@@ -212,7 +212,7 @@ public:
 	long _actionExecutionDelay = 20l;
 };
 
-inline Axis Model::lockedAxis() const {
+inline core::Axis Model::lockedAxis() const {
 	return _lockedAxis;
 }
 

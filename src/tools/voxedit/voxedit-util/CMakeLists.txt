@@ -1,6 +1,4 @@
 set(SRCS
-	Axis.h
-
 	ImportHeightmap.h ImportHeightmap.cpp
 	UndoHandler.h UndoHandler.cpp
 

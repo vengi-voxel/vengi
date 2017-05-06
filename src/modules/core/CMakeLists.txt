@@ -1,5 +1,6 @@
 set(SRCS
 	AABB.h
+	Axis.h
 	command/CommandHandler.h command/CommandHandler.cpp
 	command/Command.h command/Command.cpp
 	trace/Remotery.c trace/Remotery.h

@@ -72,19 +72,19 @@ void EditorScene::setCursorPosition(const glm::ivec3& pos, bool force) {
 	m().setCursorPosition(pos, force);
 }
 
-voxedit::Axis EditorScene::lockedAxis() const {
+core::Axis EditorScene::lockedAxis() const {
 	return m().lockedAxis();
 }
 
-void EditorScene::setLockedAxis(voxedit::Axis axis, bool unlock) {
+void EditorScene::setLockedAxis(core::Axis axis, bool unlock) {
 	m().setLockedAxis(axis, unlock);
 }
 
-voxedit::Axis EditorScene::mirrorAxis() const {
+core::Axis EditorScene::mirrorAxis() const {
 	return m().mirrorAxis();
 }
 
-void EditorScene::setMirrorAxis(voxedit::Axis axis, const glm::ivec3& pos) {
+void EditorScene::setMirrorAxis(core::Axis axis, const glm::ivec3& pos) {
 	m().setMirrorAxis(axis, pos);
 }
 

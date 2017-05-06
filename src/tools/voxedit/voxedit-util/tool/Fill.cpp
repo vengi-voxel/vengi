@@ -3,23 +3,23 @@
 namespace voxedit {
 namespace tool {
 
-bool fill(voxel::RawVolume& target, const glm::ivec3& position, const Axis axis, const voxel::Voxel& voxel, bool overwrite, voxel::Region* modifiedRegion) {
+bool fill(voxel::RawVolume& target, const glm::ivec3& position, const core::Axis axis, const voxel::Voxel& voxel, bool overwrite, voxel::Region* modifiedRegion) {
 	const voxel::Region& region = target.getRegion();
 	int zStart = region.getLowerZ();
 	glm::ivec3 modifiedMins(std::numeric_limits<int>::max());
 	glm::ivec3 modifiedMaxs(std::numeric_limits<int>::min());
 	int cnt = 0;
-	if ((axis & Axis::Z) != Axis::None) {
+	if ((axis & core::Axis::Z) != core::Axis::None) {
 		zStart = position.y;
 	}
 	for (int32_t z = zStart; z <= region.getUpperZ(); ++z) {
 		int yStart = region.getLowerY();
-		if ((axis & Axis::Y) != Axis::None) {
+		if ((axis & core::Axis::Y) != core::Axis::None) {
 			yStart = position.y;
 		}
 		for (int32_t y = yStart; y <= region.getUpperY(); ++y) {
 			int xStart = region.getLowerX();
-			if ((axis & Axis::X) != Axis::None) {
+			if ((axis & core::Axis::X) != core::Axis::None) {
 				xStart = position.x;
 			}
 			for (int32_t x = xStart; x <= region.getUpperX(); ++x) {
@@ -35,15 +35,15 @@ bool fill(voxel::RawVolume& target, const glm::ivec3& position, const Axis axis,
 						modifiedMaxs.z = glm::max(modifiedMaxs.z, z);
 					}
 				}
-				if ((axis & Axis::X) != Axis::None) {
+				if ((axis & core::Axis::X) != core::Axis::None) {
 					break;
 				}
 			}
-			if ((axis & Axis::Y) != Axis::None) {
+			if ((axis & core::Axis::Y) != core::Axis::None) {
 				break;
 			}
 		}
-		if ((axis & Axis::Z) != Axis::None) {
+		if ((axis & core::Axis::Z) != core::Axis::None) {
 			break;
 		}
 	}

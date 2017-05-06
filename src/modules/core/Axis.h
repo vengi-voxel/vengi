@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/Common.h"
+#include "Common.h"
 
-namespace voxedit {
+namespace core {
 
 enum class Axis : uint8_t {
 	None = 0,

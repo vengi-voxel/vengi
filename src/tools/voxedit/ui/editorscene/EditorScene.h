@@ -15,7 +15,7 @@
 #include "Action.h"
 #include "Controller.h"
 #include "voxedit-util/Shape.h"
-#include "voxedit-util/Axis.h"
+#include "core/Axis.h"
 #include "voxedit-util/SelectType.h"
 
 class EditorScene: public ui::Widget {
@@ -87,11 +87,11 @@ public:
 
 	void setVoxel(const voxel::Voxel& voxel);
 
-	voxedit::Axis lockedAxis() const;
-	void setLockedAxis(voxedit::Axis axis, bool unlock);
+	core::Axis lockedAxis() const;
+	void setLockedAxis(core::Axis axis, bool unlock);
 
-	voxedit::Axis mirrorAxis() const;
-	void setMirrorAxis(voxedit::Axis axis, const glm::ivec3& pos);
+	core::Axis mirrorAxis() const;
+	void setMirrorAxis(core::Axis axis, const glm::ivec3& pos);
 
 	float cameraSpeed() const;
 	void setCameraSpeed(float cameraSpeed);

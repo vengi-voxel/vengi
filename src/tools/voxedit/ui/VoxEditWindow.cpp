@@ -278,7 +278,7 @@ void VoxEditWindow::executeMode() {
 	if (_mode == ModifierMode::None) {
 		_modeNumberBuf[0] = '\0';
 		_lastModePress = -1l;
-		_axis = voxedit::Axis::None;
+		_axis = core::Axis::None;
 		return;
 	}
 
@@ -286,26 +286,26 @@ void VoxEditWindow::executeMode() {
 		if (_mode == ModifierMode::Scale) {
 			const float value = core::string::toFloat(_modeNumberBuf);
 			glm::vec3 values(1.0f, 1.0f, 1.0f);
-			if ((_axis & voxedit::Axis::X) != voxedit::Axis::None) {
+			if ((_axis & core::Axis::X) != core::Axis::None) {
 				values.x = value;
 			}
-			if ((_axis & voxedit::Axis::Y) != voxedit::Axis::None) {
+			if ((_axis & core::Axis::Y) != core::Axis::None) {
 				values.y = value;
 			}
-			if ((_axis & voxedit::Axis::Z) != voxedit::Axis::None) {
+			if ((_axis & core::Axis::Z) != core::Axis::None) {
 				values.z = value;
 			}
 			scale(values.x, values.y, values.z);
 		} else {
 			const int value = core::string::toInt(_modeNumberBuf);
 			glm::ivec3 values(0, 0, 0);
-			if ((_axis & voxedit::Axis::X) != voxedit::Axis::None) {
+			if ((_axis & core::Axis::X) != core::Axis::None) {
 				values.x = value;
 			}
-			if ((_axis & voxedit::Axis::Y) != voxedit::Axis::None) {
+			if ((_axis & core::Axis::Y) != core::Axis::None) {
 				values.y = value;
 			}
-			if ((_axis & voxedit::Axis::Z) != voxedit::Axis::None) {
+			if ((_axis & core::Axis::Z) != core::Axis::None) {
 				values.z = value;
 			}
 
@@ -317,23 +317,23 @@ void VoxEditWindow::executeMode() {
 		}
 	}
 	if (_mode == ModifierMode::Lock) {
-		const voxedit::Axis locked = _scene->lockedAxis();
-#define VOXEDIT_LOCK(axis) if ((_axis & axis) != voxedit::Axis::None) { _scene->setLockedAxis(axis, (locked & axis) != voxedit::Axis::None); _lockedDirty = true; }
-		VOXEDIT_LOCK(voxedit::Axis::X)
-		VOXEDIT_LOCK(voxedit::Axis::Y)
-		VOXEDIT_LOCK(voxedit::Axis::Z)
+		const core::Axis locked = _scene->lockedAxis();
+#define VOXEDIT_LOCK(axis) if ((_axis & axis) != core::Axis::None) { _scene->setLockedAxis(axis, (locked & axis) != core::Axis::None); _lockedDirty = true; }
+		VOXEDIT_LOCK(core::Axis::X)
+		VOXEDIT_LOCK(core::Axis::Y)
+		VOXEDIT_LOCK(core::Axis::Z)
 #undef VOXEDIT_LOCK
 	} else if (_mode == ModifierMode::Mirror) {
 #define VOXEDIT_MIRROR(axis) if (_axis == axis) { _scene->setMirrorAxis(axis, _scene->cursorPosition()); _mirrorDirty = true; }
-		VOXEDIT_MIRROR(voxedit::Axis::X)
-		VOXEDIT_MIRROR(voxedit::Axis::Y)
-		VOXEDIT_MIRROR(voxedit::Axis::Z)
+		VOXEDIT_MIRROR(core::Axis::X)
+		VOXEDIT_MIRROR(core::Axis::Y)
+		VOXEDIT_MIRROR(core::Axis::Z)
 #undef VOXEDIT_MIRROR
 	}
 
 	_modeNumberBuf[0] = '\0';
 	_lastModePress = -1l;
-	_axis = voxedit::Axis::None;
+	_axis = core::Axis::None;
 	_mode = ModifierMode::None;
 }
 
@@ -358,31 +358,31 @@ void VoxEditWindow::unselectall() {
 
 void VoxEditWindow::rotatemode() {
 	_mode = ModifierMode::Rotate;
-	_axis = voxedit::Axis::None;
+	_axis = core::Axis::None;
 	_modeNumberBuf[0] = '\0';
 }
 
 void VoxEditWindow::scalemode() {
 	_mode = ModifierMode::Scale;
-	_axis = voxedit::Axis::None;
+	_axis = core::Axis::None;
 	_modeNumberBuf[0] = '\0';
 }
 
 void VoxEditWindow::movemode() {
 	_mode = ModifierMode::Move;
-	_axis = voxedit::Axis::None;
+	_axis = core::Axis::None;
 	_modeNumberBuf[0] = '\0';
 }
 
 void VoxEditWindow::togglelockaxis() {
 	_mode = ModifierMode::Lock;
-	_axis = voxedit::Axis::None;
+	_axis = core::Axis::None;
 	_modeNumberBuf[0] = '\0';
 }
 
 void VoxEditWindow::togglemirroraxis() {
 	_mode = ModifierMode::Mirror;
-	_axis = voxedit::Axis::None;
+	_axis = core::Axis::None;
 	_modeNumberBuf[0] = '\0';
 }
 
@@ -684,25 +684,25 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		setQuadViewport(value == 1);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("lockx")) {
-		_scene->setLockedAxis(Axis::X, ev.target->GetValue() != 1);
+		_scene->setLockedAxis(core::Axis::X, ev.target->GetValue() != 1);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("locky")) {
-		_scene->setLockedAxis(Axis::Y, ev.target->GetValue() != 1);
+		_scene->setLockedAxis(core::Axis::Y, ev.target->GetValue() != 1);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("lockz")) {
-		_scene->setLockedAxis(Axis::Z, ev.target->GetValue() != 1);
+		_scene->setLockedAxis(core::Axis::Z, ev.target->GetValue() != 1);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("mirrorx")) {
-		_scene->setMirrorAxis(Axis::X, _scene->cursorPosition());
+		_scene->setMirrorAxis(core::Axis::X, _scene->cursorPosition());
 		return true;
 	} else if (ev.target->GetID() == TBIDC("mirrory")) {
-		_scene->setMirrorAxis(Axis::Y, _scene->cursorPosition());
+		_scene->setMirrorAxis(core::Axis::Y, _scene->cursorPosition());
 		return true;
 	} else if (ev.target->GetID() == TBIDC("mirrorz")) {
-		_scene->setMirrorAxis(Axis::Z, _scene->cursorPosition());
+		_scene->setMirrorAxis(core::Axis::Z, _scene->cursorPosition());
 		return true;
 	} else if (ev.target->GetID() == TBIDC("mirrornone")) {
-		_scene->setMirrorAxis(Axis::None, _scene->cursorPosition());
+		_scene->setMirrorAxis(core::Axis::None, _scene->cursorPosition());
 		return true;
 	} else if (ev.target->GetID() == TBIDC("cursorx")) {
 		const tb::TBStr& str = ev.target->GetText();
@@ -791,29 +791,29 @@ void VoxEditWindow::OnProcess() {
 
 	if (_lockedDirty) {
 		_lockedDirty = false;
-		const voxedit::Axis axis = _scene->lockedAxis();
+		const core::Axis axis = _scene->lockedAxis();
 		if (_lockedX != nullptr) {
-			_lockedX->SetValue((axis & voxedit::Axis::X) != voxedit::Axis::None);
+			_lockedX->SetValue((axis & core::Axis::X) != core::Axis::None);
 		}
 		if (_lockedY != nullptr) {
-			_lockedY->SetValue((axis & voxedit::Axis::Y) != voxedit::Axis::None);
+			_lockedY->SetValue((axis & core::Axis::Y) != core::Axis::None);
 		}
 		if (_lockedZ != nullptr) {
-			_lockedZ->SetValue((axis & voxedit::Axis::Z) != voxedit::Axis::None);
+			_lockedZ->SetValue((axis & core::Axis::Z) != core::Axis::None);
 		}
 	}
 
 	if (_mirrorDirty) {
 		_mirrorDirty = false;
-		const voxedit::Axis axis = _scene->mirrorAxis();
+		const core::Axis axis = _scene->mirrorAxis();
 		if (_mirrorX != nullptr) {
-			_mirrorX->SetValue(axis == voxedit::Axis::X);
+			_mirrorX->SetValue(axis == core::Axis::X);
 		}
 		if (_mirrorY != nullptr) {
-			_mirrorY->SetValue(axis == voxedit::Axis::Y);
+			_mirrorY->SetValue(axis == core::Axis::Y);
 		}
 		if (_mirrorZ != nullptr) {
-			_mirrorZ->SetValue(axis == voxedit::Axis::Z);
+			_mirrorZ->SetValue(axis == core::Axis::Z);
 		}
 	}
 
@@ -873,7 +873,7 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		}
 	} else if (ev.type == tb::EVENT_TYPE_KEY_DOWN) {
 		const int key = ev.key;
-		if (_axis != voxedit::Axis::None) {
+		if (_axis != core::Axis::None) {
 			if (isValidNumberKey(key)) {
 				int l = SDL_strlen(_modeNumberBuf);
 				if (l < MODENUMBERBUFSIZE - 1) {
@@ -887,12 +887,12 @@ bool VoxEditWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 		} else if (_mode != ModifierMode::None) {
 			if (key == SDLK_x) {
 				Log::debug("Set axis to x");
-				_axis |= voxedit::Axis::X;
+				_axis |= core::Axis::X;
 			} else if (key == SDLK_y) {
-				_axis |= voxedit::Axis::Y;
+				_axis |= core::Axis::Y;
 				Log::debug("Set axis to y");
 			} else if (key == SDLK_z) {
-				_axis |= voxedit::Axis::Z;
+				_axis |= core::Axis::Z;
 				Log::debug("Set axis to z");
 			}
 			_lastModePress = core::App::getInstance()->timeProvider()->tickTime();

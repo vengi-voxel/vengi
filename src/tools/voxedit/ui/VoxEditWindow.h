@@ -7,7 +7,7 @@
 #include "ui/Window.h"
 #include "core/Common.h"
 #include "core/String.h"
-#include "voxedit-util/Axis.h"
+#include "core/Axis.h"
 #include "editorscene/Action.h"
 #include "voxedit-util/SelectType.h"
 
@@ -80,7 +80,7 @@ private:
 		Mirror
 	};
 	ModifierMode _mode = ModifierMode::None;
-	voxedit::Axis _axis = voxedit::Axis::None;
+	core::Axis _axis = core::Axis::None;
 	static constexpr int MODENUMBERBUFSIZE = 64;
 	char _modeNumberBuf[MODENUMBERBUFSIZE];
 	long _lastModePress = -1l;
