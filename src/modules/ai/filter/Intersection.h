@@ -39,6 +39,10 @@ inline void Intersection::filter (const AIPtr& entity) {
 		filtered.clear();
 	}
 
+	for (size_t i = 0; i < filteredArray.size(); ++i) {
+		std::sort(filteredArray[i].begin(), filteredArray[i].end());
+	}
+
 	FilteredEntities result(max);
 	std::set_intersection(
 			filteredArray[0].begin(), filteredArray[0].end(),
@@ -49,6 +53,7 @@ inline void Intersection::filter (const AIPtr& entity) {
 		FilteredEntities buffer(max);
 		for (size_t i = 2; i < filteredArray.size(); ++i) {
 			buffer.clear();
+			std::sort(result.begin(), result.end());
 			std::set_intersection(
 					result.begin(), result.end(),
 					filteredArray[i].begin(), filteredArray[i].end(),

@@ -4,7 +4,7 @@
 #pragma once
 
 #include <chrono>
-#include <set>
+#include <queue>
 #include <functional>
 #include <thread>
 #include <future>
@@ -46,7 +46,18 @@ private:
 		}
 	};
 
-	std::set<ScheduledTask> _tasks;
+	class prioqueue: public std::priority_queue<ScheduledTask> {
+	public:
+		bool remove(int timerId) {
+			auto it = std::find_if(this->c.begin(), this->c.end(), [=] (const ScheduledTask& task) { return task._timerId == timerId; });
+			if (it == this->c.end()) {
+				return false;
+			};
+			this->c.erase(it);
+			return true;
+		}
+	};
+	prioqueue _tasks;
 	std::atomic_int _timerId {0};
 	std::atomic_bool _stop;
 	std::atomic_bool _notEmpty;
@@ -64,21 +75,20 @@ public:
 					auto epoch = std::chrono::system_clock::now().time_since_epoch();
 					auto now = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
 					std::unique_lock<std::mutex> lock(_mutex);
-					while (!this->_tasks.empty() && this->_tasks.begin()->_execTime <= now) {
+					while (!this->_tasks.empty() && this->_tasks.top()._execTime <= now) {
 						if (this->_stop) {
 							return;
 						}
-						auto iter = this->_tasks.begin();
-						const ScheduledTask& t = *iter;
+						const ScheduledTask& t = this->_tasks.top();
 						if (t()) {
 							auto callback = t._callback;
 							auto delay = t._delay;
 							auto timerId = t._timerId;
 							auto execTime = t._execTime;
-							this->_tasks.erase(iter);
+							this->_tasks.pop();
 							_tasks.emplace(this, std::move(callback), execTime + delay, delay, timerId);
 						} else {
-							this->_tasks.erase(iter);
+							this->_tasks.pop();
 						}
 					}
 					if (this->_stop) {
@@ -136,12 +146,7 @@ public:
 	 */
 	bool cancel(int timerId) {
 		std::unique_lock<std::mutex> lock(_mutex);
-		auto it = std::find_if(_tasks.begin(), _tasks.end(), [=] (const ScheduledTask& task) { return task._timerId == timerId; });
-		if (it == _tasks.end()) {
-			return false;
-		};
-		_tasks.erase(it);
-		return true;
+		return _tasks.remove(timerId);
 	}
 };
 
