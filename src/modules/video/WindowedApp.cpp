@@ -135,6 +135,7 @@ bool WindowedApp::loadKeyBindings(const std::string& filename) {
 	if (bindings.empty()) {
 		return false;
 	}
+	Log::info("Load key bindings from %s", filename.c_str());
 	const util::KeybindingParser p(bindings);
 	_bindings.insert(p.getBindings().begin(), p.getBindings().end());
 	return true;

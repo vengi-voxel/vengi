@@ -112,7 +112,7 @@ void TestApp::beforeUI() {
 }
 
 void TestApp::onRenderUI() {
-	ImGui::Text("ESC: toggle camera free look");
+	ImGui::BulletText("ESC: toggle camera free look");
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::Separator();
 	if (ImGui::Button("Quit")) {

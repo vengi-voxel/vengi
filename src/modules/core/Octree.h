@@ -21,26 +21,29 @@ template<class NODE, typename TYPE = int>
 class Octree {
 public:
 	typedef typename std::vector<NODE> Contents;
-private:
+
+	class OctreeNode;
+	struct IOctreeListener {
+		virtual ~IOctreeListener() {}
+		virtual void onNodeCreated(const OctreeNode& parent, const OctreeNode& child) const {}
+	};
+
 	class OctreeNode {
 		friend class Octree;
 	private:
-		static inline AABB<TYPE> aabb(const typename std::remove_pointer<NODE>::type* item) {
-			return item->aabb();
-		}
-
-		static inline AABB<TYPE> aabb(const typename std::remove_pointer<NODE>::type& item) {
-			return item.aabb();
-		}
-
-		const int _maxDepth;
+		int _maxDepth;
 		int _depth;
+		const Octree* _octree;
 		const AABB<TYPE> _aabb;
 		Contents _contents;
 		std::vector<OctreeNode> _nodes;
 
-		OctreeNode(const AABB<TYPE>& bounds, int maxDepth, int depth) :
-				_maxDepth(maxDepth), _depth(depth), _aabb(bounds) {
+		template<class FUNC>
+		inline void visit(FUNC&& func) const {
+			func(*this);
+			for (const OctreeNode& node : _nodes) {
+				node.visit(func);
+			}
 		}
 
 		void createNodes() {
@@ -55,8 +58,27 @@ private:
 			aabb().split(subareas);
 			_nodes.reserve(subareas.size());
 			for (size_t i = 0u; i < subareas.size(); ++i) {
-				_nodes.emplace_back(OctreeNode(subareas[i], _maxDepth, _depth + 1));
+				_nodes.emplace_back(OctreeNode(subareas[i], _maxDepth, _depth + 1, _octree));
+				if (_octree->_listener != nullptr) {
+					_octree->_listener->onNodeCreated(*this, _nodes.back());
+				}
 			}
+		}
+	public:
+		static inline AABB<TYPE> aabb(const typename std::remove_pointer<NODE>::type* item) {
+			return item->aabb();
+		}
+
+		static inline AABB<TYPE> aabb(const typename std::remove_pointer<NODE>::type& item) {
+			return item.aabb();
+		}
+
+		OctreeNode(const AABB<TYPE>& bounds, int maxDepth, int depth, const Octree* octree) :
+				_maxDepth(maxDepth), _depth(depth), _octree(octree), _aabb(bounds) {
+		}
+
+		inline int depth() const {
+			return _depth;
 		}
 
 		inline int count() const {
@@ -160,13 +182,14 @@ private:
 			}
 		}
 	};
-
+private:
 	OctreeNode _root;
 	// dirty flag can be used for query caches
-	bool _dirty;
+	bool _dirty = false;
+	const IOctreeListener* _listener = nullptr;
 public:
 	Octree(const AABB<TYPE>& aabb, int maxDepth = 10) :
-			_root(aabb, maxDepth, 0), _dirty(false) {
+			_root(aabb, maxDepth, 0, this) {
 	}
 
 	inline int count() const {
@@ -189,9 +212,17 @@ public:
 		return false;
 	}
 
+	inline const AABB<TYPE>& aabb() const {
+		return _root.aabb();
+	}
+
 	inline void query(const AABB<TYPE>& area, Contents& results) const {
 		core_trace_scoped(OctreeQuery);
 		_root.query(area, results);
+	}
+
+	void setListener(const IOctreeListener* func) {
+		_listener = func;
 	}
 
 	void clear() {
@@ -215,6 +246,11 @@ public:
 		results.clear();
 		results.reserve(count());
 		_root.getAllContents(results);
+	}
+
+	template<class FUNC>
+	void visit(FUNC&& func) {
+		_root.visit(func);
 	}
 };
 
