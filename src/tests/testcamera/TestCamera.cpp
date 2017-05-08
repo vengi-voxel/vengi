@@ -4,6 +4,7 @@
 
 TestCamera::TestCamera(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
+	init(ORGANISATION, "testcamera");
 	setCameraMotion(true);
 	//setRenderPlane(true);
 	setRenderAxis(true);

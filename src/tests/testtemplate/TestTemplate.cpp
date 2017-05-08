@@ -3,6 +3,7 @@
 
 TestTemplate::TestTemplate(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
+	init(ORGANISATION, "testtemplate");
 }
 
 core::AppState TestTemplate::onInit() {

@@ -5,6 +5,7 @@
 
 TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
+	init(ORGANISATION, "testvoxelfont");
 	setCameraMotion(true);
 }
 

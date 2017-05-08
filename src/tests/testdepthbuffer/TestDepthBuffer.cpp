@@ -4,6 +4,7 @@
 
 TestDepthBuffer::TestDepthBuffer(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
+	init(ORGANISATION, "testdepthbuffer");
 }
 
 void TestDepthBuffer::doRender() {

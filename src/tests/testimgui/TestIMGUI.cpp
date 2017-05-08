@@ -7,6 +7,7 @@
 
 TestIMGUI::TestIMGUI(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
+	init(ORGANISATION, "testimgui");
 }
 
 void TestIMGUI::onRenderUI() {
