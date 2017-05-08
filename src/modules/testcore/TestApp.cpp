@@ -1,8 +1,8 @@
 #include "TestApp.h"
+#include "imgui/IMGUI.h"
 #include "core/Color.h"
 #include "core/command/Command.h"
 #include "frontend/Movement.h"
-#include "ui/TestAppWindow.h"
 #include "video/ScopedPolygonMode.h"
 
 TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
@@ -81,8 +81,6 @@ core::AppState TestApp::onInit() {
 
 	SDL_SetRelativeMouseMode(SDL_FALSE);
 
-	new testcore::TestAppWindow(this);
-
 	return state;
 }
 
@@ -113,9 +111,13 @@ void TestApp::beforeUI() {
 	}
 }
 
-void TestApp::afterRootWidget() {
-	Super::afterRootWidget();
-	enqueueShowStr(5, core::Color::Gray, "ESC: toggle camera free look");
+void TestApp::onRenderUI() {
+	ImGui::Text("ESC: toggle camera free look");
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::Separator();
+	if (ImGui::Button("Quit")) {
+		requestQuit();
+	}
 }
 
 core::AppState TestApp::onCleanup() {
@@ -129,11 +131,6 @@ bool TestApp::onKeyPress(int32_t key, int16_t modifier) {
 		const SDL_bool current = SDL_GetRelativeMouseMode();
 		const SDL_bool mode = current ? SDL_FALSE : SDL_TRUE;
 		SDL_SetRelativeMouseMode(mode);
-		if (mode) {
-			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_INVISIBLE);
-		} else {
-			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_VISIBLE);
-		}
 	}
 	return Super::onKeyPress(key, modifier);
 }

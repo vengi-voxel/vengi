@@ -1,4 +1,5 @@
 #include "TestCamera.h"
+#include "imgui/IMGUI.h"
 #include "io/Filesystem.h"
 
 TestCamera::TestCamera(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
@@ -78,8 +79,7 @@ void TestCamera::doRender() {
 	}
 }
 
-void TestCamera::afterRootWidget() {
-	tb::TBStr str;
+void TestCamera::onRenderUI() {
 	const char *cameraRotType;
 	const video::Camera& targetCamera = _renderCamera[_targetCamera];
 	video::CameraRotationType rotType = targetCamera.rotationType();
@@ -95,21 +95,21 @@ void TestCamera::afterRootWidget() {
 	if (_targetCamera == 1) {
 		mode = "Frustum split";
 	}
-	enqueueShowStr(5, core::Color::Gray, "Space: toggle camera");
-	enqueueShowStr(5, core::Color::Gray, "Shift/MouseMove: rotate");
-	enqueueShowStr(5, core::Color::Gray, "Backspace: toggle aabb");
-	enqueueShowStr(5, core::Color::Gray, "0: reset position");
-	enqueueShowStr(5, core::Color::Gray, "Shift/+ Shift/-: far plane");
-	enqueueShowStr(5, core::Color::Gray, "Ctrl/Shift/+ Ctrl/Shift/-: near plane");
-	enqueueShowStr(5, core::Color::Gray, "Shift/MouseWheel: far plane");
-	enqueueShowStr(5, core::Color::Gray, "Ctrl/Shift/MouseWheel: near plane");
-	enqueueShowStr(5, core::Color::LightGray, "Sphere: red = outside, green = inside, purple = touching");
-	enqueueShowStr(5, core::Color::White, "Camera: %s (%i) %s", cameraRotType, _targetCamera + 1, mode);
+	ImGui::Text("Space: toggle camera");
+	ImGui::Text("Shift/MouseMove: rotate");
+	ImGui::Text("Backspace: toggle aabb");
+	ImGui::Text("0: reset position");
+	ImGui::Text("Shift/+ Shift/-: far plane");
+	ImGui::Text("Ctrl/Shift/+ Ctrl/Shift/-: near plane");
+	ImGui::Text("Shift/MouseWheel: far plane");
+	ImGui::Text("Ctrl/Shift/MouseWheel: near plane");
+	ImGui::Text("Sphere: red = outside, green = inside, purple = touching");
+	ImGui::Text("Camera: %s (%i) %s", cameraRotType, _targetCamera + 1, mode);
 	if (_frustums[_targetCamera].renderAABB()) {
 		const core::AABB<float>&& aabb = targetCamera.aabb();
-		enqueueShowStr(5, core::Color::White, "AABB(mins(%.2f:%.2f:%.2f), maxs(%.2f:%.2f:%.2f))", aabb.getLowerX(), aabb.getLowerY(), aabb.getLowerZ(), aabb.getUpperX(), aabb.getUpperY(), aabb.getUpperZ());
+		ImGui::Text("AABB(mins(%.2f:%.2f:%.2f), maxs(%.2f:%.2f:%.2f))", aabb.getLowerX(), aabb.getLowerY(), aabb.getLowerZ(), aabb.getUpperX(), aabb.getUpperY(), aabb.getUpperZ());
 	}
-	Super::afterRootWidget();
+	Super::onRenderUI();
 }
 
 core::AppState TestCamera::onRunning() {

@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "ui/UIApp.h"
+#include "imgui/IMGUIApp.h"
 #include "video/Mesh.h"
 #include "video/Camera.h"
 #include "frontend/Axis.h"
 #include "frontend/Plane.h"
 
-class TestApp: public ui::UIApp {
+class TestApp: public imgui::IMGUIApp {
 private:
-	using Super = ui::UIApp;
+	using Super = imgui::IMGUIApp;
 	bool _cameraMotion = false;
 	bool _renderPlane = false;
 	bool _renderAxis = true;
@@ -52,11 +52,11 @@ public:
 	virtual core::AppState onConstruct() override;
 	virtual core::AppState onInit() override;
 	virtual void beforeUI() override;
-	virtual void afterRootWidget() override;
+	virtual void onRenderUI() override;
 	virtual core::AppState onCleanup() override;
+	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	virtual void onMouseWheel(int32_t x, int32_t y) override;
-	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual void onWindowResize() override;
 };
 

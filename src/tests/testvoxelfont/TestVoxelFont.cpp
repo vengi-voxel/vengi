@@ -1,6 +1,7 @@
 #include "TestVoxelFont.h"
 #include "voxel/MaterialColor.h"
 #include "io/Filesystem.h"
+#include "imgui/IMGUI.h"
 
 TestVoxelFont::TestVoxelFont(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, eventBus, timeProvider) {
@@ -124,17 +125,17 @@ bool TestVoxelFont::onKeyPress(int32_t key, int16_t modifier) {
 	return retVal;
 }
 
-void TestVoxelFont::afterRootWidget() {
-	enqueueShowStr(5, core::Color::White, "Fontsize: %i", _fontSize);
-	enqueueShowStr(5, core::Color::White, "Thickness: %i", _thickness);
+void TestVoxelFont::onRenderUI() {
+	ImGui::Text("Fontsize: %i", _fontSize);
+	ImGui::Text("Thickness: %i", _thickness);
 	const char *state = _mergeQuads ? "true" : "false";
-	enqueueShowStr(5, core::Color::White, "Merge Quads: %s", state);
-	enqueueShowStr(5, core::Color::White, "Font vertices: %i, indices: %i", _vertices, _indices);
-	enqueueShowStr(5, core::Color::Gray, "Ctrl/+ Ctrl/-: Change font thickness");
-	enqueueShowStr(5, core::Color::Gray, "Space: Toggle merge quads");
-	enqueueShowStr(5, core::Color::Gray, "Shift/+ Shift/-: Change font size");
-	enqueueShowStr(5, core::Color::Gray, "Shift/Mousewheel: Change font size");
-	Super::afterRootWidget();
+	ImGui::Text("Merge Quads: %s", state);
+	ImGui::Text("Font vertices: %i, indices: %i", _vertices, _indices);
+	ImGui::Text("Ctrl/+ Ctrl/-: Change font thickness");
+	ImGui::Text("Space: Toggle merge quads");
+	ImGui::Text("Shift/+ Shift/-: Change font size");
+	ImGui::Text("Shift/Mousewheel: Change font size");
+	Super::onRenderUI();
 }
 
 void TestVoxelFont::doRender() {
