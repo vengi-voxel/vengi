@@ -556,7 +556,7 @@ SDL_QueueAudio(SDL_AudioDeviceID devid, const void *data, Uint32 len)
         return -1;  /* get_audio_device() will have set the error state */
     } else if (device->iscapture) {
         return SDL_SetError("This is a capture device, queueing not allowed");
-    } else if (device->spec.callback != SDL_BufferQueueDrainCallback) {
+    } else if (device->callbackspec.callback != SDL_BufferQueueDrainCallback) {
         return SDL_SetError("Audio device has a callback, queueing not allowed");
     }
 
@@ -578,7 +578,7 @@ SDL_DequeueAudio(SDL_AudioDeviceID devid, void *data, Uint32 len)
     if ( (len == 0) ||  /* nothing to do? */
          (!device) ||  /* called with bogus device id */
          (!device->iscapture) ||  /* playback devices can't dequeue */
-         (device->spec.callback != SDL_BufferQueueFillCallback) ) { /* not set for queueing */
+         (device->callbackspec.callback != SDL_BufferQueueFillCallback) ) { /* not set for queueing */
         return 0;  /* just report zero bytes dequeued. */
     }
 
@@ -599,11 +599,11 @@ SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
     }
 
     /* Nothing to do unless we're set up for queueing. */
-    if (device->spec.callback == SDL_BufferQueueDrainCallback) {
+    if (device->callbackspec.callback == SDL_BufferQueueDrainCallback) {
         current_audio.impl.LockDevice(device);
         retval = ((Uint32) SDL_CountDataQueue(device->buffer_queue)) + current_audio.impl.GetPendingBytes(device);
         current_audio.impl.UnlockDevice(device);
-    } else if (device->spec.callback == SDL_BufferQueueFillCallback) {
+    } else if (device->callbackspec.callback == SDL_BufferQueueFillCallback) {
         current_audio.impl.LockDevice(device);
         retval = (Uint32) SDL_CountDataQueue(device->buffer_queue);
         current_audio.impl.UnlockDevice(device);
@@ -733,7 +733,7 @@ SDL_CaptureAudio(void *devicep)
     const int data_len = device->spec.size;
     Uint8 *data;
     void *udata = device->spec.userdata;
-    SDL_AudioCallback callback = device->spec.callback;
+    SDL_AudioCallback callback = device->callbackspec.callback;
 
     SDL_assert(device->iscapture);
 
@@ -1344,8 +1344,8 @@ open_audio_device(const char *devname, int iscapture,
             SDL_SetError("Couldn't create audio buffer queue");
             return 0;
         }
-        device->spec.callback = iscapture ? SDL_BufferQueueFillCallback : SDL_BufferQueueDrainCallback;
-        device->spec.userdata = device;
+        device->callbackspec.callback = iscapture ? SDL_BufferQueueFillCallback : SDL_BufferQueueDrainCallback;
+        device->callbackspec.userdata = device;
     }
 
     /* Allocate a scratch audio buffer */

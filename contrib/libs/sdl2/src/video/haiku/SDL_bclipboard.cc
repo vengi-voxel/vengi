@@ -22,7 +22,7 @@
 
 #if SDL_VIDEO_DRIVER_HAIKU
 
-/* BWindow based framebuffer implementation */
+/* BWindow based clipboard implementation */
 
 #include <unistd.h>
 #include <TypeConstants.h>
@@ -61,8 +61,6 @@ char *BE_GetClipboardText(_THIS) {
 			/* Presumably the string of characters is ascii-format */
 			clip->FindData("text/plain", B_MIME_TYPE, (const void**)&text,
 				&length);
-		} else {
-			be_clipboard->Unlock();
 		}
 		be_clipboard->Unlock();
 	} 
