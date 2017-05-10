@@ -195,7 +195,6 @@ public:
 	int getMeshSize() const;
 
 private:
-	void cleanupFutures();
 	Region getChunkRegion(const glm::ivec3& pos) const;
 	Region getMeshRegion(const glm::ivec3& pos) const;
 	Region getRegion(const glm::ivec3& pos, int size) const;
@@ -210,11 +209,11 @@ private:
 
 	core::ThreadPool _threadPool;
 	core::ConcurrentQueue<ChunkMeshes> _meshQueue;
+	core::ConcurrentQueue<glm::ivec3, VecLessThan<3, int> > _meshesQueue;
 	// fast lookup for positions that are already extracted and available in the _meshData vector
 	PositionSet _meshesExtracted;
 	core::VarPtr _meshSize;
 	core::Random _random;
-	std::vector<std::future<void> > _futures;
 	std::atomic_bool _cancelThreads { false };
 };
 

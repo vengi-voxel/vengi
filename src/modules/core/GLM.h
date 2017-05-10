@@ -35,6 +35,13 @@
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
+template<int N, typename T>
+struct VecLessThan {
+	inline bool operator()(const glm::vec<N, T>& lhs, const glm::vec<N, T>& rhs) const {
+		return glm::all(glm::lessThan(lhs, rhs));
+	}
+};
+
 namespace glm {
 extern const glm::vec3 forward;
 extern const glm::vec3 backward;

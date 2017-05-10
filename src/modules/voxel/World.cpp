@@ -56,43 +56,12 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	const glm::ivec3& pos = getMeshPos(p);
 	auto i = _meshesExtracted.find(pos);
 	if (i != _meshesExtracted.end()) {
-		Log::trace("mesh is already extracted for %i:%i:%i (%i:%i:%i - %i:%i:%i)", p.x, p.y, p.z, i->x, i->y, i->z, pos.x, pos.y, pos.z);
 		return false;
 	}
-	Log::trace("mesh extraction for %i:%i:%i (%i:%i:%i)", p.x, p.y, p.z, pos.x, pos.y, pos.z);
+	Log::trace("mesh extraction for %i:%i:%i (%i:%i:%i)",
+			p.x, p.y, p.z, pos.x, pos.y, pos.z);
 	_meshesExtracted.insert(pos);
-
-	_futures.push_back(_threadPool.enqueue([=] () {
-		if (_cancelThreads) {
-			return;
-		}
-		core_trace_scoped(MeshExtraction);
-		const Region &region = getMeshRegion(pos);
-
-		// these number are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
-		// they also heavily depend on the size of the mesh region we extract
-		const int opaqueFactor = 16;
-		const int waterFactor = 16;
-		const int opaqueVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
-		const int waterVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * waterFactor;
-		ChunkMeshes data(opaqueVertices, opaqueVertices, waterVertices, waterVertices);
-		if (_cancelThreads) {
-			return;
-		}
-		extractCubicMesh(_volumeData, region, &data.opaqueMesh, IsQuadNeeded());
-		if (_cancelThreads) {
-			return;
-		}
-		extractCubicMesh(_volumeData, region, &data.waterMesh, IsWaterQuadNeeded());
-		if (_cancelThreads) {
-			return;
-		}
-#if 0
-		Log::info("opaque mesh size: %i", (int)data.opaqueMesh.size());
-		Log::info("water mesh size: %i", (int)data.waterMesh.size());
-#endif
-		_meshQueue.push(std::move(data));
-	}));
+	_meshesQueue.push(pos);
 	return true;
 }
 
@@ -147,51 +116,63 @@ bool World::init(const std::string& luaParameters, const std::string& luaBiomes,
 		_pager.setCreateFlags(voxel::world::WORLDGEN_SERVER);
 	}
 
+	_threadPool.enqueue([=] () {
+		while (!_cancelThreads) {
+			core_trace_scoped(MeshExtraction);
+			glm::ivec3 pos;
+			if (!_meshesQueue.waitAndPop(pos)) {
+				break;
+			}
+			const Region &region = getMeshRegion(pos);
+			// these number are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
+			// they also heavily depend on the size of the mesh region we extract
+			const int opaqueFactor = 16;
+			const int waterFactor = 16;
+			const int opaqueVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
+			const int waterVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * waterFactor;
+			ChunkMeshes data(opaqueVertices, opaqueVertices, waterVertices, waterVertices);
+			if (_cancelThreads) {
+				return;
+			}
+			extractCubicMesh(_volumeData, region, &data.opaqueMesh, IsQuadNeeded());
+			if (_cancelThreads) {
+				return;
+			}
+			extractCubicMesh(_volumeData, region, &data.waterMesh, IsWaterQuadNeeded());
+			if (_cancelThreads) {
+				return;
+			}
+#if 0
+			Log::info("opaque mesh size: %i", (int)data.opaqueMesh.size());
+			Log::info("water mesh size: %i", (int)data.waterMesh.size());
+#endif
+			_meshQueue.push(std::move(data));
+		}
+	});
+
 	return true;
 }
 
 void World::shutdown() {
 	_cancelThreads = true;
-	while (!_futures.empty()) {
-		cleanupFutures();
-	}
+	_meshesQueue.abortWait();
+	_meshesQueue.clear();
+	_meshQueue.abortWait();
+	_meshQueue.clear();
 	_meshesExtracted.clear();
 	_meshQueue.clear();
 	_pager.shutdown();
 	delete _volumeData;
 	_volumeData = nullptr;
+	_ctx = WorldContext();
 }
 
 void World::reset() {
 	_cancelThreads = true;
 }
 
-void World::cleanupFutures() {
-	for (auto i = _futures.begin(); i != _futures.end();) {
-		auto& future = *i;
-		if (std::future_status::ready == future.wait_for(std::chrono::milliseconds::zero())) {
-			i = _futures.erase(i);
-			continue;
-		}
-		break;
-	}
-}
-
 void World::onFrame(long dt) {
 	core_trace_scoped(WorldOnFrame);
-	cleanupFutures();
-	if (_cancelThreads) {
-		if (!_futures.empty()) {
-			return;
-		}
-		_volumeData->flushAll();
-		_ctx = WorldContext();
-		_meshesExtracted.clear();
-		_meshQueue.clear();
-		_meshQueue.abortWait();
-		Log::info("reset the world");
-		_cancelThreads = false;
-	}
 }
 
 bool World::isReset() const {
@@ -200,7 +181,7 @@ bool World::isReset() const {
 
 void World::stats(int& meshes, int& extracted, int& pending) const {
 	extracted = _meshesExtracted.size();
-	pending = _futures.size();
+	pending = _meshesQueue.size();
 	meshes = _meshQueue.size();
 }
 
