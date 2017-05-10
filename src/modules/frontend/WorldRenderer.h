@@ -102,11 +102,6 @@ protected:
 	glm::vec4 _clearColor = core::Color::LightBlue;
 	glm::vec3 _diffuseColor = glm::vec3(1.0, 1.0, 1.0);
 	glm::vec3 _ambientColor = glm::vec3(0.2, 0.2, 0.2);
-	/**
-	 * @brief The position of the last extraction
-	 * @note we only care for x and z here
-	 */
-	glm::ivec3 _lastGridPosition = { std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::min() };
 	voxel::WorldPtr _world;
 	core::VarPtr _shadowMap;
 	core::VarPtr _shadowMapShow;
@@ -135,11 +130,7 @@ protected:
 	 */
 	void fillPlantPositionsFromMeshes();
 
-	int getDistanceSquare(const glm::ivec3& pos) const;
-	/**
-	 * @brief Schedule mesh extraction around the grid position with the given radius
-	 */
-	void extractMeshAroundCamera(const glm::ivec3& gridPos, int radius = 1);
+	int getDistanceSquare(const glm::ivec3& pos, const glm::ivec3& pos2) const;
 
 	/**
 	 * @return Visible chunks
@@ -165,8 +156,8 @@ public:
 	void onRunning(const video::Camera& camera, long dt);
 	void shutdown();
 
-	/** @brief called to initialed the player position */
-	void onSpawn(const glm::vec3& pos, int initialExtractionRadius = 5);
+	/** @brief extract meshes around the given position */
+	void extractMeshes(const glm::vec3& pos, int radius = 5);
 
 	ClientEntityPtr getEntity(ClientEntityId id) const;
 	bool addEntity(const ClientEntityPtr& entity);
@@ -187,7 +178,6 @@ public:
 	float getViewDistance() const;
 	void setViewDistance(float viewDistance);
 
-	bool extractNewMeshes(const glm::vec3& position, bool force = false);
 	int renderWorld(const video::Camera& camera, int* vertices = nullptr);
 	int renderEntities(const video::Camera& camera);
 };

@@ -37,7 +37,7 @@ TEST_F(WorldRendererTest, testCreate) {
 	ASSERT_TRUE(_world);
 	_world->setPersist(false);
 	ASSERT_NE(nullptr, _renderer);
-	ASSERT_TRUE(_renderer->extractNewMeshes(glm::ivec3(0), true));
+	_renderer->extractMeshes(glm::ivec3(0));
 	voxel::ChunkMeshes mesh(0, 0, 0, 0);
 	int amount = 0;
 	while (!_world->pop(mesh)) {

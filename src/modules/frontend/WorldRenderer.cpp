@@ -580,48 +580,18 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 	return true;
 }
 
-void WorldRenderer::onSpawn(const glm::vec3& pos, int initialExtractionRadius) {
+void WorldRenderer::extractMeshes(const glm::vec3& p, int radius) {
 	core_trace_scoped(WorldRendererOnSpawn);
-	// TODO: move into World class
-	extractMeshAroundCamera(_world->getMeshPos(pos), initialExtractionRadius);
-}
-
-// TODO: move into World class
-bool WorldRenderer::extractNewMeshes(const glm::vec3& position, bool force) {
-	core_trace_scoped(WorldRendererExtractNewMeshes);
-	if (force) {
-		_world->allowReExtraction(position);
-		return _world->scheduleMeshExtraction(position);
-	}
-	const glm::ivec3& meshGridPos = _world->getMeshPos(position);
-	const glm::ivec3& diff = _lastGridPosition - meshGridPos;
-	if (glm::abs(diff.x) >= 1 || glm::abs(diff.y) >= 1 || glm::abs(diff.z) >= 1) {
-		const int chunks = MinCullingDistance / _world->getMeshSize() + 1;
-		extractMeshAroundCamera(meshGridPos, chunks);
-		return true;
-	}
-	return false;
-}
-
-// TODO: move into World class
-void WorldRenderer::extractMeshAroundCamera(const glm::ivec3& meshGridPos, int radius) {
+	const glm::ivec3& meshGridPos = _world->getMeshPos(p);
 	core_trace_scoped(WorldRendererExtractAroundCamera);
 	const int sideLength = radius * 2 + 1;
 	const int amount = sideLength * (sideLength - 1) + sideLength;
 	const int meshSize = _world->getMeshSize();
-	if (meshGridPos == _lastGridPosition) {
-		return;
-	}
-	Log::debug("set last grid position to %i:%i", meshGridPos.x, meshGridPos.z);
-	_lastGridPosition = meshGridPos;
 	glm::ivec3 pos = meshGridPos;
 	pos.y = 0;
 	voxel::Spiral o;
 	for (int i = 0; i < amount; ++i) {
-		const float distance = getDistanceSquare(pos);
-		if (distance <= glm::pow(MinExtractionCullingDistance, 2)) {
-			_world->scheduleMeshExtraction(pos);
-		}
+		_world->scheduleMeshExtraction(pos);
 		o.next();
 		pos.x = meshGridPos.x + o.x() * meshSize;
 		pos.z = meshGridPos.z + o.z() * meshSize;
@@ -796,20 +766,20 @@ void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 		if (!chunkBuffer.inuse) {
 			continue;
 		}
-		const int distance = getDistanceSquare(chunkBuffer.translation());
+		const int distance = getDistanceSquare(chunkBuffer.translation(), glm::ivec3(camera.position()));
 		Log::trace("distance is: %i (%i)", distance, maxAllowedDistance);
 		if (distance >= maxAllowedDistance) {
 			_world->allowReExtraction(chunkBuffer.translation());
 			chunkBuffer.inuse = false;
 			--_activeChunkBuffers;
 			_octree.remove(&chunkBuffer);
-			Log::debug("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
+			Log::trace("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
 		}
 	}
 }
 
-int WorldRenderer::getDistanceSquare(const glm::ivec3& pos) const {
-	const glm::ivec3 dist = pos - _lastGridPosition;
+int WorldRenderer::getDistanceSquare(const glm::ivec3& pos, const glm::ivec3& pos2) const {
+	const glm::ivec3 dist = pos - pos2;
 	const int distance = dist.x * dist.x + dist.z * dist.z;
 	return distance;
 }

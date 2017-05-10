@@ -205,7 +205,7 @@ void Client::beforeUI() {
 
 		_drawCallsWorld = _worldRenderer.renderWorld(_camera);
 		_drawCallsEntities = _worldRenderer.renderEntities(_camera);
-		_worldRenderer.extractNewMeshes(_camera.position());
+		_worldRenderer.extractMeshes(_camera.position());
 	} else {
 		_drawCallsWorld = 0;
 		_drawCallsEntities = 0;
@@ -361,7 +361,7 @@ void Client::spawn(frontend::ClientEntityId id, const char *name, const glm::vec
 	const network::EntityType type = network::EntityType::PLAYER;
 	_player = std::make_shared<frontend::ClientEntity>(id, type, pos, orientation, mesh);
 	_worldRenderer.addEntity(_player);
-	_worldRenderer.onSpawn(pos);
+	_worldRenderer.extractMeshes(pos);
 
 	flatbuffers::FlatBufferBuilder fbb;
 	_messageSender->sendClientMessage(_peer, fbb, network::ClientMsgType::UserConnected,
