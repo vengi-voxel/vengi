@@ -45,11 +45,15 @@ private:
 	frontend::ShapeRenderer _shapeRenderer;
 	core::Random _random;
 	bool _dirty = false;
+	bool _renderItems = true;
+	bool _renderAABBs = true;
 	int _nodes = 0;
 	int32_t _aabbMeshes = -1;
 	int32_t _itemMeshes = -1;
 	int32_t _queryMeshes = -1;
 
+	std::vector<core::AABB<int> > _itemVector;
+	int _itemIndex = -1;
 	Tree::Contents _results;
 
 	core::AABB<int> _queryAABB;

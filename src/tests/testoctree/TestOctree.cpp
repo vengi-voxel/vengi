@@ -2,6 +2,7 @@
 #include "io/Filesystem.h"
 #include "imgui/IMGUI.h"
 #include "core/Color.h"
+#include "video/ScopedLineWidth.h"
 #include <array>
 
 TestOctree::TestOctree(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
@@ -78,9 +79,15 @@ void TestOctree::handleDirtyState() {
 	_dirty = false;
 
 	_nodes = 0;
+	_itemIndex = -1;
+	_itemVector.clear();
 	_octree.visit([&] (const Node& node) {
 		++_nodes;
-		Log::info("aabb for depth %i: %s", node.depth(), glm::to_string(node.aabb().getWidth()).c_str());
+		const core::AABB<int>& aabb = node.aabb();
+		const int depth = node.depth();
+		_itemVector.push_back(aabb);
+		Log::info("aabb for depth %i: %s",
+				depth, glm::to_string(aabb.getWidth()).c_str());
 	});
 
 	// build AABBs
@@ -129,16 +136,19 @@ void TestOctree::onRenderUI() {
 	Super::onRenderUI();
 	ImGui::End();
 
-	ImGui::SetNextWindowSize(ImVec2(500, 180));
+	ImGui::SetNextWindowSize(ImVec2(500, 260));
 	ImGui::Begin("Actions");
 	if (ImGui::Button("Clear")) {
 		clear();
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Insert")) {
+	if (ImGui::Button("Random Insert")) {
 		// TODO: insert with position and size
 		insert();
 	}
+	ImGui::Separator();
+	ImGui::Checkbox("Render AABBs", &_renderAABBs);
+	ImGui::Checkbox("Render Items", &_renderItems);
 	ImGui::Separator();
 
 	const int width = 95;
@@ -164,12 +174,11 @@ void TestOctree::onRenderUI() {
 		_results.clear();
 		_queryAABB = core::AABB<int>(_queryMins, _queryMaxs);
 		_octree.query(_queryAABB, _results);
-		//_octree.query(_octree.aabb(), _results);
 		Log::info("Query (%i:%i:%i) to (%i:%i:%i) (found: %i)",
 				_queryMins.x, _queryMins.y, _queryMins.z, _queryMaxs.x, _queryMaxs.y, _queryMaxs.z, (int)_results.size());
 	}
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Pink);
+	_shapeBuilder.setColor(core::Color::White);
 	_shapeBuilder.aabb(_queryAABB);
 	if (_queryMeshes == -1) {
 		_queryMeshes = _shapeRenderer.createMesh(_shapeBuilder);
@@ -183,16 +192,59 @@ void TestOctree::onRenderUI() {
 			mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	ImGui::BulletText("Nodes: %i", _nodes);
 	ImGui::BulletText("Elements: %i", _octree.count());
+	ImGui::Separator();
 	ImGui::BulletText("Results: %i", (int)_results.size());
-	ImGui::End();
+	ImGui::PushItemWidth(400);
 
-	ImGui::Begin("Elements");
-	// TODO: visit tree with elements and show aabb - transfer aabb to query parameter on click
+	typedef struct _VectorGetter {
+		struct AABBInfo {
+			core::AABB<int> aabb;
+			std::string info;
+		};
+		std::vector<AABBInfo> _itemVector;
+		_VectorGetter(const std::vector<core::AABB<int> >& itemVector) {
+			for (const auto& aabb : itemVector) {
+				const glm::ivec3& mins = aabb.mins();
+				const glm::ivec3& maxs = aabb.maxs();
+				_itemVector.emplace_back(AABBInfo{aabb,
+						core::string::format("mins(%i:%i:%i) maxs(%i:%i:%i)",
+						mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z)});
+			}
+		}
+		static bool resolve(void* pmds, int idx, const char** pOut) {
+			const _VectorGetter& mds = *((const _VectorGetter*) pmds);
+			if (idx < 0 || idx > (int)mds._itemVector.size()) {
+				return false;
+			}
+			*pOut = mds._itemVector[idx].info.c_str();
+			return true;
+		}
+	} VectorGetter;
+	VectorGetter mds(_itemVector);
+	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
+	const int numEntries = _itemVector.size();
+	ImGui::Combo("Nodes", &_itemIndex, &VectorGetter::resolve, &mds,
+			numEntries, glm::clamp(numEntries, 0, 25));
+	ImGui::PopItemWidth();
+	if (_itemIndex != -1) {
+		const core::AABB<int>& selected = _itemVector[_itemIndex];
+		_queryMins = selected.mins();
+		_queryMaxs = selected.maxs();
+	}
 	ImGui::End();
 }
 
 void TestOctree::doRender() {
-	_shapeRenderer.renderAll(_camera);
+	if (_aabbMeshes != -1 && _renderAABBs) {
+		_shapeRenderer.render(_aabbMeshes, _camera);
+	}
+	if (_itemMeshes != -1 && _renderItems) {
+		_shapeRenderer.render(_itemMeshes, _camera);
+	}
+	if (_queryMeshes != -1) {
+		video::ScopedLineWidth lineWidth(2.0f);
+		_shapeRenderer.render(_queryMeshes, _camera);
+	}
 }
 
 core::AppState TestOctree::onCleanup() {
