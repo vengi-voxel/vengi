@@ -35,6 +35,7 @@ struct GLState {
 	BlendEquation blendEquation = BlendEquation::Max;
 	TextureUnit textureUnit = TextureUnit::Zero;
 	Id textureHandle = InvalidId;
+	Id occlusionQuery = InvalidId;
 	int viewportX = 0;
 	int viewportY = 0;
 	int viewportW = 0;

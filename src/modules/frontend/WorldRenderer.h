@@ -61,7 +61,7 @@ protected:
 			return meshes.opaqueMesh.getOffset();
 		}
 
-		inline core::AABB<int> aabb() const {
+		inline const core::AABB<int>& aabb() const {
 			return _aabb;
 		}
 	};

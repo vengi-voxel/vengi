@@ -153,6 +153,7 @@ extern bool enable(State state);
  * @return The previous state value
  */
 extern bool disable(State state);
+extern void colorMask(bool red, bool green, bool blue, bool alpha);
 extern bool cullFace(Face face);
 extern bool depthFunc(CompareFunc func);
 extern bool blendFunc(BlendMode src, BlendMode dest);
@@ -196,6 +197,16 @@ extern Id genRenderbuffer();
 extern void deleteRenderbuffers(uint8_t amount, Id* ids);
 extern void deleteRenderbuffer(Id& id);
 extern void configureAttribute(const Attribute& a);
+extern Id genOcclusionQuery();
+extern void deleteOcclusionQuery(Id& id);
+extern bool isOcclusionQuery(Id id);
+extern bool beginOcclusionQuery(Id id);
+extern bool endOcclusionQuery(Id id);
+extern bool isOcclusionQueryAvailable(Id id);
+/**
+ * @return The value of the query object's passed samples counter. The initial value is 0, -1 is returned on error
+ */
+extern int getOcclusionQueryResult(Id id);
 /**
  * Binds a new frame buffer
  * @param mode The FrameBufferMode to bind the frame buffer with

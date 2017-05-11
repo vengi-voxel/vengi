@@ -248,6 +248,11 @@ bool scissor(int x, int y, int w, int h) {
 	return true;
 }
 
+void colorMask(bool red, bool green, bool blue, bool alpha) {
+	glColorMask((GLboolean)red, (GLboolean)green, (GLboolean)blue, (GLboolean)alpha);
+	checkError();
+}
+
 bool enable(State state) {
 	const int stateIndex = std::enum_value(state);
 	if (_priv::s.states[stateIndex]) {
@@ -657,6 +662,75 @@ void configureAttribute(const Attribute& a) {
 		glVertexAttribDivisor(a.index, a.divisor);
 	}
 	checkError();
+}
+
+Id genOcclusionQuery() {
+	Id id;
+	glGenQueries(1, &id);
+	checkError();
+	return id;
+}
+
+void deleteOcclusionQuery(Id& id) {
+	if (id == InvalidId) {
+		return;
+	}
+	glDeleteQueries(1, &id);
+	id = InvalidId;
+	checkError();
+}
+
+bool isOcclusionQuery(Id id) {
+	if (id == InvalidId) {
+		return false;
+	}
+	const GLboolean state = glIsQuery(id);
+	checkError();
+	return (bool)state;
+}
+
+bool beginOcclusionQuery(Id id) {
+	if (_priv::s.occlusionQuery == id || id == InvalidId) {
+		return false;
+	}
+	_priv::s.occlusionQuery = id;
+	glBeginQuery(GL_SAMPLES_PASSED, id);
+	checkError();
+	return true;
+}
+
+bool endOcclusionQuery(Id id) {
+	if (_priv::s.occlusionQuery != id || id == InvalidId) {
+		return false;
+	}
+	glEndQuery(GL_SAMPLES_PASSED);
+	_priv::s.occlusionQuery = video::InvalidId;
+	checkError();
+	return true;
+}
+
+// TODO: cache this per id per frame - or just the last queried id?
+bool isOcclusionQueryAvailable(Id id) {
+	if (id == InvalidId) {
+		return false;
+	}
+	GLint available;
+	glGetQueryObjectiv(id, GL_QUERY_RESULT_AVAILABLE, &available);
+	checkError();
+	return available != 0;
+}
+
+int getOcclusionQueryResult(Id id) {
+	if (id == InvalidId) {
+		return -1;
+	}
+	if (!isOcclusionQueryAvailable(id)) {
+		return -1;
+	}
+	GLint samples;
+	glGetQueryObjectiv(id, GL_QUERY_RESULT, &samples);
+	checkError();
+	return (int)samples;
 }
 
 Id bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle) {
