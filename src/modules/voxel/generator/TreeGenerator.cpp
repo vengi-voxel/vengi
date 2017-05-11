@@ -126,6 +126,7 @@ bool Tree::grow() {
 
 			// Min attraction point distance reached, we remove it
 			if (length <= _minDistance2) {
+				// TODO: don't remove them - even if they aren't the leaves - use them as a hack
 				pi = _attractionPoints.erase(pi);
 				attractionPointRemoved = true;
 				break;
