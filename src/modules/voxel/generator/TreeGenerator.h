@@ -63,7 +63,7 @@ private:
 	float _branchSizeFactor = 0.6f;
 
 	Branch *_root;
-	std::vector<AttractionPoint> _attrationPoints;
+	std::vector<AttractionPoint> _attractionPoints;
 	std::unordered_map<glm::vec3, Branch*, std::hash<glm::vec3>> _branches;
 	core::Random _random;
 	core::AABB<int> _crown;
@@ -88,9 +88,9 @@ public:
 
 	template<class Volume>
 	void generate(Volume& volume, const glm::ivec3& leafSize = glm::ivec3(4)) const {
-		Log::debug("Generate for %i attraction points and %i branches", (int)_attrationPoints.size(), (int)_branches.size());
+		Log::debug("Generate for %i attraction points and %i branches", (int)_attractionPoints.size(), (int)_branches.size());
 		const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, _random);
-		for (const AttractionPoint& attractionPoint : _attrationPoints) {
+		for (const AttractionPoint& attractionPoint : _attractionPoints) {
 			voxel::shape::createEllipse(volume, attractionPoint._position, leafSize.x, leafSize.y, leafSize.z, leavesVoxel);
 		}
 

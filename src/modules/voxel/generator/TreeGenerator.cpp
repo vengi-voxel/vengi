@@ -44,7 +44,7 @@ void Tree::generateCrown(int radius) {
 				_random.random(_crown.getLowerY(), _crown.getUpperY()),
 				_random.random(_crown.getLowerZ(), _crown.getUpperZ()));
 		if (glm::distance2(location, center) < radiusSquare) {
-			_attrationPoints.emplace_back(AttractionPoint(location));
+			_attractionPoints.emplace_back(AttractionPoint(location));
 		}
 	}
 }
@@ -97,7 +97,7 @@ Tree::~Tree() {
 	}
 	_root = nullptr;
 	_branches.clear();
-	_attrationPoints.clear();
+	_attractionPoints.clear();
 }
 
 bool Tree::grow() {
@@ -106,13 +106,13 @@ bool Tree::grow() {
 	}
 
 	// If no attraction points left, we are done
-	if (_attrationPoints.empty()) {
+	if (_attractionPoints.empty()) {
 		_doneGrowing = true;
 		return false;
 	}
 
 	// process the attraction points
-	for (auto pi = _attrationPoints.begin(); pi != _attrationPoints.end();) {
+	for (auto pi = _attractionPoints.begin(); pi != _attractionPoints.end();) {
 		bool attractionPointRemoved = false;
 		AttractionPoint& attractionPoint = *pi;
 
@@ -126,7 +126,7 @@ bool Tree::grow() {
 
 			// Min attraction point distance reached, we remove it
 			if (length <= _minDistance2) {
-				pi = _attrationPoints.erase(pi);
+				pi = _attractionPoints.erase(pi);
 				attractionPointRemoved = true;
 				break;
 			} else if (length <= _maxDistance2) {
