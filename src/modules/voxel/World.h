@@ -199,6 +199,8 @@ private:
 	Region getMeshRegion(const glm::ivec3& pos) const;
 	Region getRegion(const glm::ivec3& pos, int size) const;
 
+	void extractScheduledMesh();
+
 	WorldPager _pager;
 	PagedVolume *_volumeData = nullptr;
 	BiomeManager _biomeManager;
