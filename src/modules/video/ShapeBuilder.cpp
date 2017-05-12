@@ -11,12 +11,12 @@ void ShapeBuilder::aabbGridXY(const core::AABB<float>& aabb, bool near, float st
 	const float wy = halfWidth.y + center.y;
 	const float wz = near ? 0.0f : center.z + halfWidth.z;
 	for (float x = 0.0f; x <= width.x; x += stepWidth) {
-		addIndex(addVertex(glm::vec3(x, 0.0f, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
-		addIndex(addVertex(glm::vec3(x, wy, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(x, 0.0f, wz)));
+		addIndex(addVertex(glm::vec3(x, wy, wz)));
 	}
 	for (float y = 0.0f; y <= width.y; y += stepWidth) {
-		addIndex(addVertex(glm::vec3(0.0f, y, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
-		addIndex(addVertex(glm::vec3(wx, y, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(0.0f, y, wz)));
+		addIndex(addVertex(glm::vec3(wx, y, wz)));
 	}
 }
 
@@ -29,12 +29,12 @@ void ShapeBuilder::aabbGridYZ(const core::AABB<float>& aabb, bool near, float st
 	const float wy = halfWidth.y + center.y;
 	const float wz = halfWidth.z + center.z;
 	for (float y = 0.0f; y <= width.y; y += stepWidth) {
-		addIndex(addVertex(glm::vec3(wx, y, 0.0f), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
-		addIndex(addVertex(glm::vec3(wx, y, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(wx, y, 0.0f)));
+		addIndex(addVertex(glm::vec3(wx, y, wz)));
 	}
 	for (float z = 0.0f; z <= width.z; z += stepWidth) {
-		addIndex(addVertex(glm::vec3(wx, 0.0f, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
-		addIndex(addVertex(glm::vec3(wx, wy, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(wx, 0.0f, z)));
+		addIndex(addVertex(glm::vec3(wx, wy, z)));
 	}
 }
 
@@ -47,13 +47,73 @@ void ShapeBuilder::aabbGridXZ(const core::AABB<float>& aabb, bool near, float st
 	const float wy = near ? 0.0f : center.y + halfWidth.y;
 	const float wz = halfWidth.z + center.z;
 	for (float x = 0.0f; x <= width.x; x += stepWidth) {
-		addIndex(addVertex(glm::vec3(x, wy, 0.0f), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
-		addIndex(addVertex(glm::vec3(x, wy, wz), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(x, wy, 0.0f)));
+		addIndex(addVertex(glm::vec3(x, wy, wz)));
 	}
 	for (float z = 0.0f; z <= width.z; z += stepWidth) {
-		addIndex(addVertex(glm::vec3(0.0f, wy, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
-		addIndex(addVertex(glm::vec3(wx, wy, z), glm::zero<glm::vec2>(), glm::zero<glm::vec3>()));
+		addIndex(addVertex(glm::vec3(0.0f, wy, z)));
+		addIndex(addVertex(glm::vec3(wx, wy, z)));
 	}
+}
+
+void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs) {
+	setPrimitive(Primitive::Triangles);
+
+	// counter clock wise
+
+	// left side
+	int offset = _vertices.size();
+	addVertex(glm::vec3(mins[0], mins[1], mins[2]));
+	addVertex(glm::vec3(mins[0], maxs[1], mins[2]));
+	addVertex(glm::vec3(mins[0], maxs[1], maxs[2]));
+	addVertex(glm::vec3(mins[0], mins[1], maxs[2]));
+	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
+	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
+
+	// right side
+	offset = _vertices.size();
+	addVertex(glm::vec3(maxs[0], mins[1], maxs[2]));
+	addVertex(glm::vec3(maxs[0], maxs[1], maxs[2]));
+	addVertex(glm::vec3(maxs[0], maxs[1], mins[2]));
+	addVertex(glm::vec3(maxs[0], mins[1], mins[2]));
+	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
+	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
+
+	// back side
+	offset = _vertices.size();
+	addVertex(glm::vec3(mins[0], mins[1], maxs[2]));
+	addVertex(glm::vec3(mins[0], maxs[1], maxs[2]));
+	addVertex(glm::vec3(maxs[0], maxs[1], maxs[2]));
+	addVertex(glm::vec3(maxs[0], mins[1], maxs[2]));
+	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
+	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
+
+	// front side
+	offset = _vertices.size();
+	addVertex(glm::vec3(maxs[0], mins[1], mins[2]));
+	addVertex(glm::vec3(maxs[0], maxs[1], mins[2]));
+	addVertex(glm::vec3(mins[0], maxs[1], mins[2]));
+	addVertex(glm::vec3(mins[0], mins[1], mins[2]));
+	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
+	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
+
+	// bottom side
+	offset = _vertices.size();
+	addVertex(glm::vec3(mins[0], mins[1], mins[2]));
+	addVertex(glm::vec3(mins[0], mins[1], maxs[2]));
+	addVertex(glm::vec3(maxs[0], mins[1], maxs[2]));
+	addVertex(glm::vec3(maxs[0], mins[1], mins[2]));
+	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
+	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
+
+	// top side
+	offset = _vertices.size();
+	addVertex(glm::vec3(maxs[0], maxs[1], mins[2]));
+	addVertex(glm::vec3(maxs[0], maxs[1], maxs[2]));
+	addVertex(glm::vec3(mins[0], maxs[1], maxs[2]));
+	addVertex(glm::vec3(mins[0], maxs[1], mins[2]));
+	addIndex(offset + 0); addIndex(offset + 1); addIndex(offset + 3);
+	addIndex(offset + 3); addIndex(offset + 1); addIndex(offset + 2);
 }
 
 void ShapeBuilder::aabb(const core::AABB<float>& aabb, bool renderGrid, float stepWidth) {
@@ -70,7 +130,7 @@ void ShapeBuilder::aabb(const core::AABB<float>& aabb, bool renderGrid, float st
 	const glm::vec3& halfWidth = width / 2.0f;
 	const glm::vec3& center = aabb.getCenter();
 	for (size_t i = 0; i < SDL_arraysize(vecs); ++i) {
-		addVertex(vecs[i] * halfWidth + center, glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+		addVertex(vecs[i] * halfWidth + center);
 	}
 
 	// front
@@ -128,7 +188,7 @@ void ShapeBuilder::geom(const std::vector<glm::vec3>& vert, const std::vector<ui
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 
 	for (const glm::vec3& v : vert) {
-		addVertex(v, glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+		addVertex(v);
 	}
 
 	for (uint32_t i : indices) {
@@ -219,7 +279,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 			camera.splitFrustum(near, far, out);
 
 			for (size_t i = 0; i < SDL_arraysize(out); ++i) {
-				addVertex(out[i], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+				addVertex(out[i]);
 			}
 
 			for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
@@ -231,7 +291,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 		reserve(core::FRUSTUM_VERTICES_MAX + targetLineVertices);
 
 		for (size_t i = 0; i < SDL_arraysize(out); ++i) {
-			addVertex(out[i], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+			addVertex(out[i]);
 		}
 
 		for (size_t i = 0; i < SDL_arraysize(indices); ++i) {
@@ -241,8 +301,8 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 	if (camera.rotationType() == CameraRotationType::Target) {
 		setColor(core::Color::Green);
-		addVertex(camera.position(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
-		addVertex(camera.target(), glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+		addVertex(camera.position());
+		addVertex(camera.target());
 		addIndex(startIndex + core::FRUSTUM_VERTICES_MAX + 0);
 		addIndex(startIndex + core::FRUSTUM_VERTICES_MAX + 1);
 	}
@@ -260,14 +320,14 @@ void ShapeBuilder::axis(float scale) {
 			 glm::vec3( 0.0f,   0.0f,  scale)};
 
 	setColor(core::Color::Red);
-	addVertex(verticesAxis[0], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
-	addVertex(verticesAxis[1], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+	addVertex(verticesAxis[0]);
+	addVertex(verticesAxis[1]);
 	setColor(core::Color::Green);
-	addVertex(verticesAxis[2], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
-	addVertex(verticesAxis[3], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+	addVertex(verticesAxis[2]);
+	addVertex(verticesAxis[3]);
 	setColor(core::Color::Blue);
-	addVertex(verticesAxis[4], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
-	addVertex(verticesAxis[5], glm::zero<glm::vec2>(), glm::zero<glm::vec3>());
+	addVertex(verticesAxis[4]);
+	addVertex(verticesAxis[5]);
 
 	for (size_t i = 0; i < SDL_arraysize(verticesAxis); ++i) {
 		addIndex(startIndex + i);
