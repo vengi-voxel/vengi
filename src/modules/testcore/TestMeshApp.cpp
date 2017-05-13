@@ -181,6 +181,7 @@ void TestMeshApp::doRender() {
 		_colorShader.recordUsedUniforms(true);
 		_colorShader.clearUsedUniforms();
 		_colorShader.setViewprojection(_camera.viewProjectionMatrix());
+		_colorShader.setModel(glm::mat4());
 		_mesh->renderNormals(_colorShader);
 	}
 

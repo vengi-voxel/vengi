@@ -146,10 +146,10 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 
-void ShapeRenderer::renderAll(const video::Camera& camera) const {
+void ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model) const {
 	video::ScopedShader scoped(_colorShader);
 	core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
-
+	core_assert_always(_colorShader.setModel(model));
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
 			continue;
@@ -161,9 +161,10 @@ void ShapeRenderer::renderAll(const video::Camera& camera) const {
 	}
 }
 
-void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera) const {
+void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model) const {
 	video::ScopedShader scoped(_colorShader);
 	core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
+	core_assert_always(_colorShader.setModel(model));
 
 	core_assert_always(_vbo[meshIndex].bind());
 	const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));

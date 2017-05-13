@@ -39,9 +39,9 @@ public:
 
 	void update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder);
 
-	void render(uint32_t meshIndex, const video::Camera& camera) const;
+	void render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4()) const;
 
-	void renderAll(const video::Camera& camera) const;
+	void renderAll(const video::Camera& camera, const glm::mat4& model = glm::mat4()) const;
 };
 
 }
