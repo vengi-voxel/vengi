@@ -18,6 +18,10 @@
 constexpr int MinCullingDistance = 500;
 constexpr int MinExtractionCullingDistance = 1000;
 
+namespace config {
+constexpr const char *RenderAABB = "r_renderaabb";
+}
+
 namespace frontend {
 
 const std::string MaxDepthBufferUniformName = "u_cascades";
@@ -57,6 +61,8 @@ void WorldRenderer::shutdown() {
 	_entities.clear();
 	_opaqueBuffer.shutdown();
 	_waterBuffer.shutdown();
+	_shapeRenderer.shutdown();
+	_shapeBuilder.shutdown();
 
 	for (PlantBuffer& vbo : _meshPlantList) {
 		vbo.shutdown();
@@ -220,10 +226,16 @@ int WorldRenderer::cull(const video::Camera& camera) {
 	const core::AABB<float>& aabb = camera.aabb();
 	_octree.query(core::AABB<int>(aabb.mins(), aabb.maxs()), contents);
 	_queryResults = contents.size();
+
+	_shapeBuilder.clear();
 	for (ChunkBuffer* chunkBuffer : contents) {
 		const core::AABB<int>& aabb = chunkBuffer->aabb();
 		if (!camera.isVisible(aabb.mins(), aabb.maxs())) {
 			continue;
+		}
+		if (_renderAABBs->boolVal()) {
+			_shapeBuilder.setColor(core::Color::Red);
+			_shapeBuilder.aabb(aabb);
 		}
 		const voxel::ChunkMeshes& meshes = chunkBuffer->meshes;
 		opaqueIndexOffset += transform(opaqueIndexOffset, meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
@@ -477,6 +489,15 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 		_shadowMapDebugBuffer.unbind();
 	}
 
+	if (_renderAABBs->boolVal()) {
+		if (_aabbMeshes == -1) {
+			_aabbMeshes = _shapeRenderer.createMesh(_shapeBuilder);
+		} else {
+			_shapeRenderer.update(_aabbMeshes, _shapeBuilder);
+		}
+		_shapeRenderer.render(_aabbMeshes, camera);
+	}
+
 	return drawCallsWorld;
 }
 
@@ -609,6 +630,7 @@ void WorldRenderer::stats(Stats& stats) const {
 void WorldRenderer::onConstruct() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");
+	_renderAABBs = core::Var::get(config::RenderAABB, "false");
 }
 
 bool WorldRenderer::initOpaqueBuffer() {
@@ -677,6 +699,11 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	core_trace_scoped(WorldRendererOnInit);
 	_colorTexture.init();
 	_plantGenerator.generateAll();
+
+	if (!_shapeRenderer.init()) {
+		Log::error("Failed to init the shape renderer");
+		return false;
+	}
 
 	if (!_worldShader.setup()) {
 		return false;

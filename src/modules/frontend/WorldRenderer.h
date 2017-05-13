@@ -21,6 +21,8 @@
 #include "ClientEntity.h"
 #include "frontend/Shadow.h"
 #include "frontend/RandomColorTexture.h"
+#include "video/ShapeBuilder.h"
+#include "frontend/ShapeRenderer.h"
 
 #include <unordered_map>
 #include <list>
@@ -92,6 +94,11 @@ protected:
 	Shadow _shadow;
 	RandomColorTexture _colorTexture;
 	voxel::PlantGenerator _plantGenerator;
+
+	video::ShapeBuilder _shapeBuilder;
+	frontend::ShapeRenderer _shapeRenderer;
+	int32_t _aabbMeshes = -1;
+	core::VarPtr _renderAABBs;
 
 	float _fogRange = 250.0f;
 	// TODO: get the view distance from the server - entity attributes
