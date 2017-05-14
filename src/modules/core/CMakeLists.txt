@@ -17,6 +17,7 @@ set(SRCS
 	Frustum.cpp Frustum.h
 	GameConfig.h
 	GLM.cpp GLM.h
+	Hash.h
 	IFactoryRegistry.h
 	Input.cpp Input.h
 	JSON.h json.hpp
@@ -24,6 +25,7 @@ set(SRCS
 	MD5.cpp MD5.h
 	MemoryAllocator.h
 	MemGuard.cpp MemGuard.h
+	MurmurHash3.cpp MurmurHash3.h
 	NonCopyable.h
 	Octree.h
 	Plane.h Plane.cpp

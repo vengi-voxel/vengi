@@ -17,135 +17,209 @@ bool Shader::setUniformBuffer(const std::string& name, const UniformBuffer& buff
 	if (!uniform->block) {
 		return false;
 	}
-	glUniformBlockBinding(_program, uniform->location, 0);
+	// glGetUniformBlockIndex?
+	const GLuint uniformBlockBinding = 0;
+	glUniformBlockBinding(_program, (GLuint)uniform->location, uniformBlockBinding);
 	checkError();
 	addUsedUniform(uniform->location);
 	return buffer.bind();
 }
 
 void Shader::setUniformui(int location, unsigned int value) const {
-	glUniform1ui(location, value);
-	checkError();
+	if (checkUniformCache(location, &value, sizeof(value))) {
+		glUniform1ui(location, value);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
 void Shader::setUniformi(int location, int value) const {
-	glUniform1i(location, value);
-	checkError();
+	if (checkUniformCache(location, &value, sizeof(value))) {
+		glUniform1i(location, value);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
 void Shader::setUniformi(int location, int value1, int value2) const {
-	glUniform2i(location, value1, value2);
-	checkError();
+	const int value[] = { value1, value2 };
+	if (checkUniformCache(location, value, sizeof(value))) {
+		glUniform2i(location, value1, value2);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
 void Shader::setUniformi(int location, int value1, int value2, int value3) const {
-	glUniform3i(location, value1, value2, value3);
-	checkError();
+	const int value[] = { value1, value2, value3 };
+	if (checkUniformCache(location, value, sizeof(value))) {
+		glUniform3i(location, value1, value2, value3);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
 void Shader::setUniformi(int location, int value1, int value2, int value3, int value4) const {
-	glUniform4i(location, value1, value2, value3, value4);
-	checkError();
+	const int value[] = { value1, value2, value3, value4 };
+	if (checkUniformCache(location, value, sizeof(value))) {
+		glUniform4i(location, value1, value2, value3, value4);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
-void Shader::setUniform1iv(int location, const int* values, int length) const {
-	glUniform1iv(location, length, values);
-	checkError();
+void Shader::setUniform1iv(int location, const int* values, int amount) const {
+	if (checkUniformCache(location, values, amount * sizeof(int))) {
+		glUniform1iv(location, amount, values);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
-void Shader::setUniform2iv(int location, const int* values, int length) const {
-	glUniform2iv(location, length / 2, values);
-	checkError();
+void Shader::setUniform2iv(int location, const int* values, int amount) const {
+	if (checkUniformCache(location, values, amount * sizeof(int))) {
+		glUniform2iv(location, amount / 2, values);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
-void Shader::setUniform3iv(int location, const int* values, int length) const {
-	glUniform3iv(location, length / 3, values);
-	checkError();
+void Shader::setUniform3iv(int location, const int* values, int amount) const {
+	if (checkUniformCache(location, values, amount * sizeof(int))) {
+		glUniform3iv(location, amount / 3, values);
+		checkError();
+	}
+	addUsedUniform(location);
+}
+
+void Shader::setUniformIVec2v(int location, const glm::ivec2* value, int amount) const {
+	if (checkUniformCache(location, glm::value_ptr(*value), amount * sizeof(glm::ivec2))) {
+		glUniform2iv(location, amount, glm::value_ptr(*value));
+		checkError();
+	}
+	addUsedUniform(location);
+}
+
+void Shader::setUniformIVec3v(int location, const glm::ivec3* value, int amount) const {
+	if (checkUniformCache(location, glm::value_ptr(*value), amount * sizeof(glm::ivec3))) {
+		glUniform3iv(location, amount, glm::value_ptr(*value));
+		checkError();
+	}
+	addUsedUniform(location);
+}
+
+void Shader::setUniformIVec4v(int location, const glm::ivec4* value, int amount) const {
+	if (checkUniformCache(location, glm::value_ptr(*value), amount * sizeof(glm::ivec4))) {
+		glUniform4iv(location, amount, glm::value_ptr(*value));
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
 void Shader::setUniformf(int location, float value) const {
-	glUniform1f(location, value);
-	checkError();
+	if (checkUniformCache(location, &value, sizeof(value))) {
+		glUniform1f(location, value);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
 void Shader::setUniformf(int location, float value1, float value2) const {
-	glUniform2f(location, value1, value2);
-	checkError();
+	const float value[] = { value1, value2 };
+	if (checkUniformCache(location, value, sizeof(value))) {
+		glUniform2f(location, value1, value2);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
 void Shader::setUniformf(int location, float value1, float value2, float value3) const {
-	glUniform3f(location, value1, value2, value3);
-	checkError();
+	const float value[] = { value1, value2, value3 };
+	if (checkUniformCache(location, value, sizeof(value))) {
+		glUniform3f(location, value1, value2, value3);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
 void Shader::setUniformf(int location, float value1, float value2, float value3, float value4) const {
-	glUniform4f(location, value1, value2, value3, value4);
-	checkError();
+	const float value[] = { value1, value2, value3, value4 };
+	if (checkUniformCache(location, value, sizeof(value))) {
+		glUniform4f(location, value1, value2, value3, value4);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
-void Shader::setUniform4fv(int location, const float* values, int length) const {
-	glUniform4fv(location, length / 4, values);
-	checkError();
+void Shader::setUniform4fv(int location, const float* values, int amount) const {
+	if (checkUniformCache(location, values, amount * sizeof(float))) {
+		glUniform4fv(location, amount / 4, values);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
-void Shader::setUniformVec4v(int location, const glm::vec4* value, int length) const {
-	glUniform4fv(location, length, glm::value_ptr(*value));
-	checkError();
+void Shader::setUniformVec4v(int location, const glm::vec4* value, int amount) const {
+	if (checkUniformCache(location, glm::value_ptr(*value), amount * sizeof(glm::vec4))) {
+		glUniform4fv(location, amount, glm::value_ptr(*value));
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
 void Shader::setUniformMatrixv(int location, const glm::mat4* matrixes, int amount, bool transpose) const {
-	glUniformMatrix4fv(location, amount, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrixes[0]));
-	checkError();
+	if (checkUniformCache(transpose ? -location : location, glm::value_ptr(matrixes[0]), amount * sizeof(glm::mat4))) {
+		glUniformMatrix4fv(location, amount, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrixes[0]));
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
 void Shader::setUniformMatrixv(int location, const glm::mat3* matrixes, int amount, bool transpose) const {
-	glUniformMatrix3fv(location, amount, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrixes[0]));
-	checkError();
+	if (checkUniformCache(transpose ? -location : location, glm::value_ptr(matrixes[0]), amount * sizeof(glm::mat3))) {
+		glUniformMatrix3fv(location, amount, transpose ? GL_TRUE : GL_FALSE, glm::value_ptr(matrixes[0]));
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
-void Shader::setUniform1fv(int location, const float* values, int length) const {
-	glUniform1fv(location, length, values);
-	checkError();
+void Shader::setUniform1fv(int location, const float* values, int amount) const {
+	if (checkUniformCache(location, values, amount * sizeof(float))) {
+		glUniform1fv(location, amount, values);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
-void Shader::setUniform2fv(int location, const float* values, int length) const {
-	glUniform2fv(location, length / 2, values);
-	checkError();
+void Shader::setUniform2fv(int location, const float* values, int amount) const {
+	if (checkUniformCache(location, values, amount * sizeof(float))) {
+		glUniform2fv(location, amount / 2, values);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
-void Shader::setUniformVec2v(int location, const glm::vec2* value, int length) const {
-	glUniform2fv(location, length, glm::value_ptr(*value));
-	checkError();
+void Shader::setUniformVec2v(int location, const glm::vec2* value, int amount) const {
+	if (checkUniformCache(location, glm::value_ptr(*value), amount * sizeof(glm::vec2))) {
+		glUniform2fv(location, amount, glm::value_ptr(*value));
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
-void Shader::setUniformVec3v(int location, const glm::vec3* value, int length) const {
-	glUniform3fv(location, length, glm::value_ptr(*value));
-	checkError();
+void Shader::setUniformVec3v(int location, const glm::vec3* value, int amount) const {
+	if (checkUniformCache(location, glm::value_ptr(*value), amount * sizeof(glm::vec3))) {
+		glUniform3fv(location, amount, glm::value_ptr(*value));
+		checkError();
+	}
 	addUsedUniform(location);
 }
 
-void Shader::setUniform3fv(int location, const float* values, int length) const {
-	glUniform3fv(location, length / 3, values);
-	checkError();
+void Shader::setUniform3fv(int location, const float* values, int amount) const {
+	if (checkUniformCache(location, values, amount * sizeof(float))) {
+		glUniform3fv(location, amount / 3, values);
+		checkError();
+	}
 	addUsedUniform(location);
 }
 

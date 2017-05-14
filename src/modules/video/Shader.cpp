@@ -6,6 +6,7 @@
 
 #include "core/App.h"
 #include "core/Common.h"
+#include "core/Hash.h"
 #include "io/Filesystem.h"
 #include "Version.h"
 #include "core/Var.h"
@@ -85,6 +86,7 @@ void Shader::shutdown() {
 	for (auto& shader : _shader) {
 		video::deleteShader(shader.second);
 	}
+	_uniformStateMap.clear();
 	_shader.clear();
 	video::deleteProgram(_program);
 	_initialized = false;
@@ -213,6 +215,17 @@ int Shader::checkAttributeLocation(const std::string& name) const {
 		return -1;
 	}
 	return i->second;
+}
+
+bool Shader::checkUniformCache(int location, const void* value, size_t length) const {
+	auto i = _uniformStateMap.find(location);
+	const uint32_t hash = core::fastHash(value, length);
+	if (i == _uniformStateMap.end()) {
+		_uniformStateMap[location] = hash;
+		return true;
+	}
+	const uint32_t current = i->second;
+	return current != hash;
 }
 
 int Shader::getUniformLocation(const std::string& name) const {

@@ -41,6 +41,9 @@ protected:
 	typedef std::unordered_map<ShaderType, Id, EnumClassHash> ShaderMap;
 	ShaderMap _shader;
 
+	typedef std::unordered_map<int, uint32_t> UniformStateMap;
+	mutable UniformStateMap _uniformStateMap;
+
 	Id _program = InvalidId;
 	bool _initialized = false;;
 	mutable bool _active = false;
@@ -74,6 +77,14 @@ protected:
 	int fetchAttributes();
 
 	bool createProgramFromShaders();
+
+	/**
+	 * @param[in] location The uniform location in the shader
+	 * @param[in] value The buffer with the data
+	 * @param[in] length The length in bytes of the given value buffer
+	 * @return @c false if no change is needed, @c true if we have to update the value
+	 */
+	bool checkUniformCache(int location, const void* value, size_t length) const;
 
 	std::string handleIncludes(const std::string& buffer) const;
 public:
@@ -223,21 +234,57 @@ public:
 	void setUniformi(int location, int value1, int value2) const;
 	void setUniformi(int location, int value1, int value2, int value3) const;
 	void setUniformi(int location, int value1, int value2, int value3, int value4) const;
-	void setUniform1iv(int location, const int* values, int length) const;
-	void setUniform2iv(int location, const int* values, int length) const;
-	void setUniform3iv(int location, const int* values, int length) const;
+	/**
+	 * @param[in] amount The amount of int values
+	 */
+	void setUniform1iv(int location, const int* values, int amount) const;
+	/**
+	 * @param[in] amount The amount of int values
+	 */
+	void setUniform2iv(int location, const int* values, int amount) const;
+	/**
+	 * @param[in] amount The amount of int values
+	 */
+	void setUniform3iv(int location, const int* values, int amount) const;
+	void setUniformIVec2v(int location, const glm::ivec2* value, int amount) const;
+	void setUniformIVec3v(int location, const glm::ivec3* value, int amount) const;
+	void setUniformIVec4v(int location, const glm::ivec4* value, int amount) const;
 	void setUniformf(int location, float value) const;
 	void setUniformf(int location, float value1, float value2) const;
 	void setUniformf(int location, float value1, float value2, float value3) const;
 	void setUniformf(int location, float value1, float value2, float value3, float value4) const;
-	void setUniform1fv(int location, const float* values, int length) const;
-	void setUniform2fv(int location, const float* values, int length) const;
-	void setUniformVec2v(int location, const glm::vec2* value, int length) const;
+	/**
+	 * @param[in] amount The amount of float values
+	 */
+	void setUniform1fv(int location, const float* values, int amount) const;
+	/**
+	 * @param[in] amount The amount of float values
+	 */
+	void setUniform2fv(int location, const float* values, int amount) const;
+	/**
+	 * @param[in] amount The amount of the matrix instances
+	 */
+	void setUniformVec2v(int location, const glm::vec2* value, int amount) const;
 	void setUniformVec3(int location, const glm::vec3& value) const;
-	void setUniform4fv(int location, const float* values, int length) const;
-	void setUniform3fv(int location, const float* values, int length) const;
-	void setUniformVec3v(int location, const glm::vec3* value, int length) const;
-	void setUniformVec4v(int location, const glm::vec4* value, int length) const;
+	/**
+	 * @param[in] amount The amount of float values
+	 */
+	void setUniform4fv(int location, const float* values, int amount) const;
+	/**
+	 * @param[in] amount The amount of float values
+	 */
+	void setUniform3fv(int location, const float* values, int amount) const;
+	/**
+	 * @param[in] amount The amount of the vector instances
+	 */
+	void setUniformVec3v(int location, const glm::vec3* value, int amount) const;
+	/**
+	 * @param[in] amount The amount of the vector instances
+	 */
+	void setUniformVec4v(int location, const glm::vec4* value, int amount) const;
+	/**
+	 * @param[in] amount The amount of the matrix instances
+	 */
 	void setUniformMatrixv(int location, const glm::mat4* matrixes, int amount, bool transpose = false) const;
 	void setVertexAttribute(int location, int size, DataType type, bool normalize, int stride, const void* buffer) const;
 	void setVertexAttributeInt(int location, int size, DataType type, int stride, const void* buffer) const;
