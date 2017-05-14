@@ -675,6 +675,10 @@ void deleteOcclusionQuery(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
+#if SANITY_CHECKS_GL
+	const GLboolean state = glIsQuery(id);
+	core_assert_always(state == GL_TRUE);
+#endif
 	glDeleteQueries(1, &id);
 	id = InvalidId;
 	checkError();
@@ -694,6 +698,10 @@ bool beginOcclusionQuery(Id id) {
 		return false;
 	}
 	_priv::s.occlusionQuery = id;
+#if SANITY_CHECKS_GL
+	const GLboolean state = glIsQuery(id);
+	core_assert_always(state == GL_TRUE);
+#endif
 	glBeginQuery(GL_SAMPLES_PASSED, id);
 	checkError();
 	return true;
@@ -719,6 +727,10 @@ bool isOcclusionQueryAvailable(Id id) {
 	if (id == InvalidId) {
 		return false;
 	}
+#if SANITY_CHECKS_GL
+	const GLboolean state = glIsQuery(id);
+	core_assert_always(state == GL_TRUE);
+#endif
 	GLint available;
 	glGetQueryObjectiv(id, GL_QUERY_RESULT_AVAILABLE, &available);
 	checkError();
@@ -726,9 +738,6 @@ bool isOcclusionQueryAvailable(Id id) {
 }
 
 int getOcclusionQueryResult(Id id) {
-	if (id == InvalidId) {
-		return -1;
-	}
 	if (!isOcclusionQueryAvailable(id)) {
 		return -1;
 	}
@@ -743,7 +752,7 @@ Id bindFramebuffer(FrameBufferMode mode, Id handle, Id textureHandle) {
 #if SANITY_CHECKS_GL
 	GLint _oldFramebuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
-	core_assert(_oldFramebuffer == (GLint)old);
+	core_assert_always(_oldFramebuffer == (GLint)old);
 #endif
 	if (old == handle && _priv::s.framebufferTextureHandle == textureHandle) {
 		return handle;

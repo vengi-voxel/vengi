@@ -205,6 +205,7 @@ extern bool endOcclusionQuery(Id id);
 extern bool isOcclusionQueryAvailable(Id id);
 /**
  * @return The value of the query object's passed samples counter. The initial value is 0, -1 is returned on error
+ * or if no result is available yet - this call does not block the gpu
  */
 extern int getOcclusionQueryResult(Id id);
 /**
