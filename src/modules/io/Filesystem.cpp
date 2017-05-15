@@ -13,6 +13,10 @@ Filesystem::Filesystem() :
 		_threadPool(1, "IO") {
 }
 
+Filesystem::~Filesystem() {
+	shutdown();
+}
+
 void Filesystem::init(const std::string& organisation, const std::string& appname) {
 	_organisation = organisation;
 	_appname = appname;
@@ -36,6 +40,10 @@ void Filesystem::init(const std::string& organisation, const std::string& appnam
 	Log::debug("homepath: %s", _homePath.c_str());
 	core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 	core::Var::get(cfg::AppBasePath, _basePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
+}
+
+void Filesystem::shutdown() {
+	_threadPool.shutdown();
 }
 
 bool Filesystem::isRelativeFilename(const std::string& name) const {

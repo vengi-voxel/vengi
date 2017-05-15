@@ -481,6 +481,9 @@ AppState App::onCleanup() {
 	}
 	SDL_ResetAssertionReport();
 
+	_filesystem->shutdown();
+	_threadPool.shutdown();
+
 	core_trace_shutdown();
 
 	return AppState::Destroy;

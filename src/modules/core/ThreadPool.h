@@ -49,6 +49,8 @@ public:
 	template<class F, class ... Args>
 	auto enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type>;
 
+	void shutdown();
+
 	~ThreadPool();
 private:
 	// need to keep track of threads so we can join them
@@ -67,6 +69,9 @@ template<class F, class ... Args>
 auto ThreadPool::enqueue(F&& f, Args&&... args)
 -> std::future<typename std::result_of<F(Args...)>::type> {
 	using return_type = typename std::result_of<F(Args...)>::type;
+	if (_stop) {
+		return std::future<return_type>();
+	}
 
 	auto task = std::make_shared<std::packaged_task<return_type()> >(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
 

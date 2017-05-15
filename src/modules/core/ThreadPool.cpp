@@ -40,11 +40,16 @@ ThreadPool::ThreadPool(size_t threads, const char *name) :
 }
 
 ThreadPool::~ThreadPool() {
+	shutdown();
+}
+
+void ThreadPool::shutdown() {
 	_stop = true;
 	_condition.notify_all();
 	for (std::thread &worker : _workers) {
 		worker.join();
 	}
+	_workers.clear();
 }
 
 }

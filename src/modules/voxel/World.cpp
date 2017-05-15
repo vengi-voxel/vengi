@@ -157,6 +157,7 @@ void World::extractScheduledMesh() {
 
 void World::shutdown() {
 	_cancelThreads = true;
+	_threadPool.shutdown();
 	_meshesQueue.abortWait();
 	_meshesQueue.clear();
 	_meshQueue.abortWait();

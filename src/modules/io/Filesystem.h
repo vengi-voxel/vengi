@@ -25,8 +25,10 @@ private:
 	std::string _homePath;
 public:
 	Filesystem();
+	~Filesystem();
 
 	void init(const std::string& organisation, const std::string& appname);
+	void shutdown();
 
 	/**
 	 * @brief Get the path where the application resides.
