@@ -13,10 +13,10 @@
 class TestApp: public imgui::IMGUIApp {
 private:
 	using Super = imgui::IMGUIApp;
+protected:
 	bool _cameraMotion = false;
 	bool _renderPlane = false;
 	bool _renderAxis = true;
-protected:
 	video::Camera _camera;
 	frontend::Axis _axis;
 	frontend::Plane _plane;

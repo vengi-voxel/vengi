@@ -68,7 +68,7 @@ int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
 		return -1;
 	}
 
-	const video::ShapeBuilder::Indices& indices= shapeBuilder.getIndices();
+	const video::ShapeBuilder::Indices& indices = shapeBuilder.getIndices();
 	_indexIndex[meshIndex] = _vbo[meshIndex].create(indices, video::VertexBufferType::IndexBuffer);
 	if (_indexIndex[meshIndex] == -1) {
 		_vertexIndex[meshIndex] = -1;

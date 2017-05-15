@@ -15,8 +15,9 @@ namespace frontend {
  * @see video::VertexBuffer
  */
 class ShapeRenderer {
-private:
+public:
 	static constexpr int MAX_MESHES = 16;
+private:
 	video::VertexBuffer _vbo[MAX_MESHES];
 	int32_t _vertexIndex[MAX_MESHES];
 	int32_t _indexIndex[MAX_MESHES];

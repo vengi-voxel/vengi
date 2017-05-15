@@ -5,54 +5,42 @@ namespace video {
 void ShapeBuilder::aabbGridXY(const core::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
 	const glm::vec3& width = aabb.getWidth();
-	const glm::vec3& halfWidth = width / 2.0f;
-	const glm::vec3& center = aabb.getCenter();
-	const float wx = halfWidth.x + center.x;
-	const float wy = halfWidth.y + center.y;
-	const float wz = near ? 0.0f : center.z + halfWidth.z;
+	const float wz = near ? 0.0f : width.z;
 	for (float x = 0.0f; x <= width.x; x += stepWidth) {
 		addIndex(addVertex(glm::vec3(x, 0.0f, wz)));
-		addIndex(addVertex(glm::vec3(x, wy, wz)));
+		addIndex(addVertex(glm::vec3(x, width.y, wz)));
 	}
 	for (float y = 0.0f; y <= width.y; y += stepWidth) {
 		addIndex(addVertex(glm::vec3(0.0f, y, wz)));
-		addIndex(addVertex(glm::vec3(wx, y, wz)));
+		addIndex(addVertex(glm::vec3(width.x, y, wz)));
 	}
 }
 
 void ShapeBuilder::aabbGridYZ(const core::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
 	const glm::vec3& width = aabb.getWidth();
-	const glm::vec3& halfWidth = width / 2.0f;
-	const glm::vec3& center = aabb.getCenter();
-	const float wx = near ? 0.0f : center.x + halfWidth.x;
-	const float wy = halfWidth.y + center.y;
-	const float wz = halfWidth.z + center.z;
+	const float wx = near ? 0.0f : width.x;
 	for (float y = 0.0f; y <= width.y; y += stepWidth) {
 		addIndex(addVertex(glm::vec3(wx, y, 0.0f)));
-		addIndex(addVertex(glm::vec3(wx, y, wz)));
+		addIndex(addVertex(glm::vec3(wx, y, width.z)));
 	}
 	for (float z = 0.0f; z <= width.z; z += stepWidth) {
 		addIndex(addVertex(glm::vec3(wx, 0.0f, z)));
-		addIndex(addVertex(glm::vec3(wx, wy, z)));
+		addIndex(addVertex(glm::vec3(wx, width.y, z)));
 	}
 }
 
 void ShapeBuilder::aabbGridXZ(const core::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
 	const glm::vec3& width = aabb.getWidth();
-	const glm::vec3& halfWidth = width / 2.0f;
-	const glm::vec3& center = aabb.getCenter();
-	const float wx = halfWidth.x + center.x;
-	const float wy = near ? 0.0f : center.y + halfWidth.y;
-	const float wz = halfWidth.z + center.z;
+	const float wy = near ? 0.0f : width.y;
 	for (float x = 0.0f; x <= width.x; x += stepWidth) {
 		addIndex(addVertex(glm::vec3(x, wy, 0.0f)));
-		addIndex(addVertex(glm::vec3(x, wy, wz)));
+		addIndex(addVertex(glm::vec3(x, wy, width.z)));
 	}
 	for (float z = 0.0f; z <= width.z; z += stepWidth) {
 		addIndex(addVertex(glm::vec3(0.0f, wy, z)));
-		addIndex(addVertex(glm::vec3(wx, wy, z)));
+		addIndex(addVertex(glm::vec3(width.x, wy, z)));
 	}
 }
 
