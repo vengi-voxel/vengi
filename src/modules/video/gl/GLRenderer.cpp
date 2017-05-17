@@ -737,7 +737,13 @@ bool isOcclusionQueryAvailable(Id id) {
 	return available != 0;
 }
 
-int getOcclusionQueryResult(Id id) {
+int getOcclusionQueryResult(Id id, bool wait) {
+	if (wait) {
+		GLint samples;
+		glGetQueryObjectiv(id, GL_QUERY_RESULT, &samples);
+		checkError();
+		return (int)samples;
+	}
 	if (!isOcclusionQueryAvailable(id)) {
 		return -1;
 	}

@@ -17,8 +17,12 @@ bool Shader::setUniformBuffer(const std::string& name, const UniformBuffer& buff
 	if (!uniform->block) {
 		return false;
 	}
-	// glGetUniformBlockIndex?
+
+#if 0
+	const GLuint uniformBlockBinding = glGetUniformBlockIndex(_program, "name");
+#else
 	const GLuint uniformBlockBinding = 0;
+#endif
 	glUniformBlockBinding(_program, (GLuint)uniform->location, uniformBlockBinding);
 	checkError();
 	addUsedUniform(uniform->location);
