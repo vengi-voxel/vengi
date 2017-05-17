@@ -239,6 +239,7 @@ extern bool compileShader(Id id, ShaderType shaderType, const std::string& sourc
 extern bool linkShader(Id program, Id vert, Id frag, Id geom, const std::string& name);
 extern int fetchUniforms(Id program, ShaderUniforms& uniforms, const std::string& name);
 extern int fetchAttributes(Id program, ShaderAttributes& attributes, const std::string& name);
+extern void flush();
 
 template<class IndexType>
 inline void drawElements(Primitive mode, size_t numIndices, void* offset = nullptr) {

@@ -699,6 +699,11 @@ bool beginOcclusionQuery(Id id) {
 	return true;
 }
 
+void flush() {
+	glFlush();
+	checkError();
+}
+
 bool endOcclusionQuery(Id id) {
 	if (_priv::s.occlusionQuery != id || id == InvalidId) {
 		return false;
