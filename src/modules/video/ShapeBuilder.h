@@ -148,7 +148,7 @@ inline void ShapeBuilder::convertVertices(std::vector<glm::vec4>& out) const {
 	const ShapeBuilder::Vertices& vertices = getVertices();
 	out.reserve(vertices.size());
 	for (const ShapeBuilder::Vertices::value_type& v : vertices) {
-		out.emplace_back(v, 1.0f);
+		out.emplace_back(v.x, v.y, v.z, 1.0f);
 	}
 }
 
