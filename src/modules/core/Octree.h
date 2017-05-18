@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include "AABB.h"
+#include "Frustum.h"
 #include "Trace.h"
 #include "GLM.h"
 
@@ -166,7 +167,7 @@ public:
 				const AABB<TYPE>& aabb = node.aabb();
 				if (aabb.containsAABB(queryArea)) {
 					node.query(queryArea, results);
-					// the queried area is completely part of the node
+					// the queried area is completely part of the node - so no other node can be involved
 					break;
 				}
 
@@ -178,6 +179,37 @@ public:
 
 				if (intersects(aabb, queryArea)) {
 					node.query(queryArea, results);
+				}
+			}
+		}
+
+		void query(const Frustum& queryArea, const AABB<TYPE>& queryAreaAABB, Contents& results) const {
+			for (const NODE& item : _contents) {
+				const auto& itemAABB = aabb(item);
+				if (queryArea.isVisible(itemAABB.mins(), itemAABB.maxs())) {
+					results.push_back(item);
+				}
+			}
+
+			for (const typename Octree<NODE, TYPE>::OctreeNode& node : _nodes) {
+				if (node.isEmpty()) {
+					continue;
+				}
+
+				const AABB<TYPE>& aabb = node.aabb();
+				if (aabb.containsAABB(queryAreaAABB)) {
+					node.query(queryArea, queryAreaAABB, results);
+					// the queried area is completely part of the node - so no other node can be involved
+					break;
+				}
+
+				const FrustumResult result = queryArea.test(aabb.mins(), aabb.maxs());
+				if (FrustumResult::Intersect == result) {
+					// some children might be visible - but other nodes might also still contribute
+					node.query(queryArea, queryAreaAABB, results);
+				} else if (FrustumResult::Inside == result) {
+					// the whole node content is part of the query
+					node.getAllContents(results);
 				}
 			}
 		}
@@ -219,6 +251,12 @@ public:
 	inline void query(const AABB<TYPE>& area, Contents& results) const {
 		core_trace_scoped(OctreeQuery);
 		_root.query(area, results);
+	}
+
+	inline void query(const Frustum& area, Contents& results) const {
+		core_trace_scoped(OctreeQuery);
+		const AABB<float>& areaAABB = area.aabb();
+		_root.query(area, AABB<TYPE>(areaAABB.mins(), areaAABB.maxs()), results);
 	}
 
 	void setListener(const IOctreeListener* func) {

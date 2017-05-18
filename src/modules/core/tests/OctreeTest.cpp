@@ -34,6 +34,12 @@ TEST(OctreeTest, testAdd) {
 	EXPECT_EQ(2, octree.count())<< "Expected to have 2 entries in the octree";
 }
 
+TEST(OctreeTest, testAddAABBTooBig) {
+	Octree<Item, int> octree({0, 0, 0, 100, 100, 100});
+	EXPECT_EQ(0, octree.count())<< "Expected to have no entries in the octree";
+	EXPECT_FALSE(octree.insert({{-100, -100, -100, 200, 200, 200}, 1}));
+}
+
 TEST(OctreeTest, testRemove) {
 	Octree<Item, int> octree({0, 0, 0, 100, 100, 100});
 	EXPECT_EQ(0, octree.count())<< "Expected to have no entries in the octree";
