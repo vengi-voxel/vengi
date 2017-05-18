@@ -221,8 +221,8 @@ void Client::afterRootWidget() {
 	enqueueShowStr(x, core::Color::White, "drawcalls world: %i", _drawCallsWorld);
 	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
-	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i",
-			stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive);
+	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
+			stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive, stats.occluded);
 	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f (target: %.2f:%.2f:%.2f)", pos.x, pos.y, pos.z, target.x, target.y, target.z);
 
 	if (hasState(CLIENT_CONNECTING)) {

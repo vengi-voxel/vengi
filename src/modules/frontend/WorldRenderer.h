@@ -54,10 +54,16 @@ protected:
 	};
 
 	struct ChunkBuffer {
+		~ChunkBuffer() {
+			core_assert(occlusionQueryId == video::InvalidId);
+		}
 		bool inuse = false;
 		core::AABB<int> _aabb = {glm::zero<glm::ivec3>(), glm::zero<glm::ivec3>()};
 		voxel::ChunkMeshes meshes {0, 0, 0, 0};
 		std::vector<glm::vec3> instancedPositions;
+		video::Id occlusionQueryId = video::InvalidId;
+		bool occludedLastFrame = false;
+		bool pendingResult = false;
 
 		inline const glm::ivec3& translation() const {
 			return meshes.opaqueMesh.getOffset();
@@ -73,6 +79,7 @@ protected:
 	ChunkBuffer _chunkBuffers[MAX_CHUNKBUFFERS];
 	int _activeChunkBuffers = 0;
 	int _visibleChunks = 0;
+	int _occludedChunks = 0;
 	int _queryResults = 0;
 	PlantBuffer _meshPlantList[(int)voxel::PlantType::MaxPlantTypes];
 
@@ -99,6 +106,13 @@ protected:
 	frontend::ShapeRenderer _shapeRenderer;
 	int32_t _aabbMeshes = -1;
 	core::VarPtr _renderAABBs;
+	core::VarPtr _occlusionThreshold;
+	core::VarPtr _occlusionQuery;
+	core::VarPtr _renderOccluded;
+
+	video::ShapeBuilder _shapeBuilderOcclusionQuery;
+	frontend::ShapeRenderer _shapeRendererOcclusionQuery;
+	int32_t _aabbMeshesOcclusionQuery = -1;
 
 	float _fogRange = 250.0f;
 	// TODO: get the view distance from the server - entity attributes
@@ -139,10 +153,8 @@ protected:
 
 	int getDistanceSquare(const glm::ivec3& pos, const glm::ivec3& pos2) const;
 
-	/**
-	 * @return Visible chunks
-	 */
-	int cull(const video::Camera& camera);
+	void cull(const video::Camera& camera);
+	bool occluded(ChunkBuffer * chunkBuffer) const;
 	int renderPlants(const std::list<PlantBuffer*>& vbos, int* vertices);
 	bool renderOpaqueBuffers();
 	bool renderWaterBuffers();
@@ -176,6 +188,7 @@ public:
 		int pending = 0;
 		int active = 0;
 		int visible = 0;
+		int occluded = 0;
 		int octreeSize = 0;
 		int octreeActive = 0;
 	};
