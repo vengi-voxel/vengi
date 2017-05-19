@@ -28,7 +28,7 @@ struct IsQuadNeeded {
  */
 struct IsWaterQuadNeeded {
 	inline bool operator()(const VoxelType& back, const VoxelType& front, FaceNames face) const {
-		if (face == PositiveY && !isBlocked(front) && isWater(back)) {
+		if (!isBlocked(front) && isWater(back)) {
 			return true;
 		}
 		return false;

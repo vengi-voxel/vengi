@@ -91,6 +91,37 @@ SDL_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool cor
 	return 3 - (side1 + side2 + corner);
 }
 
+void meshify(Mesh* result, bool mergeQuads, QuadListVector& vecListQuads) {
+	for (QuadList& listQuads : vecListQuads) {
+		if (mergeQuads) {
+			core_trace_scoped(MergeQuads);
+			// Repeatedly call this function until it returns
+			// false to indicate nothing more can be done.
+			while (performQuadMerging(listQuads, result)) {
+			}
+		}
+
+		for (const Quad& quad : listQuads) {
+			const IndexType i0 = quad.vertices[0];
+			const IndexType i1 = quad.vertices[1];
+			const IndexType i2 = quad.vertices[2];
+			const IndexType i3 = quad.vertices[3];
+			const VoxelVertex& v00 = result->getVertex(i3);
+			const VoxelVertex& v01 = result->getVertex(i0);
+			const VoxelVertex& v10 = result->getVertex(i2);
+			const VoxelVertex& v11 = result->getVertex(i1);
+
+			if (isQuadFlipped(v00, v01, v10, v11)) {
+				result->addTriangle(i1, i2, i3);
+				result->addTriangle(i1, i3, i0);
+			} else {
+				result->addTriangle(i0, i1, i2);
+				result->addTriangle(i0, i2, i3);
+			}
+		}
+	}
+}
+
 IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset) {
 	const uint8_t ambientOcclusion = vertexAmbientOcclusion(

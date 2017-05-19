@@ -9,6 +9,7 @@
 #include "IsQuadNeeded.h"
 #include "polyvox/PagedVolume.h"
 #include "polyvox/Mesh.h"
+#include "voxel/Constants.h"
 
 #include <limits>
 
@@ -48,8 +49,7 @@ void SurfaceExtractionTask::process() {
 	const uint32_t downScaleFactor = 0x0001 << _node->height();
 
 	if (downScaleFactor == 1) {
-		extractCubicMesh(_volume, _node->region(), mesh, IsQuadNeeded());
-		extractCubicMesh(_volume, _node->region(), meshWater, IsWaterQuadNeeded());
+		extractAllCubicMesh(_volume, _node->region(), mesh, meshWater, IsQuadNeeded(), IsWaterQuadNeeded(), MAX_WATER_HEIGHT);
 	} else if (downScaleFactor == 2) {
 		Region srcRegion = _node->region();
 		srcRegion.grow(2);
@@ -68,8 +68,7 @@ void SurfaceExtractionTask::process() {
 
 		dstRegion.shrink(1);
 
-		extractCubicMesh(&resampledVolume, dstRegion, mesh, IsQuadNeeded());
-		extractCubicMesh(&resampledVolume, dstRegion, meshWater, IsWaterQuadNeeded());
+		extractAllCubicMesh(&resampledVolume, dstRegion, mesh, meshWater, IsQuadNeeded(), IsWaterQuadNeeded(), MAX_WATER_HEIGHT);
 
 		scaleVertices(mesh, downScaleFactor);
 		scaleVertices(meshWater, downScaleFactor);
@@ -103,8 +102,7 @@ void SurfaceExtractionTask::process() {
 
 		dstRegion2.shrink(1);
 
-		extractCubicMesh(&resampledVolume2, dstRegion2, mesh, IsQuadNeeded());
-		extractCubicMesh(&resampledVolume2, dstRegion2, meshWater, IsWaterQuadNeeded());
+		extractAllCubicMesh(&resampledVolume2, dstRegion2, mesh, meshWater, IsQuadNeeded(), IsWaterQuadNeeded(), MAX_WATER_HEIGHT);
 
 		scaleVertices(mesh, downScaleFactor);
 		scaleVertices(meshWater, downScaleFactor);

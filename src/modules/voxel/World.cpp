@@ -133,28 +133,16 @@ void World::extractScheduledMesh() {
 		// these number are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
 		// they also heavily depend on the size of the mesh region we extract
 		const int opaqueFactor = 16;
-		const int waterFactor = 16;
 		const int opaqueVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * opaqueFactor;
-		const int waterVertices = region.getWidthInVoxels() * region.getDepthInVoxels() * waterFactor;
+		const int waterVertices = region.getWidthInVoxels() * region.getDepthInVoxels();
 		ChunkMeshes data(opaqueVertices, opaqueVertices, waterVertices, waterVertices);
-		if (_cancelThreads) {
-			return;
-		}
-		extractCubicMesh(_volumeData, region, &data.opaqueMesh, IsQuadNeeded());
-		if (_cancelThreads) {
-			return;
-		}
-		extractCubicMesh(_volumeData, region, &data.waterMesh, IsWaterQuadNeeded());
-		if (_cancelThreads) {
-			return;
-		}
+		extractAllCubicMesh(_volumeData, region,
+				&data.opaqueMesh, &data.waterMesh,
+				IsQuadNeeded(), IsWaterQuadNeeded(),
+				MAX_WATER_HEIGHT);
 		if (data.waterMesh.isEmpty() && data.opaqueMesh.isEmpty()) {
 			continue;
 		}
-#if 0
-		Log::info("opaque mesh size: %i", (int)data.opaqueMesh.size());
-		Log::info("water mesh size: %i", (int)data.waterMesh.size());
-#endif
 		_meshQueue.push(std::move(data));
 	}
 }

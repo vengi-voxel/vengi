@@ -121,6 +121,8 @@ static inline bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01,
 	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
 }
 
+extern void meshify(Mesh* result, bool mergeQuads, QuadListVector& vecListQuads);
+
 /**
  * The CubicSurfaceExtractor creates a mesh in which each voxel appears to be rendered as a cube
  * Introduction
@@ -446,38 +448,292 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 	{
 		core_trace_scoped(GenerateMesh);
 		for (QuadListVector& vecListQuads : vecQuads) {
-			for (QuadList& listQuads : vecListQuads) {
-				if (mergeQuads) {
-					core_trace_scoped(MergeQuads);
-					// Repeatedly call this function until it returns
-					// false to indicate nothing more can be done.
-					while (performQuadMerging(listQuads, result)) {
-					}
-				}
-
-				for (const Quad& quad : listQuads) {
-					const IndexType i0 = quad.vertices[0];
-					const IndexType i1 = quad.vertices[1];
-					const IndexType i2 = quad.vertices[2];
-					const IndexType i3 = quad.vertices[3];
-					const VoxelVertex& v00 = result->getVertex(i3);
-					const VoxelVertex& v01 = result->getVertex(i0);
-					const VoxelVertex& v10 = result->getVertex(i2);
-					const VoxelVertex& v11 = result->getVertex(i1);
-
-					if (isQuadFlipped(v00, v01, v10, v11)) {
-						result->addTriangle(i1, i2, i3);
-						result->addTriangle(i1, i3, i0);
-					} else {
-						result->addTriangle(i0, i1, i2);
-						result->addTriangle(i0, i2, i3);
-					}
-				}
-			}
+			meshify(result, mergeQuads, vecListQuads);
 		}
 	}
 
 	result->removeUnusedVertices();
+}
+
+template<typename VolumeType, typename IsQuadNeeded, typename IsQuadNeededWater>
+void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result, Mesh* resultWater, IsQuadNeeded isQuadNeeded, IsQuadNeededWater isQuadNeededWater, int waterSurface, bool mergeQuads = true, bool reuseVertices = true) {
+	core_trace_scoped(ExtractCubicMesh);
+
+	const glm::ivec3& offset = region.getLowerCorner();
+	result->clear();
+	resultWater->clear();
+	result->setOffset(offset);
+	resultWater->setOffset(offset);
+
+	// Used to avoid creating duplicate vertices.
+	Array previousSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
+	Array currentSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
+
+	Array previousSliceVerticesWater(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
+	Array currentSliceVerticesWater(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
+
+	// During extraction we create a number of different lists of quads. All the
+	// quads in a given list are in the same plane and facing in the same direction.
+	QuadListVector vecQuads[NoOfFaces];
+
+	vecQuads[NegativeX].resize(region.getUpperX() - region.getLowerX() + 2);
+	vecQuads[PositiveX].resize(region.getUpperX() - region.getLowerX() + 2);
+
+	vecQuads[NegativeY].resize(region.getUpperY() - region.getLowerY() + 2);
+	vecQuads[PositiveY].resize(region.getUpperY() - region.getLowerY() + 2);
+
+	vecQuads[NegativeZ].resize(region.getUpperZ() - region.getLowerZ() + 2);
+	vecQuads[PositiveZ].resize(region.getUpperZ() - region.getLowerZ() + 2);
+
+	QuadListVector vecQuadsWater;
+	vecQuadsWater.resize(region.getUpperY() - region.getLowerY() + 2);
+
+	typename VolumeType::Sampler volumeSampler(volData);
+
+	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
+		const uint32_t regZ = z - region.getLowerZ();
+
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y++) {
+			const uint32_t regY = y - region.getLowerY();
+
+			volumeSampler.setPosition(region.getLowerX(), y, z);
+
+			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
+				const uint32_t regX = x - region.getLowerX();
+
+				/**
+				 *
+				 *
+				 *                  [D]
+				 *            8 ____________ 7
+				 *             /|          /|
+				 *            / |         / |              ABOVE [D] |
+				 *           /  |    [F] /  |              BELOW [C]
+				 *        5 /___|_______/ 6 |  [B]       y           BEHIND  [F]
+				 *    [A]   |   |_______|___|              |      z  BEFORE [E] /
+				 *          | 4 /       |   / 3            |   /
+				 *          |  / [E]    |  /               |  /   . center
+				 *          | /         | /                | /
+				 *          |/__________|/                 |/________   LEFT  RIGHT
+				 *        1               2                          x   [A] - [B]
+				 *               [C]
+				 */
+
+				const Voxel& voxelCurrent          = volumeSampler.getVoxel();
+				const Voxel& voxelLeft             = volumeSampler.peekVoxel1nx0py0pz();
+				const Voxel& voxelBefore           = volumeSampler.peekVoxel0px0py1nz();
+				const Voxel& voxelLeftBefore       = volumeSampler.peekVoxel1nx0py1nz();
+				const Voxel& voxelRightBefore      = volumeSampler.peekVoxel1px0py1nz();
+				const Voxel& voxelLeftBehind       = volumeSampler.peekVoxel1nx0py1pz();
+
+				const Voxel& voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz();
+				const Voxel& voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz();
+				const Voxel& voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz();
+				const Voxel& voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz();
+				const Voxel& voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz();
+
+				const Voxel& voxelBelow            = volumeSampler.peekVoxel0px1ny0pz();
+				const Voxel& voxelBelowLeft        = volumeSampler.peekVoxel1nx1ny0pz();
+				const Voxel& voxelBelowBefore      = volumeSampler.peekVoxel0px1ny1nz();
+				const Voxel& voxelBelowLeftBefore  = volumeSampler.peekVoxel1nx1ny1nz();
+				const Voxel& voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz();
+				const Voxel& voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz();
+
+				const VoxelType voxelCurrentMaterial          = voxelCurrent.getMaterial();
+				const VoxelType voxelLeftMaterial             = voxelLeft.getMaterial();
+				const VoxelType voxelBelowMaterial            = voxelBelow.getMaterial();
+				const VoxelType voxelBeforeMaterial           = voxelBefore.getMaterial();
+				const VoxelType voxelLeftBeforeMaterial       = voxelLeftBefore.getMaterial();
+				const VoxelType voxelBelowLeftMaterial        = voxelBelowLeft.getMaterial();
+				const VoxelType voxelBelowLeftBeforeMaterial  = voxelBelowLeftBefore.getMaterial();
+				const VoxelType voxelLeftBehindMaterial       = voxelLeftBehind.getMaterial();
+				const VoxelType voxelBelowLeftBehindMaterial  = voxelBelowLeftBehind.getMaterial();
+				const VoxelType voxelAboveLeftMaterial        = voxelAboveLeft.getMaterial();
+				const VoxelType voxelAboveLeftBehindMaterial  = voxelAboveLeftBehind.getMaterial();
+				const VoxelType voxelAboveLeftBeforeMaterial  = voxelAboveLeftBefore.getMaterial();
+
+				// X [A] LEFT
+				if (isQuadNeeded(voxelCurrentMaterial, voxelLeftMaterial, NegativeX)) {
+					const IndexType v_0_1 = addVertex(reuseVertices, regX, regY,     regZ,     voxelCurrent, previousSliceVertices, result,
+							voxelLeftBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, offset);
+					const IndexType v_1_4 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelCurrent, currentSliceVertices,  result,
+							voxelBelowLeftMaterial, voxelLeftBehindMaterial, voxelBelowLeftBehindMaterial, offset);
+					const IndexType v_2_8 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelCurrent, currentSliceVertices,  result,
+							voxelLeftBehindMaterial, voxelAboveLeftMaterial, voxelAboveLeftBehindMaterial, offset);
+					const IndexType v_3_5 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelCurrent, previousSliceVertices, result,
+							voxelAboveLeftMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, offset);
+					vecQuads[NegativeX][regX].emplace_back(v_0_1, v_1_4, v_2_8, v_3_5);
+				}
+
+				// X [B] RIGHT
+				if (isQuadNeeded(voxelLeftMaterial, voxelCurrentMaterial, PositiveX)) {
+					volumeSampler.moveNegativeX();
+
+					const VoxelType _voxelRightBefore      = volumeSampler.peekVoxel1px0py1nz().getMaterial();
+					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz().getMaterial();
+
+					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz().getMaterial();
+					const VoxelType _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
+
+					const VoxelType _voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz().getMaterial();
+					const VoxelType _voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz().getMaterial();
+					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz().getMaterial();
+
+					const IndexType v_0_2 = addVertex(reuseVertices, regX, regY,     regZ,     voxelLeft, previousSliceVertices, result,
+							_voxelBelowRight, _voxelRightBefore, _voxelBelowRightBefore, offset);
+					const IndexType v_1_3 = addVertex(reuseVertices, regX, regY,     regZ + 1, voxelLeft, currentSliceVertices,  result,
+							_voxelBelowRight, _voxelRightBehind, _voxelBelowRightBehind, offset);
+					const IndexType v_2_7 = addVertex(reuseVertices, regX, regY + 1, regZ + 1, voxelLeft, currentSliceVertices,  result,
+							_voxelAboveRight, _voxelRightBehind, _voxelAboveRightBehind, offset);
+					const IndexType v_3_6 = addVertex(reuseVertices, regX, regY + 1, regZ,     voxelLeft, previousSliceVertices, result,
+							_voxelAboveRight, _voxelRightBefore, _voxelAboveRightBefore, offset);
+					vecQuads[PositiveX][regX].emplace_back(v_0_2, v_3_6, v_2_7, v_1_3);
+
+					volumeSampler.movePositiveX();
+				}
+
+				// Y [C] BELOW
+				if (isQuadNeeded(voxelCurrentMaterial, voxelBelowMaterial, NegativeY)) {
+					const Voxel& voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
+					const Voxel& voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
+					const Voxel& voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
+
+					const VoxelType voxelBelowRightMaterial       = voxelBelowRight.getMaterial();
+					const VoxelType voxelBelowBeforeMaterial      = voxelBelowBefore.getMaterial();
+					const VoxelType voxelBelowRightBeforeMaterial = voxelBelowRightBefore.getMaterial();
+					const VoxelType voxelBelowBehindMaterial      = voxelBelowBehind.getMaterial();
+					const VoxelType voxelBelowRightBehindMaterial = voxelBelowRightBehind.getMaterial();
+					const IndexType v_0_1 = addVertex(reuseVertices, regX,     regY, regZ,     voxelCurrent, previousSliceVertices, result,
+							voxelBelowBeforeMaterial, voxelBelowLeftMaterial, voxelBelowLeftBeforeMaterial, offset);
+					const IndexType v_1_2 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelCurrent, previousSliceVertices, result,
+							voxelBelowRightMaterial, voxelBelowBeforeMaterial, voxelBelowRightBeforeMaterial, offset);
+					const IndexType v_2_3 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelCurrent, currentSliceVertices,  result,
+							voxelBelowBehindMaterial, voxelBelowRightMaterial, voxelBelowRightBehindMaterial, offset);
+					const IndexType v_3_4 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelCurrent, currentSliceVertices,  result,
+							voxelBelowLeftMaterial, voxelBelowBehindMaterial, voxelBelowLeftBehindMaterial, offset);
+					vecQuads[NegativeY][regY].emplace_back(v_0_1, v_1_2, v_2_3, v_3_4);
+				}
+
+				// Y [D] ABOVE
+				if (isQuadNeeded(voxelBelowMaterial, voxelCurrentMaterial, PositiveY)) {
+					volumeSampler.moveNegativeY();
+
+					const VoxelType _voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz().getMaterial();
+					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz().getMaterial();
+					const VoxelType _voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz().getMaterial();
+					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz().getMaterial();
+					const VoxelType _voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz().getMaterial();
+					const VoxelType _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz().getMaterial();
+					const VoxelType _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
+
+					const IndexType v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     voxelBelow, previousSliceVertices, result,
+							_voxelAboveBefore, _voxelAboveLeft, _voxelAboveLeftBefore, offset);
+					const IndexType v_1_6 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelBelow, previousSliceVertices, result,
+							_voxelAboveRight, _voxelAboveBefore, _voxelAboveRightBefore, offset);
+					const IndexType v_2_7 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelBelow, currentSliceVertices,  result,
+							_voxelAboveBehind, _voxelAboveRight, _voxelAboveRightBehind, offset);
+					const IndexType v_3_8 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelBelow, currentSliceVertices,  result,
+							_voxelAboveLeft, _voxelAboveBehind, _voxelAboveLeftBehind, offset);
+					vecQuads[PositiveY][regY].emplace_back(v_0_5, v_3_8, v_2_7, v_1_6);
+
+					volumeSampler.movePositiveY();
+				}
+
+				if (y == waterSurface && isQuadNeededWater(voxelBelowMaterial, voxelCurrentMaterial, PositiveY)) {
+					volumeSampler.moveNegativeY();
+
+					const VoxelType _voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz().getMaterial();
+					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz().getMaterial();
+					const VoxelType _voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz().getMaterial();
+					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz().getMaterial();
+					const VoxelType _voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz().getMaterial();
+					const VoxelType _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz().getMaterial();
+					const VoxelType _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
+
+					const IndexType v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     voxelBelow, previousSliceVerticesWater, resultWater,
+							_voxelAboveBefore, _voxelAboveLeft, _voxelAboveLeftBefore, offset);
+					const IndexType v_1_6 = addVertex(reuseVertices, regX + 1, regY, regZ,     voxelBelow, previousSliceVerticesWater, resultWater,
+							_voxelAboveRight, _voxelAboveBefore, _voxelAboveRightBefore, offset);
+					const IndexType v_2_7 = addVertex(reuseVertices, regX + 1, regY, regZ + 1, voxelBelow, currentSliceVerticesWater,  resultWater,
+							_voxelAboveBehind, _voxelAboveRight, _voxelAboveRightBehind, offset);
+					const IndexType v_3_8 = addVertex(reuseVertices, regX,     regY, regZ + 1, voxelBelow, currentSliceVerticesWater,  resultWater,
+							_voxelAboveLeft, _voxelAboveBehind, _voxelAboveLeftBehind, offset);
+					vecQuadsWater[regY].emplace_back(v_0_5, v_3_8, v_2_7, v_1_6);
+
+					volumeSampler.movePositiveY();
+				}
+
+				// Z [E] BEFORE
+				if (isQuadNeeded(voxelCurrentMaterial, voxelBeforeMaterial, NegativeZ)) {
+					const VoxelType voxelBelowBeforeMaterial = voxelBelowBefore.getMaterial();
+					const VoxelType voxelAboveBeforeMaterial = voxelAboveBefore.getMaterial();
+					const VoxelType voxelRightBeforeMaterial = voxelRightBefore.getMaterial();
+					const VoxelType voxelAboveRightBeforeMaterial = voxelAboveRightBefore.getMaterial();
+					const VoxelType voxelBelowRightBeforeMaterial = voxelBelowRightBefore.getMaterial();
+
+					const IndexType v_0_1 = addVertex(reuseVertices, regX,     regY,     regZ, voxelCurrent, previousSliceVertices, result,
+							voxelBelowBeforeMaterial, voxelLeftBeforeMaterial, voxelBelowLeftBeforeMaterial, offset); //1
+					const IndexType v_1_5 = addVertex(reuseVertices, regX,     regY + 1, regZ, voxelCurrent, previousSliceVertices, result,
+							voxelAboveBeforeMaterial, voxelLeftBeforeMaterial, voxelAboveLeftBeforeMaterial, offset); //5
+					const IndexType v_2_6 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, voxelCurrent, previousSliceVertices, result,
+							voxelAboveBeforeMaterial, voxelRightBeforeMaterial, voxelAboveRightBeforeMaterial, offset); //6
+					const IndexType v_3_2 = addVertex(reuseVertices, regX + 1, regY,     regZ, voxelCurrent, previousSliceVertices, result,
+							voxelBelowBeforeMaterial, voxelRightBeforeMaterial, voxelBelowRightBeforeMaterial, offset); //2
+					vecQuads[NegativeZ][regZ].emplace_back(v_0_1, v_1_5, v_2_6, v_3_2);
+				}
+
+				// Z [F] BEHIND
+				if (isQuadNeeded(voxelBeforeMaterial, voxelCurrentMaterial, PositiveZ)) {
+					volumeSampler.moveNegativeZ();
+
+					const VoxelType _voxelLeftBehind       = volumeSampler.peekVoxel1nx0py1pz().getMaterial();
+					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz().getMaterial();
+
+					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz().getMaterial();
+					const VoxelType _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
+
+					const VoxelType _voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz().getMaterial();
+					const VoxelType _voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz().getMaterial();
+					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz().getMaterial();
+
+					const IndexType v_0_4 = addVertex(reuseVertices, regX,     regY,     regZ, voxelBefore, previousSliceVertices, result,
+							_voxelBelowBehind, _voxelLeftBehind, _voxelBelowLeftBehind, offset); //4
+					const IndexType v_1_8 = addVertex(reuseVertices, regX,     regY + 1, regZ, voxelBefore, previousSliceVertices, result,
+							_voxelAboveBehind, _voxelLeftBehind, _voxelAboveLeftBehind, offset); //8
+					const IndexType v_2_7 = addVertex(reuseVertices, regX + 1, regY + 1, regZ, voxelBefore, previousSliceVertices, result,
+							_voxelAboveBehind, _voxelRightBehind, _voxelAboveRightBehind, offset); //7
+					const IndexType v_3_3 = addVertex(reuseVertices, regX + 1, regY,     regZ, voxelBefore, previousSliceVertices, result,
+							_voxelBelowBehind, _voxelRightBehind, _voxelBelowRightBehind, offset); //3
+					vecQuads[PositiveZ][regZ].emplace_back(v_0_4, v_3_3, v_2_7, v_1_8);
+
+					volumeSampler.movePositiveZ();
+				}
+
+				volumeSampler.movePositiveX();
+			}
+		}
+
+		previousSliceVertices.swap(currentSliceVertices);
+		currentSliceVertices.clear();
+
+		previousSliceVerticesWater.swap(currentSliceVerticesWater);
+		currentSliceVerticesWater.clear();
+	}
+
+	{
+		core_trace_scoped(GenerateMesh);
+		for (QuadListVector& vecListQuads : vecQuads) {
+			meshify(result, mergeQuads, vecListQuads);
+		}
+		meshify(resultWater, mergeQuads, vecQuadsWater);
+	}
+
+	result->removeUnusedVertices();
+	resultWater->removeUnusedVertices();
 }
 
 }
