@@ -67,9 +67,10 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 
 Region World::getRegion(const glm::ivec3& pos, int size) const {
 	int deltaX = size - 1;
+	int deltaY = size - 1;
 	int deltaZ = size - 1;
-	const glm::ivec3 mins(pos.x, 0, pos.z);
-	const glm::ivec3 maxs(pos.x + deltaX, MAX_HEIGHT - 1, pos.z + deltaZ);
+	const glm::ivec3 mins(pos.x, pos.y, pos.z);
+	const glm::ivec3 maxs(pos.x + deltaX, pos.y + deltaY, pos.z + deltaZ);
 	const Region region(mins, maxs);
 	return region;
 }
@@ -146,6 +147,9 @@ void World::extractScheduledMesh() {
 		extractCubicMesh(_volumeData, region, &data.waterMesh, IsWaterQuadNeeded());
 		if (_cancelThreads) {
 			return;
+		}
+		if (data.waterMesh.isEmpty() && data.opaqueMesh.isEmpty()) {
+			continue;
 		}
 #if 0
 		Log::info("opaque mesh size: %i", (int)data.opaqueMesh.size());

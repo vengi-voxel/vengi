@@ -6,6 +6,7 @@
 #include "core/Color.h"
 #include "video/Renderer.h"
 #include "voxel/Spiral.h"
+#include "voxel/Constants.h"
 #include "core/App.h"
 #include "core/Var.h"
 #include "voxel/MaterialColor.h"
@@ -288,7 +289,6 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	// disable writing to the color buffer
 	// We just want to check whether they would be rendered, not actually render them
 	video::colorMask(false, false, false, false);
-	//video::disable(video::State::CullFace);
 
 	for (ChunkBuffer* chunkBuffer : contents) {
 		if (!occlusionQuery || chunkBuffer->pendingResult) {
@@ -340,9 +340,7 @@ void WorldRenderer::cull(const video::Camera& camera) {
 		opaqueIndexOffset += transform(opaqueIndexOffset, meshes.opaqueMesh, _opaqueVertices, _opaqueIndices);
 		waterIndexOffset += transform(waterIndexOffset, meshes.waterMesh, _waterVertices, _waterIndices);
 	}
-	video::flush();
 
-	//video::enable(video::State::CullFace);
 	video::colorMask(true, true, true, true);
 }
 
@@ -715,8 +713,13 @@ void WorldRenderer::extractMeshes(const glm::vec3& p, int radius) {
 	for (int i = 0; i < amount; ++i) {
 		_world->scheduleMeshExtraction(pos);
 		o.next();
+		pos.y = 0;
 		pos.x = meshGridPos.x + o.x() * meshSize;
 		pos.z = meshGridPos.z + o.z() * meshSize;
+		while (pos.y < voxel::MAX_HEIGHT - 1) {
+			_world->scheduleMeshExtraction(pos);
+			pos.y += meshSize;
+		}
 	}
 }
 
