@@ -25,8 +25,8 @@ void Cubemap::shutdown() {
 bool Cubemap::load() {
 	_textureHandle = video::genTexture();
 	image::ImagePtr images[6];
-	for (unsigned int i = 1; i <= 6; i++) {
-		const std::string& filename = core::string::format("%s-cm-%i", _filename.c_str(), i);
+	for (unsigned int i = 0; i < 6; ++i) {
+		const std::string& filename = core::string::format("%s-cm-%i", _filename.c_str(), i + 1);
 		images[i] = image::loadImage(filename);
 	}
 	return video::setupCubemap(_textureHandle, images);

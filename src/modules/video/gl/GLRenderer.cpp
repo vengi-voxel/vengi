@@ -137,10 +137,10 @@ bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
 		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
 	};
 
-	for (unsigned int i = 1; i <= 6; i++) {
+	for (unsigned int i = 0; i < 6; ++i) {
 		const image::ImagePtr& img = images[i];
 		const GLenum mode = img->depth() == 4 ? GL_RGBA : GL_RGB;
-		glTexImage2D(types[i - 1], 0, mode, img->width(), img->height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data());
+		glTexImage2D(types[i], 0, mode, img->width(), img->height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img->data());
 	}
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
