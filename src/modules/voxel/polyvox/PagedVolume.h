@@ -41,7 +41,7 @@ public:
 		friend class PagedVolumeWrapper;
 
 	public:
-		Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager = nullptr);
+		Chunk(const glm::ivec3& v3dPosition, uint16_t uSideLength, Pager* pPager = nullptr);
 		~Chunk();
 
 		bool isGenerated() const;

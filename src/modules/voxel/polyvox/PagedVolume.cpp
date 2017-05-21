@@ -276,7 +276,7 @@ uint32_t PagedVolume::calculateSizeInBytes() {
 	return PagedVolume::Chunk::calculateSizeInBytes(_chunkSideLength) * uChunkCount;
 }
 
-PagedVolume::Chunk::Chunk(glm::ivec3 v3dPosition, uint16_t uSideLength, Pager* pPager) :
+PagedVolume::Chunk::Chunk(const glm::ivec3& v3dPosition, uint16_t uSideLength, Pager* pPager) :
 		_pager(pPager), _chunkSpacePosition(v3dPosition) {
 	core_assert_msg(_pager, "No valid pager supplied to chunk constructor.");
 	core_assert_msg(uSideLength <= 256, "Chunk side length cannot be greater than 256.");
