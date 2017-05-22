@@ -1,4 +1,5 @@
 set(SRCS
+	Simplex.h
 	Noise.h Noise.cpp
 	SphereNoise.h SphereNoise.cpp
 	PoissonDiskDistribution.h PoissonDiskDistribution.cpp
