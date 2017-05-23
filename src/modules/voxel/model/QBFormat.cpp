@@ -55,7 +55,7 @@ bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	wrapSave(stream.addInt(1))
 	wrapSave(stream.addByte(0)); // no name
 
-	const voxel::Region& region = volume->getRegion();
+	const voxel::Region& region = volume->region();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
 	wrapSave(stream.addInt(size.x));
 	wrapSave(stream.addInt(size.y));
@@ -97,7 +97,7 @@ bool QBFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 					x = axis1;
 					z = axis2;
 				}
-				const Voxel& voxel = volume->getVoxel(x, y, z);
+				const Voxel& voxel = volume->voxel(x, y, z);
 				int32_t newColor;
 				if (voxel == Empty) {
 					newColor = EmptyColor;
@@ -341,7 +341,7 @@ RawVolume* QBFormat::loadFromStream(io::FileStream& stream) {
 		if (v == nullptr) {
 			break;
 		}
-		const voxel::Region& region = v->getRegion();
+		const voxel::Region& region = v->region();
 		mins = glm::min(mins, region.getLowerCorner());
 		maxs = glm::max(maxs, region.getUpperCorner());
 		volumes.push_back(v);
@@ -360,7 +360,7 @@ RawVolume* QBFormat::loadFromStream(io::FileStream& stream) {
 	const glm::ivec3 lc(center.x, 0, center.z);
 	const glm::ivec3 uc(center.x, mergedRegion.getUpperY(), center.z);
 	for (voxel::RawVolume* v : volumes) {
-		const voxel::Region& sr = v->getRegion();
+		const voxel::Region& sr = v->region();
 		const glm::ivec3& destMins = lc + sr.getLowerCorner();
 		const voxel::Region dr(destMins, destMins + sr.getDimensionsInCells());
 		Log::debug("Merge %i:%i:%i - %i:%i:%i into %i:%i:%i - %i:%i:%i",

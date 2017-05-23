@@ -4,7 +4,7 @@ namespace voxedit {
 namespace tool {
 
 bool fill(voxel::RawVolume& target, const glm::ivec3& position, const core::Axis axis, const voxel::Voxel& voxel, bool overwrite, voxel::Region* modifiedRegion) {
-	const voxel::Region& region = target.getRegion();
+	const voxel::Region& region = target.region();
 	int zStart = region.getLowerZ();
 	glm::ivec3 modifiedMins(std::numeric_limits<int>::max());
 	glm::ivec3 modifiedMaxs(std::numeric_limits<int>::min());
@@ -23,7 +23,7 @@ bool fill(voxel::RawVolume& target, const glm::ivec3& position, const core::Axis
 				xStart = position.x;
 			}
 			for (int32_t x = xStart; x <= region.getUpperX(); ++x) {
-				if (overwrite || isAir(target.getVoxel(x, y, z).getMaterial())) {
+				if (overwrite || isAir(target.voxel(x, y, z).getMaterial())) {
 					if (target.setVoxel(x, y, z, voxel)) {
 						++cnt;
 						modifiedMins.x = glm::min(modifiedMins.x, x);

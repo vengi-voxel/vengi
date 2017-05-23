@@ -35,7 +35,7 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	stream.addInt(FourCC('S','I','Z','E'));
 	stream.addInt(3 * sizeof(uint32_t));
 	stream.addInt(0);
-	const voxel::Region& region = volume->getRegion();
+	const voxel::Region& region = volume->region();
 	stream.addInt(region.getWidthInVoxels());
 	stream.addInt(region.getDepthInVoxels());
 	stream.addInt(region.getHeightInVoxels());
@@ -46,7 +46,7 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-				const voxel::Voxel& voxel = volume->getVoxel(x, y, z);
+				const voxel::Voxel& voxel = volume->voxel(x, y, z);
 				if (voxel::isAir(voxel.getMaterial())) {
 					continue;
 				}
@@ -62,7 +62,7 @@ bool VoxFormat::save(const RawVolume* volume, const io::FilePtr& file) {
 	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-				const voxel::Voxel& voxel = volume->getVoxel(x, y, z);
+				const voxel::Voxel& voxel = volume->voxel(x, y, z);
 				if (voxel::isAir(voxel.getMaterial())) {
 					continue;
 				}

@@ -65,14 +65,14 @@ protected:
 
 		const glm::ivec3 vec(worldX, worldY, worldZ);
 
-		const glm::ivec3& chunkPos = world.getChunkPos(vec);
+		const glm::ivec3& chunkPos = world.chunkPos(vec);
 		ASSERT_EQ(glm::ivec3(chunkX, chunkY, chunkZ), chunkPos)
-			<< "Chunk position doesn't match the expected for chunk size: " << world.getChunkSize()
+			<< "Chunk position doesn't match the expected for chunk size: " << world.chunkSize()
 			<< " at: " << vec.x << ", " << vec.y << ", " << vec.z;
 
-		const glm::ivec3& meshPos = world.getMeshPos(vec);
+		const glm::ivec3& meshPos = world.meshPos(vec);
 		ASSERT_EQ(glm::ivec3(meshX, meshY, meshZ), meshPos)
-			<< "Mesh position doesn't match the expected for mesh size: " << world.getMeshSize()
+			<< "Mesh position doesn't match the expected for mesh size: " << world.meshSize()
 			<< " at: " << vec.x << ", " << vec.y << ", " << vec.z;
 	}
 };
@@ -95,9 +95,9 @@ TEST_F(WorldTest, testChunkAndmeshPos) {
 	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 	const io::FilesystemPtr& filesystem = _testApp->filesystem();
 	ASSERT_TRUE(world.init(filesystem->load("world.lua"), filesystem->load("biomes.lua")));
-	const int chunkSize = world.getChunkSize();
+	const int chunkSize = world.chunkSize();
 	//const int halfChunkSize = chunkSize / 2;
-	const int meshSize = world.getMeshSize();
+	const int meshSize = world.meshSize();
 	ASSERT_EQ(0, chunkSize % meshSize) << "mesh size must be a multiple of chunk size";
 	const int meshFactor = chunkSize / meshSize;
 	ASSERT_GT(meshFactor, 0) << "mesh factor is <= 0, which mean, <= 0 meshes fitting into a chunk - weird";

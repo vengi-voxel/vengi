@@ -51,8 +51,8 @@ typedef std::unordered_set<glm::ivec3, std::hash<glm::ivec3> > PositionSet;
 class World {
 public:
 	enum Result {
-		COMPLETED, ///< If the ray passed through the volume without being interupted
-		INTERUPTED, ///< If the ray was interupted while travelling
+		COMPLETED, ///< If the ray passed through the volume without being interrupted
+		INTERUPTED, ///< If the ray was interrupted while traveling
 		FAILED
 	};
 
@@ -75,8 +75,8 @@ public:
 		const float distance = (float)MAX_HEIGHT;
 		int y = NO_FLOOR_FOUND;
 		raycast(start, direction, distance, [&] (const PagedVolume::Sampler& sampler) {
-			if (check(sampler.getVoxel().getMaterial())) {
-				y = sampler.getPosition().y;
+			if (check(sampler.voxel().getMaterial())) {
+				y = sampler.position().y;
 				return false;
 			}
 			return true;
@@ -108,10 +108,10 @@ public:
 	void reset();
 	bool isReset() const;
 
-	VoxelType getMaterial(int x, int y, int z) const;
+	VoxelType material(int x, int y, int z) const;
 
-	BiomeManager& getBiomeManager();
-	const BiomeManager& getBiomeManager() const;
+	BiomeManager& biomeManager();
+	const BiomeManager& biomeManager() const;
 
 	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
 
@@ -123,12 +123,12 @@ public:
 	/**
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
 	 */
-	glm::ivec3 getMeshPos(const glm::ivec3& pos) const;
+	glm::ivec3 meshPos(const glm::ivec3& pos) const;
 
 	/**
 	 * @brief Cuts the given world coordinate down to chunk tile vectors
 	 */
-	glm::ivec3 getChunkPos(const glm::ivec3& pos) const;
+	glm::ivec3 chunkPos(const glm::ivec3& pos) const;
 
 	/**
 	 * @brief We need to pop the mesh extractor queue to find out if there are new and ready to use meshes for us
@@ -160,13 +160,15 @@ public:
 
 	void setSeed(long seed);
 
-	bool isCreated() const;
+	bool created() const;
 
 	void setPersist(bool persist);
 
-	int getChunkSize() const;
-	PagedVolume::ChunkPtr getChunk(const glm::ivec3& pos) const;
-	int getMeshSize() const;
+	int chunkSize() const;
+
+	PagedVolume::ChunkPtr chunk(const glm::ivec3& pos) const;
+
+	int meshSize() const;
 
 private:
 	Region getChunkRegion(const glm::ivec3& pos) const;
@@ -201,16 +203,16 @@ inline void World::setClientData(bool clientData) {
 	_clientData = clientData;
 }
 
-inline glm::ivec3 World::getMeshPos(const glm::ivec3& pos) const {
-	const float size = getMeshSize();
+inline glm::ivec3 World::meshPos(const glm::ivec3& pos) const {
+	const float size = meshSize();
 	const int x = glm::floor(pos.x / size);
 	const int y = glm::floor(pos.y / size);
 	const int z = glm::floor(pos.z / size);
 	return glm::ivec3(x * size, y * size, z * size);
 }
 
-inline glm::ivec3 World::getChunkPos(const glm::ivec3& pos) const {
-	const float size = getChunkSize();
+inline glm::ivec3 World::chunkPos(const glm::ivec3& pos) const {
+	const float size = chunkSize();
 	const int x = glm::floor(pos.x / size);
 	const int y = glm::floor(pos.y / size);
 	const int z = glm::floor(pos.z / size);
@@ -221,7 +223,7 @@ inline bool World::pop(ChunkMeshes& item) {
 	return _meshQueue.pop(item);
 }
 
-inline bool World::isCreated() const {
+inline bool World::created() const {
 	return _seed != 0;
 }
 
@@ -230,7 +232,7 @@ inline void World::setPersist(bool persist) {
 }
 
 inline Region World::getChunkRegion(const glm::ivec3& pos) const {
-	const int size = getChunkSize();
+	const int size = chunkSize();
 	return getRegion(pos, size);
 }
 
@@ -243,32 +245,32 @@ inline long World::seed() const {
 }
 
 inline Region World::getMeshRegion(const glm::ivec3& pos) const {
-	const int size = getMeshSize();
+	const int size = meshSize();
 	return getRegion(pos, size);
 }
 
-inline int World::getChunkSize() const {
-	return _volumeData->getChunkSideLength();
+inline int World::chunkSize() const {
+	return _volumeData->chunkSideLength();
 }
 
-inline PagedVolume::ChunkPtr World::getChunk(const glm::ivec3& pos) const {
-	return _volumeData->getChunk(pos);
+inline PagedVolume::ChunkPtr World::chunk(const glm::ivec3& pos) const {
+	return _volumeData->chunk(pos);
 }
 
-inline int World::getMeshSize() const {
+inline int World::meshSize() const {
 	return _meshSize->intVal();
 }
 
-inline VoxelType World::getMaterial(int x, int y, int z) const {
-	const Voxel& voxel = _volumeData->getVoxel(x, y, z);
+inline VoxelType World::material(int x, int y, int z) const {
+	const Voxel& voxel = _volumeData->voxel(x, y, z);
 	return voxel.getMaterial();
 }
 
-inline BiomeManager& World::getBiomeManager() {
+inline BiomeManager& World::biomeManager() {
 	return _biomeManager;
 }
 
-inline const BiomeManager& World::getBiomeManager() const {
+inline const BiomeManager& World::biomeManager() const {
 	return _biomeManager;
 }
 

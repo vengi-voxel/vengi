@@ -46,7 +46,7 @@ bool Model::importHeightmap(const std::string& file) {
 		return false;
 	}
 	voxedit::importHeightmap(*v, img);
-	modified(v->getRegion());
+	modified(v->region());
 	return true;
 }
 
@@ -104,7 +104,7 @@ bool Model::load(const std::string& file) {
 	Log::info("Loaded model file %s", file.c_str());
 	undoHandler().clearUndoStates();
 	setNewVolume(newVolume);
-	modified(newVolume->getRegion());
+	modified(newVolume->region());
 	_dirty = false;
 	return true;
 }
@@ -144,7 +144,7 @@ void Model::crop() {
 		return;
 	}
 	setNewVolume(newVolume);
-	modified(newVolume->getRegion());
+	modified(newVolume->region());
 }
 
 void Model::extend(const glm::ivec3& size) {
@@ -153,12 +153,12 @@ void Model::extend(const glm::ivec3& size) {
 		return;
 	}
 	setNewVolume(newVolume);
-	modified(newVolume->getRegion());
+	modified(newVolume->region());
 }
 
 void Model::scale() {
 	// TODO: check that src region boundaries are even
-	const voxel::Region& srcRegion = modelVolume()->getRegion();
+	const voxel::Region& srcRegion = modelVolume()->region();
 	const int w = srcRegion.getWidthInVoxels();
 	const int h = srcRegion.getHeightInVoxels();
 	const int d = srcRegion.getDepthInVoxels();
@@ -168,7 +168,7 @@ void Model::scale() {
 	voxel::RawVolumeWrapper wrapper(newVolume);
 	voxel::rescaleVolume(*modelVolume(), *newVolume);
 	setNewVolume(newVolume);
-	modified(newVolume->getRegion());
+	modified(newVolume->region());
 }
 
 void Model::fill(int x, int y, int z) {
@@ -270,7 +270,7 @@ void Model::undo() {
 		return;
 	}
 	setNewVolume(v);
-	modified(v->getRegion(), false);
+	modified(v->region(), false);
 }
 
 void Model::redo() {
@@ -279,13 +279,13 @@ void Model::redo() {
 		return;
 	}
 	setNewVolume(v);
-	modified(v->getRegion(), false);
+	modified(v->region(), false);
 }
 
 bool Model::placeCursor(voxel::Region* modifiedRegion) {
 	const glm::ivec3& pos = _cursorPos;
 	const voxel::RawVolume* cursorVolume = cursorPositionVolume();
-	const voxel::Region& cursorRegion = cursorVolume->getRegion();
+	const voxel::Region& cursorRegion = cursorVolume->region();
 	const glm::ivec3 mins = -cursorRegion.getCentre() + pos;
 	const glm::ivec3 maxs = mins + cursorRegion.getDimensionsInCells();
 	const voxel::Region destReg(mins, maxs);
@@ -296,7 +296,7 @@ bool Model::placeCursor(voxel::Region* modifiedRegion) {
 		for (int32_t y = cursorRegion.getLowerY(); y <= cursorRegion.getUpperY(); ++y) {
 			const int destY = destReg.getLowerY() + y - cursorRegion.getLowerY();
 			for (int32_t x = cursorRegion.getLowerX(); x <= cursorRegion.getUpperX(); ++x) {
-				const voxel::Voxel& voxel = cursorVolume->getVoxel(x, y, z);
+				const voxel::Voxel& voxel = cursorVolume->voxel(x, y, z);
 				if (isAir(voxel.getMaterial())) {
 					continue;
 				}
@@ -322,7 +322,7 @@ void Model::resetLastTrace() {
 }
 
 void Model::setNewVolume(voxel::RawVolume* volume) {
-	const voxel::Region& region = volume->getRegion();
+	const voxel::Region& region = volume->region();
 
 	delete _rawVolumeSelectionRenderer.setVolume(SelectionVolumeIndex, new voxel::RawVolume(region));
 	delete _rawVolumeRenderer.setVolume(ModelVolumeIndex, volume);
@@ -334,7 +334,7 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	}
 
 	if (volume != nullptr) {
-		const voxel::Region& region = volume->getRegion();
+		const voxel::Region& region = volume->region();
 		_gridRenderer.update(region);
 	} else {
 		_gridRenderer.clear();
@@ -367,20 +367,20 @@ void Model::rotate(int angleX, int angleY, int angleZ) {
 	const voxel::RawVolume* model = modelVolume();
 	voxel::RawVolume* newVolume = voxel::rotateVolume(model, glm::vec3(angleX, angleY, angleZ), voxel::Voxel(), false);
 	setNewVolume(newVolume);
-	modified(newVolume->getRegion());
+	modified(newVolume->region());
 }
 
 void Model::move(int x, int y, int z) {
 	const voxel::RawVolume* model = modelVolume();
-	voxel::RawVolume* newVolume = new voxel::RawVolume(model->getRegion());
+	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
 	voxel::moveVolume(&wrapper, model, glm::ivec3(x, y, z), voxel::Voxel());
 	setNewVolume(newVolume);
-	modified(newVolume->getRegion());
+	modified(newVolume->region());
 }
 
 const voxel::Voxel& Model::getVoxel(const glm::ivec3& pos) const {
-	return modelVolume()->getVoxel(pos);
+	return modelVolume()->voxel(pos);
 }
 
 bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
@@ -418,7 +418,7 @@ void Model::copy() {
 
 void Model::paste() {
 	voxel::RawVolume* cursorVolume = cursorPositionVolume();
-	const voxel::Region& srcRegion = cursorVolume->getRegion();
+	const voxel::Region& srcRegion = cursorVolume->region();
 	const voxel::Region destRegion = srcRegion + _cursorPos;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::mergeVolumes(&wrapper, cursorVolume, destRegion, srcRegion);
@@ -434,7 +434,7 @@ void Model::cut() {
 void Model::render(const video::Camera& camera) {
 	const voxel::Mesh* mesh = _rawVolumeRenderer.mesh(ModelVolumeIndex);
 	_empty = mesh != nullptr ? mesh->getNoOfIndices() == 0 : true;
-	_gridRenderer.render(camera, modelVolume()->getRegion());
+	_gridRenderer.render(camera, modelVolume()->region());
 	_rawVolumeRenderer.render(camera);
 	// TODO: render error if rendered last - but be before grid renderer to get transparency.
 	if (_renderLockAxis) {
@@ -498,7 +498,7 @@ void Model::update() {
 		_lastGrow = ms;
 		voxel::RawVolumeWrapper wrapper(modelVolume());
 		_spaceColonizationTree->generate(wrapper);
-		modified(modelVolume()->getRegion());
+		modified(modelVolume()->region());
 		if (!growing) {
 			delete _spaceColonizationTree;
 			_spaceColonizationTree = nullptr;
@@ -574,11 +574,11 @@ void Model::noise(int octaves, float lacunarity, float frequency, float gain, vo
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random);
-	modified(modelVolume()->getRegion());
+	modified(modelVolume()->region());
 }
 
 void Model::spaceColonization() {
-	const voxel::Region& region = modelVolume()->getRegion();
+	const voxel::Region& region = modelVolume()->region();
 	core::AABB<int> aabb = region.aabb();
 	const int heightShift = aabb.getWidthY() / 4;
 	aabb.shiftLowerCorner(0, heightShift, 0);
@@ -596,7 +596,7 @@ void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	if (voxel::lsystem::generate(wrapper, lsystemCtx, random)) {
-		modified(modelVolume()->getRegion());
+		modified(modelVolume()->region());
 	}
 }
 
@@ -612,14 +612,14 @@ void Model::world(const voxel::WorldContext& ctx) {
 	voxel::cloud::CloudContext cloudCtx;
 	gen.createClouds(wrapper, cloudCtx);
 	gen.createTrees(wrapper);
-	modified(modelVolume()->getRegion());
+	modified(modelVolume()->region());
 }
 
 void Model::createCactus() {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::cactus::createCactus(wrapper, _cursorPos, 18, 2, random);
-	modified(modelVolume()->getRegion());
+	modified(modelVolume()->region());
 }
 
 void Model::createCloud() {
@@ -634,8 +634,8 @@ void Model::createCloud() {
 	hasClouds.pos = glm::vec2(_cursorPos.x, _cursorPos.z);
 	voxel::cloud::CloudContext cloudCtx;
 	cloudCtx.amount = 1;
-	if (voxel::cloud::createClouds(wrapper, wrapper.getRegion(), hasClouds, cloudCtx)) {
-		modified(modelVolume()->getRegion());
+	if (voxel::cloud::createClouds(wrapper, wrapper.region(), hasClouds, cloudCtx)) {
+		modified(modelVolume()->region());
 	}
 }
 
@@ -650,13 +650,13 @@ void Model::createPlant(voxel::PlantType type) {
 		g.createMushroom(7, _cursorPos, wrapper);
 	}
 	g.shutdown();
-	modified(modelVolume()->getRegion());
+	modified(modelVolume()->region());
 }
 
 void Model::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	voxel::building::createBuilding(wrapper, _cursorPos, type);
-	modified(modelVolume()->getRegion());
+	modified(modelVolume()->region());
 }
 
 void Model::createTree(voxel::TreeContext ctx) {
@@ -664,7 +664,7 @@ void Model::createTree(voxel::TreeContext ctx) {
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	ctx.pos = _cursorPos;
 	voxel::tree::createTree(wrapper, ctx, random);
-	modified(modelVolume()->getRegion());
+	modified(modelVolume()->region());
 }
 
 void Model::setCursorPosition(glm::ivec3 pos, bool force) {
@@ -680,7 +680,7 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 		}
 	}
 
-	const voxel::Region& region = modelVolume()->getRegion();
+	const voxel::Region& region = modelVolume()->region();
 	if (!region.containsPoint(pos)) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
@@ -688,7 +688,7 @@ void Model::setCursorPosition(glm::ivec3 pos, bool force) {
 		return;
 	}
 	_cursorPos = pos;
-	const voxel::Region& cursorRegion = cursorPositionVolume()->getRegion();
+	const voxel::Region& cursorRegion = cursorPositionVolume()->region();
 	_rawVolumeRenderer.setOffset(CursorVolumeIndex, -cursorRegion.getCentre() + _cursorPos);
 
 	updateLockedPlane(core::Axis::X);
@@ -752,7 +752,7 @@ int Model::getIndexForMirrorAxis(core::Axis axis) const {
 }
 
 void Model::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, core::Axis axis, const glm::vec4& color) {
-	const voxel::Region& region = modelVolume()->getRegion();
+	const voxel::Region& region = modelVolume()->region();
 	const int index = mirror ? getIndexForMirrorAxis(axis) : getIndexForAxis(axis);
 	glm::vec3 mins = region.getLowerCorner();
 	glm::vec3 maxs = region.getUpperCorner();

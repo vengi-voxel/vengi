@@ -56,28 +56,28 @@ TEST_F(UndoHandlerTest, testUndoRedo) {
 
 	voxel::RawVolume* undoThird = undoHandler.undo();
 	ASSERT_NE(nullptr, undoThird);
-	EXPECT_EQ(2, undoThird->getRegion().getWidthInVoxels());
+	EXPECT_EQ(2, undoThird->region().getWidthInVoxels());
 	EXPECT_TRUE(undoHandler.canRedo());
 	EXPECT_TRUE(undoHandler.canUndo());
 	EXPECT_EQ(1, (int)undoHandler.undoPosition());
 
 	voxel::RawVolume* undoSecond = undoHandler.undo();
 	ASSERT_NE(nullptr, undoSecond);
-	EXPECT_EQ(1, undoSecond->getRegion().getWidthInVoxels());
+	EXPECT_EQ(1, undoSecond->region().getWidthInVoxels());
 	EXPECT_TRUE(undoHandler.canRedo());
 	EXPECT_FALSE(undoHandler.canUndo());
 	EXPECT_EQ(0, (int)undoHandler.undoPosition());
 
 	voxel::RawVolume* redoSecond = undoHandler.redo();
 	ASSERT_NE(nullptr, redoSecond);
-	EXPECT_EQ(2, redoSecond->getRegion().getWidthInVoxels());
+	EXPECT_EQ(2, redoSecond->region().getWidthInVoxels());
 	EXPECT_TRUE(undoHandler.canRedo());
 	EXPECT_TRUE(undoHandler.canUndo());
 	EXPECT_EQ(1, (int)undoHandler.undoPosition());
 
 	undoSecond = undoHandler.undo();
 	ASSERT_NE(nullptr, undoSecond);
-	EXPECT_EQ(1, undoSecond->getRegion().getWidthInVoxels());
+	EXPECT_EQ(1, undoSecond->region().getWidthInVoxels());
 	EXPECT_TRUE(undoHandler.canRedo());
 	EXPECT_FALSE(undoHandler.canUndo());
 	EXPECT_EQ(0, (int)undoHandler.undoPosition());

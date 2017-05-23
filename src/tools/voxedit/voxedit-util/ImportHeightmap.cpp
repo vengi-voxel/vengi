@@ -6,7 +6,7 @@ namespace voxedit {
 void importHeightmap(voxel::RawVolume& volume, const image::ImagePtr& image) {
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
-	const voxel::Region& region = volume.getRegion();
+	const voxel::Region& region = volume.region();
 	const int volumeHeight = region.getHeightInVoxels();
 	const int volumeWidth = region.getWidthInVoxels();
 	const int volumeDepth = region.getDepthInVoxels();

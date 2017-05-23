@@ -33,7 +33,7 @@ int mergeVolumes(Volume1* destination, const Volume2* source, const Region& dest
 		for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
 			const int destY = destReg.getLowerY() + y - sourceReg.getLowerY();
 			for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
-				const Voxel& voxel = source->getVoxel(x, y, z);
+				const Voxel& voxel = source->voxel(x, y, z);
 				if (!mergeCondition(voxel)) {
 					continue;
 				}
@@ -53,8 +53,8 @@ int mergeVolumes(Volume1* destination, const Volume2* source, const Region& dest
  */
 template<typename MergeCondition = MergeSkipEmpty>
 inline int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume* source, MergeCondition mergeCondition = MergeCondition()) {
-	core_assert(source->getRegion() == destination->getRegion());
-	return mergeVolumes(destination, source, destination->getRegion(), source->getRegion());
+	core_assert(source->region() == destination->region());
+	return mergeVolumes(destination, source, destination->region(), source->region());
 }
 
 }

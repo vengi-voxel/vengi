@@ -50,12 +50,12 @@ public:
 	 */
 	OctreeVolume(PagedVolume* volume, const Region& region, uint32_t baseNodeSize = 32);
 
-	const Region& getRegion() const;
+	const Region& region() const;
 
 	/**
 	 * @note this adds a border rather than calling straight through.
 	 */
-	Voxel getVoxel(int32_t x, int32_t y, int32_t z) const;
+	Voxel voxel(int32_t x, int32_t y, int32_t z) const;
 
 	/**
 	 * @note This one's a bit of a hack... direct access to underlying PolyVox volume
@@ -102,12 +102,12 @@ private:
 	friend class OctreeNode;
 };
 
-inline const Region& OctreeVolume::getRegion() const {
+inline const Region& OctreeVolume::region() const {
 	return _region;
 }
 
-inline Voxel OctreeVolume::getVoxel(int32_t x, int32_t y, int32_t z) const {
-	return pagedVolume()->getVoxel(x, y, z);
+inline Voxel OctreeVolume::voxel(int32_t x, int32_t y, int32_t z) const {
+	return pagedVolume()->voxel(x, y, z);
 }
 
 inline PagedVolume* OctreeVolume::pagedVolume() const {

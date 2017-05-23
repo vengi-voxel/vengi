@@ -26,14 +26,14 @@ protected:
 
 		voxel::RawVolume* rotated = voxel::rotateVolume(&smallVolume, glm::ivec3(0, degree, 0), voxel::Voxel());
 		ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
-		const voxel::Region& rotatedRegion = rotated->getRegion();
+		const voxel::Region& rotatedRegion = rotated->region();
 		ASSERT_EQ(rotatedRegion, region) << "Rotating by " << degree << " degree should not increase the size of the volume "
 				<< str(rotatedRegion) << " " << str(region);
 		glm::ivec3 rotPos = rotatedRegion.getCentre();
 		SCOPED_TRACE(std::to_string(degree) + " degree rotation: " + str(rotatedRegion) + " " + str(region));
-		EXPECT_EQ(voxel::VoxelType::Rock, rotated->getVoxel(rotPos.x, rotPos.y++, rotPos.z).getMaterial());
-		EXPECT_EQ(voxel::VoxelType::Grass, rotated->getVoxel(rotPos.x, rotPos.y++, rotPos.z).getMaterial());
-		EXPECT_EQ(voxel::VoxelType::Sand, rotated->getVoxel(rotPos.x, rotPos.y++, rotPos.z).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Rock, rotated->voxel(rotPos.x, rotPos.y++, rotPos.z).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Grass, rotated->voxel(rotPos.x, rotPos.y++, rotPos.z).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Sand, rotated->voxel(rotPos.x, rotPos.y++, rotPos.z).getMaterial());
 	}
 };
 
@@ -56,7 +56,7 @@ TEST_F(VolumeRotatorTest, testRotate45Y) {
 
 	voxel::RawVolume* rotated = voxel::rotateVolume(&smallVolume, glm::ivec3(0, 45, 0), voxel::Voxel());
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
-	const voxel::Region& rotatedRegion = rotated->getRegion();
+	const voxel::Region& rotatedRegion = rotated->region();
 	ASSERT_NE(rotatedRegion, region) << "Rotating by 45 degree should increase the size of the volume "
 			<< str(rotatedRegion) << " " << str(region);
 }
@@ -71,12 +71,12 @@ TEST_F(VolumeRotatorTest, testRotate45YNoExtend) {
 
 	voxel::RawVolume* rotated = voxel::rotateVolume(&smallVolume, glm::ivec3(0, 45, 0), voxel::Voxel(), false);
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
-	const voxel::Region& rotatedRegion = rotated->getRegion();
+	const voxel::Region& rotatedRegion = rotated->region();
 	ASSERT_EQ(rotatedRegion, region) << "This rotation was forced to not exceed the source bounds "
 			<< str(rotatedRegion) << " " << str(region);
 	SCOPED_TRACE(str(rotatedRegion) + " " + str(region));
 	const glm::ivec3& rotPos = rotatedRegion.getCentre();
-	EXPECT_EQ(voxel::VoxelType::Rock, rotated->getVoxel(rotPos.x, rotPos.y, rotPos.z).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Rock, rotated->voxel(rotPos.x, rotPos.y, rotPos.z).getMaterial());
 }
 
 }

@@ -167,7 +167,7 @@ void RawVolumeRenderer::update(int idx, voxel::Mesh* mesh) {
 }
 
 void RawVolumeRenderer::extract(voxel::RawVolume* volume, voxel::Mesh* mesh) const {
-	voxel::Region region = volume->getRegion();
+	voxel::Region region = volume->region();
 	region.shiftUpperCorner(1, 1, 1);
 	voxel::extractCubicMesh(volume, region, mesh, CustomIsQuadNeeded());
 }

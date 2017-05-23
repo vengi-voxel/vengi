@@ -28,10 +28,10 @@ inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Voxel& voxel)
 }
 
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::RawVolume& volume) {
-	const voxel::Region& region = volume.getRegion();
+	const voxel::Region& region = volume.region();
 	os << "volume[" << region;
 	const int threshold = 6;
-	if (volume.getDepth() <= threshold && volume.getWidth() <= threshold && volume.getHeight() <= threshold) {
+	if (volume.depth() <= threshold && volume.width() <= threshold && volume.height() <= threshold) {
 		const int32_t lowerX = region.getLowerX();
 		const int32_t lowerY = region.getLowerY();
 		const int32_t lowerZ = region.getLowerZ();
@@ -43,7 +43,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const voxel::RawVolume& vo
 			for (int32_t y = lowerY; y <= upperY; ++y) {
 				for (int32_t x = lowerX; x <= upperX; ++x) {
 					const glm::ivec3 pos(x, y, z);
-					const voxel::Voxel& voxel = volume.getVoxel(pos);
+					const voxel::Voxel& voxel = volume.voxel(pos);
 					os << x << ", " << y << ", " << z << ": " << voxel << "\n";
 				}
 			}
@@ -106,7 +106,7 @@ public:
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 		_random.setSeed(_seed);
 		const voxel::Region region(glm::ivec3(0, 0, 0), glm::ivec3(63, 63, 63));
-		_ctx = PagedVolumeWrapper(&_volData, _volData.getChunk(region.getCentre()), region);
+		_ctx = PagedVolumeWrapper(&_volData, _volData.chunk(region.getCentre()), region);
 	}
 };
 

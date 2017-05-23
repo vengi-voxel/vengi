@@ -34,7 +34,7 @@ void VolumeNode::update() {
 	voxelCnt = ret.voxelCnt;
 
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	const voxel::Region& region = ret.volume->getRegion();
+	const voxel::Region& region = ret.volume->region();
 	const glm::ivec3& center = region.getCentre();
 	_camera.setTarget(center);
 	_camera.setPosition(glm::vec3(-center.x, region.getHeightInVoxels() + center.y, -center.z));

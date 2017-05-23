@@ -35,7 +35,7 @@ void Npc::init() {
 
 void Npc::init(const glm::ivec3* pos) {
 	const glm::ivec3& randomPos = pos ? *pos : _world->randomPos();
-	const voxel::VoxelType material = _world->getMaterial(randomPos.x, randomPos.y, randomPos.z);
+	const voxel::VoxelType material = _world->material(randomPos.x, randomPos.y, randomPos.z);
 	Log::info("spawn character %i with behaviour tree %s at position %i:%i:%i (material: %i)",
 			ai()->getId(), ai()->getBehaviour()->getName().c_str(),
 			randomPos.x, randomPos.y, randomPos.z, std::enum_value(material));

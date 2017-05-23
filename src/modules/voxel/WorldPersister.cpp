@@ -36,7 +36,7 @@ bool WorldPersister::load(PagedVolume::Chunk* chunk, long seed) {
 	core_trace_scoped(WorldPersisterLoad);
 	const core::App* app = core::App::getInstance();
 	const io::FilesystemPtr& filesystem = app->filesystem();
-	const Region& region = chunk->getRegion();
+	const Region& region = chunk->region();
 	const std::string& filename = getWorldName(region, seed);
 	const io::FilePtr& f = filesystem->open(filename);
 	if (!f->exists()) {
@@ -103,7 +103,7 @@ bool WorldPersister::load(PagedVolume::Chunk* chunk, long seed) {
 bool WorldPersister::save(PagedVolume::Chunk* chunk, long seed) {
 	core_trace_scoped(WorldPersisterLoad);
 	core::ByteStream voxelStream;
-	const Region& region = chunk->getRegion();
+	const Region& region = chunk->region();
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
@@ -111,7 +111,7 @@ bool WorldPersister::save(PagedVolume::Chunk* chunk, long seed) {
 	for (int z = 0; z < depth; ++z) {
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
-				const Voxel& voxel = chunk->getVoxel(x, y, z);
+				const Voxel& voxel = chunk->voxel(x, y, z);
 				static_assert(sizeof(VoxelType) == sizeof(uint8_t), "Voxel type size changed");
 				voxelStream.addByte(std::enum_value(voxel.getMaterial()));
 				voxelStream.addByte(voxel.getColor());

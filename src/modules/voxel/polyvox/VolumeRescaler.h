@@ -44,7 +44,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 					for (int32_t childY = 0; childY < 2; ++childY) {
 						for (int32_t childX = 0; childX < 2; ++childX) {
 							srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
-							const Voxel& child = srcSampler.getVoxel();
+							const Voxel& child = srcSampler.voxel();
 
 							if (isBlocked(child.getMaterial())) {
 								++solidVoxels;
@@ -87,7 +87,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 				dstSampler.setPosition(dstPos);
 
 				// Skip empty voxels
-				if (dstSampler.getVoxel().getMaterial() != VoxelType::Air) {
+				if (dstSampler.voxel().getMaterial() != VoxelType::Air) {
 					// Only process voxels on a material-air boundary.
 					if (dstSampler.peekVoxel0px0py1nz().getMaterial() == VoxelType::Air || dstSampler.peekVoxel0px0py1pz().getMaterial() == VoxelType::Air
 							|| dstSampler.peekVoxel0px1ny0pz().getMaterial() == VoxelType::Air || dstSampler.peekVoxel0px1py0pz().getMaterial() == VoxelType::Air
@@ -105,7 +105,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 								for (int32_t childX = -1; childX < 3; childX++) {
 									srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
 
-									const Voxel& child = srcSampler.getVoxel();
+									const Voxel& child = srcSampler.voxel();
 
 									if (child.getColor() > 0) {
 										// For each small voxel, count the exposed faces and use this
@@ -159,7 +159,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 
 template<typename SourceVolume, typename DestVolume>
 void rescaleVolume(const SourceVolume& sourceVolume, DestVolume& destVolume) {
-	rescaleVolume(sourceVolume, sourceVolume.getRegion(), destVolume, destVolume.getRegion());
+	rescaleVolume(sourceVolume, sourceVolume.region(), destVolume, destVolume.region());
 }
 
 }

@@ -115,13 +115,13 @@ static int findFloor(const Volume& volume, int x, int z) {
 	glm::ivec3 end(x, 0, z);
 	int y = NO_FLOOR_FOUND;
 	voxel::raycastWithEndpoints(&volume, start, end, [&y] (const typename Volume::Sampler& sampler) {
-		const Voxel& voxel = sampler.getVoxel();
+		const Voxel& voxel = sampler.voxel();
 		const VoxelType material = voxel.getMaterial();
 		if (isLeaves(material)) {
 			return false;
 		}
 		if (!isRock(material) && (isFloor(material) || isWood(material))) {
-			y = sampler.getPosition().y + 1;
+			y = sampler.position().y + 1;
 			return false;
 		}
 		return true;

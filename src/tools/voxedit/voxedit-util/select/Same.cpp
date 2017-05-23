@@ -4,10 +4,10 @@ namespace voxedit {
 namespace selections {
 
 int Same::execute(voxel::RawVolume::Sampler& model, voxel::RawVolume::Sampler& selection) const {
-	selection.setVoxel(model.getVoxel());
-	const glm::ivec3& pos = model.getPosition();
+	selection.setVoxel(model.voxel());
+	const glm::ivec3& pos = model.position();
 	int cnt = 0;
-	goSixDirections(model, selection, model.getVoxel(), cnt);
+	goSixDirections(model, selection, model.voxel(), cnt);
 	selection.setPosition(pos);
 	model.setPosition(pos);
 	return cnt;

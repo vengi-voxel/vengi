@@ -53,7 +53,7 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	if (_cancelThreads) {
 		return false;
 	}
-	const glm::ivec3& pos = getMeshPos(p);
+	const glm::ivec3& pos = meshPos(p);
 	auto i = _meshesExtracted.find(pos);
 	if (i != _meshesExtracted.end()) {
 		return false;
@@ -88,7 +88,7 @@ void World::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 }
 
 bool World::allowReExtraction(const glm::ivec3& pos) {
-	const glm::ivec3& gridPos = getMeshPos(pos);
+	const glm::ivec3& gridPos = meshPos(pos);
 	return _meshesExtracted.erase(gridPos) != 0;
 }
 
@@ -96,7 +96,7 @@ bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
 		std::list<glm::ivec3>& listResult) {
 	core_trace_scoped(FindPath);
 	static auto f = [] (const voxel::PagedVolume* volData, const glm::ivec3& v3dPos) {
-		const voxel::Voxel& voxel = volData->getVoxel(v3dPos);
+		const voxel::Voxel& voxel = volData->voxel(v3dPos);
 		return isBlocked(voxel.getMaterial());
 	};
 
@@ -190,10 +190,10 @@ void World::stats(int& meshes, int& extracted, int& pending) const {
 
 bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) const {
 	const bool result = raycast(start, direction, maxDistance, [&] (const PagedVolume::Sampler& sampler) {
-		voxel = sampler.getVoxel();
+		voxel = sampler.voxel();
 		if (isBlocked(voxel.getMaterial())) {
 			// store position and abort raycast
-			hit = sampler.getPosition();
+			hit = sampler.position();
 			return false;
 		}
 		return true;

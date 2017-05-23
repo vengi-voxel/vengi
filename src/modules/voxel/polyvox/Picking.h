@@ -46,16 +46,16 @@ public:
 	}
 
 	bool operator()(typename VolumeType::Sampler& sampler) {
-		if (sampler.getVoxel() != _emptyVoxelExample) {
+		if (sampler.voxel() != _emptyVoxelExample) {
 			// If we've hit something
 			_result.didHit = true;
-			_result.hitVoxel = sampler.getPosition();
+			_result.hitVoxel = sampler.position();
 			return false;
 		}
 
-		if (sampler.isCurrentPositionValid()) {
+		if (sampler.currentPositionValid()) {
 			_result.validPreviousPosition = true;
-			_result.previousPosition = sampler.getPosition();
+			_result.previousPosition = sampler.position();
 		}
 		return true;
 	}

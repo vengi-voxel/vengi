@@ -48,7 +48,7 @@ OctreeVolume::OctreeVolume(PagedVolume* volume, const Region& region, uint32_t b
 }
 
 void OctreeVolume::setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& value, bool markAsModified) {
-	core_assert_msg(getRegion().containsPoint(x, y, z), "Attempted to write to a voxel which is outside of the volume");
+	core_assert_msg(region().containsPoint(x, y, z), "Attempted to write to a voxel which is outside of the volume");
 	pagedVolume()->setVoxel(x, y, z, value);
 	if (markAsModified) {
 		octree().markDataAsModified(x, y, z, octree().time());

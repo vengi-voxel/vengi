@@ -194,7 +194,7 @@ void Client::handleLogin() {
 void Client::beforeUI() {
 	Super::beforeUI();
 
-	if (_world->isCreated()) {
+	if (_world->created()) {
 		if (_player) {
 			const glm::vec3& pos = _player->position();
 			_camera.setTarget(pos);
@@ -285,7 +285,7 @@ core::AppState Client::onRunning() {
 	if (state == core::AppState::Running) {
 		_network->update();
 		_world->onFrame(_deltaFrame);
-		if (_world->isCreated()) {
+		if (_world->created()) {
 			_worldRenderer.onRunning(_camera, _deltaFrame);
 		}
 	}

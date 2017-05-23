@@ -9,7 +9,7 @@ void Controller::resetCamera(const voxel::RawVolume* volume) {
 	if (volume == nullptr) {
 		return;
 	}
-	const voxel::Region& region = volume->getRegion();
+	const voxel::Region& region = volume->region();
 	const glm::ivec3& center = region.getCentre();
 	_camera.setTarget(center);
 	if (_camMode == Controller::SceneCameraMode::Free) {

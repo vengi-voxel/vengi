@@ -282,7 +282,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 				 *               [C]
 				 */
 
-				const Voxel& voxelCurrent          = volumeSampler.getVoxel();
+				const Voxel& voxelCurrent          = volumeSampler.voxel();
 				const Voxel& voxelLeft             = volumeSampler.peekVoxel1nx0py0pz();
 				const Voxel& voxelBefore           = volumeSampler.peekVoxel0px0py1nz();
 				const Voxel& voxelLeftBefore       = volumeSampler.peekVoxel1nx0py1nz();
@@ -537,7 +537,7 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 				 *               [C]
 				 */
 
-				const Voxel& voxelCurrent          = volumeSampler.getVoxel();
+				const Voxel& voxelCurrent          = volumeSampler.voxel();
 				const Voxel& voxelLeft             = volumeSampler.peekVoxel1nx0py0pz();
 				const Voxel& voxelBefore           = volumeSampler.peekVoxel0px0py1nz();
 				const Voxel& voxelLeftBefore       = volumeSampler.peekVoxel1nx0py1nz();

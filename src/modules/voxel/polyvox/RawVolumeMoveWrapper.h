@@ -23,13 +23,13 @@ public:
 	private:
 		using Super = RawVolume::Sampler;
 	public:
-		Sampler(const RawVolumeWrapper* volume) : Super(volume->getVolume()) {}
+		Sampler(const RawVolumeWrapper* volume) : Super(volume->volume()) {}
 
-		Sampler(const RawVolumeWrapper& volume) : Super(volume.getVolume()) {};
+		Sampler(const RawVolumeWrapper& volume) : Super(volume.volume()) {};
 	};
 
 	RawVolumeMoveWrapper(voxel::RawVolume* volume) :
-			_volume(volume), _region(volume->getRegion()) {
+			_volume(volume), _region(volume->region()) {
 	}
 
 	inline operator RawVolume& () const {
@@ -48,16 +48,16 @@ public:
 		return _volume;
 	}
 
-	inline const Region& getRegion() const {
+	inline const Region& region() const {
 		return _region;
 	}
 
-	inline const Voxel& getVoxel(const glm::ivec3& pos) const {
-		return _volume->getVoxel(pos.x, pos.y, pos.z);
+	inline const Voxel& voxel(const glm::ivec3& pos) const {
+		return _volume->voxel(pos.x, pos.y, pos.z);
 	}
 
-	inline const Voxel& getVoxel(int x, int y, int z) const {
-		return _volume->getVoxel(x, y, z);
+	inline const Voxel& voxel(int x, int y, int z) const {
+		return _volume->voxel(x, y, z);
 	}
 
 	inline bool setVoxel(const glm::ivec3& pos, const Voxel& voxel) {

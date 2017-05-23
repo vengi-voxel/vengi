@@ -36,12 +36,12 @@ public:
 	operator PagedVolume* () const;
 	operator const PagedVolume* () const;
 
-	PagedVolume::ChunkPtr getChunk() const;
-	PagedVolume* getVolume() const;
-	const Region& getRegion() const;
+	PagedVolume::ChunkPtr chunk() const;
+	PagedVolume* volume() const;
+	const Region& region() const;
 
-	const Voxel& getVoxel(const glm::ivec3& pos) const;
-	const Voxel& getVoxel(int x, int y, int z) const;
+	const Voxel& voxel(const glm::ivec3& pos) const;
+	const Voxel& voxel(int x, int y, int z) const;
 
 	bool setVoxel(const glm::ivec3& pos, const Voxel& voxel);
 	bool setVoxel(int x, int y, int z, const Voxel& voxel);
@@ -50,7 +50,7 @@ public:
 	bool setVoxels(int x, int y, int z, const Voxel* voxels, int amount);
 };
 
-inline const Region& PagedVolumeWrapper::getRegion() const {
+inline const Region& PagedVolumeWrapper::region() const {
 	return _region;
 }
 
@@ -70,11 +70,11 @@ inline PagedVolumeWrapper::operator const PagedVolume* () const {
 	return _pagedVolume;
 }
 
-inline PagedVolume::ChunkPtr PagedVolumeWrapper::getChunk() const {
+inline PagedVolume::ChunkPtr PagedVolumeWrapper::chunk() const {
 	return _chunk;
 }
 
-inline PagedVolume* PagedVolumeWrapper::getVolume() const {
+inline PagedVolume* PagedVolumeWrapper::volume() const {
 	return _pagedVolume;
 }
 
@@ -82,8 +82,8 @@ inline bool PagedVolumeWrapper::setVoxel(const glm::ivec3& pos, const Voxel& vox
 	return setVoxel(pos.x, pos.y, pos.z, voxel);
 }
 
-inline const Voxel& PagedVolumeWrapper::getVoxel(const glm::ivec3& pos) const {
-	return getVoxel(pos.x, pos.y, pos.z);
+inline const Voxel& PagedVolumeWrapper::voxel(const glm::ivec3& pos) const {
+	return voxel(pos.x, pos.y, pos.z);
 }
 
 inline bool PagedVolumeWrapper::setVoxels(int x, int z, const Voxel* voxels, int amount) {

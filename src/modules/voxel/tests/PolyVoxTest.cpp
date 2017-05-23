@@ -35,15 +35,15 @@ protected:
 };
 
 TEST_F(PolyVoxTest, testSamplerPeek) {
-	const PagedVolume::ChunkPtr& chunk = _volData.getChunk(glm::ivec3(0, 0, 0));
-	ASSERT_EQ(VoxelType::Grass, chunk->getVoxel(1, 2, 1).getMaterial());
-	ASSERT_EQ(VoxelType::Leaf, chunk->getVoxel(1, 1, 1).getMaterial());
-	ASSERT_EQ(VoxelType::Leaf, chunk->getVoxel(1, 0, 1).getMaterial());
+	const PagedVolume::ChunkPtr& chunk = _volData.chunk(glm::ivec3(0, 0, 0));
+	ASSERT_EQ(VoxelType::Grass, chunk->voxel(1, 2, 1).getMaterial());
+	ASSERT_EQ(VoxelType::Leaf, chunk->voxel(1, 1, 1).getMaterial());
+	ASSERT_EQ(VoxelType::Leaf, chunk->voxel(1, 0, 1).getMaterial());
 
 	PagedVolume::Sampler sampler(&_volData);
 	sampler.setPosition(1, 1, 1);
 	ASSERT_EQ(VoxelType::Grass, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different ";
-	ASSERT_EQ(VoxelType::Leaf, sampler.getVoxel().getMaterial()) << "The current voxel should have a different material";
+	ASSERT_EQ(VoxelType::Leaf, sampler.voxel().getMaterial()) << "The current voxel should have a different material";
 	ASSERT_EQ(VoxelType::Leaf, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
@@ -52,7 +52,7 @@ TEST_F(PolyVoxTest, testSamplerPeekWithMovingX) {
 	sampler.setPosition(0, 1, 1);
 	sampler.movePositiveX();
 	ASSERT_EQ(VoxelType::Grass, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different ";
-	ASSERT_EQ(VoxelType::Leaf, sampler.getVoxel().getMaterial()) << "The current voxel should have a different material";
+	ASSERT_EQ(VoxelType::Leaf, sampler.voxel().getMaterial()) << "The current voxel should have a different material";
 	ASSERT_EQ(VoxelType::Leaf, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
@@ -60,7 +60,7 @@ TEST_F(PolyVoxTest, testSamplerPeekWithAir) {
 	PagedVolume::Sampler sampler(&_volData);
 	sampler.setPosition(1, 3, 1);
 	ASSERT_EQ(VoxelType::Air, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different material";
-	ASSERT_EQ(VoxelType::Air, sampler.getVoxel().getMaterial()) << "The current voxel should have a different material";
+	ASSERT_EQ(VoxelType::Air, sampler.voxel().getMaterial()) << "The current voxel should have a different material";
 	ASSERT_EQ(VoxelType::Grass, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
@@ -68,12 +68,12 @@ TEST_F(PolyVoxTest, testSamplerPeekWithTipOfTheGeom) {
 	PagedVolume::Sampler sampler(&_volData);
 	sampler.setPosition(1, 2, 1);
 	ASSERT_EQ(VoxelType::Air, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different material";
-	ASSERT_EQ(VoxelType::Grass, sampler.getVoxel().getMaterial()) << "The current voxel should have a different material";
+	ASSERT_EQ(VoxelType::Grass, sampler.voxel().getMaterial()) << "The current voxel should have a different material";
 	ASSERT_EQ(VoxelType::Leaf, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
 TEST_F(PolyVoxTest, testFullSamplerLoop) {
-	const voxel::Region& region = _ctx.getRegion();
+	const voxel::Region& region = _ctx.region();
 	PagedVolume::Sampler volumeSampler(&_volData);
 
 	ASSERT_EQ(0, region.getLowerX());
@@ -85,7 +85,7 @@ TEST_F(PolyVoxTest, testFullSamplerLoop) {
 			volumeSampler.setPosition(region.getLowerX(), y, z);
 
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
-				const Voxel voxelCurrent          = volumeSampler.getVoxel();
+				const Voxel voxelCurrent          = volumeSampler.voxel();
 				const Voxel voxelLeft             = volumeSampler.peekVoxel1nx0py0pz();
 				const Voxel voxelRight            = volumeSampler.peekVoxel1px0py0pz();
 				const Voxel voxelBefore           = volumeSampler.peekVoxel0px0py1nz();

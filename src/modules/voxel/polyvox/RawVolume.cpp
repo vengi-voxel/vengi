@@ -13,9 +13,9 @@ RawVolume::RawVolume(const Region& regValid) :
 }
 
 RawVolume::RawVolume(const RawVolume* copy) :
-		_region(copy->getRegion()) {
-	setBorderValue(copy->getBorderValue());
-	_data = new Voxel[getWidth() * getHeight() * getDepth()];
+		_region(copy->region()) {
+	setBorderValue(copy->borderValue());
+	_data = new Voxel[width() * height() * depth()];
 	_mins = copy->_mins;
 	_maxs = copy->_maxs;
 	_boundsValid = copy->_boundsValid;
@@ -35,38 +35,38 @@ RawVolume::~RawVolume() {
  * is outside the extents of the volume.
  * @return The value used for voxels outside of the volume
  */
-const Voxel& RawVolume::getBorderValue() const {
+const Voxel& RawVolume::borderValue() const {
 	return _borderVoxel;
 }
 
 /**
  * @return A Region representing the extent of the volume.
  */
-const Region& RawVolume::getRegion() const {
+const Region& RawVolume::region() const {
 	return _region;
 }
 
 /**
  * @return The width of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the width is 64.
- * @sa getHeight(), getDepth()
+ * @sa height(), getDepth()
  */
-int32_t RawVolume::getWidth() const {
+int32_t RawVolume::width() const {
 	return _region.getWidthInVoxels();
 }
 
 /**
  * @return The height of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the height is 64.
- * @sa getWidth(), getDepth()
+ * @sa width(), getDepth()
  */
-int32_t RawVolume::getHeight() const {
+int32_t RawVolume::height() const {
 	return _region.getHeightInVoxels();
 }
 
 /**
  * @return The depth of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the depth is 64.
- * @sa getWidth(), getHeight()
+ * @sa width(), height()
  */
-int32_t RawVolume::getDepth() const {
+int32_t RawVolume::depth() const {
 	return _region.getDepthInVoxels();
 }
 
@@ -78,14 +78,14 @@ int32_t RawVolume::getDepth() const {
  * @param uZPos The @c z position of the voxel
  * @return The voxel value
  */
-const Voxel& RawVolume::getVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const {
+const Voxel& RawVolume::voxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const {
 	if (_region.containsPoint(uXPos, uYPos, uZPos)) {
 		const Region& regValidRegion = _region;
 		const int32_t iLocalXPos = uXPos - regValidRegion.getLowerX();
 		const int32_t iLocalYPos = uYPos - regValidRegion.getLowerY();
 		const int32_t iLocalZPos = uZPos - regValidRegion.getLowerZ();
 
-		return _data[iLocalXPos + iLocalYPos * getWidth() + iLocalZPos * getWidth() * getHeight()];
+		return _data[iLocalXPos + iLocalYPos * width() + iLocalZPos * width() * height()];
 	}
 	return _borderVoxel;
 }
@@ -121,7 +121,7 @@ bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 	const int32_t localXPos = pos.x - lowerCorner.x;
 	const int32_t localYPos = pos.y - lowerCorner.y;
 	const int32_t iLocalZPos = pos.z - lowerCorner.z;
-	const int index = localXPos + localYPos * getWidth() + iLocalZPos * getWidth() * getHeight();
+	const int index = localXPos + localYPos * width() + iLocalZPos * width() * height();
 	if (_data[index].isSame(voxel)) {
 		return false;
 	}
@@ -138,19 +138,19 @@ bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 void RawVolume::initialise(const Region& regValidRegion) {
 	_region = regValidRegion;
 
-	core_assert_msg(getWidth() > 0, "Volume width must be greater than zero.");
-	core_assert_msg(getHeight() > 0, "Volume height must be greater than zero.");
-	core_assert_msg(getDepth() > 0, "Volume depth must be greater than zero.");
+	core_assert_msg(width() > 0, "Volume width must be greater than zero.");
+	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
+	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 
 	//Create the data
-	_data = new Voxel[getWidth() * getHeight() * getDepth()];
+	_data = new Voxel[width() * height() * depth()];
 
 	// Clear to zeros
 	clear();
 }
 
 void RawVolume::clear() {
-	std::fill(_data, _data + getWidth() * getHeight() * getDepth(), Voxel());
+	std::fill(_data, _data + width() * height() * depth(), Voxel());
 	_mins = glm::ivec3(std::numeric_limits<int>::max());
 	_maxs = glm::ivec3(std::numeric_limits<int>::min());
 	_boundsValid = false;
@@ -160,7 +160,7 @@ void RawVolume::clear() {
  * @note: This function needs reviewing for accuracy...
  */
 uint32_t RawVolume::calculateSizeInBytes() {
-	return getWidth() * getHeight() * getDepth() * sizeof(Voxel);
+	return width() * height() * depth() * sizeof(Voxel);
 }
 
 RawVolume::Sampler::Sampler(const RawVolume* volume) :
@@ -175,7 +175,7 @@ RawVolume::Sampler::~Sampler() {
 }
 
 bool RawVolume::Sampler::setVoxel(const Voxel& voxel) {
-	if (this->_isCurrentPositionValidInX && this->_isCurrentPositionValidInY && this->_isCurrentPositionValidInZ) {
+	if (this->_currentPositionValidInX && this->_currentPositionValidInY && this->_currentPositionValidInZ) {
 		*_currentVoxel = voxel;
 		_volume->_mins = glm::min(_volume->_mins, _posInVolume);
 		_volume->_mins = glm::max(_volume->_maxs, _posInVolume);
@@ -190,18 +190,18 @@ bool RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	_posInVolume.y = yPos;
 	_posInVolume.z = zPos;
 
-	const voxel::Region& region = _volume->getRegion();
-	_isCurrentPositionValidInX = region.containsPointInX(xPos);
-	_isCurrentPositionValidInY = region.containsPointInY(yPos);
-	_isCurrentPositionValidInZ = region.containsPointInZ(zPos);
+	const voxel::Region& region = _volume->region();
+	_currentPositionValidInX = region.containsPointInX(xPos);
+	_currentPositionValidInY = region.containsPointInY(yPos);
+	_currentPositionValidInZ = region.containsPointInZ(zPos);
 
 	// Then we update the voxel pointer
-	if (isCurrentPositionValid()) {
+	if (currentPositionValid()) {
 		const glm::ivec3& v3dLowerCorner = region.getLowerCorner();
 		const int32_t iLocalXPos = xPos - v3dLowerCorner.x;
 		const int32_t iLocalYPos = yPos - v3dLowerCorner.y;
 		const int32_t iLocalZPos = zPos - v3dLowerCorner.z;
-		const int32_t uVoxelIndex = iLocalXPos + iLocalYPos * _volume->getWidth() + iLocalZPos * _volume->getWidth() * _volume->getHeight();
+		const int32_t uVoxelIndex = iLocalXPos + iLocalYPos * _volume->width() + iLocalZPos * _volume->width() * _volume->height();
 
 		_currentVoxel = _volume->_data + uVoxelIndex;
 		return true;
@@ -212,14 +212,14 @@ bool RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 
 void RawVolume::Sampler::movePositiveX() {
 	// We'll need this in a moment...
-	const bool bIsOldPositionValid = isCurrentPositionValid();
+	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.x++;
 
-	_isCurrentPositionValidInX = _volume->getRegion().containsPointInX(_posInVolume.x);
+	_currentPositionValidInX = _volume->region().containsPointInX(_posInVolume.x);
 
 	// Then we update the voxel pointer
-	if (isCurrentPositionValid() && bIsOldPositionValid) {
+	if (currentPositionValid() && bIsOldPositionValid) {
 		++_currentVoxel;
 	} else {
 		setPosition(_posInVolume);
@@ -228,15 +228,15 @@ void RawVolume::Sampler::movePositiveX() {
 
 void RawVolume::Sampler::movePositiveY() {
 	// We'll need this in a moment...
-	const bool bIsOldPositionValid = isCurrentPositionValid();
+	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.y++;
 
-	_isCurrentPositionValidInY = _volume->getRegion().containsPointInY(_posInVolume.y);
+	_currentPositionValidInY = _volume->region().containsPointInY(_posInVolume.y);
 
 	// Then we update the voxel pointer
-	if (isCurrentPositionValid() && bIsOldPositionValid) {
-		_currentVoxel += _volume->getWidth();
+	if (currentPositionValid() && bIsOldPositionValid) {
+		_currentVoxel += _volume->width();
 	} else {
 		setPosition(_posInVolume);
 	}
@@ -244,15 +244,15 @@ void RawVolume::Sampler::movePositiveY() {
 
 void RawVolume::Sampler::movePositiveZ() {
 	// We'll need this in a moment...
-	const bool bIsOldPositionValid = isCurrentPositionValid();
+	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.z++;
 
-	_isCurrentPositionValidInZ = _volume->getRegion().containsPointInZ(_posInVolume.z);
+	_currentPositionValidInZ = _volume->region().containsPointInZ(_posInVolume.z);
 
 	// Then we update the voxel pointer
-	if (isCurrentPositionValid() && bIsOldPositionValid) {
-		_currentVoxel += _volume->getWidth() * _volume->getHeight();
+	if (currentPositionValid() && bIsOldPositionValid) {
+		_currentVoxel += _volume->width() * _volume->height();
 	} else {
 		setPosition(_posInVolume);
 	}
@@ -260,14 +260,14 @@ void RawVolume::Sampler::movePositiveZ() {
 
 void RawVolume::Sampler::moveNegativeX() {
 	// We'll need this in a moment...
-	const bool bIsOldPositionValid = isCurrentPositionValid();
+	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.x--;
 
-	_isCurrentPositionValidInX = _volume->getRegion().containsPointInX(_posInVolume.x);
+	_currentPositionValidInX = _volume->region().containsPointInX(_posInVolume.x);
 
 	// Then we update the voxel pointer
-	if (isCurrentPositionValid() && bIsOldPositionValid) {
+	if (currentPositionValid() && bIsOldPositionValid) {
 		--_currentVoxel;
 	} else {
 		setPosition(_posInVolume);
@@ -276,15 +276,15 @@ void RawVolume::Sampler::moveNegativeX() {
 
 void RawVolume::Sampler::moveNegativeY() {
 	// We'll need this in a moment...
-	const bool bIsOldPositionValid = isCurrentPositionValid();
+	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.y--;
 
-	_isCurrentPositionValidInY = _volume->getRegion().containsPointInY(_posInVolume.y);
+	_currentPositionValidInY = _volume->region().containsPointInY(_posInVolume.y);
 
 	// Then we update the voxel pointer
-	if (isCurrentPositionValid() && bIsOldPositionValid) {
-		_currentVoxel -= _volume->getWidth();
+	if (currentPositionValid() && bIsOldPositionValid) {
+		_currentVoxel -= _volume->width();
 	} else {
 		setPosition(_posInVolume);
 	}
@@ -292,15 +292,15 @@ void RawVolume::Sampler::moveNegativeY() {
 
 void RawVolume::Sampler::moveNegativeZ() {
 	// We'll need this in a moment...
-	const bool bIsOldPositionValid = isCurrentPositionValid();
+	const bool bIsOldPositionValid = currentPositionValid();
 
 	_posInVolume.z--;
 
-	_isCurrentPositionValidInZ = _volume->getRegion().containsPointInZ(_posInVolume.z);
+	_currentPositionValidInZ = _volume->region().containsPointInZ(_posInVolume.z);
 
 	// Then we update the voxel pointer
-	if (isCurrentPositionValid() && bIsOldPositionValid) {
-		_currentVoxel -= _volume->getWidth() * _volume->getHeight();
+	if (currentPositionValid() && bIsOldPositionValid) {
+		_currentVoxel -= _volume->width() * _volume->height();
 	} else {
 		setPosition(_posInVolume);
 	}

@@ -95,7 +95,7 @@ private:
 
 Octree::Octree(OctreeVolume* volume, uint32_t baseNodeSize) :
 		_baseNodeSize(baseNodeSize), _volume(volume) {
-	_regionToCover = _volume->getRegion();
+	_regionToCover = _volume->region();
 	_regionToCover.shiftUpperCorner(1, 1, 1);
 
 	core_assert_msg(glm::isPowerOfTwo(_baseNodeSize), "Node size must be a power of two");

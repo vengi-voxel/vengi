@@ -38,7 +38,7 @@ RawVolume* cropVolume(const RawVolume* volume, CropSkipCondition condition = Cro
 		for (int32_t y = mins.y; y <= maxs.y; ++y) {
 			for (int32_t x = mins.x; x <= maxs.x; ++x) {
 				volumeSampler.setPosition(x, y, z);
-				const voxel::Voxel& voxel = volumeSampler.getVoxel();
+				const voxel::Voxel& voxel = volumeSampler.voxel();
 				if (condition(voxel)) {
 					continue;
 				}

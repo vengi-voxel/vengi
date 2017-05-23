@@ -31,7 +31,7 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 			* glm::angleAxis(glm::radians(angles.z), glm::backward));
 	const glm::mat4& rot = glm::mat4_cast(quat);
 #endif
-	const voxel::Region& srcRegion = source->getRegion();
+	const voxel::Region& srcRegion = source->region();
 	const glm::ivec3& srcCenter = srcRegion.getCentre();
 	voxel::Region destRegion;
 
@@ -58,7 +58,7 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 		for (int32_t y = 0; y < height; y++) {
 			for (int32_t x = 0; x < width; x++) {
 				srcSampler.setPosition(x, y, z);
-				const Voxel& v = srcSampler.getVoxel();
+				const Voxel& v = srcSampler.voxel();
 				if (v == empty) {
 					continue;
 				}
@@ -70,7 +70,7 @@ RawVolume* rotateVolume(const RawVolume* source, const glm::vec3& angles, const 
 				}
 
 				destSampler.setPosition(volumePos);
-				if (destSampler.getVoxel() == empty) {
+				if (destSampler.voxel() == empty) {
 					destSampler.setVoxel(v);
 				}
 			}

@@ -37,13 +37,13 @@ public:
 	template<class Volume>
 	bool createBuildings(Volume& volume) {
 		// TODO: apply gradient at city positions and then build houses
-		const voxel::Region& region = volume.getRegion();
+		const voxel::Region& region = volume.region();
 		glm::ivec3 buildingPos = region.getCentre();
 		if (!_biomeManager.hasCity(buildingPos)) {
 			return false;
 		}
 		for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; --i) {
-			const VoxelType material = volume.getVoxel(buildingPos.x, i, buildingPos.z).getMaterial();
+			const VoxelType material = volume.voxel(buildingPos.x, i, buildingPos.z).getMaterial();
 			if (isFloor(material)) {
 				buildingPos.y = i;
 				if (_random.fithyFifthy()) {
@@ -60,7 +60,7 @@ public:
 	template<class Volume>
 	void createWorld(const WorldContext& worldCtx, Volume& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const {
 		core_trace_scoped(WorldGeneration);
-		const Region& region = volume.getRegion();
+		const Region& region = volume.region();
 		Log::debug("Create new chunk at %i:%i:%i", region.getLowerX(), region.getLowerY(), region.getLowerZ());
 		const int width = region.getWidthInVoxels();
 		const int depth = region.getDepthInVoxels();
@@ -84,14 +84,14 @@ public:
 	template<class Volume>
 	bool createClouds(Volume& volume, voxel::cloud::CloudContext& ctx) {
 		core_trace_scoped(Clouds);
-		const voxel::Region& region = volume.getRegion();
+		const voxel::Region& region = volume.region();
 		return voxel::cloud::createClouds(volume, region, _biomeManager, ctx);
 	}
 
 	template<class Volume>
 	void createTrees(Volume& volume) {
 		core_trace_scoped(Trees);
-		const voxel::Region& region = volume.getRegion();
+		const voxel::Region& region = volume.region();
 		voxel::tree::createTrees(volume, region, _biomeManager);
 	}
 };

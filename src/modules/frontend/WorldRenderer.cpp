@@ -708,11 +708,11 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 
 void WorldRenderer::extractMeshes(const glm::vec3& p, int radius) {
 	core_trace_scoped(WorldRendererOnSpawn);
-	const glm::ivec3& meshGridPos = _world->getMeshPos(p);
+	const glm::ivec3& meshGridPos = _world->meshPos(p);
 	core_trace_scoped(WorldRendererExtractAroundCamera);
 	const int sideLength = radius * 2 + 1;
 	const int amount = sideLength * (sideLength - 1) + sideLength;
-	const int meshSize = _world->getMeshSize();
+	const int meshSize = _world->meshSize();
 	glm::ivec3 pos = meshGridPos;
 	pos.y = 0;
 	voxel::Spiral o;
@@ -912,7 +912,7 @@ void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const bool shadowMap = _shadowMap->boolVal();
 	_shadow.calculateShadowData(camera, shadowMap, maxDepthBuffers, _depthBuffer.dimension());
-	const float cullingThreshold = _world->getMeshSize();
+	const float cullingThreshold = _world->meshSize();
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {

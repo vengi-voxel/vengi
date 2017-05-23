@@ -9,11 +9,11 @@
 namespace voxel {
 
 PagedVolumeWrapper::Sampler::Sampler(const PagedVolumeWrapper* volume) :
-		Super(volume->getVolume()), _chunk(volume->_chunk) {
+		Super(volume->volume()), _chunk(volume->_chunk) {
 }
 
 PagedVolumeWrapper::Sampler::Sampler(const PagedVolumeWrapper& volume) :
-		Super(volume.getVolume()), _chunk(volume._chunk) {
+		Super(volume.volume()), _chunk(volume._chunk) {
 }
 
 void PagedVolumeWrapper::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
@@ -35,7 +35,7 @@ void PagedVolumeWrapper::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_
 	if (p.x == xChunk && p.y == yChunk && p.z == zChunk) {
 		_currentChunk = _chunk;
 	} else {
-		_currentChunk = _volume->getChunk(xChunk, yChunk, zChunk);
+		_currentChunk = _volume->chunk(xChunk, yChunk, zChunk);
 	}
 
 	_currentVoxel = _currentChunk->_data + voxelIndexInChunk;
@@ -44,20 +44,20 @@ void PagedVolumeWrapper::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_
 PagedVolumeWrapper::PagedVolumeWrapper(PagedVolume* voxelStorage, PagedVolume::ChunkPtr chunk, const Region& region) :
 		_pagedVolume(voxelStorage), _chunk(chunk), _region(region) {
 	if (_chunk != nullptr) {
-		_validRegion = _chunk->getRegion();
+		_validRegion = _chunk->region();
 	}
 }
 
-const Voxel& PagedVolumeWrapper::getVoxel(int x, int y, int z) const {
+const Voxel& PagedVolumeWrapper::voxel(int x, int y, int z) const {
 	if (_validRegion.containsPoint(x, y, z)) {
 		core_assert(_chunk != nullptr);
 		const int relX = x - _validRegion.getLowerX();
 		const int relY = y - _validRegion.getLowerY();
 		const int relZ = z - _validRegion.getLowerZ();
-		return _chunk->getVoxel(relX, relY, relZ);
+		return _chunk->voxel(relX, relY, relZ);
 	}
 	core_assert(_pagedVolume != nullptr);
-	return _pagedVolume->getVoxel(x, y, z);
+	return _pagedVolume->voxel(x, y, z);
 }
 
 bool PagedVolumeWrapper::setVoxel(int x, int y, int z, const Voxel& voxel) {
