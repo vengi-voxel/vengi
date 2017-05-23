@@ -474,6 +474,7 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 	core_trace_scoped(ExtractCubicMesh);
 
 	const glm::ivec3& offset = region.getLowerCorner();
+	const glm::ivec3& upper = region.getUpperCorner();
 	result->clear();
 	resultWater->clear();
 	result->setOffset(offset);
@@ -490,30 +491,33 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 	// quads in a given list are in the same plane and facing in the same direction.
 	QuadListVector vecQuads[NoOfFaces];
 
-	vecQuads[NegativeX].resize(region.getUpperX() - region.getLowerX() + 2);
-	vecQuads[PositiveX].resize(region.getUpperX() - region.getLowerX() + 2);
+	const int xSize = region.getUpperX() - offset.x + 2;
+	const int ySize = region.getUpperY() - offset.y + 2;
+	const int zSize = region.getUpperZ() - offset.z + 2;
+	vecQuads[NegativeX].resize(xSize);
+	vecQuads[PositiveX].resize(xSize);
 
-	vecQuads[NegativeY].resize(region.getUpperY() - region.getLowerY() + 2);
-	vecQuads[PositiveY].resize(region.getUpperY() - region.getLowerY() + 2);
+	vecQuads[NegativeY].resize(ySize);
+	vecQuads[PositiveY].resize(ySize);
 
-	vecQuads[NegativeZ].resize(region.getUpperZ() - region.getLowerZ() + 2);
-	vecQuads[PositiveZ].resize(region.getUpperZ() - region.getLowerZ() + 2);
+	vecQuads[NegativeZ].resize(zSize);
+	vecQuads[PositiveZ].resize(zSize);
 
 	QuadListVector vecQuadsWater;
-	vecQuadsWater.resize(region.getUpperY() - region.getLowerY() + 2);
+	vecQuadsWater.resize(ySize);
 
 	typename VolumeType::Sampler volumeSampler(volData);
 
-	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
-		const uint32_t regZ = z - region.getLowerZ();
+	for (int32_t z = offset.z; z <= upper.z; ++z) {
+		const uint32_t regZ = z - offset.z;
 
-		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y++) {
-			const uint32_t regY = y - region.getLowerY();
+		for (int32_t y = offset.y; y <= upper.y; ++y) {
+			const uint32_t regY = y - offset.y;
 
-			volumeSampler.setPosition(region.getLowerX(), y, z);
+			volumeSampler.setPosition(offset.x, y, z);
 
-			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
-				const uint32_t regX = x - region.getLowerX();
+			for (int32_t x = offset.x; x <= upper.x; ++x) {
+				const uint32_t regX = x - offset.x;
 
 				/**
 				 *
@@ -583,15 +587,15 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 				if (isQuadNeeded(voxelLeftMaterial, voxelCurrentMaterial, PositiveX)) {
 					volumeSampler.moveNegativeX();
 
-					const VoxelType _voxelRightBefore      = volumeSampler.peekVoxel1px0py1nz().getMaterial();
+					const VoxelType _voxelRightBefore      = voxelBeforeMaterial;
 					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz().getMaterial();
 
 					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz().getMaterial();
-					const VoxelType _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz().getMaterial();
+					const VoxelType _voxelAboveRightBefore = voxelAboveBefore.getMaterial();
 					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
 
-					const VoxelType _voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz().getMaterial();
-					const VoxelType _voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz().getMaterial();
+					const VoxelType _voxelBelowRight       = voxelBelowMaterial;
+					const VoxelType _voxelBelowRightBefore = voxelBelowBefore.getMaterial();
 					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz().getMaterial();
 
 					const IndexType v_0_2 = addVertex(reuseVertices, regX, regY,     regZ,     voxelLeft, previousSliceVertices, result,
@@ -633,13 +637,13 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 				if (isQuadNeeded(voxelBelowMaterial, voxelCurrentMaterial, PositiveY)) {
 					volumeSampler.moveNegativeY();
 
-					const VoxelType _voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz().getMaterial();
+					const VoxelType _voxelAboveLeft        = voxelLeftMaterial;
 					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz().getMaterial();
-					const VoxelType _voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz().getMaterial();
+					const VoxelType _voxelAboveBefore      = voxelBeforeMaterial;
 					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz().getMaterial();
-					const VoxelType _voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz().getMaterial();
+					const VoxelType _voxelAboveLeftBefore  = voxelLeftBeforeMaterial;
 					const VoxelType _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz().getMaterial();
-					const VoxelType _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz().getMaterial();
+					const VoxelType _voxelAboveLeftBehind  = voxelLeftBehindMaterial;
 					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
 
 					const IndexType v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     voxelBelow, previousSliceVertices, result,
@@ -658,13 +662,13 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 				if (y == waterSurface && isQuadNeededWater(voxelBelowMaterial, voxelCurrentMaterial, PositiveY)) {
 					volumeSampler.moveNegativeY();
 
-					const VoxelType _voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz().getMaterial();
+					const VoxelType _voxelAboveLeft        = voxelLeftMaterial;
 					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px1py0pz().getMaterial();
-					const VoxelType _voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz().getMaterial();
+					const VoxelType _voxelAboveBefore      = voxelBeforeMaterial;
 					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz().getMaterial();
-					const VoxelType _voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz().getMaterial();
+					const VoxelType _voxelAboveLeftBefore  = voxelLeftBeforeMaterial;
 					const VoxelType _voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz().getMaterial();
-					const VoxelType _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz().getMaterial();
+					const VoxelType _voxelAboveLeftBehind  = voxelLeftBehindMaterial;
 					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
 
 					const IndexType v_0_5 = addVertex(reuseVertices, regX,     regY, regZ,     voxelBelow, previousSliceVerticesWater, resultWater,
@@ -703,15 +707,15 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 				if (isQuadNeeded(voxelBeforeMaterial, voxelCurrentMaterial, PositiveZ)) {
 					volumeSampler.moveNegativeZ();
 
-					const VoxelType _voxelLeftBehind       = volumeSampler.peekVoxel1nx0py1pz().getMaterial();
+					const VoxelType _voxelLeftBehind       = voxelLeftMaterial;
 					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz().getMaterial();
 
 					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px1py1pz().getMaterial();
-					const VoxelType _voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz().getMaterial();
+					const VoxelType _voxelAboveLeftBehind  = voxelAboveLeftMaterial;
 					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py1pz().getMaterial();
 
-					const VoxelType _voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz().getMaterial();
-					const VoxelType _voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz().getMaterial();
+					const VoxelType _voxelBelowBehind      = voxelBelowMaterial;
+					const VoxelType _voxelBelowLeftBehind  = voxelBelowLeftMaterial;
 					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz().getMaterial();
 
 					const IndexType v_0_4 = addVertex(reuseVertices, regX,     regY,     regZ, voxelBefore, previousSliceVertices, result,
