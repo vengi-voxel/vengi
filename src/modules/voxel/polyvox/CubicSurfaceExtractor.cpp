@@ -150,7 +150,7 @@ IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, c
 		}
 
 		// If we have an existing vertex and the material matches then we can return it.
-		if (reuseVertices && entry.voxel.isSame(materialIn) && entry.ambientOcclusion == ambientOcclusion) {
+		if (reuseVertices && entry.ambientOcclusion == ambientOcclusion && entry.voxel.isSame(materialIn)) {
 			return entry.index - 1;
 		}
 	}
