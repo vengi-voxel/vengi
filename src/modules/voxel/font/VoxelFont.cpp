@@ -6,6 +6,8 @@
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-function" // for stb_truetype.h
+#elif __GNUC__
+#pragma GCC diagnostic ignored "-Wunused-function" // for stb_truetype.h
 #endif
 
 #define STBTT_ASSERT core_assert
