@@ -657,9 +657,7 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 					vecQuads[PositiveY][regY].emplace_back(v_0_5, v_3_8, v_2_7, v_1_6);
 
 					volumeSampler.movePositiveY();
-				}
-
-				if (y == waterSurface && isQuadNeededWater(voxelBelowMaterial, voxelCurrentMaterial, PositiveY)) {
+				} else if (y == waterSurface && isQuadNeededWater(voxelBelowMaterial, voxelCurrentMaterial, PositiveY)) {
 					volumeSampler.moveNegativeY();
 
 					const VoxelType _voxelAboveLeft        = voxelLeftMaterial;
