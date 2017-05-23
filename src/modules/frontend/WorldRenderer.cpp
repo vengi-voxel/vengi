@@ -744,7 +744,7 @@ void WorldRenderer::onConstruct() {
 	_shadowMapShow = core::Var::get(cfg::ClientShadowMapShow, "false");
 	_renderAABBs = core::Var::get(config::RenderAABB, "false");
 	_occlusionThreshold = core::Var::get(config::OcclusionThreshold, "20");
-	_occlusionQuery = core::Var::get(config::OcclusionQuery, "true");
+	_occlusionQuery = core::Var::get(config::OcclusionQuery, "false");
 	_renderOccluded = core::Var::get(config::RenderOccluded, "false");
 }
 
