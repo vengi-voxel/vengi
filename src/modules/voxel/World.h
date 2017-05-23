@@ -59,38 +59,12 @@ public:
 	World();
 	~World();
 
-	void setContext(const WorldContext& ctx) {
-		_ctx = ctx;
-	}
-
-	// if clientData is true, additional data that is only useful for rendering is generated
-	void setClientData(bool clientData) {
-		_clientData = clientData;
-	}
+	void setContext(const WorldContext& ctx);
 
 	/**
-	 * @return true if the ray hit something - false if not. If true is returned, the position is set to @c hit and
-	 * the @c Voxel that was hit is stored in @c voxel
-	 * @param[out] hit If the ray hits a voxel, this is the position of the hit
-	 * @param[out] voxel The voxel that was hit
+	 * @param[in] clientData if true, additional data that is only useful for rendering is generated
 	 */
-	bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) const;
-
-	/**
-	 * @return true if the ray hit something - false if not.
-	 * @note The callback has a parameter of @c const PagedVolume::Sampler& and returns a boolean. If the callback returns false,
-	 * the ray is interrupted. Only if the callback returned false at some point in time, this function will return @c true.
-	 */
-	template<typename Callback>
-	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) const {
-		const RaycastResults::RaycastResult result = raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
-		return result == RaycastResults::Interupted;
-	}
-
-	bool init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes = 512, uint16_t chunkSideLength = 256);
-	void shutdown();
-	void reset();
-	bool isReset() const;
+	void setClientData(bool clientData);
 
 	bool findPath(const glm::ivec3& start, const glm::ivec3& end, std::list<glm::ivec3>& listResult);
 
@@ -110,6 +84,30 @@ public:
 		return y;
 	}
 
+	/**
+	 * @return true if the ray hit something - false if not.
+	 * @note The callback has a parameter of @c const PagedVolume::Sampler& and returns a boolean. If the callback returns false,
+	 * the ray is interrupted. Only if the callback returned false at some point in time, this function will return @c true.
+	 */
+	template<typename Callback>
+	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) const {
+		const RaycastResults::RaycastResult result = raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
+		return result == RaycastResults::Interupted;
+	}
+
+	/**
+	 * @return true if the ray hit something - false if not. If true is returned, the position is set to @c hit and
+	 * the @c Voxel that was hit is stored in @c voxel
+	 * @param[out] hit If the ray hits a voxel, this is the position of the hit
+	 * @param[out] voxel The voxel that was hit
+	 */
+	bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) const;
+
+	bool init(const std::string& luaParameters, const std::string& luaBiomes, uint32_t volumeMemoryMegaBytes = 512, uint16_t chunkSideLength = 256);
+	void shutdown();
+	void reset();
+	bool isReset() const;
+
 	VoxelType getMaterial(int x, int y, int z) const;
 
 	BiomeManager& getBiomeManager();
@@ -125,31 +123,17 @@ public:
 	/**
 	 * @brief Cuts the given world coordinate down to mesh tile vectors
 	 */
-	inline glm::ivec3 getMeshPos(const glm::ivec3& pos) const {
-		const float size = getMeshSize();
-		const int x = glm::floor(pos.x / size);
-		const int y = glm::floor(pos.y / size);
-		const int z = glm::floor(pos.z / size);
-		return glm::ivec3(x * size, y * size, z * size);
-	}
+	glm::ivec3 getMeshPos(const glm::ivec3& pos) const;
 
 	/**
 	 * @brief Cuts the given world coordinate down to chunk tile vectors
 	 */
-	inline glm::ivec3 getChunkPos(const glm::ivec3& pos) const {
-		const float size = getChunkSize();
-		const int x = glm::floor(pos.x / size);
-		const int y = glm::floor(pos.y / size);
-		const int z = glm::floor(pos.z / size);
-		return glm::ivec3(x, y, z);
-	}
+	glm::ivec3 getChunkPos(const glm::ivec3& pos) const;
 
 	/**
 	 * @brief We need to pop the mesh extractor queue to find out if there are new and ready to use meshes for us
 	 */
-	inline bool pop(ChunkMeshes& item) {
-		return _meshQueue.pop(item);
-	}
+	bool pop(ChunkMeshes& item);
 
 	void stats(int& meshes, int& extracted, int& pending) const;
 
@@ -170,25 +154,15 @@ public:
 
 	void onFrame(long dt);
 
-	const core::Random& random() const { return _random; }
+	const core::Random& random() const;
 
-	inline long seed() const { return _seed; }
+	long seed() const;
 
-	void setSeed(long seed) {
-		Log::info("Seed is: %li", seed);
-		_seed = seed;
-		_random.setSeed(seed);
-		_pager.setSeed(seed);
-		_pager.setNoiseOffset(glm::vec2(_random.randomf(-10000.0f, 10000.0f), _random.randomf(-10000.0f, 10000.0f)));
-	}
+	void setSeed(long seed);
 
-	inline bool isCreated() const {
-		return _seed != 0;
-	}
+	bool isCreated() const;
 
-	inline void setPersist(bool persist) {
-		_pager.setPersist(persist);
-	}
+	void setPersist(bool persist);
 
 	int getChunkSize() const;
 	PagedVolume::ChunkPtr getChunk(const glm::ivec3& pos) const;
@@ -219,9 +193,53 @@ private:
 	std::atomic_bool _cancelThreads { false };
 };
 
+inline void World::setContext(const WorldContext& ctx) {
+	_ctx = ctx;
+}
+
+inline void World::setClientData(bool clientData) {
+	_clientData = clientData;
+}
+
+inline glm::ivec3 World::getMeshPos(const glm::ivec3& pos) const {
+	const float size = getMeshSize();
+	const int x = glm::floor(pos.x / size);
+	const int y = glm::floor(pos.y / size);
+	const int z = glm::floor(pos.z / size);
+	return glm::ivec3(x * size, y * size, z * size);
+}
+
+inline glm::ivec3 World::getChunkPos(const glm::ivec3& pos) const {
+	const float size = getChunkSize();
+	const int x = glm::floor(pos.x / size);
+	const int y = glm::floor(pos.y / size);
+	const int z = glm::floor(pos.z / size);
+	return glm::ivec3(x, y, z);
+}
+
+inline bool World::pop(ChunkMeshes& item) {
+	return _meshQueue.pop(item);
+}
+
+inline bool World::isCreated() const {
+	return _seed != 0;
+}
+
+inline void World::setPersist(bool persist) {
+	_pager.setPersist(persist);
+}
+
 inline Region World::getChunkRegion(const glm::ivec3& pos) const {
 	const int size = getChunkSize();
 	return getRegion(pos, size);
+}
+
+inline const core::Random& World::random() const {
+	return _random;
+}
+
+inline long World::seed() const {
+	return _seed;
 }
 
 inline Region World::getMeshRegion(const glm::ivec3& pos) const {

@@ -65,6 +65,14 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 	return true;
 }
 
+void World::setSeed(long seed) {
+	Log::info("Seed is: %li", seed);
+	_seed = seed;
+	_random.setSeed(seed);
+	_pager.setSeed(seed);
+	_pager.setNoiseOffset(glm::vec2(_random.randomf(-10000.0f, 10000.0f), _random.randomf(-10000.0f, 10000.0f)));
+}
+
 Region World::getRegion(const glm::ivec3& pos, int size) const {
 	int deltaX = size - 1;
 	int deltaY = size - 1;
