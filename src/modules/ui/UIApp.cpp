@@ -236,6 +236,7 @@ void UIApp::onMouseWheel(int32_t x, int32_t y) {
 }
 
 void UIApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
+	Super::onMouseMotion(x, y, relX, relY);
 	if (_console.isActive()) {
 		return;
 	}

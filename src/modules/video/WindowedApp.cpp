@@ -99,6 +99,11 @@ void WindowedApp::onWindowResize() {
 	video::viewport(0, 0, _width, _height);
 }
 
+void WindowedApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
+	_mousePos.x = x;
+	_mousePos.y = y;
+}
+
 bool WindowedApp::onKeyRelease(int32_t key) {
 	auto range = _bindings.equal_range(key);
 	for (auto i = range.first; i != range.second; ++i) {

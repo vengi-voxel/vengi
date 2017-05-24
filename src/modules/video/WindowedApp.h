@@ -31,6 +31,7 @@ protected:
 	typedef KeyMap::iterator KeyMapIter;
 	KeyMap _keys;
 	util::BindMap _bindings;
+	glm::ivec2 _mousePos;
 
 	WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport = 17815);
 
@@ -84,6 +85,7 @@ public:
 
 	virtual core::AppState onRunning() override;
 	virtual void onAfterRunning() override;
+	virtual void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	virtual bool onKeyRelease(int32_t key) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 	virtual core::AppState onConstruct() override;

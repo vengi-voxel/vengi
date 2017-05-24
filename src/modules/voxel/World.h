@@ -10,6 +10,7 @@
 #include "polyvox/PagedVolume.h"
 #include "polyvox/Raycast.h"
 #include "voxel/Constants.h"
+#include "voxel/polyvox/Picking.h"
 #include <memory>
 #include <vector>
 #include <atomic>
@@ -114,6 +115,8 @@ public:
 	const BiomeManager& biomeManager() const;
 
 	void setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel);
+
+	PickResult pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength);
 
 	/**
 	 * @brief Returns a random position inside the boundaries of the world (on the surface)

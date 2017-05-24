@@ -8,6 +8,8 @@
 #include "core/GLM.h"
 #include "core/GameConfig.h"
 #include "core/Color.h"
+#include "voxel/polyvox/Voxel.h"
+#include "voxel/polyvox/Picking.h"
 #include "io/Filesystem.h"
 #include "ui/WorldParametersWindow.h"
 #include "frontend/Movement.h"
@@ -208,6 +210,18 @@ bool WorldRendererTool::onKeyPress(int32_t key, int16_t modifier) {
 		_speed->setVal(std::to_string(speed));
 	}
 	return Super::onKeyPress(key, modifier);
+}
+
+void WorldRendererTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+	Super::onMouseButtonPress(x, y, button, clicks);
+	const video::Ray& ray = _camera.mouseRay(glm::ivec2(_mousePos.x, _mousePos.y));
+	const glm::vec3& dirWithLength = ray.direction * _camera.farPlane();
+	const voxel::PickResult& result = _world->pickVoxel(ray.origin, dirWithLength);
+	if (result.didHit && button == SDL_BUTTON_RIGHT) {
+		_world->setVoxel(result.hitVoxel, voxel::createVoxel(voxel::VoxelType::Air, 0));
+	} else if (result.validPreviousPosition && button == SDL_BUTTON_LEFT) {
+		_world->setVoxel(result.previousPosition, voxel::createRandomColorVoxel(voxel::VoxelType::Grass));
+	}
 }
 
 void WorldRendererTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {

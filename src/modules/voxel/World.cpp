@@ -83,8 +83,15 @@ Region World::getRegion(const glm::ivec3& pos, int size) const {
 	return region;
 }
 
+PickResult World::pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength) {
+	static constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air, 0);
+	return voxel::pickVoxel(_volumeData, origin, directionWithLength, air);
+}
+
 void World::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	_volumeData->setVoxel(pos, voxel);
+	allowReExtraction(pos);
+	scheduleMeshExtraction(pos);
 }
 
 bool World::allowReExtraction(const glm::ivec3& pos) {
