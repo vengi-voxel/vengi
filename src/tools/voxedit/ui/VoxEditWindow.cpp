@@ -1068,8 +1068,7 @@ bool VoxEditWindow::createNew(bool force) {
 		popup("Unsaved Modifications",
 				"There are unsaved modifications.\nDo you wish to discard them and close?",
 				ui::Window::PopupType::YesNo, "unsaved_changes_new");
-	}
-	if (_scene->newModel(force)) {
+	} else if (_scene->newModel(force)) {
 		resetcamera();
 		return true;
 	}
