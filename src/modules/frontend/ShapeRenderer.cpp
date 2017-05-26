@@ -46,7 +46,15 @@ bool ShapeRenderer::deleteMesh(int32_t meshIndex) {
 	return true;
 }
 
-int32_t ShapeRenderer::createMesh(const video::ShapeBuilder& shapeBuilder) {
+void ShapeRenderer::createOrUpdate(int32_t& meshIndex, const video::ShapeBuilder& shapeBuilder) {
+	if (meshIndex < 0) {
+		meshIndex = create(shapeBuilder);
+	} else {
+		update(static_cast<uint32_t>(meshIndex), shapeBuilder);
+	}
+}
+
+int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 	uint32_t meshIndex = _currentMeshIndex;
 	for (uint32_t i = 0u; i < _currentMeshIndex; ++i) {
 		if (!_vbo[i].isValid(0)) {

@@ -595,11 +595,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	}
 
 	if (_renderAABBs->boolVal()) {
-		if (_aabbMeshes == -1) {
-			_aabbMeshes = _shapeRenderer.createMesh(_shapeBuilder);
-		} else {
-			_shapeRenderer.update(_aabbMeshes, _shapeBuilder);
-		}
+		_shapeRenderer.createOrUpdate(_aabbMeshes, _shapeBuilder);
 		_shapeRenderer.render(_aabbMeshes, camera);
 	}
 
@@ -828,7 +824,7 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	_shapeBuilderOcclusionQuery.setPosition(glm::vec3(0.0f));
 	_shapeBuilderOcclusionQuery.setColor(core::Color::Red);
 	_shapeBuilderOcclusionQuery.cube(glm::vec3(-0.5f), glm::vec3(0.5f));
-	_aabbMeshesOcclusionQuery = _shapeRendererOcclusionQuery.createMesh(_shapeBuilderOcclusionQuery);
+	_aabbMeshesOcclusionQuery = _shapeRendererOcclusionQuery.create(_shapeBuilderOcclusionQuery);
 
 	if (!_worldShader.setup()) {
 		return false;

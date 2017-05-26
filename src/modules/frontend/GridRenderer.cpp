@@ -25,59 +25,31 @@ void GridRenderer::update(const voxel::Region& region) {
 	const core::AABB<float> aabb(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
 	_shapeBuilder.clear();
 	_shapeBuilder.aabb(aabb, false);
-	if (_aabbMeshIndex == -1) {
-		_aabbMeshIndex = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_aabbMeshIndex, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.aabbGridXY(aabb, false);
-	if (_gridMeshIndexXYFar == -1) {
-		_gridMeshIndexXYFar = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_gridMeshIndexXYFar, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_gridMeshIndexXYFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.aabbGridXZ(aabb, false);
-	if (_gridMeshIndexXZFar == -1) {
-		_gridMeshIndexXZFar = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_gridMeshIndexXZFar, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_gridMeshIndexXZFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.aabbGridYZ(aabb, false);
-	if (_gridMeshIndexYZFar == -1) {
-		_gridMeshIndexYZFar = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_gridMeshIndexYZFar, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_gridMeshIndexYZFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.aabbGridXY(aabb, true);
-	if (_gridMeshIndexXYNear == -1) {
-		_gridMeshIndexXYNear = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_gridMeshIndexXYNear, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_gridMeshIndexXYNear, _shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.aabbGridXZ(aabb, true);
-	if (_gridMeshIndexXZNear == -1) {
-		_gridMeshIndexXZNear = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_gridMeshIndexXZNear, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_gridMeshIndexXZNear, _shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.aabbGridYZ(aabb, true);
-	if (_gridMeshIndexYZNear == -1) {
-		_gridMeshIndexYZNear = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_gridMeshIndexYZNear, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_gridMeshIndexYZNear, _shapeBuilder);
 }
 
 void GridRenderer::clear() {

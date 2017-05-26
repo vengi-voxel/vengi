@@ -797,11 +797,7 @@ void Model::updateLockedPlane(core::Axis axis) {
 		core::Color::LightBlue
 	};
 	updateShapeBuilderForPlane(false, _cursorPos, axis, core::Color::alpha(colors[index], 0.3f));
-	if (meshIndex == -1) {
-		meshIndex = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(meshIndex, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 
 core::Axis Model::mirrorAxis() const {
@@ -831,11 +827,7 @@ void Model::updateMirrorPlane() {
 	}
 
 	updateShapeBuilderForPlane(true, _mirrorPos, _mirrorAxis, core::Color::alpha(core::Color::LightGray, 0.1f));
-	if (_mirrorMeshIndex == -1) {
-		_mirrorMeshIndex = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_mirrorMeshIndex, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 
 void Model::setLockedAxis(core::Axis axis, bool unlock) {

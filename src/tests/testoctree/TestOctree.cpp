@@ -102,11 +102,7 @@ void TestOctree::handleDirtyState() {
 		_shapeBuilder.setColor(colors[node.depth() % colors.size()]);
 		_shapeBuilder.aabb(node.aabb());
 	});
-	if (_aabbMeshes == -1) {
-		_aabbMeshes = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_aabbMeshes, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_aabbMeshes, _shapeBuilder);
 	_shapeBuilder.clear();
 
 	// build spheres
@@ -118,12 +114,7 @@ void TestOctree::handleDirtyState() {
 			_shapeBuilder.sphere(10, 10, 5.0f);
 		}
 	});
-	if (_itemMeshes == -1) {
-		_itemMeshes = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_itemMeshes, _shapeBuilder);
-	}
-
+	_shapeRenderer.createOrUpdate(_itemMeshes, _shapeBuilder);
 	_shapeBuilder.clear();
 }
 
@@ -180,11 +171,7 @@ void TestOctree::onRenderUI() {
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::White);
 	_shapeBuilder.aabb(_queryAABB);
-	if (_queryMeshes == -1) {
-		_queryMeshes = _shapeRenderer.createMesh(_shapeBuilder);
-	} else {
-		_shapeRenderer.update(_queryMeshes, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_queryMeshes, _shapeBuilder);
 	_shapeBuilder.clear();
 	const glm::ivec3& mins = _octree.aabb().mins();
 	const glm::ivec3& maxs = _octree.aabb().maxs();

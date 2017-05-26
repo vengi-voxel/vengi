@@ -36,7 +36,7 @@ public:
 			return false;
 		}
 		_shapeBuilder.axis(20.0f);
-		return _shapeRenderer.createMesh(_shapeBuilder) >= 0;
+		return _shapeRenderer.create(_shapeBuilder) >= 0;
 	};
 };
 

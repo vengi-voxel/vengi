@@ -34,7 +34,13 @@ public:
 
 	bool deleteMesh(int32_t meshIndex);
 
-	int32_t createMesh(const video::ShapeBuilder& shapeBuilder);
+	/**
+	 * @param[in,out meshIndex If this is -1 a new mesh is created. The mesh index is 'returned' here. If
+	 * this is a valid mesh index, the mesh is updated with the new data from the @c ShapeBuilder
+	 */
+	void createOrUpdate(int32_t& meshIndex, const video::ShapeBuilder& shapeBuilder);
+
+	int32_t create(const video::ShapeBuilder& shapeBuilder);
 
 	void shutdown();
 

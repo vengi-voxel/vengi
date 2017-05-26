@@ -14,7 +14,7 @@ core::AppState TestPlane::onInit() {
 	}
 	_plane.set(glm::vec3(1.0f, 0.5f, 0.5f), glm::vec3(10.0, 10.0, 10.0f));
 	_shapeBuilder.plane(_plane, true);
-	_shapeRenderer.createMesh(_shapeBuilder);
+	_shapeRenderer.create(_shapeBuilder);
 
 	return state;
 }

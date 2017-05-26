@@ -48,11 +48,7 @@ public:
 		_shapeBuilder.setColor(color);
 		_shapeBuilder.setPosition(position);
 		_shapeBuilder.plane(tesselation, scale);
-		if (_planeMesh >= 0) {
-			_shapeRenderer.update(_planeMesh, _shapeBuilder);
-		} else {
-			_planeMesh = _shapeRenderer.createMesh(_shapeBuilder);
-		}
+		_shapeRenderer.createOrUpdate(_planeMesh, _shapeBuilder);
 		return _planeMesh >= 0;
 	};
 
@@ -60,11 +56,7 @@ public:
 		_shapeBuilder.setColor(color);
 		_shapeBuilder.setPosition(position);
 		_shapeBuilder.plane(plane, false);
-		if (_planeMesh >= 0) {
-			_shapeRenderer.update(_planeMesh, _shapeBuilder);
-		} else {
-			_planeMesh = _shapeRenderer.createMesh(_shapeBuilder);
-		}
+		_shapeRenderer.createOrUpdate(_planeMesh, _shapeBuilder);
 		return _planeMesh >= 0;
 	};
 };

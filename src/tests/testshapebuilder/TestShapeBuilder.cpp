@@ -29,7 +29,7 @@ core::AppState TestShapeBuilder::onInit() {
 	_shapeBuilder.setPosition(glm::vec3(0.0f));
 	_shapeBuilder.setColor(core::Color::Red);
 	_shapeBuilder.cube(glm::vec3(-0.5f), glm::vec3(0.5f));
-	_meshUnitCube = _shapeRenderer.createMesh(_shapeBuilder);
+	_meshUnitCube = _shapeRenderer.create(_shapeBuilder);
 	_shapeBuilder.clear();
 
 	return state;
@@ -120,7 +120,7 @@ void TestShapeBuilder::onRenderUI() {
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("UnitCube")) {
-		if (_meshCount < SDL_arraysize(_meshes)) {
+		if (_meshCount < (int)SDL_arraysize(_meshes)) {
 			_meshes[_meshCount++] = _meshUnitCube;
 		}
 	}
@@ -149,8 +149,8 @@ void TestShapeBuilder::onRenderUI() {
 	}
 	ImGui::Separator();
 
-	if (buildMesh && _meshCount < SDL_arraysize(_meshes)) {
-		_meshes[_meshCount] = _shapeRenderer.createMesh(_shapeBuilder);
+	if (buildMesh && _meshCount < (int)SDL_arraysize(_meshes)) {
+		_meshes[_meshCount] = _shapeRenderer.create(_shapeBuilder);
 		if (_meshes[_meshCount] != -1) {
 			++_meshCount;
 		}

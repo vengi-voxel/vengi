@@ -43,7 +43,7 @@ public:
 		_shapeBuilder.setPosition(_position);
 		_shapeBuilder.setColor(_color);
 		_shapeBuilder.sphere(10, 10, _radius);
-		_sphereMesh = _shapeRenderer.createMesh(_shapeBuilder);
+		_sphereMesh = _shapeRenderer.create(_shapeBuilder);
 
 		return _sphereMesh != -1;
 	}
