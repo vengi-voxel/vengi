@@ -23,7 +23,8 @@ void Branch::reset() {
 	_growDirection = _originalGrowDirection;
 }
 
-void Tree::generateCrown(int radius) {
+void Tree::generateCrown() {
+	const int radius = _treeWidth / 2;
 	const glm::ivec3& mins = _crown.mins();
 	const glm::ivec3& maxs = _crown.maxs();
 	Log::debug("Generate tree at mins(%i:%i:%i), maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
@@ -50,7 +51,7 @@ void Tree::generateCrown(int radius) {
 }
 
 void Tree::generateTrunk() {
-	_root = new Branch(nullptr, _position, glm::down, _branchSize);
+	_root = new Branch(nullptr, _position, glm::up, _branchSize);
 	_branches.insert(std::make_pair(_root->_position, _root));
 
 	Branch* current = new Branch(_root,
@@ -61,8 +62,8 @@ void Tree::generateTrunk() {
 	// grow until the trunk height is reached
 	while (glm::length(_root->_position - current->_position) < _trunkHeight) {
 		Branch *trunk = new Branch(current,
-				glm::vec3(current->_position.x, current->_position.y - _branchLength, current->_position.z),
-				glm::down, _branchSize);
+				glm::vec3(current->_position.x, current->_position.y + _branchLength, current->_position.z),
+				glm::up, _branchSize);
 		_branches.insert(std::make_pair(trunk->_position, trunk));
 		current = trunk;
 		_branchSize *= _trunkSizeFactor;
@@ -70,25 +71,20 @@ void Tree::generateTrunk() {
 }
 
 Tree::Tree(const glm::ivec3& position, int trunkHeight, int branchLength,
-	int treeWidth, int treeDepth, int treeHeight, float branchSize, int seed) :
-		_position(position.x, position.y + trunkHeight, position.z), _treeWidth(treeWidth), _treeDepth(treeDepth), _treeHeight(treeHeight),
-		_trunkHeight(trunkHeight), _branchLength(branchLength), _branchSize(branchSize), _random(seed),
-		_crown(_position.x - _treeWidth / 2, _position.y, _position.z - _treeDepth / 2,
-				_position.x + _treeWidth / 2, _position.y + _treeHeight, _position.z + _treeDepth / 2) {
-	_attractionPointCount = _treeDepth * 10;
-	generateCrown(_treeWidth / 2);
+	int treeWidth, int treeHeight, int treeDepth, float branchSize, int seed) :
+		_position(position), _attractionPointCount(treeDepth * 10), _treeWidth(treeWidth),
+		_treeDepth(treeDepth), _treeHeight(treeHeight), _trunkHeight(trunkHeight),
+		_branchLength(branchLength), _branchSize(branchSize), _random(seed),
+		_crown(_position.x - (_treeWidth / 2), _position.y + _trunkHeight, _position.z - (_treeDepth / 2),
+				_position.x + (_treeWidth / 2), _position.y + _treeHeight, _position.z + (_treeDepth / 2)) {
+	generateCrown();
 	generateTrunk();
 	//generateRoots(_treeWidth / 2);
 }
 
 Tree::Tree(const core::AABB<int>& crownAABB, int trunkHeight, int branchLength, int seed) :
-		_position(crownAABB.getLowerCenter()), _trunkHeight(trunkHeight), _branchLength(branchLength), _random(seed), _crown(crownAABB) {
-	_treeWidth = crownAABB.getWidthX();
-	_treeHeight = crownAABB.getWidthY();
-	_treeDepth = crownAABB.getWidthZ();
-	_attractionPointCount = _treeDepth * 10;
-	generateCrown(_treeWidth / 2);
-	generateTrunk();
+		Tree(crownAABB.getLowerCenter(), trunkHeight, branchLength,
+				crownAABB.getWidthX(), crownAABB.getWidthY(), crownAABB.getWidthZ(), 4.0f, seed) {
 }
 
 Tree::~Tree() {

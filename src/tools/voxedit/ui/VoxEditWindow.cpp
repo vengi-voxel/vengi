@@ -601,9 +601,6 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	} else if (isAny(ev, TBIDC("cactus"))) {
 		_scene->createCactus();
 		return true;
-	} else if (isAny(ev, TBIDC("cactus"))) {
-		_scene->createCactus();
-		return true;
 	}
 
 	Log::debug("Unknown event %s - %s", ev.target->GetID().debug_string.CStr(), ev.ref_id.debug_string.CStr());

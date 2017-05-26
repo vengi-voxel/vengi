@@ -70,18 +70,25 @@ private:
 
 	/**
 	 * Generate the attraction points for the crown
-	 * @param radius The radius of the crown sphere
 	 */
-	void generateCrown(int radius);
+	void generateCrown();
 
 	void generateTrunk();
 
 public:
+	/**
+	 * @param[in] position The floor position of the trunk
+	 * @param[in] trunkHeight
+	 * @param[in] branchLength
+	 * @param[in] treeWidth
+	 * @param[in] treeDepth
+	 * @param[in] treeHeight
+	 * @param[in] branchSize
+	 * @param[in] seed
+	 */
 	Tree(const glm::ivec3& position, int trunkHeight = 32, int branchLength = 6,
-		int treeWidth = 40, int treeDepth = 40, int treeHeight = 60, float branchSize = 4.0f, int seed = 0);
-
+		int treeWidth = 40, int treeHeight = 60, int treeDepth = 40, float branchSize = 4.0f, int seed = 0);
 	Tree(const core::AABB<int>& crownAABB, int trunkHeight, int branchLength, int seed = 0);
-
 	~Tree();
 
 	bool grow();
@@ -438,10 +445,10 @@ void createSpaceColonizationTree(Volume& volume, const TreeContext& ctx, core::R
 	const int branchLength = 6;
 	const int treeWidth = ctx.leavesWidth;
 	const int treeDepth = ctx.leavesDepth;
-	const int treeHeight = ctx.leavesHeight;
-	const float branchSize = ctx.trunkWidth;
+	const int treeHeight = ctx.leavesHeight + ctx.trunkHeight;
+	const float branchSize = 4.0f;
 	const int seed = ctx.pos.x;
-	Tree tree(ctx.pos, ctx.trunkHeight, branchLength, treeWidth, treeDepth, treeHeight, branchSize, seed);
+	Tree tree(ctx.pos, ctx.trunkHeight, branchLength, treeWidth, treeHeight, treeDepth, branchSize, seed);
 	while (tree.grow()) {
 	}
 	tree.generate(volume);

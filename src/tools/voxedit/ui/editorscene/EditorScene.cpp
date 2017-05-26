@@ -82,7 +82,6 @@ const glm::ivec3& EditorScene::referencePosition() const {
 }
 
 void EditorScene::setReferencePosition(const glm::ivec3& pos) {
-	Log::info("set ref point to %i:%i:%i", pos.x, pos.y, pos.z);
 	m().setReferencePosition(pos);
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
@@ -136,8 +135,8 @@ bool EditorScene::newModel(bool force) {
 	if (!m().newVolume(force)) {
 		return false;
 	}
+	setReferencePosition(referencePosition());
 	resetCamera();
-	setReferencePosition(cursorPosition());
 	return true;
 }
 

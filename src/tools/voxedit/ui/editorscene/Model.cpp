@@ -345,10 +345,11 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	_dirty = false;
 	_lastPlacement = glm::ivec3(-1);
 	_result = voxel::PickResult();
-	const glm::ivec3& pos = _cursorPos;
+	const glm::ivec3 pos = _cursorPos;
 	_cursorPos = pos * 10 + 10;
 	setCursorPosition(pos);
-	setReferencePosition(pos);
+	const glm::ivec3 refPos(region.getCentreX(), 0, region.getCentreZ());
+	setReferencePosition(refPos);
 	resetLastTrace();
 }
 
@@ -580,12 +581,12 @@ void Model::noise(int octaves, float lacunarity, float frequency, float gain, vo
 
 void Model::spaceColonization() {
 	const voxel::Region& region = modelVolume()->region();
-	core::AABB<int> aabb = region.aabb();
-	const int heightShift = aabb.getWidthY() / 4;
-	aabb.shiftLowerCorner(0, heightShift, 0);
-	aabb.shrink(4);
+	const core::AABB<int>& aabb = region.aabb();
+	const int trunkHeight = aabb.getWidthY() / 4;
 	_lastGrow = core::App::getInstance()->currentMillis();
-	_spaceColonizationTree = new voxel::tree::Tree(aabb, heightShift, 6, _lastGrow);
+
+	_spaceColonizationTree = new voxel::tree::Tree(_referencePos, trunkHeight, 6,
+			aabb.getWidthX(), aabb.getWidthY(), aabb.getWidthZ(), 4.0f, _lastGrow);
 	_spaceColonizationTree->grow();
 
 	voxel::RawVolumeWrapper wrapper(modelVolume());
