@@ -169,6 +169,7 @@ core::AppState VoxEdit::onConstruct() {
 
 	COMMAND_MAINWINDOW(remove, "Remove the cursor shape from the current cursor position");
 	COMMAND_MAINWINDOW(place, "Place the cursor shape at the current cursor position");
+	COMMAND_MAINWINDOW(setreferenceposition, "Set the reference position to the current cursor position");
 	COMMAND_MAINWINDOW(unselectall, "Unselect every voxel");
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
 	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");

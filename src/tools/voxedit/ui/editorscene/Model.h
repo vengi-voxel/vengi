@@ -47,6 +47,7 @@ private:
 
 	glm::ivec3 _lastPlacement;
 	glm::ivec3 _cursorPos;
+	glm::ivec3 _referencePos;
 	glm::ivec3 _mirrorPos;
 
 	core::Axis _lockedAxis = core::Axis::None;
@@ -97,6 +98,9 @@ public:
 
 	const glm::ivec3& cursorPosition() const;
 	void setCursorPosition(glm::ivec3 pos, bool force = false);
+
+	const glm::ivec3& referencePosition() const;
+	void setReferencePosition(const glm::ivec3& pos);
 
 	void init();
 	void update();
@@ -350,6 +354,10 @@ inline bool Model::empty() const {
 
 inline const glm::ivec3& Model::cursorPosition() const {
 	return _cursorPos;
+}
+
+inline const glm::ivec3& Model::referencePosition() const {
+	return _referencePos;
 }
 
 }

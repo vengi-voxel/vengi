@@ -27,6 +27,8 @@ EditorScene::EditorScene() :
 EditorScene::~EditorScene() {
 	_axis.shutdown();
 	_frameBuffer.shutdown();
+	_shapeRenderer.shutdown();
+	_shapeBuilder.shutdown();
 	m().shutdown();
 }
 
@@ -37,6 +39,9 @@ void EditorScene::render() {
 	mdl.render(camera);
 	if (mdl.renderAxis()) {
 		_axis.render(camera);
+	}
+	if (_referencePointMesh != -1) {
+		_shapeRenderer.render(_referencePointMesh, camera);
 	}
 }
 
@@ -70,6 +75,20 @@ const glm::ivec3& EditorScene::cursorPosition() const {
 
 void EditorScene::setCursorPosition(const glm::ivec3& pos, bool force) {
 	m().setCursorPosition(pos, force);
+}
+
+const glm::ivec3& EditorScene::referencePosition() const {
+	return m().referencePosition();
+}
+
+void EditorScene::setReferencePosition(const glm::ivec3& pos) {
+	Log::info("set ref point to %i:%i:%i", pos.x, pos.y, pos.z);
+	m().setReferencePosition(pos);
+	_shapeBuilder.clear();
+	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
+	_shapeBuilder.setPosition(pos);
+	_shapeBuilder.sphere(5, 4, 1.0f);
+	_shapeRenderer.createOrUpdate(_referencePointMesh, _shapeBuilder);
 }
 
 core::Axis EditorScene::lockedAxis() const {
@@ -114,7 +133,12 @@ void EditorScene::move(int x, int y, int z) {
 
 bool EditorScene::newModel(bool force) {
 	core_trace_scoped(EditorSceneNewModel);
-	return m().newVolume(force);
+	if (!m().newVolume(force)) {
+		return false;
+	}
+	resetCamera();
+	setReferencePosition(cursorPosition());
+	return true;
 }
 
 bool EditorScene::importHeightmap(const std::string& file) {
@@ -422,6 +446,7 @@ void EditorScene::OnPaint(const PaintProps &paintProps) {
 void EditorScene::OnInflate(const tb::INFLATE_INFO &info) {
 	Super::OnInflate(info);
 	_axis.init();
+	_shapeRenderer.init();
 	m().init();
 
 	Controller::SceneCameraMode mode = Controller::SceneCameraMode::Free;

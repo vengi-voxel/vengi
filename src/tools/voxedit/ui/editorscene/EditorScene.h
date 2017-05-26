@@ -22,10 +22,14 @@ class EditorScene: public ui::Widget {
 private:
 	using Super = ui::Widget;
 	frontend::Axis _axis;
+	video::ShapeBuilder _shapeBuilder;
+	frontend::ShapeRenderer _shapeRenderer;
 	video::FrameBuffer _frameBuffer;
 	tb::UIBitmapGL _bitmap;
 	voxedit::Controller _controller;
 	std::string _cameraMode;
+
+	int32_t _referencePointMesh = -1;
 
 	void render();
 
@@ -72,6 +76,9 @@ public:
 
 	const glm::ivec3& cursorPosition() const;
 	void setCursorPosition(const glm::ivec3& pos, bool force = false);
+
+	const glm::ivec3& referencePosition() const;
+	void setReferencePosition(const glm::ivec3& pos);
 
 	voxedit::SelectType selectionType() const;
 	void setSelectionType(voxedit::SelectType type);

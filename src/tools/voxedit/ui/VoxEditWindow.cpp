@@ -352,6 +352,10 @@ void VoxEditWindow::toggleviewport() {
 	setQuadViewport(!vis);
 }
 
+void VoxEditWindow::setreferenceposition() {
+	_scene->setReferencePosition(_scene->cursorPosition());
+}
+
 void VoxEditWindow::unselectall() {
 	_scene->unselectAll();
 }
@@ -525,7 +529,6 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 	if (ev.target->GetID() == TBIDC("unsaved_changes_new")) {
 		if (ev.ref_id == TBIDC("TBMessageWindow.yes")) {
 			_scene->newModel(true);
-			resetcamera();
 		}
 		return true;
 	} else if (ev.target->GetID() == TBIDC("unsaved_changes_quit")) {
@@ -1069,7 +1072,6 @@ bool VoxEditWindow::createNew(bool force) {
 				"There are unsaved modifications.\nDo you wish to discard them and close?",
 				ui::Window::PopupType::YesNo, "unsaved_changes_new");
 	} else if (_scene->newModel(force)) {
-		resetcamera();
 		return true;
 	}
 	return false;

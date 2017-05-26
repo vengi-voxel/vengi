@@ -348,6 +348,7 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	const glm::ivec3& pos = _cursorPos;
 	_cursorPos = pos * 10 + 10;
 	setCursorPosition(pos);
+	setReferencePosition(pos);
 	resetLastTrace();
 }
 
@@ -618,7 +619,7 @@ void Model::world(const voxel::WorldContext& ctx) {
 void Model::createCactus() {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
-	voxel::cactus::createCactus(wrapper, _cursorPos, 18, 2, random);
+	voxel::cactus::createCactus(wrapper, _referencePos, 18, 2, random);
 	modified(modelVolume()->region());
 }
 
@@ -631,7 +632,7 @@ void Model::createCloud() {
 		}
 	};
 	HasClouds hasClouds;
-	hasClouds.pos = glm::vec2(_cursorPos.x, _cursorPos.z);
+	hasClouds.pos = glm::vec2(_referencePos.x, _referencePos.z);
 	voxel::cloud::CloudContext cloudCtx;
 	cloudCtx.amount = 1;
 	if (voxel::cloud::createClouds(wrapper, wrapper.region(), hasClouds, cloudCtx)) {
@@ -643,11 +644,11 @@ void Model::createPlant(voxel::PlantType type) {
 	voxel::PlantGenerator g;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
 	if (type == voxel::PlantType::Flower) {
-		g.createFlower(5, _cursorPos, wrapper);
+		g.createFlower(5, _referencePos, wrapper);
 	} else if (type == voxel::PlantType::Grass) {
-		g.createGrass(10, _cursorPos, wrapper);
+		g.createGrass(10, _referencePos, wrapper);
 	} else if (type == voxel::PlantType::Mushroom) {
-		g.createMushroom(7, _cursorPos, wrapper);
+		g.createMushroom(7, _referencePos, wrapper);
 	}
 	g.shutdown();
 	modified(modelVolume()->region());
@@ -655,16 +656,20 @@ void Model::createPlant(voxel::PlantType type) {
 
 void Model::createBuilding(voxel::BuildingType type, const voxel::BuildingContext& ctx) {
 	voxel::RawVolumeWrapper wrapper(modelVolume());
-	voxel::building::createBuilding(wrapper, _cursorPos, type);
+	voxel::building::createBuilding(wrapper, _referencePos, type);
 	modified(modelVolume()->region());
 }
 
 void Model::createTree(voxel::TreeContext ctx) {
 	core::Random random;
 	voxel::RawVolumeWrapper wrapper(modelVolume());
-	ctx.pos = _cursorPos;
+	ctx.pos = _referencePos;
 	voxel::tree::createTree(wrapper, ctx, random);
 	modified(modelVolume()->region());
+}
+
+void Model::setReferencePosition(const glm::ivec3& pos) {
+	_referencePos = pos;
 }
 
 void Model::setCursorPosition(glm::ivec3 pos, bool force) {
