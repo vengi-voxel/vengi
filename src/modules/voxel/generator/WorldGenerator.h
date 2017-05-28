@@ -57,6 +57,7 @@ public:
 		return true;
 	}
 
+	// use a 2d noise to switch between different noises - to generate steep mountains
 	template<class Volume>
 	void createWorld(const WorldContext& worldCtx, Volume& volume, int noiseSeedOffsetX, int noiseSeedOffsetZ) const {
 		core_trace_scoped(WorldGeneration);

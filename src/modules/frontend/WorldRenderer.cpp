@@ -292,36 +292,38 @@ void WorldRenderer::cull(const video::Camera& camera) {
 	std::sort(contents.begin(), contents.end(), VisibleSorter(camera.position()));
 #endif
 
-	// disable writing to the color buffer
-	// We just want to check whether they would be rendered, not actually render them
-	video::colorMask(false, false, false, false);
+	if (occlusionQuery) {
+		// disable writing to the color buffer
+		// We just want to check whether they would be rendered, not actually render them
+		video::colorMask(false, false, false, false);
 
-	for (ChunkBuffer* chunkBuffer : contents) {
-		if (!occlusionQuery || chunkBuffer->pendingResult) {
+		for (ChunkBuffer* chunkBuffer : contents) {
+			if (chunkBuffer->pendingResult) {
 #if 0
+				const core::AABB<int>& aabb = chunkBuffer->aabb();
+				const glm::vec3& center = glm::vec3(aabb.getCenter());
+				const glm::mat4& translate = glm::translate(center);
+				const glm::mat4& model = glm::scale(translate, glm::vec3(aabb.getWidth()));
+				_shapeRendererOcclusionQuery.render(_aabbMeshesOcclusionQuery, camera, model);
+#endif
+				continue;
+			}
 			const core::AABB<int>& aabb = chunkBuffer->aabb();
+			if (aabb.containsPoint(camera.position())) {
+				continue;
+			}
+			const video::Id queryId = chunkBuffer->occlusionQueryId;
 			const glm::vec3& center = glm::vec3(aabb.getCenter());
 			const glm::mat4& translate = glm::translate(center);
 			const glm::mat4& model = glm::scale(translate, glm::vec3(aabb.getWidth()));
+			core_assert(queryId != video::InvalidId);
+			core_assert_always(video::beginOcclusionQuery(queryId));
 			_shapeRendererOcclusionQuery.render(_aabbMeshesOcclusionQuery, camera, model);
-#endif
-			continue;
+			core_assert_always(video::endOcclusionQuery(queryId));
+			chunkBuffer->pendingResult = true;
 		}
-		const core::AABB<int>& aabb = chunkBuffer->aabb();
-		if (aabb.containsPoint(camera.position())) {
-			continue;
-		}
-		const video::Id queryId = chunkBuffer->occlusionQueryId;
-		const glm::vec3& center = glm::vec3(aabb.getCenter());
-		const glm::mat4& translate = glm::translate(center);
-		const glm::mat4& model = glm::scale(translate, glm::vec3(aabb.getWidth()));
-		core_assert(queryId != video::InvalidId);
-		core_assert_always(video::beginOcclusionQuery(queryId));
-		_shapeRendererOcclusionQuery.render(_aabbMeshesOcclusionQuery, camera, model);
-		core_assert_always(video::endOcclusionQuery(queryId));
-		chunkBuffer->pendingResult = true;
+		video::flush();
 	}
-	video::flush();
 
 	// TODO: maybe fill the shapebuilder before waiting for the query result - measure measure measure...
 	const bool renderOccluded = _renderOccluded->boolVal();
