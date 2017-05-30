@@ -64,20 +64,11 @@ private:
 	uint32_t _width;
 	uint32_t _height;
 	uint32_t _depth;
-	bool _allocated;
 	VertexData* _elements;
-	VertexData _stack[32 * 32 * 32];
 public:
 	Array(uint32_t width, uint32_t height, uint32_t depth) :
 			_width(width), _height(height), _depth(depth) {
-		const size_t len = _width * _height * _depth;
-		if (len <= sizeof(_stack) / sizeof(VertexData)) {
-			_elements = _stack;
-			_allocated = false;
-		} else {
-			_elements = new VertexData[len];
-			_allocated = true;
-		}
+		_elements = new VertexData[_width * _height * _depth];
 		clear();
 	}
 
@@ -86,9 +77,7 @@ public:
 	Array& operator=(const Array&) = delete;
 
 	~Array() {
-		if (_allocated) {
-			delete[] _elements;
-		}
+		delete[] _elements;
 	}
 
 	inline void clear() {
@@ -102,11 +91,8 @@ public:
 
 	inline void swap(Array& other) {
 		VertexData* temp = other._elements;
-		const bool allocated = other._allocated;
 		other._elements = _elements;
-		other._allocated = _allocated;
 		_elements = temp;
-		_allocated = allocated;
 	}
 };
 
