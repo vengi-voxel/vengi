@@ -451,7 +451,9 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 					volumeSampler.movePositiveZ();
 				}
 
-				volumeSampler.movePositiveX();
+				if (x != upper.x) {
+					volumeSampler.movePositiveX();
+				}
 			}
 		}
 
@@ -729,7 +731,9 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 					volumeSampler.movePositiveZ();
 				}
 
-				volumeSampler.movePositiveX();
+				if (x != upper.x) {
+					volumeSampler.movePositiveX();
+				}
 			}
 		}
 
