@@ -247,7 +247,6 @@ public:
 	protected:
 		uint16_t index(int x, int y, int z) const;
 
-		Region _region;
 		std::vector<Voxel> _buffer;
 
 		//The current position in the volume
@@ -265,13 +264,11 @@ public:
 		uint16_t _regionWidth;
 		uint16_t _regionHeight;
 		uint16_t _regionDepth;
+		uint16_t _zOffset;
 
 		int32_t _minsX;
 		int32_t _minsY;
 		int32_t _minsZ;
-
-		const uint8_t _chunkSideLengthPower;
-		const int32_t _chunkMask;
 	};
 
 public:
@@ -603,7 +600,7 @@ inline uint16_t PagedVolume::BufferedSampler::index(int x, int y, int z) const {
 	core_assert_msg(x >= 0 && x < _regionWidth, "x: %i is out of bounds (0, %i)", x, _regionWidth);
 	core_assert_msg(y >= 0 && y < _regionHeight, "y: %i is out of bounds (0, %i)", y, _regionHeight);
 	core_assert_msg(z >= 0 && z < _regionDepth, "z: %i is out of bounds (0, %i)", z, _regionDepth);
-	return z * _regionWidth * _regionHeight + y * _regionWidth + x;
+	return z * _zOffset + y * _regionWidth + x;
 }
 
 inline const Voxel& PagedVolume::BufferedSampler::peekVoxel1nx1ny1nz() const {

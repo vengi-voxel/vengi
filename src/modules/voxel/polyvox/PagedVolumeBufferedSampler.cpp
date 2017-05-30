@@ -5,56 +5,63 @@
 #include "PagedVolume.h"
 #include "core/Log.h"
 #include "Utility.h"
+#include "Morton.h"
 #include "core/TimeProvider.h"
 
 namespace voxel {
 
-PagedVolume::BufferedSampler::BufferedSampler(const PagedVolume* volume, const Region& region) :
-		_region(region), _chunkSideLengthPower(volume->_chunkSideLengthPower), _chunkMask(volume->_chunkMask) {
-	const int border = 1;
-	_region.grow(border);
-	_minsX = _region.getLowerX();
-	_minsY = _region.getLowerY();
-	_minsZ = _region.getLowerZ();
-	_regionWidth = _region.getWidthInVoxels();
-	_regionHeight = _region.getHeightInVoxels();
-	_regionDepth = _region.getDepthInVoxels();
+PagedVolume::BufferedSampler::BufferedSampler(const PagedVolume* volume, const Region& region) {
+	const int32_t chunkMask = volume->_chunkMask;
+	const uint8_t chunkSideLengthPower = volume->_chunkSideLengthPower;
+	Region r = region;
+	r.grow(1);
+	_minsX = r.getLowerX();
+	_minsY = r.getLowerY();
+	_minsZ = r.getLowerZ();
+	_regionWidth = r.getWidthInVoxels();
+	_regionHeight = r.getHeightInVoxels();
+	_regionDepth = r.getDepthInVoxels();
+	_zOffset = _regionWidth * _regionHeight;
 
-	_buffer.reserve(_regionWidth * _regionHeight * _regionDepth);
-	const glm::ivec3& offset = _region.getLowerCorner();
-	const glm::ivec3& upper = _region.getUpperCorner();
+	_buffer.reserve(_zOffset * _regionDepth);
+	const glm::ivec3& offset = r.getLowerCorner();
+	const glm::ivec3& upper = r.getUpperCorner();
 	ChunkPtr chunk;
-	int32_t xChunk = 0;
-	int32_t yChunk = 0;
-	int32_t zChunk = 0;
+
+	std::unordered_map<glm::ivec3, ChunkPtr> chunks;
 
 	core::RecursiveScopedReadLock readLock(volume->_rwLock);
+	glm::ivec3 chunkPos(std::numeric_limits<int>::min()), newChunkPos;
 	for (int32_t z = offset.z; z <= upper.z; ++z) {
 		const uint32_t regZ = z - offset.z;
-		const uint16_t zOffset = static_cast<uint16_t>(z & _chunkMask);
-		const int nzChunk = z >> _chunkSideLengthPower;
+		const uint16_t zOffset = static_cast<uint16_t>(z & chunkMask);
+		newChunkPos.z = z >> chunkSideLengthPower;
 
 		for (int32_t y = offset.y; y <= upper.y; ++y) {
 			const uint32_t regY = y - offset.y;
-			const uint16_t yOffset = static_cast<uint16_t>(y & _chunkMask);
-			const int nyChunk = y >> _chunkSideLengthPower;
+			const uint16_t yOffset = static_cast<uint16_t>(y & chunkMask);
+			newChunkPos.y = y >> chunkSideLengthPower;
 
 			int vecIndex = index(0, regY, regZ);
 			for (int32_t x = offset.x; x <= upper.x; ++x, ++vecIndex) {
-				const int nxChunk = x >> _chunkSideLengthPower;
-				if (nullptr == chunk.get() || xChunk != nxChunk || yChunk != nyChunk || zChunk != nzChunk) {
-					chunk = volume->chunk(nxChunk, nyChunk, nzChunk);
-					xChunk = nxChunk;
-					yChunk = nyChunk;
-					zChunk = nzChunk;
+				newChunkPos.x = x >> chunkSideLengthPower;
+				if (chunkPos != newChunkPos) {
+					chunkPos = newChunkPos;
+					auto i = chunks.find(chunkPos);
+					if (i != chunks.end()) {
+						chunk = i->second;
+					} else {
+						chunk = volume->chunk(chunkPos.x, chunkPos.y, chunkPos.z);
+						chunks[chunkPos] = chunk;
+					}
 				}
 
-				const uint16_t xOffset = static_cast<uint16_t>(x & _chunkMask);
-				_buffer[vecIndex] = chunk->voxel(xOffset, yOffset, zOffset);
+				const uint16_t xOffset = static_cast<uint16_t>(x & chunkMask);
+				const uint32_t index = morton256_x[xOffset] | morton256_y[yOffset] | morton256_z[zOffset];
+				_buffer[vecIndex] = chunk->_data[index];
 			}
 		}
 	}
-	_region.shrink(border);
 }
 
 PagedVolume::BufferedSampler::BufferedSampler(const PagedVolume& volume, const Region& region) :
