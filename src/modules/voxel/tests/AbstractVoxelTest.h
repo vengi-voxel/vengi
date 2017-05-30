@@ -94,6 +94,7 @@ protected:
 	PagedVolumeWrapper _ctx;
 	core::Random _random;
 	long _seed = 0;
+	const voxel::Region _region { glm::ivec3(0), glm::ivec3(63) };
 
 	AbstractVoxelTest() :
 			_pager(this), _volData(&_pager, 128 * 1024 * 1024, 64), _ctx(nullptr, nullptr, voxel::Region()) {
@@ -105,8 +106,7 @@ public:
 		core::AbstractTest::SetUp();
 		ASSERT_TRUE(voxel::initDefaultMaterialColors());
 		_random.setSeed(_seed);
-		const voxel::Region region(glm::ivec3(0, 0, 0), glm::ivec3(63, 63, 63));
-		_ctx = PagedVolumeWrapper(&_volData, _volData.chunk(region.getCentre()), region);
+		_ctx = PagedVolumeWrapper(&_volData, _volData.chunk(_region.getCentre()), _region);
 	}
 };
 

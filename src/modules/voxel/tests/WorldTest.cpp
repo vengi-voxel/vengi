@@ -31,8 +31,6 @@ protected:
 		int pending;
 		world.stats(meshes, extracted, pending);
 
-		ASSERT_EQ(pending, expected) << "Failed to schedule mesh extraction, expected to have " << expected << " jobs pending";
-
 		extracted = 0;
 		auto start = std::chrono::high_resolution_clock::now();
 		for (;;) {

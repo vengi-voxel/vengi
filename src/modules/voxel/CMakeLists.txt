@@ -61,7 +61,7 @@ engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core noise zlib image as
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 #target_compile_options(${LIB} PRIVATE -march=native PRIVATE -O3)
 
-gtest_suite_files(tests
+set(TEST_SRCS
 	tests/AbstractVoxelTest.h
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
 	tests/WorldTest.cpp
@@ -80,4 +80,11 @@ gtest_suite_files(tests
 	tests/VolumeRotatorTest.cpp
 	tests/VolumeCropperTest.cpp
 )
+
+gtest_suite_files(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB})
+
+gtest_suite_begin(tests-voxel TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_files(tests-voxel ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
+gtest_suite_deps(tests-voxel ${LIB})
+gtest_suite_end(tests-voxel)
