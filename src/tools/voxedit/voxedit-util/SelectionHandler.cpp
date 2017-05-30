@@ -4,6 +4,7 @@
 #include "select/LineVertical.h"
 #include "select/Same.h"
 #include "select/Single.h"
+#include "core/Common.h"
 #include <SDL.h>
 
 namespace voxedit {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/Common.h"
+#include "core/Assert.h"
 #include <glm/gtc/round.hpp>
 #include <cstdint>
 

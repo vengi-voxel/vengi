@@ -1,4 +1,5 @@
 #include "Select.h"
+#include "core/Log.h"
 
 namespace voxedit {
 namespace selections {

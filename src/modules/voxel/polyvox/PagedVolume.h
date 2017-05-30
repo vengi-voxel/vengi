@@ -10,6 +10,7 @@
 #include "core/RecursiveReadWriteLock.h"
 #include <array>
 #include <memory>
+#include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 

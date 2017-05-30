@@ -5,6 +5,7 @@
 #include "PagedVolume.h"
 #include "Morton.h"
 #include "Utility.h"
+#include "core/Log.h"
 
 namespace voxel {
 
