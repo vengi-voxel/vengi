@@ -90,6 +90,12 @@ public:
 		bool _currentPositionValidInZ = false;
 	};
 
+	class BufferedSampler : public Sampler {
+	public:
+		BufferedSampler(const RawVolume& volume, const Region& region) : Sampler(volume) {}
+		BufferedSampler(const RawVolume* volume, const Region& region) : Sampler(volume) {}
+	};
+
 public:
 	/// Constructor for creating a fixed size volume.
 	RawVolume(const Region& region);

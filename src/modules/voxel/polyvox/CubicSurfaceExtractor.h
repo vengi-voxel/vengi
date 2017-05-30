@@ -232,6 +232,7 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 
 	result->clear();
 	const glm::ivec3& offset = region.getLowerCorner();
+	const glm::ivec3& upper = region.getUpperCorner();
 	result->setOffset(offset);
 
 	// Used to avoid creating duplicate vertices.
@@ -251,18 +252,18 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 	vecQuads[NegativeZ].resize(region.getUpperZ() - region.getLowerZ() + 2);
 	vecQuads[PositiveZ].resize(region.getUpperZ() - region.getLowerZ() + 2);
 
-	typename VolumeType::Sampler volumeSampler(volData);
+	typename VolumeType::BufferedSampler volumeSampler(volData, region);
 
-	for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
-		const uint32_t regZ = z - region.getLowerZ();
+	for (int32_t z = offset.z; z <= upper.z; ++z) {
+		const uint32_t regZ = z - offset.z;
 
-		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y++) {
-			const uint32_t regY = y - region.getLowerY();
+		for (int32_t y = offset.y; y <= upper.y; ++y) {
+			const uint32_t regY = y - offset.y;
 
-			volumeSampler.setPosition(region.getLowerX(), y, z);
+			volumeSampler.setPosition(offset.x, y, z);
 
-			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
-				const uint32_t regX = x - region.getLowerX();
+			for (int32_t x = offset.x; x <= upper.x; ++x) {
+				const uint32_t regX = x - offset.x;
 
 				/**
 				 *
@@ -508,7 +509,7 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 	QuadListVector vecQuadsWater;
 	vecQuadsWater.resize(ySize);
 
-	typename VolumeType::Sampler volumeSampler(volData);
+	typename VolumeType::BufferedSampler volumeSampler(volData, region);
 
 	for (int32_t z = offset.z; z <= upper.z; ++z) {
 		const uint32_t regZ = z - offset.z;

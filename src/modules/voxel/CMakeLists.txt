@@ -35,6 +35,8 @@ set(SRCS
 	polyvox/Mesh.h polyvox/Mesh.cpp
 	polyvox/Morton.h
 	polyvox/PagedVolume.h polyvox/PagedVolume.cpp
+	polyvox/PagedVolumeSampler.cpp polyvox/PagedVolumeChunk.cpp
+	polyvox/PagedVolumeBufferedSampler.cpp
 	polyvox/PagedVolumeWrapper.h polyvox/PagedVolumeWrapper.cpp
 	polyvox/RawVolume.h polyvox/RawVolume.cpp
 	polyvox/RawVolumeWrapper.h
@@ -72,6 +74,7 @@ set(TEST_SRCS
 	tests/BiomeManagerTest.cpp
 	tests/AmbientOcclusionTest.cpp
 	tests/OctreeTest.cpp
+	tests/PagedVolumeBufferedSamplerTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
