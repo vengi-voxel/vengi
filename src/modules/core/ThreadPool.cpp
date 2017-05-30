@@ -45,9 +45,15 @@ ThreadPool::~ThreadPool() {
 
 void ThreadPool::shutdown() {
 	_stop = true;
-	_condition.notify_all();
+	{
+		std::unique_lock<std::mutex> lock(_queueMutex);
+		while (!_tasks.empty()) {
+			_tasks.pop();
+		}
+		_condition.notify_all();
+	}
 	for (std::thread &worker : _workers) {
-		worker.join();
+		worker.detach();
 	}
 	_workers.clear();
 }
