@@ -31,17 +31,17 @@ PagedVolume::BufferedSampler::BufferedSampler(const PagedVolume* volume, const R
 	core::RecursiveScopedReadLock readLock(volume->_rwLock);
 	for (int32_t z = offset.z; z <= upper.z; ++z) {
 		const uint32_t regZ = z - offset.z;
+		const uint16_t zOffset = static_cast<uint16_t>(z & _chunkMask);
+		const int nzChunk = z >> _chunkSideLengthPower;
 
 		for (int32_t y = offset.y; y <= upper.y; ++y) {
 			const uint32_t regY = y - offset.y;
+			const uint16_t yOffset = static_cast<uint16_t>(y & _chunkMask);
+			const int nyChunk = y >> _chunkSideLengthPower;
 
-			for (int32_t x = offset.x; x <= upper.x; ++x) {
-				const uint32_t regX = x - offset.x;
-				const int vecIndex = index(regX, regY, regZ);
-
+			int vecIndex = index(0, regY, regZ);
+			for (int32_t x = offset.x; x <= upper.x; ++x, ++vecIndex) {
 				const int nxChunk = x >> _chunkSideLengthPower;
-				const int nyChunk = y >> _chunkSideLengthPower;
-				const int nzChunk = z >> _chunkSideLengthPower;
 				if (nullptr == chunk.get() || xChunk != nxChunk || yChunk != nyChunk || zChunk != nzChunk) {
 					chunk = volume->chunk(nxChunk, nyChunk, nzChunk);
 					xChunk = nxChunk;
@@ -50,8 +50,6 @@ PagedVolume::BufferedSampler::BufferedSampler(const PagedVolume* volume, const R
 				}
 
 				const uint16_t xOffset = static_cast<uint16_t>(x & _chunkMask);
-				const uint16_t yOffset = static_cast<uint16_t>(y & _chunkMask);
-				const uint16_t zOffset = static_cast<uint16_t>(z & _chunkMask);
 				_buffer[vecIndex] = chunk->voxel(xOffset, yOffset, zOffset);
 			}
 		}
