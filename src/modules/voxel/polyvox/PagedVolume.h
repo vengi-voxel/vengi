@@ -10,6 +10,7 @@
 #include "core/RecursiveReadWriteLock.h"
 #include <array>
 #include <memory>
+#include <list>
 #include <vector>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
@@ -83,6 +84,12 @@ public:
 		core::RecursiveReadWriteLock _rwLock{"chunk"};
 	};
 	typedef std::shared_ptr<Chunk> ChunkPtr;
+
+	struct IChunkListener {
+		virtual void onCreate(const ChunkPtr& ptr) {};
+
+		virtual void onRemove(const ChunkPtr& ptr) {};
+	};
 
 	struct PagerContext {
 		Region region;
@@ -282,6 +289,9 @@ public:
 	/// Gets a voxel at the position given by a 3D vector
 	const Voxel& voxel(const glm::ivec3& v3dPos) const;
 
+	void addChunkListener(IChunkListener* listener);
+	void removeChunkListener(IChunkListener* listener);
+
 	/// Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
 	void setVoxel(int32_t uXPos, int32_t uYPos, int32_t uZPos, const Voxel& tValue);
 	/// Sets the voxel at the position given by a 3D vector
@@ -307,6 +317,8 @@ protected:
 
 	/// Assignment operator
 	PagedVolume& operator=(const PagedVolume& rhs);
+
+	std::list<IChunkListener*> _listener;
 
 private:
 	ChunkPtr chunk(int32_t uChunkX, int32_t uChunkY, int32_t uChunkZ) const;
@@ -338,6 +350,7 @@ private:
 	Pager* _pager = nullptr;
 
 	mutable core::RecursiveReadWriteLock _rwLock{"pagedvolume"};
+	mutable core::RecursiveReadWriteLock _listenerLock{"listener"};
 };
 
 inline const Voxel& PagedVolume::Sampler::voxel() const {
@@ -747,6 +760,22 @@ inline Region PagedVolume::Chunk::region() const {
 	 const glm::ivec3 mins = _chunkSpacePosition * static_cast<int32_t>(_sideLength);
 	 const glm::ivec3 maxs = mins + glm::ivec3(_sideLength - 1);
 	 return Region(mins, maxs);
+}
+
+inline void PagedVolume::addChunkListener(IChunkListener* listener) {
+	core::RecursiveScopedWriteLock writeLock(_listenerLock);
+	_listener.push_back(listener);
+}
+
+inline void PagedVolume::removeChunkListener(IChunkListener* listener) {
+	core::RecursiveScopedWriteLock writeLock(_listenerLock);
+	for (auto i = _listener.begin(); i != _listener.end();) {
+		if (listener == *i) {
+			i = _listener.erase(i);
+		} else {
+			++i;
+		}
+	}
 }
 
 }

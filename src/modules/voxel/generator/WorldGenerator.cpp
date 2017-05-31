@@ -9,6 +9,7 @@ WorldGenerator::WorldGenerator(BiomeManager& biomeManager, long seed) :
 }
 
 float WorldGenerator::getHeight(const glm::vec2& noisePos2d, const WorldContext& worldCtx) const {
+	// TODO: move the noise settings into the biome
 	const float landscapeNoise = ::noise::Noise2D(noisePos2d, worldCtx.landscapeNoiseOctaves,
 			worldCtx.landscapeNoisePersistence, worldCtx.landscapeNoiseFrequency, worldCtx.landscapeNoiseAmplitude);
 	const float noiseNormalized = ::noise::norm(landscapeNoise);
@@ -37,6 +38,7 @@ int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& wor
 	voxels[0] = dirt;
 	for (int y = ni - 1; y >= lowerY + 1; --y) {
 		const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
+		// TODO: move the noise settings into the biome
 		const float noiseVal = ::noise::norm(
 				::noise::Noise3D(noisePos3d, worldCtx.caveNoiseOctaves, worldCtx.caveNoisePersistence,
 						worldCtx.caveNoiseFrequency, worldCtx.caveNoiseAmplitude));
