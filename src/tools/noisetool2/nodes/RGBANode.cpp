@@ -67,7 +67,15 @@ void RGBANode::getDefaultTitleBarColors(ImU32& defaultTitleTextColorOut, ImU32& 
 bool RGBANode::render(float nodeWidth) {
 	const bool retVal = Node::render(nodeWidth);
 	if (_texture->isLoaded()) {
-		ImGui::Image((ImTextureID) (intptr_t) _texture->handle(), ImVec2(200, 100));
+		ImVec2 size = ImVec2(200, 100);
+		ImGuiWindow* window = ImGui::GetCurrentWindow();
+		const ImVec2& mins = window->DC.CursorPos;
+		const ImVec2 maxs(mins.x + size.x, mins.y + size.y);
+		if (ImGui::IsMouseHoveringRect(mins, maxs)) {
+			size.x *= 4;
+			size.y *= 4;
+		}
+		ImGui::Image((ImTextureID) (intptr_t) _texture->handle(), size);
 	}
 	return retVal;
 }
