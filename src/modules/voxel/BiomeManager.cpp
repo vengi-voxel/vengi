@@ -275,14 +275,25 @@ const Zone* BiomeManager::getZone(const glm::ivec2& pos, ZoneType type) const {
 	return nullptr;
 }
 
-float BiomeManager::getCityMultiplier(const glm::ivec2& pos) const {
+float BiomeManager::getCityMultiplier(const glm::ivec2& pos, int* targetHeight) const {
 	const Zone* zone = getZone(pos, ZoneType::City);
 	if (zone == nullptr) {
 		return 1.0f;
 	}
 	const glm::ivec3& zonePos = zone->pos();
 	const glm::vec3 dist(pos.x - zonePos.x, 0.0f, pos.y - zonePos.z);
-	return glm::clamp(glm::length(dist) / zone->radius(), MinCityHeight, 1.0f);
+
+	if (targetHeight != nullptr) {
+		*targetHeight = MAX_WATER_HEIGHT + 2;
+	}
+	const float l = glm::length(dist);
+	if (glm::abs(l) < glm::epsilon<float>()) {
+		return 0.0f;
+	}
+	// near: 1 / (1000 /  0.1)^2
+	// far:  1 / (1000 / 1000)^2
+	const float v = 1.0f / glm::pow(zone->radius() / l, 2);
+	return v;
 }
 
 bool BiomeManager::hasCity(const glm::ivec3& pos) const {

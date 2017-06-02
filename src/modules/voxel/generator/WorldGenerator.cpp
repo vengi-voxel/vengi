@@ -25,8 +25,13 @@ int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& wor
 	const glm::vec2 noisePos2d(noiseSeedOffsetX + x, noiseSeedOffsetZ + z);
 	const float n = getHeight(noisePos2d, worldCtx);
 	const glm::ivec3 noisePos3d(x, lowerY, z);
-	const float cityMultiplier = _biomeManager.getCityMultiplier(noisePos3d);
-	const int ni = n * cityMultiplier * maxHeight;
+	int centerHeight;
+	const float cityMultiplier = _biomeManager.getCityMultiplier(glm::ivec2(x, z), &centerHeight);
+	int ni = n * maxHeight;
+	if (cityMultiplier < 1.0f) {
+		const float revn = (1.0f - cityMultiplier);
+		ni = revn * centerHeight + (n * maxHeight * cityMultiplier);
+	}
 	if (ni < lowerY) {
 		return 0;
 	}

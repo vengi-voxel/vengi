@@ -36,7 +36,6 @@ public:
 
 	template<class Volume>
 	bool createBuildings(Volume& volume) {
-		// TODO: apply gradient at city positions and then build houses
 		const voxel::Region& region = volume.region();
 		glm::ivec3 buildingPos = region.getCentre();
 		if (!_biomeManager.hasCity(buildingPos)) {
@@ -44,15 +43,16 @@ public:
 		}
 		for (int i = MAX_TERRAIN_HEIGHT - 1; i >= MAX_WATER_HEIGHT; --i) {
 			const VoxelType material = volume.voxel(buildingPos.x, i, buildingPos.z).getMaterial();
-			if (isFloor(material)) {
-				buildingPos.y = i;
-				if (_random.fithyFifthy()) {
-					voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::House);
-				} else {
-					voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::Tower);
-				}
-				break;
+			if (!isFloor(material)) {
+				continue;
 			}
+			buildingPos.y = i;
+			if (_random.fithyFifthy()) {
+				voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::House);
+			} else {
+				voxel::building::createBuilding(volume, buildingPos, voxel::BuildingType::Tower);
+			}
+			break;
 		}
 		return true;
 	}

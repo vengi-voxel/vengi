@@ -89,7 +89,7 @@ public:
 	const Zone* getZone(const glm::ivec3& pos, ZoneType type) const;
 	const Zone* getZone(const glm::ivec2& pos, ZoneType type) const;
 	int getCityDensity(const glm::ivec2& pos) const;
-	float getCityMultiplier(const glm::ivec2& pos) const;
+	float getCityMultiplier(const glm::ivec2& pos, int* targetHeight = nullptr) const;
 	void getTreeTypes(const Region& region, std::vector<TreeType>& treeTypes) const;
 	void getTreePositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
 	void getPlantPositions(const Region& region, std::vector<glm::vec2>& positions, core::Random& random, int border) const;
