@@ -31,12 +31,6 @@ void IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
 	Super::onMouseWheel(x, y);
 }
 
-void IMGUIApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	ImGuiIO& io = ImGui::GetIO();
-	io.MousePos = ImVec2(x, y);
-	Super::onMouseMotion(x, y, relX, relY);
-}
-
 void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	if (button == SDL_BUTTON_LEFT) {
 		_mousePressed[0] = true;
@@ -237,6 +231,9 @@ core::AppState IMGUIApp::onRunning() {
 		return state;
 	}
 
+	ImGuiIO& io = ImGui::GetIO();
+	io.MousePos = ImVec2(_mousePos.x, _mousePos.y);
+
 	core_assert(_bufferIndex > -1);
 	core_assert(_indexBufferIndex > -1);
 
@@ -250,7 +247,6 @@ core::AppState IMGUIApp::onRunning() {
 		return core::AppState::Running;
 	}
 
-	ImGuiIO& io = ImGui::GetIO();
 	const int renderTargetW = (int) (io.DisplaySize.x * io.DisplayFramebufferScale.x);
 	const int renderTargetH = (int) (io.DisplaySize.y * io.DisplayFramebufferScale.y);
 	// Avoid rendering when minimized, scale coordinates for

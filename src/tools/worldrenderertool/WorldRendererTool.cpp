@@ -171,6 +171,11 @@ core::AppState WorldRendererTool::onRunning() {
 	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
 	const core::AppState state = Super::onRunning();
 
+	const bool current = isRelativeMouseMode();
+	if (current) {
+		_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+	}
+
 	_axis.render(_camera);
 	//glm::vec3 entPos = _entity->position();
 	//entPos.y = _world->findFloor(entPos.x, entPos.z, voxel::isFloor);
@@ -222,15 +227,6 @@ void WorldRendererTool::onMouseButtonPress(int32_t x, int32_t y, uint8_t button,
 	} else if (result.validPreviousPosition && button == SDL_BUTTON_LEFT) {
 		_world->setVoxel(result.previousPosition, voxel::createRandomColorVoxel(voxel::VoxelType::Grass));
 	}
-}
-
-void WorldRendererTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	Super::onMouseMotion(x, y, relX, relY);
-	const bool current = isRelativeMouseMode();
-	if (!current) {
-		return;
-	}
-	_camera.rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
 }
 
 void WorldRendererTool::reset(const voxel::WorldContext& ctx) {

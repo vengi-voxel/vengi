@@ -235,14 +235,6 @@ void UIApp::onMouseWheel(int32_t x, int32_t y) {
 	_root.InvokeWheel(posX, posY, x, -y, getModifierKeys());
 }
 
-void UIApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	Super::onMouseMotion(x, y, relX, relY);
-	if (_console.isActive()) {
-		return;
-	}
-	_root.InvokePointerMove(x, y, getModifierKeys(), false);
-}
-
 void UIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	if (_console.onMouseButtonPress(x, y, button)) {
 		return;
@@ -428,6 +420,10 @@ core::AppState UIApp::onRunning() {
 	core::AppState state = Super::onRunning();
 
 	_lastShowTextY = 5;
+
+	if (!_console.isActive()) {
+		_root.InvokePointerMove(_mousePos.x, _mousePos.y, getModifierKeys(), false);
+	}
 
 	const bool running = state == core::AppState::Running;
 	if (running) {

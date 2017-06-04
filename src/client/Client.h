@@ -75,7 +75,6 @@ public:
 	void afterRootWidget() override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onMouseWheel(int32_t x, int32_t y) override;
-	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	void onWindowResize() override;
 
 	/**

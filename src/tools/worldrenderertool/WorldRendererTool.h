@@ -41,7 +41,6 @@ protected:
 	int _vertices = 0;
 	int _drawCallsEntities = 0;
 
-	void onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) override;
 	void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize() override;

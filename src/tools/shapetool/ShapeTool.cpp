@@ -152,6 +152,10 @@ void ShapeTool::afterRootWidget() {
 core::AppState ShapeTool::onRunning() {
 	ScopedProfiler<ProfilerCPU> wt(_frameTimer);
 	const core::AppState state = Super::onRunning();
+	const bool current = isRelativeMouseMode();
+	if (current) {
+		_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+	}
 
 	_axis.render(_camera);
 	//glm::vec3 entPos = _entity->position();
@@ -191,15 +195,6 @@ bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {
 		_speed->setVal(std::to_string(speed));
 	}
 	return Super::onKeyPress(key, modifier);
-}
-
-void ShapeTool::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	Super::onMouseMotion(x, y, relX, relY);
-	const bool current = isRelativeMouseMode();
-	if (!current) {
-		return;
-	}
-	_camera.rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
 }
 
 int main(int argc, char *argv[]) {

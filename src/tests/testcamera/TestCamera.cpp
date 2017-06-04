@@ -115,7 +115,11 @@ void TestCamera::onRenderUI() {
 
 core::AppState TestCamera::onRunning() {
 	core::AppState state = Super::onRunning();
-	const video::Camera& c = _renderCamera[_targetCamera];
+	video::Camera& c = _renderCamera[_targetCamera];
+	const SDL_Keymod mods = SDL_GetModState();
+	if (mods & KMOD_SHIFT) {
+		c.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+	}
 	_camera.setTarget(c.position());
 	return state;
 }
@@ -132,15 +136,6 @@ core::AppState TestCamera::onCleanup() {
 	}
 
 	return state;
-}
-
-void TestCamera::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	const SDL_Keymod mods = SDL_GetModState();
-	if (mods & KMOD_SHIFT) {
-		_renderCamera[_targetCamera].rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
-		return;
-	}
-	Super::onMouseMotion(x, y, relX, relY);
 }
 
 void TestCamera::onMouseWheel(int32_t x, int32_t y) {

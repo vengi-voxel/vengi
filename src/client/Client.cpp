@@ -73,11 +73,6 @@ void Client::sendMovement() {
 	_messageSender->sendClientMessage(_peer, _moveFbb, network::ClientMsgType::Move, CreateMove(_moveFbb, _moveMask, pitch, yaw).Union());
 }
 
-void Client::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	Super::onMouseMotion(x, y, relX, relY);
-	_camera.rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
-}
-
 void Client::onEvent(const network::DisconnectEvent& event) {
 	removeState(CLIENT_CONNECTING);
 	ui::Window* main = new frontend::LoginWindow(this);
@@ -281,6 +276,7 @@ core::AppState Client::onRunning() {
 	core::Var::visitBroadcast([] (const core::VarPtr& var) {
 		Log::info("TODO: %s needs broadcast", var->name().c_str());
 	});
+	_camera.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 	sendMovement();
 	if (state == core::AppState::Running) {
 		_network->update();

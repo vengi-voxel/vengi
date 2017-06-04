@@ -57,6 +57,8 @@ core::AppState WindowedApp::onRunning() {
 		}
 	}
 
+	SDL_GetMouseState(&_mousePos.x, &_mousePos.y);
+	SDL_GetRelativeMouseState(&_mouseRelativePos.x, &_mouseRelativePos.y);
 	core_trace_scoped(WindowedAppOnRunning);
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -97,11 +99,6 @@ void WindowedApp::onWindowResize() {
 	_aspect = _width / static_cast<float>(_height);
 	_dimension = glm::ivec2(_width, _height);
 	video::viewport(0, 0, _width, _height);
-}
-
-void WindowedApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	_mousePos.x = x;
-	_mousePos.y = y;
 }
 
 bool WindowedApp::onKeyRelease(int32_t key) {
@@ -157,6 +154,7 @@ core::AppState WindowedApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
+	SDL_EventState(SDL_MOUSEMOTION, SDL_DISABLE);
 	SDL_StopTextInput();
 
 	if (!loadKeyBindings()) {

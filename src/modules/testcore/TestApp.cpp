@@ -86,10 +86,10 @@ core::AppState TestApp::onInit() {
 
 void TestApp::beforeUI() {
 	Super::beforeUI();
-
 	if (_cameraMotion) {
 		const bool current = SDL_GetRelativeMouseMode();
 		if (current) {
+			_camera.rotate(glm::vec3(_mouseRelativePos.y,_mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 			SDL_WarpMouseInWindow(_window, width() / 2, height() / 2);
 		}
 	}
@@ -139,15 +139,4 @@ void TestApp::onMouseWheel(int32_t x, int32_t y) {
 	Super::onMouseWheel(x, y);
 	const float targetDistance = glm::clamp(_camera.targetDistance() - y, 0.0f, 500.0f);
 	_camera.setTargetDistance(targetDistance);
-}
-
-void TestApp::onMouseMotion(int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	Super::onMouseMotion(x, y, relX, relY);
-	if (_cameraMotion) {
-		const bool current = SDL_GetRelativeMouseMode();
-		if (!current) {
-			return;
-		}
-		_camera.rotate(glm::vec3(relY, relX, 0.0f) * _rotationSpeed->floatVal());
-	}
 }
