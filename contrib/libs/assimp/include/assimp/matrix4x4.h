@@ -3,7 +3,8 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2016, assimp team
+Copyright (c) 2006-2017, assimp team
+
 
 All rights reserved.
 
@@ -112,6 +113,8 @@ public:
     // matrix multiplication.
     aiMatrix4x4t& operator *= (const aiMatrix4x4t& m);
     aiMatrix4x4t  operator *  (const aiMatrix4x4t& m) const;
+    aiMatrix4x4t operator * (const TReal& aFloat) const;
+    aiMatrix4x4t operator + (const aiMatrix4x4t& aMatrix) const;
 
     template <typename TOther>
     operator aiMatrix4x4t<TOther> () const;
