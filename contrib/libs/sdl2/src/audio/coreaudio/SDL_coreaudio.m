@@ -400,8 +400,12 @@ static void
 outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *) inUserData;
+    if (SDL_AtomicGet(&this->hidden->shutdown)) {
+        return;  /* don't do anything. */
+    }
+
     if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
-        /* Supply silence if audio is enabled and not paused */
+        /* Supply silence if audio is not enabled or paused */
         SDL_memset(inBuffer->mAudioData, this->spec.silence, inBuffer->mAudioDataBytesCapacity);
     } else {
         UInt32 remaining = inBuffer->mAudioDataBytesCapacity;
@@ -412,7 +416,7 @@ outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffe
             if (this->hidden->bufferOffset >= this->hidden->bufferSize) {
                 /* Generate the data */
                 SDL_LockMutex(this->mixer_lock);
-                (*this->spec.callback)(this->spec.userdata,
+                (*this->callbackspec.callback)(this->callbackspec.userdata,
                             this->hidden->buffer, this->hidden->bufferSize);
                 SDL_UnlockMutex(this->mixer_lock);
                 this->hidden->bufferOffset = 0;
@@ -430,9 +434,7 @@ outputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffe
         }
     }
 
-    if (!SDL_AtomicGet(&this->hidden->shutdown)) {
-        AudioQueueEnqueueBuffer(this->hidden->audioQueue, inBuffer, 0, NULL);
-    }
+    AudioQueueEnqueueBuffer(this->hidden->audioQueue, inBuffer, 0, NULL);
 
     inBuffer->mAudioDataByteSize = inBuffer->mAudioDataBytesCapacity;
 }
@@ -443,7 +445,13 @@ inputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer
               const AudioStreamPacketDescription *inPacketDescs )
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *) inUserData;
-    if (SDL_AtomicGet(&this->enabled) && !SDL_AtomicGet(&this->paused)) {  /* ignore unless we're active. */
+
+    if (SDL_AtomicGet(&this->shutdown)) {
+        return;  /* don't do anything. */
+    }
+
+    /* ignore unless we're active. */
+    if (!SDL_AtomicGet(&this->paused) && SDL_AtomicGet(&this->enabled) && !SDL_AtomicGet(&this->paused)) {
         const Uint8 *ptr = (const Uint8 *) inBuffer->mAudioData;
         UInt32 remaining = inBuffer->mAudioDataByteSize;
         while (remaining > 0) {
@@ -459,16 +467,14 @@ inputCallback(void *inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer
 
             if (this->hidden->bufferOffset >= this->hidden->bufferSize) {
                 SDL_LockMutex(this->mixer_lock);
-                (*this->spec.callback)(this->spec.userdata, this->hidden->buffer, this->hidden->bufferSize);
+                (*this->callbackspec.callback)(this->callbackspec.userdata, this->hidden->buffer, this->hidden->bufferSize);
                 SDL_UnlockMutex(this->mixer_lock);
                 this->hidden->bufferOffset = 0;
             }
         }
     }
 
-    if (!SDL_AtomicGet(&this->hidden->shutdown)) {
-        AudioQueueEnqueueBuffer(this->hidden->audioQueue, inBuffer, 0, NULL);
-    }
+    AudioQueueEnqueueBuffer(this->hidden->audioQueue, inBuffer, 0, NULL);
 }
 
 
@@ -514,7 +520,6 @@ static void
 COREAUDIO_CloseDevice(_THIS)
 {
     const SDL_bool iscapture = this->iscapture;
-    int i;
 
 /* !!! FIXME: what does iOS do when a bluetooth audio device vanishes? Headphones unplugged? */
 /* !!! FIXME: (we only do a "default" device on iOS right now...can we do more?) */
@@ -533,11 +538,6 @@ COREAUDIO_CloseDevice(_THIS)
     }
 
     if (this->hidden->audioQueue) {
-        for (i = 0; i < SDL_arraysize(this->hidden->audioBuffer); i++) {
-            if (this->hidden->audioBuffer[i]) {
-                AudioQueueFreeBuffer(this->hidden->audioQueue, this->hidden->audioBuffer[i]);
-            }
-        }
         AudioQueueDispose(this->hidden->audioQueue, 1);
     }
 
@@ -545,6 +545,8 @@ COREAUDIO_CloseDevice(_THIS)
         SDL_DestroySemaphore(this->hidden->ready_semaphore);
     }
 
+    /* AudioQueueDispose() frees the actual buffer objects. */
+    SDL_free(this->hidden->audioBuffer);
     SDL_free(this->hidden->thread_error);
     SDL_free(this->hidden->buffer);
     SDL_free(this->hidden);
@@ -663,7 +665,24 @@ prepare_audioqueue(_THIS)
         return 0;
     }
 
-    for (i = 0; i < SDL_arraysize(this->hidden->audioBuffer); i++) {
+    /* Make sure we can feed the device at least 50 milliseconds at a time. */
+    const double msecs = (this->spec.samples / ((double) this->spec.freq)) * 1000.0;
+    int numAudioBuffers = 2;
+    if (msecs < 10.0) {  /* use more buffers if we have a VERY small sample set. */
+        numAudioBuffers = (int) (SDL_ceil(10.0 / msecs) * 2);
+    }
+
+    this->hidden->audioBuffer = SDL_calloc(1, sizeof (AudioQueueBufferRef) * numAudioBuffers);
+    if (this->hidden->audioBuffer == NULL) {
+        SDL_OutOfMemory();
+        return 0;
+    }
+
+#if DEBUG_COREAUDIO
+    printf("COREAUDIO: numAudioBuffers == %d\n", numAudioBuffers);
+#endif
+
+    for (i = 0; i < numAudioBuffers; i++) {
         result = AudioQueueAllocateBuffer(this->hidden->audioQueue, this->spec.size, &this->hidden->audioBuffer[i]);
         CHECK_RESULT("AudioQueueAllocateBuffer");
         SDL_memset(this->hidden->audioBuffer[i]->mAudioData, this->spec.silence, this->hidden->audioBuffer[i]->mAudioDataBytesCapacity);
@@ -699,9 +718,9 @@ audioqueue_thread(void *arg)
     if (this->iscapture) {  /* just stop immediately for capture devices. */
         AudioQueueStop(this->hidden->audioQueue, 1);
     } else {  /* Drain off any pending playback. */
-        AudioQueueStop(this->hidden->audioQueue, 0);
         const CFTimeInterval secs = (((this->spec.size / (SDL_AUDIO_BITSIZE(this->spec.format) / 8)) / this->spec.channels) / ((CFTimeInterval) this->spec.freq)) * 2.0;
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, secs, 0);
+        AudioQueueStop(this->hidden->audioQueue, 0);
     }
 
     return 0;

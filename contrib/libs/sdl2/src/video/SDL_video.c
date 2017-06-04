@@ -1321,7 +1321,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 }
 
 #define CREATE_FLAGS \
-    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP)
+    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN )
 
 static void
 SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
@@ -3857,6 +3857,9 @@ SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
 				   SDL_sqrt((double)den2));
 }
 
+/*
+ * Functions used by iOS application delegates
+ */
 void SDL_OnApplicationWillTerminate()
 {
     SDL_SendAppEvent(SDL_APP_TERMINATING);
@@ -3869,7 +3872,6 @@ void SDL_OnApplicationDidReceiveMemoryWarning()
 
 void SDL_OnApplicationWillResignActive()
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this) {
         SDL_Window *window;
         for (window = _this->windows; window != NULL; window = window->next) {
@@ -3894,7 +3896,6 @@ void SDL_OnApplicationDidBecomeActive()
 {
     SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
 
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this) {
         SDL_Window *window;
         for (window = _this->windows; window != NULL; window = window->next) {

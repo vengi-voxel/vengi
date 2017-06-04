@@ -52,7 +52,7 @@ FeedAudioDevice(_THIS, const void *buf, const int buflen)
 static void
 HandleAudioProcess(_THIS)
 {
-    SDL_AudioCallback callback = this->spec.callback;
+    SDL_AudioCallback callback = this->callbackspec.callback;
     const int stream_len = this->callbackspec.size;
 
     /* Only do something if audio is enabled */
@@ -65,11 +65,11 @@ HandleAudioProcess(_THIS)
 
     if (this->stream == NULL) {  /* no conversion necessary. */
         SDL_assert(this->spec.size == stream_len);
-        callback(this->spec.userdata, this->work_buffer, stream_len);
+        callback(this->callbackspec.userdata, this->work_buffer, stream_len);
     } else {  /* streaming/converting */
         int got;
         while (SDL_AudioStreamAvailable(this->stream) < ((int) this->spec.size)) {
-            callback(this->spec.userdata, this->work_buffer, stream_len);
+            callback(this->callbackspec.userdata, this->work_buffer, stream_len);
             if (SDL_AudioStreamPut(this->stream, this->work_buffer, stream_len) == -1) {
                 SDL_AudioStreamClear(this->stream);
                 SDL_AtomicSet(&this->enabled, 0);
@@ -90,7 +90,7 @@ HandleAudioProcess(_THIS)
 static void
 HandleCaptureProcess(_THIS)
 {
-    SDL_AudioCallback callback = this->spec.callback;
+    SDL_AudioCallback callback = this->callbackspec.callback;
     const int stream_len = this->callbackspec.size;
 
     /* Only do something if audio is enabled */
@@ -123,7 +123,7 @@ HandleCaptureProcess(_THIS)
 
     if (this->stream == NULL) {  /* no conversion necessary. */
         SDL_assert(this->spec.size == stream_len);
-        callback(this->spec.userdata, this->work_buffer, stream_len);
+        callback(this->callbackspec.userdata, this->work_buffer, stream_len);
     } else {  /* streaming/converting */
         if (SDL_AudioStreamPut(this->stream, this->work_buffer, this->spec.size) == -1) {
             SDL_AtomicSet(&this->enabled, 0);
@@ -135,7 +135,7 @@ HandleCaptureProcess(_THIS)
             if (got != stream_len) {
                 SDL_memset(this->work_buffer, this->callbackspec.silence, stream_len);
             }
-            callback(this->spec.userdata, this->work_buffer, stream_len);  /* Send it to the app. */
+            callback(this->callbackspec.userdata, this->work_buffer, stream_len);  /* Send it to the app. */
         }
     }
 }
@@ -328,6 +328,9 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
 static int
 EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
+    int available;
+    int capture_available;
+
     /* Set the function pointers */
     impl->OpenDevice = EMSCRIPTENAUDIO_OpenDevice;
     impl->CloseDevice = EMSCRIPTENAUDIO_CloseDevice;
@@ -339,7 +342,7 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->ProvidesOwnCallbackThread = 1;
 
     /* check availability */
-    const int available = EM_ASM_INT_V({
+    available = EM_ASM_INT_V({
         if (typeof(AudioContext) !== 'undefined') {
             return 1;
         } else if (typeof(webkitAudioContext) !== 'undefined') {
@@ -352,7 +355,7 @@ EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
         SDL_SetError("No audio context available");
     }
 
-    const int capture_available = available && EM_ASM_INT_V({
+    capture_available = available && EM_ASM_INT_V({
         if ((typeof(navigator.mediaDevices) !== 'undefined') && (typeof(navigator.mediaDevices.getUserMedia) !== 'undefined')) {
             return 1;
         } else if (typeof(navigator.webkitGetUserMedia) !== 'undefined') {

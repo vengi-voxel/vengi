@@ -270,7 +270,7 @@ static const SDL_Scancode emscripten_scancode_table[] = {
 
 
 /* "borrowed" from SDL_windowsevents.c */
-int
+static int
 Emscripten_ConvertUTF32toUTF8(Uint32 codepoint, char * text)
 {
     if (codepoint <= 0x7F) {
@@ -307,7 +307,7 @@ Emscripten_HandlePointerLockChange(int eventType, const EmscriptenPointerlockCha
 }
 
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -338,7 +338,7 @@ Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent
     return 0;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -374,7 +374,7 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
     return SDL_GetEventState(sdl_event_type) == SDL_ENABLE;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -396,7 +396,7 @@ Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEven
     return SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -404,7 +404,7 @@ Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, vo
     return SDL_GetEventState(SDL_MOUSEWHEEL) == SDL_ENABLE;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -419,7 +419,7 @@ Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, vo
     return SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -437,6 +437,7 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
     for (i = 0; i < touchEvent->numTouches; i++) {
         SDL_FingerID id;
         float x, y;
+        int mx, my;
 
         if (!touchEvent->touches[i].isChanged)
             continue;
@@ -445,11 +446,14 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
         x = touchEvent->touches[i].canvasX / client_w;
         y = touchEvent->touches[i].canvasY / client_h;
 
+        mx = x * window_data->window->w;
+        my = y * window_data->window->h;
+
         if (eventType == EMSCRIPTEN_EVENT_TOUCHSTART) {
             if (!window_data->finger_touching) {
                 window_data->finger_touching = SDL_TRUE;
                 window_data->first_finger = id;
-                SDL_SendMouseMotion(window_data->window, SDL_TOUCH_MOUSEID, 0, x, y);
+                SDL_SendMouseMotion(window_data->window, SDL_TOUCH_MOUSEID, 0, mx, my);
                 SDL_SendMouseButton(window_data->window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
             }
             SDL_SendTouch(deviceId, id, SDL_TRUE, x, y, 1.0f);
@@ -459,7 +463,7 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
             }
         } else if (eventType == EMSCRIPTEN_EVENT_TOUCHMOVE) {
             if ((window_data->finger_touching) && (window_data->first_finger == id)) {
-                SDL_SendMouseMotion(window_data->window, SDL_TOUCH_MOUSEID, 0, x, y);
+                SDL_SendMouseMotion(window_data->window, SDL_TOUCH_MOUSEID, 0, mx, my);
             }
             SDL_SendTouchMotion(deviceId, id, x, y, 1.0f);
 
@@ -482,10 +486,12 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
     return preventDefault;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     Uint32 scancode;
+    SDL_bool prevent_default;
+    SDL_bool is_nav_key;
 
     /* .keyCode is deprecated, but still the most reliable way to get keys */
     if (keyEvent->keyCode < SDL_arraysize(emscripten_scancode_table)) {
@@ -513,18 +519,25 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
         }
     }
 
-    SDL_bool prevent_default = SDL_GetEventState(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_KEYDOWN : SDL_KEYUP) == SDL_ENABLE;
+    prevent_default = SDL_GetEventState(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_KEYDOWN : SDL_KEYUP) == SDL_ENABLE;
 
     /* if TEXTINPUT events are enabled we can't prevent keydown or we won't get keypress
      * we need to ALWAYS prevent backspace and tab otherwise chrome takes action and does bad navigation UX
      */
-    if (eventType == EMSCRIPTEN_EVENT_KEYDOWN && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE && keyEvent->keyCode != 8 /* backspace */ && keyEvent->keyCode != 9 /* tab */)
+    is_nav_key = keyEvent->keyCode == 8 /* backspace */ ||
+                 keyEvent->keyCode == 9 /* tab */ ||
+                 keyEvent->keyCode == 37 /* left */ ||
+                 keyEvent->keyCode == 38 /* up */ ||
+                 keyEvent->keyCode == 39 /* right */ ||
+                 keyEvent->keyCode == 40 /* down */;
+
+    if (eventType == EMSCRIPTEN_EVENT_KEYDOWN && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE && !is_nav_key)
         prevent_default = SDL_FALSE;
 
     return prevent_default;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     char text[5];
@@ -534,7 +547,7 @@ Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent
     return SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChangeEvent *fullscreenChangeEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -555,7 +568,7 @@ Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChang
     return 0;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -607,7 +620,7 @@ Emscripten_HandleCanvasResize(int eventType, const void *reserved, void *userDat
     return 0;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleVisibilityChange(int eventType, const EmscriptenVisibilityChangeEvent *visEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -618,6 +631,8 @@ Emscripten_HandleVisibilityChange(int eventType, const EmscriptenVisibilityChang
 void
 Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
+    const char *keyElement;
+
     /* There is only one window and that window is the canvas */
     emscripten_set_mousemove_callback("#canvas", data, 0, Emscripten_HandleMouseMove);
 
@@ -640,7 +655,7 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_pointerlockchange_callback(NULL, data, 0, Emscripten_HandlePointerLockChange);
 
     /* Keyboard events are awkward */
-    const char *keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
+    keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
     if (!keyElement) keyElement = "#window";
 
     emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
@@ -657,6 +672,8 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 void
 Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 {
+    const char *target;
+
     /* only works due to having one window */
     emscripten_set_mousemove_callback("#canvas", NULL, 0, NULL);
 
@@ -676,14 +693,15 @@ Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
     emscripten_set_touchmove_callback("#canvas", NULL, 0, NULL);
     emscripten_set_touchcancel_callback("#canvas", NULL, 0, NULL);
 
-    const char *target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
+    emscripten_set_pointerlockchange_callback(NULL, NULL, 0, NULL);
+
+    target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
     if (!target) {
         target = "#window";
     }
 
     emscripten_set_keydown_callback(target, NULL, 0, NULL);
     emscripten_set_keyup_callback(target, NULL, 0, NULL);
-
     emscripten_set_keypress_callback(target, NULL, 0, NULL);
 
     emscripten_set_fullscreenchange_callback("#document", NULL, 0, NULL);

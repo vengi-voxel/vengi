@@ -348,6 +348,7 @@ X11_ReconcileKeyboardState(_THIS)
     Window junk_window;
     int x, y;
     unsigned int mask;
+    const Uint8 *keyboardState;
 
     X11_XQueryKeymap(display, keys);
 
@@ -357,11 +358,16 @@ X11_ReconcileKeyboardState(_THIS)
         SDL_ToggleModState(KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) != 0);
     }
 
+    keyboardState = SDL_GetKeyboardState(0);
     for (keycode = 0; keycode < 256; ++keycode) {
-        if (keys[keycode / 8] & (1 << (keycode % 8))) {
-            SDL_SendKeyboardKey(SDL_PRESSED, viddata->key_layout[keycode]);
-        } else {
-            SDL_SendKeyboardKey(SDL_RELEASED, viddata->key_layout[keycode]);
+        SDL_Scancode scancode = viddata->key_layout[keycode];
+        SDL_bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
+        SDL_bool sdlKeyPressed = keyboardState[scancode] == SDL_PRESSED;
+
+        if (x11KeyPressed && !sdlKeyPressed) {
+            SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+        } else if (!x11KeyPressed && sdlKeyPressed) {
+            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
         }
     }
 }
@@ -775,7 +781,7 @@ X11_DispatchEvent(_THIS)
                 X11_XDisplayKeycodes(display, &min_keycode, &max_keycode);
                 keysym = X11_KeyCodeToSym(_this, keycode, xevent.xkey.state >> 13);
                 fprintf(stderr,
-                        "The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL mailing list <sdl@libsdl.org> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
+                        "The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
                         keycode, keycode - min_keycode, keysym,
                         X11_XKeysymToString(keysym));
             }

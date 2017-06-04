@@ -108,8 +108,6 @@ DirectFB_CreateDevice(int devindex)
     SDL_DFB_ALLOC_CLEAR(device, sizeof(SDL_VideoDevice));
 
     /* Set the function pointers */
-
-    /* Set the function pointers */
     device->VideoInit = DirectFB_VideoInit;
     device->VideoQuit = DirectFB_VideoQuit;
     device->GetDisplayModes = DirectFB_GetDisplayModes;
@@ -178,7 +176,7 @@ DirectFB_DeviceInformation(IDirectFB * dfb)
     SDL_DFB_LOG( "Driver Version: %d.%d", desc.driver.major,
             desc.driver.minor);
 
-    SDL_DFB_LOG( "Video memoory:  %d", desc.video_memory);
+    SDL_DFB_LOG( "Video memory:   %d", desc.video_memory);
 
     SDL_DFB_LOG( "Blitting flags:");
     for (n = 0; blitting_flags[n].flag; n++) {

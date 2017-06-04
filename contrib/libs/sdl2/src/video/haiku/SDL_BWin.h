@@ -250,6 +250,7 @@ class SDL_BWin:public BDirectWindow
 
     virtual void WindowActivated(bool active) {
         BMessage msg(BAPP_KEYBOARD_FOCUS);  /* Mouse focus sold separately */
+        msg.AddBool("focusGained", active);
         _PostWindowEvent(msg);
     }
 
@@ -585,7 +586,7 @@ private:
         if(msg->FindBool("window-border", &bEnabled) != B_OK) {
             return;
         }
-        SetLook(bEnabled ? B_BORDERED_WINDOW_LOOK : B_NO_BORDER_WINDOW_LOOK);
+        SetLook(bEnabled ? B_TITLED_WINDOW_LOOK : B_NO_BORDER_WINDOW_LOOK);
     }
 
     void _SetResizable(BMessage *msg) {

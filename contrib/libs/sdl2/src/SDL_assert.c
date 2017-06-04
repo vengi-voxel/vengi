@@ -44,6 +44,11 @@
 #endif
 #endif
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#endif
+
+
 static SDL_assert_state
 SDL_PromptAssertion(const SDL_assert_data *data, void *userdata);
 
@@ -53,7 +58,10 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata);
  */
 static SDL_assert_data *triggered_assertions = NULL;
 
+#ifndef SDL_THREADS_DISABLED
 static SDL_mutex *assertion_mutex = NULL;
+#endif
+
 static SDL_AssertionHandler assertion_handler = SDL_PromptAssertion;
 static void *assertion_userdata = NULL;
 
@@ -116,6 +124,10 @@ static SDL_NORETURN void SDL_ExitProcess(int exitcode)
 {
 #ifdef __WIN32__
     ExitProcess(exitcode);
+#elif defined(__EMSCRIPTEN__)
+    emscripten_cancel_main_loop();  /* this should "kill" the app. */
+    emscripten_force_exit(exitcode);  /* this should "kill" the app. */
+    exit(exitcode);
 #else
     _exit(exitcode);
 #endif
@@ -218,9 +230,45 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
             state = (SDL_assert_state)selected;
         }
     }
-#ifdef HAVE_STDIO_H
+
     else
     {
+#if defined(__EMSCRIPTEN__)
+        /* This is nasty, but we can't block on a custom UI. */
+        for ( ; ; ) {
+            SDL_bool okay = SDL_TRUE;
+            char *buf = (char *) EM_ASM_INT({
+                var str =
+                    Pointer_stringify($0) + '\n\n' +
+                    'Abort/Retry/Ignore/AlwaysIgnore? [ariA] :';
+                var reply = window.prompt(str, "i");
+                if (reply === null) {
+                    reply = "i";
+                }
+                return allocate(intArrayFromString(reply), 'i8', ALLOC_NORMAL);
+            }, message);
+
+            if (SDL_strcmp(buf, "a") == 0) {
+                state = SDL_ASSERTION_ABORT;
+            /* (currently) no break functionality on Emscripten
+            } else if (SDL_strcmp(buf, "b") == 0) {
+                state = SDL_ASSERTION_BREAK; */
+            } else if (SDL_strcmp(buf, "r") == 0) {
+                state = SDL_ASSERTION_RETRY;
+            } else if (SDL_strcmp(buf, "i") == 0) {
+                state = SDL_ASSERTION_IGNORE;
+            } else if (SDL_strcmp(buf, "A") == 0) {
+                state = SDL_ASSERTION_ALWAYS_IGNORE;
+            } else {
+                okay = SDL_FALSE;
+            }
+            free(buf);
+
+            if (okay) {
+                break;
+            }
+        }
+#elif defined(HAVE_STDIO_H)
         /* this is a little hacky. */
         for ( ; ; ) {
             char buf[32];
@@ -247,8 +295,8 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
                 break;
             }
         }
-    }
 #endif /* HAVE_STDIO_H */
+    }
 
     /* Re-enter fullscreen mode */
     if (window) {
@@ -265,10 +313,11 @@ SDL_assert_state
 SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
                     int line)
 {
-    static int assertion_running = 0;
-    static SDL_SpinLock spinlock = 0;
     SDL_assert_state state = SDL_ASSERTION_IGNORE;
+    static int assertion_running = 0;
 
+#ifndef SDL_THREADS_DISABLED
+    static SDL_SpinLock spinlock = 0;
     SDL_AtomicLock(&spinlock);
     if (assertion_mutex == NULL) { /* never called SDL_Init()? */
         assertion_mutex = SDL_CreateMutex();
@@ -282,6 +331,7 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
     if (SDL_LockMutex(assertion_mutex) < 0) {
         return SDL_ASSERTION_IGNORE;   /* oh well, I guess. */
     }
+#endif
 
     /* doing this because Visual C is upset over assigning in the macro. */
     if (data->trigger_count == 0) {
@@ -325,7 +375,10 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
     }
 
     assertion_running--;
+
+#ifndef SDL_THREADS_DISABLED
     SDL_UnlockMutex(assertion_mutex);
+#endif
 
     return state;
 }
@@ -334,10 +387,12 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
 void SDL_AssertionsQuit(void)
 {
     SDL_GenerateAssertionReport();
+#ifndef SDL_THREADS_DISABLED
     if (assertion_mutex != NULL) {
         SDL_DestroyMutex(assertion_mutex);
         assertion_mutex = NULL;
     }
+#endif
 }
 
 void SDL_SetAssertionHandler(SDL_AssertionHandler handler, void *userdata)
