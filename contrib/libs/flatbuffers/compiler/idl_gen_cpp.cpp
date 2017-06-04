@@ -72,13 +72,15 @@ class CppGenerator : public BaseGenerator {
     }
     for (auto it = parser_.included_files_.begin();
          it != parser_.included_files_.end(); ++it) {
-      const auto basename =
-          flatbuffers::StripPath(flatbuffers::StripExtension(it->first));
-      if (basename != file_name_) {
-        code_ += "#include \"" + parser_.opts.include_prefix + basename +
-                 "_generated.h\"";
-        num_includes++;
-      }
+      if (it->second.empty())
+        continue;
+      auto noext = flatbuffers::StripExtension(it->second);
+      auto basename = flatbuffers::StripPath(noext);
+
+      code_ += "#include \"" + parser_.opts.include_prefix +
+               (parser_.opts.keep_include_path ? noext : basename) +
+               "_generated.h\"";
+      num_includes++;
     }
     if (num_includes) code_ += "";
   }
@@ -86,10 +88,8 @@ class CppGenerator : public BaseGenerator {
   // Iterate through all definitions we haven't generate code for (enums,
   // structs, and tables) and output them to a single file.
   bool generate() {
-    if (IsEverythingGenerated()) return true;
-
     code_.Clear();
-    code_ += "// " + std::string(FlatBuffersGeneratedWarning());
+    code_ += "// " + std::string(FlatBuffersGeneratedWarning()) + "\n\n";
 
     const auto include_guard = GenIncludeGuard();
     code_ += "#ifndef " + include_guard;
@@ -260,8 +260,7 @@ class CppGenerator : public BaseGenerator {
       }
     }
 
-    assert(cur_name_space_);
-    SetNameSpace(nullptr);
+    if (cur_name_space_) SetNameSpace(nullptr);
 
     // Close the include guard.
     code_ += "#endif  // " + include_guard;

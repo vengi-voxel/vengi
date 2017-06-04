@@ -358,6 +358,7 @@ struct IDLOptions {
   bool union_value_namespacing;
   bool allow_non_utf8;
   std::string include_prefix;
+  bool keep_include_path;
   bool binary_schema_comments;
   bool skip_flatbuffers_import;
   std::string go_namespace;
@@ -403,6 +404,7 @@ struct IDLOptions {
       cpp_object_api_pointer_type("std::unique_ptr"),
       union_value_namespacing(true),
       allow_non_utf8(false),
+      keep_include_path(false),
       binary_schema_comments(false),
       skip_flatbuffers_import(false),
       reexport_ts_modules(true),
@@ -508,6 +510,8 @@ class Parser : public ParserState {
   // directory.
   // If the source was loaded from a file and isn't an include file,
   // supply its name in source_filename.
+  // All paths specified in this call must be in posix format, if you accept
+  // paths from user input, please call PosixPath on them first.
   bool Parse(const char *_source, const char **include_paths = nullptr,
              const char *source_filename = nullptr);
 
@@ -586,7 +590,8 @@ private:
   FLATBUFFERS_CHECKED_ERROR SkipJsonString();
   FLATBUFFERS_CHECKED_ERROR DoParse(const char *_source,
                                     const char **include_paths,
-                                    const char *source_filename);
+                                    const char *source_filename,
+                                    const char *include_filename);
   FLATBUFFERS_CHECKED_ERROR CheckClash(std::vector<FieldDef*> &fields,
                                        StructDef *struct_def,
                                        const char *suffix,
@@ -605,7 +610,7 @@ private:
   std::string file_identifier_;
   std::string file_extension_;
 
-  std::map<std::string, bool> included_files_;
+  std::map<std::string, std::string> included_files_;
   std::map<std::string, std::set<std::string>> files_included_per_file_;
   std::vector<std::string> native_included_files_;
 

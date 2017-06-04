@@ -601,6 +601,10 @@ CheckedError Parser::AddField(StructDef &struct_def, const std::string &name,
 
 CheckedError Parser::ParseField(StructDef &struct_def) {
   std::string name = attribute_;
+
+  if (name == struct_def.name)
+    return Error("field name can not be the same as table/struct name");
+
   std::vector<std::string> dc = doc_comment_;
   EXPECT(kTokenIdentifier);
   EXPECT(':');
@@ -895,6 +899,29 @@ CheckedError Parser::ParseTable(const StructDef &struct_def, std::string *value,
     }
     if (Is('}')) { NEXT(); break; }
     EXPECT(',');
+  }
+
+  // Check if all required fields are parsed.
+  for (auto field_it = struct_def.fields.vec.begin();
+            field_it != struct_def.fields.vec.end();
+            ++field_it) {
+    auto required_field = *field_it;
+    if (!required_field->required) {
+      continue;
+    }
+    bool found = false;
+    for (auto pf_it = field_stack_.end() - fieldn;
+         pf_it != field_stack_.end();
+         ++pf_it) {
+      auto parsed_field = pf_it->second;
+      if (parsed_field == required_field) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      return Error("required field is missing: " + required_field->name + " in " + struct_def.name);
+    }
   }
 
   if (struct_def.fixed && fieldn != struct_def.fields.vec.size())
@@ -1339,6 +1366,10 @@ CheckedError Parser::ParseEnum(bool is_union, EnumDef **dest) {
         if (!opts.proto_mode && prevsize &&
             enum_def.vals.vec[prevsize - 1]->value >= ev.value)
           return Error("enum values must be specified in ascending order");
+      }
+      if (is_union) {
+        if (ev.value < 0 || ev.value >= 256)
+          return Error("union enum value must fit in a ubyte");
       }
       if (opts.proto_mode && Is('[')) {
         NEXT();
@@ -1890,15 +1921,16 @@ CheckedError Parser::SkipJsonString() {
 
 bool Parser::Parse(const char *source, const char **include_paths,
                    const char *source_filename) {
-  return !DoParse(source, include_paths, source_filename).Check();
+  return !DoParse(source, include_paths, source_filename, nullptr).Check();
 }
 
 CheckedError Parser::DoParse(const char *source, const char **include_paths,
-                             const char *source_filename) {
+                             const char *source_filename,
+                             const char *include_filename) {
   file_being_parsed_ = source_filename ? source_filename : "";
   if (source_filename &&
       included_files_.find(source_filename) == included_files_.end()) {
-    included_files_[source_filename] = true;
+    included_files_[source_filename] = include_filename ? include_filename : "";
     files_included_per_file_[source_filename] = std::set<std::string>();
   }
   if (!include_paths) {
@@ -1935,7 +1967,7 @@ CheckedError Parser::DoParse(const char *source, const char **include_paths,
                 Is(kTokenIdentifier))) {
       NEXT();
       if (opts.proto_mode && attribute_ == "public") NEXT();
-      auto name = attribute_;
+      auto name = flatbuffers::PosixPath(attribute_.c_str());
       EXPECT(kTokenStringConstant);
       // Look for the file in include_paths.
       std::string filepath;
@@ -1953,7 +1985,8 @@ CheckedError Parser::DoParse(const char *source, const char **include_paths,
         std::string contents;
         if (!LoadFile(filepath.c_str(), true, &contents))
           return Error("unable to load include file: " + name);
-        ECHECK(DoParse(contents.c_str(), include_paths, filepath.c_str()));
+        ECHECK(DoParse(contents.c_str(), include_paths, filepath.c_str(),
+                       name.c_str()));
         // We generally do not want to output code for any included files:
         if (!opts.generate_all) MarkGenerated();
         // This is the easiest way to continue this file after an include:
@@ -1963,7 +1996,7 @@ CheckedError Parser::DoParse(const char *source, const char **include_paths,
         // entered into included_files_.
         // This is recursive, but only go as deep as the number of include
         // statements.
-        return DoParse(source, include_paths, source_filename);
+        return DoParse(source, include_paths, source_filename, include_filename);
       }
       EXPECT(';');
     } else {
