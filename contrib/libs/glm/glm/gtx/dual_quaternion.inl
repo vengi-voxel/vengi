@@ -217,7 +217,7 @@ namespace glm
 	template<typename T, precision P>
 	GLM_FUNC_QUALIFIER bool operator!=(tdualquat<T, P> const & q1, tdualquat<T, P> const & q2)
 	{
-		return (q1.real != q2.dual) || (q1.real != q2.dual);
+		return (q1.real != q2.real) || (q1.dual != q2.dual);
 	}
 
 	// -- Operations --
