@@ -27,6 +27,7 @@
 Q                 = @
 OS               := $(shell uname)
 LOCAL_CONFIG_DIR  = ~/.local/share/engine
+UPDATEDIR        := /tmp
 
 VALGRIND         ?=
 ifeq ($(VALGRIND),)
@@ -176,50 +177,52 @@ tags:
 	$(Q)ctags -R src
 
 define UPDATE_GIT
-	$(Q)if [ ! -d $(1).sync ]; then \
-		git clone $(2) $(1).sync; \
+	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
+		git clone $(2) $(UPDATEDIR)/$(1).sync; \
 	else \
-		cd $(1).sync && git pull --rebase && cd ..; \
+		cd $(UPDATEDIR)/$(1).sync && git pull --rebase; \
 	fi;
 endef
 
 define UPDATE_HG
-	$(Q)if [ ! -d $(1).sync ]; then \
-		hg clone $(2) $(1).sync; \
+	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
+		hg clone $(2) $(UPDATEDIR)/$(1).sync; \
 	else \
-		cd $(1).sync && hg pull && hg update && cd ..; \
+		cd $(UPDATEDIR)/$(1).sync && hg pull && hg update; \
 	fi;
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
+	cp -r $(UPDATEDIR)/imgui.sync/imgui*.h $(UPDATEDIR)/imgui.sync/imgui*.cpp $(UPDATEDIR)/imgui.sync/stb_*.h contrib/libs/dearimgui/dearimgui
 	$(call UPDATE_GIT,assimp,https://github.com/assimp/assimp.git)
 	rm -rf contrib/libs/assimp/code/* contrib/libs/assimp/include/*
-	cp -r assimp.sync/code/* contrib/libs/assimp/code
-	cp -r assimp.sync/include/* contrib/libs/assimp/include
+	cp -r $(UPDATEDIR)/assimp.sync/code/* contrib/libs/assimp/code
+	cp -r $(UPDATEDIR)/assimp.sync/include/* contrib/libs/assimp/include
 	git checkout contrib/libs/assimp/include/assimp/revision.h
 	$(call UPDATE_GIT,flatbuffers,https://github.com/google/flatbuffers.git)
 	rm -rf contrib/libs/flatbuffers/flatbuffers/* contrib/libs/flatbuffers/compiler/*
 	mkdir -p contrib/libs/flatbuffers/compiler/src
-	cp -r flatbuffers.sync/include/flatbuffers/* contrib/libs/flatbuffers/flatbuffers
-	cp -r flatbuffers.sync/src/* contrib/libs/flatbuffers/compiler
-	cp -r flatbuffers.sync/grpc/src/* contrib/libs/flatbuffers/compiler/src
+	cp -r $(UPDATEDIR)/flatbuffers.sync/include/flatbuffers/* contrib/libs/flatbuffers/flatbuffers
+	cp -r $(UPDATEDIR)/flatbuffers.sync/src/* contrib/libs/flatbuffers/compiler
+	cp -r $(UPDATEDIR)/flatbuffers.sync/grpc/src/* contrib/libs/flatbuffers/compiler/src
 	rm contrib/libs/flatbuffers/compiler/flathash.cpp
 	$(call UPDATE_GIT,libenet,https://github.com/lsalzman/enet.git)
-	cp -r libenet.sync/*.[ch] contrib/libs/libenet
-	cp -r libenet.sync/include/* contrib/libs/libenet/include
+	cp -r $(UPDATEDIR)/libenet.sync/*.[ch] contrib/libs/libenet
+	cp -r $(UPDATEDIR)/libenet.sync/include/* contrib/libs/libenet/include
 	$(call UPDATE_GIT,glm,https://github.com/g-truc/glm.git)
 	rm -rf contrib/libs/glm/glm/*
-	cp -r glm.sync/glm/* contrib/libs/glm/glm
+	cp -r $(UPDATEDIR)/glm.sync/glm/* contrib/libs/glm/glm
 	rm contrib/libs/glm/glm/CMakeLists.txt
 	$(call UPDATE_HG,sdl2,https://hg.libsdl.org/SDL)
 	rm -rf contrib/libs/sdl2/src/* contrib/libs/sdl2/include/*
-	cp -r sdl2.sync/src/* contrib/libs/sdl2/src
-	cp -r sdl2.sync/include/* contrib/libs/sdl2/include
+	cp -r $(UPDATEDIR)/sdl2.sync/src/* contrib/libs/sdl2/src
+	cp -r $(UPDATEDIR)/sdl2.sync/include/* contrib/libs/sdl2/include
 	mv contrib/libs/sdl2/include/SDL_config.h contrib/libs/sdl2/config/
 	rm contrib/libs/sdl2/include/SDL_config.h.in
 	$(call UPDATE_GIT,turbobadger,https://github.com/fruxo/turbobadger.git)
 	rm -rf contrib/libs/turbobadger/tb/*
-	cp -r turbobadger.sync/src/tb/* contrib/libs/turbobadger/tb
+	cp -r $(UPDATEDIR)/turbobadger.sync/src/tb/* contrib/libs/turbobadger/tb
 	git checkout master contrib/libs/turbobadger/tb/tb_clipboard_sdl.cpp
 	git checkout master contrib/libs/turbobadger/tb/tb_system_sdl.cpp
 	git checkout master contrib/libs/turbobadger/tb/tb_file_sdl.cpp
@@ -227,9 +230,8 @@ updatelibs:
 	rm contrib/libs/turbobadger/tb/CMakeLists.txt
 	rm -rf contrib/libs/turbobadger/tb/utf8/test\ files
 	rm -rf contrib/libs/turbobadger/tb/tests
-	git diff contrib/libs/turbobadger/ > turbobadger.sync/upstream.diff
+	git diff contrib/libs/turbobadger/ > $(UPDATEDIR)/turbobadger.sync/upstream.diff
 	git checkout contrib/libs/turbobadger/tb/tb_id.cpp
-	git add contrib/libs
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
