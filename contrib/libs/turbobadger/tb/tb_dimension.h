@@ -53,9 +53,11 @@ public:
 
 	/** Convert device independant point to pixel. */
 	int DpToPx(int dp) const;
+	float DpToPxF(float dp) const;
 
 	/** Convert millimeter to pixel. */
 	int MmToPx(int mm) const;
+	float MmToPxF(float mm) const;
 
 	/** Get a pixel value from string in any of the following formats:
 		str may be nullptr. def_value is returned on fail.
@@ -64,6 +66,7 @@ public:
 		Pixel value:					"1px"
 		*/
 	int GetPxFromString(const char *str, int def_value) const;
+	float GetPxFromStringF(const char *str, float def_value) const;
 
 	/** Get a pixel value from TBValue.
 		value may be nullptr. def_value is returned on fail.
@@ -72,6 +75,7 @@ public:
 		String format is treated like for GetPxFromString.
 		*/
 	int GetPxFromValue(TBValue *value, int def_value) const;
+	float GetPxFromValueF(TBValue *value, float def_value) const;
 };
 
 } // namespace tb

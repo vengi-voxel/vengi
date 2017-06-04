@@ -26,9 +26,27 @@ public:
 		"#rrggbbaa", "#rrggbb", "#rgba", "#rgb" */
 	void SetFromString(const char *str, int len);
 
-	operator uint32 () const		{ return *((uint32*)this); }
-	bool operator == (const TBColor &c) const { return *this == (uint32)c; }
-	bool operator != (const TBColor &c) const { return !(*this == c); }
+	inline operator uint32 () const		{ return *((uint32*)this); }
+	inline bool operator == (const TBColor &c) const { return *this == (uint32)c; }
+	inline bool operator != (const TBColor &c) const { return !(*this == c); }
+
+	/** Premultiply alpha on the r, g, b components */
+	inline void Premultiply() {
+		const uint32 a32 = a;
+		r = (r * a32 + 1) >> 8;
+		g = (g * a32 + 1) >> 8;
+		b = (b * a32 + 1) >> 8;
+	}
+
+	/** Unpremultiply alpha on the r, g, b components */
+	inline void Unpremultiply() {
+		const uint32 a32 = a;
+		if (a32) {
+			r = r * 255 / a32;
+			g = g * 255 / a32;
+			b = b * 255 / a32;
+		}
+	}
 };
 
 } // namespace tb

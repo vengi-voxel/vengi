@@ -67,9 +67,11 @@ public:
 	void Delete(TBNode *n) { m_children.Delete(n); }
 
 	/** Create duplicates of all items in source and add them to this node.
+		If follow_refs is true, any references will be followed and the final target
+		will be cloned instead of the ref node.
 		Note: Nodes does not replace existing nodes with the same name. Cloned nodes
 		are added after any existing nodes. */
-	bool CloneChildren(TBNode *source);
+	bool CloneChildren(TBNode *source, bool follow_refs = false);
 
 	enum GET_MISS_POLICY {
 		/** GetNode will return nullptr if the node doesn't exist. */

@@ -1278,13 +1278,23 @@ void TBTextFragment::Click(const TBBlock *block, int button, uint32 modifierkeys
 
 int32 TBTextFragment::GetWidth(const TBBlock *block, TBFontFace *font)
 {
+	if (m_packed.is_width_valid)
+		return m_packed.width;
+	int32 width = 0;
 	if (content)
-		return content->GetWidth(block, font, this);
-	if (IsBreak())
-		return 0;
-	if (IsTab())
-		return block->CalculateTabWidth(font, xpos);
-	return block->CalculateStringWidth(font, block->str.CStr() + ofs, len);
+		width = content->GetWidth(block, font, this);
+	else if (IsBreak())
+		width = 0;
+	else if (IsTab())
+		width = block->CalculateTabWidth(font, xpos);
+	else
+		width = block->CalculateStringWidth(font, block->str.CStr() + ofs, len);
+	if ((((uint32) width) & WIDTH_CACHE_MASK) == width)
+	{
+		m_packed.is_width_valid = 1;
+		m_packed.width = (uint32) width;
+	}
+	return width;
 }
 
 int32 TBTextFragment::GetHeight(const TBBlock *block, TBFontFace *font)
@@ -1338,10 +1348,14 @@ int32 TBTextFragment::GetCharOfs(const TBBlock *block, TBFontFace *font, int32 x
 
 int32 TBTextFragment::GetStringWidth(const TBBlock *block, TBFontFace *font, const char *str, int len)
 {
+	if (len == 0)
+		return 0;
+	if (len == this->len)
+		return GetWidth(block, font);
 	if (IsTab())
-		return len == 0 ? 0 : block->CalculateTabWidth(font, xpos);
+		return block->CalculateTabWidth(font, xpos);
 	if (IsBreak())
-		return len == 0 ? 0 : 8;
+		return 8;
 	return block->CalculateStringWidth(font, str, len);
 }
 

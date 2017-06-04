@@ -286,13 +286,13 @@ bool TBFontFace::RenderGlyphs(const char *glyph_str, int glyph_str_len)
 	return has_all_glyphs;
 }
 
-TBFontGlyph *TBFontFace::CreateAndCacheGlyph(UCS4 cp)
+TBFontGlyph *TBFontFace::CreateAndCacheGlyph(const TBID &hash_id, UCS4 cp)
 {
 	if (!m_font_renderer)
 		return nullptr; // This is the test font
 
 	// Create the new glyph
-	TBFontGlyph *glyph = m_glyph_cache->CreateAndCacheGlyph(GetHashId(cp), cp);
+	TBFontGlyph *glyph = m_glyph_cache->CreateAndCacheGlyph(hash_id, cp);
 	if (glyph)
 		m_font_renderer->GetGlyphMetrics(&glyph->metrics, cp);
 	return glyph;
@@ -355,9 +355,10 @@ TBID TBFontFace::GetHashId(UCS4 cp) const
 
 TBFontGlyph *TBFontFace::GetGlyph(UCS4 cp, bool render_if_needed)
 {
-	TBFontGlyph *glyph = m_glyph_cache->GetGlyph(GetHashId(cp), cp);
+	const TBID &hash_id = GetHashId(cp);
+	TBFontGlyph *glyph = m_glyph_cache->GetGlyph(hash_id, cp);
 	if (!glyph)
-		glyph = CreateAndCacheGlyph(cp);
+		glyph = CreateAndCacheGlyph(hash_id, cp);
 	if (glyph && !glyph->frag && render_if_needed)
 		RenderGlyph(glyph);
 	return glyph;

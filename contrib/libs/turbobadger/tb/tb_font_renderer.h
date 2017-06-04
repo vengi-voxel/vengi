@@ -184,7 +184,7 @@ public:
 private:
 	TBID GetHashId(UCS4 cp) const;
 	TBFontGlyph *GetGlyph(UCS4 cp, bool render_if_needed);
-	TBFontGlyph *CreateAndCacheGlyph(UCS4 cp);
+	TBFontGlyph *CreateAndCacheGlyph(const TBID &hash_id, UCS4 cp);
 	void RenderGlyph(TBFontGlyph *glyph);
 	TBFontGlyphCache *m_glyph_cache;
 	TBFontRenderer *m_font_renderer;
