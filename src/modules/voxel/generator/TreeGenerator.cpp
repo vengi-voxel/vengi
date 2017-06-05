@@ -117,7 +117,6 @@ bool Tree::grow() {
 		// Find the nearest branch for this attraction point
 		for (auto bi = _branches.begin(); bi != _branches.end(); ++bi) {
 			Branch* branch = bi->second;
-			// distance to branch from attraction point
 			const float length = (float) glm::round(glm::length2(attractionPoint._position - branch->_position));
 
 			// Min attraction point distance reached, we remove it
@@ -130,7 +129,7 @@ bool Tree::grow() {
 				// branch in range, determine if it is the nearest
 				if (attractionPoint._closestBranch == nullptr) {
 					attractionPoint._closestBranch = branch;
-				} else if (glm::length(attractionPoint._position - attractionPoint._closestBranch->_position) > length) {
+				} else if (glm::length2(attractionPoint._position - attractionPoint._closestBranch->_position) > length) {
 					attractionPoint._closestBranch = branch;
 				}
 			}
