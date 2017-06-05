@@ -60,11 +60,13 @@ private:
 	int _branchLength = 2;
 	float _branchSize = 4.0f;
 	float _trunkSizeFactor = 0.8f;
-	float _branchSizeFactor = 0.6f;
+	float _branchSizeFactor = 0.9f;
 
 	Branch *_root;
-	std::vector<AttractionPoint> _attractionPoints;
-	std::unordered_map<glm::vec3, Branch*, std::hash<glm::vec3>> _branches;
+	using AttractionPoints = std::vector<AttractionPoint>;
+	AttractionPoints _attractionPoints;
+	using Branches = std::unordered_map<glm::vec3, Branch*, std::hash<glm::vec3>>;
+	Branches _branches;
 	core::Random _random;
 	core::AABB<int> _crown;
 
@@ -72,8 +74,7 @@ private:
 	 * Generate the attraction points for the crown
 	 */
 	void generateCrown();
-
-	void generateTrunk();
+	void generateBranches(Branches& branches, const glm::vec3& direction, float maxSize, float branchLength) const;
 
 public:
 	/**

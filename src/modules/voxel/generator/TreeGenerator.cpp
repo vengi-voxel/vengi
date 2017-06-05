@@ -50,23 +50,22 @@ void Tree::generateCrown() {
 	}
 }
 
-void Tree::generateTrunk() {
-	_root = new Branch(nullptr, _position, glm::up, _branchSize);
-	_branches.insert(std::make_pair(_root->_position, _root));
-
+void Tree::generateBranches(Branches& branches, const glm::vec3& direction, float maxSize, float branchLength) const {
+	float branchSize = _branchSize;
 	Branch* current = new Branch(_root,
-			glm::vec3(_position.x, _position.y - _branchLength, _position.z),
-			glm::down, _branchSize);
-	_branches.insert(std::make_pair(current->_position, current));
+			glm::vec3(_position.x, _position.y - branchLength, _position.z),
+			direction, branchSize);
+	branches.insert(std::make_pair(current->_position, current));
 
-	// grow until the trunk height is reached
-	while (glm::length(_root->_position - current->_position) < _trunkHeight) {
-		Branch *trunk = new Branch(current,
-				glm::vec3(current->_position.x, current->_position.y + _branchLength, current->_position.z),
-				glm::up, _branchSize);
-		_branches.insert(std::make_pair(trunk->_position, trunk));
-		current = trunk;
-		_branchSize *= _trunkSizeFactor;
+	// grow until the max distance between root and branch is reached
+	const float size = maxSize * maxSize;
+	while (glm::length2(_root->_position - current->_position) < size) {
+		Branch *branch = new Branch(current,
+				glm::vec3(current->_position.x, current->_position.y + branchLength, current->_position.z),
+				direction, branchSize);
+		branches.insert(std::make_pair(branch->_position, branch));
+		current = branch;
+		branchSize *= _trunkSizeFactor;
 	}
 }
 
@@ -77,9 +76,11 @@ Tree::Tree(const glm::ivec3& position, int trunkHeight, int branchLength,
 		_branchLength(branchLength), _branchSize(branchSize), _random(seed),
 		_crown(_position.x - (_treeWidth / 2), _position.y + _trunkHeight, _position.z - (_treeDepth / 2),
 				_position.x + (_treeWidth / 2), _position.y + _treeHeight, _position.z + (_treeDepth / 2)) {
+	_root = new Branch(nullptr, _position, glm::up, _branchSize);
+	_branches.insert(std::make_pair(_root->_position, _root));
+
 	generateCrown();
-	generateTrunk();
-	//generateRoots(_treeWidth / 2);
+	generateBranches(_branches, glm::up, _trunkHeight, _branchLength);
 }
 
 Tree::Tree(const core::AABB<int>& crownAABB, int trunkHeight, int branchLength, int seed) :
