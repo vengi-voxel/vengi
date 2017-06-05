@@ -3,7 +3,7 @@
  */
 
 #include "Random.h"
-
+#include "Assert.h"
 #include <chrono>
 #include <random>
 #include <stdlib.h>
@@ -24,11 +24,13 @@ void Random::setSeed(unsigned int seed) {
 }
 
 float Random::randomf(float min, float max) const {
+	core_assert(min <= max);
 	std::uniform_real_distribution<float> distribution(min, max);
 	return distribution(_engine);
 }
 
 int Random::random(int min, int max) const {
+	core_assert(min <= max);
 	if (min == max) {
 		return min;
 	}
