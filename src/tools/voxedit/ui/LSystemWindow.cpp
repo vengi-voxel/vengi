@@ -61,7 +61,7 @@ bool LSystemWindow::OnEvent(const tb::TBWidgetEvent &ev) {
 			// TODO: voxels via ui
 			ctx.voxels.emplace('A', voxel::createRandomColorVoxel(voxel::VoxelType::Grass));
 			ctx.generations = _generations->GetValue();
-			ctx.start = _scene->cursorPosition();
+			ctx.start = _scene->referencePosition();
 			Log::info("evaluate lsystem axiom %s with %i generations", ctx.axiom.c_str(), ctx.generations);
 			_scene->lsystem(ctx);
 			return true;

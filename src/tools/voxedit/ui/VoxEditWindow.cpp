@@ -324,7 +324,7 @@ void VoxEditWindow::executeMode() {
 		VOXEDIT_LOCK(core::Axis::Z)
 #undef VOXEDIT_LOCK
 	} else if (_mode == ModifierMode::Mirror) {
-#define VOXEDIT_MIRROR(axis) if (_axis == axis) { _scene->setMirrorAxis(axis, _scene->cursorPosition()); _mirrorDirty = true; }
+#define VOXEDIT_MIRROR(axis) if (_axis == axis) { _scene->setMirrorAxis(axis, _scene->referencePosition()); _mirrorDirty = true; }
 		VOXEDIT_MIRROR(core::Axis::X)
 		VOXEDIT_MIRROR(core::Axis::Y)
 		VOXEDIT_MIRROR(core::Axis::Z)
@@ -653,7 +653,7 @@ void VoxEditWindow::scale() {
 }
 
 void VoxEditWindow::fill() {
-	const glm::ivec3& pos = _scene->cursorPosition();
+	const glm::ivec3& pos = _scene->referencePosition();
 	fill(pos.x, pos.y, pos.z);
 }
 
@@ -693,16 +693,16 @@ bool VoxEditWindow::handleChangeEvent(const tb::TBWidgetEvent &ev) {
 		_scene->setLockedAxis(core::Axis::Z, ev.target->GetValue() != 1);
 		return true;
 	} else if (ev.target->GetID() == TBIDC("mirrorx")) {
-		_scene->setMirrorAxis(core::Axis::X, _scene->cursorPosition());
+		_scene->setMirrorAxis(core::Axis::X, _scene->referencePosition());
 		return true;
 	} else if (ev.target->GetID() == TBIDC("mirrory")) {
-		_scene->setMirrorAxis(core::Axis::Y, _scene->cursorPosition());
+		_scene->setMirrorAxis(core::Axis::Y, _scene->referencePosition());
 		return true;
 	} else if (ev.target->GetID() == TBIDC("mirrorz")) {
-		_scene->setMirrorAxis(core::Axis::Z, _scene->cursorPosition());
+		_scene->setMirrorAxis(core::Axis::Z, _scene->referencePosition());
 		return true;
 	} else if (ev.target->GetID() == TBIDC("mirrornone")) {
-		_scene->setMirrorAxis(core::Axis::None, _scene->cursorPosition());
+		_scene->setMirrorAxis(core::Axis::None, _scene->referencePosition());
 		return true;
 	} else if (ev.target->GetID() == TBIDC("cursorx")) {
 		const tb::TBStr& str = ev.target->GetText();
