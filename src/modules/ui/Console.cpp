@@ -375,7 +375,7 @@ void Console::autoComplete() {
 		}
 	} else {
 		// try to complete the already existing command
-		baseSearchString = strings.back();
+		baseSearchString = strings.empty() ? "" : strings.back();
 		core::Command::visitSorted([&] (const core::Command& cmd) {
 			if (strings.empty() || strings.size() == 1) {
 				// match the command name itself
