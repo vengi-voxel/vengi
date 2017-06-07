@@ -31,10 +31,11 @@ struct AttractionPoint {
 
 struct Branch {
 	Branch *_parent;
+	std::vector<Branch*> _children;
 	glm::vec3 _position;
 	glm::vec3 _growDirection;
 	glm::vec3 _originalGrowDirection;
-	int _growCount = 0;
+	int _attractionPointInfluence = 0;
 	float _size;
 
 	Branch(Branch* parent, const glm::vec3& position, const glm::vec3& growDirection, float size);
@@ -43,24 +44,26 @@ struct Branch {
 };
 
 /**
+ * @brief Space colonization algorithm
+ *
  * http://www.jgallant.com/procedurally-generating-trees-with-space-colonization-algorithm-in-xna/
  */
 class Tree {
 private:
 	bool _doneGrowing = false;
-	glm::vec3 _position;
+	const glm::vec3 _position;
 
-	int _attractionPointCount = 400;
-	int _treeWidth = 40;
-	int _treeDepth = 40;
-	int _treeHeight = 60;
-	int _trunkHeight = 20;
-	int _minDistance2 = 36;
-	int _maxDistance2 = 100;
-	int _branchLength = 2;
-	float _branchSize = 4.0f;
-	float _trunkSizeFactor = 0.8f;
-	float _branchSizeFactor = 0.9f;
+	const int _attractionPointCount;
+	const int _crownWidth;
+	const int _crownDepth;
+	const int _crownHeight;
+	const int _trunkHeight;
+	const int _minDistance2;
+	const int _maxDistance2;
+	const int _branchLength;
+	const float _branchSize;
+	const float _trunkSizeFactor = 0.8f;
+	const float _branchSizeFactor = 0.9f;
 
 	Branch *_root;
 	using AttractionPoints = std::vector<AttractionPoint>;
@@ -68,47 +71,64 @@ private:
 	using Branches = std::unordered_map<glm::vec3, Branch*, std::hash<glm::vec3>>;
 	Branches _branches;
 	core::Random _random;
-	core::AABB<int> _crown;
 
 	/**
 	 * Generate the attraction points for the crown
 	 */
-	void generateCrown();
+	void fillAttractionPoints();
 	void generateBranches(Branches& branches, const glm::vec3& direction, float maxSize, float branchLength) const;
+
+	template<class Volume, class Voxel>
+	void generateLeaves_r(Volume& volume, const Voxel& voxel, Branch* branch, const glm::ivec3& leafSize) const {
+		const int leavesStart = _root->_position.y + _trunkHeight;
+		if (branch->_children.empty()) {
+			if (branch->_position.y >= leavesStart) {
+				voxel::shape::createEllipse(volume, branch->_position, leafSize.x, leafSize.y, leafSize.z, voxel);
+			}
+			return;
+		}
+		for (Branch* b : branch->_children) {
+			generateLeaves_r(volume, voxel, b, leafSize);
+		}
+	}
 
 public:
 	/**
 	 * @param[in] position The floor position of the trunk
-	 * @param[in] trunkHeight
-	 * @param[in] branchLength
-	 * @param[in] treeWidth
-	 * @param[in] treeDepth
-	 * @param[in] treeHeight
-	 * @param[in] branchSize
-	 * @param[in] seed
+	 * @param[in] trunkHeight The height of the trunk in voxels
 	 */
 	Tree(const glm::ivec3& position, int trunkHeight = 32, int branchLength = 6,
-		int treeWidth = 40, int treeHeight = 60, int treeDepth = 40, float branchSize = 4.0f, int seed = 0);
-	Tree(const core::AABB<int>& crownAABB, int trunkHeight, int branchLength, int seed = 0);
+		int crownWidth = 40, int crownHeight = 60, int crownDepth = 40, float branchSize = 4.0f, int seed = 0);
 	~Tree();
 
 	bool grow();
 
 	template<class Volume>
-	void generate(Volume& volume, const glm::ivec3& leafSize = glm::ivec3(4)) const {
-		Log::debug("Generate for %i attraction points and %i branches", (int)_attractionPoints.size(), (int)_branches.size());
-		const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, _random);
-		for (const AttractionPoint& attractionPoint : _attractionPoints) {
-			voxel::shape::createEllipse(volume, attractionPoint._position, leafSize.x, leafSize.y, leafSize.z, leavesVoxel);
+	void generateAttractionPoints(Volume& volume) const {
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Grass, 0);
+		for (const AttractionPoint& p : _attractionPoints) {
+			volume.setVoxel(p._position, voxel);
 		}
+	}
 
-		const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, _random);
+	template<class Volume, class Voxel>
+	void generateLeaves(Volume& volume, const Voxel& voxel, const glm::ivec3& leafSize) const {
+		const voxel::RandomVoxel leavesVoxel(voxel::VoxelType::Leaf, _random);
+		if (_root == nullptr) {
+			return;
+		}
+		generateLeaves_r(volume, leavesVoxel, _root, leafSize);
+	}
+
+	template<class Volume, class Voxel>
+	void generate(Volume& volume, const Voxel& voxel) const {
+		Log::debug("Generate for %i attraction points and %i branches", (int)_attractionPoints.size(), (int)_branches.size());
 		for (const auto& e : _branches) {
 			Branch* b = e.second;
 			if (b->_parent == nullptr) {
 				continue;
 			}
-			voxel::shape::createLine(volume, b->_position, b->_parent->_position, woodRandomVoxel, std::max(1, (int)(b->_size + 0.5f)));
+			voxel::shape::createLine(volume, b->_position, b->_parent->_position, voxel, std::max(1, (int)(b->_size + 0.5f)));
 		}
 	}
 };
@@ -444,15 +464,17 @@ void createTreeCubeSideCubes(Volume& volume, const TreeContext& ctx, core::Rando
 template<class Volume>
 void createSpaceColonizationTree(Volume& volume, const TreeContext& ctx, core::Random& random) {
 	const int branchLength = 6;
-	const int treeWidth = ctx.leavesWidth;
-	const int treeDepth = ctx.leavesDepth;
-	const int treeHeight = ctx.leavesHeight + ctx.trunkHeight;
 	const float branchSize = 4.0f;
 	const int seed = ctx.pos.x;
-	Tree tree(ctx.pos, ctx.trunkHeight, branchLength, treeWidth, treeHeight, treeDepth, branchSize, seed);
+	Tree tree(ctx.pos, ctx.trunkHeight, branchLength, ctx.leavesWidth, ctx.leavesHeight,
+			ctx.leavesDepth, branchSize, seed);
+	tree.generateAttractionPoints(volume);
 	while (tree.grow()) {
 	}
-	tree.generate(volume);
+	const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, random);
+	tree.generate(volume, woodRandomVoxel);
+	const voxel::RandomVoxel leavesRandomVoxel(voxel::VoxelType::Leaf, random);
+	tree.generateLeaves(volume, leavesRandomVoxel, glm::ivec3(12));
 }
 
 /**
@@ -517,8 +539,8 @@ void createTrees(Volume& volume, const Region& region, const BiomeManager& biomM
 			ctx.trunkHeight = ctx.leavesHeight * 2;
 			break;
 		case TreeType::SpaceColonization:
-			ctx.leavesHeight = random.random(20, 28);
-			ctx.trunkHeight = std::min(maxSize, ctx.leavesHeight * 2);
+			ctx.leavesHeight = random.random(28, 34);
+			ctx.trunkHeight = ctx.leavesHeight / 2;
 			ctx.leavesWidth = ctx.leavesDepth = maxSize;
 			ctx.trunkWidth = 4;
 			break;

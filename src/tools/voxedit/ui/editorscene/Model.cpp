@@ -499,9 +499,13 @@ void Model::update() {
 		const bool growing = _spaceColonizationTree->grow();
 		_lastGrow = ms;
 		voxel::RawVolumeWrapper wrapper(modelVolume());
-		_spaceColonizationTree->generate(wrapper);
+		core::Random random;
+		const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, random);
+		_spaceColonizationTree->generate(wrapper, woodRandomVoxel);
 		modified(modelVolume()->region());
 		if (!growing) {
+			const voxel::RandomVoxel leavesRandomVoxel(voxel::VoxelType::Leaf, random);
+			_spaceColonizationTree->generateLeaves(wrapper, leavesRandomVoxel, glm::ivec3(12));
 			delete _spaceColonizationTree;
 			_spaceColonizationTree = nullptr;
 		}
@@ -585,13 +589,8 @@ void Model::spaceColonization() {
 	const int trunkHeight = aabb.getWidthY() / 4;
 	_lastGrow = core::App::getInstance()->currentMillis();
 
-	_spaceColonizationTree = new voxel::tree::Tree(_referencePos, trunkHeight, 6,
-			aabb.getWidthX(), aabb.getWidthY(), aabb.getWidthZ(), 4.0f, _lastGrow);
-	_spaceColonizationTree->grow();
-
-	voxel::RawVolumeWrapper wrapper(modelVolume());
-	_spaceColonizationTree->generate(wrapper);
-	modified(region);
+	_spaceColonizationTree = new voxel::tree::Tree(referencePosition(), trunkHeight, 6,
+			aabb.getWidthX(), aabb.getWidthY() - trunkHeight, aabb.getWidthZ(), 4.0f, _lastGrow);
 }
 
 void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
