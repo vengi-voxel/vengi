@@ -11,16 +11,17 @@
 namespace core {
 
 Random::Random() :
-		_engine(std::default_random_engine()) {
+		Random(0) {
 }
 
 Random::Random(unsigned int seed) :
-		Random() {
+		_engine(std::default_random_engine()) {
 	setSeed(seed);
 }
 
 void Random::setSeed(unsigned int seed) {
 	_engine.seed(seed);
+	_seed = seed;
 }
 
 float Random::randomf(float min, float max) const {

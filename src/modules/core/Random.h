@@ -37,12 +37,19 @@ public:
 		std::advance(begin, dis(_engine));
 		return begin;
 	}
+
+	unsigned int seed() const;
 private:
+	unsigned int _seed;
 	mutable std::default_random_engine _engine;
 };
 
 inline bool Random::fithyFifthy() const {
 	return randomf() >= 0.5f;
+}
+
+inline unsigned int Random::seed() const {
+	return _seed;
 }
 
 }
