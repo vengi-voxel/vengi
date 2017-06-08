@@ -21,6 +21,7 @@ set(SRCS
 	WorldContext.h WorldContext.cpp
 	generator/CloudGenerator.h
 	generator/ShapeGenerator.h
+	generator/SpaceColonization.h generator/SpaceColonization.cpp
 	generator/TreeGenerator.h generator/TreeGenerator.cpp
 	generator/BuildingGenerator.h
 	generator/WorldGenerator.h generator/WorldGenerator.cpp

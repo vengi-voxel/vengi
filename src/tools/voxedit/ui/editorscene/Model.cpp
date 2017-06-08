@@ -28,7 +28,7 @@
 
 namespace voxedit {
 
-const int leaveSize = 8;
+const int leafSize = 8;
 
 Model::Model() :
 		_gridRenderer(true, true) {
@@ -500,7 +500,7 @@ void Model::init() {
 void Model::update() {
 	const long ms = core::App::getInstance()->currentMillis();
 	if (_spaceColonizationTree != nullptr && ms - _lastGrow > 1000L) {
-		const bool growing = _spaceColonizationTree->grow();
+		const bool growing = _spaceColonizationTree->step();
 		_lastGrow = ms;
 		voxel::RawVolumeWrapper wrapper(modelVolume());
 		core::Random random;
@@ -509,7 +509,7 @@ void Model::update() {
 		modified(modelVolume()->region());
 		if (!growing) {
 			const voxel::RandomVoxel leavesRandomVoxel(voxel::VoxelType::Leaf, random);
-			_spaceColonizationTree->generateLeaves(wrapper, leavesRandomVoxel, glm::ivec3(leaveSize));
+			_spaceColonizationTree->generateLeaves(wrapper, leavesRandomVoxel, glm::ivec3(leafSize));
 			delete _spaceColonizationTree;
 			_spaceColonizationTree = nullptr;
 		}
@@ -594,7 +594,7 @@ void Model::spaceColonization() {
 	_lastGrow = core::App::getInstance()->currentMillis();
 
 	_spaceColonizationTree = new voxel::tree::Tree(referencePosition(), trunkHeight, 6,
-			aabb.getWidthX() - leaveSize, aabb.getWidthY() - trunkHeight - leaveSize, aabb.getWidthZ() - leaveSize, 4.0f, _lastGrow);
+			aabb.getWidthX() - leafSize, aabb.getWidthY() - trunkHeight - leafSize, aabb.getWidthZ() - leafSize, 4.0f, _lastGrow);
 }
 
 void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
