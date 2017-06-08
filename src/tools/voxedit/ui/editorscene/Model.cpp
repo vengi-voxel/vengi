@@ -28,6 +28,8 @@
 
 namespace voxedit {
 
+const int leaveSize = 8;
+
 Model::Model() :
 		_gridRenderer(true, true) {
 }
@@ -328,10 +330,12 @@ void Model::setNewVolume(voxel::RawVolume* volume) {
 	delete _rawVolumeRenderer.setVolume(ModelVolumeIndex, volume);
 	delete _rawVolumeRenderer.setVolume(CursorVolumeIndex, new voxel::RawVolume(region));
 
+#if 0
 	if (_spaceColonizationTree != nullptr) {
 		delete _spaceColonizationTree;
 		_spaceColonizationTree = nullptr;
 	}
+#endif
 
 	if (volume != nullptr) {
 		const voxel::Region& region = volume->region();
@@ -505,7 +509,7 @@ void Model::update() {
 		modified(modelVolume()->region());
 		if (!growing) {
 			const voxel::RandomVoxel leavesRandomVoxel(voxel::VoxelType::Leaf, random);
-			_spaceColonizationTree->generateLeaves(wrapper, leavesRandomVoxel, glm::ivec3(12));
+			_spaceColonizationTree->generateLeaves(wrapper, leavesRandomVoxel, glm::ivec3(leaveSize));
 			delete _spaceColonizationTree;
 			_spaceColonizationTree = nullptr;
 		}
@@ -586,11 +590,11 @@ void Model::noise(int octaves, float lacunarity, float frequency, float gain, vo
 void Model::spaceColonization() {
 	const voxel::Region& region = modelVolume()->region();
 	const core::AABB<int>& aabb = region.aabb();
-	const int trunkHeight = aabb.getWidthY() / 4;
+	const int trunkHeight = aabb.getWidthY() / 2;
 	_lastGrow = core::App::getInstance()->currentMillis();
 
 	_spaceColonizationTree = new voxel::tree::Tree(referencePosition(), trunkHeight, 6,
-			aabb.getWidthX(), aabb.getWidthY() - trunkHeight, aabb.getWidthZ(), 4.0f, _lastGrow);
+			aabb.getWidthX() - leaveSize, aabb.getWidthY() - trunkHeight - leaveSize, aabb.getWidthZ() - leaveSize, 4.0f, _lastGrow);
 }
 
 void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
