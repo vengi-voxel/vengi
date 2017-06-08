@@ -26,10 +26,11 @@ void Branch::reset() {
 }
 
 SpaceColonization::SpaceColonization(const glm::ivec3& position, int branchLength,
-	int attractionPointWidth, int attractionPointHeight, int attractionPointDepth, float branchSize, int seed) :
-		_position(position), _attractionPointCount(attractionPointDepth * 10), _attractionPointWidth(attractionPointWidth),
+	int attractionPointWidth, int attractionPointHeight, int attractionPointDepth, float branchSize,
+	int seed, int minDistance, int maxDistance, int attractionPointCount) :
+		_position(position), _attractionPointCount(attractionPointCount), _attractionPointWidth(attractionPointWidth),
 		_attractionPointDepth(attractionPointDepth), _attractionPointHeight(attractionPointHeight),
-		_minDistance2(36), _maxDistance2(100),
+		_minDistance2(minDistance * minDistance), _maxDistance2(maxDistance * maxDistance),
 		_branchLength(branchLength), _branchSize(branchSize), _random(seed) {
 	_root = new Branch(nullptr, _position, glm::up, _branchSize);
 	_branches.insert(std::make_pair(_root->_position, _root));
@@ -47,24 +48,35 @@ SpaceColonization::~SpaceColonization() {
 }
 
 void SpaceColonization::fillAttractionPoints() {
-	const int radius = _attractionPointWidth / 2;
+	const float radius = std::max({_attractionPointHeight, _attractionPointDepth, _attractionPointWidth}) / 2.0f;
 	const glm::ivec3 mins(_position.x - (_attractionPointWidth / 2), _position.y, _position.z - (_attractionPointDepth / 2));
 	const glm::ivec3 maxs(mins.x + _attractionPointWidth, mins.y + _attractionPointHeight, mins.z + _attractionPointDepth);
-	const int radiusSquare = radius * radius;
+	const float radiusSquare = radius * radius;
+	int failed = 0;
 	const glm::vec3 center((mins + maxs) / 2);
-	for (int i = 0; i < _attractionPointCount; ++i) {
+	for (int i = 0; i < _attractionPointCount;) {
 		const glm::vec3 location(
 				_random.random(mins.x, maxs.x),
 				_random.random(mins.y, maxs.y),
 				_random.random(mins.z, maxs.z));
 		if (glm::distance2(location, center) < radiusSquare) {
 			_attractionPoints.emplace_back(AttractionPoint(location));
+			++i;
+		} else {
+			++failed;
+			if (failed > _attractionPointCount) {
+				break;
+			}
 		}
 	}
 }
 
 void SpaceColonization::grow() {
-	while (step()) {
+	int n = 100;
+	while (step() && --n > 0) {
+	}
+	if (n <= 0) {
+		Log::warn("Could not finish space colonization growing");
 	}
 }
 
@@ -92,15 +104,15 @@ bool SpaceColonization::step() {
 			const float length2 = (float) glm::round(glm::distance2(branch->_position, attractionPoint._position));
 
 			// Min attraction point distance reached, we remove it
-			if (length2 <= _minDistance2) {
+			if (attractionPoint._closestBranch == nullptr) {
+				attractionPoint._closestBranch = branch;
+			} else if (length2 <= _minDistance2) {
 				pi = _attractionPoints.erase(pi);
 				attractionPointRemoved = true;
 				break;
 			} else if (length2 <= _maxDistance2) {
 				// branch in range, determine if it is the nearest
-				if (attractionPoint._closestBranch == nullptr) {
-					attractionPoint._closestBranch = branch;
-				} else if (glm::distance2(attractionPoint._closestBranch->_position, attractionPoint._position) > length2) {
+				if (glm::distance2(attractionPoint._closestBranch->_position, attractionPoint._position) > length2) {
 					attractionPoint._closestBranch = branch;
 				}
 			}

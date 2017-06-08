@@ -638,7 +638,6 @@ void Model::createCloud() {
 	HasClouds hasClouds;
 	hasClouds.pos = glm::vec2(_referencePos.x, _referencePos.z);
 	voxel::cloud::CloudContext cloudCtx;
-	cloudCtx.amount = 1;
 	if (voxel::cloud::createClouds(wrapper, wrapper.region(), hasClouds, cloudCtx)) {
 		modified(modelVolume()->region());
 	}

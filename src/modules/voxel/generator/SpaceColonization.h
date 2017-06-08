@@ -67,20 +67,22 @@ protected:
 	 */
 	void fillAttractionPoints();
 
-	template<class Volume, class Voxel>
-	void generateLeaves_r(Volume& volume, const Voxel& voxel, Branch* branch, const glm::ivec3& leafSize) const {
+	template<class Volume, class Voxel, class Size>
+	void generateLeaves_r(Volume& volume, const Voxel& voxel, Branch* branch, const Size& size) const {
 		if (branch->_children.empty()) {
-			voxel::shape::createEllipse(volume, branch->_position, leafSize.x, leafSize.y, leafSize.z, voxel);
+			const glm::ivec3& s = size;
+			voxel::shape::createEllipse(volume, branch->_position, s.x, s.y, s.z, voxel);
 			return;
 		}
 		for (Branch* b : branch->_children) {
-			generateLeaves_r(volume, voxel, b, leafSize);
+			generateLeaves_r(volume, voxel, b, size);
 		}
 	}
 
 public:
-	SpaceColonization(const glm::ivec3& position, int branchLength = 6,
-		int crownWidth = 40, int crownHeight = 60, int crownDepth = 40, float branchSize = 4.0f, int seed = 0);
+	SpaceColonization(const glm::ivec3& position, int branchLength,
+		int width, int height, int depth, float branchSize = 4.0f, int seed = 0,
+		int minDistance = 6, int maxDistance = 10, int attractionPointCount = 400);
 	~SpaceColonization();
 
 	bool step();
@@ -89,17 +91,51 @@ public:
 
 	template<class Volume, class Voxel>
 	void generateAttractionPoints(Volume& volume, const Voxel& voxel) const {
+		if (_root) {
+			const Voxel& root = createVoxel(VoxelType::Flower, 0);
+			volume.setVoxel(_root->_position, root);
+		}
 		for (const AttractionPoint& p : _attractionPoints) {
 			volume.setVoxel(p._position, voxel);
 		}
 	}
 
-	template<class Volume, class Voxel>
-	void generateLeaves(Volume& volume, const Voxel& voxel, const glm::ivec3& leafSize) const {
+	class RandomSize {
+	private:
+		core::Random& _random;
+		const glm::ivec3 _mins;
+		const glm::ivec3 _maxs;
+	public:
+		RandomSize(core::Random& random, int mins, int maxs) :
+				_random(random), _mins(mins), _maxs(maxs) {
+		}
+
+		RandomSize(core::Random& random, int size) :
+				_random(random), _mins(size - size / 2), _maxs(size + size / 2) {
+		}
+
+		RandomSize(core::Random& random, const glm::ivec3& mins, const glm::ivec3& maxs) :
+				_random(random), _mins(mins), _maxs(maxs) {
+		}
+
+		RandomSize(core::Random& random) :
+				_random(random), _mins(16), _maxs(80, 25, 80) {
+		}
+
+		operator glm::ivec3() const {
+			const int x = _random.random(_mins.x, _maxs.x);
+			const int y = _random.random(_mins.y, _maxs.y);
+			const int z = _random.random(_mins.z, _maxs.z);
+			return glm::ivec3(x, y, z);
+		}
+	};
+
+	template<class Volume, class Voxel, class Size>
+	void generateLeaves(Volume& volume, const Voxel& voxel, const Size& size) const {
 		if (_root == nullptr) {
 			return;
 		}
-		generateLeaves_r(volume, voxel, _root, leafSize);
+		generateLeaves_r(volume, voxel, _root, size);
 	}
 
 	template<class Volume, class Voxel>
@@ -110,7 +146,9 @@ public:
 			if (b->_parent == nullptr) {
 				continue;
 			}
-			voxel::shape::createLine(volume, b->_position, b->_parent->_position, voxel, std::max(1, (int)(b->_size + 0.5f)));
+			const glm::ivec3& start = b->_position;
+			const glm::ivec3& end = b->_parent->_position;
+			voxel::shape::createLine(volume, start, end, voxel, std::max(1, (int)(b->_size + 0.5f)));
 		}
 	}
 };
