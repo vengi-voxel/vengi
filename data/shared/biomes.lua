@@ -35,6 +35,15 @@ end
 function addGrass(lower, upper, humidity, temperature, underGround)
 	local grass = addBiome(lower, upper, humidity, temperature, "Grass", underGround)
 	addTree(grass, "SpaceColonization")
+	addTree(grass, "Dome")
+	addTree(grass, "DomeHangingLeaves")
+	addTree(grass, "Cone")
+	addTree(grass, "Ellipsis")
+	addTree(grass, "BranchesEllipsis")
+	addTree(grass, "Cube")
+	addTree(grass, "CubeSideCubes")
+	addTree(grass, "Pine")
+	addTree(grass, "Fir")
 	return grass
 end
 

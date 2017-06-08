@@ -140,7 +140,7 @@ public:
 template<class Volume>
 static int findFloor(const Volume& volume, int x, int z) {
 	glm::ivec3 start(x, MAX_TERRAIN_HEIGHT - 1, z);
-	glm::ivec3 end(x, 0, z);
+	glm::ivec3 end(x, MAX_WATER_HEIGHT, z);
 	int y = NO_FLOOR_FOUND;
 	voxel::raycastWithEndpoints(&volume, start, end, [&y] (const typename Volume::Sampler& sampler) {
 		const Voxel& voxel = sampler.voxel();
