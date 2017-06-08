@@ -376,13 +376,12 @@ void createSpaceColonizationTree(Volume& volume, const TreeContext& ctx, core::R
 	const int seed = ctx.pos.x;
 	Tree tree(ctx.pos, ctx.trunkHeight, branchLength, ctx.leavesWidth, ctx.leavesHeight,
 			ctx.leavesDepth, branchSize, seed);
-	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Rock, 0);
-	tree.generateAttractionPoints(volume, voxel);
 	tree.grow();
 	const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, random);
 	tree.generate(volume, woodRandomVoxel);
 	const voxel::RandomVoxel leavesRandomVoxel(voxel::VoxelType::Leaf, random);
-	tree.generateLeaves(volume, leavesRandomVoxel, glm::ivec3(leafSize));
+	SpaceColonization::RandomSize rndSize(random, leafSize);
+	tree.generateLeaves(volume, leavesRandomVoxel, rndSize);
 }
 
 /**
