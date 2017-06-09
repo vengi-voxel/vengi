@@ -370,16 +370,14 @@ void createTreeCubeSideCubes(Volume& volume, const TreeContext& ctx, core::Rando
 
 template<class Volume>
 void createSpaceColonizationTree(Volume& volume, const TreeContext& ctx, core::Random& random) {
-	const int branchLength = 6;
-	const int leafSize = 12;
-	const float branchSize = 4.0f;
 	const int seed = ctx.pos.x;
-	Tree tree(ctx.pos, ctx.trunkHeight, branchLength, ctx.leavesWidth, ctx.leavesHeight,
-			ctx.leavesDepth, branchSize, seed);
+	Tree tree(ctx.pos, ctx.trunkHeight, ctx.trunkHeight, ctx.leavesWidth, ctx.leavesHeight,
+			ctx.leavesDepth, ctx.trunkWidth, seed);
 	tree.grow();
 	const voxel::RandomVoxel woodRandomVoxel(voxel::VoxelType::Wood, random);
 	tree.generate(volume, woodRandomVoxel);
 	const voxel::RandomVoxel leavesRandomVoxel(voxel::VoxelType::Leaf, random);
+	const int leafSize = 12;
 	SpaceColonization::RandomSize rndSize(random, leafSize);
 	tree.generateLeaves(volume, leavesRandomVoxel, rndSize);
 }
