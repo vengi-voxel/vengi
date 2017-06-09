@@ -704,6 +704,7 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 	return true;
 }
 
+// TODO: extract frustum and do closest to camera first
 void WorldRenderer::extractMeshes(const glm::vec3& p, int radius) {
 	core_trace_scoped(WorldRendererExtractMeshes);
 	const glm::ivec3& meshGridPos = _world->meshPos(p);
