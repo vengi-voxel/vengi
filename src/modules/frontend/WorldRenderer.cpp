@@ -705,9 +705,8 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 }
 
 void WorldRenderer::extractMeshes(const glm::vec3& p, int radius) {
-	core_trace_scoped(WorldRendererOnSpawn);
+	core_trace_scoped(WorldRendererExtractMeshes);
 	const glm::ivec3& meshGridPos = _world->meshPos(p);
-	core_trace_scoped(WorldRendererExtractAroundCamera);
 	const int sideLength = radius * 2 + 1;
 	const int amount = sideLength * (sideLength - 1) + sideLength;
 	const int meshSize = _world->meshSize();
