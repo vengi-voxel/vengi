@@ -138,8 +138,7 @@ void App::onFrame() {
 
 AppState App::onConstruct() {
 	core::Var::get(cfg::CoreLogLevel, SDL_LOG_PRIORITY_INFO);
-
-	_filesystem->init(_organisation, _appname);
+	Log::init();
 
 	core::Command::registerCommand("set", [] (const core::CmdArgs& args) {
 		if (args.size() != 2) {
@@ -147,6 +146,32 @@ AppState App::onConstruct() {
 		}
 		core::Var::get(args[0], "")->setVal(args[1]);
 	}).setHelp("Set a variable name");
+
+	for (int i = 0; i < _argc; ++i) {
+		if (_argv[i][0] != '-' || (_argv[i][0] != '\0' &&_argv[i][1] == '-')) {
+			continue;
+		}
+
+		const std::string command = &_argv[i][1];
+		if (command != "set") {
+			continue;
+		}
+		std::string args;
+		args.reserve(256);
+		for (++i; i < _argc;) {
+			if (_argv[i][0] == '-') {
+				--i;
+				break;
+			}
+			args.append(_argv[i++]);
+			args.append(" ");
+		}
+		core::executeCommands(command + " " + args);
+	}
+	Log::init();
+
+	_filesystem->init(_organisation, _appname);
+
 	core::Command::registerCommand("varclearhistory", [] (const core::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::error("not enough arguments given. Expecting a variable name");
@@ -317,6 +342,10 @@ AppState App::onInit() {
 		}
 
 		const std::string command = &_argv[i][1];
+		if (command == "set") {
+			// already handled
+			continue;
+		}
 		std::string args;
 		args.reserve(256);
 		for (++i; i < _argc;) {
