@@ -59,16 +59,18 @@
 #	endif
 #endif
 
-#include <fstream>
-#include <iostream>
 #include <algorithm>
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
 #include <cctype>
-#include <string>
-#include <new>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <new>
+#include <sstream>
+#include <streambuf>
+#include <string>
 #include <vector>
 
 #if defined(BACKWARD_SYSTEM_LINUX)
@@ -186,6 +188,15 @@ extern "C" uintptr_t _Unwind_GetIPInfo(_Unwind_Context*, int*);
 #	include <signal.h>
 
 #	if BACKWARD_HAS_BFD == 1
+//              NOTE: defining PACKAGE{,_VERSION} is required before including
+//                    bfd.h on some platforms, see also:
+//                    https://sourceware.org/bugzilla/show_bug.cgi?id=14243
+#               ifndef PACKAGE
+#                       define PACKAGE
+#               endif
+#               ifndef PACKAGE_VERSION
+#                       define PACKAGE_VERSION
+#               endif
 #		include <bfd.h>
 #		ifndef _GNU_SOURCE
 #			define _GNU_SOURCE
@@ -425,8 +436,8 @@ struct Trace {
 	Trace():
 		addr(0), idx(0) {}
 
-	explicit Trace(void* addr, size_t idx):
-		addr(addr), idx(idx) {}
+	explicit Trace(void* _addr, size_t _idx):
+		addr(_addr), idx(_idx) {}
 };
 
 struct ResolvedTrace: public Trace {
@@ -487,6 +498,7 @@ public:
 	size_t load_here(size_t=0) { return 0; }
 	size_t load_from(void*, size_t=0) { return 0; }
 	unsigned thread_id() const { return 0; }
+	void skip_n_firsts(size_t) { }
 };
 
 #ifdef BACKWARD_SYSTEM_LINUX
@@ -499,6 +511,8 @@ public:
 		return _thread_id;
 	}
 
+	void skip_n_firsts(size_t n) { _skip = n; }
+
 protected:
 	void load_thread_info() {
 		_thread_id = syscall(SYS_gettid);
@@ -509,7 +523,6 @@ protected:
 		}
 	}
 
-	void skip_n_firsts(size_t n) { _skip = n; }
 	size_t skip_n_firsts() const { return _skip; }
 
 private:
@@ -626,7 +639,7 @@ public:
 private:
 	struct callback {
 		StackTraceImpl& self;
-		callback(StackTraceImpl& self): self(self) {}
+		callback(StackTraceImpl& _self): self(_self) {}
 
 		void operator()(size_t idx, void* addr) {
 			self._stacktrace[idx] = addr;
@@ -1338,7 +1351,7 @@ private:
 		Dwarf_Addr low, high;
 
 		// continuous range
-		if (dwarf_hasattr(die, DW_AT_low_pc) and
+		if (dwarf_hasattr(die, DW_AT_low_pc) &&
 							dwarf_hasattr(die, DW_AT_high_pc)) {
 			if (dwarf_lowpc(die, &low) != 0) {
 				return false;
@@ -1380,23 +1393,22 @@ private:
 					if (die_has_pc(die, pc)) {
 						return result;
 					}
-				default:
-					bool declaration = false;
-					Dwarf_Attribute attr_mem;
-					dwarf_formflag(dwarf_attr(die, DW_AT_declaration,
-								&attr_mem), &declaration);
-					if (!declaration) {
-						// let's be curious and look deeper in the tree,
-						// function are not necessarily at the first level, but
-						// might be nested inside a namespace, structure etc.
-						Dwarf_Die die_mem;
-						Dwarf_Die* indie = find_fundie_by_pc(die, pc, &die_mem);
-						if (indie) {
-							*result = die_mem;
-							return result;
-						}
-					}
 			};
+			bool declaration = false;
+			Dwarf_Attribute attr_mem;
+			dwarf_formflag(dwarf_attr(die, DW_AT_declaration,
+						&attr_mem), &declaration);
+			if (!declaration) {
+				// let's be curious and look deeper in the tree,
+				// function are not necessarily at the first level, but
+				// might be nested inside a namespace, structure etc.
+				Dwarf_Die die_mem;
+				Dwarf_Die* indie = find_fundie_by_pc(die, pc, &die_mem);
+				if (indie) {
+					*result = die_mem;
+					return result;
+				}
+			}
 		} while (dwarf_siblingof(die, result) == 0);
 		return 0;
 	}
@@ -1652,6 +1664,44 @@ private:
 
 /*************** PRINTER ***************/
 
+namespace ColorMode {
+	enum type {
+		automatic,
+		never,
+		always
+	};
+}
+
+class cfile_streambuf: public std::streambuf {
+public:
+	cfile_streambuf(FILE *sink): sink(sink) {}
+	int_type underflow() { return traits_type::eof(); }
+	int_type overflow(int_type ch) {
+		if (traits_type::not_eof(ch) && fwrite(&ch, sizeof ch, 1, sink) == 1) {
+				return ch;
+		}
+		return traits_type::eof();
+	}
+
+	std::streamsize xsputn(const char_type* s, std::streamsize count) {
+		return fwrite(s, sizeof *s, count, sink);
+	}
+
+#ifdef BACKWARD_ATLEAST_CXX11
+public:
+	cfile_streambuf(const cfile_streambuf&) = delete;
+	cfile_streambuf& operator=(const cfile_streambuf&) = delete;
+#else
+private:
+	cfile_streambuf(const cfile_streambuf &);
+	cfile_streambuf &operator= (const cfile_streambuf &);
+#endif
+
+private:
+	FILE *sink;
+	std::vector<char> buffer;
+};
+
 #ifdef BACKWARD_SYSTEM_LINUX
 
 namespace Color {
@@ -1664,19 +1714,23 @@ namespace Color {
 
 class Colorize {
 public:
-	Colorize(std::FILE* os):
-		_os(os), _reset(false), _istty(false) {}
+	Colorize(std::ostream& os):
+		_os(os), _reset(false), _enabled(false) {}
 
-	void init() {
-		_istty = isatty(fileno(_os));
+	void activate(ColorMode::type mode) {
+		_enabled = mode == ColorMode::always;
+	}
+
+	void activate(ColorMode::type mode, FILE* fp) {
+		activate(mode, fileno(fp));
 	}
 
 	void set_color(Color::type ccode) {
-		if (!_istty) return;
+		if (!_enabled) return;
 
 		// I assume that the terminal can handle basic colors. Seriously I
 		// don't want to deal with all the termcap shit.
-		fprintf(_os, "\033[%im", static_cast<int>(ccode));
+		_os << "\033[" << static_cast<int>(ccode) << "m";
 		_reset = (ccode != Color::reset);
 	}
 
@@ -1687,13 +1741,16 @@ public:
 	}
 
 private:
-	std::FILE* _os;
-	bool       _reset;
-	bool       _istty;
+	void activate(ColorMode::type mode, int fd) {
+		activate(mode == ColorMode::automatic && isatty(fd) ? ColorMode::always : mode);
+	}
+
+	std::ostream& _os;
+	bool          _reset;
+	bool          _enabled;
 };
 
 #else // ndef BACKWARD_SYSTEM_LINUX
-
 
 namespace Color {
 	enum type {
@@ -1705,8 +1762,9 @@ namespace Color {
 
 class Colorize {
 public:
-	Colorize(std::FILE*) {}
-	void init() {}
+	Colorize(std::ostream&) {}
+	void activate(ColorMode::type) {}
+	void activate(ColorMode::type, FILE*) {}
 	void set_color(Color::type) {}
 };
 
@@ -1714,97 +1772,134 @@ public:
 
 class Printer {
 public:
+
 	bool snippet;
-	bool color;
+	ColorMode::type color_mode;
 	bool address;
 	bool object;
+	int inliner_context_size;
+	int trace_context_size;
 
 	Printer():
 		snippet(true),
-		color(true),
+		color_mode(ColorMode::automatic),
 		address(false),
-		object(false)
+		object(false),
+		inliner_context_size(5),
+		trace_context_size(7)
 		{}
 
 	template <typename ST>
-		FILE* print(ST& st, FILE* os = stderr) {
+		FILE* print(ST& st, FILE* fp = stderr) {
+			cfile_streambuf obuf(fp);
+			std::ostream os(&obuf);
 			Colorize colorize(os);
-			if (color) {
-				colorize.init();
-			}
+			colorize.activate(color_mode, fp);
+			print_stacktrace(st, os, colorize);
+			return fp;
+		}
+
+	template <typename ST>
+		std::ostream& print(ST& st, std::ostream& os) {
+			Colorize colorize(os);
+			colorize.activate(color_mode);
+			print_stacktrace(st, os, colorize);
+			return os;
+		}
+
+	template <typename IT>
+		FILE* print(IT begin, IT end, FILE* fp = stderr, size_t thread_id = 0) {
+			cfile_streambuf obuf(fp);
+			std::ostream os(&obuf);
+			Colorize colorize(os);
+			colorize.activate(color_mode, fp);
+			print_stacktrace(begin, end, os, thread_id, colorize);
+			return fp;
+		}
+
+	template <typename IT>
+		std::ostream& print(IT begin, IT end, std::ostream& os, size_t thread_id = 0) {
+			Colorize colorize(os);
+			colorize.activate(color_mode);
+			print_stacktrace(begin, end, os, thread_id, colorize);
+			return os;
+		}
+
+private:
+	TraceResolver  _resolver;
+	SnippetFactory _snippets;
+
+	template <typename ST>
+		void print_stacktrace(ST& st, std::ostream& os, Colorize& colorize) {
 			print_header(os, st.thread_id());
 			_resolver.load_stacktrace(st);
 			for (size_t trace_idx = st.size(); trace_idx > 0; --trace_idx) {
 				print_trace(os, _resolver.resolve(st[trace_idx-1]), colorize);
 			}
-			return os;
 		}
 
 	template <typename IT>
-		FILE* print(IT begin, IT end, FILE* os = stderr, size_t thread_id = 0) {
-			Colorize colorize(os);
-			if (color) {
-				colorize.init();
-			}
+		void print_stacktrace(IT begin, IT end, std::ostream& os, size_t thread_id, Colorize& colorize) {
 			print_header(os, thread_id);
 			for (; begin != end; ++begin) {
 				print_trace(os, *begin, colorize);
 			}
-			return os;
 		}
-private:
-	TraceResolver  _resolver;
-	SnippetFactory _snippets;
 
-	void print_header(FILE* os, unsigned thread_id) {
-		fprintf(os, "Stack trace (most recent call last)");
+	void print_header(std::ostream& os, unsigned thread_id) {
+		os << "Stack trace (most recent call last)";
 		if (thread_id) {
-			fprintf(os, " in thread %u:\n", thread_id);
-		} else {
-			fprintf(os, ":\n");
+			os << " in thread " << thread_id;
 		}
+		os << ":\n";
 	}
 
-	void print_trace(FILE* os, const ResolvedTrace& trace,
+	void print_trace(std::ostream& os, const ResolvedTrace& trace,
 			Colorize& colorize) {
-		fprintf(os, "#%-2u", trace.idx);
+		os << "#"
+		   << std::left << std::setw(2) << trace.idx
+		   << std::right;
 		bool already_indented = true;
 
 		if (!trace.source.filename.size() || object) {
-			fprintf(os, "   Object \"%s\", at %p, in %s\n",
-					trace.object_filename.c_str(), trace.addr,
-					trace.object_function.c_str());
+			os << "   Object \""
+			   << trace.object_filename
+			   << ", at "
+			   << trace.addr
+			   << ", in "
+			   << trace.object_function
+			   << "\n";
 			already_indented = false;
 		}
 
 		for (size_t inliner_idx = trace.inliners.size();
 				inliner_idx > 0; --inliner_idx) {
 			if (!already_indented) {
-				fprintf(os, "   ");
+				os << "   ";
 			}
 			const ResolvedTrace::SourceLoc& inliner_loc
 				= trace.inliners[inliner_idx-1];
 			print_source_loc(os, " | ", inliner_loc);
 			if (snippet) {
 				print_snippet(os, "    | ", inliner_loc,
-						colorize, Color::purple, 5);
+						colorize, Color::purple, inliner_context_size);
 			}
 			already_indented = false;
 		}
 
 		if (trace.source.filename.size()) {
 			if (!already_indented) {
-				fprintf(os, "   ");
+				os << "   ";
 			}
 			print_source_loc(os, "   ", trace.source, trace.addr);
 			if (snippet) {
 				print_snippet(os, "      ", trace.source,
-						colorize, Color::yellow, 7);
+						colorize, Color::yellow, trace_context_size);
 			}
 		}
 	}
 
-	void print_snippet(FILE* os, const char* indent,
+	void print_snippet(std::ostream& os, const char* indent,
 			const ResolvedTrace::SourceLoc& source_loc,
 			Colorize& colorize, Color::type color_code,
 			int context_size)
@@ -1819,29 +1914,35 @@ private:
 				it != lines.end(); ++it) {
 			if (it-> first == source_loc.line) {
 				colorize.set_color(color_code);
-				fprintf(os, "%s>", indent);
+				os << indent << ">";
 			} else {
-				fprintf(os, "%s ", indent);
+				os << indent << " ";
 			}
-			fprintf(os, "%4u: %s\n", it->first, it->second.c_str());
+			os << std::setw(4) << it->first
+			   << ": "
+			   << it->second
+			   << "\n";
 			if (it-> first == source_loc.line) {
 				colorize.set_color(Color::reset);
 			}
 		}
 	}
 
-	void print_source_loc(FILE* os, const char* indent,
+	void print_source_loc(std::ostream& os, const char* indent,
 			const ResolvedTrace::SourceLoc& source_loc,
 			void* addr=0) {
-		fprintf(os, "%sSource \"%s\", line %i, in %s",
-				indent, source_loc.filename.c_str(), (int)source_loc.line,
-				source_loc.function.c_str());
+		os << indent
+		   << "Source \""
+		   << source_loc.filename
+		   << "\", line "
+		   << source_loc.line
+		   << ", in "
+		   << source_loc.function;
 
 		if (address && addr != 0) {
-			fprintf(os, " [%p]\n", addr);
-		} else {
-			fprintf(os, "\n");
+			os << " [" << addr << "]";
 		}
+		os << "\n";
 	}
 };
 
@@ -1854,33 +1955,19 @@ class SignalHandling {
 public:
    static std::vector<int> make_default_signals() {
        const int posix_signals[] = {
-		// default action: Core
-		SIGILL,
-		SIGABRT,
-		SIGFPE,
-		SIGSEGV,
-		SIGBUS,
-		// I am not sure the following signals should be enabled by
-		// default:
-		// default action: Term
-		SIGHUP,
-		SIGINT,
-		SIGPIPE,
-		SIGALRM,
-		SIGTERM,
-		SIGUSR1,
-		SIGUSR2,
-		SIGPOLL,
-		SIGPROF,
-		SIGVTALRM,
-		SIGIO,
-		SIGPWR,
-		// default action: Core
-		SIGQUIT,
-		SIGSYS,
-		SIGTRAP,
-		SIGXCPU,
-		SIGXFSZ
+		// Signals for which the default action is "Core".
+		SIGABRT,    // Abort signal from abort(3)
+		SIGBUS,     // Bus error (bad memory access)
+		SIGFPE,     // Floating point exception
+		SIGILL,     // Illegal Instruction
+		SIGIOT,     // IOT trap. A synonym for SIGABRT
+		SIGQUIT,    // Quit from keyboard
+		SIGSEGV,    // Invalid memory reference
+		SIGSYS,     // Bad argument to routine (SVr4)
+		SIGTRAP,    // Trace/breakpoint trap
+		SIGUNUSED,  // Synonymous with SIGSYS
+		SIGXCPU,    // CPU time limit exceeded (4.2BSD)
+		SIGXFSZ,    // File size limit exceeded (4.2BSD)
 	};
         return std::vector<int>(posix_signals, posix_signals + sizeof posix_signals / sizeof posix_signals[0] );
    }
@@ -1925,6 +2012,9 @@ private:
 	details::handle<char*> _stack_content;
 	bool                   _loaded;
 
+#ifdef __GNUC__
+	__attribute__((noreturn))
+#endif
 	static void sig_handler(int, siginfo_t* info, void* _ctx) {
 		ucontext_t *uctx = (ucontext_t*) _ctx;
 
@@ -1936,6 +2026,8 @@ private:
 		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.gregs[REG_EIP]);
 #elif defined(__arm__)
 		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.arm_pc);
+#elif defined(__ppc__) || defined(__powerpc) || defined(__powerpc__) || defined(__POWERPC__)
+		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.regs->nip);
 #else
 #	warning ":/ sorry, ain't know no nothing none not of your architecture!"
 #endif
