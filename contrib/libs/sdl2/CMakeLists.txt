@@ -138,7 +138,7 @@ endif()
 
 # Default option knobs
 if(APPLE OR ARCH_64)
-  if (NOT "${CMAKE_OSX_ARCHITECTURES}" MATCHES "arm")
+  if(NOT "${CMAKE_OSX_ARCHITECTURES}" MATCHES "arm")
     set(OPT_DEF_SSEMATH ON)
   endif()
 endif()
@@ -267,6 +267,7 @@ set_option(MMX                 "Use MMX assembly routines" ${OPT_DEF_ASM})
 set_option(3DNOW               "Use 3Dnow! MMX assembly routines" ${OPT_DEF_ASM})
 set_option(SSE                 "Use SSE assembly routines" ${OPT_DEF_ASM})
 set_option(SSE2                "Use SSE2 assembly routines" ${OPT_DEF_SSEMATH})
+set_option(SSE3                "Use SSE3 assembly routines" ${OPT_DEF_SSEMATH})
 set_option(ALTIVEC             "Use Altivec assembly routines" ${OPT_DEF_ASM})
 set_option(DISKAUDIO           "Support the disk writer audio driver" ON)
 set_option(DUMMYAUDIO          "Support the dummy audio driver" ON)
@@ -281,6 +282,8 @@ set_option(SDL_DLOPEN          "Use dlopen for shared object loading" ${SDL_DLOP
 set_option(OSS                 "Support the OSS audio API" ${UNIX_SYS})
 set_option(ALSA                "Support the ALSA audio API" ${UNIX_SYS})
 dep_option(ALSA_SHARED         "Dynamically load ALSA audio support" ON "ALSA" OFF)
+set_option(JACK                "Support the JACK audio API" ${UNIX_SYS})
+dep_option(JACK_SHARED         "Dynamically load JACK audio support" ON "JACK" OFF)
 set_option(ESD                 "Support the Enlightened Sound Daemon" ${UNIX_SYS})
 dep_option(ESD_SHARED          "Dynamically load ESD audio support" ON "ESD" OFF)
 set_option(PULSEAUDIO          "Use PulseAudio" ${UNIX_SYS})
@@ -504,11 +507,34 @@ if(ASSEMBLY)
       set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
-    if(SSEMATH)
-      if(SSE OR SSE2)
+    if(SSE3)
+      set(CMAKE_REQUIRED_FLAGS "-msse3")
+      check_c_source_compiles("
+          #ifdef __MINGW32__
+          #include <_mingw.h>
+          #ifdef __MINGW64_VERSION_MAJOR
+          #include <intrin.h>
+          #else
+          #include <pmmintrin.h>
+          #endif
+          #else
+          #include <pmmintrin.h>
+          #endif
+          #ifndef __SSE3__
+          #error Assembler CPP flag not enabled
+          #endif
+          int main(int argc, char **argv) { }" HAVE_SSE3)
+      if(HAVE_SSE3)
+        list(APPEND EXTRA_CFLAGS "-msse3")
+      endif()
+      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+    endif()
+
+    if(NOT SSEMATH)
+      if(SSE OR SSE2 OR SSE3)
         if(USE_GCC)
           check_c_compiler_flag(-mfpmath=387 HAVE_FP_387)
-          if (HAVE_FP_387)
+          if(HAVE_FP_387)
             list(APPEND EXTRA_CFLAGS "-mfpmath=387")
           endif()
         endif()
@@ -548,12 +574,13 @@ if(ASSEMBLY)
     endif()
     set(HAVE_SSE TRUE)
     set(HAVE_SSE2 TRUE)
+    set(HAVE_SSE3 TRUE)
     set(SDL_ASSEMBLY_ROUTINES 1)
   endif()
 # TODO:
 #else()
 #  if(USE_GCC OR USE_CLANG)
-#    list(APPEND EXTRA_CFLAGS "-mno-sse" "-mno-sse2" "-mno-mmx")
+#    list(APPEND EXTRA_CFLAGS "-mno-sse" "-mno-sse2" "-mno-sse3" "-mno-mmx")
 #  endif()
 endif()
 
@@ -720,6 +747,16 @@ endif()
 if(ANDROID)
   file(GLOB ANDROID_CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/android/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_CORE_SOURCES})
+
+  # SDL_spinlock.c Needs to be compiled in ARM mode.
+  # There seems to be no better way currently to set the ARM mode.
+  # see: https://issuetracker.google.com/issues/62264618
+  # Another option would be to set ARM mode to all compiled files
+  check_c_compiler_flag(-marm HAVE_ARM_MODE)
+  if(HAVE_ARM_MODE)
+    set_source_files_properties(${SDL2_SOURCE_DIR}/src/atomic/SDL_spinlock.c PROPERTIES COMPILE_FLAGS -marm)
+  endif()
+
   file(GLOB ANDROID_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/android/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_MAIN_SOURCES})
   if(SDL_AUDIO)
@@ -752,12 +789,23 @@ if(ANDROID)
     set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_VIDEO_SOURCES})
     set(HAVE_SDL_VIDEO TRUE)
 
+    # Core stuff
+    find_library(ANDROID_DL_LIBRARY dl)
+    find_library(ANDROID_LOG_LIBRARY log)
+    find_library(ANDROID_LIBRARY_LIBRARY android)
+    list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_LOG_LIBRARY} ${ANDROID_LIBRARY_LIBRARY})
+    add_definitions(-DGL_GLEXT_PROTOTYPES)
+
     #enable gles
     if(VIDEO_OPENGLES)
       set(SDL_VIDEO_OPENGL_EGL 1)
       set(HAVE_VIDEO_OPENGLES TRUE)
       set(SDL_VIDEO_OPENGL_ES2 1)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
+
+      find_library(OpenGLES1_LIBRARY GLESv1_CM)
+      find_library(OpenGLES2_LIBRARY GLESv2)
+      list(APPEND EXTRA_LIBS ${OpenGLES1_LIBRARY} ${OpenGLES2_LIBRARY})
     endif()
   endif()
   list(APPEND EXTRA_LDFLAGS "-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit")
@@ -816,17 +864,17 @@ if(EMSCRIPTEN)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
     endif()
   endif()
-elseif(UNIX AND NOT APPLE)
+elseif(UNIX AND NOT APPLE AND NOT ANDROID)
   if(SDL_AUDIO)
     if(SYSV5 OR SOLARIS OR HPUX)
         set(SDL_AUDIO_DRIVER_SUNAUDIO 1)
         file(GLOB SUN_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/sun/*.c)
         set(SOURCE_FILES ${SOURCE_FILES} ${SUN_AUDIO_SOURCES})
         set(HAVE_SDL_AUDIO TRUE)
-    elseif(NETBSD OR OPENBSD)
-        set(SDL_AUDIO_DRIVER_BSD 1)
-        file(GLOB BSD_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/bsd/*.c)
-        set(SOURCE_FILES ${SOURCE_FILES} ${BSD_AUDIO_SOURCES})
+    elseif(NETBSD)
+        set(SDL_AUDIO_DRIVER_NETBSD 1)
+        file(GLOB NETBSD_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/netbsd/*.c)
+        set(SOURCE_FILES ${SOURCE_FILES} ${NETBSD_AUDIO_SOURCES})
         set(HAVE_SDL_AUDIO TRUE)
     elseif(AIX)
         set(SDL_AUDIO_DRIVER_PAUDIO 1)
@@ -836,6 +884,7 @@ elseif(UNIX AND NOT APPLE)
     endif()
     CheckOSS()
     CheckALSA()
+    CheckJACK()
     CheckPulseAudio()
     CheckESD()
     CheckARTS()
@@ -1245,7 +1294,6 @@ elseif(APPLE)
     set(HAVE_SDL_JOYSTICK TRUE)
     set(SDL_FRAMEWORK_IOKIT 1)
     set(SDL_FRAMEWORK_FF 1)
-    set(SDL_FRAMEWORK_GAMECONTROLLER 1)
   endif()
 
   if(SDL_HAPTIC)

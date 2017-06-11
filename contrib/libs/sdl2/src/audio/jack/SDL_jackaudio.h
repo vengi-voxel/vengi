@@ -18,45 +18,25 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#ifndef _SDL_jackaudio_h
+#define _SDL_jackaudio_h
 
-#ifdef SDL_FILESYSTEM_ANDROID
+#include <jack/jack.h>
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+#include "../SDL_sysaudio.h"
 
-#include <unistd.h>
+/* Hidden "this" pointer for the audio functions */
+#define _THIS SDL_AudioDevice *this
 
-#include "SDL_error.h"
-#include "SDL_filesystem.h"
-#include "SDL_system.h"
-
-
-char *
-SDL_GetBasePath(void)
+struct SDL_PrivateAudioData
 {
-    /* The current working directory is / on Android */
-    SDL_Unsupported();
-    return NULL;
-}
+    jack_client_t *client;
+    SDL_sem *iosem;
+    float *iobuffer;
+    const char **devports;
+    jack_port_t **sdlports;
+};
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
-{
-    const char *path = SDL_AndroidGetInternalStoragePath();
-    if (path) {
-        size_t pathlen = SDL_strlen(path)+2;
-        char *fullpath = (char *)SDL_malloc(pathlen);
-        if (!fullpath) {
-            SDL_OutOfMemory();
-            return NULL;
-        }
-        SDL_snprintf(fullpath, pathlen, "%s/", path);
-        return fullpath;
-    }
-    return NULL;
-}
-
-#endif /* SDL_FILESYSTEM_ANDROID */
+#endif /* _SDL_jackaudio_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
