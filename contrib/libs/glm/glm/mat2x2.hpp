@@ -1,6 +1,8 @@
 /// @ref core
 /// @file glm/mat2x2.hpp
 
+#include "detail/setup.hpp"
+
 #pragma once
 
 #include "detail/type_mat2x2.hpp"

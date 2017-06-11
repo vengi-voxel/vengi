@@ -8,7 +8,7 @@
 namespace glm{
 namespace detail
 {
-	template<int Columns, int Rows, typename T, precision P, template<int, class, precision> class colType, template<int, class, precision> class rowType>
+	template<length_t Columns, length_t Rows, typename T, precision P, template<length_t, class, precision> class colType, template<length_t, class, precision> class rowType>
 	struct outerProduct_trait{};
 }//namespace detail
 

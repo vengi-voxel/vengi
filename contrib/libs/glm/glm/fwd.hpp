@@ -1,6 +1,8 @@
 /// @ref core
 /// @file glm/fwd.hpp
 
+#include "detail/setup.hpp"
+
 #pragma once
 
 #include "detail/type_int.hpp"

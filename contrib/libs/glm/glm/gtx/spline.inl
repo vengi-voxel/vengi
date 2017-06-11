@@ -13,7 +13,6 @@ namespace glm
 		typename genType::value_type const & s
 	)
 	{
-		typename genType::value_type s1 = s;
 		typename genType::value_type s2 = pow2(s);
 		typename genType::value_type s3 = pow3(s);
 
@@ -36,7 +35,6 @@ namespace glm
 		typename genType::value_type const & s
 	)
 	{
-		typename genType::value_type s1 = s;
 		typename genType::value_type s2 = pow2(s);
 		typename genType::value_type s3 = pow3(s);
 

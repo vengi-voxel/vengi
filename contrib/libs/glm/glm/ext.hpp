@@ -25,6 +25,8 @@
 /// at once by including <glm/ext.hpp>. Otherwise, each extension needs to be 
 /// included  a specific file.
 
+#include "detail/setup.hpp"
+
 #pragma once
 
 #include "glm.hpp"

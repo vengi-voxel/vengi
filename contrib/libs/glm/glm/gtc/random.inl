@@ -10,7 +10,7 @@
 namespace glm{
 namespace detail
 {
-	template<length_t L, typename T, precision P, template<int, class, precision> class vecType>
+	template<length_t L, typename T, precision P, template<length_t, class, precision> class vecType>
 	struct compute_rand
 	{
 		GLM_FUNC_QUALIFIER static vecType<L, T, P> call();

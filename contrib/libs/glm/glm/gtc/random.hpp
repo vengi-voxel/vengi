@@ -32,10 +32,10 @@ namespace glm
 	/// @param Max 
 	/// @tparam genType Value type. Currently supported: float or double scalars.
 	/// @see gtc_random
-	template<typename genTYpe>
-	GLM_FUNC_DECL genTYpe linearRand(
-		genTYpe Min,
-		genTYpe Max);
+	template<typename genType>
+	GLM_FUNC_DECL genType linearRand(
+		genType Min,
+		genType Max);
 
 	/// Generate random numbers in the interval [Min, Max], according a linear distribution 
 	/// 

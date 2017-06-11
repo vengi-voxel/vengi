@@ -20,7 +20,7 @@ namespace detail
 		}
 #	endif
 
-	template<length_t L, typename T, precision P, template<int, class, precision> class vecType, bool isFloat, bool Aligned>
+	template<length_t L, typename T, precision P, template<length_t, class, precision> class vecType, bool isFloat, bool Aligned>
 	struct compute_log2
 	{
 		GLM_FUNC_QUALIFIER static vec<L, T, P> call(vec<L, T, P> const& v)

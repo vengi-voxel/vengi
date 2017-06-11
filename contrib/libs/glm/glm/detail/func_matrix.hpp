@@ -111,7 +111,7 @@ namespace detail
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/outerProduct.xml">GLSL outerProduct man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.6 Matrix Functions</a>
-	template<int DA, int DB, typename T, precision P, template<length_t, typename, precision> class vecTypeA, template<length_t, typename, precision> class vecTypeB>
+	template<length_t DA, length_t DB, typename T, precision P, template<length_t, typename, precision> class vecTypeA, template<length_t, typename, precision> class vecTypeB>
 	GLM_FUNC_DECL typename detail::outerProduct_trait<DA, DB, T, P, vecTypeA, vecTypeB>::type outerProduct(vecTypeA<DA, T, P> const & c, vecTypeB<DB, T, P> const & r);
 
 	/// Returns the transposed matrix of x

@@ -362,7 +362,7 @@ namespace detail
 		return detail::compute_matrixCompMult<matType, C, R, T, P, detail::is_aligned<P>::value>::call(x, y);
 	}
 
-	template<int DA, int DB, typename T, precision P, template<length_t, typename, precision> class vecTypeA, template<length_t, typename, precision> class vecTypeB>
+	template<length_t DA, length_t DB, typename T, precision P, template<length_t, typename, precision> class vecTypeA, template<length_t, typename, precision> class vecTypeB>
 	GLM_FUNC_QUALIFIER typename detail::outerProduct_trait<DA, DB, T, P, vecTypeA, vecTypeB>::type outerProduct(vecTypeA<DA, T, P> const & c, vecTypeB<DB, T, P> const & r)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559 || GLM_UNRESTRICTED_GENTYPE, "'outerProduct' only accept floating-point inputs");

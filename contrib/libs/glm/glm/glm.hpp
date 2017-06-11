@@ -51,6 +51,8 @@
 
 #include "detail/_fixes.hpp"
 
+#include "detail/setup.hpp"
+
 #pragma once
 
 #include <cmath>

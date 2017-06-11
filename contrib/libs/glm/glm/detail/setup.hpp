@@ -1,11 +1,22 @@
 /// @ref core
 /// @file glm/detail/setup.hpp
 
-#pragma once
+#ifndef GLM_SETUP_INCLUDED
+
+#define GLM_VERSION_MAJOR			0
+#define GLM_VERSION_MINOR			9
+#define GLM_VERSION_PATCH			9
+#define GLM_VERSION_REVISION		0
+#define GLM_VERSION					990
+
+#define GLM_SETUP_INCLUDED GLM_VERSION
 
 #if defined(GLM_FORCE_SWIZZLE) && defined(GLM_FORCE_UNRESTRICTED_GENTYPE)
 #	error "Both GLM_FORCE_SWIZZLE and GLM_FORCE_UNRESTRICTED_GENTYPE can't be defined at the same time"
 #endif
+
+#include <cassert>
+#include <cstddef>
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Messages
@@ -19,18 +30,13 @@
 #	define GLM_MESSAGES GLM_MESSAGES_DISABLE
 #endif
 
-#include <cassert>
-#include <cstddef>
+///////////////////////////////////////////////////////////////////////////////////
+// Detect the platform
+
 #include "../simd/platform.h"
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Version
-
-#define GLM_VERSION					99
-#define GLM_VERSION_MAJOR			0
-#define GLM_VERSION_MINOR			9
-#define GLM_VERSION_PATCH			9
-#define GLM_VERSION_REVISION		0
 
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_VERSION_DISPLAYED)
 #	define GLM_MESSAGE_VERSION_DISPLAYED
@@ -731,9 +737,11 @@
 #define GLM_HAS_ALIGNED_TYPE GLM_HAS_UNRESTRICTED_UNIONS
 
 ///////////////////////////////////////////////////////////////////////////////////
-// Length type
+// Length type: all length functions returns a length_t type.
+// When GLM_FORCE_SIZE_T_LENGTH is defined, length_t is a typedef of size_t otherwise
+// length_t is a typedef of int like GLSL defines it.
 
-// User defines: GLM_FORCE_SIZE_T_LENGTH GLM_FORCE_SIZE_FUNC
+// User define: GLM_FORCE_SIZE_T_LENGTH
 
 namespace glm
 {
@@ -784,3 +792,12 @@ namespace glm
 {
 	enum ctor{uninitialize};
 }//namespace glm
+
+///////////////////////////////////////////////////////////////////////////////////
+// Check inclusions of different versions of GLM
+
+#elif ((GLM_SETUP_INCLUDED != GLM_VERSION) && !defined(GLM_FORCE_IGNORE_VERSION))	
+#	error "GLM error: A different version of GLM is already included. Define GLM_FORCE_IGNORE_VERSION before including GLM headers to ignore this error."
+#elif GLM_SETUP_INCLUDED == GLM_VERSION
+
+#endif//GLM_SETUP_INCLUDED

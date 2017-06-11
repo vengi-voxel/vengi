@@ -11,10 +11,11 @@
 /// 
 /// <glm/gtc/bitfield.hpp> need to be included to use these functionalities.
 
+#include "../detail/setup.hpp"
+
 #pragma once
 
 // Dependencies
-#include "../detail/setup.hpp"
 #include "../detail/precision.hpp"
 #include "../detail/type_int.hpp"
 #include "../detail/_vectorize.hpp"
