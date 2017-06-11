@@ -193,8 +193,12 @@ define UPDATE_HG
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,backward-cpp,https://github.com/bombela/backward-cpp.git)
+	cp $(UPDATEDIR)/backward-cpp.sync/backward.cpp contrib/libs/backward
+	cp -f $(UPDATEDIR)/backward-cpp.sync/backward.hpp contrib/libs/backward/backward.h
+	sed -i 's/backward.hpp/backward.h/g' contrib/libs/backward/backward.cpp
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
-	cp -r $(UPDATEDIR)/imgui.sync/imgui*.h $(UPDATEDIR)/imgui.sync/imgui*.cpp $(UPDATEDIR)/imgui.sync/stb_*.h contrib/libs/dearimgui/dearimgui
+	cp $(UPDATEDIR)/imgui.sync/imgui*.h $(UPDATEDIR)/imgui.sync/imgui*.cpp $(UPDATEDIR)/imgui.sync/stb_*.h contrib/libs/dearimgui/dearimgui
 	$(call UPDATE_GIT,assimp,https://github.com/assimp/assimp.git)
 	rm -rf contrib/libs/assimp/code/* contrib/libs/assimp/include/*
 	cp -r $(UPDATEDIR)/assimp.sync/code/* contrib/libs/assimp/code
