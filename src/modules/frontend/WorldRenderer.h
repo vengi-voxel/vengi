@@ -177,6 +177,7 @@ public:
 
 	/** @brief extract meshes around the given position */
 	void extractMeshes(const glm::vec3& pos, int radius = 5);
+	void extractMeshes(const video::Camera& camera);
 
 	ClientEntityPtr getEntity(ClientEntityId id) const;
 	bool addEntity(const ClientEntityPtr& entity);

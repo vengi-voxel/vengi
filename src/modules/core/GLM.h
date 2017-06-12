@@ -6,6 +6,7 @@
 #include <limits>
 #include <cmath>
 
+#include <glm/gtc/integer.hpp>
 #include <glm/glm.hpp>
 
 #include <glm/vec2.hpp>

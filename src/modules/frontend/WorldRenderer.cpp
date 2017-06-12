@@ -704,7 +704,13 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 	return true;
 }
 
-// TODO: extract frustum and do closest to camera first
+void WorldRenderer::extractMeshes(const video::Camera& camera) {
+	_octree.visit(camera.frustum(), [this] (const glm::ivec3& center) {
+		const glm::ivec3& meshdPos = _world->meshPos(center);
+		_world->scheduleMeshExtraction(meshdPos);
+	}, glm::vec3(_world->meshSize()));
+}
+
 void WorldRenderer::extractMeshes(const glm::vec3& p, int radius) {
 	core_trace_scoped(WorldRendererExtractMeshes);
 	const glm::ivec3& meshGridPos = _world->meshPos(p);
@@ -907,6 +913,7 @@ void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
 	_deltaFrame = dt;
+	_world->updateExtractionOrder(camera.position(), camera.frustum());
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const bool shadowMap = _shadowMap->boolVal();
 	_shadow.calculateShadowData(camera, shadowMap, maxDepthBuffers, _depthBuffer.dimension());

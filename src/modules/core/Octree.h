@@ -219,6 +219,23 @@ private:
 	// dirty flag can be used for query caches
 	bool _dirty = false;
 	const IOctreeListener* _listener = nullptr;
+
+	template<class VISITOR>
+	void visit_r(const Frustum& queryArea, const AABB<TYPE>& queryAABB, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) const {
+		if (!queryArea.isVisible(queryAABB.mins(), queryAABB.maxs())) {
+			return;
+		}
+		if (glm::any(glm::lessThanEqual(queryAABB.getWidth(), minSize))) {
+			visitor(queryAABB.getCenter());
+			return;
+		}
+		std::array<AABB<TYPE>, 8> result;
+		queryAABB.split(result);
+		for (AABB<TYPE>& aabb : result) {
+			visit_r(queryArea, aabb, visitor, minSize);
+		}
+	}
+
 public:
 	Octree(const AABB<TYPE>& aabb, int maxDepth = 10) :
 			_root(aabb, maxDepth, 0, this) {
@@ -257,6 +274,42 @@ public:
 		core_trace_scoped(OctreeQuery);
 		const AABB<float>& areaAABB = area.aabb();
 		_root.query(area, AABB<TYPE>(areaAABB.mins(), areaAABB.maxs()), results);
+	}
+
+	/**
+	 * @brief Executes the given visitor for all visible nodes in this octree.
+	 * @note As there might not be nodes yet for the potential visible nodes, the visitor
+	 * is just called with the center of the potential node
+	 * @param area The frustum area to visit visible AABBs for
+	 * @param visitor The visitor to execute if an AABB is visible in the given frustum
+	 * @param minSize The mimimum size of the AABBs when the recursion is stopped.
+	 */
+	template<class VISITOR>
+	inline void visit(const Frustum& area, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) {
+		const AABB<float>& aabb = area.aabb();
+#if 0
+		const AABB<TYPE> converted(aabb.mins(), aabb.maxs());
+
+		glm::vec<3, TYPE> mins = converted.mins();
+		const glm::vec<3, TYPE>& resultMins = glm::mod(mins, minSize);
+		mins -= resultMins;
+
+		glm::vec<3, TYPE> maxs = converted.maxs();
+		const glm::vec<3, TYPE>& resultMaxs = glm::mod(maxs + minSize, minSize);
+		maxs += resultMaxs;
+
+#else
+		glm::vec3 mins = aabb.mins();
+		const glm::vec3 fminsize(minSize);
+		const glm::vec3& resultMins = glm::mod(mins, fminsize);
+		mins -= resultMins;
+
+		glm::vec3 maxs = aabb.maxs();
+		const glm::vec3& resultMaxs = glm::mod(maxs + fminsize, fminsize);
+		maxs += resultMaxs;
+#endif
+		const AABB<int> final(mins, maxs);
+		visit_r(area, final, visitor, minSize);
 	}
 
 	void setListener(const IOctreeListener* func) {

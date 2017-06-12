@@ -94,6 +94,10 @@ void World::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	scheduleMeshExtraction(pos);
 }
 
+void World::updateExtractionOrder(const glm::ivec3& sortPos, const core::Frustum& frustum) {
+	// TODO: sort closest to camera and in frustum first
+}
+
 bool World::allowReExtraction(const glm::ivec3& pos) {
 	const glm::ivec3& gridPos = meshPos(pos);
 	return _meshesExtracted.erase(gridPos) != 0;

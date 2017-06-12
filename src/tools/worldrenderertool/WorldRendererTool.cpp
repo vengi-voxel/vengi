@@ -83,7 +83,7 @@ core::AppState WorldRendererTool::onInit() {
 	_camera.setPosition(glm::vec3(50.0f, 100.0f, 50.0f));
 	_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 
-	_worldRenderer.extractMeshes(_camera.position(), 1);
+	_worldRenderer.extractMeshes(_camera);
 
 	_meshPool->init();
 
@@ -117,7 +117,7 @@ void WorldRendererTool::beforeUI() {
 
 	if (_resetTriggered && !_world->isReset()) {
 		_world->setContext(_ctx);
-		_worldRenderer.extractMeshes(_camera.position());
+		_worldRenderer.extractMeshes(_camera);
 		_resetTriggered = false;
 	}
 
@@ -134,7 +134,7 @@ void WorldRendererTool::beforeUI() {
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	_camera.update(_deltaFrame);
 
-	_worldRenderer.extractMeshes(_camera.position());
+	_worldRenderer.extractMeshes(_camera);
 	_worldRenderer.onRunning(_camera, _deltaFrame);
 	ScopedProfiler<video::ProfilerGPU> wt(_worldTimer);
 	if (_lineModeRendering) {
