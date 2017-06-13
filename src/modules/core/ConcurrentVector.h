@@ -1,24 +1,24 @@
 #pragma once
 
 #include <cstdint>
-#include <queue>
 #include <vector>
+#include <algorithm>
 #include <condition_variable>
 #include <mutex>
 #include <atomic>
 
 namespace core {
 
-template<class Data, class Compare = std::less<Data> >
-class ConcurrentQueue {
+template<class Data>
+class ConcurrentVector {
 private:
-	using Collection = std::priority_queue<Data, std::vector<Data>, Compare>;
+	using Collection = std::vector<Data>;
 	Collection _data;
 	mutable std::mutex _mutex;
 	std::condition_variable _conditionVariable;
 	std::atomic_bool _abort { false };
 public:
-	~ConcurrentQueue() {
+	~ConcurrentVector() {
 		abortWait();
 	}
 
@@ -29,19 +29,26 @@ public:
 
 	void clear() {
 		std::unique_lock<std::mutex> lock(_mutex);
-		_data = Collection();
+		_data.clear();
 	}
 
 	void push(Data const& data) {
 		std::unique_lock<std::mutex> lock(_mutex);
-		_data.push(data);
+		_data.push_back(data);
 		lock.unlock();
 		_conditionVariable.notify_one();
 	}
 
+	std::vector<Data> clearCopy() {
+		std::unique_lock<std::mutex> lock(_mutex);
+		std::vector<Data> copy = _data;
+		_data.clear();
+		return copy;
+	}
+
 	void push(Data&& data) {
 		std::unique_lock<std::mutex> lock(_mutex);
-		_data.push(data);
+		_data.emplace_back(std::forward(data));
 		lock.unlock();
 		_conditionVariable.notify_one();
 	}
@@ -62,8 +69,8 @@ public:
 			return false;
 		}
 
-		poppedValue = std::move(_data.top());
-		_data.pop();
+		poppedValue = std::move(_data.back());
+		_data.pop_back();
 		return true;
 	}
 
@@ -79,9 +86,19 @@ public:
 			}
 		}
 
-		poppedValue = std::move(_data.top());
-		_data.pop();
+		poppedValue = std::move(_data.back());
+		_data.pop_back();
 		return true;
+	}
+
+	template<class SORT>
+	void sort(SORT&& sort, int amount = 0) {
+		std::unique_lock<std::mutex> lock(_mutex);
+		if (amount <= 0) {
+			std::sort(_data.begin(), _data.end(), sort);
+		} else {
+			std::partial_sort(_data.begin(), _data.begin() + amount, _data.end(), sort);
+		}
 	}
 };
 

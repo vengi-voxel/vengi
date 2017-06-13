@@ -1,8 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <queue>
-#include <vector>
+#include <set>
 #include <condition_variable>
 #include <mutex>
 #include <atomic>
@@ -10,15 +9,15 @@
 namespace core {
 
 template<class Data, class Compare = std::less<Data> >
-class ConcurrentQueue {
+class ConcurrentSet {
 private:
-	using Collection = std::priority_queue<Data, std::vector<Data>, Compare>;
+	using Collection = std::set<Data, Compare>;
 	Collection _data;
 	mutable std::mutex _mutex;
 	std::condition_variable _conditionVariable;
 	std::atomic_bool _abort { false };
 public:
-	~ConcurrentQueue() {
+	~ConcurrentSet() {
 		abortWait();
 	}
 
@@ -29,21 +28,28 @@ public:
 
 	void clear() {
 		std::unique_lock<std::mutex> lock(_mutex);
-		_data = Collection();
+		_data.clear();
 	}
 
-	void push(Data const& data) {
+	bool push(Data const& data) {
 		std::unique_lock<std::mutex> lock(_mutex);
-		_data.push(data);
+		auto i = _data.insert(data);
 		lock.unlock();
 		_conditionVariable.notify_one();
+		return i->second;
 	}
 
-	void push(Data&& data) {
+	bool contains(Data const& data) const {
 		std::unique_lock<std::mutex> lock(_mutex);
-		_data.push(data);
+		return _data.find(data) != _data.end();
+	}
+
+	bool push(Data&& data) {
+		std::unique_lock<std::mutex> lock(_mutex);
+		auto i = _data.insert(data);
 		lock.unlock();
 		_conditionVariable.notify_one();
+		return i->second;
 	}
 
 	inline bool empty() const {
@@ -62,8 +68,8 @@ public:
 			return false;
 		}
 
-		poppedValue = std::move(_data.top());
-		_data.pop();
+		poppedValue = std::move(*_data.begin());
+		_data.erase(_data.begin());
 		return true;
 	}
 
@@ -79,9 +85,15 @@ public:
 			}
 		}
 
-		poppedValue = std::move(_data.top());
-		_data.pop();
+		poppedValue = std::move(*_data.begin());
+		_data.erase(_data.begin());
 		return true;
+	}
+
+	template<class SORT>
+	void sort(SORT&& sort) {
+		std::unique_lock<std::mutex> lock(_mutex);
+		std::sort(_data.begin(), _data.end(), sort);
 	}
 };
 

@@ -1,24 +1,23 @@
 #pragma once
 
 #include <cstdint>
-#include <queue>
-#include <vector>
+#include <map>
 #include <condition_variable>
 #include <mutex>
 #include <atomic>
 
 namespace core {
 
-template<class Data, class Compare = std::less<Data> >
-class ConcurrentQueue {
+template<class Key, class Data, typename Compare = std::less<Key>>
+class ConcurrentMap {
 private:
-	using Collection = std::priority_queue<Data, std::vector<Data>, Compare>;
-	Collection _data;
+	using Collection = std::map<Key, Data, Compare>;
+	Collection _map;
 	mutable std::mutex _mutex;
 	std::condition_variable _conditionVariable;
 	std::atomic_bool _abort { false };
 public:
-	~ConcurrentQueue() {
+	~ConcurrentMap() {
 		abortWait();
 	}
 
@@ -29,49 +28,43 @@ public:
 
 	void clear() {
 		std::unique_lock<std::mutex> lock(_mutex);
-		_data = Collection();
+		_map.clear();
 	}
 
-	void push(Data const& data) {
+	bool insert(const Key& key, const Data& data) {
 		std::unique_lock<std::mutex> lock(_mutex);
-		_data.push(data);
+		const bool inserted = _map.insert(key, data).second;
 		lock.unlock();
 		_conditionVariable.notify_one();
-	}
-
-	void push(Data&& data) {
-		std::unique_lock<std::mutex> lock(_mutex);
-		_data.push(data);
-		lock.unlock();
-		_conditionVariable.notify_one();
+		return inserted;
 	}
 
 	inline bool empty() const {
 		std::unique_lock<std::mutex> lock(_mutex);
-		return _data.empty();
+		return _map.empty();
 	}
 
 	inline uint32_t size() const {
 		std::unique_lock<std::mutex> lock(_mutex);
-		return _data.size();
+		return _map.size();
 	}
 
 	bool pop(Data& poppedValue) {
 		std::unique_lock<std::mutex> lock(_mutex);
-		if (_data.empty()) {
+		if (_map.empty()) {
 			return false;
 		}
 
-		poppedValue = std::move(_data.top());
-		_data.pop();
+		poppedValue = std::move(_map.first());
+		_map.erase(_map.first());
 		return true;
 	}
 
 	bool waitAndPop(Data& poppedValue) {
 		std::unique_lock<std::mutex> lock(_mutex);
-		while (_data.empty()) {
+		while (_map.empty()) {
 			_conditionVariable.wait(lock, [this] {
-				return _abort || !_data.empty();
+				return _abort || !_map.empty();
 			});
 			if (_abort) {
 				_abort = false;
@@ -79,8 +72,8 @@ public:
 			}
 		}
 
-		poppedValue = std::move(_data.top());
-		_data.pop();
+		poppedValue = std::move(_map.first());
+		_map.erase(_map.first());
 		return true;
 	}
 };

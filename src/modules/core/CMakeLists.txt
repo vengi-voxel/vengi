@@ -11,6 +11,8 @@ set(SRCS
 	ByteStream.cpp ByteStream.h
 	Color.cpp Color.h
 	ConcurrentQueue.h
+	ConcurrentSet.h
+	ConcurrentVector.h
 	Common.h
 	Concurrency.h
 	EventBus.cpp EventBus.h
