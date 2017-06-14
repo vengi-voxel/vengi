@@ -54,13 +54,12 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		return false;
 	}
 	const glm::ivec3& pos = meshPos(p);
-	auto i = _meshesExtracted.find(pos);
-	if (i != _meshesExtracted.end()) {
+	auto i = _meshesExtracted.insert(pos);
+	if (!i.second) {
 		return false;
 	}
 	Log::trace("mesh extraction for %i:%i:%i (%i:%i:%i)",
 			p.x, p.y, p.z, pos.x, pos.y, pos.z);
-	_meshesExtracted.insert(pos);
 	_meshesQueue.push(pos);
 	return true;
 }
