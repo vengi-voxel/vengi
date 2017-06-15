@@ -19,7 +19,8 @@ PagedVolume::Chunk::Chunk(const glm::ivec3& v3dPosition, uint16_t uSideLength, P
 
 	// Allocate the data
 	const uint32_t uNoOfVoxels = _sideLength * _sideLength * _sideLength;
-	_data = new Voxel[uNoOfVoxels];
+	_data = (Voxel*)SDL_malloc(uNoOfVoxels * sizeof(Voxel));
+	memset(_data, 0, uNoOfVoxels * sizeof(Voxel));
 }
 
 PagedVolume::Chunk::~Chunk() {
@@ -27,7 +28,7 @@ PagedVolume::Chunk::~Chunk() {
 		_pager->pageOut(this);
 	}
 
-	delete[] _data;
+	SDL_free(_data);
 	_data = nullptr;
 }
 
@@ -65,6 +66,7 @@ void PagedVolume::Chunk::setVoxel(uint32_t uXPos, uint32_t uYPos, uint32_t uZPos
 	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
 	const uint32_t index = morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
+	core::RecursiveScopedWriteLock writeLock(_rwLock);
 	_data[index] = tValue;
 	_dataModified = true;
 }
@@ -82,6 +84,7 @@ void PagedVolume::Chunk::setVoxels(uint32_t uXPos, uint32_t uYPos, uint32_t uZPo
 	core_assert_msg(uZPos < _sideLength, "Supplied z position is outside of the chunk");
 	core_assert_msg(_data, "No uncompressed data - chunk must be decompressed before accessing voxels.");
 
+	core::RecursiveScopedWriteLock writeLock(_rwLock);
 	for (int y = uYPos; y < amount; ++y) {
 		const uint32_t index = morton256_x[uXPos] | morton256_y[y] | morton256_z[uZPos];
 		_data[index] = tValues[y];

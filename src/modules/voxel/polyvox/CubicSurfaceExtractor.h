@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "Voxel.h"
 #include "VoxelVertex.h"
+#include "core/NonCopyable.h"
 #include "Region.h"
 #include <vector>
 #include <list>
@@ -59,7 +60,7 @@ struct VertexData {
 	uint8_t ambientOcclusion;
 };
 
-class Array {
+class Array : core::NonCopyable {
 private:
 	uint32_t _width;
 	uint32_t _height;
@@ -68,31 +69,25 @@ private:
 public:
 	Array(uint32_t width, uint32_t height, uint32_t depth) :
 			_width(width), _height(height), _depth(depth) {
-		_elements = new VertexData[_width * _height * _depth];
-		clear();
+		_elements = (VertexData*)SDL_malloc(width * height * depth * sizeof(VertexData));
+		SDL_memset(_elements, 0, width * height * depth * sizeof(VertexData));
 	}
-
-	// These are deleted to avoid accidental copying.
-	Array(const Array&) = delete;
-	Array& operator=(const Array&) = delete;
 
 	~Array() {
-		delete[] _elements;
+		SDL_free(_elements);
 	}
 
-	inline void clear() {
-		std::memset(_elements, 0x0, _width * _height * _depth * sizeof(VertexData));
+	void clear() {
+		memset(_elements, 0x0, _width * _height * _depth * sizeof(VertexData));
 	}
 
-	inline VertexData& operator()(uint32_t x, uint32_t y, uint32_t z) const {
+	inline VertexData& operator()(uint32_t x, uint32_t y, uint32_t z) {
 		core_assert_msg(x < _width && y < _height && z < _depth, "Array access is out-of-range.");
 		return _elements[z * _width * _height + y * _width + x];
 	}
 
-	inline void swap(Array& other) {
-		VertexData* temp = other._elements;
-		other._elements = _elements;
-		_elements = temp;
+	void swap(Array& other) {
+		std::swap(_elements, other._elements);
 	}
 };
 
@@ -106,8 +101,6 @@ typedef std::vector<QuadList> QuadListVector;
  * @section Surface extraction
  */
 
-extern bool performQuadMerging(QuadList& quads, Mesh* meshCurrent);
-
 extern IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_t uZ, const Voxel& materialIn, Array& existingVertices,
 		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset);
 
@@ -117,7 +110,7 @@ extern IndexType addVertex(bool reuseVertices, uint32_t uX, uint32_t uY, uint32_
  * the quads. This can be done by comparing the ambient occlusion values for each quad and selecting
  * an appropriate orientation. Quad vertices must be sorted in clockwise order.
  */
-static inline bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
+SDL_FORCE_INLINE bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
 	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
 }
 

@@ -57,7 +57,7 @@ static bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 	return false;
 }
 
-bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
+static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
 	bool didMerge = false;
 	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
 		QuadList::iterator innerIter = outerIter;
