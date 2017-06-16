@@ -183,7 +183,7 @@ void createEllipse(Volume& volume, const glm::ivec3& center, int width, int heig
 	const int start = heightLow - 1;
 	const double minRadius = glm::pow(adjustedMinRadius + 0.5, 2.0);
 	for (int y = -start; y <= heightHigh; ++y) {
-		const double percent = glm::abs(y / heightFactor);
+		const double percent = glm::abs(y) / heightFactor;
 		const double circleRadius = minRadius - glm::pow(percent, 2.0);
 		const glm::ivec3 planePos(center.x, center.y + y, center.z);
 		createCirclePlane(volume, planePos, width, depth, circleRadius, voxel);
