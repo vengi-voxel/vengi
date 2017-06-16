@@ -64,19 +64,12 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int 
 template<class Volume, class Voxel>
 void createCube(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const Voxel& voxel) {
 	const int heightLow = height / 2;
-	const int heightHigh = height - heightLow;
 	const int widthLow = width / 2;
-	const int widthHigh = width - widthLow;
 	const int depthLow = depth / 2;
-	const int depthHigh = depth - depthLow;
-	for (int x = -widthLow; x < widthHigh; ++x) {
-		for (int y = -heightLow; y < heightHigh; ++y) {
-			for (int z = -depthLow; z < depthHigh; ++z) {
-				const glm::ivec3 pos(center.x + x, center.y + y, center.z + z);
-				volume.setVoxel(pos, voxel);
-			}
-		}
-	}
+	std::vector<voxel::Voxel> voxels;
+	voxels.assign(height, voxel);
+	volume.setVoxels(center.x - widthLow, center.y - heightLow, center.z - depthLow,
+			width, depth, &voxels.front(), height);
 }
 
 /**
@@ -92,27 +85,9 @@ void createCube(Volume& volume, const glm::ivec3& center, int width, int height,
  */
 template<class Volume, class Voxel>
 void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const Voxel& voxel) {
-	const int w = glm::abs(width);
-	const int h = glm::abs(height);
-	const int d = glm::abs(depth);
-
-	const int sw = width / w;
-	const int sh = height / h;
-	const int sd = depth / d;
-
-	glm::ivec3 p = pos;
-	for (int x = 0; x < w; ++x) {
-		p.y = pos.y;
-		for (int y = 0; y < h; ++y) {
-			p.z = pos.z;
-			for (int z = 0; z < d; ++z) {
-				volume.setVoxel(p, voxel);
-				p.z += sd;
-			}
-			p.y += sh;
-		}
-		p.x += sw;
-	}
+	std::vector<voxel::Voxel> voxels;
+	voxels.assign(height, voxel);
+	volume.setVoxels(pos.x, pos.y, pos.z, width, depth, &voxels.front(), height);
 }
 
 /**
