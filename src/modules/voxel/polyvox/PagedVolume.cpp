@@ -120,15 +120,15 @@ void PagedVolume::setVoxels(int32_t uXPos, int32_t uZPos, const Voxel* tArray, i
 
 void PagedVolume::setVoxels(int32_t uXPos, int32_t uYPos, int32_t uZPos, int nx, int nz, const Voxel* tArray, int amount) {
 	for (int j = 0; j < nx; ++j) {
+		const int32_t x = uXPos + j;
+		const int32_t chunkX = x >> _chunkSideLengthPower;
+		const uint16_t xOffset = static_cast<uint16_t>(x & _chunkMask);
 		for (int k = 0; k < nz; ++k) {
 			int32_t y = uYPos;
-			const int32_t x = uXPos + j;
 			const int32_t z = uZPos + k;
 			int left = amount;
 			const Voxel* array = tArray;
-			const int32_t chunkX = x >> _chunkSideLengthPower;
 			const int32_t chunkZ = z >> _chunkSideLengthPower;
-			const uint16_t xOffset = static_cast<uint16_t>(x & _chunkMask);
 			const uint16_t zOffset = static_cast<uint16_t>(z & _chunkMask);
 			while (left > 0) {
 				const int32_t chunkY = y >> _chunkSideLengthPower;
