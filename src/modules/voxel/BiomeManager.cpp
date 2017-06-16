@@ -117,7 +117,7 @@ const Biome* BiomeManager::getBiome(const glm::ivec3& pos, bool underground) con
 	float humidity;
 	float temperature;
 
-	if (last.humidity > -1.0f && last.pos == pos && last.underground == underground) {
+	if (last.humidity > -1.0f && last.pos.x == pos.x && last.pos.z == pos.z && last.underground == underground) {
 		humidity = last.humidity;
 		temperature = last.temperature;
 	} else {

@@ -41,6 +41,7 @@ int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& wor
 	static constexpr Voxel air;
 
 	voxels[0] = dirt;
+	glm::ivec3 pos(x, 0, z);
 	for (int y = ni - 1; y >= lowerY + 1; --y) {
 		const glm::vec3 noisePos3d(noisePos2d.x, y, noisePos2d.y);
 		// TODO: move the noise settings into the biome
@@ -50,7 +51,7 @@ int WorldGenerator::fillVoxels(int x, int lowerY, int z, const WorldContext& wor
 		const float finalDensity = n + noiseVal;
 		if (finalDensity > worldCtx.caveDensityThreshold) {
 			const bool cave = y < ni - 1;
-			const glm::ivec3 pos(x, y, z);
+			pos.y = y;
 			const Voxel& voxel = _biomeManager.getVoxel(pos, cave);
 			voxels[y] = voxel;
 		} else {
