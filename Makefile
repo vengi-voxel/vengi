@@ -193,6 +193,9 @@ define UPDATE_HG
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,benchmark,https://github.com/google/benchmark.git)
+	cp -r $(UPDATEDIR)/benchmark.sync/src/* contrib/libs/benchmark/src
+	cp -r $(UPDATEDIR)/benchmark.sync/include/* contrib/libs/benchmark/include
 	$(call UPDATE_GIT,backward-cpp,https://github.com/bombela/backward-cpp.git)
 	cp $(UPDATEDIR)/backward-cpp.sync/backward.cpp contrib/libs/backward
 	cp -f $(UPDATEDIR)/backward-cpp.sync/backward.hpp contrib/libs/backward/backward.h
