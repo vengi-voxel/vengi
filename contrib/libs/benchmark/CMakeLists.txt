@@ -35,7 +35,6 @@ set(SRCS
 engine_add_library(
 	LIB benchmark
 	SRCS ${SRCS}
+	DEFINES HAVE_STD_REGEX=1 BENCHMARK_HAS_NO_EXCEPTIONS=1
 )
-if (NOT BENCHMARK_FOUND)
 	target_include_directories(benchmark PUBLIC include)
-endif()

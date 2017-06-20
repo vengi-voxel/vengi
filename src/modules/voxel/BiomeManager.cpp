@@ -32,6 +32,11 @@ BiomeManager::BiomeManager() {
 }
 
 BiomeManager::~BiomeManager() {
+	shutdown();
+}
+
+void BiomeManager::shutdown() {
+	_defaultBiome = nullptr;
 	for (const Biome* biome : _bioms) {
 		delete biome;
 	}

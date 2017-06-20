@@ -166,6 +166,7 @@ core::AppState ShapeTool::onRunning() {
 
 core::AppState ShapeTool::onCleanup() {
 	_meshPool->shutdown();
+	_biomeManager.shutdown();
 	_octreeRenderer.shutdown();
 	_worldTimer.shutdown();
 	_axis.shutdown();

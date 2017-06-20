@@ -92,3 +92,10 @@ gtest_suite_begin(tests-voxel TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.c
 gtest_suite_files(tests-voxel ${TEST_SRCS} ../core/tests/AbstractTest.cpp)
 gtest_suite_deps(tests-voxel ${LIB})
 gtest_suite_end(tests-voxel)
+
+set(BENCHMARK_SRCS
+	../core/benchmark/AbstractBenchmark.cpp
+	benchmark/VoxelBenchmark.cpp
+)
+engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS})
+engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark ${LIB})

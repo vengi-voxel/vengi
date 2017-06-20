@@ -175,6 +175,7 @@ void World::shutdown() {
 	_meshesExtracted.clear();
 	_meshQueue.clear();
 	_pager.shutdown();
+	_biomeManager.shutdown();
 	delete _volumeData;
 	_volumeData = nullptr;
 	_ctx = WorldContext();
