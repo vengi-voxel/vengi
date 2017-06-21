@@ -62,7 +62,6 @@ void WorldRenderer::shutdown() {
 	_materialBlock.shutdown();
 	reset();
 	_colorTexture.shutdown();
-	_entities.clear();
 	_opaqueBuffer.shutdown();
 	_waterBuffer.shutdown();
 	_shapeRenderer.shutdown();
