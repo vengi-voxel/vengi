@@ -374,6 +374,7 @@ bool WorldRenderer::renderWaterBuffers() {
 }
 
 int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertices) {
+	int drawCalls = 0;
 	for (PlantBuffer* vbo : vbos) {
 		const uint32_t numIndices = vbo->vb.elements(vbo->indexBuffer, 1, sizeof(voxel::IndexType));
 		if (numIndices == 0u) {
@@ -387,13 +388,14 @@ int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertic
 			const std::vector<glm::vec3>& positions = vbo->instancedPositions;
 			video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, numIndices, positions.size());
 		}
+		++drawCalls;
 		if (vertices != nullptr) {
 			// TODO: replace magic number for components
 			*vertices += vbo->vb.elements(vbo->vertexBuffer, 3, sizeof(voxel::VoxelVertex));
 		}
 	}
 
-	return vbos.size();
+	return drawCalls;
 }
 
 int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {

@@ -155,6 +155,9 @@ protected:
 
 	void cull(const video::Camera& camera);
 	bool occluded(ChunkBuffer * chunkBuffer) const;
+	/**
+	 * @return The amount of drawcalls
+	 */
 	int renderPlants(const std::list<PlantBuffer*>& vbos, int* vertices);
 	bool renderOpaqueBuffers();
 	bool renderWaterBuffers();

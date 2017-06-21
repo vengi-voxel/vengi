@@ -10,10 +10,11 @@ void distributePlants(const voxel::WorldPtr& world, const glm::ivec3& pos, std::
 	core::Random random(pos.x);
 	const voxel::BiomeManager& biomeMgr = world->biomeManager();
 	std::vector<glm::vec2> positions;
-	biomeMgr.getPlantPositions(voxel::Region(pos.x, 0, pos.z, pos.x + size - 1, 0, pos.z + size - 1), positions, random, 5);
+	const voxel::Region region(pos.x, 0, pos.z, pos.x + size - 1, voxel::MAX_TERRAIN_HEIGHT, pos.z + size - 1);
+	biomeMgr.getPlantPositions(region, positions, random, 5);
 	for (const glm::vec2& p : positions) {
 		const int y = world->findFloor(p.x, p.y, voxel::isFloor);
-		if (y == voxel::NO_FLOOR_FOUND) {
+		if (y == voxel::NO_FLOOR_FOUND || y < voxel::MAX_WATER_HEIGHT) {
 			continue;
 		}
 		const glm::ivec3 translation(p.x, y, p.y);
