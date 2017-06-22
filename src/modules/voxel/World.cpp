@@ -82,6 +82,16 @@ Region World::getRegion(const glm::ivec3& pos, int size) const {
 	return region;
 }
 
+Region World::getRegion(const glm::ivec3& pos, const glm::ivec3& size) const {
+	int deltaX = size.x - 1;
+	int deltaY = size.y - 1;
+	int deltaZ = size.z - 1;
+	const glm::ivec3 mins(pos.x, pos.y, pos.z);
+	const glm::ivec3 maxs(pos.x + deltaX, pos.y + deltaY, pos.z + deltaZ);
+	const Region region(mins, maxs);
+	return region;
+}
+
 PickResult World::pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength) {
 	static constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air, 0);
 	return voxel::pickVoxel(_volumeData, origin, directionWithLength, air);

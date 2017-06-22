@@ -896,8 +896,8 @@ void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const bool shadowMap = _shadowMap->boolVal();
 	_shadow.calculateShadowData(camera, shadowMap, maxDepthBuffers, _depthBuffer.dimension());
-	const float cullingThreshold = _world->meshSize();
-	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold, 2);
+	const glm::vec3 cullingThreshold(_world->meshSize());
+	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold.x, 2);
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {
 			continue;

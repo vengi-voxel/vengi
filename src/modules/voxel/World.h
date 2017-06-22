@@ -177,12 +177,13 @@ public:
 
 	PagedVolume::ChunkPtr chunk(const glm::ivec3& pos) const;
 
-	int meshSize() const;
+	glm::ivec3 meshSize() const;
 
 private:
 	Region getChunkRegion(const glm::ivec3& pos) const;
 	Region getMeshRegion(const glm::ivec3& pos) const;
 	Region getRegion(const glm::ivec3& pos, int size) const;
+	Region getRegion(const glm::ivec3& pos, const glm::ivec3& size) const;
 
 	void extractScheduledMesh();
 
@@ -213,11 +214,11 @@ inline void World::setClientData(bool clientData) {
 }
 
 inline glm::ivec3 World::meshPos(const glm::ivec3& pos) const {
-	const float size = meshSize();
-	const int x = glm::floor(pos.x / size);
-	const int y = glm::floor(pos.y / size);
-	const int z = glm::floor(pos.z / size);
-	return glm::ivec3(x * size, y * size, z * size);
+	const glm::vec3 size(meshSize());
+	const int x = glm::floor(pos.x / size.x);
+	const int y = glm::floor(pos.y / size.y);
+	const int z = glm::floor(pos.z / size.z);
+	return glm::ivec3(x * size.x, y * size.y, z * size.z);
 }
 
 inline glm::ivec3 World::chunkPos(const glm::ivec3& pos) const {
@@ -254,7 +255,7 @@ inline long World::seed() const {
 }
 
 inline Region World::getMeshRegion(const glm::ivec3& pos) const {
-	const int size = meshSize();
+	const glm::ivec3& size = meshSize();
 	return getRegion(pos, size);
 }
 
@@ -266,8 +267,9 @@ inline PagedVolume::ChunkPtr World::chunk(const glm::ivec3& pos) const {
 	return _volumeData->chunk(pos);
 }
 
-inline int World::meshSize() const {
-	return _meshSize->intVal();
+inline glm::ivec3 World::meshSize() const {
+	const int s = _meshSize->intVal();
+	return glm::ivec3(s);
 }
 
 inline VoxelType World::material(int x, int y, int z) const {

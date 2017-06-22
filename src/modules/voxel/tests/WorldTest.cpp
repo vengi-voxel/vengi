@@ -70,7 +70,8 @@ protected:
 
 		const glm::ivec3& meshPos = world.meshPos(vec);
 		ASSERT_EQ(glm::ivec3(meshX, meshY, meshZ), meshPos)
-			<< "Mesh position doesn't match the expected for mesh size: " << world.meshSize()
+			<< "Mesh position doesn't match the expected for mesh size: "
+			<< glm::to_string(world.meshSize())
 			<< " at: " << vec.x << ", " << vec.y << ", " << vec.z;
 	}
 };
@@ -95,12 +96,14 @@ TEST_F(WorldTest, testChunkAndmeshPos) {
 	ASSERT_TRUE(world.init(filesystem->load("world.lua"), filesystem->load("biomes.lua")));
 	const int chunkSize = world.chunkSize();
 	//const int halfChunkSize = chunkSize / 2;
-	const int meshSize = world.meshSize();
-	ASSERT_EQ(0, chunkSize % meshSize) << "mesh size must be a multiple of chunk size";
-	const int meshFactor = chunkSize / meshSize;
+	const glm::ivec3& meshSize = world.meshSize();
+	ASSERT_EQ(0, chunkSize % meshSize.x) << "mesh size must be a multiple of chunk size";
+	ASSERT_EQ(0, chunkSize % meshSize.y) << "mesh size must be a multiple of chunk size";
+	ASSERT_EQ(0, chunkSize % meshSize.z) << "mesh size must be a multiple of chunk size";
+	const int meshFactor = chunkSize / meshSize.x;
 	ASSERT_GT(meshFactor, 0) << "mesh factor is <= 0, which mean, <= 0 meshes fitting into a chunk - weird";
 	//const int chunkSizePlusOneMesh = chunkSize + meshSize;
-	const int chunkSizeMinusOneMesh = chunkSize - meshSize;
+	const int chunkSizeMinusOneMesh = chunkSize - meshSize.x;
 
 	chunkMeshPositionTest(world, chunkSize, chunkSize, chunkSize, 1, 1, 1, chunkSize, chunkSize, chunkSize);
 	chunkMeshPositionTest(world, chunkSize + 1, chunkSize + 1, chunkSize + 1, 1, 1, 1, chunkSize, chunkSize, chunkSize);
@@ -108,7 +111,7 @@ TEST_F(WorldTest, testChunkAndmeshPos) {
 	chunkMeshPositionTest(world, -chunkSize, -chunkSize, -chunkSize, -1, -1, -1, -chunkSize, -chunkSize, -chunkSize);
 	chunkMeshPositionTest(world, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-	chunkMeshPositionTest(world, -1, -1, -1, -1, -1, -1, -meshSize, -meshSize, -meshSize);
+	chunkMeshPositionTest(world, -1, -1, -1, -1, -1, -1, -meshSize.x, -meshSize.y, -meshSize.z);
 #if 0
 	chunkMeshPositionTest(world, -(chunkSize + 1), -(chunkSize + 1), -(chunkSize + 1), -2, -2, -2, -2 * chunkSize, -2 * chunkSize, -2 * chunkSize);
 	chunkMeshPositionTest(world, -halfChunkSize, halfChunkSize, halfChunkSize, -1, 0, 0, -chunkSize, 0, 0);
