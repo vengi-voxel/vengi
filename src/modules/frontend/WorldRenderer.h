@@ -94,6 +94,7 @@ protected:
 	video::VertexBuffer _waterBuffer;
 	int32_t _waterIbo = -1;
 	int32_t _waterVbo = -1;
+	glm::ivec3 _worldScale;
 
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;

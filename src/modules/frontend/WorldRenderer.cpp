@@ -31,7 +31,9 @@ const std::string MaxDepthBufferUniformName = "u_cascades";
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
-		_octree(core::AABB<int>(), 30), _viewDistance(MinCullingDistance), _world(world) {
+		_octree(core::AABB<int>(), 30), _worldScale(1, 1, 1),
+		_viewDistance(MinCullingDistance), _world(world) {
+	core_assert(_worldScale.x == _worldScale.z);
 }
 
 WorldRenderer::~WorldRenderer() {
@@ -148,7 +150,7 @@ void WorldRenderer::updateAABB(ChunkBuffer& chunkBuffer) const {
 		maxs = glm::max(maxs, v.position);
 	}
 
-	chunkBuffer._aabb = core::AABB<int>(mins, maxs);
+	chunkBuffer._aabb = core::AABB<int>(mins * _worldScale, maxs * _worldScale);
 }
 
 void WorldRenderer::handleMeshQueue() {
@@ -525,7 +527,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	{
 		video::ScopedShader scoped(_worldShader);
-		_worldShader.setModel(glm::mat4());
+		_worldShader.setModel(glm::scale(glm::mat4(), glm::vec3(_worldScale)));
 		if (shadowMap) {
 			_worldShader.setCascades(cascades);
 			_worldShader.setDistances(distances);
@@ -545,7 +547,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
-		_waterShader.setModel(glm::mat4());
+		_waterShader.setModel(glm::scale(glm::mat4(), glm::vec3(_worldScale)));
 		if (shadowMap) {
 			_waterShader.setCascades(cascades);
 			_waterShader.setDistances(distances);
