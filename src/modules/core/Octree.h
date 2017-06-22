@@ -287,18 +287,6 @@ public:
 	template<class VISITOR>
 	inline void visit(const Frustum& area, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) {
 		const AABB<float>& aabb = area.aabb();
-#if 0
-		const AABB<TYPE> converted(aabb.mins(), aabb.maxs());
-
-		glm::vec<3, TYPE> mins = converted.mins();
-		const glm::vec<3, TYPE>& resultMins = glm::mod(mins, minSize);
-		mins -= resultMins;
-
-		glm::vec<3, TYPE> maxs = converted.maxs();
-		const glm::vec<3, TYPE>& resultMaxs = glm::mod(maxs + minSize, minSize);
-		maxs += resultMaxs;
-
-#else
 		glm::vec3 mins = aabb.mins();
 		const glm::vec3 fminsize(minSize);
 		const glm::vec3& resultMins = glm::mod(mins, fminsize);
@@ -307,7 +295,7 @@ public:
 		glm::vec3 maxs = aabb.maxs();
 		const glm::vec3& resultMaxs = glm::mod(maxs + fminsize, fminsize);
 		maxs += resultMaxs;
-#endif
+
 		const AABB<int> final(mins, maxs);
 		visit_r(area, final, visitor, minSize);
 	}
