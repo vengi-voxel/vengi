@@ -12,23 +12,24 @@ SDL_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2)
 }
 
 static bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
-	const VoxelVertex& v11 = meshCurrent->getVertex(q1.vertices[0]);
-	const VoxelVertex& v21 = meshCurrent->getVertex(q2.vertices[0]);
+	const std::vector<VoxelVertex>& vv = meshCurrent->getVertexVector();
+	const VoxelVertex& v11 = vv[q1.vertices[0]];
+	const VoxelVertex& v21 = vv[q2.vertices[0]];
 	if (!isSameVertex(v11, v21)) {
 		return false;
 	}
-	const VoxelVertex& v12 = meshCurrent->getVertex(q1.vertices[1]);
-	const VoxelVertex& v22 = meshCurrent->getVertex(q2.vertices[1]);
+	const VoxelVertex& v12 = vv[q1.vertices[1]];
+	const VoxelVertex& v22 = vv[q2.vertices[1]];
 	if (!isSameVertex(v12, v22)) {
 		return false;
 	}
-	const VoxelVertex& v13 = meshCurrent->getVertex(q1.vertices[2]);
-	const VoxelVertex& v23 = meshCurrent->getVertex(q2.vertices[2]);
+	const VoxelVertex& v13 = vv[q1.vertices[2]];
+	const VoxelVertex& v23 = vv[q2.vertices[2]];
 	if (!isSameVertex(v13, v23)) {
 		return false;
 	}
-	const VoxelVertex& v14 = meshCurrent->getVertex(q1.vertices[3]);
-	const VoxelVertex& v24 = meshCurrent->getVertex(q2.vertices[3]);
+	const VoxelVertex& v14 = vv[q1.vertices[3]];
+	const VoxelVertex& v24 = vv[q2.vertices[3]];
 	if (!isSameVertex(v14, v24)) {
 		return false;
 	}
