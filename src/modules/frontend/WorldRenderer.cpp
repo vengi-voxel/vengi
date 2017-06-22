@@ -5,7 +5,6 @@
 #include "WorldRenderer.h"
 #include "core/Color.h"
 #include "video/Renderer.h"
-#include "voxel/Spiral.h"
 #include "voxel/Constants.h"
 #include "core/App.h"
 #include "core/Var.h"
@@ -709,28 +708,6 @@ void WorldRenderer::extractMeshes(const video::Camera& camera) {
 	_octree.visit(camera.frustum(), [this] (const glm::ivec3& center) {
 		_world->scheduleMeshExtraction(center);
 	}, glm::vec3(_world->meshSize()));
-}
-
-void WorldRenderer::extractMeshes(const glm::vec3& p, int radius) {
-	core_trace_scoped(WorldRendererExtractMeshes);
-	const glm::ivec3& meshGridPos = _world->meshPos(p);
-	const int sideLength = radius * 2 + 1;
-	const int amount = sideLength * (sideLength - 1) + sideLength;
-	const int meshSize = _world->meshSize();
-	glm::ivec3 pos = meshGridPos;
-	pos.y = 0;
-	voxel::Spiral o;
-	for (int i = 0; i < amount; ++i) {
-		_world->scheduleMeshExtraction(pos);
-		o.next();
-		pos.y = 0;
-		pos.x = meshGridPos.x + o.x() * meshSize;
-		pos.z = meshGridPos.z + o.z() * meshSize;
-		while (pos.y < voxel::MAX_HEIGHT - 1) {
-			_world->scheduleMeshExtraction(pos);
-			pos.y += meshSize;
-		}
-	}
 }
 
 void WorldRenderer::stats(Stats& stats) const {

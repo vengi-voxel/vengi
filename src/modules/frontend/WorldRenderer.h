@@ -178,8 +178,6 @@ public:
 	void onRunning(const video::Camera& camera, long dt);
 	void shutdown();
 
-	/** @brief extract meshes around the given position */
-	void extractMeshes(const glm::vec3& pos, int radius = 5);
 	void extractMeshes(const video::Camera& camera);
 
 	ClientEntityPtr getEntity(ClientEntityId id) const;
