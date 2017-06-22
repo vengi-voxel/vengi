@@ -269,7 +269,7 @@ inline PagedVolume::ChunkPtr World::chunk(const glm::ivec3& pos) const {
 
 inline glm::ivec3 World::meshSize() const {
 	const int s = _meshSize->intVal();
-	return glm::ivec3(s);
+	return glm::ivec3(s, MAX_TERRAIN_HEIGHT, s);
 }
 
 inline VoxelType World::material(int x, int y, int z) const {
