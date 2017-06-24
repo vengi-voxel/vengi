@@ -125,11 +125,8 @@ void WorldRendererTool::beforeUI() {
 	const glm::vec3& moveDelta = getMoveDelta(speed, _moveMask);
 	_camera.move(moveDelta);
 	if (!_freelook) {
-		const glm::vec3& position = _camera.position();
-		const int y = _world->findFloor(position.x, position.z, [] (voxel::VoxelType type) {
-			return voxel::isFloor(type);
-		});
-		_camera.setPosition(glm::vec3(position.x, y + 10, position.z));
+		const glm::vec3& groundPosition = _worldRenderer.groundPosition(_camera.position());
+		_camera.setPosition(groundPosition);
 	}
 	_camera.setFarPlane(_worldRenderer.getViewDistance());
 	_camera.update(_deltaFrame);

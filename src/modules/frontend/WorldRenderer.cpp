@@ -15,9 +15,6 @@
 #include "video/ScopedPolygonMode.h"
 #include "frontend/ShaderAttribute.h"
 
-constexpr int MinCullingDistance = 500;
-constexpr int MinExtractionCullingDistance = 1000;
-
 namespace config {
 constexpr const char *RenderAABB = "r_renderaabb";
 constexpr const char *OcclusionThreshold = "r_occlusionthreshold";
@@ -31,8 +28,7 @@ const std::string MaxDepthBufferUniformName = "u_cascades";
 
 // TODO: respect max vertex/index size of the one-big-vbo/ibo
 WorldRenderer::WorldRenderer(const voxel::WorldPtr& world) :
-		_octree(core::AABB<int>(), 30), _worldScale(1, 1, 1),
-		_viewDistance(MinCullingDistance), _world(world) {
+		_octree(core::AABB<int>(), 30), _world(world) {
 	core_assert(_worldScale.x == _worldScale.z);
 }
 
@@ -130,8 +126,12 @@ void WorldRenderer::fillPlantPositionsFromMeshes() {
 			delta = 0;
 		}
 	}
+	const glm::vec3 worldScalef(_worldScale);
 	for (PlantBuffer& vbo : _meshPlantList) {
-		const std::vector<glm::vec3>& positions = vbo.instancedPositions;
+		std::vector<glm::vec3>& positions = vbo.instancedPositions;
+		for(glm::vec3& p : positions) {
+			p *= worldScalef;
+		}
 		vbo.vb.update(vbo.offsetBuffer, positions);
 	}
 }
@@ -187,7 +187,7 @@ void WorldRenderer::handleMeshQueue() {
 
 	freeChunkBuffer->meshes = std::move(meshes);
 	updateAABB(*freeChunkBuffer);
-	distributePlants(_world, freeChunkBuffer->translation(), freeChunkBuffer->instancedPositions);
+	distributePlants(_world, freeChunkBuffer->translation() * _worldScale, freeChunkBuffer->instancedPositions);
 	fillPlantPositionsFromMeshes();
 	if (!_octree.insert(freeChunkBuffer)) {
 		Log::warn("Failed to insert into octree");
@@ -500,7 +500,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 			{
 				video::ScopedShader scoped(_shadowMapShader);
 				_shadowMapShader.setLightviewprojection(cascades[i]);
-				_shadowMapShader.setModel(glm::mat4());
+				_shadowMapShader.setModel(glm::scale(glm::vec3(_worldScale)));
 				renderOpaqueBuffers();
 				++drawCallsWorld;
 			}
@@ -527,7 +527,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 
 	{
 		video::ScopedShader scoped(_worldShader);
-		_worldShader.setModel(glm::scale(glm::mat4(), glm::vec3(_worldScale)));
+		_worldShader.setModel(glm::scale(glm::vec3(_worldScale)));
 		if (shadowMap) {
 			_worldShader.setCascades(cascades);
 			_worldShader.setDistances(distances);
@@ -634,6 +634,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 		_meshShader.setShadowmap(video::TextureUnit::One);
 		video::bindTexture(video::TextureUnit::One, _depthBuffer);
 	}
+	const glm::vec3 worldScalef(_worldScale);
 	for (const auto& e : _entities) {
 		const frontend::ClientEntityPtr& ent = e.second;
 		ent->update(_deltaFrame);
@@ -645,7 +646,7 @@ int WorldRenderer::renderEntities(const video::Camera& camera) {
 			continue;
 		}
 		const glm::mat4& rotate = glm::rotate(glm::mat4(1.0f), ent->orientation(), glm::up);
-		const glm::mat4& translate = glm::translate(rotate, ent->position());
+		const glm::mat4& translate = glm::translate(rotate, ent->position() * worldScalef);
 		const glm::mat4& scale = glm::scale(translate, glm::vec3(ent->scale()));
 		const glm::mat4& model = scale;
 		_meshShader.setModel(model);
@@ -708,8 +709,8 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 
 void WorldRenderer::extractMeshes(const video::Camera& camera) {
 	_octree.visit(camera.frustum(), [this] (const glm::ivec3& center) {
-		_world->scheduleMeshExtraction(center);
-	}, glm::vec3(_world->meshSize()));
+		_world->scheduleMeshExtraction(center / this->_worldScale);
+	}, glm::vec3(_world->meshSize() * _worldScale));
 }
 
 void WorldRenderer::stats(Stats& stats) const {
@@ -888,6 +889,14 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 	return true;
 }
 
+glm::vec3 WorldRenderer::groundPosition(const glm::vec3& position, int hovering) const {
+	const glm::vec3& worldPosition = position / glm::vec3(_worldScale);
+	const int y = _world->findFloor(worldPosition.x, worldPosition.z, [] (voxel::VoxelType type) {
+		return voxel::isFloor(type);
+	});
+	return glm::vec3(position.x, y * _worldScale.y + hovering * _worldScale.y, position.z);
+}
+
 void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
@@ -896,13 +905,13 @@ void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const bool shadowMap = _shadowMap->boolVal();
 	_shadow.calculateShadowData(camera, shadowMap, maxDepthBuffers, _depthBuffer.dimension());
-	const glm::vec3 cullingThreshold(_world->meshSize());
+	const glm::vec3 cullingThreshold(_world->meshSize() * _worldScale);
 	const int maxAllowedDistance = glm::pow(_viewDistance + cullingThreshold.x, 2);
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {
 			continue;
 		}
-		const int distance = getDistanceSquare(chunkBuffer.translation(), glm::ivec3(camera.position()));
+		const int distance = getDistanceSquare(chunkBuffer.translation() * _worldScale, glm::ivec3(camera.position()));
 		Log::trace("distance is: %i (%i)", distance, maxAllowedDistance);
 		if (distance >= maxAllowedDistance) {
 			_world->allowReExtraction(chunkBuffer.translation());

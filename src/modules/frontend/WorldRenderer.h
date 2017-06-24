@@ -65,10 +65,18 @@ protected:
 		bool occludedLastFrame = false;
 		bool pendingResult = false;
 
+		/**
+		 * This is the world position. Not the render positions. There is no scale
+		 * applied here.
+		 */
 		inline const glm::ivec3& translation() const {
 			return meshes.opaqueMesh.getOffset();
 		}
 
+		/**
+		 * This is the render aabb. There might be a scale applied here. So the mins of
+		 * the AABB might not be at the position given by @c translation()
+		 */
 		inline const core::AABB<int>& aabb() const {
 			return _aabb;
 		}
@@ -94,7 +102,7 @@ protected:
 	video::VertexBuffer _waterBuffer;
 	int32_t _waterIbo = -1;
 	int32_t _waterVbo = -1;
-	glm::ivec3 _worldScale;
+	glm::ivec3 _worldScale {4, 4, 4};
 
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
@@ -115,9 +123,9 @@ protected:
 	frontend::ShapeRenderer _shapeRendererOcclusionQuery;
 	int32_t _aabbMeshesOcclusionQuery = -1;
 
-	float _fogRange = 250.0f;
+	float _fogRange = 500.0f;
 	// TODO: get the view distance from the server - entity attributes
-	float _viewDistance;
+	float _viewDistance = 1000.0f;
 	long _now = 0l;
 	long _deltaFrame = 0l;
 
@@ -204,6 +212,8 @@ public:
 
 	int renderWorld(const video::Camera& camera, int* vertices = nullptr);
 	int renderEntities(const video::Camera& camera);
+
+	glm::vec3 groundPosition(const glm::vec3& position, int hovering = 10) const;
 };
 
 inline float WorldRenderer::getViewDistance() const {
