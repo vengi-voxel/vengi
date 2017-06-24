@@ -197,6 +197,7 @@ public:
 	};
 
 	void stats(Stats& stats) const;
+	const glm::ivec3& worldScale() const;
 
 	float getViewDistance() const;
 	void setViewDistance(float viewDistance);
@@ -211,6 +212,10 @@ inline float WorldRenderer::getViewDistance() const {
 
 inline void WorldRenderer::setViewDistance(float viewDistance) {
 	_viewDistance = viewDistance;
+}
+
+inline const glm::ivec3& WorldRenderer::worldScale() const {
+	return _worldScale;
 }
 
 }
