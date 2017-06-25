@@ -464,12 +464,6 @@ void genBuffers(uint8_t amount, Id* ids) {
 	checkError();
 }
 
-Id genBuffer() {
-	Id id;
-	genBuffers(1, &id);
-	return id;
-}
-
 void deleteBuffers(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;
@@ -481,23 +475,9 @@ void deleteBuffers(uint8_t amount, Id* ids) {
 	}
 }
 
-void deleteBuffer(Id& id) {
-	if (id == InvalidId) {
-		return;
-	}
-	deleteBuffers(1, &id);
-	id = InvalidId;
-}
-
 void genVertexArrays(uint8_t amount, Id* ids) {
 	glGenVertexArrays((GLsizei)amount, (GLuint*)ids);
 	checkError();
-}
-
-Id genVertexArray() {
-	Id id;
-	genVertexArrays(1, &id);
-	return id;
 }
 
 void deleteShader(Id& id) {
@@ -565,12 +545,6 @@ void genTextures(uint8_t amount, Id* ids) {
 	checkError();
 }
 
-Id genTexture() {
-	Id id;
-	genTextures(1, &id);
-	return id;
-}
-
 void deleteTextures(uint8_t amount, Id* ids) {
 	if (amount == 0) {
 		return;
@@ -582,23 +556,9 @@ void deleteTextures(uint8_t amount, Id* ids) {
 	}
 }
 
-void deleteTexture(Id& id) {
-	if (id == InvalidId) {
-		return;
-	}
-	deleteTextures(1, &id);
-	id = InvalidId;
-}
-
 void genFramebuffers(uint8_t amount, Id* ids) {
 	glGenFramebuffers((GLsizei)amount, (GLuint*)ids);
 	checkError();
-}
-
-Id genFramebuffer() {
-	Id id;
-	genFramebuffers(1, &id);
-	return id;
 }
 
 void deleteFramebuffers(uint8_t amount, Id* ids) {
@@ -612,23 +572,9 @@ void deleteFramebuffers(uint8_t amount, Id* ids) {
 	}
 }
 
-void deleteFramebuffer(Id& id) {
-	if (id == InvalidId) {
-		return;
-	}
-	deleteFramebuffers(1, &id);
-	id = InvalidId;
-}
-
 void genRenderbuffers(uint8_t amount, Id* ids) {
 	glGenRenderbuffers((GLsizei)amount, (GLuint*)ids);
 	checkError();
-}
-
-Id genRenderbuffer() {
-	Id id;
-	genRenderbuffers(1, &id);
-	return id;
 }
 
 void deleteRenderbuffers(uint8_t amount, Id* ids) {
@@ -640,14 +586,6 @@ void deleteRenderbuffers(uint8_t amount, Id* ids) {
 	for (uint8_t i = 0u; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
-}
-
-void deleteRenderbuffer(Id& id) {
-	if (id == InvalidId) {
-		return;
-	}
-	deleteRenderbuffers(1, &id);
-	id = InvalidId;
 }
 
 void configureAttribute(const Attribute& a) {
@@ -916,14 +854,6 @@ void drawArrays(Primitive mode, size_t count) {
 	const GLenum glMode = _priv::Primitives[std::enum_value(mode)];
 	glDrawArrays(glMode, (GLint)0, (GLsizei)count);
 	checkError();
-}
-
-void disableDebug() {
-	if (!hasFeature(Feature::DebugOutput)) {
-		return;
-	}
-	disable(State::DebugOutput);
-	Log::info("disable opengl debug messages");
 }
 
 void enableDebug(DebugSeverity severity) {

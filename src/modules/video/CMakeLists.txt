@@ -19,7 +19,7 @@ set(SRCS
 	Texture.cpp Texture.h
 	Types.h
 	Version.h
-	Renderer.h
+	Renderer.cpp Renderer.h
 	Mesh.cpp Mesh.h
 	MeshPool.cpp MeshPool.h
 	ShapeBuilder.cpp ShapeBuilder.h
