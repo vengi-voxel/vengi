@@ -326,13 +326,13 @@ glm::vec4 Camera::sphereBoundingBox() const {
 }
 
 glm::mat4 Camera::orthogonalMatrix() const {
-	const float _x = x();
-	const float _y = y();
-	const float w = _x + width();
-	const float h = _y + height();
-	core_assert_msg(w > 0.0f, "Invalid dimension given: width must be greater than zero but is %f", w);
-	core_assert_msg(h > 0.0f, "Invalid dimension given: height must be greater than zero but is %f", h);
-	return glm::ortho(_x, w, h, _y, nearPlane(), farPlane());
+	const float left = x();
+	const float bottom = y();
+	const float right = left + width();
+	const float top = bottom + height();
+	core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
+	core_assert_msg(top > bottom, "Invalid dimension given: top must be greater than bottom but is %f", top);
+	return glm::ortho(left, right, bottom, top, nearPlane(), farPlane());
 }
 
 glm::mat4 Camera::perspectiveMatrix() const {
