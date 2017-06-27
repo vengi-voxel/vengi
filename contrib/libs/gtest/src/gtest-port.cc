@@ -93,7 +93,7 @@ const int kStdErrFileno = STDERR_FILENO;
 
 namespace {
 template <typename T>
-T ReadProcFileField(const string& filename, int field) {
+T ReadProcFileField(const std::string& filename, int field) {
   std::string dummy;
   std::ifstream file(filename.c_str());
   while (field-- > 0) {
@@ -107,7 +107,7 @@ T ReadProcFileField(const string& filename, int field) {
 
 // Returns the number of active threads, or 0 when there is an error.
 size_t GetThreadCount() {
-  const string filename =
+  const std::string filename =
       (Message() << "/proc/" << getpid() << "/stat").GetString();
   return ReadProcFileField<int>(filename, 19);
 }
@@ -1055,24 +1055,6 @@ std::string GetCapturedStderr() {
 
 #endif  // GTEST_HAS_STREAM_REDIRECTION
 
-std::string TempDir() {
-#if GTEST_OS_WINDOWS_MOBILE
-  return "\\temp\\";
-#elif GTEST_OS_WINDOWS
-  const char* temp_dir = posix::GetEnv("TEMP");
-  if (temp_dir == NULL || temp_dir[0] == '\0')
-    return "\\temp\\";
-  else if (temp_dir[strlen(temp_dir) - 1] == '\\')
-    return temp_dir;
-  else
-    return std::string(temp_dir) + "\\";
-#elif GTEST_OS_LINUX_ANDROID
-  return "/sdcard/";
-#else
-  return "/tmp/";
-#endif  // GTEST_OS_WINDOWS_MOBILE
-}
-
 size_t GetFileSize(FILE* file) {
   fseek(file, 0, SEEK_END);
   return static_cast<size_t>(ftell(file));
@@ -1226,13 +1208,33 @@ Int32 Int32FromGTestEnv(const char* flag, Int32 default_value) {
 
 // Reads and returns the string environment variable corresponding to
 // the given flag; if it's not set, returns default_value.
-const char* StringFromGTestEnv(const char* flag, const char* default_value) {
+std::string StringFromGTestEnv(const char* flag, const char* default_value) {
 #if defined(GTEST_GET_STRING_FROM_ENV_)
   return GTEST_GET_STRING_FROM_ENV_(flag, default_value);
 #endif  // defined(GTEST_GET_STRING_FROM_ENV_)
   const std::string env_var = FlagToEnvVar(flag);
-  const char* const value = posix::GetEnv(env_var.c_str());
-  return value == NULL ? default_value : value;
+  const char* value = posix::GetEnv(env_var.c_str());
+  if (value != NULL) {
+    return value;
+  }
+
+  // As a special case for the 'output' flag, if GTEST_OUTPUT is not
+  // set, we look for XML_OUTPUT_FILE, which is set by the Bazel build
+  // system.  The value of XML_OUTPUT_FILE is a filename without the
+  // "xml:" prefix of GTEST_OUTPUT.
+  //
+  // The net priority order after flag processing is thus:
+  //   --gtest_output command line flag
+  //   GTEST_OUTPUT environment variable
+  //   XML_OUTPUT_FILE environment variable
+  //   'default_value'
+  if (strcmp(flag, "output") == 0) {
+    value = posix::GetEnv("XML_OUTPUT_FILE");
+    if (value != NULL) {
+      return std::string("xml:") + value;
+    }
+  }
+  return default_value;
 }
 
 }  // namespace internal

@@ -193,6 +193,7 @@ define UPDATE_HG
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
 	$(call UPDATE_GIT,benchmark,https://github.com/google/benchmark.git)
 	cp -r $(UPDATEDIR)/benchmark.sync/src/* contrib/libs/benchmark/src
 	cp -r $(UPDATEDIR)/benchmark.sync/include/* contrib/libs/benchmark/include
