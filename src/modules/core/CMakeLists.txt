@@ -56,6 +56,7 @@ set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 
 set(TEST_SRCS
 	tests/AbstractTest.cpp
+	tests/AABBTest.cpp
 	tests/CoreTest.cpp
 	tests/RectTest.cpp
 	tests/ByteStreamTest.cpp
