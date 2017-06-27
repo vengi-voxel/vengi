@@ -29,29 +29,32 @@ public:
 	}
 
 	void updateVP(const glm::mat4& view, const glm::mat4& projection) {
-		_frustum.updatePlanes(view, projection);
-		_frustum.updateVertices(view, projection);
+		_frustum.update(view, projection);
 		_aabb = _frustum.aabb();
 	}
 
 	void updateV(const glm::mat4& view) {
-		_frustum.updatePlanes(view, _projection);
-		_frustum.updateVertices(view, _projection);
+		_frustum.update(view, _projection);
 		_aabb = _frustum.aabb();
 	}
 
 	void updateP(const glm::mat4& projection) {
-		_frustum.updatePlanes(_view, projection);
-		_frustum.updateVertices(_view, projection);
+		_frustum.update(_view, projection);
 		_aabb = _frustum.aabb();
 	}
 };
 
 TEST_F(FrustumTest, testAABBOrtho) {
-	updateVP(glm::mat4(), glm::ortho(0.0f, 50.0f, 0.0f, 100.0f, _nearPlane, _farPlane));
+	updateVP(glm::mat4(), glm::ortho(0.0f, 50.0f, 0.0f, 100.0f, _nearPlane, -_farPlane));
 	EXPECT_FLOAT_EQ(_aabb.getWidthX(), 50.0f) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
 	EXPECT_FLOAT_EQ(_aabb.getWidthY(), 100.0f) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
 	EXPECT_NEAR(_aabb.getWidthZ(), _farPlane, _nearPlane) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
+	EXPECT_TRUE(_frustum.isVisible(glm::vec3(1.0f), 1.0f));
+	EXPECT_EQ(FrustumResult::Inside, _frustum.test(glm::vec3(1.0f), glm::vec3(2.0f)));
+	EXPECT_TRUE(_frustum.isVisible(glm::vec3(1.0f), glm::vec3(2.0f)));
+	EXPECT_TRUE(_frustum.isVisible(glm::vec3(48.0f), 1.0f));
+	EXPECT_EQ(FrustumResult::Inside, _frustum.test(glm::vec3(48.0f), glm::vec3(50.0f)));
+	EXPECT_TRUE(_frustum.isVisible(glm::vec3(48.0f), glm::vec3(50.0f)));
 }
 
 TEST_F(FrustumTest, testAABBPerspective) {
@@ -131,5 +134,27 @@ TEST_F(FrustumTest, testStaticFrustumCheck) {
 	EXPECT_FALSE(Frustum::isVisible(glm::vec3(0.0, 0.0, 0.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(10.0f)));
 }
 
+TEST_F(FrustumTest, testOrthoFrustum) {
+	const glm::ivec3 mins(-64, -32, -32);
+	const glm::ivec3 maxs(64, 32, 96);
+	const core::AABB<int> aabb(mins, maxs);
+	core::Frustum frustum(aabb);
+	EXPECT_EQ(frustum.aabb(), core::AABB<float>(mins, maxs));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-64, -32, 64), glm::ivec3(-32, 0, 96)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-64, 0, 64), glm::ivec3(-32, 32, 96)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-32, -32, 64), glm::ivec3(0, 0, 96)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-32, 0, 64), glm::ivec3(0, 32, 96)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(0, -32, 64), glm::ivec3(32, 0, 96)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(0, 0, 64), glm::ivec3(32, 32, 96)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, -32, -32), glm::ivec3(64, 0, 0)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, -32, 0), glm::ivec3(64, 0, 32)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, -32, 32), glm::ivec3(64, 0, 64)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, -32, 64), glm::ivec3(64, 0, 96)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, 0, -32), glm::ivec3(64, 32, 0)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, 0, 0), glm::ivec3(64, 32, 32)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, 0, 32), glm::ivec3(64, 32, 64)));
+	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, 0, 64), glm::ivec3(64, 32, 96)));
+	EXPECT_FALSE(frustum.isVisible(glm::ivec3(-66, -32, 64), glm::ivec3(-65, 0, 96)));
+}
 
 }

@@ -144,7 +144,8 @@ bool Frustum::isVisible(const glm::vec3& mins, const glm::vec3& maxs) const {
 bool Frustum::isVisible(const glm::vec3& center, float radius) const {
 	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
 		const Plane& p = _planes[i];
-		if (-p.distanceToPlane(center) > radius) {
+		const float dist = p.distanceToPlane(center);
+		if (-dist > radius) {
 			return false;
 		}
 	}
@@ -155,7 +156,8 @@ bool Frustum::isVisible(const glm::vec3& center, float radius) const {
 bool Frustum::isVisible(const glm::vec3& pos) const {
 	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
 		const Plane& p = _planes[i];
-		if (p.isBackSide(pos)) {
+		const bool back = p.isBackSide(pos);
+		if (back) {
 			return false;
 		}
 	}
