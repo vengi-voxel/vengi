@@ -62,7 +62,7 @@ protected:
 	glm::ivec2 _dimension;
 	// the position that is used for ortho projection matrices
 	glm::ivec2 _position;
-	// the position of the camera in thw world
+	// the position of the camera in the world
 	glm::vec3 _pos;
 	glm::quat _quat;
 	uint32_t _dirty = DIRTY_ALL;
