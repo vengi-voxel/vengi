@@ -227,14 +227,22 @@ private:
 		if (!queryArea.isVisible(queryAABB.mins(), queryAABB.maxs())) {
 			return;
 		}
-		if (glm::any(glm::lessThanEqual(queryAABB.getWidth(), minSize))) {
+		const glm::tvec3<TYPE>& width = queryAABB.getWidth();
+		if (glm::all(glm::lessThanEqual(width, minSize))) {
 			visitor(queryAABB.getCenter());
 			return;
 		}
-		std::array<AABB<TYPE>, 8> result;
-		queryAABB.split(result);
-		for (AABB<TYPE>& aabb : result) {
-			visit_r(queryArea, aabb, visitor, minSize);
+
+		const glm::tvec3<TYPE>& mins = queryAABB.mins();
+		for (TYPE x = mins.x; x < mins.x + width.x; x += minSize.x) {
+			for (TYPE y = mins.y; y < mins.y + width.y; y += minSize.y) {
+				for (TYPE z = mins.z; z < mins.z + width.z; z += minSize.z) {
+					const AABB<TYPE> aabb({x, y, z}, {x + minSize.x, y + minSize.y, z + minSize.z});
+					if (queryArea.isVisible(aabb.mins(), aabb.maxs())) {
+						visitor(aabb.getCenter());
+					}
+				}
+			}
 		}
 	}
 
