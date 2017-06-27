@@ -30,6 +30,13 @@ private:
 
 	Plane& plane(FrustumPlanes frustumPlane);
 public:
+	Frustum() {}
+
+	template<class T>
+	Frustum(const core::AABB<T>& aabb) {
+		update(glm::mat4(), aabb.projectionMatrix());
+	}
+
 	FrustumResult test(const glm::vec3& position) const;
 
 	FrustumResult test(const glm::vec3& mins, const glm::vec3& maxs) const;
@@ -47,6 +54,8 @@ public:
 	void updateVertices(const glm::mat4& view, const glm::mat4& projection);
 
 	void updatePlanes(const glm::mat4& view, const glm::mat4& projection);
+
+	void update(const glm::mat4& view, const glm::mat4& projection);
 
 	core::AABB<float> aabb() const;
 
@@ -80,5 +89,11 @@ inline Plane& Frustum::plane(FrustumPlanes frustumPlane) {
 inline const Plane& Frustum::plane(FrustumPlanes frustumPlane) const {
 	return _planes[(int)frustumPlane];
 }
+
+inline void Frustum::update(const glm::mat4& view, const glm::mat4& projection) {
+	updatePlanes(view, projection);
+	updateVertices(view, projection);
+}
+
 
 }
