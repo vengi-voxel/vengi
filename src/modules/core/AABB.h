@@ -7,6 +7,8 @@
 #include "core/Assert.h"
 
 #include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <array>
 #include <algorithm>
 #include <limits>
@@ -59,6 +61,8 @@ public:
 		return construct(&vertices[0], vertices.size());
 	}
 
+	glm::mat4 projectionMatrix() const;
+
 	/// Equality Operator.
 	bool operator==(const AABB& rhs) const;
 	/// Inequality Operator.
@@ -96,10 +100,10 @@ public:
 	 */
 	void split(std::array<AABB<TYPE>, 8>& result) const {
 		const glm::tvec3<TYPE>& center = getCenter();
-		result[0] = AABB<TYPE>(mins(), center);
+		result[0] = AABB<TYPE>(_mins, center);
 
 		glm::tvec3<TYPE> mins1(getLowerX(), getLowerY(), center.z);
-		glm::tvec3<TYPE> maxs1(center.x, center.y, maxs().z);
+		glm::tvec3<TYPE> maxs1(center.x, center.y, _maxs.z);
 		result[1] = AABB<TYPE>(mins1, maxs1);
 
 		glm::tvec3<TYPE> mins2(getLowerX(), center.y, getLowerZ());
@@ -107,7 +111,7 @@ public:
 		result[2] = AABB<TYPE>(mins2, maxs2);
 
 		glm::tvec3<TYPE> mins3(getLowerX(), center.y, center.z);
-		glm::tvec3<TYPE> maxs3(center.x, getUpperY(), maxs().z);
+		glm::tvec3<TYPE> maxs3(center.x, getUpperY(), _maxs.z);
 		result[3] = AABB<TYPE>(mins3, maxs3);
 
 		glm::tvec3<TYPE> mins4(center.x, getLowerY(), getLowerZ());
@@ -123,7 +127,7 @@ public:
 		result[6] = AABB<TYPE>(mins6, maxs6);
 
 		glm::tvec3<TYPE> mins7(center.x, center.y, center.z);
-		glm::tvec3<TYPE> maxs7(getUpperX(), getUpperY(), maxs().z);
+		glm::tvec3<TYPE> maxs7(getUpperX(), getUpperY(), _maxs.z);
 		result[7] = AABB<TYPE>(mins7, maxs7);
 	}
 
@@ -752,6 +756,11 @@ inline void AABB<TYPE>::shrink(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ) {
 	_maxs.x -= iAmountX;
 	_maxs.y -= iAmountY;
 	_maxs.z -= iAmountZ;
+}
+
+template<typename TYPE>
+inline glm::mat4 AABB<TYPE>::projectionMatrix() const {
+	return glm::ortho(float(_mins.x), float(_maxs.x), float(_mins.y), float(_maxs.y), float(-_mins.z), float(-_maxs.z));
 }
 
 /**
