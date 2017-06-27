@@ -25,7 +25,7 @@ ThreadPool::ThreadPool(size_t threads, const char *name) :
 					this->_condition.wait(lock, [this] {
 						return this->_stop || !this->_tasks.empty();
 					});
-					if (this->_stop && this->_tasks.empty()) {
+					if (this->_stop) {
 						return;
 					}
 					task = std::move(this->_tasks.front());
@@ -53,7 +53,7 @@ void ThreadPool::shutdown() {
 		_condition.notify_all();
 	}
 	for (std::thread &worker : _workers) {
-		worker.detach();
+		worker.join();
 	}
 	_workers.clear();
 }
