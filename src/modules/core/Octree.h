@@ -15,6 +15,8 @@
 
 namespace core {
 
+extern core::AABB<int> computeAABB(const Frustum& area, const glm::vec3& minSize);
+
 /**
  * @note Given NODE type must implement @c aabb() and return core::AABB<TYPE>
  */
@@ -286,18 +288,9 @@ public:
 	 */
 	template<class VISITOR>
 	inline void visit(const Frustum& area, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) {
-		const AABB<float>& aabb = area.aabb();
-		glm::vec3 mins = aabb.mins();
 		const glm::vec3 fminsize(minSize);
-		const glm::vec3& resultMins = glm::mod(mins, fminsize);
-		mins -= resultMins;
-
-		glm::vec3 maxs = aabb.maxs();
-		const glm::vec3& resultMaxs = glm::mod(maxs + fminsize, fminsize);
-		maxs += resultMaxs;
-
-		const AABB<int> final(mins, maxs);
-		visit_r(area, final, visitor, minSize);
+		const core::AABB<int>& aabb = computeAABB(area, fminsize);
+		visit_r(area, aabb, visitor, minSize);
 	}
 
 	void setListener(const IOctreeListener* func) {

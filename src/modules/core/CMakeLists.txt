@@ -29,7 +29,7 @@ set(SRCS
 	MemGuard.cpp MemGuard.h
 	MurmurHash3.cpp MurmurHash3.h
 	NonCopyable.h
-	Octree.h
+	Octree.h Octree.cpp
 	Plane.h Plane.cpp
 	Process.cpp Process.h
 	QuadTree.h
