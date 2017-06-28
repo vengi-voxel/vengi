@@ -92,9 +92,9 @@ TEST_F(WorldTest, testChunkAndmeshPos) {
 	const int chunkSize = world.chunkSize();
 	//const int halfChunkSize = chunkSize / 2;
 	const glm::ivec3& meshSize = world.meshSize();
-	ASSERT_EQ(0, chunkSize % meshSize.x) << "mesh size must be a multiple of chunk size";
-	ASSERT_EQ(0, chunkSize % meshSize.y) << "mesh size must be a multiple of chunk size";
-	ASSERT_EQ(0, chunkSize % meshSize.z) << "mesh size must be a multiple of chunk size";
+	ASSERT_EQ(0, chunkSize % meshSize.x) << "mesh size must be a multiple of chunk x size: " << chunkSize << ", " << meshSize.x;
+	ASSERT_EQ(0, chunkSize % meshSize.y) << "mesh size must be a multiple of chunk y size: " << chunkSize << ", " << meshSize.y;
+	ASSERT_EQ(0, chunkSize % meshSize.z) << "mesh size must be a multiple of chunk z size: " << chunkSize << ", " << meshSize.z;
 	const int meshFactor = chunkSize / meshSize.x;
 	ASSERT_GT(meshFactor, 0) << "mesh factor is <= 0, which mean, <= 0 meshes fitting into a chunk - weird";
 	//const int chunkSizePlusOneMesh = chunkSize + meshSize;
