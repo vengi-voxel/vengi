@@ -31,9 +31,8 @@ protected:
 		int pending;
 		world.stats(meshes, extracted, pending);
 
-		extracted = 0;
 		auto start = std::chrono::high_resolution_clock::now();
-		for (;;) {
+		while (pending <= 0) {
 			ChunkMeshes meshData(0, 0, 0, 0);
 			while (!world.pop(meshData)) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -45,10 +44,6 @@ protected:
 #endif
 			}
 			world.stats(meshes, extracted, pending);
-			if (extracted == expected) {
-				break;
-			}
-			ASSERT_GT(pending, 0) << "Nothing left in the mesh creation phase";
 		}
 		world.shutdown();
 	}
