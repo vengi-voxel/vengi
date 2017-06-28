@@ -253,30 +253,6 @@ inline const core::Random& World::random() const {
 inline long World::seed() const {
 	return _seed;
 }
-
-inline Region World::getMeshRegion(const glm::ivec3& pos) const {
-	const glm::ivec3& size = meshSize();
-	return getRegion(pos, size);
-}
-
-inline int World::chunkSize() const {
-	return _volumeData->chunkSideLength();
-}
-
-inline PagedVolume::ChunkPtr World::chunk(const glm::ivec3& pos) const {
-	return _volumeData->chunk(pos);
-}
-
-inline glm::ivec3 World::meshSize() const {
-	const int s = _meshSize->intVal();
-	return glm::ivec3(s, MAX_TERRAIN_HEIGHT, s);
-}
-
-inline VoxelType World::material(int x, int y, int z) const {
-	const Voxel& voxel = _volumeData->voxel(x, y, z);
-	return voxel.getMaterial();
-}
-
 inline BiomeManager& World::biomeManager() {
 	return _biomeManager;
 }

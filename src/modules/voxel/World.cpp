@@ -222,4 +222,27 @@ bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float ma
 	return result;
 }
 
+Region World::getMeshRegion(const glm::ivec3& pos) const {
+	const glm::ivec3& size = meshSize();
+	return getRegion(pos, size);
+}
+
+int World::chunkSize() const {
+	return _volumeData->chunkSideLength();
+}
+
+PagedVolume::ChunkPtr World::chunk(const glm::ivec3& pos) const {
+	return _volumeData->chunk(pos);
+}
+
+glm::ivec3 World::meshSize() const {
+	const int s = _meshSize->intVal();
+	return glm::ivec3(s, MAX_TERRAIN_HEIGHT, s);
+}
+
+VoxelType World::material(int x, int y, int z) const {
+	const Voxel& voxel = _volumeData->voxel(x, y, z);
+	return voxel.getMaterial();
+}
+
 }
