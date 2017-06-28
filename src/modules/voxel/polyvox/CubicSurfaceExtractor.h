@@ -13,6 +13,8 @@
 #include <list>
 #include "core/Trace.h"
 
+#define BUFFERED_SAMPLER 1
+
 namespace voxel {
 
 /**
@@ -231,7 +233,11 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 	vecQuads[NegativeZ].resize(region.getUpperZ() - region.getLowerZ() + 2);
 	vecQuads[PositiveZ].resize(region.getUpperZ() - region.getLowerZ() + 2);
 
+#if BUFFERED_SAMPLER == 1
 	typename VolumeType::BufferedSampler volumeSampler(volData, region);
+#else
+	typename VolumeType::Sampler volumeSampler(volData);
+#endif
 
 	for (int32_t z = offset.z; z <= upper.z; ++z) {
 		const uint32_t regZ = z - offset.z;
@@ -488,7 +494,11 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 	QuadListVector vecQuadsWater;
 	vecQuadsWater.resize(ySize);
 
+#if BUFFERED_SAMPLER == 1
 	typename VolumeType::BufferedSampler volumeSampler(volData, region);
+#else
+	typename VolumeType::Sampler volumeSampler(volData);
+#endif
 
 	for (int32_t z = offset.z; z <= upper.z; ++z) {
 		const uint32_t regZ = z - offset.z;
