@@ -332,7 +332,7 @@ glm::mat4 Camera::orthogonalMatrix() const {
 	const float top = bottom + height();
 	core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
 	core_assert_msg(top > bottom, "Invalid dimension given: top must be greater than bottom but is %f", top);
-	return glm::ortho(left, right, bottom, top, nearPlane(), farPlane());
+	return glm::ortho(left, right, top, bottom, nearPlane(), farPlane());
 }
 
 glm::mat4 Camera::perspectiveMatrix() const {
