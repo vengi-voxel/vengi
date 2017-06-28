@@ -30,6 +30,7 @@ TEST_F(ThreadPoolTest, testMultiplePush) {
 		for (int i = 0; i < x; ++i) {
 			pool.enqueue([this] () {_count++;});
 		}
+		pool.shutdown(true);
 	}
 	ASSERT_EQ(x, _count) << "Not all threads were executed";
 }

@@ -43,9 +43,9 @@ ThreadPool::~ThreadPool() {
 	shutdown();
 }
 
-void ThreadPool::shutdown() {
+void ThreadPool::shutdown(bool wait) {
 	_stop = true;
-	{
+	if (!wait) {
 		std::unique_lock<std::mutex> lock(_queueMutex);
 		while (!_tasks.empty()) {
 			_tasks.pop();
