@@ -79,44 +79,4 @@ TEST_F(WorldTest, testExtractionSingle) {
 	extract(1);
 }
 
-// e.g. chunksize = 64 and meshsize = 64
-// 0 - 63 => chunk 0
-// -64 - -1 => chunk -1
-// 0 - 63 => meshPos 0
-// -64 - -1 => meshPos -64
-TEST_F(WorldTest, testChunkAndmeshPos) {
-	World world;
-	core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-	const io::FilesystemPtr& filesystem = _testApp->filesystem();
-	ASSERT_TRUE(world.init(filesystem->load("world.lua"), filesystem->load("biomes.lua")));
-	const int chunkSize = world.chunkSize();
-	//const int halfChunkSize = chunkSize / 2;
-	const glm::ivec3& meshSize = world.meshSize();
-	ASSERT_EQ(0, chunkSize % meshSize.x) << "mesh size must be a multiple of chunk x size: " << chunkSize << ", " << meshSize.x;
-	ASSERT_EQ(0, chunkSize % meshSize.y) << "mesh size must be a multiple of chunk y size: " << chunkSize << ", " << meshSize.y;
-	ASSERT_EQ(0, chunkSize % meshSize.z) << "mesh size must be a multiple of chunk z size: " << chunkSize << ", " << meshSize.z;
-	const int meshFactor = chunkSize / meshSize.x;
-	ASSERT_GT(meshFactor, 0) << "mesh factor is <= 0, which mean, <= 0 meshes fitting into a chunk - weird";
-	//const int chunkSizePlusOneMesh = chunkSize + meshSize;
-	const int chunkSizeMinusOneMesh = chunkSize - meshSize.x;
-
-	chunkMeshPositionTest(world, chunkSize, chunkSize, chunkSize, 1, 1, 1, chunkSize, chunkSize, chunkSize);
-	chunkMeshPositionTest(world, chunkSize + 1, chunkSize + 1, chunkSize + 1, 1, 1, 1, chunkSize, chunkSize, chunkSize);
-	chunkMeshPositionTest(world, chunkSize - 1, chunkSize - 1, chunkSize - 1, 0, 0, 0, chunkSizeMinusOneMesh, chunkSizeMinusOneMesh, chunkSizeMinusOneMesh);
-	chunkMeshPositionTest(world, -chunkSize, -chunkSize, -chunkSize, -1, -1, -1, -chunkSize, -chunkSize, -chunkSize);
-	chunkMeshPositionTest(world, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-	chunkMeshPositionTest(world, -1, -1, -1, -1, -1, -1, -meshSize.x, -meshSize.y, -meshSize.z);
-#if 0
-	chunkMeshPositionTest(world, -(chunkSize + 1), -(chunkSize + 1), -(chunkSize + 1), -2, -2, -2, -2 * chunkSize, -2 * chunkSize, -2 * chunkSize);
-	chunkMeshPositionTest(world, -halfChunkSize, halfChunkSize, halfChunkSize, -1, 0, 0, -chunkSize, 0, 0);
-	chunkMeshPositionTest(world, -halfChunkSize, -halfChunkSize, -halfChunkSize, -1, -1, -1, -chunkSize, 0, -chunkSize);
-	chunkMeshPositionTest(world, halfChunkSize, halfChunkSize, halfChunkSize, 0, 0, 0, 0, 0, 0);
-
-	chunkMeshPositionTest(world, 2 * chunkSize + halfChunkSize, 2 * chunkSize + halfChunkSize, 2 * chunkSize + halfChunkSize, 2, 2, 2, 2 * chunkSize, 0, 2 * chunkSize);
-	chunkMeshPositionTest(world, halfChunkSize, 0, halfChunkSize, 0, 0, 0, 0, 0, 0);
-	chunkMeshPositionTest(world, halfChunkSize, MAX_HEIGHT - 1, halfChunkSize, 0, MAX_HEIGHT / chunkSize, 0, 0, 0, 0);
-#endif
-}
-
 }
