@@ -36,6 +36,17 @@ else
 VALGRIND_CMD     ?= valgrind
 endif
 
+PERF             ?=
+ifeq ($(PERF),)
+PERF_OPTIONS     ?=
+PERF_CMD         ?=
+PERF_REPORT_CMD  ?=
+else
+PERF_OPTIONS     ?= -F 99 -g
+PERF_CMD         ?= sudo perf record $(PERF_OPTIONS)
+PERF_REPORT_CMD  ?= sudo perf report  -n --stdio
+endif
+
 DEBUG            ?=
 ifeq ($(DEBUG),)
 DEBUG_CMD        ?=
@@ -146,7 +157,8 @@ server client voxedit shapetool worldrenderertool shadertool noisetool noisetool
 	$(call COMPILE, $@)
 	$(call COMPILE, copy-data-shared)
 	$(call COMPILE, copy-data-$@)
-	$(Q)cd $(BUILDDIR); $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
+	$(Q)cd $(BUILDDIR); $(PERF_CMD) $(VALGRIND_CMD) $(DEBUG_CMD) $(VOGL_CMD) ./$@ $(ARGS)
+	$(Q)cd $(BUILDDIR); $(PERF_REPORT_CMD)
 
 backward flatbuffers glm libenet nativefiledialog restclient-cpp selene zlib lua53 luac libcurl assimp turbobadger sdl2: cmake
 	$(call COMPILE, $@)
@@ -243,7 +255,3 @@ updatelibs:
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
-
-#execute as root
-profile:
-	tools/linux-perf.sh worldrenderertool

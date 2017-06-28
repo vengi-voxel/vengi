@@ -7,3 +7,4 @@
 /typescript
 gmon.out
 /*.sync
+/perf.data*
