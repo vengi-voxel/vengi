@@ -1,0 +1,54 @@
+/**
+ * @file
+ */
+
+#pragma once
+
+#include "testcore/TestApp.h"
+#include "core/Octree.h"
+#include "core/Random.h"
+#include "video/ShapeBuilder.h"
+#include "frontend/ShapeRenderer.h"
+
+class TestOctreeVisit: public TestApp {
+private:
+	using Super = TestApp;
+	class Wrapper {
+	private:
+		core::AABB<int> _aabb;
+	public:
+		Wrapper(const glm::ivec3& pos) :
+				_aabb(pos, pos + 1) {
+		}
+		inline core::AABB<int> aabb() const {
+			return _aabb;
+		}
+	};
+
+	using Tree = core::Octree<Wrapper>;
+	using Node = Tree::OctreeNode;
+
+	Tree _octree { core::AABB<int>(glm::ivec3(-1024, 0, -1024), glm::ivec3(1024, 2048, 1024)), 10 };
+	mutable video::ShapeBuilder _shapeBuilder;
+	frontend::ShapeRenderer _shapeRenderer;
+	video::Camera _octreeCamera;
+	int32_t _itemMeshes = -1;
+	int32_t _frustumMesh = -1;
+	int32_t _aabbMesh = -1;
+	glm::vec3 _pos;
+	glm::vec3 _lookAt{10.0f, 70.0f, 10.0f};
+	glm::vec3 _omega{0.0f, 0.1f, 0.0f};
+	float _farPlane = 500.0f;
+	float _nearPlane = 0.1f;
+	bool _ortho = false;
+
+	void updateCamera();
+	void doRender() override;
+	void onRenderUI() override;
+public:
+	TestOctreeVisit(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+
+	virtual core::AppState onInit() override;
+	virtual core::AppState onRunning() override;
+	virtual core::AppState onCleanup() override;
+};
