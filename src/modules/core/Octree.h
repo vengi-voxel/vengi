@@ -223,23 +223,22 @@ private:
 	const IOctreeListener* _listener = nullptr;
 
 	template<class VISITOR>
-	void visit_r(const Frustum& queryArea, const AABB<TYPE>& queryAABB, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) const {
-		if (!queryArea.isVisible(queryAABB.mins(), queryAABB.maxs())) {
-			return;
-		}
-		const glm::tvec3<TYPE>& width = queryAABB.getWidth();
-		if (glm::all(glm::lessThanEqual(width, minSize))) {
-			visitor(queryAABB.getCenter());
-			return;
-		}
-
+	void visit(const Frustum& queryArea, const AABB<TYPE>& queryAABB, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) const {
 		const glm::tvec3<TYPE>& mins = queryAABB.mins();
-		for (TYPE x = mins.x; x < mins.x + width.x; x += minSize.x) {
-			for (TYPE y = mins.y; y < mins.y + width.y; y += minSize.y) {
-				for (TYPE z = mins.z; z < mins.z + width.z; z += minSize.z) {
-					const AABB<TYPE> aabb({x, y, z}, {x + minSize.x, y + minSize.y, z + minSize.z});
-					if (queryArea.isVisible(aabb.mins(), aabb.maxs())) {
-						visitor(aabb.getCenter());
+		const glm::tvec3<TYPE>& width = queryAABB.getWidth();
+		const TYPE maxX = mins.x + width.x;
+		const TYPE maxY = mins.y + width.y;
+		const TYPE maxZ = mins.z + width.z;
+		for (TYPE x = mins.x; x < maxX; x += minSize.x) {
+			for (TYPE y = mins.y; y < maxY; y += minSize.y) {
+				for (TYPE z = mins.z; z < maxZ; z += minSize.z) {
+					const glm::tvec3<TYPE> qmins{x, y, z};
+					const glm::tvec3<TYPE> qmaxs{x + minSize.x, y + minSize.y, z + minSize.z};
+					if (queryArea.isVisible(qmins, qmaxs)) {
+						const glm::tvec3<TYPE> center = (qmins + qmaxs) / (TYPE)2;
+						if (!visitor(center)) {
+							break;
+						}
 					}
 				}
 			}
@@ -298,7 +297,7 @@ public:
 	inline void visit(const Frustum& area, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) {
 		const glm::vec3 fminsize(minSize);
 		const core::AABB<int>& aabb = computeAABB(area, fminsize);
-		visit_r(area, aabb, visitor, minSize);
+		visit(area, aabb, visitor, minSize);
 	}
 
 	void setListener(const IOctreeListener* func) {

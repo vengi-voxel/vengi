@@ -63,6 +63,7 @@ public:
 				}
 			}
 			++n;
+			return true;
 		}, glm::ivec3(size));
 	}
 
@@ -199,6 +200,7 @@ TEST_F(OctreeTest, testOctreeVisitOrthoFrustum) {
 			EXPECT_EQ(center[i] % blockSize, slices) << glm::to_string(center);
 		}
 		++n;
+		return true;
 	}, glm::ivec3(blockSize));
 	EXPECT_EQ(glm::pow(slices, glm::ivec3::length()), n);
 }
