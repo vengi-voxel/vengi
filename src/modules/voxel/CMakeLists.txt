@@ -62,7 +62,11 @@ set(LIB voxel)
 add_library(${LIB} ${SRCS})
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core noise zlib image assimp commonlua)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
-#target_compile_options(${LIB} PRIVATE -march=native PRIVATE -O3)
+if (NOT MSVC)
+	target_compile_options(${LIB} PRIVATE -march=native PRIVATE -O3)
+else()
+	# TODO MSVC
+endif()
 
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
