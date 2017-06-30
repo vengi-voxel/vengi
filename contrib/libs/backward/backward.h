@@ -72,6 +72,7 @@
 #include <streambuf>
 #include <string>
 #include <vector>
+#include <limits>
 
 #if defined(BACKWARD_SYSTEM_LINUX)
 
@@ -586,7 +587,12 @@ private:
 		uintptr_t ip = _Unwind_GetIPInfo(ctx, &ip_before_instruction);
 
 		if (!ip_before_instruction) {
-			ip -= 1;
+			// calculating 0-1 for unsigned, looks like a possible bug to sanitiziers, so let's do it explicitly:
+			if (ip==0) {
+				ip = std::numeric_limits<uintptr_t>::max(); // set it to 0xffff... (as from casting 0-1)
+			} else {
+				ip -= 1; // else just normally decrement it (no overflow/underflow will happen)
+			}
 		}
 
 		if (_index >= 0) { // ignore first frame.
@@ -1674,7 +1680,7 @@ namespace ColorMode {
 
 class cfile_streambuf: public std::streambuf {
 public:
-	cfile_streambuf(FILE *sink): sink(sink) {}
+	cfile_streambuf(FILE *_sink): sink(_sink) {}
 	int_type underflow() { return traits_type::eof(); }
 	int_type overflow(int_type ch) {
 		if (traits_type::not_eof(ch) && fwrite(&ch, sizeof ch, 1, sink) == 1) {
