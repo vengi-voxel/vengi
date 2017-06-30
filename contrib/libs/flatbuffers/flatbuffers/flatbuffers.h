@@ -431,6 +431,9 @@ class DefaultAllocator : public Allocator {
 // the DetachedBuffer can manage the memory lifetime.
 class DetachedBuffer {
  public:
+  DetachedBuffer() : allocator_(nullptr), own_allocator_(false), buf_(nullptr),
+                     reserved_(0), cur_(nullptr), size_(0) {}
+
   DetachedBuffer(Allocator *allocator, bool own_allocator, uint8_t *buf,
                  size_t reserved, uint8_t *cur, size_t sz)
     : allocator_(allocator), own_allocator_(own_allocator), buf_(buf),
@@ -442,13 +445,22 @@ class DetachedBuffer {
     : allocator_(other.allocator_), own_allocator_(other.own_allocator_),
       buf_(other.buf_), reserved_(other.reserved_), cur_(other.cur_),
       size_(other.size_) {
-    assert(allocator_);
     other.allocator_ = nullptr;
     other.own_allocator_ = false;
     other.buf_ = nullptr;
     other.reserved_ = 0;
     other.cur_ = nullptr;
     other.size_ = 0;
+  }
+
+  DetachedBuffer &operator=(DetachedBuffer &&other) {
+    std::swap(allocator_, other.allocator_);
+    std::swap(own_allocator_, other.own_allocator_);
+    std::swap(buf_, other.buf_);
+    std::swap(reserved_, other.reserved_);
+    std::swap(cur_, other.cur_);
+    std::swap(size_, other.size_);
+    return *this;
   }
 
   ~DetachedBuffer() {
@@ -462,17 +474,14 @@ class DetachedBuffer {
   }
 
   const uint8_t *data() const {
-    assert(cur_);
     return cur_;
   }
 
   uint8_t *data() {
-    assert(cur_);
     return cur_;
   }
 
   size_t size() const {
-    assert(cur_);
     return size_;
   }
 
@@ -587,7 +596,7 @@ class vector_downward {
     return static_cast<uoffset_t>(reserved_ - (cur_ - buf_));
   }
 
-  uoffset_t capacity() const {
+  size_t capacity() const {
     return reserved_;
   }
 
@@ -1110,15 +1119,30 @@ class FlatBufferBuilder
   /// @return Returns a typed `Offset` into the serialized data indicating
   /// where the vector is stored.
   template<typename T> Offset<Vector<T>> CreateVector(const T *v, size_t len) {
+    // If this assert hits, you're specifying a template argument that is
+    // causing the wrong overload to be selected, remove it.
+    AssertScalarT<T>();
     StartVector(len, sizeof(T));
-    if (sizeof(T) == 1) {
-      PushBytes(reinterpret_cast<const uint8_t *>(v), len);
-    } else {
-      for (auto i = len; i > 0; ) {
-        PushElement(v[--i]);
+    #if FLATBUFFERS_LITTLEENDIAN
+      PushBytes(reinterpret_cast<const uint8_t *>(v), len * sizeof(T));
+    #else
+      if (sizeof(T) == 1) {
+        PushBytes(reinterpret_cast<const uint8_t *>(v), len);
+      } else {
+        for (auto i = len; i > 0; ) {
+          PushElement(v[--i]);
+        }
       }
-    }
+    #endif
     return Offset<Vector<T>>(EndVector(len));
+  }
+
+  template<typename T> Offset<Vector<Offset<T>>> CreateVector(const Offset<T> *v, size_t len) {
+    StartVector(len, sizeof(Offset<T>));
+    for (auto i = len; i > 0; ) {
+      PushElement(v[--i]);
+    }
+    return Offset<Vector<Offset<T>>>(EndVector(len));
   }
 
   /// @brief Serialize a `std::vector` into a FlatBuffer `vector`.
@@ -1517,9 +1541,21 @@ template<typename T> const T *GetTemporaryPointer(FlatBufferBuilder &fbb,
   return GetMutableTemporaryPointer<T>(fbb, offset);
 }
 
+
+/// @brief Get a pointer to the the file_identifier section of the buffer.
+/// @return Returns a const char pointer to the start of the file_identifier
+/// characters in the buffer.  The returned char * has length
+/// 'flatbuffers::FlatBufferBuilder::kFileIdentifierLength'.
+/// This function is UNDEFINED for FlatBuffers whose schema does not include
+/// a file_identifier (likely points at padding or the start of a the root
+/// vtable).
+inline const char *GetBufferIdentifier(const void *buf) {
+  return reinterpret_cast<const char *>(buf) + sizeof(uoffset_t);
+}
+
 // Helper to see if the identifier in a buffer has the expected value.
 inline bool BufferHasIdentifier(const void *buf, const char *identifier) {
-  return strncmp(reinterpret_cast<const char *>(buf) + sizeof(uoffset_t),
+  return strncmp(GetBufferIdentifier(buf),
                  identifier, FlatBufferBuilder::kFileIdentifierLength) == 0;
 }
 
