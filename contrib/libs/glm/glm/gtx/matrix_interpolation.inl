@@ -1,6 +1,8 @@
 /// @ref gtx_matrix_interpolation
 /// @file glm/gtx/matrix_interpolation.hpp
 
+#include "../gtc/constants.hpp"
+
 namespace glm
 {
 	template<typename T, precision P>
@@ -72,7 +74,11 @@ namespace glm
 		T s = sqrt((mat[2][1] - mat[1][2]) * (mat[2][1] - mat[1][2]) + (mat[2][0] - mat[0][2]) * (mat[2][0] - mat[0][2]) + (mat[1][0] - mat[0][1]) * (mat[1][0] - mat[0][1]));
 		if (glm::abs(s) < T(0.001))
 			s = (T)1.0;
-		angle = acos((mat[0][0] + mat[1][1] + mat[2][2] - (T)1.0) * (T)0.5);
+		T const angleCos = (mat[0][0] + mat[1][1] + mat[2][2] - (T)1.0) * (T)0.5;
+		if (angleCos - static_cast<T>(1)) < epsilon)
+			angle = pi<T>() * static_cast<T>(0.25);
+		else
+			angle = acos(angleCos);
 		axis.x = (mat[1][2] - mat[2][1]) / s;
 		axis.y = (mat[2][0] - mat[0][2]) / s;
 		axis.z = (mat[0][1] - mat[1][0]) / s;

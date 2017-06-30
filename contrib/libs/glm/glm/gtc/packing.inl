@@ -793,5 +793,145 @@ namespace detail
 		Unpack.pack = v;
 		return vec3(Unpack.data.x, Unpack.data.y, Unpack.data.z) * ScaleFactor;
 	}
+
+	GLM_FUNC_QUALIFIER int16 packInt2x8(i8vec2 const& v)
+	{
+		int16 Pack = 0;
+		memcpy(&Pack, &v, sizeof(Pack));
+		return Pack;
+	}
+
+	GLM_FUNC_QUALIFIER i8vec2 unpackInt2x8(int16 p)
+	{
+		i8vec2 Unpack(uninitialize);
+		memcpy(&Unpack, &p, sizeof(Unpack));
+		return Unpack;
+	}
+
+	GLM_FUNC_QUALIFIER uint16 packUint2x8(u8vec2 const& v)
+	{
+		uint16 Pack = 0;
+		memcpy(&Pack, &v, sizeof(Pack));
+		return Pack;
+	}
+
+	GLM_FUNC_QUALIFIER u8vec2 unpackUint2x8(uint16 p)
+	{
+		u8vec2 Unpack(uninitialize);
+		memcpy(&Unpack, &p, sizeof(Unpack));
+		return Unpack;
+	}
+
+	GLM_FUNC_QUALIFIER int32 packInt4x8(i8vec4 const& v)
+	{
+		int32 Pack = 0;
+		memcpy(&Pack, &v, sizeof(Pack));
+		return Pack;
+	}
+
+	GLM_FUNC_QUALIFIER i8vec4 unpackInt4x8(int32 p)
+	{
+		i8vec4 Unpack(uninitialize);
+		memcpy(&Unpack, &p, sizeof(Unpack));
+		return Unpack;
+	}
+
+	GLM_FUNC_QUALIFIER uint32 packUint4x8(u8vec4 const& v)
+	{
+		uint32 Pack = 0;
+		memcpy(&Pack, &v, sizeof(Pack));
+		return Pack;
+	}
+
+	GLM_FUNC_QUALIFIER u8vec4 unpackUint4x8(uint32 p)
+	{
+		u8vec4 Unpack(uninitialize);
+		memcpy(&Unpack, &p, sizeof(Unpack));
+		return Unpack;
+	}
+
+	GLM_FUNC_QUALIFIER int packInt2x16(i16vec2 const& v)
+	{
+		int Pack = 0;
+		memcpy(&Pack, &v, sizeof(Pack));
+		return Pack;
+	}
+
+	GLM_FUNC_QUALIFIER i16vec2 unpackInt2x16(int p)
+	{
+		i16vec2 Unpack(uninitialize);
+		memcpy(&Unpack, &p, sizeof(Unpack));
+		return Unpack;
+	}
+
+	GLM_FUNC_QUALIFIER int64 packInt4x16(i16vec4 const& v)
+	{
+		int64 Pack = 0;
+		memcpy(&Pack, &v, sizeof(Pack));
+		return Pack;
+	}
+
+	GLM_FUNC_QUALIFIER i16vec4 unpackInt4x16(int64 p)
+	{
+		i16vec4 Unpack(uninitialize);
+		memcpy(&Unpack, &p, sizeof(Unpack));
+		return Unpack;
+	}
+
+	GLM_FUNC_QUALIFIER uint packUint2x16(u16vec2 const& v)
+	{
+		uint Pack = 0;
+		memcpy(&Pack, &v, sizeof(Pack));
+		return Pack;
+	}
+
+	GLM_FUNC_QUALIFIER u16vec2 unpackUint2x16(uint p)
+	{
+		u16vec2 Unpack(uninitialize);
+		memcpy(&Unpack, &p, sizeof(Unpack));
+		return Unpack;
+	}
+
+	GLM_FUNC_QUALIFIER uint64 packUint4x16(u16vec4 const& v)
+	{
+		uint64 Pack = 0;
+		memcpy(&Pack, &v, sizeof(Pack));
+		return Pack;
+	}
+
+	GLM_FUNC_QUALIFIER u16vec4 unpackUint4x16(uint64 p)
+	{
+		u16vec4 Unpack(uninitialize);
+		memcpy(&Unpack, &p, sizeof(Unpack));
+		return Unpack;
+	}
+
+	GLM_FUNC_QUALIFIER int64 packInt2x32(i32vec2 const& v)
+	{
+		int64 Pack = 0;
+		memcpy(&Pack, &v, sizeof(Pack));
+		return Pack;
+	}
+
+	GLM_FUNC_QUALIFIER i32vec2 unpackInt2x32(int64 p)
+	{
+		i32vec2 Unpack(uninitialize);
+		memcpy(&Unpack, &p, sizeof(Unpack));
+		return Unpack;
+	}
+
+	GLM_FUNC_QUALIFIER uint64 packUint2x32(u32vec2 const& v)
+	{
+		uint64 Pack = 0;
+		memcpy(&Pack, &v, sizeof(Pack));
+		return Pack;
+	}
+
+	GLM_FUNC_QUALIFIER u32vec2 unpackUint2x32(uint64 p)
+	{
+		u32vec2 Unpack(uninitialize);
+		memcpy(&Unpack, &p, sizeof(Unpack));
+		return Unpack;
+	}
 }//namespace glm
 

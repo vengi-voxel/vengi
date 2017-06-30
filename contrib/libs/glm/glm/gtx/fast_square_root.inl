@@ -26,7 +26,7 @@ namespace glm
 			vec<1, T, P> tmp(detail::compute_inversesqrt<tvec1, genType, lowp, detail::is_aligned<lowp>::value>::call(vec<1, genType, lowp>(x)));
 			return tmp.x;
 #		else
-			return detail::compute_inversesqrt<1, genType, highp, detail::is_aligned<highp>::value>::call(vec<1, genType, lowp>(x)).x;
+			return detail::compute_inversesqrt<1, genType, lowp, detail::is_aligned<lowp>::value>::call(vec<1, genType, lowp>(x)).x;
 #		endif
 	}
 

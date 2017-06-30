@@ -251,7 +251,7 @@ namespace glm
 	GLM_FUNC_DECL tquat<T, P> rotate(tquat<T, P> const & q, T const & angle, vec<3, T, P> const & axis);
 
 	/// Returns euler angles, pitch as x, yaw as y, roll as z.
-	/// The result is expressed in radians if GLM_FORCE_RADIANS is defined or degrees otherwise.
+	/// The result is expressed in radians.
 	/// 
 	/// @see gtc_quaternion
 	template<typename T, precision P>

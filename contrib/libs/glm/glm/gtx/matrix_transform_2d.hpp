@@ -42,7 +42,7 @@ namespace glm
 	/// Builds a rotation 3 * 3 matrix created from an angle. 
 	///
 	/// @param m Input matrix multiplied by this translation matrix.
-	/// @param angle Rotation angle expressed in radians if GLM_FORCE_RADIANS is defined or degrees otherwise.
+	/// @param angle Rotation angle expressed in radians.
 	template<typename T, precision P> 
 	GLM_FUNC_QUALIFIER mat<3, 3, T, P> rotate(
 		mat<3, 3, T, P> const& m,

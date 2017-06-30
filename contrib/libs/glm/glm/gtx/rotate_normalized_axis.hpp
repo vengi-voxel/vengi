@@ -35,7 +35,7 @@ namespace glm
 	/// Builds a rotation 4 * 4 matrix created from a normalized axis and an angle. 
 	/// 
 	/// @param m Input matrix multiplied by this rotation matrix.
-	/// @param angle Rotation angle expressed in radians if GLM_FORCE_RADIANS is define or degrees otherwise.
+	/// @param angle Rotation angle expressed in radians.
 	/// @param axis Rotation axis, must be normalized.
 	/// @tparam T Value type used to build the matrix. Currently supported: half (not recommanded), float or double.
 	/// 
@@ -52,7 +52,7 @@ namespace glm
 	/// Rotates a quaternion from a vector of 3 components normalized axis and an angle.
 	/// 
 	/// @param q Source orientation
-	/// @param angle Angle expressed in radians if GLM_FORCE_RADIANS is define or degrees otherwise.
+	/// @param angle Angle expressed in radians.
 	/// @param axis Normalized axis of the rotation, must be normalized.
 	/// 
 	/// @see gtx_rotate_normalized_axis
