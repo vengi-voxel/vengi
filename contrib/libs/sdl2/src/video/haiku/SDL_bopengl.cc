@@ -35,8 +35,6 @@ extern "C" {
 #endif
 
 
-#define BGL_FLAGS BGL_RGB | BGL_DOUBLE
-
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
     return ((SDL_BWin*)(window->driverdata));
 }
@@ -104,7 +102,28 @@ SDL_GLContext BE_GL_CreateContext(_THIS, SDL_Window * window) {
     /* FIXME: Not sure what flags should be included here; may want to have
        most of them */
     SDL_BWin *bwin = _ToBeWin(window);
-    bwin->CreateGLView(BGL_FLAGS);
+    Uint32 gl_flags = BGL_RGB;
+    if (_this->gl_config.alpha_size) {
+        gl_flags |= BGL_ALPHA;
+    }
+    if (_this->gl_config.depth_size) {
+        gl_flags |= BGL_DEPTH;
+    }
+    if (_this->gl_config.stencil_size) {
+        gl_flags |= BGL_STENCIL;
+    }
+    if (_this->gl_config.double_buffer) {
+        gl_flags |= BGL_DOUBLE;
+    } else {
+        gl_flags |= BGL_SINGLE;
+    }
+    if (_this->gl_config.accum_red_size ||
+            _this->gl_config.accum_green_size ||
+            _this->gl_config.accum_blue_size ||
+            _this->gl_config.accum_alpha_size) {
+        gl_flags |= BGL_ACCUM;
+    }
+    bwin->CreateGLView(gl_flags);
     return (SDL_GLContext)(bwin);
 }
 
@@ -140,78 +159,12 @@ void BE_GL_RebootContexts(_THIS) {
         if(bwin->GetGLView()) {
             bwin->LockLooper();
             bwin->RemoveGLView();
-            bwin->CreateGLView(BGL_FLAGS);
+            bwin->CreateGLView(bwin->GetGLType());
             bwin->UnlockLooper();
         }
         window = window->next;
     }
 }
-
-
-#if 0 /* Functions from 1.2 that do not appear to be used in 1.3 */
-
-    int BE_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
-    {
-        /*
-           FIXME? Right now BE_GL_GetAttribute shouldn't be called between glBegin() and glEnd() - it doesn't use "cached" values
-         */
-        switch (attrib) {
-        case SDL_GL_RED_SIZE:
-            glGetIntegerv(GL_RED_BITS, (GLint *) value);
-            break;
-        case SDL_GL_GREEN_SIZE:
-            glGetIntegerv(GL_GREEN_BITS, (GLint *) value);
-            break;
-        case SDL_GL_BLUE_SIZE:
-            glGetIntegerv(GL_BLUE_BITS, (GLint *) value);
-            break;
-        case SDL_GL_ALPHA_SIZE:
-            glGetIntegerv(GL_ALPHA_BITS, (GLint *) value);
-            break;
-        case SDL_GL_DOUBLEBUFFER:
-            glGetBooleanv(GL_DOUBLEBUFFER, (GLboolean *) value);
-            break;
-        case SDL_GL_BUFFER_SIZE:
-            int v;
-            glGetIntegerv(GL_RED_BITS, (GLint *) & v);
-            *value = v;
-            glGetIntegerv(GL_GREEN_BITS, (GLint *) & v);
-            *value += v;
-            glGetIntegerv(GL_BLUE_BITS, (GLint *) & v);
-            *value += v;
-            glGetIntegerv(GL_ALPHA_BITS, (GLint *) & v);
-            *value += v;
-            break;
-        case SDL_GL_DEPTH_SIZE:
-            glGetIntegerv(GL_DEPTH_BITS, (GLint *) value);      /* Mesa creates 16 only? r5 always 32 */
-            break;
-        case SDL_GL_STENCIL_SIZE:
-            glGetIntegerv(GL_STENCIL_BITS, (GLint *) value);
-            break;
-        case SDL_GL_ACCUM_RED_SIZE:
-            glGetIntegerv(GL_ACCUM_RED_BITS, (GLint *) value);
-            break;
-        case SDL_GL_ACCUM_GREEN_SIZE:
-            glGetIntegerv(GL_ACCUM_GREEN_BITS, (GLint *) value);
-            break;
-        case SDL_GL_ACCUM_BLUE_SIZE:
-            glGetIntegerv(GL_ACCUM_BLUE_BITS, (GLint *) value);
-            break;
-        case SDL_GL_ACCUM_ALPHA_SIZE:
-            glGetIntegerv(GL_ACCUM_ALPHA_BITS, (GLint *) value);
-            break;
-        case SDL_GL_STEREO:
-        case SDL_GL_MULTISAMPLEBUFFERS:
-        case SDL_GL_MULTISAMPLESAMPLES:
-        default:
-            *value = 0;
-            return (-1);
-        }
-        return 0;
-    }
-
-#endif
-
 
 
 #ifdef __cplusplus
