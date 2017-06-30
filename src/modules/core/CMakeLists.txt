@@ -71,6 +71,7 @@ set(TEST_SRCS
 	tests/TokenizerTest.cpp
 	tests/FrustumTest.cpp
 	tests/PlaneTest.cpp
+	tests/StringTest.cpp
 	tests/ReadWriteLockTest.cpp
 )
 

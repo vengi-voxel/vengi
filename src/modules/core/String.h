@@ -102,6 +102,9 @@ inline std::string replaceAll(const std::string& str, const std::string& searchS
 	return replaceAll(str, searchStr, replaceStr.data(), replaceStr.size());
 }
 
+/**
+ * @brief Cuts everything (including the pattern) from the match
+ */
 inline std::string_view cutAfterFirstMatch(const std::string_view str, const std::string& pattern, size_t start = 0) {
 	std::string_view::size_type pos = str.find_first_of(pattern, 0);
 	return str.substr(start, pos);
