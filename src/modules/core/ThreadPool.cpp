@@ -25,7 +25,7 @@ ThreadPool::ThreadPool(size_t threads, const char *name) :
 					this->_condition.wait(lock, [this] {
 						return this->_stop || !this->_tasks.empty();
 					});
-					if (this->_stop) {
+					if (this->_stop && this->_tasks.empty()) {
 						return;
 					}
 					task = std::move(this->_tasks.front());
