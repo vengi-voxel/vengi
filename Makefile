@@ -31,9 +31,11 @@ UPDATEDIR        := /tmp
 
 VALGRIND         ?=
 ifeq ($(VALGRIND),)
+VALGRIND_OPTIONS ?=
 VALGRIND_CMD     ?=
 else
-VALGRIND_CMD     ?= valgrind
+VALGRIND_OPTIONS ?=
+VALGRIND_CMD     ?= valgrind $(VALGRIND_OPTIONS)
 endif
 
 PERF             ?=
