@@ -40,9 +40,7 @@ void EditorScene::render() {
 	if (mdl.renderAxis()) {
 		_axis.render(camera);
 	}
-	if (_referencePointMesh != -1) {
-		_shapeRenderer.render(_referencePointMesh, camera);
-	}
+	_shapeRenderer.render(_referencePointMesh, camera);
 }
 
 void EditorScene::setKeyAction(Action action) {

@@ -445,15 +445,10 @@ void Model::render(const video::Camera& camera) {
 	// TODO: render error if rendered last - but be before grid renderer to get transparency.
 	if (_renderLockAxis) {
 		for (int i = 0; i < (int)SDL_arraysize(_planeMeshIndex); ++i) {
-			if (_planeMeshIndex[i] == -1) {
-				continue;
-			}
 			_shapeRenderer.render(_planeMeshIndex[i], camera);
 		}
 	}
-	if (_mirrorMeshIndex != -1) {
-		_shapeRenderer.render(_mirrorMeshIndex, camera);
-	}
+	_shapeRenderer.render(_mirrorMeshIndex, camera);
 	renderSelection(camera);
 }
 

@@ -222,16 +222,14 @@ void TestOctree::onRenderUI() {
 }
 
 void TestOctree::doRender() {
-	if (_aabbMeshes != -1 && _renderAABBs) {
+	if (_renderAABBs) {
 		_shapeRenderer.render(_aabbMeshes, _camera);
 	}
-	if (_itemMeshes != -1 && _renderItems) {
+	if (_renderItems) {
 		_shapeRenderer.render(_itemMeshes, _camera);
 	}
-	if (_queryMeshes != -1) {
-		video::ScopedLineWidth lineWidth(2.0f);
-		_shapeRenderer.render(_queryMeshes, _camera);
-	}
+	video::ScopedLineWidth lineWidth(2.0f);
+	_shapeRenderer.render(_queryMeshes, _camera);
 }
 
 core::AppState TestOctree::onCleanup() {

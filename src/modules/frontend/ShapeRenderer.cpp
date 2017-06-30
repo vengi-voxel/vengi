@@ -170,6 +170,9 @@ void ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& mode
 }
 
 void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model) const {
+	if (meshIndex == (uint32_t)-1) {
+		return;
+	}
 	video::ScopedShader scoped(_colorShader);
 	core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
 	core_assert_always(_colorShader.setModel(model));

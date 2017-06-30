@@ -90,15 +90,9 @@ void TestOctreeVisit::onRenderUI() {
 }
 
 void TestOctreeVisit::doRender() {
-	if (_itemMeshes != -1) {
-		_shapeRenderer.render(_itemMeshes, _camera);
-	}
-	if (_aabbMesh != -1) {
-		_shapeRenderer.render(_aabbMesh, _camera);
-	}
-	if (_frustumMesh != -1) {
-		_shapeRenderer.render(_frustumMesh, _camera);
-	}
+	_shapeRenderer.render(_itemMeshes, _camera);
+	_shapeRenderer.render(_aabbMesh, _camera);
+	_shapeRenderer.render(_frustumMesh, _camera);
 }
 
 core::AppState TestOctreeVisit::onCleanup() {
