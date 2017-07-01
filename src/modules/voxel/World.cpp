@@ -177,11 +177,11 @@ void World::extractScheduledMesh() {
 
 void World::shutdown() {
 	_cancelThreads = true;
-	_threadPool.shutdown();
 	_meshesQueue.clear();
 	_meshesQueue.abortWait();
 	_meshQueue.clear();
 	_meshQueue.abortWait();
+	_threadPool.shutdown();
 	_meshesExtracted.clear();
 	_meshQueue.clear();
 	_pager.shutdown();

@@ -24,6 +24,7 @@ public:
 
 	void abortWait() {
 		_abort = true;
+		std::unique_lock<std::mutex> lock(_mutex);
 		_conditionVariable.notify_all();
 	}
 
@@ -75,6 +76,9 @@ public:
 			});
 			if (_abort) {
 				_abort = false;
+				return false;
+			}
+			if (_data.empty()) {
 				return false;
 			}
 		}
