@@ -21,12 +21,6 @@ TEST_F(PagedVolumeBufferedSamplerTest, testExtractWhole) {
 	ASSERT_TRUE(sampler.setPosition(_region.getCentre()));
 }
 
-TEST_F(PagedVolumeBufferedSamplerTest, testPeek) {
-	PagedVolume::BufferedSampler sampler(_volData, _region);
-	sampler.peekVoxel1nx1ny1nz();
-	sampler.peekVoxel1px1py1pz();
-}
-
 TEST_F(PagedVolumeBufferedSamplerTest, testPeekUpperCorner) {
 	PagedVolume::BufferedSampler sampler(_volData, _region);
 	ASSERT_TRUE(sampler.setPosition(_region.getUpperCorner()));
