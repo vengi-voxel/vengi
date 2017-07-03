@@ -60,13 +60,16 @@ Connection* ConnectionPool::addConnection() {
 }
 
 void ConnectionPool::giveBack(Connection* c) {
+	if (c == nullptr) {
+		return;
+	}
 	_connections.push(c);
 }
 
 Connection* ConnectionPool::connection() {
 	if (_connections.empty()) {
 		if (_connectionAmount >= _max) {
-			Log::warn("Could not aquire pooled connection, max limit hit");
+			Log::warn("Could not acquire pooled connection, max limit hit");
 			return nullptr;
 		}
 		Connection* newC = addConnection();
