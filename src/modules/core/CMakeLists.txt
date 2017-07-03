@@ -58,6 +58,7 @@ set(TEST_SRCS
 	tests/AbstractTest.cpp
 	tests/AABBTest.cpp
 	tests/CoreTest.cpp
+	tests/ConcurrentQueueTest.cpp
 	tests/RectTest.cpp
 	tests/ByteStreamTest.cpp
 	tests/ThreadPoolTest.cpp
