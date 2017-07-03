@@ -79,13 +79,20 @@ TEST_F(BiomeManagerTest, testCityGradient) {
 	end
 
 	function initCities()
-		biomeMgr.addCity(ivec2.new(0, 0), 100.0)
+		biomeMgr.addCity(ivec2.new(0, 0), 1000.0)
 	end)";
 	BiomeManager mgr;
 	ASSERT_TRUE(mgr.init(str));
-	// y level should not be taken into account here
-	EXPECT_DOUBLE_EQ(BiomeManager::MinCityHeight, mgr.getCityMultiplier(glm::ivec2(0)));
-	EXPECT_DOUBLE_EQ(BiomeManager::MinCityHeight, mgr.getCityMultiplier(glm::ivec2(0, 0)));
+	EXPECT_DOUBLE_EQ(0.0f, mgr.getCityMultiplier(glm::ivec2(0)))
+		<< "The center of the city should have a very small modifier";
+	EXPECT_DOUBLE_EQ(1.0f, mgr.getCityMultiplier(glm::ivec2(1000, 0)))
+		<< "Out of the radius of the city - here we should not have any influence on the height anymore";
+	EXPECT_DOUBLE_EQ(1.0f, mgr.getCityMultiplier(glm::ivec2(1000, 1000)))
+		<< "Out of the radius of the city - here we should not have any influence on the height anymore";
+	EXPECT_DOUBLE_EQ(1.0f, mgr.getCityMultiplier(glm::ivec2(0, 1000)))
+		<< "Out of the radius of the city - here we should not have any influence on the height anymore";
+	EXPECT_DOUBLE_EQ(1.0f, mgr.getCityMultiplier(glm::ivec2(2000, 2000)))
+		<< "Out of the radius of the city - here we should not have any influence on the height anymore";
 }
 
 }
