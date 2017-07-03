@@ -201,8 +201,8 @@ bool Model::remove() {
 }
 
 void Model::vertices(float* vertices, size_t vertexSize, size_t verticesSize, uint32_t* indices, size_t indicesSize) {
-	glm::ivec3 mins = glm::vec3(std::numeric_limits<float>::max());
-	glm::ivec3 maxs = glm::vec3(std::numeric_limits<float>::min());
+	glm::ivec3 mins(std::numeric_limits<float>::max());
+	glm::ivec3 maxs(std::numeric_limits<float>::min());
 	// TODO: add uv support and apply colored voxels from the texture
 	const voxel::Voxel& voxel = voxel::createColorVoxel(voxel::VoxelType::Generic, 0);
 
@@ -211,12 +211,8 @@ void Model::vertices(float* vertices, size_t vertexSize, size_t verticesSize, ui
 		const float* vertex = &vertices[vertexIndex * vertexSize];
 		const glm::ivec3 pos(_cursorPos.x + vertex[0], _cursorPos.y + vertex[1], _cursorPos.z + vertex[2]);
 		setVoxel(pos, voxel);
-		mins.x = std::min(mins.x, pos.x);
-		mins.y = std::min(mins.y, pos.y);
-		mins.z = std::min(mins.z, pos.z);
-		maxs.x = std::max(maxs.x, pos.x);
-		maxs.y = std::max(maxs.y, pos.y);
-		maxs.z = std::max(maxs.z, pos.z);
+		mins = glm::min(mins, pos);
+		maxs = glm::max(maxs, pos);
 	}
 	const voxel::Region modifiedRegion(mins, maxs);
 	modified(modifiedRegion);
