@@ -31,6 +31,8 @@ private:
 	bool hasPreparedStatement(const std::string& name) const;
 	void registerPreparedStatement(const std::string& name);
 
+	bool status() const;
+
 	void setLoginData(const std::string& username, const std::string& password);
 
 	void changeHost(const std::string& host);

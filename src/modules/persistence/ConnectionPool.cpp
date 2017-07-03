@@ -80,8 +80,7 @@ Connection* ConnectionPool::connection() {
 	}
 	Connection* c = _connections.front();
 	_connections.pop();
-	// TODO: hide postgres here - move into connection
-	if (PQstatus(c->connection()) == CONNECTION_OK) {
+	if (c->status()) {
 		return c;
 	}
 

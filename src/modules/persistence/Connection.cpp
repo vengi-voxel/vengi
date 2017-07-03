@@ -22,6 +22,10 @@ void Connection::setLoginData(const std::string& username, const std::string& pa
 	_user = username;
 }
 
+bool Connection::status() const {
+	return PQstatus(connection()) == CONNECTION_OK;
+}
+
 void Connection::changeDb(const std::string& dbname) {
 	_dbname = dbname;
 }
