@@ -196,10 +196,10 @@ private:
 	bool _clientData = false;
 
 	core::ThreadPool _threadPool;
-	core::ConcurrentQueue<ChunkMeshes> _meshQueue;
-	core::ConcurrentQueue<glm::ivec3, VecLessThan<3, int> > _meshesQueue;
-	// fast lookup for positions that are already extracted and available in the _meshData vector
-	PositionSet _meshesExtracted;
+	core::ConcurrentQueue<ChunkMeshes> _extracted;
+	core::ConcurrentQueue<glm::ivec3, VecLessThan<3, int> > _pendingExtraction;
+	// fast lookup for positions that are already extracted
+	PositionSet _positionsExtracted;
 	core::VarPtr _meshSize;
 	core::Random _random;
 	std::atomic_bool _cancelThreads { false };
@@ -230,7 +230,7 @@ inline glm::ivec3 World::chunkPos(const glm::ivec3& pos) const {
 }
 
 inline bool World::pop(ChunkMeshes& item) {
-	return _meshQueue.pop(item);
+	return _extracted.pop(item);
 }
 
 inline bool World::created() const {

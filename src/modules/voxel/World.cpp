@@ -34,7 +34,7 @@ glm::ivec3 World::randomPos() const {
 	int lowestZ = -100;
 	int highestX = 100;
 	int highestZ = 100;
-	for (const glm::ivec3& gridPos : _meshesExtracted) {
+	for (const glm::ivec3& gridPos : _positionsExtracted) {
 		lowestX = std::min(lowestX, gridPos.x);
 		lowestZ = std::min(lowestZ, gridPos.z);
 		highestX = std::min(highestX, gridPos.x);
@@ -54,13 +54,13 @@ bool World::scheduleMeshExtraction(const glm::ivec3& p) {
 		return false;
 	}
 	const glm::ivec3& pos = meshPos(p);
-	auto i = _meshesExtracted.insert(pos);
+	auto i = _positionsExtracted.insert(pos);
 	if (!i.second) {
 		return false;
 	}
 	Log::trace("mesh extraction for %i:%i:%i (%i:%i:%i)",
 			p.x, p.y, p.z, pos.x, pos.y, pos.z);
-	_meshesQueue.push(pos);
+	_pendingExtraction.push(pos);
 	return true;
 }
 
@@ -109,7 +109,7 @@ void World::updateExtractionOrder(const glm::ivec3& sortPos, const core::Frustum
 
 bool World::allowReExtraction(const glm::ivec3& pos) {
 	const glm::ivec3& gridPos = meshPos(pos);
-	return _meshesExtracted.erase(gridPos) != 0;
+	return _positionsExtracted.erase(gridPos) != 0;
 }
 
 bool World::findPath(const glm::ivec3& start, const glm::ivec3& end,
@@ -154,7 +154,7 @@ void World::extractScheduledMesh() {
 	while (!_cancelThreads) {
 		core_trace_scoped(MeshExtraction);
 		glm::ivec3 pos;
-		if (!_meshesQueue.waitAndPop(pos)) {
+		if (!_pendingExtraction.waitAndPop(pos)) {
 			break;
 		}
 		const Region &region = getMeshRegion(pos);
@@ -171,19 +171,19 @@ void World::extractScheduledMesh() {
 		if (data.waterMesh.isEmpty() && data.opaqueMesh.isEmpty()) {
 			continue;
 		}
-		_meshQueue.push(std::move(data));
+		_extracted.push(std::move(data));
 	}
 }
 
 void World::shutdown() {
 	_cancelThreads = true;
-	_meshesQueue.clear();
-	_meshesQueue.abortWait();
-	_meshQueue.clear();
-	_meshQueue.abortWait();
+	_pendingExtraction.clear();
+	_pendingExtraction.abortWait();
+	_extracted.clear();
+	_extracted.abortWait();
 	_threadPool.shutdown();
-	_meshesExtracted.clear();
-	_meshQueue.clear();
+	_positionsExtracted.clear();
+	_extracted.clear();
 	_pager.shutdown();
 	_biomeManager.shutdown();
 	delete _volumeData;
@@ -204,9 +204,9 @@ void World::onFrame(long dt) {
 }
 
 void World::stats(int& meshes, int& extracted, int& pending) const {
-	extracted = _meshesExtracted.size();
-	pending = _meshesQueue.size();
-	meshes = _meshQueue.size();
+	extracted = _positionsExtracted.size();
+	pending = _pendingExtraction.size();
+	meshes = _extracted.size();
 }
 
 bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, glm::ivec3& hit, Voxel& voxel) const {
