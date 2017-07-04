@@ -159,7 +159,7 @@ void WorldRenderer::handleMeshQueue() {
 		return;
 	}
 	// Now add the mesh to the list of meshes to render.
-	core_trace_gl_scoped(WorldRendererHandleMeshQueue);
+	core_trace_scoped(WorldRendererHandleMeshQueue);
 
 	ChunkBuffer* freeChunkBuffer = nullptr;
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
