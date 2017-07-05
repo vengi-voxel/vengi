@@ -5,6 +5,7 @@
 #include "video/Camera.h"
 #include "video/Types.h"
 #include "ColorShader.h"
+#include "ColorInstancedShader.h"
 
 namespace frontend {
 
@@ -22,9 +23,13 @@ private:
 	int32_t _vertexIndex[MAX_MESHES];
 	int32_t _indexIndex[MAX_MESHES];
 	int32_t _colorIndex[MAX_MESHES];
+	// for instancing
+	int32_t _offsetIndex[MAX_MESHES];
+	int32_t _amounts[MAX_MESHES];
 	video::Primitive _primitives[MAX_MESHES];
 	uint32_t _currentMeshIndex = 0u;
 	shader::ColorShader& _colorShader;
+	shader::ColorInstancedShader& _colorInstancedShader;
 
 public:
 	ShapeRenderer();
@@ -45,6 +50,13 @@ public:
 	void shutdown();
 
 	void update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder);
+
+	template<class T>
+	void updatePositions(uint32_t meshIndex, const std::vector<glm::vec<3, T>>& positions) {
+		updatePositions(meshIndex, glm::value_ptr(positions.front()), positions.size() * 3 * sizeof(T), 3);
+	}
+
+	void updatePositions(uint32_t meshIndex, const void* posBuf, const size_t posBufLength, const int posBufComponents);
 
 	void render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4()) const;
 

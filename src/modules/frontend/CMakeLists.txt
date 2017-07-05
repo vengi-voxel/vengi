@@ -17,7 +17,7 @@ set(SRCS
 
 set(LIB frontend)
 add_library(${LIB} ${SRCS})
-generate_shaders(${LIB} world mesh water world_instanced shadowmap shadowmap_instanced shadowmap_render color)
+generate_shaders(${LIB} world mesh water world_instanced shadowmap shadowmap_instanced shadowmap_render color color_instanced)
 engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES network voxel cooldown attrib)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 

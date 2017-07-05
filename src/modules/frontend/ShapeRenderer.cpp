@@ -6,11 +6,14 @@
 namespace frontend {
 
 ShapeRenderer::ShapeRenderer() :
-		_colorShader(shader::ColorShader::getInstance()) {
+		_colorShader(shader::ColorShader::getInstance()),
+		_colorInstancedShader(shader::ColorInstancedShader::getInstance()) {
 	for (int i = 0; i < MAX_MESHES; ++i) {
 		_vertexIndex[i] = -1;
 		_indexIndex[i] = -1;
 		_colorIndex[i] = -1;
+		_offsetIndex[i] = -1;
+		_amounts[i] = -1;
 		_primitives[i] = video::Primitive::Triangles;
 	}
 }
@@ -23,6 +26,9 @@ ShapeRenderer::~ShapeRenderer() {
 bool ShapeRenderer::init() {
 	core_assert_msg(_currentMeshIndex == 0, "ShapeRenderer was already in use");
 	if (!_colorShader.setup()) {
+		return false;
+	}
+	if (!_colorInstancedShader.setup()) {
 		return false;
 	}
 	return true;
@@ -39,6 +45,8 @@ bool ShapeRenderer::deleteMesh(int32_t meshIndex) {
 	_vertexIndex[meshIndex] = -1;
 	_indexIndex[meshIndex] = -1;
 	_colorIndex[meshIndex] = -1;
+	_offsetIndex[meshIndex] = -1;
+	_amounts[meshIndex] = -1;
 	_primitives[meshIndex] = video::Primitive::Triangles;
 	if (meshIndex > 0 && (uint32_t)meshIndex == _currentMeshIndex) {
 		--_currentMeshIndex;
@@ -126,6 +134,7 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 
 void ShapeRenderer::shutdown() {
 	_colorShader.shutdown();
+	_colorInstancedShader.shutdown();
 	for (uint32_t i = 0u; i < _currentMeshIndex; ++i) {
 		deleteMesh(i);
 	}
@@ -154,18 +163,30 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 
+void ShapeRenderer::updatePositions(uint32_t meshIndex, const void* posBuf, const size_t posBufLength, const int posBufComponents) {
+	video::VertexBuffer& vbo = _vbo[meshIndex];
+	if (_offsetIndex[meshIndex] == -1) {
+		_offsetIndex[meshIndex] = vbo.create(posBuf, posBufLength);
+		vbo.setMode(_offsetIndex[meshIndex], video::VertexBufferMode::Stream);
+
+		video::Attribute attributeOffset;
+		attributeOffset.bufferIndex = _offsetIndex[meshIndex];
+		attributeOffset.index = _colorInstancedShader.getLocationOffset();
+		attributeOffset.size = _colorInstancedShader.getComponentsOffset();
+		core_assert_always(posBufComponents == _colorInstancedShader.getComponentsOffset());
+		core_assert_always(_vbo[meshIndex].addAttribute(attributeOffset));
+	} else {
+		core_assert_always(vbo.update(_offsetIndex[meshIndex], posBuf, posBufLength));
+	}
+	_amounts[meshIndex] = posBufLength / posBufComponents;
+}
+
 void ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model) const {
-	video::ScopedShader scoped(_colorShader);
-	core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
-	core_assert_always(_colorShader.setModel(model));
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
 			continue;
 		}
-		core_assert_always(_vbo[meshIndex].bind());
-		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
-		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
-		_vbo[meshIndex].unbind();
+		render(meshIndex, camera, model);
 	}
 }
 
@@ -173,13 +194,21 @@ void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 	if (meshIndex == (uint32_t)-1) {
 		return;
 	}
-	video::ScopedShader scoped(_colorShader);
-	core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
-	core_assert_always(_colorShader.setModel(model));
-
 	core_assert_always(_vbo[meshIndex].bind());
 	const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
-	video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
+
+	if (_amounts[meshIndex] > 0) {
+		core_assert(_offsetIndex[meshIndex] != -1);
+		video::ScopedShader scoped(_colorInstancedShader);
+		core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
+		core_assert_always(_colorInstancedShader.setModel(model));
+		video::drawElementsInstanced<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices, _amounts[meshIndex]);
+	} else {
+		video::ScopedShader scoped(_colorShader);
+		core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
+		core_assert_always(_colorShader.setModel(model));
+		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
+	}
 	_vbo[meshIndex].unbind();
 }
 
