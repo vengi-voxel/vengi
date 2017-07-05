@@ -20,11 +20,35 @@
 *                   : *
 * ----------------- :
 * license           : Lightweight profiler library for c++
-*                   : Copyright(C) 2016  Sergey Yagovtsev, Victor Zarubkin
+*                   : Copyright(C) 2016-2017  Sergey Yagovtsev, Victor Zarubkin
 *                   :
+*                   : Licensed under either of
+*                   :     * MIT license (LICENSE.MIT or http://opensource.org/licenses/MIT)
+*                   :     * Apache License, Version 2.0, (LICENSE.APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+*                   : at your option.
 *                   :
-*                   : Licensed under the Apache License, Version 2.0 (the "License");
-*                   : you may not use this file except in compliance with the License.
+*                   : The MIT License
+*                   :
+*                   : Permission is hereby granted, free of charge, to any person obtaining a copy
+*                   : of this software and associated documentation files (the "Software"), to deal
+*                   : in the Software without restriction, including without limitation the rights 
+*                   : to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+*                   : of the Software, and to permit persons to whom the Software is furnished 
+*                   : to do so, subject to the following conditions:
+*                   : 
+*                   : The above copyright notice and this permission notice shall be included in all 
+*                   : copies or substantial portions of the Software.
+*                   : 
+*                   : THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+*                   : INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+*                   : PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+*                   : LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+*                   : TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+*                   : USE OR OTHER DEALINGS IN THE SOFTWARE.
+*                   : 
+*                   : The Apache License, Version 2.0 (the "License")
+*                   :
+*                   : You may not use this file except in compliance with the License.
 *                   : You may obtain a copy of the License at
 *                   :
 *                   : http://www.apache.org/licenses/LICENSE-2.0
@@ -34,34 +58,23 @@
 *                   : WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *                   : See the License for the specific language governing permissions and
 *                   : limitations under the License.
-*                   :
-*                   :
-*                   : GNU General Public License Usage
-*                   : Alternatively, this file may be used under the terms of the GNU
-*                   : General Public License as published by the Free Software Foundation,
-*                   : either version 3 of the License, or (at your option) any later version.
-*                   :
-*                   : This program is distributed in the hope that it will be useful,
-*                   : but WITHOUT ANY WARRANTY; without even the implied warranty of
-*                   : MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-*                   : GNU General Public License for more details.
-*                   :
-*                   : You should have received a copy of the GNU General Public License
-*                   : along with this program.If not, see <http://www.gnu.org/licenses/>.
 ************************************************************************/
 
-#ifndef EASY__GRAPHICS_VIEW__H_
-#define EASY__GRAPHICS_VIEW__H_
+#ifndef EASY_GRAPHICS_VIEW_H
+#define EASY_GRAPHICS_VIEW_H
 
 #include <stdlib.h>
 #include <unordered_set>
+
 #include <QGraphicsView>
 #include <QGraphicsItem>
 #include <QPoint>
 #include <QRectF>
 #include <QTimer>
 #include <QLabel>
-#include "easy/reader.h"
+
+#include <easy/reader.h>
+
 #include "common_types.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -111,10 +124,10 @@ private:
     typedef QGraphicsView Parent;
     typedef EasyGraphicsView This;
     typedef ::std::vector<EasyGraphicsItem*> Items;
-    typedef ::std::unordered_set<int, ::profiler_gui::do_no_hash<int>::hasher_t> Keys;
+    //typedef ::std::unordered_set<int, ::profiler::passthrough_hash<int> > Keys;
 
     Items                               m_items; ///< Array of all EasyGraphicsItem items
-    Keys                                 m_keys; ///< Pressed keys
+    //Keys                                 m_keys; ///< Pressed keyboard keys
     ::profiler_gui::TreeBlocks m_selectedBlocks; ///< Array of items which were selected by selection zone (EasyChronometerItem)
     QTimer                       m_flickerTimer; ///< Timer for flicking behavior
     QTimer                          m_idleTimer; ///< 
@@ -131,7 +144,7 @@ private:
     EasyGraphicsScrollbar*         m_pScrollbar; ///< Pointer to the graphics scrollbar widget
     EasyChronometerItem*      m_chronometerItem; ///< Pointer to the EasyChronometerItem which is displayed when you press right mouse button and move mouse left or right. This item is used to select blocks to display in tree widget.
     EasyChronometerItem*   m_chronometerItemAux; ///< Pointer to the EasyChronometerItem which is displayed when you double click left mouse button and move mouse left or right. This item is used only to measure time.
-    QGraphicsProxyWidget*        m_csInfoWidget; ///< 
+    QGraphicsProxyWidget*         m_popupWidget; ///< 
     int                         m_flickerSpeedX; ///< Current flicking speed x
     int                         m_flickerSpeedY; ///< Current flicking speed y
     int                       m_flickerCounterX;
@@ -185,6 +198,8 @@ private:
 
     // Private non-virtual methods
 
+    void removePopup(bool _removeFromScene = false);
+
     EasyChronometerItem* createChronometer(bool _main = true);
     bool moveChrono(EasyChronometerItem* _chronometerItem, qreal _mouseX);
     void initMode();
@@ -209,6 +224,7 @@ private slots:
     void onSelectedThreadChange(::profiler::thread_id_t _id);
     void onSelectedBlockChange(unsigned int _block_index);
     void onRefreshRequired();
+    void onThreadViewChanged();
 
 public:
 
@@ -259,8 +275,12 @@ private:
     typedef QGraphicsView Parent;
     typedef EasyThreadNamesWidget This;
 
-    EasyGraphicsView*     m_view;
-    const int m_additionalHeight;
+    QTimer                  m_idleTimer; ///< 
+    uint64_t                 m_idleTime; ///< 
+    EasyGraphicsView*            m_view; ///< 
+    QGraphicsProxyWidget* m_popupWidget; ///< 
+    int                     m_maxLength; ///< 
+    const int        m_additionalHeight; ///< 
 
 public:
 
@@ -284,10 +304,15 @@ public:
         return m_view;
     }
 
+private:
+
+    void removePopup(bool _removeFromScene = false);
+
 private slots:
 
     void setVerticalScrollbarRange(int _minValue, int _maxValue);
     void onTreeChange();
+    void onIdleTimeout();
     void repaintScene();
 
 }; // END of class EasyThreadNamesWidget.
@@ -321,4 +346,4 @@ private:
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-#endif // EASY__GRAPHICS_VIEW__H_
+#endif // EASY_GRAPHICS_VIEW_H

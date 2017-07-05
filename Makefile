@@ -207,6 +207,16 @@ define UPDATE_HG
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,easy_profiler,https://github.com/yse/easy_profiler.git)
+	rm -rf contrib/libs/easy_profiler
+	mkdir contrib/libs/easy_profiler
+	cp -r $(UPDATEDIR)/easy_profiler.sync/easy_profiler_core/* contrib/libs/easy_profiler
+	git checkout HEAD contrib/libs/easy_profiler/version.info
+	git checkout -f contrib/libs/easy_profiler/CMakeLists.txt
+	rm -rf src/tools/profiler
+	mkdir src/tools/profiler
+	cp -r $(UPDATEDIR)/easy_profiler.sync/profiler_gui/* src/tools/profiler
+	git checkout -f src/tools/profiler/CMakeLists.txt
 	$(call UPDATE_GIT,remotery,https://github.com/Celtoys/Remotery)
 	cp $(UPDATEDIR)/remotery.sync/lib/Remotery.[ch] src/modules/core/trace
 	rm -rf tools/remotery

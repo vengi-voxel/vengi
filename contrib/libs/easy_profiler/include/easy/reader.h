@@ -1,33 +1,43 @@
 /**
 Lightweight profiler library for c++
-Copyright(C) 2016  Sergey Yagovtsev, Victor Zarubkin
+Copyright(C) 2016-2017  Sergey Yagovtsev, Victor Zarubkin
+
+Licensed under either of
+	* MIT license (LICENSE.MIT or http://opensource.org/licenses/MIT)
+    * Apache License, Version 2.0, (LICENSE.APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+at your option.
+
+The MIT License
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights 
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+	of the Software, and to permit persons to whom the Software is furnished 
+	to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+	PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+	LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+	USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+The Apache License, Version 2.0 (the "License");
+	You may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
 
-
-GNU General Public License Usage
-Alternatively, this file may be used under the terms of the GNU
-General Public License as published by the Free Software Foundation,
-either version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.If not, see <http://www.gnu.org/licenses/>.
 **/
 
 #ifndef PROFILER_READER____H
@@ -40,8 +50,8 @@ along with this program.If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <atomic>
 
-#include "../../../easy_profiler/include/easy/profiler.h"
-#include "../../../easy_profiler/include/easy/serialized_block.h"
+#include <easy/profiler.h>
+#include <easy/serialized_block.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,17 +60,36 @@ namespace profiler {
     typedef uint32_t calls_number_t;
     typedef uint32_t block_index_t;
 
+    template <class T, bool greater_than_size_t>
+    struct hash : public ::std::hash<T> {
+        using ::std::hash<T>::operator();
+    };
+
+    template <class T>
+    struct hash<T, false> {
+        inline size_t operator () (T _value) const {
+            return static_cast<size_t>(_value);
+        }
+    };
+
+    template <class T>
+    struct passthrough_hash : public hash<T, (sizeof(T) > sizeof(size_t))> {
+        using hash<T, (sizeof(T) > sizeof(size_t))>::operator();
+    };
+
 #pragma pack(push, 1)
     struct BlockStatistics EASY_FINAL
     {
-        ::profiler::timestamp_t        total_duration; ///< Total duration of all block calls
-        ::profiler::block_index_t  min_duration_block; ///< Will be used in GUI to jump to the block with min duration
-        ::profiler::block_index_t  max_duration_block; ///< Will be used in GUI to jump to the block with max duration
-        ::profiler::block_index_t        parent_block; ///< Index of block which is "parent" for "per_parent_stats" or "frame" for "per_frame_stats" or thread-id for "per_thread_stats"
-        ::profiler::calls_number_t       calls_number; ///< Block calls number
+        ::profiler::timestamp_t          total_duration; ///< Total duration of all block calls
+        ::profiler::timestamp_t total_children_duration; ///< Total duration of all children of all block calls
+        ::profiler::block_index_t    min_duration_block; ///< Will be used in GUI to jump to the block with min duration
+        ::profiler::block_index_t    max_duration_block; ///< Will be used in GUI to jump to the block with max duration
+        ::profiler::block_index_t          parent_block; ///< Index of block which is "parent" for "per_parent_stats" or "frame" for "per_frame_stats" or thread-id for "per_thread_stats"
+        ::profiler::calls_number_t         calls_number; ///< Block calls number
 
         explicit BlockStatistics(::profiler::timestamp_t _duration, ::profiler::block_index_t _block_index, ::profiler::block_index_t _parent_index)
             : total_duration(_duration)
+            , total_children_duration(0)
             , min_duration_block(_block_index)
             , max_duration_block(_block_index)
             , parent_block(_parent_index)
@@ -92,11 +121,16 @@ namespace profiler {
         typedef ::std::vector<::profiler::block_index_t> children_t;
 
         children_t                           children; ///< List of children blocks. May be empty.
-        ::profiler::SerializedBlock*             node; ///< Pointer to serilized data (type, name, begin, end etc.)
+
+        union {
+            ::profiler::SerializedBlock*   node; ///< Pointer to serilized data for regular block (id, name, begin, end etc.)
+            ::profiler::SerializedCSwitch*   cs; ///< Pointer to serilized data for context switch (thread_id, name, begin, end etc.)
+        };
+
         ::profiler::BlockStatistics* per_parent_stats; ///< Pointer to statistics for this block within the parent (may be nullptr for top-level blocks)
         ::profiler::BlockStatistics*  per_frame_stats; ///< Pointer to statistics for this block within the frame (may be nullptr for top-level blocks)
         ::profiler::BlockStatistics* per_thread_stats; ///< Pointer to statistics for this block within the bounds of all frames per current thread
-        uint16_t                                depth; ///< Maximum number of sublevels (maximum children depth)
+        uint8_t                                 depth; ///< Maximum number of sublevels (maximum children depth)
 
         BlocksTree()
             : node(nullptr)
@@ -194,10 +228,11 @@ namespace profiler {
         ::profiler::timestamp_t   profiled_time; ///< Profiled time of this thread (sum of all children duration)
         ::profiler::timestamp_t       wait_time; ///< Wait time of this thread (sum of all context switches)
         ::profiler::thread_id_t       thread_id; ///< System Id of this thread
+        ::profiler::block_index_t frames_number; ///< Total frames number (top-level blocks)
         ::profiler::block_index_t blocks_number; ///< Total blocks number including their children
-        uint16_t                          depth; ///< Maximum stack depth (number of levels)
+        uint8_t                           depth; ///< Maximum stack depth (number of levels)
 
-        BlocksTreeRoot() : profiled_time(0), wait_time(0), thread_id(0), blocks_number(0), depth(0)
+        BlocksTreeRoot() : profiled_time(0), wait_time(0), thread_id(0), frames_number(0), blocks_number(0), depth(0)
         {
         }
 
@@ -209,6 +244,7 @@ namespace profiler {
             , profiled_time(that.profiled_time)
             , wait_time(that.wait_time)
             , thread_id(that.thread_id)
+            , frames_number(that.frames_number)
             , blocks_number(that.blocks_number)
             , depth(that.depth)
         {
@@ -223,6 +259,7 @@ namespace profiler {
             profiled_time = that.profiled_time;
             wait_time = that.wait_time;
             thread_id = that.thread_id;
+            frames_number = that.frames_number;
             blocks_number = that.blocks_number;
             depth = that.depth;
             return *this;
@@ -251,7 +288,8 @@ namespace profiler {
     }; // END of class BlocksTreeRoot.
 
     typedef ::profiler::BlocksTree::blocks_t blocks_t;
-    typedef ::std::unordered_map<::profiler::thread_id_t, ::profiler::BlocksTreeRoot, ::profiler::passthrough_hash> thread_blocks_tree_t;
+
+    typedef ::std::unordered_map<::profiler::thread_id_t, ::profiler::BlocksTreeRoot, ::profiler::passthrough_hash<::profiler::thread_id_t> > thread_blocks_tree_t;
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -359,6 +397,7 @@ extern "C" {
                                                              ::profiler::blocks_t& _blocks,
                                                              ::profiler::thread_blocks_tree_t& threaded_trees,
                                                              uint32_t& total_descriptors_number,
+                                                             uint32_t& version,
                                                              bool gather_statistics,
                                                              ::std::stringstream& _log);
 
@@ -369,6 +408,7 @@ extern "C" {
                                                                ::profiler::blocks_t& _blocks,
                                                                ::profiler::thread_blocks_tree_t& threaded_trees,
                                                                uint32_t& total_descriptors_number,
+                                                               uint32_t& version,
                                                                bool gather_statistics,
                                                                ::std::stringstream& _log);
 
@@ -383,11 +423,12 @@ inline ::profiler::block_index_t fillTreesFromFile(const char* filename, ::profi
                                                    ::profiler::descriptors_list_t& descriptors, ::profiler::blocks_t& _blocks,
                                                    ::profiler::thread_blocks_tree_t& threaded_trees,
                                                    uint32_t& total_descriptors_number,
+                                                   uint32_t& version,
                                                    bool gather_statistics,
                                                    ::std::stringstream& _log)
 {
     ::std::atomic<int> progress = ATOMIC_VAR_INIT(0);
-    return fillTreesFromFile(progress, filename, serialized_blocks, serialized_descriptors, descriptors, _blocks, threaded_trees, total_descriptors_number, gather_statistics, _log);
+    return fillTreesFromFile(progress, filename, serialized_blocks, serialized_descriptors, descriptors, _blocks, threaded_trees, total_descriptors_number, version, gather_statistics, _log);
 }
 
 inline bool readDescriptionsFromStream(::std::stringstream& str,

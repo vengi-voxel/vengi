@@ -14,11 +14,35 @@
 *                   : * 
 * ----------------- : 
 * license           : Lightweight profiler library for c++
-*                   : Copyright(C) 2016  Sergey Yagovtsev, Victor Zarubkin
+*                   : Copyright(C) 2016-2017  Sergey Yagovtsev, Victor Zarubkin
 *                   :
+*                   : Licensed under either of
+*                   :     * MIT license (LICENSE.MIT or http://opensource.org/licenses/MIT)
+*                   :     * Apache License, Version 2.0, (LICENSE.APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+*                   : at your option.
 *                   :
-*                   : Licensed under the Apache License, Version 2.0 (the "License");
-*                   : you may not use this file except in compliance with the License.
+*                   : The MIT License
+*                   :
+*                   : Permission is hereby granted, free of charge, to any person obtaining a copy
+*                   : of this software and associated documentation files (the "Software"), to deal
+*                   : in the Software without restriction, including without limitation the rights 
+*                   : to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+*                   : of the Software, and to permit persons to whom the Software is furnished 
+*                   : to do so, subject to the following conditions:
+*                   : 
+*                   : The above copyright notice and this permission notice shall be included in all 
+*                   : copies or substantial portions of the Software.
+*                   : 
+*                   : THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+*                   : INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+*                   : PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+*                   : LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+*                   : TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+*                   : USE OR OTHER DEALINGS IN THE SOFTWARE.
+*                   : 
+*                   : The Apache License, Version 2.0 (the "License")
+*                   :
+*                   : You may not use this file except in compliance with the License.
 *                   : You may obtain a copy of the License at
 *                   :
 *                   : http://www.apache.org/licenses/LICENSE-2.0
@@ -28,31 +52,18 @@
 *                   : WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *                   : See the License for the specific language governing permissions and
 *                   : limitations under the License.
-*                   :
-*                   :
-*                   : GNU General Public License Usage
-*                   : Alternatively, this file may be used under the terms of the GNU
-*                   : General Public License as published by the Free Software Foundation,
-*                   : either version 3 of the License, or (at your option) any later version.
-*                   :
-*                   : This program is distributed in the hope that it will be useful,
-*                   : but WITHOUT ANY WARRANTY; without even the implied warranty of
-*                   : MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-*                   : GNU General Public License for more details.
-*                   :
-*                   : You should have received a copy of the GNU General Public License
-*                   : along with this program.If not, see <http://www.gnu.org/licenses/>.
 ************************************************************************/
 
-#ifndef EASY__TREE_WIDGET_LOADER__H_
-#define EASY__TREE_WIDGET_LOADER__H_
+#ifndef EASY_TREE_WIDGET_LOADER_H
+#define EASY_TREE_WIDGET_LOADER_H
 
 #include <stdlib.h>
 #include <vector>
-//#include <unordered_set>
 #include <thread>
 #include <atomic>
-#include "easy/reader.h"
+
+#include <easy/reader.h>
+
 #include "common_types.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -60,14 +71,14 @@
 class EasyTreeWidgetItem;
 
 #ifndef EASY_TREE_WIDGET__USE_VECTOR
-typedef ::std::unordered_map<::profiler::block_index_t, EasyTreeWidgetItem*, ::profiler_gui::do_no_hash<::profiler::block_index_t>::hasher_t> Items;
+typedef ::std::unordered_map<::profiler::block_index_t, EasyTreeWidgetItem*, ::profiler::passthrough_hash<::profiler::block_index_t> > Items;
 #else
 typedef ::std::vector<EasyTreeWidgetItem*> Items;
 #endif
 
 typedef ::std::vector<::std::pair<::profiler::thread_id_t, EasyTreeWidgetItem*> > ThreadedItems;
-typedef ::std::unordered_map<::profiler::thread_id_t, EasyTreeWidgetItem*, ::profiler_gui::do_no_hash<::profiler::thread_id_t>::hasher_t> RootsMap;
-typedef ::std::unordered_map<::profiler::block_id_t, EasyTreeWidgetItem*, ::profiler_gui::do_no_hash<::profiler::block_index_t>::hasher_t> IdItems;
+typedef ::std::unordered_map<::profiler::thread_id_t, EasyTreeWidgetItem*, ::profiler::passthrough_hash<::profiler::thread_id_t> > RootsMap;
+typedef ::std::unordered_map<::profiler::block_id_t, EasyTreeWidgetItem*, ::profiler::passthrough_hash<::profiler::block_index_t> > IdItems;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -111,8 +122,8 @@ private:
     void setDone();
     void setProgress(int _progress);
 
-    void setTreeInternal1(::profiler::timestamp_t& _beginTime, const unsigned int _blocksNumber, const ::profiler::thread_blocks_tree_t& _blocksTree, bool _colorizeRows, bool _addZeroBlocks, bool _decoratedThreadNames, ::profiler_gui::TimeUnits _units);
-    void setTreeInternal2(const ::profiler::timestamp_t& _beginTime, const ::profiler_gui::TreeBlocks& _blocks, ::profiler::timestamp_t _left, ::profiler::timestamp_t _right, bool _strict, bool _colorizeRows, bool _addZeroBlocks, bool _decoratedThreadNames, ::profiler_gui::TimeUnits _units);
+    void setTreeInternal1(::profiler::timestamp_t& _beginTime, const unsigned int _blocksNumber, const ::profiler::thread_blocks_tree_t& _blocksTree, bool _colorizeRows, bool _addZeroBlocks, bool _decoratedThreadNames, bool _hexThreadId, ::profiler_gui::TimeUnits _units);
+    void setTreeInternal2(const ::profiler::timestamp_t& _beginTime, const ::profiler_gui::TreeBlocks& _blocks, ::profiler::timestamp_t _left, ::profiler::timestamp_t _right, bool _strict, bool _colorizeRows, bool _addZeroBlocks, bool _decoratedThreadNames, bool _hexThreadId, ::profiler_gui::TimeUnits _units);
     size_t setTreeInternal(const ::profiler::BlocksTreeRoot& _threadRoot, ::profiler::block_index_t _firstCswitch, const ::profiler::timestamp_t& _beginTime, const ::profiler::BlocksTree::children_t& _children, EasyTreeWidgetItem* _parent, EasyTreeWidgetItem* _frame, ::profiler::timestamp_t _left, ::profiler::timestamp_t _right, bool _strict, ::profiler::timestamp_t& _duration, bool _colorizeRows, bool _addZeroBlocks, ::profiler_gui::TimeUnits _units);
     size_t setTreeInternalPlain(const ::profiler::BlocksTreeRoot& _threadRoot, ::profiler::block_index_t _firstCswitch, const ::profiler::timestamp_t& _beginTime, const ::profiler::BlocksTree::children_t& _children, EasyTreeWidgetItem* _parent, EasyTreeWidgetItem* _frame, ::profiler::timestamp_t _left, ::profiler::timestamp_t _right, bool _strict, ::profiler::timestamp_t& _duration, bool _colorizeRows, bool _addZeroBlocks, ::profiler_gui::TimeUnits _units);
 
@@ -122,4 +133,4 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 
-#endif // EASY__TREE_WIDGET_LOADER__H_
+#endif // EASY_TREE_WIDGET_LOADER_H

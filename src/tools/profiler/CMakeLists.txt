@@ -30,6 +30,8 @@ set(SRCS
     descriptors_tree_widget.cpp
     easy_chronometer_item.h
     easy_chronometer_item.cpp
+    easy_frame_rate_viewer.h
+    easy_frame_rate_viewer.cpp
     easy_graphics_item.h
     easy_graphics_item.cpp
     easy_graphics_scrollbar.h
@@ -69,6 +71,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 	${AUTOGEN_TARGETS_FOLDER}
 	${AUTOMOC_TARGETS_FOLDER}
 )
+if (NOT MSVC)
+	set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-Wno-reorder")
+endif()
 
 qt5_use_modules(${PROJECT_NAME} Widgets)
 

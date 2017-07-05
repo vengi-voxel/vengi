@@ -18,11 +18,35 @@
 *                   : *
 * ----------------- :
 * license           : Lightweight profiler library for c++
-*                   : Copyright(C) 2016  Sergey Yagovtsev, Victor Zarubkin
+*                   : Copyright(C) 2016-2017  Sergey Yagovtsev, Victor Zarubkin
 *                   :
+*                   : Licensed under either of
+*                   :     * MIT license (LICENSE.MIT or http://opensource.org/licenses/MIT)
+*                   :     * Apache License, Version 2.0, (LICENSE.APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+*                   : at your option.
 *                   :
-*                   : Licensed under the Apache License, Version 2.0 (the "License");
-*                   : you may not use this file except in compliance with the License.
+*                   : The MIT License
+*                   :
+*                   : Permission is hereby granted, free of charge, to any person obtaining a copy
+*                   : of this software and associated documentation files (the "Software"), to deal
+*                   : in the Software without restriction, including without limitation the rights
+*                   : to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+*                   : of the Software, and to permit persons to whom the Software is furnished
+*                   : to do so, subject to the following conditions:
+*                   :
+*                   : The above copyright notice and this permission notice shall be included in all
+*                   : copies or substantial portions of the Software.
+*                   :
+*                   : THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+*                   : INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+*                   : PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+*                   : LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+*                   : TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+*                   : USE OR OTHER DEALINGS IN THE SOFTWARE.
+*                   :
+*                   : The Apache License, Version 2.0 (the "License")
+*                   :
+*                   : You may not use this file except in compliance with the License.
 *                   : You may obtain a copy of the License at
 *                   :
 *                   : http://www.apache.org/licenses/LICENSE-2.0
@@ -32,20 +56,6 @@
 *                   : WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *                   : See the License for the specific language governing permissions and
 *                   : limitations under the License.
-*                   :
-*                   :
-*                   : GNU General Public License Usage
-*                   : Alternatively, this file may be used under the terms of the GNU
-*                   : General Public License as published by the Free Software Foundation,
-*                   : either version 3 of the License, or (at your option) any later version.
-*                   :
-*                   : This program is distributed in the hope that it will be useful,
-*                   : but WITHOUT ANY WARRANTY; without even the implied warranty of
-*                   : MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-*                   : GNU General Public License for more details.
-*                   :
-*                   : You should have received a copy of the GNU General Public License
-*                   : along with this program.If not, see <http://www.gnu.org/licenses/>.
 ************************************************************************/
 
 #include <chrono>
@@ -76,18 +86,22 @@
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QFile>
+#include <QFileInfo>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QMimeData>
+#include <QDateTime>
 
 #include "main_window.h"
 #include "blocks_tree_widget.h"
 #include "blocks_graphics_view.h"
 #include "descriptors_tree_widget.h"
+#include "easy_frame_rate_viewer.h"
 #include "globals.h"
-#include "easy/easy_net.h"
+
+#include <easy/easy_net.h>
 
 #ifdef max
 #undef max
@@ -98,6 +112,8 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////
+
+#define EASY_DEFAULT_WINDOW_TITLE "EasyProfiler"
 
 const int LOADER_TIMER_INTERVAL = 40;
 const auto NETWORK_CACHE_FILE = "easy_profiler_stream.cache";
@@ -122,7 +138,7 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     { QIcon icon(":/logo"); if (!icon.isNull()) QApplication::setWindowIcon(icon); }
 
     setObjectName("ProfilerGUI_MainWindow");
-    setWindowTitle("EasyProfiler");
+    setWindowTitle(EASY_DEFAULT_WINDOW_TITLE);
     setDockNestingEnabled(true);
     setAcceptDrops(true);
     resize(800, 600);
@@ -145,8 +161,14 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     auto treeWidget = new EasyHierarchyWidget(this);
     m_treeWidget->setWidget(treeWidget);
 
+    m_fpsViewer = new QDockWidget("FPS Monitor", this);
+    m_fpsViewer->setObjectName("ProfilerGUI_FPS");
+    m_fpsViewer->setWidget(new EasyFrameRateViewer(this));
+    m_fpsViewer->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+
     addDockWidget(Qt::TopDockWidgetArea, m_graphicsView);
     addDockWidget(Qt::BottomDockWidgetArea, m_treeWidget);
+    addDockWidget(Qt::TopDockWidgetArea, m_fpsViewer);
 
 #if EASY_GUI_USE_DESCRIPTORS_DOCK_WINDOW != 0
     auto descTree = new EasyDescWidget();
@@ -236,6 +258,8 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
 
     toolbar->addSeparator();
     auto menu = new QMenu("Settings", this);
+    menu->setToolTipsVisible(true);
+
     QToolButton* toolButton = new QToolButton(toolbar);
     toolButton->setIcon(QIcon(":/Settings"));
     toolButton->setMenu(menu);
@@ -258,6 +282,17 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
         action->setText("Statistics disabled");
         SET_ICON(action, ":/Stats-off");
     }
+
+
+    action = menu->addAction("Only frames on histogram");
+    action->setToolTip("Display only top-level blocks on histogram.");
+    action->setCheckable(true);
+    action->setChecked(EASY_GLOBALS.display_only_frames_on_histogram);
+    connect(action, &QAction::triggered, [this](bool _checked)
+    {
+        EASY_GLOBALS.display_only_frames_on_histogram = _checked;
+        emit EASY_GLOBALS.events.displayOnlyFramesOnHistogramChanged();
+    });
 
 
     menu->addSeparator();
@@ -333,11 +368,25 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     action->setChecked(EASY_GLOBALS.selecting_block_changes_thread);
     connect(action, &QAction::triggered, [this](bool _checked){ EASY_GLOBALS.selecting_block_changes_thread = _checked; });
 
-    action = submenu->addAction("Draw event indicators");
-    action->setToolTip("Display event indicators under the blocks\n(even if event-blocks are not visible).\nThis slightly reduces performance.");
+    action = submenu->addAction("Draw event markers");
+    action->setToolTip("Display event markers under the blocks\n(even if event-blocks are not visible).\nThis slightly reduces performance.");
     action->setCheckable(true);
-    action->setChecked(EASY_GLOBALS.enable_event_indicators);
-    connect(action, &QAction::triggered, this, &This::onEventIndicatorsChange);
+    action->setChecked(EASY_GLOBALS.enable_event_markers);
+    connect(action, &QAction::triggered, [this](bool _checked)
+    {
+        EASY_GLOBALS.enable_event_markers = _checked;
+        refreshDiagram();
+    });
+
+    action = submenu->addAction("Automatically adjust histogram height");
+    action->setToolTip("You do not need to adjust boundaries manually,\nbut this restricts you from adjusting boundaries at all (zoom mode).\nYou can still adjust boundaries in overview mode though.");
+    action->setCheckable(true);
+    action->setChecked(EASY_GLOBALS.auto_adjust_histogram_height);
+    connect(action, &QAction::triggered, [](bool _checked)
+    {
+        EASY_GLOBALS.auto_adjust_histogram_height = _checked;
+        emit EASY_GLOBALS.events.autoAdjustHistogramChanged();
+    });
 
     action = submenu->addAction("Use decorated thread names");
     action->setToolTip("Add \'Thread\' word into thread name if there is no one already.\nExamples: \'Render\' will change to \'Render Thread\'\n\'WorkerThread\' will not change.");
@@ -347,6 +396,16 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     {
         EASY_GLOBALS.use_decorated_thread_name = _checked;
         emit EASY_GLOBALS.events.threadNameDecorationChanged();
+    });
+
+    action = submenu->addAction("Display hex thread id");
+    action->setToolTip("Display hex thread id instead of decimal.");
+    action->setCheckable(true);
+    action->setChecked(EASY_GLOBALS.hex_thread_id);
+    connect(action, &QAction::triggered, [this](bool _checked)
+    {
+        EASY_GLOBALS.hex_thread_id = _checked;
+        emit EASY_GLOBALS.events.hexThreadIdChanged();
     });
 
     submenu->addSeparator();
@@ -386,7 +445,7 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     l->setContentsMargins(33, 1, 1, 1);
     l->addWidget(new QLabel("Min blocks spacing, px", w), 0, Qt::AlignLeft);
     auto spinbox = new QSpinBox(w);
-    spinbox->setMinimum(0);
+    spinbox->setRange(0, 400);
     spinbox->setValue(EASY_GLOBALS.blocks_spacing);
     spinbox->setFixedWidth(50);
     connect(spinbox, SIGNAL(valueChanged(int)), this, SLOT(onSpacingChange(int)));
@@ -401,7 +460,7 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     l->setContentsMargins(33, 1, 1, 1);
     l->addWidget(new QLabel("Min blocks size, px", w), 0, Qt::AlignLeft);
     spinbox = new QSpinBox(w);
-    spinbox->setMinimum(1);
+    spinbox->setRange(1, 400);
     spinbox->setValue(EASY_GLOBALS.blocks_size_min);
     spinbox->setFixedWidth(50);
     connect(spinbox, SIGNAL(valueChanged(int)), this, SLOT(onMinSizeChange(int)));
@@ -416,7 +475,7 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     l->setContentsMargins(33, 1, 1, 1);
     l->addWidget(new QLabel("Blocks narrow size, px", w), 0, Qt::AlignLeft);
     spinbox = new QSpinBox(w);
-    spinbox->setMinimum(1);
+    spinbox->setRange(1, 400);
     spinbox->setValue(EASY_GLOBALS.blocks_narrow_size);
     spinbox->setFixedWidth(50);
     connect(spinbox, SIGNAL(valueChanged(int)), this, SLOT(onNarrowSizeChange(int)));
@@ -425,6 +484,57 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     waction = new QWidgetAction(submenu);
     waction->setDefaultWidget(w);
     submenu->addAction(waction);
+
+
+
+
+    submenu = menu->addMenu("FPS Monitor");
+    w = new QWidget(submenu);
+    l = new QHBoxLayout(w);
+    l->setContentsMargins(33, 1, 1, 1);
+    l->addWidget(new QLabel("Request interval, ms", w), 0, Qt::AlignLeft);
+    spinbox = new QSpinBox(w);
+    spinbox->setRange(1, 600000);
+    spinbox->setValue(EASY_GLOBALS.fps_timer_interval);
+    spinbox->setFixedWidth(50);
+    connect(spinbox, SIGNAL(valueChanged(int)), this, SLOT(onFpsIntervalChange(int)));
+    l->addWidget(spinbox);
+    w->setLayout(l);
+    waction = new QWidgetAction(submenu);
+    waction->setDefaultWidget(w);
+    submenu->addAction(waction);
+
+    w = new QWidget(submenu);
+    l = new QHBoxLayout(w);
+    l->setContentsMargins(33, 1, 1, 1);
+    l->addWidget(new QLabel("Max history size", w), 0, Qt::AlignLeft);
+    spinbox = new QSpinBox(w);
+    spinbox->setRange(2, 200);
+    spinbox->setValue(EASY_GLOBALS.max_fps_history);
+    spinbox->setFixedWidth(50);
+    connect(spinbox, SIGNAL(valueChanged(int)), this, SLOT(onFpsHistoryChange(int)));
+    l->addWidget(spinbox);
+    w->setLayout(l);
+    waction = new QWidgetAction(submenu);
+    waction->setDefaultWidget(w);
+    submenu->addAction(waction);
+
+    w = new QWidget(submenu);
+    l = new QHBoxLayout(w);
+    l->setContentsMargins(33, 1, 1, 1);
+    l->addWidget(new QLabel("Line width, px", w), 0, Qt::AlignLeft);
+    spinbox = new QSpinBox(w);
+    spinbox->setRange(1, 6);
+    spinbox->setValue(EASY_GLOBALS.fps_widget_line_width);
+    spinbox->setFixedWidth(50);
+    connect(spinbox, SIGNAL(valueChanged(int)), this, SLOT(onFpsMonitorLineWidthChange(int)));
+    l->addWidget(spinbox);
+    w->setLayout(l);
+    waction = new QWidgetAction(submenu);
+    waction->setDefaultWidget(w);
+    submenu->addAction(waction);
+
+
 
 
     submenu = menu->addMenu("Units");
@@ -501,7 +611,7 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     toolbar->setContentsMargins(1, 0, 1, 0);
     toolbar->setMinimumHeight(tb_height);
 
-    lbl = new QLabel("Frame time:", toolbar);
+    lbl = new QLabel("Expected frame time:", toolbar);
     lbl->setContentsMargins(5, 2, 2, 2);
     toolbar->addWidget(lbl);
 
@@ -513,6 +623,7 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     m_frameTimeEdit->setValidator(val);
     m_frameTimeEdit->setText(QString::number(EASY_GLOBALS.frame_time * 1e-3));
     connect(m_frameTimeEdit, &QLineEdit::editingFinished, this, &This::onFrameTimeEditFinish);
+    connect(&EASY_GLOBALS.events, &::profiler_gui::EasyGlobalSignals::expectedFrameTimeChanged, this, &This::onFrameTimeChanged);
     toolbar->addWidget(m_frameTimeEdit);
 
     lbl = new QLabel("ms", toolbar);
@@ -523,11 +634,12 @@ EasyMainWindow::EasyMainWindow() : Parent(), m_lastAddress("localhost"), m_lastP
     connect(graphicsView->view(), &EasyGraphicsView::intervalChanged, treeWidget->tree(), &EasyTreeWidget::setTreeBlocks);
     connect(&m_readerTimer, &QTimer::timeout, this, &This::onFileReaderTimeout);
     connect(&m_listenerTimer, &QTimer::timeout, this, &This::onListenerTimerTimeout);
+    connect(&m_fpsRequestTimer, &QTimer::timeout, this, &This::onFrameTimeRequestTimeout);
     
 
     m_progress = new QProgressDialog("Loading file...", "Cancel", 0, 100, this);
     m_progress->setFixedWidth(300);
-    m_progress->setWindowTitle("EasyProfiler");
+    m_progress->setWindowTitle(EASY_DEFAULT_WINDOW_TITLE);
     m_progress->setModal(true);
     m_progress->setValue(100);
     //m_progress->hide();
@@ -573,7 +685,24 @@ void EasyMainWindow::dropEvent(QDropEvent* drop_event)
 {
     const auto& urls = drop_event->mimeData()->urls();
     if (!urls.empty())
+    {
+        if (m_bNetworkFileRegime)
+        {
+            // Warn user about unsaved network information and suggest to save
+            auto result = QMessageBox::question(this, "Unsaved session", "You have unsaved data!\nSave before opening new file?", QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
+            if (result == QMessageBox::Yes)
+            {
+                onSaveFileClicked(true);
+            }
+            else if (result != QMessageBox::No)
+            {
+                // User cancelled opening new file
+                return;
+            }
+        }
+
         loadFile(urls.front().toLocalFile());
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -584,15 +713,31 @@ void EasyMainWindow::onOpenFileClicked(bool)
     if (action == nullptr)
         return;
 
+    QString filename;
+
     if (action == m_loadActionMenu->menuAction())
-    {
-        auto filename = QFileDialog::getOpenFileName(this, "Open profiler log", m_lastFiles.empty() ? QString() : m_lastFiles.front(), "Profiler Log File (*.prof);;All Files (*.*)");
-        if (!filename.isEmpty())
-            loadFile(filename);
-    }
+        filename = QFileDialog::getOpenFileName(this, "Open EasyProfiler File", m_lastFiles.empty() ? QString() : m_lastFiles.front(), "EasyProfiler File (*.prof);;All Files (*.*)");
     else
+        filename = action->text();
+
+    if (!filename.isEmpty())
     {
-        loadFile(action->text());
+        if (m_bNetworkFileRegime)
+        {
+            // Warn user about unsaved network information and suggest to save
+            auto result = QMessageBox::question(this, "Unsaved session", "You have unsaved data!\nSave before opening new file?", QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
+            if (result == QMessageBox::Yes)
+            {
+                onSaveFileClicked(true);
+            }
+            else if (result != QMessageBox::No)
+            {
+                // User cancelled opening new file
+                return;
+            }
+        }
+
+        loadFile(filename);
     }
 }
 
@@ -617,6 +762,13 @@ void EasyMainWindow::addFileToList(const QString& filename)
         m_loadActionMenu->removeAction(fileActions.back());
         delete fileActions.back();
     }
+
+    m_bOpenedCacheFile = filename.contains(NETWORK_CACHE_FILE);
+
+    if (m_bOpenedCacheFile)
+        setWindowTitle(QString(EASY_DEFAULT_WINDOW_TITLE " - [%1] - UNSAVED network cache file").arg(m_lastFiles.front()));
+    else
+        setWindowTitle(QString(EASY_DEFAULT_WINDOW_TITLE " - [%1]").arg(m_lastFiles.front()));
 }
 
 void EasyMainWindow::loadFile(const QString& filename)
@@ -658,9 +810,57 @@ void EasyMainWindow::onSaveFileClicked(bool)
     if (k > 0)
         dir = lastFile.mid(0, ++k);
 
-    auto filename = QFileDialog::getSaveFileName(this, "Save profiler log", dir, "Profiler Log File (*.prof);;All Files (*.*)");
+    if (m_bNetworkFileRegime)
+    {
+        // Current file is network cache file, use current system time as output file name
+
+        if (!dir.isEmpty())
+            dir += QDateTime::currentDateTime().toString("/yyyy-MM-dd_HH-mm-ss.prof");
+        else
+            dir = QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss.prof");
+    }
+    else if (m_bOpenedCacheFile)
+    {
+        // Opened old network cache file, use it's last modification time as output file name
+
+        QFileInfo fileInfo(lastFile);
+        if (!fileInfo.exists())
+        {
+            // Can not open the file!
+
+            QMessageBox::warning(this, "Warning", "Can not open source file.\nSaving incomplete.", QMessageBox::Close);
+
+            m_lastFiles.pop_front();
+            auto action = m_loadActionMenu->actions().front();
+            m_loadActionMenu->removeAction(action);
+            delete action;
+
+            return;
+        }
+
+        if (!dir.isEmpty())
+            dir += fileInfo.lastModified().toString("/yyyy-MM-dd_HH-mm-ss.prof");
+        else
+            dir = fileInfo.lastModified().toString("yyyy-MM-dd_HH-mm-ss.prof");
+    }
+    else
+    {
+        dir = lastFile;
+    }
+
+    auto filename = QFileDialog::getSaveFileName(this, "Save EasyProfiler File", dir, "EasyProfiler File (*.prof);;All Files (*.*)");
     if (!filename.isEmpty())
     {
+        // Check if the same file has been selected
+        {
+            QFileInfo fileInfo1(m_bNetworkFileRegime ? QString(NETWORK_CACHE_FILE) : lastFile), fileInfo2(filename);
+            if (fileInfo1.exists() && fileInfo2.exists() && fileInfo1 == fileInfo2)
+            {
+                // Selected the same file - do nothing
+                return;
+            }
+        }
+
         bool inOk = false, outOk = false;
         int8_t retry1 = -1;
         while (++retry1 < 4)
@@ -695,8 +895,24 @@ void EasyMainWindow::onSaveFileClicked(bool)
         if (outOk)
         {
             if (m_bNetworkFileRegime)
+            {
+                // Remove temporary network cahche file
                 QFile::remove(QString(NETWORK_CACHE_FILE));
+            }
+            else if (m_bOpenedCacheFile)
+            {
+                // Remove old temporary network cahche file
+
+                QFile::remove(lastFile.toStdString().c_str());
+
+                m_lastFiles.pop_front();
+                auto action = m_loadActionMenu->actions().front();
+                m_loadActionMenu->removeAction(action);
+                delete action;
+            }
+
             addFileToList(filename);
+
             m_bNetworkFileRegime = false;
         }
         else if (inOk)
@@ -739,7 +955,13 @@ void EasyMainWindow::clear()
     m_saveAction->setEnabled(false);
     m_deleteAction->setEnabled(false);
 
+    if (m_bNetworkFileRegime)
+        QFile::remove(QString(NETWORK_CACHE_FILE));
+
     m_bNetworkFileRegime = false;
+    m_bOpenedCacheFile = false;
+
+    setWindowTitle(EASY_DEFAULT_WINDOW_TITLE);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -753,7 +975,10 @@ void EasyMainWindow::refreshDiagram()
 
 void EasyMainWindow::onDeleteClicked(bool)
 {
-    auto button = QMessageBox::question(this, "Clear all profiled data", "All profiled data is going to be deleted!\nContinue?", QMessageBox::Yes, QMessageBox::No);
+    int button = QMessageBox::Yes;
+    if (m_bNetworkFileRegime)
+        button = QMessageBox::question(this, "Clear all profiled data", "All profiled data and network cache file\nare going to be deleted!\nContinue?", QMessageBox::Yes, QMessageBox::No);
+
     if (button == QMessageBox::Yes)
         clear();
 }
@@ -786,12 +1011,6 @@ void EasyMainWindow::onUnitsChanged(bool)
 {
     auto _sender = qobject_cast<QAction*>(sender());
     EASY_GLOBALS.time_units = static_cast<::profiler_gui::TimeUnits>(_sender->data().toInt());
-}
-
-void EasyMainWindow::onEventIndicatorsChange(bool _checked)
-{
-    EASY_GLOBALS.enable_event_indicators = _checked;
-    refreshDiagram();
 }
 
 void EasyMainWindow::onEnableDisableStatistics(bool _checked)
@@ -887,6 +1106,29 @@ void EasyMainWindow::onNarrowSizeChange(int _value)
 
 //////////////////////////////////////////////////////////////////////////
 
+void EasyMainWindow::onFpsIntervalChange(int _value)
+{
+    EASY_GLOBALS.fps_timer_interval = _value;
+
+    if (m_fpsRequestTimer.isActive())
+        m_fpsRequestTimer.stop();
+
+    if (EASY_GLOBALS.connected)
+        m_fpsRequestTimer.start(_value);
+}
+
+void EasyMainWindow::onFpsHistoryChange(int _value)
+{
+    EASY_GLOBALS.max_fps_history = _value;
+}
+
+void EasyMainWindow::onFpsMonitorLineWidthChange(int _value)
+{
+    EASY_GLOBALS.fps_widget_line_width = _value;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 void EasyMainWindow::onEditBlocksClicked(bool)
 {
     if (m_descTreeDialog != nullptr)
@@ -897,7 +1139,7 @@ void EasyMainWindow::onEditBlocksClicked(bool)
 
     m_descTreeDialog = new QDialog();
     m_descTreeDialog->setAttribute(Qt::WA_DeleteOnClose, true);
-    m_descTreeDialog->setWindowTitle("EasyProfiler");
+    m_descTreeDialog->setWindowTitle(EASY_DEFAULT_WINDOW_TITLE);
     m_descTreeDialog->resize(800, 600);
     connect(m_descTreeDialog, &QDialog::finished, this, &This::onDescTreeDialogClose);
 
@@ -921,6 +1163,15 @@ void EasyMainWindow::onDescTreeDialogClose(int)
 
 void EasyMainWindow::closeEvent(QCloseEvent* close_event)
 {
+    if (m_bNetworkFileRegime)
+    {
+        // Warn user about unsaved network information and suggest to save
+        if (QMessageBox::Yes == QMessageBox::question(this, "Unsaved session", "You unsaved data!\nSave before exit?", QMessageBox::Yes, QMessageBox::No))
+        {
+            onSaveFileClicked(true);
+        }
+    }
+
     saveSettingsAndGeometry();
 
     if (m_descTreeDialog != nullptr)
@@ -1026,11 +1277,35 @@ void EasyMainWindow::loadSettings()
 
     flag = settings.value("enable_event_indicators");
     if (!flag.isNull())
-        EASY_GLOBALS.enable_event_indicators = flag.toBool();
+        EASY_GLOBALS.enable_event_markers = flag.toBool();
+
+    flag = settings.value("auto_adjust_histogram_height");
+    if (!flag.isNull())
+        EASY_GLOBALS.auto_adjust_histogram_height = flag.toBool();
+
+    flag = settings.value("display_only_frames_on_histogram");
+    if (!flag.isNull())
+        EASY_GLOBALS.display_only_frames_on_histogram = flag.toBool();
 
     flag = settings.value("use_decorated_thread_name");
     if (!flag.isNull())
         EASY_GLOBALS.use_decorated_thread_name = flag.toBool();
+
+    flag = settings.value("hex_thread_id");
+    if (!flag.isNull())
+        EASY_GLOBALS.hex_thread_id = flag.toBool();
+
+    flag = settings.value("fps_timer_interval");
+    if (!flag.isNull())
+        EASY_GLOBALS.fps_timer_interval = flag.toInt();
+
+    flag = settings.value("max_fps_history");
+    if (!flag.isNull())
+        EASY_GLOBALS.max_fps_history = flag.toInt();
+
+    flag = settings.value("fps_widget_line_width");
+    if (!flag.isNull())
+        EASY_GLOBALS.fps_widget_line_width = flag.toInt();
 
     flag = settings.value("enable_statistics");
     if (!flag.isNull())
@@ -1087,9 +1362,15 @@ void EasyMainWindow::saveSettingsAndGeometry()
     settings.setValue("highlight_blocks_with_same_id", EASY_GLOBALS.highlight_blocks_with_same_id);
     settings.setValue("bind_scene_and_tree_expand_status", EASY_GLOBALS.bind_scene_and_tree_expand_status);
     settings.setValue("selecting_block_changes_thread", EASY_GLOBALS.selecting_block_changes_thread);
-    settings.setValue("enable_event_indicators", EASY_GLOBALS.enable_event_indicators);
+    settings.setValue("enable_event_indicators", EASY_GLOBALS.enable_event_markers);
+    settings.setValue("auto_adjust_histogram_height", EASY_GLOBALS.auto_adjust_histogram_height);
+    settings.setValue("display_only_frames_on_histogram", EASY_GLOBALS.display_only_frames_on_histogram);
     settings.setValue("use_decorated_thread_name", EASY_GLOBALS.use_decorated_thread_name);
+    settings.setValue("hex_thread_id", EASY_GLOBALS.hex_thread_id);
     settings.setValue("enable_statistics", EASY_GLOBALS.enable_statistics);
+    settings.setValue("fps_timer_interval", EASY_GLOBALS.fps_timer_interval);
+    settings.setValue("max_fps_history", EASY_GLOBALS.max_fps_history);
+    settings.setValue("fps_widget_line_width", EASY_GLOBALS.fps_widget_line_width);
     settings.setValue("encoding", QTextCodec::codecForLocale()->name());
 
     settings.endGroup();
@@ -1097,15 +1378,22 @@ void EasyMainWindow::saveSettingsAndGeometry()
 
 void EasyMainWindow::setDisconnected(bool _showMessage)
 {
+    if (m_fpsRequestTimer.isActive())
+        m_fpsRequestTimer.stop();
+
     if (_showMessage)
-        QMessageBox::warning(this, "Warning", "Application was disconnected", QMessageBox::Close);
+        QMessageBox::warning(this, "Warning", "Connection has lost", QMessageBox::Close);
 
     EASY_GLOBALS.connected = false;
     m_captureAction->setEnabled(false);
     SET_ICON(m_connectAction, ":/Connection");
+    m_connectAction->setText(tr("Connect"));
 
     m_eventTracingEnableAction->setEnabled(false);
     m_eventTracingPriorityAction->setEnabled(false);
+
+    m_addressEdit->setEnabled(true);
+    m_portEdit->setEnabled(true);
 
     emit EASY_GLOBALS.events.connectionChanged(false);
 
@@ -1113,15 +1401,76 @@ void EasyMainWindow::setDisconnected(bool _showMessage)
 
 //////////////////////////////////////////////////////////////////////////
 
+void EasyMainWindow::onFrameTimeRequestTimeout()
+{
+    if (EASY_GLOBALS.fps_enabled && EASY_GLOBALS.connected && (m_listener.regime() == LISTENER_IDLE || m_listener.regime() == LISTENER_CAPTURE))
+    {
+        if (m_listener.requestFrameTime())
+        {
+            QTimer::singleShot(100, this, &This::checkFrameTimeReady);
+        }
+        else if (!m_listener.connected())
+        {
+            setDisconnected();
+        }
+    }
+}
+
+void EasyMainWindow::checkFrameTimeReady()
+{
+    if (EASY_GLOBALS.fps_enabled && EASY_GLOBALS.connected && (m_listener.regime() == LISTENER_IDLE || m_listener.regime() == LISTENER_CAPTURE))
+    {
+        uint32_t maxTime = 0, avgTime = 0;
+        if (m_listener.frameTime(maxTime, avgTime))
+        {
+            static_cast<EasyFrameRateViewer*>(m_fpsViewer->widget())->addPoint(maxTime, avgTime);
+        }
+        else if (m_fpsRequestTimer.isActive())
+        {
+            QTimer::singleShot(100, this, &This::checkFrameTimeReady);
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 void EasyMainWindow::onListenerTimerTimeout()
 {
     if (!m_listener.connected())
+    {
+        if (m_listener.regime() == LISTENER_CAPTURE_RECEIVE)
+            m_listener.finalizeCapture();
         m_listenerDialog->reject();
+    }
+    else if (m_listener.regime() == LISTENER_CAPTURE_RECEIVE)
+    {
+        if (m_listener.captured())
+        {
+            if (m_listenerTimer.isActive())
+                m_listenerTimer.stop();
+
+            m_listener.finalizeCapture();
+
+            m_listenerDialog->accept();
+            m_listenerDialog = nullptr;
+
+            if (m_listener.size() != 0)
+            {
+                readStream(m_listener.data());
+                m_listener.clearData();
+            }
+        }
+    }
 }
 
-void EasyMainWindow::onListenerDialogClose(int)
+void EasyMainWindow::onListenerDialogClose(int _result)
 {
-    m_listenerTimer.stop();
+    if (m_listener.regime() != LISTENER_CAPTURE_RECEIVE || !m_listener.connected())
+    {
+        if (m_listenerTimer.isActive())
+            m_listenerTimer.stop();
+    }
+
     disconnect(m_listenerDialog, &QDialog::finished, this, &This::onListenerDialogClose);
     m_listenerDialog = nullptr;
 
@@ -1129,14 +1478,76 @@ void EasyMainWindow::onListenerDialogClose(int)
     {
         case LISTENER_CAPTURE:
         {
-            m_listenerDialog = new QMessageBox(QMessageBox::Information, "Receiving data...", "This process may take some time.", QMessageBox::NoButton, this);
+            m_listenerDialog = new QMessageBox(QMessageBox::Information, "Receiving data...", "This process may take some time.", QMessageBox::Cancel, this);
             m_listenerDialog->setAttribute(Qt::WA_DeleteOnClose, true);
             m_listenerDialog->show();
 
             m_listener.stopCapture();
 
-            m_listenerDialog->reject();
-            m_listenerDialog = nullptr;
+            if (m_listener.regime() != LISTENER_CAPTURE_RECEIVE)
+            {
+                m_listenerDialog->reject();
+                m_listenerDialog = nullptr;
+            }
+            else
+            {
+                connect(m_listenerDialog, &QDialog::finished, this, &This::onListenerDialogClose);
+                m_listenerTimer.start(250);
+            }
+
+            break;
+        }
+
+        case LISTENER_CAPTURE_RECEIVE:
+        {
+            if (!m_listener.captured())
+            {
+                if (_result == QDialog::Accepted)
+                {
+                    m_listenerDialog = new QMessageBox(QMessageBox::Information, "Receiving data...", "This process may take some time.", QMessageBox::Cancel, this);
+                    connect(m_listenerDialog, &QDialog::finished, this, &This::onListenerDialogClose);
+                    m_listenerDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+                    m_listenerDialog->show();
+                }
+                else
+                {
+                    m_listener.finalizeCapture();
+                    m_listener.clearData();
+
+                    if (m_listener.connected())
+                    {
+                        // make reconnect to clear socket buffers
+                        std::string address = m_listener.address();
+
+                        profiler::net::EasyProfilerStatus reply(false, false, false);
+                        if (m_listener.connect(address.c_str(), m_listener.port(), reply))
+                        {
+                            disconnect(m_eventTracingEnableAction, &QAction::triggered, this, &This::onEventTracingEnableChange);
+                            disconnect(m_eventTracingPriorityAction, &QAction::triggered, this, &This::onEventTracingPriorityChange);
+
+                            m_eventTracingEnableAction->setChecked(reply.isEventTracingEnabled);
+                            m_eventTracingPriorityAction->setChecked(reply.isLowPriorityEventTracing);
+
+                            connect(m_eventTracingEnableAction, &QAction::triggered, this, &This::onEventTracingEnableChange);
+                            connect(m_eventTracingPriorityAction, &QAction::triggered, this, &This::onEventTracingPriorityChange);
+
+                            if (reply.isProfilerEnabled)
+                            {
+                                // Connected application is already profiling.
+                                // Show capture dialog immediately
+                                onCaptureClicked(true);
+                            }
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            if (m_listenerTimer.isActive())
+                m_listenerTimer.stop();
+
+            m_listener.finalizeCapture();
 
             if (m_listener.size() != 0)
             {
@@ -1181,7 +1592,8 @@ void EasyMainWindow::onFileReaderTimeout()
             ::profiler::thread_blocks_tree_t threads_map;
             QString filename;
             uint32_t descriptorsNumberInFile = 0;
-            m_reader.get(serialized_blocks, serialized_descriptors, descriptors, blocks, threads_map, descriptorsNumberInFile, filename);
+            uint32_t version = 0;
+            m_reader.get(serialized_blocks, serialized_descriptors, descriptors, blocks, threads_map, descriptorsNumberInFile, version, filename);
 
             if (threads_map.size() > 0xff)
             {
@@ -1201,20 +1613,37 @@ void EasyMainWindow::onFileReaderTimeout()
                     // This file is totally new. Add it to the list.
                     addFileToList(filename);
                 }
-                else if (index != 0)
+                else
                 {
-                    // This file has been already loaded. Move it to the front.
-                    m_lastFiles.move(index, 0);
-                    auto fileActions = m_loadActionMenu->actions();
-                    auto action = fileActions.at(index);
-                    m_loadActionMenu->removeAction(action);
-                    m_loadActionMenu->insertAction(fileActions.front(), action);
+                    if (index != 0)
+                    {
+                        // This file has been already loaded. Move it to the front.
+                        m_lastFiles.move(index, 0);
+                        auto fileActions = m_loadActionMenu->actions();
+                        auto action = fileActions.at(index);
+                        m_loadActionMenu->removeAction(action);
+                        m_loadActionMenu->insertAction(fileActions.front(), action);
+                    }
+
+                    m_bOpenedCacheFile = filename.contains(NETWORK_CACHE_FILE);
+
+                    if (m_bOpenedCacheFile)
+                        setWindowTitle(QString(EASY_DEFAULT_WINDOW_TITLE " - [%1] - UNSAVED network cache file").arg(filename));
+                    else
+                        setWindowTitle(QString(EASY_DEFAULT_WINDOW_TITLE " - [%1]").arg(filename));
                 }
             }
+            else
+            {
+                m_bOpenedCacheFile = false;
+                setWindowTitle(EASY_DEFAULT_WINDOW_TITLE " - UNSAVED network cache");
+            }
+
             m_serializedBlocks = ::std::move(serialized_blocks);
             m_serializedDescriptors = ::std::move(serialized_descriptors);
             m_descriptorsNumberInFile = descriptorsNumberInFile;
             EASY_GLOBALS.selected_thread = 0;
+            EASY_GLOBALS.version = version;
             ::profiler_gui::set_max(EASY_GLOBALS.selected_block);
             ::profiler_gui::set_max(EASY_GLOBALS.selected_block_id);
             EASY_GLOBALS.profiler_blocks.swap(threads_map);
@@ -1297,7 +1726,7 @@ EasyFileReader::~EasyFileReader()
     interrupt();
 }
 
-const bool EasyFileReader::isFile() const
+bool EasyFileReader::isFile() const
 {
     return m_isFile;
 }
@@ -1330,7 +1759,7 @@ void EasyFileReader::load(const QString& _filename)
     m_filename = _filename;
     m_thread = ::std::thread([this](bool _enableStatistics) {
         m_size.store(fillTreesFromFile(m_progress, m_filename.toStdString().c_str(), m_serializedBlocks, m_serializedDescriptors,
-            m_descriptors, m_blocks, m_blocksTree, m_descriptorsNumberInFile, _enableStatistics, m_errorMessage), ::std::memory_order_release);
+            m_descriptors, m_blocks, m_blocksTree, m_descriptorsNumberInFile, m_version, _enableStatistics, m_errorMessage), ::std::memory_order_release);
         m_progress.store(100, ::std::memory_order_release);
         m_bDone.store(true, ::std::memory_order_release);
     }, EASY_GLOBALS.enable_statistics);
@@ -1360,7 +1789,7 @@ void EasyFileReader::load(::std::stringstream& _stream)
             cache_file.close();
         }
         m_size.store(fillTreesFromStream(m_progress, m_stream, m_serializedBlocks, m_serializedDescriptors, m_descriptors,
-            m_blocks, m_blocksTree, m_descriptorsNumberInFile, _enableStatistics, m_errorMessage), ::std::memory_order_release);
+            m_blocks, m_blocksTree, m_descriptorsNumberInFile, m_version, _enableStatistics, m_errorMessage), ::std::memory_order_release);
         m_progress.store(100, ::std::memory_order_release);
         m_bDone.store(true, ::std::memory_order_release);
     }, EASY_GLOBALS.enable_statistics);
@@ -1381,6 +1810,7 @@ void EasyFileReader::interrupt()
     m_blocks.clear();
     m_blocksTree.clear();
     m_descriptorsNumberInFile = 0;
+    m_version = 0;
 
     clear_stream(m_stream);
     clear_stream(m_errorMessage);
@@ -1388,7 +1818,7 @@ void EasyFileReader::interrupt()
 
 void EasyFileReader::get(::profiler::SerializedData& _serializedBlocks, ::profiler::SerializedData& _serializedDescriptors,
                          ::profiler::descriptors_list_t& _descriptors, ::profiler::blocks_t& _blocks,
-                         ::profiler::thread_blocks_tree_t& _tree, uint32_t& _descriptorsNumberInFile, QString& _filename)
+                         ::profiler::thread_blocks_tree_t& _tree, uint32_t& _descriptorsNumberInFile, uint32_t& _version, QString& _filename)
 {
     if (done())
     {
@@ -1399,6 +1829,7 @@ void EasyFileReader::get(::profiler::SerializedData& _serializedBlocks, ::profil
         m_blocksTree.swap(_tree);
         m_filename.swap(_filename);
         _descriptorsNumberInFile = m_descriptorsNumberInFile;
+        _version = m_version;
     }
 }
 
@@ -1433,70 +1864,37 @@ void EasyMainWindow::onFrameTimeEditFinish()
     }
 
     EASY_GLOBALS.frame_time = text.toFloat() * 1e3f;
-    emit EASY_GLOBALS.events.timelineMarkerChanged();
+
+    disconnect(&EASY_GLOBALS.events, &::profiler_gui::EasyGlobalSignals::expectedFrameTimeChanged, this, &This::onFrameTimeChanged);
+    emit EASY_GLOBALS.events.expectedFrameTimeChanged();
+    connect(&EASY_GLOBALS.events, &::profiler_gui::EasyGlobalSignals::expectedFrameTimeChanged, this, &This::onFrameTimeChanged);
+}
+
+void EasyMainWindow::onFrameTimeChanged()
+{
+    m_frameTimeEdit->setText(QString::number(EASY_GLOBALS.frame_time * 1e-3));
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 void EasyMainWindow::onConnectClicked(bool)
 {
-    auto text = m_addressEdit->text();
-//     auto parts = text.split(QChar('.'));
-//     if (parts.size() != 4)
-//     {
-//         QMessageBox::warning(this, "Warning", "Invalid IP-Address", QMessageBox::Close);
-// 
-//         if (EASY_GLOBALS.connected)
-//         {
-//             // Restore last values
-//             m_addressEdit->setText(m_lastAddress);
-//             m_portEdit->setText(QString::number(m_lastPort));
-//         }
-// 
-//         return;
-//     }
-// 
-//     for (auto& part : parts)
-//     {
-//         int i = 0;
-//         for (; i < part.size(); ++i)
-//         {
-//             if (part[i] != QChar('0'))
-//                 break;
-//         }
-// 
-//         if (i < part.size())
-//             part = part.mid(i);
-//         else
-//             part = "0";
-//     }
-
-    QString& address = text;// parts.join(QChar('.'));
-    const decltype(m_lastPort) port = m_portEdit->text().toUShort();
-    //m_addressEdit->setText(address);
-
-    const bool isReconnecting = (EASY_GLOBALS.connected && m_listener.port() == port && address.toStdString() == m_listener.address());
     if (EASY_GLOBALS.connected)
     {
-        if (QMessageBox::question(this, isReconnecting ? "Reconnect" : "New connection", QString("Current connection will be broken\n\n%1")
-            .arg(isReconnecting ? "Re-connect?" : "Establish new connection?"),
-            QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
-        {
-            if (!isReconnecting)
-            {
-                // Restore last values
-                m_addressEdit->setText(m_lastAddress);
-                m_portEdit->setText(QString::number(m_lastPort));
-            }
-
-            return;
-        }
+        // Disconnect if already connected
+        m_listener.disconnect();
+        setDisconnected(false);
+        return;
     }
+
+    QString address = m_addressEdit->text();
+    const decltype(m_lastPort) port = m_portEdit->text().toUShort();
+    const bool isSameAddress = (EASY_GLOBALS.connected && m_listener.port() == port && address.toStdString() == m_listener.address());
 
     profiler::net::EasyProfilerStatus reply(false, false, false);
     if (!m_listener.connect(address.toStdString().c_str(), port, reply))
     {
-        if (EASY_GLOBALS.connected && !isReconnecting)
+        /*if (EASY_GLOBALS.connected && !isSameAddress)
         {
             if (QMessageBox::warning(this, "Warning", QString("Cannot connect to %1\n\nRestore previous connection?").arg(address),
                 QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
@@ -1512,7 +1910,7 @@ void EasyMainWindow::onConnectClicked(bool)
                 {
                     m_addressEdit->setText(m_lastAddress);
                     m_portEdit->setText(QString::number(m_lastPort));
-                //    QMessageBox::information(this, "Information", "Previous connection restored", QMessageBox::Close);
+                    //QMessageBox::information(this, "Information", "Previous connection restored", QMessageBox::Close);
                 }
             }
             else
@@ -1522,13 +1920,13 @@ void EasyMainWindow::onConnectClicked(bool)
                 m_lastPort = port;
             }
         }
-        else
+        else*/
         {
             QMessageBox::warning(this, "Warning", QString("Cannot connect to %1").arg(address), QMessageBox::Close);
             if (EASY_GLOBALS.connected)
                 setDisconnected(false);
 
-            if (!isReconnecting)
+            if (!isSameAddress)
             {
                 m_lastAddress = ::std::move(address);
                 m_lastPort = port;
@@ -1545,6 +1943,13 @@ void EasyMainWindow::onConnectClicked(bool)
     EASY_GLOBALS.connected = true;
     m_captureAction->setEnabled(true);
     SET_ICON(m_connectAction, ":/Connection-on");
+    m_connectAction->setText(tr("Disconnect"));
+
+    if (m_fpsViewer->isVisible())
+        static_cast<EasyFrameRateViewer*>(m_fpsViewer->widget())->clear();
+
+    if (!m_fpsRequestTimer.isActive())
+        m_fpsRequestTimer.start(EASY_GLOBALS.fps_timer_interval);
 
     disconnect(m_eventTracingEnableAction, &QAction::triggered, this, &This::onEventTracingEnableChange);
     disconnect(m_eventTracingPriorityAction, &QAction::triggered, this, &This::onEventTracingPriorityChange);
@@ -1558,7 +1963,17 @@ void EasyMainWindow::onConnectClicked(bool)
     connect(m_eventTracingEnableAction, &QAction::triggered, this, &This::onEventTracingEnableChange);
     connect(m_eventTracingPriorityAction, &QAction::triggered, this, &This::onEventTracingPriorityChange);
 
+    m_addressEdit->setEnabled(false);
+    m_portEdit->setEnabled(false);
+
     emit EASY_GLOBALS.events.connectionChanged(true);
+
+    if (reply.isProfilerEnabled)
+    {
+        // Connected application is already profiling.
+        // Show capture dialog immediately
+        onCaptureClicked(true);
+    }
 }
 
 void EasyMainWindow::onCaptureClicked(bool)
@@ -1571,7 +1986,7 @@ void EasyMainWindow::onCaptureClicked(bool)
 
     if (m_listener.regime() != LISTENER_IDLE)
     {
-        if (m_listener.regime() == LISTENER_CAPTURE)
+        if (m_listener.regime() == LISTENER_CAPTURE || m_listener.regime() == LISTENER_CAPTURE_RECEIVE)
             QMessageBox::warning(this, "Warning", "Already capturing frames.\nFinish old capturing session first.", QMessageBox::Close);
         else
             QMessageBox::warning(this, "Warning", "Capturing blocks description.\nFinish old capturing session first.", QMessageBox::Close);
@@ -1767,6 +2182,10 @@ EasySocketListener::EasySocketListener() : m_receivedSize(0), m_port(0), m_regim
     m_bInterrupt = ATOMIC_VAR_INIT(false);
     m_bConnected = ATOMIC_VAR_INIT(false);
     m_bStopReceive = ATOMIC_VAR_INIT(false);
+    m_bFrameTimeReady = ATOMIC_VAR_INIT(false);
+    m_bCaptureReady = ATOMIC_VAR_INIT(false);
+    m_frameMax = ATOMIC_VAR_INIT(0);
+    m_frameAvg = ATOMIC_VAR_INIT(0);
 }
 
 EasySocketListener::~EasySocketListener()
@@ -1779,6 +2198,11 @@ EasySocketListener::~EasySocketListener()
 bool EasySocketListener::connected() const
 {
     return m_bConnected.load(::std::memory_order_acquire);
+}
+
+bool EasySocketListener::captured() const
+{
+    return m_bCaptureReady.load(::std::memory_order_acquire);
 }
 
 EasyListenerRegime EasySocketListener::regime() const
@@ -1812,6 +2236,27 @@ void EasySocketListener::clearData()
     m_receivedSize = 0;
 }
 
+void EasySocketListener::disconnect()
+{
+    if (connected())
+    {
+        m_bInterrupt.store(true, ::std::memory_order_release);
+        if (m_thread.joinable())
+            m_thread.join();
+
+        m_bConnected.store(false, ::std::memory_order_release);
+        m_bInterrupt.store(false, ::std::memory_order_release);
+        m_bCaptureReady.store(false, ::std::memory_order_release);
+        m_bStopReceive.store(false, ::std::memory_order_release);
+    }
+
+    m_address.clear();
+    m_port = 0;
+
+    m_easySocket.flush();
+    m_easySocket.init();
+}
+
 bool EasySocketListener::connect(const char* _ipaddress, uint16_t _port, profiler::net::EasyProfilerStatus& _reply)
 {
     if (connected())
@@ -1822,13 +2267,15 @@ bool EasySocketListener::connect(const char* _ipaddress, uint16_t _port, profile
 
         m_bConnected.store(false, ::std::memory_order_release);
         m_bInterrupt.store(false, ::std::memory_order_release);
+        m_bCaptureReady.store(false, ::std::memory_order_release);
+        m_bStopReceive.store(false, ::std::memory_order_release);
     }
 
     m_address.clear();
     m_port = 0;
 
-    m_easySocket.flush();
-    m_easySocket.init();
+    //m_easySocket.flush();
+    //m_easySocket.init();
     int res = m_easySocket.setAddress(_ipaddress, _port);
     res = m_easySocket.connect();
 
@@ -1891,6 +2338,13 @@ bool EasySocketListener::connect(const char* _ipaddress, uint16_t _port, profile
 
 bool EasySocketListener::startCapture()
 {
+    //if (m_thread.joinable())
+    //{
+    //    m_bInterrupt.store(true, ::std::memory_order_release);
+    //    m_thread.join();
+    //    m_bInterrupt.store(false, ::std::memory_order_release);
+    //}
+
     clearData();
 
     profiler::net::Message request(profiler::net::MESSAGE_TYPE_REQUEST_START_CAPTURE);
@@ -1902,32 +2356,71 @@ bool EasySocketListener::startCapture()
     }
 
     m_regime = LISTENER_CAPTURE;
-    m_thread = ::std::thread(&EasySocketListener::listenCapture, this);
+    m_bCaptureReady.store(false, ::std::memory_order_release);
+    //m_thread = ::std::thread(&EasySocketListener::listenCapture, this);
 
     return true;
 }
 
 void EasySocketListener::stopCapture()
 {
-    if (!m_thread.joinable() || m_regime != LISTENER_CAPTURE)
+    //if (!m_thread.joinable() || m_regime != LISTENER_CAPTURE)
+    //    return;
+
+    if (m_regime != LISTENER_CAPTURE)
         return;
 
-    m_bStopReceive.store(true, ::std::memory_order_release);
+    //m_bStopReceive.store(true, ::std::memory_order_release);
+    profiler::net::Message request(profiler::net::MESSAGE_TYPE_REQUEST_STOP_CAPTURE);
+    m_easySocket.send(&request, sizeof(request));
 
-    //profiler::net::Message request(profiler::net::MESSAGE_TYPE_REQUEST_STOP_CAPTURE);
-    //m_easySocket.send(&request, sizeof(request));
+    //m_thread.join();
 
-    m_thread.join();
-
-    if (m_easySocket.isDisconnected())
+    if (m_easySocket.isDisconnected()) {
         m_bConnected.store(false, ::std::memory_order_release);
+        m_bStopReceive.store(false, ::std::memory_order_release);
+        m_regime = LISTENER_IDLE;
+        m_bCaptureReady.store(true, ::std::memory_order_release);
+        return;
+    }
+
+    m_regime = LISTENER_CAPTURE_RECEIVE;
+    if (m_thread.joinable())
+    {
+        m_bInterrupt.store(true, ::std::memory_order_release);
+        m_thread.join();
+        m_bInterrupt.store(false, ::std::memory_order_release);
+    }
+
+    m_thread = ::std::thread(&EasySocketListener::listenCapture, this);
+
+    //m_regime = LISTENER_IDLE;
+    //m_bStopReceive.store(false, ::std::memory_order_release);
+}
+
+void EasySocketListener::finalizeCapture()
+{
+    if (m_thread.joinable())
+    {
+        m_bInterrupt.store(true, ::std::memory_order_release);
+        m_thread.join();
+        m_bInterrupt.store(false, ::std::memory_order_release);
+    }
 
     m_regime = LISTENER_IDLE;
+    m_bCaptureReady.store(false, ::std::memory_order_release);
     m_bStopReceive.store(false, ::std::memory_order_release);
 }
 
 void EasySocketListener::requestBlocksDescription()
 {
+    if (m_thread.joinable())
+    {
+        m_bInterrupt.store(true, ::std::memory_order_release);
+        m_thread.join();
+        m_bInterrupt.store(false, ::std::memory_order_release);
+    }
+
     clearData();
 
     profiler::net::Message request(profiler::net::MESSAGE_TYPE_REQUEST_BLOCKS_DESCRIPTION);
@@ -1940,6 +2433,45 @@ void EasySocketListener::requestBlocksDescription()
     m_regime = LISTENER_DESCRIBE;
     listenDescription();
     m_regime = LISTENER_IDLE;
+}
+
+bool EasySocketListener::frameTime(uint32_t& _maxTime, uint32_t& _avgTime)
+{
+    if (m_bFrameTimeReady.exchange(false, ::std::memory_order_acquire))
+    {
+        _maxTime = m_frameMax.load(::std::memory_order_acquire);
+        _avgTime = m_frameAvg.load(::std::memory_order_acquire);
+        return true;
+    }
+
+    return false;
+}
+
+bool EasySocketListener::requestFrameTime()
+{
+    if (m_regime != LISTENER_IDLE && m_regime != LISTENER_CAPTURE)
+        return false;
+
+    if (m_thread.joinable())
+    {
+        m_bInterrupt.store(true, ::std::memory_order_release);
+        m_thread.join();
+        m_bInterrupt.store(false, ::std::memory_order_release);
+    }
+
+    profiler::net::Message request(profiler::net::MESSAGE_TYPE_REQUEST_MAIN_FRAME_TIME_MAX_AVG_US);
+    m_easySocket.send(&request, sizeof(request));
+
+    if (m_easySocket.isDisconnected())
+    {
+        m_bConnected.store(false, ::std::memory_order_release);
+        return false;
+    }
+
+    m_bFrameTimeReady.store(false, ::std::memory_order_release);
+    m_thread = ::std::thread(&EasySocketListener::listenFrameTime, this);
+
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2107,6 +2639,8 @@ void EasySocketListener::listenCapture()
         clearData();
 
     delete [] buffer;
+
+    m_bCaptureReady.store(true, ::std::memory_order_release);
 }
 
 void EasySocketListener::listenDescription()
@@ -2239,6 +2773,85 @@ void EasySocketListener::listenDescription()
         clearData();
 
     delete[] buffer;
+}
+
+void EasySocketListener::listenFrameTime()
+{
+    // TODO: Merge functions listenDescription() and listenCapture()
+
+    static const int buffer_size = sizeof(::profiler::net::TimestampMessage) << 2;
+    char buffer[buffer_size] = {};
+    int seek = 0, bytes = 0;
+
+    bool isListen = true;
+    while (isListen && !m_bInterrupt.load(::std::memory_order_acquire))
+    {
+        if ((bytes - seek) == 0)
+        {
+            bytes = m_easySocket.receive(buffer, buffer_size);
+
+            if (bytes == -1)
+            {
+                if (m_easySocket.isDisconnected())
+                {
+                    m_bConnected.store(false, ::std::memory_order_release);
+                    isListen = false;
+                }
+
+                seek = 0;
+                bytes = 0;
+
+                continue;
+            }
+
+            seek = 0;
+        }
+
+        if (bytes == 0)
+        {
+            isListen = false;
+            break;
+        }
+
+        char* buf = buffer + seek;
+
+        if (bytes > 0)
+        {
+            auto message = reinterpret_cast<const ::profiler::net::Message*>(buf);
+            if (!message->isEasyNetMessage())
+                continue;
+
+            switch (message->type)
+            {
+                case profiler::net::MESSAGE_TYPE_ACCEPTED_CONNECTION:
+                case profiler::net::MESSAGE_TYPE_REPLY_START_CAPTURING:
+                {
+                    seek += sizeof(profiler::net::Message);
+                    break;
+                }
+
+                case profiler::net::MESSAGE_TYPE_REPLY_MAIN_FRAME_TIME_MAX_AVG_US:
+                {
+                    //qInfo() << "Receive MESSAGE_TYPE_REPLY_MAIN_FRAME_TIME_MAX_AVG_US";
+
+                    seek += sizeof(profiler::net::TimestampMessage);
+                    if (seek <= buffer_size)
+                    {
+                        profiler::net::TimestampMessage* timestampMessage = (profiler::net::TimestampMessage*)message;
+                        m_frameMax.store(timestampMessage->maxValue, ::std::memory_order_release);
+                        m_frameAvg.store(timestampMessage->avgValue, ::std::memory_order_release);
+                        m_bFrameTimeReady.store(true, ::std::memory_order_release);
+                    }
+
+                    isListen = false;
+                    break;
+                }
+
+                default:
+                    break;
+            }
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

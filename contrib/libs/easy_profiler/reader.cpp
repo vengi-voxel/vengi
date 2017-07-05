@@ -26,11 +26,35 @@
 *                   : * 
 * ----------------- :
 * license           : Lightweight profiler library for c++
-*                   : Copyright(C) 2016  Sergey Yagovtsev, Victor Zarubkin
+*                   : Copyright(C) 2016-2017  Sergey Yagovtsev, Victor Zarubkin
 *                   :
+*                   : Licensed under either of
+*                   :     * MIT license (LICENSE.MIT or http://opensource.org/licenses/MIT)
+*                   :     * Apache License, Version 2.0, (LICENSE.APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+*                   : at your option.
 *                   :
-*                   : Licensed under the Apache License, Version 2.0 (the "License");
-*                   : you may not use this file except in compliance with the License.
+*                   : The MIT License
+*                   :
+*                   : Permission is hereby granted, free of charge, to any person obtaining a copy
+*                   : of this software and associated documentation files (the "Software"), to deal
+*                   : in the Software without restriction, including without limitation the rights
+*                   : to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+*                   : of the Software, and to permit persons to whom the Software is furnished
+*                   : to do so, subject to the following conditions:
+*                   :
+*                   : The above copyright notice and this permission notice shall be included in all
+*                   : copies or substantial portions of the Software.
+*                   :
+*                   : THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+*                   : INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+*                   : PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+*                   : LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+*                   : TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+*                   : USE OR OTHER DEALINGS IN THE SOFTWARE.
+*                   :
+*                   : The Apache License, Version 2.0 (the "License")
+*                   :
+*                   : You may not use this file except in compliance with the License.
 *                   : You may obtain a copy of the License at
 *                   :
 *                   : http://www.apache.org/licenses/LICENSE-2.0
@@ -40,23 +64,11 @@
 *                   : WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *                   : See the License for the specific language governing permissions and
 *                   : limitations under the License.
-*                   :
-*                   :
-*                   : GNU General Public License Usage
-*                   : Alternatively, this file may be used under the terms of the GNU
-*                   : General Public License as published by the Free Software Foundation,
-*                   : either version 3 of the License, or (at your option) any later version.
-*                   :
-*                   : This program is distributed in the hope that it will be useful,
-*                   : but WITHOUT ANY WARRANTY; without even the implied warranty of
-*                   : MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-*                   : GNU General Public License for more details.
-*                   :
-*                   : You should have received a copy of the GNU General Public License
-*                   : along with this program.If not, see <http://www.gnu.org/licenses/>.
 ************************************************************************/
 
-#include "../easy_profiler/include/easy/reader.h"
+#include <easy/reader.h>
+
+#include "hashed_cstr.h"
 
 #include <fstream>
 #include <sstream>
@@ -64,11 +76,10 @@
 #include <algorithm>
 #include <unordered_map>
 #include <thread>
-#include "../easy_profiler/hashed_cstr.h"
 
 //////////////////////////////////////////////////////////////////////////
 
-typedef uint32_t processid_t;
+typedef uint64_t processid_t;
 
 extern const uint32_t PROFILER_SIGNATURE;
 extern const uint32_t EASY_CURRENT_VERSION;
@@ -76,6 +87,7 @@ extern const uint32_t EASY_CURRENT_VERSION;
 # define EASY_VERSION_INT(v_major, v_minor, v_patch) ((static_cast<uint32_t>(v_major) << 24) | (static_cast<uint32_t>(v_minor) << 16) | static_cast<uint32_t>(v_patch))
 const uint32_t MIN_COMPATIBLE_VERSION = EASY_VERSION_INT(0, 1, 0); ///< minimal compatible version (.prof file format was not changed seriously since this version)
 const uint32_t EASY_V_100 = EASY_VERSION_INT(1, 0, 0); ///< in v1.0.0 some additional data were added into .prof file
+const uint32_t EASY_V_130 = EASY_VERSION_INT(1, 3, 0); ///< in v1.3.0 changed sizeof(thread_id_t) uint32_t -> uint64_t
 # undef EASY_VERSION_INT
 
 const uint64_t TIME_FACTOR = 1000000000ULL;
@@ -174,7 +186,7 @@ namespace profiler {
 
 #ifdef EASY_PROFILER_HASHED_CSTR_DEFINED
 
-typedef ::std::unordered_map<::profiler::block_id_t, ::profiler::BlockStatistics*, ::profiler::passthrough_hash> StatsMap;
+typedef ::std::unordered_map<::profiler::block_id_t, ::profiler::BlockStatistics*, ::profiler::passthrough_hash<::profiler::block_id_t> > StatsMap;
 
 /** \note It is absolutely safe to use hashed_cstr (which simply stores pointer) because std::unordered_map,
 which uses it as a key, exists only inside fillTreesFromFile function. */
@@ -185,7 +197,7 @@ typedef ::std::unordered_map<::profiler::hashed_cstr, ::profiler::BlockStatistic
 #else
 
 // TODO: Create optimized version of profiler::hashed_cstr for Linux too.
-typedef ::std::unordered_map<::profiler::block_id_t, ::profiler::BlockStatistics*, ::profiler::passthrough_hash> StatsMap;
+typedef ::std::unordered_map<::profiler::block_id_t, ::profiler::BlockStatistics*, ::profiler::passthrough_hash<::profiler::block_id_t> > StatsMap;
 typedef ::std::unordered_map<::profiler::hashed_stdstring, ::profiler::block_id_t> IdMap;
 typedef ::std::unordered_map<::profiler::hashed_stdstring, ::profiler::BlockStatistics*> CsStatsMap;
 
@@ -205,7 +217,7 @@ typedef ::std::unordered_map<::profiler::hashed_stdstring, ::profiler::BlockStat
 automatically receive statistics update.
 
 */
-::profiler::BlockStatistics* update_statistics(StatsMap& _stats_map, const ::profiler::BlocksTree& _current, ::profiler::block_index_t _current_index, ::profiler::block_index_t _parent_index, const ::profiler::blocks_t& _blocks)
+::profiler::BlockStatistics* update_statistics(StatsMap& _stats_map, const ::profiler::BlocksTree& _current, ::profiler::block_index_t _current_index, ::profiler::block_index_t _parent_index, const ::profiler::blocks_t& _blocks, bool _calculate_children = true)
 {
     auto duration = _current.node->duration();
     //StatsMap::key_type key(_current.node->name());
@@ -219,6 +231,12 @@ automatically receive statistics update.
 
         ++stats->calls_number; // update calls number of this block
         stats->total_duration += duration; // update summary duration of all block calls
+
+        if (_calculate_children)
+        {
+            for (auto i : _current.children)
+                stats->total_children_duration += _blocks[i].node->duration();
+        }
 
         if (duration > _blocks[stats->max_duration_block].node->duration())
         {
@@ -245,10 +263,16 @@ automatically receive statistics update.
     //_stats_map.emplace(key, stats);
     _stats_map.emplace(_current.node->id(), stats);
 
+    if (_calculate_children)
+    {
+        for (auto i : _current.children)
+            stats->total_children_duration += _blocks[i].node->duration();
+    }
+
     return stats;
 }
 
-::profiler::BlockStatistics* update_statistics(CsStatsMap& _stats_map, const ::profiler::BlocksTree& _current, ::profiler::block_index_t _current_index, ::profiler::block_index_t _parent_index, const ::profiler::blocks_t& _blocks)
+::profiler::BlockStatistics* update_statistics(CsStatsMap& _stats_map, const ::profiler::BlocksTree& _current, ::profiler::block_index_t _current_index, ::profiler::block_index_t _parent_index, const ::profiler::blocks_t& _blocks, bool _calculate_children = true)
 {
     auto duration = _current.node->duration();
     CsStatsMap::key_type key(_current.node->name());
@@ -261,6 +285,12 @@ automatically receive statistics update.
 
         ++stats->calls_number; // update calls number of this block
         stats->total_duration += duration; // update summary duration of all block calls
+
+        if (_calculate_children)
+        {
+            for (auto i : _current.children)
+                stats->total_children_duration += _blocks[i].node->duration();
+        }
 
         if (duration > _blocks[stats->max_duration_block].node->duration())
         {
@@ -286,6 +316,12 @@ automatically receive statistics update.
     auto stats = new ::profiler::BlockStatistics(duration, _current_index, _parent_index);
     _stats_map.emplace(key, stats);
 
+    if (_calculate_children)
+    {
+        for (auto i : _current.children)
+            stats->total_children_duration += _blocks[i].node->duration();
+    }
+
     return stats;
 }
 
@@ -293,9 +329,12 @@ automatically receive statistics update.
 
 void update_statistics_recursive(StatsMap& _stats_map, ::profiler::BlocksTree& _current, ::profiler::block_index_t _current_index, ::profiler::block_index_t _parent_index, ::profiler::blocks_t& _blocks)
 {
-    _current.per_frame_stats = update_statistics(_stats_map, _current, _current_index, _parent_index, _blocks);
+    _current.per_frame_stats = update_statistics(_stats_map, _current, _current_index, _parent_index, _blocks, false);
     for (auto i : _current.children)
+    {
+        _current.per_frame_stats->total_children_duration += _blocks[i].node->duration();
         update_statistics_recursive(_stats_map, _blocks[i], i, _parent_index, _blocks);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -344,6 +383,7 @@ extern "C" {
                                                              ::profiler::blocks_t& blocks,
                                                              ::profiler::thread_blocks_tree_t& threaded_trees,
                                                              uint32_t& total_descriptors_number,
+                                                             uint32_t& version,
                                                              bool gather_statistics,
                                                              ::std::stringstream& _log)
     {
@@ -370,7 +410,7 @@ extern "C" {
         
         // Read data from file
         auto result = fillTreesFromStream(progress, str, serialized_blocks, serialized_descriptors, descriptors, blocks,
-                                          threaded_trees, total_descriptors_number, gather_statistics, _log);
+                                          threaded_trees, total_descriptors_number, version, gather_statistics, _log);
 
         // Restore old str buffer to avoid possible second memory free on stringstream destructor
         s.rdbuf(oldbuf);
@@ -387,6 +427,7 @@ extern "C" {
                                                                ::profiler::blocks_t& blocks,
                                                                ::profiler::thread_blocks_tree_t& threaded_trees,
                                                                uint32_t& total_descriptors_number,
+                                                               uint32_t& version,
                                                                bool gather_statistics,
                                                                ::std::stringstream& _log)
     {
@@ -407,7 +448,7 @@ extern "C" {
             return 0;
         }
 
-        uint32_t version = 0;
+        version = 0;
         inFile.read((char*)&version, sizeof(uint32_t));
         if (!isCompatibleVersion(version))
         {
@@ -417,7 +458,18 @@ extern "C" {
 
         processid_t pid = 0;
         if (version > EASY_V_100)
-            inFile.read((char*)&pid, sizeof(processid_t));
+        {
+            if (version < EASY_V_130)
+            {
+                uint32_t old_pid = 0;
+                inFile.read((char*)&old_pid, sizeof(uint32_t));
+                pid = old_pid;
+            }
+            else
+            {
+                inFile.read((char*)&pid, sizeof(processid_t));
+            }
+        }
 
         int64_t file_cpu_frequency = 0LL;
         inFile.read((char*)&file_cpu_frequency, sizeof(int64_t));
@@ -501,7 +553,7 @@ extern "C" {
             }
         }
 
-        typedef ::std::unordered_map<::profiler::thread_id_t, StatsMap, ::profiler::passthrough_hash> PerThreadStats;
+        typedef ::std::unordered_map<::profiler::thread_id_t, StatsMap, ::profiler::passthrough_hash<::profiler::thread_id_t> > PerThreadStats;
         PerThreadStats parent_statistics, frame_statistics;
         IdMap identification_table;
 
@@ -514,12 +566,15 @@ extern "C" {
         uint32_t read_number = 0;
         ::profiler::block_index_t blocks_counter = 0;
         ::std::vector<char> name;
+
+        const size_t thread_id_t_size = version < EASY_V_130 ? sizeof(uint32_t) : sizeof(::profiler::thread_id_t);
+
         while (!inFile.eof() && read_number < total_blocks_number)
         {
             EASY_BLOCK("Read thread data", ::profiler::colors::DarkGreen);
 
             ::profiler::thread_id_t thread_id = 0;
-            inFile.read((char*)&thread_id, sizeof(decltype(thread_id)));
+            inFile.read((char*)&thread_id, thread_id_t_size);
 
             auto& root = threaded_trees[thread_id];
 
@@ -554,7 +609,7 @@ extern "C" {
                 char* data = serialized_blocks[i];
                 inFile.read(data, sz);
                 i += sz;
-                auto baseData = reinterpret_cast<::profiler::SerializedBlock*>(data);
+                auto baseData = reinterpret_cast<::profiler::SerializedCSwitch*>(data);
                 auto t_begin = reinterpret_cast<::profiler::timestamp_t*>(data);
                 auto t_end = t_begin + 1;
 
@@ -571,7 +626,7 @@ extern "C" {
 
                     blocks.emplace_back();
                     ::profiler::BlocksTree& tree = blocks.back();
-                    tree.node = baseData;
+                    tree.cs = baseData;
                     const auto block_index = blocks_counter++;
 
                     root.wait_time += baseData->duration();
@@ -580,7 +635,7 @@ extern "C" {
                     if (gather_statistics)
                     {
                         EASY_BLOCK("Gather per thread statistics", ::profiler::colors::Coral);
-                        tree.per_thread_stats = update_statistics(per_thread_statistics_cs, tree, block_index, thread_id, blocks);
+                        tree.per_thread_stats = update_statistics(per_thread_statistics_cs, tree, block_index, ~0U, blocks);//, thread_id, blocks);
                     }
                 }
 
@@ -720,6 +775,19 @@ extern "C" {
                                 }
                             }
 
+                            if (tree.depth == 254)
+                            {
+                                // 254 because we need 1 additional level for root (thread).
+                                // In other words: real stack depth = 1 root block + 254 children
+
+                                if (*tree.node->name() != 0)
+                                    _log << "Stack depth exceeded value of 254\nfor block \"" << desc->name() << "\"";
+                                else
+                                    _log << "Stack depth exceeded value of 254\nfor block \"" << desc->name() << "\"\nfrom file \"" << desc->file() << "\":" << desc->line();
+
+                                return 0;
+                            }
+
                             ++tree.depth;
                         }
                     }
@@ -733,7 +801,7 @@ extern "C" {
                     if (gather_statistics)
                     {
                         EASY_BLOCK("Gather per thread statistics", ::profiler::colors::Coral);
-                        tree.per_thread_stats = update_statistics(per_thread_statistics, tree, block_index, thread_id, blocks);
+                        tree.per_thread_stats = update_statistics(per_thread_statistics, tree, block_index, ~0U, blocks);//, thread_id, blocks);
                     }
                 }
 
@@ -768,7 +836,7 @@ extern "C" {
                 auto& per_parent_statistics = parent_statistics[it.first];
                 per_parent_statistics.clear();
 
-                statistics_threads.emplace_back(::std::thread([&per_parent_statistics, &per_frame_statistics, &blocks](::profiler::BlocksTreeRoot& root)
+                statistics_threads.emplace_back(::std::thread([&per_parent_statistics, &per_frame_statistics, &blocks, &descriptors](::profiler::BlocksTreeRoot& root)
                 {
                     //::std::sort(root.sync.begin(), root.sync.end(), [&blocks](::profiler::block_index_t left, ::profiler::block_index_t right)
                     //{
@@ -779,7 +847,11 @@ extern "C" {
                     for (auto i : root.children)
                     {
                         auto& frame = blocks[i];
-                        frame.per_parent_stats = update_statistics(per_parent_statistics, frame, i, root.thread_id, blocks);
+
+                        if (descriptors[frame.node->id()]->type() == ::profiler::BLOCK_TYPE_BLOCK)
+                            ++root.frames_number;
+
+                        frame.per_parent_stats = update_statistics(per_parent_statistics, frame, i, ~0U, blocks);//, root.thread_id, blocks);
 
                         per_frame_statistics.clear();
                         update_statistics_recursive(per_frame_statistics, frame, i, i, blocks);
@@ -834,8 +906,13 @@ extern "C" {
                 for (auto i : root.children)
                 {
                     auto& frame = blocks[i];
+
+                    if (descriptors[frame.node->id()]->type() == ::profiler::BLOCK_TYPE_BLOCK)
+                        ++root.frames_number;
+
                     if (root.depth < frame.depth)
                         root.depth = frame.depth;
+
                     root.profiled_time += frame.node->duration();
                 }
 

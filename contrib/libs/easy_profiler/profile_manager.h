@@ -1,55 +1,69 @@
 /**
 Lightweight profiler library for c++
-Copyright(C) 2016  Sergey Yagovtsev, Victor Zarubkin
+Copyright(C) 2016-2017  Sergey Yagovtsev, Victor Zarubkin
+
+Licensed under either of
+	* MIT license (LICENSE.MIT or http://opensource.org/licenses/MIT)
+    * Apache License, Version 2.0, (LICENSE.APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+at your option.
+
+The MIT License
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights 
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+	of the Software, and to permit persons to whom the Software is furnished 
+	to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+	PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+	LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+	USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+The Apache License, Version 2.0 (the "License");
+	You may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
 
-
-GNU General Public License Usage
-Alternatively, this file may be used under the terms of the GNU
-General Public License as published by the Free Software Foundation,
-either version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.If not, see <http://www.gnu.org/licenses/>.
 **/
 
-#ifndef EASY_PROFILER____MANAGER____H______
-#define EASY_PROFILER____MANAGER____H______
+#ifndef EASY_PROFILER_MANAGER_H
+#define EASY_PROFILER_MANAGER_H
+
+#include <easy/profiler.h>
+#include <easy/easy_socket.h>
+
+#include "spin_lock.h"
+#include "outstream.h"
+#include "hashed_cstr.h"
 
 #include <map>
 #include <vector>
 #include <unordered_map>
 #include <thread>
 #include <atomic>
-
-#include "../easy_profiler/hashed_cstr.h"
-#include "../easy_profiler/include/easy/easy_socket.h"
-#include "../easy_profiler/include/easy/profiler.h"
-#include "../easy_profiler/outstream.h"
-#include "../easy_profiler/spin_lock.h"
-//#include <list>
+#include <list>
 
 //////////////////////////////////////////////////////////////////////////
 
 #ifdef _WIN32
 #include <Windows.h>
+#elif defined(__APPLE__)
+#include <pthread.h>
+#include <Availability.h>
 #else
 #include <sys/types.h>
 #include <unistd.h>
@@ -58,13 +72,26 @@ along with this program.If not, see <http://www.gnu.org/licenses/>.
 #include <time.h>
 #endif
 
-inline uint32_t getCurrentThreadId()
+#ifdef max
+#undef max
+#endif
+
+inline profiler::thread_id_t getCurrentThreadId()
 {
 #ifdef _WIN32
-    return (uint32_t)::GetCurrentThreadId();
+    return (profiler::thread_id_t)::GetCurrentThreadId();
+#elif defined(__APPLE__)
+#   if (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= __MAC_10_6) || \
+       (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_8_0)
+        EASY_THREAD_LOCAL static uint64_t _id = 0;
+        if (!_id)
+            pthread_threadid_np(NULL, &_id);
+        return (profiler::thread_id_t)_id;
+#   else
+        return (profiler::thread_id_t)pthread_self();
+#   endif
 #else
-    EASY_THREAD_LOCAL static const pid_t x = syscall(__NR_gettid);
-    EASY_THREAD_LOCAL static const uint32_t _id = (uint32_t)x;//std::hash<std::thread::id>()(std::this_thread::get_id());
+    EASY_THREAD_LOCAL static const profiler::thread_id_t _id = (profiler::thread_id_t)syscall(__NR_gettid);
     return _id;
 #endif
 }
@@ -148,6 +175,10 @@ class chunk_allocator
             *(uint16_t*)last->data = 0;
         }
 
+        /** Invert current chunks list to enable to iterate over chunks list in direct order.
+
+        This method is used by serialize().
+        */
         void invert()
         {
             chunk* next = nullptr;
@@ -176,6 +207,11 @@ public:
         m_chunks.emplace_back();
     }
 
+    /** Allocate n bytes.
+
+    Automatically checks if there is enough preserved memory to store additional n bytes
+    and allocates additional buffer if needed.
+    */
     void* allocate(uint16_t n)
     {
         ++m_size;
@@ -205,6 +241,8 @@ public:
         return data;
     }
 
+    /** Check if current storage is not enough to store additional n bytes.
+    */
     inline bool need_expand(uint16_t n) const
     {
         return (m_shift + n + sizeof(uint16_t)) > N;
@@ -234,8 +272,11 @@ public:
     */
     void serialize(profiler::OStream& _outputStream)
     {
+        // Chunks are stored in reversed order (stack).
+        // To be able to iterate them in direct order we have to invert chunks list.
         m_chunks.invert();
 
+        // Iterate over chunks and perform blocks serialization
         auto current = m_chunks.last;
         do {
             const int8_t* data = current->data;
@@ -251,55 +292,123 @@ public:
 
         clear();
     }
-};
+
+}; // END of class chunk_allocator.
 
 //////////////////////////////////////////////////////////////////////////
 
-const uint16_t SIZEOF_CSWITCH = sizeof(profiler::BaseBlockData) + 1 + sizeof(uint16_t);
+class NonscopedBlock : public profiler::Block
+{
+    char* m_runtimeName; ///< a copy of _runtimeName to make it safe to begin block in one function and end it in another
 
-typedef std::vector<profiler::SerializedBlock*> serialized_list_t;
+    NonscopedBlock() = delete;
+    NonscopedBlock(const NonscopedBlock&) = delete;
+    NonscopedBlock(NonscopedBlock&&) = delete;
+    NonscopedBlock& operator = (const NonscopedBlock&) = delete;
+    NonscopedBlock& operator = (NonscopedBlock&&) = delete;
+
+public:
+
+    NonscopedBlock(const profiler::BaseBlockDescriptor* _desc, const char* _runtimeName, bool = false);
+    ~NonscopedBlock();
+
+    /** Copy string from m_name to m_runtimeName to make it safe to end block in another function.
+
+    Performs any work if block is ON and m_name != ""
+    */
+    void copyname();
+
+    void destroy();
+
+}; // END of class NonscopedBlock.
+
+//////////////////////////////////////////////////////////////////////////
+
+template <class T>
+inline void destroy_elem(T*)
+{
+
+}
+
+inline void destroy_elem(NonscopedBlock* _elem)
+{
+    _elem->destroy();
+}
+
+template <class T>
+class StackBuffer
+{
+    struct chunk { int8_t data[sizeof(T)]; };
+
+    std::list<chunk> m_overflow; ///< List of additional stack elements if current capacity of buffer is not enough
+    T*                 m_buffer; ///< Contiguous buffer used for stack
+    uint32_t             m_size; ///< Current size of stack
+    uint32_t         m_capacity; ///< Current capacity of m_buffer
+    uint32_t      m_maxcapacity; ///< Maximum used capacity including m_buffer and m_overflow
+
+public:
+
+    StackBuffer(uint32_t N) : m_buffer(static_cast<T*>(malloc(N * sizeof(T)))), m_size(0), m_capacity(N), m_maxcapacity(N)
+    {
+    }
+
+    ~StackBuffer()
+    {
+        for (uint32_t i = 0; i < m_size; ++i)
+            destroy_elem(m_buffer + i);
+
+        free(m_buffer);
+
+        for (auto& elem : m_overflow)
+            destroy_elem(reinterpret_cast<T*>(elem.data + 0));
+    }
+
+    template <class ... TArgs>
+    T& push(TArgs ... _args)
+    {
+        if (m_size < m_capacity)
+            return *(::new (m_buffer + m_size++) T(_args...));
+
+        m_overflow.emplace_back();
+        const uint32_t cap = m_capacity + static_cast<uint32_t>(m_overflow.size());
+        if (m_maxcapacity < cap)
+            m_maxcapacity = cap;
+
+        return *(::new (m_overflow.back().data + 0) T(_args...));
+    }
+
+    void pop()
+    {
+        if (m_overflow.empty())
+        {
+            // m_size should not be equal to 0 here because ProfileManager behavior does not allow such situation
+            destroy_elem(m_buffer + --m_size);
+
+            if (m_size == 0 && m_maxcapacity > m_capacity)
+            {
+                // When stack gone empty we can resize buffer to use enough space in the future
+                free(m_buffer);
+                m_maxcapacity = m_capacity = std::max(m_maxcapacity, m_capacity << 1);
+                m_buffer = static_cast<T*>(malloc(m_capacity * sizeof(T)));
+            }
+
+            return;
+        }
+
+        destroy_elem(reinterpret_cast<T*>(m_overflow.back().data + 0));
+        m_overflow.pop_back();
+    }
+
+}; // END of class StackBuffer.
+
+//////////////////////////////////////////////////////////////////////////
 
 template <class T, const uint16_t N>
 struct BlocksList
 {
     BlocksList() = default;
 
-    class Stack {
-        //std::stack<T> m_stack;
-        std::vector<T> m_stack;
-
-    public:
-
-        inline void clear() { m_stack.clear(); }
-        inline bool empty() const { return m_stack.empty(); }
-
-        inline void emplace(profiler::Block& _block) {
-            //m_stack.emplace(_block);
-            m_stack.emplace_back(_block);
-        }
-
-        inline void emplace(profiler::Block&& _block) {
-            //m_stack.emplace(_block);
-            m_stack.emplace_back(std::forward<profiler::Block&&>(_block));
-        }
-
-        template <class ... TArgs> inline void emplace(TArgs ... _args) {
-            //m_stack.emplace(_args);
-            m_stack.emplace_back(_args...);
-        }
-
-        inline T& top() {
-            //return m_stack.top();
-            return m_stack.back();
-        }
-
-        inline void pop() {
-            //m_stack.pop();
-            m_stack.pop_back();
-        }
-    };
-
-    Stack                     openedList;
+    std::vector<T>            openedList;
     chunk_allocator<N>        closedList;
     uint64_t          usedMemorySize = 0;
 
@@ -307,36 +416,57 @@ struct BlocksList
         //closedList.clear();
         usedMemorySize = 0;
     }
-};
 
+}; // END of struct BlocksList.
 
-struct ThreadStorage
+//////////////////////////////////////////////////////////////////////////
+
+class CSwitchBlock : public profiler::CSwitchEvent
 {
-    BlocksList<std::reference_wrapper<profiler::Block>, SIZEOF_CSWITCH * (uint16_t)128U> blocks;
-    BlocksList<profiler::Block, SIZEOF_CSWITCH * (uint16_t)128U>                           sync;
-    std::string name;
+    const char* m_name;
 
-#ifndef _WIN32
-    const pthread_t pthread_id;
-#endif
+public:
 
-    const profiler::thread_id_t id;
-    std::atomic<char> expired;
-    std::atomic_bool frame; ///< is new frame working
-    bool allowChildren;
-    bool named;
-    bool guarded;
-
-    void storeBlock(const profiler::Block& _block);
-    void storeCSwitch(const profiler::Block& _block);
-    void clearClosed();
-
-    ThreadStorage();
+    CSwitchBlock(profiler::timestamp_t _begin_time, profiler::thread_id_t _tid, const char* _runtimeName);
+    inline const char* name() const { return m_name; }
 };
 
 //////////////////////////////////////////////////////////////////////////
 
-typedef uint32_t processid_t;
+const uint16_t SIZEOF_BLOCK = sizeof(profiler::BaseBlockData) + 1 + sizeof(uint16_t); // SerializedBlock stores BaseBlockData + at least 1 character for name ('\0') + 2 bytes for size of serialized data
+const uint16_t SIZEOF_CSWITCH = sizeof(profiler::CSwitchEvent) + 1 + sizeof(uint16_t); // SerializedCSwitch also stores additional 4 bytes to be able to save 64-bit thread_id
+
+struct ThreadStorage
+{
+    StackBuffer<NonscopedBlock>                                                 nonscopedBlocks;
+    BlocksList<std::reference_wrapper<profiler::Block>, SIZEOF_BLOCK * (uint16_t)128U>   blocks;
+    BlocksList<CSwitchBlock, SIZEOF_CSWITCH * (uint16_t)128U>                              sync;
+
+    std::string name; ///< Thread name
+
+#ifndef _WIN32
+    const pthread_t pthread_id; ///< Thread pointer
+#endif
+
+    const profiler::thread_id_t id; ///< Thread ID
+    std::atomic<char>      expired; ///< Is thread expired
+    std::atomic_bool         frame; ///< Is new frame opened
+    bool             allowChildren; ///< False if one of previously opened blocks has OFF_RECURSIVE or ON_WITHOUT_CHILDREN status
+    bool                     named; ///< True if thread name was set
+    bool                   guarded; ///< True if thread has been registered using ThreadGuard
+
+    void storeBlock(const profiler::Block& _block);
+    void storeCSwitch(const CSwitchBlock& _block);
+    void clearClosed();
+    void popSilent();
+
+    ThreadStorage();
+
+}; // END of struct ThreadStorage.
+
+//////////////////////////////////////////////////////////////////////////
+
+typedef uint64_t processid_t;
 
 class BlockDescriptor;
 
@@ -360,20 +490,26 @@ class ProfileManager
     typedef std::unordered_map<profiler::hashed_stdstring, profiler::block_id_t> descriptors_map_t;
 #endif
 
-    const processid_t               m_processId;
+    const processid_t                     m_processId;
 
-    map_of_threads_stacks             m_threads;
-    block_descriptors_t           m_descriptors;
-    descriptors_map_t          m_descriptorsMap;
-    uint64_t                   m_usedMemorySize;
-    profiler::timestamp_t           m_beginTime;
-    profiler::timestamp_t             m_endTime;
-    profiler::spin_lock                  m_spin;
-    profiler::spin_lock            m_storedSpin;
-    profiler::spin_lock              m_dumpSpin;
-    std::atomic<char>          m_profilerStatus;
-    std::atomic_bool    m_isEventTracingEnabled;
-    std::atomic_bool       m_isAlreadyListening;
+    map_of_threads_stacks                   m_threads;
+    block_descriptors_t                 m_descriptors;
+    descriptors_map_t                m_descriptorsMap;
+    uint64_t                         m_usedMemorySize;
+    profiler::timestamp_t                 m_beginTime;
+    profiler::timestamp_t                   m_endTime;
+    std::atomic<profiler::timestamp_t>     m_frameMax;
+    std::atomic<profiler::timestamp_t>     m_frameAvg;
+    std::atomic<profiler::timestamp_t>     m_frameCur;
+    profiler::spin_lock                        m_spin;
+    profiler::spin_lock                  m_storedSpin;
+    profiler::spin_lock                    m_dumpSpin;
+    std::atomic<profiler::thread_id_t> m_mainThreadId;
+    std::atomic<char>                m_profilerStatus;
+    std::atomic_bool          m_isEventTracingEnabled;
+    std::atomic_bool             m_isAlreadyListening;
+    std::atomic_bool                  m_frameMaxReset;
+    std::atomic_bool                  m_frameAvgReset;
 
     std::string m_csInfoFilename = "/tmp/cs_profiling_info.log";
 
@@ -400,8 +536,13 @@ public:
                                                             bool _copyName = false);
 
     bool storeBlock(const profiler::BaseBlockDescriptor* _desc, const char* _runtimeName);
+    bool storeBlock(const profiler::BaseBlockDescriptor* _desc, const char* _runtimeName, profiler::timestamp_t _beginTime, profiler::timestamp_t _endTime);
     void beginBlock(profiler::Block& _block);
+    void beginNonScopedBlock(const profiler::BaseBlockDescriptor* _desc, const char* _runtimeName);
     void endBlock();
+    profiler::timestamp_t maxFrameDuration();
+    profiler::timestamp_t avgFrameDuration();
+    profiler::timestamp_t curFrameDuration() const;
     void setEnabled(bool isEnable);
     bool isEnabled() const;
     void setEventTracingEnabled(bool _isEnable);
@@ -428,6 +569,9 @@ public:
 
 private:
 
+    void beginFrame();
+    void endFrame();
+
     void enableEventTracer();
     void disableEventTracer();
 
@@ -451,6 +595,9 @@ private:
         guard_lock_t lock(m_spin);
         return _findThreadStorage(_thread_id);
     }
-};
 
-#endif // EASY_PROFILER____MANAGER____H______
+}; // END of class ProfileManager.
+
+//////////////////////////////////////////////////////////////////////////
+
+#endif // EASY_PROFILER_MANAGER_H

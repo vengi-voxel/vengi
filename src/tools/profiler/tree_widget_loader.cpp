@@ -14,11 +14,35 @@
 *                   : *
 * ----------------- :
 * license           : Lightweight profiler library for c++
-*                   : Copyright(C) 2016  Sergey Yagovtsev, Victor Zarubkin
+*                   : Copyright(C) 2016-2017  Sergey Yagovtsev, Victor Zarubkin
 *                   :
+*                   : Licensed under either of
+*                   :     * MIT license (LICENSE.MIT or http://opensource.org/licenses/MIT)
+*                   :     * Apache License, Version 2.0, (LICENSE.APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+*                   : at your option.
 *                   :
-*                   : Licensed under the Apache License, Version 2.0 (the "License");
-*                   : you may not use this file except in compliance with the License.
+*                   : The MIT License
+*                   :
+*                   : Permission is hereby granted, free of charge, to any person obtaining a copy
+*                   : of this software and associated documentation files (the "Software"), to deal
+*                   : in the Software without restriction, including without limitation the rights
+*                   : to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+*                   : of the Software, and to permit persons to whom the Software is furnished
+*                   : to do so, subject to the following conditions:
+*                   :
+*                   : The above copyright notice and this permission notice shall be included in all
+*                   : copies or substantial portions of the Software.
+*                   :
+*                   : THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+*                   : INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+*                   : PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+*                   : LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+*                   : TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+*                   : USE OR OTHER DEALINGS IN THE SOFTWARE.
+*                   :
+*                   : The Apache License, Version 2.0 (the "License")
+*                   :
+*                   : You may not use this file except in compliance with the License.
 *                   : You may obtain a copy of the License at
 *                   :
 *                   : http://www.apache.org/licenses/LICENSE-2.0
@@ -28,20 +52,6 @@
 *                   : WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *                   : See the License for the specific language governing permissions and
 *                   : limitations under the License.
-*                   :
-*                   :
-*                   : GNU General Public License Usage
-*                   : Alternatively, this file may be used under the terms of the GNU
-*                   : General Public License as published by the Free Software Foundation,
-*                   : either version 3 of the License, or (at your option) any later version.
-*                   :
-*                   : This program is distributed in the hope that it will be useful,
-*                   : but WITHOUT ANY WARRANTY; without even the implied warranty of
-*                   : MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
-*                   : GNU General Public License for more details.
-*                   :
-*                   : You should have received a copy of the GNU General Public License
-*                   : along with this program.If not, see <http://www.gnu.org/licenses/>.
 ************************************************************************/
 
 #include "tree_widget_loader.h"
@@ -50,7 +60,11 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+
+#ifdef __MINGW32__
 #include <processthreadsapi.h>
+#endif
+
 #endif
 
 #ifdef max
@@ -162,7 +176,7 @@ void EasyTreeWidgetLoader::fillTree(::profiler::timestamp_t& _beginTime, const u
     m_mode = _mode;
     m_thread = ::std::thread(&EasyTreeWidgetLoader::setTreeInternal1, this,
         ::std::ref(_beginTime), _blocksNumber, ::std::ref(_blocksTree), _colorizeRows,
-        EASY_GLOBALS.add_zero_blocks_to_hierarchy, EASY_GLOBALS.use_decorated_thread_name, EASY_GLOBALS.time_units);
+        EASY_GLOBALS.add_zero_blocks_to_hierarchy, EASY_GLOBALS.use_decorated_thread_name, EASY_GLOBALS.hex_thread_id, EASY_GLOBALS.time_units);
 }
 
 void EasyTreeWidgetLoader::fillTreeBlocks(const::profiler_gui::TreeBlocks& _blocks, ::profiler::timestamp_t _beginTime, ::profiler::timestamp_t _left, ::profiler::timestamp_t _right, bool _strict, bool _colorizeRows, EasyTreeMode _mode)
@@ -171,12 +185,12 @@ void EasyTreeWidgetLoader::fillTreeBlocks(const::profiler_gui::TreeBlocks& _bloc
     m_mode = _mode;
     m_thread = ::std::thread(&EasyTreeWidgetLoader::setTreeInternal2, this,
         _beginTime, ::std::ref(_blocks), _left, _right, _strict, _colorizeRows,
-        EASY_GLOBALS.add_zero_blocks_to_hierarchy, EASY_GLOBALS.use_decorated_thread_name, EASY_GLOBALS.time_units);
+        EASY_GLOBALS.add_zero_blocks_to_hierarchy, EASY_GLOBALS.use_decorated_thread_name, EASY_GLOBALS.hex_thread_id, EASY_GLOBALS.time_units);
 }
 
 //////////////////////////////////////////////////////////////////////////
 
-void EasyTreeWidgetLoader::setTreeInternal1(::profiler::timestamp_t& _beginTime, const unsigned int _blocksNumber, const ::profiler::thread_blocks_tree_t& _blocksTree, bool _colorizeRows, bool _addZeroBlocks, bool _decoratedThreadNames, ::profiler_gui::TimeUnits _units)
+void EasyTreeWidgetLoader::setTreeInternal1(::profiler::timestamp_t& _beginTime, const unsigned int _blocksNumber, const ::profiler::thread_blocks_tree_t& _blocksTree, bool _colorizeRows, bool _addZeroBlocks, bool _decoratedThreadNames, bool _hexThreadId, ::profiler_gui::TimeUnits _units)
 {
     m_items.reserve(_blocksNumber + _blocksTree.size()); // _blocksNumber does not include Thread root blocks
 
@@ -205,7 +219,7 @@ void EasyTreeWidgetLoader::setTreeInternal1(::profiler::timestamp_t& _beginTime,
 
         const auto& root = threadTree.second;
         auto item = new EasyTreeWidgetItem();
-        item->setText(COL_NAME, ::profiler_gui::decoratedThreadName(_decoratedThreadNames, root, u_thread));
+        item->setText(COL_NAME, ::profiler_gui::decoratedThreadName(_decoratedThreadNames, root, u_thread, _hexThreadId));
 
         ::profiler::timestamp_t duration = 0;
         if (!root.children.empty())
@@ -252,9 +266,9 @@ void EasyTreeWidgetLoader::setTreeInternal1(::profiler::timestamp_t& _beginTime,
 //     return children_number;
 // }
 
-typedef ::std::unordered_map<::profiler::thread_id_t, ::profiler::block_index_t, ::profiler_gui::do_no_hash<::profiler::thread_id_t>::hasher_t> BeginEndIndicesMap;
+typedef ::std::unordered_map<::profiler::thread_id_t, ::profiler::block_index_t, ::profiler::passthrough_hash<::profiler::thread_id_t> > BeginEndIndicesMap;
 
-void EasyTreeWidgetLoader::setTreeInternal2(const ::profiler::timestamp_t& _beginTime, const ::profiler_gui::TreeBlocks& _blocks, ::profiler::timestamp_t _left, ::profiler::timestamp_t _right, bool _strict, bool _colorizeRows, bool _addZeroBlocks, bool _decoratedThreadNames, ::profiler_gui::TimeUnits _units)
+void EasyTreeWidgetLoader::setTreeInternal2(const ::profiler::timestamp_t& _beginTime, const ::profiler_gui::TreeBlocks& _blocks, ::profiler::timestamp_t _left, ::profiler::timestamp_t _right, bool _strict, bool _colorizeRows, bool _addZeroBlocks, bool _decoratedThreadNames, bool _hexThreadId, ::profiler_gui::TimeUnits _units)
 {
     //size_t blocksNumber = 0;
     //for (const auto& block : _blocks)
@@ -295,7 +309,7 @@ void EasyTreeWidgetLoader::setTreeInternal2(const ::profiler::timestamp_t& _begi
         else
         {
             thread_item = new EasyTreeWidgetItem();
-            thread_item->setText(COL_NAME, ::profiler_gui::decoratedThreadName(_decoratedThreadNames, *block.root, u_thread));
+            thread_item->setText(COL_NAME, ::profiler_gui::decoratedThreadName(_decoratedThreadNames, *block.root, u_thread, _hexThreadId));
 
             if (!block.root->children.empty())
                 duration = blocksTree(block.root->children.back()).node->end() - blocksTree(block.root->children.front()).node->begin();
@@ -384,8 +398,8 @@ void EasyTreeWidgetLoader::setTreeInternal2(const ::profiler::timestamp_t& _begi
 
             if (per_thread_stats->calls_number > 1 || !EASY_GLOBALS.display_only_relevant_stats)
             {
-                item->setTimeSmart(COL_MIN_PER_THREAD, _units, easyBlock(per_thread_stats->min_duration_block).tree.node->duration(), "min ");
-                item->setTimeSmart(COL_MAX_PER_THREAD, _units, easyBlock(per_thread_stats->max_duration_block).tree.node->duration(), "max ");
+                item->setTimeSmart(COL_MIN_PER_THREAD, _units, easyBlock(per_thread_stats->min_duration_block).tree.node->duration());
+                item->setTimeSmart(COL_MAX_PER_THREAD, _units, easyBlock(per_thread_stats->max_duration_block).tree.node->duration());
                 item->setTimeSmart(COL_AVERAGE_PER_THREAD, _units, per_thread_stats->average_duration());
                 item->setTimeSmart(COL_DURATION_SUM_PER_THREAD, _units, per_thread_stats->total_duration);
             }
@@ -400,8 +414,8 @@ void EasyTreeWidgetLoader::setTreeInternal2(const ::profiler::timestamp_t& _begi
 
             if (per_parent_stats->calls_number > 1 || !EASY_GLOBALS.display_only_relevant_stats)
             {
-                item->setTimeSmart(COL_MIN_PER_PARENT, _units, easyBlock(per_parent_stats->min_duration_block).tree.node->duration(), "min ");
-                item->setTimeSmart(COL_MAX_PER_PARENT, _units, easyBlock(per_parent_stats->max_duration_block).tree.node->duration(), "max ");
+                item->setTimeSmart(COL_MIN_PER_PARENT, _units, easyBlock(per_parent_stats->min_duration_block).tree.node->duration());
+                item->setTimeSmart(COL_MAX_PER_PARENT, _units, easyBlock(per_parent_stats->max_duration_block).tree.node->duration());
                 item->setTimeSmart(COL_AVERAGE_PER_PARENT, _units, per_parent_stats->average_duration());
                 item->setTimeSmart(COL_DURATION_SUM_PER_PARENT, _units, per_parent_stats->total_duration);
             }
@@ -412,8 +426,8 @@ void EasyTreeWidgetLoader::setTreeInternal2(const ::profiler::timestamp_t& _begi
 
             if (per_frame_stats->calls_number > 1 || !EASY_GLOBALS.display_only_relevant_stats)
             {
-                item->setTimeSmart(COL_MIN_PER_FRAME, _units, easyBlock(per_frame_stats->min_duration_block).tree.node->duration(), "min ");
-                item->setTimeSmart(COL_MAX_PER_FRAME, _units, easyBlock(per_frame_stats->max_duration_block).tree.node->duration(), "max ");
+                item->setTimeSmart(COL_MIN_PER_FRAME, _units, easyBlock(per_frame_stats->min_duration_block).tree.node->duration());
+                item->setTimeSmart(COL_MAX_PER_FRAME, _units, easyBlock(per_frame_stats->max_duration_block).tree.node->duration());
                 item->setTimeSmart(COL_AVERAGE_PER_FRAME, _units, per_frame_stats->average_duration());
                 item->setTimeSmart(COL_DURATION_SUM_PER_FRAME, _units, per_frame_stats->total_duration);
             }
@@ -624,8 +638,8 @@ size_t EasyTreeWidgetLoader::setTreeInternal(const ::profiler::BlocksTreeRoot& _
 
             if (per_thread_stats->calls_number > 1 || !EASY_GLOBALS.display_only_relevant_stats)
             {
-                item->setTimeSmart(COL_MIN_PER_THREAD, _units, easyBlock(per_thread_stats->min_duration_block).tree.node->duration(), "min ");
-                item->setTimeSmart(COL_MAX_PER_THREAD, _units, easyBlock(per_thread_stats->max_duration_block).tree.node->duration(), "max ");
+                item->setTimeSmart(COL_MIN_PER_THREAD, _units, easyBlock(per_thread_stats->min_duration_block).tree.node->duration());
+                item->setTimeSmart(COL_MAX_PER_THREAD, _units, easyBlock(per_thread_stats->max_duration_block).tree.node->duration());
                 item->setTimeSmart(COL_AVERAGE_PER_THREAD, _units, per_thread_stats->average_duration());
                 item->setTimeSmart(COL_DURATION_SUM_PER_THREAD, _units, per_thread_stats->total_duration);
             }
@@ -640,8 +654,8 @@ size_t EasyTreeWidgetLoader::setTreeInternal(const ::profiler::BlocksTreeRoot& _
 
             if (per_parent_stats->calls_number > 1 || !EASY_GLOBALS.display_only_relevant_stats)
             {
-                item->setTimeSmart(COL_MIN_PER_PARENT, _units, easyBlock(per_parent_stats->min_duration_block).tree.node->duration(), "min ");
-                item->setTimeSmart(COL_MAX_PER_PARENT, _units, easyBlock(per_parent_stats->max_duration_block).tree.node->duration(), "max ");
+                item->setTimeSmart(COL_MIN_PER_PARENT, _units, easyBlock(per_parent_stats->min_duration_block).tree.node->duration());
+                item->setTimeSmart(COL_MAX_PER_PARENT, _units, easyBlock(per_parent_stats->max_duration_block).tree.node->duration());
                 item->setTimeSmart(COL_AVERAGE_PER_PARENT, _units, per_parent_stats->average_duration());
                 item->setTimeSmart(COL_DURATION_SUM_PER_PARENT, _units, per_parent_stats->total_duration);
             }
@@ -652,8 +666,8 @@ size_t EasyTreeWidgetLoader::setTreeInternal(const ::profiler::BlocksTreeRoot& _
 
             if (per_frame_stats->calls_number > 1 || !EASY_GLOBALS.display_only_relevant_stats)
             {
-                item->setTimeSmart(COL_MIN_PER_FRAME, _units, easyBlock(per_frame_stats->min_duration_block).tree.node->duration(), "min ");
-                item->setTimeSmart(COL_MAX_PER_FRAME, _units, easyBlock(per_frame_stats->max_duration_block).tree.node->duration(), "max ");
+                item->setTimeSmart(COL_MIN_PER_FRAME, _units, easyBlock(per_frame_stats->min_duration_block).tree.node->duration());
+                item->setTimeSmart(COL_MAX_PER_FRAME, _units, easyBlock(per_frame_stats->max_duration_block).tree.node->duration());
                 item->setTimeSmart(COL_AVERAGE_PER_FRAME, _units, per_frame_stats->average_duration());
                 item->setTimeSmart(COL_DURATION_SUM_PER_FRAME, _units, per_frame_stats->total_duration);
             }
@@ -780,11 +794,10 @@ size_t EasyTreeWidgetLoader::setTreeInternalPlain(const ::profiler::BlocksTreeRo
         {
             ++total_items;
 
-            size_t children_items_number = 0;
             ::profiler::timestamp_t children_duration = 0;
             if (!child.children.empty())
             {
-                children_items_number = setTreeInternalPlain(_threadRoot, _firstCswitch, _beginTime, child.children, _frame, _frame, _left, _right, _strict, children_duration, _colorizeRows, _addZeroBlocks, _units);
+                setTreeInternalPlain(_threadRoot, _firstCswitch, _beginTime, child.children, _frame, _frame, _left, _right, _strict, children_duration, _colorizeRows, _addZeroBlocks, _units);
                 if (interrupted())
                     break;
             }
@@ -882,8 +895,8 @@ size_t EasyTreeWidgetLoader::setTreeInternalPlain(const ::profiler::BlocksTreeRo
             const ::profiler::BlockStatistics* per_thread_stats = child.per_thread_stats;
             if (per_thread_stats->calls_number > 1 || !EASY_GLOBALS.display_only_relevant_stats)
             {
-                item->setTimeSmart(COL_MIN_PER_THREAD, _units, easyBlock(per_thread_stats->min_duration_block).tree.node->duration(), "min ");
-                item->setTimeSmart(COL_MAX_PER_THREAD, _units, easyBlock(per_thread_stats->max_duration_block).tree.node->duration(), "max ");
+                item->setTimeSmart(COL_MIN_PER_THREAD, _units, easyBlock(per_thread_stats->min_duration_block).tree.node->duration());
+                item->setTimeSmart(COL_MAX_PER_THREAD, _units, easyBlock(per_thread_stats->max_duration_block).tree.node->duration());
                 item->setTimeSmart(COL_AVERAGE_PER_THREAD, _units, per_thread_stats->average_duration());
             }
 
@@ -902,8 +915,8 @@ size_t EasyTreeWidgetLoader::setTreeInternalPlain(const ::profiler::BlocksTreeRo
 
             if (per_frame_stats->calls_number > 1 || !EASY_GLOBALS.display_only_relevant_stats)
             {
-                item->setTimeSmart(COL_MIN_PER_FRAME, _units, easyBlock(per_frame_stats->min_duration_block).tree.node->duration(), "min ");
-                item->setTimeSmart(COL_MAX_PER_FRAME, _units, easyBlock(per_frame_stats->max_duration_block).tree.node->duration(), "max ");
+                item->setTimeSmart(COL_MIN_PER_FRAME, _units, easyBlock(per_frame_stats->min_duration_block).tree.node->duration());
+                item->setTimeSmart(COL_MAX_PER_FRAME, _units, easyBlock(per_frame_stats->max_duration_block).tree.node->duration());
                 item->setTimeSmart(COL_AVERAGE_PER_FRAME, _units, per_frame_stats->average_duration());
             }
 
