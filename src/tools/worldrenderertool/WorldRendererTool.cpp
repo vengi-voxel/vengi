@@ -11,7 +11,7 @@
 #include "voxel/polyvox/Voxel.h"
 #include "voxel/polyvox/Picking.h"
 #include "io/Filesystem.h"
-#include "ui/WorldParametersWindow.h"
+#include "imgui/IMGUI.h"
 #include "frontend/Movement.h"
 #include "voxel/MaterialColor.h"
 
@@ -106,12 +106,11 @@ core::AppState WorldRendererTool::onInit() {
 
 	_worldTimer.init();
 
-	new WorldParametersWindow(this);
-
 	return state;
 }
 
 void WorldRendererTool::beforeUI() {
+	Super::beforeUI();
 	ScopedProfiler<ProfilerCPU> but(_beforeUiTimer);
 	_world->onFrame(_deltaFrame);
 
@@ -144,24 +143,29 @@ void WorldRendererTool::beforeUI() {
 	}
 }
 
-void WorldRendererTool::afterRootWidget() {
+void WorldRendererTool::onRenderUI() {
 	const glm::vec3& pos = _camera.position();
 	frontend::WorldRenderer::Stats stats;
 	_worldRenderer.stats(stats);
-	const int x = 5;
-	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
-	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
-	enqueueShowStr(x, core::Color::White, "%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
-	enqueueShowStr(x, core::Color::White, "drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
-	enqueueShowStr(x, core::Color::White, "drawcalls entities: %i", _drawCallsEntities);
-	enqueueShowStr(x, core::Color::White, "pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
-	enqueueShowStr(x, core::Color::White, "pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
+	ImGui::Text("%s: %f, max: %f", _frameTimer.name().c_str(), _frameTimer.avg(), _frameTimer.maximum());
+	ImGui::Text("%s: %f, max: %f", _beforeUiTimer.name().c_str(), _beforeUiTimer.avg(), _beforeUiTimer.maximum());
+	ImGui::Text("%s: %f, max: %f", _worldTimer.name().c_str(), _worldTimer.avg(), _worldTimer.maximum());
+	ImGui::Text("drawcalls world: %i (verts: %i)", _drawCallsWorld, _vertices);
+	ImGui::Text("drawcalls entities: %i", _drawCallsEntities);
+	ImGui::Text("pos: %.2f:%.2f:%.2f", pos.x, pos.y, pos.z);
+	ImGui::Text("pending: %i, meshes: %i, extracted: %i, uploaded: %i, visible: %i, octreesize: %i, octreeactive: %i, occluded: %i",
 			stats.pending, stats.meshes, stats.extracted, stats.active, stats.visible, stats.octreeSize, stats.octreeActive, stats.occluded);
+	const bool current = isRelativeMouseMode();
+	ImGui::Text("world mouse mode: %s", (current ? "true" : "false"));
 
-	enqueueShowStr(x, core::Color::Gray, "+/-: change move speed");
-	enqueueShowStr(x, core::Color::Gray, "l: line mode rendering");
+	ImGui::InputVarFloat("speed", _speed);
+	ImGui::InputVarFloat("rotationSpeed", _rotationSpeed);
 
-	Super::afterRootWidget();
+	ImGui::Checkbox("Line mode rendering", &_lineModeRendering);
+	ImGui::Checkbox("Freelook", &_freelook);
+
+	ImGui::Text("+/-: change move speed");
+	ImGui::Text("l: line mode rendering");
 }
 
 core::AppState WorldRendererTool::onRunning() {
@@ -199,17 +203,12 @@ void WorldRendererTool::onWindowResize() {
 bool WorldRendererTool::onKeyPress(int32_t key, int16_t modifier) {
 	if (key == SDLK_ESCAPE) {
 		toggleRelativeMouseMode();
-		if (isRelativeMouseMode()) {
-			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_INVISIBLE);
-		} else {
-			_root.SetVisibility(tb::WIDGET_VISIBILITY::WIDGET_VISIBILITY_VISIBLE);
-		}
 	} else if (key == SDLK_PLUS || key == SDLK_KP_PLUS) {
 		const float speed = _speed->floatVal() + 0.1f;
-		_speed->setVal(std::to_string(speed));
+		_speed->setVal(speed);
 	} else if (key == SDLK_MINUS || key == SDLK_KP_MINUS) {
 		const float speed = std::max(0.1f, _speed->floatVal() - 0.1f);
-		_speed->setVal(std::to_string(speed));
+		_speed->setVal(speed);
 	}
 	return Super::onKeyPress(key, modifier);
 }

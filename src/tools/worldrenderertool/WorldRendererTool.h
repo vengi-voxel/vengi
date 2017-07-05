@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ui/UIApp.h"
+#include "imgui/IMGUIApp.h"
 #include "FrontendShaders.h"
 #include "frontend/WorldRenderer.h"
 #include "frontend/ClientEntity.h"
@@ -17,9 +17,9 @@
 /**
  * @brief This tool will render the world as a client would, but with options to modify it.
  */
-class WorldRendererTool: public ui::UIApp {
+class WorldRendererTool: public imgui::IMGUIApp {
 protected:
-	using Super = ui::UIApp;
+	using Super = imgui::IMGUIApp;
 	voxel::WorldContext _ctx;
 	video::Camera _camera;
 	video::MeshPoolPtr _meshPool;
@@ -45,7 +45,6 @@ protected:
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 	void onWindowResize() override;
 	void beforeUI() override;
-	void afterRootWidget() override;
 
 public:
 	WorldRendererTool(const video::MeshPoolPtr& meshPool, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, const voxel::WorldPtr& world);
@@ -55,6 +54,7 @@ public:
 
 	core::AppState onConstruct() override;
 	core::AppState onInit() override;
+	void onRenderUI() override;
 	core::AppState onCleanup() override;
 	core::AppState onRunning() override;
 };
