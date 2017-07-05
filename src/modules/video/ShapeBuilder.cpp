@@ -47,6 +47,8 @@ void ShapeBuilder::aabbGridXZ(const core::AABB<float>& aabb, bool near, float st
 void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs) {
 	setPrimitive(Primitive::Triangles);
 
+	reserve(24);
+
 	// counter clock wise
 
 	// left side
@@ -175,6 +177,8 @@ void ShapeBuilder::geom(const std::vector<glm::vec3>& vert, const std::vector<ui
 	setPrimitive(primitive);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 
+	reserve(vert.size());
+
 	for (const glm::vec3& v : vert) {
 		addVertex(v);
 	}
@@ -206,6 +210,8 @@ void ShapeBuilder::plane(const core::Plane& plane, bool normals) {
 		glm::vec4( planeScale,  planeScale, 0.0f, 1.0f),
 		glm::vec4( planeScale, -planeScale, 0.0f, 1.0f)
 	};
+
+	reserve(SDL_arraysize(corners) + 2);
 
 	setColor(core::Color::Green);
 	for (uint32_t i = 0; i < SDL_arraysize(corners); ++i) {
@@ -307,6 +313,8 @@ void ShapeBuilder::axis(float scale) {
 			 glm::vec3( 0.0f,   0.0f,   0.0f),
 			 glm::vec3( 0.0f,   0.0f,  scale)};
 
+	reserve(SDL_arraysize(verticesAxis));
+
 	setColor(core::Color::Red);
 	addVertex(verticesAxis[0]);
 	addVertex(verticesAxis[1]);
@@ -367,6 +375,8 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 	static constexpr float twoPi = glm::two_pi<float>();
 	const float du = 1.0f / numSlices;
 	const float dv = 1.0f / numStacks;
+
+	reserve(numStacks * numSlices);
 
 	for (int stack = 0; stack <= numStacks; stack++) {
 		const float stackAngle = (pi * stack) / numStacks;
