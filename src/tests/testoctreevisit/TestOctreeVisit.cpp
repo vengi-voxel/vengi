@@ -24,6 +24,14 @@ core::AppState TestOctreeVisit::onInit() {
 		Log::error("Failed to init the shape renderer");
 		return core::AppState::Cleanup;
 	}
+
+	_shapeBuilder.sphere(10, 10, 5.0f);
+	_shapeRenderer.createOrUpdate(_itemMesh, _shapeBuilder);
+	// create the offset buffer - just empty
+	_shapeRenderer.updatePositions(_itemMesh, _positions);
+
+	_positions.reserve(4096);
+
 	return state;
 }
 
@@ -51,14 +59,14 @@ core::AppState TestOctreeVisit::onRunning() {
 
 	_octreeCamera.update(_deltaFrame);
 
-	_shapeBuilder.clear();
 	const int minSize = 64;
+	_positions.clear();
 	_octree.visit(_octreeCamera.frustum(), [this] (const glm::vec3& center) {
-		_shapeBuilder.setPosition(center);
-		_shapeBuilder.sphere(10, 10, 5.0f);
+		_positions.push_back(center);
 		return true;
 	}, glm::ivec3(minSize));
-	_shapeRenderer.createOrUpdate(_itemMeshes, _shapeBuilder);
+
+	_shapeRenderer.updatePositions(_itemMesh, _positions);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.frustum(_octreeCamera);
@@ -90,7 +98,7 @@ void TestOctreeVisit::onRenderUI() {
 }
 
 void TestOctreeVisit::doRender() {
-	_shapeRenderer.render(_itemMeshes, _camera);
+	_shapeRenderer.render(_itemMesh, _camera);
 	_shapeRenderer.render(_aabbMesh, _camera);
 	_shapeRenderer.render(_frustumMesh, _camera);
 }
