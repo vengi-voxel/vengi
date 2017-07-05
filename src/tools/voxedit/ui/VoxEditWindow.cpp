@@ -352,7 +352,11 @@ void VoxEditWindow::toggleviewport() {
 	setQuadViewport(!vis);
 }
 
-void VoxEditWindow::setreferenceposition() {
+void VoxEditWindow::setReferencePosition(int x, int y, int z) {
+	_scene->setReferencePosition(glm::ivec3(x, y, z));
+}
+
+void VoxEditWindow::setReferencePositionToCursor() {
 	_scene->setReferencePosition(_scene->cursorPosition());
 }
 

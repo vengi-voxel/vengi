@@ -12,7 +12,7 @@
 
 #define COMMAND_MAINWINDOW(command, help) core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) {_mainWindow->command();}).setHelp(help)
 #define COMMAND_FILE(command, help) \
-	core::Command::registerCommand(#command, [this] (const core::CmdArgs& args) { \
+	core::Command::registerCommand(core::string::toLower(#command), [this] (const core::CmdArgs& args) { \
 		const std::string file = args.empty() ? "" : args[0]; \
 		if (!command##File(file)) { \
 			Log::error("Failed to " #command " to file %s", file.c_str()); \
@@ -155,6 +155,17 @@ core::AppState VoxEdit::onConstruct() {
 		this->_mainWindow->setCursorPosition(x, y, z, true);
 	}).setHelp("Move the cursor by the specified offsets");
 
+	core::Command::registerCommand("setreferenceposition", [this] (const core::CmdArgs& args) {
+		if (args.size() != 3) {
+			Log::info("Expected to get x, y and z coordinates");
+			return;
+		}
+		const int x = core::string::toInt(args[0]);
+		const int y = core::string::toInt(args[1]);
+		const int z = core::string::toInt(args[2]);
+		this->_mainWindow->setReferencePosition(x, y, z);
+	}).setHelp("Set the reference position to the specified position");
+
 	COMMAND_MAINWINDOW_EVENT("dialog_lsystem", "Opens the lsystem dialog");
 	COMMAND_MAINWINDOW_EVENT("dialog_world", "Opens the world dialog");
 	COMMAND_MAINWINDOW_EVENT("dialog_noise", "Opens the noise dialog");
@@ -169,7 +180,7 @@ core::AppState VoxEdit::onConstruct() {
 
 	COMMAND_MAINWINDOW(remove, "Remove the cursor shape from the current cursor position");
 	COMMAND_MAINWINDOW(place, "Place the cursor shape at the current cursor position");
-	COMMAND_MAINWINDOW(setreferenceposition, "Set the reference position to the current cursor position");
+	COMMAND_MAINWINDOW(setReferencePositionToCursor, "Set the reference position to the current cursor position");
 	COMMAND_MAINWINDOW(unselectall, "Unselect every voxel");
 	COMMAND_MAINWINDOW(rotatex, "Rotate the volume around the x axis");
 	COMMAND_MAINWINDOW(rotatey, "Rotate the volume around the y axis");

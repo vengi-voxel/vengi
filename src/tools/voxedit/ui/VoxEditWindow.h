@@ -129,7 +129,8 @@ private:
 	void rotatemode();
 	void togglelockaxis();
 	void togglemirroraxis();
-	void setreferenceposition();
+	void setReferencePosition(int x = 0, int y = 0, int z = 0);
+	void setReferencePositionToCursor();
 	void unselectall();
 	bool voxelize(const std::string& file);
 	bool importHeightmp(const std::string& file);
