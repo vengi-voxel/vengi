@@ -1,6 +1,6 @@
 set(SRCS
 	IMGUIApp.cpp IMGUIApp.h
-	IMGUI.h
+	IMGUI.cpp IMGUI.h
 	IMGUIInternal.h
 	IMGUIAddons.h
 )
