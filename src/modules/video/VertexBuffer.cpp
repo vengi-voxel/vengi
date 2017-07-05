@@ -119,10 +119,10 @@ bool VertexBuffer::update(int32_t idx, const void* data, size_t size) {
 	const VertexBufferType type = _targets[idx];
 	const Id id = _handles[idx];
 	video::bindBuffer(type, id);
-	if (_size[idx] >= size && _mode != VertexBufferMode::Static) {
+	if (_size[idx] >= size && _modes[idx] != VertexBufferMode::Static) {
 		video::bufferSubData(type, 0, data, size);
 	} else {
-		video::bufferData(type, _mode, data, size);
+		video::bufferData(type, _modes[idx], data, size);
 	}
 	video::unbindBuffer(type);
 	_size[idx] = size;
@@ -144,7 +144,7 @@ int32_t VertexBuffer::create(const void* data, size_t size, VertexBufferType tar
 	_size[_handleIdx] = size;
 	if (data != nullptr) {
 		video::bindBuffer(_targets[_handleIdx], _handles[_handleIdx]);
-		video::bufferData(_targets[_handleIdx], _mode, data, size);
+		video::bufferData(_targets[_handleIdx], _modes[_handleIdx], data, size);
 		video::unbindBuffer(_targets[_handleIdx]);
 	}
 	++_handleIdx;
@@ -266,10 +266,10 @@ void VertexBuffer::shutdown() {
 	video::deleteBuffers(_handleIdx, _handles);
 	_handleIdx = 0;
 	for (int i = 0; i < MAX_HANDLES; ++i) {
-		_targets[0] = VertexBufferType::Max;
+		_targets[i] = VertexBufferType::Max;
+		_modes[i] = VertexBufferMode::Static;
 		_size[i] = 0u;
 	}
-	_mode = VertexBufferMode::Static;
 	clearAttributes();
 }
 

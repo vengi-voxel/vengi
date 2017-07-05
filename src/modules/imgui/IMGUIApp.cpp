@@ -130,12 +130,12 @@ core::AppState IMGUIApp::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	_vbo.setMode(video::VertexBufferMode::Stream);
 	_bufferIndex = _vbo.create();
 	if (_bufferIndex < 0) {
 		Log::error("Failed to create ui vertex buffer");
 		return core::AppState::Cleanup;
 	}
+	_vbo.setMode(_bufferIndex, video::VertexBufferMode::Stream);
 	_indexBufferIndex = _vbo.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
 	if (_indexBufferIndex < 0) {
 		Log::error("Failed to create ui index buffer");

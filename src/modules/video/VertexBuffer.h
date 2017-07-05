@@ -20,12 +20,11 @@ private:
 	size_t _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
 	Id _handles[MAX_HANDLES] = {InvalidId, InvalidId, InvalidId, InvalidId, InvalidId, InvalidId};
 	VertexBufferType _targets[MAX_HANDLES] = {VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max, VertexBufferType::Max};
+	VertexBufferMode _modes[MAX_HANDLES] = {VertexBufferMode::Static, VertexBufferMode::Static, VertexBufferMode::Static, VertexBufferMode::Static, VertexBufferMode::Static, VertexBufferMode::Static};
 	uint32_t _handleIdx = 0u;
 
 	std::vector<Attribute> _attributes;
 	mutable Id _vao = InvalidId;
-	// TODO: must be per vbo - not per vao!
-	VertexBufferMode _mode = VertexBufferMode::Static;
 	mutable bool _dirtyAttributes = true;
 public:
 	/**
@@ -42,7 +41,7 @@ public:
 
 	void clearAttributes();
 
-	void setMode(VertexBufferMode mode);
+	void setMode(int32_t idx, VertexBufferMode mode);
 	void shutdown();
 
 	bool addAttribute(const Attribute& attribute);
@@ -141,14 +140,14 @@ inline bool VertexBuffer::isValid(int32_t idx) const {
 	if (idx < 0) {
 		return false;
 	}
-	if (idx >= (int)SDL_arraysize(_handles)) {
+	if (idx >= MAX_HANDLES) {
 		return false;
 	}
 	return _handles[idx] != InvalidId;
 }
 
 inline uint32_t VertexBuffer::size(int32_t idx) const {
-	core_assert(idx >= 0 && idx < (int)SDL_arraysize(_size));
+	core_assert(idx >= 0 && idx < MAX_HANDLES);
 	return _size[idx];
 }
 
@@ -157,12 +156,13 @@ inline uint32_t VertexBuffer::elements(int32_t idx, int components, size_t compo
 }
 
 inline Id VertexBuffer::bufferHandle(int32_t idx) const {
-	core_assert(idx >= 0 && idx < (int)SDL_arraysize(_handles));
+	core_assert(idx >= 0 && idx < MAX_HANDLES);
 	return _handles[idx];
 }
 
-inline void VertexBuffer::setMode(VertexBufferMode mode) {
-	_mode = mode;
+inline void VertexBuffer::setMode(int32_t idx, VertexBufferMode mode) {
+	core_assert(idx >= 0 && idx < MAX_HANDLES);
+	_modes[idx] = mode;
 }
 
 }

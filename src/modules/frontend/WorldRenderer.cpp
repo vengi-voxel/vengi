@@ -733,12 +733,12 @@ void WorldRenderer::onConstruct() {
 }
 
 bool WorldRenderer::initOpaqueBuffer() {
-	_opaqueBuffer.setMode(video::VertexBufferMode::Dynamic);
 	_opaqueVbo = _opaqueBuffer.create();
 	if (_opaqueVbo == -1) {
 		Log::error("Failed to create vertex buffer");
 		return false;
 	}
+	_opaqueBuffer.setMode(_opaqueVbo, video::VertexBufferMode::Dynamic);
 	_opaqueIbo = _opaqueBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
 	if (_opaqueIbo == -1) {
 		Log::error("Failed to create index buffer");
@@ -765,12 +765,12 @@ bool WorldRenderer::initOpaqueBuffer() {
 }
 
 bool WorldRenderer::initWaterBuffer() {
-	_waterBuffer.setMode(video::VertexBufferMode::Dynamic);
 	_waterVbo = _waterBuffer.create();
 	if (_waterVbo == -1) {
 		Log::error("Failed to create water vertex buffer");
 		return false;
 	}
+	_waterBuffer.setMode(_waterVbo, video::VertexBufferMode::Dynamic);
 	_waterIbo = _waterBuffer.create(nullptr, 0, video::VertexBufferType::IndexBuffer);
 	if (_waterIbo == -1) {
 		Log::error("Failed to create water index buffer");

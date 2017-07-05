@@ -319,8 +319,8 @@ bool Mesh::initMesh(Shader& shader, float timeInSeconds, uint8_t animationIndex)
 
 		_state = io::IOSTATE_LOADED;
 
-		_vertexBufferNormals.setMode(VertexBufferMode::Dynamic);
 		_vertexBufferNormalsIndex = _vertexBufferNormals.create();
+		_vertexBufferNormals.setMode(_vertexBufferNormalsIndex, VertexBufferMode::Dynamic);
 
 		_vertexBufferIndex = _vertexBuffer.create(_vertices);
 		_vertexBuffer.create(_indices, VertexBufferType::IndexBuffer);
