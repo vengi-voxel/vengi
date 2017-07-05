@@ -52,11 +52,11 @@ public:
 	void update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder);
 
 	template<class T>
-	void updatePositions(uint32_t meshIndex, const std::vector<glm::vec<3, T>>& positions) {
-		updatePositions(meshIndex, glm::value_ptr(positions.front()), positions.size() * 3 * sizeof(T), 3);
+	bool updatePositions(uint32_t meshIndex, const std::vector<glm::vec<3, T>>& positions) {
+		return updatePositions(meshIndex, glm::value_ptr(positions.front()), positions.size() * 3 * sizeof(T), 3);
 	}
 
-	void updatePositions(uint32_t meshIndex, const void* posBuf, const size_t posBufLength, const int posBufComponents);
+	bool updatePositions(uint32_t meshIndex, const void* posBuf, const size_t posBufLength, const int posBufComponents);
 
 	void render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4()) const;
 
