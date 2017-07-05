@@ -44,7 +44,7 @@ PERF_OPTIONS     ?=
 PERF_CMD         ?=
 PERF_REPORT_CMD  ?=
 else
-PERF_OPTIONS     ?= -F 99 -g
+PERF_OPTIONS     ?= --call-graph dwarf
 PERF_CMD         ?= sudo perf record $(PERF_OPTIONS)
 PERF_REPORT_CMD  ?= sudo perf report  -n --stdio
 endif
