@@ -46,7 +46,7 @@ PERF_REPORT_CMD  ?=
 else
 PERF_OPTIONS     ?= --call-graph dwarf
 PERF_CMD         ?= sudo perf record $(PERF_OPTIONS)
-PERF_REPORT_CMD  ?= sudo perf report  -n --stdio
+PERF_REPORT_CMD  ?= sudo perf report -g srcline -s dso,sym,srcline --inline -n --stdio
 endif
 
 DEBUG            ?=
