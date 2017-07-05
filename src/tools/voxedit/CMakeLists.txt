@@ -26,6 +26,6 @@ set(SRCS
 	VoxEdit.h VoxEdit.cpp
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES voxedit-util)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ui voxedit-util)
 include_directories(.)
 check_ui_files(${PROJECT_NAME})

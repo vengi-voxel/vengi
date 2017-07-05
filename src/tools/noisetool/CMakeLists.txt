@@ -11,5 +11,5 @@ set(SRCS
 	ui/noisedata/NoiseDataItemWidget.h ui/noisedata/NoiseDataItemWidget.cpp
 )
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} WINDOWED)
-engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES frontend util)
+engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES ui frontend util)
 check_ui_files(${PROJECT_NAME})
