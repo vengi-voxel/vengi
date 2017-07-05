@@ -677,6 +677,7 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 		Log::error("Failed to create offset buffer");
 		return false;
 	}
+	vbo.vb.setMode(vbo.offsetBuffer, video::VertexBufferMode::Stream);
 
 	const int locationPos = _worldInstancedShader.getLocationPos();
 	_worldInstancedShader.enableVertexAttributeArray(locationPos);
