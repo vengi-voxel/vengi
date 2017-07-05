@@ -733,6 +733,7 @@ void WorldRenderer::onConstruct() {
 }
 
 bool WorldRenderer::initOpaqueBuffer() {
+	_opaqueBuffer.setMode(video::VertexBufferMode::Dynamic);
 	_opaqueVbo = _opaqueBuffer.create();
 	if (_opaqueVbo == -1) {
 		Log::error("Failed to create vertex buffer");
@@ -764,6 +765,7 @@ bool WorldRenderer::initOpaqueBuffer() {
 }
 
 bool WorldRenderer::initWaterBuffer() {
+	_waterBuffer.setMode(video::VertexBufferMode::Dynamic);
 	_waterVbo = _waterBuffer.create();
 	if (_waterVbo == -1) {
 		Log::error("Failed to create water vertex buffer");
