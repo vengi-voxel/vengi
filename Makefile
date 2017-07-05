@@ -207,6 +207,14 @@ define UPDATE_HG
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,remotery,https://github.com/Celtoys/Remotery)
+	cp $(UPDATEDIR)/remotery.sync/lib/Remotery.[ch] src/modules/core/trace
+	rm -rf tools/remotery
+	mkdir tools/remotery
+	cp -r $(UPDATEDIR)/remotery.sync/vis/* tools/remotery/
+	cp $(UPDATEDIR)/remotery.sync/LICENSE tools/remotery
+	cp $(UPDATEDIR)/remotery.sync/readme.md tools/remotery
+	sed -i 's/[ \t]*$$//g' src/modules/core/trace/Remotery.[ch]
 	$(call UPDATE_GIT,microprofile,https://github.com/jonasmr/microprofile.git)
 	cp $(UPDATEDIR)/microprofile.sync/microprofile*.[ch]* src/modules/core/trace
 	sed -i 's/\r//g' src/modules/core/trace/microprofile*
