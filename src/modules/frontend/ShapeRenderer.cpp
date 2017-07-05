@@ -163,7 +163,7 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 
-bool ShapeRenderer::updatePositions(uint32_t meshIndex, const void* posBuf, const size_t posBufLength, const int posBufComponents) {
+bool ShapeRenderer::updatePositions(uint32_t meshIndex, const void* posBuf, size_t posBufLength, int posBufComponents, size_t typeSize) {
 	video::VertexBuffer& vbo = _vbo[meshIndex];
 	if (_offsetIndex[meshIndex] == -1) {
 		_offsetIndex[meshIndex] = vbo.create(posBuf, posBufLength);
@@ -181,7 +181,7 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const void* posBuf, cons
 	} else {
 		core_assert_always(vbo.update(_offsetIndex[meshIndex], posBuf, posBufLength));
 	}
-	_amounts[meshIndex] = posBufLength / posBufComponents;
+	_amounts[meshIndex] = posBufLength / (posBufComponents * typeSize);
 	return true;
 }
 

@@ -53,10 +53,10 @@ public:
 
 	template<class T>
 	bool updatePositions(uint32_t meshIndex, const std::vector<glm::vec<3, T>>& positions) {
-		return updatePositions(meshIndex, glm::value_ptr(positions.front()), positions.size() * 3 * sizeof(T), 3);
+		return updatePositions(meshIndex, glm::value_ptr(positions.front()), positions.size() * 3 * sizeof(T), 3, sizeof(T));
 	}
 
-	bool updatePositions(uint32_t meshIndex, const void* posBuf, const size_t posBufLength, const int posBufComponents);
+	bool updatePositions(uint32_t meshIndex, const void* posBuf, size_t posBufLength, int posBufComponents, size_t typeSize);
 
 	void render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4()) const;
 
