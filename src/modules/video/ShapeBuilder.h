@@ -28,10 +28,12 @@ private:
 	Vertices _normals;
 	Colors _colors;
 	Primitive _primitive = Primitive::Triangles;
-
+	int _initialSize;
 	glm::vec4 _color = core::Color::White;
 	glm::vec3 _position;
 public:
+	ShapeBuilder(int initialSize = 0);
+
 	inline void reserve(int vertices, int additionalIndices = 0) {
 		_colors.reserve(_colors.size() + vertices + additionalIndices);
 		_vertices.reserve(_vertices.size() + vertices);
@@ -67,6 +69,9 @@ public:
 		_indices.clear();
 		_texcoords.clear();
 		_position = glm::vec3();
+		if (_initialSize > 0) {
+			reserve(_initialSize);
+		}
 	}
 	void aabbGridXY(const core::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
 	void aabbGridYZ(const core::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);

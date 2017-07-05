@@ -2,6 +2,13 @@
 
 namespace video {
 
+ShapeBuilder::ShapeBuilder(int initialSize) :
+		_initialSize(initialSize) {
+	if (_initialSize > 0) {
+		reserve(initialSize);
+	}
+}
+
 void ShapeBuilder::aabbGridXY(const core::AABB<float>& aabb, bool near, float stepWidth) {
 	setPrimitive(Primitive::Lines);
 	const glm::vec3& width = aabb.getWidth();
