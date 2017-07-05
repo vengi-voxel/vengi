@@ -207,6 +207,10 @@ define UPDATE_HG
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,microprofile,https://github.com/jonasmr/microprofile.git)
+	cp $(UPDATEDIR)/microprofile.sync/microprofile*.[ch]* src/modules/core/trace
+	sed -i 's/\r//g' src/modules/core/trace/microprofile*
+	sed -i 's/[ \t]*$$//g' src/modules/core/trace/microprofile*
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
 	$(call UPDATE_GIT,benchmark,https://github.com/google/benchmark.git)
 	cp -r $(UPDATEDIR)/benchmark.sync/src/* contrib/libs/benchmark/src
