@@ -4,6 +4,7 @@
 #include "video/VertexBuffer.h"
 #include "video/Camera.h"
 #include "video/Types.h"
+#include "core/Common.h"
 #include "ColorShader.h"
 #include "ColorInstancedShader.h"
 
@@ -40,7 +41,7 @@ public:
 	bool deleteMesh(int32_t meshIndex);
 
 	/**
-	 * @param[in,out meshIndex If this is -1 a new mesh is created. The mesh index is 'returned' here. If
+	 * @param[in,out] meshIndex If this is -1 a new mesh is created. The mesh index is 'returned' here. If
 	 * this is a valid mesh index, the mesh is updated with the new data from the @c ShapeBuilder
 	 */
 	void createOrUpdate(int32_t& meshIndex, const video::ShapeBuilder& shapeBuilder);
@@ -51,12 +52,23 @@ public:
 
 	void update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder);
 
-	template<class T>
-	bool updatePositions(uint32_t meshIndex, const std::vector<glm::vec<3, T>>& positions) {
-		return updatePositions(meshIndex, glm::value_ptr(positions.front()), positions.size() * 3 * sizeof(T), 3, sizeof(T));
-	}
+	/**
+	 * @brief Updating the positions for a mesh means that you are doing instanced rendering
+	 * @param[in] meshIndex The index returned by @c create() that should not get updated
+	 * @param[in] positions The positions to render the mesh instances at
+	 * @return @c true if the update was successful, @c false otherwise
+	 */
+	bool updatePositions(uint32_t meshIndex, const std::vector<glm::vec3>& positions);
 
-	bool updatePositions(uint32_t meshIndex, const void* posBuf, size_t posBufLength, int posBufComponents, size_t typeSize);
+	/**
+	 * @brief Updating the positions for a mesh means that you are doing instanced rendering
+	 * @param[in] meshIndex The index returned by @c create() that should not get updated
+	 * @param[in] posBuf The raw buffer pointer
+	 * @param[in] posBufLength The size of the raw buffer given via @c posBuf
+	 * @note It's assumed that the positions are always defined by a 3-component float vector
+	 * @return @c true if the update was successful, @c false otherwise
+	 */
+	bool updatePositions(uint32_t meshIndex, const float* posBuf, size_t posBufLength);
 
 	bool render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4()) const;
 

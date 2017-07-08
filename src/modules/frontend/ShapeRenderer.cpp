@@ -167,7 +167,11 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 
-bool ShapeRenderer::updatePositions(uint32_t meshIndex, const void* posBuf, size_t posBufLength, int posBufComponents, size_t typeSize) {
+bool ShapeRenderer::updatePositions(uint32_t meshIndex, const std::vector<glm::vec3>& positions) {
+	return updatePositions(meshIndex, glm::value_ptr(positions.front()), core::vectorSize(positions));
+}
+
+bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, size_t posBufLength) {
 	video::VertexBuffer& vbo = _vbo[meshIndex];
 	if (_offsetIndex[meshIndex] == -1) {
 		_offsetIndex[meshIndex] = vbo.create(posBuf, posBufLength);
@@ -181,13 +185,12 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const void* posBuf, size
 		attributeOffset.index = _colorInstancedShader.getLocationOffset();
 		attributeOffset.size = _colorInstancedShader.getComponentsOffset();
 		attributeOffset.divisor = 1;
-		attributeOffset.stride = posBufComponents * typeSize;
-		core_assert_always(posBufComponents == _colorInstancedShader.getComponentsOffset());
+		attributeOffset.stride = attributeOffset.size * sizeof(float);
 		core_assert_always(_vbo[meshIndex].addAttribute(attributeOffset));
 	} else {
 		core_assert_always(vbo.update(_offsetIndex[meshIndex], posBuf, posBufLength));
 	}
-	_amounts[meshIndex] = posBufLength / (posBufComponents * typeSize);
+	_amounts[meshIndex] = posBufLength / (_colorInstancedShader.getComponentsOffset() * sizeof(float));
 	return true;
 }
 

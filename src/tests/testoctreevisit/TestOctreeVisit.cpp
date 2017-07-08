@@ -68,7 +68,7 @@ core::AppState TestOctreeVisit::onRunning() {
 		return true;
 	}, glm::ivec3(minSize));
 
-	_shapeRenderer.updatePositions(_itemMesh, _positions);
+	core_assert_always(_shapeRenderer.updatePositions(_itemMesh, _positions));
 
 	_shapeBuilder.clear();
 	_shapeBuilder.frustum(_octreeCamera);
