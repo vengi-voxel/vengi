@@ -391,8 +391,7 @@ int WorldRenderer::renderPlants(const std::list<PlantBuffer*>& vbos, int* vertic
 		}
 		++drawCalls;
 		if (vertices != nullptr) {
-			// TODO: replace magic number for components
-			*vertices += vbo->vb.elements(vbo->vertexBuffer, 3, sizeof(voxel::VoxelVertex));
+			*vertices += vbo->vb.elements(vbo->vertexBuffer, 1, sizeof(voxel::VoxelVertex));
 		}
 	}
 
