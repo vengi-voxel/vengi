@@ -32,6 +32,8 @@ core::AppState TestOctreeVisit::onInit() {
 
 	_positions.reserve(4096);
 
+	updateCamera();
+
 	return state;
 }
 
