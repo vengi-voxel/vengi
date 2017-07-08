@@ -180,6 +180,8 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const void* posBuf, size
 		attributeOffset.bufferIndex = _offsetIndex[meshIndex];
 		attributeOffset.index = _colorInstancedShader.getLocationOffset();
 		attributeOffset.size = _colorInstancedShader.getComponentsOffset();
+		attributeOffset.divisor = 1;
+		attributeOffset.stride = posBufComponents * typeSize;
 		core_assert_always(posBufComponents == _colorInstancedShader.getComponentsOffset());
 		core_assert_always(_vbo[meshIndex].addAttribute(attributeOffset));
 	} else {
