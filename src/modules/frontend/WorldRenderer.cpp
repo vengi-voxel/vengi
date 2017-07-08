@@ -680,7 +680,6 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 	vbo.vb.setMode(vbo.offsetBuffer, video::VertexBufferMode::Stream);
 
 	const int locationPos = _worldInstancedShader.getLocationPos();
-	_worldInstancedShader.enableVertexAttributeArray(locationPos);
 	const video::Attribute& posAttrib = getPositionVertexAttribute(vbo.vertexBuffer, locationPos, _worldInstancedShader.getAttributeComponents(locationPos));
 	if (!vbo.vb.addAttribute(posAttrib)) {
 		Log::error("Failed to add position attribute");
@@ -688,7 +687,6 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 	}
 
 	const int locationInfo = _worldInstancedShader.getLocationInfo();
-	_worldInstancedShader.enableVertexAttributeArray(locationInfo);
 	const video::Attribute& infoAttrib = getInfoVertexAttribute(vbo.vertexBuffer, locationInfo, _worldInstancedShader.getAttributeComponents(locationInfo));
 	if (!vbo.vb.addAttribute(infoAttrib)) {
 		Log::error("Failed to add info attribute");
@@ -696,7 +694,6 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 	}
 
 	const int locationOffset = _worldInstancedShader.getLocationOffset();
-	_worldInstancedShader.enableVertexAttributeArray(locationOffset);
 	const video::Attribute& offsetAttrib = getOffsetVertexAttribute(vbo.offsetBuffer, locationOffset, _worldInstancedShader.getAttributeComponents(locationOffset));
 	if (!vbo.vb.addAttribute(offsetAttrib)) {
 		Log::error("Failed to add offset attribute");
@@ -748,7 +745,6 @@ bool WorldRenderer::initOpaqueBuffer() {
 	_opaqueBuffer.setMode(_opaqueIbo, video::VertexBufferMode::Stream);
 
 	const int locationPos = _worldShader.getLocationPos();
-	_worldShader.enableVertexAttributeArray(locationPos);
 	const video::Attribute& posAttrib = getPositionVertexAttribute(_opaqueVbo, locationPos, _worldShader.getAttributeComponents(locationPos));
 	if (!_opaqueBuffer.addAttribute(posAttrib)) {
 		Log::error("Failed to add position attribute");
@@ -756,7 +752,6 @@ bool WorldRenderer::initOpaqueBuffer() {
 	}
 
 	const int locationInfo = _worldShader.getLocationInfo();
-	_worldShader.enableVertexAttributeArray(locationInfo);
 	const video::Attribute& infoAttrib = getInfoVertexAttribute(_opaqueVbo, locationInfo, _worldShader.getAttributeComponents(locationInfo));
 	if (!_opaqueBuffer.addAttribute(infoAttrib)) {
 		Log::error("Failed to add info attribute");
