@@ -15,7 +15,7 @@ void main()
 {
 	v_color = a_color;
 #ifdef INSTANCED
-	gl_Position = vec4(a_offset, 0.0) + u_viewprojection * u_model * a_pos;
+	gl_Position = u_viewprojection * (vec4(a_offset, 0.0) + u_model * a_pos);
 #else // INSTANCED
 	gl_Position = u_viewprojection * u_model * a_pos;
 #endif // INSTANCED
