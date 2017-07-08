@@ -58,9 +58,9 @@ public:
 
 	bool updatePositions(uint32_t meshIndex, const void* posBuf, size_t posBufLength, int posBufComponents, size_t typeSize);
 
-	void render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4()) const;
+	bool render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4()) const;
 
-	void renderAll(const video::Camera& camera, const glm::mat4& model = glm::mat4()) const;
+	int renderAll(const video::Camera& camera, const glm::mat4& model = glm::mat4()) const;
 };
 
 }

@@ -185,18 +185,22 @@ bool ShapeRenderer::updatePositions(uint32_t meshIndex, const void* posBuf, size
 	return true;
 }
 
-void ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model) const {
+int ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model) const {
+	int cnt = 0;
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
 			continue;
 		}
-		render(meshIndex, camera, model);
+		if (render(meshIndex, camera, model)) {
+			++cnt;
+		}
 	}
+	return cnt;
 }
 
-void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model) const {
+bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model) const {
 	if (meshIndex == (uint32_t)-1) {
-		return;
+		return false;
 	}
 	core_assert_always(_vbo[meshIndex].bind());
 	const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
@@ -214,6 +218,7 @@ void ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
 	}
 	_vbo[meshIndex].unbind();
+	return true;
 }
 
 }
