@@ -279,7 +279,7 @@ struct Attribute {
 	 * times the entire set of vertices is rendered before the attribute is updated from the buffer. By default,
 	 * the divisor is zero. This causes regular vertex attributes to be updated from vertex to vertex. If the divisor
 	 * is 10 it means that the first 10 instances will use the first piece of data from the buffer, the next 10 instances
-	 * will use the second, etc. We want to have a dedicated WVP matrix for each instance so we use a divisor of 1.
+	 * will use the second, etc.
 	 */
 	uint8_t divisor = 0;
 	bool normalized = false;
