@@ -118,12 +118,16 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 	attributePos.bufferIndex = _vertexIndex[meshIndex];
 	attributePos.index = _colorShader.getLocationPos();
 	attributePos.size = _colorShader.getComponentsPos();
+	core_assert(attributePos.index == _colorInstancedShader.getLocationPos());
+	core_assert(attributePos.size == _colorInstancedShader.getComponentsPos());
 	core_assert_always(_vbo[meshIndex].addAttribute(attributePos));
 
 	video::Attribute attributeColor;
 	attributeColor.bufferIndex = _colorIndex[meshIndex];
 	attributeColor.index = _colorShader.getLocationColor();
 	attributeColor.size = _colorShader.getComponentsColor();
+	core_assert(attributeColor.index == _colorInstancedShader.getLocationColor());
+	core_assert(attributeColor.size == _colorInstancedShader.getComponentsColor());
 	core_assert_always(_vbo[meshIndex].addAttribute(attributeColor));
 
 	_primitives[meshIndex] = shapeBuilder.primitive();
