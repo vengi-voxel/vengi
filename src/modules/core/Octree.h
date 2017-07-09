@@ -229,11 +229,11 @@ private:
 		const TYPE maxX = mins.x + width.x;
 		const TYPE maxY = mins.y + width.y;
 		const TYPE maxZ = mins.z + width.z;
-		for (TYPE x = mins.x; x < maxX; x += minSize.x) {
-			for (TYPE y = mins.y; y < maxY; y += minSize.y) {
-				for (TYPE z = mins.z; z < maxZ; z += minSize.z) {
-					const glm::tvec3<TYPE> qmins{x, y, z};
-					const glm::tvec3<TYPE> qmaxs{x + minSize.x, y + minSize.y, z + minSize.z};
+		glm::tvec3<TYPE> qmins(glm::uninitialize);
+		for (qmins.x = mins.x; qmins.x < maxX; qmins.x += minSize.x) {
+			for (qmins.y = mins.y; qmins.y < maxY; qmins.y += minSize.y) {
+				for (qmins.z = mins.z; qmins.z < maxZ; qmins.z += minSize.z) {
+					const glm::tvec3<TYPE> qmaxs(qmins + minSize);
 					if (!queryArea.isVisible(qmins, qmaxs)) {
 						continue;
 					}
