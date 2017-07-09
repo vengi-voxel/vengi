@@ -234,11 +234,11 @@ private:
 				for (TYPE z = mins.z; z < maxZ; z += minSize.z) {
 					const glm::tvec3<TYPE> qmins{x, y, z};
 					const glm::tvec3<TYPE> qmaxs{x + minSize.x, y + minSize.y, z + minSize.z};
-					if (queryArea.isVisible(qmins, qmaxs)) {
-						const glm::tvec3<TYPE> center = (qmins + qmaxs) / (TYPE)2;
-						if (!visitor(center)) {
-							break;
-						}
+					if (!queryArea.isVisible(qmins, qmaxs)) {
+						continue;
+					}
+					if (!visitor(qmins, qmaxs)) {
+						break;
 					}
 				}
 			}

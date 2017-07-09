@@ -50,8 +50,9 @@ public:
 		EXPECT_EQ(expectedMins, visitAABB.mins())
 			<< "Expected to get " << glm::to_string(expectedMins)
 			<< " but got " << glm::to_string(visitAABB.mins());
-		octree.visit(frustum, [&] (const glm::ivec3& center) {
+		octree.visit(frustum, [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
 			if (!ignore) {
+				const glm::ivec3 center = (mins + maxs) / 2;
 				for (int i = 0; i < center.length(); ++i) {
 					const int mod = glm::abs(center[i]) % size;
 					const int expected = size / 2;
@@ -195,7 +196,8 @@ TEST_F(OctreeTest, testOctreeVisitOrthoFrustum) {
 		<< glm::to_string(frustumAABB.maxs());
 	int n = 0;
 	const int blockSize = glm::ceil(aabb.getWidthX() / slices);
-	octree.visit(frustum, [&] (const glm::ivec3& center) {
+	octree.visit(frustum, [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
+		const glm::ivec3 center = (mins + maxs) / 2;
 		for (int i = 0; i < center.length(); ++i) {
 			EXPECT_EQ(center[i] % blockSize, slices) << glm::to_string(center);
 		}

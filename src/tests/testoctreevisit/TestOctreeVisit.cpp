@@ -63,7 +63,8 @@ core::AppState TestOctreeVisit::onRunning() {
 
 	const int minSize = 64;
 	_positions.clear();
-	_octree.visit(_octreeCamera.frustum(), [this] (const glm::vec3& center) {
+	_octree.visit(_octreeCamera.frustum(), [this] (const glm::ivec3& mins, const glm::ivec3& maxs) {
+		const glm::ivec3 center = (mins + maxs) / 2;
 		_positions.push_back(center);
 		return true;
 	}, glm::ivec3(minSize));
