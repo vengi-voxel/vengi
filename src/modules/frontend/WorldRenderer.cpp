@@ -177,10 +177,6 @@ void WorldRenderer::handleMeshQueue() {
 		Log::warn("Could not find free chunk buffer slot");
 		return;
 	}
-	if (!freeChunkBuffer->inuse) {
-		freeChunkBuffer->inuse = true;
-		++_activeChunkBuffers;
-	}
 	if (freeChunkBuffer->occlusionQueryId == video::InvalidId) {
 		freeChunkBuffer->occlusionQueryId = video::genOcclusionQuery();
 	}
@@ -191,6 +187,10 @@ void WorldRenderer::handleMeshQueue() {
 	fillPlantPositionsFromMeshes();
 	if (!_octree.insert(freeChunkBuffer)) {
 		Log::warn("Failed to insert into octree");
+	}
+	if (!freeChunkBuffer->inuse) {
+		freeChunkBuffer->inuse = true;
+		++_activeChunkBuffers;
 	}
 }
 
