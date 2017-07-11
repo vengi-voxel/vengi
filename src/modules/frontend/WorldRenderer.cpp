@@ -912,15 +912,17 @@ void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 			continue;
 		}
 		const int distance = getDistanceSquare(chunkBuffer.translation() * _worldScale, glm::ivec3(camera.position()));
-		Log::trace("distance is: %i (%i)", distance, maxAllowedDistance);
-		if (distance >= maxAllowedDistance) {
-			_world->allowReExtraction(chunkBuffer.translation());
-			chunkBuffer.inuse = false;
-			--_activeChunkBuffers;
-			_octree.remove(&chunkBuffer);
-			video::deleteOcclusionQuery(chunkBuffer.occlusionQueryId);
-			Log::trace("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
+		if (distance < maxAllowedDistance) {
+			continue;
 		}
+		Log::trace("distance is: %i (%i) (view: %f, t: %f)",
+			distance, maxAllowedDistance, _viewDistance, cullingThreshold.x);
+		_world->allowReExtraction(chunkBuffer.translation());
+		chunkBuffer.inuse = false;
+		--_activeChunkBuffers;
+		_octree.remove(&chunkBuffer);
+		video::deleteOcclusionQuery(chunkBuffer.occlusionQueryId);
+		Log::trace("Remove mesh from %i:%i", chunkBuffer.translation().x, chunkBuffer.translation().z);
 	}
 }
 
