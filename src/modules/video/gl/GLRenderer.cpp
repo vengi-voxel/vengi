@@ -747,27 +747,17 @@ size_t bufferSize(VertexBufferType type) {
 }
 
 void bufferSubData(VertexBufferType type, intptr_t offset, const void* data, size_t size) {
+	if (size == 0) {
+		return;
+	}
 	const int typeIndex = std::enum_value(type);
 	const GLenum glType = _priv::VertexBufferTypes[typeIndex];
 #if SANITY_CHECKS_GL
 	core_assert(_priv::s.bufferHandle[typeIndex] != InvalidId);
 #endif
-
-#if 0
-	if (size == 0) {
-		return;
-	}
 	void *target = glMapBufferRange(glType, offset, size, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
 	memcpy(target, data, size);
 	glUnmapBuffer(glType);
-#else
-	glBufferSubData(glType, (GLintptr)offset, (GLsizeiptr)size, data);
-	if (_priv::s.vendor[std::enum_value(Vendor::Nouveau)]) {
-		// nouveau needs this if doing the buffer update short before the draw call
-		glFlush(); // TODO: use glFenceSync here glClientWaitSync
-	}
-#endif
-
 	checkError();
 }
 
