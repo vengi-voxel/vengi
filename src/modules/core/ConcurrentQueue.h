@@ -18,6 +18,8 @@ private:
 	std::condition_variable _conditionVariable;
 	std::atomic_bool _abort { false };
 public:
+	using Key = Data;
+
 	~ConcurrentQueue() {
 		abortWait();
 	}
