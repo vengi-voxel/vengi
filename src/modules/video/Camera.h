@@ -68,7 +68,9 @@ protected:
 	uint32_t _dirty = DIRTY_ALL;
 
 	glm::mat4 _viewMatrix;
+	glm::mat4 _invViewMatrix;
 	glm::mat4 _projectionMatrix;
+	glm::mat4 _invProjectionMatrix;
 	glm::mat4 _viewProjectionMatrix;
 	glm::mat4 _orientation;
 
@@ -150,8 +152,10 @@ public:
 
 	glm::mat4 orthogonalMatrix() const;
 	glm::mat4 perspectiveMatrix() const;
+	const glm::mat4& inverseViewMatrix() const;
 	const glm::mat4& viewMatrix() const;
 	const glm::mat4& projectionMatrix() const;
+	const glm::mat4& inverseProjectionMatrix() const;
 	const glm::mat4& viewProjectionMatrix() const;
 
 	float fieldOfView() const;
@@ -405,12 +409,20 @@ inline void Camera::setPosition(const glm::vec3& pos) {
 	}
 }
 
+inline const glm::mat4& Camera::inverseViewMatrix() const {
+	return _invViewMatrix;
+}
+
 inline const glm::mat4& Camera::viewMatrix() const {
 	return _viewMatrix;
 }
 
 inline const glm::mat4& Camera::projectionMatrix() const {
 	return _projectionMatrix;
+}
+
+inline const glm::mat4& Camera::inverseProjectionMatrix() const {
+	return _invProjectionMatrix;
 }
 
 inline const glm::mat4& Camera::viewProjectionMatrix() const {
@@ -456,7 +468,7 @@ inline void Camera::setAspectRatio(float aspect) {
 }
 
 inline glm::vec3 Camera::direction() const {
-	return glm::vec3(glm::column(glm::inverse(viewMatrix()), 2));
+	return glm::vec3(glm::column(inverseViewMatrix(), 2));
 }
 
 inline const glm::vec3& Camera::position() const {

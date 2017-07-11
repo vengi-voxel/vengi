@@ -25,14 +25,14 @@ void Shadow::calculateShadowData(const video::Camera& camera, bool active, int m
 
 	std::vector<float> planes(maxDepthBuffers * 2);
 	camera.sliceFrustum(&planes.front(), planes.size(), maxDepthBuffers, sliceWeight);
-	const glm::mat4& inverseView = glm::inverse(camera.viewMatrix());
+	const glm::mat4& inverseView = camera.inverseViewMatrix();
 	const float shadowRangeZ = camera.farPlane() * 3.0f;
 
 	for (int i = 0; i < maxDepthBuffers; ++i) {
 		const float near = planes[i * 2 + 0];
 		const float far = planes[i * 2 + 1];
 		const glm::vec4& sphere = camera.splitFrustumSphereBoundingBox(near, far);
-		const glm::vec3 lightCenter(_lightView * inverseView * glm::vec4(sphere.x, sphere.y, sphere.z, 1));
+		const glm::vec3 lightCenter(_lightView * inverseView * glm::vec4(sphere.x, sphere.y, sphere.z, 1.0f));
 		const float lightRadius = sphere.w;
 
 		// round to prevent movement

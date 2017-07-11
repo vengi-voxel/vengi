@@ -162,6 +162,7 @@ void Camera::updateProjectionMatrix() {
 		_projectionMatrix = perspectiveMatrix();
 		break;
 	}
+	_invProjectionMatrix = glm::inverse(_projectionMatrix);
 }
 
 void Camera::updateViewMatrix() {
@@ -169,6 +170,7 @@ void Camera::updateViewMatrix() {
 		return;
 	}
 	_viewMatrix = glm::translate(orientation(), -_pos);
+	_invViewMatrix = glm::inverse(_viewMatrix);
 }
 
 Ray Camera::mouseRay(const glm::ivec2& screenPos) const {
@@ -184,10 +186,10 @@ Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	const float y = 1.0f - (2.0f * screenPos.y);
 	const glm::vec4 rayClipSpace(x, y, -1.0f, 1.0f);
 
-	glm::vec4 rayEyeSpace = glm::inverse(projectionMatrix()) * rayClipSpace;
+	glm::vec4 rayEyeSpace = inverseProjectionMatrix() * rayClipSpace;
 	rayEyeSpace = glm::vec4(glm::vec2(rayEyeSpace), -1.0f, 0.0f);
 
-	const glm::vec3& rayDirection = glm::normalize(glm::vec3(glm::inverse(viewMatrix()) * rayEyeSpace));
+	const glm::vec3& rayDirection = glm::normalize(glm::vec3(inverseViewMatrix() * rayEyeSpace));
 	return Ray(position(), rayDirection);
 }
 
@@ -267,7 +269,7 @@ static inline float getBoundingSphereRadius(const glm::vec3& center, const std::
 
 glm::vec4 Camera::splitFrustumSphereBoundingBox(float near, float far) const {
 	const glm::mat4& projection = projectionMatrix();
-	const glm::mat4& inverseProjection = glm::inverse(projection);
+	const glm::mat4& inverseProjection = inverseProjectionMatrix();
 
 	const float znearp = glm::project(projection, glm::vec3(0.0f, 0.0f, -near)).z;
 	const float zfarp = glm::project(projection, glm::vec3(0.0f, 0.0f, -far)).z;
