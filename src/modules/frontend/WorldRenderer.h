@@ -126,7 +126,7 @@ protected:
 	int32_t _aabbMeshesOcclusionQuery = -1;
 	int _maxDepthBuffers = -1;
 
-	float _fogRange = 500.0f;
+	float _fogRange = 300.0f;
 	// TODO: get the view distance from the server - entity attributes
 	float _viewDistance = 1000.0f;
 	long _now = 0l;
