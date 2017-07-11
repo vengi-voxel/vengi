@@ -180,10 +180,6 @@ public:
 	glm::ivec3 meshSize() const;
 
 private:
-	Region getChunkRegion(const glm::ivec3& pos) const;
-	Region getRegion(const glm::ivec3& pos, int size) const;
-	Region getRegion(const glm::ivec3& pos, const glm::ivec3& size) const;
-
 	void extractScheduledMesh();
 
 	WorldPager _pager;
@@ -238,11 +234,6 @@ inline bool World::created() const {
 
 inline void World::setPersist(bool persist) {
 	_pager.setPersist(persist);
-}
-
-inline Region World::getChunkRegion(const glm::ivec3& pos) const {
-	const int size = chunkSize();
-	return getRegion(pos, size);
 }
 
 inline const core::Random& World::random() const {

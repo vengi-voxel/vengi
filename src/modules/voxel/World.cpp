@@ -72,26 +72,6 @@ void World::setSeed(long seed) {
 	_pager.setNoiseOffset(glm::vec2(_random.randomf(-10000.0f, 10000.0f), _random.randomf(-10000.0f, 10000.0f)));
 }
 
-Region World::getRegion(const glm::ivec3& pos, int size) const {
-	int deltaX = size - 1;
-	int deltaY = size - 1;
-	int deltaZ = size - 1;
-	const glm::ivec3 mins(pos.x, pos.y, pos.z);
-	const glm::ivec3 maxs(pos.x + deltaX, pos.y + deltaY, pos.z + deltaZ);
-	const Region region(mins, maxs);
-	return region;
-}
-
-Region World::getRegion(const glm::ivec3& pos, const glm::ivec3& size) const {
-	int deltaX = size.x - 1;
-	int deltaY = size.y - 1;
-	int deltaZ = size.z - 1;
-	const glm::ivec3 mins(pos.x, pos.y, pos.z);
-	const glm::ivec3 maxs(pos.x + deltaX, pos.y + deltaY, pos.z + deltaZ);
-	const Region region(mins, maxs);
-	return region;
-}
-
 PickResult World::pickVoxel(const glm::vec3& origin, const glm::vec3& directionWithLength) {
 	static constexpr voxel::Voxel air = voxel::createVoxel(voxel::VoxelType::Air, 0);
 	return voxel::pickVoxel(_volumeData, origin, directionWithLength, air);
@@ -158,7 +138,9 @@ void World::extractScheduledMesh() {
 			break;
 		}
 		const glm::ivec3& size = meshSize();
-		const Region &region = getRegion(pos, size);
+		const glm::ivec3 mins(pos);
+		const glm::ivec3 maxs(glm::ivec3(pos) + size - 1);
+		const Region region(mins, maxs);
 		// these number are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
 		// they also heavily depend on the size of the mesh region we extract
 		const int opaqueFactor = 16;
