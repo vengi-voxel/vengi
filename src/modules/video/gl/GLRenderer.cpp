@@ -725,6 +725,9 @@ bool bindRenderbuffer(Id handle) {
 }
 
 void bufferData(VertexBufferType type, VertexBufferMode mode, const void* data, size_t size) {
+	if (size == 0) {
+		return;
+	}
 	const GLenum glType = _priv::VertexBufferTypes[std::enum_value(type)];
 	const GLenum usage = _priv::VertexBufferModes[std::enum_value(mode)];
 	glBufferData(glType, (GLsizeiptr)size, data, usage);
