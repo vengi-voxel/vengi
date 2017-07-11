@@ -157,7 +157,8 @@ void World::extractScheduledMesh() {
 		if (!_pendingExtraction.waitAndPop(pos)) {
 			break;
 		}
-		const Region &region = getMeshRegion(pos);
+		const glm::ivec3& size = meshSize();
+		const Region &region = getRegion(pos, size);
 		// these number are made up mostly by try-and-error - we need to revisit them from time to time to prevent extra mem allocs
 		// they also heavily depend on the size of the mesh region we extract
 		const int opaqueFactor = 16;
@@ -220,11 +221,6 @@ bool World::raycast(const glm::vec3& start, const glm::vec3& direction, float ma
 		return true;
 	});
 	return result;
-}
-
-Region World::getMeshRegion(const glm::ivec3& pos) const {
-	const glm::ivec3& size = meshSize();
-	return getRegion(pos, size);
 }
 
 int World::chunkSize() const {

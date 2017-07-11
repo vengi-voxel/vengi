@@ -181,7 +181,6 @@ public:
 
 private:
 	Region getChunkRegion(const glm::ivec3& pos) const;
-	Region getMeshRegion(const glm::ivec3& pos) const;
 	Region getRegion(const glm::ivec3& pos, int size) const;
 	Region getRegion(const glm::ivec3& pos, const glm::ivec3& size) const;
 
