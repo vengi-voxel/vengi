@@ -706,8 +706,7 @@ bool WorldRenderer::createInstancedVertexBuffer(const voxel::Mesh &mesh, int amo
 
 void WorldRenderer::extractMeshes(const video::Camera& camera) {
 	_octree.visit(camera.frustum(), [&] (const glm::ivec3& mins, const glm::ivec3& maxs) {
-		const glm::ivec3 center = (mins + maxs) / 2;
-		return !_world->scheduleMeshExtraction(center / this->_worldScale);
+		return !_world->scheduleMeshExtraction(mins / this->_worldScale);
 	}, glm::vec3(_world->meshSize() * _worldScale));
 }
 
