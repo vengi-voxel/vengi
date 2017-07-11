@@ -104,6 +104,7 @@ protected:
 	int32_t _waterIbo = -1;
 	int32_t _waterVbo = -1;
 	glm::ivec3 _worldScale {4, 4, 4};
+	int _maxAllowedDistance = -1;
 
 	typedef std::unordered_map<ClientEntityId, ClientEntityPtr> Entities;
 	Entities _entities;
@@ -123,6 +124,7 @@ protected:
 	video::ShapeBuilder _shapeBuilderOcclusionQuery;
 	frontend::ShapeRenderer _shapeRendererOcclusionQuery;
 	int32_t _aabbMeshesOcclusionQuery = -1;
+	int _maxDepthBuffers = -1;
 
 	float _fogRange = 500.0f;
 	// TODO: get the view distance from the server - entity attributes

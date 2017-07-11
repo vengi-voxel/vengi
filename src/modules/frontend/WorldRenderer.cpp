@@ -836,6 +836,8 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		return false;
 	}
 
+	_maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+
 	const glm::ivec2& fullscreenQuadIndices = _shadowMapDebugBuffer.createFullscreenTexturedQuad(true);
 	video::Attribute attributePos;
 	attributePos.bufferIndex = fullscreenQuadIndices.x;
@@ -856,9 +858,8 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		_visiblePlant.push_back(&_meshPlantList[i]);
 	}
 
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
 	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
-	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, maxDepthBuffers)) {
+	if (!_depthBuffer.init(smSize, video::DepthBufferMode::DEPTH_CMP, _maxDepthBuffers)) {
 		return false;
 	}
 
@@ -886,6 +887,10 @@ bool WorldRenderer::init(const glm::ivec2& position, const glm::ivec2& dimension
 		return false;
 	}
 
+	const glm::vec3 cullingThreshold(_world->meshSize() * _worldScale);
+	const int maxCullingThreshold = glm::max(cullingThreshold.x, cullingThreshold.z) * 10;
+	_maxAllowedDistance = glm::pow(_viewDistance + maxCullingThreshold, 2);
+
 	return true;
 }
 
@@ -901,24 +906,23 @@ void WorldRenderer::onRunning(const video::Camera& camera, long dt) {
 	core_trace_scoped(WorldRendererOnRunning);
 	_now += dt;
 	_deltaFrame = dt;
+
 	_world->updateExtractionOrder(camera.position(), camera.frustum());
-	const int maxDepthBuffers = _worldShader.getUniformArraySize(MaxDepthBufferUniformName);
+
 	const bool shadowMap = _shadowMap->boolVal();
-	_shadow.calculateShadowData(camera, shadowMap, maxDepthBuffers, _depthBuffer.dimension());
-	const glm::vec3 cullingThreshold(_world->meshSize() * _worldScale);
-	const int maxCullingThreshold = glm::max(cullingThreshold.x, cullingThreshold.z) * 10;
-	const int maxAllowedDistance = glm::pow(_viewDistance + maxCullingThreshold, 2);
+	_shadow.calculateShadowData(camera, shadowMap, _maxDepthBuffers, _depthBuffer.dimension());
+
+	const glm::ivec3 cameraPos(camera.position() / glm::vec3(_worldScale));
+
 	for (ChunkBuffer& chunkBuffer : _chunkBuffers) {
 		if (!chunkBuffer.inuse) {
 			continue;
 		}
-		const int distance = getDistanceSquare(chunkBuffer.translation() * _worldScale, glm::ivec3(camera.position()));
-		if (distance < maxAllowedDistance) {
+		const int distance = getDistanceSquare(chunkBuffer.translation(), cameraPos);
+		if (distance < _maxAllowedDistance) {
 			continue;
 		}
-		Log::trace("distance is: %i (%i) (view: %f, t: %f)",
-			distance, maxAllowedDistance, _viewDistance, cullingThreshold.x);
-		_world->allowReExtraction(chunkBuffer.translation());
+		core_assert_always(_world->allowReExtraction(chunkBuffer.translation()));
 		chunkBuffer.inuse = false;
 		--_activeChunkBuffers;
 		_octree.remove(&chunkBuffer);
