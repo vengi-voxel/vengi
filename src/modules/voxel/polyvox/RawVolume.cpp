@@ -22,6 +22,15 @@ RawVolume::RawVolume(const RawVolume* copy) :
 	memcpy(_data, copy->_data, calculateSizeInBytes());
 }
 
+RawVolume::RawVolume(RawVolume&& move) {
+	_data = move._data;
+	move._data = nullptr;
+	_mins = move._mins;
+	_maxs = move._maxs;
+	_region = move._region;
+	_boundsValid = move._boundsValid;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Destroys the volume
 ////////////////////////////////////////////////////////////////////////////////
