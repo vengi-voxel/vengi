@@ -8,7 +8,7 @@
 #include "cooldown/CooldownProvider.h"
 #include "network/MessageSender.h"
 #include "attrib/ContainerProvider.h"
-#include "backend/poi/PoiProvider.h"
+#include "poi/PoiProvider.h"
 #include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AIRegistry.h"
 #include "backend/entity/ai/AILoader.h"

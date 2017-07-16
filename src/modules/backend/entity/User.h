@@ -7,7 +7,7 @@
 #include "network/MessageSender.h"
 #include "Entity.h"
 #include "core/Var.h"
-#include "backend/poi/PoiProvider.h"
+#include "poi/PoiProvider.h"
 
 namespace backend {
 

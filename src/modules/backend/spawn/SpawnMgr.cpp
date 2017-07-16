@@ -11,7 +11,7 @@
 #include "backend/entity/EntityStorage.h"
 #include "backend/entity/ai/AICharacter.h"
 #include "backend/entity/ai/AILoader.h"
-#include "backend/poi/PoiProvider.h"
+#include "poi/PoiProvider.h"
 #include "backend/entity/Npc.h"
 
 namespace backend {

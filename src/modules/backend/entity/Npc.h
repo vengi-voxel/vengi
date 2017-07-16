@@ -7,7 +7,7 @@
 #include "backend/entity/ai/AICharacter.h"
 #include <atomic>
 #include "Entity.h"
-#include "backend/poi/PoiProvider.h"
+#include "poi/PoiProvider.h"
 
 namespace backend {
 

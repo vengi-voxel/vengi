@@ -5,8 +5,8 @@
 #include "voxel/polyvox/AStarPathfinder.h"
 #include "Npc.h"
 #include "EntityStorage.h"
-#include "backend/poi/PoiProvider.h"
 #include "voxel/World.h"
+#include "poi/PoiProvider.h"
 
 namespace backend {
 

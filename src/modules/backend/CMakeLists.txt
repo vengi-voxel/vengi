@@ -27,7 +27,6 @@ set(SRCS
 	entity/ai/filter/SelectVisible.cpp entity/ai/filter/SelectVisible.h
 	entity/ai/filter/SelectIncreasePartner.cpp entity/ai/filter/SelectIncreasePartner.h
 	entity/ai/filter/SelectEntitiesOfTypes.h entity/ai/filter/SelectEntitiesOfTypes.cpp
-	poi/PoiProvider.cpp poi/PoiProvider.h
 	entity/Npc.cpp entity/Npc.h
 	entity/User.cpp entity/User.h
 	entity/EntityId.h
@@ -36,13 +35,12 @@ set(SRCS
 )
 set(LIB backend)
 add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES network io core util voxel attrib cooldown persistence ai stock util)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES network io core util voxel attrib poi cooldown persistence ai stock util)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 generate_db_models(${LIB} ${ROOT_DIR}/data/server/database/tables.tbl DatabaseModels.h)
 
 gtest_suite_files(tests
 	tests/DatabaseModelTest.cpp
 	tests/SpawnMgrTest.cpp
-	tests/PoiProviderTest.cpp
 )
 gtest_suite_deps(tests ${LIB})
