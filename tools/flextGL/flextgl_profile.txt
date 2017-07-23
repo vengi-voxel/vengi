@@ -5,3 +5,4 @@ extension ARB_buffer_storage optional
 extension ARB_multi_draw_indirect optional
 extension ARB_draw_indirect optional
 extension ARB_instanced_arrays optional
+extension ARB_compute_shader optional

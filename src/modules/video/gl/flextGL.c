@@ -59,6 +59,10 @@ int flextInit(void)
         FLEXT_ARB_instanced_arrays = GL_TRUE;
     }
 
+    if (SDL_GL_ExtensionSupported("GL_ARB_compute_shader")) {
+        FLEXT_ARB_compute_shader = GL_TRUE;
+    }
+
 
     return 0;
 }
@@ -73,6 +77,12 @@ void flextLoadOpenGLFunctions(void)
     /* GL_ARB_buffer_storage */
 
     glpfBufferStorage = (PFNGLBUFFERSTORAGE_PROC*)SDL_GL_GetProcAddress("glBufferStorage");
+
+
+    /* GL_ARB_compute_shader */
+
+    glpfDispatchCompute = (PFNGLDISPATCHCOMPUTE_PROC*)SDL_GL_GetProcAddress("glDispatchCompute");
+    glpfDispatchComputeIndirect = (PFNGLDISPATCHCOMPUTEINDIRECT_PROC*)SDL_GL_GetProcAddress("glDispatchComputeIndirect");
 
 
     /* GL_ARB_debug_output */
@@ -533,12 +543,18 @@ int FLEXT_ARB_buffer_storage = GL_FALSE;
 int FLEXT_ARB_multi_draw_indirect = GL_FALSE;
 int FLEXT_ARB_draw_indirect = GL_FALSE;
 int FLEXT_ARB_instanced_arrays = GL_FALSE;
+int FLEXT_ARB_compute_shader = GL_FALSE;
 
 /* ---------------------- Function pointer definitions --------------------- */
 
 /* GL_ARB_buffer_storage */
 
 PFNGLBUFFERSTORAGE_PROC* glpfBufferStorage = NULL;
+
+/* GL_ARB_compute_shader */
+
+PFNGLDISPATCHCOMPUTE_PROC* glpfDispatchCompute = NULL;
+PFNGLDISPATCHCOMPUTEINDIRECT_PROC* glpfDispatchComputeIndirect = NULL;
 
 /* GL_ARB_debug_output */
 

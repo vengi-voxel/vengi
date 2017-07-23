@@ -91,7 +91,7 @@ public:
 	Shader();
 	virtual ~Shader();
 
-	static std::string validGLSLPreprocessorName(const std::string& name);
+	static std::string validPreprocessorName(const std::string& name);
 
 	static int glslVersion;
 

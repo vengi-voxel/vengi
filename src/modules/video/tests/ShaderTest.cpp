@@ -30,7 +30,7 @@ TEST_F(ShaderTest, testCvar) {
 	ASSERT_EQ("true", v->strVal());
 	Shader s;
 	const std::string &vert = s.getSource(ShaderType::Vertex, "#define FOO");
-	const std::string &name = Shader::validGLSLPreprocessorName(v->name());
+	const std::string &name = Shader::validPreprocessorName(v->name());
 	ASSERT_TRUE(core::string::contains(vert, name)) << "vertex shader: " << vert;
 }
 

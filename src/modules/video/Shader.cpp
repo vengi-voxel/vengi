@@ -309,7 +309,7 @@ std::string Shader::handleIncludes(const std::string& buffer) const {
 /**
  * Some drivers don't support underscores in their defines...
  */
-std::string Shader::validGLSLPreprocessorName(const std::string& name) {
+std::string Shader::validPreprocessorName(const std::string& name) {
 	return core::string::replaceAll(name, "_", "");
 }
 
@@ -328,7 +328,7 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 	core::Var::visitSorted([&] (const core::VarPtr& var) {
 		if ((var->getFlags() & core::CV_SHADER) != 0) {
 			src.append("#define ");
-			const std::string& validName = validGLSLPreprocessorName(var->name());
+			const std::string& validName = validPreprocessorName(var->name());
 			src.append(validName);
 			src.append(" ");
 			std::string val;
@@ -385,7 +385,7 @@ std::string Shader::getSource(ShaderType shaderType, const std::string& buffer, 
 
 	core::Var::visitSorted([&] (const core::VarPtr& var) {
 		if ((var->getFlags() & core::CV_SHADER) != 0) {
-			const std::string& validName = validGLSLPreprocessorName(var->name());
+			const std::string& validName = validPreprocessorName(var->name());
 			src = core::string::replaceAll(src, var->name(), validName);
 		}
 	});
