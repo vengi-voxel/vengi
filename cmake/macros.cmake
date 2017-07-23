@@ -88,6 +88,58 @@ macro(generate_shaders TARGET)
 	add_dependencies(${TARGET} GenerateShaderBindings${TARGET})
 endmacro()
 
+macro(generate_compute_shaders TARGET)
+	set(files ${ARGV})
+	list(REMOVE_AT files 0)
+	set(_headers)
+	set(GEN_DIR ${CMAKE_BINARY_DIR}/gen-compute-shaders/${TARGET}/)
+	set(_template ${ROOT_DIR}/src/tools/computeshadertool/ComputeShaderTemplate.h.in)
+	file(MAKE_DIRECTORY ${GEN_DIR})
+	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
+	foreach (shader_dir "${TARGET}" shared)
+		set(_dir ${ROOT_DIR}/${GAME_BASE_DIR}/${shader_dir}/shaders)
+		if (IS_DIRECTORY ${_dir})
+			foreach (_file ${files})
+				if (EXISTS ${_dir}/${_file}.cl)
+					convert_to_camel_case(${_file} _f)
+					set(_shaderfile "${_f}Shader.h")
+					set(_shader "${GEN_DIR}${_shaderfile}")
+					# TODO: there are includes in those files.... so we also might depend on other cl files
+					add_custom_command(
+						OUTPUT ${_shader}
+						COMMENT "Generate ${_shaderfile}"
+						COMMAND ${CMAKE_BINARY_DIR}/computeshadertool ${_file} ${_template} compute shaders/ ${GEN_DIR}
+						DEPENDS computeshadertool ${_dir}/${_file}.cl ${_template}
+						WORKING_DIRECTORY ${_dir}
+					)
+					list(APPEND _headers ${_shader})
+				endif()
+			endforeach()
+		endif()
+	endforeach()
+	convert_to_camel_case(${TARGET} _filetarget)
+	# TODO: not regenerated if files were added, renamed or removed
+	set(_h ${GEN_DIR}/${_filetarget}Shaders.h)
+	file(WRITE ${_h}.in "#pragma once\n")
+	foreach(header_path ${_headers})
+		string(REPLACE "${GEN_DIR}" "" header "${header_path}")
+		file(APPEND ${_h}.in "#include \"${header}\"\n")
+	endforeach()
+	add_custom_command(
+		OUTPUT  ${_h}
+		COMMAND ${CMAKE_COMMAND}
+		ARGS    -E copy_if_different ${_h}.in ${_h}
+		COMMENT "Generate ${_h}"
+	)
+	add_custom_target(GenerateComputeShaderBindings${TARGET}
+		DEPENDS ${_headers} ${_h}
+		COMMENT "Generate compute shader bindings for ${TARGET} in ${GEN_DIR}"
+	)
+	#target_sources(${TARGET} PUBLIC ${_headers} ${_h})
+	set_source_files_properties(${_headers} ${_h} ${_h}.in PROPERTIES GENERATED TRUE)
+	add_dependencies(${TARGET} GenerateComputeShaderBindings${TARGET})
+endmacro()
+
 macro(generate_db_models TARGET INPUT OUTPUT)
 	set(GEN_DIR ${CMAKE_BINARY_DIR}/gen-dbmodels/${TARGET}/)
 	file(MAKE_DIRECTORY ${GEN_DIR})

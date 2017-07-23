@@ -1,6 +1,7 @@
 add_subdirectory(core)
 add_subdirectory(io)
 add_subdirectory(video)
+add_subdirectory(compute)
 add_subdirectory(imgui)
 add_subdirectory(ui)
 add_subdirectory(network)
