@@ -152,4 +152,12 @@ TEST_F(TokenizerTest, testTokenizerSimple) {
 	EXPECT_EQ("bar", core::Tokenizer("/* empty\none */\n// foo\n bar").next());
 }
 
+TEST_F(TokenizerTest, testTokenizerSplit) {
+	core::Tokenizer t("typedef struct f[4] vec3;", " ", ";");
+	ASSERT_GT(5, t.tokens().size()) << toString(t.tokens());
+	EXPECT_EQ(6u, t.size()) << toString(t.tokens());
+	EXPECT_EQ(";", t.tokens()[4]) << toString(t.tokens());
+	EXPECT_EQ("typedef", t.tokens()[0]) << toString(t.tokens());
+}
+
 }

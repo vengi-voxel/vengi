@@ -21,6 +21,12 @@ protected:
 	char skip(const char **s, bool skipWhitespace = true);
 	bool isSeparator(char c, const char *sep);
 public:
+	/**
+	 * @param s The string to tokenize.
+	 * @param len The length of the string.
+	 * @param sep The separator chars - they are not included in the tokens.
+	 * @param split Splits chars, they are included in the tokens - but otherwise handled like usual separators.
+	 */
 	Tokenizer(const char* s, std::size_t len, const char *sep = " (){};", const char *split = "");
 
 	Tokenizer(const std::string_view string, const char *sep, const char *split = "") : Tokenizer(string.data(), string.length(), sep, split) {}
@@ -29,6 +35,20 @@ public:
 
 	inline bool hasNext() const {
 		return _posIndex < _tokens.size();
+	}
+
+	inline std::string peekNext() const {
+		if (!hasNext()) {
+			return "";
+		}
+		return _tokens[_posIndex + 1];
+	}
+
+	inline bool isNext(const std::string& token) const {
+		if (!hasNext()) {
+			return false;
+		}
+		return _tokens[_posIndex + 1] == token;
 	}
 
 	inline const std::string& next() {

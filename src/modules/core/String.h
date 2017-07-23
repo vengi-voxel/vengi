@@ -78,6 +78,18 @@ inline bool startsWith(const std::string& string, const std::string& token) {
 	return !string.compare(0, token.size(), token);
 }
 
+inline bool startsWith(const std::string_view& string, const std::string& token) {
+	return !string.compare(0, token.size(), token);
+}
+
+inline bool startsWith(const std::string_view& string, const char* token) {
+	return !string.compare(0, strlen(token), token);
+}
+
+inline bool startsWith(const std::string& string, const char* token) {
+	return !string.compare(0, strlen(token), token);
+}
+
 inline bool endsWith(const std::string& string, const std::string& end) {
 	const std::size_t strLength = string.length();
 	const std::size_t endLength = end.length();
@@ -120,6 +132,18 @@ inline std::string_view extractPath(const std::string_view str) {
 		return "";
 	}
 	return str.substr(0, pos + 1) ;
+}
+
+inline std::string_view extractFilename(std::string_view str) {
+	const size_t pathPos = str.rfind('/');
+	if (pathPos != std::string::npos) {
+		str = str.substr(pathPos + 1);
+	}
+	const size_t extPos = str.rfind('.');
+	if (extPos != std::string::npos) {
+		str = str.substr(0, extPos);
+	}
+	return str;
 }
 
 inline std::string eraseAllSpaces(const std::string& str) {

@@ -15,6 +15,13 @@ TEST_F(StringTest, testEraseAllSpaces) {
 	ASSERT_EQ(",", core::string::eraseAllSpaces("  ,  "));
 }
 
+TEST_F(StringTest, testExtractFilename) {
+	ASSERT_EQ("file", core::string::extractFilename("/path/to/file.extension"));
+	ASSERT_EQ("file", core::string::extractFilename("file.extension"));
+	ASSERT_EQ("file", core::string::extractFilename("/file.extension"));
+	ASSERT_EQ("file", core::string::extractFilename("file"));
+}
+
 TEST_F(StringTest, testCutAfterFirstMatch) {
 	std::string_view test("filename.ext");
 	ASSERT_EQ("filename", core::string::cutAfterFirstMatch(test, "."));
