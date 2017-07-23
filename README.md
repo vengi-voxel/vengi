@@ -25,12 +25,13 @@ Voxel engine with procedural generated landscape.
   * zlib
   * turbobadger
   * gtest
+  * opencl
   * qt (for the rcon tool)
 
 Some of these dependencies might not be available as packages in your toolchain - most of them are also bundled with the application. But local installed headers always have the higher priority.
 
 ## Debian
-    apt-get install libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev libenet-dev libgtk-3-dev qt5-default qttools5-dev qttools5-dev-tools
+    apt-get install libglm-dev libassimp-dev lua5.3 liblua5.3-dev libsdl2-dev postgresql-server-dev-9.5 libpq-dev libenet-dev libgtk-3-dev qt5-default qttools5-dev qttools5-dev-tools opencl-c-headers
 
 ## Arch Linux
     pacman [...]
