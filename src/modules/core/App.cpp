@@ -43,10 +43,6 @@ int App::startMainLoop(int argc, char *argv[]) {
 	_argc = argc;
 	_argv = argv;
 
-	for (int i = 0; i < _argc; ++i) {
-		Log::debug("argv[%i] = %s", i, _argv[i]);
-	}
-
 	while (AppState::InvalidAppState != _curState) {
 		core_trace_scoped(AppMainLoop);
 		onFrame();
@@ -141,13 +137,6 @@ void App::onFrame() {
 }
 
 AppState App::onConstruct() {
-	if (_coredump) {
-#ifdef HAVE_SYS_RESOURCE_H
-		struct rlimit core_limits;
-		core_limits.rlim_cur = core_limits.rlim_max = RLIM_INFINITY;
-		setrlimit(RLIMIT_CORE, &core_limits);
-#endif
-	}
 	core::Var::get(cfg::CoreLogLevel, SDL_LOG_PRIORITY_INFO);
 	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
 	Log::init();
@@ -181,6 +170,21 @@ AppState App::onConstruct() {
 		core::executeCommands(command + " " + args);
 	}
 	Log::init();
+
+	for (int i = 0; i < _argc; ++i) {
+		Log::debug("argv[%i] = %s", i, _argv[i]);
+	}
+
+	if (_coredump) {
+#ifdef HAVE_SYS_RESOURCE_H
+		struct rlimit core_limits;
+		core_limits.rlim_cur = core_limits.rlim_max = RLIM_INFINITY;
+		setrlimit(RLIMIT_CORE, &core_limits);
+		Log::debug("activate core dumps");
+#else
+		Log::debug("can't activate core dumps");
+#endif
+	}
 
 	_filesystem->init(_organisation, _appname);
 
