@@ -18,7 +18,7 @@ private:
 	std::string _email;
 	uint32_t _host;
 	voxel::WorldPtr _world;
-	PoiProviderPtr _poiProvider;
+	poi::PoiProviderPtr _poiProvider;
 	network::MoveDirection _moveMask = network::MoveDirection::NONE;
 	float _yaw = 0.0f;
 	uint64_t _lastAction = 0u;
@@ -37,7 +37,7 @@ protected:
 public:
 	User(ENetPeer* peer, EntityId id, const std::string& name, const network::MessageSenderPtr& messageSender, const voxel::WorldPtr& world,
 			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider,
-			const PoiProviderPtr& poiProvider);
+			const poi::PoiProviderPtr& poiProvider);
 
 	void setEntityId(EntityId id);
 

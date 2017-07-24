@@ -58,6 +58,10 @@ typedef std::shared_ptr<Npc> NpcPtr;
 class EntityStorage;
 typedef std::shared_ptr<EntityStorage> EntityStoragePtr;
 
+}
+
+namespace poi {
+
 class PoiProvider;
 typedef std::shared_ptr<PoiProvider> PoiProviderPtr;
 

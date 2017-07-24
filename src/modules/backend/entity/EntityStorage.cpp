@@ -13,7 +13,7 @@
 namespace backend {
 
 EntityStorage::EntityStorage(const network::MessageSenderPtr& messageSender, const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider,
-		const attrib::ContainerProviderPtr& containerProvider, const PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
+		const attrib::ContainerProviderPtr& containerProvider, const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider) :
 		_quadTree(core::RectFloat::getMaxRect(), 100.0f), _quadTreeCache(_quadTree), _messageSender(messageSender), _world(world), _timeProvider(
 				timeProvider), _containerProvider(containerProvider), _poiProvider(poiProvider), _cooldownProvider(cooldownProvider), _time(0L) {
 }

@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 
 	const cooldown::CooldownProviderPtr& cooldownProvider = std::make_shared<cooldown::CooldownProvider>();
 
-	const backend::PoiProviderPtr& poiProvider = std::make_shared<backend::PoiProvider>(world, timeProvider);
+	const poi::PoiProviderPtr& poiProvider = std::make_shared<poi::PoiProvider>(world, timeProvider);
 	const backend::EntityStoragePtr& entityStorage = std::make_shared<backend::EntityStorage>(messageSender, world, timeProvider, containerProvider, poiProvider, cooldownProvider);
 	const backend::SpawnMgrPtr& spawnMgr = std::make_shared<backend::SpawnMgr>(world, entityStorage, messageSender, timeProvider, loader, containerProvider, poiProvider, cooldownProvider);
 

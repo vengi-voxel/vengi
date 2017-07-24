@@ -8,7 +8,7 @@
 #include "voxel/World.h"
 #include "core/Var.h"
 
-namespace backend {
+namespace poi {
 
 PoiProvider::PoiProvider(const voxel::WorldPtr& world, const core::TimeProviderPtr& timeProvider) :
 		_world(world), _timeProvider(timeProvider), _lock("PoiProvider") {

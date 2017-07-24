@@ -17,7 +17,7 @@ private:
 	static std::atomic<EntityId> _nextNpcId;
 	voxel::WorldPtr _world;
 	EntityStoragePtr _entityStorage;
-	PoiProviderPtr _poiProvider;
+	poi::PoiProviderPtr _poiProvider;
 	glm::ivec3 _homePosition;
 	ai::AIPtr _ai;
 
@@ -27,7 +27,7 @@ private:
 
 public:
 	Npc(network::EntityType type, const EntityStoragePtr& entityStorage, const ai::TreeNodePtr& behaviour, const voxel::WorldPtr& world, const network::MessageSenderPtr& messageSender,
-			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const PoiProviderPtr& poiProvider);
+			const core::TimeProviderPtr& timeProvider, const attrib::ContainerProviderPtr& containerProvider, const cooldown::CooldownProviderPtr& cooldownProvider, const poi::PoiProviderPtr& poiProvider);
 	~Npc();
 
 	void init(const glm::ivec3* pos);

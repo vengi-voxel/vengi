@@ -10,7 +10,7 @@
 #include <vector>
 #include <memory>
 
-namespace backend {
+namespace poi {
 
 /**
  * @brief Maintains a list of points of interest that are only valid for a particular time.

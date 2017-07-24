@@ -19,7 +19,7 @@ private:
 	network::MessageSenderPtr _messageSender;
 	core::TimeProviderPtr _timeProvider;
 	attrib::ContainerProviderPtr _containerProvider;
-	PoiProviderPtr _poiProvider;
+	poi::PoiProviderPtr _poiProvider;
 	cooldown::CooldownProviderPtr _cooldownProvider;
 	long _time;
 
@@ -30,7 +30,7 @@ private:
 public:
 	SpawnMgr(const voxel::WorldPtr& world, const EntityStoragePtr& entityStorage, const network::MessageSenderPtr& messageSender,
 			const core::TimeProviderPtr& timeProvider, const AILoaderPtr& loader, const attrib::ContainerProviderPtr& containerProvider,
-			const PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
+			const poi::PoiProviderPtr& poiProvider, const cooldown::CooldownProviderPtr& cooldownProvider);
 	bool init();
 	void shutdown();
 

@@ -6,7 +6,7 @@
 #include "poi/PoiProvider.h"
 #include "voxel/World.h"
 
-namespace backend {
+namespace poi {
 
 class PoiProviderTest: public core::AbstractTest {
 public:
