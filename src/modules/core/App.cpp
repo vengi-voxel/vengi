@@ -13,14 +13,17 @@
 #include "Concurrency.h"
 #include <thread>
 #include <SDL.h>
+#include "config.h"
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
 
 namespace core {
 
 App* App::_staticInstance;
 
 App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport, size_t threadPoolSize) :
-		_trace(traceport), _argc(0), _argv(nullptr), _curState(AppState::Construct), _nextState(AppState::InvalidAppState),
-		_suspendRequested(false), _deltaFrame(0L), _initTime(0L), _filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core"),
+		_trace(traceport), _filesystem(filesystem), _eventBus(eventBus), _threadPool(threadPoolSize, "Core"),
 		_timeProvider(timeProvider) {
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 	_now = currentMillis();
@@ -28,6 +31,7 @@ App::App(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus,
 }
 
 App::~App() {
+	Log::shutdown();
 }
 
 void App::init(const std::string& organisation, const std::string& appname) {
@@ -137,7 +141,15 @@ void App::onFrame() {
 }
 
 AppState App::onConstruct() {
+	if (_coredump) {
+#ifdef HAVE_SYS_RESOURCE_H
+		struct rlimit core_limits;
+		core_limits.rlim_cur = core_limits.rlim_max = RLIM_INFINITY;
+		setrlimit(RLIMIT_CORE, &core_limits);
+#endif
+	}
 	core::Var::get(cfg::CoreLogLevel, SDL_LOG_PRIORITY_INFO);
+	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
 	Log::init();
 
 	core::Command::registerCommand("set", [] (const core::CmdArgs& args) {

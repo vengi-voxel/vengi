@@ -25,6 +25,7 @@
 class Log {
 public:
 	static void init();
+	static void shutdown();
 	static void trace(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));
 	static void debug(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));
 	static void info(CORE_FORMAT_STRING const char* msg, ...) __attribute__((format(printf, 1, 2)));

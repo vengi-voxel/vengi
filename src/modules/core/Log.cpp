@@ -4,8 +4,14 @@
 
 #include "Log.h"
 #include "Var.h"
+#include "config.h"
+#include "App.h"
 #include <cstring>
 #include <SDL.h>
+
+#ifdef HAVE_SYSLOG_H
+#include <syslog.h>
+#endif
 
 #ifdef __LINUX__
 #define ANSI_COLOR_RESET "\033[0m"
@@ -23,13 +29,51 @@
 #define ANSI_COLOR_CYAN ""
 #endif
 
-
+static bool _syslog = false;
 static constexpr int bufSize = 4096;
 static SDL_LogPriority _logLevel = SDL_LOG_PRIORITY_INFO;
+
+#ifdef HAVE_SYSLOG_H
+static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message) {
+	int syslogLevel = LOG_DEBUG;
+	if (priority == SDL_LOG_PRIORITY_CRITICAL) {
+		syslogLevel = LOG_CRIT;
+	} else if (priority == SDL_LOG_PRIORITY_ERROR) {
+		syslogLevel = LOG_ERR;
+	} else if (priority == SDL_LOG_PRIORITY_WARN) {
+		syslogLevel = LOG_WARNING;
+	} else if (priority == SDL_LOG_PRIORITY_INFO) {
+		syslogLevel = LOG_INFO;
+	}
+	syslog(syslogLevel, "%s", message);
+}
+#endif
 
 void Log::init() {
 	_logLevel = (SDL_LogPriority)core::Var::getSafe(cfg::CoreLogLevel)->intVal();
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, _logLevel);
+
+	const bool syslog = core::Var::getSafe(cfg::CoreSysLog)->boolVal();
+	if (syslog) {
+#ifdef HAVE_SYSLOG_H
+		openlog(nullptr, LOG_PID, LOG_USER);
+		SDL_LogSetOutputFunction(sysLogOutputFunction, nullptr);
+		_syslog = true;
+#else
+		Log::warn("Syslog support is not compiled into the binary");
+		_syslog = false;
+#endif
+	} else {
+		_syslog = false;
+	}
+}
+
+void Log::shutdown() {
+	// this is one of the last methods that is executed - so don't rely on anything
+	// still being available here - it won't
+#ifdef HAVE_SYSLOG_H
+	closelog();
+#endif
 }
 
 void Log::trace(const char* msg, ...) {
@@ -41,7 +85,11 @@ void Log::trace(const char* msg, ...) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_CYAN "%s" ANSI_COLOR_RESET "\n", buf);
+	if (_syslog) {
+		SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
+	} else {
+		SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_CYAN "%s" ANSI_COLOR_RESET "\n", buf);
+	}
 	va_end(args);
 }
 
@@ -54,7 +102,11 @@ void Log::debug(const char* msg, ...) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET "\n", buf);
+	if (_syslog) {
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
+	} else {
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET "\n", buf);
+	}
 	va_end(args);
 }
 
@@ -67,7 +119,11 @@ void Log::info(const char* msg, ...) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", buf);
+	if (_syslog) {
+		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
+	} else {
+		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", buf);
+	}
 	va_end(args);
 }
 
@@ -80,7 +136,11 @@ void Log::warn(const char* msg, ...) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET "\n", buf);
+	if (_syslog) {
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
+	} else {
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET "\n", buf);
+	}
 	va_end(args);
 }
 
@@ -93,6 +153,10 @@ void Log::error(const char* msg, ...) {
 	char buf[bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_RED "%s" ANSI_COLOR_RESET "\n", buf);
+	if (_syslog) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
+	} else {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, ANSI_COLOR_RED "%s" ANSI_COLOR_RESET "\n", buf);
+	}
 	va_end(args);
 }

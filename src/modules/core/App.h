@@ -71,20 +71,22 @@ protected:
 	};
 
 	core::Trace _trace;
-	int _argc;
-	char **_argv;
+	int _argc = 0;
+	char **_argv = nullptr;
 
 	std::string _organisation;
 	std::string _appname;
 
-	AppState _curState;
-	AppState _nextState;
+	AppState _curState = AppState::Construct;
+	AppState _nextState = AppState::InvalidAppState;
 	std::unordered_set<AppState> _blockers;
-	bool _suspendRequested;
+	bool _suspendRequested = false;
+	bool _syslog = false;
+	bool _coredump = false;
 	long _now;
-	long _deltaFrame;
-	long _initTime;
-	double _nextFrame = 0;
+	long _deltaFrame = 0l;
+	long _initTime = 0l;
+	double _nextFrame = 0.0;
 	double _framesPerSecondsCap = 0.0;
 	int _exitCode = 0;
 	io::FilesystemPtr _filesystem;

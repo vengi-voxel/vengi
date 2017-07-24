@@ -22,6 +22,8 @@ Server::Server(const network::NetworkPtr& network, const backend::ServerLoopPtr&
 		const core::EventBusPtr& eventBus) :
 		core::App(filesystem, eventBus, timeProvider, 15678), _network(network),
 		_serverLoop(serverLoop) {
+	_syslog = true;
+	_coredump = true;
 	init(ORGANISATION, "server");
 }
 

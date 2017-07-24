@@ -47,6 +47,7 @@ constexpr const char *ServerMaxClients = "sv_maxclients";
 constexpr const char *ShapeToolExtractRadius = "sh_extractradius";
 
 constexpr const char *CoreLogLevel = "core_loglevel";
+constexpr const char *CoreSysLog = "core_syslog";
 
 // The size of the chunk that is extracted with each step
 constexpr const char *VoxelMeshSize = "voxel_meshsize";
