@@ -230,6 +230,10 @@ updatelibs:
 	sed -i 's/\r//g' src/modules/core/trace/microprofile*
 	sed -i 's/[ \t]*$$//g' src/modules/core/trace/microprofile*
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
+	rm -rf contrib/libs/gtest/src
+	rm -rf contrib/libs/gtest/include
+	cp -r $(UPDATEDIR)/googletest.sync/googletest/src contrib/libs/gtest
+	cp -r $(UPDATEDIR)/googletest.sync/googletest/include contrib/libs/gtest/include
 	git checkout -f contrib/libs/gtest/include/gtest/internal/custom
 	$(call UPDATE_GIT,benchmark,https://github.com/google/benchmark.git)
 	cp -r $(UPDATEDIR)/benchmark.sync/src/* contrib/libs/benchmark/src
