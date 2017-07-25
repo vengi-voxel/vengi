@@ -90,6 +90,10 @@ inline bool startsWith(const std::string& string, const char* token) {
 	return !string.compare(0, strlen(token), token);
 }
 
+inline bool startsWith(const char* string, const char* token) {
+	return !std::string_view(string).compare(0, strlen(token), token);
+}
+
 inline bool endsWith(const std::string& string, const std::string& end) {
 	const std::size_t strLength = string.length();
 	const std::size_t endLength = end.length();
