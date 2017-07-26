@@ -1,4 +1,5 @@
 add_subdirectory(shadertool)
+add_subdirectory(computeshadertool)
 add_subdirectory(databasetool)
 add_subdirectory(uitool)
 add_subdirectory(glslang)

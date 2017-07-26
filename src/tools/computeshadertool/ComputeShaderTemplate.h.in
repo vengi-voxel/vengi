@@ -1,0 +1,62 @@
+/**
+ * @file
+ */
+
+#pragma once
+
+#include "compute/Shader.h"
+#include "core/Singleton.h"
+
+$includes$
+
+namespace $namespace$ {
+
+class $name$ : public compute::Shader {
+private:
+	using Super = compute::Shader;
+	int _setupCalls = 0;
+$members$
+public:
+	static inline $name$& getInstance() {
+		return core::Singleton<$name$>::getInstance();
+	}
+
+$structs$
+
+	/**
+	 * @brief Load the vertex and fragment shaders and verifies that its attributes and uniforms are used.
+	 * @note If an attribute or an uniform isn't active, a message will be printed about that fact - but
+	 * the setup process won't fail.
+	 */
+	bool setup() override {
+		++_setupCalls;
+		if (_initialized) {
+			return true;
+		}
+		if (!init()) {
+			return false;
+		}
+		if (!loadProgram("$filename$")) {
+			return false;
+		}
+$createkernels$
+		return true;
+	}
+
+	void shutdown() override {
+		if (_setupCalls == 0) {
+			return;
+		}
+		--_setupCalls;
+		if (_setupCalls > 0) {
+			return;
+		}
+$shutdown$
+		Super::shutdown();
+	}
+$kernels$
+};
+
+typedef std::shared_ptr<$name$> $name$Ptr;
+
+};
