@@ -186,4 +186,9 @@ std::string Shader::getSource(const std::string& buffer, bool finalize) const {
 	return src;
 }
 
+void Shader::addDefine(const std::string& name, const std::string& value) {
+	core_assert_msg(!_initialized, "Shader is already initialized");
+	_defines[name] = value;
+}
+
 }

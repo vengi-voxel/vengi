@@ -1,3 +1,5 @@
+// this file does contain the hardest bug class - whitespace errors... this is
+// on purpose to check the parser/tokenizer
 struct Data {
 	int foo;
 	char foo2;
@@ -5,12 +7,13 @@ struct Data {
 	float4 foo4;
 };
 
-__kernel void example( __global const char* buf, __global char* buf2 ) {
+ __kernel void example( __global  const char* buf, __global char* buf2 )
+  {
 	int x = get_global_id(0);
 	buf2[x] = buf[x];
 }
 
-__kernel void example2( __global const char* buf, __global char* buf2, int N ) {
+__kernel  void  example2 ( __global const char *  buf ,  __global  char* buf2, int N) {
 	int x = get_global_id(0);
 	buf2[x] = buf[x];
 }
@@ -21,4 +24,9 @@ __kernel void vector_add(__global const int *A, __global const int *B, __global 
 
 	// Do the operation
 	C[i1] = A[i1] + B[i1];
+}
+
+__kernel void exampleLocal(__local const char *  bufLocal, __global const char* buf, __global char* buf2) {
+	int x = get_global_id(0);
+	buf2[x] = buf[x] + bufLocal[x];
 }

@@ -45,9 +45,6 @@ public:
 
 	void deleteKernel(Id& kernel);
 
-	template<class ... Args>
-	auto execute(const char* kernel, Args&&... args);
-
 	std::string getSource(const std::string& buffer, bool finalize = true) const;
 
 	/**
@@ -79,5 +76,9 @@ public:
 	 */
 	void addDefine(const std::string& name, const std::string& value);
 };
+
+inline bool Shader::isActive() const {
+	return _active;
+}
 
 }

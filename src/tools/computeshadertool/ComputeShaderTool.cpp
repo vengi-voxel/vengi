@@ -361,6 +361,10 @@ bool ComputeShaderTool::parseKernel(core::Tokenizer& tok) {
 		}
 		if (token == ",") {
 			core_assert(!parameter.name.empty());
+			if (core::string::startsWith(parameter.name, "*")) {
+				parameter.name = parameter.name.substr(1, parameter.name.size());
+				parameter.type.append("*");
+			}
 			kernel.parameters.insert(kernel.parameters.begin(), parameter);
 			parameter = Parameter();
 			continue;
@@ -391,12 +395,17 @@ bool ComputeShaderTool::parseKernel(core::Tokenizer& tok) {
 		} else {
 			// TODO: opencl data types - image2d_t, sampler_t, float4
 			if (!parameter.type.empty()) {
-				parameter.type.append(" ");
+				parameter.type = token + " " + parameter.type;
+			} else {
+				parameter.type = token;
 			}
-			parameter.type.append(token.data());
 		}
 	}
 	if (added) {
+		if (core::string::startsWith(parameter.name, "*")) {
+			parameter.name = parameter.name.substr(1, parameter.name.size());
+			parameter.type.append("*");
+		}
 		core_assert(!parameter.name.empty());
 		kernel.parameters.insert(kernel.parameters.begin(), parameter);
 	}

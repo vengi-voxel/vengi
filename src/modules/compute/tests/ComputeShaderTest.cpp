@@ -22,7 +22,7 @@ public:
 	}
 };
 
-TEST_F(ComputeShaderTest, testExecuteSimpleShader) {
+TEST_F(ComputeShaderTest, testExecuteExample) {
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	const char *foo = "1234";
@@ -31,7 +31,16 @@ TEST_F(ComputeShaderTest, testExecuteSimpleShader) {
 	ASSERT_EQ(std::string(foo), std::string(foo2, strlen(foo)));
 }
 
-TEST_F(ComputeShaderTest, testExecuteSimpleShaderBig) {
+TEST_F(ComputeShaderTest, testExecuteExample2) {
+	compute::TestShader shader;
+	ASSERT_TRUE(shader.setup());
+	const char *foo = "1234";
+	char foo2[4] = {};
+	ASSERT_TRUE(shader.example2(foo, strlen(foo), foo2, sizeof(foo2), 42, strlen(foo), 1));
+	ASSERT_EQ(std::string(foo), std::string(foo2, strlen(foo)));
+}
+
+TEST_F(ComputeShaderTest, testExecuteExampleBig) {
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	std::vector<char> source(10000, 'a');
@@ -40,7 +49,8 @@ TEST_F(ComputeShaderTest, testExecuteSimpleShaderBig) {
 	ASSERT_EQ(source, target);
 }
 
-TEST_F(ComputeShaderTest, testExecuteSimpleShaderBigNormal) {
+// just for comparing runtimes
+TEST_F(ComputeShaderTest, testExecuteExampleBigNonOpenCL) {
 	std::vector<char> source(10000, 'a');
 	std::vector<char> target(10000, ' ');
 	for (int i = 0; i < 10000; ++i) {
@@ -49,24 +59,39 @@ TEST_F(ComputeShaderTest, testExecuteSimpleShaderBigNormal) {
 	ASSERT_EQ(source, target);
 }
 
-TEST_F(ComputeShaderTest, DISABLED_testExecuteVectorAdd) {
+TEST_F(ComputeShaderTest, testExecuteVectorAdd) {
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
-	std::vector<int> a(1000, 1);
-	std::vector<int> b(1000, 2);
-	std::vector<int> c(1000, 0);
-	ASSERT_TRUE(shader.vector_add(&a.front(), &b.front(), &c.front(), a.size(), 1));
-	ASSERT_EQ(c[999], 3);
+	constexpr int size = 1000;
+	ASSERT_GT(size, 2);
+	constexpr int initA = 1;
+	constexpr int initB = 2;
+	std::vector<int> a(size, initA);
+	std::vector<int> b(size, initB);
+	std::vector<int> c(size, 0);
+	ASSERT_TRUE(shader.vector_add(&a.front(), core::vectorSize(a), &b.front(), core::vectorSize(b), &c.front(), core::vectorSize(c), size, 1));
+	for (int i = 0; i < size; ++i) {
+		SCOPED_TRACE(core::string::format("index: %i", i));
+		ASSERT_EQ(c[i], initA + initB);
+	}
 }
 
-TEST_F(ComputeShaderTest, testExecuteVectorAddNormal) {
-	std::vector<int> a(1000, 1);
-	std::vector<int> b(1000, 2);
-	std::vector<int> c(1000, 0);
-	for (int i = 0; i < 1000; ++i) {
+// just for comparing runtimes
+TEST_F(ComputeShaderTest, testExecuteVectorAddNonOpenCL) {
+	constexpr int size = 1000;
+	ASSERT_GT(size, 2);
+	constexpr int initA = 1;
+	constexpr int initB = 2;
+	std::vector<int> a(size, initA);
+	std::vector<int> b(size, initB);
+	std::vector<int> c(size, 0);
+	for (int i = 0; i < size; ++i) {
 		c[i] = a[i] + b[i];
 	}
-	ASSERT_EQ(c[999], 3);
+	for (int i = 0; i < size; ++i) {
+		SCOPED_TRACE(core::string::format("index: %i", i));
+		ASSERT_EQ(c[i], initA + initB);
+	}
 }
 
 }

@@ -29,7 +29,7 @@ bool kernelRun(Id kernel, int workSize, int workDim, bool blocking = true);
 template<class T>
 inline bool kernelArg(Id kernel, uint32_t index, T& t) {
 	static_assert(!std::is_void<typename std::remove_pointer<T>::type>::value, "void type is not supported here");
-	return kernelArg(kernel, index, sizeof(typename std::remove_pointer<T>::type), (const void*)&t);
+	return kernelArg(kernel, index, sizeof(T), (const void*)&t);
 }
 
 template<>
@@ -39,7 +39,7 @@ inline bool kernelArg(Id kernel, uint32_t index, const char*& t) {
 
 template<>
 inline bool kernelArg(Id kernel, uint32_t index, Id& t) {
-	return kernelArg(kernel, index, sizeof(Id), (void*)&t);
+	return kernelArg(kernel, index, sizeof(Id), (const void*)&t);
 }
 
 }
