@@ -2,11 +2,11 @@
  * @file
  */
 #include "CL.h"
+#include "CLSymbol.h"
 #include "compute/Compute.h"
 #include "core/Log.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
-// TODO: don't link against OpenCL - dyload it (flextgl)
 #include <vector>
 #include <string>
 
@@ -442,6 +442,10 @@ Id createKernel(Id program, const char *name) {
 }
 
 bool init() {
+	if (computeCLInit() == -1) {
+		return false;
+	}
+
 	cl_int error;
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clGetPlatformIDs.html
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clGetDeviceIDs.html
@@ -549,6 +553,7 @@ void shutdown() {
 		checkError(error);
 	}
 	_priv::_ctx = _priv::Context();
+	computeCLShutdown();
 }
 
 }

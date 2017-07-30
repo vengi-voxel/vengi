@@ -2,6 +2,7 @@ set(SRCS
 	cl/CL.h
 	cl/CLCompute.cpp
 	cl/CLTypes.h
+	cl/CLSymbol.c cl/CLSymbol.h
 
 	Types.h
 	Compute.h
@@ -10,9 +11,9 @@ set(SRCS
 set(LIB compute)
 find_package(OpenCL REQUIRED)
 add_library(${LIB} ${SRCS})
-# TODO: don't link against OpenCL - dyload it
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core OpenCL ${OPENCL_LIBRARY})
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
+target_compile_definitions(${LIB} PRIVATE -DOPENCL_LIBRARY="${OpenCL_LIBRARY}")
 target_include_directories(${LIB} PUBLIC ${OPENCL_INCLUDE_DIRS})
 
 set(TEST_SRCS
