@@ -1,20 +1,19 @@
 #include "core/benchmark/AbstractBenchmark.h"
 #include "voxel/WorldPager.h"
 #include "voxel/polyvox/PagedVolume.h"
+#include "voxel/polyvox/CubicSurfaceExtractor.h"
 #include "voxel/WorldContext.h"
 #include "voxel/BiomeManager.h"
+#include "voxel/Constants.h"
+#include "voxel/IsQuadNeeded.h"
 
 class PagedVolumeBenchmark: public core::AbstractBenchmark {
-private:
-	voxel::WorldPager _pager;
-	voxel::PagedVolume *_volumeData = nullptr;
+protected:
 	voxel::BiomeManager _biomeManager;
 	voxel::WorldContext _ctx;
 
 public:
 	void onCleanupApp() override {
-		delete _volumeData;
-		_volumeData = nullptr;
 		_biomeManager.shutdown();
 	}
 
@@ -26,19 +25,31 @@ public:
 		Log::info("%s", luaBiomes.c_str());
 		_biomeManager.init(luaBiomes);
 		_ctx.load(luaParameters);
-		const uint32_t volumeMemoryMegaBytes = 512;
-		const uint16_t chunkSideLength = 256;
-		_volumeData = new voxel::PagedVolume(&_pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
-		_pager.init(_volumeData, &_biomeManager, &_ctx);
 		return true;
 	}
 };
 
-BENCHMARK_F(PagedVolumeBenchmark, pageIn) (benchmark::State& st) {
-	while (st.KeepRunning()) {
+BENCHMARK_DEFINE_F(PagedVolumeBenchmark, pageIn) (benchmark::State& state) {
+	const uint16_t chunkSideLength = state.range(0);
+	const uint32_t volumeMemoryMegaBytes = chunkSideLength * 2;
+	voxel::WorldPager pager;
+	pager.setSeed(0l);
+	pager.setPersist(false);
+	voxel::PagedVolume *volumeData = new voxel::PagedVolume(&pager, volumeMemoryMegaBytes * 1024 * 1024, chunkSideLength);
+	pager.init(volumeData, &_biomeManager, &_ctx);
+	const glm::ivec3 meshSize(16, 128, 16);
+	int x = 0;
+	while (state.KeepRunning()) {
+		glm::ivec3 mins(x, 0, 0);
+		x += meshSize.x;
+		voxel::Region region(mins, mins + meshSize);
+		voxel::Mesh mesh(0, 0, true);
+		voxel::Mesh waterMesh(0, 0, true);
+		voxel::extractAllCubicMesh(volumeData, region, &mesh, &waterMesh, voxel::IsQuadNeeded(), voxel::IsWaterQuadNeeded(), voxel::MAX_WATER_HEIGHT);
 	}
+	delete volumeData;
 }
 
-BENCHMARK_REGISTER_F(PagedVolumeBenchmark, pageIn)->Threads(2);
+BENCHMARK_REGISTER_F(PagedVolumeBenchmark, pageIn)->RangeMultiplier(2)->Range(8, 256);
 
 BENCHMARK_MAIN()
