@@ -150,16 +150,16 @@ static std::string getPlatformName(cl_platform_id id) {
 	return result;
 }
 
-static std::string getDeviceName(cl_device_id id) {
+static std::string getDeviceInfo(cl_device_id id, cl_device_info param) {
 	size_t size = 0u;
 	cl_int error;
 
-	error = clGetDeviceInfo(id, CL_DEVICE_NAME, 0, nullptr, &size);
+	error = clGetDeviceInfo(id, param, 0, nullptr, &size);
 	checkError(error);
 
 	std::string result;
 	result.resize(size);
-	error = clGetDeviceInfo(id, CL_DEVICE_NAME, size,
+	error = clGetDeviceInfo(id, param, size,
 			const_cast<char*>(result.data()), nullptr);
 	checkError(error);
 
@@ -173,15 +173,19 @@ bool configureProgram(Id program) {
 		"",
 		nullptr,
 		nullptr);
-	if (error == CL_SUCCESS) {
-		return true;
+	if (error == CL_BUILD_PROGRAM_FAILURE) {
+		char buf[4096];
+		const cl_int infoError = clGetProgramBuildInfo((cl_program) program,
+				_priv::_ctx.deviceId,
+				CL_PROGRAM_BUILD_LOG, sizeof(buf), buf, nullptr);
+		if (infoError == CL_SUCCESS) {
+			Log::error("Failed to build program: %s", buf);
+		} else {
+			Log::error("Failed to build program, but couldn't query the reason");
+		}
 	}
-	char buf[4096];
-	clGetProgramBuildInfo((cl_program) program, _priv::_ctx.deviceId,
-			CL_PROGRAM_BUILD_LOG, sizeof(buf), buf, nullptr);
-	Log::error("Failed to build program: %s", buf);
 	checkError(error);
-	return false;
+	return error == CL_SUCCESS;
 }
 
 bool deleteProgram(Id& program) {
@@ -443,7 +447,9 @@ bool init() {
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clGetDeviceIDs.html
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateContext.html
 	error = clGetPlatformIDs(0, nullptr, &_priv::_ctx.platformIdCount);
-	checkError(error);
+	if (error != CL_PLATFORM_NOT_FOUND_KHR) {
+		checkError(error);
+	}
 
 	if (_priv::_ctx.platformIdCount == 0u) {
 		Log::error("No OpenCL platform found");
@@ -464,7 +470,9 @@ bool init() {
 
 	error = clGetDeviceIDs(_priv::_ctx.platformIds[0], CL_DEVICE_TYPE_ALL, 0,
 			nullptr, &_priv::_ctx.deviceIdCount);
-	checkError(error);
+	if (error != CL_DEVICE_NOT_FOUND) {
+		checkError(error);
+	}
 
 	if (_priv::_ctx.deviceIdCount == 0u) {
 		Log::error("No OpenCL devices found");
@@ -479,7 +487,7 @@ bool init() {
 	checkError(error);
 
 	for (cl_uint i = 0; i < _priv::_ctx.deviceIdCount; ++i) {
-		const std::string& device = getDeviceName(_priv::_ctx.deviceIds[i]);
+		const std::string& device = getDeviceInfo(_priv::_ctx.deviceIds[i], CL_DEVICE_NAME);
 		Log::info("* (%i): %s", i + 1, device.c_str());
 	}
 
@@ -512,6 +520,7 @@ bool init() {
 	// TODO: this segfaults on nvidia/linux
 //#ifdef CL_VERSION_2_0
 	// TODO: CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE??
+	7/ TODO: CL_QUEUE_PROFILING_ENABLE
 	cl_queue_properties properties[] = { CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0 };
 	/**
 	 * Must be a device associated with context. It can either be in the list of devices specified when context
@@ -531,11 +540,14 @@ bool init() {
 }
 
 void shutdown() {
-	cl_int error;
-	error = clReleaseCommandQueue(_priv::_ctx.commandQueue);
-	checkError(error);
-	error = clReleaseContext(_priv::_ctx.context);
-	checkError(error);
+	if (_priv::_ctx.commandQueue != nullptr) {
+		const cl_int error = clReleaseCommandQueue(_priv::_ctx.commandQueue);
+		checkError(error);
+	}
+	if (_priv::_ctx.context != nullptr) {
+		const cl_int error = clReleaseContext(_priv::_ctx.context);
+		checkError(error);
+	}
 	_priv::_ctx = _priv::Context();
 }
 

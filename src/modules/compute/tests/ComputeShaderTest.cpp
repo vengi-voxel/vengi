@@ -10,10 +10,12 @@ namespace compute {
 class ComputeShaderTest: public core::AbstractTest {
 private:
 	using Super = core::AbstractTest;
+protected:
+	bool _supported = false;
 public:
 	void SetUp() override {
 		Super::SetUp();
-		ASSERT_TRUE(compute::init());
+		_supported = compute::init();
 	}
 
 	void TearDown() override {
@@ -23,6 +25,9 @@ public:
 };
 
 TEST_F(ComputeShaderTest, testExecuteExample) {
+	if (!_supported) {
+		return;
+	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	const char *foo = "1234";
@@ -32,6 +37,9 @@ TEST_F(ComputeShaderTest, testExecuteExample) {
 }
 
 TEST_F(ComputeShaderTest, testExecuteExample2) {
+	if (!_supported) {
+		return;
+	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	const char *foo = "1234";
@@ -41,6 +49,9 @@ TEST_F(ComputeShaderTest, testExecuteExample2) {
 }
 
 TEST_F(ComputeShaderTest, testExecuteExampleBig) {
+	if (!_supported) {
+		return;
+	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	std::vector<char> source(10000, 'a');
@@ -60,6 +71,9 @@ TEST_F(ComputeShaderTest, testExecuteExampleBigNonOpenCL) {
 }
 
 TEST_F(ComputeShaderTest, testExecuteVectorAdd) {
+	if (!_supported) {
+		return;
+	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	constexpr int size = 1000;
