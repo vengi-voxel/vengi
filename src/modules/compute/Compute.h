@@ -18,6 +18,7 @@ bool deleteBuffer(Id& buffer);
 bool readBuffer(Id buffer, size_t size, void* data);
 Id createBuffer(BufferFlag flags, size_t size = 0, void* data = nullptr);
 Id createProgram(const std::string& source);
+size_t requiredAlignment();
 bool configureProgram(Id program);
 bool deleteProgram(Id& program);
 

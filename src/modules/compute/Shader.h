@@ -25,7 +25,12 @@ protected:
 
 	std::string _name;
 
+	std::string handlePragmas(const std::string& buffer) const;
 	std::string handleIncludes(const std::string& buffer) const;
+
+	BufferFlag bufferFlags(const void* bufPtr, size_t size) const;
+	void* bufferAlloc(size_t &size) const;
+	void bufferFree(void *pointer) const;
 
 public:
 	virtual ~Shader();

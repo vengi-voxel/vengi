@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/App.h"
 #include "io/Filesystem.h"
+#include <glm/gtc/round.hpp>
 #include <vector>
 #include <string>
 
@@ -21,6 +22,7 @@ struct Context {
 	cl_context context = nullptr;
 	cl_command_queue commandQueue = nullptr;
 	cl_device_id deviceId = nullptr;
+	cl_uint alignment = 4096;
 };
 
 static Context _ctx;
@@ -164,6 +166,10 @@ static std::string getDeviceInfo(cl_device_id id, cl_device_info param) {
 	checkError(error);
 
 	return result;
+}
+
+size_t requiredAlignment() {
+	return _priv::_ctx.alignment;
 }
 
 bool configureProgram(Id program) {
@@ -504,6 +510,19 @@ bool init() {
 	error = clGetDeviceIDs(_priv::_ctx.platformIds[0], CL_DEVICE_TYPE_DEFAULT,
 			1, &_priv::_ctx.deviceId, nullptr);
 	checkError(error);
+	if (error != CL_SUCCESS) {
+		return false;
+	}
+
+	error = clGetDeviceInfo(_priv::_ctx.deviceId,
+			CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof(_priv::_ctx.alignment), &_priv::_ctx.alignment, 0);
+	checkError(error);
+	if (error != CL_SUCCESS) {
+		_priv::_ctx.alignment = 4096;
+	} else {
+		_priv::_ctx.alignment = glm::max(sizeof(void*), size_t(_priv::_ctx.alignment));
+	}
+	Log::debug("Device memory alignment: %u", _priv::_ctx.alignment);
 
 	error = CL_SUCCESS;
 	_priv::_ctx.context = clCreateContext(contextProperties, 1,

@@ -21,6 +21,12 @@ bool Shader::init() {
 	return _initialized;
 }
 
+std::string Shader::handlePragmas(const std::string& buffer) const {
+	// TODO: check the code for printf statements and activate the pragmas
+	//#pragma OPENCL EXTENSION cl_amd_printf : enable
+	return buffer;
+}
+
 std::string Shader::handleIncludes(const std::string& buffer) const {
 	std::string src;
 	const std::string_view include = "#include";
@@ -101,6 +107,42 @@ bool Shader::load(const std::string& name, const std::string& buffer) {
 	return compute::configureProgram(_program);
 }
 
+// see https://software.intel.com/sites/default/files/managed/f1/25/opencl-zero-copy-in-opencl-1-2.pdf
+BufferFlag Shader::bufferFlags(const void* bufPtr, size_t size) const {
+	if ((uintptr_t) bufPtr % compute::requiredAlignment() != 0) {
+		return BufferFlag::None;
+	}
+	if (size % 64 != 0) {
+		return BufferFlag::None;
+	}
+	return BufferFlag::UseHostPointer;
+}
+
+void* Shader::bufferAlloc(size_t &size) const {
+	const size_t alignment = compute::requiredAlignment();
+
+	// round up to 64 bytes - according to intel opencl zero copy hints
+	size = size + (~size + 1) % 64;
+
+	core_assert(size >= sizeof(void*));
+	core_assert(size / sizeof(void*) * sizeof(void*) == size);
+
+	// allocate memory for the extra alignment and the pointer of the
+	// position to free (the unaligned pointer)
+	char* orig = new char[size + alignment + sizeof(void*)];
+	char* aligned = orig + ((((size_t) orig + alignment + sizeof(void*)) & ~(alignment - 1)) - (size_t) orig);
+	*((char**) aligned - 1) = orig;
+	return aligned;
+}
+
+void Shader::bufferFree(void *pointer) const {
+	if (pointer == nullptr) {
+		return;
+	}
+	// the offset of the original (unaligned) pointer
+	delete[] *((char**) pointer - 1);
+}
+
 Id Shader::createKernel(const char *name) {
 	core_assert(_program != InvalidId);
 	return compute::createKernel(_program, name);
@@ -172,6 +214,8 @@ std::string Shader::getSource(const std::string& buffer, bool finalize) const {
 			break;
 		}
 	}
+
+	src = handlePragmas(src);
 
 	core::Var::visitSorted([&] (const core::VarPtr& var) {
 		if ((var->getFlags() & core::CV_SHADER) != 0) {

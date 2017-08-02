@@ -161,7 +161,8 @@ void ComputeShaderTool::generateSrc() {
 			if (core::string::contains(p.type, "*")) {
 				const std::string& bufferName = core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
 				kernels << "\t\tif (" << bufferName << " == InvalidId) {\n\t\t\t" << bufferName;
-				kernels << " = compute::createBuffer(" << toString(p.flags) << ", " << p.name << "Size, ";
+				kernels << " = compute::createBuffer(" << toString(p.flags) << " | ";
+				kernels << "bufferFlags(" << p.name << ", " << p.name << "Size), " << p.name << "Size, ";
 				if ((p.flags & compute::BufferFlag::ReadOnly) != compute::BufferFlag::None) {
 					kernels << "const_cast<" << p.type << ">(" << p.name << ")";
 				} else {

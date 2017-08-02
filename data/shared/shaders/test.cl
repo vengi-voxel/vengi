@@ -30,3 +30,7 @@ __kernel void exampleLocal(__local const char *  bufLocal, __global const char* 
 	int x = get_global_id(0);
 	buf2[x] = buf[x] + bufLocal[x];
 }
+
+__kernel void exampleDataStruct(const __global struct Data* data, __global struct Data* out) {
+	out->foo = data->foo;
+}
