@@ -48,6 +48,7 @@ addons:
     - qt5-default
     - qtbase5-dev
     - libmirclient-dev
+    - opencl-c-headers
     sources:
     - ubuntu-toolchain-r-test
     - george-edison55-precise-backports # cmake 3.x
