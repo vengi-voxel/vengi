@@ -29,9 +29,6 @@ protected:
 	std::string handleIncludes(const std::string& buffer) const;
 
 	BufferFlag bufferFlags(const void* bufPtr, size_t size) const;
-	void* bufferAlloc(size_t &size) const;
-	void bufferFree(void *pointer) const;
-
 public:
 	virtual ~Shader();
 
@@ -45,6 +42,20 @@ public:
 	bool loadFromFile(const std::string& filename);
 	bool loadProgram(const std::string& filename);
 	bool load(const std::string& name, const std::string& buffer);
+
+	/**
+	 * Use this to allocate memory for buffers that have the right size and alignment for
+	 * possible zero-copy-buffers
+	 * @param[in,out] size The size you need. Filled with the real buffer size after alignment.
+	 * @sa bufferFree()
+	 */
+	void* bufferAlloc(size_t &size) const;
+	/**
+	 * You have to use this method to deallocate the buffer memory that you allocated with
+	 * bufferAlloc()
+	 * @sa bufferAlloc()
+	 */
+	void bufferFree(void *pointer) const;
 
 	Id createKernel(const char *name);
 
