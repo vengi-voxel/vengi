@@ -48,10 +48,12 @@ addons:
     - qt5-default
     - qtbase5-dev
     - libmirclient-dev
-    - opencl-c-headers
     sources:
     - ubuntu-toolchain-r-test
     - george-edison55-precise-backports # cmake 3.x
+
+# currently not available
+#    - opencl-c-headers
 
 script:
   - CXX=clang++-3.8 CC=clang-3.8 make BUILDDIR=build-$TRAVIS_OS_NAME -j 4 CMAKE_BINARY=cmake
