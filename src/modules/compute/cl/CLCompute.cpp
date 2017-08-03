@@ -209,6 +209,7 @@ bool deleteProgram(Id& program) {
 
 Id createBuffer(BufferFlag flags, size_t size, void* data) {
 	core_assert(_priv::_ctx.context != nullptr);
+	core_assert(size > 0);
 	cl_int error;
 
 	cl_mem_flags clValue = 0;
@@ -239,7 +240,7 @@ Id createBuffer(BufferFlag flags, size_t size, void* data) {
 	if (error != CL_SUCCESS) {
 		return InvalidId;
 	}
-	if (!useHostPtr) {
+	if (!useHostPtr && data != nullptr) {
 		void *target = clEnqueueMapBuffer(_priv::_ctx.commandQueue, bufferObject, CL_TRUE, CL_MAP_WRITE,
 				0, size, 0, nullptr, nullptr, &error);
 		checkError(error);
