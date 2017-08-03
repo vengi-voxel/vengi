@@ -60,6 +60,36 @@ TEST_F(ComputeShaderTest, testExecuteExampleBig) {
 	ASSERT_EQ(source, target);
 }
 
+TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3NoPointer) {
+	if (!_supported) {
+		return;
+	}
+	compute::TestShader shader;
+	ASSERT_TRUE(shader.setup());
+	float A[3] = {0.0f, 1.0f, 2.0f};
+	float B[3] = {0.0f, 2.0f, 4.0f};
+	float C[3] = {0.0f};
+	ASSERT_TRUE(shader.exampleVectorAddFloat3NoPointer(A, B, C, 3, 1));
+	ASSERT_FLOAT_EQ(C[0], 0.0f);
+	ASSERT_FLOAT_EQ(C[2], 6.0f);
+}
+
+#if 0
+TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3) {
+	if (!_supported) {
+		return;
+	}
+	compute::TestShader shader;
+	ASSERT_TRUE(shader.setup());
+	float A[2][3] = {{0.0f, 1.0f, 2.0f}, {0.0f, 1.0f, 2.0f}};
+	float B[2][3] = {{0.0f, 2.0f, 4.0f}, {0.0f, 2.0f, 4.0f}};
+	float C[2][3] = {{0.0f}, {0.0f}};
+	ASSERT_TRUE(shader.exampleVectorAddFloat3(A, sizeof(A), B, sizeof(B), C, sizeof(C), 3, 1));
+	ASSERT_FLOAT_EQ(C[0][0], 0.0f);
+	ASSERT_FLOAT_EQ(C[2][1], 6.0f);
+}
+#endif
+
 // just for comparing runtimes
 TEST_F(ComputeShaderTest, testExecuteExampleBigNonOpenCL) {
 	std::vector<char> source(10000, 'a');
@@ -83,7 +113,7 @@ TEST_F(ComputeShaderTest, testExecuteVectorAdd) {
 	std::vector<int> a(size, initA);
 	std::vector<int> b(size, initB);
 	std::vector<int> c(size, 0);
-	ASSERT_TRUE(shader.vector_add(&a.front(), core::vectorSize(a), &b.front(), core::vectorSize(b), &c.front(), core::vectorSize(c), size, 1));
+	ASSERT_TRUE(shader.exampleVectorAddInt(&a.front(), core::vectorSize(a), &b.front(), core::vectorSize(b), &c.front(), core::vectorSize(c), size, 1));
 	for (int i = 0; i < size; ++i) {
 		SCOPED_TRACE(core::string::format("index: %i", i));
 		ASSERT_EQ(c[i], initA + initB);

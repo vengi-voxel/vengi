@@ -33,7 +33,16 @@ static std::string getAlignment(const std::string& type) {
 }
 
 static std::string convertType(const std::string& type, std::string& afterName) {
-	const char c = type[type.size() - 1];
+	char c;
+	const size_t size = type.size();
+	size_t i;
+	for (i = 1; i < size; ++i) {
+		c = type[size - i];
+		if (c == ' ' || c == '*') {
+			continue;
+		}
+		break;
+	}
 	afterName = "";
 	if (c < '0' || c > '9') {
 		return getAlignment(type);
@@ -44,7 +53,8 @@ static std::string convertType(const std::string& type, std::string& afterName) 
 		const char buf[] = {c, '\0'};
 		afterName.append(buf);
 		afterName.append("]");
-		return getAlignment(type.substr(0, type.size() - 1));
+		const std::string& sub = type.substr(0, size - i);
+		return getAlignment(sub);
 	}
 	return getAlignment(type);
 }
@@ -147,8 +157,8 @@ void ComputeShaderTool::generateSrc() {
 			if (!p.qualifier.empty()) {
 				kernels << p.qualifier << " ";
 			}
-			kernels << p.type << " ";
-			kernels << p.name;
+			std::string arrayDefinition;
+			kernels << convertType(p.type, arrayDefinition) << " " << p.name << arrayDefinition;
 			if (core::string::contains(p.type, "*")) {
 				kernels << ", size_t " << p.name << "Size";
 			}
@@ -162,14 +172,28 @@ void ComputeShaderTool::generateSrc() {
 				const std::string& bufferName = core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
 				kernels << "\t\tif (" << bufferName << " == InvalidId) {\n\t\t\t" << bufferName;
 				kernels << " = compute::createBuffer(" << toString(p.flags) << " | ";
-				kernels << "bufferFlags(" << p.name << ", " << p.name << "Size), " << p.name << "Size, ";
+				std::string arrayDefinition;
+				const std::string ctype = convertType(p.type, arrayDefinition);
+
+				std::string size;
+				if (core::string::contains(p.type, "*")) {
+					size = p.name + "Size";
+				} else {
+					size = "sizeof(" + p.name + ")";
+				}
+				kernels << "bufferFlags(" << p.name << ", " << size << "), " << size << ", ";
 				if ((p.flags & compute::BufferFlag::ReadOnly) != compute::BufferFlag::None) {
-					kernels << "const_cast<" << p.type << ">(" << p.name << ")";
+					kernels << "const_cast<";
+					kernels << ctype;
+					if (!arrayDefinition.empty()) {
+						kernels << "*";
+					}
+					kernels << ">(" << p.name << ")";
 				} else {
 					kernels << p.name;
 				}
 				kernels << ");\n\t\t} else {\n";
-				kernels << "\t\t\tcompute::updateBuffer(" << bufferName << ", " << p.name << "Size, " << p.name << ");\n\t\t}\n";
+				kernels << "\t\t\tcompute::updateBuffer(" << bufferName << ", " << size << ", " << p.name << ");\n\t\t}\n";
 				kernelMembers << "\tmutable compute::Id " << bufferName << " = compute::InvalidId;\n";
 				shutdown << "\t\tcompute::deleteBuffer(" << bufferName << ");\n";
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
@@ -442,7 +466,7 @@ bool ComputeShaderTool::parseKernel(core::Tokenizer& tok) {
 }
 
 bool ComputeShaderTool::parse(const std::string& buffer) {
-	core::Tokenizer tok(buffer, " ", "{}(),;");
+	core::Tokenizer tok(buffer, " ", "{}(),;*");
 	while (tok.hasNext()) {
 		const std::string& token = tok.next();
 		Log::trace("token: %s", token.c_str());
