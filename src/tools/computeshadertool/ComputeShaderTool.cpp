@@ -231,8 +231,8 @@ void ComputeShaderTool::generateSrc() {
 	for (const Struct& s : _structs) {
 		structs << "\tstruct " << s.name << " {\n";
 		for (const Parameter& p : s.parameters) {
-			std::string out;
-			structs << "\t\t" << convertType(p.type, out) << " " << p.name << out << ";\n";
+			std::string arrayDefinition;
+			structs << "\t\t" << convertType(p.type, arrayDefinition) << " " << p.name << arrayDefinition << ";\n";
 		}
 		structs << "\t};\n\n";
 	}
