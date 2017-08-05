@@ -28,6 +28,7 @@ set(COMPILER_SRCS
 	compiler/idl_gen_go.cpp
 	compiler/idl_gen_grpc.cpp
 	compiler/idl_gen_js.cpp
+	compiler/idl_gen_json_schema.cpp
 	compiler/idl_gen_php.cpp
 	compiler/idl_gen_python.cpp
 	compiler/idl_gen_text.cpp

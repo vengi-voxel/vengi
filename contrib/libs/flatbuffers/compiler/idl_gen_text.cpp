@@ -135,8 +135,8 @@ template<> bool Print<const void *>(const void *val,
       type = type.VectorType();
       // Call PrintVector above specifically for each element type:
       switch (type.base_type) {
-        #define FLATBUFFERS_TD(ENUM, IDLTYPE, CTYPE, JTYPE, GTYPE, NTYPE, \
-          PTYPE) \
+        #define FLATBUFFERS_TD(ENUM, IDLTYPE, ALIASTYPE, \
+          CTYPE, JTYPE, GTYPE, NTYPE, PTYPE) \
           case BASE_TYPE_ ## ENUM: \
             if (!PrintVector<CTYPE>( \
                   *reinterpret_cast<const Vector<CTYPE> *>(val), \
@@ -165,6 +165,10 @@ template<typename T> static bool GenField(const FieldDef &fd,
                                             opts, _text);
 }
 
+static bool GenStruct(const StructDef &struct_def, const Table *table,
+						  int indent, const IDLOptions &opts,
+						  std::string *_text);
+
 // Generate text for non-scalar field.
 static bool GenFieldOffset(const FieldDef &fd, const Table *table, bool fixed,
                            int indent, Type *union_type,
@@ -178,8 +182,12 @@ static bool GenFieldOffset(const FieldDef &fd, const Table *table, bool fixed,
   } else if (fd.flexbuffer) {
     auto vec = table->GetPointer<const Vector<uint8_t> *>(fd.value.offset);
     auto root = flexbuffers::GetRoot(vec->data(), vec->size());
-    root.ToString(true, false, *_text);
+    root.ToString(true, opts.strict_json, *_text);
     return true;
+  } else if (fd.nested_flatbuffer) {
+    auto vec = table->GetPointer<const Vector<uint8_t> *>(fd.value.offset);
+    auto root = GetRoot<Table>(vec->data());
+    return GenStruct(*fd.nested_flatbuffer, root, indent, opts, _text);
   } else {
     val = IsStruct(fd.value.type)
       ? table->GetStruct<const void *>(fd.value.offset)
@@ -218,8 +226,8 @@ static bool GenStruct(const StructDef &struct_def, const Table *table,
       text += " ";
       if (is_present) {
         switch (fd.value.type.base_type) {
-           #define FLATBUFFERS_TD(ENUM, IDLTYPE, CTYPE, JTYPE, GTYPE, NTYPE, \
-             PTYPE) \
+           #define FLATBUFFERS_TD(ENUM, IDLTYPE, ALIASTYPE, \
+             CTYPE, JTYPE, GTYPE, NTYPE, PTYPE) \
              case BASE_TYPE_ ## ENUM: \
                 if (!GenField<CTYPE>(fd, table, struct_def.fixed, \
                                      opts, indent + Indent(opts), _text)) { \
@@ -229,8 +237,8 @@ static bool GenStruct(const StructDef &struct_def, const Table *table,
             FLATBUFFERS_GEN_TYPES_SCALAR(FLATBUFFERS_TD)
           #undef FLATBUFFERS_TD
           // Generate drop-thru case statements for all pointer types:
-          #define FLATBUFFERS_TD(ENUM, IDLTYPE, CTYPE, JTYPE, GTYPE, NTYPE, \
-            PTYPE) \
+          #define FLATBUFFERS_TD(ENUM, IDLTYPE, ALIASTYPE, \
+            CTYPE, JTYPE, GTYPE, NTYPE, PTYPE) \
             case BASE_TYPE_ ## ENUM:
             FLATBUFFERS_GEN_TYPES_POINTER(FLATBUFFERS_TD)
           #undef FLATBUFFERS_TD
