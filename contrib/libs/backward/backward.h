@@ -752,14 +752,18 @@ public:
 		while (*funcname && *funcname != '(') {
 			funcname += 1;
 		}
-		trace.object_filename.assign(filename, funcname++);
-		char* funcname_end = funcname;
-		while (*funcname_end && *funcname_end != ')' && *funcname_end != '+') {
-			funcname_end += 1;
+		trace.object_filename.assign(filename, funcname); // ok even if funcname is the ending \0 (then we assign entire string)
+
+		if (*funcname) { // if it's not end of string (e.g. from last frame ip==0)
+			funcname += 1;
+			char* funcname_end = funcname;
+			while (*funcname_end && *funcname_end != ')' && *funcname_end != '+') {
+				funcname_end += 1;
+			}
+			*funcname_end = '\0';
+			trace.object_function = this->demangle(funcname);
+			trace.source.function = trace.object_function; // we cannot do better.
 		}
-		*funcname_end = '\0';
-		trace.object_function = this->demangle(funcname);
-		trace.source.function = trace.object_function; // we cannot do better.
 		return trace;
 	}
 
@@ -2032,6 +2036,8 @@ private:
 		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.gregs[REG_EIP]);
 #elif defined(__arm__)
 		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.arm_pc);
+#elif defined(__aarch64__)
+		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.pc);
 #elif defined(__ppc__) || defined(__powerpc) || defined(__powerpc__) || defined(__POWERPC__)
 		error_addr = reinterpret_cast<void*>(uctx->uc_mcontext.regs->nip);
 #else
