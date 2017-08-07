@@ -5,8 +5,8 @@
 #pragma once
 
 #include "core/App.h"
-#include "core/Tokenizer.h"
 #include "compute/Types.h"
+#include <simplecpp.h>
 #include <vector>
 
 /**
@@ -17,6 +17,7 @@ protected:
 	std::string _namespaceSrc;
 	std::string _sourceDirectory;
 	std::string _shaderDirectory;
+	std::string _computeFilename;
 	std::string _shaderTemplateFile;
 	std::string _name;
 
@@ -45,8 +46,8 @@ protected:
 	std::vector<Kernel> _kernels;
 	std::vector<Struct> _structs;
 
-	bool parseKernel(core::Tokenizer& tok);
-	bool parseStruct(core::Tokenizer& tok);
+	const simplecpp::Token *parseKernel(const simplecpp::Token *tok);
+	const simplecpp::Token *parseStruct(const simplecpp::Token *tok);
 	bool parse(const std::string& src);
 	void generateSrc();
 	static bool validate(Kernel& kernel);

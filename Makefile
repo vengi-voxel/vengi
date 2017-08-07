@@ -207,6 +207,8 @@ define UPDATE_HG
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)
+	cp $(UPDATEDIR)/simplecpp.sync/simplecpp.* contrib/libs/simplecpp
 	$(call UPDATE_GIT,easy_profiler,https://github.com/yse/easy_profiler.git)
 	rm -rf contrib/libs/easy_profiler
 	mkdir contrib/libs/easy_profiler
