@@ -208,7 +208,9 @@ bool deleteProgram(Id& program) {
 }
 
 Id createBuffer(BufferFlag flags, size_t size, void* data) {
-	core_assert(_priv::_ctx.context != nullptr);
+	if (_priv::_ctx.context == nullptr) {
+		return InvalidId;
+	}
 	core_assert(size > 0);
 	cl_int error;
 
@@ -277,7 +279,9 @@ bool updateBuffer(Id buffer, size_t size, const void* data, bool blockingWrite) 
 	if (buffer == InvalidId) {
 		return false;
 	}
-	core_assert(_priv::_ctx.commandQueue != nullptr);
+	if (_priv::_ctx.commandQueue == nullptr) {
+		return false;
+	}
 	const cl_int error = clEnqueueWriteBuffer(_priv::_ctx.commandQueue,
 			(cl_mem) buffer, blockingWrite ? CL_TRUE : CL_FALSE, 0, size, data,
 			0, nullptr, nullptr);
@@ -289,7 +293,9 @@ bool readBuffer(Id buffer, size_t size, void* data) {
 	if (buffer == InvalidId) {
 		return false;
 	}
-	core_assert(_priv::_ctx.commandQueue != nullptr);
+	if (_priv::_ctx.commandQueue == nullptr) {
+		return false;
+	}
 	const cl_int error = clEnqueueReadBuffer(_priv::_ctx.commandQueue,
 			(cl_mem) buffer, CL_TRUE, 0, size, data, 0, nullptr, nullptr);
 	checkError(error);
@@ -297,6 +303,9 @@ bool readBuffer(Id buffer, size_t size, void* data) {
 }
 
 Id createProgram(const std::string& source) {
+	if (_priv::_ctx.context == nullptr) {
+		return InvalidId;
+	}
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateProgramWithSource.html
 	const size_t lengths[] = { source.size () };
 	const char* sources[] = { source.data () };
@@ -352,8 +361,8 @@ bool kernelArg(Id kernel, uint32_t index, size_t size, const void* data) {
  * get_global_id(X) where the highest X is the workDim
  *
  * @param[in] workSize Points to an array of work_dim unsigned values that describe the number of global work-items
- * in work_dim dimensions that will execute the kernel function. The total number of global
- * work-items is computed as global_work_size[0] *...* global_work_size[work_dim - 1].
+ * in workDim dimensions that will execute the kernel function. The total number of global
+ * work-items is computed as global_work_size[0] *...* global_work_size[workDim - 1].
  * The values specified in global_work_size cannot exceed the range given by the sizeof(size_t)
  * for the device on which the kernel execution will be enqueued. The sizeof(size_t) for a
  * device can be determined using CL_DEVICE_ADDRESS_BITS in the table of OpenCL Device Queries
@@ -362,7 +371,7 @@ bool kernelArg(Id kernel, uint32_t index, size_t size, const void* data) {
  * be in the range 1 .. 2^32 - 1. Values outside this range return a CL_OUT_OF_RESOURCES error.
  */
 bool kernelRun(Id kernel, int workSize, int workDim, bool blocking) {
-	// TODO: check contraints/limits of the hardward for workSize and workDim
+	// TODO: check contraints/limits of the hardware for workSize and workDim
 	if (kernel == InvalidId) {
 		return false;
 	}
@@ -382,7 +391,7 @@ bool kernelRun(Id kernel, int workSize, int workDim, bool blocking) {
 	 * at offset (0, 0,... 0).
 	 */
 	const size_t *globalWorkOffset = nullptr;
-	const size_t globalWorkSize = workSize;
+	const std::vector<size_t> globalWorkSize(workDim, workSize);
 	/**
 	 * Points to an array of work_dim unsigned values that describe the number of work-items that
 	 * make up a work-group (also referred to as the size of the work-group) that will execute the
@@ -396,7 +405,7 @@ bool kernelRun(Id kernel, int workSize, int workDim, bool blocking) {
 	 * The explicitly specified local_work_size will be used to determine how to break the global
 	 * work-items specified by global_work_size into appropriate work-group instances. If
 	 * local_work_size is specified, the values specified in
-	 * global_work_size[0],... global_work_size[work_dim - 1] must be evenly divisable by the
+	 * global_work_size[0],... global_work_size[work_dim - 1] must be evenly divisible by the
 	 * corresponding values specified in local_work_size[0],... local_work_size[work_dim - 1].
 	 *
 	 * The work-group size to be used for kernel can also be specified in the program source using
@@ -421,7 +430,7 @@ bool kernelRun(Id kernel, int workSize, int workDim, bool blocking) {
 
 	core_assert(_priv::_ctx.commandQueue != nullptr);
 	const cl_int error = clEnqueueNDRangeKernel(_priv::_ctx.commandQueue,
-			clKernel, workDim, globalWorkOffset, &globalWorkSize,
+			clKernel, workDim, globalWorkOffset, &globalWorkSize.front(),
 			localWorkSize, numEventsInWaitList, eventWaitList, &event);
 	checkError(error);
 	if (error == CL_SUCCESS) {

@@ -25,17 +25,11 @@ bool deleteProgram(Id& program);
 Id createKernel(Id program, const char *name);
 bool deleteKernel(Id& kernel);
 bool kernelArg(Id kernel, uint32_t index, size_t size, const void* data);
-bool kernelRun(Id kernel, int workSize, int workDim, bool blocking = true);
+bool kernelRun(Id kernel, int workSize, int workDim = -1, bool blocking = true);
 
 template<class T>
 inline bool kernelArg(Id kernel, uint32_t index, T& t) {
-	static_assert(!std::is_void<typename std::remove_pointer<T>::type>::value, "void type is not supported here");
 	return kernelArg(kernel, index, sizeof(T), (const void*)&t);
-}
-
-template<>
-inline bool kernelArg(Id kernel, uint32_t index, const char*& t) {
-	return kernelArg(kernel, index, strlen(t) /* +1?? */, t);
 }
 
 template<>

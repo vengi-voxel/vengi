@@ -8,7 +8,7 @@ set(SRCS
 
 set(LIB noise)
 add_library(${LIB} ${SRCS})
-engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core)
+engine_target_link_libraries(TARGET ${LIB} DEPENDENCIES core compute)
 set_target_properties(${LIB} PROPERTIES FOLDER ${LIB})
 #set(MARCH native)
 set(MARCH generic)
@@ -18,9 +18,11 @@ if (NOT MSVC)
 else()
 	# TODO: MSVC
 endif()
+generate_compute_shaders(noise noise)
 
 gtest_suite_files(tests
 	tests/NoiseTest.cpp
+	tests/NoiseShaderTest.cpp
 	tests/PoissonDiskDistributionTest.cpp
 )
 gtest_suite_deps(tests ${LIB} image)
@@ -29,6 +31,7 @@ gtest_suite_begin(tests-noise TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.c
 gtest_suite_files(tests-noise
 	../core/tests/AbstractTest.cpp
 	tests/NoiseTest.cpp
+	tests/NoiseShaderTest.cpp
 	tests/PoissonDiskDistributionTest.cpp
 )
 gtest_suite_deps(tests-noise ${LIB} image)

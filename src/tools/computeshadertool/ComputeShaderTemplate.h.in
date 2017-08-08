@@ -6,7 +6,7 @@
 
 #include "compute/Shader.h"
 #include "core/Singleton.h"
-
+#include "core/Assert.h"
 $includes$
 
 namespace $namespace$ {

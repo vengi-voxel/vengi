@@ -4,6 +4,7 @@
 
 #include "ComputeShaderTool.h"
 #include "core/App.h"
+#include "core/Assert.h"
 #include "io/Filesystem.h"
 #include "compute/Shader.h"
 #include <stack>
@@ -11,52 +12,85 @@
 
 namespace {
 
+static const struct TypeMapping {
+	const char* computeType;
+	const std::string ctype;
+} Types[] = {
+	{"char",     "int8_t"},
+	{"uchar",    "uint8_t"},
+	{"short",    "int16_t"},
+	{"ushort",   "uint16_t"},
+	{"int",      "int32_t"},
+	{"uint",     "uint32_t"},
+	{"long",     "int64_t"},
+	{"ulong",    "uint64_t"},
+	{"float",    "float"},
+	{"double",   "double"},
+	{"half",     "uint16_t"},
+	{nullptr,    ""}
+};
+
 static bool isQualifier(const std::string& token) {
 	return token == "const" || core::string::startsWith(token, "__");
 }
 
-static std::string getAlignment(const std::string& type) {
-	// TODO: alignas
-#if 0
-	typedef int16_t         cl_short    __attribute__((aligned(2)));
-	typedef uint16_t        cl_ushort   __attribute__((aligned(2)));
-	typedef int32_t         cl_int      __attribute__((aligned(4)));
-	typedef uint32_t        cl_uint     __attribute__((aligned(4)));
-	typedef int64_t         cl_long     __attribute__((aligned(8)));
-	typedef uint64_t        cl_ulong    __attribute__((aligned(8)));
+static std::string convert(const std::string& type) {
+	if (type.empty()) {
+		return type;
+	}
+	const bool ispointer = type[type.size() - 1] == '*';
 
-	typedef uint16_t        cl_half     __attribute__((aligned(2)));
-	typedef float           cl_float    __attribute__((aligned(4)));
-	typedef double          cl_double   __attribute__((aligned(8)));
-#endif
+	for (const TypeMapping* t = Types; t->computeType != nullptr; ++t) {
+		if (!core::string::startsWith(type, t->computeType)) {
+			continue;
+		}
+		if (ispointer) {
+			return t->ctype + " *";
+		}
+		return t->ctype;
+	}
 	return type;
 }
 
-static std::string convertType(const std::string& type, std::string& afterName) {
+static std::string convertType(const std::string& type, std::string& arrayDefinition, int *arraySize = nullptr) {
 	char c;
 	const size_t size = type.size();
+	if (arraySize != nullptr) {
+		*arraySize = 0;
+	}
 	size_t i;
+	bool isPointer = false;
 	for (i = 1; i < size; ++i) {
 		c = type[size - i];
-		if (c == ' ' || c == '*') {
+		if (c == '*') {
+			isPointer = true;
+			continue;
+		}
+		if (c == ' ') {
 			continue;
 		}
 		break;
 	}
-	afterName = "";
-	if (c < '0' || c > '9') {
-		return getAlignment(type);
+	arrayDefinition = "";
+	if (isPointer || c < '0' || c > '9') {
+		return convert(type);
 	}
-	const int n = c - '0';
-	if (n > 0 && n < 10) {
-		afterName.append("[");
-		const char buf[] = {c, '\0'};
-		afterName.append(buf);
-		afterName.append("]");
-		const std::string& sub = type.substr(0, size - i);
-		return getAlignment(sub);
+	for (; i < size; ++i) {
+		c = type[size - i];
+		if (c >= '0' && c <= '9') {
+			const char buf[] = {c, '\0'};
+			arrayDefinition.append(buf);
+			continue;
+		}
+		break;
 	}
-	return getAlignment(type);
+	if (arraySize != nullptr) {
+		*arraySize = core::string::toInt(arrayDefinition);
+	}
+
+	arrayDefinition = "[" + arrayDefinition + "]";
+	const std::string& sub = type.substr(0, size - i);
+	return convert(type);
 }
 
 static std::string toString(compute::BufferFlag flagMask) {
@@ -126,6 +160,7 @@ bool ComputeShaderTool::validate(Kernel& kernel) {
 	return !error;
 }
 
+// TODO: doxygen
 void ComputeShaderTool::generateSrc() {
 	const std::string& templateShader = core::App::getInstance()->filesystem()->load(_shaderTemplateFile);
 	std::string src(templateShader);
@@ -164,8 +199,7 @@ void ComputeShaderTool::generateSrc() {
 			}
 			first = false;
 		}
-		kernels << ", int workSize, int workDim) const {\n";
-		kernels << "\t\tcore_assert(workSize % workDim == 0);\n";
+		kernels << ", int workSize, int workDim = 1) const {\n";
 		for (size_t i = 0; i < k.parameters.size(); ++i) {
 			const Parameter& p = k.parameters[i];
 			if (core::string::contains(p.type, "*")) {
@@ -199,8 +233,19 @@ void ComputeShaderTool::generateSrc() {
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
 				kernels << i << ", " << bufferName << ");\n";
 			} else {
+				std::string arrayDefinition;
+				int arraySize = 0;
+				const std::string ctype = convertType(p.type, arrayDefinition, &arraySize);
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
-				kernels << i << ", " << p.name << ");\n";
+				kernels << i << ", sizeof(" << ctype << ")";
+				if (arraySize > 0) {
+					kernels << " * " << arraySize;
+				}
+				kernels << ", (const void*)";
+				if (arraySize == 0) {
+					kernels << "&";
+				}
+				kernels << p.name << ");\n";
 			}
 		}
 		kernels << "\t\tconst bool state = compute::kernelRun(_kernel" << k.name << ", workSize, workDim);\n";
@@ -211,7 +256,7 @@ void ComputeShaderTool::generateSrc() {
 			}
 			if ((p.flags & (compute::BufferFlag::ReadWrite | compute::BufferFlag::WriteOnly)) != compute::BufferFlag::None) {
 				const std::string& bufferName = core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
-				kernels << "\t\tcompute::readBuffer(" << bufferName << ", " << p.name << "Size, " << p.name << ");\n";
+				kernels << "\t\tif (state) {\n\t\t\tcore_assert_always(compute::readBuffer(" << bufferName << ", " << p.name << "Size, " << p.name << "));\n\t\t}\n";
 			}
 		}
 		kernels << "\t\treturn state;\n";
@@ -404,11 +449,11 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 			parameter = Parameter();
 			continue;
 		}
+		// TODO: handle these: __global, __local, __private
 		if (core::string::startsWith(token, "__")) {
 			// The "__" prefix is not required before the qualifiers, but we will continue to use the
 			// prefix in this text for consistency. If the qualifier is not specified, the variable
 			// gets allocated to "__private", which is the default qualifier.
-			// TODO: handle these: __global, __local, __private
 			if (core::string::startsWith(&token[2], "constant")
 			 || core::string::startsWith(&token[2], "read_only")) {
 				parameter.flags |= compute::BufferFlag::ReadOnly;
@@ -416,6 +461,14 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 				parameter.flags |= compute::BufferFlag::WriteOnly;
 			}
 			continue;
+		} else {
+			if (token == "constant" || token == "read_only") {
+				parameter.flags |= compute::BufferFlag::ReadOnly;
+				continue;
+			} else if (token == "write_only") {
+				parameter.flags |= compute::BufferFlag::WriteOnly;
+				continue;
+			}
 		}
 
 		added = true;
@@ -428,7 +481,7 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 			parameter.flags |= compute::BufferFlag::ReadOnly;
 			parameter.qualifier = token;
 		} else {
-			// TODO: opencl data types - image2d_t, sampler_t, float4
+			// TODO: opencl data types - image2d_t, sampler_t
 			if (!parameter.type.empty()) {
 				parameter.type = token + " " + parameter.type;
 			} else {

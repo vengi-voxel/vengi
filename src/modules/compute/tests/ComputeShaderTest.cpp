@@ -32,7 +32,7 @@ TEST_F(ComputeShaderTest, testExecuteExample) {
 	ASSERT_TRUE(shader.setup());
 	const char *foo = "1234";
 	char foo2[4] = {};
-	ASSERT_TRUE(shader.example(foo, strlen(foo), foo2, sizeof(foo2), strlen(foo), 1));
+	ASSERT_TRUE(shader.example((const int8_t *)foo, strlen(foo), (int8_t *)foo2, sizeof(foo2), strlen(foo)));
 	ASSERT_EQ(std::string(foo), std::string(foo2, strlen(foo)));
 }
 
@@ -44,7 +44,7 @@ TEST_F(ComputeShaderTest, testExecuteExample2) {
 	ASSERT_TRUE(shader.setup());
 	const char *foo = "1234";
 	char foo2[4] = {};
-	ASSERT_TRUE(shader.example2(foo, strlen(foo), foo2, sizeof(foo2), 42, strlen(foo), 1));
+	ASSERT_TRUE(shader.example2((const int8_t *)foo, strlen(foo), (int8_t *)foo2, sizeof(foo2), 42, strlen(foo)));
 	ASSERT_EQ(std::string(foo), std::string(foo2, strlen(foo)));
 }
 
@@ -54,9 +54,9 @@ TEST_F(ComputeShaderTest, testExecuteExampleBig) {
 	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
-	std::vector<char> source(10000, 'a');
-	std::vector<char> target(10000, ' ');
-	ASSERT_TRUE(shader.example(source.data(), source.size(), &target[0], target.size(), source.size(), 1));
+	std::vector<int8_t> source(10000, 'a');
+	std::vector<int8_t> target(10000, ' ');
+	ASSERT_TRUE(shader.example(source.data(), source.size(), &target[0], target.size(), source.size()));
 	ASSERT_EQ(source, target);
 }
 
@@ -69,7 +69,7 @@ TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3NoPointer) {
 	float A[3] = {0.0f, 1.0f, 2.0f};
 	float B[3] = {0.0f, 2.0f, 4.0f};
 	float C[3] = {0.0f};
-	ASSERT_TRUE(shader.exampleVectorAddFloat3NoPointer(A, B, C, 3, 1));
+	ASSERT_TRUE(shader.exampleVectorAddFloat3NoPointer(A, B, C, 3));
 	ASSERT_FLOAT_EQ(C[0], 0.0f);
 	ASSERT_FLOAT_EQ(C[2], 6.0f);
 }
@@ -113,7 +113,7 @@ TEST_F(ComputeShaderTest, testExecuteVectorAdd) {
 	std::vector<int> a(size, initA);
 	std::vector<int> b(size, initB);
 	std::vector<int> c(size, 0);
-	ASSERT_TRUE(shader.exampleVectorAddInt(&a.front(), core::vectorSize(a), &b.front(), core::vectorSize(b), &c.front(), core::vectorSize(c), size, 1));
+	ASSERT_TRUE(shader.exampleVectorAddInt(&a.front(), core::vectorSize(a), &b.front(), core::vectorSize(b), &c.front(), core::vectorSize(c), size));
 	for (int i = 0; i < size; ++i) {
 		SCOPED_TRACE(core::string::format("index: %i", i));
 		ASSERT_EQ(c[i], initA + initB);
