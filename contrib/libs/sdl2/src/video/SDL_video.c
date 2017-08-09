@@ -105,11 +105,17 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_RPI
     &RPI_bootstrap,
 #endif 
+#if SDL_VIDEO_DRIVER_KMSDRM
+    &KMSDRM_bootstrap,
+#endif
 #if SDL_VIDEO_DRIVER_NACL
     &NACL_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN
     &Emscripten_bootstrap,
+#endif
+#if SDL_VIDEO_DRIVER_QNX
+    &QNX_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,
@@ -2889,7 +2895,7 @@ SDL_GL_ExtensionSupported(const char *extension)
             break;
 
         terminator = where + SDL_strlen(extension);
-        if (where == start || *(where - 1) == ' ')
+        if (where == extensions || *(where - 1) == ' ')
             if (*terminator == ' ' || *terminator == '\0')
                 return SDL_TRUE;
 
@@ -2910,6 +2916,8 @@ SDL_GL_ExtensionSupported(const char *extension)
 void
 SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
 {
+/* This function breaks games because OpenGL functions are being called before a context is current - see bug 3725 */
+#if 0
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
 	/* XXX This is fragile; it will break in the event of release of
 	 * new versions of OpenGL ES.
@@ -2928,6 +2936,10 @@ SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
         *minor = 0;
     }
 #endif
+#else
+        *major = 2;
+        *minor = 0;
+#endif /* 0 */
 }
 
 void
@@ -3110,8 +3122,16 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     GLenum attachmentattrib = 0;
 #endif
 
+    if (!value) {
+        return SDL_InvalidParamError("value");
+    }
+
     /* Clear value in any case */
     *value = 0;
+
+    if (!_this) {
+        return SDL_UninitializedVideo();
+    }
 
     switch (attr) {
     case SDL_GL_RED_SIZE:
@@ -3860,17 +3880,17 @@ SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
 /*
  * Functions used by iOS application delegates
  */
-void SDL_OnApplicationWillTerminate()
+void SDL_OnApplicationWillTerminate(void)
 {
     SDL_SendAppEvent(SDL_APP_TERMINATING);
 }
 
-void SDL_OnApplicationDidReceiveMemoryWarning()
+void SDL_OnApplicationDidReceiveMemoryWarning(void)
 {
     SDL_SendAppEvent(SDL_APP_LOWMEMORY);
 }
 
-void SDL_OnApplicationWillResignActive()
+void SDL_OnApplicationWillResignActive(void)
 {
     if (_this) {
         SDL_Window *window;
@@ -3882,17 +3902,17 @@ void SDL_OnApplicationWillResignActive()
     SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
 }
 
-void SDL_OnApplicationDidEnterBackground()
+void SDL_OnApplicationDidEnterBackground(void)
 {
     SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
 }
 
-void SDL_OnApplicationWillEnterForeground()
+void SDL_OnApplicationWillEnterForeground(void)
 {
     SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
 }
 
-void SDL_OnApplicationDidBecomeActive()
+void SDL_OnApplicationDidBecomeActive(void)
 {
     SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
 

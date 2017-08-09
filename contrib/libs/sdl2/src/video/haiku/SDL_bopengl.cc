@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_HAIKU
+#if SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL
 
 #include "SDL_bopengl.h"
 
@@ -54,7 +54,7 @@ int BE_GL_LoadLibrary(_THIS, const char *path)
         if( get_image_symbol(info.id, "glBegin", B_SYMBOL_TYPE_ANY,
                 &location) == B_OK) {
 
-            _this->gl_config.dll_handle = (void *) info.id;
+            _this->gl_config.dll_handle = (void *) (size_t) info.id;
             _this->gl_config.driver_loaded = 1;
             SDL_strlcpy(_this->gl_config.driver_path, "libGL.so",
                     SDL_arraysize(_this->gl_config.driver_path));
@@ -69,7 +69,7 @@ void *BE_GL_GetProcAddress(_THIS, const char *proc)
         void *location = NULL;
         status_t err;
         if ((err =
-            get_image_symbol((image_id) _this->gl_config.dll_handle,
+            get_image_symbol((image_id) (size_t) _this->gl_config.dll_handle,
                               proc, B_SYMBOL_TYPE_ANY,
                               &location)) == B_OK) {
             return location;
@@ -171,6 +171,6 @@ void BE_GL_RebootContexts(_THIS) {
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif /* SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL */
 
 /* vi: set ts=4 sw=4 expandtab: */

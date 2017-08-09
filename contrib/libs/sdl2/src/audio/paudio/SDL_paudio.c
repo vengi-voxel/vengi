@@ -38,7 +38,7 @@
 #include "../SDL_audio_c.h"
 #include "SDL_paudio.h"
 
-#define DEBUG_AUDIO 0
+/* #define DEBUG_AUDIO */
 
 /* A conflict within AIX 4.3.3 <sys/> headers and probably others as well.
  * I guess nobody ever uses audio... Shame over AIX header files.  */
@@ -245,7 +245,6 @@ PAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     SDL_AudioFormat test_format;
     audio_init paud_init;
     audio_buffer paud_bufinfo;
-    audio_status paud_status;
     audio_control paud_control;
     audio_change paud_change;
     int fd = -1;
@@ -510,11 +509,11 @@ PAUDIO_Init(SDL_AudioDriverImpl * impl)
     close(fd);
 
     /* Set the function pointers */
-    impl->OpenDevice = DSP_OpenDevice;
-    impl->PlayDevice = DSP_PlayDevice;
-    impl->PlayDevice = DSP_WaitDevice;
-    impl->GetDeviceBuf = DSP_GetDeviceBuf;
-    impl->CloseDevice = DSP_CloseDevice;
+    impl->OpenDevice = PAUDIO_OpenDevice;
+    impl->PlayDevice = PAUDIO_PlayDevice;
+    impl->PlayDevice = PAUDIO_WaitDevice;
+    impl->GetDeviceBuf = PAUDIO_GetDeviceBuf;
+    impl->CloseDevice = PAUDIO_CloseDevice;
     impl->OnlyHasDefaultOutputDevice = 1;       /* !!! FIXME: add device enum! */
 
     return 1;   /* this audio target is available. */

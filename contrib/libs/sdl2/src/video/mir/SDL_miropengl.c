@@ -66,29 +66,11 @@ MIR_GL_LoadLibrary(_THIS, const char* path)
 {
     MIR_Data* mir_data = _this->driverdata;
 
-    SDL_EGL_LoadLibrary(_this, path, MIR_mir_connection_get_egl_native_display(mir_data->connection));
+    SDL_EGL_LoadLibrary(_this, path, MIR_mir_connection_get_egl_native_display(mir_data->connection), 0);
 
     SDL_EGL_ChooseConfig(_this);
 
     return 0;
-}
-
-void
-MIR_GL_UnloadLibrary(_THIS)
-{
-    SDL_EGL_UnloadLibrary(_this);
-}
-
-void*
-MIR_GL_GetProcAddress(_THIS, const char* proc)
-{
-    void* proc_addr = SDL_EGL_GetProcAddress(_this, proc);
-
-    if (!proc_addr) {
-        SDL_SetError("Failed to find proc address!");
-    }
-
-    return proc_addr;
 }
 
 #endif /* SDL_VIDEO_DRIVER_MIR */

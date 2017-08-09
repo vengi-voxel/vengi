@@ -160,6 +160,10 @@ else()
   set(OPT_DEF_ASM FALSE)
 endif()
 
+if(USE_GCC OR USE_CLANG)
+  set(OPT_DEF_GCC_ATOMICS ON)
+endif()
+
 # Default flags, if not set otherwise
 if("$ENV{CFLAGS}" STREQUAL "")
   if(CMAKE_BUILD_TYPE STREQUAL "")
@@ -260,7 +264,7 @@ endforeach()
 option_string(ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
 #set_option(DEPENDENCY_TRACKING "Use gcc -MMD -MT dependency tracking" ON)
 set_option(LIBC                "Use the system C library" ${OPT_DEF_LIBC})
-set_option(GCC_ATOMICS         "Use gcc builtin atomics" ${USE_GCC})
+set_option(GCC_ATOMICS         "Use gcc builtin atomics" ${OPT_DEF_GCC_ATOMICS})
 set_option(ASSEMBLY            "Enable assembly routines" ${OPT_DEF_ASM})
 set_option(SSEMATH             "Allow GCC to use SSE floating point math" ${OPT_DEF_SSEMATH})
 set_option(MMX                 "Use MMX assembly routines" ${OPT_DEF_ASM})
@@ -317,6 +321,8 @@ set_option(VIDEO_COCOA         "Use Cocoa video driver" ${APPLE})
 set_option(DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
 set_option(RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS})
 set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
+set_option(VIDEO_KMSDRM        "Use KMS DRM video driver" ${UNIX_SYS})
+dep_option(KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "VIDEO_KMSDRM" OFF)
 
 # TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
 # The options below are for compatibility to configure's default behaviour.
@@ -589,7 +595,7 @@ endif()
 if(LIBC)
   if(WINDOWS AND NOT MINGW)
     set(HAVE_LIBC TRUE)
-    foreach(_HEADER stdio.h string.h ctype.h math.h)
+    foreach(_HEADER stdio.h string.h wchar.h ctype.h math.h)
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REPLACE "." "_" _HAVE_H ${_UPPER})
       set(${_HAVE_H} 1)
@@ -597,6 +603,7 @@ if(LIBC)
     set(HAVE_SIGNAL_H 1)
     foreach(_FN
             malloc calloc realloc free qsort abs memset memcpy memmove memcmp
+            wcslen wcslcpy wcslcat wcscmp
             strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf atan atan2 acos asin ceil copysign cos
@@ -615,7 +622,7 @@ if(LIBC)
     check_include_file(sys/types.h HAVE_SYS_TYPES_H)
     foreach(_HEADER
             stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h
-            strings.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h)
+            strings.h wchar.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h)
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REPLACE "." "_" _HAVE_H ${_UPPER})
       check_include_file("${_HEADER}" ${_HAVE_H})
@@ -636,8 +643,8 @@ if(LIBC)
             strdup _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
-            vsscanf vsnprintf fseeko fseeko64 sigaction setjmp
-            nanosleep sysconf sysctlbyname getauxval
+            vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp
+            nanosleep sysconf sysctlbyname getauxval poll
             )
       string(TOUPPER ${_FN} _UPPER)
       set(_HAVEVAR "HAVE_${_UPPER}")
@@ -777,11 +784,23 @@ if(ANDROID)
     set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_JOYSTICK_SOURCES})
     set(HAVE_SDL_JOYSTICK TRUE)
   endif()
+  if(SDL_LOADSO)
+    set(SDL_LOADSO_DLOPEN 1)
+    file(GLOB LOADSO_SOURCES ${SDL2_SOURCE_DIR}/src/loadso/dlopen/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${LOADSO_SOURCES})
+    set(HAVE_SDL_LOADSO TRUE)
+  endif()
   if(SDL_POWER)
     set(SDL_POWER_ANDROID 1)
     file(GLOB ANDROID_POWER_SOURCES ${SDL2_SOURCE_DIR}/src/power/android/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_POWER_SOURCES})
     set(HAVE_SDL_POWER TRUE)
+  endif()
+  if(SDL_TIMERS)
+    set(SDL_TIMER_UNIX 1)
+    file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/unix/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${TIMER_SOURCES})
+    set(HAVE_SDL_TIMERS TRUE)
   endif()
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_ANDROID 1)
@@ -808,6 +827,9 @@ if(ANDROID)
       list(APPEND EXTRA_LIBS ${OpenGLES1_LIBRARY} ${OpenGLES2_LIBRARY})
     endif()
   endif()
+
+  CheckPTHREAD()
+
   list(APPEND EXTRA_LDFLAGS "-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit")
 endif()
 
@@ -904,6 +926,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
     CheckOpenGLESX11()
     CheckWayland()
     CheckVivante()
+    CheckKMSDRM()
   endif()
 
   if(LINUX)
@@ -925,7 +948,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
             ioctl(0, KDGKBENT, &kbe);
         }" HAVE_INPUT_KD)
 
-    file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/linux/*.c)
+    file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/linux/*.c ${SDL2_SOURCE_DIR}/src/core/unix/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${CORE_SOURCES})
 
     if(HAVE_INPUT_EVENTS)
@@ -1058,9 +1081,9 @@ elseif(WINDOWS)
 
   if(MSVC)
     # Prevent codegen that would use the VC runtime libraries.
-    add_definitions(/GS-)
+    set_property(DIRECTORY . APPEND PROPERTY COMPILE_OPTIONS "/GS-")
     if(NOT ARCH_64)
-      add_definitions(/arch:SSE)
+      set_property(DIRECTORY . APPEND PROPERTY COMPILE_OPTIONS "/arch:SSE")
     endif()
   endif()
 
@@ -1082,6 +1105,16 @@ elseif(WINDOWS)
         #include <windows.h>
         #include <xinput.h>
         int main(int argc, char **argv) { }" HAVE_XINPUT_H)
+      check_c_source_compiles("
+        #include <windows.h>
+        #include <xinput.h>
+        XINPUT_GAMEPAD_EX x1;
+        int main(int argc, char **argv) { }" HAVE_XINPUT_GAMEPAD_EX)
+      check_c_source_compiles("
+        #include <windows.h>
+        #include <xinput.h>
+        XINPUT_STATE_EX s1;
+        int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
     else()
       check_include_file(xinput.h HAVE_XINPUT_H)
     endif()
