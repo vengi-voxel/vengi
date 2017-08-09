@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "benchmark/reporter.h"
+#include "benchmark/benchmark.h"
 #include "timers.h"
 
 #include <cstdlib>
@@ -31,10 +31,10 @@ BenchmarkReporter::BenchmarkReporter()
 
 BenchmarkReporter::~BenchmarkReporter() {}
 
-void BenchmarkReporter::PrintBasicContext(std::ostream *out_ptr,
+void BenchmarkReporter::PrintBasicContext(std::ostream *out,
                                           Context const &context) {
-  CHECK(out_ptr) << "cannot be null";
-  auto &Out = *out_ptr;
+  CHECK(out) << "cannot be null";
+  auto &Out = *out;
 
   Out << "Run on (" << context.num_cpus << " X " << context.mhz_per_cpu
       << " MHz CPU " << ((context.num_cpus > 1) ? "s" : "") << ")\n";

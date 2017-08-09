@@ -1,7 +1,7 @@
 #ifndef BENCHMARK_INTERNAL_MACROS_H_
 #define BENCHMARK_INTERNAL_MACROS_H_
 
-#include "benchmark/macros.h"
+#include "benchmark/benchmark.h"
 
 #ifndef __has_feature
 #define __has_feature(x) 0
@@ -45,6 +45,8 @@
 #define BENCHMARK_OS_NACL 1
 #elif defined(EMSCRIPTEN)
 #define BENCHMARK_OS_EMSCRIPTEN 1
+#elif defined(__rtems__)
+#define BENCHMARK_OS_RTEMS 1
 #endif
 
 #if !__has_feature(cxx_exceptions) && !defined(__cpp_exceptions) \
