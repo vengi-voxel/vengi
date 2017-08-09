@@ -167,12 +167,30 @@ inline static void GetVerticalGradientTopAndBottomColors(ImU32 c,float fillColor
     const int A = (unsigned char) (c>>IM_COL32_A_SHIFT);
 
     int r = R+fcgi, g = G+fcgi, b = B+fcgi;
-    if (r>255) r=255;if (g>255) g=255;if (b>255) b=255;
-    if (negative) bc = IM_COL32(r,g,b,A); else tc = IM_COL32(r,g,b,A);
+	if (r > 255)
+		r = 255;
+	if (g > 255)
+		g = 255;
+	if (b > 255)
+		b = 255;
+	if (negative)
+		bc = IM_COL32(r, g, b, A);
+	else
+		tc = IM_COL32(r, g, b, A);
 
-    r = R-fcgi; g = G-fcgi; b = B-fcgi;
-    if (r<0) r=0;if (g<0) g=0;if (b<0) b=0;
-    if (negative) tc = IM_COL32(r,g,b,A); else bc = IM_COL32(r,g,b,A);
+	r = R - fcgi;
+	g = G - fcgi;
+	b = B - fcgi;
+	if (r < 0)
+		r = 0;
+	if (g < 0)
+		g = 0;
+	if (b < 0)
+		b = 0;
+	if (negative)
+		tc = IM_COL32(r, g, b, A);
+	else
+		bc = IM_COL32(r, g, b, A);
 
     // Old legacy code (to remove)... [However here we lerp alpha too...]
     /*// Can we do it without the double conversion ImU32 -> ImVec4 -> ImU32 ?

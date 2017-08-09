@@ -480,10 +480,11 @@ struct NodeGraphEditor	{
     static bool UseSlidersInsteadOfDragControls;
     mutable void* user_ptr;
     static Style& GetStyle() {return style;}
-    mutable ImGuiColorEditMode colorEditMode;
+    //mutable ImGuiColorEditMode colorEditMode;
     float nodesBaseWidth;
 
     NodeGraphEditor(bool show_grid_= true,bool show_connection_names_=true,bool _allowOnlyOneLinkPerInputSlot=true,bool _avoidCircularLinkLoopsInOut=true,bool init_in_ctr=false) {
+    	menuNode = nullptr;
         scrolling = ImVec2(0.0f, 0.0f);
         show_grid = show_grid_;
         show_connection_names = show_connection_names_;
@@ -501,7 +502,7 @@ struct NodeGraphEditor	{
         numNodeTypeNames = 0;
         nodeFactoryFunctionPtr = NULL;
         inited = init_in_ctr;
-        colorEditMode = ImGuiColorEditMode_RGB;
+        //colorEditMode = ImGuiColorEditMode_RGB;
         //isAContextMenuOpen = false;
         oldFontWindowScale = 0.f;
         nodesBaseWidth = 120.f;

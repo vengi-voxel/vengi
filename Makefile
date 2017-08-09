@@ -249,6 +249,8 @@ updatelibs:
 	$(call UPDATE_GIT,imgui-addons,https://github.com/Flix01/imgui.git)
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
 	cp $(UPDATEDIR)/imgui.sync/imgui*.h $(UPDATEDIR)/imgui.sync/imgui*.cpp $(UPDATEDIR)/imgui.sync/stb_*.h contrib/libs/dearimgui/dearimgui
+	mv contrib/libs/dearimgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
+	sed -i 's/"imgui.h"/"imgui\/IMGUI.h"/g' src/tests/testimgui/Demo.cpp
 	$(call UPDATE_GIT,assimp,https://github.com/assimp/assimp.git)
 	rm -rf contrib/libs/assimp/code/* contrib/libs/assimp/include/*
 	cp -r $(UPDATEDIR)/assimp.sync/code/* contrib/libs/assimp/code

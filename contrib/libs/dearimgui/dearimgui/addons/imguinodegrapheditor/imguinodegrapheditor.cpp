@@ -81,12 +81,25 @@ inline static void GetVerticalGradientTopAndBottomColors(ImU32 c,float fillColor
     const int A = (unsigned char) (c>>IM_COL32_A_SHIFT);
 
     int r = R+fcgi, g = G+fcgi, b = B+fcgi;
-    if (r>255) r=255;if (g>255) g=255;if (b>255) b=255;
+	if (r > 255)
+		r = 255;
+	if (g > 255)
+		g = 255;
+	if (b > 255)
+		b = 255;
     if (negative) bc = IM_COL32(r,g,b,A); else tc = IM_COL32(r,g,b,A);
 
     r = R-fcgi; g = G-fcgi; b = B-fcgi;
-    if (r<0) r=0;if (g<0) g=0;if (b<0) b=0;
-    if (negative) tc = IM_COL32(r,g,b,A); else bc = IM_COL32(r,g,b,A);
+	if (r < 0)
+		r = 0;
+	if (g < 0)
+		g = 0;
+	if (b < 0)
+		b = 0;
+	if (negative)
+		tc = IM_COL32(r, g, b, A);
+	else
+		bc = IM_COL32(r, g, b, A);
 
     // Old legacy code (to remove)... [However here we lerp alpha too...]
     /*// Can we do it without the double conversion ImU32 -> ImVec4 -> ImU32 ?
@@ -548,13 +561,15 @@ void NodeGraphEditor::render()
             ImGui::Separator();
             if (ImGui::CollapsingHeader("Style Editor##styleEditor",NULL,false))   {
                 ImGui::Separator();
-                ImGui::ColorEditMode(colorEditMode);
+                //ImGui::ColorEditMode(colorEditMode);
                 Style::Edit(this->style);
                 ImGui::Separator();
 #if             (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
                 const char* saveName = "nodeGraphEditor.nge.style";
-                const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge.style";
                 const char* pSaveName = saveName;
+#ifdef YES_IMGUIEMSCRIPTENPERSISTENTFOLDER
+				const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge.style";
+#endif
 #               ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
                 if (ImGui::SmallButton("Save##saveGNEStyle")) {
 #                   ifdef YES_IMGUIEMSCRIPTENPERSISTENTFOLDER
@@ -592,7 +607,9 @@ void NodeGraphEditor::render()
 	    if (ImGui::CollapsingHeader("Serialization##serialization",NULL,false))   {
 		ImGui::Separator();
 		const char* saveName = "nodeGraphEditor.nge";
+#ifdef YES_IMGUIEMSCRIPTENPERSISTENTFOLDER
         const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge";
+#endif
         const char* pSaveName = saveName;
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
 		if (ImGui::SmallButton("Save##saveGNE")) {
@@ -669,6 +686,7 @@ void NodeGraphEditor::render()
         ImGui::Checkbox("Show grid", &show_grid);
     ImGui::Text("%s","Double-click LMB on slots to remove their links (or SHIFT+LMB on links).");
         ImGui::SameLine(ImGui::GetWindowWidth()-120);
+#if 0
         // Color Mode
         static const char* btnlbls[2]={"HSV##myColorBtnType","RGB##myColorBtnType"};
         if (colorEditMode!=ImGuiColorEditMode_RGB)  {
@@ -685,6 +703,7 @@ void NodeGraphEditor::render()
         }
         ImGui::SameLine(0);ImGui::Text("Color Mode");
         // ------------------
+#endif
         ImGui::PopStyleVar(2);
     }
 
@@ -828,7 +847,7 @@ void NodeGraphEditor::render()
     // Display nodes
     //ImGui::PushStyleColor(ImGuiCol_Header,transparent);ImGui::PushStyleColor(ImGuiCol_HeaderActive,transparent);ImGui::PushStyleColor(ImGuiCol_HeaderHovered,transparent);    // moved inside the loop to wrap the ImGui::TreeNode()
     bool isSomeNodeMoving = false;Node *node_to_fire_edit_callback = NULL,* node_to_paste_from_copy_source = NULL;bool mustDeleteANodeSoon = false;
-    ImGui::ColorEditMode(colorEditMode);
+    //ImGui::ColorEditMode(colorEditMode);
 
     const float nodeTitleBarBgHeight = ImGui::GetTextLineHeightWithSpacing() + NODE_WINDOW_PADDING.y;
     Node* nodeThatIsBeingEditing = NULL;
