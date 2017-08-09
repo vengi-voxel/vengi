@@ -14,7 +14,7 @@ namespace detail
 		{
 			__m128 data = *reinterpret_cast<__m128 const*>(&this->_buffer);
 
-			vec<4, float, P> Result(uninitialize);
+			vec<4, float, P> Result;
 #			if GLM_ARCH & GLM_ARCH_AVX_BIT
 				Result.data = _mm_permute_ps(data, _MM_SHUFFLE(E3, E2, E1, E0));
 #			else
@@ -31,7 +31,7 @@ namespace detail
 		{
 			__m128i data = *reinterpret_cast<__m128i const*>(&this->_buffer);
 
-			vec<4, int32, P> Result(uninitialize);
+			vec<4, int32, P> Result;
 			Result.data = _mm_shuffle_epi32(data, _MM_SHUFFLE(E3, E2, E1, E0));
 			return Result;
 		}
@@ -44,7 +44,7 @@ namespace detail
 		{
 			__m128i data = *reinterpret_cast<__m128i const*>(&this->_buffer);
 
-			vec<4, uint32, P> Result(uninitialize);
+			vec<4, uint32, P> Result;
 			Result.data = _mm_shuffle_epi32(data, _MM_SHUFFLE(E3, E2, E1, E0));
 			return Result;
 		}
@@ -56,7 +56,7 @@ namespace detail
 	{
 		static vec<4, float, P> call(vec<4, float, P> const & a, vec<4, float, P> const & b)
 		{
-			vec<4, float, P> Result(uninitialize);
+			vec<4, float, P> Result;
 			Result.data = _mm_add_ps(a.data, b.data);
 			return Result;
 		}
@@ -68,7 +68,7 @@ namespace detail
 	{
 		static vec<4, double, P> call(vec<4, double, P> const & a, vec<4, double, P> const & b)
 		{
-			vec<4, double, P> Result(uninitialize);
+			vec<4, double, P> Result;
 			Result.data = _mm256_add_pd(a.data, b.data);
 			return Result;
 		}
@@ -80,7 +80,7 @@ namespace detail
 	{
 		static vec<4, float, P> call(vec<4, float, P> const & a, vec<4, float, P> const & b)
 		{
-			vec<4, float, P> Result(uninitialize);
+			vec<4, float, P> Result;
 			Result.data = _mm_sub_ps(a.data, b.data);
 			return Result;
 		}
@@ -92,7 +92,7 @@ namespace detail
 	{
 		static vec<4, double, P> call(vec<4, double, P> const & a, vec<4, double, P> const & b)
 		{
-			vec<4, double, P> Result(uninitialize);
+			vec<4, double, P> Result;
 			Result.data = _mm256_sub_pd(a.data, b.data);
 			return Result;
 		}
@@ -104,7 +104,7 @@ namespace detail
 	{
 		static vec<4, float, P> call(vec<4, float, P> const & a, vec<4, float, P> const & b)
 		{
-			vec<4, float, P> Result(uninitialize);
+			vec<4, float, P> Result;
 			Result.data = _mm_mul_ps(a.data, b.data);
 			return Result;
 		}
@@ -116,7 +116,7 @@ namespace detail
 	{
 		static vec<4, double, P> call(vec<4, double, P> const & a, vec<4, double, P> const & b)
 		{
-			vec<4, double, P> Result(uninitialize);
+			vec<4, double, P> Result;
 			Result.data = _mm256_mul_pd(a.data, b.data);
 			return Result;
 		}
@@ -128,7 +128,7 @@ namespace detail
 	{
 		static vec<4, float, P> call(vec<4, float, P> const & a, vec<4, float, P> const & b)
 		{
-			vec<4, float, P> Result(uninitialize);
+			vec<4, float, P> Result;
 			Result.data = _mm_div_ps(a.data, b.data);
 			return Result;
 		}
@@ -140,7 +140,7 @@ namespace detail
 	{
 		static vec<4, double, P> call(vec<4, double, P> const & a, vec<4, double, P> const & b)
 		{
-			vec<4, double, P> Result(uninitialize);
+			vec<4, double, P> Result;
 			Result.data = _mm256_div_pd(a.data, b.data);
 			return Result;
 		}
@@ -152,7 +152,7 @@ namespace detail
 	{
 		static vec<4, float, aligned_lowp> call(vec<4, float, aligned_lowp> const & a, vec<4, float, aligned_lowp> const & b)
 		{
-			vec<4, float, aligned_lowp> Result(uninitialize);
+			vec<4, float, aligned_lowp> Result;
 			Result.data = _mm_mul_ps(a.data, _mm_rcp_ps(b.data));
 			return Result;
 		}
@@ -163,7 +163,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm_and_si128(a.data, b.data);
 			return Result;
 		}
@@ -175,7 +175,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm256_and_si256(a.data, b.data);
 			return Result;
 		}
@@ -187,7 +187,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm_or_si128(a.data, b.data);
 			return Result;
 		}
@@ -199,7 +199,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm256_or_si256(a.data, b.data);
 			return Result;
 		}
@@ -211,7 +211,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm_xor_si128(a.data, b.data);
 			return Result;
 		}
@@ -223,7 +223,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm256_xor_si256(a.data, b.data);
 			return Result;
 		}
@@ -235,7 +235,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm_sll_epi32(a.data, b.data);
 			return Result;
 		}
@@ -247,7 +247,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm256_sll_epi64(a.data, b.data);
 			return Result;
 		}
@@ -259,7 +259,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm_srl_epi32(a.data, b.data);
 			return Result;
 		}
@@ -271,7 +271,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const& a, vec<4, T, P> const& b)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm256_srl_epi64(a.data, b.data);
 			return Result;
 		}
@@ -283,7 +283,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const & v)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm_xor_si128(v.data, _mm_set1_epi32(-1));
 			return Result;
 		}
@@ -295,7 +295,7 @@ namespace detail
 	{
 		static vec<4, T, P> call(vec<4, T, P> const & v)
 		{
-			vec<4, T, P> Result(uninitialize);
+			vec<4, T, P> Result;
 			Result.data = _mm256_xor_si256(v.data, _mm_set1_epi32(-1));
 			return Result;
 		}
@@ -338,29 +338,6 @@ namespace detail
 		}
 	};
 }//namespace detail
-
-#	if !GLM_HAS_DEFAULTED_FUNCTIONS
-		template<>
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD vec<4, float, aligned_lowp>::vec()
-#			ifndef GLM_FORCE_NO_CTOR_INIT
-				: data(_mm_setzero_ps())
-#			endif
-		{}
-
-		template<>
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD vec<4, float, aligned_mediump>::vec()
-#			ifndef GLM_FORCE_NO_CTOR_INIT
-			: data(_mm_setzero_ps())
-#			endif
-		{}
-
-		template<>
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD vec<4, float, aligned_highp>::vec()
-#			ifndef GLM_FORCE_NO_CTOR_INIT
-			: data(_mm_setzero_ps())
-#			endif
-		{}
-#	endif//!GLM_HAS_DEFAULTED_FUNCTIONS
 
 	template<>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_SIMD vec<4, float, aligned_lowp>::vec(float _s) :

@@ -33,26 +33,26 @@ namespace detail
 	template<typename T, bool isFloat = false>
 	struct literal
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "%d";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "%d";}
 	};
 
 	template<typename T>
 	struct literal<T, true>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "%f";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "%f";}
 	};
 
 #	if GLM_MODEL == GLM_MODEL_32 && GLM_COMPILER && GLM_COMPILER_VC
 	template<>
 	struct literal<uint64_t, false>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "%lld";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "%lld";}
 	};
 
 	template<>
 	struct literal<int64_t, false>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "%lld";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "%lld";}
 	};
 #	endif//GLM_MODEL == GLM_MODEL_32 && GLM_COMPILER && GLM_COMPILER_VC
 
@@ -62,67 +62,67 @@ namespace detail
 	template<>
 	struct prefix<float>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "";}
 	};
 
 	template<>
 	struct prefix<double>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "d";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "d";}
 	};
 
 	template<>
 	struct prefix<bool>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "b";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "b";}
 	};
 
 	template<>
 	struct prefix<uint8_t>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "u8";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "u8";}
 	};
 
 	template<>
 	struct prefix<int8_t>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "i8";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "i8";}
 	};
 
 	template<>
 	struct prefix<uint16_t>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "u16";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "u16";}
 	};
 
 	template<>
 	struct prefix<int16_t>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "i16";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "i16";}
 	};
 
 	template<>
 	struct prefix<uint32_t>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "u";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "u";}
 	};
 
 	template<>
 	struct prefix<int32_t>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "i";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "i";}
 	};
 
 	template<>
 	struct prefix<uint64_t>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "u64";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "u64";}
 	};
 
 	template<>
 	struct prefix<int64_t>
 	{
-		GLM_FUNC_QUALIFIER static char const * value() {return "i64";};
+		GLM_FUNC_QUALIFIER static char const * value() {return "i64";}
 	};
 
 	template<typename matType>

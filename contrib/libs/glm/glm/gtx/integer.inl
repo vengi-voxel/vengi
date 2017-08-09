@@ -4,12 +4,13 @@
 namespace glm
 {
 	// pow
-	GLM_FUNC_QUALIFIER int pow(int x, int y)
+	GLM_FUNC_QUALIFIER int pow(int x, uint y)
 	{
 		if(y == 0)
-			return 1;
+			return x >= 0 ? 1 : -1;
+
 		int result = x;
-		for(int i = 1; i < y; ++i)
+		for(uint i = 1; i < y; ++i)
 			result *= x;
 		return result;
 	}
@@ -111,6 +112,9 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER uint pow(uint x, uint y)
 	{
+		if (y == 0)
+			return 1u;
+
 		uint result = x;
 		for(uint i = 1; i < y; ++i)
 			result *= x;

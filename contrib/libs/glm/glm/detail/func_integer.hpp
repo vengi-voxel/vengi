@@ -26,59 +26,59 @@ namespace glm
 	/// modulo pow(2, 32). The value carry is set to 0 if the sum was
 	/// less than pow(2, 32), or to 1 otherwise.
 	///
-	/// @tparam genUType Unsigned integer scalar or vector types.
+	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/uaddCarry.xml">GLSL uaddCarry man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
-	template<length_t L, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, uint, P> uaddCarry(
-		vecType<L, uint, P> const & x,
-		vecType<L, uint, P> const & y,
-		vecType<L, uint, P> & carry);
+	template<length_t L, precision P>
+	GLM_FUNC_DECL vec<L, uint, P> uaddCarry(
+		vec<L, uint, P> const & x,
+		vec<L, uint, P> const & y,
+		vec<L, uint, P> & carry);
 
 	/// Subtracts the 32-bit unsigned integer y from x, returning
 	/// the difference if non-negative, or pow(2, 32) plus the difference
 	/// otherwise. The value borrow is set to 0 if x >= y, or to 1 otherwise.
 	///
-	/// @tparam genUType Unsigned integer scalar or vector types.
+	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/usubBorrow.xml">GLSL usubBorrow man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
-	template<length_t L, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, uint, P> usubBorrow(
-		vecType<L, uint, P> const & x,
-		vecType<L, uint, P> const & y,
-		vecType<L, uint, P> & borrow);
+	template<length_t L, precision P>
+	GLM_FUNC_DECL vec<L, uint, P> usubBorrow(
+		vec<L, uint, P> const & x,
+		vec<L, uint, P> const & y,
+		vec<L, uint, P> & borrow);
 
 	/// Multiplies 32-bit integers x and y, producing a 64-bit
 	/// result. The 32 least-significant bits are returned in lsb.
 	/// The 32 most-significant bits are returned in msb.
 	///
-	/// @tparam genUType Unsigned integer scalar or vector types.
+	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/umulExtended.xml">GLSL umulExtended man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
-	template<length_t L, precision P, template<length_t, typename, precision> class vecType>
+	template<length_t L, precision P>
 	GLM_FUNC_DECL void umulExtended(
-		vecType<L, uint, P> const & x,
-		vecType<L, uint, P> const & y,
-		vecType<L, uint, P> & msb,
-		vecType<L, uint, P> & lsb);
+		vec<L, uint, P> const & x,
+		vec<L, uint, P> const & y,
+		vec<L, uint, P> & msb,
+		vec<L, uint, P> & lsb);
 		
 	/// Multiplies 32-bit integers x and y, producing a 64-bit
 	/// result. The 32 least-significant bits are returned in lsb.
 	/// The 32 most-significant bits are returned in msb.
 	/// 
-	/// @tparam genIType Signed integer scalar or vector types.
+	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/imulExtended.xml">GLSL imulExtended man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
-	template<length_t L, precision P, template<length_t, typename, precision> class vecType>
+	template<length_t L, precision P>
 	GLM_FUNC_DECL void imulExtended(
-		vecType<L, int, P> const & x,
-		vecType<L, int, P> const & y,
-		vecType<L, int, P> & msb,
-		vecType<L, int, P> & lsb);
+		vec<L, int, P> const & x,
+		vec<L, int, P> const & y,
+		vec<L, int, P> & msb,
+		vec<L, int, P> & lsb);
 
 	/// Extracts bits [offset, offset + bits - 1] from value,
 	/// returning them in the least significant bits of the result.
@@ -91,13 +91,14 @@ namespace glm
 	/// offset and bits is greater than the number of bits used
 	/// to store the operand.
 	///
-	/// @tparam T Signed or unsigned integer scalar or vector types.
+	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
+	/// @tparam T Signed or unsigned integer scalar types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/bitfieldExtract.xml">GLSL bitfieldExtract man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, T, P> bitfieldExtract(
-		vecType<L, T, P> const& Value,
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_DECL vec<L, T, P> bitfieldExtract(
+		vec<L, T, P> const& Value,
 		int Offset,
 		int Bits);
 
@@ -111,14 +112,15 @@ namespace glm
 	/// offset and bits is greater than the number of bits used to
 	/// store the operand.
 	///
+	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
 	/// @tparam T Signed or unsigned integer scalar or vector types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/bitfieldInsert.xml">GLSL bitfieldInsert man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, T, P> bitfieldInsert(
-		vecType<L, T, P> const& Base,
-		vecType<L, T, P> const& Insert,
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_DECL vec<L, T, P> bitfieldInsert(
+		vec<L, T, P> const& Base,
+		vec<L, T, P> const& Insert,
 		int Offset,
 		int Bits);
 
@@ -126,16 +128,17 @@ namespace glm
 	/// The bit numbered n of the result will be taken from bit (bits - 1) - n of value, 
 	/// where bits is the total number of bits used to represent value.
 	///
+	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
 	/// @tparam T Signed or unsigned integer scalar or vector types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/bitfieldReverse.xml">GLSL bitfieldReverse man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, T, P> bitfieldReverse(vecType<L, T, P> const & v);
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_DECL vec<L, T, P> bitfieldReverse(vec<L, T, P> const & v);
 
 	/// Returns the number of bits set to 1 in the binary representation of value.
 	///
-	/// @tparam T Signed or unsigned integer scalar or vector types.
+	/// @tparam genType Signed or unsigned integer scalar or vector types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/bitCount.xml">GLSL bitCount man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
@@ -144,18 +147,19 @@ namespace glm
 
 	/// Returns the number of bits set to 1 in the binary representation of value.
 	///
+	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
 	/// @tparam T Signed or unsigned integer scalar or vector types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/bitCount.xml">GLSL bitCount man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, int, P> bitCount(vecType<L, T, P> const & v);
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_DECL vec<L, int, P> bitCount(vec<L, T, P> const & v);
 
 	/// Returns the bit number of the least significant bit set to
 	/// 1 in the binary representation of value. 
 	/// If value is zero, -1 will be returned.
 	///
-	/// @tparam T Signed or unsigned integer scalar types.
+	/// @tparam genIUType Signed or unsigned integer scalar types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/findLSB.xml">GLSL findLSB man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
@@ -166,19 +170,20 @@ namespace glm
 	/// 1 in the binary representation of value. 
 	/// If value is zero, -1 will be returned.
 	///
+	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
 	/// @tparam T Signed or unsigned integer scalar types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/findLSB.xml">GLSL findLSB man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, int, P> findLSB(vecType<L, T, P> const & v);
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_DECL vec<L, int, P> findLSB(vec<L, T, P> const & v);
 
 	/// Returns the bit number of the most significant bit in the binary representation of value.
 	/// For positive integers, the result will be the bit number of the most significant bit set to 1. 
 	/// For negative integers, the result will be the bit number of the most significant
 	/// bit set to 0. For a value of zero or negative one, -1 will be returned.
 	///
-	/// @tparam T Signed or unsigned integer scalar types.
+	/// @tparam genIUType Signed or unsigned integer scalar types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/findMSB.xml">GLSL findMSB man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
@@ -190,12 +195,13 @@ namespace glm
 	/// For negative integers, the result will be the bit number of the most significant
 	/// bit set to 0. For a value of zero or negative one, -1 will be returned.
 	///
+	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
 	/// @tparam T Signed or unsigned integer scalar types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/findMSB.xml">GLSL findMSB man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.8 Integer Functions</a>
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_DECL vecType<L, int, P> findMSB(vecType<L, T, P> const & v);
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_DECL vec<L, int, P> findMSB(vec<L, T, P> const & v);
 
 	/// @}
 }//namespace glm

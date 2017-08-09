@@ -33,7 +33,7 @@ void TestOctree::insert() {
 	const core::AABB<int>& aabb = _octree.aabb();
 	const glm::ivec3& mins = aabb.mins();
 	const glm::ivec3& maxs = aabb.maxs();
-	glm::ivec3 pos(glm::uninitialize);
+	glm::ivec3 pos;
 	for (int i = 0; i < (int)decltype(pos)::length(); ++i) {
 		pos[i] = _random.random(mins[i] + 1, maxs[i] - 1);
 	}

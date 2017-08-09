@@ -1008,7 +1008,7 @@ GLM_FUNC_QUALIFIER void glm_mat4_rotate(__m128 const in[4], float Angle, float c
 	Result[2] = TmpC4;
 	Result[3] = _mm_set_ps(1, 0, 0, 0);
 
-	//mat<4, 4, valType> Result(uninitialize);
+	//mat<4, 4, valType> Result;
 	//Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
 	//Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
 	//Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];

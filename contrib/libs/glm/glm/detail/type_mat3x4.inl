@@ -5,16 +5,10 @@ namespace glm
 {
 	// -- Constructors --
 
-#	if !GLM_HAS_DEFAULTED_FUNCTIONS || !defined(GLM_FORCE_NO_CTOR_INIT)
+#	if !GLM_HAS_DEFAULTED_FUNCTIONS
 		template<typename T, precision P>
 		GLM_FUNC_QUALIFIER mat<3, 4, T, P>::mat()
-		{
-#			ifndef GLM_FORCE_NO_CTOR_INIT 
-				this->value[0] = col_type(1, 0, 0, 0);
-				this->value[1] = col_type(0, 1, 0, 0);
-				this->value[2] = col_type(0, 0, 1, 0);
-#			endif
-		}
+		{}
 #	endif
 
 #	if !GLM_HAS_DEFAULTED_FUNCTIONS
@@ -35,10 +29,6 @@ namespace glm
 		this->value[1] = m.value[1];
 		this->value[2] = m.value[2];
 	}
-
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR mat<3, 4, T, P>::mat(ctor)
-	{}
 
 	template<typename T, precision P>
 	GLM_FUNC_QUALIFIER mat<3, 4, T, P>::mat(T scalar)
@@ -446,7 +436,7 @@ namespace glm
 		const T SrcB31 = m2[3][1];
 		const T SrcB32 = m2[3][2];
 
-		mat<4, 4, T, P> Result(uninitialize);
+		mat<4, 4, T, P> Result;
 		Result[0][0] = SrcA00 * SrcB00 + SrcA10 * SrcB01 + SrcA20 * SrcB02;
 		Result[0][1] = SrcA01 * SrcB00 + SrcA11 * SrcB01 + SrcA21 * SrcB02;
 		Result[0][2] = SrcA02 * SrcB00 + SrcA12 * SrcB01 + SrcA22 * SrcB02;

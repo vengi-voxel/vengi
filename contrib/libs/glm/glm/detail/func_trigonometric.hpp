@@ -24,7 +24,7 @@ namespace glm
 
 	/// Converts degrees to radians and returns the result.
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/radians.xml">GLSL radians man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -33,7 +33,7 @@ namespace glm
 
 	/// Converts radians to degrees and returns the result.
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/degrees.xml">GLSL degrees man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -43,7 +43,7 @@ namespace glm
 	/// The standard trigonometric sine function. 
 	/// The values returned by this function will range from [-1, 1].
 	/// 
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/sin.xml">GLSL sin man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -53,7 +53,7 @@ namespace glm
 	/// The standard trigonometric cosine function. 
 	/// The values returned by this function will range from [-1, 1].
 	/// 
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/cos.xml">GLSL cos man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -62,7 +62,7 @@ namespace glm
 
 	/// The standard trigonometric tangent function.
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/tan.xml">GLSL tan man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -73,7 +73,7 @@ namespace glm
 	/// The range of values returned by this function is [-PI/2, PI/2]. 
 	/// Results are undefined if |x| > 1.
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/asin.xml">GLSL asin man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -84,7 +84,7 @@ namespace glm
 	/// The range of values returned by this function is [0, PI]. 
 	/// Results are undefined if |x| > 1.
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/acos.xml">GLSL acos man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -97,7 +97,7 @@ namespace glm
 	/// by this function is [-PI, PI]. Results are undefined 
 	/// if x and y are both 0. 
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/atan.xml">GLSL atan man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -107,7 +107,7 @@ namespace glm
 	/// Arc tangent. Returns an angle whose tangent is y_over_x. 
 	/// The range of values returned by this function is [-PI/2, PI/2].
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/atan.xml">GLSL atan man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -116,7 +116,7 @@ namespace glm
 
 	/// Returns the hyperbolic sine function, (exp(x) - exp(-x)) / 2
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/sinh.xml">GLSL sinh man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -125,7 +125,7 @@ namespace glm
 
 	/// Returns the hyperbolic cosine function, (exp(x) + exp(-x)) / 2
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/cosh.xml">GLSL cosh man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -134,7 +134,7 @@ namespace glm
 
 	/// Returns the hyperbolic tangent function, sinh(angle) / cosh(angle)
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/tanh.xml">GLSL tanh man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -143,7 +143,7 @@ namespace glm
 
 	/// Arc hyperbolic sine; returns the inverse of sinh.
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/asinh.xml">GLSL asinh man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -153,7 +153,7 @@ namespace glm
 	/// Arc hyperbolic cosine; returns the non-negative inverse
 	/// of cosh. Results are undefined if x < 1.
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/acosh.xml">GLSL acosh man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>
@@ -163,7 +163,7 @@ namespace glm
 	/// Arc hyperbolic tangent; returns the inverse of tanh.
 	/// Results are undefined if abs(x) >= 1.
 	///
-	/// @tparam genType Floating-point scalar or vector types.
+	/// @tparam vecType Floating-point scalar or vector types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/atanh.xml">GLSL atanh man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.1 Angle and Trigonometry Functions</a>

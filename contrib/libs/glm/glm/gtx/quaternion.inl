@@ -7,6 +7,12 @@
 namespace glm
 {
 	template<typename T, precision P>
+	GLM_FUNC_QUALIFIER tquat<T, P> quat_identity()
+	{
+		return tquat<T, P>(static_cast<T>(1), static_cast<T>(0), static_cast<T>(0), static_cast<T>(0));
+	}
+
+	template<typename T, precision P>
 	GLM_FUNC_QUALIFIER vec<3, T, P> cross(vec<3, T, P> const& v, tquat<T, P> const& q)
 	{
 		return inverse(q) * v;
@@ -78,7 +84,7 @@ namespace glm
 	}
 
 	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER tquat<T, P> pow(tquat<T, P> const & x, T const & y)
+	GLM_FUNC_QUALIFIER tquat<T, P> pow(tquat<T, P> const& x, T const& y)
 	{
 		//Raising to the power of 0 should yield 1
 		//Needed to prevent a division by 0 error later on
@@ -207,6 +213,40 @@ namespace glm
 			rotationAxis.x * invs,
 			rotationAxis.y * invs,
 			rotationAxis.z * invs);
+	}
+	
+	template<typename T, precision P>
+	GLM_FUNC_QUALIFIER tquat<T, P> quatLookAt(vec<3, T, P> const& direction, vec<3, T, P> const& up)
+	{
+#		if GLM_COORDINATE_SYSTEM == GLM_LEFT_HANDED
+			return quatLookAtLH(direction, up);
+#		else
+			return quatLookAtRH(direction, up);
+# 		endif
+	}
+
+	template<typename T, precision P>
+	GLM_FUNC_QUALIFIER tquat<T, P> quatLookAtRH(vec<3, T, P> const& direction, vec<3, T, P> const& up)
+	{
+		mat<3, 3, T, P> Result;
+
+		Result[2] = -normalize(direction);
+		Result[0] = normalize(cross(up, Result[2]));
+		Result[1] = cross(Result[2], Result[0]);
+
+		return quat_cast(Result);
+	}
+
+	template<typename T, precision P>
+	GLM_FUNC_QUALIFIER tquat<T, P> quatLookAtLH(vec<3, T, P> const& direction, vec<3, T, P> const& up)
+	{
+		mat<3, 3, T, P> Result;
+
+		Result[2] = normalize(direction);
+		Result[0] = normalize(cross(up, Result[2]));
+		Result[1] = cross(Result[2], Result[0]);
+
+		return quat_cast(Result);
 	}
 
 }//namespace glm

@@ -507,11 +507,9 @@ void Mesh::readNodeHierarchy(const aiAnimation* animation, float animationTime, 
 }
 
 void Mesh::boneTransform(float timeInSeconds, glm::mat4* transforms, size_t size, uint8_t animationIndex) {
-	const glm::mat4 identity;
-
 	if (_numBones == 0 || _scene->mNumAnimations == 0) {
 		core_assert_always(size >= 1);
-		transforms[0] = identity;
+		transforms[0] = glm::mat4();
 		return;
 	}
 	core_assert(_numBones <= size);
@@ -521,7 +519,7 @@ void Mesh::boneTransform(float timeInSeconds, glm::mat4* transforms, size_t size
 	const float timeInTicks = timeInSeconds * ticksPerSecond;
 	const float animationTime = fmod(timeInTicks, (float) animation->mDuration);
 
-	readNodeHierarchy(animation, animationTime, _scene->mRootNode, identity);
+	readNodeHierarchy(animation, animationTime, _scene->mRootNode, glm::mat4());
 
 	for (uint32_t i = 0u; i < _numBones; ++i) {
 		transforms[i] = _boneInfo[i].finalTransformation;

@@ -7,15 +7,10 @@ namespace glm
 {
 	// -- Constructors --
 
-#	if !GLM_HAS_DEFAULTED_FUNCTIONS || !defined(GLM_FORCE_NO_CTOR_INIT)
+#	if !GLM_HAS_DEFAULTED_FUNCTIONS
 		template<typename T, precision P>
 		GLM_FUNC_QUALIFIER mat<2, 2, T, P>::mat()
-		{
-#			ifndef GLM_FORCE_NO_CTOR_INIT 
-				this->value[0] = col_type(1, 0);
-				this->value[1] = col_type(0, 1);
-#			endif
-		}
+		{}
 #	endif
 
 #	if !GLM_HAS_DEFAULTED_FUNCTIONS
@@ -34,10 +29,6 @@ namespace glm
 		this->value[0] = m.value[0];
 		this->value[1] = m.value[1];
 	}
-
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR mat<2, 2, T, P>::mat(ctor)
-	{}
 
 	template<typename T, precision P>
 	GLM_FUNC_QUALIFIER mat<2, 2, T, P>::mat(T scalar)

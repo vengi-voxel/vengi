@@ -1,6 +1,9 @@
 /// @ref gtx_matrix_decompose
 /// @file glm/gtx/matrix_decompose.inl
 
+#include "../gtc/constants.hpp"
+#include "../gtc/epsilon.hpp"
+
 namespace glm{
 namespace detail
 {
@@ -32,7 +35,7 @@ namespace detail
 		mat<4, 4, T, P> LocalMatrix(ModelMatrix);
 
 		// Normalize the matrix.
-		if(LocalMatrix[3][3] == static_cast<T>(0))
+		if(epsilonEqual(LocalMatrix[3][3], static_cast<T>(0), epsilon<T>()))
 			return false;
 
 		for(length_t i = 0; i < 4; ++i)
@@ -48,11 +51,14 @@ namespace detail
 		PerspectiveMatrix[3][3] = static_cast<T>(1);
 
 		/// TODO: Fixme!
-		if(determinant(PerspectiveMatrix) == static_cast<T>(0))
+		if(epsilonEqual(determinant(PerspectiveMatrix), static_cast<T>(0), epsilon<T>()))
 			return false;
 
 		// First, isolate perspective.  This is the messiest.
-		if(LocalMatrix[0][3] != static_cast<T>(0) || LocalMatrix[1][3] != static_cast<T>(0) || LocalMatrix[2][3] != static_cast<T>(0))
+		if(
+			epsilonNotEqual(LocalMatrix[0][3], static_cast<T>(0), epsilon<T>()) || 
+			epsilonNotEqual(LocalMatrix[1][3], static_cast<T>(0), epsilon<T>()) || 
+			epsilonNotEqual(LocalMatrix[2][3], static_cast<T>(0), epsilon<T>()))
 		{
 			// rightHandSide is the right hand side of the equation.
 			vec<4, T, P> RightHandSide;
@@ -88,8 +94,8 @@ namespace detail
 
 		// Now get scale and shear.
 		for(length_t i = 0; i < 3; ++i)
-			for(int j = 0; j < 3; ++j)
-				Row[i][j] = LocalMatrix[i][j];
+		for(length_t j = 0; j < 3; ++j)
+			Row[i][j] = LocalMatrix[i][j];
 
 		// Compute X scale factor and normalize first row.
 		Scale.x = length(Row[0]);// v3Length(Row[0]);

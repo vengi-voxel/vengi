@@ -78,21 +78,20 @@ namespace glm
 
 		/// Return the count of components of the vector
 		typedef length_t length_type;
-		GLM_FUNC_DECL static length_type length(){return 1;}
+		GLM_FUNC_DECL static GLM_CONSTEXPR length_type length(){return 1;}
 
 		GLM_FUNC_DECL T & operator[](length_type i);
 		GLM_FUNC_DECL T const & operator[](length_type i) const;
 
 		// -- Implicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec() GLM_DEFAULT_CTOR;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec() GLM_DEFAULT;
 		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec(vec const& v) GLM_DEFAULT;
 		template<precision Q>
 		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec(vec<1, T, Q> const& v);
 
 		// -- Explicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR explicit vec(ctor);
 		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR explicit vec(T scalar);
 
 		// -- Conversion vector constructors --

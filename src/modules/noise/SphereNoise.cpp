@@ -12,10 +12,9 @@ float sphereNoise(float longitude, float latitude) {
 	const float latRad = glm::radians(latitude);
 	const float longRad = glm::radians(longitude);
 	const float r = glm::cos(latRad);
-	glm::vec3 pos(glm::uninitialize);
-	pos.x = glm::sin(longRad) * r;
-	pos.y = glm::sin(latRad);
-	pos.z = glm::cos(longRad) * r;
+	glm::vec3 pos(glm::sin(longRad) * r,
+			glm::sin(latRad),
+			glm::cos(longRad) * r);
 	return glm::simplex(pos);
 }
 

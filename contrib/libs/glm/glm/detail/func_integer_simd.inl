@@ -9,13 +9,13 @@ namespace glm{
 namespace detail
 {
 	template<glm::precision P>
-	struct compute_bitfieldReverseStep<4, uint32, P, vec, true, true>
+	struct compute_bitfieldReverseStep<4, uint32, P, true, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, uint32, P> call(vec<4, uint32, P> const & v, uint32 Mask, uint32 Shift)
+		GLM_FUNC_QUALIFIER static vec<4, uint32, P> call(vec<4, uint32, P> const& v, uint32 Mask, uint32 Shift)
 		{
 			__m128i const set0 = v.data;
 
-			__m128i const set1 = _mm_set1_epi32(Mask);
+			__m128i const set1 = _mm_set1_epi32(static_cast<int>(Mask));
 			__m128i const and1 = _mm_and_si128(set0, set1);
 			__m128i const sft1 = _mm_slli_epi32(and1, Shift);
 
@@ -30,13 +30,13 @@ namespace detail
 	};
 
 	template<glm::precision P>
-	struct compute_bitfieldBitCountStep<4, uint32, P, vec, true, true>
+	struct compute_bitfieldBitCountStep<4, uint32, P, true, true>
 	{
-		GLM_FUNC_QUALIFIER static vec<4, uint32, P> call(vec<4, uint32, P> const & v, uint32 Mask, uint32 Shift)
+		GLM_FUNC_QUALIFIER static vec<4, uint32, P> call(vec<4, uint32, P> const& v, uint32 Mask, uint32 Shift)
 		{
 			__m128i const set0 = v.data;
 
-			__m128i const set1 = _mm_set1_epi32(Mask);
+			__m128i const set1 = _mm_set1_epi32(static_cast<int>(Mask));
 			__m128i const and0 = _mm_and_si128(set0, set1);
 			__m128i const sft0 = _mm_slli_epi32(set0, Shift);
 			__m128i const and1 = _mm_and_si128(sft0, set1);

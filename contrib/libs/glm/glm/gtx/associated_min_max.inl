@@ -17,7 +17,7 @@ GLM_FUNC_QUALIFIER vec<2, U, P> associatedMin
 	vecType<L, T, P> const& y, vecType<L, U, P> const & b
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 		Result[i] = x[i] < y[i] ? a[i] : b[i];
 	return Result;
@@ -30,7 +30,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMin
 	T y, const vecType<L, U, P>& b
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 		Result[i] = x < y ? a[i] : b[i];
 	return Result;
@@ -43,7 +43,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMin
 	vecType<L, T, P> const& y, U b
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 		Result[i] = x[i] < y[i] ? a : b;
 	return Result;
@@ -70,7 +70,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMin
 	vecType<L, T, P> const& z, vecType<L, U, P> const & c
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 		Result[i] = x[i] < y[i] ? (x[i] < z[i] ? a[i] : c[i]) : (y[i] < z[i] ? b[i] : c[i]);
 	return Result;
@@ -104,7 +104,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMin
 	vecType<L, T, P> const& w, vecType<L, U, P> const & d
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 	{
 		T Test1 = min(x[i], y[i]);
@@ -129,7 +129,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMin
 	T Test1 = min(x, y);
 	T Test2 = min(z, w);
 
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 	{
 		U Result1 = x < y ? a[i] : b[i];
@@ -149,7 +149,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMin
 	vecType<L, T, P> const& w, U d
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 	{
 		T Test1 = min(x[i], y[i]);
@@ -176,7 +176,7 @@ GLM_FUNC_QUALIFIER vec<2, U, P> associatedMax
 	vecType<L, T, P> const& y, vecType<L, U, P> const & b
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 		Result[i] = x[i] > y[i] ? a[i] : b[i];
 	return Result;
@@ -190,7 +190,7 @@ GLM_FUNC_QUALIFIER vecType<L, T, P> associatedMax
 	T y, vecType<L, U, P> const & b
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 		Result[i] = x > y ? a[i] : b[i];
 	return Result;
@@ -204,7 +204,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMax
 	vecType<L, T, P> const& y, U b
 )
 {
-	vecType<L, T, P> Result(uninitialize);
+	vecType<L, T, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 		Result[i] = x[i] > y[i] ? a : b;
 	return Result;
@@ -232,7 +232,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMax
 	vecType<L, T, P> const& z, vecType<L, U, P> const & c
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 		Result[i] = x[i] > y[i] ? (x[i] > z[i] ? a[i] : c[i]) : (y[i] > z[i] ? b[i] : c[i]);
 	return Result;
@@ -247,7 +247,7 @@ GLM_FUNC_QUALIFIER vecType<L, T, P> associatedMax
 	T z, vecType<L, U, P> const & c
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 		Result[i] = x > y ? (x > z ? a[i] : c[i]) : (y > z ? b[i] : c[i]);
 	return Result;
@@ -262,7 +262,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMax
 	vecType<L, T, P> const& z, U c
 )
 {
-	vecType<L, T, P> Result(uninitialize);
+	vecType<L, T, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 		Result[i] = x[i] > y[i] ? (x[i] > z[i] ? a : c) : (y[i] > z[i] ? b : c);
 	return Result;
@@ -296,7 +296,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMax
 	vecType<L, T, P> const& w, vecType<L, U, P> const & d
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 	{
 		T Test1 = max(x[i], y[i]);
@@ -321,7 +321,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMax
 	T Test1 = max(x, y);
 	T Test2 = max(z, w);
 
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 	{
 		U Result1 = x > y ? a[i] : b[i];
@@ -341,7 +341,7 @@ GLM_FUNC_QUALIFIER vecType<L, U, P> associatedMax
 	vecType<L, T, P> const& w, U d
 )
 {
-	vecType<L, U, P> Result(uninitialize);
+	vecType<L, U, P> Result;
 	for(length_t i = 0, n = Result.length(); i < n; ++i)
 	{
 		T Test1 = max(x[i], y[i]);

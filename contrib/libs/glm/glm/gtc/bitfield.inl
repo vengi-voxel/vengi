@@ -30,7 +30,7 @@ namespace detail
 		REG1 = ((REG1 <<  1) | REG1) & glm::uint16(0x5555);
 		REG2 = ((REG2 <<  1) | REG2) & glm::uint16(0x5555);
 
-		return REG1 | (REG2 << 1);
+		return REG1 | static_cast<glm::uint16>(REG2 << 1);
 	}
 
 	template<>

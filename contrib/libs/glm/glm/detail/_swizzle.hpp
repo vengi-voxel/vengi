@@ -160,27 +160,27 @@ namespace detail
 //
 // To prevent the C++ syntax from getting entirely overwhelming, define some alias macros
 //
-#define _GLM_SWIZZLE_TEMPLATE1   template<int N, typename T, precision P, int E0, int E1, int E2, int E3>
-#define _GLM_SWIZZLE_TEMPLATE2   template<int N, typename T, precision P, int E0, int E1, int E2, int E3, int F0, int F1, int F2, int F3>
-#define _GLM_SWIZZLE_TYPE1       _swizzle<N, T, P, E0, E1, E2, E3>
-#define _GLM_SWIZZLE_TYPE2       _swizzle<N, T, P, F0, F1, F2, F3>
+#define GLM_SWIZZLE_TEMPLATE1   template<int N, typename T, precision P, int E0, int E1, int E2, int E3>
+#define GLM_SWIZZLE_TEMPLATE2   template<int N, typename T, precision P, int E0, int E1, int E2, int E3, int F0, int F1, int F2, int F3>
+#define GLM_SWIZZLE_TYPE1       _swizzle<N, T, P, E0, E1, E2, E3>
+#define GLM_SWIZZLE_TYPE2       _swizzle<N, T, P, F0, F1, F2, F3>
 
 //
 // Wrapper for a binary operator (e.g. u.yy + v.zy)
 //
-#define _GLM_SWIZZLE_VECTOR_BINARY_OPERATOR_IMPLEMENTATION(OPERAND)                 \
-	_GLM_SWIZZLE_TEMPLATE2                                                          \
-	GLM_FUNC_QUALIFIER vec<N, T, P> operator OPERAND ( const _GLM_SWIZZLE_TYPE1& a, const _GLM_SWIZZLE_TYPE2& b)  \
+#define GLM_SWIZZLE_VECTOR_BINARY_OPERATOR_IMPLEMENTATION(OPERAND)                 \
+	GLM_SWIZZLE_TEMPLATE2                                                          \
+	GLM_FUNC_QUALIFIER vec<N, T, P> operator OPERAND ( const GLM_SWIZZLE_TYPE1& a, const GLM_SWIZZLE_TYPE2& b)  \
 	{                                                                               \
 		return a() OPERAND b();                                                     \
 	}                                                                               \
-	_GLM_SWIZZLE_TEMPLATE1                                                          \
-	GLM_FUNC_QUALIFIER vec<N, T, P> operator OPERAND ( const _GLM_SWIZZLE_TYPE1& a, const vec<N, T, P>& b)                   \
+	GLM_SWIZZLE_TEMPLATE1                                                          \
+	GLM_FUNC_QUALIFIER vec<N, T, P> operator OPERAND ( const GLM_SWIZZLE_TYPE1& a, const vec<N, T, P>& b)                   \
 	{                                                                               \
 		return a() OPERAND b;                                                       \
 	}                                                                               \
-	_GLM_SWIZZLE_TEMPLATE1                                                          \
-	GLM_FUNC_QUALIFIER vec<N, T, P> operator OPERAND ( const vec<N, T, P>& a, const _GLM_SWIZZLE_TYPE1& b)                   \
+	GLM_SWIZZLE_TEMPLATE1                                                          \
+	GLM_FUNC_QUALIFIER vec<N, T, P> operator OPERAND ( const vec<N, T, P>& a, const GLM_SWIZZLE_TYPE1& b)                   \
 	{                                                                               \
 		return a OPERAND b();                                                       \
 	}
@@ -188,14 +188,14 @@ namespace detail
 //
 // Wrapper for a operand between a swizzle and a binary (e.g. 1.0f - u.xyz)
 //
-#define _GLM_SWIZZLE_SCALAR_BINARY_OPERATOR_IMPLEMENTATION(OPERAND)                 \
-	_GLM_SWIZZLE_TEMPLATE1                                                          \
-	GLM_FUNC_QUALIFIER vec<N, T, P> operator OPERAND ( const _GLM_SWIZZLE_TYPE1& a, const T& b)                   \
+#define GLM_SWIZZLE_SCALAR_BINARY_OPERATOR_IMPLEMENTATION(OPERAND)                 \
+	GLM_SWIZZLE_TEMPLATE1                                                          \
+	GLM_FUNC_QUALIFIER vec<N, T, P> operator OPERAND ( const GLM_SWIZZLE_TYPE1& a, const T& b)                   \
 	{                                                                               \
 		return a() OPERAND b;                                                       \
 	}                                                                               \
-	_GLM_SWIZZLE_TEMPLATE1                                                          \
-	GLM_FUNC_QUALIFIER vec<N, T, P> operator OPERAND ( const T& a, const _GLM_SWIZZLE_TYPE1& b)                   \
+	GLM_SWIZZLE_TEMPLATE1                                                          \
+	GLM_FUNC_QUALIFIER vec<N, T, P> operator OPERAND ( const T& a, const GLM_SWIZZLE_TYPE1& b)                   \
 	{                                                                               \
 		return a OPERAND b();                                                       \
 	}
@@ -203,9 +203,9 @@ namespace detail
 //
 // Macro for wrapping a function taking one argument (e.g. abs())
 //
-#define _GLM_SWIZZLE_FUNCTION_1_ARGS(RETURN_TYPE,FUNCTION)                          \
-	_GLM_SWIZZLE_TEMPLATE1                                                          \
-	GLM_FUNC_QUALIFIER typename _GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const _GLM_SWIZZLE_TYPE1& a)  \
+#define GLM_SWIZZLE_FUNCTION_1_ARGS(RETURN_TYPE,FUNCTION)                          \
+	GLM_SWIZZLE_TEMPLATE1                                                          \
+	GLM_FUNC_QUALIFIER typename GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const GLM_SWIZZLE_TYPE1& a)  \
 	{                                                                               \
 		return FUNCTION(a());                                                       \
 	}
@@ -213,24 +213,24 @@ namespace detail
 //
 // Macro for wrapping a function taking two vector arguments (e.g. dot()).
 //
-#define _GLM_SWIZZLE_FUNCTION_2_ARGS(RETURN_TYPE,FUNCTION)                                                      \
-	_GLM_SWIZZLE_TEMPLATE2                                                                                      \
-	GLM_FUNC_QUALIFIER typename _GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const _GLM_SWIZZLE_TYPE1& a, const _GLM_SWIZZLE_TYPE2& b) \
+#define GLM_SWIZZLE_FUNCTION_2_ARGS(RETURN_TYPE,FUNCTION)                                                      \
+	GLM_SWIZZLE_TEMPLATE2                                                                                      \
+	GLM_FUNC_QUALIFIER typename GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const GLM_SWIZZLE_TYPE1& a, const GLM_SWIZZLE_TYPE2& b) \
 	{                                                                                                           \
 		return FUNCTION(a(), b());                                                                              \
 	}                                                                                                           \
-	_GLM_SWIZZLE_TEMPLATE1                                                                                      \
-	GLM_FUNC_QUALIFIER typename _GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const _GLM_SWIZZLE_TYPE1& a, const _GLM_SWIZZLE_TYPE1& b) \
+	GLM_SWIZZLE_TEMPLATE1                                                                                      \
+	GLM_FUNC_QUALIFIER typename GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const GLM_SWIZZLE_TYPE1& a, const GLM_SWIZZLE_TYPE1& b) \
 	{                                                                                                           \
 		return FUNCTION(a(), b());                                                                              \
 	}                                                                                                           \
-	_GLM_SWIZZLE_TEMPLATE1                                                                                      \
-	GLM_FUNC_QUALIFIER typename _GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const _GLM_SWIZZLE_TYPE1& a, const typename V& b)         \
+	GLM_SWIZZLE_TEMPLATE1                                                                                      \
+	GLM_FUNC_QUALIFIER typename GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const GLM_SWIZZLE_TYPE1& a, const typename V& b)         \
 	{                                                                                                           \
 		return FUNCTION(a(), b);                                                                                \
 	}                                                                                                           \
-	_GLM_SWIZZLE_TEMPLATE1                                                                                      \
-	GLM_FUNC_QUALIFIER typename _GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const V& a, const _GLM_SWIZZLE_TYPE1& b)                  \
+	GLM_SWIZZLE_TEMPLATE1                                                                                      \
+	GLM_FUNC_QUALIFIER typename GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const V& a, const GLM_SWIZZLE_TYPE1& b)                  \
 	{                                                                                                           \
 		return FUNCTION(a, b());                                                                                \
 	} 
@@ -238,24 +238,24 @@ namespace detail
 //
 // Macro for wrapping a function take 2 vec arguments followed by a scalar (e.g. mix()).
 //
-#define _GLM_SWIZZLE_FUNCTION_2_ARGS_SCALAR(RETURN_TYPE,FUNCTION)                                                             \
-	_GLM_SWIZZLE_TEMPLATE2                                                                                                    \
-	GLM_FUNC_QUALIFIER typename _GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const _GLM_SWIZZLE_TYPE1& a, const _GLM_SWIZZLE_TYPE2& b, const T& c)   \
+#define GLM_SWIZZLE_FUNCTION_2_ARGS_SCALAR(RETURN_TYPE,FUNCTION)                                                             \
+	GLM_SWIZZLE_TEMPLATE2                                                                                                    \
+	GLM_FUNC_QUALIFIER typename GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const GLM_SWIZZLE_TYPE1& a, const GLM_SWIZZLE_TYPE2& b, const T& c)   \
 	{                                                                                                                         \
 		return FUNCTION(a(), b(), c);                                                                                         \
 	}                                                                                                                         \
-	_GLM_SWIZZLE_TEMPLATE1                                                                                                    \
-	GLM_FUNC_QUALIFIER typename _GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const _GLM_SWIZZLE_TYPE1& a, const _GLM_SWIZZLE_TYPE1& b, const T& c)   \
+	GLM_SWIZZLE_TEMPLATE1                                                                                                    \
+	GLM_FUNC_QUALIFIER typename GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const GLM_SWIZZLE_TYPE1& a, const GLM_SWIZZLE_TYPE1& b, const T& c)   \
 	{                                                                                                                         \
 		return FUNCTION(a(), b(), c);                                                                                         \
 	}                                                                                                                         \
-	_GLM_SWIZZLE_TEMPLATE1                                                                                                    \
-	GLM_FUNC_QUALIFIER typename _GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const _GLM_SWIZZLE_TYPE1& a, const typename S0::vec_type& b, const T& c)\
+	GLM_SWIZZLE_TEMPLATE1                                                                                                    \
+	GLM_FUNC_QUALIFIER typename GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const GLM_SWIZZLE_TYPE1& a, const typename S0::vec_type& b, const T& c)\
 	{                                                                                                                         \
 		return FUNCTION(a(), b, c);                                                                                           \
 	}                                                                                                                         \
-	_GLM_SWIZZLE_TEMPLATE1                                                                                                    \
-	GLM_FUNC_QUALIFIER typename _GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const typename V& a, const _GLM_SWIZZLE_TYPE1& b, const T& c)           \
+	GLM_SWIZZLE_TEMPLATE1                                                                                                    \
+	GLM_FUNC_QUALIFIER typename GLM_SWIZZLE_TYPE1::RETURN_TYPE FUNCTION(const typename V& a, const GLM_SWIZZLE_TYPE1& b, const T& c)           \
 	{                                                                                                                         \
 		return FUNCTION(a, b(), c);                                                                                           \
 	} 
@@ -267,12 +267,12 @@ namespace glm
 {
 	namespace detail
 	{
-		_GLM_SWIZZLE_SCALAR_BINARY_OPERATOR_IMPLEMENTATION(-)
-		_GLM_SWIZZLE_SCALAR_BINARY_OPERATOR_IMPLEMENTATION(*)
-		_GLM_SWIZZLE_VECTOR_BINARY_OPERATOR_IMPLEMENTATION(+)
-		_GLM_SWIZZLE_VECTOR_BINARY_OPERATOR_IMPLEMENTATION(-)
-		_GLM_SWIZZLE_VECTOR_BINARY_OPERATOR_IMPLEMENTATION(*)
-		_GLM_SWIZZLE_VECTOR_BINARY_OPERATOR_IMPLEMENTATION(/)
+		GLM_SWIZZLE_SCALAR_BINARY_OPERATOR_IMPLEMENTATION(-)
+		GLM_SWIZZLE_SCALAR_BINARY_OPERATOR_IMPLEMENTATION(*)
+		GLM_SWIZZLE_VECTOR_BINARY_OPERATOR_IMPLEMENTATION(+)
+		GLM_SWIZZLE_VECTOR_BINARY_OPERATOR_IMPLEMENTATION(-)
+		GLM_SWIZZLE_VECTOR_BINARY_OPERATOR_IMPLEMENTATION(*)
+		GLM_SWIZZLE_VECTOR_BINARY_OPERATOR_IMPLEMENTATION(/)
 	}
 
 	//
@@ -285,25 +285,25 @@ namespace glm
 	// to explicitly convert the swizzled type to the unswizzled type.
 	//
 
-	//_GLM_SWIZZLE_FUNCTION_1_ARGS(vec_type,    abs);
-	//_GLM_SWIZZLE_FUNCTION_1_ARGS(vec_type,    acos);
-	//_GLM_SWIZZLE_FUNCTION_1_ARGS(vec_type,    acosh);
-	//_GLM_SWIZZLE_FUNCTION_1_ARGS(vec_type,    all);
-	//_GLM_SWIZZLE_FUNCTION_1_ARGS(vec_type,    any);
+	//GLM_SWIZZLE_FUNCTION_1_ARGS(vec_type,    abs);
+	//GLM_SWIZZLE_FUNCTION_1_ARGS(vec_type,    acos);
+	//GLM_SWIZZLE_FUNCTION_1_ARGS(vec_type,    acosh);
+	//GLM_SWIZZLE_FUNCTION_1_ARGS(vec_type,    all);
+	//GLM_SWIZZLE_FUNCTION_1_ARGS(vec_type,    any);
 
-	//_GLM_SWIZZLE_FUNCTION_2_ARGS(value_type,  dot);
-	//_GLM_SWIZZLE_FUNCTION_2_ARGS(vec_type,    cross);
-	//_GLM_SWIZZLE_FUNCTION_2_ARGS(vec_type,    step);    
-	//_GLM_SWIZZLE_FUNCTION_2_ARGS_SCALAR(vec_type, mix);
+	//GLM_SWIZZLE_FUNCTION_2_ARGS(value_type,  dot);
+	//GLM_SWIZZLE_FUNCTION_2_ARGS(vec_type,    cross);
+	//GLM_SWIZZLE_FUNCTION_2_ARGS(vec_type,    step);    
+	//GLM_SWIZZLE_FUNCTION_2_ARGS_SCALAR(vec_type, mix);
 }
 
-#define _GLM_SWIZZLE2_2_MEMBERS(T, P, E0,E1) \
+#define GLM_SWIZZLE2_2_MEMBERS(T, P, E0,E1) \
 	struct { detail::_swizzle<2, T, P, 0,0,-1,-2> E0 ## E0; }; \
 	struct { detail::_swizzle<2, T, P, 0,1,-1,-2> E0 ## E1; }; \
 	struct { detail::_swizzle<2, T, P, 1,0,-1,-2> E1 ## E0; }; \
 	struct { detail::_swizzle<2, T, P, 1,1,-1,-2> E1 ## E1; }; 
 
-#define _GLM_SWIZZLE2_3_MEMBERS(T, P, E0,E1) \
+#define GLM_SWIZZLE2_3_MEMBERS(T, P, E0,E1) \
 	struct { detail::_swizzle<3,T, P, 0,0,0,-1> E0 ## E0 ## E0; }; \
 	struct { detail::_swizzle<3,T, P, 0,0,1,-1> E0 ## E0 ## E1; }; \
 	struct { detail::_swizzle<3,T, P, 0,1,0,-1> E0 ## E1 ## E0; }; \
@@ -313,7 +313,7 @@ namespace glm
 	struct { detail::_swizzle<3,T, P, 1,1,0,-1> E1 ## E1 ## E0; }; \
 	struct { detail::_swizzle<3,T, P, 1,1,1,-1> E1 ## E1 ## E1; };  
 
-#define _GLM_SWIZZLE2_4_MEMBERS(T, P, E0,E1) \
+#define GLM_SWIZZLE2_4_MEMBERS(T, P, E0,E1) \
 	struct { detail::_swizzle<4,T, P, 0,0,0,0> E0 ## E0 ## E0 ## E0; }; \
 	struct { detail::_swizzle<4,T, P, 0,0,0,1> E0 ## E0 ## E0 ## E1; }; \
 	struct { detail::_swizzle<4,T, P, 0,0,1,0> E0 ## E0 ## E1 ## E0; }; \
@@ -331,7 +331,7 @@ namespace glm
 	struct { detail::_swizzle<4,T, P, 1,1,1,0> E1 ## E1 ## E1 ## E0; }; \
 	struct { detail::_swizzle<4,T, P, 1,1,1,1> E1 ## E1 ## E1 ## E1; };
 
-#define _GLM_SWIZZLE3_2_MEMBERS(T, P, E0,E1,E2) \
+#define GLM_SWIZZLE3_2_MEMBERS(T, P, E0,E1,E2) \
 	struct { detail::_swizzle<2,T, P, 0,0,-1,-2> E0 ## E0; }; \
 	struct { detail::_swizzle<2,T, P, 0,1,-1,-2> E0 ## E1; }; \
 	struct { detail::_swizzle<2,T, P, 0,2,-1,-2> E0 ## E2; }; \
@@ -342,7 +342,7 @@ namespace glm
 	struct { detail::_swizzle<2,T, P, 2,1,-1,-2> E2 ## E1; }; \
 	struct { detail::_swizzle<2,T, P, 2,2,-1,-2> E2 ## E2; };
 
-#define _GLM_SWIZZLE3_3_MEMBERS(T, P ,E0,E1,E2) \
+#define GLM_SWIZZLE3_3_MEMBERS(T, P ,E0,E1,E2) \
 	struct { detail::_swizzle<3, T, P, 0,0,0,-1> E0 ## E0 ## E0; }; \
 	struct { detail::_swizzle<3, T, P, 0,0,1,-1> E0 ## E0 ## E1; }; \
 	struct { detail::_swizzle<3, T, P, 0,0,2,-1> E0 ## E0 ## E2; }; \
@@ -371,7 +371,7 @@ namespace glm
 	struct { detail::_swizzle<3, T, P, 2,2,1,-1> E2 ## E2 ## E1; }; \
 	struct { detail::_swizzle<3, T, P, 2,2,2,-1> E2 ## E2 ## E2; };
 
-#define _GLM_SWIZZLE3_4_MEMBERS(T, P, E0,E1,E2) \
+#define GLM_SWIZZLE3_4_MEMBERS(T, P, E0,E1,E2) \
 	struct { detail::_swizzle<4,T, P, 0,0,0,0> E0 ## E0 ## E0 ## E0; }; \
 	struct { detail::_swizzle<4,T, P, 0,0,0,1> E0 ## E0 ## E0 ## E1; }; \
 	struct { detail::_swizzle<4,T, P, 0,0,0,2> E0 ## E0 ## E0 ## E2; }; \
@@ -454,7 +454,7 @@ namespace glm
 	struct { detail::_swizzle<4,T, P, 2,2,2,1> E2 ## E2 ## E2 ## E1; }; \
 	struct { detail::_swizzle<4,T, P, 2,2,2,2> E2 ## E2 ## E2 ## E2; }; 
 
-#define _GLM_SWIZZLE4_2_MEMBERS(T, P, E0,E1,E2,E3) \
+#define GLM_SWIZZLE4_2_MEMBERS(T, P, E0,E1,E2,E3) \
 	struct { detail::_swizzle<2,T, P, 0,0,-1,-2> E0 ## E0; }; \
 	struct { detail::_swizzle<2,T, P, 0,1,-1,-2> E0 ## E1; }; \
 	struct { detail::_swizzle<2,T, P, 0,2,-1,-2> E0 ## E2; }; \
@@ -472,7 +472,7 @@ namespace glm
 	struct { detail::_swizzle<2,T, P, 3,2,-1,-2> E3 ## E2; }; \
 	struct { detail::_swizzle<2,T, P, 3,3,-1,-2> E3 ## E3; }; 
 
-#define _GLM_SWIZZLE4_3_MEMBERS(T, P, E0,E1,E2,E3) \
+#define GLM_SWIZZLE4_3_MEMBERS(T, P, E0,E1,E2,E3) \
 	struct { detail::_swizzle<3, T, P, 0,0,0,-1> E0 ## E0 ## E0; }; \
 	struct { detail::_swizzle<3, T, P, 0,0,1,-1> E0 ## E0 ## E1; }; \
 	struct { detail::_swizzle<3, T, P, 0,0,2,-1> E0 ## E0 ## E2; }; \
@@ -538,7 +538,7 @@ namespace glm
 	struct { detail::_swizzle<3, T, P, 3,3,2,-1> E3 ## E3 ## E2; }; \
 	struct { detail::_swizzle<3, T, P, 3,3,3,-1> E3 ## E3 ## E3; };  
 
-#define _GLM_SWIZZLE4_4_MEMBERS(T, P, E0,E1,E2,E3) \
+#define GLM_SWIZZLE4_4_MEMBERS(T, P, E0,E1,E2,E3) \
 	struct { detail::_swizzle<4, T, P, 0,0,0,0> E0 ## E0 ## E0 ## E0; }; \
 	struct { detail::_swizzle<4, T, P, 0,0,0,1> E0 ## E0 ## E0 ## E1; }; \
 	struct { detail::_swizzle<4, T, P, 0,0,0,2> E0 ## E0 ## E0 ## E2; }; \

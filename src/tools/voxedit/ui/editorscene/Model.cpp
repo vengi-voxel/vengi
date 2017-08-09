@@ -401,7 +401,7 @@ bool Model::setVoxel(const glm::ivec3& pos, const voxel::Voxel& voxel) {
 	if (delta == 0) {
 		return true;
 	}
-	glm::ivec3 mirror(glm::uninitialize);
+	glm::ivec3 mirror;
 	for (int i = 0; i < 3; ++i) {
 		if (i == index) {
 			mirror[i] = _mirrorPos[i] + delta;
@@ -758,8 +758,8 @@ void Model::updateShapeBuilderForPlane(bool mirror, const glm::ivec3& pos, core:
 	mins[index] = maxs[index] = pos[index];
 	const glm::vec3& ll = mins;
 	const glm::vec3& ur = maxs;
-	glm::vec3 ul(glm::uninitialize);
-	glm::vec3 lr(glm::uninitialize);
+	glm::vec3 ul;
+	glm::vec3 lr;
 	if (axis == core::Axis::Y) {
 		ul = glm::vec3(mins.x, mins.y, maxs.z);
 		lr = glm::vec3(maxs.x, maxs.y, mins.z);

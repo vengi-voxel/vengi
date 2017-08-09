@@ -81,7 +81,7 @@ bool Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 		targetDir = glm::forward;
 	}
 
-	glm::vec3 upDir(glm::uninitialize);
+	glm::vec3 upDir;
 	if (glm::epsilonEqual(glm::length2(upDirection), 0.0f, glm::epsilon<float>())) {
 		upDir = glm::up;
 	} else {
@@ -224,7 +224,7 @@ void Camera::sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceW
 }
 
 void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[core::FRUSTUM_VERTICES_MAX]) const {
-	glm::mat4 proj(glm::uninitialize);
+	glm::mat4 proj;
 	switch(_mode) {
 	case CameraMode::Orthogonal:
 		proj = glm::ortho(0.0f, (float)width(), (float)height(), 0.0f, nearPlane, farPlane);

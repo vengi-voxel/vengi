@@ -51,7 +51,7 @@ namespace detail
 			//
 			//return _mm_shuffle_ps(xxyy, zzww, _MM_SHUFFLE(2, 0, 2, 0));
 
-			tquat<float, P> Result(uninitialize);
+			tquat<float, P> Result;
 			_mm_store_ss(&Result.x, add4);
 			_mm_store_ss(&Result.y, add5);
 			_mm_store_ss(&Result.z, add6);
@@ -75,7 +75,7 @@ namespace detail
 	{
 		static tquat<float, P> call(tquat<float, P> const& q, tquat<float, P> const& p)
 		{
-			tquat<float, P> Result(uninitialize);
+			tquat<float, P> Result;
 			Result.data = _mm_add_ps(q.data, p.data);
 			return Result;
 		}
@@ -87,7 +87,7 @@ namespace detail
 	{
 		static tquat<double, P> call(tquat<double, P> const & a, tquat<double, P> const & b)
 		{
-			tquat<double, P> Result(uninitialize);
+			tquat<double, P> Result;
 			Result.data = _mm256_add_pd(a.data, b.data);
 			return Result;
 		}
@@ -99,7 +99,7 @@ namespace detail
 	{
 		static tquat<float, P> call(tquat<float, P> const& q, tquat<float, P> const& p)
 		{
-			vec<4, float, P> Result(uninitialize);
+			vec<4, float, P> Result;
 			Result.data = _mm_sub_ps(q.data, p.data);
 			return Result;
 		}
@@ -111,7 +111,7 @@ namespace detail
 	{
 		static tquat<double, P> call(tquat<double, P> const & a, tquat<double, P> const & b)
 		{
-			tquat<double, P> Result(uninitialize);
+			tquat<double, P> Result;
 			Result.data = _mm256_sub_pd(a.data, b.data);
 			return Result;
 		}
@@ -123,7 +123,7 @@ namespace detail
 	{
 		static tquat<float, P> call(tquat<float, P> const& q, float s)
 		{
-			vec<4, float, P> Result(uninitialize);
+			vec<4, float, P> Result;
 			Result.data = _mm_mul_ps(q.data, _mm_set_ps1(s));
 			return Result;
 		}
@@ -135,7 +135,7 @@ namespace detail
 	{
 		static tquat<double, P> call(tquat<double, P> const& q, double s)
 		{
-			tquat<double, P> Result(uninitialize);
+			tquat<double, P> Result;
 			Result.data = _mm256_mul_pd(q.data, _mm_set_ps1(s));
 			return Result;
 		}
@@ -147,7 +147,7 @@ namespace detail
 	{
 		static tquat<float, P> call(tquat<float, P> const& q, float s)
 		{
-			vec<4, float, P> Result(uninitialize);
+			vec<4, float, P> Result;
 			Result.data = _mm_div_ps(q.data, _mm_set_ps1(s));
 			return Result;
 		}
@@ -159,7 +159,7 @@ namespace detail
 	{
 		static tquat<double, P> call(tquat<double, P> const& q, double s)
 		{
-			tquat<double, P> Result(uninitialize);
+			tquat<double, P> Result;
 			Result.data = _mm256_div_pd(q.data, _mm_set_ps1(s));
 			return Result;
 		}
@@ -186,7 +186,7 @@ namespace detail
 			uv  = _mm_mul_ps(uv, _mm_mul_ps(q_wwww, two));
 			uuv = _mm_mul_ps(uuv, two);
 
-			vec<4, float, P> Result(uninitialize);
+			vec<4, float, P> Result;
 			Result.data = _mm_add_ps(v.Data, _mm_add_ps(uv, uuv));
 			return Result;
 		}

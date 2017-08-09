@@ -231,7 +231,7 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 	buf[nameLength] = '\0';
 	Log::debug("Matrix name: %s", buf);
 
-	glm::uvec3 size(glm::uninitialize);
+	glm::uvec3 size;
 	wrap(stream.readInt(size.x));
 	wrap(stream.readInt(size.y));
 	wrap(stream.readInt(size.z));
@@ -242,7 +242,7 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 		return nullptr;
 	}
 
-	glm::ivec3 offset(glm::uninitialize);
+	glm::ivec3 offset;
 	wrap(stream.readInt((uint32_t&)offset.x));
 	wrap(stream.readInt((uint32_t&)offset.y));
 	wrap(stream.readInt((uint32_t&)offset.z));

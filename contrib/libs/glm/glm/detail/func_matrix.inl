@@ -12,10 +12,10 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static matType<C, R, T, P> call(matType<C, R, T, P> const& x, matType<C, R, T, P> const& y)
 		{
-			matType<C, R, T, P> result(uninitialize);
-			for(length_t i = 0; i < result.length(); ++i)
-				result[i] = x[i] * y[i];
-			return result;
+			matType<C, R, T, P> Result;
+			for(length_t i = 0; i < Result.length(); ++i)
+				Result[i] = x[i] * y[i];
+			return Result;
 		}
 	};
 
@@ -27,12 +27,12 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static mat<2, 2, T, P> call(mat<2, 2, T, P> const& m)
 		{
-			mat<2, 2, T, P> result(uninitialize);
-			result[0][0] = m[0][0];
-			result[0][1] = m[1][0];
-			result[1][0] = m[0][1];
-			result[1][1] = m[1][1];
-			return result;
+			mat<2, 2, T, P> Result;
+			Result[0][0] = m[0][0];
+			Result[0][1] = m[1][0];
+			Result[1][0] = m[0][1];
+			Result[1][1] = m[1][1];
+			return Result;
 		}
 	};
 
@@ -41,14 +41,14 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static mat<3, 2, T, P> call(mat<2, 3, T, P> const& m)
 		{
-			mat<3,2, T, P> result(uninitialize);
-			result[0][0] = m[0][0];
-			result[0][1] = m[1][0];
-			result[1][0] = m[0][1];
-			result[1][1] = m[1][1];
-			result[2][0] = m[0][2];
-			result[2][1] = m[1][2];
-			return result;
+			mat<3,2, T, P> Result;
+			Result[0][0] = m[0][0];
+			Result[0][1] = m[1][0];
+			Result[1][0] = m[0][1];
+			Result[1][1] = m[1][1];
+			Result[2][0] = m[0][2];
+			Result[2][1] = m[1][2];
+			return Result;
 		}
 	};
 
@@ -57,16 +57,16 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static mat<4, 2, T, P> call(mat<2, 4, T, P> const& m)
 		{
-			mat<4, 2, T, P> result(uninitialize);
-			result[0][0] = m[0][0];
-			result[0][1] = m[1][0];
-			result[1][0] = m[0][1];
-			result[1][1] = m[1][1];
-			result[2][0] = m[0][2];
-			result[2][1] = m[1][2];
-			result[3][0] = m[0][3];
-			result[3][1] = m[1][3];
-			return result;
+			mat<4, 2, T, P> Result;
+			Result[0][0] = m[0][0];
+			Result[0][1] = m[1][0];
+			Result[1][0] = m[0][1];
+			Result[1][1] = m[1][1];
+			Result[2][0] = m[0][2];
+			Result[2][1] = m[1][2];
+			Result[3][0] = m[0][3];
+			Result[3][1] = m[1][3];
+			return Result;
 		}
 	};
 
@@ -75,14 +75,14 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static mat<2, 3, T, P> call(mat<3, 2, T, P> const& m)
 		{
-			mat<2, 3, T, P> result(uninitialize);
-			result[0][0] = m[0][0];
-			result[0][1] = m[1][0];
-			result[0][2] = m[2][0];
-			result[1][0] = m[0][1];
-			result[1][1] = m[1][1];
-			result[1][2] = m[2][1];
-			return result;
+			mat<2, 3, T, P> Result;
+			Result[0][0] = m[0][0];
+			Result[0][1] = m[1][0];
+			Result[0][2] = m[2][0];
+			Result[1][0] = m[0][1];
+			Result[1][1] = m[1][1];
+			Result[1][2] = m[2][1];
+			return Result;
 		}
 	};
 
@@ -91,19 +91,19 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static mat<3, 3, T, P> call(mat<3, 3, T, P> const& m)
 		{
-			mat<3, 3, T, P> result(uninitialize);
-			result[0][0] = m[0][0];
-			result[0][1] = m[1][0];
-			result[0][2] = m[2][0];
+			mat<3, 3, T, P> Result;
+			Result[0][0] = m[0][0];
+			Result[0][1] = m[1][0];
+			Result[0][2] = m[2][0];
 
-			result[1][0] = m[0][1];
-			result[1][1] = m[1][1];
-			result[1][2] = m[2][1];
+			Result[1][0] = m[0][1];
+			Result[1][1] = m[1][1];
+			Result[1][2] = m[2][1];
 
-			result[2][0] = m[0][2];
-			result[2][1] = m[1][2];
-			result[2][2] = m[2][2];
-			return result;
+			Result[2][0] = m[0][2];
+			Result[2][1] = m[1][2];
+			Result[2][2] = m[2][2];
+			return Result;
 		}
 	};
 
@@ -112,20 +112,20 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static mat<4, 3, T, P> call(mat<3, 4, T, P> const& m)
 		{
-			mat<4, 3, T, P> result(uninitialize);
-			result[0][0] = m[0][0];
-			result[0][1] = m[1][0];
-			result[0][2] = m[2][0];
-			result[1][0] = m[0][1];
-			result[1][1] = m[1][1];
-			result[1][2] = m[2][1];
-			result[2][0] = m[0][2];
-			result[2][1] = m[1][2];
-			result[2][2] = m[2][2];
-			result[3][0] = m[0][3];
-			result[3][1] = m[1][3];
-			result[3][2] = m[2][3];
-			return result;
+			mat<4, 3, T, P> Result;
+			Result[0][0] = m[0][0];
+			Result[0][1] = m[1][0];
+			Result[0][2] = m[2][0];
+			Result[1][0] = m[0][1];
+			Result[1][1] = m[1][1];
+			Result[1][2] = m[2][1];
+			Result[2][0] = m[0][2];
+			Result[2][1] = m[1][2];
+			Result[2][2] = m[2][2];
+			Result[3][0] = m[0][3];
+			Result[3][1] = m[1][3];
+			Result[3][2] = m[2][3];
+			return Result;
 		}
 	};
 
@@ -134,16 +134,16 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static mat<2, 4, T, P> call(mat<4, 2, T, P> const& m)
 		{
-			mat<2, 4, T, P> result(uninitialize);
-			result[0][0] = m[0][0];
-			result[0][1] = m[1][0];
-			result[0][2] = m[2][0];
-			result[0][3] = m[3][0];
-			result[1][0] = m[0][1];
-			result[1][1] = m[1][1];
-			result[1][2] = m[2][1];
-			result[1][3] = m[3][1];
-			return result;
+			mat<2, 4, T, P> Result;
+			Result[0][0] = m[0][0];
+			Result[0][1] = m[1][0];
+			Result[0][2] = m[2][0];
+			Result[0][3] = m[3][0];
+			Result[1][0] = m[0][1];
+			Result[1][1] = m[1][1];
+			Result[1][2] = m[2][1];
+			Result[1][3] = m[3][1];
+			return Result;
 		}
 	};
 
@@ -152,20 +152,20 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static mat<3, 4, T, P> call(mat<4, 3, T, P> const& m)
 		{
-			mat<3, 4, T, P> result(uninitialize);
-			result[0][0] = m[0][0];
-			result[0][1] = m[1][0];
-			result[0][2] = m[2][0];
-			result[0][3] = m[3][0];
-			result[1][0] = m[0][1];
-			result[1][1] = m[1][1];
-			result[1][2] = m[2][1];
-			result[1][3] = m[3][1];
-			result[2][0] = m[0][2];
-			result[2][1] = m[1][2];
-			result[2][2] = m[2][2];
-			result[2][3] = m[3][2];
-			return result;
+			mat<3, 4, T, P> Result;
+			Result[0][0] = m[0][0];
+			Result[0][1] = m[1][0];
+			Result[0][2] = m[2][0];
+			Result[0][3] = m[3][0];
+			Result[1][0] = m[0][1];
+			Result[1][1] = m[1][1];
+			Result[1][2] = m[2][1];
+			Result[1][3] = m[3][1];
+			Result[2][0] = m[0][2];
+			Result[2][1] = m[1][2];
+			Result[2][2] = m[2][2];
+			Result[2][3] = m[3][2];
+			return Result;
 		}
 	};
 
@@ -174,27 +174,27 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static mat<4, 4, T, P> call(mat<4, 4, T, P> const& m)
 		{
-			mat<4, 4, T, P> result(uninitialize);
-			result[0][0] = m[0][0];
-			result[0][1] = m[1][0];
-			result[0][2] = m[2][0];
-			result[0][3] = m[3][0];
+			mat<4, 4, T, P> Result;
+			Result[0][0] = m[0][0];
+			Result[0][1] = m[1][0];
+			Result[0][2] = m[2][0];
+			Result[0][3] = m[3][0];
 
-			result[1][0] = m[0][1];
-			result[1][1] = m[1][1];
-			result[1][2] = m[2][1];
-			result[1][3] = m[3][1];
+			Result[1][0] = m[0][1];
+			Result[1][1] = m[1][1];
+			Result[1][2] = m[2][1];
+			Result[1][3] = m[3][1];
 
-			result[2][0] = m[0][2];
-			result[2][1] = m[1][2];
-			result[2][2] = m[2][2];
-			result[2][3] = m[3][2];
+			Result[2][0] = m[0][2];
+			Result[2][1] = m[1][2];
+			Result[2][2] = m[2][2];
+			Result[2][3] = m[3][2];
 
-			result[3][0] = m[0][3];
-			result[3][1] = m[1][3];
-			result[3][2] = m[2][3];
-			result[3][3] = m[3][3];
-			return result;
+			Result[3][0] = m[0][3];
+			Result[3][1] = m[1][3];
+			Result[3][2] = m[2][3];
+			Result[3][3] = m[3][3];
+			return Result;
 		}
 	};
 
@@ -278,7 +278,7 @@ namespace detail
 				- m[1][0] * (m[0][1] * m[2][2] - m[2][1] * m[0][2])
 				+ m[2][0] * (m[0][1] * m[1][2] - m[1][1] * m[0][2]));
 
-			mat<3, 3, T, P> Inverse(uninitialize);
+			mat<3, 3, T, P> Inverse;
 			Inverse[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]) * OneOverDeterminant;
 			Inverse[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]) * OneOverDeterminant;
 			Inverse[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]) * OneOverDeterminant;
@@ -362,12 +362,12 @@ namespace detail
 		return detail::compute_matrixCompMult<matType, C, R, T, P, detail::is_aligned<P>::value>::call(x, y);
 	}
 
-	template<length_t DA, length_t DB, typename T, precision P, template<length_t, typename, precision> class vecTypeA, template<length_t, typename, precision> class vecTypeB>
-	GLM_FUNC_QUALIFIER typename detail::outerProduct_trait<DA, DB, T, P, vecTypeA, vecTypeB>::type outerProduct(vecTypeA<DA, T, P> const & c, vecTypeB<DB, T, P> const & r)
+	template<length_t DA, length_t DB, typename T, precision P>
+	GLM_FUNC_QUALIFIER typename detail::outerProduct_trait<DA, DB, T, P>::type outerProduct(vec<DA, T, P> const & c, vec<DB, T, P> const & r)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559 || GLM_UNRESTRICTED_GENTYPE, "'outerProduct' only accept floating-point inputs");
 
-		typename detail::outerProduct_trait<DA, DB, T, P, vecTypeA, vecTypeB>::type m(uninitialize);
+		typename detail::outerProduct_trait<DA, DB, T, P>::type m;
 		for(length_t i = 0; i < m.length(); ++i)
 			m[i] = c * r[i];
 		return m;

@@ -5,6 +5,7 @@
 
 #include "precision.hpp"
 #include "type_int.hpp"
+#include "compute_vector_relational.hpp"
 
 namespace glm{
 namespace detail

@@ -49,21 +49,20 @@ namespace glm
 
 		typedef length_t length_type;
 		/// Return the count of components of a dual quaternion
-		GLM_FUNC_DECL static length_type length(){return 2;}
+		GLM_FUNC_DECL static GLM_CONSTEXPR length_type length(){return 2;}
 
 		GLM_FUNC_DECL part_type & operator[](length_type i);
 		GLM_FUNC_DECL part_type const & operator[](length_type i) const;
 
 		// -- Implicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat() GLM_DEFAULT_CTOR;
+		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat() GLM_DEFAULT;
 		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tdualquat<T, P> const & d) GLM_DEFAULT;
 		template<precision Q>
 		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tdualquat<T, Q> const & d);
 
 		// -- Explicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR explicit tdualquat(ctor);
 		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tquat<T, P> const & real);
 		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tquat<T, P> const & orientation, vec<3, T, P> const & translation);
 		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tquat<T, P> const & real, tquat<T, P> const & dual);
@@ -132,6 +131,12 @@ namespace glm
 
 	template<typename T, precision P>
 	GLM_FUNC_DECL bool operator!=(tdualquat<T, P> const & q1, tdualquat<T, P> const & q2);
+
+	/// Creates an identity dual quaternion.
+	///
+	/// @see gtx_dual_quaternion
+	template <typename T, precision P>
+	GLM_FUNC_DECL tdualquat<T, P> dual_quat_identity();
 
 	/// Returns the normalized quaternion.
 	///

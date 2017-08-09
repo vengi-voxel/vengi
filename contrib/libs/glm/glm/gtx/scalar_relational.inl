@@ -50,7 +50,7 @@ namespace glm
 		T const & y
 	)
 	{
-		return x == y;
+		return detail::compute_equal<T>::call(x, y);
 	}
 
 	template<typename T>
@@ -60,7 +60,7 @@ namespace glm
 		T const & y
 	)
 	{
-		return x != y;
+		return !detail::compute_equal<T>::call(x, y);
 	}
 
 	GLM_FUNC_QUALIFIER bool any

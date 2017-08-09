@@ -35,55 +35,55 @@ namespace glm{
 namespace detail
 {
 	template<typename T, precision P>
-	struct outerProduct_trait<2, 2, T, P, vec, vec>
+	struct outerProduct_trait<2, 2, T, P>
 	{
 		typedef mat<2, 2, T, P> type;
 	};
 
 	template<typename T, precision P>
-	struct outerProduct_trait<2, 3, T, P, vec, vec>
+	struct outerProduct_trait<2, 3, T, P>
 	{
 		typedef mat<3, 2, T, P> type;
 	};
 
 	template<typename T, precision P>
-	struct outerProduct_trait<2, 4, T, P, vec, vec>
+	struct outerProduct_trait<2, 4, T, P>
 	{
 		typedef mat<4, 2, T, P> type;
 	};
 
 	template<typename T, precision P>
-	struct outerProduct_trait<3, 2, T, P, vec, vec>
+	struct outerProduct_trait<3, 2, T, P>
 	{
 		typedef mat<2, 3, T, P> type;
 	};
 
 	template<typename T, precision P>
-	struct outerProduct_trait<3, 3, T, P, vec, vec>
+	struct outerProduct_trait<3, 3, T, P>
 	{
 		typedef mat<3, 3, T, P> type;
 	};
 
 	template<typename T, precision P>
-	struct outerProduct_trait<3, 4, T, P, vec, vec>
+	struct outerProduct_trait<3, 4, T, P>
 	{
 		typedef mat<4, 3, T, P> type;
 	};
 
 	template<typename T, precision P>
-	struct outerProduct_trait<4, 2, T, P, vec, vec>
+	struct outerProduct_trait<4, 2, T, P>
 	{
 		typedef mat<2, 4, T, P> type;
 	};
 
 	template<typename T, precision P>
-	struct outerProduct_trait<4, 3, T, P, vec, vec>
+	struct outerProduct_trait<4, 3, T, P>
 	{
 		typedef mat<3, 4, T, P> type;
 	};
 
 	template<typename T, precision P>
-	struct outerProduct_trait<4, 4, T, P, vec, vec>
+	struct outerProduct_trait<4, 4, T, P>
 	{
 		typedef mat<4, 4, T, P> type;
 	};
@@ -107,12 +107,10 @@ namespace detail
 	/// and the second parameter r as a row vector
 	/// and does a linear algebraic matrix multiply c * r.
 	/// 
-	/// @tparam matType Floating-point matrix types.
-	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/outerProduct.xml">GLSL outerProduct man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.6 Matrix Functions</a>
-	template<length_t DA, length_t DB, typename T, precision P, template<length_t, typename, precision> class vecTypeA, template<length_t, typename, precision> class vecTypeB>
-	GLM_FUNC_DECL typename detail::outerProduct_trait<DA, DB, T, P, vecTypeA, vecTypeB>::type outerProduct(vecTypeA<DA, T, P> const & c, vecTypeB<DB, T, P> const & r);
+	template<length_t DA, length_t DB, typename T, precision P>
+	GLM_FUNC_DECL typename detail::outerProduct_trait<DA, DB, T, P>::type outerProduct(vec<DA, T, P> const & c, vec<DB, T, P> const & r);
 
 	/// Returns the transposed matrix of x
 	/// 
@@ -125,7 +123,7 @@ namespace detail
 	
 	/// Return the determinant of a squared matrix.
 	/// 
-	/// @tparam valType Floating-point scalar types.
+	/// @tparam T Floating-point scalar types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/determinant.xml">GLSL determinant man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.6 Matrix Functions</a>	
@@ -134,7 +132,7 @@ namespace detail
 
 	/// Return the inverse of a squared matrix.
 	/// 
-	/// @tparam valType Floating-point scalar types.
+	/// @tparam T Floating-point scalar types.
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/inverse.xml">GLSL inverse man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.6 Matrix Functions</a>	 

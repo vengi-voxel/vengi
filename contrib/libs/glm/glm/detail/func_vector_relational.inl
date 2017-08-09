@@ -1,79 +1,79 @@
 /// @ref core
 /// @file glm/detail/func_vector_relational.inl
 
-#include <limits>
+#include "compute_vector_relational.hpp"
 
 namespace glm
 {
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, bool, P> lessThan(vecType<L, T, P> const & x, vecType<L, T, P> const & y)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, bool, P> lessThan(vec<L, T, P> const& x, vec<L, T, P> const& y)
 	{
 		assert(x.length() == y.length());
 
-		vecType<L, bool, P> Result(uninitialize);
+		vec<L, bool, P> Result;
 		for(length_t i = 0; i < x.length(); ++i)
 			Result[i] = x[i] < y[i];
 
 		return Result;
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, bool, P> lessThanEqual(vecType<L, T, P> const & x, vecType<L, T, P> const & y)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, bool, P> lessThanEqual(vec<L, T, P> const& x, vec<L, T, P> const& y)
 	{
 		assert(x.length() == y.length());
 
-		vecType<L, bool, P> Result(uninitialize);
+		vec<L, bool, P> Result;
 		for(length_t i = 0; i < x.length(); ++i)
 			Result[i] = x[i] <= y[i];
 		return Result;
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, bool, P> greaterThan(vecType<L, T, P> const & x, vecType<L, T, P> const & y)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, bool, P> greaterThan(vec<L, T, P> const& x, vec<L, T, P> const& y)
 	{
 		assert(x.length() == y.length());
 
-		vecType<L, bool, P> Result(uninitialize);
+		vec<L, bool, P> Result;
 		for(length_t i = 0; i < x.length(); ++i)
 			Result[i] = x[i] > y[i];
 		return Result;
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, bool, P> greaterThanEqual(vecType<L, T, P> const & x, vecType<L, T, P> const & y)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, bool, P> greaterThanEqual(vec<L, T, P> const& x, vec<L, T, P> const& y)
 	{
 		assert(x.length() == y.length());
 
-		vecType<L, bool, P> Result(uninitialize);
+		vec<L, bool, P> Result;
 		for(length_t i = 0; i < x.length(); ++i)
 			Result[i] = x[i] >= y[i];
 		return Result;
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, bool, P> equal(vecType<L, T, P> const & x, vecType<L, T, P> const & y)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, bool, P> equal(vec<L, T, P> const& x, vec<L, T, P> const& y)
 	{
 		assert(x.length() == y.length());
 
-		vecType<L, bool, P> Result(uninitialize);
+		vec<L, bool, P> Result;
 		for(length_t i = 0; i < x.length(); ++i)
-			Result[i] = x[i] == y[i];
+			Result[i] = detail::compute_equal<T>::call(x[i], y[i]);
 		return Result;
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, bool, P> notEqual(vecType<L, T, P> const & x, vecType<L, T, P> const & y)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, bool, P> notEqual(vec<L, T, P> const& x, vec<L, T, P> const& y)
 	{
 		assert(x.length() == y.length());
 
-		vecType<L, bool, P> Result(uninitialize);
+		vec<L, bool, P> Result;
 		for(length_t i = 0; i < x.length(); ++i)
-			Result[i] = x[i] != y[i];
+			Result[i] = !detail::compute_equal<T>::call(x[i], y[i]);
 		return Result;
 	}
 
-	template<length_t L, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER bool any(vecType<L, bool, P> const & v)
+	template<length_t L, precision P>
+	GLM_FUNC_QUALIFIER bool any(vec<L, bool, P> const& v)
 	{
 		bool Result = false;
 		for(length_t i = 0; i < v.length(); ++i)
@@ -81,8 +81,8 @@ namespace glm
 		return Result;
 	}
 
-	template<length_t L, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER bool all(vecType<L, bool, P> const & v)
+	template<length_t L, precision P>
+	GLM_FUNC_QUALIFIER bool all(vec<L, bool, P> const& v)
 	{
 		bool Result = true;
 		for(length_t i = 0; i < v.length(); ++i)
@@ -90,10 +90,10 @@ namespace glm
 		return Result;
 	}
 
-	template<length_t L, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, bool, P> not_(vecType<L, bool, P> const & v)
+	template<length_t L, precision P>
+	GLM_FUNC_QUALIFIER vec<L, bool, P> not_(vec<L, bool, P> const& v)
 	{
-		vecType<L, bool, P> Result(uninitialize);
+		vec<L, bool, P> Result;
 		for(length_t i = 0; i < v.length(); ++i)
 			Result[i] = !v[i];
 		return Result;

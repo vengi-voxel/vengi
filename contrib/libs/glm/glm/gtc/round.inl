@@ -6,62 +6,62 @@
 namespace glm{
 namespace detail
 {
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType, bool compute = false>
+	template<length_t L, typename T, precision P, bool compute = false>
 	struct compute_ceilShift
 	{
-		GLM_FUNC_QUALIFIER static vecType<L, T, P> call(vecType<L, T, P> const & v, T)
+		GLM_FUNC_QUALIFIER static vec<L, T, P> call(vec<L, T, P> const& v, T)
 		{
 			return v;
 		}
 	};
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	struct compute_ceilShift<L, T, P, vecType, true>
+	template<length_t L, typename T, precision P>
+	struct compute_ceilShift<L, T, P, true>
 	{
-		GLM_FUNC_QUALIFIER static vecType<L, T, P> call(vecType<L, T, P> const & v, T Shift)
+		GLM_FUNC_QUALIFIER static vec<L, T, P> call(vec<L, T, P> const& v, T Shift)
 		{
 			return v | (v >> Shift);
 		}
 	};
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType, bool isSigned = true>
+	template<length_t L, typename T, precision P, bool isSigned = true>
 	struct compute_ceilPowerOfTwo
 	{
-		GLM_FUNC_QUALIFIER static vecType<L, T, P> call(vecType<L, T, P> const & x)
+		GLM_FUNC_QUALIFIER static vec<L, T, P> call(vec<L, T, P> const& x)
 		{
 			GLM_STATIC_ASSERT(!std::numeric_limits<T>::is_iec559, "'ceilPowerOfTwo' only accept integer scalar or vector inputs");
 
-			vecType<L, T, P> const Sign(sign(x));
+			vec<L, T, P> const Sign(sign(x));
 
-			vecType<L, T, P> v(abs(x));
+			vec<L, T, P> v(abs(x));
 
 			v = v - static_cast<T>(1);
 			v = v | (v >> static_cast<T>(1));
 			v = v | (v >> static_cast<T>(2));
 			v = v | (v >> static_cast<T>(4));
-			v = compute_ceilShift<L, T, P, vecType, sizeof(T) >= 2>::call(v, 8);
-			v = compute_ceilShift<L, T, P, vecType, sizeof(T) >= 4>::call(v, 16);
-			v = compute_ceilShift<L, T, P, vecType, sizeof(T) >= 8>::call(v, 32);
+			v = compute_ceilShift<L, T, P, sizeof(T) >= 2>::call(v, 8);
+			v = compute_ceilShift<L, T, P, sizeof(T) >= 4>::call(v, 16);
+			v = compute_ceilShift<L, T, P, sizeof(T) >= 8>::call(v, 32);
 			return (v + static_cast<T>(1)) * Sign;
 		}
 	};
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	struct compute_ceilPowerOfTwo<L, T, P, vecType, false>
+	template<length_t L, typename T, precision P>
+	struct compute_ceilPowerOfTwo<L, T, P, false>
 	{
-		GLM_FUNC_QUALIFIER static vecType<L, T, P> call(vecType<L, T, P> const & x)
+		GLM_FUNC_QUALIFIER static vec<L, T, P> call(vec<L, T, P> const& x)
 		{
 			GLM_STATIC_ASSERT(!std::numeric_limits<T>::is_iec559, "'ceilPowerOfTwo' only accept integer scalar or vector inputs");
 
-			vecType<L, T, P> v(x);
+			vec<L, T, P> v(x);
 
 			v = v - static_cast<T>(1);
 			v = v | (v >> static_cast<T>(1));
 			v = v | (v >> static_cast<T>(2));
 			v = v | (v >> static_cast<T>(4));
-			v = compute_ceilShift<L, T, P, vecType, sizeof(T) >= 2>::call(v, 8);
-			v = compute_ceilShift<L, T, P, vecType, sizeof(T) >= 4>::call(v, 16);
-			v = compute_ceilShift<L, T, P, vecType, sizeof(T) >= 8>::call(v, 32);
+			v = compute_ceilShift<L, T, P, sizeof(T) >= 2>::call(v, 8);
+			v = compute_ceilShift<L, T, P, sizeof(T) >= 4>::call(v, 16);
+			v = compute_ceilShift<L, T, P, sizeof(T) >= 8>::call(v, 32);
 			return v + static_cast<T>(1);
 		}
 	};
@@ -219,11 +219,11 @@ namespace detail
 		return !(Result & (Result - 1));
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, bool, P> isPowerOfTwo(vecType<L, T, P> const & Value)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, bool, P> isPowerOfTwo(vec<L, T, P> const & Value)
 	{
-		vecType<L, T, P> const Result(abs(Value));
-		return equal(Result & (Result - 1), vecType<L, T, P>(0));
+		vec<L, T, P> const Result(abs(Value));
+		return equal(Result & (Result - 1), vec<L, T, P>(0));
 	}
 
 	//////////////////
@@ -232,13 +232,13 @@ namespace detail
 	template<typename genType>
 	GLM_FUNC_QUALIFIER genType ceilPowerOfTwo(genType value)
 	{
-		return detail::compute_ceilPowerOfTwo<1, genType, defaultp, vec, std::numeric_limits<genType>::is_signed>::call(vec<1, genType, defaultp>(value)).x;
+		return detail::compute_ceilPowerOfTwo<1, genType, defaultp, std::numeric_limits<genType>::is_signed>::call(vec<1, genType, defaultp>(value)).x;
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> ceilPowerOfTwo(vecType<L, T, P> const & v)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, T, P> ceilPowerOfTwo(vec<L, T, P> const& v)
 	{
-		return detail::compute_ceilPowerOfTwo<L, T, P, vecType, std::numeric_limits<T>::is_signed>::call(v);
+		return detail::compute_ceilPowerOfTwo<L, T, P, std::numeric_limits<T>::is_signed>::call(v);
 	}
 
 	///////////////////
@@ -250,8 +250,8 @@ namespace detail
 		return isPowerOfTwo(value) ? value : static_cast<genType>(1) << findMSB(value);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> floorPowerOfTwo(vecType<L, T, P> const & v)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, T, P> floorPowerOfTwo(vec<L, T, P> const & v)
 	{
 		return detail::functor1<L, T, T, P>::call(floorPowerOfTwo, v);
 	}
@@ -270,8 +270,8 @@ namespace detail
 		return (next - value) < (value - prev) ? next : prev;
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> roundPowerOfTwo(vecType<L, T, P> const & v)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, T, P> roundPowerOfTwo(vec<L, T, P> const & v)
 	{
 		return detail::functor1<L, T, T, P>::call(roundPowerOfTwo, v);
 	}
@@ -285,16 +285,16 @@ namespace detail
 		return isMultiple(vec<1, genType>(Value), vec<1, genType>(Multiple)).x;
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, bool, P> isMultiple(vecType<L, T, P> const & Value, T Multiple)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, bool, P> isMultiple(vec<L, T, P> const & Value, T Multiple)
 	{
-		return (Value % Multiple) == vecType<L, T, P>(0);
+		return (Value % Multiple) == vec<L, T, P>(0);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, bool, P> isMultiple(vecType<L, T, P> const & Value, vecType<L, T, P> const & Multiple)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, bool, P> isMultiple(vec<L, T, P> const& Value, vec<L, T, P> const& Multiple)
 	{
-		return (Value % Multiple) == vecType<L, T, P>(0);
+		return (Value % Multiple) == vec<L, T, P>(0);
 	}
 
 	//////////////////////
@@ -306,8 +306,8 @@ namespace detail
 		return detail::compute_ceilMultiple<std::numeric_limits<genType>::is_iec559, std::numeric_limits<genType>::is_signed>::call(Source, Multiple);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> ceilMultiple(vecType<L, T, P> const & Source, vecType<L, T, P> const & Multiple)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, T, P> ceilMultiple(vec<L, T, P> const& Source, vec<L, T, P> const& Multiple)
 	{
 		return detail::functor2<L, T, P>::call(ceilMultiple, Source, Multiple);
 	}
@@ -321,8 +321,8 @@ namespace detail
 		return detail::compute_floorMultiple<std::numeric_limits<genType>::is_iec559, std::numeric_limits<genType>::is_signed>::call(Source, Multiple);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> floorMultiple(vecType<L, T, P> const & Source, vecType<L, T, P> const & Multiple)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, T, P> floorMultiple(vec<L, T, P> const& Source, vec<L, T, P> const& Multiple)
 	{
 		return detail::functor2<L, T, P>::call(floorMultiple, Source, Multiple);
 	}
@@ -336,8 +336,8 @@ namespace detail
 		return detail::compute_roundMultiple<std::numeric_limits<genType>::is_iec559, std::numeric_limits<genType>::is_signed>::call(Source, Multiple);
 	}
 
-	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
-	GLM_FUNC_QUALIFIER vecType<L, T, P> roundMultiple(vecType<L, T, P> const & Source, vecType<L, T, P> const & Multiple)
+	template<length_t L, typename T, precision P>
+	GLM_FUNC_QUALIFIER vec<L, T, P> roundMultiple(vec<L, T, P> const& Source, vec<L, T, P> const& Multiple)
 	{
 		return detail::functor2<L, T, P>::call(roundMultiple, Source, Multiple);
 	}

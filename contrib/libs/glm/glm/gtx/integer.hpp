@@ -31,7 +31,7 @@ namespace glm
 
 	//! Returns x raised to the y power. 
 	//! From GLM_GTX_integer extension.
-	GLM_FUNC_DECL int pow(int x, int y);
+	GLM_FUNC_DECL int pow(int x, uint y);
 
 	//! Returns the positive square root of x.
 	//! From GLM_GTX_integer extension.

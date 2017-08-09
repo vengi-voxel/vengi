@@ -55,10 +55,9 @@ GLM_FUNC_QUALIFIER vec3 transform(const mat4& mat, const vec3& v) {
 	const mat4::col_type& c1 = column(mat, 0);
 	const mat4::col_type& c2 = column(mat, 1);
 	const mat4::col_type& c3 = column(mat, 2);
-	vec3 r(uninitialize);
-	r.x = c1.x * v.x + c1.y * v.y + c1.z * v.z + c1.w;
-	r.y = c2.x * v.x + c2.y * v.y + c2.z * v.z + c2.w;
-	r.z = c3.x * v.x + c3.y * v.y + c3.z * v.z + c3.w;
+	vec3 r(c1.x * v.x + c1.y * v.y + c1.z * v.z + c1.w,
+		c2.x * v.x + c2.y * v.y + c2.z * v.z + c2.w,
+		c3.x * v.x + c3.y * v.y + c3.z * v.z + c3.w);
 	return r;
 }
 
@@ -66,10 +65,9 @@ GLM_FUNC_QUALIFIER vec3 rotate(const mat4& mat, const vec3& v) {
 	const mat4::col_type& c1 = column(mat, 0);
 	const mat4::col_type& c2 = column(mat, 1);
 	const mat4::col_type& c3 = column(mat, 2);
-	vec3 r(uninitialize);
-	r.x = c1.x * v.x + c1.y * v.y + c1.z * v.z;
-	r.y = c2.x * v.x + c2.y * v.y + c2.z * v.z;
-	r.z = c3.x * v.x + c3.y * v.y + c3.z * v.z;
+	vec3 r(c1.x * v.x + c1.y * v.y + c1.z * v.z,
+		c2.x * v.x + c2.y * v.y + c2.z * v.z,
+		c3.x * v.x + c3.y * v.y + c3.z * v.z);
 	return r;
 }
 

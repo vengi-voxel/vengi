@@ -2,6 +2,7 @@
 /// @file glm/gtc/packing.inl
 
 #include "../common.hpp"
+#include "../vector_relational.hpp"
 #include "../vec2.hpp"
 #include "../vec3.hpp"
 #include "../vec4.hpp"
@@ -280,14 +281,14 @@ namespace detail
 		GLM_FUNC_QUALIFIER static vec<1, uint16, P> pack(vec<1, float, P> const & v)
 		{
 			int16 const Unpack(detail::toFloat16(v.x));
-			u16vec1 Packed(uninitialize);
+			u16vec1 Packed;
 			memcpy(&Packed, &Unpack, sizeof(Packed));
 			return Packed;
 		}
 
 		GLM_FUNC_QUALIFIER static vec<1, float, P> unpack(vec<1, uint16, P> const & v)
 		{
-			i16vec1 Unpack(uninitialize);
+			i16vec1 Unpack;
 			memcpy(&Unpack, &v, sizeof(Unpack));
 			return vec<1, float, P>(detail::toFloat32(v.x));
 		}
@@ -299,14 +300,14 @@ namespace detail
 		GLM_FUNC_QUALIFIER static vec<2, uint16, P> pack(vec<2, float, P> const & v)
 		{
 			vec<2, int16, P> const Unpack(detail::toFloat16(v.x), detail::toFloat16(v.y));
-			u16vec2 Packed(uninitialize);
+			u16vec2 Packed;
 			memcpy(&Packed, &Unpack, sizeof(Packed));
 			return Packed;
 		}
 
 		GLM_FUNC_QUALIFIER static vec<2, float, P> unpack(vec<2, uint16, P> const & v)
 		{
-			i16vec2 Unpack(uninitialize);
+			i16vec2 Unpack;
 			memcpy(&Unpack, &v, sizeof(Unpack));
 			return vec<2, float, P>(detail::toFloat32(v.x), detail::toFloat32(v.y));
 		}
@@ -318,14 +319,14 @@ namespace detail
 		GLM_FUNC_QUALIFIER static vec<3, uint16, P> pack(vec<3, float, P> const & v)
 		{
 			vec<3, int16, P> const Unpack(detail::toFloat16(v.x), detail::toFloat16(v.y), detail::toFloat16(v.z));
-			u16vec3 Packed(uninitialize);
+			u16vec3 Packed;
 			memcpy(&Packed, &Unpack, sizeof(Packed));
 			return Packed;
 		}
 
 		GLM_FUNC_QUALIFIER static vec<3, float, P> unpack(vec<3, uint16, P> const & v)
 		{
-			i16vec3 Unpack(uninitialize);
+			i16vec3 Unpack;
 			memcpy(&Unpack, &v, sizeof(Unpack));
 			return vec<3, float, P>(detail::toFloat32(v.x), detail::toFloat32(v.y), detail::toFloat32(v.z));
 		}
@@ -337,14 +338,14 @@ namespace detail
 		GLM_FUNC_QUALIFIER static vec<4, uint16, P> pack(vec<4, float, P> const & v)
 		{
 			vec<4, int16, P> const Unpack(detail::toFloat16(v.x), detail::toFloat16(v.y), detail::toFloat16(v.z), detail::toFloat16(v.w));
-			u16vec4 Packed(uninitialize);
+			u16vec4 Packed;
 			memcpy(&Packed, &Unpack, sizeof(Packed));
 			return Packed;
 		}
 
 		GLM_FUNC_QUALIFIER static vec<4, float, P> unpack(vec<4, uint16, P> const & v)
 		{
-			i16vec4 Unpack(uninitialize);
+			i16vec4 Unpack;
 			memcpy(&Unpack, &v, sizeof(Unpack));
 			return vec<4, float, P>(detail::toFloat32(v.x), detail::toFloat32(v.y), detail::toFloat32(v.z), detail::toFloat32(v.w));
 		}
@@ -373,7 +374,7 @@ namespace detail
 	
 	GLM_FUNC_QUALIFIER vec2 unpackUnorm2x8(uint16 p)
 	{
-		u8vec2 Unpack(uninitialize);
+		u8vec2 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return vec2(Unpack) * float(0.0039215686274509803921568627451); // 1 / 255
 	}
@@ -405,7 +406,7 @@ namespace detail
 	
 	GLM_FUNC_QUALIFIER vec2 unpackSnorm2x8(uint16 p)
 	{
-		i8vec2 Unpack(uninitialize);
+		i8vec2 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return clamp(
 			vec2(Unpack) * 0.00787401574803149606299212598425f, // 1.0f / 127.0f
@@ -433,7 +434,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER vec4 unpackUnorm4x16(uint64 p)
 	{
-		u16vec4 Unpack(uninitialize);
+		u16vec4 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return vec4(Unpack) * 1.5259021896696421759365224689097e-5f; // 1.0 / 65535.0
 	}
@@ -465,7 +466,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER vec4 unpackSnorm4x16(uint64 p)
 	{
-		i16vec4 Unpack(uninitialize);
+		i16vec4 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return clamp(
 			vec4(Unpack) * 3.0518509475997192297128208258309e-5f, //1.0f / 32767.0f,
@@ -501,7 +502,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER glm::vec4 unpackHalf4x16(uint64 v)
 	{
-		i16vec4 Unpack(uninitialize);
+		i16vec4 Unpack;
 		memcpy(&Unpack, &v, sizeof(Unpack));
 		return vec4(
 			detail::toFloat32(Unpack.x),
@@ -619,7 +620,7 @@ namespace detail
 
 		float const ExpSharedP = max(-15.f - 1.f, floor(log2(MaxColor))) + 1.0f + 15.f;
 		float const MaxShared = floor(MaxColor / pow(2.0f, (ExpSharedP - 15.f - 9.f)) + 0.5f);
-		float const ExpShared = MaxShared == pow(2.0f, 9.0f) ? ExpSharedP + 1.0f : ExpSharedP;
+		float const ExpShared = detail::compute_equal<float>::call(MaxShared, pow(2.0f, 9.0f)) ? ExpSharedP + 1.0f : ExpSharedP;
 
 		uvec3 const ColorComp(floor(Color / pow(2.f, (ExpShared - 15.f - 9.f)) + 0.5f));
 
@@ -803,7 +804,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER i8vec2 unpackInt2x8(int16 p)
 	{
-		i8vec2 Unpack(uninitialize);
+		i8vec2 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return Unpack;
 	}
@@ -817,7 +818,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER u8vec2 unpackUint2x8(uint16 p)
 	{
-		u8vec2 Unpack(uninitialize);
+		u8vec2 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return Unpack;
 	}
@@ -831,7 +832,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER i8vec4 unpackInt4x8(int32 p)
 	{
-		i8vec4 Unpack(uninitialize);
+		i8vec4 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return Unpack;
 	}
@@ -845,7 +846,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER u8vec4 unpackUint4x8(uint32 p)
 	{
-		u8vec4 Unpack(uninitialize);
+		u8vec4 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return Unpack;
 	}
@@ -859,7 +860,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER i16vec2 unpackInt2x16(int p)
 	{
-		i16vec2 Unpack(uninitialize);
+		i16vec2 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return Unpack;
 	}
@@ -873,7 +874,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER i16vec4 unpackInt4x16(int64 p)
 	{
-		i16vec4 Unpack(uninitialize);
+		i16vec4 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return Unpack;
 	}
@@ -887,7 +888,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER u16vec2 unpackUint2x16(uint p)
 	{
-		u16vec2 Unpack(uninitialize);
+		u16vec2 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return Unpack;
 	}
@@ -901,7 +902,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER u16vec4 unpackUint4x16(uint64 p)
 	{
-		u16vec4 Unpack(uninitialize);
+		u16vec4 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return Unpack;
 	}
@@ -915,7 +916,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER i32vec2 unpackInt2x32(int64 p)
 	{
-		i32vec2 Unpack(uninitialize);
+		i32vec2 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return Unpack;
 	}
@@ -929,7 +930,7 @@ namespace detail
 
 	GLM_FUNC_QUALIFIER u32vec2 unpackUint2x32(uint64 p)
 	{
-		u32vec2 Unpack(uninitialize);
+		u32vec2 Unpack;
 		memcpy(&Unpack, &p, sizeof(Unpack));
 		return Unpack;
 	}

@@ -60,10 +60,10 @@ bool QBTFormat::loadMatrix(io::FileStream& stream) {
 		return false;
 	}
 	wrap(stream.readString(nameLength, buf));
-	glm::ivec3 position(glm::uninitialize);
-	glm::ivec3 localScale(glm::uninitialize);
-	glm::vec3 pivot(glm::uninitialize);
-	glm::ivec3 size(glm::uninitialize);
+	glm::ivec3 position;
+	glm::ivec3 localScale;
+	glm::vec3 pivot;
+	glm::ivec3 size;
 	wrap(stream.readInt((uint32_t&)position.x));
 	wrap(stream.readInt((uint32_t&)position.y));
 	wrap(stream.readInt((uint32_t&)position.z));
@@ -168,7 +168,7 @@ bool QBTFormat::loadFromStream(io::FileStream& stream) {
 	uint32_t versionMinor;
 	wrap(stream.readInt(versionMinor))
 
-	glm::vec3 globalScale(glm::uninitialize);
+	glm::vec3 globalScale;
 	wrap(stream.readFloat(globalScale.x));
 	wrap(stream.readFloat(globalScale.y));
 	wrap(stream.readFloat(globalScale.z));

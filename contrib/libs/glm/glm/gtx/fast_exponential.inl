@@ -28,7 +28,7 @@ namespace glm
 	template<length_t L, typename T, precision P, template<length_t, typename, precision> class vecType>
 	GLM_FUNC_QUALIFIER vecType<L, T, P> fastPow(vecType<L, T, P> const & x, vecType<L, int, P> const & y)
 	{
-		vecType<L, T, P> Result(uninitialize);
+		vecType<L, T, P> Result;
 		for(length_t i = 0, n = x.length(); i < n; ++i)
 			Result[i] = fastPow(x[i], y[i]);
 		return Result;

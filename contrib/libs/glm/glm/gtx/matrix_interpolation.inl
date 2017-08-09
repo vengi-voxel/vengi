@@ -6,40 +6,38 @@
 namespace glm
 {
 	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER void axisAngle
-	(
-		mat<4, 4, T, P> const& mat,
-		vec<3, T, P> & axis,
-		T & angle
-	)
+	GLM_FUNC_QUALIFIER void axisAngle(mat<4, 4, T, P> const& mat, vec<3, T, P> & axis, T & angle)
 	{
-		T epsilon = (T)0.01;
-		T epsilon2 = (T)0.1;
+		T epsilon = static_cast<T>(0.01);
+		T epsilon2 = static_cast<T>(0.1);
 
 		if((abs(mat[1][0] - mat[0][1]) < epsilon) && (abs(mat[2][0] - mat[0][2]) < epsilon) && (abs(mat[2][1] - mat[1][2]) < epsilon))
 		{
-			if ((abs(mat[1][0] + mat[0][1]) < epsilon2) && (abs(mat[2][0] + mat[0][2]) < epsilon2) && (abs(mat[2][1] + mat[1][2]) < epsilon2) && (abs(mat[0][0] + mat[1][1] + mat[2][2] - (T)3.0) < epsilon2))
+			if ((abs(mat[1][0] + mat[0][1]) < epsilon2) && (abs(mat[2][0] + mat[0][2]) < epsilon2) && (abs(mat[2][1] + mat[1][2]) < epsilon2) && (abs(mat[0][0] + mat[1][1] + mat[2][2] - static_cast<T>(3.0)) < epsilon2))
 			{
-				angle = (T)0.0;
-				axis.x = (T)1.0;
-				axis.y = (T)0.0;
-				axis.z = (T)0.0;
+				angle = static_cast<T>(0.0);
+				axis.x = static_cast<T>(1.0);
+				axis.y = static_cast<T>(0.0);
+				axis.z = static_cast<T>(0.0);
 				return;
 			}
 			angle = static_cast<T>(3.1415926535897932384626433832795);
-			T xx = (mat[0][0] + (T)1.0) * (T)0.5;
-			T yy = (mat[1][1] + (T)1.0) * (T)0.5;
-			T zz = (mat[2][2] + (T)1.0) * (T)0.5;
-			T xy = (mat[1][0] + mat[0][1]) * (T)0.25;
-			T xz = (mat[2][0] + mat[0][2]) * (T)0.25;
-			T yz = (mat[2][1] + mat[1][2]) * (T)0.25;
+			T xx = (mat[0][0] + static_cast<T>(1.0)) * static_cast<T>(0.5);
+			T yy = (mat[1][1] + static_cast<T>(1.0)) * static_cast<T>(0.5);
+			T zz = (mat[2][2] + static_cast<T>(1.0)) * static_cast<T>(0.5);
+			T xy = (mat[1][0] + mat[0][1]) * static_cast<T>(0.25);
+			T xz = (mat[2][0] + mat[0][2]) * static_cast<T>(0.25);
+			T yz = (mat[2][1] + mat[1][2]) * static_cast<T>(0.25);
 			if((xx > yy) && (xx > zz))
 			{
-				if (xx < epsilon) {
-					axis.x = (T)0.0;
-					axis.y = (T)0.7071;
-					axis.z = (T)0.7071;
-				} else {
+				if(xx < epsilon)
+				{
+					axis.x = static_cast<T>(0.0);
+					axis.y = static_cast<T>(0.7071);
+					axis.z = static_cast<T>(0.7071);
+				}
+				else
+				{
 					axis.x = sqrt(xx);
 					axis.y = xy / axis.x;
 					axis.z = xz / axis.x;
@@ -47,11 +45,14 @@ namespace glm
 			}
 			else if (yy > zz)
 			{
-				if (yy < epsilon) {
-					axis.x = (T)0.7071;
-					axis.y = (T)0.0;
-					axis.z = (T)0.7071;
-				} else {
+				if(yy < epsilon)
+				{
+					axis.x = static_cast<T>(0.7071);
+					axis.y = static_cast<T>(0.0);
+					axis.z = static_cast<T>(0.7071);
+				}
+				else
+				{
 					axis.y = sqrt(yy);
 					axis.x = xy / axis.y;
 					axis.z = yz / axis.y;
@@ -59,11 +60,14 @@ namespace glm
 			}
 			else
 			{
-				if (zz < epsilon) {
-					axis.x = (T)0.7071;
-					axis.y = (T)0.7071;
-					axis.z = (T)0.0;
-				} else {
+				if (zz < epsilon)
+				{
+					axis.x = static_cast<T>(0.7071);
+					axis.y = static_cast<T>(0.7071);
+					axis.z = static_cast<T>(0.0);
+				}
+				else
+				{
 					axis.z = sqrt(zz);
 					axis.x = xz / axis.z;
 					axis.y = yz / axis.z;
@@ -73,9 +77,9 @@ namespace glm
 		}
 		T s = sqrt((mat[2][1] - mat[1][2]) * (mat[2][1] - mat[1][2]) + (mat[2][0] - mat[0][2]) * (mat[2][0] - mat[0][2]) + (mat[1][0] - mat[0][1]) * (mat[1][0] - mat[0][1]));
 		if (glm::abs(s) < T(0.001))
-			s = (T)1.0;
-		T const angleCos = (mat[0][0] + mat[1][1] + mat[2][2] - (T)1.0) * (T)0.5;
-		if (angleCos - static_cast<T>(1)) < epsilon)
+			s = static_cast<T>(1);
+		T const angleCos = (mat[0][0] + mat[1][1] + mat[2][2] - static_cast<T>(1)) * static_cast<T>(0.5);
+		if(angleCos - static_cast<T>(1) < epsilon)
 			angle = pi<T>() * static_cast<T>(0.25);
 		else
 			angle = acos(angleCos);
@@ -85,11 +89,7 @@ namespace glm
 	}
 
 	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> axisAngleMatrix
-	(
-		vec<3, T, P> const & axis,
-		T const angle
-	)
+	GLM_FUNC_QUALIFIER mat<4, 4, T, P> axisAngleMatrix(vec<3, T, P> const & axis, T const angle)
 	{
 		T c = cos(angle);
 		T s = sin(angle);
@@ -97,32 +97,24 @@ namespace glm
 		vec<3, T, P> n = normalize(axis);
 
 		return mat<4, 4, T, P>(
-			t * n.x * n.x + c,          t * n.x * n.y + n.z * s,    t * n.x * n.z - n.y * s,    T(0),
-			t * n.x * n.y - n.z * s,    t * n.y * n.y + c,          t * n.y * n.z + n.x * s,    T(0),
-			t * n.x * n.z + n.y * s,    t * n.y * n.z - n.x * s,    t * n.z * n.z + c,          T(0),
-			T(0),                        T(0),                        T(0),                     T(1));
+			t * n.x * n.x + c,          t * n.x * n.y + n.z * s,    t * n.x * n.z - n.y * s,    static_cast<T>(0.0),
+			t * n.x * n.y - n.z * s,    t * n.y * n.y + c,          t * n.y * n.z + n.x * s,    static_cast<T>(0.0),
+			t * n.x * n.z + n.y * s,    t * n.y * n.z - n.x * s,    t * n.z * n.z + c,          static_cast<T>(0.0),
+			static_cast<T>(0.0),        static_cast<T>(0.0),        static_cast<T>(0.0),        static_cast<T>(1.0));
 	}
 
 	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> extractMatrixRotation
-	(
-		mat<4, 4, T, P> const& m
-	)
+	GLM_FUNC_QUALIFIER mat<4, 4, T, P> extractMatrixRotation(mat<4, 4, T, P> const& m)
 	{
 		return mat<4, 4, T, P>(
-			m[0][0], m[0][1], m[0][2], 0.0,
-			m[1][0], m[1][1], m[1][2], 0.0,
-			m[2][0], m[2][1], m[2][2], 0.0,
-			0.0,     0.0,     0.0,     1.0);
+			m[0][0], m[0][1], m[0][2], static_cast<T>(0.0),
+			m[1][0], m[1][1], m[1][2], static_cast<T>(0.0),
+			m[2][0], m[2][1], m[2][2], static_cast<T>(0.0),
+			static_cast<T>(0.0), static_cast<T>(0.0), static_cast<T>(0.0), static_cast<T>(1.0));
 	}
 
 	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER mat<4, 4, T, P> interpolate
-	(
-		mat<4, 4, T, P> const& m1,
-		mat<4, 4, T, P> const& m2,
-		T const delta
-	)
+	GLM_FUNC_QUALIFIER mat<4, 4, T, P> interpolate(mat<4, 4, T, P> const& m1, mat<4, 4, T, P> const& m2, T const delta)
 	{
 		mat<4, 4, T, P> m1rot = extractMatrixRotation(m1);
 		mat<4, 4, T, P> dltRotation = m2 * transpose(m1rot);

@@ -229,7 +229,7 @@ private:
 		const TYPE maxX = mins.x + width.x;
 		const TYPE maxY = mins.y + width.y;
 		const TYPE maxZ = mins.z + width.z;
-		glm::tvec3<TYPE> qmins(glm::uninitialize);
+		glm::tvec3<TYPE> qmins;
 		for (qmins.x = mins.x; qmins.x < maxX; qmins.x += minSize.x) {
 			for (qmins.y = mins.y; qmins.y < maxY; qmins.y += minSize.y) {
 				for (qmins.z = mins.z; qmins.z < maxZ; qmins.z += minSize.z) {

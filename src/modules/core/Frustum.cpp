@@ -128,10 +128,9 @@ bool Frustum::isVisible(const glm::vec3& mins, const glm::vec3& maxs) const {
 		const Plane& p = _planes[i];
 		const glm::vec3& normal = p.norm();
 
-		glm::vec3 pos(glm::uninitialize);
-		pos.x = normal.x > 0.0f ? maxs.x : mins.x;
-		pos.y = normal.y > 0.0f ? maxs.y : mins.y;
-		pos.z = normal.z > 0.0f ? maxs.z : mins.z;
+		const glm::vec3 pos(normal.x > 0.0f ? maxs.x : mins.x,
+				normal.y > 0.0f ? maxs.y : mins.y,
+				normal.z > 0.0f ? maxs.z : mins.z);
 
 		if (p.isBackSide(pos)) {
 			return false;
@@ -171,19 +170,17 @@ FrustumResult Frustum::test(const glm::vec3& mins, const glm::vec3& maxs) const 
 		const Plane& p = _planes[i];
 		const glm::vec3& normal = p.norm();
 
-		glm::vec3 positiveVertex(glm::uninitialize);
-		positiveVertex.x = normal.x > 0.0f ? maxs.x : mins.x;
-		positiveVertex.y = normal.y > 0.0f ? maxs.y : mins.y;
-		positiveVertex.z = normal.z > 0.0f ? maxs.z : mins.z;
+		const glm::vec3 positiveVertex(normal.x > 0.0f ? maxs.x : mins.x,
+				normal.y > 0.0f ? maxs.y : mins.y,
+				normal.z > 0.0f ? maxs.z : mins.z);
 
 		if (p.isBackSide(positiveVertex)) {
 			return FrustumResult::Outside;
 		}
 
-		glm::vec3 negativeVertex(glm::uninitialize);
-		negativeVertex.x = normal.x > 0.0f ? mins.x : maxs.x;
-		negativeVertex.y = normal.y > 0.0f ? mins.y : maxs.y;
-		negativeVertex.z = normal.z > 0.0f ? mins.z : maxs.z;
+		const glm::vec3 negativeVertex(normal.x > 0.0f ? mins.x : maxs.x,
+				normal.y > 0.0f ? mins.y : maxs.y,
+				normal.z > 0.0f ? mins.z : maxs.z);
 		if (p.isBackSide(negativeVertex)) {
 			result = FrustumResult::Intersect;
 		}
@@ -193,10 +190,7 @@ FrustumResult Frustum::test(const glm::vec3& mins, const glm::vec3& maxs) const 
 }
 
 bool Frustum::isVisible(const glm::vec3& eye, float orientation, const glm::vec3& target, float fieldOfView) {
-	glm::vec2 direction(glm::uninitialize);
-	direction.x = target.x - eye.x;
-	direction.y = target.z - eye.z;
-	direction = glm::normalize(direction);
+	const glm::vec2 direction = glm::normalize(glm::vec2(target.x - eye.x, target.z - eye.z));
 	const float angle = ::atan2(direction.y, direction.x);
 
 	float delta;

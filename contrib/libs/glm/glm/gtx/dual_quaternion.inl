@@ -24,13 +24,9 @@ namespace glm
 
 	// -- Implicit basic constructors --
 
-#	if !GLM_HAS_DEFAULTED_FUNCTIONS || !defined(GLM_FORCE_NO_CTOR_INIT)
+#	if !GLM_HAS_DEFAULTED_FUNCTIONS
 		template<typename T, precision P>
 		GLM_FUNC_QUALIFIER GLM_CONSTEXPR tdualquat<T, P>::tdualquat()
-#			ifndef GLM_FORCE_NO_CTOR_INIT 
-				: real(tquat<T, P>())
-				, dual(tquat<T, P>(0, 0, 0, 0))
-#			endif
 		{}
 #	endif
 
@@ -50,10 +46,6 @@ namespace glm
 	{}
 
 	// -- Explicit basic constructors --
-
-	template<typename T, precision P>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CTOR tdualquat<T, P>::tdualquat(ctor)
-	{}
 
 	template<typename T, precision P>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR tdualquat<T, P>::tdualquat(tquat<T, P> const & r)
@@ -223,6 +215,14 @@ namespace glm
 	// -- Operations --
 
 	template<typename T, precision P>
+	GLM_FUNC_QUALIFIER tdualquat<T, P> dual_quat_identity()
+	{
+		return tdualquat<T, P>(
+			tquat<T, P>(static_cast<T>(1), static_cast<T>(0), static_cast<T>(0), static_cast<T>(0)),
+			tquat<T, P>(static_cast<T>(0), static_cast<T>(0), static_cast<T>(0), static_cast<T>(0)));
+	}
+
+	template<typename T, precision P>
 	GLM_FUNC_QUALIFIER tdualquat<T, P> normalize(tdualquat<T, P> const & q)
 	{
 		return q / length(q.real);
@@ -301,7 +301,7 @@ namespace glm
 	template<typename T, precision P>
 	GLM_FUNC_QUALIFIER tdualquat<T, P> dualquat_cast(mat<3, 4, T, P> const & x)
 	{
-		tquat<T, P> real(uninitialize);
+		tquat<T, P> real;
 		
 		T const trace = x[0].x + x[1].y + x[2].z;
 		if(trace > static_cast<T>(0))
@@ -341,7 +341,7 @@ namespace glm
 			real.w = (x[1].x - x[0].y) * invr;
 		}
 		
-		tquat<T, P> dual(uninitialize);
+		tquat<T, P> dual;
 		dual.x =  static_cast<T>(0.5) * ( x[0].w * real.w + x[1].w * real.z - x[2].w * real.y);
 		dual.y =  static_cast<T>(0.5) * (-x[0].w * real.z + x[1].w * real.w + x[2].w * real.x);
 		dual.z =  static_cast<T>(0.5) * ( x[0].w * real.y - x[1].w * real.x + x[2].w * real.w);

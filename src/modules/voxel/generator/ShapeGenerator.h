@@ -38,7 +38,7 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int 
 			if (distance > radius) {
 				continue;
 			}
-			glm::ivec3 pos(glm::uninitialize);
+			glm::ivec3 pos;
 			if (axis[0]) {
 				pos = glm::ivec3(center.x, center.y + x, center.z + z);
 			} else if (axis[1]) {
