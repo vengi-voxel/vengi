@@ -181,7 +181,6 @@ set(SRCS
 	contrib/clipper/clipper.cpp
 	contrib/unzip/unzip.c
 	contrib/unzip/ioapi.c
-	contrib/ConvertUTF/ConvertUTF.c
 	contrib/irrXML/irrXML.cpp
 )
 #	code/C4DImporter.cpp

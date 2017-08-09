@@ -292,11 +292,10 @@ Document::~Document()
 }
 
 // ------------------------------------------------------------------------------------------------
-static const int LowerSupportedVersion = 7100;
-static const int UpperSupportedVersion = 7400;
+static const unsigned int LowerSupportedVersion = 7100;
+static const unsigned int UpperSupportedVersion = 7400;
 
-void Document::ReadHeader()
-{
+void Document::ReadHeader() {
     // Read ID objects from "Objects" section
     const Scope& sc = parser.GetRootScope();
     const Element* const ehead = sc["FBXHeaderExtension"];
@@ -565,7 +564,7 @@ std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id,
         temp.push_back((*it).second);
     }
 
-    std::sort(temp.begin(), temp.end(), std::mem_fun(&Connection::Compare));
+    std::sort(temp.begin(), temp.end(), std::mem_fn(&Connection::Compare));
 
     return temp; // NRVO should handle this
 }
@@ -617,7 +616,7 @@ std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id, bo
         temp.push_back((*it).second);
     }
 
-    std::sort(temp.begin(), temp.end(), std::mem_fun(&Connection::Compare));
+    std::sort(temp.begin(), temp.end(), std::mem_fn(&Connection::Compare));
     return temp; // NRVO should handle this
 }
 

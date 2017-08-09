@@ -45,7 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ColladaExporter.h"
 #include "Bitmap.h"
 #include "fast_atof.h"
-#include "SceneCombiner.h"
+#include <assimp/SceneCombiner.h>
 #include "StringUtils.h"
 #include "XMLTools.h"
 #include <assimp/DefaultIOSystem.h>
@@ -552,7 +552,7 @@ void ColladaExporter::WriteImageEntry( const Surface& pSurface, const std::strin
     std::stringstream imageUrlEncoded;
     for( std::string::const_iterator it = pSurface.texture.begin(); it != pSurface.texture.end(); ++it )
     {
-      if( isalnum_C( (unsigned char) *it) || *it == ':' || *it == '_' || *it == '.' || *it == '/' || *it == '\\' )
+      if( isalnum_C( (unsigned char) *it) || *it == ':' || *it == '_' || *it == '-' || *it == '.' || *it == '/' || *it == '\\' )
         imageUrlEncoded << *it;
       else
         imageUrlEncoded << '%' << std::hex << size_t( (unsigned char) *it) << std::dec;
