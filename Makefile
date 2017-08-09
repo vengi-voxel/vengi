@@ -192,9 +192,9 @@ tags:
 
 define UPDATE_GIT
 	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
-		git clone $(2) $(UPDATEDIR)/$(1).sync; \
+		git clone --depth=1 $(2) $(UPDATEDIR)/$(1).sync; \
 	else \
-		cd $(UPDATEDIR)/$(1).sync && git pull --rebase; \
+		cd $(UPDATEDIR)/$(1).sync && git pull --depth=1 --rebase; \
 	fi;
 endef
 
@@ -244,6 +244,7 @@ updatelibs:
 	cp $(UPDATEDIR)/backward-cpp.sync/backward.cpp contrib/libs/backward
 	cp -f $(UPDATEDIR)/backward-cpp.sync/backward.hpp contrib/libs/backward/backward.h
 	sed -i 's/backward.hpp/backward.h/g' contrib/libs/backward/backward.cpp
+	$(call UPDATE_GIT,imgui-addons,https://github.com/Flix01/imgui.git)
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
 	cp $(UPDATEDIR)/imgui.sync/imgui*.h $(UPDATEDIR)/imgui.sync/imgui*.cpp $(UPDATEDIR)/imgui.sync/stb_*.h contrib/libs/dearimgui/dearimgui
 	$(call UPDATE_GIT,assimp,https://github.com/assimp/assimp.git)
