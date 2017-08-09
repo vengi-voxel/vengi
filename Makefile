@@ -244,6 +244,8 @@ updatelibs:
 	cp $(UPDATEDIR)/backward-cpp.sync/backward.cpp contrib/libs/backward
 	cp -f $(UPDATEDIR)/backward-cpp.sync/backward.hpp contrib/libs/backward/backward.h
 	sed -i 's/backward.hpp/backward.h/g' contrib/libs/backward/backward.cpp
+	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
+	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
 	$(call UPDATE_GIT,imgui-addons,https://github.com/Flix01/imgui.git)
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
 	cp $(UPDATEDIR)/imgui.sync/imgui*.h $(UPDATEDIR)/imgui.sync/imgui*.cpp $(UPDATEDIR)/imgui.sync/stb_*.h contrib/libs/dearimgui/dearimgui
