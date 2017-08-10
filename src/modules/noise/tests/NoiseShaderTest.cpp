@@ -45,7 +45,7 @@ TEST_F(NoiseShaderTest, testNoiseShaderRidgedMultiFractal) {
 	const float bias[] = { 128.0f, 128.0f };
 	const float lacunarity = 2.02f;
 	const float increment = 1.0f;
-	const float octaves = 3.3f;
+	const int octaves = 3;
 	const float amplitude = 1.0f;
 
 	ASSERT_TRUE(shader.ridgedMF(
