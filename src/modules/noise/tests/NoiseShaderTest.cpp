@@ -36,15 +36,11 @@ TEST_F(NoiseShaderTest, testNoiseShaderRidgedMultiFractal) {
 	compute::NoiseShader shader;
 	ASSERT_TRUE(shader.setup());
 	constexpr int dim = 256;
-#if 0
 	const size_t minsize = dim * dim * sizeof(uint32_t);
-	size_t size = minsize;
-	uint32_t *buf = (uint32_t*)shader.bufferAlloc(size);
+	size_t bufSize = minsize;
+	uint32_t *buf = (uint32_t*)shader.bufferAlloc(bufSize);
 	ASSERT_TRUE(buf != nullptr);
-	ASSERT_TRUE(size >= minsize);
-#else
-	uint32_t buf[dim * dim];
-#endif
+	ASSERT_TRUE(bufSize >= minsize);
 	const float scale[] = { 20.0f, 20.0f };
 	const float bias[] = { 128.0f, 128.0f };
 	const float lacunarity = 2.02f;
@@ -53,14 +49,12 @@ TEST_F(NoiseShaderTest, testNoiseShaderRidgedMultiFractal) {
 	const float amplitude = 1.0f;
 
 	ASSERT_TRUE(shader.ridgedMF(
-			(uint8_t* )buf, sizeof(buf), bias, scale,
+			(uint8_t* )buf, bufSize, bias, scale,
 			lacunarity, increment, octaves, amplitude, dim, 2));
 
 	ASSERT_TRUE(image::Image::writePng("compute-ridgedmf-noise.png", (const uint8_t*)buf, dim, dim, sizeof(uint32_t)));
 	ASSERT_TRUE(buf[0] != 0) << buf[0];
-#if 0
 	shader.bufferFree(buf);
-#endif
 	shader.shutdown();
 }
 
