@@ -132,4 +132,9 @@ inline size_t vectorSize(const std::vector<T>& v) {
 	return v.size() * sizeof(T);
 }
 
+template<class T>
+inline size_t vectorCapacity(const std::vector<T>& v) {
+	return v.capacity() * sizeof(T);
+}
+
 }
