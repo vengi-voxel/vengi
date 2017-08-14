@@ -7,6 +7,7 @@
 #include <cstring>
 #include "Types.h"
 #include "cl/CLTypes.h"
+#include "core/Vector.h"
 
 namespace compute {
 

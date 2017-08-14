@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Renderer.h"
-#include "core/Common.h"
+#include "core/Vector.h"
 #include "core/GLM.h"
 #include <vector>
 

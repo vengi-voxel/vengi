@@ -124,17 +124,3 @@ inline constexpr uint32_t FourCC(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 # define ENABLE_WARNING(gcc_option,clang_option,msvc_unused) DIAG_PRAGMA(GCC,warning DIAG_JOINSTR(-W,gcc_option))
 #endif
 #endif
-
-namespace core {
-
-template<class T>
-inline size_t vectorSize(const std::vector<T>& v) {
-	return v.size() * sizeof(T);
-}
-
-template<class T>
-inline size_t vectorCapacity(const std::vector<T>& v) {
-	return v.capacity() * sizeof(T);
-}
-
-}

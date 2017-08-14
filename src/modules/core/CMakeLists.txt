@@ -46,6 +46,7 @@ set(SRCS
 	Trace.cpp Trace.h
 	UTF8.cpp UTF8.h
 	Var.cpp Var.h
+	Vector.h
 	Vertex.h
 	Zip.h
 )
