@@ -90,7 +90,7 @@ void ComputeShaderTool::generateSrc() {
 				kernels << "/* " << p.type << "*/ std::vector<" << util::vectorType(p.type) << ">& " << p.name;
 			} else {
 				kernels << util::vectorType(p.type);
-				if ((p.flags & compute::BufferFlag::ReadOnly) != compute::BufferFlag::None) {
+				if (p.byReference || (p.flags & compute::BufferFlag::ReadOnly) != compute::BufferFlag::None) {
 					kernels << "&";
 				}
 				kernels << " " << p.name;
@@ -316,12 +316,13 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 			core_assert(!parameter.name.empty());
 			if (core::string::startsWith(parameter.name, "*")) {
 				parameter.name = parameter.name.substr(1, parameter.name.size());
-				parameter.type.append("*");
+				parameter.type.append(" *");
 			}
 			kernel.parameters.insert(kernel.parameters.begin(), parameter);
 			parameter = Parameter();
 			continue;
 		}
+		// TODO: __local size must be the size in bytes for the buffer that create
 		// TODO: handle these: __global, __local, __private
 		if (core::string::startsWith(token, "__")) {
 			// The "__" prefix is not required before the qualifiers, but we will continue to use the
@@ -329,17 +330,24 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 			// gets allocated to "__private", which is the default qualifier.
 			if (core::string::startsWith(&token[2], "constant")
 			 || core::string::startsWith(&token[2], "read_only")) {
+				parameter.flags &= ~(compute::BufferFlag::ReadWrite);
 				parameter.flags |= compute::BufferFlag::ReadOnly;
 			} else if (core::string::startsWith(&token[2], "write_only")) {
+				parameter.flags &= ~(compute::BufferFlag::ReadWrite);
 				parameter.flags |= compute::BufferFlag::WriteOnly;
+				parameter.byReference = true;
 			}
 			continue;
 		} else {
 			if (token == "constant" || token == "read_only") {
+				parameter.flags &= ~(compute::BufferFlag::ReadWrite);
 				parameter.flags |= compute::BufferFlag::ReadOnly;
+				parameter.qualifier = "const";
 				continue;
 			} else if (token == "write_only") {
+				parameter.flags &= ~(compute::BufferFlag::ReadWrite);
 				parameter.flags |= compute::BufferFlag::WriteOnly;
+				parameter.byReference = true;
 				continue;
 			}
 		}
@@ -365,7 +373,7 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 	if (added) {
 		if (core::string::startsWith(parameter.name, "*")) {
 			parameter.name = parameter.name.substr(1, parameter.name.size());
-			parameter.type.append("*");
+			parameter.type.append(" *");
 		}
 		core_assert(!parameter.name.empty());
 		kernel.parameters.insert(kernel.parameters.begin(), parameter);

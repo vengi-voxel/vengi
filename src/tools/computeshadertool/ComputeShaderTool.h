@@ -25,6 +25,7 @@ protected:
 		std::string qualifier;
 		std::string type;
 		std::string name;
+		bool byReference = false;
 		compute::BufferFlag flags = compute::BufferFlag::ReadWrite;
 	};
 

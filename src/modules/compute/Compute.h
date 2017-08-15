@@ -9,6 +9,8 @@
 #include "Types.h"
 #include "cl/CLTypes.h"
 #include "core/Vector.h"
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 namespace compute {
 
@@ -71,6 +73,18 @@ bool kernelRun(Id kernel, int workSize, int workDim = -1, bool blocking = true);
 template<class T>
 inline bool kernelArg(Id kernel, uint32_t index, T& t) {
 	return kernelArg(kernel, index, sizeof(T), (const void*)&t);
+}
+
+template<>
+inline bool kernelArg(Id kernel, uint32_t index, const glm::vec3& t) {
+	const glm::vec4 fourComponents(t, 0.0f);
+	return kernelArg(kernel, index, sizeof(fourComponents), (const void*)&fourComponents);
+}
+
+template<>
+inline bool kernelArg(Id kernel, uint32_t index, glm::vec3& t) {
+	const glm::vec4 fourComponents(t, 0.0f);
+	return kernelArg(kernel, index, sizeof(fourComponents), (const void*)&fourComponents);
 }
 
 template<>
