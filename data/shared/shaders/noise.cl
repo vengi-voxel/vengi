@@ -77,19 +77,17 @@ float sgnoise2d(float2 position) {
 
 __kernel void ridgedMF(
 		__global uchar4 *output,
-		const float2 bias,
-		const float2 scale,
-		const float lacunarity,
-		const float increment,
-		const int octaves,
-		const float amplitude)
+		const float2 pos,
+		float frequency,
+		float lacunarity,
+		int octaves,
+		float amplitude)
 {
 	const int2 coord = (int2)(get_global_id(0), get_global_id(1));
 	const int2 size = (int2)(get_global_size(0), get_global_size(1));
 	const float2 position = (float2)(coord.x / (float)size.x, coord.y / (float)size.y);
-	const float2 sample = (position + bias);
+	const float2 sample = (position + pos);
 
-	float frequency = scale.x;
 	float signal = 1.0f - fabs(sgnoise2d(sample * frequency));
 	float value = signal * signal;
 

@@ -10,6 +10,7 @@
 #include <glm/gtc/round.hpp>
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 namespace compute {
 
@@ -24,6 +25,8 @@ struct Context {
 	cl_device_id deviceId = nullptr;
 	cl_uint alignment = 4096;
 };
+
+static std::unordered_map<void*, size_t> _sizes;
 
 static Context _ctx;
 
@@ -259,6 +262,7 @@ Id createBuffer(BufferFlag flags, size_t size, void* data) {
 		error = clWaitForEvents(1, &event);
 		checkError(error);
 	}
+	_priv::_sizes[bufferObject] = size;
 	return (Id)bufferObject;
 }
 
@@ -270,6 +274,7 @@ bool deleteBuffer(Id& buffer) {
 	checkError(error);
 	if (error == CL_SUCCESS) {
 		buffer = InvalidId;
+		_priv::_sizes[buffer] = 0;
 		return true;
 	}
 	return false;
@@ -286,7 +291,11 @@ bool updateBuffer(Id buffer, size_t size, const void* data, bool blockingWrite) 
 			(cl_mem) buffer, blockingWrite ? CL_TRUE : CL_FALSE, 0, size, data,
 			0, nullptr, nullptr);
 	checkError(error);
-	return error == CL_SUCCESS;
+	if (error == CL_SUCCESS) {
+		_priv::_sizes[buffer] = size;
+		return true;
+	}
+	return false;
 }
 
 bool readBuffer(Id buffer, size_t size, void* data) {
@@ -296,6 +305,15 @@ bool readBuffer(Id buffer, size_t size, void* data) {
 	if (_priv::_ctx.commandQueue == nullptr) {
 		return false;
 	}
+	if (size <= 0) {
+		return false;
+	}
+	if (data == nullptr) {
+		return false;
+	}
+	const auto i = _priv::_sizes.find(buffer);
+	core_assert_always(i != _priv::_sizes.end());
+	core_assert_msg(i->second == size, "Expected to read %i bytes, but was asked to read %i", (int)i->second, (int)size);
 	const cl_int error = clEnqueueReadBuffer(_priv::_ctx.commandQueue,
 			(cl_mem) buffer, CL_TRUE, 0, size, data, 0, nullptr, nullptr);
 	checkError(error);

@@ -7,115 +7,9 @@
 #include "core/Assert.h"
 #include "io/Filesystem.h"
 #include "compute/Shader.h"
+#include "Util.h"
 #include <stack>
 #include <string>
-
-namespace {
-
-static const struct TypeMapping {
-	const char* computeType;
-	const std::string ctype;
-} Types[] = {
-	{"char",     "int8_t"},
-	{"uchar",    "uint8_t"},
-	{"short",    "int16_t"},
-	{"ushort",   "uint16_t"},
-	{"int",      "int32_t"},
-	{"uint",     "uint32_t"},
-	{"long",     "int64_t"},
-	{"ulong",    "uint64_t"},
-	{"float",    "float"},
-	{"double",   "double"},
-	{"half",     "uint16_t"},
-	{nullptr,    ""}
-};
-
-static bool isQualifier(const std::string& token) {
-	return token == "const" || core::string::startsWith(token, "__");
-}
-
-static std::string convert(const std::string& type) {
-	if (type.empty()) {
-		return type;
-	}
-	const bool ispointer = type[type.size() - 1] == '*';
-
-	for (const TypeMapping* t = Types; t->computeType != nullptr; ++t) {
-		if (!core::string::startsWith(type, t->computeType)) {
-			continue;
-		}
-		if (ispointer) {
-			return t->ctype + " *";
-		}
-		return t->ctype;
-	}
-	return type;
-}
-
-static std::string convertType(const std::string& type, std::string& arrayDefinition, int *arraySize = nullptr) {
-	char c;
-	const size_t size = type.size();
-	if (arraySize != nullptr) {
-		*arraySize = 0;
-	}
-	size_t i;
-	bool isPointer = false;
-	for (i = 1; i < size; ++i) {
-		c = type[size - i];
-		if (c == '*') {
-			isPointer = true;
-			continue;
-		}
-		if (c == ' ') {
-			continue;
-		}
-		break;
-	}
-	arrayDefinition = "";
-	if (isPointer || c < '0' || c > '9') {
-		return convert(type);
-	}
-	for (; i < size; ++i) {
-		c = type[size - i];
-		if (c >= '0' && c <= '9') {
-			const char buf[] = {c, '\0'};
-			arrayDefinition.append(buf);
-			continue;
-		}
-		break;
-	}
-	if (arraySize != nullptr) {
-		*arraySize = core::string::toInt(arrayDefinition);
-	}
-
-	arrayDefinition = "[" + arrayDefinition + "]";
-	const std::string& sub = type.substr(0, size - i);
-	return convert(type);
-}
-
-static std::string toString(compute::BufferFlag flagMask) {
-	std::string str;
-
-#define CHECK_MASK(mask) \
-	if ((flagMask & compute::BufferFlag::mask) == compute::BufferFlag::mask) { \
-		if (!str.empty()) \
-			str += " | "; \
-		str += "compute::BufferFlag::" CORE_STRINGIFY(mask); \
-	}
-	CHECK_MASK(ReadWrite)
-	CHECK_MASK(WriteOnly)
-	CHECK_MASK(ReadOnly)
-	CHECK_MASK(UseHostPointer)
-	CHECK_MASK(AllocHostPointer)
-	CHECK_MASK(CopyHostPointer)
-#undef CHECK_MASK
-	if (str.empty()) {
-		str += "compute::BufferFlag::None";
-	}
-	return str;
-}
-
-}
 
 ComputeShaderTool::ComputeShaderTool(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		core::App(filesystem, eventBus, timeProvider, 0) {
@@ -192,10 +86,14 @@ void ComputeShaderTool::generateSrc() {
 			if (!p.qualifier.empty()) {
 				kernels << p.qualifier << " ";
 			}
-			std::string arrayDefinition;
-			kernels << convertType(p.type, arrayDefinition) << " " << p.name << arrayDefinition;
 			if (core::string::contains(p.type, "*")) {
-				kernels << ", size_t " << p.name << "Size";
+				kernels << "/* " << p.type << "*/ std::vector<" << util::vectorType(p.type) << ">& " << p.name;
+			} else {
+				kernels << util::vectorType(p.type);
+				if ((p.flags & compute::BufferFlag::ReadOnly) != compute::BufferFlag::None) {
+					kernels << "&";
+				}
+				kernels << " " << p.name;
 			}
 			first = false;
 		}
@@ -204,48 +102,23 @@ void ComputeShaderTool::generateSrc() {
 			const Parameter& p = k.parameters[i];
 			if (core::string::contains(p.type, "*")) {
 				const std::string& bufferName = core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
-				kernels << "\t\tif (" << bufferName << " == InvalidId) {\n\t\t\t" << bufferName;
-				kernels << " = compute::createBuffer(" << toString(p.flags) << " | ";
-				std::string arrayDefinition;
-				const std::string ctype = convertType(p.type, arrayDefinition);
-
-				std::string size;
-				if (core::string::contains(p.type, "*")) {
-					size = p.name + "Size";
-				} else {
-					size = "sizeof(" + p.name + ")";
-				}
-				kernels << "bufferFlags(" << p.name << ", " << size << "), " << size << ", ";
-				if ((p.flags & compute::BufferFlag::ReadOnly) != compute::BufferFlag::None) {
-					kernels << "const_cast<";
-					kernels << ctype;
-					if (!arrayDefinition.empty()) {
-						kernels << "*";
-					}
-					kernels << ">(" << p.name << ")";
-				} else {
-					kernels << p.name;
-				}
-				kernels << ");\n\t\t} else {\n";
-				kernels << "\t\t\tcompute::updateBuffer(" << bufferName << ", " << size << ", " << p.name << ");\n\t\t}\n";
+				const std::string size = "core::vectorSize(" + p.name + ")";
+				kernels << "\t\tif (" << bufferName << " == InvalidId) {\n";
+				kernels << "\t\t\tconst compute::BufferFlag flags = " << util::toString(p.flags) << " | bufferFlags(&" << p.name << "[0], " << size << ");\n";
+				kernels << "\t\t\t" << bufferName << " = compute::createBufferFromType(flags, " << p.name << ");\n";
+				kernels << "\t\t} else {\n";
+				kernels << "\t\t\tcompute::updateBufferFromType(" << bufferName << ", " << p.name << ");\n\t\t}\n";
 				kernelMembers << "\tmutable compute::Id " << bufferName << " = compute::InvalidId;\n";
 				shutdown << "\t\tcompute::deleteBuffer(" << bufferName << ");\n";
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
 				kernels << i << ", " << bufferName << ");\n";
 			} else {
 				std::string arrayDefinition;
-				int arraySize = 0;
-				const std::string ctype = convertType(p.type, arrayDefinition, &arraySize);
+				const std::string ctype = util::convert(p.type);
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
-				kernels << i << ", sizeof(" << ctype << ")";
-				if (arraySize > 0) {
-					kernels << " * " << arraySize;
-				}
-				kernels << ", (const void*)";
-				if (arraySize == 0) {
-					kernels << "&";
-				}
-				kernels << p.name << ");\n";
+				kernels << i << ", ";
+				kernels << p.name;
+				kernels << ");\n";
 			}
 		}
 		kernels << "\t\tconst bool state = compute::kernelRun(_kernel" << k.name << ", workSize, workDim);\n";
@@ -256,7 +129,7 @@ void ComputeShaderTool::generateSrc() {
 			}
 			if ((p.flags & (compute::BufferFlag::ReadWrite | compute::BufferFlag::WriteOnly)) != compute::BufferFlag::None) {
 				const std::string& bufferName = core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
-				kernels << "\t\tif (state) {\n\t\t\tcore_assert_always(compute::readBuffer(" << bufferName << ", " << p.name << "Size, " << p.name << "));\n\t\t}\n";
+				kernels << "\t\tif (state) {\n\t\t\tcore_assert_always(compute::readBufferIntoVector(" << bufferName << ", " << p.name << "));\n\t\t}\n";
 			}
 		}
 		kernels << "\t\treturn state;\n";
@@ -277,7 +150,7 @@ void ComputeShaderTool::generateSrc() {
 		structs << "\tstruct " << s.name << " {\n";
 		for (const Parameter& p : s.parameters) {
 			std::string arrayDefinition;
-			structs << "\t\t" << convertType(p.type, arrayDefinition) << " " << p.name << arrayDefinition << ";\n";
+			structs << "\t\t" << util::convertType(p.type, arrayDefinition) << " " << p.name << arrayDefinition << ";\n";
 		}
 		structs << "\t};\n\n";
 	}
@@ -348,7 +221,7 @@ const simplecpp::Token *ComputeShaderTool::parseStruct(const simplecpp::Token *t
 			param = Parameter();
 			tok = tok->next;
 		} else {
-			if (isQualifier(token)) {
+			if (util::isQualifier(token)) {
 				param.qualifier = token;
 			} else {
 				if (param.type.empty()) {

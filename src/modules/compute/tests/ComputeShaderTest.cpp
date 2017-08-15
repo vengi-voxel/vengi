@@ -30,10 +30,10 @@ TEST_F(ComputeShaderTest, testExecuteExample) {
 	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
-	const char *foo = "1234";
-	char foo2[4] = {};
-	ASSERT_TRUE(shader.example((const int8_t *)foo, strlen(foo), (int8_t *)foo2, sizeof(foo2), strlen(foo)));
-	ASSERT_EQ(std::string(foo), std::string(foo2, strlen(foo)));
+	const std::vector<int8_t> foo { '1', '2', '3', '4', '5', '6' };
+	std::vector<int8_t> foo2(foo.size(), '0');
+	ASSERT_TRUE(shader.example(foo, foo2, foo.size()));
+	ASSERT_EQ(foo, foo2);
 }
 
 TEST_F(ComputeShaderTest, testExecuteExample2) {
@@ -42,10 +42,10 @@ TEST_F(ComputeShaderTest, testExecuteExample2) {
 	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
-	const char *foo = "1234";
-	char foo2[4] = {};
-	ASSERT_TRUE(shader.example2((const int8_t *)foo, strlen(foo), (int8_t *)foo2, sizeof(foo2), 42, strlen(foo)));
-	ASSERT_EQ(std::string(foo), std::string(foo2, strlen(foo)));
+	const std::vector<int8_t> foo { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
+	std::vector<int8_t> foo2(foo.size(), '0');
+	ASSERT_TRUE(shader.example2(foo, foo2, 42, foo.size()));
+	ASSERT_EQ(foo, foo2);
 }
 
 TEST_F(ComputeShaderTest, testExecuteExampleBig) {
@@ -54,9 +54,10 @@ TEST_F(ComputeShaderTest, testExecuteExampleBig) {
 	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
-	std::vector<int8_t> source(10000, 'a');
-	std::vector<int8_t> target(10000, ' ');
-	ASSERT_TRUE(shader.example(source.data(), source.size(), &target[0], target.size(), source.size()));
+	constexpr int size = 10000;
+	std::vector<int8_t> source(size, 'a');
+	std::vector<int8_t> target(size, ' ');
+	ASSERT_TRUE(shader.example(source, target, source.size()));
 	ASSERT_EQ(source, target);
 }
 
@@ -66,29 +67,27 @@ TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3NoPointer) {
 	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
-	float A[3] = {0.0f, 1.0f, 2.0f};
-	float B[3] = {0.0f, 2.0f, 4.0f};
-	float C[3] = {0.0f};
+	const glm::vec3 A(0.0f, 1.0f, 2.0f);
+	const glm::vec3 B(0.0f, 2.0f, 4.0f);
+	glm::vec3 C(0.0f);
 	ASSERT_TRUE(shader.exampleVectorAddFloat3NoPointer(A, B, C, 3));
 	ASSERT_FLOAT_EQ(C[0], 0.0f);
 	ASSERT_FLOAT_EQ(C[2], 6.0f);
 }
 
-#if 0
 TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3) {
 	if (!_supported) {
 		return;
 	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
-	float A[2][3] = {{0.0f, 1.0f, 2.0f}, {0.0f, 1.0f, 2.0f}};
-	float B[2][3] = {{0.0f, 2.0f, 4.0f}, {0.0f, 2.0f, 4.0f}};
-	float C[2][3] = {{0.0f}, {0.0f}};
-	ASSERT_TRUE(shader.exampleVectorAddFloat3(A, sizeof(A), B, sizeof(B), C, sizeof(C), 3, 1));
+	const std::vector<glm::vec3> A {glm::vec3{0.0f, 1.0f, 2.0f}, glm::vec3{0.0f, 1.0f, 2.0f}};
+	const std::vector<glm::vec3> B {glm::vec3{0.0f, 2.0f, 4.0f}, glm::vec3{0.0f, 2.0f, 4.0f}};
+	std::vector<glm::vec3> C(2);
+	ASSERT_TRUE(shader.exampleVectorAddFloat3(A, B, C, 3, 1));
 	ASSERT_FLOAT_EQ(C[0][0], 0.0f);
 	ASSERT_FLOAT_EQ(C[2][1], 6.0f);
 }
-#endif
 
 // just for comparing runtimes
 TEST_F(ComputeShaderTest, testExecuteExampleBigNonOpenCL) {
@@ -113,7 +112,7 @@ TEST_F(ComputeShaderTest, testExecuteVectorAdd) {
 	std::vector<int> a(size, initA);
 	std::vector<int> b(size, initB);
 	std::vector<int> c(size, 0);
-	ASSERT_TRUE(shader.exampleVectorAddInt(&a.front(), core::vectorSize(a), &b.front(), core::vectorSize(b), &c.front(), core::vectorSize(c), size));
+	ASSERT_TRUE(shader.exampleVectorAddInt(a, b, c, size));
 	for (int i = 0; i < size; ++i) {
 		SCOPED_TRACE(core::string::format("index: %i", i));
 		ASSERT_EQ(c[i], initA + initB);
