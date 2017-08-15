@@ -29,6 +29,22 @@ protected:
 	std::string handleIncludes(const std::string& buffer) const;
 
 	BufferFlag bufferFlags(const void* bufPtr, size_t size) const;
+
+	template<class T>
+	void* ptr(T& data) const {
+		return const_cast<T*>(&data);
+	}
+
+	template<class T>
+	void* ptr(const std::vector<T>& data) const {
+		return const_cast<T*>(&data.front());
+	}
+
+	template<class T>
+	void* ptr(std::vector<T>& data) const {
+		return &data.front();
+	}
+
 public:
 	virtual ~Shader();
 

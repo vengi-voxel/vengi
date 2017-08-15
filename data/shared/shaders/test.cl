@@ -44,9 +44,8 @@ __kernel void exampleVectorAddFloat3(__global const float3 *A, __global const fl
 	C[i1] = A[i1] + B[i1];
 }
 
-__kernel void exampleVectorAddFloat3NoPointer(__global const float3 A, __global const float3 B, __global float3 C) {
+__kernel void exampleVectorAddFloat3NoPointer(const float3 A, const float3 B, float3 C) {
 	int i1 = get_global_id(0);
-	C[i1] = A[i1] + B[i1];
 }
 
 __kernel void examplePointertest(__global const float*A, __global const float*B, __global float3*C) {
@@ -61,4 +60,37 @@ __kernel void exampleLocal(__local const char *  bufLocal, __global const char* 
 
 __kernel void exampleDataStruct(const __global struct Data* data, __global struct Data* out) {
 	out->foo = data->foo;
+}
+
+__kernel void exampleNoise(__global uchar4 *output, const float2 pos, float frequency, float lacunarity, int octaves, float amplitude) {
+}
+
+__kernel void exampleNoiseOther(__global uchar4 *output, __global const float2* pos, float4 frequency, uchar4 lacunarity, int4 octaves, uint3 amplitude) {
+}
+
+__kernel void exampleVec2Vector(__global float2 *output) {
+}
+
+__kernel void exampleVec3Vector(__global float3 *output) {
+}
+
+__kernel void exampleVec4Vector(__global float4 *output) {
+}
+
+__kernel void exampleIVec2Vector(__global int2 *output) {
+}
+
+__kernel void exampleIVec3Vector(__global int3 *output) {
+}
+
+__kernel void exampleIVec4Vector(__global int4 *output) {
+}
+
+__kernel void exampleUVec2Vector(__global uchar2 *output) {
+}
+
+__kernel void exampleUVec3Vector(__global uchar3 *output) {
+}
+
+__kernel void exampleUVec4Vector(__global uchar4 *output) {
 }
