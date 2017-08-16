@@ -35,7 +35,7 @@
 
 namespace core {
 
-int Process::exec (const std::string& command, const std::vector<std::string>& arguments, const char* workdingDirectory, size_t bufSize, char *output) {
+int Process::exec (const std::string& command, const std::vector<std::string>& arguments, const char* workingDirectory, size_t bufSize, char *output) {
 #if __LINUX__ or __MACOSX__
 	int link[2];
 	if (::pipe(link) < 0) {
@@ -62,8 +62,11 @@ int Process::exec (const std::string& command, const std::vector<std::string>& a
 		::dup2(link[1], STDOUT_FILENO);
 		::close(link[0]);
 		::close(link[1]);
-		if (workdingDirectory != nullptr) {
-			::chdir(workdingDirectory);
+		if (workingDirectory != nullptr) {
+			const int retVal = ::chdir(workingDirectory);
+			if (retVal == -1) {
+				Log::warn("Could not change current working dir to %s", workingDirectory);
+			}
 		}
 		// we are the child
 		::execv(command.c_str(), const_cast<char* const*>(argv));
