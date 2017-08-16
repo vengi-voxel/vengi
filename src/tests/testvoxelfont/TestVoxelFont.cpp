@@ -20,7 +20,7 @@ core::AppState TestVoxelFont::onInit() {
 		Log::error("Failed to initialize the raw volume renderer");
 		return core::AppState::Cleanup;
 	}
-	if (!_rawVolumeRenderer.onResize(glm::ivec2(), dimension())) {
+	if (!_rawVolumeRenderer.onResize(glm::ivec2(0), dimension())) {
 		Log::error("Failed to initialize the raw volume renderer");
 		return core::AppState::Cleanup;
 	}

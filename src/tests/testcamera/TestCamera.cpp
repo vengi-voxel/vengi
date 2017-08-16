@@ -37,7 +37,7 @@ core::AppState TestCamera::onInit() {
 		bool targetCamera = i == 0;
 		bool ortho = i == 2;
 
-		_renderCamera[i].init(glm::ivec2(), ortho ? glm::ivec2(100, 50) : dimension());
+		_renderCamera[i].init(glm::ivec2(0), ortho ? glm::ivec2(100, 50) : dimension());
 		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
 
 		_renderCamera[i].setPosition(glm::zero<glm::vec3>());
@@ -83,12 +83,13 @@ void TestCamera::doRender() {
 void TestCamera::onRenderUI() {
 	const char *cameraRotType;
 	const video::Camera& targetCamera = _renderCamera[_targetCamera];
-	video::CameraRotationType rotType = targetCamera.rotationType();
+	const video::CameraRotationType rotType = targetCamera.rotationType();
 	switch (rotType) {
 	case video::CameraRotationType::Target:
 		cameraRotType = "R: Target";
 		break;
 	case video::CameraRotationType::Eye:
+	default:
 		cameraRotType = "R: Eye";
 		break;
 	}

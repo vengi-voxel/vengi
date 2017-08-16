@@ -30,7 +30,7 @@ private:
 	Primitive _primitive = Primitive::Triangles;
 	int _initialSize;
 	glm::vec4 _color = core::Color::White;
-	glm::vec3 _position;
+	glm::vec3 _position {0.0f};
 public:
 	ShapeBuilder(int initialSize = 0);
 
@@ -68,7 +68,7 @@ public:
 		_vertices.clear();
 		_indices.clear();
 		_texcoords.clear();
-		_position = glm::vec3();
+		_position = glm::zero<glm::vec3>();
 		if (_initialSize > 0) {
 			reserve(_initialSize);
 		}

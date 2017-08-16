@@ -39,8 +39,8 @@ private:
 	};
 
 	struct BoneInfo {
-		glm::mat4 boneOffset;
-		glm::mat4 finalTransformation;
+		glm::mat4 boneOffset {1.0f};
+		glm::mat4 finalTransformation {1.0f};
 	};
 
 	void loadTextureImages(const aiScene* scene, const std::string& filename);

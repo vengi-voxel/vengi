@@ -212,7 +212,7 @@ voxel::Voxel QBFormat::getVoxel(io::FileStream& stream) {
 	if (alpha == 0) {
 		return voxel::Voxel();
 	}
-	glm::vec4 color;
+	glm::vec4 color(0.0f);
 	if (_colorFormat == ColorFormat::RGBA) {
 		color = core::Color::fromRGBA(((uint32_t)red) << 24 | ((uint32_t)green) << 16 | ((uint32_t)blue) << 8 | ((uint32_t)255) << 0);
 	} else {
@@ -231,7 +231,7 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 	buf[nameLength] = '\0';
 	Log::debug("Matrix name: %s", buf);
 
-	glm::uvec3 size;
+	glm::uvec3 size(0);
 	wrap(stream.readInt(size.x));
 	wrap(stream.readInt(size.y));
 	wrap(stream.readInt(size.z));
@@ -242,7 +242,7 @@ voxel::RawVolume* QBFormat::loadMatrix(io::FileStream& stream) {
 		return nullptr;
 	}
 
-	glm::ivec3 offset;
+	glm::ivec3 offset(0);
 	wrap(stream.readInt((uint32_t&)offset.x));
 	wrap(stream.readInt((uint32_t&)offset.y));
 	wrap(stream.readInt((uint32_t&)offset.z));
@@ -331,8 +331,8 @@ RawVolume* QBFormat::loadFromStream(io::FileStream& stream) {
 	Log::debug("VisibilityMaskEncoded: %u", std::enum_value(_visibilityMaskEncoded));
 	Log::debug("NumMatrices: %u", numMatrices);
 
-	glm::ivec3 mins = glm::ivec3(std::numeric_limits<int32_t>::max());
-	glm::ivec3 maxs = glm::ivec3(std::numeric_limits<int32_t>::min());
+	glm::ivec3 mins(std::numeric_limits<int32_t>::max());
+	glm::ivec3 maxs(std::numeric_limits<int32_t>::min());
 	std::vector<voxel::RawVolume*> volumes;
 	volumes.reserve(numMatrices);
 	for (uint32_t i = 0; i < numMatrices; i++) {

@@ -104,13 +104,12 @@ glm::vec4 Color::fromHSB(const float hue, const float saturation, const float br
 	if (std::numeric_limits<float>::epsilon() > saturation) {
 		return glm::vec4(brightness, brightness, brightness, alpha);
 	}
-	glm::vec4 color;
-	color.a = alpha;
-	float h = (hue - std::floor(hue)) * 6.f;
-	float f = h - std::floor(h);
-	float p = brightness * (1.f - saturation);
-	float q = brightness * (1.f - saturation * f);
-	float t = brightness * (1.f - (saturation * (1.f - f)));
+	glm::vec4 color(0.0f, 0.0f, 0.0f, alpha);
+	const float h = (hue - std::floor(hue)) * 6.f;
+	const float f = h - std::floor(h);
+	const float p = brightness * (1.f - saturation);
+	const float q = brightness * (1.f - saturation * f);
+	const float t = brightness * (1.f - (saturation * (1.f - f)));
 	switch (static_cast<int>(h)) {
 	case 0:
 		color.r = brightness;
@@ -201,7 +200,7 @@ glm::vec4 Color::brighter(const glm::vec4& color, float f) {
 	static float min = 21.f / magnitude;
 	glm::vec3 result = glm::vec3(color);
 	f = std::pow(scaleFactor, f);
-	if (glm::all(glm::epsilonEqual(glm::vec3(), result, 0.00001f))) {
+	if (glm::all(glm::epsilonEqual(glm::zero<glm::vec3>(), result, 0.00001f))) {
 		return glm::vec4(min / f, min / f, min / f, color.a);
 	}
 	if (result.r > 0.f && result.r < min) {

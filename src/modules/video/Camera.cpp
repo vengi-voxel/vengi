@@ -11,7 +11,7 @@
 namespace video {
 
 Camera::Camera(CameraType type, CameraMode mode) :
-	_type(type), _mode(mode), _pos(glm::vec3()), _omega(0.0f) {
+	_type(type), _mode(mode), _pos(glm::vec3(0.0f)), _omega(0.0f) {
 }
 
 Camera::~Camera() {
@@ -28,7 +28,7 @@ void Camera::init(const glm::ivec2& position, const glm::ivec2& dimension) {
 }
 
 void Camera::move(const glm::vec3& delta) {
-	if (glm::all(glm::epsilonEqual(delta, glm::vec3(), 0.0001f))) {
+	if (glm::all(glm::epsilonEqual(delta, glm::zero<glm::vec3>(), 0.0001f))) {
 		return;
 	}
 	_dirty |= DIRTY_POSITON;
@@ -230,6 +230,7 @@ void Camera::splitFrustum(float nearPlane, float farPlane, glm::vec3 out[core::F
 		proj = glm::ortho(0.0f, (float)width(), (float)height(), 0.0f, nearPlane, farPlane);
 		break;
 	case CameraMode::Perspective:
+	default:
 		proj = glm::perspective(glm::radians(_fieldOfView), _aspectRatio, nearPlane, farPlane);
 		break;
 	}

@@ -140,7 +140,7 @@ bool VolumeNode::onInit() {
 		Log::error("Failed to initialize the raw volume renderer");
 		return false;
 	}
-	if (!_rawVolumeRenderer.onResize(glm::ivec2(), dimension)) {
+	if (!_rawVolumeRenderer.onResize(glm::ivec2(0), dimension)) {
 		Log::error("Failed to initialize the raw volume renderer");
 		return false;
 	}
@@ -149,7 +149,7 @@ bool VolumeNode::onInit() {
 	video::clear(video::ClearFlag::Color);
 	_frameBuffer.unbind();
 
-	_camera.init(glm::ivec2(), _frameBuffer.dimension());
+	_camera.init(glm::ivec2(0), _frameBuffer.dimension());
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 
 	return true;

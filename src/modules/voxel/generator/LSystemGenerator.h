@@ -36,7 +36,7 @@ enum LSystemAlphabet {
  * @brief The current state of the evaluation
  */
 struct LSystemState {
-	glm::vec4 pos;
+	glm::vec4 pos {0.0f};
 	char lastVoxelType = '\0';
 
 	// how many voxels should be generated in each direction when the axiom evaluation

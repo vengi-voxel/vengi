@@ -36,7 +36,7 @@ public:
 
 	MoveVector execute (const AIPtr& ai, float speed) const {
 		float totalWeight = 0.0f;
-		glm::vec3 vecBlended;
+		glm::vec3 vecBlended(0.0f);
 		float angularBlended = 0.0f;
 		for (const WeightedData& wd : _steerings) {
 			const float weight = wd.weight;

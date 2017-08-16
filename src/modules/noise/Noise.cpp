@@ -111,7 +111,7 @@ float swissTurbulence(const glm::vec2& p, float offset, int octaves, float lacun
 	float sum = 0.0f;
 	float freq = 1.0f;
 	float amp = 1.0f;
-	glm::vec2 dsum;
+	glm::vec2 dsum(0.0f);
 	for (int i = 0; i < octaves; i++) {
 		const glm::vec2 in(p + glm::vec2(offset + i) + warp * dsum);
 		const glm::vec3& n = noise::dnoise(in * freq);

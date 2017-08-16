@@ -17,7 +17,7 @@ void Shadow::calculateShadowData(const video::Camera& camera, bool active, int m
 
 	if (!active) {
 		for (int i = 0; i < maxDepthBuffers; ++i) {
-			_cascades[i] = glm::mat4();
+			_cascades[i] = glm::mat4(1.0f);
 			_distances[i] = camera.farPlane();
 		}
 		return;

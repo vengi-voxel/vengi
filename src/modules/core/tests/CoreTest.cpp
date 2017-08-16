@@ -13,9 +13,9 @@ namespace core {
 TEST(CoreTest, testVecSize) {
 	std::vector<glm::vec4> vec4;
 	EXPECT_EQ(0u, core::vectorSize(vec4));
-	vec4.push_back(glm::vec4());
+	vec4.push_back(glm::vec4(0.0f));
 	EXPECT_EQ(4 * sizeof(glm::vec4::value_type), core::vectorSize(vec4));
-	vec4.push_back(glm::vec4());
+	vec4.push_back(glm::vec4(0.0f));
 	EXPECT_EQ(8 * sizeof(glm::vec4::value_type), core::vectorSize(vec4));
 }
 

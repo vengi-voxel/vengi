@@ -76,7 +76,7 @@ bool RawVolumeRenderer::init() {
 	_materialBlock.create(materialBlock);
 	video::ScopedShader scoped(_worldShader);
 	_worldShader.setMaterialblock(_materialBlock);
-	_worldShader.setModel(glm::mat4());
+	_worldShader.setModel(glm::mat4(1.0f));
 	_worldShader.setTexture(video::TextureUnit::Zero);
 	_worldShader.setShadowmap(video::TextureUnit::One);
 	_worldShader.setFogrange(250.0f);

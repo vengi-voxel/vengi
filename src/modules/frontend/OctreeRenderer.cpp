@@ -165,7 +165,7 @@ void OctreeRenderer::render(const video::Camera& camera) {
 		_depthBuffer.bindTexture(i);
 		video::ScopedShader scoped(_shadowMapShader);
 		_shadowMapShader.setLightviewprojection(cascades[i]);
-		_shadowMapShader.setModel(glm::mat4());
+		_shadowMapShader.setModel(glm::mat4(1.0f));
 		renderOctreeNode(camera, _rootNode);
 	}
 	_depthBuffer.unbind();
@@ -187,7 +187,7 @@ void OctreeRenderer::render(const video::Camera& camera) {
 	_worldShader.setViewprojection(camera.viewProjectionMatrix());
 	_worldShader.setShadowmap(video::TextureUnit::One);
 	_worldShader.setDepthsize(glm::vec2(_depthBuffer.dimension()));
-	_worldShader.setModel(glm::mat4());
+	_worldShader.setModel(glm::mat4(1.0f));
 	_worldShader.setCascades(cascades);
 	_worldShader.setDistances(distances);
 	renderOctreeNode(camera, _rootNode);

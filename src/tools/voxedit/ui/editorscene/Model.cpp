@@ -201,8 +201,8 @@ bool Model::remove() {
 }
 
 void Model::vertices(float* vertices, size_t vertexSize, size_t verticesSize, uint32_t* indices, size_t indicesSize) {
-	glm::ivec3 mins(std::numeric_limits<float>::max());
-	glm::ivec3 maxs(std::numeric_limits<float>::min());
+	glm::ivec3 mins(std::numeric_limits<glm::ivec3::value_type>::max());
+	glm::ivec3 maxs(std::numeric_limits<glm::ivec3::value_type>::min());
 	// TODO: add uv support and apply colored voxels from the texture
 	const voxel::Voxel& voxel = voxel::createColorVoxel(voxel::VoxelType::Generic, 0);
 
@@ -462,8 +462,8 @@ void Model::renderSelection(const video::Camera& camera) {
 }
 
 void Model::onResize(const glm::ivec2& size) {
-	_rawVolumeRenderer.onResize(glm::ivec2(), size);
-	_rawVolumeSelectionRenderer.onResize(glm::ivec2(), size);
+	_rawVolumeRenderer.onResize(glm::ivec2(0), size);
+	_rawVolumeSelectionRenderer.onResize(glm::ivec2(0), size);
 }
 
 void Model::init() {

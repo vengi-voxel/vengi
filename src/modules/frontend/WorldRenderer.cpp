@@ -546,7 +546,7 @@ int WorldRenderer::renderWorld(const video::Camera& camera, int* vertices) {
 	}
 	{
 		video::ScopedShader scoped(_waterShader);
-		_waterShader.setModel(glm::scale(glm::mat4(), glm::vec3(_worldScale)));
+		_waterShader.setModel(glm::scale(glm::mat4(1.0f), glm::vec3(_worldScale)));
 		if (shadowMap) {
 			_waterShader.setCascades(cascades);
 			_waterShader.setDistances(distances);

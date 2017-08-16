@@ -140,7 +140,7 @@ core::AppState Client::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	_camera.init(glm::ivec2(), dimension());
+	_camera.init(glm::ivec2(0), dimension());
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setTargetDistance(_maxTargetDistance->floatVal());
 	_waiting.init();
@@ -156,7 +156,7 @@ core::AppState Client::onInit() {
 		return core::AppState::Cleanup;
 	}
 
-	if (!_worldRenderer.init(glm::ivec2(), _dimension)) {
+	if (!_worldRenderer.init(glm::ivec2(0), _dimension)) {
 		return core::AppState::Cleanup;
 	}
 
@@ -195,7 +195,7 @@ void Client::beforeUI() {
 			_camera.setTarget(pos);
 		}
 		_camera.setFarPlane(_worldRenderer.getViewDistance());
-		_camera.init(glm::ivec2(), dimension());
+		_camera.init(glm::ivec2(0), dimension());
 		_camera.update(_deltaFrame);
 
 		_drawCallsWorld = _worldRenderer.renderWorld(_camera);
@@ -291,7 +291,7 @@ core::AppState Client::onRunning() {
 
 void Client::onWindowResize() {
 	Super::onWindowResize();
-	_camera.init(glm::ivec2(), dimension());
+	_camera.init(glm::ivec2(0), dimension());
 }
 
 void Client::signup(const std::string& email, const std::string& password) {

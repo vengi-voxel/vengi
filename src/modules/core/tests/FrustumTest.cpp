@@ -4,6 +4,7 @@
 
 #include "core/tests/AbstractTest.h"
 #include "core/Frustum.h"
+#include "core/GLM.h"
 
 namespace core {
 
@@ -13,8 +14,8 @@ protected:
 	const float _nearPlane = 0.1f;
 	Frustum _frustum;
 	core::AABB<float> _aabb;
-	glm::mat4 _view;
-	glm::mat4 _projection;
+	glm::mat4 _view = glm::mat4(1.0f);
+	glm::mat4 _projection = glm::mat4(1.0f);
 public:
 	FrustumTest() :
 			_aabb(glm::vec3(0.0f), glm::vec3(1.0f)) {
@@ -45,7 +46,7 @@ public:
 };
 
 TEST_F(FrustumTest, testAABBOrtho) {
-	updateVP(glm::mat4(), glm::ortho(0.0f, 50.0f, 0.0f, 100.0f, _nearPlane, -_farPlane));
+	updateVP(glm::mat4(1.0f), glm::ortho(0.0f, 50.0f, 0.0f, 100.0f, _nearPlane, -_farPlane));
 	EXPECT_FLOAT_EQ(_aabb.getWidthX(), 50.0f) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
 	EXPECT_FLOAT_EQ(_aabb.getWidthY(), 100.0f) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
 	EXPECT_NEAR(_aabb.getWidthZ(), _farPlane, _nearPlane) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
@@ -58,7 +59,7 @@ TEST_F(FrustumTest, testAABBOrtho) {
 }
 
 TEST_F(FrustumTest, testAABBPerspective) {
-	updateV(glm::mat4());
+	updateV(glm::mat4(1.0f));
 	EXPECT_NEAR(_aabb.getWidthZ(), _farPlane, _nearPlane) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
 }
 

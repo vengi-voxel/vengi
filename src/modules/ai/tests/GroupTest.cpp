@@ -126,7 +126,7 @@ TEST_F(GroupTest, testGroupLeader) {
 
 TEST_F(GroupTest, testGroupAveragePosition) {
 	const ai::GroupId id = 1;
-	glm::vec3 avg;
+	glm::vec3 avg(0.0f);
 	ai::GroupMgr groupMgr;
 	ai::AIPtr entity1(new ai::AI(ai::TreeNodePtr()));
 	ai::ICharacterPtr chr(new ai::ICharacter(id));

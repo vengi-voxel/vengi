@@ -16,8 +16,8 @@ TEST_F(VolumeCropperTest, testCropSmall) {
 	RawVolume *croppedVolume = voxel::cropVolume(&smallVolume);
 	ASSERT_NE(nullptr, croppedVolume) << "Expected to get the cropped raw volume";
 	const voxel::Region& croppedRegion = croppedVolume->region();
-	EXPECT_EQ(croppedRegion.getUpperCorner(), glm::ivec3()) << croppedRegion;
-	EXPECT_EQ(croppedRegion.getLowerCorner(), glm::ivec3()) << croppedRegion;
+	EXPECT_EQ(croppedRegion.getUpperCorner(), glm::ivec3(0)) << croppedRegion;
+	EXPECT_EQ(croppedRegion.getLowerCorner(), glm::ivec3(0)) << croppedRegion;
 	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getLowerCorner()), createVoxel(VoxelType::Grass, 0));
 }
 
@@ -28,8 +28,8 @@ TEST_F(VolumeCropperTest, testCropBigger) {
 	voxel::RawVolume *croppedVolume = voxel::cropVolume(&smallVolume);
 	ASSERT_NE(nullptr, croppedVolume) << "Expected to get the cropped raw volume";
 	const voxel::Region& croppedRegion = croppedVolume->region();
-	EXPECT_EQ(croppedRegion.getUpperCorner(), glm::ivec3()) << croppedRegion;
-	EXPECT_EQ(croppedRegion.getLowerCorner(), glm::ivec3()) << croppedRegion;
+	EXPECT_EQ(croppedRegion.getUpperCorner(), glm::ivec3(0)) << croppedRegion;
+	EXPECT_EQ(croppedRegion.getLowerCorner(), glm::ivec3(0)) << croppedRegion;
 	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getLowerCorner()), createVoxel(VoxelType::Grass, 0)) << *croppedVolume;
 }
 
@@ -42,7 +42,7 @@ TEST_F(VolumeCropperTest, testCropBiggerMultiple) {
 	ASSERT_NE(nullptr, croppedVolume) << "Expected to get the cropped raw volume";
 	const voxel::Region& croppedRegion = croppedVolume->region();
 	EXPECT_EQ(croppedRegion.getUpperCorner(), region.getCentre()) << croppedRegion;
-	EXPECT_EQ(croppedRegion.getLowerCorner(), glm::ivec3()) << croppedRegion;
+	EXPECT_EQ(croppedRegion.getLowerCorner(), glm::ivec3(0)) << croppedRegion;
 	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getLowerCorner()), createVoxel(VoxelType::Grass, 0)) << *croppedVolume;
 	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getUpperCorner()), createVoxel(VoxelType::Grass, 0)) << *croppedVolume;
 }

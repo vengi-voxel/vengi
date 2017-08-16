@@ -30,11 +30,15 @@ private:
 
 	Plane& plane(FrustumPlanes frustumPlane);
 public:
-	Frustum() {}
+	Frustum() {
+		for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
+			_frustumVertices[i] = glm::vec3(0.0f);
+		}
+	}
 
 	template<class T>
 	Frustum(const core::AABB<T>& aabb) {
-		update(glm::mat4(), aabb.projectionMatrix());
+		update(glm::mat4(1.0f), aabb.projectionMatrix());
 	}
 
 	FrustumResult test(const glm::vec3& position) const;

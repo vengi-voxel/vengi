@@ -22,12 +22,12 @@ namespace _priv {
  */
 struct GLState {
 	GLVersion glVersion {0, 0};
-	glm::vec4 clearColor;
+	glm::vec4 clearColor {0.0f};
 	Face cullFace = Face::Back;
 	CompareFunc depthFunc = CompareFunc::Less;
 	Id programHandle = InvalidId;
 	Id vertexArrayHandle = InvalidId;
-	glm::vec2 polygonOffset;
+	glm::vec2 polygonOffset {0.0f};
 	Face polygonModeFace = Face::Max;
 	PolygonMode polygonMode = PolygonMode::Solid;
 	BlendMode blendSrc = BlendMode::One;

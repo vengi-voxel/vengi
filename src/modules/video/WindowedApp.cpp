@@ -33,7 +33,7 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 }
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, uint16_t traceport) :
-		App(filesystem, eventBus, timeProvider, traceport), _dimension(-1) {
+		App(filesystem, eventBus, timeProvider, traceport), _dimension(-1), _mousePos(-1), _mouseRelativePos(-1) {
 }
 
 void WindowedApp::onAfterRunning() {

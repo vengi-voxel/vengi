@@ -50,7 +50,7 @@ void Controller::init(Controller::SceneCameraMode mode) {
 }
 
 void Controller::onResize(const glm::ivec2& size) {
-	_camera.init(glm::ivec2(), size);
+	_camera.init(glm::ivec2(0), size);
 }
 
 void Controller::zoom(float level) {

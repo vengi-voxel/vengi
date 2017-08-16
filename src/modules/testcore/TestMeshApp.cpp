@@ -129,7 +129,7 @@ void TestMeshApp::doRender() {
 		if (_mesh->initMesh(_shadowMapShader, timeInSeconds, animationIndex)) {
 			_shadowMapShader.recordUsedUniforms(true);
 			_shadowMapShader.clearUsedUniforms();
-			_shadowMapShader.setModel(glm::mat4());
+			_shadowMapShader.setModel(glm::mat4(1.0f));
 			for (int i = 0; i < maxDepthBuffers; ++i) {
 				_depthBuffer.bindTexture(i);
 				_shadowMapShader.setLightviewprojection(cascades[i]);
@@ -159,7 +159,7 @@ void TestMeshApp::doRender() {
 			_meshShader.setViewprojection(_camera.viewProjectionMatrix());
 			_meshShader.setFogrange(250.0f);
 			_meshShader.setViewdistance(_camera.farPlane());
-			_meshShader.setModel(glm::mat4());
+			_meshShader.setModel(glm::mat4(1.0f));
 			_meshShader.setTexture(video::TextureUnit::Zero);
 			_meshShader.setDiffuseColor(_diffuseColor);
 			_meshShader.setAmbientColor(_ambientColor);
@@ -181,7 +181,7 @@ void TestMeshApp::doRender() {
 		_colorShader.recordUsedUniforms(true);
 		_colorShader.clearUsedUniforms();
 		_colorShader.setViewprojection(_camera.viewProjectionMatrix());
-		_colorShader.setModel(glm::mat4());
+		_colorShader.setModel(glm::mat4(1.0f));
 		_mesh->renderNormals(_colorShader);
 	}
 

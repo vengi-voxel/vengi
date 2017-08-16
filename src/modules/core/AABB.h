@@ -241,8 +241,8 @@ public:
 	/// Shrinks this AABB by the amounts specified.
 	void shrink(const glm::tvec3<TYPE>& v3dAmount);
 private:
-	glm::tvec3<TYPE> _mins;
-	glm::tvec3<TYPE> _maxs;
+	glm::tvec3<TYPE> _mins {0};
+	glm::tvec3<TYPE> _maxs {0};
 };
 
 template<typename TYPE>

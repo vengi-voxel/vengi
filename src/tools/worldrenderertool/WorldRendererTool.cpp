@@ -75,10 +75,10 @@ core::AppState WorldRendererTool::onInit() {
 	}
 
 	_world->setSeed(1);
-	if (!_worldRenderer.init(glm::ivec2(), _dimension)) {
+	if (!_worldRenderer.init(glm::ivec2(0), _dimension)) {
 		return core::AppState::Cleanup;
 	}
-	_camera.init(glm::ivec2(), dimension());
+	_camera.init(glm::ivec2(0), dimension());
 	_camera.setFieldOfView(45.0f);
 	_camera.setPosition(glm::vec3(50.0f, 100.0f, 50.0f));
 	_camera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -197,7 +197,7 @@ core::AppState WorldRendererTool::onCleanup() {
 
 void WorldRendererTool::onWindowResize() {
 	Super::onWindowResize();
-	_camera.init(glm::ivec2(), dimension());
+	_camera.init(glm::ivec2(0), dimension());
 }
 
 bool WorldRendererTool::onKeyPress(int32_t key, int16_t modifier) {

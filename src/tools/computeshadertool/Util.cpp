@@ -79,7 +79,7 @@ std::string vectorType(const std::string& type) {
 }
 
 std::string convertType(const std::string& type, std::string& arrayDefinition, int *arraySize) {
-	char c;
+	char c = '\0';
 	const size_t size = type.size();
 	if (arraySize != nullptr) {
 		*arraySize = 0;

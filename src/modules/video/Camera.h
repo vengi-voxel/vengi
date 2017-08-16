@@ -59,30 +59,30 @@ protected:
 	PolygonMode _polygonMode = PolygonMode::Solid;
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
-	glm::ivec2 _dimension;
+	glm::ivec2 _dimension {0};
 	// the position that is used for ortho projection matrices
-	glm::ivec2 _position;
+	glm::ivec2 _position {0};
 	// the position of the camera in the world
-	glm::vec3 _pos;
-	glm::quat _quat;
+	glm::vec3 _pos {0.0f};
+	glm::quat _quat = glm::quat(1, 0, 0, 0);
 	uint32_t _dirty = DIRTY_ALL;
 
-	glm::mat4 _viewMatrix;
-	glm::mat4 _invViewMatrix;
-	glm::mat4 _projectionMatrix;
-	glm::mat4 _invProjectionMatrix;
-	glm::mat4 _viewProjectionMatrix;
-	glm::mat4 _orientation;
+	glm::mat4 _viewMatrix = glm::mat4(1.0f);
+	glm::mat4 _invViewMatrix = glm::mat4(1.0f);
+	glm::mat4 _projectionMatrix = glm::mat4(1.0f);
+	glm::mat4 _invProjectionMatrix = glm::mat4(1.0f);
+	glm::mat4 _viewProjectionMatrix = glm::mat4(1.0f);
+	glm::mat4 _orientation = glm::mat4(1.0f);
 
 	// rotation speed over time for all three axis
-	glm::vec3 _omega;
+	glm::vec3 _omega {0.0f};
 
 	float _nearPlane = 0.1f;
 	float _farPlane = 500.0f;
 	float _aspectRatio = 1.0f;
 	float _fieldOfView = 45.0f;
 
-	glm::vec3 _target;
+	glm::vec3 _target {0.0f};
 	float _distance = 100.0f;
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion

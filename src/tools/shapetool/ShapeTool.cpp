@@ -84,7 +84,7 @@ core::AppState ShapeTool::onInit() {
 	if (!_octreeRenderer.init(_volumeData, region, 32)) {
 		return core::AppState::Cleanup;
 	}
-	_camera.init(glm::ivec2(), dimension());
+	_camera.init(glm::ivec2(0), dimension());
 	_camera.setFieldOfView(45.0f);
 	_camera.setFarPlane(2000.0f);
 	_camera.setPosition(glm::vec3(50.0f, 100.0f, 50.0f));
@@ -177,7 +177,7 @@ core::AppState ShapeTool::onCleanup() {
 
 void ShapeTool::onWindowResize() {
 	Super::onWindowResize();
-	_camera.init(glm::ivec2(), dimension());
+	_camera.init(glm::ivec2(0), dimension());
 }
 
 bool ShapeTool::onKeyPress(int32_t key, int16_t modifier) {

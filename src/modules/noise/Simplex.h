@@ -2207,7 +2207,7 @@ float ridgedMF(const glm::vec4 &v, float ridgeOffset, uint8_t octaves, float lac
 float iqfBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
 	float sum = 0.0f;
 	float amp = 0.5f;
-	glm::vec2 delta;
+	glm::vec2 delta(0.0f);
 	float freq = 1.0f;
 	for (uint8_t i = 0; i < octaves; ++i) {
 		const glm::vec3& d = dnoise(v * freq);
@@ -2224,7 +2224,7 @@ float iqfBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
 float iqfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
 	float sum = 0.0f;
 	float amp = 0.5f;
-	glm::vec3 delta;
+	glm::vec3 delta(0.0f);
 	float freq = 1.0f;
 	for (uint8_t i = 0; i < octaves; ++i) {
 		const glm::vec4& d = dnoise(v * freq);
@@ -2243,7 +2243,7 @@ float iqMatfBm(const glm::vec2 &v, uint8_t octaves, const glm::mat2 &mat, float 
 	float sum = 0.0f;
 	float amp = 1.0f;
 	glm::vec2 pos = v;
-	glm::vec2 noiseAccum;
+	glm::vec2 noiseAccum(0.0f);
 	for (uint8_t i = 0; i < octaves; ++i) {
 		const glm::vec3& n = dnoise(pos);
 		noiseAccum += glm::vec2(n.y, n.z);
