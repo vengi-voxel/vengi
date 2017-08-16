@@ -107,7 +107,7 @@ public:
     EasyFileReader();
     ~EasyFileReader();
 
-    bool isFile() const;
+    const bool isFile() const;
     bool done() const;
     int progress() const;
     unsigned int size() const;
