@@ -78,7 +78,16 @@ int Process::exec (const std::string& command, const std::vector<std::string>& a
 
 	close(link[1]);
 	if (bufSize > 0) {
-		read(link[0], output, bufSize);
+		char* p = output;
+		int size = bufSize;
+		for (;;) {
+			const int n = ::read(link[0], p, size);
+			if (n <= 0) {
+				break;
+			}
+			p += n;
+			size -= n;
+		}
 	}
 	// we are the parent and are blocking until the child stopped
 	int status;
