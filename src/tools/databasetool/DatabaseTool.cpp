@@ -49,6 +49,7 @@ std::string DatabaseTool::getCPPInit(persistence::Model::FieldType type) const {
 	case persistence::Model::FieldType::INT:
 		return "0";
 	}
+	return "";
 }
 
 std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool function, bool pointer) const {
@@ -81,6 +82,7 @@ std::string DatabaseTool::getCPPType(persistence::Model::FieldType type, bool fu
 		}
 		return "int32_t";
 	}
+	return "";
 }
 
 std::string DatabaseTool::getDbType(const persistence::Model::Field& field) const {
@@ -109,6 +111,7 @@ std::string DatabaseTool::getDbType(const persistence::Model::Field& field) cons
 		}
 		return "INT";
 	}
+	return "";
 }
 
 std::string DatabaseTool::getDbFlags(const Table& table, const persistence::Model::Field& field) const {
