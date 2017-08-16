@@ -166,7 +166,9 @@ int FileStream::readFloat(float& val) {
 		uint32_t i;
 	} tmp;
 	const int retVal = readInt(tmp.i);
-	val = tmp.f;
+	if (retVal == 0) {
+		val = tmp.f;
+	}
 	return retVal;
 }
 
