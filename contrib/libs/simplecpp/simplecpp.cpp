@@ -202,14 +202,15 @@ simplecpp::TokenList::~TokenList()
     clear();
 }
 
-void simplecpp::TokenList::operator=(const TokenList &other)
+simplecpp::TokenList &simplecpp::TokenList::operator=(const TokenList &other)
 {
-    if (this == &other)
-        return;
-    clear();
-    for (const Token *tok = other.cfront(); tok; tok = tok->next)
-        push_back(new Token(*tok));
-    sizeOfType = other.sizeOfType;
+    if (this != &other) {
+        clear();
+        for (const Token *tok = other.cfront(); tok; tok = tok->next)
+            push_back(new Token(*tok));
+        sizeOfType = other.sizeOfType;
+    }
+    return *this;
 }
 
 void simplecpp::TokenList::clear()
@@ -1640,7 +1641,7 @@ namespace simplecpp {
             return nextTok;
         }
 
-        bool isReplaced(const std::set<std::string> &expandedmacros) const {
+        static bool isReplaced(const std::set<std::string> &expandedmacros) {
             // return true if size > 1
             std::set<std::string>::const_iterator it = expandedmacros.begin();
             if (it == expandedmacros.end())
