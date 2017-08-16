@@ -136,7 +136,7 @@ static const char *convertCLError(cl_int err) {
 #ifdef DEBUG
 #define checkError(clError) core_assert_msg(clError == CL_SUCCESS, "CL err: %s => %i", convertCLError(clError), clError)
 #else
-#define checkError(clError)
+#define checkError(clError) (void)error
 #endif
 
 static std::string getPlatformName(cl_platform_id id) {
