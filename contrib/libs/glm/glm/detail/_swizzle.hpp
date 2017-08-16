@@ -47,10 +47,9 @@ namespace detail
 	/*
 		Template parameters:
 
-		ValueType = type of scalar values (e.g. float, double)
-		VecType   = class the swizzle is applies to (e.g. vec<3, float>)
-		N         = number of components in the vector (e.g. 3)
-		E0...3    = what index the n-th element of this swizzle refers to in the unswizzled vec
+		T			= type of scalar values (e.g. float, double)
+		N			= number of components in the vector (e.g. 3)
+		E0...3		= what index the n-th element of this swizzle refers to in the unswizzled vec
 
 		DUPLICATE_ELEMENTS = 1 if there is a repeated element, 0 otherwise (used to specialize swizzles
 			containing duplicate elements so that they cannot be used as r-values).            

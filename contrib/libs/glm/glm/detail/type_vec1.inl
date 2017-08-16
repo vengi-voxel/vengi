@@ -478,7 +478,7 @@ namespace glm
 	GLM_FUNC_QUALIFIER vec<1, T, P> operator<<(vec<1, T, P> const & v, T scalar)
 	{
 		return vec<1, T, P>(
-			v.x << scalar);
+			static_cast<T>(v.x << scalar));
 	}
 
 	template<typename T, precision P>

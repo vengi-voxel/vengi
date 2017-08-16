@@ -7,6 +7,7 @@
 
 namespace glm
 {
+	/// enum precision
 	enum precision
 	{
 		packed_highp,

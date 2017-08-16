@@ -777,7 +777,7 @@ namespace detail
 	}
 
 	template<typename genType>
-	GLM_FUNC_QUALIFIER genType frexp(genType x, int & exp)
+	GLM_FUNC_QUALIFIER genType frexp(genType x, int& exp)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<genType>::is_iec559 || GLM_UNRESTRICTED_GENTYPE, "'frexp' only accept floating-point inputs");
 

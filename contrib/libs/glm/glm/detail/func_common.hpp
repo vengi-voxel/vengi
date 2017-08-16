@@ -26,27 +26,38 @@ namespace glm
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/abs.xml">GLSL abs man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
+	/// @see precision
 	template<typename genType>
 	GLM_FUNC_DECL genType abs(genType x);
 
+	/// Returns x if x >= 0; otherwise, it returns -x.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point or signed integer scalar types
+	/// @tparam P Value from precision enum
+	/// 
+	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/abs.xml">GLSL abs man page</a>
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
 	GLM_FUNC_DECL vec<L, T, P> abs(vec<L, T, P> const& x);
 
 	/// Returns 1.0 if x > 0, 0.0 if x == 0, or -1.0 if x < 0. 
-	/// 
-	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
-	/// @tparam T Floating-point scalar types.
-	/// 
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
+	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/sign.xml">GLSL sign man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
 	GLM_FUNC_DECL vec<L, T, P> sign(vec<L, T, P> const& x);
 
 	/// Returns a value equal to the nearest integer that is less then or equal to x. 
-	/// 
-	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
-	/// @tparam T Floating-point scalar types.
-	/// 
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
+	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/floor.xml">GLSL floor man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
@@ -54,10 +65,11 @@ namespace glm
 
 	/// Returns a value equal to the nearest integer to x
 	/// whose absolute value is not larger than the absolute value of x.
-	/// 
-	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
-	/// @tparam T Floating-point scalar types.
-	/// 
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
+	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/trunc.xml">GLSL trunc man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
@@ -68,10 +80,11 @@ namespace glm
 	/// implementation, presumably the direction that is fastest.
 	/// This includes the possibility that round(x) returns the
 	/// same value as roundEven(x) for all values of x.
-	/// 
-	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
-	/// @tparam T Floating-point scalar types.
-	/// 
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
+	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/round.xml">GLSL round man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
@@ -80,10 +93,11 @@ namespace glm
 	/// Returns a value equal to the nearest integer to x.
 	/// A fractional part of 0.5 will round toward the nearest even
 	/// integer. (Both 3.5 and 4.5 for x will return 4.0.)
-	/// 
-	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
-	/// @tparam T Floating-point scalar types.
-	/// 
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
+	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/roundEven.xml">GLSL roundEven man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	/// @see <a href="http://developer.amd.com/documentation/articles/pages/New-Round-to-Even-Technique.aspx">New round to even technique</a>
@@ -92,9 +106,10 @@ namespace glm
 
 	/// Returns a value equal to the nearest integer
 	/// that is greater than or equal to x.
-	/// 
-	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
-	/// @tparam T Floating-point scalar types.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/ceil.xml">GLSL ceil man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
@@ -110,6 +125,14 @@ namespace glm
 	template<typename genType>
 	GLM_FUNC_DECL genType fract(genType x);
 
+	/// Return x - floor(x).
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
+	///
+	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/fract.xml">GLSL fract man page</a>
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
 	GLM_FUNC_DECL vec<L, T, P> fract(vec<L, T, P> const& x);
 
@@ -123,11 +146,29 @@ namespace glm
 	template<typename genType>
 	GLM_FUNC_DECL genType mod(genType x, genType y);
 
+	/// Modulus. Returns x - y * floor(x / y)
+	/// for each component in x using the floating point value y.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
+	///
+	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/mod.xml">GLSL mod man page</a>
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
-	GLM_FUNC_DECL vec<L, T, P> mod(vec<L, T, P> const & x, T y);
+	GLM_FUNC_DECL vec<L, T, P> mod(vec<L, T, P> const& x, T y);
 
+	/// Modulus. Returns x - y * floor(x / y)
+	/// for each component in x using the floating point value y.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
+	///
+	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/mod.xml">GLSL mod man page</a>
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
-	GLM_FUNC_DECL vec<L, T, P> mod(vec<L, T, P> const & x, vec<L, T, P> const & y);
+	GLM_FUNC_DECL vec<L, T, P> mod(vec<L, T, P> const& x, vec<L, T, P> const& y);
 
 	/// Returns the fractional part of x and sets i to the integer
 	/// part (as a whole number floating point value). Both the
@@ -139,7 +180,7 @@ namespace glm
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/modf.xml">GLSL modf man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<typename genType>
-	GLM_FUNC_DECL genType modf(genType x, genType & i);
+	GLM_FUNC_DECL genType modf(genType x, genType& i);
 
 	/// Returns y if y < x; otherwise, it returns x.
 	///
@@ -150,9 +191,25 @@ namespace glm
 	template<typename genType>
 	GLM_FUNC_DECL genType min(genType x, genType y);
 
+	/// Returns y if y < x; otherwise, it returns x.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point or integer scalar types
+	/// @tparam P Value from precision enum
+	///
+	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/min.xml">GLSL min man page</a>
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
 	GLM_FUNC_DECL vec<L, T, P> min(vec<L, T, P> const& x, T y);
 
+	/// Returns y if y < x; otherwise, it returns x.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point or integer scalar types
+	/// @tparam P Value from precision enum
+	///
+	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/min.xml">GLSL min man page</a>
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
 	GLM_FUNC_DECL vec<L, T, P> min(vec<L, T, P> const& x, vec<L, T, P> const& y);
 
@@ -165,9 +222,25 @@ namespace glm
 	template<typename genType>
 	GLM_FUNC_DECL genType max(genType x, genType y);
 
+	/// Returns y if x < y; otherwise, it returns x.
+	/// 
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point or integer scalar types
+	/// @tparam P Value from precision enum
+	/// 
+	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/max.xml">GLSL max man page</a>
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
 	GLM_FUNC_DECL vec<L, T, P> max(vec<L, T, P> const& x, T y);
 
+	/// Returns y if x < y; otherwise, it returns x.
+	/// 
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point or integer scalar types
+	/// @tparam P Value from precision enum
+	/// 
+	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/max.xml">GLSL max man page</a>
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
 	GLM_FUNC_DECL vec<L, T, P> max(vec<L, T, P> const& x, vec<L, T, P> const& y);
 
@@ -181,9 +254,27 @@ namespace glm
 	template<typename genType>
 	GLM_FUNC_DECL genType clamp(genType x, genType minVal, genType maxVal);
 
+	/// Returns min(max(x, minVal), maxVal) for each component in x 
+	/// using the floating-point values minVal and maxVal.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point or integer scalar types
+	/// @tparam P Value from precision enum
+	///
+	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/clamp.xml">GLSL clamp man page</a>
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
 	GLM_FUNC_DECL vec<L, T, P> clamp(vec<L, T, P> const & x, T minVal, T maxVal);
 
+	/// Returns min(max(x, minVal), maxVal) for each component in x 
+	/// using the floating-point values minVal and maxVal.
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point or integer scalar types
+	/// @tparam P Value from precision enum
+	///
+	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/clamp.xml">GLSL clamp man page</a>
+	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, typename T, precision P>
 	GLM_FUNC_DECL vec<L, T, P> clamp(vec<L, T, P> const& x, vec<L, T, P> const& minVal, vec<L, T, P> const& maxVal);
 
@@ -247,8 +338,9 @@ namespace glm
 
 	/// Returns 0.0 if x < edge, otherwise it returns 1.0.
 	/// 
-	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
-	/// @tparam T Floating-point scalar types.
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/step.xml">GLSL step man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
@@ -257,8 +349,9 @@ namespace glm
 
 	/// Returns 0.0 if x < edge, otherwise it returns 1.0.
 	/// 
-	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
-	/// @tparam T Floating-point scalar types.
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/step.xml">GLSL step man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
@@ -296,8 +389,9 @@ namespace glm
 	/// 
 	/// /!\ When using compiler fast math, this function may fail.
 	/// 
-	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
-	/// @tparam T Floating-point scalar types.
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
 	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/isnan.xml">GLSL isnan man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
@@ -310,8 +404,9 @@ namespace glm
 	/// otherwise, including for implementations with no infinity
 	/// representations.
 	/// 
-	/// @tparam L An integer between 1 and 4 included that qualify the dimension of the vector.
-	/// @tparam T Floating-point scalar types.
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam T Floating-point scalar types
+	/// @tparam P Value from precision enum
 	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/isinf.xml">GLSL isinf man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
@@ -330,10 +425,13 @@ namespace glm
 	/// the encoding of a floating-point value. The floatingpoint
 	/// value's bit-level representation is preserved.
 	/// 
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam P Value from precision enum
+	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/floatBitsToInt.xml">GLSL floatBitsToInt man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, precision P>
-	GLM_FUNC_DECL vec<L, int, P> floatBitsToInt(vec<L, float, P> const & v);
+	GLM_FUNC_DECL vec<L, int, P> floatBitsToInt(vec<L, float, P> const& v);
 
 	/// Returns a unsigned integer value representing
 	/// the encoding of a floating-point value. The floatingpoint
@@ -346,7 +444,10 @@ namespace glm
 	/// Returns a unsigned integer value representing
 	/// the encoding of a floating-point value. The floatingpoint
 	/// value's bit-level representation is preserved.
-	/// 
+	///
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam P Value from precision enum
+	///
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/floatBitsToUint.xml">GLSL floatBitsToUint man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, precision P>
@@ -368,10 +469,13 @@ namespace glm
 	/// resulting floating point value is unspecified. Otherwise,
 	/// the bit-level representation is preserved.
 	/// 
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam P Value from precision enum
+	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/intBitsToFloat.xml">GLSL intBitsToFloat man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, precision P>
-	GLM_FUNC_DECL vec<L, float, P> intBitsToFloat(vec<L, int, P> const & v);
+	GLM_FUNC_DECL vec<L, float, P> intBitsToFloat(vec<L, int, P> const& v);
 
 	/// Returns a floating-point value corresponding to a
 	/// unsigned integer encoding of a floating-point value.
@@ -389,10 +493,13 @@ namespace glm
 	/// resulting floating point value is unspecified. Otherwise,
 	/// the bit-level representation is preserved.
 	/// 
+	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
+	/// @tparam P Value from precision enum
+	/// 
 	/// @see <a href="http://www.opengl.org/sdk/docs/manglsl/xhtml/uintBitsToFloat.xml">GLSL uintBitsToFloat man page</a>
 	/// @see <a href="http://www.opengl.org/registry/doc/GLSLangSpec.4.20.8.pdf">GLSL 4.20.8 specification, section 8.3 Common Functions</a>
 	template<length_t L, precision P>
-	GLM_FUNC_DECL vec<L, float, P> uintBitsToFloat(vec<L, uint, P> const & v);
+	GLM_FUNC_DECL vec<L, float, P> uintBitsToFloat(vec<L, uint, P> const& v);
 
 	/// Computes and returns a * b + c.
 	/// 

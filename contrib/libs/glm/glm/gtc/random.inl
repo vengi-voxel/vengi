@@ -3,6 +3,7 @@
 
 #include "../geometric.hpp"
 #include "../exponential.hpp"
+#include "../trigonometric.hpp"
 #include <cstdlib>
 #include <ctime>
 #include <cassert>
@@ -331,8 +332,8 @@ namespace detail
 	template<typename T>
 	GLM_FUNC_QUALIFIER vec<2, T, defaultp> circularRand(T Radius)
 	{
-		T a = linearRand(T(0), T(6.283185307179586476925286766559f));
-		return vec<2, T, defaultp>(cos(a), sin(a)) * Radius;
+		T a = linearRand(T(0), static_cast<T>(6.283185307179586476925286766559));
+		return vec<2, T, defaultp>(glm::cos(a), glm::sin(a)) * Radius;
 	}
 
 	template<typename T>
