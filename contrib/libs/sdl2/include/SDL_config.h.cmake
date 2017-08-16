@@ -73,6 +73,7 @@
 #cmakedefine HAVE_MEMORY_H 1
 #cmakedefine HAVE_STRING_H 1
 #cmakedefine HAVE_STRINGS_H 1
+#cmakedefine HAVE_WCHAR_H 1
 #cmakedefine HAVE_INTTYPES_H 1
 #cmakedefine HAVE_STDINT_H 1
 #cmakedefine HAVE_CTYPE_H 1
@@ -106,6 +107,10 @@
 #cmakedefine HAVE_MEMCPY 1
 #cmakedefine HAVE_MEMMOVE 1
 #cmakedefine HAVE_MEMCMP 1
+#cmakedefine HAVE_WCSLEN 1
+#cmakedefine HAVE_WCSLCPY 1
+#cmakedefine HAVE_WCSLCAT 1
+#cmakedefine HAVE_WCSCMP 1
 #cmakedefine HAVE_STRLEN 1
 #cmakedefine HAVE_STRLCPY 1
 #cmakedefine HAVE_STRLCAT 1
@@ -159,6 +164,7 @@
 #cmakedefine HAVE_SQRTF 1
 #cmakedefine HAVE_TAN 1
 #cmakedefine HAVE_TANF 1
+#cmakedefine HAVE_FOPEN64 1
 #cmakedefine HAVE_FSEEKO 1
 #cmakedefine HAVE_FSEEKO64 1
 #cmakedefine HAVE_SIGACTION 1
@@ -175,6 +181,7 @@
 #cmakedefine HAVE_PTHREAD_SET_NAME_NP 1
 #cmakedefine HAVE_SEM_TIMEDWAIT 1
 #cmakedefine HAVE_GETAUXVAL 1
+#cmakedefine HAVE_POLL 1
 
 #elif __WIN32__
 #cmakedefine HAVE_STDARG_H 1

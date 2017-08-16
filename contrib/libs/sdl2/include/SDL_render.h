@@ -233,6 +233,8 @@ extern DECLSPEC int SDLCALL SDL_GetRendererOutputSize(SDL_Renderer * renderer,
  *          active,  the format was unsupported, or the width or height were out
  *          of range.
  *
+ *  \note The contents of the texture are not defined at creation.
+ *
  *  \sa SDL_QueryTexture()
  *  \sa SDL_UpdateTexture()
  *  \sa SDL_DestroyTexture()
@@ -370,8 +372,11 @@ extern DECLSPEC int SDLCALL SDL_GetTextureBlendMode(SDL_Texture * texture,
  *  \param texture   The texture to update
  *  \param rect      A pointer to the rectangle of pixels to update, or NULL to
  *                   update the entire texture.
- *  \param pixels    The raw pixel data.
+ *  \param pixels    The raw pixel data in the format of the texture.
  *  \param pitch     The number of bytes in a row of pixel data, including padding between lines.
+ *
+ *  The pixel data must be in the format of the texture. The pixel format can be
+ *  queried with SDL_QueryTexture.
  *
  *  \return 0 on success, or -1 if the texture is not valid.
  *
@@ -816,7 +821,7 @@ extern DECLSPEC int SDLCALL SDL_RenderCopy(SDL_Renderer * renderer,
  *                   texture.
  *  \param dstrect   A pointer to the destination rectangle, or NULL for the
  *                   entire rendering target.
- *  \param angle    An angle in degrees that indicates the rotation that will be applied to dstrect
+ *  \param angle    An angle in degrees that indicates the rotation that will be applied to dstrect, rotating it in a clockwise direction
  *  \param center   A pointer to a point indicating the point around which dstrect will be rotated (if NULL, rotation will be done around dstrect.w/2, dstrect.h/2).
  *  \param flip     An SDL_RendererFlip value stating which flipping actions should be performed on the texture
  *

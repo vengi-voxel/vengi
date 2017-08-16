@@ -27,6 +27,7 @@
 #include "SDL_assert.h"
 #include "SDL_log.h"
 
+#include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/scancodes_xfree86.h"
@@ -74,16 +75,14 @@ void
 Wayland_PumpEvents(_THIS)
 {
     SDL_VideoData *d = _this->driverdata;
-    struct pollfd pfd[1];
 
-    pfd[0].fd = WAYLAND_wl_display_get_fd(d->display);
-    pfd[0].events = POLLIN;
-    poll(pfd, 1, 0);
-
-    if (pfd[0].revents & POLLIN)
+    if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0)) {
         WAYLAND_wl_display_dispatch(d->display);
+    }
     else
+    {
         WAYLAND_wl_display_dispatch_pending(d->display);
+    }
 }
 
 static void
@@ -98,7 +97,7 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
         /* enter event for a window we've just destroyed */
         return;
     }
-    
+
     /* This handler will be called twice in Wayland 1.4
      * Once for the window surface which has valid user data
      * and again for the mouse cursor surface which does not have valid user data
@@ -106,7 +105,7 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
      */
 
     window = (SDL_WindowData *)wl_surface_get_user_data(surface);
-    
+
     if (window) {
         input->pointer_focus = window;
         SDL_SetMouseFocus(window->sdlwindow);
@@ -185,7 +184,7 @@ pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
     SDL_WindowData *window = input->pointer_focus;
     enum wl_pointer_button_state state = state_w;
     uint32_t sdl_button;
-    
+
     if  (input->pointer_focus) {
         switch (button) {
             case BTN_LEFT:
@@ -232,16 +231,16 @@ pointer_handle_axis_common(struct SDL_WaylandInput *input,
 {
     SDL_WindowData *window = input->pointer_focus;
     enum wl_pointer_axis a = axis;
-    int x, y;
+    float x, y;
 
     if (input->pointer_focus) {
         switch (a) {
             case WL_POINTER_AXIS_VERTICAL_SCROLL:
                 x = 0;
-                y = wl_fixed_to_int(value);
+                y = (float)wl_fixed_to_double(value);
                 break;
             case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-                x = wl_fixed_to_int(value);
+                x = (float)wl_fixed_to_double(value);
                 y = 0;
                 break;
             default:
@@ -325,7 +324,7 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         /* enter event for a window we've just destroyed */
         return;
     }
- 
+
     window = wl_surface_get_user_data(surface);
 
     if (window) {

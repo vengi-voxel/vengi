@@ -292,6 +292,25 @@ windows_file_close(SDL_RWops * context)
 
 #ifdef HAVE_STDIO_H
 
+#ifdef HAVE_FOPEN64
+#define fopen   fopen64
+#endif
+#ifdef HAVE_FSEEKO64
+#define fseek_off_t off64_t
+#define fseek   fseeko64
+#define ftell   ftello64
+#elif defined(HAVE_FSEEKO)
+#define fseek_off_t off_t
+#define fseek   fseeko
+#define ftell   ftello
+#elif defined(HAVE__FSEEKI64)
+#define fseek_off_t __int64
+#define fseek   _fseeki64
+#define ftell   _ftelli64
+#else
+#define fseek_off_t long
+#endif
+
 /* Functions to read/write stdio file pointers */
 
 static Sint64 SDLCALL
@@ -312,23 +331,9 @@ stdio_size(SDL_RWops * context)
 static Sint64 SDLCALL
 stdio_seek(SDL_RWops * context, Sint64 offset, int whence)
 {
-#ifdef HAVE_FSEEKO64
-    if (fseeko64(context->hidden.stdio.fp, (off64_t)offset, whence) == 0) {
-        return ftello64(context->hidden.stdio.fp);
-    }
-#elif defined(HAVE_FSEEKO)
-    if (fseeko(context->hidden.stdio.fp, (off_t)offset, whence) == 0) {
-        return ftello(context->hidden.stdio.fp);
-    }
-#elif defined(HAVE__FSEEKI64)
-    if (_fseeki64(context->hidden.stdio.fp, offset, whence) == 0) {
-        return _ftelli64(context->hidden.stdio.fp);
-    }
-#else
-    if (fseek(context->hidden.stdio.fp, offset, whence) == 0) {
+    if (fseek(context->hidden.stdio.fp, (fseek_off_t)offset, whence) == 0) {
         return ftell(context->hidden.stdio.fp);
     }
-#endif
     return SDL_Error(SDL_EFSEEK);
 }
 
@@ -651,6 +656,59 @@ void
 SDL_FreeRW(SDL_RWops * area)
 {
     SDL_free(area);
+}
+
+/* Load all the data from an SDL data stream */
+void *
+SDL_LoadFile_RW(SDL_RWops * src, size_t *datasize, int freesrc)
+{
+    const int FILE_CHUNK_SIZE = 1024;
+    Sint64 size;
+    size_t size_read, size_total;
+    void *data = NULL, *newdata;
+
+    if (!src) {
+        SDL_InvalidParamError("src");
+        return NULL;
+    }
+
+    size = SDL_RWsize(src);
+    if (size < 0) {
+        size = FILE_CHUNK_SIZE;
+    }
+    data = SDL_malloc((size_t)(size + 1));
+
+    size_total = 0;
+    for (;;) {
+        if ((size_total + FILE_CHUNK_SIZE) > size) {
+            size = (size_total + FILE_CHUNK_SIZE);
+            newdata = SDL_realloc(data, (size_t)(size + 1));
+            if (!newdata) {
+                SDL_free(data);
+                data = NULL;
+                SDL_OutOfMemory();
+                goto done;
+            }
+            data = newdata;
+        }
+
+        size_read = SDL_RWread(src, (char *)data+size_total, 1, (size_t)(size-size_total));
+        if (size_read == 0) {
+            break;
+        }
+        size_total += size_read;
+    }
+
+    if (datasize) {
+        *datasize = size_total;
+    }
+    ((char *)data)[size_total] = '\0';
+
+done:
+    if (freesrc && src) {
+        SDL_RWclose(src);
+    }
+    return data;
 }
 
 /* Functions for dynamically reading and writing endian-specific values */

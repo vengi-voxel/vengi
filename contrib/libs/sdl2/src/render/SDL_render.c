@@ -33,17 +33,44 @@
 #define SDL_WINDOWRENDERDATA    "_SDL_WindowRenderData"
 
 #define CHECK_RENDERER_MAGIC(renderer, retval) \
+    SDL_assert(renderer && renderer->magic == &renderer_magic); \
     if (!renderer || renderer->magic != &renderer_magic) { \
         SDL_SetError("Invalid renderer"); \
         return retval; \
     }
 
 #define CHECK_TEXTURE_MAGIC(texture, retval) \
+    SDL_assert(texture && texture->magic == &texture_magic); \
     if (!texture || texture->magic != &texture_magic) { \
         SDL_SetError("Invalid texture"); \
         return retval; \
     }
 
+/* Predefined blend modes */
+#define SDL_COMPOSE_BLENDMODE(srcColorFactor, dstColorFactor, colorOperation, \
+                              srcAlphaFactor, dstAlphaFactor, alphaOperation) \
+    (SDL_BlendMode)(((Uint32)colorOperation << 0) | \
+                    ((Uint32)srcColorFactor << 4) | \
+                    ((Uint32)dstColorFactor << 8) | \
+                    ((Uint32)alphaOperation << 16) | \
+                    ((Uint32)srcAlphaFactor << 20) | \
+                    ((Uint32)dstAlphaFactor << 24))
+
+#define SDL_BLENDMODE_NONE_FULL \
+    SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ZERO, SDL_BLENDOPERATION_ADD, \
+                          SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ZERO, SDL_BLENDOPERATION_ADD)
+
+#define SDL_BLENDMODE_BLEND_FULL \
+    SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD, \
+                          SDL_BLENDFACTOR_ONE, SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, SDL_BLENDOPERATION_ADD)
+
+#define SDL_BLENDMODE_ADD_FULL \
+    SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD, \
+                          SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD)
+
+#define SDL_BLENDMODE_MOD_FULL \
+    SDL_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_COLOR, SDL_BLENDOPERATION_ADD, \
+                          SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD)
 
 #if !SDL_RENDER_DISABLED
 static const SDL_RenderDriver *render_drivers[] = {
@@ -102,7 +129,7 @@ SDL_GetRenderDriverInfo(int index, SDL_RendererInfo * info)
 #endif
 }
 
-static int
+static int SDLCALL
 SDL_RendererEventWatch(void *userdata, SDL_Event *event)
 {
     SDL_Renderer *renderer = (SDL_Renderer *)userdata;
@@ -187,10 +214,10 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                event->type == SDL_MOUSEBUTTONUP) {
         SDL_Window *window = SDL_GetWindowFromID(event->button.windowID);
         if (renderer->logical_w && window == renderer->window) {
-            event->motion.x -= (int)(renderer->viewport.x * renderer->dpi_scale.x);
-            event->motion.y -= (int)(renderer->viewport.y * renderer->dpi_scale.y);
-            event->motion.x = (int)(event->motion.x / (renderer->scale.x * renderer->dpi_scale.x));
-            event->motion.y = (int)(event->motion.y / (renderer->scale.y * renderer->dpi_scale.y));
+            event->button.x -= (int)(renderer->viewport.x * renderer->dpi_scale.x);
+            event->button.y -= (int)(renderer->viewport.y * renderer->dpi_scale.y);
+            event->button.x = (int)(event->button.x / (renderer->scale.x * renderer->dpi_scale.x));
+            event->button.y = (int)(event->button.y / (renderer->scale.y * renderer->dpi_scale.y));
         }
     }
     return 0;
@@ -376,6 +403,23 @@ SDL_GetRendererOutputSize(SDL_Renderer * renderer, int *w, int *h)
     } else {
         SDL_assert(0 && "This should never happen");
         return SDL_SetError("Renderer doesn't support querying output size");
+    }
+}
+
+static SDL_bool
+IsSupportedBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
+{
+    switch (blendMode)
+    {
+    /* These are required to be supported by all renderers */
+    case SDL_BLENDMODE_NONE:
+    case SDL_BLENDMODE_BLEND:
+    case SDL_BLENDMODE_ADD:
+    case SDL_BLENDMODE_MOD:
+        return SDL_TRUE;
+
+    default:
+        return renderer->SupportsBlendMode && renderer->SupportsBlendMode(renderer, blendMode);
     }
 }
 
@@ -706,6 +750,9 @@ SDL_SetTextureBlendMode(SDL_Texture * texture, SDL_BlendMode blendMode)
     CHECK_TEXTURE_MAGIC(texture, -1);
 
     renderer = texture->renderer;
+    if (!IsSupportedBlendMode(renderer, blendMode)) {
+        return SDL_Unsupported();
+    }
     texture->blendMode = blendMode;
     if (texture->native) {
         return SDL_SetTextureBlendMode(texture->native, blendMode);
@@ -1452,6 +1499,9 @@ SDL_SetRenderDrawBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     CHECK_RENDERER_MAGIC(renderer, -1);
 
+    if (!IsSupportedBlendMode(renderer, blendMode)) {
+        return SDL_Unsupported();
+    }
     renderer->blendMode = blendMode;
     return 0;
 }
@@ -2040,6 +2090,95 @@ int SDL_GL_UnbindTexture(SDL_Texture *texture)
     }
 
     return SDL_Unsupported();
+}
+
+static SDL_BlendMode
+SDL_GetShortBlendMode(SDL_BlendMode blendMode)
+{
+    if (blendMode == SDL_BLENDMODE_NONE_FULL) {
+        return SDL_BLENDMODE_NONE;
+    }
+    if (blendMode == SDL_BLENDMODE_BLEND_FULL) {
+        return SDL_BLENDMODE_BLEND;
+    }
+    if (blendMode == SDL_BLENDMODE_ADD_FULL) {
+        return SDL_BLENDMODE_ADD;
+    }
+    if (blendMode == SDL_BLENDMODE_MOD_FULL) {
+        return SDL_BLENDMODE_MOD;
+    }
+    return blendMode;
+}
+
+static SDL_BlendMode
+SDL_GetLongBlendMode(SDL_BlendMode blendMode)
+{
+    if (blendMode == SDL_BLENDMODE_NONE) {
+        return SDL_BLENDMODE_NONE_FULL;
+    }
+    if (blendMode == SDL_BLENDMODE_BLEND) {
+        return SDL_BLENDMODE_BLEND_FULL;
+    }
+    if (blendMode == SDL_BLENDMODE_ADD) {
+        return SDL_BLENDMODE_ADD_FULL;
+    }
+    if (blendMode == SDL_BLENDMODE_MOD) {
+        return SDL_BLENDMODE_MOD_FULL;
+    }
+    return blendMode;
+}
+
+SDL_BlendMode
+SDL_ComposeCustomBlendMode(SDL_BlendFactor srcColorFactor, SDL_BlendFactor dstColorFactor,
+                           SDL_BlendOperation colorOperation,
+                           SDL_BlendFactor srcAlphaFactor, SDL_BlendFactor dstAlphaFactor,
+                           SDL_BlendOperation alphaOperation)
+{
+    SDL_BlendMode blendMode = SDL_COMPOSE_BLENDMODE(srcColorFactor, dstColorFactor, colorOperation,
+                                                    srcAlphaFactor, dstAlphaFactor, alphaOperation);
+    return SDL_GetShortBlendMode(blendMode);
+}
+
+SDL_BlendFactor
+SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode)
+{
+    blendMode = SDL_GetLongBlendMode(blendMode);
+    return (SDL_BlendFactor)(((Uint32)blendMode >> 4) & 0xF);
+}
+
+SDL_BlendFactor
+SDL_GetBlendModeDstColorFactor(SDL_BlendMode blendMode)
+{
+    blendMode = SDL_GetLongBlendMode(blendMode);
+    return (SDL_BlendFactor)(((Uint32)blendMode >> 8) & 0xF);
+}
+
+SDL_BlendOperation
+SDL_GetBlendModeColorOperation(SDL_BlendMode blendMode)
+{
+    blendMode = SDL_GetLongBlendMode(blendMode);
+    return (SDL_BlendOperation)(((Uint32)blendMode >> 0) & 0xF);
+}
+
+SDL_BlendFactor
+SDL_GetBlendModeSrcAlphaFactor(SDL_BlendMode blendMode)
+{
+    blendMode = SDL_GetLongBlendMode(blendMode);
+    return (SDL_BlendFactor)(((Uint32)blendMode >> 20) & 0xF);
+}
+
+SDL_BlendFactor
+SDL_GetBlendModeDstAlphaFactor(SDL_BlendMode blendMode)
+{
+    blendMode = SDL_GetLongBlendMode(blendMode);
+    return (SDL_BlendFactor)(((Uint32)blendMode >> 24) & 0xF);
+}
+
+SDL_BlendOperation
+SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode)
+{
+    blendMode = SDL_GetLongBlendMode(blendMode);
+    return (SDL_BlendOperation)(((Uint32)blendMode >> 16) & 0xF);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

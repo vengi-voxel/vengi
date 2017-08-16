@@ -18,46 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_OGL_ES2
+#ifndef SDL_poll_h_
+#define SDL_poll_h_
 
-#ifndef SDL_shaders_gles2_h_
-#define SDL_shaders_gles2_h_
+#include "SDL_stdinc.h"
 
-typedef struct GLES2_ShaderInstance
-{
-    GLenum type;
-    GLenum format;
-    int length;
-    const void *data;
-} GLES2_ShaderInstance;
 
-typedef struct GLES2_Shader
-{
-    int instance_count;
-    const GLES2_ShaderInstance *instances[4];
-} GLES2_Shader;
+extern int SDL_IOReady(int fd, SDL_bool forWrite, int timeoutMS);
 
-typedef enum
-{
-    GLES2_SHADER_VERTEX_DEFAULT,
-    GLES2_SHADER_FRAGMENT_SOLID_SRC,
-    GLES2_SHADER_FRAGMENT_TEXTURE_ABGR_SRC,
-    GLES2_SHADER_FRAGMENT_TEXTURE_ARGB_SRC,
-    GLES2_SHADER_FRAGMENT_TEXTURE_BGR_SRC,
-    GLES2_SHADER_FRAGMENT_TEXTURE_RGB_SRC,
-    GLES2_SHADER_FRAGMENT_TEXTURE_YUV_SRC,
-    GLES2_SHADER_FRAGMENT_TEXTURE_NV12_SRC,
-    GLES2_SHADER_FRAGMENT_TEXTURE_NV21_SRC
-} GLES2_ShaderType;
-
-#define GLES2_SOURCE_SHADER (GLenum)-1
-
-const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type);
-
-#endif /* SDL_shaders_gles2_h_ */
-
-#endif /* SDL_VIDEO_RENDER_OGL_ES2 */
+#endif /* SDL_poll_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

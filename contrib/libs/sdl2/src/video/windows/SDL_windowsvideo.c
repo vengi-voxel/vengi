@@ -42,7 +42,8 @@ static void WIN_VideoQuit(_THIS);
 SDL_bool g_WindowsEnableMessageLoop = SDL_TRUE;
 SDL_bool g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
 
-static void UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
+static void SDLCALL
+UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     if (newValue && *newValue == '0') {
         g_WindowsEnableMessageLoop = SDL_FALSE;
@@ -51,7 +52,8 @@ static void UpdateWindowsEnableMessageLoop(void *userdata, const char *name, con
     }
 }
 
-static void UpdateWindowFrameUsableWhileCursorHidden(void *userdata, const char *name, const char *oldValue, const char *newValue)
+static void SDLCALL
+UpdateWindowFrameUsableWhileCursorHidden(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     if (newValue && *newValue == '0') {
         g_WindowFrameUsableWhileCursorHidden = SDL_FALSE;
@@ -113,11 +115,15 @@ WIN_CreateDevice(int devindex)
         data->CloseTouchInputHandle = (BOOL (WINAPI *)(HTOUCHINPUT)) SDL_LoadFunction(data->userDLL, "CloseTouchInputHandle");
         data->GetTouchInputInfo = (BOOL (WINAPI *)(HTOUCHINPUT, UINT, PTOUCHINPUT, int)) SDL_LoadFunction(data->userDLL, "GetTouchInputInfo");
         data->RegisterTouchWindow = (BOOL (WINAPI *)(HWND, ULONG)) SDL_LoadFunction(data->userDLL, "RegisterTouchWindow");
+    } else {
+        SDL_ClearError();
     }
 
     data->shcoreDLL = SDL_LoadObject("SHCORE.DLL");
     if (data->shcoreDLL) {
         data->GetDpiForMonitor = (HRESULT (WINAPI *)(HMONITOR, MONITOR_DPI_TYPE, UINT *, UINT *)) SDL_LoadFunction(data->shcoreDLL, "GetDpiForMonitor");
+    } else {
+        SDL_ClearError();
     }
 
     /* Set the function pointers */
