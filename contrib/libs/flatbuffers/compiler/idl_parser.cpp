@@ -608,7 +608,7 @@ CheckedError Parser::AddField(StructDef &struct_def, const std::string &name,
 CheckedError Parser::ParseField(StructDef &struct_def) {
   std::string name = attribute_;
 
-  if (name == struct_def.name)
+  if (structs_.Lookup(name))
     return Error("field name can not be the same as table/struct name");
 
   std::vector<std::string> dc = doc_comment_;
@@ -628,8 +628,8 @@ CheckedError Parser::ParseField(StructDef &struct_def) {
                     type.enum_def->underlying_type, &typefield));
   } else if (type.base_type == BASE_TYPE_VECTOR &&
              type.element == BASE_TYPE_UNION) {
-    // Only cpp supports the union vector feature so far.
-    if (opts.lang_to_generate != IDLOptions::kCpp) {
+    // Only cpp, js and ts supports the union vector feature so far.
+    if (!SupportsVectorOfUnions()) {
       return Error("Vectors of unions are not yet supported in all "
                    "the specified programming languages.");
     }
@@ -745,6 +745,10 @@ CheckedError Parser::ParseField(StructDef &struct_def) {
   }
 
   if (typefield) {
+    if (!IsScalar(typefield->value.type.base_type)) {
+      // this is a union vector field
+      typefield->required = field->required;
+    }
     // If this field is a union, and it has a manually assigned id,
     // the automatically added type field should have an id as well (of N - 1).
     auto attr = field->attributes.Lookup("id");
@@ -1567,6 +1571,11 @@ CheckedError Parser::CheckClash(std::vector<FieldDef*> &fields,
   return NoError();
 }
 
+bool Parser::SupportsVectorOfUnions() const {
+  return opts.lang_to_generate != 0 && (opts.lang_to_generate &
+    ~(IDLOptions::kCpp | IDLOptions::kJs | IDLOptions::kTs | IDLOptions::kPhp)) == 0;
+}
+
 static bool compareFieldDefs(const FieldDef *a, const FieldDef *b) {
   auto a_id = atoi(a->attributes.Lookup("id")->constant.c_str());
   auto b_id = atoi(b->attributes.Lookup("id")->constant.c_str());
@@ -1961,22 +1970,29 @@ CheckedError Parser::ParseProtoOption() {
 
 // Parse a protobuf type, and map it to the corresponding FlatBuffer one.
 CheckedError Parser::ParseTypeFromProtoType(Type *type) {
-  struct type_lookup { const char *proto_type; BaseType fb_type; };
+  struct type_lookup { const char *proto_type; BaseType fb_type, element; };
   static type_lookup lookup[] = {
-    { "float", BASE_TYPE_FLOAT },  { "double", BASE_TYPE_DOUBLE },
-    { "int32", BASE_TYPE_INT },    { "int64", BASE_TYPE_LONG },
-    { "uint32", BASE_TYPE_UINT },  { "uint64", BASE_TYPE_ULONG },
-    { "sint32", BASE_TYPE_INT },   { "sint64", BASE_TYPE_LONG },
-    { "fixed32", BASE_TYPE_UINT }, { "fixed64", BASE_TYPE_ULONG },
-    { "sfixed32", BASE_TYPE_INT }, { "sfixed64", BASE_TYPE_LONG },
-    { "bool", BASE_TYPE_BOOL },
-    { "string", BASE_TYPE_STRING },
-    { "bytes", BASE_TYPE_STRING },
-    { nullptr, BASE_TYPE_NONE }
+    { "float", BASE_TYPE_FLOAT, BASE_TYPE_NONE },
+    { "double", BASE_TYPE_DOUBLE, BASE_TYPE_NONE },
+    { "int32", BASE_TYPE_INT, BASE_TYPE_NONE },
+    { "int64", BASE_TYPE_LONG, BASE_TYPE_NONE },
+    { "uint32", BASE_TYPE_UINT, BASE_TYPE_NONE },
+    { "uint64", BASE_TYPE_ULONG, BASE_TYPE_NONE },
+    { "sint32", BASE_TYPE_INT, BASE_TYPE_NONE },
+    { "sint64", BASE_TYPE_LONG, BASE_TYPE_NONE },
+    { "fixed32", BASE_TYPE_UINT, BASE_TYPE_NONE },
+    { "fixed64", BASE_TYPE_ULONG, BASE_TYPE_NONE },
+    { "sfixed32", BASE_TYPE_INT, BASE_TYPE_NONE },
+    { "sfixed64", BASE_TYPE_LONG, BASE_TYPE_NONE },
+    { "bool", BASE_TYPE_BOOL, BASE_TYPE_NONE },
+    { "string", BASE_TYPE_STRING, BASE_TYPE_NONE },
+    { "bytes", BASE_TYPE_VECTOR, BASE_TYPE_UCHAR },
+    { nullptr, BASE_TYPE_NONE, BASE_TYPE_NONE }
   };
   for (auto tl = lookup; tl->proto_type; tl++) {
     if (attribute_ == tl->proto_type) {
       type->base_type = tl->fb_type;
+      type->element = tl->element;
       NEXT();
       return NoError();
     }
@@ -2137,7 +2153,7 @@ CheckedError Parser::ParseRoot(const char *source, const char **include_paths,
            val_it != enum_def.vals.vec.end();
            ++val_it) {
         auto &val = **val_it;
-        if (opts.lang_to_generate != IDLOptions::kCpp &&
+        if (!SupportsVectorOfUnions() &&
             val.union_type.struct_def && val.union_type.struct_def->fixed)
           return Error(
                 "only tables can be union elements in the generated language: "
@@ -2207,6 +2223,11 @@ CheckedError Parser::DoParse(const char *source,
                        name.c_str()));
         // We generally do not want to output code for any included files:
         if (!opts.generate_all) MarkGenerated();
+        // Reset these just in case the included file had them, and the
+        // parent doesn't.
+        root_struct_def_ = nullptr;
+        file_identifier_.clear();
+        file_extension_.clear();
         // This is the easiest way to continue this file after an include:
         // instead of saving and restoring all the state, we simply start the
         // file anew. This will cause it to encounter the same include
