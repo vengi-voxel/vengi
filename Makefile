@@ -244,7 +244,6 @@ updatelibs:
 	cp $(UPDATEDIR)/backward-cpp.sync/backward.cpp contrib/libs/backward
 	cp -f $(UPDATEDIR)/backward-cpp.sync/backward.hpp contrib/libs/backward/backward.h
 	sed -i 's/backward.hpp/backward.h/g' contrib/libs/backward/backward.cpp
-	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
 	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
 	$(call UPDATE_GIT,imgui-addons,https://github.com/Flix01/imgui.git)
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
@@ -288,6 +287,8 @@ updatelibs:
 	rm -rf contrib/libs/turbobadger/tb/tests
 	git diff contrib/libs/turbobadger/ > $(UPDATEDIR)/turbobadger.sync/upstream.diff
 	git checkout contrib/libs/turbobadger/tb/tb_id.cpp
+
+#	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
