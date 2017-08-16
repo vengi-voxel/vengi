@@ -607,7 +607,9 @@ bool VoxEditWindow::handleClickEvent(const tb::TBWidgetEvent &ev) {
 		return true;
 	}
 
+#ifdef DEBUG
 	Log::debug("Unknown event %s - %s", ev.target->GetID().debug_string.CStr(), ev.ref_id.debug_string.CStr());
+#endif
 
 	return false;
 }
