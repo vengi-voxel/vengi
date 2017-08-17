@@ -25,6 +25,7 @@ protected:
 		std::string qualifier;
 		std::string type;
 		std::string name;
+		std::string comment;
 		bool byReference = false;
 		compute::BufferFlag flags = compute::BufferFlag::ReadWrite;
 	};
@@ -40,6 +41,7 @@ protected:
 	};
 
 	struct Struct {
+		std::string comment;
 		std::string name;
 		std::vector<Parameter> parameters;
 	};

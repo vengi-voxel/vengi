@@ -12,10 +12,18 @@
  * @note Next line
  **/
 struct Data {
-	int foo;
-	char foo2;
-	float foo3;
-	float4 foo4;
+	int foo_int32_t;
+	char foo2_int8_t;
+	char4 foo2_char4;
+	float foo3_float;
+	/**
+	 * multiline comment
+	 */
+	float2 foo3_vec2;
+	// some comment
+	float3 foo3_vec4;
+	float4 foo4_vec4;
+	float4 foo4_vec4_2[2];
 } /* inline */ ;
 
  __kernel void example( __global  const char* buf, __global char* buf2 )
@@ -59,7 +67,7 @@ __kernel void exampleLocal(__local const char *  bufLocal, __global const char* 
 }
 
 __kernel void exampleDataStruct(const __global struct Data* data, __global struct Data* out) {
-	out->foo = data->foo;
+	out->foo_int32_t = data->foo_int32_t;
 }
 
 __kernel void exampleNoise(__global uchar4 *output, const float2 pos, float frequency, float lacunarity, int octaves, float amplitude) {

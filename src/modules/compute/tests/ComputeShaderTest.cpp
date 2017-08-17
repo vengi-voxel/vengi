@@ -24,6 +24,19 @@ public:
 	}
 };
 
+TEST_F(ComputeShaderTest, testCompileStruct) {
+	compute::TestShader::Data data;
+	EXPECT_EQ(sizeof(int32_t), sizeof(data.foo_int32_t));
+	EXPECT_EQ(sizeof(int8_t), sizeof(data.foo2_int8_t));
+	EXPECT_EQ(sizeof(int8_t) * 4, sizeof(data.foo2_char4));
+	EXPECT_EQ(sizeof(float), sizeof(data.foo3_float));
+	EXPECT_EQ(sizeof(glm::vec2), sizeof(data.foo3_vec2));
+	EXPECT_EQ(sizeof(glm::vec3), sizeof(data.foo3_vec4));
+	EXPECT_EQ(sizeof(glm::vec4), sizeof(data.foo4_vec4));
+	EXPECT_EQ(sizeof(glm::vec4) * 2, sizeof(data.foo4_vec4_2));
+	EXPECT_EQ(96u, sizeof(data));
+}
+
 TEST_F(ComputeShaderTest, testExecuteExample) {
 	if (!_supported) {
 		return;
@@ -45,7 +58,7 @@ TEST_F(ComputeShaderTest, testExecuteExample2) {
 	const std::vector<int8_t> foo { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
 	std::vector<int8_t> foo2(foo.size(), '0');
 	ASSERT_TRUE(shader.example2(foo, foo2, 42, foo.size()));
-	ASSERT_EQ(foo, foo2);
+	EXPECT_EQ(foo, foo2);
 }
 
 TEST_F(ComputeShaderTest, testExecuteExampleBig) {
@@ -58,7 +71,7 @@ TEST_F(ComputeShaderTest, testExecuteExampleBig) {
 	std::vector<int8_t> source(size, 'a');
 	std::vector<int8_t> target(size, ' ');
 	ASSERT_TRUE(shader.example(source, target, source.size()));
-	ASSERT_EQ(source, target);
+	EXPECT_EQ(source, target);
 }
 
 TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3NoPointer) {
@@ -71,9 +84,9 @@ TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3NoPointer) {
 	const glm::vec3 B(0.0f, 2.0f, 4.0f);
 	glm::vec3 C(0.0f);
 	ASSERT_TRUE(shader.exampleVectorAddFloat3NoPointer(A, B, C, 3));
-	ASSERT_FLOAT_EQ(C.x, 0.0f);
-	ASSERT_FLOAT_EQ(C.y, 3.0f);
-	ASSERT_FLOAT_EQ(C.z, 6.0f);
+	EXPECT_FLOAT_EQ(C.x, 0.0f);
+	EXPECT_FLOAT_EQ(C.y, 3.0f);
+	EXPECT_FLOAT_EQ(C.z, 6.0f);
 }
 
 TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3) {
@@ -97,7 +110,7 @@ TEST_F(ComputeShaderTest, testExecuteExampleBigNonOpenCL) {
 	for (int i = 0; i < 10000; ++i) {
 		source[i] = target[i];
 	}
-	ASSERT_EQ(source, target);
+	EXPECT_EQ(source, target);
 }
 
 TEST_F(ComputeShaderTest, testExecuteVectorAdd) {
@@ -116,7 +129,7 @@ TEST_F(ComputeShaderTest, testExecuteVectorAdd) {
 	ASSERT_TRUE(shader.exampleVectorAddInt(a, b, c, size));
 	for (int i = 0; i < size; ++i) {
 		SCOPED_TRACE(core::string::format("index: %i", i));
-		ASSERT_EQ(c[i], initA + initB);
+		EXPECT_EQ(c[i], initA + initB);
 	}
 }
 
@@ -134,7 +147,7 @@ TEST_F(ComputeShaderTest, testExecuteVectorAddNonOpenCL) {
 	}
 	for (int i = 0; i < size; ++i) {
 		SCOPED_TRACE(core::string::format("index: %i", i));
-		ASSERT_EQ(c[i], initA + initB);
+		EXPECT_EQ(c[i], initA + initB);
 	}
 }
 

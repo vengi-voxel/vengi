@@ -9,37 +9,21 @@
 class ComputeShaderToolTest: public core::AbstractTest {
 };
 
-TEST_F(ComputeShaderToolTest, testConvertType) {
-	std::string arrayDefinition;
-	int arraySize = 0;
-
-	EXPECT_EQ("float", util::convertType("float", arrayDefinition, &arraySize));
-	EXPECT_EQ(0, arraySize);
-	EXPECT_EQ("", arrayDefinition);
-
-	EXPECT_EQ("float", util::convertType("float2", arrayDefinition, &arraySize));
-	EXPECT_EQ(2, arraySize);
-	EXPECT_EQ("[2]", arrayDefinition);
-
-	EXPECT_EQ("float", util::convertType("float3", arrayDefinition, &arraySize));
-	EXPECT_EQ(3, arraySize);
-	EXPECT_EQ("[3]", arrayDefinition);
-
-	EXPECT_EQ("float", util::convertType("float4", arrayDefinition, &arraySize));
-	EXPECT_EQ(4, arraySize);
-	EXPECT_EQ("[4]", arrayDefinition);
-
-	EXPECT_EQ("float *", util::convertType("float2*", arrayDefinition, &arraySize));
-	EXPECT_EQ(2, arraySize);
-	EXPECT_EQ("[2]", arrayDefinition);
-
-	EXPECT_EQ("float *", util::convertType("float3*", arrayDefinition, &arraySize));
-	EXPECT_EQ(3, arraySize);
-	EXPECT_EQ("[3]", arrayDefinition);
-
-	EXPECT_EQ("float *", util::convertType("float4*", arrayDefinition, &arraySize));
-	EXPECT_EQ(4, arraySize);
-	EXPECT_EQ("[4]", arrayDefinition);
+TEST_F(ComputeShaderToolTest, testConvertVectorType) {
+	EXPECT_EQ("uint8_t", util::vectorType("uchar").type);
+	EXPECT_EQ("uint8_t", util::vectorType("uchar4").type);
+	EXPECT_EQ(4, util::vectorType("uchar4").arraySize);
+	EXPECT_EQ("int8_t", util::vectorType("char").type);
+	EXPECT_EQ("float", util::vectorType("float").type);
+	EXPECT_EQ("glm::vec2", util::vectorType("float2").type);
+	EXPECT_EQ("glm::vec3", util::vectorType("float3").type);
+	EXPECT_EQ("glm::vec4", util::vectorType("float4").type);
+	EXPECT_EQ("glm::vec2", util::vectorType("float2*").type);
+	EXPECT_EQ("glm::vec3", util::vectorType("float3*").type);
+	EXPECT_EQ("glm::vec4", util::vectorType("float4*").type);
+	EXPECT_EQ("glm::vec2", util::vectorType("float2 *").type);
+	EXPECT_EQ("glm::vec3", util::vectorType("float3 *").type);
+	EXPECT_EQ("glm::vec4", util::vectorType("float4 *").type);
 }
 
 TEST_F(ComputeShaderToolTest, testIsQualifier) {

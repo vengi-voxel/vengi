@@ -43,16 +43,66 @@ static const struct VecMapping {
 	{nullptr,    ""}
 };
 
+static const struct TypeAlignment {
+	const char* type;
+	const int alignment;
+} Alignments[] = {
+	{"int16_t",     2},
+	{"uint16_t",    2},
+	{"int32_t",     4},
+	{"uint32_t",    4},
+	{"int64_t",     8},
+	{"uint64_t",    8},
+	{"float",       4},
+	{"double",      8},
+	{"glm::vec2",   8},
+	{"glm::vec3",  16},
+	{"glm::vec4",  16},
+	{"glm::ivec2",  8},
+	{"glm::ivec3", 16},
+	{"glm::ivec4", 16},
+	{"glm::uvec2",  8},
+	{"glm::uvec3", 16},
+	{"glm::uvec4", 16},
+	{"glm::dvec2", 16},
+	{"glm::dvec3", 32},
+	{"glm::dvec4", 32},
+	{nullptr,       0}
+};
+
 bool isQualifier(const std::string& token) {
 	return token == "const" || core::string::startsWith(token, "__");
 }
 
-std::string convert(const std::string& type) {
+static int arraySizeFromType(const std::string& type) {
 	if (type.empty()) {
-		return type;
+		return 0u;
+	}
+	const size_t size = type.size();
+	for (size_t i = 1; i < size; ++i) {
+		const char c = type[size - i];
+		if (c == '*') {
+			continue;
+		}
+		if (c == ' ') {
+			continue;
+		}
+		if (c >= '0' && c <= '9') {
+			return c - '0';
+		}
+		break;
+	}
+	return 0u;
+}
+
+static CLTypeMapping convert(const std::string& type) {
+	if (type.empty()) {
+		static const CLTypeMapping mapping;
+		return mapping;
 	}
 	const bool ispointer = type[type.size() - 1] == '*';
 
+	CLTypeMapping mapping;
 	for (const TypeMapping* t = Types; t->computeType != nullptr; ++t) {
 		if (!core::string::startsWith(type, t->computeType)) {
 			continue;
@@ -60,60 +110,38 @@ std::string convert(const std::string& type) {
 		if (ispointer) {
 			//return t->ctype + " *";
 		}
-		return t->ctype;
+		mapping.type = t->ctype;
+		mapping.arraySize = arraySizeFromType(type);
+		return mapping;
 	}
-	return type;
+	mapping.type = type;
+	mapping.arraySize = arraySizeFromType(type);
+	return mapping;
 }
 
-std::string vectorType(const std::string& type) {
+int alignment(const std::string& type) {
+	for (const TypeAlignment* t = Alignments; t->type != nullptr; ++t) {
+		if (type == t->type) {
+			return t->alignment;
+		}
+	}
+
+	return 1;
+}
+
+CLTypeMapping vectorType(const std::string& type) {
 	if (type.empty()) {
-		return type;
+		static const CLTypeMapping mapping;
+		return mapping;
 	}
 	for (const VecMapping* t = Vecs; t->computeType != nullptr; ++t) {
 		if (!core::string::startsWith(type, t->computeType)) {
 			continue;
 		}
-		return t->ctype;
+		CLTypeMapping mapping;
+		mapping.type = t->ctype;
+		return mapping;
 	}
-	return convert(type);
-}
-
-std::string convertType(const std::string& type, std::string& arrayDefinition, int *arraySize) {
-	char c = '\0';
-	const size_t size = type.size();
-	if (arraySize != nullptr) {
-		*arraySize = 0;
-	}
-	size_t i;
-	for (i = 1; i < size; ++i) {
-		c = type[size - i];
-		if (c == '*') {
-			continue;
-		}
-		if (c == ' ') {
-			continue;
-		}
-		break;
-	}
-	arrayDefinition = "";
-	if (c < '0' || c > '9') {
-		return convert(type);
-	}
-	for (; i < size; ++i) {
-		c = type[size - i];
-		if (c >= '0' && c <= '9') {
-			const char buf[] = {c, '\0'};
-			arrayDefinition.append(buf);
-			continue;
-		}
-		break;
-	}
-	if (arraySize != nullptr) {
-		*arraySize = core::string::toInt(arrayDefinition);
-	}
-
-	arrayDefinition = "[" + arrayDefinition + "]";
-	const std::string& sub = type.substr(0, size - i);
 	return convert(type);
 }
 

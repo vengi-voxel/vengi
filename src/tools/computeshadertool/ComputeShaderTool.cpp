@@ -87,13 +87,18 @@ void ComputeShaderTool::generateSrc() {
 				kernels << p.qualifier << " ";
 			}
 			if (core::string::contains(p.type, "*")) {
-				kernels << "/* " << p.type << "*/ std::vector<" << util::vectorType(p.type) << ">& " << p.name;
+				const util::CLTypeMapping& clType = util::vectorType(p.type);
+				kernels << "/* " << p.type << "*/ std::vector<" << clType.type << ">& " << p.name;
 			} else {
-				kernels << util::vectorType(p.type);
+				const util::CLTypeMapping& clType = util::vectorType(p.type);
+				kernels << clType.type;
 				if (p.byReference || (p.flags & compute::BufferFlag::ReadOnly) != compute::BufferFlag::None) {
 					kernels << "&";
 				}
 				kernels << " " << p.name;
+				if (clType.arraySize > 0) {
+					kernels << "[" << clType.arraySize << "]";
+				}
 			}
 			first = false;
 		}
@@ -113,8 +118,6 @@ void ComputeShaderTool::generateSrc() {
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
 				kernels << i << ", " << bufferName << ");\n";
 			} else {
-				std::string arrayDefinition;
-				const std::string ctype = util::convert(p.type);
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
 				kernels << i << ", ";
 				kernels << p.name;
@@ -146,13 +149,35 @@ void ComputeShaderTool::generateSrc() {
 	std::stringstream includes;
 
 	std::stringstream structs;
+	bool firstStruct = true;
 	for (const Struct& s : _structs) {
-		structs << "\tstruct " << s.name << " {\n";
-		for (const Parameter& p : s.parameters) {
-			std::string arrayDefinition;
-			structs << "\t\t" << util::convertType(p.type, arrayDefinition) << " " << p.name << arrayDefinition << ";\n";
+		if (!firstStruct) {
+			structs << "\n";
 		}
-		structs << "\t};\n\n";
+		firstStruct = false;
+		if (!s.comment.empty()) {
+			structs << "/** " << s.comment << "*/\n";
+		}
+		structs << "\tstruct /*alignas(4)*/ " << s.name << " {\n";
+		for (const Parameter& p : s.parameters) {
+			const util::CLTypeMapping& clType = util::vectorType(p.type);
+			if (!p.comment.empty()) {
+				structs << "\t\t/** " << p.comment << "*/\n";
+			}
+			structs << "\t\t";
+			const int alignment = util::alignment(clType.type);
+			if (alignment > 1) {
+				structs << "alignas(" << alignment << ") ";
+			}
+			structs << clType.type;
+			structs << " /* '" << p.type << "' */ ";
+			structs << p.name;
+			if (clType.arraySize > 0) {
+				structs << "[" << clType.arraySize << "]";
+			}
+			structs << ";\n";
+		}
+		structs << "\t};\n";
 	}
 
 	src = core::string::replaceAll(src, "$name$", filename);
@@ -215,11 +240,21 @@ const simplecpp::Token *ComputeShaderTool::parseStruct(const simplecpp::Token *t
 				valid = true;
 				break;
 			}
-		} else if (tok->next && tok->next->str == ";") {
+		} else if (tok->next && (tok->next->str == ";" || tok->next->str == "[")) {
 			param.name = token;
+			if (tok->next->str == "[") {
+				for (tok = tok->next; tok; tok = tok->next) {
+					param.name.append(tok->str);
+					if (tok->str == "]") {
+						break;
+					}
+				}
+			}
 			structVar.parameters.push_back(param);
 			param = Parameter();
-			tok = tok->next;
+			if (tok) {
+				tok = tok->next;
+			}
 		} else {
 			if (util::isQualifier(token)) {
 				param.qualifier = token;
