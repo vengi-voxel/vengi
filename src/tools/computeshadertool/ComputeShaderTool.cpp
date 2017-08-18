@@ -77,11 +77,11 @@ void ComputeShaderTool::generateSrc() {
 	std::stringstream createKernels;
 	std::stringstream kernels;
 	for (Kernel& k : _kernels) {
-		kernels << "\n\tbool " << k.name << "(";
+		kernels << "\n\tbool " << k.name << "(\n\t\t";
 		bool first = true;
 		for (Parameter& p : k.parameters) {
 			if (!first) {
-				kernels << ", ";
+				kernels << ",\n\t\t";
 			}
 			if (!p.qualifier.empty()) {
 				kernels << p.qualifier << " ";
@@ -102,7 +102,7 @@ void ComputeShaderTool::generateSrc() {
 			}
 			first = false;
 		}
-		kernels << ", int workSize, int workDim = 1) const {\n";
+		kernels << ",\n\t\tconst glm::ivec" << k.workDimension << "& workSize\n\t) const {\n";
 		for (size_t i = 0; i < k.parameters.size(); ++i) {
 			const Parameter& p = k.parameters[i];
 			if (core::string::contains(p.type, "*")) {
@@ -112,11 +112,13 @@ void ComputeShaderTool::generateSrc() {
 				kernels << "\t\t\tconst compute::BufferFlag flags = " << util::toString(p.flags) << " | bufferFlags(&" << p.name << "[0], " << size << ");\n";
 				kernels << "\t\t\t" << bufferName << " = compute::createBufferFromType(flags, " << p.name << ");\n";
 				kernels << "\t\t} else {\n";
-				kernels << "\t\t\tcompute::updateBufferFromType(" << bufferName << ", " << p.name << ");\n\t\t}\n";
+				kernels << "\t\t\tcompute::updateBufferFromType(" << bufferName << ", " << p.name << ");\n";
+				kernels << "\t\t}\n";
+				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", " << i << ", " << bufferName << ");\n";
+
 				kernelMembers << "\tmutable compute::Id " << bufferName << " = compute::InvalidId;\n";
+
 				shutdown << "\t\tcompute::deleteBuffer(" << bufferName << ");\n";
-				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
-				kernels << i << ", " << bufferName << ");\n";
 			} else {
 				kernels << "\t\tcompute::kernelArg(_kernel" << k.name << ", ";
 				kernels << i << ", ";
@@ -124,7 +126,15 @@ void ComputeShaderTool::generateSrc() {
 				kernels << ");\n";
 			}
 		}
-		kernels << "\t\tconst bool state = compute::kernelRun(_kernel" << k.name << ", workSize, workDim);\n";
+		kernels << "\t\tglm::ivec3 globalWorkSize(0);\n";
+		kernels << "\t\tfor (int i = 0; i < " << k.workDimension << "; ++i) {\n";
+		kernels << "\t\t\tglobalWorkSize[i] += workSize[i];\n";
+		kernels << "\t\t}\n";
+		kernels << "\t\tconst bool state = compute::kernelRun(";
+		kernels << "_kernel" << k.name << ", ";
+		kernels << "globalWorkSize, ";
+		kernels << k.workDimension;
+		kernels << ");\n";
 		for (size_t i = 0; i < k.parameters.size(); ++i) {
 			const Parameter& p = k.parameters[i];
 			if (!core::string::contains(p.type, "*")) {
@@ -132,7 +142,9 @@ void ComputeShaderTool::generateSrc() {
 			}
 			if ((p.flags & (compute::BufferFlag::ReadWrite | compute::BufferFlag::WriteOnly)) != compute::BufferFlag::None) {
 				const std::string& bufferName = core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
-				kernels << "\t\tif (state) {\n\t\t\tcore_assert_always(compute::readBufferIntoVector(" << bufferName << ", " << p.name << "));\n\t\t}\n";
+				kernels << "\t\tif (state) {\n";
+				kernels << "\t\t\tcore_assert_always(compute::readBufferIntoVector(" << bufferName << ", " << p.name << "));\n";
+				kernels << "\t\t}\n";
 			}
 		}
 		kernels << "\t\treturn state;\n";
@@ -317,6 +329,48 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 		return tok;
 	}
 
+	int kernelDimensions = 1;
+	core_assert(tok->str == "{");
+	for (tok = tok->next; tok; tok = tok->next) {
+		const std::string& token = tok->str;
+		if (token == "}") {
+			break;
+		}
+		if (token == "get_global_id" || token == "get_global_size") {
+			Log::debug("found %s", token.c_str());
+			tok = tok->next;
+			if (!tok) {
+				Log::error("Expected (");
+				return tok;
+			}
+			if (tok->str != "(") {
+				Log::error("Expected ( - got %s", tok->str.c_str());
+				return tok;
+			}
+			tok = tok->next;
+			if (!tok) {
+				Log::error("Expected number");
+				return tok;
+			}
+			if (!tok->number) {
+				Log::error("Expected number, got %s", tok->str.c_str());
+				return tok;
+			}
+			const int dimension = (int)(tok->str[0] - '0') + 1;
+			Log::debug("found dimension %i", dimension);
+			kernelDimensions = std::max(kernelDimensions, dimension);
+			tok = tok->next;
+			if (!tok) {
+				Log::error("Expected )");
+				return tok;
+			}
+			if (tok->str != ")") {
+				Log::error("Expected ) - got %s", tok->str.c_str());
+				return tok;
+			}
+		}
+	}
+
 	std::vector<std::string> parameterTokens;
 	while (!stack.empty()) {
 		const std::string token = stack.top();
@@ -337,6 +391,8 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 
 	Kernel kernel;
 	kernel.name = stack.top();
+	kernel.workDimension = kernelDimensions;
+	Log::debug("found kernel %s with dimension %i", kernel.name.c_str(), kernel.workDimension);
 	stack.pop();
 
 	bool added = false;

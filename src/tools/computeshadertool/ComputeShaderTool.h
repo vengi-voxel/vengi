@@ -37,6 +37,7 @@ protected:
 	struct Kernel {
 		std::string name;
 		std::vector<Parameter> parameters;
+		int workDimension = 1;
 		ReturnValue returnValue;
 	};
 

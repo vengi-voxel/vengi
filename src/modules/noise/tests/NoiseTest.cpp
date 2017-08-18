@@ -11,23 +11,16 @@ namespace noise {
 
 class NoiseTest: public core::AbstractTest {
 protected:
-	const int components = 4;
-	const int w = 256;
-	const int h = 256;
-
-	bool WriteImage(const char* name, uint8_t* buffer, int w = 256, int h = 256, int components = 4) {
-		return image::Image::writePng(name, buffer, w, h, components);
-	}
-
-	void test2DNoise(float frequency, const char *filename) {
-		uint8_t buffer[w * h * components];
+	template<typename NOISE>
+	void test2DNoise(NOISE&& noiseFunc, float frequency, const char *filename, int w = 256, int h = 256, int components = 4) {
+		uint8_t* buffer = new uint8_t[w * h * components];
 
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
 				const glm::vec2 pos(x * frequency, y * frequency);
-				const float noise = noise::noise(pos);
-				ASSERT_LE(noise, +1.0f)<< "Noise is bigger than 1.0: " << noise;
-				ASSERT_GE(noise, -1.0f)<< "Noise is less than -1.0: " << noise;
+				const float noise = noiseFunc(pos);
+//				ASSERT_LE(noise, +1.0f)<< "Noise is bigger than 1.0: " << noise;
+//				ASSERT_GE(noise, -1.0f)<< "Noise is less than -1.0: " << noise;
 				float normalized = noise::norm(noise);
 				ASSERT_LE(normalized, 1.0f)<< "Noise is bigger than 1.0: " << normalized;
 				ASSERT_GE(normalized, 0.0f)<< "Noise is less than 0.0: " << normalized;
@@ -44,16 +37,17 @@ protected:
 				}
 			}
 		}
-		ASSERT_TRUE(WriteImage(filename, buffer));
+		ASSERT_TRUE(image::Image::writePng(filename, buffer, w, h, components));
+		delete[] buffer;
 	}
 };
 
 TEST_F(NoiseTest, testHumidityNoise) {
-	test2DNoise(0.001f, "testHumidity.png");
+	test2DNoise([] (const glm::vec2& pos) {return noise::noise(pos);}, 0.001f, "testHumidity.png");
 }
 
 TEST_F(NoiseTest, testTemperatureNoise) {
-	test2DNoise(0.0001f, "testTemperature.png");
+	test2DNoise([] (const glm::vec2& pos) {return noise::noise(pos); }, 0.0001f, "testTemperature.png");
 }
 
 TEST_F(NoiseTest, test2DNoiseColorMap) {
@@ -67,6 +61,10 @@ TEST_F(NoiseTest, test2DNoiseColorMap) {
 	const float amplitude = 1.0f;
 	noise::SeamlessNoise2DRGB(buffer, width, octaves, persistence, frequency, amplitude);
 	ASSERT_TRUE(image::Image::writePng("testNoiseColorMap.png", buffer, width, height, components));
+}
+
+TEST_F(NoiseTest, test2DNoiseRF) {
+	test2DNoise([] (const glm::vec2& pos) {return noise::ridgedMF(pos, 128.0f, 4, 2.02f, 1.0f);}, 20.0f, "test-ridgedmf-noise-1024-2048.png", 1024, 2048, 4);
 }
 
 }

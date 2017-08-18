@@ -388,11 +388,13 @@ bool kernelArg(Id kernel, uint32_t index, size_t size, const void* data) {
  * 32-bit address space, size_t is a 32-bit unsigned integer and global_work_size values must
  * be in the range 1 .. 2^32 - 1. Values outside this range return a CL_OUT_OF_RESOURCES error.
  */
-bool kernelRun(Id kernel, int workSize, int workDim, bool blocking) {
+bool kernelRun(Id kernel, const glm::ivec3& workSize, int workDim, bool blocking) {
 	// TODO: check contraints/limits of the hardware for workSize and workDim
 	if (kernel == InvalidId) {
 		return false;
 	}
+	core_assert_always(workDim > 0);
+	core_assert_always(workDim <= 3);
 	/**
 	 * Returns an event object that identifies this particular kernel execution instance.
 	 * Event objects are unique and can be used to identify a particular kernel execution
@@ -409,7 +411,7 @@ bool kernelRun(Id kernel, int workSize, int workDim, bool blocking) {
 	 * at offset (0, 0,... 0).
 	 */
 	const size_t *globalWorkOffset = nullptr;
-	const std::vector<size_t> globalWorkSize(workDim, workSize);
+	const size_t globalWorkSize[] = {(size_t)workSize.x, (size_t)workSize.y, (size_t)workSize.z};
 	/**
 	 * Points to an array of work_dim unsigned values that describe the number of work-items that
 	 * make up a work-group (also referred to as the size of the work-group) that will execute the
@@ -448,7 +450,7 @@ bool kernelRun(Id kernel, int workSize, int workDim, bool blocking) {
 
 	core_assert(_priv::_ctx.commandQueue != nullptr);
 	const cl_int error = clEnqueueNDRangeKernel(_priv::_ctx.commandQueue,
-			clKernel, workDim, globalWorkOffset, &globalWorkSize.front(),
+			clKernel, workDim, globalWorkOffset, globalWorkSize,
 			localWorkSize, numEventsInWaitList, eventWaitList, &event);
 	checkError(error);
 	if (error == CL_SUCCESS) {
