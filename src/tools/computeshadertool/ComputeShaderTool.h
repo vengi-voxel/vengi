@@ -10,7 +10,17 @@
 #include <vector>
 
 /**
- * @brief This tool validates the shaders and generated c++ code for them.
+ * @brief This tool validates the compute shaders and generates c++ code for them.
+ *
+ * @li contains a C preprocessor (simplecpp/cppcheck).
+ * @li detects the needed dimensions of the compute shader and generate worksizes with
+ *  proper types to call the kernels.
+ * @li converts OpenCL types into glm and stl types (basically just vector).
+ * @li handles alignment and padding of types according to the OpenCL specification.
+ * @li detects buffer flags like use-the-host-pointer(-luke) according to the alignment
+ *  and size.
+ * @li hides all the buffer creation/deletion mambo-jambo from the caller.
+ * @li parses OpenCL structs and generate proper aligned C++ struct for them.
  */
 class ComputeShaderTool: public core::App {
 protected:

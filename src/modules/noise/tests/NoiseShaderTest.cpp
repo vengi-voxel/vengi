@@ -46,7 +46,6 @@ public:
 		ASSERT_TRUE(image::Image::writePng(imageName.c_str(), (const uint8_t*)&buf[0], width, height, sizeof(uint32_t)));
 		ASSERT_TRUE(buf[0] != 0) << buf[0];
 		shader.shutdown();
-
 	}
 };
 
