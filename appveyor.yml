@@ -1,6 +1,9 @@
 version: 0.1-{build}
 
-image: Visual Studio 2017 RC
+environment:
+  INTELOCLSDKROOT: C:\Program Files (x86)\Intel\OpenCL SDK\5.3
+
+image: Visual Studio 2017
 
 configuration: Release
 
@@ -11,6 +14,8 @@ branches:
 clone_depth: 10
 
 before_build:
+  - ps: Start-FileDownload "http://registrationcenter-download.intel.com/akdlm/irc_nas/8386/intel_sdk_for_opencl_2015_r3_x64_setup.msi"
+  - start /wait msiexec /i intel_sdk_for_opencl_2015_r3_x64_setup.msi /qn  /l*v msiexec.log
   - cmake -DTOOLS=OFF -G "Visual Studio 15 2017"
 
 build:
