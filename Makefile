@@ -207,6 +207,10 @@ define UPDATE_HG
 endef
 
 updatelibs:
+	$(call UPDATE_GIT,stb,https://github.com/nothings/stb.git)
+	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/stb_image.h
+	cp $(UPDATEDIR)/stb.sync/stb_image_write.h src/modules/image/stb_image_write.h
+	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxel/font/stb_truetype.h
 	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)
 	cp $(UPDATEDIR)/simplecpp.sync/simplecpp.* contrib/libs/simplecpp
 	$(call UPDATE_GIT,easy_profiler,https://github.com/yse/easy_profiler.git)
@@ -244,7 +248,6 @@ updatelibs:
 	cp $(UPDATEDIR)/backward-cpp.sync/backward.cpp contrib/libs/backward
 	cp -f $(UPDATEDIR)/backward-cpp.sync/backward.hpp contrib/libs/backward/backward.h
 	sed -i 's/backward.hpp/backward.h/g' contrib/libs/backward/backward.cpp
-	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
 	$(call UPDATE_GIT,imgui-addons,https://github.com/Flix01/imgui.git)
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git)
 	cp $(UPDATEDIR)/imgui.sync/imgui*.h $(UPDATEDIR)/imgui.sync/imgui*.cpp $(UPDATEDIR)/imgui.sync/stb_*.h contrib/libs/dearimgui/dearimgui
@@ -289,6 +292,7 @@ updatelibs:
 	git checkout contrib/libs/turbobadger/tb/tb_id.cpp
 
 #	$(call UPDATE_GIT,simplexnoise,https://github.com/simongeilfus/SimplexNoise.git)
+#	cp $(UPDATEDIR)/simplexnoise.sync/include/Simplex.h src/modules/noise
 
 updategl:
 	cd tools/flextGL && ./flextgl.sh
