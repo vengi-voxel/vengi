@@ -13,7 +13,6 @@ language: generic
 addons:
   apt:
     packages:
-    - libglm-dev
     - zlib1g-dev
     - g++-6
     - gcc-6
