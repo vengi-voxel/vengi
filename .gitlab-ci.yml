@@ -14,7 +14,7 @@ build:
 pages:
   script:
     - make doc
-    - mv build-debug/html/ public/
+    - mv build/Debug/html/ public/
   artifacts:
     paths:
     - public
