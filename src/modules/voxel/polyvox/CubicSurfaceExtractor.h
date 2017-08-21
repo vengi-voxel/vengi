@@ -217,21 +217,26 @@ void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, I
 	result->setOffset(offset);
 
 	// Used to avoid creating duplicate vertices.
-	Array previousSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
-	Array currentSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
+	const int widthInCells = upper.x - offset.x;
+	const int heightInCells = upper.y - offset.y;
+	Array previousSliceVertices(widthInCells + 2, heightInCells + 2, MaxVerticesPerPosition);
+	Array currentSliceVertices(widthInCells + 2, heightInCells + 2, MaxVerticesPerPosition);
 
 	// During extraction we create a number of different lists of quads. All the
 	// quads in a given list are in the same plane and facing in the same direction.
 	QuadListVector vecQuads[NoOfFaces];
 
-	vecQuads[NegativeX].resize(region.getUpperX() - region.getLowerX() + 2);
-	vecQuads[PositiveX].resize(region.getUpperX() - region.getLowerX() + 2);
+	const int xSize = upper.x - offset.x + 2;
+	const int ySize = upper.y - offset.y + 2;
+	const int zSize = upper.z - offset.z + 2;
+	vecQuads[NegativeX].resize(xSize);
+	vecQuads[PositiveX].resize(xSize);
 
-	vecQuads[NegativeY].resize(region.getUpperY() - region.getLowerY() + 2);
-	vecQuads[PositiveY].resize(region.getUpperY() - region.getLowerY() + 2);
+	vecQuads[NegativeY].resize(ySize);
+	vecQuads[PositiveY].resize(ySize);
 
-	vecQuads[NegativeZ].resize(region.getUpperZ() - region.getLowerZ() + 2);
-	vecQuads[PositiveZ].resize(region.getUpperZ() - region.getLowerZ() + 2);
+	vecQuads[NegativeZ].resize(zSize);
+	vecQuads[PositiveZ].resize(zSize);
 
 #if BUFFERED_SAMPLER == 1
 	typename VolumeType::BufferedSampler volumeSampler(volData, region);
@@ -469,19 +474,21 @@ void extractAllCubicMesh(VolumeType* volData, const Region& region, Mesh* result
 	resultWater->setOffset(offset);
 
 	// Used to avoid creating duplicate vertices.
-	Array previousSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
-	Array currentSliceVertices(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
+	const int widthInCells = upper.x - offset.x;
+	const int heightInCells = upper.y - offset.y;
+	Array previousSliceVertices(widthInCells + 2, heightInCells + 2, MaxVerticesPerPosition);
+	Array currentSliceVertices(widthInCells + 2, heightInCells + 2, MaxVerticesPerPosition);
 
-	Array previousSliceVerticesWater(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
-	Array currentSliceVerticesWater(region.getWidthInCells() + 2, region.getHeightInCells() + 2, MaxVerticesPerPosition);
+	Array previousSliceVerticesWater(widthInCells + 2, heightInCells + 2, MaxVerticesPerPosition);
+	Array currentSliceVerticesWater(widthInCells + 2, heightInCells + 2, MaxVerticesPerPosition);
 
 	// During extraction we create a number of different lists of quads. All the
 	// quads in a given list are in the same plane and facing in the same direction.
 	QuadListVector vecQuads[NoOfFaces];
 
-	const int xSize = region.getUpperX() - offset.x + 2;
-	const int ySize = region.getUpperY() - offset.y + 2;
-	const int zSize = region.getUpperZ() - offset.z + 2;
+	const int xSize = upper.x - offset.x + 2;
+	const int ySize = upper.y - offset.y + 2;
+	const int zSize = upper.z - offset.z + 2;
 	vecQuads[NegativeX].resize(xSize);
 	vecQuads[PositiveX].resize(xSize);
 
