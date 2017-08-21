@@ -84,6 +84,7 @@ bool ServerLoop::init() {
 
 	const core::VarPtr& seed = core::Var::getSafe(cfg::ServerSeed);
 	_world->setSeed(seed->longVal());
+	_world->setPersist(false);
 	if (_aiServer->start()) {
 		Log::info("Start the ai debug server on %s:%i", aiDebugServerInterface, aiDebugServerPort);
 		_aiServer->addZone(_zone);

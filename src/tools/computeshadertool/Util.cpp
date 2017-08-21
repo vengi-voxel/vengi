@@ -97,7 +97,7 @@ static int arraySizeFromType(const std::string& type) {
 
 static CLTypeMapping convert(const std::string& type) {
 	if (type.empty()) {
-		static const CLTypeMapping mapping;
+		static const CLTypeMapping mapping = CLTypeMapping();
 		return mapping;
 	}
 	const bool ispointer = type[type.size() - 1] == '*';
@@ -131,7 +131,7 @@ int alignment(const std::string& type) {
 
 CLTypeMapping vectorType(const std::string& type) {
 	if (type.empty()) {
-		static const CLTypeMapping mapping;
+		static const CLTypeMapping mapping = CLTypeMapping();
 		return mapping;
 	}
 	for (const VecMapping* t = Vecs; t->computeType != nullptr; ++t) {

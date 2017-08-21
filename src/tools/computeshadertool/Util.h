@@ -9,7 +9,7 @@
 namespace util {
 
 struct CLTypeMapping {
-	std::string type;
+	std::string type {};
 	int arraySize = 0;
 };
 

@@ -10,6 +10,7 @@
 #include "imguihelper.h"
 
 #ifdef _WIN32
+#include <windows.h>
 #include <shellapi.h>	// ShellExecuteA(...) - Shell32.lib
 #include <objbase.h>    // CoInitializeEx(...)  - ole32.lib
 #else //_WIN32
