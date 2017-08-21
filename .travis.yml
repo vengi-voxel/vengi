@@ -39,7 +39,6 @@ addons:
     - libgles2-mesa-dev
     - libegl1-mesa-dev
     - libibus-1.0-dev
-    - libassimp-dev
     - postgresql-server-dev-all
     - libpq-dev
     - libenet-dev
