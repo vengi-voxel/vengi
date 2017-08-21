@@ -9,7 +9,7 @@ before_script:
 build:
   script:
     - make -j 4
-    - make tests ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate"
+    - make tests ARGS="--gtest_filter=-DatabaseModelTest.*:ConnectionPoolTest.*:WorldRendererTest.testCreate:UIShaderTest.*:FrontendShaderTest.*"
 
 pages:
   script:
