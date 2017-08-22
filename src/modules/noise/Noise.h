@@ -65,10 +65,10 @@ extern float Noise4D(const glm::vec4& pos, int octaves = 1, float persistence = 
 inline void SeamlessNoise2DRGB(uint8_t* buffer, int size, int octaves = 1, float persistence = 1.0f, float frequency = 1.0f, float amplitude = 1.0f) {
 	const int components = 3;
 	uint8_t bufferChannel[size * size];
+	const float pi2 = glm::two_pi<float>();
+	const float d = 1.0f / size;
 	for (int channel = 0; channel < components; ++channel) {
 		// seamless noise: http://www.gamedev.net/blog/33/entry-2138456-seamless-noise/
-		const float pi2 = glm::two_pi<float>();
-		const float d = 1.0f / size;
 		float s = 0.0f;
 		for (int x = 0; x < size; x++, s += d) {
 			const float s_pi2 = s * pi2;

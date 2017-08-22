@@ -69,6 +69,7 @@ Id createKernel(Id program, const char *name);
 bool deleteKernel(Id& kernel);
 bool kernelArg(Id kernel, uint32_t index, size_t size, const void* data);
 bool kernelRun(Id kernel, const glm::ivec3& globalWorkSize, int workDim, bool blocking = true);
+bool finish();
 
 template<class T>
 inline bool kernelArg(Id kernel, uint32_t index, T& t) {

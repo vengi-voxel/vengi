@@ -477,7 +477,16 @@ Id createKernel(Id program, const char *name) {
 	return InvalidId;
 }
 
+bool finish() {
+	core_assert(_priv::_ctx.context != nullptr);
+	core_assert(_priv::_ctx.commandQueue != nullptr);
+	const cl_int error = clFinish(_priv::_ctx.commandQueue);
+	checkError(error);
+	return error == CL_SUCCESS;
+}
+
 bool init() {
+	core_assert(_priv::_ctx.context == nullptr);
 	if (computeCLInit() == -1) {
 		return false;
 	}

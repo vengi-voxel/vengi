@@ -142,6 +142,9 @@ void ComputeShaderTool::generateSrc() {
 			}
 			if ((p.flags & (compute::BufferFlag::ReadWrite | compute::BufferFlag::WriteOnly)) != compute::BufferFlag::None) {
 				const std::string& bufferName = core::string::format("_buffer_%s_%s", k.name.c_str(), p.name.c_str());
+				kernels << "#ifdef DEBUG\n";
+				kernels << "\t\tcompute::finish();\n";
+				kernels << "#endif\n";
 				kernels << "\t\tif (state) {\n";
 				kernels << "\t\t\tcore_assert_always(compute::readBufferIntoVector(" << bufferName << ", " << p.name << "));\n";
 				kernels << "\t\t}\n";
