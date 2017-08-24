@@ -302,6 +302,10 @@ void EditorScene::select(const glm::ivec3& pos) {
 	m().select(pos);
 }
 
+void EditorScene::bezier(const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control) {
+	m().bezier(start, end, control);
+}
+
 bool EditorScene::renderAABB() const {
 	return m().gridRenderer().renderAABB();
 }

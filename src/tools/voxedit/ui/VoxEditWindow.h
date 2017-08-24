@@ -125,6 +125,7 @@ private:
 	void toggleviewport();
 	void togglefreelook();
 	void movemode();
+	void bezier(const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control);
 	void scalemode();
 	void rotatemode();
 	void togglelockaxis();

@@ -596,6 +596,15 @@ void Model::lsystem(const voxel::lsystem::LSystemContext& lsystemCtx) {
 	}
 }
 
+void Model::bezier(const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control) {
+	voxel::RawVolumeWrapper wrapper(modelVolume());
+	const int steps = glm::distance2(glm::vec3(start), glm::vec3(end)) * 10;
+	voxel::shape::createBezier(wrapper,start, end, control, _shapeHandler.currentVoxel(), steps);
+	const glm::ivec3 mins = glm::min(start, end);
+	const glm::ivec3 maxs = glm::max(start, end);
+	modified(voxel::Region(mins, maxs));
+}
+
 void Model::world(const voxel::WorldContext& ctx) {
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(127, 63, 127));
 	setNewVolume(new voxel::RawVolume(region));

@@ -364,6 +364,10 @@ void VoxEditWindow::unselectall() {
 	_scene->unselectAll();
 }
 
+void VoxEditWindow::bezier(const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control) {
+	_scene->bezier(start, end, control);
+}
+
 void VoxEditWindow::rotatemode() {
 	_mode = ModifierMode::Rotate;
 	_axis = core::Axis::None;

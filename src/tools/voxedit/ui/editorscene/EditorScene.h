@@ -63,6 +63,8 @@ public:
 	void unselectAll();
 	void select(const glm::ivec3& pos);
 
+	void bezier(const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control);
+
 	void spaceColonization();
 
 	void noise(int octaves, float persistence, float frequency, float amplitude, voxel::noise::NoiseType type);

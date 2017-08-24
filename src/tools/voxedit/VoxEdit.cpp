@@ -155,6 +155,23 @@ core::AppState VoxEdit::onConstruct() {
 		this->_mainWindow->setCursorPosition(x, y, z, true);
 	}).setHelp("Move the cursor by the specified offsets");
 
+	core::Command::registerCommand("bezier", [this] (const core::CmdArgs& args) {
+		if (args.size() != 9) {
+			Log::info("Expected to get 3 x (x, y, z) coordinates (start, end, control)");
+			return;
+		}
+		const int x1 = core::string::toInt(args[0]);
+		const int y1 = core::string::toInt(args[1]);
+		const int z1 = core::string::toInt(args[2]);
+		const int x2 = core::string::toInt(args[3]);
+		const int y2 = core::string::toInt(args[4]);
+		const int z2 = core::string::toInt(args[5]);
+		const int x3 = core::string::toInt(args[6]);
+		const int y3 = core::string::toInt(args[7]);
+		const int z3 = core::string::toInt(args[8]);
+		this->_mainWindow->bezier(glm::ivec3(x1, y1, z1), glm::ivec3(x2, y2, z2), glm::ivec3(x3, y3, z3));
+	}).setHelp("Move the cursor by the specified offsets");
+
 	core::Command::registerCommand("setreferenceposition", [this] (const core::CmdArgs& args) {
 		if (args.size() != 3) {
 			Log::info("Expected to get x, y and z coordinates");
