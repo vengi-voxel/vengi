@@ -67,6 +67,7 @@ if (NOT MSVC)
 else()
 	# TODO MSVC
 endif()
+generate_compute_shaders(voxel meshextractor)
 
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
