@@ -71,6 +71,7 @@ public:
 		core_assert(region.getLowerY() >= 0);
 		Voxel voxels[MAX_TERRAIN_HEIGHT];
 
+		// TODO: store voxel data in local buffer and transfer in one step into the volume to reduce locking
 		const int size = 2;
 		core_assert(depth % size == 0);
 		core_assert(width % size == 0);
