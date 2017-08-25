@@ -15,6 +15,9 @@
 
 #ifdef _MSC_VER
 #include "../string_view/string_view.hpp"
+namespace std {
+using string_view = std_backport::string_view;
+}
 #else
 #if __cplusplus <= 201411
 #include <experimental/string_view>
