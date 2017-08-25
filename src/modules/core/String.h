@@ -14,7 +14,7 @@
 #include <SDL.h>
 
 #ifdef _MSC_VER
-#include <string_view>
+#include "../string_view/string_view.hpp"
 #else
 #if __cplusplus <= 201411
 #include <experimental/string_view>
