@@ -10,6 +10,7 @@
 #include <climits>
 #include <algorithm>
 #include <vector>
+#include <cctype>
 #include <stdarg.h>
 #include <SDL.h>
 
