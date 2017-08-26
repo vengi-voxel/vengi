@@ -171,11 +171,12 @@ Model::State Model::PreparedStatement::exec() {
 		scoped.connection()->registerPreparedStatement(_name);
 	}
 	const int size = _params.size();
-	const char* paramValues[size];
+	std::vector<const char*> paramValues;
+	paramValues.reserve(size);
 	for (int i = 0; i < size; ++i) {
-		paramValues[i] = _params[i].first.c_str();
+		paramValues.push_back(_params[i].first.c_str());
 	}
-	State prepState(PQexecPrepared(conn, _name.c_str(), size, paramValues, nullptr, nullptr, 0));
+	State prepState(PQexecPrepared(conn, _name.c_str(), size, &paramValues[0], nullptr, nullptr, 0));
 	if (!_model->checkLastResult(prepState, scoped)) {
 		return prepState;
 	}
