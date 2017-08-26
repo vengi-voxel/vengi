@@ -101,7 +101,6 @@ static int len(lua_State* s) {
 }
 };
 
-template<>
 template<int N>
 struct clua_veclen<glm::vec<N, int> > {
 static int len(lua_State* s) {
@@ -178,7 +177,6 @@ int clua_vectostring(lua_State* s) {
 template<class T>
 struct clua_vecnew {};
 
-template<>
 template<int N>
 struct clua_vecnew<glm::vec<N, float> > {
 static int vecnew(lua_State* s) {
@@ -192,7 +190,6 @@ static int vecnew(lua_State* s) {
 }
 };
 
-template<>
 template<int N>
 struct clua_vecnew<glm::vec<N, int> > {
 static int vecnew(lua_State* s) {

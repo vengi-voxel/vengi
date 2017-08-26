@@ -447,7 +447,7 @@ bool DatabaseTool::parseField(core::Tokenizer& tok, Table& table) const {
 				Constraint& c = i->second;
 				c.types |= std::enum_value(persistence::Model::ConstraintType::NOTNULL);
 			} else {
-				table.contraints.insert(std::make_pair(fieldname, Constraint{fieldname, std::enum_value(persistence::Model::ConstraintType::NOTNULL)}));
+				table.contraints.insert(std::make_pair(fieldname, Constraint{fieldname, (uint32_t)std::enum_value(persistence::Model::ConstraintType::NOTNULL)}));
 			}
 		} else if (token == "default") {
 			if (!tok.hasNext()) {
