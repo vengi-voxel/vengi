@@ -53,7 +53,7 @@ bool Filesystem::isRelativeFilename(const std::string& name) const {
 		return true;
 	}
 	// TODO: hm... not cool and most likely not enough
-	return name[1] != ":";
+	return name[1] != ':';
 #else
 	if (size == 0) {
 		return false;
