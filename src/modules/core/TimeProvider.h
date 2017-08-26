@@ -28,7 +28,7 @@ public:
 	}
 
 	unsigned long currentTime() const {
-		const unsigned long now = (unsigned long) std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1);
+		const unsigned long now = (unsigned long)(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));
 		return now;
 	}
 
