@@ -6,6 +6,7 @@
 
 #include "core/Common.h"
 #include <cstdint>
+#include <unordered_map>
 #include "gl/GLTypes.h"
 
 namespace video {
