@@ -11,7 +11,7 @@ class FileStreamTest : public core::AbstractTest {
 };
 
 TEST_F(FileStreamTest, testFileStreamRead) {
-	const FilePtr& file = core::App::getInstance()->filesystem()->open("ui/window/testapp.tb.txt");
+	const FilePtr& file = core::App::getInstance()->filesystem()->open("iotest.txt");
 	ASSERT_TRUE((bool)file) << "Could not open filename " << file->fileName();
 	FileStream stream(file.get());
 	uint8_t chr;
