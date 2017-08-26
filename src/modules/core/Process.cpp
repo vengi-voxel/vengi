@@ -11,6 +11,7 @@
 #include <string.h>
 
 #if __WINDOWS__
+#include <SDL.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shlobj.h>
