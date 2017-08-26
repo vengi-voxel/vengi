@@ -120,7 +120,6 @@ static int dot(lua_State* s) {
 }
 };
 
-template<>
 template<int N>
 struct clua_vecdot<glm::vec<N, int> > {
 static int dot(lua_State* s) {
@@ -131,7 +130,6 @@ static int dot(lua_State* s) {
 template<class T>
 struct clua_vecequal {};
 
-template<>
 template<int N>
 struct clua_vecequal<glm::vec<N, float> > {
 static int equal(lua_State* s) {
@@ -143,7 +141,6 @@ static int equal(lua_State* s) {
 }
 };
 
-template<>
 template<int N>
 struct clua_vecequal<glm::vec<N, int> > {
 static int equal(lua_State* s) {
