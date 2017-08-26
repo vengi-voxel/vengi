@@ -242,6 +242,9 @@ const simplecpp::Token *ComputeShaderTool::parseStruct(const simplecpp::Token *t
 			}
 		}
 	}
+	if (!tok) {
+		return nullptr;
+	}
 	int depth = 1;
 	bool valid = false;
 	Parameter param;
@@ -325,6 +328,9 @@ const simplecpp::Token *ComputeShaderTool::parseKernel(const simplecpp::Token *t
 		}
 
 		stack.push(token);
+		if (!tok) {
+			break;
+		}
 	}
 
 	if (stack.empty()) {
@@ -515,7 +521,7 @@ bool ComputeShaderTool::parse(const std::string& buffer) {
 
 	simplecpp::Location loc(files);
 	std::stringstream comment;
-	for (const simplecpp::Token *tok = output.cfront(); tok; tok = tok->next) {
+	for (const simplecpp::Token *tok = output.cfront(); tok != nullptr; tok = tok->next) {
 		const std::string& token = tok->str;
 		if (tok->comment) {
 			comment << token;
@@ -527,6 +533,9 @@ bool ComputeShaderTool::parse(const std::string& buffer) {
 			tok = parseStruct(tok);
 		}
 		comment.clear();
+		if (tok == nullptr) {
+			break;
+		}
 	}
 	Log::info("Found %i kernels", (int)_kernels.size());
 	simplecpp::cleanup(included);
