@@ -2,6 +2,7 @@
 #include "core/String.h"
 #include <windows.h>
 #include <direct.h>
+#include <io.h>
 #include <wchar.h>
 
 namespace io {
@@ -27,8 +28,8 @@ bool Filesystem::createDir(const std::string& directory) const {
 		if (sep == std::string::npos) {
 			return false;
 		}
-		const std::string szPrev = directory.substr(0, sep);
-		if (CreateDirectory(szPrev, nullptr)) {
+		const std::string& szPrev = directory.substr(0, sep);
+		if (CreateDirectory(szPrev.c_str(), nullptr)) {
 			const bool bSuccess = CreateDirectory(directory.c_str(), nullptr) != 0;
 			if (bSuccess) {
 				return true;
